@@ -35,25 +35,21 @@ extern int x_flush (void);
 /* Char display */
 extern int x_clear_line (void *line_id);
 
-extern int x_move (void *line_id,
-                   int row, int column);
-
 extern int x_set_attributes (void *line_id,
                              int paper, int ink,
                              boolean superbright, boolean underline,
                              boolean blink, boolean reverse);
 
-extern int x_put_char (void *line_id, int car);
-
-extern int x_overwrite_char (void *line_id, int car);
-
 extern int x_set_xor_mode (void *line_id, boolean xor_mode);
 
-extern int x_put_string (void *line_id, char *p_char, int number);
+extern int x_put_char (void *line_id, int car, int row, int column);
 
-extern int x_put_string_at (void *line_id,
-                            char *p_char, int number,
-                            int row, int column);
+extern int x_overwrite_char (void *line_id, int car, int row, int column);
+
+
+extern int x_put_string (void *line_id,
+                         char *p_char, int number,
+                         int row, int column);
 
 extern int x_put_char_attributes (void *line_id,
                                   int car,
@@ -62,7 +58,9 @@ extern int x_put_char_attributes (void *line_id,
                                   boolean superbright, boolean underline,
                                   boolean blink, boolean reverse);
 
-extern int x_draw_area (void *line_id, int width, int height);
+extern int x_draw_area (void *line_id,
+                        int width, int height,
+                        int row, int column);
 
 /* Graphics */
 extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,

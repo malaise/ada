@@ -48,7 +48,6 @@ typedef struct {
     /* Graphic characteristics */
     boolean underline;
     boolean xor_mode;
-    int cur_row, cur_column;
     GC x_graphic_context;
     /* Event characteristics */
     boolean motion_enabled;

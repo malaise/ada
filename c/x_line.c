@@ -183,8 +183,6 @@ boolean screen_created;
     p_window->underline = False;
     p_window->xor_mode = False;
     p_window->motion_enabled = False;
-    p_window->cur_row = 0;
-    p_window->cur_column = 0;
     p_window->nbre_key = 0;
     p_window->button = 0;
     p_window->tid_x = 0;
@@ -336,10 +334,6 @@ int lin_clear (t_window *p_window) {
       p_window->server->x_font, p_window->no_font,
       p_window->screen->color_id, 0, 1, 
       False, False, False);
-
-    /* Cursor at home */
-    p_window->cur_row = 0;
-    p_window->cur_column = 0;
 
     return(True);
 }

@@ -275,31 +275,6 @@ int x_clear_line (void *line_id) {
 /***** Put and attributes management *****/
 
 /* Sets the attributes for a further put in the same window */
-int x_move (void *line_id, int row, int column) {
-
-    t_window *win_id = (t_window*) line_id;
-
-    /* Check that window is open */
-        if (! lin_check(win_id)) {
-        return (ERR);
-    }
-
-    /* Check position */
-    if (row < 0) {
-        row = 0;
-    }
-    if (column < 0) {
-        column = 0;
-    }
-
-    /* Store row and column */
-    win_id->cur_row = row;
-    win_id->cur_column = column;
-
-    return (OK);
-}
-
-/* Sets the attributes for a further put in the same window */
 int x_set_attributes (void *line_id, int paper, int ink,
   boolean superbright, boolean underline, boolean blink, boolean reverse) {
 
@@ -333,78 +308,6 @@ int x_set_attributes (void *line_id, int paper, int ink,
 
 }
 
-/* Writes a char whith the attributes previously set */
-/* The line_id is the token, previously given by open_line */
-/* The character is the one to be written */
-/* The output is not flushed */
-int x_put_char (void *line_id, int car) {
-
-    int x, y;
-    t_window *win_id = (t_window*) line_id;
-    int no_font = win_id->no_font;
-
-
-    /* Check that window is open */
-    if (! lin_check(win_id)) {
-        return (ERR);
-    }
-
-    /* Compute pixels */
-    x = win_id->cur_column * 
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y = win_id->cur_row * 
-      fon_get_height (win_id->server->x_font[no_font]) +
-      fon_get_offset (win_id->server->x_font[no_font]);
-
-    /* Put char */
-    scr_put_char (win_id->server->x_server, 
-      win_id->x_graphic_context, 
-      win_id->x_window, x, y, (char)car, win_id->xor_mode);
-
-    /* Underline */
-    if (win_id->underline) {
-        scr_underline_char (win_id->server->x_server,
-          win_id->x_graphic_context, win_id->x_window, x, y);
-    }
-
-    win_id->cur_column ++;
-
-    return (OK);
-}
-
-/* Writes a char whith the attributes previously set */
-/* The line_id is the token, previously given by open_line */
-/* The character is the one to be written */
-/* The output is not flushed */
-int x_overwrite_char (void *line_id, int car) {
-
-    int x, y;
-    t_window *win_id = (t_window*) line_id;
-    int no_font = win_id->no_font;
-
-
-    /* Check that window is open */
-    if (! lin_check(win_id)) {
-        return (ERR);
-    }
-
-    /* Compute pixels */
-    x = win_id->cur_column * 
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y = win_id->cur_row * 
-      fon_get_height (win_id->server->x_font[no_font]) +
-      fon_get_offset (win_id->server->x_font[no_font]);
-
-    /* Put char */
-    scr_overwrite_char (win_id->server->x_server, 
-      win_id->x_graphic_context, 
-      win_id->x_window, x, y, (char)car);
-
-    win_id->cur_column ++;
-
-    return (OK);
-}
-
 /* Set further put on window in Xor or back to Copy mode */
 int x_set_xor_mode (void *line_id, boolean xor_mode) {
     t_window *win_id = (t_window*) line_id;
@@ -425,13 +328,82 @@ int x_set_xor_mode (void *line_id, boolean xor_mode) {
     return (OK);
 }
     
+/* Writes a char whith the attributes previously set */
+/* The line_id is the token, previously given by open_line */
+/* The character is the one to be written */
+/* The output is not flushed */
+int x_put_char (void *line_id, int car, int row, int column) {
+
+    int x, y;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Compute pixels */
+    x = column * 
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y = row * 
+      fon_get_height (win_id->server->x_font[no_font]) +
+      fon_get_offset (win_id->server->x_font[no_font]);
+
+    /* Put char */
+    scr_put_char (win_id->server->x_server, 
+      win_id->x_graphic_context, 
+      win_id->x_window, x, y, (char)car, win_id->xor_mode);
+
+    /* Underline */
+    if (win_id->underline) {
+        scr_underline_char (win_id->server->x_server,
+          win_id->x_graphic_context, win_id->x_window, x, y);
+    }
+
+    return (OK);
+}
+
+/* Writes a char whith the attributes previously set */
+/* The line_id is the token, previously given by open_line */
+/* The character is the one to be written */
+/* The output is not flushed */
+int x_overwrite_char (void *line_id, int car, int row, int column) {
+
+    int x, y;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Compute pixels */
+    x = column * 
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y = row * 
+      fon_get_height (win_id->server->x_font[no_font]) +
+      fon_get_offset (win_id->server->x_font[no_font]);
+
+    /* Put char */
+    scr_overwrite_char (win_id->server->x_server, 
+      win_id->x_graphic_context, 
+      win_id->x_window, x, y, (char)car);
+
+    return (OK);
+}
+
 
 /* Writes a string whith the attributes previously set */
 /* The line_id is the token, previously given by open_line */
 /* The str is the adress of the first character to write */
 /* The length is the number of characters to write */
 /* The output is not flushed */
-int x_put_string (void *line_id, char *p_char, int number) {
+int x_put_string (void *line_id, char *p_char, int number,
+                  int row, int column) {
 
     int x, y;
     t_window *win_id = (t_window*) line_id;
@@ -443,9 +415,9 @@ int x_put_string (void *line_id, char *p_char, int number) {
     }
 
     /* Compute pixels */
-    x = win_id->cur_column *
+    x = column *
       fon_get_width  (win_id->server->x_font[no_font]);
-    y = win_id->cur_row *
+    y = row *
       fon_get_height (win_id->server->x_font[no_font]) +
       fon_get_offset (win_id->server->x_font[no_font]);
 
@@ -460,21 +432,73 @@ int x_put_string (void *line_id, char *p_char, int number) {
           win_id->x_graphic_context, win_id->x_window, x, y, number);
     }
 
-    /* Update cursor pos */
-    win_id->cur_column += number;
+    return (OK);
+}
+
+/* Writes a char on a line with specified characteristics */
+/* The output is not flushed */
+int x_put_char_attributes (void *line_id, int car, int row, int column,
+  int paper, int ink,
+  boolean superbright, boolean underline, boolean blink, boolean reverse) {
+
+    if (x_set_attributes (line_id, paper, ink, 
+      superbright, underline, blink, reverse) == ERR) {
+        return (ERR);
+    }
+
+    return (x_put_char (line_id, car, row, column));
+}
+
+int x_draw_area (void *line_id, int width, int height, int row, int column) {
+
+    int x_from, y_from;
+    int pix_width, pix_height;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Compute pixels */
+    x_from = column *
+      fon_get_width  (win_id->server->x_font[no_font]);
+    pix_width = width *
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y_from = row *
+      fon_get_height (win_id->server->x_font[no_font]);
+    pix_height = height *
+      fon_get_height (win_id->server->x_font[no_font]);
+
+    /* draw */
+    scr_draw_array (win_id->server->x_server,
+      win_id->x_graphic_context,
+      win_id->x_window, x_from, y_from, pix_width, pix_height);
 
     return (OK);
 }
 
-extern int x_put_string_at (void *line_id,
-                            char *p_char, int number,
-                            int row, int column) {
+/* Give graphic characteristics of the windows and its font */
+int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
+                      int *p_f_width, int *p_f_height, int *p_f_offset) {
 
-    if (x_move (line_id, row, column) == ERR) {
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
         return (ERR);
     }
 
-    return (x_put_string (line_id, p_char, number));
+    *p_w_width  = win_id->wwidth;
+    *p_w_height = win_id->wheight;
+    *p_f_width  = fon_get_width  (win_id->server->x_font[no_font]);
+    *p_f_height = fon_get_height (win_id->server->x_font[no_font]);
+    *p_f_offset = fon_get_offset (win_id->server->x_font[no_font]);
+
+    return (OK);
 }
 
 /* Writes a char on a line (characteristics are previously set) */
@@ -501,87 +525,6 @@ int x_put_char_pixels (void *line_id, int car, int x, int y) {
       win_id->x_graphic_context, 
       win_id->x_window, x, y);
     }
-
-    /* Update cursor pos */
-    win_id->cur_column ++;
-
-    return (OK);
-}
-
-
-int x_draw_area (void *line_id, int width, int height) {
-
-    int x_from, y_from;
-    int pix_width, pix_height;
-    t_window *win_id = (t_window*) line_id;
-    int no_font = win_id->no_font;
- 
-    /* Check that window is open */
-    if (! lin_check(win_id)) {
-        return (ERR);
-    }
-
-
-    /* Compute pixels */
-    x_from = win_id->cur_column *
-      fon_get_width  (win_id->server->x_font[no_font]);
-    pix_width = width *
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y_from = win_id->cur_row *
-      fon_get_height (win_id->server->x_font[no_font]);
-    pix_height = height *
-      fon_get_height (win_id->server->x_font[no_font]);
-
-    /* draw */
-    scr_draw_array (win_id->server->x_server,
-      win_id->x_graphic_context,
-      win_id->x_window, x_from, y_from, pix_width, pix_height);
-
-    /* Update cursor pos */
-    win_id->cur_column += (width-1);
-    win_id->cur_row += (height-1);
-
-    return (OK);
-}
-
-
-
-/* Writes a char on a line with specified characteristics */
-/* The output is not flushed */
-int x_put_char_attributes (void *line_id, int car, int row, int column,
-  int paper, int ink,
-  boolean superbright, boolean underline, boolean blink, boolean reverse) {
-
-    if (x_move (line_id, row, column) == ERR) {
-        return (ERR);
-    }
-
-    if (x_set_attributes (line_id, paper, ink, 
-      superbright, underline, blink, reverse) == ERR) {
-        return (ERR);
-    }
-
-    return (x_put_char (line_id, car));
-}
-
-/* Give graphic characteristics of the windows and its font */
-int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
-                      int *p_f_width, int *p_f_height, int *p_f_offset) {
-
-    t_window *win_id = (t_window*) line_id;
-    int no_font = win_id->no_font;
-
-
-    /* Check that window is open */
-    if (! lin_check(win_id)) {
-        return (ERR);
-    }
-
-    *p_w_width  = win_id->wwidth;
-    *p_w_height = win_id->wheight;
-    *p_f_width  = fon_get_width  (win_id->server->x_font[no_font]);
-    *p_f_height = fon_get_height (win_id->server->x_font[no_font]);
-    *p_f_offset = fon_get_offset (win_id->server->x_font[no_font]);
 
     return (OK);
 }

@@ -11,7 +11,7 @@
 #define NBRE_COLOR 14
 
 #define T1 "Usage is: test_x display [back border font] (0-9 0-9 0-3)."
-#define T2 "Use any mouse button to simulate TID."
+#define T2 "Use any mouse button to simulate TID. m to enable motion."
 #define T3 "Use s, u, b and r keys to change attributes."
 #define T4 "Use + - keys to shift inks and * / keys to shift backgrounds."
 #define T5 "To exit, touch TID (or click/release) in row 1 col 1."
@@ -27,24 +27,19 @@
 int back;
 
 
-void put(void *line, char *string) {
+void put(void *line, char *string, int row, int column) {
 
-  (void) x_put_string (line, string, strlen(string));
+  (void) x_put_string (line, string, strlen(string), row, column);
 }
 
 void title (void *line) {
 
-  (void) x_move (line, TITLE_LNE + 0, 2);
   (void) x_set_attributes (line, back, 13, 0, 0, 0, 0);
-  (void) put (line, T1);
-  (void) x_move (line, TITLE_LNE + 2, 2);
-  (void) put (line, T2);
-  (void) x_move (line, TITLE_LNE + 3, 2);
-  (void) put (line, T3);
-  (void) x_move (line, TITLE_LNE + 4, 2);
-  (void) put (line, T4);
-  (void) x_move (line, TITLE_LNE + 6, 2);
-  (void) put (line, T5);
+  (void) put (line, T1, TITLE_LNE + 0, 2);
+  (void) put (line, T2, TITLE_LNE + 2, 2);
+  (void) put (line, T3, TITLE_LNE + 3, 2);
+  (void) put (line, T4, TITLE_LNE + 4, 2);
+  (void) put (line, T5, TITLE_LNE + 6, 2);
 }
 
 void main(int argc, char *argv[]) 
@@ -62,6 +57,7 @@ unsigned int b1;
 unsigned int s, u, b, r;
 int delta;
 int b_off, c_off, bv, cv;
+int motion;
 
   /* Parameters */ 
   name[0] = '\0';
@@ -112,6 +108,7 @@ int b_off, c_off, bv, cv;
   delta = 0;
   strcpy (stre, "");
   b_off = 0; c_off = 1;
+  motion = False;
 
   k = REFRESH;
   l = 0;
@@ -131,19 +128,17 @@ int b_off, c_off, bv, cv;
         if (cv < 0) cv += NBRE_COLOR;
         bv = (i + b_off) % NBRE_COLOR;
         if (bv < 0) bv += NBRE_COLOR;
-        x_move (line, COLOURS_LNE + (2*i), 30);
-        x_set_attributes (line, bv, cv, s, u, b, r);
         strcpy (stra, "Ink ");
         sprintf (digits, "%2d", cv);
         strcat (stra, digits);
         strcat (stra, " on Background ");
         sprintf (digits, "%2d", bv);
         strcat (stra, digits);
-        put (line, stra);
+        x_set_attributes (line, bv, cv, s, u, b, r);
+        put (line, stra, COLOURS_LNE + (2*i), 30);
       }
-      x_move (line, COLOURS_LNE, 10);
       x_set_attributes (line, bv, 2, 0, 0, 0, 0);
-      x_draw_area (line, 5, 2*NBRE_COLOR);
+      x_draw_area (line, 5, 2*NBRE_COLOR, COLOURS_LNE, 10);
       x_draw_rectangle (line, 0, 0, 9, 14);
 
       /* Text display  : show attributes */
@@ -155,16 +150,13 @@ int b_off, c_off, bv, cv;
       if (b) strcat (stra, YES_STR); else strcat (stra, NO_STR);
       strcat (stra, "(r)everse:");
       if (r) strcat (stra, YES_STR); else strcat (stra, NO_STR);
-      x_move (line, STATUS_LNE, 7);
       x_set_attributes (line, back, 13, 0, 0, 0, 0);
-      put (line, stra);
+      put (line, stra, STATUS_LNE, 7);
 
       /* Text display  : show event */
       x_set_attributes (line, back, 13, 0, 0, 0, 0);
-      x_move (line, EVENT_LNE, 10);
-      put (line, CLL);
-      x_move (line, EVENT_LNE, 10);
-      put (line, stre);
+      put (line, CLL, EVENT_LNE, 10);
+      put (line, stre, EVENT_LNE, 10);
       
     }
 
@@ -218,11 +210,14 @@ int b_off, c_off, bv, cv;
        if (b1 == '-') c_off = (c_off + 1) % NBRE_COLOR;
        if (b1 == '*') b_off = (b_off - 1) % NBRE_COLOR;
        if (b1 == '/') b_off = (b_off + 1) % NBRE_COLOR;
+       if (b1 == 'm') {
+         motion = ! motion;
+         x_enable_motion_events (line, motion);
+       }
      }
 
     } else if (k == TID_PRESS) {
 
-x_enable_motion_events (line, True);
       /* TID press */
       strcpy (stre, "TID press buttton: ");
       x_read_tid (line_event, TRUE, &l, &i, &j);
