@@ -6,8 +6,7 @@ package body Assertion is
   Init_Done : Boolean := False;
 
   Action_Name : constant String := "ASSERT_ACTION";
-  type Action_List is (Ignore, Put_Trace, Raise_Exception);
-  Action : Action_List;
+  Action : Action_List := Default_Action;
 
   procedure Init is
     Action_Str : String (1 .. 5);
@@ -18,14 +17,16 @@ package body Assertion is
       return;
     end if;
     -- Set Action according to env variable Action_Name
-    Action := Ignore;
+    Action := Default_Action;
     Init_Done := True;
     Sys_Calls.Getenv (Action_Name, Set, Trunc, Action_Str, Len);
     if not Set or else Trunc or else Len /= Action_Str'Length then
       return;
     end if;
     Action_Str := Upper_Str (Action_Str);
-    if Action_Str = "TRACE" then
+    if Action_Str = "IGNORE" then
+      Action := Ignore;
+    elsif Action_Str = "TRACE" then
       Action := Put_Trace;
     elsif Action_Str = "RAISE" then
       Action := Raise_Exception;
@@ -33,6 +34,15 @@ package body Assertion is
   end Init;
 
     
+  procedure Set (Action : in Action_List) is
+  begin
+    if not Init_Done then
+      -- Init is necessary
+      Init;
+    end if;
+    Assertion.Action := Set.Action;
+  end Set;
+
   -- Do nothing if What is True,
   -- else check environment variable ASSERT_ACTION
   --  If set to TRACE, trace assertion error
