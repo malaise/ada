@@ -28,26 +28,16 @@ package body FILE is
     package MY_GET_LINE is new GET_LINE(
       MAX_WORD_LEN => 6, -- 100.00
       MAX_WORD_NB => MAX_DIM,
-      MAX_LINE_LEN => 1024);
+      MAX_LINE_LEN => 1024,
+      COMMENT      => '#');
     LINE  : MY_GET_LINE.LINE_ARRAY;
-    LINE_NO : TEXT_IO.COUNT := 0;
     DIM : POSITIVE;
     F   : FLOAT_CELL_RANGE;
 
-    function LINE_IS_SIGNIFICANT return BOOLEAN is
-    begin
-      return MY_GET_LINE.GET_WORD_NUMBER /= 0 and then
-        TEXT_HANDLER.VALUE(LINE(1))(1) /= '#';
-    end LINE_IS_SIGNIFICANT;
-
     procedure READ_NEXT_SIGNIFICANT_LINE is
     begin
-      loop
-        MY_GET_LINE.READ_NEXT_LINE;
-        MY_GET_LINE.GET_WORDS (LINE);
-        LINE_NO := TEXT_IO."+" (LINE_NO, 1);
-        exit when LINE_IS_SIGNIFICANT;
-      end loop;
+      MY_GET_LINE.READ_NEXT_LINE;
+      MY_GET_LINE.GET_WORDS (LINE);
     end READ_NEXT_SIGNIFICANT_LINE;
   begin
     -- Open file
@@ -62,9 +52,6 @@ package body FILE is
     -- Read mattrix kind
     begin
       MY_GET_LINE.GET_WORDS (LINE);
-      if not LINE_IS_SIGNIFICANT then
-        READ_NEXT_SIGNIFICANT_LINE;
-      end if;
     exception
       when MY_GET_LINE.NO_MORE_LINE =>
         TEXT_IO.PUT_LINE ("ERROR in file " & FILE_NAME
@@ -113,7 +100,7 @@ package body FILE is
       exception
         when others =>
           TEXT_IO.PUT_LINE ("ERROR, when reading data at line "
-                            & TEXT_IO.COUNT'IMAGE(LINE_NO) & " of file " & FILE_NAME);
+                            & TEXT_IO.COUNT'IMAGE(MY_GET_LINE.GET_LINE_NO) & " of file " & FILE_NAME);
           raise READ_ERROR;
       end;
 
@@ -124,7 +111,7 @@ package body FILE is
         -- Check number of words
         if MY_GET_LINE.GET_WORD_NUMBER /= DIM then
           TEXT_IO.PUT_LINE ("ERROR in file. Wrong number of words at line "
-                            & TEXT_IO.COUNT'IMAGE(LINE_NO) & " of file " & FILE_NAME);
+                            & TEXT_IO.COUNT'IMAGE(MY_GET_LINE.GET_LINE_NO) & " of file " & FILE_NAME);
           raise READ_ERROR;
         end if;
       end if;
@@ -135,7 +122,7 @@ package body FILE is
     begin
       READ_NEXT_SIGNIFICANT_LINE;
       TEXT_IO.PUT_LINE ("ERROR. Unexpected data at line "
-                        & TEXT_IO.COUNT'IMAGE(LINE_NO) & " of file " & FILE_NAME);
+                        & TEXT_IO.COUNT'IMAGE(MY_GET_LINE.GET_LINE_NO) & " of file " & FILE_NAME);
       MY_GET_LINE.CLOSE;
       raise READ_ERROR;
     exception
