@@ -170,27 +170,41 @@ package body Event_Mng is
   function C_Get_Signal return Integer;
   pragma Import(C, C_Get_Signal, "get_signal");
 
-  Cb_Sig : Sig_Callback := Null_Procedure'Access;
+  Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
+  Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
 
-  procedure Set_Sig_Callback (Callback : in Sig_Callback) is
+  procedure Set_Sig_Term_Callback (Callback : in Sig_Callback) is
   begin
-    Cb_Sig := Callback;
-  end Set_Sig_Callback;
+    Cb_Term_Sig := Callback;
+  end Set_Sig_Term_Callback;
+
+  procedure Set_Sig_Child_Callback (Callback : in Sig_Callback) is
+  begin
+    Cb_Child_Sig := Callback;
+  end Set_Sig_Child_Callback;
 
   -- Is a callback set on signals
-  function Sig_Callback_Set return Boolean is
+  function Sig_Term_Callback_Set return Boolean is
   begin
-    return Cb_Sig /= null;
-  end Sig_Callback_Set;
+    return Cb_Term_Sig /= null;
+  end Sig_Term_Callback_Set;
 
-  procedure Send_Signal is
+  function Sig_Child_Callback_Set return Boolean is
+  begin
+    return Cb_Child_Sig /= null;
+  end Sig_Child_Callback_Set;
+
+  procedure Send_Dummy_Signal is
   begin
     if Debug then
       Ada.Text_Io.Put_Line ("Event_Mng.Send_Signal");
     end if;
     C_Send_Signal (C_Sig_Dummy);
-  end Send_Signal;
+  end Send_Dummy_Signal;
   
+  -- PRIVATE. Get kind of last signal
+  type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
+                            Terminate_Sig, Child_Sig);
   function Get_Signal_Kind return Signal_Kind_List is
     Sig : Integer;
   begin
@@ -386,7 +400,7 @@ package body Event_Mng is
         if Pause_Level /= 0 then
           Pause_Level := Pause_Level - 1;
           if Pause_Level /= 0 then
-            Send_Signal;
+            Send_Dummy_Signal;
           end if;
         end if;
         exit;
@@ -443,7 +457,8 @@ package body Event_Mng is
         Signal_Kind := Get_Signal_Kind;
         if Debug then
           Ada.Text_Io.Put_Line ("Event_Mng.Handle " & Signal_Kind'Img
-                   & " with cb: " & Boolean'Image(Cb_Sig /= null));
+                   & " with term cb: " & Boolean'Image(Cb_Term_Sig /= null)
+                   & " and child cb: " & Boolean'Image(Cb_Child_Sig /= null));
         end if;
         case Signal_Kind is
           when Unknown_Sig | No_Sig =>
@@ -452,9 +467,15 @@ package body Event_Mng is
           when Dummy_Sig =>
             -- Dummy signal: never call Cb but always generate event
             return Sig_Event;
-          when Terminate_Sig | Child_Sig =>
-            if Cb_Sig /= null then
-              Cb_Sig.all;
+          when Terminate_Sig =>
+            if Cb_Term_Sig /= null then
+              Cb_Term_Sig.all;
+              return Sig_Event;
+            end if;
+            -- else No_Event
+          when Child_Sig =>
+            if Cb_Child_Sig /= null then
+              Cb_Child_Sig.all;
               return Sig_Event;
             end if;
             -- else No_Event

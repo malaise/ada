@@ -33,19 +33,17 @@ package Event_Mng is
 
   -- Register a callback on signal
   -- Call it with null to disable generation of Signal_Event by Wait
-  -- Default is event generation with no callback
-  procedure Set_Sig_Callback (Callback : in Sig_Callback);
+  -- Default is event generation with no_action callback
+  procedure Set_Sig_Term_Callback (Callback : in Sig_Callback);
+  procedure Set_Sig_Child_Callback (Callback : in Sig_Callback);
+
   -- Is a callback set on signals
-  function Sig_Callback_Set return Boolean;
+  function Sig_Term_Callback_Set return Boolean;
+  function Sig_Child_Callback_Set return Boolean;
 
   -- Send a dummy signal
-  -- It always generates a Sig_Event and Sig_Callback is not called
-  procedure Send_Signal;
-
-  -- Get kind of last signal
-  type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
-                            Terminate_Sig, Child_Sig);
-  function Get_Signal_Kind return Signal_Kind_List;
+  -- It always generates a Sig_Event but Callbacks are not called
+  procedure Send_Dummy_Signal;
 
   -------------------
   -- Waiting point --
