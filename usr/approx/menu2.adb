@@ -93,6 +93,7 @@ package body MENU2 is
 
     -- Compute Y
     SCREEN.INFORM(SCREEN.I_WAIT);
+    OK := TRUE;
     begin
       declare
         -- Resolution of problem
