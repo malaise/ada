@@ -104,7 +104,7 @@ begin
   elsif Argument.Get_Parameter = "s" then
     Publish := False;
   else
-    return;
+    raise Argument.Argument_Not_Found;
   end if;
   Fifo.Change_Channel_Name (Argument.Get_Parameter(2));
   Nb_To_Do := Positive'Value (Argument.Get_Parameter(3));
