@@ -1,5 +1,5 @@
 with System, Ada.Calendar;
-with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_List,
+with Text_Handler, Environ, Socket, Tcp_Util, Dynamic_List,
      Event_Mng, Assertion;
 package body Channels is
 
@@ -102,17 +102,9 @@ package body Channels is
   end Parse;
 
   function Get_Period (Channel : String) return Ada.Calendar.Day_Duration is
-    Set : Boolean;
-    Tru : Boolean;
-    Val : String (1 .. 6);
-    Len : Natural;
     Default_Period : constant Ada.Calendar.Day_Duration := 1.0;
   begin
-    Sys_Calls.Getenv ("Channel_" & Channel & "_period", Set, Tru, Val, Len);
-    if not Set or else Tru then
-      return Default_Period;
-    end if;
-    return Ada.Calendar.Day_Duration'Value (Val(1 .. Len));
+    return Environ.Get_Dur ("Channel_" & Channel & "_period", Default_Period);
   exception
     when others =>
       return Default_Period;

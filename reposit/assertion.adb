@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Argument, Date_Image, Sys_Calls, Upper_Str;
+with Argument, Date_Image, Sys_Calls, Environ, Upper_Str;
 package body Assertion is
 
   -- Init (getenv) done?
@@ -9,27 +9,26 @@ package body Assertion is
   Action : Action_List := Default_Action;
 
   procedure Init is
-    Action_Str : String (1 .. 5);
-    Set, Trunc : Boolean;
+    Action_Str : String (1 .. 6);
     Len : Natural;
   begin
     if Init_Done then
       return;
     end if;
-    -- Set Action according to env variable Action_Name
-    Action := Default_Action;
     Init_Done := True;
-    Sys_Calls.Getenv (Action_Name, Set, Trunc, Action_Str, Len);
-    if not Set or else Trunc or else Len /= Action_Str'Length then
-      return;
-    end if;
+    -- Set Action according to env variable Action_Name
+    Action_Str := (others => '-');
+    Len := Action_Str'Last;
+    Environ.Get_Str (Action_Name, Action_Str, Len);
     Action_Str := Upper_Str (Action_Str);
-    if Action_Str = "IGNORE" then
+    if Action_Str (1 .. Len) = "IGNORE" then
       Action := Ignore;
-    elsif Action_Str = "TRACE" then
+    elsif Action_Str (1 .. Len) = "TRACE" then
       Action := Put_Trace;
-    elsif Action_Str = "RAISE" then
+    elsif Action_Str (1 .. Len) = "RAISE" then
       Action := Raise_Exception;
+    else
+      Action := Default_Action;
     end if;
   end Init;
 

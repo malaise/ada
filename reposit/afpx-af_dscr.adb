@@ -1,5 +1,5 @@
 with Direct_Io;
-with Sys_Calls, Text_Handler;
+with Environ, Text_Handler;
 separate (Afpx)
 package body Af_Dscr is
 
@@ -114,16 +114,10 @@ begin
   -- Try to getenv data dir then to open the files
   declare
     File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
-    Env_Set, Env_Trunc : Boolean;
-    Env_Value : String (1 .. Afpx_Typ.Dest_Path.Max_Len - 1);
-    Env_Len : Natural;
+    Default_Path : constant String := ".";
   begin
-    Sys_Calls.Getenv(File_Dir_Env_Name, Env_Set, Env_Trunc, Env_Value, Env_Len);
-    if Env_Set and then not Env_Trunc and then Env_Len /= 0 then
-      Text_Handler.Set (Afpx_Typ.Dest_Path, Env_Value (1 .. Env_Len));
-    else
-      Text_Handler.Set (Afpx_Typ.Dest_Path, ".");
-    end if;
+    Text_Handler.Set (Afpx_Typ.Dest_Path, Default_Path);
+    Environ.Get_Txt (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
     Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
 
     Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,

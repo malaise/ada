@@ -1,4 +1,4 @@
-with Argument, Dyn_Data, Sys_Calls;
+with Argument, Dyn_Data, Environ;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
@@ -59,7 +59,6 @@ package body Generic_Con_Io is
     Init_Done : Boolean := False;
     procedure Init is
       Line : X_Mng.Line_Definition_Rec := Line_Def;
-      Env_Set, Env_Tru : Boolean;
       Env_Str : String (1 .. Font_Env_Small'Length);
       Env_Len : Natural;
     begin
@@ -67,15 +66,15 @@ package body Generic_Con_Io is
         return;
       end if;
       X_Initialise;
-      Sys_Calls.Getenv (Font_Env_Name, Env_Set, Env_Tru, Env_Str, Env_Len);
-      if Env_Set and then not Env_Tru then
-        if Env_Str (1 .. Env_Len) = Font_Env_Small
-        and then Font_No /= Font_No_Range'First then
-          Line.No_Font := Font_No - 1;
-        elsif Env_Str (1 .. Env_Len) = Font_Env_Large
-        and then Font_No /= Font_No_Range'Last then
-          Line.No_Font := Font_No + 1;
-        end if;
+      Env_Str := (others => '-');
+      Env_Len := Env_Str'Length;
+      Environ.Get_Str (Font_Env_Name, Env_Str, Env_Len);
+      if Env_Str (1 .. Env_Len) = Font_Env_Small
+      and then Font_No /= Font_No_Range'First then
+        Line.No_Font := Font_No - 1;
+      elsif Env_Str (1 .. Env_Len) = Font_Env_Large
+      and then Font_No /= Font_No_Range'Last then
+        Line.No_Font := Font_No + 1;
       end if;
       X_Mng.X_Open_Line (Line, Id);
       X_Mng.X_Set_Line_Name (Id, Argument.Get_Program_Name);

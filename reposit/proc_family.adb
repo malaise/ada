@@ -1,4 +1,4 @@
-with Dynamic_List, Event_Mng;
+with Dynamic_List, Event_Mng, Environ;
 package body Proc_Family is
 
   Init_Done : Boolean := False;
@@ -255,26 +255,21 @@ package body Proc_Family is
   -- No_Fd is raised if they cannot be retreived
   procedure Child_Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc) is
     My_Pid : constant Sys_Calls.Pid := Sys_Calls.Get_Pid;
-    Env_Set   : Boolean;
-    Env_Trunc : Boolean;
-    Env_Value : String (1 .. Integer'Width);
-    Env_Len   : Natural;
+    Int_Val   : Integer;
   begin
     -- Get Fd_In
-    Sys_Calls.Getenv (Var_Name (My_Pid, True), Env_Set, Env_Trunc,
-                      Env_Value, Env_Len);
-    if not Env_Set or else Env_Trunc or else Env_Len = 0 then
+    Int_Val := Environ.Get_Int(Var_Name (My_Pid, True), -1);
+    if Int_Val = -1 then
       raise No_Fd;
     end if;
-    Fd_In := Sys_Calls.File_Desc'Value (Env_Value(1 .. Env_Len));
+    Fd_In := Sys_Calls.File_Desc(Int_Val);
 
     -- Get Fd_Out
-    Sys_Calls.Getenv (Var_Name (My_Pid, False), Env_Set, Env_Trunc,
-                      Env_Value, Env_Len);
-    if not Env_Set or else Env_Trunc or else Env_Len = 0 then
+    Int_Val := Environ.Get_Int(Var_Name (My_Pid, False), -1);
+    if Int_Val = -1 then
       raise No_Fd;
     end if;
-    Fd_Out := Sys_Calls.File_Desc'Value (Env_Value(1 .. Env_Len));
+    Fd_Out := Sys_Calls.File_Desc(Int_Val);
   exception
     when others =>
       raise No_Fd;

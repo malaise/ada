@@ -1,5 +1,5 @@
 with System, Ada.Calendar, Ada.Text_Io;
-with Null_Procedure, Dynamic_List, Timers;
+with Null_Procedure, Dynamic_List, Timers, Environ;
 package body Event_Mng is
 
   -------------
@@ -30,18 +30,11 @@ package body Event_Mng is
   Debug_Set : Boolean := False;
 
   procedure Set_Debug is
-    Set : Boolean;
-    Tru : Boolean;
-    Val : String (1 .. 1);
-    Len : Natural;
   begin
     if Debug_Set then
       return;
     end if;
-    Sys_Calls.Getenv (Debug_Var_Name, Set, Tru, Val, Len);
-    if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
-      Debug := True;
-    end if;
+    Debug := Environ.Is_Yes (Debug_Var_Name);
     Debug_Set := True;
   exception
     when others =>

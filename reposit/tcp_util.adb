@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Sys_Calls, Dynamic_List, Timers, Event_Mng, My_Io;
+with Environ, Dynamic_List, Timers, Event_Mng, My_Io;
 package body Tcp_Util is
 
   -- Remove tailing spaces
@@ -14,6 +14,7 @@ package body Tcp_Util is
   end Parse;
     
   -- Debugging
+  Debug_Init : Boolean := False;
   Debug_Connect_Name   : constant String := "TCP_UTIL_DEBUG_CONNECT";
   Debug_Accept_Name    : constant String := "TCP_UTIL_DEBUG_ACCEPT";
   Debug_Overflow_Name  : constant String := "TCP_UTIL_DEBUG_OVERFLOW";
@@ -23,19 +24,24 @@ package body Tcp_Util is
   Debug_Overflow : Boolean := False;
   Debug_Reception : Boolean := False;
   procedure Set_Debug (Name : in String; Var : in out Boolean) is
-    Set : Boolean;
-    Tru : Boolean;
-    Val : String (1 .. 1);
-    Len : Natural;
   begin
-    Sys_Calls.Getenv (Name, Set, Tru, Val, Len);
-    if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
-      Var := True;
-    end if;
+    Var := Environ.Is_Yes (Name);
   exception
     when others =>
       null;
   end Set_Debug;
+
+  procedure Init_Debug is
+  begin
+    if Debug_Init then
+      return;
+    end if;
+    Set_Debug (Debug_Connect_Name, Debug_Connect);
+    Set_Debug (Debug_Accept_Name, Debug_Accept);
+    Set_Debug (Debug_Overflow_Name, Debug_Overflow);
+    Set_Debug (Debug_Reception_Name, Debug_Reception);
+    Debug_Init := True;
+  end Init_Debug;
 
   -- Connecting connection
   type Connecting_Rec is record
@@ -454,7 +460,7 @@ package body Tcp_Util is
            return Boolean is
     Rec : Connecting_Rec;
   begin
-    Set_Debug (Debug_Connect_Name, Debug_Connect);
+    Init_Debug;
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connect_To start");
     end if;
@@ -624,7 +630,7 @@ package body Tcp_Util is
                          Num          : out Port_Num) is
     Rec : Accepting_Rec;
   begin
-    Set_Debug (Debug_Accept_Name, Debug_Accept);
+    Init_Debug;
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Accept_From start");
     end if;
@@ -803,7 +809,7 @@ package body Tcp_Util is
     Rec : Sending_Rec;
     procedure Send is new Socket.Send (Message_Type);
   begin
-    Set_Debug (Debug_Overflow_Name, Debug_Overflow);
+    Init_Debug;
     -- Try to send
     begin
       Send (Dscr, Message, Length);
@@ -993,6 +999,7 @@ package body Tcp_Util is
                 Disconnection_Cb : in Disconnection_Callback_Access) is
       The_Rec : Rece_Rec;
     begin
+      Init_Debug;
       if not Socket.Is_Open (Dscr) then
         raise No_Such;
       end if;
