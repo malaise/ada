@@ -1,0 +1,12 @@
+"Stack size is " put ssize putl
+"Stack:" putl
+
+[
+ssize isnul ifretall
+strof putl
+pushle copye retacal
+] pope
+
+pushle copye call
+
+
