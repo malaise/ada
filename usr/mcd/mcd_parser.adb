@@ -209,9 +209,10 @@ package body Parser is
       Item_Chrs.Val_Len := Text_Handler.Length(Txt);
       Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
       Instr_Stack.Push(Item_Chrs);
-      Item_Chrs.Val_Len := Item_Chrs.Val_Len - 2;
-      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) :=
-             Item_Chrs.Val_Text(2 .. Item_Chrs.Val_Len + 1);
+      -- Remove first and last string delimiters, and replace
+      --  pairs of delimiters by one delimiter
+      Input_Dispatcher.Parse_String (Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len),
+                                     Item_Chrs.Val_Len);
       return Item_Chrs;
     end if;
 

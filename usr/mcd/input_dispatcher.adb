@@ -29,6 +29,40 @@ package body Input_Dispatcher is
     return C = ' ' or else C = Ascii.Ht;
   end Is_Separator;
 
+
+  -- Remove string
+  procedure Parse_String (Str : in out String; Len : out Natural) is
+    Tmp_Index : Natural;
+  begin
+    -- Remove first and last delim
+    if Str'Length < 2
+    or else Str(Str'First) /= Sd
+    or else Str(Str'Last) /= Sd then
+      raise String_Error;
+    end if;
+    Str(Str'First .. Str'Last-2) := Str(Str'First+1 .. Str'Last-1);
+    Len := Str'Length - 2;
+
+    -- Empty string?
+    if Len = 0 then
+      return;
+    end if;
+
+    -- Parse sequence of two delim
+    Tmp_Index := Str'First;
+    while Tmp_Index <= Len loop
+      if Str(Tmp_Index) = Sd then
+        if Tmp_Index = Len or else Str(Tmp_Index + 1) /= Sd then
+          -- Sd alone within string
+          raise String_Error;
+        end if;
+        Str(Tmp_Index .. Len - 1) := Str(Tmp_Index + 1 .. Len);
+        Len := Len - 1;
+      end if;
+      Tmp_Index := Tmp_Index + 1;
+    end loop;
+  end Parse_String;
+
   function Next_Str_Word return String is
     Tmp_Index : Positive;
     In_Lit : Boolean := False;
@@ -63,10 +97,8 @@ package body Input_Dispatcher is
             exit Parse_Lit;
           elsif Cur_Str(Stop_Index + 1) = Sd 
           and then Stop_Index + 1 /= Cur_Len then
-            -- Two successive Sd in the middle: shift left by one
-            Cur_Str(Stop_Index + 1 .. Cur_Len - 1) :=
-                     Cur_Str(Stop_Index + 2 .. Cur_Len);
-            Cur_Len := Cur_Len - 1;
+            -- Two successive Sd in the middle: keep
+            Stop_Index := Stop_Index + 1;
           else
             -- One Sd in middle of string
             raise String_Error;

@@ -20,6 +20,11 @@ package Input_Dispatcher is
   -- String delimiter (returned by Next_Word)
   Sd : constant Character := '"';
 
+  -- Remove first and last string delimiters
+  --  and then pair of delimiters by one
+  -- >"foo ""bar"" stuff"< becomes >foo "bar" stuff<
+  procedure Parse_String (Str : in out String; Len : out Natural);
+
   -- Error if end of string litteral not found
   String_Error : exception;
 
