@@ -144,6 +144,7 @@ package body DISPLAY is
   begin
     SYS_CALLS.PUT_ERROR ("No way for ");
     SYS_CALLS.PUT_LINE_ERROR (CHAR(OTHER_KIND(KIND)) & NORMAL(COTE, 3, TRUE, '0'));
+    OK := FALSE;
   end PUT_NO_WAY;
 
   procedure PRINT_TITTLE (KIND : in COMMON.COTE_KIND) is
@@ -167,3 +168,4 @@ package body DISPLAY is
   end PRINT_RESULT;
 
 end DISPLAY;
+

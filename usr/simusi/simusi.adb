@@ -13,6 +13,6 @@ begin
 
 exception
   when RESOLUTION.ABORT_ERROR =>
-   null;
+    DISPLAY.PRINT_RESULT;
 end SIMUSI;
 
