@@ -287,7 +287,7 @@ package body Parser is
     end;
 
 
-    -- Parse OPER : synbol
+    -- Parse OPER : symbol
     if Text_Handler.Length(Txt) <= 2 then
       if Text_Handler.Length(Txt) = 2 then
         W := Text_Handler.Value(Txt);
