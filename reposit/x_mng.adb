@@ -20,7 +20,7 @@ package body X_MNG is
   INITIALISED : BOOLEAN := FALSE; 
  
   -- Boolean on 32 bits for C
-  type    BOOL_FOR_C is (FALSE, TRUE);
+  type BOOL_FOR_C is new BOOLEAN;
   for BOOL_FOR_C'SIZE use 32;
   for BOOL_FOR_C use (FALSE => 0, TRUE => 1);
 
@@ -37,6 +37,7 @@ package body X_MNG is
   -- Callback list
   type CB_REC is record
     FD : FILE_DESC;
+    READ : BOOLEAN;
     CB : FD_CALLBACK;
   end record;
   package CB_MNG is new DYNAMIC_LIST(CB_REC);
@@ -45,7 +46,7 @@ package body X_MNG is
   -- Same FD
   function SAME_FD (CB1, CB2 : CB_REC) return BOOLEAN is
   begin
-    return CB1.FD = CB2.FD;
+    return CB1.READ = CB2.READ and then CB1.FD = CB2.FD;
   end SAME_FD;
   procedure CB_SEARCH is new CB_MNG.SEARCH(SAME_FD);
 
@@ -272,16 +273,16 @@ package body X_MNG is
 
   ------------------------------------------------------------------
   -- Add a fd for select
-  -- int x_add_fd (int fd);
+  -- int x_add_fd (int fd, boolean read);
   ------------------------------------------------------------------
-  function X_ADD_FD (FD : INTEGER) return RESULT;
+  function X_ADD_FD (FD : INTEGER; READ : BOOL_FOR_C) return RESULT;
   pragma IMPORT(C, X_ADD_FD, "x_add_fd");
 
   ------------------------------------------------------------------
   -- Del a fd from select
-  -- int x_del_fd (int fd);
+  -- int x_del_fd (int fd, boolean read);
   ------------------------------------------------------------------
-  function X_DEL_FD (FD : INTEGER) return RESULT;
+  function X_DEL_FD (FD : INTEGER; READ : BOOL_FOR_C) return RESULT;
   pragma IMPORT(C, X_DEL_FD, "x_del_fd");
 
   ------------------------------------------------------------------
@@ -291,6 +292,7 @@ package body X_MNG is
   C_SELECT_NO_EVENT : constant INTEGER := -2;
   C_SELECT_X_EVENT  : constant INTEGER := -1;
   function X_SELECT (P_FD : SYSTEM.ADDRESS;
+                     P_READ : SYSTEM.ADDRESS;
                      TIMEOUT_MS : SYSTEM.ADDRESS) return RESULT;
   pragma IMPORT(C, X_SELECT, "x_select");
 
@@ -851,12 +853,14 @@ package body X_MNG is
   end X_SET_GRAPHIC_POINTER;
 
   ------------------------------------------------------------------
-  procedure X_ADD_CALLBACK (FD : in FILE_DESC; CALLBACK : in FD_CALLBACK) is
+  procedure X_ADD_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN;
+                            CALLBACK : in FD_CALLBACK) is
     RES : BOOLEAN;
     CB_SEARCHED : CB_REC;
   begin
     -- Check no cb for this fd yet
     CB_SEARCHED.FD := FD;
+    CB_SEARCHED.READ := READ;
     CB_SEARCHED.CB := null;
     begin
       CB_SEARCH (CB_LIST, CB_SEARCHED, CB_MNG.PREV, FROM_CURRENT => FALSE);
@@ -869,9 +873,9 @@ package body X_MNG is
     if not CB_MNG.IS_EMPTY (CB_LIST) then
       CB_MNG.MOVE_TO (CB_LIST, CB_MNG.PREV, 0, FALSE);
     end if;
-    CB_MNG.INSERT (CB_LIST, (FD, CALLBACK));
+    CB_MNG.INSERT (CB_LIST, (FD, READ, CALLBACK));
     -- Add fd to select
-    RES := X_ADD_FD (INTEGER(FD)) = OK;
+    RES := X_ADD_FD (INTEGER(FD), BOOL_FOR_C(READ)) = OK;
     if not RES then
       raise X_FAILURE;
     end if;
@@ -881,14 +885,15 @@ package body X_MNG is
   end X_ADD_CALLBACK;
 
   ------------------------------------------------------------------
-  procedure X_DEL_CALLBACK (FD : in FILE_DESC) is
+  procedure X_DEL_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN) is
     RES : BOOLEAN;
     CB_SEARCHED : CB_REC;
   begin
     -- Del fd from select
-    RES := X_DEL_FD (INTEGER(FD)) = OK;
+    RES := X_DEL_FD (INTEGER(FD), BOOL_FOR_C(READ)) = OK;
     -- del from list
     CB_SEARCHED.FD := FD;
+    CB_SEARCHED.READ := READ;
     CB_SEARCHED.CB := null;
     CB_SEARCH (CB_LIST, CB_SEARCHED, CB_MNG.PREV, FROM_CURRENT => FALSE);
     if CB_MNG.GET_POSITION (CB_LIST) /=  CB_MNG.LIST_LENGTH(CB_LIST) then
@@ -1084,6 +1089,7 @@ package body X_MNG is
 
   function XX_SELECT (TIMEOUT_IN : DURATION) return XX_SELECT_RESULT_LIST is
     FD    : INTEGER;
+    READ  : BOOL_FOR_C;
     TIMEOUT_DUR : DURATION;
     TIMEOUT_MS : INTEGER;
     DUMMY : RESULT;
@@ -1103,9 +1109,10 @@ package body X_MNG is
 
     -- The real select
     TIMEOUT_MS := INTEGER (TIMEOUT_DUR * 1000.0);
-    DUMMY := X_SELECT (FD'ADDRESS, TIMEOUT_MS'ADDRESS);
+    DUMMY := X_SELECT (FD'ADDRESS, READ'ADDRESS, TIMEOUT_MS'ADDRESS);
     if DEBUG then
-      MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD));
+      MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD)
+                                  & " " & BOOL_FOR_C'IMAGE(READ));
     end if;
 
     -- Results
@@ -1122,6 +1129,7 @@ package body X_MNG is
     else
       -- A FD event
       CB_SEARCHED.FD := FILE_DESC(FD);
+      CB_SEARCHED.READ := BOOLEAN(READ);
       CB_SEARCHED.CB := null;
       begin
         -- Search and read callback

@@ -227,11 +227,12 @@ package X_MNG is
                                   GRAPHIC : in BOOLEAN);
 
   ----- EVENT MANAGEMENT -----
-  -- Register a callback on a fd.
+  -- Register a callback on a fd for read or write.
   -- The callback will be called (within X_SELECT) with one arg: the fd
-  procedure X_ADD_CALLBACK (FD : in FILE_DESC; CALLBACK : in FD_CALLBACK);
+  procedure X_ADD_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN;
+                            CALLBACK : in FD_CALLBACK);
   -- Unregister the callback from a fd
-  procedure X_DEL_CALLBACK (FD : in FILE_DESC);
+  procedure X_DEL_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN);
 
   -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
   --  (or X_FAILURE will be raised)

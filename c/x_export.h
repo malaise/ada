@@ -88,12 +88,12 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic);
 
 /* Events */
 
-extern int x_add_fd (int fd);
-extern int x_del_fd (int fd);
+extern int x_add_fd (int fd, boolean read);
+extern int x_del_fd (int fd, boolean read);
 
 #define NO_EVENT (-2)
 #define X_EVENT  (-1)
-extern int x_select (int *p_fd, int *timeout_ms);
+extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms);
 
 extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
 

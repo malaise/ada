@@ -70,31 +70,45 @@ int x_start_blinking (void) {
 }
 
 /***** Fds Management   *****/
-static fd_set global_mask;
+static fd_set global_read_mask;
+static fd_set global_write_mask;
 
 static int last_fd = 0;
 
-int x_add_fd (int fd) {
+int x_add_fd (int fd, boolean read) {
   if (last_fd == 0) {
-    FD_ZERO(&global_mask);
+    FD_ZERO(&global_read_mask);
+    FD_ZERO(&global_read_mask);
   }
-  FD_SET(fd, &global_mask);
+  if (read) {
+    FD_SET(fd, &global_read_mask);
+  } else {
+    FD_SET(fd, &global_write_mask);
+  }
   if (fd > last_fd) {
     last_fd = fd;
   }
   return (OK);
 }
 
-int x_del_fd (int fd) {
+int x_del_fd (int fd, boolean read) {
   int i;
+  fd_set *mask;
 
-  if (!FD_ISSET(fd, &global_mask)) {
+  if (read) {
+    mask = &global_read_mask;
+  } else {
+    mask = &global_write_mask;
+  }
+
+  if (!FD_ISSET(fd, mask)) {
     return (ERR);
   }
-  FD_CLR (fd, &global_mask);
+  FD_CLR (fd, mask);
 
   for (i = NFDBITS - 1; i >= 0; i--) {
-    if (FD_ISSET(i, &global_mask)) {
+    if ( FD_ISSET(i, &global_read_mask)
+      || FD_ISSET(i, &global_write_mask) ) {
       last_fd = i;
       return (OK);
     }
@@ -108,13 +122,14 @@ int x_del_fd (int fd) {
 /* Makes a select between the sockets described in the global mask AND the */
 /*  the socket used by X for the events */
 /* The time out is in miliseconds (negative for blocking )
-/* If a X event is available, *p_fd is set to -1
-/* Else *p_fd is set to one valid fd (on which there is an event) */
-/*  or to -2 if no event */
+/* If a X event is available, *p_fd is set to X_EVENT (-1) and read to true */
+/* Else *p_fd is set to one valid fd on which there is an event and */
+/*  read is set accordingly */
+/* Else *p_fd is set to NO_EVENT (-2) and read is meaningless */
 /* Failure if select fails */
 
-extern int x_select (int *p_fd, int *timeout_ms) {
-  fd_set select_mask;
+extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
+  fd_set select_read_mask, select_write_mask;
   int last_select_fd;
   int x_soc;
   int i, n;
@@ -125,9 +140,6 @@ extern int x_select (int *p_fd, int *timeout_ms) {
   if (p_fd == (int*) NULL) {
     return (ERR);
   }
-
-
-
 
   /* Compute exp_time = cur_time + timeout_ms */
   blink_is_active = (curr_percent != 0);
@@ -185,27 +197,46 @@ extern int x_select (int *p_fd, int *timeout_ms) {
       }
     } else {
       /* Compute mask for select */
-      bcopy ((char*)&global_mask, (char*)&select_mask, sizeof(fd_set));
+      bcopy ((char*)&global_read_mask, (char*)&select_read_mask,
+             sizeof(fd_set));
+      bcopy ((char*)&global_write_mask, (char*)&select_write_mask,
+             sizeof(fd_set));
       last_select_fd = last_fd;
       if (x_soc != -1) {
-        FD_SET(x_soc, &select_mask);
+        FD_SET(x_soc, &select_read_mask);
         if (x_soc > last_select_fd) {
           last_select_fd = x_soc;
         }
       }
+      /* Default result */
       *p_fd = NO_EVENT;
+      *p_read = TRUE;
 
-      n = select (last_select_fd + 1, &select_mask, NULL, NULL, timeout_ptr);
+      n = select (last_select_fd + 1, &select_read_mask,
+                                      &select_write_mask, NULL, timeout_ptr);
 
       if (n > 0) {
         /* An Event : Separate X events from others */
-        if ( (x_soc != -1) && (FD_ISSET(x_soc, &select_mask)) ) {
+        if ( (x_soc != -1) && (FD_ISSET(x_soc, &select_read_mask)) ) {
           *p_fd = X_EVENT;
+          *p_read = TRUE;
         } else {
+          /* Check read events first */
           for (i = 0; i <= last_fd; i++) {
-            if (FD_ISSET(i, &select_mask)) {
+            if (FD_ISSET(i, &select_read_mask)) {
               *p_fd = i;
+              *p_read = TRUE;
               break;
+            }
+          }
+          if (*p_fd == NO_EVENT) {
+            /* Check write events second */
+            for (i = 0; i <= last_fd; i++) {
+              if (FD_ISSET(i, &select_write_mask)) {
+                *p_fd = i;
+                *p_read = FALSE;
+                break;
+              }
             }
           }
         }
