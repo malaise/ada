@@ -23,7 +23,7 @@ export DICTIO_STABLE_DELAY=0.2
 # Default prio
 export DICTIO_PRIO=10
 # Default mode
-export MODE=channel
+export MODE=bus
 
 # Parse args
 while [ "$1" != "" ] ; do
