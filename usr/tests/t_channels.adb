@@ -2,6 +2,9 @@ with Ada.Text_Io;
 with Argument, X_Mng, Socket, Timers, Channels;
 procedure T_Channels is
 
+  -- Channel name
+  Channel_Name : constant String := "dummy_channel";
+
   -- Message exchanged
   type Message_Type is record
     Str : String (1 .. 50);
@@ -19,7 +22,7 @@ procedure T_Channels is
                      Length   : in Channels.Message_Length;
                      Diffused : in Boolean);
 
-  package Fifo is new Channels.Channel ("test_tcp", Message_Type, Fifo_Cb);
+  package Fifo is new Channels.Channel (Channel_Name, Message_Type, Fifo_Cb);
 
   -- Reception callback
   procedure Fifo_Cb (Message  : in Message_Type;
@@ -100,13 +103,20 @@ begin
   else
     return;
   end if;
-  Nb_To_Do := Positive'Value (Argument.Get_Parameter(2));
+  Fifo.Change_Channel_Name (Argument.Get_Parameter(2));
+  Nb_To_Do := Positive'Value (Argument.Get_Parameter(3));
   Nb_Done := 0;
 
   if not Publish then
     -- Subscriber
     Ada.Text_Io.Put_Line ("Subscribing");
-    Fifo.Subscribe;
+    begin
+      Fifo.Subscribe;
+    exception
+      when Channels.Unknown_Destination =>
+        Ada.Text_Io.Put_Line ("Unknown destination");
+        return;
+    end;
     -- Wait until Nb_To_Do messages received
     Wait (Timers.Infinite_Seconds);
 
@@ -121,9 +131,14 @@ begin
   Message.Str := (others => ' ');
   Message.Str(1 .. 6) := "Coucou";
   Ada.Text_Io.Put ("Adding dests: ");
-  for I in 3 .. Argument.Get_Nbre_Arg loop
+  for I in 4 .. Argument.Get_Nbre_Arg loop
     Ada.Text_Io.Put (Argument.Get_Parameter(Occurence => I) & " ");
-    Fifo.Add_Destination (Argument.Get_Parameter(I));
+    begin
+      Fifo.Add_Destination (Argument.Get_Parameter(I));
+    exception
+      when Channels.Unknown_Destination =>
+        Ada.Text_Io.Put_Line ("Unknown destination, skipping");
+    end;
   end loop;
   Ada.Text_Io.New_Line;
   Wait (1.0);
@@ -138,7 +153,7 @@ begin
   end loop;
 
   Ada.Text_Io.New_Line;
-  for I in 3 .. Argument.Get_Nbre_Arg-1 loop
+  for I in 4 .. Argument.Get_Nbre_Arg-1 loop
     Ada.Text_Io.Put_Line ("Deleting dest "
                         & Argument.Get_Parameter(Occurence => I));
     Fifo.Del_Destination (Argument.Get_Parameter(I));
@@ -158,9 +173,13 @@ begin
   Send (Message);
   Wait (0.5);
 exception
+  when Channels.Unknown_Channel =>
+    Ada.Text_Io.Put_Line ("Unknown channel "
+                        & Argument.Get_Parameter (Occurence => 2));
   when Argument.Argument_Not_Found =>
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-        & " <publish_or_subscribe> <nb_messages> [ { <dest_of_publisher> } ]");
+        & " <publish_or_subscribe> <channel_name> <nb_messages>"
+        & " [ { <dest_of_publisher> } ]");
     Ada.Text_Io.Put_Line ("<publish_or_subscribe> ::= p | s");
 end T_Channels;
 
