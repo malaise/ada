@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Calendar;
+with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
 with Text_Handler, Argument, Sys_Calls, Ip_Addr,
      Normal, My_Math, Timers, Socket, Tcp_Util, Event_Mng;
@@ -155,8 +155,14 @@ procedure Tcping is
     -- Retry
     Ada.Text_Io.Put ("Connecting... ");
     Connecting := True;
-    Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port, Timeout, 1,
-             Connect_Cb'Unrestricted_Access);
+    begin
+      Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port, Timeout, 1,
+               Connect_Cb'Unrestricted_Access);
+    exception
+      when Error:others =>
+        Ada.Text_Io.Put_Line ("Connect exception "
+            & Ada.Exceptions.Exception_Name (Error));
+    end;
     Start_Time := Ada.Calendar.Clock;
     return False;
   end Timer_Cb;
