@@ -33,6 +33,16 @@ procedure T_Tcp_Util is
   function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean) return Boolean;
   procedure End_Ovf_Cb (Dscr : in  Socket.Socket_Dscr);
 
+  -- Signal received
+  Sig : Boolean := False;
+
+  -- Signal callback
+  procedure Signal_Cb is
+  begin
+    Ada.Text_Io.Put_Line ("Aborted.");
+    Sig := True;
+  end Signal_Cb;
+
   function Send (Msg : in String) return Boolean is
   begin
     if not Socket.Is_Open (The_Dscr) then
@@ -288,6 +298,7 @@ begin
   end if;
 
   -- Init
+  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
   if Server then
     loop
       begin
@@ -314,7 +325,7 @@ begin
   Give_Up := False;
   loop
     Wait (1.0);
-    exit when Give_Up;
+    exit when Give_Up or else Sig;
   end loop;
 
 exception

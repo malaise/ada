@@ -8,9 +8,19 @@ procedure T_Udp is
   Server_Name : Text_Handler.Text (80);
 
   Soc : Socket.Socket_Dscr;
-  Fd  : X_Mng.File_Desc;
+  Fd  : X_Mng.File_Desc := 0;
 
   Server_Port_Name : constant String := "test_udp";
+
+  -- Signal received
+  Sig : Boolean := False;
+
+  -- Signal callback
+  procedure Signal_Cb is
+  begin
+    My_Io.Put_Line ("Aborted.");
+    Sig := True;
+  end Signal_Cb;
 
   type Message_Type is record
     Len : Positive;
@@ -84,6 +94,8 @@ begin
   Socket.Open (Soc, Socket.Udp);
   Fd := Socket.Fd_Of (Soc);
   X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
+  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
+
   
   -- Link, set server dest in client, client sends
   if Server then
@@ -98,6 +110,7 @@ begin
 
 
   -- Main loop
+  Main:
   loop
     for i in 1 .. 10 loop
       if X_Mng.Select_No_X (1000) then
@@ -105,14 +118,17 @@ begin
       else
         My_Io.Put_Line ("Timeout");
       end if;
+      exit Main when Sig;
     end loop;
     if not Server then
       Send;
     end if;
-  end loop;
+  end loop Main;
 
-  X_Mng.X_Del_Callback (Fd, True);
-  Socket.Close (Soc);
+  if X_Mng.X_Callback_Set (Fd, True) then
+    X_Mng.X_Del_Callback (Fd, True);
+    Socket.Close (Soc);
+  end if;
 
 exception
   when Arg_Error =>

@@ -8,9 +8,20 @@ procedure T_Stdin is
   Port : Socket.Port_Num;
 
   Soc : Socket.Socket_Dscr;
-  Fd : X_Mng.File_Desc;
+  Fd : X_Mng.File_Desc := 0;
 
   Go_On : Boolean;
+
+  -- Signal received
+  Sig : Boolean := False;
+
+  -- Signal callback
+  procedure Signal_Cb is
+  begin
+    Ada.Text_Io.Put_Line ("Aborted.");
+    Sig := True;
+  end Signal_Cb;
+
 
   subtype Message_Type is String(Async_Stdin.Max_Chars_Range);
   procedure My_Send is new Socket.Send(Message_Type);
@@ -91,6 +102,7 @@ begin
       return;
   end;
   X_Mng.X_Add_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
+  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
 
 
   -- Main loop
@@ -99,11 +111,14 @@ begin
     if X_Mng.Select_No_X(-1) then
       exit when not Go_On;
     end if;
+    exit when Sig;
   end loop;
 
-  X_Mng.X_Del_Callback(Fd, True);
+  if X_Mng.X_Callback_Set (Fd, True) then
+    X_Mng.X_Del_Callback(Fd, True);
+    Socket.Close(Soc);
+  end if;
   Async_Stdin.Set_Async;
-  Socket.Close(Soc);
 
 exception
   when Arg_Error =>
