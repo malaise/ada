@@ -1,0 +1,28 @@
+# Test register ordering and double indirection
+
+# Generic loop do iterate function in F on registers a .. z
+[
+F pushr pushr call
+dup z = [ pop 2 retn ] ifcall
+nextr L pushr retacal
+] L popr
+
+
+# To iterate: store rnd in reg at top
+[ dup rnd dup T pushr + T popr swap popr ] S popr
+
+# To iterate: put content of reg at top
+[ dup pushr dup T pushr + T popr putl ] P popr
+
+# Iterate on S
+0.0 T popr
+S F popr
+a L pushr call
+"Sigma: " put T pushr putl
+
+# Iterate on P
+0.0 T popr
+P F popr
+a L pushr call
+"Sigma: " put T pushr putl
+
