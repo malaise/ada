@@ -589,6 +589,19 @@ package body Operations is
     return (Kind => Real, Val_Real => R);
   end Msd;
 
+  function Sqrt (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Sqrt(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Sqrt;
+
   -- *->BOOL
   function Isreal  (X : Item_Rec) return Item_Rec is
   begin

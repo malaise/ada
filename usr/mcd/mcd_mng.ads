@@ -12,6 +12,7 @@ package Mcd_Mng is
    Div,
    Remind,
    Pow,
+   Sqrt,
    Minus,
    Absv,
 

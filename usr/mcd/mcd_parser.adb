@@ -41,6 +41,7 @@ package body Parser is
    Div      => ("/ ", "push B / A                    ", False),
    Remind   => ("% ", "push B % A (rest of division) ", False),
    Pow      => ("**", "push B ** A (pow)             ", False),
+   Sqrt     => (Nosy, "push Sqrt(A)                  ", False),
    Minus    => ("+-", "push -A                       ", False),
    Absv     => (Nosy, "push |A|                      ", True),
 
