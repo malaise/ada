@@ -11,6 +11,7 @@ package body Dictio_Lib is
   Port : Tcp_Util.Remote_Port(Tcp_Util.Port_Name_Spec);
 
   Dictio_Dscr : Socket.Socket_Dscr := Socket.No_Socket;
+  Dictio_State : Dictio_State_List := Unavailable;
 
 
   procedure Connect_To_Dictio;
@@ -22,18 +23,25 @@ package body Dictio_Lib is
 
   procedure Close is
   begin
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: closing");
+    end if;
     if Socket.Is_Open (Dictio_Dscr) then
       Event_Mng.Del_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True);
       Socket.Close (Dictio_Dscr);
     end if;
-    if Dictio_State_Cb /= null then
-      Dictio_State_Cb (Unavailable);
+    if Dictio_State /= Unavailable then
+      Dictio_State := Unavailable;
+      if Dictio_State_Cb /= null then
+        Dictio_State_Cb (Dictio_State);
+      end if;
     end if;
   end Close;
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean) return Boolean is
     Len : Natural;
     State : Status.Stable_Status_List;
+    New_Dictio_State : Dictio_State_List;
   begin
     Read_Msg:
     begin
@@ -69,6 +77,10 @@ package body Dictio_Lib is
           end if;
           Close;
         end if;
+        if Debug.Level_Array(Debug.Lib) then
+          Debug.Put ("Dictio_Lib: received lib version: "
+                   & Parse(Msg.Item.Name));
+        end if;
         return False;
       when Client_Com.State =>
         begin
@@ -82,15 +94,23 @@ package body Dictio_Lib is
             Close;
             return False;
         end;
-        if Dictio_State_Cb /= null then
-          case State is
-            when Status.Slave =>
-              Dictio_State_Cb (Slave);
-            when Status.Master =>
-              Dictio_State_Cb (Master);
-            when Status.Dead =>
-              Dictio_State_Cb (Unavailable);
-          end case;
+        if Debug.Level_Array(Debug.Lib) then
+          Debug.Put ("Dictio_Lib: received dictio status: "
+                   & Parse(Msg.Item.Name));
+        end if;
+        case State is
+          when Status.Slave =>
+            New_Dictio_State := Slave;
+          when Status.Master =>
+            New_Dictio_State := Master;
+          when Status.Dead =>
+            New_Dictio_State := Unavailable;
+        end case;
+        if Dictio_State /= New_Dictio_State then
+          Dictio_State := New_Dictio_State;
+          if Dictio_State_Cb /= null then
+            Dictio_State_Cb (Dictio_State);
+          end if;
         end if;
         return False;
       when Client_Com.Read =>
