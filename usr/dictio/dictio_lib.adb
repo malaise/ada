@@ -29,6 +29,13 @@ package body Dictio_Lib is
     if Socket.Is_Open (Dictio_Dscr) then
       Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dictio_Dscr), True);
       Socket.Close (Dictio_Dscr);
+    else
+      begin 
+        Tcp_Util.Abort_Connect (Host, Port);
+      exception
+        when Tcp_Util.No_Such =>
+          null;
+      end;
     end if;
     if Dictio_State /= Unavailable then
       Dictio_State := Unavailable;
@@ -42,7 +49,10 @@ package body Dictio_Lib is
     Len : Natural;
     State : Status.Stable_Status_List;
     New_Dictio_State : Dictio_State_List;
+    use type Sys_Calls.File_Desc;
   begin
+
+    Msg.Item := Data_Base.No_Item;
 
     Read_Msg:
     begin
@@ -59,13 +69,13 @@ package body Dictio_Lib is
           when others =>
             null;
         end;
-        return False;
+        return Fd = Sys_Calls.Stdin;
       when Socket.Soc_Len_Err =>
         if Debug.Level_Array(Debug.Lib) then
           Debug.Put ("Dictio_Lib: received invalid size, givig up");
         end if;
         Close;
-        return False;
+        return Fd = Sys_Calls.Stdin;
     end Read_Msg;
 
     case Msg.Action is
@@ -306,7 +316,7 @@ package body Dictio_Lib is
     Send_Request;
     -- Wait for reply
     loop
-      exit when Read_Cb(0, True);
+      exit when Read_Cb(Sys_Calls.Stdin, True);
     end loop;
     Check_Available;
   end Set_Msg_To;
@@ -325,10 +335,10 @@ package body Dictio_Lib is
     Msg.Action := Client_Com.Set;
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. Name'Length) := Name;
-    Msg.Item.Kind := "d";
+    Msg.Item.Kind := Data_Base.Data_Kind;
     Msg.Item.Data_Len := Data'Length;
     Msg.Item.Data(1 .. Msg.Item.Data_Len) := Data;
-    Msg.Item.Crc := Data_base.No_Item.Crc;
+    Msg.Item.Crc := Data_Base.No_Item.Crc;
     Send_Request;
   end Set;
 
@@ -340,7 +350,7 @@ package body Dictio_Lib is
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: get " & Name);
     end if;
-    Set_Msg_To (Name, "d");
+    Set_Msg_To (Name, Data_Base.Data_Kind);
     if Msg.Item = Data_Base.No_Item then
       raise No_Item;
     end if;
@@ -389,10 +399,10 @@ package body Dictio_Lib is
     Msg.Action := Client_Com.Set;
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. Alias'Length) := Alias;
-    Msg.Item.Kind := "a";
+    Msg.Item.Kind := Data_Base.Alias_Kind;
     Msg.Item.Data_Len := What'Length;
     Msg.Item.Data(1 .. Msg.Item.Data_Len) := What;
-    Msg.Item.Crc := Data_base.No_Item.Crc;
+    Msg.Item.Crc := Data_Base.No_Item.Crc;
     Send_Request;
   end Set_Alias;
 
@@ -403,7 +413,7 @@ package body Dictio_Lib is
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: get_alias " & Alias);
     end if;
-    Set_Msg_To (Alias, "a");
+    Set_Msg_To (Alias, Data_Base.Alias_Kind);
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: get_alias -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));
     end if;
