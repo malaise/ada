@@ -127,12 +127,17 @@ package body Storage is
     Id := Term.Id;
     -- Remove all records with same id
     loop
+      -- Delete current and exit if end of list
       Free (Term.Str_Acc);
       exit when Del_Term;
-      Search_Pattern (Term_List, Term, From => Term_List_Mng.From_Current);
+      -- Search next term of pattern from current and exit if no more 
+      begin
+        Search_Pattern (Term_List, Term, From => Term_List_Mng.From_Current);
+      exception
+        when Term_List_Mng.Not_In_List =>
+          exit;
+      end;
       Term_List_Mng.Read (Term_List, Term, Term_List_Mng.Current);
-      -- New pattern of same rule
-      exit when Term.Rule = Rule and then Term.Id /= Id;
     end loop;
   end Delete_Current_Pattern;
 
