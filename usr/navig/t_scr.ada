@@ -1,0 +1,26 @@
+with con_io;
+with NAV_DATA, NAV_SCREEN;
+use  NAV_DATA, NAV_SCREEN;
+procedure T_SCR is
+  ACT : ACTION;
+  B : BOOLEAN;
+begin
+  RESET;
+  TITLE;
+  PUT_MASK;
+  PUT (WIND_S, "  29.5");
+  PUT (TRAJ_A, "361.40", TRUE);
+  PUT (DRIFT, "-178.00");
+  PUT_RESULT (TRAJ_A, "  1.40");
+  ARROW (TRAJ_A);
+  PUT_RESULT (PLAN_S, " 120.0");
+  DOT (PLAN_S);
+  ACT := GET_ACTION;
+  ERR_FORMAT;
+  CLEAR_LINE (TRAJ_A);
+  CLEAR_LINE (PLAN_S);
+  delay 2.0;
+  CLEAR_ERR;
+  PUT_HELP;
+  B := CONFIRM_QUIT;
+end T_SCR;

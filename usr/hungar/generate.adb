@@ -1,0 +1,35 @@
+with TEXT_IO;
+with NORMAL, RND, ARGUMENT;
+procedure GENERATE is
+  DIM : POSITIVE;
+  FILE : TEXT_IO.FILE_TYPE;
+begin
+
+  if ARGUMENT.GET_NBRE_ARG /= 1 then
+    return;
+  end if;
+
+  begin
+    DIM := POSITIVE'VALUE(ARGUMENT.GET_PARAMETER);
+  exception
+    when others =>
+      return;
+  end;
+
+  RND.RANDOMIZE;
+
+
+  if RND.INT_RANDOM (0, 1) = 1 then
+    TEXT_IO.PUT_LINE ("REGRET");
+  else
+    TEXT_IO.PUT_LINE ("WISH");
+  end if;
+
+  for I in 1 .. DIM loop
+    for J in 1 .. DIM loop
+      TEXT_IO.PUT (NORMAL(RND.INT_RANDOM(0, 100), 3) & " ");
+    end loop;
+    TEXT_IO.NEW_LINE;
+  end loop;
+
+end GENERATE;

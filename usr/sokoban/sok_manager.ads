@@ -1,0 +1,6 @@
+with SOK_TYPES;
+package SOK_MANAGER is
+
+  procedure PLAY_GAME (FIRST_FRAME : in SOK_TYPES.FRAME_RANGE);
+
+end SOK_MANAGER;
