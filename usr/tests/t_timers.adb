@@ -47,7 +47,7 @@ procedure T_Timers is
   The_Timers : array (Timer_List) of Timers.Timer_Id;
 
   -- Generic callback
-  procedure CallBack (Id : in Timers.Timer_Id);
+  function CallBack (Id : in Timers.Timer_Id) return Boolean;
 
   -- Start a timer and store its id
   procedure Start (T : Timer_List;
@@ -68,8 +68,11 @@ procedure T_Timers is
        Callback   => A);
   end Start;
 
+  Nb_Funny : Natural := 0;
+  Max_Funny : constant Natural := 10;
+
   -- Generic callback
-  procedure CallBack (Id : in Timers.Timer_Id) is
+  function CallBack (Id : in Timers.Timer_Id) return Boolean is
     Use_Afpx : Boolean;
     use type Timers.Timer_Id;
     N : Positive;
@@ -94,12 +97,19 @@ procedure T_Timers is
           N := Rnd.Int_Random (1, 5);
           Start (Single, Duration(N), Timers.No_Period, True);
         elsif T = Funny then
-          Start (Funny, Rnd.Dur_Random (10.0, 15.0), Timers.No_Period, False);
+          Nb_Funny := Nb_Funny + 1;
+          if Nb_Funny <= Max_Funny then
+            Start (Funny, Rnd.Dur_Random (2.1, 2.9), Timers.No_Period, True);
+          else
+            Start (Funny, 20.0, Timers.No_Period, False);
+          end if;
+          return False;
         end if;     
-        return;
+        return True;
       end if;
     end loop;
     Ada.Text_Io.Put_Line ("Expiration of unknown timer");
+    return False;
   end CallBack;
 
 begin
