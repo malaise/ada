@@ -7,9 +7,9 @@ package body Connection is
 
   Soc : Socket.Socket_Dscr;
   Fd  : X_Mng.File_Desc;
-  Server_Port_Num : constant := 50000;
-  Client_Host : Socket.Host_Id;
-  Client_Port : Socket.Port_Num;
+  Server_Host : Tcp_Util.Remote_Host;
+  Local_Port : Tcp_Util.Local_Port;
+  Remote_Port : Tcp_Util.Remote_Port;
 
   Type Message_Kind_List is (Init, Move, Error);
   type Error_List is (Busy, Color, Protocol);
@@ -56,6 +56,9 @@ package body Connection is
   procedure Chess_Read is new Socket.Receive (Message_Type);
   procedure Chess_Send is new Socket.Send    (Message_Type);
 
+  function Rec_Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  return Boolean;
+
   procedure Raise_Error (Error : in Error_List) is
   begin
     case Error is
@@ -68,20 +71,98 @@ package body Connection is
     end case;
   end Raise_Error;
 
-  function Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean) return Boolean is
+  procedure Close is
+  begin
+    if Socket.Is_Open (Soc) then
+      X_Mng.X_Del_Callback (Fd, True);
+      Socket.Close (Soc);
+    end if;
+  end Close;
+
+  -- May handle Lost_conn/Reconn via a timer
+  procedure My_Send (Message : in Message_Type) is
+  begin
+    Chess_Send (Soc, Message);
+  exception
+    when Socket.Soc_Conn_Lost =>
+      null;
+  end My_Send;
+
+
+  procedure Con_Call_Back (Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Connected       : in Boolean;
+                           Dscr            : in Socket.Socket_Dscr) is
+  begin
+    if Debug.Get (Debug.Connection) then
+      Ada.Text_Io.Put_Line ("Connect callback");
+    end if;
+    Soc := Dscr;
+    Fd := Socket.Fd_Of (Soc);
+    X_Mng.X_Add_Callback (Fd, True, Rec_Call_Back'access);
+    My_Send ((Init, Own_Color));
+  end Con_Call_Back;
+
+  procedure Connect_Server is
+    OK : Boolean;
+  begin
+    Close;
+    Ok := Tcp_Util.Connect_To (Socket.Tcp_Header,
+                               Server_Host,
+                               Remote_Port,
+                               1.0, 0,
+                               Con_Call_Back'access);
+  end Connect_Server;
+
+  procedure Acc_Call_Back (Local_Port_Num  : in Tcp_Util.Port_Num;
+                           Local_Dscr      : in Socket.Socket_Dscr;
+                           Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           New_Dscr        : in Socket.Socket_Dscr) is
+  begin
+    if Debug.Get (Debug.Connection) then
+      Ada.Text_Io.Put_Line ("Accept callback");
+    end if;
+    Tcp_Util.Abort_Accept (Local_Port_Num);
+    Soc := New_Dscr;
+    Fd := Socket.Fd_Of (Soc);
+    X_Mng.X_Add_Callback (Fd, True, Rec_Call_Back'access);
+  end Acc_Call_Back;
+
+  procedure Accept_Client is
+    Acc_Dscr : Socket.Socket_Dscr;
+    Port_Num : Tcp_Util.Port_Num;
+  begin
+    Close;
+    Tcp_Util.Accept_From (Socket.Tcp_Header,
+                          Local_Port,
+                          Acc_Call_Back'access,
+                          Acc_Dscr,
+                          Port_Num);
+  end Accept_Client;
+
+  function Rec_Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  return Boolean is
     Message : Message_Type;
     Len : Natural;
     use type Space.Color_List;
     use type Socket.Host_Id, Socket.Port_Num;
   begin
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put ("In callback : ");
+      Ada.Text_Io.Put ("In receive callback : ");
     end if;
     begin
-      Chess_Read (Soc, Message, Len, Server);
+      Chess_Read (Soc, Message, Len, False);
     exception
-      when Socket.Soc_Conn_Lost =>
-        Ada.Text_Io.Put_Line ("Lost connection - Discard");
+      when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
+        if Debug.Get (Debug.Connection) then
+          Ada.Text_Io.Put_Line ("Lost connection - Discard");
+        end if;
+        if Server then
+          Accept_Client;
+        else
+          Connect_Server;
+        end if;
         return False;
     end;
     if Debug.Get (Debug.Connection) then
@@ -97,18 +178,16 @@ package body Connection is
             when Init =>
               if Message.Color /= Own_Color then
                 -- Reply by our color and accept client
-                Chess_Send (Soc, (Init, Own_Color));
-                Client_Host := Socket.Get_Destination_Host (Soc);
-                Client_Port := Socket.Get_Destination_Port (Soc);
+                My_Send ((Init, Own_Color));
                 We_Are_Ready := True;
                 We_Have_Moved := False;
               else
                 -- We have same color
-                Chess_Send (Soc, (Error, Color));
+                My_Send ((Error, Color));
               end if;
             when Move | Error =>
               -- Not an Init request. Reject.
-              Chess_Send (Soc, (Error, Protocol));
+              My_Send ((Error, Protocol));
           end case;
               
         else
@@ -126,22 +205,10 @@ package body Connection is
       when True =>
         -- We are ready
         if Server then
-          -- Reject new client
-          if      Socket.Get_Destination_Host (Soc) /= Client_Host
-          or else Socket.Get_Destination_Port (Soc) /= Client_Port then
-            -- New client
-            if Message.Kind = Init then
-              Chess_Send (Soc, (Error, Busy));
-            else
-              Chess_Send (Soc, (Error, Protocol));
-            end if;
-            -- Restore
-            Socket.Set_Destination_Host_And_Port (Soc, Client_Host, Client_Port);
-            return True;
-          elsif Message.Kind /= Move then
+          if Message.Kind /= Move then
             if We_Have_Moved then
               -- Not a retry
-              Chess_Send (Soc, (Error, Protocol));
+              My_Send ((Error, Protocol));
             end if;
             return True;
           end if;
@@ -155,7 +222,7 @@ package body Connection is
         end if;
 
         if Debug.Get (Debug.Connection) then
-          Ada.Text_Io.Put_Line ("In callback : Saving action");
+          Ada.Text_Io.Put_Line ("In rec callback : Saving action");
         end if;
 
         -- Insert action
@@ -169,32 +236,47 @@ package body Connection is
     end case;
 
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("In callback : End");
+      Ada.Text_Io.Put_Line ("In rec callback : End");
     end if;
     return True;
-  end Call_Back;
+  end Rec_Call_Back;
 
   -- Initialise connection
   -- If server name is empty, we are server
   procedure Init (Server_Name : in String;
+                  Port : Tcp_Util.Remote_Port;
                   Color : in Space.Color_List) is
+    use type Tcp_Util.Local_Port_List;
   begin
+    -- Init parameters and socket
     if Server_Name /= "" then
       Server := False;
+      Server_Host := (Tcp_Util.Host_Name_Spec, (others => ' '));
+      Server_Host.Name (1 .. Server_Name'Length) := Server_Name;
+      Remote_Port := Port;
+      Connect_Server;
+    else
+      if Port.Kind = Tcp_Util.Port_Name_Spec then
+        Local_Port := (Tcp_Util.Port_Name_Spec, Port.Name);
+      else
+        Local_Port := (Tcp_Util.Port_Num_Spec, Port.Num);
+      end if;
+      loop
+        declare
+          Dummy : Boolean;
+        begin
+          Accept_Client;
+          exit;
+        exception
+          when Socket.Soc_Addr_In_Use =>
+            if Debug.Get (Debug.Connection) then
+              Ada.Text_Io.Put_Line ("Address in use: Waiting");
+            end if;
+            Dummy :=  X_Mng.Select_No_X (10_000);
+        end;
+      end loop;
     end if;
     Own_Color := Color;
-
-    -- Init socket
-    Socket.Open (Soc, Socket.Udp);
-    Fd := Socket.Fd_Of (Soc);
-    X_Mng.X_Add_Callback (Fd, True, Call_Back'Access);
-    if Server then
-      Socket.Link_Port (Soc, Server_Port_Num);
-    else
-      Socket.Link_Dynamic (Soc);
-      Socket.Set_Destination_Name_And_Port (Soc,
-           False, Server_Name, Server_Port_Num);
-    end if;
 
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Connection: init done");
@@ -204,12 +286,6 @@ package body Connection is
       raise Connection_Error;
   end Init;
 
-  procedure Close is
-  begin
-    X_Mng.X_Del_Callback (Fd, True);
-    Socket.Close (Soc);
-  end Close;
-
   procedure Wait_Ready is
     Select_Got_Fd : Boolean;
   begin
@@ -217,18 +293,8 @@ package body Connection is
       Ada.Text_Io.Put_Line ("Connection: waiting");
     end if;
     loop
-      if not Server then
-        -- Client sends its color to server
-        Chess_Send (Soc, (Init, Own_Color));
-        if Debug.Get (Debug.Connection) then
-          Ada.Text_Io.Put_Line ("Connection: pinging");
-        end if;
-        -- Retry a bit later
-        Select_Got_Fd := X_Mng.Select_No_X (1000);
-      else
-        -- Server waits
-        Select_Got_Fd := X_Mng.Select_No_X (-1);
-      end if;
+      -- Wait
+      Select_Got_Fd := X_Mng.Select_No_X (-1);
       exit when We_Are_Ready;
     end loop;
     if Debug.Get (Debug.Connection) then
@@ -239,7 +305,7 @@ package body Connection is
   procedure Send (Action : in Players.Action_Rec) is
     Message : constant Message_Type := (Move, Action);
   begin
-    Chess_Send (Soc, Message);
+    My_Send (Message);
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Connection: sent "
          & Integer'Image (Message'Size / 8) & " bytes");

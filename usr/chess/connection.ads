@@ -1,9 +1,11 @@
+with Tcp_Util;
 with Space, Players;
 package Connection is
 
   -- Initialise connection
   -- If server name is empty, we are server
   procedure Init (Server_Name : in String;
+                  Port : Tcp_Util.Remote_Port;
                   Color : in Space.Color_List);
 
   -- Wait until iitialisation completed

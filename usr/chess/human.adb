@@ -24,6 +24,7 @@ package body Human is
   procedure Play (Mode   : in Play_Mode;
                   Color  : in Space.Color_List;
                   Name   : in string;
+                  Port   : in Tcp_Util.Remote_Port;
                   SetUp  : in string;
                   Wait   : in Boolean) is
     use type Space.Color_List; 
@@ -63,13 +64,14 @@ package body Human is
     -- Client/Server
     if Mode /= Both then
       if Mode = Server then
-        Connection.Init ("", Color);
+        Connection.Init ("", Port, Color);
       else
-        Connection.Init (Name, Color);
+        Connection.Init (Name, Port, Color);
       end if;
       Connection.Wait_Ready;
     end if;
 
+    -- Init
     begin
       Game.Init (Color);
     exception
@@ -83,10 +85,12 @@ package body Human is
 
     Load_Moves (Wait);
 
+    -- Black move first
     if SetUp /= "" and then Move_Color = Space.Black then
       File.Write ((Valid => False), Game.Nok);
     end if;
 
+    -- Play loop
     while not The_End loop
       if Mode = Both or else Move_Color = Color then
         Do_Play;
@@ -96,6 +100,7 @@ package body Human is
       Move_Color := Space.Opponent (Move_Color);
     end loop;
 
+    -- The End
     if Mode /= Client then
       File.Close;
     end if;
