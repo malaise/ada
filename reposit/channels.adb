@@ -121,11 +121,6 @@ package body Channels is
     -- Current channel state
     Channel_Dscr : Channel_Rec;
 
-    -- The message kind sent on socket
-    type Channel_Message_Type is record
-      Diff : Boolean := True;
-      Data : Message_Type;
-    end record;
     procedure Channel_Read is new Socket.Receive (Channel_Message_Type);
     function Channel_Send is new Tcp_Util.Send (Channel_Message_Type);
 
@@ -405,6 +400,7 @@ package body Channels is
       -- Hook fd to receive data (replies)
       X_Mng.X_Add_Callback (Socket.Fd_Of (Dscr), True,
                             Snd_Read_Cb'Unrestricted_Access);
+      Socket.Set_Blocking (Dscr, False);
     end Connect_Cb;
 
 
