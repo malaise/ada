@@ -793,23 +793,27 @@ extern int soc_receive (soc_token token, boolean *p_received,
     do {
       result = recv(soc->socket_id, (char *)&header, sizeof(header), 0);
     } while ( (result == -1) && (errno == EINTR) );
-    /* Disconnect if invalid magic num */
-    if (ntohl(header.magic_number) != MAGIC_NUMBER) {
-      *p_length = 0;
-      return (BS_OK);
-    }
-    /* Check length: drop */
-    if (*p_length < ntohl(header.size) ) {
+
+    /* Check data, header and size */
+    if (result > 0) {
+      /* Disconnect if invalid magic num */
+      if (ntohl(header.magic_number) != MAGIC_NUMBER) {
+        *p_length = 0;
+        return (BS_OK);
+      }
+      /* Check length vs size: drop message */
+      if (*p_length < ntohl(header.size) ) {
+        do {
+          result = recv(soc->socket_id, (char *)message, ntohl(header.size), 0);
+        } while ( (result == -1) && (errno == EINTR) );
+        return (BS_ERROR);
+      }
+      /* Read message */
+      *p_length = ntohl(header.size);
       do {
-        result = recv(soc->socket_id, (char *)message, ntohl(header.size), 0);
+        result = recv(soc->socket_id, (char *)message, *p_length, 0);
       } while ( (result == -1) && (errno == EINTR) );
-      return (BS_ERROR);
     }
-    /* Read */
-    *p_length = ntohl(header.size);
-    do {
-      result = recv(soc->socket_id, (char *)message, *p_length, 0);
-    } while ( (result == -1) && (errno == EINTR) );
   } else {
     do {
       result = recvfrom(soc->socket_id, (char *)message, 
