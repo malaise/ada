@@ -4,6 +4,7 @@ package Socket is
 
   -- The socket descriptor
   type Socket_Dscr is private;
+  No_Socket : constant Socket_Dscr;
 
   -- Available protocols
   type Protocol_List is (Udp, Tcp);
@@ -16,6 +17,7 @@ package Socket is
 
   -- A host
   type Host_Id is private;
+  No_Host : constant Host_Id;
 
   ---------------------------------
   -- OPEN - CLOSE - SET BLOCKING --
@@ -147,7 +149,10 @@ private
     Soc_Addr : System.Address := System.Null_Address;
   end record;
 
+  No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
+
   type Host_Id is new Natural;
+  No_Host : constant Host_Id := 0;
 
 end Socket;
 
