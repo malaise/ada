@@ -12,7 +12,6 @@ all:
 	amake fact.adb
 	amake g.adb
 	amake hanoi.adb
-	amake impot_98.adb
 	amake impot_99.adb
 	amake one_of_arg.adb
 	amake pascal.adb
@@ -29,5 +28,5 @@ clean:
 	rm *.o *.ali
 
 clean_exe:
-	rm adand beep ddir fact g hanoi impot_98 impot 99 one_of_arg pascal random second stat statfile wait
+	rm adand beep ddir fact g hanoi impot_99 one_of_arg pascal random second stat statfile wait
 
