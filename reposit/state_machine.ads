@@ -25,14 +25,12 @@ package STATE_MACHINE is
   -- To add a transition in the state machine
   -- May raise EVENT_ALREADY if this event is already defined
   --  from the original state
-  -- May raise DESTINATION_ALREADY if another event from the
-  --  original state reaches the same destination state
   -- May raise DECLARATION_ENDED if called after END_DECLARATION;
   procedure ADD_TRANSITION (TRANSITION : in TRANSITION_REC);
 
   -- To end declarations
   -- May raise DECLARATION_ENDED if re-called after END_DECLARATION;
-  -- May raise TRUE_LOOP if TRUE transitions from initial state loop
+  -- May raise TRUE_LOOP if TRUE transitions from any state loop
   procedure END_DECLARATION;
 
 
@@ -43,7 +41,6 @@ package STATE_MACHINE is
   --  current state, the state reamains unchanged
   -- Any TRUE event has no effect (any potential TRUE transistion
   --  would already have been done)
-  -- May raise TRUE_LOOP if TRUE transitions from new state loop
   function NEW_EVENT (EVENT : EVENT_LIST) return STATE_LIST;
 
   procedure NEW_EVENT (EVENT : in EVENT_LIST);
@@ -52,12 +49,12 @@ package STATE_MACHINE is
   function CURRENT_STATE return STATE_LIST;
 
   -- To force a new state without event
-  -- May raise TRUE_LOOP if TRUE transitions from new state loop
   procedure SET_STATE (STATE : in STATE_LIST);
 
 
   DECLARATION_ENDED, DECLARATION_NOT_ENDED : exception;
   TRUE_LOOP : exception;
-  EVENT_ALREADY, DESTINATION_ALREADY : exception;
+  EVENT_ALREADY : exception;
 
 end STATE_MACHINE;
+

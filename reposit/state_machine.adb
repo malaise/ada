@@ -59,10 +59,6 @@ package body STATE_MACHINE is
           -- This event already defined from this state
           raise EVENT_ALREADY;
         end if;
-        if TA.NEW_STATE = TRANSITION.DESTINATION_STATE then
-          -- This new_state already reached by another transition from this state
-          raise DESTINATION_ALREADY;
-        end if;
         TAP := TA;
         TA := TAP.NEXT_TRANSITION;
         exit when TA = null;
