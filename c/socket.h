@@ -79,7 +79,7 @@ typedef union soc_host_t {
 } soc_host;
 
 /* String length for a host or a port */
-#define SOC_MAX_LEN	50
+#define SOC_MAX_LEN 50
 
 /* A message */
 typedef int soc_length;
@@ -149,6 +149,15 @@ extern int soc_get_dest_host (soc_token token, soc_host *p_host);
 extern int soc_host_name_of (const soc_host *p_host, char *host_name,
                              unsigned int host_name_len);
 extern int soc_host_of (const char *host_name, soc_host *p_host);
+
+/* Find name of soc_port and vice versa */
+extern int soc_port_name_of (const soc_port port,
+                             const socket_protocol proto,
+                             char *port_name,
+                             unsigned int port_name_len);
+extern int soc_port_of (const char *port_name,
+                        const socket_protocol proto,
+                        soc_port *p_port);
 
 /* Gets local host */
 extern int soc_get_local_host_name (char *host_name,

@@ -649,7 +649,8 @@ extern int soc_host_of (const char *host_name, soc_host *p_host) {
   struct hostent *host_struct;
 
   /* Read  IP adress of host */
-  if ((host_struct = gethostbyname(host_name)) == NULL) {
+  host_struct = gethostbyname(host_name);
+  if (host_struct == (struct hostent *)NULL) {
     return (SOC_NAME_NOT_FOUND);
   }
   memcpy((void *) &(p_host->integer),
@@ -659,6 +660,47 @@ extern int soc_host_of (const char *host_name, soc_host *p_host) {
   return (SOC_OK);
 }
 
+static const char *proto_name[3] = {"udp", "tcp", "tcp"};
+
+/* Find name of soc_port and vice versa */
+extern int soc_port_name_of (const soc_port port,
+                             const socket_protocol proto,
+                             char *port_name,
+                             unsigned int port_name_len) {
+
+  struct servent *port_struct;
+
+  /* Read name of port */
+  port_struct = getservbyport((int)port, proto_name[proto]);
+  if (port_struct == (struct servent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(port_struct->s_name) >= port_name_len) {
+    return (SOC_LEN_ERR);
+  }
+  strcpy (port_name, port_struct->s_name);
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_port_of (const char *port_name,
+                        const socket_protocol proto,
+                        soc_port *p_port) {
+
+  struct servent *port_struct;
+
+  /* Read  num of port */
+  port_struct = getservbyname(port_name, proto_name[proto]);
+  if (port_struct == (struct servent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+  *p_port = (soc_port) port_struct->s_port;
+
+  /* Ok */
+  return (SOC_OK);
+}
 /* Gets local host */
 extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len) {
@@ -951,7 +993,7 @@ extern int soc_link_service (soc_token token, const char *service) {
 
   /* Bind */
   return bind_and_co (token, FALSE);
-}	
+}
 
 
 /* Links the socket to a port specified by it's value */
@@ -976,7 +1018,7 @@ extern int soc_link_port  (soc_token token, soc_port port) {
 
   /* Bind */
   return bind_and_co (token, FALSE);
-}	
+}
 
 /* Links the socket to a port dynamically choosen by the system */
 /* The socket must be open and not already linked */
@@ -1000,7 +1042,7 @@ extern int soc_link_dynamic  (soc_token token) {
 
   /* Bind */
   return bind_and_co (token, TRUE);
-}	
+}
 
 /* Gets the port to which is linked a socket */
 extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
