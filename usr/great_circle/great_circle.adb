@@ -4,7 +4,7 @@ with String_Util;
 
 package body Great_Circle is
 
-  Debug : constant Boolean := True;
+  Debug : constant Boolean := False;
 
   use type Conv.Rad_Range;
 
@@ -108,6 +108,7 @@ package body Great_Circle is
     Angle_Result : Conv.Rad_Coord_Range;
 
     -- Heading in radian
+    Cos_H : My_Math.Real;
     Heading_Rad_Angle : Conv.Rad_Coord_Range;
 
     -- Add Pi to Result_Rad_Angle if B in south of A
@@ -190,16 +191,33 @@ package body Great_Circle is
       return;
     end if;      
 
+    if Debug then
+      Ada.Text_Io.Put_Line ("Delta Lat: " & Lat_Lon_Rad_Delta.Y'Img);
+      Ada.Text_Io.Put_Line ("Delta Lon: " & Lat_Lon_Rad_Delta.X'Img);
+      Ada.Text_Io.Put_Line ("Gamma : " & Angle_Result'Img);
+    end if;
+
     -- Compute heading
     -- cos H = (cos colatB - cos colatA * cos Angle) / (sin colatA * sin Angle)
     --  cos colatX = sin latX
-    Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(My_Math.Arc_Cos(
+    Cos_H :=
            ( My_Math.Sin(My_Math.Real(Lat_Lon_Rad_B.Y))
              -   My_Math.Sin(My_Math.Real(Lat_Lon_Rad_A.Y))
                * My_Math.Cos(My_Math.Real(Angle_Result))) 
             / My_Math.Cos(My_Math.Real(Lat_Lon_Rad_A.Y))
-            / My_Math.Sin(My_Math.Real(Angle_Result)) )));
-    Fix_Angle;
+            / My_Math.Sin(My_Math.Real(Angle_Result)) ;
+
+    -- Round to 0 or 180 if cos between 1+Epsilon and -1-Epsilon
+    if abs Cos_H > 1.0 and then abs Cos_H - 1.0 < Epsilon then
+      if Cos_H > 1.0 then
+        Heading_Rad_Angle := 0.0;
+      else
+        Heading_Rad_Angle := Conv.Pi;
+      end if;
+    else
+      Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(My_Math.Arc_Cos(Cos_H)));
+    end if;
+    
 
     -- Fix result if B is at south of A
     -- or if A and B are on the same meridian

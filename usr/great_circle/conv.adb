@@ -17,10 +17,22 @@ package body Conv is
     Sr := Sr * 60.0 * 60.0;
     Si := Natural(My_Math.Round(Sr));
 
-    -- Minutes
-    R.Min := Si / 60;
-    -- Seconds
-    R.Sec := Si rem 60;
+    if Si = 60 * 60 then
+      -- Rounded to next degree
+      if R.Deg = Deg_Range'Last then
+        R.Deg := Deg_Range'First;
+      else
+        R.Deg := R.Deg + 1;
+      end if;
+      R.Min := 0;
+      R.Sec := 0;
+    else
+      -- Minutes
+      R.Min := Si / 60;
+      -- Seconds
+      R.Sec := Si rem 60;
+    end if;
+
     return R;
   end Rad2Geo;
 
