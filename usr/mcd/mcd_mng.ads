@@ -63,9 +63,11 @@ package Mcd_Mng is
    Popr,
    Copyr,
    Pushr,
+   Clearr,
+   Clearall,
+   Emptyr,
    Nextr,
    Prevr,
-   Clearreg,
 
    Pope,
    Copye,
@@ -103,6 +105,7 @@ package Mcd_Mng is
    Strreal,
    Strinte,
    Strbool,
+   Strregi,
    Strof,
 
    Obase,
@@ -138,7 +141,11 @@ package Mcd_Mng is
   -- Treat a new item
   procedure New_Item (Item : in Item_Rec; The_End : out Boolean);
 
+  -- Check stack is empty
   function Check_Empty_Stack return Boolean;
+
+  -- Is a character a register (in A..Z or a..z)
+  function Is_Register (C : in Character) return Boolean;
 
   Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
   Empty_Stack, String_Len, Compute_Error: exception;

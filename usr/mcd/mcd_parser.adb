@@ -87,14 +87,16 @@ package body Parser is
    Swap3    => (Nosy, "push A, push B, push C        ", False),
    Dup      => (Nosy, "push A, push A                ", False),
    Pop      => (Nosy, "pop A                         ", False),
-   Popn     => (Nosy, "pop B A times                 ", False),
+   Popn     => (Nosy, "pop B A times                 ", True),
 
    Popr     => (Nosy, "B -> regA                     ", False),
    Copyr    => (Nosy, "B -> regA, push B             ", False),
    Pushr    => (Nosy, "push regA                     ", False),
+   Clearr   => (Nosy, "clear regA                    ", False),
+   Clearall => (Nosy, "clear all registers           ", False),
+   Emptyr   => (Nosy, "push True is regA is empty    ", False),
    Nextr    => (Nosy, "push next reg (RegA -> RegB)  ", False),
-   Prevr    => (Nosy, "push prev reg (RegB -> RegA)  ", False),
-   Clearreg => (Nosy, "clear all registers           ", True),
+   Prevr    => (Nosy, "push prev reg (RegB -> RegA)  ", True),
 
    Pope     => (Nosy, "pop A push_extra A            ", False),
    Copye    => (Nosy, "pop A push_extra A push A     ", False),
@@ -130,8 +132,9 @@ package body Parser is
    Strupp   => (Nosy, "push A in uppercase           ", False),
    Strlow   => (Nosy, "push A in lowercase           ", False),
    Strreal  => (Nosy, "push A converted to real      ", False),
-   Strinte  => (Nosy, "push A converted to inte      ", False),
-   Strbool  => (Nosy, "push A converted to bool      ", False),
+   Strinte  => (Nosy, "push A converted to integer   ", False),
+   Strbool  => (Nosy, "push A converted to boolean   ", False),
+   Strregi  => (Nosy, "push A converted to register  ", False),
    Strof    => (Nosy, "push formated string of A     ", True),
 
    Obase    => (Nosy, "set output base to A          ", False),
@@ -187,7 +190,7 @@ package body Parser is
     -- Parse [ or REGI
     if Text_Handler.Length(Txt) = 1 then
       
-      if C in 'a' .. 'z' or else C in 'A' .. 'Z' then
+      if Mcd_Mng.Is_Register(C) then
         -- A register
         Instr_Stack.Push(Item_Chrs);
         return (Kind => Mcd_Mng.Regi, Val_Regi => C);

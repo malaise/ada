@@ -27,13 +27,17 @@ package body Registers is
     end if;
   end Reg2Ind;
 
+  function Is_Register (C : in Character) return Boolean is
+  begin
+    return C in 'A' .. 'Z' or else C in 'a' .. 'z';
+  end Is_Register;
+
   procedure Check_Reg (Reg : in Item_Rec) is
   begin
     if Reg.Kind /= Regi then
       raise Invalid_Register;
     end if;
-    if Reg.Val_Regi not in 'A' .. 'Z'
-    and then Reg.Val_Regi not in 'a' .. 'z' then
+    if not Is_Register(Reg.Val_Regi) then
       raise Invalid_Register;
     end if;
   end Check_Reg;
@@ -51,7 +55,7 @@ package body Registers is
     end if;
   end Store;
     
-  function  Retrieve (From_Reg : in Item_Rec) return Item_Rec is
+  function  Retrieve (From_Reg : Item_Rec) return Item_Rec is
     Val : Item_Rec;
   begin
     Val := Registers_Array(Reg2Ind(From_Reg));
@@ -65,6 +69,25 @@ package body Registers is
     end if;
     return Val;
   end Retrieve;
+
+  procedure Clear (Reg : in Item_Rec) is
+  begin
+    Registers_Array(Reg2Ind(Reg)) := Empty_Rec;
+  end Clear;
+
+  procedure Clear_All is
+  begin
+    for R in Registers_Array'Range loop
+      Registers_Array(R) := Empty_Rec;
+    end loop;
+  end Clear_All;
+
+  function Is_Empty (Reg : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Bool);
+  begin
+    Res.Val_Bool := Registers_Array(Reg2Ind(Reg)) = Empty_Rec;
+    return Res;
+  end Is_Empty;
 
   procedure Next (Reg : in out Item_Rec) is
   begin
@@ -89,14 +112,6 @@ package body Registers is
       raise Invalid_Argument;
     end if;
   end Prev;
-
-
-  procedure Clear_All is
-  begin
-    for R in Registers_Array'Range loop
-      Registers_Array(R) := Empty_Rec;
-    end loop;
-  end Clear_All;
 
 end Registers;
 

@@ -106,11 +106,21 @@ package body Mcd_Mng is
   package Registers is
     subtype Register_Content_List is Item_Kind_List range Inte .. Regi;
 
-    procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec); 
-    function  Retrieve (From_Reg : in Item_Rec) return Item_Rec;
+    -- Is a character a register (in a..z or A..Z)
+    function Is_Register (C : in Character) return Boolean;
 
+    -- Store to / retrieve from / Clear
+    procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec); 
+    function  Retrieve (From_Reg : Item_Rec) return Item_Rec;
+    procedure Clear (Reg : in Item_Rec);
+
+    -- Clear all registers
     procedure Clear_All;
 
+    -- Empty?
+    function Is_Empty (Reg : Item_Rec) return Item_Rec;
+
+    -- Next / prev register
     procedure Next (Reg : in out Item_Rec);
     procedure Prev (Reg : in out Item_Rec);
  
@@ -136,8 +146,9 @@ package body Mcd_Mng is
     function Strinte (S : Item_Rec) return Item_Rec;
     function Strreal (S : Item_Rec) return Item_Rec;
     function Strbool (S : Item_Rec) return Item_Rec;
+    function Strregi (S : Item_Rec) return Item_Rec;
     function Strof (Item : Item_Rec) return Item_Rec;
-    -- INVALID_ARGUMENT : exception;
+    -- INVALID_ARGUMENT, ARGUMENT_MISMATCH : exception;
   end Ios;
 
   package Call_Stack is 
@@ -167,6 +178,8 @@ package body Mcd_Mng is
   package body Call_Stack is separate;
   package body Strings is separate;
 
+  function Is_Register (C : in Character) return Boolean 
+                       renames Registers.Is_Register;
 
   procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
     use Stack;
@@ -436,14 +449,22 @@ package body Mcd_Mng is
         when Pushr =>
           -- A -> push content of reg A
           Pop(A); Push(Registers.Retrieve(A));
+        when Clearr =>
+          -- Clear reg A
+          Pop(A); Registers.Clear(A);
+        when Clearall =>
+          -- Clear all registers
+          Registers.Clear_All;
+        when Emptyr =>
+          -- True is reg A is empty
+          Pop(A); Push(Registers.Is_Empty(A));
         when Nextr =>
           -- Reg A -> Reg B
           Pop(A); Registers.Next(A); Push(A);
         when Prevr =>
           -- Reg A -> Reg B
           Pop(A); Registers.Prev(A); Push(A);
-        when Clearreg =>
-          Registers.Clear_All;
+        
 
         -- Stack size
         when Ssize =>
@@ -545,6 +566,8 @@ package body Mcd_Mng is
           Pop(A); Push (Ios.Strinte(A));
         when Strbool =>
           Pop(A); Push (Ios.Strbool(A));
+        when Strregi =>
+          Pop(A); Push (Ios.Strregi(A));
         when Strof =>
           Pop(A); Push (Ios.Strof(A));
 

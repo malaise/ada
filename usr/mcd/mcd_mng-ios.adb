@@ -140,6 +140,22 @@ package body Ios is
     when others =>
       raise Argument_Mismatch;
   end Strbool;
+
+  function Strregi (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Regi);
+  begin
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    if S.Val_Len /= 1 or else not Is_Register(S.Val_Text(1)) then
+      raise Argument_Mismatch;
+    end if;
+    Res.Val_Regi := S.Val_Text(1);
+    return Res;
+  exception
+    when others =>
+      raise Argument_Mismatch;
+  end Strregi;
     
   function Strof (Item : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
@@ -195,6 +211,9 @@ package body Ios is
         end if;
       when Chrs =>
         Res := Item;
+      when Regi =>
+        Res.Val_Len := 1;
+        Res.Val_Text(1) := Item.Val_Regi;
       when others =>
         raise Invalid_Argument;
     end case;
