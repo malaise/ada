@@ -63,6 +63,8 @@ begin
                 Ada.Text_Io.Standard_Output);
 
   Ada.Text_Io.New_Line;
+
+  -- Swap 2 and 15 tree
   Ada.Text_Io.Put_Line ("Swapping 2 and 15");
   My_Tree.Move_Child (T);
   My_Tree.Save_Position (T);
@@ -73,14 +75,26 @@ begin
   My_Tree.Move_Root (T);
   My_Tree.Dump (T, Image'Unrestricted_Access,
                 Ada.Text_Io.Standard_Output);
-  -- Clear
-  My_Tree.Reset (T);
+
+  -- Clear second branch (15)
+  Ada.Text_Io.Put_Line ("Clearing branch 15");
+  My_Tree.Move_Root (T);
+  My_Tree.Move_Child (T, True);
+  My_Tree.Delete_Tree (T, False);
+  My_Tree.Move_Root (T);
+  My_Tree.Dump (T, Image'Unrestricted_Access,
+                Ada.Text_Io.Standard_Output);
+
+  -- Clear all
+  Ada.Text_Io.Put_Line ("Clearing all");
+  My_Tree.Move_Root (T);
+  My_Tree.Delete_Tree (T, True);
   begin
     My_Tree.Move_Root (T);
     raise Program_Error;
   exception
     when Trees.No_Cell =>
-      null;
+      Ada.Text_Io.Put_Line ("Empty");
   end;
 
 end T_Trees;
