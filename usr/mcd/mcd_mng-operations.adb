@@ -94,15 +94,20 @@ package body Operations is
     if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
-    if L.Kind /= R.Kind then
+    if L.Kind = Inte and then R.Kind = Inte then
+      return (Kind => Inte, Val_Inte => L.Val_Inte ** Natural(R.Val_Inte));
+    elsif L.Kind = Real and then R.Kind = Inte then
+      return (Kind => Real,
+              Val_Real => My_Math.Real(Float(L.Val_Real)
+                                    ** Integer(R.Val_Inte)));
+    elsif L.Kind = Real and then R.Kind = Real then
+      return (Kind => Real, Val_Real => L.Val_Real ** R.Val_Real);
+    else
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
-      return (Kind => Inte, Val_Inte => Round(My_Math.Real(L.Val_Inte)
-                                           ** My_Math.Real(R.Val_Inte)));
-    else
-      return (Kind => Real, Val_Real => L.Val_Real ** R.Val_Real);
-    end if;
+  exception
+    when others =>
+      raise Invalid_Argument;
   end Pow;
 
   -- INTE,INTE->INTE
