@@ -82,6 +82,8 @@ package body Unit_Format is
         return "Xfer";
       when Oper_Def.Withdraw =>
         return "Draw";
+      when Oper_Def.Savings =>
+        return "Save";
     end case;
   end Short_Kind_Image;
 
