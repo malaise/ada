@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Exceptions;
 with Argument, X_Mng, Socket, Timers, Channels;
 procedure T_Channels is
 
@@ -14,7 +14,7 @@ procedure T_Channels is
   Publish : Boolean;
 
   -- Nb messages to process and processed
-  Nb_To_Do  : Positive;
+  Nb_To_Do  : Natural;
   Nb_Done : Natural;
 
   -- The Fifo
@@ -44,7 +44,7 @@ procedure T_Channels is
       end;
     end if;
     -- Count subscriber receptions
-    if not Publish then
+    if not Publish and then Nb_To_Do /= 0 then
       Nb_Done := Nb_Done + 1;
     end if;
   end Fifo_Cb;
@@ -77,7 +77,9 @@ procedure T_Channels is
       -- Stops waiting on timer
       exit when not Go_Wait;
       -- Subscriber stops waiting when amount of messages received
-      exit when not Publish and then Nb_Done = Nb_To_Do;
+      exit when not Publish
+                and then Nb_To_Do /= 0
+                and then Nb_Done = Nb_To_Do;
     end loop;
   end Wait;
 
@@ -131,6 +133,15 @@ begin
   -- Publisher
   Message.Str := (others => ' ');
   Message.Str(1 .. 6) := "Coucou";
+  Ada.Text_Io.Put_Line ("Adding dests from file");
+  begin
+    Fifo.Add_Destinations ("channels.dir");
+  exception
+    when Error : others =>
+      Ada.Text_Io.Put_Line ("Exception: "
+         & Ada.Exceptions.Exception_Name(Error)
+         & " raised.");
+  end;
   Ada.Text_Io.Put ("Adding dests: ");
   for I in 4 .. Argument.Get_Nbre_Arg loop
     Ada.Text_Io.Put (Argument.Get_Parameter(Occurence => I) & " ");
@@ -139,6 +150,8 @@ begin
     exception
       when Channels.Unknown_Destination =>
         Ada.Text_Io.Put_Line ("Unknown destination, skipping");
+      when Channels.Destination_Already =>
+        Ada.Text_Io.Put_Line ("Destination already set, skipping");
     end;
   end loop;
   Ada.Text_Io.New_Line;
@@ -148,7 +161,7 @@ begin
   loop
     Send (Message);
     Nb_Done := Nb_Done + 1;
-    exit when Nb_Done = Nb_To_Do;
+    exit when Nb_To_Do /= 0 and then Nb_Done = Nb_To_Do;
   end loop;
 
   Ada.Text_Io.New_Line;

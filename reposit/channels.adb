@@ -79,6 +79,22 @@ package body Channels is
     return Str;
   end Parse;
 
+  package File is
+    -- All may raise File_Error
+
+    -- Open a file and look for a channel
+    procedure Open (File_Name : in String; Channel_Name : in String);
+
+    procedure Close;
+
+    -- May raise End_Error
+    End_Error : exception;
+    function Next_Host return Tcp_Util.Remote_Host;
+
+  end File;
+  package body File is separate;
+
+
   package body Channel is
 
     -- Current channel state
@@ -383,6 +399,35 @@ package body Channels is
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
           := Text_Handler.Value (Channel_Dscr.Name); 
     end Build_Host_Port;
+
+    -- Add destinations from file
+    procedure Add_Destinations (File_Name : in String) is
+      Host : Tcp_Util.Remote_Host;
+    begin
+      File.Open (File_Name, Text_Handler.Value (Channel_Dscr.Name) );
+      loop
+        begin
+          Host := File.Next_Host;
+        exception
+          when File.End_Error =>
+            File.Close;
+            return;
+          when File_Error =>
+            File.Close;
+            raise;
+        end;
+
+        begin
+          Add_Destination (Parse (Host.name));
+        exception
+          when Destination_Already | Unknown_Destination =>
+            null;
+          when others =>
+            raise;
+        end;
+      end loop;
+      
+    end Add_Destinations;
 
     -- Add a new recipient
     procedure Add_Destination (Host_Name : in String) is
