@@ -107,8 +107,8 @@ package body Great_Circle is
     -- Angle of result
     Angle_Result : Conv.Rad_Coord_Range;
 
-    -- Result angle from X
-    Result_Rad_Angle : Conv.Rad_Coord_Range;
+    -- Heading in radian
+    Heading_Rad_Angle : Conv.Rad_Coord_Range;
 
     -- Add Pi to Result_Rad_Angle if B in south of A
     -- or shortest route along meridian is via south pole
@@ -126,7 +126,7 @@ package body Great_Circle is
       end if;
 
       -- If same meridian
-      Angle :=  C_Nbres.Radian(Result_Rad_Angle);
+      Angle :=  C_Nbres.Radian(Heading_Rad_Angle);
       if Angle < Epsilon
       or else abs (Angle - Conv.Pi) < Epsilon then
         -- See if A and B are on the same meridian
@@ -149,9 +149,10 @@ package body Great_Circle is
         end if;
       end if;
 
-      Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(Angle));
+      Heading_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(Angle));
     end Fix_Angle;
 
+  use My_Math;
   begin
 
     -- Convert args in lat_lon of A and B
@@ -179,7 +180,8 @@ package body Great_Circle is
     Chord_Result := Lat_Lon.Distance(My_Math.Sqrt(Real(
                       Chord_Xa * Chord_Xb + Chord_Y * Chord_Y)));
     -- Compute Angle of result
-    Angle_result :=  Angle_Of_Chord(Chord_Result, Route_Radius);
+    Angle_Result :=  Angle_Of_Chord(Chord_Result, Route_Radius);
+
     -- Compute Arc of result
     Distance := Route_Radius * abs Angle_Result;
 
@@ -189,44 +191,22 @@ package body Great_Circle is
     end if;      
 
     -- Compute heading
-    if Debug then
-      -- Get angle between meridian chord and route chord (in secant plan)
-      declare
-        Dist : Lat_Lon.Distance;
-      begin
-        Dist := Distance * Distance + Chord_Y * Chord_Y - Chord_Xb * Chord_Xb;
-        Dist := Dist / 2.0 / Distance / Chord_Y;
-        Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-            My_Math.Arc_Cos(Real(Dist)))));
-        Fix_Angle;
-        Ada.Text_Io.Put_Line ("Nu = " & String_Util.Angle2Str(
-            Conv.Rad2Geo(Result_Rad_Angle)));
-      end;
-    end if;
-
-    -- Angle in tangent plan
-    declare
-      -- Tangents in A to A meridien and to AB
-      Tang_A_North, Tang_A_B : Vector_Rec;
-      Sin_Angle : Real;
-      use type My_Math.Real;
-    begin
-      Tang_A_North := Vector_Of(Rad2Spheric(Lat_Lon_Rad_A), (P => 0.0, T => 0.0));
-      Tang_A_B := Vector_Of(Rad2Spheric(Lat_Lon_Rad_A),
-                            Rad2Spheric(Lat_Lon_Rad_B));
-      -- Vectorial product has a norm of Norm1 * Norm2 * SinAngle
-      Sin_Angle := Vector_Norm(Vectorial_Product(Tang_A_North, Tang_A_B))
-                 / Vector_Norm(Tang_A_North) / Vector_Norm(Tang_A_B);
-      Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-               My_Math.Arc_Sin(Sin_Angle))));
-    end;
+    -- cos H = (cos colatB - cos colatA * cos Angle) / (sin colatA * sin Angle)
+    --  cos colatX = sin latX
+    Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(My_Math.Arc_Cos(
+           ( My_Math.Sin(My_Math.Real(Lat_Lon_Rad_B.Y))
+             -   My_Math.Sin(My_Math.Real(Lat_Lon_Rad_A.Y))
+               * My_Math.Cos(My_Math.Real(Angle_Result))) 
+            / My_Math.Cos(My_Math.Real(Lat_Lon_Rad_A.Y))
+            / My_Math.Sin(My_Math.Real(Angle_Result)) )));
+    Fix_Angle;
 
     -- Fix result if B is at south of A
     -- or if A and B are on the same meridian
     Fix_Angle;
 
     -- In degrees
-    Heading := Conv.Rad2Geo(Result_Rad_Angle);
+    Heading := Conv.Rad2Geo(Heading_Rad_Angle);
 
   end Compute_Route;
 
