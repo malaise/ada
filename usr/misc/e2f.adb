@@ -22,9 +22,9 @@ procedure E2f is
     use Ada.Text_Io;
   begin
     Put_Line("Usage: " & Argument.Get_Program_Name
-                       & " <value>[<unit>]");
-    Put_Line("   <value> : integer or float (2 digits)");
-    Put_Line("   <unit>  : F or E");
+                       & " <amount>[<unit>]");
+    Put_Line("   <amount> : integer or float (2 digits)");
+    Put_Line("   <unit>   : f or e");
   end Help;
 
   procedure Put (V : in My_Math.Real) is
@@ -71,7 +71,7 @@ begin
                      Text_Handler.Value(The_Argument)(1 .. Len));
 
     -- If value is float, must have 2 digits for cents
-    Dot := Text_Handler.locate(The_Argument, '.', 1);
+    Dot := Text_Handler.Locate(The_Argument, '.', 1);
     if Dot /= 0 and then Dot + 2 /= Len then
       raise Constraint_Error;
     end if;
