@@ -32,6 +32,10 @@ procedure T_Tcp_Util is
 
   function Send (Msg : in String) return Boolean is
   begin
+    if not Socket.Is_Open (The_Dscr) then
+      Ada.Text_Io.Put_Line (Msg & " not sending cause not open");
+      return False;
+    end if;
     if Server then
       if not In_Ovf then
         if My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access, Message) then
@@ -176,7 +180,7 @@ procedure T_Tcp_Util is
         end if;
         if not Server then
           Ada.Text_Io.Put_Line (" - Waiting");
-          Wait (3.0);
+          delay 3.0;
           Connect;
         else
           Ada.Text_Io.New_Line;
@@ -195,11 +199,11 @@ procedure T_Tcp_Util is
 
     if not Server then
       Ada.Text_Io.Put_Line ("      Working");
-      Wait (0.3);
+      delay 0.3;
       Res := Send ("Request");
     else
       Ada.Text_Io.Put_Line ("      Working");
-      Wait (0.1);
+      delay 0.1;
       Ada.Text_Io.Put_Line ("      Replying");
       Message.Num := Message.Num + 10;
       if not Send ("Reply") and then In_Ovf then
