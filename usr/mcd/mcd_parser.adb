@@ -1,11 +1,15 @@
 with TEXT_IO;
-with TEXT_HANDLER, MATH;
+with TEXT_HANDLER, MATH, QUEUES, SYS_CALLS;
 with DEBUG, INPUT_DISPATCHER, BOOL_IO, INTE_IO, REAL_IO;
 package body PARSER is
   use MCD_MNG;
 
+  subtype ITEM_CHRS_REC is MCD_MNG.ITEM_REC(MCD_MNG.CHRS);
+  package INSTR_STACK is new QUEUES.CIRC(7, ITEM_CHRS_REC);
 
   TXT, TXTS : TEXT_HANDLER.TEXT(INPUT_DISPATCHER.MAX_STRING_LG);
+
+  INPUT_ERROR : BOOLEAN := FALSE;
 
   subtype ONE_WORD is STRING(1 .. 2);
   WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_WORD :=
@@ -71,7 +75,7 @@ package body PARSER is
 
   function NEXT_ITEM return MCD_MNG.ITEM_REC is
     LEVEL : NATURAL;
-    ITEM_CHRS : MCD_MNG.ITEM_REC(MCD_MNG.CHRS);
+    ITEM_CHRS, SAVED_ITEM_CHRS : ITEM_CHRS_REC;
     FIRST_WORD : BOOLEAN;
     W : ONE_WORD;
     C : CHARACTER;
@@ -86,12 +90,17 @@ package body PARSER is
       TEXT_IO.PUT_LINE ("Parser: Getting >"
                & TEXT_HANDLER.VALUE(TXT)  & "<");
     end if;
+    ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXT);
+    ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) := TEXT_HANDLER.VALUE(TXT);
 
     -- EOF
     if TEXT_HANDLER.EMPTY(TXT) then
       if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
         TEXT_IO.PUT_LINE ("Parser: Eof >");
       end if;
+      ITEM_CHRS.VAL_LEN := 3;
+      ITEM_CHRS.VAL_TEXT(1 .. 3) := "EOF";
+      INSTR_STACK.PUSH(ITEM_CHRS);
       return (KIND => OPER, VAL_OPER => RET);
     end if;
 
@@ -102,6 +111,7 @@ package body PARSER is
       
       if C in 'a' .. 'z' or else C in 'A' .. 'Z' then
         -- A register
+        INSTR_STACK.PUSH(ITEM_CHRS);
         return (KIND => MCD_MNG.REGI, VAL_REGI => C);
       elsif C = '[' then
         -- Get rid of strings
@@ -126,6 +136,13 @@ package body PARSER is
         end loop;
         ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXTS);
         ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) := TEXT_HANDLER.VALUE(TXTS);
+        if ITEM_CHRS.VAL_LEN + 4 <= INPUT_DISPATCHER.MAX_STRING_LG then
+          SAVED_ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXTS) + 4;
+          SAVED_ITEM_CHRS.VAL_TEXT(1 .. SAVED_ITEM_CHRS.VAL_LEN) := "[ " & TEXT_HANDLER.VALUE(TXTS) & " ]";
+        else
+          SAVED_ITEM_CHRS := ITEM_CHRS;
+        end if;
+        INSTR_STACK.PUSH(SAVED_ITEM_CHRS);
         return ITEM_CHRS;
       end if;
 
@@ -141,6 +158,7 @@ package body PARSER is
       end if;
       for O in MCD_MNG.OPERATOR_LIST loop
         if WORDS(O) = W then
+          INSTR_STACK.PUSH(ITEM_CHRS);
           return (KIND => MCD_MNG.OPER, VAL_OPER => O);
         end if;
       end loop;
@@ -150,6 +168,7 @@ package body PARSER is
     begin
       BOOL_IO.GET(TEXT_HANDLER.VALUE(TXT), B, L);
       if L = TEXT_HANDLER.LENGTH(TXT) then
+        INSTR_STACK.PUSH(ITEM_CHRS);
         return (KIND => MCD_MNG.BOOL, VAL_BOOL => B);
       end if;
     exception
@@ -158,6 +177,7 @@ package body PARSER is
     begin
       INTE_IO.GET(TEXT_HANDLER.VALUE(TXT), I, L);
       if L = TEXT_HANDLER.LENGTH(TXT) then
+        INSTR_STACK.PUSH(ITEM_CHRS);
         return (KIND => MCD_MNG.INTE, VAL_INTE => I);
       end if;
     exception
@@ -166,6 +186,7 @@ package body PARSER is
     begin
       REAL_IO.GET(TEXT_HANDLER.VALUE(TXT), R, L);
       if L = TEXT_HANDLER.LENGTH(TXT) then
+        INSTR_STACK.PUSH(ITEM_CHRS);
         return (KIND => MCD_MNG.REAL, VAL_REAL => R);
       end if;
     exception
@@ -173,9 +194,13 @@ package body PARSER is
     end;
     
     -- Cannot recognise anything
+    INSTR_STACK.PUSH(ITEM_CHRS);
     raise PARSING_ERROR;  
     
   exception
+    when INPUT_DISPATCHER.STRING_ERROR =>
+      INPUT_ERROR := TRUE;
+      raise PARSING_ERROR;
     when others =>
       raise PARSING_ERROR;  
   end NEXT_ITEM;
@@ -194,5 +219,28 @@ package body PARSER is
     end loop;
   end PRINT_HELP;
     
+  procedure DUMP_STACK is
+    ITEM_CHRS : ITEM_CHRS_REC;
+  begin
+    if not DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.HISTORY) then
+      return;
+    end if;
+    SYS_CALLS.PUT_LINE_ERROR ("History:");
+    loop
+      begin
+        INSTR_STACK.POP(ITEM_CHRS);
+        SYS_CALLS.PUT_ERROR (ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) & " ");
+      exception
+        when INSTR_STACK.CIRC_EMPTY =>
+         exit;
+      end;
+    end loop;
+    if INPUT_ERROR then
+      SYS_CALLS.PUT_LINE_ERROR (INPUT_DISPATCHER.ERROR_STRING);
+    else
+      SYS_CALLS.NEW_LINE_ERROR;
+    end if;
+  end DUMP_STACK;
+
 
 end PARSER;

@@ -8,5 +8,7 @@ package PARSER is
 
   procedure PRINT_HELP;
 
+  procedure DUMP_STACK;
+
 end PARSER;
 

@@ -22,6 +22,11 @@ package body DEBUG is
     GETENV ("MCD_DEBUG_STACK", SET, TRUNC, VAL, LEN);
     DEBUG_LEVEL_ARRAY(STACK) := SET;
 
+    GETENV ("MCD_DEBUG_HISTORY", SET, TRUNC, VAL, LEN);
+    if SET then
+      DEBUG_LEVEL_ARRAY(HISTORY) := SET;
+    end if;
+
     GETENV ("MCD_DEBUG_ALL", SET, TRUNC, VAL, LEN);
     if SET then
       DEBUG_LEVEL_ARRAY := (others => TRUE);

@@ -20,5 +20,8 @@ package INPUT_DISPATCHER is
   -- Error if end of string litteral not found
   STRING_ERROR : exception;
 
+  -- The string on which the error occured
+  function ERROR_STRING return STRING;
+
 end INPUT_DISPATCHER;
 

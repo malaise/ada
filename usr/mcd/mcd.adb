@@ -19,9 +19,15 @@ begin
   end if;
 
   loop 
-    ITEM := PARSER.NEXT_ITEM;
-    MCD_MNG.NEW_ITEM(ITEM, THE_END);
-    exit when THE_END;
+    begin
+      ITEM := PARSER.NEXT_ITEM;
+      MCD_MNG.NEW_ITEM(ITEM, THE_END);
+      exit when THE_END;
+    exception
+      when others =>
+        PARSER.DUMP_STACK;
+        raise;
+    end;
    end loop;
    
    if not MCD_MNG.CHECK_EMPTY_STACK then

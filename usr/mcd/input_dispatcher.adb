@@ -22,6 +22,7 @@ package body INPUT_DISPATCHER is
 
   -- Get first/next word from a string
   CUR_INDEX : POSITIVE;
+  STOP_INDEX : POSITIVE;
 
   -- String delimiter
   SD : constant CHARACTER := '"';
@@ -32,7 +33,7 @@ package body INPUT_DISPATCHER is
   end IS_SEPARATOR;
 
   function NEXT_STR_WORD return STRING is
-    TMP_INDEX, STOP_INDEX : POSITIVE;
+    TMP_INDEX : POSITIVE;
     IN_LIT : BOOLEAN := FALSE;
   begin
     -- Skip separators
@@ -56,6 +57,7 @@ package body INPUT_DISPATCHER is
       end loop;
       if STOP_INDEX > CUR_LEN then
         -- No SD before end of line
+        STOP_INDEX := CUR_LEN;
         raise STRING_ERROR;
       end if;
       if STOP_INDEX + 1 <= CUR_LEN and then
@@ -80,6 +82,11 @@ package body INPUT_DISPATCHER is
 
     return CUR_STR(TMP_INDEX .. STOP_INDEX);
   end NEXT_STR_WORD;
+
+  function ERROR_STRING return STRING is
+  begin
+   return CUR_STR(CUR_INDEX .. STOP_INDEX);
+  end ERROR_STRING;
 
   function FIRST_STR_WORD (STR : STRING := "") return STRING is
   begin
