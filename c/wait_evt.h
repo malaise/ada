@@ -17,7 +17,7 @@ extern void send_signal (int sig);
 #define SIG_NONE     -1
 #define SIG_DUMMY     0
 #define SIG_TERMINATE 1
-#define SIG_CHILD     3
+#define SIG_CHILD     2
 extern int get_signal (void);
 
 extern void evt_wake_up (void);
