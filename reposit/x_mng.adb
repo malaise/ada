@@ -344,8 +344,9 @@ package body X_Mng is
     Used : Boolean := False;
     -- Registration date
     Birth : Ada.Calendar.Time;
-    -- Is this client between Register and first Wait
-    Starting : Boolean := False;
+    -- Is this client going to call Wait (running)
+    --  or blocked in Get_Event
+    Running : Boolean := False;
     -- Will be Line_For_C
     Line_For_C_Id : Line_For_C := No_Line_For_C;
     -- The one provided to Wait
@@ -374,7 +375,7 @@ package body X_Mng is
       -- Ready to wait, store expiration time. Select if last
       --  and no client to wake up
       entry Wait (Client : in Client_Range;
-                      Exp : in Timers.Expiration_Rec);
+                     Exp : in Timers.Expiration_Rec);
 
       -- All but one client wait here, eventually getting and event
       --  from select [ process_event ]

@@ -93,10 +93,10 @@ package body Dispatch is
     loop
       -- Compute min of Exp and timers, set timeout in Ms
       Select_Exp := Timers.Next_Expiration (Exp);
-      if Exp = Timers.Infinite_Expiration then
+      if Select_Exp = Timers.Infinite_Expiration then
         Timeout := Infinite_Timeout;
       else
-        Timeout := Exp.Time - Ada.Calendar.Clock;
+        Timeout := Select_Exp.Time - Ada.Calendar.Clock;
         if Timeout < 0.0 then
           Timeout := 0.0;
         end if;
@@ -291,9 +291,7 @@ package body Dispatch is
         raise Dispatch_Error;
       end if;
 
-      if not Clients(Client).Starting
-         and then Selected /= No_Client_No
-         and then Client /= Selected then
+      if not Clients(Client).Running then
         if Debug then
           My_Io.Put_Line ("Dispatch.Check: unexpected client " & Client'Img);
         end if;
@@ -327,7 +325,7 @@ package body Dispatch is
       end if;
       Clients(Client).Used := True;
       Clients(Client).Birth := Ada.Calendar.Clock;
-      Clients(Client).Starting := True;
+      Clients(Client).Running := True;
       Clients(Client).Line_For_C_Id := No_Line_For_C;
       Nb_Clients := Nb_Clients + 1;
       if Debug then
@@ -350,16 +348,21 @@ package body Dispatch is
         My_Io.Put_Line ("Dispatch.Unregister " & Client'Img
                  & " " & Nb_Clients'Img & " " & Nb_Waiting'Img);
       end if;
-      Nb_Clients := Nb_Clients - 1;
-      if Nb_Clients /= 0 then
-        Nb_Waiting := Nb_Waiting - 1;
-        -- Refresh all if any client remains
-        Refreshing := True;
-      end if;
       -- This client is not used (set it before calling First)
+      Nb_Clients := Nb_Clients - 1;
       Clients(Client).Used := False;
       Selected := First;
       Event := Refresh;
+      if Selected /= No_Client_No then
+        -- At least one client remaining
+        Refreshing := True;
+        if not Clients(Selected).Running then
+          -- The selected client was waiting
+          Nb_Waiting := Nb_Waiting - 1;
+          Clients(Selected).Running := True;
+        end if;
+      end if;
+
       Client := No_Client_No;
       if Debug then
         My_Io.Put_Line ("Dispatch.Unregister selected "
@@ -410,7 +413,6 @@ package body Dispatch is
            My_Io.Put_Line (" " & Date_Image (Exp.Time));
         end if;
       end if;
-      Clients(Client).Starting := False;
       Clients(Client).Wait_Exp := Exp;
       
       -- Do/Update refreshing
@@ -431,6 +433,7 @@ package body Dispatch is
       end if;
 
       -- All but last client will wait in Get_Event
+      Clients(Client).Running := False;
       if Nb_Waiting /= Nb_Clients - 1 then
         Selected := No_Client_No;
         Nb_Waiting := Nb_Waiting + 1;
@@ -447,6 +450,7 @@ package body Dispatch is
         -- Try to dispatch a non X event
         if Event_Mng.Wait  (0) /= Event_Mng.No_Event then
           Selected := Oldest;
+          Clients(Client).Running := True;
           return;
         end if;
       end if;
@@ -478,7 +482,7 @@ package body Dispatch is
           Selected := Oldest;
           Nb_X_Events := 0;
         when Wakeup_Event =>
-          -- A wake up. Select no client is registration pending
+          -- A wake up. Select no client if registration pending
           if Register_Waiting /= 0 then
             Selected := No_Client_No;
             Nb_Waiting := Nb_Waiting + 1;
@@ -492,8 +496,10 @@ package body Dispatch is
           Nb_X_Events := 0;
       end case;
 
-      -- There MUST be a selected client, otherwise all will wait
-      if Selected = No_Client_No and then Event /= Wakeup_Event then
+      -- One shall be selected or a registration pending
+      if Selected /= No_Client_No then
+        Clients(Selected).Running := True;
+      elsif Event /= Wakeup_Event then
         if Debug then
           My_Io.Put_Line ("Dispatch.Wait: no selected " & Selected'Img);
         end if;
