@@ -1,44 +1,15 @@
+with Parser;
 function Num_Match (Num : in Natural; Criteria : in String) return Boolean is
 
-  Spec_Start : Positive := Positive'Last;
+  -- Separator of criteria
   Spec_Sep : constant Character := ',';
-  No_Spec : constant String := "";
-
-  procedure Init_Spec is
+  Str_Sep : constant String := Spec_Sep & "";
+  function Is_Sep (C : Character) return Boolean is
   begin
-    if Criteria = "" 
-    or else Criteria(Criteria'First) = Spec_Sep
-    or else Criteria(Criteria'Last)  = Spec_Sep then
-      raise Constraint_Error;
-    end if;
-    Spec_Start := 1;
-  end Init_Spec;
+    return C = Spec_Sep;
+  end Is_Sep;
 
-  function Next_Spec return String is
-    Start, Stop : Positive;
-  begin
-    -- End of criteria?
-    if Spec_Start > Criteria'Last then
-      return No_Spec;
-    end if;
-    -- Check "SepSep"
-    if  Criteria(Spec_Start) = Spec_Sep then
-      raise Constraint_Error;
-    end if;
-    -- Search next ','
-    Start := Spec_Start;
-    Stop := Start;
-    loop
-      exit when Stop = Criteria'Last
-      or else Criteria(Stop + 1) = ',';
-      Stop := Stop + 1;
-    end loop;
-    -- Set Spec_Start for next search
-    Spec_Start := Stop + 2;
-    -- Done
-    return Criteria(Start .. Stop);
-  end Next_Spec;
-
+  -- Locate Range_Sep in Str (0 if not found)
   function Range_Sep_Index (Str : in String) return Natural is
     Range_Sep : constant Character := '-';
     Index : Natural;
@@ -58,10 +29,17 @@ function Num_Match (Num : in Natural; Criteria : in String) return Boolean is
     return Index;
   end Range_Sep_Index;
 
+  Iter : Parser.Iterator;
+  First : Boolean;
   Match : Boolean;
+
 begin
   -- Init for check
-  Init_Spec;
+  Parser.Create (Criteria, Is_Sep'Unrestricted_Access, Iter);
+  -- First spec
+  First := True;
+  -- Mach is kept along all specs cause we parse (check) all
+  -- for syntax
   Match := False;
 
   -- Check all specs
@@ -70,20 +48,46 @@ begin
 
     One_Spec:
     declare
-      Cur_Spec : constant String := Next_Spec;
+      Cur_Spec : constant String := Parser.Next_Word (Iter);
       Range_Index : Natural;
       Range_First, Range_Last : Natural;
     begin
-      exit when Cur_Spec = No_Spec;
+      if First then
+        -- First word
+        if Cur_Spec = "" then
+          -- Empty criteria
+          exit All_Specs;
+        end if;
+        if Parser.Prev_Separators (Iter) /= "" then
+          -- Criteria starts with Sep(s)
+          raise Constraint_Error;
+        end if;
+        First := False;
+      elsif Cur_Spec /= "" then
+        -- Not first word nor the end shall be separated by one Sep
+        if Parser.Prev_Separators (Iter) /= Str_Sep then
+          -- Not separated by Sep
+          raise Constraint_Error;
+        end if;
+      else
+        -- The end, last word shall not be followed by Seps(s)
+        if Parser.Prev_Separators (Iter) /= "" then
+          raise Constraint_Error;
+        end if;
+        exit All_Specs;
+      end if;
+
       -- Check for range separator
       Range_Index := Range_Sep_Index (Cur_Spec);
       Range_First := Natural'First;
       Range_Last  := Natural'Last;
+      -- Set the value(s) or raise Constraint_Error
       if Range_Index = 0 then
-        -- No range, one value
+        -- No range
         Range_First := Natural'Value(Cur_Spec);
         Range_Last  := Range_First;
-      elsif Range_Index = Cur_Spec'First and then Range_Index = Cur_Spec'Last then
+      elsif Range_Index = Cur_Spec'First
+      and then Range_Index = Cur_Spec'Last then
         -- No limit
         null;
       elsif Range_Index = Cur_Spec'First then
@@ -108,6 +112,9 @@ begin
 
   end loop All_Specs;
 
+  -- Cleanup and Done
+  Parser.Delete (Iter);
   return Match;
+
 end Num_Match;
 
