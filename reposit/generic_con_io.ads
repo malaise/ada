@@ -183,15 +183,6 @@ package GENERIC_CON_IO is
                         NUMBER : in POSITIVE := 1);
 
 
-    -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
-    -- if not is_char, key is the key code. If is_char, key is the ascii code.
-    -- CARE : is_char can be set and key not compatible with ADA characters.
-    -- KEY = 0 and IS_CHAR and other flags FALSE indicate refresh has to be done
-    procedure GET_KEY (KEY     : out NATURAL;
-                       IS_CHAR : out BOOLEAN;
-                       CTRL    : out BOOLEAN;
-                       SHIFT   : out BOOLEAN);
-
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure PAUSE;
 
@@ -249,7 +240,8 @@ package GENERIC_CON_IO is
                    FOREGROUND : in COLORS := CURRENT;
                    BLINK_STAT : in BLINK_STATS := CURRENT;
                    BACKGROUND : in BASIC_COLORS := CURRENT;
-                   TIME_OUT   : in DELAY_REC := INFINITE_DELAY);
+                   TIME_OUT   : in DELAY_REC := INFINITE_DELAY;
+                   ECHO       : in BOOLEAN := TRUE);
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
@@ -262,14 +254,17 @@ package GENERIC_CON_IO is
                             FOREGROUND : in COLORS := CURRENT;
                             BLINK_STAT : in BLINK_STATS := CURRENT;
                             BACKGROUND : in BASIC_COLORS := CURRENT;
-                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY);
+                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY;
+                            ECHO       : in BOOLEAN := TRUE);
+
+    -- Avoid GET_KEY_TIME and GET_KEY functions. Not portable.
 
     -- Get_key_time can return if key pressed (ESC event),
     -- mouse action, refresh or timeout
     subtype EVENT_LIST is CURS_MVT range ESC .. REFRESH;
 
     -- Check if a key is available, or another event, until a certain time. 
-    -- ESC means any key
+    -- ESC means any key. No echo.
     procedure GET_KEY_TIME (CHECK_BREAK : in BOOLEAN;
                             EVENT       : out EVENT_LIST;
                             KEY         : out NATURAL;
@@ -277,6 +272,16 @@ package GENERIC_CON_IO is
                             CTRL        : out BOOLEAN;
                             SHIFT       : out BOOLEAN;
                             TIME_OUT    : in DELAY_REC := INFINITE_DELAY);
+
+    -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
+    -- if not is_char, key is the key code. If is_char, key is the ascii code.
+    -- CARE : is_char can be set and key not compatible with ADA characters.
+    -- KEY = 0 and IS_CHAR and other flags FALSE indicate refresh has to be done
+    procedure GET_KEY (KEY     : out NATURAL;
+                       IS_CHAR : out BOOLEAN;
+                       CTRL    : out BOOLEAN;
+                       SHIFT   : out BOOLEAN);
+
 
     procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN);
 

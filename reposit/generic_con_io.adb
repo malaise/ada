@@ -912,9 +912,7 @@ package body GENERIC_CON_IO is
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
-    procedure INTERN_PUT_THEN_GET (
-                            ECHO       : in BOOLEAN;
-                            STR        : in out STRING;
+    procedure PUT_THEN_GET (STR        : in out STRING;
                             LAST       : out NATURAL;
                             STAT       : out CURS_MVT;
                             POS        : in out POSITIVE;
@@ -923,7 +921,8 @@ package body GENERIC_CON_IO is
                             FOREGROUND : in COLORS := CURRENT;
                             BLINK_STAT : in BLINK_STATS := CURRENT;
                             BACKGROUND : in BASIC_COLORS := CURRENT;
-                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
+                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY;
+                            ECHO       : in BOOLEAN := TRUE) is
       WIDTH         : constant NATURAL := STR'LENGTH;
       LSTR          : STRING(1 .. WIDTH) := STR;
       KEY           : NATURAL;
@@ -1236,20 +1235,6 @@ package body GENERIC_CON_IO is
           PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
        end if;
       end loop;
-    end INTERN_PUT_THEN_GET;
-
-    procedure PUT_THEN_GET (STR        : in out STRING;
-                            LAST       : out NATURAL;
-                            STAT       : out CURS_MVT;
-                            POS        : in out POSITIVE;
-                            INSERT     : in out BOOLEAN;
-                            NAME       : in WINDOW := SCREEN;
-                            FOREGROUND : in COLORS := CURRENT;
-                            BLINK_STAT : in BLINK_STATS := CURRENT;
-                            BACKGROUND : in BASIC_COLORS := CURRENT;
-                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
-    begin
-      INTERN_PUT_THEN_GET (TRUE, STR, LAST, STAT, POS, INSERT, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, TIME_OUT);
     end PUT_THEN_GET;
 
     -- Gets a string of at most width characters
@@ -1262,15 +1247,16 @@ package body GENERIC_CON_IO is
                    FOREGROUND : in COLORS := CURRENT;
                    BLINK_STAT : in BLINK_STATS := CURRENT;
                    BACKGROUND : in BASIC_COLORS := CURRENT;
-                   TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
+                   TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY;
+                   ECHO       : in BOOLEAN := TRUE) is
       LSTR : STRING(STR'RANGE ) := (others => ' ');
       LPOS : POSITIVE;
       LINS : BOOLEAN;
     begin
       LPOS := 1;
       LINS := FALSE;
-      INTERN_PUT_THEN_GET(TRUE, LSTR, LAST, STAT, LPOS, LINS, NAME,
-          FOREGROUND, BLINK_STAT, BACKGROUND, TIME_OUT);
+      PUT_THEN_GET(LSTR, LAST, STAT, LPOS, LINS, NAME,
+          FOREGROUND, BLINK_STAT, BACKGROUND, TIME_OUT, ECHO);
       STR := LSTR;
       POS := LPOS;
       INSERT := LINS;
@@ -1308,7 +1294,7 @@ package body GENERIC_CON_IO is
         STR := (others => ' ');
         POS := 1;
         INS := FALSE;
-        INTERN_PUT_THEN_GET(ECHO, STR, LAST, STAT, POS, INS, NAME);
+        PUT_THEN_GET(STR, LAST, STAT, POS, INS, NAME, ECHO => ECHO);
         case STAT is
           when UP .. RIGHT | TAB .. STAB =>
             -- Cursor movement
