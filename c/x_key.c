@@ -1,5 +1,3 @@
-/*  @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~  */
-static char C_YEK_X []=" @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~";
 /* May 29, 1996 : Increase generate Shift preffix then Control preffix          */
 /* Jan 14, 1997 : Allow 4 bytes of key code from X. Treat last 2 bytes          */
 
@@ -63,4 +61,3 @@ printf ("READ KEY %02X %02X %02X %02X %d\n",
         return (True);
 }
  
-
