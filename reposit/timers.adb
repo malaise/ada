@@ -87,7 +87,8 @@ package body Timers is
     Cb  : Timer_Callback;
   end record;
 
-  package Timer_List_Mng is new Dynamic_List (Timer_Rec);
+  package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Rec);
+  package Timer_List_Mng renames Timer_Dyn_List_Mng.Dyn_List;
   Timer_List : Timer_List_Mng.List_Type;
 
   -- Sort timers in crescent order of expiration times

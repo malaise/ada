@@ -14,7 +14,8 @@ package Dir_Mng is
     Len  : File_Str_Range;
     Kind : File_Kind_List;
   end record;
-  package File_List_Mng is new Dynamic_List (Element_Type => File_Entry_Rec);
+  package File_Dyn_List_Mng is new Dynamic_List (Element_Type => File_Entry_Rec);
+  package File_List_Mng renames File_Dyn_List_Mng.Dyn_List;
 
   -- List files of a directory
   --  and append them at the end of the current list

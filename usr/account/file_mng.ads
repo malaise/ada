@@ -1,6 +1,7 @@
-with Oper_List_Mng;
+with Oper_Dyn_List_Mng;
 package File_Mng is
 
+  package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
 
   -- Overwrites the list from file content
   procedure Load (File_Name : in String;

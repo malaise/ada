@@ -63,7 +63,8 @@ package body Event_Mng is
     Read : Boolean;
     Cb : Fd_Callback;
   end record;
-  package Cb_Mng is new Dynamic_List(Cb_Rec);
+  package Cb_Dyn_Mng is new Dynamic_List(Cb_Rec);
+  package Cb_Mng renames Cb_Dyn_Mng.Dyn_List;
   Cb_List : Cb_Mng.List_Type;
 
   -- Same Fd

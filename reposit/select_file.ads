@@ -15,4 +15,3 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
                       Current_File : String;
                       For_Read : Boolean) return String;
 
-

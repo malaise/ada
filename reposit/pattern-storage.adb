@@ -6,7 +6,8 @@ package body Storage is
 
   -- Patterns and their Terms are in order in the list.
   -- Rules are mixed.
-  package Term_List_Mng is new Dynamic_List (Term_Rec);
+  package Term_Dyn_List_Mng is new Dynamic_List (Term_Rec);
+  package Term_List_Mng renames Term_Dyn_List_Mng.Dyn_List;
   Term_List : Term_List_Mng.List_Type;
 
   -- Search first term of pattern in rule

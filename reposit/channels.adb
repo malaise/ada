@@ -5,7 +5,8 @@ package body Channels is
 
   Byte_Size : constant := System.Storage_Unit;
 
-  package Host_List_Mng is new Dynamic_List (Tcp_Util.Remote_Host);
+  package Host_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Remote_Host);
+  package Host_List_Mng renames Host_Dyn_List_Mng.Dyn_List;
 
   -- Destination
   type Dest_Rec is record
@@ -14,7 +15,8 @@ package body Channels is
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
     Fd : Event_Mng.File_Desc;
   end record;
-  package Dest_List_Mng is new Dynamic_List(Dest_Rec);
+  package Dest_Dyn_List_Mng is new Dynamic_List(Dest_Rec);
+  package Dest_List_Mng renames Dest_Dyn_List_Mng.Dyn_List;
 
   function Fd_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Event_Mng.File_Desc;
@@ -49,7 +51,8 @@ package body Channels is
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
     Fd : Event_Mng.File_Desc;
   end record;
-  package Send_List_Mng is new Dynamic_List(Send_Rec);
+  package Send_Dyn_List_Mng is new Dynamic_List(Send_Rec);
+  package Send_List_Mng renames Send_Dyn_List_Mng.Dyn_List;
 
   function Fd_Match (D1, D2 : Send_Rec) return Boolean is
     use type Event_Mng.File_Desc;
@@ -66,7 +69,8 @@ package body Channels is
   procedure Dscr_Search is new Send_List_Mng.Search (Dscr_Match);
 
   -- Reply
-  package Reply_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
+  package Reply_Dyn_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
+  package Reply_List_Mng renames Reply_Dyn_List_Mng.dyn_List;
 
   -- The channel
   type Read_Kind is (None, Send, Dest);
@@ -749,7 +753,8 @@ package body Channels is
 
   ----------------------------------------------------------------------------
 
-  package Bus_Reply_List_Mng is new Dynamic_List (Socket.Host_Id);
+  package Bus_Reply_Dyn_List_Mng is new Dynamic_List (Socket.Host_Id);
+  package Bus_Reply_List_Mng renames Bus_Reply_Dyn_List_Mng.Dyn_List;
   package body Bus is
 
     type Bus_Dscr_Rec is record

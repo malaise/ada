@@ -1,12 +1,13 @@
 with Ada.Text_Io, Ada.Calendar;
 with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
      Environ, Sys_Calls, Date_Image;
-with File_Mng, Oper_List_Mng, Screen, Unit_Format;
+with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
 package body Mng is
 
   -- Sorted operations
+  package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
   Oper_List : Oper_List_Mng.List_Type;
   procedure Sort is new Oper_List_Mng.Sort (Oper_Def.Before);
 
@@ -49,7 +50,8 @@ package body Mng is
     No : Oper_Range;
     Deleted : Boolean := False;
   end record;
-  package Sel_List_Mng is new Dynamic_List(Sel_Rec);
+  package Sel_Dyn_List_Mng is new Dynamic_List(Sel_Rec);
+  package Sel_List_Mng renames Sel_Dyn_List_Mng.Dyn_List;
   Sel_List : Sel_List_Mng.List_Type;
 
   -- Set current in sel list from Afpx selected

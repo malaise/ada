@@ -145,7 +145,8 @@ package Afpx is
     Len : Line_Len_Range;
   end record;
 
-  package Line_List_Mng is new Dynamic_List (Line_Rec);
+  package Line_Dyn_List_Mng is new Dynamic_List (Line_Rec);
+  package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;
   Line_List : Line_List_Mng.List_Type;
   -- Actions on the list
   type List_Action_List is (Up, Down, Page_Up, Page_Down,

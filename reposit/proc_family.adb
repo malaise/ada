@@ -10,7 +10,8 @@ package body Proc_Family is
     Fd_In, Fd_Out : Sys_Calls.File_Desc;
     Child_Cb  : Death_Callback_Access;
   end record;
-  package Child_List_Mng is new Dynamic_List (Child_Rec);
+  package Child_Dyn_List_Mng is new Dynamic_List (Child_Rec);
+  package Child_List_Mng renames Child_Dyn_List_Mng.Dyn_List;
   Child_List : Child_List_Mng.List_Type;
 
   -- Find a child by Pid

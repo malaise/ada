@@ -2,7 +2,7 @@ with Ada.Text_Io;
 
 with Argument;
 
-with Oper_Def, Oper_List_Mng, File_Mng, Unit_Format;
+with Oper_Def, Oper_Dyn_List_Mng, File_Mng, Unit_Format;
 
 procedure Import is
 
@@ -12,6 +12,7 @@ procedure Import is
                         & " <ascii_file> <account_file>");
   end Usage;
 
+  package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
   File : Ada.Text_Io.File_Type;
   Str  : Unit_Format.Oper_Str;
   Last : Natural;

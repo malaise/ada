@@ -58,7 +58,8 @@ package body Tcp_Util is
     Curr_Try : Natural;
   end record;
 
-  package Con_List_Mng is new Dynamic_List (Connecting_Rec);
+  package Con_Dyn_List_Mng is new Dynamic_List (Connecting_Rec);
+  package Con_List_Mng renames Con_Dyn_List_Mng.Dyn_List;
   Con_List : Con_List_Mng.List_Type;
 
   -- Search Connecting_Rec by Timer
@@ -573,7 +574,8 @@ package body Tcp_Util is
     Dscr : Socket.Socket_Dscr;
     Fd   : Event_Mng.File_Desc;
   end record;
-  package Acc_List_Mng is new Dynamic_List (Accepting_Rec);
+  package Acc_Dyn_List_Mng is new Dynamic_List (Accepting_Rec);
+  package Acc_List_Mng renames Acc_Dyn_List_Mng.Dyn_List;
   Acc_List : Acc_List_Mng.List_Type;
 
   -- Search Accepting_Rec by Fd
@@ -734,7 +736,8 @@ package body Tcp_Util is
     Cb : End_Overflow_Callback_Access;
   end record;
 
-  package Sen_List_Mng is new Dynamic_List (Sending_Rec);
+  package Sen_Dyn_List_Mng is new Dynamic_List (Sending_Rec);
+  package Sen_List_Mng renames Sen_Dyn_List_Mng.Dyn_List;
   Sen_List : Sen_List_Mng.List_Type;
 
   -- Search Sending_Rec by Dscr
@@ -913,7 +916,8 @@ package body Tcp_Util is
       Read_Cb : Reception_Callback_Access := null;
       Discon_Cb : Disconnection_Callback_Access := null; 
     end record;
-    package Rece_List_Mng is new Dynamic_List (Rece_Rec);
+    package Rece_Dyn_List_Mng is new Dynamic_List (Rece_Rec);
+    package Rece_List_Mng renames Rece_Dyn_List_Mng.Dyn_List;
     Rece_List : Rece_List_Mng.List_Type;
 
     function Dscr_Match (R1, R2 : Rece_Rec) return Boolean is

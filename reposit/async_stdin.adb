@@ -53,7 +53,8 @@ package body Async_Stdin is
          Len : Natural;
          Str : String (1 .. Max_Chars_Range'Last);
       end record;
-      package List_Mng is new Dynamic_List (Rec);
+      package Dyn_List_Mng is new Dynamic_List (Rec);
+      package List_Mng renames Dyn_List_Mng.Dyn_List;
       List : List_Mng.List_Type;
       function Match (Curr, Crit : Rec) return Boolean is
       begin
@@ -238,20 +239,20 @@ package body Async_Stdin is
        Saved_Searching : Boolean;
        use Text_Handler;
     begin
-      -- For debug
-      -- Trace.Activate;
-      -- Trace.Put (C & "->" & Integer'Image(Character'Pos(C)));
       -- Simplistic treatment when stdin/out is not a tty
       if not Stdio_Is_A_Tty then
         Append (Txt, C);
         -- Done when extra character or buffer full
-        return C < ' ' or else Length(Txt) = Max;
+        return C not in ' ' .. '~' or else Length(Txt) = Max;
       end if;
 
       -- Save current searching status
       Saved_Searching := Searching;
       -- Default, we cancel search on each input except on escape
       Searching := False;
+      -- For debug
+      -- Trace.Activate;
+      -- Trace.Put (C & "->" & Integer'Image(Character'Pos(C)));
       case C is
         when Ascii.Bs | Ascii.Del =>
           -- Backspace
@@ -299,7 +300,7 @@ package body Async_Stdin is
           end if;
           Set (Seq, C);
           Escape_Time := Ada.Calendar.Clock;
-        when ' ' .. '~' | Character'Succ(Ascii.Del) .. Character'Last =>
+        when ' ' .. '~' =>
           if Empty (Seq) then
             -- Insert C at current position and move 1 right
             Set (Txt, Value(Txt)(1 .. Ind - 1)
@@ -480,10 +481,6 @@ package body Async_Stdin is
     Line.Clear;
     return Result;
 
-  exception
-    when others =>
-      Result := Cb ("");
-      return Result;
   end Fd_Callback;
 
   -- Set asynchronous mode for stdin
