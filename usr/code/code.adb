@@ -25,27 +25,16 @@ procedure Code is
   Sl : Grid_2.Long_Positive;
   Si : Grid_2.Long_Positive;
   C : Character;
+  Is_A_Tty : Boolean;
 
-  function Is_A_Tty return Boolean is
-    Result : Integer;
-  begin
-    Result := Sys_Calls.Call_System("tty > /dev/null 2>&1");
-    return Result = 0;
-  end Is_A_Tty;
-  
-
-  procedure Echo (On : in Boolean) is
-    Dummy : Integer;
-    Stty_echo : constant String := "stty echo";
-    Stty_No_Echo : constant String := "stty -echo";
+  function Echo (On : in Boolean) return Boolean is
   begin
     if On then
-      Dummy := Sys_Calls.Call_System(Stty_Echo);
+      return Sys_Calls.Set_Stdin_Attr (Sys_Calls.Canonical);
     else
-      Dummy := Sys_Calls.Call_System(Stty_No_Echo);
+      return Sys_Calls.Set_Stdin_Attr (Sys_Calls.No_Echo);
     end if;
   end Echo;
-
 
   procedure Code_1 is
   begin
@@ -136,13 +125,14 @@ begin
 
   -- Get key
   loop
+    Is_A_Tty := Echo(True);
     if Is_A_Tty then
       My_Io.Put ("Key: ");
-      Echo (False);
+      Is_A_Tty := Echo (False);
     end if;
     My_Io.Get_Line (Buff, Len);
     if Is_A_Tty then
-      Echo (True);
+      Is_A_Tty := Echo(True);
       My_Io.New_Line;
     end if;
     if Len = 0 then
