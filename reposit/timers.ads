@@ -70,18 +70,28 @@ package Timers is
   --  and this callback has returned True
   function Expire return Boolean;
 
-  -- Delay until next timer expires (or Infinite_Seconds)
-  function Wait_For return Duration;
 
-
-  -- Compute next timeout from Expiration and timers
+  -- Expiration time
   type Expiration_Rec (Infinite : Boolean := True) is record
     case Infinite is
       when True => null;
       when False => Time : Ada.Calendar.Time;
     end case;
   end record;
+  Infinite_Expiration : constant Expiration_Rec := (Infinite => True);
+
+  function "<" (E1, E2 : Expiration_Rec) return Boolean;
+
+  -- Delay until next timer expires (or Infinite_Seconds)
+  function Wait_For return Duration;
+  -- Expiration time of next timer (or Infinite)
+  function Wait_Until return Expiration_Rec;
+
+  -- Compute next timeout from Expiration and timers
   function Next_Timeout (Expiration : Expiration_Rec) return Duration;
+  -- Compute nearest expiratin time from Expiration and timers
+  function Next_Expiration (Expiration : Expiration_Rec) return Expiration_Rec;
+
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean;

@@ -307,24 +307,19 @@ package body Timers is
   end Expire;
 
   -- We add this accuracy to the result of Wait_For and Next_Timeout
-  --  (if it not infinite nor 0)
-  --  in order to avoid too early call to Is_Reached due to rounding
-  --  in client.
+  --  (if it is not infinite) in order to avoid too early call to
+  --  Is_Reached due to rounding in client.
   Accuracy : constant Duration := 0.001;
   procedure Adjust (Dur : in out Duration) is
   begin
-    if Dur = 0.0 or else Dur = Infinite_Seconds then
-      -- No time to play with, or infinite (-1 by convention)
-      return;
+    if Dur /= Infinite_Seconds then
+      Dur := Dur + Accuracy;
     end if;
-    Dur := Dur + Accuracy;
   end Adjust;
 
-  -- Delay until next timer expires (or Infinite_Seconds)
-  function Wait_For (Do_Adjust : in Boolean) return Duration is
+  -- Expiration of next timer
+  function Wait_Until return Expiration_Rec is
     Timer : Timer_Rec;
-    Result : Duration;
-    use Ada.Calendar;
   begin
     Set_Debug;
     begin
@@ -333,85 +328,107 @@ package body Timers is
     exception
       when Invalid_Timer =>
         -- No  more timer
-        Put_Debug ("Wait_For", "-> Infinite cause no timer");
-        return Infinite_Seconds;
+        Put_Debug ("Wait_Until", "-> Infinite cause no timer");
+        return Infinite_Expiration;
     end;
     Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
 
-    -- Compute delay until expiration
-    Result := Timer.Exp.Expiration_Time - Ada.Calendar.Clock;
-    if Result < 0.0 then
-      Result := 0.0;
+    Put_Debug ("Wait_Until", "-> "
+                           & Date_Image (Timer.Exp.Expiration_Time)
+                           & " cause id " & Timer.Id'Img);
+    return (Infinite => False, Time =>Timer.Exp.Expiration_Time);
+  end Wait_Until;
+
+  function Wait_For return Duration is
+    Now : Ada.Calendar.Time;
+    Next_Exp : Expiration_Rec;
+    Result : Duration;
+    use type Ada.Calendar.Time;
+  begin
+    -- Get next timer and substract now
+    Now :=  Ada.Calendar.Clock;
+    Next_Exp := Wait_Until;
+    if Next_Exp = Infinite_Expiration then
+      Result := Infinite_Seconds;
+    else
+      Result := Next_Exp.Time - Now;
+      if Result < 0.0 then
+        -- Timer should have expired
+        Result := 0.0;
+      else
+        Adjust (Result);
+      end if;
     end if;
 
-    -- Done
-    if Do_Adjust then
-      Adjust (Result);
-    end if;
-    Put_Debug ("Wait_For", "-> " & Result'Img
-                         & " cause id " & Timer.Id'Img);
+    Put_Debug ("Wait_For", "-> " & Result'Img);
     return Result;
   end Wait_For;
 
-  function Wait_For return Duration is
-  begin
-    return Wait_For (True);
-  end Wait_For;
-
-
-  -- Compute next timeout from Expiration and timers
-  function Next_Timeout (Expiration : Expiration_Rec) return Duration is
-    Timeout_Dur, Timeout_Tim : Duration;
+  function "<" (E1, E2 : Expiration_Rec) return Boolean is
     use type Ada.Calendar.Time;
   begin
-    Set_Debug;
-    -- Final timeout from the one specified
-    if not Expiration.Infinite then
-      Timeout_Dur := Expiration.Time - Ada.Calendar.Clock;
-      -- Reached?
-      if Timeout_Dur < 0.0 then
-        Timeout_Dur := 0.0;
-      end if;
+    if E1 = Infinite_Expiration then
+      return False;
+    elsif E2 = Infinite_Expiration then
+      return True;
     else
-      Timeout_Dur := Infinite_Seconds;
+     return E1.Time < E2.Time;
+    end if;
+  end "<";
+
+  -- Compute next timeout from Expiration and timers
+  function Next_Expiration (Expiration : Expiration_Rec)
+           return Expiration_Rec is
+    Next_Exp : Expiration_Rec;
+    Result   : Expiration_Rec;
+    use type Ada.Calendar.Time;
+  begin
+    -- First timer to expire
+    Next_Exp := Wait_Until;
+
+    if Next_Exp < Expiration then
+      -- A timer is due before provided expiration
+      Result := Next_Exp;
+    else
+      -- Provided expiration will occure first
+      Result := Expiration;
+    end if;
+      
+    if Result.Infinite then
+      Put_Debug ("Next_Expiration", "-> infinite");
+    else
+      Put_Debug ("Next_Expiration", "-> " & Date_Image (Result.Time));
+    end if;
+    return Result;
+  end Next_Expiration;
+        
+
+  function Next_Timeout (Expiration : Expiration_Rec) return Duration is
+    Now : Ada.Calendar.Time;
+    Next_Exp : Expiration_Rec;
+    Result : Duration;
+    use type Ada.Calendar.Time;
+  begin
+    -- Get next expiration and substract now
+    Now :=  Ada.Calendar.Clock;
+    Next_Exp := Next_Expiration (Expiration);
+
+    if Next_Exp = Infinite_Expiration then
+      Result := Infinite_Seconds;
+    else
+      Result := Next_Exp.Time - Now;
+      if Result < 0.0 then
+        -- Timer should have expired
+        Result := 0.0;
+      else
+        Adjust (Result);
+      end if;
     end if;
 
-    -- Next timer timeout
-    Timeout_Tim := Timers.Wait_For (False);
-
-    -- Compute smaller timeout between timers and the one requested
-    if Timeout_Tim = Infinite_Seconds then
-      -- No timer
-      if Expiration.Infinite then
-        -- No timer and infinite timeout: infinite
-        Timeout_Dur := Infinite_Seconds;
-      else
-        -- No timer and timeout set: keep timeout
-        null;
-      end if;
-    else
-      -- Some timer
-      if Expiration.Infinite then
-        -- Some timer and infinite timeout: take timer
-        Timeout_Dur := Timeout_Tim;
-      else
-        -- Some timer and a timeout set: take smallest
-        if Timeout_Tim <= Timeout_Dur then
-          -- Timer is smallest
-          Timeout_Dur := Timeout_Tim;
-        else
-          -- Keep timeout
-          null;
-        end if;
-      end if;
-    end if;
-
-    -- Done
-    Adjust (Timeout_Dur);
-    Put_Debug ("Next_Timeout", Exp_Image(Expiration)
-                             & " -> " & Timeout_Dur'Img);
-    return Timeout_Dur;
+    Put_Debug ("Next_Timeout", "-> " & Result'Img);
+    return Result;
   end Next_Timeout;
+
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean is
