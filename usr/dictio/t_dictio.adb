@@ -114,6 +114,7 @@ procedure T_Dictio is
     if Connected and then Init then
       Init := False;
       Load;
+      Sig := True;
     end if;
   end Dictio_Connect_Cb;
 

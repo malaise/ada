@@ -19,6 +19,9 @@ package body Data_Base is
       Item_List_Mng.Modify (Item_List, Itm, Item_List_Mng.Current);
     exception
       when Item_List_Mng.Not_In_List =>
+        if not Item_List_Mng.Is_Empty (Item_List) then
+          Item_List_Mng.Move_To (Item_List, Item_List_Mng.Prev, 0, False);
+        end if;
         Item_List_Mng.Insert (Item_List, Itm);
     end;
   end Set;
@@ -34,13 +37,19 @@ package body Data_Base is
       when Item_List_Mng.Not_In_List =>
         Item := No_Item;
     end;
-  end get;
+  end Get;
 
   procedure Reset is
   begin
     Item_List_Mng.Delete_List (Item_List);
   end Reset;
 
+  function Nb_Item return Natural is
+  begin
+    return Item_List_Mng.List_Length (Item_List);
+  end Nb_Item;
+
+  
   -- Item_Name is empty when no more item
   procedure Read_First (Item : out Item_Rec) is
   begin

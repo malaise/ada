@@ -1,6 +1,6 @@
 with Timers;
 with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes,
-     Fight_Mng, Sync_Mng, Crc, Data_Base;
+     Fight_Mng, Sync_Mng, Crc, Data_Base, Sync_Mng;
 
 package body Online_Mng is
 
@@ -63,8 +63,10 @@ package body Online_Mng is
       Fight_Mng.Event (From, Stat);
     elsif Status.Get = Status.Slave then
       if Stat = Status.Master then
-        -- Receive a Master while slave, restart timer
-        if Extra /= Crc.Get then
+        -- Receive a Master while slave, check Crc and restart timer
+        if not Sync_Mng.In_Sync
+        and then Extra /= Crc.Dummy_Crc 
+        and then Extra /= Crc.Get then
           if Debug.Level_Array(Debug.Online) then
             Debug.Put ("Online: Crc error. Received >" & Extra
                      & "< from: " & Parse(From)
@@ -73,7 +75,13 @@ package body Online_Mng is
           -- Invalid Crc. Re-sync.
           Data_Base.Reset;
           Intra_Dictio.Send_Status;
+          Sync_Mng.Start;
+        elsif Extra = Crc.Dummy_Crc then
+          if Debug.Level_Array(Debug.Online) then
+            Debug.Put ("Online: received dummy crc");
+          end if;
         end if;
+
         Timers.Delete (Tid);
         Start_Slave_Timeout;
       elsif Stat = Status.Dead then
@@ -125,7 +133,16 @@ package body Online_Mng is
   begin
     if Status.Get = Status.Master then
       -- Send alive message
-      Intra_Dictio.Send_Status (Crc.Get);
+      if Sync_Mng.In_Sync then
+        if Debug.Level_Array(Debug.Online) then
+          Debug.Put ("Online: sending dummy crc");
+        end if;
+        -- No computation of Crc while Syncing
+        --   cause Data_Base Read_First/Next re-entrance
+        Intra_Dictio.Send_Status (Crc.Dummy_Crc);
+      else
+        Intra_Dictio.Send_Status (Crc.Get);
+      end if;
     else
       -- No alive message
       if Debug.Level_Array(Debug.Online) then

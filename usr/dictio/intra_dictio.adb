@@ -188,7 +188,7 @@ package body Intra_Dictio is
   begin
     Msg.Head.Kind := Sync_Kind;
     Msg.Item := Item;
-    Send (Msg, True, Result);
+    Send (Msg, False, Result);
     if Debug.Level_Array(Debug.Intra) and then Result /= Ok then
       Debug.Put ("Intra: sync reply failed on " & Result'Img);
     end if;

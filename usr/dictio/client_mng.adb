@@ -1,5 +1,5 @@
-with Timers, Socket, Tcp_Util, Dynamic_List, X_Mng, Sys_Calls;
-with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio;
+with Socket, Tcp_Util, Dynamic_List, X_Mng, Sys_Calls;
+with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio, Sync_Mng;
 package body Client_Mng is
 
 
@@ -7,8 +7,6 @@ package body Client_Mng is
   State : State_List := Not_Init;
 
   Accept_Port : Tcp_Util.Port_Num;
-  Timer_Id : Timers.Timer_Id := Timers.No_Timer;
-  Sync_Received : Boolean := True;
 
   function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
                    return Boolean is
@@ -113,17 +111,11 @@ package body Client_Mng is
   end Accept_Cb;
 
 
-  function Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
+  procedure Allow_Clients is
     Port : Tcp_Util.Local_Port;
     Port_Name : constant String := Args.Get_Client_Port;
     Dscr : Socket.Socket_Dscr;
   begin
-    if Sync_Received then
-      -- Still in sync
-      Sync_Received := False;
-      return False;
-    end if;
-    Timers.Delete (Id);
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: allow");
     end if;
@@ -131,8 +123,7 @@ package body Client_Mng is
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
                           Dscr, Accept_Port);
     State := Allow;
-    return False;
-  end Timer_Cb;
+  end Allow_Clients;
 
 
   procedure Start is
@@ -143,8 +134,7 @@ package body Client_Mng is
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: start");
     end if;
-    Timer_Id := Timers.Create ( (Timers.Delay_Sec, 1.0, 1.0),
-                                Timer_Cb'access);
+    Sync_Mng.Start (Allow_Clients'access);
     State := Waiting;
   end Start;
 
@@ -159,7 +149,7 @@ package body Client_Mng is
       when Not_Init =>
         null;
       when Waiting =>
-        Timers.Delete (Timer_Id);
+        Sync_Mng.Cancel;
       when Allow =>
         -- Delete all notify
         Notify.Del_All;
@@ -175,7 +165,7 @@ package body Client_Mng is
       if Debug.Level_Array(Debug.Client) then
         Debug.Put ("Client: receive sync " & Parse(Item.Name));
       end if;
-      Sync_Received := True;
+      Sync_Mng.Sync_Received;
     else 
       if Debug.Level_Array(Debug.Client) then
         Debug.Put ("Client: modified data " & Parse(Item.Name));

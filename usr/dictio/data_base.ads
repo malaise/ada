@@ -17,6 +17,7 @@ package Data_Base is
   procedure Reset;
 
   -- Item is No_Item when no more item
+  function Nb_Item return Natural;
   procedure Read_First (Item : out Item_Rec);
   procedure Read_Next (Item : out Item_Rec);
 
