@@ -1,0 +1,26 @@
+#!/bin/bash
+export ROOT_DIR=/usr/local/account
+export X_COLOR_MAP=DEFAULT
+export X_BLINK_KIND=BOLD
+export CON_IO_FONT=large
+export AFPX_DATA_DIR=$ROOT_DIR
+export ACCOUNT_LPR_COMMAND=account_lpr
+
+cd $ROOT_DIR/data
+
+for file in * ; do
+  if [ -f $file ] ; then
+    co -l -q $file
+  fi
+done
+
+umask 111
+$ROOT_DIR/account $*
+umask 022
+
+for file in * ; do
+  if [ -f $file ] ; then
+    ci -u -q -maccount -t-account_data $file
+  fi
+done
+
