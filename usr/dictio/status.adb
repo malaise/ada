@@ -7,7 +7,7 @@ package body Status is
   procedure Set (Status : in Status_List) is
     Prev_Status : constant Status_List := Current_Status;
   begin
-    if Status /= Current_Status then
+    if Current_Status /= Dead and then Status /= Current_Status then
       if Debug.Level_Array(Debug.Status) then
         Debug.Put ("Status: " & Prev_Status'Img & " -> " & Status'Img);
       end if;

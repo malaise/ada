@@ -59,7 +59,8 @@ package body Dispatch is
         when Status.Starting | Status.Dead =>
           return;
         when Status.Init =>
-          Init_Mng.Event (From, Stat, Diff);
+          Init_Mng.Event (From, Stat, Diff,
+                          Item.Data(1 .. Item.Data_Len));
         when Status.Slave | Status.Master | Status.Fight =>
           Online_Mng.Event (From, Stat, Diff,
                             Item.Data(1 .. Item.Data_Len));

@@ -8,7 +8,10 @@ package Fight_Mng is
 
   function In_Fight return Boolean;
 
-  procedure Event (From : in Tcp_Util.Host_Name; Stat : in Status.Status_List); 
+  procedure Event (From : in Tcp_Util.Host_Name;
+                   Stat : in Status.Status_List;
+                   Diff : in Boolean;
+                   Extra : in String := ""); 
 
 end Fight_Mng;
 

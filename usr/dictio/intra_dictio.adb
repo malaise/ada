@@ -166,10 +166,16 @@ package body Intra_Dictio is
     Send (Msg, True);
   end Send_Status;
 
-  procedure Reply_Status is
+  procedure Reply_Status (Extra : in String := "") is
     Msg : Message_Rec;
   begin
     Msg.Head.Kind := Stat_Kind;
+    if Extra = "" then
+      Msg.Item.Data_Len := 0;
+    else
+      Msg.Item.Data_Len := Extra'Length;
+      Msg.Item.Data (1 .. Msg.Item.Data_Len) := Extra;
+    end if;
     Send (Msg, False);
   end Reply_Status;
 

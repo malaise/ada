@@ -1,5 +1,6 @@
 with Socket, Tcp_Util, Dynamic_List, X_Mng, Sys_Calls;
-with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio, Sync_Mng;
+with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
+     Sync_Mng, Versions;
 package body Client_Mng is
 
 
@@ -46,6 +47,17 @@ package body Client_Mng is
                & Parse (Msg.Item.Name) & "<");
     end if;
     case Msg.Action is
+      when Client_Com.Version =>
+        if Parse (Msg.Item.Name) /= Versions.Lib then
+          if Debug.Level_Array(Debug.Client) then
+            Debug.Put ("Client: received invalid version: "
+                     & Parse (Msg.Item.Name)
+                     & " being: " & Versions.Lib);
+          end if;
+          Notify.Del_Client (Dscr);
+          Client_Fd.Del_Client (Dscr);
+        end if;
+        return False;
       when Client_Com.Read =>
         Data_Base.Get (Msg.Item.Name, Msg.Item);
         begin
@@ -83,7 +95,6 @@ package body Client_Mng is
     return False;
   end Read_Cb;
   
-
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                        Local_Dscr      : in Socket.Socket_Dscr;
                        Remote_Port_Num : in Tcp_Util.Port_Num;
@@ -108,6 +119,27 @@ package body Client_Mng is
     end if;
     Client_Fd.Add_Client (New_Dscr);
     X_Mng.X_Add_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'access);
+
+    -- Send version
+    declare
+      Msg : Client_Com.Dictio_Client_Rec;
+      Dummy : Boolean;
+    begin
+      Msg.Action := Client_Com.Version;
+      Msg.Item.Name := (others => ' ');
+      Msg.Item.Name(1 .. Versions.Lib'Length) := Versions.Lib;
+      Msg.Item.Data_Len := 0;
+      Dummy := Client_Com.Dictio_Send (New_Dscr, null, Msg);
+    exception
+      when Socket.Soc_Tail_Err =>
+        null;
+      when Socket.Soc_Conn_Lost =>
+        if Debug.Level_Array(Debug.Client) then
+          Debug.Put ("Client: lost connection with "
+                   & Sys_Calls.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
+        end if;
+        Client_Fd.Del_Client (New_Dscr);
+    end;
   end Accept_Cb;
 
 

@@ -6,7 +6,8 @@ package Init_Mng is
 
   procedure Event (From : in Tcp_Util.Host_Name;
                    Stat : in Status.Status_List;
-                   Diff : in Boolean);
+                   Diff : in Boolean;
+                   Extra : in String := "");
 
 end Init_Mng;
 

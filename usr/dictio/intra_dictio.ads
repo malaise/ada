@@ -19,7 +19,7 @@ package Intra_Dictio is
   procedure Quit;
 
   procedure Send_Status (Extra : in String := "");
-  procedure Reply_Status;
+  procedure Reply_Status (Extra : in String := "");
 
   procedure Send_Data (Item : in Data_Base.Item_Rec);
 

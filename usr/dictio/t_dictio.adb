@@ -131,7 +131,7 @@ procedure T_Dictio is
     Ada.Text_Io.Put_Line("CLIENT: Notified on >"
                    & Name & "< - >" & Data & "<");
   end Dictio_Notify_Cb;
-
+  
   procedure Load is
     Name : String (1 .. 10);
     N : Positive;
@@ -193,7 +193,7 @@ begin
 
   if not Init then
     Ada.Text_Io.Put_Line (
-        "g <name> / s <name> <data> / n <name> / c <name> / q");
+           "g <name> / s <name> <data> / n <name> / c <name> / q");
   end if;
   loop
     Res := X_Mng.Select_No_X (-1);

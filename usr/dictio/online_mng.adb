@@ -1,6 +1,6 @@
 with Timers;
 with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes,
-     Fight_Mng, Sync_Mng, Data_Base, Sync_Mng;
+     Fight_Mng, Sync_Mng, Data_Base, Sync_Mng, Versions;
 
 package body Online_Mng is
 
@@ -60,7 +60,7 @@ package body Online_Mng is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Fight then
-      Fight_Mng.Event (From, Stat);
+      Fight_Mng.Event (From, Stat, Diff, Extra);
     elsif Status.Get = Status.Slave then
       if Stat = Status.Master then
         -- Receive a Master while slave, check Crc and restart timer
@@ -119,7 +119,7 @@ package body Online_Mng is
 
 
     if Diff and then (Stat = Status.Starting or else Stat = Status.Fight) then
-      Intra_Dictio.Reply_Status;
+      Intra_Dictio.Reply_Status (Versions.Intra);
     end if;
   end Event;
 

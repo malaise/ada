@@ -3,7 +3,7 @@ package Client_Fd is
 
   procedure Add_Client (Client : in Socket.Socket_Dscr);
 
-  -- Unhook fd, close socket and de record
+  -- Unhook fd, close socket and del record
   procedure Del_Client (Client : in Socket.Socket_Dscr);
   procedure Del_All;
 

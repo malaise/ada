@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Socket, Tcp_Util, X_Mng, Sys_Calls;
-with Debug, Parse, Client_Com;
+with Debug, Parse, Client_Com, Versions;
 package body Dictio_Lib is
 
   Dictio_Env_Host : constant String := "DICTIO_HOST";
@@ -16,6 +16,9 @@ package body Dictio_Lib is
   procedure Connect_To_Dictio;
 
   Msg : Client_Com.Dictio_Client_Rec;
+
+  -- Send Msg on Dictio_Dscr
+  procedure Send_Request;
 
   procedure Close is
   begin
@@ -54,6 +57,16 @@ package body Dictio_Lib is
     end Read_Msg;
 
     case Msg.Action is
+      when Client_Com.Version =>
+        if Parse (Msg.Item.Name) /= Versions.Lib then
+          if Debug.Level_Array(Debug.Lib) then
+            Debug.Put ("Dictio_Lib: received invalid version: "
+                     & Parse (Msg.Item.Name)
+                     & " being: " & Versions.Lib);
+          end if;
+          Close;
+        end if;
+        return False;
       when Client_Com.Read =>
         if Debug.Level_Array(Debug.Lib) then
           Debug.Put ("Dictio_Lib: received read reply:"
@@ -97,6 +110,12 @@ package body Dictio_Lib is
     end if;
     Dictio_Dscr := Dscr;
     X_Mng.X_Add_Callback (Socket.fd_Of (Dictio_Dscr), True, Read_Cb'access);
+
+    Msg.Action := Client_Com.Version;
+    Msg.Item.Name := (others => ' ');
+    Msg.Item.Name(1 .. Versions.Lib'Length) := Versions.Lib;
+    Msg.Item.Data_Len := 0;
+    Send_Request;
     if Available_Cb /= null then
       Available_Cb (True);
     end if;
