@@ -20,12 +20,28 @@ fi
 export DICTIO_DELAY_PER_KB=1
 # Delay after which master is stable
 export DICTIO_STABLE_DELAY=0.2
+# Default prio
+export DICTIO_PRIO=10
+# Default mode
+export MODE=channel
 
-if [ -z "$1" ] ; then
-  export DICTIO_PRIO=10
+# Parse args
+while [ "$1" != "" ] ; do
+  if [ "$1" = "-p" ] ; then
+    shift
+    export DICTIO_PRIO=$1
+    shift
+  elif [ "$1" = "-b" ] ; then
+    export MODE=bus
+    shift
+  fi
+done
+
+if [ "$MODE" = "channel" ] ; then
+  export CHANNEL="-ntest_tcp -cdictio.chn"
 else
-  export DICTIO_PRIO=$1
+  export CHANNEL="-ntest_udp -btest_ipm"
 fi
 
-exec ./dictio -ctest_tcp -fdictio.chn -pfido -P$DICTIO_PRIO
+exec ./dictio $CHANNEL -pfido -P$DICTIO_PRIO
 
