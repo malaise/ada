@@ -1,2 +1,2 @@
 #!/bin/bash
-mcdt e2f.mcd "[ $1 ]"
+mmcdt "[ $1 ]" -f e2f.mcd

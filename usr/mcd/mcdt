@@ -1,36 +1,5 @@
-##!/bin/ksh
-
-if [ "$1" = "" ] ; then
-  echo "USAGE `basename $0` <mcd_prog> { < arg> }"
-  exit 1;
-fi
-
+#!/bin/ksh
 file=$1
-name=`basename $file`
-com=/tmp/$name
-
 shift
-
-if [ ! -f $file ] ; then
-  echo "Error. File $file not found."
-  exit 2
-fi
-
-if [ -f $com ] ; then
-  rm $com
-fi
-if [ -f $com ] ; then
-  echo "Error. Cannot remove tmp file $com"
-  exit 2
-fi
-
-touch $com
-
-while [ "$1" != "" ] ; do
-  echo $1 >> $com
-  shift
-done
-cat $file >> $com
-mcd < $com
-rm -f $com
+mmcdt $* -f $file
 

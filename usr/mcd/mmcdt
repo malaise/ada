@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ \( $# -eq 1 \) -a \( "$1" = "-h" \) ] ; then
+  echo "USAGE `basename $0` [ { <file> | <arg> } ]"
+  echo "   <file> ::= -f <filename>"
+  exit 1;
+fi
+
+com=/tmp/mmcdt
+if [ -f $com ] ; then
+  rm -f $com
+  if [ -f $com ] ; then
+    echo "Error. Cannot remove tmp file $com"
+    exit 2
+  fi
+fi
+touch $com
+
+while [ "$1" != "" ] ; do
+  if [ "$1" = "-f" ] ; then
+
+    if [ ! -f $2 ] ; then
+      echo "Error. File $2 not found."
+      exit 2
+    fi
+    cat $2 >> $com
+    shift; shift
+  else
+    echo $1 >> $com
+    shift
+  fi
+done
+
+mcd < $com
+rm -f $com
+
