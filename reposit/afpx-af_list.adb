@@ -219,15 +219,22 @@ package body AF_LIST is
     if STATUS.ID_SELECTED = 0 then
       COMPUTE (1);
     end if;
-    -- List is empty or nothing to scroll
-    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST)
-    or else STATUS.NB_ROWS /= AF_DSCR.FIELDS(LFN).HEIGHT then
+    -- List is empty
+    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
       return;
     end if;
 
     -- Update selection, cause current may have changed
     -- called by user
     AF_LIST.SET_SELECTED (LINE_LIST_MNG.GET_POSITION(LINE_LIST));
+
+    -- Recompute cause list may have changed
+    COMPUTE (STATUS.ID_TOP);
+
+    -- Nothing to scroll
+    if STATUS.NB_ROWS /= AF_DSCR.FIELDS(LFN).HEIGHT then
+      return;
+    end if;
 
     case ACTION is
       when UP =>
