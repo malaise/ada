@@ -372,7 +372,8 @@ package body Dictio_Lib is
   procedure Notify (Name : in String; Item : in Boolean; On : in Boolean) is
   begin
     if Debug.Level_Array(Debug.Lib) then
-      Debug.Put ("Dictio_Lib: notify " & On'Img & " " & Name);
+      Debug.Put ("Dictio_Lib: notify " & Name
+               & " item: " & Item'Img & " on: " & On'Img);
     end if;
     Check_Available;
     if Name'Length > Max_Name_Len then
