@@ -366,8 +366,8 @@ package body AF_PTG is
       -- list defined
       if LIST_PRESENT then
         if AF_LIST.GET_STATUS.ID_TOP = 0 then
-          -- First display of the list, start at current
-          AF_LIST.DISPLAY(AF_LIST.GET_STATUS.ID_SELECTED);
+          -- First time we display a non empty list
+          AF_LIST.DISPLAY(1);
         else
           AF_LIST.DISPLAY(AF_LIST.GET_STATUS.ID_TOP);
         end if;
@@ -541,11 +541,17 @@ package body AF_PTG is
             end case;
           end;
         when CON_IO.BREAK =>
+          if LIST_PRESENT then
+            AF_LIST.SET_CURRENT;
+          end if;
           RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
                      EVENT        => KEYBOARD,
                      KEYBOARD_KEY => BREAK_KEY);
           DONE := TRUE;
         when CON_IO.REFRESH =>
+          if LIST_PRESENT then
+            AF_LIST.SET_CURRENT;
+          end if;
           RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
                      EVENT        => REFRESH);
           DONE := TRUE;
