@@ -22,6 +22,11 @@ package body OPERATIONS is
     return X.KIND = INTE or else X.KIND = REAL or else X.KIND = BOOL;
   end IS_INTE_OR_REAL_OR_BOOL;
 
+  function IS_INTE_OR_REAL_OR_BOOL_OR_CHARS (X : ITEM_REC) return BOOLEAN is
+  begin
+    return X.KIND = INTE or else X.KIND = REAL or else X.KIND = BOOL or else X.KIND = CHRS;
+  end IS_INTE_OR_REAL_OR_BOOL_OR_CHARS;
+
   -- INTE,INTE->INTE or REAL,REAL->REAL
   function ADD     (L, R : ITEM_REC) return ITEM_REC is
   begin
@@ -181,7 +186,7 @@ package body OPERATIONS is
   -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
   function EQUAL   (L, R : ITEM_REC) return ITEM_REC is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL(L) or else not IS_INTE_OR_REAL_OR_BOOL(R) then
+    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
       raise INVALID_ARGUMENT;
     end if;
     if L.KIND /= R.KIND then
@@ -191,14 +196,16 @@ package body OPERATIONS is
       return (KIND => BOOL, VAL_BOOL => L.VAL_INTE = R.VAL_INTE);
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL = R.VAL_REAL);
-    else
+    elsif L.KIND = BOOL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL = R.VAL_BOOL);
+    else
+      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) = R.VAL_TEXT(1 .. R.VAL_LEN));
     end if;
   end EQUAL;
 
   function DIFF    (L, R : ITEM_REC) return ITEM_REC is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL(L) or else not IS_INTE_OR_REAL_OR_BOOL(R) then
+    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
       raise INVALID_ARGUMENT;
     end if;
     if L.KIND /= R.KIND then
@@ -208,14 +215,16 @@ package body OPERATIONS is
       return (KIND => BOOL, VAL_BOOL => L.VAL_INTE /= R.VAL_INTE);
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL /= R.VAL_REAL);
-    else
+    elsif L.KIND = BOOL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL /= R.VAL_BOOL);
+    else
+      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) /= R.VAL_TEXT(1 .. R.VAL_LEN));
     end if;
   end DIFF;
 
   function GREATER (L, R : ITEM_REC) return ITEM_REC is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL(L) or else not IS_INTE_OR_REAL_OR_BOOL(R) then
+    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
       raise INVALID_ARGUMENT;
     end if;
     if L.KIND /= R.KIND then
@@ -225,14 +234,16 @@ package body OPERATIONS is
       return (KIND => BOOL, VAL_BOOL => L.VAL_INTE > R.VAL_INTE);
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL > R.VAL_REAL);
-    else
+    elsif L.KIND = BOOL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL > R.VAL_BOOL);
+    else
+      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) > R.VAL_TEXT(1 .. R.VAL_LEN));
     end if;
   end GREATER;
 
   function SMALLER (L, R : ITEM_REC) return ITEM_REC is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL(L) or else not IS_INTE_OR_REAL_OR_BOOL(R) then
+    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
       raise INVALID_ARGUMENT;
     end if;
     if L.KIND /= R.KIND then
@@ -242,14 +253,16 @@ package body OPERATIONS is
       return (KIND => BOOL, VAL_BOOL => L.VAL_INTE < R.VAL_INTE);
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL < R.VAL_REAL);
-    else
+    elsif L.KIND = BOOL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL < R.VAL_BOOL);
+    else
+      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) < R.VAL_TEXT(1 .. R.VAL_LEN));
     end if;
   end SMALLER;
 
   function GREATEQ (L, R : ITEM_REC) return ITEM_REC is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL(L) or else not IS_INTE_OR_REAL_OR_BOOL(R) then
+    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
       raise INVALID_ARGUMENT;
     end if;
     if L.KIND /= R.KIND then
@@ -266,7 +279,7 @@ package body OPERATIONS is
 
   function SMALLEQ (L, R : ITEM_REC) return ITEM_REC is 
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL(L) or else not IS_INTE_OR_REAL_OR_BOOL(R) then
+    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
       raise INVALID_ARGUMENT;
     end if;
     if L.KIND /= R.KIND then
