@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Normal;
+with Afpx, Con_Io, Normal, Rnd;
 use Afpx;
 
 with Common;
@@ -175,7 +175,11 @@ package body Screen is
 
   procedure Update (Row : in Common.Row_Range; Bars : in Common.Full_Bar_Range;
                     Result : in Compute.Result_List; Change_Game : out Boolean) is
-    Nb_To_Remove, J : Natural;
+    -- Number of bars to remove, number remaining to remove,
+    -- number of bars remaining in row
+    Nb_To_Remove, Nb_Left_To_Remove, Nb_Bars : Natural;
+    -- Random choice of the Nth bar to remove, number of free found
+    N, F : Natural;
     -- For put then get
     Cursor_Field : Field_Range := Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
@@ -184,25 +188,50 @@ package body Screen is
   begin
     Change_Game := False;
     -- Current content
-    Nb_To_Remove := 0;
+    Nb_Bars := 0;
     for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
       if Status(I) = Free then
-        Nb_To_Remove := Nb_To_Remove + 1;
+        Nb_Bars := Nb_Bars + 1;
       end if;
     end loop;
     -- Nb to remove
-    Nb_To_Remove := Nb_To_Remove - Bars;
+    Nb_To_Remove := Nb_Bars - Bars;
 
     -- Select
-    J := Nb_To_Remove;
-    for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
-      if Status(I) = Free then
-        Status(I)  := Selected;
-        Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
-        J := J - 1;
-        exit when J = 0;
-      end if;
+    Nb_Left_To_Remove := Nb_To_Remove;
+    -- Select randomly Nb_To_Remove free bars
+    for I in 1 .. Nb_Left_To_Remove loop
+      -- Random choice of the Nth bar to remove
+      N := Rnd.Int_Random(1, Nb_Bars);
+      -- Number of free found
+      F := 0;
+
+      -- Find Nth free bar and remove it
+      for J in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
+        if Status(J) = Free then
+          F := F + 1;
+          if F = N then
+            -- Remove this one
+            Status(J)  := Selected;
+            Set_Field_Colors (Field_Range(J), Background => Con_Io.Red);
+            Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
+            Nb_Bars := Nb_Bars - 1;
+            exit;
+          end if;
+        end if;
+      end loop;
+
     end loop;
+
+    -- Previous strategy: Select the Nb_To_Remove first from left
+    -- for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
+    --  if Status(I) = Free then
+    --    Status(I)  := Selected;
+    --    Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
+    --    Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
+    --    exit when Nb_Left_To_Remove = 0;
+    --  end if;
+    -- end loop;
 
     -- Display
     if Result in Compute.Played_Result_List then
@@ -212,14 +241,14 @@ package body Screen is
     end if;
 
     -- Remove
-    J := Nb_To_Remove;
+    Nb_Left_To_Remove := Nb_To_Remove;
     for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
       if Status(I) = Selected then
         Status(I) := Removed;
         Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
         Set_Field_Activation (Field_Range(I), False);
-        J := J - 1;
-        exit when J = 0;
+        Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
+        exit when Nb_Left_To_Remove = 0;
       end if;
     end loop;
 
