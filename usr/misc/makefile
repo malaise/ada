@@ -10,6 +10,7 @@ all:
 	amake fact.adb
 	amake g.adb
 	amake hanoi.adb
+	amake impot_98.adb
 	amake one_of_arg.adb
 	amake pascal.adb
 	amake second.adb
