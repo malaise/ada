@@ -144,11 +144,14 @@ package body HASH is
     begin
       MY_IO.PUT_LINE ("Hash " & HASH_RANGE'IMAGE(I));
       if CA = null then
-        MY_IO.PUT_line ("No data found");
+        MY_IO.PUT_line (" No data found");
       end if;
       while CA /= null loop
-        MY_IO.PUT ("Data found -> ");
+        MY_IO.PUT (" Data found -> ");
         DUMP (CA.DATA);
+        if CA = FIRST_ARRAY(I).CURRENT then
+          MY_IO.PUT (" <- Current");
+        end if;
         MY_IO.NEW_LINE;
         CA := CA.NEXT;
       end loop;
