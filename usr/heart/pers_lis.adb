@@ -100,6 +100,7 @@ package body Pers_Lis is
           end if;
 
         when 16 | 17 | 18 | 19 | 20 | 21 =>
+          Locok := True;
           Tz_S := Afpx.Decode_Field (Current_Field, 00);
           begin
             Tz := Str_Mng.To_Bpm(Tz_S);
