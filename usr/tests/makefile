@@ -7,6 +7,7 @@ do_all:
 	amake t_afpx.adb $(LX)
 	amake t_arg.adb
 	amake t_con.adb $(LX)
+	amake t_color.adb $(LX)
 	amake t_curve.adb $(LX)
 	amake t_day_mng.adb
 	amake t_delta_date.adb
@@ -41,7 +42,7 @@ clean:
 	rm *.o *.ali
 
 clean_exe:
-	rm t_afpx t_arg t_con t_curve t_day_mng t_delta_date t_dd t_dir\
+	rm t_afpx t_arg t_color t_con t_curve t_day_mng t_delta_date t_dd t_dir\
 	t_dl t_dscr t_except t_getenv t_get_line t_fifo t_hash t_key \
 	t_lifo t_math t_mut t_norm t_perpet t_rnd t_sorts t_select_file \
 	t_state_machine t_str_error t_syslin t_urand t_x \

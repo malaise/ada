@@ -6,7 +6,6 @@ begin
   CON_IO.SET_BACKGROUND (CON_IO.BROWN);
 
   loop
-    CON_IO.SET_FOREGROUND(CON_IO.DEFAULT_FOREGROUND);
     CON_IO.CLEAR;
     for I in CON_IO.EFFECTIVE_COLORS loop
       CON_IO.MOVE (CON_IO.COLORS'POS(I), 1);
@@ -16,11 +15,11 @@ begin
       CON_IO.NEW_LINE;
     end loop;
 
-    CON_IO.SET_FOREGROUND(CON_IO.GET_BACKGROUND);
     CON_IO.MOVE;
-    C := CON_IO.GET;
+    C := CON_IO.GET (ECHO => FALSE);
     exit when C /= ASCII.NUL;
   end loop;
+  delay 5.0;
   CON_IO.DESTROY;
 
 end T_COLOR;
