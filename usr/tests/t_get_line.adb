@@ -22,7 +22,8 @@ begin
     package MY_GET_LINE is new GET_LINE (
       MAX_WORD_LEN => MAX_WORD_LEN,
       MAX_WORD_NB  => MAX_WORD_NB,
-      MAX_LINE_LEN => MAX_LINE_LEN);
+      MAX_LINE_LEN => MAX_LINE_LEN,
+      COMMENT      => '#');
 
     LINE  : MY_GET_LINE.LINE_ARRAY;
 

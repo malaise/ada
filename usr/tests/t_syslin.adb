@@ -15,7 +15,6 @@ procedure T_SYSLIN is
 
   -- Matrix dimension
   DIM : POSITIVE := 1;
-  LINE_NO : NATURAL := 0;
 
   FILE_ERROR : exception;
 
@@ -31,24 +30,17 @@ begin
     package MY_GET_LINE is new GET_LINE (
       MAX_WORD_LEN => MAX_WORD_LEN,
       MAX_WORD_NB  => MAX_WORD_NB,
-      MAX_LINE_LEN => MAX_LINE_LEN);
+      MAX_LINE_LEN => MAX_LINE_LEN,
+      COMMENT => '#');
 
     LINE  : MY_GET_LINE.LINE_ARRAY;
-
-    function LINE_IS_SIGNIFICANT return BOOLEAN is
-    begin
-      return MY_GET_LINE.GET_WORD_NUMBER /= 0 and then
-        TEXT_HANDLER.VALUE(LINE(1))(1) /= '#';
-    end LINE_IS_SIGNIFICANT;
+    WHOLE_LINE : MY_GET_LINE.LINE_TXT;
 
     procedure READ_NEXT_SIGNIFICANT_LINE is
     begin
-      loop
-        MY_GET_LINE.READ_NEXT_LINE;
-        MY_GET_LINE.GET_WORDS (LINE);
-        LINE_NO := LINE_NO + 1;
-        exit when LINE_IS_SIGNIFICANT;
-      end loop;
+      MY_GET_LINE.READ_NEXT_LINE;
+      MY_GET_LINE.GET_WORDS (LINE);
+      MY_GET_LINE.GET_WHOLE_LINE (WHOLE_LINE);
     end READ_NEXT_SIGNIFICANT_LINE;
 
   begin
@@ -61,14 +53,11 @@ begin
         TEXT_IO.PUT_LINE ("ERROR opening file " & ARGUMENT.GET_PARAMETER & ".");
         raise;
     end;
-    LINE_NO := 1;
 
     -- Compute dimension from first line : nb of words - 1
     begin
       MY_GET_LINE.GET_WORDS (LINE);
-      if not LINE_IS_SIGNIFICANT then
-        READ_NEXT_SIGNIFICANT_LINE;
-      end if;
+      MY_GET_LINE.GET_WHOLE_LINE (WHOLE_LINE);
       DIM := MY_GET_LINE.GET_WORD_NUMBER - 1;
       if DIM = 0 then
         TEXT_IO.PUT_LINE ("ERROR in file " & ARGUMENT.GET_PARAMETER
@@ -98,9 +87,10 @@ begin
         exception
           when others =>
             TEXT_IO.PUT_LINE ("ERROR, when reading data at line "
-                              & INTEGER'IMAGE(LINE_NO) & ".");
+                              & INTEGER'IMAGE(MY_GET_LINE.GET_WORD_NUMBER) & ".");
             raise FILE_ERROR;
         end;
+        TEXT_IO.PUT_LINE (">" & TEXT_HANDLER.VALUE(WHOLE_LINE) & "<");
 
         if I /= DIM then
           -- read next not empty line
@@ -109,7 +99,7 @@ begin
           -- Check number of words
           if MY_GET_LINE.GET_WORD_NUMBER /= DIM + 1 then
             TEXT_IO.PUT_LINE ("ERROR in file. Wrong number of words at line "
-                              & INTEGER'IMAGE(LINE_NO) & ".");
+                              & INTEGER'IMAGE(MY_GET_LINE.GET_WORD_NUMBER) & ".");
             raise FILE_ERROR;
           end if;
         end if;
@@ -120,7 +110,7 @@ begin
       begin
         READ_NEXT_SIGNIFICANT_LINE;
         TEXT_IO.PUT_LINE ("ERROR. Unexpected data at line "
-                          & INTEGER'IMAGE(LINE_NO) & ".");
+                          & INTEGER'IMAGE(MY_GET_LINE.GET_WORD_NUMBER) & ".");
         MY_GET_LINE.CLOSE;
         raise FILE_ERROR;
       exception
@@ -146,7 +136,7 @@ begin
       -- Put solution
       for I in 1 .. DIM loop
         TEXT_IO.PUT ("X(" & NORMAL(I, 3) & ") = ");
-        FLO_IO.PUT (SOLUTION(I));
+        FLO_IO.PUT (SOLUTION(I), AFT => 6);
         TEXT_IO.NEW_LINE;
       end loop;
 
