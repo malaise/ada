@@ -136,7 +136,7 @@ package body Registers is
     return (Kind => Regi, Val_Regi => Ind2Reg(Index));
   end Register_At;
 
-  Reg_File_Name : constant String := "mcd_storage.dat";
+  Reg_File_Name : constant String := "mcd_registers.dat";
   package Reg_Io is new Ada.Direct_Io (Item_Rec);
   Reg_File : Reg_Io.File_Type;
 
