@@ -1,0 +1,9 @@
+with PERS_DEF, STR_MNG;
+package MESU_MNG is
+
+  procedure LIST_MESURES (NB_MONTH : in STR_MNG.OFFSET_RANGE);
+
+  procedure DELETE_ALL (PERSON : in PERS_DEF.PERSON_REC);
+
+end MESU_MNG;
+
