@@ -34,16 +34,18 @@ package body Players is
             := Pieces.Pos_Of (Piece.all);
         Arr : constant Pieces.Action_Array
             := Pieces.Actions_Of (Piece.all);
+        Piece_Kind : constant Pieces.Piece_Kind_List
+                   := Pieces.Id_Of (Piece.all).Kind;
       begin
         -- Sanity
         if Space.Board.Piece_At (Pos) /= Piece then
           raise Player_Board_Error;
         end if;
         for I in Arr'Range loop
-          Action_List_Mng.Insert (Actions(Color), (True, Pos, Arr(I)) );
+          Action_List_Mng.Insert (Actions(Color), (True, Piece_Kind, Pos, Arr(I)) );
           if Debug.Get (Debug.Think) then
             Ada.Text_Io.Put ("-> ");
-            Debug.Put (Valid_Action_Rec'(True, Pos, Arr(I)));
+            Debug.Put (Valid_Action_Rec'(True, Piece_Kind, Pos, Arr(I)));
             Ada.Text_Io.New_Line;
           end if;
         end loop;
@@ -124,7 +126,7 @@ package body Players is
     end if;
   end Match;
 
-  procedure Search_Action is new Action_List_Mng.Search (Match); 
+  procedure Search_Match_Action is new Action_List_Mng.Search (Match); 
 
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
@@ -134,17 +136,19 @@ package body Players is
   begin
     if Promote in Pieces.Promotion_Piece_List then
       Ref := (Valid => True,
+              Piece => Pieces.Pawn,
               From  => From,
               To    => (Pieces.Promote, Dest => To, New_Piece => Promote) );
     else
       Ref := (Valid => True,
+              Piece => Pieces.Pawn,
               From  => From,
               To    => (Pieces.Move, Dest => To) );
     end if;
 
     -- Search first occurence
     begin
-      Search_Action(Actions(Color), Ref, From_Current => False);
+      Search_Match_Action(Actions(Color), Ref, From_Current => False);
     exception
        when Action_List_Mng.Not_In_List =>
          -- Not found
@@ -156,7 +160,7 @@ package body Players is
 
     begin
       Action_List_Mng.Move_To(Actions(Color));
-      Search_Action(Actions(Color), Ref, From_Current => True);
+      Search_Match_Action(Actions(Color), Ref, From_Current => True);
       -- Should be unique
       raise More_Than_One;
     exception
@@ -166,9 +170,16 @@ package body Players is
   end Find_Action;
 
   -- Check an action exists the the list
+  function Same (Action, Ref : Valid_Action_Rec) return Boolean is
+  begin
+    return Action = Ref;
+  end Same;
+
+  procedure Search_Same_Action is new Action_List_Mng.Search (Same); 
+
   function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
   begin
-    Search_Action (Actions(Color), Action, From_Current => False);
+    Search_Same_Action (Actions(Color), Action, From_Current => False);
     return True;
   exception
     when Action_List_Mng.Not_In_List =>

@@ -28,9 +28,6 @@ package body Image is
 
   function Move_Image (Action : Game.Valid_Action_Rec;
                        Result : Game.Move_Status_List) return Move_Str is
-    -- Acting piece
-    Piece : constant Pieces.Piece_Kind_List
-          := Pieces.Id_Of (Space.Board.Piece_At (Action.To.Dest).all).Kind;
     -- Result
     Res : Text_Handler.Text(10);
     Str : Move_Str := (others => ' ');
@@ -45,7 +42,7 @@ package body Image is
     use type Space.Col_Range;
     use type Pieces.Action_Kind_List;
   begin
-    Text_Handler.Set (Res, Piece_Image (Piece));
+    Text_Handler.Set (Res, Piece_Image (Action.Piece));
     case Action.To.Kind is
       when Pieces.Move =>
         Text_Handler.Append (Res, Image (Action.From) & "-" & Image (Action.To.Dest) );
@@ -100,6 +97,7 @@ package body Image is
     -- Take/Move and associated squares
     Take : Boolean;
     From, Dest : Space.Square_Coordinate;
+    Piece_Kind : Pieces.Piece_Kind_List;
 
     -- Decode square
     subtype Square_Str is String (1 ..2);
@@ -134,6 +132,7 @@ package body Image is
     if Str(1 .. 5) = "o-o-o" then
       if Color = Space.White then
         Action := (Valid => True,
+                   Piece => Pieces.King,
                    From  => (Space.e, 1),
                    To    => (Kind => Pieces.Castle,
                              Dest => (Space.c, 1),
@@ -141,6 +140,7 @@ package body Image is
                              Rook_Dest => (Space.d, 1)));
       else
         Action := (Valid => True,
+                   Piece => Pieces.King,
                    From  => (Space.e, 8),
                    To    => (Kind => Pieces.Castle,
                              Dest => (Space.c, 8),
@@ -153,6 +153,7 @@ package body Image is
     elsif  Str(1 .. 3) = "o-o" then
       if Color = Space.White then
         Action := (Valid => True,
+                   Piece => Pieces.King,
                    From  => (Space.e, 1),
                    To    => (Kind => Pieces.Castle,
                              Dest => (Space.g, 1),
@@ -160,6 +161,7 @@ package body Image is
                              Rook_Dest => (Space.f, 1)));
       else
         Action := (Valid => True,
+                   Piece => Pieces.King,
                    From  => (Space.e, 8),
                    To    => (Kind => Pieces.Castle,
                              Dest => (Space.g, 8),
@@ -171,7 +173,8 @@ package body Image is
     else
 
       -- Skip first letter if piece
-      if Piece_Value (Str(1)) = Pieces.Pawn then
+      Piece_Kind := Piece_Value (Str(1));
+      if Piece_Kind = Pieces.Pawn then
         Next := 1;
       else
         Next := 2;
@@ -191,7 +194,7 @@ package body Image is
 
       -- Check "en passant"
       if Str(Next .. Next+1) = "ep" then
-        if not Take then
+        if not Take or else Piece_Kind /= Pieces.Pawn then
           raise Value_Error;
         end if;
         declare
@@ -205,6 +208,7 @@ package body Image is
             Taking.Row := Taking.Row + 1;
           end if;
           Action := (Valid => True,
+                     Piece => Piece_Kind,
                      From  => From,
                      To    => (Kind => Pieces.Take_En_Passant,
                                Dest => Dest,
@@ -220,12 +224,14 @@ package body Image is
         begin
           if Take then
             Action := (Valid => True,
+                       Piece => Piece_Kind,
                        From  => From,
                        To    => (Kind => Pieces.Take_And_Promote,
                                  Dest => Dest,
                                  New_Piece => New_Piece));
           else
             Action := (Valid => True,
+                       Piece => Piece_Kind,
                        From  => From,
                        To    => (Kind => Pieces.Promote,
                                  Dest => Dest,
@@ -238,11 +244,13 @@ package body Image is
         -- Move/take
         if Take then
           Action := (Valid => True,
+                     Piece => Piece_Kind,
                      From  => From,
                      To    => (Kind => Pieces.Take,
                                Dest => Dest));
         else
           Action := (Valid => True,
+                     Piece => Piece_Kind,
                      From  => From,
                      To    => (Kind => Pieces.Move,
                                Dest => Dest));

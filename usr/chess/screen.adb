@@ -124,6 +124,23 @@ package body Screen is
     Con_Io.Set_Background (Main_Back);
     Con_Io.Set_Foreground (Con_Io.White);
     Con_Io.Clear;
+    -- + Try some graphic
+    Try:
+    declare
+      X0 : constant Con_Io.Graphics.X_Range := 50;
+      Y0 : constant Con_Io.Graphics.Y_Range
+         := Con_Io.Graphics.Y_Max - 40;
+      Size : Constant Natural := 45;
+      Len  : Constant Natural := 8 * Size;
+    begin
+      for I in 0 .. 8 loop
+        Con_Io.Graphics.Draw_Line (X0 + (I * Size), Y0,
+                                   X0 + (I * Size), Y0 - Len);
+        Con_Io.Graphics.Draw_Line (X0, Y0 - (I * Size),
+                                   X0 + Len, Y0 - (I * Size));
+      end loop;
+   end Try;
+    -- - Try some graphic
     for Row in Space.Row_Range loop
       for Col in Space.Col_Range loop
         Display_Square (Color, (Col, Row) );

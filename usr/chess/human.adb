@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 With Normal, Lower_Str, Argument;
 
-with Screen, Game, Debug, Connection, File, Image;
+with Pieces, Space.Board, Screen, Game, Debug, Connection, File, Image;
 
 package body Human is
 
@@ -87,6 +87,7 @@ package body Human is
 
   procedure Do_Play is
     Action : Players.Action_Rec;
+    Kind   : Pieces.Piece_Kind_list;
     Result : Game.Move_Status_List;
     use type Game.Move_Status_List;
   begin
@@ -118,6 +119,7 @@ package body Human is
         Debug.Put(Action);
         Ada.Text_Io.New_Line;
       end if;
+      Kind := Pieces.Id_Of (Space.Board.Piece_At(Action.From).all).Kind;
       Result := Game.Do_Move (Action);
       exit Get_One when Result /= Game.Nok;
       -- Invalid move
@@ -145,10 +147,11 @@ package body Human is
   end Do_Play;
 
   procedure Do_Wait is
+    Action : Players.Action_Rec;
+    Kind   : Pieces.Piece_Kind_List;
     Result : Game.Move_Status_List;
     use type Game.Move_Status_List;
 
-    Action : Players.Action_Rec;
   begin
     Screen.Reset_Time;
 
@@ -171,6 +174,7 @@ package body Human is
       Put (Result);
       The_End := True;
     else
+      Kind := Pieces.Id_Of (Space.Board.Piece_At(Action.From).all).Kind;
       Result := Game.Do_Move (Action);
       Screen.Put_Move (Space.Opponent (Color), Action, Result);
       Save_If_Server (Action, Result);
@@ -189,6 +193,8 @@ package body Human is
   procedure Load_Moves is
     Action : Players.Action_Rec;
     Result : Game.Move_Status_List;
+    Piece  : Pieces.Piece_Access;
+    use type Pieces.Piece_Kind_List, Pieces.Piece_Access;
     use type Game.Move_Status_List;
   begin
     Move_Color := Space.White;
@@ -203,14 +209,20 @@ package body Human is
         end loop;
         Action := Connection.Receive;
       end if;
-      if Action.Valid and then not Players.Action_Exists (Move_Color, Action) then
-        Screen.Put (Color, "Invalid action", True);
-        if Debug.Get (Debug.Human) then
-          Ada.Text_Io.Put ("Loading invalid action ");
-          Debug.Put (Action);
-          Ada.Text_Io.New_Line;
+      if Action.Valid then
+        -- Check piece and movement
+        Piece := Space.Board.Piece_At (Action.From);
+        if not Players.Action_Exists (Move_Color, Action)
+        or else Piece = null
+        or else Pieces.Id_Of (Piece.all).Kind /=  Action.Piece then
+          Screen.Put (Color, "Invalid action", True);
+          if Debug.Get (Debug.Human) then
+            Ada.Text_Io.Put ("Loading invalid action ");
+            Debug.Put (Action);
+            Ada.Text_Io.New_Line;
+          end if;
+          raise Load_Error;
         end if;
-        raise Load_Error;
       end if;
  
       if Debug.Get (Debug.Human) then
