@@ -23,6 +23,7 @@ package body AF_LIST is
                    AF_DSCR.FIELDS(0).UPPER_LEFT,
                    AF_DSCR.FIELDS(0).LOWER_RIGHT);
       OPENED := TRUE;
+      DISPLAYED := FALSE;
     else
       OPENED := FALSE;
     end if;
@@ -126,7 +127,6 @@ package body AF_LIST is
       STATUS.ID_TOP := 0;
       STATUS.ID_BOTTOM := 0;
       STATUS.ID_SELECTED := 0;
-      DISPLAYED := TRUE;
       SET_COLORS;
       CON_IO.CLEAR (LIST_WINDOW);
       DISPLAYED := TRUE;
