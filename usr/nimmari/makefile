@@ -1,4 +1,4 @@
-all: do_nimmari
+all: do_nimmari AFPX.DSC
 
 do_nimmari:
 	amake nimmari.adb -largs -lx_mng -lX11
