@@ -24,6 +24,19 @@ package body Graphic is
   X_Offset : Natural;
   Y_Offset : Natural;
 
+  -- Bitmaps
+  package Bitmaps is
+    Piece_Size : constant := 35;
+    Bits_Offset : constant := (Size -  Piece_Size) / 2;
+    subtype Piece_Map is Con_Io.Byte_Array (1 .. Piece_Size * Piece_Size);
+    type Piece_Map_Access is access all Piece_Map;
+
+    function Get_Bitmap (Kind : in Pieces.Piece_Kind_List) return Piece_Map_Access;
+
+  end Bitmaps;
+  package body Bitmaps is separate;
+
+
   function To_Con_Io_Square (Color : in Space.Color_List;
                              Square : Space.Square_Coordinate)
                              return Graph_Square is
@@ -76,7 +89,7 @@ package body Graphic is
 
     Pos : constant Graph_Square := To_Con_Io_Square (Color, Square);
 
-    Char : Character;
+    Bits : Bitmaps.Piece_Map_Access;
     use type Space.Color_List, Pieces.Piece_Access, Pieces.Piece_Kind_List;
   begin
     -- get background
@@ -92,22 +105,20 @@ package body Graphic is
     Con_Io.Graphics.Fill_Rectangle (Pos.X - Size2, Pos.Y - Size2,
                                     Pos.X + Size2, Pos.Y + Size2);
 
-    -- Set Foreground and character
+    -- Set Foreground and piece
     if Space.Board.Piece_At(Square) /= null then
       Id := Pieces.Id_Of(Space.Board.Piece_At(Square).all);
-      if Id.Kind = Pieces.Pawn then
-        Char := 'i';
-      else
-         Char := Image.Piece_Image(Id.Kind)(1);
-      end if;
-
+      Bits := Bitmaps.Get_Bitmap (Id.Kind);
       if Id.Color = Space.White then
         Fore := Fore_White;
       else
         Fore := Fore_Black;
       end if;
       Con_Io.Set_Foreground (Fore);
-      Con_Io.Graphics.Put(Char, Pos.X - X_Offset, Pos.Y - Y_Offset);
+      Con_Io.Graphics.Draw_Points(Pos.X - (Size2 - Bitmaps.Bits_Offset),
+                                  Pos.Y + (Size2 - Bitmaps.Bits_Offset),
+                                  Bitmaps.Piece_Size, Bitmaps.Piece_Size,
+                                  Bits.all);
     end if;
 
   end Display_Square;
@@ -165,6 +176,7 @@ package body Graphic is
   procedure Display_Promotion (Move_Color : in Space.Color_List) is
     Fore : Con_Io.Effective_Colors;
     Back : Con_Io.Effective_Basic_Colors;
+    Bits : Bitmaps.Piece_Map_Access;
     use type Space.Color_List;
     use type Con_IO.Colors;
   begin
@@ -196,11 +208,15 @@ package body Graphic is
         end if;
 
         Con_Io.Set_Foreground (Fore);
-        Con_Io.Graphics.Put(Image.Piece_Image(P)(1),
-                            Promotion_X - X_Offset,
-                            Promotion_Y_Offset
-                             + Pieces.Promotion_Piece_List'Pos(P) * Size
-                             - Y_Offset);
+        Bits := Bitmaps.Get_Bitmap (P);
+        Con_Io.Graphics.Draw_Points(
+            Promotion_X - (Size2 - Bitmaps.Bits_Offset),
+            Promotion_Y_Offset
+                 + Pieces.Promotion_Piece_List'Pos(P) * Size
+                 + (Size2 - Bitmaps.Bits_Offset),
+            Bitmaps.Piece_Size,
+            Bitmaps.Piece_Size,
+            Bits.all);
       end loop;
     
     else
