@@ -1,6 +1,7 @@
 #ifndef _X_STDINC_H
 #define _X_STDINC_H
 
+#include <string.h>
 #include <stdio.h>
 #include <X11/Xlib.h>
 

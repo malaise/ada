@@ -23,7 +23,7 @@ extern int incr_time ( timeout_t *p_to, unsigned int delay_ms );
     
 
 /* Init a time with current time */
-extern void get_time (/* timeout_t *p_time */);
+extern void get_time ( timeout_t *p_time );
 
 
 /* Compares 2 times (-1 if t1 < t2, 0 if t1 = t2, 1 if t1 > t2) */

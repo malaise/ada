@@ -1,5 +1,6 @@
 /* Oct 21, 1998 : Use private color map                            */
 /* Nov 07, 1998 : Store size at creation of win, in pixels         */
+#include <stdlib.h>
 #include <malloc.h>
 
 #define LINE_LOCAL 
