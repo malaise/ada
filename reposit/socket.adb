@@ -269,6 +269,7 @@ package body Socket is
     Con_For_C : Boolean_For_C;
   begin
     Res := Soc_Is_Connected (Socket.Soc_Addr, Con_For_C'Address);
+    Check_Ok;
     return Boolean (Con_For_C);
   end Is_Connected;
 
