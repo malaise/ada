@@ -2,1400 +2,1404 @@
 # -----------------------------
 # <descriptor_file> ::= { <descriptor_def> }
 #
-# <descriptor_def> ::= DESCRIPTOR <descriptor_no>
+# <descriptor_def> ::= Descriptor <descriptor_no>
 #                        [ <list_def>  ]
-#                        { <field_def> }
-#                      END DESCRIPTOR
+#                        [ { <field_def> } ]
+#                      End Descriptor
 #
-# <list_def>  ::= LIST
+# <list_def>  ::= List
 #                   <field_geo_and_color>
-#                 END LIST
+#                 End List
 #
-# <field_def> ::= FIELD <field_no> <field_type>
+# <field_def> ::= Field <field_no> <field_type>
 #                   <field_geo_and_color>
 #                   [ <init_def> ]
-#                 END FIELD
+#                 End Field
 #
-# <field_type> ::= PUT  |  BUTTON  |  GET
+# <field_type> ::= Put  |  Button  |  Get
 #
-# <field_geo_and_color> ::= GEOMETRY <geometry>
-#                           COLORS   <colors>
+# <field_geo_and_color> ::= Geometry <geometry>
+#                           Colors   <colors>
 #
 # <geometry> ::= <upper_left_row> <upper_left_col>
-#                          <lower_right_row> <lower_right_col>
+#                <lower_right_row> <lower_right_col>
 #
 # <colors> ::= <foreground_color> [ <blink> ]
 #                          <background_color> [ <selected_color> ]
 #
-# <init_def> ::= INIT
-#                  { <init_line> }
-#                END INIT
+# <init_def> ::= Init
+#                  [ { <init_line> } ]
+#                End Init
 #
 # <init_line> ::= <init_row> <init_col> [ <init_string> ]
 #
 #
 # Semantic of the descriptor file
 # -------------------------------
-# - <descriptor_no> has to be positive and sole (no double)
-# - LIST has to be defined none or once per descriptor
-# - <field_no> have to be strictly crescent within one descriptor, no "hole",
-#   no double
-# - <field_no> within FIELD_RANGE
+# - <descriptor_no> has to be positive range 1 .. 50 and sole (no double)
+# - List has to be defined none or once per descriptor
+# - <field_no> have to be within Field_Range (1 .. 200), strictly crescent
+#                    within one descriptor, no "hole", no double
 # - <geometry> must define at least one row and one col
-# - <geometry> of a GET field must define only ONE row
-# - <geometry> must not make field overlapping with another
-# - <foreground_color> must be of COLORS for PUT fields
-#                     and of BASIC_COLORS for BUTTON, GET and LIST
-# - <background_color> and <selected_color> must be BASIC_COLORS
-# - <blink> is mandatory for PUT fields and must not be specified
-#                    for LIST, BUTTON and GET fields
-# - <selected_color> is mandatory for LIST and GET fields and
-#                    must not be specified for PUT and BUTTON
+# - <geometry> must not make the field overlap with another field of the
+#                    descriptor
+# - <geometry> of a Get field must define only one row
+# - <foreground_color> must be of Colors for Put fields
+#                    and of Basic_Colors for Button, Get and List
+# - <background_color> and <selected_color> must be Basic_Colors
+# - <blink> is mandatory for Put fields and must not be specified
+#                    for List, Button and Get fields
+# - <selected_color> is mandatory for List and Get fields and
+#                    must not be specified for Put and Button
 # - <init_row> have to be compatible with <geometry>
-#                       crescent, no double (holes allowed)
+#                    crescent, no double (holes allowed)
 # - <init_col> have to be compatible with <geometry>
 # - <init_string> have to be compatible with <geometry> and <init_col>
 #
 # Infos
 # -----
+# Separator is space or tabulation
+# Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase)
+# Comments are lines with '#' as first signficant character
 # Rows are from 0 to 24
 # Cols are from 0 to 79
-# Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
-# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
-#                              LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE
-# Blink is "blink" or "not_blink"
+# Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray
+# Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange,
+#                              Yellow, White
+# Blink is "Blink" or "Not_Blink"
+# Upper case is mandatory for keywords, not significant for colors and blink,
+#  significant for init_string
 #
 # Summary of color combinations
 # -----------------------------
 #  Type  |   Foreground  Blink  Background  Selected
 #  -------------------------------------------------
-#  PUT   |   X Colors    X      X Basic
-#  BUTTON|   X Basic            X Basic
-#  GET   |   X Basic            X Basic     X Basic
-#  LIST  |   X Basic            X Basic     X Basic
-
+#  Put   |   X Colors    X      X Basic
+#  Button|   X Basic            X Basic
+#  Get   |   X Basic            X Basic     X Basic
+#  List  |   X Basic            X Basic     X Basic
 
 # Record selection screen
 # -----------------------
-DESCRIPTOR 1
+Descriptor 1
 
   # List of records selected
-  LIST
-    GEOMETRY 07 01 23 65
-    COLORS light_gray blue green
-  END LIST
+  List
+    Geometry 07 01 23 65
+    Colors light_gray blue green
+  End List
 
   # Tittle of selection criteria
-  FIELD 01 PUT
-    GEOMETRY 00 01 00 56
-    COLORS light_gray not_blink black
-    INIT
+  Field 01 Put
+    Geometry 00 01 00 56
+    Colors light_gray not_blink black
+    Init
       00 00 Person
       00 21 Activity
       00 34 After
       00 45 And
       00 50 Before
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Date
-  FIELD 02 PUT
-    GEOMETRY 00 69 00 78
-    COLORS cyan not_blink black
-    INIT
+  Field 02 Put
+    Geometry 00 69 00 78
+    Colors cyan not_blink black
+    Init
       00 00 dd/mm/yyyy
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # / between day and month of date after
-  FIELD 03 PUT
-    GEOMETRY 01 37 01 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 03 Put
+    Geometry 01 37 01 37
+    Colors light_gray not_blink black
+    Init
       00 00 /
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # / between month and year of date after
-  FIELD 04 PUT
-    GEOMETRY 01 40 01 40
-    COLORS light_gray not_blink black
-    INIT
+  Field 04 Put
+    Geometry 01 40 01 40
+    Colors light_gray not_blink black
+    Init
       00 00 /
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # / between day and month of date before
-  FIELD 05 PUT
-    GEOMETRY 01 53 01 53
-    COLORS light_gray not_blink black
-    INIT
+  Field 05 Put
+    Geometry 01 53 01 53
+    Colors light_gray not_blink black
+    Init
       00 00 /
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # / between month and year of date before
-  FIELD 06 PUT
-    GEOMETRY 01 56 01 56
-    COLORS light_gray not_blink black
-    INIT
+  Field 06 Put
+    Geometry 01 56 01 56
+    Colors light_gray not_blink black
+    Init
       00 00 /
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Person
-  FIELD 07 GET
-    GEOMETRY 01 01 01 20
-    COLORS light_gray blue green
-  END FIELD
+  Field 07 Get
+    Geometry 01 01 01 20
+    Colors light_gray blue green
+  End Field
 
   # Activity
-  FIELD 08 GET
-    GEOMETRY 01 22 01 31
-    COLORS light_gray blue green
-  END FIELD
+  Field 08 Get
+    Geometry 01 22 01 31
+    Colors light_gray blue green
+  End Field
 
   # Day after
-  FIELD 09 GET
-    GEOMETRY 01 35 01 36
-    COLORS light_gray blue green
-  END FIELD
+  Field 09 Get
+    Geometry 01 35 01 36
+    Colors light_gray blue green
+  End Field
 
   # Month after
-  FIELD 10 GET
-    GEOMETRY 01 38 01 39
-    COLORS light_gray blue green
-  END FIELD
+  Field 10 Get
+    Geometry 01 38 01 39
+    Colors light_gray blue green
+  End Field
 
   # Year after
-  FIELD 11 GET
-    GEOMETRY 01 41 01 44
-    COLORS light_gray blue green
-  END FIELD
+  Field 11 Get
+    Geometry 01 41 01 44
+    Colors light_gray blue green
+  End Field
 
   # Day before
-  FIELD 12 GET
-    GEOMETRY 01 51 01 52
-    COLORS light_gray blue green
-  END FIELD
+  Field 12 Get
+    Geometry 01 51 01 52
+    Colors light_gray blue green
+  End Field
 
   # Month before
-  FIELD 13 GET
-    GEOMETRY 01 54 01 55
-    COLORS light_gray blue green
-  END FIELD
+  Field 13 Get
+    Geometry 01 54 01 55
+    Colors light_gray blue green
+  End Field
 
   # Year before
-  FIELD 14 GET
-    GEOMETRY 01 57 01 60
-    COLORS light_gray blue green
-  END FIELD
+  Field 14 Get
+    Geometry 01 57 01 60
+    Colors light_gray blue green
+  End Field
 
   # Add selection button
-  FIELD 15 BUTTON
-    GEOMETRY 03 02 05 15
-    COLORS brown blue
-    INIT
+  Field 15 Button
+    Geometry 03 02 05 15
+    Colors brown blue
+    Init
       01 02 Add Select
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Remove selection button
-  FIELD 16 BUTTON
-    GEOMETRY 03 18 05 31
-    COLORS brown blue
-    INIT
+  Field 16 Button
+    Geometry 03 18 05 31
+    Colors brown blue
+    Init
       01 02 Rem Select
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Undo button
-  FIELD 17 BUTTON
-    GEOMETRY 03 34 05 41
-    COLORS brown blue
-    INIT
+  Field 17 Button
+    Geometry 03 34 05 41
+    Colors brown blue
+    Init
       01 02 Undo
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Activity data base button
-  FIELD 18 BUTTON
-    GEOMETRY 03 49 05 63
-    COLORS brown blue
-    INIT
+  Field 18 Button
+    Geometry 03 49 05 63
+    Colors brown blue
+    Init
       01 02 Activity DB
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Exit button
-  FIELD 19 BUTTON
-    GEOMETRY 03 71 05 78
-    COLORS brown blue
-    INIT
+  Field 19 Button
+    Geometry 03 71 05 78
+    Colors brown blue
+    Init
       01 02 Exit
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Number of recors in list
-  FIELD 20 PUT
-    GEOMETRY 06 57 06 78
-    COLORS cyan not_blink black
-    INIT
+  Field 20 Put
+    Geometry 06 57 06 78
+    Colors cyan not_blink black
+    Init
       00 00 xxxxx records selected
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Tittle of list
-  FIELD 21 PUT
-    GEOMETRY 06 01 06 52
-    COLORS light_gray not_blink black
-    INIT
+  Field 21 Put
+    Geometry 06 01 06 52
+    Colors light_gray not_blink black
+    Init
       00 00 Person
       00 21 Activity
       00 34 Date
       00 45 Comment
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Unselect button
-  FIELD 22 BUTTON
-    GEOMETRY 07 67 09 78
-    COLORS brown blue
-    INIT
+  Field 22 Button
+    Geometry 07 67 09 78
+    Colors brown blue
+    Init
       01 02 Unselect
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Draw button
-  FIELD 23 BUTTON
-    GEOMETRY 11 67 13 78
-    COLORS brown blue
-    INIT
+  Field 23 Button
+    Geometry 11 67 13 78
+    Colors brown blue
+    Init
       01 04 Draw
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Print button
-  FIELD 24 BUTTON
-    GEOMETRY 15 67 15 78
-    COLORS brown blue
-    INIT
+  Field 24 Button
+    Geometry 15 67 15 78
+    Colors brown blue
+    Init
       00 03 Print
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Create button
-  FIELD 25 BUTTON
-    GEOMETRY 17 67 19 78
-    COLORS brown blue
-    INIT
+  Field 25 Button
+    Geometry 17 67 19 78
+    Colors brown blue
+    Init
       01 03 Create
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Edit button
-  FIELD 26 BUTTON
-    GEOMETRY 21 67 21 78
-    COLORS brown blue
-    INIT
+  Field 26 Button
+    Geometry 21 67 21 78
+    Colors brown blue
+    Init
       00 04 Edit
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Delete button
-  FIELD 27 BUTTON
-    GEOMETRY 23 67 23 78
-    COLORS brown blue
-    INIT
+  Field 27 Button
+    Geometry 23 67 23 78
+    Colors brown blue
+    Init
       00 03 Delete
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
 
 # Activity DB screen
 # ------------------
-DESCRIPTOR 2
+Descriptor 2
 
   # List of activities
-  LIST
-    GEOMETRY 05 05 19 35
-    COLORS light_gray blue green
-  END LIST
+  List
+    Geometry 05 05 19 35
+    Colors light_gray blue green
+  End List
 
   # Tittle screen
-  FIELD 01 PUT
-    GEOMETRY 00 21 00 48
-    COLORS light_gray not_blink black
-    INIT
+  Field 01 Put
+    Geometry 00 21 00 48
+    Colors light_gray not_blink black
+    Init
       00 00 Activity Data Base
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Date
-  FIELD 02 PUT
-    GEOMETRY 00 69 00 78
-    COLORS cyan not_blink black
-    INIT
+  Field 02 Put
+    Geometry 00 69 00 78
+    Colors cyan not_blink black
+    Init
       00 00 dd/mm/yyyy
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Tittle of list
-  FIELD 03 PUT
-    GEOMETRY 04 05 04 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 03 Put
+    Geometry 04 05 04 37
+    Colors light_gray not_blink black
+    Init
       00 00 Person
       00 21 Activity
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Back to Mesure DB button
-  FIELD 04 BUTTON
-    GEOMETRY 01 44 03 55
-    COLORS brown blue
-    INIT
+  Field 04 Button
+    Geometry 01 44 03 55
+    Colors brown blue
+    Init
       01 01 Records DB
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Exit button
-  FIELD 05 BUTTON
-    GEOMETRY 01 57 03 64
-    COLORS brown blue
-    INIT
+  Field 05 Button
+    Geometry 01 57 03 64
+    Colors brown blue
+    Init
       01 02 Exit
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Create button
-  FIELD 06 BUTTON
-    GEOMETRY 05 52 07 59
-    COLORS brown blue
-    INIT
+  Field 06 Button
+    Geometry 05 52 07 59
+    Colors brown blue
+    Init
       01 01 Create
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Delete button
-  FIELD 07 BUTTON
-    GEOMETRY 09 52 11 59
-    COLORS brown blue
-    INIT
+  Field 07 Button
+    Geometry 09 52 11 59
+    Colors brown blue
+    Init
       01 01 Delete
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Edit button
-  FIELD 08 BUTTON
-    GEOMETRY 13 52 15 59
-    COLORS brown blue
-    INIT
+  Field 08 Button
+    Geometry 13 52 15 59
+    Colors brown blue
+    Init
       01 02 Edit
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Deletion confirm
-  FIELD 09 PUT
-    GEOMETRY 20 00 20 47
-    COLORS red blink black
-    INIT
+  Field 09 Put
+    Geometry 20 00 20 47
+    Colors red blink black
+    Init
       00 00 CONFIRM DELETION OF ACTIVITY AND ALL ITS RECORDS
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Person edit tittle
-  FIELD 10 PUT
-    GEOMETRY 21 00 21 05
-    COLORS light_gray not_blink black
-    INIT
+  Field 10 Put
+    Geometry 21 00 21 05
+    Colors light_gray not_blink black
+    Init
       00 00 Person
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Person get
-  FIELD 11 GET
-    GEOMETRY 21 07 21 26
-    COLORS light_gray blue green
-  END FIELD
+  Field 11 Get
+    Geometry 21 07 21 26
+    Colors light_gray blue green
+  End Field
 
   # Activity edit tittle
-  FIELD 12 PUT
-    GEOMETRY 21 29 21 36
-    COLORS light_gray not_blink black
-    INIT
+  Field 12 Put
+    Geometry 21 29 21 36
+    Colors light_gray not_blink black
+    Init
       00 00 Activity
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Activity get
-  FIELD 13 GET
-    GEOMETRY 21 38 21 47
-    COLORS light_gray blue green
-  END FIELD
+  Field 13 Get
+    Geometry 21 38 21 47
+    Colors light_gray blue green
+  End Field
 
   # TZ edit numbers
-  FIELD 14 PUT
-    GEOMETRY 22 15 22 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 14 Put
+    Geometry 22 15 22 37
+    Colors light_gray not_blink black
+    Init
      00 01 1
      00 05 2
      00 09 3
      00 13 4
      00 17 5
      00 21 6
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # TZ edit tittle
-  FIELD 15 PUT
-    GEOMETRY 23 00 23 13
-    COLORS light_gray not_blink black
-    INIT
+  Field 15 Put
+    Geometry 23 00 23 13
+    Colors light_gray not_blink black
+    Init
       00 00 Training Zones
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # TZ1 get
-  FIELD 16 GET
-    GEOMETRY 23 15 23 17
-    COLORS light_gray blue green
-  END FIELD
+  Field 16 Get
+    Geometry 23 15 23 17
+    Colors light_gray blue green
+  End Field
 
   # TZ2 get
-  FIELD 17 GET
-    GEOMETRY 23 19 23 21
-    COLORS light_gray blue green
-  END FIELD
+  Field 17 Get
+    Geometry 23 19 23 21
+    Colors light_gray blue green
+  End Field
 
   # TZ3 get
-  FIELD 18 GET
-    GEOMETRY 23 23 23 25
-    COLORS light_gray blue green
-  END FIELD
+  Field 18 Get
+    Geometry 23 23 23 25
+    Colors light_gray blue green
+  End Field
 
   # TZ4 get
-  FIELD 19 GET
-    GEOMETRY 23 27 23 29
-    COLORS light_gray blue green
-  END FIELD
+  Field 19 Get
+    Geometry 23 27 23 29
+    Colors light_gray blue green
+  End Field
 
   # TZ5 get
-  FIELD 20 GET
-    GEOMETRY 23 31 23 33
-    COLORS light_gray blue green
-  END FIELD
+  Field 20 Get
+    Geometry 23 31 23 33
+    Colors light_gray blue green
+  End Field
 
   # TZ6 get
-  FIELD 21 GET
-    GEOMETRY 23 35 23 37
-    COLORS light_gray blue green
-  END FIELD
+  Field 21 Get
+    Geometry 23 35 23 37
+    Colors light_gray blue green
+  End Field
 
   # Valid button
-  FIELD 22 BUTTON
-    GEOMETRY 17 52 19 59
-    COLORS brown blue
-    INIT
+  Field 22 Button
+    Geometry 17 52 19 59
+    Colors brown blue
+    Init
       01 01 Valid
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Cancel button
-  FIELD 23 BUTTON
-    GEOMETRY 21 52 23 59
-    COLORS brown blue
-    INIT
+  Field 23 Button
+    Geometry 21 52 23 59
+    Colors brown blue
+    Init
       01 01 Cancel
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Compute button
-  FIELD 24 BUTTON
-    GEOMETRY 23 41 23 49
-    COLORS brown blue
-    INIT
+  Field 24 Button
+    Geometry 23 41 23 49
+    Colors brown blue
+    Init
       00 01 Compute
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
 # Edition, Creation of a record
 # -----------------------------
-DESCRIPTOR 3
+Descriptor 3
 
   # Tittle
-  FIELD 01 PUT
-    GEOMETRY 01 30 01 49
-    COLORS light_gray not_blink black
-    INIT
+  Field 01 Put
+    Geometry 01 30 01 49
+    Colors light_gray not_blink black
+    Init
       00 00 xxxxxxxx of a record
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Date
-  FIELD 02 PUT
-    GEOMETRY 00 69 00 78
-    COLORS cyan not_blink black
-    INIT
+  Field 02 Put
+    Geometry 00 69 00 78
+    Colors cyan not_blink black
+    Init
       00 00 dd/mm/yyyy
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Person get tittle
-  FIELD 03 PUT
-    GEOMETRY 04 05 04 10
-    COLORS light_gray not_blink black
-    INIT
+  Field 03 Put
+    Geometry 04 05 04 10
+    Colors light_gray not_blink black
+    Init
       00 00 Person
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Person get
-  FIELD 04 GET
-    GEOMETRY 04 12 04 31
-    COLORS light_gray blue green
-  END FIELD
+  Field 04 Get
+    Geometry 04 12 04 31
+    Colors light_gray blue green
+  End Field
 
   # Activity get tittle
-  FIELD 05 PUT
-    GEOMETRY 04 34 04 41
-    COLORS light_gray not_blink black
-    INIT
+  Field 05 Put
+    Geometry 04 34 04 41
+    Colors light_gray not_blink black
+    Init
       00 00 Activity
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Activity get
-  FIELD 06 GET
-    GEOMETRY 04 43 04 52
-    COLORS light_gray blue green
-  END FIELD
+  Field 06 Get
+    Geometry 04 43 04 52
+    Colors light_gray blue green
+  End Field
 
  # TZ edit numbers
-  FIELD 07 PUT
-    GEOMETRY 06 30 06 52
-    COLORS light_gray not_blink black
-    INIT
+  Field 07 Put
+    Geometry 06 30 06 52
+    Colors light_gray not_blink black
+    Init
      00 01 1
      00 05 2
      00 09 3
      00 13 4
      00 17 5
      00 21 6
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # TZ edit tittle
-  FIELD 08 PUT
-    GEOMETRY 07 15 07 28
-    COLORS light_gray not_blink black
-    INIT
+  Field 08 Put
+    Geometry 07 15 07 28
+    Colors light_gray not_blink black
+    Init
       00 00 Training Zones
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # TZ1 get
-  FIELD 09 GET
-    GEOMETRY 07 30 07 32
-    COLORS light_gray blue green
-  END FIELD
+  Field 09 Get
+    Geometry 07 30 07 32
+    Colors light_gray blue green
+  End Field
 
   # TZ2 get
-  FIELD 10 GET
-    GEOMETRY 07 34 07 36
-    COLORS light_gray blue green
-  END FIELD
+  Field 10 Get
+    Geometry 07 34 07 36
+    Colors light_gray blue green
+  End Field
 
   # TZ3 get
-  FIELD 11 GET
-    GEOMETRY 07 38 07 40
-    COLORS light_gray blue green
-  END FIELD
+  Field 11 Get
+    Geometry 07 38 07 40
+    Colors light_gray blue green
+  End Field
 
   # TZ4 get
-  FIELD 12 GET
-    GEOMETRY 07 42 07 44
-    COLORS light_gray blue green
-  END FIELD
+  Field 12 Get
+    Geometry 07 42 07 44
+    Colors light_gray blue green
+  End Field
 
   # TZ5 get
-  FIELD 13 GET
-    GEOMETRY 07 46 07 48
-    COLORS light_gray blue green
-  END FIELD
+  Field 13 Get
+    Geometry 07 46 07 48
+    Colors light_gray blue green
+  End Field
 
   # TZ6 get
-  FIELD 14 GET
-    GEOMETRY 07 50 07 52
-    COLORS light_gray blue green
-  END FIELD
+  Field 14 Get
+    Geometry 07 50 07 52
+    Colors light_gray blue green
+  End Field
 
   # Date tittle
-  FIELD 15 PUT
-    GEOMETRY 09 05 09 08
-    COLORS light_gray not_blink black
-    INIT
+  Field 15 Put
+    Geometry 09 05 09 08
+    Colors light_gray not_blink black
+    Init
       00 00 Date
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Date days
-  FIELD 16 GET
-    GEOMETRY 09 10 09 11
-    COLORS light_gray blue green
-  END FIELD
+  Field 16 Get
+    Geometry 09 10 09 11
+    Colors light_gray blue green
+  End Field
 
   # / betweeen day and month
-  FIELD 17 PUT
-    GEOMETRY 09 12 09 12
-    COLORS light_gray not_blink black
-    INIT
+  Field 17 Put
+    Geometry 09 12 09 12
+    Colors light_gray not_blink black
+    Init
       00 00 /
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Date month
-  FIELD 18 GET
-    GEOMETRY 09 13 09 14
-    COLORS light_gray blue green
-  END FIELD
+  Field 18 Get
+    Geometry 09 13 09 14
+    Colors light_gray blue green
+  End Field
 
   # / betweeen month and year
-  FIELD 19 PUT
-    GEOMETRY 09 15 09 15
-    COLORS light_gray not_blink black
-    INIT
+  Field 19 Put
+    Geometry 09 15 09 15
+    Colors light_gray not_blink black
+    Init
       00 00 /
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Date year
-  FIELD 20 GET
-    GEOMETRY 09 16 09 19
-    COLORS light_gray blue green
-  END FIELD
+  Field 20 Get
+    Geometry 09 16 09 19
+    Colors light_gray blue green
+  End Field
 
   # Comment tittle
-  FIELD 21 PUT
-    GEOMETRY 09 22 09 28
-    COLORS light_gray not_blink black
-    INIT
+  Field 21 Put
+    Geometry 09 22 09 28
+    Colors light_gray not_blink black
+    Init
       00 00 Comment
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Comment get
-  FIELD 22 GET
-    GEOMETRY 09 30 09 49
-    COLORS light_gray blue green
-  END FIELD
+  Field 22 Get
+    Geometry 09 30 09 49
+    Colors light_gray blue green
+  End Field
 
   # Sampling tittle
-  FIELD 23 PUT
-    GEOMETRY 09 52 09 65
-    COLORS light_gray not_blink black
-    INIT
+  Field 23 Put
+    Geometry 09 52 09 65
+    Colors light_gray not_blink black
+    Init
       00 00 Sampling delta
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Sampling get
-  FIELD 24 GET
-    GEOMETRY 09 67 09 69
-    COLORS light_gray blue green
-  END FIELD
+  Field 24 Get
+    Geometry 09 67 09 69
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 25 GET
-    GEOMETRY 11 00 11 02
-    COLORS light_gray blue green
-  END FIELD
+  Field 25 Get
+    Geometry 11 00 11 02
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 26 GET
-    GEOMETRY 11 04 11 06
-    COLORS light_gray blue green
-  END FIELD
+  Field 26 Get
+    Geometry 11 04 11 06
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 27 GET
-    GEOMETRY 11 08 11 10
-    COLORS light_gray blue green
-  END FIELD
+  Field 27 Get
+    Geometry 11 08 11 10
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 28 GET
-    GEOMETRY 11 12 11 14
-    COLORS light_gray blue green
-  END FIELD
+  Field 28 Get
+    Geometry 11 12 11 14
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 29 GET
-    GEOMETRY 11 16 11 18
-    COLORS light_gray blue green
-  END FIELD
+  Field 29 Get
+    Geometry 11 16 11 18
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 30 GET
-    GEOMETRY 11 20 11 22
-    COLORS light_gray blue green
-  END FIELD
+  Field 30 Get
+    Geometry 11 20 11 22
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 31 GET
-    GEOMETRY 11 24 11 26
-    COLORS light_gray blue green
-  END FIELD
+  Field 31 Get
+    Geometry 11 24 11 26
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 32 GET
-    GEOMETRY 11 28 11 30
-    COLORS light_gray blue green
-  END FIELD
+  Field 32 Get
+    Geometry 11 28 11 30
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 33 GET
-    GEOMETRY 11 32 11 34
-    COLORS light_gray blue green
-  END FIELD
+  Field 33 Get
+    Geometry 11 32 11 34
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 34 GET
-    GEOMETRY 11 36 11 38
-    COLORS light_gray blue green
-  END FIELD
+  Field 34 Get
+    Geometry 11 36 11 38
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 35 GET
-    GEOMETRY 11 40 11 42
-    COLORS light_gray blue green
-  END FIELD
+  Field 35 Get
+    Geometry 11 40 11 42
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 36 GET
-    GEOMETRY 11 44 11 46
-    COLORS light_gray blue green
-  END FIELD
+  Field 36 Get
+    Geometry 11 44 11 46
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 37 GET
-    GEOMETRY 11 48 11 50
-    COLORS light_gray blue green
-  END FIELD
+  Field 37 Get
+    Geometry 11 48 11 50
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 38 GET
-    GEOMETRY 11 52 11 54
-    COLORS light_gray blue green
-  END FIELD
+  Field 38 Get
+    Geometry 11 52 11 54
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 39 GET
-    GEOMETRY 11 56 11 58
-    COLORS light_gray blue green
-  END FIELD
+  Field 39 Get
+    Geometry 11 56 11 58
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 40 GET
-    GEOMETRY 11 60 11 62
-    COLORS light_gray blue green
-  END FIELD
+  Field 40 Get
+    Geometry 11 60 11 62
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 41 GET
-    GEOMETRY 11 64 11 66
-    COLORS light_gray blue green
-  END FIELD
+  Field 41 Get
+    Geometry 11 64 11 66
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 42 GET
-    GEOMETRY 11 68 11 70
-    COLORS light_gray blue green
-  END FIELD
+  Field 42 Get
+    Geometry 11 68 11 70
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 43 GET
-    GEOMETRY 11 72 11 74
-    COLORS light_gray blue green
-  END FIELD
+  Field 43 Get
+    Geometry 11 72 11 74
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 44 GET
-    GEOMETRY 11 76 11 78
-    COLORS light_gray blue green
-  END FIELD
+  Field 44 Get
+    Geometry 11 76 11 78
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 45 GET
-    GEOMETRY 13 00 13 02
-    COLORS light_gray blue green
-  END FIELD
+  Field 45 Get
+    Geometry 13 00 13 02
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 46 GET
-    GEOMETRY 13 04 13 06
-    COLORS light_gray blue green
-  END FIELD
+  Field 46 Get
+    Geometry 13 04 13 06
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 47 GET
-    GEOMETRY 13 08 13 10
-    COLORS light_gray blue green
-  END FIELD
+  Field 47 Get
+    Geometry 13 08 13 10
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 48 GET
-    GEOMETRY 13 12 13 14
-    COLORS light_gray blue green
-  END FIELD
+  Field 48 Get
+    Geometry 13 12 13 14
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 49 GET
-    GEOMETRY 13 16 13 18
-    COLORS light_gray blue green
-  END FIELD
+  Field 49 Get
+    Geometry 13 16 13 18
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 50 GET
-    GEOMETRY 13 20 13 22
-    COLORS light_gray blue green
-  END FIELD
+  Field 50 Get
+    Geometry 13 20 13 22
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 51 GET
-    GEOMETRY 13 24 13 26
-    COLORS light_gray blue green
-  END FIELD
+  Field 51 Get
+    Geometry 13 24 13 26
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 52 GET
-    GEOMETRY 13 28 13 30
-    COLORS light_gray blue green
-  END FIELD
+  Field 52 Get
+    Geometry 13 28 13 30
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 53 GET
-    GEOMETRY 13 32 13 34
-    COLORS light_gray blue green
-  END FIELD
+  Field 53 Get
+    Geometry 13 32 13 34
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 54 GET
-    GEOMETRY 13 36 13 38
-    COLORS light_gray blue green
-  END FIELD
+  Field 54 Get
+    Geometry 13 36 13 38
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 55 GET
-    GEOMETRY 13 40 13 42
-    COLORS light_gray blue green
-  END FIELD
+  Field 55 Get
+    Geometry 13 40 13 42
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 56 GET
-    GEOMETRY 13 44 13 46
-    COLORS light_gray blue green
-  END FIELD
+  Field 56 Get
+    Geometry 13 44 13 46
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 57 GET
-    GEOMETRY 13 48 13 50
-    COLORS light_gray blue green
-  END FIELD
+  Field 57 Get
+    Geometry 13 48 13 50
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 58 GET
-    GEOMETRY 13 52 13 54
-    COLORS light_gray blue green
-  END FIELD
+  Field 58 Get
+    Geometry 13 52 13 54
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 59 GET
-    GEOMETRY 13 56 13 58
-    COLORS light_gray blue green
-  END FIELD
+  Field 59 Get
+    Geometry 13 56 13 58
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 60 GET
-    GEOMETRY 13 60 13 62
-    COLORS light_gray blue green
-  END FIELD
+  Field 60 Get
+    Geometry 13 60 13 62
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 61 GET
-    GEOMETRY 13 64 13 66
-    COLORS light_gray blue green
-  END FIELD
+  Field 61 Get
+    Geometry 13 64 13 66
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 62 GET
-    GEOMETRY 13 68 13 70
-    COLORS light_gray blue green
-  END FIELD
+  Field 62 Get
+    Geometry 13 68 13 70
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 63 GET
-    GEOMETRY 13 72 13 74
-    COLORS light_gray blue green
-  END FIELD
+  Field 63 Get
+    Geometry 13 72 13 74
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 64 GET
-    GEOMETRY 13 76 13 78
-    COLORS light_gray blue green
-  END FIELD
+  Field 64 Get
+    Geometry 13 76 13 78
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 65 GET
-    GEOMETRY 15 00 15 02
-    COLORS light_gray blue green
-  END FIELD
+  Field 65 Get
+    Geometry 15 00 15 02
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 66 GET
-    GEOMETRY 15 04 15 06
-    COLORS light_gray blue green
-  END FIELD
+  Field 66 Get
+    Geometry 15 04 15 06
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 67 GET
-    GEOMETRY 15 08 15 10
-    COLORS light_gray blue green
-  END FIELD
+  Field 67 Get
+    Geometry 15 08 15 10
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 68 GET
-    GEOMETRY 15 12 15 14
-    COLORS light_gray blue green
-  END FIELD
+  Field 68 Get
+    Geometry 15 12 15 14
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 69 GET
-    GEOMETRY 15 16 15 18
-    COLORS light_gray blue green
-  END FIELD
+  Field 69 Get
+    Geometry 15 16 15 18
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 70 GET
-    GEOMETRY 15 20 15 22
-    COLORS light_gray blue green
-  END FIELD
+  Field 70 Get
+    Geometry 15 20 15 22
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 71 GET
-    GEOMETRY 15 24 15 26
-    COLORS light_gray blue green
-  END FIELD
+  Field 71 Get
+    Geometry 15 24 15 26
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 72 GET
-    GEOMETRY 15 28 15 30
-    COLORS light_gray blue green
-  END FIELD
+  Field 72 Get
+    Geometry 15 28 15 30
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 73 GET
-    GEOMETRY 15 32 15 34
-    COLORS light_gray blue green
-  END FIELD
+  Field 73 Get
+    Geometry 15 32 15 34
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 74 GET
-    GEOMETRY 15 36 15 38
-    COLORS light_gray blue green
-  END FIELD
+  Field 74 Get
+    Geometry 15 36 15 38
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 75 GET
-    GEOMETRY 15 40 15 42
-    COLORS light_gray blue green
-  END FIELD
+  Field 75 Get
+    Geometry 15 40 15 42
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 76 GET
-    GEOMETRY 15 44 15 46
-    COLORS light_gray blue green
-  END FIELD
+  Field 76 Get
+    Geometry 15 44 15 46
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 77 GET
-    GEOMETRY 15 48 15 50
-    COLORS light_gray blue green
-  END FIELD
+  Field 77 Get
+    Geometry 15 48 15 50
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 78 GET
-    GEOMETRY 15 52 15 54
-    COLORS light_gray blue green
-  END FIELD
+  Field 78 Get
+    Geometry 15 52 15 54
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 79 GET
-    GEOMETRY 15 56 15 58
-    COLORS light_gray blue green
-  END FIELD
+  Field 79 Get
+    Geometry 15 56 15 58
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 80 GET
-    GEOMETRY 15 60 15 62
-    COLORS light_gray blue green
-  END FIELD
+  Field 80 Get
+    Geometry 15 60 15 62
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 81 GET
-    GEOMETRY 15 64 15 66
-    COLORS light_gray blue green
-  END FIELD
+  Field 81 Get
+    Geometry 15 64 15 66
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 82 GET
-    GEOMETRY 15 68 15 70
-    COLORS light_gray blue green
-  END FIELD
+  Field 82 Get
+    Geometry 15 68 15 70
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 83 GET
-    GEOMETRY 15 72 15 74
-    COLORS light_gray blue green
-  END FIELD
+  Field 83 Get
+    Geometry 15 72 15 74
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 84 GET
-    GEOMETRY 15 76 15 78
-    COLORS light_gray blue green
-  END FIELD
+  Field 84 Get
+    Geometry 15 76 15 78
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 85 GET
-    GEOMETRY 17 00 17 02
-    COLORS light_gray blue green
-  END FIELD
+  Field 85 Get
+    Geometry 17 00 17 02
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 86 GET
-    GEOMETRY 17 04 17 06
-    COLORS light_gray blue green
-  END FIELD
+  Field 86 Get
+    Geometry 17 04 17 06
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 87 GET
-    GEOMETRY 17 08 17 10
-    COLORS light_gray blue green
-  END FIELD
+  Field 87 Get
+    Geometry 17 08 17 10
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 88 GET
-    GEOMETRY 17 12 17 14
-    COLORS light_gray blue green
-  END FIELD
+  Field 88 Get
+    Geometry 17 12 17 14
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 89 GET
-    GEOMETRY 17 16 17 18
-    COLORS light_gray blue green
-  END FIELD
+  Field 89 Get
+    Geometry 17 16 17 18
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 90 GET
-    GEOMETRY 17 20 17 22
-    COLORS light_gray blue green
-  END FIELD
+  Field 90 Get
+    Geometry 17 20 17 22
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 91 GET
-    GEOMETRY 17 24 17 26
-    COLORS light_gray blue green
-  END FIELD
+  Field 91 Get
+    Geometry 17 24 17 26
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 92 GET
-    GEOMETRY 17 28 17 30
-    COLORS light_gray blue green
-  END FIELD
+  Field 92 Get
+    Geometry 17 28 17 30
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 93 GET
-    GEOMETRY 17 32 17 34
-    COLORS light_gray blue green
-  END FIELD
+  Field 93 Get
+    Geometry 17 32 17 34
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 94 GET
-    GEOMETRY 17 36 17 38
-    COLORS light_gray blue green
-  END FIELD
+  Field 94 Get
+    Geometry 17 36 17 38
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 95 GET
-    GEOMETRY 17 40 17 42
-    COLORS light_gray blue green
-  END FIELD
+  Field 95 Get
+    Geometry 17 40 17 42
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 96 GET
-    GEOMETRY 17 44 17 46
-    COLORS light_gray blue green
-  END FIELD
+  Field 96 Get
+    Geometry 17 44 17 46
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 97 GET
-    GEOMETRY 17 48 17 50
-    COLORS light_gray blue green
-  END FIELD
+  Field 97 Get
+    Geometry 17 48 17 50
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 98 GET
-    GEOMETRY 17 52 17 54
-    COLORS light_gray blue green
-  END FIELD
+  Field 98 Get
+    Geometry 17 52 17 54
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 99 GET
-    GEOMETRY 17 56 17 58
-    COLORS light_gray blue green
-  END FIELD
+  Field 99 Get
+    Geometry 17 56 17 58
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 100 GET
-    GEOMETRY 17 60 17 62
-    COLORS light_gray blue green
-  END FIELD
+  Field 100 Get
+    Geometry 17 60 17 62
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 101 GET
-    GEOMETRY 17 64 17 66
-    COLORS light_gray blue green
-  END FIELD
+  Field 101 Get
+    Geometry 17 64 17 66
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 102 GET
-    GEOMETRY 17 68 17 70
-    COLORS light_gray blue green
-  END FIELD
+  Field 102 Get
+    Geometry 17 68 17 70
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 103 GET
-    GEOMETRY 17 72 17 74
-    COLORS light_gray blue green
-  END FIELD
+  Field 103 Get
+    Geometry 17 72 17 74
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 104 GET
-    GEOMETRY 17 76 17 78
-    COLORS light_gray blue green
-  END FIELD
+  Field 104 Get
+    Geometry 17 76 17 78
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 105 GET
-    GEOMETRY 19 00 19 02
-    COLORS light_gray blue green
-  END FIELD
+  Field 105 Get
+    Geometry 19 00 19 02
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 106 GET
-    GEOMETRY 19 04 19 06
-    COLORS light_gray blue green
-  END FIELD
+  Field 106 Get
+    Geometry 19 04 19 06
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 107 GET
-    GEOMETRY 19 08 19 10
-    COLORS light_gray blue green
-  END FIELD
+  Field 107 Get
+    Geometry 19 08 19 10
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 108 GET
-    GEOMETRY 19 12 19 14
-    COLORS light_gray blue green
-  END FIELD
+  Field 108 Get
+    Geometry 19 12 19 14
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 109 GET
-    GEOMETRY 19 16 19 18
-    COLORS light_gray blue green
-  END FIELD
+  Field 109 Get
+    Geometry 19 16 19 18
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 110 GET
-    GEOMETRY 19 20 19 22
-    COLORS light_gray blue green
-  END FIELD
+  Field 110 Get
+    Geometry 19 20 19 22
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 111 GET
-    GEOMETRY 19 24 19 26
-    COLORS light_gray blue green
-  END FIELD
+  Field 111 Get
+    Geometry 19 24 19 26
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 112 GET
-    GEOMETRY 19 28 19 30
-    COLORS light_gray blue green
-  END FIELD
+  Field 112 Get
+    Geometry 19 28 19 30
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 113 GET
-    GEOMETRY 19 32 19 34
-    COLORS light_gray blue green
-  END FIELD
+  Field 113 Get
+    Geometry 19 32 19 34
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 114 GET
-    GEOMETRY 19 36 19 38
-    COLORS light_gray blue green
-  END FIELD
+  Field 114 Get
+    Geometry 19 36 19 38
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 115 GET
-    GEOMETRY 19 40 19 42
-    COLORS light_gray blue green
-  END FIELD
+  Field 115 Get
+    Geometry 19 40 19 42
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 116 GET
-    GEOMETRY 19 44 19 46
-    COLORS light_gray blue green
-  END FIELD
+  Field 116 Get
+    Geometry 19 44 19 46
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 117 GET
-    GEOMETRY 19 48 19 50
-    COLORS light_gray blue green
-  END FIELD
+  Field 117 Get
+    Geometry 19 48 19 50
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 118 GET
-    GEOMETRY 19 52 19 54
-    COLORS light_gray blue green
-  END FIELD
+  Field 118 Get
+    Geometry 19 52 19 54
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 119 GET
-    GEOMETRY 19 56 19 58
-    COLORS light_gray blue green
-  END FIELD
+  Field 119 Get
+    Geometry 19 56 19 58
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 120 GET
-    GEOMETRY 19 60 19 62
-    COLORS light_gray blue green
-  END FIELD
+  Field 120 Get
+    Geometry 19 60 19 62
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 121 GET
-    GEOMETRY 19 64 19 66
-    COLORS light_gray blue green
-  END FIELD
+  Field 121 Get
+    Geometry 19 64 19 66
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 122 GET
-    GEOMETRY 19 68 19 70
-    COLORS light_gray blue green
-  END FIELD
+  Field 122 Get
+    Geometry 19 68 19 70
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 123 GET
-    GEOMETRY 19 72 19 74
-    COLORS light_gray blue green
-  END FIELD
+  Field 123 Get
+    Geometry 19 72 19 74
+    Colors light_gray blue green
+  End Field
 
   # Rates get
-  FIELD 124 GET
-    GEOMETRY 19 76 19 78
-    COLORS light_gray blue green
-  END FIELD
+  Field 124 Get
+    Geometry 19 76 19 78
+    Colors light_gray blue green
+  End Field
 
   # Valid button
-  FIELD 125 BUTTON
-    GEOMETRY 21 30 23 38
-    COLORS brown blue
-    INIT
+  Field 125 Button
+    Geometry 21 30 23 38
+    Colors brown blue
+    Init
       01 02 Valid
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Cancel button
-  FIELD 126 BUTTON
-    GEOMETRY 21 42 23 51
-    COLORS brown blue
-    INIT
+  Field 126 Button
+    Geometry 21 42 23 51
+    Colors brown blue
+    Init
       01 02 Cancel
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Exit button
-  FIELD 127 BUTTON
-    GEOMETRY 03 71 05 78
-    COLORS brown blue
-    INIT
+  Field 127 Button
+    Geometry 03 71 05 78
+    Colors brown blue
+    Init
       01 02 Exit
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Import button
-  FIELD 128 BUTTON
-    GEOMETRY 21 59 21 76
-    COLORS brown blue
-    INIT
+  Field 128 Button
+    Geometry 21 59 21 76
+    Colors brown blue
+    Init
       00 02 Import samples
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Import tittle
-  FIELD 129 PUT
-    GEOMETRY 23 53 23 56
-    COLORS light_gray not_blink black
-    INIT
+  Field 129 Put
+    Geometry 23 53 23 56
+    Colors light_gray not_blink black
+    Init
       00 00 File
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Import file name
-  FIELD 130 GET
-    GEOMETRY 23 57 23 78
-    COLORS light_gray blue green
-  END FIELD
+  Field 130 Get
+    Geometry 23 57 23 78
+    Colors light_gray blue green
+  End Field
 
   # Insert button
-  FIELD 131 BUTTON
-    GEOMETRY 21 5 23 11
-    COLORS brown blue
-    INIT
+  Field 131 Button
+    Geometry 21 5 23 11
+    Colors brown blue
+    Init
       01 02 Ins
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Suppr button
-  FIELD 132 BUTTON
-    GEOMETRY 21 13 23 21
-    COLORS brown blue
-    INIT
+  Field 132 Button
+    Geometry 21 13 23 21
+    Colors brown blue
+    Init
       01 02 Suppr
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
 
 # Message during printing
 # -----------------------
-DESCRIPTOR 4
+Descriptor 4
 
-  FIELD 1 PUT
-    GEOMETRY 10 25 18 55
-    COLORS brown not_blink blue
-    INIT
+  Field 1 Put
+    Geometry 10 25 18 55
+    Colors brown not_blink blue
+    Init
       01 08 P R I N T I N G
       03 05 Abort with Ctrl Break
       05 01 In case of DOS error:
       06 02  Abort will terminate program
       07 02  Fail  will cancel printing
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-END DESCRIPTOR
+End Descriptor

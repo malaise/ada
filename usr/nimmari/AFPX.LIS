@@ -2,24 +2,24 @@
 # -----------------------------
 # <descriptor_file> ::= { <descriptor_def> }
 #
-# <descriptor_def> ::= DESCRIPTOR <descriptor_no>
+# <descriptor_def> ::= Descriptor <descriptor_no>
 #                        [ <list_def>  ]
 #                        [ { <field_def> } ]
-#                      END DESCRIPTOR
+#                      End Descriptor
 #
-# <list_def>  ::= LIST
+# <list_def>  ::= List
 #                   <field_geo_and_color>
-#                 END LIST
+#                 End List
 #
-# <field_def> ::= FIELD <field_no> <field_type>
+# <field_def> ::= Field <field_no> <field_type>
 #                   <field_geo_and_color>
 #                   [ <init_def> ]
-#                 END FIELD
+#                 End Field
 #
-# <field_type> ::= PUT  |  BUTTON  |  GET
+# <field_type> ::= Put  |  Button  |  Get
 #
-# <field_geo_and_color> ::= GEOMETRY <geometry>
-#                           COLORS   <colors>
+# <field_geo_and_color> ::= Geometry <geometry>
+#                           Colors   <colors>
 #
 # <geometry> ::= <upper_left_row> <upper_left_col>
 #                <lower_right_row> <lower_right_col>
@@ -27,9 +27,9 @@
 # <colors> ::= <foreground_color> [ <blink> ]
 #                          <background_color> [ <selected_color> ]
 #
-# <init_def> ::= INIT
+# <init_def> ::= Init
 #                  [ { <init_line> } ]
-#                END INIT
+#                End Init
 #
 # <init_line> ::= <init_row> <init_col> [ <init_string> ]
 #
@@ -37,20 +37,20 @@
 # Semantic of the descriptor file
 # -------------------------------
 # - <descriptor_no> has to be positive range 1 .. 50 and sole (no double)
-# - LIST has to be defined none or once per descriptor
-# - <field_no> have to be within FIELD_RANGE (1 .. 200), strictly crescent
+# - List has to be defined none or once per descriptor
+# - <field_no> have to be within Field_Range (1 .. 200), strictly crescent
 #                    within one descriptor, no "hole", no double
 # - <geometry> must define at least one row and one col
 # - <geometry> must not make the field overlap with another field of the
 #                    descriptor
-# - <geometry> of a GET field must define only one row
-# - <foreground_color> must be of COLORS for PUT fields
-#                    and of BASIC_COLORS for BUTTON, GET and LIST
-# - <background_color> and <selected_color> must be BASIC_COLORS
-# - <blink> is mandatory for PUT fields and must not be specified
-#                    for LIST, BUTTON and GET fields
-# - <selected_color> is mandatory for LIST and GET fields and
-#                    must not be specified for PUT and BUTTON
+# - <geometry> of a Get field must define only one row
+# - <foreground_color> must be of Colors for Put fields
+#                    and of Basic_Colors for Button, Get and List
+# - <background_color> and <selected_color> must be Basic_Colors
+# - <blink> is mandatory for Put fields and must not be specified
+#                    for List, Button and Get fields
+# - <selected_color> is mandatory for List and Get fields and
+#                    must not be specified for Put and Button
 # - <init_row> have to be compatible with <geometry>
 #                    crescent, no double (holes allowed)
 # - <init_col> have to be compatible with <geometry>
@@ -59,13 +59,14 @@
 # Infos
 # -----
 # Separator is space or tabulation
+# Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase)
 # Comments are lines with '#' as first signficant character
 # Rows are from 0 to 24
 # Cols are from 0 to 79
-# Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
-# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, ORANGE,
-#                              YELLOW, WHITE
-# Blink is "BLINK" or "NOT_BLINK"
+# Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray
+# Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange,
+#                              Yellow, White
+# Blink is "Blink" or "Not_Blink"
 # Upper case is mandatory for keywords, not significant for colors and blink,
 #  significant for init_string
 #
@@ -73,30 +74,29 @@
 # -----------------------------
 #  Type  |   Foreground  Blink  Background  Selected
 #  -------------------------------------------------
-#  PUT   |   X Colors    X      X Basic
-#  BUTTON|   X Basic            X Basic
-#  GET   |   X Basic            X Basic     X Basic
-#  LIST  |   X Basic            X Basic     X Basic
+#  Put   |   X Colors    X      X Basic
+#  Button|   X Basic            X Basic
+#  Get   |   X Basic            X Basic     X Basic
+#  List  |   X Basic            X Basic     X Basic
 
-
-DESCRIPTOR 1
+Descriptor 1
 
 # Title, presentation, rules
 
    # Title NIM / MARIENBAD, then NIM or Marienbad
-   FIELD 1 PUT
-     GEOMETRY 0 30 0 46
-     COLORS blue not_blink black
-     INIT
+   Field 1 Put
+     Geometry 0 30 0 46
+     Colors blue not_blink black
+     Init
        0 0 NIM and MARIENBAD
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
 # Rules
-   FIELD 2 PUT
-     GEOMETRY 1 1 19 78
-     COLORS cyan not_blink black
-     INIT
+   Field 2 Put
+     Geometry 1 1 19 78
+     Colors cyan not_blink black
+     Init
         1 2 This game presents several sticks aligned on four rows:
         2 3  - seven sticks in the first row,
         3 3  - five in the second,
@@ -114,165 +114,166 @@ DESCRIPTOR 1
        16 2 Two variants are available:
        17 3 - at Nim, the winner is the one who takes the last stick,
        18 3 - at Marienbad, the player who takes the last stick loses.
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
 # Buttons
 # Play nimm,  Play Marienbad, exit
-   FIELD 3 BUTTON
-     GEOMETRY 21 10 23 19
-     COLORS cyan light_gray 
-     INIT
+   Field 3 Button
+     Geometry 21 10 23 19
+     Colors cyan light_gray 
+     Init
        1 1 Play Nim
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
-   FIELD 4 BUTTON
-     GEOMETRY 21 22 23 37
-     COLORS cyan light_gray 
-     INIT
+   Field 4 Button
+     Geometry 21 22 23 37
+     Colors cyan light_gray 
+     Init
        1 1 Play Marienbad
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
-   FIELD 5 BUTTON
-     GEOMETRY 21 60 23 68
-     COLORS cyan light_gray 
-     INIT
+   Field 5 Button
+     Geometry 21 60 23 68
+     Colors cyan light_gray 
+     Init
        1 1 E X I T
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
-END DESCRIPTOR
+End Descriptor
 
-DESCRIPTOR 2
+Descriptor 2
 
    # First row
-   FIELD 1 BUTTON
-     GEOMETRY 2 23 4 24
-     COLORS cyan light_gray 
-   END FIELD
+   Field 1 Button
+     Geometry 2 23 4 24
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 2 BUTTON
-     GEOMETRY 2 28 4 29
-     COLORS cyan light_gray 
-   END FIELD
+   Field 2 Button
+     Geometry 2 28 4 29
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 3 BUTTON
-     GEOMETRY 2 33 4 34
-     COLORS cyan light_gray 
-   END FIELD
+   Field 3 Button
+     Geometry 2 33 4 34
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 4 BUTTON
-     GEOMETRY 2 38 4 39
-     COLORS cyan light_gray 
-   END FIELD
+   Field 4 Button
+     Geometry 2 38 4 39
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 5 BUTTON
-     GEOMETRY 2 43 4 44
-     COLORS cyan light_gray 
-   END FIELD
+   Field 5 Button
+     Geometry 2 43 4 44
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 6 BUTTON
-     GEOMETRY 2 48 4 49
-     COLORS cyan light_gray 
-   END FIELD
+   Field 6 Button
+     Geometry 2 48 4 49
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 7 BUTTON
-     GEOMETRY 2 53 4 54
-     COLORS cyan light_gray 
-   END FIELD
+   Field 7 Button
+     Geometry 2 53 4 54
+     Colors cyan light_gray 
+   End Field
 
    # Second row
-   FIELD 8 BUTTON
-     GEOMETRY 6 28 8 29
-     COLORS cyan light_gray 
-   END FIELD
+   Field 8 Button
+     Geometry 6 28 8 29
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 9 BUTTON
-     GEOMETRY 6 33 8 34
-     COLORS cyan light_gray 
-   END FIELD
+   Field 9 Button
+     Geometry 6 33 8 34
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 10 BUTTON
-     GEOMETRY 6 38 8 39
-     COLORS cyan light_gray 
-   END FIELD
+   Field 10 Button
+     Geometry 6 38 8 39
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 11 BUTTON
-     GEOMETRY 6 43 8 44
-     COLORS cyan light_gray 
-   END FIELD
+   Field 11 Button
+     Geometry 6 43 8 44
+     Colors cyan light_gray 
+   End Field
 
-   FIELD 12 BUTTON
-     GEOMETRY 6 48 8 49
-     COLORS cyan light_gray 
-   END FIELD
-
-   # Third row
-   FIELD 13 BUTTON
-     GEOMETRY 10 33 12 34
-     COLORS cyan light_gray 
-   END FIELD
-
-   FIELD 14 BUTTON
-     GEOMETRY 10 38 12 39
-     COLORS cyan light_gray 
-   END FIELD
-
-   FIELD 15 BUTTON
-     GEOMETRY 10 43 12 44
-     COLORS cyan light_gray 
-   END FIELD
+   Field 12 Button
+     Geometry 6 48 8 49
+     Colors cyan light_gray 
+   End Field
 
    # Third row
-   FIELD 16 BUTTON
-     GEOMETRY 14 38 16 39
-     COLORS cyan light_gray 
-   END FIELD
+   Field 13 Button
+     Geometry 10 33 12 34
+     Colors cyan light_gray 
+   End Field
+
+   Field 14 Button
+     Geometry 10 38 12 39
+     Colors cyan light_gray 
+   End Field
+
+   Field 15 Button
+     Geometry 10 43 12 44
+     Colors cyan light_gray 
+   End Field
+
+   # Third row
+   Field 16 Button
+     Geometry 14 38 16 39
+     Colors cyan light_gray 
+   End Field
 
    # Play
-   FIELD 17 BUTTON
-     GEOMETRY 21 34 23 42
-     COLORS blue light_gray 
-     INIT
+   Field 17 Button
+     Geometry 21 34 23 42
+     Colors blue light_gray 
+     Init
        1 1 Remove
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
-   FIELD 18 BUTTON
-     GEOMETRY 21 60 23 68
-     COLORS blue light_gray 
-     INIT
+   Field 18 Button
+     Geometry 21 60 23 68
+     Colors blue light_gray 
+     Init
        1 1 E X I T
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
    # Score
-   FIELD 19 PUT
-     GEOMETRY 0 54 0 78
-     COLORS blue not_blink black
-     INIT
+   Field 19 Put
+     Geometry 0 54 0 78
+     Colors blue not_blink black
+     Init
        0 0 You :   0 | Me :   0
-     END INIT
-   END FIELD
+     End Init
+   End Field
 
    # Title NIM or Marienbad
-   FIELD 20 PUT
-     GEOMETRY 0 34 0 42
-     COLORS blue not_blink black
-   END FIELD
+   Field 20 Put
+     Geometry 0 34 0 42
+     Colors blue not_blink black
+   End Field
 
    # Who wins
-   FIELD 21 PUT
-     GEOMETRY 19 0 19 79
-     COLORS light_green blink black
-   END FIELD
+   Field 21 Put
+     Geometry 19 0 19 79
+     Colors light_green blink black
+   End Field
 
    # Play
-   FIELD 22 BUTTON
-     GEOMETRY 21 03 23 18
-     COLORS blue light_gray 
-   END FIELD
-END DESCRIPTOR
+   Field 22 Button
+     Geometry 21 03 23 18
+     Colors blue light_gray 
+   End Field
+
+End Descriptor
 

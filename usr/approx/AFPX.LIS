@@ -2,24 +2,24 @@
 # -----------------------------
 # <descriptor_file> ::= { <descriptor_def> }
 #
-# <descriptor_def> ::= DESCRIPTOR <descriptor_no>
+# <descriptor_def> ::= Descriptor <descriptor_no>
 #                        [ <list_def>  ]
 #                        [ { <field_def> } ]
-#                      END DESCRIPTOR
+#                      End Descriptor
 #
-# <list_def>  ::= LIST
+# <list_def>  ::= List
 #                   <field_geo_and_color>
-#                 END LIST
+#                 End List
 #
-# <field_def> ::= FIELD <field_no> <field_type>
+# <field_def> ::= Field <field_no> <field_type>
 #                   <field_geo_and_color>
 #                   [ <init_def> ]
-#                 END FIELD
+#                 End Field
 #
-# <field_type> ::= PUT  |  BUTTON  |  GET
+# <field_type> ::= Put  |  Button  |  Get
 #
-# <field_geo_and_color> ::= GEOMETRY <geometry>
-#                           COLORS   <colors>
+# <field_geo_and_color> ::= Geometry <geometry>
+#                           Colors   <colors>
 #
 # <geometry> ::= <upper_left_row> <upper_left_col>
 #                <lower_right_row> <lower_right_col>
@@ -27,977 +27,981 @@
 # <colors> ::= <foreground_color> [ <blink> ]
 #                          <background_color> [ <selected_color> ]
 #
-# <init_def> ::= INIT
-#                  { <init_line> }
-#                END INIT
+# <init_def> ::= Init
+#                  [ { <init_line> } ]
+#                End Init
 #
-# <init_line> ::= <init_row> <init_col> <init_string>
+# <init_line> ::= <init_row> <init_col> [ <init_string> ]
 #
 #
 # Semantic of the descriptor file
 # -------------------------------
-# - <descriptor_no> has to be positive and sole (no double)
-# - LIST has to be defined none or once per descriptor
-# - <field_no> have to be strictly crescent within one descriptor, no "hole",
-#   no double
-# - <field_no> within FIELD_RANGE
+# - <descriptor_no> has to be positive range 1 .. 50 and sole (no double)
+# - List has to be defined none or once per descriptor
+# - <field_no> have to be within Field_Range (1 .. 200), strictly crescent
+#                    within one descriptor, no "hole", no double
 # - <geometry> must define at least one row and one col
-# - <geometry> of a GET field must define only ONE row
-# - <geometry> must not make field overlapping with another
-# - <foreground_color> must be of COLORS for PUT fields
-#                     and of BASIC_COLORS for BUTTON, GET and LIST
-# - <background_color> and <selected_color> must be BASIC_COLORS
-# - <blink> is mandatory for PUT fields and must not be specified
-#                    for LIST, BUTTON and GET fields
-# - <selected_color> is mandatory for LIST and GET fields and
-#                    must not be specified for PUT and BUTTON
+# - <geometry> must not make the field overlap with another field of the
+#                    descriptor
+# - <geometry> of a Get field must define only one row
+# - <foreground_color> must be of Colors for Put fields
+#                    and of Basic_Colors for Button, Get and List
+# - <background_color> and <selected_color> must be Basic_Colors
+# - <blink> is mandatory for Put fields and must not be specified
+#                    for List, Button and Get fields
+# - <selected_color> is mandatory for List and Get fields and
+#                    must not be specified for Put and Button
 # - <init_row> have to be compatible with <geometry>
-#                       crescent, no double (holes allowed)
+#                    crescent, no double (holes allowed)
 # - <init_col> have to be compatible with <geometry>
 # - <init_string> have to be compatible with <geometry> and <init_col>
 #
 # Infos
 # -----
+# Separator is space or tabulation
+# Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase)
+# Comments are lines with '#' as first signficant character
 # Rows are from 0 to 24
 # Cols are from 0 to 79
-# Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
-# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, ORANGE,
-#                              YELLOW, WHITE
-# Blink is "BLINK" or "NOT_BLINK"
+# Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray
+# Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange,
+#                              Yellow, White
+# Blink is "Blink" or "Not_Blink"
+# Upper case is mandatory for keywords, not significant for colors and blink,
+#  significant for init_string
 #
 # Summary of color combinations
 # -----------------------------
 #  Type  |   Foreground  Blink  Background  Selected
 #  -------------------------------------------------
-#  PUT   |   X Colors    X      X Basic
-#  BUTTON|   X Basic            X Basic
-#  GET   |   X Basic            X Basic     X Basic
-#  LIST  |   X Basic            X Basic     X Basic
-
+#  Put   |   X Colors    X      X Basic
+#  Button|   X Basic            X Basic
+#  Get   |   X Basic            X Basic     X Basic
+#  List  |   X Basic            X Basic     X Basic
 
 # Menu 1 : Data
-DESCRIPTOR 1
+Descriptor 1
 
-  LIST
-    GEOMETRY 2 33 21 65
-    COLORS cyan brown red
-  END LIST
+  List
+    Geometry 2 33 21 65
+    Colors cyan brown red
+  End List
 
-  FIELD 1 PUT
-    GEOMETRY 0 25 0 48
-    COLORS light_gray not_blink black
-    INIT
+  Field 1 Put
+    Geometry 0 25 0 48
+    Colors light_gray not_blink black
+    Init
       0 0 POLYNOMIAL APPROXIMATION
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Title
-  FIELD 2 PUT
-    GEOMETRY 1 3 1 27
-    COLORS cyan not_blink black
-  END FIELD
+  Field 2 Put
+    Geometry 1 3 1 27
+    Colors cyan not_blink black
+  End Field
 
   # File name
-  FIELD 3 PUT
-    GEOMETRY 1 33 1 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 3 Put
+    Geometry 1 33 1 37
+    Colors light_gray not_blink black
+    Init
       0 0 File:
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 4 PUT
-    GEOMETRY 1 39 1 65
-    COLORS cyan not_blink black
-  END FIELD
+  Field 4 Put
+    Geometry 1 39 1 65
+    Colors cyan not_blink black
+  End Field
 
   # Points
-  FIELD 5 PUT
-    GEOMETRY 1 68 1 71
-    COLORS cyan not_blink black
-  END FIELD
+  Field 5 Put
+    Geometry 1 68 1 71
+    Colors cyan not_blink black
+  End Field
 
-  FIELD 6 PUT
-    GEOMETRY 1 73 1 78
-    COLORS light_gray not_blink black
-    INIT
+  Field 6 Put
+    Geometry 1 73 1 78
+    Colors light_gray not_blink black
+    Init
       0 0 points
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 7 PUT
-    GEOMETRY 2 71 2 73
-    COLORS white blink black
-    INIT
+  Field 7 Put
+    Geometry 2 71 2 73
+    Colors white blink black
+    Init
       0 0 NOT
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 8 PUT
-    GEOMETRY 3 70 3 74
-    COLORS light_gray not_blink black
-    INIT
+  Field 8 Put
+    Geometry 3 70 3 74
+    Colors light_gray not_blink black
+    Init
       0 0 saved
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Get
-  FIELD 9 GET
-    GEOMETRY 23 1 23 33
-    COLORS cyan brown brown
-  END FIELD
+  Field 9 Get
+    Geometry 23 1 23 33
+    Colors cyan brown brown
+  End Field
 
   # Message
-  FIELD 10 PUT
-    GEOMETRY 23 35 23 78
-    COLORS light_gray not_blink black
-  END FIELD
+  Field 10 Put
+    Geometry 23 35 23 78
+    Colors light_gray not_blink black
+  End Field
 
   # List Action
-  FIELD 11 BUTTON
-    GEOMETRY 5 69 5 77
-    COLORS cyan brown
-    INIT
+  Field 11 Button
+    Geometry 5 69 5 77
+    Colors cyan brown
+    Init
       0 3 Top
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 12 BUTTON
-    GEOMETRY 7 69 9 77
-    COLORS cyan brown
-    INIT
+  Field 12 Button
+    Geometry 7 69 9 77
+    Colors cyan brown
+    Init
       1 2 Pg Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 13 BUTTON
-    GEOMETRY 11 69 11 77
-    COLORS cyan brown
-    INIT
+  Field 13 Button
+    Geometry 11 69 11 77
+    Colors cyan brown
+    Init
       0 3 Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 14 BUTTON
-    GEOMETRY 15 69 15 77
-    COLORS cyan brown
-    INIT
+  Field 14 Button
+    Geometry 15 69 15 77
+    Colors cyan brown
+    Init
       0 2 Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 15 BUTTON
-    GEOMETRY 17 69 19 77
-    COLORS cyan brown
-    INIT
+  Field 15 Button
+    Geometry 17 69 19 77
+    Colors cyan brown
+    Init
       1 1 Pg Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 16 BUTTON
-    GEOMETRY 21 69 21 77
-    COLORS cyan brown
-    INIT
+  Field 16 Button
+    Geometry 21 69 21 77
+    Colors cyan brown
+    Init
       0 1 Bottom
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # EXIT/BACK, OK, CANCEL
-  FIELD 17 BUTTON
-    GEOMETRY 19 11 21 20
-    COLORS cyan brown
-    INIT
+  Field 17 Button
+    Geometry 19 11 21 20
+    Colors cyan brown
+    Init
       1 3 EXIT
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 18 BUTTON
-    GEOMETRY 19 2 21 9
-    COLORS cyan brown
-    INIT
+  Field 18 Button
+    Geometry 19 2 21 9
+    Colors cyan brown
+    Init
       1 3 OK
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 19 BUTTON
-    GEOMETRY 19 22 21 31
-    COLORS cyan brown
-    INIT
+  Field 19 Button
+    Geometry 19 22 21 31
+    Colors cyan brown
+    Init
       1 2 CANCEL
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Menu specific 1 T+3B
-  FIELD 20 PUT
-    GEOMETRY 3 13 3 16
-    COLORS light_gray not_blink black
-    INIT
+  Field 20 Put
+    Geometry 3 13 3 16
+    Colors light_gray not_blink black
+    Init
       0 0 Data
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 21 BUTTON
-    GEOMETRY 4 2 6 9
-    COLORS cyan brown
-    INIT
+  Field 21 Button
+    Geometry 4 2 6 9
+    Colors cyan brown
+    Init
       1 2 Load
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 22 BUTTON
-    GEOMETRY 4 11 6 20
-    COLORS cyan brown
-    INIT
+  Field 22 Button
+    Geometry 4 11 6 20
+    Colors cyan brown
+    Init
       1 3 Save
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 23 BUTTON
-    GEOMETRY 4 22 6 31
-    COLORS cyan brown
-    INIT
+  Field 23 Button
+    Geometry 4 22 6 31
+    Colors cyan brown
+    Init
       1 3 New
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Menu specific 2 T+3B
-  FIELD 24 PUT
-    GEOMETRY 8 13 8 17
-    COLORS light_gray not_blink black
-    INIT
+  Field 24 Put
+    Geometry 8 13 8 17
+    Colors light_gray not_blink black
+    Init
       0 0 Point
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 25 BUTTON
-    GEOMETRY 9 2 11 9
-    COLORS cyan brown
-    INIT
+  Field 25 Button
+    Geometry 9 2 11 9
+    Colors cyan brown
+    Init
       1 2 Add
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 26 BUTTON
-    GEOMETRY 9 11 11 20
-    COLORS cyan brown
-    INIT
+  Field 26 Button
+    Geometry 9 11 11 20
+    Colors cyan brown
+    Init
       1 2 Delete
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 27 BUTTON
-    GEOMETRY 9 22 11 31
-    COLORS cyan brown
-    INIT
+  Field 27 Button
+    Geometry 9 22 11 31
+    Colors cyan brown
+    Init
       1 2 Modify
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Menu specific 3 T+3B
-  FIELD 28 PUT
-    GEOMETRY 13 0 13 0
-    COLORS black not_blink black
-  END FIELD
+  Field 28 Put
+    Geometry 13 0 13 0
+    Colors black not_blink black
+  End Field
 
-  FIELD 29 BUTTON
-    GEOMETRY 14 2 16 20
-    COLORS cyan brown
-    INIT
+  Field 29 Button
+    Geometry 14 2 16 20
+    Colors cyan brown
+    Init
       1 3 Approximation
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 30 PUT
-    GEOMETRY 15 21 15 21
-    COLORS black not_blink black
-  END FIELD
+  Field 30 Put
+    Geometry 15 21 15 21
+    Colors black not_blink black
+  End Field
 
-  FIELD 31 BUTTON
-    GEOMETRY 14 22 16 31
-    COLORS cyan brown
-    INIT
+  Field 31 Button
+    Geometry 14 22 16 31
+    Colors cyan brown
+    Init
       1 3 Sort
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
 
 # File selection
-DESCRIPTOR 2
+Descriptor 2
 
-  LIST
-    GEOMETRY 2 11 21 65
-    COLORS cyan brown red
-  END LIST
+  List
+    Geometry 2 11 21 65
+    Colors cyan brown red
+  End List
 
-  FIELD 1 PUT
-    GEOMETRY 0 25 0 48
-    COLORS light_gray not_blink black
-    INIT
+  Field 1 Put
+    Geometry 0 25 0 48
+    Colors light_gray not_blink black
+    Init
       0 0 POLYNOMIAL APPROXIMATION
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Title
-  FIELD 2 PUT
-    GEOMETRY 1 3 1 27
-    COLORS cyan not_blink black
-  END FIELD
+  Field 2 Put
+    Geometry 1 3 1 27
+    Colors cyan not_blink black
+  End Field
 
   # File
-  FIELD 3 PUT
-    GEOMETRY 1 33 1 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 3 Put
+    Geometry 1 33 1 37
+    Colors light_gray not_blink black
+    Init
       0 0 File:
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 4 PUT
-    GEOMETRY 1 39 1 65
-    COLORS cyan not_blink black
-  END FIELD
+  Field 4 Put
+    Geometry 1 39 1 65
+    Colors cyan not_blink black
+  End Field
 
   # Get
-  FIELD 5 GET
-    GEOMETRY 23 1 23 33
-    COLORS cyan brown brown
-  END FIELD
+  Field 5 Get
+    Geometry 23 1 23 33
+    Colors cyan brown brown
+  End Field
 
   # Messages
-  FIELD 6 PUT
-    GEOMETRY 23 35 23 78
-    COLORS light_gray not_blink black
-  END FIELD
+  Field 6 Put
+    Geometry 23 35 23 78
+    Colors light_gray not_blink black
+  End Field
 
   # List actions
-  FIELD 7 BUTTON
-    GEOMETRY 5 69 5 77
-    COLORS cyan brown
-    INIT
+  Field 7 Button
+    Geometry 5 69 5 77
+    Colors cyan brown
+    Init
       0 3 Top
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 8 BUTTON
-    GEOMETRY 7 69 9 77
-    COLORS cyan brown
-    INIT
+  Field 8 Button
+    Geometry 7 69 9 77
+    Colors cyan brown
+    Init
       1 2 Pg Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 9 BUTTON
-    GEOMETRY 11 69 11 77
-    COLORS cyan brown
-    INIT
+  Field 9 Button
+    Geometry 11 69 11 77
+    Colors cyan brown
+    Init
       0 3 Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 10 BUTTON
-    GEOMETRY 13 69 13 77
-    COLORS cyan brown
-    INIT
+  Field 10 Button
+    Geometry 13 69 13 77
+    Colors cyan brown
+    Init
       0 1 Center
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 11 BUTTON
-    GEOMETRY 15 69 15 77
-    COLORS cyan brown
-    INIT
+  Field 11 Button
+    Geometry 15 69 15 77
+    Colors cyan brown
+    Init
       0 2 Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 12 BUTTON
-    GEOMETRY 17 69 19 77
-    COLORS cyan brown
-    INIT
+  Field 12 Button
+    Geometry 17 69 19 77
+    Colors cyan brown
+    Init
       1 1 Pg Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 13 BUTTON
-    GEOMETRY 21 69 21 77
-    COLORS cyan brown
-    INIT
+  Field 13 Button
+    Geometry 21 69 21 77
+    Colors cyan brown
+    Init
       0 1 Bottom
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Reread
-  FIELD 14 BUTTON
-    GEOMETRY 11 2 13 9
-    COLORS cyan brown
-    INIT
+  Field 14 Button
+    Geometry 11 2 13 9
+    Colors cyan brown
+    Init
       1 1 REREAD
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Ok Cancel
-  FIELD 15 BUTTON
-    GEOMETRY 15 2 17 9
-    COLORS cyan brown
-    INIT
+  Field 15 Button
+    Geometry 15 2 17 9
+    Colors cyan brown
+    Init
       1 3 OK
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 16 BUTTON
-    GEOMETRY 19 2 21 9
-    COLORS cyan brown
-    INIT
+  Field 16 Button
+    Geometry 19 2 21 9
+    Colors cyan brown
+    Init
       1 1 CANCEL
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Any other field here
 
 
   # Points
-  FIELD 17 PUT
-    GEOMETRY 1 68 1 71
-    COLORS cyan not_blink black
-  END FIELD
+  Field 17 Put
+    Geometry 1 68 1 71
+    Colors cyan not_blink black
+  End Field
 
-  FIELD 18 PUT
-    GEOMETRY 1 73 1 78
-    COLORS light_gray not_blink black
-    INIT
+  Field 18 Put
+    Geometry 1 73 1 78
+    Colors light_gray not_blink black
+    Init
       0 0 points
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 19 PUT
-    GEOMETRY 2 71 2 73
-    COLORS white blink black
-    INIT
+  Field 19 Put
+    Geometry 2 71 2 73
+    Colors white blink black
+    Init
       0 0 NOT
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 20 PUT
-    GEOMETRY 3 70 3 74
-    COLORS light_gray not_blink black
-    INIT
+  Field 20 Put
+    Geometry 3 70 3 74
+    Colors light_gray not_blink black
+    Init
       0 0 saved
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
 # Menu 2 : degre/compute
-DESCRIPTOR 3
+Descriptor 3
 
-  LIST
-    GEOMETRY 2 33 21 65
-    COLORS cyan brown red
-  END LIST
+  List
+    Geometry 2 33 21 65
+    Colors cyan brown red
+  End List
 
-  FIELD 1 PUT
-    GEOMETRY 0 25 0 48
-    COLORS light_gray not_blink black
-    INIT
+  Field 1 Put
+    Geometry 0 25 0 48
+    Colors light_gray not_blink black
+    Init
       0 0 POLYNOMIAL APPROXIMATION
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Title
-  FIELD 2 PUT
-    GEOMETRY 1 3 1 27
-    COLORS cyan not_blink black
-  END FIELD
+  Field 2 Put
+    Geometry 1 3 1 27
+    Colors cyan not_blink black
+  End Field
 
   # File name
-  FIELD 3 PUT
-    GEOMETRY 1 33 1 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 3 Put
+    Geometry 1 33 1 37
+    Colors light_gray not_blink black
+    Init
       0 0 File:
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 4 PUT
-    GEOMETRY 1 39 1 65
-    COLORS cyan not_blink black
-  END FIELD
+  Field 4 Put
+    Geometry 1 39 1 65
+    Colors cyan not_blink black
+  End Field
 
   # Points
-  FIELD 5 PUT
-    GEOMETRY 1 68 1 71
-    COLORS cyan not_blink black
-  END FIELD
+  Field 5 Put
+    Geometry 1 68 1 71
+    Colors cyan not_blink black
+  End Field
 
-  FIELD 6 PUT
-    GEOMETRY 1 73 1 78
-    COLORS light_gray not_blink black
-    INIT
+  Field 6 Put
+    Geometry 1 73 1 78
+    Colors light_gray not_blink black
+    Init
       0 0 points
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 7 PUT
-    GEOMETRY 2 71 2 73
-    COLORS white blink black
-    INIT
+  Field 7 Put
+    Geometry 2 71 2 73
+    Colors white blink black
+    Init
       0 0 NOT
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 8 PUT
-    GEOMETRY 3 70 3 74
-    COLORS light_gray not_blink black
-    INIT
+  Field 8 Put
+    Geometry 3 70 3 74
+    Colors light_gray not_blink black
+    Init
       0 0 saved
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Get
-  FIELD 9 GET
-    GEOMETRY 23 1 23 33
-    COLORS cyan brown brown
-  END FIELD
+  Field 9 Get
+    Geometry 23 1 23 33
+    Colors cyan brown brown
+  End Field
 
   # Message
-  FIELD 10 PUT
-    GEOMETRY 23 35 23 78
-    COLORS light_gray not_blink black
-  END FIELD
+  Field 10 Put
+    Geometry 23 35 23 78
+    Colors light_gray not_blink black
+  End Field
 
   # List Action
-  FIELD 11 BUTTON
-    GEOMETRY 5 69 5 77
-    COLORS cyan brown
-    INIT
+  Field 11 Button
+    Geometry 5 69 5 77
+    Colors cyan brown
+    Init
       0 3 Top
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 12 BUTTON
-    GEOMETRY 7 69 9 77
-    COLORS cyan brown
-    INIT
+  Field 12 Button
+    Geometry 7 69 9 77
+    Colors cyan brown
+    Init
       1 2 Pg Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 13 BUTTON
-    GEOMETRY 11 69 11 77
-    COLORS cyan brown
-    INIT
+  Field 13 Button
+    Geometry 11 69 11 77
+    Colors cyan brown
+    Init
       0 3 Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 14 BUTTON
-    GEOMETRY 15 69 15 77
-    COLORS cyan brown
-    INIT
+  Field 14 Button
+    Geometry 15 69 15 77
+    Colors cyan brown
+    Init
       0 2 Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 15 BUTTON
-    GEOMETRY 17 69 19 77
-    COLORS cyan brown
-    INIT
+  Field 15 Button
+    Geometry 17 69 19 77
+    Colors cyan brown
+    Init
       1 1 Pg Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 16 BUTTON
-    GEOMETRY 21 69 21 77
-    COLORS cyan brown
-    INIT
+  Field 16 Button
+    Geometry 21 69 21 77
+    Colors cyan brown
+    Init
       0 1 Bottom
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # EXIT/BACK, OK, CANCEL
-  FIELD 17 BUTTON
-    GEOMETRY 19 11 21 20
-    COLORS cyan brown
-    INIT
+  Field 17 Button
+    Geometry 19 11 21 20
+    Colors cyan brown
+    Init
       1 3 BACK
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 18 BUTTON
-    GEOMETRY 19 2 21 9
-    COLORS cyan brown
-    INIT
+  Field 18 Button
+    Geometry 19 2 21 9
+    Colors cyan brown
+    Init
       1 3 OK
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 19 BUTTON
-    GEOMETRY 19 22 21 31
-    COLORS cyan brown
-    INIT
+  Field 19 Button
+    Geometry 19 22 21 31
+    Colors cyan brown
+    Init
       1 2 CANCEL
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Menu specific 1 2T+1B
-  FIELD 20 PUT
-    GEOMETRY 3 7 3 21
-    COLORS light_gray not_blink black
-    INIT
+  Field 20 Put
+    Geometry 3 7 3 21
+    Colors light_gray not_blink black
+    Init
       0 0 Current degree:
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 21 PUT
-    GEOMETRY 3 23 3 26
-    COLORS cyan not_blink black
-  END FIELD
+  Field 21 Put
+    Geometry 3 23 3 26
+    Colors cyan not_blink black
+  End Field
 
-  FIELD 22 BUTTON
-    GEOMETRY 4 9 6 22
-    COLORS cyan brown
-    INIT
+  Field 22 Button
+    Geometry 4 9 6 22
+    Colors cyan brown
+    Init
       1 2 Set degree
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 23 PUT
-    GEOMETRY 4 0 4 0
-    COLORS black not_blink black
-  END FIELD
+  Field 23 Put
+    Geometry 4 0 4 0
+    Colors black not_blink black
+  End Field
 
   # Menu specific 2 T+2B
-  FIELD 24 PUT
-    GEOMETRY 8 13 8 19
-    COLORS light_gray not_blink black
-    INIT
+  Field 24 Put
+    Geometry 8 13 8 19
+    Colors light_gray not_blink black
+    Init
       0 0 Compute
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 25 BUTTON
-    GEOMETRY 9 5 11 15
-    COLORS cyan brown
-    INIT
+  Field 25 Button
+    Geometry 9 5 11 15
+    Colors cyan brown
+    Init
       1 2 Polynom
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 26 PUT
-    GEOMETRY 9 0 11 0
-    COLORS black not_blink black
-  END FIELD
+  Field 26 Put
+    Geometry 9 0 11 0
+    Colors black not_blink black
+  End Field
 
-  FIELD 27 BUTTON
-    GEOMETRY 9 17 11 28
-    COLORS cyan brown
-    INIT
+  Field 27 Button
+    Geometry 9 17 11 28
+    Colors cyan brown
+    Init
       1 2 y = F(x)
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Menu specific 3 T+2B
-  FIELD 28 PUT
-    GEOMETRY 13 14 13 17
-    COLORS light_gray not_blink black
-    INIT
+  Field 28 Put
+    Geometry 13 14 13 17
+    Colors light_gray not_blink black
+    Init
       0 0 Draw
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 29 BUTTON
-    GEOMETRY 14 2 16 15
-    COLORS cyan brown
-    INIT
+  Field 29 Button
+    Geometry 14 2 16 15
+    Colors cyan brown
+    Init
       1 2 Set bounds
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 30 PUT
-    GEOMETRY 14 0 14 0
-    COLORS black not_blink black
-  END FIELD
+  Field 30 Put
+    Geometry 14 0 14 0
+    Colors black not_blink black
+  End Field
 
-  FIELD 31 BUTTON
-    GEOMETRY 14 17 16 31
-    COLORS cyan brown
-    INIT
+  Field 31 Button
+    Geometry 14 17 16 31
+    Colors cyan brown
+    Init
       1 3 Draw curve
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Activated Only on y=f(x)
   # to display F(....) = 
-  FIELD 32 PUT
-    GEOMETRY 22 1 22 33
-    COLORS black not_blink black
-  END FIELD
+  Field 32 Put
+    Geometry 22 1 22 33
+    Colors black not_blink black
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
 
 # Menu 2.1 bounds
-DESCRIPTOR 4
+Descriptor 4
 
-  LIST
-    GEOMETRY 2 33 21 65
-    COLORS cyan brown red
-  END LIST
+  List
+    Geometry 2 33 21 65
+    Colors cyan brown red
+  End List
 
-  FIELD 1 PUT
-    GEOMETRY 0 25 0 48
-    COLORS light_gray not_blink black
-    INIT
+  Field 1 Put
+    Geometry 0 25 0 48
+    Colors light_gray not_blink black
+    Init
       0 0 POLYNOMIAL APPROXIMATION
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Title
-  FIELD 2 PUT
-    GEOMETRY 1 3 1 27
-    COLORS cyan not_blink black
-  END FIELD
+  Field 2 Put
+    Geometry 1 3 1 27
+    Colors cyan not_blink black
+  End Field
 
   # File name
-  FIELD 3 PUT
-    GEOMETRY 1 33 1 37
-    COLORS light_gray not_blink black
-    INIT
+  Field 3 Put
+    Geometry 1 33 1 37
+    Colors light_gray not_blink black
+    Init
       0 0 File:
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 4 PUT
-    GEOMETRY 1 39 1 65
-    COLORS cyan not_blink black
-  END FIELD
+  Field 4 Put
+    Geometry 1 39 1 65
+    Colors cyan not_blink black
+  End Field
 
   # Points
-  FIELD 5 PUT
-    GEOMETRY 1 68 1 71
-    COLORS cyan not_blink black
-  END FIELD
+  Field 5 Put
+    Geometry 1 68 1 71
+    Colors cyan not_blink black
+  End Field
 
-  FIELD 6 PUT
-    GEOMETRY 1 73 1 78
-    COLORS light_gray not_blink black
-    INIT
+  Field 6 Put
+    Geometry 1 73 1 78
+    Colors light_gray not_blink black
+    Init
       0 0 points
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 7 PUT
-    GEOMETRY 2 71 2 73
-    COLORS white blink black
-    INIT
+  Field 7 Put
+    Geometry 2 71 2 73
+    Colors white blink black
+    Init
       0 0 NOT
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 8 PUT
-    GEOMETRY 3 70 3 74
-    COLORS light_gray not_blink black
-    INIT
+  Field 8 Put
+    Geometry 3 70 3 74
+    Colors light_gray not_blink black
+    Init
       0 0 saved
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Get
-  FIELD 9 GET
-    GEOMETRY 23 1 23 33
-    COLORS cyan brown brown
-  END FIELD
+  Field 9 Get
+    Geometry 23 1 23 33
+    Colors cyan brown brown
+  End Field
 
   # Message
-  FIELD 10 PUT
-    GEOMETRY 23 35 23 78
-    COLORS light_gray not_blink black
-  END FIELD
+  Field 10 Put
+    Geometry 23 35 23 78
+    Colors light_gray not_blink black
+  End Field
 
   # List Action
-  FIELD 11 BUTTON
-    GEOMETRY 5 69 5 77
-    COLORS cyan brown
-    INIT
+  Field 11 Button
+    Geometry 5 69 5 77
+    Colors cyan brown
+    Init
       0 3 Top
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 12 BUTTON
-    GEOMETRY 7 69 9 77
-    COLORS cyan brown
-    INIT
+  Field 12 Button
+    Geometry 7 69 9 77
+    Colors cyan brown
+    Init
       1 2 Pg Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 13 BUTTON
-    GEOMETRY 11 69 11 77
-    COLORS cyan brown
-    INIT
+  Field 13 Button
+    Geometry 11 69 11 77
+    Colors cyan brown
+    Init
       0 3 Up
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 14 BUTTON
-    GEOMETRY 15 69 15 77
-    COLORS cyan brown
-    INIT
+  Field 14 Button
+    Geometry 15 69 15 77
+    Colors cyan brown
+    Init
       0 2 Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 15 BUTTON
-    GEOMETRY 17 69 19 77
-    COLORS cyan brown
-    INIT
+  Field 15 Button
+    Geometry 17 69 19 77
+    Colors cyan brown
+    Init
       1 1 Pg Down
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 16 BUTTON
-    GEOMETRY 21 69 21 77
-    COLORS cyan brown
-    INIT
+  Field 16 Button
+    Geometry 21 69 21 77
+    Colors cyan brown
+    Init
       0 1 Bottom
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # EXIT/BACK, OK, CANCEL
-  FIELD 17 BUTTON
-    GEOMETRY 19 11 21 20
-    COLORS cyan brown
-    INIT
+  Field 17 Button
+    Geometry 19 11 21 20
+    Colors cyan brown
+    Init
       1 2 CLEAR
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 18 BUTTON
-    GEOMETRY 19 2 21 9
-    COLORS cyan brown
-    INIT
+  Field 18 Button
+    Geometry 19 2 21 9
+    Colors cyan brown
+    Init
       1 3 OK
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 19 BUTTON
-    GEOMETRY 19 22 21 31
-    COLORS cyan brown
-    INIT
+  Field 19 Button
+    Geometry 19 22 21 31
+    Colors cyan brown
+    Init
       1 2 CANCEL
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
   # Menu specific 1 T+2B
-  FIELD 20 PUT
-    GEOMETRY 2 2 2 31
-    COLORS light_gray not_blink black
-    INIT
+  Field 20 Put
+    Geometry 2 2 2 31
+    Colors light_gray not_blink black
+    Init
       0 0 Computed from curve and points
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 21 BUTTON
-    GEOMETRY 3 2 5 15
-    COLORS cyan brown
-    INIT
+  Field 21 Button
+    Geometry 3 2 5 15
+    Colors cyan brown
+    Init
       1 2 Fit screen
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 22 BUTTON
-    GEOMETRY 3 17 5 31
-    COLORS cyan brown
-    INIT
+  Field 22 Button
+    Geometry 3 17 5 31
+    Colors cyan brown
+    Init
       1 4 Normed
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 23 PUT
-    GEOMETRY 4 0 4 0
-    COLORS black not_blink black
-  END FIELD
+  Field 23 Put
+    Geometry 4 0 4 0
+    Colors black not_blink black
+  End Field
 
   # Menu specific 2 T+2B
-  FIELD 24 PUT
-    GEOMETRY 6 5 6 28
-    COLORS light_gray not_blink black
-    INIT
+  Field 24 Put
+    Geometry 6 5 6 28
+    Colors light_gray not_blink black
+    Init
       0 0 X defined and Y computed
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 25 BUTTON
-    GEOMETRY 7 2 9 15
-    COLORS cyan brown
-    INIT
+  Field 25 Button
+    Geometry 7 2 9 15
+    Colors cyan brown
+    Init
       1 2 Fit screen
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 26 BUTTON
-    GEOMETRY 7 17 9 31
-    COLORS cyan brown
-    INIT
+  Field 26 Button
+    Geometry 7 17 9 31
+    Colors cyan brown
+    Init
       1 4 Normed
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 27 PUT
-    GEOMETRY 8 0 8 0
-    COLORS black not_blink black
-  END FIELD
+  Field 27 Put
+    Geometry 8 0 8 0
+    Colors black not_blink black
+  End Field
 
   # Menu specific 3 T+2B
-  FIELD 28 PUT
-    GEOMETRY 10 9 10 23
-    COLORS light_gray not_blink black
-    INIT
+  Field 28 Put
+    Geometry 10 9 10 23
+    Colors light_gray not_blink black
+    Init
       0 0 X and Y defined
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 29 BUTTON
-    GEOMETRY 11 2 13 15
-    COLORS cyan brown
-    INIT
+  Field 29 Button
+    Geometry 11 2 13 15
+    Colors cyan brown
+    Init
       1 2 Fit screen
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 30 BUTTON
-    GEOMETRY 11 17 13 31
-    COLORS cyan brown
-    INIT
+  Field 30 Button
+    Geometry 11 17 13 31
+    Colors cyan brown
+    Init
       1 4 Normed
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 31 PUT
-    GEOMETRY 12 0 12 0
-    COLORS black not_blink black
-  END FIELD
+  Field 31 Put
+    Geometry 12 0 12 0
+    Colors black not_blink black
+  End Field
 
   # Very specific 3 T+2P
-  FIELD 32 PUT
-    GEOMETRY 14 2 14 9
-    COLORS light_gray not_blink black
-    INIT
+  Field 32 Put
+    Geometry 14 2 14 9
+    Colors light_gray not_blink black
+    Init
       0 0 Current:
-    END INIT
-  END FIELD
+    End Init
+  End Field
 
-  FIELD 33 PUT
-    GEOMETRY 14 11 14 31
-    COLORS cyan not_blink black
-  END FIELD
+  Field 33 Put
+    Geometry 14 11 14 31
+    Colors cyan not_blink black
+  End Field
 
-  FIELD 34 PUT
-    GEOMETRY 15 3 18 24
-    COLORS cyan not_blink black
-  END FIELD
+  Field 34 Put
+    Geometry 15 3 18 24
+    Colors cyan not_blink black
+  End Field
 
-END DESCRIPTOR
+End Descriptor
 
