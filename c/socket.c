@@ -1001,7 +1001,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
     /* Done */
     if (soc->rece_head != NULL) {
       /* Return full head and clear it */
-      memcpy (buffer, soc->rece_head, soc->rece_len);
+      memcpy (buffer, soc->rece_head, total_len);
       free (soc->rece_head);
       soc->rece_head = NULL;
       soc->rece_len = 0;
