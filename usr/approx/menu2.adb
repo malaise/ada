@@ -5,12 +5,23 @@ package body MENU2 is
   type RESTORE_LIST is (NONE, PARTIAL, LIST, FULL); 
   CURSOR_FIELD : AFPX.FIELD_RANGE;
 
+  package CURVE_DATA is
+    NB_POINTS : NATURAL;
+    THE_POINTS : POINTS.P_T_THE_POINTS(1 .. POINTS.MAX_NUMBER);
+    THE_DEGREE : RESOL.R_T_DEGREE;
+    THE_SOLUTION : RESOL.VECTOR (1 .. RESOL.R_T_DEGREE'LAST + 1);
+    THE_BOUNDS : CURVE.T_BOUNDARIES;
+    THE_BOUNDS_SET : BOOLEAN;
+    function CURVE_F_X (X : POINTS.P_T_COORDINATE)
+                       return POINTS.P_T_COORDINATE;
+    procedure CURVE_DRAW (BOUNDARIES : in CURVE.T_BOUNDARIES;
+                          POINTS : in CURVE.T_THE_POINTS);
+  end CURVE_DATA;
+
   task CURVE_TASK is
-    -- Start computation
-    entry START (OK : out BOOLEAN);
-    -- Points and bounds got
-    entry STARTED;
-    entry STOPPED (OK : out BOOLEAN);
+    -- Start computation, SOLUTION is computed on main stack
+    entry START (SOLUTION : in RESOL.VECTOR; OK : out BOOLEAN);
+    entry STOPPED;
   end;
 
   procedure ERROR (MSG : in SCREEN.S_ERROR_LIST) is
@@ -51,7 +62,7 @@ package body MENU2 is
   begin
      -- Y = F(X) from vector
      for I in POLYNOM'RANGE loop
-       Y := Y + POLYNOM(I)*BUBBLE;
+       Y := Y + POLYNOM(I) * BUBBLE;
        BUBBLE := BUBBLE * X;
      end loop;
      return Y;
@@ -87,20 +98,46 @@ package body MENU2 is
     POINT := LP;
   end COMPUTE_XY;
 
+  package body CURVE_DATA is
+    function CURVE_F_X (X : POINTS.P_T_COORDINATE)
+                    return POINTS.P_T_COORDINATE is
+    begin
+      return F_X (X, THE_SOLUTION(1 .. THE_DEGREE + 1));
+    end CURVE_F_X;
+    procedure MY_DRAW is new CURVE.DRAW (CURVE_F_X);
+    procedure CURVE_DRAW (BOUNDARIES : in CURVE.T_BOUNDARIES;
+                          POINTS : in CURVE.T_THE_POINTS) is
+    begin
+      MY_DRAW (BOUNDARIES, POINTS);
+    end CURVE_DRAW;
+  end CURVE_DATA;
+
   task body CURVE_TASK is
     DRAW_IT : BOOLEAN;
-    DRAW_OK : BOOLEAN;
+    INIT_OK : BOOLEAN;
+    use CURVE_DATA;
   begin
-    DRAW_OK := TRUE;
     loop
       select
-        accept START (OK : out BOOLEAN) do
-          DRAW_IT := CURVE.INIT;
+        accept START (SOLUTION : in RESOL.VECTOR; OK : out BOOLEAN) do
+          begin
+            NB_POINTS := POINTS.P_NB;
+            THE_POINTS(1 .. NB_POINTS) := POINTS.P_THE_POINTS;
+            THE_DEGREE := RESOL.R_DEGREE;
+            THE_SOLUTION (1 .. THE_DEGREE + 1) := SOLUTION;
+            MENU21.GET_BOUNDS (THE_BOUNDS_SET, THE_BOUNDS);
+            DRAW_IT := THE_BOUNDS_SET;
+          exception
+            when others =>
+              DRAW_IT := FALSE;
+          end;
+          if DRAW_IT then
+            DRAW_IT := CURVE.INIT;
+          end if;
           OK := DRAW_IT;
         end START;
       or
-        accept STOPPED (OK : out BOOLEAN) do
-          OK := DRAW_OK;
+        accept STOPPED do
           DRAW_IT := FALSE;
         end STOPPED;
       or
@@ -109,35 +146,12 @@ package body MENU2 is
 
       if DRAW_IT then
         begin
-          declare
-            THE_POINTS : constant POINTS.P_T_THE_POINTS := POINTS.P_THE_POINTS;
-            THE_BOUNDS : CURVE.T_BOUNDARIES;
-            SET : BOOLEAN;
-            -- Resolution of problem
-            SOLUTION : constant RESOL.VECTOR
-                     := RESOL.R_RESOLUTION (THE_POINTS);
-            function MY_F_X (X : POINTS.P_T_COORDINATE)
-                     return POINTS.P_T_COORDINATE is
-            begin
-              return F_X (X, SOLUTION);
-            end MY_F_X;
-            procedure MY_DRAW is new CURVE.DRAW (MY_F_X);
-          begin
-            MENU21.GET_BOUNDS (SET, THE_BOUNDS);
-            accept STARTED;
-            MY_DRAW (THE_BOUNDS, THE_POINTS);
-            DRAW_OK := TRUE;
-          exception
-            when others =>
-              DRAW_OK := FALSE;
-          end;
+           CURVE_DRAW (THE_BOUNDS, THE_POINTS(1 .. NB_POINTS));
         exception
           when others =>
-            accept STARTED;
-            DRAW_OK := FALSE;
+            -- Draw error
+            null;
         end;
-      else
-        DRAW_OK := TRUE;
       end if;  
     end loop;
   end CURVE_TASK;
@@ -146,7 +160,7 @@ package body MENU2 is
    OK : BOOLEAN;
   begin
     select
-      CURVE_TASK.STOPPED(OK);
+      CURVE_TASK.STOPPED;
       OK := TRUE;
     or
       delay 0.0;
@@ -157,19 +171,13 @@ package body MENU2 is
 
   procedure DRAW_CURVE is
     OK : BOOLEAN;
-    THE_BOUNDS : CURVE.T_BOUNDARIES;
   begin
     SCREEN.PUT_TITLE(SCREEN.CURVE);
-    MENU21.GET_BOUNDS (OK, THE_BOUNDS);
-    if not OK then
-      -- Should not occure, but who knows
-      raise PROGRAM_ERROR;
-    end if;
     if not CURVED_STOPED then
       SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
     else
-      CURVE_TASK.START (OK);
-      CURVE_TASK.STARTED;
+      CURVE_TASK.START (RESOL.R_RESOLUTION (POINTS.P_THE_POINTS), OK);
+      -- Accept started if start OK
       if not OK then
         SCREEN.ERROR (SCREEN.E_CURVE_PROBLEM);
       end if;
@@ -193,7 +201,11 @@ package body MENU2 is
     -- Try to keep previous data
     if DATA_CHANGED then
       -- Or reset to max
-      RESOL.R_SET_DEGREE(POINTS.P_NB - 1);
+      if POINTS.P_NB - 1 < RESOL.R_T_DEGREE'LAST then
+        RESOL.R_SET_DEGREE(POINTS.P_NB - 1);
+      else
+        RESOL.R_SET_DEGREE(RESOL.R_T_DEGREE'LAST);
+      end if;
       RESOL.R_POINTS_MODIFICATION;
     end if;
     SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
@@ -219,7 +231,12 @@ package body MENU2 is
             when AFPX.RETURN_KEY =>
               null;
             when AFPX.ESCAPE_KEY =>
-              return;
+              if not CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                return;
+              end if;
             when AFPX.BREAK_KEY =>
               null;
           end case;
@@ -230,10 +247,19 @@ package body MENU2 is
               SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
             when SCREEN.EXIT_BUTTON_FLD =>
               -- Back
-              return;
+              if not CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                return;
+              end if;
             when 22 =>
               -- Get and set new degree
-              DIALOG.READ_DEGREE;
+              if not CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+              else
+                DIALOG.READ_DEGREE;
+              end if;
               RESTORE := PARTIAL;
             when 25 =>
               -- Display polynom
