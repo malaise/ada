@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Con_Io;
+with Con_Io, Perpet;
 separate (Mng)
 package body Edition is
 
@@ -223,6 +223,7 @@ package body Edition is
     use type Oper_Def.Kind_List;
     Cur_Date : constant Oper_Def.Date_Rec := Oper_Def.Current_Date;
     Prev : Boolean;
+    Max_Days : Ada.Calendar.Day_Number;
   begin
     -- Adjust Status: Credit is defered, others are not entered
     if Oper.Kind = Oper_Def.Credit then
@@ -232,7 +233,7 @@ package body Edition is
     end if;
 
     -- Set Date: If source of copy is at previous month
-    --  and is a Trnasfer then set to current month
+    --  and is a Transfer then set to current month & year
     begin
       Prev := (Cur_Date.Month = Ada.Calendar.Month_Number'First
                and then Oper.Date.Month = Ada.Calendar.Month_Number'Last
@@ -245,6 +246,13 @@ package body Edition is
     end;
     if Oper.Kind = Oper_Def.Transfer and then Prev then
       Oper.Date.Month := Cur_Date.Month;
+      Oper.Date.Year := Cur_Date.Year;
+      -- Adjust days if new month does not have enough days
+      Max_Days := Perpet.Nb_Days_Month(Oper.Date.Year, Oper.Date.Month);
+      if Oper.Date.Day > Max_Days then
+        Oper.Date.Day := Max_Days;
+      end if;
+        
     end if;
   end Adjust_Copy;
 
