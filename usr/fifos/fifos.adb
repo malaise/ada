@@ -234,6 +234,11 @@ package body Fifos is
           Acc.Dscr := Socket.No_Socket;
           Acc.State := Waiting; 
         elsif Acc.Kind = Accepted then
+          -- Conn_Cb calls may have changed current: find again
+          if not List.Search_By_Dscr (Dscr) then
+            -- Conn_Cb removed diconnected fifo
+            return;
+          end if;
           List.Del_Current;
         else
           Assertion.Assert (False, "disconnection of accepting fifo");
