@@ -51,6 +51,8 @@ package Mcd_Mng is
    Trunc,
    Int,
    Frac,
+   Dms,
+   Msd,
 
    Isreal,
    Isinte,

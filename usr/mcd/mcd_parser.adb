@@ -79,7 +79,9 @@ package body Parser is
    Round    => (Nosy, "push INTE(A) (round)          ", False),
    Trunc    => (Nosy, "push INTE(A) (int part)       ", False),
    Int      => (Nosy, "push int part of A            ", False),
-   Frac     => (Nosy, "push frac part of A           ", True),
+   Frac     => (Nosy, "push frac part of A           ", False),
+   Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
+   Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", True),
  
    Isreal   => (Nosy, "push True if A is a real      ", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),

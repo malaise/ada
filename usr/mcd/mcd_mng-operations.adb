@@ -517,7 +517,7 @@ package body Operations is
   function Frac (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind = Inte then
-      return X;
+      return (Kind => Inte, Val_Inte => 0);
     end if;
     if X.Kind /= Real then
       raise Invalid_Argument;
@@ -529,6 +529,59 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Frac;
+
+  function Dms (X : Item_Rec) return Item_Rec is
+    I, M, S, F, R : My_Math.Real;
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    -- Int part and frac parts
+    I := My_Math.Int (X.Val_Real);
+    S := My_Math.Frac (X.Val_Real);
+
+    -- Frac of hours -> seconds
+    S := S * 3600.0;
+
+    -- Round micro
+    S := My_Math.Real (My_Math.Round (S * 1000000.0)) / 1000000.0;
+
+    -- Get int and frac of seconds
+    F := My_Math.Frac (S);
+    S := My_Math.Real (My_Math.Trunc (S));
+
+    -- Split seconds into minutes and seconds
+    M := My_Math.Real (My_Math.Inte (S) / 60);
+    S := My_Math.Real (My_Math.Inte (S) rem 60);
+
+    -- Set minutes, seconds, frac of seconds
+    R := I + M / 100.0 + S / 10000.0 + F / 1_0000.0;
+    
+    return (Kind => Real, Val_Real => R);
+  end Dms;
+
+  function Msd (X : Item_Rec) return Item_Rec is
+    I, M, S, F, R : My_Math.Real;
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+
+    -- Int part and frac parts
+    I := My_Math.Int (X.Val_Real);
+    F := My_Math.Frac (X.Val_Real);
+
+    -- Extract Minutes and seconds
+    F := F * 100.0;
+    F := My_Math.Real (My_Math.Round (F * 100000.0)) / 100000.0;
+    M := My_Math.Int (F);
+    S := (F - M) * 100.0;
+
+    -- Compute hours and fracs of hours
+    R := I + M / 60.0 + S / 3600.0;
+
+    return (Kind => Real, Val_Real => R);
+  end Msd;
 
   -- *->BOOL
   function Isreal  (X : Item_Rec) return Item_Rec is

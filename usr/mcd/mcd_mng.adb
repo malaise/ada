@@ -74,6 +74,8 @@ package body Mcd_Mng is
     -- REAL->REAL
     function Int     (X : Item_Rec) return Item_Rec;
     function Frac    (X : Item_Rec) return Item_Rec;
+    function Dms     (X : Item_Rec) return Item_Rec;
+    function Msd     (X : Item_Rec) return Item_Rec;
 
     -- *->BOOL
     function Isreal  (X : Item_Rec) return Item_Rec;
@@ -443,6 +445,10 @@ package body Mcd_Mng is
           Pop(A); Push (Operations.Int(A));
         when Frac =>
           Pop(A); Push (Operations.Frac(A));
+        when Dms =>
+          Pop(A); Push (Operations.Dms(A));
+        when Msd =>
+          Pop(A); Push (Operations.Msd(A));
         when Isreal =>
           Pop(A); Push (Operations.Isreal(A));
         when Isinte =>
