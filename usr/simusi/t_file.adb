@@ -1,7 +1,11 @@
+-- Reads (checks) a pair of simusi data files
+
 with NORMAL, MY_IO;
 use MY_IO;
+
 with COMMON, DATA;
 use COMMON, DATA;
+
 procedure T_FILE is
 begin
 
