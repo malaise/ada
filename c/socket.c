@@ -93,15 +93,17 @@ static int soc_init (soc_ptr *p_soc,
                    &allow_sockopt, sizeof (allow_sockopt));
     if (result == -1) {
       perror ("setsockopt1");
-    }
-  } else {
-    result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEADDR,
-                   &allow_sockopt, sizeof (allow_sockopt));
-    if (result == -1) {
-      perror ("setsockopt2");
+      close ((*p_soc)->socket_id);
+      free (*p_soc);
+      *p_soc = NULL;
+      return (SOC_SYS_ERR);
     }
   }
+
+  result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEADDR,
+                 &allow_sockopt, sizeof (allow_sockopt));
   if (result == -1) {
+    perror ("setsockopt2");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
@@ -464,6 +466,7 @@ extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
     return (SOC_NAME_NOT_FOUND);
   }
 
+  /* First of aliases */
   host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
   net_mask = inet_netof(host_address);
   if (net_mask == -1) {
@@ -691,6 +694,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
     } else {
       cr = sendto(soc->socket_id, msg2send, len2send, 0,
        (struct sockaddr*) &(soc->send_struct), socklen);
+printf ("Send to %08x\n", soc->send_struct.sin_addr.s_addr);
     }
   } while ( (cr == -1 ) && (errno == EINTR) );
 
@@ -782,6 +786,78 @@ extern int soc_resend (soc_token token) {
 
 }
 
+/*******************************************************************/
+
+static boolean is_ipm (struct sockaddr_in *addr) {
+  soc_host host;
+  host.integer = addr->sin_addr.s_addr;
+
+  /* @@@ A Affiner */
+  return host.bytes[0] == 234;
+}
+
+
+static int bind_and_co (soc_token token, boolean dynamic) {
+
+  soc_ptr soc = (soc_ptr) token;
+  int res;
+  soc_port linked_port;
+  boolean do_ipm;
+
+  /* Bind */
+  if (bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
+            socklen ) < 0) {
+    if (errno == EADDRINUSE) {
+      return (SOC_ADDR_IN_USE);
+    } else {
+      perror ("bind");
+      return (SOC_SYS_ERR);
+    }
+  }
+
+  /* Set linked port */
+  soc->linked = TRUE;
+  res = soc_get_linked_port (token, &linked_port);
+  soc->linked = FALSE;
+  if (res != SOC_OK) {
+     return res;
+  }
+
+  /* Listen for tcp */
+  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    if (listen (soc->socket_id, SOMAXCONN) < 0) {
+      perror ("listen");
+      return (SOC_SYS_ERR);
+    }
+  }
+
+
+  /* Ipm if udp, dest_set with an ipm adress */
+  /*  and same port (if not dynamic) */
+  do_ipm =  ( (soc->proto == udp_socket)
+           && (soc->dest_set) 
+           && (is_ipm(& soc->send_struct) )
+           && ( dynamic || (soc->send_struct.sin_port
+                         == soc->rece_struct.sin_port) ) );
+
+  if (do_ipm) {
+    struct ip_mreq ipm_addr;
+    ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
+    ipm_addr.imr_interface.s_addr = INADDR_ANY;
+    if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                    (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
+      perror ("setsockopt3");
+      return (SOC_SYS_ERR);
+    }
+printf ("Ipm on %08x\n", soc->send_struct.sin_addr.s_addr);
+  }
+
+  /* Ok */
+  soc->linked = TRUE;
+  return (SOC_OK);
+}
+
+
 /* Links the socket to a port specified by the service */
 /* The socket must be open and not already linked */
 extern int soc_link_service (soc_token token, const char *service) {
@@ -809,28 +885,9 @@ extern int soc_link_service (soc_token token, const char *service) {
   soc->rece_struct.sin_port = serv_name->s_port;
 
   /* Bind */
-  if (bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
-            socklen ) < 0) {
-    if (errno == EADDRINUSE) {
-      return (SOC_ADDR_IN_USE);
-    } else {
-      perror ("bind");
-      return (SOC_SYS_ERR);
-    }
-  }
-
-  /* Listen for tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    if (listen (soc->socket_id, SOMAXCONN) < 0) {
-      perror ("listen");
-      return (SOC_SYS_ERR);
-    }
-  }
-
-  /* Ok */
-  soc->linked = TRUE;
-  return (SOC_OK);
+  return bind_and_co (token, FALSE);
 }	
+
 
 /* Links the socket to a port specified by it's value */
 /* The socket must be open and not already linked */
@@ -853,27 +910,7 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   soc->rece_struct.sin_port = htons((u_short) port);
 
   /* Bind */
-  if (bind (soc->socket_id,
-   (struct sockaddr*) &(soc->rece_struct), socklen ) < 0) {
-    if (errno == EADDRINUSE) {
-      return (SOC_ADDR_IN_USE);
-    } else {
-      perror ("bind");
-      return (SOC_SYS_ERR);
-    }
-  }
-
-  /* Listen for tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    if (listen (soc->socket_id, SOMAXCONN) < 0) {
-      perror ("listen");
-      return (SOC_SYS_ERR);
-    }
-  }
-
-  /* Ok */
-  soc->linked = TRUE;
-  return (SOC_OK);
+  return bind_and_co (token, FALSE);
 }	
 
 /* Links the socket to a port dynamically choosen by the system */
@@ -897,27 +934,7 @@ extern int soc_link_dynamic  (soc_token token) {
   soc->rece_struct.sin_port = htons(0);
 
   /* Bind */
-  if (bind (soc->socket_id,
-   (struct sockaddr*) &(soc->rece_struct), socklen ) < 0) {
-    if (errno == EADDRINUSE) {
-      return (SOC_ADDR_IN_USE);
-    } else {
-      perror ("bind");
-      return (SOC_SYS_ERR);
-    }
-  }
-
-  /* Listen for tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    if (listen (soc->socket_id, SOMAXCONN) < 0) {
-      perror ("listen");
-      return (SOC_SYS_ERR);
-    }
-  }
-
-  /* Ok */
-  soc->linked = TRUE;
-  return (SOC_OK);
+  return bind_and_co (token, TRUE);
 }	
 
 /* Gets the port to which is linked a socket */
