@@ -1,7 +1,7 @@
 # Replace top of stack by its int (uses register z)
 [
 # Round v in z
-dup dup tointe toreal  z copyr swap 0.0 >= 
+dup dup round toreal z copyr swap 0.0 >= 
 # v >= 0.0 : if v < R then R:=R-1
 [ < [ z pushr 1.0 - z popr ] ifcall ]
 # v < 0.0  : if v > R then R:=R+1
@@ -14,7 +14,7 @@ z pushr
 [ dup 0.0 < [ +- ] ifcall ] A popr
 
 # Can top of stack be assimilated to 0.0
-[ A pushr call 1.0e-17 < ] Z popr
+[ A pushr call 1.0e-10 < ] Z popr
 
 # Replace top of stack by its frac
 [ dup
@@ -34,14 +34,14 @@ dup 100.0 * F pushr call Z pushr call ~ E pushr ifcall
 # Frac < 60
 dup F pushr call 100.0 * 60.0 >= E pushr ifcall
 # Push minutes then hours
-dup F pushr call 100.0 * tointe
-swap I pushr call tointe
+dup F pushr call 100.0 * round
+swap I pushr call round
 ] C popr
 
 # Loop
 [
 # Return if no more data in stack
-ssize 0 = 1 ifretn
+ssize 0 =  ifret
 # Store value for error tracing
 v copyr
 # Check 
@@ -63,5 +63,6 @@ L pushr retacal ] L popr
 L pushr call
 
 # Display result
-h pushr 5 format put [ h ] put m pushr  2 format putl
+h pushr 5 format put [ h ] put m pushr
+dup 10 < [ [ 0 ] put 1 format putl ] [ 2 format putl ] ifte call
 
