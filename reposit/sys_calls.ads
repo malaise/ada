@@ -1,5 +1,6 @@
 with System;
 with Ada.Calendar;
+with Many_Strings;
 package Sys_Calls is
 
   -- Call system
@@ -97,11 +98,15 @@ package Sys_Calls is
   -- Create a pipe
   procedure Pipe (Fd1, Fd2 : out File_Desc);
 
+  -- Get current / parent pid
+  function Get_Pid return positive;
+  function Get_Parent_Pid return positive;
+ 
   -- Process procreation (fork)
   procedure Procreate (Child : out Boolean; Child_Pid : out positive);
 
   -- Process mutation (exec)
-  -- Program_name and arguments are build by Many_Strings.Cat
+  -- Program_name and arguments have to follow Many_Strings format
   procedure Mutate (Program : in String);
 
   -- Process termination

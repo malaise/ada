@@ -1,7 +1,7 @@
 with Interfaces.C_Streams;
 with Interfaces.C.Strings;
 with Ada.Command_Line;
-with Day_Mng, Bit_Ops, Many_Strings;
+with Day_Mng, Bit_Ops;
 
 package body Sys_Calls is
 
@@ -418,6 +418,23 @@ package body Sys_Calls is
     end if;
   end Pipe;
 
+  -- Get current / parent pid
+  function C_Getpid return Integer;
+  pragma Import (C, C_Getpid, "getpid");
+
+  function C_Getppid return Integer;
+  pragma Import (C, C_Getppid, "getppid");
+
+  function Get_Pid return positive is
+  begin
+    return C_Getpid;
+  end Get_Pid;
+
+  function Get_Parent_Pid return positive is
+  begin
+    return C_Getppid;
+  end Get_Parent_Pid;
+
   -- Process procreation (fork)
   function C_Procreate return Integer;
   pragma Import (C, C_Procreate, "procreate");
@@ -438,13 +455,13 @@ package body Sys_Calls is
   end Procreate;
 
   -- Process mutation (exec)
-  procedure C_Mutate (Args : in System.Address);
+  procedure C_Mutate (Args : in System.Address; Len : in Integer);
   pragma Import  (C, C_Mutate, "mutate");
 
   procedure Mutate (Program : in String) is
+    Str4C : constant String := Program & Ascii.Nul;
   begin
-    -- @@@
-    raise System_Error;
+    C_Mutate (Str4C(Str4C'First)'Address, Str4C'Length);
   end Mutate;
 
   -- Process termination
