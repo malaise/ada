@@ -1,16 +1,21 @@
 with Team;
 package body Space.Board is
 
+  Board_Error : exception;
+
   function Is_Empty (Square : in Square_Coordinate) return Boolean is
     use type Pieces.Piece_Access;
   begin
-    return The_Board(Square.Col, Square.Row) /= null;
+    return The_Board(Square.Col, Square.Row) = null;
   end Is_Empty;
 
   procedure Create_Piece (Kind   : in Pieces.Piece_Kind_List;
                           Color  : in Color_List;
                           Square : in Square_Coordinate) is
   begin
+    if not Is_Empty (Square) then
+      raise Board_Error;
+    end if;
     The_Board(Square.Col, Square.Row) :=  Pieces.Create(Kind, Color, Square);
     Team.Add (The_Board(Square.Col, Square.Row));
   end Create_Piece;
