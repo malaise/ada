@@ -1,3 +1,5 @@
+# Start time
+clock z popr
 # Error and quit
 4 format
 [ "Error, 3 arguments: <nb_disks> <from_column> <to_column> expected" putl
@@ -59,5 +61,7 @@ i pushr j pushr n pushr H pushr call
 
 # Done
 7 format
-" Nb moves: " put t pushr putl
+" Nb moves: " put t pushr put
+1 format
+", in " put clock z pushr - daysof putl
 
