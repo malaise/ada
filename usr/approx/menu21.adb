@@ -1,5 +1,6 @@
 with CON_IO, AFPX, CURVE;
 with POINTS, SCREEN, DIALOG, POINT_STR;
+with MENU2;
 package body MENU21 is
 
   type RESTORE_LIST is (NONE, PARTIAL); 
@@ -158,32 +159,67 @@ package body MENU21 is
               return;
             when SCREEN.EXIT_BUTTON_FLD =>
               -- Clear
-              THE_BOUNDS_SET := FALSE;
-              PUT_BOUNDS;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                THE_BOUNDS_SET := FALSE;
+                PUT_BOUNDS;
+              end if;
             when 21 =>
               -- Computed fit screen
-              SET_BOUNDS (CURVE.CURVE_SCREEN, COMPUTE_X => TRUE);
-              RESTORE := PARTIAL;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                SET_BOUNDS (CURVE.CURVE_SCREEN, COMPUTE_X => TRUE);
+                RESTORE := PARTIAL;
+              end if;
             when 22 =>
               -- Computed normed
-              SET_BOUNDS (CURVE.CURVE_NORMED, COMPUTE_X => TRUE);
-              RESTORE := PARTIAL;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                SET_BOUNDS (CURVE.CURVE_NORMED, COMPUTE_X => TRUE);
+                RESTORE := PARTIAL;
+              end if;
             when 25 =>
               -- X set fit screen : Get Xmin & Xmax
-              SET_BOUNDS (CURVE.CURVE_SCREEN);
-              RESTORE := PARTIAL;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                SET_BOUNDS (CURVE.CURVE_SCREEN);
+                RESTORE := PARTIAL;
+              end if;
             when 26 =>
               -- X set normed : Get Xmin & Xmax
-              SET_BOUNDS (CURVE.CURVE_NORMED);
-              RESTORE := PARTIAL;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                SET_BOUNDS (CURVE.CURVE_NORMED);
+                RESTORE := PARTIAL;
+              end if;
             when 29 =>
               -- Defined fit screen : Get Xmin, Xmax Ymin & Ymax
-              SET_BOUNDS (CURVE.FREE_SCREEN);
-              RESTORE := PARTIAL;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                SET_BOUNDS (CURVE.FREE_SCREEN);
+                RESTORE := PARTIAL;
+              end if;
             when 30 =>
               -- Defined normed : Get Xmin, Xmax Ymin & Ymax
-              SET_BOUNDS (CURVE.FREE_NORMED);
-              RESTORE := PARTIAL;
+              if not MENU2.CURVED_STOPED then
+                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+                RESTORE := PARTIAL;
+              else
+                SET_BOUNDS (CURVE.FREE_NORMED);
+                RESTORE := PARTIAL;
+              end if;
             when others =>
               null;
           end case; 
