@@ -81,10 +81,17 @@ package body MESU_SEL is
 
   function LESS_THAN (L1, L2 : LINE_REC) return BOOLEAN is
     F1, F2 : MESU_NAM.FILE_NAME_STR;
+    D1, D2 : MESU_NAM.FILE_DATE_STR;
+    N1, N2 : MESU_NAM.FILE_NO_STR;
+    P1, P2 : MESU_NAM.FILE_PID_STR;
   begin
+    -- Do not sort on file_name cause 2000 (=>00) < 1999 (=>99)
     STR_MNG.FORMAT_LIST_TO_MESURE (L1, F1);
+    MESU_NAM.SPLIT_FILE_NAME (F1, D1, N1, P1);
     STR_MNG.FORMAT_LIST_TO_MESURE (L2, F2);
-    return F1 < F2;
+    MESU_NAM.SPLIT_FILE_NAME (F2, D2, N2, P2);
+    --  Splitting file name gives full year number
+    return D1 & N1 & P1 < D2 & N2 & P2;
   end LESS_THAN;
 
 
