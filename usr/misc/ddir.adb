@@ -25,6 +25,7 @@ procedure DDIR is
         return;
     end;
 
+    MY_IO.PUT_LINE ("Directories of " & DIR_NAME);
     loop
       begin
         DIRECTORY.NEXT_ENTRY (DIR_DSC, ENTRY_NAME);
@@ -47,6 +48,7 @@ procedure DDIR is
       end if;
     end loop;
     DIRECTORY.CLOSE(DIR_DSC);
+    MY_IO.NEW_LINE;
   end DDIR_ONE;
 
 begin
