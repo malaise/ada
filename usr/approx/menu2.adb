@@ -1,3 +1,4 @@
+with text_io;
 with CON_IO, AFPX, CURVE;
 with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, RESOL, MENU21;
 package body MENU2 is
@@ -33,8 +34,7 @@ package body MENU2 is
   end ERROR;
 
   procedure DO_RESTORE (RESTORE : in RESTORE_LIST) is
-    ACTIVATE_NO_CURVE : constant BOOLEAN
-                      := CURVED_STOPPED;
+    ACTIVATE_NO_CURVE : constant BOOLEAN := CURVED_STOPPED;
   begin
     case RESTORE is
       when NONE =>
@@ -62,7 +62,6 @@ package body MENU2 is
     AFPX.SET_FIELD_ACTIVATION (22, ACTIVATE_NO_CURVE);
     -- Draw
     AFPX.SET_FIELD_ACTIVATION (31, ACTIVATE_NO_CURVE);
-
   end DO_RESTORE;
 
   function F_X (X : POINTS.P_T_COORDINATE;
@@ -86,6 +85,7 @@ package body MENU2 is
     -- Get X
     SET := FALSE;
     DIALOG.READ_COORDINATE (SCREEN.I_X, SET, LP.X);
+    AFPX.SET_FIELD_ACTIVATION (SCREEN.GET_FLD, FALSE);
     if not SET then
       OK := FALSE;
       return;
@@ -93,12 +93,14 @@ package body MENU2 is
 
     -- Compute Y
     SCREEN.INFORM(SCREEN.I_WAIT);
-    declare
-      -- Resolution of problem
-      SOLUTION : constant RESOL.VECTOR
-               := RESOL.R_RESOLUTION (POINTS.P_THE_POINTS);
     begin
-      LP.Y := F_X(LP.X, SOLUTION);
+      declare
+        -- Resolution of problem
+        SOLUTION : constant RESOL.VECTOR
+                 := RESOL.R_RESOLUTION (POINTS.P_THE_POINTS);
+      begin
+        LP.Y := F_X(LP.X, SOLUTION);
+      end;
     exception
       when others =>
         SCREEN.ERROR (SCREEN.E_RESOLUTION_PROBLEM);
@@ -183,7 +185,9 @@ package body MENU2 is
     OK : BOOLEAN;
   begin
     SCREEN.PUT_TITLE(SCREEN.CURVE);
+    SCREEN.INFORM(SCREEN.I_WAIT);
     CURVE_TASK.START (RESOL.R_RESOLUTION (POINTS.P_THE_POINTS), OK);
+    SCREEN.INFORM(SCREEN.I_CLEAR);
     -- Accept started if start OK
     if not OK then
       SCREEN.ERROR (SCREEN.E_CURVE_PROBLEM);
@@ -254,7 +258,6 @@ package body MENU2 is
             when SCREEN.EXIT_BUTTON_FLD =>
               return;
             when 22 =>
-              -- Get and set new degree
               DIALOG.READ_DEGREE;
               RESTORE := PARTIAL;
             when 25 =>
@@ -312,4 +315,3 @@ package body MENU2 is
   end MAIN_SCREEN;
 
 end MENU2;
-
