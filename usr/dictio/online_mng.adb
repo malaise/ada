@@ -65,9 +65,7 @@ package body Online_Mng is
       Tid := Timers.Create (T, Timer_Cb'Access);
       Status.Sync := True;
       Ever_Synced := True;
-      if First then
-        Client_Mng.Start;
-      end if;
+      Client_Mng.Start;
     end if;
   
     if Debug.Level_Array(Debug.Online) then
