@@ -391,6 +391,9 @@ package body Fifos is
                        Delta_Retry => 3.0,
                        Nb_Tries    => 3,
                        Connection_Cb => Connection_Cb'Unrestricted_Access);
+      exception
+        when Tcp_Util.Name_Error =>
+          null;
       end Connect;
 
       procedure Close (Fifo : in Fifo_Access) is 

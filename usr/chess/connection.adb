@@ -112,6 +112,13 @@ package body Connection is
                                Remote_Port,
                                1.0, 0,
                                Con_Call_Back'access);
+  exception
+    when Error: others =>
+      if Debug.Get (Debug.Connection) then
+        Ada.Text_Io.Put_Line ("Connect exception: "
+           & Ada.Exceptions.Exception_Name(Error));
+      end if;
+      raise;
   end Connect_Server;
 
   procedure Acc_Call_Back (Local_Port_Num  : in Tcp_Util.Port_Num;

@@ -172,6 +172,12 @@ package body Dictio_Lib is
     Connected := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                       Host, Port, 1.0, 0,
                                       Connection_Cb'access);
+  exception
+    when Error:others =>
+      if Debug.Level_Array(Debug.Lib) then
+        Debug.Put ("Dictio_Lib: connect fails on exception "
+          & Ada.Exceptions.Exception_name(Error));
+      end if;
   end Connect_To_Dictio;
 
   procedure Check_Available is
