@@ -685,6 +685,10 @@ package body CURVE is
         -- Toggle mode
         if ACTION = TOGGLE then
            MISC(M_SCALE) := not MISC(M_SCALE);
+        end if;
+
+        -- Update help
+        if ACTION = INIT or else ACTION = TOGGLE then
           if MISC (M_HELP) then
             TOGGLE_HELP_MISC (M_SCALE);
           end if;
