@@ -1,11 +1,15 @@
-# B is x % of A + B
-a popr b copyr
-toreal a pushr toreal + 1.0 swap / b pushr toreal * 100.0 *
+# A is B + x % of B
+a popr b popr
+
+# x = (A / B) - 1
+a pushr toreal b pushr toreal / 1.0 - 100.0 *
 
 0 format
-b pushr put "/(" put a pushr put "+" put b pushr put ") = " put 
+a pushr put " = " put b pushr put " " put
 
 # Format result
+dup 0.0 <  "-"  "+" ifte put " " put
+absv
 100.0 *
 Trunc dup
 100 / put "." put
