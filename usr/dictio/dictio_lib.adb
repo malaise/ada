@@ -231,9 +231,12 @@ package body Dictio_Lib is
     
     Connect_To_Dictio;
 
-     -- Wait a bit for connection to establish
+    -- Wait a bit for connection to establish
+    Event_Mng.Wait (100);
     loop
-      exit when Event_Mng.Wait (100) = Event_Mng.No_Event;
+      -- Wait until connected or nothing happens
+      exit when Dictio_State /= Unavailable
+      or else Event_Mng.Wait (500) = Event_Mng.No_Event;
     end loop;
 
     Init_Done := True;
