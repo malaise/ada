@@ -23,6 +23,7 @@ begin
 --    this STR variable which changes indirectly the INIT_FILE_NAME
 --    of MAIN_SCREEN
 -- The workaround is to make a copy of ARGUMENT.GET_PARAMETER
+--
 -- Original code => bug:
 --    MENU1.MAIN_SCREEN (ARGUMENT.GET_PARAMETER);
 -- New code:
