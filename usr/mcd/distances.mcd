@@ -40,6 +40,9 @@ B pushr round " |   " put put
 S pushr round "  " put put " |" putl
 ] C popr
 
+# Default values
+ssize 0 = [ 50 60 70 80 90 100 110 120 130 140 150 160 170 ] ifcall
+
 # Store stack in reverse order in estack
 [ ssize 0 = ifret
 pope R pushr retacal ] R popr
@@ -48,7 +51,7 @@ R pushr call
 # Title
 "+--------------------------------------------+" putl
 "| Speed |         Distances (m)              |" putl
-"|  (km) | Reaction |     Dry    |     Wet    |" putl
+"| (km/h)| Reaction |     Dry    |     Wet    |" putl
 "|       |          | Break Stop | Break Stop |" putl
 "|--------------------------------------------|" putl
 #|   123 |      123 |   123  123 |   123  123 |
