@@ -163,7 +163,7 @@ begin
         end case;
       when Afpx.Refresh =>
         Redisplay := True;
-      when Afpx.Fd_Event | Afpx.Timer_Event =>
+      when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
         null;
     end case;
   end loop;

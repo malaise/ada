@@ -150,10 +150,13 @@ begin
         end case;
       when Afpx.Fd_Event =>
         Afpx.Clear_Field (2);
-         Afpx.Encode_Field (2, (1, 0), ">> Fd Event <<");
+        Afpx.Encode_Field (2, (1, 0), ">> Fd Event <<");
       when Afpx.Timer_Event =>
         Afpx.Clear_Field (2);
-         Afpx.Encode_Field (2, (1, 0), ">> Timer Event <<");
+        Afpx.Encode_Field (2, (1, 0), ">> Timer Event <<");
+      when Afpx.Signal_Event =>
+        Afpx.Clear_Field (2);
+        Afpx.Encode_Field (2, (1, 0), ">> Signal Event <<");
       when Afpx.Refresh =>
         Redisplay := True;
     end case;

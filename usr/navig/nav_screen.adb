@@ -260,7 +260,7 @@ package body Nav_Screen is
           else
             Cur_Action := Operation'First;
           end if;
-        when Fd_Event | Timer_Event => 
+        when Fd_Event | Timer_Event | Con_Io.Signal_Event => 
           null;
         when Refresh => 
           return Refresh;

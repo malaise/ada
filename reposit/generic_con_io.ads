@@ -190,9 +190,11 @@ package Generic_Con_Io is
     procedure Pause;
 
     -- Gets first character (echo or not)
-    -- No echo for RET,      ESC, BREAK, FD_EVENT, TIMER_EVENT and REFRESH where
-    --             ASCII.CR, ESC, EOT,   STX,      SYN         and NUL are returned
-    --   respectively
+    -- No echo for RET,      ESC, BREAK, FD_EVENT, TIMER_EVENT, SIGNAL_EVENT
+    -- and REFRESH where
+    --             ASCII.CR, ESC, EOT,   STX,      SYN,         SI          
+    -- and NUL are returned respectively
+
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
     function Get (Name : Window := Screen; Echo : in Boolean := True)
@@ -236,7 +238,8 @@ package Generic_Con_Io is
     -- Note that is STR'LENGHT is 0, the cursor is hidden
     type Curs_Mvt is (Up, Down, Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
                       Left, Right, Full, Tab, Stab, Ret, Esc, Break,
-                      Mouse_Button, Timeout, Fd_Event, Timer_Event, Refresh);
+                      Mouse_Button, Timeout, Fd_Event, Timer_Event, 
+                      Signal_Event, Refresh);
     procedure Get (Str        : out String;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;
@@ -282,8 +285,10 @@ package Generic_Con_Io is
     -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
     -- if not is_char, key is the key code. If is_char, key is the ascii code.
     -- CARE : is_char can be set and key not compatible with ADA characters.
-    -- KEY = 0 and IS_CHAR and other flags FALSE indicate refresh has to be done
-    -- KEY = 1 and IS_CHAR and other flags FALSE indicate fd event has occured
+    -- KEY = 0 and IS_CHAR and other flags FALSE: refresh has to be done
+    -- KEY = 1 and IS_CHAR and other flags FALSE: fd event has occured
+    -- KEY = 2 and IS_CHAR and other flags FALSE: timer event has occured
+    -- KEY = 3 and IS_CHAR and other flags FALSE: signal event has occured
     procedure Get_Key (Key     : out Natural;
                        Is_Char : out Boolean;
                        Ctrl    : out Boolean;

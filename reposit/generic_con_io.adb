@@ -808,7 +808,7 @@ package body Generic_Con_Io is
       Shift := Loc_Shift;
     end Get_X_Key;
 
-    -- check if a key is available until a certain time.
+    -- Check if a key is available until a certain time.
     procedure Get_Key_Time (Check_Break : in Boolean;
                             Event       : out Event_List;
                             Key         : out Natural;
@@ -848,13 +848,17 @@ package body Generic_Con_Io is
 
       Next_X_Event (Timeout_Ms, X_Event);
       case X_Event is
-        when X_Mng.Timer_Event =>
-          -- Fd event
-          Event := Timer_Event;
-          return;
         when X_Mng.Fd_Event =>
           -- Fd event
           Event := Fd_Event;
+          return;
+        when X_Mng.Timer_Event =>
+          -- Timer event
+          Event := Timer_Event;
+          return;
+        when X_Mng.Signal_Event =>
+          -- Signal event
+          Event := Signal_Event;
           return;
         when X_Mng.Refresh =>
           -- Refresh
@@ -912,6 +916,18 @@ package body Generic_Con_Io is
           return;
         elsif Event = Fd_Event then
           Key := 1;
+          Is_Char := True;
+          Ctrl := False;
+          Shift := False;
+          return;
+        elsif Event = Timer_Event then
+          Key := 2;
+          Is_Char := True;
+          Ctrl := False;
+          Shift := False;
+          return;
+        elsif Event = Signal_Event then
+          Key := 3;
           Is_Char := True;
           Ctrl := False;
           Shift := False;
@@ -983,12 +999,14 @@ package body Generic_Con_Io is
       use type Timers.Delay_Rec, Timers.Delay_List;
     begin
       -- Time at which the get ends
-      if Time_Out = Timers.Infinite_Delay or else Time_Out.Delay_Kind = Timers.Delay_Exp then
+      if Time_Out = Timers.Infinite_Delay
+      or else Time_Out.Delay_Kind = Timers.Delay_Exp then
         Last_Time := Time_Out;
       else
         Last_Time := (Delay_Kind => Timers.Delay_Exp,
                       Period     => Timers.No_Period,
-                      Expiration_Time => Calendar."+"(Calendar.Clock, Time_Out.Delay_Seconds) );
+                      Expiration_Time => Calendar."+"(Calendar.Clock,
+                                                      Time_Out.Delay_Seconds) );
       end if;
 
       -- Emtpy string
@@ -1110,7 +1128,7 @@ package body Generic_Con_Io is
           Last := Parse;
           Stat := Event;
           return;
-        elsif  not Is_Char then
+        elsif not Is_Char then
           case Key is
             when 16#0D# =>
               -- Return
@@ -1300,7 +1318,8 @@ package body Generic_Con_Io is
     --  ASCII.CR, ESC, EOT and NUL are returned respectively
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
-    function Get (Name : Window := Screen; Echo : in Boolean := True) return Character is
+    function Get (Name : Window := Screen; Echo : in Boolean := True)
+                 return Character is
       Str  : String(1 .. 1);
       Last : Natural;
       Stat : Curs_Mvt;
@@ -1329,6 +1348,8 @@ package body Generic_Con_Io is
             return Ascii.Stx;
           when Timer_Event =>
             return Ascii.Syn;
+          when Signal_Event =>
+            return Ascii.Si;
           when Refresh =>
             return Ascii.Nul;
           when Mouse_Button | Timeout =>

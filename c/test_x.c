@@ -192,6 +192,9 @@ boolean read;
       /* Timeout */
       k = DISCARD;
       continue;
+    } else if (m == SIG_EVENT) {
+      printf ("Signal\n");
+      break;
     } else {
       printf ("ERROR OTHER FD\n");
     }
@@ -272,8 +275,8 @@ boolean read;
 
     }  else if (k == REFRESH) {
       x_read_tid (line_event, FALSE, &l, &i, &j);
-       /* Redraw to be done */
-       strcpy (stre, "Refresh");
+      /* Redraw to be done */
+      strcpy (stre, "Refresh");
     }
 
     printf ("%s\n", stre);

@@ -38,7 +38,7 @@ package X_Mng is
 
   -- Returned events (see timers)
   type Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard, Refresh,
-                      Tid_Motion, Fd_Event, Timer_Event);
+                      Tid_Motion, Fd_Event, Timer_Event, Signal_Event);
 
   -- Fd management
   subtype File_Desc is Sys_Calls.File_Desc;
@@ -46,6 +46,9 @@ package X_Mng is
   -- and should return True if fd event has to be reported by select
   type Fd_Callback is access
     function (Fd : in File_Desc; Read : in Boolean) return Boolean;
+
+  -- Signal management
+  type Signal_Callback is access procedure;
  
   ----- EXCEPTIONS -----
 
@@ -237,10 +240,15 @@ package X_Mng is
                             Callback : in Fd_Callback);
   -- Unregister the callback from a fd in a mode
   procedure X_Del_Callback (Fd : in File_Desc; Read : in Boolean);
-
   -- Is a callback registered on a fd in a mode
   function X_Callback_Set (Fd : in File_Desc; Read : in Boolean)
   return Boolean;
+
+  -- Register a callback on termination signals
+  -- Call it with null to disable
+  procedure X_Set_Signal (Callback : in Signal_Callback);
+  -- Is a callback set on signals
+  function X_Signal_Set return Boolean;
 
   -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
   --  (or X_FAILURE will be raised)
@@ -308,16 +316,17 @@ package X_Mng is
  
 private
  
-  for Event_Kind'Size use 32;
-  for Event_Kind use (
-   Discard     => 0, 
-   Tid_Release => 1, 
-   Tid_Press   => 2, 
-   Keyboard    => 3,
-   Refresh     => 4,
-   Tid_Motion  => 5,
-   Fd_Event    => 9,
-   Timer_Event => 10);
+--  for Event_Kind'Size use 32;
+--  for Event_Kind use (
+--   Discard      => 0, 
+--   Tid_Release  => 1, 
+--   Tid_Press    => 2, 
+--   Keyboard     => 3,
+--   Refresh      => 4,
+--   Tid_Motion   => 5,
+--   Fd_Event     => 9,
+--   Timer_Event  => 10,
+--   Signal_Event => 11);
  
  subtype Line_Range is Natural range 0 .. Max_Line_Number;
   subtype Client_Range is Positive range 1 .. Max_Line_Number;

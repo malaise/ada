@@ -133,15 +133,45 @@ extern boolean x_fd_set (int fd, boolean read) {
   }
 }
 
+#define NO_SIG 0
+#define NO_HANDLER  -1
+static int sig_received = NO_HANDLER;
+static void signal_handler (int sig) {
+  sig_received = sig;
+}
+
+static void set_sig_handler (void) {
+  /* Set handler if not set */
+  if (sig_received == NO_HANDLER) {
+    sig_received = NO_SIG;
+    (void) signal(SIGINT,  signal_handler);
+  }
+}
+
 
 /***** Event management *****/
 
+void time_remaining (int *timeout_ms, timeout_t *exp_time) {
+
+  timeout_t cur_time;
+
+  if (*timeout_ms > 0) {
+    get_time (&cur_time);
+    if (sub_time (exp_time, &cur_time) >= 0) {
+      *timeout_ms = exp_time->tv_sec * 1000 + exp_time->tv_usec / 1000;
+    } else {
+      *timeout_ms = 0;
+    }
+  }
+}
 /* Makes a select between the sockets described in the global mask AND the  */
 /*  the socket used by X for the events                                     */
 /* The time out is in miliseconds (negative for blocking )                  */
 /* If a X event is available, *p_fd is set to X_EVENT (-1) and read to true */
-/* Else *p_fd is set to one valid fd on which there is an event and         */
-/*  read is set accordingly                                                 */
+/* Else if an event on a fd, *p_fd is set to thhis fd and read is set       */
+/*  accordingly                                                             */
+/* Else if a (added) signal has been received, *p_fd is set to SIG_EVENT    */
+/*  and read is meaningless                                                 */
 /* Else *p_fd is set to NO_EVENT (-2) and read is meaningless               */
 /* Failure if select fails                                                  */
 
@@ -157,6 +187,9 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   if (p_fd == (int*) NULL) {
     return (ERR);
   }
+
+  /* Init signal handling */
+  set_sig_handler ();
 
   /* Compute exp_time = cur_time + timeout_ms */
   blink_is_active = (curr_percent != 0);
@@ -181,6 +214,16 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   }
 
   for (;;) {
+
+    /* Check for signal */
+    if (sig_received != NO_SIG) {
+      sig_received = NO_SIG;
+      *p_fd = SIG_EVENT;
+      time_remaining (timeout_ms, &exp_time);
+      return (OK);
+    }
+
+
     /* Compute exp_select : smallest of exp_time(timeout) and next_blink */
     if (blink_is_active) {
       if (timeout_is_active) {
@@ -257,14 +300,7 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
             }
           }
         }
-        if (*timeout_ms > 0) {
-          get_time (&cur_time);
-          if (sub_time (&exp_time, &cur_time) >= 0) {
-            *timeout_ms = exp_time.tv_sec * 1000 + exp_time.tv_usec / 1000;
-          } else {
-            *timeout_ms = 0;
-          }
-        }
+        time_remaining (timeout_ms, &exp_time);
         return (OK);
       } else if (n < 0) {
         if (errno != EINTR) {

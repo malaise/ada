@@ -51,6 +51,9 @@ package body X_Mng is
   end Same_Fd;
   procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
 
+  -- Signal callback
+  Cb_Sig : Signal_Callback := null;
+
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
   ------------------------------------------------------------------
@@ -297,8 +300,9 @@ package body X_Mng is
   -- Wait for some events
   -- int x_select (int *p_fd, int *timeout_ms);
   ------------------------------------------------------------------
-  C_Select_No_Event : constant Integer := -2;
-  C_Select_X_Event  : constant Integer := -1;
+  C_Select_Sig_Event : constant Integer := -3;
+  C_Select_No_Event  : constant Integer := -2;
+  C_Select_X_Event   : constant Integer := -1;
   function X_Select (P_Fd : System.Address;
                      P_Read : System.Address;
                      Timeout_Ms : System.Address) return Result;
@@ -943,6 +947,21 @@ package body X_Mng is
   end X_Callback_Set;
 
   ------------------------------------------------------------------
+  -- Register a callback on terminations signals
+  -- Call it with null to disable
+  procedure X_Set_Signal (Callback : in Signal_Callback) is
+  begin
+    Cb_Sig := Callback;
+  end X_Set_Signal;
+
+  ------------------------------------------------------------------
+  -- Is a callback set on signals
+  function X_Signal_Set return Boolean is
+  begin
+    return Cb_Sig /= null;
+  end X_Signal_Set;
+
+  ------------------------------------------------------------------
   procedure X_Select (Line_Id : in Line; Timeout_Ms : in out Integer;
                       X_Event : out Boolean) is
     Exp : Calendar.Time;
@@ -1119,7 +1138,7 @@ package body X_Mng is
   ------------------------------------------------------------------
 
   type Xx_Select_Result_List is (Select_X_Event, Select_Fd, Select_Timer,
-                                 Select_Timeout);
+                                 Select_Signal, Select_Timeout);
 
   function Xx_Select (Timeout_In : Duration) return Xx_Select_Result_List is
     Fd    : Integer;
@@ -1204,6 +1223,11 @@ package body X_Mng is
         and then Calendar.Clock > Final_Exp then
           -- Requested timeout reached
           return Select_Timeout;
+        end if;
+      elsif Fd = C_Select_Sig_Event then
+        if Cb_Sig /= null then
+          Cb_Sig.all;
+          return Select_Signal;
         end if;
       else
         -- A FD event
@@ -1481,6 +1505,15 @@ package body X_Mng is
                                 & Line_Range'Image(Selected_Client));
                 end if;
                 exit;
+              when Select_Signal =>
+                Some_Event_Present := True;
+                Loc_Kind := Signal_Event;
+                Loc_Next := False;
+                if Debug then
+                  My_Io.Put_Line ("            Wait select signal event for -> "
+                                & Line_Range'Image(Selected_Client));
+                end if;
+                exit;
             end case;
           end loop;
         end if;
@@ -1588,7 +1621,7 @@ package body X_Mng is
           My_Io.Put_Line ("**** SELECT_NO_X: Got a X event");
         end if;
         raise X_Failure;
-      when Select_Fd | Select_Timer =>
+      when Select_Fd | Select_Timer | Select_Signal =>
         return True;
       when Select_Timeout =>
         return False;

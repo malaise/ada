@@ -834,6 +834,12 @@ package body Curve is
           when Big_Con_Io.Fd_Event =>
             -- Call any fd callback
             Fd_Callback;
+          when Big_Con_Io.Timer_Event =>
+            -- Call any timer callback
+            Timer_Callback;
+          when Big_Con_Io.Signal_Event =>
+            -- Call any signal callback
+            Signal_Callback;
           when Big_Con_Io.Timeout =>
             -- Should not occure: GET(INFINITE_TIME)
             null;

@@ -122,7 +122,8 @@ package body Dialog is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First .. Screen.List_Scroll_Fld_Range'Last =>
+            when Screen.List_Scroll_Fld_Range'First ..
+                 Screen.List_Scroll_Fld_Range'Last =>
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Ok_Button_Fld =>
               if Decode then
@@ -135,7 +136,7 @@ package body Dialog is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
         when Afpx.Refresh =>
           Redisplay := True;
@@ -155,7 +156,8 @@ package body Dialog is
 
     procedure Encode is
     begin
-      Afpx.Encode_Field (Screen.Get_Fld, (0, 0), Normal (Degree, Screen.Get_Get_Width, False));
+      Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
+                  Normal (Degree, Screen.Get_Get_Width, False));
     end Encode;
 
     function Decode return Boolean is
@@ -210,7 +212,8 @@ package body Dialog is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First .. Screen.List_Scroll_Fld_Range'Last =>
+            when Screen.List_Scroll_Fld_Range'First ..
+                 Screen.List_Scroll_Fld_Range'Last =>
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Ok_Button_Fld =>
               if Decode then
@@ -221,7 +224,7 @@ package body Dialog is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
         when Afpx.Refresh =>
           Redisplay := True;

@@ -149,6 +149,8 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
           Fd_Callback;
         when Afpx.Timer_Event =>
           Timer_Callback;
+        when Afpx.Signal_Event =>
+          Signal_Callback;
         when Afpx.Refresh =>
           Redisplay := True;
       end case;
@@ -390,6 +392,8 @@ begin
         Fd_Callback;
       when Afpx.Timer_Event =>
         Timer_Callback;
+      when Afpx.Signal_Event =>
+        Signal_Callback;
       when Afpx.Refresh =>
         Redisplay := True;
     end case;

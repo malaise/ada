@@ -1,4 +1,4 @@
-with My_Io, X_Mng, Argument, Text_Handler;
+with My_Io, X_Mng, Argument, Text_Handler, Null_Procedure;
 use X_Mng;
 procedure T_X is
 
@@ -52,7 +52,9 @@ begin
   end if;
 
   X_Mng.X_Open_Line (Line_Def, Id);
-
+  
+  -- Enable signal event
+  X_Mng.X_Set_Signal(Null_Procedure'access);
 
   X_Event := True;
   Kind := X_Mng.Refresh;
@@ -81,7 +83,8 @@ begin
         case Kind is
           when X_Mng.Discard =>
             Put (X_Mng.Event_Kind'Image(Kind));
-          when X_Mng.Refresh | X_Mng.Fd_Event | X_Mng.Timer_Event =>
+          when X_Mng.Refresh | X_Mng.Fd_Event 
+             | X_Mng.Timer_Event | X_Mng.Signal_Event =>
             X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
             Put (X_Mng.Event_Kind'Image(Kind));
           when X_Mng.Tid_Press | X_Mng.Tid_Release =>
@@ -104,8 +107,8 @@ begin
         exit when not Next;
       end loop;
     else
---      PUT ("Timeout");
-null;
+--    Put ("Timeout");
+      null;
     end if;
     My_Io.Put_Line (Integer'Image(Var_Timeout_Ms));
   end loop Main_Loop;
