@@ -82,7 +82,8 @@ package body PARSER is
    IFCALL  => ("?@", "if B then call A              "),
    RET     => ("_ ", "return                        "),
    RETN    => ("__", "return A levels (0=all)       "),
-   IFRETN  => ("?_", "if B return A levels          "),
+   IFRET   => ("_?", "if B return                   "),
+   IFRETN  => ("?_", "if B return A levels (0=all)  "),
    RETACAL => ("_@", "return and call A             "),
 
    FORMAT  => ("//", "xx or xx.yyy format           "),

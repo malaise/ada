@@ -352,6 +352,12 @@ package body MCD_MNG is
           DO_RET;
         when RETN =>
           DO_RET;
+        when IFRET =>
+          POP(A);
+          if OPERATIONS.IS_TRUE(A) then
+            PUSH( (KIND => INTE, VAL_INTE => 1) );
+            DO_RET;
+          end if;
         when IFRETN =>
           POP(A);
           POP(B);

@@ -67,6 +67,7 @@ package MCD_MNG is
    IFCALL,
    RET,
    RETN,
+   IFRET,
    IFRETN,
    RETACAL,
 
