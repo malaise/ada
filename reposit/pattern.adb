@@ -40,28 +40,33 @@ package body Pattern is
 
 
     -- Append a terms to new pattern
-    procedure Create_Pattern (Rule : in Rule_No;
-                              Id : in Pattern_Id;
-                              Cb : in Match_Cb_Access);
+    procedure Create_Pattern (Rule  : in Rule_No;
+                              Id    : in Pattern_Id;
+                              Cb    : in Match_Cb_Access;
+                              Id4Cb : in Pattern_Id);
     procedure Add_Term (Str : in String;
                         Optio : in Boolean;
                         Repet : in Boolean);
                       
 
-    -- Get terms one by one
-    procedure Rewind (Rule : in Rule_No);
+    -- Get terms of patterns of rule, one by one
 
     type Str_Access is access String;
 
+    -- A record with these values (Str_Acc=null) is used
+    --  internally to mark a used rule
+    --  or returned by Next_Term when no more pattern for the rule
     type Term_Rec is record
       Rule : Rule_No := Rule_No'First;
-      Id : Pattern_Id := Pattern_Id'First;
+      Id    : Pattern_Id := Pattern_Id'First;
+      Id4Cb : Pattern_Id := Pattern_Id'First;
       Str_Acc : Str_Access := null;
       Optio : Boolean := False;
       Repet : Boolean := False;
       Cb : Match_Cb_Access;
     end record;
 
+    procedure Rewind (Rule : in Rule_No);
     function Next_Term (Lower_Case : Boolean) return Term_Rec;
 
   end Storage;
@@ -78,10 +83,11 @@ package body Pattern is
 
   -- (Re)define a pattern
   -- May raise Invalid_Pattern if Pattern is not valid
-  procedure Set (Rule : in Rule_No;
-                 Id : in Pattern_Id;
+  procedure Set (Rule     : in Rule_No;
+                 Id       : in Pattern_Id;
                  Pattern  : in String;
-                 Match_Cb : in Match_Cb_Access) is
+                 Match_Cb : in Match_Cb_Access;
+                 Id4Cb    : in Pattern_Id4Cb := Same_Id) is
     Iter : Parser.Iterator;
     First : Boolean;
     Optio : Boolean;
@@ -97,7 +103,11 @@ package body Pattern is
     end if;
     -- Init
     Put_Debug ("Set", "Create patern to rule " & Rule'Img & ", id " & Id'Img);
-    Storage.Create_Pattern (Rule, Id, Match_Cb);
+    if Id4Cb = Same_Id then
+      Storage.Create_Pattern (Rule, Id, Match_Cb, Id);
+    else
+      Storage.Create_Pattern (Rule, Id, Match_Cb, Id4Cb);
+    end if;
     Parser.Set (Iter, Pattern, Is_Sep'Access);
     First := True;
     Optio := False;
@@ -223,6 +233,16 @@ package body Pattern is
 
     use type Storage.Str_Access;
 
+    -- Get Parser.Current_Word, in lower case or not
+    function Current_Word return String is
+    begin
+      if Case_Sensitive then
+        return Parser.Current_Word (Iter);
+      else
+        return Lower_Str (Parser.Current_Word (Iter));
+      end if;
+    end Current_Word;
+
     -- Pull one term
     function Pull return Boolean is
     begin
@@ -278,7 +298,7 @@ package body Pattern is
       end if;
       if Ok and then Term.Cb /= null then
         Put_Debug ("Check", "Calling Cb");
-        Res := Term.Cb (Rule, Term.Id, Nb_Match, Iter);
+        Res := Term.Cb (Rule, Term.Id4Cb, Nb_Match, Iter);
       end if;
       Parser.Del (Iter);
       Put_Debug ("Check", "Done");
@@ -334,7 +354,8 @@ package body Pattern is
     One_Word:
     loop
       declare
-        Strl : constant String := Parser.Current_Word (Iter);
+        -- In lower case or not
+        Strl : constant String := Current_Word;
       begin
         -- Match?
         Put_Debug ("Check", "Comparing word " & Strl

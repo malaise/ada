@@ -12,14 +12,18 @@ package body Storage is
   -- Search first term of pattern in rule
   function Pattern_Match (Curr, Crit : Term_Rec) return Boolean is
   begin
-    return Curr.Rule = Crit.Rule and then Curr.Id = Crit.Id;
+    return Curr.Rule = Crit.Rule
+           and then Curr.Str_Acc /= null
+           and then Curr.Id = Crit.Id;
   end Pattern_Match;
   procedure Search_Pattern is new Term_List_Mng.Search (Pattern_Match);
 
   -- Search first term of next pattern of same rule
   function Pattern_After (Curr, Crit : Term_Rec) return Boolean is
   begin
-    return Curr.Rule = Crit.Rule and then Curr.Id > Crit.Id;
+    return Curr.Rule = Crit.Rule
+           and then Curr.Str_Acc /= null
+           and then Curr.Id > Crit.Id;
   end Pattern_After;
   procedure Next_Pattern is new Term_List_Mng.Search (Pattern_After);
 
@@ -40,7 +44,8 @@ package body Storage is
         Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute);
       exception
         when Term_List_Mng.Not_In_List =>
-          -- This rule does not exist;
+          -- This rule does not exist: insert a dummy term
+          Term_List_Mng.Insert (Term_List, Term);
           return I;
       end;
     end loop;
@@ -61,7 +66,7 @@ package body Storage is
     end if;
   end Del_Term;
 
-  -- Delete all terms of all aptterns of a rule
+  -- Delete all terms of all patterns of a rule
   procedure Del_Rule (Rule : in Rule_No) is
 
     function Find_Rule (From_Current : Boolean) return Boolean is
@@ -124,6 +129,7 @@ package body Storage is
     loop
       Free (Term.Str_Acc);
       exit when Del_Term;
+      Search_Pattern (Term_List, Term, From => Term_List_Mng.From_Current);
       Term_List_Mng.Read (Term_List, Term, Term_List_Mng.Current);
       -- New pattern of same rule
       exit when Term.Rule = Rule and then Term.Id /= Id;
@@ -131,13 +137,15 @@ package body Storage is
   end Delete_Current_Pattern;
 
   -- Append terms to a new pattern
-  In_Prev : Boolean := True;
-  Term_Rule : Rule_No := Rule_No'First;
-  Term_Id : Pattern_Id := Pattern_Id'First;
-  Pat_Cb  : Match_Cb_Access;
-  procedure Create_Pattern (Rule : in Rule_No;
-                            Id : in Pattern_Id;
-                            Cb : in Match_Cb_Access) is
+  In_Prev    : Boolean := True;
+  Term_Rule  : Rule_No := Rule_No'First;
+  Term_Id    : Pattern_Id := Pattern_Id'First;
+  Term_Id4Cb : Pattern_Id := Pattern_Id'First;
+  Term_Cb    : Match_Cb_Access;
+  procedure Create_Pattern (Rule  : in Rule_No;
+                            Id    : in Pattern_Id;
+                            Cb    : in Match_Cb_Access;
+                            Id4Cb : in Pattern_Id) is
     Term : Term_Rec;
   begin
     -- Move to end of previous pattern if posssible
@@ -165,7 +173,8 @@ package body Storage is
     end if;
     Term_Rule := Rule;
     Term_Id := Id;
-    Pat_Cb := Cb;
+    Term_Id4Cb := Id4Cb;
+    Term_Cb := Cb;
   end Create_Pattern;
 
   procedure Add_Term (Str : in String;
@@ -177,9 +186,10 @@ package body Storage is
     Term.Str_Acc := new String'(Str);
     Term.Rule := Term_Rule;
     Term.Id := Term_Id;
+    Term.Id4Cb := Term_Id4Cb;
     Term.Optio := Optio;
     Term.Repet := Repet;
-    Term.Cb := Pat_Cb;
+    Term.Cb := Term_Cb;
     if In_Prev then
       Term_List_Mng.Insert (Term_List, Term, Term_List_Mng.Next);
     else
@@ -219,8 +229,8 @@ package body Storage is
       else
         The_End := True;
       end if;
-      -- Term got is of correct rule
-      if Term.Rule = The_Rule then
+      -- Term got is of correct rule and not rule lock
+      if Term.Rule = The_Rule and then Term.Str_Acc /= null then
         if Lower_Case then
           Term.Str_Acc.all := Lower_Str (Term.Str_Acc.all);
         end if;
