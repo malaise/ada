@@ -28,9 +28,15 @@ package body Crc is
     Data_Base.Read_First (Item);
     loop
       exit when Item = Data_Base.No_Item;
-      for I in Parse(Item.Name)'Range loop
-        Add (Char2Byte (Item.Name(I)));
-      end loop;
+      -- Bug in Gnat 3.13
+      --  "for I in Parse(Item.Name)'Range loop" makes process grow
+      declare
+        S : constant String := Parse(Item.Name);
+      begin
+        for I in S'Range loop
+          Add (Char2Byte (S(I)));
+        end loop;
+      end;
       for I in 1 .. Item.Data_Len loop
         Add (Char2Byte (Item.Data(I)));
       end loop;
