@@ -1,7 +1,6 @@
 --  Triangle de PASCAL
 
 with MY_IO; use MY_IO;
-with TEXT_IO;
 -- Calcul des elements des 33 premieres lignes du
 --  TRIANGLE DE PASCAL
 procedure PASCAL is
