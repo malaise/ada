@@ -1,3 +1,4 @@
+with Ada.Text_Io;
 with Event_Mng, Sys_Calls, Text_Handler;
 package body Async_Stdin is
 
@@ -19,9 +20,22 @@ package body Async_Stdin is
         when Sys_Calls.Got =>
           -- Dump character code
           -- Sys_Calls.Put_Line_Error (Integer'Image(Character'Pos(C)));
-          Text_Handler.Append (Txt, C);
-          exit when Text_Handler.Length (Txt) = Max
-          or else C < ' ';
+          if Character'Pos(C) = 8 or else Character'Pos(C) = 127 then
+            -- Backspace
+            if not Text_Handler.Empty (Txt) then
+              -- Erase prev char and move one left
+              Ada.Text_Io.Put (Ascii.Bs & ' ' & Ascii.Bs);
+              Text_Handler.Set (Txt,
+                Text_Handler.Value(Txt)(1 .. Text_Handler.Length(Txt) - 1));
+            end if;
+          else
+            if C >= ' ' or else C = Ascii.Lf then
+              Ada.Text_Io.Put (C);
+            end if;
+            Text_Handler.Append (Txt, C);
+            exit when Text_Handler.Length (Txt) = Max
+            or else C < ' ';
+          end if;
         when Sys_Calls.None =>
           -- No more char
           return False;
@@ -32,6 +46,11 @@ package body Async_Stdin is
       end case;
     end loop;
 
+    -- Dump result
+    -- for I in 1 .. Text_Handler.Length(Txt) loop
+    --   Sys_Calls.Put_Line_Error (
+    --      Integer'Image(Character'Pos(Text_Handler.Value(Txt)(I))));
+    -- end loop;
     Result := Cb (Text_Handler.Value (Txt));
     Text_Handler.Empty (Txt);
     return Result;
@@ -66,7 +85,7 @@ package body Async_Stdin is
       if Cb = null then
         if Stdin_Is_A_Tty then
           Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                            Sys_Calls.Asynchronous);
+                                            Sys_Calls.Transparent);
         else
           Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
         end if;
