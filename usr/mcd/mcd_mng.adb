@@ -495,8 +495,17 @@ package body Mcd_Mng is
           -- store B in reg A and push B
           Pop(A); Read(B); Registers.Store(B, A);
         when Pushr =>
-          -- A -> push content of reg A
+          -- push content of reg A
           Pop(A); Push(Registers.Retrieve(A));
+        when Swapr =>
+          -- exchange B and content of reg A
+          Pop(A); pop(B); Push(Registers.Retrieve(A)); Registers.Store(B, A);
+        when Swap2r =>
+          -- exchange content of reg B and content of reg A
+          Pop(A); pop(B);
+          C := Registers.Retrieve(A);
+          Registers.Store(Registers.Retrieve(B), A);
+          Registers.Store(C, B);
         when Clearr =>
           -- Clear reg A
           Pop(A); Registers.Clear(A);
