@@ -36,7 +36,7 @@ package body Screen is
     Afpx.Set_Field_Activation(30, Mode = Default and then Edit_Allowed);
     Afpx.Set_Field_Activation(31, Mode = Default and then Sublist_Active);
     -- Account buttons
-    for F in Afpx.Field_Range'(32) .. 38 loop
+    for F in Afpx.Field_Range'(32) .. 39 loop
        Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
     -- To francs/Euros button
