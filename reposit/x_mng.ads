@@ -319,19 +319,20 @@ package X_Mng is
  
 private
  
---  for Event_Kind'Size use 32;
---  for Event_Kind use (
---   Discard      => 0, 
---   Tid_Release  => 1, 
---   Tid_Press    => 2, 
---   Keyboard     => 3,
---   Refresh      => 4,
---   Tid_Motion   => 5,
---   Fd_Event     => 9,
---   Timer_Event  => 10,
---   Signal_Event => 11);
+  -- This is passed to C
+  for Event_Kind'Size use 32;
+  for Event_Kind use (
+    Discard      => 0, 
+    Tid_Release  => 1, 
+    Tid_Press    => 2, 
+    Keyboard     => 3,
+    Refresh      => 4,
+    Tid_Motion   => 5,
+    Fd_Event     => 9,
+    Timer_Event  => 10,
+    Signal_Event => 11);
  
- subtype Line_Range is Natural range 0 .. Max_Line_Number;
+  subtype Line_Range is Natural range 0 .. Max_Line_Number;
   subtype Client_Range is Positive range 1 .. Max_Line_Number;
   No_Client_No : constant Line_Range := 0;
 
