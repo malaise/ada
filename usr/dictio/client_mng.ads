@@ -6,6 +6,8 @@ package Client_Mng is
 
   procedure Modified (Kind : in Character; Item : in Data_Base.Item_Rec);
 
+  function Stable return Boolean;
+
   procedure New_Status;
 
 end Client_Mng;
