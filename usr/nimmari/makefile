@@ -1,6 +1,8 @@
 C_DIR=/users/malaise/ada/c
 
-all: AFPX.DSC
+all: do_nimmari
+
+do_nimmari:
 	amake nimmari.adb -largs $(C_DIR)/libx_mng.a -lX11
 
 AFPX.DSC: AFPX.LIS
