@@ -7,6 +7,7 @@ package AFPX is
   type ABSOLUTE_FIELD_RANGE is new NATURAL range 0 .. 200;
   subtype FIELD_RANGE is ABSOLUTE_FIELD_RANGE
           range 1 .. ABSOLUTE_FIELD_RANGE 'LAST;
+  LIST_FIELD_NO : constant ABSOLUTE_FIELD_RANGE := 0;
 
   -- The content of one row of one field (encode, decode)
   subtype STR_TXT is TEXT_HANDLER.TEXT (CON_IO.COL_RANGE_LAST + 1);
@@ -157,7 +158,7 @@ package AFPX is
       when KEYBOARD =>
         KEYBOARD_KEY : KEYBOARD_KEY_LIST;
       when MOUSE_BUTTON =>
-        FIELD_NO : FIELD_RANGE;
+        FIELD_NO : ABSOLUTE_FIELD_RANGE;
       when REFRESH =>
         null;
     end case;
@@ -167,12 +168,13 @@ package AFPX is
   -- REDISPLAY should be set if modif if some other screen actions (con_io)
   --  justify a redisplay
   -- In LIST: mouse click changes current list element (ID_SELECTED)
-  --      up/down arrows, page up/down scroll list (affecting ID_TOP)
+  --      double click ends put_then get 
+  --      up/down arrows, page up/down, Ctrl page up/down scroll list
   -- In PUT fields : nothing
   -- In GET fields : cursor right/left, characters, bakcspace, delete,
   --                  Home, end, insert edit field
   --                 Tab, shift Tab  change field
-  --                 Return / Esc to end put_then_get
+  --                 Return / Esc / Break to end put_then_get
   --                 mouse click to move at home of field
   -- In MOUSE fields : mouse click then release ends put_then_get
   -- This call affects the content of GET fields, the cursor field and col,
@@ -194,3 +196,4 @@ package AFPX is
 
 
 end AFPX;
+

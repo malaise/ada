@@ -69,8 +69,8 @@ package body AF_DSCR is
   begin
     CHECK;
 
-    if FIELD_NO = 0 then
-      if FIELDS(0).KIND = AFPX_TYP.BUTTON then
+    if FIELD_NO = LFN then
+      if FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
         -- A list in the descriptor
         return;
       end if;

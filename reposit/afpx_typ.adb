@@ -19,3 +19,4 @@ package body AFPX_TYP is
   end IN_FIELD_ABSOLUTE;
 
 end AFPX_TYP;
+

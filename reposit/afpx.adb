@@ -2,6 +2,8 @@ with TEXT_IO;
 with AFPX_TYP;
 package body AFPX is
 
+  LFN : constant AFPX_TYP.ABSOLUTE_FIELD_RANGE
+                := AFPX_TYP.ABSOLUTE_FIELD_RANGE(LIST_FIELD_NO);
   AFPX_INTERNAL_ERROR : exception;
 
   package AF_DSCR is
@@ -58,7 +60,7 @@ package body AFPX is
     loop
       if RET_NO /= AF_DSCR.CURRENT_DSCR.NB_FIELDS then
         RET_NO := RET_NO + 1;
-      elsif AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
+      elsif AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
         RET_NO := 0;
       else
         RET_NO := 1;
@@ -79,7 +81,7 @@ package body AFPX is
         RET_NO := AF_DSCR.CURRENT_DSCR.NB_FIELDS;
       elsif RET_NO /= 1 then
         RET_NO := RET_NO - 1;
-      elsif AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
+      elsif AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
         RET_NO := 0;
       else
         RET_NO := AF_DSCR.CURRENT_DSCR.NB_FIELDS;
@@ -474,8 +476,8 @@ package body AFPX is
     use AFPX_TYP;
   begin
     AF_DSCR.CHECK;
-    if AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
-      AF_PTG.ERASE_FIELD (0);
+    if AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
+      AF_PTG.ERASE_FIELD (LFN);
     end if;
     for I in 1 .. AF_DSCR.CURRENT_DSCR.NB_FIELDS loop
       AF_PTG.ERASE_FIELD (I);
@@ -489,11 +491,11 @@ package body AFPX is
   begin
     AF_DSCR.CHECK;
     -- Check no list active in descriptor
-    if AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
-      if AF_DSCR.FIELDS (0).ACTIVATED then
+    if AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
+      if AF_DSCR.FIELDS (LFN).ACTIVATED then
         raise LIST_IN_PUT;
       else
-        AF_PTG.ERASE_FIELD (0);
+        AF_PTG.ERASE_FIELD (LFN);
       end if;
     end if;
 
@@ -560,7 +562,7 @@ package body AFPX is
 
   procedure UPDATE_LIST (ACTION : in LIST_ACTION_LIST) is
   begin
-    AF_DSCR.CHECK(0);
+    AF_DSCR.CHECK(LFN);
     AF_LIST.UPDATE(ACTION);
   end UPDATE_LIST;
 
@@ -604,3 +606,4 @@ package body AFPX is
   end PUT_THEN_GET;
 
 end AFPX;
+

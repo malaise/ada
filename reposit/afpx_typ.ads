@@ -88,3 +88,4 @@ package AFPX_TYP is
                               SQUARE : in CON_IO.SQUARE) return BOOLEAN;
 
 end AFPX_TYP;
+
