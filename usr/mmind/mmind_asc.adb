@@ -23,7 +23,9 @@ begin
       Common.Set_Level_To_Stored;
     when Constraint_Error =>
       Ada.Text_Io.Put_Line (
-       "Syntax ERROR. Usage is ""MMIND_ASC [ <level> ]"" (level from 3 to 5).");
+         "Syntax ERROR. Usage is """
+       & Argument.Get_Program_Name
+       & " [ <level> ]"" (level from 3 to 5).");
       return;
   end;
  
