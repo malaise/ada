@@ -58,12 +58,15 @@ package body Online_Mng is
 
   procedure Start_Fight is
   begin
+    if Sync_Mng.In_Sync then
+      Sync_Mng.Cancel;
+    end if;
     Fight_Mng.Start (Status.Fight, 1.0, Fight_Actions);
   end Start_Fight;
 
   procedure Event (From  : in Tcp_Util.Host_Name;
                    Stat  : in Status.Status_List;
-                   Sync : in Boolean;
+                   Sync  : in Boolean;
                    Diff  : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
@@ -118,8 +121,8 @@ package body Online_Mng is
         end if;
         Timers.Delete (Tid);
         Start_Fight;
-      elsif Stat = Status.Slave and then not Sync_Mng.In_Sync then
-        -- Synchronise initialising slave
+      elsif Stat = Status.Slave and then not Sync and then not Sync_Mng.In_Sync then
+        -- Synchronise slave which is not Synchronised
         if Debug.Level_Array(Debug.Online) then
           Debug.Put ("Online: syncing " & Parse(From) );
         end if;
