@@ -852,7 +852,18 @@ package body X_MNG is
   ------------------------------------------------------------------
   procedure X_ADD_CALLBACK (FD : in FILE_DESC; CALLBACK : in FD_CALLBACK) is
     RES : BOOLEAN;
+    CB_SEARCHED : CB_REC;
   begin
+    -- Check no cb for this fd yet
+    CB_SEARCHED.FD := FD;
+    CB_SEARCHED.CB := null;
+    begin
+      CB_SEARCH (CB_LIST, CB_SEARCHED, CB_MNG.PREV, FROM_CURRENT => FALSE);
+      raise X_FAILURE;
+    exception
+      when CB_MNG.NOT_IN_LIST =>
+        null;
+    end;
     -- Append
     if not CB_MNG.IS_EMPTY (CB_LIST) then
       CB_MNG.MOVE_TO (CB_LIST, CB_MNG.PREV, 0, FALSE);
@@ -878,7 +889,7 @@ package body X_MNG is
     -- del from list
     CB_SEARCHED.FD := FD;
     CB_SEARCHED.CB := null;
-    CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
+    CB_SEARCH (CB_LIST, CB_SEARCHED, CB_MNG.PREV, FROM_CURRENT => FALSE);
     if CB_MNG.GET_POSITION (CB_LIST) /=  CB_MNG.LIST_LENGTH(CB_LIST) then
       CB_MNG.DELETE (CB_LIST, CB_MNG.NEXT);
     else
