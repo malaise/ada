@@ -184,10 +184,10 @@ package body Mcd_Mng is
     function Strregi (S : Item_Rec) return Item_Rec;
     function Strprog (S : Item_Rec) return Item_Rec;
     function Strof (Item : Item_Rec) return Item_Rec;
-    function Normalof (Item  : Item_Rec;
-                       Len   : Item_Rec;
-                       Right : Item_Rec;
-                       Gap   : Item_Rec) return Item_Rec;
+    function Normalof (Item      : Item_Rec;
+                       Len       : Item_Rec;
+                       Right_Len : Item_Rec;
+                       Gap       : Item_Rec) return Item_Rec;
 
     function Getenv (Item : Item_Rec) return Item_Rec;
     -- Invalid_Argument, Argument_Mismatch : exception;

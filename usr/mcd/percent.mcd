@@ -1,41 +1,38 @@
 # A percentage of B
+2.004 format
 
 # Error message
 [ "Error, 2 positive numbers expected." putl
 ssize popn retall ] E popr
 ssize 2 /= E pushr ifcall
 
-# Check and store one arg
-[ swap dup isinte ~ E pushr ifcall
-dup ispos ~ E pushr ifcall
-swap popr
+# Check the content of a reg
+[ pushr dup isinte [ toreal ] ifcall
+dup isreal ~ E pushr ifcall
+ispos ~ E pushr ifcall
 ] C popr
 
 # A
-a C pushr call
+a popr a C pushr call
 # B
-b C pushr call
+b popr b C pushr call
 
-# Format a % result (2 digits)
-[ 100.0 *
-Trunc dup
-100 / put "." put
-# Display frac (2 digits) and %
-100 % 2 True "0" normal put "%" putl ] P popr
+# Format a result (2 digits)
+[ 4 2 " " normal put ] P popr
 
 # x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *
 0 format
-a pushr put " = " put b pushr put " " put
+a pushr P pushr call " = " put b pushr P pushr call " " put
 # Format result
 dup 0.0 <  "-"  "+" ifte put " " put
-absv P pushr call
+absv P pushr call "%" putl
 
 
 # A is B + x % of B
 a pushr toreal b pushr toreal / 100.0 *
 0 format
-a pushr put " = " put b pushr put " * " put
+a pushr P pushr call " = " put b pushr P pushr call " * " put
 # Format result
-P pushr call
+P pushr call "%" putl
 

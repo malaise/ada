@@ -233,42 +233,82 @@ package body Ios is
       raise String_Len;
   end Strof;
 
-  function Normalof (Item : Item_Rec;
-                     Len : Item_Rec;
-                     Right : Item_Rec;
-                     Gap : Item_Rec) return Item_Rec is
-    Int : Integer;
-    L : Positive;
+  function Normalof (Item      : Item_Rec;
+                     Len       : Item_Rec;
+                     Right_Len : Item_Rec;
+                     Gap       : Item_Rec) return Item_Rec is
+    Int, Frac : Integer;
+    Long_Int, Tenth  : My_Math.Inte;
+    Lint, Lfrac : Positive;
     Res : Item_Rec(Chrs);
   begin
-    -- Check Kinds, check Len is Positive, check Gap is one char
-    if Item.Kind /= Inte
-    or else Len.Kind /= Inte
+    -- Check Kind is Inte or Real
+    if Item.Kind /= Inte and then Item.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    -- Check Len is Positive, check Gap is one char
+    if Len.Kind /= Inte
     or else Len.Val_Inte <= 0
-    or else Right.Kind /= Bool
     or else Gap.Kind /= Chrs
     or else Gap.Val_Len /= 1 then
       raise Invalid_Argument;
     end if;
-    -- Check range of ints
-    begin
-      Int := Integer(Item.Val_Inte);
-      L := Positive(Len.Val_Inte);
-    exception
-      when Constraint_Error =>
+    -- Check right is boolean for int, positive for real
+    if Item.Kind = Inte then
+      if Right_Len.Kind /= Bool then
         raise Invalid_Argument;
-    end;
-    -- Call Normal
-    declare
-      Str : constant String := Normal (Int, L, Right.Val_Bool,
-                                       Gap.Val_Text(1));
-    begin
-      if Str'Length > Res.Val_Text'Length then
-        raise String_Len;
       end if;
-      Res.Val_Len := Str'Length;
-      Res.Val_Text(1 .. Res.Val_Len) := Str;
-    end;
+    else
+      if Right_Len.Kind /= Inte
+      or else Right_Len.Val_Inte <= 0 then
+        raise Invalid_Argument;
+      end if;
+    end if;
+    if Item.Kind = Inte then
+      -- Check range of ints
+      begin
+        Int := Integer(Item.Val_Inte);
+        Lint := Positive(Len.Val_Inte);
+      exception
+        when Constraint_Error =>
+          raise Invalid_Argument;
+      end;
+      -- Call Normal
+      declare
+        Str : constant String := Normal (Int, Lint, Right_Len.Val_Bool,
+                                         Gap.Val_Text(1));
+      begin
+        if Str'Length > Res.Val_Text'Length then
+          raise String_Len;
+        end if;
+        Res.Val_Len := Str'Length;
+        Res.Val_Text(1 .. Res.Val_Len) := Str;
+      end;
+    else
+      -- Check range of ints
+      begin
+        Tenth := 10 ** Integer(Right_Len.Val_Inte);
+        Long_Int := My_Math.Round(Item.Val_Real * My_Math.Real(Tenth));
+        Int := Integer(Long_Int / Tenth);
+        Lint := Positive(Len.Val_Inte);
+        Frac := Integer(abs Long_Int mod Tenth);
+        Lfrac := Positive(Right_Len.Val_Inte);
+      exception
+        when Constraint_Error =>
+          raise Invalid_Argument;
+      end;
+      declare
+        Str : constant String := Normal(Int, Lint, True, Gap.Val_Text(1))
+                               & "."
+                               & Normal(Frac, Lfrac, True, '0') ;
+      begin
+        if Str'Length > Res.Val_Text'Length then
+          raise String_Len;
+        end if;
+        Res.Val_Len := Str'Length;
+        Res.Val_Text(1 .. Res.Val_Len) := Str;
+      end;
+    end if;
     return Res;
   end Normalof;
 
