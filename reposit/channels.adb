@@ -70,7 +70,7 @@ package body Channels is
 
   -- Reply
   package Reply_Dyn_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
-  package Reply_List_Mng renames Reply_Dyn_List_Mng.dyn_List;
+  package Reply_List_Mng renames Reply_Dyn_List_Mng.Dyn_List;
 
   -- The channel
   type Read_Kind is (None, Send, Dest);
