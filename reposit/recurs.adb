@@ -32,13 +32,27 @@ procedure RECURS (
       end if;
 
       if not DO_IN_DIR and then STOP_ON_ERROR then
+        MY_IO.PUT_LINE (" *** Abort ***");
         raise ABORT_EXPLORE;
       end if;
     end DO_HERE;
 
   begin
+    begin
+      DIRECTORY.CHANGE_CURRENT (CURR_NAME);
+    exception
+      when DIRECTORY.NAME_ERROR =>
+        MY_IO.NEW_LINE;
+        MY_IO.PUT ("Error changing to directory " & CURR_NAME);
+        if STOP_ON_ERROR then
+          MY_IO.PUT_LINE (" *** Abort ***");
+          raise ABORT_EXPLORE;
+        else
+           MY_IO.NEW_LINE;
+           return;
+        end if;
+    end;
 
-    DIRECTORY.CHANGE_CURRENT (CURR_NAME);
     DIRECTORY.GET_CURRENT (FULL_CURR_NAME);
 
     -- When not LEAVES_ONLY, do current dir before sons
