@@ -1,4 +1,4 @@
-DEST=/users/malaise/bin
+DEST=$(HOME)/bin
 LC=-largs -lcutil
 
 

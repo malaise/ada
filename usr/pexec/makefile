@@ -1,5 +1,5 @@
 LC=-largs -lcutil
-DEST=/users/malaise/bin
+DEST=$(HOME)/bin
 
 
 # pexec_exe is a dummy target to always execute amake
