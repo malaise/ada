@@ -599,13 +599,25 @@ extern int soc_host_of (char *host_name, soc_host *p_host) {
 }
 
 /* Gets local host */
-extern int soc_get_local_host (soc_host *p_host) {
-  char hostname[MAXHOSTNAMELEN];
-
+extern int soc_get_local_host_name (char *host_name,
+                                    unsigned int host_name_len) {
   /* Get current host name */
-  if (gethostname(hostname, sizeof(hostname)) != 0) {
+  if (gethostname(host_name, host_name_len) != 0) {
     perror("gethostname");
     return (SOC_NAME_NOT_FOUND);
+  }
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_get_local_host_id (soc_host *p_host) {
+  char hostname[MAXHOSTNAMELEN];
+  int res;
+
+  /* Get current host name */
+  res = soc_get_local_host_name(hostname, sizeof(hostname));
+  if (res != SOC_OK) {
+    return (res);
   }
   /* Get its addr */
   return soc_host_of(hostname, p_host);

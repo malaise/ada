@@ -187,7 +187,8 @@ package Socket is
   function Host_Name_Of (Id : Host_Id) return String;
   function Host_Id_Of   (Name : String) return Host_Id;
 
-  -- Get local Host_id
+  -- Get local Host name or id
+  function Local_Host_Name return String;
   function Local_Host_Id return Host_Id;
   
   -- Send a message

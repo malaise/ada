@@ -143,7 +143,9 @@ extern int soc_host_name_of (soc_host *p_host, char *host_name,
 extern int soc_host_of (char *host_name, soc_host *p_host);
 
 /* Gets local host */
-extern int soc_get_local_host (soc_host *p_host);
+extern int soc_get_local_host_name (char *host_name,
+                                    unsigned int host_name_len);
+extern int soc_get_local_host_id (soc_host *p_host);
 
 /* Send to a socket, the destination of which must set */
 /* May return SOC_WOULD_BLOCK, then next sends have to be made */

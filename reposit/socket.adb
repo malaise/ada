@@ -115,8 +115,11 @@ package body Socket is
   function Soc_Host_Of (Name : System.Address;
                         Id   : System.Address) return Result;
   pragma Import (C, Soc_Host_Of, "soc_host_of");
-  function Soc_Get_Local_Host(Id : System.Address) return Result;
-  pragma Import (C, Soc_Get_Local_Host, "soc_get_local_host");
+  function Soc_Get_Local_Host_Name (Name : System.Address;
+                                    Len  : Natural) return Result;
+  pragma Import (C, Soc_Get_Local_Host_Name, "soc_get_local_host_name");
+  function Soc_Get_Local_Host_Id(Id : System.Address) return Result;
+  pragma Import (C, Soc_Get_Local_Host_Id, "soc_get_local_host_id");
 
 
   function Soc_Send (S : System.Address;
@@ -406,11 +409,24 @@ package body Socket is
     return Id;
   end Host_Id_Of;
 
-  -- Get local Host_id
+  -- Get local Host name or id
+  function Local_Host_Name return String is
+    Name : String (1 .. 1024);
+  begin
+    Res := Soc_Get_Local_Host_Name (Name'Address, Name'Length);
+    Check_Ok;
+    for I in Name'Range loop
+      if Name(I) = Ascii.Nul then
+        return Name(1 .. I-1);
+      end if;
+    end loop;
+    raise Soc_Len_Err;
+  end Local_Host_Name;
+
   function Local_Host_Id return Host_Id is
     Id : Host_Id;
   begin
-    Res := Soc_Get_Local_Host (Id'Address);
+    Res := Soc_Get_Local_Host_Id (Id'Address);
     Check_Ok;
     return Id;
   end Local_Host_Id;
