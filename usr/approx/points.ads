@@ -2,6 +2,9 @@
 with CURVE;
 package POINTS is
 
+  -- Maxi number of points
+  MAX_NUMBER : constant POSITIVE := 9999;
+
   -- One coordinate, one point, point array
   subtype P_T_COORDINATE is CURVE.T_COORDINATE;
   subtype P_T_ONE_POINT is CURVE.T_ONE_POINT;

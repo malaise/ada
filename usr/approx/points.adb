@@ -1,8 +1,6 @@
 with SORTS;
 package body POINTS is
 
-  -- Maxi number of points
-  MAX_NUMBER : constant POSITIVE := 9999;
   subtype T_RANGE is POSITIVE range 1 .. MAX_NUMBER;
 
   -- Points storage
