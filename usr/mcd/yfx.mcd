@@ -29,7 +29,7 @@ dup isreal ~ [ pop E pushr call ] ifcall j popr
 
 # Check f(i) * f(j) < 0.0
 i pushr F pushr call a copyr j pushr F pushr call b copyr *
-0.0 >= E pushr ifcall
+isneg ~ E pushr ifcall
 
 # Sort f(i) < f(j)
 a pushr b pushr > [ i pushr j pushr i popr j popr ] ifcall
@@ -44,7 +44,7 @@ i pushr j pushr - absv epsilon <= [ putl retall ] ifcall
 dup F pushr call
 
 # Replace i by (i+j)/2 if r<0, else replace j
-0.0 > j i ifte popr
+ispos j i ifte popr
 
 # Loop
 L pushr retacal

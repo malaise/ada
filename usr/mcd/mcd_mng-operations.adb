@@ -633,6 +633,50 @@ package body Operations is
     return (Kind => Bool, Val_Bool => X.Kind = Prog);
   end Isprog;
 
+  -- Inte->Bool or Real->Bool
+  function Ispos  (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Inte then
+      return (Kind => Bool, Val_Bool => X.Val_Inte > 0);
+    elsif  X.Kind = Real then
+      return (Kind => Bool, Val_Bool => X.Val_Real > 0.0);
+    else
+      raise Invalid_Argument;
+    end if;
+  end Ispos;
+
+  function Isnul  (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Inte then
+      return (Kind => Bool, Val_Bool => X.Val_Inte = 0);
+    elsif  X.Kind = Real then
+      return (Kind => Bool, Val_Bool => X.Val_Real = 0.0);
+    else
+      raise Invalid_Argument;
+    end if;
+  end Isnul;
+
+  function Isnotnul  (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Inte then
+      return (Kind => Bool, Val_Bool => X.Val_Inte /= 0);
+    elsif  X.Kind = Real then
+      return (Kind => Bool, Val_Bool => X.Val_Real /= 0.0);
+    else
+      raise Invalid_Argument;
+    end if;
+  end Isnotnul;
+
+  function Isneg  (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Inte then
+      return (Kind => Bool, Val_Bool => X.Val_Inte < 0);
+    elsif  X.Kind = Real then
+      return (Kind => Bool, Val_Bool => X.Val_Real < 0.0);
+    else
+      raise Invalid_Argument;
+    end if;
+  end Isneg;
 
   -- Bool,Bool->Bool
   function Boland  (L, R : Item_Rec) return Item_Rec is

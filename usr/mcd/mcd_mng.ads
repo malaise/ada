@@ -62,6 +62,10 @@ package Mcd_Mng is
    Isstr,
    Isreg,
    Isprog,
+   Ispos,
+   Isnul,
+   Isnotnul,
+   Isneg,
 
    Ssize,
    Swap,

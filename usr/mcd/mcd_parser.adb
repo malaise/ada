@@ -91,6 +91,11 @@ package body Mcd_Parser is
    Isstr    => (Nosy, "push True if A is a string    ", False),
    Isreg    => (Nosy, "push True if A is a register  ", False),
    Isprog   => (Nosy, "push True if A is a subprog   ", True),
+
+   Ispos    => (Nosy, "push True if A >  0 or 0.0    ", False),
+   Isnul    => (Nosy, "push True if A =  0 or 0.0    ", False),
+   Isnotnul => (Nosy, "push True if A /= 0 or 0.0    ", False),
+   Isneg    => (Nosy, "push True if A <  0 or 0.0    ", True),
  
    Ssize    => (Nosy, "push stack size               ", False),
    Swap     => (Nosy, "push A, push B                ", False),

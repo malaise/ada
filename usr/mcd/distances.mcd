@@ -41,10 +41,10 @@ S pushr round "  " put put " |" putl
 ] C popr
 
 # Default values
-ssize 0 = [ 50 60 70 80 90 100 110 120 130 140 150 160 170 ] ifcall
+ssize isnul [ 50 60 70 80 90 100 110 120 130 140 150 160 170 ] ifcall
 
 # Store stack in reverse order in estack
-[ ssize 0 = ifret
+[ ssize isnul ifret
 pope R pushr retacal ] R popr
 R pushr call
 

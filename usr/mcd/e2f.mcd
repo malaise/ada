@@ -43,9 +43,9 @@ d pushr [ "e" u popr ] ifcall
 # Extract amount value
 a pushr 1 l pushr strsub v copyr
 # locate '.'
-1 "." v pushr strloc
+1 "." v pushr strloc isnul
 # Convert to real
-0 = [ strinte toreal ] [ strreal ] ifte call
+[ strinte toreal ] [ strreal ] ifte call
 v copyr
 
 # Check not more than two digits of cents

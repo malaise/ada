@@ -10,7 +10,7 @@ F copyr isprog ~ E pushr ifcall
 # Get delta
 dup dup isinte swap isreal | ~ E pushr ifcall
 dup isinte [ toreal ] ifcall
-d copyr 0.0 <= [ "Need dx > 0.0" putl E pushr call ] ifcall
+d copyr ispos ~ [ "Need dx > 0.0" putl E pushr call ] ifcall
 
 # Get a and b
 dup dup isinte swap isreal | ~ E pushr ifcall

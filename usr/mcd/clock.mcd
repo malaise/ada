@@ -4,7 +4,7 @@
 [ "Usage: Clock" putl ssize popn retall ] E popr
 
 # 0 arg
-ssize 0 /= E pushr ifcall
+ssize isnotnul E pushr ifcall
 
 # Get time
 [ clock dateof 6 16 strsub ] G popr

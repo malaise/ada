@@ -7,8 +7,8 @@ ssize 1 > E pushr ifcall
 # Max default or positive
 ssize 0 = 10 ifthen
 n copyr dup
-isinte ~  E pushr ifcall
-0 <=  E pushr ifcall
+isinte ~ E pushr ifcall
+ispos ~ E pushr ifcall
 
 # Init
 3 format

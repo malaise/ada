@@ -4,7 +4,7 @@
 [ "Usage: prime [ <max_number> ]" putl ssize popn retall ] E popr
 
 # Store max in m if set
-ssize 0 = [ 0 ] ifcall
+ssize isnul [ 0 ] ifcall
 ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
 m popr
@@ -21,7 +21,7 @@ j pushr 1 + j popr
 pushfe copye e copyr
 s pushr > dup [ j pushr rotle ] ifcall ifret
 # Check i % fe. 0 => not prime
-i pushr e pushr % 0 =
+i pushr e pushr % isnul
 # Not prime, restore estack (rotate j times from last)
 dup [ j pushr rotle swap pop false swap ] ifcall ifret
 L pushr retacal ] L popr
@@ -37,7 +37,7 @@ i pushr toreal 0.5 ** round s popr
 # Next i
 i pushr 1 + i popr
 # Stop loop f m /= 0 and then m < j
-m pushr dup 0 /= swap i pushr < & ifret
+m pushr dup isnotnul swap i pushr < & ifret
 # Infinite loop or up to m
 S pushr retacal ] S popr
 

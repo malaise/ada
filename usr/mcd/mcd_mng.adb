@@ -74,7 +74,7 @@ package body Mcd_Mng is
     -- Inte->Real
     function Toreal  (X : Item_Rec) return Item_Rec;
 
-    -- Real -> Inte
+    -- Real->Inte
     function Round   (X : Item_Rec) return Item_Rec;
     function Trunc   (X : Item_Rec) return Item_Rec;
 
@@ -93,6 +93,12 @@ package body Mcd_Mng is
     function Isreg   (X : Item_Rec) return Item_Rec;
     function Isprog  (X : Item_Rec) return Item_Rec;
 
+    -- Inte->Bool or Real->Bool
+    function Ispos    (X : Item_Rec) return Item_Rec;
+    function Isnul    (X : Item_Rec) return Item_Rec;
+    function Isnotnul (X : Item_Rec) return Item_Rec;
+    function Isneg    (X : Item_Rec) return Item_Rec;
+
     -- Bool,Bool->Bool
     function Boland  (L, R : Item_Rec) return Item_Rec;
     function Bolor   (L, R : Item_Rec) return Item_Rec;
@@ -104,7 +110,7 @@ package body Mcd_Mng is
     -- Bool,*,*->*
     function Ifte    (X, A, B : Item_Rec) return Item_Rec;
 
-    -- Real -> Real
+    -- Real->Real
     function Sin     (X : Item_Rec) return Item_Rec;
     function Cos     (X : Item_Rec) return Item_Rec;
     function Tan     (X : Item_Rec) return Item_Rec;
@@ -527,6 +533,18 @@ package body Mcd_Mng is
           S := A;
         when Isprog =>
           Pop(A); Push (Operations.Isprog(A));
+          S := A;
+        when Ispos =>
+          Pop(A); Push (Operations.Ispos(A));
+          S := A;
+        when Isnul =>
+          Pop(A); Push (Operations.Isnul(A));
+          S := A;
+        when Isnotnul =>
+          Pop(A); Push (Operations.Isnotnul(A));
+          S := A;
+        when Isneg =>
+          Pop(A); Push (Operations.Isneg(A));
           S := A;
         when Boland =>
           Pop(A); Pop(B); Push (Operations.Boland(B,A));

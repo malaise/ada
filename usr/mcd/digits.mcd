@@ -5,10 +5,10 @@
 [ "Error, 1 positive argument expected" putl
 ssize popn retall ] E popr
 
-# Check 1 arg integer
+# Check 1 arg integer positive
 ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
-dup 0 <= E pushr ifcall
+dup isneg E pushr ifcall
 
 # Epsilon
 1.0e14 e popr
