@@ -159,6 +159,7 @@ begin
   PUT(MY_LIST.LIST_LENGTH(LIST), TRUE);
 
   TEXT_IO.PUT ("Make the following random list: ");
+  RND.RANDOMIZE;
   for I in 1 .. RND.INT_RANDOM (0, 10) loop
     MY_LIST.INSERT (LIST, RND.INT_RANDOM(0, 50));
   end loop;
