@@ -1,29 +1,20 @@
 package body Mutex_Manager is
 
-  -- the task which implements the mutex
-  task body Mut_Task is
+  -- The protected object which implements the mutex
+  protected body Mut_Protect is
     -- Mutex is free at creation
-    Free : Boolean := True;
-  begin
-    loop
-      select
-        when Free =>
-          -- Mutex can be got only if it is free
-          accept Mut_Get do
-            Free := False;
-          end Mut_Get;
-      or
-        accept Mut_Rel(Status : out Boolean) do
-          -- Mutex is released, but status is set to false if it was already free
-          Status := not Free;
-          Free := True;
-        end Mut_Rel;
-      or
-        -- For clean termination
-        terminate;
-      end select;
-    end loop;
-  end Mut_Task;
+    entry Mut_Get when Free is
+    begin
+      Free := False;
+    end Mut_Get;
+
+    entry Mut_Rel(Status : out Boolean) when True is
+    begin
+      -- Mutex is released, but status is set to false if it was already free
+      Status := not Free;
+      Free := True;
+    end Mut_Rel;
+  end Mut_Protect;
 
 
   -- The entry point
@@ -60,3 +51,4 @@ package body Mutex_Manager is
   end Release_Mutex;
 
 end Mutex_Manager;
+

@@ -3,12 +3,11 @@ with System;
 -- Mutex management
 package Mutex_Manager is
 
-  pragma Elaborate_Body(Mutex_Manager);
   -- Mutex object, free at creation
   type Mutex is limited private;
 
   -- Get un mutex.
-  --  If dealy is negative, wait until mutex is got
+  --  If delay is negative, wait until mutex is got
   --  If delay is null, try and give up if not free
   --  If delay is positive, try during the specified delay
   function Get_Mutex (A_Mutex      : Mutex;
@@ -21,19 +20,18 @@ package Mutex_Manager is
 
 private
 
-  task type Mut_Task is
-    -- Prio max
-    pragma Priority(System.Priority'Last);
-
+  protected type Mut_Protect is
     entry Mut_Get;
     entry Mut_Rel(Status : out Boolean);
-  end Mut_Task;
+  private
+    Free : Boolean := True;
+  end Mut_Protect;
 
-  type Mut_Ptr is access Mut_Task;
+  type Mut_Access is access Mut_Protect;
 
   -- Create a new mutex
   type Mutex is record
-    Pointer : Mut_Ptr := new Mut_Task;
+    Pointer : Mut_Access := new Mut_Protect;
   end record;
 
 end Mutex_Manager;
