@@ -29,7 +29,9 @@ package Timers is
 
   -- Timer callback: called when the timer expires with one argument:
   --  the timer Id
-  type Timer_Callback is access procedure (Id : in Timer_Id);
+  -- Should return True if the timer expiration has to be reported by
+  --    expire
+  type Timer_Callback is access function (Id : in Timer_Id) return Boolean;
 
   -- Value returned by Next_Timer if no more timer
   No_Timer : constant Timer_Id;
@@ -52,7 +54,8 @@ package Timers is
   -- its callback is called
   -- then, if periodical it is re-armed (and may expire)
   --       if not it is deleted
-  -- Return True if at least one timer has expired 
+  -- Return True if at least one timer has expired with a callback set
+  --  and this callback has returned True
   function Expire return Boolean;
 
   -- Delay until next timer expires (or Infinite_Seconds)

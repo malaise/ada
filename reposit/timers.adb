@@ -166,10 +166,10 @@ package body  Timers is
   -- Return True if at least one timer has expired
   function Expire return Boolean is
     Timer : Timer_Rec;
-    One_Found : Boolean;
+    One_True : Boolean;
     use type Ada.Calendar.Time;
   begin
-    One_Found := False;
+    One_True := False;
     loop
       begin
         -- Search first timer
@@ -197,12 +197,14 @@ package body  Timers is
       end if;
       -- Call callback
       if Timer.CB /= null then
-        Timer.CB ((Timer_Num => Timer.Id));
+        if Timer.CB ((Timer_Num => Timer.Id)) then
+          -- At least this CB has returned True
+          One_True := True;
+        end if;
       end if;
-      One_Found := True;
     end loop;
 
-    return One_Found;
+    return One_True;
   end Expire;
 
   -- Delay until next timer expires (or Infinite_Seconds)
