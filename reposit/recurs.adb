@@ -38,6 +38,8 @@ procedure RECURS (
     end DO_HERE;
 
   begin
+
+    -- Go in current directory
     begin
       DIRECTORY.CHANGE_CURRENT (CURR_NAME);
     exception
@@ -55,24 +57,19 @@ procedure RECURS (
 
     DIRECTORY.GET_CURRENT (FULL_CURR_NAME);
 
-    -- When not LEAVES_ONLY, do current dir before sons
+    -- Do current dir when not LEAVES_ONLY
     if not LEAVES_ONLY then
-      -- Check if do action in current dir
-      IF CURRENT_LEVEL /= 0 or else IN_CURRENT then
+      if CURRENT_LEVEL /= 0 or else IN_CURRENT then
+        -- Check if do action in intial dir
         DO_HERE;
+      end if;
+      -- Optim: Done it if first level only
+      if CURRENT_LEVEL = 1 and then FIRST_LEVEL_ONLY then
+        return;
       end if;
     end if;
 
-    -- Check if first level only
-    if CURRENT_LEVEL = 1 and then FIRST_LEVEL_ONLY then
-      -- Do before return if not done before
-      if LEAVES_ONLY then
-        DO_HERE;
-      end if;
-      return;
-    end if;
-
-    -- go to next sub dir
+    -- Go to next sub dir
     NB_SONS := 0;
     DIR_DSC := DIRECTORY.OPEN(TEXT_HANDLER.VALUE(FULL_CURR_NAME));
     loop
@@ -92,11 +89,13 @@ procedure RECURS (
       if KIND = DIRECTORY.DIR
       and then TEXT_HANDLER.VALUE(NEW_NAME) /= DOT_DIR 
       and then TEXT_HANDLER.VALUE(NEW_NAME) /= DOT_DOT_DIR then
-        -- Restart with next son
-        CURRENT_LEVEL := CURRENT_LEVEL + 1;
-        EXPLORE (TEXT_HANDLER.VALUE(NEW_NAME));
-        CURRENT_LEVEL := CURRENT_LEVEL - 1;
-        DIRECTORY.CHANGE_CURRENT (TEXT_HANDLER.VALUE(FULL_CURR_NAME));
+        -- Restart with next son if not FIRST_LEVEL_ONLY
+        if CURRENT_LEVEL /= 1 or else not FIRST_LEVEL_ONLY then
+          CURRENT_LEVEL := CURRENT_LEVEL + 1;
+          EXPLORE (TEXT_HANDLER.VALUE(NEW_NAME));
+          CURRENT_LEVEL := CURRENT_LEVEL - 1;
+          DIRECTORY.CHANGE_CURRENT (TEXT_HANDLER.VALUE(FULL_CURR_NAME));
+        end if;
         NB_SONS := NB_SONS + 1;
       end if;
     end loop;
@@ -104,9 +103,9 @@ procedure RECURS (
 
 
     -- When LEAVES_ONLY, do current dir after counting sons
-    if LEAVES_ONLY and then NB_SONS = 0 then
+    if NB_SONS = 0 and then LEAVES_ONLY then
       -- Check if do action in current dir
-      IF CURRENT_LEVEL /= 0 or else IN_CURRENT then
+      if CURRENT_LEVEL /= 0 or else IN_CURRENT then
         DO_HERE;
       end if;
     end if;
