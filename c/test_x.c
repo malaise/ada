@@ -67,7 +67,7 @@ unsigned int s, u, b, r;
 int delta;
 int b_off, c_off, bv, cv;
 int motion;
-boolean read_fd;
+boolean read;
 
   /* Parameters */ 
   name[0] = '\0';
@@ -178,7 +178,7 @@ boolean read_fd;
 
     if (l == 0) {
       /* no event pending */
-      i = x_select (&m, &read_fd, &delta);
+      i = x_select (&m, &read, &delta);
     }
 
     if (m == X_EVENT) {
