@@ -7,6 +7,16 @@ package body PERPET is
     SECONDS : CALENDAR.DAY_DURATION;
   end record;
 
+  -- Is a year leap
+  function IS_LEAP_YEAR (YEAR  : CALENDAR.YEAR_NUMBER) return BOOLEAN is
+  begin
+    -- Year is multiple of 4 and not 100, or multiple of 400
+    -- the parenthesis tend to optimize:
+    --  return FALSE asap in case of year not multiple of 4
+    return YEAR rem 4 = 0 and then
+     (YEAR rem 100 /= 0 or else YEAR rem 400 = 0);
+  end IS_LEAP_YEAR;
+
   -- Number of days of a month
   function NB_DAYS_MONTH (
    YEAR  : CALENDAR.YEAR_NUMBER;
@@ -18,8 +28,8 @@ package body PERPET is
   begin
     if MONTH /= 2 then return LAST_DAY_ARRAY(MONTH); end if;
 
-    if YEAR rem 4 = 0 and then
-     (YEAR rem 100 /= 0 or else (YEAR / 100) rem 4 = 0 ) then
+    -- February
+    if IS_LEAP_YEAR (YEAR) then
       -- Leap year
       return LAST_DAY_ARRAY(MONTH) + 1;
     else
@@ -31,15 +41,25 @@ package body PERPET is
   -- Number of days of a year
   function NB_DAYS_YEAR (YEAR : CALENDAR.YEAR_NUMBER) return DAY_RANGE is
   begin
-    if NB_DAYS_MONTH (YEAR => YEAR, MONTH => 2) = 28 then
-      return 365;
-    else
+    if IS_LEAP_YEAR (YEAR) then
+      -- Leap year
       return 366;
+    else
+      -- Non leap year
+      return 365;
     end if;
   end NB_DAYS_YEAR;
 
+  -- Check date validity
+  function IS_VALID (
+   YEAR  : CALENDAR.YEAR_NUMBER;
+   MONTH : CALENDAR.MONTH_NUMBER;
+   DAY   : CALENDAR.DAY_NUMBER) return BOOLEAN is
+  begin
+    return DAY <= NB_DAYS_MONTH (YEAR, MONTH);
+  end IS_VALID;
 
-  -- TIME_REC MANUPULATIONS
+  -- TIME_REC operations
   function SPLIT (DATE : CALENDAR.TIME) return TIME_REC is
     REC : TIME_REC;
   begin
@@ -303,7 +323,7 @@ package body PERPET is
 
   end "-";
 
-  -- type DAY_OF_WEEK_LIST is (SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, STURDAY);
+  -- type DAY_OF_WEEK_LIST is (MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, STURDAY, SUNDAY);
   function GET_DAY_OF_WEEK (DATE : CALENDAR.TIME) return DAY_OF_WEEK_LIST is
     DELTA_DAYS : DAY_RANGE;
     REF_REC : constant TIME_REC := (
@@ -318,15 +338,19 @@ package body PERPET is
     return DAY_OF_WEEK_LIST'VAL ( (DELTA_DAYS + DAY_OF_WEEK_LIST'POS(REF_DAY_OF_WEEK)) rem 7);
   end GET_DAY_OF_WEEK;
 
-  -- subtype WEEK_OF_YEAR_RANGE is POSITIVE range 1 .. 53;
+  -- subtype WEEK_OF_YEAR_RANGE is NATURAL range 1 .. 53;
   function GET_WEEK_OF_YEAR (DATE : CALENDAR.TIME) return WEEK_OF_YEAR_RANGE is
     REC_0 : TIME_REC;
     DATE_0 : CALENDAR.TIME;
     DAY_DATE_0 : DAY_OF_WEEK_LIST;
-    subtype NB_DAYS_A_WEEK_RANGE is POSITIVE range 1 .. 7;
-    NB_DAYS_WEEK_1 : NB_DAYS_A_WEEK_RANGE;
+    WEEK_OF_WEEK_0 : WEEK_OF_YEAR_RANGE;
+    DATE_0_OFFSET : DAY_RANGE;
+
     DELTA_DAYS : DELTA_REC;
-    RAW_WEEK_OF_YEAR : POSITIVE;
+
+    MAX_NB_DAYS_A_WEEK : constant := DAY_OF_WEEK_LIST'POS(DAY_OF_WEEK_LIST'LAST) + 1;
+    WEEK_OFFSET : NATURAL range 0 .. WEEK_OF_YEAR_RANGE'LAST;
+    WEEK_OF_DATE : WEEK_OF_YEAR_RANGE;
   begin
     -- 01/01 of the year
     REC_0 := SPLIT (DATE);
@@ -336,24 +360,35 @@ package body PERPET is
     DATE_0 := TIME_OF(REC_0);
     -- Day of week of it
     DAY_DATE_0 := GET_DAY_OF_WEEK(DATE_0);
-    -- Nb of days of week one
-    NB_DAYS_WEEK_1 := DAY_OF_WEEK_LIST'POS(DAY_OF_WEEK_LIST'LAST) - DAY_OF_WEEK_LIST'POS(DAY_DATE_0) + 1;
+    -- No of first week is 1 if day_date_0 is Monday .. Thursday
+    if DAY_DATE_0 <= THURSDAY then
+      WEEK_OF_WEEK_0 := 1;
+    else
+      -- 52 or 53? The same as day before day_0
+      WEEK_OF_WEEK_0 := GET_WEEK_OF_YEAR(DATE_0 - 1);
+    end if;
+    -- Number of days of first week in the previous year
+    DATE_0_OFFSET := DAY_OF_WEEK_LIST'POS(DAY_DATE_0);
+
     -- Nb of days between date and 01/01
     DELTA_DAYS := DATE - DATE_0;
-    -- Check if week one
-    if DELTA_DAYS.DAYS < NB_DAYS_WEEK_1 then
-      return 1;
-    end if;
-    -- Number of days since first day of week two
-    DELTA_DAYS.DAYS := DELTA_DAYS.DAYS - NB_DAYS_WEEK_1;
-    -- Raw value of week nb
-    RAW_WEEK_OF_YEAR := DELTA_DAYS.DAYS / NB_DAYS_A_WEEK_RANGE'LAST + 2;
-    if RAW_WEEK_OF_YEAR = WEEK_OF_YEAR_RANGE'LAST + 1 then
-      -- Here we are at the end of the year and beginning of week 1 of next year
-      return 1;
+    -- Nb of days between date and Monday of first week
+    DELTA_DAYS.DAYS := DELTA_DAYS.DAYS + DATE_0_OFFSET;
+
+    -- Week offset from first week
+    WEEK_OFFSET := DELTA_DAYS.DAYS / MAX_NB_DAYS_A_WEEK;
+    -- Week no
+    if WEEK_OFFSET = 0 then
+      -- First week
+      WEEK_OF_DATE := WEEK_OF_WEEK_0;
+    elsif WEEK_OF_WEEK_0 = 1 then
+      -- Week 1 + offset
+      WEEK_OF_DATE := WEEK_OFFSET + 1;
     else
-      return RAW_WEEK_OF_YEAR;
-    end if;
+      -- 52/53 -> 0, + offset
+      WEEK_OF_DATE := WEEK_OFFSET;
+    end if; 
+    return WEEK_OF_DATE;
     
   end GET_WEEK_OF_YEAR;
 
