@@ -534,24 +534,30 @@ procedure Look_95 is
   type Verbose_Level_List is (Normal, Silent, Verbose, Test);
   Verbose_Level : Verbose_Level_List;
   Warn_Comment, Warn_Newline : Boolean;
+  One_Done : Boolean;
 
-begin
-
-  -- Help
-  if Argument.Get_Nbre_Arg = 0
-  or else Argument.Get_Parameter = "-h" then
+  procedure Put_Usage is
+  begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
          & " [ { -v | -s | -t | -n | -C | -N <file> } ]");
     Ada.Text_Io.Put_Line ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
     Ada.Text_Io.Put_Line ("Warnings: on upper_Case in comments");
     Ada.Text_Io.Put_Line ("          or missing last New_Line");
-    return;
+  end Put_Usage;
+
+begin
+
+  -- Help
+  if Argument.Get_Nbre_Arg = 0
+  or else Argument.Get_Parameter = "-h" then
+    Put_Usage;
   end if;
 
   Verbose_Level := Normal;
   Warn_Comment := False;
   Warn_Newline := False;
+  One_Done := False;
 
   -- Process all remaining arguments (file names)
   for I in 1 .. Argument.Get_Nbre_Arg loop
@@ -573,6 +579,7 @@ begin
       Warn_Newline := True;
     else
       -- Process file
+      One_Done := True;
       if Do_One (Argument.Get_Parameter (I),
                  Verbose_Level /= Test,
                  Warn_Comment, Warn_Newline) then
@@ -591,5 +598,9 @@ begin
       end if;
     end if;
   end loop;
+
+  if not One_Done then
+    Put_Usage;
+  end if; 
 end Look_95;
 
