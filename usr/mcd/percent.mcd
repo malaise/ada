@@ -18,7 +18,7 @@ a popr a C pushr call
 b popr b C pushr call
 
 # Format a result (2 digits)
-[ 4 2 " " normal put ] P popr
+[ toreal 4 2 " " normal put ] P popr
 
 # x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *
