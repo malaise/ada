@@ -764,12 +764,13 @@ package body X_MNG is
     if not INITIALISED or else LINE_ID = NO_CLIENT then
       raise X_FAILURE;
     end if;
+    -- Compute expiration and set timeout in duration
     EXP := CALENDAR.CLOCK;
     if TIMEOUT_MS > 0 then
-      EXP := EXP + DURATION(TIMEOUT_MS);
       SECS := TIMEOUT_MS / 1_000;
       TIMEOUT := DURATION(SECS)
-               + DURATION(TIMEOUT_MS - SECS) / 1_000.0;
+               + DURATION(TIMEOUT_MS - SECS * 1_000) / 1_000.0;
+      EXP := EXP + TIMEOUT;
     else
       TIMEOUT := -1.0;
     end if;
