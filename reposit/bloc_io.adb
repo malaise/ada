@@ -1,7 +1,7 @@
 -- Perform read/write of several Element_Type in file
 package  body Bloc_Io is
 
-  Element_Size : constant Positive := Element_Type'Size / 8;
+  Element_Size : constant Positive := Element_Type'Size / System.Storage_Unit;
 
   -----------------
   -- C interface --

@@ -3,7 +3,7 @@ package body Socket is
   ----------------
   -- INTERFACES --
   ----------------
-  Byte_Size : constant := 8;
+  Byte_Size : constant := System.Storage_Unit;
 
   subtype Result is Integer;
   C_Soc_Ok : constant Result := 0;

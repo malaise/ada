@@ -1,11 +1,11 @@
 -- Interface to forker process
-
+with System;
 package Forker is
 
   -- Command number
   subtype Command_Number is Natural;
   type Boolean_For_C is new Boolean;
-  for Boolean_For_C'Size use 8;
+  for Boolean_For_C'Size use System.Storage_Unit;
 
   -------------
   -- REQUEST --

@@ -1,8 +1,8 @@
-with Ada.Calendar;
+with System, Ada.Calendar;
 with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list, X_Mng;
 package body Channels is
 
-  Byte_Size : constant := 8;
+  Byte_Size : constant := System.Storage_Unit;
 
   package Host_List_Mng is new Dynamic_List (Tcp_Util.Remote_Host);
 

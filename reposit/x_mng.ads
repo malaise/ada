@@ -1,3 +1,4 @@
+with System;
 with Sys_Calls;
 package X_Mng is
  
@@ -6,7 +7,7 @@ package X_Mng is
   type Line is private;
  
   type Byte is new Natural range 0 .. 255;
-  for Byte'Size use 8;
+  for Byte'Size use System.Storage_Unit;
 
   subtype Color       is Natural range 0 .. 14;
   subtype Font        is Natural range 0 .. 3;
