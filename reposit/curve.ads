@@ -36,7 +36,7 @@ package CURVE is
   -- of window and test the result
   function INIT return BOOLEAN;
 
-  -- Should be called after INIT is DRAW cannot be called
+  -- Should be called after INIT if DRAW cannot be or is not called
   procedure DESTROY;
 
   generic
