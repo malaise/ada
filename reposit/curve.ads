@@ -32,6 +32,10 @@ package CURVE is
    POINTS       : in T_THE_POINTS;
    X_MIN, X_MAX : out T_COORDINATE);
 
+  -- Can be (not mandatory) called before a DRAW to make initialisation
+  -- of window and test the result
+  function INIT return BOOLEAN;
+
   generic
     -- Y = F(x)
     with function F (X : MATH.REAL) return MATH.REAL;

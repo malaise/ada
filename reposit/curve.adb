@@ -1,5 +1,5 @@
 with CALENDAR, TEXT_IO;
-with BIG_CON_IO, DOS, NORMAL, X_MNG, UPPER_CHAR;
+with BIG_CON_IO, NORMAL, X_MNG, UPPER_CHAR;
 package body CURVE is
 
   package P_IO is new TEXT_IO.FLOAT_IO (T_COORDINATE);
@@ -560,7 +560,7 @@ package body CURVE is
             when others => null;
           end;
         end loop;
-        DOS.SOUND;
+        BIG_CON_IO.BELL(1);
       end DRAW_CURVE;
 
 
@@ -809,7 +809,7 @@ package body CURVE is
               return TRUE;
             else
               -- Invalid key
-              DOS.SOUND(3);
+              BIG_CON_IO.BELL(3);
             end if;
 
           when MOUSE_BUTTON =>
@@ -912,7 +912,7 @@ package body CURVE is
                     exception
                       when others =>
                         CANCEL_ZOOM;
-                        DOS.SOUND(3);
+                        BIG_CON_IO.BELL(3);
                     end;
                   end;
 
@@ -946,7 +946,6 @@ package body CURVE is
     BIG_CON_IO.INIT;
     BIG_CON_IO.SET_FOREGROUND (BLINK_STAT => BIG_CON_IO.NOT_BLINK);
 
-    X_MNG.X_STOP_BLINKING_TASK;
     BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_ON);
     BIG_CON_IO.SET_POINTER_SHAPE(BIG_CON_IO.CROSS);
 
@@ -971,13 +970,12 @@ package body CURVE is
             CURR_ZOOM_NO := CURR_ZOOM_NO - 1;
             CONVERT.MAJ(ZOOM_ARRAY(CURR_ZOOM_NO));
             DRAW_RESULT := TRUE;
-            DOS.SOUND(3);
+            BIG_CON_IO.BELL(3);
           end if;
       end;
 
       if not DRAW_RESULT then
         -- Exit drawings
-        X_MNG.X_START_BLINKING_TASK;
         BIG_CON_IO.DESTROY;
         exit;
       else
@@ -990,9 +988,22 @@ package body CURVE is
 
   exception
     when others =>
-      X_MNG.X_START_BLINKING_TASK;
-      BIG_CON_IO.DESTROY;
+      begin
+        BIG_CON_IO.DESTROY;
+      exception
+        when others => null;
+      end;
       raise;
   end DRAW;
 
+  function INIT return BOOLEAN is
+  begin
+    BIG_CON_IO.INIT;
+    return TRUE;
+  exception
+    when BIG_CON_IO.INIT_FAILURE =>
+      return FALSE;
+  end INIT;
+
 end CURVE;
+
