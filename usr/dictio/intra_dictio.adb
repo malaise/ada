@@ -70,7 +70,35 @@ package body Intra_Dictio is
     end;
     Dictio_Channel.Del_All_Destinations;
   end Quit;
-    
+
+
+  procedure Add_Host (Host : String) is
+  begin
+    Dictio_Channel.Add_Destination (Host);
+    if Debug.Level_Array(Debug.Intra) then
+      Debug.Put ("Intra: Add_Host: " & Host & " done");
+    end if;
+  exception
+    when Error : others =>
+      if Debug.Level_Array(Debug.Intra) then
+        Debug.Put ("Intra: Add_Host: " & Host & " not done cause "
+                 & Ada.Exceptions.Exception_Name(Error));
+      end if;
+  end Add_Host;
+
+  procedure Del_Host (Host : String) is
+  begin
+    Dictio_Channel.Del_Destination (Host);
+    if Debug.Level_Array(Debug.Intra) then
+      Debug.Put ("Intra: Del_Host: " & Host & " done");
+    end if;
+  exception
+    when Error : others =>
+      if Debug.Level_Array(Debug.Intra) then
+        Debug.Put ("Intra: Del_Host: " & Host & " not done cause "
+                 & Ada.Exceptions.Exception_Name(Error));
+      end if;
+  end Del_Host;
 
   Client_Cb : Read_Cb_Access := null;
 

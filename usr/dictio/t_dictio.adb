@@ -62,7 +62,8 @@ procedure T_Dictio is
       return False;
     end if;
 
-    if Lstr(1) = 'g' or else Lstr(1) = 'n' or else Lstr(1) = 'c' then
+    if Lstr(1) = 'g' or else Lstr(1) = 'n' or else Lstr(1) = 'c'
+                     or else Lstr(1) = 'd' or else Lstr(1) = 'a' then
       if N /= 1 or else I = Lstr'Last then
         Ada.Text_Io.Put_Line ("CLIENT: Discarded");
         return False;
@@ -72,8 +73,12 @@ procedure T_Dictio is
               & Dictio_Lib.Get (Lstr(3 .. Lstr'Last)) & "<");
       elsif Lstr(1) = 'n' then
         Dictio_Lib.Notify (Lstr(3 .. Lstr'Last), True);
-      else
+      elsif Lstr(1) = 'c' then
         Dictio_Lib.Notify (Lstr(3 .. Lstr'Last), False);
+      elsif Lstr(1) = 'a' then
+        Dictio_Lib.Add_Host (Lstr(3 .. Lstr'Last));
+      elsif Lstr(1) = 'd' then
+        Dictio_Lib.Del_Host (Lstr(3 .. Lstr'Last));
       end if;
       return False;
     end if;
@@ -200,7 +205,8 @@ begin
 
   if not Init then
     Ada.Text_Io.Put_Line (
-           "g <name> / s <name> <data> / n <name> / c <name> / q");
+           "g <name> / s <name> <data> / n <name> / c <name> / "
+         & "a <host> / d <host> / q");
   end if;
   loop
     Event_Mng.Wait (Delay_Ms);

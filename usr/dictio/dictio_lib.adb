@@ -131,7 +131,8 @@ package body Dictio_Lib is
                      Msg.Item.Data(1 .. Msg.Item.Data_Len));
         end if;
         return False;
-      when Client_Com.Write | Client_Com.Notif_Off =>
+      when Client_Com.Write | Client_Com.Notif_Off
+         | Client_Com.Add_Host | Client_Com.Del_Host =>
         if Debug.Level_Array(Debug.Lib) then
           Debug.Put ("Dictio_Lib: received invalid kind: "
                    & Msg.Action'Img & ", giving up");
@@ -311,6 +312,34 @@ package body Dictio_Lib is
     Msg.Item.Name(1 .. Name'Length) := Name;
     Send_Request;
   end Notify;
+
+  procedure Add_Host (Host : in String) is
+  begin
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: add host " & Host);
+    end if;
+    Check_Available;
+    Check_Data (Host);
+    Msg.Action := Client_Com.Add_Host;
+    Msg.Item.Name := (others => ' ');
+    Msg.Item.Data_Len := Host'Length;
+    Msg.Item.Data(1 .. Msg.Item.Data_Len) := Host;
+    Send_Request;
+  end Add_Host;
+
+  procedure Del_Host (Host : in String) is
+  begin
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: del host " & Host);
+    end if;
+    Check_Available;
+    Check_Data (Host);
+    Msg.Action := Client_Com.Del_Host;
+    Msg.Item.Name := (others => ' ');
+    Msg.Item.Data_Len := Host'Length;
+    Msg.Item.Data(1 .. Msg.Item.Data_Len) := Host;
+    Send_Request;
+  end Del_Host;
 
 end Dictio_Lib;
 

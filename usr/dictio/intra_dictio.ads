@@ -26,6 +26,9 @@ package Intra_Dictio is
   procedure Init;
   procedure Quit;
 
+  procedure Add_Host (Host : String);
+  procedure Del_Host (Host : String);
+
   procedure Send_Status (Stat  : in Status.Status_List;
                          Extra : in String := "");
 
