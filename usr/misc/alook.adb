@@ -124,7 +124,7 @@ procedure Look_95 is
   end Reading;
 
   -- Process one file
-  function Do_One(File_Name : in String) return Boolean is
+  function Do_One(File_Name : in String; Do_It : in Boolean) return Boolean is
 
     -- Current and prev character
     Char, Prev_Char : Character;
@@ -226,7 +226,9 @@ procedure Look_95 is
         -- Convert?
         if Prev_Is_Upper and then Curr_Is_Upper then
           Modified := True;
-          Reading.Update_Char(Lower_Char(Char));
+          if Do_It then
+            Reading.Update_Char(Lower_Char(Char));
+          end if;
         end if;
 
         -- Prepare for next char
@@ -251,7 +253,7 @@ procedure Look_95 is
       return Modified;
   end Do_One;
 
-  type Verbose_Level_List is (Normal, Silent, Verbose);
+  type Verbose_Level_List is (Normal, Silent, Verbose, Test);
   Verbose_Level    : Verbose_Level_List;
 
 begin
@@ -259,7 +261,7 @@ begin
   -- Help
   if Argument.Get_Parameter = "-h" then
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                                    & " [ { -v | -s | -d | <file> } ]");
+                                    & " [ { -v | -s | -t | -d | <file> } ]");
     return;
   end if;
 
@@ -275,16 +277,18 @@ begin
       Verbose_Level := Silent;
     elsif Argument.Get_Parameter (I) = "-d" then
       Verbose_Level := Normal;
+    elsif Argument.Get_Parameter (I) = "-t" then
+      Verbose_Level := Test;
     else
       -- Process file
-      if Do_One (Argument.Get_Parameter (I)) then
+      if Do_One (Argument.Get_Parameter (I), Verbose_Level /= Test) then
         -- Trace altered files if not silent
         if Verbose_Level /= Silent then
           Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
-          if Verbose_Level = Normal then
-            Ada.Text_Io.New_Line;
-          else
+          if Verbose_Level = Verbose then
             Ada.Text_Io.Put_Line (" *");
+          else
+            Ada.Text_Io.New_Line;
           end if;
         end if;
       elsif Verbose_Level = Verbose then
