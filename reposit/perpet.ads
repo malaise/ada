@@ -14,6 +14,10 @@ package PERPET is
 
   subtype DAY_RANGE is NATURAL;
 
+  -- Is a year leap
+  function IS_LEAP_YEAR (
+   YEAR  : CALENDAR.YEAR_NUMBER) return BOOLEAN;
+
   -- Number of days of a year
   function NB_DAYS_YEAR (
    YEAR  : CALENDAR.YEAR_NUMBER) return DAY_RANGE;
