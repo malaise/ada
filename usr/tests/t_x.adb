@@ -94,7 +94,7 @@ begin
             X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, TRUE, FALSE);
             PUT (X_MNG.EVENT_KIND'IMAGE(KIND));
           when X_MNG.TID_PRESS | X_MNG.TID_RELEASE =>
-            X_MNG.X_READ_TID (ID, TID_BUTTON, TID_ROW, TID_COL);
+            X_MNG.X_READ_TID (ID, TRUE, TID_BUTTON, TID_ROW, TID_COL);
             PUT (X_MNG.EVENT_KIND'IMAGE(KIND) & " " & X_MNG.BUTTON_LIST'IMAGE(TID_BUTTON)
                               & " " & INTEGER'IMAGE(TID_ROW)  & " " & INTEGER'IMAGE(TID_COL));
             exit MAIN_LOOP when TID_ROW = 1 and then TID_COL = 1;
