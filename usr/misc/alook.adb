@@ -14,7 +14,7 @@
 --
 -- Debug displays the modified words.
 
-with Ada.Text_Io, Ada.Exceptions;
+with Ada.Text_Io, Ada.Exceptions, Ada.Direct_Io;
 
 with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
      Lower_Str, Mixed_Str;
@@ -24,6 +24,8 @@ procedure Look_95 is
   Debug : Boolean := False;
 
   package Reading is
+
+    -- Open file for Next_Char
     procedure Open(File_Name : in String);
     Name_Error : exception;
 
@@ -46,9 +48,16 @@ procedure Look_95 is
     -- Update a string at a given offset
     subtype Positive_Count is Char_Io.Positive_Count;
     procedure Update_Str (Str : in String; At_Index : in Positive_Count);
+
+    -- End of line/comment
+    New_Line : constant Character := Ascii.Lf;
+
+    -- Append a newline in file (which has to be and is left closed)
+    procedure Append_New_Line (File_Name : in String);
   end Reading;
 
   package body Reading is
+    package Dir_Io is new Ada.Direct_Io (Character);
 
     File : Char_Io.File_Type;
 
@@ -241,6 +250,18 @@ procedure Look_95 is
 
     end Update_Str;
 
+    procedure Append_New_Line (File_Name : in String) is
+      Dir_File : Dir_Io.File_Type;
+      use type Dir_Io.Count;
+    begin
+      if Char_Io.Is_Open (File) then
+        raise Char_Io.Status_Error;
+      end if;
+      Dir_Io.Open (Dir_File,  Dir_Io.Inout_File, File_Name);
+      Dir_Io.Write (Dir_File, New_Line, Dir_Io.Size (Dir_File) + 1);
+      Dir_Io.Close (Dir_File);
+    end Append_New_Line;
+
   end Reading;
 
   -- These ones are static because they are big
@@ -253,7 +274,7 @@ procedure Look_95 is
   -- Process one file
   function Do_One(File_Name : in String;
                   Do_It : in Boolean;
-                  Warn_Comment, Warn_Newline : in Boolean) return Boolean is
+                  Warn_Comment : in Boolean) return Boolean is
 
     -- Current and prev character
     Char, Prev_Char : Character;
@@ -269,9 +290,6 @@ procedure Look_95 is
 
     -- Do we proceed current character
     Proceed : Boolean;
-
-    -- End of line/comment
-    New_Line : constant Character := Ascii.Lf;
 
     -- File has been changed
     Modified : Boolean;
@@ -389,10 +407,13 @@ procedure Look_95 is
         when Reading.End_Of_File =>
           -- Done: Check warnings
           Check_Line;
-          if Last_Char /= New_Line and then Warn_Newline then
-            Ada.Text_Io.Put_Line("Warning. Missing last Newline in file "
-                               & File_Name
-                               & " at line" & Line_No'Img);
+          if Last_Char /= Reading.New_Line then
+            Reading.Append_New_Line (File_Name);
+            if Debug then
+              Ada.Text_Io.Put_Line ("In file " & File_Name
+                                  & " at line" & Line_No'Img
+                                  & ": New_Line appended");
+            end if;
           end if;
           exit;
       end;
@@ -402,7 +423,7 @@ procedure Look_95 is
 
 
       -- Check end of line or store char
-      if Char = New_Line then
+      if Char = Reading.New_Line then
         -- End of line (and end of comment)
         In_Comment := False;
         Proceed := False;
@@ -460,7 +481,7 @@ procedure Look_95 is
       end if;
 
       -- Update line char for warnings if possible
-      if Char /= New_Line then
+      if Char /= Reading.New_Line then
         begin
           Text_Handler.Append (Line, Char);
         exception
@@ -533,17 +554,16 @@ procedure Look_95 is
 
   type Verbose_Level_List is (Normal, Silent, Verbose, Test);
   Verbose_Level : Verbose_Level_List;
-  Warn_Comment, Warn_Newline : Boolean;
+  Warn_Comment : Boolean;
   One_Done : Boolean;
 
   procedure Put_Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-         & " [ { -v | -s | -t | -n | -C | -N <file> } ]");
+         & " [ { -v | -s | -t | -n | -C <file> } ]");
     Ada.Text_Io.Put_Line ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
-    Ada.Text_Io.Put_Line ("Warnings: on upper_Case in comments");
-    Ada.Text_Io.Put_Line ("          or missing last New_Line");
+    Ada.Text_Io.Put_Line ("Warnings: on upper case in comments");
   end Put_Usage;
 
 begin
@@ -556,7 +576,6 @@ begin
 
   Verbose_Level := Normal;
   Warn_Comment := False;
-  Warn_Newline := False;
   One_Done := False;
 
   -- Process all remaining arguments (file names)
@@ -575,14 +594,12 @@ begin
       Verbose_Level := Test;
     elsif Argument.Get_Parameter (I) = "-C" then
       Warn_Comment := True;
-    elsif Argument.Get_Parameter (I) = "-N" then
-      Warn_Newline := True;
     else
       -- Process file
       One_Done := True;
       if Do_One (Argument.Get_Parameter (I),
                  Verbose_Level /= Test,
-                 Warn_Comment, Warn_Newline) then
+                 Warn_Comment) then
         -- Trace altered files if not silent
         if Verbose_Level /= Silent then
           Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
