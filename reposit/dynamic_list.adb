@@ -407,7 +407,7 @@ package body Dynamic_List is
       return null;
     end if;
     return List.Current.Value'Unrestricted_Access;
-  end;
+  end Access_Current;
 
   procedure Search (List         : in out List_Type;
                     Item         : in Element_Type;
