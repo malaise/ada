@@ -149,7 +149,7 @@ package AFPX is
   LINE_LIST : LINE_LIST_MNG.LIST_TYPE;
   -- Actions on the list
   type LIST_ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN,
-                            TOP, BOTTOM);
+                            TOP, BOTTOM, CENTER);
 
   -- Update the list due to an action
   -- Exceptions : INVALID_FIELD if no list in current descriptor,
