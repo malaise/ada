@@ -3,9 +3,8 @@ package Sync_Mng is
 
   type End_Of_Sync_Callback is access procedure;
 
-  -- Start/Abort a sync reception sequence
+  -- Start a sync reception sequence
   procedure Start;
-  procedure Cancel;
   -- Inform that a sync has been received
   procedure Sync_Received;
 
@@ -15,6 +14,8 @@ package Sync_Mng is
   
   -- Are we receiving or sending sync
   function In_Sync return Boolean;
+  -- Abort a send/receive sequence
+  procedure Cancel;
 
 end Sync_Mng;
 

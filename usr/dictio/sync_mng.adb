@@ -2,7 +2,6 @@ with Timers, Event_Mng, Dynamic_List, Sys_Calls;
 with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors;
 package body Sync_Mng is
 
-  Sending_Sync : Boolean := False;
 
   Timer_Id : Timers.Timer_Id := Timers.No_Timer;
   Sync_Has_Been_Received : Boolean;
@@ -55,13 +54,6 @@ package body Sync_Mng is
     end if;
   end Start;
 
-  procedure Cancel is
-  begin
-    Cancel_Timer;
-    if Debug.Level_Array(Debug.Sync) then
-      Debug.Put ("Sync: Cancel");
-    end if;
-  end Cancel;
 
   procedure Sync_Received is
   begin
@@ -71,16 +63,16 @@ package body Sync_Mng is
     end if;
   end Sync_Received;
 
-  function In_Sync return Boolean is
-  begin
-    return Timer_Active or else Sending_Sync;
-  end In_Sync;
-
   ------------------------------------------------------------
+
+  type Send_Status_List is (Init, Send, Stop);
+  Sending_Status : Send_Status_List := Stop;
 
   Max_Retry : constant := 3;
   First_Timeout : constant Natural := 100;
   Timeout_Factor : constant := 2;
+
+  Tid : Timers.Timer_Id := Timers.No_Timer;
 
   Delay_Per_Kb : Natural := 0;
 
@@ -122,10 +114,12 @@ package body Sync_Mng is
   end Timer_Sen_Cb;
   
   procedure Send (To : Tcp_Util.Host_Name) is
-    Tid : Timers.Timer_Id := Timers.No_Timer;
   begin
-    if Sending_Sync then
+    if Sending_Status = Send then
       -- Reject new dest if already syncing
+      if Debug.Level_Array(Debug.Sync) then
+        Debug.Put ("Sync: Rejecting dest " & Parse (To) & " cause sending");
+      end if;
       return;
     end if;
     if Sync_List_Mng.Is_Empty (Sync_List) then
@@ -134,6 +128,7 @@ package body Sync_Mng is
                               Timers.No_Period,
                               Sync_Timeout),
                               Timer_Sen_Cb'access);
+      Sending_Status := Init;
     end if;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Adding dest " & Parse (To));
@@ -151,13 +146,23 @@ package body Sync_Mng is
     use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List,
              Event_Mng.Out_Event_List;
   begin
+
     Set_Delay;
+
+    -- Check sync not cancelled during init
+    if Sending_Status /= Init then
+      if Debug.Level_Array(Debug.Sync) then
+        Debug.Put ("Sync: cancelling due to " & Sending_Status'Img);
+      end if;
+      return;
+    end if;
+
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Sending " & Natural'Image(Data_Base.Nb_Item)
                & " items");
     end if; 
 
-    Sending_Sync := True;
+    Sending_Status := Send;
     Data_Base.Read_First (Item);
     Bytes_Sent := 0;
 
@@ -187,6 +192,14 @@ package body Sync_Mng is
           end if;
           -- Wait a bit / check event
           Event_Mng.Wait (Curr_Timeout);
+
+          if Sending_Status /= Send then
+            if Debug.Level_Array(Debug.Sync) then
+              Debug.Put ("Sync: Sending cancelled");
+            end if; 
+            exit Items;
+          end if;
+
           -- Ok or Error or too many Overflows.
           exit Retries when Reply_Result /= Intra_Dictio.Overflow
                             or else I = Max_Retry;
@@ -235,8 +248,29 @@ package body Sync_Mng is
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Done");
     end if; 
-    Sending_Sync := False;
+    Sending_Status := Stop;
   end Do_Sync;
+
+  ------------------------------------------------------------
+
+  function In_Sync return Boolean is
+  begin
+    return Timer_Active or else Sending_Status = Send;
+  end In_Sync;
+
+  procedure Cancel is
+  begin
+    if Debug.Level_Array(Debug.Sync) then
+      Debug.Put ("Sync: Cancel");
+    end if;
+    if Timer_Active then
+      Cancel_Timer;
+    end if;
+    if Sending_Status = Init then
+      Timers.Delete (TId);
+    end if;
+    Sending_Status := Stop;
+  end Cancel;
 
 end Sync_Mng;
 
