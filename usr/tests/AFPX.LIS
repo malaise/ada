@@ -4,7 +4,7 @@
 #
 # <descriptor_def> ::= DESCRIPTOR <descriptor_no>
 #                        [ <list_def>  ]
-#                        { <field_def> }
+#                        [ { <field_def> } ]
 #                      END DESCRIPTOR
 #
 # <list_def>  ::= LIST
@@ -22,7 +22,7 @@
 #                           COLORS   <colors>
 #
 # <geometry> ::= <upper_left_row> <upper_left_col>
-#                          <lower_right_row> <lower_right_col>
+#                <lower_right_row> <lower_right_col>
 #
 # <colors> ::= <foreground_color> [ <blink> ]
 #                          <background_color> [ <selected_color> ]
@@ -31,7 +31,7 @@
 #                  { <init_line> }
 #                END INIT
 #
-# <init_line> ::= <init_row> <init_col> [ <init_string> ]
+# <init_line> ::= <init_row> <init_col> <init_string>
 #
 #
 # Semantic of the descriptor file
@@ -61,9 +61,9 @@
 # Rows are from 0 to 24
 # Cols are from 0 to 79
 # Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
-# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
-#                              LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE
-# Blink is "blink" or "not_blink"
+# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, ORANGE,
+#                              YELLOW, WHITE
+# Blink is "BLINK" or "NOT_BLINK"
 #
 # Summary of color combinations
 # -----------------------------
@@ -125,15 +125,63 @@ DESCRIPTOR 1
     INIT
       0 0 Type exit in a get field to desactivate it
       1 0 Type return to print content of field, escape to clear field
-      2 0 Print button and list protection are flip-flop based on keyboard event
+      2 0 Print button is flip-flop based on keyboard event
 
+    END INIT
+  END FIELD
+
+  FIELD 8 BUTTON
+    GEOMETRY 7 2 9 7
+    COLORS red blue
+    INIT
+      1 2 Up 
+    END INIT
+  END FIELD
+
+  FIELD 9 BUTTON
+    GEOMETRY 17 2 19 7
+    COLORS red blue
+    INIT
+      1 1 Down
+    END INIT
+  END FIELD
+
+  FIELD 10 BUTTON
+    GEOMETRY 7 9 9 19
+    COLORS red blue
+    INIT
+      1 1 Page  Up 
+    END INIT
+  END FIELD
+
+  FIELD 11 BUTTON
+    GEOMETRY 17 9 19 19
+    COLORS red blue
+    INIT
+      1 1 Page Down
+    END INIT
+  END FIELD
+
+  FIELD 12 BUTTON
+    GEOMETRY 7 21 9 28
+    COLORS red blue
+    INIT
+      1 2 Top
+    END INIT
+  END FIELD
+
+  FIELD 13 BUTTON
+    GEOMETRY 17 21 19 28
+    COLORS red blue
+    INIT
+      1 1 Bottom
     END INIT
   END FIELD
 
 END DESCRIPTOR
 
 
-DESCRIPTOR 3
+DESCRIPTOR 2
 
   FIELD 1 BUTTON
     GEOMETRY 0 50 2 60
@@ -145,7 +193,7 @@ DESCRIPTOR 3
 
 END DESCRIPTOR
 
-DESCRIPTOR 4
+DESCRIPTOR 3
 
   LIST
     GEOMETRY 0 50 2 60
@@ -155,7 +203,7 @@ DESCRIPTOR 4
 END DESCRIPTOR
 
 
-DESCRIPTOR 5
+DESCRIPTOR 4
 
   FIELD 1 PUT
     GEOMETRY 0 0 1 79
