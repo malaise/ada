@@ -28,6 +28,9 @@ package Sys_Calls is
                     Env_Value : out String;
                     Env_Len   : out Natural);
 
+  -- Putenv
+  procedure Putenv (Env_Name : in String; Env_Value : in String);
+
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);
   -- Set error exit code

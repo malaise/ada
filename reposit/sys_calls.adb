@@ -185,6 +185,24 @@ package body Sys_Calls is
     end;
   end Getenv;
 
+  -- Putenv
+  function C_Putenv (Str : System.Address) return Integer;
+  pragma Import (C, C_Putenv, "putenv");
+  
+  type Str_Ptr is access String;
+
+  procedure Putenv (Env_Name : in String; Env_Value : in String) is
+    Str4C : constant String := Env_Name & "=" & Env_Value & Ascii.Nul;
+    -- Voluntary memory leak here
+    Ptr : constant Str_Ptr := new String'(Str4C);
+    Addr : constant System.Address
+         := Ptr.all(Ptr.all'First)'Address;
+  begin
+    
+    if C_Putenv (Addr) /= 0 then
+      raise System_Error;
+    end if;
+  end Putenv;
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) is
