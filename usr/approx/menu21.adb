@@ -9,6 +9,11 @@ package body MENU21 is
   THE_BOUNDS_SET : BOOLEAN := FALSE;
   THE_BOUNDS : CURVE.T_BOUNDARIES;
 
+  procedure RESET_BOUNDS is
+  begin
+    THE_BOUNDS_SET := FALSE;
+  end RESET_BOUNDS;
+
   function BOUNDS_SET return BOOLEAN is
   begin
     return THE_BOUNDS_SET;
