@@ -22,10 +22,19 @@ package body Operations is
     return X.Kind = Inte or else X.Kind = Real or else X.Kind = Bool;
   end Is_Inte_Or_Real_Or_Bool;
 
-  function Is_Inte_Or_Real_Or_Bool_Or_Chars (X : Item_Rec) return Boolean is
+  function Is_Inte_Or_Real_Or_Bool_Or_Chars (X : Item_Rec)
+           return Boolean is
   begin
-    return X.Kind = Inte or else X.Kind = Real or else X.Kind = Bool or else X.Kind = Chrs;
+    return X.Kind = Inte or else X.Kind = Real
+   or else X.Kind = Bool or else X.Kind = Chrs;
   end Is_Inte_Or_Real_Or_Bool_Or_Chars;
+
+  function Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi (X : Item_Rec)
+           return Boolean is
+  begin
+    return X.Kind = Inte or else X.Kind = Real
+   or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
+  end Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
 
   -- INTE,INTE->INTE or REAL,REAL->REAL
   function Add     (L, R : Item_Rec) return Item_Rec is
@@ -269,9 +278,11 @@ package body Operations is
   end Bitneg;
 
   -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
+  -- REGI,REGI->BOOL or CHARS,CHARS->BOOL
   function Equal   (L, R : Item_Rec) return Item_Rec is
   begin
-    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -283,8 +294,11 @@ package body Operations is
       return (Kind => Bool, Val_Bool => L.Val_Real = R.Val_Real);
     elsif L.Kind = Bool then
       return (Kind => Bool, Val_Bool => L.Val_Bool = R.Val_Bool);
+    elsif L.Kind = Regi then
+      return (Kind => Bool, Val_Bool => L.Val_Regi = R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) = R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
+                                      = R.Val_Text(1 .. R.Val_Len));
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -295,7 +309,8 @@ package body Operations is
 
   function Diff    (L, R : Item_Rec) return Item_Rec is
   begin
-    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -307,8 +322,11 @@ package body Operations is
       return (Kind => Bool, Val_Bool => L.Val_Real /= R.Val_Real);
     elsif L.Kind = Bool then
       return (Kind => Bool, Val_Bool => L.Val_Bool /= R.Val_Bool);
+    elsif L.Kind = Regi then
+      return (Kind => Bool, Val_Bool => L.Val_Regi /= R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) /= R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
+                                     /= R.Val_Text(1 .. R.Val_Len));
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -319,7 +337,8 @@ package body Operations is
 
   function Greater (L, R : Item_Rec) return Item_Rec is
   begin
-    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -331,8 +350,11 @@ package body Operations is
       return (Kind => Bool, Val_Bool => L.Val_Real > R.Val_Real);
     elsif L.Kind = Bool then
       return (Kind => Bool, Val_Bool => L.Val_Bool > R.Val_Bool);
+    elsif L.Kind = Regi then
+      return (Kind => Bool, Val_Bool => L.Val_Regi > R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) > R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
+                                      > R.Val_Text(1 .. R.Val_Len));
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -343,7 +365,8 @@ package body Operations is
 
   function Smaller (L, R : Item_Rec) return Item_Rec is
   begin
-    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -355,8 +378,11 @@ package body Operations is
       return (Kind => Bool, Val_Bool => L.Val_Real < R.Val_Real);
     elsif L.Kind = Bool then
       return (Kind => Bool, Val_Bool => L.Val_Bool < R.Val_Bool);
+    elsif L.Kind = Regi then
+      return (Kind => Bool, Val_Bool => L.Val_Regi < R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) < R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
+                                      < R.Val_Text(1 .. R.Val_Len));
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -367,7 +393,8 @@ package body Operations is
 
   function Greateq (L, R : Item_Rec) return Item_Rec is
   begin
-    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -377,8 +404,13 @@ package body Operations is
       return (Kind => Bool, Val_Bool => L.Val_Inte >= R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real >= R.Val_Real);
-    else
+    elsif L.Kind = Bool then
       return (Kind => Bool, Val_Bool => L.Val_Bool >= R.Val_Bool);
+    elsif L.Kind = Regi then
+      return (Kind => Bool, Val_Bool => L.Val_Regi >= R.Val_Regi);
+    else
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
+                                     >= R.Val_Text(1 .. R.Val_Len));
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -389,7 +421,8 @@ package body Operations is
 
   function Smalleq (L, R : Item_Rec) return Item_Rec is 
   begin
-    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -399,8 +432,13 @@ package body Operations is
       return (Kind => Bool, Val_Bool => L.Val_Inte <= R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real <= R.Val_Real);
-    else
+    elsif L.Kind = Bool then
       return (Kind => Bool, Val_Bool => L.Val_Bool <= R.Val_Bool);
+    elsif L.Kind = Regi then
+      return (Kind => Bool, Val_Bool => L.Val_Regi <= R.Val_Regi);
+    else
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
+                                     <= R.Val_Text(1 .. R.Val_Len));
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
