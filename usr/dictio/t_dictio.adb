@@ -5,6 +5,7 @@ procedure T_Dictio is
 
   Init : Boolean := False;
   Verbose : Boolean := False;
+  Delay_Ms : Integer;
 
   -- Signal received
   Sig : Boolean := False;
@@ -160,6 +161,12 @@ begin
     when Argument.Argument_Not_Found =>
       Init := False;
   end;
+  if Init then
+    Delay_Ms := 100;
+  else
+    Delay_Ms := -1;
+  end if;
+
   begin
     if Argument.Get_Parameter (1, "v") = "" then
       Verbose := True;
@@ -194,7 +201,7 @@ begin
            "g <name> / s <name> <data> / n <name> / c <name> / q");
   end if;
   loop
-    Event_Mng.Wait (-1);
+    Event_Mng.Wait (Delay_Ms);
     exit when Sig;
   end loop;
 
