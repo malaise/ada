@@ -587,6 +587,8 @@ package body EDITION is
 
           when AFPX.REFRESH =>
             REDISPLAY := TRUE;
+          when AFPX.FD_EVENT =>
+            null;
         end case;
 
       end loop ONE_EDIT;

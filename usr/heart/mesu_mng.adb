@@ -233,6 +233,8 @@ package body MESU_MNG is
         case PTG_RESULT.EVENT is
           when REFRESH =>
             REDISPLAY := TRUE;
+          when FD_EVENT =>
+            null;
           when KEYBOARD =>
 
             case PTG_RESULT.KEYBOARD_KEY is

@@ -120,6 +120,8 @@ begin
         end case;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
+      when AFPX.FD_EVENT =>
+        null;
     end case;
 
   end loop;

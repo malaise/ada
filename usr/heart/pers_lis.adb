@@ -249,6 +249,8 @@ package body PERS_LIS is
 
         when REFRESH =>
           REDISPLAY := TRUE;
+        when FD_EVENT =>
+          null;
         when KEYBOARD =>
 
           case PTG_RESULT.KEYBOARD_KEY is

@@ -158,6 +158,8 @@ package body SCREEN is
           end case;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;
+        when AFPX.FD_EVENT =>
+          REDISPLAY := TRUE;
       end case;
     end loop;
   end MY_PTG;
