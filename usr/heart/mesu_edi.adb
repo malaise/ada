@@ -56,9 +56,9 @@ package body MESU_EDI is
     package GET_SAMPLE is new GET_LINE (
                        MAX_WORD_LEN => 100,
                        MAX_WORD_NB => 40,
-                       MAX_LINE_LEN => 132);
+                       MAX_LINE_LEN => 132,
+                       COMMENT => '#');
     SAMPLE_LINE : GET_SAMPLE.LINE_ARRAY;
-    SAMPLE_LINE_TXT : GET_SAMPLE.LINE_TXT;
   begin
     OK := FALSE;
     -- Check if file name is empty
@@ -85,24 +85,15 @@ package body MESU_EDI is
 
     -- Read, decode, store in SAMPLES
     loop
-      -- Get whole line
-      GET_SAMPLE.GET_WHOLE_LINE (SAMPLE_LINE_TXT);
-
-      -- Discard empty lines and comments
-      if TEXT_HANDLER.EMPTY (SAMPLE_LINE_TXT)
-      or else TEXT_HANDLER.VALUE (SAMPLE_LINE_TXT)(1) /= '#' then
-
-        -- Split line in words
-        GET_SAMPLE.GET_WORDS (SAMPLE_LINE);
-        -- Not empty nor a comment
-        for I in 1 .. GET_SAMPLE.GET_WORD_NUMBER loop
-          -- Decode a BPM
-          SAMPLES(SAMPLES_INDEX) := PERS_DEF.BPM_RANGE'VALUE (
-                                       TEXT_HANDLER.VALUE (SAMPLE_LINE(I)));
-          SAMPLES_INDEX := SAMPLES_INDEX + 1;
-        end loop;
-
-      end if;
+      -- Split line in words
+      GET_SAMPLE.GET_WORDS (SAMPLE_LINE);
+      -- Not empty nor a comment
+      for I in 1 .. GET_SAMPLE.GET_WORD_NUMBER loop
+        -- Decode a BPM
+        SAMPLES(SAMPLES_INDEX) := PERS_DEF.BPM_RANGE'VALUE (
+                                     TEXT_HANDLER.VALUE (SAMPLE_LINE(I)));
+        SAMPLES_INDEX := SAMPLES_INDEX + 1;
+      end loop;
 
       -- Read next line and exit when end of file
       begin
