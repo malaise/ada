@@ -119,7 +119,7 @@ package Udp is
   generic
     type Message_Type is private;
   procedure Send (Socket  : in Socket_Dscr;
-                  Message : out Message_Type;
+                  Message : in Message_Type;
                   Length  : in Natural := 0);
 
 private

@@ -320,7 +320,7 @@ package body Udp is
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
   procedure Send (Socket  : in Socket_Dscr;
-                  Message : out Message_Type;
+                  Message : in Message_Type;
                   Length  : in Natural := 0) is
     Len : Natural;
   begin
