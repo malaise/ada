@@ -120,6 +120,10 @@ package Mcd_Mng is
    Strregi,
    Strof,
 
+   Clock,
+   Dateof,
+   Timeof,
+
    Obase,
    Nop,
    Rnd,

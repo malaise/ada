@@ -149,6 +149,10 @@ package body Parser is
    Strregi  => (Nosy, "push A converted to register  ", False),
    Strof    => (Nosy, "push formated string of A     ", True),
 
+   Clock    => (Nosy, "Push current time             ", False),
+   Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm", False),
+   Timeof   => (Nosy, "YYyy/mm/dd-hh:mm:ss.mmm -> int", True),
+
    Obase    => (Nosy, "set output base to A          ", False),
    Nop      => (Nosy, "no operation                  ", False),
    Rnd      => (Nosy, "push 0.0 <= RND < 1.0         ", False),

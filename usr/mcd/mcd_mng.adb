@@ -180,8 +180,13 @@ package body Mcd_Mng is
     function Strrep (I, Pat, S : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
-
   end Strings;
+
+  package Dates is
+    function Clock return Item_Rec;
+    function Time_To_Date (Time : Item_Rec) return Item_Rec;
+    function Date_To_Time (Date : Item_Rec) return Item_Rec;
+  end Dates;
 
   package body Stack is separate;
   package body Operations is separate;
@@ -189,6 +194,7 @@ package body Mcd_Mng is
   package body Ios is separate;
   package body Call_Stack is separate;
   package body Strings is separate;
+  package body Dates is separate;
 
   function Is_Register (C : in Character) return Boolean 
                        renames Registers.Is_Register;
@@ -614,7 +620,6 @@ package body Mcd_Mng is
         when Newl =>
           Ios.New_Line;
 
-
         -- Strings
         when Strlen =>
           Pop(A); Push (Strings.Strlen(A));
@@ -640,6 +645,14 @@ package body Mcd_Mng is
           Pop(A); Push (Ios.Strregi(A));
         when Strof =>
           Pop(A); Push (Ios.Strof(A));
+
+        -- Dates
+        when Clock =>
+          Push (Dates.Clock);
+        when Dateof =>
+          Pop(A); Push (Dates.Time_To_Date(A));
+        when Timeof =>
+          Pop(A); Push (Dates.Date_To_Time(A));
 
         when Help =>
           Parser.Print_Help;
