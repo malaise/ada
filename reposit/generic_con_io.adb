@@ -589,7 +589,7 @@ package body GENERIC_CON_IO is
       SAVED_POS : constant SQUARE := NAME.CURRENT_POS;
       WIN_LAST_COL : constant COL_RANGE
                    := NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL;
-      CRS : NATURAL;
+      PCR : BOOLEAN;
 
       procedure X_PUT (STR : in STRING) is
       begin
@@ -612,7 +612,7 @@ package body GENERIC_CON_IO is
       SFIRST := S'FIRST;
       loop
         SLAST  := S'FIRST;
-        CRS := 0;
+        PCR := FALSE;
         -- Look for CR or end of string
         while SLAST /= S'LAST and then S(SLAST) /= ASCII.CR loop
           SLAST := SLAST + 1;
@@ -620,7 +620,7 @@ package body GENERIC_CON_IO is
         -- Skip CR
         if S(SLAST) = ASCII.CR then
           RLAST := SLAST - 1;
-          CRS := CRS + 1;
+          PCR := TRUE;
         else
           RLAST := SLAST;
         end if;
@@ -628,14 +628,18 @@ package body GENERIC_CON_IO is
         -- Last - first <= Win_las_col - Pos 
         if NAME.CURRENT_POS.COL + RLAST - SFIRST  > WIN_LAST_COL then
            RLAST := SFIRST + WIN_LAST_COL - NAME.CURRENT_POS.COL;
-           CRS := CRS + 1;
         end if;
         -- Put the chunk
         X_PUT (S(SFIRST .. RLAST));
-        -- Issue as many CRs
-        for I in 1 .. CRS loop
+        -- Update position : last character + one
+        ONE_CON_IO.MOVE (NAME.CURRENT_POS.ROW,
+                         NAME.CURRENT_POS.COL + RLAST - SFIRST,
+                         NAME);
+        MOVE_ONE (NAME);
+        -- Issue CR
+        if PCR then
           PUT(ASCII.CR, NAME);
-        end loop;
+        end if;
         -- Move to next chunk
         exit when SLAST = S'LAST;
         SFIRST := SLAST + 1;
@@ -944,6 +948,7 @@ package body GENERIC_CON_IO is
       IS_CHAR       : BOOLEAN;
       CTRL, SHIFT   : BOOLEAN;
       REDRAW        : BOOLEAN;
+      FIRST_POS     : constant SQUARE := NAME.CURRENT_POS;
       LAST_TIME     : CALENDAR.TIME;
       INFINITE_TIME : constant BOOLEAN := TIME_OUT < 0.0;
       EVENT         : EVENT_LIST;
@@ -963,7 +968,7 @@ package body GENERIC_CON_IO is
       procedure CURSOR (SHOW : in BOOLEAN) is
         ABSOLUTE_POS : SQUARE;
       begin
-        MOVE(ROW_RANGE'FIRST, POS - 1, NAME);
+        MOVE(FIRST_POS.ROW, FIRST_POS.COL + POS - 1, NAME);
         ABSOLUTE_POS := TO_ABSOLUTE (NAME.CURRENT_POS, NAME);
         if SHOW then
           if INSERT then
@@ -1087,7 +1092,7 @@ package body GENERIC_CON_IO is
       end if;
 
       -- put the string
-      MOVE(NAME => NAME);
+      MOVE(FIRST_POS, NAME);
       PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
 
       loop
@@ -1250,7 +1255,7 @@ package body GENERIC_CON_IO is
 
         -- redraw if necessary
         if REDRAW then
-          MOVE(NAME => NAME);
+          MOVE(FIRST_POS, NAME);
           PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
        end if;
       end loop;
