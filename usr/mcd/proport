@@ -1,0 +1,2 @@
+#!/bin/bash
+mmcdt $1 $2 $3 -e proport.mcd putl

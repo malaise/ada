@@ -1,0 +1,17 @@
+# if C <-> B, then A <-> x?
+
+# Function to handle error
+[ "Usage: portport A B C" putl ssize popn retall ] E popr
+
+# Function to check and store n arg
+[ dup isinte [ toreal ] ifcall dup isreal ~ E pushr ifcall pope ] C popr
+
+# Check and store args
+ssize 3 < E pushr ifcall
+C pushr call
+C pushr call
+C pushr call
+
+# Estack has C B A. Compute A * B / C
+1.0 pushle / pushle * pushle *
+
