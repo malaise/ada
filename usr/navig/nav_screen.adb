@@ -267,7 +267,7 @@ package body NAV_SCREEN is
   procedure ERR_FORMAT is
   begin
     MOVE ( (0, 0), W_ERR);
-    PUT ("ERREUR : Wrong input format or bad value.", W_ERR);
+    PUT ("ERROR : Wrong input format or bad value.", W_ERR);
   end ERR_FORMAT;
 
   -- display an error adapted to the detected inconsistency of data
@@ -275,7 +275,7 @@ package body NAV_SCREEN is
   procedure ERR_CHECK (ERROR : in NAV_DATA.T_CONSISTENCY) is
   begin
     move ( (0, 0), W_ERR);
-    PUT ("ERREUR : ", W_ERR);
+    PUT ("ERROR : ", W_ERR);
     case ERROR is
       when NAV_DATA.KNOWN_ERR =>
         PUT ("Only 3 fields must be unknown.", W_ERR);
@@ -375,8 +375,11 @@ package body NAV_SCREEN is
 
   procedure ABORT_CLOCK is
   begin
-    TIME_TASK_MNG.ABORT_TASK;
     MOVE ( (0, 0), W_ACT);
+    TIME_TASK_MNG.ABORT_TASK;
+  exception
+    when TIME_TASK_MNG.TASK_ABORTED =>
+      null;
   end ABORT_CLOCK;
 
 
