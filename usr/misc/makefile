@@ -12,7 +12,7 @@ all:
 	amake fact.adb
 	amake g.adb
 	amake hanoi.adb
-	amake impot_00.adb
+	amake impot_02.adb
 	amake look_95.adb
 	amake one_of_arg.adb
 	amake pascal.adb
