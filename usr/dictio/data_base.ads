@@ -6,10 +6,14 @@ package Data_Base is
   subtype Item_Data is String (1 .. 256);
   subtype Item_Crc  is String (1 .. 4);
 
+  Data_Kind  : constant Item_Kind := (others => 'd');
+  Alias_Kind : constant Item_Kind := (others => 'a');
+  Trace_Kind : constant Item_Kind := (others => 't');
+
   type Item_Rec is record
     Data_Len : Natural := 0;  -- Of data
     Name : Item_Name := (others => ' ');
-    Kind : Item_Kind := (others => 'd');
+    Kind : Item_Kind := Data_Kind;
     Crc  : Item_Crc := (others => ' ');
     Data : Item_Data := (others => ' ');
   end record;

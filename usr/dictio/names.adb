@@ -3,8 +3,6 @@ with Data_Base, Debug;
 package body Names is
 
   -- For parsing
-  Sep : constant Character := '.';
-  Sep_Str : constant String := Sep & "";
   function Is_Sep (C : Character) return Boolean is
   begin
     return C = Sep;

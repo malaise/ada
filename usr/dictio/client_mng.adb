@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with Socket, Tcp_Util, Dynamic_List, Event_Mng, Sys_Calls;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
-     Versions, Status;
+     Versions, Status, Alias;
 package body Client_Mng is
 
   -- Init done?
@@ -19,7 +19,7 @@ package body Client_Mng is
   procedure Send_Notify (Item : Data_Base.Item_Rec)  is
     use type Data_Base.Item_Rec;
   begin
-    if Item.Kind = "d" then
+    if Item.Kind = Data_Base.Data_Kind then
       Notify.Send (Item);
     end if;
   end Send_Notify;
@@ -82,6 +82,7 @@ package body Client_Mng is
         Client_Fd.Del_Client (Dscr);
         return False;
       when Client_Com.Get =>
+        Alias.Resolve (Msg.Item);
         Data_Base.Get (Msg.Item.Name, Msg.Item.Kind, Msg.Item);
         begin
           Send_Res := Client_Com.Dictio_Send (Dscr, null, Msg);
@@ -107,6 +108,7 @@ package body Client_Mng is
       when Client_Com.Set =>
         Modif_Stamp := Ada.Calendar.Clock;
         -- Store, get new Crc
+        Alias.Resolve (Msg.Item);
         Data_Base.Set_Then_Get_Crc (Msg.Item);
         -- Send notifications and diffuse
         Send_Notify (Msg.Item);

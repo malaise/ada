@@ -1,5 +1,10 @@
 package Names is
 
+  -- Separator for parsing
+  Sep : constant Character := '.';
+  Sep_Str : constant String := Sep & "";
+  function Is_Sep (C : Character) return Boolean;
+
 
   -- Syntax of name for Get/Set
   --   <ident> [ { .<ident> } ]

@@ -1,4 +1,3 @@
-with ada.text_io;
 with Dynamic_List, Normal, Crc_10, Hash;
 with Parse;
 package body Data_Base is

@@ -67,6 +67,8 @@ package Dictio_Lib is
   -- - Get("foo") will return the data of "bar" or raises No_Item
   -- - notification requests on the item named "foo" are accepted
   --    but this item cannot be Set or Get
+  -- - same applies to operations on "foo.stuff" performed realy
+  --    on "bar.stuff"
   -- Alias can be canceled with an empty What string.
   -- May raise Invalid_Name or Name_Too_Long
   procedure Set_Alias (Alias : in String; What : in String);
