@@ -77,7 +77,13 @@ package body Connection is
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put ("In callback : ");
     end if;
-    Chess_Read (Soc, Message, Len, Server);
+    begin
+      Chess_Read (Soc, Message, Len, Server);
+    exception
+      when Socket.Soc_Conn_Lost =>
+        Ada.Text_Io.Put_Line ("Lost connection - Discard");
+        return False;
+    end;
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Message read " & Integer'Image (Len) & " bytes");
     end if;
@@ -214,6 +220,9 @@ package body Connection is
       if not Server then
         -- Client sends its color to server
         Chess_Send (Soc, (Init, Own_Color));
+        if Debug.Get (Debug.Connection) then
+          Ada.Text_Io.Put_Line ("Connection: pinging");
+        end if;
         -- Retry a bit later
         Select_Got_Fd := X_Mng.Select_No_X (1000);
       else
