@@ -13,7 +13,12 @@ if [ $# -lt 2 ] ; then
 fi
 
 # Create fifos and check
-mkfifo $PIPI $PIPO
+if [ ! -p $PIPI ] ; then
+  mkfifo $PIPI
+fi
+if [ ! -p $PIPO ] ; then
+  mkfifo $PIPO
+fi
 
 if [ ! -p $PIPI ] ; then
   echo "Error. Cannot create fifo $PIPI"
