@@ -155,6 +155,7 @@ package Afpx is
   -- Exceptions : Invalid_Field if no list in current descriptor,
   procedure Update_List (Action : in List_Action_List);
 
+  -- Result of Put_Then_Get:
   -- See Con_io.Curs_Mvt
   type Event_List is (Keyboard, Mouse_Button,
                       Fd_Event, Timer_Event, Signal_Event, Refresh);
@@ -172,6 +173,20 @@ package Afpx is
     end case;
   end record;
 
+  -- Call back called by Put_Then_Get when entering a new get field:
+  -- Given the reason for entering field (see Con_Io)
+  type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
+  --  and given the content of the get field as by Decode_Field (Row =>0)
+  --  the client specifies the column of the cursor.
+  -- If the value returned is bigger then Str'Length - 1,
+  --  then Str'Length - 1 is used.
+  -- If no callback is provided, then 0 is used.
+  -- No call to Afpx are allowed in this callback 
+  --  (or anonymous exception In_Put_Then_Get would be raised).
+  type Cursor_Set_Col_Cb is access
+       function (Enter_Field_Cause : Enter_Field_Cause_List;
+                 Str : String) return Con_Io.Col_Range;
+
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif if some other screen actions (con_io)
   --  justify a redisplay
@@ -188,14 +203,16 @@ package Afpx is
   -- This call affects the content of Get fields, the cursor field and col,
   -- and the current element of the list
   -- If no field is Get (or all protected or desactivated,
-  --  then cursor field and col are not significant
+  --  then cursor field and col are not significant, otherwise
+  --  they are used at initialisation and set before the end.
   -- Exceptions :  No_Descriptor,
   --               Invalid_Field, Invalid_Col (for cursor)
   --               String_Too_Long (if an item in list is too long)
-  procedure Put_Then_Get (Cursor_Field : in out Field_Range;
-                          Cursor_Col   : in out Con_Io.Col_Range;
-                          Result       : out Result_Rec;
-                          Redisplay    : in Boolean := False);
+  procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
+                          Cursor_Col    : in out Con_Io.Col_Range;
+                          Result        : out Result_Rec;
+                          Redisplay     : in Boolean := False;
+                          Cursor_Col_Cb : in Cursor_Set_Col_Cb := null);
 
   -- At elaboration
   Afpx_File_Not_Found, Afpx_File_Read_Error, Afpx_File_Version_Error : exception;

@@ -370,14 +370,49 @@ package body Af_Ptg is
     Con_Io.Move (Cursor_Pos);
   end Handle_Click;
 
+  -- Call the user callback to get cursor col
+  function Get_Cursor_Col (
+                 Field : Afpx_Typ.Field_Rec;
+                 Enter_Field_Cause : Enter_Field_Cause_List;
+                 Cursor_Col_Cb : Cursor_Set_Col_Cb) 
+           return Con_Io.Col_Range is
+    Result : Con_Io.Col_Range;
+  begin
+    -- Call Cb if set
+    if Cursor_Col_Cb = null then
+      -- End of field if Left, Start of field otherwise
+      if Enter_Field_Cause = Left then
+         return Field.Width - 1;
+      else
+        return 0;
+      end if;
+    end if;
+    -- The user user Cb will appreciate a string (1 .. Len)
+    --  so make a local copy
+    declare
+      Str : constant String (1 .. Field.Width) := Af_Dscr.Chars
+            (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
+    begin
+      Result := Cursor_Col_Cb (Enter_Field_Cause, Str);
+    end;
+    -- Check result vs width
+    if Result >= Field.Width then
+      Result := Field.Width - 1;
+    end if;
+    return Result;
+  exception
+    when others =>
+      return Field.Width - 1;
+  end Get_Cursor_Col;
 
   -- Print the fields and the list, then gets
   procedure Ptg (
-                 Cursor_Field : in out Afpx_Typ.Field_Range;
-                 Cursor_Col   : in out Con_Io.Col_Range;
-                 Result       : out Result_Rec;
-                 Redisplay    : in Boolean;
-                 Get_Active   : in Boolean) is
+                 Cursor_Field  : in out Afpx_Typ.Field_Range;
+                 Cursor_Col    : in out Con_Io.Col_Range;
+                 Result        : out Result_Rec;
+                 Redisplay     : in Boolean;
+                 Get_Active    : in Boolean;
+                 Cursor_Col_Cb : in Cursor_Set_Col_Cb) is
     List_Present : Boolean;
     New_Field : Boolean;
     Field : Afpx_Typ.Field_Rec;
@@ -389,7 +424,8 @@ package body Af_Ptg is
     Background : Con_Io.Effective_Basic_Colors;
     Done : Boolean;
 
-    use Afpx_Typ;
+    use Afpx_Typ; 
+    use type Con_Io.Curs_Mvt;
 
   begin
     -- Reset last selection for double click
@@ -516,22 +552,34 @@ package body Af_Ptg is
           if List_Present then
             Af_List.Update (Bottom);
           end if;
-        when Con_Io.Right | Con_Io.Full | Con_Io.Tab =>
+        when Con_Io.Right | Con_Io.Full =>
           if Get_Active then
-            -- Beginning of next get field
+            -- End (right) of previous field
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
-            Cursor_Col := 0;
+            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+                                          Right_Full, Cursor_Col_Cb);
+            New_Field := True;
+          end if;
+        when Con_Io.Tab =>
+          if Get_Active then
+            -- Tab in previous field
+            -- Restore normal color of previous field
+            Put_Field (Cursor_Field, Normal);
+            Cursor_Field := Next_Get_Field (Cursor_Field);
+            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+                                          Tab, Cursor_Col_Cb);
             New_Field := True;
           end if;
         when Con_Io.Left =>
           if Get_Active then
-            -- End of prev get field
+            -- Left on previous field
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
-            Cursor_Col := Af_Dscr.Fields(Cursor_Field).Width - 1;
+            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+                                          Left, Cursor_Col_Cb);
             New_Field := True;
           end if;
         when Con_Io.Stab =>
@@ -540,7 +588,8 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
-            Cursor_Col := 0;
+            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+                                          Stab, Cursor_Col_Cb);
             New_Field := True;
           end if;
         when Con_Io.Ret =>
@@ -575,7 +624,8 @@ package body Af_Ptg is
                   Put_Field (Cursor_Field, Normal);
                   -- Change field
                   Cursor_Field := Click_Result.Field_No;
-                  Cursor_Col := 0;
+                  Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+                                                Mouse, Cursor_Col_Cb);
                   New_Field := True;
                 end if;
               when Afpx_Typ.Button =>
