@@ -439,6 +439,29 @@ package body Edition is
       return Field;
   end Validate;
 
+  -- Cursor is set after the last significant (non  space) character
+  function Set_Cursor (Cause : Afpx.Enter_Field_Cause_List;
+                       Str   : String) return Con_Io.Col_Range is
+    use type Afpx.Enter_Field_Cause_List;
+  begin
+    if Cause = Afpx.Right_Full then
+      return 0;
+    end if;
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' then
+        if I = Str'Last then
+          -- Last char is significant.
+          -- Ok Afpx takes care of excessive col, but let's be clean
+          return Str'Length - 1;
+        else
+          -- Afpx takes care of us with a Str (1 .. N), but let's be clean
+          return I - Str'First + 1;
+        end if;
+      end if;
+    end loop;
+    return 0;
+  end Set_Cursor;
+
   -- Do the edition  
   procedure Edit (Edit_Type : in Edit_List) is
     -- Original unit to restore
@@ -509,7 +532,8 @@ package body Edition is
       -- Ptgs
       One_Edit:
       loop
-        Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+        Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay,
+                          Set_Cursor'Access);
         Redisplay := False;
         case Ptg_Result.Event is
 
