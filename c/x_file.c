@@ -21,15 +21,13 @@ static char *default_font_name[NBRE_FONT] = {
    "-b&h-lucidatypewriter-medium-r-normal-sans-25-180-100-100-m-150-iso8859-1",
       "-b&h-lucidatypewriter-bold-r-normal-sans-25-180-100-100-m-150-iso8859-1"};
 
-#define FONT_1N_NAME "X_FONT_1N"
-#define FONT_1B_NAME "X_FONT_1B"
-#define FONT_2N_NAME "X_FONT_2N"
-#define FONT_2B_NAME "X_FONT_2B"
+#define FONT_NAME "X_FONT_"
 
 void set_from_env (int font_index, char *env_name);
 
 boolean fil_init (void) {
     int i;
+    char env_name[10];
 
     /* Set to default values */
     for (i=0; i<NBRE_COLOR; i++) {
@@ -40,10 +38,10 @@ boolean fil_init (void) {
     }
 
     /* Check if env sets font name */
-    set_from_env(0, FONT_1N_NAME);
-    set_from_env(1, FONT_1B_NAME);
-    set_from_env(2, FONT_2N_NAME);
-    set_from_env(3, FONT_2B_NAME);
+    for (i=0; i<NBRE_FONT; i++) {
+      sprintf (env_name, "%s%1d", FONT_NAME, i + 1);
+      set_from_env(i, env_name);
+    }
     return (True);
 }
 
