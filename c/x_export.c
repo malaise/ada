@@ -95,6 +95,10 @@ int x_del_fd (int fd, boolean read) {
   int i;
   fd_set *mask;
 
+  if (last_fd == 0) {
+    return (ERR);
+  }
+
   if (read) {
     mask = &global_read_mask;
   } else {
@@ -118,6 +122,9 @@ int x_del_fd (int fd, boolean read) {
 }
 
 extern boolean x_fd_set (int fd, boolean read) {
+  if (last_fd == 0) {
+    return (FALSE);
+  }
   if (read) {
     return (FD_ISSET(fd, &global_read_mask));
   } else {
