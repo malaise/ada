@@ -6,7 +6,7 @@ procedure ExpBit is
   Size : constant := 35;
   Size2 : constant := Size / 2 + 1;
 
-  package MGL is new Get_Line (1, Size2, Size/2 * 2 - 1, '#');
+  package MGL is new Get_Line (1, Size2, Size/2 * 2 + 1, '#');
   Count : MGL.Word_Count;
   Line : MGL.Line_Array;
 
