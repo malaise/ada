@@ -106,7 +106,7 @@ begin
         case PTG_RESULT.FIELD_NO is
           when 4 =>
             exit;
-          when 5 =>
+          when 5 | AFPX.LIST_FIELD_NO =>
             AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, AFPX_ITEM,
                                      AFPX.LINE_LIST_MNG.CURRENT);
             AFPX.CLEAR_FIELD (2);
