@@ -1,4 +1,4 @@
-with Dynamic_List;
+with Dynamic_List, My_Math;
 package body Prime_List is
 
   package Prime_List_Mng is new Dynamic_List(Long_Long_Positive);
@@ -45,6 +45,7 @@ package body Prime_List is
   function Next return Long_Long_Positive is
     Res, Tmp : Long_Long_Positive;
     Is_Prime : Boolean;
+    Square : Long_Long_Positive;
   begin
     -- Need to search?
     if not Need_Search then
@@ -75,12 +76,16 @@ package body Prime_List is
     loop
       Res := Res + 1;
       Is_Prime := True;
+      Square := My_Math.Round(My_Math.Sqrt(My_Math.Real(Res)));
       Rewind;
 
       -- Loop on list
       Divisor_Loop:
       for I in 1 .. Prime_List_Mng.List_Length (The_List) loop
         Tmp := Read;
+        if Tmp > Square then
+          exit Divisor_Loop;
+        end if;
         if Tmp /= 1 and then Res rem Tmp = 0 then
           Is_Prime := False;
           exit Divisor_Loop;
