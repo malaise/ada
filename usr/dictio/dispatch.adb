@@ -107,6 +107,7 @@ package body Dispatch is
           Intra_Dictio.Send_Status;
         end if;
         Sync_Mng.Cancel;
+        Client_Mng.New_Status;
         Client_Mng.Quit;
         Intra_Dictio.Quit;
       when Status.Slave | Status.Master =>
@@ -115,7 +116,9 @@ package body Dispatch is
       when Status.Fight =>
         null;
     end case;
-    Client_Mng.New_Status;
+    if New_Status /= Status.Dead then
+      Client_Mng.New_Status;
+    end if;
   end Handle_New_Status;
 
 end Dispatch;
