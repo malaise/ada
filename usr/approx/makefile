@@ -13,8 +13,6 @@ AFPX.DSC: AFPX.LIS
 	afpx_bld
 
 clean:
-	rm *.o *.ali approxp
+	rm *.o *.ali approxp import
 
-a: all
-	approxp
 
