@@ -92,12 +92,14 @@ package body Str_Mng is
 
   function To_Bpm (Str : Bpm_Str) return Pers_Def.Bpm_Range is
     Loc_Str : Bpm_Str := Str;
+    Result : Pers_Def.Set_Bpm_Range;
   begin
     if Is_Spaces (Loc_Str) then
       return 0;
     end if;
     Parse (Loc_Str);
-    return Pers_Def.Bpm_Range'Value(Loc_Str);
+    Result := Pers_Def.Set_Bpm_Range'Value(Loc_Str);
+    return Result;
   end To_Bpm;
 
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str is
