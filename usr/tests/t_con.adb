@@ -57,8 +57,8 @@ procedure T_CON is
     end;
     accept START(I : in POSITIVE) do
       ME := I;
+      INIT;
     end START;
-    INIT;
 
     RESET_TERM;
     ENABLE_MOTION_EVENTS(TRUE);
