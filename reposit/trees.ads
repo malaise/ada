@@ -63,6 +63,15 @@ package Trees is
                      Deallocate : in Boolean := True);
 
 
+    -- Save position --
+    ------------------
+    -- Position points to the cell in the tree, so it points
+    --  to the same cell (same data) when inserting fathers.
+    -- It is reset when saved cell is deleted
+    -- May raise No_Cell if The_Tree is empty
+    procedure Save_Position (The_Tree : in out Tree_Type);
+
+
     -- Read / Replace --
     --------------------
     -- All may raise No_Cell if The_Tree is empty
@@ -81,6 +90,11 @@ package Trees is
                     Element  : in out Element_Type);
 
 
+    -- Swap saved pos and its sub tree with current position and its sub tree
+    -- May raise No_Cell if no position is saved
+    procedure Swap_Saved (The_Tree : in Tree_Type);
+
+
     -- Look up --
     -------------
     -- All may raise No_Cell if The_Tree is empty
@@ -95,13 +109,6 @@ package Trees is
     -- How many children has current cell
     function Children_Number (The_Tree : Tree_Type) return Child_Range;
 
-    -- Save position --
-    ------------------
-    -- Position points to the cell in the tree, so it points
-    --  to the same cell (same data) when inserting fathers.
-    -- It is reset when saved cell is deleted
-    -- May raise No_Cell if The_Tree is empty
-    procedure Save_Position (The_Tree : in out Tree_Type);
 
     -- Move --
     ----------
@@ -128,6 +135,7 @@ package Trees is
     -- May raise No_Cell if no saved position
     procedure Move_Saved (The_Tree : in out Tree_Type);
 
+
     -- Dump --
     ----------
     -- Image of an element at a depth (level)
@@ -138,17 +146,18 @@ package Trees is
                     Image_Acc : in Image_Access;
                     File      : in Ada.Text_Io.File_Type);
 
+
   private
 
     -- One cell of tree and access to it
-    type Cell;
-    type Cell_Access is access Cell;
+    type Cell_Rec;
+    type Cell_Access is access Cell_Rec;
 
     -- Eldest/Youngest children, or Elder/Younger brothers
     type Cell_Pair is array (Boolean) of Cell_Access;
 
     -- A cell of tree
-    type Cell is record
+    type Cell_Rec is record
       Father   : Cell_Access := null;
       Brothers : Cell_Pair := (others => null);
       Nb_Children : Child_Range := 0;

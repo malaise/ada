@@ -26,7 +26,7 @@ package body Trees is
     --  is Natural'Last
 
     -- Dynamic data management
-    package Cell_Dyn is new Dyn_Data (Cell, Cell_Access);
+    package Cell_Dyn is new Dyn_Data (Cell_Rec, Cell_Access);
     package Data_Dyn is new Dyn_Data (Element_Type, Element_Access);
 
     -- Allocate a new Cell storing Element
@@ -271,6 +271,18 @@ package body Trees is
       end if;
     end Reset;
 
+
+    ------------------
+    -- Save position --
+    ------------------
+    procedure Save_Position (The_Tree : in out Tree_Type) is
+    begin
+      -- No empty tree
+      Check_Empty (The_Tree);
+      The_Tree.Save := The_Tree.Curr;
+    end Save_Position;
+
+
     --------------------
     -- Read / Replace --
     --------------------
@@ -310,13 +322,40 @@ package body Trees is
                     Element  : in out Element_Type) is
       Tmp : Element_Type;
     begin
-            -- No empty tree
+      -- No empty tree
       Check_Empty (The_Tree);
       Tmp := The_Tree.Curr.Data.all;
       The_Tree.Curr.Data.all := Element;
       Element := Tmp;
     end Swap;
 
+    -- Move saved pos and its sub tree at current position, return current
+    procedure Swap_Saved (The_Tree : in Tree_Type) is
+
+      -- Copy Children and data
+      procedure Copy (Dst : in out Cell_Rec; Src : in Cell_Rec) is
+      begin
+        Dst.Children := Src.Children;
+        Dst.Nb_Children := Src.Nb_Children;
+        Dst.Data := Src.Data;
+      end Copy;
+
+      Tmp : Cell_Rec;
+    begin
+      -- No empty tree
+      Check_Empty (The_Tree);
+
+      -- Check a pos is saved
+      if The_Tree.Save = null then
+        raise No_Cell;
+      end if;
+
+      -- Swap data and children between current and saved
+      Copy (Tmp, The_Tree.Curr.all);
+      Copy (The_Tree.Curr.all, The_Tree.Save.all);
+      Copy (The_Tree.Save.all, Tmp);
+
+    end Swap_Saved;
 
     -------------
     -- Look up --
@@ -345,18 +384,6 @@ package body Trees is
       Check_Empty (The_Tree);
       return The_Tree.Curr.Nb_Children;
     end Children_Number;
-
-
-    ------------------
-    -- Save position --
-    ------------------
-    procedure Save_Position (The_Tree : in out Tree_Type) is
-    begin
-      -- No empty tree
-      Check_Empty (The_Tree);
-      The_Tree.Save := The_Tree.Curr;
-    end Save_Position;
-
 
 
     ----------
