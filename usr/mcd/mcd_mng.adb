@@ -1,3 +1,4 @@
+with TEXT_IO;
 with TEXT_HANDLER;
 with DEBUG, INPUT_DISPATCHER, PARSER;
 package body MCD_MNG is
@@ -212,6 +213,10 @@ package body MCD_MNG is
         -- Push operand
         STACK.PUSH(ITEM);
     else -- OPERATOR
+      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
+        DEBUG.PUT(ITEM);
+        TEXT_IO.NEW_LINE;
+      end if;
       case ITEM.VAL_OPER is 
         -- These 3 I do it myself
         when SWAP =>
