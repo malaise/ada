@@ -28,23 +28,32 @@ package Event_Mng is
   -----------------------
   -- Signal management --
   -----------------------
-  -- Called on Sig Int or after Send_Signal
+  -- Called on some signal: SigInt SigChld
   type Sig_Callback is access procedure;
-  -- Register a callback on termination signal (SigInt)
+
+  -- Register a callback on signal
   -- Call it with null to disable generation of Signal_Event by Wait
   -- Default is event generation with no callback
   procedure Set_Sig_Callback (Callback : in Sig_Callback);
   -- Is a callback set on signals
   function Sig_Callback_Set return Boolean;
 
-  -- Emulate signal reception
+  -- Send a dummy signal
+  -- It always generates a Sig_Event and Sig_Callback is not called
   procedure Send_Signal;
 
+  -- Get kind of last signal
+  type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
+                            Terminate_Sig, Child_Sig);
+  function Get_Signal_Kind return Signal_Kind_List;
 
   -------------------
   -- Waiting point --
   -------------------
-  -- Wait until some event callback return True, or until timeout
+  -- Wait until some timer or fd callback return True,
+  --      until a Dummy_Sig
+  --      until a Terminate_Sig or Child_Sig while Sig_Callback set
+  --   or until timeout
   -- Any negative timeout means infinite
   Infinite_Ms : constant Integer := -1;
   type Out_Event_List is (Timer_Event, Fd_Event, Sig_Event, No_Event);
@@ -69,7 +78,7 @@ package Event_Mng is
         Fd : File_Desc;
         Read : Boolean;
       when Sig_Event =>
-        Dummy_Sig : Boolean;
+        null;
       when No_Event =>
         null;
     end case;

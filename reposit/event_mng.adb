@@ -150,8 +150,17 @@ package body Event_Mng is
   -----------------------
   -- Signal management --
   -----------------------
+  C_Sig_Unknown   : constant Integer := -2;
+  C_Sig_None      : constant Integer := -1;
+  C_Sig_Dummy     : constant Integer :=  0;
+  C_Sig_Terminate : constant Integer :=  1;
+  C_Sig_Child     : constant Integer :=  2;
+
   procedure C_Send_Signal (Num : Integer);
   pragma Import(C, C_Send_Signal, "send_signal");
+
+  function C_Get_Signal return Integer;
+  pragma Import(C, C_Get_Signal, "get");
 
   Cb_Sig : Sig_Callback := Null_Procedure'Access;
 
@@ -168,8 +177,26 @@ package body Event_Mng is
 
   procedure Send_Signal is
   begin
-    C_Send_Signal (0);
+    C_Send_Signal (C_Sig_Dummy);
   end Send_Signal;
+  
+  function Get_Signal_Kind return Signal_Kind_List is
+  begin
+    case C_Get_Signal is
+      when C_Sig_Unknown =>
+        return Unknown_Sig;
+      when C_Sig_None =>
+        return No_Sig;
+      when C_Sig_Dummy =>
+        return Dummy_Sig;
+      when C_Sig_Terminate =>
+        return Terminate_Sig;
+      when C_Sig_Child =>
+        return Child_Sig;
+      when others =>
+        return Unknown_Sig;
+    end case;
+  end Get_Signal_Kind;
 
   ------------------------------------------------------------------
 
@@ -232,7 +259,7 @@ package body Event_Mng is
       -- Results
       if Fd = C_Sig_Event then
         -- Signal
-        Handle_Res := Handle ((Kind => Sig_Event, Dummy_Sig => Read = True));
+        Handle_Res := Handle ((Kind => Sig_Event));
       elsif Fd = C_No_Event or else Fd >= 0 then
         -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
@@ -357,6 +384,7 @@ package body Event_Mng is
 
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
+    Signal_Kind : Signal_Kind_List;
   begin
     Set_Debug;
     case Event.Kind is
@@ -384,15 +412,21 @@ package body Event_Mng is
             end if;
         end;
       when Sig_Event =>
-        if Event.Dummy_Sig then
-          if Cb_Sig /= null then
-            Cb_Sig.all;
+        Signal_Kind := Get_Signal_Kind;
+        case Signal_Kind is
+          when Unknown_Sig | No_Sig =>
+            -- No_Event
+            null;
+          when Dummy_Sig =>
+            -- Dummy signal: never call Cb but always generate event
             return Sig_Event;
-          end if;
-        else
-          -- Dummy signal: no Cb but always event
-          return Sig_Event;
-        end if;
+          when Terminate_Sig | Child_Sig =>
+            if Cb_Sig /= null then
+              Cb_Sig.all;
+              return Sig_Event;
+            end if;
+            -- else No_Event
+        end case;
       when No_Event =>
         -- Nothing. Expire timers or return timeout
         if Timers.Expire then
