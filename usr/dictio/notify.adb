@@ -98,7 +98,7 @@ package body Notify is
         Dummy : Boolean;
       begin
         Dummy := Client_Com.Dictio_Send (Rec.Client, null, Msg);
-        if Debug.Level_Array(Debug.Client) then
+        if Debug.Level_Array(Debug.Client_Data) then
           Debug.Put ("Client-notify: " & Fd'Img & " of " & Parse(Item.Name));
         end if;
       exception
