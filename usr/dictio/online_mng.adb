@@ -79,7 +79,6 @@ package body Online_Mng is
             -- Invalid Crc. Re-sync.
             Data_Base.Reset;
             Status.Sync := False;
-            Intra_Dictio.Send_Status;
             Sync_Mng.Start;
           else
             -- Crc OK:

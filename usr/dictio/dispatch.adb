@@ -96,10 +96,10 @@ package body Dispatch is
         Online_Mng.Start;
         if Prev_Status = Status.Init
         and then New_Status = Status.Slave then
-          -- Request sync
-          Intra_Dictio.Send_Status;
+          -- Start client, allowing after sync
           Client_Mng.Start (True);
         else
+          -- Start client immediately
           Client_Mng.Start (False);
         end if;
       when Status.Fight =>

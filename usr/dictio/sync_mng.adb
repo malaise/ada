@@ -46,6 +46,7 @@ package body Sync_Mng is
     Cancel_Timer;
     Eos_Cb := End_Of_Sync_Cb;
     Nb_Syn_Received := 0;
+    Intra_Dictio.Send_Status;
     Timer_Id := Timers.Create ( (Timers.Delay_Sec, 1.0, 1.0),
                                 Timer_Cb'access);
     Sync_Has_Been_Received := False;
