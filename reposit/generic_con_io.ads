@@ -140,7 +140,7 @@ package GENERIC_CON_IO is
     function POSITION (NAME : WINDOW := SCREEN) return SQUARE;
 
     -- Rings a bell
-    procedure BELL (REPEAT : in POSITIVE);
+    procedure BELL (REPEAT : in POSITIVE := 1);
 
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.

@@ -471,7 +471,7 @@ package body GENERIC_CON_IO is
       return NAME.CURRENT_POS;
     end POSITION;
 
-    procedure BELL (REPEAT : in POSITIVE) is
+    procedure BELL (REPEAT : in POSITIVE := 1) is
     begin
       if not INIT_DONE then
         raise NOT_INIT;
