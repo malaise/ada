@@ -1,7 +1,7 @@
 -- Make a ADA 83 sources look like a Ada 95 one.
 -- Each upper case character, if preceeded by an upper case
 --  is set to lower case.
--- Strings, comments and ibased literals are not modified.
+-- Strings, comments and based literals are not modified.
 with Ada.Text_Io, Ada.Exceptions;
 
 with Argument, Lower_Char, Bloc_Io;
@@ -246,14 +246,35 @@ procedure Look_95 is
       return Modified;
   end Do_One;
 
+  First_File : Positive;
+  Verbose    : Boolean;
+
 begin
-  -- Process all arguments (file names)
-  for I in 1 .. Argument.Get_Nbre_Arg loop
-    Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
+
+  -- Help
+  if Argument.Get_Parameter = "-h" then
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+                                    & " [ -v ] [ { <file> } ]");
+    return;
+  end if;
+
+  -- Verbose optional flag
+  First_File := 1;
+  Verbose := False;
+  if Argument.Get_Parameter = "-v" then
+    Verbose := True;
+    First_File := 2;
+  end if;
+
+
+  -- Process all remaining arguments (file names)
+  for I in First_File .. Argument.Get_Nbre_Arg loop
     if Do_One (Argument.Get_Parameter (I)) then
-      Ada.Text_Io.Put_Line (" *");
-    else
-      Ada.Text_Io.Put_Line (" =");
+      -- Always trace altered files
+      Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " *");
+    elsif Verbose then
+      -- Trace unaltered files if verbose
+      Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " =");
     end if;
   end loop;
 end Look_95;
