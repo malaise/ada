@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Calendar;
 with Event_Mng, Sys_Calls, Text_Handler, Console, Dynamic_List, Trace;
 package body Async_Stdin is
 
@@ -184,11 +184,19 @@ package body Async_Stdin is
 
     end History;
 
+    -- Current line of text and cursor position in it
     Ind : Positive := 1;
     Txt : Text_Handler.Text (Max_Chars_Range'Last);
+
+    -- Are we searching (Tab, Tab, Tab...)
     Searching : Boolean := False;
 
+    -- Current sequence characters
     Seq : Text_Handler.Text (4);
+    -- After this delay from Esc, we give up
+    Seq_Delay   : constant Duration := 0.25;
+    Escape_Time : Ada.Calendar.Time;
+    -- Supported sequences
     Arrow_Left_Seq    : constant String := "[D";
     Arrow_Right_Seq   : constant String := "[C";
     Arrow_Up_Seq      : constant String := "[A";
@@ -275,6 +283,7 @@ package body Async_Stdin is
             return True;
           end if;
           Set (Seq, C);
+          Escape_Time := Ada.Calendar.Clock;
         when ' ' .. '~' =>
           if Empty (Seq) then
             -- Insert C at current position and move 1 right
@@ -375,8 +384,11 @@ package body Async_Stdin is
     end Add;
 
     function Flush return Boolean is
+      use type Ada.Calendar.Time;
     begin
-      if not Text_Handler.Empty (Seq) then
+      if not Text_Handler.Empty (Seq) 
+      and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
+        -- Client wants to flush and Esc is getting old
         Text_Handler.Append (Txt, Ascii.Esc);
         Text_Handler.Empty (Seq);
         return True;
