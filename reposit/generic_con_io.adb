@@ -85,6 +85,9 @@ package body GENERIC_CON_IO is
       INIT_DONE := TRUE;
       X_MNG.X_GET_GRAPHIC_CHARACTERISTICS(ID, X_MAX, Y_MAX,
             FONT_WIDTH, FONT_HEIGHT, FONT_OFFSET);
+      -- Max is width - 1 so that range is 0 .. max
+      X_MAX := X_MAX - 1;
+      Y_MAX := Y_MAX - 1;
       SET_ATTRIBUTES (DEFAULT_FOREGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
                       DEFAULT_XOR_MODE, FORCED => TRUE);
       FLUSH;
@@ -1419,9 +1422,9 @@ package body GENERIC_CON_IO is
           raise NOT_INIT;
         end if;
         X_MNG.X_GET_CURRENT_POINTER_POSITION(ID, LX, LY);
-        -- In screen? 
-        if       LX in GRAPHICS.X_RANGE and then LX <= X_MAX
-        and then LY in GRAPHICS.Y_RANGE and then LY <= Y_MAX then
+        -- In screen? (avoiding function call for X/Y_MAX) 
+        if       LX in GRAPHICS.X_RANGE and then LX <= ONE_CON_IO.X_MAX
+        and then LY in GRAPHICS.Y_RANGE and then LY <= ONE_CON_IO.Y_MAX then
           X := LX;
           Y := ONE_CON_IO.Y_MAX - LY;
           VALID := TRUE;
@@ -1527,21 +1530,21 @@ package body GENERIC_CON_IO is
           end if;
         end if;
       else
-        if       ROW in GRAPHICS.X_RANGE and then ROW <= X_MAX
-        and then COL in GRAPHICS.Y_RANGE and then COL <= Y_MAX then
+        if       ROW in GRAPHICS.X_RANGE and then ROW <= ONE_CON_IO.X_MAX
+        and then COL in GRAPHICS.Y_RANGE and then COL <= ONE_CON_IO.Y_MAX then
           LOC_EVENT.VALID := TRUE;
           LOC_EVENT.X := ROW;
           LOC_EVENT.Y := ONE_CON_IO.Y_MAX - COL;
         else
           LOC_EVENT.VALID := FALSE;
-          if ROW in GRAPHICS.X_RANGE and then ROW <= X_MAX then
+          if ROW in GRAPHICS.X_RANGE and then ROW <= ONE_CON_IO.X_MAX then
             LOC_EVENT.X := ROW;
           elsif ROW < GRAPHICS.X_RANGE'FIRST then
             LOC_EVENT.X := GRAPHICS.X_RANGE'FIRST;
           elsif ROW > X_MAX then
             LOC_EVENT.X := X_MAX;
           end if;
-          if COL in GRAPHICS.Y_RANGE and then COL <= Y_MAX then
+          if COL in GRAPHICS.Y_RANGE and then COL <= ONE_CON_IO.Y_MAX then
             LOC_EVENT.Y := Y_MAX - COL;
           elsif COL < GRAPHICS.Y_RANGE'FIRST then
             LOC_EVENT.Y := Y_MAX;
