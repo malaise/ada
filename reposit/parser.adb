@@ -48,6 +48,23 @@ package body Parser is
     Free (Iter);
   end Delete;
 
+  -- Reset the iterator, setting it in the same state than at creation
+  -- The separing function may be changed
+  -- May raise Constraint_Error if iterator has not been created or is deleted
+  procedure Reset (Iter : in out Iterator;
+                   Is_Sep : in Separing_Function := null) is
+  begin
+    Check (Iter);
+    -- Possibly new separator function
+    if Is_Sep /= null then
+      Iter.Is_Sep := Is_Sep;
+    end if;
+    Iter.State := Parsing;
+    Iter.First := 1;
+    Iter.Last  := 0;
+    Iter.Sep   := 1;
+  end Reset;
+
   -- Parse first then next word of the string
   -- Parsing ends by returning empty string
   -- May raise Constraint_Error if iterator has not been created

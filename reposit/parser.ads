@@ -14,8 +14,14 @@ package Parser is
                     Iter : out Iterator);
 
   -- Destroy the iterator
-  -- May raise Constraint_Error if iterator has not been created
+  -- May raise Constraint_Error if iterator has not been created or is deleted
   procedure Delete (Iter : in out Iterator);
+
+  -- Reset the iterator, setting it in the same state than at creation
+  -- The separing function may be changed
+  -- May raise Constraint_Error if iterator has not been created or is deleted
+  procedure Reset (Iter : in out Iterator;
+                   Is_Sep : in Separing_Function := null);
 
   -- Parse first then next word of the string
   -- Parsing ends by returning empty string
