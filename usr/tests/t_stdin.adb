@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Argument, Socket, X_Mng, Tcp_Util, Async_Stdin;
+with Argument, Socket, Event_Mng, Tcp_Util, Async_Stdin;
 
 procedure T_Stdin is
 
@@ -8,7 +8,7 @@ procedure T_Stdin is
   Port : Socket.Port_Num;
 
   Soc : Socket.Socket_Dscr;
-  Fd : X_Mng.File_Desc := 0;
+  Fd : Event_Mng.File_Desc := 0;
 
   Go_On : Boolean;
 
@@ -27,9 +27,9 @@ procedure T_Stdin is
   procedure My_Send is new Socket.Send(Message_Type);
   procedure My_Receive is new Socket.Receive(Message_Type);
 
-  function Socket_Cb(F : in X_Mng.File_Desc; Read : in Boolean)
+  function Socket_Cb(F : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
     Message : Message_Type;
     Message_Len : Natural;
   begin
@@ -101,21 +101,21 @@ begin
       Async_Stdin.Set_Async;
       return;
   end;
-  X_Mng.X_Add_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
-  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Add_Fd_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
 
 
   -- Main loop
   Go_On := True;
   loop
-    if X_Mng.Select_No_X(-1) then
+    if Event_Mng.Wait(-1) then
       exit when not Go_On;
     end if;
     exit when Sig;
   end loop;
 
-  if X_Mng.X_Callback_Set (Fd, True) then
-    X_Mng.X_Del_Callback(Fd, True);
+  if Event_Mng.Fd_Callback_Set (Fd, True) then
+    Event_Mng.Del_Fd_Callback(Fd, True);
     Socket.Close(Soc);
   end if;
   Async_Stdin.Set_Async;

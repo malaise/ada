@@ -1,4 +1,4 @@
-with My_Io, X_Mng, Argument, Text_Handler, Null_Procedure;
+with My_Io, X_Mng, Event_Mng, Argument, Text_Handler, Null_Procedure;
 use X_Mng;
 procedure T_X is
 
@@ -54,7 +54,7 @@ begin
   X_Mng.X_Open_Line (Line_Def, Id);
   
   -- Enable signal event
-  X_Mng.X_Set_Signal(Null_Procedure'access);
+  Event_Mng.Set_Sig_Callback (Null_Procedure'access);
 
   X_Event := True;
   Kind := X_Mng.Refresh;

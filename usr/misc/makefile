@@ -1,26 +1,26 @@
 DEST=/users/malaise/bin
-LIBX_MNG=-lx_mng
+LC=-largs -lcutil
 
 
 all:
-	amake adand.adb -largs $(LIBX_MNG) -lX11
+	amake adand.adb $(LC)
 	cp adand $(DEST)
 	amake beep.adb
 	cp beep $(DEST)
-	amake ddir.adb -largs $(LIBX_MNG) -lX11
+	amake ddir.adb $(LC)
 	cp ddir $(DEST)
 	amake e2f.adb
 	amake fact.adb
-	amake g.adb -largs -largs $(LIBX_MNG) -lX11
+	amake g.adb $(LC)
 	amake hanoi.adb
-	amake impot_02 -largs $(LIBX_MNG) -lX11
+	amake impot_02 $(LC)
 	amake look_95.adb
 	amake mlbx_overflow.adb
 	amake one_of_arg.adb
 	amake pascal.adb
-	amake pipe.adb -largs $(LIBX_MNG) -lX11
+	amake pipe.adb $(LC)
 	amake prime.adb
-	amake random.adb -largs $(LIBX_MNG) -lX11
+	amake random.adb $(LC)
 	amake rndsok.adb 
 	amake second.adb
 	amake stat.adb

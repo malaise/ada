@@ -1,15 +1,15 @@
-LIBX_MNG=-lx_mng
+LXC=-lx_mng -lcutil -lX11
 
 all: do_approxp do_import do_export AFPX.DSC
 
 do_approxp: 
-	amake approxp.adb -largs $(LIBX_MNG) -lX11
+	amake approxp.adb -largs $(LXC)
 
 do_import: 
-	amake import.adb -largs $(LIBX_MNG) -lX11
+	amake import.adb -largs $(LXC)
 
 do_export: 
-	amake export.adb -largs $(LIBX_MNG) -lX11
+	amake export.adb -largs $(LXC)
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld

@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Text_Io;
-with Text_Handler, Argument, Lower_Str, X_Mng, Socket, Tcp_Util;
+with Text_Handler, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
@@ -30,7 +30,7 @@ procedure T_Tcp_Util is
   procedure My_Read is new Socket.Receive (Message_Type);
   function My_Send is new Tcp_Util.Send (Message_Type);
 
-  function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean) return Boolean;
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean) return Boolean;
   procedure End_Ovf_Cb (Dscr : in  Socket.Socket_Dscr);
 
   -- Signal received
@@ -104,7 +104,7 @@ procedure T_Tcp_Util is
     if Connected then
       Ada.Text_Io.Put_Line ("Connected");
       The_Dscr := Dscr;
-      X_Mng.X_Add_CallBack (Socket.Fd_Of(Dscr),
+      Event_Mng.Add_Fd_Callback (Socket.Fd_Of(Dscr),
                             True,
                             Read_Cb'Unrestricted_Access);
       Socket.Set_Blocking (The_Dscr, False);
@@ -146,7 +146,7 @@ procedure T_Tcp_Util is
       Socket.Close (Tmp_Dscr);
     else
       The_Dscr := New_Dscr;
-      X_Mng.X_Add_CallBack (Socket.Fd_Of(New_Dscr),
+      Event_Mng.Add_Fd_Callback (Socket.Fd_Of(New_Dscr),
                             True,
                             Read_Cb'Unrestricted_Access);
       Socket.Set_Blocking (The_Dscr, False);
@@ -155,21 +155,19 @@ procedure T_Tcp_Util is
   end Accept_Cb;
 
   procedure Wait (Dur : in Duration) is
-    Event : Boolean;
   begin
-    Event := X_Mng.Select_No_X (Integer (Dur) * 1_000);
-    if Event then
+    if Event_Mng.Wait (Integer (Dur) * 1_000) then
       Ada.Text_Io.Put_Line ("Timer/Event");
     else
       Ada.Text_Io.Put_Line ("Timeout");
     end if;
   end Wait;
 
-  function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean is
     Len : Natural;
     Res : Boolean;
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     if Server then
       Ada.Text_Io.Put ("Server: ");
@@ -187,7 +185,7 @@ procedure T_Tcp_Util is
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
         Ada.Text_Io.Put ("Read Cb -> disconnected: Closing");
-        X_Mng.X_Del_CallBack (Fd, True);
+        Event_Mng.Del_Fd_Callback (Fd, True);
         if In_Ovf then
           Tcp_Util.Abort_Send_and_Close (The_Dscr);
           In_Ovf := False;
@@ -234,7 +232,7 @@ procedure T_Tcp_Util is
         else
           -- Cancel with this bad client
           Ada.Text_Io.Put_Line ("      Closing with client in overflow");
-          X_Mng.X_Del_CallBack (Fd, True);
+          Event_Mng.Del_Fd_Callback (Fd, True);
           Tcp_Util.Abort_Send_and_Close (The_Dscr);
           In_Ovf := False;
           Server_Nb_Overflow := 0;
@@ -298,7 +296,7 @@ begin
   end if;
 
   -- Init
-  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
   if Server then
     loop
       begin

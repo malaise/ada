@@ -1,8 +1,8 @@
-LIBX_MNG=-lx_mng
+LXC=-largs -lx_mng -lcutil -lX11
 
 all:
-	amake t_input.adb -largs $(LIBX_MNG) -lX11
-	amake sokoban.adb -largs $(LIBX_MNG) -lX11
+	amake t_input.adb $(LXC)
+	amake sokoban.adb $(LXC)
 	amake trans.adb
 clean:
 	rm *.o *.ali

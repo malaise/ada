@@ -1,6 +1,4 @@
-LIBC_DIR=$(HOME)/ada/c
-LIBX_MNG=x_mng
-LX=-largs -L$(LIBC_DIR) -l$(LIBX_MNG) -lX11
+LC=-largs -lcutil
 ADA_FLAG=-gnato
 
 EXE=mcd
@@ -8,7 +6,7 @@ EXE=mcd
 all: $(EXE)
 
 mcd:
-	amake $(ADA_FLAG) $@ $(LX)
+	amake $(ADA_FLAG) $@ $(LC)
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld

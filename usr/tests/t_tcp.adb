@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with My_Io, Argument, Socket, X_Mng, Text_Handler;
+with My_Io, Argument, Socket, Event_Mng, Text_Handler;
 
 procedure T_Tcp is
 
@@ -8,7 +8,7 @@ procedure T_Tcp is
   Server_Name : Text_Handler.Text (80);
 
   Soc, Accept_Soc : Socket.Socket_Dscr;
-  Fd, Accept_Fd : X_Mng.File_Desc := 0;
+  Fd, Accept_Fd : Event_Mng.File_Desc := 0;
   Server_Port_Name : constant String := "test_tcp";
 
   -- Signal received
@@ -33,9 +33,9 @@ procedure T_Tcp is
   procedure My_Send is new Socket.Send (Message_Type);
   procedure My_Receive is new Socket.Receive (Message_Type);
 
-  function Call_Back (F : in X_Mng.File_Desc; Read : in Boolean)
+  function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
     Message_Len : Natural;
   begin
     My_Io.Put ("In callback - ");
@@ -52,7 +52,7 @@ procedure T_Tcp is
       end if;
       Socket.Accept_Connection (Accept_Soc, Soc);
       Fd := Socket.Fd_Of (Soc);
-      X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
+      Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
       My_Io.Put_Line ("accepts connection");
       return True;
     end if;
@@ -71,7 +71,7 @@ procedure T_Tcp is
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
         My_Io.Put_Line (" receives disconnection: Closing");
-        X_Mng.X_Del_Callback (Fd, True);
+        Event_Mng.Del_Fd_Callback (Fd, True);
         Socket.Close (Soc);
         return True;
     end;
@@ -105,7 +105,7 @@ procedure T_Tcp is
         Socket.Close (Soc);
         return False;
     end;
-    X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
+    Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
     return True;
   end Client_Connect;
 
@@ -124,7 +124,7 @@ procedure T_Tcp is
     exception
       when Socket.Soc_Conn_Lost =>
          My_Io.Put_Line ("Client sending disconnection: Closing");
-         X_Mng.X_Del_Callback (Fd, True);
+         Event_Mng.Del_Fd_Callback (Fd, True);
          Socket.Close (Soc);
       when others =>
          My_Io.Put_Line ("Client sending has failed!");
@@ -144,7 +144,7 @@ begin
   end if;
 
   -- Link, set server dest in client, client sends
-  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
   if Server then
     -- Create socket, add callback
     Socket.Open (Accept_Soc, Socket.Tcp_Header);
@@ -159,7 +159,7 @@ begin
       end;
     end loop;
     Accept_Fd := Socket.Fd_Of (Accept_Soc);
-    X_Mng.X_Add_Callback (Accept_Fd, True, Call_Back'Unrestricted_Access);
+    Event_Mng.Add_Fd_Callback (Accept_Fd, True, Call_Back'Unrestricted_Access);
   else
     Message.Num := 1;
     Client_Send;
@@ -170,7 +170,7 @@ begin
   Main:
   loop
     for i in 1 .. 10 loop
-      if X_Mng.Select_No_X (1000) then
+      if Event_Mng.Wait (1000) then
         My_Io.Put_Line ("Fd event");
       else
         My_Io.Put_Line ("Timeout");
@@ -182,8 +182,8 @@ begin
     end if;
   end loop Main;
 
-  if X_Mng.X_Callback_Set (Fd, True) then
-    X_Mng.X_Del_Callback (Fd, True);
+  if Event_Mng.Fd_Callback_Set (Fd, True) then
+    Event_Mng.Del_Fd_Callback (Fd, True);
     Socket.Close (Soc);
   end if;
 

@@ -1,7 +1,8 @@
+LXC=-largs -lx_mng -lcutil -lX11
 all: navig
 
 navig:
-	amake navig.adb -largs -lx_mng -lX11
+	amake navig.adb -largs $(LXC)
 
 clean:
 	rm *.o *.ali

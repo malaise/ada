@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with My_Io, Argument, Socket, X_Mng, Text_Handler;
+with My_Io, Argument, Socket, Event_Mng, Text_Handler;
 
 procedure T_Udp is
 
@@ -8,7 +8,7 @@ procedure T_Udp is
   Server_Name : Text_Handler.Text (80);
 
   Soc : Socket.Socket_Dscr;
-  Fd  : X_Mng.File_Desc := 0;
+  Fd  : Event_Mng.File_Desc := 0;
 
   Server_Port_Name : constant String := "test_udp";
 
@@ -34,9 +34,9 @@ procedure T_Udp is
   procedure My_Send is new Socket.Send (Message_Type);
   procedure My_Receive is new Socket.Receive (Message_Type);
 
-  function Call_Back (F : in X_Mng.File_Desc; Read : in Boolean)
+  function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
     Message_Len : Natural;
   begin
     if F /= Fd then
@@ -93,8 +93,8 @@ begin
   -- Create socket, add callback
   Socket.Open (Soc, Socket.Udp);
   Fd := Socket.Fd_Of (Soc);
-  X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
-  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
+  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
 
   
   -- Link, set server dest in client, client sends
@@ -113,7 +113,7 @@ begin
   Main:
   loop
     for i in 1 .. 10 loop
-      if X_Mng.Select_No_X (1000) then
+      if Event_Mng.Wait (1000) then
         My_Io.Put_Line ("Fd event");
       else
         My_Io.Put_Line ("Timeout");
@@ -125,8 +125,8 @@ begin
     end if;
   end loop Main;
 
-  if X_Mng.X_Callback_Set (Fd, True) then
-    X_Mng.X_Del_Callback (Fd, True);
+  if Event_Mng.Fd_Callback_Set (Fd, True) then
+    Event_Mng.Del_Fd_Callback (Fd, True);
     Socket.Close (Soc);
   end if;
 

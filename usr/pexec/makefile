@@ -1,3 +1,4 @@
+LC=-largs -lcutil
 DEST=/users/malaise/bin
 
 
@@ -6,7 +7,7 @@ DEST=/users/malaise/bin
 all : pexec_exe $(DEST)/pexec
 
 pexec_exe :
-	amake pexec.adb -largs -lx_mng -lX11
+	amake pexec.adb $(LC)
 
 $(DEST)/pexec : pexec
 	cp pexec $(DEST)

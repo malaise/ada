@@ -1,6 +1,4 @@
-LIBC_DIR=$(HOME)/ada/c
-LIBX_MNG=x_mng
-LX=-largs -L$(LIBC_DIR) -l$(LIBX_MNG) -lX11
+LXC=-largs -lx_mng -lcutil -lX11
 
 EXE=chess
 
@@ -11,7 +9,7 @@ new:
 	make
 	
 chess:
-	amake $@ $(LX)
+	amake $@ $(LXC)
 
 clean:
 	rm -f *.o *.ali b~*

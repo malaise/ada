@@ -1,10 +1,9 @@
-LIBX_MNG=-lx_mng
-LX=-largs $(LIBX_MNG) -lX11
+LXC=-largs -lx_mng -lcutil -lX11
 
 all: do_all AFPX.DSC
 
 do_all:
-	@for file in *.adb ; do amake $$file $(LX) ; done
+	@for file in *.adb ; do amake $$file $(LXC) ; done
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld

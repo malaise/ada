@@ -1,12 +1,12 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Socket, X_Mng, Debug, Dynamic_List;
+with Socket, Event_Mng, Debug, Dynamic_List;
 package body Connection is
 
   Server : Boolean := True;
   Own_Color : Space.Color_List := Space.White;
 
   Soc : Socket.Socket_Dscr;
-  Fd  : X_Mng.File_Desc;
+  Fd  : Event_Mng.File_Desc;
   Server_Host : Tcp_Util.Remote_Host;
   Local_Port : Tcp_Util.Local_Port;
   Remote_Port : Tcp_Util.Remote_Port;
@@ -56,7 +56,7 @@ package body Connection is
   procedure Chess_Read is new Socket.Receive (Message_Type);
   procedure Chess_Send is new Socket.Send    (Message_Type);
 
-  function Rec_Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  function Rec_Call_Back (Fd : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean;
 
   procedure Raise_Error (Error : in Error_List) is
@@ -74,7 +74,7 @@ package body Connection is
   procedure Close is
   begin
     if Socket.Is_Open (Soc) then
-      X_Mng.X_Del_Callback (Fd, True);
+      Event_Mng.Del_Fd_Callback (Fd, True);
       Socket.Close (Soc);
     end if;
   end Close;
@@ -99,7 +99,7 @@ package body Connection is
     end if;
     Soc := Dscr;
     Fd := Socket.Fd_Of (Soc);
-    X_Mng.X_Add_Callback (Fd, True, Rec_Call_Back'access);
+    Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'access);
     My_Send ((Init, Own_Color));
   end Con_Call_Back;
 
@@ -126,7 +126,7 @@ package body Connection is
     Tcp_Util.Abort_Accept (Local_Port_Num);
     Soc := New_Dscr;
     Fd := Socket.Fd_Of (Soc);
-    X_Mng.X_Add_Callback (Fd, True, Rec_Call_Back'access);
+    Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'access);
   end Acc_Call_Back;
 
   procedure Accept_Client is
@@ -141,7 +141,7 @@ package body Connection is
                           Port_Num);
   end Accept_Client;
 
-  function Rec_Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  function Rec_Call_Back (Fd : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean is
     Default_Action : Players.Valid_Action_Rec;
     -- Largest message
@@ -270,8 +270,6 @@ package body Connection is
         Local_Port := (Tcp_Util.Port_Num_Spec, Port.Num);
       end if;
       loop
-        declare
-          Dummy : Boolean;
         begin
           Accept_Client;
           exit;
@@ -280,7 +278,7 @@ package body Connection is
             if Debug.Get (Debug.Connection) then
               Ada.Text_Io.Put_Line ("Address in use: Waiting");
             end if;
-            Dummy :=  X_Mng.Select_No_X (10_000);
+            Event_Mng.Wait (10_000);
         end;
       end loop;
     end if;
@@ -295,14 +293,13 @@ package body Connection is
   end Init;
 
   procedure Wait_Ready is
-    Select_Got_Fd : Boolean;
   begin
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Connection: waiting");
     end if;
     loop
       -- Wait
-      Select_Got_Fd := X_Mng.Select_No_X (-1);
+      Event_Mng.Wait (-1);
       exit when We_Are_Ready;
     end loop;
     if Debug.Get (Debug.Connection) then

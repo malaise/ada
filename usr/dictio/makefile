@@ -1,6 +1,4 @@
-LIBC_DIR=$(HOME)/ada/c
-LIBX_MNG=x_mng
-LX=-largs -L$(LIBC_DIR) -l$(LIBX_MNG) -lX11
+LC=-largs -lcutil
 
 EXE=dictio t_dictio
 
@@ -11,10 +9,10 @@ new:
 	make
 
 dictio:
-	amake $@ $(LX)
+	amake $@ $(LC)
 
 t_dictio:
-	amake $@ $(LX)
+	amake $@ $(LC)
 
 clean:
 	-rm -f *.o *.ali b~*

@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Argument, X_Mng, Socket, Timers, Channels;
+with Argument, Event_Mng, Socket, Timers, Channels;
 procedure T_Channels is
 
   -- Channel name
@@ -72,7 +72,6 @@ procedure T_Channels is
   -- Infinite wait or use a timer
   procedure Wait (Dur : in Duration) is
     Id : Timers.Timer_Id;
-    Event : Boolean;
   begin
     if Sig then
       return;
@@ -86,7 +85,7 @@ procedure T_Channels is
                              Timer_Cb'Unrestricted_Access);
     end if;
     loop
-      Event := X_Mng.Select_No_X (Integer (Dur) * 1_000);
+       Event_Mng.Wait (Integer (Dur) * 1_000);
       exit when Sig;
       -- Stops waiting on timer
       exit when not Go_Wait;
@@ -123,7 +122,7 @@ begin
   Fifo.Change_Channel_Name (Argument.Get_Parameter(2));
   Nb_To_Do := Positive'Value (Argument.Get_Parameter(3));
   Nb_Done := 0;
-  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
 
   if not Publish then
     if Argument.Get_Nbre_Arg /= 3 then

@@ -7,7 +7,7 @@
 
 with Ada.Text_Io;
 
-with Text_Handler, Argument, Sys_Calls, X_Mng,
+with Text_Handler, Argument, Sys_Calls, Event_Mng,
      Socket, Tcp_Util, Channels, Async_Stdin;
 procedure Pipe is
 
@@ -29,11 +29,14 @@ procedure Pipe is
   -- End of processing
   Done : Boolean := False;
 
-  -- Event occured
-  Event : Boolean;
-
   -- Is stdin a tty
   Is_A_Tty : Boolean;
+
+  -- Sig callback
+  procedure Sig_Callback is
+  begin
+    Done := True;
+  end Sig_Callback;
 
   procedure Usage is
   begin
@@ -99,9 +102,9 @@ procedure Pipe is
   Read_Dscr   : Socket.Socket_Dscr;
   Channel_Message : My_Channel.Channel_Message_Type;
   procedure My_Read is new Socket.Receive (My_Channel.Channel_Message_Type);
-  function Read_Cb (Fd : in X_Mng.File_Desc;
+  function Read_Cb (Fd : in Event_Mng.File_Desc;
                     Read : in Boolean) return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
 
   begin
     if not Socket.Is_Open (Read_Dscr)
@@ -113,7 +116,7 @@ procedure Pipe is
       My_Read (Read_Dscr, Channel_Message, Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        X_Mng.X_Del_CallBack (Fd, True);
+        Event_Mng.Del_Fd_CallBack (Fd, True);
         Socket.Close (Read_Dscr);
         Done := True;
         return True;
@@ -122,7 +125,7 @@ procedure Pipe is
       when others =>
         Sys_Calls.Put_Line_Error ("Read error");
         Sys_Calls.Set_Error_Exit_Code;
-        X_Mng.X_Del_CallBack (Fd, True);
+        Event_Mng.Del_Fd_CallBack (Fd, True);
         Socket.Close (Read_Dscr);
         Done := True;
         return True;
@@ -155,7 +158,7 @@ procedure Pipe is
       return;
     end if;
     Read_Dscr := New_Dscr;
-    X_Mng.X_Add_CallBack (Socket.Fd_Of(New_Dscr),
+    Event_Mng.Add_Fd_CallBack (Socket.Fd_Of(New_Dscr),
                           True,
                           Read_Cb'Unrestricted_Access);
     Socket.Set_Blocking (Read_Dscr, False);
@@ -240,26 +243,27 @@ begin
       Is_A_Tty := True;
     exception
       when Async_Stdin.Not_A_Tty =>
-        Event := X_Mng.Select_No_X (500);
+        Event_Mng.Wait (500);
         Is_A_Tty := False;
     end;
   end if;
   
 
+  Event_Mng.Set_Sig_Callback (Sig_Callback'Unrestricted_Access);
 
   -- Main loop
   loop
     if Mode = Subscribe then
 
-       Event := X_Mng.Select_No_X (-1);
+       Event_Mng.Wait (-1);
 
      else
 
        if not Is_A_Tty then
-         Event := X_Mng.Select_No_X (0);
+         Event_Mng.Wait (0);
          Get_No_Tty;
        else
-         Event := X_Mng.Select_No_X (-1);
+         Event_Mng.Wait (-1);
        end if;
 
      end if;

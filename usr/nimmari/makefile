@@ -1,7 +1,8 @@
+LXC=-largs -lx_mng -lcutil -lX11
 all: do_nimmari AFPX.DSC
 
 do_nimmari:
-	amake nimmari.adb -largs -lx_mng -lX11
+	amake nimmari.adb $(LXC)
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld

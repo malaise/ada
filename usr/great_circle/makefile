@@ -1,7 +1,7 @@
-LIBX_MNG=-lx_mng
+LC=-largs -lcutil
 
 all:
-	amake great_circle -largs $(LIBX_MNG) -lX11
+	amake great_circle $(LC)
 
 clean:
 	rm *.o *.ali

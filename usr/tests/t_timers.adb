@@ -6,7 +6,7 @@
 -- Never      : never
 
 with Ada.Text_Io;
-with Afpx, Con_Io, Timers, Rnd, X_Mng;
+with Afpx, Con_Io, Timers, Rnd, Event_Mng;
 procedure T_Timers is
 
   Timers_Error : exception;
@@ -133,7 +133,7 @@ begin
 
   -- Wait a bit
   loop
-    exit when X_Mng.Select_No_X (1_000);
+    exit when Event_Mng.Wait (1_000);
   end loop;
 
   -- Afpx init

@@ -1,7 +1,7 @@
-LIBX_MNG=-lx_mng
+LC=-lcutil
 
 all:
-	amake code.adb -largs $(LIBX_MNG) -lX11
+	amake code.adb -largs $(LC)
 	amake tg1.adb
 	amake tg2.adb
 

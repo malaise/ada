@@ -1,9 +1,9 @@
-LIBX_MNG=-lx_mng
+LXC=-largs -lx_mng -lcutil -lX11
 
 all: do_heart AFPX.DSC
 
 do_heart:
-	amake heart.adb -largs $(LIBX_MNG) -lX11
+	amake heart.adb $(LXC)
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld
