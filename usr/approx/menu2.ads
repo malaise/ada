@@ -5,3 +5,4 @@ package MENU2 is
   -- Is the curve stopped (can we exit)
   function CURVED_STOPPED return BOOLEAN;
 end MENU2;
+
