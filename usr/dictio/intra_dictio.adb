@@ -58,10 +58,20 @@ package body Intra_Dictio is
 
       begin
         Dictio_Channel.Add_Destinations (Args.Get_Dest);
+      exception
+        when Error: others =>
+          Debug.Put_Error ("Cannot set destinations of "
+                         & Args.Get_Name);
+          Debug.Put_Error ("Exception: "
+                         & Ada.Exceptions.Exception_Name(Error));
+          Args.Usage;
+      end;
+
+      begin
         Dictio_Channel.Del_Destination (Parse (Local_Name));
       exception
         when Error: others =>
-          Debug.Put_Error ("Cannot set destinations on "
+          Debug.Put_Error ("Cannot remove local host from destinations of "
                          & Args.Get_Name);
           Debug.Put_Error ("Exception: "
                          & Ada.Exceptions.Exception_Name(Error));
