@@ -45,7 +45,7 @@ package SOK_DISPLAY is
 
   -- Errors
   type ERROR_LIST is (NO_DATA, READ, NO_FRAME, RESTORE, SAVE,
-                      FORMAT, INTERNAL, INIT_SCORE, SCORE_IO);
+                      FORMAT, SCORE_IO, INTERNAL, INIT_SCORE);
   procedure PUT_ERROR (ERROR : in ERROR_LIST);
   procedure CLEAR_ERROR;
 

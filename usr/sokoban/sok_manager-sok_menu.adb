@@ -6,7 +6,7 @@ function SOK_MENU (ALLOW_WRITE : BOOLEAN) return MENU_RESULT_REC is
   KEY : SOK_INPUT.KEY_LIST;
 
   subtype MENU_ERROR_LIST is SOK_DISPLAY.ERROR_LIST
-   range SOK_DISPLAY.NO_FRAME .. SOK_DISPLAY.FORMAT;
+   range SOK_DISPLAY.NO_FRAME .. SOK_DISPLAY.SCORE_IO;
   procedure PUT_MENU_ERROR (ERROR : in MENU_ERROR_LIST) is
   begin
     SOK_DISPLAY.PUT_ERROR (ERROR);
@@ -78,6 +78,7 @@ begin
             SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
             begin
               SOK_FILE.RESTORE (STATE);
+              STATE.SCORE := SOK_FILE.READ_SCORE(STATE.NO_FRAME);
               BACK;
               return (RESULT => RESTART_FRAME, UPDATE_STATE => UPDATE_TIME);
             exception
@@ -87,6 +88,11 @@ begin
                 return (RESULT => GO_ON);
               when SOK_FILE.ERROR_READING_FRAME =>
                 PUT_MENU_ERROR (RESTORE);
+                BACK;
+                return (RESULT => GO_ON);
+              when SOK_FILE.SCORE_IO_ERROR =>
+                PUT_MENU_ERROR (SCORE_IO);
+                STATE.SCORE.SET := FALSE;
                 BACK;
                 return (RESULT => GO_ON);
             end;
