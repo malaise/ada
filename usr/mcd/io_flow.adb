@@ -180,7 +180,7 @@ package body Io_Flow is
               or else Message(1) = Ada.Characters.Latin_1.Lf) then
       return;
     end if;
-    Text_handler.Set (Fifo_Txt, Message(1 .. Length));
+    Text_Handler.Set (Fifo_Txt, Message(1 .. Length));
   end Rece_Cb;
 
   procedure Open_Fifo is
