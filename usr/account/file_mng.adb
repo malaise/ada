@@ -78,12 +78,12 @@ package body File_Mng is
       Oper_List_Mng.Insert (Loc_List, Loc_Oper);
     end loop;
 
+    Oper_Io.Close (File);
+
     -- Everything OK. Overwrite the existing list. Go to end.
     Oper_List_Mng.Delete_List (Oper_List);
     Oper_List_Mng.Assign (Oper_List, Loc_List);
     Oper_List_Mng.Move_To (Oper_List, Oper_List_Mng.Prev, 0, False);
-
-    Oper_Io.Close (File);
     
   exception
     when F_Access_Error =>

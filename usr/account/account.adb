@@ -176,9 +176,17 @@ exception
   when Quit_Program =>
     Con_Io.Destroy;
   when Ooops : others =>
-    Screen.Reset;
-    Screen.Ack_Error(Screen.Internal_Error);
-    Text_Io.Put_Line("Exception: " & Ada.Exceptions.Exception_Name(Ooops));
+    begin
+      Screen.Reset;
+      Screen.Ack_Error(Screen.Internal_Error);
+    exception
+      when others => null;
+    end;
+    begin
+      Text_Io.Put_Line("Exception: " & Ada.Exceptions.Exception_Name(Ooops));
+    exception
+      when others => null;
+    end;
     Mng.Save(Rescue => True);
 end Account; 
 

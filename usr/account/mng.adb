@@ -241,6 +241,7 @@ package body Mng is
 
   -- Load from file
   procedure Load (File_Name : in String) is
+    Loaded_Name : Text_Handler.Text(Account_Name.Max_Len);
     Oper : Oper_Def.Oper_Rec;
     Can_Write : Boolean;
   begin
@@ -253,37 +254,31 @@ package body Mng is
     if File_Name /= "" then
       -- Store file name
       begin
-        Text_Handler.Set(Account_Name, File_Name);
+        Text_Handler.Set(Loaded_Name, File_Name);
       exception
         when Constraint_Error =>
           Screen.Ack_Error(Screen.File_Name_Too_Long);
-          Account_Saved := False;
           Refresh_Screen(Unchanged);
           return;
       end;
     else
       -- Let user select file
       Loading := True;
-      Text_Handler.Set(Account_Name, Account_Select_File(2, "", True));
+      Text_Handler.Set(Loaded_Name, Account_Select_File(2, "", True));
       Screen.Reset;
       Refresh_Screen(Bottom);
     end if;
 
-    -- In case of load error
-    Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
-    -- If error occures afeter this point we clear the account
-    if not Text_Handler.Empty(Account_Name) then
+    if not Text_Handler.Empty(Loaded_Name) then
       -- Load
       begin
-        File_Mng.Load(Text_Handler.Value(Account_Name), Oper_List, Can_Write);
+        File_Mng.Load(Text_Handler.Value(Loaded_Name), Oper_List, Can_Write);
       exception
         when File_Mng.F_Access_Error =>
           Screen.Ack_Error(Screen.File_Access);
-          Clear;
           return;
         when File_Mng.F_Io_Error =>
           Screen.Ack_Error(Screen.File_Io);
-          Clear;
           return;
       end;
       -- Get root amount
@@ -292,6 +287,7 @@ package body Mng is
       Sort(Oper_List);
       List_Util.Reset_Selection;
       -- Set data
+      Text_Handler.Set (Account_Name, Loaded_Name);
       Account_Saved := True;
       Compute_Amounts;
       -- Set screen
@@ -301,7 +297,7 @@ package body Mng is
       end if;
     else
       -- User cancelled selection
-      Clear;
+      null;
     end if;
 
   end Load;
