@@ -5,8 +5,9 @@ package body FILE is
 
   package COTE_GET_LINE is new GET_LINE (
     MAX_WORD_LEN => 20,
-    MAX_WORD_NB  => 50,
-    MAX_LINE_LEN => 80);
+    MAX_WORD_NB  => 4,
+    MAX_LINE_LEN => 80,
+    COMMENT      => '#');
 
   LINE : COTE_GET_LINE.LINE_ARRAY; 
 
@@ -20,19 +21,11 @@ package body FILE is
   DESIGNS : DESIGN_ARRAY(1 .. MAX_COTE);
   NB_DESIGN : LOC_COTE_RANGE;
 
-  function LINE_IS_SIGNIFICANT return BOOLEAN is
-  begin
-    return COTE_GET_LINE.GET_WORD_NUMBER /= 0 and then
-      TEXT_HANDLER.VALUE(LINE(1))(1) /= '#';
-  end LINE_IS_SIGNIFICANT;
 
   procedure READ_NEXT_SIGNIFICANT_LINE is
   begin
-    loop
-      COTE_GET_LINE.READ_NEXT_LINE;
-      COTE_GET_LINE.GET_WORDS (LINE);
-      exit when LINE_IS_SIGNIFICANT;
-    end loop;
+    COTE_GET_LINE.READ_NEXT_LINE;
+    COTE_GET_LINE.GET_WORDS (LINE);
   end READ_NEXT_SIGNIFICANT_LINE;
 
   type RESULT_LIST is (OK, END_OF_FILE, FILE_ACCESS, FILE_FORMAT, FILE_LENGTH,
@@ -78,9 +71,6 @@ package body FILE is
   begin
     COTE_GET_LINE.OPEN (FILENAME);
     COTE_GET_LINE.GET_WORDS (LINE);
-    if not LINE_IS_SIGNIFICANT then
-      READ_NEXT_SIGNIFICANT_LINE;
-    end if;
   exception
     when others =>
       ERROR (FILENAME, FILE_ACCESS);
