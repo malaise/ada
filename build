@@ -5,6 +5,15 @@ if [ "$1" = "html" ] ; then
 elif [ "$1" = "clean_html" ] ; then
   rm -rf html/*
   exit 0
+elif [ "$1" = "clean_all" ] ; then
+  build clean
+  build clean_exe
+  build clean_html
+  exit 0
+elif [ "$1" = "all" ] ; then
+  build
+  build html
+  exit 0
 fi
 
 cur=`pwd`
