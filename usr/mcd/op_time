@@ -12,7 +12,7 @@ if [ $# -ne 3 ] ; then
 fi
 case "$2" in
   "+" | "-" )
-    num2="$3 S pushr call"
+    num2="$3 toreal msd"
   ;;
   "*" | "/" )
     num2="$3 toreal"
@@ -21,10 +21,10 @@ case "$2" in
     error `basename $0`
 esac
  
-# Store dms functions
+# Load second format function
 # Convert H.DMS to H.frac \
-# Sub and back to H.DMS and put \
-mmcdt -e dms.mcd F popr A popr S popr D popr \
-"$1" S pushr call "$num2" \
-"$2" D pushr call F pushr call putl
+# oper and back to H.DMS and put \
+mmcdt -e format.mcd swap pop \
+"$1" toreal msd "$num2" \
+"$2" dms swap call putl
 
