@@ -1,21 +1,37 @@
+# Francs <-> Euros conversion
+
 # Error and quit
-[ [ Error, 2 arguments: <amount> <unit> expected ] ;
+[ [ Error, 1 argument: <amount><unit> expected ] ;
   [ "   amount : float or integer" ] ;
-  [ "   unit   : [ f ] or [ e ]." ] ;
+  [ "   unit   :  f or e" ] ;
 0 retn ] E popr
 
 # Francs in an euro
 6.55957 e popr
 
-# Check 2 args
-ssize 2 /= E pushr ifcall
+# Check 1 arg
+ssize 1 /= E pushr ifcall
+# Store arg
+a copyr
 
-# Store args
-u popr
-toreal v popr
+# Parse arg
+strlen l copyr
+# At least two chars
+2 < E pushr ifcall
 
-# Unit is [ f ] or [ e ]
+# Extract unit - last char
+a pushr l pushr dup strsub u popr
+# Unit is f or e
 u pushr [ f ] /= u pushr [ e ] /= & E pushr ifcall
+
+# Extract amount value
+a pushr 1 l pushr 1 - strsub v copyr
+# locate '.'
+1 [ . ] v pushr strloc
+# Convert to real
+0 = [ strinte toreal ] [ strreal ] ifte call
+v popr
+
 
 # Set conversion factor and result unit
 [ f ] r popr
@@ -24,7 +40,7 @@ u pushr [ f ] /= u pushr [ e ] /= & E pushr ifcall
 # Convert
 v pushr *
 
-# Display
+# Display int.frac
 100.0 *
 tointe dup
 9 format 100 / put [ . ] put 2 format 100 % put r pushr putl
