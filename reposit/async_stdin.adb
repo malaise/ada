@@ -18,7 +18,8 @@ package body Async_Stdin is
         -- No more char
         return False;
       end if;
-
+      -- Dump character code
+      -- Sys_Calls.Put_Line_Error (Integer'Image(Character'Pos(C)));
       Text_Handler.Append (Txt, C);
       exit when Text_Handler.Length (Txt) = Max
       or else C < ' ';
