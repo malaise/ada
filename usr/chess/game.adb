@@ -236,12 +236,15 @@ package body Game is
   begin
     -- Push and verify our king is not in check
     Try_Move (Color, Action);
-    -- Compute our controlled squares
+    -- Compute our controlled squares (for opponent castle)
     Players.Think (Color);
-    -- verify our king is not in check
+    -- Verify our king is not in check
     Players.Think (Opp_Color);
     if In_Check (Color) then
       Undo_Try;
+      -- Reset opponent controlled squares and our possibilities
+      Players.Think (Opp_Color);
+      Players.Think (Color);
       return Nok;
     end if;
     Undo_Try;
