@@ -29,15 +29,14 @@ procedure T_X is
 
   procedure PUT (STR : in STRING) is
   begin
-    X_MNG.X_MOVE (ID, ROW, 8);
-    X_MNG.X_PUT_STRING (ID, " ");
+    X_MNG.X_PUT_STRING (ID, " ", ROW, 8);
     if ROW /= ROW_RANGE'LAST then
       ROW := ROW_RANGE'SUCC(ROW);
     else
       ROW := ROW_RANGE'FIRST;
     end if;
-    X_MNG.X_MOVE (ID, ROW, 8);
-    X_MNG.X_PUT_STRING (ID, "> " & STR & "                       ");
+    X_MNG.X_PUT_STRING (ID, "> " & STR & "                       ",
+                            ROW, 8);
   end PUT;
 
 begin
@@ -57,8 +56,7 @@ begin
   X_MNG.X_SET_ATTRIBUTES (ID, 0, 5, TRUE, FALSE, FALSE, FALSE);
   for I in 0 .. 15 loop
     for J in 0 .. 15 loop
-      X_MNG.X_MOVE (ID, 8 + I, 60 + J);
-      X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(16 * I + J));
+      X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(16 * I + J), 8 + I, 60 + J);
     end loop;
   end loop;
 
@@ -68,22 +66,14 @@ begin
   loop
     if X_EVENT and then KIND = X_MNG.REFRESH then
       X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, TRUE, FALSE);
-      X_MNG.X_MOVE (ID, 5, 10);
-      X_MNG.X_PUT_STRING (ID, "Ah que coucou");
+      X_MNG.X_PUT_STRING (ID, "Ah que coucou", 5, 10);
       X_MNG.X_SET_ATTRIBUTES (ID, 1, 4);
-      X_MNG.X_MOVE (ID, 7, 10);
-      X_MNG.X_DRAW_AREA (ID, 50, 2);
+      X_MNG.X_DRAW_AREA (ID, 50, 2, 7, 10);
       X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, FALSE, FALSE);
-      X_MNG.X_BELL (1);
+      X_MNG.X_BELL (ID, 1);
     end if;
---    for I in X_MNG.BYTE loop
---      X_MNG.X_MOVE (ID, INTEGER(I)/16 + 10, INTEGER(I) rem 16 + 2);
---      X_MNG.X_PUT_CHAR (ID, I);
---      X_MNG.X_MOVE (ID, INTEGER(I)/16 + 10, INTEGER(I) rem 16 + 2);
---      X_MNG.X_OVERWRITE_CHAR (ID, 175);
---    end loop;
     VAR_TIMEOUT_MS := TIMEOUT_MS;
-    X_MNG.X_SELECT (VAR_TIMEOUT_MS, X_EVENT);
+    X_MNG.X_SELECT (ID, VAR_TIMEOUT_MS, X_EVENT);
     if X_EVENT then
       loop
         X_MNG.X_PROCESS_EVENT (ID, KIND, NEXT);
