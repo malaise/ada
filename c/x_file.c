@@ -8,13 +8,18 @@ static char *default_color_name[NBRE_COLOR]={
   "dark green", "cyan",
   "red",        "magenta",
   "brown",      "light grey",
-  "dark grey",  "light blue",
-  "light green","orange",
+  "grey",  "light blue",
+  "lime green","orange",
   "yellow",     "white"
  };
 
 static char *default_font_name[NBRE_FONT] = {
-  "8x13", "8x13bold", "9x15", "9x15bold"}; 
+  "8x13", "8x13bold",
+  "9x15", "9x15bold",
+   "-b&h-lucidatypewriter-medium-r-normal-sans-18-180-75-75-m-110-iso8859-1"
+      "-b&h-lucidatypewriter-bold-r-normal-sans-18-180-75-75-m-110-iso8859-1"
+   "-b&h-lucidatypewriter-medium-r-normal-sans-25-180-100-100-m-150-iso8859-1"
+      "-b&h-lucidatypewriter-bold-r-normal-sans-25-180-100-100-m-150-iso8859-1"};
 
 #define FONT_1N_NAME "X_FONT_1N"
 #define FONT_1B_NAME "X_FONT_1B"

@@ -2,8 +2,8 @@
 #define _X_FILE_H
 #include "x_stdinc.h"
 
-#define NBRE_FONT 4
-#define FONT_NAME_MAX_SIZE   80
+#define NBRE_FONT 8
+#define FONT_NAME_MAX_SIZE   132
 
 /* Limitation in default color map */
 #define NBRE_COLOR 14

@@ -10,7 +10,7 @@
 
 #define NBRE_COLOR 14
 
-#define T1 "Usage is: test_x display [back border font] (0-9 0-9 0-1)."
+#define T1 "Usage is: test_x display [back border font] (0-9 0-9 0-3)."
 #define T2 "Use any mouse button to simulate TID."
 #define T3 "Use s, u, b and r keys to change attributes."
 #define T4 "Use + - keys to shift inks and * / keys to shift backgrounds."
@@ -84,7 +84,7 @@ int b_off, c_off, bv, cv;
   }
 
   if ( (back < 0) || (back > 9) || (bord < 0) || (bord > 9)
-    || (font < 0) || (font > 1) ) {
+    || (font < 0) || (font > 3) ) {
     printf ("SYNTAX ERROR: %s\n", T1);
     exit(1);
   }
