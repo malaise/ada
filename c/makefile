@@ -16,8 +16,9 @@ clean :
 clean_exe :
 	rm test_x
 
+socket.o : socket.h socket_prv.h
 
-test_x : libx_mng.a test_x.c
+test_x : libx_mng.a test_x.c x_export.h
 	$(CC) -o test_x test_x.c libx_mng.a -lX11
 
 libx_mng.a : $(OBJS)
