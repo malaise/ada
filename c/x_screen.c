@@ -5,14 +5,15 @@
 #define STD_MASK GCForeground | GCBackground | GCFont
 
 /* Change GC in the window */
-void scr_set_gc (Display *x_server, GC x_context, int paper, int ink, Font font);
+void scr_set_gc (Display *x_server, GC x_context, unsigned long paper,
+                 unsigned long ink, Font font);
 
 /* Sets the attribute of the window */
 void scr_set_attrib (Display *x_server, GC x_context, XFontStruct *x_fonts[],
                      int no_font, unsigned long color_ids[],
                      int paper, int ink, int superbright, int blink, int reverse) {
 
-int foreground, background;
+unsigned long foreground, background;
 
     if (reverse) {
         background = ink;
@@ -94,7 +95,8 @@ void scr_draw_array (Display *x_server, GC x_context, Window x_window,
 }
 
 /* Change GC in the window */
-void scr_set_gc (Display *x_server, GC x_context, int paper, int ink, Font font) {
+void scr_set_gc (Display *x_server, GC x_context,
+                 unsigned long paper, unsigned long ink, Font font) {
 
 unsigned long gc_mask = STD_MASK;
 XGCValues gc_values;
