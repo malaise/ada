@@ -68,7 +68,7 @@ procedure Prime is
   procedure Rewind (L : in out Plm.List_Type) is
   begin
     if not Plm.Is_Empty (L) then
-      Plm.Move_To (L, Plm.Next, 0, False);
+      Plm.Rewind (L);
     end if;
   end Rewind;
 
@@ -107,25 +107,17 @@ procedure Prime is
     loop
       Plm.Read (L, T, Plm.Current);
       Put_Line (T);
-      begin
-        Plm.Move_To (L);
-      exception
-        when Plm.Not_In_List =>
-          exit;
-      end;
+      exit when not Plm.Check_Move (L);
+      Plm.Move_To (L);
     end loop;
   end Put_List;
 
   -- Delete current
   procedure Delete (L : in out Plm.List_Type; End_Of_List : out Boolean) is
+    Done : Boolean;
   begin
-    if Plm.Get_Position (L) /= Plm.List_Length (L) then
-      Plm.Delete (L, Plm.Next);
-      End_Of_List := False;
-    else
-      Plm.Delete (L, Plm.Prev);
-      End_Of_List := True;
-    end if;
+    Plm.Delete (L, Plm.Next, Done);
+    End_Of_List := not Done;
   end Delete;
 
   -- Mustiply numbers of list from current
@@ -138,11 +130,12 @@ procedure Prime is
     loop
       Plm.Read (Lt, T, Plm.Current);
       S := S * T;
+      exit when not Plm.Check_Move (Lt);
       Plm.Move_To (Lt);
     end loop;
     return S;
   exception
-    when Plm.Not_In_List | Plm.Empty_List =>
+    when Plm.Empty_List =>
       return S;
   end Multiply;
 
@@ -251,18 +244,11 @@ begin
         begin
           Plm.Read (L1, N1, Plm.Current);
         exception
-          when Plm.Empty_List | Plm.Not_In_List =>
+          when Plm.Empty_List =>
             exit;
         end;
         -- Find in factors of N2
-        begin
-          Search (L2, N1, From => Plm.Absolute);
-          Match := True;
-        exception
-          when Plm.Empty_List | Plm.Not_In_List =>
-            -- Not found in L2
-            Match := False;
-        end;
+        Search (L2, Match, N1, From => Plm.Absolute);
 
         if Match then
           -- Found. Add it to Lr and remove it from L1 and L2
@@ -273,12 +259,8 @@ begin
           exit when End_Of_List;
         else
           -- Not found next of L1
-          begin
-            Plm.Move_To (L1);
-          exception
-            when Plm.Not_In_List | Plm.Empty_List =>
-              exit;
-          end;
+          exit when not Plm.Check_Move (L1);
+          Plm.Move_To (L1);
         end if;
       end loop;
 

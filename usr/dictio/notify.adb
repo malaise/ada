@@ -14,14 +14,14 @@ package body Notify is
   begin
     return Elt1 = Elt2;
   end Full_Match;
-  procedure Full_Search is new Notif_List_Mng.Safe_Search (Full_Match);
+  procedure Full_Search is new Notif_List_Mng.Search (Full_Match);
 
   function Client_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return Elt1.Client = Elt2.Client;
   end Client_Match;
-  procedure Client_Search is new Notif_List_Mng.Safe_Search (Client_Match);
+  procedure Client_Search is new Notif_List_Mng.Search (Client_Match);
 
   function Item_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
   begin
@@ -30,7 +30,7 @@ package body Notify is
     return Elt2.Kind = Elt1.Kind
     and then Names.Match (Parse (Elt2.Item), Parse (Elt1.Item));
   end Item_Match;
-  procedure Item_Search is new Notif_List_Mng.Safe_Search (Item_Match);
+  procedure Item_Search is new Notif_List_Mng.Search (Item_Match);
 
 
   procedure Add (Client : in Socket.Socket_Dscr;
@@ -151,9 +151,8 @@ package body Notify is
           Client_Fd.Del_Client (Rec.Client);
       end;
       -- Search next
-      Notif_List_Mng.Move_To (Notif_List);
-      Rec.Item := Item.Name;
-      Item_Search (Notif_List, Found, Rec, From => Notif_List_Mng.From_Current);
+      Item_Search (Notif_List, Found, Rec,
+                   From => Notif_List_Mng.Skip_Current);
       exit when not Found;
     end loop;
     -- No more notification

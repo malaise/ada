@@ -31,8 +31,8 @@ package body Mesu_Sel is
     -- Copy items
     loop
       Read (From, Line, Next, Done);
-      exit when not Done;
       Insert (To, Line);
+      exit when not Done;
     end loop;
     -- Restore pos, set it in saved_list
     Move_To (From, Next, Pos - 1, False);
@@ -90,7 +90,7 @@ package body Mesu_Sel is
   end Less_Than;
 
 
-  procedure File_Search is new Line_List_Mng.Safe_Search (Same_File);
+  procedure File_Search is new Line_List_Mng.Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
 
 

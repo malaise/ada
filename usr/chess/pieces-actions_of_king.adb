@@ -26,7 +26,7 @@ procedure Actions_Of_King (Piece : in King_Piece) is
     begin
       return King.Dest = Ref.Dest;
     end Same_Square;
-    procedure Find_Square is new Action_List_Mng.Safe_Search (Same_Square);
+    procedure Find_Square is new Action_List_Mng.Search (Same_Square);
 
     use type Space.Color_List;
 

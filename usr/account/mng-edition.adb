@@ -9,7 +9,7 @@ package body Edition is
   begin
     return Op1.Kind = Op2.Kind and then Op1.Reference = Op2.Reference;
   end Same_Kind_And_Ref;
-  procedure Search_Kind_Ref is new Oper_List_Mng.Safe_Search(Same_Kind_And_Ref);
+  procedure Search_Kind_Ref is new Oper_List_Mng.Search(Same_Kind_And_Ref);
 
 
   -- Affectation of kind and status buttons

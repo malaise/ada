@@ -18,7 +18,7 @@ package body Nodes is
     return El1.Name = El2.Name;
   end Name_Match;
   
-  procedure Search_Name is new Node_Mng.Safe_Search (Name_Match);
+  procedure Search_Name is new Node_Mng.Search (Name_Match);
 
 
   procedure Init_List is

@@ -14,14 +14,14 @@ package body Client_Fd is
   begin
     return El1.Fd = El2.Fd;
   end Fd_Match;
-  procedure Search_Fd is new Client_List_Mng.Safe_Search(Fd_Match);
+  procedure Search_Fd is new Client_List_Mng.Search(Fd_Match);
 
   function Soc_Match (El1, El2 : Client_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return El1.Soc = El2.Soc;
   end Soc_Match;
-  procedure Search_Soc is new Client_List_Mng.Safe_Search(Soc_Match);
+  procedure Search_Soc is new Client_List_Mng.Search(Soc_Match);
 
   procedure Add_Client (Client : in Socket.Socket_Dscr) is
     Rec : Client_Rec;

@@ -10,7 +10,7 @@ package body Data_Base is
   begin
     return Elt1.Kind = Elt2.Kind and then Elt1.Name = Elt2.Name;
   end Name_Match;
-  procedure Search_Name is new Item_List_Mng.Safe_Search (Name_Match);
+  procedure Search_Name is new Item_List_Mng.Search (Name_Match);
 
 
   -- Hash on: Item.Kind & Item.Name (not Parsed)

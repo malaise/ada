@@ -119,7 +119,7 @@ package body Sync_Mng is
 
   package Sync_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
   Sync_List : Sync_List_Mng.List_Type;
-  procedure Sync_Search is new Sync_List_Mng.Safe_Search;
+  procedure Sync_Search is new Sync_List_Mng.Search;
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;

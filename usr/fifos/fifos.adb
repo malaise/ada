@@ -113,7 +113,7 @@ package body Fifos is
         and then El1.Len = El2.Len
         and then El1.Name (1 .. El1.Len) = El2.Name (1 .. El2.Len);
       end Same_Name;
-      procedure Search_Name is new Fifo_List_Mng.Safe_Search (Same_Name);
+      procedure Search_Name is new Fifo_List_Mng.Search (Same_Name);
 
       function Search_By_Name (Kind : Fifo_Kind_List;
                                Name : String) return Boolean is
@@ -134,7 +134,7 @@ package body Fifos is
         return   El1.Kind = El2.Kind
         and then El1.Port = El2.Port;
       end Same_Port;
-      procedure Search_Port is new Fifo_List_Mng.Safe_Search (Same_Port);
+      procedure Search_Port is new Fifo_List_Mng.Search (Same_Port);
 
       function Search_By_Port (Kind : Fifo_Kind_List;
                                Port : Tcp_Util.Port_Num) return Boolean is
@@ -154,7 +154,7 @@ package body Fifos is
       begin
         return El1.Dscr = El2.Dscr;
       end Same_Dscr;
-      procedure Search_Dscr is new Fifo_List_Mng.Safe_Search (Same_Dscr);
+      procedure Search_Dscr is new Fifo_List_Mng.Search (Same_Dscr);
 
       function Search_By_Dscr (Dscr : Socket.Socket_Dscr) return Boolean is
         Rec : Fifo_Rec;
@@ -173,7 +173,7 @@ package body Fifos is
         and then El1.Port = El2.Port
         and then El1.Host = El2.Host;
       end Same_Addr;
-      procedure Search_Addr is new Fifo_List_Mng.Safe_Search (Same_Addr);
+      procedure Search_Addr is new Fifo_List_Mng.Search (Same_Addr);
 
       function Search_By_Addr (Kind : Fifo_Kind_List;
                                Host : Tcp_Util.Host_Id;

@@ -135,7 +135,7 @@ package body Players is
     end if;
   end Match;
 
-  procedure Search_Match_Action is new Action_List_Mng.Safe_Search (Match); 
+  procedure Search_Match_Action is new Action_List_Mng.Search (Match); 
 
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
@@ -168,9 +168,9 @@ package body Players is
     Action_List_Mng.Read(Actions(Color), Res, Action_List_Mng.Current);
 
     Search_Match_Action(Actions(Color), Found, Ref,
-                        From => Action_List_Mng.From_Current);
+                        From => Action_List_Mng.Skip_Current);
     if Found then
-      -- SHould be unique
+      -- Should be unique
       raise More_Than_One;
     end if;
     return Res;
@@ -182,7 +182,7 @@ package body Players is
     return Action = Ref;
   end Same;
 
-  procedure Search_Same_Action is new Action_List_Mng.Safe_Search (Same); 
+  procedure Search_Same_Action is new Action_List_Mng.Search (Same); 
 
   function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
     Found : Boolean;
