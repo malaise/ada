@@ -12,7 +12,7 @@ all:
 	amake fact.adb
 	amake g.adb
 	amake hanoi.adb
-	amake impot_99.adb
+	amake impot_00.adb
 	amake one_of_arg.adb
 	amake pascal.adb
 	amake random.adb -largs $(LIBX_MNG) -lX11
