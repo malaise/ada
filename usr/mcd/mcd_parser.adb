@@ -61,7 +61,7 @@ package body PARSER is
    BOLNEG  => ("~ ", "push not A                    "),
  
    DUP     => ("><", "push A, push A                "),
-   POP     => ("--", "pop                           "),
+   POP     => ("--", "pop A                         "),
 
    IFTHEN  => ("?-", "if A then push B              "),
    IFTE    => ("? ", "if C then push B else push A  "),
@@ -72,6 +72,11 @@ package body PARSER is
    POPR    => ("->", "B -> regA                     "),
    COPYR   => ("=>", "B -> regA, push B             "),
    PUSHR   => ("<-", "push regA                     "),
+
+   POPE    => ("+>", "pop A push_extra A            "),
+   COPYE   => ("*>", "pop A push_extra A push A     "),
+   PUSHE   => ("<+", "pop_extra X push X            "),
+   ESIZE   => (".+", "push extra_stack size         "),
 
    CALL    => ("@ ", "call A                        "),
    IFCALL  => ("?@", "if B then call A              "),

@@ -58,6 +58,11 @@ package MCD_MNG is
 
    SSIZE,
 
+   POPE,
+   COPYE,
+   PUSHE,
+   ESIZE,
+
    CALL,
    IFCALL,
    RET,
