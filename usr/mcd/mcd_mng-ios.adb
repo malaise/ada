@@ -52,7 +52,7 @@ package body Ios is
       Format ((Kind => Inte, Val_Inte => 5));
     end if;
     if not Real_Format_Set then
-      Format ((Kind => Real, Val_Real => 5.003));
+      Format ((Kind => Real, Val_Real => 2.009));
     end if;
   end Check_Default_Formats;
     
