@@ -1,60 +1,44 @@
-DEST=/usr/local/lib
-CC=gcc
-CCOPT=-g -c -DDEBUG -Wall -pthread
+include $(HOME)/Makefiles/common.mk
 
-.SUFFIXES: .h .c .o .a .so 
+LIBS := cutil x_mng
+ifeq ($(HOST), Linux)
+DEST := /usr/local/lib
+INSTALLED := $(LIBS:%=$(DEST)/lib%.a) $(LIBS:%=$(DEST)/lib%.so)
+endif
+EXES := test_x
 
-%.o : %.c
-	$(CC) $(CCOPT) -c $<
-
-
-$(DEST)/%.a : %.a
-	cp $< $(DEST)
-	chmod a+r $(DEST)/$<
-
-$(DEST)/%.so : %.so
-	cp $< $(DEST)
-	chmod a+r $(DEST)/$<
-
-LIBS=libx_mng.a libcutil.a
-SOLIBS=$(LIBS:%.a=%.so)
-DESTLIBS=$(LIBS:lib%=$(DEST)/lib%)
-DESTSOLIBS=$(SOLIBS:lib%=$(DEST)/lib%)
-
-
-all : $(DESTLIBS) $(DESTSOLIBS) test_x
-
-test_x.o : test_x.c x_export.h
-
-test_x : $(DESTSOLIBS) test_x.o
-	$(CC) -pthread -o test_x test_x.o -lx_mng -lcutil -lX11
-
-
-X_OBJS=x_color.o x_font.o x_line.o\
+U_OBJS := timeval.o sys_calls.o wait_evt.o socket.o
+X_OBJS := x_color.o x_font.o x_line.o\
 	x_export.o x_file.o x_key.o x_screen.o
+OBJS := $(X_OBJS) $(U_OBJS) test_x.o
 
-libx_mng.a : $(X_OBJS)
+include $(TEMPLATES)/c.mk
+
+U_OBJS := $(U_OBJS:%=$(LIB)/%)
+X_OBJS := $(X_OBJS:%=$(LIB)/%)
+
+$(LIB)/test_x.o : test_x.c x_export.h
+
+$(BIN)/test_x : $(LIB)/test_x.o
+	$(CC) -o $(BIN)/test_x $(LIB)/test_x.o -L$(LIB) -lx_mng -lcutil -lX11
+
+test_x : $(BIN)/test_x
+	$(LN) $< $@
+
+
+$(LIB)/libx_mng.a : $(X_OBJS)
 	ar crvs $@ $(X_OBJS)
 
-libx_mng.so : $(X_OBJS) $(DEST)/libcutil.so
-	ld -shared -o $@ $(X_OBJS) -lcutil -lX11 -lc
+$(LIB)/libx_mng.so : $(X_OBJS) $(LIB)/libcutil.so
+	ld -shared $(SOOPT) -o $@ $(X_OBJS) -L$(LIB) -lcutil -lX11 -lc
+	-$(RM) so_locations
+
+$(LIB)/libcutil.so : $(U_OBJS)
+	ld -shared $(SOOPT) -o $@ $(U_OBJS) -lc
+	-$(RM) so_locations
+
+$(LIB)/libcutil.a : $(U_OBJS)
+	ar crvs $@ $(U_OBJS)
 
 
-U_OBJS=timeval.o sys_calls.o wait_evt.o socket.o
-
-libcutil.a : $(U_OBJS)
-	ar crvs libcutil.a $(U_OBJS)
-
-libcutil.so : $(U_OBJS)
-	ld -shared -o $@ $(U_OBJS) -lc
-
-OBJS=$(X_OBJS) $(U_OBJS) test_x.o
-
-clean :
-	rm -f $(OBJS) $(LIBS) $(SOLIBS)
-
-clean_exe :
-	rm -f test_x
-
-clean_all : clean clean_exe
 

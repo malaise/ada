@@ -1,32 +1,15 @@
-LIBX_MNG=-lx_mng
-LIBCUTIL=-lcutil
-LXC=-largs $(LIBX_MNG) $(LIBCUTIL) -lX11
-LUC=-largs $(LIBCUTIL)
+include $(HOME)/Makefiles/common.mk
 
-all: reposit afpx_bld clear_screen
+include $(TEMPLATES)/units.mk
 
-reposit:
-	@for file in  *.ads; do \
-	  if [ !  -f `basename $$file .ads`.adb ] ; then \
-	    gnatmake $(ADA_OPT) -c $$file; \
-	  fi \
-	done;
-	@for file in  *.adb; do \
-	  gnatmake $(ADA_OPT) -c $$file; \
-	done;
+LIBS := $(UNITS)
+EXES := afpx_bld clear_screen
 
-afpx_bld:
-	gnatmake $(ADA_OPT) $@ $(LXC)
+CLIBS_afpx_bld := x_mng cutil X11
 
-clear_screen:
-	gnatmake $(ADA_OPT) $@ $(LUC)
+CLIBS_clear_screen := x_mng cutil X11
 
-clean:
-	-rm *.o *.ali b~*
+GNATHTMLOPT := -D
 
-clean_exe:
-	-rm afpx_bld clear_screen
-
-clean_all: clean clean_exe
-
+include $(TEMPLATES)/ada.mk
 
