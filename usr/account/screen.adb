@@ -88,7 +88,8 @@ package body Screen is
   begin
     Afpx.Encode_Field(1, (0, 0),
          String_Mng.Procuste(File_Name,
-                           Afpx.Get_Field_Width(1)));
+                             Afpx.Get_Field_Width(1),
+                             Align_Left => False));
   end Encode_File_Name;
 
   procedure Encode_Nb_Oper (Oper : in Natural; Selected : in Natural) is
