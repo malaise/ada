@@ -680,7 +680,7 @@ package body Tcp_Util is
     -- Store Rec
     Acc_List_Mng.Insert (Acc_List, Rec);
     if Debug_Accept then
-      My_Io.Put_Line ("  Tcp_Util.Tcp_Util.Accept_From insert rec "
+      My_Io.Put_Line ("  Tcp_Util.Accept_From insert rec "
                     & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
     end if;
     
