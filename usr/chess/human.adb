@@ -83,6 +83,10 @@ package body Human is
 
     Load_Moves (Wait);
 
+    if SetUp /= "" and then Move_Color = Space.Black then
+      File.Write ((Valid => False), Game.Nok);
+    end if;
+
     while not The_End loop
       if Mode = Both or else Move_Color = Color then
         Do_Play;
@@ -298,7 +302,8 @@ package body Human is
       Move_Color := Space.Opponent (Move_Color);
     end loop;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("End of loading. Move is " & Space.Color_List'Image(Move_Color));
+      Ada.Text_Io.Put_Line ("End of loading. Move is "
+          & Space.Color_List'Image(Move_Color));
     end if;
   exception
     when Load_Error => 

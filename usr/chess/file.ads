@@ -26,8 +26,8 @@ package File is
   function Read return Players.Action_Rec;
 
   -- After all movements have been read (otherwise File_Error)
-  -- Append new movement
-  procedure Write (Action : in Game.Valid_Action_Rec;
+  -- Append new movement (or "- " if not valid)
+  procedure Write (Action : in Players.Action_Rec;
                    Result : in Game.Move_Status_List);
 
   -- At the end
