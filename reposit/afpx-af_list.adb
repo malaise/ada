@@ -6,7 +6,8 @@ package body AF_LIST is
 
   LIST_WINDOW : CON_IO.WINDOW;
 
-  -- Compute status
+  -- Reset/Compute status
+  procedure RESET;
   procedure COMPUTE (FIRST_ITEM_ID : in POSITIVE);
 
   -- Open / Re-open the list window
@@ -27,7 +28,7 @@ package body AF_LIST is
       OPENED := TRUE;
       -- Start at top
       STATUS.ID_SELECTED := 0;
-      COMPUTE (1);
+      RESET;
     else
       OPENED := FALSE;
     end if;
@@ -116,6 +117,15 @@ package body AF_LIST is
     CON_IO.SET_BACKGROUND (AF_DSCR.FIELDS(LFN).COLORS.BACKGROUND, LIST_WINDOW);
   end SET_COLORS;
 
+  -- Reset status
+  procedure RESET is
+  begin
+      STATUS.NB_ROWS := 0;
+      STATUS.ID_TOP := 0;
+      STATUS.ID_BOTTOM := 0;
+      STATUS.ID_SELECTED := 0;
+  end RESET;
+
   -- Compute status
   procedure COMPUTE (FIRST_ITEM_ID : in POSITIVE) is
   begin
@@ -123,18 +133,14 @@ package body AF_LIST is
       raise NOT_OPENED;
     end if;
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
-      STATUS.NB_ROWS := 0;
-      STATUS.ID_TOP := 0;
-      STATUS.ID_BOTTOM := 0;
-      STATUS.ID_SELECTED := 0;
+      RESET;
       return;
     end if;
 
     if STATUS.ID_SELECTED > LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
       raise LINE_LIST_MNG.NOT_IN_LIST;
     end if;
-    STATUS.ID_TOP := FIRST_ITEM_ID;
-    -- top + height - 1 <= length => can display height items
+    -- top + height - 1 <= length => can display HEIGHT items
     if LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) - FIRST_ITEM_ID >=
        AF_DSCR.FIELDS(LFN).HEIGHT then
       -- Can display HEIGHT items
@@ -145,8 +151,8 @@ package body AF_LIST is
       -- Cannot display LIST length items whatever first
       STATUS.NB_ROWS := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST);
       STATUS.ID_TOP := 1;
-   else
-      -- Can display LIST length items but not with this first.
+    else
+      -- Can display HEIGHT items but not with this first.
       -- Set top to display last page
       STATUS.NB_ROWS := AF_DSCR.FIELDS(LFN).HEIGHT;
       STATUS.ID_TOP := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
