@@ -120,8 +120,10 @@ package body GET_LINE is
       -- Parse first word
       TEXT_HANDLER.SET (FIRST_WORD, GET_NEXT_WORD);
 
+      -- Done when no check of comments
+      -- else go on if empty or comment
       exit when COMMENT = ASCII.NUL
-      or else (not TEXT_HANDLER.EMPTY(CURRENT_WHOLE_LINE)
+      or else (not TEXT_HANDLER.EMPTY(FIRST_WORD)
                and then TEXT_HANDLER.VALUE(FIRST_WORD)(1) /= COMMENT);
     end loop;
 
