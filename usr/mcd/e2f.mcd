@@ -1,0 +1,31 @@
+# Error and quit
+[ [ Error, 2 arguments: <amount> <unit> expected ] ;
+  [ "   amount : float or integer" ] ;
+  [ "   unit   : [ f ] or [ e ]." ] ;
+0 retn ] E popr
+
+# Francs in an euro
+6.55957 e popr
+
+# Check 2 args
+ssize 2 /= E pushr ifcall
+
+# Store args
+u popr
+toreal v popr
+
+# Unit is [ f ] or [ e ]
+u pushr [ f ] /= u pushr [ e ] /= & E pushr ifcall
+
+# Set conversion factor and result unit
+[ f ] r popr
+6.55957 u pushr [ f ] = [ 1.0 swap / [ e ] r popr ] ifcall
+
+# Convert
+v pushr *
+
+# Display
+100.0 *
+tointe dup
+9 format 100 / put [ . ] put 2 format 100 % put r pushr putl
+
