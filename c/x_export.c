@@ -324,7 +324,7 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
           *p_read = TRUE;
         } else {
           /* Check read events first */
-          for (i = 0; i <= last_fd; i++) {
+          for (i = 0; i <= last_select_fd; i++) {
             if (FD_ISSET(i, &select_read_mask)) {
               *p_fd = i;
               *p_read = TRUE;
@@ -333,7 +333,7 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
           }
           if (*p_fd == NO_EVENT) {
             /* Check write events second */
-            for (i = 0; i <= last_fd; i++) {
+            for (i = 0; i <= last_select_fd; i++) {
               if (FD_ISSET(i, &select_write_mask)) {
                 *p_fd = i;
                 *p_read = FALSE;
@@ -342,9 +342,8 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
             }
           }
         }
-        /* p_fd is still NO_EVENT if no fd (i.e. wake-up) */
-        if ( (*p_fd == NO_EVENT)
-          && (FD_ISSET(wake_up_fds[0], &select_read_mask)) ) {
+        /* p_fd is wake-up) */
+        if (*p_fd == wake_up_fds[0] ) {
           for (;;) {
             size = read (wake_up_fds[0], &c, sizeof(c));
             if ( (size == -1) && (errno != EINTR) ) {
@@ -357,6 +356,7 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
               break;
             }
           }
+          *p_fd = NO_EVENT;
         }
 
         time_remaining (timeout_ms, &exp_time);
