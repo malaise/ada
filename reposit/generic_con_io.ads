@@ -195,12 +195,12 @@ package GENERIC_CON_IO is
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure PAUSE;
 
-    -- Gets first character (echo)
+    -- Gets first character (echo or not)
     -- No echo for RET, ESC, BREAK and REFRESH where
     --  ASCII.CR, ESC, EOT and NUL are returned respectively
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
-    function GET (NAME : WINDOW := SCREEN) return CHARACTER;
+    function GET (NAME : WINDOW := SCREEN; ECHO : in BOOLEAN := TRUE) return CHARACTER;
 
     -- How to specify a delay, wait some seconds or until a specific time
     type DELAY_LIST is (DELAY_SEC, DELAY_EXP);
@@ -214,7 +214,8 @@ package GENERIC_CON_IO is
       end case;
     end record;
     -- Inifinte delay
-    INFINITE_DELAY : constant DELAY_REC(DELAY_SEC) := (DELAY_KIND => DELAY_SEC, DELAY_SECONDS => INFINITE_SECONDS);
+    INFINITE_DELAY : constant DELAY_REC(DELAY_SEC)
+                   := (DELAY_KIND => DELAY_SEC, DELAY_SECONDS => INFINITE_SECONDS);
    
 
     -- Gets a string of at most width characters

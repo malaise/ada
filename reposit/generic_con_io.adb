@@ -909,33 +909,12 @@ package body GENERIC_CON_IO is
     end GET_KEY;
         
 
-    -- Gets a string of at most width characters
-    procedure GET (STR        : out STRING;
-                   LAST       : out NATURAL;
-                   STAT       : out CURS_MVT;
-                   POS        : out POSITIVE;
-                   INSERT     : out BOOLEAN;
-                   NAME       : in WINDOW := SCREEN;
-                   FOREGROUND : in COLORS := CURRENT;
-                   BLINK_STAT : in BLINK_STATS := CURRENT;
-                   BACKGROUND : in BASIC_COLORS := CURRENT;
-                   TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
-      LSTR : STRING(STR'range ) := (others => ' ');
-      LPOS : POSITIVE;
-      LINS : BOOLEAN;
-    begin
-      LPOS := 1;
-      LINS := FALSE;
-      PUT_THEN_GET(LSTR, LAST, STAT, LPOS, LINS, NAME, FOREGROUND, BLINK_STAT,
-        BACKGROUND, TIME_OUT);
-      STR := LSTR;
-      POS := LPOS;
-      INSERT := LINS;
-    end GET;
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
-    procedure PUT_THEN_GET (STR        : in out STRING;
+    procedure INTERN_PUT_THEN_GET (
+                            ECHO       : in BOOLEAN;
+                            STR        : in out STRING;
                             LAST       : out NATURAL;
                             STAT       : out CURS_MVT;
                             POS        : in out POSITIVE;
@@ -1093,16 +1072,22 @@ package body GENERIC_CON_IO is
 
       -- put the string
       MOVE(FIRST_POS, NAME);
-      PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
+      if ECHO then
+        PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
+      end if;
 
       loop
         -- show cursor
-        CURSOR (TRUE);
+        if ECHO then
+          CURSOR (TRUE);
+        end if;
         REDRAW := FALSE;
         -- try to get a key
         GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, LAST_TIME);
         -- hide cursor
-        CURSOR (FALSE);
+        if ECHO then
+          CURSOR (FALSE);
+        end if;
         if EVENT /= ESC then
           -- No key ==> mouse or time out or refresh
           STR := LSTR;
@@ -1239,19 +1224,57 @@ package body GENERIC_CON_IO is
               STAT := FULL;
               return;
             end if;
-            if not REDRAW then
+            if not REDRAW and then ECHO then
               PUT(CHARACTER'VAL(KEY), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
             end if;
           end if;
         end if;  -- is_char
 
         -- redraw if necessary
-        if REDRAW then
+        if REDRAW and then ECHO then
           MOVE(FIRST_POS, NAME);
           PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
        end if;
       end loop;
+    end INTERN_PUT_THEN_GET;
+
+    procedure PUT_THEN_GET (STR        : in out STRING;
+                            LAST       : out NATURAL;
+                            STAT       : out CURS_MVT;
+                            POS        : in out POSITIVE;
+                            INSERT     : in out BOOLEAN;
+                            NAME       : in WINDOW := SCREEN;
+                            FOREGROUND : in COLORS := CURRENT;
+                            BLINK_STAT : in BLINK_STATS := CURRENT;
+                            BACKGROUND : in BASIC_COLORS := CURRENT;
+                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
+    begin
+      INTERN_PUT_THEN_GET (TRUE, STR, LAST, STAT, POS, INSERT, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, TIME_OUT);
     end PUT_THEN_GET;
+
+    -- Gets a string of at most width characters
+    procedure GET (STR        : out STRING;
+                   LAST       : out NATURAL;
+                   STAT       : out CURS_MVT;
+                   POS        : out POSITIVE;
+                   INSERT     : out BOOLEAN;
+                   NAME       : in WINDOW := SCREEN;
+                   FOREGROUND : in COLORS := CURRENT;
+                   BLINK_STAT : in BLINK_STATS := CURRENT;
+                   BACKGROUND : in BASIC_COLORS := CURRENT;
+                   TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
+      LSTR : STRING(STR'RANGE ) := (others => ' ');
+      LPOS : POSITIVE;
+      LINS : BOOLEAN;
+    begin
+      LPOS := 1;
+      LINS := FALSE;
+      INTERN_PUT_THEN_GET(TRUE, LSTR, LAST, STAT, LPOS, LINS, NAME,
+          FOREGROUND, BLINK_STAT, BACKGROUND, TIME_OUT);
+      STR := LSTR;
+      POS := LPOS;
+      INSERT := LINS;
+    end GET;
 
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure PAUSE is
@@ -1262,18 +1285,19 @@ package body GENERIC_CON_IO is
       INS  : BOOLEAN;
     begin
       loop
+        -- STR is empty so no echo at all
         GET(STR, LAST, STAT, POS, INS);
         exit when STAT /= MOUSE_BUTTON;
       end loop;
     end PAUSE;
 
 
-    -- Gets first character (echo)
+    -- Gets first character (echo or not)
     -- No echo for RET, ESC, BREAK and REFRESH where
     --  ASCII.CR, ESC, EOT and NUL are returned respectively
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
-    function GET (NAME : WINDOW := SCREEN) return CHARACTER is
+    function GET (NAME : WINDOW := SCREEN; ECHO : in BOOLEAN := TRUE) return CHARACTER is
       STR  : STRING(1 .. 1);
       LAST : NATURAL;
       STAT : CURS_MVT;
@@ -1281,7 +1305,10 @@ package body GENERIC_CON_IO is
       INS  : BOOLEAN;
     begin
       loop
-        GET(STR, LAST, STAT, POS, INS, NAME);
+        STR := (others => ' ');
+        POS := 1;
+        INS := FALSE;
+        INTERN_PUT_THEN_GET(ECHO, STR, LAST, STAT, POS, INS, NAME);
         case STAT is
           when UP .. RIGHT | TAB .. STAB =>
             -- Cursor movement
