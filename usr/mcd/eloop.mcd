@@ -1,0 +1,21 @@
+# Loop example
+
+# Nb of iterations
+10
+
+# Loop
+[
+# Anywhere in loop, exit with a ret
+# Work
+"Things to do "  put dup putl 
+# Test exit
+dup 0 = ifret
+# Update counter
+1 -
+# Do again
+pushle copye retacal
+] copye call
+
+# Remove counter
+pop
+
