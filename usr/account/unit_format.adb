@@ -185,7 +185,7 @@ package body Unit_Format is
   -- From an amount (in euros) return 'image (euros/francs)
   -- Truncation rule:
   --  Sign is kept, three lower digits of unit removed,
-  --  cents and dot replaced by " k "
+  --  cents and dot replaced by " k"
   function Short_Image (Amount_In_Euros : Oper_Def.Amount_Range)
                        return Short_Amount_Str is
     Str : Amount_Str;
@@ -212,10 +212,10 @@ package body Unit_Format is
         Real_Io.Get(Str, R, L);
         R := R / 1000.0;
         I := My_Math.Round(R);
-        Str (4 .. Dot-1) := Normal(Integer(I), Dot-4);
+        Str (4 .. Dot) := Normal(Integer(I), Dot-3);
     
         -- Remove digits
-        Str(Dot .. Last) := " k ";
+        Str(Dot+1 .. Last) := " k";
       end;
     end if; 
   
