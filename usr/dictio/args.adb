@@ -4,9 +4,7 @@ package body Args is
 
   procedure Usage is
   begin
-    Debug.Put_Error ("ERROR. Argument not found"
-                   & Ascii.Cr & Ascii.Lf
-                   & "Usage: "
+    Debug.Put_Error ("Usage: "
                    & Argument.Get_Program_Name
                    & " -c<channel_name> -f<channel_file> -p<port>");
     raise Errors.Exit_Error;
@@ -23,6 +21,7 @@ package body Args is
     end;
   exception
     when Argument.Argument_not_Found =>
+      Debug.Put_Error ("ERROR. Argument not found");
       Usage;
   end Init;
 
