@@ -1,20 +1,3 @@
-#Dms takes top of stack x.y and transforms it to x.MMssz
-# where MM are minutes, ss are seconds and z is fraction of seconds
-# Extract x and 0.y
-[ toreal dup int pope frac
-# Make 0.y sec.msec
-3600.0 * 1000.0 * round toreal 1000.0 /
-# Save 0.0000msec
-dup frac 10000.0 / pope trunc
-dup 60 / toreal 100.0 / pope 60 % toreal 10000.0 /
-# Add saved values
-pushle pushle pushle + + + ]
-
-#Smd make the reverse, taking a x.MMsszz (assuming zeros if shorter)
-# and puts x.y
-[ toreal dup int swap frac 10.0e7 * round toreal 10.0e5 / dup frac swap int 60.0 / 
-swap 100.0 * 3600.0 / + + ]
-
 #Format N (int top stack) on i (second on stack) digits, padding with zeros
 # make N positive. If N is negative: pope -, N = absv N and i = i - 1
 [ dup 0 < [ "-" pope absv swap 1 - swap ] [ "" pope ] ifte call
