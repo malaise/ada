@@ -68,26 +68,18 @@ package body Connection is
     end case;
   end Raise_Error;
 
-  procedure Call_Back (Fd : in X_Mng.File_Desc) is
+  function Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean) return Boolean is
     Message : Message_Type;
     Len : Natural;
-    Receive : Boolean;
     use type Space.Color_List;
     use type Socket.Host_Id, Socket.Port_Num;
   begin
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put ("In callback : ");
     end if;
-    Chess_Read (Soc, Message, Len, Receive, Server);
-    if not Receive then
-      if Debug.Get (Debug.Connection) then
-        Ada.Text_Io.Put_Line ("No message");
-      end if;
-      return;
-    else
-      if Debug.Get (Debug.Connection) then
-        Ada.Text_Io.Put_Line ("Message read " & Integer'Image (Len) & " bytes");
-      end if;
+    Chess_Read (Soc, Message, Len, Server);
+    if Debug.Get (Debug.Connection) then
+      Ada.Text_Io.Put_Line ("Message read " & Integer'Image (Len) & " bytes");
     end if;
     case We_Are_Ready is
 
@@ -139,13 +131,13 @@ package body Connection is
             end if;
             -- Restore
             Socket.Set_Destination_Host_And_Port (Soc, Client_Host, Client_Port);
-            return;
+            return True;
           elsif Message.Kind /= Move then
             if We_Have_Moved then
               -- Not a retry
               Chess_Send (Soc, (Error, Protocol));
             end if;
-            return;
+            return True;
           end if;
         else
           -- Client
@@ -173,6 +165,7 @@ package body Connection is
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("In callback : End");
     end if;
+    return True;
   end Call_Back;
 
   -- Initialise connection
@@ -188,7 +181,7 @@ package body Connection is
     -- Init socket
     Socket.Open (Soc, Socket.Udp);
     Fd := Socket.Fd_Of (Soc);
-    X_Mng.X_Add_Callback (Fd, Call_Back'Access);
+    X_Mng.X_Add_Callback (Fd, True, Call_Back'Access);
     if Server then
       Socket.Link_Port (Soc, Server_Port_Num);
     else
@@ -207,7 +200,7 @@ package body Connection is
 
   procedure Close is
   begin
-    X_Mng.X_Del_Callback (Fd);
+    X_Mng.X_Del_Callback (Fd, True);
     Socket.Close (Soc);
   end Close;
 
