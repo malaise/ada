@@ -286,6 +286,7 @@ package body Mesu_Gra is
     Move (No-1, 10);
     if Mesure.Samples(1) = Pers_Def.Bpm_Range'First or else
        Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
+      -- 0 or only 1 sample. Cannot draw this one
       Text_Handler.Set (Title_Txt, "(*)");
     else
       Text_Handler.Set (Title_Txt, "   ");
