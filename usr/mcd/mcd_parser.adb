@@ -163,6 +163,7 @@ package body Parser is
 
    Obase    => (Nosy, "set output base to A          ", False),
    Nop      => (Nosy, "no operation                  ", False),
+   Getenv   => (Nosy, "push getenv(A) or False       ", False),
    Rnd      => (Nosy, "push 0.0 <= RND < 1.0         ", False),
    Sleep    => (Nosy, "sleep A seconds               ", False),
    Help     => (Nosy, "put help                      ", False) );

@@ -176,7 +176,9 @@ package body Mcd_Mng is
     function Strregi (S : Item_Rec) return Item_Rec;
     function Strprog (S : Item_Rec) return Item_Rec;
     function Strof (Item : Item_Rec) return Item_Rec;
-    -- INVALID_ARGUMENT, ARGUMENT_MISMATCH : exception;
+
+    function Getenv (Item : Item_Rec) return Item_Rec;
+    -- Invalid_Argument, Argument_Mismatch : exception;
   end Ios;
 
   package Call_Stack is 
@@ -785,6 +787,9 @@ package body Mcd_Mng is
           S := A;
         when Timeof =>
           Pop(A); Push (Dates.Date_To_Time(A));
+          S := A;
+        when Getenv =>
+          Pop(A); Push (Ios.Getenv(A));
           S := A;
 
         when Help =>

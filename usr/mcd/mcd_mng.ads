@@ -134,6 +134,7 @@ package Mcd_Mng is
 
    Obase,
    Nop,
+   Getenv,
    Rnd,
    Sleep,
    Help

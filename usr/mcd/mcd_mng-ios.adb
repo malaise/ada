@@ -1,5 +1,5 @@
 with Text_Io;
-with My_Math; use My_Math;
+with My_Math, Sys_Calls; use My_Math;
 with Inte_Io, Real_Io, Bool_Io;
 separate (Mcd_Mng)
 
@@ -236,6 +236,22 @@ package body Ios is
     end case;
     return Res;
   end Strof;
+
+  function Getenv (Item : Item_Rec) return Item_Rec is
+    Result : Item_Rec (Chrs);
+    Set, Trunc : Boolean;
+    
+  begin
+    if Item.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    Sys_Calls.Getenv (Item.Val_Text(1 .. Item.Val_Len), Set, Trunc,
+                      Result.Val_Text, Result.Val_Len);
+    if not Set then
+      return (Kind => Bool, Val_Bool => False);
+    end if;
+    return Result;
+  end Getenv;
 
 end Ios;
 
