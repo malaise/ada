@@ -6,9 +6,10 @@ with MATH;
 with GET_LINE;
 with GET_FLOAT;
 
+with TYPES;
 package body FILE is
 
-  MAX_DIM : constant := 256;
+  MAX_DIM : constant := TYPES.MAX_DIM;
 
   FILE_READ : BOOLEAN := FALSE;
 
