@@ -39,10 +39,11 @@ v popr
 # Convert
 v pushr *
 
-# Round, Display int.frac unit
+# Round cents and display "int."
 100.0 *
 tointe dup
 9 format 100 / put [ . ] put
+# Display frac (2 digits) and unit
 100 % dup 10 < [ [ 0 ] put 1 format put ] [ 2 format put ] ifte call
 r pushr putl
 

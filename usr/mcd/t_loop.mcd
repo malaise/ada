@@ -1,16 +1,25 @@
+# 10 loops by default
+10 d popr
+
+# Check 1 arg >= 0 or no arg (=> 10)
+[ [ Error: N >= 0 or no argument expected. ] putl ssize popn 0 retn ] E popr
+ssize 1 > E pushr ifcall
+ssize 0 = [ [ "Defaulting to " ] put d pushr dup putl ] ifcall
+dup 0 < E pushr ifcall 
+
 [ 
+# I = 0 ? If yes return
+dup 0 = ifret
 # Print I
 dup putl
-# I - 1 = 0 ? If yes return
-1 - dup 0 = 1 ifretn
+# I - 1
+1 - 
 # Loop
-A pushr retacal ] A popr
+L pushr retacal ] L popr
 
+# Call
 2 format
-# 10 loops by default
-10
-ssize 1 = ifthen
-A pushr call
+L pushr call
 
 # Remove counter
 pop
