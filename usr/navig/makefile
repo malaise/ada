@@ -2,6 +2,7 @@ all: navig
 
 navig:
 	amake -g navig.adb -largs -lx_mng -lX11
+	rm b~navig.ad*
 
 clean:
 	rm *.o *.ali
