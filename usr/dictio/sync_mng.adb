@@ -288,7 +288,9 @@ package body Sync_Mng is
   procedure Cancel is
   begin
     if Debug.Level_Array(Debug.Sync) then
-      Debug.Put ("Sync: Cancel");
+      if Timer_Active or else Sending_Status /= Stop then
+        Debug.Put ("Sync: Cancel");
+      end if;
     end if;
     if Timer_Active then
       Cancel_Timer;
