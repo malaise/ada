@@ -1,13 +1,13 @@
 -- This hash package does not store the user's data but an access to it.
 -- The user needs to associate a unique acess to each data
 --  (index in an array, acess type...)
-
+with Crc_10;
 package Hash is
 
-  -- Maximum size of primary hash table : 1023 (1Kb),
+  -- Maximum size of primary hash table
   -- due to the implemented hashing function
-  Max_Hash_Value : constant := 16#3Ff#;
-  type Max_Hash_Range is new Integer range 0 .. Max_Hash_Value;
+  Max_Hash_Value : constant := Crc_10.Max_Crc_Value;
+  subtype Max_Hash_Range is Crc_10.Max_Crc_Range;
 
   generic
     -- Size of primary hash table
