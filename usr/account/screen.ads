@@ -20,9 +20,9 @@ package Screen is
   procedure Update_To_Unit;
 
   -- Encore summary
-  procedure Encode_Summary(Real_Amount, Account_Amount,
-                           Defered_Amount, Margin_Amount :
-                                    in Oper_Def.Amount_Range);
+  type Amount_List is (Real, Account, Defered, Margin);
+  type Amounts_Array is array (Amount_List) of Oper_Def.Amount_Rec;
+  procedure Encode_Summary(Amounts : in Amounts_Array);
 
   -- Confirm
   type Action_List is (Overwrite_Account, Overwrite_File, Quit_Unsaved);
@@ -30,7 +30,8 @@ package Screen is
 
   -- Ack an error
   type Error_List is (File_Access, File_Io, File_Read_Only, File_Name_Too_Long,
-                      Account_Full, Not_Implemented, Internal_Error);
+                      Account_Full, Not_Implemented, Internal_Error,
+                      Capacity_Error);
   procedure Ack_Error (Error : in Error_List);
 
   -- Ring alarm / question bell

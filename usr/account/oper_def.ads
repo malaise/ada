@@ -16,6 +16,12 @@ package Oper_Def is
   -- Oper amount
   type Amount_Range is digits 13 range -99_999_999.99999 .. 99_999_999.99999;
 
+  -- An amount computed
+  type Amount_Rec is record
+    Amount : Oper_Def.Amount_Range := 0.0;
+    Overflow : Boolean := False;
+  end record;
+
   -- Oper kind
   type Kind_List is (Cheque, Credit, Transfer, Withdraw);
 

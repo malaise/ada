@@ -16,13 +16,12 @@ package body Mng is
   -- Are we working with sublist or all selection
   In_Sublist : Boolean := False;
 
-  -- The one in first record of file
+  -- The amount in first record of file (entered)
   Root_Amount : Oper_Def.Amount_Range;
 
-  -- The ones computed
-  Real_Amount, Account_Amount, Defered_Amount,
-               Margin_Amount : Oper_Def.Amount_Range;
-
+  -- The amounts computed
+  Amounts : Screen.Amounts_Array;
+  
   -- Callback for selection when Loading/saving file
   Loading : Boolean;
   procedure Init_Select_File is
@@ -175,14 +174,34 @@ package body Mng is
 
   -- Compute amounts from all account operations
   procedure Compute_Amounts is
+    use type Oper_Def.Amount_Range, Screen.Amount_List;
+
+    -- Add a value to an amount, if not already in overflow.
+    procedure Add_Amount (Kind : in Screen.Amount_List;
+                          Value : in Oper_Def.Amount_Range) is
+    begin
+      if not Amounts(Kind).Overflow then
+      begin
+        Amounts(Kind).Amount := Amounts(Kind).Amount + Value;
+      exception
+        when Constraint_Error | Numeric_Error =>
+          Amounts(Kind).Overflow := True;
+        end;
+      end if;
+    end Add_Amount;
+
     Oper : Oper_Def.Oper_Rec;
-    use type Oper_Def.Amount_Range;
+
   begin
     -- Initial values
-    Real_Amount := Root_Amount;
-    Account_Amount := Root_Amount;
-    Defered_Amount := 0.0;
-    Margin_Amount  := Root_Amount;
+    Amounts(Screen.Real).Amount    := Root_Amount;
+    Amounts(Screen.Account).Amount := Root_Amount;
+    Amounts(Screen.Defered).Amount := 0.0;
+    Amounts(Screen.Margin).Amount  := Root_Amount;
+    for I in Screen.Amount_List loop
+      Amounts(I).Overflow := False;
+    end loop;
+
     if Oper_List_Mng.Is_Empty(Oper_List) then
       return;
     end if;
@@ -191,19 +210,19 @@ package body Mng is
     Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
     loop
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
-      Real_Amount := Real_Amount + Oper.Amount;
+      Add_Amount (Screen.Real, Oper.Amount);
       case Oper.Status is
         when Oper_Def.Entered =>
-          Account_Amount := Account_Amount + Oper.Amount;
-          Margin_Amount := Margin_Amount + Oper.Amount;
+          Add_Amount(Screen.Account, Oper.Amount);
+          Add_Amount(Screen.Margin, Oper.Amount);
         when Oper_Def.Not_Entered =>
           if Oper.Amount < 0.0 then
-            Margin_Amount := Margin_Amount + Oper.Amount;
+            Add_Amount(Screen.Margin, Oper.Amount);
           end if;
         when Oper_Def.Defered =>
-          Defered_Amount := Defered_Amount + Oper.Amount;
+          Add_Amount(Screen.Defered, Oper.Amount);
           if Oper.Amount < 0.0 then
-            Margin_Amount := Margin_Amount + Oper.Amount;
+            Add_Amount(Screen.Margin, Oper.Amount);
           end if;
       end case;
       exit when Oper_List_Mng.Get_Position(Oper_List)
@@ -215,8 +234,7 @@ package body Mng is
   -- Ecode amounts values
   procedure Encode_Amounts is
   begin
-    Screen.Encode_Summary(Real_Amount, Account_Amount,
-                          Defered_Amount, Margin_Amount);
+    Screen.Encode_Summary(Amounts);
   end Encode_Amounts;
 
   -- Refresh all, to be called each time an oper or the account changes
@@ -381,6 +399,7 @@ package body Mng is
     Page_Title : constant String
     --     --1234 123456789  123456789012 1234 1234 12345678901234567890 12345678901234567890 1234567890
        := "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference";
+    Overflow : constant Unit_Format.Amount_Str := "Overflow    ";
   begin
     -- Get lines per page
     declare
@@ -449,10 +468,33 @@ package body Mng is
       New_Page(Pf);
       Line := 2;
     end if;
-    Put_Line(Pf, "Real: "     &  Unit_Format.Image(Real_Amount, False)
-               & " Account: " &  Unit_Format.Image(Account_Amount, False)
-               & " Defered: " &  Unit_Format.Image(Defered_Amount, False)
-               & " Margin: "  &  Unit_Format.Image(Margin_Amount, False));
+
+    Put(Pf, "Real: ");
+    if not Amounts(Screen.Real).Overflow then
+      Put (Pf, Unit_Format.Image(Amounts(Screen.Real).Amount, False));
+    else
+      Put (Pf, Overflow);
+    end if;
+    Put (Pf, " Account: ");
+    if not Amounts(Screen.Account).Overflow then
+      Put (Pf, Unit_Format.Image(Amounts(Screen.Account).Amount, False));
+    else
+      Put (Pf, Overflow);
+    end if;
+    Put (Pf, " Defered: ");
+    if not Amounts(Screen.Defered).Overflow then
+      Put (Pf, Unit_Format.Image(Amounts(Screen.Defered).Amount, False));
+    else
+      Put (Pf, Overflow);
+    end if;
+    Put (Pf, " Margin: ");
+    if not Amounts(Screen.Margin).Overflow then
+      Put (Pf, Unit_Format.Image(Amounts(Screen.Margin).Amount, False));
+    else
+      Put (Pf, Overflow);
+    end if;
+    New_Line (Pf);
+
     Line := Line + 1;
     New_Page(Pf);
     Flush(Pf);
@@ -510,6 +552,10 @@ package body Mng is
 
     -- Delete all flagged operation
     procedure Commit_Deletions;
+
+    -- Cancel all flagged operation
+    procedure Cancel_Deletions;
+
   end Deletion;
   package body Deletion is separate;
 
@@ -583,6 +629,7 @@ package body Mng is
   procedure Garbage_Collect is
     Pos : Positive;
     Oper : Oper_Def.Oper_Rec;
+    Tmp_Amount : Oper_Def.Amount_Range;
     use type Oper_Def.Status_List, Oper_Def.Amount_Range;
   begin
     if Oper_List_Mng.Is_Empty(Oper_List) then
@@ -592,12 +639,22 @@ package body Mng is
     Pos := Sel_List_Mng.Get_Position(Sel_List);
     Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
     -- Check up to pos included
+    Tmp_Amount := Root_Amount;
     for I in 1 .. Pos loop
       List_Util.Move_To_Current;
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
       -- Remove if entered
       if Oper.Status = Oper_Def.Entered then
-        Root_Amount := Root_Amount + Oper.Amount;
+        begin
+          Tmp_Amount := Tmp_Amount + Oper.Amount;
+        exception
+          when Constraint_Error | Numeric_Error =>
+            -- Overflow on root amount. Cancel.
+            Deletion.Cancel_Deletions;
+            Screen.Ack_Error(Screen.Capacity_Error);
+            Refresh_Screen(Bottom);
+            return;
+        end;
         Deletion.Flag_Deleted;
         Account_Saved := False;
       end if;
@@ -606,6 +663,7 @@ package body Mng is
       -- Move to next
       Sel_List_Mng.Move_To(Sel_List);
     end loop;
+    Root_Amount := Tmp_Amount;
     Deletion.Commit_Deletions;
     Compute_Amounts;
     Refresh_Screen(Center);

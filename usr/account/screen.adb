@@ -118,14 +118,36 @@ package body Screen is
      end if;
   end Encode_Saved;
 
-  procedure Encode_Summary(Real_Amount, Account_Amount,
-                           Defered_Amount, Margin_Amount :
-                                    in Oper_Def.Amount_Range) is
+  procedure Encode_Summary(Amounts : in Amounts_Array) is
   begin
-    Afpx.Encode_Field (10, (0, 0), Unit_Format.Image(Real_Amount, True));
-    Afpx.Encode_Field (12, (0, 0), Unit_Format.Image(Account_Amount, True));
-    Afpx.Encode_Field (14, (0, 0), Unit_Format.Image(Defered_Amount, True));
-    Afpx.Encode_Field (16, (0, 0), Unit_Format.Image(Margin_Amount, True));
+    if not Amounts(Real).Overflow then
+      Afpx.Encode_Field (10, (0, 0),
+                         Unit_Format.Image(Amounts(Real).Amount, True));
+    else
+      Afpx.Clear_Field (10);
+      Afpx.Encode_Field (10, (0, 0), "Overflow");
+    end if;
+    if not Amounts(Account).Overflow then
+      Afpx.Encode_Field (12, (0, 0),
+                         Unit_Format.Image(Amounts(Account).Amount, True));
+    else
+      Afpx.Clear_Field (12);
+      Afpx.Encode_Field (12, (0, 0), "Overflow");
+    end if;
+    if not Amounts(Defered).Overflow then
+      Afpx.Encode_Field (14, (0, 0),
+                         Unit_Format.Image(Amounts(Defered).Amount, True));
+    else
+      Afpx.Clear_Field (14);
+      Afpx.Encode_Field (14, (0, 0), "Overflow");
+    end if;
+    if not Amounts(Margin).Overflow then
+      Afpx.Encode_Field (16, (0, 0),
+                         Unit_Format.Image(Amounts(Margin).Amount, True));
+    else
+      Afpx.Clear_Field (16);
+      Afpx.Encode_Field (16, (0, 0), "Overflow");
+    end if;
   end Encode_Summary;
 
   function My_Ptg return Boolean is
@@ -208,6 +230,8 @@ package body Screen is
         Afpx.Encode_Field (39, (0, 0), "Sorry, not implmeneted yet");
       when Internal_Error =>
         Afpx.Encode_Field (39, (0, 0), "Internal error. Saving in Tmp");
+      when Capacity_Error =>
+        Afpx.Encode_Field (39, (0, 0), "Overflow on amount value");
     end case;
     -- Loop until ack
     while not My_Ptg loop

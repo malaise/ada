@@ -77,5 +77,29 @@ package body Deletion is
     end loop;
   end Commit_Deletions;
 
+  -- Cancel all flagged operation
+  procedure Cancel_Deletions is
+    Sel : Sel_Rec;
+  begin
+    if Nb_Deleted = 0 then
+      return;
+    end if;
+
+    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0 , False);
+    loop
+      Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+      if Sel.Deleted then
+        -- Restore flag
+        Sel.Deleted := False;
+        Sel_List_Mng.Modify (Sel_List, Sel, Sel_List_Mng.Current);
+        -- Update counter
+        Nb_Deleted := Nb_Deleted - 1;
+        exit when Nb_Deleted = 0;
+      end if;
+      -- Move to previous selection
+      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
+    end loop;
+  end Cancel_Deletions;
+
 end Deletion;
 
