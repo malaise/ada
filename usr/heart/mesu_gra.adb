@@ -174,6 +174,9 @@ package body Mesu_Gra is
     if not Draw_First_Point then
       Pixel (Xa, Ya, In_Graphic);
     end if;
+  exception
+    when others =>
+      null;
   end Draw_Line;
 
   -- Graphic layout (help, scales, TZ)
