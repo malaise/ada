@@ -4,8 +4,8 @@ ssize 1 /= E pushr ifcall
 dup 0 < E pushr ifcall 
 dup 7 > E pushr ifcall 
 
-dup putl
-r popr
+putl
+prevtop r popr
 
 [ "in 1" putl r pushr retn "end 1" putl ] A popr
 [ "in 2" putl A pushr call "end 2" putl ] B popr
