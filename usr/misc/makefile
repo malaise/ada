@@ -14,6 +14,7 @@ all:
 	amake hanoi.adb
 	amake impot_02.adb
 	amake look_95.adb
+	amake mlbx_overflow.adb
 	amake one_of_arg.adb
 	amake pascal.adb
 	amake random.adb -largs $(LIBX_MNG) -lX11
