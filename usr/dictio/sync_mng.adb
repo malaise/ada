@@ -1,5 +1,5 @@
 with Timers, Event_Mng, Dynamic_List, Sys_Calls;
-with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors;
+with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors, Online_Mng;
 package body Sync_Mng is
 
 
@@ -7,7 +7,29 @@ package body Sync_Mng is
   Sync_Has_Been_Received : Boolean;
   Nb_Syn_Received : Natural := 0;
 
+
+  -- When receiving a Alive message, slave (if not sync) sends its status and
+  -- starts sync: wait Sync_Init_Timeout then Sync_Timeout then Sync_Timeout
+  --  until no (more) sync received
+  -- When receiving a sync request, master waits Sync_Listen_Timeout for
+  --  other requests then starts sync
+
+  -- Delay in master for building list of slave nodes to sync
+  -- A small value because all waiting unsynced slaves send their sync request
+  --   when they receive an alive message
+  Sync_Listen_Timeout : constant Duration := 0.3;
+
+  -- Delay after which end of sync reception sequence if no sync received
+  -- Large enough to be sure than we don't cancel a running sync
   Sync_Timeout : constant Duration := 1.0;
+
+  -- Delay for first check of end of sync reception sequence
+  -- More than Sync_Listen_Timeout so we don't cancel a sync while master
+  --  is listening
+  -- Smaller than Alive_Period so that all unsync slaves will not be in sync
+  --   at next alive message and will reauest sync
+  Sync_Init_Timeout : constant Duration
+                    := (Sync_Listen_Timeout + Online_Mng.Alive_Period) / 2;
 
 
   function Timer_Active return Boolean is
@@ -43,10 +65,10 @@ package body Sync_Mng is
   begin
     Cancel_Timer;
     Nb_Syn_Received := 0;
-    Intra_Dictio.Send_Status;
+    Intra_Dictio.Reply_Status;
     Timer_Id := Timers.Create ( (Timers.Delay_Sec,
                                  Sync_Timeout,
-                                 2 * Sync_Timeout),
+                                 Sync_Init_Timeout),
                                 Timer_Rec_Cb'access);
     Sync_Has_Been_Received := False;
     if Debug.Level_Array(Debug.Sync) then
@@ -103,6 +125,7 @@ package body Sync_Mng is
 
   package Sync_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
   Sync_List : Sync_List_Mng.List_Type;
+  procedure Sync_Search is new Sync_List_Mng.Search;
 
   procedure Do_Sync;
 
@@ -126,16 +149,20 @@ package body Sync_Mng is
       -- First dest, arm timer
       Tid := Timers.Create ( (Timers.Delay_Sec,
                               Timers.No_Period,
-                              Sync_Timeout),
+                              Sync_Listen_Timeout),
                               Timer_Sen_Cb'access);
       Sending_Status := Init;
     end if;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Adding dest " & Parse (To));
     end if;
-    Sync_List_Mng.Insert (Sync_List, To);
+    begin
+      Sync_Search (Sync_List, To, From_Current => False);
+    exception
+      when Sync_List_Mng.Not_In_List =>
+        Sync_List_Mng.Insert (Sync_List, To);
+    end;
   end Send;
-      
 
   procedure Do_Sync is
     Item : Data_Base.Item_Rec;

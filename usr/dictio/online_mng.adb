@@ -7,10 +7,11 @@ package body Online_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
 
+  -- Ever requested a sync?
+  Ever_Synced : Boolean := False;
+
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean;
-
-  Alive_Period : constant Duration := 1.0;
 
   Fight_Actions : constant Fight_Mng.Fight_Action :=
     (Nodes.Many_Master_Master => Status.Master,
@@ -54,7 +55,7 @@ package body Online_Mng is
     if Status.Get = Status.Slave then
       Start_Slave_Timeout;
       if First then
-        Sync_Mng.Start;
+        Ever_Synced := False;
       end if;
     else
       -- Master
@@ -63,6 +64,7 @@ package body Online_Mng is
       T.Period := Alive_Period;
       Tid := Timers.Create (T, Timer_Cb'Access);
       Status.Sync := True;
+      Ever_Synced := True;
       if First then
         Client_Mng.Start;
       end if;
@@ -90,39 +92,42 @@ package body Online_Mng is
                    Diff  : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
+    Crc : constant String
+        := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc);
   begin
     if Status.Get = Status.Slave then
       if Stat = Status.Master then
 
         -- Receive a Master while slave, check Crc and restart timer
         Current_Master := From;
-        if not Sync_Mng.In_Sync then
-          declare
-            Crc : constant String
-                := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc);
-          begin
-            if Crc /= "" and then Crc /= Data_Base.Get_Crc then
-              -- Crc Error: Re sync
-              if Debug.Level_Array(Debug.Online) then
-                Debug.Put ("Online: Crc error. Received " & Crc
-                         & " from: " & Parse(From)
-                         & ", got " & Data_Base.Get_Crc);
-              end if;
-              -- Invalid Crc. Re-sync.
-              Data_Base.Reset;
-              Status.Sync := False;
-              Sync_Mng.Start;
-            else
-              -- Crc OK:
-              if not Status.Sync then
-                if Debug.Level_Array(Debug.Online) then
-                  Debug.Put ("Online: Crc OK, synced.");
-                end if;
-                Status.Sync := True;
-                Client_Mng.Start;
-              end if;
+        if Crc /= "" and then not Sync_Mng.In_Sync then
+          if not Ever_Synced then
+            -- Never synced and not syncing (init). Sync.
+            if Debug.Level_Array(Debug.Online) then
+              Debug.Put ("Online: Syncing from: " & Parse(From));
             end if;
-          end;
+            Data_Base.Reset;
+            Status.Sync := False;
+            Ever_Synced := True;
+            Sync_Mng.Start;
+          elsif Crc /= Data_Base.Get_Crc then
+            -- Invalid Crc. Re-sync.
+            if Debug.Level_Array(Debug.Online) then
+              Debug.Put ("Online: Crc error. Received " & Crc
+                       & " from: " & Parse(From)
+                       & ", got " & Data_Base.Get_Crc);
+            end if;
+            Data_Base.Reset;
+            Status.Sync := False;
+            Sync_Mng.Start;
+          elsif not Status.Sync then
+            -- Crc OK and not synced
+            if Debug.Level_Array(Debug.Online) then
+              Debug.Put ("Online: Crc OK, synced");
+            end if;
+            Status.Sync := True;
+            Client_Mng.Start;
+          end if;
         end if;
 
         Delete_Timer;
