@@ -441,6 +441,7 @@ package body Tcp_Util is
     Rec.Timer := Timers.No_Timer;
     Rec.Dscr := Socket.No_Socket;
     Rec.Curr_Try := 0;
+    Rec.Fd_Set := False;
     Con_List_Mng.Insert (Con_List, Rec);
 
     -- Try to connect: call timer callback
