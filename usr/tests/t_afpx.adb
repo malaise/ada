@@ -124,6 +124,8 @@ begin
             AFPX.UPDATE_LIST(AFPX.TOP);
           when 13 =>
             AFPX.UPDATE_LIST(AFPX.BOTTOM);
+          when 14 =>
+            AFPX.UPDATE_LIST(AFPX.CENTER);
           when others =>
             null;
         end case;

@@ -178,6 +178,16 @@ DESCRIPTOR 1
     END INIT
   END FIELD
 
+  FIELD 14 BUTTON
+    GEOMETRY 12 21 14 28
+    COLORS red blue
+    INIT
+      1 1 Center
+    END INIT
+  END FIELD
+
+
+
 END DESCRIPTOR
 
 
