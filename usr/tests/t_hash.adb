@@ -43,7 +43,7 @@ begin
   loop
     My_Io.New_Line;
 
-    My_Io.Put ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, EXIT ? ");
+    My_Io.Put ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, Clear all, EXIT ? ");
     My_Io.Get_Line (Input, Len);
     Text_Handler.Set (Txt, Input(1 .. Len));
     if Text_Handler.Length(Txt) >= 3 and then Text_Handler.Value(Txt)(2) = ' ' then
@@ -77,6 +77,9 @@ begin
         when others =>
           Dos.Sound;
       end case;
+    elsif Upper_Str (Text_Handler.Value(Txt)) = "C" then
+      My_Hash.Clear_All;
+      My_Io.Put_Line ("Storage cleared.");
     elsif Upper_Str (Text_Handler.Value(Txt)) = "EXIT" then
       exit;
     else
