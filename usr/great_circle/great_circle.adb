@@ -11,7 +11,7 @@ package body Great_Circle is
   subtype Real is My_Math.Real;
 
   -- For rounding
-  Epsilon : constant := 1.0e-5;
+  Epsilon : constant := 1.0E-5;
 
   -- Earth radius
   Earth_Radius : constant Lat_Lon.Distance := 6_370.0; 

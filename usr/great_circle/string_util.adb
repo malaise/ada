@@ -92,7 +92,7 @@ package body String_Util is
     Str(4) := '.'; Str(7) := '.';
     Str(1 ..  3) := Normal (Angle.Deg, 3, Gap => '0');
     Str(5 ..  6) := Normal (Angle.Min, 2, Gap => '0');
-    Str(8 ..  9) := Normal (ANgle.Sec, 2, Gap => '0');
+    Str(8 ..  9) := Normal (Angle.Sec, 2, Gap => '0');
     return Str;
   end Angle2Str;
 
