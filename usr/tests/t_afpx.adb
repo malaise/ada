@@ -155,6 +155,9 @@ begin
       when Afpx.Signal_Event =>
         Afpx.Clear_Field (2);
         Afpx.Encode_Field (2, (1, 0), ">> Signal Event <<");
+      when Afpx.Wakeup_Event =>
+        Afpx.Clear_Field (2);
+        Afpx.Encode_Field (2, (1, 0), ">> Wakeup Event <<");
       when Afpx.Refresh =>
         Redisplay := True;
     end case;

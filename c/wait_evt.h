@@ -22,8 +22,9 @@ extern int get_signal (void);
 
 extern void evt_wake_up (void);
 
-#define SIG_EVENT (-2)
-#define NO_EVENT  (-1)
+#define WAKE_EVENT (-3)
+#define SIG_EVENT  (-2)
+#define NO_EVENT   (-1)
 extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms);
 
 extern void evt_time_remaining (int *timeout_ms, timeout_t *exp_time);

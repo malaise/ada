@@ -82,7 +82,7 @@ begin
     X_Mng.X_Wait_Event (Id, Exp, Kind);
     case Kind is
       when X_Mng.Refresh | X_Mng.Fd_Event 
-         | X_Mng.Timer_Event | X_Mng.Signal_Event =>
+         | X_Mng.Timer_Event | X_Mng.Signal_Event | X_Mng.Wakeup_Event =>
         X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
         Put (X_Mng.Event_Kind'Image(Kind));
       when X_Mng.Tid_Press | X_Mng.Tid_Release =>

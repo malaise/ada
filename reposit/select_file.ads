@@ -8,6 +8,8 @@ generic
   with procedure Timer_Callback is Null_Procedure;
   -- Any action to do when a signal_event has occured (see Afpx Signal_Event)
   with procedure Signal_Callback is Null_Procedure;
+  -- Any action to do when a wakeup_event has occured (see Afpx Wakeup_Event)
+  with procedure Wakeup_Callback is Null_Procedure;
 
 function Select_File (Descriptor : Afpx.Descriptor_Range;
                       Current_File : String;

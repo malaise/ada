@@ -5,15 +5,17 @@
 #include "boolean.h"
 #include "wait_evt.h"
 
-#define X_EVENT (-3)
+/* New kind of event (fd) added to the list */
+/*  of wait_evt (NO_EVENT, SIG_EVENT, WAKE_EVENT) */
+#define X_EVENT (-10)
 
-/* The 5 kinds of events */
-#define TID_MOTION  5
-#define REFRESH     4
-#define KEYBOARD    3
-#define TID_PRESS   2
-#define TID_RELEASE 1
+/* The 5 kinds of X events */
 #define DISCARD     0
+#define TID_RELEASE 1
+#define TID_PRESS   2
+#define KEYBOARD    3
+#define REFRESH     4
+#define TID_MOTION  5
 
 /* Basics */
 

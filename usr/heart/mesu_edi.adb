@@ -384,7 +384,8 @@ package body Mesu_Edi is
       case Ptg_Result.Event is
         when Refresh  =>
           Redisplay := True;
-        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Wakeup_Event =>
           null;
         when Keyboard =>
 
@@ -599,7 +600,8 @@ package body Mesu_Edi is
       case Ptg_Result.Event is
         when Refresh =>
           Redisplay := True;
-        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
+        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+           | Afpx.Wakeup_Event =>
           null;
         when Keyboard =>
 

@@ -224,8 +224,9 @@ package body Event_Mng is
   -------------------
   -- Waiting point --
   -------------------
-  C_No_Event  : constant Integer := -1;
-  C_Sig_Event : constant Integer := -2;
+  C_No_Event   : constant Integer := -1;
+  C_Sig_Event  : constant Integer := -2;
+  C_Wake_Event : constant Integer := -3;
   function C_Wait (P_Fd : System.Address;
                    P_Read : System.Address;
                    Timeout_Ms : System.Address) return Result;
@@ -282,6 +283,9 @@ package body Event_Mng is
       if Fd = C_Sig_Event then
         -- Signal
         Handle_Res := Handle ((Kind => Signal_Event));
+      elsif Fd = C_Wake_Event then
+        -- Signal
+        Handle_Res := Handle ((Kind => Wakeup_Event));
       elsif Fd = C_No_Event or else Fd >= 0 then
         -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
@@ -470,6 +474,8 @@ package body Event_Mng is
             end if;
             -- else No_Event
         end case;
+      when Wakeup_Event =>
+        return Wakeup_Event;
       when No_Event =>
         -- Nothing. Expire timers or return timeout
         if Timers.Expire then

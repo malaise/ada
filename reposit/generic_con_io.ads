@@ -191,9 +191,9 @@ package Generic_Con_Io is
 
     -- Gets first character (echo or not)
     -- No echo for Ret,      Esc, Break, Fd_Event, Timer_Event, Signal_Event
-    -- and Refresh where
+    -- Wakeup_Event  and Refresh where
     --             Ascii.Cr, Esc, Eot,   Stx,      Syn,         Si          
-    -- and Nul are returned respectively
+    -- So            and Nul are returned respectively
 
     -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
     --  discarded (get does not return).
@@ -240,7 +240,7 @@ package Generic_Con_Io is
     type Curs_Mvt is (Up, Down, Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
                       Left, Right, Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Timeout, Fd_Event, Timer_Event, 
-                      Signal_Event, Refresh);
+                      Signal_Event, Wakeup_Event, Refresh);
     procedure Get (Str        : out String;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;
@@ -290,6 +290,7 @@ package Generic_Con_Io is
     -- Key = 1 and Is_Char and other flags False: fd event has occured
     -- Key = 2 and Is_Char and other flags False: timer event has occured
     -- Key = 3 and Is_Char and other flags False: signal event has occured
+    -- Key = 4 and Is_Char and other flags False: wake up event has occured
     procedure Get_Key (Key     : out Natural;
                        Is_Char : out Boolean;
                        Ctrl    : out Boolean;

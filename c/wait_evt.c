@@ -245,7 +245,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
             break;
           }
         }
-        *p_fd = NO_EVENT;
+        *p_fd = WAKE_EVENT;
       } else if (*p_fd == NO_EVENT) {
 #ifdef DEBUG
         fprintf (stderr, "No fd found\n");

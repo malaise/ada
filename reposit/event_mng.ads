@@ -54,7 +54,8 @@ package Event_Mng is
   --   or until timeout
   -- Any negative timeout means infinite
   Infinite_Ms : constant Integer := -1;
-  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, No_Event);
+  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event,
+                          Wakeup_Event, No_Event);
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
   procedure Wait (Timeout_Ms : Integer);
@@ -62,13 +63,13 @@ package Event_Mng is
   -- Force re-evaluation (and expiration) of timers while in Wait
   procedure Wake_Up;
 
-  -- Waits for the specified delay or Sig_Event
+  -- Waits for the specified delay or Signal_Event or Wakeup_Event
   procedure Pause (Timeout_Ms : in Integer);
 
   ----------------------
   -- Event management --
   ----------------------
-  -- Event got by another waiting point (X_Select?)
+  -- Event got by another waiting point (X_Wait_Event?)
   subtype In_Event_List is Out_Event_List range Fd_Event .. No_Event;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record
     case Kind is
@@ -76,6 +77,8 @@ package Event_Mng is
         Fd : File_Desc;
         Read : Boolean;
       when Signal_Event =>
+        null;
+      when Wakeup_Event =>
         null;
       when No_Event =>
         null;
