@@ -1,0 +1,82 @@
+with Ada.Text_Io;
+with Sys_Calls, Proc_Family, Many_Strings, Argument, Text_Handler, Event_Mng;
+
+procedure T_Proc_Father is
+
+  Str : Text_Handler.Text(1024);
+  Spawn_Result : Proc_Family.Spawn_Result_Rec;
+
+  procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
+    use type Sys_Calls.Death_Cause_List;
+  begin
+    if Death_Report.Cause = Sys_Calls.Exited then
+      Ada.Text_Io.Put_Line ("Child pid " & Death_Report.Exited_Pid'Img
+        & " has exited with code " & Death_Report.Exit_Code'Img);
+    else
+      Ada.Text_Io.Put_Line ("Child pid " & Death_Report.Signaled_Pid'Img
+        & " has exited on signal " & Death_Report.Signal'Img);
+    end if;
+  end Death_Cb;
+
+  Done : Boolean := False;
+
+  procedure Term_Cb is
+  begin
+    Ada.Text_Io.Put_Line ("Aborted by user");
+    Done := True;
+  end Term_Cb;
+
+  I_Am_Father : Boolean;
+
+begin
+
+  -- Build String (may raise Constraint_Error if args too long)
+  for I in 1 .. Argument.Get_Nbre_Arg loop
+    if I = 1 then
+      Text_Handler.Set (Str, Argument.Get_Parameter (Occurence => I));
+    else
+      Many_Strings.Cat (Str, Argument.Get_Parameter (Occurence => I));
+    end if;
+  end loop;
+
+
+  Spawn_Result := Proc_Family.Spawn (Text_Handler.Value(Str),
+                                     True, Death_Cb'Unrestricted_Access);
+  if not Spawn_Result.Ok then
+    Ada.Text_Io.Put_Line ("Spawn result NOT OK");
+    return;
+  end if;
+
+  declare
+    use type Sys_Calls.Pid;
+  begin
+    I_Am_Father := Sys_Calls.Get_Pid /= Spawn_Result.Child_Pid;
+    if I_Am_Father then
+      Ada.Text_Io.Put_Line ("I am father of " & Spawn_Result.Child_Pid'Img);
+    else
+      Ada.Text_Io.Put_Line ("I am child " & Spawn_Result.Child_Pid'Img);
+    end if;
+  end;
+
+  if not Spawn_Result.Open then
+    Ada.Text_Io.Put_Line ("Spawn result NOT OPEN");
+    return;
+  end if;
+
+  Ada.Text_Io.Put_Line ("Fds are " & Spawn_Result.Fd_In'Img & " and "
+                                   & Spawn_Result.Fd_Out'Img);
+
+  if not I_Am_Father then
+    Ada.Text_Io.Put_Line ("Child exiting");
+    return;
+  end if;
+
+  Event_Mng.Set_Sig_Term_Callback (Term_Cb'Unrestricted_Access);
+
+  loop
+    Event_Mng.Pause (Event_Mng.Infinite_Ms);
+    exit when Done;
+  end loop;
+
+end T_Proc_Father;
+
