@@ -1,9 +1,9 @@
-# Clock display HHhMM
+# Clock display Hh:Mm
 
 # Arg error
 [ "Usage: Clock" putl ssize popn retall ] E popr
 
-# 0 arg 0
+# 0 arg
 ssize 0 /= E pushr ifcall
 
 # Get time
