@@ -1,13 +1,15 @@
+LC=-largs -lcutil
 LXC=-largs -lx_mng -lcutil -lX11
 
 EXE=mmind mmind_asc
 
-all: exes
+all: $(EXE)
 
-exes:
-	@for file in $(EXE); do \
-	  amake $$file $(LXC); \
-	done;
+mmind:
+	amake mmind $(LXC)
+
+mmind_asc:
+	amake mmind_asc $(LC)
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld
