@@ -127,7 +127,7 @@ package body Fifos is
         Rec.Len := Name'Length;
         Rec.Name (1 .. Rec.Len) := Name;
         begin
-          Search_Name (Fifo_List, Rec, From_Current => False);
+          Search_Name (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
         exception
           when Fifo_List_Mng.Not_In_List =>
             return False;
@@ -152,7 +152,7 @@ package body Fifos is
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
 
         begin
-          Search_Port (Fifo_List, Rec, From_Current => False);
+          Search_Port (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
         exception
           when Fifo_List_Mng.Not_In_List =>
             return False;
@@ -173,7 +173,7 @@ package body Fifos is
       begin
         Rec.Dscr := Dscr;
         begin
-          Search_Dscr (Fifo_List, Rec, From_Current => False);
+          Search_Dscr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
         exception
           when Fifo_List_Mng.Not_In_List =>
             return False;
@@ -201,7 +201,7 @@ package body Fifos is
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
 
         begin
-          Search_Addr (Fifo_List, Rec, From_Current => False);
+          Search_Addr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
         exception
           when Fifo_List_Mng.Not_In_List =>
             return False;

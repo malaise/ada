@@ -146,7 +146,7 @@ package body Sync_Mng is
       Debug.Put ("Sync: Adding dest " & Parse (To));
     end if;
     begin
-      Sync_Search (Sync_List, To, From_Current => False);
+      Sync_Search (Sync_List, To, From => Sync_List_Mng.Absolute);
     exception
       when Sync_List_Mng.Not_In_List =>
         Sync_List_Mng.Insert (Sync_List, To);

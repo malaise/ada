@@ -22,10 +22,10 @@ package Dynamic_List.Basic is
   -- Return True if found, False otherwise
   generic
     with procedure Search (List         : in out List_Type;
-                           Item         : in Element_Type;
+                           Criteria     : in Element_Type;
                            Where        : in Direction := Next;
                            Occurence    : in Positive := 1;
-                           From_Current : in Boolean := True);
+                           From         : in Search_Kind_List);
   procedure Find_First (List  : in out List_Type;
                         Item  : in Element_Type;
                         Found : out Boolean);

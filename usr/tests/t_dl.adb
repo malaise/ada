@@ -98,7 +98,7 @@ begin
   -- permute 1st and 4th elements, then search 3 from last
   Text_Io.Put_Line("Permute 1st and 4th elements, then seach 3 from last");
   My_List.Permute (List, 0, 3, My_List.Next, False);
-  My_Search (List, 3, My_List.Prev, 1, False);
+  My_Search (List, 3, My_List.Prev, 1, My_List.Absolute);
 
   -- get pos from first and current item
   Text_Io.Put("Get current pos from first: ");

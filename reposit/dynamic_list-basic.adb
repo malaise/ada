@@ -48,7 +48,7 @@ package body Dynamic_List.Basic is
       Found := False;
       return;
     end if;
-    Search (List, Item, From_Current => False);
+    Search (List, Item, From => Absolute);
     Found :=  True;
   exception
     when Not_In_List =>

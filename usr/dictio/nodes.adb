@@ -33,7 +33,7 @@ package body Nodes is
     Rec : Node_Rec;
   begin
     Rec.Name := Name;
-    Search_Name (Node_List, Rec, From_Current => False);
+    Search_Name (Node_List, Rec, From => Node_Mng.Absolute);
     return True;
   exception
     when Node_Mng.Not_In_List =>

@@ -193,7 +193,7 @@ package body Mesu_Sel is
         if not Is_Empty(Line_List) then
           Pos := Get_Position (Line_List);
           begin
-            File_Search (Line_List, Line, Next, 1, False);
+            File_Search (Line_List, Line, Next, 1, Absolute);
             -- Line already exists
             Ok := False;
           exception
@@ -343,7 +343,7 @@ package body Mesu_Sel is
     File_Sort (Line_List);
 
     -- Current set to inserted
-    File_Search (Line_List, Line, Next, 1, False);
+    File_Search (Line_List, Line, Next, 1, Absolute);
   end Add_Selection;
 
   -- Remove a record from selection
@@ -381,7 +381,7 @@ package body Mesu_Sel is
     Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
     -- Search record
-    File_Search (Line_List, Line, Next, 1, False);
+    File_Search (Line_List, Line, Next, 1, Absolute);
 
     -- Delete line. Update saved pos if deleting initial current line
     Curr_Pos := Get_Position (Line_List);
@@ -421,7 +421,7 @@ package body Mesu_Sel is
     Save_List;
 
     -- Search record
-    File_Search (Line_List, Line, Next, 1, False);
+    File_Search (Line_List, Line, Next, 1, Absolute);
 
     -- Delete line. Update saved pos if deleting initial current line
     Curr_Pos := Get_Position (Line_List);

@@ -29,14 +29,14 @@ package body Client_Fd is
     Rec.Soc := Client;
     Rec.Fd := Socket.Fd_Of (Client);
     begin
-      Search_Fd (Client_List, Rec, From_Current => False);
+      Search_Fd (Client_List, Rec, From => Client_List_Mng.Absolute);
       raise Client_Error;
     exception
       when Client_List_Mng.Not_In_List =>
         null;
     end;
     begin
-      Search_Soc (Client_List, Rec, From_Current => False);
+      Search_Soc (Client_List, Rec, From => Client_List_Mng.Absolute);
       raise Client_Error;
     exception
       when Client_List_Mng.Not_In_List =>
@@ -51,7 +51,7 @@ package body Client_Fd is
   begin
     Rec.Soc := Client;
     begin
-      Search_Soc (Client_List, Rec, From_Current => False);
+      Search_Soc (Client_List, Rec, From => Client_List_Mng.Absolute);
     exception
       when Client_List_Mng.Not_In_List =>
         raise Client_Error;
@@ -90,7 +90,7 @@ package body Client_Fd is
   begin
     Rec.Fd := Fd;
     begin
-      Search_Fd (Client_List, Rec, From_Current => False);
+      Search_Fd (Client_List, Rec, From => Client_List_Mng.Absolute);
     exception
       when Client_List_Mng.Not_In_List =>
         raise Client_Error;

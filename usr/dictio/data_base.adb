@@ -78,7 +78,7 @@ package body Data_Base is
       end if;
     else
       begin
-        Search_Name (Item_List, Itm, From_Current => False);
+        Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute);
         Item_List_Mng.Modify (Item_List, Itm, Item_List_Mng.Current);
       exception
         when Item_List_Mng.Not_In_List =>
@@ -112,7 +112,7 @@ package body Data_Base is
       Itm.Name := Name;
       Itm.Kind := Kind;
       begin
-        Search_Name (Item_List, Itm, From_Current => False);
+        Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute);
         Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
       exception
         when Item_List_Mng.Not_In_List =>

@@ -63,7 +63,7 @@ package body Notify is
   begin
     Rec := (Client, Item, Kind);
     begin
-      Full_Search (Notif_List, Rec, From_Current => False);
+      Full_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
     exception
       when Notif_List_Mng.Not_In_List =>
         if Debug.Level_Array(Debug.Client_Notify) then
@@ -86,7 +86,7 @@ package body Notify is
     Rec : Notif_Rec;
   begin
     Rec.Client := Client;
-    Client_Search (Notif_List, Rec, From_Current => False);
+    Client_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
     loop
       if Debug.Level_Array(Debug.Client_Notify) then
         Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
@@ -95,7 +95,7 @@ package body Notify is
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
       end if;
       Delete_Current;
-      Client_Search (Notif_List, Rec);
+      Client_Search (Notif_List, Rec, From => Notif_List_Mng.From_Current);
     end loop;
   exception
     when Notif_List_Mng.Not_In_List =>
@@ -122,7 +122,7 @@ package body Notify is
     -- Search first notification record
     Rec.Item := Item.Name;
     Rec.Kind := Item.Kind;
-    Item_Search (Notif_List, Rec, From_Current => False);
+    Item_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
     loop
       Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
       Fd := Socket.Fd_Of (Rec.Client);
@@ -148,7 +148,7 @@ package body Notify is
       -- Search next
       Notif_List_Mng.Move_To (Notif_List);
       Rec.Item := Item.Name;
-      Item_Search (Notif_List, Rec, From_Current => True);
+      Item_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
     end loop;
   exception
     when Notif_List_Mng.Not_In_List =>
