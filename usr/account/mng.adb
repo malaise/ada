@@ -375,12 +375,40 @@ package body Mng is
   -- Print account
   procedure Print is
     use Text_Io;
-    Pfn : constant String := "Printed.lpt";
+    Pfn : constant String := "Account.lpt";
     Pf : File_Type;
     Oper : Oper_Def.Oper_Rec;
     Sep : constant Character := '|';
     Index : Oper_Range;
+    Line : Positive;
+    Lines_Per_Page : Positive;
+    Page_Title : constant String
+    --     --1234 123456789  123456789012 1234 1234 12345678901234567890 12345678901234567890 1234567890
+       := "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference";
   begin
+    -- Get lines per page
+    declare
+      Set, Trunc : Boolean;
+      Val : String(1 .. 256);
+      Len : Natural;
+      Min_Lines_Per_Page : constant Positive := 10;
+      Default_Lines_Per_Page : constant Positive := 60;
+    begin
+      Sys_Calls.Getenv("ACCOUNT_LPR_LINES_PER_PAGE", Set, Trunc, Val, Len);
+      if not Set or else Len = 0 or else Trunc then 
+        Lines_Per_Page := Default_Lines_Per_Page;
+      else
+        Lines_Per_Page := Positive'Value(Val(1 .. Len));
+      end if;
+      if Lines_Per_Page < Min_Lines_Per_Page then
+        Lines_Per_Page := Default_Lines_Per_Page;
+      end if;
+    exception
+      when others =>
+        Lines_Per_Page := Default_Lines_Per_Page;
+    end;
+
+    -- Create file
     begin
       Create(Pf, Out_File, Pfn);
     exception
@@ -391,8 +419,8 @@ package body Mng is
     end;
     Put_Line(Pf, "Account: " & Text_Handler.Value(Account_Name)
                & "     at: " & Unit_Format.Date_Image(Oper_Def.Current_Date));
-    --            --1234 123456789  123456789012 1234 1234 12345678901234567890 12345678901234567890 1234567890
-    Put_Line(Pf, "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference");
+    Put_Line(Pf, Page_Title);
+    Line := 3;
 
     if not Oper_List_Mng.Is_Empty(Oper_List) then
       Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
@@ -411,13 +439,25 @@ package body Mng is
                 = Oper_List_Mng.List_Length(Oper_List);
         Oper_List_Mng.Move_To(Oper_List);
         Index := Index + 1;
+        if Line = Lines_Per_Page then
+          New_Page(Pf);
+          Put_Line(Pf, Page_Title);
+          Line := 2;
+        else
+          Line := Line + 1;
+        end if;
       end loop;
     end if;
     -- Print summary
+    if Line = Lines_Per_Page then
+      New_Page(Pf);
+      Line := 2;
+    end if;
     Put_Line(Pf, "Real: "     &  Unit_Format.Image(Real_Amount, False)
                & " Account: " &  Unit_Format.Image(Account_Amount, False)
                & " Defered: " &  Unit_Format.Image(Defered_Amount, False)
                & " Margin: "  &  Unit_Format.Image(Margin_Amount, False));
+    Line := Line + 1;
     New_Page(Pf);
     Flush(Pf);
     
