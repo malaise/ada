@@ -1,5 +1,5 @@
 with CALENDAR, TEXT_IO;
-with PERPET, DAY_MNG, MY_IO;
+with PERPET, DAY_MNG, NORMAL, MY_IO;
 procedure T_DELTA_DATE is
 
   package DUR_IO is new TEXT_IO.FIXED_IO (CALENDAR.DAY_DURATION);
@@ -99,24 +99,37 @@ procedure T_DELTA_DATE is
     YEAR : CALENDAR.YEAR_NUMBER;
     MONTH : CALENDAR.MONTH_NUMBER;
     DAY : CALENDAR.DAY_NUMBER;
-    SECONDS : CALENDAR.DAY_DURATION;
+    SECS : CALENDAR.DAY_DURATION;
+    HOUR : DAY_MNG.T_HOURS;
+    MINUTE : DAY_MNG.T_MINUTES;
+    SECOND : DAY_MNG.T_SECONDS;
+    MILLISEC : DAY_MNG.T_MILLISEC;
+
     use MY_IO;
   begin
-    CALENDAR.SPLIT (DATE, YEAR, MONTH, DAY, SECONDS);
-    PUT (YEAR); PUT (" ");
-    PUT (MONTH); PUT (" ");
-    PUT (DAY); PUT (" ");
-    MY_IO.NEW_LINE;
+    CALENDAR.SPLIT (DATE, YEAR, MONTH, DAY, SECS);
+    DAY_MNG.SPLIT (SECS, HOUR, MINUTE, SECOND, MILLISEC);
+    PUT (NORMAL(YEAR, 4, GAP => '0')); PUT ("/");
+    PUT (NORMAL(MONTH, 2, GAP => '0')); PUT ("/");
+    PUT (NORMAL(DAY, 2, GAP => '0')); PUT (" ");
+    PUT (NORMAL(HOUR, 2, GAP => '0')); PUT (":");
+    PUT (NORMAL(MINUTE, 2, GAP => '0')); PUT (":");
+    PUT (NORMAL(SECOND, 2, GAP => '0')); PUT (".");
+    PUT (NORMAL(MILLISEC, 3, GAP => '0'));
   end PUT;
 
 begin
   MY_IO.PUT_LINE ("Date1 :");
   T1 := GET;
+  PUT (T1);
+  MY_IO.PUT (" is a ");
   MY_IO.PUT_LINE (PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T1)));
   loop
     begin
       MY_IO.PUT_LINE ("Date2 :");
       T2 := GET;
+      PUT (T2);
+      MY_IO.PUT (" is a ");
       MY_IO.PUT_LINE (PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T2)));
       D := PERPET."-"(T1, T2);
       MY_IO.PUT (" Date2 - Date1:");
