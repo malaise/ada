@@ -907,20 +907,27 @@ DESCRIPTOR 4
       1 1 Not entered
     END INIT
   END FIELD
-  FIELD 11 PUT
-    GEOMETRY 11 35 11 51
+  FIELD 11 BUTTON
+    GEOMETRY 10 31 12 50
+    COLORS cyan brown
+    INIT
+      1 1 Cheque not entered
+    END INIT
+  END FIELD
+  FIELD 12 PUT
+    GEOMETRY 15 2 15 18
     COLORS light_gray not_blink black
     INIT
       0 0 Cheque reference:
     END INIT
   END FIELD
-  FIELD 12 GET
-    GEOMETRY 11 53 11 62
+  FIELD 13 GET
+    GEOMETRY 15 20 15 29
     COLORS cyan brown brown
   END FIELD
 
   # Cancel
-  FIELD 13 BUTTON
+  FIELD 14 BUTTON
     GEOMETRY 20 2 22 14
     COLORS cyan brown
     INIT

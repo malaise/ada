@@ -36,6 +36,12 @@ procedure Search is
     return Cur.Status = Crit.Status;
   end Status_Match;
 
+  function Kind_Status_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Kind_List, Oper_Def.Status_List;
+  begin
+    return Cur.Kind = Crit.Kind and then Cur.Status = Crit.Status;
+  end Kind_Status_Match;
+
   -- Unselect all non matching oper
   procedure Unsel_All(Match : in Match_Prot; Crit : in Oper_Def.Oper_Rec) is
      Oper : Oper_Def.Oper_Rec;
@@ -88,7 +94,7 @@ begin
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
             -- Return = Search ref
-            Oper.Reference := Afpx.Decode_Field(12, 0);
+            Oper.Reference := Afpx.Decode_Field(13, 0);
             Unsel_All(Ref_Match'access, Oper);
             In_Sublist := True;
             exit;
@@ -111,7 +117,14 @@ begin
             Unsel_All(Status_Match'access, Oper);
             In_Sublist := True;
             exit;
-          when 13 =>
+          when 11 =>
+            -- Cheque not entered
+            Oper.Kind := Oper_Def.Cheque;
+            Oper.Status := Oper_Def.Not_Entered;
+            Unsel_All(Kind_Status_Match'access, Oper);
+            In_Sublist := True;
+            exit;
+          when 14 =>
             -- Cancel
             In_Sublist := False;
             exit;
