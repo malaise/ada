@@ -1,6 +1,6 @@
 with TEXT_IO;
 with MY_MATH, MY_IO;
-procedure T_MY_MATH is
+procedure T_MATH is
 
   package REAL_IO is new TEXT_IO.FLOAT_IO (MY_MATH.REAL);
 
@@ -86,4 +86,4 @@ begin
     end;
     NEW_LINE;
   end loop;
-end T_MY_MATH;
+end T_MATH;
