@@ -1,6 +1,6 @@
 with MY_MATH;
-use type MY_MATH.REAL;
 package body DAY_MNG is
+  use MY_MATH;
 
   MIN_IN_HOR : constant := 60;
   SEC_IN_MIN : constant := 60;
