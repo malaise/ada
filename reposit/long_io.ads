@@ -1,0 +1,2 @@
+with TEXT_IO;
+package LONG_IO is new TEXT_IO.INTEGER_IO (LONG_LONG_INTEGER);

@@ -1,0 +1,188 @@
+# Syntax of the descriptor file
+# -----------------------------
+# <descriptor_file> ::= { <descriptor_def> }
+#
+# <descriptor_def> ::= DESCRIPTOR <descriptor_no>
+#                        [ <list_def>  ]
+#                        { <field_def> }
+#                      END DESCRIPTOR
+#
+# <list_def>  ::= LIST
+#                   <field_geo_and_color>
+#                 END LIST
+#
+# <field_def> ::= FIELD <field_no> <field_type>
+#                   <field_geo_and_color>
+#                   [ <init_def> ]
+#                 END FIELD
+#
+# <field_type> ::= PUT  |  BUTTON  |  GET
+#
+# <field_geo_and_color> ::= GEOMETRY <geometry>
+#                           COLORS   <colors>
+#
+# <geometry> ::= <upper_left_row> <upper_left_col>
+#                          <lower_right_row> <lower_right_col>
+#
+# <colors> ::= <foreground_color> [ <blink> ]
+#                          <background_color> [ <selected_color> ]
+#
+# <init_def> ::= INIT
+#                  { <init_line> }
+#                END INIT
+#
+# <init_line> ::= <init_row> <init_col> <init_string>
+#
+# <init_string> ::= { <word> }
+#
+#
+# Semantic of the descriptor file
+# -------------------------------
+# - <descriptor_no> has to within DESCRIPTOR_RANGE and sole (no double)
+# - LIST has to be defined none or once per descriptor
+# - <field_no> have to be strictly crescent within one descriptor, no "hole",
+#   no double
+# - <field_no> within FIELD_RANGE
+# - <geometry> must define at least one row and one col
+# - <geometry> of a GET field must define only ONE row
+# - <geometry> must not make field overlapping with another
+# - <foreground_color> must be of COLORS for PUT fields
+#                     and of BASIC_COLORS for BUTTON, GET and LIST
+# - <background_color> and <selected_color> must be BASIC_COLORS
+# - <blink> is mandatory for PUT fields and must not be specified
+#                    for LIST, BUTTON and GET fields
+# - <selected_color> is mandatory for LIST and GET fields and
+#                    must not be specified for PUT and BUTTON
+# - <init_line> have to be compatible with <geometry> and crescent
+# - <init_col> have to be compatible with <geometry>, sctricty crescent within
+#                    a same row and not overlapping
+# - <init_string> have to be compatible with <geometry> and <init_col>
+#
+# Infos
+# -----
+# Rows are from 0 to 24
+# Cols are from 0 to 79
+# Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
+# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
+#                              LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE
+# Blink is "blink" or "not_blink"
+#
+# Summary of color combinations
+# -----------------------------
+#  Type  |   Foreground  Blink  Background  Selected
+#  -------------------------------------------------
+#  PUT   |   X Colors    X      X Basic
+#  BUTTON|   X Basic            X Basic
+#  GET   |   X Basic            X Basic     X Basic
+#  LIST  |   X Basic            X Basic     X Basic
+
+
+
+DESCRIPTOR 1
+
+  LIST
+    GEOMETRY 6 48 20 78
+    COLORS red blue green
+  END LIST
+
+  FIELD 1 GET
+    GEOMETRY 0 1 0 35
+    COLORS red blue green
+  END FIELD
+
+  FIELD 2 PUT
+    GEOMETRY 2 0 4 79
+    COLORS red blink brown
+  END FIELD
+
+  FIELD 3 GET
+    GEOMETRY 0 37 0 78
+    COLORS red blue green
+  END FIELD
+
+  FIELD 4 BUTTON
+    GEOMETRY 10 35 12 45
+    COLORS red blue
+    INIT
+      1 2 E X I T
+    END INIT
+  END FIELD
+
+  FIELD 5 BUTTON
+    GEOMETRY 15 34 17 46
+    COLORS red blue
+    INIT
+      1 2 P R I N T
+    END INIT
+  END FIELD
+
+  FIELD 6 GET
+    GEOMETRY 19 34 19 46
+    COLORS red blue green
+  END FIELD
+
+  FIELD 7 PUT
+    GEOMETRY 22 0 24 79
+    COLORS red not_blink magenta
+    INIT
+      0 0 Type exit in a get field to desactivate it
+      1 0 Type return to print content of field, escape to clear field
+      2 0 Print button is flip-flop based on keyboard event
+
+    END INIT
+  END FIELD
+
+END DESCRIPTOR
+
+
+DESCRIPTOR 3
+
+  FIELD 1 BUTTON
+    GEOMETRY 0 50 2 60
+    COLORS red black
+    INIT
+      1 5 OK
+    END INIT
+  END FIELD
+
+END DESCRIPTOR
+
+DESCRIPTOR 4
+
+  LIST
+    GEOMETRY 0 50 2 60
+    COLORS red black green
+  END LIST
+
+END DESCRIPTOR
+
+
+DESCRIPTOR 5
+
+  FIELD 1 PUT
+    GEOMETRY 0 0 1 79
+    COLORS white not_blink black
+    INIT
+      0 0 0         1         2         3         4         5         6         7
+      1 0 01234567890123456789012345678901234567890123456789012345678901234567890123456789
+    END INIT
+  END FIELD
+
+  FIELD 2 PUT
+    GEOMETRY 2 20 2 60
+    COLORS red blink blue
+    INIT
+      0 5 Ah que coucou!
+    END INIT
+  END FIELD
+
+  FIELD 3 PUT
+    GEOMETRY 5 30 10 50
+    COLORS light_blue not_blink red
+    INIT
+      3 7 COUCOU
+    END INIT
+  END FIELD
+
+END DESCRIPTOR
+

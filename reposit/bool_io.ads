@@ -1,0 +1,2 @@
+with TEXT_IO;
+package BOOL_IO is new TEXT_IO.ENUMERATION_IO(BOOLEAN);

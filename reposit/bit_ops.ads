@@ -1,0 +1,17 @@
+package BIT_OPS is
+
+  function "AND" (LEFT, RIGHT : INTEGER) return INTEGER;
+  function "OR"  (LEFT, RIGHT : INTEGER) return INTEGER;
+  function "XOR" (LEFT, RIGHT : INTEGER) return INTEGER;
+  function "NOT" (VAL : INTEGER) return INTEGER;
+  function SHL (VAL : INTEGER; BITS : INTEGER) return INTEGER;
+  function SHR (VAL : INTEGER; BITS : INTEGER) return INTEGER;
+
+  function "AND" (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
+  function "OR"  (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
+  function "XOR" (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
+  function "NOT" (VAL : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
+  function SHL (VAL : LONG_LONG_INTEGER; BITS : INTEGER) return LONG_LONG_INTEGER;
+  function SHR (VAL : LONG_LONG_INTEGER; BITS : INTEGER) return LONG_LONG_INTEGER;
+
+end BIT_OPS;

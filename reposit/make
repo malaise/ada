@@ -1,0 +1,21 @@
+#!/bin/bash
+if [ "$1" = "clean" ]
+then
+  rm *.o *.ali
+  exit
+else
+  # Save and hide ourself
+  OLD_ADA_VIEW=${ADA_VIEW}
+  unset ADA_VIEW
+  # Compile
+  for i in `ls *.adb`
+  do
+    echo Making $i
+    amake -c $i
+  done
+  # Link afpx_bld
+  amake afpx_bld -largs /users/malaise/ada/c/libx_mng.a -lX11
+  cp afpx_bld /users/malaise/bin/
+  # Restore view to ourself
+  export ADA_VIEW=${OLD_ADA_VIEW}
+fi
