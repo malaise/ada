@@ -19,7 +19,7 @@ X_OBJS := $(X_OBJS:%=$(LIB)/%)
 
 $(LIB)/test_x.o : test_x.c x_export.h
 
-$(BIN)/test_x : $(LIB)/test_x.o
+$(BIN)/test_x : $(LIB)/test_x.o $(LIB)/libx_mng.so $(LIB)/libcutil.so
 	$(CC) -o $(BIN)/test_x $(LIB)/test_x.o -L$(LIB) -lx_mng -lcutil -lX11
 
 test_x : $(BIN)/test_x
