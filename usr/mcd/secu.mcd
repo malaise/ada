@@ -5,7 +5,7 @@ ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
 0 format dup strof strlen 13 /= E pushr ifcall
 
-97 d copyr %
-
-+- d pushr + 2 format [ "cle: " ] put putl
+# Key = 97 - N % 97
+97 d copyr % +- d pushr +
+2 format [ "key: " ] put putl
 
