@@ -818,9 +818,6 @@ int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         }
         *p_line_id = (void*) win_id;
         *p_kind = REFRESH;
-        /* Erase the window */
-        (void) lin_clear(win_id);
-        XFlush (local_server.x_server); 
         result = OK;
       break;
       default :
