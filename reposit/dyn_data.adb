@@ -23,7 +23,7 @@ package body DYN_DATA is
   --                    Null        Null
   --                     ^           ^
   --                     |           |
-  -- FIRST_FREE_DATA -> Cell ----> Cell ----> Null
+  -- FIRST_FREE_CELL -> Cell ----> Cell ----> Null
   --
 
 
