@@ -1,7 +1,9 @@
+# Look for y(x)=0 between two x
+
 # Arguments
 ssize 3 /=
 
-[ "Error, function then i then j expected" putl ssize popn retall ] ifcall
+[ "Error, i then j then function expected" putl ssize popn retall ] ifcall
 # The function
 dup isprog ~ [ "Error, function expected" putl ssize popn retall ] ifcall
 F popr
