@@ -67,10 +67,12 @@ package body C_Nbres is
     return R;
   end Reduct;
 
+  Rounding : constant := 1000000.0;
   function To_Degree (A : Radian) return Reducted_Degree is
     R : Real;
   begin
     R := Real(Reduct(A)/Reducted_Radian'Last) * Real(Reducted_Degree'Last);
+    R := Real(Round (R * Rounding) ) / Rounding;
     return Reducted_Degree (R);
   end To_Degree;
 
