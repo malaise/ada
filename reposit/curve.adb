@@ -745,7 +745,7 @@ package body CURVE is
 
 
         if EVENT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
-          -- Discard refresh when in drag 
+          -- Discard refresh when in drag
           -- Frozen mouse when done
           if CURR_ZOOM_MODE /= DONE then
             BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
@@ -827,6 +827,24 @@ package body CURVE is
               -- Compute new conversions
               MAJ (ZOOM_ARRAY(CURR_ZOOM_NO));
               return TRUE;
+            elsif CHAR = '+' then
+              if CURR_ZOOM_NO /= ZOOM_NO_RANGE'LAST then
+                CURR_ZOOM_NO := CURR_ZOOM_NO + 1;
+                -- Compute new conversions
+                MAJ (ZOOM_ARRAY(CURR_ZOOM_NO));
+                return TRUE;
+              else
+                BIG_CON_IO.BELL(3);
+              end if;
+            elsif CHAR = '-' then
+              if CURR_ZOOM_NO /= ZOOM_NO_RANGE'FIRST then
+                CURR_ZOOM_NO := CURR_ZOOM_NO - 1;
+                -- Compute new conversions
+                MAJ (ZOOM_ARRAY(CURR_ZOOM_NO));
+                return TRUE;
+              else
+                BIG_CON_IO.BELL(3);
+              end if;
             else
               -- Invalid key
               BIG_CON_IO.BELL(3);
