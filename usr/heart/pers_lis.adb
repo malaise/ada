@@ -238,6 +238,13 @@ package body PERS_LIS is
       AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
       REDISPLAY := FALSE;
 
+      -- Move in persons list according to AFPX selection
+      PERS_DEF.PERSON_LIST_MNG.MOVE_TO(
+              PERS_DEF.THE_PERSONS, NEXT,
+              AFPX.LINE_LIST_MNG.GET_POSITION(LINE_LIST) - 1,
+              FALSE);
+      
+
       case PTG_RESULT.EVENT is
 
         when REFRESH =>
@@ -283,7 +290,7 @@ package body PERS_LIS is
               PERSON.ACTIVITY := (others => ' ');
               PERSON.TZ := (others => PERS_DEF.BPM_RANGE'FIRST);
               ENCODE_PERSON;
-            when 08 =>
+            when 00 | 08 =>
               -- Edit
               STATE := IN_EDIT;
               FIRST_FIELD := 16;
