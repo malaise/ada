@@ -32,8 +32,8 @@ begin
   if ARGUMENT.GET_NBRE_ARG = 0 then
     DIR_MNG.LIST_DIR (DIR_LIST, "");
   else
-    DIR_MNG.LIST_DIR (DIR_LIST, "",
-                      TEMPLATE => ARGUMENT.GET_PARAMETER (OCCURENCE => 1));
+    DIR_MNG.LIST_DIR (DIR_LIST,
+                      ARGUMENT.GET_PARAMETER (OCCURENCE => 1));
   end if;
 
   DIR_SORT (DIR_LIST);
@@ -99,14 +99,30 @@ begin
         AFPX.SET_FIELD_ACTIVATION (5, FLIP_FLOP);
         AFPX.SET_FIELD_PROTECTION (0, not FLIP_FLOP);
       when AFPX.MOUSE_BUTTON =>
-        exit when PTG_RESULT.FIELD_NO = 4;
-        if PTG_RESULT.FIELD_NO = 5 then
-          AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, AFPX_ITEM,
-                                   AFPX.LINE_LIST_MNG.CURRENT);
-          AFPX.CLEAR_FIELD (2);
-          AFPX.ENCODE_FIELD (2, (1, 0),
-                             ">" & AFPX_ITEM.STR (1 .. AFPX_ITEM.LEN) & "<");
-        end if;
+        case PTG_RESULT.FIELD_NO is
+          when 4 =>
+            exit;
+          when 5 =>
+            AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, AFPX_ITEM,
+                                     AFPX.LINE_LIST_MNG.CURRENT);
+            AFPX.CLEAR_FIELD (2);
+            AFPX.ENCODE_FIELD (2, (1, 0),
+                               ">" & AFPX_ITEM.STR (1 .. AFPX_ITEM.LEN) & "<");
+          when 8 =>
+            AFPX.UPDATE_LIST(AFPX.UP);
+          when 9 =>
+            AFPX.UPDATE_LIST(AFPX.DOWN);
+          when 10 =>
+            AFPX.UPDATE_LIST(AFPX.PAGE_UP);
+          when 11 =>
+            AFPX.UPDATE_LIST(AFPX.PAGE_DOWN);
+          when 12 =>
+            AFPX.UPDATE_LIST(AFPX.TOP);
+          when 13 =>
+            AFPX.UPDATE_LIST(AFPX.BOTTOM);
+          when others =>
+            null;
+        end case;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;
