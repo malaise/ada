@@ -1,25 +1,40 @@
 #!/bin/bash
 error() {
-  echo "Usage: $1 <num1> <oper> <num2>"
+  echo "Usage: $1 <num1> [ { <oper> <num2> } ]"
   echo " <oper> ::= + | - | * | /"
   echo " <num1> is in Hours.MinutesSecondsMiliseconds"
   echo " <num2> is in Hours.MinutesSecondsMiliseconds if <oper> is + or -"
   exit 1
 }
 
-if [ $# -ne 3 ] ; then
+if [ $# -lt 1 ] ; then
   error `basename $0`
 fi
-case "$2" in
-  "+" | "-" )
-    num2="$3 toreal msd"
-  ;;
-  "*" | "/" )
-    num2="$3 toreal"
-  ;;
-  * )
+
+# Save first arg
+num1=$1
+shift
+
+# Loop on pairs (op, num2)
+num=""
+while [ "$1" != "" ] ; do
+  if [ "$2" = "" ] ; then
     error `basename $0`
-esac
+  fi
+  case "$1" in
+    "+" | "-" )
+      num2="$2 toreal msd"
+    ;;
+    "*" | "/" )
+      num2="$2 toreal"
+    ;;
+    * )
+      error `basename $0`
+  esac
+  num="$num $num2 $1"
+  shift
+  shift
+done
  
-mmcdt "$1" toreal msd "$num2" "$2" -e op_time.mcd 
+mmcdt "$num1" toreal msd "$num" -e op_time.mcd 
 
