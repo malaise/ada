@@ -44,6 +44,7 @@ package body Smart_Reference is
     Decrement_Ref(Ref);
   end Finalize;
 
+  -- Initialize handle
   procedure Set (Reference : in out Handle; Init : in Object) is
   begin
     Decrement_Ref(Reference);
@@ -60,11 +61,17 @@ package body Smart_Reference is
     Increment_Ref(Dest);
   end Set;
 
+  -- Release handle
+  procedure Release (Reference : in out Handle) is
+  begin
+    Finalize (Reference);
+    Reference.Box_Access := null;
+  end Release;
+
+  -- Get a copy of referenced object
   procedure Dereference (Reference : in out Handle; Val : in out Object) is
   begin
-    Trace("Dereference");
     Set (Val, Reference.Box_Access.Obj);
-    Trace("Dereferenced");
   end Dereference;
   function  Dereference (Reference : Handle) return Object is
   begin

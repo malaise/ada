@@ -8,8 +8,12 @@ package Smart_Reference is
 
   -- Initialise a Handle to an object 
   procedure Set (Reference : in out Handle; Init : in Object);
+
   -- Copy handle
   procedure Set (Dest : in out Handle; Val : in Handle);
+
+  -- Release handle
+  procedure Release (Reference : in out Handle);
 
   -- Get handled object
   function  Dereference (Reference : Handle) return Object;
@@ -25,7 +29,7 @@ private
   type Object_Box_Access is access Object_Box;
 
   type Handle is new Ada.Finalization.Controlled with record
-    Box_Access : Object_Box_Access;
+    Box_Access : Object_Box_Access := null;
   end record;
   procedure Initialize (Ref : in out Handle);
   procedure Finalize (Ref : in out Handle);
