@@ -38,7 +38,12 @@ package body Input_Dispatcher is
       Cur_Index := Cur_Index + 1;
     end loop;
     if Cur_Index > Cur_Len then
-      -- no more word
+      -- No more word
+      return "";
+    end if;
+
+    if Cur_Str(Cur_Index) = '#' then
+      -- Comment: skip line
       return "";
     end if;
 
@@ -179,7 +184,7 @@ package body Input_Dispatcher is
             when Text_Io.End_Error =>
               return "";
           end;
-          if Len_Stdin /= 0 and then Str_Stdin(1) /= '#' then
+          if Len_Stdin /= 0 then
             -- Str not to discard, parse it
             Text_Handler.Set(Word, First_Str_Word(Str_Stdin(1 .. Len_Stdin)));
             exit when not Text_Handler.Empty(Word);

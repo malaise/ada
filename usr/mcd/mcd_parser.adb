@@ -348,6 +348,7 @@ package body Parser is
   begin
     Put_Line ("Commands are read from standard input. No argument accepted.");
     Put_Line ("Separators are space and horizontal tab.");
+    Put_Line ("Comments start by '#', up to the end of line");
     Put_Line ("Item ::= <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
     Put_Line ("  <integer>    ::= <number> | <base>#<number># ");
     Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
