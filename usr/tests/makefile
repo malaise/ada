@@ -1,6 +1,8 @@
 LIBX_MNG=/users/malaise/ada/c/libx_mng.a
 
-all:
+all: do_all AFPX.DSC
+
+do_all:
 	amake t_afpx.adb -largs $(LIBX_MNG) -lX11
 	amake t_arg.adb
 	amake t_con.adb -largs $(LIBX_MNG) -lX11
@@ -26,8 +28,9 @@ all:
 	amake t_syslin.adb
 	amake t_urand.adb
 	amake t_x.adb -largs $(LIBX_MNG) -lX11
-	afpx_bld
 
+AFPX.DSC: AFPX.LIS
+	afpx_bld
 
 clean:
 	rm *.o *.ali
