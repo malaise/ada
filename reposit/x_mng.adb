@@ -1,5 +1,5 @@
 with Calendar, System;
-with Dynamic_List, My_Io, Timers;
+with Dynamic_List, My_Io, Timers, Address_Image;
 package body X_Mng is
 
   -- Duration
@@ -13,7 +13,7 @@ package body X_Mng is
   Ok : constant Result := 0;
 
   -- Line access for X
-  subtype Line_For_C  is System.Address;
+  subtype Line_For_C is System.Address;
   No_Line_For_C : constant Line_For_C := System.Null_Address;
 
   -- True if the connection to X has been initialised
@@ -469,6 +469,10 @@ package body X_Mng is
                         Line_Definition.Border, 
                         Line_Definition.No_Font,
                         Line_For_C_Id'Address) = Ok;
+    if Debug then
+      My_Io.Put_Line ("Open_Line " & Line_Id.No'Img
+                    & " -> " & Address_Image(Line_For_C_Id));
+    end if;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       Dispatcher.Unregister(Line_Id.No);
@@ -1007,6 +1011,10 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Get_Event(Line_Id.No, Kind, Next);
+    if Debug then
+      My_Io.Put_Line ("X_Process_Event " & Line_Id.No'Img
+                   & " -> " & Kind'Img & ", Next: " & Next'Img);
+    end if;
   end X_Process_Event;
 
   ------------------------------------------------------------------
@@ -1337,13 +1345,25 @@ package body X_Mng is
                                    Client : in out Client_Range;
                                    Found : out Boolean) is
     begin
+      if Debug then
+        My_Io.Put_Line ("  Get_Client_From_Line "
+                      & Address_Image(Line_For_C_Id));
+      end if;
+
       -- Same as current?
       if Clients(Client).Known
       and then Clients(Client).Line_For_C_Id = Line_For_C_Id then
         Found := True;
+        if Debug then
+          My_Io.Put_Line ("  GCFL -> same");
+        end if;
         return;
       end if;
       for I in Client_Range loop
+        if Debug and then Clients(I).Known then
+          My_Io.Put_Line ("  GCFL loop " & I'Img & " known as "
+                        & Address_Image(Clients(I).Line_For_C_Id));
+        end if;
         if Clients(I).Known
         and then Clients(I).Line_For_C_Id = Line_For_C_Id then
           Found := True;
@@ -1352,6 +1372,9 @@ package body X_Mng is
         end if;
       end loop;
       Client := Client_Range'First;
+        if Debug then
+          My_Io.Put_Line ("  GCFL -> NOT FOUND!!!");
+        end if;
       Found := False;
     end Get_Client_From_Line;
 
