@@ -43,6 +43,8 @@ package body Screen is
     if Mode = Default then
       Update_To_Unit;
     end if;
+    -- Exit
+    Afpx.Set_Field_Activation(39, Mode = Default);
     -- Message
     Afpx.Clear_Field(40);
     -- Confirm Ack
@@ -172,9 +174,32 @@ package body Screen is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
+
+            -- List movements
+            when 17 =>
+              -- Top
+              Afpx.Update_List(Afpx.Top);
+            when 18 =>
+              -- PgUp
+              Afpx.Update_List(Afpx.Page_Up);
+            when 19 =>
+              -- Up
+              Afpx.Update_List(Afpx.Up);
+            when 20 =>
+              -- Down
+              Afpx.Update_List(Afpx.Down);
+            when 21 =>
+              -- PgDown
+              Afpx.Update_List(Afpx.Page_Down);
+            when 22 =>
+              -- Bottom
+              Afpx.Update_List(Afpx.Bottom);
+
             when 41 =>
+              -- Ack
               return True;
             when 42 =>
+              -- Nack
               return False;
             when others =>
               null;
