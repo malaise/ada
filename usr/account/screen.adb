@@ -71,8 +71,12 @@ package body Screen is
     Sublist_Active := Active;
     if Sublist_Active then
       Afpx.Encode_Field(29, (0, 1), "UN SEL");
+      Afpx.Set_Field_Colors(37, Con_Io.Blue);
+      Afpx.Set_Field_Colors(38, Con_Io.Blue);
     else
-       Afpx.Reset_Field(29, Reset_Colors => False);
+      Afpx.Reset_Field(29, Reset_Colors => False);
+      Afpx.Reset_Field(37, Reset_String => False);
+      Afpx.Reset_Field(38, Reset_String => False);
     end if;
     Afpx.Set_Field_Activation(30, Sublist_Active);
   end Sublist;
