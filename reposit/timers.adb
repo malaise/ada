@@ -1,5 +1,5 @@
-with Dynamic_List;
-package body  Timers is
+with Dynamic_List, X_Mng;
+package body Timers is
 
   -- Return an image of a timer
   function Image (Id : Timer_Id) return String is
@@ -9,7 +9,7 @@ package body  Timers is
 
   -- Allocated timer Ids
   subtype Timer_Id_Range is Positive;
-  Next_Timer_Id : Positive := Positive'First;
+  Next_Timer_Id : Timer_Id_Range := Timer_Id_Range'First;
   -- Allocate a new (free) timer id
   function Get_Next_Id return Timer_Id_Range;
 
@@ -39,6 +39,15 @@ package body  Timers is
   end Id_Match;
   procedure Search_Id is new Timer_List_Mng.Search (Id_Match);
 
+  procedure Incr_Id is
+  begin
+    if Next_Timer_Id /= Timer_Id_Range'Last then
+      Next_Timer_Id := Next_Timer_Id + 1;
+    else
+      Next_Timer_Id := Timer_Id_Range'First;
+    end if;
+  end Incr_Id;
+
   -- Allocate a new (free) timer id
   function Get_Next_Id return Timer_Id_Range is
     Start_Id : constant Timer_Id_Range := Next_Timer_Id;
@@ -53,14 +62,11 @@ package body  Timers is
       exception
         when Timer_List_Mng.Not_In_List =>
           -- Good
+          Incr_Id;
           return Timer.Id;
       end;
       -- Bad luck, this Id is in use. Try next. 
-      if Next_Timer_Id /= Timer_Id_Range'Last then
-        Next_Timer_Id := Next_Timer_Id + 1;
-      else
-        Next_Timer_Id := Timer_Id_Range'First;
-      end if;
+      Incr_Id;
       -- Check we have not tried ALL timers
       if Next_Timer_Id = Start_Id then
         raise No_More_Timer;
@@ -74,6 +80,7 @@ package body  Timers is
   function Create (Delay_Spec : Delay_Rec;
                    Callback   : Timer_Callback) return Timer_Id is
     Timer : Timer_Rec;
+    This_Id : Timer_Id_Range;
     use Ada.Calendar;
   begin
     -- Compute expiration time ASAP
@@ -99,8 +106,15 @@ package body  Timers is
     Timer_List_Mng.Insert (Timer_List, Timer, Timer_List_Mng.Prev);
     Sort (Timer_List);
 
+    -- If this timer is first then force wake-up of select
+    This_Id := Timer.Id;
+    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    if Timer.Id = This_Id then
+      X_Mng.X_Wake_Up;
+    end if;
+
     -- Done
-    return (Timer_Num => Timer.Id);
+    return (Timer_Num => This_Id);
   end Create;
 
   -- Locate a timer in list

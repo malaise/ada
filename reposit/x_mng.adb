@@ -297,6 +297,12 @@ package body X_Mng is
   pragma Import(C, X_Fd_Set, "x_fd_set");
 
   ------------------------------------------------------------------
+  -- Wake-up the select
+  ------------------------------------------------------------------
+  procedure C_X_Wake_Up;
+  pragma Import(C, C_X_Wake_Up, "x_wake_up");
+
+  ------------------------------------------------------------------
   -- Wait for some events
   -- int x_select (int *p_fd, int *timeout_ms);
   ------------------------------------------------------------------
@@ -1627,6 +1633,12 @@ package body X_Mng is
         return False;
     end case;
   end Select_No_X;
+
+  ------------------------------------------------------------------
+  procedure X_Wake_Up is
+  begin
+    C_X_Wake_Up;
+  end X_Wake_Up;
 
 end X_Mng;
 

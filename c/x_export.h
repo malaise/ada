@@ -92,6 +92,8 @@ extern int x_add_fd (int fd, boolean read);
 extern int x_del_fd (int fd, boolean read);
 extern boolean x_fd_set (int fd, boolean read);
 
+extern void x_wake_up (void);
+
 #define SIG_EVENT (-3)
 #define NO_EVENT  (-2)
 #define X_EVENT   (-1)

@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 #include <X11/cursorfont.h>
 
 #include "x_export.h"
@@ -140,14 +141,44 @@ static void signal_handler (int sig) {
   sig_received = sig;
 }
 
-static void set_sig_handler (void) {
+
+static int wake_up_fds[2] = {-1, -1};
+extern void x_wake_up (void) {
+  char c;
+  int r;
+
+  if (wake_up_fds[1] == -1) {
+    return;
+  } else {
+    c = 'w';
+    for (;;) {
+      r = write (wake_up_fds[1], &c, 1);
+      if ( (r == -1) && (errno != EINTR) ) {
+#ifdef DEBUG
+        perror("write");
+#endif
+        return;
+      }
+      if (r == 1) {
+        return;
+      }
+    }
+  }
+}
+
+
+
+/* Init signal handling and wake-up pipe */
+static void init_select (void) {
   /* Set handler if not set */
   if (sig_received == NO_HANDLER) {
     sig_received = NO_SIG;
     (void) signal(SIGINT,  signal_handler);
   }
+  if (wake_up_fds[0] == -1) {
+    (void) pipe (wake_up_fds);
+  }
 }
-
 
 /***** Event management *****/
 
@@ -182,14 +213,16 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   int i, n;
   timeout_t cur_time, exp_time, exp_select, timeout, *timeout_ptr;
   boolean timeout_is_active, blink_is_active;
+  size_t size;
+  char c;
 
 
   if (p_fd == (int*) NULL) {
     return (ERR);
   }
 
-  /* Init signal handling */
-  set_sig_handler ();
+  /* Init signal handling and wake-up pipe */
+  init_select ();
 
   /* Compute exp_time = cur_time + timeout_ms */
   blink_is_active = (curr_percent != 0);
@@ -262,12 +295,21 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
       bcopy ((char*)&global_write_mask, (char*)&select_write_mask,
              sizeof(fd_set));
       last_select_fd = last_fd;
+      /* Add X fd */
       if (x_soc != -1) {
         FD_SET(x_soc, &select_read_mask);
         if (x_soc > last_select_fd) {
           last_select_fd = x_soc;
         }
       }
+      /* Add wake up fd */
+      if (wake_up_fds[0] != -1) {
+        FD_SET(wake_up_fds[0], &select_read_mask);
+        if (wake_up_fds[0] > last_select_fd) {
+          last_select_fd = wake_up_fds[0];
+        }
+      }
+
       /* Default result */
       *p_fd = NO_EVENT;
       *p_read = TRUE;
@@ -300,6 +342,22 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
             }
           }
         }
+        /* p_fd is still NO_EVENT if no fd (i.e. wake-up) */
+        if (FD_ISSET(wake_up_fds[0], &select_write_mask)) {
+          for (;;) {
+            size = read (wake_up_fds[0], &c, sizeof(c));
+            if ( (size == -1) && (errno != EINTR) ) {
+#ifdef DEBUG
+              perror ("read");
+#endif
+              break;
+            }
+            if (size == 1) {
+              break;
+            }
+          }
+        }
+
         time_remaining (timeout_ms, &exp_time);
         return (OK);
       } else if (n < 0) {

@@ -250,6 +250,9 @@ package X_Mng is
   -- Is a callback set on signals
   function X_Signal_Set return Boolean;
 
+  -- Force re-evaluation (and expiration) of timers
+  procedure X_Wake_Up;
+
   -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
   --  (or X_FAILURE will be raised)
   -- Return True if an event has occured

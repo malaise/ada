@@ -1,7 +1,8 @@
 -- Test timers
 -- Periodical : 1 then each 3 secs
 -- Single     : 1 then [1, 5] secs re-created in the callback
--- Funny      : 0 then once [10, 15[ in then callback then never
+-- Funny      : 0 then in [2.1, 2.9[ with callback (10 times) 
+--                then once in 20 with no callback (then never)
 -- Never      : never
 
 with Ada.Text_Io;
@@ -46,6 +47,8 @@ procedure T_Timers is
 
   The_Timers : array (Timer_List) of Timers.Timer_Id;
 
+  Use_Afpx : Boolean := False;
+
   -- Generic callback
   function CallBack (Id : in Timers.Timer_Id) return Boolean;
 
@@ -56,16 +59,23 @@ procedure T_Timers is
                    Cb : in Boolean) is
     A : Timers.Timer_Callback;
   begin
-   if Cb
-     then A := CallBack'Unrestricted_Access;
-   else
-     A := null;
-   end if;
-   The_Timers(T) := Timers.Create (
-       Delay_Spec => (Delay_Kind => Timers.Delay_Sec,
-                      Delay_Seconds => D,
-                      Period => P),
-       Callback   => A);
+    if Cb
+      then A := CallBack'Unrestricted_Access;
+    else
+      A := null;
+    end if;
+    The_Timers(T) := Timers.Create (
+        Delay_Spec => (Delay_Kind => Timers.Delay_Sec,
+                       Delay_Seconds => D,
+                       Period => P),
+        Callback   => A);
+    if Use_Afpx then 
+      Put_Line ("Created timer " & Timer_List'Image(T) & ": "
+              & Timers.Image(The_Timers(T)));
+    else
+      Ada.Text_Io.Put_Line ("Created timer " & Timer_List'Image(T) & ": "
+                          & Timers.Image(The_Timers(T)));
+    end if;
   end Start;
 
   Nb_Funny : Natural := 0;
@@ -73,19 +83,20 @@ procedure T_Timers is
 
   -- Generic callback
   function CallBack (Id : in Timers.Timer_Id) return Boolean is
-    Use_Afpx : Boolean;
     use type Timers.Timer_Id;
     N : Positive;
   begin
-    declare
-      W : Afpx.Width_Range;
-    begin
-      W := Afpx.Get_Field_Width (F);
-      Use_Afpx := True;
-    exception
-      when Afpx.No_Descriptor =>
-        Use_Afpx := False;
-    end;
+    if not Use_Afpx then
+      declare
+        W : Afpx.Width_Range;
+      begin
+        W := Afpx.Get_Field_Width (F);
+        Use_Afpx := True;
+      exception
+        when Afpx.No_Descriptor =>
+          null;
+      end;
+    end if;
     for T in Timer_List loop
       if The_Timers(T) = Id then
         if Use_Afpx then
@@ -104,11 +115,11 @@ procedure T_Timers is
             Start (Funny, 20.0, Timers.No_Period, False);
           end if;
           return False;
-        end if;     
+        end if;
         return True;
       end if;
     end loop;
-    Ada.Text_Io.Put_Line ("Expiration of unknown timer");
+    Ada.Text_Io.Put_Line ("Expiration of unknown timer:" & Timers.Image(Id));
     return False;
   end CallBack;
 
