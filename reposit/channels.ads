@@ -127,7 +127,8 @@ package Channels is
     -- Reply to sender of last message received
     -- Should only be called in Read_Cb.
     -- May raise Not_In_Read if not called by Read_Cb
-    -- May raise Reply_Failed if reply cannot be sent
+    -- May raise Reply_Overflow if reply cannot be sent due to overflow
+    -- May raise Reply_Failed if reply cannot be sent due to other error
     procedure Reply (Message : in Message_Type;
                      Length : in Message_Length := 0);
 
