@@ -209,12 +209,17 @@ package body AF_LIST is
     if not OPENED then
       raise NOT_OPENED;
     end if;
+    -- Update may be called before 1st PTG
+    if STATUS.ID_SELECTED = 0 then
+      COMPUTE (1);
+    end if;
+    -- List is empty or nothing to scroll
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST)
     or else STATUS.NB_ROWS /= AF_DSCR.FIELDS(LFN).HEIGHT then
       return;
     end if;
 
-    -- Update selectection, cause current may have changed
+    -- Update selection, cause current may have changed
     -- called by user
     AF_LIST.SET_SELECTED (LINE_LIST_MNG.GET_POSITION(LINE_LIST));
 
@@ -276,6 +281,29 @@ package body AF_LIST is
         FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
                          - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
         DISPLAY (FIRST_ITEM_ID);
+      when CENTER =>
+        -- Center current LIST item in window (do ower best)
+        declare
+          -- List length
+          LEN : constant POSITIVE := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST);
+          -- Current position in list
+          POS : constant POSITIVE
+              := LINE_LIST_MNG.GET_POSITION (LINE_LIST);
+          -- Row in window to put it
+          HEIGHT : constant POSITIVE := AF_DSCR.FIELDS(LFN).HEIGHT;
+          MIDROW : constant NATURAL := HEIGHT / 2;
+          LASTROW : constant NATURAL := HEIGHT - 1;
+        begin
+          if POS - 1 < MIDROW then
+            UPDATE(TOP);
+          elsif LEN - POS < LASTROW - MIDROW then
+            UPDATE(BOTTOM);
+          else
+            FIRST_ITEM_ID := POS - MIDROW;
+            DISPLAY (FIRST_ITEM_ID);
+          end if;
+        end;
+
     end case;
   exception
     when others =>
