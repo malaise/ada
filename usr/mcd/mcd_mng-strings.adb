@@ -100,13 +100,13 @@ package body STRINGS is
       TEXT_HANDLER.AMEND(TO => TXT, 
                          BY => PAT.VAL_TEXT(1 .. PAT.VAL_LEN),
                          POSITION => TEXT_HANDLER.MAX_LEN_RANGE(I.VAL_INTE) );
-      if TEXT_HANDLER.LENGTH(TXT) > CHARS_TEXT'LENGTH then
-        raise STRING_LEN;
-      end if;
       RES.VAL_LEN := TEXT_HANDLER.LENGTH(TXT);
       RES.VAL_TEXT(1 .. RES.VAL_LEN) := TEXT_HANDLER.VALUE(TXT);
     end;
     return RES;
+  exception
+    when CONSTRAINT_ERROR =>
+      raise STRING_LEN;
   end STRREP;
 
   function STRLEN (S : ITEM_REC) return ITEM_REC is
