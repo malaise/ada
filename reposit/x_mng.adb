@@ -35,7 +35,7 @@ package body X_MNG is
   -- int x_initialise (char *server_name);
   ------------------------------------------------------------------
   function X_INITIALISE (SERVER_NAME : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT (C, X_INITIALISE, "x_initialise");
+  pragma IMPORT(C, X_INITIALISE, "x_initialise");
 
   ------------------------------------------------------------------
   -- Opens a line
@@ -379,6 +379,7 @@ package body X_MNG is
                         LINE_FOR_C_ID'ADDRESS) = OK;
     DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
     if not RES then
+      DISPATCHER.UNREGISTER(LINE_ID.NO);
       raise X_FAILURE;
     end if;
   end X_OPEN_LINE;
@@ -760,6 +761,7 @@ package body X_MNG is
     use CALENDAR;
     TIMEOUT : DURATION;
     SECS : INTEGER;
+    MSECS : FLOAT;
   begin
     if not INITIALISED or else LINE_ID = NO_CLIENT then
       raise X_FAILURE;
@@ -768,8 +770,9 @@ package body X_MNG is
     EXP := CALENDAR.CLOCK;
     if TIMEOUT_MS > 0 then
       SECS := TIMEOUT_MS / 1_000;
+      MSECS := FLOAT(TIMEOUT_MS - SECS * 1_000) / 1_000.0;
       TIMEOUT := DURATION(SECS)
-               + DURATION(TIMEOUT_MS - SECS * 1_000) / 1_000.0;
+               + DURATION(MSECS);
       EXP := EXP + TIMEOUT;
     else
       TIMEOUT := -1.0;
@@ -780,7 +783,10 @@ package body X_MNG is
     DISPATCHER.SOME_EVENT(LINE_ID.NO)(X_EVENT);
     -- Compute remaining time
     if TIMEOUT_MS > 0 then
-      TIMEOUT_MS := INTEGER ( (EXP - CALENDAR.CLOCK) * 1000.0);
+      TIMEOUT_MS := INTEGER ( FLOAT(EXP - CALENDAR.CLOCK) * 1_000.0);
+      if TIMEOUT_MS < 0 then
+        TIMEOUT_MS := 0;
+      end if;
     end if;
   end X_SELECT;
 
@@ -797,7 +803,7 @@ package body X_MNG is
 
   ------------------------------------------------------------------
   procedure X_READ_TID(LINE_ID : in LINE;
-                       ROW_COL : BOOLEAN;
+                       ROW_COL : in BOOLEAN;
                        BUTTON : out BUTTON_LIST;
                        ROW, COLUMN : out INTEGER) is
     LOC_BUTTON : INTEGER;
