@@ -295,8 +295,9 @@ package body AFPX is
     end if;
 
     -- Check that FROM_POS.COL + STR is length compatible with field width
-    if not AFPX_TYP.IN_FIELD (FIELD,
-           (FROM_POS.ROW, FROM_POS.COL + STR'LENGTH - 1)) then
+    if STR'LENGTH /= 0
+     and then not AFPX_TYP.IN_FIELD (FIELD,
+                       (FROM_POS.ROW, FROM_POS.COL + STR'LENGTH - 1)) then
 	  raise STRING_TOO_LONG;
     end if;
     -- Copy in init string
