@@ -14,6 +14,9 @@ elif [ "$1" = "all" ] ; then
   build
   build html
   exit 0
+elif [ "$1" = "help" ] ; then
+  echo "Usage: `basename $0`  [ html | clean_html | all | clean_all ] "
+  exit 0
 fi
 
 cur=`pwd`
