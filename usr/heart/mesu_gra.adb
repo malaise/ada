@@ -479,6 +479,21 @@ package body Mesu_Gra is
 
           Draw_Mesure (No_Mesure);
         end if;
+      elsif Char = Ascii.Nul then
+        -- Refresh
+        Con_Io.Reset_Term;
+        Con_Io.Set_Xor_Mode(Con_Io.Xor_On);
+        Draw_Layout;
+        -- Redraw mesures
+        for I in 1 .. Nb_Mesure loop
+          if Mesure_Array(I).Drown then
+            Draw_Mesure (I);
+          end if;
+        end loop;
+        -- Tz_Drown is already up to date
+        if Tz_Drown then
+          Draw_Tz(True);
+        end if;
       end if;
     end loop Main_Loop;
 
