@@ -1,51 +1,38 @@
 with System;
-with Unchecked_Conversion;
-
+with Interfaces.C_Streams;
+with Interfaces.C.Strings;
 with Ada.Command_Line;
-with System.Os_Interface;
-
-
 
 package body Sys_Calls is
 
-
-
   function C_Strlen (S : System.Address) return Natural;
-  pragma Interface(C, C_Strlen);
-  pragma Interface_Name(C_Strlen, "strlen");
+  pragma Import (C, C_Strlen, "strlen");
 
   function C_Strcpy (Dest, Src : System.Address) return System.Address;
-  pragma Interface(C, C_Strcpy);
-  pragma Interface_Name(C_Strcpy, "strcpy");
+  pragma Import (C, C_Strcpy, "strcpy");
 
   function C_Memcpy (Dest, Src : System.Address; Size : Integer)
   return System.Address;
-  pragma Interface(C, C_Memcpy);
-  pragma Interface_Name(C_Memcpy, "memcpy");
-
-  type Str_Access is access String;
+  pragma Import (C, C_Memcpy, "memcpy");
 
   function Str_For_C (Str : String) return String is
   begin
     return Str & Ascii.Nul;
   end Str_For_C;
 
-  function Str_From_C (Str_Ptr : Str_Access) return String is
-    Str_Len : Natural;
+  function Str_From_C (Str_Addr : Interfaces.C.Strings.Chars_Ptr) return String is
   begin
-    Str_Len := 0;
-    while Str_Ptr.All(Str_Len) /= Ascii.Nul loop
-      Str_Len := Str_Len + 1;
-    end loop;
-    return Str_Ptr.All (1 .. Str_Len);
+    return Interfaces.C.Strings.Value(Str_Addr);
+  exception
+    when Interfaces.C.Strings.Dereference_Error =>
+      return "";
   end Str_From_C;
 
   function Call_System (Command : String) return Integer is
     Command4C : constant String := Str_For_C (Command);
 
     function C_System (Command : System.Address) return Integer;
-    pragma Interface(C, C_System);
-    pragma Interface_Name(C_System, "system");
+    pragma Import (C, C_System, "system");
 
   begin
     return C_System (Command4C'Address);
@@ -56,8 +43,7 @@ package body Sys_Calls is
     Res : Integer;
 
     function C_Unlink (Pathname: System.Address) return Integer;
-    pragma Interface(C, C_Unlink);
-    pragma Interface_Name(C_Unlink, "unlink");
+    pragma Import (C, C_Unlink, "unlink");
 
   begin
     Res := C_Unlink (File_Name4C'Address);
@@ -70,57 +56,44 @@ package body Sys_Calls is
     Res : Integer;
 
     function C_Rename (Oldpath, Newpath : System.Address) return Integer;
-    pragma Interface(C, C_Rename);
-    pragma Interface_Name(C_Rename, "rename");
+    pragma Import (C, C_Rename, "rename");
   begin
     Res := C_Rename (Src4C'Address, Dest4C'Address);
     return Res = 0;
   end Rename;
 
   function Errno return Integer is
+    function C_Get_Errno return Integer;
+    pragma Import (C, C_Get_Errno, "__get_errno");
   begin
-
-    return Integer(System.Os_Interface.Errno);
-
+    return C_Get_Errno;
   end Errno;
    
  
   function Str_Error (Err : Integer) return String is
-    Addr : System.Address;
 
-    function C_Strerror (Errnum: Integer) return System.Address;
-    pragma Interface(C, C_Strerror);
-    pragma Interface_Name(C_Strerror, "strerror");
+    function C_Strerror (Errnum: Integer) return Interfaces.C.Strings.Chars_Ptr;
+    pragma Import (C, C_Strerror, "strerror");
 
-    use System;
   begin
-    Addr := C_Strerror (Err);
-    if Addr = System.Null_Address then
-      return "";
-    end if;
-    declare
-      Result : String (1 .. C_Strlen(Addr));
-      Dummy_Addr : System.Address;
-    begin
-      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
-      return Result;
-    end;
+    return Str_From_C (C_Strerror (Err));
   end Str_Error;
 
-  procedure Put_Error (Str : in System.Address);
-  pragma Interface(C, Put_Error);
-  pragma Interface_Name(Put_Error, "put_error");
 
   procedure Put_Error (Str : in String) is
+    I : Interfaces.C_Streams.Int;
     C_Str : constant String := Str & Ascii.Nul;
   begin
-    Put_Error (C_Str'Address);
+    I := Interfaces.C_Streams.Fputs (C_Str'Address,
+                 Interfaces.C_Streams.Stderr);
   end Put_Error;
 
   procedure New_Line_Error is
+    I : Interfaces.C_Streams.Int;
     C_Str : constant String := Ascii.Lf & Ascii.Nul;
   begin
-    Put_Error (C_Str'Address);
+    I := Interfaces.C_Streams.Fputs (C_Str'Address,
+                 Interfaces.C_Streams.Stderr);
   end New_Line_Error;
 
   procedure Put_Line_Error (Str : in String) is
@@ -139,8 +112,7 @@ package body Sys_Calls is
     Addr : System.Address;
 
     function C_Getenv (Name : in System.Address) return System.Address;
-    pragma Interface(C, C_Getenv);
-    pragma Interface_Name(C_Getenv, "getenv");
+    pragma Import (C, C_Getenv, "getenv");
 
     use System;
   begin
@@ -172,16 +144,16 @@ package body Sys_Calls is
 
   procedure Set_Exit_Code (Code : in Natural) is
   begin
-
     Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Exit_Status(Code));
-
   end Set_Exit_Code;
 
+  -- Set error exit code
   procedure Set_Error_Exit_Code is
   begin
     Set_Exit_Code(1);
   end Set_Error_Exit_Code;
 
+  -- Stdin
   function Stdin return File_Desc is
   begin
     return 0;
