@@ -29,12 +29,20 @@ package body Online_Mng is
     Tid := Timers.Create (T, Timer_Cb'Access);
   end Start_Slave_Timeout;
 
+  No_Master : constant Tcp_Util.Host_Name := (others => ' ');
+  Current_Master : Tcp_Util.Host_Name := No_Master;
+
+  procedure Reset_Master is
+  begin
+    Current_Master := No_Master;
+  end Reset_Master;
 
   procedure Start (First : in Boolean) is
     T : Timers.Delay_Rec;
     use type Status.Status_List;
     use type Timers.Timer_Id;
   begin
+    Reset_Master;
     if Status.Get = Status.Slave then
       Start_Slave_Timeout;
       if First then
@@ -42,6 +50,7 @@ package body Online_Mng is
       end if;
     else
       -- Master
+      Local_Host_Name.Get (Current_Master);
       T.Delay_Seconds := 0.0;
       T.Period := Alive_Period;
       Tid := Timers.Create (T, Timer_Cb'Access);
@@ -58,6 +67,7 @@ package body Online_Mng is
 
   procedure Start_Fight is
   begin
+    Reset_Master;
     if Sync_Mng.In_Sync then
       Sync_Mng.Cancel;
     end if;
@@ -73,7 +83,9 @@ package body Online_Mng is
   begin
     if Status.Get = Status.Slave then
       if Stat = Status.Master then
+
         -- Receive a Master while slave, check Crc and restart timer
+        Current_Master := From;
         if not Sync_Mng.In_Sync
         and then Extra /= ""
         and then Extra(1) = Intra_Dictio.Extra_Crc then
@@ -110,6 +122,16 @@ package body Online_Mng is
         end if;
         Timers.Delete (Tid);
         Start_Fight;
+      else
+        -- Receive other status, check that this is not from previously known master
+        if Current_Master /= No_Master and then From = Current_Master then
+          if Debug.Level_Array(Debug.Online) then
+            Debug.Put ("Online: fight due to master new status "
+                       & Parse(From) & "/" & Stat'Img);
+          end if;
+          Timers.Delete (Tid);
+          Start_Fight;
+        end if;
       end if;
 
     elsif Status.Get = Status.Master then
