@@ -102,6 +102,9 @@ package body Ios is
       raise Argument_Mismatch;
     end if;
     return Res;
+  exception
+    when others =>
+      raise Argument_Mismatch;
   end Strreal;
 
   function Strinte (S : Item_Rec) return Item_Rec is
@@ -116,6 +119,9 @@ package body Ios is
       raise Argument_Mismatch;
     end if;
     return Res;
+  exception
+    when others =>
+      raise Argument_Mismatch;
   end Strinte;
 
   function Strbool (S : Item_Rec) return Item_Rec is
@@ -130,6 +136,9 @@ package body Ios is
       raise Argument_Mismatch;
     end if;
     return Res;
+  exception
+    when others =>
+      raise Argument_Mismatch;
   end Strbool;
     
   function Strof (Item : Item_Rec) return Item_Rec is
