@@ -242,6 +242,7 @@ package body MNG is
   -- Load from file
   procedure LOAD (FILE_NAME : in STRING) is
     OPER : OPER_DEF.OPER_REC;
+    CAN_WRITE : BOOLEAN;
   begin
     if not ACCOUNT_SAVED
     and then not SCREEN.CONFIRM_ACTION(SCREEN.OVERWRITE_ACCOUNT) then
@@ -274,7 +275,7 @@ package body MNG is
     if not TEXT_HANDLER.EMPTY(ACCOUNT_NAME) then
       -- Load
       begin
-        FILE_MNG.LOAD(TEXT_HANDLER.VALUE(ACCOUNT_NAME), OPER_LIST);
+        FILE_MNG.LOAD(TEXT_HANDLER.VALUE(ACCOUNT_NAME), OPER_LIST, CAN_WRITE);
       exception
         when FILE_MNG.F_ACCESS_ERROR =>
           SCREEN.ACK_ERROR(SCREEN.FILE_ACCESS);
@@ -295,6 +296,9 @@ package body MNG is
       COMPUTE_AMOUNTS;
       -- Set screen
       REFRESH_SCREEN(BOTTOM);
+      if not CAN_WRITE then
+        SCREEN.ACK_ERROR(SCREEN.FILE_READ_ONLY);
+      end if;
     else
       -- User cancelled selection
       CLEAR;

@@ -4,7 +4,8 @@ package FILE_MNG is
 
   -- Overwrites the list from file content
   procedure LOAD (FILE_NAME : in STRING;
-                  OPER_LIST : in out OPER_LIST_MNG.LIST_TYPE);
+                  OPER_LIST : in out OPER_LIST_MNG.LIST_TYPE;
+                  CAN_WRITE : out BOOLEAN);
 
   -- Save the list in file
   procedure SAVE (FILE_NAME : in STRING;

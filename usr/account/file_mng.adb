@@ -15,7 +15,8 @@ package body FILE_MNG is
 
   -- Overwrites the list from file content
   procedure LOAD (FILE_NAME : in STRING;
-                  OPER_LIST : in out OPER_LIST_MNG.LIST_TYPE) is
+                  OPER_LIST : in out OPER_LIST_MNG.LIST_TYPE;
+                  CAN_WRITE : out BOOLEAN) is
     FILE : OPER_IO.FILE_TYPE;
     -- A record to read
     LOC_OPER : OPER_DEF.OPER_REC; 
@@ -23,11 +24,30 @@ package body FILE_MNG is
     LOC_LIST : OPER_LIST_MNG.LIST_TYPE;
     use OPER_DEF;
   begin
+    -- First test we can access file
     begin
       OPER_IO.OPEN (FILE, OPER_IO.IN_FILE, FILE_NAME);
     exception
       when others => raise F_ACCESS_ERROR;
     end;
+    OPER_IO.CLOSE (FILE);
+
+    -- Then test we can write file
+    TEST_WRITE:
+    declare
+      WRITE_FILE : OPER_IO.FILE_TYPE;
+    begin
+      OPER_IO.OPEN (WRITE_FILE, OPER_IO.APPEND_FILE, FILE_NAME);
+      CAN_WRITE := TRUE;
+      OPER_IO.CLOSE (WRITE_FILE);
+    exception
+      when others =>
+        -- Cannot be opened for writting 
+        CAN_WRITE := FALSE;
+    end TEST_WRITE;
+
+    -- Then open file for work 
+    OPER_IO.OPEN (FILE, OPER_IO.IN_FILE, FILE_NAME);
     OPER_IO.RESET (FILE);
 
     -- Read magic record

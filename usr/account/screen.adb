@@ -195,6 +195,8 @@ package body SCREEN is
           "File not found or not an account or access denied");
       when FILE_IO =>
         AFPX.ENCODE_FIELD (39, (0, 0), "File read or write error");
+      when FILE_READ_ONLY =>
+        AFPX.ENCODE_FIELD (39, (0, 0), "File is read-only");
       when FILE_NAME_TOO_LONG =>
         AFPX.ENCODE_FIELD (39, (0, 0), "File name too long");
       when ACCOUNT_FULL =>

@@ -29,8 +29,8 @@ package SCREEN is
   function CONFIRM_ACTION (ACTION : ACTION_LIST) return BOOLEAN;
 
   -- Ack an error
-  type ERROR_LIST is (FILE_ACCESS, FILE_IO, FILE_NAME_TOO_LONG, ACCOUNT_FULL,
-                      NOT_IMPLEMENTED, INTERNAL_ERROR);
+  type ERROR_LIST is (FILE_ACCESS, FILE_IO, FILE_READ_ONLY, FILE_NAME_TOO_LONG,
+                      ACCOUNT_FULL, NOT_IMPLEMENTED, INTERNAL_ERROR);
   procedure ACK_ERROR (ERROR : in ERROR_LIST);
 
   -- Ring alarm / question bell
