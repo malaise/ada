@@ -149,14 +149,16 @@ package body Online_Mng is
 
     elsif Status.Get = Status.Master then
 
-      if Stat = Status.Master then
+      if Stat = Status.Master
+      and then Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc) /= "" then
+        -- An alive message (not a fight reply nor fight info)
         if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: fight cause another master: "
-                   & Parse(From) );
+          Debug.Put ("Online: fight cause another master: " & Parse(From) );
         end if;
         Start_Fight;
         return;
-      elsif Stat = Status.Slave and then not Sync and then not Sync_Mng.In_Sync then
+      elsif Stat = Status.Slave and then not Sync
+      and then not Sync_Mng.In_Sync then
         -- Synchronise slave which is not Synchronised
         if Debug.Level_Array(Debug.Online) then
           Debug.Put ("Online: syncing " & Parse(From) );
