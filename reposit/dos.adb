@@ -5,8 +5,9 @@ package body DOS is
   begin
     for I in 1 .. N_TIMES loop
       MY_IO.PUT (ASCII.BEL);
+      MY_IO.FLUSH;
+      delay 0.2;
     end loop;
-    MY_IO.FLUSH;
   end SOUND;
 
 end DOS;

@@ -193,6 +193,18 @@ package body DIRECTORY is
     RIGHTS := INTEGER(STAT.ST_MODE) AND 8#00007777#;
   end FILE_STAT;
 
+
+  function C_FNMATCH (PATTERN : SYSTEM.ADDRESS; STRINGS : SYSTEM.ADDRESS;
+                      FLAGS : INTEGER) return INTEGER;
+  pragma IMPORT (C, C_FNMATCH, "fnmatch");
+
+  -- Does file name match a pattern
+  function FILE_MATCH (FILE_NAME : STRING; TEMPLATE : STRING) return BOOLEAN is
+    C_FILE_NAME : constant STRING := STR_FOR_C (FILE_NAME);
+    C_TEMPLATE : constant STRING := STR_FOR_C (TEMPLATE);
+  begin
+    return C_FNMATCH(C_TEMPLATE'ADDRESS, C_FILE_NAME'ADDRESS, 0) = 0;
+  end FILE_MATCH;
 end DIRECTORY;
 
 

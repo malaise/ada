@@ -31,12 +31,12 @@ package X_MNG is
     NBRE : KBD_INDEX_CODE;
   end record;
 
-  type BUTTON_LIST is (LEFT, MIDDLE, RIGHT);
+  type BUTTON_LIST is (NONE, LEFT, MIDDLE, RIGHT);
     
   -- mask of socket ids on which select events
   type EXTERNAL_MASK is new INTEGER;
 
-  type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH);
+  type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH, TID_MOTION);
  
   ----- EXCEPTIONS -----
   X_FAILURE : exception;
@@ -176,6 +176,10 @@ package X_MNG is
   -- key is the byte read
   procedure X_READ_KEY(LINE_ID : in LINE; KEY : out KBD_TAB_CODE);
 
+  -- Enable disable cursor motion events
+  -- The line_id must be the one given by wait_event
+  procedure X_ENABLE_MOTION_EVENTS (LINE_ID : in LINE; MOTION_ENABLE : in BOOLEAN);
+
   ----- GRAPHIC MANAGEMENT -----
   -- Writes a char on a line with current characteristics
   --  attributes and xor mode
@@ -206,6 +210,13 @@ package X_MNG is
   procedure X_DRAW_POINT(LINE_ID       : in LINE;
                          X, Y          : in NATURAL);
 
+  -- Draw a line with current characteristics
+  --  attributes and xor mode
+  -- The line_id is the token, previously given by open_line
+  -- The X and Y are coordinates of the 2 points
+  procedure X_DRAW_LINE(LINE_ID        : in LINE;
+                        X1, Y1, X2, Y2 : in NATURAL);
+
   -- Draw a rectangle with current characteristics
   --  attributes and xor mode
   -- The line_id is the token, previously given by open_line
@@ -219,6 +230,10 @@ package X_MNG is
   procedure X_GET_CURRENT_POINTER_POSITION(LINE_ID : in LINE;
                                            X, Y    : out INTEGER);
 
+  -- Set mouse cursor to cross (graphic) or arrow
+  procedure X_SET_GRAPHIC_POINTER(LINE_ID : in LINE;
+                                  GRAPHIC : in BOOLEAN);
+
   ----- BLINK MANAGEMENT -----
 
   -- This procedure stops the task which, internaly to x_vdu_mng,
@@ -226,9 +241,12 @@ package X_MNG is
   -- If a process calls this procedure, no blinking of text will
   --  be impliciptly assumed any more, and the process must
   --  call X_BLINK_ALTERNATE regulary;
-  -- No effect on a IMAGE line.
   procedure X_STOP_BLINKING_TASK;
 
+  -- This procedure restarts  the task which, internaly to x_vdu_mng,
+  --  manages the blinking of text.
+  -- The task should be stopped when this call is done
+  procedure X_START_BLINKING_TASK;
 
   -- This procedure hides the the text which has blink attribute
   --  (gives the same ink as paper) or restores it, alternatively.
@@ -248,7 +266,8 @@ private
    TID_RELEASE => 1, 
    TID_PRESS   => 2, 
    KEYBOARD    => 3,
-   REFRESH     => 4);
+   REFRESH     => 4,
+   TID_MOTION  => 5);
  
   subtype LINE_FOR_C is SYSTEM.ADDRESS;
  

@@ -1,5 +1,3 @@
-/*  @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~  */
-static char C_NEERCS_X []=" @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~";
 #include "x_screen.h"
 #include "x_color.h"
 
@@ -39,9 +37,14 @@ int foreground, background;
 
 
 
-void scr_put_char(Display *x_server, GC x_context, Window x_window, int x, int y, char car) {
+void scr_put_char(Display *x_server, GC x_context, Window x_window,
+                   int x, int y, char car, int xor_mode) {
 
-    XDrawImageString (x_server, x_window, x_context, x, y, &car, 1);
+    if (!xor_mode) {
+      XDrawImageString (x_server, x_window, x_context, x, y, &car, 1); 
+    } else {
+      XDrawString (x_server, x_window, x_context, x, y, &car, 1);
+    }
 
 } 
 
@@ -52,9 +55,13 @@ void scr_overwrite_char(Display *x_server, GC x_context, Window x_window, int x,
 } 
 
 void scr_put_string (Display *x_server, GC x_context, Window x_window,
-                     int x, int y, char *p_car, int number) {
+                     int x, int y, char *p_car, int number, int xor_mode) {
 
-    XDrawImageString (x_server, x_window, x_context, x, y, p_car, number);
+    if (!xor_mode) {
+      XDrawImageString (x_server, x_window, x_context, x, y, p_car, number);
+    } else {
+      XDrawString (x_server, x_window, x_context, x, y, p_car, number);
+    }
 }
 
 

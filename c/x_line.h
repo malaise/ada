@@ -1,4 +1,5 @@
 /* Oct 21, 1998 : Use private color map                            */
+/* Nov 07, 1998 : Store size at creation of win, in pixels         */
 #ifndef _X_LINE_H
 #define _X_LINE_H
 
@@ -42,11 +43,15 @@ typedef struct {
     int no_font;
     /* Background specifierd in open */
     int background_color;
+    /* Size at creation */
+    int wwidth, wheight;
     /* Graphic characteristics */
     boolean underline;
+    boolean xor_mode;
     int cur_row, cur_column;
     GC x_graphic_context;
     /* Event characteristics */
+    boolean motion_enabled;
     int key_buf[NBRE_MAX_KEY]; 
     int nbre_key;
     int button;

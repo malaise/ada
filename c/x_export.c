@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
+#include <X11/cursorfont.h>
 
 #include "x_export.h"
 #include "x_screen.h"
@@ -58,12 +59,14 @@ int x_stop_blinking (void) {
   if (curr_percent == PERCENT_OFF) {
     x_do_blink();
   }
+  return (OK);
 }
 
 int x_start_blinking (void) {
   curr_percent = PERCENT_ON;
   get_time (&next_blink);
   (void) incr_time (&next_blink, curr_percent * 10);
+  return (OK);
 }
 
 
@@ -132,12 +135,13 @@ extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms) {
 
     timeout = exp_select;
     get_time (&cur_time);
-    if (sub_time (&timeout, &cur_time) < 0) {
+    if ( (timeout_ptr != NULL) && (sub_time (timeout_ptr, &cur_time) < 0) ) {
       /* Select timeout is reached */
       if ( (blink_is_active) && time_is_reached (&next_blink) ) {
         /* Blink and continue */
         x_do_blinking();
-      } if ( (timeout_is_active) && time_is_reached (&exp_time) ) {
+      }
+      if ( (timeout_is_active) && time_is_reached (&exp_time) ) {
         /* Done on timeout */
         *p_x_event = 0;
         if (p_mask != (fd_set *)NULL) {
@@ -194,7 +198,7 @@ int x_initialise (char *server_name) {
     int result;
 
     result = (lin_initialise (server_name) ? OK : ERR);
-    x_start_blinking();
+    (void) x_start_blinking();
     return (result);
 }
 
@@ -232,12 +236,14 @@ int x_set_line_name (void *line_id, char *line_name) {
     t_window *win_id = (t_window*) line_id;
 
     /* Check that window is open */
-        if (! lin_check(win_id)) {
+    if (! lin_check(win_id)) {
         return (ERR);
     }
     
     result = XStoreName(local_server.x_server, win_id->x_window, line_name);
-    return ((result == Success) ? OK : ERR);
+    /* Strange: it works but returns error */
+    /*    return ((result == Success) ? OK : ERR); */
+    return (OK);
 }
 
 
@@ -353,7 +359,7 @@ int x_put_char (void *line_id, int car) {
     /* Put char */
     scr_put_char (win_id->server->x_server, 
       win_id->x_graphic_context, 
-      win_id->x_window, x, y, (char)car);
+      win_id->x_window, x, y, (char)car, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
@@ -399,6 +405,27 @@ int x_overwrite_char (void *line_id, int car) {
     return (OK);
 }
 
+/* Set further put on window in Xor or back to Copy mode */
+int x_set_xor_mode (void *line_id, boolean xor_mode) {
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    if (xor_mode) {
+        XSetFunction(win_id->server->x_server,
+                     win_id->x_graphic_context, GXxor);
+    } else {
+        XSetFunction(win_id->server->x_server,
+                     win_id->x_graphic_context, GXcopy);
+    }
+    win_id->xor_mode = xor_mode;
+    return (OK);
+}
+    
+
 /* Writes a string whith the attributes previously set */
 /* The line_id is the token, previously given by open_line */
 /* The str is the adress of the first character to write */
@@ -425,7 +452,7 @@ int x_put_string (void *line_id, char *p_char, int number) {
     /* Put string */
     scr_put_string (win_id->server->x_server,
       win_id->x_graphic_context,
-      win_id->x_window, x, y, p_char, number);
+      win_id->x_window, x, y, p_char, number, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
@@ -441,44 +468,22 @@ int x_put_string (void *line_id, char *p_char, int number) {
 
 
 /* Writes a char on a line (characteristics are previously set) */
-/* x is a number of pixels of vertical translation (top down) */
-/* y                          horizontal translation (left right) */
+/* x is a number of pixels of vertical position (top down) */
+/* y                          horizontal position (left right) */
 /* The output is not flushed */
 int x_put_char_pixels (void *line_id, int car, int x, int y) {
 
     t_window *win_id = (t_window*) line_id;
-    int no_font = win_id->no_font;
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
     }
 
-    /* Check position */
-    if (x < 0) {
-        x = 0;
-    }
-    if (x >= fon_get_width  (win_id->server->x_font[no_font])) {
-        x = fon_get_width  (win_id->server->x_font[no_font]) - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    }
-    if (y > fon_get_height (win_id->server->x_font[no_font])) {
-        y = fon_get_height (win_id->server->x_font[no_font]) - 1;
-    }
-
-    /* Compute pixels */
-    x += win_id->cur_column * 
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y += win_id->cur_row * 
-      fon_get_height (win_id->server->x_font[no_font]) +
-      fon_get_offset (win_id->server->x_font[no_font]);
-
     /* Put char */
     scr_put_char (win_id->server->x_server, 
       win_id->x_graphic_context, 
-      win_id->x_window, x, y, (char)car);
+      win_id->x_window, x, y, (char)car, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
@@ -517,7 +522,7 @@ int x_draw_area (void *line_id, int width, int height) {
     pix_height = height *
       fon_get_height (win_id->server->x_font[no_font]);
 
-    /* Put string */
+    /* draw */
     scr_draw_array (win_id->server->x_server,
       win_id->x_graphic_context,
       win_id->x_window, x_from, y_from, pix_width, pix_height);
@@ -547,6 +552,114 @@ int x_put_char_attributes (void *line_id, int car, int row, int column,
     }
 
     return (x_put_char (line_id, car));
+}
+
+/* Give graphic characteristics of the windows and its font */
+int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
+                      int *p_f_width, int *p_f_height, int *p_f_offset) {
+
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    *p_w_width  = win_id->wwidth;
+    *p_w_height = win_id->wheight;
+    *p_f_width  = fon_get_width  (win_id->server->x_font[no_font]);
+    *p_f_height = fon_get_height (win_id->server->x_font[no_font]);
+    *p_f_offset = fon_get_offset (win_id->server->x_font[no_font]);
+
+    return (OK);
+}
+
+/* Draw a point at x,y */
+int x_draw_point (void *line_id, int x, int y) {
+    t_window *win_id = (t_window*) line_id;
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    XDrawPoint (win_id->server->x_server, win_id->x_window,
+                win_id->x_graphic_context, x, y);
+    return (OK);
+}
+
+/* Draw a line between  x1y1 and x2y2 */
+int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
+    t_window *win_id = (t_window*) line_id;
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Draw */
+    XDrawLine (win_id->server->x_server,
+      win_id->x_window,
+      win_id->x_graphic_context, x1, y1, x2, y2);
+
+    return (OK);
+
+}
+
+/* Draw a rectangle at x1y1, x1y2, x2y2, x2y1 */
+int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
+    t_window *win_id = (t_window*) line_id;
+    int x, y;
+    unsigned int width, height;
+
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Set xy upper left, positive width and height */
+    if (x1 <= x2) {
+        x = x1;
+        width = x2 - x1;
+    } else {
+        x = x2;
+        width = x1 - x2;
+    }
+    if (y1 <= y2) {
+        y = y1;
+        height = y2 - y1;
+    } else {
+        y = y2;
+        height = y1 - y2;
+    }
+
+    /* Draw */
+    XDrawRectangle (win_id->server->x_server,
+      win_id->x_window,
+      win_id->x_graphic_context, x, y, width, height);
+
+    return (OK);
+
+}
+
+int x_set_graphic_pointer (void *line_id, boolean graphic) {
+    t_window *win_id = (t_window*) line_id;
+    Cursor cursor;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+    if (graphic) {
+      cursor = XCreateFontCursor(local_server.x_server, XC_tcross);
+      XDefineCursor(local_server.x_server, win_id->x_window, cursor);
+    } else {
+      XUndefineCursor(local_server.x_server, win_id->x_window);
+    }
+    return (OK);
 }
 
 /***** Event management *****/
@@ -663,6 +776,24 @@ int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         }
         result = OK;
       break;
+      case MotionNotify :
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        if (!(win_id->motion_enabled)) {
+          break; /* Next Event */
+        }
+        win_id->button = 0;
+        /* Store position */
+        win_id->tid_x = event.xmotion.x;
+        win_id->tid_y = event.xmotion.y;
+
+        *p_line_id = (void*) win_id;
+        *p_kind = TID_MOTION;
+        result = OK;
+      break;
       case Expose:
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
@@ -709,8 +840,10 @@ int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
 /* Reads the position on TID */
 /* The line_id must be the one given by wait_event */
 /* p_button is set to the button 1, 2 or 3 */
-/* p_row and p_column are thje position of the "finger" on the TID */
-int x_read_tid (void *line_id, int *p_button, int *p_row, int *p_column) {
+/* p_row and p_column are the position of the "finger" on the TID */
+/* If row_col is FALSE, p_row is y and p_col is x */
+int x_read_tid (void *line_id, boolean row_col, 
+                int *p_button, int *p_row, int *p_column) {
 
     t_window *win_id = (t_window*) line_id;
 
@@ -719,19 +852,18 @@ int x_read_tid (void *line_id, int *p_button, int *p_row, int *p_column) {
         return (ERR);
     }
 
-    /* Check that there is a TID event to read */
-    if (win_id->button == 0) {
-        return (ERR);
-    }
-
 
     /* Return coordinates and button */
-    *p_row = (win_id->tid_y /
-         fon_get_height (win_id->server->x_font[win_id->no_font])) + 1;
-    *p_column = (win_id->tid_x / 
-         fon_get_width  (win_id->server->x_font[win_id->no_font])) + 1;
+    if (row_col) {
+        *p_row = (win_id->tid_y /
+             fon_get_height (win_id->server->x_font[win_id->no_font])) + 1;
+        *p_column = (win_id->tid_x / 
+             fon_get_width  (win_id->server->x_font[win_id->no_font])) + 1;
+    } else {
+        *p_row = win_id->tid_x;
+        *p_column = win_id->tid_y;
+    }
     *p_button = win_id->button;
-    win_id->button = 0;
 
     return (OK);
 }
@@ -769,6 +901,60 @@ int x_read_key (void *line_id, int *p_key, int *p_nbre) {
     return (OK);
 }
 
+extern int x_enable_motion_events (void *line_id, boolean enable_motion) {
+    t_window *win_id = (t_window*) line_id;
+    unsigned long valuemask;
+    XSetWindowAttributes win_attrib;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+    /* Set new attributes */
+    valuemask = CWEventMask;
+    win_attrib.event_mask = EVENT_MASK;
+
+    if (enable_motion) {
+      win_attrib.event_mask |= PointerMotionMask;
+    }
+    XChangeWindowAttributes(win_id->server->x_server, win_id->x_window,
+      valuemask, &win_attrib);
+    XChangeActivePointerGrab(win_id->server->x_server,
+       PointerMotionMask | ButtonReleaseMask | ButtonPressMask,
+       None, CurrentTime);
+    XFlush(win_id->server->x_server);
+    win_id->motion_enabled = enable_motion;
+    return (OK);
+}
+
+/* Reads the current position on TID in pixels */
+/* The line_id must be the one given by wait_event */
+/* p_x and p_y are the position of the "finger" on the TID */
+extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y) {
+
+    t_window *win_id = (t_window*) line_id;
+    Bool result;
+    Window root, win;
+    int root_x, root_y;
+    unsigned int mask;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    result = XQueryPointer (win_id->server->x_server, win_id->x_window,
+       &root, &win, &root_x, &root_y, p_x, p_y, &mask);
+
+    /* Pointer not in same screen than window */
+    if (result == False) {
+        *p_x = -1;
+        *p_y = -1;
+    }
+
+    return (OK);
+}
+
 
 /* Special Blink primitive must be called twice a second to generate */
 /* blink if blinking is stopped */
@@ -776,6 +962,11 @@ int x_blink(void) {
 
     /* Check that the server is initialised */
     if (local_server.x_server == NULL) return (OK);
+
+    /* Check task is not active */
+    if (next_blink.tv_sec == 0) {
+      return (ERR);
+    }
 
     x_do_blink ();
 

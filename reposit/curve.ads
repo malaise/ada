@@ -1,6 +1,7 @@
+with MATH;
 package CURVE is
   -- What is a point, a point data set
-  subtype T_COORDINATE is FLOAT;
+  subtype T_COORDINATE is MATH.REAL;
   type T_ONE_POINT is record
     X : T_COORDINATE;
     Y : T_COORDINATE;
@@ -33,9 +34,9 @@ package CURVE is
 
   generic
     -- Y = F(x)
-    with function F (X : FLOAT) return FLOAT;
+    with function F (X : MATH.REAL) return MATH.REAL;
 
   -- Give boundaries and points array : It will draw the curves
   procedure DRAW (BOUNDARIES : in T_BOUNDARIES; POINTS : in T_THE_POINTS);
 end CURVE;
-
+

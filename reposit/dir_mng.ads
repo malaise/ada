@@ -20,9 +20,11 @@ package DIR_MNG is
   -- If DIR is empty, then current drive and path and *.* is assumed
   -- May raise PATH_ERROR if DIR is not valid or not existing
   procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
-                      DIR  : in STRING := "");
+                      DIR  : in STRING := "";
+                      TEMPLATE : in STRING := "");
   procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
-                      DIR  : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT);
+                      DIR  : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT;
+                      TEMPLATE : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT);
 
   -- To sort files. Directories, then hidden, then system, then others.
   -- By prefix then suffix

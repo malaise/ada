@@ -26,8 +26,10 @@ package body AFPX is
     --  and if FIELD_NO is valid in it (raise INVALID_FIELD)
     procedure CHECK (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE);
 
-    -- Load a field's characters and colors from init
-    procedure LOAD_FIELD (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE);
+    -- Load a field's characters and/or colors from init
+    procedure LOAD_FIELD (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE;
+        LOAD_COLORS : in BOOLEAN;
+        LOAD_CHARS  : in BOOLEAN);
 
   end AF_DSCR;
 
@@ -255,11 +257,13 @@ package body AFPX is
   end CLEAR_FIELD;
 
   -- Reset the field from initial definition in file
-  procedure RESET_FIELD (FIELD_NO : in ABSOLUTE_FIELD_RANGE) is
+  procedure RESET_FIELD (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
+                         RESET_COLORS : in BOOLEAN := TRUE;
+                         RESET_STRING : in BOOLEAN := TRUE) is
     FN : constant AFPX_TYP.FIELD_RANGE := AFPX_TYP.FIELD_RANGE(FIELD_NO);
   begin
     AF_DSCR.CHECK(FN);
-    AF_DSCR.LOAD_FIELD (FN);
+    AF_DSCR.LOAD_FIELD (FN, RESET_COLORS, RESET_STRING);
     AF_DSCR.CURRENT_DSCR.MODIFIED := TRUE;
   end RESET_FIELD;
 
@@ -483,11 +487,15 @@ package body AFPX is
     use AFPX_TYP;
   begin
     AF_DSCR.CHECK;
-    -- Check no list in descriptor
-    if AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON
-    and then AF_DSCR.FIELDS (0).ACTIVATED then
-      raise LIST_IN_PUT;
+    -- Check no list active in descriptor
+    if AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
+      if AF_DSCR.FIELDS (0).ACTIVATED then
+        raise LIST_IN_PUT;
+      else
+        AF_PTG.ERASE_FIELD (0);
+      end if;
     end if;
+
     -- Put all fields
     for I in 1 .. AF_DSCR.CURRENT_DSCR.NB_FIELDS loop
       if AF_DSCR.FIELDS (I).ACTIVATED then

@@ -4,7 +4,7 @@
 #
 # <descriptor_def> ::= DESCRIPTOR <descriptor_no>
 #                        [ <list_def>  ]
-#                        { <field_def> }
+#                        [ { <field_def> } ]
 #                      END DESCRIPTOR
 #
 # <list_def>  ::= LIST
@@ -63,9 +63,10 @@
 # Rows are from 0 to 24
 # Cols are from 0 to 79
 # Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
-# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
-#                              LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE
-# Blink is "blink" or "not_blink"
+# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, ORANGE,
+#                              YELLOW, WHITE
+# Blink is "BLINK" or "NOT_BLINK"
+# Colors and Blink are not case sensitive, keywords are
 #
 # Summary of color combinations
 # -----------------------------

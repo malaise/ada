@@ -215,11 +215,34 @@ package body X_MNG is
     pragma IMPORT(C, X_STOP_BLINKING, "x_stop_blinking");
 
     ------------------------------------------------------------------
+    -- Start the blinking task
+    -- int x_start_blinking(void) 
+    ------------------------------------------------------------------
+    function X_START_BLINKING return RESULT;
+    pragma IMPORT(C, X_START_BLINKING, "x_start_blinking");
+
+    ------------------------------------------------------------------
+    -- Set mouse pointer in graphic (cross) or standard (arrow)
+    -- int x_set_graphic_pointer (void *line_id, boolean graphic);
+    ------------------------------------------------------------------
+    function X_SET_GRAPHIC_POINTER(LINE_ID : LINE_FOR_C;
+                                   GRAPHIC : BOOL_FOR_C) return RESULT;
+    pragma IMPORT(C, X_SET_GRAPHIC_POINTER, "x_set_graphic_pointer");
+
+    ------------------------------------------------------------------
     -- Rings a bell several times
     -- int x_bell (int nbre_bell;
     ------------------------------------------------------------------
     function X_BELL (REPEAT : INTEGER) return RESULT;
     pragma IMPORT(C, X_BELL, "x_bell");
+
+    ------------------------------------------------------------------
+    -- Enable / disable cursor motion events
+    -- extern int x_enable_motion_events (void *line_id, boolean enable_motion);
+    ------------------------------------------------------------------
+    function X_ENABLE_MOTION_EVENTS (LINE_ID : LINE_FOR_C;
+                                     MOTION_ENABLE : BOOL_FOR_C) return RESULT;
+    pragma IMPORT(C, X_ENABLE_MOTION_EVENTS, "x_enable_motion_events");
 
     ------------------------------------------------------------------
     -- Puts a char with current characteristics
@@ -252,6 +275,14 @@ package body X_MNG is
     function X_DRAW_POINT(LINE_ID : LINE_FOR_C;
                           X, Y    : INTEGER) return RESULT;
     pragma IMPORT(C, X_DRAW_POINT, "x_draw_point");
+
+    ------------------------------------------------------------------
+    -- Draw a line with current characteristics
+    -- int x_draw_line (void *line_id, int x1, int y1, int x2, int y2);
+    ------------------------------------------------------------------
+    function X_DRAW_LINE(LINE_ID : LINE_FOR_C;
+                         X1, Y1, X2, Y2 : NATURAL) return RESULT;
+    pragma IMPORT(C, X_DRAW_LINE, "x_draw_line");
 
     ------------------------------------------------------------------
     -- Draw a rectangle with current characteristics
@@ -525,11 +556,13 @@ package body X_MNG is
             raise X_FAILURE;
         end if;
         -- check returned coordinates
-        if LOC_BUTTON = 1 then
+        if LOC_BUTTON = 0 then
+          BUTTON := NONE;
+        elsif LOC_BUTTON = 1 then
           BUTTON := LEFT;
         elsif LOC_BUTTON = 2 then
           BUTTON := MIDDLE;
-        else
+        elsif LOC_BUTTON = 3 then
           BUTTON := RIGHT;
         end if;
     end X_READ_TID;
@@ -554,6 +587,18 @@ package body X_MNG is
 
 
     ------------------------------------------------------------------
+    procedure X_ENABLE_MOTION_EVENTS (LINE_ID : in LINE; MOTION_ENABLE : in BOOLEAN) is
+    begin
+        if not INITIALISED or else
+         X_ENABLE_MOTION_EVENTS (LINE_ID.NO, FOR_C(MOTION_ENABLE))
+         /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_ENABLE_MOTION_EVENTS;
+
+
+    ------------------------------------------------------------------
+
     procedure X_PUT_CHAR_PIXELS(LINE_ID : in LINE; CAR : in BYTE;
                                 X, Y    : in NATURAL) is
     begin
@@ -594,6 +639,18 @@ package body X_MNG is
 
 
     ------------------------------------------------------------------
+    procedure X_DRAW_LINE(LINE_ID       : in LINE;
+                          X1, Y1, X2, Y2 : in NATURAL) is
+
+    begin
+        if not INITIALISED or else
+        X_DRAW_LINE(LINE_ID.NO, X1, Y1, X2, Y2) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_DRAW_LINE;
+
+
+    ------------------------------------------------------------------
     procedure X_DRAW_RECTANGLE(LINE_ID       : in LINE;
                                X1, Y1, X2, Y2 : in NATURAL) is
 
@@ -616,6 +673,18 @@ package body X_MNG is
             raise X_FAILURE;
         end if;
     end X_GET_CURRENT_POINTER_POSITION;
+
+
+    ------------------------------------------------------------------
+    procedure X_SET_GRAPHIC_POINTER(LINE_ID : in LINE;
+                                    GRAPHIC : in BOOLEAN) is
+    begin
+        if not INITIALISED or else
+        X_SET_GRAPHIC_POINTER(LINE_ID.NO,
+                              FOR_C(GRAPHIC)) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_SET_GRAPHIC_POINTER;
 
 
     ------------------------------------------------------------------
@@ -651,6 +720,18 @@ package body X_MNG is
         -- Dont't care of the result;
         DUMMY := X_STOP_BLINKING;
     end X_STOP_BLINKING_TASK;  
+
+
+    ------------------------------------------------------------------
+    procedure X_START_BLINKING_TASK is
+        DUMMY : RESULT;
+    begin
+        if not INITIALISED then
+            raise X_FAILURE;
+        end if;
+        -- Dont't care of the result;
+        DUMMY := X_START_BLINKING;
+    end X_START_BLINKING_TASK;  
 
 end X_MNG;
 

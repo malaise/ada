@@ -191,14 +191,12 @@ package CON_IO is
   --  in the window.
   -- The current cursor position is updated by the call
   -- The arrows, Insert, suppr, backspace, Home, End, PageUp and PageDown
-  --  are managed!
+  --  Tab and Ctrl Tab, are managed. Ctrl Suppr clears the string.!
   -- The get ends if an Up/Down arrow, Page Up/Down, Return(CR), Escape,
-  --  Tab or Shift Tab is pressed or if the cursor leaves the field
+  --  Tab or Control Tab is pressed or if the cursor leaves the field
   --  (on character input or Right/Left arrow), on mouse click or release,
   --  on time_out expiration or on CtrlC/CtrlBreak
   -- Mouse_button event can only be generated if the mouse cursor is shown
-  -- Break event can only be generated if break_server is installed
-  --  and breaks are inhibitted
   -- The returned string ends at last significant digit (gaps with spaces),
   --  tailling spaces are parsed out and last is the index in STR of
   --  the last non-space character
@@ -248,6 +246,8 @@ package CON_IO is
                           CTRL          : out BOOLEAN;
                           SHIFT         : out BOOLEAN);
 
+  procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN);
+
   -- failure when allocating data for window
   OPEN_FAILURE        : exception;
   -- position out of screen (or out of window)
@@ -273,28 +273,47 @@ package CON_IO is
     function X_MAX return X_RANGE;
     function Y_MAX return Y_RANGE;
 
+    -- Font characteristics
+    function FONT_WIDTH  return NATURAL;
+    function FONT_HEIGHT return NATURAL;
+    function FONT_OFFSET return NATURAL;
 
     -- Put a char with screen foreground and current Xor mode
     -- on screen background, no blink
     -- No window if affected
-    procedure PUT (C : CHARACTER;
-                   X          : in X_RANGE;
-                   Y          : in Y_RANGE);
+    procedure PUT (C : in CHARACTER;
+                   X : in X_RANGE;
+                   Y : in Y_RANGE);
+
+    -- Put a string with screen foreground and current Xor mode
+    -- on screen background, no blink
+    -- No window if affected
+    procedure PUT (S : in STRING;
+                   X : in X_RANGE;
+                   Y : in Y_RANGE);
 
     -- Draw a point with screen foreground and current Xor mode
     -- on screen background, no blink
     -- No window if affected
-    procedure POINT (X          : in X_RANGE;
-                     Y          : in Y_RANGE);
+    procedure DRAW_POINT (X : in X_RANGE;
+                          Y : in Y_RANGE);
 
+
+    -- Draw a line between 2 points, with screen foreground
+    --  and current Xor mode on screen background, no blink
+    -- No window if affected
+    procedure DRAW_LINE (X1 : in X_RANGE;
+                         Y1 : in Y_RANGE;
+                         X2 : in X_RANGE;
+                         Y2 : in Y_RANGE);
 
     -- Draw a rectangle with screen foreground and current Xor mode
     -- on screen background, no blink
     -- No window if affected
-    procedure RECTANGLE (X1         : in X_RANGE;
-                         Y1         : in Y_RANGE;
-                         X2         : in X_RANGE;
-                         Y2         : in Y_RANGE);
+    procedure DRAW_RECTANGLE (X1 : in X_RANGE;
+                              Y1 : in Y_RANGE;
+                              X2 : in X_RANGE;
+                              Y2 : in Y_RANGE);
 
     -- Get dynmically the current position of pointer
     -- If valid is FALSE, it means that the pointer
@@ -305,15 +324,22 @@ package CON_IO is
 
   end GRAPHICS;
 
+  -- Set mouse pointer shape
+  --  ARROW by default
+  type POINTER_SHAPE_LIST is (ARROW, CROSS);
+  procedure SET_POINTER_SHAPE (POINTER_SHAPE : in POINTER_SHAPE_LIST);
+  
 
   -- We want mouse position in row_col or x_y
   type COORDINATE_MODE_LIST is (ROW_COL, X_Y);
 
-  -- Button status
-  type MOUSE_BUTTON_STATUS_LIST is (PRESSED, RELEASED);
+  -- Button status: when MOTION, BUTTON is not MOTION
+  type MOUSE_BUTTON_STATUS_LIST is (PRESSED, RELEASED, MOTION);
   -- List of button
-  type MOUSE_BUTTON_LIST is (LEFT, MIDDLE, RIGHT);
+  type MOUSE_BUTTON_LIST is (LEFT, MIDDLE, RIGHT, MOTION);
   -- Mouse status
+  -- Invalid press should be discarded
+  -- Invalid release/motion are out of screen
   type MOUSE_EVENT_REC (COORDINATE_MODE : COORDINATE_MODE_LIST := ROW_COL)
                        is record
     VALID : BOOLEAN;

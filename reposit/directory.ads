@@ -54,6 +54,9 @@ package DIRECTORY is
   -- May raise NAME_ERROR  
 
 
+  -- Does file name match a pattern
+  function FILE_MATCH (FILE_NAME : STRING; TEMPLATE : STRING) return BOOLEAN;
+
   NAME_ERROR : exception;
   OPEN_ERROR : exception;
   END_ERROR  : exception;

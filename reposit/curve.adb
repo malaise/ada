@@ -84,8 +84,14 @@ package body CURVE is
       function Y_SCREEN_REAL (Y_SCREEN : CON_IO.GRAPHICS.Y_RANGE)
                return T_COORDINATE;
 
+      EPSILON : constant T_COORDINATE := T_COORDINATE'EPSILON;
+      
       -- Computes every conversion according to new boundaries
       procedure MAJ (BOUNDS : in T_BOUNDARIES);
+
+      -- Raised by MAJ if Xmax-Xmin <= EPSILON
+      --            or    Ymax-Ymin <= EPSILON
+      MAJ_ERROR : exception;
 
     end CONVERT;
 
@@ -98,8 +104,8 @@ package body CURVE is
 
       -- Conversion from real to screen :  screen = real * factor + offset
       type T_CONVERSION is record
-        OFFSET_X, OFFSET_Y : FLOAT;
-        FACTOR_X, FACTOR_Y : FLOAT;
+        OFFSET_X, OFFSET_Y : MATH.REAL;
+        FACTOR_X, FACTOR_Y : MATH.REAL;
       end record;
       CONVERSION : T_CONVERSION;
 
@@ -111,10 +117,10 @@ package body CURVE is
         MSG : constant STRING := "COMPUTING. Please wait ...";
       begin
         CON_IO.SET_FOREGROUND (CON_IO.LIGHT_BLUE);
-        CON_IO.SET_XOR_MODE (CON_IO.XOR_ON);
         CON_IO.MOVE (CON_IO.ROW_RANGE_LAST,
                      CON_IO.COL_RANGE_LAST - MSG'LENGTH);
         CON_IO.PUT (MSG);
+        CON_IO.FLUSH;
       end WAIT_MESSAGE;
 
       -- Screen coordinates of the frame
@@ -192,9 +198,9 @@ package body CURVE is
           -- (x provided, y of points and curve for y)
           REAL_BOUNDARIES := (SCALE => FREE_SCREEN,
            X_MIN => BOUNDS.X_MIN,
-           Y_MIN => FLOAT'LAST,
+           Y_MIN => MATH.REAL'LAST,
            X_MAX => BOUNDS.X_MAX,
-           Y_MAX => FLOAT'FIRST);
+           Y_MAX => MATH.REAL'FIRST);
 
           -- Find lowest and greatest Y of points in X_min .. X_max
           for I in POINTS'RANGE loop
@@ -211,17 +217,20 @@ package body CURVE is
         end if;
 
         -- Compute X conversion
+        if REAL_BOUNDARIES.X_MAX - REAL_BOUNDARIES.X_MIN <= EPSILON then
+          raise MAJ_ERROR;
+        end if;
         CONVERSION.FACTOR_X :=
-          FLOAT (CON_IO.GRAPHICS.X_MAX - CON_IO.GRAPHICS.X_RANGE'FIRST)
+          MATH.REAL (CON_IO.GRAPHICS.X_MAX - CON_IO.GRAPHICS.X_RANGE'FIRST)
           / (REAL_BOUNDARIES.X_MAX - REAL_BOUNDARIES.X_MIN);
-        CONVERSION.OFFSET_X  := FLOAT (CON_IO.GRAPHICS.X_RANGE'FIRST)
+        CONVERSION.OFFSET_X  := MATH.REAL (CON_IO.GRAPHICS.X_RANGE'FIRST)
          - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
 
         -- Now X scale is computed, we can compute curve and update Ys
         if BOUNDS.SCALE /= FREE_SCREEN and then
            BOUNDS.SCALE /= FREE_NORMED then
           -- Find lowest and greatest y of curve
-          for X in CON_IO.GRAPHICS.X_RANGE loop
+          for X in CON_IO.GRAPHICS.X_RANGE'FIRST .. CON_IO.GRAPHICS.X_MAX loop
             X_REAL := X_SCREEN_REAL (X);
             Y_REAL := F (X_REAL);
             if Y_REAL < REAL_BOUNDARIES.Y_MIN then
@@ -233,11 +242,14 @@ package body CURVE is
           end loop;
         end if;
 
-        -- Compute X conversion
+        -- Compute Y conversion
+        if REAL_BOUNDARIES.Y_MAX - REAL_BOUNDARIES.Y_MIN <= EPSILON then
+          raise MAJ_ERROR;
+        end if;
         CONVERSION.FACTOR_Y :=
-          FLOAT (CON_IO.GRAPHICS.Y_MAX - CON_IO.GRAPHICS.Y_RANGE'FIRST)
+          MATH.REAL (CON_IO.GRAPHICS.Y_MAX - CON_IO.GRAPHICS.Y_RANGE'FIRST)
           / (REAL_BOUNDARIES.Y_MAX - REAL_BOUNDARIES.Y_MIN);
-        CONVERSION.OFFSET_Y  := FLOAT (CON_IO.GRAPHICS.Y_RANGE'FIRST)
+        CONVERSION.OFFSET_Y  := MATH.REAL (CON_IO.GRAPHICS.Y_RANGE'FIRST)
         - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
 
         -- If Scale is normed, factors must be the same on X and Y
@@ -250,9 +262,9 @@ package body CURVE is
             CONVERSION.FACTOR_X := CONVERSION.FACTOR_Y;
           end if;
           -- Update conversion
-          CONVERSION.OFFSET_X  := FLOAT (CON_IO.GRAPHICS.X_RANGE'FIRST)
+          CONVERSION.OFFSET_X  := MATH.REAL (CON_IO.GRAPHICS.X_RANGE'FIRST)
           - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
-          CONVERSION.OFFSET_Y  := FLOAT (CON_IO.GRAPHICS.Y_RANGE'FIRST)
+          CONVERSION.OFFSET_Y  := MATH.REAL (CON_IO.GRAPHICS.Y_RANGE'FIRST)
           - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
         end if;
 
@@ -264,6 +276,12 @@ package body CURVE is
 
         -- Hide wait message
         WAIT_MESSAGE;
+
+      exception
+        when others =>
+          -- Hide wait message
+          WAIT_MESSAGE;
+          raise;
       end MAJ;
 
     end CONVERT;
@@ -313,6 +331,27 @@ package body CURVE is
       MOUSE_EVENT : CON_IO.MOUSE_EVENT_REC(CON_IO.X_Y);
       -- Status (pos) at start of drag
       CLICKED_STATUS : CON_IO.MOUSE_EVENT_REC(CON_IO.X_Y);
+
+      MVALID : BOOLEAN;
+      MX : CON_IO.GRAPHICS.X_RANGE;
+      MY : CON_IO.GRAPHICS.Y_RANGE;
+
+      -- Set mouse position within screen boundaries
+      -- Invert Y
+      procedure SET_MOUSE_IN_FRAME(X : in out CON_IO.GRAPHICS.X_RANGE;
+                                   Y : in out CON_IO.GRAPHICS.Y_RANGE) is
+      begin
+        if X < SCREEN_BOUNDARIES.X_MIN then
+          X := SCREEN_BOUNDARIES.X_MIN;
+        elsif X > SCREEN_BOUNDARIES.X_MAX then
+          X := SCREEN_BOUNDARIES.X_MAX;
+        end if;
+        if Y < SCREEN_BOUNDARIES.Y_MIN then
+          Y := SCREEN_BOUNDARIES.Y_MIN;
+        elsif Y > SCREEN_BOUNDARIES.Y_MAX then
+          Y := SCREEN_BOUNDARIES.Y_MAX;
+        end if;
+      end SET_MOUSE_IN_FRAME;
 
       -- Draw help message
       procedure DRAW_HELP (ACTION : in DRAW_ACTION) is
@@ -419,8 +458,8 @@ package body CURVE is
           for I in POINT_PIXELS'RANGE loop
             begin
               IN_FRAME (X_S + POINT_PIXELS(I).X, Y_S + POINT_PIXELS(I).Y);
-              CON_IO.GRAPHICS.POINT (X_S + POINT_PIXELS(I).X,
-                                     Y_S + POINT_PIXELS(I).Y);
+              CON_IO.GRAPHICS.DRAW_POINT (X_S + POINT_PIXELS(I).X,
+                                          Y_S + POINT_PIXELS(I).Y);
             exception
               when others => null;
             end;
@@ -439,17 +478,13 @@ package body CURVE is
       -- Draw an horizontal line (for frames and axes)
       procedure DRAW_X (X_MIN, X_MAX : in NATURAL; Y : in NATURAL) is
       begin
-        for X in CON_IO.GRAPHICS.X_RANGE range X_MIN .. X_MAX loop
-          CON_IO.GRAPHICS.POINT (X, Y);
-        end loop;
+        CON_IO.GRAPHICS.DRAW_LINE (X_MIN, Y, X_MAX, Y);
       end DRAW_X;
 
       -- Draw a vertical line (for frames and axes)
       procedure DRAW_Y (X : in NATURAL; Y_MIN, Y_MAX : in NATURAL) is
       begin
-        for Y in CON_IO.GRAPHICS.Y_RANGE range Y_MIN .. Y_MAX loop
-          CON_IO.GRAPHICS.POINT (X, Y);
-        end loop;
+        CON_IO.GRAPHICS.DRAW_LINE (X, Y_MIN, X, Y_MAX);
       end DRAW_Y;
 
       -- Draw axes of the curve
@@ -478,7 +513,7 @@ package body CURVE is
         if INTERSEC then
           begin
             IN_FRAME (X_0, Y_0);
-            CON_IO.GRAPHICS.POINT (X_0, Y_0);
+            CON_IO.GRAPHICS.DRAW_POINT (X_0, Y_0);
           exception
             when others => null;
           end;
@@ -489,11 +524,12 @@ package body CURVE is
       -- Draw the curve
       procedure DRAW_CURVE is
         Y_S : INTEGER;
-        X_R, Y_R : FLOAT;
+        X_R, Y_R : MATH.REAL;
 
         -- Draw the frame around the curve
         procedure DRAW_FRAME is
         begin
+          CON_IO.SET_XOR_MODE (CON_IO.XOR_OFF);
           CON_IO.SET_FOREGROUND (CON_IO.WHITE);
           DRAW_X (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.X_MAX,
                   SCREEN_BOUNDARIES.Y_MIN);
@@ -503,6 +539,7 @@ package body CURVE is
                   SCREEN_BOUNDARIES.Y_MAX);
           DRAW_Y (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.Y_MIN,
                   SCREEN_BOUNDARIES.Y_MAX);
+          CON_IO.SET_XOR_MODE (CON_IO.XOR_ON);
         end DRAW_FRAME;
 
       begin
@@ -518,7 +555,7 @@ package body CURVE is
             Y_R := F (X_R);
             Y_S := Y_REAL_SCREEN (Y_R);
             IN_FRAME (X_S, Y_S);
-            CON_IO.GRAPHICS.POINT (X_S, Y_S);
+            CON_IO.GRAPHICS.DRAW_POINT (X_S, Y_S);
           exception
             when others => null;
           end;
@@ -539,18 +576,15 @@ package body CURVE is
           case POS is
             when X_MIN =>
               CON_IO.MOVE (13, 1);
-              CON_IO.PUT (COO_TO_STR(SCALE));
             when X_MAX =>
               CON_IO.MOVE (13, 66);
-              CON_IO.PUT (COO_TO_STR(SCALE));
             when Y_MIN =>
               CON_IO.MOVE (CON_IO.ROW_RANGE'PRED(CON_IO.ROW_RANGE'PRED(
                             CON_IO.ROW_RANGE_LAST)), 30);
-              CON_IO.PUT (COO_TO_STR(SCALE));
             when Y_MAX =>
               CON_IO.MOVE (2, 30);
-              CON_IO.PUT (COO_TO_STR(SCALE));
           end case;
+          CON_IO.PUT (COO_TO_STR(SCALE));
         end PUT_SCALE;
       begin
         -- Optimization : most frequent case
@@ -588,7 +622,7 @@ package body CURVE is
         if      ACTION = TOGGLE
         or else (ACTION = INIT and then MISC (M_SCALE)) then
           -- External scales
-          CON_IO.SET_FOREGROUND (CON_IO.CYAN);
+          CON_IO.SET_FOREGROUND (CON_IO.LIGHT_GRAY);
           CON_IO.MOVE (1, 30);
           CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MAX)));
           CON_IO.MOVE (CON_IO.ROW_RANGE'PRED(CON_IO.ROW_RANGE_LAST), 30);
@@ -610,19 +644,22 @@ package body CURVE is
         -- Draw/hide a zoom frame
         procedure PUT_FRAME (BOUNDS : in T_SCREEN_BOUNDARIES) is
         begin
-          DRAW_X (BOUNDS.X_MIN, BOUNDS.X_MAX, BOUNDS.Y_MIN);
-          DRAW_X (BOUNDS.X_MIN, BOUNDS.X_MAX, BOUNDS.Y_MAX);
-          DRAW_Y (BOUNDS.X_MIN, BOUNDS.Y_MIN+1, BOUNDS.Y_MAX-1);
-          DRAW_Y (BOUNDS.X_MAX, BOUNDS.Y_MIN+1, BOUNDS.Y_MAX-1);
+          CON_IO.GRAPHICS.DRAW_RECTANGLE (
+             BOUNDS.X_MIN,
+             BOUNDS.Y_MIN,
+             BOUNDS.X_MAX,
+             BOUNDS.Y_MAX);
         end PUT_FRAME;
 
       begin
         -- Optimization : most frequent case
         -- Update and same frame, or update and not in drag
-        if (ACTION = UPDATE and then
-            (CURR_ZOOM_MODE /= DRAG or else
-             ZOOM_BOUNDS = PREV_FRAME_BOUNDS)) or else
-           ACTION = NONE then
+        if ACTION = UPDATE
+        and then (CURR_ZOOM_MODE /= DRAG
+                      or else ZOOM_BOUNDS = PREV_FRAME_BOUNDS) then
+          return;
+        end if;
+        if ACTION = NONE then
           return;
         end if;
 
@@ -630,19 +667,21 @@ package body CURVE is
         CON_IO.SET_FOREGROUND (CON_IO.CYAN);
 
         -- Previous frame to hide : new drag or drag -> done or done -> init
-        if ACTION = UPDATE or else
-           PREV_ZOOM_MODE /= INIT then
+        if ACTION = UPDATE
+           or else CURR_ZOOM_MODE /= DRAG then
           PUT_FRAME (PREV_FRAME_BOUNDS);
         end if;
 
         -- New frame to draw : new drag or init -> drag or drag -> done
-        if ACTION = UPDATE or else
-           PREV_ZOOM_MODE /= DONE then
+        if ACTION = UPDATE
+        or else CURR_ZOOM_MODE /= INIT then
           PUT_FRAME(ZOOM_BOUNDS);
           PREV_FRAME_BOUNDS := ZOOM_BOUNDS;
         end if;
         -- Toggle zoom mode
-        if ACTION = TOGGLE then PREV_ZOOM_MODE := CURR_ZOOM_MODE; end if;
+        if ACTION = TOGGLE then
+          PREV_ZOOM_MODE := CURR_ZOOM_MODE;
+        end if;
       end DRAW_Z_FRAME;
 
       -- Exchange x_min and x_max if necessary. Same on Y.
@@ -664,20 +703,46 @@ package body CURVE is
 
       procedure CANCEL_ZOOM is
       begin
+        CURR_ZOOM_MODE := INIT;
         -- Reset zoom and hide zoom frame.
         DRAW_HELP (UPDATE);
         ZOOM_FRAME_ACTION := TOGGLE;
+        CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
       end CANCEL_ZOOM;
 
     use CON_IO;
     begin -- DRAW_ONE
+
+      -- Init context
       PREV_ZOOM_MODE := INIT;
       CURR_ZOOM_MODE := INIT;
       EVENT := CON_IO.REFRESH;
+      CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
+
+      CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
+      if MVALID then
+        SET_MOUSE_IN_FRAME(MX, MY);
+        MOUSE_BOUNDS.X_MIN := MX;
+        MOUSE_BOUNDS.X_MAX := MX;
+        MOUSE_BOUNDS.Y_MIN := MY;
+        MOUSE_BOUNDS.Y_MAX := MY;
+        CLICKED_STATUS.X := MX;
+        CLICKED_STATUS.Y := MY;
+        PREV_FRAME_BOUNDS := MOUSE_BOUNDS;
+        PREV_SCALE_BOUNDS := MOUSE_BOUNDS;
+      end if;
 
       loop -- Main loop of mouse and keys actions
 
         if EVENT = CON_IO.REFRESH then
+          CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
+          if MVALID then
+            SET_MOUSE_IN_FRAME(MX, MY);
+            MOUSE_BOUNDS.X_MIN := MX;
+            MOUSE_BOUNDS.X_MAX := MX;
+            MOUSE_BOUNDS.Y_MIN := MY;
+            MOUSE_BOUNDS.Y_MAX := MY;
+          end if;
           -- Draw what has to be for initial
           DRAW_CURVE;
           if MISC(M_AXES)   then DRAW_AXES; end if;
@@ -704,6 +769,9 @@ package body CURVE is
             -- KEY pressed
             if IS_CHAR and then not CTRL then
               CHAR := CHARACTER'VAL(KEY);
+            elsif not IS_CHAR and then not CTRL and then not SHIFT and then
+                      KEY = CHARACTER'POS(ASCII.ESC) then
+              CHAR := ASCII.ESC;
             else
               CHAR := ASCII.NUL;
             end if;
@@ -715,6 +783,8 @@ package body CURVE is
             elsif UPPER_CHAR(CHAR) = 'S' then
               -- Toggle scales
               DRAW_SCALE (TOGGLE, MOUSE_BOUNDS);
+              CON_IO.ENABLE_MOTION_EVENTS (
+                 MISC(M_SCALE) or else CURR_ZOOM_MODE = DRAG);
             elsif UPPER_CHAR(CHAR) = 'P' then
               -- Toggle points
               DRAW_POINTS;
@@ -745,6 +815,23 @@ package body CURVE is
           when MOUSE_BUTTON =>
             -- New button status
             CON_IO.GET_MOUSE_EVENT (MOUSE_EVENT, CON_IO.X_Y);
+            SET_MOUSE_IN_FRAME(MOUSE_EVENT.X, MOUSE_EVENT.Y);
+            -- Update scales and frame according to zoom mode
+            if CURR_ZOOM_MODE = INIT then
+              -- Before DRAG : follow cur pos
+              MOUSE_BOUNDS.X_MIN := MOUSE_EVENT.X;
+              MOUSE_BOUNDS.X_MAX := MOUSE_EVENT.X;
+              MOUSE_BOUNDS.Y_MIN := MOUSE_EVENT.Y;
+              MOUSE_BOUNDS.Y_MAX := MOUSE_EVENT.Y;
+            elsif CURR_ZOOM_MODE = DRAG then
+              -- Drag : clicked_pos and cur pos
+              MOUSE_BOUNDS.X_MIN := MOUSE_EVENT.X;
+              MOUSE_BOUNDS.X_MAX := CLICKED_STATUS.X;
+              MOUSE_BOUNDS.Y_MIN := MOUSE_EVENT.Y;
+              MOUSE_BOUNDS.Y_MAX := CLICKED_STATUS.Y;
+              SORT_BOUNDS (MOUSE_BOUNDS);
+              ZOOM_FRAME_ACTION := UPDATE;
+            end if;
 
             case CURR_ZOOM_MODE is
               when INIT =>
@@ -757,13 +844,13 @@ package body CURVE is
                   -- Store what has to be done with zoom frame
                   CLICKED_STATUS := MOUSE_EVENT;
                   ZOOM_FRAME_ACTION := TOGGLE;
+                  CON_IO.ENABLE_MOTION_EVENTS (TRUE);
                 else
                   -- no change
                   ZOOM_FRAME_ACTION := NONE;
                 end if;
               when DRAG =>
-                if MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = CON_IO.LEFT
+                if       MOUSE_EVENT.BUTTON = CON_IO.LEFT
                 and then MOUSE_EVENT.STATUS = CON_IO.RELEASED then
                   -- release
                   if      MOUSE_EVENT.X = CLICKED_STATUS.X
@@ -772,6 +859,7 @@ package body CURVE is
                     CANCEL_ZOOM;
                   else
                     -- Drag done
+                    CON_IO.ENABLE_MOTION_EVENTS (FALSE);
                     CURR_ZOOM_MODE := DONE;
                     DRAW_HELP (UPDATE);
                     -- Store what has to be done with zoom frame
@@ -793,6 +881,8 @@ package body CURVE is
 
                     if CURR_ZOOM_NO /= ZOOM_NO_RANGE'LAST then
                       NEW_ZOOM_NO := CURR_ZOOM_NO + 1;
+                    else
+                      NEW_ZOOM_NO := CURR_ZOOM_NO;
                     end if;
                     -- New_bounds.scale mode is FREE_SCREEN or FREE_NORMED
                     --  according to initial scale type
@@ -811,12 +901,19 @@ package body CURVE is
                          Y_MAX => Y_SCREEN_REAL(MOUSE_BOUNDS.Y_MAX) );
                     end if;
                     -- Compute new conversions
-                    MAJ (NEW_BOUNDS);
-                    -- No exception, store it
-                    CURR_ZOOM_NO := NEW_ZOOM_NO;
-                    LAST_ZOOM_NO := CURR_ZOOM_NO;
-                    ZOOM_ARRAY(CURR_ZOOM_NO) := NEW_BOUNDS;
-                    return TRUE;
+                    begin
+                      MAJ (NEW_BOUNDS);
+                      -- No exception, store it
+                      CURR_ZOOM_NO := NEW_ZOOM_NO;
+                      LAST_ZOOM_NO := CURR_ZOOM_NO;
+                      ZOOM_ARRAY(CURR_ZOOM_NO) := NEW_BOUNDS;
+                      CON_IO.ENABLE_MOTION_EVENTS (FALSE);
+                      return TRUE;
+                    exception
+                      when others =>
+                        CANCEL_ZOOM;
+                        DOS.SOUND(3);
+                    end;
                   end;
 
                 elsif MOUSE_EVENT.VALID
@@ -829,33 +926,18 @@ package body CURVE is
                 end if;
 
             end case; -- Current zoom mode
+
+            -- perform zoom frame drawing
+            if MOUSE_EVENT.VALID
+            or else MOUSE_EVENT.STATUS /= CON_IO.PRESSED then
+              DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
+            end if;
         end case; -- event
 
+        -- perform scales drawing
+        DRAW_SCALE (UPDATE, MOUSE_BOUNDS);
+
       end loop;
-
--- @@@          -- Update scales and frame according to zoom mode
---          if CURR_ZOOM_MODE = INIT then
---            -- Before DRAG : follow cur pos
---            MOUSE_BOUNDS.X_MIN := MOUSE_STATUS.X;
---            MOUSE_BOUNDS.X_MAX := MOUSE_STATUS.X;
---            MOUSE_BOUNDS.Y_MIN := MOUSE_STATUS.Y;
---            MOUSE_BOUNDS.Y_MAX := MOUSE_STATUS.Y;
---          elsif CURR_ZOOM_MODE = DRAG then
---            -- Drag : clicked_pos and cur pos
---            MOUSE_BOUNDS.X_MIN := MOUSE_STATUS.X;
---            MOUSE_BOUNDS.X_MAX := CLICKED_STATUS.X;
---            MOUSE_BOUNDS.Y_MIN := MOUSE_STATUS.Y;
---            MOUSE_BOUNDS.Y_MAX := CLICKED_STATUS.Y;
---            SORT_BOUNDS (MOUSE_BOUNDS);
---          end if;
---
---          -- perform zoom frame drawing
---          DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
---
---        -- perform scales drawing
---        DRAW_SCALE (UPDATE, MOUSE_BOUNDS);
--- @@@
-
 
     end DRAW_ONE;
 
@@ -863,7 +945,10 @@ package body CURVE is
     -- Initialise graphics
     CON_IO.INIT;
     CON_IO.SET_FOREGROUND (BLINK_STAT => CON_IO.NOT_BLINK);
+
+    X_MNG.X_STOP_BLINKING_TASK;
     CON_IO.SET_XOR_MODE (CON_IO.XOR_ON);
+    CON_IO.SET_POINTER_SHAPE(CON_IO.CROSS);
 
     -- Initialise zooms storing
     ZOOM_ARRAY(ZOOM_NO_RANGE'FIRST) := BOUNDARIES;
@@ -892,11 +977,14 @@ package body CURVE is
 
       if not DRAW_RESULT then
         -- Exit drawings
+        CON_IO.RESET_TERM;
+        X_MNG.X_START_BLINKING_TASK;
         CON_IO.SET_XOR_MODE (CON_IO.XOR_OFF);
+        CON_IO.SET_POINTER_SHAPE(CON_IO.ARROW);
         exit;
       else
         -- New drawing : clear graphic
-        CON_IO.CLEAR;
+        CON_IO.RESET_TERM;
       end if;
 
     end loop;
@@ -904,7 +992,10 @@ package body CURVE is
 
   exception
     when others =>
+      CON_IO.RESET_TERM;
+      X_MNG.X_START_BLINKING_TASK;
       CON_IO.SET_XOR_MODE (CON_IO.XOR_OFF);
+      CON_IO.SET_POINTER_SHAPE(CON_IO.ARROW);
       raise;
   end DRAW;
 

@@ -1,5 +1,5 @@
-
 /* Oct 21, 1998 : Use private color map                            */
+/* Nov 07, 1998 : Store size at creation of win, in pixels         */
 #include <malloc.h>
 
 #define LINE_LOCAL 
@@ -30,6 +30,7 @@ static int my_error_handler (Display *display, XErrorEvent *error_p) {
 
         XGetErrorText(display, error_p->error_code, msg, sizeof(msg));
         fprintf (stderr, "Error code %s\n", msg);
+        return (0);
 }
 
 /* Init comunication with the local X server */
@@ -180,6 +181,8 @@ boolean screen_created;
     p_window->no_font = no_font;
     p_window->background_color = background;
     p_window->underline = False;
+    p_window->xor_mode = False;
+    p_window->motion_enabled = False;
     p_window->cur_row = 0;
     p_window->cur_column = 0;
     p_window->nbre_key = 0;
@@ -216,12 +219,12 @@ boolean screen_created;
     {
         unsigned long win_mask;
         XSetWindowAttributes win_attrib;
-        int x_pix, y_pix, width_pix, height_pix;
+        int x_pix, y_pix;
 
         x_pix = x * fon_get_width(p_window->server->x_font[no_font]);
         y_pix = y * fon_get_height(p_window->server->x_font[no_font]);
-        width_pix = width * fon_get_width(p_window->server->x_font[no_font]);
-        height_pix = height * fon_get_height(p_window->server->x_font[no_font]);
+        p_window->wwidth = width * fon_get_width(p_window->server->x_font[no_font]);
+        p_window->wheight = height * fon_get_height(p_window->server->x_font[no_font]);
         win_mask = DEF_WIN_MASK; 
         win_attrib.background_pixel = 
           col_get_std(background, background, p_window->screen->color_id);
@@ -233,7 +236,7 @@ boolean screen_created;
         win_attrib.backing_store = p_window->server->backing_store;
         p_window->x_window = XCreateWindow (
           p_window->server->x_server, p_window->screen->x_root_win, 
-          x_pix, y_pix, width_pix, height_pix, DEF_WIN_ATTRIB);
+          x_pix, y_pix, p_window->wwidth, p_window->wheight, DEF_WIN_ATTRIB);
         if (p_window->x_window == None) {
 #ifdef DEBUG
             printf ("X_LINE : X can't create window.\n");
@@ -439,9 +442,10 @@ int i;
         if (blink != list_window[i]->screen->blinking) {
             /* Screen is not in the proper colors */
             col_set_blinking (list_window[i]->server->x_server,
-            list_window[i]->screen->x_screen,
-            list_window[i]->screen->color_id,
-            list_window[i]->screen->colormap, blink);
+                              list_window[i]->screen->x_screen,
+                              list_window[i]->screen->color_id,
+                              list_window[i]->screen->colormap,
+                              blink);
         }
         /* Screen is now in the proper colors */
         list_window[i]->screen->blinking = blink;

@@ -144,6 +144,7 @@ int b_off, c_off, bv, cv;
       x_move (line, COLOURS_LNE, 10);
       x_set_attributes (line, bv, 2, 0, 0, 0, 0);
       x_draw_area (line, 5, 2*NBRE_COLOR);
+      x_draw_rectangle (line, 0, 0, 9, 14);
 
       /* Text display  : show attributes */
       strcpy (stra, "(s)uperbright:");
@@ -221,9 +222,10 @@ int b_off, c_off, bv, cv;
 
     } else if (k == TID_PRESS) {
 
+x_enable_motion_events (line, True);
       /* TID press */
       strcpy (stre, "TID press buttton: ");
-      x_read_tid (line_event, &l, &i, &j);
+      x_read_tid (line_event, TRUE, &l, &i, &j);
       sprintf (digits, "%03d", l);
       strcat (stre, digits);
       strcat (stre, "    row: ");
@@ -236,8 +238,8 @@ int b_off, c_off, bv, cv;
     } else if (k == TID_RELEASE) {
 
       /* TID release */
-      strcpy (stre, "TID release row: ");
-      x_read_tid (line_event, &l, &i, &j);
+      strcpy (stre, "TID release buttton: ");
+      x_read_tid (line_event, TRUE, &l, &i, &j);
       sprintf (digits, "%03d", l);
       strcat (stre, digits);
       strcat (stre, "    row: ");
@@ -247,8 +249,20 @@ int b_off, c_off, bv, cv;
       sprintf (digits, "%03d", j);
       strcat (stre, digits);
       (void) x_bell(1);
+    } else if (k == TID_MOTION) {
+      strcpy (stre, "TID motion buttton: ");
+      x_read_tid (line_event, TRUE, &l, &i, &j);
+      sprintf (digits, "%03d", l);
+      strcat (stre, digits);
+      strcat (stre, "    x: ");
+      sprintf (digits, "%03d", i);
+      strcat (stre, digits);
+      strcat (stre, "    y: ");
+      sprintf (digits, "%03d", j);
+      strcat (stre, digits);
 
     }  else if (k == REFRESH) {
+      x_read_tid (line_event, FALSE, &l, &i, &j);
        /* Redraw to be done */
        strcpy (stre, "Refresh");
     }
@@ -262,7 +276,7 @@ int b_off, c_off, bv, cv;
     }
 
 
-  }/* end for(;;;) */
+  }/* end for(;;) */
 
   /* Close */
   if (x_close_line (line) != 0) {

@@ -85,16 +85,21 @@ package body AF_DSCR is
   end CHECK;
 
   -- Load a field
-  procedure LOAD_FIELD (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE) is
+  procedure LOAD_FIELD (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE;
+        LOAD_COLORS : in BOOLEAN;
+        LOAD_CHARS  : in BOOLEAN) is
     FIELD : constant AFPX_TYP.FIELD_REC := FIELDS(FIELD_NO);
     NB_CHARS : constant POSITIVE := FIELD.HEIGHT * FIELD.WIDTH;
     use AFPX_TYP;
   begin
     CHECK (FIELD_NO);
-    FIELDS(FIELD_NO).COLORS := INIT_COLORS(FIELD_NO);
     FIELDS(FIELD_NO).ACTIVATED := TRUE;
     FIELDS(FIELD_NO).ISPROTECTED := FALSE;
-    if FIELD_NO /= 0 then
+    if LOAD_COLORS then
+      FIELDS(FIELD_NO).COLORS := INIT_COLORS(FIELD_NO);
+    end if;
+
+    if LOAD_CHARS and then FIELD_NO /= 0 then
       -- Copy the nb_chars from init_str to char_str
       for I in FIELD.CHAR_INDEX .. FIELD.CHAR_INDEX + NB_CHARS - 1 loop
         CHARS(I) := INIT_STR(I);
