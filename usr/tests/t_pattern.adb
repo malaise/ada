@@ -1,141 +1,159 @@
-with Ada.text_Io;
+with Ada.Text_Io;
 with Parser, Pattern, Lower_Str;
 procedure T_Pattern is
 
   Done : Boolean := False;
 
-  procedure Cli (Ru : in Pattern.Rule_No; 
-                 St : in String;
-                 Pa : in Pattern.Pattern_Id; 
-                 Nb : in Natural;
-                 Id : in Natural) is
+  Rule : Pattern.Rule_No;
+
+  function Cli (Ru : in Pattern.Rule_No; 
+                Pa : in Pattern.Pattern_Id; 
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
   begin
-    Ada.Text_Io.Put_Line ("Called Cb (" & Ru'Img & ", "
-                        & St & "," & Pa'Img & "," & Nb'Img & ","
-                        & Id'Img & ").");
+    Ada.Text_Io.Put ("Called Cb (" & Ru'Img & "," & Pa'Img & ","
+                                   & Nb'Img & ", tail: ");
+    while Parser.Current_Word (It) /= "" loop
+      Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
+      Parser.Next_Word (It);
+    end loop;
+    Ada.Text_Io.Put_Line (").");
+    return Nb /= 0;
   end Cli;
 
-  function Tail (Str : String) return String is
+  -- Skip heading separators and return a String(1 .. N)
+  function Parse (Str : String) return String is
+    First : Natural;
   begin
+    First := 0;
     for I in Str'Range loop
       if not Pattern.Is_Sep (Str(I)) then
-        return Str (I .. Str'Last);
+        First := I;
+        exit;
       end if;
     end loop;
-    return "";
-  end Tail;
+    if First = 0 then
+      return "";
+    else
+      declare
+        Ret : constant String (1 .. Str'Last-First+1)
+            := Str (First .. Str'Last);
+      begin
+        return Ret;
+      end;
+    end if;
+  end Parse;
 
-  procedure Set (Ru : in Pattern.Rule_No;
-                 St : in String;
-                 Pa : in Pattern.Pattern_Id; 
-                 Nb : in Natural;
-                 Id : in Natural) is
-    It : Parser.Iterator;
+  function Set (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id; 
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
 
+    Str : constant String := Parser.Image (It);
+    Last : constant Natural := Parser.Last_Index (It);
   begin
-    Parser.Create (St(Id+1 .. St'Last), Pattern.Is_Sep'Access, It);
+    -- First word is pattern id
     begin
-      New_Pa := Pattern.Pattern_Id'Value (Parser.Next_Word(It));
+      New_Pa := Pattern.Pattern_Id'Value (Parser.Current_Word(It));
     exception
       when Constraint_Error =>
         Ada.Text_Io.Put_Line ("Invalid pattern id " & Parser.Current_Word(It));
-        Parser.Delete (It);
-        return;
+        return False;
     end;
 
-    Pattern.Set (2, New_Pa,
-                 Tail(St(Parser.Last_Index(It) + 1 .. St'Last)),
+    Pattern.Set (Rule,
+                 New_Pa,
+                 Parse (Str(Last + 1 .. Str'Last)),
                  Cli'Unrestricted_Access);
-    Parser.Delete (It);
+    return False;
   end Set;
 
-  procedure Del (Ru : in Pattern.Rule_No;
-                 St : in String;
-                 Pa : in Pattern.Pattern_Id; 
-                 Nb : in Natural;
-                 Id : in Natural) is
-    It : Parser.Iterator;
+  function Del (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id; 
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
 
   begin
-    Parser.Create (St(Id+1 .. St'Last), Pattern.Is_Sep'Access, It);
     begin
-      New_Pa := Pattern.Pattern_Id'Value (Parser.Next_Word(It));
+      New_Pa := Pattern.Pattern_Id'Value (Parser.Current_Word(It));
     exception
       when Constraint_Error =>
         Ada.Text_Io.Put_Line ("Invalid pattern id" & Parser.Current_Word(It));
-        Parser.Delete (It);
-        return;
+        return False;
     end;
     if Parser.Next_Word(It) /= "" then
       Ada.Text_Io.Put_Line ("Invalid extra argument "
                           & Parser.Current_Word(It));
-      Parser.Delete (It);
-      return;
+      return False;
     end if;
-
-    Pattern.Del (2, New_Pa);
+    Pattern.Del (Rule, New_Pa);
+    return False;
   end Del;
 
-  procedure Che (Ru : in Pattern.Rule_No;
-                 St : in String;
-                 Pa : in Pattern.Pattern_Id; 
-                 Nb : in Natural;
-                 Id : in Natural) is
+  function Che (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id; 
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
+    Str : constant String := Parser.Image (It);
+    First : constant Natural := Parser.First_Index (It);
   begin
-    if Pattern.Check (2, St (Id+1 .. St'Last)) then
+    -- Check remaining of string
+    if Pattern.Check (Rule, Parse (Str(First .. Str'Last))) then
       Ada.Text_Io.Put_Line ("Check ok");
     else
-      Ada.Text_Io.Put_Line ("No match");
+      Ada.Text_Io.Put_Line ("Check nok");
     end if;
+    return False;
   end Che;
 
-  procedure Hel (Ru : in Pattern.Rule_No;
-                  St : in String;
-                  Pa : in Pattern.Pattern_Id; 
-                  Nb : in Natural;
-                  Id : in Natural) is
+  function Hel (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id; 
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
   begin
     Ada.Text_Io.Put_Line ("The following commands are supported:");
     Ada.Text_Io.Put_Line ("  set <id> <pattern>");
     Ada.Text_Io.Put_Line ("  del <id>");
     Ada.Text_Io.Put_Line ("  check <string>");
-    Ada.Text_Io.Put_Line ("  exit or quit");
+    Ada.Text_Io.Put_Line ("  exit, quit or q");
+    return False;
   end Hel;
 
-  procedure Def (Ru : in Pattern.Rule_No;
-                 St : in String;
+  function Def (Ru : in Pattern.Rule_No;
                  Pa : in Pattern.Pattern_Id; 
                  Nb : in Natural;
-                 Id : in Natural) is
-    It : Parser.Iterator;
+                 It : in Parser.Iterator) return Boolean is
 
   begin
-    Parser.Create (St, Pattern.Is_Sep'Access, It);
-    if Parser.Next_Word (It) /= "" then
-      Ada.Text_Io.Put_Line ("Invalid command: " & St & ".");
-      Hel (Ru, St, Pa, Nb, Id);
+    if Parser.Current_Word (It) /= "" then
+      Ada.Text_Io.Put_Line ("Invalid command: " & Parser.Image(It) & ".");
+      return Hel (Ru, Pa, Nb, It);
     end if;
+    return False;
   end Def;
 
-  procedure Exi (Ru : in Pattern.Rule_No;
-                 St : in String;
-                 Pa : in Pattern.Pattern_Id;
-                 Nb : in Natural;
-                 Id : in Natural) is
+  function Exi (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id;
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
   begin
-    if St = "exit" or else St = "quit" then
+    if Parser.Current_Word (It) = "" then
       Ada.Text_Io.Put_Line ("Exiting");
       Done := True;
     else
-      Def (Ru, St, Pa, Nb, Id);
+      Parser.Reset (It);
+      Parser.Next_Word (It);
+      return Def (Ru, Pa, Nb, It);
     end if;
+    return False;
   end Exi;
 
 
   Buf : String (1 .. 1024);
   Len : Natural;
+
 begin
 
   -- Hook parser (rule 1)
@@ -146,6 +164,10 @@ begin
   Pattern.Set (1, 50, "exit",  Exi'Unrestricted_Access);
   Pattern.Set (1, 60, "",      Def'Unrestricted_Access);
   Pattern.Set (1, 51, "quit",  Exi'Unrestricted_Access);
+  Pattern.Set (1, 52, "q",     Exi'Unrestricted_Access);
+
+  -- Set rule
+  Rule := Pattern.Get_Free_Rule;
 
   loop
     Ada.Text_Io.Put ("> ");
@@ -153,5 +175,6 @@ begin
     Pattern.Check (1, Lower_Str(Buf(1 .. Len)));
     exit when Done;
   end loop;
+
 end T_Pattern;
 
