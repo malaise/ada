@@ -46,6 +46,15 @@ procedure T_Con is
       Put (Natural'Image(T) & "   ", W3);
     end Show_Clock;
 
+    procedure Redraw is
+    begin
+      Clear (W1);
+      Clear (W2);
+      Clear (W3);
+      Frame(Name => W2);
+      Show_Clock;
+    end Redraw;
+
   begin
     begin
       Col := 1;
@@ -75,13 +84,8 @@ procedure T_Con is
     Set_Background (Red, W2);
     Set_Background (Green, W3);
 
-    Clear (W1);
-    Clear (W2);
-    Clear (W3);
+    Redraw;
 
-    Frame(Name => W2);
-
-    Show_Clock;
     Move (1, Col, W1);
     Get (Str(1..Width), Last, Stat, Pos, Ins,
        W1, Current, Current, Red, Delt);
@@ -93,6 +97,8 @@ procedure T_Con is
           Str (1 .. Width) := (others => ' ');
           Pos := 1;
           Ins := False;
+        elsif Stat = Refresh then
+          Redraw;
         elsif Stat = Break then
           exit;
         elsif Stat = Ret then
@@ -121,6 +127,10 @@ procedure T_Con is
             Put (" R", W2);
           elsif Mouse_Event.Button = Motion then
             Put (" x", W2);
+          elsif Mouse_Event.Button = Up then
+            Put (" U", W2);
+          elsif Mouse_Event.Button = Down then
+            Put (" D", W2);
           end if;
           Put (Normal(Mouse_Event.Row, 4) & Normal(Mouse_Event.Col, 4), W2);
           if Mouse_Event.Valid
