@@ -343,7 +343,8 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
           }
         }
         /* p_fd is still NO_EVENT if no fd (i.e. wake-up) */
-        if (FD_ISSET(wake_up_fds[0], &select_write_mask)) {
+        if ( (*p_fd == NO_EVENT)
+          && (FD_ISSET(wake_up_fds[0], &select_read_mask)) ) {
           for (;;) {
             size = read (wake_up_fds[0], &c, sizeof(c));
             if ( (size == -1) && (errno != EINTR) ) {
