@@ -1,58 +1,66 @@
+# Clear stack
+[ ssize 0 = [ 0 retn ] ifcall pop Z pushr retacal ] Z popr
+
 # Error and quit
-4 //
-[ [ Error, 3 arguments: <nb_disks> <from_column> <to_column> expected ] ;
-  [ "   nb_disks must be >= 0," ] ;
-  [ "   columns must be 1, 2 or 3 and different." ] ;
-0 __ ] E ->
+4 format
+[ [ Error, 3 arguments: <nb_disks> <from_column> <to_column> expected ] putl
+  [ "   nb_disks must be >= 0," ] putl
+  [ "   columns must be 1, 2 or 3 and different." ] putl
+Z pushr call ] E popr
 
 # Check 3 args
-. 3 /= E <- ?@
+ssize 3 /= E pushr ifcall
 
 # Store args j=dest, i=origin, n=nb_disks
-j -> i -> n ->
+j popr i popr n popr
 
 # Init total moves
-0 t ->
+0 t popr
 
 # Check arguments  1 <= i j <= 3  and  i /= j  and 1 <= n 
-i <- ?! ~ E <- ?@ j <- ?! ~ E <- ?@ n <- ?! ~ E <- ?@
-i <- 1 < E <- ?@ i <- 3 > E <- ?@ j <- 1 < E <- ?@ j <- 3 > E <- ?@
-i <- j <- = E <- ?@
-n <- 1 < E <- ?@
+i pushr isinte ~ E pushr ifcall
+j pushr isinte ~ E pushr ifcall
+n pushr isinte ~ E pushr ifcall
+i pushr 1 < E pushr ifcall i pushr 3 > E pushr ifcall
+j pushr 1 < E pushr ifcall j pushr 3 > E pushr ifcall
+i pushr j pushr = E pushr ifcall
+n pushr 1 < E pushr ifcall
 
 # Compute other axis from i, j and push it instead
-[ >< 1 = [ -- 2 = 3 2 ? 2 __ ] ?@ 2 = [ 3 = 1 3 ? 2 __ ] ?@ 2 = 1 2 ? ] K ->
+[ dup 1 = [ pop 2 = 3 2 ifte 2 retn ] ifcall
+2 = [ 3 = 1 3 ifte 2 retn ] ifcall 2 = 1 2 ifte ] K popr
 
 # M(i, j, d) Move a disk: display
-[ t <- 1 + t -> [ "move disk" ] , , <> [ " from" ] , , [ " to" ] , ; ] M ->
+[ t pushr 1 + t popr [ "move disk" ] put put swap [ " from" ] put put
+[ " to" ] put putl ] M popr
 
 # Move disk 1: Move and return
-[ M <- @ 2 __ ] T ->
+[ M pushr call 2 retn ] T popr
 
 # H(i, j, d): H(i, k, d-1), M(i, j, d), H(k, j, d-1)
 # Stack of arguments: d j i
 # H(i, j, 1): T(i, j, 1)
-[ >< 1 = T <- ?@
+[ dup 1 = T pushr ifcall
 # Save arguments in registers
-d -> j -> i => j <- d <-
+d popr j popr i copyr j pushr d pushr
 # Compute K(i, j)
-j <- i <- K <- @
-k =>
+j pushr i pushr K pushr call
+k copyr
 # Save
 # H(i, k, d-1)
-i <- k <- d <- 1 - H <- @
+i pushr k pushr d pushr 1 - H pushr call
 # Restore registers: k d j i
-k -> d -> j -> i ->
+k popr d popr j popr i popr
 # M(i, j, d)
-i <- j <-  d <- M <- @
+i pushr j pushr d pushr M pushr call
 # H(k, j, d-1)
-k <- j <- d <- 1 - H <- @
-] H ->
+k pushr j pushr d pushr 1 - H pushr call
+] H popr
 
 # H(i, k, n)
-i <- j <- n <- H <- @
+i pushr j pushr n pushr H pushr call
 
 # Done
-7 //
-[ Nb moves: ] , t <- ;
+7 format
+[ Nb moves: ] put t pushr putl
 
