@@ -5,10 +5,10 @@ package Response is
   procedure New_Code;
 
 
-  type Color_Array is array (Common.Level_Range range <>) of
-   Common.Eff_Color_Range;
-  type Color_Rec (Level : Common.Last_Level_Range := Common.Min_Level)
-   is record
+  type Color_Array is array (Common.Level_Range range <>)
+                            of Common.Eff_Color_Range;
+  type Color_Rec (Level : Common.Last_Level_Range
+                        := Common.Min_Level) is record
     Color : Color_Array (1 .. Level);
   end record;
 
@@ -22,3 +22,4 @@ package Response is
   function Respond (Propal : Color_Rec) return Response_Rec;
 
 end Response;
+

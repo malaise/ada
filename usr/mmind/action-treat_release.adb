@@ -256,3 +256,4 @@ begin
     Screen.Put_Help (Screen.Start);
   end if;
 end Treat_Release;
+

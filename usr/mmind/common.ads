@@ -65,6 +65,5 @@ package Common is
 
   procedure Reset_State;
 
-
-
 end Common;
+
