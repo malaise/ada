@@ -272,8 +272,8 @@ static int soc_connect (soc_ptr soc) {
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
-extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
-                                 const char *service) {
+extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
+                                      boolean lan, const char *service) {
   soc_ptr soc = (soc_ptr) token;
   struct hostent *host_name;
   struct netent  *lan_name;
@@ -282,11 +282,6 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
 
-  /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
@@ -294,6 +289,11 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
     } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
+  }
+
+  /* Read port num */
+  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+    return (SOC_NAME_NOT_FOUND);
   }
 
   if (! lan) {
@@ -330,8 +330,8 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
 
 /* Set the destination host name and port - specify port */
 /* Broadcast if lan */
-extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
-                              soc_port port) {
+extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
+                                   boolean lan, soc_port port) {
 
   soc_ptr soc = (soc_ptr) token;
   struct hostent *host_name;
@@ -381,7 +381,43 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
   return (SOC_OK);
 }
 
-extern int soc_set_dest (soc_token token, soc_host *host, soc_port port) {
+extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
+                                      const char *service) {
+  soc_ptr soc = (soc_ptr) token;
+  struct servent *serv_name;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+
+  /* Not linked nor already connected if tcp */
+  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    if (soc->linked) {
+      return (SOC_LINK_ERR);
+    } else if (soc->connection != not_connected) {
+      return (SOC_CONN_ERR);
+    }
+  }
+
+  /* Read port num */
+  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  soc->send_struct.sin_addr.s_addr = host->integer;
+  soc->send_struct.sin_port = serv_name->s_port;
+
+  /* Connect tcp */
+  soc->dest_set = TRUE;
+  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    return soc_connect (soc);
+  }
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
+                                   soc_port port) {
   soc_ptr soc = (soc_ptr) token;
 
   /* Check that socket is open */
@@ -412,7 +448,7 @@ extern int soc_set_dest (soc_token token, soc_host *host, soc_port port) {
 /* Change destination host_lan name (same port) */
 /* Destination must have been previously set (by a set or a rece) */
 /* Broadcast if lan */
-extern int soc_change_dest_host (soc_token token, char *host_lan, boolean lan) {
+extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean lan) {
   soc_ptr soc = (soc_ptr) token;
   struct hostent *host_name;
   struct netent  *lan_name;
@@ -447,50 +483,31 @@ extern int soc_change_dest_host (soc_token token, char *host_lan, boolean lan) {
   return (SOC_OK);
 }
 
-/* Get current lan name (computed from local host name) */
-/* lan_name must be big enough */
-extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
+/* Change destination host (same port) */
+extern int soc_change_dest_host (soc_token token, const soc_host *host) {
+  soc_ptr soc = (soc_ptr) token;
+  struct hostent *host_name;
+  struct netent  *lan_name;
 
-  char host_name[MAXHOSTNAMELEN];
-  struct hostent *hostentp;
-  struct in_addr host_address;
-  unsigned int net_mask;
-  struct netent  *netentp;
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
 
-  if (gethostname(host_name, sizeof(host_name)) == -1) {
-    return (SOC_NAME_NOT_FOUND);
+  /* Check not tcp */
+  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    return (SOC_PROTO_ERR);
   }
 
-  hostentp = gethostbyname (host_name);
-  if (hostentp ==  (struct hostent *)NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
+  /* Check that a destination is already set */
+  if (!soc->dest_set) return (SOC_DEST_ERR);
 
-  /* First of aliases */
-  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
-  net_mask = inet_netof(host_address);
-  if (net_mask == -1) {
-    perror ("inet_netof");
-    return (SOC_SYS_ERR);
-  }
+  soc->send_struct.sin_addr.s_addr = host->integer;
 
-  netentp = getnetbyaddr(net_mask, AF_INET);
-  if (netentp == (struct netent *) NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  if (strlen(netentp->n_name) >= lan_name_len) {
-    return (SOC_LEN_ERR);
-  }
-
-  strcpy (lan_name, netentp->n_name);
   /* Ok */
   return (SOC_OK);
-
 }
 
 /* Change destination port (same host) - specify service */
-extern int soc_change_dest_service (soc_token token, char *service) {
+extern int soc_change_dest_service (soc_token token, const char *service) {
   soc_ptr soc = (soc_ptr) token;
   struct servent *serv_name;
 
@@ -539,6 +556,48 @@ extern int soc_change_dest_port (soc_token token, soc_port port) {
   return (SOC_OK);
 }
 
+/* Get current lan name (computed from local host name) */
+/* lan_name must be big enough */
+extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
+
+  char host_name[MAXHOSTNAMELEN];
+  struct hostent *hostentp;
+  struct in_addr host_address;
+  unsigned int net_mask;
+  struct netent  *netentp;
+
+  if (gethostname(host_name, sizeof(host_name)) == -1) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  hostentp = gethostbyname (host_name);
+  if (hostentp ==  (struct hostent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  /* First of aliases */
+  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
+  net_mask = inet_netof(host_address);
+  if (net_mask == -1) {
+    perror ("inet_netof");
+    return (SOC_SYS_ERR);
+  }
+
+  netentp = getnetbyaddr(net_mask, AF_INET);
+  if (netentp == (struct netent *) NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(netentp->n_name) >= lan_name_len) {
+    return (SOC_LEN_ERR);
+  }
+
+  strcpy (lan_name, netentp->n_name);
+  /* Ok */
+  return (SOC_OK);
+
+}
+
 /* Get the destination port */
 extern int soc_get_dest_port (soc_token token, soc_port *p_port) {
   soc_ptr soc = (soc_ptr) token;
@@ -569,7 +628,7 @@ extern int soc_get_dest_host (soc_token token, soc_host *p_host) {
 }
 
 /* Find name of soc_host and vice versa */
-extern int soc_host_name_of (soc_host *p_host, char *host_name,
+extern int soc_host_name_of (const soc_host *p_host, char *host_name,
                              unsigned int host_name_len) {
   struct hostent *host_struct;
 
@@ -588,7 +647,7 @@ extern int soc_host_name_of (soc_host *p_host, char *host_name,
   return (SOC_OK);
 }
 
-extern int soc_host_of (char *host_name, soc_host *p_host) {
+extern int soc_host_of (const char *host_name, soc_host *p_host) {
   struct hostent *host_struct;
 
   /* Read  IP adress of host */

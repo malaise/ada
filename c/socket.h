@@ -105,31 +105,39 @@ extern int soc_set_blocking (soc_token token, boolean blocking);
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
-extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan, 
-                                 const char *service);
+extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
+                                      boolean lan, const char *service);
 
 /* Set the destination host name and port - specify port */
 /* Broadcast if lan */
-extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan, 
-                              soc_port port);
+extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
+                                   boolean lan, soc_port port);
+
+/* Set dest to a host, service */
+extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
+                                      const char *service);
+/* Set dest to a host, port */
+extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
+                                   soc_port port);
 
 /* Change destination host_lan name (same port) */
 /* Destination must have been previously set (by a set or a rece) */
 /* Broadcast if lan */
-extern int soc_change_dest_host (soc_token token, char *host_lan, boolean lan);
+extern int soc_change_dest_name (soc_token token, const char *host_lan,
+                                 boolean lan);
 
-/* Set dest to a host, port */
-extern int soc_set_dest (soc_token token, soc_host *host, soc_port port);
+/* Change destination host (same port) */
+extern int soc_change_dest_host (soc_token token, const soc_host *host);
+
+/* Change destination port (same host_lan) - specify service */
+extern int soc_change_dest_service (soc_token token, const char *service);
+
+/* Change destination port (same host_lan) - specify port */
+extern int soc_change_dest_port (soc_token token, soc_port port);
 
 /* Get current lan name (computed from local host name) */
 /* lan_name must be large enough */
 extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len);
-
-/* Change destination port (same host_lan) - specify service */
-extern int soc_change_dest_service (soc_token token, char *service);
-
-/* Change destination port (same host_lan) - specify port */
-extern int soc_change_dest_port (soc_token token, soc_port port);
 
 /* Get the destination port */
 extern int soc_get_dest_port (soc_token token, soc_port *p_port);
@@ -138,9 +146,9 @@ extern int soc_get_dest_port (soc_token token, soc_port *p_port);
 extern int soc_get_dest_host (soc_token token, soc_host *p_host);
 
 /* Find name of soc_host and vice versa */
-extern int soc_host_name_of (soc_host *p_host, char *host_name,
+extern int soc_host_name_of (const soc_host *p_host, char *host_name,
                              unsigned int host_name_len);
-extern int soc_host_of (char *host_name, soc_host *p_host);
+extern int soc_host_of (const char *host_name, soc_host *p_host);
 
 /* Gets local host */
 extern int soc_get_local_host_name (char *host_name,

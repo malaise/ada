@@ -1,3 +1,4 @@
+with Ada.Unchecked_Conversion;
 package body Socket is
 
   ----------------
@@ -71,28 +72,31 @@ package body Socket is
                         Set_For_Reply : Boolean_For_C) return Result;
   pragma Import (C, Soc_Receive, "soc_receive");
 
-  function Soc_Set_Dest_Service (S : System.Address;
-                                 Host_Lan : System.Address;
-                                 Lan      : Boolean_For_C;
-                                 Service  : System.Address) return Result;
-  pragma Import (C, Soc_Set_Dest_Service, "soc_set_dest_service");
-  function Soc_Set_Dest_Port (S : System.Address;
-                              Host_Lan : System.Address;
-                              Lan      : Boolean_For_C;
-                              Port     : Word) return Result;
-  pragma Import (C, Soc_Set_Dest_Port, "soc_set_dest_port");
-  function Soc_Set_Dest (S : System.Address;
-                         Host : Host_Id;
-                         Port : Word) return Result;
-  pragma Import (C, Soc_Set_Dest, "soc_set_dest");
+  function Soc_Set_Dest_Name_Service (S : System.Address;
+                                      Host_Lan : System.Address;
+                                      Lan      : Boolean_For_C;
+                                      Service  : System.Address) return Result;
+  pragma Import (C, Soc_Set_Dest_Name_Service, "soc_set_dest_name_service");
+  function Soc_Set_Dest_Name_Port (S : System.Address;
+                                   Host_Lan : System.Address;
+                                   Lan      : Boolean_For_C;
+                                   Port     : Word) return Result;
+  pragma Import (C, Soc_Set_Dest_Name_Port, "soc_set_dest_name_port");
+  function Soc_Set_Dest_Host_Service (S : System.Address;
+                                      Host : System.Address;
+                                      Service  : System.Address) return Result;
+  pragma Import (C, Soc_Set_Dest_Host_Service, "soc_set_dest_host_service");
+  function Soc_Set_Dest_Host_Port (S : System.Address;
+                                   Host : System.Address;
+                                   Port : Word) return Result;
+  pragma Import (C, Soc_Set_Dest_Host_Port, "soc_set_dest_host_port");
 
-  function Soc_Is_Connected (S : System.Address;
-                             P_Connected : System.Address) return Result;
-  pragma Import (C, Soc_Is_Connected, "soc_is_connected");
-
-  function Soc_Change_Dest_Host (S : System.Address;
+  function Soc_Change_Dest_Name (S : System.Address;
                                  Host_Lan : System.Address;
                                  Lan      : Boolean_For_C) return Result;
+  pragma Import (C, Soc_Change_Dest_Name, "soc_change_dest_name");
+  function Soc_Change_Dest_Host (S : System.Address;
+                                 Host : System.Address) return Result;
   pragma Import (C, Soc_Change_Dest_Host, "soc_change_dest_host");
   function Soc_Change_Dest_Service (S : System.Address;
                                     Service : System.Address) return Result;
@@ -100,6 +104,10 @@ package body Socket is
   function Soc_Change_Dest_Port (S : System.Address;
                                  Port : Word) return Result;
   pragma Import (C, Soc_Change_Dest_Port, "soc_change_dest_port");
+
+  function Soc_Is_Connected (S : System.Address;
+                             P_Connected : System.Address) return Result;
+  pragma Import (C, Soc_Is_Connected, "soc_is_connected");
 
   function Soc_Get_Dest_Host (S : System.Address;
                               Host : System.Address) return Result;
@@ -282,7 +290,7 @@ package body Socket is
     Name_For_C : constant String := C_Str (Name);
     Service_For_C : constant String := C_Str (Service);
   begin
-    Res := Soc_Set_Dest_Service (Socket.Soc_Addr,
+    Res := Soc_Set_Dest_Name_Service (Socket.Soc_Addr,
                                  Name_For_C'Address, Boolean_For_C(Lan),
                                  Service_For_C'Address);
     Check_Ok;
@@ -292,10 +300,11 @@ package body Socket is
                Socket  : in Socket_Dscr;
                Host    : in Host_Id;
                Service : in String) is
+    Service_For_C : constant String := C_Str (Service);
   begin
-    -- Dummy port
-    Set_Destination_Host_And_Port (Socket, Host, 0);
-    Change_Destination_Service (Socket, Service);
+    Res := Soc_Set_Dest_Host_Service (Socket.Soc_Addr, Host'Address,
+                                      Service_For_C'Address);
+    Check_Ok;
   end Set_Destination_Host_And_Service;
 
   procedure Set_Destination_Name_And_Port (
@@ -305,7 +314,7 @@ package body Socket is
                Port   : in Port_Num) is
     Name_For_C : constant String := C_Str (Name);
   begin
-    Res := Soc_Set_Dest_Port (Socket.Soc_Addr,
+    Res := Soc_Set_Dest_Name_Port (Socket.Soc_Addr,
                               Name_For_C'Address, Boolean_For_C(Lan),
                               Word(Port) );
     Check_Ok;
@@ -316,7 +325,7 @@ package body Socket is
                Host   : in Host_Id;
                Port   : in Port_Num) is
   begin
-    Res := Soc_Set_Dest (Socket.Soc_Addr, Host, Word(Port) );
+    Res := Soc_Set_Dest_Host_Port (Socket.Soc_Addr, Host'Address, Word(Port) );
     Check_Ok;
   end Set_Destination_Host_And_Port;
 
@@ -336,7 +345,7 @@ package body Socket is
                Name   : in String) is
     Name_For_C : constant String := C_Str (Name);
   begin
-    res := Soc_Change_Dest_Host (Socket.Soc_Addr, Name_For_C'Address,
+    Res := Soc_Change_Dest_Name (Socket.Soc_Addr, Name_For_C'Address,
                                  Boolean_For_C(Lan));
     Check_Ok;
   end Change_Destination_Name;
@@ -344,10 +353,9 @@ package body Socket is
   procedure Change_Destination_Host (
                Socket   : in Socket_Dscr;
                Host     : in host_Id) is
-    Port : Port_Num;
   begin
-    Port := Get_Destination_Port (Socket);
-    Set_Destination_Host_And_Port (Socket, Host, Port);
+    Res := Soc_Change_Dest_Host (Socket.Soc_Addr, Host'Address);
+    Check_Ok;
   end Change_Destination_Host;
 
   -- Change service or port
@@ -430,7 +438,20 @@ package body Socket is
     Check_Ok;
     return Id;
   end Local_Host_Id;
-  
+
+  -- Host_Id <-> 4 bytes of Ip address
+  function L_Id2Addr is new Ada.Unchecked_Conversion (Host_Id, Ip_Address);
+  function Id2Addr (Id : Host_Id) return Ip_Address is
+  begin
+    return L_Id2Addr(Id);
+  end Id2Addr;
+
+  function L_Addr2Id is new Ada.Unchecked_Conversion (Ip_Address, Host_Id);
+  function Addr2Id (Addr : Ip_Address) return Host_Id is
+  begin
+    return L_Addr2Id(Addr);
+  end Addr2Id;
+
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
   procedure Send (Socket  : in Socket_Dscr;

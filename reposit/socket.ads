@@ -200,7 +200,18 @@ package Socket is
   -- Get local Host name or id
   function Local_Host_Name return String;
   function Local_Host_Id return Host_Id;
-  
+
+  -- Host_Id <-> 4 bytes of Ip address
+  type Byte is new Natural range 0 .. 255;
+  for Byte'Size use System.Storage_Unit;
+  type Ip_Address is record
+    A, B, C, D : Byte; -- Network (natural) order
+  end record;
+  for Ip_Address'Size use 4 * System.Storage_Unit;
+
+  function Id2Addr (Id : Host_Id) return Ip_Address;
+  function Addr2Id (Addr : Ip_Address) return Host_Id;
+
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
   -- May raise Soc_Dest_Err if destination is not set
@@ -231,6 +242,7 @@ private
   No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
 
   type Host_Id is new Natural;
+  for Host_Id'Size use 4 * System.Storage_Unit; -- As Ip_Addr
   No_Host : constant Host_Id := 0;
 
 end Socket;
