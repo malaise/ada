@@ -64,6 +64,7 @@ package body Prime_List is
     -- Empty list, add 1
     if Prime_List_Mng.is_Empty (The_List) then
       Append (1);
+      Need_Search := True;
       return 1;
     end if;
 
@@ -86,6 +87,7 @@ package body Prime_List is
         end if;
       end loop Divisor_Loop;
 
+      Need_Search := True;
       if Is_Prime then
         Append (Res);
         return Res;
