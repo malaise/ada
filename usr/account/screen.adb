@@ -113,7 +113,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Nb_Selected_Fld, Sublist_Active);
     Afpx.Encode_Field(Nb_Selected_Fld,
                       (0, 0),
-                      Normal(Integer(Nb_Selected_Fld),
+                      Normal(Integer(Selected),
                       Afpx.Get_Field_Width(Nb_Selected_Fld)));
     Afpx.Set_Field_Activation(Selected_Fld, Sublist_Active);
   end Encode_Nb_Oper;
@@ -153,12 +153,12 @@ package body Screen is
       Afpx.Clear_Field (Defered_Amnt_Fld);
       Afpx.Encode_Field (Defered_Amnt_Fld, (0, 0), "Overflow");
     end if;
-    if not Amounts(Margin).Overflow then
-      Afpx.Encode_Field (Margin_Amnt_Fld, (0, 0),
-                         Unit_Format.Image(Amounts(Margin).Amount, True));
+    if not Amounts(Saved).Overflow then
+      Afpx.Encode_Field (Saved_Amnt_Fld, (0, 0),
+                         Unit_Format.Image(Amounts(Saved).Amount, True));
     else
-      Afpx.Clear_Field (Margin_Amnt_Fld);
-      Afpx.Encode_Field (Margin_Amnt_Fld, (0, 0), "Overflow");
+      Afpx.Clear_Field (Saved_Amnt_Fld);
+      Afpx.Encode_Field (Saved_Amnt_Fld, (0, 0), "Overflow");
     end if;
   end Encode_Summary;
 
