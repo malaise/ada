@@ -16,7 +16,7 @@ procedure Afpx_Bld is
   package Dscr_Get is new Get_Line (Max_Word_Len => 80, 
                                     Max_Word_Nb  => 45,
                                     Max_Line_Len => 132,
-                                    Comment      => '#');
+                                    Comment      => "#");
   Dscr_Line : Dscr_Get.Line_Array;
   Dscr_Words : Dscr_Get.Word_Count;
 

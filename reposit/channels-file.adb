@@ -8,7 +8,7 @@ package body File is
      Max_Word_Len => Tcp_Util.Max_Host_Name_Len,
      Max_Word_Nb  => 60,
      Max_Line_Len => 132,
-     Comment      => '#');
+     Comment      => "#");
 
   type Section_List is (Out_Channel, In_Channel, In_Matching_Channel);
 

@@ -10,9 +10,10 @@ generic
   Max_Word_Nb  : in Positive;
   -- Only this one is used while loading a line
   Max_Line_Len : in Positive;
-  -- If this comment character is set, then only significant
-  -- lines (not empty nor starting with comment) are loaded
-  Comment : in Character := Ascii.Nul;
+  -- If this comment string is set, then only significant lines
+  -- (not empty nor starting with comment nor with comment as first word)
+  -- are loaded
+  Comment : in String := "";
 
 package Get_Line is
 
@@ -22,12 +23,12 @@ package Get_Line is
   type Line_Array is array (Word_Range) of Word_Txt;
   subtype Line_Txt is Text_Handler.Text(Max_Len => Max_Line_Len);
 
-  -- Opens the file. Exceptions are the one of TEXT_IO.OPEN (IN_FILE)
+  -- Opens the file. Exceptions are the one of Text_Io.Open (In_File)
   -- Loads the first line
   procedure Open (File_Name : in String);
 
   -- Closes the file
-  -- Exceptions are the one of TEXT_IO.CLOSE
+  -- Exceptions are the one of Text_Io.Close
   procedure Close;
 
   -- The following features may raise

@@ -7,7 +7,7 @@ with Space.Board, Pieces, Image;
 package body Set_Up is
 
   -- WPe1 = White Pawn at e1
-  package My_Get_Line is new Get_Line (4, 132, 132, '#');
+  package My_Get_Line is new Get_Line (4, 132, 132, "#");
   Line : My_Get_Line.Line_Array;
 
   -- Load_Error : exception;

@@ -57,7 +57,7 @@ package body Mesu_Edi is
                        Max_Word_Len => 100,
                        Max_Word_Nb => 40,
                        Max_Line_Len => 132,
-                       Comment => '#');
+                       Comment => "#");
     Sample_Line : Get_Sample.Line_Array;
   begin
     Ok := False;

@@ -10,7 +10,7 @@ procedure Import is
      Max_Word_Len => 40,
      Max_Word_Nb  => 3,
      Max_Line_Len => 132,
-     Comment      => '#');
+     Comment      => "#");
 
   Line  : My_Get_Line.Line_Array;
 

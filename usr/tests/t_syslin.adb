@@ -31,7 +31,7 @@ begin
       Max_Word_Len => Max_Word_Len,
       Max_Word_Nb  => Max_Word_Nb,
       Max_Line_Len => Max_Line_Len,
-      Comment => '#');
+      Comment => "#");
 
     Line  : My_Get_Line.Line_Array;
     Whole_Line : My_Get_Line.Line_Txt;

@@ -23,7 +23,7 @@ package body File is
       Max_Word_Len => Image.Move_Str'Length,
       Max_Word_Nb  => 2,
       Max_Line_Len => 132,
-      Comment      => '#');
+      Comment      => "#");
   Line : My_Get_Line.Line_Txt;
   Line_Array : My_Get_Line.Line_Array;
   Line_No : Ada.Text_Io.Count;

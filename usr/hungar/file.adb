@@ -30,7 +30,7 @@ package body File is
       Max_Word_Len => 6, -- 100.00
       Max_Word_Nb => Max_Dim,
       Max_Line_Len => 1024,
-      Comment      => '#');
+      Comment      => "#");
     Line  : My_Get_Line.Line_Array;
     Dim : Positive;
     F   : Float_Cell_Range;

@@ -7,7 +7,7 @@ package body File is
     Max_Word_Len => 20,
     Max_Word_Nb  => 4,
     Max_Line_Len => 80,
-    Comment      => '#');
+    Comment      => "#");
 
   Line : Cote_Get_Line.Line_Array; 
 

@@ -121,10 +121,16 @@ package body Get_Line is
       Text_Handler.Set (First_Word, Get_Next_Word);
 
       -- Done when no check of comments
-      -- else go on if empty or comment
-      exit when Comment = Ascii.Nul
-      or else (not Text_Handler.Empty(First_Word)
-               and then Text_Handler.Value(First_Word)(1) /= Comment);
+      exit when Comment = "";
+
+      -- Done when not empty
+      --  and then neither first word nor first letters are the comment
+      exit when not Text_Handler.Empty(First_Word)
+      and then Text_Handler.Value(First_Word) /= Comment
+      and then
+       (Text_Handler.Length(Current_Whole_Line) < Comment'Length
+        or else Text_Handler.Value(Current_Whole_Line)(1 .. Comment'Length)
+                                      /= Comment);
     end loop;
 
   end Read_Next_Line;
