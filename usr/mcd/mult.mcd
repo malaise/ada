@@ -1,0 +1,33 @@
+# Multiplication table
+# Error
+[ "Error, no or one positive argument expected" putl ssize popn retall ] E popr
+
+ssize 1 > E pushr ifcall
+
+# Max default or positive
+ssize 0 = 10 ifthen
+n copyr dup
+isinte ~  E pushr ifcall
+0 <=  E pushr ifcall
+
+# Init
+3 format
+
+# Put one value
+[ i pushr j pushr * put " " put ] P popr
+
+# Loop on one line
+[ P pushr call j pushr n pushr = ifret j pushr 1 + j popr
+L pushr retacal ] L popr
+
+# Put all table
+[
+1 j popr
+L pushr call newl
+i pushr n pushr = ifret i pushr 1 + i popr
+M pushr retacal ] M popr
+
+# Start
+1 i popr
+M pushr call
+
