@@ -1,20 +1,25 @@
-# General debug
+#!/bin/ksh
+
 export DICTIO_DEBUG=N
 
-# These ones debug protocol
 if [ "$DICTIO_DEBUG" = "Y" ] ; then
-  export DICTIO_DEBUG_STATUS=Y
-  export DICTIO_DEBUG_FIGHT=Y
-  export DICTIO_DEBUG_SYNC=Y
-  export DICTIO_DEBUG_ONLINE=Y
+# These ones debug protocol
+export DICTIO_DEBUG_STATUS=Y
+export DICTIO_DEBUG_FIGHT=Y
+export DICTIO_DEBUG_SYNC=Y
+export DICTIO_DEBUG_ONLINE=Y
+export DICTIO_DEBUG_CLIENT=Y
 fi
 
 # These ones debug messages
-#export DICTIO_DEBUG_CLIENT=Y
+#export DICTIO_DEBUG_CLIENT_DATA=Y
 #export DICTIO_DEBUG_INTRA=Y
 
-# This one is not debug
-export DICTIO_DELAY_PER_KB=2
+# These ones are not debug
+# Flow control on LAN during sync
+export DICTIO_DELAY_PER_KB=1
+# Delay after which master is stable
+export DICTIO_STABLE_DELAY=0.8
 
 if [ -z "$1" ] ; then
   export DICTIO_PRIO=10
@@ -22,5 +27,5 @@ else
   export DICTIO_PRIO=$1
 fi
 
-./dictio -ctest_tcp -fdictio.chn -pfido -P$DICTIO_PRIO
+exec ./dictio -ctest_tcp -fdictio.chn -pfido -P$DICTIO_PRIO
 

@@ -1,4 +1,5 @@
-with Socket, Tcp_Util, Dynamic_List, Event_Mng;
+with Ada.Calendar;
+with Socket, Tcp_Util, Dynamic_List, Event_Mng, Sys_Calls;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
      Sync_Mng, Versions, Status;
 package body Client_Mng is
@@ -44,7 +45,7 @@ package body Client_Mng is
         Client_Fd.Del_Client (Dscr);
         return False;
     end;
-    if Debug.Level_Array(Debug.Client) then
+    if Debug.Level_Array(Debug.Client_Data) then
       Debug.Put ("Client: request " & Msg.Action'Img & " >"
                & Parse (Msg.Item.Name) & "<");
     end if;
@@ -72,7 +73,7 @@ package body Client_Mng is
         Data_Base.Get (Msg.Item.Name, Msg.Item);
         begin
           Send_Res := Client_Com.Dictio_Send (Dscr, null, Msg);
-          if Debug.Level_Array(Debug.Client) then
+          if Debug.Level_Array(Debug.Client_Data) then
             Debug.Put ("Client: read reply result " & Send_Res'Img);
           end if;
         exception
@@ -103,7 +104,7 @@ package body Client_Mng is
       when Client_Com.Del_Host =>
         Intra_Dictio.Del_Host (Msg.Item.Data(1 .. Msg.Item.Data_Len));
     end case;
-    if Debug.Level_Array(Debug.Client) then
+    if Debug.Level_Array(Debug.Client_Data) then
       Debug.Put ("Client: request done");
     end if;
     return False;
@@ -160,6 +161,30 @@ package body Client_Mng is
     end;
   end Accept_Cb;
 
+  Stable_Delay : Duration := 0.0;
+
+  procedure Set_Delay is
+    Default_Stable_Delay : constant Duration := 0.5;
+    Val : String (1 .. 5);
+    Set, Trunc : Boolean;
+    Len : Natural;
+  begin
+    Sys_Calls.Getenv ("DICTIO_STABLE_DELAY", Set, Trunc, Val, Len);
+    if not Set or else Len = 0 or else Trunc then
+      Stable_Delay := Default_Stable_Delay;
+    else
+      begin
+        Stable_Delay := Duration'Value (Val(1 .. Len));
+      exception
+        when others =>
+          Stable_Delay := Default_Stable_Delay;
+      end;
+    end if;
+    if Debug.Level_Array(Debug.Client) then
+      Debug.Put ("Client: Stable delay set to" & Stable_Delay'Img & " s");
+    end if;
+  end Set_Delay;
+
 
   procedure Start is
     Port : Tcp_Util.Local_Port;
@@ -175,6 +200,7 @@ package body Client_Mng is
     Port.Name(1 .. Port_Name'Length) := Port_Name;
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
                           Dscr, Accept_Port);
+    Set_Delay;
     Init := True;
   end Start;
 
@@ -195,22 +221,30 @@ package body Client_Mng is
     Client_Fd.Del_All;
   end Quit;
 
+  Modif_Stamp : Ada.Calendar.Time := Ada.Calendar.Clock;
+
   procedure Modified (Kind : in Character; Item : Data_Base.Item_Rec) is
   begin
     if Kind = Intra_Dictio.Sync_Kind then
-      if Debug.Level_Array(Debug.Client) then
+      if Debug.Level_Array(Debug.Client_Data) then
         Debug.Put ("Client: receive sync " & Parse(Item.Name));
       end if;
       Sync_Mng.Sync_Received;
     else 
-      if Debug.Level_Array(Debug.Client) then
+      if Debug.Level_Array(Debug.Client_Data) then
         Debug.Put ("Client: modified data " & Parse(Item.Name));
       end if;
     end if;
     Data_Base.Set (Item);
     Notify.Send (Item);
+    Modif_Stamp := Ada.Calendar.Clock;
   end Modified;
 
+  function Stable return Boolean is
+    use type Ada.Calendar.Time;
+  begin
+    return Ada.Calendar.Clock - Modif_Stamp >= Stable_Delay;
+  end Stable;
 
   procedure Send_Status (Dscr : in Socket.Socket_Dscr) is
     Msg : Client_Com.Dictio_Client_Rec;
