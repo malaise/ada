@@ -42,6 +42,12 @@ procedure Search is
     return Cur.Kind = Crit.Kind and then Cur.Status = Crit.Status;
   end Kind_Status_Match;
 
+  function Kind_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Kind_List;
+  begin
+    return Cur.Kind = Crit.Kind;
+  end Kind_Match;
+
   -- Unselect all non matching oper
   procedure Unsel_All(Match : in Match_Prot; Crit : in Oper_Def.Oper_Rec) is
      Oper : Oper_Def.Oper_Rec;
@@ -125,6 +131,30 @@ begin
             In_Sublist := True;
             exit;
           when 14 =>
+            -- Cheque
+            Oper.Kind := Oper_Def.Cheque;
+            Unsel_All(Kind_Match'access, Oper);
+            In_Sublist := True;
+            exit;
+          when 15 =>
+            -- Credit
+            Oper.Kind := Oper_Def.Credit;
+            Unsel_All(Kind_Match'access, Oper);
+            In_Sublist := True;
+            exit;
+          when 16 =>
+            -- Transfer
+            Oper.Kind := Oper_Def.Transfer;
+            Unsel_All(Kind_Match'access, Oper);
+            In_Sublist := True;
+            exit;
+          when 17 =>
+            -- Withdraw
+            Oper.Kind := Oper_Def.Withdraw;
+            Unsel_All(Kind_Match'access, Oper);
+            In_Sublist := True;
+            exit;
+          when 18 =>
             -- Cancel
             In_Sublist := False;
             exit;
