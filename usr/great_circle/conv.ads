@@ -1,3 +1,4 @@
+-- Converts DegMinSec to Radians and vice versa
 with My_Math, C_Nbres;
 package Conv is
 

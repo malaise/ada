@@ -7,6 +7,7 @@ package body Conv is
     Si : Natural;
     R : Geo_Coord_Rec;
   begin
+    -- Convert to degrees (fraction)
     Deg := C_Nbres.To_Degree(Coord);
 
     R.Deg := Deg_Range(My_Math.Trunc(My_Math.Real(Deg)));

@@ -1,5 +1,4 @@
-with Normal;
-with Conv;
+with Normal, My_Math;
 package body String_Util is
 
   function Str2Geo (Str : Coord_Str) return Lat_Lon.Lat_Lon_Geo_Rec is
@@ -67,17 +66,35 @@ package body String_Util is
     end if;
 
     -- Put the numbers
-    Str( 2 ..  3) := Normal (Geo.Lat.Coord.Deg, 3, Gap => '0');
-    Str( 5 ..  6) := Normal (Geo.Lat.Coord.Min, 3, Gap => '0');
-    Str( 8 ..  9) := Normal (Geo.Lat.Coord.Sec, 3, Gap => '0');
+    Str( 2 ..  3) := Normal (Geo.Lat.Coord.Deg, 2, Gap => '0');
+    Str( 5 ..  6) := Normal (Geo.Lat.Coord.Min, 2, Gap => '0');
+    Str( 8 ..  9) := Normal (Geo.Lat.Coord.Sec, 2, Gap => '0');
     Str(12 .. 14) := Normal (Geo.Lon.Coord.Deg, 3, Gap => '0');
-    Str(16 .. 17) := Normal (Geo.Lon.Coord.Min, 3, Gap => '0');
-    Str(19 .. 20) := Normal (Geo.Lon.Coord.Sec, 3, Gap => '0');
+    Str(16 .. 17) := Normal (Geo.Lon.Coord.Min, 2, Gap => '0');
+    Str(19 .. 20) := Normal (Geo.Lon.Coord.Sec, 2, Gap => '0');
 
     -- Done
     return Str;
   end Geo2Str;
     
-    
+
+  function Dist2Str (Dist : Lat_Lon.Distance) return Dist_Str is
+    Int : My_Math.Inte; 
+  begin
+    Int := My_Math.Round(My_Math.Real(Dist));
+    return Normal(Integer(Int), Dist_Str'Length);
+  end Dist2Str;
+
+  function Angle2Str (Angle : Conv.Geo_Coord_Rec) return Angle_Str is
+    Str : Angle_Str;
+  begin
+    -- Set .
+    Str(4) := '.'; Str(7) := '.';
+    Str(1 ..  3) := Normal (Angle.Deg, 3, Gap => '0');
+    Str(5 ..  6) := Normal (Angle.Min, 2, Gap => '0');
+    Str(8 ..  9) := Normal (ANgle.Sec, 2, Gap => '0');
+    return Str;
+  end Angle2Str;
+
 end String_Util;
 

@@ -1,5 +1,8 @@
+-- Convert lat/long to radians and vice versa
 with Conv;
 package Lat_Lon is
+
+  subtype Distance is Conv.Rad_Range;
 
   type Lat_Geo_Rec is record
     North : Boolean;
