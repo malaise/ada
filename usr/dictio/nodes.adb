@@ -138,8 +138,8 @@ package body Nodes is
     loop
       if Debug.Level_Array(Debug.Fight) then
         Debug.Put ("Fight.Check: " & Parse (Rec.Name)
-                 & " " & Rec.Stat'Img & " " & Rec.Sync'Img
-                 & " " & Rec.Prio);
+                 & "/" & Rec.Stat'Img & "-" & Rec.Prio
+                 & " Sync: " & Rec.Sync'Img);
       end if;
       if Rec.Stat = Status.Master then
         -- One master found

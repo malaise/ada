@@ -81,8 +81,8 @@ package body Fight_Mng is
 
     Nodes.Set (From, Stat, Sync, Prio);
     if Debug.Level_Array(Debug.Fight) then
-      Debug.Put ("Fight: received Stat: " & Stat'Img
-               & "  From: " & Parse (From));
+      Debug.Put ("Fight: received status from: " & Parse (From)
+               & "/" & Stat'Img & "-" & Prio);
     end if;
   end Event;
 
