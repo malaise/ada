@@ -13,7 +13,7 @@ package body Async_Stdin is
     A : Boolean;
   begin
     loop
-      Sys_Calls.Get_Immediate_Stdin (C, A);
+      Sys_Calls.Get_Immediate (Fd, C, A);
       if not A then
         -- No more char
         return False;
@@ -37,19 +37,32 @@ package body Async_Stdin is
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1) is
     Result : Boolean;
+    Stdin_Is_A_Tty : Boolean;
+    use type  Sys_Calls.File_Desc_Kind_List;
   begin
+    Stdin_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty;
     -- Check if restore
     if User_Callback = null then
       if Cb = null then
         return;
       else
         Cb := null;
-        Result := Sys_Calls.Set_Stdin_Attr (Sys_Calls.Canonical);
+        if Stdin_Is_A_Tty then
+          Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, 
+                                            Sys_Calls.Canonical);
+        else
+          Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+        end if;
         Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
       end if;
     else
       if Cb = null then
-        Result := Sys_Calls.Set_Stdin_Attr (Sys_Calls.Asynchronous);
+        if Stdin_Is_A_Tty then
+          Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                            Sys_Calls.Asynchronous);
+        else
+          Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+        end if;
       end if;
       if Result then
         Cb := User_Callback;
