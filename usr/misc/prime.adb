@@ -32,21 +32,31 @@ procedure Prime is
   -- Boolean for call to delete
   End_Of_List : Boolean;
 
+  -- Help
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <mode>");
     Ada.Text_Io.Put_Line ("<mode> ::= <list> | <factors> | <hcd> | <lcm>");
-    Ada.Text_Io.Put_Line ("<list>      ::= -list");
-    Ada.Text_Io.Put_Line ("<decompose> ::= -fact <positive>");
-    Ada.Text_Io.Put_Line ("<pgcd>      ::= -hcd <positive> <positive>");
-    Ada.Text_Io.Put_Line ("<ppcm>      ::= -lcm <positive> <positive>");
+    Ada.Text_Io.Put_Line ("<list>    ::= -list");
+    Ada.Text_Io.Put_Line ("<factors> ::= -fact <positive>");
+    Ada.Text_Io.Put_Line ("<hcd>     ::= -hcd <positive> <positive>");
+    Ada.Text_Io.Put_Line ("<lcm>     ::= -lcm <positive> <positive>");
   end Usage;
 
+  -- Put a number
   procedure Put_Line (P : in Long_Long_Positive) is
   begin
     llp_Io.Put (P);
     Ada.Text_Io.New_Line;
   end Put_Line;
+
+  -- Rewind a list
+  procedure Rewind (L : in out Plm.List_type) is
+  begin
+    if not Plm.Is_Empty (L) then
+      Plm.Move_To (L, Plm.Next, 0, False);
+    end if;
+  end Rewind;
 
   -- Decompose N in prime numbers.
   procedure Decompose (N : in Long_Long_Positive; L : in out Plm.List_Type) is
@@ -61,18 +71,22 @@ procedure Prime is
       T := Prime_List.Next;
       loop
         if C rem T = 0 then
+          -- Insert this factor and try again with it
           Plm.Insert (L, T);
           C := C / T;
           exit when C = 1;
         else
+          -- Try next factor
           T := Prime_List.Next;
         end if;
       end loop;
     end if;
-    Plm.Move_To (L, Plm.Next, 0, False);
+    -- Rewind lists
+    Rewind (L);
     Prime_List.Rewind;
   end Decompose;
 
+  -- Put list from current
   procedure Put_List (L : in out Plm.List_type) is
     T : Long_Long_Positive;
   begin
@@ -88,6 +102,7 @@ procedure Prime is
     end loop;
   end Put_List;
 
+  -- Delete current
   procedure Delete (L : in out Plm.List_type; End_Of_List : out Boolean) is
   begin
     if Plm.Get_Position (L) /= Plm.List_Length (L) then
@@ -99,13 +114,7 @@ procedure Prime is
     end if;
   end Delete;
 
-  procedure Rewind (L : in out Plm.List_type) is
-  begin
-    if not Plm.Is_Empty (L) then
-      Plm.Move_To (L, Plm.Next, 0, False);
-    end if;
-  end Rewind;
-
+  -- Mustiply numbers of list from current
   function Multiply (L : in Plm.List_type) return Long_Long_Integer is
     S, T : Long_Long_Integer;
     Lt : Plm.List_type;
@@ -127,16 +136,20 @@ begin
 
   -- Parse arguments
   begin
-    if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-list" then
+    if Argument.Get_Nbre_Arg = 1
+    and then Argument.Get_Parameter = "-list" then
       Mode := List;
-    elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-fact" then
+    elsif Argument.Get_Nbre_Arg = 2
+    and then Argument.Get_Parameter = "-fact" then
       Mode := Factors;
       N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
-    elsif Argument.Get_Nbre_Arg = 3 and then Argument.Get_Parameter = "-hcd" then
+    elsif Argument.Get_Nbre_Arg = 3
+    and then Argument.Get_Parameter = "-hcd" then
       Mode := Hcd;
       N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
       N2 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 3));
-    elsif Argument.Get_Nbre_Arg = 3 and then Argument.Get_Parameter = "-lcm" then
+    elsif Argument.Get_Nbre_Arg = 3
+    and then Argument.Get_Parameter = "-lcm" then
       Mode := Lcm;
       N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
       N2 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 3));
