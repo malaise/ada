@@ -146,6 +146,9 @@ package body MCD_MNG is
 
     procedure DO_CALL is
     begin
+      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
+        TEXT_IO.PUT_LINE("Mng: Do_call");
+      end if;
       POP(A);
       if A.KIND /= CHRS then
         raise INVALID_ARGUMENT;
@@ -173,8 +176,13 @@ package body MCD_MNG is
 
     procedure DO_RET (ALLOW_LEVEL_0 : in BOOLEAN := TRUE) is
       L : INTEGER;
+      CALL_STACK_LEVEL : NATURAL;
     begin
+      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
+        TEXT_IO.PUT_LINE("Mng: Do_ret");
+      end if;
       POP(A);
+      CALL_STACK_LEVEL := CALL_STACK.LEVEL;
       -- has to be INTE and val NATURAL
       begin
         L := NATURAL(A.VAL_INTE);
@@ -183,12 +191,12 @@ package body MCD_MNG is
       end;
       if L = 0 then
         -- Return all
-        L := CALL_STACK.LEVEL + 1;
+        L := CALL_STACK_LEVEL + 1;
       end if;
       -- Can return by one more than level
-      if L - 1 > CALL_STACK.LEVEL then
+      if L - 1 > CALL_STACK_LEVEL then
         raise INVALID_ARGUMENT;
-      elsif L - 1 = CALL_STACK.LEVEL then
+      elsif L - 1 = CALL_STACK_LEVEL then
         if ALLOW_LEVEL_0 then
           THE_END := TRUE;
           return;
@@ -214,6 +222,7 @@ package body MCD_MNG is
         STACK.PUSH(ITEM);
     else -- OPERATOR
       if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
+        TEXT_IO.PUT("Mng: ");
         DEBUG.PUT(ITEM);
         TEXT_IO.NEW_LINE;
       end if;
