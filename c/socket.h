@@ -142,6 +142,9 @@ extern int soc_host_name_of (soc_host *p_host, char *host_name,
                              unsigned int host_name_len);
 extern int soc_host_of (char *host_name, soc_host *p_host);
 
+/* Gets local host */
+extern int soc_get_local_host (soc_host *p_host);
+
 /* Send to a socket, the destination of which must set */
 /* May return SOC_WOULD_BLOCK, then next sends have to be made */
 /*  with length=0, util soc_send returns ok */
@@ -167,7 +170,7 @@ extern int soc_link_dynamic (soc_token token);
 
 /* Gets the port to which is linked a socket */
 extern int soc_get_linked_port (soc_token token, soc_port *p_port);
- 
+
 /* To test if there is a message to receive and receive it */
 /* Length must be initialized with the size of the buffer */
 /* The socket must be open, linked in udp and not linked in tcp */

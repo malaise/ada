@@ -598,6 +598,19 @@ extern int soc_host_of (char *host_name, soc_host *p_host) {
   return (SOC_OK);
 }
 
+/* Gets local host */
+extern int soc_get_local_host (soc_host *p_host) {
+  char hostname[MAXHOSTNAMELEN];
+
+  /* Get current host name */
+  if (gethostname(hostname, sizeof(hostname)) != 0) {
+    perror("gethostname");
+    return (SOC_NAME_NOT_FOUND);
+  }
+  /* Get its addr */
+  return soc_host_of(hostname, p_host);
+}
+
 /* Send to a socket, the destination of which must set */
 /* May return SOC_WOULD_BLOCK, then next sends have to be made */
 /*  with length=0, util soc_send returns ok */
