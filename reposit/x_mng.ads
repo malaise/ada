@@ -237,6 +237,10 @@ package X_MNG is
   -- Unregister the callback from a fd in a mode
   procedure X_DEL_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN);
 
+  -- Is a callback registered on a fd in a mode
+  function X_CALLBACK_SET (FD : in FILE_DESC; READ : in BOOLEAN)
+  return BOOLEAN;
+
   -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
   --  (or X_FAILURE will be raised)
   -- Return True if an event has occured
