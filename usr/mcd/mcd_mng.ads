@@ -42,6 +42,10 @@ package Mcd_Mng is
    Acos,
    Atan,
 
+   Exp,
+   Ln,
+   Log,
+
    Toreal,
    Round,
    Trunc,

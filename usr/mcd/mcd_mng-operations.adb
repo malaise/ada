@@ -707,5 +707,31 @@ package body Operations is
       raise Compute_Error;
   end Atan;
 
+  function Ln  (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Ln(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Ln;
+
+  function Log (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Log_10(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Log;
+
 end Operations;
 

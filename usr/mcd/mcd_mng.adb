@@ -95,6 +95,8 @@ package body Mcd_Mng is
     function ASin    (X : Item_Rec) return Item_Rec;
     function ACos    (X : Item_Rec) return Item_Rec;
     function ATan    (X : Item_Rec) return Item_Rec;
+    function Ln      (X : Item_Rec) return Item_Rec;
+    function Log     (X : Item_Rec) return Item_Rec;
 
 
     -- Argument does not mach operator
@@ -413,6 +415,8 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Push (Operations.Bolxor(B,A));
         when Bolneg =>
           Pop(A); Push (Operations.Bolneg(A));
+
+        -- Trigo
         when Pi =>
           Push( (Kind => Real,
                  Val_Real => My_Math.Real(My_Math.Pi)) );
@@ -428,6 +432,15 @@ package body Mcd_Mng is
           Pop(A); Push (Operations.Acos(A));
         when Atan =>
           Pop(A); Push (Operations.Atan(A));
+
+        -- Exp, logs
+        when Exp =>
+          Push( (Kind => Real,
+                 Val_Real => My_Math.Real(My_Math.E)) );
+        when Ln =>
+          Pop(A); Push (Operations.Ln(A));
+        when Log =>
+          Pop(A); Push (Operations.Log(A));
 
         -- Conditions
         when Ifthen =>

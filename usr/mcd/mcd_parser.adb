@@ -71,6 +71,10 @@ package body Parser is
    ACos     => (Nosy, "push ACos(A) in radiants      ", False),
    ATan     => (Nosy, "push ATan(A) in radiants      ", True),
 
+   Exp      => (Nosy, "push E                        ", False),
+   Ln       => (Nosy, "push ln(A)                    ", False),
+   Log      => (Nosy, "push log(A)                   ", True),
+
    Toreal   => (Nosy, "push REAL(A)                  ", False),
    Round    => (Nosy, "push INTE(A) (round)          ", False),
    Trunc    => (Nosy, "push INTE(A) (int part)       ", False),
