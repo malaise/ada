@@ -2,7 +2,7 @@
 10 d popr
 
 # Check 1 arg >= 0 or no arg (=> 10)
-[ [ Error: N >= 0 or no argument expected. ] putl ssize popn 0 retn ] E popr
+[ [ Error: N >= 0 or no argument expected. ] putl ssize popn retall ] E popr
 ssize 1 > E pushr ifcall
 ssize 0 = [ [ "Defaulting to " ] put d pushr dup putl ] ifcall
 dup 0 < E pushr ifcall 

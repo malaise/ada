@@ -3,7 +3,7 @@
 [ [ Error, 3 arguments: <nb_disks> <from_column> <to_column> expected ] putl
   [ "   nb_disks must be >= 0," ] putl
   [ "   columns must be 1, 2 or 3 and different." ] putl
-ssize popn 0 retn ] E popr
+ssize popn retall ] E popr
 
 # Check 3 args
 ssize 3 /= E pushr ifcall
