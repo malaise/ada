@@ -133,7 +133,7 @@ package AFPX is
   return ABSOLUTE_FIELD_RANGE;
 
   -- List of items to put in list field in put_then_get
-  subtype LINE_LEN_RANGE is NATURAL range 0 .. CON_IO.COL_RANGE'LAST;
+  subtype LINE_LEN_RANGE is NATURAL range 0 .. CON_IO.COL_RANGE'LAST+1;
   type LINE_REC is record
     STR : STRING (1 .. LINE_LEN_RANGE'LAST);
     LEN : LINE_LEN_RANGE;
@@ -183,6 +183,7 @@ package AFPX is
   --  then cursor field and col are not significant
   -- Exceptions :  NO_DESCRIPTOR,
   --               INVALID_FIELD, INVALID_COL (for cursor)
+  --               STRING_TOO_LONG (if an item in list is too long)
   procedure PUT_THEN_GET (CURSOR_FIELD : in out FIELD_RANGE;
                           CURSOR_COL   : in out CON_IO.COL_RANGE;
                           RESULT       : out RESULT_REC;
