@@ -636,6 +636,72 @@ int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
 
 }
 
+/* Fill a rectangle at x1y1, x1y2, x2y2, x2y1 */
+int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
+    t_window *win_id = (t_window*) line_id;
+    int x, y;
+    unsigned int width, height;
+
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Set xy upper left, positive width and height */
+    if (x1 <= x2) {
+        x = x1;
+        width = x2 - x1;
+    } else {
+        x = x2;
+        width = x1 - x2;
+    }
+    if (y1 <= y2) {
+        y = y1;
+        height = y2 - y1;
+    } else {
+        y = y2;
+        height = y1 - y2;
+    }
+
+    /* Fill */
+    XFillRectangle (win_id->server->x_server,
+      win_id->x_window,
+      win_id->x_graphic_context, x, y, width, height);
+
+    return (OK);
+
+}
+
+/* Draw points in a rectangle, starting at x1, y1 and of width * height pixels */
+/* The points array has to be width * height and contains a list of Zero (no put) */
+/*  or not Zero (put) */
+extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
+                          unsigned char points[]) {
+    t_window *win_id = (t_window*) line_id;
+    int x, y;
+    unsigned char *p;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Draw points if set in array */
+    p = points;
+    for (y = 0; y < height; y++) {
+      for (x = 0; x < width; x++) {
+        if (*p != (unsigned char) 0) {
+          XDrawPoint (win_id->server->x_server, win_id->x_window,
+                      win_id->x_graphic_context, x1 + x, y1 + y);
+        }
+        p++;
+      }
+    }
+    return (OK);
+}
+
+
 int x_set_graphic_pointer (void *line_id, boolean graphic) {
     t_window *win_id = (t_window*) line_id;
     Cursor cursor;

@@ -26,6 +26,16 @@
 
 int back;
 
+/* 7 * 8 */
+unsigned char draw[] = {0, 0, 0, 1, 0, 0, 0, \
+                        0, 0, 1, 1, 1, 0, 0, \
+                        0, 0, 1, 1, 1, 0, 0, \
+                        0, 0, 1, 1, 1, 0, 0, \
+                        0, 1, 1, 1, 1, 1, 0, \
+                        0, 1, 1, 1, 1, 1, 0, \
+                        1, 1, 1, 1, 1, 1, 1, \
+                        1, 1, 1, 1, 1, 1, 1 };
+
 
 void put(void *line, char *string, int row, int column) {
 
@@ -138,7 +148,9 @@ int motion;
       }
       x_set_attributes (line, bv, 2, 0, 0, 0, 0);
       x_draw_area (line, 5, 2*NBRE_COLOR, COLOURS_LNE, 10);
-      x_draw_rectangle (line, 0, 0, 9, 14);
+      x_fill_rectangle (line, 0, 0, 9, 14);
+      x_draw_rectangle (line, 10, 0, 19, 14); 
+      x_draw_points (line, 20, 1, 7, 8, draw); 
 
       /* Text display  : show attributes */
       strcpy (stra, "(s)uperbright:");
