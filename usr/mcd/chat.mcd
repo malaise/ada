@@ -1,0 +1,49 @@
+# Sentence start
+"Le petit chat" z popr
+
+# Variable sentence ends
+13 M popr
+a
+"joue du piano." a popr
+"fait la sieste." b popr
+"dort sur le lit." c popr
+"fait sa toilette." d popr
+"fair des galipettes." e popr
+"joue avec la souris." f popr
+"dit bonjour aux pies." g popr
+"mange des croquettes." h popr
+"joue à chat avec les maîtres." i popr
+"joue dehors avec les autres chats." j popr
+"ronronne sur les genoux de la maîtresse." k popr
+"regarde l'eau s'écouler de la baignoire." l popr
+"surveille la maison du haut de l'étagère." m popr
+
+# Replace top by register (1 -> a, b -> 2)
+[ a swap
+# End?
+[ dup 1 = [ pushle 2 popn 2 retn ] ifcall
+# Next register
+swap nextr swap 1 -
+# Loop
+pushle copye retacal ]
+copye call ] R popr
+
+# Main loop
+[
+# Put random 1 .. 13 on top
+rnd M pushr toreal * trunc 1 +
+# Display num
+2 format dup put ": " put
+# Set register
+R pushr call
+# Display sentence
+z pushr put " " put pushr putl
+# Wait a bit
+1 sleep
+# Loop
+pushle copye retacal ]
+copye call ] R popr
+
+
+
+
