@@ -34,7 +34,7 @@ clean:
 	rm *.o *.ali
 
 clean_exe:
-	rm adand beep ddir fact g hanoi impot_02 look_95 \
+	rm adand beep ddir e2f fact g hanoi impot_02 look_95 \
 	   mlbx_overflow one_of_arg pascal pipe prime random rndsok second \
 	   stat statfile wait
 
