@@ -56,7 +56,7 @@ package STR_MNG is
   subtype PRINTED_DATE_STR is STRING (1 .. 10);
   function TO_PRINTED_STR (DATE : MESU_DEF.DATE_STR) return PRINTED_DATE_STR;
   function TO_DATE_STR (PRINTED_DATE : PRINTED_DATE_STR)
-  return MESU_DEF.DATE_STR;
+           return MESU_DEF.DATE_STR;
 
   -- Current_date - nb month
   subtype OFFSET_RANGE is NATURAL range 0 .. CALENDAR.MONTH_NUMBER'LAST;
