@@ -13,9 +13,12 @@ procedure AFPX_BLD is
   LIST_FILE_NAME : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN * 2);
 
   -- GET_LINE of descriptor file
-  package DSCR_GET is new GET_LINE (80, 50, 132);
+  package DSCR_GET is new GET_LINE (MAX_WORD_LEN => 80, 
+                                    MAX_WORD_NB  => 45,
+                                    MAX_LINE_LEN => 132,
+                                    COMMENT      => '#');
   DSCR_LINE : DSCR_GET.LINE_ARRAY;
-  DSCR_NB_WORDS : NATURAL;
+  DSCR_WORDS : DSCR_GET.WORD_COUNT;
 
   -- Direct_io of descriptors, fields, init strings
   package DSCR_IO is new DIRECT_IO (AFPX_TYP.DESCRIPTORS_ARRAY);
@@ -41,37 +44,21 @@ procedure AFPX_BLD is
   FILE_SYNTAX_ERROR : exception;
   FILE_NOT_FOUND : exception;
 
-  -- Skip empty lines and comments
-  -- Load line's words and nb of words
-  function IS_SIGNIFICANT return BOOLEAN is
+  procedure NEXT_LINE is
   begin
-    DSCR_NB_WORDS := DSCR_GET.GET_WORD_NUMBER;
-    DSCR_GET.GET_WORDS (DSCR_LINE);
-    if DSCR_NB_WORDS = 0 then
-      return FALSE;
-    end if;
-    if TEXT_HANDLER.VALUE (DSCR_LINE(1))(1) = '#' then
-      return FALSE;
-    end if;
-    return TRUE;
-  end IS_SIGNIFICANT;
+    DSCR_GET.READ_NEXT_LINE;
+    DSCR_WORDS := DSCR_GET.GET_WORD_NUMBER;
+    DSCR_GET.GET_WORDS(DSCR_LINE);
+  end NEXT_LINE;
 
   procedure DUMP_LINE is
   begin
     TEXT_IO.PUT(TEXT_IO.POSITIVE_COUNT'IMAGE(DSCR_GET.GET_LINE_NO) & " : ");
-    for I in 1 .. DSCR_NB_WORDS loop
+    for I in 1 .. DSCR_WORDS loop
       TEXT_IO.PUT(">" & TEXT_HANDLER.VALUE(DSCR_LINE(I)) & "< ");
     end loop;
     TEXT_IO.NEW_LINE;
   end DUMP_LINE;
-
-  procedure NEXT_LINE is
-  begin
-    DSCR_GET.READ_NEXT_LINE;
-    while not IS_SIGNIFICANT loop
-      DSCR_GET.READ_NEXT_LINE;
-    end loop;
-  end NEXT_LINE;
 
   procedure CLOSE (ON_ERROR : in BOOLEAN) is
   begin
@@ -129,7 +116,7 @@ procedure AFPX_BLD is
 
   function END_OF (KEYWORD : STRING) return BOOLEAN is
   begin
-    return DSCR_NB_WORDS = 2 and then
+    return DSCR_WORDS = 2 and then
            FIRST_WORD = "END" and then
            TEXT_HANDLER.VALUE(DSCR_LINE(2)) = KEYWORD;
   end END_OF;
@@ -150,7 +137,7 @@ procedure AFPX_BLD is
   -- Check and store upper_left (and lower right in size) and colors
   procedure LOAD_GEO_COLOR (FN : in AFPX_TYP.ABSOLUTE_FIELD_RANGE) is
   begin
-    if FIRST_WORD /= "GEOMETRY" or else DSCR_NB_WORDS /= 5 then
+    if FIRST_WORD /= "GEOMETRY" or else DSCR_WORDS /= 5 then
       FILE_ERROR ("GEOMETRY <upper_row> <left_col> <lower_row> <right_col> expected");
     end if;
     begin
@@ -192,7 +179,7 @@ procedure AFPX_BLD is
     end if;
     begin
       if FN = 0 or else FIELDS(FN).KIND = AFPX_TYP.GET then
-        if DSCR_NB_WORDS /= 4 then
+        if DSCR_WORDS /= 4 then
           FILE_ERROR ("COLORS <foreground> <background> <selected> expected");
         end if;
         FIELDS(FN).COLORS.FOREGROUND :=
@@ -204,7 +191,7 @@ procedure AFPX_BLD is
          CON_IO.EFFECTIVE_BASIC_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(4)));
 
       elsif FIELDS(FN).KIND = PUT then
-        if DSCR_NB_WORDS /= 4 then
+        if DSCR_WORDS /= 4 then
           FILE_ERROR ("COLORS <foreground> <blink> <background> expected");
         end if;
         FIELDS(FN).COLORS.FOREGROUND :=
@@ -216,7 +203,7 @@ procedure AFPX_BLD is
         FIELDS(FN).COLORS.SELECTED := FIELDS(FN).COLORS.BACKGROUND;
 
       elsif FIELDS(FN).KIND = BUTTON then
-        if DSCR_NB_WORDS /= 3 then
+        if DSCR_WORDS /= 3 then
           FILE_ERROR ("COLORS <foreground> <background> expected");
         end if;
         FIELDS(FN).COLORS.FOREGROUND :=
@@ -245,7 +232,7 @@ procedure AFPX_BLD is
 
   procedure LOAD_LIST is
   begin
-    if DSCR_NB_WORDS /= 1 then
+    if DSCR_WORDS /= 1 then
       FILE_ERROR ("LIST expected");
     end if;
     -- In LIST
@@ -275,7 +262,7 @@ procedure AFPX_BLD is
     -- Index in CHAR_STR of beginning of INIT string
     FINIT_INDEX : AFPX_TYP.CHAR_STR_RANGE;
   begin
-    if DSCR_NB_WORDS /= 3 then
+    if DSCR_WORDS /= 3 then
       FILE_ERROR ("FIELD <field_no> <field_type> expected");
     end if;
     begin
@@ -310,7 +297,7 @@ procedure AFPX_BLD is
 
     if FIRST_WORD = "INIT" then
 
-      if DSCR_NB_WORDS /= 1 then
+      if DSCR_WORDS /= 1 then
         FILE_ERROR ("INIT expected");
       end if;
       NEXT_LINE;
@@ -319,7 +306,7 @@ procedure AFPX_BLD is
       PREV_INIT_SQUARE := (0, 0);
       while not END_OF ("INIT") loop
         -- Check init syntax and length of string
-        if DSCR_NB_WORDS < 3 then
+        if DSCR_WORDS < 3 then
           FILE_ERROR ("Invalid init. <row> <col> <str> expected");
         end if;
         begin
@@ -452,9 +439,6 @@ procedure AFPX_BLD is
     -- Open list file.
     begin
       DSCR_GET.OPEN (TEXT_HANDLER.VALUE(LIST_FILE_NAME));
-      if not IS_SIGNIFICANT then
-        NEXT_LINE;
-      end if;
     exception
       when TEXT_IO.NAME_ERROR =>
         TEXT_IO.PUT_LINE ("ERROR : File " & TEXT_HANDLER.VALUE(LIST_FILE_NAME)
@@ -502,6 +486,10 @@ procedure AFPX_BLD is
       DESCRIPTORS(I).NB_FIELDS := 0;
     end loop;
 
+    TEXT_HANDLER.SET (ERROR_MSG, "DESCRIPTOR <descriptor_number> expected");
+    DSCR_WORDS := DSCR_GET.GET_WORD_NUMBER;
+    DSCR_GET.GET_WORDS(DSCR_LINE);
+
     -- Loop on descriptors
     DSCR_INDEX := 1;
     DSCRS:
@@ -509,7 +497,7 @@ procedure AFPX_BLD is
       EOF_ALLOWED := FALSE;
       -- DESCRIPTOR line
       TEXT_HANDLER.SET (ERROR_MSG, "DESCRIPTOR <descriptor_number> expected");
-      if DSCR_NB_WORDS /= 2 then
+      if DSCR_WORDS /= 2 then
         FILE_ERROR (TEXT_HANDLER.VALUE (ERROR_MSG));
       end if;
       if FIRST_WORD /= "DESCRIPTOR" then
@@ -606,7 +594,7 @@ procedure AFPX_BLD is
         raise FILE_SYNTAX_ERROR;
       end if;
     when DSCR_GET.TOO_MANY_WORDS =>
-      FILE_ERROR ("Too namy words");
+      FILE_ERROR ("Too many words");
       CLOSE (TRUE);
       raise FILE_SYNTAX_ERROR;
     when DSCR_GET.LINE_TOO_LONG =>
