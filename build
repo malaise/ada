@@ -1,6 +1,9 @@
 #!/bin/bash
 if [ "$1" = "html" ] ; then
-  gnathtml.pl -D -o `pwd`/html */*.ad? */*/*.ad?
+  gnathtml.pl -D -o html */*.ad? */*/*.ad?
+  exit 0
+elif [ "$1" = "clean_html" ] ; then
+  rm -rf html/*
   exit 0
 fi
 
