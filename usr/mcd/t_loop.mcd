@@ -1,16 +1,16 @@
 [ 
 # Print I
->< ;  
+dup putl
 # I - 1 = 0 ? If yes return
-1 - >< 0 = 1 ?_
+1 - dup 0 = 1 ifretn
 # Loop
-A <- _@ ] A ->
+A pushr retacal ] A popr
 
-2 //
+2 format
 # 10 loops
 10
-A <- @
+A pushr call
 
 # Remove counter
---
+pop
 
