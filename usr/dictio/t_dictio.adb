@@ -5,9 +5,8 @@ procedure T_Dictio is
 
   Init : Boolean := False;
   Verbose : Boolean := False;
-  Delay_Ms : Integer;
 
-  -- Signal received
+  -- Signal received (while loading)
   Sig : Boolean := False;
   procedure Sig_Cb is
   begin
@@ -31,13 +30,12 @@ procedure T_Dictio is
     Lstr : constant String := Str(1 .. Str'Last - 1);
   begin
     if Str'Length = 0 then
-      Sig := True;
       return True;
     end if;
     if Str'Length >= 1
     and then Str(Str'Length) = Ada.Characters.Latin_1.Etx then
       Ada.Text_Io.Put_Line ("CLIENT: Aborted");
-      Sig := True;
+      Event_Mng.Send_Signal;
       return True;
     end if;
     if Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
@@ -46,7 +44,7 @@ procedure T_Dictio is
     end if;
     if Str'Length = 2 and then Str(1) = 'q' then
       Ada.Text_Io.Put_Line ("CLIENT: Quit");
-      Sig := True;
+      Event_Mng.Send_Signal;
       return True;
     end if;
 
@@ -130,9 +128,7 @@ procedure T_Dictio is
       Ada.Text_Io.Put_Line("CLIENT: Dictio state is " & State'Img);
     end if;
     if State /= Dictio_Lib.Unavailable and then Init then
-      Init := False;
       Load;
-      Sig := True;
     end if;
   end Dictio_State_Cb;
 
@@ -162,9 +158,13 @@ procedure T_Dictio is
       Event_Mng.Pause (100);
       exit when Sig;
     end loop;
+    Sig := True;
+    Event_Mng.Send_Signal;
   exception
     when Dictio_Lib.No_Dictio =>
       Ada.Text_Io.Put_Line ("CLIENT.LOAD: No Dictio");
+      Sig := True;
+      Event_Mng.Send_Signal;
       Sys_Calls.Set_Error_Exit_Code;
   end Load;
 
@@ -179,11 +179,6 @@ begin
     when Argument.Argument_Not_Found =>
       Init := False;
   end;
-  if Init then
-    Delay_Ms := 100;
-  else
-    Delay_Ms := Event_Mng.Infinite_Ms;
-  end if;
 
   begin
     if Argument.Get_Parameter (1, "v") = "" then
@@ -221,7 +216,9 @@ begin
            "g <name> / s <name> <data> / n <name> / c <name> / "
          & "a <host> / d <host> / q");
   end if;
-  Event_Mng.Pause (Delay_Ms);
+  if not Sig then
+    Event_Mng.Pause (Event_Mng.Infinite_Ms);
+  end if;
 
   Async_Stdin.Set_Async;
 exception
