@@ -12,6 +12,7 @@ do_all:
 	amake t_dir.adb
 	amake t_dl.adb
 	amake t_dscr.adb -largs $(LIBX_MNG) -lX11
+	amake t_except
 	amake t_getenv.adb
 	amake t_get_line.adb
 	amake t_fifo.adb
