@@ -1,11 +1,11 @@
 with Ada.Exceptions;
-with System.Compiler_Exceptions;
+with System.Tasking_Soft_Links;
 package body Current_Exception is
 
   function Exception_Name return String is
   begin
     return Ada.Exceptions.Exception_Name(
-             System.Compiler_Exceptions.Current_Exception);
+             System.Tasking_Soft_Links.Get_Current_Excep_NT.all);
   end Exception_Name;
 
 end Current_Exception;
