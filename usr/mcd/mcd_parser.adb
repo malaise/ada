@@ -186,6 +186,18 @@ package body Parser is
 
     C := Text_Handler.Value(Txt)(1);
 
+    -- Strings
+    if Text_Handler.Value(Txt)(1) = Input_Dispatcher.Sd
+    and then Text_Handler.Value(Txt)(Text_Handler.Length(Txt)) = Input_Dispatcher.Sd then
+      Item_Chrs.Val_Len := Text_Handler.Length(Txt);
+      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
+      Instr_Stack.Push(Item_Chrs);
+      Item_Chrs.Val_Len := Item_Chrs.Val_Len - 2;
+      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) :=
+             Item_Chrs.Val_Text(2 .. Item_Chrs.Val_Len + 1);
+      return Item_Chrs;
+    end if;
+
     -- No [ nor ] in word
     if Text_Handler.Value(Txt) /= "["
     and then Text_Handler.Value(Txt) /= "]"
@@ -254,19 +266,6 @@ package body Parser is
       end if;
 
     end if;
-
-    -- Strings
-    if Text_Handler.Value(Txt)(1) = Input_Dispatcher.Sd
-    and then Text_Handler.Value(Txt)(Text_Handler.Length(Txt)) = Input_Dispatcher.Sd then
-      Item_Chrs.Val_Len := Text_Handler.Length(Txt);
-      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
-      Instr_Stack.Push(Item_Chrs);
-      Item_Chrs.Val_Len := Item_Chrs.Val_Len - 2;
-      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) :=
-             Item_Chrs.Val_Text(2 .. Item_Chrs.Val_Len + 1);
-      return Item_Chrs;
-    end if;
-
 
     -- Parse OPER : string
     declare
