@@ -27,8 +27,9 @@ begin
     return;
   end if;
 
+  -- Out (account) file shall not exist
   begin
-    Ada.Text_Io.Open(File, Ada.Text_Io.Out_File,
+    Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 2));
     Ada.Text_Io.Close(File);
     raise Program_Error;
@@ -43,6 +44,7 @@ begin
       return;
   end;
 
+  -- Open In (Ascii) file
   begin
     Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 1));
@@ -54,6 +56,7 @@ begin
       return;
   end;
 
+  -- Read Ascii file
   No := 1;
   loop
     begin
@@ -73,6 +76,7 @@ begin
         return;
     end;
 
+    -- Parse Ascii line
     begin
       Oper := Unit_Format.Value(Str);
     exception
@@ -82,9 +86,11 @@ begin
         Ada.Text_Io.Close(File);
         return;
     end;
-    
+
+    -- Append oper
     Oper_List_Mng.Insert(Oper_List, Oper);
 
+    -- Read CR, check there was no extra char
     begin
       Ada.Text_Io.Get_Line(File, Str, Last);
       if Last /= 0 then
@@ -102,6 +108,7 @@ begin
 
   end loop;
 
+  -- Read CR, check there was no extra char
   begin
     Ada.Text_Io.Get_Line(File, Str, Last);
     raise Constraint_Error;
@@ -114,16 +121,15 @@ begin
       return;
   end;
 
-
+  -- Done, check there was data
   Ada.Text_Io.Close(File);
-
   if No = 0 then
     Ada.Text_Io.Put_Line("Error. Empty file "
                          & Argument.Get_Parameter(Occurence => 1));
     return;
   end if;
 
-
+  -- Save account
   begin
     File_Mng.Save(Argument.Get_Parameter(Occurence => 2), Oper_List);
   exception

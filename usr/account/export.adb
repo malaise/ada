@@ -26,8 +26,9 @@ begin
     return;
   end if;
 
+  -- Check that out (ascii) file does not exist
   begin
-    Ada.Text_Io.Open(File, Ada.Text_Io.Out_File,
+    Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 2));
     Ada.Text_Io.Put_Line("Error. Ascii file " 
                          & Argument.Get_Parameter(Occurence => 2)
@@ -40,6 +41,7 @@ begin
       null;
   end;
 
+  -- Load account and rewind
   begin
     File_Mng.Load(Argument.Get_Parameter(Occurence => 1), Oper_List, Can_Write);
   exception
@@ -50,7 +52,9 @@ begin
       Ada.Text_Io.Put_Line("Error. Reading from file "
                          & Argument.Get_Parameter(Occurence => 1));
   end;
+  Oper_List_Mng.Rewind(Oper_List);
 
+  -- Create out file
   begin
     Ada.Text_Io.Create(File, Ada.Text_Io.Out_File,
                        Argument.Get_Parameter(Occurence => 2));
@@ -62,8 +66,7 @@ begin
       return;
   end;
 
-  Oper_List_Mng.Rewind(Oper_List);
-
+  -- Save opers image one by one
   No := 1;
   loop
     Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
@@ -96,6 +99,7 @@ begin
 
   end loop;
 
+  -- Done
   Ada.Text_Io.New_Line(File);
   Ada.Text_Io.Close(File);
 
