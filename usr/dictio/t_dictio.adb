@@ -155,7 +155,7 @@ procedure T_Dictio is
         Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
         exit when Sig;
       end loop;
-      Event_Mng.Wait (250);
+      Event_Mng.Wait (100);
       exit when Sig;
     end loop;
   exception

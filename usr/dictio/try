@@ -1,6 +1,6 @@
-#!/bin/ksh
+#!/bin/bash
 
-export DICTIO_DEBUG=N
+export DICTIO_DEBUG=Y
 
 if [ "$DICTIO_DEBUG" = "Y" ] ; then
 # These ones debug protocol
@@ -19,7 +19,7 @@ fi
 # Flow control on LAN during sync
 export DICTIO_DELAY_PER_KB=1
 # Delay after which master is stable
-export DICTIO_STABLE_DELAY=0.8
+export DICTIO_STABLE_DELAY=0.2
 
 if [ -z "$1" ] ; then
   export DICTIO_PRIO=10

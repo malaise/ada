@@ -164,7 +164,7 @@ package body Client_Mng is
   Stable_Delay : Duration := 0.0;
 
   procedure Set_Delay is
-    Default_Stable_Delay : constant Duration := 0.5;
+    Default_Stable_Delay : constant Duration := 0.2;
     Val : String (1 .. 5);
     Set, Trunc : Boolean;
     Len : Natural;
