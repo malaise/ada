@@ -18,5 +18,8 @@ package Dyn_Data is
   -- Frees a cell. Data_Access is set to null.
   procedure Free (Data_Access : in out Data_Access_Type);
 
+  -- Clear the free list
+  procedure Clear;
+
 end Dyn_Data;
 

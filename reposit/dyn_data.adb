@@ -1,3 +1,4 @@
+with Ada.Unchecked_Deallocation;
 package body Dyn_Data is
 
   type Cell;
@@ -97,6 +98,32 @@ package body Dyn_Data is
     -- Reset data access
     Data_Access := null;
   end Free;
+
+  procedure Free_Data is new Ada.Unchecked_Deallocation
+                            (Data_Type, Data_Access_Type);
+  procedure Free_Cell is new Ada.Unchecked_Deallocation
+                            (Cell, Cell_Access);
+
+  -- Clear all the list from Cell_Acc (including data)
+  procedure Clear (Cell_Acc : in out Cell_Access) is
+    Next_Acc : Cell_Access;
+  begin
+    while Cell_Acc /= null loop
+      if Cell_Acc.Data /= null then
+        Free_Data (Cell_Acc.Data);
+      end if;
+      Next_Acc := Cell_Acc.Next;
+      Free_Cell (Cell_Acc);
+      Cell_Acc := Next_Acc;
+    end loop;
+  end Clear;
+      
+  -- Clear the free lists
+  procedure Clear is
+  begin
+    Clear (First_Free_Data);
+    Clear (First_Free_Cell);
+  end Clear;
 
 end Dyn_Data;
 
