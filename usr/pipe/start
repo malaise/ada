@@ -33,6 +33,5 @@ export PID=$!
 
 $* > $PIPO < $PIPI
 
-kill -INT $PID
 /bin/rm -f $PIPI $PIPO
 
