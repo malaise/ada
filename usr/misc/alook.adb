@@ -77,12 +77,8 @@ procedure Look_95 is
         -- End of bloc
         if Modified then
           -- Need to write before read
-Ada.Text_Io.Put_Line("Write B: " & Char_Io.Count'Image(Char_Io.Index(File))
-                     & " at " & Char_Io.Count'Image(
-                                  (Curr_Bloc - 1) * Bloc_Size + 1));
           Char_Io.Write(File, Bloc(1 .. Last_Index),
                         (Curr_Bloc - 1) * Bloc_Size + 1);
-Ada.Text_Io.Put_Line("Write A: " & Char_Io.Count'Image(Char_Io.Index(File)));
           Modified := False;
         end if;
         if Curr_Bloc = Nb_Bloc then
@@ -95,9 +91,7 @@ Ada.Text_Io.Put_Line("Write A: " & Char_Io.Count'Image(Char_Io.Index(File)));
         if Curr_Bloc = Nb_Bloc then
           Last_Index := File_Size rem Bloc_Size;
         end if;
-Ada.Text_Io.Put_Line("Read  B: " & Char_Io.Count'Image(Char_Io.Index(File)));
         Char_Io.Read(File, Bloc(1 .. Last_Index));
-Ada.Text_Io.Put_Line("Read  A: " & Char_Io.Count'Image(Char_Io.Index(File)));
         Sub_Index := 1;
       else
         Sub_Index := Sub_Index + 1;
