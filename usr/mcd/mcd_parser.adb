@@ -12,68 +12,74 @@ package body PARSER is
   INPUT_ERROR : BOOLEAN := FALSE;
 
   subtype ONE_WORD is STRING(1 .. 2);
-  WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_WORD :=
-  (ADD     => "+ ",
-   SUB     => "- ",
-   MULT    => "* ",
-   DIV     => "/ ",
-   REMIND  => "% ",
-   POW     => "**",
-   SWAP    => "<>",
+  subtype ONE_COMMENT is STRING (1 .. 20);
+  type ONE_REC is record
+    WORD : ONE_WORD;
+    COMMENT : ONE_COMMENT;
+  end record;
 
-   BITAND  => "&&",
-   BITOR   => "||",
-   BITXOR  => "^^",
+  WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_REC :=
+  (ADD     => ("+ ", "push A + B          "),
+   SUB     => ("- ", "push A - B          "),
+   MULT    => ("* ", "push A * B          "),
+   DIV     => ("/ ", "push A / B          "),
+   REMIND  => ("% ", "push A  % B         "),
+   POW     => ("**", "push A ** B         "),
+   SWAP    => ("<>", "push B, push A      "),
 
-   SHL     => "<<",
-   SHR     => ">>",
+   BITAND  => ("&&", "push A & B          "),
+   BITOR   => ("||", "push A | B          "),
+   BITXOR  => ("^^", "push A ^ B          "),
+ 
+   SHL     => ("<<", "push A << B         "),
+   SHR     => (">>", "push A >> B         "),
 
-   MINUS   => "+-",
-   BITNEG  => "~~",
+   MINUS   => ("+-", "push -A             "),
+   BITNEG  => ("~~", "push ~A             "),
 
-   EQUAL   => "= ",
-   DIFF    => "/=",
-   GREATER => "> ",
-   SMALLER => "< ",
-   GREATEQ => ">=",
-   SMALLEQ => "<=",
+   EQUAL   => ("= ", "push A = B          "),
+   DIFF    => ("/=", "push A /= B         "),
+   GREATER => ("> ", "push A > B          "),
+   SMALLER => ("< ", "push A < B          "),
+   GREATEQ => (">=", "push A >= B         "),
+   SMALLEQ => ("<=", "push A <= B         "),
 
-   TOREAL  => "$ ",
-   TOINTE  => "! ",
+   TOREAL  => ("$ ", "push REAL(A)        "),
+   TOINTE  => ("! ", "push INTE(A)        "),
 
-   ISREAL  => "?$",
-   ISINTE  => "?!",
+   ISREAL  => ("?$", "push IS_REAL(A)     "),
+   ISINTE  => ("?!", "push IS_INTE(A)     "),
 
-   OBASE   => ">#",
+   OBASE   => (">#", "set output base     "),
 
-   BOLAND  => "& ",
-   BOLOR   => "| ",
-   BOLXOR  => "^ ",
+   BOLAND  => ("& ", "push A and B        "),
+   BOLOR   => ("| ", "push A or B         "),
+   BOLXOR  => ("^ ", "push A xor B        "),
 
-   BOLNEG  => "~ ",
+   BOLNEG  => ("~ ", "push not A          "),
+ 
+   DUP     => ("><", "push A, push A      "),
+   POP     => ("--", "pop                 "),
 
-   DUP     => "><",
-   POP     => "--",
+   IFTE    => ("? ", "if A then B else C  "),
 
-   IFTE    => "? ",
-
-   SSIZE   => ". ",
+   SSIZE   => (". ", "push stack_size     "),
   
-   POPR    => "->",
-   COPYR   => "=>",
-   PUSHR   => "<-",
+   POPR    => ("->", "A -> regB           "),
+   COPYR   => ("=>", "A -> regB, push A   "),
+   PUSHR   => ("<-", "push regA           "),
 
-   CALL    => "@ ",
-   IFCALL  => "?@",
-   RET     => "_ ",
-   RETN    => "__",
-   IFRETN  => "?_",
-   RETACAL => "_@",
+   CALL    => ("@ ", "call A              "),
+   IFCALL  => ("?@", "if A then call B    "),
+   RET     => ("_ ", "return              "),
+   RETN    => ("__", "return A levels     "),
+   IFRETN  => ("?_", "if A return B levels"),
+   RETACAL => ("_@", "return and call     "),
 
-   FORMAT  => "//",
-   PUT     => ", ",
-   NEWL    => ": ",
-   PUTL    => "; ");
+   FORMAT  => ("//", "xx or xx.yyy fmt    "),
+   PUT     => (", ", "put A               "),
+   NEWL    => (": ", "put line            "),
+   PUTL    => ("; ", "put_line A          "));
 
 
   function NEXT_ITEM return MCD_MNG.ITEM_REC is
@@ -160,7 +166,7 @@ package body PARSER is
         W(2) := ' ';
       end if;
       for O in MCD_MNG.OPERATOR_LIST loop
-        if WORDS(O) = W then
+        if WORDS(O).WORD = W then
           INSTR_STACK.PUSH(ITEM_CHRS);
           return (KIND => MCD_MNG.OPER, VAL_OPER => O);
         end if;
@@ -218,7 +224,7 @@ package body PARSER is
     PUT_LINE ("  <string/subprogram> ::= '[' <text> ']'");
     PUT_LINE ("  <operators>         ::=");
     for O in MCD_MNG.OPERATOR_LIST loop
-      PUT_LINE("       " & WORDS(O) & "  " & MCD_MNG.OPERATOR_LIST'IMAGE(O));
+      PUT_LINE("       " & WORDS(O).WORD & "  " & WORDS(O).COMMENT & "  " & MCD_MNG.OPERATOR_LIST'IMAGE(O));
     end loop;
   end PRINT_HELP;
     
