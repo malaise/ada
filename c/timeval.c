@@ -1,9 +1,16 @@
 #include <errno.h>
 #include <stdio.h>
+#include <limits.h>
+#include <math.h>
+extern double trunc(double x);
+extern double round(double x);
+
 #include "timeval.h"
 
 #define MILLION  1000000
 #define THOUSAND    1000
+
+#define DMILLION  (double) 1000000
 
 /*
  ****************************************************************************** 
@@ -300,13 +307,14 @@ extern void delay ( timeout_t *p_timeout ) {
     timeout_t cur_time, exp_time, delta_time;
     int cr;
 
+  /* Compute expiration time */
   get_time (&exp_time);
-
   (void) add_time (&exp_time, p_timeout);
 
 
   for (;;) {
 
+    /* Compute delay until expiration */
     delta_time = exp_time;
     get_time (&cur_time);
     if (sub_time (&delta_time, &cur_time) > 0) {
@@ -314,11 +322,86 @@ extern void delay ( timeout_t *p_timeout ) {
     } else {
       cr = 0;
     }
+
+    /* Done or interrupted */
     if (cr == 0) {
       return;
     } else if (errno != EINTR) {
       perror ("select");
     }
   }
+}
+
+/*
+ ****************************************************************************** 
+ * Function	: time_to_double
+ *
+ * Abstract	: Convert time to double (seconds dot microseconds)
+ *
+ * Decisions	: None
+ *
+ * Input	: p_time  The time to convert
+ *
+ * Output       : None
+ *
+ * Return	: The double value of conversion
+ *
+ * Errors       : None
+ *
+ * History :
+ *			 
+ *******************************************************************************
+*/
+extern double time_to_double (timeout_t *p_time ) {
+  normalize_time (p_time);
+  return (double) p_time->tv_sec
+       + ((double) p_time->tv_usec) / DMILLION;
+}
+
+/*
+ ****************************************************************************** 
+ * Function	: double_to_time
+ *
+ * Abstract	: Convert a double (seconds dot microseconds) to time
+ *
+ * Decisions	: Normalize the result
+ *
+ * Input	: from  The double value to convert
+ *
+ * Output       : p_to  address of the converted time structure
+ *
+ * Return	: The double value of conversion
+ *
+ * Errors       : None
+ *
+ * History :
+ *			 
+ *******************************************************************************
+*/
+extern void double_to_time (double from, timeout_t *p_to) {
+  double s, u;
+
+  /* Try to round usecs */
+  if (isinf (from * DMILLION) ) {
+    /* Cannot round usecs: trunc them */
+    s = trunc (from);
+    u = trunc ((from - s) * MILLION);
+  } else {
+    /* Round usecs */
+    u = from * DMILLION;
+    u = (round (u)) / DMILLION;
+    /* Split */
+    s = trunc (u);
+    u = (u - s) * DMILLION;
+  }
+  
+  /* Convert to ints, checking overflow */
+  p_to->tv_sec = (sizeof(p_to->tv_sec) == sizeof(long) ? LONG_MAX : INT_MAX);
+  if (s <= (double) p_to->tv_sec) {
+    p_to->tv_sec = s;
+  }
+  p_to->tv_usec = u;
+  normalize_time (p_to);
+
 }
 
