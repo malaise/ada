@@ -1,19 +1,24 @@
 with TEXT_IO;
-with TEXT_HANDLER, MY_IO, ARGUMENT, UPPER_STR, SYS_CALLS, MATH;
+with SYS_CALLS, TEXT_HANDLER, MY_IO, ARGUMENT, UPPER_STR, NORMAL, MATH;
 with GRID_1, GRID_2;
 
 procedure CODE is
   CODE : BOOLEAN;
-  BUFF : STRING (1 .. 132);
+  MAX_LINE_LEN : constant := 1024;
+  BUFF : STRING (1 .. MAX_LINE_LEN);
   MAX_FILE_LEN : constant := 58;
   REC : GRID_1.COORDINATE_REC;
   -- Bug in Meridian: Cannot allocate that in stack, but in heap.
   type ACCESS_LONG_STRING is access GRID_2.LONG_STRING;
   STR  : ACCESS_LONG_STRING
-       := new GRID_2.LONG_STRING(1 .. MATH.INTE(262_144));
+       := new GRID_2.LONG_STRING(1 .. MATH.INTE(1_048_576));
+  FILE_TOO_LONG : exception;
 
 
-  LEN : NATURAL;
+  subtype LINE_INDEX is NATURAL range 0 .. MAX_LINE_LEN;
+  LEN : LINE_INDEX;
+  MIN_KEY_LEN : constant LINE_INDEX := 8;
+  LINE_TOO_LONG : exception;
   KEY : TEXT_HANDLER.TEXT(80);
   IN_FILE  : TEXT_IO.FILE_TYPE;
   OUT_FILE : TEXT_IO.FILE_TYPE;
@@ -21,12 +26,41 @@ procedure CODE is
   SI : GRID_2.LONG_POSITIVE;
   C : CHARACTER;
 
+  function IS_A_TTY return BOOLEAN is
+    RESULT : INTEGER;
+  begin
+    RESULT := SYS_CALLS.CALL_SYSTEM("tty > /dev/null 2>&1");
+    return RESULT = 0;
+  end IS_A_TTY;
+  
+
+  procedure ECHO (ON : in BOOLEAN) is
+    DUMMY : INTEGER;
+    STTY_ECHO : constant STRING := "stty echo";
+    STTY_NO_ECHO : constant STRING := "stty -echo";
+  begin
+    if ON then
+      DUMMY := SYS_CALLS.CALL_SYSTEM(STTY_ECHO);
+    else
+      DUMMY := SYS_CALLS.CALL_SYSTEM(STTY_NO_ECHO);
+    end if;
+  end ECHO;
+
+
   procedure CODE_1 is
   begin
-    LEN := LEN + 1;
+    begin
+      LEN := LEN + 1;
+    exception
+      when CONSTRAINT_ERROR =>
+        raise LINE_TOO_LONG;
+    end;
     BUFF(LEN) := ASCII.CR;
     for I in 1 .. LEN loop
       REC := GRID_1.ENCODE(BUFF(I));
+      if SL > STR'LAST then
+        raise FILE_TOO_LONG;
+      end if;
       STR(SL) := REC.ROW;
       STR(SL + 1) := REC.COL;
       SL := SL + 2;
@@ -54,9 +88,9 @@ begin
     if ARGUMENT.GET_NBRE_ARG < 2 or else ARGUMENT.GET_NBRE_ARG > 3 then
       raise ARGUMENT.ARGUMENT_NOT_FOUND;
     end if;
-    if UPPER_STR (ARGUMENT.GET_PARAMETER) = "/C" then
+    if UPPER_STR (ARGUMENT.GET_PARAMETER) = "-C" then
       CODE := TRUE;
-    elsif UPPER_STR (ARGUMENT.GET_PARAMETER) = "/D" then
+    elsif UPPER_STR (ARGUMENT.GET_PARAMETER) = "-D" then
       CODE := FALSE;
     else
       raise ARGUMENT.ARGUMENT_NOT_FOUND;
@@ -65,7 +99,7 @@ begin
     when others =>
       MY_IO.PUT_LINE ("Wrong argument. Usage : "
                      & ARGUMENT.GET_PARAMETER(OCCURENCE => 0) 
-                     & " /C  |  /D     <input_file> [ <output_file> ] ");
+                     & " -c  |  -d     <input_file> [ <output_file> ] ");
       return;
   end;
 
@@ -101,22 +135,29 @@ begin
   end if;
 
   -- Get key
-  MY_IO.PUT ("Key: ");
-  declare
-    DUMMY : INTEGER;
-  begin
-    DUMMY := SYS_CALLS.CALL_SYSTEM ("stty -echo");
+  loop
+    if IS_A_TTY then
+      MY_IO.PUT ("Key: ");
+      ECHO (FALSE);
+    end if;
     MY_IO.GET_LINE (BUFF, LEN);
-    DUMMY := SYS_CALLS.CALL_SYSTEM ("stty echo");
-  exception
-    when others =>
-      DUMMY := SYS_CALLS.CALL_SYSTEM ("stty echo");
-  end;
-  if LEN = 0 then
-    MY_IO.PUT_LINE ("Program aborted by user.");
-    return;
-  end if;
-  MY_IO.NEW_LINE;
+    if IS_A_TTY then
+      ECHO (TRUE);
+      MY_IO.NEW_LINE;
+    end if;
+    if LEN = 0 then
+      MY_IO.PUT_LINE ("Program aborted by user.");
+      return;
+    elsif CODE and then LEN < MIN_KEY_LEN then
+      MY_IO.PUT_LINE ("Too short ("
+                    & NORMAL(MIN_KEY_LEN, 1) & " min), try again.");
+      if not IS_A_TTY then
+        return;
+      end if;
+    else
+      exit;
+    end if;
+  end loop;
 
   if ARGUMENT.GET_NBRE_ARG = 3 then
     TEXT_IO.SET_OUTPUT (OUT_FILE);
@@ -201,5 +242,9 @@ begin
   if TEXT_IO.IS_OPEN (OUT_FILE) then
     TEXT_IO.CLOSE (OUT_FILE);
   end if;
-
+exception
+  when LINE_TOO_LONG =>
+    TEXT_IO.PUT_LINE ("ERROR, input line too long.");
+  when FILE_TOO_LONG =>
+    TEXT_IO.PUT_LINE ("ERROR, input file too long.");
 end CODE;
