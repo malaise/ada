@@ -76,7 +76,6 @@ package body GENERIC_CON_IO is
         and then FONT_NO /= FONT_NO_RANGE'LAST then
           LINE.NO_FONT := FONT_NO + 1;
         end if;
-        LINE.NO_FONT := 0;
       end if;
       X_MNG.X_OPEN_LINE (LINE, ID);
       X_MNG.X_SET_LINE_NAME (ID, ARGUMENT.GET_PROGRAM_NAME);
