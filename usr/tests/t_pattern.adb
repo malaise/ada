@@ -133,7 +133,13 @@ procedure T_Pattern is
                 It : in Parser.Iterator) return Boolean is
     Str : constant String := Parser.Current_Word (It);
     Str1 : constant String := Parser.Next_Word (It);
-    New_Pa : Pattern.Pattern_Id;
+    Pat2Put : Pattern.Pattern_Id;
+    procedure Put_Pat (Id : Pattern.Pattern_Id) is
+    begin
+      Ada.Text_Io.Put_Line (Id'Img & " -> "
+          & Pattern.Pattern_Id'Image(Pattern.Get_Id4Cb (Rule, Id))
+          & ":" & Pattern.Image (Rule, Id));
+    end Put_Pat;
   begin
     if Str /= "" then
       if Str1 /= "" then
@@ -142,19 +148,19 @@ procedure T_Pattern is
       end if;
       -- First word is pattern id
       begin
-        New_Pa := Pattern.Pattern_Id'Value (Str);
+        Pat2Put := Pattern.Pattern_Id'Value (Str);
       exception
         when Constraint_Error =>
           Ada.Text_Io.Put_Line ("Invalid pattern id " & Str);
           return False;
       end;
-      Ada.Text_Io.Put_Line (New_Pa'Img & " -> " & Pattern.Image (Rule, New_Pa));
+      Put_Pat (Pat2Put);
       return False;
     end if;
 
     for I in 1 .. High_Id loop
       begin
-        Ada.Text_Io.Put_Line (I'Img & " -> " & Pattern.Image (Rule, I));
+        Put_Pat (I);
       exception
         when Pattern.Invalid_Pattern =>
           null;
