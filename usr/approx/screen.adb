@@ -197,7 +197,7 @@ package body SCREEN is
     -- Set colors
     AFPX.SET_FIELD_COLORS(INFO_FLD, FOREGROUND => CON_IO.ORANGE,
                                     BLINK_STAT => CON_IO.BLINK);
-    X_MNG.X_BELL(1);
+    CON_IO.BELL(1);
     case MSG is
       when C_FILE_EXISTS  =>  ENCODE_INFO ("File exists and will be overwritten");
       when C_DELETE_POINT =>  ENCODE_INFO ("Delete this point");
@@ -223,7 +223,7 @@ package body SCREEN is
     AFPX.SET_FIELD_COLORS(INFO_FLD, FOREGROUND => CON_IO.ORANGE,
                                     BLINK_STAT => CON_IO.BLINK);
     if MSG /= E_DONE then
-      X_MNG.X_BELL(1);
+      CON_IO.BELL(1);
     end if;
     case MSG is
       when E_DONE               => ENCODE_INFO ("");
