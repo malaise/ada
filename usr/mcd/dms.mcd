@@ -1,0 +1,24 @@
+#dms takes top of stack x.y and transforms it to x.MMssz
+# where MM are minutes, ss are seconds and z is fraction of seconds
+[ toreal dup int pope frac dup
+60.0 * int dup pope 60.0 * +- swap 3600.0 * +
+10000.0 / pushle 100.0 / pushle + + ]
+
+#smd make the reverse, taking a x.MMsszz (assuming zeros if shorter)
+# and puts x.y
+[ toreal dup int swap frac 100.0 * dup frac swap int 60.0 / 
+swap 100.0 * 3600.0 / + + ]
+
+#format N (int top stack) on i (second on stack) digits, padding with zeros
+# Stack is [ <zeros> ] N i
+[ [ ] 
+[ [  ]  pope pope pushle copye retacal ] copye call
+pushle pop
+pope format strof swap strcat ]
+
+#format replaces a dms number by the string [+-]<hours>h<mins>m<secs>.<millisecs>s
+[ 5 format dup trunc strof [ h ] strcat pope
+2 format frac absv 100.0 * dup trunc strof pushle swap strcat [ m ] strcat pope
+2 format frac 100.0 * dup trunc strof pushle swap strcat [ . ] strcat pope
+3 format frac 1000.0 * round strof pushle swap strcat [ s ] strcat ]
+
