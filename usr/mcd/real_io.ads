@@ -1,4 +1,4 @@
 with TEXT_IO;
-with MATH;
-package REAL_IO is new TEXT_IO.FLOAT_IO       (MATH.REAL);
+with MY_MATH;
+package REAL_IO is new TEXT_IO.FLOAT_IO       (MY_MATH.REAL);
 

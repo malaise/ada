@@ -1,8 +1,8 @@
 with TEXT_IO;
-with MATH;
+with MY_MATH;
 package NBRES_C is
 
-  subtype REAL is MATH.REAL;
+  subtype REAL is MY_MATH.REAL;
 
   package MY_REAL_IO is new TEXT_IO.FLOAT_IO (REAL);
 
@@ -10,7 +10,7 @@ package NBRES_C is
   I : constant COMPLEX;
 
   type RADIAN is new REAL;
-  subtype REDUCTED_RADIAN is RADIAN range 0.0 .. 2.0*MATH.PI;
+  subtype REDUCTED_RADIAN is RADIAN range 0.0 .. 2.0*MY_MATH.PI;
 
   type DEGREE is new REAL;
   subtype REDUCTED_DEGREE is DEGREE range 0.0 .. 360.0;

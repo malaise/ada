@@ -1,5 +1,5 @@
 with TEXT_IO;
-with TEXT_HANDLER, MATH, QUEUES, SYS_CALLS;
+with TEXT_HANDLER, MY_MATH, QUEUES, SYS_CALLS;
 with DEBUG, INPUT_DISPATCHER, BOOL_IO, INTE_IO, REAL_IO;
 package body PARSER is
   use MCD_MNG;
@@ -89,8 +89,8 @@ package body PARSER is
     W : ONE_WORD;
     C : CHARACTER;
     B : BOOLEAN;
-    I : MATH.INTE;
-    R : MATH.REAL;
+    I : MY_MATH.INTE;
+    R : MY_MATH.REAL;
     L : POSITIVE;
   begin
 

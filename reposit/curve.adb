@@ -1,7 +1,7 @@
 with CALENDAR, TEXT_IO;
 with BIG_CON_IO, NORMAL, X_MNG, UPPER_CHAR;
 package body CURVE is
-  use MATH;
+  use MY_MATH;
 
   package P_IO is new TEXT_IO.FLOAT_IO (T_COORDINATE);
 
@@ -105,8 +105,8 @@ package body CURVE is
 
       -- Conversion from real to screen :  screen = real * factor + offset
       type T_CONVERSION is record
-        OFFSET_X, OFFSET_Y : MATH.REAL;
-        FACTOR_X, FACTOR_Y : MATH.REAL;
+        OFFSET_X, OFFSET_Y : MY_MATH.REAL;
+        FACTOR_X, FACTOR_Y : MY_MATH.REAL;
       end record;
       CONVERSION : T_CONVERSION;
 
@@ -199,9 +199,9 @@ package body CURVE is
           -- (x provided, y of points and curve for y)
           REAL_BOUNDARIES := (SCALE => FREE_SCREEN,
            X_MIN => BOUNDS.X_MIN,
-           Y_MIN => MATH.REAL'LAST,
+           Y_MIN => MY_MATH.REAL'LAST,
            X_MAX => BOUNDS.X_MAX,
-           Y_MAX => MATH.REAL'FIRST);
+           Y_MAX => MY_MATH.REAL'FIRST);
 
           -- Find lowest and greatest Y of points in X_min .. X_max
           for I in POINTS'RANGE loop
@@ -222,9 +222,9 @@ package body CURVE is
           raise MAJ_ERROR;
         end if;
         CONVERSION.FACTOR_X :=
-          MATH.REAL (BIG_CON_IO.GRAPHICS.X_MAX - BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
+          MY_MATH.REAL (BIG_CON_IO.GRAPHICS.X_MAX - BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
           / (REAL_BOUNDARIES.X_MAX - REAL_BOUNDARIES.X_MIN);
-        CONVERSION.OFFSET_X  := MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
+        CONVERSION.OFFSET_X  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
          - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
 
         -- Now X scale is computed, we can compute curve and update Ys
@@ -248,9 +248,9 @@ package body CURVE is
           raise MAJ_ERROR;
         end if;
         CONVERSION.FACTOR_Y :=
-          MATH.REAL (BIG_CON_IO.GRAPHICS.Y_MAX - BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
+          MY_MATH.REAL (BIG_CON_IO.GRAPHICS.Y_MAX - BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
           / (REAL_BOUNDARIES.Y_MAX - REAL_BOUNDARIES.Y_MIN);
-        CONVERSION.OFFSET_Y  := MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
+        CONVERSION.OFFSET_Y  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
         - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
 
         -- If Scale is normed, factors must be the same on X and Y
@@ -263,9 +263,9 @@ package body CURVE is
             CONVERSION.FACTOR_X := CONVERSION.FACTOR_Y;
           end if;
           -- Update conversion
-          CONVERSION.OFFSET_X  := MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
+          CONVERSION.OFFSET_X  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
           - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
-          CONVERSION.OFFSET_Y  := MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
+          CONVERSION.OFFSET_Y  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
           - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
         end if;
 
@@ -565,7 +565,7 @@ package body CURVE is
       -- Draw the curve
       procedure DRAW_CURVE is
         Y_S : INTEGER;
-        X_R, Y_R : MATH.REAL;
+        X_R, Y_R : MY_MATH.REAL;
 
         -- Draw the frame around the curve
         procedure DRAW_FRAME is

@@ -1,4 +1,4 @@
-with MATH;
+with MY_MATH;
 separate (RESOL)
 package body R_COMPUTE is
   use MY_SYSLIN;
@@ -25,7 +25,7 @@ package body R_COMPUTE is
     A_LOC : MATRIX (INDEX_DEGREE, INDEX_POINT);
     T_A_A_LOC : MATRIX (INDEX_DEGREE, INDEX_DEGREE);
     A_Y_LOC : VECTOR (INDEX_DEGREE);
-    use MATH;
+    use MY_MATH;
   begin
     -- Build local A matrix
     for COLUMN in INDEX_POINT loop

@@ -278,7 +278,7 @@ package body MCD_MNG is
 
         -- Stack size
         when SSIZE =>
-          PUSH( (KIND => INTE, VAL_INTE => MATH.INTE(STACK.STACK_SIZE)));
+          PUSH( (KIND => INTE, VAL_INTE => MY_MATH.INTE(STACK.STACK_SIZE)));
 
         -- These ones are subprogram
         when CALL =>

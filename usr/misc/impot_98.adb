@@ -1,4 +1,4 @@
-with FLO_IO, LONG_IO, MATH, MY_IO, CLEAR_SCREEN;
+with FLO_IO, LONG_IO, MY_MATH, MY_IO, CLEAR_SCREEN;
 use MY_IO;
 procedure IMPOT_98 is
 
@@ -33,26 +33,26 @@ procedure IMPOT_98 is
   RESULTAT : SOMME;
 
   -- pour lire un float tres securise
-  function GET_REAL return MATH.REAL is
+  function GET_REAL return MY_MATH.REAL is
     CHAINE : STRING(1..132);
     DERNIER : NATURAL;
     VALEUR : FLOAT;
-    INT_VAL : MATH.INTE;
+    INT_VAL : MY_MATH.INTE;
   begin
     MY_IO.GET_LINE (CHAINE, DERNIER);
     begin
       FLO_IO.GET (CHAINE(1..DERNIER), VALEUR, DERNIER);
-      return MATH.REAL(VALEUR);
+      return MY_MATH.REAL(VALEUR);
     exception
       when others =>
         LONG_IO.GET(CHAINE(1..DERNIER), INT_VAL, DERNIER);
-        return MATH.REAL (INT_VAL);
+        return MY_MATH.REAL (INT_VAL);
     end;
   end GET_REAL;
 
   -- Pour lire une somme avec une invite
   function GET_SOMME (MESSAGE : STRING) return SOMME is
-    VAL : MATH.REAL;
+    VAL : MY_MATH.REAL;
   begin
     loop
       begin
@@ -68,23 +68,23 @@ procedure IMPOT_98 is
   -- Pour lire le nombre de parts avec une invite
   --  rend le nombre * 10
   function GET_PART (MESSAGE : STRING) return POSITIVE is
-    VAL : MATH.REAL;
-    FRAC : MATH.REAL;
-    use MATH;
+    VAL : MY_MATH.REAL;
+    FRAC : MY_MATH.REAL;
+    use MY_MATH;
   begin
     loop
       begin
         PUT (MESSAGE);
         PUT (" : ");
         VAL := GET_REAL;
-        FRAC := MATH.FRAC (VAL);
+        FRAC := MY_MATH.FRAC (VAL);
         if (FRAC /= 0.0) and then (FRAC /= 0.5) then
           raise CONSTRAINT_ERROR;
         end if;
         if (VAL <= 0.0) then
           raise CONSTRAINT_ERROR;
         end if;
-        return POSITIVE(MATH.INT (VAL * 10.0) );
+        return POSITIVE(MY_MATH.INT (VAL * 10.0) );
       exception
         when others => PUT_LINE ("ERREUR. Recommencez.");
       end;
@@ -140,14 +140,14 @@ begin
 
   -- 2. CALCUL DU REVENU NET IMPOSABLE
   declare
-    use MATH;
+    use MY_MATH;
   begin
     -- 2.1. deductions diverses
     CHARGES_DEDUITES := 0.0;
     RESULTAT := RESULTAT - CHARGES_DEDUITES;
 
     -- arrondi a la dizaine de francs inferieure}
-    RESULTAT := SOMME (MATH.INTE (MATH.REAL (RESULTAT/10.0) * 10.0) );
+    RESULTAT := SOMME (MY_MATH.INTE (MY_MATH.REAL (RESULTAT/10.0) * 10.0) );
     REVENU_NET_IMPOSABLE := RESULTAT;
     ECRIT ("Revenu net imposable : ", REVENU_NET_IMPOSABLE,"F");
   end;

@@ -1,6 +1,6 @@
 package body NBRES_C is
 
-  use MATH;
+  use MY_MATH;
 
   -- ANGLES en RADIAN
   package POLAR is

@@ -1,4 +1,4 @@
-with MATH;
+with MY_MATH;
 separate (NAV_DATA)
 
 -- if DRIFT is known, compute plan angle or traj angles before
@@ -23,14 +23,14 @@ begin
     begin
       R := 90.0 + TO_REAL (DATA.DRIFT);
       R := REAL(DATA.PLAN.SPEED) / REAL(DATA.WIND.SPEED)
-         * MATH.COS (R, MATH.DEGREE);
-      R := MATH.ARC_COS (R, MATH.DEGREE);
+         * MY_MATH.COS (R, MY_MATH.DEGREE);
+      R := MY_MATH.ARC_COS (R, MY_MATH.DEGREE);
       DATA.TRAJ.ANGLE := TO_ANGLE (90.0 - R) + DATA.WIND.ANGLE;
       DATA.PLAN.ANGLE := DATA.TRAJ.ANGLE - DATA.DRIFT;
       DATA.SET (TRAJ_A) := TRUE;
       DATA.SET (PLAN_A) := TRUE;
     exception
-      when MATH.MATH_ERROR => raise COMP_ERR;
+      when MY_MATH.MY_MATH_ERROR => raise COMP_ERR;
     end;
 
   end if;

@@ -1,4 +1,4 @@
-with CON_IO, AFPX, CURVE, MATH;
+with CON_IO, AFPX, CURVE, MY_MATH;
 with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, RESOL;
 package body MENU2 is
 
@@ -80,7 +80,7 @@ package body MENU2 is
                     POLYNOM : RESOL.VECTOR) return POINTS.P_T_COORDINATE is
      Y : POINTS.P_T_COORDINATE := 0.0;
      BUBBLE : POINTS.P_T_COORDINATE := 1.0;
-     use MATH;
+     use MY_MATH;
   begin
      -- Y = F(X) from vector
      for I in POLYNOM'RANGE loop

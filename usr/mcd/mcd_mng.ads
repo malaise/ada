@@ -1,4 +1,4 @@
-with MATH;
+with MY_MATH;
 with INPUT_DISPATCHER;
 package MCD_MNG is
 
@@ -76,9 +76,9 @@ package MCD_MNG is
   type ITEM_REC (KIND : ITEM_KIND_LIST := ITEM_KIND_LIST'FIRST) is record
     case KIND is
       when INTE =>
-        VAL_INTE : MATH.INTE;
+        VAL_INTE : MY_MATH.INTE;
       when REAL =>
-        VAL_REAL : MATH.REAL;
+        VAL_REAL : MY_MATH.REAL;
       when BOOL =>
         VAL_BOOL : BOOLEAN;
       when CHRS =>

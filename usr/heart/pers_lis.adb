@@ -1,4 +1,4 @@
-with AFPX, CON_IO, NORMAL, UPPER_STR, MATH;
+with AFPX, CON_IO, NORMAL, UPPER_STR, MY_MATH;
 with PERS_DEF, STR_MNG, MESU_MNG, PERS_MNG, PERS_FIL;
 package body PERS_LIS is
 
@@ -352,18 +352,18 @@ package body PERS_LIS is
               if OK then
                 declare
                   REST_RATE : PERS_DEF.BPM_RANGE;
-                  DELTA_RATE : MATH.REAL;
-                  PERCENT : MATH.REAL;
-                  use MATH;
+                  DELTA_RATE : MY_MATH.REAL;
+                  PERCENT : MY_MATH.REAL;
+                  use MY_MATH;
                   use PERS_DEF;
                 begin
                   REST_RATE := PERSON.TZ(1);
-                  DELTA_RATE := MATH.REAL (PERSON.TZ(6) - PERSON.TZ(1));
+                  DELTA_RATE := MY_MATH.REAL (PERSON.TZ(6) - PERSON.TZ(1));
                   -- REST_RATE + 50% .. 90% of DELTA
                   for I in 1 .. 5 loop
-                    PERCENT := MATH.REAL (50 + (I - 1) * 10) / 100.0;
+                    PERCENT := MY_MATH.REAL (50 + (I - 1) * 10) / 100.0;
                     PERSON.TZ(I) :=
-                       PERS_DEF.BPM_RANGE(MATH.TRUNC(DELTA_RATE * PERCENT))
+                       PERS_DEF.BPM_RANGE(MY_MATH.TRUNC(DELTA_RATE * PERCENT))
                      + REST_RATE;
                   end loop;
                 end;

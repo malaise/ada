@@ -1,5 +1,5 @@
 with TEXT_IO;
-with MATH; use MATH;
+with MY_MATH; use MY_MATH;
 with INTE_IO, REAL_IO, BOOL_IO;
 separate (MCD_MNG)
 
@@ -20,20 +20,20 @@ package body IOS is
   end SET_OBASE;
 
   procedure FORMAT (ITEM : in ITEM_REC) is
-    R : MATH.REAL;
-    I : MATH.INTE;
+    R : MY_MATH.REAL;
+    I : MY_MATH.INTE;
   begin
     case ITEM.KIND is
       when INTE =>
         INTE_IO.DEFAULT_WIDTH := TEXT_IO.FIELD (ITEM.VAL_INTE);
         INTE_FORMAT_SET := TRUE;
       when REAL =>
-        R := MATH.INT(ITEM.VAL_REAL);
-        I := MATH.ROUND(R);
+        R := MY_MATH.INT(ITEM.VAL_REAL);
+        I := MY_MATH.ROUND(R);
         REAL_IO.DEFAULT_FORE := TEXT_IO.FIELD(I);
         -- AFT 0 .. 999
-        R := MATH.FRAC(ITEM.VAL_REAL) * 1000.0;
-        I := MATH.ROUND(R);
+        R := MY_MATH.FRAC(ITEM.VAL_REAL) * 1000.0;
+        I := MY_MATH.ROUND(R);
         REAL_IO.DEFAULT_AFT := TEXT_IO.FIELD(I);
         -- EXP 3
         REAL_IO.DEFAULT_EXP := 4;

@@ -2,7 +2,7 @@ with BIT_OPS;
 separate (MCD_MNG)
 
 package body OPERATIONS is
-  use MATH;
+  use MY_MATH;
 
   function IS_TRUE (X : ITEM_REC) return BOOLEAN is
   begin
@@ -84,7 +84,7 @@ package body OPERATIONS is
   end DIV;
 
   function POW     (L, R : ITEM_REC) return ITEM_REC is
-    use MATH; -- for real ** real
+    use MY_MATH; -- for real ** real
   begin
     if not IS_INTE_OR_REAL(L) or else not IS_INTE_OR_REAL(R) then
       raise INVALID_ARGUMENT;
@@ -93,8 +93,8 @@ package body OPERATIONS is
       raise ARGUMENT_MISMATCH;
     end if;
     if L.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => ROUND(MATH.REAL(L.VAL_INTE)
-                                           ** MATH.REAL(R.VAL_INTE)));
+      return (KIND => INTE, VAL_INTE => ROUND(MY_MATH.REAL(L.VAL_INTE)
+                                           ** MY_MATH.REAL(R.VAL_INTE)));
     else
       return (KIND => REAL, VAL_REAL => L.VAL_REAL ** R.VAL_REAL);
     end if;
@@ -290,7 +290,7 @@ package body OPERATIONS is
     if X.KIND /= INTE then
       raise INVALID_ARGUMENT;
     end if;
-    return (KIND => REAL, VAL_REAL => MATH.REAL(X.VAL_INTE));
+    return (KIND => REAL, VAL_REAL => MY_MATH.REAL(X.VAL_INTE));
   end TOREAL;
 
   -- REAL->INTE
@@ -302,7 +302,7 @@ package body OPERATIONS is
     if X.KIND /= REAL then
       raise INVALID_ARGUMENT;
     end if;
-    return (KIND => INTE, VAL_INTE => MATH.ROUND(X.VAL_REAL));
+    return (KIND => INTE, VAL_INTE => MY_MATH.ROUND(X.VAL_REAL));
   end TOINTE;
 
   function ISREAL  (X : ITEM_REC) return ITEM_REC is

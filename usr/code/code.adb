@@ -1,5 +1,5 @@
 with TEXT_IO;
-with SYS_CALLS, TEXT_HANDLER, MY_IO, ARGUMENT, UPPER_STR, NORMAL, MATH;
+with SYS_CALLS, TEXT_HANDLER, MY_IO, ARGUMENT, UPPER_STR, NORMAL, MY_MATH;
 with GRID_1, GRID_2;
 
 procedure CODE is
@@ -11,7 +11,7 @@ procedure CODE is
   -- Bug in Meridian: Cannot allocate that in stack, but in heap.
   type ACCESS_LONG_STRING is access GRID_2.LONG_STRING;
   STR  : ACCESS_LONG_STRING
-       := new GRID_2.LONG_STRING(1 .. MATH.INTE(1_048_576));
+       := new GRID_2.LONG_STRING(1 .. MY_MATH.INTE(1_048_576));
   FILE_TOO_LONG : exception;
 
 

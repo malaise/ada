@@ -1,5 +1,5 @@
 with SEQUENTIAL_IO;
-with DIRECTORY, TEXT_HANDLER, MATH;
+with DIRECTORY, TEXT_HANDLER, MY_MATH;
 package body FILE is
 
   MAGIC_X : constant POINTS.P_T_COORDINATE := 21.21;
@@ -13,7 +13,7 @@ package body FILE is
     SIZE : NATURAL;
     FILE : FILE_TYPE;
     MAGIC_POINT : POINTS.P_T_ONE_POINT;
-    use MATH;
+    use MY_MATH;
   begin
     begin
       OPEN (FILE, IN_FILE, NAME);

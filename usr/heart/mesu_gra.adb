@@ -1,8 +1,8 @@
-with AFPX, CON_IO, NORMAL, MATH, TEXT_HANDLER, DOS;
+with AFPX, CON_IO, NORMAL, MY_MATH, TEXT_HANDLER, DOS;
 with MESU_DEF, STR_MNG, MESU_NAM, PERS_MNG, PERS_DEF, MESU_FIL;
 use PERS_DEF;
 package body MESU_GRA is
-  use MATH;
+  use MY_MATH;
 
   -- X and Y first and last, in screen and reality
   X_FIRST : constant NATURAL := 0;
@@ -98,8 +98,8 @@ package body MESU_GRA is
                        IN_GRAPHIC       : in BOOLEAN := FALSE;
                        DRAW_FIRST_POINT : in BOOLEAN := TRUE) is
     -- Y := A * X + B;
-    A : MATH.REAL;
-    B : MATH.REAL;
+    A : MY_MATH.REAL;
+    B : MY_MATH.REAL;
     X, X1, X2 : INTEGER;
     Y, Y1, Y2 : INTEGER;
   begin
@@ -143,10 +143,10 @@ package body MESU_GRA is
           Y2 := YA;
         end if;
         -- Y := A * X + B
-        A := MATH.REAL (Y2 - Y1) / MATH.REAL (X2 - X1);
-        B := MATH.REAL(Y1) - (A * MATH.REAL(X1));
+        A := MY_MATH.REAL (Y2 - Y1) / MY_MATH.REAL (X2 - X1);
+        B := MY_MATH.REAL(Y1) - (A * MY_MATH.REAL(X1));
         for X in X1 .. X2 loop
-          Y := CON_IO.GRAPHICS.Y_RANGE(MATH.ROUND (A * MATH.REAL(X) + B));
+          Y := CON_IO.GRAPHICS.Y_RANGE(MY_MATH.ROUND (A * MY_MATH.REAL(X) + B));
           PIXEL (X, Y, IN_GRAPHIC);
         end loop;
       else
@@ -162,10 +162,10 @@ package body MESU_GRA is
           Y2 := YA;
         end if;
         -- X := A * Y + B
-        A := MATH.REAL (X2 - X1) / MATH.REAL (Y2 - Y1);
-        B := MATH.REAL(X1) - (A * MATH.REAL(Y1));
+        A := MY_MATH.REAL (X2 - X1) / MY_MATH.REAL (Y2 - Y1);
+        B := MY_MATH.REAL(X1) - (A * MY_MATH.REAL(Y1));
         for Y in Y1 .. Y2 loop
-          X := CON_IO.GRAPHICS.X_RANGE(MATH.ROUND (A * MATH.REAL(Y) + B));
+          X := CON_IO.GRAPHICS.X_RANGE(MY_MATH.ROUND (A * MY_MATH.REAL(Y) + B));
           PIXEL (X, Y, IN_GRAPHIC);
         end loop;
       end if;

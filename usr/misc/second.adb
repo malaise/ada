@@ -1,15 +1,15 @@
 -- Purpose: solve a.x2 + b.x + c = 0
 with TEXT_IO;
-with ARGUMENT, MY_IO, MATH, GET_FLOAT;
-use MATH;
+with ARGUMENT, MY_IO, MY_MATH, GET_FLOAT;
+use MY_MATH;
 procedure SECOND is
 
-  A, B, C : MATH.REAL;
+  A, B, C : MY_MATH.REAL;
 
   -- Discriminant
-  D : MATH.REAL;
+  D : MY_MATH.REAL;
 
-  package REAL_IO is new TEXT_IO.FLOAT_IO (MATH.REAL);
+  package REAL_IO is new TEXT_IO.FLOAT_IO (MY_MATH.REAL);
   
 begin
 
@@ -21,9 +21,9 @@ begin
 
   -- Parse arguments
   begin
-    A := MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(1)));
-    B := MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(2)));
-    C := MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(3)));
+    A := MY_MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(1)));
+    B := MY_MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(2)));
+    C := MY_MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(3)));
   exception
     when others =>
       MY_IO.PUT_LINE ("ERROR in an argument. 3 arguments expected, a, b and c.");
@@ -52,15 +52,15 @@ begin
     D := B * B - 4.0 * A * C;
     if D >= 0.0 then
       MY_IO.PUT ("Two solutions: ");
-      REAL_IO.PUT ((-B + MATH.SQRT(D)) / (2.0 * A));
+      REAL_IO.PUT ((-B + MY_MATH.SQRT(D)) / (2.0 * A));
       MY_IO.PUT (" and ");
-      REAL_IO.PUT ((-B - MATH.SQRT(D)) / (2.0 * A));
+      REAL_IO.PUT ((-B - MY_MATH.SQRT(D)) / (2.0 * A));
       MY_IO.NEW_LINE;
     else
       MY_IO.PUT_LINE ("Two complex solutions: ");
       REAL_IO.PUT ((-B) / (2.0 * A) );
       MY_IO.PUT (" +/-");
-      REAL_IO.PUT (MATH.SQRT(-D) / (2.0 * A));
+      REAL_IO.PUT (MY_MATH.SQRT(-D) / (2.0 * A));
       MY_IO.PUT (" * i ");
       MY_IO.NEW_LINE;
     end if;
