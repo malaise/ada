@@ -103,13 +103,13 @@ begin
     end if;
     MY_IO.PUT ("  Total loss: ");
     MY_IO.PUT (abs (IDEAL_NOTE - SIGMA), 6, 2, 0);
-    MY_IO.PUT ("  Iter: ");
+    MY_IO.NEW_LINE;
+    MY_IO.PUT ("Iter: ");
     if POSITIVE'IMAGE(NB_ITERATIONS)'LENGTH - 1 >= MAX_ITER_DIGITS then
       MY_IO.PUT (POSITIVE'IMAGE(NB_ITERATIONS));
     else
       MY_IO.PUT (NORMAL (NB_ITERATIONS, MAX_ITER_DIGITS));
     end if;
-    MY_IO.NEW_LINE;
 
   end SOLVE;
 
@@ -145,7 +145,7 @@ begin
         end if;
       end PUT_TIME;
     begin  
-      MY_IO.PUT ("In");
+      MY_IO.PUT ("    In");
       PUT_TIME (DAYS, "day");
       PUT_TIME (HOURS, "hour");
       PUT_TIME (MINUTES, "minute");
