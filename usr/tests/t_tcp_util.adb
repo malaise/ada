@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Exceptions, Ada.Text_Io;
 with Text_Handler, Argument, X_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
@@ -63,7 +63,10 @@ procedure T_Tcp_Util is
     Host.Name (1 .. Text_Handler.Length(Server_Name))
          := Text_Handler.Value(Server_Name);
     Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
-    Tcp_Util.Connect_To (Host, Port, Delay_Try, Nb_Try, Connect_Cb'Unrestricted_Access);
+    Tcp_Util.Connect_To (Socket.Tcp_Header,
+                         Host, Port,
+                         Delay_Try, Nb_Try,
+                         Connect_Cb'Unrestricted_Access);
   end Connect;
 
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
@@ -155,8 +158,20 @@ begin
       Port_num : Tcp_Util.Port_num;
     begin
       Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
-      Tcp_Util.Accept_From (Port, Accept_Cb'Unrestricted_Access, Accept_Dscr,
-                            Port_Num);
+      loop
+        begin
+          Tcp_Util.Accept_From (Socket.Tcp_Header,
+                                Port,
+                                Accept_Cb'Unrestricted_Access,
+                                Accept_Dscr,
+                                Port_Num);
+          exit;
+        exception
+          when Socket.Socket_Error =>
+            Ada.Text_Io.Put_Line ("Cannot accept. Maybe Time_Wait. Waiting");
+            delay 20.0;
+        end;
+      end loop;
     end;
   else
     Message.Num := 1;
@@ -175,6 +190,13 @@ begin
     end loop;
   end;
 
+exception
+  when Arg_Error =>
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+                   & " -c <server_host> | -s");
+  when Error : others =>
+    Ada.Text_Io.Put_Line ("Exception: "
+                   & Ada.Exceptions.Exception_Name (Error));
 end T_Tcp_Util;
 
 
