@@ -566,10 +566,10 @@ procedure Look_95 is
   procedure Put_Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-         & " [ { -v | -s | -t | -n | -C <file> } ]");
+         & " [ { -v | -s | -t | -n | -C | -c <file> } ]");
     Ada.Text_Io.Put_Line ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
-    Ada.Text_Io.Put_Line ("Warnings: on upper case in comments");
+    Ada.Text_Io.Put_Line ("Warnings on comments (on/off): if upper case");
   end Put_Usage;
 
 begin
@@ -601,6 +601,8 @@ begin
       Verbose_Level := Test;
     elsif Argument.Get_Parameter (I) = "-C" then
       Warn_Comment := True;
+    elsif Argument.Get_Parameter (I) = "-c" then
+      Warn_Comment := False;
     else
       -- Process file
       One_Done := True;
