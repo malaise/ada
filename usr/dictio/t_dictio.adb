@@ -21,82 +21,118 @@ procedure T_Dictio is
     procedure P (Str : in String) renames Ada.Text_Io.Put_Line;
   begin
     P ("Comands are:");
-    P ("  set    [ alias ] <name> [ <data/name> ]  get    [ alias ] <name>");
-    P ("  notify [ alias ] <pattern>               cancel [ alias ]  <pattern>");
-    P ("  add    <host>                            del    <host>");
-    P ("  help                                     status");
-    P ("  quit | exit");
+    P (" set    <name>    [ <data> ]        setalias <name>    [ <of_name> ]");
+    P (" get    [ alias ] [ <name> ]");
+    P (" notify [ alias ] [ <pattern> ]     cancel   [ alias ] [ <pattern> ]");
+    P (" add    <host>                      del      <host>");
+    P (" help                               status");
+    P (" quit | exit | q");
   end Put_Help;
 
   Rule : Pattern.Rule_No;
 
-  Id_Set     : constant Pattern.Pattern_Id := 10;
-  Id_Get     : constant Pattern.Pattern_Id := 20;
-  Id_Notify  : constant Pattern.Pattern_Id := 21;
-  Id_Cancel  : constant Pattern.Pattern_Id := 22;
-  Id_Add     : constant Pattern.Pattern_Id := 30;
-  Id_Del     : constant Pattern.Pattern_Id := 31;
-  Id_Help    : constant Pattern.Pattern_Id := 40;
-  Id_Status  : constant Pattern.Pattern_Id := 41;
-  Id_Quit    : constant Pattern.Pattern_Id := 42;
-  Id_Exit    : constant Pattern.Pattern_Id := 43;
-  Id_Error   : constant Pattern.Pattern_Id := 99;
+  Id_Set      : constant Pattern.Pattern_Id := 010;
+  Id_Setalias : constant Pattern.Pattern_Id := 020;
+  Id_Get      : constant Pattern.Pattern_Id := 100;
+  Id_Notify   : constant Pattern.Pattern_Id := 110;
+  Id_Cancel   : constant Pattern.Pattern_Id := 120;
+  Id_Add      : constant Pattern.Pattern_Id := 200;
+  Id_Del      : constant Pattern.Pattern_Id := 210;
+  Id_Help     : constant Pattern.Pattern_Id := 300;
+  Id_Status   : constant Pattern.Pattern_Id := 310;
+  Id_Exit     : constant Pattern.Pattern_Id := 320;
+  Id_Quit     : constant Pattern.Pattern_Id := 321;
+  Id_Q        : constant Pattern.Pattern_Id := 322;
+  Id_Error    : constant Pattern.Pattern_Id := 999;
 
-  function Com_Opt_Fix_Opt (Rule : in Pattern.Rule_No;
-                            Id   : in Pattern.Pattern_Id;
-                            Nb_Match : in Natural;
-                            Iter : in Parser.Iterator) return Boolean is
-    Arg1 : constant String := Parser.Current_Word (Iter);
-    Arg2 : constant String := Parser.Next_Word (Iter);
-    Arg3 : constant String := Parser.Next_Word (Iter);
-    use type Pattern.Pattern_Id;
-  begin
-    -- Set [ alias ] <name> [ <data/name> ]
-    if Arg1 = "" or else Arg3 /= "" then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      return False;
-    end if;
-    if Nb_Match = 1 then
-      Dictio_Lib.Set (Arg1, Arg2);
-    elsif Nb_Match = 2 then
-      Dictio_Lib.Set_Alias (Arg1, Arg2);
-    else
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-    end if;
-    return False;
-  end Com_Opt_Fix_Opt;
-
-  function Com_Opt_Fix (Rule : in Pattern.Rule_No;
+  function Com_Fix_Opt (Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
                         Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
     Arg1 : constant String := Parser.Current_Word (Iter);
     Arg2 : constant String := Parser.Next_Word (Iter);
-    Alias : constant Boolean := Nb_Match = 2;
+    Arg3 : constant String := Parser.Next_Word (Iter);
     use type Pattern.Pattern_Id;
   begin
-    -- Get/Notify/Cancel [ alias ] <name>
-    if Arg1 = "" or else Arg2 /= "" then
+    -- Set/Setalias <name> [ <data/of_name> ]
+    if Arg1 = "" or else Arg3 /= "" then
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
       return False;
     end if;
-    if Id = Id_Get then
-      if not Alias then
-        Ada.Text_Io.Put_Line ("CLIENT: got >"
-                            & Dictio_Lib.Get (Arg1) & "<");
-      else
-        Ada.Text_Io.Put_Line ("CLIENT: got alias >"
-                            & Dictio_Lib.Get_Alias (Arg1) & "<");
-      end if;
-    elsif Id = Id_Notify then
-      Dictio_Lib.Notify (Arg1, not Alias, True);
-    elsif Id = Id_Cancel then
-      Dictio_Lib.Notify (Arg1, not Alias, False);
+    if Id = Id_Set then
+      Dictio_Lib.Set (Arg1, Arg2);
+    elsif Id = Id_Setalias then
+      Dictio_Lib.Set_Alias (Arg1, Arg2);
     else
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
     end if;
     return False;
-  end Com_Opt_Fix;
+  end Com_Fix_Opt;
+
+  function Com_Opt_Opt (Rule : in Pattern.Rule_No;
+                        Id   : in Pattern.Pattern_Id;
+                        Nb_Match : in Natural;
+                        Iter : in Parser.Iterator) return Boolean is
+    Arg1 : constant String := Parser.Current_Word (Iter);
+    Arg2 : constant String := Parser.Next_Word (Iter);
+    Alias_Name : constant String := "alias";
+    Alias : Boolean := Nb_Match = 2;
+    Name_Is_Alias : Boolean := False;
+
+    function Get_Name return String is
+    begin
+      if Alias then
+        return Arg1;
+      elsif Name_Is_Alias then
+        return Alias_Name;
+      else
+        return Arg1;
+      end if;
+    end Get_Name;
+
+    use type Pattern.Pattern_Id;
+  begin
+    -- Get/Notify/Cancel [ alias ] [ <name> ]
+    -- If <name> is not set then name is "alias"
+    if Arg1 = "" or else Arg2 /= "" then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      return False;
+    end if;
+    if not Alias and then Arg1 /= "" then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      return False;
+    end if;
+
+    -- Find our way in optionnal args:
+    -- alias      -> name is "alias"
+    -- alias name -> alias name
+    -- name       -> name
+    if Alias and then Arg1 = "" then
+      -- <command> alias
+      Alias := False;
+      Name_Is_Alias := True;
+    else
+      -- <command> alias <name> or <command> <name> <data>
+      Name_Is_Alias := False;
+    end if;
+
+    if Id = Id_Get then
+      if not Alias then
+        Ada.Text_Io.Put_Line ("CLIENT: got >"
+                            & Dictio_Lib.Get (Get_Name) & "<");
+      else
+        Ada.Text_Io.Put_Line ("CLIENT: got alias >"
+                            & Dictio_Lib.Get_Alias (Get_Name) & "<");
+      end if;
+    elsif Id = Id_Notify then
+      Dictio_Lib.Notify (Get_Name, not Alias, True);
+    elsif Id = Id_Cancel then
+      Dictio_Lib.Notify (Get_Name, not Alias, False);
+    else
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    end if;
+    return False;
+  end Com_Opt_Opt;
 
   function Com_Fix (Rule : in Pattern.Rule_No;
                     Id   : in Pattern.Pattern_Id;
@@ -138,7 +174,8 @@ procedure T_Dictio is
       Put_Help;
     elsif Id = Id_Status then
       Ada.Text_Io.Put_Line("CLIENT: Dictio status is " & Saved_State'Img);
-    elsif Id = Id_Quit or else Id = Id_Exit then
+    elsif Id = Id_Quit then
+      Ada.Text_Io.Put_Line ("CLIENT: Exiting");
       Event_Mng.Send_Dummy_Signal;
       return True;
     elsif Id = Id_Error then
@@ -152,14 +189,16 @@ procedure T_Dictio is
   procedure Init_Parsing is
   begin
     Rule := Pattern.Get_Free_Rule;
-    Pattern.Set (Rule, Id_Set, "set [ alias ]",
-                 Com_Opt_Fix_Opt'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Set, "set",
+                 Com_Fix_Opt'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Setalias, "setalias",
+                 Com_Fix_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Get, "get [ alias ]",
-                 Com_Opt_Fix'Unrestricted_Access);
+                 Com_Opt_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Notify, "notify [ alias ]",
-                 Com_Opt_Fix'Unrestricted_Access);
+                 Com_Opt_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Cancel, "cancel [ alias ]",
-                 Com_Opt_Fix'Unrestricted_Access);
+                 Com_Opt_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Add, "add",
                  Com_Fix'Unrestricted_Access);
     Pattern.Set (Rule, Id_Del, "del",
@@ -171,7 +210,9 @@ procedure T_Dictio is
     Pattern.Set (Rule, Id_Quit, "quit",
                  Com'Unrestricted_Access);
     Pattern.Set (Rule, Id_Exit, "exit",
-                 Com'Unrestricted_Access);
+                 Com'Unrestricted_Access, Id_Quit);
+    Pattern.Set (Rule, Id_Q, "q",
+                 Com'Unrestricted_Access, Id_Quit);
     Pattern.Set (Rule, Id_Error, "",
                  Com'Unrestricted_Access);
   end Init_Parsing;
