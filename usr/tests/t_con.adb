@@ -161,7 +161,8 @@ procedure T_Con is
 
   exception
     when Error : others =>
-       My_Io.Put_Line ("Exception " &  Ada.Exceptions.Exception_Name (Error));
+       My_Io.Put_Line ("Exception in " &  Me'Img
+                     & " " & Ada.Exceptions.Exception_Name (Error));
        raise;
   end Task_T;
 
