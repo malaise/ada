@@ -22,7 +22,8 @@ X_OBJS := $(X_OBJS:%=$(LIB)/%)
 $(LIB)/test_x.o : test_x.c x_export.h
 
 $(BIN)/test_x : $(LIB)/test_x.o $(LIB)/libx_mng.so $(LIB)/libcutil.so
-	$(CC) -o $(BIN)/test_x $(LIB)/test_x.o -L$(LIB) -lx_mng -lcutil -lX11
+	$(CC) -o $(BIN)/test_x $(LIB)/test_x.o -L$(LIB) \
+	  -lx_mng -lcutil -lX11 -lm
 
 $(LIB)/libcndbm.so : $(D_OBJS)
 	ld -shared $(SOOPT) -o $@ $(D_OBJS) -lc
@@ -32,7 +33,7 @@ $(LIB)/libcndbm.a : $(D_OBJS)
 	ar crvs $@ $(D_OBJS)
 
 $(LIB)/libcutil.so : $(U_OBJS)
-	ld -shared $(SOOPT) -o $@ $(U_OBJS) -lc
+	ld -shared $(SOOPT) -o $@ $(U_OBJS) -lm -lc
 	-$(RM) so_locations
 
 $(LIB)/libcutil.a : $(U_OBJS)
