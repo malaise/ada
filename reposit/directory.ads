@@ -34,7 +34,7 @@ package DIRECTORY is
   procedure CLOSE (DESC : in out DIR_DESC);
   -- May raise OPEN_ERROR if dir desc is not open
 
-  type FILE_KIND_LIST is (FILE, DIR, SYNBOLIC_LINK,
+  type FILE_KIND_LIST is (FILE, DIR, SYMBOLIC_LINK,
            BLOCK_DEVICE, CHARACTER_DEVICE, FIFO, SOCKET, UNKNOWN);
   -- RIGHTS are :
   --  1st bit OX
@@ -53,6 +53,11 @@ package DIRECTORY is
                        KIND : out FILE_KIND_LIST; RIGHTS : out NATURAL);
   -- May raise NAME_ERROR  
 
+  
+  function READ_LINK (FILE_NAME : STRING) return STRING;
+  procedure READ_LINK (FILE_NAME : in STRING; TARGET : in out TEXT_HANDLER.TEXT);
+  -- May raise OPEN_ERROR if FILE_NAME is not a link
+  --           NAME_ERROR if FILE_NAME does not exist
 
   -- Does file name match a pattern
   function FILE_MATCH (FILE_NAME : STRING; TEMPLATE : STRING) return BOOLEAN;

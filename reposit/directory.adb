@@ -1,4 +1,4 @@
-with BIT_OPS;
+with SYS_CALLS, BIT_OPS;
 package body DIRECTORY is
   use SYSTEM;
 
@@ -41,6 +41,7 @@ package body DIRECTORY is
     return STR & ASCII.NUL;
   end STR_FOR_C;
 
+
   function C_GETCWD (BUF : SYSTEM.ADDRESS; SIZE : INTEGER) return SYSTEM.ADDRESS;
   pragma IMPORT (C, C_GETCWD, "getcwd");
 
@@ -64,6 +65,7 @@ package body DIRECTORY is
     TEXT_HANDLER.SET (CUR_DIR, GET_CURRENT);
   end GET_CURRENT;
 
+
   function C_CHDIR (PATH : SYSTEM.ADDRESS) return INTEGER;
   pragma IMPORT (C, C_CHDIR, "chdir");
 
@@ -75,6 +77,7 @@ package body DIRECTORY is
       raise NAME_ERROR;
     end if;
   end CHANGE_CURRENT;
+
 
   function C_OPENDIR (NAME : SYSTEM.ADDRESS) return SYSTEM.ADDRESS;
   pragma IMPORT (C, C_OPENDIR, "opendir");
@@ -127,6 +130,7 @@ package body DIRECTORY is
     TEXT_HANDLER.SET (DIR_ENTRY, NEXT_ENTRY (DESC));
   end NEXT_ENTRY;
 
+
   procedure C_REWINDDIR (DIR : SYSTEM.ADDRESS);
   pragma IMPORT (C, C_REWINDDIR, "rewinddir");
 
@@ -140,6 +144,7 @@ package body DIRECTORY is
     C_REWINDDIR (DESC.DIR_ADDR);
   end REWIND;
 
+
   procedure C_CLOSEDIR (DIR : SYSTEM.ADDRESS);
   pragma IMPORT (C, C_CLOSEDIR, "closedir");
 
@@ -152,6 +157,7 @@ package body DIRECTORY is
     C_CLOSEDIR (DESC.DIR_ADDR);
     DESC.DIR_ADDR := SYSTEM.NULL_ADDRESS;
   end CLOSE;
+
 
   function C_STAT (FILE_NAME : SYSTEM.ADDRESS; STAT : SYSTEM.ADDRESS)
   return INTEGER;
@@ -176,7 +182,7 @@ package body DIRECTORY is
       when 8#14# =>
         KIND := SOCKET;
       when 8#12# =>
-        KIND := SYNBOLIC_LINK;
+        KIND := SYMBOLIC_LINK;
       when 8#10# =>
         KIND := FILE;
       when 8#06# =>
@@ -192,6 +198,34 @@ package body DIRECTORY is
     end case;
     RIGHTS := INTEGER(STAT.ST_MODE) AND 8#00007777#;
   end FILE_STAT;
+
+
+  function C_READLINK (PATH : SYSTEM.ADDRESS;
+                       BUF : SYSTEM.ADDRESS; BUFSIZ : INTEGER) return INTEGER;
+  pragma IMPORT (C, C_READLINK, "readlink");
+
+  function READ_LINK (FILE_NAME : STRING) return STRING is
+    STR : STRING(1 .. MAX_DIR_NAME_LEN);
+    C_FILE_NAME : constant STRING := STR_FOR_C(FILE_NAME);
+    RES : INTEGER;
+  begin
+    RES := C_READLINK (C_FILE_NAME'ADDRESS, STR'ADDRESS, STR'LENGTH);
+    if RES /= -1 then
+      return STR (1 .. RES);
+    elsif SYS_CALLS.ERRNO = 2 then
+      -- ENOENT : file not found
+      raise NAME_ERROR;
+    else
+      raise OPEN_ERROR;
+    end if;
+  end READ_LINK;
+    
+  procedure READ_LINK (FILE_NAME : in STRING; TARGET : in out TEXT_HANDLER.TEXT) is
+  begin
+    TEXT_HANDLER.SET (TARGET, READ_LINK(FILE_NAME));
+  end READ_LINK;
+  -- May raise OPEN_ERROR if FILE_NAME is not a link
+  --           NAME_ERROR if FILE_NAME does not exist
 
 
   function C_FNMATCH (PATTERN : SYSTEM.ADDRESS; STRINGS : SYSTEM.ADDRESS;
