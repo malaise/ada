@@ -175,7 +175,7 @@ package Afpx is
   end record;
 
   -- Call back called by Put_Then_Get when entering a new get field:
-  -- Given the reason for entering field (see Con_Io)
+  -- Given the reason for entering field (see Con_Io).
   type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
   --  and given the content of the get field as by Decode_Field (Row =>0)
   --  the client specifies the column of the cursor.
@@ -185,6 +185,13 @@ package Afpx is
   type Cursor_Set_Col_Cb is access
        function (Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : String) return Con_Io.Col_Range;
+
+  -- Returns the index (from 0 to Str'Last-1) of the last character of Str
+  --  or, if Significant, the index following last significant character
+  --  (skipping trailing spaces and htabs).
+  -- This can be usefully called by Cursor_Set_Col_Cb.
+  function Last_Index (Str : String; Significant : Boolean)
+                      return Con_Io.Col_Range;
 
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)

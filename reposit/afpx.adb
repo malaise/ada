@@ -1,3 +1,4 @@
+with String_Mng;
 with Afpx_Typ;
 package body Afpx is
 
@@ -577,6 +578,29 @@ package body Afpx is
     Af_List.Update(Action);
  end Update_List;
 
+  -- Returns the index (from 0 to Str'Last-1) of the last character of Str
+  --  or, if Significant, the index following last significant character
+  --  (skipping trailing spaces and htabs).
+  -- This can be usefully called by Cursor_Set_Col_Cb.
+  function Last_Index (Str : String; Significant : Boolean)
+                      return Con_Io.Col_Range is
+    N : Natural;
+  begin
+    if not Significant then
+      return Str'Length - 1;
+    end if;
+    N := String_Mng.Parse_Spaces (Str, From_Head => False);
+    if N = 0 then
+      -- All is space/tab
+      return 0;
+    elsif N = Str'Last then
+      -- Last character is significant. That's it.
+      return Str'Length - 1;
+    else
+      -- Set to space after N
+      return N - Str'First + 1;
+    end if;
+  end Last_Index;
 
   -- Print the fields and the list, then gets
   procedure Put_Then_Get (
