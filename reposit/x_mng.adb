@@ -966,9 +966,12 @@ package body X_MNG is
       LINE_FOR_C_ID : LINE_FOR_C;
       WAIT_INF : BOOLEAN;
       WAIT_EXP : CALENDAR.TIME;
+      -- Refreshing this client due to a unregister
+      REFRESH : BOOLEAN;
     end record;
     CLIENTS : array (CLIENT_RANGE) of CLIENT_DESC_REC;
-    -- The one from WAIT, SOME_EVENT
+    -- The TIMEOUT/EVENT and CLIENT from WAIT to SOME_EVENT to GET_EVENT
+    SELECT_SOMETHING : BOOLEAN;
     SELECTED_CLIENT : CLIENT_RANGE;
     -- One event to give in SOME_EVENT
     SOME_EVENT_PRESENT : BOOLEAN;
@@ -979,7 +982,6 @@ package body X_MNG is
     use SYSTEM, CALENDAR;
     -- Delay in msec, or -1
     DELAY_MS : INTEGER;
-    SELECT_SOMETHING : BOOLEAN;
   
     procedure COMPUTE_SMALLER_DELAY(DELAY_MS : out INTEGER;
                                     SELECTED_CLIENT : out CLIENT_RANGE) is
@@ -1015,9 +1017,15 @@ package body X_MNG is
     end COMPUTE_SMALLER_DELAY;
 
     procedure GET_CLIENT_FROM_LINE(LINE_FOR_C_ID : in LINE_FOR_C;
-                                   CLIENT : out CLIENT_RANGE;
+                                   CLIENT : in out CLIENT_RANGE;
                                    FOUND : out BOOLEAN) is
     begin
+      -- Same as current?
+      if CLIENTS(CLIENT).KNOWN
+      and then CLIENTS(CLIENT).LINE_FOR_C_ID = LINE_FOR_C_ID then
+        FOUND := TRUE;
+        return;
+      end if;
       for I in CLIENT_RANGE loop
         if CLIENTS(I).KNOWN
         and then CLIENTS(I).LINE_FOR_C_ID = LINE_FOR_C_ID then
@@ -1042,7 +1050,6 @@ package body X_MNG is
     NB_WAIT := 0;
     for I in CLIENT_RANGE loop
       CLIENTS(I).KNOWN := FALSE;
-      CLIENTS(I).LINE_FOR_C_ID := NO_LINE_FOR_C;
     end loop;
     -- No event
     SOME_EVENT_PRESENT := FALSE;
@@ -1068,6 +1075,8 @@ package body X_MNG is
           for I in CLIENT_RANGE loop
             if not CLIENTS(I).KNOWN then
               CLIENTS(I).KNOWN := TRUE;
+              CLIENTS(I).REFRESH := FALSE;
+              CLIENTS(I).LINE_FOR_C_ID := NO_LINE_FOR_C;
               CLIENT := I;
               NB_CLIENTS := NB_CLIENTS + 1;
               return;
@@ -1078,18 +1087,25 @@ package body X_MNG is
         end REGISTER;
       or
         accept UNREGISTER (CLIENT : in out LINE_RANGE) do
+          -- Update administration
           if CLIENT /= NO_CLIENT_NO then
             CLIENTS(CLIENT).KNOWN := FALSE;
-            CLIENTS(CLIENT).LINE_FOR_C_ID := NO_LINE_FOR_C;
             NB_CLIENTS := NB_CLIENTS - 1;
           end if;
           CLIENT := NO_CLIENT_NO;
-          -- Select a new client for a dummy event
-          SOME_EVENT_PRESENT := FALSE;
+          -- Generate a dummy refresh event for all client
+          -- Wake up all waiting clients
           for I in CLIENT_RANGE loop
             if CLIENTS(I).KNOWN then
-              SELECTED_CLIENT := I;
-              exit;
+              CLIENTS(I).REFRESH := TRUE;
+              select
+                accept SOME_EVENT(I) (SOME : out BOOLEAN) do
+                  SOME := TRUE;
+                  NB_WAIT := NB_WAIT - 1;
+                end SOME_EVENT;
+              or
+                delay 0.0;
+              end select; 
             end if;
           end loop;
         end UNREGISTER;
@@ -1141,6 +1157,13 @@ package body X_MNG is
       or
         accept GET_EVENT (CLIENT : in CLIENT_RANGE; KIND : out EVENT_KIND;
                                                     SOME : out BOOLEAN) do
+          -- Artificial refresh for this client?
+          if CLIENTS(CLIENT).REFRESH then
+            CLIENTS(CLIENT).REFRESH := FALSE;
+            KIND := REFRESH;
+            SOME := FALSE;
+            return;
+          end if;
           if CLIENT /= SELECTED_CLIENT then
             -- Invalid client
             KIND := DISCARD;
