@@ -13,14 +13,19 @@ if [ -f $com ] ; then
     exit 2
   fi
 fi
+
 touch $com
+if [ ! -f $com ] ; then
+  echo "Error. Cannot create tmp file $com"
+  exit 2
+fi
 
 while [ $# -ne 0 ] ; do
   if [ "$1" = "-e" ] ; then
 
     if [ ! -f "$2" ] ; then
       echo "Error. File "$2" not found."
-      exit 2
+      exit 3
     fi
     cat "$2" >> $com
     shift; shift
