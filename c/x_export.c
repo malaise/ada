@@ -166,6 +166,7 @@ extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms) {
         /* An Event : Separate X events from others */
         *p_x_event = (FD_ISSET(x_soc, &select_mask) != 0);
         if (p_mask != (fd_set *)NULL) {
+          bcopy ((char*)&select_mask, (char*)p_mask, sizeof(fd_set));
           FD_CLR(x_soc, p_mask);
         }
         if (*timeout_ms > 0) {
