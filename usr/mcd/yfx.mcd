@@ -1,5 +1,4 @@
 # The function
-dup isprog ~ [ "Error, function expected" putl ssize popn retall ] ifcall
 F popr
 
 # Epsilon
