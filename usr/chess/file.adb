@@ -225,7 +225,7 @@ package body File is
     if Move_Num /= 0 and then Move_Num rem 2 = 0 then
       -- White move to write. Leave this Lf.
       Chess_Io.Read (The_File, Char);
-    else
+    elsif Move_Num rem 2 /= 0 then
       if Char /= ' ' then
         -- We have white move then Lf
         Chess_Io.Write (The_File, ' ');
@@ -274,20 +274,29 @@ package body File is
 
   -- After all movements have been read (otherwise File_Error)
   -- Append new movement
-  procedure Write (Action : in Game.Valid_Action_Rec;
+  procedure Write (Action : in Players.Action_Rec;
                    Result : in Game.Move_Status_List) is
   begin
     if State /= Writting then
       raise File_Error;
     end if;
-    declare
-      Str : constant Image.Move_Str := Image.Move_Image(Action, Result);
-    begin
-      for I in Str'Range loop
-        -- First write to the file
-        Chess_Io.Write (The_File, Str(I));
-      end loop;
-    end;
+    if Action.Valid then
+      declare
+        Str : constant Image.Move_Str := Image.Move_Image(Action, Result);
+      begin
+        for I in Str'Range loop
+          Chess_Io.Write (The_File, Str(I));
+        end loop;
+      end;
+    else
+      declare
+        Str : constant Image.Move_Str := "   ----   ";
+      begin
+        for I in Str'Range loop
+          Chess_Io.Write (The_File, Str(I));
+        end loop;
+      end;
+    end if;
     Move_Num := Move_Num + 1;
     if Move_Num rem 2 = 0 then
       Chess_Io.Write (The_File, Ascii.Lf);
