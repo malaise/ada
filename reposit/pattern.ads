@@ -97,7 +97,7 @@ package Pattern is
   -- Set (R, 30, "notify", Cb);
   -- Set (R, 40, "quit", Quit);
   -- Set (R, 41, "exit", Quit, 40);
-  -- Set (R, "", 100, Default);
+  -- Set (R, 100, "", Default);
   -- Check (R, "get foo");      calls Cb (R, 20, 1);         tail: foo
   -- Check (R, "get alias foo") calls Cb (R, 10, 2);         tail: foo
   -- Check (R, "notify alias")  calls Cb (R, 30, 1);         tail: alias
