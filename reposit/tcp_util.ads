@@ -158,10 +158,37 @@ package Tcp_Util is
   -- May raise No_Such
   procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr);
 
+
+  -- RECEIVE PROCEDURE --
+  -----------------------
+  -- Callback invoqued when remote disconnects
+  -- Dscr is closed after invocation
+  type Disconnection_Callback_Access is access
+       procedure (Dscr : in Socket.Socket_Dscr);
+
+  -- Callback invoqued when a message is received
+  generic
+    type Message_Type is private;
+  package Reception is
+    type Reception_Callback_Access is access
+         procedure (Dscr    : in Socket.Socket_Dscr;
+                    Message : in Message_Type;
+                    Length  : in Natural);
+
+    -- Set reception and disconnection callbacks
+    --  disconnection callback may be null
+    -- May raise No_Such if Dscr is not open
+    procedure Set_Callbacks (
+                    Dscr             : in Socket.Socket_Dscr;
+                    Reception_Cb     : in Reception_Callback_Access;
+                    Disconnection_Cb : in Disconnection_Callback_Access);
+  end Reception;
+
   -- EXCEPTIONS --
   ----------------
-  -- Raise when aborting unknown connection/acception
+  -- Raised when aborting unknown connection/acception
   -- Or a send which is not in overflow
+  -- Or setting reception callback on not open Dscr
   No_Such : exception;
 
 end Tcp_Util;

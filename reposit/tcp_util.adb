@@ -14,12 +14,14 @@ package body Tcp_Util is
   end Parse;
     
   -- Debugging
-  Debug_Connect_Name  : constant String := "TCP_UTIL_DEBUG_CONNECT";
-  Debug_Accept_Name   : constant String := "TCP_UTIL_DEBUG_ACCEPT";
-  Debug_Overflow_Name : constant String := "TCP_UTIL_DEBUG_OVERFLOW";
+  Debug_Connect_Name   : constant String := "TCP_UTIL_DEBUG_CONNECT";
+  Debug_Accept_Name    : constant String := "TCP_UTIL_DEBUG_ACCEPT";
+  Debug_Overflow_Name  : constant String := "TCP_UTIL_DEBUG_OVERFLOW";
+  Debug_Reception_Name : constant String := "TCP_UTIL_DEBUG_RECEPTION";
   Debug_Connect  : Boolean := False;
   Debug_Accept   : Boolean := False;
   Debug_Overflow : Boolean := False;
+  Debug_Reception : Boolean := False;
   procedure Set_Debug (Name : in String; Var : in out Boolean) is
     Set : Boolean;
     Tru : Boolean;
@@ -825,6 +827,145 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close done");
     end if;
   end Abort_Send_and_Close;
+
+  --------------------------------------------------------------------------
+
+
+  package body Reception is
+
+    -- List of Dscrs
+    type Rece_Rec is record
+      Dscr : Socket.Socket_Dscr;
+      Fd   : Event_Mng.File_Desc;
+      Read_Cb : Reception_Callback_Access := null;
+      Discon_Cb : Disconnection_Callback_Access := null; 
+    end record;
+    package Rece_List_Mng is new Dynamic_List (Rece_Rec);
+    Rece_List : Rece_List_Mng.List_Type;
+
+    function Dscr_Match (R1, R2 : Rece_Rec) return Boolean is
+      use type Socket.Socket_Dscr;
+    begin
+      return R1.Dscr = R2.Dscr;
+    end Dscr_Match;
+    procedure Find_Dscr is new Rece_List_Mng.Search (Dscr_Match);
+
+    function Fd_Match (R1, R2 : Rece_Rec) return Boolean is
+      use type Event_Mng.File_Desc;
+    begin
+      return R1.Fd = R2.Fd;
+    end Fd_Match;
+    procedure Find_Fd is new Rece_List_Mng.Search (Fd_Match);
+
+    -- The one to use with Socket
+    procedure Read is new Socket.Receive (Message_Type);
+
+    -- Unhook and close a Dscr. Call appli Cb
+    procedure Close_Current is
+      Rec : Rece_Rec;
+    begin
+      -- Get from list
+      if Rece_List_Mng.Get_Position (Rece_List) = 1 then
+        Rece_List_Mng.Get (Rece_List, Rec, Rece_List_Mng.Next);
+      else
+        Rece_List_Mng.Get (Rece_List, Rec, Rece_List_Mng.Prev);
+      end if;
+      -- Call appli disconnection Cb
+      if Rec.Discon_Cb /= null then
+        Rec.Discon_Cb (Rec.Dscr);
+      end if;
+      -- Unhook and close
+      Event_Mng.Del_Fd_Callback (Rec.Fd, True);
+      begin
+        Abort_Send_and_Close (Rec.Dscr);
+      exception
+        when No_Such =>
+          Socket.Close (Rec.Dscr);
+      end;
+    end Close_Current;
+
+    -- The Cb hooked on Fd
+    function Read_Cb (Fd : Event_Mng.File_Desc; For_Read : in Boolean)
+                     return Boolean is
+      use type Event_Mng.File_Desc;
+      The_Rec : Rece_Rec;
+      Msg : Message_Type;
+      Len : Natural;
+    begin
+      if not For_Read then
+        if Debug_Reception then
+          My_Io.Put_Line ("  Tcp_Util.Read_Cb on writting fd " & Fd'Img);
+        end if;
+        return False;
+      end if;
+      -- Find dscr from Fd
+      The_Rec.Fd := Fd;
+      begin
+        Find_Fd (Rece_List, The_Rec, From_Current => False);
+      exception
+        when Rece_List_Mng.Not_In_List =>
+          if Debug_Reception then
+            My_Io.Put_Line ("  Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
+          end if;
+          Event_Mng.Del_Fd_Callback (Fd, True);
+          return False;
+      end;
+      Rece_List_Mng.Read (Rece_List, The_Rec, Rece_List_Mng.Current);
+
+      -- Try to read
+      begin
+        Read (The_Rec.Dscr, Msg, Len);
+      exception
+        when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
+          -- Remote has diconnected
+          if Debug_Reception then
+            My_Io.Put_Line ("  Tcp_Util.Read_Cb disconnection on fd " & Fd'Img);
+          end if;
+          Close_Current;
+          return True;
+        when Socket.Soc_Len_Err =>
+          -- Invalid length
+          if Debug_Reception then
+            My_Io.Put_Line ("  Tcp_Util.Read_Cb invalid length on fd " & Fd'Img);
+          end if;
+          Close_Current;
+          return True;
+      end;
+      if Debug_Reception then
+        My_Io.Put_Line ("  Tcp_Util.Read_Cb len " & Len'Img & " on fd " & Fd'Img);
+      end if;
+      -- Call appli callback
+      if The_Rec.Read_Cb /= null then
+        The_Rec.Read_Cb (The_Rec.Dscr, Msg, Len);
+      end if;
+      return True;
+    end Read_Cb;
+
+    procedure Set_Callbacks (
+                Dscr             : in Socket.Socket_Dscr;
+                Reception_Cb     : in Reception_Callback_Access;
+                Disconnection_Cb : in Disconnection_Callback_Access) is
+      The_Rec : Rece_Rec;
+    begin
+      if not Socket.Is_Open (Dscr) then
+        raise No_Such;
+      end if;
+
+      The_Rec.Dscr := Dscr;
+      The_Rec.Fd := Socket.Fd_Of (Dscr);
+      The_Rec.Read_Cb := Reception_Cb;
+      The_Rec.Discon_Cb := Disconnection_Cb;
+
+      -- Append to list
+      Rece_List_Mng.Insert (Rece_List, The_Rec);
+
+      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
+                 Read_Cb'Unrestricted_Access);
+        
+    end Set_Callbacks;
+
+  end Reception;
+
 
 end Tcp_Util;
 
