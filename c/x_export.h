@@ -90,6 +90,7 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic);
 
 extern int x_add_fd (int fd, boolean read);
 extern int x_del_fd (int fd, boolean read);
+extern boolean x_fd_set (int fd, boolean read);
 
 #define NO_EVENT (-2)
 #define X_EVENT  (-1)
