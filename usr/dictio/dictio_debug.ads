@@ -1,6 +1,6 @@
 package Debug is
 
-  type Level_List is (Status, Intra, Fight, Online, Client, Lib);
+  type Level_List is (Status, Intra, Fight, Online, Client, Sync, Lib);
   Level_Array : array (Level_List) of Boolean;
 
   procedure Init;

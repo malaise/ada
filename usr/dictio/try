@@ -1,6 +1,8 @@
 export DICTIO_DEBUG_STATUS=Y
 #export DICTIO_DEBUG_INTRA=Y
 export DICTIO_DEBUG_FIGHT=Y
+export DICTIO_DEBUG_SYNC=Y
 export DICTIO_DEBUG_ONLINE=Y
 export DICTIO_DEBUG_CLIENT=Y
 ./dictio -ctest_tcp -fdictio.chn -pfido
+

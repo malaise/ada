@@ -29,7 +29,7 @@ package body Sync_Mng is
 
       if Result /= Intra_Dictio.Ok then
         -- Give up if too many overlows or other error
-        if Debug.Level_Array(Debug.Intra) then
+        if Debug.Level_Array(Debug.Sync) then
           Debug.Put ("Sync: Giving up due to " & Result'Img);
         end if; 
         exit;
