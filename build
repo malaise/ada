@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ "$1" = "html" ] ; then
-  gnathtml reposit/*.ad* usr/*/*.ad*
+  gnathtml.pl reposit/*.ad* usr/*/*.ad*
   exit 0;
 fi
 
