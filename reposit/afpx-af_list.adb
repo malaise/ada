@@ -26,6 +26,7 @@ package body AF_LIST is
                    AF_DSCR.FIELDS(0).LOWER_RIGHT);
       OPENED := TRUE;
       -- Start at top
+      STATUS.ID_SELECTED := 0;
       COMPUTE (1);
     else
       OPENED := FALSE;
