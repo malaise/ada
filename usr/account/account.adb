@@ -93,74 +93,74 @@ begin
             Mng.Update_State;
 
           -- List movements
-          when 17 =>
+          when Screen.List_Top_Fld =>
             -- Top
             Afpx.Update_List(Afpx.Top);
-          when 18 =>
+          when Screen.List_Pgup_Fld =>
             -- PgUp
             Afpx.Update_List(Afpx.Page_Up);
-          when 19 =>
+          when Screen.List_Up_Fld =>
             -- Up
             Afpx.Update_List(Afpx.Up);
-          when 20 =>
+          when Screen.List_Center_Fld =>
             -- Center
             Afpx.Update_List(Afpx.Center);
-          when 21 =>
+          when Screen.List_Down_Fld =>
             -- Down
             Afpx.Update_List(Afpx.Down);
-          when 22 =>
+          when Screen.List_Pg_Down_Fld =>
             -- PgDown
             Afpx.Update_List(Afpx.Page_Down);
-          when 23 =>
+          when Screen.List_Bottom_Fld =>
             -- Bottom
             Afpx.Update_List(Afpx.Bottom);
 
           -- Oper actions
-          when 25 =>
+          when Screen.Add_Oper_Fld =>
             -- Add
             Mng.Add_Oper;
-          when 26 =>
+          when Screen.Copy_Oper_Fld =>
             -- Copy
             Mng.Copy_Oper;
-          when 27 =>
+          when Screen.Edit_Oper_Fld =>
             -- Edit
             Mng.Edit_Oper;
-          when 28 =>
+          when Screen.Delete_Oper_Fld =>
             -- Delete
             Mng.Del_Oper;
-          when 29 =>
+          when Screen.Clean_Oper_Fld =>
             -- Update
             Mng.Garbage_Collect;
-          when 30 =>
+          when Screen.Search_Oper_Fld =>
             -- Search
             Mng.Search;
-          when 31 =>
+          when Screen.Show_Oper_Fld =>
             -- Show all
             Mng.Show_All;
 
           -- Account actions
-          when 33 =>
+          when Screen.New_Account_Fld =>
             -- Create
             Mng.Clear;
-          when 34 =>
+          when Screen.Load_Account_Fld =>
             -- Load
             Mng.Load("");
-          when 35 =>
+          when Screen.Save_Account_Fld =>
             -- Save
             Mng.Save(Mng.Select_New);
-          when 36 =>
+          when Screen.Print_Account_Fld =>
             -- Print
             Mng.Print;
-          when 37 =>
+          when Screen.Franc_Account_Fld =>
             -- Switch francs/euros
             Mng.Change_Unit;
-          when 38 =>
+          when Screen.Sdat_Account_Fld =>
             -- Sort by date
             Mng.Sort (By_Date => True);
-          when 39 =>
+          when Screen.Samo_Account_Fld =>
             -- Sort by abs(amount)
             Mng.Sort (By_Date => False);
-          when 40 =>
+          when Screen.Exit_Account_Fld =>
             -- Exit
             Quit;
           when others =>

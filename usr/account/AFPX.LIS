@@ -97,7 +97,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
 
-  # Nb cheques
+  # Nb operations
   FIELD 3 PUT
     GEOMETRY 0 28 0 31
     COLORS light_gray not_blink black
@@ -249,7 +249,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
 
-  # Cheque actions
+  # Operations actions
   FIELD 24 PUT
     GEOMETRY 21 1 21 5
     COLORS light_gray not_blink black
@@ -257,7 +257,7 @@ DESCRIPTOR 1
       0 0 Oper:
     END INIT
   END FIELD
-  # Add cheque
+  # Add operation
   FIELD 25 BUTTON
     GEOMETRY 21 10 21 14
     COLORS cyan brown
@@ -265,7 +265,7 @@ DESCRIPTOR 1
       0 1 ADD
     END INIT
   END FIELD
-  # Copy cheque
+  # Copy operation
   FIELD 26 BUTTON
     GEOMETRY 21 17 21 22
     COLORS cyan brown
@@ -273,7 +273,7 @@ DESCRIPTOR 1
       0 1 COPY
     END INIT
   END FIELD
-  # Edit cheque
+  # Edit operation
   FIELD 27 BUTTON
     GEOMETRY 21 25 21 30
     COLORS cyan brown
@@ -281,7 +281,7 @@ DESCRIPTOR 1
       0 1 EDIT
     END INIT
   END FIELD
-  # Delete cheque
+  # Delete operation
   FIELD 28 BUTTON
     GEOMETRY 21 33 21 40
     COLORS cyan brown
@@ -297,7 +297,7 @@ DESCRIPTOR 1
       0 1 CLEAN UP TO
     END INIT
   END FIELD
-  # Search cheques
+  # Search operation
   FIELD 30 BUTTON
     GEOMETRY 21 58 21 65
     COLORS cyan brown
@@ -305,7 +305,7 @@ DESCRIPTOR 1
       0 1 SEARCH
     END INIT
   END FIELD
-  # Show all cheques
+  # Show all operations
   FIELD 31 BUTTON
     GEOMETRY 21 68 21 77
     COLORS blue brown
@@ -564,7 +564,7 @@ DESCRIPTOR 3
       0 0 :
     END INIT
   END FIELD
-  # Nb cheques
+  # Nb operations
   FIELD 3 PUT
     GEOMETRY 0 28 0 31
     COLORS light_gray not_blink black
@@ -864,7 +864,7 @@ DESCRIPTOR 4
     END INIT
   END FIELD
 
-  # Nb cheques
+  # Nb operations
   FIELD 3 PUT
     GEOMETRY 0 28 0 31
     COLORS light_gray not_blink black
