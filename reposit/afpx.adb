@@ -228,13 +228,16 @@ package body AFPX is
 
 
   -- Set current descriptor (read descriptor description)
-  procedure USE_DESCRIPTOR (DESCRIPTOR_NO : in DESCRIPTOR_RANGE) is
+  procedure USE_DESCRIPTOR (DESCRIPTOR_NO : in DESCRIPTOR_RANGE;
+                            CLEAR_SCREEN : in BOOLEAN := TRUE) is
   begin
     CON_IO.INIT;
     AF_DSCR.LOAD_DSCR (AFPX_TYP.DESCRIPTOR_RANGE (DESCRIPTOR_NO));
     AF_LIST.OPEN;
     AF_DSCR.CURRENT_DSCR.MODIFIED := TRUE;
-    CON_IO.CLEAR (CON_IO.SCREEN);
+    if CLEAR_SCREEN then
+      CON_IO.CLEAR (CON_IO.SCREEN);
+    end if;
   end USE_DESCRIPTOR;
 
   -- Clear the content of a field

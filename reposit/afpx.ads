@@ -18,8 +18,10 @@ package AFPX is
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost
+  -- By default, the CON_IO screen is cleared
   -- Exceptions : NO_DESCRIPTOR (DESCRIPTOR not found)
-  procedure USE_DESCRIPTOR (DESCRIPTOR_NO : in DESCRIPTOR_RANGE);
+  procedure USE_DESCRIPTOR (DESCRIPTOR_NO : in DESCRIPTOR_RANGE;
+                            CLEAR_SCREEN : in BOOLEAN := TRUE);
 
   -- Clear the content of a field
   -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
