@@ -148,7 +148,7 @@ package body Notify is
       -- Search next
       Notif_List_Mng.Move_To (Notif_List);
       Rec.Item := Item.Name;
-      Item_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
+      Item_Search (Notif_List, Rec, From => Notif_List_Mng.From_Current);
     end loop;
   exception
     when Notif_List_Mng.Not_In_List =>
