@@ -62,6 +62,17 @@ begin
   My_Tree.Dump (T, Image'Unrestricted_Access,
                 Ada.Text_Io.Standard_Output);
 
+  Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Swapping 2 and 15");
+  My_Tree.Move_Child (T);
+  My_Tree.Save_Position (T);
+  My_Tree.Move_Brother (T, False);
+  My_Tree.Move_Child (T);
+  My_Tree.Swap_Saved (T);
+
+  My_Tree.Move_Root (T);
+  My_Tree.Dump (T, Image'Unrestricted_Access,
+                Ada.Text_Io.Standard_Output);
   -- Clear
   My_Tree.Reset (T);
   begin
