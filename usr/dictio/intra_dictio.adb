@@ -112,12 +112,15 @@ package body Intra_Dictio is
 
   procedure Send (To      : in String;
                   Message : in out Message_Rec;
-                  Result  : out Reply_Result_List) is
+                  Result  : out Reply_Result_List;
+                  Get_Status : in Boolean := True) is
     Len : Natural;
     use Address_Ops; 
     use type Data_Base.Item_Rec;
   begin
-    Message.Head.Stat := Status.Get;
+    if Get_Status then
+      Message.Head.Stat := Status.Get;
+    end if;
     Message.Head.Sync := Status.Sync;
     Local_Host_Name.Get (Message.Head.From);
      
@@ -169,10 +172,12 @@ package body Intra_Dictio is
     end if;
   end Send;
 
-  procedure Send (To : in String; Message : in out Message_Rec) is
+  procedure Send (To : in String;
+                  Message : in out Message_Rec;
+                  Get_Status : in Boolean := True) is
     Result : Reply_Result_List;
   begin
-    Send (To, Message, Result);
+    Send (To, Message, Result, Get_Status);
   end Send;
 
   procedure Send_Status (Extra : in String := "") is
@@ -187,6 +192,16 @@ package body Intra_Dictio is
     end if;
     Send ("*", Msg);
   end Send_Status;
+
+  procedure Send_Status (Stat : in Status.Status_List) is
+    Msg : Message_Rec;
+  begin
+    Msg.Head.Kind := Stat_Kind;
+    Msg.Head.Stat := Stat;
+    Msg.Item.Data_Len := 0;
+    Send ("*", Msg, get_Status => False);
+  end Send_Status;
+
 
   procedure Reply_Status (Extra : in String := "") is
     Msg : Message_Rec;

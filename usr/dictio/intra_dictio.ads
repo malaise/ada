@@ -22,6 +22,8 @@ package Intra_Dictio is
   procedure Init;
   procedure Quit;
 
+  procedure Send_Status (Stat : in Status.Status_List);
+
   procedure Send_Status (Extra : in String := "");
   procedure Reply_Status (Extra : in String := "");
 
