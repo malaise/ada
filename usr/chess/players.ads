@@ -12,6 +12,7 @@ package Players is
       when False => null;
     end case;
   end record;
+  subtype Valid_Action_Rec is Action_Rec(True);
 
   -- Sequential access : Returns a not Valid Action when end of list
   procedure Rewind_Actions (Color : in Space.Color_List);
@@ -29,5 +30,8 @@ package Players is
                         From, To : Space.Square_Coordinate;
                         Promote  : in Pieces.Piece_Kind_List) return Action_Rec;
   
+  -- Check that a valid action exists the the list of a player
+ function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean;
+
 end Players;
 

@@ -40,7 +40,7 @@ package body Moves is
   end Prev;
 
   procedure Add_Move (Color  : in Space.Color_List;
-                      Action : in Game.Action_Rec;
+                      Action : in Game.Valid_Action_Rec;
                       Result : in Game.Move_Status_List) is
     use type Space.Color_List;
   begin

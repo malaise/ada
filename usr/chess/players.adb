@@ -5,8 +5,7 @@ with Team, Space.Board, Debug;
 
 package body Players is
 
-  subtype True_Action is Action_Rec(True);
-  package Action_List_Mng is new Dynamic_List (True_Action);
+  package Action_List_Mng is new Dynamic_List (Valid_Action_Rec);
   Actions : array (Space.Color_List) of Action_List_Mng.List_Type;
   At_End : array (Space.Color_List) of Boolean := (others => True);
 
@@ -44,7 +43,7 @@ package body Players is
           Action_List_Mng.Insert (Actions(Color), (True, Pos, Arr(I)) );
           if Debug.Get (Debug.Think) then
             Ada.Text_Io.Put ("-> ");
-            Debug.Put (True_Action'(True, Pos, Arr(I)));
+            Debug.Put (Valid_Action_Rec'(True, Pos, Arr(I)));
             Ada.Text_Io.New_Line;
           end if;
         end loop;
@@ -68,7 +67,7 @@ package body Players is
   end Rewind_Actions;
 
   function Next_Action (Color : Space.Color_List) return Action_Rec is
-    Result : True_Action;
+    Result : Valid_Action_Rec;
   begin
     if Action_List_Mng.Is_Empty (Actions(Color)) or else At_End(Color) then
       return (Valid => False);
@@ -84,7 +83,7 @@ package body Players is
   end Next_Action;
 
   function Get_Action (Color : Space.Color_List; Index : Positive) return Action_Rec is
-    Result : True_Action;
+    Result : Valid_Action_Rec;
     Pos : Positive;
   begin
     if Action_List_Mng.Is_Empty (Actions(Color)) then
@@ -104,7 +103,7 @@ package body Players is
   end Get_Action;
 
   
-  function Match (Action, Ref : True_Action) return Boolean is
+  function Match (Action, Ref : Valid_Action_Rec) return Boolean is
     use type Pieces.Action_Kind_List, Pieces.Piece_Kind_List,
              Space.Square_Coordinate;
   begin
@@ -130,8 +129,8 @@ package body Players is
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
                         Promote  : in Pieces.Piece_Kind_List) return Action_Rec is
-    Ref : True_Action; 
-    Res : True_Action;
+    Ref : Valid_Action_Rec; 
+    Res : Valid_Action_Rec;
   begin
     if Promote in Pieces.Promotion_Piece_List then
       Ref := (Valid => True,
@@ -165,6 +164,17 @@ package body Players is
       return Res;
     end;
   end Find_Action;
+
+  -- Check an action exists the the list
+  function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
+  begin
+    Search_Action (Actions(Color), Action, From_Current => False);
+    return True;
+  exception
+    when Action_List_Mng.Not_In_List =>
+       -- Not found
+       return False;
+  end Action_Exists;
 
 end Players;
 

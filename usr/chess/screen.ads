@@ -22,11 +22,11 @@ package Screen is
 
   -- Put a move
   procedure Put_Move (Color  : in Space.Color_List;
-                      Action : in Game.Action_Rec;
+                      Action : in Game.Valid_Action_Rec;
                       Result : in Game.Move_Status_List);
 
-  -- Wait a bit
-  procedure Wait (Color : Space.Color_List; Delay_Ms : in Natural);
+  -- Wait for a Fd event
+  procedure Wait (Color : Space.Color_List);
 
   -- Close the board
   procedure Close;

@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Udp, X_Mng, Debug;
+with Udp, X_Mng, Debug, Dynamic_List;
 package body Connection is
 
   Server : Boolean := True;
@@ -26,22 +26,24 @@ package body Connection is
     end case;
   end record;
 
-  Action_Set : Boolean := False;
-  Action_To_Get : Players.Action_Rec;
+  package Action_List_Mng is new Dynamic_List (Players.Action_Rec);
+  Action_List : Action_List_Mng.List_Type;
 
   -- Has an action been received and get it
   function Action_Received return Boolean is
   begin
-    return Action_Set;
+    return not Action_List_Mng.Is_Empty (Action_list);
   end;
 
   function Receive return Players.Action_Rec is
+    ACtion : Players.Action_Rec;
   begin
-    if not Action_Set then
+    Action_List_Mng.Move_To (Action_list, Action_List_Mng.Prev, 0, False);
+    Action_List_Mng.Get (Action_List, Action, Action_List_Mng.Prev);
+    return Action;
+  exception
+    when Action_List_Mng.Empty_List =>
       raise No_Action;
-    end if;
-    Action_Set := False;
-    return Action_To_Get;
   end Receive;
 
   -- Init completed?
@@ -157,13 +159,13 @@ package body Connection is
         if Debug.Get (Debug.Connection) then
           Ada.Text_Io.Put_Line ("In callback : Saving action");
         end if;
-        if Action_Set then
-          -- Oooops, overwriting an action!!!
-          Ada.Text_Io.Put_Line ("In callback : Overwrting action");
-          raise Protocol_Error;
+
+        -- Insert action
+        if not Action_List_Mng.Is_Empty (Action_list) then
+          Action_List_Mng.Move_To (Action_list, Action_List_Mng.Next, 0, False);
         end if;
-        Action_To_Get := Message.Action;
-        Action_Set := True;
+        Action_List_Mng.Insert (Action_List, Message.Action,
+                                Action_List_Mng.Prev);
         We_Have_Moved := True;
 
     end case;
@@ -210,6 +212,7 @@ package body Connection is
   end Close;
 
   procedure Wait_Ready is
+    Select_Got_Fd : Boolean;
   begin
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Connection: waiting");
@@ -218,10 +221,11 @@ package body Connection is
       if not Server then
         -- Client sends its color to server
         Chess_Send (Soc, (Init, Own_Color));
-        X_Mng.Select_No_X (100);
+        -- Retry a bit later
+        Select_Got_Fd := X_Mng.Select_No_X (1000);
       else
         -- Server waits
-        X_Mng.Select_No_X (100);
+        Select_Got_Fd := X_Mng.Select_No_X (-1);
       end if;
       exit when We_Are_Ready;
     end loop;

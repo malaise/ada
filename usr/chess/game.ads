@@ -5,7 +5,7 @@ package Game is
   procedure Init (Color : in Space.Color_List);
 
   -- Valid actions
-  subtype Action_Rec is Players.Action_Rec(True);
+  subtype Valid_Action_Rec is Players.Valid_Action_Rec;
 
   -- Status of move
   -- Nok       : Our king would be in check
@@ -16,7 +16,7 @@ package Game is
   type Move_Status_List is (Nok, Ok, Check, Stalemate, Checkmate);
 
   -- Check a move is valid (no King in chess) and commit
-  function Do_Move (Action : Action_Rec) return Move_Status_List;
+  function Do_Move (Action : Valid_Action_Rec) return Move_Status_List;
 
 end Game;
 

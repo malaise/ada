@@ -29,14 +29,19 @@ package body Debug is
   begin
     Ada.Text_Io.Put (Lower_Str(Space.Col_Range'Image(Square.Col))
                    & Normal(Integer(Square.Row), 1) );
+  exception
+    when others =>
+      Ada.Text_Io.Put ("Exception when putting square");
   end Put;
 
   procedure Put (Piece : in Pieces.Basic_Piece'Class) is
     Id : constant Pieces.Piece_Id := Pieces.Id_Of (Piece);
-    use Ada.Text_Io;
   begin
-    Put (Space.Color_List'Image(Id.Color)
+    Ada.Text_Io.Put (Space.Color_List'Image(Id.Color)
          & " " & Pieces.Piece_Kind_List'Image(Id.Kind));
+  exception
+    when others =>
+      Ada.Text_Io.Put ("Exception when putting piece");
   end Put;
 
   procedure Put (Action : in Pieces.Action_Rec) is
@@ -70,6 +75,9 @@ package body Debug is
         Put (" Promoting to ");
         Put (Pieces.Piece_Kind_List'Image(Action.New_Piece));
     end case;
+  exception
+    when others =>
+      Put ("Exception when putting action.to");
   end Put;
 
 
@@ -77,14 +85,22 @@ package body Debug is
     use Ada.Text_Io;
   begin
     if not Action.Valid then
-      Put_Line ("INVALID_ACTION");
+      Put ("Invalid Action");
       return;
     end if;
-    Put (Space.Board.Piece_At(Action.From).all);
+    begin
+      Put (Space.Board.Piece_At(Action.From).all);
+    exception
+      when others =>
+        Put ("Exception when getting piece");
+    end;
     Put (' ');
     Put (Action.From);
     Put (' ');
     Put (Action.To);
+  exception
+    when others =>
+      Put ("Exception when putting action");
   end Put;
 
 end Debug;

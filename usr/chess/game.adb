@@ -7,7 +7,7 @@ package body Game is
 
   type History_Rec is record
     -- The action
-    Action : Action_Rec;
+    Action : Valid_Action_Rec;
     -- The taken piece
     Taken : Pieces.Piece_Access := null;
     -- The promoted piece
@@ -28,7 +28,7 @@ package body Game is
 
 
   -- Save and Try a move (no commit - must be undone)
-  Procedure Try_Move (Color : in Space.Color_List; Action : in Action_Rec) is
+  Procedure Try_Move (Color : in Space.Color_List; Action : in Valid_Action_Rec) is
     use type Pieces.Action_Kind_List;
     Take_Own : exception;
   begin
@@ -94,7 +94,7 @@ package body Game is
 
   -- Definitively commit a move (in board and screen)
   procedure Commit_Move (Color  : in Space.Color_List;
-                         Action : in Action_Rec) is
+                         Action : in Valid_Action_Rec) is
     use type Pieces.Action_Kind_List;
     Take_Own : exception;
   begin
@@ -228,7 +228,7 @@ package body Game is
 
 
   -- Check a move is valid (no King in chess), commit and refresh screen
-  function Do_Move (Action : Action_Rec) return Move_Status_List is
+  function Do_Move (Action : Valid_Action_Rec) return Move_Status_List is
     Color : constant Space.Color_List
           := Pieces.Id_Of (Space.Board.Piece_At (Action.From).all).Color;
     Opp_Color : constant Space.Color_List := Space.Opponent (Color);

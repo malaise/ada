@@ -33,7 +33,7 @@ package body Screen is
   package Moves is
     procedure Put_Moves;
     procedure Add_Move (Color  : in Space.Color_List;
-                        Action : in Game.Action_Rec;
+                        Action : in Game.Valid_Action_Rec;
                         Result : in Game.Move_Status_List);
   end Moves;
   package body Moves is separate;
@@ -346,7 +346,7 @@ package body Screen is
   end Put;
 
   -- Wait a bit
-  procedure Wait (Color : Space.Color_List; Delay_Ms : in Natural) is
+  procedure Wait (Color : Space.Color_List) is
     Str  : String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
@@ -357,7 +357,7 @@ package body Screen is
 
     use type Con_Io.Curs_Mvt, Space.Color_List;
   begin
-    Timeout := (Con_Io.Delay_Sec, Duration (Delay_Ms) / 1000.0);
+    Timeout := (Con_Io.Delay_Sec, 0.5);
     Ins := False;
     Put_Time (Color);
 
@@ -368,7 +368,7 @@ package body Screen is
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => Timeout);
       Put_Time (Color);
-      if Stat = Con_Io.Timeout or else Stat = Con_Io.Break then
+      if Stat = Con_Io.Fd_Event then
         return;
       elsif Stat = Con_Io.Refresh then
         Display_Board (Color);
@@ -377,7 +377,7 @@ package body Screen is
   end Wait;
 
   procedure Put_Move (Color  : in Space.Color_List;
-                      Action : in Game.Action_Rec;
+                      Action : in Game.Valid_Action_Rec;
                       Result : in Game.Move_Status_List) is
   begin
     Moves.Add_Move (Color, Action, Result);
