@@ -6,11 +6,10 @@ procedure T_Udp is
   Arg_Error : exception;
   Server : Boolean;
   Server_Name : Text_Handler.Text (80);
+  Port_Name : Text_Handler.Text (80);
 
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;
-
-  Server_Port_Name : constant String := "test_udp";
 
   -- Signal received
   Sig : Boolean := False;
@@ -81,14 +80,23 @@ procedure T_Udp is
 begin
 
   -- Server or client
-  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-s" then
+  if Argument.Get_Nbre_Arg < 3
+  or else Argument.Get_Parameter (Occurence => 1) /= "-p" then
+    raise Arg_Error;
+  end if;
+  Argument.Get_Parameter (Port_Name, 2);
+
+  if Argument.Get_Nbre_Arg = 3
+  and then Argument.Get_Parameter (Occurence => 3) = "-s" then
     Server := True;
-  elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-s" then
+  elsif Argument.Get_Nbre_Arg = 4
+  and then Argument.Get_Parameter (Occurence => 3) = "-s" then
     Server := True;
-    Argument.Get_Parameter (Server_Name, 2);
-  elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-c" then
+    Argument.Get_Parameter (Server_Name, 4);
+  elsif Argument.Get_Nbre_Arg = 4
+  and then Argument.Get_Parameter (Occurence => 3) = "-c" then
     Server := False;
-    Argument.Get_Parameter (Server_Name, 2);
+    Argument.Get_Parameter (Server_Name, 4);
   else
     raise Arg_Error;
   end if;
@@ -105,9 +113,10 @@ begin
     if not Text_Handler.Empty (Server_Name) then
       -- Ipm lan
       Socket.Set_Destination_Name_And_Service (Soc,
-           True, Text_Handler.Value (Server_Name), Server_Port_Name);
+           True, Text_Handler.Value (Server_Name),
+           Text_Handler.Value(Port_Name));
     end if;
-    Socket.Link_Service (Soc, Server_Port_Name);
+    Socket.Link_Service (Soc, Text_Handler.Value(Port_Name));
 
   else
     Socket.Link_Dynamic (Soc);
@@ -117,11 +126,13 @@ begin
     begin
       Dest_Host_Id := Socket.Host_Id_Of (Text_Handler.Value (Server_Name));
       Socket.Set_Destination_Name_And_Service (Soc,
-         False, Text_Handler.Value (Server_Name), Server_Port_Name);
+         False, Text_Handler.Value (Server_Name),
+         Text_Handler.Value(Port_Name));
     exception
       when Socket.Soc_Name_Not_Found =>
         Socket.Set_Destination_Name_And_Service (Soc,
-         True, Text_Handler.Value (Server_Name), Server_Port_Name);
+         True, Text_Handler.Value (Server_Name),
+         Text_Handler.Value(Port_Name));
     end;
     Message.Num := 1;
     Send;
@@ -151,8 +162,10 @@ begin
 
 exception
   when Arg_Error =>
-    My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                   & " -c <server_host_or_lan> | -s [ <server_lan> ]");
+    My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <port> <mode>");
+    My_Io.Put_Line ("  <port> ::= -p <port_name>");
+    My_Io.Put_Line ("  <mode> ::= -c <server_host_or_lan> "
+                             & "| -s [ <server_lan> ]");
 
   when Error : others =>
     My_Io.Put_Line ("Exception: " & Ada.Exceptions.Exception_Name (Error));
