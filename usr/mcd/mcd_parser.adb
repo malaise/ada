@@ -218,7 +218,7 @@ package body PARSER is
   procedure PRINT_HELP is
     use TEXT_IO;
   begin
-    PUT_LINE ("Commands are read fromn standard input. No argument accepted.");
+    PUT_LINE ("Commands are read from standard input. No argument accepted.");
     PUT_LINE ("Item ::= <integer> <real> <boolean> <operator> <register> <string/subprogram>");
     PUT_LINE ("  <register>          ::= 'a' .. 'z'  | 'A' .. 'Z'");
     PUT_LINE ("  <string/subprogram> ::= '[' <text> ']'");
