@@ -1,5 +1,7 @@
+LIBX_MNG=-lx_mng
+
 all:
-	amake hungar.adb
+	amake hungar.adb -largs $(LIBX_MNG) -lX11
 	amake generate.adb
 
 clean:
