@@ -114,6 +114,7 @@ package body MENU21 is
     REDISPLAY : BOOLEAN;
     PTG_RESULT : AFPX.RESULT_REC;
     RESTORE : RESTORE_LIST;
+    ACTIVATE_NO_CURVE : BOOLEAN;
 
     use AFPX;
 
@@ -134,6 +135,19 @@ package body MENU21 is
           SCREEN.PUT_FILE;
           PUT_BOUNDS;
       end case;
+      ACTIVATE_NO_CURVE := MENU2.CURVED_STOPPED;
+      -- Activate or not according to curve activity
+      -- Clear
+      AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (20, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (21, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (22, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (24, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (25, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (26, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (28, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (29, ACTIVATE_NO_CURVE);
+      AFPX.SET_FIELD_ACTIVATION (30, ACTIVATE_NO_CURVE);
 
 
       AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
@@ -159,67 +173,32 @@ package body MENU21 is
               return;
             when SCREEN.EXIT_BUTTON_FLD =>
               -- Clear
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                THE_BOUNDS_SET := FALSE;
-                PUT_BOUNDS;
-              end if;
+              THE_BOUNDS_SET := FALSE;
+              PUT_BOUNDS;
             when 21 =>
               -- Computed fit screen
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                SET_BOUNDS (CURVE.CURVE_SCREEN, COMPUTE_X => TRUE);
-                RESTORE := PARTIAL;
-              end if;
+              SET_BOUNDS (CURVE.CURVE_SCREEN, COMPUTE_X => TRUE);
+              RESTORE := PARTIAL;
             when 22 =>
               -- Computed normed
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                SET_BOUNDS (CURVE.CURVE_NORMED, COMPUTE_X => TRUE);
-                RESTORE := PARTIAL;
-              end if;
+              SET_BOUNDS (CURVE.CURVE_NORMED, COMPUTE_X => TRUE);
+              RESTORE := PARTIAL;
             when 25 =>
               -- X set fit screen : Get Xmin & Xmax
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                SET_BOUNDS (CURVE.CURVE_SCREEN);
-                RESTORE := PARTIAL;
-              end if;
+              SET_BOUNDS (CURVE.CURVE_SCREEN);
+              RESTORE := PARTIAL;
             when 26 =>
               -- X set normed : Get Xmin & Xmax
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                SET_BOUNDS (CURVE.CURVE_NORMED);
-                RESTORE := PARTIAL;
-              end if;
+              SET_BOUNDS (CURVE.CURVE_NORMED);
+              RESTORE := PARTIAL;
             when 29 =>
               -- Defined fit screen : Get Xmin, Xmax Ymin & Ymax
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                SET_BOUNDS (CURVE.FREE_SCREEN);
-                RESTORE := PARTIAL;
-              end if;
+              SET_BOUNDS (CURVE.FREE_SCREEN);
+              RESTORE := PARTIAL;
             when 30 =>
               -- Defined normed : Get Xmin, Xmax Ymin & Ymax
-              if not MENU2.CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                SET_BOUNDS (CURVE.FREE_NORMED);
-                RESTORE := PARTIAL;
-              end if;
+              SET_BOUNDS (CURVE.FREE_NORMED);
+              RESTORE := PARTIAL;
             when others =>
               null;
           end case; 

@@ -33,6 +33,8 @@ package body MENU2 is
   end ERROR;
 
   procedure DO_RESTORE (RESTORE : in RESTORE_LIST) is
+    ACTIVATE_NO_CURVE : constant BOOLEAN
+                      := CURVED_STOPPED;
   begin
     case RESTORE is
       when NONE =>
@@ -53,6 +55,14 @@ package body MENU2 is
         SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
         SCREEN.PUT_FILE;
     end case;
+    -- Activate or not according to curve activity
+    -- Back
+    AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, ACTIVATE_NO_CURVE);
+    -- Set degree
+    AFPX.SET_FIELD_ACTIVATION (22, ACTIVATE_NO_CURVE);
+    -- Draw
+    AFPX.SET_FIELD_ACTIVATION (31, ACTIVATE_NO_CURVE);
+
   end DO_RESTORE;
 
   function F_X (X : POINTS.P_T_COORDINATE;
@@ -156,7 +166,7 @@ package body MENU2 is
     end loop;
   end CURVE_TASK;
 
-  function CURVED_STOPED return BOOLEAN is
+  function CURVED_STOPPED return BOOLEAN is
    OK : BOOLEAN;
   begin
     select
@@ -167,20 +177,16 @@ package body MENU2 is
       OK := FALSE;
     end select;
     return OK;
-  end CURVED_STOPED;
+  end CURVED_STOPPED;
 
   procedure DRAW_CURVE is
     OK : BOOLEAN;
   begin
     SCREEN.PUT_TITLE(SCREEN.CURVE);
-    if not CURVED_STOPED then
-      SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-    else
-      CURVE_TASK.START (RESOL.R_RESOLUTION (POINTS.P_THE_POINTS), OK);
-      -- Accept started if start OK
-      if not OK then
-        SCREEN.ERROR (SCREEN.E_CURVE_PROBLEM);
-      end if;
+    CURVE_TASK.START (RESOL.R_RESOLUTION (POINTS.P_THE_POINTS), OK);
+    -- Accept started if start OK
+    if not OK then
+      SCREEN.ERROR (SCREEN.E_CURVE_PROBLEM);
     end if;
   exception
     when others =>
@@ -231,7 +237,7 @@ package body MENU2 is
             when AFPX.RETURN_KEY =>
               null;
             when AFPX.ESCAPE_KEY =>
-              if not CURVED_STOPED then
+              if not CURVED_STOPPED then
                 SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
                 RESTORE := PARTIAL;
               else
@@ -246,20 +252,10 @@ package body MENU2 is
                  SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
               SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
             when SCREEN.EXIT_BUTTON_FLD =>
-              -- Back
-              if not CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
-              else
-                return;
-              end if;
+              return;
             when 22 =>
               -- Get and set new degree
-              if not CURVED_STOPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-              else
-                DIALOG.READ_DEGREE;
-              end if;
+              DIALOG.READ_DEGREE;
               RESTORE := PARTIAL;
             when 25 =>
               -- Display polynom
@@ -316,3 +312,4 @@ package body MENU2 is
   end MAIN_SCREEN;
 
 end MENU2;
+
