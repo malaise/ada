@@ -77,7 +77,8 @@ package Pattern is
   -- On Set/Del.
   Invalid_Pattern : exception;
 
-  -- On Get_Free_Rule
+  -- On Get_Free_Rule if no more free rule
+  -- On any other call Rule has not been got.
   No_Rule : exception;
 
   -- Example:
@@ -101,7 +102,13 @@ package Pattern is
 
 private
 
-  type Rule_No is new Positive;
+  type Rule_No_Range is new Natural;
+  subtype Valid_Rule_No_Range is Rule_No_Range range 1 .. Rule_No_Range'Last;
+  -- Valid numbers are positive
+  type Rule_No is record
+    No : Rule_No_Range := 0;
+  end record;
+  No_Rule_No : constant Rule_No := (No => 0);
 
 end Pattern;
 

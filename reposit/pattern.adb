@@ -22,6 +22,12 @@ package body Pattern is
     Ada.Text_Io.Put_Line ("Pattern." & Proc &": " & Msg & ".");
   end Put_Debug;
 
+  procedure Check_Rule (Rule : in Rule_No) is
+  begin
+    if Rule = No_Rule_No then
+      raise No_Rule;
+    end if;
+  end Check_Rule;
 
   package Storage is
 
@@ -57,13 +63,13 @@ package body Pattern is
     --  internally to mark a used rule
     --  or returned by Next_Term when no more pattern for the rule
     type Term_Rec is record
-      Rule : Rule_No := Rule_No'First;
-      Id    : Pattern_Id := Pattern_Id'First;
-      Id4Cb : Pattern_Id := Pattern_Id'First;
+      Rule    : Rule_No := No_Rule_No;
+      Id      : Pattern_Id := Pattern_Id'First;
+      Id4Cb   : Pattern_Id := Pattern_Id'First;
       Str_Acc : Str_Access := null;
-      Optio : Boolean := False;
-      Repet : Boolean := False;
-      Cb : Match_Cb_Access;
+      Optio   : Boolean := False;
+      Repet   : Boolean := False;
+      Cb      : Match_Cb_Access;
     end record;
 
     procedure Rewind (Rule : in Rule_No);
@@ -98,11 +104,13 @@ package body Pattern is
 
   begin
     Init;
+    Check_Rule (Rule);
     if Storage.Pattern_Exists (Rule, Id) then
       Storage.Delete_Current_Pattern;
     end if;
     -- Init
-    Put_Debug ("Set", "Create patern to rule " & Rule'Img & ", id " & Id'Img);
+    Put_Debug ("Set", "Create patern to rule " & Image (Rule) &
+                      ", id " & Id'Img);
     if Id4Cb = Same_Id then
       Storage.Create_Pattern (Rule, Id, Match_Cb, Id);
     else
@@ -126,7 +134,7 @@ package body Pattern is
         if Str = "" then
           if First then
             -- Empty pattern
-            Put_Debug ("Set", "Add empty patern to rule " & Rule'Img
+            Put_Debug ("Set", "Add empty patern to rule " & Image (Rule)
                             & ", id " & Id'Img);
             Storage.Add_Term (Str, Optio, Repet);
             Ok := True;
@@ -188,7 +196,8 @@ package body Pattern is
             -- Valid
             Put_Debug ("Set", "Add patern " & Str
                             & " " & Optio'Img & " " & Repet'Img
-                            & " to rule " & Rule'Img & ", id "  & Id'Img);
+                            & " to rule " & Image (Rule)
+                            & ", id "  & Id'Img);
             Storage.Add_Term (Str, Optio, Repet);
             Termi := Optio or else Repet;
           end if;
@@ -210,8 +219,10 @@ package body Pattern is
   procedure Del (Rule : in Rule_No; Id : in Pattern_Id) is
   begin
     Init;
+    Check_Rule (Rule);
     if Storage.Pattern_Exists (Rule, Id) then
-      Put_Debug ("Del", "Delete pattern rule " & Rule'Img & ", id " & Id'Img);
+      Put_Debug ("Del", "Delete pattern rule " & Image (Rule)
+                      & ", id " & Id'Img);
       Storage.Delete_Current_Pattern;
     else
       raise Invalid_Pattern;
@@ -307,7 +318,9 @@ package body Pattern is
 
   begin
     Init;
-    Put_Debug ("Check", "Checking string " & Str & " in rule no " & Rule'Img);
+    Check_Rule (Rule);
+    Put_Debug ("Check", "Checking string " & Str
+             & " in rule no " & Image (Rule));
 
     -- Init check
     if Case_Sensitive then
@@ -378,7 +391,7 @@ package body Pattern is
             end if;
           end if;
           -- Reset Str and move to next pattern
-          Put_Debug ("Check", "  Resetting for pattern no " & Term.Rule'Img
+          Put_Debug ("Check", "  Resetting for pattern no " & Image (Term.Rule)
                             & ", id " & Term.Id'Img);
           Parser.Reset (Iter);
           Parser.Next_Word (Iter);
@@ -403,7 +416,7 @@ package body Pattern is
           if not Term.Optio and then not Repeating then
             -- Mismatch, reset string and pull all terms of pattern
             Put_Debug ("Check", "  Mismatch. Resetting from pattern no "
-                              & Term.Rule'Img & ", id " & Term.Id'Img);
+                              & Image (Term.Rule) & ", id " & Term.Id'Img);
             Parser.Reset (Iter);
             Parser.Next_Word (Iter);
             Nb_Match := 0;
@@ -438,22 +451,25 @@ package body Pattern is
   -- Rule image
   function Image (Rule : Rule_No) return String is
   begin
-    return Rule'Img;
+    return Rule.No'Img;
   end Image;
 
   -- May raise No_Rule if no rule is available.
   function Get_Free_Rule return Rule_No is
     Rule : Rule_No;
   begin
+    Init;
     Rule := Storage.Get_Free_Rule;
-    Put_Debug ("Get_Free_Rule", "Allocating " & Rule'Img);
+    Put_Debug ("Get_Free_Rule", "Allocating " & Image (Rule));
     return Rule;
   end Get_Free_Rule;
 
   -- Delete all patterns of a rule
   procedure Del_Rule (Rule : in Rule_No) is
   begin
-    Put_Debug ("Del_Rule", "Deleting " & Rule'Img);
+    Init;
+    Check_Rule (Rule);
+    Put_Debug ("Del_Rule", "Deleting " & Image (Rule));
     Storage.Del_Rule (Rule);
   end Del_Rule;
 

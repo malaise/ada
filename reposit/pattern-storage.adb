@@ -38,15 +38,15 @@ package body Storage is
   function Get_Free_Rule return Rule_No is
     Term : Term_Rec;
   begin
-    for I in Rule_No'Range loop
-      Term.Rule := I;
+    for I in Valid_Rule_No_Range loop
+      Term.Rule := (No => I);
       begin
         Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute);
       exception
         when Term_List_Mng.Not_In_List =>
           -- This rule does not exist: insert a dummy term
           Term_List_Mng.Insert (Term_List, Term);
-          return I;
+          return (No => I);
       end;
     end loop;
     -- All rules are used!
@@ -138,10 +138,10 @@ package body Storage is
 
   -- Append terms to a new pattern
   In_Prev    : Boolean := True;
-  Term_Rule  : Rule_No := Rule_No'First;
+  Term_Rule  : Rule_No := No_Rule_No;
   Term_Id    : Pattern_Id := Pattern_Id'First;
   Term_Id4Cb : Pattern_Id := Pattern_Id'First;
-  Term_Cb    : Match_Cb_Access;
+  Term_Cb    : Match_Cb_Access := null;
   procedure Create_Pattern (Rule  : in Rule_No;
                             Id    : in Pattern_Id;
                             Cb    : in Match_Cb_Access;
@@ -201,7 +201,7 @@ package body Storage is
 
   -- Get terms one by one
   The_End : Boolean := False;
-  The_Rule : Rule_No := Rule_No'First;
+  The_Rule : Rule_No := No_Rule_No;
   procedure Rewind (Rule : Rule_No) is
   begin                 
     if not Term_List_Mng.Is_Empty (Term_List) then
