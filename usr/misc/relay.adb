@@ -62,7 +62,7 @@ procedure Relay is
   begin
     if Len = 0 then
       Done := True;
-      return;
+      return True;
     end if;
     if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
       Len := Len - 1;
