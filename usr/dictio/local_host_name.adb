@@ -5,6 +5,7 @@ package body Local_Host_Name is
 
   procedure Set (Name : in String) is
   begin
+    Lhn :=  (others => ' ');
     Lhn(1 .. Name'Length) := Name;
   end Set;
 
