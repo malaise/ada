@@ -281,4 +281,100 @@ package body QUEUES is
 
   end PRIO;
 
+  package body CIRC is
+    FILE : array (0..SIZE - 1) of ITEM;
+    PTR_IN  : NATURAL range 0 .. SIZE - 1 := 0;
+    PTR_OUT : NATURAL range 0 .. SIZE - 1 := 0;
+
+    FULL : BOOLEAN := FALSE;
+
+    -- PTR_IN  points to the last pushed
+    -- PTR_OUT points to the first to pop
+    --  fifo full  is raised if and only if ptr_in  = ptr_out and full
+    --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
+
+    -- push an item
+    procedure PUSH (X : in ITEM) is
+    begin
+      if PTR_IN = PTR_OUT and then FULL then
+        -- Fifo full
+        PTR_OUT := (PTR_OUT + 1) mod SIZE;
+      end if;
+      PTR_IN := (PTR_IN + 1) mod SIZE;
+      FILE (PTR_IN) := X;
+      FULL := (PTR_IN = PTR_OUT);
+    end PUSH;
+
+    -- pop an item
+    procedure POP (X : out ITEM) is
+    begin
+      if PTR_OUT = PTR_IN and then not FULL then
+        raise CIRC_EMPTY;
+      end if;
+      PTR_OUT := (PTR_OUT + 1) mod SIZE;
+      X := FILE (PTR_OUT);
+      FULL := FALSE;
+    end POP;
+
+    -- read without popping
+    -- 1 gives the last pushed
+    procedure LOOK_LAST (X : out ITEM; NO : in NO_RANGE := 1) is
+      LOC : NATURAL range 0 .. SIZE - 1;
+    begin
+      if PTR_OUT = PTR_IN and then not FULL then
+        raise CIRC_EMPTY;
+      end if;
+      LOC := (PTR_IN - NO + 1) mod SIZE;
+
+      -- Good if PTR_OUT < LOC <= PTR_IN
+      -- or      LOC <= PTR_IN <= PTR_OUT
+      -- or             PTR_IN <= PTR_OUT < LOC
+
+      if      (PTR_OUT <  PTR_IN
+                and then (LOC <= PTR_OUT or else  PTR_IN < LOC) )
+      or else (PTR_IN  <= PTR_OUT
+                and then (LOC <= PTR_OUT and then PTR_IN < LOC) ) then
+        raise CIRC_NOT;
+      else
+        X := FILE (LOC);
+      end if;
+    end LOOK_LAST;
+
+    -- read without popping
+    -- 1 gives the first to be popped
+    procedure LOOK_FIRST (X : out ITEM; NO : in NO_RANGE := 1) is
+      LOC : NATURAL range 0 .. SIZE - 1;
+    begin
+      if PTR_OUT = PTR_IN and then not FULL then
+        raise CIRC_EMPTY;
+      end if;
+      LOC := (PTR_OUT + NO) mod SIZE;
+
+      -- Good if PTR_OUT < LOC <= PTR_IN
+      -- or      LOC <= PTR_IN <= PTR_OUT
+      -- or             PTR_IN <= PTR_OUT < LOC
+
+      if      (PTR_OUT <  PTR_IN
+                and then (LOC <= PTR_OUT or else  PTR_IN < LOC) )
+      or else (PTR_IN  <= PTR_OUT
+                and then (LOC <= PTR_OUT and then PTR_IN < LOC) ) then
+        raise CIRC_NOT;
+      else
+        X := FILE (LOC);
+      end if;
+    end LOOK_FIRST;
+
+    -- discard last pushed 
+    procedure DISCARD_LAST is
+    begin
+      if PTR_OUT = PTR_IN and then not FULL then
+        raise CIRC_EMPTY;
+      end if;
+      PTR_IN := (PTR_IN - 1) mod SIZE;
+      FULL := FALSE;
+    end DISCARD_LAST;
+
+  end CIRC;
+
 end QUEUES;
+

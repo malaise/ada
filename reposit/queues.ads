@@ -121,5 +121,43 @@ package QUEUES is
 
   end PRIO;
 
+  generic
+    -- Circular buffer
+    -- management of a buffer of objects to be defined: type OBJECT is...;
+    -- size of the stack: SIZE : POSITIVE := ...;
+    -- INSTANCIATION: package MY_FIFO is new QUEUES.CIRC (SIZE, OBJECT);
+    SIZE : POSITIVE;
+    type ITEM is private;
+  package CIRC is
+
+    subtype NO_RANGE is POSITIVE range 1 .. SIZE;
+
+    -- push an item
+    procedure PUSH (X : in ITEM);
+
+    -- pop an item
+    procedure POP (X : out ITEM);
+
+    -- read without popping an item
+    -- 1 gives the last pushed etc...
+    -- FIFO_NOT if NO > number of items in the stack
+    procedure LOOK_LAST (X : out ITEM; NO : in NO_RANGE := 1);
+
+    -- read without popping an item
+    -- 1 gives the first to be popped etc...
+    -- FIFO_NOT if NO > number of items in the stack
+    procedure LOOK_FIRST (X : out ITEM; NO : in NO_RANGE := 1);
+
+    -- Make room by removing the last to be popped
+    procedure DISCARD_LAST;
+
+
+    -- exceptions raised when popping if stack is empty
+    CIRC_EMPTY : exception;
+    -- raised by look if no is > number of items in the stack
+    CIRC_NOT : exception;
+
+  end CIRC;
+
 end QUEUES;
 
