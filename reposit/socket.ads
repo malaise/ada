@@ -190,8 +190,8 @@ package Socket is
   -- May raise Soc_Conn_Err if tcp and not connected
   -- May raise Soc_Tail_Err if non blocking and previous send
   --   had raised Soc_Would_Block (Re_Send should have been used)
-  -- May send Soc_Conn_Lost if destination has closed
-  -- May Soc_Would_Block if non blocking and overflow (call Re_Send)
+  -- May raise Soc_Conn_Lost if destination has closed
+  -- May raise Soc_Would_Block if non blocking and overflow (call Re_Send)
   generic
     type Message_Type is private;
   procedure Send (Socket  : in Socket_Dscr;
