@@ -1,0 +1,30 @@
+#!/bin/bash
+error() {
+  echo "Usage: $1 <num1> <oper> <num1>"
+  echo " <oper> ::= + | - | * | /"
+  echo " <num1> is in H.MSmls"
+  echo " <num2> is in H.MSmls if + or -"
+  exit 1
+}
+
+if [ $# -ne 3 ] ; then
+  error `basename $0`
+fi
+case "$2" in
+  "+" | "-" )
+    num2="$3 S pushr call"
+  ;;
+  "*" | "/" )
+    num2="$3 toreal"
+  ;;
+  * )
+    error `basename $0`
+esac
+ 
+# Store dms functions
+# Convert H.DMS to H.frac \
+# Sub and back to H.DMS and put \
+mmcdt -e dms.mcd F popr A popr S popr D popr \
+"$1" S pushr call "$num2" \
+"$2" D pushr call F pushr call putl
+
