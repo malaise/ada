@@ -54,10 +54,13 @@ package DIRECTORY is
   -- May raise NAME_ERROR  
 
   
-  function READ_LINK (FILE_NAME : STRING) return STRING;
-  procedure READ_LINK (FILE_NAME : in STRING; TARGET : in out TEXT_HANDLER.TEXT);
-  -- May raise OPEN_ERROR if FILE_NAME is not a link
-  --           NAME_ERROR if FILE_NAME does not exist
+  function READ_LINK (FILE_NAME : STRING; RECURSIVE : BOOLEAN := TRUE)
+                      return STRING;
+  procedure READ_LINK (FILE_NAME : in STRING;
+                       TARGET : in out TEXT_HANDLER.TEXT;
+                       RECURSIVE : in BOOLEAN := TRUE);
+  -- May raise NAME_ERROR if FILE_NAME does not exist
+  --           OPEN_ERROR if FILE_NAME is not a link
 
   -- Does file name match a pattern
   function FILE_MATCH (FILE_NAME : STRING; TEMPLATE : STRING) return BOOLEAN;

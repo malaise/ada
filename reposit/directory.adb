@@ -204,7 +204,9 @@ package body DIRECTORY is
                        BUF : SYSTEM.ADDRESS; BUFSIZ : INTEGER) return INTEGER;
   pragma IMPORT (C, C_READLINK, "readlink");
 
-  function READ_LINK (FILE_NAME : STRING) return STRING is
+  -- May raise NAME_ERROR if FILE_NAME does not exist
+  --           OPEN_ERROR if FILE_NAME is not a link
+  function READ_ONE_LINK (FILE_NAME : STRING) return STRING is
     STR : STRING(1 .. MAX_DIR_NAME_LEN);
     C_FILE_NAME : constant STRING := STR_FOR_C(FILE_NAME);
     RES : INTEGER;
@@ -218,14 +220,40 @@ package body DIRECTORY is
     else
       raise OPEN_ERROR;
     end if;
-  end READ_LINK;
-    
-  procedure READ_LINK (FILE_NAME : in STRING; TARGET : in out TEXT_HANDLER.TEXT) is
+  end READ_ONE_LINK;
+
+  function READ_LINK (FILE_NAME : STRING;
+                      RECURSIVE : BOOLEAN := TRUE) return STRING is
+    TXT : TEXT_HANDLER.TEXT(MAX_DIR_NAME_LEN);
+    KIND : FILE_KIND_LIST;
+    RIGHTS : NATURAL;
   begin
-    TEXT_HANDLER.SET (TARGET, READ_LINK(FILE_NAME));
+    -- Check file_name  is a link
+    FILE_STAT (FILE_NAME, KIND, RIGHTS);
+    if KIND /= SYMBOLIC_LINK then
+      raise OPEN_ERROR;
+    end if;
+    if not RECURSIVE then
+      return READ_ONE_LINK(FILE_NAME);
+    end if;
+
+    TEXT_HANDLER.SET (TXT, FILE_NAME);
+    loop
+      -- Current is a link
+      TEXT_HANDLER.SET (TXT, READ_ONE_LINK(TEXT_HANDLER.VALUE(TXT)));
+      FILE_STAT(TEXT_HANDLER.VALUE(TXT), KIND, RIGHTS);
+      exit when KIND /= SYMBOLIC_LINK;
+    end loop;
+    return TEXT_HANDLER.VALUE(TXT);
   end READ_LINK;
-  -- May raise OPEN_ERROR if FILE_NAME is not a link
-  --           NAME_ERROR if FILE_NAME does not exist
+
+
+  procedure READ_LINK (FILE_NAME : in STRING;
+                       TARGET : in out TEXT_HANDLER.TEXT;
+                       RECURSIVE : in BOOLEAN := TRUE) is
+  begin
+    TEXT_HANDLER.SET (TARGET, READ_LINK(FILE_NAME, RECURSIVE));
+  end READ_LINK;
 
 
   function C_FNMATCH (PATTERN : SYSTEM.ADDRESS; STRINGS : SYSTEM.ADDRESS;
