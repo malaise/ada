@@ -14,10 +14,11 @@ package Dictio_Lib is
   -- On Get
   No_Item : exception;
 
-  -- Callback called when dictio availability changes
-  type Dictio_Availability_Callback is
-       access procedure (Available : in Boolean);
-  Available_Cb : Dictio_Availability_Callback := null;
+  -- Callback called when dictio status changes
+  type Dictio_State_List is (Master, Slave, Unavailable);
+  type Dictio_State_Callback is
+       access procedure (State : in Dictio_State_List);
+  Dictio_State_Cb : Dictio_State_Callback := null;
 
   -- Callback called on notification
   type Dictio_Notification_Callback is

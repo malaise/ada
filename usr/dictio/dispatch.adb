@@ -100,6 +100,7 @@ package body Dispatch is
       when Status.Fight =>
         null;
     end case;
+    Client_Mng.New_Status;
     Prev_Status := New_Status;
   end Handle_New_Status;
 

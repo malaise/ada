@@ -2,6 +2,7 @@ with Debug;
 package body Status is
 
   Current_Status : Status_List := Starting;
+  Stable_Status : Stable_Status_List := Dead;
   Status_Cb : New_Status_Callback := null;
 
   procedure Set (Status : in Status_List) is
@@ -12,6 +13,14 @@ package body Status is
         Debug.Put ("Status: " & Prev_Status'Img & " -> " & Status'Img);
       end if;
       Current_Status := Status;
+      case Current_Status is
+        when Starting | Init | Dead =>
+          Stable_Status := Dead;
+        when Slave | Master =>
+          Stable_Status := Current_Status;
+        when Fight =>
+          null;
+      end case;
       if Status_Cb /= null then
         Status_Cb.all;
       end if;
@@ -27,6 +36,11 @@ package body Status is
   begin
     Status_Cb := New_Status_Cb;
   end Set;
+
+  function Get_Stable return Stable_Status_List is
+  begin
+    return Stable_Status;
+  end Get_Stable;
 
 end Status;
 

@@ -113,18 +113,18 @@ procedure T_Dictio is
 
   procedure Load;
 
-  procedure Dictio_Connect_Cb (Connected : in Boolean) is
+  procedure Dictio_State_Cb (State : in Dictio_Lib.Dictio_State_List) is
+    use type Dictio_Lib.Dictio_State_List;
   begin
     if not Init then
-      Ada.Text_Io.Put_Line("CLIENT: Connected: " & Connected'Img
-                          & "  Init: " & Init'Img);
+      Ada.Text_Io.Put_Line("CLIENT: Dictio state is " & State'Img);
     end if;
-    if Connected and then Init then
+    if State /= Dictio_Lib.Unavailable and then Init then
       Init := False;
       Load;
       Sig := True;
     end if;
-  end Dictio_Connect_Cb;
+  end Dictio_State_Cb;
 
   procedure Dictio_Notify_Cb (Name : in String; Data : in String) is
   begin
@@ -186,7 +186,7 @@ begin
   Rnd.Randomize;
 
   Dictio_Lib.Init;
-  Dictio_Lib.Available_Cb := Dictio_Connect_Cb'Unrestricted_Access;
+  Dictio_Lib.Dictio_State_Cb := Dictio_State_Cb'Unrestricted_Access;
   Dictio_Lib.Notify_Cb := Dictio_Notify_Cb'Unrestricted_Access;
 
   if not Init then

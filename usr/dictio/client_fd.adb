@@ -99,5 +99,30 @@ package body Client_Fd is
     return Rec.Soc;
   end Socket_Of;
 
+  -- Read first/next client
+  -- Socket.No_Socket when no more
+  procedure Read_First (Client : out Socket.Socket_Dscr) is
+    Rec : Client_Rec;
+  begin
+    if Client_List_Mng.Is_Empty (Client_List) then
+      Client := Socket.No_Socket;
+      return;
+    end if;
+    Client_List_Mng.Move_To (Client_List, Client_List_Mng.Next, 0, False);
+    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    Client := Rec.Soc;
+  end Read_First;
+
+  procedure Read_Next  (Client : out Socket.Socket_Dscr) is
+    Rec : Client_Rec;
+  begin
+    Client_List_Mng.Move_To (Client_List);
+    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    Client := Rec.Soc;
+  exception
+    when Client_List_Mng.Not_In_List =>
+      Client := Socket.No_Socket;
+  end Read_Next;
+
 end Client_Fd;
 

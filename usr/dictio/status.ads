@@ -1,12 +1,14 @@
 -- The status of process
 package Status is
 
-  type Status_List is (Starting, Init, Slave, Master, Fight, Dead);
+  type Status_List is (Starting, Init, Slave, Master, Dead, Fight);
 
   procedure Set (Status : in Status_List);
 
   function Get return Status_List;
 
+  subtype Stable_Status_List is Status_List range Slave .. Dead;
+  function Get_Stable return Stable_Status_List;
 
   type New_Status_Callback is access procedure;
   procedure Set (New_Status_Cb : in New_Status_Callback);

@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Socket, Tcp_Util, Event_Mng, Sys_Calls;
-with Debug, Parse, Client_Com, Versions;
+with Debug, Parse, Client_Com, Versions, Status;
 package body Dictio_Lib is
 
   Dictio_Env_Host : constant String := "DICTIO_HOST";
@@ -24,13 +24,14 @@ package body Dictio_Lib is
   begin
     Event_Mng.Del_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True);
     Socket.Close (Dictio_Dscr);
-    if Available_Cb /= null then
-      Available_Cb (False);
+    if Dictio_State_Cb /= null then
+      Dictio_State_Cb (Unavailable);
     end if;
   end Close;
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean) return Boolean is
     Len : Natural;
+    State : Status.Stable_Status_List;
   begin
     Read_Msg:
     begin
@@ -65,6 +66,29 @@ package body Dictio_Lib is
                      & " being: " & Versions.Lib);
           end if;
           Close;
+        end if;
+        return False;
+      when Client_Com.State =>
+        begin
+          State := Status.Stable_Status_List'Value(Parse(Msg.Item.Name));
+        exception
+          when others =>
+            if Debug.Level_Array(Debug.Lib) then
+              Debug.Put ("Dictio_Lib: received invalid status: "
+                     & Parse (Msg.Item.Name));
+            end if;
+            Close;
+            return False;
+        end;
+        if Dictio_State_Cb /= null then
+          case State is
+            when Status.Slave =>
+              Dictio_State_Cb (Slave);
+            when Status.Master =>
+              Dictio_State_Cb (Master);
+            when Status.Dead =>
+              Dictio_State_Cb (Unavailable);
+          end case;
         end if;
         return False;
       when Client_Com.Read =>
@@ -116,9 +140,6 @@ package body Dictio_Lib is
     Msg.Item.Name(1 .. Versions.Lib'Length) := Versions.Lib;
     Msg.Item.Data_Len := 0;
     Send_Request;
-    if Available_Cb /= null then
-      Available_Cb (True);
-    end if;
   end Connection_Cb;
 
   procedure Connect_To_Dictio is

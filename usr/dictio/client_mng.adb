@@ -1,11 +1,14 @@
 with Socket, Tcp_Util, Dynamic_List, Event_Mng;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
-     Sync_Mng, Versions;
+     Sync_Mng, Versions, Status;
 package body Client_Mng is
 
 
   type State_List is (Not_Init, Waiting, Allow);
   State : State_List := Not_Init;
+
+  Dictio_Status : Status.Stable_Status_List := Status.Dead;
+  procedure Send_Status (Dscr : in Socket.Socket_Dscr);
 
   Accept_Port : Tcp_Util.Port_Num;
 
@@ -57,6 +60,14 @@ package body Client_Mng is
           Notify.Del_Client (Dscr);
           Client_Fd.Del_Client (Dscr);
         end if;
+        return False;
+      when Client_Com.State =>
+        if Debug.Level_Array(Debug.Client) then
+          Debug.Put ("Client: received status. "
+                   & Parse (Msg.Item.Name));
+        end if;
+        Notify.Del_Client (Dscr);
+        Client_Fd.Del_Client (Dscr);
         return False;
       when Client_Com.Read =>
         Data_Base.Get (Msg.Item.Name, Msg.Item);
@@ -120,16 +131,20 @@ package body Client_Mng is
     Client_Fd.Add_Client (New_Dscr);
     Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'access);
 
-    -- Send version
+    -- Send version and status
     declare
       Msg : Client_Com.Dictio_Client_Rec;
       Dummy : Boolean;
     begin
+      -- Send version then status
       Msg.Action := Client_Com.Version;
       Msg.Item.Name := (others => ' ');
       Msg.Item.Name(1 .. Versions.Lib'Length) := Versions.Lib;
       Msg.Item.Data_Len := 0;
       Dummy := Client_Com.Dictio_Send (New_Dscr, null, Msg);
+
+      Dictio_Status := Status.Get_Stable;
+      Send_Status (New_Dscr);
     exception
       when Socket.Soc_Tail_Err =>
         null;
@@ -206,6 +221,41 @@ package body Client_Mng is
     Data_Base.Set (Item);
     Notify.Send (Item);
   end Modified;
+
+
+  procedure Send_Status (Dscr : in Socket.Socket_Dscr) is
+    Msg : Client_Com.Dictio_Client_Rec;
+    Dummy : Boolean;
+    State : constant String
+          := Status.Stable_Status_List'Image(Dictio_Status);
+    
+  begin
+    if Debug.Level_Array(Debug.Client) then
+      Debug.Put ("Client: sending dictio status: " & State);
+    end if;
+    Msg.Action := Client_Com.State;
+    Msg.Item.Name := (others => ' ');
+    Msg.Item.Name(1 .. State'Length) := State;
+    Msg.Item.Data_Len := 0;
+    Dummy := Client_Com.Dictio_Send (Dscr, null, Msg);
+  end Send_Status;
+
+  procedure New_Status is
+    Got_New_Status : Status.Stable_Status_List := Status.Get_Stable;
+    Dscr : Socket.Socket_Dscr;
+    use type Status.Stable_Status_List, Socket.Socket_Dscr;
+  begin
+    if Got_New_Status = Dictio_Status then
+      return;
+    end if;
+    Dictio_Status := Got_New_Status;
+    -- Notify all clients
+    Client_Fd.Read_First (Dscr);
+    while Dscr /= Socket.No_Socket loop
+      Send_Status (Dscr);
+      Client_Fd.Read_Next (Dscr);
+    end loop;
+  end New_Status;
 
 end Client_Mng;
 
