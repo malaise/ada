@@ -8,20 +8,25 @@ package body OPER_DEF is
     return DATE;
   end CURRENT_DATE;
 
-  function LESS_THAN (OPER_1, OPER_2 : OPER_REC) return BOOLEAN is
+  -- Sort by date, amount, kind, destination
+  -- DO NOT SORT BY STATUS, or a double click on sub list will
+  --  mess all up.
+  function BEFORE (OPER_1, OPER_2 : OPER_REC) return BOOLEAN is
   begin
-    if OPER_1.DATE.YEAR < OPER_2.DATE.YEAR then
-      return TRUE;
-    elsif OPER_1.DATE.YEAR > OPER_2.DATE.YEAR then
-      return FALSE;
+    if OPER_1.DATE.YEAR /= OPER_2.DATE.YEAR then
+      return OPER_1.DATE.YEAR < OPER_2.DATE.YEAR;
+    elsif OPER_1.DATE.MONTH /= OPER_2.DATE.MONTH then
+      return OPER_1.DATE.MONTH < OPER_2.DATE.MONTH;
+    elsif OPER_1.DATE.DAY /= OPER_2.DATE.DAY then
+      return OPER_1.DATE.DAY < OPER_2.DATE.DAY;
+    elsif OPER_1.AMOUNT /= OPER_2.AMOUNT then
+      return OPER_1.AMOUNT < OPER_2.AMOUNT;
+    elsif OPER_1.KIND /= OPER_2.KIND then
+      return OPER_1.KIND < OPER_2.KIND;
+    else
+      return OPER_1.DESTINATION < OPER_2.DESTINATION;
     end if;
-    if OPER_1.DATE.MONTH < OPER_2.DATE.MONTH then
-      return TRUE;
-    elsif OPER_1.DATE.MONTH > OPER_2.DATE.MONTH then
-      return FALSE;
-    end if;
-    return OPER_1.DATE.DAY < OPER_2.DATE.DAY;
-  end LESS_THAN;
+  end BEFORE;
 
 end OPER_DEF;
 

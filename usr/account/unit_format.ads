@@ -7,6 +7,7 @@ package UNIT_FORMAT is
   -- Current unit switching
   function GET_CURRENT_UNIT return UNITS_LIST;
   procedure SET_UNIT_TO (UNIT : UNITS_LIST);
+  procedure SWITCH_UNIT;
 
   --  May be raised by any IMAGE/VALUE
   FORMAT_ERROR : EXCEPTION;
@@ -33,8 +34,8 @@ package UNIT_FORMAT is
   -- Amount: -12345678.12
   subtype AMOUNT_STR is STRING (1 .. 12);
   -- From an amount (in euros) return 'image (euros/francs)
-  function IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE)
-                 return AMOUNT_STR;
+  function IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE;
+                  ALIGN_LEFT : in BOOLEAN) return AMOUNT_STR;
 
 
   -- From a string (euros/francs) return amount in euros

@@ -32,7 +32,7 @@ package OPER_DEF is
 
   -- Oper strings
   subtype REFERENCE_STR is STRING (1 .. 10);
-  subtype DESTINATION_STR is STRING (1 .. 10);
+  subtype DESTINATION_STR is STRING (1 .. 20);
   subtype COMMENT_STR is STRING (1 .. 20);
 
   -- Oper
@@ -41,13 +41,13 @@ package OPER_DEF is
     AMOUNT : AMOUNT_RANGE := 21.21;
     KIND : KIND_LIST := KIND_LIST'FIRST; 
     STATUS : STATUS_LIST := STATUS_LIST'FIRST;
-    DESTINATION : DESTINATION_STR := (others => '2');
-    COMMENT : COMMENT_STR := (others => '1');
-    REFERENCE : REFERENCE_STR := (others => '3');
+    DESTINATION : DESTINATION_STR := (others => '0');
+    COMMENT : COMMENT_STR := (others => '0');
+    REFERENCE : REFERENCE_STR := (others => '1');
   end record;
 
-  -- Criteria for sorting opers
-  function LESS_THAN (OPER_1, OPER_2 : OPER_REC) return BOOLEAN;
+  -- Criteria for sorting opers: dates
+  function BEFORE (OPER_1, OPER_2 : OPER_REC) return BOOLEAN;
 
 end OPER_DEF;
 

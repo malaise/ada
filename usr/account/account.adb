@@ -93,65 +93,69 @@ begin
             MNG.UPDATE_STATE;
 
           -- List movements
-          when 15 =>
+          when 17 =>
             -- Top
             AFPX.UPDATE_LIST(AFPX.TOP);
-          when 16 =>
+          when 18 =>
             -- PgUp
             AFPX.UPDATE_LIST(AFPX.PAGE_UP);
-          when 17 =>
+          when 19 =>
             -- Up
             AFPX.UPDATE_LIST(AFPX.UP);
-          when 18 =>
+          when 20 =>
             -- Down
             AFPX.UPDATE_LIST(AFPX.DOWN);
-          when 19 =>
+          when 21 =>
             -- PgDown
             AFPX.UPDATE_LIST(AFPX.PAGE_DOWN);
-          when 20 =>
+          when 22 =>
             -- Bottom
             AFPX.UPDATE_LIST(AFPX.BOTTOM);
 
           -- Oper actions
-          when 22 =>
+          when 24 =>
             -- New
             MNG.ADD_OPER;
-          when 23 =>
+          when 25 =>
             -- Edit
             MNG.EDIT_OPER;
-          when 24 =>
+          when 26 =>
             -- View
             MNG.VIEW_OPER;
-          when 25 =>
+          when 27 =>
             -- Delete
             MNG.DEL_OPER;
-          when 26 =>
+          when 28 =>
             -- Update
             MNG.GARBAGE_COLLECT;
-          when 27 =>
+          when 29 =>
             -- Search
             MNG.SEARCH;
-          when 28 =>
+          when 30 =>
             -- Show all
             MNG.SHOW_ALL;
 
           -- Account actions
-          when 30 =>
+          when 32 =>
             -- Create
             MNG.CLEAR;
-          when 31 =>
+          when 33 =>
             -- Load
             MNG.LOAD("");
-          when 32 =>
+          when 34 =>
             -- Save
             MNG.SAVE;
-          when 33 =>
+          when 35 =>
             -- Print
             MNG.PRINT;
-          when 34 =>
+          when 36 =>
             -- Switch francs/euros
             MNG.CHANGE_UNIT;
-          when 35 =>
+          when 37 =>
+            -- Sort
+            MNG.SORT;
+          when 38 =>
+            -- Exit
             QUIT;
           when others =>
             SCREEN.ACK_ERROR(SCREEN.INTERNAL_ERROR);
@@ -170,6 +174,7 @@ exception
   when QUIT_PROGRAM =>
     CON_IO.DESTROY;
   when OOOPS : others =>
+    SCREEN.RESET;
     SCREEN.ACK_ERROR(SCREEN.INTERNAL_ERROR);
     TEXT_IO.PUT_LINE("Exception: " & ADA.EXCEPTIONS.EXCEPTION_NAME(OOOPS));
     MNG.SAVE(RESCUE => TRUE);

@@ -17,6 +17,8 @@ package MNG is
   procedure SAVE (RESCUE : in BOOLEAN := FALSE);
   -- Clear current account (and file name)
   procedure CLEAR;
+  -- Sort operation
+  procedure SORT;
   -- Print listing
   procedure PRINT;
   -- Update the displayed amounts of opers, sums

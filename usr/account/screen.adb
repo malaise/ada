@@ -3,17 +3,17 @@ package body SCREEN is
   type MODES_LIST is (DEFAULT, CONFIRM, ACK);
 
   EDIT_ALLOWED : BOOLEAN := FALSE;
-  SHOW_ALL_ALLOWED : BOOLEAN := FALSE;
+  SUBLIST_ACTIVE : BOOLEAN := FALSE;
 
   procedure UPDATE_TO_UNIT is
     use type UNIT_FORMAT.UNITS_LIST;
   begin
     if UNIT_FORMAT.GET_CURRENT_UNIT = UNIT_FORMAT.EUROS then
-      AFPX.RESET_FIELD(34);
+      AFPX.RESET_FIELD(36);
     else
-      AFPX.CLEAR_FIELD(34);
-      AFPX.SET_FIELD_COLORS(34, FOREGROUND => CON_IO.BLUE);
-      AFPX.ENCODE_FIELD(34, (0, 1), "TO EUROS");
+      AFPX.CLEAR_FIELD(36);
+      AFPX.SET_FIELD_COLORS(36, FOREGROUND => CON_IO.BLUE);
+      AFPX.ENCODE_FIELD(36, (0, 1), "TO EUROS");
     end if;
   end UPDATE_TO_UNIT;
 
@@ -22,15 +22,21 @@ package body SCREEN is
     -- List unprotected in default
     AFPX.SET_FIELD_PROTECTION(AFPX.LIST_FIELD_NO, MODE /= DEFAULT);
     -- Oper buttons
-    for F in AFPX.FIELD_RANGE'(21) .. 22 loop
+    for F in AFPX.FIELD_RANGE'(23) .. 24 loop
       AFPX.SET_FIELD_ACTIVATION(F, MODE = DEFAULT);
     end loop;
-    for F in AFPX.FIELD_RANGE'(23) .. 27 loop
+    for F in AFPX.FIELD_RANGE'(25) .. 28 loop
       AFPX.SET_FIELD_ACTIVATION(F, MODE = DEFAULT and then EDIT_ALLOWED);
     end loop;
-    AFPX.SET_FIELD_ACTIVATION(28, MODE = DEFAULT and then SHOW_ALL_ALLOWED);
+    if SUBLIST_ACTIVE then
+      AFPX.ENCODE_FIELD(29, (0, 1), "UN SEL");
+    else
+      AFPX.RESET_FIELD(29, RESET_COLORS => FALSE);
+    end if;
+    AFPX.SET_FIELD_ACTIVATION(29, MODE = DEFAULT and then EDIT_ALLOWED);
+    AFPX.SET_FIELD_ACTIVATION(30, MODE = DEFAULT and then SUBLIST_ACTIVE);
     -- Account buttons
-    for F in AFPX.FIELD_RANGE'(29) .. 35 loop
+    for F in AFPX.FIELD_RANGE'(31) .. 38 loop
        AFPX.SET_FIELD_ACTIVATION(F, MODE = DEFAULT);
     end loop;
     -- To francs/Euros button
@@ -38,36 +44,42 @@ package body SCREEN is
       UPDATE_TO_UNIT;
     end if;
     -- Message
-    AFPX.CLEAR_FIELD(36);
+    AFPX.CLEAR_FIELD(39);
     -- Confirm Ack
-    AFPX.SET_FIELD_ACTIVATION(37, MODE /= DEFAULT);
+    AFPX.SET_FIELD_ACTIVATION(40, MODE /= DEFAULT);
     if MODE = CONFIRM then
-      AFPX.RESET_FIELD(37, RESET_COLORS=> FALSE);
+      AFPX.RESET_FIELD(40, RESET_COLORS => FALSE);
     elsif MODE = ACK then
-      AFPX.ENCODE_FIELD(37, (0, 1), "ACK");
+      AFPX.ENCODE_FIELD(40, (0, 1), "ACK");
     end if;
 
-    AFPX.SET_FIELD_ACTIVATION(38, MODE = CONFIRM);
+    AFPX.SET_FIELD_ACTIVATION(41, MODE = CONFIRM);
   end SET_MODE;
 
   procedure ALLOW_EDIT (ALLOW : in BOOLEAN) is
   begin
     EDIT_ALLOWED := ALLOW;
-    for F in AFPX.FIELD_RANGE'(23) .. 27 loop
+    for F in AFPX.FIELD_RANGE'(25) .. 29 loop
       AFPX.SET_FIELD_ACTIVATION(F, EDIT_ALLOWED);
     end loop;
   end ALLOW_EDIT;
 
-  procedure ALLOW_SHOW_ALL (ALLOW : in BOOLEAN) is
+  procedure SUBLIST (ACTIVE : in BOOLEAN) is
   begin
-    SHOW_ALL_ALLOWED := ALLOW;
-    AFPX.SET_FIELD_ACTIVATION(28, SHOW_ALL_ALLOWED);
-  end ALLOW_SHOW_ALL;
+    SUBLIST_ACTIVE := ACTIVE;
+    if SUBLIST_ACTIVE then
+      AFPX.ENCODE_FIELD(29, (0, 1), "UN SEL");
+    else
+       AFPX.RESET_FIELD(29, RESET_COLORS => FALSE);
+    end if;
+    AFPX.SET_FIELD_ACTIVATION(30, SUBLIST_ACTIVE);
+  end SUBLIST;
 
   -- Reset to default screen
   procedure RESET is
   begin
     AFPX.USE_DESCRIPTOR(1);
+    AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
     SET_MODE(DEFAULT);
   end RESET;
 
@@ -79,16 +91,20 @@ package body SCREEN is
                            AFPX.GET_FIELD_WIDTH(1)));
   end ENCODE_FILE_NAME;
 
-  procedure ENCODE_NB_OPER (NB : in NATURAL) is
+  procedure ENCODE_NB_OPER (OPER : in NATURAL; SELECTED : in NATURAL) is
   begin
     -- Set account number
     AFPX.ENCODE_FIELD(3, (0, 0),
-        NORMAL(NB, AFPX.GET_FIELD_WIDTH(3)));
-    if NB <= 1 then
-      AFPX.ENCODE_FIELD(4, (0, 0), "cheque ");
+        NORMAL(OPER, AFPX.GET_FIELD_WIDTH(3)));
+    if OPER <= 1 then
+      AFPX.ENCODE_FIELD(4, (0, 0), "operation ");
     else
-      AFPX.ENCODE_FIELD(4, (0, 0), "cheques");
+      AFPX.ENCODE_FIELD(4, (0, 0), "operations");
     end if;
+    AFPX.SET_FIELD_ACTIVATION(6, SUBLIST_ACTIVE);
+    AFPX.ENCODE_FIELD(6, (0, 0),
+               NORMAL(SELECTED, AFPX.GET_FIELD_WIDTH(6)));
+    AFPX.SET_FIELD_ACTIVATION(7, SUBLIST_ACTIVE);
   end ENCODE_NB_OPER;
 
   procedure ENCODE_SAVED (SAVED : in BOOLEAN) is
@@ -105,10 +121,10 @@ package body SCREEN is
                            DEFERED_AMOUNT, MARGIN_AMOUNT :
                                     in OPER_DEF.AMOUNT_RANGE) is
   begin
-    AFPX.ENCODE_FIELD ( 8, (0, 0), UNIT_FORMAT.IMAGE(REAL_AMOUNT));
-    AFPX.ENCODE_FIELD (10, (0, 0), UNIT_FORMAT.IMAGE(ACCOUNT_AMOUNT));
-    AFPX.ENCODE_FIELD (12, (0, 0), UNIT_FORMAT.IMAGE(DEFERED_AMOUNT));
-    AFPX.ENCODE_FIELD (14, (0, 0), UNIT_FORMAT.IMAGE(MARGIN_AMOUNT));
+    AFPX.ENCODE_FIELD (10, (0, 0), UNIT_FORMAT.IMAGE(REAL_AMOUNT, TRUE));
+    AFPX.ENCODE_FIELD (12, (0, 0), UNIT_FORMAT.IMAGE(ACCOUNT_AMOUNT, TRUE));
+    AFPX.ENCODE_FIELD (14, (0, 0), UNIT_FORMAT.IMAGE(DEFERED_AMOUNT, TRUE));
+    AFPX.ENCODE_FIELD (16, (0, 0), UNIT_FORMAT.IMAGE(MARGIN_AMOUNT, TRUE));
   end ENCODE_SUMMARY;
 
   function MY_PTG return BOOLEAN is
@@ -133,9 +149,9 @@ package body SCREEN is
           end case;
         when AFPX.MOUSE_BUTTON =>
           case PTG_RESULT.FIELD_NO is
-            when 37 =>
+            when 40 =>
               return TRUE;
-            when 38 =>
+            when 41 =>
               return FALSE;
             when others =>
               null;
@@ -152,17 +168,16 @@ package body SCREEN is
     SET_MODE(CONFIRM);
     case ACTION is
       when OVERWRITE_ACCOUNT =>
-        AFPX.ENCODE_FIELD (36, (0, 0),
+        RING(FALSE);
+        AFPX.ENCODE_FIELD (39, (0, 0),
           "Account is not saved and will be overwritten. Confirm?");
       when OVERWRITE_FILE =>
-        AFPX.ENCODE_FIELD (36, (0, 0),
+        AFPX.ENCODE_FIELD (39, (0, 0),
           "Account file exists and will be overwritten. Confirm?");
       when QUIT_UNSAVED =>
-        AFPX.ENCODE_FIELD (36, (0, 0),
+        RING(FALSE);
+        AFPX.ENCODE_FIELD (39, (0, 0),
           "Account is not saved and will be lost. Confirm?");
-      when ADD_COPY =>
-        AFPX.ENCODE_FIELD (36, (0, 0),
-          "Add new operation as a copy of current?");
     end case;
     -- Get answer
     RESULT := MY_PTG;
@@ -173,20 +188,21 @@ package body SCREEN is
   procedure ACK_ERROR (ERROR : in ERROR_LIST) is
   begin
     SET_MODE(ACK);
+    RING(TRUE);
     case ERROR is
       when FILE_ACCESS =>
-        AFPX.ENCODE_FIELD (36, (0, 0),
+        AFPX.ENCODE_FIELD (39, (0, 0),
           "File not found or not an account or access denied");
       when FILE_IO =>
-        AFPX.ENCODE_FIELD (36, (0, 0), "File read or write error");
+        AFPX.ENCODE_FIELD (39, (0, 0), "File read or write error");
       when FILE_NAME_TOO_LONG =>
-         AFPX.ENCODE_FIELD (36, (0, 0), "File name too long");
+        AFPX.ENCODE_FIELD (39, (0, 0), "File name too long");
       when ACCOUNT_FULL =>
-         AFPX.ENCODE_FIELD (36, (0, 0), "Sorry, the account is full");
+        AFPX.ENCODE_FIELD (39, (0, 0), "Sorry, the account is full");
       when NOT_IMPLEMENTED =>
-         AFPX.ENCODE_FIELD (36, (0, 0), "Sorry, not implmeneted yet");
+        AFPX.ENCODE_FIELD (39, (0, 0), "Sorry, not implmeneted yet");
       when INTERNAL_ERROR =>
-         AFPX.ENCODE_FIELD (36, (0, 0), "Internal error. Saving in Tmp");
+        AFPX.ENCODE_FIELD (39, (0, 0), "Internal error. Saving in Tmp");
     end case;
     -- Loop until ack
     while not MY_PTG loop
@@ -195,5 +211,15 @@ package body SCREEN is
     SET_MODE(DEFAULT);
   end ACK_ERROR;
  
+  -- Ring alarm / question bell
+  procedure RING (ALARM : in BOOLEAN) is
+  begin
+    if ALARM then
+      CON_IO.BELL(3);
+    else
+      CON_IO.BELL(1);
+    end if;
+  end RING;
+
 end SCREEN;
 

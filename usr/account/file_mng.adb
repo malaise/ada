@@ -58,10 +58,10 @@ package body FILE_MNG is
       OPER_LIST_MNG.INSERT (LOC_LIST, LOC_OPER);
     end loop;
 
-    -- Everything OK. Overwrite the existing list. Rewind.
+    -- Everything OK. Overwrite the existing list. Go to end.
     OPER_LIST_MNG.DELETE_LIST (OPER_LIST);
     OPER_LIST_MNG.ASSIGN (OPER_LIST, LOC_LIST);
-    OPER_LIST_MNG.MOVE_TO (OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
+    OPER_LIST_MNG.MOVE_TO (OPER_LIST, OPER_LIST_MNG.PREV, 0, FALSE);
 
     OPER_IO.CLOSE (FILE);
     

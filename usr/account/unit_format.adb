@@ -49,7 +49,7 @@ package body UNIT_FORMAT is
       when OPER_DEF.ENTERED =>
         return "Yes";
       when OPER_DEF.NOT_ENTERED =>
-        return " No";
+        return "No ";
       when OPER_DEF.DEFERED =>
         return "Def";
     end case;
@@ -82,21 +82,57 @@ package body UNIT_FORMAT is
     CURRENT_UNIT := UNIT;
   end SET_UNIT_TO;
 
+  procedure SWITCH_UNIT is
+  begin
+    if CURRENT_UNIT = EUROS then
+      CURRENT_UNIT := FRANCS;
+    else
+      CURRENT_UNIT := EUROS;
+    end if;
+  end SWITCH_UNIT;
+
+  function FIRST_DIG (STR : STRING) return POSITIVE is
+  begin
+    for I in STR'RANGE loop
+      if STR(I) /= ' ' then return I; end if;
+    end loop;
+    raise FORMAT_ERROR;
+  end FIRST_DIG;
+
+  function LAST_DIG (STR : STRING) return POSITIVE is
+  begin
+    for I in reverse STR'RANGE loop
+      if STR(I) /= ' ' then return I; end if;
+    end loop;
+    raise FORMAT_ERROR;
+  end LAST_DIG;
+
   -- Amount: -12345678.12
   -- subtype AMOUNT_STR is STRING (1 .. 12);
   -- From an amount (in euros) return 'image (euros/francs)
-  function IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE)
-                 return AMOUNT_STR is
-    STR : AMOUNT_STR;
+  function IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE;
+                  ALIGN_LEFT : in BOOLEAN) return AMOUNT_STR is
+    STR, STR_RET : AMOUNT_STR;
     AMOUNT_IN_UNIT : OPER_DEF.AMOUNT_RANGE;
+    FIRST : POSITIVE;
   begin
     if GET_CURRENT_UNIT = EUROS then
       AMOUNT_IN_UNIT := AMOUNT_IN_EUROS;
     else
       AMOUNT_IN_UNIT := MEF.EUROS_TO_FRANCS(AMOUNT_IN_EUROS);
     end if;
+    STR := (others => ' ');
     AMOUNT_IO.PUT(STR, AMOUNT_IN_UNIT, 2, 0);
-    return STR;
+    if ALIGN_LEFT then
+      -- Put string at the beginning
+      STR_RET := (others => ' ');
+      FIRST := FIRST_DIG(STR);
+      STR_RET(1 .. AMOUNT_STR'LAST - FIRST + 1) :=
+           STR(FIRST .. AMOUNT_STR'LAST);
+    else
+      STR_RET := STR;
+    end if;
+    return STR_RET;
   exception
     when others =>
       raise FORMAT_ERROR;
@@ -106,25 +142,10 @@ package body UNIT_FORMAT is
   function VALUE (STR : AMOUNT_STR) return OPER_DEF.AMOUNT_RANGE is
     AMOUNT_IN_UNIT : OPER_DEF.AMOUNT_RANGE;
 
-    function FIRST_DIG return POSITIVE is
-    begin
-      for I in STR'RANGE loop
-        if STR(I) = ' ' then return I; end if;
-      end loop;
-      raise FORMAT_ERROR;
-    end FIRST_DIG;
-
-    function LAST_DIG return POSITIVE is
-    begin
-      for I in reverse STR'RANGE loop
-        if STR(I) = ' ' then return I; end if;
-      end loop;
-      raise FORMAT_ERROR;
-    end LAST_DIG;
 
     function HAS_DOT (S : STRING) return BOOLEAN is
     begin
-      for I in STR'RANGE loop
+      for I in S'RANGE loop
         if S(I) = '.' then return TRUE; end if;
       end loop;
       return FALSE;
@@ -134,7 +155,7 @@ package body UNIT_FORMAT is
     -- Get amount or int from significant characters
     declare
       -- Strip blancs
-      TMP : constant STRING := STR(FIRST_DIG .. LAST_DIG);
+      TMP : constant STRING := STR(FIRST_DIG(STR) .. LAST_DIG(STR));
       I : MY_MATH.INTE;
       LAST : POSITIVE;
     begin
@@ -160,7 +181,7 @@ package body UNIT_FORMAT is
   end VALUE;
 
   -- Amount of an operation in LIST: -12345.12
-   --subtype SHORT_AMOUNT_STR is STRING (1 .. 9);
+  -- subtype SHORT_AMOUNT_STR is STRING (1 .. 9);
   -- From an amount (in euros) return 'image (euros/francs)
   -- Truncation rule:
   --  Sign is kept, three lower digits of unit removed,
@@ -168,21 +189,16 @@ package body UNIT_FORMAT is
   function SHORT_IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE)
                        return SHORT_AMOUNT_STR is
     STR : AMOUNT_STR;
-    FIRST_DIG : POSITIVE;
+    FIRST : POSITIVE;
   begin
     -- Get full string in proper unit
-    STR := IMAGE(AMOUNT_IN_EUROS);
+    STR := IMAGE(AMOUNT_IN_EUROS, FALSE);
 
     -- Look for first digit
-    for I in STR'RANGE loop
-      if STR(I) /= ' ' then
-        FIRST_DIG := I;
-        exit;
-      end if;
-    end loop;
+    FIRST := FIRST_DIG(STR);
 
     -- Enough space?
-    if FIRST_DIG < 4 then
+    if FIRST < 4 then
       -- No
       declare
         LAST : constant := STR'LAST;

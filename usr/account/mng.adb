@@ -5,12 +5,16 @@ with FILE_MNG, OPER_LIST_MNG, SCREEN, UNIT_FORMAT;
 -- Manage the whole acount status
 package body MNG is
 
+  -- Sorted operations
   OPER_LIST : OPER_LIST_MNG.LIST_TYPE;
-  procedure SORT is new OPER_LIST_MNG.SORT (OPER_DEF.LESS_THAN);
+  procedure SORT is new OPER_LIST_MNG.SORT (OPER_DEF.BEFORE);
 
+  -- Name and status of current account
   ACCOUNT_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
-
   ACCOUNT_SAVED : BOOLEAN := TRUE;
+
+  -- Are we working with sublist or all selection
+  IN_SUBLIST : BOOLEAN := FALSE;
 
   -- The one in first record of file
   ROOT_AMOUNT : OPER_DEF.AMOUNT_RANGE;
@@ -19,8 +23,8 @@ package body MNG is
   REAL_AMOUNT, ACCOUNT_AMOUNT, DEFERED_AMOUNT,
                MARGIN_AMOUNT : OPER_DEF.AMOUNT_RANGE;
 
+  -- Callback for selection when Loading/saving file
   LOADING : BOOLEAN;
-
   procedure INIT_SELECT_FILE is
   begin
     AFPX.CLEAR_FIELD(1);
@@ -32,11 +36,19 @@ package body MNG is
   end INIT_SELECT_FILE;
   function ACCOUNT_SELECT_FILE is new SELECT_FILE(INIT_SELECT_FILE);
 
-  -- Set current in oper list from AFPX selected
+  -- Selection list
+  type SEL_REC is record
+    NO : OPER_RANGE;
+    DELETED : BOOLEAN := FALSE;
+  end record;
+  package SEL_LIST_MNG is new DYNAMIC_LIST(SEL_REC);
+  SEL_LIST : SEL_LIST_MNG.LIST_TYPE;
+
+  -- Set current in sel list from AFPX selected
   procedure SET_CURRENT (NO : in OPER_NB_RANGE) is
   begin
     if NO in OPER_RANGE then
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, NO-1, FALSE);
+      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, NO - 1, FALSE);
     end if;
   end SET_CURRENT;
       
@@ -47,123 +59,143 @@ package body MNG is
     LINE : AFPX.LINE_REC;
     SEP : constant CHARACTER := '|';
   begin
-    LINE.LEN := AFPX.GET_FIELD_WIDTH(6);
+    LINE.LEN := AFPX.GET_FIELD_WIDTH(8);
     LINE.STR(1 .. 71) :=
                 NORMAL(NO, 4) & SEP
               & UNIT_FORMAT.SHORT_DATE_IMAGE(OPER.DATE) & SEP
               & UNIT_FORMAT.SHORT_IMAGE(OPER.AMOUNT) & SEP
-              & UNIT_FORMAT.SHORT_STATUS_IMAGE(OPER.STATUS) & SEP
-              & ' ' & UNIT_FORMAT.SHORT_KIND_IMAGE(OPER.KIND) & SEP
-              & OPER.DESTINATION & SEP
+              & ' ' & UNIT_FORMAT.SHORT_STATUS_IMAGE(OPER.STATUS) & SEP
+              & UNIT_FORMAT.SHORT_KIND_IMAGE(OPER.KIND) & SEP
+              & OPER.DESTINATION(1 .. 10) & SEP
               & OPER.COMMENT(1 .. 15) & SEP
               & OPER.REFERENCE;
     return LINE;
   end OPER_TO_LINE;
 
   package LIST_UTIL is
-    -- These work only if list is not mofified between calls
+    -- Build initial selection with all opers
+    procedure RESET_SELECTION;
+
+    -- Move in oper list to currently selected in sel list
+    procedure MOVE_TO_CURRENT;
+
+    -- These work only if lists are not modified between calls
     procedure SAVE_POS (MOVE_TO_FIRST : in BOOLEAN := TRUE);
     procedure RESTORE_POS;
 
-    -- These don't affect saved pos
+    -- Don't use selection list between insert and get
     procedure INSERT_AMOUNT (AMOUNT : in OPER_DEF.AMOUNT_RANGE);
     function GET_AMOUNT return OPER_DEF.AMOUNT_RANGE;
   end LIST_UTIL;
 
   package body LIST_UTIL is
+
+    procedure RESET_SELECTION is
+    begin
+      SEL_LIST_MNG.DELETE_LIST(SEL_LIST, DEALLOCATE => FALSE);
+      for I in 1 .. OPER_LIST_MNG.LIST_LENGTH(OPER_LIST) loop
+        SEL_LIST_MNG.INSERT(SEL_LIST, (NO => I, DELETED => FALSE));
+      end loop;
+      IN_SUBLIST := FALSE;
+      SCREEN.SUBLIST(IN_SUBLIST);
+    end RESET_SELECTION;
+
+
+    procedure MOVE_TO_CURRENT is
+      SEL : SEL_REC;
+    begin
+      SEL_LIST_MNG.READ(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
+      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, SEL.NO - 1, FALSE);
+    end MOVE_TO_CURRENT;
+
+
     LOC_POS : OPER_RANGE;
+
     procedure SAVE_POS (MOVE_TO_FIRST : in BOOLEAN := TRUE) is
     begin
-      LOC_POS := OPER_LIST_MNG.GET_POSITION(OPER_LIST);
+      LOC_POS := SEL_LIST_MNG.GET_POSITION(SEL_LIST);
       if MOVE_TO_FIRST then
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
+        SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, 0, FALSE);
       end if;
     end SAVE_POS;
 
     procedure RESTORE_POS is
     begin
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, LOC_POS-1, FALSE);
+      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, LOC_POS-1, FALSE);
     end RESTORE_POS;
 
+
     procedure INSERT_AMOUNT (AMOUNT : in OPER_DEF.AMOUNT_RANGE) is
-      LOC_LOC_POS : NATURAL;
       OPER : OPER_DEF.OPER_REC;
     begin
       OPER.AMOUNT := AMOUNT;
-      if OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-        LOC_LOC_POS := 0;
-      else
-        LOC_LOC_POS := OPER_LIST_MNG.GET_POSITION(OPER_LIST);
+      if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
         OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
       end if;
       OPER_LIST_MNG.INSERT(OPER_LIST, OPER, OPER_LIST_MNG.PREV);
-      if LOC_LOC_POS /= 0 then
-        -- Restore position: we have added a record
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT,
-                              LOC_LOC_POS, FALSE);
-      end if;
     end INSERT_AMOUNT;
 
     function GET_AMOUNT return OPER_DEF.AMOUNT_RANGE is
-      LOC_LOC_POS : POSITIVE;
       OPER : OPER_DEF.OPER_REC;
     begin
-      LOC_LOC_POS := OPER_LIST_MNG.GET_POSITION(OPER_LIST);
       OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
       OPER_LIST_MNG.GET(OPER_LIST, OPER, OPER_LIST_MNG.NEXT);
-      if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-        -- Restore position: we have removed a record
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT,
-                              LOC_LOC_POS-2, FALSE);
-      end if;
       return OPER.AMOUNT;
     end GET_AMOUNT;
       
   end LIST_UTIL;
       
 
-  -- Reset the AFPX list from the oper list
+  -- Reset the AFPX list from the sel list
   procedure RESET_LIST is
     OPER : OPER_DEF.OPER_REC;
-    INDEX : OPER_RANGE;
   begin
     AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
-    if OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
+    if SEL_LIST_MNG.IS_EMPTY(SEL_LIST) then
       return;
     end if;
 
+    -- Save pos and move to beginning of selection
     LIST_UTIL.SAVE_POS;
-    INDEX := 1;
     loop
+      LIST_UTIL.MOVE_TO_CURRENT;
       OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-      AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, OPER_TO_LINE(INDEX, OPER));
-      exit when OPER_LIST_MNG.GET_POSITION(OPER_LIST)
-              = OPER_LIST_MNG.LIST_LENGTH(OPER_LIST);
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST);
-      INDEX := INDEX + 1;
+      AFPX.LINE_LIST_MNG.INSERT(AFPX.LINE_LIST,
+                  OPER_TO_LINE(OPER_LIST_MNG.GET_POSITION(OPER_LIST),
+                  OPER));
+      exit when SEL_LIST_MNG.GET_POSITION(SEL_LIST)
+              = SEL_LIST_MNG.LIST_LENGTH(SEL_LIST);
+      SEL_LIST_MNG.MOVE_TO(SEL_LIST);
     end loop;
     LIST_UTIL.RESTORE_POS;
+    AFPX.LINE_LIST_MNG.MOVE_TO(AFPX.LINE_LIST,
+                     AFPX.LINE_LIST_MNG.NEXT,
+                     SEL_LIST_MNG.GET_POSITION(SEL_LIST) - 1, FALSE);
   end RESET_LIST;
 
-
+  -- Compute amounts from all account operations
   procedure COMPUTE_AMOUNTS is
     OPER : OPER_DEF.OPER_REC;
     use type OPER_DEF.AMOUNT_RANGE;
   begin
+    -- Initial values
     REAL_AMOUNT := ROOT_AMOUNT;
     ACCOUNT_AMOUNT := ROOT_AMOUNT;
     DEFERED_AMOUNT := 0.0;
-    MARGIN_AMOUNT  := 0.0;
+    MARGIN_AMOUNT  := ROOT_AMOUNT;
     if OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
       return;
     end if;
-    LIST_UTIL.SAVE_POS;
+
+    -- All operations
+    OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
     loop
       OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
       REAL_AMOUNT := REAL_AMOUNT + OPER.AMOUNT;
       case OPER.STATUS is
         when OPER_DEF.ENTERED =>
           ACCOUNT_AMOUNT := ACCOUNT_AMOUNT + OPER.AMOUNT;
+          MARGIN_AMOUNT := MARGIN_AMOUNT + OPER.AMOUNT;
         when OPER_DEF.NOT_ENTERED =>
           if OPER.AMOUNT < 0.0 then
             MARGIN_AMOUNT := MARGIN_AMOUNT + OPER.AMOUNT;
@@ -178,29 +210,36 @@ package body MNG is
               = OPER_LIST_MNG.LIST_LENGTH(OPER_LIST);
       OPER_LIST_MNG.MOVE_TO(OPER_LIST);
     end loop;
-    LIST_UTIL.RESTORE_POS;
   end COMPUTE_AMOUNTS;
 
+  -- Ecode amounts values
   procedure ENCODE_AMOUNTS is
   begin
     SCREEN.ENCODE_SUMMARY(REAL_AMOUNT, ACCOUNT_AMOUNT,
                           DEFERED_AMOUNT, MARGIN_AMOUNT);
   end ENCODE_AMOUNTS;
 
-  -- Refresh all
-  procedure REFRESH_SCREEN is
+  -- Refresh all, to be called each time an oper or the account changes
+  type LIST_UPDATE_LIST is (BOTTOM, CENTER, UNCHANGED);
+  procedure REFRESH_SCREEN (LIST_UPDATE : in LIST_UPDATE_LIST) is
   begin
     SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
-    SCREEN.ENCODE_NB_OPER(OPER_LIST_MNG.LIST_LENGTH(OPER_LIST));
+    SCREEN.ENCODE_NB_OPER(OPER_LIST_MNG.LIST_LENGTH(OPER_LIST),
+                          SEL_LIST_MNG.LIST_LENGTH(SEL_LIST));
     SCREEN.ENCODE_SAVED(ACCOUNT_SAVED);
     RESET_LIST;
+    if LIST_UPDATE = BOTTOM then
+      AFPX.UPDATE_LIST(AFPX.BOTTOM);
+    elsif LIST_UPDATE = CENTER then
+      AFPX.UPDATE_LIST(AFPX.CENTER);
+    end if;
     ENCODE_AMOUNTS;
     SCREEN.UPDATE_TO_UNIT;
-    SCREEN.ALLOW_EDIT(not OPER_LIST_MNG.IS_EMPTY(OPER_LIST));
+    SCREEN.ALLOW_EDIT(not SEL_LIST_MNG.IS_EMPTY(SEL_LIST));
   end REFRESH_SCREEN;
 
 
-  -- Modify the account
+  -- Load from file
   procedure LOAD (FILE_NAME : in STRING) is
     OPER : OPER_DEF.OPER_REC;
   begin
@@ -218,7 +257,7 @@ package body MNG is
         when CONSTRAINT_ERROR =>
           SCREEN.ACK_ERROR(SCREEN.FILE_NAME_TOO_LONG);
           ACCOUNT_SAVED := FALSE;
-          REFRESH_SCREEN;
+          REFRESH_SCREEN(UNCHANGED);
           return;
       end;
     else
@@ -226,11 +265,12 @@ package body MNG is
       LOADING := TRUE;
       TEXT_HANDLER.SET(ACCOUNT_NAME, ACCOUNT_SELECT_FILE(2, "", TRUE));
       SCREEN.RESET;
-      REFRESH_SCREEN;
+      REFRESH_SCREEN(BOTTOM);
     end if;
 
     -- In case of load error
     SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
+    -- If error occures afeter this point we clear the account
     if not TEXT_HANDLER.EMPTY(ACCOUNT_NAME) then
       -- Load
       begin
@@ -247,15 +287,14 @@ package body MNG is
       end;
       -- Get root amount
       ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
-      -- Move to end
-      if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.PREV, 0, FALSE);
-      end if;
+      -- Build initial selection with all
+      SORT(OPER_LIST);
+      LIST_UTIL.RESET_SELECTION;
       -- Set data
       ACCOUNT_SAVED := TRUE;
       COMPUTE_AMOUNTS;
       -- Set screen
-      REFRESH_SCREEN;
+      REFRESH_SCREEN(BOTTOM);
     else
       -- User cancelled selection
       CLEAR;
@@ -280,7 +319,7 @@ package body MNG is
     or else not SCREEN.CONFIRM_ACTION(SCREEN.OVERWRITE_FILE) then
       TEXT_HANDLER.SET(TMP_NAME, ACCOUNT_SELECT_FILE(2, "", FALSE));
       SCREEN.RESET;
-      REFRESH_SCREEN;
+      REFRESH_SCREEN(BOTTOM);
       if TEXT_HANDLER.EMPTY(TMP_NAME) then
         -- User discards
         return;
@@ -306,7 +345,7 @@ package body MNG is
     ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
     -- Update data and screen
     ACCOUNT_SAVED := TRUE;
-    REFRESH_SCREEN;
+    REFRESH_SCREEN(CENTER);
   end SAVE;
 
   procedure CLEAR is
@@ -318,12 +357,15 @@ package body MNG is
     end if;
     -- Set data
     TEXT_HANDLER.EMPTY(ACCOUNT_NAME);
+    SEL_LIST_MNG.DELETE_LIST(SEL_LIST, DEALLOCATE => FALSE);
     OPER_LIST_MNG.DELETE_LIST(OPER_LIST);
     ROOT_AMOUNT := 0.0;
     ACCOUNT_SAVED := TRUE;
     COMPUTE_AMOUNTS;
     -- Set screen
-    REFRESH_SCREEN;
+    IN_SUBLIST := FALSE;
+    SCREEN.SUBLIST(IN_SUBLIST);
+    REFRESH_SCREEN(BOTTOM);
   end CLEAR;
 
   -- Print account
@@ -340,36 +382,38 @@ package body MNG is
     exception
       when others =>
         SCREEN.ACK_ERROR(SCREEN.FILE_ACCESS);
-        REFRESH_SCREEN;
+        REFRESH_SCREEN(CENTER);
         return;
     end;
     PUT_LINE(PF, "Account: " & TEXT_HANDLER.VALUE(ACCOUNT_NAME)
                & "     at: " & UNIT_FORMAT.DATE_IMAGE(OPER_DEF.CURRENT_DATE));
+    --            --1234 123456789  123456789012 1234 1234 12345678901234567890 12345678901234567890 1234567890
+    PUT_LINE(PF, "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference");
+
     if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-      LIST_UTIL.SAVE_POS;
+      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
       INDEX := 1;
       loop
         OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
         PUT_LINE(PF, "  " & NORMAL(INDEX, 4) & SEP
                    & UNIT_FORMAT.DATE_IMAGE(OPER.DATE) & SEP
-                   & UNIT_FORMAT.IMAGE(OPER.AMOUNT) & SEP
-                   & UNIT_FORMAT.SHORT_STATUS_IMAGE(OPER.STATUS) & SEP
+                   & UNIT_FORMAT.IMAGE(OPER.AMOUNT, FALSE) & SEP
+                   & ' ' & UNIT_FORMAT.SHORT_STATUS_IMAGE(OPER.STATUS) & SEP
                    & UNIT_FORMAT.SHORT_KIND_IMAGE(OPER.KIND) & SEP
-                   & OPER.REFERENCE & SEP
                    & OPER.DESTINATION & SEP
-                   & OPER.COMMENT);
+                   & OPER.COMMENT & SEP
+                   & OPER.REFERENCE);
         exit when OPER_LIST_MNG.GET_POSITION(OPER_LIST)
                 = OPER_LIST_MNG.LIST_LENGTH(OPER_LIST);
         OPER_LIST_MNG.MOVE_TO(OPER_LIST);
         INDEX := INDEX + 1;
       end loop;
-      LIST_UTIL.RESTORE_POS;
     end if;
     -- Print summary
-    PUT_LINE(PF, "Real: "     &  UNIT_FORMAT.IMAGE(REAL_AMOUNT)
-               & " Account: " &  UNIT_FORMAT.IMAGE(ACCOUNT_AMOUNT)
-               & " Defered: " &  UNIT_FORMAT.IMAGE(DEFERED_AMOUNT)
-               & " Margin: "  &  UNIT_FORMAT.IMAGE(MARGIN_AMOUNT));
+    PUT_LINE(PF, "Real: "     &  UNIT_FORMAT.IMAGE(REAL_AMOUNT, FALSE)
+               & " Account: " &  UNIT_FORMAT.IMAGE(ACCOUNT_AMOUNT, FALSE)
+               & " Defered: " &  UNIT_FORMAT.IMAGE(DEFERED_AMOUNT, FALSE)
+               & " Margin: "  &  UNIT_FORMAT.IMAGE(MARGIN_AMOUNT, FALSE));
     NEW_PAGE(PF);
     FLUSH(PF);
     
@@ -394,7 +438,7 @@ package body MNG is
   exception
     when others =>
       SCREEN.ACK_ERROR(SCREEN.FILE_IO);
-      REFRESH_SCREEN;
+      REFRESH_SCREEN(CENTER);
       return;
   end PRINT; 
 
@@ -402,20 +446,36 @@ package body MNG is
   procedure CHANGE_UNIT is
     use type UNIT_FORMAT.UNITS_LIST;
   begin
-    if UNIT_FORMAT.GET_CURRENT_UNIT = UNIT_FORMAT.EUROS then
-      UNIT_FORMAT.SET_UNIT_TO(UNIT_FORMAT.FRANCS);
-    else
-      UNIT_FORMAT.SET_UNIT_TO(UNIT_FORMAT.EUROS);
-    end if;
+    UNIT_FORMAT.SWITCH_UNIT;
     -- Redisplay
-    REFRESH_SCREEN;
+    REFRESH_SCREEN(CENTER);
   end CHANGE_UNIT;
 
-  -- Modify operations
+  -- Sort
+  procedure SORT is
+  begin
+    SORT(OPER_LIST); 
+    LIST_UTIL.RESET_SELECTION;
+    REFRESH_SCREEN(BOTTOM);
+  end SORT;
+
+  -- Deletion management
+  package DELETION is
+    -- Flag currently selected operation as deleted or not
+    procedure FLAG_DELETED;
+    procedure FLAG_UNDELETED;
+
+    -- Get number of flagged operations
+    function GET_NB_DELETED return OPER_NB_RANGE;
+
+    -- Delete all flagged operation
+    procedure COMMIT_DELETIONS;
+  end DELETION;
+  package body DELETION is separate;
 
   -- The generic edition of an operation
   package EDITION is
-    type EDIT_LIST is (CREATE, COPY, MODIFY, VIEW, DELETE);
+    type EDIT_LIST is (CREATE, MODIFY, VIEW, DELETE);
     procedure EDIT (EDIT_TYPE : in EDIT_LIST);
   end EDITION;
   package body EDITION is separate;
@@ -424,30 +484,31 @@ package body MNG is
   procedure UPDATE_STATE is
     OPER : OPER_DEF.OPER_REC;
   begin
+    LIST_UTIL.MOVE_TO_CURRENT;
     OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
     case OPER.STATUS is
       when OPER_DEF.ENTERED =>
-        OPER.STATUS := OPER_DEF.NOT_ENTERED;
+        if OPER_DEF.KIND_CAN_BE_DEFERED(OPER.KIND) then
+          OPER.STATUS := OPER_DEF.DEFERED;
+        else
+          OPER.STATUS := OPER_DEF.NOT_ENTERED;
+        end if;
       when OPER_DEF.NOT_ENTERED | OPER_DEF.DEFERED =>
         OPER.STATUS := OPER_DEF.ENTERED;
     end case;
     OPER_LIST_MNG.MODIFY(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
+    ACCOUNT_SAVED := FALSE;
     COMPUTE_AMOUNTS;
-    REFRESH_SCREEN;
+    REFRESH_SCREEN(UNCHANGED);
   end UPDATE_STATE;
 
   -- Create a new operation
   procedure ADD_OPER is
   begin
-    if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST)
-    and then SCREEN.CONFIRM_ACTION(SCREEN.ADD_COPY) then
-      EDITION.EDIT(EDITION.COPY);
-    else
-      EDITION.EDIT(EDITION.CREATE);
-    end if;
+    EDITION.EDIT(EDITION.CREATE);
     SCREEN.RESET;
     COMPUTE_AMOUNTS;
-    REFRESH_SCREEN;
+    REFRESH_SCREEN(BOTTOM);
   end ADD_OPER;
 
   -- Edit an operation
@@ -455,7 +516,8 @@ package body MNG is
   begin
     EDITION.EDIT(EDITION.MODIFY);
     SCREEN.RESET;
-    REFRESH_SCREEN;
+    COMPUTE_AMOUNTS;
+    REFRESH_SCREEN(CENTER);
   end EDIT_OPER;
 
   -- View an operation
@@ -463,7 +525,7 @@ package body MNG is
   begin
     EDITION.EDIT(EDITION.VIEW);
     SCREEN.RESET;
-    REFRESH_SCREEN;
+    REFRESH_SCREEN(CENTER);
   end VIEW_OPER;
 
   -- Delete an operation
@@ -471,7 +533,8 @@ package body MNG is
   begin
     EDITION.EDIT(EDITION.DELETE);
     SCREEN.RESET;
-    REFRESH_SCREEN;
+    COMPUTE_AMOUNTS;
+    REFRESH_SCREEN(CENTER);
   end DEL_OPER;
 
   -- Remove all entered operations up to current
@@ -485,50 +548,38 @@ package body MNG is
       return;
     end if;
     -- Get number of oper to check and start from the beginning
-    POS := OPER_LIST_MNG.GET_POSITION(OPER_LIST);
-    OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
-    -- Check  up to pos included
+    POS := SEL_LIST_MNG.GET_POSITION(SEL_LIST);
+    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, 0, FALSE);
+    -- Check up to pos included
     for I in 1 .. POS loop
+      LIST_UTIL.MOVE_TO_CURRENT;
       OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
       -- Remove if entered
       if OPER.STATUS = OPER_DEF.ENTERED then
         ROOT_AMOUNT := ROOT_AMOUNT + OPER.AMOUNT;
-        if OPER_LIST_MNG.GET_POSITION(OPER_LIST) /= OPER_LIST_MNG.LIST_LENGTH(OPER_LIST) then
-          -- Delete and move to next
-          OPER_LIST_MNG.DELETE(OPER_LIST);
-        else
-          -- Delete and stop
-          OPER_LIST_MNG.DELETE(OPER_LIST, OPER_LIST_MNG.PREV);
-          exit;
-        end if;
-      else
-        if I /= POS then
-          -- Move to next
-          OPER_LIST_MNG.MOVE_TO(OPER_LIST);
-        end if;
+        DELETION.FLAG_DELETED;
+        ACCOUNT_SAVED := FALSE;
       end if;
+      -- Done when orig pos is processed
+      exit when I = POS;
+      -- Move to next
+      SEL_LIST_MNG.MOVE_TO(SEL_LIST);
     end loop;
-    -- Move to end
-    if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.PREV, 0, FALSE);
-    end if;
-    ACCOUNT_SAVED := FALSE;
+    DELETION.COMMIT_DELETIONS;
     COMPUTE_AMOUNTS;
-    REFRESH_SCREEN;
+    REFRESH_SCREEN(CENTER);
   end GARBAGE_COLLECT;
 
   -- Make a sub selection of operations
-  procedure SEARCH is
-  begin
-    -- @@@
-    SCREEN.ACK_ERROR(SCREEN.NOT_IMPLEMENTED);
-  end SEARCH;
+  procedure SEARCH is separate;
 
   -- Reset selection to the full list
   procedure SHOW_ALL is
   begin
-    -- @@@
-    SCREEN.ACK_ERROR(SCREEN.NOT_IMPLEMENTED);
+    IN_SUBLIST := FALSE;
+    SCREEN.SUBLIST(IN_SUBLIST);
+    LIST_UTIL.RESET_SELECTION;
+    REFRESH_SCREEN(BOTTOM);
   end SHOW_ALL;
 
   -- Get data
