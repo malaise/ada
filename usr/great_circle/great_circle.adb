@@ -98,6 +98,7 @@ package body Great_Circle is
     procedure Fix_Angle is
       Signed_A_Y : Conv.Rad_Range := Lat_Lon_Rad_A.Y;
       Signed_B_Y : Conv.Rad_Range := Lat_Lon_Rad_B.Y;
+      Angle : C_Nbres.Radian;
     begin
       -- Set Signed_*_Y < 0 if > Pi
       if Signed_A_Y > Conv.Pi then
@@ -107,29 +108,31 @@ package body Great_Circle is
         Signed_B_Y := Signed_B_Y - 2.0 * Conv.Pi;
       end if;
 
-      -- if same meridian
-      if Result_Rad_Angle < Epsilon
-      or else Result_Rad_Angle - Conv.Pi < Epsilon then
+      -- If same meridian
+      Angle :=  C_Nbres.Radian(Result_Rad_Angle);
+      if Angle < Epsilon
+      or else abs (Angle - Conv.Pi) < Epsilon then
         -- See if A and B are on the same meridian
         if abs Lat_Lon_Rad_Delta.X <= Conv.Pi / 2.0 then
           -- Yes, add Pi if B is below A on meridian
           if Signed_B_Y < Signed_A_Y then
-            Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
+            Angle := Angle + Conv.Pi;
           end if;
         else
           -- A and B are on opposed meridians
           -- Add Pi if B is below -A
           if Signed_B_Y < -Signed_A_Y then
-            Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
+            Angle := Angle + Conv.Pi;
           end if;
         end if;
       else
         -- Si if B is in the south of A
         if Signed_B_Y < Signed_A_Y then
-          Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
+          Angle := Angle + Conv.Pi;
         end if;
       end if;
 
+      Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(Angle));
     end Fix_Angle;
 
   begin
@@ -172,6 +175,7 @@ package body Great_Circle is
 
     -- Compute heading
     if Debug then
+      -- Get angle between meridian chord and route chord (in secant plan)
       declare
         Dist : Lat_Lon.Distance;
       begin
@@ -184,7 +188,7 @@ package body Great_Circle is
             Conv.Rad2Geo(Result_Rad_Angle)));
       end;
 
-      -- Angle from Y axis to route
+      -- Project chords of lat and long in tangent plan
       declare
         P_Chord_Xa, P_Chord_Y : Real;
         use type Real;
@@ -216,6 +220,7 @@ package body Great_Circle is
       end;
     end if;
 
+    -- Angle in tangent plan
     declare
       -- Tangents in A to A meridien and to AB
       Tang_A_North, Tang_A_B : Vector_Rec;
