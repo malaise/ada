@@ -2,7 +2,7 @@
 2.004 format
 
 # Error message
-[ "Error, 2 positive numbers expected." putl
+[ "Error, 2 positive numbers, ref then val, expected." putl
 ssize popn retall ] E popr
 ssize 2 /= E pushr ifcall
 
@@ -18,9 +18,9 @@ a popr a C pushr call
 b popr b C pushr call
 
 # Format a result (2 digits)
-[ toreal 4 2 " " normal put ] P popr
+[ toreal 6 2 " " normal put ] P popr
 
-# x = (A / B) - 1
+# A is B + x % of B, so x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *
 0 format
 a pushr P pushr call " = " put b pushr P pushr call " " put
@@ -29,7 +29,7 @@ dup 0.0 <  "-"  "+" ifte put " " put
 absv P pushr call "%" putl
 
 
-# A is B + x % of B
+# A is x % of B, so x = A / B
 a pushr toreal b pushr toreal / 100.0 *
 0 format
 a pushr P pushr call " = " put b pushr P pushr call " * " put
