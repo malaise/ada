@@ -284,6 +284,9 @@ package body OPERATIONS is
   -- INTE->REAL
   function TOREAL  (X : ITEM_REC) return ITEM_REC is
   begin
+    if X.KIND = REAL then
+      return X;
+    end if;
     if X.KIND /= INTE then
       raise INVALID_ARGUMENT;
     end if;
@@ -293,6 +296,9 @@ package body OPERATIONS is
   -- REAL->INTE
   function TOINTE (X : ITEM_REC) return ITEM_REC is
   begin
+    if X.KIND = INTE then
+      return X;
+    end if;
     if X.KIND /= REAL then
       raise INVALID_ARGUMENT;
     end if;
