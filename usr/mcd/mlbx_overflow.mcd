@@ -1,0 +1,30 @@
+# New_Delay = Prev_Delay + 10 * (5 ** No_Try)
+
+# Max tries, Delay, No_Try, Total_Delay
+10 m popr
+0 d popr
+0 n popr
+0 t popr
+
+[
+# Put n
+2 format "Try no: " put n pushr put ", " put
+
+# Compute and put d
+5 n pushr ** 10 * d pushr + d copyr dup
+9 format "this try delay: " put put " us; " put
+
+# Compute and put t
+t pushr + t copyr
+"Total delay: " put put " us" putl
+
+# Increment n and test
+n pushr 1 + n copyr
+m pushr > ifret
+
+# Loop
+L pushr retacal ] L copyr
+
+# Call
+call
+
