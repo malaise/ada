@@ -196,10 +196,17 @@ package body Dictio_Lib is
     end if;
   end Check_Data;
 
+  Init_Done : Boolean := False;
+
   procedure Init is
     Env_Set, Env_Trunc : Boolean;
     Env_Len : Natural;
+    use type Event_Mng.Out_Event_List;
   begin
+    if Init_Done then
+      return;
+    end if;
+
     Debug.Init;
     Sys_Calls.Getenv (Dictio_Env_Host, Env_Set, Env_Trunc,
                       Host.Name, Env_Len);
@@ -223,6 +230,13 @@ package body Dictio_Lib is
     end if;
     
     Connect_To_Dictio;
+
+     -- Wait a bit for connection to establish
+    loop
+      exit when Event_Mng.Wait (100) = Event_Mng.No_Event;
+    end loop;
+
+    Init_Done := True;
   exception
     when Error:others =>
       if Debug.Level_Array(Debug.Lib) then
