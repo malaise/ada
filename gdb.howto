@@ -1,0 +1,7 @@
+Stop in main:   break _ada_<main>
+Stop in proc:   break <package>__<procedure>
+Exception:      break __gnat_raise
+Print varable:  p <package>__<variable>
+Dump mem     : x/<fmt> <addr>   (<fmt>=<count><type><size>
+                                 <type>= x d u f a c s)
+                                 <size>= b h w g
