@@ -156,7 +156,8 @@ package body Players is
 
     -- Search first occurence
     begin
-      Search_Match_Action(Actions(Color), Ref, From_Current => False);
+      Search_Match_Action(Actions(Color), Ref,
+                          From => Action_List_Mng.Absolute);
     exception
        when Action_List_Mng.Not_In_List =>
          -- Not found
@@ -168,7 +169,8 @@ package body Players is
 
     begin
       Action_List_Mng.Move_To(Actions(Color));
-      Search_Match_Action(Actions(Color), Ref, From_Current => True);
+      Search_Match_Action(Actions(Color), Ref,
+                          From => Action_List_Mng.From_Current);
       -- Should be unique
       raise More_Than_One;
     exception
@@ -187,7 +189,8 @@ package body Players is
 
   function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
   begin
-    Search_Same_Action (Actions(Color), Action, From_Current => False);
+    Search_Same_Action (Actions(Color), Action,
+                        From => Action_List_Mng.Absolute);
     return True;
   exception
     when Action_List_Mng.Not_In_List =>

@@ -256,7 +256,7 @@ begin
         end;
         -- Find in factors of N2
         begin
-          Search (L2, N1, From_Current => False);
+          Search (L2, N1, From => Plm.Absolute);
           Match := True;
         exception
           when Plm.Empty_List | Plm.Not_In_List =>

@@ -85,7 +85,8 @@ procedure Actions_Of_King (Piece : in King_Piece) is
 
       if Opp_Action.To.Kind = Move then
         begin
-          Find_Square (King_Way, Opp_Action.To, From_Current => False);
+          Find_Square (King_Way, Opp_Action.To,
+                       From => Action_List_Mng.Absolute);
           -- We are under attack on our way (or current pos)
           Action_List_Mng.Delete_List (King_Way);
           return;

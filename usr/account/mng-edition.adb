@@ -378,7 +378,7 @@ package body Edition is
 
       -- Search same kind (cheque) and same reference
       begin
-        Search_Kind_Ref(Oper_List, Oper, From_Current => False);
+        Search_Kind_Ref(Oper_List, Oper, From => Oper_List_Mng.Absolute);
         -- oh, oh. Found another one
       exception
         when Oper_List_Mng.Not_In_List =>
