@@ -106,7 +106,7 @@ package body Pattern is
     Init;
     Check_Rule (Rule);
     if Storage.Pattern_Exists (Rule, Id) then
-      Storage.Delete_Current_Pattern;
+      raise Pattern_Exists;
     end if;
     -- Init
     Put_Debug ("Set", "Create patern to rule " & Image (Rule) &

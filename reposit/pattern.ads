@@ -41,6 +41,7 @@ package Pattern is
   -- Id4Cb will be the Id provided to Match_Cb when pattern matches.
   -- It can be Same_Id (same value as Id) or another value:
   -- May raise Invalid_Pattern if Pattern is not valid.
+  -- May raise Pattern_Exists if this pattern Id is already set.
   procedure Set (Rule     : in Rule_No;
                  Id       : in Pattern_Id;
                  Pattern  : in String;
@@ -76,6 +77,9 @@ package Pattern is
 
   -- On Set/Del.
   Invalid_Pattern : exception;
+
+  -- On Set
+  Pattern_Exists : exception;
 
   -- On Get_Free_Rule if no more free rule
   -- On any other call Rule has not been got.
