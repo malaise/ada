@@ -6,8 +6,7 @@ ssize 3 /=
 dup isprog ~ [ "Error, function expected" putl ssize popn retall ] ifcall
 F popr
 
-# Epsilon
-1.0E-10 e popr
+# Format
 2.010 format
 
 # Error and quit
@@ -38,7 +37,7 @@ a pushr b pushr > [ i pushr j pushr i popr j popr ] ifcall
 # Compute (i+j)/2
 i pushr j pushr + 2.0 /
 # Abs(i - j) <= epsilon? If yes, this is the end
-i pushr j pushr - absv e pushr <= [ putl retall ] ifcall
+i pushr j pushr - absv epsilon <= [ putl retall ] ifcall
 # r=f((i+j)/2)
 dup F pushr call
 
