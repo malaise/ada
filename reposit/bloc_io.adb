@@ -224,7 +224,7 @@ package  body Bloc_Io is
     if Res < 0 then
       raise Device_Error;
     end if;
-    return Count(Res + 1) / Count(Element_Size);
+    return Count(Res) / Count(Element_Size) + 1;
   end Index;
 
   procedure Set_Index(File : in File_Type; To : in Positive_Count) is
