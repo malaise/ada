@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/wait.h>
 
 #include "sys_calls.h"
 
@@ -57,8 +58,12 @@ extern int set_tty_attr (int fd, int mode) {
   struct termios termattr;
   int blk;
 
-  if (tcgetattr(fd, &termattr) != 0) {
-    return (-1);
+  for (;;) {
+    if (tcgetattr(fd, &termattr) == 0) {
+      break;
+    } else if (errno != EINTR) {
+      return (-1);
+    }
   }
 
   switch (mode) {
@@ -92,8 +97,12 @@ extern int set_tty_attr (int fd, int mode) {
     break;
   }
 
-  if (tcsetattr (fd, TCSANOW, &termattr) != 0) {
-    return (-1);
+  for (;;) {
+    if (tcsetattr (fd, TCSANOW, &termattr) == 0) {
+      break;
+    } else if (errno != EINTR) {
+      return (-1);
+    }
   }
 
   return set_blocking (fd, blk);
@@ -104,18 +113,20 @@ extern int get_immediate (int fd) {
   ssize_t n;
   char c;
 
-  n = read (fd, &c, 1);
-  if (n < 0) {
-    if (errno == EWOULDBLOCK) {
-      return NONE;
+  for (;;) {
+    n = read (fd, &c, 1);
+    if (n < 0) {
+      if (errno == EWOULDBLOCK) {
+        return NONE;
+      } else if (errno != EINTR) {
+        perror ("get_immediate/read");
+        return ERROR;
+      }
+    } else if (n > 0) {
+      return ((char)c);
     } else {
-      perror ("get_immediate/read");
-      return ERROR;
+      return CLOSED;
     }
-  } else if (n > 0) {
-    return ((char)c);
-  } else {
-    return CLOSED;
   }
 }
 
@@ -162,3 +173,110 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
 
 }
 
+extern int fd_int_read (int fd, void *buffer, int nbytes) {
+  size_t res;
+  for (;;) {
+    res = read (fd, buffer, (size_t) nbytes);
+    if (res >= 0) {
+      return (int)res;
+    } else if (errno != EINTR) {
+      return -1;
+    }
+  }
+}
+
+extern int fd_int_write (int fd, void *buffer, int nbytes) {
+  size_t res;
+  for (;;) {
+    res = write (fd, buffer, (size_t) nbytes);
+    if (res >= 0) {
+      return (int)res;
+    } else if (errno != EINTR) {
+      return -1;
+    }
+  }
+}
+
+extern int fd_pipe (int *fd1, int *fd2) {
+  int fds[2];
+
+  for (;;) {
+    if (pipe (fds) == 0) {
+      *fd1 = fds[0];
+      *fd2 = fds[1];
+      return 0;
+    } else if (errno != EINTR) {
+      return -1;
+    }
+  }
+}
+
+extern int fd_close (int fd) {
+  for (;;) {
+    if (close (fd) == 0) {
+      return 0;
+    } else if (errno != EINTR) {
+      return -1;
+    }
+  }
+}
+
+extern int procreate (void) {
+  pid_t pid;
+
+  pid = fork();
+  if (pid == -1) {
+    return 0;
+  } else if (pid > 0) {
+    return pid;
+  } else {
+    return (- getpid());
+  }
+}
+
+extern void mutate (char * const argv[]) {
+
+  if ( (argv[0] == NULL) || (strlen (argv[0]) == 0) )  {
+    return;
+  }
+  execv (argv[0], argv);
+}
+
+/* Waitpid (WNOHANG): pid is set to 0 if no more child */
+#define NO_MORE  0
+#define EXITED   1
+#define SIGNALED 2
+#define STOPPED  3
+extern void next_dead (int *cause, int *pid, int *code) {
+
+  int status;
+  pid_t got_pid;
+
+  for (;;) {
+    got_pid = waitpid((pid_t)-1, &status, WNOHANG);
+    if ( (got_pid != (pid_t)-1) || (errno != EINTR) ) {
+      break;
+    }
+  }
+  *pid = (int) got_pid;
+  if ( (got_pid == (pid_t)-1) && (errno != ECHILD) ) {
+    *pid = 0;
+    *cause = ERROR;
+    *code = 0;
+  } else if ( (got_pid == 0)
+         || ( (got_pid == (pid_t)-1) && (errno == ECHILD) ) ) {
+    *pid = 0;
+    *cause = NO_MORE;
+    *code = 0;
+  } else if (WIFEXITED(status)) {
+    *cause = EXITED;
+    *code = WEXITSTATUS(status);
+  } else if (WIFSIGNALED(status)) {
+    *cause = SIGNALED;
+    *code = WTERMSIG(status);
+  } else {
+    *cause = STOPPED;
+    *code = 0;
+  }
+
+}

@@ -1,3 +1,4 @@
+with System;
 with Ada.Calendar;
 package Sys_Calls is
 
@@ -84,10 +85,49 @@ package Sys_Calls is
   procedure Get_Immediate (Fd : in File_Desc;
                            Status : out Get_Status_List;
                            C      : out Character);
+  -- Read / write on File_Desc
+  function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
+           return Natural;
+  function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
+           return Natural;
 
-  -- Exception (of File_Stat)
+  -- Close
+  procedure Close (Fd : in File_Desc);
+
+  -- Create a pipe
+  procedure Pipe (Fd1, Fd2 : out File_Desc);
+
+  -- Process procreation (fork)
+  procedure Procreate (Child : out Boolean; Child_Pid : out positive);
+
+  -- Process mutation (exec)
+  -- Program_name and arguments are build by Many_Strings.Cat
+  procedure Mutate (Program : in String);
+
+  -- Process termination
+  type Death_Cause_List is (No_Dead, Exited, Signaled, Stopped);
+  type Death_Rec (Cause : Death_Cause_List := No_Dead) is record
+    case Cause is
+      when No_Dead =>
+        null;
+      when Exited =>
+        Exited_Pid : Positive;
+        Exit_Code : Integer;
+      when Signaled =>
+        Signaled_Pid : Positive;
+        Signal : Positive;
+      when Stopped =>
+        Stopped_Pid : Positive;
+    end case;
+  end record;
+  function Next_Dead return Death_Rec;
+
+  -- Exceptions (of File_Stat)
   Name_Error   : exception;
   Access_Error : exception;
+
+  -- Exception (of read, write, pipe...)
+  System_Error : exception;
 
 private
 

@@ -1,9 +1,7 @@
-with System;
 with Interfaces.C_Streams;
 with Interfaces.C.Strings;
 with Ada.Command_Line;
-with Day_Mng;
-with Bit_Ops;
+with Day_Mng, Bit_Ops, Many_Strings;
 
 package body Sys_Calls is
 
@@ -361,6 +359,121 @@ package body Sys_Calls is
       Status := Error;
     end if;
   end Get_Immediate;
+
+  -- Read / write on File_Desc
+  function C_Fd_Int_Read  (Fd     : Integer;
+                           Buffer : System.Address;
+                           Nbytes : Integer)
+                          return Integer;
+  pragma Import (C, C_Fd_Int_Read, "fd_int_read");
+  function C_Fd_Int_Write (Fd     : Integer;
+                           Buffer : System.Address;
+                           Nbytes : Integer)
+                          return Integer;
+  pragma Import (C, C_Fd_Int_Write, "fd_int_write");
+
+  function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
+           return Natural is
+    Res : Integer;
+  begin
+    Res := C_Fd_Int_Read (Integer(Fd), Buffer, Nbytes);
+    if Res >= 0 then
+      return Res;
+    else
+      raise System_Error;
+    end if;
+  end Read;
+    
+  function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
+           return Natural is
+    Res : Integer;
+  begin
+    Res := C_Fd_Int_Write (Integer(Fd), Buffer, Nbytes);
+    if Res >= 0 then
+      return Res;
+    else
+      raise System_Error;
+    end if;
+  end Write;
+
+  -- Close
+  function C_Fd_Close (Fd : Integer) return Integer;
+  pragma Import (C, C_Fd_Close, "fd_close");
+
+  procedure Close (Fd : in File_Desc) is
+  begin
+    if C_Fd_Close (Integer(Fd)) /= 0 then
+      raise System_Error;
+    end if;
+  end Close;
+
+  -- Create a pipe
+  function C_Fd_Pipe (Fd1, Fd2 : in System.Address) return Integer;
+  pragma Import (C, C_Fd_Pipe, "fd_pipe");
+
+  procedure Pipe (Fd1, Fd2 : out File_Desc) is
+  begin
+    if C_Fd_Pipe (Fd1'Address, Fd2'Address) /= 0 then
+      raise System_Error;
+    end if;
+  end Pipe;
+
+  -- Process procreation (fork)
+  function C_Procreate return Integer;
+  pragma Import (C, C_Procreate, "procreate");
+
+  procedure Procreate (Child : out Boolean; Child_Pid : out positive) is
+    Res : Integer;
+  begin
+    Res := C_Procreate;
+    if Res > 0 then
+      Child := False;
+      Child_Pid := Res;
+    elsif Res < 0 then
+      Child := True;
+      Child_Pid := - Res;
+    else
+      raise System_Error;
+    end if;
+  end Procreate;
+
+  -- Process mutation (exec)
+  procedure C_Mutate (Args : in System.Address);
+  pragma Import  (C, C_Mutate, "mutate");
+
+  procedure Mutate (Program : in String) is
+  begin
+    -- @@@
+    raise System_Error;
+  end Mutate;
+
+  -- Process termination
+  C_No_More  : constant Integer := 0;
+  C_Exited   : constant Integer := 1;
+  C_Signaled : constant Integer := 2;
+  C_Stopped  : constant Integer := 3;
+  procedure C_Next_Dead (Cause, Pid, Code : in System.Address);
+  pragma Import  (C, C_Next_Dead, "next_dead");
+  
+  function Next_Dead return Death_Rec is
+    Pid, Cause, Code : Integer;
+  begin
+    C_Next_Dead (Cause'Address, Pid'Address, Code'Address);
+    case Cause is
+      when C_Error =>
+        raise System_Error;
+      when C_No_More =>
+        return (Cause => No_Dead);
+      when C_Exited =>
+        return (Cause => Exited, Exited_Pid => Pid, Exit_Code => Code);
+      when C_Signaled =>
+        return (Cause => Signaled, Signaled_Pid => Pid, Signal => Code);
+      when C_Stopped =>
+        return (Cause => Stopped, Stopped_Pid => Pid);
+      when others =>
+        raise Constraint_Error;
+    end case;
+  end Next_Dead;
 
 end Sys_Calls; 
 

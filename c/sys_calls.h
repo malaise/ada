@@ -44,5 +44,28 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct);
 
 extern int fd_stat(int fd, simple_stat *simple_stat_struct);
 
+extern int fd_int_read (int fd, void *buffer, int nbytes);
+
+extern int fd_int_write (int fd, void *buffer, int nbytes);
+
+extern int fd_pipe (int *fd1, int *fd2);
+
+extern int fd_close (int fd);
+
+/* Fork. >0 : father, pid of child, <0 : child, -pid, 0 : error */
+extern int procreate (void);
+
+/* Execv */
+extern void mutate (char * const argv[]);
+
+/* Waitpid (WNOHANG): pid is set to 0 if no more child */
+/* Cause may be ERROR, or */
+#define NO_MORE  0
+#define EXITED   1
+#define SIGNALED 2
+#define STOPPED  3
+/* Pid is set if not ERROR nor NO_MORE, Code if EXITED or SIGNALED */
+extern void next_dead (int *cause, int *pid, int *code);
+
 #endif
 
