@@ -86,7 +86,7 @@ package AFPX is
 
   -- Activate/Desactivate a field for further put_then_gets
   -- All fields are activated by default (when USE_DESCRIPTOR or RESET_FIELD)
-  -- A non active field is not displayed by put_then get
+  -- A non active field is not displayed by put or put_then_get
   --  (when USE_DESCRIPTOR or RESET_FIELD)
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
   procedure SET_FIELD_ACTIVATION (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
