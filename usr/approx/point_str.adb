@@ -48,9 +48,9 @@ package body POINT_STR is
     else
       return C;
     end if;
-    exception
-      when others =>
-        raise CONSTRAINT_ERROR;
+  exception
+    when others =>
+      raise CONSTRAINT_ERROR;
   end COORDINATE_VALUE;
 
 
