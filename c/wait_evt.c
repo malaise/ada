@@ -82,7 +82,6 @@ static void signal_handler (int sig) {
 }
 
 
-
 /***** WakeUp Management   *****/
 static int wake_up_fds[2] = {-1, -1};
 extern void evt_wake_up (void) {
@@ -115,7 +114,8 @@ static void init_evt (void) {
   /* Set handler if not set */
   if (sig_received == NO_HANDLER) {
     sig_received = NO_SIG;
-    (void) signal(SIGINT,  signal_handler);
+    (void) signal(SIGINT, signal_handler);
+    (void) signal(SIGPIPE, SIG_IGN);
   }
   if (wake_up_fds[0] == -1) {
     (void) pipe (wake_up_fds);

@@ -1,5 +1,6 @@
 #include <sys/time.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,8 +108,6 @@ static int soc_init (soc_ptr *p_soc,
     return (SOC_SYS_ERR);
   }
 
-  
-
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
     perror ("fcntl_cloexec_open");
@@ -134,6 +133,8 @@ extern int soc_open (soc_token *p_token,
   /* Check that socket is not already open */
   if (*p_soc != NULL) return (SOC_USE_ERR);
 
+  /* Stay alive on Sigpipe */
+  (void) signal (SIGPIPE, SIG_IGN);
 
   /* Call to socket */
   if (protocol == udp_socket) {
