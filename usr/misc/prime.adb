@@ -16,8 +16,9 @@ procedure Prime is
   package Llp_Io is new Ada.Text_Io.Integer_Io (Long_Long_Positive);
 
   -- Lists of prime factors
-  package Plm is new Dynamic_List(Long_Long_Positive);
-  procedure Search is new Plm.Search;
+  package Pldm is new Dynamic_List(Long_Long_Positive);
+  package Plm renames Pldm.Dyn_List;
+  procedure Search is new Plm.Search("=");
 
   -- What should we do
   type Mode_List is (List_All, List, Is_Prime, Next, Prev, Factors, Hcd, Lcm);

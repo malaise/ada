@@ -11,7 +11,8 @@ package body Call_Stack is
   Call_Entry : Call_Entry_Rec;
 
 
-  package Call_Stack_List is new Dynamic_List (Call_Entry_Rec);
+  package Call_Stack_Dyn_List is new Dynamic_List (Call_Entry_Rec);
+  package Call_Stack_List renames Call_Stack_Dyn_List.Dyn_List;
   List : Call_Stack_List.List_Type;
 
   procedure Push (Item : in String) is

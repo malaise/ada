@@ -1,7 +1,8 @@
 with Dynamic_List, My_Math;
 package body Prime_List is
 
-  package Prime_List_Mng is new Dynamic_List(Long_Long_Positive);
+  package Prime_Dyn_List_Mng is new Dynamic_List(Long_Long_Positive);
+  package Prime_List_Mng renames Prime_Dyn_List_Mng.Dyn_List;
   The_List : Prime_List_Mng.List_Type;
   Need_Search : Boolean := True;
 

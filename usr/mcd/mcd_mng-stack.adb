@@ -4,7 +4,8 @@ separate (Mcd_Mng)
 
 package body Stack is 
 
-  package Stack_List is new Dynamic_List (Item_Rec);
+  package Stack_Dyn_List is new Dynamic_List (Item_Rec);
+  package Stack_List renames Stack_Dyn_List.Dyn_List;
   List, Extra_List : Stack_List.List_Type;
 
   procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True) is

@@ -2,8 +2,8 @@
 error() {
   echo "Usage: $1 <num1> <oper> <num2>"
   echo " <oper> ::= + | - | * | /"
-  echo " <num1> is in H.MSmls"
-  echo " <num2> is in H.MSmls if + or -"
+  echo " <num1> is in Hours.MinutesSecondsMiliseconds"
+  echo " <num2> is in Hours.MinutesSecondsMiliseconds if <oper> is + or -"
   exit 1
 }
 

@@ -1,9 +1,10 @@
 with Ada.Text_Io;
 with Dynamic_List, Normal, Rnd;
 procedure T_Dl is
-  package My_List is new Dynamic_List(Element_Type => Integer);
-  procedure My_Search is new My_List.Search;   -- ("=" of Integer)
-  procedure My_Unsafe_Search is new My_List.Unsafe_Search;
+  package My_Dyn_List is new Dynamic_List(Element_Type => Integer);
+  package My_List renames My_Dyn_List.Dyn_List;
+  procedure My_Search is new My_List.Search("=");   -- ("=" of Integer)
+  procedure My_Unsafe_Search is new My_List.Unsafe_Search("=");
   procedure My_Sort is new My_List.Sort("<");  -- ("<" of Integer)
 
   List : My_List.List_Type;
