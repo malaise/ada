@@ -1,6 +1,9 @@
 # Error and quit
 4 //
-[ [ Error: n start stop expected ] ; 0 __ ] E ->
+[ [ Error, 3 arguments: <nb_disks> <from_column> <to_column expected> ] ;
+  [ "   nb_disks must be >= 0," ] ;
+  [ "   columns must be 1, 2 or 3 and different." ] ;
+0 __ ] E ->
 
 # Check 3 args
 . 3 /= E <- ?@
