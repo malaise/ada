@@ -21,15 +21,14 @@ package body FILE is
   DESIGNS : DESIGN_ARRAY(1 .. MAX_COTE);
   NB_DESIGN : LOC_COTE_RANGE;
 
+  type RESULT_LIST is (OK, END_OF_FILE, FILE_ACCESS, FILE_FORMAT, FILE_LENGTH,
+           LINE_NB, START_STOP, DUPLICATE, NO_COTE);
 
   procedure READ_NEXT_SIGNIFICANT_LINE is
   begin
     COTE_GET_LINE.READ_NEXT_LINE;
     COTE_GET_LINE.GET_WORDS (LINE);
   end READ_NEXT_SIGNIFICANT_LINE;
-
-  type RESULT_LIST is (OK, END_OF_FILE, FILE_ACCESS, FILE_FORMAT, FILE_LENGTH,
-           LINE_NB, START_STOP, DUPLICATE, NO_COTE);
 
   procedure ERROR (FILENAME : in STRING; RESULT : in RESULT_LIST;
                    COTE_NO : in LOC_COTE_RANGE := 0; 
@@ -143,22 +142,22 @@ package body FILE is
   -- Load both sets of cotes from two files
   -- And checks
   procedure LOAD_COTES is
-    function ARE_DUP (C1, C2 : in COTE_REC) return BOOLEAN is
-    begin
-      return  C1.START = C2.START and then C1.STOP = C2.STOP;
-    end ARE_DUP;
-
     LINE_USAGE : array (LINE_RANGE) of BOOLEAN;
     RESULT : RESULT_LIST;
     MANUFA_COTE : MANUFA_COTE_REC;
     DESIGN_COTE : DESIGN_COTE_REC;
+
+    function ARE_DUP (C1, C2 : in COTE_REC) return BOOLEAN is
+    begin
+      return  C1.START = C2.START and then C1.STOP = C2.STOP;
+    end ARE_DUP;
   begin
     begin
       ARG_PARSING.CHECK;
     exception
       when others =>
         SYS_CALLS.PUT_LINE_ERROR ("Error. Usage: "
-          & ARGUMENT.GET_PROGRAM_NAME & " [ -v ] <specification_file> <manufacturing_file>");
+          & ARGUMENT.GET_PROGRAM_NAME & " [ -v ] <manufacturing_file> <specification_file>");
         raise LOAD_ERROR;
     end;
     -- Load and check Manufas
