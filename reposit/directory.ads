@@ -36,8 +36,8 @@ package DIRECTORY is
   procedure CLOSE (DESC : in out DIR_DESC);
   -- May raise OPEN_ERROR if dir desc is not open
 
-  type FILE_KIND_LIST is (FILE, DIR, SYMBOLIC_LINK,
-           BLOCK_DEVICE, CHARACTER_DEVICE, FIFO, SOCKET, UNKNOWN);
+  type FILE_KIND_LIST is (FILE, DIR, LINK,
+           BLOCK_DEVICE, CHARACTER_DEVICE, PIPE, SOCKET, UNKNOWN);
   type TIME_T is private;
   -- RIGHTS are :
   --  1st bit OX

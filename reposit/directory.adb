@@ -224,7 +224,7 @@ package body DIRECTORY is
       when 8#14# =>
         KIND := SOCKET;
       when 8#12# =>
-        KIND := SYMBOLIC_LINK;
+        KIND := LINK;
       when 8#10# =>
         KIND := FILE;
       when 8#06# =>
@@ -234,7 +234,7 @@ package body DIRECTORY is
       when 8#02# =>
         KIND := CHARACTER_DEVICE;
       when 8#01# =>
-        KIND := FIFO;
+        KIND := PIPE;
       when others =>
         KIND := UNKNOWN;
     end case;
@@ -311,7 +311,7 @@ package body DIRECTORY is
   begin
     -- Check file_name  is a link
     FILE_STAT (FILE_NAME, KIND, RIGHTS, MTIME);
-    if KIND /= SYMBOLIC_LINK then
+    if KIND /= LINK then
       raise OPEN_ERROR;
     end if;
     if not RECURSIVE then
@@ -337,7 +337,7 @@ package body DIRECTORY is
       EXTRACT_PATH(TEXT_HANDLER.VALUE(TXT), DIR);
       
       FILE_STAT(TEXT_HANDLER.VALUE(TXT), KIND, RIGHTS, MTIME);
-      exit when KIND /= SYMBOLIC_LINK;
+      exit when KIND /= LINK;
     end loop;
     return TEXT_HANDLER.VALUE(TXT);
   end READ_LINK;

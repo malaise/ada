@@ -94,7 +94,7 @@ begin
           PUT_RIGHTS (RIGHTS);
           PUT_DATE (MTIME);
           MY_IO.PUT_LINE (" " & DIRECTORY.FILE_KIND_LIST'IMAGE(KIND));
-          if KIND = DIRECTORY.SYMBOLIC_LINK then
+          if KIND = DIRECTORY.LINK then
             MY_IO.PUT_LINE ("    ++++>" & DIRECTORY.READ_LINK (
                 TEXT_HANDLER.VALUE (DIR_NAME) & '/' &
                 TEXT_HANDLER.VALUE (FILE_NAME)) & '<');
