@@ -18,7 +18,7 @@ begin
     if Key = 0 and then Char and then not Ctrl and then Not Shift then
       -- refresh
       Con_Io.Move;
-      Con_Io.Put_Line ("Exit with CTRL_BREAK");
+      Con_Io.Put_Line ("Exit with Ctrl C");
     end if;
     Con_Io.Get_Key (Key, Char, Ctrl, Shift);
     My_Io.Put (Key, Base => 16, Width => 6);
@@ -36,6 +36,12 @@ begin
     end if;
     My_Io.Put (" " & Boolean'Image(Ctrl) & " " & Boolean'Image(Shift));
     My_Io.New_Line;
-    exit when Key = 0 and then Ctrl and then not Shift;
+    -- Ctrl C in Window
+    exit when Char and then Key = Character'Pos('c')
+     and then Ctrl and then not Shift;
+    -- SigInt C in Xterm
+    exit when Char and then Key = 3
+     and then not Ctrl and then not Shift;
   end loop;
 end T_Key;
+

@@ -52,6 +52,16 @@ procedure T_Channels is
   -- Go on waiting
   Go_Wait : Boolean;
 
+  -- Signal received
+  Sig : Boolean := False;
+
+  -- Signal callback
+  procedure Signal_Cb is
+  begin
+    Ada.Text_Io.Put_Line ("Aborted.");
+    Sig := True;
+  end Signal_Cb;
+
   -- Time callback, no more waiting
   function Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
   begin
@@ -64,6 +74,9 @@ procedure T_Channels is
     Id : Timers.Timer_Id;
     Event : Boolean;
   begin
+    if Sig then
+      return;
+    end if;
     Go_Wait := True;
     if Dur /= Timers.Infinite_Seconds then
       -- No timer if infinite
@@ -74,6 +87,7 @@ procedure T_Channels is
     end if;
     loop
       Event := X_Mng.Select_No_X (Integer (Dur) * 1_000);
+      exit when Sig;
       -- Stops waiting on timer
       exit when not Go_Wait;
       -- Subscriber stops waiting when amount of messages received
@@ -109,8 +123,12 @@ begin
   Fifo.Change_Channel_Name (Argument.Get_Parameter(2));
   Nb_To_Do := Positive'Value (Argument.Get_Parameter(3));
   Nb_Done := 0;
+  X_Mng.X_Set_Signal (Signal_Cb'Unrestricted_Access);
 
   if not Publish then
+    if Argument.Get_Nbre_Arg /= 3 then
+      raise Argument.Argument_Not_Found;
+    end if;
     -- Subscriber
     Ada.Text_Io.Put_Line ("Subscribing");
     begin
@@ -128,6 +146,7 @@ begin
     -- Wait infinite
     Nb_Done := 0;
     Wait (Timers.Infinite_Seconds);
+    return;
   end if;
 
   -- Publisher
@@ -161,6 +180,7 @@ begin
   loop
     Send (Message);
     Nb_Done := Nb_Done + 1;
+    exit when Sig;
     exit when Nb_To_Do /= 0 and then Nb_Done = Nb_To_Do;
   end loop;
 

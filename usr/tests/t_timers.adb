@@ -158,8 +158,10 @@ begin
         end case;
       when Afpx.Mouse_Button =>
         null;
-      when Afpx.Fd_Event | Afpx.Signal_Event =>
+      when Afpx.Fd_Event =>
         null;
+      when Afpx.Signal_Event =>
+        exit;
       when Afpx.Timer_Event =>
         Put_Line ("Timer Event");
       when Afpx.Refresh =>
