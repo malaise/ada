@@ -1,4 +1,5 @@
-LC=-largs -lcutil
+LIBC_DIR=$(HOME)/ada/c
+LC=-largs -L$(LIBC_DIR) -lcutil
 ADA_FLAG=-gnato
 
 EXE=mcd
@@ -12,7 +13,7 @@ AFPX.DSC: AFPX.LIS
 	afpx_bld
 
 clean:
-	rm *.o *.ali
+	rm -f *.o *.ali mcd_storage.dat
 
 clean_exe:
 	rm -f AFPX.DSC AFPX.FLD AFPX.INI $(EXE)
