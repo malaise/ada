@@ -1,6 +1,6 @@
 with TEXT_IO;
 with MY_MATH;
-package NBRES_C is
+package C_NBRES is
 
   subtype REAL is MY_MATH.REAL;
 
@@ -10,7 +10,7 @@ package NBRES_C is
   I : constant COMPLEX;
 
   type RADIAN is new REAL;
-  subtype REDUCTED_RADIAN is RADIAN range 0.0 .. 2.0*MY_MATH.PI;
+  subtype REDUCTED_RADIAN is RADIAN range 0.0 .. 2.0 * MY_MATH.PI;
 
   type DEGREE is new REAL;
   subtype REDUCTED_DEGREE is DEGREE range 0.0 .. 360.0;
@@ -66,5 +66,5 @@ package NBRES_C is
 
     I : constant COMPLEX := (0.0, 1.0);
 
-end NBRES_C;
+end C_NBRES;
 

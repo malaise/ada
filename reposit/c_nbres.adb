@@ -1,4 +1,4 @@
-package body NBRES_C is
+package body C_NBRES is
 
   use MY_MATH;
 
@@ -286,4 +286,4 @@ package body NBRES_C is
   end GET;
 
 
-end NBRES_C;
+end C_NBRES;

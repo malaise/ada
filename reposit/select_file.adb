@@ -388,6 +388,7 @@ begin
   end loop;
  
   DIR_MNG.FILE_LIST_MNG.DELETE_LIST(DIR_LIST);
+  AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
   if VALID then
     return FILE_REC.NAME(1 .. FILE_REC.LEN);
   else
