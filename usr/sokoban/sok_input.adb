@@ -1,4 +1,4 @@
-with Calendar; use Calendar;
+with Ada.Calendar; use Ada.Calendar;
 with Con_Io, Timers;
 with Sok_Display, Sok_Time;
 package body Sok_Input is

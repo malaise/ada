@@ -1,4 +1,5 @@
-with My_Io, Rnd, Dos, Calendar;
+with Ada.Calendar;
+with My_Io, Rnd, Dos;
 use My_Io;
 procedure Stamp is
 
@@ -16,7 +17,7 @@ procedure Stamp is
   end Scan;
 
   task body St is
-    use Calendar;
+    use Ada.Calendar;
     Gap : constant Duration := 1.0;
     Next_Event : Time;
   begin

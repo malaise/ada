@@ -1,16 +1,16 @@
-with Calendar;
-use Calendar;
+with Ada.Calendar;
+use Ada.Calendar;
 with Sok_Display;
 package body Sok_Time is
 
   Running : Boolean := False;
   Dur : Day_Duration := 0.0;
   Day : Natural := 0;
-  Start_Clock : Calendar.Time;
+  Start_Clock : Ada.Calendar.Time;
 
   procedure Start_Time is
   begin
-    Start_Clock := Calendar.Clock - Dur;
+    Start_Clock := Ada.Calendar.Clock - Dur;
     Running := True;
   end Start_Time;
 
@@ -24,12 +24,12 @@ package body Sok_Time is
     if Running then
       -- elapsed time
       declare 
-        Current_Time : constant Calendar.Time := Calendar.Clock;
+        Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
       begin
         if Current_Time > Start_Clock + Day_Duration'Last then
           Day := Day + 1;
           Dur := Current_Time - (Start_Clock + Day_Duration'Last);
-          Start_Clock := Calendar.Clock;
+          Start_Clock := Ada.Calendar.Clock;
         else
           Dur := Current_Time - Start_Clock;
         end if;
@@ -40,14 +40,14 @@ package body Sok_Time is
 
   procedure Reset_Time is
   begin
-    Start_Clock := Calendar.Clock;
+    Start_Clock := Ada.Calendar.Clock;
     Dur := 0.0;
     Day := 0;
   end Reset_Time;
 
   procedure Set_Time (Day : Natural; Dur : Duration) is
   begin
-    Start_Clock := Calendar.Clock - Dur;
+    Start_Clock := Ada.Calendar.Clock - Dur;
     Sok_Time.Dur := Dur;
     Sok_Time.Day := Day;
   end Set_Time;

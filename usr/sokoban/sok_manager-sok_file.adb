@@ -16,7 +16,7 @@ package body Sok_File is
 
   -- internal state of a frame
   type File_State_Rec is record
-    Dur          : Calendar.Day_Duration;
+    Dur          : Ada.Calendar.Day_Duration;
     Day          : Natural;
     Frame        : File_Frame_Tab;
     No_Frame     : Sok_Types.Frame_Range;

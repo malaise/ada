@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 with Sok_Types;
 -- displaying of sokoban
 package Sok_Display is
@@ -23,7 +23,7 @@ package Sok_Display is
   procedure Put_Score (Score : in Sok_Types.Score_Rec);
 
   -- puts the elapsed time
-  procedure Put_Time (Day : in Natural; Time : in Calendar.Day_Duration);
+  procedure Put_Time (Day : in Natural; Time : in Ada.Calendar.Day_Duration);
 
   -- list of possible actions
   type Action_List is (Frame, Done, Write, Read, Reset, Get_New, Break);

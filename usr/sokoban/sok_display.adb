@@ -1,10 +1,5 @@
-with Normal;
-with Day_Mng;
-with Con_Io;
-with Timers;
-with Dos;
-with Sok_Input;
-with Sok_Time;
+with Normal, Day_Mng, Con_Io, Timers, Dos;
+with Sok_Input, Sok_Time;
 
 -- displaying of sokoban
 package body Sok_Display is
@@ -203,11 +198,13 @@ package body Sok_Display is
     Con_Io.Put ("Frame : "      & Normal (Frame, 2),          Line_Win);
     Con_Io.Put ("    Moves : "  & Normal (Moves, Len_Moves),  Line_Win);
     Con_Io.Put ("    Pushes : " & Normal (Pushes, Len_Moves), Line_Win);
-    Con_Io.Put ("    Boxes : " & Normal (Boxes_In, 2) & '/' & Normal (Nb_Boxes, 2), Line_Win,
-     Move => False);
+    Con_Io.Put ("    Boxes : " & Normal (Boxes_In, 2)
+                & '/' & Normal (Nb_Boxes, 2), Line_Win,
+              Move => False);
   end Put_Line;
 
-  function Time_Image (Day : Natural; Time : Calendar.Day_Duration) return String is
+  function Time_Image (Day : Natural;
+                       Time : Ada.Calendar.Day_Duration) return String is
     Hours    : Day_Mng.T_Hours;
     Minutes  : Day_Mng.T_Minutes;
     Seconds  : Day_Mng.T_Seconds;
@@ -229,7 +226,8 @@ package body Sok_Display is
     return Str;
   end Time_Image;
 
-  procedure Put_Time (Day : in Natural; Time : in Calendar.Day_Duration) is
+  procedure Put_Time (Day : in Natural;
+                      Time : in Ada.Calendar.Day_Duration) is
 
   begin
     Con_Io.Move (Name => Time_Win);
