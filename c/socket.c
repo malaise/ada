@@ -22,6 +22,8 @@ static int x_fd_set (int fd, boolean read) {
 #define MAXHOSTNAMELEN 64
 #endif
 
+/**********************************************/
+/*
 static void h_perror (const char *msg) {
   fprintf (stderr, "%s: ", msg);
   switch (h_errno) {
@@ -43,11 +45,13 @@ static void h_perror (const char *msg) {
   }
   fprintf (stderr, "\n");
 }
+*/
+/**********************************************/
 
-/* Open a socket */
-extern int soc_open (soc_token *p_token,
+/* Init a socket (for open and accept) */
+static int soc_init (soc_ptr *p_soc,
+                     int fd,
                      socket_protocol protocol) {
-  soc_ptr *p_soc = (soc_ptr*) p_token;
   int allow_sockopt;
   int result;
 
@@ -61,25 +65,13 @@ extern int soc_open (soc_token *p_token,
     return (SOC_SYS_ERR);
   }
 
-  /* Save protocol */
+  /* Save protocol and id */
   (*p_soc)->proto = protocol;
-
-  /* Call to socket */
-  if (protocol == udp_socket) {
-    (*p_soc)->socket_id = socket(AF_INET, SOCK_DGRAM, 0);
-  } else {
-    (*p_soc)->socket_id = socket(AF_INET, SOCK_STREAM, 0);
-  }
-  if ( (*p_soc)->socket_id == -1) {
-    perror ("socket");
-    free (*p_soc);
-    *p_soc = NULL;
-    return (SOC_SYS_ERR);
-  }
+  (*p_soc)->socket_id = fd;
 
   /* Blocking operations as default */
   (*p_soc)->blocking = FALSE;
-  result = soc_set_blocking (*p_token, TRUE);
+  result = soc_set_blocking ((soc_token)*p_soc, TRUE);
   if (result != SOC_OK) {
     return (result);
   }
@@ -94,18 +86,29 @@ extern int soc_open (soc_token *p_token,
   (*p_soc)->rece_len = 0;
   (*p_soc)->expect_len = 0;
 
-  /* Allow UDP broadcast */
+  /* Allow UDP broadcast or TCP ReuseAddr */
+  allow_sockopt = 1;
   if (protocol == udp_socket) {
-    allow_sockopt = 1;
-    if (setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_BROADCAST,
-                   &allow_sockopt, sizeof (allow_sockopt)) < 0) {
+    result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_BROADCAST,
+                   &allow_sockopt, sizeof (allow_sockopt));
+    if (result == -1) {
       perror ("setsockopt1");
-      close ((*p_soc)->socket_id);
-      free (*p_soc);
-      *p_soc = NULL;
-      return (SOC_SYS_ERR);
+    }
+  } else {
+    result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEADDR,
+                   &allow_sockopt, sizeof (allow_sockopt));
+    if (result == -1) {
+      perror ("setsockopt2");
     }
   }
+  if (result == -1) {
+    close ((*p_soc)->socket_id);
+    free (*p_soc);
+    *p_soc = NULL;
+    return (SOC_SYS_ERR);
+  }
+
+  
 
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
@@ -122,6 +125,32 @@ extern int soc_open (soc_token *p_token,
   (*p_soc)->connection = not_connected;
   return (SOC_OK);
 
+}
+/* Open a socket */
+extern int soc_open (soc_token *p_token,
+                     socket_protocol protocol) {
+  soc_ptr *p_soc = (soc_ptr*) p_token;
+  int fd;
+
+  /* Check that socket is not already open */
+  if (*p_soc != NULL) return (SOC_USE_ERR);
+
+
+  /* Call to socket */
+  if (protocol == udp_socket) {
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+  } else {
+    fd = socket(AF_INET, SOCK_STREAM, 0);
+  }
+  if ( fd == -1) {
+    perror ("socket");
+    free (*p_soc);
+    *p_soc = NULL;
+    return (SOC_SYS_ERR);
+  }
+
+  /* Init socket */
+  return (soc_init(p_soc, fd, protocol));
 }
 
 /* Close a socket */
@@ -899,7 +928,7 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 /*     except in tcp (no header) where the length read my me anything */
 /*     from 0 to length */
 /*   - SOC_READ_0: disconnection? */
-/*   - Error
+/*   - Error */
 /*  In others: */
 /*   - SOC_OK: total_len has been read */
 /*   - SOC_WOULD_BLOCK: new read has to be done */
@@ -1085,7 +1114,7 @@ extern int soc_receive (soc_token token,
 
 /* Tcp specific calls */
 
-/* Accept a connection.
+/* Accept a connection. */
 /* The socket must be open, tcp and linked */
 /* A new socket is created (tcp) with dest set */
 extern int soc_accept (soc_token token, soc_token *p_token) {
@@ -1093,6 +1122,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   soc_ptr *p_soc = (soc_ptr*) p_token;
 
   int result;
+  int fd;
   struct sockaddr from_addr;
   int len = socklen;
 
@@ -1110,59 +1140,27 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Accept */
   do {
-    result = accept (soc->socket_id, &from_addr, &len);
+    fd = accept (soc->socket_id, &from_addr, &len);
   } while ( (result == -1) && (errno == EINTR) );
 
   /* Check result */
-  if (result < 0) {
+  if (fd < 0) {
     perror ("accept");
     return (SOC_SYS_ERR);
   }
 
-  /* Create structure */
-  *p_soc = (soc_ptr) malloc (sizeof (soc_struct));
-  if (*p_soc==NULL) {
-    perror ("malloc4");
-    return (SOC_SYS_ERR);
-  }
-
-  /* Save id and protocol */
-  (*p_soc)->socket_id = result;
-  (*p_soc)->proto = soc->proto;
-  (*p_soc)->connection = connected;
-
-  /* Blocking operations as default */
-  (*p_soc)->blocking = FALSE;
-  result = soc_set_blocking (*p_token, TRUE);
+  /* Init socket */
+  result = soc_init(p_soc, fd, soc->proto);
   if (result != SOC_OK) {
     return (result);
   }
 
-  /* Init structures */
-  (*p_soc)->send_struct.sin_family = AF_INET;
-  (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
-  (*p_soc)->rece_struct.sin_family = AF_INET;
-  (*p_soc)->send_tail = NULL;
-  (*p_soc)->send_len = 0;
-  (*p_soc)->rece_head = NULL;
-  (*p_soc)->rece_len = 0;
-  (*p_soc)->expect_len = 0;
-
-  /* Close on exec */
-  if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
-    perror ("fcntl_cloexec_accept");
-    close ((*p_soc)->socket_id);
-    free (*p_soc);
-    *p_soc = NULL;
-    return (SOC_SYS_ERR);
-  }
-
-  /* Set dest */
+  /* Set dest and connected */
   memcpy (&(*p_soc)->send_struct , &from_addr, len);
   (*p_soc)->dest_set = TRUE;
+  (*p_soc)->connection = connected;
 
   /* Ok */
-  (*p_soc)->linked = FALSE;
   return (SOC_OK);
 
 }
