@@ -2,23 +2,22 @@
 # deg <-> grad
 
 # Error message
-[ "Error. Two reals lat and lon (deg or grad) then mode (d or r) expected." putl
+[ "Error. Two reals lat and lon (deg or grad) then mode (d or g) expected." putl
 ssize popn retall ] E popr
 
 # Check an arg and store
-[ dup isreal ~ E pushr ifcall swap popr ] C popr
-
-# Check and store lat and long
-ssize 3 /= E pushr ifcall
-swap3
-a swap C pushr call
-b swap C pushr call
+[ dup isinte [ toreal ] ifcall dup isreal ~ E pushr ifcall swap popr ] C popr
 
 # Check mode
+ssize 3 /= E pushr ifcall
 -1 m popr
 dup d = [ 0 m popr ] ifcall
 g = [ 1 m popr ] ifcall
 m pushr isneg E pushr ifcall
+
+# Check and store long and lat
+b swap C pushr call
+a swap C pushr call
 
 # Store long offset and factor (g->d)
 2.2014025 msd o popr
@@ -31,15 +30,15 @@ m pushr isnul
 o pushr +- o popr f pushr 1.0 swap / f popr ] ifcall
 
 # Compute lat and long
-m pushr isnul
-[ a pushr o pushr + f pushr * ] [ a pushr f pushr * o pushr + ] ifte call
-a popr
-b pushr f pushr * b popr
+a pushr f pushr * a popr
+b pushr 
+m pushr isnul [ o pushr + f pushr * ] [ f pushr * o pushr + ] ifte call
+b popr
 
 # Set a and b in dms if g->d
 m pushr ispos
 [ a pushr dms a popr b pushr dms b popr ] ifcall
 
 # Put result
-"Lon: " put a pushr put " Lat: " put b pushr put " " put u pushr putl
+"Lat: " put a pushr put " Lon: " put b pushr put " " put u pushr putl
 
