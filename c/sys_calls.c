@@ -3,8 +3,11 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 
 typedef struct {
@@ -40,7 +43,7 @@ extern int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
 #define ASYNC  2
 #define TRANSP 3
 
-int set_stdin_attr (int mode) {
+extern int set_stdin_attr (int mode) {
 
   struct termios termattr;
   int res;
@@ -108,7 +111,7 @@ int set_stdin_attr (int mode) {
 
 }
 
-int get_immediate_stdin (void) {
+extern int get_immediate_stdin (void) {
 
   ssize_t n;
   char c;
@@ -123,5 +126,39 @@ int get_immediate_stdin (void) {
   } else {
     return (-1);
   }
+}
+
+
+extern int read_dir (DIR *dir, char *name) {
+
+  struct dirent * dir_ent;
+
+  dir_ent = readdir (dir);
+  if (dir_ent == NULL) {
+    return (-1);
+  }
+
+  strcpy (name, dir_ent->d_name);
+  return (strlen(name));
+}
+
+typedef struct {
+  unsigned int mode;
+  int mtime;
+} simple_stat;
+
+extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
+
+  struct stat stat_struct;
+
+  if (lstat (path, &stat_struct) != 0) {
+    return (-1);
+  }
+
+  simple_stat_struct->mode = stat_struct.st_mode;
+  simple_stat_struct->mtime = stat_struct.st_mtime;
+
+  return (0);
+
 }
 

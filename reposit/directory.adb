@@ -12,37 +12,9 @@ package body Directory is
   -- For OPEN_ERROR else ACCESS_ERROR
   Einval : constant := 22;
 
-  type C_Dirent_Rec is record
-    D_Ino : Long_Integer;
-    D_Off : Long_Integer;
-    D_Reclen : Short_Integer;
-    D_Type : Character;
-    D_Name : Dir_Str;
-  end record;
-
   type C_Stat_Rec is record
-    St_Dev1 : Long_Integer;
-    St_Dev2 : Long_Integer;
-    St_Pad1 : Short_Integer;
-    St_Ino : Long_Integer;
-    St_Mode : Integer;
-    St_Link : Integer;
-    St_Uid : Integer;
-    St_Gid : Integer;
-    St_Rdev1 : Long_Integer;
-    St_Rdev2 : Long_Integer;
-    St_Pad2 : Short_Integer;
-    St_Size : Long_Integer;
-    St_Blocksize : Long_Integer;
-    St_Blocks : Long_Integer;
-    St_Atime : Long_Integer;
-    St_Unused1 : Long_Integer;
-    St_Mtime : Long_Integer;
-    St_Unused2 : Long_Integer;
-    St_Ctime : Long_Integer;
-    St_Unused3 : Long_Integer;
-    St_Unused4 : Long_Integer;
-    St_Unused5 : Long_Integer;
+    C_Mode : Integer;
+    C_Mtime : Integer;
   end record;
 
   type My_Tm_T is record
@@ -55,13 +27,17 @@ package body Directory is
   end record;
 
   function C_Strlen (S : System.Address) return Natural;
-  pragma Import (C, C_Strlen, "strlen");
+  pragma Interface(C, C_Strlen);
+  pragma Interface_Name(C_Strlen, "strlen");
 
   function C_Strcpy (Dest, Src : System.Address) return System.Address;
-  pragma Import (C, C_Strcpy, "strcpy");
+  pragma Interface(C, C_Strcpy);
+  pragma Interface_Name(C_Strcpy, "strcpy");
 
-  function C_Memcpy (Dest, Src : System.Address; Size : Integer) return System.Address;
-  pragma Import (C, C_Memcpy, "memcpy");
+  function C_Memcpy (Dest, Src : System.Address; Size : Integer)
+                    return System.Address;
+  pragma Interface(C, C_Memcpy);
+  pragma Interface_Name(C_Memcpy, "memcpy");
 
 
   function Str_For_C (Str : String) return String is
@@ -69,9 +45,9 @@ package body Directory is
     return Str & Ascii.Nul;
   end Str_For_C;
 
-
   function C_Getcwd (Buf : System.Address; Size : Integer) return System.Address;
-  pragma Import (C, C_Getcwd, "getcwd");
+  pragma Interface(C, C_Getcwd);
+  pragma Interface_Name(C_Getcwd, "getcwd");
 
   -- Returns current working directory
   function Get_Current return String is
@@ -93,9 +69,9 @@ package body Directory is
     Text_Handler.Set (Cur_Dir, Get_Current);
   end Get_Current;
 
-
   function C_Chdir (Path : System.Address) return Integer;
-  pragma Import (C, C_Chdir, "chdir");
+  pragma Interface(C, C_Chdir);
+  pragma Interface_Name(C_Chdir, "chdir");
 
   -- Changes current working directory
   procedure Change_Current (New_Dir : in String) is
@@ -110,9 +86,9 @@ package body Directory is
     end if;
   end Change_Current;
 
-
   function C_Opendir (Name : System.Address) return System.Address;
-  pragma Import (C, C_Opendir, "opendir");
+  pragma Interface(C, C_Opendir);
+  pragma Interface_Name(C_Opendir, "opendir");
 
   -- Opens a directory for list of entries
   function Open (Dir_Name : in String) return Dir_Desc is
@@ -134,14 +110,14 @@ package body Directory is
   end Open;
 
 
-  function C_Readdir (Dir : System.Address) return System.Address;
-  pragma Import (C, C_Readdir, "readdir");
+  function C_Readdir (Dir : System.Address; Name : System.Address) return Integer;
+  pragma Interface(C, C_Readdir);
+  pragma Interface_Name(C_Readdir, "read_dir");
 
   -- Gets next entry of the opened directory
   function Next_Entry (Desc : Dir_Desc) return String is
-    Dirent : C_Dirent_Rec;
-    Addr, Dummy : System.Address;
-    Len : Natural;
+    Len : Integer;
+    Dir_Name : Dir_Str;
   begin
     -- Check dir desc
     if Desc.Dir_Addr = System.Null_Address then
@@ -149,16 +125,12 @@ package body Directory is
     end if;
 
     -- Read entry and check validity
-    Addr := C_Readdir (Desc.Dir_Addr);
-    if Addr = System.Null_Address then
+    Len := C_Readdir (Desc.Dir_Addr, Dir_Name(Dir_Name'First)'Address);
+    if Len = -1 then
       raise End_Error;
     end if;
 
-    -- Copy address to record
-    Dummy := C_Memcpy (Dirent'Address, Addr, Dirent'Size/System.Storage_Unit);
-    Len := C_Strlen(Dirent.D_Name'Address);
-    -- Done
-    return Dirent.D_Name (1 .. Len);
+    return Dir_Name(1 .. Len);
   end Next_Entry;
 
   procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Text_Handler.Text) is
@@ -166,9 +138,9 @@ package body Directory is
     Text_Handler.Set (Dir_Entry, Next_Entry (Desc));
   end Next_Entry;
 
-
   procedure C_Rewinddir (Dir : System.Address);
-  pragma Import (C, C_Rewinddir, "rewinddir");
+  pragma Interface(C, C_Rewinddir);
+  pragma Interface_Name(C_Rewinddir, "rewinddir");
 
   -- Reset entries for the first 
   procedure Rewind (Desc : in Dir_Desc) is
@@ -180,9 +152,9 @@ package body Directory is
     C_Rewinddir (Desc.Dir_Addr);
   end Rewind;
 
-
   procedure C_Closedir (Dir : System.Address);
-  pragma Import (C, C_Closedir, "closedir");
+  pragma Interface(C, C_Closedir);
+  pragma Interface_Name(C_Closedir, "closedir");
 
   -- Closes a directory
   procedure Close (Desc : in out Dir_Desc) is
@@ -194,10 +166,10 @@ package body Directory is
     Desc.Dir_Addr := System.Null_Address;
   end Close;
 
-
   function C_Stat (File_Name : System.Address; Stat : System.Address)
-  return Integer;
-  pragma Import (C, C_Stat, "lstat");
+                  return Integer;
+  pragma Interface(C, C_Stat);
+  pragma Interface_Name(C_Stat, "file_stat");
 
   -- type FILE_KIND_LIST is (FILE, DIR, DEVICE, FIFO_SOCKET);
   procedure File_Stat (File_Name : in String;
@@ -218,7 +190,7 @@ package body Directory is
         raise Access_Error;
       end if;
     end if;
-    Mode := Integer(Stat.St_Mode) And 8#00170000#;
+    Mode := Integer(Stat.C_Mode) And 8#00170000#;
     Mode := Shr (Mode, 12);
     case Mode is
       when 8#14# =>
@@ -238,8 +210,8 @@ package body Directory is
       when others =>
         Kind := Unknown;
     end case;
-    Rights := Integer(Stat.St_Mode) And 8#00007777#;
-    Modif_Time := Time_T(Stat.St_Mtime);
+    Rights := Integer(Stat.C_Mode) And 8#00007777#;
+    Modif_Time := Time_T(Stat.C_Mtime);
   end File_Stat;
 
   function C_Time_To_Tm (Time_P : System.Address;
@@ -261,10 +233,12 @@ package body Directory is
       Day_Mng.Pack (My_Tm.Tm_Hour, My_Tm.Tm_Min, My_Tm.Tm_Sec, 0));
   end Time_Of;
 
+  
 
   function C_Readlink (Path : System.Address;
                        Buf : System.Address; Bufsiz : Integer) return Integer;
-  pragma Import (C, C_Readlink, "readlink");
+  pragma Interface(C, C_Readlink);
+  pragma Interface_Name(C_Readlink, "readlink");
 
   -- May raise NAME_ERROR if FILE_NAME does not exist
   --           OPEN_ERROR if FILE_NAME is not a link
@@ -286,6 +260,7 @@ package body Directory is
       raise Access_Error;
     end if;
   end Read_One_Link;
+
 
   procedure Extract_Path (From : in String; To : in out Text_Handler.Text) is
   begin
@@ -342,6 +317,7 @@ package body Directory is
     return Text_Handler.Value(Txt);
   end Read_Link;
 
+
   procedure Read_Link (File_Name : in String;
                        Target : in out Text_Handler.Text;
                        Recursive : in Boolean := True) is
@@ -350,9 +326,10 @@ package body Directory is
   end Read_Link;
 
 
-  function C_Fnmatch (Pattern : System.Address; Strings : System.Address;
-                      Flags : Integer) return Integer;
-  pragma Import (C, C_Fnmatch, "fnmatch");
+  function C_Fnmatch (Pattern : System.Address; Strings : System.Address; Flags : Integer)
+           return Integer;
+  pragma Interface(C, C_Fnmatch);
+  pragma Interface_Name(C_Fnmatch, "fnmatch");
 
   -- Does file name match a pattern
   function File_Match (File_Name : String; Template : String) return Boolean is
