@@ -260,6 +260,8 @@ package GENERIC_CON_IO is
 
     procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN);
 
+    -- failure when initialising the screen
+    INIT_FAILURE : exception;
     -- failure when allocating data for window
     OPEN_FAILURE        : exception;
     -- position out of screen (or out of window)

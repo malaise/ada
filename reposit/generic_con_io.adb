@@ -88,6 +88,9 @@ package body GENERIC_CON_IO is
       SET_ATTRIBUTES (DEFAULT_FOREGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
                       DEFAULT_XOR_MODE, FORCED => TRUE);
       FLUSH;
+    exception
+      when others =>
+        raise INIT_FAILURE;
     end INIT;
 
     procedure DESTROY is
