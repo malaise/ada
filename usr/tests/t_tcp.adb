@@ -30,10 +30,20 @@ procedure T_Tcp is
   begin
     My_Io.Put ("In callback - ");
     if F = Accept_Fd then
+      if Socket.Is_Open (Soc) and then Socket.Is_Connected (Soc) then
+        My_Io.Put_Line ("rejects new connection");
+        declare
+          Tmp_Soc : Socket.Socket_Dscr;
+        begin
+          Socket.Accept_Connection (Accept_Soc, Tmp_Soc);
+          Socket.Close (Tmp_Soc);
+        end;
+        return;
+      end if;
       Socket.Accept_Connection (Accept_Soc, Soc);
       Fd := Socket.Fd_Of (Soc);
       X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
-      My_Io.Put_Line (" accepts");
+      My_Io.Put_Line ("accepts connection");
       return;
     end if;
       
