@@ -208,9 +208,9 @@ begin
 
   Rnd.Randomize;
 
-  Dictio_Lib.Init;
   Dictio_Lib.Dictio_State_Cb := Dictio_State_Cb'Unrestricted_Access;
   Dictio_Lib.Notify_Cb := Dictio_Notify_Cb'Unrestricted_Access;
+  Dictio_Lib.Init;
 
   if not Init then
     Ada.Text_Io.Put_Line (
