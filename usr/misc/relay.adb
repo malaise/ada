@@ -29,8 +29,8 @@ procedure Relay is
   -- End of processing
   Done : Boolean := False;
 
-  -- Is stdin a tty
-  Is_A_Tty : Boolean;
+  -- Is stdin a regular file
+  Is_A_File : Boolean;
 
   -- Sig callback
   procedure Sig_Callback is
@@ -60,6 +60,10 @@ procedure Relay is
   function Stdin_Cb (Str : in String) return Boolean is
     Len : Natural := Str'Length;
   begin
+    if Len = 0 then
+      Done := True;
+      return;
+    end if;
     if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
       Len := Len - 1;
       Done := True;
@@ -238,14 +242,16 @@ begin
         Sys_Calls.Set_Error_Exit_Code;
         return;
     end;
+    declare
+      use type Sys_Calls.File_Desc_Kind_List;
     begin
-      Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, Max_Data_Size);
-      Is_A_Tty := True;
-    exception
-      when Async_Stdin.Not_A_Tty =>
-        Event_Mng.Wait (500);
-        Is_A_Tty := False;
+      Is_A_File := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.File;
     end;
+    if not Is_A_File then
+      Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, Max_Data_Size);
+    else
+      Event_Mng.Wait (500);
+    end if;
   end if;
   
 
@@ -259,7 +265,7 @@ begin
 
      else
 
-       if not Is_A_Tty then
+       if Is_A_File then
          Event_Mng.Wait (0);
          Get_No_Tty;
        else
@@ -273,7 +279,7 @@ begin
 
   if Mode = Publish then
     My_Channel.Del_All_Destinations;
-    if Is_A_Tty then
+    if not Is_A_File then
       Async_Stdin.Set_Async;
     end if;
   end if;
