@@ -238,14 +238,15 @@ package body MESU_GRA is
     if not SHOW then
       MESURE_INDEX := PREV_TZ;
     else
-      -- First drawn mesure
+      -- First drawn mesure if any (else first mesure)
+      MESURE_INDEX := 1;
       for MESU in 1 .. NB_MESURE loop
         if MESURE_ARRAY(MESU).DROWN then
           MESURE_INDEX := MESU;
-          PREV_TZ := MESURE_INDEX;
           exit;
         end if;
       end loop;
+      PREV_TZ := MESURE_INDEX;
     end if;
 
     for I in PERS_DEF.PERSON_TZ_ARRAY'RANGE loop

@@ -15,11 +15,11 @@ package body MESU_PRT is
     if not IS_OPEN (PRINTER) then
       CREATE (PRINTER, OUT_FILE, PRINTER_NAME);
     end if;
-    PUT_LINE (PRINTER, "Person: " & PERSON.NAME & " " & PERSON.ACTIVITY
-                      & "  Date: " & STR_MNG.TO_PRINTED_STR(MESURE.DATE));
+    PUT_LINE (PRINTER, "Person: " & PERSON.NAME & "    " & PERSON.ACTIVITY
+                      & "    Date: " & STR_MNG.TO_PRINTED_STR(MESURE.DATE));
     PUT (PRINTER, "Comment: " & MESURE.COMMENT
-                & "  Delta: " & NORMAL(INTEGER(MESURE.SAMPLING_DELTA), 3)
-                & "  TZ: ");
+                & "   Delta: " & NORMAL(INTEGER(MESURE.SAMPLING_DELTA), 3)
+                & "    TZ: ");
     for I in PERS_DEF.PERSON_TZ_ARRAY'RANGE loop
       PUT (PRINTER, STR_MNG.TO_STR(MESURE.TZ(I)) & " ");
     end loop;
