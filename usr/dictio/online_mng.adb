@@ -189,8 +189,13 @@ package body Online_Mng is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Master then
-      -- Send alive message with Crc
-      Intra_Dictio.Send_Status (Intra_Dictio.Extra_Crc & Data_Base.Get_Crc);
+      -- Send alive message
+      -- With Crc if stable
+      if Client_Mng.Stable then
+        Intra_Dictio.Send_Status (Intra_Dictio.Extra_Crc & Data_Base.Get_Crc);
+      else
+        Intra_Dictio.Send_Status;
+      end if;
     elsif Status.Get /= Status.Dead then
       -- No alive message
       if Debug.Level_Array(Debug.Online) then
