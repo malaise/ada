@@ -4,6 +4,7 @@ with Dictio_Lib;
 procedure T_Dictio is
 
   Init : Boolean := False;
+  Verbose : Boolean := False;
 
   -- Signal received
   Sig : Boolean := False;
@@ -109,8 +110,10 @@ procedure T_Dictio is
 
   procedure Dictio_Connect_Cb (Connected : in Boolean) is
   begin
-    Ada.Text_Io.Put_Line("CLIENT: Connected: " & Connected'Img
-                        & "  Init: " & Init'Img);
+    if not Init then
+      Ada.Text_Io.Put_Line("CLIENT: Connected: " & Connected'Img
+                          & "  Init: " & Init'Img);
+    end if;
     if Connected and then Init then
       Init := False;
       Load;
@@ -134,7 +137,9 @@ procedure T_Dictio is
         Name(J) := Character'Val(Rnd.Int_Random (
               Character'Pos('a'), Character'Pos('z')));
       end loop;
-      Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
+      if Verbose then
+        Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
+      end if;
       Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
     end loop;
   end Load;
@@ -151,6 +156,16 @@ begin
   exception
     when Argument.Argument_Not_Found =>
       Init := False;
+  end;
+  begin
+    if Argument.Get_Parameter (1, "v") = "" then
+      Verbose := True;
+    else
+      Verbose := False;
+    end if;
+  exception
+    when Argument.Argument_Not_Found =>
+      Verbose := False;
   end;
 
   -- Set async stdin
@@ -171,7 +186,9 @@ begin
   Dictio_Lib.Available_Cb := Dictio_Connect_Cb'Unrestricted_Access;
   Dictio_Lib.Notify_Cb := Dictio_Notify_Cb'Unrestricted_Access;
 
-  Ada.Text_Io.Put_Line ("g <name> / s <name> <data> / n <name> / c <name>");
+  if not Init then
+    Ada.Text_Io.Put_Line ("g <name> / s <name> <data> / n <name> / c <name>");
+  end if;
   loop
     Res := X_Mng.Select_No_X (-1);
     exit when Sig;
