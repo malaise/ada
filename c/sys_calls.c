@@ -118,14 +118,15 @@ extern int get_immediate (int fd) {
   char c;
 
   n = read (fd, &c, 1);
-
-  if ( (n < 0) && (errno != EWOULDBLOCK) ) {
-    perror ("get_immediate/read");
+  if (n < 0) {
+    if (errno != EWOULDBLOCK) {
+      perror ("get_immediate/read");
+    }
     return (-1);
   } else if (n > 0) {
     return ((char)c);
   } else {
-    return (-1);
+    return (0);
   }
 }
 
