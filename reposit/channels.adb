@@ -225,7 +225,7 @@ package body Channels is
         begin
           Fd_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
         exception
-          when Send_List_Mng.Not_In_List =>
+          when Dest_List_Mng.Not_In_List =>
             Event_Mng.Del_Fd_Callback (Fd, True);
             return False;
         end;
@@ -249,6 +249,7 @@ package body Channels is
             begin
               -- Update record
               D_Rec.Dscr := Socket.No_Socket;
+              D_Rec.Fd := 0;
               Dest_List_Mng.Modify (Channel_Dscr.Dests, D_Rec,
                                     Dest_List_Mng.Current);
               -- Retry to connect
