@@ -42,7 +42,6 @@ XSetWindowAttributes win_attrib;
 Window x_window;
 
     /* Open X display */
-    local_server.image = False;
     local_server.x_server = XOpenDisplay (server_name);
     if (local_server.x_server == NULL) {
 #ifdef DEBUG
@@ -111,14 +110,6 @@ t_screen *p_screen;
 t_window *p_window;
 boolean screen_created;
 
-
-    /* Check consistency */
-    if (local_server.image) {
-#ifdef DEBUG
-        printf ("X_LINE : Open not IMAGE window on IMAGE display.\n");
-#endif
-        return (NULL);
-    }
 
     /* Checks number of lines already open */
     if (nbre_window == NBRE_MAX_WINDOW) {
@@ -280,10 +271,8 @@ boolean found;
     /* Free graphic context */
     XFreeGC (p_window->server->x_server, p_window->x_graphic_context);
 
-    /* Delete window (if not image) */
-    if (! p_window->server->image) {
-        XDestroyWindow (p_window->server->x_server, p_window->x_window);
-    }
+    /* Delete window */
+    XDestroyWindow (p_window->server->x_server, p_window->x_window);
 
     /* Check if it is the last window of its screen */
     found = False;
@@ -412,10 +401,8 @@ void close_screen (t_screen *p_screen) {
 
 
     /* Free colors */
-    if (! p_screen->server->image) {
-        col_close (p_screen->server->x_server, p_screen->x_screen, p_screen->color_id,
-                   p_screen->colormap);
-    }
+    col_close (p_screen->server->x_server, p_screen->x_screen, p_screen->color_id,
+               p_screen->colormap);
 
     /* Free memory */
     free (p_screen);
@@ -428,9 +415,6 @@ void lin_blink_colors(blink)
     boolean blink;
 {
 int i;
-
-    /* No blink with Image */
-    if (local_server.image) return;
 
     for (i=0; i<nbre_window; i++) {
         if (blink != list_window[i]->screen->blinking) {

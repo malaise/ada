@@ -296,11 +296,6 @@ int x_set_attributes (void *line_id, int paper, int ink,
     /* Store underline attribute */
     win_id->underline = underline;
 
-    /* No Blink */
-    if (win_id->server->image && blink) {
-        blink = False;
-    }
-
     /* Update graphic context */
     scr_set_attrib (win_id->server->x_server, 
       win_id->x_graphic_context, win_id->server->x_font,

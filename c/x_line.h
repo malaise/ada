@@ -16,7 +16,6 @@
 typedef struct {
     Display *x_server;
     XFontStruct *x_font[NBRE_FONT];
-    boolean image;
     int backing_store;
 }t_server;
 
@@ -69,16 +68,9 @@ typedef struct {
 /* Initialize a line (return True if OK) */
 boolean lin_initialise (char *server_name);
 
-/* Same for Image */
-boolean lin_initialise_image (char *server_name);
-
 /* Open a line and gives it's Line_id, or NULL if error */
 t_window *lin_open(int screen_id, int y, int x, int height, int width,
                    int background, int border, int no_font);
-
-/* Open a line created by image and gives it's Line_id, or NULL if error */
-t_window *lin_open_image(Window window_id, int background,
-                         Font font_ids[], unsigned long color_ids[]);
 
 /* Close a line */
 boolean lin_close(t_window *p_window);

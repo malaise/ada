@@ -1,4 +1,3 @@
-/* Sep 05, 1993 : Image compliant X ressources management (PM)     */
 /* Oct 23, 1998 : Use private color map                   (PM)     */
 #include <stdlib.h>
 
@@ -105,38 +104,6 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[], Colo
     return (True);
 }
 
-/* Loads the colors in the server */
-boolean col_open_image(unsigned long color_ids[], unsigned long colors[]) {
-                       /* in                      out */
-
-int i, j;
- 
-    /* Store colors no blink */
-    switch (blink_kind) {
-      case full_blink :
-        for (i = 0; i < NBRE_COLOR; i++) {
-          for (j = 0; j < NBRE_COLOR; j++) {
-            colors[i * NBRE_COLOR + j] = color_ids[i];
-          }
-        }
-      break;
-      case on_0_blink :
-        for (i = 0; i < NBRE_COLOR; i++) {
-          for (j = 0; j < 2; j++) {
-            colors[i * NBRE_COLOR + j] = color_ids[i];
-          }
-        }
-      break;
-      case bold_blink :
-        for (i = 0; i < NBRE_COLOR; i++) {
-          colors[i] = color_ids[i];
-        }
-      break;
-    }
-
-    /* Ok */
-    return (True);
-}
 
 void col_close(Display *x_server, int x_screen, unsigned long color_id[], Colormap colormap) {
 

@@ -244,7 +244,6 @@ package X_MNG is
   --  stoped with X_STOP_BLINKING_TASK. 
   -- In this case, it has to be called twice a second to provide
   --  blinking effect.
-  -- No effect on a IMAGE line.
   procedure X_BLINK_ALTERNATE(LINE_ID : in LINE);
 
   -- This procedure stops the task which, internaly to x_vdu_mng,

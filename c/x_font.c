@@ -1,4 +1,3 @@
-/* Sep 05, 1993 : Image compliant X ressources management (PM)     */
 #include "x_font.h"
 
 /* Loads the fonts in the server */
@@ -37,34 +36,6 @@ Font font_id;
     }
 
 }
-
-
-/* Loads the fonts in the server */
-boolean fon_open_image (Display *x_server, Font font_ids[], XFontStruct *font[]) {
-
-int i, err;
-
-    /* Store the fonts info */
-    err = -1;
-    for (i=0; i<2; i++) {
-        font[i] = XQueryFont (x_server, font_ids[i]);
-        if (font[i] == 0) {
-            err = i;
-            break;
-        }
-    }
-
-    if (err == -1) {
-        return (True);
-    } else {
-#ifdef DEBUG
-        printf ("X_FONT :X can't load font no %d id %d.\n",
-         err, font_ids[err]); 
-#endif
-        return (False);
-    }
-}
-
 
 
 /* Free the fonts in the server */
