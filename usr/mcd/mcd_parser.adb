@@ -334,7 +334,8 @@ package body Parser is
     end;
     begin
       Real_Io.Get(Text_Handler.Value(Txt), R, L);
-      if L = Text_Handler.Length(Txt) then
+      if L = Text_Handler.Length(Txt)
+      and then Text_Handler.Value(Txt)(L) /= '.' then
         Instr_Stack.Push(Item_Chrs);
         return (Kind => Mcd_Mng.Real, Val_Real => R);
       end if;
