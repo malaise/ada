@@ -20,8 +20,11 @@ clear_screen:
 	gnatmake $(ADA_OPT) $@ $(LX)
 
 clean:
-	rm *.o *.ali b~*
+	-rm *.o *.ali b~*
 
 clean_exe:
-	rm afpx_bld clear_screen
+	-rm afpx_bld clear_screen
+
+clean_all: clean clean_exe
+
 
