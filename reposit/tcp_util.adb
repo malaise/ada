@@ -1,4 +1,4 @@
-with Dynamic_List, Timers, X_Mng;
+with Sys_Calls, Dynamic_List, Timers, X_Mng, My_Io;
 package body Tcp_Util is
 
   -- Remove tailing spaces
@@ -12,8 +12,29 @@ package body Tcp_Util is
     return Str;
   end Parse;
     
+  -- Debugging
+  Debug_Connect_Name  : constant String := "TCP_UTIL_DEBUG_CONNECT";
+  Debug_Accept_Name   : constant String := "TCP_UTIL_DEBUG_ACCEPT";
+  Debug_Overflow_Name : constant String := "TCP_UTIL_DEBUG_OVERFLOW";
+  Debug_Connect  : Boolean := False;
+  Debug_Accept   : Boolean := False;
+  Debug_Overflow : Boolean := False;
+  procedure Set_Debug (Name : in String; Var : in out Boolean) is
+    Set : Boolean;
+    Tru : Boolean;
+    Val : String (1 .. 1);
+    Len : Natural;
+  begin
+    Sys_Calls.Getenv (Name, Set, Tru, Val, Len);
+    if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
+      Var := True;
+    end if;
+  exception
+    when others =>
+      null;
+  end Set_Debug;
 
-  -- Connecting or connected connection
+  -- Connecting connection
   type Connecting_Rec is record
     Protocol : Tcp_Protocol_List;
     Host : Remote_Host;
@@ -24,6 +45,7 @@ package body Tcp_Util is
     Timer : Timers.Timer_Id;
     Dscr : Socket.Socket_Dscr;
     Fd   : X_Mng.File_Desc;
+    Fd_Set : Boolean;
     Curr_Try : Natural;
   end record;
 
@@ -49,7 +71,7 @@ package body Tcp_Util is
   function Fd_Match (R1, R2 : Connecting_Rec) return Boolean is
     use type X_Mng.File_Desc;
   begin
-    return R1.Fd = R2.Fd;
+    return R1.Fd_Set and then R2.Fd_Set and then R1.Fd = R2.Fd;
   end Fd_Match;
   procedure Find_By_Fd is new Con_List_Mng.Search (Fd_Match);
 
@@ -75,9 +97,15 @@ package body Tcp_Util is
     use type  Socket.Socket_Dscr;
   begin
 
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Try_Connect start");
+    end if;
     -- Open non blocking
     Socket.Open (Dscr, Protocol);
     Socket.Set_Blocking (Dscr, False);
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Try_Connect socket open");
+    end if;
 
     -- Connect
     case Host.Kind is
@@ -106,14 +134,23 @@ package body Tcp_Util is
       Socket.Close (Dscr);
       Connected := False;
     end if;
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Try_Connect result " & Connected'Img);
+    end if;
   exception
     when Socket.Soc_Conn_Refused =>
       -- Not open or not connected
       if Socket.Is_Open (Dscr) then
         Socket.Close (Dscr);
       end if;
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Try_Connect refused");
+      end if;
     when Socket.Soc_Would_Block =>
       Connected := False;
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Try_Connect would block");
+      end if;
   end Try_Connect;
 
   -- Handle a connection success/failure according to Rec.Dscr (open or not)
@@ -127,18 +164,31 @@ package body Tcp_Util is
     use type Timers.Timer_Id;
     use type Socket.Socket_Dscr;
   begin
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result start");
+    end if;
     -- Remove management data
     if Rec.Timer /= Timers.No_Timer then
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result delete timer"
+                      & Timers.Image (Rec.Timer));
+      end if;
       Timers.Delete (Rec.Timer);
     end if;
     Delete_Current_Con;
     if Socket.Is_Open (Rec.Dscr) then
       -- Connected
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result connected");
+      end if;
       Host := Socket.Get_Destination_Host (Rec.Dscr);
       Port := Socket.Get_Destination_Port (Rec.Dscr);
       Socket.Set_Blocking (Rec.Dscr, True);
     else
       -- Giving up
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result giving up");
+      end if;
       Port := 0;
       Host := Socket.No_Host;
     end if;
@@ -157,13 +207,25 @@ package body Tcp_Util is
                                Rec : in out Connecting_Rec;
                                Go_On : out Boolean) is
   begin
-    -- Remove Fd callback
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.End_Async_Connect start");
+    end if;
+    -- Remove Fd callbacks. Thery are active at this time
+    --  either because called by Fd_Cb or by Timer_Cb with open connection
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.End_Async_Connect del Cbs on fd "
+                    & Rec.Fd'Img);
+    end if;
     X_Mng.X_Del_CallBack (Rec.Fd, True);
     X_Mng.X_Del_CallBack (Rec.Fd, False);
 
     -- Close if failure and still open
     if not Success and then Socket.Is_Open (Rec.Dscr) then
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.End_Async_Connect closing socket");
+      end if;
       Socket.Close (Rec.Dscr);
+      Rec.Fd_Set := False;
     end if;
 
     -- Note that if success but Dscr not open, which would be a bug,
@@ -172,15 +234,24 @@ package body Tcp_Util is
     -- Success or failure
     if Socket.Is_Open (Rec.Dscr) then
       -- Connection success
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.End_Async_Connect success");
+      end if;
       Handle_Current_Result (Rec);
       Go_On := False;
     else
       -- This try failure
       -- Give up if no more try
       if Rec.Curr_Try = Rec.Nb_Tries then
+        if Debug_Connect then
+          My_Io.Put_Line ("  Tcp_Util.End_Async_Connect last failure");
+        end if;
         Handle_Current_Result (Rec);
         Go_On := False;
       else
+        if Debug_Connect then
+          My_Io.Put_Line ("  Tcp_Util.End_Async_Connect this failure");
+        end if;
         Go_On := True;
       end if;
     end if;
@@ -193,22 +264,41 @@ package body Tcp_Util is
     Go_On : Boolean;
     use type Socket.Socket_Dscr;
   begin
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb start with fd " & Fd'Img
+                    & "  read " & Read'Img);
+    end if;
     -- Find record by fd
     Rec.Fd := Fd;
+    Rec.Fd_Set := True;
     Find_By_Fd (Con_List, Rec, From_Current => False);
     Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb found rec "
+                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+    end if;
 
     -- This try result?
     if not Socket.Is_Connected (Rec.Dscr) then
       -- Cancel and close
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb not connected");
+      end if;
       End_Async_Connect (False, Rec, Go_On);
     else
       -- Success
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb connected");
+      end if;
       End_Async_Connect (True, Rec, Go_On);
     end if;
     if Go_On then
       -- Store closed Dscr for timer callback
       Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb update rec "
+                      & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+      end if;
     end if;
     -- Propagate event if no Go_On
     return not Go_On;
@@ -222,6 +312,10 @@ package body Tcp_Util is
     use type Timers.Timer_Id;
     use type Socket.Socket_Dscr;
   begin
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb start on timer "
+                    & Timers.Image (Id));
+    end if;
     -- Read rec: Try current
     Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     if Rec.Timer /= Id then
@@ -230,13 +324,20 @@ package body Tcp_Util is
       Find_By_Timer (Con_List, Rec, From_Current => False);
       Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     end if;
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb found rec "
+                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+    end if;
 
     -- Either first try, or previous failed (sync or not)
     --  or async connect is pending
     -- Rec.Curr_Try is current try number
 
-    -- Cancel pending async connect. Check end of tries
+    -- Cancel pending async connect
     if Socket.Is_Open (Rec.Dscr) then
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb is open");
+      end if;
       End_Async_Connect (False, Rec, Go_On);
       if not Go_On then
         return True;
@@ -249,37 +350,65 @@ package body Tcp_Util is
 
     if Socket.Is_Open (Rec.Dscr) and then Connected then
       -- Connected synchronous success
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb synchronous success");
+      end if;
       Handle_Current_Result (Rec);
       return True;
     elsif not Socket.Is_Open (Rec.Dscr) then
       -- Connect synchronous failure: Check number of tries
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb synchronous failure");
+      end if;
       if Rec.Curr_Try = Rec.Nb_Tries then
+        if Debug_Connect then
+          My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb last failure");
+        end if;
         Handle_Current_Result (Rec);
         return True;
       end if;
     end if;
 
     -- Asynchronous pending
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb pending");
+    end if;
     if Socket.Is_Open (Rec.Dscr) then
       -- Connection pending
       -- Save Dscr, Fd and pending status
       Rec.Fd := Socket.Fd_Of (Rec.Dscr);
+      Rec.Fd_Set := True;
       -- Add callback on fd
       X_Mng.X_Add_CallBack (Rec.Fd, True, Connection_Fd_Cb'access);
       X_Mng.X_Add_CallBack (Rec.Fd, False, Connection_Fd_Cb'access);
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb asynchronous pending"
+                        & " on fd " & Rec.Fd'Img);
+      end if;
     end if;
 
     -- Synchronous failure or pending: arm timer at first try
     if Rec.Curr_Try = 1 then
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb first try");
+      end if;
       -- First attempt failure: start timer
       Rec.Timer := Timers.Create (
           Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
                          Period        => Rec.Delta_Retry,
                          Delay_Seconds =>  Rec.Delta_Retry),
           Callback => Connection_Timer_Cb'access);
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb created timer "
+                      & Timers.Image (Rec.Timer));
+      end if;
     end if;  
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
     Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb update rec "
+                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+    end if;
     return False;       
   end Connection_Timer_Cb;
 
@@ -295,6 +424,10 @@ package body Tcp_Util is
            return Boolean is
     Rec : Connecting_Rec;
   begin
+    Set_Debug (Debug_Connect_Name, Debug_Connect);
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Connect_To");
+    end if;
     -- Initialise record and insert it in list
     Rec.Protocol := Protocol;
     Rec.Host := Host;
@@ -319,13 +452,36 @@ package body Tcp_Util is
                            Port : in Remote_Port) is
     Rec : Connecting_Rec;
   begin
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Connect");
+    end if;
     -- Find rec
     Rec.Host := Host;
     Rec.Port := Port;
     Find_By_Dest (Con_List, Rec, From_Current => False);
+    Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Connect found rec "
+                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+    end if;
+    if Rec.Fd_Set then
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Abort_Connect del Cbs on fd "
+                      & Rec.Fd'Img);
+      end if;
+      X_Mng.X_Del_CallBack (Rec.Fd, True);
+      X_Mng.X_Del_CallBack (Rec.Fd, False);
+    end if;
     -- Cancel timer
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting timer "
+                    & Timers.Image (Rec.Timer));
+    end if;
     Timers.Delete (Rec.Timer);
     -- Delete rec
+    if Debug_Connect then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting rec");
+    end if;
     if Con_List_Mng.Get_Position (Con_List) /= 1 then
       Con_List_Mng.Delete (Con_List, Con_List_Mng.Prev);
     else
@@ -398,6 +554,7 @@ package body Tcp_Util is
                          Num          : out Port_Num) is
     Rec : Accepting_Rec;
   begin
+    Set_Debug (Debug_Accept_Name, Debug_Accept);
     -- Initialise Rec
     Rec.Port := 0;
     Rec.Cb := Acception_Cb;
@@ -443,9 +600,14 @@ package body Tcp_Util is
     Rec.Port := Num;
     Find_By_Port (Acc_List, Rec, From_Current => False);
     Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
-    -- Del callback and close
+    -- Del callback, close and delete rec
     X_Mng.X_Del_CallBack (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
+    if Acc_List_Mng.Get_Position (Acc_List) = 1 then
+       Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Next);
+    else
+       Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Prev);
+    end if;
   exception
     when Con_List_Mng.Not_In_List =>
       raise No_Such;
@@ -527,6 +689,7 @@ package body Tcp_Util is
     Rec : Sending_Rec;
     procedure Send is new Socket.Send (Message_Type);
   begin
+    Set_Debug (Debug_Overflow_Name, Debug_Overflow);
     -- Try to send
     begin
       Send (Dscr, Message, Length);
