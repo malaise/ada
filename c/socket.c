@@ -694,7 +694,6 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
     } else {
       cr = sendto(soc->socket_id, msg2send, len2send, 0,
        (struct sockaddr*) &(soc->send_struct), socklen);
-printf ("Send to %08x\n", soc->send_struct.sin_addr.s_addr);
     }
   } while ( (cr == -1 ) && (errno == EINTR) );
 
@@ -787,13 +786,23 @@ extern int soc_resend (soc_token token) {
 }
 
 /*******************************************************************/
+typedef enum {a_class, b_class, c_class, d_class, reserved_class} net_class;
+
+static net_class class_of (unsigned char first_byte) {
+
+  if (first_byte <= 127) return a_class;
+  if (first_byte <= 191) return b_class;
+  if (first_byte <= 223) return c_class;
+  if (first_byte <= 239) return d_class;
+  return reserved_class;
+}
 
 static boolean is_ipm (struct sockaddr_in *addr) {
   soc_host host;
   host.integer = addr->sin_addr.s_addr;
 
-  /* @@@ A Affiner */
-  return host.bytes[0] == 234;
+  /* Valid ipm addr are d class */
+  return (class_of(host.bytes[0]) == d_class);
 }
 
 
@@ -849,7 +858,6 @@ static int bind_and_co (soc_token token, boolean dynamic) {
       perror ("setsockopt3");
       return (SOC_SYS_ERR);
     }
-printf ("Ipm on %08x\n", soc->send_struct.sin_addr.s_addr);
   }
 
   /* Ok */
