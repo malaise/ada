@@ -66,6 +66,10 @@ package body Socket is
                          Port : Word) return Result;
   pragma Import (C, Soc_Set_Dest, "soc_set_dest");
 
+  function Soc_Is_Connected (S : System.Address;
+                             P_Received : System.Address) return Result;
+  pragma Import (C, Soc_Is_Connected, "soc_is_connected");
+
   function Soc_Change_Dest_Host (S : System.Address;
                                  Host_Lan : System.Address;
                                  Lan      : Boolean_For_C) return Result;
@@ -259,6 +263,14 @@ package body Socket is
     Res := Soc_Set_Dest (Socket.Soc_Addr, Host, Word(Port) );
     Check_Ok;
   end Set_Destination_Host_And_Port;
+
+  -- Is a tcp socket connected
+  function Is_Connected (Socket : Socket_Dscr) return Boolean is
+    Con_For_C : Boolean_For_C;
+  begin
+    Res := Soc_Is_Connected (Socket.Soc_Addr, Con_For_C'Address);
+    return Boolean (Con_For_C);
+  end Is_Connected;
 
   -- Change destination Host/Lan
   procedure Change_Destination_Name (

@@ -76,7 +76,7 @@ package Socket is
   -- Set destination (Host/Lan and port) for sending
   -- If Lan is true then Name is a LAN name to broadcast on
   -- Otherwise it is a host name
-  -- No Lan to bradcast if tcp
+  -- No Lan to bradcast if tcp. Connects if tcp.
   procedure Set_Destination_Name_And_Service (
                Socket  : in Socket_Dscr;
                Lan     : in Boolean;
@@ -95,6 +95,8 @@ package Socket is
                Socket : in Socket_Dscr;
                Host   : in Host_Id;
                Port   : in Port_Num);
+
+  function Is_Connected (Socket : Socket_Dscr) return Boolean;
 
   -- Change destination Host/Lan
   -- Must be Udp and have been set by either
