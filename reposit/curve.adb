@@ -883,7 +883,7 @@ package body Curve is
               Maj (Zoom_Array(Curr_Zoom_No));
               return True;
             elsif Char = '+' then
-              if Curr_Zoom_No /= Zoom_No_Range'Last then
+              if Curr_Zoom_No /= Last_Zoom_No then
                 Curr_Zoom_No := Curr_Zoom_No + 1;
                 -- Compute new conversions
                 Maj (Zoom_Array(Curr_Zoom_No));
@@ -938,8 +938,28 @@ package body Curve is
                   Clicked_Status := Mouse_Event;
                   Zoom_Frame_Action := Toggle;
                   Big_Con_Io.Enable_Motion_Events (True);
+                elsif Mouse_Event.Valid
+                and then Mouse_Event.Status = Big_Con_Io.Released then
+                  if Mouse_Event.Button = Big_Con_Io.Up
+                  and then Curr_Zoom_No /= Last_Zoom_No then
+                    -- Next zoom
+                    Curr_Zoom_No := Curr_Zoom_No + 1;
+                    -- Compute new conversions
+                    Maj (Zoom_Array(Curr_Zoom_No));
+                    return True;
+                  elsif Mouse_Event.Button = Big_Con_Io.Down
+                  and then Curr_Zoom_No /= Zoom_No_Range'First then
+                    -- Prev zoom
+                    Curr_Zoom_No := Curr_Zoom_No - 1;
+                    -- Compute new conversions
+                    Maj (Zoom_Array(Curr_Zoom_No));
+                    return True;
+                  else
+                    -- No change
+                    Zoom_Frame_Action := None;
+                  end if;
                 else
-                  -- no change
+                  -- No change
                   Zoom_Frame_Action := None;
                 end if;
               when Drag =>
