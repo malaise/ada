@@ -1,0 +1,88 @@
+with CALENDAR, MUTEX_MANAGER, MATH;
+package body RND is
+ 
+  type LONG_INTEGER is new INTEGER;
+ 
+  -- Generator of pseudo random : remanent variable
+  RND_NBRE : FLOAT;
+ 
+  LOCK     : MUTEX_MANAGER.MUTEX;
+
+  -- Initialise sequence
+  procedure RANDOMIZE(INIT : in FLOAT := 1.0) is
+    -- Result of mutex query : always TRUE because call is blocking
+    OK : BOOLEAN;
+ 
+    -- Random number 
+    -- Number of seconds in current day is N.xxx
+    -- Result is 0.xxx
+    function INIT_RND return FLOAT is
+      DUREE : constant DURATION := abs(CALENDAR.SECONDS(CALENDAR.CLOCK));
+    begin
+      return FLOAT(DUREE - DURATION(MATH.TRUNC(MATH.REAL(DUREE))));
+    end INIT_RND;
+ 
+  begin
+    -- 0 <= init < 1 : valid, else random
+    OK := MUTEX_MANAGER.GET_MUTEX(LOCK, -1.0);
+    if 0.0 <= INIT and then INIT < 1.0 then
+      RND_NBRE := INIT;
+    else
+      RND_NBRE := INIT_RND;
+    end if;
+    MUTEX_MANAGER.RELEASE_MUTEX(LOCK);
+  end RANDOMIZE;
+ 
+ 
+  -- Next element in sequence
+  function RANDOM(MINI : FLOAT := 0.0;
+                  MAXI : FLOAT := 1.0) return FLOAT is
+    RND_2 : FLOAT;
+    PI    : constant := 3.141592653589793;
+    OK    : BOOLEAN;
+  begin
+    OK := MUTEX_MANAGER.GET_MUTEX(LOCK, -1.0);
+    -- (rnd + pi) ** 5
+    RND_NBRE := RND_NBRE + PI;
+    RND_2 := RND_NBRE * RND_NBRE;
+    RND_NBRE := RND_2 * RND_2 * RND_NBRE;
+    -- decimal part
+    RND_NBRE := RND_NBRE - FLOAT(MATH.TRUNC(MATH.REAL(RND_NBRE)));
+    MUTEX_MANAGER.RELEASE_MUTEX(LOCK);
+    -- here 0 <= RND < 1
+    if MINI >= MAXI then
+      return RND_NBRE;
+    else
+      return MINI + (RND_NBRE * (MAXI - MINI));
+    end if;
+  end RANDOM;
+ 
+  function DISCR_RANDOM(MINI : NUM := NUM'FIRST;
+                        MAXI : NUM := NUM'LAST) return NUM is
+  begin
+    return NUM'VAL(INTEGER(MATH.TRUNC(MATH.REAL(RANDOM(FLOAT(NUM'POS(MINI)),
+                                                             FLOAT(NUM'POS(MAXI) + 1))))));
+  end DISCR_RANDOM;
+ 
+  function INT_RANDOM(MINI : INTEGER := 0;
+                      MAXI : INTEGER := 1) return INTEGER is
+  begin
+    return INTEGER(MATH.TRUNC(MATH.REAL(RANDOM(FLOAT(MINI), FLOAT(MAXI + 1)))));
+  end INT_RANDOM;
+ 
+  function FLOAT_RANDOM(MINI : FLOAT := 0.0;
+                        MAXI : FLOAT := 1.0) return FLOAT is
+  begin
+    return RANDOM(MINI, MAXI);
+  end FLOAT_RANDOM;
+ 
+  function DUR_RANDOM(MINI : DURATION := 0.0;
+                      MAXI : DURATION := 1.0) return DURATION is
+  begin
+    return DURATION(RANDOM(FLOAT(MINI), FLOAT(MAXI)));
+  end DUR_RANDOM;
+ 
+begin
+  RANDOMIZE;
+end RND;
+
