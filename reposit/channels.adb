@@ -763,5 +763,292 @@ package body Channels is
     Init;
   end Channel;
 
+  ----------------------------------------------------------------------------
+
+  package Bus_Reply_List_Mng is new Dynamic_List (Socket.Host_Id);
+  package body Bus is
+
+    type Bus_Dscr_Rec is record
+      Init : Boolean := False;
+      Active : Boolean := False;
+      Subscribed : Boolean := False;
+      Joined : Boolean := False;
+      Bus_Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
+      Dest_Name : Text_Handler.Text (Tcp_Util.Max_Host_Name_Len);
+      Send_Dscr : Socket.Socket_Dscr;
+      Rece_Dscr : Socket.Socket_Dscr;
+      Bus_Id : Socket.Host_Id;
+      Replies : Bus_Reply_List_Mng.List_Type;
+    end record;
+    Bus_Dscr : Bus_Dscr_Rec;
+
+    -- Socket instance
+    procedure Bus_Read is new Socket.Receive (Bus_Message_Type);
+    procedure Bus_Write is new Socket.Send (Bus_Message_Type);
+
+    -- Store instanciation names
+    procedure Init is
+    begin
+      if Bus_Dscr.Init then
+        return;
+      end if;
+      Text_Handler.Set (Bus_Dscr.Bus_Name, Bus_Name);
+      Text_Handler.Set (Bus_Dscr.Dest_Name, Destination_Name);
+      Bus_Dscr.Init := True;
+    exception
+      when Constraint_Error =>
+        raise Name_Too_Long;
+    end Init;
+
+    -- Change bus and Lan names 
+    -- May raise Name_Too_Long if a Name is too long
+    -- May raise Bus_Active if subscribed or joined
+    procedure Change_Names (New_Bus_Name, New_Destination_Name : in String) is
+    begin
+      if Bus_Dscr.Active then
+        raise Bus_Active;
+      end if;
+      Text_Handler.Set (Bus_Dscr.Bus_Name, New_Bus_Name);
+      Text_Handler.Set (Bus_Dscr.Dest_Name, New_Destination_Name);
+      Bus_Dscr.Init := True;
+    exception
+      when Constraint_Error =>
+        raise Name_Too_Long;
+    end Change_Names;
+
+    function Loc_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+                     return Boolean is 
+      Dscr : Socket.Socket_Dscr;
+      Msg : Bus_Message_Type;
+      Len  : Natural;
+    begin
+      if Bus_Dscr.Subscribed then
+        Dscr := Bus_Dscr.Rece_Dscr;
+      elsif Bus_Dscr.Joined then
+        Dscr := Bus_Dscr.Send_Dscr;
+      end if;
+
+       
+      begin
+        Bus_Read (Dscr, Msg, Len, True);
+      exception
+        when others =>
+          return False;
+      end;
+      Bus_Reply_List_Mng.Insert (Bus_Dscr.Replies,
+           Socket.Get_Destination_Host (Dscr));
+      Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
+      Bus_Reply_List_Mng.Delete (Bus_Dscr.Replies, Bus_Reply_List_Mng.Prev);
+      return True;
+    end Loc_Read_Cb;
+
+    procedure Set_Dest_Bus (Dscr : in out Socket.Socket_Dscr) is
+    begin
+      Socket.Set_Destination_Name_And_Service (
+         Dscr,
+         True,
+         Text_Handler.Value (Bus_Dscr.Dest_Name),
+         Text_Handler.Value (Bus_Dscr.Bus_Name));
+      Bus_Dscr.Bus_Id := Socket.Get_Destination_Host (Dscr);
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        declare
+          Num : Socket.Port_Num;
+        begin
+          Num := Socket.Port_Num_Of (Text_Handler.Value (Bus_Dscr.Bus_Name),
+                                     Socket.Udp);
+        exception
+           when Socket.Soc_Name_Not_Found =>
+             raise Unknown_Bus;
+        end;
+        raise Unknown_Destination;
+    end Set_Dest_Bus;
+          
+    -- Subscription
+    -- Allow reception from bus
+    -- May raise Already_Subscribed if already subscribed to this bus
+    -- May raise Name_Too_Long if Bus or Destination Name is too long
+    -- May raise Unknown_Bus if Bus_Name is not known
+    -- May raise Unknown_Destination if Destination_Name is not known
+    procedure Subscribe is
+    begin
+      if Bus_Dscr.Subscribed then
+        raise Already_Subscribed;
+      end if;
+      Init;
+      Bus_Dscr.Active := True;
+      Bus_Dscr.Subscribed := True;
+      Socket.Open (Bus_Dscr.Rece_Dscr, Socket.Udp);
+      Set_Dest_Bus (Bus_Dscr.Rece_Dscr);
+      Socket.Link_Service (Bus_Dscr.Rece_Dscr,
+            Text_Handler.Value (Bus_Dscr.Bus_Name));
+      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Rece_Dscr),
+                                 True, Loc_Read_Cb'Unrestricted_Access);
+    end Subscribe;
+
+    -- Close reception from bus
+    -- May raise Not_Subscribed if not subscribed to this channel
+    procedure Unsubscribe is
+    begin
+      if not Bus_Dscr.Subscribed then
+        raise Not_Subscribed;
+      end if;
+      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Rece_Dscr), True);
+      Socket.Close (Bus_Dscr.Rece_Dscr);
+      Bus_Dscr.Subscribed := False;
+    end Unsubscribe;
+
+
+    -- Join a bus for publishing
+    -- May raise Already_Joined if already joined
+    -- May raise Unknown_Bus if Bus_Name is not known
+    -- May raise Unknown_Destination if Destination_Name is not known
+    procedure Join is
+    begin
+      if Bus_Dscr.Joined then
+        raise Already_Joined;
+      end if;
+      Init;
+      Bus_Dscr.Active := True;
+      Bus_Dscr.Joined := True;
+      Socket.Open (Bus_Dscr.Send_Dscr, Socket.Udp);
+      Set_Dest_Bus (Bus_Dscr.Send_Dscr);
+      -- This is for receiving replies
+      Socket.Link_Dynamic (Bus_Dscr.Send_Dscr);
+      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Send_Dscr),
+                                 True, Loc_Read_Cb'Unrestricted_Access);
+    end Join;
+
+    -- Leave a bus
+    -- May raise Not_Joined if not joined
+    procedure Leave is
+    begin
+      if not Bus_Dscr.Joined then
+        raise Not_Joined;
+      end if;
+      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Send_Dscr), True);
+      Socket.Close (Bus_Dscr.Send_Dscr);
+      Bus_Dscr.Joined := False;
+    end Leave;
+    
+
+    procedure Send  (Dscr    : in Socket.Socket_Dscr;
+                     Diff    : in Boolean;
+                     Message : in Message_Type;
+                     Length  : in Message_Length) is
+      Msg : Bus_Message_Type;
+      Len  : Natural;
+    begin
+      -- Build message and len
+      Msg.Diff := Diff;
+      Msg.Data := Message;
+      if Length = 0 then
+        Len := Message'Size / Byte_Size + Msg.Diff'Size / Byte_Size;
+      else
+        Len := Length + Msg.Diff'Size / Byte_Size;
+      end if;
+      Bus_Write (Dscr, Msg, Len);
+    end Send;
+
+    -- Send a message on the bus
+    -- May raise Not_Joined if not joined
+    procedure Write (Message : in Message_Type;
+                     Length  : in Message_Length := 0) is
+    begin
+      if not Bus_Dscr.Joined then
+        raise Not_Joined;
+      end if;
+      -- Dest may have been changed by reading a reply
+      Socket.Change_Destination_Host (Bus_Dscr.Send_Dscr, Bus_Dscr.Bus_Id);
+      Send (Bus_Dscr.Send_Dscr, True, Message, Length);
+    exception
+      when Socket.Soc_Conn_Lost | Socket.Soc_Would_Block =>
+        null;
+    end Write;
+
+    -- Reply to sender of last message received
+    -- Should only be called in Read_Cb.
+    -- May raise Not_In_Read if not called by Read_Cb
+    -- May raise Reply_Failed if reply cannot be sent
+    procedure Reply (Message : in Message_Type;
+                     Length : in Message_Length := 0) is
+      Id : Socket.Host_Id;
+    begin
+      if not Bus_Dscr.Subscribed then
+        raise Not_Subscribed;
+      end if;
+      -- Get current socket of reception
+      if Bus_Reply_List_Mng.Is_Empty (Bus_Dscr.Replies) then
+        raise Not_In_Read;
+      end if;
+      Bus_Reply_List_Mng.Read (Bus_Dscr.Replies, Id,
+                               Bus_Reply_List_Mng.Current);
+      -- Reply to it
+      Socket.Change_Destination_Host (Bus_Dscr.Rece_Dscr, Id);
+      Send (Bus_Dscr.Rece_Dscr, False, Message, Length);
+    exception
+      when others =>
+        raise Reply_Failed;
+    end Reply;
+
+    -- Send a message to one destination
+    -- May raise Unknown_Destination if Host_Name is not known
+    -- May raise Send_Failed if message cannot be sent
+    procedure Send (Host_Name : in String;
+                    Message   : in Message_Type;
+                    Length    : in Message_Length := 0) is
+
+      -- Tempo socket if not subscribed
+      Dscr : Socket.Socket_Dscr;
+
+      -- Close tempo socket if it has been used
+      procedure Garbage_Collect is
+      begin
+        if not Bus_Dscr.Subscribed then
+          Socket.Close (Dscr);
+        end if;
+      end Garbage_Collect;
+
+    begin
+      if not Bus_Dscr.Joined then
+        raise Not_Joined;
+      end if;
+
+      -- Set / Change host
+      begin
+        if Bus_Dscr.Subscribed then
+          -- Use reply port
+          Dscr := Bus_Dscr.Rece_Dscr;
+          Socket.Change_Destination_Name (Dscr, False, Host_Name);
+        else
+          -- Create a socket with same port as sending
+          Socket.Open (Dscr, Socket.Udp);
+          Socket.Set_Destination_Name_And_Port (
+             Dscr,
+             False,
+             Host_Name,
+             Socket.Get_Destination_Port (Bus_Dscr.Send_Dscr));
+        end if;
+      exception
+        when Socket.Soc_Name_Not_Found =>
+          Garbage_Collect;
+          raise Unknown_Destination;
+      end;
+
+      begin
+        Send (Dscr, False, Message, Length);
+      exception
+        when others =>
+          Garbage_Collect;
+          raise Send_Failed;
+      end;
+      Garbage_Collect;
+    end Send;
+
+
+  begin -- Bus
+    Init;
+  end Bus;
+    
 end Channels;
 

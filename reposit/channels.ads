@@ -1,48 +1,76 @@
 package Channels is
 
+
+  -----------------
+  -- DEFINITIONS --
+  -----------------
   -- Lenght of message exchanged on channel
   subtype Message_Length is Natural;
 
-  -- Callback invoqued in Write after each transmission to a destination
+  -- Callback invoqued in Channel.Write after each transmission to a
+  --  destination
   type Send_Callback_Access is access
     procedure (Host_Name : in String;
                Send_Ok   : in Boolean);
 
+  -- Exceptions raised in a channel or bus
+  ----------------------------------------
+  -- Channel, Destination, Bus or Lan name too long (see Tcp_Util)
+  Name_Too_Long : exception;
+  -- Replying while not in Read_Cb
+  Not_In_Read : exception;
+
+  -- Host_Name not set in hosts or not previously added (channel)
+  -- Lan_Name not set in networks (bus)
+  Unknown_Destination : exception;
+
+  -- Subscribing twice to the same channel or bus
+  Already_Subscribed : exception;
+  -- Unsubscribing from a channel or bus no subscribed to
+  Not_Subscribed : exception;
+
+  -- Reply sending has failed
+  Reply_Failed : exception;
+  -- Message sending has failed
+  Send_Failed : exception;
+
   -- Exceptions raised in a channel
+  ---------------------------------
   -- Calling Change_Channel_Name while Subscribed or a Destination is set
   Channel_Active : exception;
 
-  -- Channel or Destination host name too long (see Tcp_Util)
-  Name_Too_Long : exception;
-
-  -- Channel_Name not set in services
+  -- Channel_Name not set in services (tcp)
   Unknown_Channel : exception;
-  -- Host_Name not set in hosts or not previously added
-  Unknown_Destination : exception;
-
-  -- Subscribing twice to the same channel
-  Already_Subscribed : exception;
-  -- Unsubscribing from a channel no subscribed to
-  Not_Subscribed : exception;
 
   -- Adding twice the same destination to a channel
   Destination_Already : exception;
 
-  -- Replying while not in Read_Cb
-  Not_In_Read : exception;
   -- Reply sending has failed due to overflow
   Reply_Overflow : exception;
-  -- Reply sending has failed due to other error
-  Reply_Failed : exception;
 
   -- Message sending has failed due to overflow
   Send_Overflow : exception;
-  -- Message sending has failed due to other error
-  Send_Failed : exception;
 
-  -- File not found or syntax error in add_destinations
+  -- File not found or syntax error in Add_destinations
   File_Error : exception;
 
+  -- Exceptions raised in a bus
+  -----------------------------
+  -- Calling Change_Bus_Names while subscribed or a joined
+  Bus_Active : exception;
+
+  -- Bus name not set in services (udp)
+  Unknown_Bus : exception;
+
+  -- Joining twice to the same bus
+  Already_Joined : exception;
+  -- Writing without joining
+  Not_Joined : exception;
+
+
+  -------------
+  -- CHANNEL --
+  -------------
   generic
     -- Name of the channel (tcp in services)
     Channel_Name : in String;
@@ -73,7 +101,6 @@ package Channels is
     -- May raise Name_Too_Long if Channel_Name is too long
     -- May raise Unknown_Channel if Channel_Name is not known
     procedure Subscribe;
-
 
     -- Close all connections from remote process and forbid new connections
     -- May raise Not_Subscribed if not subscribed to this channel
@@ -146,6 +173,84 @@ package Channels is
                     Length    : in Message_Length := 0);
 
   end Channel;
+
+
+  ---------
+  -- BUS --
+  ---------
+  generic
+    -- Name of the bus (udp in services)
+    Bus_Name : in String;
+
+    -- Name of the Lan (in setworks)
+    Destination_Name : in String;
+
+    -- Type of message exchanged on the channel
+    type Message_Type is private;
+    -- Callback invoqued to receive a message on the channel
+    with procedure Read_Cb (Message  : in Message_Type;
+                            Length   : in Message_Length;
+                            Diffused : in Boolean);
+
+  package Bus is
+
+    -- The message kind sent on socket (Udp/Ipm)
+    type Bus_Message_Type is record
+      Diff : Boolean := True;
+      Data : Message_Type;
+    end record;
+
+    -- Change bus and Lan names
+    -- May raise Name_Too_Long if a Name is too long
+    -- May raise Bus_Active if subscribed or joined
+    procedure Change_Names (New_Bus_Name, New_Destination_Name : in String);
+
+
+    -- Subscription
+    -- Allow reception from bus
+    -- May raise Already_Subscribed if already subscribed to this bus
+    -- May raise Name_Too_Long if Bus or Destination Name is too long
+    -- May raise Unknown_Bus if Bus_Name is not known
+    -- May raise Unknown_Destination if Destination_Name is not known
+    procedure Subscribe;
+
+    -- Close reception from bus
+    -- May raise Not_Subscribed if not subscribed to this bus
+    procedure Unsubscribe;
+
+
+    -- Join a bus for publishing
+    -- May raise Already_Joined if already joined
+    -- May raise Unknown_Bus if Bus_Name is not known
+    -- May raise Unknown_Destination if Destination_Name is not known
+    procedure Join;
+
+    -- Leave a bus
+    -- May raise Not_Joined if not joined
+    procedure Leave;
+
+    -- Send a message on the bus
+    -- May raise Not_Joined if not joined
+    procedure Write (Message : in Message_Type;
+                     Length  : in Message_Length := 0);
+
+    -- Reply to sender of last message received
+    -- Should only be called in Read_Cb.
+    -- May raise Not_Subscribed if not subscribed (any more) to this bus
+    -- May raise Not_In_Read if not called by Read_Cb
+    -- May raise Reply_Failed if reply cannot be sent
+    procedure Reply (Message : in Message_Type;
+                     Length : in Message_Length := 0);
+
+    -- Send a message to one destination
+    -- May raise Not_Joined if not joined
+    -- May raise Unknown_Destination if Host_Name is not known
+    -- May raise Send_Failed if message cannot be sent
+    procedure Send (Host_Name : in String;
+                    Message   : in Message_Type;
+                    Length    : in Message_Length := 0);
+
+  end Bus;
 
 end Channels;
 
