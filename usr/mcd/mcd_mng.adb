@@ -1,6 +1,8 @@
 with TEXT_IO;
 with TEXT_HANDLER;
+with RANDOM;
 with DEBUG, INPUT_DISPATCHER, PARSER;
+pragma ELABORATE(RANDOM);
 package body MCD_MNG is
 
 
@@ -45,6 +47,7 @@ package body MCD_MNG is
 
     -- INTE->INTE or REAL->REAL
     function MINUS   (X : ITEM_REC) return ITEM_REC;
+    function ABSV    (X : ITEM_REC) return ITEM_REC;
 
     -- INTE->INTE
     function BITNEG  (X : ITEM_REC) return ITEM_REC;
@@ -57,13 +60,22 @@ package body MCD_MNG is
     function GREATEQ (L, R : ITEM_REC) return ITEM_REC;
     function SMALLEQ (L, R : ITEM_REC) return ITEM_REC;
 
-    -- INTE<->REAL
+    -- INTE->REAL
     function TOREAL  (X : ITEM_REC) return ITEM_REC;
-    function TOINTE  (X : ITEM_REC) return ITEM_REC;
 
-    -- INTE->BOOL REAL->BOOL
+    -- REAL -> INTE
+    function ROUND   (X : ITEM_REC) return ITEM_REC;
+    function TRUNC   (X : ITEM_REC) return ITEM_REC;
+
+    -- REAL->REAL
+    function INT     (X : ITEM_REC) return ITEM_REC;
+    function FRAC    (X : ITEM_REC) return ITEM_REC;
+
+    -- *->BOOL
     function ISREAL  (X : ITEM_REC) return ITEM_REC;
     function ISINTE  (X : ITEM_REC) return ITEM_REC;
+    function ISSTR   (X : ITEM_REC) return ITEM_REC;
+    function ISREG  (X : ITEM_REC) return ITEM_REC;
 
     -- BOOL,BOOL->BOOL
     function BOLAND  (L, R : ITEM_REC) return ITEM_REC;
@@ -176,22 +188,27 @@ package body MCD_MNG is
       end if;
     end DO_CALL;
 
-    procedure DO_RET (ALLOW_LEVEL_0 : in BOOLEAN := TRUE) is
+    procedure DO_RETN (ALL_LEVELS    : in BOOLEAN;
+                       LEVELS        : in ITEM_REC;
+                       ALLOW_LEVEL_0 : in BOOLEAN) is
       L : INTEGER;
       CALL_STACK_LEVEL : NATURAL;
     begin
       if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
         TEXT_IO.PUT_LINE("Mng: Do_ret");
       end if;
-      POP(A);
       CALL_STACK_LEVEL := CALL_STACK.LEVEL;
-      -- has to be INTE and val NATURAL
-      begin
-        L := NATURAL(A.VAL_INTE);
-      exception
-        when others => raise INVALID_ARGUMENT;
-      end;
-      if L = 0 then
+      if not ALL_LEVELS then
+        -- has to be INTE and val NATURAL
+        begin
+          L := NATURAL(LEVELS.VAL_INTE);
+        exception
+          when others => raise INVALID_ARGUMENT;
+        end;
+        if L = 0 then
+          return;
+        end if;
+      else
         -- Return all
         L := CALL_STACK_LEVEL + 1;
       end if;
@@ -208,12 +225,24 @@ package body MCD_MNG is
         end if;
       end if;
       -- Return N times
-      for I in reverse 1 .. A.VAL_INTE loop
+      for I in reverse 1 .. L loop
         -- Restart form previous context
         TEXT_HANDLER.SET(CALL_ENTRY, CALL_STACK.POP);
       end loop;
       INPUT_DISPATCHER.SET_INPUT(TEXT_HANDLER.VALUE(CALL_ENTRY));
+    end DO_RETN;
+
+    procedure DO_RETALL is
+    begin
+      DO_RETN(TRUE, A, TRUE);
+    end DO_RETALL;
+
+    procedure DO_RET (ALLOW_LEVEL_0 : in BOOLEAN := TRUE) is
+    begin
+      POP(A);
+      DO_RETN(FALSE, A, ALLOW_LEVEL_0);
     end DO_RET;
+    
 
     procedure DO_POPN is
       N : NATURAL;
@@ -230,6 +259,19 @@ package body MCD_MNG is
       end loop;
     end DO_POPN;
 
+    procedure DO_DELAY(THE_DELAY : in ITEM_REC) is
+    begin
+      if THE_DELAY.KIND = INTE then
+        delay DURATION(THE_DELAY.VAL_INTE);
+      elsif THE_DELAY.KIND = REAL then
+        delay DURATION(THE_DELAY.VAL_REAL);
+      else
+        raise INVALID_ARGUMENT;
+      end if;
+    exception
+      when others =>
+        raise INVALID_ARGUMENT;
+    end DO_DELAY;
 
   begin
     -- Default, except RET
@@ -245,13 +287,21 @@ package body MCD_MNG is
         TEXT_IO.NEW_LINE;
       end if;
       case ITEM.VAL_OPER is 
-        -- These 3 I do it myself
+        -- These 5 I do it myself
+        when NOP =>
+          null;
         when SWAP =>
           POP(A); POP(B); PUSH(A); PUSH(B);
         when DUP =>
           READ(A); PUSH(A);
         when POP =>
           POP(A);
+        when RND =>
+          PUSH( (KIND => REAL,
+                 VAL_REAL => MY_MATH.REAL(RANDOM.FLOAT_RANDOM)) );
+        when SLEEP =>
+          POP(A);
+          DO_DELAY(A);
 
         when POPN =>
           DO_POPN;
@@ -281,6 +331,8 @@ package body MCD_MNG is
           POP(A); POP(B); PUSH (OPERATIONS.SHR(B,A));
         when MINUS =>
           POP(A); PUSH (OPERATIONS.MINUS(A));
+        when ABSV =>
+          POP(A); PUSH (OPERATIONS.ABSV(A));
         when BITNEG =>
           POP(A); PUSH (OPERATIONS.BITNEG(A));
         when EQUAL =>
@@ -297,12 +349,22 @@ package body MCD_MNG is
           POP(A); POP(B); PUSH (OPERATIONS.SMALLEQ(B,A));
         when TOREAL =>
           POP(A); PUSH (OPERATIONS.TOREAL(A));
-        when TOINTE =>
-          POP(A); PUSH (OPERATIONS.TOINTE(A));
+        when ROUND =>
+          POP(A); PUSH (OPERATIONS.ROUND(A));
+        when TRUNC =>
+          POP(A); PUSH (OPERATIONS.TRUNC(A));
+        when INT =>
+          POP(A); PUSH (OPERATIONS.INT(A));
+        when FRAC =>
+          POP(A); PUSH (OPERATIONS.FRAC(A));
         when ISREAL =>
           POP(A); PUSH (OPERATIONS.ISREAL(A));
         when ISINTE =>
           POP(A); PUSH (OPERATIONS.ISINTE(A));
+        when ISSTR =>
+          POP(A); PUSH (OPERATIONS.ISSTR(A));
+        when ISREG =>
+          POP(A); PUSH (OPERATIONS.ISREG(A));
         when BOLAND =>
           POP(A); POP(B); PUSH (OPERATIONS.BOLAND(B,A));
         when BOLOR =>
@@ -315,8 +377,8 @@ package body MCD_MNG is
         -- Conditions
         when IFTHEN =>
           POP(A); POP(B);
-          if OPERATIONS.IS_TRUE(A) then
-            PUSH(B);
+          if OPERATIONS.IS_TRUE(B) then
+            PUSH(A);
           end if;
         when IFTE =>
           POP(A); POP(B); POP(C); PUSH (OPERATIONS.IFTE(C,B,A));
@@ -376,6 +438,8 @@ package body MCD_MNG is
           DO_RET;
         when RETN =>
           DO_RET;
+        when RETALL =>
+          DO_RETALL;
         when IFRET =>
           POP(A);
           if OPERATIONS.IS_TRUE(A) then
@@ -389,10 +453,16 @@ package body MCD_MNG is
             PUSH(A);
             DO_RET;
           end if;
+        when IFRETALL =>
+          POP(A);
+          if OPERATIONS.IS_TRUE(A) then
+            DO_RETALL;
+          end if;
 
         when RETACAL =>
           PUSH( (KIND => INTE, VAL_INTE => 1) );
-          DO_RET;
+          -- Return but forbid level 0
+          DO_RET(FALSE);
           DO_CALL;
 
         -- PUTs
@@ -441,5 +511,7 @@ package body MCD_MNG is
     return STACK.STACK_SIZE = 0;
   end;
 
+begin
+  RANDOM.RANDOMIZE;
 end MCD_MNG;
 

@@ -5,6 +5,8 @@ package MCD_MNG is
   type ITEM_KIND_LIST is (INTE, REAL, BOOL, CHRS, REGI, OPER);
 
   type OPERATOR_LIST is (
+   NOP,
+
    ADD,
    SUB,
    MULT,
@@ -21,6 +23,7 @@ package MCD_MNG is
    SHR,
    
    MINUS,
+   ABSV,
    BITNEG,
 
    EQUAL,
@@ -31,10 +34,16 @@ package MCD_MNG is
    SMALLEQ,
 
    TOREAL,
-   TOINTE,
+   ROUND,
+   TRUNC,
+
+   INT,
+   FRAC,
 
    ISREAL,
    ISINTE,
+   ISSTR,
+   ISREG,
 
    OBASE,
 
@@ -58,6 +67,8 @@ package MCD_MNG is
    PUSHR,
 
    SSIZE,
+   RND,
+   SLEEP,
 
    POPE,
    COPYE,
@@ -69,8 +80,10 @@ package MCD_MNG is
    IFCALL,
    RET,
    RETN,
+   RETALL,
    IFRET,
    IFRETN,
+   IFRETALL,
    RETACAL,
 
    FORMAT,

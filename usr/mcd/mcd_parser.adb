@@ -13,96 +13,118 @@ package body PARSER is
 
   INPUT_ERROR : BOOLEAN := FALSE;
 
+  -- Length of an operator
+  OPE_LEN : constant := 8;
+
+  -- Length of a symbol
   subtype ONE_WORD is STRING(1 .. 2);
+  -- No symbol
   NOSY : constant ONE_WORD := (others => ' ');
+
+  -- Length of the comment
   subtype ONE_COMMENT is STRING (1 .. 30);
+
+  -- One operator definition
   type ONE_REC is record
     WORD : ONE_WORD;
     COMMENT : ONE_COMMENT;
   end record;
 
+  -- The operators
   WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_REC :=
-  (ADD     => ("+ ", "push B + A                    "),
-   SUB     => ("- ", "push B - A                    "),
-   MULT    => ("* ", "push B * A                    "),
-   DIV     => ("/ ", "push B / A                    "),
-   REMIND  => ("% ", "push B % A (rest of division) "),
-   POW     => ("**", "push B ** A (pow)             "),
-   MINUS   => ("+-", "push -A                       "),
+  (NOP      => (NOSY, "No operation                  "),
 
-   BITAND  => ("&&", "push B & A (bit and)          "),
-   BITOR   => ("||", "push B | A (bit and)          "),
-   BITXOR  => ("^^", "push B ^ A (bit and)          "),
-   BITNEG  => ("~~", "push ~A    (bit neg)          "),
-   SHL     => ("<<", "push B << A (bits shift left) "),
-   SHR     => (">>", "push B >> A (bits shift right)"),
+   ADD      => ("+ ", "push B + A                    "),
+   SUB      => ("- ", "push B - A                    "),
+   MULT     => ("* ", "push B * A                    "),
+   DIV      => ("/ ", "push B / A                    "),
+   REMIND   => ("% ", "push B % A (rest of division) "),
+   POW      => ("**", "push B ** A (pow)             "),
+   MINUS    => ("+-", "push -A                       "),
+   ABSV     => (NOSY, "push |A|                      "),
 
-   EQUAL   => ("= ", "push B = A                    "),
-   DIFF    => ("/=", "push B /= A                   "),
-   GREATER => ("> ", "push B > A                    "),
-   SMALLER => ("< ", "push B < A                    "),
-   GREATEQ => (">=", "push B >= A                   "),
-   SMALLEQ => ("<=", "push B <= A                   "),
+   BITAND   => ("&&", "push B & A (bit and)          "),
+   BITOR    => ("||", "push B | A (bit and)          "),
+   BITXOR   => ("^^", "push B ^ A (bit and)          "),
+   BITNEG   => ("~~", "push ~A    (bit neg)          "),
+   SHL      => ("<<", "push B << A (bits shift left) "),
+   SHR      => (">>", "push B >> A (bits shift right)"),
 
-   BOLAND  => ("& ", "push B and A                  "),
-   BOLOR   => ("| ", "push B or A                   "),
-   BOLXOR  => ("^ ", "push B xor A                  "),
-   BOLNEG  => ("~ ", "push not A                    "),
+   EQUAL    => ("= ", "push B = A                    "),
+   DIFF     => ("/=", "push B /= A                   "),
+   GREATER  => ("> ", "push B > A                    "),
+   SMALLER  => ("< ", "push B < A                    "),
+   GREATEQ  => (">=", "push B >= A                   "),
+   SMALLEQ  => ("<=", "push B <= A                   "),
 
-   TOREAL  => (NOSY, "push REAL(A)                  "),
-   TOINTE  => (NOSY, "push INTE(A)                  "),
+   BOLAND   => ("& ", "push B and A                  "),
+   BOLOR    => ("| ", "push B or A                   "),
+   BOLXOR   => ("^ ", "push B xor A                  "),
+   BOLNEG   => ("~ ", "push not A                    "),
 
-   ISREAL  => (NOSY, "push IS_REAL(A)               "),
-   ISINTE  => (NOSY, "push IS_INTE(A)               "),
-
-   OBASE   => (NOSY, "set output base to A          "),
+   TOREAL   => (NOSY, "push REAL(A)                  "),
+   ROUND    => (NOSY, "push INTE(A) (round)          "),
+   TRUNC    => (NOSY, "push INTE(A) (int part)       "),
+   INT      => (NOSY, "push int part of A            "),
+   FRAC     => (NOSY, "push frac part of A           "),
  
-   SSIZE   => (NOSY, "push stack size               "),
-   SWAP    => (NOSY, "push A, push B                "),
-   DUP     => (NOSY, "push A, push A                "),
-   POP     => (NOSY, "pop A                         "),
-   POPN    => (NOSY, "pop B A times                 "),
+   ISREAL   => (NOSY, "push True if A is a real      "),
+   ISINTE   => (NOSY, "push True if A in an integer  "),
+   ISSTR    => (NOSY, "push True if A is a string    "),
+   ISREG    => (NOSY, "push True if A is a register  "),
 
-   POPR    => (NOSY, "B -> regA                     "),
-   COPYR   => (NOSY, "B -> regA, push B             "),
-   PUSHR   => (NOSY, "push regA                     "),
+   OBASE    => (NOSY, "set output base to A          "),
+ 
+   SSIZE    => (NOSY, "push stack size               "),
+   SWAP     => (NOSY, "push A, push B                "),
+   DUP      => (NOSY, "push A, push A                "),
+   POP      => (NOSY, "pop A                         "),
+   POPN     => (NOSY, "pop B A times                 "),
+   RND      => (NOSY, "push 0.0 <= RND < 1.0         "),
+   SLEEP    => (NOSY, "sleep A seconds               "),
 
-   POPE    => (NOSY, "pop A push_extra A            "),
-   COPYE   => (NOSY, "pop A push_extra A push A     "),
-   PUSHLE  => (NOSY, "pop_extra last  X push X      "),
-   PUSHFE  => (NOSY, "pop_extra first X push X      "),
-   ESIZE   => (NOSY, "push extra_stack size         "),
+   POPR     => (NOSY, "B -> regA                     "),
+   COPYR    => (NOSY, "B -> regA, push B             "),
+   PUSHR    => (NOSY, "push regA                     "),
 
-   IFTHEN  => (NOSY, "if A then push B              "),
-   IFTE    => (NOSY, "if C then push B else push A  "),
-   ETFI    => (NOSY, "if A then push C else push B  "),
+   POPE     => (NOSY, "pop A push_extra A            "),
+   COPYE    => (NOSY, "pop A push_extra A push A     "),
+   PUSHLE   => (NOSY, "pop_extra last  X push X      "),
+   PUSHFE   => (NOSY, "pop_extra first X push X      "),
+   ESIZE    => (NOSY, "push extra_stack size         "),
 
-   CALL    => (NOSY, "call A                        "),
-   IFCALL  => (NOSY, "if B then call A              "),
-   RET     => (NOSY, "return                        "),
-   RETN    => (NOSY, "return A levels (0=all)       "),
-   IFRET   => (NOSY, "if B return                   "),
-   IFRETN  => (NOSY, "if B return A levels (0=all)  "),
-   RETACAL => (NOSY, "return and call A             "),
+   IFTHEN   => (NOSY, "if B then push A              "),
+   IFTE     => (NOSY, "if C then push B else push A  "),
+   ETFI     => (NOSY, "if A then push C else push B  "),
 
-   FORMAT  => (NOSY, "xx or xx.yyy format           "),
-   PUT     => (NOSY, "put A                         "),
-   NEWL    => (NOSY, "new line                      "),
-   PUTL    => (NOSY, "put_line A                    "),
+   CALL     => (NOSY, "call A                        "),
+   IFCALL   => (NOSY, "if B then call A              "),
+   RET      => (NOSY, "return                        "),
+   RETN     => (NOSY, "return A levels (0=none)      "),
+   RETALL   => (NOSY, "return all levels             "),
+   IFRET    => (NOSY, "if A return                   "),
+   IFRETN   => (NOSY, "if B return A levels (0=none) "),
+   IFRETALL => (NOSY, "if A return all levels        "),
+   RETACAL  => (NOSY, "return and call A             "),
 
-   STRLEN  => (NOSY, "push length of A              "),
-   STRCAT  => (NOSY, "push B & A                    "),
-   STRSUB  => (NOSY, "push C(B..A)                  "),
-   STRLOC  => (NOSY, "push C occurence of B in A    "),
-   STRREP  => (NOSY, "push C replaced by B at pos A "),
-   STRUPP  => (NOSY, "push A in uppercase           "),
-   STRLOW  => (NOSY, "push A in lowercase           "),
-   STRREAL => (NOSY, "push A converted to real      "),
-   STRINTE => (NOSY, "push A converted to inte      "),
-   STRBOOL => (NOSY, "push A converted to bool      "),
-   STROF =>   (NOSY, "push formated string of A     "),
+   FORMAT   => (NOSY, "xx or xx.yyy format           "),
+   PUT      => (NOSY, "put A                         "),
+   NEWL     => (NOSY, "new line                      "),
+   PUTL     => (NOSY, "put_line A                    "),
 
-   HELP    => (NOSY, "put help                      ") );
+   STRLEN   => (NOSY, "push length of A              "),
+   STRCAT   => (NOSY, "push B & A                    "),
+   STRSUB   => (NOSY, "push C(B..A)                  "),
+   STRLOC   => (NOSY, "push C occurence of B in A    "),
+   STRREP   => (NOSY, "push C replaced by B at pos A "),
+   STRUPP   => (NOSY, "push A in uppercase           "),
+   STRLOW   => (NOSY, "push A in lowercase           "),
+   STRREAL  => (NOSY, "push A converted to real      "),
+   STRINTE  => (NOSY, "push A converted to inte      "),
+   STRBOOL  => (NOSY, "push A converted to bool      "),
+   STROF    => (NOSY, "push formated string of A     "),
+
+   HELP     => (NOSY, "put help                      ") );
 
 
   function NEXT_ITEM return MCD_MNG.ITEM_REC is
@@ -256,7 +278,7 @@ package body PARSER is
 
   procedure PRINT_HELP is
     use TEXT_IO;
-    OPE_NAME : STRING (1 .. 7);
+    OPE_NAME : STRING (1 .. OPE_LEN);
   begin
     PUT_LINE ("Commands are read from standard input. No argument accepted.");
     PUT_LINE ("Separators are space and horiz tab.");

@@ -173,6 +173,19 @@ package body OPERATIONS is
     end if;
   end MINUS;
 
+  -- INTE->INTE or REAL->REAL
+  function ABSV   (X : ITEM_REC) return ITEM_REC is
+  begin
+    if not IS_INTE_OR_REAL(X) then
+      raise INVALID_ARGUMENT;
+    end if;
+    if X.KIND = INTE then
+      return (KIND => INTE, VAL_INTE => abs X.VAL_INTE);
+    else
+      return (KIND => REAL, VAL_REAL => abs X.VAL_REAL);
+    end if;
+  end ABSV;
+
   -- INTE->INTE
   function BITNEG  (X : ITEM_REC) return ITEM_REC is
     use BIT_OPS;
@@ -307,7 +320,7 @@ package body OPERATIONS is
   end TOREAL;
 
   -- REAL->INTE
-  function TOINTE (X : ITEM_REC) return ITEM_REC is
+  function ROUND (X : ITEM_REC) return ITEM_REC is
   begin
     if X.KIND = INTE then
       return X;
@@ -316,8 +329,43 @@ package body OPERATIONS is
       raise INVALID_ARGUMENT;
     end if;
     return (KIND => INTE, VAL_INTE => MY_MATH.ROUND(X.VAL_REAL));
-  end TOINTE;
+  end ROUND;
 
+  function TRUNC (X : ITEM_REC) return ITEM_REC is
+  begin
+    if X.KIND = INTE then
+      return X;
+    end if;
+    if X.KIND /= REAL then
+      raise INVALID_ARGUMENT;
+    end if;
+    return (KIND => INTE, VAL_INTE => MY_MATH.TRUNC(X.VAL_REAL));
+  end TRUNC;
+
+  -- REAL->REAL
+  function INT (X : ITEM_REC) return ITEM_REC is
+  begin
+    if X.KIND = INTE then
+      return X;
+    end if;
+    if X.KIND /= REAL then
+      raise INVALID_ARGUMENT;
+    end if;
+    return (KIND => REAL, VAL_REAL => MY_MATH.INT(X.VAL_REAL));
+  end INT;
+
+  function FRAC (X : ITEM_REC) return ITEM_REC is
+  begin
+    if X.KIND = INTE then
+      return X;
+    end if;
+    if X.KIND /= REAL then
+      raise INVALID_ARGUMENT;
+    end if;
+    return (KIND => REAL, VAL_REAL => MY_MATH.FRAC(X.VAL_REAL));
+  end FRAC;
+
+  -- *->BOOL
   function ISREAL  (X : ITEM_REC) return ITEM_REC is
   begin
     return (KIND => BOOL, VAL_BOOL => X.KIND = REAL);
@@ -327,6 +375,16 @@ package body OPERATIONS is
   begin
     return (KIND => BOOL, VAL_BOOL => X.KIND = INTE);
   end ISINTE;
+
+  function ISSTR  (X : ITEM_REC) return ITEM_REC is
+  begin
+    return (KIND => BOOL, VAL_BOOL => X.KIND = CHRS);
+  end ISSTR;
+
+  function ISREG  (X : ITEM_REC) return ITEM_REC is
+  begin
+    return (KIND => BOOL, VAL_BOOL => X.KIND = REGI);
+  end ISREG;
 
 
   -- BOOL,BOOL->BOOL
@@ -368,9 +426,6 @@ package body OPERATIONS is
   function IFTE    (X, A, B : ITEM_REC) return ITEM_REC is
   begin
     if X.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
-    end if;
-    if A.KIND = OPER then
       raise INVALID_ARGUMENT;
     end if;
     if A.KIND /= B.KIND then
