@@ -408,7 +408,7 @@ DESCRIPTOR 2
 
   # Person edit tittle
   FIELD 10 PUT
-    GEOMETRY 22 00 22 05
+    GEOMETRY 21 00 21 05
     COLORS light_gray not_blink black
     INIT
       00 00 Person
@@ -417,13 +417,13 @@ DESCRIPTOR 2
 
   # Person get
   FIELD 11 GET
-    GEOMETRY 22 07 22 26
+    GEOMETRY 21 07 21 26
     COLORS light_gray blue green
   END FIELD
 
   # Activity edit tittle
   FIELD 12 PUT
-    GEOMETRY 22 29 22 36
+    GEOMETRY 21 29 21 36
     COLORS light_gray not_blink black
     INIT
       00 00 Activity
@@ -432,13 +432,13 @@ DESCRIPTOR 2
 
   # Activity get
   FIELD 13 GET
-    GEOMETRY 22 38 22 47
+    GEOMETRY 21 38 21 47
     COLORS light_gray blue green
   END FIELD
 
   # TZ edit numbers
   FIELD 14 PUT
-    GEOMETRY 23 15 23 37
+    GEOMETRY 22 15 22 37
     COLORS light_gray not_blink black
     INIT
      00 01 1
@@ -452,7 +452,7 @@ DESCRIPTOR 2
 
   # TZ edit tittle
   FIELD 15 PUT
-    GEOMETRY 24 00 24 13
+    GEOMETRY 23 00 23 13
     COLORS light_gray not_blink black
     INIT
       00 00 Training Zones
@@ -461,43 +461,43 @@ DESCRIPTOR 2
 
   # TZ1 get
   FIELD 16 GET
-    GEOMETRY 24 15 24 17
+    GEOMETRY 23 15 23 17
     COLORS light_gray blue green
   END FIELD
 
   # TZ2 get
   FIELD 17 GET
-    GEOMETRY 24 19 24 21
+    GEOMETRY 23 19 23 21
     COLORS light_gray blue green
   END FIELD
 
   # TZ3 get
   FIELD 18 GET
-    GEOMETRY 24 23 24 25
+    GEOMETRY 23 23 23 25
     COLORS light_gray blue green
   END FIELD
 
   # TZ4 get
   FIELD 19 GET
-    GEOMETRY 24 27 24 29
+    GEOMETRY 23 27 23 29
     COLORS light_gray blue green
   END FIELD
 
   # TZ5 get
   FIELD 20 GET
-    GEOMETRY 24 31 24 33
+    GEOMETRY 23 31 23 33
     COLORS light_gray blue green
   END FIELD
 
   # TZ6 get
   FIELD 21 GET
-    GEOMETRY 24 35 24 37
+    GEOMETRY 23 35 23 37
     COLORS light_gray blue green
   END FIELD
 
   # Valid button
   FIELD 22 BUTTON
-    GEOMETRY 18 52 20 59
+    GEOMETRY 17 52 19 59
     COLORS brown blue
     INIT
       01 01 Valid
@@ -506,7 +506,7 @@ DESCRIPTOR 2
 
   # Cancel button
   FIELD 23 BUTTON
-    GEOMETRY 22 52 24 59
+    GEOMETRY 21 52 23 59
     COLORS brown blue
     INIT
       01 01 Cancel
@@ -515,7 +515,7 @@ DESCRIPTOR 2
 
   # Compute button
   FIELD 24 BUTTON
-    GEOMETRY 24 41 24 49
+    GEOMETRY 23 41 23 49
     COLORS brown blue
     INIT
       00 01 Compute
@@ -548,7 +548,7 @@ DESCRIPTOR 3
 
   # Person get tittle
   FIELD 03 PUT
-    GEOMETRY 05 05 05 10
+    GEOMETRY 04 05 04 10
     COLORS light_gray not_blink black
     INIT
       00 00 Person
@@ -557,13 +557,13 @@ DESCRIPTOR 3
 
   # Person get
   FIELD 04 GET
-    GEOMETRY 05 12 05 31
+    GEOMETRY 04 12 04 31
     COLORS light_gray blue green
   END FIELD
 
   # Activity get tittle
   FIELD 05 PUT
-    GEOMETRY 05 34 05 41
+    GEOMETRY 04 34 04 41
     COLORS light_gray not_blink black
     INIT
       00 00 Activity
@@ -572,13 +572,13 @@ DESCRIPTOR 3
 
   # Activity get
   FIELD 06 GET
-    GEOMETRY 05 43 05 52
+    GEOMETRY 04 43 04 52
     COLORS light_gray blue green
   END FIELD
 
  # TZ edit numbers
   FIELD 07 PUT
-    GEOMETRY 07 30 07 52
+    GEOMETRY 06 30 06 52
     COLORS light_gray not_blink black
     INIT
      00 01 1
@@ -592,7 +592,7 @@ DESCRIPTOR 3
 
   # TZ edit tittle
   FIELD 08 PUT
-    GEOMETRY 08 15 08 28
+    GEOMETRY 07 15 07 28
     COLORS light_gray not_blink black
     INIT
       00 00 Training Zones
@@ -601,43 +601,43 @@ DESCRIPTOR 3
 
   # TZ1 get
   FIELD 09 GET
-    GEOMETRY 08 30 08 32
+    GEOMETRY 07 30 07 32
     COLORS light_gray blue green
   END FIELD
 
   # TZ2 get
   FIELD 10 GET
-    GEOMETRY 08 34 08 36
+    GEOMETRY 07 34 07 36
     COLORS light_gray blue green
   END FIELD
 
   # TZ3 get
   FIELD 11 GET
-    GEOMETRY 08 38 08 40
+    GEOMETRY 07 38 07 40
     COLORS light_gray blue green
   END FIELD
 
   # TZ4 get
   FIELD 12 GET
-    GEOMETRY 08 42 08 44
+    GEOMETRY 07 42 07 44
     COLORS light_gray blue green
   END FIELD
 
   # TZ5 get
   FIELD 13 GET
-    GEOMETRY 08 46 08 48
+    GEOMETRY 07 46 07 48
     COLORS light_gray blue green
   END FIELD
 
   # TZ6 get
   FIELD 14 GET
-    GEOMETRY 08 50 08 52
+    GEOMETRY 07 50 07 52
     COLORS light_gray blue green
   END FIELD
 
   # Date tittle
   FIELD 15 PUT
-    GEOMETRY 10 05 10 08
+    GEOMETRY 09 05 09 08
     COLORS light_gray not_blink black
     INIT
       00 00 Date
@@ -646,13 +646,13 @@ DESCRIPTOR 3
 
   # Date days
   FIELD 16 GET
-    GEOMETRY 10 10 10 11
+    GEOMETRY 09 10 09 11
     COLORS light_gray blue green
   END FIELD
 
   # / betweeen day and month
   FIELD 17 PUT
-    GEOMETRY 10 12 10 12
+    GEOMETRY 09 12 09 12
     COLORS light_gray not_blink black
     INIT
       00 00 /
@@ -661,13 +661,13 @@ DESCRIPTOR 3
 
   # Date month
   FIELD 18 GET
-    GEOMETRY 10 13 10 14
+    GEOMETRY 09 13 09 14
     COLORS light_gray blue green
   END FIELD
 
   # / betweeen month and year
   FIELD 19 PUT
-    GEOMETRY 10 15 10 15
+    GEOMETRY 09 15 09 15
     COLORS light_gray not_blink black
     INIT
       00 00 /
@@ -676,13 +676,13 @@ DESCRIPTOR 3
 
   # Date year
   FIELD 20 GET
-    GEOMETRY 10 16 10 19
+    GEOMETRY 09 16 09 19
     COLORS light_gray blue green
   END FIELD
 
   # Comment tittle
   FIELD 21 PUT
-    GEOMETRY 10 22 10 28
+    GEOMETRY 09 22 09 28
     COLORS light_gray not_blink black
     INIT
       00 00 Comment
@@ -691,13 +691,13 @@ DESCRIPTOR 3
 
   # Comment get
   FIELD 22 GET
-    GEOMETRY 10 30 10 49
+    GEOMETRY 09 30 09 49
     COLORS light_gray blue green
   END FIELD
 
   # Sampling tittle
   FIELD 23 PUT
-    GEOMETRY 10 52 10 65
+    GEOMETRY 09 52 09 65
     COLORS light_gray not_blink black
     INIT
       00 00 Sampling delta
@@ -706,613 +706,613 @@ DESCRIPTOR 3
 
   # Sampling get
   FIELD 24 GET
-    GEOMETRY 10 67 10 69
+    GEOMETRY 09 67 09 69
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 25 GET
-    GEOMETRY 12 00 12 02
+    GEOMETRY 11 00 11 02
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 26 GET
-    GEOMETRY 12 04 12 06
+    GEOMETRY 11 04 11 06
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 27 GET
-    GEOMETRY 12 08 12 10
+    GEOMETRY 11 08 11 10
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 28 GET
-    GEOMETRY 12 12 12 14
+    GEOMETRY 11 12 11 14
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 29 GET
-    GEOMETRY 12 16 12 18
+    GEOMETRY 11 16 11 18
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 30 GET
-    GEOMETRY 12 20 12 22
+    GEOMETRY 11 20 11 22
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 31 GET
-    GEOMETRY 12 24 12 26
+    GEOMETRY 11 24 11 26
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 32 GET
-    GEOMETRY 12 28 12 30
+    GEOMETRY 11 28 11 30
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 33 GET
-    GEOMETRY 12 32 12 34
+    GEOMETRY 11 32 11 34
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 34 GET
-    GEOMETRY 12 36 12 38
+    GEOMETRY 11 36 11 38
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 35 GET
-    GEOMETRY 12 40 12 42
+    GEOMETRY 11 40 11 42
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 36 GET
-    GEOMETRY 12 44 12 46
+    GEOMETRY 11 44 11 46
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 37 GET
-    GEOMETRY 12 48 12 50
+    GEOMETRY 11 48 11 50
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 38 GET
-    GEOMETRY 12 52 12 54
+    GEOMETRY 11 52 11 54
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 39 GET
-    GEOMETRY 12 56 12 58
+    GEOMETRY 11 56 11 58
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 40 GET
-    GEOMETRY 12 60 12 62
+    GEOMETRY 11 60 11 62
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 41 GET
-    GEOMETRY 12 64 12 66
+    GEOMETRY 11 64 11 66
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 42 GET
-    GEOMETRY 12 68 12 70
+    GEOMETRY 11 68 11 70
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 43 GET
-    GEOMETRY 12 72 12 74
+    GEOMETRY 11 72 11 74
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 44 GET
-    GEOMETRY 12 76 12 78
+    GEOMETRY 11 76 11 78
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 45 GET
-    GEOMETRY 14 00 14 02
+    GEOMETRY 13 00 13 02
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 46 GET
-    GEOMETRY 14 04 14 06
+    GEOMETRY 13 04 13 06
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 47 GET
-    GEOMETRY 14 08 14 10
+    GEOMETRY 13 08 13 10
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 48 GET
-    GEOMETRY 14 12 14 14
+    GEOMETRY 13 12 13 14
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 49 GET
-    GEOMETRY 14 16 14 18
+    GEOMETRY 13 16 13 18
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 50 GET
-    GEOMETRY 14 20 14 22
+    GEOMETRY 13 20 13 22
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 51 GET
-    GEOMETRY 14 24 14 26
+    GEOMETRY 13 24 13 26
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 52 GET
-    GEOMETRY 14 28 14 30
+    GEOMETRY 13 28 13 30
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 53 GET
-    GEOMETRY 14 32 14 34
+    GEOMETRY 13 32 13 34
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 54 GET
-    GEOMETRY 14 36 14 38
+    GEOMETRY 13 36 13 38
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 55 GET
-    GEOMETRY 14 40 14 42
+    GEOMETRY 13 40 13 42
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 56 GET
-    GEOMETRY 14 44 14 46
+    GEOMETRY 13 44 13 46
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 57 GET
-    GEOMETRY 14 48 14 50
+    GEOMETRY 13 48 13 50
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 58 GET
-    GEOMETRY 14 52 14 54
+    GEOMETRY 13 52 13 54
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 59 GET
-    GEOMETRY 14 56 14 58
+    GEOMETRY 13 56 13 58
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 60 GET
-    GEOMETRY 14 60 14 62
+    GEOMETRY 13 60 13 62
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 61 GET
-    GEOMETRY 14 64 14 66
+    GEOMETRY 13 64 13 66
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 62 GET
-    GEOMETRY 14 68 14 70
+    GEOMETRY 13 68 13 70
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 63 GET
-    GEOMETRY 14 72 14 74
+    GEOMETRY 13 72 13 74
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 64 GET
-    GEOMETRY 14 76 14 78
+    GEOMETRY 13 76 13 78
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 65 GET
-    GEOMETRY 16 00 16 02
+    GEOMETRY 15 00 15 02
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 66 GET
-    GEOMETRY 16 04 16 06
+    GEOMETRY 15 04 15 06
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 67 GET
-    GEOMETRY 16 08 16 10
+    GEOMETRY 15 08 15 10
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 68 GET
-    GEOMETRY 16 12 16 14
+    GEOMETRY 15 12 15 14
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 69 GET
-    GEOMETRY 16 16 16 18
+    GEOMETRY 15 16 15 18
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 70 GET
-    GEOMETRY 16 20 16 22
+    GEOMETRY 15 20 15 22
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 71 GET
-    GEOMETRY 16 24 16 26
+    GEOMETRY 15 24 15 26
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 72 GET
-    GEOMETRY 16 28 16 30
+    GEOMETRY 15 28 15 30
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 73 GET
-    GEOMETRY 16 32 16 34
+    GEOMETRY 15 32 15 34
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 74 GET
-    GEOMETRY 16 36 16 38
+    GEOMETRY 15 36 15 38
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 75 GET
-    GEOMETRY 16 40 16 42
+    GEOMETRY 15 40 15 42
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 76 GET
-    GEOMETRY 16 44 16 46
+    GEOMETRY 15 44 15 46
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 77 GET
-    GEOMETRY 16 48 16 50
+    GEOMETRY 15 48 15 50
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 78 GET
-    GEOMETRY 16 52 16 54
+    GEOMETRY 15 52 15 54
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 79 GET
-    GEOMETRY 16 56 16 58
+    GEOMETRY 15 56 15 58
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 80 GET
-    GEOMETRY 16 60 16 62
+    GEOMETRY 15 60 15 62
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 81 GET
-    GEOMETRY 16 64 16 66
+    GEOMETRY 15 64 15 66
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 82 GET
-    GEOMETRY 16 68 16 70
+    GEOMETRY 15 68 15 70
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 83 GET
-    GEOMETRY 16 72 16 74
+    GEOMETRY 15 72 15 74
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 84 GET
-    GEOMETRY 16 76 16 78
+    GEOMETRY 15 76 15 78
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 85 GET
-    GEOMETRY 18 00 18 02
+    GEOMETRY 17 00 17 02
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 86 GET
-    GEOMETRY 18 04 18 06
+    GEOMETRY 17 04 17 06
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 87 GET
-    GEOMETRY 18 08 18 10
+    GEOMETRY 17 08 17 10
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 88 GET
-    GEOMETRY 18 12 18 14
+    GEOMETRY 17 12 17 14
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 89 GET
-    GEOMETRY 18 16 18 18
+    GEOMETRY 17 16 17 18
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 90 GET
-    GEOMETRY 18 20 18 22
+    GEOMETRY 17 20 17 22
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 91 GET
-    GEOMETRY 18 24 18 26
+    GEOMETRY 17 24 17 26
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 92 GET
-    GEOMETRY 18 28 18 30
+    GEOMETRY 17 28 17 30
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 93 GET
-    GEOMETRY 18 32 18 34
+    GEOMETRY 17 32 17 34
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 94 GET
-    GEOMETRY 18 36 18 38
+    GEOMETRY 17 36 17 38
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 95 GET
-    GEOMETRY 18 40 18 42
+    GEOMETRY 17 40 17 42
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 96 GET
-    GEOMETRY 18 44 18 46
+    GEOMETRY 17 44 17 46
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 97 GET
-    GEOMETRY 18 48 18 50
+    GEOMETRY 17 48 17 50
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 98 GET
-    GEOMETRY 18 52 18 54
+    GEOMETRY 17 52 17 54
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 99 GET
-    GEOMETRY 18 56 18 58
+    GEOMETRY 17 56 17 58
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 100 GET
-    GEOMETRY 18 60 18 62
+    GEOMETRY 17 60 17 62
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 101 GET
-    GEOMETRY 18 64 18 66
+    GEOMETRY 17 64 17 66
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 102 GET
-    GEOMETRY 18 68 18 70
+    GEOMETRY 17 68 17 70
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 103 GET
-    GEOMETRY 18 72 18 74
+    GEOMETRY 17 72 17 74
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 104 GET
-    GEOMETRY 18 76 18 78
+    GEOMETRY 17 76 17 78
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 105 GET
-    GEOMETRY 20 00 20 02
+    GEOMETRY 19 00 19 02
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 106 GET
-    GEOMETRY 20 04 20 06
+    GEOMETRY 19 04 19 06
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 107 GET
-    GEOMETRY 20 08 20 10
+    GEOMETRY 19 08 19 10
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 108 GET
-    GEOMETRY 20 12 20 14
+    GEOMETRY 19 12 19 14
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 109 GET
-    GEOMETRY 20 16 20 18
+    GEOMETRY 19 16 19 18
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 110 GET
-    GEOMETRY 20 20 20 22
+    GEOMETRY 19 20 19 22
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 111 GET
-    GEOMETRY 20 24 20 26
+    GEOMETRY 19 24 19 26
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 112 GET
-    GEOMETRY 20 28 20 30
+    GEOMETRY 19 28 19 30
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 113 GET
-    GEOMETRY 20 32 20 34
+    GEOMETRY 19 32 19 34
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 114 GET
-    GEOMETRY 20 36 20 38
+    GEOMETRY 19 36 19 38
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 115 GET
-    GEOMETRY 20 40 20 42
+    GEOMETRY 19 40 19 42
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 116 GET
-    GEOMETRY 20 44 20 46
+    GEOMETRY 19 44 19 46
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 117 GET
-    GEOMETRY 20 48 20 50
+    GEOMETRY 19 48 19 50
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 118 GET
-    GEOMETRY 20 52 20 54
+    GEOMETRY 19 52 19 54
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 119 GET
-    GEOMETRY 20 56 20 58
+    GEOMETRY 19 56 19 58
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 120 GET
-    GEOMETRY 20 60 20 62
+    GEOMETRY 19 60 19 62
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 121 GET
-    GEOMETRY 20 64 20 66
+    GEOMETRY 19 64 19 66
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 122 GET
-    GEOMETRY 20 68 20 70
+    GEOMETRY 19 68 19 70
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 123 GET
-    GEOMETRY 20 72 20 74
+    GEOMETRY 19 72 19 74
     COLORS light_gray blue green
   END FIELD
 
   # Rates get
   FIELD 124 GET
-    GEOMETRY 20 76 20 78
+    GEOMETRY 19 76 19 78
     COLORS light_gray blue green
   END FIELD
 
   # Valid button
   FIELD 125 BUTTON
-    GEOMETRY 22 22 24 30
+    GEOMETRY 21 22 23 30
     COLORS brown blue
     INIT
       01 02 Valid
@@ -1321,7 +1321,7 @@ DESCRIPTOR 3
 
   # Cancel button
   FIELD 126 BUTTON
-    GEOMETRY 22 42 24 51
+    GEOMETRY 21 42 23 51
     COLORS brown blue
     INIT
       01 02 Cancel
@@ -1339,7 +1339,7 @@ DESCRIPTOR 3
 
   # Import button
   FIELD 128 BUTTON
-    GEOMETRY 22 59 22 76
+    GEOMETRY 21 59 21 76
     COLORS brown blue
     INIT
       00 02 Import samples
@@ -1348,7 +1348,7 @@ DESCRIPTOR 3
 
   # Import tittle
   FIELD 129 PUT
-    GEOMETRY 24 53 24 56
+    GEOMETRY 23 53 23 56
     COLORS light_gray not_blink black
     INIT
       00 00 File
@@ -1357,7 +1357,7 @@ DESCRIPTOR 3
 
   # Import file name
   FIELD 130 GET
-    GEOMETRY 24 57 24 78
+    GEOMETRY 23 57 23 78
     COLORS light_gray blue green
   END FIELD
 
