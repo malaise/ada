@@ -31,6 +31,8 @@
 #define SOC_TAIL_ERR    -9
 /* Call not allowed for this protocol */
 #define SOC_PROTO_ERR  -10
+/* Close while fd used in select */
+#define SOC_FD_IN_USE  -11
 
 
 /* Failures */
