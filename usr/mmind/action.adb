@@ -71,24 +71,25 @@ package body ACTION is
     loop
 
       declare
-        EVENT : CON_IO.EVENT_LIST;
-        KEY : NATURAL;
-        IS_CHAR, CTRL, SHIFT : BOOLEAN;
+        STR : STRING (1 .. 0);
+        LAST : NATURAL;
+        STAT : CON_IO.CURS_MVT;
+        POS : POSITIVE;
+        INS : BOOLEAN;
         MOUSE_STATUS : CON_IO.MOUSE_EVENT_REC;
         use SCREEN, CON_IO;
       begin
         WAIT_EVENT:
         loop
-          CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY,
-            IS_CHAR, CTRL,SHIFT, CON_IO.INFINITE_DELAY);
-          if EVENT = CON_IO.MOUSE_BUTTON then
+          CON_IO.GET (STR, LAST, STAT, POS, INS, ECHO => FALSE);
+          if STAT = CON_IO.MOUSE_BUTTON then
             CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
             if MOUSE_STATUS.BUTTON = CON_IO.LEFT then
               -- exit on new event
               exit WAIT_EVENT when CLICKED
                  xor (MOUSE_STATUS.STATUS = CON_IO.PRESSED);
             end if;
-          elsif EVENT = CON_IO.REFRESH then
+          elsif STAT = CON_IO.REFRESH then
             SCREEN.INIT (LEVEL);
             -- Put colors
             declare
@@ -126,7 +127,7 @@ package body ACTION is
               SCREEN.PUT_HELP (SCREEN.START);
               SCREEN.PUT_CURRENT_LEVEL (COMMON.GET_STORED_LEVEL);
             end if;
-          elsif EVENT = CON_IO.BREAK then
+          elsif STAT = CON_IO.BREAK then
             SCREEN.CLEAR;
             END_ACTION;
             return FALSE;

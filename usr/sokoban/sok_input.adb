@@ -8,76 +8,88 @@ package body SOK_INPUT is
             := (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 1.0);
 
   function GET_KEY return KEY_LIST is
-    EVENT : CON_IO.EVENT_LIST;
-    KEY : NATURAL;
-    IS_CHAR, CTRL, SHIFT : BOOLEAN;
-    CHAR : CHARACTER;
+    STR  : STRING (1 .. 1);
+    LAST : NATURAL;
+    STAT : CON_IO.CURS_MVT;
+    POS  : POSITIVE;
+    INS  : BOOLEAN;
+    
     use CON_IO;
   begin
     loop
       if PLAY then
         SOK_TIME.DISP_TIME;
       end if;
-      CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, DELTA_GET);
-      if EVENT = CON_IO.ESC then
-        if not IS_CHAR and then PLAY then  
-          case KEY is
-            when 16#52# => return UP;
-            when 16#51# => return LEFT;
-            when 16#53# => return RIGHT;
-            when 16#54# => return DOWN;
-            when 16#0D# => return NEXT;
-            when 16#1B# => return ESC;
-            when 16#08# => return UNDO;
-            when others => null;
-          end case;
-        else
-          begin
-            CHAR := CHARACTER'VAL (KEY);
-          exception
-            -- values can be more than 127
-            when CONSTRAINT_ERROR => CHAR := ASCII.NUL;
-          end;
-
-          case CHAR is
-            when 'u' | 'U' =>
-              if PLAY then
+      CON_IO.GET (STR, LAST, STAT, POS, INS,
+                  TIME_OUT => DELTA_GET,
+                  ECHO     => FALSE);
+      if PLAY then
+        case STAT is
+          when UP => return UP;
+          when DOWN => return DOWN;
+          when PGUP | PGDOWN | CTRL_PGUP | CTRL_PGDOWN => null;
+          when LEFT => return LEFT;
+          when RIGHT => return RIGHT;
+          when FULL =>
+            case STR(1) is
+              when 'u' | 'U' =>
                 return UNDO;
-              end if;
-            when 'w' | 'W' =>
-              if PLAY then
+              when 'w' | 'W' =>
                 PLAY := not PLAY;
                 CON_IO.CLEAR;
                 SOK_TIME.STOP_TIME;
-              else
-                PLAY := not PLAY;
-                SOK_TIME.START_TIME;
-                return REFRESH;
-              end if;
-            when ' '  =>
-              if PLAY then
+              when ' '  =>
                 return NEXT;
-              end if;
-            when others => null;
-          end case; -- on char
-        end if; -- is_char
-      elsif EVENT = CON_IO.BREAK then
-        raise BREAK_REQUESTED;
-      elsif EVENT = CON_IO.REFRESH and then PLAY then
-        return REFRESH;
-      end if; -- event=esc
+              when others => null;
+            end case; -- on char
+          when TAB | STAB  => null;
+          when RET => return NEXT;
+          when ESC => return ESC;
+          when BREAK => raise BREAK_REQUESTED;
+          when MOUSE_BUTTON => null;
+          when TIMEOUT => null;
+          when REFRESH =>
+            return REFRESH;
+        end case;
+      else
+        if STAT = FULL
+        and then (STR(1) = 'w' or else STR(1) = 'W') then
+          PLAY := not PLAY;
+          SOK_TIME.START_TIME;
+          return REFRESH;
+        end if;
+      end if;
     end loop;
   end GET_KEY;
 
   procedure PAUSE is
-    EVENT : CON_IO.EVENT_LIST;
-    KEY : NATURAL;
-    IS_CHAR, CTRL, SHIFT : BOOLEAN;
+    STR  : STRING (1 .. 1);
+    LAST : NATURAL;
+    STAT : CON_IO.CURS_MVT;
+    POS  : POSITIVE;
+    INS  : BOOLEAN;
+    
     use CON_IO;
   begin
     loop
-      CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, DELTA_GET);
-      exit when EVENT = CON_IO.ESC or else EVENT = CON_IO.BREAK;
+      CON_IO.GET (STR, LAST, STAT, POS, INS,
+                  TIME_OUT => DELTA_GET,
+                  ECHO     => FALSE);
+      case STAT is
+        when UP => return;
+        when DOWN => return;
+        when PGUP | PGDOWN | CTRL_PGUP | CTRL_PGDOWN => null;
+        when LEFT => return;
+        when RIGHT => return;
+        when FULL => return;
+        when TAB | STAB  => null;
+        when RET => return;
+        when ESC => return;
+        when BREAK => raise BREAK_REQUESTED;
+        when MOUSE_BUTTON => null;
+        when TIMEOUT => null;
+        when REFRESH => null;
+      end case;
     end loop;
   end PAUSE;
 
