@@ -15,6 +15,8 @@ with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
 
 procedure Look_95 is
 
+  Debug : Boolean := False;
+
   package Reading is
     procedure Open(File_Name : in String);
     Name_Error : exception;
@@ -28,20 +30,32 @@ procedure Look_95 is
 
     -- Modify last read char
     procedure Update_Char(New_Char : in Character);
+
+    -- Current index in file: 0 if closed or nothing read
+    --  1 after reading first char...
+    package Char_Io is new Bloc_Io (Character);
+    subtype Count is Char_Io.Count;
+    function Curr_Index return Count;
+
+    -- Update a string at a given offset
+    subtype Positive_Count is Char_Io.Positive_Count;
+    procedure Update_Str (Str : in String; At_Index : in Positive_Count);
   end Reading;
 
   package body Reading is
 
-    package Char_Io is new Bloc_Io (Character);
     File : Char_Io.File_Type;
 
     Bloc_Size : constant Char_Io.Count := 1024;
 
     File_Size : Char_Io.Count;
     Nb_Bloc : Char_Io.Count;
+    Curr_Count : Char_Io.Count := 0;
 
-    Bloc : Char_Io.Element_Array(1 .. Bloc_Size);
-    Curr_Bloc : Char_Io.Count;
+    subtype Bloc_Type is Char_Io.Element_Array(1 .. Bloc_Size);
+    Curr_Bloc : Bloc_Type;
+    Prev_Bloc : Bloc_Type;
+    Curr_Bloc_No : Char_Io.Count;
 
     Sub_Index : Char_Io.Count;
     Last_Index : Char_Io.Count;
@@ -59,9 +73,10 @@ procedure Look_95 is
       end if;
 
       -- Current indexes
-      Curr_Bloc := 0;
+      Curr_Bloc_No := 0;
       Modified := False;
       Last_Index := 0;
+      Curr_Count := 0;
       -- Simulate end of previous bloc (for reading new)
       Sub_Index := Last_Index;
     exception
@@ -80,6 +95,7 @@ procedure Look_95 is
     procedure Close is
     begin
       Char_Io.Close(File);
+      Curr_Count := 0;
     end Close;
 
     function Next_Char return Character is
@@ -89,18 +105,19 @@ procedure Look_95 is
         -- End of bloc
         if Modified then
           -- Need to write before read
-          Char_Io.Write(File, Bloc(1 .. Last_Index),
-                        (Curr_Bloc - 1) * Bloc_Size + 1);
+          Char_Io.Write(File, Curr_Bloc(1 .. Last_Index),
+                        (Curr_Bloc_No - 1) * Bloc_Size + 1);
+          Prev_Bloc(1 .. Last_Index) := Curr_Bloc(1 .. Last_Index);
           Modified := False;
         end if;
-        if Curr_Bloc = Nb_Bloc then
+        if Curr_Bloc_No = Nb_Bloc then
           -- No more bloc
           Close;
           raise End_Of_File;
         end if;
         -- Read next bloc
-        Curr_Bloc := Curr_Bloc + 1;
-        if Curr_Bloc = Nb_Bloc then
+        Curr_Bloc_No := Curr_Bloc_No + 1;
+        if Curr_Bloc_No = Nb_Bloc then
           if File_Size rem Bloc_Size = 0 then
             Last_Index := Bloc_Size;
           else
@@ -109,19 +126,109 @@ procedure Look_95 is
         else
           Last_Index := Bloc_Size;
         end if;
-        Char_Io.Read(File, Bloc(1 .. Last_Index));
+        Char_Io.Read(File, Curr_Bloc(1 .. Last_Index),
+                     (Curr_Bloc_No - 1) * Bloc_Size + 1);
         Sub_Index := 1;
       else
         Sub_Index := Sub_Index + 1;
       end if;
-      return Bloc(Sub_Index);
+      Curr_Count := Curr_Count + 1;
+      return Curr_Bloc(Sub_Index);
     end Next_Char;
 
     procedure Update_Char(New_Char : in Character) is
     begin
-      Bloc(Sub_Index) := New_Char;
+      Curr_Bloc(Sub_Index) := New_Char;
       Modified := True;
     end Update_Char;
+
+    function Curr_Index return Count is
+    begin
+      return Curr_Count;
+    end Curr_Index;
+
+    -- Update a string at a given offset
+    Bloc_Error : exception;
+    procedure Update_Str (Str : in String; At_Index : in Positive_Count) is
+      -- Index of first char of current bloc
+      Bloc_Index : Positive_Count;
+      -- Index of first char of the sub-string in current bloc
+      Start_Index : Positive_Count;
+      -- Index of last char of Str
+      Last_Index : Positive_Count;
+      -- Nb of chars to copy in bloc
+      Nb_Char : Natural;
+      use type Char_Io.Count;
+
+      procedure Cp2Bloc (Str : in String;
+                            From_Id : Positive;
+                            Nb : Natural;
+                            Bloc : in out Char_Io.Element_Array;
+                            To_Index : in Positive_Count) is
+        I : Natural;
+        J : Positive_Count;
+      begin
+        I := 0;
+        J := To_Index;
+        while I < Nb loop
+          Bloc(J) := Str(From_Id + I);
+          I := I + 1;
+          exit when I = Nb;
+          J := J + 1;
+        end loop;
+      end Cp2Bloc;
+         
+      
+    begin
+      -- Sanity checks raising anonymous Bloc_Error
+      -- Something read and index before current
+      if At_Index > Curr_Count then
+        raise Bloc_Error;
+      end if;
+      -- Index not before previous block
+      if Curr_Bloc_No > 2
+      and then At_Index <= (Curr_Bloc_No - 2) * Bloc_Size then
+        raise Bloc_Error;
+      end if;
+      -- Index of last char of Str
+      Last_Index := At_Index + Str'Length - 1;
+      -- End of Str not after Curr_Count
+      if Last_Index > Curr_Count then
+        raise Bloc_Error;
+      end if;
+
+      -- Discard empty string
+      if Str'Length = 0 then
+        return;
+      end if;
+
+      -- Index of first char of current bloc
+      Bloc_Index := ((Curr_Count - 1) / Bloc_Size) * Bloc_Size + 1;
+
+      -- Write prev if needed,
+      if At_Index < Bloc_Index then
+        Nb_Char := Natural(Bloc_Index - At_Index);
+        Cp2Bloc (Str, Str'First, Nb_Char,
+                 Prev_Bloc, Bloc_Size - Count(Nb_Char) + 1);
+        Char_Io.Write(File, Prev_Bloc,
+                        (Curr_Bloc_No - 2) * Bloc_Size + 1);
+        Nb_Char := Str'Length - Nb_Char;
+        Start_Index := Bloc_Index;
+      else
+        Nb_Char :=  Str'Length;
+        Start_Index := At_Index;
+      end if;
+
+      -- Set Modified if needed
+      if Last_Index >= Bloc_Index then
+        -- Index in Curr_Block of start of string
+        Start_Index := (Start_Index - 1) rem  Bloc_Size + 1;
+        Cp2Bloc (Str, Str'Last - Nb_Char + 1, Nb_Char,
+                 Curr_Bloc, Start_Index);
+        Modified := True;
+      end if;
+
+    end Update_Str;
 
   end Reading;
 
@@ -334,6 +441,13 @@ procedure Look_95 is
             -- Line is too to big for Line text!
             null;
         end;
+        if Debug then
+          Ada.Text_Io.Put (Final_Char);
+        end if;
+      else
+        if Debug then
+          Ada.Text_Io.New_Line;
+        end if;
       end if;
 
       -- Warning on words
@@ -405,7 +519,8 @@ begin
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "-h" then
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-         & " [ { -v | -s | -t | -n | -c | -w <file> } ]");
+         & " [ { -d | -v | -s | -t | -n | -c | -w <file> } ]");
+    Ada.Text_Io.Put_Line ("Debug print debug info");
     Ada.Text_Io.Put_Line ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
     Ada.Text_Io.Put_Line ("Warnings on comments or words");
@@ -420,7 +535,9 @@ begin
   for I in 1 .. Argument.Get_Nbre_Arg loop
 
     -- Change verbose level?
-    if Argument.Get_Parameter (I) = "-v" then
+    if Argument.Get_Parameter (I) = "-d" then
+      Debug := True;
+    elsif Argument.Get_Parameter (I) = "-v" then
       Verbose_Level := Verbose; 
     elsif Argument.Get_Parameter (I) = "-s" then
       Verbose_Level := Silent;
