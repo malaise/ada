@@ -79,16 +79,19 @@ package body State_Machine is
       raise Declaration_Ended;
     end if;
     In_Declaration := False;
+    -- Check true loops
     -- Do all true transitions from any state,
-    --  do first state last and report it only
-    -- All tests but the last one check true_loop
-    --  last one (first state) cannot have true loop then
+    -- Last one (first state) cannot have true loop
     --  (it would have been detected by a check on the
-    --   destination state of this true event).
+    --   destination state of this true event)
+    --   except if it has true to itself, so check it as well.
     for Start_State in reverse State_List loop
       The_Current_State := Start_State;
-      Do_Trues (Start_State = State_List'First);
+      Do_Trues (False);
     end loop;
+    -- Do and report true transitions from initial state.
+    -- The_Current_State is first of State_List now.
+    Do_Trues (True);
   end End_Declaration;
 
   procedure Do_Trues (Report : in Boolean) is
