@@ -7,7 +7,7 @@ procedure T_Bloc_Io is
   subtype Bloc is Integer;
   package Int_Io is new Bloc_Io(Bloc);
 
-  File_Name : constant String := "bloc_io.blk";
+  File_Name : constant String := "data/bloc_io.blk";
   File : Int_Io.File_Type;
   Arr : Int_Io.Element_Array(1 .. 256);
 

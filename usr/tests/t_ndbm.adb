@@ -6,7 +6,7 @@ procedure T_Ndbm is
   subtype Key is Natural;
   subtype Data is String (1 .. 10);
 
-  package My_Ndbm is new Ndbm (Key, Data, "test_dbm");
+  package My_Ndbm is new Ndbm (Key, Data, "data/test_dbm");
 
   K : Key;
   D : Data;
