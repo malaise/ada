@@ -42,7 +42,7 @@ void title (void *line) {
   (void) put (line, T5, TITLE_LNE + 6, 2);
 }
 
-void main(int argc, char *argv[]) 
+int main(int argc, char *argv[]) 
 {
 
 void *line, *line_event;
