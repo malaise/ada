@@ -87,7 +87,7 @@ procedure G is
   end Div;
 
 begin
-  Clear_Screen;
+  -- Clear_Screen;
   Init;
 
   Game:
