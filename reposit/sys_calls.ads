@@ -30,6 +30,10 @@ package Sys_Calls is
   -- Set error exit code
   procedure Set_Error_Exit_Code;
 
+  -- Unix File Descriptor
+  type File_Desc is new Natural;
+  function Stdin return File_Desc;
+
 end Sys_Calls; 
 
  
