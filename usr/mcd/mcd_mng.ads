@@ -36,6 +36,8 @@ package MCD_MNG is
    ISREAL,
    ISINTE,
 
+   OBASE,
+
    BOLAND,
    BOLOR,
    BOLXOR,
@@ -59,6 +61,7 @@ package MCD_MNG is
    RET,
    RETN,
    IFRETN,
+   RETACAL,
 
    FORMAT,
    PUT,

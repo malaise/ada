@@ -8,6 +8,17 @@ package body IOS is
   INTE_FORMAT_SET : BOOLEAN := FALSE;
   REAL_FORMAT_SET : BOOLEAN := FALSE;
 
+  procedure SET_OBASE (BASE : in ITEM_REC) is
+  begin
+    if BASE.KIND /= INTE then
+      raise INVALID_ARGUMENT;
+    end if;
+    INTE_IO.DEFAULT_BASE := TEXT_IO.NUMBER_BASE(BASE.VAL_INTE);
+  exception
+    when others =>
+      raise INVALID_ARGUMENT;
+  end SET_OBASE;
+
   procedure FORMAT (ITEM : in ITEM_REC) is
     R : MATH.REAL;
     I : MATH.INTE;

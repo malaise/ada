@@ -96,6 +96,9 @@ package body MCD_MNG is
   end REGISTERS;
 
   package IOS is
+
+    procedure SET_OBASE (BASE : in ITEM_REC);
+
     subtype IO_KIND_LIST is ITEM_KIND_LIST range INTE .. BOOL;
     procedure FORMAT (ITEM : in ITEM_REC);
     procedure PUT (ITEM : in ITEM_REC);
@@ -151,7 +154,7 @@ package body MCD_MNG is
       end if;
     end DO_CALL;
 
-    procedure DO_RET is
+    procedure DO_RET (ALLOW_LEVEL_0 : in BOOLEAN := TRUE) is
       L : INTEGER;
     begin
       POP(A);
@@ -162,16 +165,20 @@ package body MCD_MNG is
         when others => raise INVALID_ARGUMENT;
       end;
       if L = 0 then
-        -- Exit
-        THE_END := TRUE;
-        return;
+        -- Return all
+        L := CALL_STACK.LEVEL + 1;
       end if;
       -- Can return by one more than level
       if L - 1 > CALL_STACK.LEVEL then
         raise INVALID_ARGUMENT;
       elsif L - 1 = CALL_STACK.LEVEL then
-        THE_END := TRUE;
-        return;
+        if ALLOW_LEVEL_0 then
+          THE_END := TRUE;
+          return;
+        else
+          -- RETACAL from level 0
+          raise INVALID_ARGUMENT;
+        end if;
       end if;
       -- Return N times
       for I in reverse 1 .. A.VAL_INTE loop
@@ -182,7 +189,7 @@ package body MCD_MNG is
     end DO_RET;
 
   begin
-    -- Default, except RET(0)
+    -- Default, except RET
     THE_END := FALSE;
     -- Dispatch
     if ITEM.KIND /= OPER then
@@ -256,6 +263,8 @@ package body MCD_MNG is
         when IFTE =>
           POP(C); POP(B); POP(A); PUSH (OPERATIONS.IFTE(A,B,C));
  
+        when OBASE =>
+          POP(A); IOS.SET_OBASE(A);
         -- These are about registers
         when POPR =>
           -- A B -> store A in reg B
@@ -294,6 +303,11 @@ package body MCD_MNG is
             PUSH(A);
             DO_RET;
           end if;
+
+        when RETACAL =>
+          PUSH( (KIND => INTE, VAL_INTE => 1) );
+          DO_RET;
+          DO_CALL;
 
         -- PUTs
         when FORMAT =>

@@ -44,6 +44,8 @@ package body PARSER is
    ISREAL  => "?$",
    ISINTE  => "?!",
 
+   OBASE   => ">#",
+
    BOLAND  => "& ",
    BOLOR   => "| ",
    BOLXOR  => "^ ",
@@ -66,6 +68,7 @@ package body PARSER is
    RET     => "_ ",
    RETN    => "__",
    IFRETN  => "?_",
+   RETACAL => "_@",
 
    FORMAT  => "//",
    PUT     => ", ",
