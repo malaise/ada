@@ -2,6 +2,7 @@ with AFPX, CON_IO, NORMAL, MATH, TEXT_HANDLER, DOS;
 with MESU_DEF, STR_MNG, MESU_NAM, PERS_MNG, PERS_DEF, MESU_FIL;
 use PERS_DEF;
 package body MESU_GRA is
+  use MATH;
 
   -- X and Y first and last, in screen and reality
   X_FIRST : constant NATURAL := 0;
@@ -101,7 +102,6 @@ package body MESU_GRA is
     B : MATH.REAL;
     X, X1, X2 : INTEGER;
     Y, Y1, Y2 : INTEGER;
-    use MATH;
   begin
     if XA = XB then
       -- Vertical line. Must have YA <= YB
@@ -334,10 +334,7 @@ package body MESU_GRA is
     PERSON    : PERS_DEF.PERSON_REC;
     SAME_TZ   : BOOLEAN;
     TZ_DROWN  : BOOLEAN;
-    KEY       : NATURAL;
-    IS_CHAR   : BOOLEAN;
-    CTRL      : BOOLEAN;
-    SHIFT     : BOOLEAN;
+    CHAR      : CHARACTER;
     NO_MESURE : MESURE_RANGE;
 
     -- Check if same TZ
@@ -437,14 +434,12 @@ package body MESU_GRA is
     MAIN_LOOP:
     loop
       -- GET key
-      CON_IO.GET_KEY(KEY, IS_CHAR, CTRL, SHIFT);
+      CHAR := CON_IO.GET(ECHO => FALSE);
       -- exit when Escape
-      if not IS_CHAR and then KEY = 27 then
+      if CHAR = ASCII.ESC then
         EXIT_PROGRAM := FALSE;
         exit MAIN_LOOP;
-      end if;
-      if IS_CHAR and then (        KEY = CHARACTER'POS('T')
-                           or else KEY = CHARACTER'POS('t')) then
+      elsif CHAR = 'T' or else CHAR = 't' then
         if TZ_DROWN then
           -- Hide TZs
           DRAW_TZ(FALSE);
@@ -457,11 +452,9 @@ package body MESU_GRA is
             TZ_DROWN := TRUE;
           end if;
         end if;
-      end if;
-      -- Draw if key in 1 .. 9 then
-      if IS_CHAR and then KEY >= CHARACTER'POS('1')
-                 and then KEY <= CHARACTER'POS('9') then
-        NO_MESURE := KEY - CHARACTER'POS('1') + 1;
+      elsif CHAR >= '1' and then CHAR <= '9' then
+        -- Draw if key in 1 .. 9 then
+        NO_MESURE := CHARACTER'POS(CHAR) - CHARACTER'POS('1') + 1;
         if NO_MESURE <= NB_MESURE then
           if not MESURE_ARRAY(NO_MESURE).DROWN then
             MESURE_ARRAY(NO_MESURE).DROWN := TRUE;
@@ -491,3 +484,4 @@ package body MESU_GRA is
   end GRAPHIC;
 
 end MESU_GRA;
+
