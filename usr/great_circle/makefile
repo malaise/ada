@@ -1,9 +1,9 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-EXES := great_circle
+EXES := t_gc
 
-CLIBS_great_circle := cutil
+CLIBS_t_gc := cutil
 
 include $(TEMPLATES)/ada.mk
 
