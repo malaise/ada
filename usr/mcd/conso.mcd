@@ -1,0 +1,49 @@
+# Concorde consumption
+
+# Tank capacities in Lbls
+160722 m popr
+50244 a popr
+
+# Error message and exit
+[ "Error: <percent> <fuel_flow> <flight_time> expected" putl
+ssize popn retall
+] E popr
+
+# Check and store one argument
+[ swap dup isinte ~ [ E pushr call ] ifcall swap popr ] C popr
+
+# Put weight in tons
+[ toreal 0.4536 * round 6 format put " tons" put ] T popr
+
+# Begin
+# Check Nb arguments
+ssize 3 /= [ E pushr call ] ifcall
+
+# Check and store arguments
+t C pushr call
+f C pushr call
+p C pushr call
+
+# Check flight time
+0 t pushr > [ E pushr call ] ifcall
+
+# Check 0 <= percent <= 200 then compute weight
+0 p pushr > [ E pushr call ] ifcall
+p pushr 200 > [ E pushr call ] ifcall
+p pushr dup 100 <= [ m pushr * 100 / ]
+[ 100 - a pushr * 100 / m pushr + ] ifte call
+w copyr "Current   fuel: " put T pushr call newl
+
+# Check 0 < fuel_flow and compute cunsumption
+0 f pushr > [ E pushr call ] ifcall
+f pushr 4 * 1000 * c popr
+
+# Compute remaining fuel
+w pushr t pushr c pushr * 60 / -
+"Remaining fuel: " put  T pushr call newl
+
+# Check 0 < fuel_flow and compute remaining flight time
+c pushr w pushr 3600 * swap /
+1000 * 6 format daysof 8 12 strsub "h" 3 swap3 strrep
+"Flight    time:  " put putl
+
