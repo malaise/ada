@@ -1,55 +1,97 @@
 package Channels is
 
+  -- Lenght of message exchanged on channel
   subtype Message_Length is Natural;
 
+  -- Callback invoqued in Write after each transmission to a destination
   type Send_Callback_Access is access
     procedure (Host_Name : in String;
                Send_Ok   : in Boolean);
 
+  -- Exceptions raised in a channel
+  -- Calling Change_Channel_Name while Subscribed or a Destination is set
+  Channel_Active : exception;
+
+  -- Channel or Destination host name too long (see Tcp_Util)
+  Name_Too_Long : exception;
+
+  -- Channel_Name not set in services
+  Unknown_Channel : exception;
+  -- Host_Name not set in hosts or not previously added
+  Unknown_Destination : exception;
+
+  -- Subscribing twice to the same channel
+  Already_Subscribed : exception;
+  -- unsubscribbing from a channel no subscribed to
+  Not_Subscribed : exception;
+
+  -- Adding twice the same destination to a channel
+  Destination_Already : exception;
+
+  -- Replying while not in Read_Cb
+  Not_In_Read : exception;
+  -- Reply sending has failed
+  Reply_Failed : exception;
+
+
   generic
-    -- The name of the channel (tcp in services)
+    -- Name of the channel (tcp in services)
     Channel_Name : in String;
-    -- The type of message exchanged on the channel
+    -- Type of message exchanged on the channel
     type Message_Type is private;
-    -- The callback to receive messages
+    -- Callback invoqued to receive a message on the channel
     with procedure Read_Cb (Message  : in Message_Type;
                             Length   : in Message_Length;
                             Diffused : in Boolean);
+
   package Channel is
-    -- Channel or Destination host name too long
-    Name_Too_Long : exception;
+
+
+    -- Change channel name
+    -- May raise Name_Too_Long if Channel_Name is too long
+    -- May raise Channel_Active if Subscribed or a Destination is set
+    procedure Change_Channel_Name (New_Channel_Name : in String);
 
     -- Subscription
-    -- Allow connections to local channel
+    -- Allow connections from remote processes to local channel
+    -- May raise Already_Subscribed if already subscribed to this channel
+    -- May raise Name_Too_Long if Channel_Name is too long
+    -- May raise Unknown_Channel if Channel_Name is not known
     procedure Subscribe;
-    Already_Subscribed : exception;
 
-    -- Close all connections and forbid new connections
+    -- Close all connections from remote process and forbid new connections
+    -- May raise Not_Subscribed if not subscribed to this channel
     procedure Unsubscribe;
-    Not_Subscribed : exception;
 
-    -- Add a new recipient
+
+    -- Add a new destination for messages sent on the channel
+    -- May raise Destination_Already if this destination has already be added
+    -- May raise Unknown_Channel if Channel_Name is not known
+    -- May raise Unknown_Destination if Host_Name is not known
     procedure Add_Destination (Host_Name : in String);
-    Destination_Already : exception;
-    Unknown_Destination : exception;
 
     -- Delete a recipient
+    -- May raise Unknown_Destination if Host_Name has not been added
     procedure Del_Destination (Host_Name : in String);
 
     -- Delete all recipients
     procedure Del_All_Destinations;
 
+
     -- Send a message to all recipients
+    -- Callback is invoqued for each recipient with the result of sending
     procedure Write (Message : in Message_Type;
                      Length  : in Message_Length := 0;
                      Send_Cb : in Send_Callback_Access := null);
 
     -- Reply to sender of last message received
     -- Should only be called in Read_Cb.
-    procedure Reply (Message : in Message_Type; Length : in Message_Length := 0);
-    Not_In_Read, Reply_Failed : exception;
+    -- May raise Not_In_Read if not called by Read_Cb
+    -- May raise Reply_Failed if reply cannot be sent
+    procedure Reply (Message : in Message_Type;
+                     Length : in Message_Length := 0);
 
   end Channel;
 
 end Channels;
-  
+

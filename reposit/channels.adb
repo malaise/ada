@@ -1,9 +1,9 @@
-with Sys_Calls, X_Mng, Socket, Tcp_Util, Dynamic_List;
+with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list, X_Mng;
 package body Channels is
 
   Byte_Size : constant := 8;
 
-  -- A destination
+  -- Destination
   type Dest_Rec is record
     Host_Name : Tcp_Util.Remote_Host (Tcp_Util.Host_Name_Spec);
     Host_Id : Socket.Host_Id;
@@ -33,11 +33,11 @@ package body Channels is
   end Dscr_Match;
   procedure Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
 
-  -- A sender
+  -- Sender
   type Send_Rec is record
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
     Fd : Sys_Calls.File_Desc;
-  end record;    
+  end record;
   package Send_List_Mng is new Dynamic_List(Send_Rec);
 
   function Fd_Match (D1, D2 : Send_Rec) return Boolean is
@@ -47,16 +47,18 @@ package body Channels is
   end Fd_Match;
   procedure Fd_Search is new Send_List_Mng.Search (Fd_Match);
 
-
   -- The channel
   type Read_Kind is (None, Send, Dest);
   type Channel_Rec is record
+    Init : Boolean := False;
+    Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
     Accept_Num : Tcp_Util.Port_Num := 0;
     In_Read : Read_Kind := None;
     Dests : Dest_List_Mng.List_Type;
     Sends : Send_List_Mng.List_Type;
   end record;
 
+  -- Misc toolkits
   -- Close a (overflow) connection
   procedure Close (Dscr : in out Socket.Socket_Dscr) is
   begin
@@ -66,7 +68,7 @@ package body Channels is
       Socket.Close (Dscr);
   end Close;
 
-  -- Remove tailing spaces
+  -- Remove tailing spaces of a string
   function Parse (Str : String) return String is
   begin
     for I in reverse Str'Range loop
@@ -79,9 +81,10 @@ package body Channels is
 
   package body Channel is
 
-    -- Current channel
+    -- Current channel state
     Channel_Dscr : Channel_Rec;
 
+    -- The message kind sent on socket
     type Channel_Message_Type is record
       Diff : Boolean := True;
       Data : Message_Type;
@@ -104,6 +107,38 @@ package body Channels is
       when Send_List_Mng.Not_In_List =>
         Send_List_Mng.Delete (Channel_Dscr.Sends, Send_List_Mng.Prev);
     end Delete_Current_Send;
+
+    procedure Init is
+    begin
+      -- Save Channel_Name from instantiation 
+      if Channel_Dscr.Init then
+        return;
+      end if;
+      Text_Handler.Set (Channel_Dscr.Name, Channel_Name);
+      Channel_Dscr.Init := True;
+    exception
+      when Constraint_Error =>
+        raise Name_Too_Long;
+    end Init;
+
+    procedure Change_Channel_Name (New_Channel_Name : in String) is
+      use type Socket.Port_Num;
+    begin
+      -- No subscribe
+      if Channel_Dscr.Accept_Num /= 0 then
+        raise Channel_Active;
+      end if;
+      -- No destination
+      if not Dest_List_Mng.Is_Empty (Channel_Dscr.Dests) then
+        raise Channel_Active;
+      end if;
+      -- Store new name
+      Text_Handler.Set (Channel_Dscr.Name, New_Channel_Name);
+      Channel_Dscr.Init := True;
+    exception
+      when Constraint_Error =>
+        raise Name_Too_Long;
+    end Change_Channel_Name;
 
     -- Connection callback (used in read callback on destination
     --  disconnection
@@ -166,7 +201,8 @@ package body Channels is
               Dest_List_Mng.Modify (Channel_Dscr.Dests, D_Rec,
                                     Dest_List_Mng.Current);
               -- Retry to connect
-              Port.Name (1 .. Channel_Name'Length) := Channel_Name; 
+              Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
+                    := Text_Handler.Value (Channel_Dscr.Name);
               Res := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                           D_Rec.Host_Name, Port,
                                           1.0, 0,
@@ -244,20 +280,24 @@ package body Channels is
       Accept_Dscr : Socket.Socket_Dscr;
       use type Socket.Port_Num;
     begin
+      Init;
       -- Error if already subscribed to channel
       if Channel_Dscr.Accept_Num /= 0 then
         raise Already_Subscribed;
       end if;
       -- Build port record
-      if Channel_Name'Length > Tcp_Util.Max_Port_Name_Len then
-        raise Name_Too_Long;
-      end if; 
-      Port.Name (1 .. Channel_Name'Length) := Channel_Name; 
+      Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
+          := Text_Handler.Value (Channel_Dscr.Name); 
       
       -- Accept
-      Tcp_Util.Accept_From (Socket.Tcp_Header, Port,
-                            Accept_Cb'Unrestricted_Access,
-                            Accept_Dscr,  Channel_Dscr.Accept_Num);
+      begin
+        Tcp_Util.Accept_From (Socket.Tcp_Header, Port,
+                              Accept_Cb'Unrestricted_Access,
+                              Accept_Dscr,  Channel_Dscr.Accept_Num);
+      exception
+        when Socket.Soc_Name_Not_Found =>
+          raise Unknown_Channel;
+      end;
     end Subscribe;
 
     -- Close all connections and forbid new connections
@@ -339,11 +379,9 @@ package body Channels is
       end if; 
       Host := (Kind => Tcp_Util.Host_Name_Spec, Name => (others => ' '));
       Host.Name (1 .. Host_Name'Length) := Host_Name; 
-      if Channel_Name'Length > Tcp_Util.Max_Port_Name_Len then
-        raise Name_Too_Long;
-      end if; 
       Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
-      Port.Name (1 .. Channel_Name'Length) := Channel_Name; 
+      Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
+          := Text_Handler.Value (Channel_Dscr.Name); 
     end Build_Host_Port;
 
     -- Add a new recipient
@@ -353,6 +391,7 @@ package body Channels is
       Port : Tcp_Util.Remote_Port;
       Result : Boolean;
     begin
+      Init;
       -- Build host and port records
       Build_Host_Port (Host_Name, Host, Port);
 
@@ -378,8 +417,25 @@ package body Channels is
       Dest_List_Mng.Insert (Channel_Dscr.Dests, Dest);
 
       -- Try to connect each sec indefinitely
-      Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
-                                     1.0, 0, Connect_Cb'Unrestricted_Access);
+      begin
+        Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
+                                       1.0, 0, Connect_Cb'Unrestricted_Access);
+      exception
+        when Socket.Soc_Name_Not_Found =>
+          -- Host/port name is not fount in hosts/services
+          -- Check host name
+          declare
+            Id : Socket.Host_Id;
+          begin
+            Id := Socket.Host_Id_Of (host_Name);
+            -- Host is ok
+            raise Unknown_Channel;
+          exception
+            when Socket.Soc_Name_Not_Found =>
+              -- Host unknown
+              raise Unknown_Destination;
+          end;
+      end;
     end Add_Destination;
 
     -- Close current connection in Dest list (may be pending)
@@ -409,6 +465,7 @@ package body Channels is
       Host : Tcp_Util.Remote_Host;
       Port : Tcp_Util.Remote_Port;
     begin
+      Init;
       -- Build host and port records
       Build_Host_Port (Host_Name, Host, Port);
 
@@ -546,6 +603,8 @@ package body Channels is
       end;
     end Reply;
 
+  begin -- Channel
+    Init;
   end Channel;
 
 end Channels;
