@@ -1,4 +1,6 @@
-with Big_Con_Io, Normal, Lower_Str, Lower_Char;
+with Ada.Calendar;
+
+with Big_Con_Io, Normal, Lower_Str, Lower_Char, Day_Mng;
 
 with Pieces, Space.Board;
 
@@ -15,16 +17,47 @@ package body Screen is
   Back_Black : constant Con_Io.Effective_Basic_Colors := Con_Io.Black;
   Main_Back  : constant Con_Io.Effective_Basic_Colors := Con_Io.Brown;
 
-  function To_Con_Io_Square (Square : Space.Square_Coordinate)
-                             return Con_Io.Square is
+
+  -- Foreground color of messages, moves and for get
+  function Fore (Color : Space.Color_List) return Con_Io.Effective_Colors is
+    use type Space.Color_List;
   begin
-    return (Row => Space.Row_Range'Pos(Space.Row_Range'Last)
-                 - Space.Row_Range'Pos(Square.Row)
-                 + Screen_Row_Offset,
-            Col => Space.Col_Range'Pos(Square.Col) + Screen_Col_Offset);
+    if Color = Space.White then
+      return Fore_White;
+    else
+      return Back_Black;
+    end if;
+  end Fore;
+
+  -- Movement history
+  package Moves is
+    procedure Put_Moves;
+    procedure Add_Move (Color  : in Space.Color_List;
+                        Action : in Game.Action_Rec;
+                        Result : in Game.Move_Status_List);
+  end Moves;
+  package body Moves is separate;
+
+  function To_Con_Io_Square (Color : in Space.Color_List;
+                             Square : Space.Square_Coordinate)
+                             return Con_Io.Square is
+    use type Space.Color_List;
+  begin
+    if Color = Space.White then 
+      return (Row => Space.Row_Range'Pos(Space.Row_Range'Last)
+                   - Space.Row_Range'Pos(Square.Row)
+                   + Screen_Row_Offset,
+              Col => Space.Col_Range'Pos(Square.Col) + Screen_Col_Offset);
+    else
+      return (Row => Space.Row_Range'Pos(Square.Row) + Screen_Row_Offset - 1,
+              Col => Space.Col_Range'Pos(Space.Col_Range'Last)
+                   - Space.Col_Range'Pos(Square.Col)
+                   + Screen_Col_Offset);
+    end if;
   end To_Con_Io_Square;
 
-  procedure Display_Square (Square : in Space.Square_Coordinate) is
+  procedure Display_Square (Color : in Space.Color_List;
+                            Square : in Space.Square_Coordinate) is
     Back : Con_Io.Effective_Basic_Colors;
     Fore : Con_Io.Effective_Colors;
     Id   : Pieces.Piece_Id;
@@ -64,7 +97,7 @@ package body Screen is
     end if;
 
     -- Move and put 
-    Con_Io.Move(To_Con_Io_Square(Square));
+    Con_Io.Move(To_Con_Io_Square(Color, Square));
     Con_Io.Put(Char,
                Foreground => Fore,
                Blink_Stat => Con_Io.Blink,
@@ -75,55 +108,78 @@ package body Screen is
 
 
   -- Redisplay the board
-  procedure Display_Board is
+  procedure Display_Board (Color : in Space.Color_List) is
+    use type Space.Color_List;
+    Con_Row : Con_Io.Row_Range;
+    Con_Col : Con_Io.Col_Range;
+
+    procedure Put (Row : in Space.Row_Range) is
+    begin
+      Con_Io.Put(Normal(Integer(Row), 1), Move => False);
+    end Put;
+    procedure Put (Col : in Space.Col_Range) is
+    begin
+      Con_Io.Put(Lower_Str(Space.Col_Range'Image(Col)), Move => False);
+    end Put;
+
   begin
     Con_Io.Init;
-    Con_IO.Set_Background (Main_Back);
-    Con_IO.Set_Foreground (Con_Io.White);
-    Con_IO.Clear;
+    Con_Io.Set_Background (Main_Back);
+    Con_Io.Set_Foreground (Con_Io.White);
+    Con_Io.Clear;
     for Row in Space.Row_Range loop
       for Col in Space.Col_Range loop
-        Display_Square( (Col, Row) );
+        Display_Square (Color, (Col, Row) );
       end loop;
     end loop;
     for Row in Space.Row_Range loop
-      Con_Io.Move(Row => Space.Row_Range'Pos(Space.Row_Range'Last)
-                       - Space.Row_Range'Pos(Row)
-                       + Screen_Row_Offset,
-                  Col => Screen_Col_Offset - 2);
-      Con_Io.Put(Normal(Integer(Row), 1), Move => False);
-      Con_Io.Move(Row => Space.Row_Range'Pos(Space.Row_Range'Last)
-                       - Space.Row_Range'Pos(Row)
-                       + Screen_Row_Offset,
+      if Color = Space.White then
+        Con_Row := Space.Row_Range'Pos(Space.Row_Range'Last)
+                 - Space.Row_Range'Pos(Row)
+                 + Screen_Row_Offset;
+      else
+        Con_Row := Space.Row_Range'Pos(Row) + Screen_Row_Offset - 1;
+      end if;
+      Con_Io.Move(Con_Row, Screen_Col_Offset - 2);
+      Put (Row);
+      Con_Io.Move(Row => Con_Row,
                   Col => Screen_Col_Offset
                        + Space.Col_Range'Pos(Space.Col_Range'Last)
                        + 2);
-      Con_Io.Put(Normal(Integer(Row), 1), Move => False);
+      Put (Row);
     end loop;
     for Col in Space.Col_Range loop
+      if Color = Space.White then
+        Con_Col := Space.Col_Range'Pos(Col) + Screen_Col_Offset;
+      else
+        Con_Col := Space.Col_Range'Pos(Space.Col_Range'Last)
+                 - Space.Col_Range'Pos(Col)
+                 + Screen_Col_Offset;
+      end if;
       Con_Io.Move(Row => Space.Row_Range'Pos(Space.Row_Range'Last)
                        + Screen_Row_Offset + 1,
-                  Col => Screen_Col_Offset + Space.Col_Range'Pos(Col));
-      Con_Io.Put(Lower_Str(Space.Col_Range'Image(Col)), Move => False);
-      Con_Io.Move(Row => Screen_Row_Offset - 2,
-                  Col => Screen_Col_Offset + Space.Col_Range'Pos(Col));
-      Con_Io.Put(Lower_Str(Space.Col_Range'Image(Col)), Move => False);
+                  Col => Con_Col);
+      Put (Col);
+      Con_Io.Move(Screen_Row_Offset - 2, Con_Col);
+      Put (Col);
     end loop;
+    Moves.Put_Moves;
     Con_Io.Flush;        
   end Display_Board;
 
 
   -- Update some squares of the board
   -- type Update_Array is array (Positive range <> of Space.Square_Coordinate);
-  procedure Update_Board (Squares : in Space.Square_Array) is
+  procedure Update_Board (Color : in Space.Color_List;
+                          Squares : in Space.Square_Array) is
   begin
     for N in Squares'Range loop
-      Display_Square(Squares(N));
+      Display_Square(Color, Squares(N));
     end loop;
     Con_Io.Flush;        
   end Update_Board;
 
-  -- Get, Ack
+  -- Get, Ack, Wait
   procedure Erase is
     Erase_Str :  constant String (1 .. 80) := (others => ' ');
   begin
@@ -131,16 +187,41 @@ package body Screen is
     Con_Io.Put (Erase_Str, Foreground => Main_Back);
   end Erase;
 
-  function Fore (Color : Space.Color_List) return Con_Io.Effective_Colors is
-    use type Space.Color_List;
-  begin
-    if Color = Space.White then
-      return Fore_White;
-    else
-      return Back_Black;
-    end if;
-  end Fore;
+  Start_Time : Ada.Calendar.Time;
 
+  procedure Put_Time (Color : Space.Color_List) is
+    Hours   : Day_Mng.T_Hours := 0;
+    Minutes : Day_Mng.T_Minutes := 0;
+    Secs    : Day_Mng.T_Seconds := 0;
+    Millisecs : Day_Mng.T_Millisec := 0;
+    use Ada.Calendar;
+  begin
+    Con_Io.Move (2, 65);
+    -- Not more than one day :-)
+    begin
+      Day_Mng.Split (Ada.Calendar.Clock-Start_Time, Hours, Minutes, Secs, Millisecs);
+    exception
+      when Constraint_Error | Ada.Calendar.Time_Error =>
+        Start_Time := Ada.Calendar.Clock;
+    end;
+    Con_Io.Put (Normal(Hours, 2, Gap => '0') & 'h'
+        & ' ' & Normal(Minutes, 2, Gap => '0') & 'm'
+        & ' ' & Normal(Secs, 2, Gap => '0') & 's',
+        Foreground => Fore (Color) );
+  end Put_Time;
+
+
+  procedure Erase_Time (Color : Space.Color_List) is
+  begin
+    Con_Io.Move (2, 65);
+    Con_Io.Put ("               ", Foreground => Main_Back);
+  end Erase_Time;
+
+  procedure Reset_Time is
+  begin
+    Start_Time := Ada.Calendar.Clock;
+  end Reset_Time;
+  
   function Get (Color : Space.Color_List) return Players.Action_Rec is
     Str  : String (1 .. 5);
     Last : Natural;
@@ -158,15 +239,19 @@ package body Screen is
   begin
     Str := (others => ' ');
     Ins := False;
+    Pos := 1;
+
+    Put_Time (Color);
 
     loop
       Con_Io.Move (23, 1);
       Con_Io.Put ("Move:", Foreground => Fore (Color));
 
       Con_Io.Move (23, 7);
-      Pos := 1;
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
-             Foreground => Fore (Color));
+             Foreground => Fore (Color),
+             Time_Out => (Con_Io.Delay_Sec, 0.1));
+      Put_Time (Color);
       if Stat = Con_Io.Ret then
         if Str(1) = ' ' then
           Str(1 .. Str'Length-1) := Str(2 .. Str'Length);
@@ -211,7 +296,7 @@ package body Screen is
           end if;
         end if;
       elsif Stat = Con_Io.Refresh then
-        Display_Board;
+        Display_Board (Color);
       elsif Stat = Con_Io.Break then
         Erase;
         return (Valid => False);
@@ -234,8 +319,10 @@ package body Screen is
   begin
     if Ack then
       Timeout := Con_Io.Infinite_Delay;
+      Erase_Time (Color);
     else
       Timeout := (Con_Io.Delay_Sec, 1.0);
+      Put_Time (Color);
     end if;
     Ins := False;
 
@@ -246,11 +333,14 @@ package body Screen is
       Pos := 1;
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => Timeout);
+      if not Ack then
+        Put_Time (Color);
+      end if;
       if Stat = Con_Io.Ret or else Stat = Con_Io.Timeout then
         Erase;
         return;
       elsif Stat = Con_Io.Refresh then
-        Display_Board;
+        Display_Board (Color);
       elsif Stat = Con_Io.Break then
         Erase;
         return;
@@ -258,6 +348,44 @@ package body Screen is
     end loop;
   end Put;
 
+  -- Wait a bit
+  procedure Wait (Color : Space.Color_List; Delay_Ms : in Natural) is
+    Str  : String (1 .. 0);
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos  : Positive;
+    Ins  : Boolean;
+
+    Timeout : Con_Io.Delay_Rec;
+
+    use type Con_Io.Curs_Mvt, Space.Color_List;
+  begin
+    Timeout := (Con_Io.Delay_Sec, Duration (Delay_Ms) / 1000.0);
+    Ins := False;
+    Put_Time (Color);
+
+    loop
+      Con_Io.Move (23, 1);
+
+      Pos := 1;
+      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
+             Time_Out => Timeout);
+      Put_Time (Color);
+      if Stat = Con_Io.Timeout or else Stat = Con_Io.Break then
+        return;
+      elsif Stat = Con_Io.Refresh then
+        Display_Board (Color);
+      end if;
+    end loop;
+  end Wait;
+
+  procedure Put_Move (Color  : in Space.Color_List;
+                      Action : in Game.Action_Rec;
+                      Result : in Game.Move_Status_List) is
+  begin
+    Moves.Add_Move (Color, Action, Result);
+    Moves.Put_Moves;
+  end Put_Move;
     
   procedure Close is
   begin

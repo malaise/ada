@@ -2,7 +2,7 @@ with Space, Players;
 
 package Game is
 
-  procedure Init;
+  procedure Init (Color : in Space.Color_List);
 
   -- Valid actions
   subtype Action_Rec is Players.Action_Rec(True);

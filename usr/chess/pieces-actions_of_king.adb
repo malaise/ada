@@ -1,3 +1,4 @@
+with debug, ada.text_io;
 with Players;
 separate(Pieces)
 procedure Actions_Of_King (Piece : in King_Piece) is
@@ -84,6 +85,9 @@ procedure Actions_Of_King (Piece : in King_Piece) is
         begin
           Find_Square (King_Way, Opp_Action.To, From_Current => False);
           -- We are under attack on our way (or current pos)
+Ada.Text_Io.Put ("Castle attacked by ");
+Debug.Put (Opp_Action);
+Ada.Text_Io.New_Line;
           Action_List_Mng.Delete_List (King_Way);
           return;
         exception

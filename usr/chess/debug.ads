@@ -1,7 +1,7 @@
 with Space, Pieces, Players;
 package Debug is
 
-  type Debug_List is (Moves, Think, No_Check);
+  type Debug_List is (Moves, Think, No_Check, Connection, Human);
 
   procedure Set (Kind : in Debug_List; On : in Boolean);
 

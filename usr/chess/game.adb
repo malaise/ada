@@ -3,6 +3,7 @@ with Ada.Text_Io;
 with Pieces, Space.Board, Team, Screen, Debug;
 package body Game is
 
+  Own_Color : Space.Color_List;
 
   type History_Rec is record
     -- The action
@@ -15,9 +16,11 @@ package body Game is
   History : History_Rec;
 
 
-  procedure Init is
+  procedure Init (Color : in Space.Color_List) is
   begin
-    Screen.Display_Board;
+    Own_Color := Color;
+    Space.Board.Init;
+    Screen.Display_Board (Own_Color);
     -- Get Movements and attacked squares
     Players.Think (Space.White);
     Players.Think (Space.Black);
@@ -99,25 +102,27 @@ package body Game is
     if Action.To.Kind = Pieces.Take
     or else Action.To.Kind = Pieces.Take_And_Promote then
       Space.Board.Delete_Piece (Action.To.Dest, True);
-      Screen.Update_Board ( (1 => Action.To.Dest ) );
+      Screen.Update_Board (Own_Color, (1 => Action.To.Dest ) );
     elsif Action.To.Kind = Pieces.Take_En_Passant then
       Space.Board.Delete_Piece (Action.To.Taking, True);
-      Screen.Update_Board ( (1 => Action.To.Taking ) );
+      Screen.Update_Board (Own_Color, (1 => Action.To.Taking ) );
     end if;
 
     -- Move piece
     Space.Board.Move_Piece (Action.From, Action.To.Dest, True);
-    Screen.Update_Board ( (Action.From, Action.To.Dest) );
+    Screen.Update_Board (Own_Color, (Action.From, Action.To.Dest) );
 
     -- Promote
     if Action.To.Kind = Pieces.Promote
     or else Action.To.Kind = Pieces.Take_And_Promote then
       Space.Board.Delete_Piece (Action.To.Dest, True);
       Space.Board.Create_Piece (Action.To.New_Piece, Color, Action.To.Dest);
-      Screen.Update_Board ( (1 => Action.To.Dest) );
+      Screen.Update_Board (Own_Color, (1 => Action.To.Dest) );
     elsif Action.To.Kind = Pieces.Castle then
       -- Castle: move rook  
       Space.Board.Move_Piece (Action.To.Rook_From, Action.To.Rook_Dest, True);
+      Screen.Update_Board (Own_Color, (Action.To.Rook_From,
+                                       Action.To.Rook_Dest) );
     end if;
 
   end Commit_Move;
@@ -231,6 +236,9 @@ package body Game is
   begin
     -- Push and verify our king is not in check
     Try_Move (Color, Action);
+    -- Compute our controlled squares
+    Players.Think (Color);
+    -- verify our king is not in check
     Players.Think (Opp_Color);
     if In_Check (Color) then
       Undo_Try;
@@ -247,7 +255,7 @@ package body Game is
     -- Compute attacked squares
     Players.Think (Color);
 
-    -- See id opponent King is in Check
+    -- See if opponent King is in Check
     Opp_In_Check := In_Check (Opp_Color);
 
     -- Global status
