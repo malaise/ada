@@ -75,7 +75,7 @@ package body Mcd_Mng is
     function Isreal  (X : Item_Rec) return Item_Rec;
     function Isinte  (X : Item_Rec) return Item_Rec;
     function Isstr   (X : Item_Rec) return Item_Rec;
-    function Isreg  (X : Item_Rec) return Item_Rec;
+    function Isreg   (X : Item_Rec) return Item_Rec;
 
     -- BOOL,BOOL->BOOL
     function Boland  (L, R : Item_Rec) return Item_Rec;
