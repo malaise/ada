@@ -524,7 +524,9 @@ package body Fifos is
         Dictio_State := State;
       end State_Cb;
 
-      procedure Notify_Cb (Name : in String; Data : in String) is
+      procedure Notify_Cb (Name : in String;
+                           Item : in Boolean;
+                           Data : in String) is
         Acc : Fifo_Access;
       begin
         -- Cet record and check
@@ -533,7 +535,7 @@ package body Fifos is
         begin
           if not List.Search_By_Name (Connect, Fifo_Name) then
             Assertion.Assert (False, "notify on unknown fifo");
-            Dictio_Lib.Notify (Name, False);
+            Dictio_Lib.Notify (Name, False, False);
             return;
           end if;
         end;
@@ -671,7 +673,8 @@ package body Fifos is
          > Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
-        Dictio_Lib.Notify (Text_Handler.Value (Name_Suffix) & Fifo_Name, On);
+        Dictio_Lib.Notify (Text_Handler.Value (Name_Suffix) & Fifo_Name,
+                           True, On);
       exception
         when Dictio_Lib.No_Dictio =>
           raise No_Dictio;
