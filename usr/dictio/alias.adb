@@ -7,6 +7,7 @@ package body Alias is
   -- Get the highest alias for a name
   -- For a.b.c.d, look for a, then a.b, then a.b.c...
   -- Return Empty if no alias found
+  Len_Error : exception;
   procedure Best_Alias (Name : in out Tmp_Txt) is
     Look_Item, Got_Item : Data_Base.Item_Rec;
     Iter : Parser.Iterator;
@@ -72,6 +73,7 @@ package body Alias is
     when Constraint_Error =>
       -- While appending
       Text_Handler.Empty (Name);
+      raise Len_Error;
   end Best_Alias;
     
   
@@ -102,7 +104,9 @@ package body Alias is
       exit when Text_Handler.Empty (Got_Txt);
       -- Loop detected
       if Got_Txt = Ini_Txt then
-        Text_Handler.Empty (Got_Txt);
+        Debug.Put ("Client-alias.resolving loop: "
+                 & Text_Handler.Value (Ini_Txt));
+        Text_Handler.Empty (Cur_Txt);
         exit;
       end if;
       -- Switch to this one
@@ -112,15 +116,24 @@ package body Alias is
       end if;
     end loop;
 
-    -- Accept final alias if not too long
-    if Text_Handler.Length(Cur_Txt) <= Item.Name'Length then
+    -- Accept final alias if one got and not too long
+    if not Text_Handler.Empty (Cur_Txt)
+    and then Text_Handler.Length (Cur_Txt) <= Item.Name'Length then
       Item.Name := (others => ' ');
       Item.Name(1 .. Text_Handler.Length(Cur_Txt))
              := Text_Handler.Value (Cur_Txt);
     end if;
+
     if Debug.Level_Array(Debug.Client_Alias) then
       Debug.Put ("Client-alias.resolved: " & Parse(Item.Name));
     end if;
+
+  exception
+    when Len_Error =>
+      -- Keep Item unchanged
+      if Debug.Level_Array(Debug.Client_Alias) then
+        Debug.Put ("Client-alias.resolve len error on: " & Parse(Item.Name));
+      end if;
   end Resolve;
 
 end Alias;

@@ -9,8 +9,8 @@ package Alias is
   --   until alias found or no more words 
   -- Done when no more alias can be found
   -- Set the item name to the result,
-  -- No_Item if a loop of alias is detected
-  --  or if temporary name becomes too long
+  -- Item is unchanged if a loop of alias is detected
+  --  or if intermediate name is too long
   procedure Resolve (Item : in out Data_Base.Item_Rec);
 
 end Alias;
