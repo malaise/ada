@@ -609,24 +609,27 @@ extern int soc_receive (soc_token token, boolean *p_received,
   if (set_for_reply) {
     from_addr = &(soc->send_struct);
     len = socklen;
+    /* In case of error */
+    soc->dest_set = FALSE;
   } else {
     from_addr = NULL;
     len = 0;
   }
 
   /* Init out values (CARE: length is in out) */
-  do {
-    *p_received = FALSE;
-    soc->dest_set = FALSE;
-    *p_length = loc_len;
+  *p_received = FALSE;
+  *p_length = loc_len;
 
+  /* Receive */
+  do {
     result = recvfrom(soc->socket_id, (char *)message, 
      *p_length, 0, (struct sockaddr*) from_addr, &len);
   } while ( (result == -1) && (errno == EINTR) );
+
   *p_length = 0;
 
   if (result < 0) {
-    if (errno != EWOULDBLOCK) {
+    if ( (errno != EWOULDBLOCK) && (errno != ECONNREFUSED) ) {
       /* Reception error */
         perror ("recvfrom");
         return (BS_ERROR);
@@ -634,15 +637,15 @@ extern int soc_receive (soc_token token, boolean *p_received,
       /* No message to read */
       return (BS_OK);
     }
-  } else if (result > 0) {
+  } else {
     /* A message read */
+    if (set_for_reply) {
+      soc->dest_set = TRUE;
+    }
     *p_received = TRUE;
     *p_length = result;
-    soc->dest_set = TRUE;
     return (BS_OK);
-  } else {
-    /* Result = 0 : buffer too small */
-    return (BS_ERROR);
+
   }
 }
 

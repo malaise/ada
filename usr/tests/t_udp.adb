@@ -13,28 +13,39 @@ procedure T_Udp is
   Server_Port_Name : constant String := "test_udp";
 
   subtype Message_Type is String (1 .. 80);
+  Str : Constant String := "Ah que coucou!";
   Message : Message_Type;
-  Message_Len : Positive;
+  Message_Len : Natural;
 
   procedure My_Send is new Udp.Send (Message_Type);
   procedure My_Receive is new Udp.Receive (Message_Type);
 
   procedure Call_Back (F : in X_Mng.File_Desc) is
     use type X_Mng.File_Desc;
+    Received : Boolean;
   begin
     if F /= Fd then
       My_Io.Put_Line ("Not same Fd");
       raise Program_Error;
     end if;
     My_Io.Put ("In callback - ");
-    My_Receive (Soc, Message, Message_Len, Set_For_Reply => True);
+    My_Receive (Soc, Message, Message_Len, Received, Set_For_Reply => Server);
     if Server then
       My_Io.Put ("Server");
     else
       My_Io.Put ("Client");
     end if;
+    if not Received then
+      My_Io.Put_Line (" receives nothing");
+      return;
+    end if;
     My_Io.Put_Line (" receives: >" & Message(1 .. Message_Len) & "<");
+    if not Server then
+      return;
+    end if;
+    My_Io.Put_Line ("      Working");
     delay 5.0;
+    My_Io.Put_Line ("      Replying");
     My_Send (Soc, Message, Message_Len);
   end Call_Back;
 
@@ -62,20 +73,23 @@ begin
     Udp.Link_Dynamic (Soc);
     Udp.Set_Destination_Name_And_Service (Soc,
            False, Text_Handler.Value (Server_Name), Server_Port_Name);
-    declare
-      Str : Constant String := "Ah que coucou!";
-    begin
-      Message_Len := Str'Length;
-      Message (1 .. Message_Len) := Str;
-    end;
+    Message_Len := Str'Length;
+    Message (1 .. Message_Len) := Str;
     My_Send (Soc, Message, Message_Len);
   end if;
 
 
   -- Main loop
   loop
-    X_Mng.Select_No_X (1000);
-    My_Io.Put_Line ("Timeout");
+    for i in 1 .. 10 loop
+      X_Mng.Select_No_X (1000);
+      My_Io.Put_Line ("Timeout");
+    end loop;
+    if not Server then
+      Message_Len := Str'Length;
+      Message (1 .. Message_Len) := Str;
+      My_Send (Soc, Message, Message_Len);
+    end if;
   end loop;
 
   X_Mng.X_Del_Callback (Fd);

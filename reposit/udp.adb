@@ -88,7 +88,7 @@ package body Udp is
 
   function Soc_Send (S : System.Address;
                      Message : System.Address;
-                     Length  : Positive) return Result;
+                     Length  : Natural) return Result;
   pragma Import (C, Soc_Send, "soc_send");
                      
   --------------------
@@ -164,22 +164,19 @@ package body Udp is
 
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply
-  -- generic
-  --  type Message_Type is private;
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
-                     Length        : out Positive;
+                     Length        : out Natural;
+                     Received      : out Boolean;
                      Set_For_Reply : in Boolean := False) is
-    Received : Boolean_For_C;
+    Rec_For_C : Boolean_For_C;
     Len : Natural  := Message'Size / Byte_Size;
     SFR_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
-    Res := Soc_Receive (Socket.Soc_Addr, Received'Address, Message'Address,
+    Res := Soc_Receive (Socket.Soc_Addr, Rec_For_C'Address, Message'Address,
            Len'Address, SFR_For_C);
     Check_Ok;
-    if not Received then
-      raise Socket_Error;
-    end if;
+    Received := Boolean(Rec_For_C);
     Length := Len;
   exception
     when others =>
@@ -322,12 +319,10 @@ package body Udp is
   
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
-  -- generic
-  --   type Message_Type is private;
   procedure Send (Socket  : in Socket_Dscr;
                   Message : out Message_Type;
                   Length  : in Natural := 0) is
-    Len : Positive;
+    Len : Natural;
   begin
     if Length = 0 then
       Len := Message_Type'Size / Byte_Size;

@@ -44,11 +44,13 @@ package Udp is
 
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply
+  -- If Received not set means no message can be read (connection refused...)
   generic
     type Message_Type is private;
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
-                     Length        : out Positive;
+                     Length        : out Natural;
+                     Received      : out Boolean;
                      Set_For_Reply : in Boolean := False);
 
 
