@@ -17,6 +17,7 @@
 #define DISCARD     0
 
 /* Basics */
+
 extern int x_initialise (char *server_name);
 
 extern int x_open_line (int screen_id,
@@ -32,8 +33,9 @@ extern int x_set_line_name (void *line_id, char *line_name);
 
 extern int x_flush (void);
 
-/* Char display */
 extern int x_clear_line (void *line_id);
+
+/* Char display */
 
 extern int x_set_attributes (void *line_id,
                              int paper, int ink,
@@ -63,6 +65,7 @@ extern int x_draw_area (void *line_id,
                         int row, int column);
 
 /* Graphics */
+
 extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
                       int *p_f_width, int *p_f_height, int *p_f_offset);
 
@@ -79,6 +82,7 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
 extern int x_set_graphic_pointer (void *line_id, boolean graphic);
 
 /* Events */
+
 extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms);
 
 extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
@@ -91,6 +95,7 @@ extern int x_read_key (void *line_id, int *p_key, int *p_nbre);
 extern int x_enable_motion_events (void *line_id, boolean enable_motion);
 
 /* Blink, bell */
+
 extern int x_blink (void);
 
 extern int x_stop_blinking (void);
