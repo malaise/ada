@@ -5,7 +5,7 @@ procedure T_Getenv is
 
   Set : Boolean;
   Tru : Boolean;
-  Res : String (1..5);
+  Res : String (1..20);
   Len : Natural;
 
 begin
