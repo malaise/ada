@@ -66,7 +66,7 @@ package body Socket is
   pragma Import (C, Soc_Accept, "soc_accept");
   function Soc_Receive (S : System.Address;
                         Message       : System.Address;
-                        Length        : System.Address;
+                        Length        : Integer;
                         Set_For_Reply : Boolean_For_C) return Result;
   pragma Import (C, Soc_Receive, "soc_receive");
 
@@ -127,9 +127,9 @@ package body Socket is
   --------------------
   Res : Result;
 
+  -- Will be anonymous.
+  Soc_Unknown_Error : exception;
   procedure Check_Ok is
-    -- Will be anonymous.
-    Soc_Unknown_Error : exception;
   begin
     if Res = C_Soc_Ok then
       return;
@@ -244,10 +244,13 @@ package body Socket is
     Len : Natural  := Message_Type'Size / Byte_Size;
     SFR_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
-    Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len'Address,
+    Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len,
                         SFR_For_C);
+    if Res >= 0 then
+      Length := Res;
+      return;
+    end if;
     Check_Ok;
-    Length := Len;
   end Receive;
 
 
