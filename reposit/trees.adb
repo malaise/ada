@@ -43,11 +43,11 @@ package body Trees is
     -- Link my brothers to me
     procedure Link_Brothers (Me : in Cell_Access) is
     begin
-      if Me.Brothers(True) /= null then
-        Me.Brothers(True).Brothers(False) := Me;
+      if Me.Brothers(Young) /= null then
+        Me.Brothers(Young).Brothers(Old) := Me;
       end if;
-      if Me.Brothers(False) /= null then
-        Me.Brothers(False).Brothers(True) := Me;
+      if Me.Brothers(Old) /= null then
+        Me.Brothers(Old).Brothers(Young) := Me;
       end if;
     end Link_Brothers;
 
@@ -72,8 +72,8 @@ package body Trees is
 
       -- Insert new cell
       Cell_Acc.Nb_Children := 1;
-      Cell_Acc.Children(True)  := Prev_Curr;
-      Cell_Acc.Children(False) := Prev_Curr;
+      Cell_Acc.Children(Old)  := Prev_Curr;
+      Cell_Acc.Children(Young) := Prev_Curr;
       Cell_Acc.Father := Prev_Curr.Father;
 
       -- Link Root or previous father to new cell
@@ -81,13 +81,13 @@ package body Trees is
         -- Inserting father of root (as root)
         The_Tree.Root := Cell_Acc;
       else
-        if Prev_Curr.Brothers(True) = null then
+        if Prev_Curr.Brothers(Old) = null then
           -- Inserting instead of oldest, link father to it
-          Prev_Curr.Father.Children(True) := Cell_Acc;
+          Prev_Curr.Father.Children(Old) := Cell_Acc;
         end if;
-        if Prev_Curr.Brothers(False) = null then
+        if Prev_Curr.Brothers(Young) = null then
           -- Inserting instead of youngest, link father to it
-          Prev_Curr.Father.Children(False) := Cell_Acc;
+          Prev_Curr.Father.Children(Young) := Cell_Acc;
         end if;
       end if;
 
@@ -110,6 +110,7 @@ package body Trees is
                             Element  : in Element_Type;
                             Eldest   : in Boolean := True) is
       Cell_Acc : Cell_Access;
+      Child, Brother : Order;
     begin
       -- No empty tree
       Check_Empty (The_Tree);
@@ -123,12 +124,19 @@ package body Trees is
       Cell_Acc := Allocate (Element);
 
       -- Insert and move
+      if Eldest then
+        Child := Old;
+        Brother := Young;
+      else
+        Child := Young;
+        Brother := Old;
+      end if;
       Cell_Acc.Father := The_Tree.Curr;
       The_Tree.Curr := Cell_Acc;
-      Cell_Acc.Brothers(not Eldest) := Cell_Acc.Father.Children(Eldest);
-      Cell_Acc.Father.Children(Eldest) := Cell_Acc;
+      Cell_Acc.Brothers(Brother) := Cell_Acc.Father.Children(Child);
+      Cell_Acc.Father.Children(Child) := Cell_Acc;
       if Cell_Acc.Father.Nb_Children = 0 then
-        Cell_Acc.Father.Children(not Eldest) := Cell_Acc;
+        Cell_Acc.Father.Children(Brother) := Cell_Acc;
       end if;
       Link_Brothers (Cell_Acc);
 
@@ -154,10 +162,11 @@ package body Trees is
         raise Is_Root;
       end if;
 
-      -- Check number of children
-      if The_Tree.Curr.Nb_Children = Child_Range'Last then
+      -- Check number of children of father
+      if The_Tree.Curr.Father.Nb_Children = Child_Range'Last then
         raise Too_Many_Children;
       end if;
+      The_Tree.Curr.Father.Nb_Children := The_Tree.Curr.Father.Nb_Children + 1;
 
       -- Create
       Cell_Acc := Allocate (Element);
@@ -166,17 +175,17 @@ package body Trees is
       Cell_Acc.Father := The_Tree.Curr.Father;
       Cell_Acc.Brothers := The_Tree.Curr.Brothers;
       if Elder then
-        if Cell_Acc.Brothers(True) = null then
+        if Cell_Acc.Brothers(Old) = null then
           -- Inserting eldest
-          Cell_Acc.Father.Children(True) := Cell_Acc;
+          Cell_Acc.Father.Children(Old) := Cell_Acc;
         end if;
-        Cell_Acc.Brothers(False) := The_Tree.Curr;
+        Cell_Acc.Brothers(Young) := The_Tree.Curr;
       else
-        if Cell_Acc.Brothers(False) = null then
+        if Cell_Acc.Brothers(Young) = null then
           -- Inserting youngest
-          Cell_Acc.Father.Children(False) := Cell_Acc;
+          Cell_Acc.Father.Children(Young) := Cell_Acc;
         end if;
-        Cell_Acc.Brothers(True) := The_Tree.Curr;
+        Cell_Acc.Brothers(Old) := The_Tree.Curr;
       end if;
       Link_Brothers (Cell_Acc);
       The_Tree.Curr := Cell_Acc;
@@ -212,23 +221,22 @@ package body Trees is
 
       -- Check for root (no father)
       if Cell_Acc.Father = null then
-        The_Tree.Root := null;
         Cell_Dyn.Free (The_Tree.Curr);
         return;
       end if;
 
       -- Relink father and brothers 
-      if Cell_Acc.Brothers(True) = null then
+      if Cell_Acc.Brothers(Old) = null then
         -- deleting oldest
-        Cell_Acc.Father.Children(True) := Cell_Acc.Brothers(False);
+        Cell_Acc.Father.Children(Old) := Cell_Acc.Brothers(Young);
       else
-        Cell_Acc.Brothers(True).Brothers(False) := Cell_Acc.Brothers(False);
+        Cell_Acc.Brothers(Old).Brothers(Young) := Cell_Acc.Brothers(Young);
       end if;
-      if Cell_Acc.Brothers(False) = null then
+      if Cell_Acc.Brothers(Young) = null then
         -- deleting oldest
-        Cell_Acc.Father.Children(False) := Cell_Acc.Brothers(True);
+        Cell_Acc.Father.Children(Young) := Cell_Acc.Brothers(Old);
       else
-        Cell_Acc.Brothers(False).Brothers(True) := Cell_Acc.Brothers(True);
+        Cell_Acc.Brothers(Young).Brothers(Old) := Cell_Acc.Brothers(Old);
       end if;
 
       -- Update father and move to it
@@ -239,37 +247,55 @@ package body Trees is
       Cell_Dyn.Free (Cell_Acc);
     end Delete_Current;
 
-    -- Clean a cell recursively
-    procedure Clean (Me : in out Cell_Access) is
-      Next : Cell_Access;
-    begin
-      -- Clean children
-      Next := Me.Children(True);
-      while Next /= null loop
-        Clean (Next);
-      end loop;
+    -- Clean children of current cell, tree is not updated
+    procedure Clean_Children (The_Tree : in out Tree_Type;
+                              Me : in Cell_Access);
 
-      -- No more child: free me and return next brother
-      Next := Me.Brothers(True);
+    -- Clean a cell recursively, tree is not updated
+    procedure Clean_Me (The_Tree : in out Tree_Type; Me : in out Cell_Access) is
+    begin
+      -- Clean my children
+      Clean_Children (The_Tree, Me);
+
+      -- Clean saved if current
+      if The_Tree.Save = Me then
+        The_Tree.Save := null;
+      end if;
       Data_Dyn.Free (Me.Data);
       Cell_Dyn.Free (Me);
-    end Clean;
+    end Clean_Me;
 
-    -- Clear the whole tree
-    procedure Reset (The_Tree : in out Tree_Type;
+    procedure Clean_Children (The_Tree : in out Tree_Type;
+                              Me : in Cell_Access) is
+      Next : Cell_Access;
+    begin
+      Next := Me.Children(Old);
+      while Next /= null loop
+        Clean_Me(The_Tree, Next);
+      end loop;
+    end Clean_Children;
+
+    -- Clear the whole sub-tree
+    procedure Delete_Tree (The_Tree : in out Tree_Type;
                      Deallocate : in Boolean := True) is
     begin
-      if The_Tree.Root /= null then
-        -- Clean the tree from root
-        Clean (The_Tree.Root);
-        The_Tree.Curr := null;
+      -- Check for empty tree
+      if The_Tree.Curr /= null then
+        -- Clean the children of current
+        Clean_Children (The_Tree, The_Tree.Curr);
+        -- Update current
+        The_Tree.Curr.Children := (others => null);
+        The_Tree.Curr.Nb_Children := 0;
+        -- Remove current
+        Delete_Current(The_Tree);
       end if;
+
       -- Deallocate cells and data if requested
       if Deallocate then
         Data_Dyn.Clear;
         Cell_Dyn.Clear;
       end if;
-    end Reset;
+    end Delete_Tree;
 
 
     ------------------
@@ -374,7 +400,11 @@ package body Trees is
     begin
       -- No empty tree
       Check_Empty (The_Tree);
-      return The_Tree.Curr.Brothers(Elder) /= null;
+      if Elder then
+        return The_Tree.Curr.Brothers(Old) /= null;
+      else
+        return The_Tree.Curr.Brothers(Young) /= null;
+      end if;
     end Has_Brother;
 
     -- How many children has current cell
@@ -416,15 +446,22 @@ package body Trees is
     -- May raise No_Cell if no child
     procedure Move_Child (The_Tree : in out Tree_Type;
                           Elder    : in Boolean := True) is
+      Child : Order;
     begin
       -- No empty tree
       Check_Empty (The_Tree);
 
-      if The_Tree.Curr.Children(Elder) = null then
+      if Elder then
+        Child := Old;
+      else
+        Child := Young;
+      end if;
+
+      if The_Tree.Curr.Children(Child) = null then
         raise No_Cell;
       end if;
 
-      The_Tree.Curr := The_Tree.Curr.Children(Elder);
+      The_Tree.Curr := The_Tree.Curr.Children(Child);
     end Move_Child;
 
 
@@ -432,15 +469,22 @@ package body Trees is
     -- May raise No_Cell if no such brother
     procedure Move_Brother (The_Tree : in out Tree_Type;
                             Elder    : in Boolean := True) is
+      Brother : Order;
     begin
       -- No empty tree
       Check_Empty (The_Tree);
 
-      if The_Tree.Curr.Brothers(Elder) = null then
+      if Elder then
+        Brother := Old;
+      else
+        Brother := Young;
+      end if;
+
+      if The_Tree.Curr.Brothers(Brother) = null then
         raise No_Cell;
       end if;
 
-      The_Tree.Curr := The_Tree.Curr.Brothers(Elder);
+      The_Tree.Curr := The_Tree.Curr.Brothers(Brother);
     end Move_Brother;
 
     -- Move to saved position
@@ -472,7 +516,7 @@ package body Trees is
       Ada.Text_Io.Put_Line (Image_Acc (Me.Data.all, Level));
 
       -- Put children, youngest first
-      Next := Me.Children(False);
+      Next := Me.Children(Young);
       if Level /= Natural'Last then
         while Next /= null loop
           Put (Next, Level + 1, Image_Acc, File);
@@ -480,7 +524,7 @@ package body Trees is
       end if;
 
       -- Move to older brother
-      Me := Me.Brothers(True);
+      Me := Me.Brothers(Old);
     end Put;
 
     procedure Dump (The_Tree : in Tree_Type;
@@ -495,6 +539,38 @@ package body Trees is
       Cell_Acc := The_Tree.Curr;
       Put (Cell_Acc, 0, Image_Acc, File);
     end Dump;
+
+    -- Iterate on current and children
+    procedure Recurs (Me : in out Cell_Access;
+                      Do_One_Acc : in Do_One_Access) is
+      Next : Cell_Access;
+    begin
+      -- Do_One on me, stop if it returns False
+      if not Do_One_Acc (Me.Data.all) then
+        return;
+      end if;
+
+      -- Iterate on children, youngest first
+      Next := Me.Children(Young);
+      while Next /= null loop
+        Recurs (Next, Do_One_Acc);
+      end loop;
+
+      -- Move to older brother
+      Me := Me.Brothers(Old);
+    end Recurs;
+
+    procedure Iterate (The_Tree   : in Tree_Type;
+                       Do_One_Acc : in Do_One_Access) is
+      Cell_Acc : Cell_Access;
+    begin
+      -- No empty tree
+      if The_Tree.Root = null then
+        return;
+      end if;
+      Cell_Acc := The_Tree.Curr;
+      Recurs (Cell_Acc, Do_One_Acc);
+    end Iterate;
 
   end Tree;
 

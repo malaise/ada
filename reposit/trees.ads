@@ -17,6 +17,7 @@ package Trees is
   package Tree is
     -- A tree
     type Tree_Type is limited private;
+    No_Tree : constant Tree_Type;
 
     -- Access to current data
     type Element_Access is access all Element_Type;
@@ -47,7 +48,7 @@ package Trees is
     -- May raise Is_Root if current is root
     procedure Insert_Brother (The_Tree : in out Tree_Type;
                               Element  : in Element_Type;
-                              Elder   : in Boolean := True);
+                              Elder    : in Boolean := True);
 
 
     -- Deletions --
@@ -58,9 +59,9 @@ package Trees is
     -- May raise Has_Children if current cell has children
     procedure Delete_Current (The_Tree : in out Tree_Type);
 
-    -- Clear the whole tree
-    procedure Reset (The_Tree : in out Tree_Type;
-                     Deallocate : in Boolean := True);
+    -- Clear the whole sub-tree, moving to father
+    procedure Delete_Tree (The_Tree   : in out Tree_Type;
+                           Deallocate : in Boolean := True);
 
 
     -- Save position --
@@ -139,13 +140,23 @@ package Trees is
     -- Dump --
     ----------
     -- Image of an element at a depth (level)
-    type Image_Access is access function (Element : in Element_Type;
-                                          Level   : in Natural) return String;
+    type Image_Access is access function (Element : Element_Type;
+                                          Level   : Natural) return String;
     -- Dump current then children data
     procedure Dump (The_Tree  : in Tree_Type;
                     Image_Acc : in Image_Access;
                     File      : in Ada.Text_Io.File_Type);
 
+    -- Iterate --
+    -------------
+    -- What to do on current item
+    -- Iteration will continue as long as returning True
+    type Do_One_Access is access function (Element : Element_Type)
+                                          return Boolean;
+
+    -- Iterate on current and children (young to old)
+    procedure Iterate (The_Tree   : in Tree_Type;
+                       Do_One_Acc : in Do_One_Access);
 
   private
 
@@ -154,7 +165,10 @@ package Trees is
     type Cell_Access is access Cell_Rec;
 
     -- Eldest/Youngest children, or Elder/Younger brothers
-    type Cell_Pair is array (Boolean) of Cell_Access;
+    type Order is (Young, Old);
+    -- Workaround of a gvd bug
+    for Order use (1, 2);
+    type Cell_Pair is array (Order) of Cell_Access;
 
     -- A cell of tree
     type Cell_Rec is record
@@ -170,7 +184,10 @@ package Trees is
       Root : Cell_Access := null;
       Curr : Cell_Access := null;
       Save : Cell_Access := null;
+      In_Cb : Boolean := False;
     end record;
+
+    No_Tree : constant Tree_Type := (null, null, null, False);
 
   end Tree;
 
@@ -185,6 +202,9 @@ package Trees is
 
   -- When deleting current
   Has_Children : exception;
+
+  -- When in callback (dump / iterate)
+  In_Callback : exception;
 
 end Trees;
 
