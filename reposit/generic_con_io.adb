@@ -31,11 +31,11 @@ package body Generic_Con_Io is
 
     type Border_List is (Erase, Simple, Blink);
 
-    X_Event_Waiting : Boolean;
-    Motion_Enabling : Boolean;
 
     -- Discard or Tid_xxx
-    Mouse_Status : X_Mng.Event_Kind;
+    Mouse_Discard : constant X_Mng.Event_Kind := X_Mng.Keyboard;
+    Mouse_Status : X_Mng.Event_Kind := X_Mng.No_Event;
+    Motion_Enabling : Boolean := False;
 
     Line_Foreground : Effective_Colors := Default_Foreground;
     Line_Background : Effective_Basic_Colors := Default_Background;
@@ -79,8 +79,7 @@ package body Generic_Con_Io is
       end if;
       X_Mng.X_Open_Line (Line, Id);
       X_Mng.X_Set_Line_Name (Id, Argument.Get_Program_Name);
-      Mouse_Status := X_Mng.Discard;
-      X_Event_Waiting := True;
+      Mouse_Status := Mouse_Discard;
       Motion_Enabling := False;
       Init_Done := True;
       X_Mng.X_Get_Graphic_Characteristics(Id, X_Max, Y_Max,
@@ -686,27 +685,13 @@ package body Generic_Con_Io is
       end loop;
     end New_Line;
 
-    procedure Next_X_Event (Timeout_Ms : in out Integer;
+    procedure Next_X_Event (Timeout : in Timers.Delay_Rec;
                             X_Event : out X_Mng.Event_Kind) is
-      Event : Boolean;
-      Loc_X_Event : X_Mng.Event_Kind;
-      use X_Mng;
+    -- In out for X_Mng
+    X_Timeout : Timers.Delay_Rec := Timeout;
     begin
-      loop
-        if not X_Event_Waiting then
-          -- Wait
-          X_Mng.X_Select (Id, Timeout_Ms, Event);
-          if not Event then
-            X_Event := X_Mng.Discard;
-            return;
-          end if;
-        end if;
-        X_Mng.X_Process_Event (Id, Loc_X_Event, X_Event_Waiting);
-        if Loc_X_Event /= X_Mng.Discard then
-          X_Event := Loc_X_Event;
-          return;
-        end if;
-      end loop;
+      -- Wait
+      X_Mng.X_Wait_Event (Id, X_Timeout, X_Event);
     end Next_X_Event;
 
     procedure Translate_X_Key (Key     : in out Natural;
@@ -818,9 +803,6 @@ package body Generic_Con_Io is
                             Time_Out    : in Delay_Rec := Infinite_Delay) is
 
       X_Event : X_Mng.Event_Kind;
-      Cur_Time : Ada.Calendar.Time;
-      Dur : Duration;
-      Timeout_Ms : Integer;
       Loc_Key : Natural;
       Loc_Is_Char : Boolean;
       Loc_Ctrl : Boolean;
@@ -832,21 +814,8 @@ package body Generic_Con_Io is
         raise Not_Init;
       end if;
 
-      if Time_Out = Infinite_Delay then
-        Timeout_Ms := -1;
-      elsif Time_Out.Delay_Kind = Timers.Delay_Sec then
-        Timeout_Ms := Integer (Float(Time_Out.Delay_Seconds) * 1_000.0);
-      else
-        Cur_Time := Ada.Calendar.Clock;
-        if Cur_Time > Time_Out.Expiration_Time then
-          Timeout_Ms := 0;
-        else
-          Dur := Time_Out.Expiration_Time - Cur_Time;
-          Timeout_Ms := Integer (Float(Dur) * 1_000.0);
-        end if;
-      end if;
 
-      Next_X_Event (Timeout_Ms, X_Event);
+      Next_X_Event (Time_Out, X_Event);
       case X_Event is
         when X_Mng.Fd_Event =>
           -- Fd event
@@ -864,7 +833,7 @@ package body Generic_Con_Io is
           -- Refresh
           Event := Refresh;
           return;
-        when X_Mng.Discard =>
+        when X_Mng.No_Event =>
           -- Timeout
           Event := Timeout;
           return;
@@ -1564,7 +1533,7 @@ package body Generic_Con_Io is
       Mouse_Event := Loc_Event;
 
       -- Mouse event pending?
-      if Mouse_Status = X_Mng.Discard then
+      if Mouse_Status = Mouse_Discard then
         return;
       end if;
 
@@ -1654,7 +1623,7 @@ package body Generic_Con_Io is
         end if;
       end if;
       Mouse_Event := Loc_Event;
-      Mouse_Status := X_Mng.Discard;
+      Mouse_Status := Mouse_Discard;
     exception
       when X_Mng.X_Failure =>
         null;
