@@ -86,6 +86,9 @@ package body Online_Mng is
           Debug.Put ("Online: sync " & Parse(From) );
         end if;
         Sync_Mng.Send;
+        if Debug.Level_Array(Debug.Online) then
+          Debug.Put ("Online: end of sync " & Parse(From) );
+        end if;
       end if;
     end if;
 
