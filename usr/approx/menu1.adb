@@ -105,12 +105,31 @@ package body MENU1 is
               
     -- Select file
     RESTORE := FULL;
-    TEXT_HANDLER.SET (TMP_FILE_NAME,
-                      MY_SELECT_FILE(2, TEXT_HANDLER.VALUE(FILE_NAME_TXT), LOAD));
-    if TEXT_HANDLER.EMPTY (TMP_FILE_NAME) then
-      -- Cancelled
-     return;
-    end if;
+    declare
+      KIND : DIRECTORY.FILE_KIND_LIST;
+      RIGHTS : NATURAL;
+      MODIF_TIME : DIRECTORY.TIME_T;
+      use DIRECTORY;
+    begin
+      TEXT_HANDLER.SET (TMP_FILE_NAME,
+                      MY_SELECT_FILE(2, TEXT_HANDLER.VALUE(FILE_NAME_TXT),
+                                     LOAD));
+      if TEXT_HANDLER.EMPTY (TMP_FILE_NAME) then
+        -- Cancelled
+       return;
+      end if;
+      DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(TMP_FILE_NAME),
+                           KIND, RIGHTS, MODIF_TIME);
+      if KIND = DIRECTORY.LINK then
+        -- Follow link recursively
+        DIRECTORY.READ_LINK (TEXT_HANDLER.VALUE(TMP_FILE_NAME),
+                             TMP_FILE_NAME);
+        DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(TMP_FILE_NAME),
+                             KIND, RIGHTS, MODIF_TIME);
+      end if;
+    end;
+      
+      
 
     -- Restore (for errors)
     AFPX.USE_DESCRIPTOR(1);
