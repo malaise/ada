@@ -1,7 +1,9 @@
 #!/bin/bash
-if [ "$1" = "clean" ]
-then
+if [ "$1" = "clean" ] ; then
   rm *.o *.ali
+  exit
+elif [ "$1" = "clean_exe" ] ; then
+  rm afpx_bld
   exit
 else
   # Save and hide ourself

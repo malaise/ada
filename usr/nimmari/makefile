@@ -1,4 +1,3 @@
-
 all: do_nimmari
 
 do_nimmari:
@@ -9,4 +8,7 @@ AFPX.DSC: AFPX.LIS
 
 clean:
 	rm *.o *.ali
+
+clean_exe:
+	rm nimmari AFPX.DSC AFPX.FLD AFPX.INI
 

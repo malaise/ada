@@ -4,3 +4,6 @@ all:
 clean:
 	rm *.o *.ali
 
+clean_exe:
+	rm mcd
+

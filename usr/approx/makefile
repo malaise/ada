@@ -15,6 +15,9 @@ AFPX.DSC: AFPX.LIS
 	afpx_bld
 
 clean:
-	rm *.o *.ali approxp import
+	rm *.o *.ali
+
+clean_exe:
+	rm approxp import export AFPX.DSC AFPX.FLD AFPX.INI
 
 

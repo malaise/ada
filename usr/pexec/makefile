@@ -13,3 +13,6 @@ $(DEST)/pexec : pexec
 clean :
 	rm *.o *.ali
 
+clean_exe:
+	rm pexec
+

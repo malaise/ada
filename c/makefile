@@ -12,6 +12,10 @@ all: $(DEST)/libx_mng.so $(DEST)/libx_mng.a test_x
 clean :
 	rm *.o libx_mng.a libx_mng.so
 
+clean_exe :
+	rm test_x
+
+
 test_x : libx_mng.a test_x.c
 	$(CC) -o test_x test_x.c libx_mng.a -lX11
 

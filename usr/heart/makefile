@@ -11,3 +11,6 @@ AFPX.DSC: AFPX.LIS
 clean:
 	rm *.o *.ali
 
+clean_exe:
+	rm heart AFPX.DSC AFPX.FLD AFPX.INI
+

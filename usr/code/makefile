@@ -6,3 +6,6 @@ all:
 clean:
 	rm *.o *.ali
 
+clean_exe:
+	rm code tg1 tg2
+

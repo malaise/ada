@@ -21,7 +21,9 @@ all:
 	amake wait.adb
 	cp wait $(DEST)
 
-
 clean:
 	rm *.o *.ali
+
+clean_exe:
+	rm adand beep ddir fact g hanoi impot_98 one_of_arg pascal second stat statfile wait
 

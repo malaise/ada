@@ -7,3 +7,6 @@ all:
 clean:
 	rm *.o *.ali
 
+clean_exe:
+	rm t_color mmind
+
