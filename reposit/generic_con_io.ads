@@ -1,4 +1,5 @@
 with CALENDAR;
+with X_MNG;
 package GENERIC_CON_IO is
   subtype FONT_NO_RANGE is NATURAL range 0 .. 3;
 
@@ -11,40 +12,40 @@ package GENERIC_CON_IO is
     COL_RANGE_FIRST : constant NATURAL := 0;
     COL_RANGE_LAST  : constant NATURAL := 79;
 
-    -- text column and row
+    -- Text column and row
     subtype ROW_RANGE is NATURAL range ROW_RANGE_FIRST .. ROW_RANGE_LAST;
     subtype COL_RANGE is NATURAL range COL_RANGE_FIRST .. COL_RANGE_LAST;
 
-    -- a square on the screen
+    -- A square on the screen
     type SQUARE is record
         ROW : ROW_RANGE;
         COL : COL_RANGE;
       end record;
 
-    -- upper left square
+    -- Upper left square
     HOME : constant SQUARE := (ROW => ROW_RANGE'FIRST, COL => COL_RANGE'FIRST);
 
-    -- list of possible colors
+    -- List of possible colors
     type COLORS is (CURRENT, BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN,
       LIGHT_GRAY, DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, ORANGE,
       YELLOW, WHITE);
     subtype BASIC_COLORS is COLORS range CURRENT .. LIGHT_GRAY;
 
-    -- list of colors for outputs
+    -- List of colors for outputs
     subtype EFFECTIVE_COLORS is COLORS range BLACK .. COLORS'LAST;
     subtype EFFECTIVE_BASIC_COLORS is BASIC_COLORS range BLACK .. BASIC_COLORS
       'LAST;
 
-    -- list of possible blink states of foreground
+    -- List of possible blink states of foreground
     type BLINK_STATS is (CURRENT, BLINK, NOT_BLINK);
     subtype EFFECTIVE_BLINK_STATS is BLINK_STATS range BLINK .. NOT_BLINK;
 
-    -- list of possible XOR_MODE
+    -- List of possible XOR_MODE for graphics
     type XOR_MODES is (CURRENT, XOR_ON, XOR_OFF);
     subtype EFFECTIVE_XOR_MODES is XOR_MODES range XOR_ON .. XOR_OFF;
 
 
-    -- standard attributes when reset
+    -- Standard attributes when reset
     DEFAULT_FOREGROUND : constant EFFECTIVE_COLORS := LIGHT_GRAY;
     DEFAULT_BACKGROUND : constant EFFECTIVE_BASIC_COLORS := BLACK;
     DEFAULT_BLINK_STAT : constant EFFECTIVE_BLINK_STATS := NOT_BLINK;
@@ -52,24 +53,26 @@ package GENERIC_CON_IO is
 
     type WINDOW is limited private;
 
+    subtype BYTE_ARRAY is X_MNG.BYTE_ARRAY;
+
     -- Has to be called to initialize con_io.
     -- Should be called prior to any con_io action
+    -- May be called several times (no effect)
     procedure INIT;
 
     -- To be called to close the con_io
     procedure DESTROY;
 
-    -- the window which is screen. Not a constant because of Meridians'bug.
-    -- always open
+    -- The window which is screen
     function SCREEN return WINDOW;
 
-    -- clear screen, and reset keyboard
+    -- Clear screen, and reset keyboard
     procedure RESET_TERM; 
 
-    -- flushes data to X
+    -- Flushes data to X
     procedure FLUSH;
 
-    -- set / get colors, blink, xor
+    -- Set / get colors, blink, xor
     procedure SET_FOREGROUND (FOREGROUND : in COLORS := CURRENT;
                               BLINK_STAT : in BLINK_STATS := CURRENT;
                               NAME       : in WINDOW := SCREEN);
@@ -87,15 +90,15 @@ package GENERIC_CON_IO is
                            NAME : in WINDOW := SCREEN);
     function GET_XOR_MODE(NAME : WINDOW := SCREEN) return EFFECTIVE_XOR_MODES;
 
-    -- get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
+    -- Get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
     function GET_ABSOLUTE_UPPER_LEFT  (NAME : WINDOW) return SQUARE;
     function GET_ABSOLUTE_LOWER_RIGHT (NAME : WINDOW) return SQUARE;
 
-    -- get LOWER_RIGHT relative coordinates of a window (UPPER_LEFT is (0, 0)).
+    -- Get LOWER_RIGHT relative coordinates of a window (UPPER_LEFT is (0, 0)).
     function GET_RELATIVE_LOWER_RIGHT (NAME : WINDOW) return SQUARE;
 
 
-    -- open a window (screen is already open)
+    -- Open a window (screen is already open)
     procedure OPEN (NAME                    : in out WINDOW;
                     UPPER_LEFT, LOWER_RIGHT : in SQUARE);
     function IS_OPEN (NAME : WINDOW) return BOOLEAN;
@@ -117,21 +120,21 @@ package GENERIC_CON_IO is
     function TO_ABSOLUTE (RELATIVE_SQUARE : SQUARE;
                           NAME            : WINDOW) return SQUARE;
 
-    -- draw a frame around a window (must be open)
+    -- Draw a frame around a window (must be open)
     -- the frame is OUTSIDE the window (so no frame for screen)
     -- FRAME_IMPOSSIBLE if part of the frame is not in the screen
     procedure FRAME (BLINK : in BOOLEAN := FALSE;
                      NAME : in WINDOW);
     procedure CLEAR_FRAME (NAME : in WINDOW);
 
-    -- clear window and move to home
+    -- Clear window and move to home
     procedure CLEAR (NAME : in WINDOW := SCREEN);
 
-    -- make window re-usable (have to re_open it)
+    -- Make window re-usable (have to re_open it)
     -- screen cannot be closed
     procedure CLOSE (NAME : in out WINDOW);
 
-    -- move cursor for use with put or get. Position is relativ to window.
+    -- Move cursor for use with put or get. Position is relativ to window.
     procedure MOVE (POSITION : in SQUARE := HOME;
                     NAME     : in WINDOW := SCREEN);
     procedure MOVE (ROW  : in ROW_RANGE;
@@ -263,7 +266,7 @@ package GENERIC_CON_IO is
                             TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY;
                             ECHO       : in BOOLEAN := TRUE);
 
-    -- Avoid GET_KEY_TIME and GET_KEY functions. Not portable.
+    -- Avoid GET_KEY_TIME and GET_KEY functions which may depend on keyboard.
 
     -- Get_key_time can return if key pressed (ESC event),
     -- mouse action, refresh or timeout
@@ -292,30 +295,32 @@ package GENERIC_CON_IO is
 
     procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN);
 
-    -- failure when initialising the screen
+    -- Failure when initialising the screen
     INIT_FAILURE : exception;
-    -- failure when allocating data for window
+    -- Failure when allocating data for window
     OPEN_FAILURE        : exception;
-    -- position out of screen (or out of window)
+    -- Position out of screen (or out of window)
     INVALID_SQUARE      : exception;
-    -- window close to screen limit
+    -- Window close to screen limit
     FRAME_IMPOSSIBLE    : exception;
-    -- self explanatory
+    -- Self explanatory
     WINDOW_NOT_OPEN     : exception;
     WINDOW_ALREADY_OPEN : exception;
     -- String lenght incompatible with current position and window width
     --  for get and put_then get
     STRING_TOO_LONG     : exception;
-    -- for non window oriented calls (GET_KEY, GRAPHICS, MOUSE)
+    -- For non window oriented calls (GET_KEY, GRAPHICS, MOUSE)
     NOT_INIT : exception;
 
-    -- Graphic operations
+    -- Graphic operations on SCREEN window
     package GRAPHICS is
 
       -- Size of the line in pixels
       -- These is the static size when line was created
       subtype X_RANGE is NATURAL;
       subtype Y_RANGE is NATURAL;
+
+      -- The screen must be open (con_io.init)
       function X_MAX return X_RANGE;
       function Y_MAX return Y_RANGE;
 
@@ -353,17 +358,34 @@ package GENERIC_CON_IO is
                            X2 : in X_RANGE;
                            Y2 : in Y_RANGE);
 
-      -- Draw a rectangle with screen foreground and current Xor mode
-      -- on screen background, no blink
+      -- Draw a rectangle (only the border) with screen foreground and current
+      --  Xor mode
+      -- on screen background, no blink (only the border)
       -- No window if affected
       procedure DRAW_RECTANGLE (X1 : in X_RANGE;
                                 Y1 : in Y_RANGE;
                                 X2 : in X_RANGE;
                                 Y2 : in Y_RANGE);
 
+      -- Draw a filled rectangle with screen foreground and current Xor mode
+      -- on screen background, no blink
+      -- No window if affected
+      procedure FILL_RECTANGLE (X1 : in X_RANGE;
+                                Y1 : in Y_RANGE;
+                                X2 : in X_RANGE;
+                                Y2 : in Y_RANGE);
+
+      -- Draw points in a rectangle, starting at X1, Y1 and of width * height
+      --  pixels
+      -- The points array has to be width * height and contains a list of
+      --  Zero (no put) or not Zero (put)
+      procedure DRAW_POINTS(X, Y          : in NATURAL;
+                            WIDTH, HEIGHT : in NATURAL; 
+                            POINTS        : in BYTE_ARRAY);
+
       -- Get dynmically the current position of pointer
       -- If valid is FALSE, it means that the pointer
-      -- is currently the screen, then X and Y are not significant
+      -- is currently out of the screen, then X and Y are not significant
       procedure GET_CURRENT_POINTER_POS (VALID : out BOOLEAN;
                                          X     : out X_RANGE;
                                          Y     : out Y_RANGE);
@@ -438,3 +460,4 @@ package GENERIC_CON_IO is
   end ONE_CON_IO;
 
 end GENERIC_CON_IO;
+

@@ -29,8 +29,13 @@ package X_MNG is
     NBRE : KBD_INDEX_CODE;
   end record;
 
+  -- For X_DRAW_POINTS
+  type BYTE_ARRAY is array (POSITIVE range <>) of BYTE;
+
+  -- Mouse buttons
   type BUTTON_LIST is (NONE, LEFT, MIDDLE, RIGHT);
-    
+
+  -- Returned events
   type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH,
                       TID_MOTION, FD_EVENT);
 
@@ -188,11 +193,18 @@ package X_MNG is
   procedure X_DRAW_LINE(LINE_ID        : in LINE;
                         X1, Y1, X2, Y2 : in NATURAL);
 
-  -- Draw a rectangle with current characteristics
+  -- Draw a rectangle (border) with current characteristics
   --  attributes and xor mode
   -- The line_id is the token, previously given by open_line
-  -- The X and Y are coordinates of the 4 segments
+  -- The X and Y are coordinates of the 4 corners
   procedure X_DRAW_RECTANGLE(LINE_ID        : in LINE;
+                             X1, Y1, X2, Y2 : in NATURAL);
+
+  -- Fill a rectangle with current characteristics
+  --  attributes and xor mode
+  -- The line_id is the token, previously given by open_line
+  -- The X and Y are coordinates of the 4 corners
+  procedure X_FILL_RECTANGLE(LINE_ID        : in LINE;
                              X1, Y1, X2, Y2 : in NATURAL);
 
   -- Get current position of pointer (independant from events)
@@ -200,6 +212,15 @@ package X_MNG is
   -- The X and Y are coordinates of the pointer
   procedure X_GET_CURRENT_POINTER_POSITION(LINE_ID : in LINE;
                                            X, Y    : out INTEGER);
+
+  -- Draw points in a rectangle, starting at X1, Y1 and of width * height pixels
+  -- The points array has to be width * height and contains a list of Zero (no put)
+  --  or not Zero (put)
+  procedure X_DRAW_POINTS(LINE_ID       : in LINE;
+                          X, Y          : in NATURAL;
+                          WIDTH, HEIGHT : in NATURAL; 
+                          POINTS        : in BYTE_ARRAY);
+
 
   -- Set mouse cursor to cross (graphic) or arrow
   procedure X_SET_GRAPHIC_POINTER(LINE_ID : in LINE;

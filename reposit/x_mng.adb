@@ -233,6 +233,26 @@ package body X_MNG is
   pragma IMPORT(C, X_DRAW_RECTANGLE, "x_draw_rectangle");
 
   ------------------------------------------------------------------
+  -- Fill a rectangle with current characteristics
+  -- int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
+  ------------------------------------------------------------------
+  function X_FILL_RECTANGLE(LINE_ID : LINE_FOR_C;
+                            X1, Y1, X2, Y2 : NATURAL) return RESULT;
+  pragma IMPORT(C, X_FILL_RECTANGLE, "x_fill_rectangle");
+
+  ------------------------------------------------------------------
+  -- Draw points in a rectangle, starting at x1, y1 and of width * height pixels
+  -- int x_draw_points (void *line_id, int x1, int y1, int width, int height,
+  --                      unsigned char points[]);
+
+  ------------------------------------------------------------------
+  function X_DRAW_POINTS(LINE_ID : LINE_FOR_C;
+                         X1, Y1 : NATURAL;
+                         WIDTH, HEIGHT : in NATURAL; 
+                         POINTS : SYSTEM.ADDRESS) return RESULT;
+  pragma IMPORT(C, X_DRAW_POINTS, "x_draw_points");
+
+  ------------------------------------------------------------------
   -- Get current position in pixels, independently from events
   -- int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
   ------------------------------------------------------------------
@@ -752,6 +772,46 @@ package body X_MNG is
       raise X_FAILURE;
     end if;
   end X_DRAW_RECTANGLE;
+
+  ------------------------------------------------------------------
+  procedure X_FILL_RECTANGLE(LINE_ID       : in LINE;
+                             X1, Y1, X2, Y2 : in NATURAL) is
+    LINE_FOR_C_ID : LINE_FOR_C;
+    RES : BOOLEAN;
+  begin
+    if not INITIALISED or else LINE_ID = NO_CLIENT then
+      raise X_FAILURE;
+    end if;
+    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
+    RES := X_FILL_RECTANGLE(LINE_FOR_C_ID, X1, Y1, X2, Y2) = OK;
+    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
+    if not RES then
+      raise X_FAILURE;
+    end if;
+  end X_FILL_RECTANGLE;
+
+  ------------------------------------------------------------------
+  procedure X_DRAW_POINTS(LINE_ID       : in LINE;
+                          X, Y          : in NATURAL;
+                          WIDTH, HEIGHT : in NATURAL; 
+                          POINTS        : in BYTE_ARRAY) is
+    LINE_FOR_C_ID : LINE_FOR_C;
+    RES : BOOLEAN;
+  begin
+    if not INITIALISED or else LINE_ID = NO_CLIENT then
+      raise X_FAILURE;
+    end if;
+    if POINTS'LENGTH /= WIDTH * HEIGHT then
+       raise X_FAILURE;
+    end if;
+    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
+    RES := X_DRAW_POINTS(LINE_FOR_C_ID, X, Y, WIDTH, HEIGHT,
+              POINTS(POINTS'FIRST)'ADDRESS) = OK;
+    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
+    if not RES then
+      raise X_FAILURE;
+    end if;
+  end X_DRAW_POINTS;
 
   ------------------------------------------------------------------
   procedure X_GET_CURRENT_POINTER_POSITION(LINE_ID : in LINE;

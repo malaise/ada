@@ -1,4 +1,4 @@
-with ARGUMENT, DYN_DATA, X_MNG, SYS_CALLS;
+with ARGUMENT, DYN_DATA, SYS_CALLS;
 package body GENERIC_CON_IO is
 
   X_INIT_DONE : BOOLEAN := FALSE;
@@ -1455,6 +1455,28 @@ package body GENERIC_CON_IO is
         X_MNG.X_DRAW_RECTANGLE(ID, X1, ONE_CON_IO.Y_MAX - Y1, X2, ONE_CON_IO.Y_MAX - Y2);
       end DRAW_RECTANGLE;
 
+      procedure FILL_RECTANGLE (X1 : in X_RANGE;
+                                Y1 : in Y_RANGE;
+                                X2 : in X_RANGE;
+                                Y2 : in Y_RANGE) is
+      begin
+        if not INIT_DONE then
+          raise NOT_INIT;
+        end if;
+        SET_SCREEN_ATTRIBUTES;
+        X_MNG.X_FILL_RECTANGLE(ID, X1, ONE_CON_IO.Y_MAX - Y1, X2, ONE_CON_IO.Y_MAX - Y2);
+      end FILL_RECTANGLE;
+
+      procedure DRAW_POINTS(X, Y          : in NATURAL;
+                            WIDTH, HEIGHT : in NATURAL; 
+                            POINTS        : in BYTE_ARRAY) is
+      begin
+        if not INIT_DONE then
+          raise NOT_INIT;
+        end if;
+        SET_SCREEN_ATTRIBUTES;
+        X_MNG.X_DRAW_POINTS(ID, X, ONE_CON_IO.Y_MAX - Y, WIDTH, HEIGHT, POINTS);
+      end DRAW_POINTS; 
 
       procedure GET_CURRENT_POINTER_POS (VALID : out BOOLEAN;
                                          X     : out X_RANGE;
