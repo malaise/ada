@@ -21,9 +21,8 @@ begin
     -- init of init and results
     LAST := RND.INT_RANDOM (0, INDEX'LAST);
     for I in 1 .. LAST loop
-      INIT(I) := RND.INT_RANDOM(0, 50);
+      INIT(I) := RND.INT_RANDOM(0, 99);
     end loop;
-LAST := 2; INIT(1) := 6; INIT(2) := 8;
     RES_BUL(1 .. LAST) := INIT(1..LAST);
     RES_TAS(1 .. LAST) := INIT(1..LAST);
     RES_RAP(1 .. LAST) := INIT(1..LAST);
@@ -79,3 +78,4 @@ exception
     MY_IO.NEW_LINE;
     raise;
 end T_SORTS;
+
