@@ -4,5 +4,6 @@
 #export DICTIO_DEBUG_SYNC=Y
 #export DICTIO_DEBUG_ONLINE=Y
 #export DICTIO_DEBUG_CLIENT=Y
+export DICTIO_DELAY_PER_KB=5
 ./dictio -ctest_tcp -fdictio.chn -pfido
 
