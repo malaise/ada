@@ -49,6 +49,8 @@ begin
     Color := Space.White;
   elsif Lower_Str (Argument.Get_Parameter (1, "c")) = "black" then
     Color := Space.black;
+  else
+    raise Invalid_Argument;
   end if;
   begin
     Argument.Get_Parameter (Server_Name, 1, "s");
