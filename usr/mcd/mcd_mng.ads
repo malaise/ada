@@ -139,7 +139,7 @@ package Mcd_Mng is
   function Check_Empty_Stack return Boolean;
 
   Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
-  Empty_Stack, String_Len : exception;
+  Empty_Stack, String_Len, Compute_Error: exception;
 
 end Mcd_Mng;
 

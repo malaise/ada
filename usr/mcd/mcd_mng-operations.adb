@@ -41,6 +41,11 @@ package body Operations is
     else
       return (Kind => Real, Val_Real => L.Val_Real + R.Val_Real);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Add;
         
   function Sub     (L, R : Item_Rec) return Item_Rec is
@@ -56,6 +61,11 @@ package body Operations is
     else
       return (Kind => Real, Val_Real => L.Val_Real - R.Val_Real);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Sub;
 
   function Mult    (L, R : Item_Rec) return Item_Rec is
@@ -71,6 +81,11 @@ package body Operations is
     else
       return (Kind => Real, Val_Real => L.Val_Real * R.Val_Real);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Mult;
 
   function Div     (L, R : Item_Rec) return Item_Rec is
@@ -86,6 +101,11 @@ package body Operations is
     else
       return (Kind => Real, Val_Real => L.Val_Real / R.Val_Real);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Div;
 
   function Pow     (L, R : Item_Rec) return Item_Rec is
@@ -106,8 +126,10 @@ package body Operations is
       raise Argument_Mismatch;
     end if;
   exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
     when others =>
-      raise Invalid_Argument;
+      raise Compute_Error;
   end Pow;
 
   -- INTE,INTE->INTE
@@ -117,6 +139,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => L.Val_Inte rem R.Val_Inte);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Remind;
 
   -- INTE,INTE->INTE
@@ -127,6 +154,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => L.Val_Inte and R.Val_Inte);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bitand;
 
   function Bitor   (L, R : Item_Rec) return Item_Rec is
@@ -136,6 +168,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => L.Val_Inte or R.Val_Inte);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bitor;
 
   function Bitxor  (L, R : Item_Rec) return Item_Rec is
@@ -145,6 +182,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => L.Val_Inte xor R.Val_Inte);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bitxor;
 
   function Shl     (L, R : Item_Rec) return Item_Rec is
@@ -154,6 +196,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => Shl(L.Val_Inte, Integer(R.Val_Inte)));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Shl;
 
   function Shr     (L, R : Item_Rec) return Item_Rec is
@@ -163,6 +210,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => Shr(L.Val_Inte, Integer(R.Val_Inte)));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Shr;
 
   -- INTE->INTE or REAL->REAL
@@ -176,6 +228,11 @@ package body Operations is
     else
       return (Kind => Real, Val_Real => - X.Val_Real);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Minus;
 
   -- INTE->INTE or REAL->REAL
@@ -189,6 +246,11 @@ package body Operations is
     else
       return (Kind => Real, Val_Real => abs X.Val_Real);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Absv;
 
   -- INTE->INTE
@@ -199,6 +261,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => not X.Val_Inte);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bitneg;
 
   -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
@@ -219,6 +286,11 @@ package body Operations is
     else
       return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) = R.Val_Text(1 .. R.Val_Len));
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Equal;
 
   function Diff    (L, R : Item_Rec) return Item_Rec is
@@ -238,6 +310,11 @@ package body Operations is
     else
       return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) /= R.Val_Text(1 .. R.Val_Len));
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Diff;
 
   function Greater (L, R : Item_Rec) return Item_Rec is
@@ -257,6 +334,11 @@ package body Operations is
     else
       return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) > R.Val_Text(1 .. R.Val_Len));
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Greater;
 
   function Smaller (L, R : Item_Rec) return Item_Rec is
@@ -276,6 +358,11 @@ package body Operations is
     else
       return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) < R.Val_Text(1 .. R.Val_Len));
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Smaller;
 
   function Greateq (L, R : Item_Rec) return Item_Rec is
@@ -293,6 +380,11 @@ package body Operations is
     else
       return (Kind => Bool, Val_Bool => L.Val_Bool >= R.Val_Bool);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Greateq;
 
   function Smalleq (L, R : Item_Rec) return Item_Rec is 
@@ -310,6 +402,11 @@ package body Operations is
     else
       return (Kind => Bool, Val_Bool => L.Val_Bool <= R.Val_Bool);
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Smalleq;
 
   -- INTE->REAL
@@ -322,6 +419,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Real, Val_Real => My_Math.Real(X.Val_Inte));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Toreal;
 
   -- REAL->INTE
@@ -334,6 +436,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => My_Math.Round(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Round;
 
   function Trunc (X : Item_Rec) return Item_Rec is
@@ -345,6 +452,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Inte, Val_Inte => My_Math.Trunc(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Trunc;
 
   -- REAL->REAL
@@ -357,6 +469,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Real, Val_Real => My_Math.Int(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Int;
 
   function Frac (X : Item_Rec) return Item_Rec is
@@ -368,6 +485,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Real, Val_Real => My_Math.Frac(X.Val_Real));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Frac;
 
   -- *->BOOL
@@ -399,6 +521,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Bool, Val_Bool => L.Val_Bool and then R.Val_Bool);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Boland;
 
   function Bolor   (L, R : Item_Rec) return Item_Rec is
@@ -407,6 +534,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Bool, Val_Bool => L.Val_Bool or else R.Val_Bool);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bolor;
 
   function Bolxor  (L, R : Item_Rec) return Item_Rec is
@@ -415,6 +547,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Bool, Val_Bool => L.Val_Bool /= R.Val_Bool);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bolxor;
 
 
@@ -425,6 +562,11 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     return (Kind => Bool, Val_Bool => not X.Val_Bool);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Bolneg;
 
   -- BOOL,*,*->*
@@ -441,6 +583,11 @@ package body Operations is
     else
       return B;
     end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Ifte;
 
   -- REAL -> REAL
@@ -451,8 +598,10 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => My_Math.Sin(X.Val_Real));
   exception
-    when My_Math.Math_Error =>
-      raise Invalid_Argument;
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Sin;
 
   function Cos     (X : Item_Rec) return Item_Rec is
@@ -462,8 +611,10 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => My_Math.Cos(X.Val_Real));
   exception
-    when My_Math.Math_Error =>
-      raise Invalid_Argument;
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Cos;
 
   function Tan     (X : Item_Rec) return Item_Rec is
@@ -473,8 +624,10 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => My_Math.Tg(X.Val_Real));
   exception
-    when My_Math.Math_Error =>
-      raise Invalid_Argument;
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Tan;
 
   function Asin     (X : Item_Rec) return Item_Rec is
@@ -484,8 +637,10 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => My_Math.Arc_Sin(X.Val_Real));
   exception
-    when My_Math.Math_Error =>
-      raise Invalid_Argument;
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Asin;
 
   function Acos     (X : Item_Rec) return Item_Rec is
@@ -495,8 +650,10 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => My_Math.Arc_Cos(X.Val_Real));
   exception
-    when My_Math.Math_Error =>
-      raise Invalid_Argument;
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Acos;
 
   function Atan     (X : Item_Rec) return Item_Rec is
@@ -506,8 +663,10 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => My_Math.Arc_Tg(X.Val_Real));
   exception
-    when My_Math.Math_Error =>
-      raise Invalid_Argument;
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
   end Atan;
 
 end Operations;
