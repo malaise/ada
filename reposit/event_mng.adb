@@ -27,6 +27,7 @@ package body Event_Mng is
 
   Debug_Var_Name : constant String := "EVENT_MNG_DEBUG";
   Debug : Boolean := False;
+  Debug_Set : Boolean := False;
 
   procedure Set_Debug is
     Set : Boolean;
@@ -34,10 +35,14 @@ package body Event_Mng is
     Val : String (1 .. 1);
     Len : Natural;
   begin
+    if Debug_Set then
+      return;
+    end if;
     Sys_Calls.Getenv (Debug_Var_Name, Set, Tru, Val, Len);
     if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
       Debug := True;
     end if;
+    Debug_Set := True;
   exception
     when others =>
       null;
@@ -185,12 +190,14 @@ package body Event_Mng is
     Handle_Res : Out_Event_List;
     use type  Ada.Calendar.Time;
   begin
+    Set_Debug;
     -- Compute final expiration
-    Timeout_In := Duration (Timeout_Ms) / 1000.0; 
-    if Timeout_In = Infinite_Timeout then
-      Final_Exp := (Infinite => True);
-    else
+    if Timeout_Ms >= 0 then
+      Timeout_In := Duration (Timeout_Ms) / 1000.0; 
       Final_Exp := (Infinite => False, Time => Ada.Calendar.Clock + Timeout_In);
+    else
+      Timeout_In := Infinite_Timeout;
+      Final_Exp := (Infinite => True);
     end if;
 
     loop
@@ -263,6 +270,7 @@ package body Event_Mng is
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
   begin      
+    Set_Debug;
     case Event.Kind is
       when Fd_Event =>
         -- A FD event
