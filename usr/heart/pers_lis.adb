@@ -231,7 +231,8 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (24, Act);
       -- Confirm if Valid
       Afpx.Set_Field_Activation (09, State = In_Delete);
-
+      -- Lock list if not in list
+      Afpx.Set_Field_Protection (Afpx.List_Field_No, State /= In_List);
 
       Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
 
