@@ -54,7 +54,7 @@ package body NAV_DATA is
 
     -- split of degrees and minutes
     DEG := NAV_TYPES.T_COMMON_DEG (MY_MATH.TRUNC(LOC_R) );
-    MIN := NATURAL (MY_MATH.ROUND ( MY_MATH.FRAC(LOC_R) *
+    MIN := NATURAL (MY_MATH.ROUND ( abs(MY_MATH.FRAC(LOC_R)) *
      ( REAL(NAV_TYPES.T_MINUTE'LAST) + 1.0) ) );
 
     if MIN <= NATURAL(NAV_TYPES.T_MINUTE'LAST) then
