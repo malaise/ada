@@ -8,7 +8,7 @@ else
   OLD_ADA_VIEW=${ADA_VIEW}
   unset ADA_VIEW
   # Compile
-  for i in `ls *.adb`
+  for i in `ls *.ads *.adb`
   do
     echo Making $i
     amake -c $i
