@@ -187,16 +187,16 @@ Descriptor 1
     Colors light_gray not_blink black
   End Field
 
-  # Margin
+  # Savings
   Field 15 Put
-    Geometry 19 61 19 67
+    Geometry 19 61 19 66
     Colors light_gray not_blink black
     Init
-      0 0 Margin:
+      0 0 Saved:
     End Init
   End Field
   Field 16 Put
-    Geometry 19 68 19 79
+    Geometry 19 67 19 78
     Colors light_gray not_blink black
   End Field
 
@@ -718,30 +718,37 @@ Descriptor 3
       0 1 Withdraw
     End Init
   End Field
+  Field 26 Button
+    Geometry 10 58 10 66
+    Colors cyan brown
+    Init
+      0 1 Savings
+    End Init
+  End Field
 
   # Status
-  Field 26 Put
+  Field 27 Put
     Geometry 12 2 12 9
     Colors light_gray not_blink black
     Init
       0 0 Entered:
     End Init
   End Field
-  Field 27 Button
+  Field 28 Button
     Geometry 12 11 12 15
     Colors cyan brown 
     Init
       0 1 Yes
     End Init
   End Field
-  Field 28 Button
+  Field 29 Button
     Geometry 12 18 12 21
     Colors cyan brown 
     Init
       0 1 No
     End Init
   End Field
-  Field 29 Button
+  Field 30 Button
     Geometry 12 24 12 32
     Colors cyan brown 
     Init
@@ -750,46 +757,46 @@ Descriptor 3
   End Field
 
   # Destination
-  Field 30 Put
+  Field 31 Put
     Geometry 14 2 14 13
     Colors light_gray not_blink black
     Init
       0 0 Destination:
     End Init
   End Field
-  Field 31 Get
+  Field 32 Get
     Geometry 14 15 14 34
     Colors cyan brown brown
   End Field
 
   # Comment
-  Field 32 Put
+  Field 33 Put
     Geometry 16 2 16 9
     Colors light_gray not_blink black
     Init
       0 0 Comment:
     End Init
   End Field
-  Field 33 Get
+  Field 34 Get
     Geometry 16 11 16 30
     Colors cyan brown brown
   End Field
 
   # Reference
-  Field 34 Put
+  Field 35 Put
     Geometry 18 2 18 11
     Colors light_gray not_blink black
     Init
       0 0 Reference:
     End Init
   End Field
-  Field 35 Get
+  Field 36 Get
     Geometry 18 13 18 22
     Colors cyan brown brown
   End Field
 
   # Deleted info
-  Field 36 Put
+  Field 37 Put
     Geometry 20 2 20 8
     Colors magenta not_blink black
     Init
@@ -799,7 +806,7 @@ Descriptor 3
 
 
   # ok cancel and next and prev
-  Field 37 Button
+  Field 38 Button
     Geometry 13 40 15 53
     Colors cyan brown
     Init
@@ -807,7 +814,7 @@ Descriptor 3
       2 3 and prev
     End Init
   End Field
-  Field 38 Button
+  Field 39 Button
     Geometry 13 57 15 69
     Colors cyan brown
     Init
@@ -816,14 +823,14 @@ Descriptor 3
     End Init
   End Field
 
-  Field 39 Button
+  Field 40 Button
     Geometry 17 40 19 53
     Colors cyan brown
     Init
       1 5 O K
     End Init
   End Field
-  Field 40 Button
+  Field 41 Button
     Geometry 17 57 19 69
     Colors cyan brown
     Init
@@ -831,7 +838,7 @@ Descriptor 3
     End Init
   End Field
 
-  Field 41 Button
+  Field 42 Button
     Geometry 21 40 23 53
     Colors cyan brown
     Init
@@ -839,7 +846,7 @@ Descriptor 3
       2 3 and next
     End Init
   End Field
-  Field 42 Button
+  Field 43 Button
     Geometry 21 57 23 69
     Colors cyan brown
     Init
@@ -975,9 +982,16 @@ Descriptor 4
       1 1 Withdraw
     End Init
   End Field
+  Field 18 Button
+    Geometry 14 55 16 63
+    Colors cyan brown
+    Init
+      1 1 Savings
+    End Init
+  End Field
 
   # Cancel
-  Field 18 Button
+  Field 19 Button
     Geometry 20 2 22 14
     Colors cyan brown
     Init
@@ -985,5 +999,13 @@ Descriptor 4
     End Init
   End Field
 
+  # Search all
+  Field 20 Button
+    Geometry 20 18 22 29
+    Colors cyan brown
+    Init
+      1 1 Select All
+    End Init
+  End Field
 End Descriptor
 

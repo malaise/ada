@@ -21,7 +21,7 @@ package Screen is
   procedure Update_To_Unit;
 
   -- Encore summary
-  type Amount_List is (Real, Account, Defered, Margin);
+  type Amount_List is (Real, Account, Defered, Saved);
   type Amounts_Array is array (Amount_List) of Oper_Def.Amount_Rec;
   procedure Encode_Summary(Amounts : in Amounts_Array);
 
@@ -49,7 +49,7 @@ package Screen is
   Real_Amnt_Fld     : constant Afpx.Field_Range := 10;
   Account_Amnt_Fld  : constant Afpx.Field_Range := 12;
   Defered_Amnt_Fld  : constant Afpx.Field_Range := 14;
-  Margin_Amnt_Fld   : constant Afpx.Field_Range := 16;
+  Saved_Amnt_Fld    : constant Afpx.Field_Range := 16;
 
   List_Top_Fld      : constant Afpx.Field_Range := 17;
   List_Pgup_Fld     : constant Afpx.Field_Range := 18;

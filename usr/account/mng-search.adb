@@ -54,6 +54,9 @@ procedure Search is
     end if;
     -- Scan from first
     Sel_List_Mng.Rewind(Sel_List);
+    if Match = null then
+      return;
+    end if;
     loop
       List_Util.Move_To_Current;
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
@@ -151,8 +154,19 @@ begin
             In_Sublist := True;
             exit;
           when 18 =>
+            -- Savings
+            Oper.Kind := Oper_Def.Savings;
+            Unsel_All(Kind_Match'Access, Oper);
+            In_Sublist := True;
+            exit;
+          when 19 =>
             -- Cancel
             In_Sublist := False;
+            exit;
+          when 20 =>
+            -- Select all
+            Unsel_All(null, Oper);
+            In_Sublist := True;
             exit;
           when others =>
             null;

@@ -184,7 +184,8 @@ package body Mng is
 
   -- Compute amounts from all account operations
   procedure Compute_Amounts is
-    use type Oper_Def.Amount_Range, Screen.Amount_List;
+    use type Oper_Def.Amount_Range, Oper_Def.Status_List, Oper_Def.Kind_List,
+             Screen.Amount_List;
 
     -- Add a value to an amount, if not already in overflow.
     procedure Add_Amount (Kind : in Screen.Amount_List;
@@ -207,7 +208,7 @@ package body Mng is
     Amounts(Screen.Real).Amount    := Root_Amount;
     Amounts(Screen.Account).Amount := Root_Amount;
     Amounts(Screen.Defered).Amount := 0.0;
-    Amounts(Screen.Margin).Amount  := Root_Amount;
+    Amounts(Screen.Saved).Amount  := 0.0;
     for I in Screen.Amount_List loop
       Amounts(I).Overflow := False;
     end loop;
@@ -221,20 +222,12 @@ package body Mng is
     loop
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
       Add_Amount (Screen.Real, Oper.Amount);
-      case Oper.Status is
-        when Oper_Def.Entered =>
-          Add_Amount(Screen.Account, Oper.Amount);
-          Add_Amount(Screen.Margin, Oper.Amount);
-        when Oper_Def.Not_Entered =>
-          if Oper.Amount < 0.0 then
-            Add_Amount(Screen.Margin, Oper.Amount);
-          end if;
-        when Oper_Def.Defered =>
-          Add_Amount(Screen.Defered, Oper.Amount);
-          if Oper.Amount < 0.0 then
-            Add_Amount(Screen.Margin, Oper.Amount);
-          end if;
-      end case;
+      if Oper.Status = Oper_Def.Entered then
+        Add_Amount(Screen.Account, Oper.Amount);
+      end if;
+      if Oper.Kind = Oper_Def.Savings then
+        Add_Amount(Screen.Saved, Oper.Amount);
+      end if;
       exit when not Oper_List_Mng.Check_Move(Oper_List);
       Oper_List_Mng.Move_To(Oper_List);
     end loop;
@@ -492,9 +485,9 @@ package body Mng is
     else
       Put (Pf, Overflow);
     end if;
-    Put (Pf, " Margin: ");
-    if not Amounts(Screen.Margin).Overflow then
-      Put (Pf, Unit_Format.Image(Amounts(Screen.Margin).Amount, False));
+    Put (Pf, " Saved: ");
+    if not Amounts(Screen.Saved).Overflow then
+      Put (Pf, Unit_Format.Image(Amounts(Screen.Saved).Amount, False));
     else
       Put (Pf, Overflow);
     end if;
@@ -581,13 +574,18 @@ package body Mng is
     Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
     case Oper.Status is
       when Oper_Def.Entered =>
-        if Oper_Def.Kind_Can_Be_Defered(Oper.Kind) then
+        if Oper_Def.Kind_Can_Be_Defered(Oper.Kind)
+        and then not Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
           Oper.Status := Oper_Def.Defered;
         else
           Oper.Status := Oper_Def.Not_Entered;
         end if;
       when Oper_Def.Not_Entered | Oper_Def.Defered =>
-        Oper.Status := Oper_Def.Entered;
+        if Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
+          Oper.Status := Oper_Def.Not_Entered;
+        else
+          Oper.Status := Oper_Def.Entered;
+        end if;
     end case;
     Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
     Account_Saved := False;

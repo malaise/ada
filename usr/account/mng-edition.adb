@@ -17,14 +17,15 @@ package body Edition is
     (Oper_Def.Cheque => 22,
      Oper_Def.Credit => 23,
      Oper_Def.Transfer => 24,
-     Oper_Def.Withdraw => 25);
+     Oper_Def.Withdraw => 25,
+     Oper_Def.Savings => 26);
 
   Status_Buttons : constant array (Oper_Def.Status_List) of Afpx.Field_Range :=
-    (Oper_Def.Entered => 27,
-     Oper_Def.Not_Entered => 28,
-     Oper_Def.Defered => 29);
+    (Oper_Def.Entered => 28,
+     Oper_Def.Not_Entered => 29,
+     Oper_Def.Defered => 30);
 
-  -- Protect get and button fields &  set colors.
+  -- Protect get and button fields & set colors.
   procedure Protect_Data is
   begin
     Afpx.Set_Field_Protection(13, True);
@@ -45,8 +46,8 @@ package body Edition is
     Afpx.Set_Field_Colors(24, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(25, True);
     Afpx.Set_Field_Colors(25, Con_Io.Light_Gray, Background => Con_Io.Black);
-    Afpx.Set_Field_Protection(27, True);
-    Afpx.Set_Field_Colors(27, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(26, True);
+    Afpx.Set_Field_Colors(26, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(28, True);
     Afpx.Set_Field_Colors(28, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(29, True);
@@ -57,6 +58,8 @@ package body Edition is
     Afpx.Set_Field_Colors(33, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(35, True);
     Afpx.Set_Field_Colors(35, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(36, True);
+    Afpx.Set_Field_Colors(36, Con_Io.Light_Gray, Background => Con_Io.Black);
   end Protect_Data;
 
 
@@ -132,8 +135,16 @@ package body Edition is
     and then not Oper_Def.Kind_Can_Be_Defered(Kind) then
       raise Program_Error;
     end if;
+    if Status /= Oper_Def.Not_Entered
+    and then Oper_Def.Kind_Must_Be_Not_Entered(Kind) then
+      raise Program_Error;
+    end if;
     Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Defered),
                               Oper_Def.Kind_Can_Be_Defered(Kind));
+    if Oper_Def.Kind_Must_Be_Not_Entered(Kind) then
+      Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Entered), False);
+      Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Defered), False);
+    end if;
   end Set_Buttons;
 
   -- Update buttons after a click
@@ -146,8 +157,12 @@ package body Edition is
       if Field = Kind_Buttons(K) then
         -- New kind
         Kind := K;
-        -- Update Status if defered and not allowed
-        if Status = Oper_Def.Defered
+        -- Update Status if not entered and mut be not_entered
+        -- or if defered and not allowed
+        if Status /= Oper_Def.Not_Entered
+        and then Oper_Def.Kind_Must_Be_Not_Entered(Kind) then
+          Status := Oper_Def.Not_Entered;
+        elsif Status = Oper_Def.Defered
         and then not Oper_Def.Kind_Can_Be_Defered(Kind) then
           Status := Oper_Def.Not_Entered;
         elsif Status = Oper_Def.Not_Entered
@@ -175,31 +190,31 @@ package body Edition is
     if Edit_Type = Create or else Edit_Type = Copy then
       -- Always and only allow Ok, Cancel,
       --  and also Ok_And_Next if create
-      Afpx.Set_Field_Activation(37, False);
       Afpx.Set_Field_Activation(38, False);
-      Afpx.Set_Field_Activation(42, False);
+      Afpx.Set_Field_Activation(39, False);
+      Afpx.Set_Field_Activation(43, False);
       if Edit_Type = Copy then
-        Afpx.Set_Field_Activation(41, False);
+        Afpx.Set_Field_Activation(42, False);
       end if;
       return;
     end if;
 
     -- Now list cannot be empty: protect out-of-list
-    Afpx.Set_Field_Activation(37,
-            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
     Afpx.Set_Field_Activation(38,
             Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
-    Afpx.Set_Field_Activation(41,
-            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(39,
+            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
     Afpx.Set_Field_Activation(42,
+            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(43,
             Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
 
     if Edit_Type = Delete then
       -- Only allow back
-      Afpx.Set_Field_Activation(37, False);
       Afpx.Set_Field_Activation(38, False);
-      Afpx.Set_Field_Activation(41, False);
+      Afpx.Set_Field_Activation(39, False);
       Afpx.Set_Field_Activation(42, False);
+      Afpx.Set_Field_Activation(43, False);
     end if;
   end Protect_Movements;
 
@@ -283,11 +298,11 @@ package body Edition is
     -- Kind and status (modifiable or not)
     Set_Buttons(Edit_Type in Create .. Copy, Oper.Kind, Oper.Status);
     -- 3 strings
-    Afpx.Encode_Field(31, (0, 0), Oper.Destination);
-    Afpx.Encode_Field(33, (0, 0), Oper.Comment);
-    Afpx.Encode_Field(35, (0, 0), Oper.Reference);
+    Afpx.Encode_Field(32, (0, 0), Oper.Destination);
+    Afpx.Encode_Field(34, (0, 0), Oper.Comment);
+    Afpx.Encode_Field(36, (0, 0), Oper.Reference);
     -- Deleted
-    Afpx.Set_Field_Activation(36, Deleted);
+    Afpx.Set_Field_Activation(37, Deleted);
   end Encode_Oper;
 
   procedure Update is
@@ -326,7 +341,7 @@ package body Edition is
     Found : Boolean;
     Pos : Positive;
     Sel : Sel_Rec;
-    use type Oper_Def.Status_List, Oper_Def.Kind_List,
+    use type Oper_Def.Status_List, Oper_Def.Kind_List, Oper_Def.Amount_Range,
              Afpx.Absolute_Field_Range;
   begin
     if Edit_Type = Delete then
@@ -349,6 +364,16 @@ package body Edition is
     -- Kind and status
     Oper.Kind := Kind;
     Oper.Status := Status;
+    -- Negative (or nul) amount for savings
+    if Oper.Kind = Oper_Def.Savings and then Oper.Amount > 0.0 then
+      raise Unit_Format.Format_Error;
+    end if;
+    -- Sanity checks
+    if Oper.Status /= Oper_Def.Not_Entered
+    and then not Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
+      -- Should be protected at buttons level
+      raise Program_Error;
+    end if;
     if Oper.Status = Oper_Def.Defered
     and then not Oper_Def.Kind_Can_Be_Defered(Oper.Kind) then
       -- Should be protected at buttons level
@@ -356,12 +381,12 @@ package body Edition is
     end if;
 
     -- Strings
-    Oper.Destination := Afpx.Decode_Field(31,0);
-    Oper.Comment     := Afpx.Decode_Field(33,0);
-    Oper.Reference   := Afpx.Decode_Field(35,0);
+    Oper.Destination := Afpx.Decode_Field(32,0);
+    Oper.Comment     := Afpx.Decode_Field(34,0);
+    Oper.Reference   := Afpx.Decode_Field(36,0);
 
     -- Non empty reference unique for cheque
-    Field := 35;
+    Field := 36;
     if Oper.Kind = Oper_Def.Cheque
     and then Oper.Reference /= Oper_Def.Reference_Str'(others => ' ') then
 
@@ -453,7 +478,7 @@ package body Edition is
                        Str   : String) return Con_Io.Col_Range is
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
-    if Field = 35 then
+    if Field = 36 then
       -- Reference: always at the end except if end of previous
       if Cause = Afpx.Right_Full then
         return 0;
@@ -554,7 +579,7 @@ package body Edition is
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then
                   -- Check that Ok_And_Next button is active
-		  Afpx.Get_Field_Activation(41, Oknext_Active);
+		  Afpx.Get_Field_Activation(42, Oknext_Active);
                   if not Oknext_Active then
                     -- Ok and back
                     exit All_Edit;
@@ -585,7 +610,7 @@ package body Edition is
                 Unit_Format.Switch_Unit;
                 Set_Unit;
 
-              when 22 .. 25 | 27 .. 29 =>
+              when 22 .. 26 | 28 .. 30 =>
                 -- Kind and status buttons
                 Update_Buttons(Ptg_Result.Field_No, Kind, Status);
                 if Edit_Type = Create then
@@ -593,7 +618,7 @@ package body Edition is
                   Cursor_Col := 0;
                 end if;
 
-              when 37 =>
+              when 38 =>
                 -- Ok and prev
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
@@ -603,22 +628,22 @@ package body Edition is
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
-              when 38 =>
+              when 39 =>
                 -- Cancel and prev
                 Cancel(Edit_Type);
                 Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
                 exit One_Edit;
-              when 39 =>
+              when 40 =>
                 -- Ok and back
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 exit All_Edit when Cursor_Field = 0;
                 Screen.Ring(True);
-              when 40 =>
+              when 41 =>
                 -- Cancel and back
                 Cancel(Edit_Type);
                 exit All_Edit;
-              when 41 =>
+              when 42 =>
                 -- Ok and next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
@@ -630,7 +655,7 @@ package body Edition is
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
-              when 42 =>
+              when 43 =>
                 -- Cancel and next
                 Cancel(Edit_Type);
                 Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
