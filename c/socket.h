@@ -42,6 +42,10 @@
 #define SOC_WOULD_BLOCK    -23
 /* Connection lost */
 #define SOC_CONN_LOST      -24
+/* Address in use. Close-wait? */
+#define SOC_ADDR_IN_USE    -25
+/* Read -> 0 : disconnection if after a select */
+#define SOC_READ_0         -26
 
 
 

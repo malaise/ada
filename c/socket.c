@@ -3,6 +3,7 @@
 #include <fcntl.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <malloc.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -40,6 +41,7 @@ extern int soc_open (soc_token *p_token,
                      socket_protocol protocol) {
   soc_ptr *p_soc = (soc_ptr*) p_token;
   int allow_sockopt;
+  int result;
 
   /* Check that socket is not already open */
   if (*p_soc != NULL) return (SOC_USE_ERR);
@@ -68,13 +70,10 @@ extern int soc_open (soc_token *p_token,
   }
 
   /* Blocking operations as default */
-  /* Ioctl for having blocking receive */
-  if (ioctl ((*p_soc)->socket_id, FIONBIO, (char *) &BLOCKINGIO) < 0) {
-    perror ("ioctl1");
-    close ((*p_soc)->socket_id);
-    free (*p_soc);
-    *p_soc = NULL;
-    return (SOC_SYS_ERR);
+  (*p_soc)->blocking = FALSE;
+  result = soc_set_blocking (*p_token, TRUE);
+  if (result != SOC_OK) {
+    return (result);
   }
 
   /* Init structures */
@@ -112,8 +111,7 @@ extern int soc_open (soc_token *p_token,
   /* Ok */
   (*p_soc)->dest_set = FALSE;
   (*p_soc)->linked = FALSE;
-  (*p_soc)->blocking = TRUE;
-  (*p_soc)->connected = FALSE;
+  (*p_soc)->connection = not_connected;
   return (SOC_OK);
 
 }
@@ -163,16 +161,28 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   /* Blocking receiving or not */
   if (blocking) {
     /* Ioctl for having blocking receive */
-    if (ioctl (soc->socket_id, FIONBIO,
+/*    if (ioctl (soc->socket_id, FIONBIO,
      (char *) &BLOCKINGIO) < 0) {
-      perror ("ioctl2");
+      perror ("ioctl1");
+      return (SOC_SYS_ERR);
+    }
+*/
+    /* Fcntl for having blocking ios */
+    if (fcntl (soc->socket_id, F_SETFL, ~O_NONBLOCK) < 0) {
+      perror ("fcntl2");
       return (SOC_SYS_ERR);
     }
   } else {
     /* Ioctl for having non blocking receive */
-    if (ioctl (soc->socket_id, FIONBIO,
+/*    if (ioctl (soc->socket_id, FIONBIO,
      (char *) &NONBLOCKINGIO) < 0) {
-      perror ("ioctl3");
+      perror ("ioctl2");
+      return (SOC_SYS_ERR);
+    }
+*/
+    /* Fcntl same for having non blocking ios */
+    if (fcntl (soc->socket_id, F_SETFL, O_NONBLOCK) < 0) {
+      perror ("fcntl3");
       return (SOC_SYS_ERR);
     }
   }
@@ -203,6 +213,7 @@ static int soc_connect (soc_ptr soc) {
       /* Not connected */
       return (SOC_CONN_REFUSED);
     } else if (errno == EINPROGRESS) {
+      soc->connection = connecting;
       return (SOC_WOULD_BLOCK);
     } else if (errno == EALREADY) {
       return (SOC_CONN_ERR);
@@ -213,8 +224,8 @@ static int soc_connect (soc_ptr soc) {
   }
 
   /* Ok */
-  soc->connected = TRUE;
-  return SOC_OK;
+  soc->connection = connected;
+  return (SOC_OK);
 
 }
 
@@ -240,7 +251,7 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
-    } else if (soc->connected) {
+    } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
   }
@@ -293,7 +304,7 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
-    } else if (soc->connected) {
+    } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
   }
@@ -340,7 +351,7 @@ extern int soc_set_dest (soc_token token, soc_host host, soc_port port) {
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
-    } else if (soc->connected) {
+    } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
   }
@@ -571,7 +582,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
 
   /* Connected if tcp */
   if ( ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) )
-    && (!soc->connected) ) {
+    && (soc->connection != connected) ) {
      return (SOC_CONN_ERR);
   }
 
@@ -612,17 +623,17 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
   /* Send */
   do {
     if (soc->proto == tcp_header_socket) {
-      cr = (writev(soc->socket_id, vector, vector_len) >= 0);
+      cr = writev(soc->socket_id, vector, vector_len);
     } else if (soc->proto == tcp_socket) {
-      cr = (send(soc->socket_id, msg2send, len2send, 0) >= 0);
+      cr = send(soc->socket_id, msg2send, len2send, 0);
     } else {
-      cr = (sendto(soc->socket_id, msg2send, len2send, 0,
-       (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
+      cr = sendto(soc->socket_id, msg2send, len2send, 0,
+       (struct sockaddr*) &(soc->send_struct), socklen);
     }
   } while ( (cr == -1 ) && (errno == EINTR) );
 
 
-  /* Nothing sent byt not an error */
+  /* Nothing sent but not an error */
   if ( (cr == -1) && (errno == EAGAIN) ) {
     cr = 0;
   }
@@ -703,7 +714,7 @@ extern int soc_resend (soc_token token) {
   if (soc->send_tail == NULL) return (SOC_TAIL_ERR);
 
   /* Send */
-  retunn (soc_send (token, NULL, 0));
+  return (soc_send (token, NULL, 0));
 
 }
 
@@ -720,7 +731,7 @@ extern int soc_link_service (soc_token token, const char *service) {
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
-    } else if (soc->connected) {
+    } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
   }
@@ -736,8 +747,12 @@ extern int soc_link_service (soc_token token, const char *service) {
   /* Bind */
   if (bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
             socklen ) < 0) {
-    perror ("bind");
-    return (SOC_SYS_ERR);
+    if (errno == EADDRINUSE) {
+      return (SOC_ADDR_IN_USE);
+    } else {
+      perror ("bind");
+      return (SOC_SYS_ERR);
+    }
   }
 
   /* Listen for tcp */
@@ -765,7 +780,7 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
-    } else if (soc->connected) {
+    } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
   }
@@ -776,8 +791,12 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   /* Bind */
   if (bind (soc->socket_id,
    (struct sockaddr*) &(soc->rece_struct), socklen ) < 0) {
-    perror ("bind");
-    return (SOC_SYS_ERR);
+    if (errno == EADDRINUSE) {
+      return (SOC_ADDR_IN_USE);
+    } else {
+      perror ("bind");
+      return (SOC_SYS_ERR);
+    }
   }
 
   /* Listen for tcp */
@@ -805,7 +824,7 @@ extern int soc_link_dynamic  (soc_token token) {
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
-    } else if (soc->connected) {
+    } else if (soc->connection != not_connected) {
       return (SOC_CONN_ERR);
     }
   }
@@ -816,8 +835,12 @@ extern int soc_link_dynamic  (soc_token token) {
   /* Bind */
   if (bind (soc->socket_id,
    (struct sockaddr*) &(soc->rece_struct), socklen ) < 0) {
-    perror ("bind");
-    return (SOC_SYS_ERR);
+    if (errno == EADDRINUSE) {
+      return (SOC_ADDR_IN_USE);
+    } else {
+      perror ("bind");
+      return (SOC_SYS_ERR);
+    }
   }
 
   /* Listen for tcp */
@@ -866,10 +889,12 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 /*   - the length of bytes read, which the length of the message sent */
 /*     except in tcp (no header) where the length read my me anything */
 /*     from 0 to length */
+/*   - SOC_READ_0: disconnection? */
 /*   - Error
 /*  In others: */
 /*   - SOC_OK */
 /*   - SOC_WOULD_BLOCK: new read has to be done */
+/*   - SOC_READ_0: disconnection? */
 /*   - Error */
 
 /* Receive data and appends to rece_head if needed */
@@ -905,6 +930,8 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
       perror ("recv");
       return (SOC_SYS_ERR);
     }
+  } else if (res == 0) {
+    return (SOC_READ_0);
   }
 
   if (res == len2read) {
@@ -956,7 +983,7 @@ extern int soc_receive (soc_token token,
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (set_for_reply)  return (SOC_REPLY_ERR);
     if (soc->linked) return (SOC_LINK_ERR);
-    if (!soc->connected) return (SOC_CONN_ERR);
+    if (soc->connection != connected) return (SOC_CONN_ERR);
   } else {
     if (!soc->linked) return (SOC_LINK_ERR);
   }
@@ -985,6 +1012,8 @@ extern int soc_receive (soc_token token,
         }
         /* Header is read and correct. Save expected length */
         soc->expect_len = ntohl(header.size);
+      } else {
+        return (result);
       }
     }
 
@@ -998,7 +1027,7 @@ extern int soc_receive (soc_token token,
       return (SOC_LEN_ERR);
     }
     result = rec1(soc, (char *)message, soc->expect_len);
-    if (result == soc->expect_len) {
+    if (result == SOC_OK) {
       /* Expect header next */
       soc->expect_len = 0;
     }
@@ -1006,7 +1035,7 @@ extern int soc_receive (soc_token token,
   }
 
   if (soc->proto == tcp_socket) {
-    return (recv1(soc->socket_id, (char *)message, length));
+    return (rec1(soc, (char *)message, length));
   }
   
 
@@ -1030,6 +1059,8 @@ extern int soc_receive (soc_token token,
       perror ("recv");
       return (SOC_SYS_ERR);
     }
+  } else if (result == 0) {
+    return (SOC_READ_0);
   } else {
     /* A message read */
     if (set_for_reply) {
@@ -1087,17 +1118,13 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   /* Save id and protocol */
   (*p_soc)->socket_id = result;
   (*p_soc)->proto = soc->proto;
-  (*p_soc)->blocking = TRUE;
-  (*p_soc)->connected = TRUE;
+  (*p_soc)->connection = connected;
 
   /* Blocking operations as default */
-  /* Ioctl for having blocking receive */
-  if (ioctl ((*p_soc)->socket_id, FIONBIO, (char *) &BLOCKINGIO) < 0) {
-    perror ("ioctl4");
-    close ((*p_soc)->socket_id);
-    free (*p_soc);
-    *p_soc = NULL;
-    return (SOC_SYS_ERR);
+  (*p_soc)->blocking = FALSE;
+  result = soc_set_blocking (*p_token, TRUE);
+  if (result != SOC_OK) {
+    return (result);
   }
 
   /* Init structures */
@@ -1112,7 +1139,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
-    perror ("fcntl2");
+    perror ("fcntl4");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
@@ -1125,7 +1152,6 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Ok */
   (*p_soc)->linked = FALSE;
-  (*p_soc)->blocking = TRUE;
   return (SOC_OK);
 
 }
@@ -1142,8 +1168,11 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
     return (SOC_PROTO_ERR);
   }
 
-  if (soc->connected) {
+  if (soc->connection == connected) {
     *p_connected = TRUE;
+    return (SOC_OK);
+  } else if (soc->connection == not_connected) {
+    *p_connected = FALSE;
     return (SOC_OK);
   }
 
@@ -1152,11 +1181,18 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   res = getsockopt(soc->socket_id, SOL_SOCKET, SO_ERROR, &status, &len);
   if (res == -1) {
     perror ("getsockopt");
+    soc->connection = not_connected;
     return (SOC_SYS_ERR);
   }
-  soc->connected = status;
 
-  *p_connected = soc->connected;
+  if (status == 0) {
+    soc->connection = connected;
+    *p_connected = TRUE;
+  } else {
+    soc->connection = not_connected;
+    *p_connected = FALSE;
+  }
+
   return (SOC_OK);
 
 }
