@@ -181,18 +181,18 @@ package body AF_PTG is
   end LAST_CLICK;
 
   function WAIT_RELEASE return CON_IO.SQUARE is
-    TIME : CALENDAR.TIME := CALENDAR.CLOCK;
+    STR : STRING (1 .. 0);
+    LAST : NATURAL;
+    STAT : CON_IO.CURS_MVT;
+    POS : POSITIVE;
+    INS : BOOLEAN;
     MOUSE_STATUS : CON_IO.MOUSE_EVENT_REC;
-    EVENT : CON_IO.EVENT_LIST;
-    KEY : NATURAL;
-    IS_CHAR, CTRL, SHIFT : BOOLEAN;
     use CON_IO;
   begin
     -- Wait until button released
     loop
-      CON_IO.GET_KEY_TIME (TRUE,
-        EVENT, KEY, IS_CHAR, CTRL, SHIFT, CON_IO.INFINITE_DELAY);
-      if EVENT = CON_IO.MOUSE_BUTTON then
+      CON_IO.GET (STR, LAST, STAT, POS, INS, ECHO => FALSE);
+      if STAT = CON_IO.MOUSE_BUTTON then
         CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
         exit when MOUSE_STATUS.BUTTON = CON_IO.LEFT
              and then MOUSE_STATUS.STATUS = CON_IO.RELEASED;

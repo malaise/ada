@@ -323,9 +323,11 @@ package body CURVE is
       MOUSE_BOUNDS : T_SCREEN_BOUNDARIES;
 
       -- For waiting for an event
-      EVENT : BIG_CON_IO.EVENT_LIST;
-      KEY   : NATURAL; 
-      IS_CHAR, CTRL, SHIFT : BOOLEAN;
+      STR  : STRING (1 .. 1);
+      LAST : NATURAL;
+      STAT : BIG_CON_IO.CURS_MVT;
+      POS  : POSITIVE;
+      INS  : BOOLEAN;
       -- Input command
       CHAR : CHARACTER;
       -- Mouse event
@@ -774,7 +776,7 @@ package body CURVE is
       -- Init context
       PREV_ZOOM_MODE := INIT;
       CURR_ZOOM_MODE := INIT;
-      EVENT := BIG_CON_IO.REFRESH;
+      STAT := BIG_CON_IO.REFRESH;
       BIG_CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
       MISC(M_CURVE) := TRUE;
 
@@ -793,7 +795,7 @@ package body CURVE is
 
       loop -- Main loop of mouse and keys actions
 
-        if EVENT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
+        if STAT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
           -- Discard refresh when in drag
           -- Frozen mouse when done
           if CURR_ZOOM_MODE /= DONE then
@@ -820,9 +822,9 @@ package body CURVE is
         end if;
 
         -- Infinite wait
-        BIG_CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, BIG_CON_IO.INFINITE_DELAY);
+        BIG_CON_IO.GET (STR, LAST, STAT, POS, INS, ECHO => FALSE);
 
-        case EVENT is
+        case STAT is
           when BIG_CON_IO.BREAK =>
             -- End of curve
             return FALSE;
@@ -830,19 +832,16 @@ package body CURVE is
             -- Redraw at next loop;
             null;
           when BIG_CON_IO.TIMEOUT =>
-            -- Should not occure: GET_KEY_TIME(INFINITE_TIME)
+            -- Should not occure: GET(INFINITE_TIME)
             null;
-          when ESC =>
-            -- KEY pressed
-            if IS_CHAR and then not CTRL then
-              CHAR := CHARACTER'VAL(KEY);
-            elsif not IS_CHAR and then not CTRL and then not SHIFT and then
-                      KEY = CHARACTER'POS(ASCII.ESC) then
-              CHAR := ASCII.ESC;
-            else
-              CHAR := ASCII.NUL;
+          when BIG_CON_IO.ESC =>
+            if CURR_ZOOM_MODE = INIT then
+              -- Initial zoom mode. Exit drawings.
+              return FALSE;
             end if;
-
+          when BIG_CON_IO.FULL =>
+            -- KEY pressed
+            CHAR := STR(1);
             if UPPER_CHAR(CHAR) = 'A' then
               -- Toggle axes
               DRAW_AXES;
@@ -863,11 +862,6 @@ package body CURVE is
               -- Toggle curve
               MISC(M_CURVE) := not MISC(M_CURVE);
               DRAW_CURVE;
-            elsif CHAR = ASCII.ESC then
-              if CURR_ZOOM_MODE = INIT then
-                -- Initiail zoom mode. Exit drawings.
-                return FALSE;
-              end if;
             elsif CHAR >= '0' and then
                   CHAR <= CHARACTER'VAL(LAST_ZOOM_NO + CHARACTER'POS('0')) then
               -- New zoom level selection
@@ -898,7 +892,7 @@ package body CURVE is
               BIG_CON_IO.BELL(3);
             end if;
 
-          when MOUSE_BUTTON =>
+          when BIG_CON_IO.MOUSE_BUTTON =>
             -- New button status
             BIG_CON_IO.GET_MOUSE_EVENT (MOUSE_EVENT, BIG_CON_IO.X_Y);
             SET_MOUSE_IN_FRAME(MOUSE_EVENT.X, MOUSE_EVENT.Y);
@@ -1018,6 +1012,11 @@ package body CURVE is
             or else MOUSE_EVENT.STATUS /= BIG_CON_IO.PRESSED then
               DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
             end if;
+          when others =>
+            -- Ret, arrows, Pg*...
+            -- Invalid key
+            BIG_CON_IO.BELL(3);
+            
         end case; -- event
 
         -- perform scales drawing
