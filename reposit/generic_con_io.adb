@@ -123,7 +123,7 @@ package body GENERIC_CON_IO is
       if not INIT_DONE then
         raise NOT_INIT;
       end if;
-      X_MNG.X_FLUSH;
+      X_MNG.X_FLUSH (ID);
     end FLUSH;
 
     -- set / get colors
@@ -360,27 +360,27 @@ package body GENERIC_CON_IO is
                           NAME.CURRENT_BACKGROUND, XOR_OFF);
       end case;
       -- draw corners
-      MOVE(ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(1));
-      MOVE(ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'SUCC(LOWER_RIGHT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(2));
-      MOVE(ROW_RANGE'SUCC(LOWER_RIGHT.ROW), COL_RANGE'SUCC(LOWER_RIGHT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(3));
-      MOVE(ROW_RANGE'SUCC(LOWER_RIGHT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(4));
+      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(1),
+            ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
+      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(2),
+            ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'SUCC(LOWER_RIGHT.COL));
+      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(3),
+            ROW_RANGE'SUCC(LOWER_RIGHT.ROW), COL_RANGE'SUCC(LOWER_RIGHT.COL));
+      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(4),
+            ROW_RANGE'SUCC(LOWER_RIGHT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
       -- draw horiz
       for I in UPPER_LEFT.COL .. LOWER_RIGHT.COL loop
-        MOVE(ROW_RANGE'PRED(UPPER_LEFT.ROW), I);
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(5));
-        MOVE(ROW_RANGE'SUCC(LOWER_RIGHT.ROW), I);
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(5));
+        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(5),
+              ROW_RANGE'PRED(UPPER_LEFT.ROW), I);
+        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(5),
+              ROW_RANGE'SUCC(LOWER_RIGHT.ROW), I);
       end loop;
       -- draw verti
       for I in UPPER_LEFT.ROW .. LOWER_RIGHT.ROW loop
-        MOVE(I, COL_RANGE'PRED(UPPER_LEFT.COL));
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(6));
-        MOVE(I, COL_RANGE'SUCC(LOWER_RIGHT.COL));
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(6));
+        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(6),
+              I, COL_RANGE'PRED(UPPER_LEFT.COL));
+        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(6),
+              I, COL_RANGE'SUCC(LOWER_RIGHT.COL));
       end loop;
     end QUICK_DRAW;
 
@@ -432,15 +432,15 @@ package body GENERIC_CON_IO is
       SET_ATTRIBUTES (NAME.CURRENT_BACKGROUND,
                       NOT_BLINK,
                       NAME.CURRENT_BACKGROUND, XOR_OFF);
-      X_MNG.X_MOVE (ID, NAME.UPPER_LEFT.ROW, NAME.UPPER_LEFT.COL);
       X_MNG.X_DRAW_AREA (ID, NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL + 1,
-                             NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW + 1);
+                             NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW + 1,
+                             NAME.UPPER_LEFT.ROW, NAME.UPPER_LEFT.COL);
       SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND,
                       NAME.CURRENT_BLINK_STAT,
                       NAME.CURRENT_BACKGROUND,
                       NAME.CURRENT_XOR_MODE);
       MOVE (NAME => NAME);
-      X_MNG.X_FLUSH;
+      X_MNG.X_FLUSH (ID);
     end CLEAR;
 
     procedure MOVE (ROW  : in ROW_RANGE;
@@ -454,7 +454,6 @@ package body GENERIC_CON_IO is
          (COL > NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL) then
         raise INVALID_SQUARE;
       end if;
-      X_MNG.X_MOVE (ID, NAME.UPPER_LEFT.ROW + ROW, NAME.UPPER_LEFT.COL + COL);
       NAME.CURRENT_POS := (ROW, COL);
     end MOVE;
 
@@ -466,6 +465,46 @@ package body GENERIC_CON_IO is
       return NAME.CURRENT_POS;
     end POSITION;
 
+    procedure BELL (REPEAT : in POSITIVE) is
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      if REPEAT in X_MNG.BELL_REPEAT then
+        X_MNG.X_BELL (ID, REPEAT);
+      else
+        X_MNG.X_BELL (ID, X_MNG.BELL_REPEAT'LAST);
+      end if;
+    end BELL;
+
+    -- Get window attributes when current, and set the whole
+    procedure SET_ATTRIBUTES_FROM_WINDOW (
+                       NAME       : in WINDOW;
+                       FOREGROUND : in COLORS;
+                       BLINK_STAT : in BLINK_STATS;
+                       BACKGROUND : in BASIC_COLORS) is
+      FG : EFFECTIVE_COLORS;
+      BL : EFFECTIVE_BLINK_STATS;
+      BG : EFFECTIVE_BASIC_COLORS;
+    begin
+      if FOREGROUND = CURRENT then
+        FG := NAME.CURRENT_FOREGROUND;
+      else
+        FG := FOREGROUND;
+      end if;
+      if BLINK_STAT = CURRENT then
+        BL := NAME.CURRENT_BLINK_STAT;
+      else
+        BL := BLINK_STAT;
+      end if;
+      if BACKGROUND = CURRENT then
+        BG := NAME.CURRENT_BACKGROUND;
+      else
+        BG := BACKGROUND;
+      end if;
+      SET_ATTRIBUTES (FG, BL, BG, NAME.CURRENT_XOR_MODE);
+    end SET_ATTRIBUTES_FROM_WINDOW;
+
     -- Writes a character at the current cursor position and with attributes.
     -- Position is not updated.
     procedure PUT_INT (INT        : in INT_CHAR;
@@ -473,33 +512,16 @@ package body GENERIC_CON_IO is
                        FOREGROUND : in COLORS := CURRENT;
                        BLINK_STAT : in BLINK_STATS := CURRENT;
                        BACKGROUND : in BASIC_COLORS := CURRENT) is
-      FG : EFFECTIVE_COLORS;
-      BL : EFFECTIVE_BLINK_STATS;
-      BG : EFFECTIVE_BASIC_COLORS;
     begin
+      if NAME = null then
+        raise WINDOW_NOT_OPEN;
+      end if;
       if INT /= CHARACTER'POS(ASCII.CR) then
+        SET_ATTRIBUTES_FROM_WINDOW (NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
         -- put character
-        if FOREGROUND = CURRENT then
-          FG := NAME.CURRENT_FOREGROUND;
-        else
-          FG := FOREGROUND;
-        end if;
-        if BLINK_STAT = CURRENT then
-          BL := NAME.CURRENT_BLINK_STAT;
-        else
-          BL := BLINK_STAT;
-        end if;
-        if BACKGROUND = CURRENT then
-          BG := NAME.CURRENT_BACKGROUND;
-        else
-          BG := BACKGROUND;
-        end if;
-        X_MNG.X_MOVE(ID, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
-                         NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
-        SET_ATTRIBUTES (FG, BL, BG, NAME.CURRENT_XOR_MODE);
-        X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(INT));
-        X_MNG.X_MOVE(ID, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
-                         NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
+        X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(INT),
+                          NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
+                          NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
       end if;
     end PUT_INT;
 
@@ -512,6 +534,26 @@ package body GENERIC_CON_IO is
       PUT_INT(CHARACTER'POS(C), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
     end PUT_NOT_MOVE;
 
+    -- Increment col by one or row by one...
+    procedure MOVE_ONE (NAME : in WINDOW := SCREEN) is
+    begin
+      if NAME.CURRENT_POS.COL /= NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL then
+        -- next col
+        NAME.CURRENT_POS.COL := COL_RANGE'SUCC(NAME.CURRENT_POS.COL);
+      else
+        -- 1st col
+        NAME.CURRENT_POS.COL := COL_RANGE'FIRST;
+        if NAME.CURRENT_POS.ROW /=
+           NAME.LOWER_RIGHT.ROW  - NAME.UPPER_LEFT.ROW then
+          -- next_line
+          NAME.CURRENT_POS.ROW := ROW_RANGE'SUCC(NAME.CURRENT_POS.ROW);
+        else
+          -- No scroll :-( first row
+          NAME.CURRENT_POS.ROW := ROW_RANGE'FIRST;
+        end if;
+      end if;
+    end MOVE_ONE;
+
     -- Writes a character at the current cursor position and with attributes.
     -- CR only is interpreted
     procedure PUT (C          : in CHARACTER;
@@ -520,43 +562,20 @@ package body GENERIC_CON_IO is
                    BLINK_STAT : in BLINK_STATS := CURRENT;
                    BACKGROUND : in BASIC_COLORS := CURRENT;
                    MOVE       : in BOOLEAN := TRUE) is
-      ROW : ROW_RANGE;
-      COL : COL_RANGE;
     begin
       if NAME = null then
         raise WINDOW_NOT_OPEN;
       end if;
-      if not MOVE then
+      if C /= ASCII.CR then
         PUT_NOT_MOVE(C, NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
-      else
-        ROW := NAME.CURRENT_POS.ROW;
-        if C = ASCII.CR then
-          COL := NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL;
-        else
-          -- put character
-          PUT_NOT_MOVE(C, NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
-          COL := NAME.CURRENT_POS.COL;
-        end if;
-
-        -- update position
-        if COL /= NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL then
-          -- next col
-          COL := COL_RANGE'SUCC(COL);
-        else
-          -- 1st col
-          COL := COL_RANGE'FIRST;
-          if ROW /= NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW then
-            -- next_line
-            ROW := ROW_RANGE'SUCC(ROW);
-          else
-            -- scroll up 1
-            ONE_CON_IO.MOVE(ROW, 0, NAME);
-          end if;
-        end if;
-        -- move cursor
-        ONE_CON_IO.MOVE(ROW, COL, NAME);
       end if;
-
+      if MOVE then
+        if C = ASCII.CR then
+          -- End of current row
+          NAME.CURRENT_POS.COL := NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL;
+        end if;
+        MOVE_ONE (NAME);
+      end if;
     end PUT;
 
     -- Idem with a string
@@ -566,6 +585,20 @@ package body GENERIC_CON_IO is
                    BLINK_STAT : in BLINK_STATS := CURRENT;
                    BACKGROUND : in BASIC_COLORS := CURRENT;
                    MOVE       : in BOOLEAN := TRUE) is
+      SFIRST, SLAST, RLAST : NATURAL;
+      SAVED_POS : constant SQUARE := NAME.CURRENT_POS;
+      WIN_LAST_COL : constant COL_RANGE
+                   := NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL;
+      CRS : NATURAL;
+
+      procedure X_PUT (STR : in STRING) is
+      begin
+        if STR'LENGTH /= 0 then
+          X_MNG.X_PUT_STRING (ID, STR, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
+                                       NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
+        end if;
+      end X_PUT;
+
     begin
       if NAME = null then
         raise WINDOW_NOT_OPEN;
@@ -574,13 +607,45 @@ package body GENERIC_CON_IO is
       if S = "" then
         return;
       end if;
-      -- put all the string except last character
-      for I in INTEGER range S'FIRST .. INTEGER'PRED(S'LAST) loop
-        -- put character
-        PUT(S(I), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+      SET_ATTRIBUTES_FROM_WINDOW (NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+      -- Put chunks of string due to CRs or too long slices
+      SFIRST := S'FIRST;
+      loop
+        SLAST  := S'FIRST;
+        CRS := 0;
+        -- Look for CR or end of string
+        while SLAST /= S'LAST and then S(SLAST) /= ASCII.CR loop
+          SLAST := SLAST + 1;
+        end loop;
+        -- Skip CR
+        if S(SLAST) = ASCII.CR then
+          RLAST := SLAST - 1;
+          CRS := CRS + 1;
+        else
+          RLAST := SLAST;
+        end if;
+        -- Truncate to fit window
+        -- Last - first <= Win_las_col - Pos 
+        if NAME.CURRENT_POS.COL + RLAST - SFIRST  > WIN_LAST_COL then
+           RLAST := SFIRST + WIN_LAST_COL - NAME.CURRENT_POS.COL;
+           CRS := CRS + 1;
+        end if;
+        -- Put the chunk
+        X_PUT (S(SFIRST .. RLAST));
+        -- Issue as many CRs
+        for I in 1 .. CRS loop
+          PUT(ASCII.CR, NAME);
+        end loop;
+        -- Move to next chunk
+        exit when SLAST = S'LAST;
+        SFIRST := SLAST + 1;
       end loop;
-      -- put last character
-      PUT(S(S'LAST), NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE);
+
+      -- Resore pos
+      if not MOVE then
+        ONE_CON_IO.MOVE (SAVED_POS, NAME);
+      end if;
+
     end PUT;
 
     -- Idem but appends a CR
@@ -625,20 +690,19 @@ package body GENERIC_CON_IO is
     procedure NEXT_X_EVENT (TIMEOUT_MS : in out INTEGER;
                             X_EVENT : out X_MNG.EVENT_KIND) is
       EVENT : BOOLEAN;
-      EVENT_ID : X_MNG.LINE;
       use X_MNG;
     begin
       loop
         if not X_EVENT_WAITING then
           -- Wait
-          X_MNG.X_SELECT (TIMEOUT_MS, EVENT);
+          X_MNG.X_SELECT (ID, TIMEOUT_MS, EVENT);
           if not EVENT then
             X_EVENT := X_MNG.DISCARD;
             return;
           end if;
         end if;
-        X_MNG.X_PROCESS_EVENT (EVENT_ID, X_EVENT, X_EVENT_WAITING);
-        if EVENT_ID = ID and then X_EVENT /= X_MNG.DISCARD then
+        X_MNG.X_PROCESS_EVENT (ID, X_EVENT, X_EVENT_WAITING);
+        if X_EVENT /= X_MNG.DISCARD then
           return;
         end if;
       end loop;
@@ -880,7 +944,6 @@ package body GENERIC_CON_IO is
       IS_CHAR       : BOOLEAN;
       CTRL, SHIFT   : BOOLEAN;
       REDRAW        : BOOLEAN;
-      FIRST_POS     : constant SQUARE := NAME.CURRENT_POS;
       LAST_TIME     : CALENDAR.TIME;
       INFINITE_TIME : constant BOOLEAN := TIME_OUT < 0.0;
       EVENT         : EVENT_LIST;
@@ -898,18 +961,22 @@ package body GENERIC_CON_IO is
       end PARSE;
 
       procedure CURSOR (SHOW : in BOOLEAN) is
+        ABSOLUTE_POS : SQUARE;
       begin
-        MOVE(FIRST_POS.ROW, FIRST_POS.COL + POS - 1, NAME);
+        MOVE(ROW_RANGE'FIRST, POS - 1, NAME);
+        ABSOLUTE_POS := TO_ABSOLUTE (NAME.CURRENT_POS, NAME);
         if SHOW then
           if INSERT then
-            X_MNG.X_OVERWRITE_CHAR (ID, 16#5E#);
+            X_MNG.X_OVERWRITE_CHAR (ID, 16#5E#,
+                  ABSOLUTE_POS.ROW, ABSOLUTE_POS.COL);
           else
-            X_MNG.X_OVERWRITE_CHAR (ID, 16#5F#);
+            X_MNG.X_OVERWRITE_CHAR (ID, 16#5F#,
+                  ABSOLUTE_POS.ROW, ABSOLUTE_POS.COL);
           end if;
         else
-          X_MNG.X_PUT_CHAR (ID, LSTR(POS));
+          X_MNG.X_PUT_CHAR (ID, LSTR(POS),
+                ABSOLUTE_POS.ROW, ABSOLUTE_POS.COL);
         end if;
-        MOVE(FIRST_POS.ROW, FIRST_POS.COL + POS - 1, NAME);
       end CURSOR;
 
 
@@ -1012,20 +1079,16 @@ package body GENERIC_CON_IO is
             end if;
           end if;  -- function key or normal key
         end loop;  -- dicard any unaccepted key
-        MOVE (POSITION);
       end if;  -- string'length = 0
 
       -- Check width and current_pos / window's width
-      if FIRST_POS.COL + WIDTH - 1 > NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL
-        then
+      if WIDTH > NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL  + 1 then
         raise STRING_TOO_LONG;
       end if;
 
       -- put the string
-      for I in LSTR'range loop
-        MOVE(FIRST_POS.ROW, FIRST_POS.COL + I - 1, NAME);
-        PUT_NOT_MOVE(LSTR(I), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
-      end loop;
+      MOVE(NAME => NAME);
+      PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
 
       loop
         -- show cursor
@@ -1187,10 +1250,8 @@ package body GENERIC_CON_IO is
 
         -- redraw if necessary
         if REDRAW then
-          for I in LSTR'RANGE loop
-            MOVE(FIRST_POS.ROW, FIRST_POS.COL + I - 1, NAME);
-            PUT_NOT_MOVE(LSTR(I), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
-          end loop;
+          MOVE(NAME => NAME);
+          PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
        end if;
       end loop;
     end PUT_THEN_GET;

@@ -139,6 +139,9 @@ package GENERIC_CON_IO is
                     NAME : in WINDOW := SCREEN);
     function POSITION (NAME : WINDOW := SCREEN) return SQUARE;
 
+    -- Rings a bell
+    procedure BELL (REPEAT : in POSITIVE);
+
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.
     -- CR is the only special ASCII character which is interpreted.
