@@ -1,5 +1,5 @@
 with System;
-with Sys_Calls;
+with Timers, Sys_Calls;
 package X_Mng is
  
   ----- TYPES -----
@@ -37,10 +37,9 @@ package X_Mng is
   -- Mouse buttons
   type Button_List is (None, Left, Middle, Right, Up, Down);
 
-  -- This is passed to C and used internally
-  type Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard,
-                      Refresh, Tid_Motion, Fd_Event, Timer_Event,
-                      Signal_Event);
+  -- Result of waiting (see Event_Mng for Events).
+  type Event_Kind is (Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh,
+                      Timer_Event, Fd_Event, Signal_Event, No_Event);
 
   ----- EXCEPTIONS -----
 
@@ -226,27 +225,23 @@ package X_Mng is
                                   Graphic : in Boolean);
 
   ----- EVENT MANAGEMENT -----
-  -- Wait for some ms or until a X event is availble
-  -- If timeout is < 0, infinite wait
-  -- The remaining time is set
-  procedure X_Select (Line_Id : in Line;
-                      Timeout_Ms : in out Integer; X_Event : out Boolean);
-
-  -- Processes a X Event (Tid or Keyboard or other)
-  -- kind is Keyboard or Tid (Press or Release or Motion), or Discard
-  --  or Refresh or Fd_Event or Timer_Event or Signal_Event
-  -- Next indicates if there is another event pendinig in X'queue
-  procedure X_Process_Event(Line_Id : in Line; 
-                            Kind : out Event_Kind;
-                            Next : out Boolean);
+  -- Wait until an event is availble
+  -- If Timeout is a real delay (neither infinite nor exp) then
+  --  it is updated with the time remaining
+  -- Kind is Keyboard or Tid (Press or Release or Motion) for this line,
+  --  or Refresh or Fd_Event or Timer_Event or Signal_Event...
+  procedure X_Wait_Event(Line_Id : in Line;
+                         Timeout : in out Timers.Delay_Rec;
+                         Kind : out Event_Kind);
  
   -- Reads the position on Tid in Row/Col or X/Y
   -- The line_id must be the one given by wait_event
   -- Button can be left, middle or right
   -- row and column are the position of the "finger" on the Tid
   --  in row/col or X/Y(pixels)
-  procedure X_Read_Tid(Line_Id : in Line; Row_Col : in Boolean;
-                       Button : out Button_List;
+  procedure X_Read_Tid(Line_Id : in Line;
+                       Row_Col : in Boolean;
+                       Button  : out Button_List;
                        Row, Column : out Integer);
  
   -- Reads a key of a sequence
@@ -286,28 +281,6 @@ package X_Mng is
 
  
 private
- 
-  -- This is passed to C and used internally
-  type Private_Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard,
-                              Refresh, Tid_Motion, Fd_Event, Timer_Event,
-                              Signal_Event, Exception_Event);
-
-  -- Returned events (see Event_Mng and Timers)
-  for Private_Event_Kind'Size use 32;
-  for Private_Event_Kind use (
-    Discard      => 0,      -- }
-    Tid_Release  => 1,      -- } These are passed to C
-    Tid_Press    => 2,      -- }  and returned to client
-    Keyboard     => 3,      -- }  (see Event_Kind)
-    Refresh      => 4,      -- } 
-    Tid_Motion   => 5,      -- }
-
-    Fd_Event     => 10,      -- } 
-    Timer_Event  => 11,     -- } These are returned to client
-    Signal_Event => 12,     -- }
-
-    Exception_Event => 20); -- } These are purely internal
-   
  
   subtype Line_Range is Natural range 0 .. Max_Line_Number;
   subtype Client_Range is Positive range 1 .. Max_Line_Number;
