@@ -1,5 +1,14 @@
 # Put prime numbers
 
+# Error Handling
+[ "Usage: prime [ <max_number> ]" putl ssize popn retall ] E popr
+
+# Store max in m if set
+ssize 0 = [ 0 ] ifcall
+ssize 1 /= E pushr ifcall
+dup isinte ~ E pushr ifcall
+m popr
+
 # Loop on all extra stack
 #  j has to be initialised to 0
 #  Top of stack has to be true and is replaced by False if i not prime
@@ -23,13 +32,17 @@ L pushr retacal ] L popr
 [ i pushr copye putl ] ifcall
 # Next i
 i pushr 1 + i popr
-# Infinite loop
-S pushr call ] S popr
+# Stop loop f m /= 0 and then m < j
+m pushr dup 0 /= swap i pushr < & ifret
+# Infinite loop or up to m
+S pushr retacal ] S popr
 
 
 # 1 is prime
 4 format
 1 putl
+m pushr 1 = ifret
+
 
 # First number to check
 2 i popr
