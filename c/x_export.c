@@ -198,7 +198,9 @@ int x_initialise (char *server_name) {
     int result;
 
     result = (lin_initialise (server_name) ? OK : ERR);
-    (void) x_start_blinking();
+    if (!blink_bold()) {
+      (void) x_start_blinking();
+    }
     return (result);
 }
 

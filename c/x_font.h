@@ -1,7 +1,5 @@
 #ifndef _X_FONT_H
 #define _X_FONT_H
-/*  @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~  */
-static char H_TNOF_X []=" @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~";
 /* Sep 05, 1993 : Image compliant X ressources management (PM)     */
 #include "x_stdinc.h"
 #include "x_file.h"
@@ -27,3 +25,4 @@ int fon_get_offset(XFontStruct *font);
 int fon_get_bold (int font);
 #endif
 /* _X_FONT_H */
+

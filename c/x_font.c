@@ -1,5 +1,3 @@
-/*  @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~  */
-static char C_TNOF_X []=" @(#) TAAATS PROGRAM FILE %M% Release %I% %H% %T% ~";
 /* Sep 05, 1993 : Image compliant X ressources management (PM)     */
 #include "x_font.h"
 
@@ -108,4 +106,3 @@ int fon_get_bold (int font) {
 
     return (font + 1);
 }
-

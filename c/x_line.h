@@ -29,7 +29,7 @@ typedef struct {
     Drawable x_root_win;
     /* X color pixels */
     boolean blinking;
-    unsigned long color_id[SIZE_TAB_COLOR];
+    unsigned long color_id[MAX_SIZE_TAB_COLOR];
     Colormap colormap;
 }t_screen;
 

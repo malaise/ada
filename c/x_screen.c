@@ -27,7 +27,7 @@ int foreground, background;
         background = col_get_std (paper, paper, color_ids);
     }
 
-    if (superbright) {
+    if ( superbright || (blink && blink_bold() ) ) {
         no_font =  fon_get_bold (no_font);
     }
 
