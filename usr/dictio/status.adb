@@ -5,12 +5,19 @@ package body Status is
   Current_Status : Status_List := Starting;
   Stable_Status : Stable_Status_List := Dead;
   Status_Cb : New_Status_Callback := null;
+  Tid : Timers.Timer_Id := Timers.No_Timer;
 
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
     Prev_Status : constant Status_List := Current_Status;
     New_Status : Status_List;
+    use type Timers.Timer_Id;
   begin
+
+    if Tid = Timers.No_Timer and then Id /= Timers.No_Timer then
+      -- Called as a timer Cb after an immediate status set
+      return False;
+    end if;
 
     begin
       New_Status := Status_List'Val(Data);
@@ -46,11 +53,12 @@ package body Status is
   procedure Set (Status : in Status_List;
                  Immediate : in Boolean := False) is
     Dummy : Boolean;
-    Tid : Timers.Timer_Id;
     T : Timers.Delay_Rec;
   begin
     if Immediate then
       Dummy := Timer_Cb (Timers.No_Timer, Status_List'Pos(Status));
+      -- No action on expiration of pendig timer
+      Tid := Timers.No_Timer;
     else
       -- Create immediate timer with status (so we go back to main loop)
       T.Delay_Seconds := 0.0;

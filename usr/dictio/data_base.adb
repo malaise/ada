@@ -147,7 +147,7 @@ package body Data_Base is
 
 
   -- Crc of empty data base
-  Default_Crc : constant Item_Crc := "   0";
+  Default_Crc : constant Item_Crc := (others => '0');
 
   function Get_Crc return Item_Crc is
     Pos : Positive;

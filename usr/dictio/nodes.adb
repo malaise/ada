@@ -1,4 +1,4 @@
-with Dynamic_List;
+with Dynamic_List, Normal;
 with Local_Host_Name, Parse, Debug;
 package body Nodes is
 
@@ -6,6 +6,7 @@ package body Nodes is
     Name : Tcp_Util.Host_Name;
     Stat : Status.Status_list;
     Sync : Boolean;
+    Prio : Args.Prio_Str;
   end record;
 
   package Node_Mng is new Dynamic_List(Node_Rec);
@@ -25,7 +26,7 @@ package body Nodes is
   begin
     Node_Mng.Delete_List (Node_List, Deallocate => True);
     Local_Host_Name.Get (N);
-    Set (N, Status.Get, Status.Sync);
+    Set (N, Status.Get, Status.Sync, Args.get_Prio);
   end Init_List;
 
   function Search_Name (Name : Tcp_Util.Host_Name) return Boolean is
@@ -41,17 +42,23 @@ package body Nodes is
 
   procedure Set (Name : in Tcp_Util.Host_Name;
                  Stat : in Status.Status_list;
-                 Sync : in Boolean) is
-    Rec : Node_Rec;
+                 Sync : in Boolean;
+                 Prio : in Args.Prio_Str) is
+    Rec, Grec : Node_Rec;
     use type Status.Status_List;
   begin
     Rec.Name := Name;
     Rec.Stat := Stat;
     Rec.Sync := Sync;
+    Rec.Prio := Prio;
     if Search_Name (Name) then
       if Stat /= Status.Dead then
         if Stat /= Status.Fight then
           -- Known and not dead and not fight => replace
+          if Prio = No_Prio then
+            Node_Mng.Read (Node_List, Grec, Node_Mng.Current);
+            Rec.Prio := Grec.Prio;
+          end if;
           Node_Mng.Modify (Node_List, Rec, Node_Mng.Current);
         end if;
       else
@@ -91,6 +98,11 @@ package body Nodes is
       return True;
     end if;
    
+    -- Prio
+    if El1.Prio /= El2.Prio then
+      return El1.Prio > El2.Prio;
+    end if;
+
     -- First name
     return El1.Name < El2.Name;
   end Less_Than;
@@ -126,7 +138,8 @@ package body Nodes is
     loop
       if Debug.Level_Array(Debug.Fight) then
         Debug.Put ("Fight.Check: " & Parse (Rec.Name)
-                 & " " & Rec.Stat'Img & " " & Rec.Sync'Img);
+                 & " " & Rec.Stat'Img & " " & Rec.Sync'Img
+                 & " " & Rec.Prio);
       end if;
       if Rec.Stat = Status.Master then
         -- One master found

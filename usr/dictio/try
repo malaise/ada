@@ -1,8 +1,13 @@
+# General debug
+export DICTIO_DEBUG=N
+
 # These ones debug protocol
-#export DICTIO_DEBUG_STATUS=Y
-#export DICTIO_DEBUG_FIGHT=Y
-#export DICTIO_DEBUG_SYNC=Y
-#export DICTIO_DEBUG_ONLINE=Y
+if [ "$DICTIO_DEBUG" = "Y" ] ; then
+  export DICTIO_DEBUG_STATUS=Y
+  export DICTIO_DEBUG_FIGHT=Y
+  export DICTIO_DEBUG_SYNC=Y
+  export DICTIO_DEBUG_ONLINE=Y
+fi
 
 # These ones debug messages
 #export DICTIO_DEBUG_CLIENT=Y
@@ -10,6 +15,12 @@
 
 # This one is not debug
 export DICTIO_DELAY_PER_KB=5
+
+if [ -z "$1" ] ; then
+  export DICTIO_PRIO=10
+else
+  export DICTIO_PRIO=$1
+fi
 
 ./dictio -ctest_tcp -fdictio.chn -pfido
 

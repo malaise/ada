@@ -1,5 +1,5 @@
-with Timers;
-with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio;
+with Timers, Normal;
+with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio, Args;
 package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
@@ -14,6 +14,8 @@ package body Fight_Mng is
                      Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : Fight_Action;
+
+  My_Prio : String (1 .. Args.Prio_Str'length + 1);
 
   function In_Fight return Boolean is
     use type Timers.Timer_Id;
@@ -35,11 +37,12 @@ package body Fight_Mng is
     Nodes.Init_List;
     Fight_Actions := Actions;
     Last_Status := Status.Get;
+    My_Prio := Intra_Dictio.Extra_Pri & Args.Get_Prio;
 
     -- Change status
     Status.Set (New_Status, Immediate => True);
     if New_Status /= Last_Status then
-      Intra_Dictio.Send_Status;
+      Intra_Dictio.Send_Status (My_Prio);
     end if;
 
     -- End of fight timer
@@ -51,7 +54,6 @@ package body Fight_Mng is
     T.Delay_Seconds := Timeout / 4;
     T.Period := Timeout / 4;
     Per := Timers.Create (T, Perio_Cb'Access);
-
   end Start;
 
 
@@ -61,6 +63,7 @@ package body Fight_Mng is
                    Diff : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
+    Got_Prio : Args.Prio_Str;
   begin
     if not In_Fight then
       if Debug.Level_Array(Debug.Fight) then
@@ -68,16 +71,36 @@ package body Fight_Mng is
       end if;
       return;
     end if;
-    if Extra /= "" and then Extra(1) = Intra_Dictio.Extra_Ver
-    and then Extra(2 .. Extra'Last) /= Versions.Intra then
-      Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
-                     & Extra & " while being " & Versions.Intra);
-      raise Errors.Exit_Error;
-    end if;
-    Nodes.Set (From, Stat, Sync);
+    declare
+      Vers : constant String
+           := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Ver);
+    begin
+      if Vers /= "" and Vers /= Versions.Intra then
+        Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
+                       & Vers & " while being " & Versions.Intra);
+        raise Errors.Exit_Error;
+      end if;
+    end;
+
+    Got_Prio := Nodes.No_Prio;
+    declare
+      T_Prio : constant String
+             := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Pri);
+    begin
+      if T_Prio /= "" then
+        Got_Prio := T_Prio;
+      end if;
+    exception
+      when others =>
+        if Debug.Level_Array(Debug.Fight) then
+          Debug.Put ("Fight.Event: receive invalid prio " & Extra);
+        end if;
+    end;
+    Nodes.Set (From, Stat, Sync, Got_Prio);
     if Debug.Level_Array(Debug.Fight) then
       Debug.Put ("Fight: received Stat: " & Stat'Img
-               & "  From: " & Parse (From));
+               & "  From: " & Parse (From)
+               & "  Extra: " & Extra);
     end if;
   end Event;
 
@@ -108,9 +131,10 @@ package body Fight_Mng is
   begin
     if In_Fight and then Last_Status /= Status.Fight then
       if Debug.Level_Array(Debug.Fight) then
-        Debug.Put ("Fight: send status " & Last_Status'Img);
+        Debug.Put ("Fight: send status " & Last_Status'Img
+                 & "-" & My_Prio);
       end if;
-      Intra_Dictio.Send_Status (Last_Status);
+      Intra_Dictio.Send_Status (Last_Status, My_Prio);
     end if;
     return False;
   end Perio_Cb;

@@ -193,13 +193,19 @@ package body Intra_Dictio is
     Send ("*", Msg);
   end Send_Status;
 
-  procedure Send_Status (Stat : in Status.Status_List) is
+  procedure Send_Status (Stat  : in Status.Status_List;
+                         Extra : in String := "") is
     Msg : Message_Rec;
   begin
     Msg.Head.Kind := Stat_Kind;
     Msg.Head.Stat := Stat;
-    Msg.Item.Data_Len := 0;
-    Send ("*", Msg, get_Status => False);
+    if Extra = "" then
+      Msg.Item.Data_Len := 0;
+    else
+      Msg.Item.Data_Len := Extra'Length;
+      Msg.Item.Data (1 .. Msg.Item.Data_Len) := Extra;
+    end if;
+    Send ("*", Msg, Get_Status => False);
   end Send_Status;
 
 
@@ -238,6 +244,29 @@ package body Intra_Dictio is
     end if;
     return Result;
   end Send_Sync_Data;
+
+  function Extra_Of (Str : String; Key : Character) return String is
+    First : Natural;
+  begin
+    First := 0;
+    for I in Str'Range loop
+      if Str(I) = Key and then I /= Str'Last then
+        First := I + 1;
+        exit;
+      end if;
+    end loop;
+
+    if First = 0 then
+      return "";
+    end if;
+
+    for I in First + 1 .. Str'Last loop
+      if Str(I) not in '0' .. '9' then
+        return Str(First .. I - 1);
+      end if;
+    end loop;
+    return Str(First .. Str'Last);
+  end Extra_Of;
 
 end Intra_Dictio;
 

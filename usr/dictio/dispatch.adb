@@ -69,9 +69,12 @@ package body Dispatch is
               and then Stat /= Status.Slave
               and then Stat /= Status.Dead then
         if Debug.Level_Array(Debug.Fight) then
-          Debug.Put ("Dispatch: reply status to: " & Parse(From) & "/" & Stat'Img);
+          Debug.Put ("Dispatch: reply status to: " & Parse(From)
+                   & "/" & Stat'Img
+                   & "-" & Item.Data(1 .. Item.Data_Len));
         end if;
-        Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
+        Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra
+                                 & Intra_Dictio.Extra_Pri & Args.Get_Prio);
       end if;
       case Status.Get is
         when Status.Starting | Status.Dead =>

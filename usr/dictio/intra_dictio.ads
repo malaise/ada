@@ -9,6 +9,10 @@ package Intra_Dictio is
 
   Extra_Crc : constant Character := 'C';
   Extra_Ver : constant Character := 'V';
+  Extra_Pri : constant Character := 'P';
+
+  -- All characters between Key and next key (or end of Str) in Str
+  function Extra_Of (Str : String; Key : Character) return String;
 
   type Read_Cb_Access is access procedure (
     Diff : in Boolean;
@@ -22,7 +26,8 @@ package Intra_Dictio is
   procedure Init;
   procedure Quit;
 
-  procedure Send_Status (Stat : in Status.Status_List);
+  procedure Send_Status (Stat  : in Status.Status_List;
+                         Extra : in String := "");
 
   procedure Send_Status (Extra : in String := "");
   procedure Reply_Status (Extra : in String := "");
