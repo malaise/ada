@@ -1,4 +1,4 @@
-# Compute altitude from Flight level an QNH
+# Compute altitude from Flight level and QNH
 
 # Error handling
 [ "Usage: alti <FL> <QNH>" put ssize popn retall ] E popr

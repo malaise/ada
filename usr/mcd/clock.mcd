@@ -12,6 +12,9 @@ ssize 0 /= E pushr ifcall
 # Put time if new
 [ G pushr call dup t pushr = [ pop ] [ dup putl t popr ] ifte call ] P popr
 
+# Initial display
+G pushr call dup putl t popr
+
 # Loop
 [
 # Display
@@ -21,7 +24,5 @@ P pushr call
 # Loop
 pushle copye retacal
 ] copye
-
-G pushr call dup putl t popr
 call
 
