@@ -1,37 +1,60 @@
 DEST=/usr/local/lib
 CC=gcc
 CCOPT=-g -c -DDEBUG -Wall -pthread
-OBJS=x_color.o x_font.o x_line.o x_export.o x_file.o x_key.o x_screen.o \
-     timeval.o socket.o sys_calls.o
+
+.SUFFIXES: .h .c .o .a .so 
+
+%.o : %.c
+	$(CC) $(CCOPT) -c $<
 
 
-.c.o:
-	$(CC) $(CCOPT) $<
+$(DEST)/%.a : %.a
+	cp $< $(DEST)
+	chmod a+r $(DEST)/$<
 
-all: $(DEST)/libx_mng.so $(DEST)/libx_mng.a test_x
+$(DEST)/%.so : %.so
+	cp $< $(DEST)
+	chmod a+r $(DEST)/$<
+
+LIBS=libx_mng.a libutil.a
+SOLIBS=$(LIBS:%.a=%.so)
+DESTLIBS=$(LIBS:%lib%=$(DEST)/%lib%)
+DESTSOLIBS=$(SOLIBS:%lib%=$(DEST)/%lib%)
+
+
+all : $(DESTLIBS) $(DESTSOLIBS) test_x
+
+test_x.o : test_x.c x_export.h
+
+test_x : $(SOLIBS) test_x.o
+	$(CC) -pthread -o test_x test_x.o -L . libx_mng.so -lutil -lX11
+
+
+X_OBJS=x_color.o x_font.o x_line.o\
+	x_export.o x_file.o x_key.o x_screen.o
+
+libx_mng.a : $(X_OBJS)
+	ar crvs $@ $(X_OBJS)
+
+libx_mng.so : $(X_OBJS) libutil.so
+	ld -shared -all -o $@ $(X_OBJS) -L. -lutil -lX11 -lc
+
+
+U_OBJS=timeval.o sys_calls.o wait_evt.o socket.o
+
+libutil.a : $(U_OBJS)
+	ar crvs libutil.a $(U_OBJS)
+
+libutil.so : $(U_OBJS)
+	ld -shared -all -o $@ $(U_OBJS) -lc
+
+OBJS=$(X_OBJS) $(U_OBJS) test_x.o
 
 clean :
-	rm *.o libx_mng.a libx_mng.so
+	rm -f $(OBJS) $(LIBS) $(SOLIBS)
 
 clean_exe :
-	rm test_x
+	rm -f test_x
 
-socket.o : socket.h socket_prv.h
-
-test_x : libx_mng.a test_x.c x_export.h
-	$(CC) -o test_x test_x.c libx_mng.a -lX11
-
-libx_mng.a : $(OBJS)
-	ar rvs libx_mng.a $(OBJS)
-
-libx_mng.so : $(OBJS)
-	ld -shared -o libx_mng.so $(OBJS)
-
-$(DEST)/libx_mng.a : libx_mng.a
-	cp libx_mng.a $(DEST)
-	chmod a+r $(DEST)/libx_mng.a
-
-$(DEST)/libx_mng.so : libx_mng.so
-	cp libx_mng.so $(DEST)
-	chmod a+r $(DEST)/libx_mng.so
+clean_all : clean clean_exe
 

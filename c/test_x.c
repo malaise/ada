@@ -1,6 +1,7 @@
 #include <strings.h>
 #include <stdio.h> 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 
 
@@ -196,7 +197,7 @@ boolean read;
       printf ("Signal\n");
       break;
     } else {
-      printf ("ERROR OTHER FD\n");
+      printf ("ERROR OTHER FD %d\n", m);
     }
 
     /* Keybord or TID */

@@ -3,10 +3,9 @@
 
 #include <X11/Xlib.h>
 #include "boolean.h"
+#include "wait_evt.h"
 
-/* The result of each call is 0 if success, -1 if error */
-#define OK        0
-#define ERR      -1
+#define X_EVENT (-3)
 
 /* The 5 kinds of events */
 #define TID_MOTION  5
@@ -87,16 +86,6 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
 extern int x_set_graphic_pointer (void *line_id, boolean graphic);
 
 /* Events */
-
-extern int x_add_fd (int fd, boolean read);
-extern int x_del_fd (int fd, boolean read);
-extern boolean x_fd_set (int fd, boolean read);
-
-extern void x_wake_up (void);
-
-#define SIG_EVENT (-3)
-#define NO_EVENT  (-2)
-#define X_EVENT   (-1)
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms);
 
 extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);

@@ -9,10 +9,10 @@
 
 #include "socket_prv.h"
 
-#ifndef SOCKET_NO_X
-#include "x_export.h"
+#ifndef SOCKET_NO_EVT
+#include "wait_evt.h"
 #else
-static int x_fd_set (int fd, boolean read) {
+static int evt_fd_set (int fd, boolean read) {
   return (FALSE);
 }
 #endif
@@ -160,8 +160,8 @@ extern int soc_close (soc_token *p_token) {
   if (*p_soc == NULL) return (SOC_USE_ERR);
 
   /* Check that Fd is not used for select */
-  if (x_fd_set ((*p_soc)->socket_id, TRUE)
-   || x_fd_set ((*p_soc)->socket_id, FALSE) ) {
+  if (evt_fd_set ((*p_soc)->socket_id, TRUE)
+   || evt_fd_set ((*p_soc)->socket_id, FALSE) ) {
     return (SOC_FD_IN_USE);
   }
  

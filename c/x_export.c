@@ -1,9 +1,4 @@
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/select.h>
-#include <signal.h>
 #include <string.h>
-#include <errno.h>
 #include <unistd.h>
 #include <X11/cursorfont.h>
 
@@ -11,7 +6,6 @@
 #include "x_screen.h"
 #include "x_line.h"
 #include "timeval.h"
-
 
 /* The maximum of sucessive bells */
 #define NBRE_MAX_BELL 5
@@ -71,308 +65,103 @@ int x_start_blinking (void) {
   return (OK);
 }
 
-/***** Fds Management   *****/
-static fd_set global_read_mask;
-static fd_set global_write_mask;
-
-static int last_fd = -1;
-
-int x_add_fd (int fd, boolean read) {
-  if (last_fd == -1) {
-    FD_ZERO(&global_read_mask);
-    FD_ZERO(&global_read_mask);
-  }
-  if (read) {
-    FD_SET(fd, &global_read_mask);
-  } else {
-    FD_SET(fd, &global_write_mask);
-  }
-  if (fd > last_fd) {
-    last_fd = fd;
-  }
-  return (OK);
+static int timeout_to_ms (timeout_t *p_time) {
+  return (p_time->tv_sec * 1000 + p_time->tv_usec / 10000);
 }
 
-int x_del_fd (int fd, boolean read) {
-  int i;
-  fd_set *mask;
-
-  if (last_fd == -1) {
-    return (ERR);
-  }
-
-  if (read) {
-    mask = &global_read_mask;
-  } else {
-    mask = &global_write_mask;
-  }
-
-  if (!FD_ISSET(fd, mask)) {
-    return (ERR);
-  }
-  FD_CLR (fd, mask);
-
-  for (i = NFDBITS - 1; i >= 0; i--) {
-    if ( FD_ISSET(i, &global_read_mask)
-      || FD_ISSET(i, &global_write_mask) ) {
-      last_fd = i;
-      return (OK);
-    }
-  }
-  last_fd = 0;
-  return (OK);
-}
-
-extern boolean x_fd_set (int fd, boolean read) {
-  if (last_fd == -1) {
-    return (FALSE);
-  }
-  if (read) {
-    return (FD_ISSET(fd, &global_read_mask));
-  } else {
-    return (FD_ISSET(fd, &global_write_mask));
-  }
-}
-
-#define NO_SIG 0
-#define NO_HANDLER  -1
-static int sig_received = NO_HANDLER;
-static void signal_handler (int sig) {
-  sig_received = sig;
-}
-
-
-static int wake_up_fds[2] = {-1, -1};
-extern void x_wake_up (void) {
-  char c;
-  int r;
-
-  if (wake_up_fds[1] == -1) {
-    return;
-  } else {
-    c = 'w';
-    for (;;) {
-      r = write (wake_up_fds[1], &c, 1);
-      if ( (r == -1) && (errno != EINTR) ) {
-#ifdef DEBUG
-        perror("write");
-#endif
-        return;
-      }
-      if (r == 1) {
-        return;
-      }
-    }
-  }
-}
-
-
-
-/* Init signal handling and wake-up pipe */
-static void init_select (void) {
-  /* Set handler if not set */
-  if (sig_received == NO_HANDLER) {
-    sig_received = NO_SIG;
-    (void) signal(SIGINT,  signal_handler);
-  }
-  if (wake_up_fds[0] == -1) {
-    (void) pipe (wake_up_fds);
-  }
-}
 
 /***** Event management *****/
-
-void time_remaining (int *timeout_ms, timeout_t *exp_time) {
-
-  timeout_t cur_time;
-
-  if (*timeout_ms > 0) {
-    get_time (&cur_time);
-    if (sub_time (exp_time, &cur_time) >= 0) {
-      *timeout_ms = exp_time->tv_sec * 1000 + exp_time->tv_usec / 1000;
-    } else {
-      *timeout_ms = 0;
-    }
-  }
-}
-/* Makes a select between the sockets described in the global mask AND the  */
-/*  the socket used by X for the events                                     */
-/* The time out is in miliseconds (negative for blocking )                  */
-/* If a X event is available, *p_fd is set to X_EVENT (-1) and read to true */
-/* Else if an event on a fd, *p_fd is set to thhis fd and read is set       */
-/*  accordingly                                                             */
-/* Else if a (added) signal has been received, *p_fd is set to SIG_EVENT    */
-/*  and read is meaningless                                                 */
-/* Else *p_fd is set to NO_EVENT (-2) and read is meaningless               */
-/* Failure if select fails                                                  */
-
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
-  fd_set select_read_mask, select_write_mask;
-  int last_select_fd;
-  int x_soc;
-  int i, n;
-  timeout_t cur_time, exp_time, exp_select, timeout, *timeout_ptr;
   boolean timeout_is_active, blink_is_active;
-  size_t size;
-  char c;
+  timeout_t exp_time, cur_time, tmp_timeout;
+  timeout_t *select_exp;
+  int select_ms;
+  int x_fd;
+  int res;
 
+  timeout_is_active = *timeout_ms >= 0;
+  blink_is_active = (curr_percent != 0);
 
-  if (p_fd == (int*) NULL) {
-    return (ERR);
+  if (local_server.x_server == NULL) {
+    /* Cannot be set by wait_evt */
+    x_fd = X_EVENT;
+  } else {
+    XFlush (local_server.x_server);
+    x_fd = ConnectionNumber (local_server.x_server);
   }
 
-  /* Init signal handling and wake-up pipe */
-  init_select ();
-
-  /* Compute exp_time = cur_time + timeout_ms */
-  blink_is_active = (curr_percent != 0);
-  timeout_is_active = *timeout_ms >= 0;
+  /* Compute expiration time */
   if (timeout_is_active) {
     get_time (&exp_time);
     incr_time (&exp_time, *timeout_ms);
   }
-  if (blink_is_active || timeout_is_active) {
-    timeout_ptr = &timeout;
-  } else {
-    timeout_ptr = NULL;
-  }
-  
 
-  /* Check X socket */
-  if (local_server.x_server == NULL) {
-    x_soc = -1;
-  } else {
-    x_soc = ConnectionNumber (local_server.x_server);
-    XFlush (local_server.x_server);
-  }
-
-  for (;;) {
-
-    /* Check for signal */
-    if (sig_received != NO_SIG) {
-      sig_received = NO_SIG;
-      *p_fd = SIG_EVENT;
-      time_remaining (timeout_ms, &exp_time);
-      return (OK);
-    }
+  for (;; ) {
 
 
-    /* Compute exp_select : smallest of exp_time(timeout) and next_blink */
+    /* Compute select expiration time */
+    /* Nearest between exp_time and next_blink */
     if (blink_is_active) {
       if (timeout_is_active) {
-        if (comp_time (&exp_time, &next_blink) >= 0) {
-          exp_select = next_blink;
+        if (comp_time(&next_blink, &exp_time) < 0) {
+          select_exp = &next_blink;
         } else {
-          exp_select = exp_time;
+          select_exp = &exp_time;
         }
       } else {
-        exp_select = next_blink;
+        select_exp = &next_blink;
       }
     } else {
       if (timeout_is_active) {
-        exp_select = exp_time;
+        select_exp = &exp_time;
+      } else {
+        select_exp = NULL;
       }
     }
 
-    timeout = exp_select;
-    get_time (&cur_time);
-    if ( (timeout_ptr != NULL) && (sub_time (timeout_ptr, &cur_time) < 0) ) {
-      /* Select timeout is reached */
-      if ( (blink_is_active) && time_is_reached (&next_blink) ) {
-        /* Blink and continue */
-        x_do_blinking();
+    /* Compute select timeout */
+    if (select_exp == NULL) {
+      select_ms = -1;
+    } else {
+      get_time(&cur_time);
+      memcpy (&tmp_timeout, select_exp, sizeof(timeout_t));
+      if (sub_time (&tmp_timeout, &cur_time) <= 0 ) {
+        select_ms = 0;
+      } else {
+        select_ms = timeout_to_ms (&tmp_timeout);
       }
-      if ( (timeout_is_active) && time_is_reached (&exp_time) ) {
-        /* Done on timeout */
-        *p_fd = NO_EVENT;
+    }
+
+    /* Call the real select */
+    res = evt_wait (p_fd, p_read, &select_ms);
+    if (res == ERR) {
+      return (ERR);
+    }
+
+    /* Check Blink */
+    if ( (blink_is_active) && time_is_reached (&next_blink) ) {
+      /* Blink and continue */
+      x_do_blinking();
+    }
+
+    if (*p_fd != NO_EVENT) {
+      /* Some event: Check for X event */
+      if (*p_fd == x_fd) {
+        *p_fd = X_EVENT;
+        *p_read = TRUE;
+      }
+      /* Done */
+      evt_time_remaining (timeout_ms, &exp_time);
+      return (OK);
+    } else {
+      /* Timeout. Check expiration */
+      if (timeout_is_active && time_is_reached (&exp_time) ) {
         *timeout_ms = 0;
         return (OK);
       }
-    } else {
-      /* Compute mask for select */
-      bcopy ((char*)&global_read_mask, (char*)&select_read_mask,
-             sizeof(fd_set));
-      bcopy ((char*)&global_write_mask, (char*)&select_write_mask,
-             sizeof(fd_set));
-      last_select_fd = last_fd;
-      /* Add X fd */
-      if (x_soc != -1) {
-        FD_SET(x_soc, &select_read_mask);
-        if (x_soc > last_select_fd) {
-          last_select_fd = x_soc;
-        }
-      }
-      /* Add wake up fd */
-      if (wake_up_fds[0] != -1) {
-        FD_SET(wake_up_fds[0], &select_read_mask);
-        if (wake_up_fds[0] > last_select_fd) {
-          last_select_fd = wake_up_fds[0];
-        }
-      }
-
-      /* Default result */
-      *p_fd = NO_EVENT;
-      *p_read = TRUE;
-
-      n = select (last_select_fd + 1, &select_read_mask,
-                                      &select_write_mask, NULL, timeout_ptr);
-
-      if (n > 0) {
-        /* An Event : Separate X events from others */
-        if ( (x_soc != -1) && (FD_ISSET(x_soc, &select_read_mask)) ) {
-          *p_fd = X_EVENT;
-          *p_read = TRUE;
-        } else {
-          /* Check read events first */
-          for (i = 0; i <= last_select_fd; i++) {
-            if (FD_ISSET(i, &select_read_mask)) {
-              *p_fd = i;
-              *p_read = TRUE;
-              break;
-            }
-          }
-          if (*p_fd == NO_EVENT) {
-            /* Check write events second */
-            for (i = 0; i <= last_select_fd; i++) {
-              if (FD_ISSET(i, &select_write_mask)) {
-                *p_fd = i;
-                *p_read = FALSE;
-                break;
-              }
-            }
-          }
-        }
-        /* p_fd is wake-up) */
-        if (*p_fd == wake_up_fds[0] ) {
-          for (;;) {
-            size = read (wake_up_fds[0], &c, sizeof(c));
-            if ( (size == -1) && (errno != EINTR) ) {
-#ifdef DEBUG
-              perror ("read");
-#endif
-              break;
-            }
-            if (size == 1) {
-              break;
-            }
-          }
-          *p_fd = NO_EVENT;
-        }
-
-        time_remaining (timeout_ms, &exp_time);
-        return (OK);
-      } else if (n < 0) {
-        if (errno != EINTR) {
-          /* Real error */
-#ifdef DEBUG
-            perror ("select");
-#endif
-          return (ERR);
-        }
-      }
-
     }
-  }
+
+  } /* For */
 }
 
 /***** Line management *****/
@@ -385,7 +174,11 @@ int x_initialise (char *server_name) {
     int result;
 
     result = (lin_initialise (server_name) ? OK : ERR);
-    if (!blink_bold()) {
+    if (result == OK) {
+      result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
+    }
+    
+    if ( (result == OK) && (!blink_bold()) ) {
       (void) x_start_blinking();
     }
     return (result);
