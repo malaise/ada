@@ -300,8 +300,8 @@ package body CURVE is
       -- Draw first, show/hide or update, for scales or help
       type DRAW_ACTION is (INIT, TOGGLE, UPDATE);
 
-      -- Nothing to draw, new zoom mode, or update for zoom frame
-      type DRAW_FRAME_ACTION is (NONE, TOGGLE, UPDATE);
+      -- Nothing to draw, new zoom mode, update zoom frame, redraw
+      type DRAW_FRAME_ACTION is (NONE, TOGGLE, UPDATE, REDRAW);
       ZOOM_FRAME_ACTION : DRAW_FRAME_ACTION;
 
       -- Previous values of scale/frame (for update)
@@ -330,7 +330,7 @@ package body CURVE is
       CHAR : CHARACTER;
       -- Mouse event
       MOUSE_EVENT : BIG_CON_IO.MOUSE_EVENT_REC(BIG_CON_IO.X_Y);
-      -- Status (pos) at start of drag
+      -- Status (pos) at start / end of drag
       CLICKED_STATUS : BIG_CON_IO.MOUSE_EVENT_REC(BIG_CON_IO.X_Y);
 
       MVALID : BOOLEAN;
@@ -561,7 +561,7 @@ package body CURVE is
             when others => null;
           end;
         end loop;
-        BIG_CON_IO.BELL(1);
+        -- BIG_CON_IO.BELL(1);
       end DRAW_CURVE;
 
 
@@ -653,6 +653,13 @@ package body CURVE is
         end PUT_FRAME;
 
       begin
+        -- Redraw (refresh when done)
+        if ACTION = REDRAW then
+          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.CYAN);
+          PUT_FRAME(PREV_FRAME_BOUNDS);
+          return;
+        end if;
+          
         -- Optimization : most frequent case
         -- Update and same frame, or update and not in drag
         if ACTION = UPDATE
@@ -736,22 +743,31 @@ package body CURVE is
 
       loop -- Main loop of mouse and keys actions
 
-        if EVENT = BIG_CON_IO.REFRESH then
-          BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
-          if MVALID then
-            SET_MOUSE_IN_FRAME(MX, MY);
-            MOUSE_BOUNDS.X_MIN := MX;
-            MOUSE_BOUNDS.X_MAX := MX;
-            MOUSE_BOUNDS.Y_MIN := MY;
-            MOUSE_BOUNDS.Y_MAX := MY;
+
+        if EVENT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
+          -- Discard refresh when in drag 
+          -- Frozen mouse when done
+          if CURR_ZOOM_MODE /= DONE then
+            BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
+            if MVALID then
+              SET_MOUSE_IN_FRAME(MX, MY);
+              MOUSE_BOUNDS.X_MIN := MX;
+              MOUSE_BOUNDS.X_MAX := MX;
+              MOUSE_BOUNDS.Y_MIN := MY;
+              MOUSE_BOUNDS.Y_MAX := MY;
+            end if;
           end if;
-          -- Draw what has to be for initial
+          -- Draw what has to be for initial/refresh
           BIG_CON_IO.CLEAR;
           if MISC(M_CURVE)  then DRAW_CURVE; end if;
           if MISC(M_AXES)   then DRAW_AXES; end if;
           if MISC(M_POINTS) then DRAW_POINTS; end if;
           if MISC(M_HELP)   then DRAW_HELP(INIT); end if;
           if MISC(M_SCALE)  then DRAW_SCALE(INIT, MOUSE_BOUNDS); end if;
+          if CURR_ZOOM_MODE = DONE then
+            -- MOUSE_BOUNDS not used
+            DRAW_Z_FRAME (REDRAW, MOUSE_BOUNDS);
+          end if;
         end if;
 
         -- Infinite wait
