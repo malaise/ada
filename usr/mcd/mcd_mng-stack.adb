@@ -89,8 +89,7 @@ package body STACK is
       raise EMPTY_STACK;
   end READ;
 
-  function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE;
-                       NO_DEBUG : BOOLEAN := FALSE) return NATURAL is
+  function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE) return NATURAL is
     SIZE : NATURAL;
   begin
     if DEFAULT_STACK then
@@ -98,7 +97,7 @@ package body STACK is
     else
       SIZE := STACK_LIST.LIST_LENGTH(EXTRA_LIST);
     end if;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) and then not NO_DEBUG then
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
       if not DEFAULT_STACK then
         TEXT_IO.PUT ("Extra ");
       end if;

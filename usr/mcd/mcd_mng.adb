@@ -17,8 +17,7 @@ package body MCD_MNG is
     procedure POP (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
     procedure READ (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
 
-    function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE;
-                         NO_DEBUG : BOOLEAN := FALSE) return NATURAL;
+    function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE) return NATURAL;
   end STACK;
 
   package OPERATIONS is
@@ -409,7 +408,7 @@ package body MCD_MNG is
 
   function CHECK_EMPTY_STACK return BOOLEAN is
   begin
-    return STACK.STACK_SIZE(NO_DEBUG => TRUE) = 0;
+    return STACK.STACK_SIZE = 0;
   end;
 
 end MCD_MNG;
