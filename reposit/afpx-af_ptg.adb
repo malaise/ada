@@ -9,15 +9,19 @@ package body AF_PTG is
         -- Nothing to do, discarded, or list action already handled,
         -- no action put
         null;
-      when AFPX_TYP.BUTTON | AFPX_TYP.GET =>
-        -- Click and release in a BUTTON field
+      when AFPX_TYP.GET | AFPX_TYP.BUTTON =>
         -- Click and release in a GET field
-        FIELD_NO : AFPX_TYP.FIELD_RANGE;
+        -- Double click in list
+        -- Click and release in a BUTTON field
+        FIELD_NO : AFPX_TYP.ABSOLUTE_FIELD_RANGE;
     end case;
   end record;
 
   LAST_POS : CON_IO.SQUARE;
 
+  LAST_SELECTED_ID : NATURAL;
+  LAST_SELECTION_TIME : CALENDAR.TIME;
+  DOUBLE_CLICK_DELAY  : constant CALENDAR.DAY_DURATION := 0.2;
 
   -- Sets Foreground and background according to state
   procedure SET_COLORS (FIELD : in AFPX_TYP.FIELD_REC;
@@ -216,9 +220,16 @@ package body AF_PTG is
     CLICK_ON_SELECTED : BOOLEAN;
     FIELD : AFPX_TYP.FIELD_REC;
     LIST_STATUS : AF_LIST.STATUS_REC;
+    CLICK_TIME : CALENDAR.TIME;
+    LOC_LAST_SELECTED_ID : NATURAL;
     use AFPX_TYP;
+    use CALENDAR;
 
   begin
+    -- Save and reset last selected id
+    LOC_LAST_SELECTED_ID := LAST_SELECTED_ID;
+    LAST_SELECTED_ID := 0;
+
     -- Result event discarded
     RESULT := (KIND => AFPX_TYP.PUT);
     if not VALID_CLICK then
@@ -228,10 +239,11 @@ package body AF_PTG is
     VALID_FIELD := TRUE;
     -- Get pos, find field
     CLICK_POS := LAST_CLICK;
-    if LIST_PRESENT and then IN_FIELD_ABSOLUTE(0, CLICK_POS)
-    and then not AF_DSCR.FIELDS(0).ISPROTECTED then
-      CLICK_FIELD := 0;
-      CLICK_ROW_LIST := CLICK_POS.ROW - AF_DSCR.FIELDS(0).UPPER_LEFT.ROW;
+    CLICK_TIME := CALENDAR.CLOCK;
+    if LIST_PRESENT and then IN_FIELD_ABSOLUTE(LFN, CLICK_POS)
+    and then not AF_DSCR.FIELDS(LFN).ISPROTECTED then
+      CLICK_FIELD := LFN;
+      CLICK_ROW_LIST := CLICK_POS.ROW - AF_DSCR.FIELDS(LFN).UPPER_LEFT.ROW;
       LIST_STATUS := AF_LIST.GET_STATUS;
       -- Check that an item is displayed at this row
       if CLICK_ROW_LIST >= LIST_STATUS.NB_ROWS then
@@ -246,6 +258,7 @@ package body AF_PTG is
         CLICK_ON_SELECTED := FALSE;
      end if;
     else
+      -- Try to find a button
       CLICK_FIELD := 0;
       for I in 1 .. AF_DSCR.CURRENT_DSCR.NB_FIELDS loop
         if AF_DSCR.FIELDS(I).KIND /= AFPX_TYP.PUT and then
@@ -263,7 +276,7 @@ package body AF_PTG is
     end if;
     if VALID_FIELD then
       -- reverse colors of field/row
-      if CLICK_FIELD = 0 then
+      if CLICK_FIELD = LFN then
         -- Reverse
         AF_LIST.PUT (CLICK_ROW_LIST, CLICKED);
       else
@@ -284,14 +297,24 @@ package body AF_PTG is
     -- Check release in same field/row than click
     if not IN_FIELD_ABSOLUTE (CLICK_FIELD, RELEASE_POS) then
       VALID_FIELD := FALSE;
-    elsif CLICK_FIELD = 0 and then RELEASE_POS.ROW /= CLICK_POS.ROW then
+    elsif CLICK_FIELD = LFN and then RELEASE_POS.ROW /= CLICK_POS.ROW then
       VALID_FIELD := FALSE;
     end if;
 
-    if CLICK_FIELD = 0 then
+    if CLICK_FIELD = LFN then
       if CLICK_ON_SELECTED then
         -- Valid or not, restore selected
         AF_LIST.PUT (CLICK_ROW_LIST, SELECTED);
+        -- Check double_click
+        if AF_LIST.TO_ID(CLICK_ROW_LIST) = LOC_LAST_SELECTED_ID
+          and then LAST_SELECTION_TIME >= CLICK_TIME - DOUBLE_CLICK_DELAY then
+            RESULT := (KIND => AFPX_TYP.BUTTON, FIELD_NO => CLICK_FIELD);
+        else
+          -- Valid click. Store for next click to check double click
+          LIST_STATUS := AF_LIST.GET_STATUS;
+          LAST_SELECTED_ID := LIST_STATUS.ID_SELECTED;
+          LAST_SELECTION_TIME := CLICK_TIME;
+        end if;
       else
         if not VALID_FIELD then
           -- Invalid release, restore clicked field as normal
@@ -307,6 +330,10 @@ package body AF_PTG is
           -- Set new selected
           AF_LIST.SET_SELECTED (AF_LIST.TO_ID(CLICK_ROW_LIST));
         end if;
+        -- Valid click. Store for next click to check double click
+        LIST_STATUS := AF_LIST.GET_STATUS;
+        LAST_SELECTED_ID := LIST_STATUS.ID_SELECTED;
+        LAST_SELECTION_TIME := CLICK_TIME;
       end if;
       -- Result is PUT
     elsif FIELD.KIND = AFPX_TYP.GET then
@@ -351,9 +378,12 @@ package body AF_PTG is
     use AFPX_TYP;
 
   begin
+    -- Reset last selection for double click
+    LAST_SELECTED_ID := 0;
+
     -- List present : defined, activated and not empty
-    LIST_PRESENT := AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON
-           and then AF_DSCR.FIELDS(0).ACTIVATED
+    LIST_PRESENT := AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON
+           and then AF_DSCR.FIELDS(LFN).ACTIVATED
            and then not LINE_LIST_MNG.IS_EMPTY(LINE_LIST);
     -- Init list if needed
     if LIST_PRESENT then
@@ -362,7 +392,7 @@ package body AF_PTG is
 
     -- Redisplay list if requested or needed
     if (REDISPLAY or else LINE_LIST_MNG.IS_MODIFIED (LINE_LIST))
-    and then AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
+    and then AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
       -- list defined
       if LIST_PRESENT then
         if AF_LIST.GET_STATUS.ID_TOP = 0 then
@@ -371,9 +401,9 @@ package body AF_PTG is
         else
           AF_LIST.DISPLAY(AF_LIST.GET_STATUS.ID_TOP);
         end if;
-      elsif not AF_DSCR.FIELDS(0).ACTIVATED then
+      elsif not AF_DSCR.FIELDS(LFN).ACTIVATED then
         -- List not active
-        ERASE_FIELD (0);
+        ERASE_FIELD (LFN);
       else
         -- Empty list
         AF_LIST.DISPLAY(1);
@@ -536,7 +566,7 @@ package body AF_PTG is
                 end if;
                 RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
                            EVENT        => MOUSE_BUTTON,
-                           FIELD_NO     => FIELD_RANGE(CLICK_RESULT.FIELD_NO));
+                           FIELD_NO     => ABSOLUTE_FIELD_RANGE(CLICK_RESULT.FIELD_NO));
                 DONE := TRUE;
             end case;
           end;
