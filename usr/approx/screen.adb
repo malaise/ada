@@ -313,7 +313,7 @@ package body SCREEN is
     -- So whatever cursor field
     CURSOR_FIELD := 1;
     -- Lock points
-    AFPX.SET_FIELD_PROTECTION (0, TRUE);
+    AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
     PUT_TITLE(APPROXIMATE);
     PUT_POINT_STATUS;
     PUT_DEGREE;
@@ -328,7 +328,7 @@ package body SCREEN is
     -- So whatever cursor field
     CURSOR_FIELD := 1;
     -- Lock points
-    AFPX.SET_FIELD_PROTECTION (0, TRUE);
+    AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
     PUT_TITLE(BOUNDARIES);
     PUT_POINT_STATUS;
   end INIT_FOR_MAIN21;
