@@ -466,6 +466,16 @@ int x_put_string (void *line_id, char *p_char, int number) {
     return (OK);
 }
 
+extern int x_put_string_at (void *line_id,
+                            char *p_char, int number,
+                            int row, int column) {
+
+    if (x_move (line_id, row, column) == ERR) {
+        return (ERR);
+    }
+
+    return (x_put_string (line_id, p_char, number));
+}
 
 /* Writes a char on a line (characteristics are previously set) */
 /* x is a number of pixels of vertical position (top down) */

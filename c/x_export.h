@@ -51,6 +51,10 @@ extern int x_set_xor_mode (void *line_id, boolean xor_mode);
 
 extern int x_put_string (void *line_id, char *p_char, int number);
 
+extern int x_put_string_at (void *line_id,
+                            char *p_char, int number,
+                            int row, int column);
+
 extern int x_put_char_attributes (void *line_id,
                                   int car,
                                   int row, int column,
