@@ -1,25 +1,5 @@
-# Replace top of stack by its int (uses register z)
-[
-# Round v in z
-dup dup round toreal z copyr swap 0.0 >= 
-# v >= 0.0 : if v < R then R:=R-1
-[ < [ z pushr 1.0 - z popr ] ifcall ]
-# v < 0.0  : if v > R then R:=R+1
-[ > [ z pushr 1.0 + z popr ] ifcall ]
-ifte call
-z pushr
-] I popr
-
-# Replace top of stack by its abs
-[ dup 0.0 < [ +- ] ifcall ] A popr
-
 # Can top of stack be assimilated to 0.0
-[ A pushr call 1.0e-10 < ] Z popr
-
-# Replace top of stack by its frac
-[ dup
-# Int
-I pushr call - ] F popr
+[ absv 1.0e-10 <= ] Z popr
 
 # Error, replace by 0.0 exit
 [ [ Invalid entry:  ] put v pushr putl pop 0.0 ] E popr
@@ -29,13 +9,13 @@ I pushr call - ] F popr
 [
 # Make a real if needed
 dup [ toreal ] swap isinte swap ifcall
-# * 100,  Frac should be 0
-dup 100.0 * F pushr call Z pushr call ~ E pushr ifcall
+# * 100, Frac should be 0
+dup 100.0 * frac Z pushr call ~ E pushr ifcall
 # Frac < 60
-dup F pushr call 100.0 * 60.0 >= E pushr ifcall
+dup frac 100.0 * 60.0 >= E pushr ifcall
 # Push minutes then hours
-dup F pushr call 100.0 * round
-swap I pushr call round
+dup frac 100.0 * round
+swap int round
 ] C popr
 
 # Loop
@@ -50,7 +30,7 @@ C pushr call
 h pushr + h popr
 m pushr + m copyr
 # Propagate the carry
-60 > [ m pushr 60 - m popr h pushr 1 h popr ] ifcall
+60 >= [ m pushr 60 - m popr h pushr 1 h popr ] ifcall
 # Loop
 L pushr retacal ] L popr
 
