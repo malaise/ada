@@ -170,7 +170,7 @@ package body Human is
     end loop Get_One;
 
     -- Send valid action
-    if Mode = Server then
+    if Mode /= Both then
       Connection.Send (Action);
     end if;
     -- Put any significant result
