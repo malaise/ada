@@ -74,6 +74,12 @@ package body MENU2 is
     AFPX.SET_FIELD_ACTIVATION (22, ACTIVATE_NO_CURVE);
     -- Draw
     AFPX.SET_FIELD_ACTIVATION (31, ACTIVATE_NO_CURVE);
+    -- Set/View bounds
+    if ACTIVATE_NO_CURVE then
+      AFPX.ENCODE_FIELD(29, (1, 1), " Set");
+    else
+      AFPX.ENCODE_FIELD(29, (1, 1), "View");
+    end if;
   end DO_RESTORE;
 
   function F_X (X : POINTS.P_T_COORDINATE;
@@ -189,7 +195,7 @@ package body MENU2 is
       CURVE_TASK.STOPPED;
       OK := TRUE;
     or
-      -- wait a bit to let curve_task be ready to accept stop
+      -- Wait a bit to let CURVE_TASK be ready to accept STOPPED
       delay 0.1;
       OK := FALSE;
     end select;
@@ -278,7 +284,7 @@ package body MENU2 is
               RESTORE := PARTIAL;
             when 25 =>
               -- Display polynom
-              SCREEN.PUT_TITLE(SCREEN.POLYNOM);
+              SCREEN.PUT_TITLE(SCREEN.POLYNOM, TRUE);
               SCREEN.INFORM(SCREEN.I_WAIT);
               -- Display
               begin

@@ -28,7 +28,7 @@ package SCREEN is
   type S_ACTION_LIST is (DATA, READ_POINTS, WRITE_POINTS, NEW_POINTS,
       MODIFY_1, ADD_1, SUPPRESS_1, APPROXIMATE, SORT_POINTS,
       GET_DEGREE, POLYNOM, Y_F_X, SCALES, BOUNDARIES, CURVE, EXIT_APPROX);
-  procedure PUT_TITLE (S_ACTION : in S_ACTION_LIST);
+  procedure PUT_TITLE (S_ACTION : in S_ACTION_LIST; OPTION : in BOOLEAN := FALSE);
 
   -- Truncate head of string:  "> " & truncated head
   -- Or or padds with spaces

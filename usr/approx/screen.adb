@@ -25,7 +25,7 @@ package body SCREEN is
   end GET_GET_WIDTH;
 
 
-  procedure PUT_TITLE (S_ACTION : in S_ACTION_LIST) is
+  procedure PUT_TITLE (S_ACTION : in S_ACTION_LIST; OPTION : in BOOLEAN := FALSE) is
 
     procedure ENCODE_TITLE (MSG : in STRING) is
     begin
@@ -45,10 +45,20 @@ package body SCREEN is
       when APPROXIMATE  => ENCODE_TITLE("Data approximation");
       when SORT_POINTS  => ENCODE_TITLE("Sort points");
       when GET_DEGREE   => ENCODE_TITLE("Set the degree");
-      when POLYNOM      => ENCODE_TITLE("Compute polynom");
+      when POLYNOM      =>
+        if OPTION then
+          ENCODE_TITLE("Compute polynom");
+        else
+          ENCODE_TITLE("View polynom");
+        end if;
       when Y_F_X        => ENCODE_TITLE("Compute Y from X");
       when SCALES       => ENCODE_TITLE("Set scales type");
-      when BOUNDARIES   => ENCODE_TITLE("Set scales boundaries");
+      when BOUNDARIES   => 
+        if OPTION then
+          ENCODE_TITLE("View scales boundaries");
+        else
+          ENCODE_TITLE("Set scales boundaries");
+        end if;
       when CURVE        => ENCODE_TITLE("Draw curve");
       when EXIT_APPROX  => ENCODE_TITLE("Exit approx");
     end case;

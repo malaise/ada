@@ -131,6 +131,8 @@ package body MENU21 is
     RESTORE := PARTIAL;
 
     loop
+      -- Activate or not according to curve activity
+      ACTIVATE_NO_CURVE := MENU2.CURVED_STOPPED;
       case RESTORE is
         when NONE =>
           null;
@@ -140,9 +142,8 @@ package body MENU21 is
           SCREEN.PUT_FILE;
           PUT_BOUNDS;
       end case;
-      ACTIVATE_NO_CURVE := MENU2.CURVED_STOPPED;
-      -- Activate or not according to curve activity
       -- Clear
+      SCREEN.PUT_TITLE (SCREEN.BOUNDARIES, not ACTIVATE_NO_CURVE);
       AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, ACTIVATE_NO_CURVE);
       AFPX.SET_FIELD_ACTIVATION (20, ACTIVATE_NO_CURVE);
       AFPX.SET_FIELD_ACTIVATION (21, ACTIVATE_NO_CURVE);
@@ -153,7 +154,6 @@ package body MENU21 is
       AFPX.SET_FIELD_ACTIVATION (28, ACTIVATE_NO_CURVE);
       AFPX.SET_FIELD_ACTIVATION (29, ACTIVATE_NO_CURVE);
       AFPX.SET_FIELD_ACTIVATION (30, ACTIVATE_NO_CURVE);
-
 
       AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
       REDISPLAY := FALSE;
