@@ -26,7 +26,7 @@ procedure Look_95 is
   package Reading is
 
     -- Open file for Next_Char
-    procedure Open(File_Name : in String);
+    procedure Open(File_Name : in String; Read_Only : in Boolean);
     Name_Error : exception;
 
     -- Closes and raises End_Of_File;
@@ -77,11 +77,15 @@ procedure Look_95 is
     Modified : Boolean;
     Prev_Modified : Boolean;
 
-    procedure Open(File_Name : in String) is
+    procedure Open(File_Name : in String; Read_Only : in Boolean) is
       use type Char_Io.Count;
     begin
       -- Open and init file metrics
-      Char_Io.Open(File, Char_Io.Inout_File, File_Name);
+      if Read_Only then
+        Char_Io.Open(File, Char_Io.In_File, File_Name);
+      else
+        Char_Io.Open(File, Char_Io.Inout_File, File_Name);
+      end if;
       File_Size := Char_Io.Size(File);
       Nb_Bloc := File_Size / Bloc_Size;
       if File_Size rem Bloc_Size /= 0 then
@@ -125,16 +129,18 @@ procedure Look_95 is
           Char_Io.Write(File, Prev_Bloc(1 .. Bloc_Size),
                         (Curr_Bloc_No - 2) * Bloc_Size + 1);
         end if;
-        -- Shift blocks by one
-        Prev_Bloc(1 .. Last_Index) := Curr_Bloc(1 .. Last_Index);
-        Prev_Modified := Modified;
         if Curr_Bloc_No = Nb_Bloc then
           -- No more bloc. Save last bloc
-          Char_Io.Write(File, Curr_Bloc(1 .. Last_Index),
-                        (Curr_Bloc_No - 1) * Bloc_Size + 1);
+          if Modified then
+            Char_Io.Write(File, Curr_Bloc(1 .. Last_Index),
+                          (Curr_Bloc_No - 1) * Bloc_Size + 1);
+          end if;
           Close;
           raise End_Of_File;
         end if;
+        -- Shift blocks by one
+        Prev_Bloc(1 .. Last_Index) := Curr_Bloc(1 .. Last_Index);
+        Prev_Modified := Modified;
         -- Read next bloc
         Curr_Bloc_No := Curr_Bloc_No + 1;
         if Curr_Bloc_No = Nb_Bloc then
@@ -146,9 +152,9 @@ procedure Look_95 is
         else
           Last_Index := Bloc_Size;
         end if;
-        Modified := False;
         Char_Io.Read(File, Curr_Bloc(1 .. Last_Index),
                      (Curr_Bloc_No - 1) * Bloc_Size + 1);
+        Modified := False;
         Sub_Index := 1;
       else
         Sub_Index := Sub_Index + 1;
@@ -370,7 +376,7 @@ procedure Look_95 is
   begin
     -- Open file
     begin
-      Reading.Open(File_Name);
+      Reading.Open(File_Name, not Do_It);
     exception
       when Reading.Name_Error =>
         Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
@@ -407,7 +413,7 @@ procedure Look_95 is
         when Reading.End_Of_File =>
           -- Done: Check warnings
           Check_Line;
-          if Last_Char /= Reading.New_Line then
+          if Last_Char /= Reading.New_Line and then Do_It then
             Reading.Append_New_Line (File_Name);
             if Debug then
               Ada.Text_Io.Put_Line ("In file " & File_Name
