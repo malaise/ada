@@ -58,7 +58,7 @@ package Sys_Calls is
   -- 12th bit US (set UID)
   -- File status
   -- May raise Name_Error or Access_Error
-  subtype Size_T is long_Integer;
+  subtype Size_T is Long_Integer;
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
                        Rights     : out Natural;
