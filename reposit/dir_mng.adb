@@ -5,11 +5,17 @@ package body DIR_MNG is
   PATH_SEPARATOR : constant CHARACTER := '/';
 
   function LESS_THAN (EL1, EL2 : in FILE_ENTRY_REC) return BOOLEAN is
+    use DIRECTORY;
   begin
-    return EL1.NAME (1 .. EL1.LEN) < EL2.NAME (1 .. EL2.LEN);
+    -- Only one is dir
+    if EL1.KIND /= EL2.KIND and then
+     (EL1.KIND = DIRECTORY.DIR or else EL2.KIND = DIRECTORY.DIR) then
+      return EL1.KIND = DIRECTORY.DIR;
+    else
+      return EL1.NAME (1 .. EL1.LEN) < EL2.NAME (1 .. EL2.LEN);
+    end if;
   end LESS_THAN;
 
-  procedure FILE_SORT is new FILE_LIST_MNG.SORT(LESS_THAN);
 
   procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
                       DIR  : in STRING := "";

@@ -16,11 +16,10 @@ package DIR_MNG is
   end record;
   package FILE_LIST_MNG is new DYNAMIC_LIST (ELEMENT_TYPE => FILE_ENTRY_REC);
 
-  -- List files of a <drive>:<path>
+  -- List files of a directory
   --  and append them at the end of the current list
   -- Current is set to the last item appended or not changed if no file found.
-  -- "." and ".." are not inserted in the list
-  -- If DIR is empty, then current drive and path and *.* is assumed
+  -- If DIR is empty, then current dir is assumed
   -- May raise PATH_ERROR if DIR is not valid or not existing
   procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
                       DIR  : in STRING := "";
@@ -29,9 +28,10 @@ package DIR_MNG is
                       DIR  : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT;
                       TEMPLATE : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT);
 
-  -- To sort files. Directories, then hidden, then system, then others.
-  -- By prefix then suffix
+  -- To sort files. Directories, then others, by name.
   function LESS_THAN (EL1, EL2 : in FILE_ENTRY_REC) return BOOLEAN;
+  -- Sorts 
+  procedure FILE_SORT is new FILE_LIST_MNG.SORT(LESS_THAN);
 
   NAME_ERROR : exception renames DIRECTORY.NAME_ERROR;
 
