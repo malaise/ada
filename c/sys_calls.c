@@ -123,11 +123,12 @@ extern int get_immediate (int fd) {
 
   n = read (fd, &c, 1);
   if (n < 0) {
-    if (errno != EWOULDBLOCK) {
+    if (errno == EWOULDBLOCK) {
+      return NONE;
+    } else {
       perror ("get_immediate/read");
       return ERROR;
     }
-    return NONE;
   } else if (n > 0) {
     return ((char)c);
   } else {
