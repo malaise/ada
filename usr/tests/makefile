@@ -22,6 +22,7 @@ do_all:
 	amake t_key.adb $(LX)
 	amake t_lifo.adb
 	amake t_math.adb
+	amake t_mut.adb
 	amake t_norm.adb
 	amake t_perpet.adb
 	amake t_rnd.adb
