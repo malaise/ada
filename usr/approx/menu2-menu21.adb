@@ -1,6 +1,6 @@
 with CON_IO, AFPX, CURVE;
 with POINTS, SCREEN, DIALOG, POINT_STR;
-with MENU2;
+separate(MENU2)
 package body MENU21 is
 
   type RESTORE_LIST is (NONE, PARTIAL); 

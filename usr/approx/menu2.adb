@@ -1,5 +1,5 @@
 with CON_IO, AFPX, CURVE, MATH;
-with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, RESOL, MENU21;
+with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, RESOL;
 package body MENU2 is
 
   type RESTORE_LIST is (NONE, PARTIAL, LIST, FULL); 
@@ -23,6 +23,19 @@ package body MENU2 is
     entry START (SOLUTION : in RESOL.VECTOR; OK : out BOOLEAN);
     entry STOPPED;
   end;
+
+  package MENU21 is
+
+    -- Return the bounds previoulsy set (if set)
+    function BOUNDS_SET return BOOLEAN;
+    procedure RESET_BOUNDS;
+    procedure GET_BOUNDS (SET : out BOOLEAN; BOUNDS : out CURVE.T_BOUNDARIES);
+
+    -- Interactive selection of bounds
+    procedure MAIN_SCREEN;
+
+  end MENU21;
+  package body MENU21 is separate;
 
   procedure ERROR (MSG : in SCREEN.S_ERROR_LIST) is
   begin
