@@ -46,7 +46,14 @@ procedure Code is
     end;
     Buff(Len) := Ascii.Cr;
     for I in 1 .. Len loop
-      Rec := Grid_1.Encode(Buff(I));
+      begin
+        Rec := Grid_1.Encode(Buff(I));
+      exception
+        when Grid_1.Invalid_Character =>
+          Ada.Text_Io.Put_Line ("ERROR, invalid character.");
+          Ada.Text_Io.Put_Line (Buff(1 .. Len));
+          raise;
+      end;
       if Sl > Str'Last then
         raise File_Too_Long;
       end if;
@@ -233,9 +240,11 @@ begin
     Ada.Text_Io.Close (Out_File);
   end if;
 exception
-  when Line_Too_LonG =>
+  when Line_Too_Long =>
     Ada.Text_Io.Put_Line ("ERROR, input line too long.");
   when File_Too_Long =>
     Ada.Text_Io.Put_Line ("ERROR, input file too long.");
+  when Grid_1.Invalid_Character =>
+    null;
 end Code;
 
