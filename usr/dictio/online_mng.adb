@@ -57,7 +57,7 @@ package body Online_Mng is
       if First then
         Ever_Synced := False;
       end if;
-    else
+    elsif Status.Get = Status.Master then
       -- Master
       Local_Host_Name.Get (Current_Master);
       T.Delay_Seconds := 0.0;
@@ -191,7 +191,7 @@ package body Online_Mng is
     if Status.Get = Status.Master then
       -- Send alive message with Crc
       Intra_Dictio.Send_Status (Intra_Dictio.Extra_Crc & Data_Base.Get_Crc);
-    else
+    elsif Status.Get /= Status.Dead then
       -- No alive message
       if Debug.Level_Array(Debug.Online) then
         Debug.Put ("Online: fight due to alive timeout");
