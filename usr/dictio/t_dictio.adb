@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with Event_Mng, Async_Stdin, Rnd, Argument;
+with Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls;
 with Dictio_Lib;
 procedure T_Dictio is
 
@@ -143,16 +143,25 @@ procedure T_Dictio is
     N : Positive;
   begin
     for I in 1 .. 100 loop
-      N := Rnd.Int_Random (1, Name'Last);
-      for J in 1 .. N loop
-        Name(J) := Character'Val(Rnd.Int_Random (
-              Character'Pos('a'), Character'Pos('z')));
+      for J in 1 .. 100 loop
+        N := Rnd.Int_Random (1, Name'Last);
+        for K in 1 .. N loop
+          Name(K) := Character'Val(Rnd.Int_Random (
+                Character'Pos('a'), Character'Pos('z')));
+        end loop;
+        if Verbose then
+          Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
+        end if;
+        Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
+        exit when Sig;
       end loop;
-      if Verbose then
-        Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
-      end if;
-      Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
+      Event_Mng.Wait (250);
+      exit when Sig;
     end loop;
+  exception
+    when Dictio_Lib.No_Dictio =>
+      Ada.Text_Io.Put_Line ("CLIENT.LOAD: No Dictio");
+      Sys_Calls.Set_Error_Exit_Code;
   end Load;
 
 begin
