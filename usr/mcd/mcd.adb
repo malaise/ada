@@ -44,6 +44,7 @@ begin
      Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
    end if;
 
+   Io_Flow.Close;
    Mcd_Mng.Close;
 exception
   -- Clean mapping of exceptions

@@ -6,6 +6,8 @@ package Io_Flow is
   procedure Next_Line (Str : in out String;
                        Len : out Natural);
 
+  procedure Close;
+
   -- May raise Fifo_Error at init (first call to Next_Line)
   Fifo_Error : exception;
 end Io_Flow;

@@ -127,6 +127,25 @@ package body Io_Flow is
     end if;
   end New_Line;
 
+  Closing : Boolean := False;
+  procedure Close is
+    use type Mcd_Fifos.Fifo_Id;
+  begin
+    if Text_Handler.Empty (Fifo_Name) then
+      return;
+    end if;
+    if Debug.Debug_Level_Array(Debug.Parser) then
+      Ada.Text_Io.Put_Line ("Flow: Closing fifo");
+    end if;
+    Closing := True;
+    if Client_Id /= Mcd_Fifos.No_Fifo then
+      Mcd_Fifos.Close (Client_Id);
+    end if;
+    if Acc_Id /= Mcd_Fifos.No_Fifo then
+      Mcd_Fifos.Close (Acc_Id);
+    end if;
+  end Close;
+
   ----------------------------------------------------
 
   procedure Conn_Cb (Fifo_Name : in String;
@@ -146,7 +165,9 @@ package body Io_Flow is
         Ada.Text_Io.Put_Line ("Flow: Client has disconnected");
       end if;
       Client_Id := Mcd_Fifos.No_Fifo;
-      Open_Fifo;
+      if not Closing then
+        Open_Fifo;
+      end if;
     end if;
   end Conn_Cb;
 
@@ -164,8 +185,15 @@ package body Io_Flow is
 
   procedure Open_Fifo is
   begin
+    if Text_Handler.Empty (Fifo_Name) then
+      if Debug.Debug_Level_Array(Debug.Parser) then
+        Ada.Text_Io.Put_Line ("Flow: Opening empty fifo discarded");
+      end if;
+      return;
+    end if;
     if Debug.Debug_Level_Array(Debug.Parser) then
-      Ada.Text_Io.Put_Line ("Flow: Opening fifo");
+      Ada.Text_Io.Put_Line ("Flow: Opening fifo "
+                          & Text_Handler.Value (Fifo_Name));
     end if;
     Acc_Id := Mcd_Fifos.Open (Text_Handler.Value (Fifo_Name),
                               False,
