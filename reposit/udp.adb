@@ -170,7 +170,7 @@ package body Udp is
                      Received      : out Boolean;
                      Set_For_Reply : in Boolean := False) is
     Rec_For_C : Boolean_For_C;
-    Len : Natural  := Message'Size / Byte_Size;
+    Len : Natural  := Message_Type'Size / Byte_Size;
     SFR_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
     Res := Soc_Receive (Socket.Soc_Addr, Rec_For_C'Address, Message'Address,
