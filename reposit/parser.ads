@@ -1,3 +1,4 @@
+with Ada.Finalization;
 with Text_Handler;
 package Parser is
 
@@ -27,6 +28,7 @@ package Parser is
   -- Parsing ends by returning empty string
   -- May raise Constraint_Error if iterator has not been created
   function Next_Word (Iter : Iterator) return String;
+  procedure Next_Word (Iter : in Iterator);
 
   -- Return the separating characters previously found when looking
   --   for Next_Word
@@ -40,15 +42,31 @@ package Parser is
   -- May raise Constraint_Error if iterator has not been created
   function Prev_Separators (Iter : Iterator) return String;
 
+  -- Return current word
+  -- Empty string if parsing is not started or finished
+  -- May raise Constraint_Error if iterator has not been created
+  function Current_Word (Iter : Iterator) return String;
+
+  -- Return the indexes of current word
+  -- CAUTION: these are indexes in the original Str provided to Create
+  -- Returns 1 .. 0 if parsing is not started or finished
+  -- May raise Constraint_Error if iterator has not been created
+  function First_Index (Iter : Iterator) return Positive;
+  function Last_Index  (Iter : Iterator) return Natural;
+
 private
 
+  type Iter_State_List is (Parsing, Parsed, Finished);
 
-  type Iter_State_List is (Parsing, Parsed);
-
-  -- Word is Str (First .. Last)
-  -- Separators is Str (Sep .. First - 1);
+  -- Start is original Str'First
+  -- While not Finished:
+  --   Word is Str (First .. Last)
+  --   Separators is Str (Sep .. First - 1);
+  -- If Word is not empty then, Indexes are First and Last
+  --  + Start - 1, else 1 and 0.
   type Iter_Rec (Len : Text_Handler.Max_Len_Range := 0) is record
     Str : String (1 .. Len) := (others => ' ');
+    Start : Positive := 1;
     Is_Sep : Separing_Function := null;
     State : Iter_State_List := Parsing;
     First : Natural := 1;
@@ -59,7 +77,14 @@ private
   Default_Rec : Iter_Rec;
   Init_Rec : constant Iter_Rec := Default_Rec;
 
-  type Iterator is access Iter_Rec;
+  type Iter_Rec_Access is access Iter_Rec;
+  type Iterator is new Ada.Finalization.Controlled with record
+    Acc : Iter_Rec_Access := null;
+  end record;
+
+  --  Free Acc
+  procedure Finalize (Iter : in out Iterator);
+
 
 end Parser;
 

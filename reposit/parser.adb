@@ -25,28 +25,36 @@ package body Parser is
       when others =>
         raise Constraint_Error;
     end;
-    Iter := new Iter_Rec'(Str'Length, Str, Is_Sep, Parsing,
-                 Init_Rec.First, Init_Rec.Last, Init_Rec.Sep);
+    Iter.Acc := new Iter_Rec'(Str'Length, Str, Str'First, Is_Sep, Parsing,
+                    Init_Rec.First, Init_Rec.Last, Init_Rec.Sep);
   end Create;
 
   -- Check iterator validity
   procedure Check (Iter : Iterator) is
   begin
-    if Iter = null
-      then raise Constraint_Error;
+    if Iter.Acc = null then
+      raise Constraint_Error;
     end if;
   end Check;
   
   -- Destroy the iterator
   -- May raise Constraint_Error if iterator has not been created
   procedure Free is new Ada.Unchecked_Deallocation(Object => Iter_Rec,
-                                                   Name   => Iterator);
+                                                   Name   => Iter_Rec_Access);
 
   procedure Delete (Iter : in out Iterator) is
   begin
     Check (Iter);
-    Free (Iter);
+    Free (Iter.Acc);
   end Delete;
+
+  -- Automatic garbage collection
+  procedure Finalize (Iter : in out Iterator) is
+  begin
+    if Iter.Acc /= null then
+      Free (Iter.Acc);
+    end if;
+  end Finalize;
 
   -- Reset the iterator, setting it in the same state than at creation
   -- The separing function may be changed
@@ -57,65 +65,76 @@ package body Parser is
     Check (Iter);
     -- Possibly new separator function
     if Is_Sep /= null then
-      Iter.Is_Sep := Is_Sep;
+      Iter.Acc.Is_Sep := Is_Sep;
     end if;
-    Iter.State := Parsing;
-    Iter.First := 1;
-    Iter.Last  := 0;
-    Iter.Sep   := 1;
+    Iter.Acc.State := Parsing;
+    Iter.Acc.First := 1;
+    Iter.Acc.Last  := 0;
+    Iter.Acc.Sep   := 1;
   end Reset;
 
   -- Parse first then next word of the string
   -- Parsing ends by returning empty string
   -- May raise Constraint_Error if iterator has not been created
-  function Next_Word (Iter : Iterator) return String is
+  procedure Next_Word (Iter : in Iterator) is
   begin
     Check (Iter);
+
     -- Check if parsing is finished
-    if Iter.State = Parsed then
-      Iter.Sep := Iter.First;
-      return Empty;
+    if Iter.Acc.State = Finished then
+      return;
+    end if;
+    if Iter.Acc.State = Parsed then
+      Iter.Acc.First := 1;
+      Iter.Acc.Last  := 0;
+      Iter.Acc.Sep   := 1;
+      Iter.Acc.State := Finished;
+      return;
     end if;
 
     -- Check for first call to Next_Word on empty string
-    if Iter.First > Iter.Len then
-      Iter.State := Parsed;
-      return Empty;
+    if Iter.Acc.First > Iter.Acc.Len then
+      Iter.Acc.State := Finished;
+      return;
     end if;
 
     -- Init search of next character (non sep)
-    Iter.First := Iter.Last + 1;
+    Iter.Acc.First := Iter.Acc.Last + 1;
 
-    if Iter.Is_Sep (Iter.Str(Iter.First)) then
+    if Iter.Acc.Is_Sep (Iter.Acc.Str(Iter.Acc.First)) then
       -- Skip separators
-      Iter.Sep := Iter.First;
+      Iter.Acc.Sep := Iter.Acc.First;
       loop
-        exit when not Iter.Is_Sep (Iter.Str(Iter.First));
-        if Iter.First = Iter.Len then
+        exit when not Iter.Acc.Is_Sep (Iter.Acc.Str(Iter.Acc.First));
+        if Iter.Acc.First = Iter.Acc.Len then
           -- String is terminating with separators
-          Iter.State := Parsed;
-          Iter.First := Iter.First + 1;
-          return Empty;
+          Iter.Acc.State := Parsed;
+          Iter.Acc.First := Iter.Acc.First + 1;
+          return;
         end if;
-        Iter.First := Iter.First + 1;
+        Iter.Acc.First := Iter.Acc.First + 1;
       end loop;
     end if;
 
     -- Now Iter.First is first character
-    Iter.Last := Iter.First;
+    Iter.Acc.Last := Iter.Acc.First;
     -- Skip characters
     loop
-      if Iter.Last = Iter.Len then
+      if Iter.Acc.Last = Iter.Acc.Len then
         -- String is terminating with word
-        Iter.State := Parsed;
+        Iter.Acc.State := Parsed;
         exit;
       end if;
-      exit when Iter.Is_Sep (Iter.Str(Iter.Last + 1));
-      Iter.Last := Iter.Last + 1;
+      exit when Iter.Acc.Is_Sep (Iter.Acc.Str(Iter.Acc.Last + 1));
+      Iter.Acc.Last := Iter.Acc.Last + 1;
     end loop;
 
-    return Iter.Str(Iter.First .. Iter.Last);
-        
+  end Next_Word;
+
+  function Next_Word (Iter : Iterator) return String is
+  begin
+    Next_Word (Iter);
+    return Current_Word (Iter);
   end Next_Word;
 
 
@@ -132,9 +151,42 @@ package body Parser is
   function Prev_Separators (Iter : Iterator) return String is
   begin
     Check (Iter);
-    return Iter.Str(Iter.Sep .. Iter.First - 1);
+    return Iter.Acc.Str(Iter.Acc.Sep .. Iter.Acc.First - 1);
   end Prev_Separators;
 
-end Parser;
 
+  -- Return current word
+  -- Empty string if parsing not started or finished
+  -- May raise Constraint_Error if iterator has not been created
+  function Current_Word (Iter : Iterator) return String is
+  begin
+    Check (Iter);
+    return Iter.Acc.Str(Iter.Acc.First .. Iter.Acc.Last);
+  end Current_Word;
+
+
+  -- Return the indexes of current word
+  -- 1 .. 0 if parsing not started or finished
+  -- May raise Constraint_Error if iterator has not been created
+  function First_Index (Iter : Iterator) return Positive is
+  begin
+    Check (Iter);
+    if Iter.Acc.First > Iter.Acc.Last then
+      return 1;
+    else
+      return Iter.Acc.First - 1 + Iter.Acc.Start;
+    end if;
+  end First_Index;
+
+  function Last_Index  (Iter : Iterator) return Natural is
+  begin
+    Check (Iter);
+    if Iter.Acc.First > Iter.Acc.Last then
+      return 0;
+    else
+      return Iter.Acc.Last - 1 + Iter.Acc.Start;
+    end if;
+  end Last_Index;
+
+end Parser;
 
