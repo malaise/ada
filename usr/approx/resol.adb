@@ -20,16 +20,21 @@ package body Resol is
 
   -- Try to re-use previous result, otherwise solve
   function R_Resolution (The_Points : Points.P_T_The_Points) return Vector is
+    -- Allocate on heap
+    type Mattrix_Access is access  R_Compute.Matrix;
+    type Vector_Access is access Vector;
   begin
     if not Resolved then
       if The_Degree > The_Points'Length then raise R_Degree_Out; end if;
       declare
-        T_A_A : R_Compute.Matrix(1..The_Degree, 1..The_Degree);
-        A_Y : Vector(1..The_Degree);
+        T_A_A : Mattrix_Access
+              := new R_Compute.Matrix(1..The_Degree, 1..The_Degree);
+        A_Y : Vector_Access := new Vector(1..The_Degree);
       begin
         Resolved := True;
-        R_Compute.Do_Matrixes (The_Points, T_A_A, A_Y);
-        Previous_Solution (1..The_Degree) := R_Compute.System (T_A_A, A_Y);
+        R_Compute.Do_Matrixes (The_Points, T_A_A.all, A_Y.all);
+        Previous_Solution (1..The_Degree)
+                        := R_Compute.System (T_A_A.all, A_Y.all);
       exception
         when others =>
           Resolved := False;

@@ -22,9 +22,9 @@ package body R_Compute is
     subtype Index_Point is Positive range The_Points'Range;
 
     subtype Index_Degree is Positive range 1..The_Degree;
-    A_Loc : Matrix (Index_Degree, Index_Point);
-    T_A_A_Loc : Matrix (Index_Degree, Index_Degree);
-    A_Y_Loc : Vector (Index_Degree);
+    -- Allocate on heap
+    type Mattrix_Access is access  R_Compute.Matrix;
+    A_Loc : Mattrix_Access := new Matrix (Index_Degree, Index_Point);
     use My_Math;
   begin
     -- Build local A matrix
@@ -43,17 +43,16 @@ package body R_Compute is
     for Row_A in Index_Degree loop
       for Column_Ta in Index_Degree loop
         declare
-          Bubble :Number := 0.0;
+          Bubble : Number := 0.0;
         begin
           for Column_A_Row_Ta in Index_Point loop
             Bubble := Bubble + A_Loc (Row_A, Column_A_Row_Ta)
             * A_Loc (Column_Ta, Column_A_Row_Ta);
           end loop;
-          T_A_A_Loc (Row_A, Column_Ta) := Bubble;
+          T_A_A (Row_A, Column_Ta) := Bubble;
         end;
       end loop;
     end loop;
-    T_A_A := T_A_A_Loc;
 
     -- Build Y * Y vector : A_Y (I) = Sum[K=1..n] A(I,K)*Y(K)
     -- Y(K) is Points(K).Y
@@ -65,10 +64,9 @@ package body R_Compute is
           Bubble := Bubble + A_Loc (Row_A, Column_A)
           * The_Points (Column_A).Y;
         end loop;
-        A_Y_Loc (Row_A) := Bubble;
+        A_Y (Row_A) := Bubble;
       end;
     end loop;
-    A_Y := A_Y_Loc;
 
   end Do_Matrixes;
 
