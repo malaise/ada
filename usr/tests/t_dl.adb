@@ -1,12 +1,16 @@
 with Text_Io;
-with Dynamic_List, Normal, Rnd;
+with Dynamic_List, Dynamic_List.Basic, Normal, Rnd;
 procedure T_Dl is
   package My_List is new Dynamic_List(Element_Type => Integer);
   procedure My_Search is new My_List.Search;   -- ("=" of INTEGER)
   procedure My_Sort is new My_List.Sort("<");  -- ("<" of INTEGER)
 
+  package My_Blist is new My_List.Basic;
+  procedure My_Find is new My_Blist.Find_First (My_Search);
+
   List : My_List.List_Type;
   Item : Integer;
+  Found : Boolean;
 
   procedure Put (I : in Integer; New_Line : in Boolean := False) is
   begin
@@ -16,23 +20,22 @@ procedure T_Dl is
 
   procedure Dump is
     Pos : Natural;
+    The_End : Boolean;
   begin
-    if My_List.List_Length(List) = 0 then
+    if My_List.Is_Empty(List) then
       Text_Io.New_Line;
       return;
     end if;
 
     Pos := My_List.Get_Position (List);
-    My_List.Move_To (List, My_List.Next, 0, False);
+    My_BList.Rewind (List);
     loop
-      My_List.Read (List, Item, My_List.Next);
+      My_BList.Read_Move (List, Item, The_End);
       Put (Item);
+      exit when The_End;
     end loop;
-  exception
-    when My_List.Not_In_List =>
-      My_List.Read (List, Item, My_List.Current);
-      Put (Item, True);
-      My_List.Move_To (List, My_List.Next, Pos-1, False);
+    Text_Io.New_Line;
+    My_List.Move_To (List, My_List.Next, Pos-1, False);
   end Dump;
 
 begin
@@ -58,9 +61,11 @@ begin
 
   -- delete 5th
   Text_Io.Put_Line("Deletes the current");
-  My_List.Delete(List);
+  My_BList.Delete_Current(List);
 
-  -- list length
+  -- Pos and list length
+  Text_Io.Put("Pos from first: ");
+  Put(My_List.Get_Position (List), False);
   Text_Io.Put("List length: ");
   Put(My_List.List_Length(List), True);
 
@@ -110,11 +115,10 @@ begin
 
   -- search 50 from first
   Text_Io.Put_Line("Seach 50 from first");
-  begin
-    My_Search(List, 50, My_List.Next, 1, False);
-  exception
-    when My_List.Not_In_List => Text_Io.Put_Line ("NOT IN LIST");
-  end;
+  My_Find(List, 50, Found);
+  if not Found then
+    Text_Io.Put_Line ("NOT FOUND");
+  end if;
 
   -- dump the list
   begin
