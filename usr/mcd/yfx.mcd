@@ -1,4 +1,9 @@
+# Arguments
+ssize 3 /=
+
+[ "Error, function then i then j expected" putl ssize popn retall ] ifcall
 # The function
+dup isprog ~ [ "Error, function expected" putl ssize popn retall ] ifcall
 F popr
 
 # Epsilon
