@@ -10,7 +10,7 @@ package Unit_Format is
   procedure Switch_Unit;
 
   --  May be raised by any IMAGE/VALUE
-  Format_Error : Exception;
+  Format_Error : exception;
 
   -- Date: 25/10/2001
   subtype Date_Str is String(1 .. 10);
@@ -25,11 +25,15 @@ package Unit_Format is
   subtype Short_Status_Str is String(1 .. 3);
   function Short_Status_Image (Status : Oper_Def.Status_List)
            return Short_Status_Str;
+  function Short_Status_Value (Str : Short_Status_Str)
+           return Oper_Def.Status_List;
 
   -- Short kind:  Cheq Card Tran Draw
   subtype Short_Kind_Str is String(1 .. 4);
   function Short_Kind_Image (Kind : Oper_Def.Kind_List)
            return Short_Kind_Str;
+  function Short_Kind_Value (Str : Short_Kind_Str)
+           return Oper_Def.Kind_List;
 
   -- Amount: -12345678.12
   subtype Amount_Str is String (1 .. 12);
@@ -51,6 +55,20 @@ package Unit_Format is
   -- Result has first digit set to '-' or ' ' and aligned on right
   function Short_Image (Amount_In_Euros : Oper_Def.Amount_Range)
                        return Short_Amount_Str;
+
+
+  -- Full operation image/value
+  subtype Oper_Str is String (1 ..
+      Date_Str'Length
+    + Amount_Str'Length
+    + Short_Kind_Str'Length
+    + Short_Status_Str'Length
+    + Oper_Def.Destination_Str'Length
+    + Oper_Def.Comment_Str'Length
+    + Oper_Def.Reference_Str'Length);
+
+  function Image (Rec : Oper_Def.Oper_Rec) return Oper_Str;
+  function Value (Str : Oper_Str) return Oper_Def.Oper_Rec;
 
 end Unit_Format;
 

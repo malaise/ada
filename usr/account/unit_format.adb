@@ -55,7 +55,21 @@ package body Unit_Format is
     end case;
   end Short_Status_Image;
 
-  -- Short kind:  Cheq Card Tran Draw
+  function Short_Status_Value (Str : Short_Status_Str)
+           return Oper_Def.Status_List is
+  begin
+    if Str = "Yes" then
+      return Oper_Def.Entered;
+    elsif Str = "No " then
+      return Oper_Def.Not_Entered;
+    elsif  Str = "Def" then
+      return Oper_Def.Defered;
+    else
+      raise Format_Error;
+    end if;
+  end Short_Status_Value;
+
+  -- Short kind:Cheq Card Tran Draw
   function Short_Kind_Image (Kind : Oper_Def.Kind_List)
            return Short_Kind_Str is
   begin
@@ -70,6 +84,23 @@ package body Unit_Format is
         return "Draw";
     end case;
   end Short_Kind_Image;
+
+  function Short_Kind_Value (Str : Short_Kind_Str)
+           return Oper_Def.Kind_List is
+  begin
+    if Str = "Cheq" then
+      return Oper_Def.Cheque;
+    elsif Str = "Cred" then
+      return Oper_Def.Credit;
+    elsif Str = "Xfer" then
+      return Oper_Def.Transfer;
+    elsif Str = "Draw" then
+      return Oper_Def.Withdraw;
+    else
+      raise Format_Error;
+    end if;
+  end Short_Kind_Value;
+
 
   -- Current unit switching
   function Get_Current_Unit return Units_List is
@@ -224,6 +255,56 @@ package body Unit_Format is
     when others =>
       raise Format_Error;
   end Short_Image;
+
+  -- Full operation image/value
+  function Image (Rec : Oper_Def.Oper_Rec) return Oper_Str is
+  begin
+    return Date_Image(Rec.Date)
+         & Image(Rec.Amount, True)
+         & Short_Kind_Image(Rec.Kind)
+         & Short_Status_Image(Rec.Status)
+         & Rec.Destination
+         & Rec.Comment
+         & Rec.Reference;
+  end Image;
+
+  function Value (Str : Oper_Str) return Oper_Def.Oper_Rec is
+    Oper : Oper_Def.Oper_Rec;
+    Index : Positive;
+  begin
+    Index := 1;
+
+    Oper.Date := Date_Value(Str
+                 (Index .. Index + Date_Str'Length - 1));
+    Index := Index + Date_Str'Length;
+
+    Oper.Amount := Value(Str
+                   (Index .. Index + Amount_Str'Length - 1));
+    Index := Index + Amount_Str'Length;
+
+    Oper.Kind := Short_Kind_Value(Str
+                 (Index .. Index + Short_Kind_Str'Length - 1));
+    Index := Index + Short_Kind_Str'Length;
+
+    Oper.Status := Short_Status_Value(Str
+                 (Index .. Index + Short_Status_Str'Length - 1));
+    Index := Index + Short_Status_Str'Length;
+
+    Oper.Destination := Str
+                 (Index .. Index + Oper_Def.Destination_Str'Length - 1);
+    Index := Index + Oper_Def.Destination_Str'Length;
+
+    Oper.Comment := Str
+                 (Index .. Index + Oper_Def.Comment_Str'Length - 1);
+    Index := Index + Oper_Def.Comment_Str'Length;
+
+    Oper.Reference := Str
+                 (Index .. Index + Oper_Def.Reference_Str'Length - 1);
+    return Oper;
+  exception
+    when others =>
+      raise Format_Error;
+  end Value;
 
 end Unit_Format;
 
