@@ -33,7 +33,7 @@ package body Nav_Screen is
   -- number of deltas before clearing err messages
   Time_Out_Get : constant := 6;
 
-  -- time displaying
+  -- Time displaying
   procedure Show_Time is separate;
 
   package Time_Task_Mng is new Task_Mng (Call_Back => Show_Time);
@@ -69,6 +69,7 @@ package body Nav_Screen is
     Move ((7, 8), W_Title);
     Put ("? in a field to clear it", W_Title);
 
+    Show_Time;
     Time_Task_Mng.Schedule;
 
   end Title;
@@ -104,7 +105,7 @@ package body Nav_Screen is
     Col := Col + Quit_Wid + Act_Off;
 
     Move ( (0, Col), W_Act);
-    Put ("Call help", W_Act, Background => Default_Background);
+    Put ("Show help", W_Act, Background => Default_Background);
     Move ( (0, Col + Help_Wid + 1), W_Act); Put (' ', W_Act);
     Col := Col + Help_Wid + Act_Off;
 
@@ -314,8 +315,12 @@ package body Nav_Screen is
     Pos : Positive;
     Ins : Boolean;
   begin
-    Put ("Confirm you want to quit by entering 'Return' : ", W_Err);
+    Stat := Con_Io.Refresh;
     loop
+      if Stat = Con_Io.Refresh then
+        Move (Name => W_Err);
+        Put ("Confirm you want to quit by entering 'Return': ", W_Err);
+      end if;
       Move ( (0, 49), W_Err);
       Get (Str, Last, Stat, Pos, Ins, W_Err, Time_Out => Delta_Get);
       Time_Task_Mng.Schedule;
@@ -335,45 +340,51 @@ package body Nav_Screen is
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;
     Ins : Boolean;
-  begin
-    Clear (W_Help);
-    Move ((0, 8), W_Help);
-    Put ("heading and trailing spaces are ignored", W_Help);
-    Move ((1, 8), W_Help);
-    Put ("decimal are optional for speeds and angles", W_Help);
-    Move ((2, 8), W_Help);
-    Put ("+ is optional for the drift", W_Help);
-    Move ((4, 0), W_Help);
-    Put ("Constraints: ", W_Help);
-    Move ((4, 13), W_Help);
-    Put ("There must be 3 unknown fields", W_Help);
-    Move ((5, 13), W_Help);
-    Put ("The 3 angles (wind, heading, route) must be different, and", W_Help);
-    Move ((6, 14), W_Help);
-    Put ("heading and wind must be on different sides of the route", W_Help);
-    Move ((7, 13), W_Help);
-    Put ("The wind must be fully known or fully unknown", W_Help);
-    Move ((8, 13), W_Help);
-    Put ("If the route is unknown, the ground speed must be unknown as well", W_Help);
-    Move ((9, 13), W_Help);
-    Put ("If the drift is known, the heading or the route must be unknown",
-     W_Help);
-    Move ((10, 13), W_Help);
-    Put ("The wind and the air speed must allow to follow the route",
-     W_Help);
 
-    Move ((13, 0), W_Help);
-    Put ("Enter Return to go back to the data ", W_Help);
+    procedure Put is
+    begin
+      Title;
+      Clear (W_Help);
+      Move ((0, 8), W_Help);
+      Put ("heading and trailing spaces are ignored", W_Help);
+      Move ((1, 8), W_Help);
+      Put ("decimal are optional for speeds and angles", W_Help);
+      Move ((2, 8), W_Help);
+      Put ("+ is optional for the drift", W_Help);
+      Move ((4, 0), W_Help);
+      Put ("Constraints: ", W_Help);
+      Move ((4, 13), W_Help);
+      Put ("There must be 3 unknown fields", W_Help);
+      Move ((5, 13), W_Help);
+      Put ("The 3 angles (wind, heading, route) must be different, and", W_Help);
+      Move ((6, 14), W_Help);
+      Put ("heading and wind must be on different sides of the route", W_Help);
+      Move ((7, 13), W_Help);
+      Put ("The wind must be fully known or fully unknown", W_Help);
+      Move ((8, 13), W_Help);
+      Put ("If the route is unknown, the ground speed must be unknown as well", W_Help);
+      Move ((9, 13), W_Help);
+      Put ("If the drift is known, the heading or the route must be unknown",
+       W_Help);
+      Move ((10, 13), W_Help);
+      Put ("The wind and the air speed must allow to follow the route",
+       W_Help);
+      Move ((13, 0), W_Help);
+      Put ("Enter Return to go back to the data ", W_Help);
+    end Put;
+
+  begin
+    Stat := Con_Io.Refresh;
     loop
+      if Stat = Con_Io.Refresh then
+        Put;
+      end if;
       Move ((13, 45), W_Help);
       Get (Str, Lst, Stat, Pos, Ins, W_Help,
        Default_Background, Default_Blink_Stat, Default_Background,
        Delta_Get);
       Time_Task_Mng.Schedule;
-      if Stat = Con_Io.Refresh then
-        Title;
-      end if;
-      exit when Stat = Con_Io.Ret or Stat = Con_Io.Refresh;
+      exit when Stat = Con_Io.Ret;
     end loop;
     Clear (W_Help);
   end Put_Help;
