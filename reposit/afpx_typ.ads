@@ -24,7 +24,8 @@ package AFPX_TYP is
     VERSION    : FLOAT;
     -- To generate refresh. True in file if used
     MODIFIED   : BOOLEAN;
-    -- In the file: index of the dscr. In memory, its No
+    -- In the file: index of the dscr for fields and init.
+    -- In memory, its No
     DSCR_INDEX : DESCRIPTOR_RANGE;
     -- Nb of fields of the dscr
     NB_FIELDS  : ABSOLUTE_FIELD_RANGE;

@@ -33,7 +33,7 @@ package body AF_DSCR is
       raise NO_DESCRIPTOR;
     end if;
 
-    -- Save index
+    -- Save index of descriptor for field and init files
     DSCR_INDEX := DSCRS(DSCR_NO).DSCR_INDEX;
 
     -- Copy descriptor, read fields and chars
@@ -43,7 +43,7 @@ package body AF_DSCR is
     FLD_IO.READ  (FLD_FILE , FIELDS,   FLD_IO.POSITIVE_COUNT(DSCR_INDEX));
     INIT_IO.READ (INIT_FILE, INIT_STR, INIT_IO.POSITIVE_COUNT(DSCR_INDEX));
 
-    -- Copy descriptor, save colors, copy chars
+    -- Save colors, copy chars
     for I in
     AFPX_TYP.ABSOLUTE_FIELD_RANGE'FIRST .. DSCRS(DSCR_NO).NB_FIELDS loop
       INIT_COLORS(I) := FIELDS(I).COLORS;
@@ -134,7 +134,7 @@ begin
                   TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.INIT_FILE_NAME);
   exception
     when others =>
-      raise AFPX_FILE_NOT_FOUND;
+      raise FILE_NOT_FOUND;
   end;
 
   -- Read first descriptor
@@ -142,11 +142,11 @@ begin
     DSCR_IO.READ (DSCR_FILE, DSCRS, 1);
   exception
     when others =>
-      raise AFPX_FILE_READ_ERROR;
+      raise FILE_READ_ERROR;
   end;
 
   -- Check AFPX version
   if DSCRS(1).VERSION /= AFPX_TYP.AFPX_VERSION then
-    raise AFPX_FILE_VERSION_ERROR;
+    raise FILE_VERSION_ERROR;
   end if;
 end AF_DSCR;
