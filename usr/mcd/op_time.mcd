@@ -15,7 +15,7 @@ ssize 1 /= E pushr ifcall
 # Fix negative values
 dup isneg [ "-" put absv ] ifcall 
 
-# Check fo days
+# Check for days
 daysof dup 1 5 strsub strinte dup
 isnul [ pop ] [ 1 format put "j" put ] ifte call
 # Convert to " days-hh:mm:ss.mmm" and remove days
