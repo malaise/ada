@@ -45,7 +45,7 @@ package Event_Mng is
   type Out_Event_List is (Timer_Event, Fd_Event, Sig_Event, No_Event);
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
-  Procedure Wait (Timeout_Ms : Integer);
+  procedure Wait (Timeout_Ms : Integer);
 
   -- Force re-evaluation (and expiration) of timers while in Wait
   procedure Wake_Up;
