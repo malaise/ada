@@ -1,6 +1,7 @@
 -- Make a ADA 83 sources look like a Ada 95 one.
 -- Reserved words are in lower_case and others in Mixed_Case.
 -- Strings, comments and based literals are not modified.
+-- A New_Line is appended to the file when last char is not a New_Line.
 --
 -- Verbose mode lists all processed files with a "=" (not modified)
 --  or a "*" (modified).
@@ -9,7 +10,6 @@
 -- Test mode as well but does not modify.
 --
 -- Warnings can be activated (no correction is done):
---  when last character is not a New_Line,
 --  when two consecutive upper case are found in comment.
 --
 -- Debug displays the modified words.
