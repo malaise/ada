@@ -235,7 +235,7 @@ package X_MNG is
 
   -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
   --  (or X_FAILURE will be raised)
-  -- Return True if an FD event has occured
+  -- Return True if an event has occured
   function SELECT_NO_X (TIMEOUT_MS : INTEGER) return BOOLEAN;
 
   -- Wait for some ms or until a X event is availble
