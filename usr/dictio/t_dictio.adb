@@ -1,9 +1,9 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with X_Mng, Async_Stdin, Rnd;
+with X_Mng, Async_Stdin, Rnd, Argument;
 with Dictio_Lib;
 procedure T_Dictio is
 
-  First_Connection : Boolean := True;
+  Init : Boolean := False;
 
   -- Signal received
   Sig : Boolean := False;
@@ -109,9 +109,10 @@ procedure T_Dictio is
 
   procedure Dictio_Connect_Cb (Connected : in Boolean) is
   begin
-    Ada.Text_Io.Put_Line("CLIENT: Connected " & Connected'Img);
-    if Connected and then First_Connection then
-      First_Connection := False;
+    Ada.Text_Io.Put_Line("CLIENT: Connected: " & Connected'Img
+                        & "  Init: " & Init'Img);
+    if Connected and then Init then
+      Init := False;
       Load;
     end if;
   end Dictio_Connect_Cb;
@@ -140,6 +141,17 @@ procedure T_Dictio is
   Res : Boolean;
 
 begin
+  begin
+    if Argument.Get_Parameter (1, "i") = "" then
+      Init := True;
+    else
+      Init := False;
+    end if;
+  exception
+    when Argument.Argument_Not_Found =>
+      Init := False;
+  end;
+
   -- Set async stdin
   begin
     Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access,
