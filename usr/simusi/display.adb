@@ -161,7 +161,7 @@ package body Display is
   procedure Print_Result is
   begin
     if Ok then
-      My_Io.Put_Line ("Simulation successfull.");
+      My_Io.Put_Line ("Simulation successful.");
     else
       My_Io.Put_Line ("Simulation FAILED.");
     end if;
