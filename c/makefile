@@ -1,11 +1,15 @@
 include $(HOME)/Makefiles/common.mk
 
 LIBS := cndbm cutil x_mng
+EXES := test_x
+
 ifeq ($(HOST), Linux)
 DEST := /usr/local/lib
 INSTALLED := $(LIBS:%=$(DEST)/lib%.a) $(LIBS:%=$(DEST)/lib%.so)
+$(DEST)/% : $(LIB)/%
+	/bin/cp -f $< $@
+	/bin/chmod a+r $@
 endif
-EXES := test_x
 
 D_OBJS := cndbm.o
 U_OBJS := timeval.o sys_calls.o wait_evt.o socket.o
@@ -30,19 +34,19 @@ $(LIB)/libcndbm.so : $(D_OBJS)
 	-$(RM) so_locations
 
 $(LIB)/libcndbm.a : $(D_OBJS)
-	ar crvs $@ $(D_OBJS)
+	ar crvs $@ $?
 
 $(LIB)/libcutil.so : $(U_OBJS)
 	ld -shared $(SOOPT) -o $@ $(U_OBJS) -lm -lc
 	-$(RM) so_locations
 
 $(LIB)/libcutil.a : $(U_OBJS)
-	ar crvs $@ $(U_OBJS)
+	ar crvs $@ $?
 
 $(LIB)/libx_mng.so : $(X_OBJS) $(LIB)/libcutil.so
 	ld -shared $(SOOPT) -o $@ $(X_OBJS) -L$(LIB) -lcutil -lX11 -lc
 	-$(RM) so_locations
 
 $(LIB)/libx_mng.a : $(X_OBJS)
-	ar crvs $@ $(X_OBJS)
+	ar crvs $@ $?
 
