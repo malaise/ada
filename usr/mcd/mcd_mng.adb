@@ -225,7 +225,7 @@ package body MCD_MNG is
         when BITXOR =>
           POP(B); POP(A); PUSH (OPERATIONS.BITXOR(A,B));
         when SHL =>
-          POP(B); POP(A); PUSH (OPERATIONS.SUB(A,B));
+          POP(B); POP(A); PUSH (OPERATIONS.SHL(A,B));
         when SHR =>
           POP(B); POP(A); PUSH (OPERATIONS.SHR(A,B));
         when MINUS =>
