@@ -1,0 +1,6 @@
+[ i pushr 1 + i copyr [ Loop No: ] put putl L pushr retacal ] L copyr
+
+0 i popr
+10 format
+call
+
