@@ -235,7 +235,7 @@ extern int procreate (void) {
   }
 }
 
-extern void mutate (char * program, int len) {
+extern void mutate (char * const program, int len) {
   int i, j, n;
   char * * argv;
 
@@ -254,7 +254,7 @@ extern void mutate (char * program, int len) {
   }
 
   /* Allocate array of args */
-  argv = malloc (n * sizeof (char*));
+  argv = malloc ((n + 1) * sizeof (char*));
   if (argv == NULL) {
     return;
   }
