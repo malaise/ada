@@ -26,6 +26,7 @@ all:
 	amake t_syslin.adb
 	amake t_urand.adb
 	amake t_x.adb -largs $(LIBX_MNG) -lX11
+	afpx_bld
 
 
 clean:
