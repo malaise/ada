@@ -22,5 +22,5 @@ else
   export DICTIO_PRIO=$1
 fi
 
-./dictio -ctest_tcp -fdictio.chn -pfido
+./dictio -ctest_tcp -fdictio.chn -pfido -P$DICTIO_PRIO
 
