@@ -741,6 +741,7 @@ extern int soc_receive (soc_token token, boolean *p_received,
   if (result < 0) {
     if ( (errno != EWOULDBLOCK)
       && (errno != ECONNRESET) 
+      && (errno != EPIPE) 
       && (errno != ECONNREFUSED) ) {
       /* Reception error */
         perror ("recvfrom");
