@@ -1,0 +1,12 @@
+# Clear stack
+[ ssize 0 = [ 0 retn ] ifcall pop Z pushr retacal ] Z popr
+
+# Check 1 arg int
+[ [ Error. 1 int argument expected ] putl Z pushr call ] E popr
+ssize 1 /= E pushr ifcall
+dup isinte ~ E pushr ifcall
+
+97 d copyr %
+
++- d pushr + putl
+
