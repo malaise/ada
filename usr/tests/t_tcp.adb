@@ -26,7 +26,6 @@ procedure T_Tcp is
   procedure Call_Back (F : in X_Mng.File_Desc) is
     use type X_Mng.File_Desc;
     Message_Len : Natural;
-    Received : Boolean;
   begin
     My_Io.Put ("In callback - ");
     if F = Accept_Fd then
@@ -42,7 +41,7 @@ procedure T_Tcp is
       end if;
       Socket.Accept_Connection (Accept_Soc, Soc);
       Fd := Socket.Fd_Of (Soc);
-      X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
+      X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
       My_Io.Put_Line ("accepts connection");
       return;
     end if;
@@ -51,18 +50,20 @@ procedure T_Tcp is
       My_Io.Put_Line ("Not same Fd");
       raise Program_Error;
     end if;
-    My_Receive (Soc, Message, Message_Len, Received, False);
     if Server then
       My_Io.Put ("Server");
     else
       My_Io.Put ("Client");
     end if;
-    if not Received or else Message_Len = 0 then
-      My_Io.Put_Line (" receives nothing: Closing");
-      X_Mng.X_Del_Callback (Fd);
-      Socket.Close (Soc);
-      return;
-    end if;
+    begin
+      My_Receive (Soc, Message, Message_Len, False);
+    exception
+      when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
+        My_Io.Put_Line (" receives disconnection: Closing");
+        X_Mng.X_Del_Callback (Fd, True);
+        Socket.Close (Soc);
+        return;
+    end;
     My_Io.Put_Line (" receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
@@ -83,16 +84,17 @@ procedure T_Tcp is
     Socket.Open (Soc, Socket.Tcp_Header);
     Fd := Socket.Fd_Of (Soc);
     My_Io.Put_Line ("Client connecting");
-    Socket.Set_Destination_Name_And_Service (Soc,
-           False, Text_Handler.Value (Server_Name), Server_Port_Name);
-    if not Socket.Is_Connected (Soc) then
-      My_Io.Put_Line ("Client connection has failed. Closing");
-      Socket.Close (Soc);
-      return False;
-    else
-      X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
-      return True;
-    end if;
+    begin
+      Socket.Set_Destination_Name_And_Service (Soc,
+             False, Text_Handler.Value (Server_Name), Server_Port_Name);
+    exception
+      when Socket.Soc_Conn_Refused =>
+        My_Io.Put_Line ("Client connection has failed. Closing");
+        Socket.Close (Soc);
+        return False;
+    end;
+    X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
+    return True;
   end Client_Connect;
 
   procedure Client_Send is
@@ -108,7 +110,11 @@ procedure T_Tcp is
     begin
       My_Send (Soc, Message, 30);
     exception
-      when Socket.Socket_Error =>
+      when Socket.Soc_Conn_Lost =>
+         My_Io.Put_Line ("Client sending disconnection: Closing");
+         X_Mng.X_Del_Callback (Fd, True);
+         Socket.Close (Soc);
+      when others =>
          My_Io.Put_Line ("Client sending has failed!");
     end;
   end Client_Send;
@@ -129,9 +135,18 @@ begin
   if Server then
     -- Create socket, add callback
     Socket.Open (Accept_Soc, Socket.Tcp_Header);
-    Socket.Link_Service (Accept_Soc, Server_Port_Name);
+    loop
+      begin
+        Socket.Link_Service (Accept_Soc, Server_Port_Name);
+        exit;
+      exception
+        when Socket.Soc_addr_In_Use =>
+           My_Io.Put_Line ("Address in use, waiting");
+           delay 20.0;
+      end;
+    end loop;
     Accept_Fd := Socket.Fd_Of (Accept_Soc);
-    X_Mng.X_Add_Callback (Accept_Fd, Call_Back'Unrestricted_Access);
+    X_Mng.X_Add_Callback (Accept_Fd, True, Call_Back'Unrestricted_Access);
   else
     Message.Num := 1;
     Client_Send;
@@ -152,7 +167,7 @@ begin
     end if;
   end loop;
 
-  X_Mng.X_Del_Callback (Fd);
+  X_Mng.X_Del_Callback (Fd, True);
   Socket.Close (Soc);
 
 exception

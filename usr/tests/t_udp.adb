@@ -27,23 +27,24 @@ procedure T_Udp is
   procedure Call_Back (F : in X_Mng.File_Desc) is
     use type X_Mng.File_Desc;
     Message_Len : Natural;
-    Received : Boolean;
   begin
     if F /= Fd then
       My_Io.Put_Line ("Not same Fd");
       raise Program_Error;
     end if;
     My_Io.Put ("In callback - ");
-    My_Receive (Soc, Message, Message_Len, Received, Set_For_Reply => Server);
     if Server then
       My_Io.Put ("Server");
     else
       My_Io.Put ("Client");
     end if;
-    if not Received then
-      My_Io.Put_Line (" receives nothing");
-      return;
-    end if;
+    begin
+      My_Receive (Soc, Message, Message_Len, Set_For_Reply => Server);
+    exception
+      when Socket.Soc_Conn_Lost =>
+        My_Io.Put_Line (" receives disconnection");
+        return;
+    end;
     My_Io.Put_Line (" receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
@@ -80,7 +81,7 @@ begin
   -- Create socket, add callback
   Socket.Open (Soc, Socket.Udp);
   Fd := Socket.Fd_Of (Soc);
-  X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
+  X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
   
   -- Link, set server dest in client, client sends
   if Server then
@@ -108,7 +109,7 @@ begin
     end if;
   end loop;
 
-  X_Mng.X_Del_Callback (Fd);
+  X_Mng.X_Del_Callback (Fd, True);
   Socket.Close (Soc);
 
 exception

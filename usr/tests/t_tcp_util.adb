@@ -31,7 +31,7 @@ procedure T_Tcp_Util is
     My_Send (The_Dscr, Message);
     Ada.Text_Io.Put_Line (Msg & " sent");
   exception
-    when Socket.Socket_Error =>
+    when others =>
       Ada.Text_Io.Put_Line ("Sending " & Msg & " failed.");
   end Send;
 
@@ -45,6 +45,7 @@ procedure T_Tcp_Util is
       Ada.Text_Io.Put_Line ("Connected");
       The_Dscr := Dscr;
       X_Mng.X_Add_CallBack (Socket.Fd_Of(Dscr),
+                            True,
                             Read_Cb'Unrestricted_Access);
     else
       Ada.Text_Io.Put_Line ("Not connected");
@@ -84,6 +85,7 @@ procedure T_Tcp_Util is
     else
       The_Dscr := New_Dscr;
       X_Mng.X_Add_CallBack (Socket.Fd_Of(New_Dscr),
+                            True,
                             Read_Cb'Unrestricted_Access);
       Ada.Text_Io.Put_Line ("Accepted");
     end if;
@@ -91,7 +93,6 @@ procedure T_Tcp_Util is
 
   procedure Read_Cb (Fd : in X_Mng.File_Desc) is
     Len : Natural;
-    Rec : Boolean;
     use type X_Mng.File_Desc;
   begin
     if Server then
@@ -104,24 +105,22 @@ procedure T_Tcp_Util is
       return;
     end if;
 
-    My_Read (The_Dscr, Message, Len, Rec, False);
-
-    if not Rec  or else Len = 0 then
-      if not Rec then
-        Ada.Text_Io.Put ("Read Cb -> no message");
-      else
-        Ada.Text_Io.Put ("Read Cb -> empty message");
-      end if;
-      Ada.Text_Io.Put_Line (" - Closing");
-      X_Mng.X_Del_CallBack (Fd);
-      Socket.Close (The_Dscr);
-      if not Server then
-        Ada.Text_Io.Put_Line (" - Waiting");
-        delay 3.0;
-        Connect;
-      end if;
-      return;
-    end if;
+    begin
+      My_Read (The_Dscr, Message, Len, False);
+    exception
+      when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
+        Ada.Text_Io.Put ("Read Cb -> disconnected: Closing");
+        X_Mng.X_Del_CallBack (Fd, True);
+        Socket.Close (The_Dscr);
+        if not Server then
+          Ada.Text_Io.Put_Line (" - Waiting");
+          delay 3.0;
+          Connect;
+        else
+          Ada.Text_Io.New_Line;
+        end if;
+        return;
+    end;
 
     Ada.Text_Io.Put_Line ("receives: >"
                    & Message.Str(1 .. Message.Len)
@@ -167,8 +166,8 @@ begin
                                 Port_Num);
           exit;
         exception
-          when Socket.Socket_Error =>
-            Ada.Text_Io.Put_Line ("Cannot accept. Maybe Time_Wait. Waiting");
+          when Socket.Soc_addr_In_Use =>
+            Ada.Text_Io.Put_Line ("Cannot accept. Maybe Close-wait. Waiting");
             delay 20.0;
         end;
       end loop;
