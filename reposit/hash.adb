@@ -147,11 +147,14 @@ package body HASH is
         MY_IO.PUT_line (" No data found");
       end if;
       while CA /= null loop
-        MY_IO.PUT (" Data found -> ");
-        DUMP (CA.DATA);
+        MY_IO.PUT (" Data found ");
         if CA = FIRST_ARRAY(I).CURRENT then
-          MY_IO.PUT (" <- Current");
+          MY_IO.PUT (" => ");
+        else
+          MY_IO.PUT (" -> ");
         end if;
+        
+        DUMP (CA.DATA);
         MY_IO.NEW_LINE;
         CA := CA.NEXT;
       end loop;
