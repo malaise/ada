@@ -244,10 +244,10 @@ DESCRIPTOR 1
 
   # Cheque actions
   FIELD 23 PUT
-    GEOMETRY 21 1 21 6
+    GEOMETRY 21 1 21 5
     COLORS light_gray not_blink black
     INIT
-      0 0 Cheque
+      0 0 Oper:
     END INIT
   END FIELD
   # Add cheque
@@ -309,10 +309,10 @@ DESCRIPTOR 1
 
   # Account actions
   FIELD 31 PUT
-    GEOMETRY 23 1 23 7
+    GEOMETRY 23 1 23 8
     COLORS light_gray not_blink black
     INIT
-      0 0 Account
+      0 0 Account:
     END INIT
   END FIELD
   # Create account
@@ -804,15 +804,13 @@ DESCRIPTOR 3
     COLORS cyan brown
     INIT
       1 5 O K
-      2 3 and back
     END INIT
   END FIELD
   FIELD 41 BUTTON
     GEOMETRY 17 57 19 69
     COLORS cyan brown
     INIT
-      1 1 C A N C E L
-      2 3 and back
+      1 3 Q U I T
     END INIT
   END FIELD
 
