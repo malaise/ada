@@ -31,9 +31,6 @@ procedure Great_Circle is
   -- Arc of result
   Arc_Result : Distance;
 
-  -- Projected chords of X and Y on plan tangent in A
-  Proj_Chord_X, Proj_Chord_Y : Distance;
-
   -- Result angle from X
   Result_Rad_Angle : Conv.Rad_Coord_Range;
   Heading : Conv.Geo_Coord_Rec;
@@ -66,7 +63,8 @@ procedure Great_Circle is
     end if;
   end Angle_Of_Chord;
 
-  -- Add Pi to result angle if shortest route along meridian is via south pole
+  -- Add Pi to result angle if B in south of A
+  -- or shortest route along meridian is via south pole
   procedure Fix_Angle is
     Signed_A_Y : Conv.Rad_Range := Lat_Lon_Rad_A.Y;
     Signed_B_Y : Conv.Rad_Range := Lat_Lon_Rad_B.Y;
@@ -79,19 +77,29 @@ procedure Great_Circle is
       Signed_B_Y := Signed_B_Y - 2.0 * Conv.Pi;
     end if;
 
-    -- See if A and B are on the same meridian
-    if abs (Lat_Lon_Rad_B.X - Lat_Lon_Rad_A.X) <= Conv.Pi/2.0 then
-      -- Yes, add Pi if B is below A on meridian
+    -- if same meridian
+    if Result_Rad_Angle < Epsilon
+    or else Result_Rad_Angle - Conv.Pi < Epsilon then
+      -- See if A and B are on the same meridian
+      if abs Lat_Lon_Rad_Delta.X <= Conv.Pi / 2.0 then
+        -- Yes, add Pi if B is below A on meridian
+        if Signed_B_Y < Signed_A_Y then
+          Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
+        end if;
+      else
+        -- A and B are on opposed meridians
+        -- Add Pi if B is below -A
+        if Signed_B_Y < -Signed_A_Y then
+          Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
+        end if;
+      end if;
+    else
+      -- Si if B is in the south of A
       if Signed_B_Y < Signed_A_Y then
         Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
       end if;
-    else
-      -- A and B are on opposed meridians
-      -- Add Pi if B is below -A
-      if Signed_B_Y < -Signed_A_Y then
-        Result_Rad_Angle := Result_Rad_Angle + Conv.Pi;
-      end if;
     end if;
+
   end Fix_Angle;
 
 begin
@@ -138,37 +146,23 @@ begin
 
   Ada.Text_Io.Put_Line ("Distance is " & String_Util.Dist2Str(Arc_Result));
 
-  -- Project both Chords (Xa and Y) on plan tangent in A
-  Proj_Chord_X := Chord_Xa * Distance(My_Math.Cos(My_Math.Real(
-                                                 Lat_Lon_Rad_Delta.X / 2.0)));
-  if abs Proj_Chord_X < Epsilon then
-    Proj_Chord_X := 0.0;
-  end if;
-  Proj_Chord_Y := Chord_Y * Distance(My_Math.Cos(My_Math.Real(
-                                                 Lat_Lon_Rad_Delta.Y / 2.0)));
+  Ada.Text_Io.Put_Line ("Xa = " & String_Util.Dist2Str(Chord_Xa));
+  Ada.Text_Io.Put_Line ("Xb = " & String_Util.Dist2Str(Chord_Xb));
+  Ada.Text_Io.Put_Line ("Y  = " & String_Util.Dist2Str(Chord_Y));
 
-  -- Angle (in tangent plan) from X axis to route
+   -- Angle from Y axis to route
+  declare
+    Dist : Distance;
   begin
+    Dist := Arc_Result * Arc_Result + Chord_Y * Chord_Y - Chord_Xb * Chord_Xb;
+    Dist := Dist / 2.0 / Arc_Result / Chord_Y;
     Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-        My_Math.Arc_Tg(My_Math.Real(Proj_Chord_Y / Proj_Chord_X)))));
-    -- Fix arc_tan result if B is at left of A (arc_tan is on -Pi/2 +Pi/2)
-    if Lat_Lon_Rad_Delta.X > Conv.Pi then
-      Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-        Result_Rad_Angle + Conv.Pi)));
-    end if;
-  exception
-    when Constraint_Error =>
-      -- X is too small, A and B are on the same or opposed meridians
-      -- Angle is Pi/2 or 3Pi/2, depending on shortest route
-      Result_Rad_Angle := Conv.Pi / 2.0;
-      Fix_Angle;
+        My_Math.Arc_Cos(My_Math.Real(Dist)))));
+    -- Fix arc_cos result if B is at south of A (arc_cos is on 0 .. Pi)
+    -- or if A and B are on the same meridian
+    Fix_Angle;
   end;
-  -- Ada.Text_Io.Put_Line ("Horiz angle: " & Result_Rad_Angle'Img);
-
-  -- Angle (in tangent plan) from route to Y axis
-  Result_Rad_Angle := Conv.Rad_Coord_Range(
-           C_Nbres.Reduct(C_Nbres.Radian(Conv.Pi / 2.0 - Result_Rad_Angle)));
-  -- Ada.Text_Io.Put_Line ("Vert angle: " & Result_Rad_Angle'Img);
+  -- Ada.Text_Io.Put_Line ("Angle: " & Result_Rad_Angle'Img);
 
   -- In degrees
   Heading := Conv.Rad2Geo(Result_Rad_Angle);
