@@ -145,7 +145,7 @@ package body INPUT_DISPATCHER is
       raise PROGRAM_ERROR;
     end if;
     if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
-      TEXT_IO.PUT_LINE ("Input_dispacher: Remining is >"
+      TEXT_IO.PUT_LINE ("Input_dispacher: Remaining is >"
        & CUR_STR(CUR_INDEX .. CUR_LEN) & "<");
     end if;
     return CUR_STR(CUR_INDEX .. CUR_LEN);
