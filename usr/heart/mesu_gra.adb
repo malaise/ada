@@ -39,6 +39,8 @@ package body MESU_GRA is
   subtype MESURE_RANGE is NATURAL range 0 .. MAX_NB_MESURE;
   MESURE_ARRAY : array (1 .. MAX_NB_MESURE) of MESURE_CELL;
   NB_MESURE : MESURE_RANGE;
+  -- No of mesure of last TZ drawn
+  PREV_TZ : MESURE_RANGE;
 
 
   -- From reality to screen
@@ -225,14 +227,28 @@ package body MESU_GRA is
 
   end DRAW_LAYOUT;
 
-  procedure DRAW_TZ is
+  procedure DRAW_TZ (SHOW : in BOOLEAN) is
     TZ_COLOR    : constant CON_IO.EFFECTIVE_COLORS := CON_IO.RED;
     BPM : PERS_DEF.BPM_RANGE;
     Y : CON_IO.GRAPHICS.Y_RANGE;
+    MESURE_INDEX : MESURE_RANGE;
   begin
     CON_IO.SET_FOREGROUND (TZ_COLOR);
+    if not SHOW then
+      MESURE_INDEX := PREV_TZ;
+    else
+      -- First drawn mesure
+      for MESU in 1 .. NB_MESURE loop
+        if MESURE_ARRAY(MESU).DROWN then
+          MESURE_INDEX := MESU;
+          PREV_TZ := MESURE_INDEX;
+          exit;
+        end if;
+      end loop;
+    end if;
+
     for I in PERS_DEF.PERSON_TZ_ARRAY'RANGE loop
-      BPM := MESURE_ARRAY(1).MESURE.TZ(I);
+      BPM := MESURE_ARRAY(MESURE_INDEX).MESURE.TZ(I);
       if BPM >= Y_FIRST then
         Y := Y_TO_SCREEN(BPM);
         DRAW_LINE (XS_FIRST, Y, XS_LAST - 4 * CON_IO.GRAPHICS.FONT_WIDTH, Y);
@@ -253,7 +269,7 @@ package body MESU_GRA is
                3 => CON_IO.LIGHT_BLUE,
                4 => CON_IO.LIGHT_GREEN,
                5 => CON_IO.ORANGE,
-               6 => CON_IO.RED,
+               6 => CON_IO.BLUE,
                7 => CON_IO.MAGENTA,
                8 => CON_IO.YELLOW,
                9 => CON_IO.WHITE);
@@ -429,13 +445,13 @@ package body MESU_GRA is
                            or else KEY = CHARACTER'POS('t')) then
         if TZ_DROWN then
           -- Hide TZs
-          DRAW_TZ;
+          DRAW_TZ(FALSE);
           TZ_DROWN := FALSE;
         else
           CHECK_SAME_TZ;
           if SAME_TZ then
             -- Draw TZs
-            DRAW_TZ;
+            DRAW_TZ(TRUE);
             TZ_DROWN := TRUE;
           end if;
         end if;
@@ -453,7 +469,7 @@ package body MESU_GRA is
               if not SAME_TZ then
                 -- This mesure has a TZ incompatible with the drown TZs
                 -- Hide TZ
-                DRAW_TZ;
+                DRAW_TZ(FALSE);
                 TZ_DROWN := FALSE;
               end if;
             end if;
