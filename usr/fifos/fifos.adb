@@ -859,6 +859,8 @@ package body Fifos is
         else
           return Disconnected;
         end if;
+      when Socket.Soc_Use_Err =>
+        return Disconnected;
       when others =>
         return Error;
     end Send;
