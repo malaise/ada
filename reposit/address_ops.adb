@@ -8,7 +8,15 @@ package body Address_Ops is
 
   function To_Readable is new Unchecked_Conversion (
     System.Address, Readable_Address);
+  function To_Address is new Unchecked_Conversion (
+    Readable_Address, System.Address);
 
+  function "+" (Addr : System.Address; Offset : Long_Long_Integer)
+               return System.Address is
+    R : constant Readable_Address := To_Readable (Addr);
+  begin
+    return To_Address (R + Readable_Address(Offset));
+  end "+";
 
   function "-" (Addr1, Addr2 : System.Address) return Long_Long_Integer is
     R1 : constant Readable_Address := To_Readable (Addr1);
