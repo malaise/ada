@@ -42,8 +42,9 @@ package State_Machine is
   -- An event: do a transition. If the event is not defined for
   --  current state, the DEFAULT (if any) transition is performed
   --  otherwise (no DEFAULT) the state remains unchanged
-  -- Any TRUE event has no effect (any potential TRUE transition
-  --  would already have been done)
+  -- A TRUE event has no effect if no DEFAULT is defined
+  --  (any potential TRUE transition would already have been done)
+  --  It generates the DEFAULT transition if it is defined
   function New_Event (Event : Event_List) return State_List;
 
   procedure New_Event (Event : in Event_List);
