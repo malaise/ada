@@ -23,16 +23,13 @@ j pushr a < E pushr ifcall j pushr c > E pushr ifcall
 i pushr j pushr = E pushr ifcall
 n pushr 1 < E pushr ifcall
 
-# Store register name in register
-"a" a popr "b" b popr "c" c popr
-
 # Compute other axis from i, j and push it instead
 [ dup a = [ pop b = c b ifte 2 retn ] ifcall
 b = [ c = a c ifte 2 retn ] ifcall b = a b ifte ] K popr
 
 # M(i, j, d) Move a disk: display
-[ t pushr 1 + t popr "move disk" put put swap " from " put pushr put
-" to " put pushr putl ] M popr
+[ t pushr 1 + t popr "move disk" put put swap " from " put strof put
+" to " put strof putl ] M popr
 
 # Move disk 1: Move and return
 [ M pushr call 2 retn ] T popr
