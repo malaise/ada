@@ -3,7 +3,7 @@ LIBX_MNG=x_mng
 LX=-largs -L$(LIBC_DIR) -l$(LIBX_MNG) -lX11
 LX_STATIC=-largs $(LIBC_DIR)/lib$(LIBX_MNG).a -lX11
 
-EXE=account.static account
+EXE=account.static account import export
 
 all: $(EXE) AFPX.DSC
 
@@ -12,6 +12,12 @@ new:
 	amake account $(LX)
 	
 account:
+	amake $@ $(LX)
+
+import:
+	amake $@ $(LX)
+
+export:
 	amake $@ $(LX)
 
 account.static:
