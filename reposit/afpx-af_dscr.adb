@@ -113,7 +113,7 @@ package body Af_Dscr is
 begin
   -- Try to getenv data dir then to open the files
   declare
-    File_Dir_Env_Name : constant String := "Afpx_Data_Dir";
+    File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
     Env_Set, Env_Trunc : Boolean;
     Env_Value : String (1 .. Afpx_Typ.Dest_Path.Max_Len - 1);
     Env_Len : Natural;

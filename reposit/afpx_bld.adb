@@ -9,7 +9,7 @@ use  Afpx_Typ;
 procedure Afpx_Bld is
 
   -- Inputs name
-  Default_List_File_Name : constant String := "Afpx.Lis";
+  Default_List_File_Name : constant String := "AFPX.LIS";
   List_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len * 2);
 
   -- GET_LINE of descriptor file
@@ -121,16 +121,16 @@ procedure Afpx_Bld is
   function End_Of (Keyword : String) return Boolean is
   begin
     return Dscr_Words = 2 and then
-           First_Word = "End" and then
+           First_Word = "END" and then
            Text_Handler.Value(Dscr_Line(2)) = Keyword;
   end End_Of;
 
   procedure File_Error (Msg : in String := "") is
   begin
     if Msg = "" then
-      Text_Io.Put_Line ("Syntax Error.");
+      Text_Io.Put_Line ("SYNTAX ERROR.");
     else
-      Text_Io.Put_Line ("Syntax Error : " & Msg & ".");
+      Text_Io.Put_Line ("SYNTAX ERROR : " & Msg & ".");
     end if;
     Text_Io.Put (" In file " & Text_Handler.Value(List_File_Name)
                & " at line ");
@@ -141,8 +141,8 @@ procedure Afpx_Bld is
   -- Check and store upper_left (and lower right in size) and colors
   procedure Load_Geo_Color (Fn : in Afpx_Typ.Absolute_Field_Range) is
   begin
-    if First_Word /= "Geometry" or else Dscr_Words /= 5 then
-      File_Error ("Geometry <upper_row> <left_col> <lower_row> <right_col> expected");
+    if First_Word /= "GEOMETRY" or else Dscr_Words /= 5 then
+      File_Error ("GEOMETRY <upper_row> <left_col> <lower_row> <right_col> expected");
     end if;
     begin
       -- Load upper_right and lower left
@@ -172,19 +172,19 @@ procedure Afpx_Bld is
 
     -- One ROW for GET fields
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
-      File_Error ("Invalid geometry. Get fields must have One row");
+      File_Error ("Invalid geometry. GET fields must have ONE row");
     end if;
 
     Next_Line;
 
     -- Parse colors
-    if First_Word /= "Colors" then
-      File_Error ("Keyword Colors expected");
+    if First_Word /= "COLORS" then
+      File_Error ("Keyword COLORS expected");
     end if;
     begin
       if Fn = 0 or else Fields(Fn).Kind = Afpx_Typ.Get then
         if Dscr_Words /= 4 then
-          File_Error ("Colors <foreground> <background> <selected> expected");
+          File_Error ("COLORS <foreground> <background> <selected> expected");
         end if;
         Fields(Fn).Colors.Foreground :=
          Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
@@ -196,7 +196,7 @@ procedure Afpx_Bld is
 
       elsif Fields(Fn).Kind = Put then
         if Dscr_Words /= 4 then
-          File_Error ("Colors <foreground> <blink> <background> expected");
+          File_Error ("COLORS <foreground> <blink> <background> expected");
         end if;
         Fields(Fn).Colors.Foreground :=
          Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
@@ -208,7 +208,7 @@ procedure Afpx_Bld is
 
       elsif Fields(Fn).Kind = Button then
         if Dscr_Words /= 3 then
-          File_Error ("Colors <foreground> <background> expected");
+          File_Error ("COLORS <foreground> <background> expected");
         end if;
         Fields(Fn).Colors.Foreground :=
          Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
@@ -229,7 +229,7 @@ procedure Afpx_Bld is
     and then Fields(Fn).Colors.Foreground
              not in Con_Io.Effective_Basic_Colors then
       -- For list, GET and BUTTON, FOREGROUND has to be basic
-      File_Error ("For all but Put fields, Foreground has to be basic color");
+      File_Error ("For all but PUT fields, FOREGROUND has to be basic color");
     end if;
     Next_Line;
   end Load_Geo_Color;
@@ -237,7 +237,7 @@ procedure Afpx_Bld is
   procedure Load_List is
   begin
     if Dscr_Words /= 1 then
-      File_Error ("List expected");
+      File_Error ("LIST expected");
     end if;
     -- In LIST
     Fields(0).Kind := Afpx_Typ.Button;
@@ -245,8 +245,8 @@ procedure Afpx_Bld is
     Fields(0).Isprotected := False;
     Next_Line;
     Load_Geo_Color (0);
-    if not End_Of ("List") then
-      File_Error ("End List expected");
+    if not End_Of ("LIST") then
+      File_Error ("END LIST expected");
     end if;
     Fields(0).Char_Index := 1;
     Next_Line;
@@ -267,7 +267,7 @@ procedure Afpx_Bld is
     Finit_Index : Afpx_Typ.Char_Str_Range;
   begin
     if Dscr_Words /= 3 then
-      File_Error ("Field <field_no> <field_type> expected");
+      File_Error ("FIELD <field_no> <field_type> expected");
     end if;
     begin
       if Afpx_Typ.Field_Range'Value(Text_Handler.Value(Dscr_Line(2))) /=
@@ -283,7 +283,7 @@ procedure Afpx_Bld is
         Afpx_Typ.Field_Kind_List'Value(Text_Handler.Value(Dscr_Line(3)));
     exception
       when others =>
-        File_Error ("Invalid field type. Put, Get or Button expected");
+        File_Error ("Invalid field type. PUT, GET or BUTTON expected");
     end;
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
@@ -299,16 +299,16 @@ procedure Afpx_Bld is
         File_Error ("Too many init characters");
     end;
 
-    if First_Word = "Init" then
+    if First_Word = "INIT" then
 
       if Dscr_Words /= 1 then
-        File_Error ("Init expected");
+        File_Error ("INIT expected");
       end if;
       Next_Line;
 
       First_Init := True;
       Prev_Init_Square := (0, 0);
-      while not End_Of ("Init") loop
+      while not End_Of ("INIT") loop
         -- Check init syntax and length of string
         if Dscr_Words < 2 then
           File_Error ("Invalid init. <row> <col> [ <str> ] expected");
@@ -397,8 +397,8 @@ procedure Afpx_Bld is
       end loop;
       Next_Line;
     end if;
-    if not End_Of ("Field") then
-      File_Error ("End Field expected");
+    if not End_Of ("FIELD") then
+      File_Error ("END FIELD expected");
     end if;
     Next_Line;
   end Loc_Load_Field;
@@ -422,9 +422,9 @@ procedure Afpx_Bld is
       return;
     end if;
     if Fi1 = 0 then
-      Text_Io.Put ("Error : List");
+      Text_Io.Put ("ERROR : LIST");
     else
-      Text_Io.Put ("Error : Field " & Afpx_Typ.Field_Range'Image(Fi1));
+      Text_Io.Put ("ERROR : Field " & Afpx_Typ.Field_Range'Image(Fi1));
     end if;
     Text_Io.Put_Line (" and Field " & Afpx_Typ.Field_Range'Image(Fi2)
                       & " of descriptor "
@@ -445,7 +445,7 @@ procedure Afpx_Bld is
       Dscr_Get.Open (Text_Handler.Value(List_File_Name));
     exception
       when Text_Io.Name_Error =>
-        Text_Io.Put_Line ("Error : File " & Text_Handler.Value(List_File_Name)
+        Text_Io.Put_Line ("ERROR : File " & Text_Handler.Value(List_File_Name)
                           & " not found.");
         raise File_Not_Found;
     end;
@@ -490,7 +490,7 @@ procedure Afpx_Bld is
       Descriptors(I).Nb_Fields := 0;
     end loop;
 
-    Text_Handler.Set (Error_Msg, "Descriptor <descriptor_number> expected");
+    Text_Handler.Set (Error_Msg, "DESCRIPTOR <descriptor_number> expected");
     Dscr_Words := Dscr_Get.Get_Word_Number;
     Dscr_Get.Get_Words(Dscr_Line);
 
@@ -502,11 +502,11 @@ procedure Afpx_Bld is
     loop
       Eof_Allowed := False;
       -- DESCRIPTOR line
-      Text_Handler.Set (Error_Msg, "Descriptor <descriptor_number> expected");
+      Text_Handler.Set (Error_Msg, "DESCRIPTOR <descriptor_number> expected");
       if Dscr_Words /= 2 then
         File_Error (Text_Handler.Value (Error_Msg));
       end if;
-      if First_Word /= "Descriptor" then
+      if First_Word /= "DESCRIPTOR" then
         File_Error (Text_Handler.Value (Error_Msg));
       end if;
       begin
@@ -520,7 +520,7 @@ procedure Afpx_Bld is
                         Normal(Integer(Dscr_No), 2, Gap => '0'));
       -- Dscr no has to be uniq
       if Descriptors(Dscr_No).Modified then
-        File_Error ("Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
+        File_Error ("DESCRIPTOR " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
                                   & " already defined");
       end if;
       -- Init dscr and fields array. No list at init
@@ -531,12 +531,12 @@ procedure Afpx_Bld is
       Init_Str := (others => ' ');
       Next_Line;
 
-      if First_Word = "List" then
+      if First_Word = "LIST" then
         Load_List;
       else
         Fields(0).Kind := Put;
       end if;
-      while First_Word = "Field" loop
+      while First_Word = "FIELD" loop
         if Descriptors(Dscr_No).Nb_Fields /= Afpx_Typ.Field_Range 'Last then
           Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
         else
@@ -546,14 +546,14 @@ procedure Afpx_Bld is
         Loc_Load_Field (Descriptors(Dscr_No).Nb_Fields);
       end loop;
 
-      if not End_Of ("Descriptor") then
+      if not End_Of ("DESCRIPTOR") then
         if Descriptors(Dscr_No).Nb_Fields = 0
         and then Fields(0).Kind = Afpx_Typ.Put then
           -- No list nor field
-          File_Error ("List, Field, or End Descriptor expected");
+          File_Error ("LIST, FIELD, or END DESCRIPTOR expected");
         else
           -- Some list or fields
-          File_Error ("Field, or End Descriptor expected");
+          File_Error ("FIELD, or END DESCRIPTOR expected");
         end if;
       end if;
 

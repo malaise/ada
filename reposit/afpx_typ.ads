@@ -8,9 +8,9 @@ package Afpx_Typ is
   Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
 
   -- Files name
-  Dscr_File_Name : constant String := "Afpx.Dsc";
-  Fld_File_Name  : constant String := "Afpx.Fld";
-  Init_File_Name : constant String := "Afpx.Ini";
+  Dscr_File_Name : constant String := "AFPX.DSC";
+  Fld_File_Name  : constant String := "AFPX.FLD";
+  Init_File_Name : constant String := "AFPX.INI";
 
   -- Descriptor, field index
   type Descriptor_Range is new Positive range 1 .. 50;

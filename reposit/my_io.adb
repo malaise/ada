@@ -1,6 +1,6 @@
 package body My_Io is
 
-  Error_Message  : constant String := "Wrong Format. Try again";
+  Error_Message  : constant String := "WRONG FORMAT. Try again";
   Separe_Message : constant String := " : ";
 
   procedure Put_Line(Item  : in Boolean;

@@ -115,7 +115,7 @@ package body Curve is
 
       -- Display / hide wait message
       procedure Wait_Message is
-        Msg : constant String := "Computing. Please wait ...";
+        Msg : constant String := "COMPUTING. Please wait ...";
       begin
         Big_Con_Io.Set_Foreground (Big_Con_Io.Light_Blue);
         Big_Con_Io.Move (Big_Con_Io.Row_Range_Last,
@@ -430,17 +430,17 @@ package body Curve is
         if Action = Toggle or else Action = Init then
           Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 9,
                        Big_Con_Io.Col_Range_Last - 17);
-          Big_Con_Io.Put ("Current Zoom: " & Normal(Curr_Zoom_No, 1) );
+          Big_Con_Io.Put ("Current ZOOM: " & Normal(Curr_Zoom_No, 1) );
           Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 8,
                        Big_Con_Io.Col_Range_Last - 17);
-          Big_Con_Io.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other Zoom");
+          Big_Con_Io.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other ZOOM");
 
           -- if mouse not installed : color is set here
           Big_Con_Io.Set_Foreground (Big_Con_Io.Magenta);
 
           Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 7,
                        Big_Con_Io.Col_Range_Last - 9);
-          Big_Con_Io.Put ("Switches:");
+          Big_Con_Io.Put ("SWITCHES:");
           Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 6,
                        Big_Con_Io.Col_Range_Last - 9);
           Big_Con_Io.Put ("H * Help");

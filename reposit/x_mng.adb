@@ -5,7 +5,7 @@ package body X_Mng is
   -- Duration
   Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
 
-  Debug_Var_Name : constant String := "X_Mng_Debug";
+  Debug_Var_Name : constant String := "X_MNG_DEBUG";
   Debug : Boolean := False;
 
   -- Result of a call to C
@@ -1182,10 +1182,10 @@ package body X_Mng is
       Dummy := X_Select (Fd'Address, Read'Address, Timeout_Ms'Address);
       if Debug then
         if Dummy /= Ok then
-          My_Io.Put_Line ("  Xx_Select -> Error");
+          My_Io.Put_Line ("  XX_SELECT -> ERROR");
           return Select_Timeout;
         else
-          My_Io.Put_Line ("  Xx_Select -> " & Integer'Image(Fd)
+          My_Io.Put_Line ("  XX_SELECT -> " & Integer'Image(Fd)
                                       & " " & Bool_For_C'Image(Read));
         end if;
       end if;
@@ -1222,7 +1222,7 @@ package body X_Mng is
         exception
           when Cb_Mng.Not_In_List =>
           if Debug then
-            My_Io.Put_Line ("**** Xx_Select: " & Integer'Image(Fd) 
+            My_Io.Put_Line ("**** XX_SELECT: " & Integer'Image(Fd) 
                           & " fd not found ****");
           end if;
         end;
@@ -1583,7 +1583,7 @@ package body X_Mng is
     case Select_Result is
       when Select_X_Event =>
         if Debug then
-          My_Io.Put_Line ("**** Select_No_X: Got a X event");
+          My_Io.Put_Line ("**** SELECT_NO_X: Got a X event");
         end if;
         raise X_Failure;
       when Select_Fd | Select_Timer =>

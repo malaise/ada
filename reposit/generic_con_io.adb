@@ -13,7 +13,7 @@ package body Generic_Con_Io is
 
   package body One_Con_Io is
 
-    Font_Env_Name : constant String := "Con_Io_Font";
+    Font_Env_Name : constant String := "CON_IO_FONT";
     Font_Env_Small : constant String := "small";
     Font_Env_Large : constant String := "large";
 

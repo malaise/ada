@@ -105,7 +105,7 @@ package body State_Machine is
         -- No other transition (which means no TRUE transition) from this state
         return;
       end if;
-      if Event_List'Image(Ta.Event) = "True" then
+      if Event_List'Image(Ta.Event) = "TRUE" then
         -- Transition is TRUE, follow it
         Do_Transition (The_Current_State, Ta, Report);
         Ta := State_Array(The_Current_State);
@@ -154,7 +154,7 @@ package body State_Machine is
         Do_Trues (True);
         return;
       else
-        if Event_List'Image(Ta.Event) = "Default" then
+        if Event_List'Image(Ta.Event) = "DEFAULT" then
           -- Default transition found. Store it.
           Defaulta := Ta;
         end if;
