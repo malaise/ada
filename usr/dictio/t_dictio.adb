@@ -179,14 +179,16 @@ begin
   end;
 
   -- Set async stdin
-  begin
-    Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access,
-                           Async_Stdin.Max_Chars_Range'Last);
-  exception
-    when Async_Stdin.Not_A_Tty =>
-      Ada.Text_Io.Put_Line("CLIENT: Cannot set stdin async");
-      return;
-  end;
+  if not Init then
+    begin
+      Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access,
+                             Async_Stdin.Max_Chars_Range'Last);
+    exception
+      when Async_Stdin.Not_A_Tty =>
+        Ada.Text_Io.Put_Line("CLIENT: Cannot set stdin async");
+        return;
+    end;
+  end if;
 
   Event_Mng.Set_Sig_Callback (Sig_Cb'Unrestricted_Access);
 
