@@ -1,10 +1,7 @@
-with Text_Io;
 with My_Math;
 package C_Nbres is
 
   subtype Real is My_Math.Real;
-
-  package My_Real_Io is new Text_Io.Float_Io (Real);
 
   type Complex is private;
   I : constant Complex;

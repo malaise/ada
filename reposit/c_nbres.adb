@@ -1,3 +1,4 @@
+with Ada.Text_Io;
 package body C_Nbres is
 
   use My_Math;
@@ -259,7 +260,7 @@ package body C_Nbres is
   end "**";
 
   -------------------------------------------------------------------------------
-
+  package My_Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
   use My_Real_Io;
 
   procedure Put (C : in Complex) is
@@ -267,20 +268,20 @@ package body C_Nbres is
   begin
     Put (Part_Real (C) );
     if (Imag_Part >= 0.0) then
-      Text_Io.Put (" +");
+      Ada.Text_Io.Put (" +");
     else
-      Text_Io.Put (" -");
+      Ada.Text_Io.Put (" -");
     end if;
     Put ( abs (Imag_Part) );
-    Text_Io.Put (" * i ");
+    Ada.Text_Io.Put (" * i ");
   end Put;
 
   procedure Get (C : out Complex) is
     Real_Part, Imag_Part : Real;
   begin
-    Text_Io.Put ("Reel? ");
+    Ada.Text_Io.Put ("Reel? ");
     Get (Real_Part);
-    Text_Io.Put ("Imag? ");
+    Ada.Text_Io.Put ("Imag? ");
     Get (Imag_Part);
     C := Create_Complex (Real_Part, Imag_Part);
   end Get;

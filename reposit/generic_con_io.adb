@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Argument, Dyn_Data, Environ;
 package body Generic_Con_Io is
 
@@ -817,14 +818,14 @@ package body Generic_Con_Io is
                             Time_Out    : in Delay_Rec := Infinite_Delay) is
 
       X_Event : X_Mng.Event_Kind;
-      Cur_Time : Calendar.Time;
+      Cur_Time : Ada.Calendar.Time;
       Dur : Duration;
       Timeout_Ms : Integer;
       Loc_Key : Natural;
       Loc_Is_Char : Boolean;
       Loc_Ctrl : Boolean;
       Loc_Shift : Boolean;
-      use X_Mng, Calendar;
+      use X_Mng, Ada.Calendar;
       use type Timers.Delay_Rec, Timers.Delay_List;
     begin
       if not Init_Done then
@@ -836,7 +837,7 @@ package body Generic_Con_Io is
       elsif Time_Out.Delay_Kind = Timers.Delay_Sec then
         Timeout_Ms := Integer (Float(Time_Out.Delay_Seconds) * 1_000.0);
       else
-        Cur_Time := Calendar.Clock;
+        Cur_Time := Ada.Calendar.Clock;
         if Cur_Time > Time_Out.Expiration_Time then
           Timeout_Ms := 0;
         else
@@ -1004,8 +1005,8 @@ package body Generic_Con_Io is
       else
         Last_Time := (Delay_Kind => Timers.Delay_Exp,
                       Period     => Timers.No_Period,
-                      Expiration_Time => Calendar."+"(Calendar.Clock,
-                                                      Time_Out.Delay_Seconds) );
+                      Expiration_Time => Ada.Calendar."+"
+                         (Ada.Calendar.Clock, Time_Out.Delay_Seconds) );
       end if;
 
       -- Emtpy string

@@ -1,4 +1,4 @@
-with Text_Io, Direct_Io;
+with Ada.Text_Io, Ada.Direct_Io;
 with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory;
 with Afpx_Typ;
 use  Afpx_Typ;
@@ -21,11 +21,11 @@ procedure Afpx_Bld is
   Dscr_Words : Dscr_Get.Word_Count;
 
   -- Direct_io of descriptors, fields, init strings
-  package Dscr_Io is new Direct_Io (Afpx_Typ.Descriptors_Array);
+  package Dscr_Io is new Ada.Direct_Io (Afpx_Typ.Descriptors_Array);
   Dscr_File : Dscr_Io.File_Type;
-  package Fld_Io  is new Direct_Io (Afpx_Typ.Fields_Array);
+  package Fld_Io  is new Ada.Direct_Io (Afpx_Typ.Fields_Array);
   Fld_File : Fld_Io.File_Type;
-  package Init_Io is new Direct_Io (Afpx_Typ.Char_Str);
+  package Init_Io is new Ada.Direct_Io (Afpx_Typ.Char_Str);
   Init_File : Init_Io.File_Type;
 
   -- List of descriptors
@@ -57,11 +57,12 @@ procedure Afpx_Bld is
 
   procedure Dump_Line is
   begin
-    Text_Io.Put(Text_Io.Positive_Count'Image(Dscr_Get.Get_Line_No) & " : ");
+    Ada.Text_Io.Put(Ada.Text_Io.Positive_Count'Image(Dscr_Get.Get_Line_No)
+                  & " : ");
     for I in 1 .. Dscr_Words loop
-      Text_Io.Put(">" & Text_Handler.Value(Dscr_Line(I)) & "< ");
+      Ada.Text_Io.Put(">" & Text_Handler.Value(Dscr_Line(I)) & "< ");
     end loop;
-    Text_Io.New_Line;
+    Ada.Text_Io.New_Line;
   end Dump_Line;
 
   procedure Close (On_Error : in Boolean) is
@@ -128,11 +129,11 @@ procedure Afpx_Bld is
   procedure File_Error (Msg : in String := "") is
   begin
     if Msg = "" then
-      Text_Io.Put_Line ("SYNTAX ERROR.");
+      Ada.Text_Io.Put_Line ("SYNTAX ERROR.");
     else
-      Text_Io.Put_Line ("SYNTAX ERROR : " & Msg & ".");
+      Ada.Text_Io.Put_Line ("SYNTAX ERROR : " & Msg & ".");
     end if;
-    Text_Io.Put (" In file " & Text_Handler.Value(List_File_Name)
+    Ada.Text_Io.Put (" In file " & Text_Handler.Value(List_File_Name)
                & " at line ");
     Dump_Line;
     raise File_Syntax_Error;
@@ -422,14 +423,14 @@ procedure Afpx_Bld is
       return;
     end if;
     if Fi1 = 0 then
-      Text_Io.Put ("ERROR : LIST");
+      Ada.Text_Io.Put ("ERROR : LIST");
     else
-      Text_Io.Put ("ERROR : Field " & Afpx_Typ.Field_Range'Image(Fi1));
+      Ada.Text_Io.Put ("ERROR : Field " & Afpx_Typ.Field_Range'Image(Fi1));
     end if;
-    Text_Io.Put_Line (" and Field " & Afpx_Typ.Field_Range'Image(Fi2)
-                      & " of descriptor "
-                      & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
-                      & " overlap.");
+    Ada.Text_Io.Put_Line (" and Field " & Afpx_Typ.Field_Range'Image(Fi2)
+                        & " of descriptor "
+                        & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
+                        & " overlap.");
     raise File_Syntax_Error;
   end Check_Overlap;
 
@@ -444,9 +445,10 @@ procedure Afpx_Bld is
     begin
       Dscr_Get.Open (Text_Handler.Value(List_File_Name));
     exception
-      when Text_Io.Name_Error =>
-        Text_Io.Put_Line ("ERROR : File " & Text_Handler.Value(List_File_Name)
-                          & " not found.");
+      when Ada.Text_Io.Name_Error =>
+        Ada.Text_Io.Put_Line ("ERROR : File "
+                            & Text_Handler.Value(List_File_Name)
+                            & " not found.");
         raise File_Not_Found;
     end;
     -- If not check_only, delete then create binary files
@@ -516,7 +518,7 @@ procedure Afpx_Bld is
         when others =>
         File_Error (Text_Handler.Value (Error_Msg));
       end;
-      Text_Io.Put_Line ("   descriptor " &
+      Ada.Text_Io.Put_Line ("   descriptor " &
                         Normal(Integer(Dscr_No), 2, Gap => '0'));
       -- Dscr no has to be unique
       if Descriptors(Dscr_No).Modified then
@@ -621,8 +623,8 @@ begin
   -- Help
   begin
     Argument.Get_Parameter (List_File_Name, Param_Key => "h");
-    Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                    & " [ -l<afpx_list_file> ] [ -d<destination_dir> ]");
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+                        & " [ -l<afpx_list_file> ] [ -d<destination_dir> ]");
     return;
   exception
     when others =>
@@ -663,30 +665,30 @@ begin
     raise Argument_Error;
   end if;
 
-  Text_Io.Put_Line ("Reading " & Text_Handler.Value(List_File_Name));
-  Text_Io.Put_Line ("Writing in " & Text_Handler.Value(Afpx_Typ.Dest_Path));
+  Ada.Text_Io.Put_Line ("Reading " & Text_Handler.Value(List_File_Name));
+  Ada.Text_Io.Put_Line ("Writing in " & Text_Handler.Value(Afpx_Typ.Dest_Path));
   Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
 
   -- First check
-  Text_Io.Put_Line ("Checking:");
+  Ada.Text_Io.Put_Line ("Checking:");
   Load_Dscrs(True);
   -- Then write
-  Text_Io.Put_Line ("Building:");
+  Ada.Text_Io.Put_Line ("Building:");
   Load_Dscrs(False);
-  Text_Io.Put_Line ("Done.");
+  Ada.Text_Io.Put_Line ("Done.");
 exception
   when Argument_Error =>
     Close (True);
-    Text_Io.Put_Line ("Argument error. Try -h option.");
+    Ada.Text_Io.Put_Line ("Argument error. Try -h option.");
   when File_Not_Found =>
     Close (True);
-    Text_Io.Put_Line ("Directory or file not found. Try -h option.");
+    Ada.Text_Io.Put_Line ("Directory or file not found. Try -h option.");
   when File_Syntax_Error =>
     Close (True);
-    Text_Io.Put_Line ("Syntax error.");
+    Ada.Text_Io.Put_Line ("Syntax error.");
   when others =>
     Close (True);
-    Text_Io.Put_Line ("Unexpected exception.");
+    Ada.Text_Io.Put_Line ("Unexpected exception.");
     raise;
 end Afpx_Bld;
 

@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 with System;
 package body Task_Mng is
 
@@ -46,9 +46,9 @@ package body Task_Mng is
   end Set_Task_State;
 
   task body The_Task is
-    use Calendar;
+    use Ada.Calendar;
     -- Next activation date
-    Next_Go : Calendar.Time;
+    Next_Go : Ada.Calendar.Time;
   begin
     loop
 
@@ -57,13 +57,13 @@ package body Task_Mng is
         -- Tasks's state changes
         if Task_State = Running then
           -- Task starts : activate it immediatly
-          Next_Go := Calendar.Clock;
+          Next_Go := Ada.Calendar.Clock;
         end if;
       or
         when Task_State = Running =>
           accept Schedule do
             -- Call_back in rendez-vous for re-entrance
-            if Calendar.Clock >= Next_Go then
+            if Ada.Calendar.Clock >= Next_Go then
               Next_Go := Next_Go + Real_Period;
               begin
                 Call_Back;

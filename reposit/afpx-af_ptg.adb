@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 separate (Afpx)
 package body Af_Ptg is
 
@@ -20,8 +20,8 @@ package body Af_Ptg is
   Last_Pos : Con_Io.Square;
 
   Last_Selected_Id : Natural;
-  Last_Selection_Time : Calendar.Time;
-  Double_Click_Delay  : constant Calendar.Day_Duration := 0.2;
+  Last_Selection_Time : Ada.Calendar.Time;
+  Double_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.2;
 
   -- Sets Foreground and background according to state
   procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
@@ -233,10 +233,10 @@ package body Af_Ptg is
     Click_On_Selected : Boolean;
     Field : Afpx_Typ.Field_Rec;
     List_Status : Af_List.Status_Rec;
-    Click_Time : Calendar.Time;
+    Click_Time : Ada.Calendar.Time;
     Loc_Last_Selected_Id : Natural;
     use Afpx_Typ;
-    use Calendar;
+    use Ada.Calendar;
 
   begin
     -- Save and reset last selected id
@@ -252,7 +252,7 @@ package body Af_Ptg is
     Valid_Field := True;
     -- Get pos, find field
     Click_Pos := Last_Click;
-    Click_Time := Calendar.Clock;
+    Click_Time := Ada.Calendar.Clock;
     if List_Present and then In_Field_Absolute(Lfn, Click_Pos)
     and then not Af_Dscr.Fields(Lfn).Isprotected then
       Click_Field := Lfn;

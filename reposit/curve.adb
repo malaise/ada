@@ -1,9 +1,9 @@
-with Calendar, Text_Io;
+with Ada.Text_Io;
 with Big_Con_Io, Normal, Upper_Char;
 package body Curve is
   use My_Math;
 
-  package P_Io is new Text_Io.Float_Io (T_Coordinate);
+  package P_Io is new Ada.Text_Io.Float_Io (T_Coordinate);
 
   -- Find lowest and greatest X of points
   procedure X_Boundaries (

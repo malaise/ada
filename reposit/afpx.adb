@@ -1,4 +1,3 @@
-with Text_Io;
 with Afpx_Typ;
 package body Afpx is
 

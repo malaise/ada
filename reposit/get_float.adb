@@ -1,4 +1,5 @@
-with Flo_Io, Int_Io, Io_Exceptions;
+with Ada.Io_Exceptions;
+with Flo_Io, Int_Io;
 package body Get_Float is
 
   function Get_Float (Str : String) return Float is

@@ -1,7 +1,5 @@
-
-  with Ada.Numerics.Generic_Elementary_Functions;
-
-with Calendar, Text_Io;
+with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Text_Io;
 package body My_Math is
 
 
@@ -25,8 +23,7 @@ package body My_Math is
   -- Integer part of a real
   function Int (X : Real) return Real is
 
-    package Real_Text_Io is
-      new Text_Io.Float_Io(Real);
+    package Real_Text_Io is new Ada.Text_Io.Float_Io(Real);
 
     Neg   : Boolean := False;
     Dig   : constant Positive := 15;  -- digits of real

@@ -1,14 +1,14 @@
-with Direct_Io;
+with Ada.Direct_Io;
 with Environ, Text_Handler;
 separate (Afpx)
 package body Af_Dscr is
 
   -- Direct_io of descriptors, fields, init strings
-  package Dscr_Io is new Direct_Io (Afpx_Typ.Descriptors_Array);
+  package Dscr_Io is new Ada.Direct_Io (Afpx_Typ.Descriptors_Array);
   Dscr_File : Dscr_Io.File_Type;
-  package Fld_Io  is new Direct_Io (Afpx_Typ.Fields_Array);
+  package Fld_Io  is new Ada.Direct_Io (Afpx_Typ.Fields_Array);
   Fld_File : Fld_Io.File_Type;
-  package Init_Io is new Direct_Io (Afpx_Typ.Char_Str);
+  package Init_Io is new Ada.Direct_Io (Afpx_Typ.Char_Str);
   Init_File : Init_Io.File_Type;
 
   -- Has a descriptor been set

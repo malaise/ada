@@ -1,8 +1,8 @@
-with Text_Io;
+with Ada.Text_Io;
 with Normal;
 package body Trace is
 
-  File            : Text_Io.File_Type;
+  File            : Ada.Text_Io.File_Type;
   Trace_File_Name : constant String := "_trace_";
   Count           : Positive        := Positive'First;
   Activated       : Boolean := True;
@@ -15,8 +15,9 @@ package body Trace is
 
   procedure Create is
   begin
-    Text_Io.Create (File => File, Mode => Text_Io.Out_File,
-     Name => Trace_File_Name);
+    Ada.Text_Io.Create (File => File,
+                        Mode => Ada.Text_Io.Out_File,
+                        Name => Trace_File_Name);
     Created := True;
   end Create;
 
@@ -28,9 +29,8 @@ package body Trace is
     if not Created then
       Create;
     end if;
-    Text_Io.Put_Line (
-     File => File,
-     Item => Normal(Count, 5) & " ->" & Message & "<");
+    Ada.Text_Io.Put_Line (File => File,
+                          Item => Normal(Count, 5) & " ->" & Message & "<");
     if Count /= Positive'Last then
       Count := Positive'Succ(Count);
     else

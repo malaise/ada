@@ -1,4 +1,4 @@
-with Calendar, Mutex_Manager, Math;
+with Ada.Calendar, Mutex_Manager, Math;
 package body Rnd is
  
   type Long_Integer is new Integer;
@@ -17,7 +17,8 @@ package body Rnd is
     -- Number of seconds in current day is N.xxx
     -- Result is 0.xxx
     function Init_Rnd return Float is
-      Duree : constant Duration := abs(Calendar.Seconds(Calendar.Clock));
+      Duree : constant Duration
+            := abs(Ada.Calendar.Seconds(Ada.Calendar.Clock));
     begin
       return Float(Duree - Duration(Math.Trunc(Math.Real(Duree))));
     end Init_Rnd;

@@ -1,14 +1,14 @@
 package body Perpet is
 
   type Time_Rec is record
-    Year    : Calendar.Year_Number;
-    Month   : Calendar.Month_Number;
-    Day     : Calendar.Day_Number;
-    Seconds : Calendar.Day_Duration;
+    Year    : Ada.Calendar.Year_Number;
+    Month   : Ada.Calendar.Month_Number;
+    Day     : Ada.Calendar.Day_Number;
+    Seconds : Ada.Calendar.Day_Duration;
   end record;
 
   -- Is a year leap
-  function Is_Leap_Year (Year  : Calendar.Year_Number) return Boolean is
+  function Is_Leap_Year (Year  : Ada.Calendar.Year_Number) return Boolean is
   begin
     -- Year is multiple of 4 and not 100, or multiple of 400
     -- the parenthesis tend to optimize:
@@ -19,10 +19,10 @@ package body Perpet is
 
   -- Number of days of a month
   function Nb_Days_Month (
-   Year  : Calendar.Year_Number;
-   Month : Calendar.Month_Number) return Calendar.Day_Number is
-    Last_Day_Array : constant array (Calendar.Month_Number) of
-     Calendar.Day_Number :=
+   Year  : Ada.Calendar.Year_Number;
+   Month : Ada.Calendar.Month_Number) return Ada.Calendar.Day_Number is
+    Last_Day_Array : constant array (Ada.Calendar.Month_Number) of
+     Ada.Calendar.Day_Number :=
      (01 => 31, 02 => 28, 03 => 31, 04 => 30, 05 => 31, 06 => 30,
       07 => 31, 08 => 31, 09 => 30, 10 => 31, 11 => 30, 12 => 31);
   begin
@@ -39,7 +39,7 @@ package body Perpet is
   end Nb_Days_Month;
 
   -- Number of days of a year
-  function Nb_Days_Year (Year : Calendar.Year_Number) return Day_Range is
+  function Nb_Days_Year (Year : Ada.Calendar.Year_Number) return Day_Range is
   begin
     if Is_Leap_Year (Year) then
       -- Leap year
@@ -52,19 +52,19 @@ package body Perpet is
 
   -- Check date validity
   function Is_Valid (
-   Year  : Calendar.Year_Number;
-   Month : Calendar.Month_Number;
-   Day   : Calendar.Day_Number) return Boolean is
+   Year  : Ada.Calendar.Year_Number;
+   Month : Ada.Calendar.Month_Number;
+   Day   : Ada.Calendar.Day_Number) return Boolean is
   begin
     return Day <= Nb_Days_Month (Year, Month);
   end Is_Valid;
 
   -- Time_Rec operations
-  function Split (Date : Calendar.Time) return Time_Rec is
+  function Split (Date : Ada.Calendar.Time) return Time_Rec is
     Rec : Time_Rec;
   begin
 
-    Calendar.Split (Date => Date,
+    Ada.Calendar.Split (Date => Date,
                     Year    => Rec.Year,
                     Month   => Rec.Month,
                     Day     => Rec.Day,
@@ -72,9 +72,9 @@ package body Perpet is
     return Rec;
   end Split;
 
-  function Time_Of (Rec : Time_Rec) return Calendar.Time is
+  function Time_Of (Rec : Time_Rec) return Ada.Calendar.Time is
   begin
-    return Calendar.Time_Of (Year    => Rec.Year,
+    return Ada.Calendar.Time_Of (Year    => Rec.Year,
                              Month   => Rec.Month,
                              Day     => Rec.Day,
                              Seconds => Rec.Seconds);
@@ -127,8 +127,8 @@ package body Perpet is
   end "-";
 
   -- Add years & months to a time
-  function "+" (Date : Calendar.Time; Months : Duration_Rec)
-   return Calendar.Time is
+  function "+" (Date : Ada.Calendar.Time; Months : Duration_Rec)
+   return Ada.Calendar.Time is
   begin
     return Time_Of (Split(Date) + Months);
   exception
@@ -136,8 +136,8 @@ package body Perpet is
   end "+";
 
   -- Substract years & months from a time
-  function "-" (Date : Calendar.Time; Months : Duration_Rec)
-   return Calendar.Time is
+  function "-" (Date : Ada.Calendar.Time; Months : Duration_Rec)
+   return Ada.Calendar.Time is
   begin
     return Time_Of (Split(Date) - Months);
   exception
@@ -185,8 +185,8 @@ package body Perpet is
 
 
   -- Add days to a time
-  function "+" (Date : Calendar.Time; Days : Day_Range)
-   return Calendar.Time is
+  function "+" (Date : Ada.Calendar.Time; Days : Day_Range)
+   return Ada.Calendar.Time is
     Rec : Time_Rec := Split (Date);
     Remaining : Day_Range := Days;
     Sum : Integer;
@@ -218,8 +218,8 @@ package body Perpet is
   end "+";
 
   -- Substract days from a time
-  function "-" (Date : Calendar.Time; Days : Day_Range)
-   return Calendar.Time is
+  function "-" (Date : Ada.Calendar.Time; Days : Day_Range)
+   return Ada.Calendar.Time is
     Rec : Time_Rec := Split (Date);
     Remaining : Day_Range := Days;
     Sum : Integer;
@@ -251,11 +251,11 @@ package body Perpet is
   end "-";
 
   -- Nb of days and secs between two dates
-  function "-" (Date_1, Date_2 : Calendar.Time)
+  function "-" (Date_1, Date_2 : Ada.Calendar.Time)
     return Delta_Rec is
     Delta_Val : Delta_Rec;
     Rec_1, Rec_2 : Time_Rec;
-    use Calendar;
+    use Ada.Calendar;
   begin
     if Date_1 < Date_2 then
       raise Time_Error;
@@ -292,7 +292,8 @@ package body Perpet is
     end if;
 
     -- End of month 2, beginning of month 1
-    Delta_Val.Days := Delta_Val.Days + Nb_Days_Month (Rec_2.Year, Rec_2.Month) - Rec_2.Day;
+    Delta_Val.Days := Delta_Val.Days
+                    + Nb_Days_Month (Rec_2.Year, Rec_2.Month) - Rec_2.Day;
     Delta_Val.Days := (Delta_Val.Days + Rec_1.Day) - 1;
 
     if Rec_2.Year = Rec_1.Year then
@@ -325,31 +326,34 @@ package body Perpet is
 
   -- type Day_Of_Week_List is (Monday, Tuesday, Wednesday, Thursday, Friday,
   --                           Saturday, Sunday);
-  function Get_Day_Of_Week (Date : Calendar.Time) return Day_Of_Week_List is
+  function Get_Day_Of_Week (Date : Ada.Calendar.Time) return Day_Of_Week_List is
     Delta_Days : Day_Range;
     Ref_Rec : constant Time_Rec := (
-     Year => Calendar.Year_Number'First,
-     Month => Calendar.Month_Number'First,
-     Day =>  Calendar.Day_Number'First,
+     Year => Ada.Calendar.Year_Number'First,
+     Month => Ada.Calendar.Month_Number'First,
+     Day =>  Ada.Calendar.Day_Number'First,
      Seconds => 0.0);
-    Ref_Date : constant Calendar.Time := Time_Of (Ref_Rec);
+    Ref_Date : constant Ada.Calendar.Time := Time_Of (Ref_Rec);
     Ref_Day_Of_Week : constant Day_Of_Week_List := Tuesday;
   begin
     Delta_Days := "-" (Date, Ref_Date).Days;
-    return Day_Of_Week_List'Val ( (Delta_Days + Day_Of_Week_List'Pos(Ref_Day_Of_Week)) rem 7);
+    return Day_Of_Week_List'Val ( (Delta_Days
+           + Day_Of_Week_List'Pos(Ref_Day_Of_Week)) rem 7);
   end Get_Day_Of_Week;
 
   -- subtype Week_Of_Year_Range is Natural range 1 .. 53;
-  function Get_Week_Of_Year (Date : Calendar.Time) return Week_Of_Year_Range is
+  function Get_Week_Of_Year (Date : Ada.Calendar.Time)
+                             return Week_Of_Year_Range is
     Rec_0 : Time_Rec;
-    Date_0 : Calendar.Time;
+    Date_0 : Ada.Calendar.Time;
     Day_Date_0 : Day_Of_Week_List;
     Week_Of_Week_0 : Week_Of_Year_Range;
     Date_0_Offset : Day_Range;
 
     Delta_Days : Delta_Rec;
 
-    Max_Nb_Days_A_Week : constant := Day_Of_Week_List'Pos(Day_Of_Week_List'Last) + 1;
+    Max_Nb_Days_A_Week : constant
+                       := Day_Of_Week_List'Pos(Day_Of_Week_List'Last) + 1;
     Week_Offset : Natural range 0 .. Week_Of_Year_Range'Last;
     Week_Of_Date : Week_Of_Year_Range;
   begin
@@ -393,7 +397,7 @@ package body Perpet is
     
   end Get_Week_Of_Year;
 
-  function Get_Month_Name (Number : Calendar.Month_Number)
+  function Get_Month_Name (Number : Ada.Calendar.Month_Number)
                           return Month_Name_List is
   begin
     return Month_Name_List'Val(Natural(Number) - 1);

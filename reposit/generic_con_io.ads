@@ -1,4 +1,3 @@
-with Calendar;
 with X_Mng, Timers;
 package Generic_Con_Io is
   subtype Font_No_Range is Natural range 0 .. 3;
