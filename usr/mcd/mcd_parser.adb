@@ -67,9 +67,9 @@ package body Parser is
    Sin      => (Nosy, "push Sin(A) A in radiants     ", False),
    Cos      => (Nosy, "push Cos(A) A in radiants     ", False),
    Tan      => (Nosy, "push Tan(A) A in radiants     ", False),
-   ASin     => (Nosy, "push ASin(A) in radiants      ", False),
-   ACos     => (Nosy, "push ACos(A) in radiants      ", False),
-   ATan     => (Nosy, "push ATan(A) in radiants      ", True),
+   Asin     => (Nosy, "push ASin(A) in radiants      ", False),
+   Acos     => (Nosy, "push ACos(A) in radiants      ", False),
+   Atan     => (Nosy, "push ATan(A) in radiants      ", True),
 
    Exp      => (Nosy, "push E                        ", False),
    Ln       => (Nosy, "push ln(A)                    ", False),

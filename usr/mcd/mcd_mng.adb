@@ -92,9 +92,9 @@ package body Mcd_Mng is
     function Sin     (X : Item_Rec) return Item_Rec;
     function Cos     (X : Item_Rec) return Item_Rec;
     function Tan     (X : Item_Rec) return Item_Rec;
-    function ASin    (X : Item_Rec) return Item_Rec;
-    function ACos    (X : Item_Rec) return Item_Rec;
-    function ATan    (X : Item_Rec) return Item_Rec;
+    function Asin    (X : Item_Rec) return Item_Rec;
+    function Acos    (X : Item_Rec) return Item_Rec;
+    function Atan    (X : Item_Rec) return Item_Rec;
     function Ln      (X : Item_Rec) return Item_Rec;
     function Log     (X : Item_Rec) return Item_Rec;
 
