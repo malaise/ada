@@ -1,17 +1,20 @@
 # A percentage of B
 
-# Error message, check and store args
+# Error message
 [ "Error, 2 positive numbers expected." putl
 ssize popn retall ] E popr
 ssize 2 /= E pushr ifcall
+
+# Check and store one arg
+[ swap dup isinte ~ E pushr ifcall
+dup ispos ~ E pushr ifcall
+swap popr
+] C popr
+
 # A
-dup isinte ~ E pushr ifcall
-dup 0 <= E pushr ifcall
-a popr
+a C pushr call
 # B
-dup isinte ~ E pushr ifcall
-dup 0 <= E pushr ifcall
-b popr
+b C pushr call
 
 # Format a % result (2 digits)
 [ 100.0 *
