@@ -126,7 +126,11 @@ package body ONE_FILE_STATEMENTS is
       raise;
   end COUNT_STATEMENTS_OF_FILE;
 
-  procedure PRINT_STATEMENTS_OF_FILE (FILE_NAME : STRING) is
+  -- If FILE_NAME is empty, put total so far and reset it
+  procedure PRINT_STATEMENTS_OF_FILE (
+             FILE_NAME : STRING;
+             PUT_IT : in BOOLEAN := TRUE) is
+
     FILE_NAME_LEN : constant NATURAL := FILE_NAME'LENGTH;
     COUNT : INTEGER range -1 ..INTEGER'LAST;
     MAX_TAB : constant := 60;
@@ -135,20 +139,22 @@ package body ONE_FILE_STATEMENTS is
   begin
 
     if FILE_NAME = "" then
-      for I in INTEGER range 1 .. MAX_TAB + GAP'LENGTH + MAX_DIG + 1 loop
-        TEXT_IO.PUT ("-");
-      end loop;
-      TEXT_IO.NEW_LINE;
-
-      declare
-        TOTAL_STR : constant STRING := "TOTAL statements";
-      begin
-        TEXT_IO.PUT (TOTAL_STR);
-        for I in INTEGER range TOTAL_STR'LENGTH .. MAX_TAB loop
-          TEXT_IO.PUT (" ");
+      if PUT_IT then
+        for I in INTEGER range 1 .. MAX_TAB + GAP'LENGTH + MAX_DIG + 1 loop
+          TEXT_IO.PUT ("-");
         end loop;
-      end;
-      TEXT_IO.PUT_LINE (GAP & NORMAL(TOTAL, MAX_DIG));
+        TEXT_IO.NEW_LINE;
+
+        declare
+          TOTAL_STR : constant STRING := "TOTAL statements";
+        begin
+          TEXT_IO.PUT (TOTAL_STR);
+          for I in INTEGER range TOTAL_STR'LENGTH .. MAX_TAB loop
+            TEXT_IO.PUT (" ");
+          end loop;
+        end;
+        TEXT_IO.PUT_LINE (GAP & NORMAL(TOTAL, MAX_DIG));
+      end if;
       TOTAL := 0;
 
     else 
@@ -160,24 +166,29 @@ package body ONE_FILE_STATEMENTS is
           COUNT := -1;
       end;
 
-      TEXT_IO.PUT (FILE_NAME);
-      if FILE_NAME_LEN < MAX_TAB then
-        TEXT_IO.PUT (" ");
-        for I in FILE_NAME_LEN+2 .. MAX_TAB loop
-          TEXT_IO.PUT (".");
-        end loop;
-      elsif FILE_NAME_LEN > MAX_TAB then
-        TEXT_IO.NEW_LINE;
-        for I in INTEGER range 1 .. MAX_TAB loop
-          TEXT_IO.PUT (".");
-        end loop;
+      if PUT_IT then
+        TEXT_IO.PUT (FILE_NAME);
+        if FILE_NAME_LEN < MAX_TAB then
+          TEXT_IO.PUT (" ");
+          for I in FILE_NAME_LEN+2 .. MAX_TAB loop
+            TEXT_IO.PUT (".");
+          end loop;
+        elsif FILE_NAME_LEN > MAX_TAB then
+          TEXT_IO.NEW_LINE;
+          for I in INTEGER range 1 .. MAX_TAB loop
+            TEXT_IO.PUT (".");
+          end loop;
+        end if;
+
+        if COUNT >= 0 then
+          TEXT_IO.PUT_LINE (GAP & NORMAL(COUNT, MAX_DIG));
+        else
+          TEXT_IO.PUT_LINE (GAP & " SKIPPED");
+        end if;
       end if;
 
       if COUNT >= 0 then
-        TEXT_IO.PUT_LINE (GAP & NORMAL(COUNT, MAX_DIG));
         TOTAL := TOTAL + COUNT;
-      else
-        TEXT_IO.PUT_LINE (GAP & " SKIPPED");
       end if;
 
     end if;
@@ -185,3 +196,4 @@ package body ONE_FILE_STATEMENTS is
   end PRINT_STATEMENTS_OF_FILE;
 
 end ONE_FILE_STATEMENTS;
+
