@@ -74,127 +74,127 @@ package body Ios is
         end if;
       when Chrs =>
         if Item.Val_Text(1) = '"' then
-          TEXT_IO.PUT (ITEM.VAL_TEXT(2 .. ITEM.VAL_LEN - 1));
+          Text_Io.Put (Item.Val_Text(2 .. Item.Val_Len - 1));
         else
-          TEXT_IO.PUT (ITEM.VAL_TEXT(1 .. ITEM.VAL_LEN));
+          Text_Io.Put (Item.Val_Text(1 .. Item.Val_Len));
         end if;
       when others =>
-        raise INVALID_ARGUMENT;
+        raise Invalid_Argument;
     end case;
-  end PUT;
+  end Put;
     
-  procedure PUT_LINE (ITEM : in ITEM_REC) is
+  procedure Put_Line (Item : in Item_Rec) is
   begin
-    PUT(ITEM);
-    NEW_LINE;
-  end PUT_LINE;
+    Put(Item);
+    New_Line;
+  end Put_Line;
 
-  procedure NEW_LINE is
+  procedure New_Line is
   begin
-    TEXT_IO.NEW_LINE;
-  end NEW_LINE;
+    Text_Io.New_Line;
+  end New_Line;
 
-  function STRREAL (S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(REAL);
-    LAST : POSITIVE;
+  function Strreal (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Real);
+    Last : Positive;
   begin
-    if S.KIND /= CHRS then
-      raise INVALID_ARGUMENT;
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
     end if;
-    REAL_IO.GET(S.VAL_TEXT(1 .. S.VAL_LEN), RES.VAL_REAL, LAST);
-    if LAST /= S.VAL_LEN then
-      raise ARGUMENT_MISMATCH;
+    Real_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Real, Last);
+    if Last /= S.Val_Len then
+      raise Argument_Mismatch;
     end if;
-    return RES;
-  end STRREAL;
+    return Res;
+  end Strreal;
 
-  function STRINTE (S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(INTE);
-    LAST : POSITIVE;
+  function Strinte (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Inte);
+    Last : Positive;
   begin
-    if S.KIND /= CHRS then
-      raise INVALID_ARGUMENT;
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
     end if;
-    INTE_IO.GET(S.VAL_TEXT(1 .. S.VAL_LEN), RES.VAL_INTE, LAST);
-    if LAST /= S.VAL_LEN then
-      raise ARGUMENT_MISMATCH;
+    Inte_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Inte, Last);
+    if Last /= S.Val_Len then
+      raise Argument_Mismatch;
     end if;
-    return RES;
-  end STRINTE;
+    return Res;
+  end Strinte;
 
-  function STRBOOL (S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(BOOL);
-    LAST : POSITIVE;
+  function Strbool (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Bool);
+    Last : Positive;
   begin
-    if S.KIND /= CHRS then
-      raise INVALID_ARGUMENT;
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
     end if;
-    BOOL_IO.GET(S.VAL_TEXT(1 .. S.VAL_LEN), RES.VAL_BOOL, LAST);
-    if LAST /= S.VAL_LEN then
-      raise ARGUMENT_MISMATCH;
+    Bool_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Bool, Last);
+    if Last /= S.Val_Len then
+      raise Argument_Mismatch;
     end if;
-    return RES;
-  end STRBOOL;
+    return Res;
+  end Strbool;
     
-  function STROF (ITEM : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(CHRS);
+  function Strof (Item : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
 
     -- String is at the end of RES
     -- Move it after some spaces at the beginning
     --  so that the whoe takes SIZE characters
-    procedure FIX_SIZE (SIZE : in TEXT_IO.FIELD) is
-      FIRST : NATURAL := 0;
-      LEN   : POSITIVE;
+    procedure Fix_Size (Size : in Text_Io.Field) is
+      First : Natural := 0;
+      Len   : Positive;
     begin
-      for I in reverse RES.VAL_TEXT'RANGE loop
-        if RES.VAL_TEXT(I) = ' ' then
-          FIRST := I + 1;
+      for I in reverse Res.Val_Text'Range loop
+        if Res.Val_Text(I) = ' ' then
+          First := I + 1;
           exit;
         end if;
       end loop;
-      if FIRST = 0 then
-        RES.VAL_LEN := 0;
+      if First = 0 then
+        Res.Val_Len := 0;
         return;
       end if;
-      LEN := RES.VAL_TEXT'LAST - FIRST + 1;
-      if LEN >= SIZE then
-        RES.VAL_LEN := LEN;
-        RES.VAL_TEXT(1 .. LEN) := RES.VAL_TEXT(FIRST .. RES.VAL_TEXT'LAST);
+      Len := Res.Val_Text'Last - First + 1;
+      if Len >= Size then
+        Res.Val_Len := Len;
+        Res.Val_Text(1 .. Len) := Res.Val_Text(First .. Res.Val_Text'Last);
       else
-        RES.VAL_LEN := SIZE;
-        RES.VAL_TEXT(SIZE - LEN + 1 .. SIZE)
-            := RES.VAL_TEXT(FIRST .. RES.VAL_TEXT'LAST);
+        Res.Val_Len := Size;
+        Res.Val_Text(Size - Len + 1 .. Size)
+            := Res.Val_Text(First .. Res.Val_Text'Last);
       end if;
-    end FIX_SIZE;
+    end Fix_Size;
 
   begin
-    CHECK_DEFAULT_FORMATS;
+    Check_Default_Formats;
 
-    case ITEM.KIND is
-      when INTE =>
-        RES.VAL_TEXT := (others => ' ');
-        INTE_IO.PUT(RES.VAL_TEXT, ITEM.VAL_INTE);
-        FIX_SIZE (INTE_IO.DEFAULT_WIDTH);
-      when REAL =>
-        RES.VAL_TEXT := (others => ' ');
-        REAL_IO.PUT(RES.VAL_TEXT, ITEM.VAL_REAL);
-         FIX_SIZE (REAL_IO.DEFAULT_FORE + 1 + REAL_IO.DEFAULT_AFT
-                   + REAL_IO.DEFAULT_EXP);
-      when BOOL  =>
-        if ITEM.VAL_BOOL then
-          RES.VAL_LEN := 4;
-          RES.VAL_TEXT(1 .. RES.VAL_LEN) := "True";
+    case Item.Kind is
+      when Inte =>
+        Res.Val_Text := (others => ' ');
+        Inte_Io.Put(Res.Val_Text, Item.Val_Inte);
+        Fix_Size (Inte_Io.Default_Width);
+      when Real =>
+        Res.Val_Text := (others => ' ');
+        Real_Io.Put(Res.Val_Text, Item.Val_Real);
+         Fix_Size (Real_Io.Default_Fore + 1 + Real_Io.Default_Aft
+                   + Real_Io.Default_Exp);
+      when Bool  =>
+        if Item.Val_Bool then
+          Res.Val_Len := 4;
+          Res.Val_Text(1 .. Res.Val_Len) := "True";
         else
-          RES.VAL_LEN := 5;
-          RES.VAL_TEXT(1 .. RES.VAL_LEN) := "False";
+          Res.Val_Len := 5;
+          Res.Val_Text(1 .. Res.Val_Len) := "False";
         end if;
-      when CHRS =>
-        RES := ITEM;
+      when Chrs =>
+        Res := Item;
       when others =>
-        raise INVALID_ARGUMENT;
+        raise Invalid_Argument;
     end case;
-    return RES;
-  end STROF;
+    return Res;
+  end Strof;
 
-end IOS;
+end Ios;
 

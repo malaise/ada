@@ -66,17 +66,17 @@ package body One_File_Statements is
         -- Every ';' within is a formal parameter list
         if  C = '(' then
           -- Count the number of levels of parentheses
-          LEVELS := LEVELS + 1;
+          Levels := Levels + 1;
 
           -- Read ahead until the whole construct is closed, LEVEL = 0
-          while LEVELS > 0 loop
-            GET (FILE, C);
+          while Levels > 0 loop
+            Get (File, C);
             if C = '(' then
               -- Increase the level if another '(' is found
-              LEVELS := LEVELS + 1;
+              Levels := Levels + 1;
             elsif C = ')' then
               -- Decrease the leval if a ')' is found
-              LEVELS := LEVELS - 1;
+              Levels := Levels - 1;
             end if;
           end loop;
 
