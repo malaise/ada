@@ -1,4 +1,4 @@
-with Ada.Text_Io, Calendar;
+with Ada.Text_Io, Ada.Calendar;
 with My_Io, U_Rand, Clear_Screen;
 procedure G is
   -- generated number
@@ -12,10 +12,13 @@ procedure G is
   Got_Res, Res : Div_Res;
   Success : Boolean;
 
+  Start_Time : Ada.Calendar.Time;
+  Time_Spent : Natural;
+
   procedure Init is
     N : Positive;
   begin
-    N := Positive (Calendar.Seconds(Calendar.Clock));
+    N := Positive (Ada.Calendar.Seconds(Ada.Calendar.Clock));
     N := (N mod (U_Rand.Seed_Range_2'Last)) + 1;
     U_Rand.Start (New_L => N);
   end Init;
@@ -92,6 +95,7 @@ begin
     Num := Rand;
     Success := True;
     My_Io.Put ("   ");
+    Start_Time := Ada.Calendar.Clock;
 
     Party:
     loop
@@ -152,8 +156,13 @@ begin
     end loop Party;
 
     My_Io.Put ("   ");
-    if Success then My_Io.Put_Line (" Perfect!");
-    else My_Io.Put_Line (" Some errors...");
+    if Success then
+      Time_Spent := Positive (Ada.Calendar."-" (Ada.Calendar.Clock,
+                                                Start_Time) );
+      My_Io.Put_Line (" Perfect, in" & Time_Spent'Img
+                    & " seconds!");
+    else
+      My_Io.Put_Line (" Some errors...");
     end if;
     My_Io.New_Line; 
   end loop Game;
