@@ -1,0 +1,83 @@
+with Normal;
+with Conv;
+package body String_Util is
+
+  function Str2Geo (Str : Coord_Str) return Lat_Lon.Lat_Lon_Geo_Rec is
+    Geo : Lat_Lon.Lat_Lon_Geo_Rec;
+  begin
+    -- Check / and .
+    if Str(4) /= '.' or else Str(7) /= '.' or else Str(10) /= '/'
+    or else Str(15) /= '.' or else Str(18) /= '.' then
+      raise Format_Error;
+    end if;
+    -- Lat N or S 
+    if Str(1) = 'N' then
+      Geo.Lat.North := True;
+    elsif Str(1) = 'S' then
+      Geo.Lat.North := False;
+    else
+      raise Format_Error;
+    end if;
+    -- Lon W or E 
+    if Str(11) = 'E' then
+      Geo.Lon.East := True;
+    elsif Str(11) = 'W' then
+      Geo.Lon.East := False;
+    else
+      raise Format_Error;
+    end if;
+
+    -- Lat
+    Geo.Lat.Coord.Deg := Conv.Deg_Range'Value(Str(2 .. 3));
+    Geo.Lat.Coord.Min := Conv.Deg_Range'Value(Str(5 .. 6));
+    Geo.Lat.Coord.Sec := Conv.Deg_Range'Value(Str(8 .. 9));
+    -- Lon
+    Geo.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(12 .. 14));
+    Geo.Lon.Coord.Min := Conv.Deg_Range'Value(Str(16 .. 17));
+    Geo.Lon.Coord.Sec := Conv.Deg_Range'Value(Str(19 .. 20));
+ 
+    -- Chek the whole thing
+    if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
+      raise Format_Error;
+    end if;
+
+    -- Ok
+    return Geo;
+  end Str2Geo;
+    
+
+  function Geo2Str (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Coord_Str is
+    Str : Coord_Str;
+  begin
+    -- Set / and .
+    Str(4) := '.'; Str(7) := '.';
+    Str(10) := '/';
+    Str(15) := '.'; Str(18) := '.';
+
+    -- North or south lat, East or west lon
+    if Geo.Lat.North then
+      Str(1) := 'N';
+    else
+      Str(1) := 'S';
+    end if;
+    if Geo.Lon.East then
+      Str(11) := 'E';
+    else
+      Str(11) := 'W';
+    end if;
+
+    -- Put the numbers
+    Str( 2 ..  3) := Normal (Geo.Lat.Coord.Deg, 3, Gap => '0');
+    Str( 5 ..  6) := Normal (Geo.Lat.Coord.Min, 3, Gap => '0');
+    Str( 8 ..  9) := Normal (Geo.Lat.Coord.Sec, 3, Gap => '0');
+    Str(12 .. 14) := Normal (Geo.Lon.Coord.Deg, 3, Gap => '0');
+    Str(16 .. 17) := Normal (Geo.Lon.Coord.Min, 3, Gap => '0');
+    Str(19 .. 20) := Normal (Geo.Lon.Coord.Sec, 3, Gap => '0');
+
+    -- Done
+    return Str;
+  end Geo2Str;
+    
+    
+end String_Util;
+

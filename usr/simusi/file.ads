@@ -1,7 +1,5 @@
-with COMMON; use COMMON;
-package FILE is
-
-  -- MUST HAVE pragma ELABORATE!
+with Common; use Common;
+package File is
 
   -- Does everything at elaboration:
   --  Errors are traced on stderr
@@ -17,11 +15,12 @@ package FILE is
   -- - Duplicate (start, stop) in file
   -- - Line with no cote
   -- - Not same amount of cotes
-  LOAD_ERROR : exception;
+  Load_Error : exception;
 
-  function GET_NB_COTE return COTE_RANGE;
+  function Get_Nb_Cote return Cote_Range;
 
-  function GET_MANUFA return MANUFA_ARRAY;
-  function GET_DESIGN return DESIGN_ARRAY;
+  function Get_Manufa return Manufa_Array;
+  function Get_Design return Design_Array;
 
-end FILE;
+end File;
+

@@ -1,27 +1,28 @@
-package GRID_1 is
+package Grid_1 is
 
 
-  subtype ROW_COORDINATE is CHARACTER range 'A' .. 'J';
-  subtype COL_COORDINATE is CHARACTER range 'K' .. 'T';
+  subtype Row_Coordinate is Character range 'A' .. 'J';
+  subtype Col_Coordinate is Character range 'K' .. 'T';
 
 
-  type COORDINATE_REC is record
-    ROW : ROW_COORDINATE;
-    COL : COL_COORDINATE;
+  type Coordinate_Rec is record
+    Row : Row_Coordinate;
+    Col : Col_Coordinate;
   end record;
 
 
-  procedure INITIALIZE (KEY : in string);
+  procedure Initialize (Key : in string);
 
-  -- C can be any char from ' ' to '~' or ASCII.CR
+  -- C can be any char from ' ' to '~' or Ascii.Cr
   -- Any other char is discarded
-  function ENCODE (C : CHARACTER) return COORDINATE_REC;
+  function Encode (C : Character) return Coordinate_Rec;
 
-  function DECODE (COORDINATE : COORDINATE_REC) return CHARACTER;
+  function Decode (Coordinate : Coordinate_Rec) return Character;
 
-  GRID_NOT_INIT : exception;
-  INVALID_CHARACTER : EXCEPTION;
+  Grid_Not_Init : exception;
+  Invalid_Character : exception;
 
-  procedure DUMP;
+  procedure Dump;
 
-end GRID_1;
+end Grid_1;
+

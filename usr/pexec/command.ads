@@ -1,23 +1,24 @@
-package COMMAND is
+package Command is
 
   -- Print command line syntax
-  procedure PRINT_USAGE;
+  procedure Print_Usage;
 
   -- Parse the command line. Must be called once and only once,
-  --  before other calls (or ALREADY_PARSED is raised);
-  -- NO_COMMAND may be raised here
+  --  before other calls (or Already_Parsed is raised);
+  -- No_Command may be raised here
   -- Picks the first -adcf option, then builds the command_line argument
-  procedure PARSE (NO_ACTION,      NO_NAME_OF_DIR,
-                   NOT_IN_CURRENT, FIRST_LEVEL_ONLY, LEAVES_ONLY,
-                   NO_STOP_ON_ERROR : out BOOLEAN);
+  procedure Parse (No_Action,      No_Name_Of_Dir,
+                   Not_In_Current, First_Level_Only, Leaves_Only,
+                   No_Stop_On_Error : out Boolean);
 
-  -- These 2 must be called after PARSE (or NOT_PARSED is raised).
-  -- They give info about the command_line (NTH_COMMAND may return "").
-  function NBRE_COMMANDS return NATURAL;
+  -- These 2 must be called after Parse (or Not_Parsed is raised).
+  -- They give info about the command_line (Nth_Command may return "").
+  function Nbre_Commands return Natural;
 
-  function NTH_COMMAND (N : POSITIVE) return STRING;
+  function Nth_Command (N : Positive) return String;
 
-  ALREADY_PARSED, NOT_PARSED : exception;
-  NO_COMMAND : exception;
+  Already_Parsed, Not_Parsed : exception;
+  No_Command : exception;
 
-end COMMAND;
+end Command;
+

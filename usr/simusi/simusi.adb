@@ -1,18 +1,18 @@
-with MY_IO;
-with COMMON, RESOLUTION, DISPLAY;
-procedure SIMUSI is
+with My_Io;
+with Common, Resolution, Display;
+procedure Simusi is
 
 begin
-  DISPLAY.PRINT_TITTLE(COMMON.MANUFA);
-  RESOLUTION.SOLVE (COMMON.MANUFA);
+  Display.Print_Tittle(Common.Manufa);
+  Resolution.Solve (Common.Manufa);
 
-  DISPLAY.PRINT_TITTLE(COMMON.DESIGN);
-  RESOLUTION.SOLVE (COMMON.DESIGN);
+  Display.Print_Tittle(Common.Design);
+  Resolution.Solve (Common.Design);
 
-  DISPLAY.PRINT_RESULT;
+  Display.Print_Result;
 
 exception
-  when RESOLUTION.ABORT_ERROR =>
-    DISPLAY.PRINT_RESULT;
-end SIMUSI;
+  when Resolution.Abort_Error =>
+    Display.Print_Result;
+end Simusi;
 

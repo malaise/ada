@@ -1,374 +1,374 @@
-with RND, SORTS;
-with MY_IO;
+with Rnd, Sorts;
+with My_Io;
 
-package body EURISTIC is
+package body Euristic is
 
   -- State of a zero in zero descriptors
   -- Used also in zero transfer
-  type ZERO_STATE_LIST is (FREE, SLASHED, SQUARED);
+  type Zero_State_List is (Free, Slashed, Squared);
   -- transfer of state of zeros after euristic (for reduction or result)
   -- No zero are free at this point, so this state is used to describe non-zero cell
-  type ZERO_TRANSFER_TAB is array (TYPES.INDEX_RANGE range <>, TYPES.INDEX_RANGE range <>) of ZERO_STATE_LIST;
+  type Zero_Transfer_Tab is array (Types.Index_Range Range <>, Types.Index_Range range <>) of Zero_State_List;
   -- Have at least 1 zero/row and 1 zero/col
-  procedure INIT_SEARCH (MATTRIX : in out TYPES.MATTRIX_REC) is
-      LOWEST : NATURAL;
+  procedure Init_Search (Mattrix : in out Types.Mattrix_Rec) is
+    Lowest : Natural;
   begin
     -- One zero in each row
-    for ROW in 1 .. MATTRIX.DIM loop
+    for Row in 1 .. Mattrix.Dim loop
       -- Search lowest elem of row
-      LOWEST := TYPES.CELL_RANGE'LAST;
-      for COL in 1 .. MATTRIX.DIM loop
-        if MATTRIX.NOTES(ROW, COL) < LOWEST then LOWEST := MATTRIX.NOTES(ROW, COL); end if;
+      Lowest := Types.Cell_Range'Last;
+      for Col in 1 .. Mattrix.Dim loop
+        if Mattrix.Notes(Row, Col) < Lowest then Lowest := Mattrix.Notes(Row, Col); end if;
       end loop;
       -- Substract it from each element
-      if LOWEST /= 0 then
-        for COL in 1 .. MATTRIX.DIM loop
-          MATTRIX.NOTES(ROW, COL)  := MATTRIX.NOTES(ROW, COL) - LOWEST;
+      if Lowest /= 0 then
+        for Col in 1 .. Mattrix.Dim loop
+          Mattrix.Notes(Row, Col)  := Mattrix.Notes(Row, Col) - Lowest;
         end loop;
       end if;
     end loop;
 
-    -- One zero in each COL
-    for COL in 1 .. MATTRIX.DIM loop
+    -- One zero in each col
+    for Col in 1 .. Mattrix.Dim loop
       -- Search lowest elem of col
-      LOWEST := TYPES.CELL_RANGE'LAST;
-      for ROW in 1 .. MATTRIX.DIM loop
-        if MATTRIX.NOTES(ROW, COL) < LOWEST then LOWEST := MATTRIX.NOTES(ROW, COL); end if;
+      Lowest := Types.Cell_Range'Last;
+      for Row in 1 .. Mattrix.Dim loop
+        if Mattrix.Notes(Row, Col) < Lowest then Lowest := Mattrix.Notes(Row, Col); end if;
       end loop;
       -- Substract it from each element
-      if LOWEST /= 0 then
-        for ROW in 1 .. MATTRIX.DIM loop
-          MATTRIX.NOTES(ROW, COL)  := MATTRIX.NOTES(ROW, COL) - LOWEST;
+      if Lowest /= 0 then
+        for Row in 1 .. Mattrix.Dim loop
+          Mattrix.Notes(Row, Col)  := Mattrix.Notes(Row, Col) - Lowest;
         end loop;
       end if;
     end loop;
-  end INIT_SEARCH;
+  end Init_Search;
 
   -- Try to find a euristic solution
-  -- If OK, DONE is set to TRUE
-  -- Else, TRANSFER is set for reduction 
-  procedure EURISTIC_SEARCH (MATTRIX : in TYPES.MATTRIX_REC;
-   DONE : out BOOLEAN; TRANSFER : out ZERO_TRANSFER_TAB) is
+  -- If OK, Done is set to True
+  -- Else, Transfer is set for reduction 
+  procedure Euristic_Search (Mattrix : in Types.Mattrix_Rec;
+   Done : out Boolean; Transfer : out Zero_Transfer_Tab) is
 
     -- For each square with 0, keep its pos and the number of zeros in
     -- its row and col
-    type ZERO_DESC_REC is record
-      ROW : TYPES.INDEX_RANGE;
-      COL : TYPES.INDEX_RANGE;
-      SIGMA : POSITIVE;
-      STATE : ZERO_STATE_LIST := FREE;
+    type Zero_Desc_Rec is record
+      Row : Types.Index_Range;
+      Col : Types.Index_Range;
+      Sigma : Positive;
+      State : Zero_State_List := Free;
     end record;
     -- To sort zero dscriptors
-    function "<" (LEFT, RIGHT : ZERO_DESC_REC) return BOOLEAN;
+    function "<" (Left, Right : Zero_Desc_Rec) return Boolean;
   
-    type ZERO_DESC_TAB_GEN is array (POSITIVE range <>) of ZERO_DESC_REC;
+    type Zero_Desc_Tab_Gen is array (Positive range <>) of Zero_Desc_Rec;
 
-    package ZERO_DESC_SORT is new SORTS (
-     TYP_OBJECT => ZERO_DESC_REC,
-     TYP_INDEX  => POSITIVE,
+    package Zero_Desc_Sort is new Sorts (
+     Typ_Object => Zero_Desc_Rec,
+     Typ_Index  => Positive,
      "<"        => "<",
-     TYP_ARRAY  => ZERO_DESC_TAB_GEN);
+     Typ_Array  => Zero_Desc_Tab_Gen);
 
     -- Index in mattrix
-    subtype INDEX_RANGE is TYPES.INDEX_RANGE range 1 .. MATTRIX.DIM;
-    -- ZERO_DESC_REC for all the mattrix
-    subtype ZERO_DESC_RANGE is POSITIVE range 1 .. MATTRIX.DIM * MATTRIX.DIM;
-    subtype ZERO_DESC_TAB is ZERO_DESC_TAB_GEN(ZERO_DESC_RANGE);
-    ZERO_DESC : ZERO_DESC_TAB;
-    NB_ZERO : NATURAL range 0 .. ZERO_DESC_RANGE'LAST;
-    -- Local copy of DONE
-    LOC_DONE : BOOLEAN;
+    subtype Index_Range is Types.Index_Range range 1 .. Mattrix.Dim;
+    -- Zero_Desc_Rec for all the mattrix
+    subtype Zero_Desc_Range is Positive range 1 .. Mattrix.Dim * Mattrix.Dim;
+    subtype Zero_Desc_Tab is Zero_Desc_Tab_Gen(Zero_Desc_Range);
+    Zero_Desc : Zero_Desc_Tab;
+    Nb_Zero : Natural range 0 .. Zero_Desc_Range'Last;
+    -- Local copy of Done
+    Loc_Done : Boolean;
 
     -- Instantiate sorting
     -- Free zeros first, in order of crescent SIGMA, then slashed then squared zeros
-    function "<" (LEFT, RIGHT : ZERO_DESC_REC) return BOOLEAN is
+    function "<" (Left, Right : Zero_Desc_Rec) return Boolean is
     begin
-      if LEFT.STATE = FREE then
-        if RIGHT.STATE /= FREE then
-          -- LEFT FREE and not RIGHT
-          return TRUE;
+      if Left.State = Free then
+        if Right.State /= Free then
+          -- Left Free and not Right
+          return True;
         else
-          -- LEFT and RIGHT FREE
-          return LEFT.SIGMA < RIGHT.SIGMA;
+          -- Left and Right Free
+          return Left.Sigma < Right.Sigma;
         end if;
       else
-        return LEFT.STATE = SLASHED and then RIGHT.STATE = SQUARED;
+        return Left.State = Slashed and then Right.State = Squared;
       end if;
     end "<";
 
   begin
 
-    INIT_ZEROS:
+    Init_Zeros:
     declare
       -- Number of zeros/row, number of zeros/col
-      ZERO_ROW : array (1 .. MATTRIX.DIM) of NATURAL := (others => 0);
-      ZERO_COL : array (1 .. MATTRIX.DIM) of NATURAL := (others => 0);
+      Zero_Row : array (1 .. Mattrix.Dim) of Natural := (others => 0);
+      Zero_Col : array (1 .. Mattrix.Dim) of Natural := (others => 0);
     begin
       -- Count zeros in rows and cols and store zeros in desc
       -- Sigmas are unknown yet
-      NB_ZERO := 0;
-      for ROW in INDEX_RANGE loop
-        for COL in INDEX_RANGE loop
-          if MATTRIX.NOTES(ROW, COL) = 0 then
+      Nb_Zero := 0;
+      for Row in Index_Range loop
+        for Col in Index_Range loop
+          if Mattrix.Notes(Row, Col) = 0 then
             -- Number of zeros in this row and col
-            ZERO_ROW(ROW) := ZERO_ROW(ROW) + 1;
-            ZERO_COL(COL) := ZERO_COL(COL) + 1;
+            Zero_Row(Row) := Zero_Row(Row) + 1;
+            Zero_Col(Col) := Zero_Col(Col) + 1;
             -- Descriptor of the zero: all is set but sigma
-            NB_ZERO := NB_ZERO + 1;
-            ZERO_DESC(NB_ZERO).ROW := ROW;
-            ZERO_DESC(NB_ZERO).COL := COL;
-            ZERO_DESC(NB_ZERO).STATE := FREE;
+            Nb_Zero := Nb_Zero + 1;
+            Zero_Desc(Nb_Zero).Row := Row;
+            Zero_Desc(Nb_Zero).Col := Col;
+            Zero_Desc(Nb_Zero).State := Free;
           end if;
         end loop;
       end loop;
 
       -- Set sigmas of zero descriptors
-      for NO_ZERO in 1 .. NB_ZERO loop
+      for No_Zero in 1 .. Nb_Zero loop
         -- Number of zeros in its row + col
-        ZERO_DESC(NO_ZERO).SIGMA := ZERO_ROW(ZERO_DESC(NO_ZERO).ROW)
-                                  + ZERO_COL(ZERO_DESC(NO_ZERO).COL);
+        Zero_Desc(No_Zero).Sigma := Zero_Row(Zero_Desc(No_Zero).Row)
+                                  + Zero_Col(Zero_Desc(No_Zero).Col);
       end loop;
-    end INIT_ZEROS;
+    end Init_Zeros;
 
     -- Init random serial list
-    RND.RANDOMIZE;
+    Rnd.Randomize;
 
-    EURISTIC_LOOP:
+    Euristic_Loop:
     loop
     
       -- Sort the list of zeros
-      SORT_ZERO_DESC:
+      Sort_Zero_Desc:
       begin
-        ZERO_DESC_SORT.QUICK_SORT(ZERO_DESC(1 .. NB_ZERO));
-      end SORT_ZERO_DESC;
+        Zero_Desc_Sort.Quick_Sort(Zero_Desc(1 .. Nb_Zero));
+      end Sort_Zero_Desc;
 
-      TRY_TO_SOLVE:
+      Try_To_Solve:
       declare
         -- Mattrix of zeros : each zero has either an index in zero desc or 0 if content of MATTRIX is not zero
-        CROSS_REF : array (1 .. MATTRIX.DIM, 1 .. MATTRIX.DIM) of NATURAL := (others => (others => 0));
+        Cross_Ref : array (1 .. Mattrix.Dim, 1 .. Mattrix.Dim) of Natural := (others => (others => 0));
         -- The zero selected (one of the zeros with min sigma)
-        SELECTED_ZERO : POSITIVE;
+        Selected_Zero : Positive;
         -- Number of zeros with min zigma
-        NB_MIN_ZERO : POSITIVE := 1;
-        -- Index in ZERO_DESC
-        INDEX_DESC : NATURAL;
+        Nb_Min_Zero : Positive := 1;
+        -- Index in Zero_Desc
+        Index_Desc : Natural;
         -- Row and column index storage
-        ROW_TMP, COL_TMP : INDEX_RANGE;
-        -- Is ther any zero free remaining
-        ZERO_FREE_REMAINING : BOOLEAN;
+        Row_Tmp, Col_Tmp : Index_Range;
+        -- Is there any zero free remaining
+        Zero_Free_Remaining : Boolean;
       begin
         -- Set the cross reference mattrix
-        for I in 1 .. NB_ZERO loop
-          CROSS_REF(ZERO_DESC(I).ROW, ZERO_DESC(I).COL) := I;
+        for I in 1 .. Nb_Zero loop
+          Cross_Ref(Zero_Desc(I).Row, Zero_Desc(I).Col) := I;
         end loop;
 
-        -- Count the number of zeros which are free and have the SIGMA minimum
-        for I in 2 .. NB_ZERO loop
-          exit when ZERO_DESC(I).STATE /= FREE or else ZERO_DESC(I).SIGMA /= ZERO_DESC(1).SIGMA;
-          NB_MIN_ZERO := I;
+        -- Count the number of zeros which are free and have the Sigma minimum
+        for I in 2 .. Nb_Zero loop
+          exit when Zero_Desc(I).State /= Free or else Zero_Desc(I).Sigma /= Zero_Desc(1).Sigma;
+          Nb_Min_Zero := I;
         end loop;
 
         -- Select one randomly
-        SELECTED_ZERO := RND.INT_RANDOM (1, NB_MIN_ZERO);
-        ZERO_DESC(SELECTED_ZERO).STATE := SQUARED;
+        Selected_Zero := Rnd.Int_Random (1, Nb_Min_Zero);
+        Zero_Desc(Selected_Zero).State := Squared;
 
         -- Propagate the choice
         -- Sigma of slashed and squared zeros are not used
         -- Slash all zero of the same row and keep up to date the sigma of zeros of their columns
-        for COL in INDEX_RANGE loop
-          INDEX_DESC := CROSS_REF(ZERO_DESC(SELECTED_ZERO).ROW, COL);
-          if INDEX_DESC /= 0 and then ZERO_DESC(INDEX_DESC).STATE = FREE then
-            ZERO_DESC(INDEX_DESC).STATE := SLASHED;
-            COL_TMP := ZERO_DESC(INDEX_DESC).COL;
-            for ROW in INDEX_RANGE loop
-              INDEX_DESC := CROSS_REF(ROW, COL_TMP);
-              if INDEX_DESC /= 0 and then ZERO_DESC(INDEX_DESC).STATE = FREE then
-                ZERO_DESC(INDEX_DESC).SIGMA := ZERO_DESC(INDEX_DESC).SIGMA - 1;
+        for Col in Index_Range loop
+          Index_Desc := Cross_Ref(Zero_Desc(Selected_Zero).Row, Col);
+          if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
+            Zero_Desc(Index_Desc).State := Slashed;
+            Col_Tmp := Zero_Desc(Index_Desc).Col;
+            for Row in Index_Range loop
+              Index_Desc := Cross_Ref(Row, Col_tmp);
+              if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
+                Zero_Desc(Index_Desc).Sigma := Zero_DesC(Index_Desc).Sigma - 1;
               end if;
             end loop;
           end if;
         end loop;
         -- Slash all zero of the same col and keep up to date the sigma of zeros of their rows
-        for ROW in INDEX_RANGE loop
-          INDEX_DESC := CROSS_REF(ROW, ZERO_DESC(SELECTED_ZERO).COL);
-          if INDEX_DESC /= 0 and then ZERO_DESC(INDEX_DESC).STATE = FREE then
-            ZERO_DESC(INDEX_DESC).STATE := SLASHED;
-            ROW_TMP := ZERO_DESC(INDEX_DESC).ROW;
-            for COL in INDEX_RANGE loop
-              INDEX_DESC := CROSS_REF(ROW_TMP, COL);
-              if INDEX_DESC /= 0 and then ZERO_DESC(INDEX_DESC).STATE = FREE then
-                ZERO_DESC(INDEX_DESC).SIGMA := ZERO_DESC(INDEX_DESC).SIGMA - 1;
+        for Row in Index_Range loop
+          Index_Desc := Cross_Ref(Row, Zero_DesC(Selected_Zero).Col);
+          if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
+            Zero_Desc(Index_Desc).State := Slashed;
+            Row_Tmp := Zero_Desc(Index_Desc).Row;
+            for Col in Index_Range loop
+              Index_Desc := Cross_Ref(Row_Tmp, Col);
+              if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
+                Zero_Desc(Index_Desc).Sigma := Zero_Desc(Index_Desc).Sigma - 1;
               end if;
             end loop;
           end if;
         end loop;
 
         -- Count nb of free zero remaining.
-        ZERO_FREE_REMAINING := FALSE;
-        for I in 1 .. NB_ZERO loop
-          if ZERO_DESC(I).STATE = FREE then
-            ZERO_FREE_REMAINING := TRUE;
+        Zero_Free_Remaining := False;
+        for I in 1 .. Nb_Zero loop
+          if Zero_Desc(I).State = Free then
+            Zero_Free_Remaining := True;
             exit;
           end if;
         end loop;
 
         -- Euristic search done when no more zero free
-        exit EURISTIC_LOOP when not ZERO_FREE_REMAINING;
-      end TRY_TO_SOLVE;
+        exit Euristic_Loop when not Zero_Free_Remaining;
+      end Try_To_Solve;
 
-    end loop EURISTIC_LOOP;
+    end loop Euristic_Loop;
 
-    TEST_DONE:
+    Test_Done:
     declare
       -- Number of squared zeros
-      NB_SQUARED_ZEROS : TYPES.INDEX_RANGE := 0;
+      Nb_Squared_Zeros : Types.Index_Range := 0;
     begin
-      -- Done if the number of squared zeros is DIM
-      for I in 1 .. NB_ZERO loop
-        if ZERO_DESC(I).STATE = SQUARED then
-          NB_SQUARED_ZEROS := NB_SQUARED_ZEROS + 1;
+      -- Done if the number of squared zeros is Dim
+      for I in 1 .. Nb_Zero loop
+        if Zero_Desc(I).State = Squared then
+          Nb_Squared_Zeros := Nb_Squared_Zeros + 1;
         end if;
       end loop;
-      LOC_DONE :=  NB_SQUARED_ZEROS = MATTRIX.DIM;
-      DONE := LOC_DONE;
-    end TEST_DONE;
+      Loc_Done := Nb_Squared_Zeros = Mattrix.Dim;
+      Done := Loc_Done;
+    end Test_Done;
 
     -- Set zero transfer tab (free means not a zero)
-    TRANSFER := (others => (others => FREE));
-    for I in 1 .. NB_ZERO loop
+    Transfer := (others => (others => Free));
+    for I in 1 .. Nb_Zero loop
       -- No zero free remain in ZERO_DESC
-      TRANSFER(ZERO_DESC(I).ROW, ZERO_DESC(I).COL) := ZERO_DESC(I).STATE;
+      Transfer(Zero_Desc(I).Row, Zero_Desc(I).Col) := Zero_Desc(I).State;
     end loop;
     
-  end EURISTIC_SEARCH;
+  end Euristic_Search;
 
-  procedure REDUCE (MATTRIX : in out TYPES.MATTRIX_REC; TRANSFER : in ZERO_TRANSFER_TAB) is
+  procedure Reduce (Mattrix : in out Types.Mattrix_Rec; Transfer : in Zero_Transfer_Tab) is
     -- Index in mattrix
-    subtype INDEX_RANGE is TYPES.INDEX_RANGE range 1 .. MATTRIX.DIM;
+    subtype Index_Range is Types.Index_Range range 1 .. Mattrix.Dim;
     -- Rows and colums marqued
-    MARKED_ROW : array (INDEX_RANGE) of BOOLEAN := (others => FALSE);
-    MARKED_COL : array (INDEX_RANGE) of BOOLEAN := (others => FALSE);
+    Marked_Row : array (Index_Range) of Boolean := (others => False);
+    Marked_Col : array (Index_Range) of Boolean := (others => False);
     -- Does the current row/col satify the criteria
-    OK : BOOLEAN;
+    Ok : Boolean;
     -- At least one mark done
-    ONE_MARK : BOOLEAN;
+    One_Mark : Boolean;
   begin
     -- Mark rows with no squared zero
-    for ROW in INDEX_RANGE loop
+    for Row in Index_Range loop
       -- No squared zero ?
-      OK := TRUE;
-      for COL in INDEX_RANGE loop
-        if TRANSFER(ROW, COL) = SQUARED then
+      Ok := True;
+      for Col in Index_Range loop
+        if Transfer(Row, Col) = Squared then
           -- Squared zero
-          OK := FALSE;
+          Ok := False;
           exit;
         end if;
       end loop;
-      if OK then
-        MARKED_ROW(ROW) := TRUE;
+      if Ok then
+        Marked_Row(Row) := True;
       end if;
     end loop;
 
     -- Iterative marking of rows and cols
-    MARKING:
+    Marking:
     loop
 
-      ONE_MARK := FALSE;
+      One_Mark := False;
 
       -- For each marked row, mark each col with a slashed zero in this row
-      for ROW in INDEX_RANGE loop
-        if MARKED_ROW(ROW) then
+      for Row in Index_Range loop
+        if Marked_Row(Row) then
           -- Mark each col with a slashed zero in this row
-          for COL in INDEX_RANGE loop
-            if TRANSFER(ROW, COL) = SLASHED and then not MARKED_COL(COL) then
-              MARKED_COL(COL) := TRUE;
-              ONE_MARK := TRUE;
+          for Col in Index_Range loop
+            if Transfer(Row, Col) = Slashed and then not Marked_Col(Col) then
+              Marked_Col(Col) := True;
+              One_Mark := True;
             end if;
           end loop;
         end if;
       end loop;
 
       -- For each marked col, mark each row with a squared zero in this col
-      for COL in INDEX_RANGE loop
-        if MARKED_COL(COL) then
+      for Col in Index_Range loop
+        if Marked_Col(Col) then
           -- Mark each row with a squared zero in this col
-          for ROW in INDEX_RANGE loop
-            if TRANSFER(ROW, COL) = SQUARED and then not MARKED_ROW(ROW) then
-              MARKED_ROW(ROW) := TRUE;
-              ONE_MARK := TRUE;
+          for Row in Index_Range loop
+            if Transfer(Row, Col) = Squared and then not Marked_Row(Row) then
+              Marked_Row(Row) := True;
+              One_Mark := True;
             end if;
           end loop;
         end if;
       end loop;
 
-      exit MARKING when not ONE_MARK;
-    end loop MARKING;
+      exit Marking when not One_Mark;
+    end loop Marking;
 
-    SUB_LOWEST:
+    Sub_Lowest:
     declare
-      LOWEST : TYPES.CELL_RANGE := TYPES.CELL_RANGE'LAST;
+      Lowest : Types.Cell_Range := Types.Cell_Range'Last;
     begin
       -- Search lowest value amoung marked lines and not marked columns
-      for ROW in INDEX_RANGE loop
-        if MARKED_ROW(ROW) then
-          for COL in INDEX_RANGE loop
-            if not MARKED_COL(COL) and then MATTRIX.NOTES(ROW, COL) < LOWEST then
-              LOWEST:= MATTRIX.NOTES(ROW, COL);
+      for Row in Index_Range loop
+        if Marked_Row(Row) then
+          for Col in Index_Range loop
+            if not Marked_Col(Col) and then Mattrix.Notes(Row, Col) < Lowest then
+              Lowest:= Mattrix.Notes(Row, Col);
             end if;
           end loop;
         end if;
       end loop;
 
-      -- Substract LOWEST from cells which row     marked and col not marked
-      -- Add       LOWEST to   cells which row not marked and col     marked
-      for ROW in INDEX_RANGE loop
-        for COL in INDEX_RANGE loop
-          if MARKED_ROW(ROW) and then not MARKED_COL(COL) then
-            MATTRIX.NOTES(ROW, COL) := MATTRIX.NOTES(ROW, COL) - LOWEST;
-          elsif not MARKED_ROW(ROW) and then MARKED_COL(COL) then
-            -- Add only if MATTRIX.NOTES(ROW, COL) + LOWEST <= CELL_RANGE'LAST
-            if TYPES.CELL_RANGE'LAST - MATTRIX.NOTES(ROW, COL) >= LOWEST then
-              MATTRIX.NOTES(ROW, COL) := MATTRIX.NOTES(ROW, COL) + LOWEST;
+      -- Substract Lowest from cells which row     marked and col not marked
+      -- Add       Lowest to   cells which row not marked and col     marked
+      for Row in Index_Range loop
+        for Col in Index_Range loop
+          if Marked_Row(Row) and then not Marked_Col(Col) then
+            Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) - Lowest;
+          elsif not Marked_Row(Row) and then Marked_Col(Col) then
+            -- Add only if Mattrix.Notes(Row, Col) + Lowest <= Cell_Range'Last
+            if Types.Cell_Range'Last - Mattrix.Notes(Row, Col) >= Lowest then
+              Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) + Lowest;
             end if;
           end if;
         end loop;
       end loop;
-    end SUB_LOWEST;
+    end Sub_Lowest;
 
-  end REDUCE;
+  end Reduce;
     
-  procedure SEARCH (MATTRIX : in out TYPES.MATTRIX_REC; NB_ITERATIONS : out POSITIVE) is
-    DONE : BOOLEAN;
-    TRANSFER : ZERO_TRANSFER_TAB (1 .. MATTRIX.DIM, 1 .. MATTRIX.DIM);
-    NB_LOOP  : POSITIVE := 1;
+  procedure Search (Mattrix : in out Types.Mattrix_Rec; Nb_Iterations : out Positive) is
+    Done : Boolean;
+    Transfer : Zero_Transfer_Tab (1 .. Mattrix.Dim, 1 .. Mattrix.Dim);
+    Nb_Loop  : Positive := 1;
   begin
     -- Init for search : one zero/row and / col
-    INIT_SEARCH (MATTRIX);
+    Init_Search (Mattrix);
     loop
-       MY_IO.PUT (".");
-       MY_IO.FLUSH;
+       My_Io.Put (".");
+       My_Io.Flush;
        -- Try to search
-       EURISTIC_SEARCH (MATTRIX, DONE, TRANSFER);
-       exit when DONE;
+       Euristic_Search (Mattrix, Done, Transfer);
+       exit when Done;
        -- Euristic failed : reduce
-       REDUCE (MATTRIX, TRANSFER);
-       NB_LOOP := NB_LOOP + 1;
+       Reduce (Mattrix, Transfer);
+       Nb_Loop := Nb_Loop + 1;
     end loop;
-    MY_IO.NEW_LINE;
+    My_Io.New_Line;
     -- Euristic success: set mattrix to 1 (affected) or 0 (not affected) 
-    -- Affected if TRANSFER is squared
-    for ROW in 1 .. MATTRIX.DIM loop
-      for COL in 1 .. MATTRIX.DIM loop
-        if TRANSFER(ROW, COL) = SQUARED then
-          MATTRIX.NOTES(ROW, COL) := 1;
+    -- Affected if Transfer is squared
+    for ROW in 1 .. Mattrix.Dim loop
+      for Col in 1 .. Mattrix.Dim loop
+        if Transfer(Row, Col) = Squared then
+          Mattrix.Notes(Row, Col) := 1;
         else
-          MATTRIX.NOTES(ROW, COL) := 0;
+          Mattrix.Notes(Row, Col) := 0;
         end if;
       end loop;
     end loop;
-    NB_ITERATIONS := NB_LOOP;
-  end SEARCH;
+    Nb_Iterations := Nb_Loop;
+  end Search;
 
 
-end EURISTIC;
+end Euristic;
 

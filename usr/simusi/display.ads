@@ -1,19 +1,20 @@
-with COMMON, DATA;
-package DISPLAY is
+with Common, Data;
+package Display is
 
-  procedure PRINT_TITTLE (KIND : in COMMON.COTE_KIND);
+  procedure Print_Tittle (Kind : in Common.Cote_Kind);
 
   -- The way for a cote
-  type WAY_VECTOR is array (DATA.EFF_LINE_RANGE range <>)
-                     of DATA.EFF_LINE_RANGE;
+  type Way_Vector is array (Data.Eff_Line_Range range <>)
+                     of Data.Eff_Line_Range;
 
-  procedure PRINT (KIND : in COMMON.COTE_KIND;
-                   COTE : in DATA.EFF_COTE_RANGE;
-                   WAY  : in WAY_VECTOR);
+  procedure Print (Kind : in Common.Cote_Kind;
+                   Cote : in Data.Eff_Cote_Range;
+                   Way  : in Way_Vector);
 
-  procedure PUT_NO_WAY (KIND : in COMMON.COTE_KIND;
-                        COTE : in DATA.EFF_COTE_RANGE);
+  procedure Put_No_Way (Kind : in Common.Cote_Kind;
+                        Cote : in Data.Eff_Cote_Range);
 
-  procedure PRINT_RESULT;
+  procedure Print_Result;
 
-end DISPLAY;
+end Display;
+

@@ -1,81 +1,81 @@
-with TEXT_IO;
+with Ada.Text_Io;
 
-package body FL_GET is
+package body Fl_Get is
 
-  function PARSE_MINUTES (STR : STRING) return FL_TIME.MINUTES_RANGE is
+  function Parse_Minutes (Str : String) return Fl_Time.Minutes_Range is
   begin
-    if STR'LENGTH = 1 then
-      raise ERROR;
+    if Str'Length = 1 then
+      raise Error;
     else
-      return FL_TIME.MINUTES_RANGE'VALUE (STR);
+      return Fl_Time.Minutes_Range'Value (Str);
     end if;
-  end PARSE_MINUTES;
+  end Parse_Minutes;
 
-  function GET_TIME return FL_TIME.TIME_TYPE is
-    MAX_HOUR_DIG : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
-    STR : STRING(1 .. MAX_HOUR_DIG + 2 + 1);
-    F, L, P :  NATURAL;
-    TIME : FL_TIME.TIME_TYPE := (TRUE, 0, 0);
+  function Get_Time return Fl_Time.Time_Type is
+    Max_Hour_Dig : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
+    Str : String(1 .. Max_Hour_Dig + 2 + 1);
+    F, L, P :  Natural;
+    Time : Fl_Time.Time_Type := (True, 0, 0);
   begin
-    TEXT_IO.PUT ('>');
-    TEXT_IO.GET_LINE (STR, L);
-    if L = 0 then raise ERROR; end if;
+    Ada.Text_Io.Put ('>');
+    Ada.Text_Io.Get_Line (Str, L);
+    if L = 0 then raise Error; end if;
     if L = 1 then
-      if STR(1) = '.' then raise ERROR; end if;
-      if STR(1) = '-' then raise ERROR; end if;
-      if STR(1) = 'x' or else STR(1) = 'X' then raise QUIT;  end if;
-      if STR(1) = 'q' or else STR(1) = 'Q' then raise QUIT;  end if;
-      if STR(1) = 'c' or else STR(1) = 'C' then raise CLEAR; end if;
+      if Str(1) = '.' then raise Error; end if;
+      if Str(1) = '-' then raise Error; end if;
+      if Str(1) = 'x' or else Str(1) = 'X' then raise Quit;  end if;
+      if Str(1) = 'q' or else Str(1) = 'Q' then raise Quit;  end if;
+      if Str(1) = 'c' or else Str(1) = 'C' then raise Clear; end if;
     end if;
 
-    if STR(1) = '-' then
-      TIME.POSITIV := FALSE;
+    if Str(1) = '-' then
+      Time.Positiv := False;
       F := 2;
     else
-      TIME.POSITIV := TRUE;
+      Time.Positiv := True;
       F := 1;
     end if;
 
     P := 0;
     for I in F .. L loop
-      case STR(I) is
+      case Str(I) is
         when '0'..'9' =>
           null;
         when '.' =>
           if P = 0 then
             P := I;
           else
-            raise ERROR;
+            raise Error;
           end if;
         when others =>
-          raise ERROR;
+          raise Error;
       end case;
     end loop;
 
     if P = 0 then
       -- no dot : only hours
-      TIME.HOURS := FL_TIME.HOURS_RANGE'VALUE (STR(F..L));
-      TIME.MINUTES := 0;
+      Time.Hours := Fl_Time.Hours_Range'Value (Str (F .. L));
+      Time.Minutes := 0;
     elsif P = L then
       -- dot at last : only hours
-      TIME.HOURS := FL_TIME.HOURS_RANGE'VALUE (STR(F..P-1));
-      TIME.MINUTES := 0;
+      Time.Hours := Fl_Time.Hours_Range'Value (Str ( F.. P - 1));
+      Time.Minutes := 0;
     elsif P = F then
       -- dot as first : only minutes
-      TIME.HOURS := 0;
-      TIME.MINUTES := PARSE_MINUTES (STR(P+1..L));
+      Time.Hours := 0;
+      Time.Minutes := Parse_Minutes (Str (P + 1 .. L));
     else
       -- dot somewhere
-      TIME.HOURS := FL_TIME.HOURS_RANGE'VALUE (STR(F..P-1));
-      TIME.MINUTES := PARSE_MINUTES (STR(P+1..L));
+      Time.Hours := Fl_Time.Hours_Range'Value (STR (F .. P - 1));
+      Time.Minutes := Parse_Minutes (Str (P + 1 .. L));
     end if;
 
     return TIME;
 
   exception
-    when QUIT | CLEAR => raise;
-    when others => raise ERROR;
-  end GET_TIME;
+    when Quit | Clear => raise;
+    when others => raise Error;
+  end Get_Time;
 
-end FL_GET;
+end Fl_Get;
 

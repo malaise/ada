@@ -1,159 +1,164 @@
-with CALENDAR, TEXT_IO;
-with PERPET, ARGUMENT, DAY_MNG, TEXT_HANDLER, NORMAL;
-procedure DAY_OF_WEEK is
+with Ada.Calendar, Ada.Text_Io;
+with Perpet, Argument, Day_Mng, Text_Handler, Normal;
+procedure Day_Of_Week is
 
-  package DUR_IO is new TEXT_IO.FIXED_IO (CALENDAR.DAY_DURATION);
+  package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
 
-  TXT : TEXT_HANDLER.TEXT (10);
-  T : CALENDAR.TIME;
-  YEAR : CALENDAR.YEAR_NUMBER;
-  DELTA_DATE_0 : PERPET.DELTA_REC;
-  DELTA_DATE_1 : PERPET.DELTA_REC;
-  DAY_NO : PERPET.DAY_RANGE;
-  TH : STRING (1 .. 2);
-  DAYS : TEXT_HANDLER.TEXT(4);
+  Txt : Text_Handler.Text (10);
+  T : Ada.Calendar.Time;
+  Year : Ada.Calendar.Year_Number;
+  Delta_Date_0 : Perpet.Delta_Rec;
+  Delta_Date_1 : Perpet.Delta_Rec;
+  Day_No : Perpet.Day_Range;
+  Th : String (1 .. 2);
+  Days : Text_Handler.Text (4);
 
-  procedure USAGE is
+  procedure Usage is
   begin
-    TEXT_IO.PUT_LINE("Syntax error or invalid date.");
-    TEXT_IO.PUT_LINE(" Usage: " & ARGUMENT.GET_PROGRAM_NAME
+    Ada.Text_Io.Put_Line("Syntax error or invalid date.");
+    Ada.Text_Io.Put_Line(" Usage: "
+                 & Argument.Get_Program_Name
                  & " [ dd/mm/yyyy ]");
-  end USAGE;
+  end Usage;
 
-  function IS_DIGIT (C : CHARACTER) return BOOLEAN is
+  function Is_Digit (C : Character) return Boolean is
   begin
     return C >= '0' and then C <= '9';
-  end IS_DIGIT;
+  end Is_Digit;
 
-  function IS_DIGIT (S : STRING) return BOOLEAN is
+  function Is_Digit (S : String) return Boolean is
   begin
-    for I in S'RANGE loop
-      if not IS_DIGIT(S(I)) then
-        return FALSE;
+    for I in S'Range loop
+      if not Is_Digit (S(I)) then
+        return False;
       end if;
     end loop;
-    return TRUE;
-  end IS_DIGIT;
+    return True;
+  end Is_Digit;
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG /= 0  and then ARGUMENT.GET_NBRE_ARG /= 1 then
-    USAGE;
+  if Argument.Get_Nbre_Arg /= 0  and then Argument.Get_Nbre_Arg /= 1 then
+    Usage;
     return;
   end if;
 
   declare
-    MONTH : CALENDAR.MONTH_NUMBER;
-    DAY : CALENDAR.DAY_NUMBER;
+    Month : Ada.Calendar.Month_Number;
+    Day : Ada.Calendar.Day_Number;
   begin
-    if ARGUMENT.GET_NBRE_ARG = 0 then
+    if Argument.Get_Nbre_Arg = 0 then
       -- Current date
-      T := CALENDAR.CLOCK;
+      T := Ada.Calendar.Clock;
       declare
-        DUMMY_DURATION : CALENDAR.DAY_DURATION;
+        Dummy_Duration : Ada.Calendar.Day_Duration;
       begin
-        CALENDAR.SPLIT (T, YEAR, MONTH, DAY, DUMMY_DURATION);
+        Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
       end;
-      TEXT_HANDLER.SET(TXT, NORMAL(DAY, 2, GAP => '0') & "/"
-                          & NORMAL(MONTH, 2, GAP => '0') & "/"
-                          & NORMAL(YEAR, 4, GAP => '0') );
-    else
+      Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
+                           & Normal (Month, 2, Gap => '0') & "/"
+                           & Normal (Year,  4, Gap => '0') );
+    elsif Argument.Get_Nbre_Arg = 1 then
       -- Get date from arg 1
-      ARGUMENT.GET_PARAMETER (TXT);
-      if TEXT_HANDLER.LENGTH(TXT) /= 10
-      or else TEXT_HANDLER.VALUE(TXT)(3) /= '/'
-      or else TEXT_HANDLER.VALUE(TXT)(6) /= '/' then
-        USAGE;
+      Argument.Get_parameter (Txt);
+      if Text_Handler.Length (Txt) /= 10
+      or else Text_Handler.Value (Txt)(3) /= '/'
+      or else Text_Handler.Value (Txt)(6) /= '/' then
+        Usage;
         return;
       end if;
 
-      if not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(1 .. 2))
-      or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(4 .. 5))
-      or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(7 .. 10)) then
-        USAGE;
+      if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
+      or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
+      or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
+        Usage;
         return;
       end if;
 
       begin
-        DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
-        MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
-        YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
+        Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
+        Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
+        Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
       exception
         when others =>
-          USAGE;
+          Usage;
           return;
       end;
+    else
+      Usage;
+      return;
     end if;
 
     -- Build time of 0h00 of date
     declare
-      HOUR : DAY_MNG.T_HOURS := 0;
-      MINUTE : DAY_MNG.T_MINUTES := 0;
-      SECOND : DAY_MNG.T_SECONDS := 0;
-      MILLISEC : DAY_MNG.T_MILLISEC := 0;
+      Hour     : Day_Mng.T_Hours    := 0;
+      Minute   : Day_Mng.T_Minutes  := 0;
+      Second   : Day_Mng.T_Seconds  := 0;
+      Millisec : Day_Mng.T_Millisec := 0;
     begin
-      T :=  CALENDAR.TIME_OF
-        (YEAR, MONTH, DAY, DAY_MNG.PACK(HOUR, MINUTE, SECOND, MILLISEC));
+      T := Ada.Calendar.Time_Of (Year, Month, Day,
+                 Day_Mng.Pack (Hour, Minute, Second, Millisec));
     exception
       when others =>
-        USAGE;
+        Usage;
         return;
     end;
   end;
 
   -- Compute delta from 01/01 and to 31/12 of year
   declare
-    T0 : CALENDAR.TIME;
-    T1 : CALENDAR.TIME;
+    T0 : Ada.Calendar.Time;
+    T1 : Ada.Calendar.Time;
   begin
-    T0 := CALENDAR.TIME_OF (YEAR, 1, 1, 0.0);
-    DELTA_DATE_0 := PERPET."-" (T, T0);
+    T0 := Ada.Calendar.Time_Of (Year, 1, 1, 0.0);
+    Delta_Date_0 := Perpet."-" (T, T0);
     
-    T1 := CALENDAR.TIME_OF (YEAR, 12, 31, 0.0);
-    DELTA_DATE_1 := PERPET."-" (T1, T);
+    T1 := Ada.Calendar.Time_Of (Year, 12, 31, 0.0);
+    Delta_Date_1 := Perpet."-" (T1, T);
   exception
     when others =>
-      TEXT_IO.PUT_LINE("Internal error");
+      Ada.Text_Io.Put_Line ("Internal error");
       raise;
   end;
 
 
   -- Compute sentence
-  DAY_NO := DELTA_DATE_0.DAYS + 1;
-  if (DAY_NO rem 100) / 10 /= 1 then
-    case DAY_NO rem 10 is
+  Day_No := Delta_Date_0.Days + 1;
+  if (Day_No rem 100) / 10 /= 1 then
+    -- In the firt tenth of this hundred
+    case Day_No rem 10 is
       when 1 =>
-        TH := "st";
+        Th := "st";
       when 2 =>
-        TH := "nd";
+        Th := "nd";
       when 3 =>
-        TH := "rd";
+        Th := "rd";
       when others =>
-        TH := "th";
+        Th := "th";
     end case;
   else
-    TH := "th";
+    Th := "th";
   end if;
 
-  if DELTA_DATE_1.DAYS <= 1 then
-    TEXT_HANDLER.SET (DAYS, "day");
+  if Delta_Date_1.Days <= 1 then
+    Text_Handler.Set (Days, "day");
   else
-    TEXT_HANDLER.SET (DAYS, "days");
+    Text_Handler.Set (Days, "days");
   end if;
 
   -- Display result
-  TEXT_IO.PUT_LINE (TEXT_HANDLER.VALUE(TXT) & " is a "
-       & PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T))
+  Ada.Text_Io.Put_line (Text_Handler.Value (Txt) & " is a "
+       & Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T))
        & ", in week"
-       & PERPET.WEEK_OF_YEAR_RANGE'IMAGE(PERPET.GET_WEEK_OF_YEAR(T))
+       & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
        & ",");
-  TEXT_IO.PUT_LINE (" the"
-       & PERPET.DAY_RANGE'IMAGE(DAY_NO) 
-       & TH
+  Ada.Text_Io.Put_Line (" the"
+       & Perpet.Day_Range'Image (Day_No) 
+       & Th
        & " day of the year,"
-       & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_1.DAYS)
-       & " " & TEXT_HANDLER.VALUE(DAYS)
+       & Perpet.Day_Range'Image (Delta_Date_1.Days)
+       & " " & Text_Handler.Value (Days)
        & " remaining.");
 
-end DAY_OF_WEEK;
+end Day_Of_Week;
 

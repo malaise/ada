@@ -1,86 +1,88 @@
-package body FL_TIME is
+package body Fl_Time is
 
-  MAX_MIN : constant INTEGER := INTEGER (MINUTES_RANGE'LAST) + 1;
+  Max_Min : constant Integer := Integer (Minutes_Range'Last) + 1;
 
-  function ABS_TIME (VAL : TIME_TYPE) return TIME_TYPE is
+  function Abs_Time (Val : Time_Type) return Time_Type is
   begin
-    return (POSITIV => TRUE, HOURS => VAL.HOURS, MINUTES => VAL.MINUTES);
-  end ABS_TIME;
+    return (Positiv => True,
+            Hours   => Val.Hours,
+            Minutes => Val.Minutes);
+  end Abs_Time;
 
-  function "-" (VAL : TIME_TYPE) return TIME_TYPE is
-    RESULT : TIME_TYPE;
+  function "-" (Val : Time_Type) return Time_Type is
   begin
-    return (POSITIV => not VAL.POSITIV,
-            HOURS   => VAL.HOURS,
-            MINUTES => VAL.MINUTES);
+    return (Positiv => not Val.Positiv,
+            Hours   => Val.Hours,
+            Minutes => Val.Minutes);
   end "-";
 
-  function "<" (LEFT, RIGHT : TIME_TYPE) return BOOLEAN is
+  function "<" (Left, Right : Time_Type) return Boolean is
   begin
-    if LEFT.POSITIV = RIGHT.POSITIV then
+    if Left.Positiv = Right.Positiv then
       -- Same sign
-      if LEFT.POSITIV then
+      if Left.Positiv then
         return
-         LEFT.HOURS < RIGHT.HOURS or else
-         (LEFT.HOURS = RIGHT.HOURS and then LEFT.MINUTES < RIGHT.MINUTES);
+         Left.Hours < Right.Hours or else
+         (Left.Hours = Right.Hours and then Left.Minutes < Right.Minutes);
       else
         return
-         LEFT.HOURS > RIGHT.HOURS or else
-         (LEFT.HOURS = RIGHT.HOURS and then LEFT.MINUTES > RIGHT.MINUTES);
+         Left.Hours > Right.Hours or else
+         (Left.Hours = Right.Hours and then Left.Minutes > Right.Minutes);
       end if;
     else
-      return RIGHT.POSITIV;
+      return Right.Positiv;
     end if;
   end "<";
 
-  function "+" (LEFT, RIGHT : TIME_TYPE) return TIME_TYPE is
-    RESULT : TIME_TYPE;
+  function "+" (Left, Right : Time_Type) return Time_Type is
+    Result : Time_Type;
   begin
-    if LEFT.POSITIV = RIGHT.POSITIV then
-      RESULT.MINUTES := MINUTES_RANGE (
-       (INTEGER (LEFT.MINUTES) + INTEGER (RIGHT.MINUTES)) mod MAX_MIN);
-      RESULT.HOURS := HOURS_RANGE (
-       (INTEGER (LEFT.MINUTES) + INTEGER (RIGHT.MINUTES)) / MAX_MIN);
-      RESULT.HOURS := RESULT.HOURS + LEFT.HOURS + RIGHT.HOURS;
-      RESULT.POSITIV := LEFT.POSITIV;
-      return RESULT;
-    elsif LEFT.POSITIV then
-      return LEFT - ABS_TIME(RIGHT);
+    if Left.Positiv = Right.Positiv then
+      Result.Minutes := Minutes_Range (
+       (Integer (Left.Minutes) + Integer (Right.Minutes)) mod Max_Min);
+      Result.Hours := Hours_range (
+       (Integer (Left.Minutes) + Integer (Right.Minutes)) / Max_Min);
+      Result.Hours := Result.Hours + Left.Hours + Right.Hours;
+      Result.Positiv := Left.Positiv;
+      return Result;
+    elsif Left.Positiv then
+      return Left - Abs_Time(Right);
     else
-      return - (ABS_TIME(LEFT) - RIGHT);
+      return - (Abs_Time(Left) - Right);
     end if;
   exception
-    when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-      raise TIME_OVERFLOW;
+    when Constraint_Error | Numeric_Error =>
+      raise Time_Overflow;
   end "+";
 
-  function "-" (LEFT, RIGHT : TIME_TYPE) return TIME_TYPE is
-    RESULT : TIME_TYPE;
+  function "-" (Left, Right : Time_Type) return Time_Type is
+    Result : Time_Type;
   begin
-    if LEFT.POSITIV = RIGHT.POSITIV then
-      if not (ABS_TIME(LEFT) < ABS_TIME(RIGHT)) then
+    if Left.Positiv = Right.Positiv then
+      if not (Abs_Time(Left) < Abs_Time(Right)) then
 
-        if LEFT.MINUTES >= RIGHT.MINUTES then
-          RESULT.MINUTES := LEFT.MINUTES - RIGHT.MINUTES;
-          RESULT.HOURS := LEFT.HOURS - RIGHT.HOURS;
+        if Left.Minutes >= Right.Minutes then
+          Result.Minutes := Left.Minutes - Right.Minutes;
+          Result.Hours := Left.Hours - Right.Hours;
         else
-          RESULT.MINUTES := MINUTES_RANGE (
-             MAX_MIN
-           + INTEGER (LEFT.MINUTES)
-           - INTEGER (RIGHT.MINUTES));
-          RESULT.HOURS := LEFT.HOURS - RIGHT.HOURS - 1;
+          Result.Minutes := Minutes_Range (
+             Max_Min
+           + Integer (Left.Minutes)
+           - Integer (Right.Minutes));
+          Result.Hours := Left.Hours - Right.Hours - 1;
         end if;
-        RESULT.POSITIV := LEFT.POSITIV;
-        return RESULT;
+        Result.Positiv := Left.Positiv;
+        return Result;
       else
-        return - (RIGHT - LEFT);
+        return - (Right - Left);
       end if;
     else
-      return LEFT + (- RIGHT);
+      return Left + (- Right);
     end if;
   exception
-    when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-      raise TIME_OVERFLOW;
+    when Constraint_Error | Numeric_Error =>
+      raise Time_Overflow;
   end "-";
 
-end FL_TIME;
+end Fl_Time;
+

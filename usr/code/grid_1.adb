@@ -1,131 +1,130 @@
-with TEXT_HANDLER;
-with MY_IO;
-with SORTS;
-package body GRID_1 is
+with Text_Handler, My_Io, Sorts;
+package body Grid_1 is
 
 
-  DATA : array (ROW_COORDINATE, COL_COORDINATE) of CHARACTER
-       := (others => (others => ASCII.NUL));
-  INITIALIZED : BOOLEAN := FALSE;
+  Data : array (Row_Coordinate, Col_Coordinate) of Character
+       := (others => (others => Ascii.Nul));
+  Initialized : Boolean := False;
 
-  package CHAR_SORT is new SORTS (CHARACTER, POSITIVE, "<", STRING);
+  package Char_Sort is new Sorts (Character, Positive, "<", String);
 
   -- Return a valid character for text
-  function FILTER (C : CHARACTER) return CHARACTER is
+  function Filter (C : Character) return Character is
   begin
-    if (C >= ' ' and then C <= '~') or else C = ASCII.CR then
+    if (C >= ' ' and then C <= '~') or else C = Ascii.Cr then
       return C;
-    elsif C = ASCII.HT then
+    elsif C = ascii.Ht then
       return ' ';
     else
-      return ASCII.NUL;
+      return Ascii.Nul;
     end if;
-  end FILTER;
+  end Filter;
 
   -- Init DATA
-  procedure INITIALIZE (KEY : in string) is
-    ROW : ROW_COORDINATE;
-    COL : COL_COORDINATE;
-    CHAR : CHARACTER;
-    STRIPPED_KEY : TEXT_HANDLER.TEXT (80);
+  procedure Initialize (Key : in string) is
+    Row : Row_Coordinate;
+    Col : Col_Coordinate;
+    Char : Character;
+    Stripped_Key : Text_Handler.Text (80);
 
-    -- Store a char in data, checking if it is in STRIPPED_KEY
-    procedure STORE (CHAR : in CHARACTER; CHECK : in BOOLEAN) is
+    -- Store a char in data, checking if it is in Stripped_Key
+    procedure Store (Char : in Character; Check : in Boolean) is
     begin
-      if CHECK and then TEXT_HANDLER.LOCATE (STRIPPED_KEY, CHAR) /= 0 then
+      if Check and then Text_Handler.Locate (Stripped_Key, Char) /= 0 then
         return;
       end if;
-      DATA (ROW, COL) := CHAR;
-      if COL /= COL_COORDINATE'LAST then
-        COL := COL_COORDINATE'SUCC(COL);
+      Data (Row, Col) := Char;
+      if Col /= Col_Coordinate'Last then
+        Col := Col_Coordinate'Succ(Col);
       else
-        COL := COL_COORDINATE'FIRST;
-        ROW := ROW_COORDINATE'SUCC(ROW);
+        Col := Col_Coordinate'First;
+        Row := Row_Coordinate'Succ(Row);
       end if;
-    end STORE;
+    end Store;
 
   begin
-    TEXT_HANDLER.SET (STRIPPED_KEY, "");
-    -- Store stripped KEY
-    for i in KEY'RANGE loop
-      CHAR := FILTER(KEY(I));
-      if CHAR /= ASCII.NUL then
-        if TEXT_HANDLER.LOCATE (STRIPPED_KEY, CHAR) = 0 then
-          TEXT_HANDLER.APPEND (STRIPPED_KEY, CHAR);
+    Text_Handler.Set (Stripped_Key, "");
+    -- Store stripped key
+    for i in Key'Range loop
+      Char := Filter(Key(I));
+      if Char /= Ascii.Nul then
+        if Text_Handler.Locate (Stripped_Key, Char) = 0 then
+          Text_Handler.Append (Stripped_Key, Char);
         end if;
       end if;
     end loop;
 
     -- Sort characters of Key
     declare
-      SORTED_KEY : STRING (1 .. TEXT_HANDLER.LENGTH(STRIPPED_KEY))
-                 := TEXT_HANDLER.VALUE(STRIPPED_KEY);
+      Sorted_Key : String (1 .. Text_Handler.Length (Stripped_Key))
+                 := Text_Handler.Value (Stripped_Key);
     begin
-      CHAR_SORT.BUBBLE_SORT (SORTED_KEY);
+      Char_Sort.Bubble_Sort (Sorted_Key);
 
       -- Store stripped key then other chars in data
-      ROW := ROW_COORDINATE'FIRST;
-      COL := COL_COORDINATE'FIRST;
-      for I in SORTED_KEY'RANGE loop
-        STORE (SORTED_KEY(I), FALSE);
+      Row := Row_Coordinate'First;
+      Col := Col_Coordinate'First;
+      for I in Sorted_Key'Range loop
+        Store (Sorted_Key(I), False);
       end loop;
     end;
-    STORE (ASCII.CR, TRUE);
-    for C in CHARACTER'(' ') .. '~' loop
-      STORE (C, TRUE);
+    Store (Ascii.Cr, True);
+    for C in Character'(' ') .. '~' loop
+      Store (C, True);
     end loop;
-    INITIALIZED := TRUE;
-  end INITIALIZE;
+    Initialized := True;
+  end Initialize;
 
 
-  -- C can be any char from ' ' to '~' or ASCII.CR
-  function ENCODE (C : CHARACTER) return COORDINATE_REC is
-    SC : constant CHARACTER := FILTER(C);
+  -- C can be any char from ' ' to '~' or Ascii.Cr
+  function Encode (C : Character) return Coordinate_Rec is
+    Sc : constant Character := Filter(C);
   begin
-    if not INITIALIZED then
-      raise GRID_NOT_INIT;
+    if not Initialized then
+      raise Grid_Not_Init;
     end if;
-    if SC = ASCII.NUL then
-      raise INVALID_CHARACTER;
+    if Sc = Ascii.Nul then
+      raise Invalid_Character;
     end if;
-    for ROW in ROW_COORDINATE loop
-      for COL in COL_COORDINATE loop
-        if DATA (ROW, COL) = SC then
-          return (ROW, COL);
+    for Row in Row_Coordinate loop
+      for Col in Col_Coordinate loop
+        if Data (Row, Col) = Sc then
+          return (Row, Col);
         end if;
       end loop;
     end loop;
-    raise INVALID_CHARACTER;
-  end ENCODE;
+    raise Invalid_Character;
+  end Encode;
 
-  function DECODE (COORDINATE : COORDINATE_REC) return CHARACTER is
+  function Decode (Coordinate : Coordinate_Rec) return Character is
   begin
-    if not INITIALIZED then
-      raise GRID_NOT_INIT;
+    if not Initialized then
+      raise Grid_Not_Init;
     end if;
-    return DATA (COORDINATE.ROW, COORDINATE.COL);
-  end DECODE;
+    return Data (Coordinate.Row, Coordinate.Col);
+  end Decode;
 
-  procedure DUMP is
+  procedure Dump is
   begin
-    if not INITIALIZED then
-      raise GRID_NOT_INIT;
+    if not Initialized then
+      raise Grid_Not_Init;
     end if;
-    for R in ROW_COORDINATE loop
-      for C in COL_COORDINATE loop
-        if DATA(R, C) = ASCII.CR then
-          MY_IO.PUT ("Ret");
-        elsif DATA(R, C) /= ASCII.NUL then
-          MY_IO.PUT('>' & DATA(R, C) & '<');
-        elsif DATA(R, C) = ASCII.NUL then
-          MY_IO.PUT ("Nul");
+    for R in Row_Coordinate loop
+      for C in Col_Coordinate loop
+        if Data(R, C) = Ascii.Cr then
+          My_Io.Put ("Ret");
+        elsif Data(R, C) /= Ascii.Nul then
+          My_Io.Put('>' & Data(R, C) & '<');
+        elsif Data(R, C) = Ascii.Nul then
+          My_Io.Put ("Nul");
         else
-          raise CONSTRAINT_ERROR;
+          raise Constraint_Error;
         end if;
-        MY_IO.PUT (' ');
+        My_Io.Put (' ');
       end loop;
-      MY_IO.NEW_LINE;
+      My_Io.New_Line;
     end loop;
-  end DUMP;
+  end Dump;
 
-end GRID_1;
+end Grid_1;
+

@@ -4,104 +4,105 @@
 -- exit 1  -->  $n file is older than some sources or does not exist
 -- exit 2  -->  Error: cannot read some source files
 -- exit 3  -->  Argument or internal error
-with CALENDAR;
-use CALENDAR;
-with ARGUMENT, SYS_CALLS, DIRECTORY;
-procedure STATUS is
+with Ada.Calendar;
+use Ada.Calendar;
+with Argument, Sys_Calls, Directory;
+procedure Status is
   -- The exit values
-  EXIT_OK             : constant := 0;
-  EXIT_NOK            : constant := 1;
-  EXIT_SRC_NOT_FOUND  : constant := 2;
-  EXIT_INTERNAL_ERROR : constant := 3;
+  Exit_Ok             : constant := 0;
+  Exit_Nok            : constant := 1;
+  Exit_Src_Not_Found  : constant := 2;
+  Exit_Internal_Error : constant := 3;
 
   -- The final exit code
-  EXIT_CODE : INTEGER;
+  Exit_Code : Integer;
 
   -- Info unused but got with FILE_STAT
-  KIND : DIRECTORY.FILE_KIND_LIST;
-  RIGHTS : NATURAL;
+  Kind : Directory.File_Kind_List;
+  Rights : Natural;
 
   -- Modif time of target, current source
-  TARGET_MTIME, SOURCE_MTIME : DIRECTORY.TIME_T;
-  TARGET_TIME, SOURCE_TIME : CALENDAR.TIME;
+  Target_Mtime, Source_Mtime : Directory.Time_T;
+  Target_Time, Source_Time : Ada.Calendar.Time;
 
 begin
 
   -- Check arguments, at least 2
-  if ARGUMENT.GET_NBRE_ARG < 2 then
-    SYS_CALLS.PUT_LINE_ERROR(
-        "SYNTAX ERROR. Usage: "
-      & ARGUMENT.GET_PROGRAM_NAME & " { <source_file> } <target_file>");
-    SYS_CALLS.SET_EXIT_CODE (EXIT_INTERNAL_ERROR);
+  if Argument.Get_Nbre_Arg < 2 then
+    Sys_Calls.Put_Line_Error("SYNTAX ERROR. Usage: "
+                           & Argument.Get_ProgrAm_Name
+                           & " { <source_file> } <target_file>");
+    Sys_Calls.Set_Exit_Code (Exit_Internal_Error);
     return;
   end if;
 
   -- Initialize final result
-  EXIT_CODE := EXIT_OK;
+  Exit_Code := Exit_Ok;
 
   -- Check that target file exists and get its modif date
   begin
-    DIRECTORY.FILE_STAT(ARGUMENT.GET_PARAMETER(ARGUMENT.GET_NBRE_ARG),
-                        KIND, RIGHTS, TARGET_MTIME);
+    Directory.File_stat(Argument.Get_Parameter(Argument.Get_Nbre_Arg),
+                        Kind, Rights, Target_Mtime);
   exception
-    when DIRECTORY.NAME_ERROR =>
+    when Directory.Name_Error =>
       -- Not found
-      EXIT_CODE := EXIT_NOK;
+      Exit_Code := Exit_Nok;
     when others =>
       -- Other error
-      SYS_CALLS.PUT_LINE_ERROR(
-          "ACCESS ERROR: Cannot read status of target file "
-        & STRING'(ARGUMENT.GET_PARAMETER(ARGUMENT.GET_NBRE_ARG)));
-      SYS_CALLS.SET_EXIT_CODE (EXIT_INTERNAL_ERROR);
+      Sys_Calls.Put_Line_Error(
+              "ACCESS ERROR: Cannot read status of target file "
+            & String'(Argument.Get_Parameter(Argument.Get_Nbre_Arg)));
+      Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
       return;
   end;
-  TARGET_TIME := DIRECTORY.TIME_OF(TARGET_MTIME);
+  Target_Time := Directory.Time_Of(Target_Mtime);
 
   -- Check that each source exists and is before result
-  for ARG_NO in 1 .. ARGUMENT.GET_NBRE_ARG - 1 loop
+  for Arg_No in 1 .. Argument.Get_Nbre_Arg - 1 loop
 
-    if STRING'(ARGUMENT.GET_PARAMETER(ARG_NO)) =
-       ARGUMENT.GET_PARAMETER(ARGUMENT.GET_NBRE_ARG) then
-      SYS_CALLS.PUT_LINE_ERROR(
-         "SEMANTIC ERROR: Source file "
-       & STRING'(ARGUMENT.GET_PARAMETER(ARG_NO))
-       & " is also the target file.");
-      SYS_CALLS.PUT_LINE_ERROR("Usage: "
-       & ARGUMENT.GET_PROGRAM_NAME & " { <source_file> } <target_file>");
-      SYS_CALLS.SET_EXIT_CODE (EXIT_INTERNAL_ERROR);
+    if String'(Argument.Get_Parameter(Arg_No)) =
+       Argument.Get_parameter(Argument.Get_Nbre_Arg) then
+      Sys_Calls.Put_Line_Error(
+              "SEMANTIC ERROR: Source file "
+            & String'(Argument.Get_Parameter(Arg_No))
+            & " is also the target file.");
+      Sys_Calls.Put_Line_Error("Usage: "
+            & Argument.Get_Program_Name
+            & " { <source_file> } <target_file>");
+      Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
       return;
     end if;
 
     begin
-      DIRECTORY.FILE_STAT(ARGUMENT.GET_PARAMETER(ARG_NO),
-                        KIND, RIGHTS, SOURCE_MTIME);
+      Directory.File_Stat(Argument.Get_Parameter(Arg_No),
+                        Kind, Rights, Source_Mtime);
     exception
-      when DIRECTORY.NAME_ERROR =>
+      when Directory.Name_Error =>
         -- Not found
-        SYS_CALLS.PUT_LINE_ERROR(
-            "NAME ERROR: Source file "
-          & STRING'(ARGUMENT.GET_PARAMETER(ARG_NO))
-          & " not found.");
-        SYS_CALLS.SET_EXIT_CODE (EXIT_SRC_NOT_FOUND);
+        Sys_Calls.Put_Line_Error(
+                "NAME ERROR: Source file "
+              & String'(Argument.Get_Parameter(Arg_No))
+              & " not found.");
+        Sys_Calls.Set_Exit_Code(Exit_Src_Not_Found);
         return;
       when others =>
         -- Other error
-        SYS_CALLS.PUT_LINE_ERROR(
-            "ACCESS ERROR: Cannot read status of source file "
-          & STRING'(ARGUMENT.GET_PARAMETER(ARG_NO)));
-        SYS_CALLS.SET_EXIT_CODE (EXIT_INTERNAL_ERROR);
+        Sys_Calls.Put_Line_Error(
+                "ACCESS ERROR: Cannot read status of source file "
+              & String'(Argument.Get_Parameter(Arg_No)));
+        Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
         return;
     end;
-    SOURCE_TIME := DIRECTORY.TIME_OF(SOURCE_MTIME);
+    Source_Time := Directory.Time_Of(Source_Mtime);
 
-    if EXIT_CODE = EXIT_OK and then TARGET_TIME <= SOURCE_TIME then
+    if Exit_Code = Exit_Ok and then Target_Time <= Source_Time then
       -- Source files exist so far and this one is after result
-      EXIT_CODE := EXIT_NOK;
+      Exit_Code := Exit_Nok;
     end if;
 
   end loop;
 
-  SYS_CALLS.SET_EXIT_CODE(EXIT_CODE);
+  Sys_Calls.Set_Exit_Code(Exit_Code);
 
-end STATUS;
+end Status;
 

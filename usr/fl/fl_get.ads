@@ -1,14 +1,10 @@
-with FL_TIME;
+with Fl_Time;
 
-package FL_GET is
+package Fl_Get is
 
-  function GET_TIME return FL_TIME.TIME_TYPE;
+  function Get_Time return Fl_Time.Time_Type;
 
-  ERROR, CLEAR, QUIT : exception;
+  Error, Clear, Quit : exception;
 
-end FL_GET;
-  
-
-  
-
+end Fl_Get;
 

@@ -1,272 +1,274 @@
-with TEXT_IO;
-with TEXT_HANDLER, ARGUMENT, SYS_CALLS, GET_LINE, GET_FLOAT;
-with ARG_PARSING;
-package body FILE is
+with Ada.Text_Io;
+with Text_Handler, Argument, Sys_Calls, Get_Line, Get_Float;
+with Arg_Parsing;
+package body File is
 
-  package COTE_GET_LINE is new GET_LINE (
-    MAX_WORD_LEN => 20,
-    MAX_WORD_NB  => 4,
-    MAX_LINE_LEN => 80,
-    COMMENT      => '#');
+  package Cote_Get_Line is new Get_Line (
+    Max_Word_Len => 20,
+    Max_Word_Nb  => 4,
+    Max_Line_Len => 80,
+    Comment      => '#');
 
-  LINE : COTE_GET_LINE.LINE_ARRAY; 
+  Line : Cote_Get_Line.Line_Array; 
 
-  subtype LOC_COTE_RANGE is NATURAL range 0 .. MAX_COTE;
-  type COTE_LINE_ARRAY is array (COTE_RANGE) of TEXT_IO.COUNT;
-  COTE_LINE : COTE_LINE_ARRAY := (others => 0);
+  subtype Loc_Cote_Range is Natural range 0 .. Max_Cote;
+  type Cote_Line_Array is array (Cote_Range) of Ada.Text_Io.Count;
+  Cote_Line : Cote_Line_Array := (others => 0);
 
-  LOAD_OK : BOOLEAN := FALSE;
-  MANUFAS : MANUFA_ARRAY(1 .. MAX_COTE);
-  NB_MANUFA : LOC_COTE_RANGE;
-  DESIGNS : DESIGN_ARRAY(1 .. MAX_COTE);
-  NB_DESIGN : LOC_COTE_RANGE;
+  Load_Ok : Boolean := False;
+  Manufas : Manufa_Array(1 .. Max_Cote);
+  Nb_Manufa : Loc_Cote_Range;
+  Designs : Design_Array(1 .. Max_Cote);
+  Nb_Design : Loc_Cote_Range;
 
-  type RESULT_LIST is (OK, END_OF_FILE, FILE_ACCESS, FILE_FORMAT, FILE_LENGTH,
-           LINE_NB, START_STOP, DUPLICATE, NO_COTE);
+  type Result_List is (Ok, End_Of_File, File_Access, File_Format, File_Length,
+           Line_Nb, Start_Stop, Duplicate, No_Cote);
 
-  procedure READ_NEXT_SIGNIFICANT_LINE is
+  procedure Read_Next_Significant_Line is
   begin
-    COTE_GET_LINE.READ_NEXT_LINE;
-    COTE_GET_LINE.GET_WORDS (LINE);
-  end READ_NEXT_SIGNIFICANT_LINE;
+    Cote_Get_Line.Read_Next_Line;
+    Cote_Get_Line.Get_Words (Line);
+  end Read_Next_Significant_Line;
 
-  procedure ERROR (FILENAME : in STRING; RESULT : in RESULT_LIST;
-                   COTE_NO : in LOC_COTE_RANGE := 0; 
-                   NO2 : in NATURAL := 0) is
+  procedure Error (Filename : in String; Result : in Result_List;
+                   Cote_No : in Loc_Cote_Range := 0; 
+                   No2 : in Natural := 0) is
   begin
-    if RESULT = OK or else RESULT = END_OF_FILE then
+    if Result = Ok or else Result = End_Of_File then
       return;
     end if;
-    SYS_CALLS.PUT_ERROR ( "Error in file " & FILENAME);
-    if COTE_NO /= 0 then
-      SYS_CALLS.PUT_LINE_ERROR (
-       " at line " & TEXT_IO.COUNT'IMAGE(COTE_LINE(COTE_NO)));
+    Sys_Calls.Put_Error ( "Error in file " & Filename);
+    if Cote_No /= 0 then
+      Sys_Calls.Put_Line_Error (
+       " at line " & Ada.Text_Io.Count'Image(Cote_Line(Cote_No)));
     else
-      SYS_CALLS.NEW_LINE_ERROR;
+      Sys_Calls.New_Line_Error;
     end if;
-    case RESULT is
-      when OK | END_OF_FILE =>
+    case Result is
+      when Ok | End_Of_File =>
         null;
-      when FILE_ACCESS =>
-        SYS_CALLS.PUT_LINE_ERROR ("File not found or not readable or empty.");
-      when FILE_FORMAT =>
-        SYS_CALLS.PUT_LINE_ERROR ("Wrong format.");
-      when FILE_LENGTH =>
-        SYS_CALLS.PUT_LINE_ERROR ("File too long.");
-      when LINE_NB =>
-        SYS_CALLS.PUT_LINE_ERROR ("Invalid line number.");
-      when START_STOP =>
-        SYS_CALLS.PUT_LINE_ERROR ("Start equal stop.");
-      when DUPLICATE =>
-        SYS_CALLS.PUT_LINE_ERROR ("Cote already exists at line "
-          & TEXT_IO.COUNT'IMAGE(COTE_LINE(NO2)));
-      when NO_COTE =>
-        SYS_CALLS.PUT_LINE_ERROR ("Line " & NATURAL'IMAGE(NO2) & " has no cote");
+      when File_Access =>
+        Sys_Calls.Put_Line_Error ("File not found or not readable or empty.");
+      when File_Format =>
+        Sys_Calls.Put_Line_Error ("Wrong format.");
+      when File_Length =>
+        Sys_Calls.Put_Line_Error ("File too long.");
+      when Line_Nb =>
+        Sys_Calls.Put_Line_Error ("Invalid line number.");
+      when Start_Stop =>
+        Sys_Calls.Put_Line_Error ("Start equal stop.");
+      when Duplicate =>
+        Sys_Calls.Put_Line_Error ("Cote already exists at line "
+          & Ada.Text_Io.Count'Image(Cote_Line(No2)));
+      when No_Cote =>
+        Sys_Calls.Put_Line_Error ("Line " & Natural'Image(No2) & " has no cote");
     end case;
-    raise LOAD_ERROR;
-  end ERROR;
+    raise Load_Error;
+  end Error;
 
-  procedure OPEN (FILENAME : in STRING) is
+  procedure Open (Filename : in String) is
   begin
-    COTE_GET_LINE.OPEN (FILENAME);
-    COTE_GET_LINE.GET_WORDS (LINE);
+    Cote_Get_Line.Open (Filename);
+    Cote_Get_Line.Get_Words (Line);
   exception
     when others =>
-      ERROR (FILENAME, FILE_ACCESS);
-  end OPEN;
+      Error (Filename, File_Access);
+  end Open;
     
-  procedure LOAD_COTE (KIND : in COTE_KIND; 
-                       NB_COTE : in out LOC_COTE_RANGE;
-                       COTE : in out COTE_REC;
-                       RESULT : out RESULT_LIST) is
+  procedure Load_Cote (Kind : in Cote_Kind; 
+                       Nb_Cote : in out Loc_Cote_Range;
+                       Cote : in out Cote_Rec;
+                       Result : out Result_List) is
   begin
     -- Except for first (done in open) get new line and parse
-    if NB_COTE /= 0 then
+    if Nb_Cote /= 0 then
       begin
-        READ_NEXT_SIGNIFICANT_LINE;
+        Read_Next_Significant_Line;
       exception
-        when COTE_GET_LINE.NO_MORE_LINE =>
-          RESULT := END_OF_FILE;
+        when Cote_Get_Line.No_More_Line =>
+          Result := End_Of_File;
           return;
       end;
-      COTE_GET_LINE.GET_WORDS (LINE);
+      Cote_Get_Line.Get_Words (Line);
     end if;
     -- Got a new cote: Check number of cotes
-    if NB_COTE = MAX_COTE then
-      RESULT := FILE_LENGTH;
+    if Nb_Cote = Max_Cote then
+      Result := File_Length;
       return;
     end if;
-    NB_COTE := NB_COTE + 1;
-    COTE_LINE(NB_COTE) := COTE_GET_LINE.GET_LINE_NO;
+    Nb_Cote := Nb_Cote + 1;
+    Cote_Line(Nb_Cote) := Cote_Get_Line.Get_Line_No;
     -- Got a new cote: Check number of words
-    if KIND = MANUFA then
-      if COTE_GET_LINE.GET_WORD_NUMBER /= 3 then
-        RESULT := FILE_FORMAT;
+    if Kind = Manufa then
+      if Cote_Get_Line.Get_Word_Number /= 3 then
+        Result := File_Format;
         return;
       end if;
     else
-      if COTE_GET_LINE.GET_WORD_NUMBER /= 4 then
-        RESULT := FILE_FORMAT;
+      if Cote_Get_Line.Get_Word_Number /= 4 then
+        Result := File_Format;
         return;
       end if;
     end if;
     -- Parse line
-    COTE.START := LINE_RANGE'VALUE(TEXT_HANDLER.VALUE(LINE(1)));
-    COTE.STOP  := LINE_RANGE'VALUE(TEXT_HANDLER.VALUE(LINE(2)));
-    if KIND = DESIGN then
-      COTE.VALUE := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(3)));
-      COTE.INTER := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(4)));
+    Cote.Start := Line_Range'Value(Text_Handler.Value(Line(1)));
+    Cote.Stop  := Line_Range'Value(Text_Handler.Value(Line(2)));
+    if Kind = Design then
+      Cote.Value := Get_Float.Get_Float(Text_Handler.Value(Line(3)));
+      Cote.Inter := Get_Float.Get_Float(Text_Handler.Value(Line(4)));
     else
-      COTE.INTER := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(3)));
+      Cote.Inter := Get_Float.Get_Float(Text_Handler.Value(Line(3)));
     end if;
     -- Error if start=stop. Set start < stop
-    if COTE.START = COTE.STOP then
-      RESULT := START_STOP;
+    if Cote.Start = Cote.Stop then
+      Result := Start_Stop;
       return;
-    elsif COTE.START > COTE.STOP then
+    elsif Cote.Start > Cote.Stop then
       declare
-        TMP : COTE_RANGE;
+        Tmp : Cote_Range;
       begin
-        TMP := COTE.START;
-        COTE.START := COTE.STOP;
-        COTE.STOP := TMP;
+        Tmp := Cote.Start;
+        Cote.Start := Cote.Stop;
+        Cote.Stop := Tmp;
       end; 
     end if;
     
-    RESULT := OK;
+    Result := Ok;
   exception
     when others =>
-      RESULT := FILE_FORMAT;
-  end LOAD_COTE;
+      Result := File_Format;
+  end Load_Cote;
 
   -- Load both sets of cotes from two files
   -- And checks
-  procedure LOAD_COTES is
-    LINE_USAGE : array (LINE_RANGE) of BOOLEAN;
-    RESULT : RESULT_LIST;
-    MANUFA_COTE : MANUFA_COTE_REC;
-    DESIGN_COTE : DESIGN_COTE_REC;
+  procedure Load_Cotes is
+    Line_Usage : array (Line_Range) of Boolean;
+    Result : Result_List;
+    Manufa_Cote : Manufa_Cote_Rec;
+    Design_Cote : Design_Cote_Rec;
 
-    function ARE_DUP (C1, C2 : in COTE_REC) return BOOLEAN is
+    function Are_Dup (C1, C2 : in Cote_Rec) return Boolean is
     begin
-      return  C1.START = C2.START and then C1.STOP = C2.STOP;
-    end ARE_DUP;
+      return  C1.Start = C2.Start and then C1.Stop = C2.Stop;
+    end Are_Dup;
   begin
     begin
-      ARG_PARSING.CHECK;
+      Arg_Parsing.Check;
     exception
       when others =>
-        SYS_CALLS.PUT_LINE_ERROR ("Error. Usage: "
-          & ARGUMENT.GET_PROGRAM_NAME & " [ -v ] <manufacturing_file> <specification_file>");
-        raise LOAD_ERROR;
+        Sys_Calls.Put_Line_Error ("Error. Usage: "
+          & Argument.Get_Program_Name
+          & " [ -v ] <manufacturing_file> <specification_file>");
+        raise Load_Error;
     end;
     -- Load and check Manufas
-    NB_MANUFA := 0;
-    OPEN (ARG_PARSING.MANUFA_FILE_NAME);
+    Nb_Manufa := 0;
+    Open (Arg_Parsing.Manufa_File_Name);
     loop
-      LOAD_COTE (MANUFA, NB_MANUFA, MANUFA_COTE, RESULT);
-      exit when RESULT = END_OF_FILE;
-      ERROR (ARG_PARSING.MANUFA_FILE_NAME, RESULT, NB_MANUFA);
-      MANUFAS(NB_MANUFA) := MANUFA_COTE;
+      Load_Cote (Manufa, Nb_Manufa, Manufa_Cote, Result);
+      exit when Result = End_Of_File;
+      Error (Arg_Parsing.Manufa_File_Name, Result, Nb_Manufa);
+      Manufas(Nb_Manufa) := Manufa_Cote;
     end loop;
-    COTE_GET_LINE.CLOSE;
+    Cote_Get_Line.Close;
         
     -- Load and check Designs
-    NB_DESIGN := 0;
-    OPEN (ARG_PARSING.DESIGN_FILE_NAME);
+    Nb_Design := 0;
+    Open (Arg_Parsing.Design_File_Name);
     loop
-      LOAD_COTE (DESIGN, NB_DESIGN, DESIGN_COTE, RESULT);
-      exit when RESULT = END_OF_FILE;
-      ERROR (ARG_PARSING.DESIGN_FILE_NAME, RESULT, NB_DESIGN);
-      DESIGNS(NB_DESIGN) := DESIGN_COTE;
+      Load_Cote (Design, Nb_Design, Design_Cote, Result);
+      exit when Result = End_Of_File;
+      Error (Arg_Parsing.Design_File_Name, Result, Nb_Design);
+      Designs(Nb_Design) := Design_Cote;
     end loop;
-    COTE_GET_LINE.CLOSE;
+    Cote_Get_Line.Close;
 
     -- Check same number of cotes
-    if NB_MANUFA /= NB_DESIGN then
-      SYS_CALLS.PUT_LINE_ERROR ( "Error: files " & ARG_PARSING.MANUFA_FILE_NAME
-                           & " and " & ARG_PARSING.DESIGN_FILE_NAME
+    if Nb_Manufa /= Nb_Design then
+      Sys_Calls.Put_Line_Error ( "Error: files " & Arg_Parsing.Manufa_File_Name
+                           & " and " & Arg_Parsing.Design_File_Name
                            & " don't have the same number of cotes.");
-      raise LOAD_ERROR;
+      raise Load_Error;
     end if;
 
     -- Check duplicates
-    for I in 2 .. NB_MANUFA loop
+    for I in 2 .. Nb_Manufa loop
       for J in 1 .. I - 1 loop
-        if ARE_DUP (MANUFAS(I), MANUFAS(J)) then
-          ERROR (ARG_PARSING.MANUFA_FILE_NAME, DUPLICATE, I, J);
+        if Are_Dup (Manufas(I), Manufas(J)) then
+          Error (Arg_Parsing.Manufa_File_Name, Duplicate, I, J);
         end if;
       end loop;
     end loop;
 
     -- Check duplicates
-    for I in 2 .. NB_DESIGN loop
+    for I in 2 .. Nb_Design loop
       for J in 1 .. I - 1 loop
-        if ARE_DUP (DESIGNS(I), DESIGNS(J)) then
-          ERROR (ARG_PARSING.DESIGN_FILE_NAME, DUPLICATE, I, J);
+        if Are_Dup (Designs(I), Designs(J)) then
+          Error (Arg_Parsing.Design_File_Name, Duplicate, I, J);
         end if;
       end loop;
     end loop;
 
     -- Check line nos and line usage
-    LINE_USAGE := (others => FALSE);
-    for I in 1 .. NB_MANUFA loop
-      if      MANUFAS(I).START > NB_MANUFA + 1
-      or else MANUFAS(I).STOP  > NB_MANUFA + 1 then
-        ERROR (ARG_PARSING.MANUFA_FILE_NAME, LINE_NB, I);
+    Line_Usage := (others => False);
+    for I in 1 .. Nb_Manufa loop
+      if      Manufas(I).Start > Nb_Manufa + 1
+      or else Manufas(I).Stop  > Nb_Manufa + 1 then
+        Error (Arg_Parsing.Manufa_File_Name, Line_Nb, I);
       end if;
-      LINE_USAGE(MANUFAS(I).START) := TRUE;
-      LINE_USAGE(MANUFAS(I).STOP)  := TRUE;
+      Line_Usage(Manufas(I).start) := True;
+      Line_Usage(Manufas(I).Stop)  := True;
     end loop;
-    for I in 1 .. NB_MANUFA + 1 loop
-      if not LINE_USAGE(I) then
-        ERROR (ARG_PARSING.MANUFA_FILE_NAME, NO_COTE, 0, I);
+    for I in 1 .. Nb_Manufa + 1 loop
+      if not Line_Usage(I) then
+        Error (Arg_Parsing.Manufa_File_Name, No_Cote, 0, I);
       end if;
     end loop;
 
     -- Check line nos and line usage
-    LINE_USAGE := (others => FALSE);
-    for I in 1 .. NB_DESIGN loop
-      if      DESIGNS(I).START > NB_DESIGN + 1
-      or else DESIGNS(I).STOP  > NB_DESIGN + 1 then
-        ERROR (ARG_PARSING.DESIGN_FILE_NAME, LINE_NB, I);
+    Line_Usage := (others => FALSE);
+    for I in 1 .. Nb_Design loop
+      if      Designs(I).Start > Nb_Design + 1
+      or else Designs(i).Stop  > Nb_Design + 1 then
+        Error (Arg_Parsing.Design_File_Name, Line_Nb, I);
       end if;
-      LINE_USAGE(DESIGNS(I).START) := TRUE;
-      LINE_USAGE(DESIGNS(I).STOP)  := TRUE;
+      Line_Usage(Designs(I).Start) := True;
+      Line_Usage(Designs(I).Stop)  := True;
     end loop;
-    for I in 1 .. NB_DESIGN + 1 loop
-      if not LINE_USAGE(I) then
-        ERROR (ARG_PARSING.DESIGN_FILE_NAME, NO_COTE, 0, I);
+    for I in 1 .. Nb_Design + 1 loop
+      if not Line_Usage(I) then
+        Error (Arg_Parsing.Design_File_Name, No_Cote, 0, I);
       end if;
     end loop;
   
-    LOAD_OK := TRUE;
-  end LOAD_COTES;
+    Load_Ok := True;
+  end Load_Cotes;
 
-  function GET_NB_COTE return COTE_RANGE is
+  function Get_Nb_Cote return Cote_Range is
   begin
-    if not LOAD_OK then
-      raise LOAD_ERROR;
+    if not Load_Ok then
+      raise Load_Error;
     end if;
-    return NB_MANUFA;
-  end GET_NB_COTE;
+    return Nb_Manufa;
+  end Get_Nb_Cote;
 
-  function GET_MANUFA return MANUFA_ARRAY is
+  function Get_Manufa return Manufa_Array is
   begin
-    if not LOAD_OK then
-      raise LOAD_ERROR;
+    if not Load_Ok then
+      raise Load_Error;
     end if;
-    return MANUFAS(1 .. NB_MANUFA);
-  end GET_MANUFA;
+    return Manufas(1 .. Nb_Manufa);
+  end Get_Manufa;
 
-  function GET_DESIGN return DESIGN_ARRAY is
+  function Get_Design return Design_Array is
   begin
-    if not LOAD_OK then
-      raise LOAD_ERROR;
+    if not Load_Ok then
+      raise Load_Error;
     end if;
-    return DESIGNS(1 .. NB_DESIGN);
-  end GET_DESIGN;
+    return Designs(1 .. Nb_Design);
+  end Get_Design;
 
 begin
-  LOAD_COTES;
-end FILE;
+  Load_Cotes;
+end File;
+

@@ -1,15 +1,16 @@
-with MY_MATH;
-package GRID_2 is
+with My_Math;
+package Grid_2 is
 
-  subtype LONG_POSITIVE is MY_MATH.INTE range 1 .. MY_MATH.INTE'LAST;
-  type LONG_STRING is array (LONG_POSITIVE range <>) of CHARACTER;
+  subtype Long_Positive is My_Math.Inte range 1 .. My_Math.Inte'Last;
+  type Long_String is array (Long_Positive range <>) of Character;
 
-  function ENCODE (KEY : in STRING; TEXT : LONG_STRING)
-                  return LONG_STRING;
+  function Encode (Key : in String; Text : Long_String)
+                  return Long_String;
 
-  function DECODE (KEY : in STRING; TEXT : LONG_STRING)
-                  return LONG_STRING;
+  function Decode (Key : in String; Text : Long_String)
+                  return Long_String;
 
-  LONG_STRING_TOO_LONG : exception;
+  Long_String_Too_Long : exception;
 
-end GRID_2;
+end Grid_2;
+

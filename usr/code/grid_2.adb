@@ -1,73 +1,73 @@
-package body GRID_2 is
-  use MY_MATH;
+package body Grid_2 is
+  use My_Math;
 
-  subtype LONG_NATURAL is MY_MATH.INTE range 0 .. MY_MATH.INTE'LAST;
+  subtype Long_Natural is My_Math.Inte range 0 .. My_Math.Inte'Last;
 
-  DIMENSION : MY_MATH.INTE;
-  FIRST_ROW : MY_MATH.INTE;
-  FIRST_COL : MY_MATH.INTE;
-  LAST_ROW : MY_MATH.INTE;
-  LAST_COL : MY_MATH.INTE;
+  Dimension : My_Math.Inte;
+  First_Row : My_Math.Inte;
+  First_Col : My_Math.Inte;
+  Last_Row : My_Math.Inte;
+  Last_Col : My_Math.Inte;
 
-  procedure INITIALIZE (KEY_LENGTH, TEXT_LENGTH : in MY_MATH.INTE) is
-    R : MY_MATH.REAL;
+  procedure Initialize (Key_Length, Text_Length : in My_Math.Inte) is
+    R : My_Math.Real;
 
   begin
-    R := MY_MATH.REAL(KEY_LENGTH) + MY_MATH.REAL(TEXT_LENGTH);
-    DIMENSION := MY_MATH.INTE(TRUNC(MY_MATH.SQRT(R))) + 1;
-    FIRST_ROW := KEY_LENGTH / DIMENSION + 1;
-    FIRST_COL := KEY_LENGTH mod DIMENSION + 1;
-    LAST_ROW :=
-         KEY_LENGTH / DIMENSION
-       + TEXT_LENGTH / DIMENSION
-       + (KEY_LENGTH mod DIMENSION + TEXT_LENGTH mod DIMENSION) / DIMENSION
+    R := My_Math.Real(Key_Length) + My_Math.Real(Text_Length);
+    Dimension := My_Math.Inte(Trunc(My_Math.Sqrt(R))) + 1;
+    First_Row := Key_Length / Dimension + 1;
+    First_Col := Key_Length mod Dimension + 1;
+    Last_Row :=
+         Key_Length / Dimension
+       + Text_Length / Dimension
+       + (Key_Length mod Dimension + Text_Length mod Dimension) / Dimension
        + 1;
-    LAST_COL :=
-         (KEY_LENGTH mod DIMENSION + TEXT_LENGTH mod DIMENSION) mod DIMENSION
+    Last_Col :=
+         (Key_Length mod Dimension + Text_Length mod Dimension) mod Dimension
        + 1;
     -- So far , last row, col is first empty slot
-    if LAST_COL /= 1 then
-      LAST_COL := LAST_COL - 1;
+    if LasT_Col /= 1 then
+      Last_Col := Last_Col - 1;
     else
-      LAST_ROW := LAST_ROW - 1;
-      LAST_COL := DIMENSION;
+      Last_Row := Last_Row - 1;
+      Last_Col := Dimension;
     end if;
-  end INITIALIZE;
+  end Initialize;
 
-  function INDEX (R, C : MY_MATH.INTE; ENCODE : BOOLEAN)
-                 return LONG_NATURAL is
-    N : LONG_NATURAL;
+  function Index (R, C : My_Math.Inte; Encode : Boolean)
+                 return Long_Natural is
+    N : Long_Natural;
   begin
-    if R < FIRST_ROW then
+    if R < First_Row then
       return 0;
-    elsif R = FIRST_ROW and then C < FIRST_COL then
+    elsif R = First_Row and then C < First_Col then
       return 0;
-    elsif R = LAST_ROW and then C > LAST_COL then
+    elsif R = Last_Row and then C > Last_Col then
       return 0;
-    elsif R > LAST_ROW then
+    elsif R > Last_Row then
       return 0;
     else
       -- In effective table
-      if ENCODE then
+      if Encode then
         -- Substract key offset
-        return (R - FIRST_ROW) * DIMENSION + C - FIRST_COL + 1;
+        return (R - First_Row) * Dimension + C - First_Col + 1;
       else
         N := 0;
         for I in 1 .. C - 1 loop
           -- General column amount
-          N := N - (FIRST_ROW - 1) + LAST_ROW;
-          if I < FIRST_COL then
+          N := N - (First_Row - 1) + LAST_ROW;
+          if I < First_Col then
             -- Before first col, so -1
             N := N - 1;
           end if;
-          if I > LAST_COL then
+          if I > Last_Col then
             -- After last col, so -1
             N := N - 1;
           end if;
         end loop;
         -- Add key offset (raow part)
-        N := N + R - FIRST_ROW;
-        if C < FIRST_COL then
+        N := N + R - First_Row;
+        if C < First_Col then
           -- Current col is before first col, so -1
           N := N - 1;
         end if;
@@ -76,49 +76,50 @@ package body GRID_2 is
         return N;
       end if;
     end if;
-  end INDEX;
+  end Index;
 
 
-  function ENCODE (KEY : in STRING; TEXT : LONG_STRING)
-           return LONG_STRING is
-    STR : LONG_STRING (1 .. TEXT'LENGTH);
-    I : LONG_POSITIVE;
-    J : LONG_NATURAL;
+  function Encode (Key : in String; Text : Long_String)
+           return Long_String is
+    Str : Long_String (1 .. Text'Length);
+    I : Long_Positive;
+    J : Long_Natural;
   begin
-    INITIALIZE (KEY'LENGTH, TEXT'LENGTH);
+    Initialize (Key'Length, Text'Length);
 
     I := 1;
-    for C in 1 .. DIMENSION loop
-      for R in 1 .. DIMENSION loop
-        J := INDEX (R, C, TRUE);
+    for C in 1 .. Dimension loop
+      for R in 1 .. Dimension loop
+        J := Index (R, C, True);
         if J /= 0 then
-          STR(I) := TEXT(J);
+          Str(I) := Text(J);
           I := I + 1;
         end if;
       end loop;
     end loop;
     return STR;
-  end ENCODE;
+  end Encode;
 
-  function DECODE (KEY : in STRING; TEXT : LONG_STRING)
-           return LONG_STRING is
-    STR : LONG_STRING (1 .. TEXT'LENGTH);
-    I : LONG_POSITIVE;
-    J : LONG_NATURAL;
+  function Decode (Key : in String; Text : Long_String)
+           return Long_String is
+    Str : Long_String (1 .. Text'Length);
+    I : Long_Positive;
+    J : Long_Natural;
   begin
-    INITIALIZE (KEY'LENGTH, TEXT'LENGTH);
+    Initialize (Key'Length, Text'Length);
 
     I := 1;
-    for R in 1 .. DIMENSION loop
-      for C in 1 .. DIMENSION loop
-        J := INDEX (R, C, FALSE);
+    for R in 1 .. Dimension loop
+      for C in 1 .. Dimension loop
+        J := Index (R, C, False);
         if J /= 0 then
-          STR(I) := TEXT(J);
+          Str(I) := Text(J);
           I := I + 1;
         end if;
       end loop;
     end loop;
-    return STR;
-  end DECODE;
+    return Str;
+  end Decode;
 
-end GRID_2;
+end Grid_2;
+

@@ -1,166 +1,167 @@
-with ADA.CALENDAR;
+with Ada.Calendar;
 
-with NORMAL;
-with ARGUMENT;
-with MY_IO;
-with DAY_MNG;
-with DOS;
+with Normal;
+with Argument;
+with My_Io;
+with Day_Mng;
+with Dos;
 
-with TYPES;
-with FILE;
-with EURISTIC;
+with Types;
+with File;
+with Euristic;
 
-procedure HUNGAR is
-  DIM : NATURAL;
-  SIGMA : FLOAT;
-  LOC_IDEAL_NOTE, IDEAL_NOTE, LOC_NOTE : FLOAT;
-  LOC_J : TYPES.INDEX_RANGE;
-  NB_ITERATIONS : POSITIVE;
-  MAX_ITER_DIGITS : constant := 3;
-  START_TIME : ADA.CALENDAR.TIME;
+procedure Hungar is
+  Dim : Natural;
+  Sigma : Float;
+  Loc_IdeaL_Note, Ideal_Note, Loc_Note : Float;
+  Loc_J : Types.Index_Range;
+  Nb_Iterations : Positive;
+  Max_Iter_Digits : constant := 3;
+  Start_Time : Ada.Calendar.Time;
 
 begin
-  if ARGUMENT.GET_NBRE_ARG /= 1 then
-    MY_IO.PUT_LINE ("Syntax error. Usage : hungar <file_name>");
+  if Argument.Get_Nbre_Arg /= 1 then
+    My_Io.Put_Line ("Syntax error. Usage : hungar <file_name>");
     return;
   end if;
 
-  START_TIME := ADA.CALENDAR.CLOCK;
+  Start_Time := Ada.Calendar.Clock;
 
-  SOLVE:
+  Solve:
   declare
-    MATTRIX : TYPES.MATTRIX_REC_ACCESS :=
-      new TYPES.MATTRIX_REC'(FILE.READ (ARGUMENT.GET_PARAMETER));
+    Mattrix : Types.Mattrix_Rec_Access :=
+      new Types.Mattrix_Rec'(File.Read (Argument.Get_Parameter));
   begin
 
-    DIM := MATTRIX.DIM;
+    Dim := Mattrix.Dim;
 
-    EURISTIC.SEARCH (MATTRIX.all, NB_ITERATIONS);
+    Euristic.Search (Mattrix.all, Nb_Iterations);
   
-    MY_IO.PUT_LINE ("Result:");
-    SIGMA := 0.0;
-    IDEAL_NOTE := 0.0;
-    for I in 1 .. DIM loop
-      if TYPES."=" (FILE.GET_KIND, TYPES.REGRET) then
-        LOC_IDEAL_NOTE := FLOAT'LAST;
+    My_Io.Put_Line ("Result:");
+    Sigma := 0.0;
+    Ideal_Note := 0.0;
+    for I in 1 .. Dim loop
+      if Types."=" (File.Get_Kind, Types.Regret) then
+        Loc_Ideal_Note := Float'Last;
       else
-        LOC_IDEAL_NOTE := FLOAT'FIRST;
+        Loc_Ideal_Note := Float'First;
       end if;
-      for J in 1 .. DIM loop
-        if TYPES."=" (FILE.GET_KIND, TYPES.REGRET) then
+      for J in 1 .. Dim loop
+        if Types."=" (File.Get_Kind, Types.Regret) then
           -- Lowest note of this row
-          if FILE.GET_NOTE(I, J) < LOC_IDEAL_NOTE then
-            LOC_IDEAL_NOTE := FILE.GET_NOTE(I, J);
+          if File.Get_Note(I, J) < Loc_IdeaL_Note then
+            Loc_Ideal_Note := File.Get_Note(I, J);
           end if;
         else
           -- Highest note of this row
-          if FILE.GET_NOTE(I, J) > LOC_IDEAL_NOTE then
-            LOC_IDEAL_NOTE := FILE.GET_NOTE(I, J);
+          if File.Get_Note(I, J) > Loc_Ideal_Note then
+            Loc_Ideal_Note := File.Get_Note(I, J);
           end if;
         end if;
-        if MATTRIX.NOTES(I, J) = 1 then
+        if Mattrix.Notes(I, J) = 1 then
           -- Affectation found
-          LOC_J := J;
+          Loc_J := J;
         end if;
       end loop;
 
       -- Affectation
-      MY_IO.PUT ("row " & NORMAL(I, 3) & " column " & NORMAL(LOC_J, 3));
-      LOC_NOTE := FILE.GET_NOTE(I, LOC_J);
-      if TYPES."=" (FILE.GET_KIND, TYPES.REGRET) then
-        MY_IO.PUT (" cost: ");
+      My_Io.Put ("row " & Normal(I, 3) & " column " & Normal(Loc_J, 3));
+      Loc_Note := File.Get_Note(I, Loc_J);
+      if Types."=" (File.Get_Kind, Types.Regret) then
+        My_Io.Put (" cost: ");
       else
-        MY_IO.PUT (" note: ");
+        My_Io.Put (" note: ");
       end if;
-      MY_IO.PUT (LOC_NOTE, 3, 2, 0);
-      SIGMA := SIGMA + LOC_NOTE;
+      My_Io.Put (Loc_Note, 3, 2, 0);
+      Sigma := Sigma + Loc_Note;
 
       -- Ideal minimum cost
-      IDEAL_NOTE := IDEAL_NOTE + LOC_IDEAL_NOTE;
-      MY_IO.PUT ("   Ideal: ");
-      MY_IO.PUT (LOC_IDEAL_NOTE, 3, 2, 0);
+      IdeaL_Note := Ideal_Note + Loc_Ideal_Note;
+      My_Io.Put ("   Ideal: ");
+      My_Io.Put (Loc_Ideal_Note, 3, 2, 0);
 
       -- Loss 
-      if abs (LOC_IDEAL_NOTE - LOC_NOTE) > FILE.EPSILON then
-        MY_IO.PUT (" Loss: ");
-        MY_IO.PUT (abs (LOC_IDEAL_NOTE - LOC_NOTE), 3, 2, 0);
+      if abs (Loc_Ideal_Note - Loc_Note) > File.Epsilon then
+        My_Io.Put (" Loss: ");
+        My_Io.Put (abs (Loc_Ideal_Note - Loc_Note), 3, 2, 0);
       end if;
-      MY_IO.NEW_LINE;
+      My_Io.New_Line;
 
     end loop;
-    MY_IO.NEW_LINE;
+    My_Io.New_Line;
 
     -- Total
-    if TYPES."=" (FILE.GET_KIND, TYPES.REGRET) then
-      MY_IO.PUT ("Total cost: ");
-      MY_IO.PUT(SIGMA, 6, 2, 0);
-      MY_IO.PUT ("  Ideal cost: ");
-      MY_IO.PUT(IDEAL_NOTE, 6, 2, 0);
+    if Types."=" (File.Get_Kind, Types.Regret) then
+      My_Io.Put ("Total cost: ");
+      My_Io.Put(Sigma, 6, 2, 0);
+      My_Io.Put ("  Ideal cost: ");
+      My_Io.Put(Ideal_Note, 6, 2, 0);
     else
-      MY_IO.PUT ("Total note: ");
-      MY_IO.PUT(SIGMA, 6, 2, 0);
-      MY_IO.PUT ("  Ideal note: ");
-      MY_IO.PUT(IDEAL_NOTE, 6, 2, 0);
+      My_Io.Put ("Total note: ");
+      My_Io.Put(Sigma, 6, 2, 0);
+      My_Io.Put ("  Ideal note: ");
+      My_Io.Put(Ideal_Note, 6, 2, 0);
     end if;
-    MY_IO.PUT ("  Total loss: ");
-    MY_IO.PUT (abs (IDEAL_NOTE - SIGMA), 6, 2, 0);
-    MY_IO.NEW_LINE;
-    MY_IO.PUT ("Iter: ");
-    if POSITIVE'IMAGE(NB_ITERATIONS)'LENGTH - 1 >= MAX_ITER_DIGITS then
-      MY_IO.PUT (POSITIVE'IMAGE(NB_ITERATIONS));
+    My_Io.Put ("  Total loss: ");
+    My_Io.Put (abs (Ideal_Note - Sigma), 6, 2, 0);
+    My_Io.New_Line;
+    My_Io.Put ("Iter: ");
+    if Positive'Image(Nb_Iterations)'Length - 1 >= Max_Iter_Digits then
+      My_Io.Put (Positive'Image(Nb_Iterations));
     else
-      MY_IO.PUT (NORMAL (NB_ITERATIONS, MAX_ITER_DIGITS));
+      My_Io.Put (Normal (Nb_Iterations, Max_Iter_Digits));
     end if;
 
-  end SOLVE;
+  end Solve;
 
-  COMPUTE_ELAPSE:
+  Compute_Elapse:
   declare
-    use type ADA.CALENDAR.TIME;
-    DUR : DURATION;
-    DAYS : NATURAL;
-    HOURS : DAY_MNG.T_HOURS;
-    MINUTES : DAY_MNG.T_MINUTES;
-    SECONDS : DAY_MNG.T_SECONDS;
-    MILLISECS : DAY_MNG.T_MILLISEC;
+    use type Ada.Calendar.Time;
+    Dur : Duration;
+    Days : Natural;
+    Hours : Day_Mng.T_Hours;
+    Minutes : Day_Mng.T_Minutes;
+    Seconds : Day_Mng.T_Seconds;
+    Millisecs : Day_Mng.T_Millisec;
   begin
-    DUR := ADA.CALENDAR.CLOCK - START_TIME;
-    DAYS := 0;
-    while DUR > ADA.CALENDAR.DAY_DURATION'LAST loop
-      DAYS := DAYS + 1;
-      DUR := DUR - ADA.CALENDAR.DAY_DURATION'LAST;
+    Dur := Ada.Calendar.Clock - Start_Time;
+    Days := 0;
+    while Dur > Ada.Calendar.Day_Duration'Last loop
+      Days := Days + 1;
+      Dur := Dur - Ada.Calendar.Day_Duration'Last;
     end loop;
-    DAY_MNG.SPLIT (DUR, HOURS, MINUTES, SECONDS, MILLISECS);
-    DISPLAY_ELAPSE:
+    Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisecs);
+    Display_Elapse:
     declare
-      SOME_TIME_PUT : BOOLEAN := FALSE;
-      procedure PUT_TIME (VAL : in NATURAL; MSG : in STRING) is
+      Some_Time_Put : Boolean := False;
+      procedure Put_Time (Val : in Natural; Msg : in String) is
       begin
-        if VAL = 0 and then not SOME_TIME_PUT then
+        if Val = 0 and then not Some_Time_Put then
           return;
         end if;
-        SOME_TIME_PUT := TRUE;
-        MY_IO.PUT (NATURAL'IMAGE(VAL) & " " & MSG);
+        Some_Time_Put := True;
+        My_Io.Put (Natural'Image(Val) & " " & Msg);
         if VAL > 1 then
-          MY_IO.PUT ("s");
+          My_Io.Put ("s");
         end if;
-      end PUT_TIME;
+      end Put_Time;
     begin  
-      MY_IO.PUT ("    In");
-      PUT_TIME (DAYS, "day");
-      PUT_TIME (HOURS, "hour");
-      PUT_TIME (MINUTES, "minute");
-      PUT_TIME (SECONDS, "second");
-      if SOME_TIME_PUT then
-        MY_IO.PUT (" and");
+      My_Io.Put ("    In");
+      Put_Time (Days, "day");
+      Put_Time (Hours, "hour");
+      Put_Time (Minutes, "minute");
+      Put_Time (Seconds, "second");
+      if Some_Time_Put then
+        My_Io.Put (" and");
       end if;
-      PUT_TIME (MILLISECS, "millisec");
-      MY_IO.PUT_LINE (".");
-    end DISPLAY_ELAPSE;
-  end COMPUTE_ELAPSE;
-  DOS.SOUND;
+      Put_Time (Millisecs, "millisec");
+      My_Io.Put_Line (".");
+    end Display_Elapse;
+  end Compute_Elapse;
+  Dos.Sound;
 
 exception
-  when FILE.READ_ERROR =>
+  when File.Read_Error =>
     null;
-end HUNGAR;
+end Hungar;
+

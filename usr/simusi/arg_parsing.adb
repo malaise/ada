@@ -1,46 +1,46 @@
-with ARGUMENT;
-package body ARG_PARSING is
+with Argument;
+package body Arg_Parsing is
 
-  VERBOSE_FLAG : BOOLEAN;
-  PM, PD : POSITIVE;
+  Verbose_Flag : Boolean;
+  Pm, Pd : Positive;
 
-  function MANUFA_FILE_NAME return STRING is
+  function Manufa_File_Name return String is
   begin
-    return ARGUMENT.GET_PARAMETER (PM);
-  end MANUFA_FILE_NAME;
+    return Argument.Get_Parameter (Pm);
+  end Manufa_File_Name;
   
-  function DESIGN_FILE_NAME return STRING is
+  function Design_File_Name return String is
   begin
-    return ARGUMENT.GET_PARAMETER (PD);
-  end DESIGN_FILE_NAME;
+    return Argument.Get_Parameter (Pd);
+  end Design_File_Name;
 
-  function VERBOSE return BOOLEAN is
+  function Verbose return Boolean is
   begin
-    return VERBOSE_FLAG;
-  end VERBOSE;
+    return Verbose_Flag;
+  end Verbose;
 
-  procedure CHECK is
+  procedure Check is
   begin
-    VERBOSE_FLAG := FALSE;
-    PM := 1;
-    PD := 2;
-    if ARGUMENT.GET_NBRE_ARG = 3 then
-      if ARGUMENT.GET_PARAMETER (1, "v") = ""
-      and then ARGUMENT.GET_POSITION (1, "v") = 1 then
-        VERBOSE_FLAG := TRUE;
-        PM := 2;
-        PD := 3;
+    Verbose_Flag := False;
+    Pm := 1;
+    Pd := 2;
+    if Argument.Get_Nbre_Arg = 3 then
+      if Argument.Get_Parameter (1, "v") = ""
+      and then Argument.Get_Position (1, "v") = 1 then
+        Verbose_Flag := True;
+        Pm := 2;
+        Pd := 3;
       else
-        raise ARG_ERROR;
+        raise Arg_Error;
       end if;
-    elsif ARGUMENT.GET_NBRE_ARG /= 2 then
-      raise ARG_ERROR;
+    elsif Argument.Get_Nbre_Arg /= 2 then
+      raise Arg_Error;
     end if;
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
+    when Argument.Argument_Not_Found =>
       -- Default: no flag
       null;
   end;
   
-end ARG_PARSING;
+end Arg_Parsing;
 

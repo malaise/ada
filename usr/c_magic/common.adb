@@ -1,201 +1,203 @@
-with TEXT_IO; with CALENDAR;
-with NORMAL, TEXT_HANDLER, SORTS;
-package body COMMON is
+with Ada.Text_Io, Ada.Calendar;
+with Normal, Text_handler, Sorts;
+package body Common is
   -- The dimension of square
-  DIM : DIM_RANGE;
-  DM1 : NATURAL;
+  Dim : Dim_Range;
+  Dm1 : Natural;
 
   -- Array of content of square
-  MAX_LEN : constant := MAX_DIM * MAX_DIM;
-  subtype LEN_RANGE is POSITIVE range 1 .. MAX_LEN;
+  Max_Len : constant := Max_Dim * Max_Dim;
+  subtype Len_Range is Positive range 1 .. Max_Len;
 
   -- Curent length of array, current array
-  LEN : LEN_RANGE;
-  type LIS_ARRAY is array (LEN_RANGE range <>) of LEN_RANGE;
-  LIS : LIS_ARRAY (LEN_RANGE);
+  Len : Len_Range;
+  type Lis_Array is array (Len_Range range <>) of Len_Range;
+  Lis : Lis_Array (Len_Range);
 
   -- Expected sum of each row, column and diag
-  SIGMA : POSITIVE;
+  Sigma : Positive;
   -- Number of magic squares found
-  NB_SQUARE : NATURAL;
+  Nb_Square : Natural;
 
   -- Output file
-  FILE : TEXT_IO.FILE_TYPE;
-  FILE_NAME : TEXT_HANDLER.TEXT(80);
+  File : Ada.Text_Io.File_Type;
+  File_Name : Text_Handler.Text(80);
 
   -- Real -> integer : round or trunc
-  function TRUNC (X : in FLOAT) return INTEGER is
-    INT : INTEGER;
+  function Trunc (X : in Float) return Integer is
+    Int : Integer;
   begin
-    INT := INTEGER (X);
+    Int := Integer (X);
     -- Adjust to 1
     if X > 0.0 then
       -- If x>0 error is 1 too much
-      if FLOAT (INT) > X then INT := INT - 1; end if;
-      return INT;
+      if Float (Int) > X then Int := Int - 1; end if;
+      return Int;
     else
       -- If x<0 error is 1 too less
-      if FLOAT (INT) < X then INT := INT + 1; end if;
-      return INT;
+      if Float (Int) < X then Int := Int + 1; end if;
+      return Int;
     end if;
   exception
-    when others => raise CONSTRAINT_ERROR;
-  end TRUNC;
+    when others => raise Constraint_Error;
+  end Trunc;
 
-  function ROUND (X : in FLOAT) return INTEGER is
-    RESULTAT : INTEGER;
+  function Round (X : in Float) return Integer is
+    Result : Integer;
   begin
     if X > 0.0 then
-      RESULTAT := TRUNC  (X + 0.5);
+      Result := Trunc  (X + 0.5);
     else
-      RESULTAT := TRUNC  (X - 0.5);
+      Result := Trunc  (X - 0.5);
     end if;
-    return RESULTAT;
+    return Result;
   exception
-    when others => raise CONSTRAINT_ERROR;
-  end ROUND;
+    when others => raise Constraint_Error;
+  end Round;
 
-  function FRAC (X : in FLOAT) return FLOAT is
+  function Frac (X : in Float) return Float is
   begin
-    return X - FLOAT(TRUNC(X));
-  end FRAC;
+    return X - Float(Trunc(X));
+  end Frac;
 
   -- Recursive procedure to try a a level
   procedure TRY (CUR : LEN_RANGE);
 
   -- Init of array and file and start first try
-  procedure SEARCH (DIM : in DIM_RANGE) is
-    START_TIME : CALENDAR.TIME;
-    SEARCH_DURATION : FLOAT;
-    use CALENDAR;
+  procedure Search (Dim : in Dim_Range) is
+    Start_Time : Ada.Calendar.Time;
+    Search_Duration : Float;
+    use Ada.Calendar;
   begin
-    COMMON.DIM := DIM;
-    DM1 := DIM - 1;
+    Common.Dim := Dim;
+    Dm1 := Dim - 1;
 
     -- Compute len and sigma : sigma := (len * (len+1)) / 2 / dim
-    LEN := DIM * DIM;
-    SIGMA := (DIM * (LEN + 1) ) / 2;
+    Len := Dim * Dim;
+    Sigma := (Dim * (Len + 1) ) / 2;
 
     -- Initialise array
-    for I in 1 .. LEN loop
-      LIS(I) := I;
+    for I in 1 .. Len loop
+      Lis(I) := I;
     end loop;
-    NB_SQUARE := 0;
+    Nb_Square := 0;
 
-    TEXT_HANDLER.SET(FILE_NAME, NORMAL (DIM, 1, TRUE) & "_MAGIC.DAT");
+    Text_Handler.Set (File_Name, Normal (Dim, 1, True) & "_MAGIC.DAT");
     begin
-      TEXT_IO.OPEN (FILE, TEXT_IO.OUT_FILE, TEXT_HANDLER.VALUE(FILE_NAME));
+      Ada.Text_Io.Open (File, Ada.Text_Io.Out_File,
+                        Text_Handler.Value(File_Name));
     exception
-      when TEXT_IO.NAME_ERROR =>
-        TEXT_IO.CREATE (FILE, TEXT_IO.OUT_FILE, TEXT_HANDLER.VALUE(FILE_NAME));
+      when Ada.Text_Io.Name_Error =>
+        Ada.Text_Io.Create (File, Ada.Text_Io.Out_File,
+                            Text_Handler.Value(File_Name));
     end;
 
     -- Start searching
-    START_TIME := CALENDAR.CLOCK;
-    TRY(1);
-    SEARCH_DURATION := FLOAT (CALENDAR.CLOCK - START_TIME);
+    Start_Time := Ada.Calendar.Clock;
+    Try(1);
+    Search_Duration := Float (Ada.Calendar.Clock - Start_Time);
 
     -- Done
-    TEXT_IO.PUT_LINE (NATURAL'IMAGE(NB_SQUARE)
+    Ada.Text_Io.Put_Line (Natural'Image(Nb_Square)
                    &  " squares of "
-                   & DIM_RANGE'IMAGE(DIM)
+                   & Dim_Range'Image(Dim)
                    & " found in "
-                   & NATURAL'IMAGE(TRUNC(SEARCH_DURATION))
+                   & Natural'Image(Trunc(Search_Duration))
                    & "."
-                   & NORMAL (ROUND(FRAC(SEARCH_DURATION) * 1000.0), 3, GAP => '0')
+                   & Normal (Round(Frac(Search_Duration) * 1000.0), 3, Gap => '0')
                    & " s." );
 
-    TEXT_IO.CLOSE(FILE);
-  end SEARCH;
+    Ada.Text_Io.Close(File);
+  end Search;
 
   -- Check if, up to N, the array content may be a magic square
-  function CHECK (N : LEN_RANGE) return BOOLEAN is separate;
+  function Check (N : Len_Range) return Boolean is separate;
 
   -- Display and log array (square) content
-  procedure DUMP;
+  procedure Dump;
 
   -- To sort a part of the array
-  package SORT is new SORTS (
-   TYP_OBJECT => LEN_RANGE,
-   TYP_INDEX  => LEN_RANGE,
+  package Sort is new Sorts (
+   Typ_Object => Len_Range,
+   Typ_Index  => Len_Range,
    "<"        => "<",
-   TYP_ARRAY  => LIS_ARRAY);
+   Typ_Array  => Lis_Array);
 
-  -- Supposing that LIS is sorted from CUR to LEN
-  -- Tries all possibilities of numbers in LIS(CUR) .. LIS (LEN)
-  procedure TRY (CUR : LEN_RANGE) is
-    REST : LEN_RANGE;
-    TMP : LEN_RANGE;
+  -- Supposing that Lis is sorted from Cur to Len
+  -- Tries all possibilities of numbers in Lis(Cur) .. Lis(Len)
+  procedure Try (Cur : Len_Range) is
+    Rest : Len_Range;
+    Tmp : Len_Range;
   begin
 
-    if CUR = LEN then
+    if Cur = Len then
       -- Square is complete
-      if CHECK(LEN) then
+      if Check(Len) then
         -- Square is complete and magic
-        NB_SQUARE := NB_SQUARE + 1;
-        DUMP;
+        Nb_Square := Nb_Square + 1;
+        Dump;
       end if;
       -- No more possibility
       return;
     end if;
 
 
-    -- We will put, at CUR position, one after one, each  number of
-    -- LIS(CUR) .. LIS(LEN)
-    REST := CUR;
+    -- We will put, at Cur position, one after one, each  number of
+    -- Lis(Cur) .. Lis(Len)
+    Rest := Cur;
 
     loop
 
-      -- No change for try with REST= CUR : LIS(CUR)
-      if REST /= CUR then
-        -- Exchange LIS(CUR) <-> LIS(REST)
-        TMP := LIS(CUR);
-        LIS(CUR) := LIS(REST);
-        LIS(REST) := TMP;
+      -- No change for try with Rest = Cur : Lis(Cur)
+      if Rest /= Cur then
+        -- Exchange Lis(Cur) <-> Lis(Rest)
+        Tmp := Lis(Cur);
+        Lis(Cur) := Lis(Rest);
+        Lis(Rest) := Tmp;
 
-        -- Sort CUR+1 .. LEN for try at CUR+1
-        SORT.QUICK_SORT(LIS(CUR+1 .. LEN));
+        -- Sort Cur+1 .. Len for try at Cur+1
+        Sort.Quick_Sort(Lis(Cur+1 .. Len));
       end if;
 
-      if CHECK(CUR) then
+      if Check(Cur) then
         -- Optim : try next level if and only if current level is convenient
-        TRY(CUR+1);
-        -- Done for CUR if REST=LEN
-        exit when REST = LEN;
+        Try(Cur+1);
+        -- Done for Cur if Rest=Len
+        exit when Rest = Len;
         -- Optim : sort only if try has been done
-        -- Sort CUR+1 .. LEN for next exchange
-        SORT.QUICK_SORT(LIS(CUR+1 .. LEN));
+        -- Sort Cur+1 .. Len for next exchange
+        Sort.Quick_Sort(Lis(Cur+1 .. Len));
       else
-        -- Done for CUR if REST=LEN
-        exit when REST = LEN;
+        -- Done for Cur if Rest=Len
+        exit when Rest = Len;
       end if;
 
-      -- Next REST
-      REST := REST + 1;
+      -- Next Rest
+      Rest := Rest + 1;
 
     end loop;
 
-  end TRY;
+  end Try;
 
-  procedure DUMP is
-    I : LEN_RANGE;
-    J : NATURAL;
+  procedure Dump is
+    I : Len_Range;
+    J : Natural;
   begin
     -- Dump lines
-    for LIN in 1 .. DIM loop
-      J := LIN * DIM - DIM;
-      for COL in 1 .. DIM loop
-        I := LIS(J + COL);
-        TEXT_IO.PUT (NORMAL(I, 2) & " ");
-        TEXT_IO.PUT (FILE, NORMAL(I, 2) & " ");
+    for Lin in 1 .. Dim loop
+      J := Lin * Dim - Dim;
+      for Col in 1 .. Dim loop
+        I := Lis(J + Col);
+        Ada.Text_Io.Put (Normal(I, 2) & " ");
+        Ada.Text_Io.Put (File, Normal(I, 2) & " ");
       end loop;
-      TEXT_IO.NEW_LINE;
-      TEXT_IO.NEW_LINE (FILE);
+      Ada.Text_Io.New_Line;
+      Ada.Text_Io.New_Line (File);
     end loop;
-    TEXT_IO.NEW_LINE;
-    TEXT_IO.NEW_LINE(FILE);
-  end DUMP;
+    Ada.Text_Io.New_Line;
+    Ada.Text_Io.New_Line(File);
+  end Dump;
 
 
-end COMMON;
+end Common;
 

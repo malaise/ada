@@ -1,35 +1,36 @@
-package COMMON is
+package Common is
 
   -- Max number of lines
-  MAX_LINE : constant := 1_000;
+  Max_Line : constant := 1_000;
   -- 2 lines -> 1 cote
-  MAX_COTE : constant := MAX_LINE - 1;
+  Max_Cote : constant := Max_Line - 1;
 
 
-  subtype LINE_RANGE is POSITIVE range 1 .. MAX_LINE;
-  subtype COTE_RANGE is POSITIVE range 1 .. MAX_COTE;
+  subtype Line_Range is Positive range 1 .. Max_Line;
+  subtype Cote_Range is Positive range 1 .. Max_Cote;
 
-  subtype POS_FLOAT is FLOAT RANGE 0.0 .. FLOAT'LAST;
+  subtype Pos_Float is Float range 0.0 .. Float'Last;
 
-  type COTE_KIND is (MANUFA, DESIGN);
+  type Cote_Kind is (Manufa, Design);
 
-  type COTE_REC (KIND : COTE_KIND) is record
+  type Cote_Rec (Kind : Cote_Kind) is record
     -- Lines of cote
-    START, STOP : LINE_RANGE;
+    Start, Stop : Line_Range;
     -- Interval of cote
-    INTER    : POS_FLOAT;
+    Inter    : Pos_Float;
     case KIND is
-      when MANUFA =>
+      when Manufa =>
         null;
-      when DESIGN =>
-        VALUE : POS_FLOAT;
+      when Design =>
+        Value : Pos_Float;
     end case;
   end record;
 
-  subtype MANUFA_COTE_REC is COTE_REC(MANUFA);
-  subtype DESIGN_COTE_REC is COTE_REC(DESIGN);
+  subtype Manufa_Cote_Rec is Cote_Rec(Manufa);
+  subtype Design_Cote_Rec is Cote_Rec(Design);
 
 
-  type MANUFA_ARRAY is array (COTE_RANGE range <>) of MANUFA_COTE_REC;
-  type DESIGN_ARRAY is array (COTE_RANGE range <>) of DESIGN_COTE_REC;
-end COMMON;
+  type Manufa_Array is array (Cote_Range range <>) of Manufa_Cote_Rec;
+  type Design_Array is array (Cote_Range range <>) of Design_Cote_Rec;
+end Common;
+

@@ -1,171 +1,171 @@
-with MY_IO, NORMAL, SYS_CALLS, ARG_PARSING;
-package body DISPLAY is
-  use COMMON;
+with My_Io, Normal, Sys_Calls, Arg_Parsing;
+package body Display is
+  use Common;
 
-  NOT_FOUND : exception;
-  NB_COTE_LINE : constant := 12;
+  Not_Found : exception;
+  Nb_Cote_Line : constant := 12;
 
-  OK : BOOLEAN := TRUE;
+  Ok : Boolean := True;
 
-  procedure PUT_VAL (VAL : in COMMON.POS_FLOAT) is
+  procedure Put_Val (Val : in Common.Pos_Float) is
   begin
-    MY_IO.PUT (VAL, FORE => 4, AFT => 3, EXP => 0);
-  end PUT_VAL;
+    My_Io.Put (Val, Fore => 4, Aft => 3, Exp => 0);
+  end Put_Val;
 
-  procedure PUT_IT (IT : in COMMON.POS_FLOAT) is
+  procedure Put_It (It : in Common.Pos_Float) is
   begin
-    MY_IO.PUT (IT, FORE => 3, AFT => 3, EXP => 0);
-  end PUT_IT;
+    My_Io.Put (It, Fore => 3, Aft => 3, Exp => 0);
+  end Put_It;
 
-  function OTHER_KIND (KIND : COMMON.COTE_KIND) return COMMON.COTE_KIND is
+  function Other_Kind (Kind : Common.Cote_Kind) return Common.Cote_Kind is
   begin
-    if KIND = COMMON.MANUFA then
-      return COMMON.DESIGN;
+    if Kind = Common.Manufa then
+      return Common.Design;
     else
-      return COMMON.MANUFA;
+      return Common.Manufa;
     end if;
-  end OTHER_KIND;
+  end Other_Kind;
 
-  procedure SEARCH (KIND : in COMMON.COTE_KIND;
-                    START, STOP : in DATA.EFF_LINE_RANGE;
-                    COTE_NO : out DATA.EFF_COTE_RANGE;
-                    PLUS : out BOOLEAN) is
+  procedure Search (Kind : in Common.Cote_Kind;
+                    Start, Stop : in Data.Eff_Line_Range;
+                    Cote_No : out Data.Eff_Cote_Range;
+                    Plus : out Boolean) is
   begin
-    if KIND = COMMON.MANUFA then
-      for I in DATA.EFF_COTE_RANGE loop
-        if DATA.MANUFAS(I).START = START
-        and then DATA.MANUFAS(I).STOP = STOP then
-          COTE_NO := I;
-          PLUS := TRUE;
+    if Kind = Common.Manufa then
+      for I in Data.Eff_Cote_Range loop
+        if Data.Manufas(I).Start = Start
+        and then Data.Manufas(I).Stop = Stop then
+          Cote_No := I;
+          Plus := True;
           return;
-        elsif DATA.MANUFAS(I).START = STOP
-        and then DATA.MANUFAS(I).STOP = START then
-          COTE_NO := I;
-          PLUS := FALSE;
+        elsif Data.Manufas(I).Start = Stop
+        and then Data.Manufas(I).Stop = Start then
+          Cote_No := I;
+          Plus := False;
           return;
         end if;
       end loop;
-      raise NOT_FOUND;
+      raise Not_Found;
     else
-      for I in DATA.EFF_COTE_RANGE loop
-        if DATA.DESIGNS(I).START = START
-        and then DATA.DESIGNS(I).STOP = STOP then
-          COTE_NO := I;
-          PLUS := TRUE;
+      for I in Data.Eff_Cote_Range loop
+        if Data.Designs(I).Start = Start
+        and then Data.Designs(I).Stop = Stop then
+          Cote_No := I;
+          Plus := True;
           return;
-        elsif DATA.DESIGNS(I).START = STOP
-        and then DATA.DESIGNS(I).STOP = START then
-          COTE_NO := I;
-          PLUS := FALSE;
+        elsif Data.Designs(I).Start = Stop
+        and then Data.Designs(I).Stop = Start then
+          Cote_No := I;
+          Plus := False;
           return;
         end if;
       end loop;
-      raise NOT_FOUND;
+      raise Not_Found;
     end if;
-  end SEARCH;
+  end Search;
 
-  function CHAR (KIND : in COMMON.COTE_KIND) return CHARACTER is
+  function Char (Kind : in Common.Cote_Kind) return Character is
   begin
-    if KIND = COMMON.MANUFA then
+    if Kind = Common.Manufa then
       return 'M';
     else
       return 'S';
     end if;
-  end CHAR;
+  end Char;
 
-  procedure PRINT (KIND : in COMMON.COTE_KIND;
-                   COTE : in DATA.EFF_COTE_RANGE;
-                   WAY  : in WAY_VECTOR) is
-    COTE_NO : DATA.EFF_COTE_RANGE;
-    PLUS : BOOLEAN;
-    NB_PRINTED : NATURAL := 0;
-    VAL : FLOAT;
-    LAST : constant NATURAL := WAY'LAST;
+  procedure Print (Kind : in Common.Cote_Kind;
+                   Cote : in Data.Eff_Cote_Range;
+                   Way  : in Way_Vector) is
+    Cote_No : Data.Eff_Cote_Range;
+    Plus : Boolean;
+    Nb_Printed : Natural := 0;
+    Val : Float;
+    Last : constant Natural := Way'Last;
   begin
-    MY_IO.PUT (CHAR(OTHER_KIND(KIND)) & NORMAL(COTE, 3, TRUE, '0') & ": ");
+    My_Io.Put (Char(Other_Kind(Kind)) & Normal(Cote, 3, True, '0') & ": ");
 
-    VAL := 0.0;
-    for I in DATA.EFF_LINE_RANGE range 2 .. LAST loop
-      SEARCH (KIND, WAY(I-1), WAY(I), COTE_NO, PLUS);
-      if ARG_PARSING.VERBOSE then
-        if NB_PRINTED >= NB_COTE_LINE
-        and then (NB_PRINTED - 1) mod (NB_COTE_LINE - 1) = 0 then
-          MY_IO.NEW_LINE;
-          MY_IO.PUT ("      ");
+    Val := 0.0;
+    for I in Data.Eff_LinE_Range range 2 .. Last loop
+      Search (Kind, Way(I-1), Way(I), Cote_No, Plus);
+      if Arg_Parsing.Verbose then
+        if Nb_Printed >= Nb_Cote_Line
+        and then (Nb_Printed - 1) mod (Nb_Cote_Line - 1) = 0 then
+          My_Io.New_Line;
+          My_Io.Put ("      ");
         end if;
-        if PLUS then
-          MY_IO.PUT ("+");
+        if Plus then
+          My_Io.Put ("+");
         else
-          MY_IO.PUT ("-");
+          My_Io.Put ("-");
         end if;
-        MY_IO.PUT (CHAR(KIND) & NORMAL(COTE_NO, 3, TRUE, '0') & " ");
+        My_Io.Put (Char(Kind) & Normal(Cote_No, 3, True, '0') & " ");
       end if;
-      NB_PRINTED := NB_PRINTED + 1;
-      if KIND = COMMON.MANUFA then
-        -- Check INTER
-        VAL := VAL + abs(DATA.MANUFAS(COTE_NO).INTER);
+      Nb_Printed := Nb_Printed + 1;
+      if Kind = Common.Manufa then
+        -- Check Inter
+        Val := Val + abs(Data.Manufas(Cote_No).Inter);
       else
-        -- Add VALUE
-        if PLUS then
-          VAL := VAL + DATA.DESIGNS(COTE_NO).VALUE;
+        -- Add Value
+        if Plus then
+          Val := Val + Data.Designs(Cote_No).Value;
         else
-          VAL := VAL - DATA.DESIGNS(COTE_NO).VALUE;
+          Val := Val - Data.Designs(Cote_No).Value;
         end if;
       end if;
     end loop;
-    if ARG_PARSING.VERBOSE then
-      MY_IO.NEW_LINE;
+    if Arg_Parsing.Verbose then
+      My_Io.New_Line;
     end if;
 
-    MY_IO.PUT (" --> ");
-    if KIND = COMMON.MANUFA then
-      MY_IO.PUT ("IT specified: ");
-      PUT_IT (DATA.DESIGNS(COTE).INTER);
-      MY_IO.PUT("   IT done: ");
-      PUT_IT (VAL);
-      if VAL > DATA.DESIGNS(COTE).INTER then
-        MY_IO.PUT_LINE (" NOT OK");
-        OK := FALSE;
+    My_Io.Put (" --> ");
+    if Kind = Common.Manufa then
+      My_Io.Put ("IT specified: ");
+      Put_It (Data.Designs(Cote).Inter);
+      My_Io.Put("   IT done: ");
+      Put_It (VAL);
+      if Val > Data.Designs(Cote).Inter then
+        My_Io.Put_Line (" NOT OK");
+        Ok := False;
       else
-        MY_IO.NEW_LINE;
+        My_Io.New_Line;
       end if;
     else
-      MY_IO.PUT ("Value : ");
-      PUT_VAL (VAL); 
-      MY_IO.PUT (" +/- ");
-      PUT_IT (DATA.MANUFAS(COTE).INTER);
-      MY_IO.NEW_LINE;
+      My_Io.Put ("Value : ");
+      Put_Val (Val); 
+      My_Io.Put (" +/- ");
+      Put_It (Data.Manufas(Cote).Inter);
+      My_Io.New_Line;
     end if;
     
-  end PRINT;
+  end Print;
 
-  procedure PUT_NO_WAY (KIND : in COMMON.COTE_KIND;
-                        COTE : in DATA.EFF_COTE_RANGE) is
+  procedure Put_No_Way (Kind : in Common.Cote_Kind;
+                        Cote : in Data.Eff_Cote_Range) is
   begin
-    SYS_CALLS.PUT_ERROR ("No way for ");
-    SYS_CALLS.PUT_LINE_ERROR (CHAR(OTHER_KIND(KIND)) & NORMAL(COTE, 3, TRUE, '0'));
-    OK := FALSE;
-  end PUT_NO_WAY;
+    Sys_Calls.Put_Error ("No way for ");
+    Sys_Calls.Put_Line_Error (Char(Other_Kind(Kind)) & Normal(Cote, 3, True, '0'));
+    Ok := False;
+  end Put_No_Way;
 
-  procedure PRINT_TITTLE (KIND : in COMMON.COTE_KIND) is
+  procedure Print_Tittle (Kind : in Common.Cote_Kind) is
   begin
-    if KIND = COMMON.MANUFA then
-      MY_IO.PUT_LINE ("Check of feasibility");
-      MY_IO.PUT_LINE ("--------------------");
+    if Kind = Common.Manufa then
+      My_Io.Put_Line ("Check of feasibility");
+      My_Io.Put_Line ("--------------------");
     else
-      MY_IO.PUT_LINE ("Resolution");
-      MY_IO.PUT_LINE ("----------");
+      My_Io.Put_Line ("Resolution");
+      My_Io.Put_Line ("----------");
     end if;
-  end PRINT_TITTLE;
+  end Print_Tittle;
 
-  procedure PRINT_RESULT is
+  procedure Print_Result is
   begin
-    if OK then
-      MY_IO.PUT_LINE ("Simulation successfull.");
+    if Ok then
+      My_Io.Put_Line ("Simulation successfull.");
     else
-      MY_IO.PUT_LINE ("Simulation FAILED.");
+      My_Io.Put_Line ("Simulation FAILED.");
     end if;
-  end PRINT_RESULT;
+  end Print_Result;
 
-end DISPLAY;
+end Display;
 

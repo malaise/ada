@@ -1,10 +1,11 @@
-with TYPES;
+with Types;
 
-package EURISTIC is
+package Euristic is
 
   -- Search a solution
   -- Mattrix is set to : 1 -> affected
   --                     0 -> not affected
-  procedure SEARCH (MATTRIX : in out TYPES.MATTRIX_REC; NB_ITERATIONS : out POSITIVE);
+  procedure Search (Mattrix : in out Types.Mattrix_Rec; Nb_Iterations : out Positive);
 
-end EURISTIC;
+end Euristic;
+

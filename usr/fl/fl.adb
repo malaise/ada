@@ -1,118 +1,115 @@
-with TEXT_IO;
-with ARGUMENT, NORMAL, MY_IO, GET_FLOAT;
-with FL_TIME, FL_GET;
+with Ada.Text_Io;
+with Argument, Normal, My_Io, Get_Float;
+with Fl_Time, Fl_Get;
 
 procedure FL is
 
-  TT, T : FL_TIME.TIME_TYPE;
-  MAX_HOUR_DIG : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
-  WITH_COST : BOOLEAN;
-  COST, TMP_COST : FLOAT;
-  use FL_TIME;
+  TT, T : Fl_Time.Time_Type;
+  Max_Hour_Dig : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
+  With_Cost : Boolean;
+  Cost, Tmp_Cost : Float;
+  use Fl_Time;
 begin
-  if ARGUMENT.GET_NBRE_ARG = 1 and then
-     ARGUMENT.GET_PARAMETER = "-c" then
-    WITH_COST := TRUE;
-  elsif ARGUMENT.GET_NBRE_ARG = 0 then
-    WITH_COST := FALSE;
+  if Argument.Get_Nbre_Arg = 1 and then
+     Argument.Get_Parameter = "-c" then
+    With_Cost := True;
+  elsif Argument.Get_Nbre_Arg = 0 then
+    With_Cost := False;
   else
-    TEXT_IO.PUT_LINE ("USAGE: " & ARGUMENT.GET_PROGRAM_NAME
-                    & " [ -c ]");
+    Ada.Text_Io.Put_Line ("Usage: "
+       & Argument.Get_Program_Name & " [ -c ]");
     return;
   end if;
-    
-  TEXT_IO.PUT_LINE ("      HOURS and MINUTES additions.");
-  TEXT_IO.PUT_LINE ("      ----------------------------");
-  TEXT_IO.PUT_LINE (" Syntax of time is [-]hhhhhhh[.mm] (Return);");
-  TEXT_IO.PUT_LINE (" Enter 'C'to clear, 'X' or 'Q' to exit.");
-  TEXT_IO.NEW_LINE (2);
+
+  Ada.Text_Io.Put_Line ("      HOURS and MINUTES additions.");
+  Ada.Text_Io.Put_Line ("      ----------------------------");
+  Ada.Text_Io.Put_Line (" Syntax of time is [-]hhhhhhh[.mm] (Return);");
+  Ada.Text_Io.Put_Line (" Enter 'C'to clear, 'X' or 'Q' to exit.");
+  Ada.Text_Io.New_Line (2);
 
   -- Initialise
-  TT := (TRUE, 0, 0);
-  COST := 0.0;
-  TMP_COST := 0.0;
+  TT := (True, 0, 0);
+  Cost := 0.0;
+  Tmp_Cost := 0.0;
 
   loop
     -- Display
-    TEXT_IO.PUT ("--> ");
+    Ada.Text_Io.Put ("--> ");
 
-    if TT.POSITIV then
-      TEXT_IO.PUT (' ');
+    if TT.Positiv then
+      Ada.Text_Io.Put (' ');
     else
-      TEXT_IO.PUT ('-');
+      Ada.Text_Io.Put ('-');
     end if;
-    TEXT_IO.PUT (NORMAL(INTEGER(TT.HOURS), MAX_HOUR_DIG + 1));
-    TEXT_IO.PUT ('.');
-    TEXT_IO.PUT (NORMAL(INTEGER(TT.MINUTES), 2, GAP => '0'));
-    if WITH_COST then
-       TEXT_IO.PUT ("     This cost: ");
-       MY_IO.PUT(TMP_COST, FORE => 4, AFT => 2, EXP => 0);
-       TEXT_IO.PUT ("  Total cost: ");
-       MY_IO.PUT_LINE(COST, FORE => 5, AFT => 2, EXP => 0);
+    Ada.Text_Io.Put (Normal(Integer(Tt.Hours), Max_Hour_Dig + 1));
+    Ada.Text_Io.Put ('.');
+    Ada.Text_Io.Put (NormaL(Integer(Tt.Minutes), 2, Gap => '0'));
+    if With_Cost then
+       Ada.Text_Io.PUT ("     This cost: ");
+       My_Io.Put(Tmp_Cost, Fore => 4, Aft => 2, Exp => 0);
+       Ada.Text_Io.Put ("  Total cost: ");
+       My_Io.Put_Line(Cost, Fore => 5, Aft => 2, Exp => 0);
     else
-      TEXT_IO.NEW_LINE;
+      Ada.Text_Io.New_Line;
     end if;
       
 
     -- Get
     begin
-      T := FL_GET.GET_TIME;
+      T := Fl_Get.Get_Time;
     exception
-      when FL_GET.ERROR =>
-        T := (TRUE, 0, 0);
-        TMP_COST := 0.0;
-        TEXT_IO.PUT_LINE (ASCII.BEL & "Error.");
-      when FL_GET.CLEAR =>
-        T := (TRUE, 0, 0);
-        TT := (TRUE, 0, 0);
-        TMP_COST := 0.0;
-        COST := 0.0;
-      when FL_GET.QUIT =>
+      when Fl_Get.Error =>
+        T := (True, 0, 0);
+        Tmp_Cost := 0.0;
+        Ada.Text_Io.Put_Line (Ascii.Bel & "Error.");
+      when Fl_Get.Clear =>
+        T := (True, 0, 0);
+        Tt := (True, 0, 0);
+        Tmp_Cost := 0.0;
+        Cost := 0.0;
+      when Fl_Get.QuiT =>
         exit;
     end;
 
-    if WITH_COST and then T /= (TRUE, 0, 0) then
+    if With_Cost and then T /= (True, 0, 0) then
       -- Get hourly cost of aircraft
       declare
-        STR : STRING(1 .. 8);
-        LEN : NATURAL;
+        Str : String(1 .. 8);
+        Len : Natural;
       begin
-        TEXT_IO.PUT(">>");
-        TEXT_IO.GET_LINE(STR, LEN);
-        TMP_COST := GET_FLOAT.GET_FLOAT(STR(1 .. LEN));
+        Ada.Text_Io.Put(">>");
+        Ada.Text_Io.Get_Line(Str, Len);
+        Tmp_Cost := Get_Float.Get_Float(Str(1 .. Len));
       exception
         when others =>
-          T := (TRUE, 0, 0);
-          TMP_COST := 0.0;
-          TEXT_IO.PUT_LINE (ASCII.BEL & "Error.");
+          T := (True, 0, 0);
+          Tmp_Cost := 0.0;
+          Ada.Text_Io.Put_Line (Ascii.Bel & "Error.");
       end;
       -- Cost of the flight
-      TMP_COST := TMP_COST * FLOAT(T.HOURS)
-                + TMP_COST * FLOAT(T.MINUTES) / 60.0;
-      if not T.POSITIV then
-        TMP_COST := -TMP_COST;
+      Tmp_Cost := Tmp_CosT * Float(T.Hours)
+                + Tmp_Cost * Float(T.Minutes) / 60.0;
+      if not T.Positiv then
+        Tmp_Cost := -Tmp_Cost;
       end if;
     end if;
 
     -- Add / substract
     declare
-      ST : constant FL_TIME.TIME_TYPE := TT;
+      St : constant Fl_Time.Time_Type := Tt;
     begin
-      TT := TT + T;
-      if TT.HOURS = 0 and then TT.MINUTES = 0 then
-        TT.POSITIV := TRUE;
+      Tt := Tt + T;
+      if Tt.Hours = 0 and then Tt.Minutes = 0 then
+        Tt.Positiv := True;
       end if;
     exception
-      when TIME_OVERFLOW =>
-        TT := ST;
-        TEXT_IO.PUT_LINE (ASCII.BEL & "Overflow.");
+      when Time_Overflow =>
+        Tt := St;
+        Ada.Text_Io.Put_Line (Ascii.Bel & "Overflow.");
     end;
-    COST := COST + TMP_COST;
+    Cost := Cost + Tmp_Cost;
 
   end loop;
 
-end FL;
+end Fl;
 
-
-
-    

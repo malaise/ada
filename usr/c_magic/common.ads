@@ -1,11 +1,11 @@
-package COMMON is
+package Common is
 
   -- Maximum dimension of square
-  MAX_DIM : constant := 9;
-  subtype DIM_RANGE is POSITIVE range 1 .. MAX_DIM;
+  Max_Dim : constant := 9;
+  subtype Dim_Range is Positive range 1 .. Max_Dim;
 
   -- Search all magic squares of a given dimension
-  procedure SEARCH (DIM : in DIM_RANGE);
+  procedure Search (Dim : in Dim_Range);
 
-end COMMON;
+end Common;
 

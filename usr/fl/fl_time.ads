@@ -1,18 +1,19 @@
-package FL_TIME is
+package Fl_Time is
 
-  type HOURS_RANGE   is range 0 .. 999_999_999;
-  type MINUTES_RANGE is range 0 .. 59;
+  type Hours_Range   is range 0 .. 999_999_999;
+  type Minutes_Range is range 0 .. 59;
 
-  type TIME_TYPE is record
-    POSITIV : BOOLEAN       := TRUE;
-    HOURS   : HOURS_RANGE   := 0;
-    MINUTES : MINUTES_RANGE := 0;
+  type Time_Type is record
+    Positiv : Boolean       := True;
+    Hours   : Hours_Range   := 0;
+    Minutes : Minutes_Range := 0;
   end record;
 
-  function "+" (LEFT, RIGHT : TIME_TYPE) return TIME_TYPE;
+  function "+" (Left, Right : Time_Type) return Time_Type;
 
-  function "-" (LEFT, RIGHT : TIME_TYPE) return TIME_TYPE;
+  function "-" (Left, Right : Time_Type) return Time_Type;
 
-  TIME_OVERFLOW : exception;
+  Time_Overflow : exception;
 
-end FL_TIME;
+end Fl_Time;
+

@@ -1,102 +1,103 @@
-separate (COMMON)
+separate (Common)
 
--- Supposing that CHECK(N-1) is true,
+-- Supposing that Check(N-1) is true,
 -- check if, up to N, the square is potentialy magic
-function CHECK (N : LEN_RANGE) return BOOLEAN is
-  SUM : NATURAL;
-  NM1 : constant NATURAL := N - 1;
+function Check (N : Len_Range) return Boolean is
+  Sum : Natural;
+  Nm1 : constant Natural := N - 1;
 begin
 
   -- Check last (even incomplete) line
   declare
-    OFFSET : constant NATURAL := (NM1 / DIM) * DIM;
+    Offset : constant Natural := (Nm1 / Dim) * Dim;
   begin
     -- Compute sum of line
-    SUM := 0;
-    for COL in 1 .. NM1 rem DIM  + 1 loop
-      SUM := SUM + LIS(OFFSET + COL);
+    Sum := 0;
+    for Col in 1 .. Nm1 rem Dim  + 1 loop
+      Sum := Sum + Lis(Offset + Col);
     end loop;
   end;
-  if NM1 rem DIM = DM1 then
+  if Nm1 rem Dim = Dm1 then
     -- Last line if it is complete
-    if SUM /= SIGMA then
+    if Sum /= Sigma then
       -- Wrong sum for this line. Test fails.
-      return FALSE;
+      return False;
     end if;
   else
     -- Incomplete last line
-    if SUM >= SIGMA then
+    if Sum >= Sigma then
       -- Sum already too big for this line. Test fails.
-      return FALSE;
+      return False;
     end if;
   end if;
 
-  if NM1 = LEN - DIM then
+  if Nm1 = Len - Dim then
     -- Only first column completed
-    -- Check diag 1,n .. n,1 (COL = DIM - LIN + 1)
-    SUM := 0;
-    for LIN in 1 .. DIM loop
-      SUM := SUM + LIS(LIN * DIM - LIN + 1);
+    -- Check diag 1,n .. n,1 (Col = Dim - Lin + 1)
+    Sum := 0;
+    for Lin in 1 .. Dim loop
+      Sum := Sum + Lis(Lin * Dim - Lin + 1);
     end loop;
-    if SUM /= SIGMA then
-      return FALSE;
+    if Sum /= Sigma then
+      return False;
     end if;
-  elsif NM1 < LEN - DIM then
+  elsif Nm1 < Len - Dim then
     -- No column completed
-    if N > DIM then
+    if N > Dim then
       -- Last column has at least 2 rows
       declare
         -- Top of this column
-        OFFSET : constant NATURAL := NM1 rem DIM + 1;
+        Offset : constant Natural := Nm1 rem Dim + 1;
       begin
-        SUM := 0;
-        for LIN in 0 .. NM1 / DIM loop
-          SUM := SUM + LIS(LIN * DIM + OFFSET);
+        Sum := 0;
+        for Lin in 0 .. Nm1 / Dim loop
+          Sum := Sum + Lis(Lin * Dim + Offset);
         end loop;
       end;
       -- No column completed. Check last (incomplete) column
-      if SUM >= SIGMA then
+      if Sum >= Sigma then
         -- Sum already too big for this column. Test fails.
-        return FALSE;
+        return False;
       else
         -- No more check possible
-        return TRUE;
+        return True;
       end if;
     else
       -- Last column does not have 2 rows: no more check possible
-      return TRUE;
+      return True;
     end if;
   end if;
 
   -- Some columns completed.
   -- Check last column (it is complete)
   declare
-    COL : constant DIM_RANGE := ((N-1) rem DIM) + 1;
+    Col : constant Dim_Range := ((N-1) rem DiM) + 1;
   begin
-    SUM := 0;
-    for LIN in 1 .. DIM loop
-      SUM := SUM + LIS(LIN * DIM - DIM + COL);
+    Sum := 0;
+    for Lin in 1 .. Dim loop
+      Sum := Sum + Lis(Lin * Dim - Dim + Col);
     end loop;
   end;
-  if SUM /= SIGMA then
-    return FALSE;
+  if Sum /= Sigma then
+    return False;
   end if;
 
-  if N /= LEN then
+  if N /= Len then
     -- No second diag (last column not complete)
-    return TRUE;
+    return True;
   end if;
 
-  -- Check diag 1,1 .. n,n (COL = LIN)
-  SUM := 0;
-  for LIN in 1 .. DIM loop
-    SUM := SUM + LIS(LIN * DIM - DIM + LIN);
+  -- Check diag 1,1 .. n,n (Col = Lin)
+  Sum := 0;
+  for Lin in 1 .. Dim loop
+    Sum := Sum + Lis(Lin * Dim - Dim + Lin);
   end loop;
-  if SUM /= SIGMA then
-    return FALSE;
+  if Sum /= Sigma then
+    return False;
   end if;
 
   -- This square is magic
-  return TRUE;
+  return True;
 
-end CHECK;
+end Check;
+

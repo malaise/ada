@@ -1,16 +1,17 @@
-with TYPES;
+with Types;
 
-package FILE is
+package File is
 
   -- Delta above which one considers it is zero (for loss printing)
-  EPSILON : constant FLOAT := 1.0E-5;
+  Epsilon : constant Float := 1.0E-5;
 
-  function READ (FILE_NAME : STRING) return TYPES.MATTRIX_REC;
+  function Read (File_Name : String) return Types.Mattrix_Rec;
 
-  function GET_KIND return TYPES.MATTRIX_KIND_LIST;
-  function GET_NOTE (ROW, COL : POSITIVE) return FLOAT;
+  function Get_Kind return Types.Mattrix_Kind_List;
+  function Get_Note (Row, Col : Positive) return Float;
 
-  READ_ERROR : exception;
-  FILE_NOT_READ : exception;
+  Read_Error : exception;
+  File_Not_Read : exception;
   
-end FILE;
+end File;
+

@@ -1,24 +1,24 @@
-with TEXT_IO; -- For exception trace
-with MY_IO;
-with GRID_2;
+with Ada.Text_Io; -- For exception trace
+with My_Io;
+with Grid_2;
 
 procedure TG2 is
-  KEY : constant STRING := "C'est la cle 2";
-  STR1 : constant GRID_2.LONG_STRING := "Ah que coucou!";
-  STR2 : GRID_2.LONG_STRING (1 .. STR1'LENGTH);
-  STR3 : GRID_2.LONG_STRING (1 .. STR1'LENGTH);
+  Key : constant String := "C'est la cle 2";
+  Str1 : constant Grid_2.Long_String := "Ah que coucou!";
+  Str2 : Grid_2.Long_String (1 .. Str1'Length);
+  Str3 : Grid_2.Long_String (1 .. Str1'Length);
 begin
-  STR2 := GRID_2.ENCODE (KEY, STR1);
-  MY_IO.PUT (">");
-  for I in STR2'RANGE loop
-    MY_IO.PUT(STR2(I));
+  Str2 := Grid_2.Encode (Key, Str1);
+  My_Io.Put (">");
+  for I in Str2'Range loop
+    My_Io.Put(Str2(I));
   end loop;
-  MY_IO.PUT_LINE("<");
-  STR3 := GRID_2.DECODE (KEY, STR2);
-  MY_IO.PUT (">");
-  for I in STR3'RANGE loop
-    MY_IO.PUT(STR3(I));
+  My_Io.Put_Line("<");
+  Str3 := Grid_2.Decode (Key, Str2);
+  My_Io.Put (">");
+  for I in Str3'Range loop
+    My_Io.Put(Str3(I));
   end loop;
-  MY_IO.PUT_LINE("<");
-end TG2;
+  My_Io.Put_Line("<");
+end Tg2;
 

@@ -1,122 +1,134 @@
-with TEXT_IO;
+with Ada.Text_Io;
 
-with TEXT_HANDLER;
-with MY_MATH;
+with Text_Handler;
+with My_Math;
 
-with GET_LINE;
-with GET_FLOAT;
+with Get_Line;
+with Get_Float;
 
-with TYPES;
-package body FILE is
+with Types;
+package body File is
 
-  MAX_DIM : constant := TYPES.MAX_DIM;
+  Max_Dim : constant := Types.Max_Dim;
 
-  FILE_READ : BOOLEAN := FALSE;
+  File_Read : Boolean := False;
 
   -- Input mattrix splitted in rows to reduce size of object
-  type FLOAT_CELL_RANGE is digits 5 range 0.00 .. 100.00;
-  type INPUT_ROW_TAB is array (1 .. MAX_DIM) of FLOAT_CELL_RANGE;
-  type INPUT_ROW_TAB_ACCESS is access INPUT_ROW_TAB;
-  type INPUT_MATTRIX_TAB is array (1 .. MAX_DIM) of
-    INPUT_ROW_TAB_ACCESS;
-  INPUT_MATTRIX : INPUT_MATTRIX_TAB
-                := (others => new INPUT_ROW_TAB);
+  type Float_Cell_Range is digits 5 range 0.00 .. 100.00;
+  type Input_Row_Tab is array (1 .. Max_Dim) of Float_Cell_Range;
+  type Input_Row_Tab_Access is access Input_Row_Tab;
+  type Input_Mattrix_Tab is array (1 .. Max_Dim) of
+    Input_Row_Tab_Access;
+  Input_Mattrix : Input_Mattrix_Tab
+                := (others => new Input_Row_Tab);
 
-  LOC_KIND : TYPES.MATTRIX_KIND_LIST;
+  Loc_Kind : Types.Mattrix_Kind_List;
 
-  function READ (FILE_NAME : STRING) return TYPES.MATTRIX_REC is
+  function Read (File_Name : String) return Types.Mattrix_Rec is
 
-    package MY_GET_LINE is new GET_LINE(
-      MAX_WORD_LEN => 6, -- 100.00
-      MAX_WORD_NB => MAX_DIM,
-      MAX_LINE_LEN => 1024,
-      COMMENT      => '#');
-    LINE  : MY_GET_LINE.LINE_ARRAY;
-    DIM : POSITIVE;
-    F   : FLOAT_CELL_RANGE;
+    package My_Get_Line is new Get_Line(
+      Max_Word_Len => 6, -- 100.00
+      Max_Word_Nb => Max_Dim,
+      Max_Line_Len => 1024,
+      Comment      => '#');
+    Line  : My_Get_Line.Line_Array;
+    Dim : Positive;
+    F   : Float_Cell_Range;
 
-    procedure READ_NEXT_SIGNIFICANT_LINE is
+    procedure Read_Next_Significant_Line is
     begin
-      MY_GET_LINE.READ_NEXT_LINE;
-      MY_GET_LINE.GET_WORDS (LINE);
-    end READ_NEXT_SIGNIFICANT_LINE;
+      My_Get_Line.Read_Next_Line;
+      My_Get_Line.Get_Words (Line);
+    end Read_Next_Significant_Line;
 
-    use MY_MATH;
+    use My_Math;
   begin
     -- Open file
     begin
-      MY_GET_LINE.OPEN (FILE_NAME);
+      My_Get_Line.Open (File_Name);
     exception
       when others =>
-        TEXT_IO.PUT_LINE ("ERROR opening file " & FILE_NAME);
-        raise READ_ERROR;
+        Ada.Text_Io.Put_Line ("ERROR opening file " & File_Name);
+        raise Read_Error;
     end;
 
     -- Read mattrix kind
     begin
-      MY_GET_LINE.GET_WORDS (LINE);
+      My_Get_Line.Get_Words (Line);
     exception
-      when MY_GET_LINE.NO_MORE_LINE =>
-        TEXT_IO.PUT_LINE ("ERROR in file " & FILE_NAME
+      when My_Get_Line.No_More_Line =>
+        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
                           & ". File is empty.");
-        raise READ_ERROR;
+        My_Get_Line.Close;
+        raise Read_Error;
     end;
-    if MY_GET_LINE.GET_WORD_NUMBER /= 1 then
-      TEXT_IO.PUT_LINE ("ERROR in file " & FILE_NAME
-                        & ", only one word, WISH or REGRET, allowed in first line.");
-      raise READ_ERROR;
+    if My_Get_Line.Get_Word_Number /= 1 then
+      Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
+            & ", only one word, WISH or REGRET, allowed in first line.");
+      My_Get_Line.Close;
+      raise Read_Error;
     end if;
     begin
-      LOC_KIND := TYPES.MATTRIX_KIND_LIST'VALUE (TEXT_HANDLER.VALUE(LINE(1)));
+      Loc_Kind := Types.Mattrix_Kind_List'Value (Text_Handler.Value(Line(1)));
     exception
       when others =>
-        TEXT_IO.PUT_LINE ("ERROR in file " & FILE_NAME
-                        & ", only one word, WISH or REGRET, allowed in first line.");
-        raise READ_ERROR;
+        Ada.Text_Io.Put_Line ("ERROR in file " & FILE_NAME
+              & ", only one word, WISH or REGRET, allowed in first line.");
+        My_Get_Line.Close;
+        raise Read_Error;
     end;
 
-    -- Compute dimension from first line : nb of words
+    -- Compute dimension from second line : nb of words
     begin
-      READ_NEXT_SIGNIFICANT_LINE;
-      DIM := MY_GET_LINE.GET_WORD_NUMBER;
+      Read_Next_Significant_Line;
+      Dim := My_Get_Line.Get_Word_Number;
     exception
-      when TEXT_IO.END_ERROR =>
-        TEXT_IO.PUT_LINE ("ERROR in file " & FILE_NAME
+      when Ada.Text_Io.End_Error =>
+        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
                           & ", no mattrix.");
-        raise READ_ERROR;
+        My_Get_Line.Close;
+        raise Read_Error;
       when others =>
-        TEXT_IO.PUT_LINE ("ERROR in file " & FILE_NAME
+        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
                           & ", impossible to compute mattrix size.");
+        My_Get_Line.Close;
+        raise Read_Error;
     end;
 
     -- Load matrix and vector from file.
-    for I in 1 .. DIM loop
+    for I in 1 .. Dim loop
       -- Parse current line in matrix and vector
       begin
-        for J in 1 .. DIM loop
-          F := FLOAT_CELL_RANGE (GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J))));
+        for J in 1 .. Dim loop
+          F := Float_Cell_Range (Get_Float.Get_Float(
+                       Text_Handler.Value(Line(J))));
           if F > 100.00
-          or else MY_MATH.FRAC(MY_MATH.REAL(F)) * 100.0 > 100.0 then
-            raise READ_ERROR;
+          or else My_Math.Frac(My_Math.Real(F)) * 100.0 > 100.0 then
+            My_Get_Line.Close;
+            raise Read_Error;
           end if;
-          INPUT_MATTRIX(I).all(J) := F;
+          Input_Mattrix(I).all(J) := F;
         end loop;
       exception
         when others =>
-          TEXT_IO.PUT_LINE ("ERROR, when reading data at line "
-                            & TEXT_IO.COUNT'IMAGE(MY_GET_LINE.GET_LINE_NO) & " of file " & FILE_NAME);
-          raise READ_ERROR;
+          Ada.Text_Io.Put_Line ("ERROR, when reading data at line "
+                & Ada.Text_Io.Count'Image(My_Get_Line.Get_Line_No)
+                & " of file " & File_Name);
+          My_Get_Line.Close;
+          raise Read_Error;
       end;
 
-      if I /= DIM then
+      if I /= Dim then
         -- read next not empty line
-        READ_NEXT_SIGNIFICANT_LINE;
+        Read_Next_Significant_Line;
 
         -- Check number of words
-        if MY_GET_LINE.GET_WORD_NUMBER /= DIM then
-          TEXT_IO.PUT_LINE ("ERROR in file. Wrong number of words at line "
-                            & TEXT_IO.COUNT'IMAGE(MY_GET_LINE.GET_LINE_NO) & " of file " & FILE_NAME);
-          raise READ_ERROR;
+        if My_Get_Line.Get_Word_Number /= Dim then
+          Ada.Text_Io.Put_Line ("ERROR in file. Wrong number of words at line "
+                & Ada.Text_Io.Count'Image(My_Get_Line.Get_Line_No)
+                & " of file " & File_Name);
+          My_Get_Line.Close;
+          raise Read_Error;
         end if;
       end if;
 
@@ -124,57 +136,59 @@ package body FILE is
 
     -- Check nothing else in file
     begin
-      READ_NEXT_SIGNIFICANT_LINE;
-      TEXT_IO.PUT_LINE ("ERROR. Unexpected data at line "
-                        & TEXT_IO.COUNT'IMAGE(MY_GET_LINE.GET_LINE_NO) & " of file " & FILE_NAME);
-      MY_GET_LINE.CLOSE;
-      raise READ_ERROR;
+      Read_Next_Significant_Line;
+      Ada.Text_Io.Put_Line ("ERROR. Unexpected data at line "
+            & Ada.Text_Io.Count'Image(My_Get_Line.Get_Line_No)
+            & " of file " & File_Name);
+      My_Get_Line.Close;
+      raise Read_Error;
     exception
-      when MY_GET_LINE.NO_MORE_LINE =>
-        MY_GET_LINE.CLOSE;
+      when My_Get_Line.No_More_Line =>
+        -- Ok, go on
+        My_Get_Line.Close;
     end;
 
     declare
-     LOC_MATTRIX : TYPES.MATTRIX_TAB (1 .. DIM, 1 .. DIM);
+     Loc_Mattrix : Types.Mattrix_Tab (1 .. Dim, 1 .. Dim);
     begin
-      -- Affect to INTEGERS
-      for I in 1 .. DIM loop
-        for J in 1 .. DIM loop
-          LOC_MATTRIX(I, J) := TYPES.CELL_RANGE(
-             MY_MATH.ROUND (MY_MATH.REAL((INPUT_MATTRIX(I).all(J))) * 100.0));
+      -- Affect to Integers
+      for I in 1 .. Dim loop
+        for J in 1 .. Dim loop
+          Loc_Mattrix(I, J) := Types.Cell_Range(
+             My_Math.Round (My_Math.Real((Input_Mattrix(I).all(J))) * 100.0));
         end loop;
       end loop;
 
-      if TYPES."=" (LOC_KIND, TYPES.WISH) then
+      if Types."=" (Loc_Kind, Types.Wish) then
         -- Make a regret mattrix by substracting each to 10_000
-        for I in 1 .. DIM loop
+        for I in 1 .. Dim loop
           for J in 1 .. DIM loop
-            LOC_MATTRIX(I, J) := 10_000 - LOC_MATTRIX(I, J);
+            Loc_Mattrix(I, J) := 10_000 - Loc_Mattrix(I, J);
           end loop;
         end loop;
       end if;
 
-      FILE_READ := TRUE;
-      return (DIM => DIM, NOTES => LOC_MATTRIX);
+      File_Read := True;
+      return (Dim => Dim, Notes => Loc_Mattrix);
     end;
 
-  end READ;
+  end Read;
 
-  function GET_KIND return TYPES.MATTRIX_KIND_LIST is
+  function Get_Kind Return Types.Mattrix_Kind_List is
   begin
-    if not FILE_READ then
-      raise FILE_NOT_READ;
+    if not File_Read then
+      raise File_Not_Read;
     end if;
-    return LOC_KIND;
-  end GET_KIND;
+    return Loc_Kind;
+  end Get_Kind;
 
-  function GET_NOTE (ROW, COL : POSITIVE) return FLOAT is
+  function Get_NotE (Row, Col : Positive) return Float is
   begin
-    if not FILE_READ then
-      raise FILE_NOT_READ;
+    if not File_Read then
+      raise File_Not_Read;
     end if;
-    return FLOAT(INPUT_MATTRIX(ROW).all(COL));
-  end GET_NOTE;
+    return Float(Input_Mattrix(Row).all(Col));
+  end Get_Note;
 
-end FILE;
+end File;
 

@@ -1,11 +1,11 @@
-package ARG_PARSING is
+package Arg_Parsing is
 
-  function MANUFA_FILE_NAME return STRING;
-  function DESIGN_FILE_NAME return STRING;
-  function VERBOSE return BOOLEAN;
+  function Manufa_File_Name return String;
+  function Design_File_Name return String;
+  function Verbose return Boolean;
 
-  procedure CHECK;
-  ARG_ERROR : exception;
+  procedure Check;
+  Arg_Error : exception;
 
-end ARG_PARSING;
+end Arg_Parsing;
 

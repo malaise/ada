@@ -1,157 +1,157 @@
-with TEXT_IO;
-with SYS_CALLS, TEXT_HANDLER, MY_IO, ARGUMENT, UPPER_STR, NORMAL, MY_MATH;
-with GRID_1, GRID_2;
+with Ada.Text_Io;
+with Sys_Calls, Text_Handler, My_Io, Argument, Upper_Str, Normal, My_Math;
+with Grid_1, Grid_2;
 
-procedure CODE is
-  CODE : BOOLEAN;
-  MAX_LINE_LEN : constant := 1024;
-  BUFF : STRING (1 .. MAX_LINE_LEN);
-  MAX_FILE_LEN : constant := 58;
-  REC : GRID_1.COORDINATE_REC;
-  -- Bug in Meridian: Cannot allocate that in stack, but in heap.
-  type ACCESS_LONG_STRING is access GRID_2.LONG_STRING;
-  STR  : ACCESS_LONG_STRING
-       := new GRID_2.LONG_STRING(1 .. MY_MATH.INTE(1_048_576));
-  FILE_TOO_LONG : exception;
+procedure Code is
+  Code : Boolean;
+  Max_Line_Len : constant := 1024;
+  Buff : String (1 .. Max_Line_Len);
+  Max_File_Len : constant := 58;
+  Rec : Grid_1.Coordinate_Rec;
+  -- Better not allocate that in stack, but in heap.
+  type Access_Long_String is access Grid_2.Long_String;
+  Str  : Access_Long_String
+       := new Grid_2.Long_String(1 .. My_Math.Inte(1_048_576));
+  File_Too_Long : exception;
 
 
-  subtype LINE_INDEX is NATURAL range 0 .. MAX_LINE_LEN;
-  LEN : LINE_INDEX;
-  MIN_KEY_LEN : constant LINE_INDEX := 8;
-  LINE_TOO_LONG : exception;
-  KEY : TEXT_HANDLER.TEXT(80);
-  IN_FILE  : TEXT_IO.FILE_TYPE;
-  OUT_FILE : TEXT_IO.FILE_TYPE;
-  SL : GRID_2.LONG_POSITIVE;
-  SI : GRID_2.LONG_POSITIVE;
-  C : CHARACTER;
+  subtype Line_Index is Natural range 0 .. Max_Line_Len;
+  Len : Line_Index;
+  Min_Key_Len : constant Line_Index := 8;
+  Line_Too_Long : exception;
+  Key : Text_Handler.Text(80);
+  In_File  : Ada.Text_Io.File_Type;
+  Out_File : Ada.Text_Io.File_Type;
+  Sl : Grid_2.Long_Positive;
+  Si : Grid_2.Long_Positive;
+  C : Character;
 
-  function IS_A_TTY return BOOLEAN is
-    RESULT : INTEGER;
+  function Is_A_Tty return Boolean is
+    Result : Integer;
   begin
-    RESULT := SYS_CALLS.CALL_SYSTEM("tty > /dev/null 2>&1");
-    return RESULT = 0;
-  end IS_A_TTY;
+    Result := Sys_Calls.Call_System("tty > /dev/null 2>&1");
+    return Result = 0;
+  end Is_A_Tty;
   
 
-  procedure ECHO (ON : in BOOLEAN) is
-    DUMMY : INTEGER;
-    STTY_ECHO : constant STRING := "stty echo";
-    STTY_NO_ECHO : constant STRING := "stty -echo";
+  procedure Echo (On : in Boolean) is
+    Dummy : Integer;
+    Stty_echo : constant String := "stty echo";
+    Stty_No_Echo : constant String := "stty -echo";
   begin
-    if ON then
-      DUMMY := SYS_CALLS.CALL_SYSTEM(STTY_ECHO);
+    if On then
+      Dummy := Sys_Calls.Call_System(Stty_Echo);
     else
-      DUMMY := SYS_CALLS.CALL_SYSTEM(STTY_NO_ECHO);
+      Dummy := Sys_Calls.Call_System(Stty_No_Echo);
     end if;
-  end ECHO;
+  end Echo;
 
 
-  procedure CODE_1 is
+  procedure Code_1 is
   begin
     begin
-      LEN := LEN + 1;
+      Len := Len + 1;
     exception
-      when CONSTRAINT_ERROR =>
-        raise LINE_TOO_LONG;
+      when Constraint_Error =>
+        raise Line_Too_Long;
     end;
-    BUFF(LEN) := ASCII.CR;
-    for I in 1 .. LEN loop
-      REC := GRID_1.ENCODE(BUFF(I));
-      if SL > STR'LAST then
-        raise FILE_TOO_LONG;
+    Buff(Len) := Ascii.Cr;
+    for I in 1 .. Len loop
+      Rec := Grid_1.Encode(Buff(I));
+      if Sl > Str'Last then
+        raise File_Too_Long;
       end if;
-      STR(SL) := REC.ROW;
-      STR(SL + 1) := REC.COL;
-      SL := SL + 2;
+      Str(Sl) := Rec.Row;
+      Str(Sl + 1) := Rec.Col;
+      Sl := Sl + 2;
     end loop;
-  end CODE_1;
+  end Code_1;
 
-  procedure DECODE_1 is
+  procedure Decode_1 is
   begin
-    LEN := 0;
+    Len := 0;
     loop
-      REC.ROW := STR(SI);
-      REC.COL := STR(SI + 1);
-      SI := SI + 2;
-      C := GRID_1.DECODE(REC);
-      LEN := LEN + 1;
-      BUFF(LEN) := C;
-      exit when C = ASCII.CR;
+      Rec.Row := Str(Si);
+      Rec.Col := Str(Si + 1);
+      Si := Si + 2;
+      C := Grid_1.Decode(Rec);
+      Len := Len + 1;
+      Buff(Len) := C;
+      exit when C = Ascii.Cr;
     end loop;
-  end DECODE_1;
+  end Decode_1;
 
 begin
 
   -- Get coding mode
   begin
-    if ARGUMENT.GET_NBRE_ARG < 2 or else ARGUMENT.GET_NBRE_ARG > 3 then
-      raise ARGUMENT.ARGUMENT_NOT_FOUND;
+    if Argument.Get_Nbre_Arg < 2 or else Argument.Get_Nbre_Arg > 3 then
+      raise Argument.Argument_Not_Found;
     end if;
-    if UPPER_STR (ARGUMENT.GET_PARAMETER) = "-C" then
-      CODE := TRUE;
-    elsif UPPER_STR (ARGUMENT.GET_PARAMETER) = "-D" then
-      CODE := FALSE;
+    if Upper_Str (Argument.Get_Parameter) = "-C" then
+      Code := True;
+    elsif Upper_Str (Argument.Get_Parameter) = "-D" then
+      Code := False;
     else
-      raise ARGUMENT.ARGUMENT_NOT_FOUND;
+      raise Argument.Argument_Not_Found;
     end if;
   exception
     when others =>
-      MY_IO.PUT_LINE ("Wrong argument. Usage : "
-                     & ARGUMENT.GET_PARAMETER(OCCURENCE => 0) 
+      My_Io.Put_LinE ("Wrong argument. Usage : "
+                     & Argument.Get_Parameter(Occurence => 0) 
                      & " -c  |  -d     <input_file> [ <output_file> ] ");
       return;
   end;
 
   -- Get input file name
-  ARGUMENT.GET_PARAMETER (BUFF(1 .. MAX_FILE_LEN), LEN, OCCURENCE => 2);
+  Argument.Get_Parameter (Buff(1 .. Max_File_Len), Len, Occurence => 2);
   -- Open input file
   begin
-    TEXT_IO.OPEN (IN_FILE, TEXT_IO.IN_FILE, BUFF(1 .. LEN));
+    Ada.Text_Io.Open (In_File, Ada.Text_io.In_File, Buff(1 .. Len));
   exception
     when others =>
-      MY_IO.PUT_LINE ("Unable to open input file >" & BUFF (1 .. LEN)
-                     & "<. Abort.");
+      My_Io.Put_Line ("Unable to open input file >"
+                     & Buff (1 .. Len) & "<. Abort.");
       raise;
   end;
 
   -- Get output file name
-  if ARGUMENT.GET_NBRE_ARG = 3 then
-    ARGUMENT.GET_PARAMETER (BUFF(1 .. MAX_FILE_LEN), LEN, OCCURENCE => 3);
+  if Argument.Get_Nbre_Arg = 3 then
+    Argument.Get_Parameter (Buff(1 .. Max_File_Len), Len, Occurence => 3);
     -- Open output file
     begin
       begin
-        TEXT_IO.OPEN (OUT_FILE, TEXT_IO.OUT_FILE, BUFF(1 .. LEN));
+        Ada.Text_Io.Open (Out_File, Ada.Text_Io.Out_File, Buff(1 .. Len));
       exception
-        when TEXT_IO.NAME_ERROR =>
-          TEXT_IO.CREATE (OUT_FILE, TEXT_IO.OUT_FILE, BUFF(1 .. LEN));
+        when Ada.Text_Io.Name_Error =>
+          Ada.Text_Io.Create (Out_File, Ada.Text_Io.Out_File, Buff(1 .. Len));
       end;
     exception
       when others =>
-        MY_IO.PUT_LINE ("Unable to open/create output file >" & BUFF (1 .. LEN)
-                       & "<. Abort.");
+        My_Io.Put_Line ("Unable to open/create output file >"
+                      & Buff (1 .. Len) & "<. Abort.");
         raise;
     end;
   end if;
 
   -- Get key
   loop
-    if IS_A_TTY then
-      MY_IO.PUT ("Key: ");
-      ECHO (FALSE);
+    if Is_A_Tty then
+      My_Io.Put ("Key: ");
+      Echo (False);
     end if;
-    MY_IO.GET_LINE (BUFF, LEN);
-    if IS_A_TTY then
-      ECHO (TRUE);
-      MY_IO.NEW_LINE;
+    My_Io.Get_Line (Buff, Len);
+    if Is_A_Tty then
+      Echo (True);
+      My_Io.New_Line;
     end if;
-    if LEN = 0 then
-      MY_IO.PUT_LINE ("Program aborted by user.");
+    if Len = 0 then
+      My_Io.Put_Line ("Program aborted by user.");
       return;
-    elsif CODE and then LEN < MIN_KEY_LEN then
-      MY_IO.PUT_LINE ("Too short ("
-                    & NORMAL(MIN_KEY_LEN, 1) & " min), try again.");
-      if not IS_A_TTY then
+    elsif Code and then Len < Min_Key_Len then
+      My_Io.Put_Line ("Too short ("
+                    & Normal(Min_Key_Len, 1) & " min), try again.");
+      if not Is_A_Tty then
         return;
       end if;
     else
@@ -159,74 +159,74 @@ begin
     end if;
   end loop;
 
-  if ARGUMENT.GET_NBRE_ARG = 3 then
-    TEXT_IO.SET_OUTPUT (OUT_FILE);
+  if Argument.Get_Nbre_Arg = 3 then
+    Ada.Text_Io.Set_Output (Out_File);
   end if;
 
-  TEXT_HANDLER.SET (KEY, BUFF (1 .. LEN));
+  Text_Handler.Set (Key, Buff (1 .. Len));
 
   -- Initialize coding
-  GRID_1.INITIALIZE(TEXT_HANDLER.VALUE(KEY));
+  Grid_1.Initialize(Text_Handler.Value(Key));
 
-  if CODE then
-    SL := 1;
+  if Code then
+    Sl := 1;
     -- Code key
-    CODE_1;
+    Code_1;
     -- Code input file
     loop
       -- Read input file
       begin
-        TEXT_IO.GET_LINE (IN_FILE, BUFF, LEN);
+        Ada.Text_Io.Get_Line (In_File, Buff, Len);
       exception
-        when TEXT_IO.END_ERROR => exit;
+        when Ada.Text_Io.End_Error => exit;
       end;
       -- Code line
-      CODE_1;
+      Code_1;
     end loop;
-    SL := SL - 1;
+    Sl := Sl - 1;
 
     -- Code through code 2
-    STR (1 .. SL) := GRID_2.ENCODE(TEXT_HANDLER.VALUE(KEY), STR(1 .. SL));
+    Str (1 .. Sl) := Grid_2.Encode(Text_Handler.Value(Key), Str(1 .. Sl));
     -- Output result (cut each 80 cars)
-    for I in 1 .. SL loop
-      TEXT_IO.PUT (STR(I));
+    for I in 1 .. Sl loop
+      Ada.Text_Io.Put (Str(I));
       if I mod 78 = 0 then
-        TEXT_IO.NEW_LINE;
+        Ada.Text_Io.New_Line;
       end if;
     end loop;
-    if SL mod 78 /= 0 then
-      TEXT_IO.NEW_LINE;
+    if Sl mod 78 /= 0 then
+      Ada.Text_Io.New_Line;
     end if;
   else
     -- Decode input file
-    SL := 1;
+    Sl := 1;
     loop
       -- Read input file
       begin
-        TEXT_IO.GET_LINE (IN_FILE, BUFF, LEN);
+        Ada.Text_Io.Get_Line (In_File, Buff, Len);
       exception
-        when TEXT_IO.END_ERROR => exit;
+        when Ada.Text_Io.End_Error => exit;
       end;
       -- Store characters
-      for I in 1 .. LEN loop
-        STR(SL) := BUFF(I);
-        SL := SL + 1;
+      for I in 1 .. Len loop
+        Str(Sl) := Buff(I);
+        Sl := Sl + 1;
       end loop;
     end loop;
-    SL := SL - 1;
+    Sl := Sl - 1;
 
     -- Decode through code 2
-    STR (1 .. SL) := GRID_2.DECODE(TEXT_HANDLER.VALUE(KEY), STR(1 .. SL));
+    Str (1 .. Sl) := Grid_2.Decode(Text_Handler.Value(Key), Str(1 .. Sl));
 
     -- Decode through code 1
     begin
-      SI := 1;
-      DECODE_1;
-      if BUFF(1 .. LEN-1) = TEXT_HANDLER.VALUE (KEY) then
+      Si := 1;
+      Decode_1;
+      if Buff(1 .. Len-1) = Text_Handler.Value (Key) then
         loop
-          DECODE_1;
-          exit when LEN = 0;
-          TEXT_IO.PUT_LINE (BUFF(1 .. LEN-1));
+          Decode_1;
+          exit when Len = 0;
+          Ada.Text_Io.Put_Line (Buff(1 .. Len-1));
         end loop;
       end if;
     exception
@@ -237,14 +237,15 @@ begin
   end if;
 
 
-  TEXT_IO.CLOSE (IN_FILE);
-  TEXT_IO.SET_OUTPUT (TEXT_IO.STANDARD_OUTPUT);
-  if TEXT_IO.IS_OPEN (OUT_FILE) then
-    TEXT_IO.CLOSE (OUT_FILE);
+  Ada.Text_Io.Close (In_File);
+  Ada.Text_Io.Set_Output (Ada.Text_Io.Standard_Output);
+  if Ada.Text_Io.Is_Open (Out_File) then
+    Ada.Text_Io.Close (Out_File);
   end if;
 exception
-  when LINE_TOO_LONG =>
-    TEXT_IO.PUT_LINE ("ERROR, input line too long.");
-  when FILE_TOO_LONG =>
-    TEXT_IO.PUT_LINE ("ERROR, input file too long.");
-end CODE;
+  when Line_Too_LonG =>
+    Ada.Text_Io.Put_Line ("ERROR, input line too long.");
+  when File_Too_Long =>
+    Ada.Text_Io.Put_Line ("ERROR, input file too long.");
+end Code;
+

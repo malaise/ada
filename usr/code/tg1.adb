@@ -1,49 +1,50 @@
-with TEXT_IO; -- For exception trace
-with TEXT_HANDLER, ARGUMENT, MY_IO;
+with Ada.Text_Io; -- For exception trace
+with Text_Handler, Argument, My_Io;
 
-with GRID_1;
-procedure TG1 is
-  KEY : constant STRING := ARGUMENT.GET_PARAMETER(1);
-  TEXT : TEXT_HANDLER.TEXT(500);
-  DUMMY : TEXT_HANDLER.TEXT(80);
-  CODE : TEXT_HANDLER.TEXT(TEXT.MAX_LEN*2);
-  REC : GRID_1.COORDINATE_REC;
+with Grid_1;
+procedure Tg1 is
+  Key : constant String := Argument.Get_Parameter(1);
+  Text : Text_Handler.Text(500);
+  Dummy : Text_Handler.Text(80);
+  Code : Text_Handler.Text(Text.Max_Len*2);
+  Rec : Grid_1.Coordinate_Rec;
 begin
 
-  TEXT_HANDLER.SET(TEXT, "");
-  for I in 2 .. ARGUMENT.GET_NBRE_ARG loop
-    ARGUMENT.GET_PARAMETER(DUMMY, I);
-    TEXT_HANDLER.APPEND (TEXT, DUMMY);
-    if I /= ARGUMENT.GET_NBRE_ARG then
-      TEXT_HANDLER.APPEND (TEXT, " ");
+  Text_Handler.Set(Text, "");
+  for I in 2 .. Argument.Get_Nbre_Arg loop
+    Argument.Get_Parameter(Dummy, I);
+    Text_Handler.Append (Text, Dummy);
+    if I /= Argument.Get_Nbre_Arg then
+      Text_Handler.Append (Text, " ");
     end if;
   end loop;
 
-  GRID_1.INITIALIZE(KEY);
-  MY_IO.PUT_LINE ("Key : " & KEY);
-  GRID_1.DUMP;
-  MY_IO.NEW_LINE;
+  Grid_1.Initialize(Key);
+  My_Io.Put_Line ("Key : " & Key);
+  Grid_1.Dump;
+  My_Io.New_Line;
 
 
-  MY_IO.PUT_LINE ("Text : " & TEXT_HANDLER.VALUE(TEXT));
-  TEXT_HANDLER.SET (CODE, "");
-  for I in 1 .. TEXT_HANDLER.LENGTH(TEXT) loop
-    REC := GRID_1.ENCODE (TEXT_HANDLER.VALUE(TEXT)(I));
-    TEXT_HANDLER.APPEND (CODE, REC.ROW);
-    TEXT_HANDLER.APPEND (CODE, REC.COL);
+  My_Io.Put_Line ("Text : " & Text_Handler.Value(Text));
+  Text_Handler.Set (Code, "");
+  for I in 1 .. Text_Handler.Length(Text) loop
+    Rec := Grid_1.Encode (Text_Handler.Value(Text)(I));
+    Text_Handler.Append (Code, Rec.Row);
+    Text_Handler.Append (Code, Rec.Col);
   end loop;
-  MY_IO.PUT_LINE ("Code : " & TEXT_HANDLER.VALUE(CODE));
+  My_Io.Put_Line ("Code : " & Text_Handler.Value(Code));
 
-  TEXT_HANDLER.SET (TEXT, "");
-  for I in 1 .. TEXT_HANDLER.LENGTH(CODE) loop
+  Text_Handler.Set (TEXT, "");
+  for I in 1 .. Text_Handler.Length(Code) loop
     if I mod 2 = 1 then
-      REC.ROW := TEXT_HANDLER.VALUE(CODE)(I);
+      Rec.Row := Text_Handler.Value(Code)(I);
     else
-      REC.COL := TEXT_HANDLER.VALUE(CODE)(I);
-      TEXT_HANDLER.APPEND (TEXT, GRID_1.DECODE(REC));
+      Rec.Col := Text_Handler.Value(Code)(I);
+      Text_Handler.Append (Text, Grid_1.Decode(Rec));
     end if;
   end loop;
-  MY_IO.PUT_LINE ("Text : " & TEXT_HANDLER.VALUE(TEXT));
+  My_Io.Put_Line ("Text : " & Text_Handler.Value(Text));
 
 
-end TG1;
+end Tg1;
+
