@@ -11,8 +11,8 @@ package NAV_TYPES is
 
   -- Angle of a vector, speed of a vector and a vector
   type T_ANGLE is record
-   DEGREES : T_DEGREE;
-   MINUTES : T_MINUTE;
+   DEGREES : T_DEGREE := 0;
+   MINUTES : T_MINUTE := 0;
   end record;
   function REDUCTION (DEG : T_COMMON_DEG; MIN : T_MINUTE) return T_ANGLE;
   function "+" (A1, A2 : T_ANGLE) return T_ANGLE;
@@ -24,16 +24,16 @@ package NAV_TYPES is
   subtype T_SPEED is FLOAT range 0.0 .. 999.9;
   -- Vector
   type T_VECTOR is record
-   SPEED : T_SPEED;
+   SPEED : T_SPEED := 0.0;
    ANGLE : T_ANGLE;
   end record;
 
   -- Special definition of the angle of drift
   subtype T_DEG_DRIFT is T_COMMON_DEG range 0 .. 179;
   type T_DRIFT is record
-   POSITIV : BOOLEAN;
-   DEGREES : T_DEG_DRIFT;
-   MINUTES : T_MINUTE;
+   POSITIV : BOOLEAN := TRUE;
+   DEGREES : T_DEG_DRIFT := 0;
+   MINUTES : T_MINUTE := 0;
   end record;
   function "+" (A : T_ANGLE; D : T_DRIFT) return T_ANGLE;
   function "-" (A : T_ANGLE; D : T_DRIFT) return T_ANGLE;
