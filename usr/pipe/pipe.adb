@@ -88,6 +88,10 @@ procedure Pipe is
   function Stdin_Cb (Str : in String) return Boolean is
     Len : Natural := Str'Length;
   begin
+    if Len = 0 then
+      Done := True;
+      return True;
+    end if;
     if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
       -- End of transmission
       Len := Len - 1;
@@ -128,6 +132,8 @@ procedure Pipe is
     Send (Message(1 .. Len));
   end Get_No_Tty;
 
+  use type Fifos.Fifo_State_List, Event_Mng.Out_Event_List;
+
 begin
 
   -- 2 arguments
@@ -153,8 +159,19 @@ begin
                          Rece_Cb'Unrestricted_Access,
                          Ovfl_Cb'Unrestricted_Access);
   if Server then
+    -- Fid will be the one of last message received
     Fid := Pipe_Fifo.No_Fifo;
+  else
+    -- Let connection establish
+    Event_Mng.Wait (100);
+    loop
+      -- Wait until connected or nothing happens
+      exit when Pipe_Fifo.Fifo_State (Fid) = Fifos.Connected
+      or else Event_Mng.Wait (500) = Event_Mng.No_Event;
+    end loop;
   end if;
+
+
 
   -- Init stdin
   Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, Max_Data_Size);
@@ -168,6 +185,9 @@ begin
 
   -- Restore stdin
   Async_Stdin.Set_Async;
+
+  -- Close
+  Pipe_Fifo.Close_All;
 
 end Pipe;
 
