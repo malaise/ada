@@ -1,6 +1,6 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Exceptions;
 
-with Bloc_Io, Current_Exception;
+with Bloc_Io;
 
 procedure T_Bloc_Io is
 
@@ -32,8 +32,9 @@ begin
     Int_Io.Open(File, Int_Io.In_File, File_Name);
     Ro := True;
   exception
-    when others =>
-      Ada.Text_Io.Put_Line("Open => " & Current_Exception.Exception_Name);
+    when Error:others =>
+      Ada.Text_Io.Put_Line("Open => "
+             & Ada.Exceptions.Exception_Name (Error));
       Int_Io.Create(File, File_Name);
       Ro := False;
   end;
