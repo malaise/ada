@@ -109,9 +109,9 @@ begin
     Deduction_1, Deduction_2 : Somme;
     -- les plafonds
     -- deduction 10%
-    Plafond_1_H : constant Somme := 12_437.00;
+    Plafond_1_H : constant Somme := 12_229.00;
     -- abattement 20%
-    Plafond_2_H : constant Somme := 22_780.00;
+    Plafond_2_H : constant Somme := 22_380.00;
   begin
     -- le salaire net imposable
     Salaire := Get_Somme ("Entrez votre salaire net imposable");
@@ -167,13 +167,13 @@ begin
     type Liste_Tranches_Familiales is array (Indice_Tranche range <>)
      of Descripteur_Tranche_Familiale;
     Les_Tranches_Familiales : constant Liste_Tranches_Familiales := (
-      1 => ( Somme_Max=>04_191.0,  Coefficient=>0000, Fixe=>00_000.00),
-      2 => ( Somme_Max=>08_242.0,  Coefficient=>0705, Fixe=>00_295.47),
-      3 => ( Somme_Max=>14_506.0,  Coefficient=>1974, Fixe=>01_341.38),
-      4 => ( Somme_Max=>23_489.0,  Coefficient=>2914, Fixe=>02_704.94),
-      5 => ( Somme_Max=>38_218.0,  Coefficient=>3854, Fixe=>04_912.91),
-      6 => ( Somme_Max=>47_131.0,  Coefficient=>4394, Fixe=>06_976.68),
-      7 => ( Somme_Max=>Somme'Last,Coefficient=>4958, Fixe=>09_634.87));
+      1 => ( Somme_Max=>04_121.0,  Coefficient=>0000, Fixe=>00_000.00),
+      2 => ( Somme_Max=>08_104.0,  Coefficient=>0750, Fixe=>00_309.08),
+      3 => ( Somme_Max=>14_264.0,  Coefficient=>2100, Fixe=>01_403.12),
+      4 => ( Somme_Max=>23_096.0,  Coefficient=>3100, Fixe=>02_829.52),
+      5 => ( Somme_Max=>37_579.0,  Coefficient=>4100, Fixe=>05_139.12),
+      6 => ( Somme_Max=>46_343.0,  Coefficient=>4675, Fixe=>07_299.91),
+      7 => ( Somme_Max=>Somme'Last,Coefficient=>5275, Fixe=>10_080.49));
   begin
     -- saisie du nombre de parts
     Nbre_Part := Get_ParT ("Entrez le nombre de parts");
