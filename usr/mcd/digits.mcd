@@ -1,0 +1,21 @@
+# Error and quit
+4 format
+[ "Error, 1 positive argument expected" putl
+ssize popn retall ] E popr
+
+# Check 1 arg integer
+ssize 1 /= E pushr ifcall
+dup isinte ~ E pushr ifcall
+dup 0 <= E pushr ifcall
+
+# Epsilon
+1.0e14 e popr
+
+# Log 10
+toreal log 
+
+# Round
+e pushr * round toreal e pushr / trunc 
+
+1 + put " digits." putl
+
