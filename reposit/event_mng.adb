@@ -473,6 +473,9 @@ package body Event_Mng is
       when No_Event =>
         -- Nothing. Expire timers or return timeout
         if Timers.Expire then
+          if Debug then
+            Ada.Text_Io.Put_Line ("Event_Mng.Handle: No_Event -> Timer_Event");
+          end if;
           return Timer_Event;
         end if;
     end case;
