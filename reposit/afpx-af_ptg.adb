@@ -190,8 +190,8 @@ package body AF_PTG is
   begin
     -- Wait until button released
     loop
-      CON_IO.GET_KEY_TIME (TIME, TRUE, TRUE,
-        EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+      CON_IO.GET_KEY_TIME (TRUE,
+        EVENT, KEY, IS_CHAR, CTRL, SHIFT, CON_IO.INFINITE_DELAY);
       if EVENT = CON_IO.MOUSE_BUTTON then
         CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
         exit when MOUSE_STATUS.BUTTON = CON_IO.LEFT

@@ -4,6 +4,8 @@ with SOK_DISPLAY, SOK_TIME;
 package body SOK_INPUT is
 
   PLAY : BOOLEAN := TRUE;
+  DELTA_GET : constant CON_IO.DELAY_REC(CON_IO.DELAY_SEC) 
+            := (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 1.0);
 
   function GET_KEY return KEY_LIST is
     EVENT : CON_IO.EVENT_LIST;
@@ -16,8 +18,7 @@ package body SOK_INPUT is
       if PLAY then
         SOK_TIME.DISP_TIME;
       end if;
-      CON_IO.GET_KEY_TIME (CALENDAR.CLOCK + 1.0, FALSE, TRUE,
-         EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+      CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, DELTA_GET);
       if EVENT = CON_IO.ESC then
         if not IS_CHAR and then PLAY then  
           case KEY is
@@ -75,8 +76,7 @@ package body SOK_INPUT is
     use CON_IO;
   begin
     loop
-      CON_IO.GET_KEY_TIME (CALENDAR.CLOCK + 1.0, TRUE, TRUE,
-         EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+      CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, DELTA_GET);
       exit when EVENT = CON_IO.ESC or else EVENT = CON_IO.BREAK;
     end loop;
   end PAUSE;

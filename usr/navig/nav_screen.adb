@@ -26,7 +26,8 @@ package body NAV_SCREEN is
   RES_FORE : constant EFFECTIVE_COLORS := LIGHT_GREEN;
 
   -- delay max of a get (data or action) in seconds.
-  DELTA_GET : CONSTANT duration := 0.5;
+  DELTA_GET : CONSTANT CON_IO.DELAY_REC(CON_IO.DELAY_SEC) := 
+    (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 0.5);
   -- number of deltas before clearing err messages
   TIME_OUT_GET : constant := 6;
 

@@ -198,6 +198,21 @@ package GENERIC_CON_IO is
     -- On refresh event ASCII.NUL is retuned (no echo)
     function GET (NAME : WINDOW := SCREEN) return CHARACTER;
 
+    -- How to specify a delay, wait some seconds or until a specific time
+    type DELAY_LIST is (DELAY_SEC, DELAY_EXP);
+    INFINITE_SECONDS : constant DURATION := -1.0;
+    type DELAY_REC (DELAY_KIND : DELAY_LIST := DELAY_SEC) is record
+      case DELAY_KIND is
+        when DELAY_SEC =>
+          DELAY_SECONDS : DURATION := INFINITE_SECONDS;
+        when DELAY_EXP =>
+          EXPIRATION_TIME : CALENDAR.TIME;
+      end case;
+    end record;
+    -- Inifinte delay
+    INFINITE_DELAY : constant DELAY_REC(DELAY_SEC) := (DELAY_KIND => DELAY_SEC, DELAY_SECONDS => INFINITE_SECONDS);
+   
+
     -- Gets a string of at most width characters
     -- The string must be short enought to be put in 1 line at current position
     --  in the window.
@@ -229,7 +244,7 @@ package GENERIC_CON_IO is
                    FOREGROUND : in COLORS := CURRENT;
                    BLINK_STAT : in BLINK_STATS := CURRENT;
                    BACKGROUND : in BASIC_COLORS := CURRENT;
-                   TIME_OUT   : in DURATION :=  -1.0);
+                   TIME_OUT   : in DELAY_REC := INFINITE_DELAY);
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
@@ -242,7 +257,7 @@ package GENERIC_CON_IO is
                             FOREGROUND : in COLORS := CURRENT;
                             BLINK_STAT : in BLINK_STATS := CURRENT;
                             BACKGROUND : in BASIC_COLORS := CURRENT;
-                            TIME_OUT   : in DURATION :=  -1.0);
+                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY);
 
     -- Get_key_time can return if key pressed (ESC event),
     -- mouse action, refresh or timeout
@@ -250,14 +265,13 @@ package GENERIC_CON_IO is
 
     -- check if a key is available, or another event, until a certain time. 
     -- ESC means any key
-    procedure GET_KEY_TIME (LAST_TIME     : in CALENDAR.TIME;
-                            INFINITE_TIME : in BOOLEAN;
-                            CHECK_BREAK   : in BOOLEAN;
-                            EVENT         : out EVENT_LIST;
-                            KEY           : out NATURAL;
-                            IS_CHAR       : out BOOLEAN;
-                            CTRL          : out BOOLEAN;
-                            SHIFT         : out BOOLEAN);
+    procedure GET_KEY_TIME (CHECK_BREAK : in BOOLEAN;
+                            EVENT       : out EVENT_LIST;
+                            KEY         : out NATURAL;
+                            IS_CHAR     : out BOOLEAN;
+                            CTRL        : out BOOLEAN;
+                            SHIFT       : out BOOLEAN;
+                            TIME_OUT    : in DELAY_REC := INFINITE_DELAY);
 
     procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN);
 

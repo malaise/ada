@@ -300,7 +300,7 @@ package body CURVE is
       -- Draw first, show/hide or update, for scales or help
       type DRAW_ACTION is (INIT, TOGGLE, UPDATE);
 
-      -- Nothing to draw, new zoom mode, update zoom frame, redraw
+      -- Nothing to draw, new zoom mode, or update for zoom frame
       type DRAW_FRAME_ACTION is (NONE, TOGGLE, UPDATE, REDRAW);
       ZOOM_FRAME_ACTION : DRAW_FRAME_ACTION;
 
@@ -468,7 +468,6 @@ package body CURVE is
             end if;
           end loop;
         end if;
-
       end DRAW_HELP;
 
       -- Draw all points
@@ -503,16 +502,13 @@ package body CURVE is
         end DRAW_POINT;
 
       begin
-
         BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.RED);
         for I in POINTS'RANGE loop
           DRAW_POINT (POINTS(I).X, POINTS(I).Y);
         end loop;
-
         if MISC (M_HELP) then
           TOGGLE_HELP_MISC (M_POINTS);
         end if;
-
       end DRAW_POINTS;
 
       -- Draw an horizontal line (for frames and axes)
@@ -558,7 +554,6 @@ package body CURVE is
             when others => null;
           end;
         end if;
-
         if MISC (M_HELP) then
           TOGGLE_HELP_MISC (M_AXES);
         end if;
@@ -604,11 +599,9 @@ package body CURVE is
             when others => null;
           end;
         end loop;
-
         if MISC (M_HELP) then
           TOGGLE_HELP_MISC (M_CURVE);
         end if;
-
         -- BIG_CON_IO.BELL(1);
       end DRAW_CURVE;
 
@@ -693,7 +686,6 @@ package body CURVE is
             TOGGLE_HELP_MISC (M_SCALE);
           end if;
         end if;
-
       end DRAW_SCALE;
 
       -- Draw Z frame (when in drag)
@@ -717,7 +709,7 @@ package body CURVE is
           PUT_FRAME(PREV_FRAME_BOUNDS);
           return;
         end if;
-          
+
         -- Optimization : most frequent case
         -- Update and same frame, or update and not in drag
         if ACTION = UPDATE
@@ -828,8 +820,7 @@ package body CURVE is
         end if;
 
         -- Infinite wait
-        BIG_CON_IO.GET_KEY_TIME (CALENDAR.CLOCK, TRUE, TRUE,
-              EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+        BIG_CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, BIG_CON_IO.INFINITE_DELAY);
 
         case EVENT is
           when BIG_CON_IO.BREAK =>

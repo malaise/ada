@@ -79,8 +79,8 @@ package body ACTION is
       begin
         WAIT_EVENT:
         loop
-          CON_IO.GET_KEY_TIME (CALENDAR.CLOCK, TRUE, TRUE, EVENT, KEY,
-            IS_CHAR, CTRL,SHIFT);
+          CON_IO.GET_KEY_TIME (TRUE, EVENT, KEY,
+            IS_CHAR, CTRL,SHIFT, CON_IO.INFINITE_DELAY);
           if EVENT = CON_IO.MOUSE_BUTTON then
             CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
             if MOUSE_STATUS.BUTTON = CON_IO.LEFT then

@@ -870,14 +870,13 @@ package body GENERIC_CON_IO is
 
 
     -- check if a key is available until a certain time.
-    procedure GET_KEY_TIME (LAST_TIME     : in CALENDAR.TIME;
-                            INFINITE_TIME : in BOOLEAN;
-                            CHECK_BREAK   : in BOOLEAN;
-                            EVENT         : out EVENT_LIST;
-                            KEY           : out NATURAL;
-                            IS_CHAR       : out BOOLEAN;
-                            CTRL          : out BOOLEAN;
-                            SHIFT         : out BOOLEAN) is
+    procedure GET_KEY_TIME (CHECK_BREAK : in BOOLEAN;
+                            EVENT       : out EVENT_LIST;
+                            KEY         : out NATURAL;
+                            IS_CHAR     : out BOOLEAN;
+                            CTRL        : out BOOLEAN;
+                            SHIFT       : out BOOLEAN;
+                            TIME_OUT    : in DELAY_REC := INFINITE_DELAY) is
 
       X_EVENT : X_MNG.EVENT_KIND;
       CUR_TIME : CALENDAR.TIME;
@@ -892,14 +891,17 @@ package body GENERIC_CON_IO is
       if not INIT_DONE then
         raise NOT_INIT;
       end if;
-      if INFINITE_TIME then
+
+      if TIME_OUT = INFINITE_DELAY then
         TIMEOUT_MS := -1;
+      elsif TIME_OUT.DELAY_KIND = DELAY_SEC then
+        TIMEOUT_MS := INTEGER (FLOAT(TIME_OUT.DELAY_SECONDS) * 1_000.0);
       else
         CUR_TIME := CALENDAR.CLOCK;
-        if CUR_TIME > LAST_TIME then
+        if CUR_TIME > TIME_OUT.EXPIRATION_TIME then
           TIMEOUT_MS := 0;
         else
-          DUR := LAST_TIME - CUR_TIME;
+          DUR := TIME_OUT.EXPIRATION_TIME - CUR_TIME;
           TIMEOUT_MS := INTEGER (FLOAT(DUR) * 1_000.0);
         end if;
       end if;
@@ -950,7 +952,7 @@ package body GENERIC_CON_IO is
                    FOREGROUND : in COLORS := CURRENT;
                    BLINK_STAT : in BLINK_STATS := CURRENT;
                    BACKGROUND : in BASIC_COLORS := CURRENT;
-                   TIME_OUT   : in DURATION :=  -1.0) is
+                   TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
       LSTR : STRING(STR'range ) := (others => ' ');
       LPOS : POSITIVE;
       LINS : BOOLEAN;
@@ -975,7 +977,7 @@ package body GENERIC_CON_IO is
                             FOREGROUND : in COLORS := CURRENT;
                             BLINK_STAT : in BLINK_STATS := CURRENT;
                             BACKGROUND : in BASIC_COLORS := CURRENT;
-                            TIME_OUT   : in DURATION :=  -1.0) is
+                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY) is
       WIDTH         : constant NATURAL := STR'LENGTH;
       LSTR          : STRING(1 .. WIDTH) := STR;
       KEY           : NATURAL;
@@ -983,8 +985,7 @@ package body GENERIC_CON_IO is
       CTRL, SHIFT   : BOOLEAN;
       REDRAW        : BOOLEAN;
       FIRST_POS     : constant SQUARE := NAME.CURRENT_POS;
-      LAST_TIME     : CALENDAR.TIME;
-      INFINITE_TIME : constant BOOLEAN := TIME_OUT < 0.0;
+      LAST_TIME     : DELAY_REC(DELAY_EXP);
       EVENT         : EVENT_LIST;
 
       function PARSE return NATURAL is
@@ -1020,12 +1021,12 @@ package body GENERIC_CON_IO is
 
 
     begin
-      if not INFINITE_TIME then
-        -- time at which the get ends
-        LAST_TIME := CALENDAR."+"(CALENDAR.CLOCK, TIME_OUT);
+      -- Time at which the get ends
+      if TIME_OUT = INFINITE_DELAY or else TIME_OUT.DELAY_KIND = DELAY_EXP then
+        LAST_TIME := TIME_OUT;
       else
-        -- to give a value (which won't be used)
-        LAST_TIME := CALENDAR.CLOCK;
+        LAST_TIME := (DELAY_KIND => DELAY_EXP,
+                      EXPIRATION_TIME => CALENDAR."+"(CALENDAR.CLOCK, TIME_OUT.DELAY_SECONDS) );
       end if;
 
       -- Emtpy string
@@ -1033,8 +1034,7 @@ package body GENERIC_CON_IO is
         LAST := STR'LAST;
 
         loop
-          GET_KEY_TIME (LAST_TIME, INFINITE_TIME, TRUE,
-                        EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+          GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, LAST_TIME);
           if EVENT /= ESC then
             -- No key ==> mouse or time out
             STAT := EVENT;
@@ -1133,8 +1133,7 @@ package body GENERIC_CON_IO is
         CURSOR (TRUE);
         REDRAW := FALSE;
         -- try to get a key
-        GET_KEY_TIME (LAST_TIME, INFINITE_TIME, TRUE,
-                      EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+        GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, LAST_TIME);
         -- hide cursor
         CURSOR (FALSE);
         if EVENT /= ESC then
