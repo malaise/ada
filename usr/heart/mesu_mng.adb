@@ -329,7 +329,8 @@ package body MESU_MNG is
               end if;
               -- Edit screen called
               exit PTG;
-            elsif PTG_RESULT.FIELD_NO = 26 then
+            elsif (PTG_RESULT.FIELD_NO = 0
+                   or else PTG_RESULT.FIELD_NO = 26) then
               -- Edit
               AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, LINE,
                                        AFPX.LINE_LIST_MNG.CURRENT);
