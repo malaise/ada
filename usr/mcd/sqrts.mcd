@@ -1,3 +1,5 @@
+# Displays square root of numbers
+# Loop
 [ i pushr 1 + i copyr dup "Sqrt(" put put ") = " put
   toreal sqrt putl pushle copye retacal ] copye
 

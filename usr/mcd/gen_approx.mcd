@@ -1,3 +1,5 @@
+# Generate data for approx: list of x, y
+
 # Check args
 [ "Error, expecting: x1 x2 dx func" putl ssize popn retall ] E popr
 ssize 4 /= E pushr ifcall

@@ -1,4 +1,4 @@
-# Multiplication table
+# Display Multiplication table
 # Error
 [ "Error, no or one positive argument expected" putl ssize popn retall ] E popr
 

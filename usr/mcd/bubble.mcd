@@ -15,7 +15,7 @@ pop
 1 I popr
 [
 I pushr N pushr > ifret
-# Check arg
+# Check arg, int or real
 dup isinte [ toreal ] ifcall
 dup isreal ~ E pushr ifcall
 # Store in reverse order (tos last)

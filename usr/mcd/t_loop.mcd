@@ -1,3 +1,5 @@
+# Test loop
+
 # Check 1 arg >= 0 or no arg (=> 10)
 [ "Error: N >= 0 or no argument expected." putl ssize popn retall ] pope
 ssize 1 > pushle copye ifcall

@@ -1,3 +1,5 @@
+# A percentage of B
+
 # Error message, check and store args
 [ "Error, 2 positive numbers expected." putl
 ssize popn retall ] E popr

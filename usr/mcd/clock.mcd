@@ -1,4 +1,4 @@
-# Clock display Hh:Mm
+# Clock display Mm/Dd-Hh:Mm
 
 # Arg error
 [ "Usage: Clock" putl ssize popn retall ] E popr

@@ -1,3 +1,4 @@
+# Display mlbx retry law
 # New_Delay = Prev_Delay + 10 * (5 ** No_Try)
 
 # Max tries, Delay, No_Try, Total_Delay

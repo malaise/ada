@@ -1,3 +1,5 @@
+# Compute the barycenter for a list of pairs (distance, weight)
+
 # Function to handle error
 [ "Usage: barycenter { <distance> <weight> }" putl ssize popn retall ] E popr
 

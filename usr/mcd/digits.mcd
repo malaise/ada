@@ -1,3 +1,5 @@
+# Displays the number of digits of the arg, using log
+
 # Error and quit
 4 format
 [ "Error, 1 positive argument expected" putl

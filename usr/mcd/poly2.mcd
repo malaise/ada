@@ -1,3 +1,5 @@
+# Power 2 polynom
+
 # Check 3 args
 7.014 format
 ssize 3 /= [ "Error. 3 arguments a b c expected" putl
@@ -5,7 +7,9 @@ ssize popn retall ] ifcall
 
 # Save a b c, 15 digits, title
 toreal c popr toreal b popr toreal a popr
-a pushr put " * X2 + " put b pushr put " * X + " put c pushr putl
+"  " put a pushr put " * X**2" putl
+"+ " put b pushr put " * X" putl
+"+ " put c pushr putl
 
 # a = 0
 # b = 0

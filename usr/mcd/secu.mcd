@@ -1,3 +1,5 @@
+# Compute the key of a social security number
+
 # Check 1 arg int len 13
 [ "Error. 1 int argument expected (13 digits)." putl
   ssize popn retall ] E popr
