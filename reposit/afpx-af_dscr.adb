@@ -134,7 +134,7 @@ begin
                   TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.INIT_FILE_NAME);
   exception
     when others =>
-      raise FILE_NOT_FOUND;
+      raise AFPX_FILE_NOT_FOUND;
   end;
 
   -- Read first descriptor
@@ -142,11 +142,11 @@ begin
     DSCR_IO.READ (DSCR_FILE, DSCRS, 1);
   exception
     when others =>
-      raise FILE_READ_ERROR;
+      raise AFPX_FILE_READ_ERROR;
   end;
 
   -- Check AFPX version
   if DSCRS(1).VERSION /= AFPX_TYP.AFPX_VERSION then
-    raise FILE_VERSION_ERROR;
+    raise AFPX_FILE_VERSION_ERROR;
   end if;
 end AF_DSCR;
