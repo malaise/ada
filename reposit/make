@@ -20,4 +20,5 @@ else
   cp afpx_bld /users/malaise/bin/
   # Restore view to ourself
   export ADA_VIEW=${OLD_ADA_VIEW}
+  rm b~*
 fi
