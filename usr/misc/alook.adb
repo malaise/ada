@@ -253,7 +253,7 @@ begin
     if Do_One (Argument.Get_Parameter (I)) then
       Ada.Text_Io.Put_Line (" *");
     else
-      Ada.Text_Io.PUT_LINE (" =");
+      Ada.Text_Io.Put_Line (" =");
     end if;
   end loop;
 end Look_95;

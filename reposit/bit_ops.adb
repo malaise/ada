@@ -14,40 +14,40 @@ package body Bit_Ops is
   function To_Long_Long_Integer is new Unchecked_Conversion
     (Source => Interfaces.Unsigned_64, Target => Long_Long_Integer);
 
-  function "AND" (Left, Right : Integer) return Integer is
+  function "And" (Left, Right : Integer) return Integer is
     Res : Integer;
   begin
     System.Bit_Ops.Bit_And (Left'Address, Left'Size,
                             Right'Address, Right'Size,
                             Res'Address);
     return Res;
-  end "AND";
+  end "And";
 
-  function "OR"  (Left, Right : Integer) return Integer is
+  function "Or"  (Left, Right : Integer) return Integer is
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
                             Right'Address, Right'Size,
                             Res'Address);
     return Res;
-  end "OR";
+  end "Or";
 
-  function "XOR" (Left, Right : Integer) return Integer is
+  function "Xor" (Left, Right : Integer) return Integer is
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
                             Right'Address, Right'Size,
                             Res'Address);
     return Res;
-  end "XOR";
+  end "Xor";
 
-  function "NOT" (Val : Integer) return Integer is
+  function "Not" (Val : Integer) return Integer is
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Not (Val'Address, Val'Size,
                             Res'Address);
     return Res;
-  end "NOT";
+  end "Not";
 
   function Shl (Val : Integer; Bits : Integer) return Integer is
   begin
@@ -59,40 +59,40 @@ package body Bit_Ops is
     return To_Integer(Interfaces.Shift_Right(To_Unsigned_32(Val), Bits));
   end Shr;
 
-  function "AND" (Left, Right : Long_Long_Integer) return Long_Long_Integer is
+  function "And" (Left, Right : Long_Long_Integer) return Long_Long_Integer is
     Res : Long_Long_Integer;
   begin
     System.Bit_Ops.Bit_And (Left'Address, Left'Size,
                             Right'Address, Right'Size,
                             Res'Address);
     return Res;
-  end "AND";
+  end "And";
 
-  function "OR"  (Left, Right : Long_Long_Integer) return Long_Long_Integer is
+  function "Or"  (Left, Right : Long_Long_Integer) return Long_Long_Integer is
     Res : Long_Long_Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
                             Right'Address, Right'Size,
                             Res'Address);
     return Res;
-  end "OR";
+  end "Or";
 
-  function "XOR" (Left, Right : Long_Long_Integer) return Long_Long_Integer is
+  function "Xor" (Left, Right : Long_Long_Integer) return Long_Long_Integer is
     Res : Long_Long_Integer;
   begin
     System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
                             Right'Address, Right'Size,
                             Res'Address);
     return Res;
-  end "XOR";
+  end "Xor";
 
-  function "NOT" (Val : Long_Long_Integer) return Long_Long_Integer is
+  function "Not" (Val : Long_Long_Integer) return Long_Long_Integer is
     Res : Long_Long_Integer;
   begin
     System.Bit_Ops.Bit_Not (Val'Address, Val'Size,
                             Res'Address);
     return Res;
-  end "NOT";
+  end "Not";
 
   function Shl (Val : Long_Long_Integer; Bits : Integer)
   return Long_Long_Integer is
@@ -109,3 +109,4 @@ package body Bit_Ops is
   end Shr;
 
 end Bit_Ops;
+
