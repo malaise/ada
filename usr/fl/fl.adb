@@ -46,9 +46,9 @@ begin
     TEXT_IO.PUT (NORMAL(INTEGER(TT.MINUTES), 2, GAP => '0'));
     if WITH_COST then
        TEXT_IO.PUT ("     This cost: ");
-       MY_IO.PUT(TMP_COST, AFT => 2, EXP => 0);
+       MY_IO.PUT(TMP_COST, FORE => 4, AFT => 2, EXP => 0);
        TEXT_IO.PUT ("  Total cost: ");
-       MY_IO.PUT_LINE(COST, AFT => 2, EXP => 0);
+       MY_IO.PUT_LINE(COST, FORE => 5, AFT => 2, EXP => 0);
     else
       TEXT_IO.NEW_LINE;
     end if;
