@@ -12,16 +12,21 @@ procedure T_Udp is
 
   Server_Port_Name : constant String := "test_udp";
 
-  subtype Message_Type is String (1 .. 80);
+  type Message_Type is record
+    Len : Positive;
+    Num : Positive;
+    Str : String (1 .. 80);
+  end record;
+
   Str : Constant String := "Ah que coucou!";
   Message : Message_Type;
-  Message_Len : Natural;
 
   procedure My_Send is new Udp.Send (Message_Type);
   procedure My_Receive is new Udp.Receive (Message_Type);
 
   procedure Call_Back (F : in X_Mng.File_Desc) is
     use type X_Mng.File_Desc;
+    Message_Len : Natural;
     Received : Boolean;
   begin
     if F /= Fd then
@@ -39,15 +44,26 @@ procedure T_Udp is
       My_Io.Put_Line (" receives nothing");
       return;
     end if;
-    My_Io.Put_Line (" receives: >" & Message(1 .. Message_Len) & "<");
+    My_Io.Put_Line (" receives: >"
+                   & Message.Str(1 .. Message.Len)
+                   & "< num "
+                   & Positive'Image(Message.Num));
     if not Server then
       return;
     end if;
     My_Io.Put_Line ("      Working");
     delay 5.0;
     My_Io.Put_Line ("      Replying");
-    My_Send (Soc, Message, Message_Len);
+    Message.Num := Message.Num + 1;
+    My_Send (Soc, Message);
   end Call_Back;
+
+  procedure Send is
+  begin
+    Message.Str (1 .. Str'Length) := Str;
+    Message.Len := Str'Length;
+    My_Send (Soc, Message, 30);
+  end Send;
 
 begin
 
@@ -73,9 +89,8 @@ begin
     Udp.Link_Dynamic (Soc);
     Udp.Set_Destination_Name_And_Service (Soc,
            False, Text_Handler.Value (Server_Name), Server_Port_Name);
-    Message_Len := Str'Length;
-    Message (1 .. Message_Len) := Str;
-    My_Send (Soc, Message, Message_Len);
+    Message.Num := 1;
+    Send;
   end if;
 
 
@@ -86,9 +101,7 @@ begin
       My_Io.Put_Line ("Timeout");
     end loop;
     if not Server then
-      Message_Len := Str'Length;
-      Message (1 .. Message_Len) := Str;
-      My_Send (Soc, Message, Message_Len);
+      Send;
     end if;
   end loop;
 
