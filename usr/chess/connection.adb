@@ -74,9 +74,6 @@ package body Connection is
   procedure Close is
   begin
     if Socket.Is_Open (Soc) then
-      if Debug.Get (Debug.Connection) then
-        Ada.Text_Io.Put_Line ("Closing");
-      end if;
       X_Mng.X_Del_Callback (Fd, True);
       Socket.Close (Soc);
     end if;
