@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Sys_Calls, Dynamic_List, Timers, X_Mng, My_Io;
 package body Tcp_Util is
 
@@ -718,6 +719,10 @@ package body Tcp_Util is
           My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
         end if;
         return False;
+      when others =>
+        if Debug_Overflow then
+          My_Io.Put_Line ("  Tcp_Util.Sending_Cb error");
+        end if;
     end;
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb resent");
@@ -749,15 +754,9 @@ package body Tcp_Util is
     procedure Send is new Socket.Send (Message_Type);
   begin
     Set_Debug (Debug_Overflow_Name, Debug_Overflow);
-    if Debug_Overflow then
-      My_Io.Put_Line ("  Tcp_Util.Send start");
-    end if;
     -- Try to send
     begin
       Send (Dscr, Message, Length);
-      if Debug_Overflow then
-        My_Io.Put_Line ("  Tcp_Util.Send done");
-      end if;
       return True;
     exception
       when Socket.Soc_Would_Block =>
@@ -765,12 +764,15 @@ package body Tcp_Util is
     end;
 
     -- Handle overflow : build and store rec
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Send oveflow");
+    end if;
     Rec.Dscr := Dscr;
     Rec.Fd := Socket.Fd_Of (Dscr);
     Rec.Cb := End_Of_Overflow_Cb;
     Sen_List_Mng.Insert (Sen_List, Rec);
     if Debug_Overflow then
-      My_Io.Put_Line ("  Tcp_Util.Send oveflow rec inserted at "
+      My_Io.Put_Line ("  Tcp_Util.Send rec inserted at "
                     & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
     end if;
 
@@ -780,8 +782,15 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Send Cb hooked");
     end if;
     return False;
+  exception
+    when Error:others =>
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Send exception "
+            & Ada.Exceptions.Exception_Name (Error));
+      end if;
+      raise;
   end Send;
-      
+
   -- Cancel overflow management and closes
   procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
