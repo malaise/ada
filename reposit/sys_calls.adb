@@ -105,7 +105,11 @@ package body Sys_Calls is
   end Rename;
 
 
-   -- Errno and associated string
+  -- Errno and associated string
+  Enoent : constant :=  2;
+  Eagain : constant := 11;
+  Ewouldblock : constant := Eagain;
+
   function Errno return Integer is
     function C_Get_Errno return Integer;
     pragma Import (C, C_Get_Errno, "__get_errno");
@@ -229,15 +233,22 @@ package body Sys_Calls is
     return 0;
   end Stdin;
 
+  function Stdout return File_Desc is
+  begin
+    return 1;
+  end Stdout;
+
+  function Stderr return File_Desc is
+  begin
+    return 2;
+  end Stderr;
+
 
   -- File status
   function C_File_Stat (File_Name : System.Address; Stat : System.Address)
                   return Integer;
   pragma Interface(C, C_File_Stat);
   pragma Interface_Name(C_File_Stat, "file_stat");
-
-  -- Errno for raising Name_Error, else raise Access_error
-  Enoent : constant := 2;
 
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
@@ -327,16 +338,23 @@ package body Sys_Calls is
   function C_Get_Immediate (Fd : Integer) return Integer;
   pragma Import (C, C_Get_Immediate, "get_immediate");
   procedure Get_Immediate (Fd : File_Desc;
-                           C         : out Character;
-                           Available : out Boolean) is
+                           Status : out Get_Status_List;
+                           C      : out Character) is
     Res : Integer;
   begin
+    C := Ascii.Nul;
+    Status := Error;
     Res := C_Get_Immediate (Integer(Fd));
     if Res = -1 then
-      Available := False;
-      C := Ascii.Nul;
+      if Errno = Ewouldblock then
+        Status := None;
+      else
+        Status := Error;
+      end if;
+    elsif Res = 0 then
+      Status := Closed;
     else
-      Available := True;
+      Status := Got;
       C := Character'Val(Res);
     end if;
   end Get_Immediate;

@@ -36,7 +36,9 @@ package Sys_Calls is
   type File_Desc_Kind_List is (Tty, 
     File, Dir, Link, Block_Device, Character_Device, Pipe, Socket, Unknown);
   function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List;
-  function Stdin return File_Desc;
+  function Stdin  return File_Desc;
+  function Stdout return File_Desc;
+  function Stderr return File_Desc;
 
   -- File kind (not tty)
   subtype File_Kind_List is File_Desc_Kind_List range File .. Unknown;
@@ -73,10 +75,15 @@ package Sys_Calls is
   function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean;
 
   -- Non blocking get of a character
-  -- (in Asynchronous tty or non blocking fd)
+  -- (from Asynchronous tty or non blocking fd)
+  -- If Status is Got then C is the got character
+  -- Else Status = None if no character available
+  --      Status = Closed if connection is closed (read -> 0)
+  --      Status = Error  in case of other error
+  type Get_Status_List is (Got, None, Closed, Error);
   procedure Get_Immediate (Fd : in File_Desc;
-                           C         : out Character;
-                           Available : out Boolean);
+                           Status : out Get_Status_List;
+                           C      : out Character);
 
   -- Exception (of File_Stat)
   Name_Error   : exception;
