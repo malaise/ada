@@ -92,6 +92,8 @@ package body Parser is
    Popr     => (Nosy, "B -> regA                     ", False),
    Copyr    => (Nosy, "B -> regA, push B             ", False),
    Pushr    => (Nosy, "push regA                     ", False),
+   Nextr    => (Nosy, "push next reg (RegA -> RegB)  ", False),
+   Prevr    => (Nosy, "push prev reg (RegB -> RegA)  ", False),
    Clearreg => (Nosy, "clear all registers           ", True),
 
    Pope     => (Nosy, "pop A push_extra A            ", False),

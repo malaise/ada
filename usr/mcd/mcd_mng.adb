@@ -110,6 +110,10 @@ package body Mcd_Mng is
     function  Retrieve (From_Reg : in Item_Rec) return Item_Rec;
 
     procedure Clear_All;
+
+    procedure Next (Reg : in out Item_Rec);
+    procedure Prev (Reg : in out Item_Rec);
+ 
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
     -- INVALID_REGISTER : exception;
 
@@ -432,6 +436,12 @@ package body Mcd_Mng is
         when Pushr =>
           -- A -> push content of reg A
           Pop(A); Push(Registers.Retrieve(A));
+        when Nextr =>
+          -- Reg A -> Reg B
+          Pop(A); Registers.Next(A); Push(A);
+        when Prevr =>
+          -- Reg A -> Reg B
+          Pop(A); Registers.Prev(A); Push(A);
         when Clearreg =>
           Registers.Clear_All;
 

@@ -63,6 +63,8 @@ package Mcd_Mng is
    Popr,
    Copyr,
    Pushr,
+   Nextr,
+   Prevr,
    Clearreg,
 
    Pope,

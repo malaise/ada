@@ -23,9 +23,20 @@ package body Registers is
       return Character'Pos(Reg.Val_Regi) -  Character'Pos('A') + 1
            + Character'Pos('z') -  Character'Pos('a') + 1;
     else
-       raise Invalid_Register;
+      raise Invalid_Register;
     end if;
   end Reg2Ind;
+
+  procedure Check_Reg (Reg : in Item_Rec) is
+  begin
+    if Reg.Kind /= Regi then
+      raise Invalid_Register;
+    end if;
+    if Reg.Val_Regi not in 'a' .. 'z'
+    and then Reg.Val_Regi not in 'A' .. 'Z' then
+      raise Invalid_Register;
+    end if;
+  end Check_Reg;
 
   procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec) is
   begin
@@ -54,6 +65,27 @@ package body Registers is
     end if;
     return Val;
   end Retrieve;
+
+  procedure Next (Reg : in out Item_Rec) is
+  begin
+    Check_Reg (Reg);
+    if Reg.Val_Regi in 'a' .. 'y' or else Reg.Val_Regi in 'A' .. 'Y' then
+      Reg.Val_Regi := Character'Succ(Reg.Val_Regi);
+    else
+      raise Invalid_Argument;
+    end if;
+  end Next;
+
+  procedure Prev (Reg : in out Item_Rec) is
+  begin
+    Check_Reg (Reg);
+    if Reg.Val_Regi in 'b' .. 'z' or else Reg.Val_Regi in 'B' .. 'Z' then
+      Reg.Val_Regi := Character'Pred(Reg.Val_Regi);
+    else
+      raise Invalid_Argument;
+    end if;
+  end Prev;
+
 
   procedure Clear_All is
   begin
