@@ -822,11 +822,20 @@ package body Channels is
       Dscr : Socket.Socket_Dscr;
       Msg : Bus_Message_Type;
       Len  : Natural;
+      use type Event_Mng.File_Desc;
     begin
-      if Bus_Dscr.Subscribed then
-        Dscr := Bus_Dscr.Rece_Dscr;
-      elsif Bus_Dscr.Joined then
-        Dscr := Bus_Dscr.Send_Dscr;
+      if Fd = Socket.Fd_Of (Bus_Dscr.Rece_Dscr) then
+        if Bus_Dscr.Subscribed then
+          Dscr := Bus_Dscr.Rece_Dscr;
+        else
+          Assertion.Assert (False, "Channel.Bus receiving on rece but not subscribed");
+        end if;
+      elsif Fd = Socket.Fd_Of (Bus_Dscr.Send_Dscr) then
+        if Bus_Dscr.Joined then
+          Dscr := Bus_Dscr.Send_Dscr;
+        else
+          Assertion.Assert (False, "Channel.Bus receiving on send but not joined");
+        end if;
       else
         Assertion.Assert (False, "Channel.Bus receiving but no bus");
       end if;
