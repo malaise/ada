@@ -1,0 +1,3 @@
+#!/bin/bash
+mmcdt  -f dms.mcd F popr A popr S popr D popr $1 S pushr call $2 S pushr call - D pushr call \
+F pushr call putl
