@@ -37,7 +37,7 @@ unsigned char draw[] = {0, 0, 0, 1, 0, 0, 0, \
                         1, 1, 1, 1, 1, 1, 1 };
 
 
-void put(void *line, char *string, int row, int column) {
+void put(void *line, const char *string, int row, int column) {
 
   (void) x_put_string (line, string, strlen(string), row, column);
 }
@@ -46,11 +46,11 @@ void title (void *line) {
 
   (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0, 0);
-  (void) put (line, T1, TITLE_LNE + 0, 2);
-  (void) put (line, T2, TITLE_LNE + 2, 2);
-  (void) put (line, T3, TITLE_LNE + 3, 2);
-  (void) put (line, T4, TITLE_LNE + 4, 2);
-  (void) put (line, T5, TITLE_LNE + 6, 2);
+  put (line, T1, TITLE_LNE + 0, 2);
+  put (line, T2, TITLE_LNE + 2, 2);
+  put (line, T3, TITLE_LNE + 3, 2);
+  put (line, T4, TITLE_LNE + 4, 2);
+  put (line, T5, TITLE_LNE + 6, 2);
 }
 
 int main(int argc, char *argv[]) 

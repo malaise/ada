@@ -631,7 +631,7 @@ extern int soc_host_name_of (const soc_host *p_host, char *host_name,
   struct hostent *host_struct;
 
   /* Read name of host */
-  host_struct = gethostbyaddr((void*)p_host, sizeof(*p_host), AF_INET);
+  host_struct = gethostbyaddr( (const char*)p_host, sizeof(*p_host), AF_INET);
   if (host_struct == (struct hostent *)NULL) {
     return (SOC_NAME_NOT_FOUND);
   }

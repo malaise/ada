@@ -4,7 +4,7 @@
 #include "socket_net.h"
 
 
-char* ns_proto[3] = {"udp", "tcp", "tcp"};
+const char* ns_proto[3] = {"udp", "tcp", "tcp"};
 typedef enum {not_connected, connecting, connected} connect_state;
 
 /* Structure pointed by the token */

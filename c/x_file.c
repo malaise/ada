@@ -4,7 +4,7 @@
 #define FILE_LOCAL
 #include "x_file.h"
 
-static char *default_color_name[NBRE_COLOR]={
+static const char *default_color_name[NBRE_COLOR]={
   "black",      "blue",
   "dark green", "cyan",
   "red",        "magenta",
@@ -14,7 +14,7 @@ static char *default_color_name[NBRE_COLOR]={
   "yellow",     "white"
  };
 
-static char *default_font_name[NBRE_FONT] = {
+static const char *default_font_name[NBRE_FONT] = {
   "8x13", "8x13bold",
   "9x15", "9x15bold",
    "-b&h-lucidatypewriter-medium-r-normal-sans-18-180-75-75-m-110-iso8859-1",
