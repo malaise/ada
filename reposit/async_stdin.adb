@@ -10,24 +10,31 @@ package body Async_Stdin is
   function Fd_Callback (Fd : in Sys_Calls.File_Desc;
                         Read : in Boolean) return Boolean is
     C : Character;
-    A : Boolean;
+    Status : Sys_Calls.Get_Status_List;
+    Result : Boolean;
   begin
     loop
-      Sys_Calls.Get_Immediate (Fd, C, A);
-      if not A then
-        -- No more char
-        return False;
-      end if;
-      -- Dump character code
-      -- Sys_Calls.Put_Line_Error (Integer'Image(Character'Pos(C)));
-      Text_Handler.Append (Txt, C);
-      exit when Text_Handler.Length (Txt) = Max
-      or else C < ' ';
+      Sys_Calls.Get_Immediate (Fd, Status, C);
+      case Status is
+        when Sys_Calls.Got =>
+          -- Dump character code
+          -- Sys_Calls.Put_Line_Error (Integer'Image(Character'Pos(C)));
+          Text_Handler.Append (Txt, C);
+          exit when Text_Handler.Length (Txt) = Max
+          or else C < ' ';
+        when Sys_Calls.None =>
+          -- No more char
+          return False;
+        when Sys_Calls.Closed | Sys_Calls.Error =>
+          -- Call Cb with empty txt
+          Text_Handler.Empty (Txt);
+          exit;
+      end case;
     end loop;
 
-    A := Cb(Text_Handler.Value (Txt));
+    Result := Cb (Text_Handler.Value (Txt));
     Text_Handler.Empty (Txt);
-    return A;
+    return Result;
   end;
 
   -- Set asynchronous mode for stdin
@@ -63,13 +70,16 @@ package body Async_Stdin is
         else
           Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
         end if;
+      else
+        Result := True;
       end if;
       if Result then
         Cb := User_Callback;
         Max := Max_Chars;
+        Text_Handler.Empty (Txt);
         Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True, Fd_Callback'access);
       else
-        raise Not_A_Tty;
+        raise Error;
       end if;
     end if;
   end Set_Async;
