@@ -13,7 +13,7 @@ procedure SOKOBAN is
 
   procedure USAGE is
   begin
-    MY_IO.PUT_LINE ("Usage : SOKOBAN [frame_number]");
+    MY_IO.PUT_LINE ("Usage : sokoban [ <frame_number> | rnd ]");
     MY_IO.PUT_LINE (" Frames are from 1 to 50");
   end USAGE;
 
@@ -46,3 +46,4 @@ exception
     delay 2.0;
     raise;
 end SOKOBAN;
+
