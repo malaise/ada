@@ -100,30 +100,29 @@ package body Sync_Mng is
 
   Delay_Per_Kb : Natural := 0;
 
-  procedure Set_Delay is
+  procedure Init is
     Default_Delay_Per_Kb : constant Natural := 1;
-    Val : String (1 .. 4);
+    Dur : Duration;
+    Val : String (1 .. 5);
     Set, Trunc : Boolean;
     Len : Natural;
   begin
-    if Delay_Per_Kb /= 0 then
-      return;
-    end if;
     Sys_Calls.Getenv ("DICTIO_DELAY_PER_KB", Set, Trunc, Val, Len);
     if not Set or else Len = 0 or else Trunc then
       Delay_Per_Kb := Default_Delay_Per_Kb;
     else
       begin
-        Delay_Per_Kb := Positive'Value (Val(1 .. Len));
+        Dur := Duration'Value (Val(1 .. Len));
+        Delay_Per_Kb := Positive (Dur * 1000.0);
       exception
         when others =>
           Delay_Per_Kb := Default_Delay_Per_Kb;
       end;
     end if;
     if Debug.Level_Array(Debug.Sync) then
-      Debug.Put ("Sync: Delay per Kb set to" & Delay_Per_Kb'Img & " ms");
+      Debug.Put ("Sync.Init: Delay per Kb set to " & Delay_Per_Kb'Img & " ms");
     end if;
-  end Set_Delay;
+  end Init;
 
   package Sync_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
   Sync_List : Sync_List_Mng.List_Type;
@@ -304,7 +303,6 @@ package body Sync_Mng is
     use type Args.Channel_Mode_List;
   begin
     Tid := Timers.No_Timer;
-    Set_Delay;
 
     -- Check sync not cancelled during init
     if Sending_Status /= Init then

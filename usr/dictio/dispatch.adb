@@ -33,6 +33,7 @@ package body Dispatch is
 
     Event_Mng.Pause (200);
 
+    Sync_Mng.Init;
     Status.Set (Handle_New_Status'Access);
     Intra_Dictio.Set_Read_Cb (New_Intra'Access);
     Status.Set (Status.Init);

@@ -3,6 +3,8 @@ package Sync_Mng is
 
   type End_Of_Sync_Callback is access procedure;
 
+  procedure Init;
+
   -- Start a sync reception sequence
   procedure Start;
   -- Inform that a sync has been received

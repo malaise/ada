@@ -164,25 +164,28 @@ package body Client_Mng is
   Stable_Delay : Duration := 0.0;
 
   procedure Set_Delay is
-    Default_Stable_Delay : constant Duration := 0.2;
+    Default_Val_Ms : constant Positive := 200;
+    Val_Ms : Positive;
     Val : String (1 .. 5);
     Set, Trunc : Boolean;
     Len : Natural;
   begin
     Sys_Calls.Getenv ("DICTIO_STABLE_DELAY", Set, Trunc, Val, Len);
     if not Set or else Len = 0 or else Trunc then
-      Stable_Delay := Default_Stable_Delay;
+      Val_Ms := Default_Val_Ms;
     else
       begin
         Stable_Delay := Duration'Value (Val(1 .. Len));
+        Val_Ms := Positive (Stable_Delay * 1000);
       exception
         when others =>
-          Stable_Delay := Default_Stable_Delay;
+          Val_Ms := Default_Val_Ms;
       end;
     end if;
     if Debug.Level_Array(Debug.Client) then
-      Debug.Put ("Client: Stable delay set to" & Stable_Delay'Img & " s");
+      Debug.Put ("Client: Stable delay set to " & Val_Ms'Img & " ms");
     end if;
+    Stable_Delay := Duration(Val_Ms) / 1000.0;
   end Set_Delay;
 
 
