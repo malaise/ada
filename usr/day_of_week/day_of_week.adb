@@ -9,12 +9,14 @@ procedure DAY_OF_WEEK is
   YEAR : CALENDAR.YEAR_NUMBER;
   DELTA_DATE_0 : PERPET.DELTA_REC;
   DELTA_DATE_1 : PERPET.DELTA_REC;
+  DAY_NO : PERPET.DAY_RANGE;
+  TH  : STRING (1 .. 2);
 
   procedure USAGE is
   begin
-    TEXT_IO.PUT_LINE("Syntax error. Usage: " & ARGUMENT.GET_PROGRAM_NAME
+    TEXT_IO.PUT_LINE("Syntax error or invalid date.");
+    TEXT_IO.PUT_LINE(" Usage: " & ARGUMENT.GET_PROGRAM_NAME
                  & " [ dd/mm/yyyy ]");
-    TEXT_IO.PUT_LINE(" or invalid date.");
   end USAGE;
 
   function IS_DIGIT (C : CHARACTER) return BOOLEAN is
@@ -105,6 +107,23 @@ begin
   end;
 
 
+  -- Compute sentence
+  DAY_NO := DELTA_DATE_0.DAYS + 1;
+  if (DAY_NO rem 100) / 10 /= 1 then
+    case DAY_NO rem 10 is
+      when 1 =>
+        TH := "st";
+      when 2 =>
+        TH := "nd";
+      when 3 =>
+        TH := "rd";
+      when others =>
+        TH := "th";
+    end case;
+  else
+    TH := "th";
+  end if;
+
   -- Display result
   TEXT_IO.PUT_LINE (TEXT_HANDLER.VALUE(TXT) & " is a "
        & PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T))
@@ -112,8 +131,9 @@ begin
        & PERPET.WEEK_OF_YEAR_RANGE'IMAGE(PERPET.GET_WEEK_OF_YEAR(T))
        & ",");
   TEXT_IO.PUT_LINE (" the"
-       & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_0.DAYS + 1)
-       & "th day of the year,"
+       & PERPET.DAY_RANGE'IMAGE(DAY_NO) 
+       & TH
+       & " day of the year,"
        & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_1.DAYS)
        & " days remaining.");
 
