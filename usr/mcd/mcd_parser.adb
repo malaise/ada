@@ -7,9 +7,6 @@ package body PARSER is
 
   TXT, TXTS : TEXT_HANDLER.TEXT(INPUT_DISPATCHER.MAX_STRING_LG);
 
-  -- Are we generating a "1 RET" due to end of flow
-  IN_EOF : BOOLEAN := FALSE;
-
   subtype ONE_WORD is STRING(1 .. 2);
   WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_WORD :=
   (ADD     => "+ ",
@@ -57,7 +54,10 @@ package body PARSER is
    PUSHR   => "<-",
 
    CALL    => "@ ",
+   IFCALL  => "?@",
    RET     => "_ ",
+   RETN    => "__",
+   IFRETN  => "?_",
 
    PUT     => ", ",
    NEWL    => ": ",
@@ -76,14 +76,6 @@ package body PARSER is
     L : POSITIVE;
   begin
 
-    if IN_EOF then
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
-        TEXT_IO.PUT_LINE ("Parser: Ret In Eof");
-      end if;
-      IN_EOF := FALSE;
-      return (KIND => OPER, VAL_OPER => RET);
-    end if;
-    
     TEXT_HANDLER.SET (TXT, INPUT_DISPATCHER.NEXT_WORD);
     if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
       TEXT_IO.PUT_LINE ("Parser: Getting >"
@@ -93,10 +85,9 @@ package body PARSER is
     -- EOF
     if TEXT_HANDLER.EMPTY(TXT) then
       if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
-        TEXT_IO.PUT_LINE ("Parser: 1 In Eof >");
+        TEXT_IO.PUT_LINE ("Parser: Eof >");
       end if;
-      IN_EOF := TRUE;
-      return (KIND => INTE, VAL_INTE => 1);
+      return (KIND => OPER, VAL_OPER => RET);
     end if;
 
     C := TEXT_HANDLER.VALUE(TXT)(1);

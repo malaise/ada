@@ -4,6 +4,14 @@ separate (MCD_MNG)
 package body OPERATIONS is
   use MATH;
 
+  function IS_TRUE (X : ITEM_REC) return BOOLEAN is
+  begin
+    if X.KIND /= BOOL then
+      raise INVALID_ARGUMENT;
+    end if;
+    return X.VAL_BOOL;
+  end IS_TRUE;
+
   function IS_INTE_OR_REAL (X : ITEM_REC) return BOOLEAN is
   begin
     return X.KIND = INTE or else X.KIND = REAL;

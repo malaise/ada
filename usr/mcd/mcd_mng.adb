@@ -20,6 +20,8 @@ package body MCD_MNG is
 
   package OPERATIONS is
 
+    function IS_TRUE (X : ITEM_REC) return BOOLEAN;
+
     -- INTE,INTE->INTE or REAL,REAL->REAL
     function ADD     (L, R : ITEM_REC) return ITEM_REC;
     function SUB     (L, R : ITEM_REC) return ITEM_REC;
@@ -117,7 +119,60 @@ package body MCD_MNG is
 
   procedure NEW_ITEM (ITEM : in ITEM_REC; THE_END : out BOOLEAN) is
     use STACK;
-    L : INTEGER;
+
+    procedure DO_CALL is
+    begin
+      POP(A);
+      if A.KIND /= CHRS then
+        raise INVALID_ARGUMENT;
+      end if;
+      if CALL_STACK.LEVEL /= 0 then
+        -- Save contect;
+        TEXT_HANDLER.SET(CALL_ENTRY, INPUT_DISPATCHER.GET_REMAINING);
+        CALL_STACK.PUSH (TEXT_HANDLER.VALUE(CALL_ENTRY));
+      else
+        -- Dummy context
+        CALL_STACK.PUSH ("");
+      end if;
+      -- Call
+      if A.VAL_LEN = 0 then
+        -- Empty subprogram : not stdin
+        INPUT_DISPATCHER.SET_INPUT(" ");
+      else
+        INPUT_DISPATCHER.SET_INPUT(A.VAL_TEXT(1 .. A.VAL_LEN));
+      end if;
+    end DO_CALL;
+
+    procedure DO_RET is
+      L : INTEGER;
+    begin
+      POP(A);
+      -- has to be INTE and val NATURAL
+      begin
+        L := NATURAL(A.VAL_INTE);
+      exception
+        when others => raise INVALID_ARGUMENT;
+      end;
+      if L = 0 then
+        -- Exit
+        THE_END := TRUE;
+        return;
+      end if;
+      -- Can return by one more than level
+      if L - 1 > CALL_STACK.LEVEL then
+        raise INVALID_ARGUMENT;
+      elsif L - 1 = CALL_STACK.LEVEL then
+        THE_END := TRUE;
+        return;
+      end if;
+      -- Return N times
+      for I in reverse 1 .. A.VAL_INTE loop
+        -- Restart form previous context
+        TEXT_HANDLER.SET(CALL_ENTRY, CALL_STACK.POP);
+      end loop;
+      INPUT_DISPATCHER.SET_INPUT(TEXT_HANDLER.VALUE(CALL_ENTRY));
+    end DO_RET;
+
   begin
     -- Default, except RET(0)
     THE_END := FALSE;
@@ -203,51 +258,27 @@ package body MCD_MNG is
 
         -- These ones are subprogram
         when CALL =>
+          DO_CALL;
+        when IFCALL =>
           POP(A);
-          if A.KIND /= CHRS then
-            raise INVALID_ARGUMENT;
+          POP(B);
+          if OPERATIONS.IS_TRUE(B) then
+            PUSH(A);
+            DO_CALL;
           end if;
-          if CALL_STACK.LEVEL /= 0 then
-            -- Save contect;
-            TEXT_HANDLER.SET(CALL_ENTRY, INPUT_DISPATCHER.GET_REMAINING);
-            CALL_STACK.PUSH (TEXT_HANDLER.VALUE(CALL_ENTRY));
-          else
-            -- Dummy context
-            CALL_STACK.PUSH ("");
-          end if;
-          -- Call
-          if A.VAL_LEN = 0 then
-            -- Empty subprogram : not stdin
-            INPUT_DISPATCHER.SET_INPUT(" ");
-          else
-            INPUT_DISPATCHER.SET_INPUT(A.VAL_TEXT(1 .. A.VAL_LEN));
-          end if;
+
         when RET =>
+          PUSH( (KIND => INTE, VAL_INTE => 1) );
+          DO_RET;
+        when RETN =>
+          DO_RET;
+        when IFRETN =>
           POP(A);
-          -- has to be INTE and val NATURAL
-          begin
-            L := NATURAL(A.VAL_INTE);
-          exception
-            when others => raise INVALID_ARGUMENT;
-          end;
-          if L = 0 then
-            -- Exit
-            THE_END := TRUE;
-            return;
+          POP(B);
+          if OPERATIONS.IS_TRUE(B) then
+            PUSH(A);
+            DO_RET;
           end if;
-          -- Can return by one more than level
-          if L - 1 > CALL_STACK.LEVEL then
-            raise INVALID_ARGUMENT;
-          elsif L - 1 = CALL_STACK.LEVEL then
-            THE_END := TRUE;
-            return;
-          end if;
-          -- Return N times
-          for I in reverse 1 .. A.VAL_INTE loop
-            -- Restart form previous context
-            TEXT_HANDLER.SET(CALL_ENTRY, CALL_STACK.POP);
-            INPUT_DISPATCHER.SET_INPUT(TEXT_HANDLER.VALUE(CALL_ENTRY));
-          end loop;
 
         -- PUTs
         when PUT =>

@@ -5,70 +5,60 @@ package MCD_MNG is
   type ITEM_KIND_LIST is (INTE, REAL, BOOL, CHRS, REGI, OPER);
 
   type OPERATOR_LIST is (
-   -- Number, number -> number
-   ADD,      -- "+"
-   SUB,      -- "-"
-   MULT,     -- "*"
-   DIV,      -- "/"
-   REMIND,   -- "%"
-   POW,      -- "**"
-   SWAP,     -- "<>"
+   ADD,
+   SUB,
+   MULT,
+   DIV,
+   REMIND,
+   POW,
+   SWAP,
 
-   BITAND,   -- "&&"
-   BITOR,    -- "||"
-   BITXOR,   -- "^^"
+   BITAND,
+   BITOR,
+   BITXOR,
 
-   SHL,      -- "<<"
-   SHR,      -- ">>"
+   SHL,
+   SHR,
    
-   -- Number -> number
-   MINUS,    -- "+-"
-   BITNEG,   -- "~~"
+   MINUS,
+   BITNEG,
 
-   -- Number, number -> boolean
-   EQUAL,    -- "="
-   DIFF,     -- "/="
-   GREATER,  -- ">"
-   SMALLER,  -- "<"
-   GREATEQ,  -- ">="
-   SMALLEQ,  -- "<="
+   EQUAL,
+   DIFF,
+   GREATER,
+   SMALLER,
+   GREATEQ,
+   SMALLEQ,
 
-   -- INTE <-> REAL
-   TOREAL,   -- "$"
-   TOINTE,   -- "!"
+   TOREAL,
+   TOINTE,
 
-    -- Boolean, boolean -> boolean
-   BOLAND,   -- "&"
-   BOLOR,    -- "|"
-   BOLXOR,   -- "^"
+   BOLAND,
+   BOLOR,
+   BOLXOR,
 
-   -- Boolean -> boolean
-   BOLNEG,   -- "~"
+   BOLNEG,
 
-   -- Operand -> operand, operand
-   DUP,      -- "><"
+   DUP,
 
-   -- Nothing
-   POP,      -- "--"
+   POP,
 
-   -- Boolean, operand, operand -> operand
-   IFTE,     -- "?"
+   IFTE,
   
-   -- Pop in / Push from register
-   POPR,     -- "->"
-   PUSHR,    -- "<-"
+   POPR,
+   PUSHR,
 
-   -- -> Number
-   SSIZE,    -- "."
+   SSIZE,
 
-   -- Exec Subprog, return N times
-   CALL,     -- "@"
-   RET,      -- "_"
+   CALL,
+   IFCALL,
+   RET,
+   RETN,
+   IFRETN,
 
-   -- Print (with new_line)
-   PUT,      -- ","
-   NEWL,     -- ":"
-   PUTL      -- ";"
+   PUT,
+   NEWL,
+   PUTL
    );
 
 
