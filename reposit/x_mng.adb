@@ -397,6 +397,20 @@ package body X_Mng is
   end Dispatcher;
 
 
+  procedure Set_Debug is
+    Set : Boolean;
+    Tru : Boolean;
+    Val : String (1 .. 1);
+    Len : Natural;
+  begin
+    Sys_Calls.Getenv (Debug_Var_Name, Set, Tru, Val, Len);
+    if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
+      Debug := True;
+    end if;
+  exception
+    when others =>
+      null;
+  end Set_Debug;
 
   ------------------------------------------------------------------
   ------------------------ T H E   C A L L S -----------------------
@@ -413,21 +427,7 @@ package body X_Mng is
         raise X_Failure;
       end if;
 
-      declare
-        Set : Boolean;
-        Tru : Boolean;
-        Val : String (1 .. 1);
-        Len : Natural;
-      begin
-        Sys_Calls.Getenv (Debug_Var_Name, Set, Tru, Val, Len);
-        if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
-          Debug := True;
-        end if;
-      exception
-        when others =>
-          null;
-      end;
-
+      Set_Debug;
       Dispatcher.Start;
       Initialised := True;
     end if;
@@ -1576,6 +1576,7 @@ package body X_Mng is
     if Initialised  then
       raise X_Failure;
     end if;
+    Set_Debug;
     if Timeout_Ms < 0 then
       Select_Result := Xx_Select (Timers.Infinite_Seconds);
     else
