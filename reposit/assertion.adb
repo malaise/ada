@@ -1,0 +1,74 @@
+with Ada.Calendar;
+with Argument, Date_Image, Sys_Calls;
+package body Assertion is
+
+  -- Init (getenv) done?
+  Init_Done : Boolean := False;
+
+  Action_Name : constant String := "ASSERT_ACTION";
+  type Action_List is (Ignore, Put_Trace, Raise_Exception);
+  Action : Action_List;
+
+  procedure Init is
+    Action_Str : String (1 .. 5);
+    Set, Trunc : Boolean;
+    Len : Natural;
+  begin
+    if Init_Done then
+      return;
+    end if;
+    -- Set Action according to env variable Action_Name
+    Action := Ignore;
+    Init_Done := True;
+    Sys_Calls.Getenv (Action_Name, Set, Trunc, Action_Str, Len);
+    if not Set or else Trunc or else Len /= Action_Str'Length then
+      return;
+    end if;
+    if Action_Str = "TRACE" then
+      Action := Put_Trace;
+    elsif Action_Str = "RAISE" then
+      Action := Raise_Exception;
+    end if;
+  end Init;
+
+    
+  -- Do nothing if What is True,
+  -- else check environment variable ASSERT_ACTION
+  --  If set to TRACE, trace assertion error
+  --  If set to RAISE, trace and raise Assert_Error
+  --  Else do nothing
+  procedure Assert (What : in Boolean; Trace : in String := "") is
+  begin
+    if What then
+      -- Assertion is True
+      return;
+    end if;
+    if not Init_Done then
+      -- Init is necessary
+      Init;
+    end if;
+    if Action = Ignore then
+      -- Action is to ignore False assertion
+      return;
+    end if;
+
+    -- Trace
+    Sys_Calls.Put_Error (Date_Image(Ada.Calendar.Clock)
+                       & " - " & Argument.Get_Program_Name
+                       & ", Assertion failed");
+    if Trace /= "" then
+      Sys_Calls.Put_Error (": " & Trace );
+    end if;
+    Sys_Calls.Put_Line_Error (".");
+
+    if Action = Put_Trace then
+      -- Action is only to log False assertion
+      return;
+    end if;
+
+    -- Action is to raise exception
+    raise Assert_Error;
+  end Assert;
+
+end Assertion;
+
