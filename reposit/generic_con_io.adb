@@ -686,16 +686,6 @@ package body GENERIC_CON_IO is
       end loop;
     end NEW_LINE;
 
-    -- Take first character of keyboard buffer (no echo) or refresh event
-    procedure PAUSE is
-      KEY     : NATURAL;
-      IS_CHAR : BOOLEAN;
-      CTRL    : BOOLEAN;
-      SHIFT   : BOOLEAN;
-    begin
-      GET_KEY(KEY, IS_CHAR, CTRL, SHIFT);
-    end PAUSE;
-
     procedure NEXT_X_EVENT (TIMEOUT_MS : in out INTEGER;
                             X_EVENT : out X_MNG.EVENT_KIND) is
       EVENT : BOOLEAN;
@@ -818,57 +808,6 @@ package body GENERIC_CON_IO is
       SHIFT := LOC_SHIFT;
     end GET_X_KEY;
 
-    -- Gives first key code of keyboard buffer, (waits if it is empty)
-    -- no echo
-    procedure GET_KEY (KEY     : out NATURAL;
-                       IS_CHAR : out BOOLEAN;
-                       CTRL    : out BOOLEAN;
-                       SHIFT   : out BOOLEAN) is
-      X_EVENT : X_MNG.EVENT_KIND;
-      TIMEOUT : INTEGER := -1;
-      use X_MNG;
-    begin
-      if not INIT_DONE then
-        raise NOT_INIT;
-      end if;
-      -- Wait for keyboard
-      loop
-        NEXT_X_EVENT (TIMEOUT, X_EVENT);
-        if X_EVENT = X_MNG.REFRESH then
-          KEY := 0;
-          IS_CHAR := TRUE;
-          CTRL := FALSE;
-          SHIFT := FALSE;
-          return;
-        end if;
-        exit when X_EVENT = X_MNG.KEYBOARD;
-      end loop;
-
-      GET_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
-    end GET_KEY;
-        
-
-    -- Gets first character (echo)
-    -- On refresh event ASCII.NUL is retuned (no echo)
-    function GET (NAME : WINDOW := SCREEN) return CHARACTER is
-      KEY     : NATURAL;
-      IS_CHAR : BOOLEAN;
-      CTRL    : BOOLEAN;
-      SHIFT   : BOOLEAN;
-      CHAR    : CHARACTER;
-    begin
-      loop
-        GET_KEY(KEY, IS_CHAR, CTRL, SHIFT);
-        exit when IS_CHAR and then not CTRL and then not SHIFT;
-      end loop;
-      CHAR := CHARACTER'VAL(KEY);
-      if KEY /= 0 then
-        PUT(CHAR, NAME);
-      end if;
-      return CHAR;
-    end GET;
-
-
     -- check if a key is available until a certain time.
     procedure GET_KEY_TIME (CHECK_BREAK : in BOOLEAN;
                             EVENT       : out EVENT_LIST;
@@ -942,6 +881,34 @@ package body GENERIC_CON_IO is
 
     end GET_KEY_TIME;
 
+    -- Gives first key code of keyboard buffer, (waits if it is empty)
+    -- no echo
+    procedure GET_KEY (KEY     : out NATURAL;
+                       IS_CHAR : out BOOLEAN;
+                       CTRL    : out BOOLEAN;
+                       SHIFT   : out BOOLEAN) is
+      EVENT : EVENT_LIST;
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      -- Wait for keyboard
+      loop
+        GET_KEY_TIME(FALSE, EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+        if EVENT = REFRESH then
+          KEY := 0;
+          IS_CHAR := TRUE;
+          CTRL := FALSE;
+          SHIFT := FALSE;
+          return;
+        elsif EVENT = ESC then
+          -- A key
+          return;
+        end if;
+      end loop;
+    end GET_KEY;
+        
+
     -- Gets a string of at most width characters
     procedure GET (STR        : out STRING;
                    LAST       : out NATURAL;
@@ -985,7 +952,7 @@ package body GENERIC_CON_IO is
       CTRL, SHIFT   : BOOLEAN;
       REDRAW        : BOOLEAN;
       FIRST_POS     : constant SQUARE := NAME.CURRENT_POS;
-      LAST_TIME     : DELAY_REC(DELAY_EXP);
+      LAST_TIME     : DELAY_REC;
       EVENT         : EVENT_LIST;
 
       function PARSE return NATURAL is
@@ -1285,6 +1252,57 @@ package body GENERIC_CON_IO is
        end if;
       end loop;
     end PUT_THEN_GET;
+
+    -- Take first character of keyboard buffer (no echo) or refresh event
+    procedure PAUSE is
+      STR  : STRING(1 .. 0);
+      LAST : NATURAL;
+      STAT : CURS_MVT;
+      POS  : POSITIVE;
+      INS  : BOOLEAN;
+    begin
+      loop
+        GET(STR, LAST, STAT, POS, INS);
+        exit when STAT /= MOUSE_BUTTON;
+      end loop;
+    end PAUSE;
+
+
+    -- Gets first character (echo)
+    -- No echo for RET, ESC, BREAK and REFRESH where
+    --  ASCII.CR, ESC, EOT and NUL are returned respectively
+    -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
+    --  discarded (get does not return).
+    function GET (NAME : WINDOW := SCREEN) return CHARACTER is
+      STR  : STRING(1 .. 1);
+      LAST : NATURAL;
+      STAT : CURS_MVT;
+      POS  : POSITIVE;
+      INS  : BOOLEAN;
+    begin
+      loop
+        GET(STR, LAST, STAT, POS, INS, NAME);
+        case STAT is
+          when UP .. RIGHT | TAB .. STAB =>
+            -- Cursor movement
+            null;
+          when FULL =>
+            -- Character input
+            return STR(1);
+          when RET =>
+            return ASCII.CR;
+          when ESC =>
+            return ASCII.ESC;
+          when BREAK =>
+            return ASCII.EOT;
+          when REFRESH =>
+            return ASCII.NUL;
+          when MOUSE_BUTTON | TIMEOUT =>
+            -- Ignore mouse. Timeout impossible.
+            null;
+        end case;
+      end loop;
+    end GET;
 
     procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN) is
     begin
