@@ -1,6 +1,7 @@
 with CALENDAR, TEXT_IO;
 with BIG_CON_IO, NORMAL, X_MNG, UPPER_CHAR;
 package body CURVE is
+  use MATH;
 
   package P_IO is new TEXT_IO.FLOAT_IO (T_COORDINATE);
 

@@ -1,4 +1,4 @@
-with SORTS;
+with MATH, SORTS;
 package body POINTS is
 
   subtype T_RANGE is POSITIVE range 1 .. MAX_NUMBER;
@@ -13,6 +13,7 @@ package body POINTS is
   STORAGE : T_STORAGE;
 
   function LT (PL, PR : in P_T_ONE_POINT) return BOOLEAN is
+    use MATH;
   begin
     return PL.X < PR.X or else
          (PL.X = PR.X and then PL.Y < PR.Y);

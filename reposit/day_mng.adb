@@ -1,4 +1,5 @@
 with MATH;
+use MATH;
 package body DAY_MNG is
 
   MIN_IN_HOR : constant := 60;

@@ -1,5 +1,5 @@
 with SEQUENTIAL_IO;
-with DIRECTORY, TEXT_HANDLER, BIT_OPS;
+with DIRECTORY, TEXT_HANDLER, BIT_OPS, MATH;
 package body FILE is
 
   SEP : constant CHARACTER := '/';
@@ -17,6 +17,7 @@ package body FILE is
     SIZE : NATURAL;
     FILE : FILE_TYPE;
     MAGIC_POINT : POINTS.P_T_ONE_POINT;
+    use MATH;
   begin
     begin
       OPEN (FILE, IN_FILE, NAME);

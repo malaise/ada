@@ -14,6 +14,7 @@ function NORMAL (I : INTEGER; LEN : POSITIVE; RIGHT : BOOLEAN := TRUE;
   L : POSITIVE := INTEGER'IMAGE(I)'LAST;
   SI : STRING (1 .. L) :=  INTEGER'IMAGE(I);
   SM : STRING (1 .. LEN);
+  use MATH;
 begin
   -- skip first char if space
   if SI(1) = ' ' then
