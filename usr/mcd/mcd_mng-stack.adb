@@ -26,11 +26,13 @@ package body STACK is
   end PUSH;
 
   procedure POP (ITEM : out ITEM_REC) is
+    LITEM : ITEM_REC;
   begin
-    STACK_LIST.GET(LIST, ITEM, STACK_LIST.PREV);
+    STACK_LIST.GET(LIST, LITEM, STACK_LIST.PREV);
+    ITEM := LITEM;
     if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
       TEXT_IO.PUT ("Stack: Poping ");
-      DEBUG.PUT (ITEM);
+      DEBUG.PUT (LITEM);
       TEXT_IO.NEW_LINE;
     end if;
   exception
@@ -39,11 +41,13 @@ package body STACK is
   end POP;
 
   procedure READ (ITEM : out ITEM_REC) is
+    LITEM : ITEM_REC;
   begin
-    STACK_LIST.READ(LIST, ITEM, STACK_LIST.CURRENT);
+    STACK_LIST.READ(LIST, LITEM, STACK_LIST.CURRENT);
+    ITEM := LITEM;
     if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
       TEXT_IO.PUT ("Stack: Reading ");
-      DEBUG.PUT (ITEM);
+      DEBUG.PUT (LITEM);
       TEXT_IO.NEW_LINE;
     end if;
   exception
