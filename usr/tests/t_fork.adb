@@ -9,20 +9,16 @@ procedure T_Fork is
 
   Done : Boolean := False;
 
-  procedure Sig_Cb is
-    Sig_Kind : Event_Mng.Signal_Kind_List;
-    Death_Dscr : Sys_Calls.Death_Rec;
-    use type Event_Mng.Signal_Kind_List, Sys_Calls.Death_Cause_List;
+  procedure Sig_Term_Cb is
   begin
-    Sig_Kind := Event_Mng.Get_Signal_Kind;
-    if Sig_Kind = Event_Mng.Terminate_Sig then
-      Ada.Text_Io.Put_Line ("Aborted by user");
-      Done := True;
-      return;
-    elsif Sig_Kind /= Event_Mng.Child_Sig then
-      return;
-    end if;
-    -- Child death
+    Ada.Text_Io.Put_Line ("Aborted by user");
+    Done := True;
+  end Sig_Term_Cb;
+
+  procedure Sig_Child_Cb is
+    Death_Dscr : Sys_Calls.Death_Rec;
+    use type Sys_Calls.Death_Cause_List;
+  begin
     loop
       Death_Dscr := Sys_Calls.Next_Dead;
       case Death_Dscr.Cause is
@@ -39,8 +35,7 @@ procedure T_Fork is
              & " has been stopped");
       end case;
     end loop;
-
-  end Sig_Cb;
+  end Sig_Child_Cb;
 
 begin
 
@@ -66,7 +61,8 @@ begin
     Ada.Text_Io.Put_Line ("I am father pid " & Sys_Calls.Get_Pid'Img
          & " of child  pid " & Child_Pid'Img);
 
-    Event_Mng.Set_Sig_Callback (Sig_Cb'Unrestricted_Access);
+    Event_Mng.Set_Sig_Term_Callback (Sig_Term_Cb'Unrestricted_Access);
+    Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Unrestricted_Access);
 
     loop
       Event_Mng.Pause (Event_Mng.Infinite_Ms);

@@ -35,7 +35,7 @@ procedure T_Dictio is
     if Str'Length >= 1
     and then Str(Str'Length) = Ada.Characters.Latin_1.Etx then
       Ada.Text_Io.Put_Line ("CLIENT: Aborted");
-      Event_Mng.Send_Signal;
+      Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
     if Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
@@ -44,7 +44,7 @@ procedure T_Dictio is
     end if;
     if Str'Length = 2 and then Str(1) = 'q' then
       Ada.Text_Io.Put_Line ("CLIENT: Quit");
-      Event_Mng.Send_Signal;
+      Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
 
@@ -159,12 +159,12 @@ procedure T_Dictio is
       exit when Sig;
     end loop;
     Sig := True;
-    Event_Mng.Send_Signal;
+    Event_Mng.Send_Dummy_Signal;
   exception
     when Dictio_Lib.No_Dictio =>
       Ada.Text_Io.Put_Line ("CLIENT.LOAD: No Dictio");
       Sig := True;
-      Event_Mng.Send_Signal;
+      Event_Mng.Send_Dummy_Signal;
       Sys_Calls.Set_Error_Exit_Code;
   end Load;
 
@@ -203,7 +203,7 @@ begin
     end;
   end if;
 
-  Event_Mng.Set_Sig_Callback (Sig_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Term_Callback (Sig_Cb'Unrestricted_Access);
 
   Rnd.Randomize;
 

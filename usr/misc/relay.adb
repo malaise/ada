@@ -255,7 +255,7 @@ begin
   end if;
   
 
-  Event_Mng.Set_Sig_Callback (Sig_Callback'Unrestricted_Access);
+  Event_Mng.Set_Sig_Term_Callback (Sig_Callback'Unrestricted_Access);
 
   -- Main loop
   loop

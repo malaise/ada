@@ -151,7 +151,7 @@ begin
   end if;
   Nb_To_Do := Positive'Value (Argument.Get_Parameter(3));
   Nb_Done := 0;
-  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
   if not Publish then
     if (Bus and then Argument.Get_Nbre_Arg /= 4)

@@ -28,7 +28,7 @@ package body Dispatch is
     use type Event_Mng.Out_Event_List;
   begin
     Args.Init;
-    Event_Mng.Set_Sig_Callback (Signal'Access);
+    Event_Mng.Set_Sig_Term_Callback (Signal'Access);
     Intra_Dictio.Init;
 
     Event_Mng.Pause (200);

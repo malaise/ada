@@ -144,7 +144,7 @@ begin
   end if;
 
   -- Link, set server dest in client, client sends
-  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
   if Server then
     -- Create socket, add callback
     Socket.Open (Accept_Soc, Socket.Tcp_Header);

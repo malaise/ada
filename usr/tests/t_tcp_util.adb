@@ -296,7 +296,7 @@ begin
   end if;
 
   -- Init
-  Event_Mng.Set_Sig_Callback (Signal_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
   if Server then
     loop
       begin

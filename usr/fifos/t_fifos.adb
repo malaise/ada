@@ -100,7 +100,7 @@ begin
     return;
   end if;
 
-  Event_Mng.Set_Sig_Callback (Sign_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Term_Callback (Sign_Cb'Unrestricted_Access);
 
   Fid := Test_Fifo.Open (Argument.Get_Parameter(Occurence => 2),
                          not Server,
