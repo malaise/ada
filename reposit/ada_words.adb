@@ -20,6 +20,61 @@ package body Ada_Words is
 
   -------------------------------------------------------------
 
+  function Is_Upper_Letter (C : Character) return Boolean is
+  begin
+    return C >= 'A' and then C <= 'Z';
+  end Is_Upper_Letter;
+
+  function Is_Lower_Letter (C : Character) return Boolean is
+  begin
+    return C >= 'a' and then C <= 'z';
+  end Is_Lower_Letter;
+
+  function Is_Digit (C : Character) return Boolean is
+  begin
+    return C >= '0' and then C <= '9';
+  end Is_Digit;
+
+  function Is_Letter (C : Character) return Boolean is
+  begin
+    return Is_Lower_Letter (C) or else Is_Upper_Letter (C);
+  end Is_Letter;
+
+
+  function Is_Identifier (Word : String) return Boolean is
+    First : constant Integer := Word'First;
+    Prev : Character;
+  begin
+    if Word = "" then
+      return False;
+    end if;
+    -- First has to be a letter
+    if not Is_Letter (Word(First)) then
+      return False;
+    end if;
+
+    -- Letter or digit or '_', never to '_' successively
+    Prev := Word(First);
+    for I in First+1 .. Word'Last loop
+      if Word(I) = '_' and then Prev = '_' then
+        return False;
+      end if;
+      Prev := Word(I);
+      if not (Is_Letter (Prev)
+      or else Is_Digit (Prev) or else Prev = '_') then
+        return False;
+      end if;
+    end loop;
+    -- Last must not be '_'
+    if Prev = '_' then
+      return False;
+    end if;
+    -- OK
+    return True;
+  end Is_Identifier;
+
+  -------------------------------------------------------------
+
   subtype Word_Len_Range is Natural range 0 .. 9;
   type Word_Rec is record
     Len : Word_Len_Range;
@@ -148,6 +203,9 @@ package body Ada_Words is
     Low_Word : constant String := Lower_Str (Word);
     Result : Word_Hash.Found_Rec;
   begin
+    if Word = "" then
+      return False;
+    end if;
     Init;
     Word_Hash.Reset_Find (Low_Word);
     loop
