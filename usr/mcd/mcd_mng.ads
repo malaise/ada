@@ -127,6 +127,7 @@ package Mcd_Mng is
    Strregi,
    Strprog,
    Strof,
+   Normal,
 
    Clock,
    Dateof,

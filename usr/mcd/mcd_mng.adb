@@ -6,7 +6,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Values poped and processed by oper
-  A, B, C : Item_Rec;
+  A, B, C, D : Item_Rec;
 
   -- Saved value (previous top of stack), invalid when of kind Oper
   Invalid_Item : constant Item_Rec
@@ -176,6 +176,10 @@ package body Mcd_Mng is
     function Strregi (S : Item_Rec) return Item_Rec;
     function Strprog (S : Item_Rec) return Item_Rec;
     function Strof (Item : Item_Rec) return Item_Rec;
+    function Normalof (Item  : Item_Rec;
+                       Len   : Item_Rec;
+                       Right : Item_Rec;
+                       Gap   : Item_Rec) return Item_Rec;
 
     function Getenv (Item : Item_Rec) return Item_Rec;
     -- Invalid_Argument, Argument_Mismatch : exception;
@@ -785,6 +789,10 @@ package body Mcd_Mng is
           S := A;
         when Strof =>
           Pop(A); Push (Ios.Strof(A));
+          S := A;
+        when Normal =>
+          Pop(A); Pop(B); Pop(C); Pop(D);
+          Push (Ios.Normalof(D, C, B, A));
           S := A;
 
         -- Dates

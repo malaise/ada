@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Math, Sys_Calls; use My_Math;
+with My_Math, Sys_Calls, Normal; use My_Math;
 with Inte_Io, Real_Io, Bool_Io, Io_Flow;
 separate (Mcd_Mng)
 
@@ -225,7 +225,52 @@ package body Ios is
         raise Invalid_Argument;
     end case;
     return Res;
+  exception
+    when Invalid_Argument =>
+      raise;
+    when Constraint_Error =>
+      -- Int or real format generates too long string
+      raise String_Len;
   end Strof;
+
+  function Normalof (Item : Item_Rec;
+                     Len : Item_Rec;
+                     Right : Item_Rec;
+                     Gap : Item_Rec) return Item_Rec is
+    Int : Integer;
+    L : Positive;
+    Res : Item_Rec(Chrs);
+  begin
+    -- Check Kinds, check Len is Positive, check Gap is one char
+    if Item.Kind /= Inte
+    or else Len.Kind /= Inte
+    or else Len.Val_Inte <= 0
+    or else Right.Kind /= Bool
+    or else Gap.Kind /= Chrs
+    or else Gap.Val_Len /= 1 then
+      raise Invalid_Argument;
+    end if;
+    -- Check range of ints
+    begin
+      Int := Integer(Item.Val_Inte);
+      L := Positive(Len.Val_Inte);
+    exception
+      when Constraint_Error =>
+        raise Invalid_Argument;
+    end;
+    -- Call Normal
+    declare
+      Str : constant String := Normal (Int, L, Right.Val_Bool,
+                                       Gap.Val_Text(1));
+    begin
+      if Str'Length > Res.Val_Text'Length then
+        raise String_Len;
+      end if;
+      Res.Val_Len := Str'Length;
+      Res.Val_Text(1 .. Res.Val_Len) := Str;
+    end;
+    return Res;
+  end Normalof;
 
   function Getenv (Item : Item_Rec) return Item_Rec is
     Result : Item_Rec (Chrs);

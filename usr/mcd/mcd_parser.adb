@@ -64,7 +64,7 @@ package body Mcd_Parser is
    Bolxor   => ("^ ", "push B xor A                  ", False),
    Bolneg   => ("~ ", "push not A                    ", True),
 
-   Pi       => (Nosy, "push PI                       ", False),
+   Pi       => (Nosy, "push pi                       ", False),
    Sin      => (Nosy, "push Sin(A) A in radiants     ", False),
    Cos      => (Nosy, "push Cos(A) A in radiants     ", False),
    Tan      => (Nosy, "push Tan(A) A in radiants     ", False),
@@ -72,15 +72,15 @@ package body Mcd_Parser is
    Acos     => (Nosy, "push ACos(A) in radiants      ", False),
    Atan     => (Nosy, "push ATan(A) in radiants      ", True),
 
-   Epsilon  => (Nosy, "push Epsilon (1.0E-10)        ", False),
-   Exp      => (Nosy, "push E                        ", False),
+   Epsilon  => (Nosy, "push epsilon (1.0E-10)        ", False),
+   Exp      => (Nosy, "push e                        ", False),
    Ln       => (Nosy, "push ln(A)                    ", False),
    Log      => (Nosy, "push log(A)                   ", True),
 
-   Toreal   => (Nosy, "push REAL(A)                  ", False),
-   Round    => (Nosy, "push INTE(A) (round)          ", False),
-   Trunc    => (Nosy, "push INTE(A) (int part)       ", False),
-   Int      => (Nosy, "push int part of A            ", False),
+   Toreal   => (Nosy, "push Real(A)                  ", False),
+   Round    => (Nosy, "push Inte(A) (round)          ", False),
+   Trunc    => (Nosy, "push Inte(A) (trunc)          ", False),
+   Int      => (Nosy, "push int  part of A           ", False),
    Frac     => (Nosy, "push frac part of A           ", False),
    Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
    Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", True),
@@ -155,9 +155,10 @@ package body Mcd_Parser is
    Strbool  => (Nosy, "push A converted to boolean   ", False),
    Strregi  => (Nosy, "push A converted to register  ", False),
    Strprog  => (Nosy, "push A converted to program   ", False),
-   Strof    => (Nosy, "push formated string of A     ", True),
+   Strof    => (Nosy, "push formated string of A     ", False),
+   Normal   => (Nosy, "push normalised string of D   ", True), 
 
-   Clock    => (Nosy, "Push current time             ", False),
+   Clock    => (Nosy, "push current time             ", False),
    Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm", False),
    Daysof   => (Nosy, "int -> days-hh:mm:ss.mmm      ", False),
    Timeof   => (Nosy, "YYyy/mm/dd-hh:mm:ss.mmm -> int", True),
@@ -165,7 +166,7 @@ package body Mcd_Parser is
    Obase    => (Nosy, "set output base to A          ", False),
    Nop      => (Nosy, "no operation                  ", False),
    Getenv   => (Nosy, "push getenv(A) or False       ", False),
-   Rnd      => (Nosy, "push 0.0 <= RND < 1.0         ", False),
+   Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0         ", False),
    Sleep    => (Nosy, "sleep A seconds               ", False),
    Help     => (Nosy, "put help                      ", False) );
 
@@ -368,7 +369,7 @@ package body Mcd_Parser is
     use Ada.Text_Io;
     Ope_Name : String (1 .. Ope_Len);
   begin
-    Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name>> ]");
+    Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name> | -h ]");
     Put_Line ("Commands are strings read from standard input or from a fifo.");
     Put_Line ("Separators are space and horizontal tab.");
     Put_Line ("Comments start by '#', up to the end of line");
