@@ -74,11 +74,11 @@ package body PARSER is
    RET     => ("_ ", "return              "),
    RETN    => ("__", "return A levels     "),
    IFRETN  => ("?_", "if A return B levels"),
-   RETACAL => ("_@", "return and call     "),
+   RETACAL => ("_@", "return and call A   "),
 
    FORMAT  => ("//", "xx or xx.yyy fmt    "),
    PUT     => (", ", "put A               "),
-   NEWL    => (": ", "put line            "),
+   NEWL    => (": ", "new line            "),
    PUTL    => ("; ", "put_line A          "));
 
 
