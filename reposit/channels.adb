@@ -1,5 +1,6 @@
 with System, Ada.Calendar;
-with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list, Event_Mng;
+with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list,
+     Event_Mng, Assertion;
 package body Channels is
 
   Byte_Size : constant := System.Storage_Unit;
@@ -826,13 +827,15 @@ package body Channels is
         Dscr := Bus_Dscr.Rece_Dscr;
       elsif Bus_Dscr.Joined then
         Dscr := Bus_Dscr.Send_Dscr;
+      else
+        Assertion.Assert (False, "Channel.Bus receiving but no bus");
       end if;
-
        
       begin
         Bus_Read (Dscr, Msg, Len, True);
       exception
         when others =>
+          Assertion.Assert (False, "Channel.Bus reading error");
           return False;
       end;
       Bus_Reply_List_Mng.Insert (Bus_Dscr.Replies,
@@ -840,6 +843,10 @@ package body Channels is
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
       Bus_Reply_List_Mng.Delete (Bus_Dscr.Replies, Bus_Reply_List_Mng.Prev);
       return True;
+    exception
+      when others =>
+        Assertion.Assert (False, "Channel.Bus handler error");
+        return False;
     end Loc_Read_Cb;
 
     procedure Set_Dest_Bus (Dscr : in out Socket.Socket_Dscr) is
@@ -958,7 +965,7 @@ package body Channels is
       if not Bus_Dscr.Joined then
         raise Not_Joined;
       end if;
-      -- Dest may have been changed by reading a reply
+      -- Dest may have been changed by a send or by reading a reply
       Socket.Change_Destination_Host (Bus_Dscr.Send_Dscr, Bus_Dscr.Bus_Id);
       Send (Bus_Dscr.Send_Dscr, True, Message, Length);
     exception
@@ -998,51 +1005,25 @@ package body Channels is
                     Message   : in Message_Type;
                     Length    : in Message_Length := 0) is
 
-      -- Tempo socket if not subscribed
-      Dscr : Socket.Socket_Dscr;
-
-      -- Close tempo socket if it has been used
-      procedure Garbage_Collect is
-      begin
-        if not Bus_Dscr.Subscribed then
-          Socket.Close (Dscr);
-        end if;
-      end Garbage_Collect;
-
     begin
       if not Bus_Dscr.Joined then
         raise Not_Joined;
       end if;
 
-      -- Set / Change host
+      -- Use send port
       begin
-        if Bus_Dscr.Subscribed then
-          -- Use reply port
-          Dscr := Bus_Dscr.Rece_Dscr;
-          Socket.Change_Destination_Name (Dscr, False, Host_Name);
-        else
-          -- Create a socket with same port as sending
-          Socket.Open (Dscr, Socket.Udp);
-          Socket.Set_Destination_Name_And_Port (
-             Dscr,
-             False,
-             Host_Name,
-             Socket.Get_Destination_Port (Bus_Dscr.Send_Dscr));
-        end if;
+        Socket.Change_Destination_Name (Bus_Dscr.Send_Dscr, False, Host_Name);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Garbage_Collect;
           raise Unknown_Destination;
       end;
 
       begin
-        Send (Dscr, False, Message, Length);
+        Send (Bus_Dscr.Send_Dscr, False, Message, Length);
       exception
         when others =>
-          Garbage_Collect;
           raise Send_Failed;
       end;
-      Garbage_Collect;
     end Send;
 
 
