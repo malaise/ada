@@ -130,7 +130,7 @@ package body INPUT_DISPATCHER is
   end SET_INPUT;
 
   -- Get the ungot words of current string
-  -- PROGRAM_ERROR is current input is stdin
+  -- PROGRAM_ERROR if current input is stdin
   --  or if no word already got from current string
   function GET_REMAINING return STRING is
   begin
