@@ -40,9 +40,10 @@ package body Pieces is
   end Delete_Action;
 
   -- Create e new piece
-  function Create (Kind   : Piece_Kind_List;
-                   Color  : Space.Color_List;
-                   Square : Space.Square_Coordinate)
+  function Create (Kind      : Piece_Kind_List;
+                   Color     : Space.Color_List;
+                   Square    : Space.Square_Coordinate;
+                   Has_Moved : Boolean := False)
            return Piece_Access is
     Pa : Piece_Access;
   begin
@@ -63,7 +64,7 @@ package body Pieces is
     Pa.Square := Square;
     Pa.Kind := Kind;
     Pa.Color := Color;
-    Pa.Has_Moved := False;
+    Pa.Has_Moved := Has_Moved;
     return Pa;
   end Create;
 

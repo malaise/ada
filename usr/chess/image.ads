@@ -29,5 +29,12 @@ package Image is
   -- Piece character (none for Pawn), or R, N, B, Q, K
   function Piece_Image (Piece_Kind : in Pieces.Piece_Kind_List) return String;
 
+  -- Return Pawn if not found
+  function Piece_Value (Char : in Character) return Pieces.Piece_Kind_List;
+
+  -- Decode square, may raise Value_Error
+  subtype Square_Str is String (1 ..2);
+  function Square_Value (S : Square_str) return Space.Square_Coordinate;
+
 end Image;
 

@@ -19,7 +19,6 @@ package body Game is
   procedure Init (Color : in Space.Color_List) is
   begin
     Own_Color := Color;
-    Space.Board.Init;
     Screen.Display_Board (Own_Color);
     -- Get Movements and attacked squares
     Players.Think (Space.White);

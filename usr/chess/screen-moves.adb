@@ -63,20 +63,29 @@ package body Moves is
   procedure Put_Moves is
     Curr, Last : Moves_Range;
 
-    -- Each Move can be empty (white and black not valid) or
-    --  partial (only white valid)
     procedure Put (M : in Move) is
+      Empty : constant Image.Move_Str := (others => ' ');
     begin
-      if not M.White_Move.Valid then return; end if;
-      Con_Io.Put (Normal (M.Num, 3) & ' ' &
+      if not M.White_Move.Valid then 
+        Con_Io.Put ("   " & ' ' & Empty,
+                    Name => Move_Window,
+                    Foreground => Main_Fore);
+      else
+        Con_Io.Put (Normal (M.Num, 3) & ' ' &
                      Image.Move_Image (M.White_Move, M.White_Result),
-                  Name => Move_Window,
-                  Foreground => Fore(Space.White));
+                    Name => Move_Window,
+                    Foreground => Fore(Space.White));
+      end if;
 
-      if not M.Black_Move.Valid then return; end if;
-      Con_Io.Put (' ' & Image.Move_Image (M.Black_Move, M.Black_Result),
-                  Name => Move_Window,
-                  Foreground => Fore(Space.Black));
+      if not M.Black_Move.Valid then
+        Con_Io.Put (' ' & Empty,
+                    Name => Move_Window,
+                    Foreground => Main_Fore);
+      else
+        Con_Io.Put (' ' & Image.Move_Image (M.Black_Move, M.Black_Result),
+                    Name => Move_Window,
+                    Foreground => Fore(Space.Black));
+      end if;
     end Put;
 
   begin

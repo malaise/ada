@@ -8,6 +8,7 @@ procedure Chess is
   Mode : Human.Play_Mode;
   Color : Space.Color_List;
   Name : Text_Handler.Text (File.Max_File_Name_Len);
+  Init : Text_Handler.Text (File.Max_File_Name_Len);
   Tmp_Txt : Text_Handler.Text (File.Max_File_Name_Len);
   Wait : Boolean;
   Invalid_Argument : exception;
@@ -16,10 +17,14 @@ procedure Chess is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
            & " [ { -D<debug_flag> } ] <mode>");
-    Ada.Text_Io.Put_Line (" Modes:");
-    Ada.Text_Io.Put_Line ("  server: -S -c<color> [ -f<file_name> [ -w ] ]");
-    Ada.Text_Io.Put_Line ("  client: -C -c<color> -s<server_host>");
-    Ada.Text_Io.Put_Line ("  both:   -B [ -f<file_name> [ -w ] ]");
+    Ada.Text_Io.Put_Line ("  <mode> ::= <server> | <client> | <both>");
+    Ada.Text_Io.Put_Line ("    <server> ::= -S -c<color> [ <replay_file> ]");
+    Ada.Text_Io.Put_Line ("    <client> ::= -C -c<color> -s<server_host>");
+    Ada.Text_Io.Put_Line ("    <both>   ::= -B [ <init_option> ]");
+    Ada.Text_Io.Put_Line ("      <color> ::=  white | black");
+    Ada.Text_Io.Put_Line ("      <init_option> ::= <replay_file> | <setup_file>");
+    Ada.Text_Io.Put_Line ("        <replay_file> ::= -f<file_name> [ -w ]");
+    Ada.Text_Io.Put_Line ("        <setup_file>  ::= -i<init_file>");
   end Usage;
 
   procedure Parse_Debug (Flag : in String; Option : in Debug.Debug_List) is
@@ -160,9 +165,26 @@ begin
     end;
   end if;
 
+  if Mode = Human.Both and then Text_Handler.Empty (Name) then
+    begin
+      Argument.Get_Parameter (Init, 1, "i");
+    exception
+      when Argument.Argument_Not_Found =>
+        Text_Handler.Empty (Init);
+    end;
+  else
+    begin
+      Argument.Get_Parameter (Init, 1, "i");
+      raise Invalid_Argument;
+    exception
+      when Argument.Argument_Not_Found =>
+        null;
+    end;
+  end if;
 
 
-  Human.Play (Mode, Color, Text_Handler.Value (Name), Wait);
+  Human.Play (Mode, Color, Text_Handler.Value (Name),
+              Text_Handler.Value (init), Wait);
  
 exception
   when Invalid_Argument | Argument.Argument_Not_Found =>

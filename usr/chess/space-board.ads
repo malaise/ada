@@ -9,9 +9,10 @@ package Space.Board is
   procedure Erase;
 
   -- Create a piece
-  procedure Create_Piece (Kind   : in Pieces.Piece_Kind_List;
-                          Color  : in Color_List;
-                          Square : in Square_Coordinate);
+  procedure Create_Piece (Kind      : in Pieces.Piece_Kind_List;
+                          Color     : in Color_List;
+                          Square    : in Square_Coordinate;
+                          Has_Moved : in Boolean := False);
 
   -- Delete a piece (If not commited, reverse can be done by Restore_Piece)
   procedure Delete_Piece (Square : in Square_Coordinate;
@@ -28,6 +29,16 @@ package Space.Board is
   -- Null if empty
   function Piece_At (Square : Square_Coordinate) return Pieces.Piece_Access;
 
+  -- Same but returns piece kind and color at normal board initialisation
+  type Orig_Piece_Id (Valid : Boolean := False) is record
+    case Valid is
+      when False => null;
+      when True  => Id : Pieces.Piece_Id;
+    end case;
+  end record;
+  function Orig_Piece_Id_At (Square : Square_Coordinate)
+           return Orig_Piece_Id;
+
   -- New_Pos is valid or not (if not, Piece is null)
   -- If Valid, Piece is null if square is empty
   procedure What_Is_At (Square : in Square_Coordinate;
@@ -35,10 +46,5 @@ package Space.Board is
                         New_Pos : out Movement_Result;
                         Piece   : out Pieces.Piece_Access);
                      
-private
-
-  The_Board : array (Col_Range, Row_Range) of aliased Pieces.Piece_Access
-            := (others => (others => null));
-
 end Space.Board;
 

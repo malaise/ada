@@ -13,8 +13,9 @@ package body Players is
   -- Build list of possible movements
   procedure Think (Color : in Space.Color_List) is
     Piece : Pieces.Piece_Access;
-    use type Pieces.Piece_Access;
+    use type Pieces.Piece_Access, Pieces.Piece_Kind_List;
     Player_Board_Error : exception;
+    King_Found : Boolean;
   begin
     if Debug.Get (Debug.Think) then
       Ada.Text_Io.Put_Line ("Player " & Space.Color_List'Image(Color)
@@ -24,6 +25,7 @@ package body Players is
     Action_List_Mng.Delete_List (Actions(Color), Deallocate => True);
     -- For each piece of team
     Team.Rewind (Color);
+    King_Found := False;
 
     One_Piece :
     loop
@@ -41,6 +43,9 @@ package body Players is
         if Space.Board.Piece_At (Pos) /= Piece then
           raise Player_Board_Error;
         end if;
+        if Piece_Kind = Pieces.King then
+          King_Found := True;
+        end if;
         for I in Arr'Range loop
           Action_List_Mng.Insert (Actions(Color), (True, Piece_Kind, Pos, Arr(I)) );
           if Debug.Get (Debug.Think) then
@@ -53,6 +58,9 @@ package body Players is
     end loop One_Piece;
 
     At_End (Color) := True;
+    if not King_Found then
+      raise Player_Board_Error;
+    end if;
     if Debug.Get (Debug.Think) then
       Ada.Text_Io.Put_Line ("Player " & Space.Color_List'Image(Color)
                           & " has finished thinking");

@@ -87,7 +87,19 @@ package body Image is
     Str (1 .. Text_Handler.Length(Res)) := Text_Handler.Value (Res);
     return Str;
   end Move_Image;
-        
+
+  -- Decode square
+  function Square_Value (S : Square_str) return Space.Square_Coordinate is
+  begin
+    if S(1) not in 'a' .. 'h' then
+      raise Value_Error;
+    end if;
+    return (Space.Col_Range'Value(S(1..1)), Space.Row_range'Value(S(2..2)));
+  exception
+    when others =>
+      raise Value_Error;
+  end Square_Value;
+
   procedure Move_Value (Str    : in Move_Str;
                         Color  : in Space.Color_List;
                         Action : out Game.Valid_Action_Rec;
@@ -100,19 +112,6 @@ package body Image is
     From, Dest : Space.Square_Coordinate;
     Piece_Kind : Pieces.Piece_Kind_List;
 
-    -- Decode square
-    subtype Square_Str is String (1 ..2);
-    function Value (S : Square_str) return Space.Square_Coordinate is
-    begin
-      if S(1) not in 'a' .. 'h' then
-        raise Value_Error;
-      end if;
-      return (Space.Col_Range'Value(S(1..1)), Space.Row_range'Value(S(2..2)));
-    exception
-      when others =>
-        raise Value_Error;
-    end Value;
- 
     use type Space.Color_List;
     use type Pieces.Piece_Kind_List;
   begin
@@ -182,8 +181,8 @@ package body Image is
       end if;
 
       -- Get both squares and Move/Take action
-      From := Value (Str(Next .. Next+1));
-      Dest := Value (Str(Next+3 .. Next+4));
+      From := Square_Value (Str(Next .. Next+1));
+      Dest := Square_Value (Str(Next+3 .. Next+4));
       if Str(Next+2) = '-' then
         Take := False;
       elsif  Str(Next+2) = 'X' then

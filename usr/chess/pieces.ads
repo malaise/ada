@@ -27,9 +27,10 @@ package Pieces is
   procedure Actions_Of (Piece : King_Piece);
 
   -- Create a new piece
-  function Create (Kind   : Piece_Kind_List;
-                   Color  : Space.Color_List;
-                   Square : Space.Square_Coordinate)
+  function Create (Kind      : Piece_Kind_List;
+                   Color     : Space.Color_List;
+                   Square    : Space.Square_Coordinate;
+                   Has_Moved : Boolean := False)
            return Piece_Access;
 
   procedure Delete (Piece : in out Piece_Access);

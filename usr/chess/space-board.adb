@@ -1,6 +1,12 @@
 with Team;
 package body Space.Board is
 
+
+  The_Board : array (Col_Range, Row_Range) of aliased Pieces.Piece_Access
+            := (others => (others => null));
+  Initial_Board : array  (Col_Range, Row_Range) of Orig_Piece_Id
+                := (others => (others => (Valid => False) ) );
+
   Board_Error : exception;
 
   function Is_Empty (Square : in Square_Coordinate) return Boolean is
@@ -9,14 +15,15 @@ package body Space.Board is
     return The_Board(Square.Col, Square.Row) = null;
   end Is_Empty;
 
-  procedure Create_Piece (Kind   : in Pieces.Piece_Kind_List;
-                          Color  : in Color_List;
-                          Square : in Square_Coordinate) is
+  procedure Create_Piece (Kind      : in Pieces.Piece_Kind_List;
+                          Color     : in Color_List;
+                          Square    : in Square_Coordinate;
+                          Has_Moved : in Boolean := False) is
   begin
     if not Is_Empty (Square) then
       raise Board_Error;
     end if;
-    The_Board(Square.Col, Square.Row) :=  Pieces.Create(Kind, Color, Square);
+    The_Board(Square.Col, Square.Row) :=  Pieces.Create(Kind, Color, Square, Has_Moved);
     Team.Add (The_Board(Square.Col, Square.Row));
   end Create_Piece;
 
@@ -57,6 +64,7 @@ package body Space.Board is
 
   -- Initialization of board
   procedure Init is
+    use type Pieces.Piece_Access;
   begin
     Create_Piece (Pieces.Rook,   White, (A, 1) );
     Create_Piece (Pieces.Knight, White, (B, 1) );
@@ -81,6 +89,21 @@ package body Space.Board is
     For Col in Col_Range loop
       Create_Piece (Pieces.Pawn, Black, (Col, 7) );
     end loop;
+
+    -- Save initial configuration for detected
+    --  pieces which have moved when loading situation
+    for Row in Row_Range loop
+      for Col in Col_Range loop
+        if The_Board(Col, Row) = null then
+          Initial_Board(Col, Row) := (Valid => False);
+        else
+          Initial_Board(Col, Row) :=
+             (Valid => True,
+              Id => Pieces.Id_Of (The_Board(Col, Row).all));
+        end if;
+      end loop;
+    end loop;
+
   end Init;
 
   -- Clean-up of board
@@ -100,6 +123,12 @@ package body Space.Board is
   begin
     return The_Board(Square.Col, Square.Row);
   end Piece_At;
+
+  function Orig_Piece_Id_At (Square : Square_Coordinate)
+           return Orig_Piece_Id is
+  begin
+    return Initial_Board(Square.Col, Square.Row);
+  end Orig_Piece_Id_At;
 
   procedure What_Is_At (Square : in Square_Coordinate;
                         Col_Offset, Row_Offset : in Movement_Range;

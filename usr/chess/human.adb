@@ -1,7 +1,8 @@
 with Ada.Text_Io;
 With Normal, Lower_Str, Argument;
 
-with Pieces, Space.Board, Screen, Game, Debug, Connection, File, Image;
+with Pieces, Space.Board, Screen, Game, Debug, Connection, File, Image,
+     Set_Up;
 
 package body Human is
 
@@ -20,10 +21,11 @@ package body Human is
   procedure Save_If_Server (Action : in Game.Valid_Action_Rec;
                             Result : in Game.Move_Status_List);
 
-  procedure Play (Mode  : in Play_Mode;
-                  Color : in Space.Color_List;
-                  Name  : in string;
-                  Wait  : in Boolean) is
+  procedure Play (Mode   : in Play_Mode;
+                  Color  : in Space.Color_List;
+                  Name   : in string;
+                  SetUp  : in string;
+                  Wait   : in Boolean) is
     use type Space.Color_List; 
   begin
     Human.Mode := Mode;
@@ -45,6 +47,19 @@ package body Human is
       end if;
     end if;
 
+    -- Init
+    Space.Board.Init;
+    Move_Color := Space.White;
+    if Mode /= Client and then SetUp /= "" then
+      Space.Board.Erase;
+      begin
+        Move_Color := Set_Up.Load (SetUp);
+      exception
+        when Set_Up.Load_Error =>
+          raise Load_Error;
+      end;
+    end if;
+
     -- Client/Server
     if Mode /= Both then
       if Mode = Server then
@@ -55,7 +70,16 @@ package body Human is
       Connection.Wait_Ready;
     end if;
 
-    Game.Init (Color);
+    begin
+      Game.Init (Color);
+    exception
+      when others =>
+        if Mode /= Client and then SetUp /= "" then
+          raise Load_Error;
+        else
+          raise;
+        end if;
+    end;
 
     Load_Moves (Wait);
 
@@ -218,7 +242,6 @@ package body Human is
     use type Pieces.Piece_Kind_List, Pieces.Piece_Access;
     use type Game.Move_Status_List;
   begin
-    Move_Color := Space.White;
     loop
       if Mode /= Client then
         Action := File.Read;
