@@ -1,5 +1,6 @@
 
 package RND is
+  pragma ELABORATE_BODY(RND);
 
   -- Initialisation of sequence,
   --   on  INIT if 0.0 <= INIT < 1.0

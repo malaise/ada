@@ -15,6 +15,7 @@ package MY_MATH is
   type ANGLE_UNIT is (RADIAN, DEGREE);
 
   -- Integer part and fractional part of a real
+  -- R := INT(R) + FRAC(R)
   function INT  (X : REAL) return REAL;
   function FRAC (X : REAL) return REAL;
 

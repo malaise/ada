@@ -78,7 +78,7 @@ package body MY_MATH is
 
   function FRAC (X : REAL) return REAL is
   begin
-    return abs(X - INT(X));
+    return X - INT(X);
   end FRAC;
 
   -- Real to inte : round or trunc

@@ -40,8 +40,9 @@ package STATE_MACHINE is
   --  called before END_DECLARATION
 
   -- An event: do a transition. If the event is not defined for
-  --  current state, the state reamains unchanged
-  -- Any TRUE event has no effect (any potential TRUE transistion
+  --  current state, the DEFAULT (if any) transition is performed
+  --  otherwise (no DEFAULT) the state remains unchanged
+  -- Any TRUE event has no effect (any potential TRUE transition
   --  would already have been done)
   function NEW_EVENT (EVENT : EVENT_LIST) return STATE_LIST;
 

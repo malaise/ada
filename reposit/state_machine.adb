@@ -81,6 +81,10 @@ package body STATE_MACHINE is
     IN_DECLARATION := FALSE;
     -- Do all true transitions from any state,
     --  do first state last and report it only
+    -- All tests but the last one check true_loop
+    --  last one (first state) cannot have true loop then
+    --  (it would have been detected by a check on the
+    --   destination state of this true event).
     for START_STATE in reverse STATE_LIST loop
       THE_CURRENT_STATE := START_STATE;
       DO_TRUES (START_STATE = STATE_LIST'FIRST);
@@ -119,8 +123,7 @@ package body STATE_MACHINE is
   -- All following calls may raise DECLARATION_NOT_ENDED if
   --  called before END_DECLARATION
 
-  -- An event: do a transition. If the event is not defined for
-  --  current state, the state reamains unchanged.
+  -- An event: do a transition.
   function NEW_EVENT (EVENT : EVENT_LIST) return STATE_LIST is
   begin
     NEW_EVENT (EVENT);

@@ -41,7 +41,7 @@ package HASH is
 
     -- To remove last found association KEY <-> INDEX
     -- Last found is reset
-    -- May raise NOT_FOUND if ast found is reset
+    -- May raise NOT_FOUND if last found is reset
     procedure REMOVE (KEY : in STRING);
 
     -- Dump hash value of key and lists all data found for key
@@ -56,3 +56,4 @@ package HASH is
   NOT_FOUND : exception;
 
 end HASH;
+

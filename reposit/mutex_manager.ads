@@ -3,6 +3,7 @@ with SYSTEM;
 -- Mutex management
 package MUTEX_MANAGER is
 
+  pragma ELABORATE_BODY(MUTEX_MANAGER);
   -- Mutex object, free at creation
   type MUTEX is limited private;
 
@@ -13,7 +14,7 @@ package MUTEX_MANAGER is
   function GET_MUTEX (A_MUTEX      : MUTEX;
                       WAITING_TIME : DURATION) return BOOLEAN;
 
-  -- release a mutex. Exception is raised if the mutex was already free.
+  -- Release a mutex. Exception is raised if the mutex was already free.
   procedure RELEASE_MUTEX (A_MUTEX : in MUTEX);
 
   MUTEX_ALREADY_FREE : exception;
@@ -21,7 +22,7 @@ package MUTEX_MANAGER is
 private
 
   task type MUT_TASK is
-    -- prio max
+    -- Prio max
     pragma PRIORITY(SYSTEM.PRIORITY'LAST);
 
     entry MUT_GET;
@@ -36,3 +37,4 @@ private
   end record;
 
 end MUTEX_MANAGER;
+
