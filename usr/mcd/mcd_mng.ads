@@ -66,6 +66,7 @@ package Mcd_Mng is
    Swap,
    Swap3,
    Dup,
+   Prevtop,
    Pop,
    Popn,
 

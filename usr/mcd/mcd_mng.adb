@@ -5,14 +5,21 @@ with Debug, Input_Dispatcher, Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
 
-
+  -- Values poped and processed by oper
   A, B, C : Item_Rec;
+
+  -- Saved value (previous top of stack), invalid when of kind Oper
+  Invalid_Item : constant Item_Rec
+       := (Kind => Oper, Val_Oper => Operator_List'First);
+  S : Item_Rec := Invalid_Item;
+
+  -- Subprogram called
   Call_Entry : Text_Handler.Text (Input_Dispatcher.Max_String_Lg);
 
   package Stack is 
     -- What can we store in stack
     subtype Operand_Kind_List is Item_Kind_List range Inte .. Regi;
-    -- On push : INVALID_ITEM;
+    -- On push : Invalid_Item;
 
     procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True);
 
@@ -244,6 +251,7 @@ package body Mcd_Mng is
       else
         Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
       end if;
+      S := A;
     end Do_Call;
 
     procedure Do_Retn (All_Levels    : in Boolean;
@@ -312,6 +320,7 @@ package body Mcd_Mng is
       exception
         when others => raise Invalid_Argument;
       end;
+      S := A;
       for I in 1 .. N loop
         Stack.Pop(A);
       end loop;
@@ -367,7 +376,7 @@ package body Mcd_Mng is
     -- Dispatch
     if Item.Kind /= Oper then
       -- Push operand
-      Stack.Push(Item);
+      Push(Item);
     else -- OPERATOR
       if Debug.Debug_Level_Array(Debug.Oper) then
         Text_Io.Put("Mng: ");
@@ -375,7 +384,7 @@ package body Mcd_Mng is
         Text_Io.New_Line;
       end if;
       case Item.Val_Oper is 
-        -- These 5 I do it myself
+        -- These I do it myself
         when Nop =>
           null;
         when Swap =>
@@ -391,7 +400,13 @@ package body Mcd_Mng is
                  Val_Real => My_Math.Real(Random.Float_Random)) );
         when Sleep =>
           Pop(A);
+          S := A;
           Do_Delay(A);
+        when Prevtop =>
+          if S.Kind = Oper then
+            raise Invalid_Argument;
+          end if;
+          Push (S);
 
         when Popn =>
           Do_Popn;
@@ -399,80 +414,118 @@ package body Mcd_Mng is
         -- These are operations
         when Add =>
           Pop(A); Pop(B); Push (Operations.Add(B,A));
+          S := A;
         when Sub =>
           Pop(A); Pop(B); Push (Operations.Sub(B,A));
+          S := A;
         when Mult =>
           Pop(A); Pop(B); Push (Operations.Mult(B,A));
+          S := A;
         when Div =>
           Pop(A); Pop(B); Push (Operations.Div(B,A));
+          S := A;
         when Remind =>
           Pop(A); Pop(B); Push (Operations.Remind(B,A));
+          S := A;
         when Pow =>
           Pop(A); Pop(B); Push (Operations.Pow(B,A));
+          S := A;
         when Bitand =>
           Pop(A); Pop(B); Push (Operations.Bitand(B,A));
+          S := A;
         when Bitor =>
           Pop(A); Pop(B); Push (Operations.Bitor(B,A));
+          S := A;
         when Bitxor =>
           Pop(A); Pop(B); Push (Operations.Bitxor(B,A));
+          S := A;
         when Shl =>
           Pop(A); Pop(B); Push (Operations.Shl(B,A));
+          S := A;
         when Shr =>
           Pop(A); Pop(B); Push (Operations.Shr(B,A));
+          S := A;
         when Minus =>
           Pop(A); Push (Operations.Minus(A));
+          S := A;
         when Absv =>
           Pop(A); Push (Operations.Absv(A));
+          S := A;
         when Bitneg =>
           Pop(A); Push (Operations.Bitneg(A));
+          S := A;
         when Equal =>
           Pop(A); Pop(B); Push (Operations.Equal(B,A));
+          S := A;
         when Diff =>
           Pop(A); Pop(B); Push (Operations.Diff(B,A));
+          S := A;
         when Greater =>
           Pop(A); Pop(B); Push (Operations.Greater(B,A));
+          S := A;
         when Smaller =>
           Pop(A); Pop(B); Push (Operations.Smaller(B,A));
+          S := A;
         when Greateq =>
           Pop(A); Pop(B); Push (Operations.Greateq(B,A));
+          S := A;
         when Smalleq =>
           Pop(A); Pop(B); Push (Operations.Smalleq(B,A));
+          S := A;
         when Toreal =>
           Pop(A); Push (Operations.Toreal(A));
+          S := A;
         when Round =>
           Pop(A); Push (Operations.Round(A));
+          S := A;
         when Trunc =>
           Pop(A); Push (Operations.Trunc(A));
+          S := A;
         when Int =>
           Pop(A); Push (Operations.Int(A));
+          S := A;
         when Frac =>
           Pop(A); Push (Operations.Frac(A));
+          S := A;
         when Dms =>
           Pop(A); Push (Operations.Dms(A));
+          S := A;
         when Msd =>
           Pop(A); Push (Operations.Msd(A));
+          S := A;
         when Sqrt =>
           Pop(A); Push (Operations.Sqrt(A));
+          S := A;
         when Isreal =>
           Pop(A); Push (Operations.Isreal(A));
+          S := A;
         when Isinte =>
           Pop(A); Push (Operations.Isinte(A));
+          S := A;
         when Isbool =>
           Pop(A); Push (Operations.Isbool(A));
+          S := A;
         when Isstr =>
           Pop(A); Push (Operations.Isstr(A));
+          S := A;
         when Isreg =>
           Pop(A); Push (Operations.Isreg(A));
+          S := A;
         when Isprog =>
           Pop(A); Push (Operations.Isprog(A));
+          S := A;
         when Boland =>
           Pop(A); Pop(B); Push (Operations.Boland(B,A));
+          S := A;
         when Bolor =>
           Pop(A); Pop(B); Push (Operations.Bolor(B,A));
+          S := A;
         when Bolxor =>
           Pop(A); Pop(B); Push (Operations.Bolxor(B,A));
+          S := A;
         when Bolneg =>
           Pop(A); Push (Operations.Bolneg(A));
+          S := A;
 
         -- Trigo
         when Pi =>
@@ -480,16 +533,22 @@ package body Mcd_Mng is
                  Val_Real => My_Math.Real(My_Math.Pi)) );
         when Sin =>
           Pop(A); Push (Operations.Sin(A));
+          S := A;
         when Cos =>
           Pop(A); Push (Operations.Cos(A));
+          S := A;
         when Tan =>
           Pop(A); Push (Operations.Tan(A));
+          S := A;
         when Asin =>
           Pop(A); Push (Operations.Asin(A));
+          S := A;
         when Acos =>
           Pop(A); Push (Operations.Acos(A));
+          S := A;
         when Atan =>
           Pop(A); Push (Operations.Atan(A));
+          S := A;
 
         -- Exp, logs
         when Exp =>
@@ -497,8 +556,10 @@ package body Mcd_Mng is
                  Val_Real => My_Math.Real(My_Math.E)) );
         when Ln =>
           Pop(A); Push (Operations.Ln(A));
+          S := A;
         when Log =>
           Pop(A); Push (Operations.Log(A));
+          S := A;
 
         -- Conditions
         when Ifthen =>
@@ -506,59 +567,74 @@ package body Mcd_Mng is
           if Operations.Is_True(B) then
             Push(A);
           end if;
+          S := A;
         when Ifte =>
           Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(C,B,A));
+          S := A;
         when Etfi =>
           Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
+          S := A;
  
         when Obase =>
           Pop(A); Ios.Set_Obase(A);
+          S := A;
 
         -- These are about registers
         when Popr =>
           -- store B in reg A
           Pop(A); Pop(B); Registers.Store(B, A);
+          S := A;
         when Copyr =>
           -- store B in reg A and push B
           Pop(A); Read(B); Registers.Store(B, A);
+          S := A;
         when Pushr =>
           -- push content of reg A
           Pop(A); Push(Registers.Retrieve(A));
+          S := A;
         when Swapr =>
           -- exchange B and content of reg A
           Pop(A); pop(B); Push(Registers.Retrieve(A)); Registers.Store(B, A);
+          S := A;
         when Swap2r =>
           -- exchange content of reg B and content of reg A
           Pop(A); pop(B);
           C := Registers.Retrieve(A);
           Registers.Store(Registers.Retrieve(B), A);
           Registers.Store(C, B);
+          S := A;
         when Clearr =>
           -- Clear reg A
           Pop(A); Registers.Clear(A);
+          S := A;
         when Clearall =>
           -- Clear all registers
           Registers.Clear_All;
         when Emptyr =>
           -- True is reg A is empty
           Pop(A); Push(Registers.Is_Empty(A));
+          S := A;
         when Nextr =>
           -- Reg A -> Reg B
           Pop(A); Registers.Next(A); Push(A);
+          S := A;
         when Prevr =>
           -- Reg A -> Reg B
           Pop(A); Registers.Prev(A); Push(A);
+          S := A;
         when Regind =>
           -- Index of register
           Pop(A); Push(Registers.Index_Of(A));
+          S := A;
         when Indreg =>
           -- Register at index
           Pop(A); Push(Registers.Register_At(A));
+          S := A;
         when Storer =>
-          -- Register at index
+          -- Store registers
           Registers.Store_All;
         when Loadr =>
-          -- Register at index
+          -- Load registers
           Registers.Load_All;
 
         -- Stack size
@@ -569,6 +645,7 @@ package body Mcd_Mng is
         when Pope =>
           -- pushe A
           Pop(A); Push (A, Default_Stack => False);
+          S := A;
         when Copye =>
           -- pushe A push A
           Read(A); Push (A, Default_Stack => False); 
@@ -582,10 +659,12 @@ package body Mcd_Mng is
           -- rotate from last
           Pop(A);
           Do_Rotate_Extra (False, A);
+          S := A;
         when Rotfe =>
           -- rotate from first
           Pop(A);
           Do_Rotate_Extra (True, A);
+          S := A;
         when Esize =>
            Push( (Kind => Inte,
                   Val_Inte => My_Math.Inte(Stack.Stack_Size(
@@ -609,6 +688,7 @@ package body Mcd_Mng is
           Push( (Kind => Inte, Val_Inte => 1) );
           Do_Ret;
         when Retn =>
+          Read (S);
           Do_Ret;
         when Retall =>
           Do_Retall;
@@ -618,6 +698,7 @@ package body Mcd_Mng is
             Push( (Kind => Inte, Val_Inte => 1) );
             Do_Ret;
           end if;
+          S := A;
         when Ifretn =>
           Pop(A);
           Pop(B);
@@ -625,11 +706,13 @@ package body Mcd_Mng is
             Push(A);
             Do_Ret;
           end if;
+          S := A;
         when Ifretall =>
           Pop(A);
           if Operations.Is_True(A) then
             Do_Retall;
           end if;
+          S := A;
 
         when Retacal =>
           Push( (Kind => Inte, Val_Inte => 1) );
@@ -640,50 +723,69 @@ package body Mcd_Mng is
         -- PUTs
         when Format =>
           Pop(A); Ios.Format(A);
+          S := A;
         when Put =>
           Pop(A); Ios.Put(A);
+          S := A;
         when Putl =>
           Pop(A); Ios.Put_Line(A);
+          S := A;
         when Newl =>
           Ios.New_Line;
 
         -- Strings
         when Strlen =>
           Pop(A); Push (Strings.Strlen(A));
+          S := A;
         when Strcat =>
           Pop(A); Pop(B); Push (Strings.Strcat(B, A));
+          S := A;
         when Strsub =>
           Pop(A); Pop(B); Pop(C); Push (Strings.Strsub(C, B, A));
+          S := A;
         when Strloc =>
           Pop(A); Pop(B); Pop(C); Push (Strings.Strloc(C, B, A));
+          S := A;
         when Strrep =>
           Pop(A); Pop(B); Pop(C); Push (Strings.Strrep(C, B, A));
+          S := A;
         when Strupp =>
           Pop(A); Push (Strings.Strupp(A));
+          S := A;
         when Strlow =>
           Pop(A); Push (Strings.Strlow(A));
+          S := A;
         when Strreal =>
           Pop(A); Push (Ios.Strreal(A));
+          S := A;
         when Strinte =>
           Pop(A); Push (Ios.Strinte(A));
+          S := A;
         when Strbool =>
           Pop(A); Push (Ios.Strbool(A));
+          S := A;
         when Strregi =>
           Pop(A); Push (Ios.Strregi(A));
+          S := A;
         when Strprog =>
           Pop(A); Push (Ios.Strprog(A));
+          S := A;
         when Strof =>
           Pop(A); Push (Ios.Strof(A));
+          S := A;
 
         -- Dates
         when Clock =>
           Push (Dates.Clock);
         when Dateof =>
           Pop(A); Push (Dates.Time_To_Date(A));
+          S := A;
         when Daysof =>
           Pop(A); Push (Dates.Time_To_Days(A));
+          S := A;
         when Timeof =>
           Pop(A); Push (Dates.Date_To_Time(A));
+          S := A;
 
         when Help =>
           Parser.Print_Help;

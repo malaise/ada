@@ -95,6 +95,7 @@ package body Parser is
    Swap     => (Nosy, "push A, push B                ", False),
    Swap3    => (Nosy, "push A, push B, push C        ", False),
    Dup      => (Nosy, "push A, push A                ", False),
+   Prevtop  => (Nosy, "push previous top of stack    ", False),
    Pop      => (Nosy, "pop A                         ", False),
    Popn     => (Nosy, "pop B A times                 ", True),
 
