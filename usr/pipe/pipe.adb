@@ -1,8 +1,9 @@
--- Usage: relay <mode> <fifo>
+-- Usage: pipe [ -n ] <mode> <fifo>
+-- -n for no carriage return after message reception
 -- <mode> ::= -c | -s
 -- -c : connects to server  for data to relay
 -- -s : accepts connections for data to relay
--- -C or -S for remanent (else exit on fifo disconnection)
+-- -C or -S for remanent (otherwise exit on fifo disconnection or end of input)
 -- Each data is send to client which sent las data received
 with Ada.Text_Io;
 
@@ -23,9 +24,13 @@ procedure Pipe is
   -- Mode
   Server : Boolean;
   Remanent : Boolean;
+  Put_Cr : Boolean;
 
   -- End of processing
   Done : Boolean := False;
+
+  -- Next argument
+  Next_Arg : Positive;
 
   -- Sig callback
   procedure Sig_Callback is
@@ -36,7 +41,9 @@ procedure Pipe is
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                            & " <mode> <fifo>");
+                            & " [ -n ] <mode> <fifo>");
+    Sys_Calls.Put_Line_Error (
+     "-n                     no cariage return after message is put");
     Sys_Calls.Put_Line_Error (
      "<mode> ::= -s | -c     exiting when fifo disconnects");
     Sys_Calls.Put_Line_Error (
@@ -110,7 +117,10 @@ procedure Pipe is
     if Length = 1 and then Message(1) = Ascii.Cr then
       Ada.Text_Io.New_Line;
     else
-      Ada.Text_Io.Put_Line (Message(1 .. Length));
+      Ada.Text_Io.Put (Message(1 .. Length));
+      if Put_Cr then
+        Ada.Text_Io.New_Line;
+      end if;
     end if;
   end Rece_Cb;
 
@@ -120,13 +130,21 @@ procedure Pipe is
     Len : Natural := Str'Length;
   begin
     if Len = 0 then
-      Done := True;
+      if not Remanent then
+        Done := True;
+      else
+        Async_Stdin.Set_Async;
+      end if;
       return True;
     end if;
     if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
       -- End of transmission
       Len := Len - 1;
-      Done := True;
+      if not Remanent then
+        Done := True;
+      else
+        Async_Stdin.Set_Async;
+      end if;
     end if;
     -- Skip Lf but avoid empty message
     if Len > 1 and then (Str(Len) = Ascii.Lf
@@ -152,7 +170,11 @@ procedure Pipe is
       Ada.Text_Io.Get_Line (Message, Len);
     exception
       when Ada.Text_Io.End_Error =>
-        Done := True;
+        if not Remanent then
+          Done := True;
+        else
+          Async_Stdin.Set_Async;
+        end if;
         return;
     end;
 
@@ -167,23 +189,50 @@ procedure Pipe is
 
 begin
 
-  -- 2 arguments
-  if Argument.Get_Nbre_Arg /= 2 then
-    Usage;
-    return;
-  end if;
+  -- Get optional -n
+  begin
+    if Argument.Get_Parameter (1, "n") /= "" then
+      Usage;
+      return;
+    end if;
+    -- -n set, check and fix Next_Arg to mode
+    if Argument.Get_Nbre_Arg /= 3 then
+      Usage;
+      return;
+    end if;
+    Next_Arg := Argument.Get_Position (1, "n");
+    if Next_Arg = 1 then
+      Next_Arg := 2;
+    elsif Next_Arg = 3 then
+      Next_Arg := 1;
+    else
+      Usage;
+      return;
+    end if;
+    Put_Cr := False;
+  exception
+    when Argument.Argument_Not_Found =>
+      -- -n not set, check and fix Next_Arg to mode
+      if Argument.Get_Nbre_Arg /= 2 then
+        Usage;
+        return;
+      end if;
+      Next_Arg := 1;
+      Put_Cr := True;
+  end;
+
 
   -- Store mode
-  if Argument.Get_Parameter (Occurence => 1) = "-s" then
+  if Argument.Get_Parameter (Occurence => Next_Arg) = "-s" then
     Server := True;
     Remanent := False;
-  elsif Argument.Get_Parameter (Occurence => 1) = "-c" then
+  elsif Argument.Get_Parameter (Occurence => Next_Arg) = "-c" then
     Server := False;
     Remanent := False;
-  elsif Argument.Get_Parameter (Occurence => 1) = "-S" then
+  elsif Argument.Get_Parameter (Occurence => Next_Arg) = "-S" then
     Server := True;
     Remanent := True;
-  elsif Argument.Get_Parameter (Occurence => 1) = "-C" then
+  elsif Argument.Get_Parameter (Occurence => Next_Arg) = "-C" then
     Server := False;
     Remanent := True;
   else
@@ -192,7 +241,7 @@ begin
   end if;
 
   -- Init connection
-  Fid := Pipe_Fifo.Open (Argument.Get_Parameter(Occurence => 2),
+  Fid := Pipe_Fifo.Open (Argument.Get_Parameter(Occurence => Next_Arg + 1),
                          not Server,
                          Conn_Cb'Unrestricted_Access,
                          Rece_Cb'Unrestricted_Access,
