@@ -309,6 +309,8 @@ package body Mcd_Mng is
           null;
         when Swap =>
           Pop(A); Pop(B); Push(A); Push(B);
+        when Swap3 =>
+          Pop(A); Pop(B); Pop(C); Push(A); Push(B); Push(C);
         when Dup =>
           Read(A); Push(A);
         when Pop =>

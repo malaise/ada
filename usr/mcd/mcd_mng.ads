@@ -55,6 +55,7 @@ package Mcd_Mng is
 
    Ssize,
    Swap,
+   Swap3,
    Dup,
    Pop,
    Popn,
