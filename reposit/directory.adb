@@ -4,6 +4,8 @@ package body DIRECTORY is
 
   subtype DIR_STR is STRING (1 .. 256);
 
+  SEPARATOR : constant CHARACTER := '/';
+
   type C_DIRENT_REC is record
     D_INO : LONG_INTEGER;
     D_OFF : LONG_INTEGER;
@@ -222,11 +224,26 @@ package body DIRECTORY is
     end if;
   end READ_ONE_LINK;
 
+  procedure EXTRACT_PATH (FROM : in STRING; TO : in out TEXT_HANDLER.TEXT) is
+  begin
+    if FROM(FROM'FIRST) /= SEPARATOR then
+      TEXT_HANDLER.EMPTY(TO);
+      return;
+    end if;
+    for I in reverse FROM'RANGE loop
+      if FROM(I) = SEPARATOR then
+        TEXT_HANDLER.SET (TO, FROM(FROM'FIRST .. I - 1));
+        exit;
+      end if;
+    end loop;
+  end EXTRACT_PATH;
+
   function READ_LINK (FILE_NAME : STRING;
                       RECURSIVE : BOOLEAN := TRUE) return STRING is
-    TXT : TEXT_HANDLER.TEXT(MAX_DIR_NAME_LEN);
+    DIR, TXT : TEXT_HANDLER.TEXT(MAX_DIR_NAME_LEN);
     KIND : FILE_KIND_LIST;
     RIGHTS : NATURAL;
+    use TEXT_HANDLER;
   begin
     -- Check file_name  is a link
     FILE_STAT (FILE_NAME, KIND, RIGHTS);
@@ -237,16 +254,29 @@ package body DIRECTORY is
       return READ_ONE_LINK(FILE_NAME);
     end if;
 
+    -- Prepend current dir if relative, store path
     TEXT_HANDLER.SET (TXT, FILE_NAME);
+    if TEXT_HANDLER.VALUE(TXT)(1) /= SEPARATOR then
+      GET_CURRENT(DIR);
+      TEXT_HANDLER.SET (TXT, DIR & '/' & TXT);
+    end if;
+    EXTRACT_PATH(TEXT_HANDLER.VALUE(TXT), DIR);
+
     loop
       -- Current is a link
       TEXT_HANDLER.SET (TXT, READ_ONE_LINK(TEXT_HANDLER.VALUE(TXT)));
+
+      -- Prepend path if relative, store path
+      if TEXT_HANDLER.VALUE(TXT)(1) /= SEPARATOR then
+        TEXT_HANDLER.SET (TXT, DIR & '/' & TXT);
+      end if;
+      EXTRACT_PATH(TEXT_HANDLER.VALUE(TXT), DIR);
+      
       FILE_STAT(TEXT_HANDLER.VALUE(TXT), KIND, RIGHTS);
       exit when KIND /= SYMBOLIC_LINK;
     end loop;
     return TEXT_HANDLER.VALUE(TXT);
   end READ_LINK;
-
 
   procedure READ_LINK (FILE_NAME : in STRING;
                        TARGET : in out TEXT_HANDLER.TEXT;
