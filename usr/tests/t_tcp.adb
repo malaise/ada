@@ -80,7 +80,7 @@ procedure T_Tcp is
 
   function Client_Connect return Boolean is
   begin
-    Socket.Open (Soc, Socket.Tcp);
+    Socket.Open (Soc, Socket.Tcp_Header);
     Fd := Socket.Fd_Of (Soc);
     My_Io.Put_Line ("Client connecting");
     Socket.Set_Destination_Name_And_Service (Soc,
@@ -128,7 +128,7 @@ begin
   -- Link, set server dest in client, client sends
   if Server then
     -- Create socket, add callback
-    Socket.Open (Accept_Soc, Socket.Tcp);
+    Socket.Open (Accept_Soc, Socket.Tcp_Header);
     Socket.Link_Service (Accept_Soc, Server_Port_Name);
     Accept_Fd := Socket.Fd_Of (Accept_Soc);
     X_Mng.X_Add_Callback (Accept_Fd, Call_Back'Unrestricted_Access);
