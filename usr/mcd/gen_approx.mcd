@@ -1,0 +1,40 @@
+# Check args
+[ "Error, expecting: x1 x2 dx func" putl ssize popn retall ] E popr
+ssize 4 /= E pushr ifcall
+
+# Get function
+F copyr isprog ~ E pushr ifcall
+
+# Get delta
+dup dup isinte swap isreal | ~ E pushr ifcall
+dup isinte [ toreal ] ifcall
+d copyr 0.0 <= [ "Need dx > 0.0" putl E pushr call ] ifcall
+
+# Get a and b
+dup dup isinte swap isreal | ~ E pushr ifcall
+dup isinte [ toreal ] ifcall
+b popr
+dup dup isinte swap isreal | ~ E pushr ifcall
+dup isinte [ toreal ] ifcall
+a copyr
+b pushr > [ "Need x1 <= x2" putl E pushr call ] ifcall
+
+2.010 format
+0 n popr
+# Loop from a to b
+[
+# Next n
+n pushr dup 1 + n popr
+# x = n * d + a
+toreal d pushr * a pushr +
+# Done when x > b
+dup b pushr > [ pop 2 retn ] ifcall
+# y = F(x)
+dup F pushr call
+# Put x y
+swap put " " put putl
+# Loop
+E pushr retacal ] E copyr
+
+call
+
