@@ -116,7 +116,7 @@ package body PARSER is
    STRCAT   => (NOSY, "push B & A                    "),
    STRSUB   => (NOSY, "push C(B..A)                  "),
    STRLOC   => (NOSY, "push C occurence of B in A    "),
-   STRREP   => (NOSY, "push C replaced by B at pos A "),
+   STRREP   => (NOSY, "push A replaced by B at pos C "),
    STRUPP   => (NOSY, "push A in uppercase           "),
    STRLOW   => (NOSY, "push A in lowercase           "),
    STRREAL  => (NOSY, "push A converted to real      "),
@@ -137,6 +137,7 @@ package body PARSER is
     I : MY_MATH.INTE;
     R : MY_MATH.REAL;
     L : POSITIVE;
+    N : NATURAL;
   begin
 
     TEXT_HANDLER.SET (TXT, INPUT_DISPATCHER.NEXT_WORD);
@@ -188,6 +189,13 @@ package body PARSER is
           end if;
           TEXT_HANDLER.APPEND (TXTS, TXT);
         end loop;
+        -- Remove leading and tailing "
+        N := TEXT_HANDLER.LENGTH(TXTS);
+        if N > 0
+        and then TEXT_HANDLER.VALUE(TXTS)(1) = '"'
+        and then TEXT_HANDLER.VALUE(TXTS)(N) = '"' then
+          TEXT_HANDLER.SET(TXTS, TEXT_HANDLER.VALUE(TXTS)(2 .. N-1));
+        end if;
         ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXTS);
         ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) := TEXT_HANDLER.VALUE(TXTS);
         if ITEM_CHRS.VAL_LEN + 4 <= INPUT_DISPATCHER.MAX_STRING_LG then
