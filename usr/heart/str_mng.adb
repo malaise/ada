@@ -110,7 +110,7 @@ package body STR_MNG is
 --  type DATE_STR_REC is record
 --    DAY : STR2;
 --    MONTH : STR2;
---    YEAR : STR2;
+--    YEAR : STR4;
 --  end record;
   -- An input date can be before or after
   -- Check its validity and build date YYyyNnDd

@@ -164,7 +164,7 @@ package body MESU_NAM is
 
   -- Find first file_no_str available for given date and pid
   -- May return WILD_NO_STR if no more_slot available
-  -- May raise FILE_NAME_ERROR if date ir pid has wild
+  -- May raise FILE_NAME_ERROR if date or pid has wild
   function FIND_SLOT (DATE : FILE_DATE_STR;
                       PID  : FILE_PID_STR) return FILE_NO_STR is
     FILE_TEMPLATE : FILE_NAME_STR;
