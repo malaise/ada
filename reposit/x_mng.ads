@@ -211,6 +211,11 @@ package X_MNG is
   -- Unregister the callback from a fd
   procedure X_DEL_CALLBACK (FD : in FILE_DESC);
 
+  -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
+  --  (or X_FAILURE will be raised)
+  -- Any callback on fd is invoked transparently
+  procedure SELECT_NO_X (TIMEOUT_MS : in INTEGER);
+
   -- Wait for some ms or until a X event is availble
   -- If timeout is < 0, infinite wait
   -- The remaining time is set

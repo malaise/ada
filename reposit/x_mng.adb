@@ -1369,5 +1369,22 @@ package body X_MNG is
     end loop;
   end DISPATCHER;
 
+  ------------------------------------------------------------------
+  -- Specific select without X
+  procedure SELECT_NO_X (TIMEOUT_MS : in INTEGER) is
+    X_EVENT : BOOLEAN;
+  begin
+    if INITIALISED  then
+      raise X_FAILURE;
+    end if;
+    XX_SELECT (TIMEOUT_MS, X_EVENT);
+    if X_EVENT then
+      if DEBUG then
+        MY_IO.PUT_LINE ("**** SELECT_NO_X: Got a X event");
+      end if;
+      raise X_FAILURE;
+    end if;
+  end SELECT_NO_X;
+
 end X_MNG;
 
