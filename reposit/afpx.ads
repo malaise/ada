@@ -183,10 +183,5 @@ package AFPX is
   NO_DESCRIPTOR, INVALID_FIELD, INVALID_SQUARE, INVALID_ROW, INVALID_COL,
   STRING_TOO_LONG, INVALID_COLOR, LIST_IN_PUT : exception;
 
-  -- Elaboration:
-  -- Read the description file (erasing current content)
-  -- Check syntax, semantic, non overlapping of fields
-  -- Exceptions : FILE_NOT_FOUND, FILE_READ_ERROR, FILE_SYNTAX_ERROR
-  --              FIELD_OVERLAP (if some fields overlap)
 
 end AFPX;
