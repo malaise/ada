@@ -6,6 +6,7 @@
 --  or a "*" (modified).
 -- Silent mode does not list any file.
 -- Default mode lists all the modified files (with no "=").
+-- Test mode as well but does not modify.
 
 with Ada.Text_Io, Ada.Exceptions;
 
