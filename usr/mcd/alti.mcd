@@ -19,5 +19,5 @@ q pushr 1013.24 - 28.0 *
 f pushr toreal 100.0 * +
 
 # Put result
-round "Alt " put putl
+round "Alt: " put put " ft" putl
 
