@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 
 with Afpx;
 
@@ -59,7 +59,7 @@ package Str_Mng is
            return Mesu_Def.Date_Str;
 
   -- Current_date - nb month
-  subtype Offset_Range is Natural range 0 .. Calendar.Month_Number'Last;
+  subtype Offset_Range is Natural range 0 .. Ada.Calendar.Month_Number'Last;
 
   function Current_Date (Offset : Offset_Range := 0) return Mesu_Def.Date_Str;
   function Current_Date_Printed (Offset : Offset_Range := 0)

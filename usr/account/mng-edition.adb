@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 with Con_Io;
 separate (Mng)
 package body Edition is
@@ -234,8 +234,8 @@ package body Edition is
     -- Set Date: If source of copy is at previous month
     --  and is a Trnasfer then set to current month
     begin
-      Prev := (Cur_Date.Month = Calendar.Month_Number'First
-               and then Oper.Date.Month = Calendar.Month_Number'Last
+      Prev := (Cur_Date.Month = Ada.Calendar.Month_Number'First
+               and then Oper.Date.Month = Ada.Calendar.Month_Number'Last
                and then Cur_Date.Year = Oper.Date.Year + 1)
               or else (Cur_Date.Month = Oper.Date.Month + 1
                 and then Cur_Date.Year = Oper.Date.Year);

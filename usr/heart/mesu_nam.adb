@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 with Perpet, Normal, Text_Handler, Dir_Mng;
 with Pers_Def;
 package body Mesu_Nam is
@@ -38,13 +38,13 @@ package body Mesu_Nam is
 
 
   function Valid_Date (Date : File_Date_Str) return Boolean is
-    Year  : Calendar.Year_Number;
-	Month : Calendar.Month_Number;
-	Day  : Calendar.Day_Number;
+    Year  : Ada.Calendar.Year_Number;
+	Month : Ada.Calendar.Month_Number;
+	Day  : Ada.Calendar.Day_Number;
   begin
-	Year  := Calendar.Year_Number'Value(Date(1..4));
-	Month := Calendar.Month_Number'Value(Date(5..6));
-	Day   := Calendar.Day_Number'Value(Date(7..8));
+	Year  := Ada.Calendar.Year_Number'Value(Date(1..4));
+	Month := Ada.Calendar.Month_Number'Value(Date(5..6));
+	Day   := Ada.Calendar.Day_Number'Value(Date(7..8));
     return Day <= Perpet.Nb_Days_Month (Year, Month);
   exception
     when others =>

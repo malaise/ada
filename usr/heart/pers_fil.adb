@@ -1,10 +1,10 @@
-with Direct_Io;
+with Ada.Direct_Io;
 with Pers_Def;
 use Pers_Def;
 package body Pers_Fil is
 
   -- Direct_io of persons
-  package Person_Io is new Direct_Io (Element_Type => Pers_Def.Person_Rec);
+  package Person_Io is new Ada.Direct_Io (Element_Type => Pers_Def.Person_Rec);
   Person_File : Person_Io.File_Type;
   Person_File_Name : constant String := "PERSONS.LST";
 

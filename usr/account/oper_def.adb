@@ -2,9 +2,9 @@ package body Oper_Def is
 
   function Current_Date return Date_Rec is
     Date : Date_Rec;
-    Secs : Calendar.Day_Duration;
+    Secs : Ada.Calendar.Day_Duration;
   begin
-    Calendar.Split(Calendar.Clock, Date.Year, Date.Month, Date.Day, Secs);
+    Ada.Calendar.Split(Ada.Calendar.Clock, Date.Year, Date.Month, Date.Day, Secs);
     return Date;
   end Current_Date;
 

@@ -1,16 +1,17 @@
-with Argument, Text_Io, Calendar;
+with Ada.Text_Io, Ada.Calendar;
+with Argument;
 procedure Wait is
 
-  Start : constant Calendar.Time := Calendar.Clock;
+  Start : constant Ada.Calendar.Time := Ada.Calendar.Clock;
 
-  package Dur_Io is new Text_Io.Fixed_Io(Duration);
-  package Int_Io is new Text_Io.Integer_Io(Integer);
+  package Dur_Io is new Ada.Text_Io.Fixed_Io(Duration);
+  package Int_Io is new Ada.Text_Io.Integer_Io(Integer);
 
   Dur  : Duration;
   Int  : Integer;
   Last : Positive;
 
-  use Calendar;
+  use Ada.Calendar;
 
 begin
 
@@ -27,9 +28,9 @@ begin
   else
     raise Constraint_Error;
   end if;
-  delay Dur - (Calendar.Clock - Start);
+  delay Dur - (Ada.Calendar.Clock - Start);
 
 exception
   when others => 
-    Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default)."); 
+    Ada.Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default)."); 
 end Wait; 

@@ -1,20 +1,20 @@
 -- time displaying
-with Calendar;
+with Ada.Calendar;
 with Normal, Day_Mng;
 
 separate (Nav_Screen)
 procedure Show_Time is
-  Year  : Calendar.Year_Number;
-  Month : Calendar.Month_Number;
-  Day   : Calendar.Day_Number;
-  Dur   : Calendar.Day_Duration;
+  Year  : Ada.Calendar.Year_Number;
+  Month : Ada.Calendar.Month_Number;
+  Day   : Ada.Calendar.Day_Number;
+  Dur   : Ada.Calendar.Day_Duration;
   Hor : Day_Mng.T_Hours;
   Min : Day_Mng.T_Minutes;
   Sec : Day_Mng.T_Seconds;
   Mil : Day_Mng.T_Millisec;
 begin
   -- get date and time
-  Calendar.Split (Calendar.Clock, Year, Month, Day, Dur);
+  Ada.Calendar.Split (Ada.Calendar.Clock, Year, Month, Day, Dur);
   -- compute time hours, minutes and seconds
   Day_Mng.Split (Dur, Hor, Min, Sec, Mil);
   -- put
@@ -27,3 +27,4 @@ begin
     Normal(Sec, 2, True, '0'),
    Name => W_Time);
 end Show_Time;
+

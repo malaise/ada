@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 package Oper_Def is
 
   subtype Oper_Range is Natural;
@@ -6,9 +6,9 @@ package Oper_Def is
 
   -- Date
   type Date_Rec is record
-    Year : Calendar.Year_Number := 2001;
-    Month : Calendar.Month_Number := 08;
-    Day   : Calendar.Day_Number := 21;
+    Year : Ada.Calendar.Year_Number := 2001;
+    Month : Ada.Calendar.Month_Number := 08;
+    Day   : Ada.Calendar.Day_Number := 21;
   end record;
 
   function Current_Date return Date_Rec;

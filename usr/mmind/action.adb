@@ -1,4 +1,3 @@
-with Calendar;
 with Con_Io, Rnd;
 with Common, Screen, Response;
 package body Action is

@@ -1,4 +1,4 @@
-with Sequential_Io;
+with Ada.Sequential_Io;
 with Dir_Mng;
 with Pers_Mng, Str_Mng, Mesu_Fil;
 
@@ -11,7 +11,7 @@ package body Mesu_Sel is
   List_File_Name : constant String := "SELECTIO.LST";
 
 
-  package List_Io is new Sequential_Io (Mesu_Nam.File_Name_Str);
+  package List_Io is new Ada.Sequential_Io (Mesu_Nam.File_Name_Str);
   List_File : List_Io.File_Type;
 
   procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is

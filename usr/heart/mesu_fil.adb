@@ -1,4 +1,4 @@
-with Direct_Io;
+with Ada.Direct_Io;
 with Normal, Text_Handler;
 with Pers_Def;
 package body Mesu_Fil is
@@ -16,7 +16,7 @@ package body Mesu_Fil is
 
 
   -- Direct_io of mesures
-  package Mesure_Io is new Direct_Io (Element_Type => File_Rec);
+  package Mesure_Io is new Ada.Direct_Io (Element_Type => File_Rec);
   Mesure_File : Mesure_Io.File_Type;
 
   procedure Open (File_Name : in String; Create : Boolean := True) is

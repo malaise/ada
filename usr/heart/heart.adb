@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Con_Io, Dos, Argument, X_Mng;
 with Pers_Fil, Mesu_Mng, Str_Mng;
 procedure Heart is
@@ -20,7 +20,7 @@ begin
     end if;
   exception
     when others =>
-      Text_Io.Put_Line ("SYNTAX ERROR. Usage : "
+      Ada.Text_Io.Put_Line ("SYNTAX ERROR. Usage : "
                       & Argument.Get_Program_Name & " [ <nb_month> ]");
       return;
   end;

@@ -120,11 +120,11 @@ package body Str_Mng is
                         After  : in Boolean;
                         Output : out Mesu_Def.Date_Str;
                         Valid  : out Boolean) is
-    Years  : Calendar.Year_Number;
-    Months : Calendar.Month_Number;
-    Days   : Calendar.Day_Number;
-    Current_Time : constant Calendar.Time := Calendar.Clock;
-    Dummy  : Calendar.Time;
+    Years  : Ada.Calendar.Year_Number;
+    Months : Ada.Calendar.Month_Number;
+    Days   : Ada.Calendar.Day_Number;
+    Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+    Dummy  : Ada.Calendar.Time;
   begin
     -- No space or all spaces in each field
     if      (not Is_Spaces(Input.Day)   and then Has_Spaces(Input.Day))
@@ -136,33 +136,33 @@ package body Str_Mng is
     -- Parse
     if Is_Spaces (Input.Year) then
       -- No year => current year
-      Years := Calendar.Year (Current_Time);
+      Years := Ada.Calendar.Year (Current_Time);
       if Is_Spaces (Input.Month) then
         -- No year no month => current month
-        Months := Calendar.Month(Current_Time);
+        Months := Ada.Calendar.Month(Current_Time);
       else
         -- Month set
-        Months := Calendar.Month_Number'Value(Input.Month);
+        Months := Ada.Calendar.Month_Number'Value(Input.Month);
       end if;
       if Is_Spaces (Input.Day) then
         if Is_Spaces (Input.Month) then
           -- ss ss ssss => current day
-          Days := Calendar.Day (Current_Time);
+          Days := Ada.Calendar.Day (Current_Time);
         else
           -- ss mm ssss => begin/end of month of current year
           if After then
             Days := Perpet.Nb_Days_Month (Years, Months);
           else
-            Days := Calendar.Day_Number'First;
+            Days := Ada.Calendar.Day_Number'First;
           end if;
         end if;
       else
         -- dd ss ssss  or  dd mm ssss
-        Days := Calendar.Day_Number'Value(Input.Day);
+        Days := Ada.Calendar.Day_Number'Value(Input.Day);
       end if;
     else
       -- Year is set
-      Years := Calendar.Year_Number'Value(Input.Year);
+      Years := Ada.Calendar.Year_Number'Value(Input.Year);
       if Is_Spaces (Input.Month) then
         -- dd ss yyyy forbidden
         if not Is_Spaces (Input.Day) then
@@ -171,28 +171,28 @@ package body Str_Mng is
         end if;
         -- Year and no month => first/last month
         if After then
-          Months := Calendar.Month_Number'Last;
+          Months := Ada.Calendar.Month_Number'Last;
         else
-          Months := Calendar.Month_Number'First;
+          Months := Ada.Calendar.Month_Number'First;
         end if;
       else
         -- Month set
-        Months := Calendar.Month_Number'Value(Input.Month);
+        Months := Ada.Calendar.Month_Number'Value(Input.Month);
       end if;
       if Is_Spaces (Input.Day) then
         -- First/last of date
         if After then
           Days := Perpet.Nb_Days_Month (Years, Months);
         else
-          Days := Calendar.Day_Number'First;
+          Days := Ada.Calendar.Day_Number'First;
         end if;
       else
         -- dd ss ssss  or  dd mm ssss
-        Days := Calendar.Day_Number'Value(Input.Day);
+        Days := Ada.Calendar.Day_Number'Value(Input.Day);
       end if;
     end if;
     -- Does all this stuff make a valid date?
-    Dummy := Calendar.Time_Of (Years, Months, Days);
+    Dummy := Ada.Calendar.Time_Of (Years, Months, Days);
     Output := Normal (Years,  4, Gap => '0')
             & Normal (Months, 2, Gap => '0')
             & Normal (Days,   2, Gap => '0');
@@ -228,17 +228,17 @@ package body Str_Mng is
 
   function Current_Date (Offset : Offset_Range := 0)
   return Mesu_Def.Date_Str is
-    Current_Time : Calendar.Time := Calendar.Clock;
-    Years  : Calendar.Year_Number;
-    Months : Calendar.Month_Number;
-    Days   : Calendar.Day_Number;
-    Secs   : Calendar.Day_Duration;
+    Current_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
+    Years  : Ada.Calendar.Year_Number;
+    Months : Ada.Calendar.Month_Number;
+    Days   : Ada.Calendar.Day_Number;
+    Secs   : Ada.Calendar.Day_Duration;
     use Perpet;
   begin
     if Offset /= 0 then
       Current_Time := Current_Time - (Years => 0, Months => Offset);
     end if;
-    Calendar.Split (Current_Time, Years, Months, Days, Secs);
+    Ada.Calendar.Split (Current_Time, Years, Months, Days, Secs);
     return Normal (Years,  4, Gap => '0')
          & Normal (Months, 2, Gap => '0')
          & Normal (Days,   2, Gap => '0');

@@ -1,12 +1,12 @@
-with Text_Io, Calendar;
+with Ada.Text_Io, Ada.Calendar;
 with My_Math, Normal, Euro_Franc;
 package body Unit_Format is
 
   Current_Unit : Units_List := Default_Unit;
 
-  package Amount_Io is new Text_Io.Float_Io(Oper_Def.Amount_Range);
-  package Real_Io is new Text_Io.Float_Io(My_Math.Real);
-  package Inte_Io is new Text_Io.Integer_Io(My_Math.Inte);
+  package Amount_Io is new Ada.Text_Io.Float_Io(Oper_Def.Amount_Range);
+  package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
+  package Inte_Io is new Ada.Text_Io.Integer_Io(My_Math.Inte);
 
   package Mef is new Euro_Franc(Oper_Def.Amount_Range, Oper_Def.Amount_Range);
 
@@ -20,13 +20,13 @@ package body Unit_Format is
 
   function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec is
     Date : Oper_Def.Date_Rec;
-    Time : Calendar.Time;
+    Time : Ada.Calendar.Time;
   begin
-    Date.Day   := Calendar.Day_Number'Value  (Str(1 ..  2));
-    Date.Month := Calendar.Month_Number'Value(Str(4 ..  5));
-    Date.Year  := Calendar.Year_Number'Value (Str(7 .. 10));
+    Date.Day   := Ada.Calendar.Day_Number'Value  (Str(1 ..  2));
+    Date.Month := Ada.Calendar.Month_Number'Value(Str(4 ..  5));
+    Date.Year  := Ada.Calendar.Year_Number'Value (Str(7 .. 10));
     -- Check validity
-    Time := Calendar.Time_Of(Date.Year, Date.Month, Date.Day, 0.0);
+    Time := Ada.Calendar.Time_Of(Date.Year, Date.Month, Date.Day, 0.0);
     return Date;
   exception
     when others =>

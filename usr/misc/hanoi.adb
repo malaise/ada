@@ -1,4 +1,5 @@
-with Text_Io, My_Io, Calendar; use My_Io; 
+with Ada.Text_Io, Ada.Calendar;
+with My_Io; use My_Io; 
 -- Simulation du jeu des tours de hanoi
 
 procedure Hanoi is 
@@ -6,7 +7,7 @@ procedure Hanoi is
   type Typ_Support is (A, B, C); 
   Origine, Destination : Typ_Support; 
   package Support_Io is 
-    new Text_Io.Enumeration_Io(Typ_Support); 
+    new Ada.Text_Io.Enumeration_Io(Typ_Support); 
   Supports_Identiques : exception; 
 
   subtype Typ_Numero_De_Disque is Positive; 
@@ -18,10 +19,10 @@ procedure Hanoi is
   Reponse                : Character;
   Trace                  : Boolean;
 
-  Temps                  : Calendar.Time;
-  Seconde                : Calendar.Day_Duration;
+  Temps                  : Ada.Calendar.Time;
+  Seconde                : Ada.Calendar.Day_Duration;
   package Duration_Io is
-    new Text_Io.Fixed_Io(Duration);
+    new Ada.Text_Io.Fixed_Io(Duration);
 
   function Determine_Intermediaire (
    Premier_Support, Deuxieme_Support : Typ_Support) return Typ_Support is
@@ -170,10 +171,10 @@ begin -- hanoi
 
     begin
       Nombre_De_Deplacements := 0; 
-      Temps := Calendar.Clock; 
+      Temps := Ada.Calendar.Clock; 
       Deplacer(Origine, Determine_Intermediaire(Origine, Destination), 
         Destination, Nombre_De_Disques); 
-      Seconde := Calendar."-"(Calendar.Clock, Temps); 
+      Seconde := Ada.Calendar."-"(Ada.Calendar.Clock, Temps); 
 
       New_Line; 
       Put("Transfert de "); 

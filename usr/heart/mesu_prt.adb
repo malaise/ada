@@ -1,15 +1,15 @@
-with Text_Io, Normal, Dos, Afpx, Sys_Calls;
+with Ada.Text_Io, Normal, Dos, Afpx, Sys_Calls;
 with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng;
 package body Mesu_Prt is
 
   Printer_Name : constant String := "";
   Printer_Command : constant String := "heart_print";
-  Printer      : Text_Io.File_Type;
+  Printer      : Ada.Text_Io.File_Type;
 
   procedure Print_Rec (Person : in Pers_Def.Person_Rec;
                        Mesure : in Mesu_Def.Mesure_Rec) is
     Last_Of_Line : Boolean;
-    use Text_Io;
+    use Ada.Text_Io;
     use Pers_Def;
   begin
     if not Is_Open (Printer) then
@@ -43,14 +43,14 @@ package body Mesu_Prt is
 
   procedure Print_Separator is
   begin
-    Text_Io.Put_Line (Printer,
+    Ada.Text_Io.Put_Line (Printer,
 "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   end Print_Separator;
 
   procedure Form_Feed is
   begin
-    Text_Io.New_Page(Printer);
-    Text_Io.Close(Printer);
+    Ada.Text_Io.New_Page(Printer);
+    Ada.Text_Io.Close(Printer);
   end Form_Feed;
 
   procedure Print is

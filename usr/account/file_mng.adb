@@ -1,11 +1,10 @@
-with Text_Io, Sequential_Io;
-with Ada.Exceptions;
+with Ada.Text_Io, Ada.Sequential_Io, Ada.Exceptions;
 with Directory, Text_Handler;
 
 with Oper_Def;
 package body File_Mng is
 
-  package Oper_Io is new Sequential_Io(Oper_Def.Oper_Rec);
+  package Oper_Io is new Ada.Sequential_Io(Oper_Def.Oper_Rec);
 
 
   -- First record in file as to be this
@@ -89,8 +88,9 @@ package body File_Mng is
     when F_Access_Error =>
       raise;
     when File_Error : others =>
-      Text_Io.Put_Line ("Exception " & Ada.Exceptions.Exception_Name(File_Error)
-                      & " raised while loading file " & File_Name);
+      Ada.Text_Io.Put_Line ("Exception "
+                          & Ada.Exceptions.Exception_Name(File_Error)
+                          & " raised while loading file " & File_Name);
       begin
         Oper_Io.Close (File);
       exception
@@ -160,8 +160,9 @@ package body File_Mng is
     when F_Access_Error =>
       raise;
     when File_Error : others =>
-      Text_Io.Put_Line ("Exception " & Ada.Exceptions.Exception_Name(File_Error)
-                      & " raised while closing file " & File_Name);
+      Ada.Text_Io.Put_Line ("Exception "
+                          & Ada.Exceptions.Exception_Name(File_Error)
+                          & " raised while closing file " & File_Name);
       begin
         Oper_Io.Close (File);
       exception

@@ -1,4 +1,4 @@
-with Calendar;
+with Ada.Calendar;
 with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Normal, Dos;
 procedure T_Screen is
 
@@ -99,12 +99,12 @@ begin
 
   -- Encode date
   declare
-    Current_Time : constant Calendar.Time := Calendar.Clock;
+    Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
   begin
     Afpx.Encode_Field (Curr_Date, (0, 0),
-      Normal(Calendar.Day(Current_Time)  , 2, Gap => '0') & "/"
-    & Normal(Calendar.Month(Current_Time), 2, Gap => '0') & "/"
-    & Normal(Calendar.Year(Current_Time),  4, Gap => '0') );
+      Normal(Ada.Calendar.Day(Current_Time)  , 2, Gap => '0') & "/"
+    & Normal(Ada.Calendar.Month(Current_Time), 2, Gap => '0') & "/"
+    & Normal(Ada.Calendar.Year(Current_Time),  4, Gap => '0') );
   end;
 
 
