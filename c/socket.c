@@ -101,7 +101,7 @@ extern int soc_open (soc_token *p_token,
 
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
-    perror ("fcntl1");
+    perror ("fcntl_cloexec_open");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
@@ -146,6 +146,7 @@ extern int soc_get_id (soc_token token, int *p_id) {
 /*  (for sendind and receiving) */ 
 extern int soc_set_blocking (soc_token token, boolean blocking) {
   soc_ptr soc = (soc_ptr) token;
+  int status;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -158,33 +159,24 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   /* Store state */
   soc->blocking = blocking; 
 
+  /* Get status */
+  status = fcntl (soc->socket_id, F_GETFL, 0);
+  if (status < 0) {
+    perror ("fcntl_get_block");
+    return (SOC_SYS_ERR);
+  }
+
   /* Blocking receiving or not */
   if (blocking) {
-    /* Ioctl for having blocking receive */
-/*    if (ioctl (soc->socket_id, FIONBIO,
-     (char *) &BLOCKINGIO) < 0) {
-      perror ("ioctl1");
-      return (SOC_SYS_ERR);
-    }
-*/
-    /* Fcntl for having blocking ios */
-    if (fcntl (soc->socket_id, F_SETFL, ~O_NONBLOCK) < 0) {
-      perror ("fcntl2");
-      return (SOC_SYS_ERR);
-    }
+    status &= ~O_NONBLOCK;
   } else {
-    /* Ioctl for having non blocking receive */
-/*    if (ioctl (soc->socket_id, FIONBIO,
-     (char *) &NONBLOCKINGIO) < 0) {
-      perror ("ioctl2");
-      return (SOC_SYS_ERR);
-    }
-*/
-    /* Fcntl same for having non blocking ios */
-    if (fcntl (soc->socket_id, F_SETFL, O_NONBLOCK) < 0) {
-      perror ("fcntl3");
-      return (SOC_SYS_ERR);
-    }
+    status |= O_NONBLOCK;
+  }
+
+  /* Fcntl for having blocking ios */
+  if (fcntl (soc->socket_id, F_SETFL, status)  == -1) {
+    perror ("fcntl_set_block");
+    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -1139,7 +1131,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
-    perror ("fcntl4");
+    perror ("fcntl_cloexec_accept");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
