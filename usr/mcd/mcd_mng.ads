@@ -61,7 +61,8 @@ package MCD_MNG is
 
    POPE,
    COPYE,
-   PUSHE,
+   PUSHLE,
+   PUSHFE,
    ESIZE,
 
    CALL,

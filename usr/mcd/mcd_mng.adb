@@ -18,6 +18,8 @@ package body MCD_MNG is
     procedure READ (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
 
     function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE) return NATURAL;
+
+    procedure POPF (ITEM : out ITEM_REC);
   end STACK;
 
   package OPERATIONS is
@@ -346,9 +348,12 @@ package body MCD_MNG is
         when COPYE =>
           -- pushe A push A
           READ(A); PUSH (A, DEFAULT_STACK => FALSE); 
-        when PUSHE =>
-          -- pushe A
+        when PUSHLE =>
+          -- pushe X push X
           POP(A, DEFAULT_STACK => FALSE); PUSH (A);
+        when PUSHFE =>
+          -- pushe X push X
+          POPF(A); PUSH (A);
         when ESIZE =>
            PUSH( (KIND => INTE,
                   VAL_INTE => MY_MATH.INTE(STACK.STACK_SIZE(

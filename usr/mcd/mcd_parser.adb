@@ -69,7 +69,8 @@ package body PARSER is
 
    POPE    => (NOSY, "pop A push_extra A            "),
    COPYE   => (NOSY, "pop A push_extra A push A     "),
-   PUSHE   => (NOSY, "pop_extra X push X            "),
+   PUSHLE  => (NOSY, "pop_extra last  X push X      "),
+   PUSHFE  => (NOSY, "pop_extra first X push X      "),
    ESIZE   => (NOSY, "push extra_stack size         "),
 
    IFTHEN  => (NOSY, "if A then push B              "),

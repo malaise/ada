@@ -106,5 +106,32 @@ package body STACK is
     return SIZE;
   end STACK_SIZE;
 
+  procedure POPF (ITEM : out ITEM_REC) is
+    LITEM : ITEM_REC;
+  begin
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
+        TEXT_IO.PUT ("Extra ");
+      TEXT_IO.PUT ("Stack: Poping first ");
+    end if;
+    -- Get first pushed item
+    STACK_LIST.MOVE_TO(EXTRA_LIST, STACK_LIST.NEXT, 0, FALSE);
+    STACK_LIST.GET(EXTRA_LIST, LITEM, STACK_LIST.NEXT);
+    ITEM := LITEM;
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
+      DEBUG.PUT (LITEM);
+      TEXT_IO.NEW_LINE;
+    end if;
+    -- Move back to las pushed item
+    if not STACK_LIST.IS_EMPTY(EXTRA_LIST) then
+      STACK_LIST.MOVE_TO(EXTRA_LIST, STACK_LIST.PREV, 0, FALSE);
+    end if;
+  exception
+    when STACK_LIST.EMPTY_LIST =>
+      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
+        TEXT_IO.PUT_LINE("raises EMPTY_STACK");
+      end if;
+      raise EMPTY_STACK;
+  end POPF;
+
 end STACK;
 
