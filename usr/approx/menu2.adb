@@ -5,6 +5,14 @@ package body MENU2 is
   type RESTORE_LIST is (NONE, PARTIAL, LIST, FULL); 
   CURSOR_FIELD : AFPX.FIELD_RANGE;
 
+  task CURVE_TASK is
+    -- Start computation
+    entry START (OK : out BOOLEAN);
+    -- Points and bounds got
+    entry STARTED;
+    entry STOPPED (OK : out BOOLEAN);
+  end;
+
   procedure ERROR (MSG : in SCREEN.S_ERROR_LIST) is
   begin
     SCREEN.ERROR(MSG);
@@ -21,7 +29,7 @@ package body MENU2 is
       when PARTIAL =>
         AFPX.USE_DESCRIPTOR(3, FALSE);
         SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
-       SCREEN.PUT_FILE;
+        SCREEN.PUT_FILE;
       when LIST =>
         -- polynom display needs reset of list
         AFPX.USE_DESCRIPTOR(3, FALSE);
@@ -79,34 +87,93 @@ package body MENU2 is
     POINT := LP;
   end COMPUTE_XY;
 
+  task body CURVE_TASK is
+    DRAW_IT : BOOLEAN;
+    DRAW_OK : BOOLEAN;
+  begin
+    DRAW_OK := TRUE;
+    loop
+      select
+        accept START (OK : out BOOLEAN) do
+          DRAW_IT := CURVE.INIT;
+          OK := DRAW_IT;
+        end START;
+      or
+        accept STOPPED (OK : out BOOLEAN) do
+          OK := DRAW_OK;
+          DRAW_IT := FALSE;
+        end STOPPED;
+      or
+        terminate;
+      end select;
+
+      if DRAW_IT then
+        begin
+          declare
+            THE_POINTS : constant POINTS.P_T_THE_POINTS := POINTS.P_THE_POINTS;
+            THE_BOUNDS : CURVE.T_BOUNDARIES;
+            SET : BOOLEAN;
+            -- Resolution of problem
+            SOLUTION : constant RESOL.VECTOR
+                     := RESOL.R_RESOLUTION (THE_POINTS);
+            function MY_F_X (X : POINTS.P_T_COORDINATE)
+                     return POINTS.P_T_COORDINATE is
+            begin
+              return F_X (X, SOLUTION);
+            end MY_F_X;
+            procedure MY_DRAW is new CURVE.DRAW (MY_F_X);
+          begin
+            MENU21.GET_BOUNDS (SET, THE_BOUNDS);
+            accept STARTED;
+            MY_DRAW (THE_BOUNDS, THE_POINTS);
+            DRAW_OK := TRUE;
+          exception
+            when others =>
+              DRAW_OK := FALSE;
+          end;
+        exception
+          when others =>
+            accept STARTED;
+            DRAW_OK := FALSE;
+        end;
+      else
+        DRAW_OK := TRUE;
+      end if;  
+    end loop;
+  end CURVE_TASK;
+
+  function CURVED_STOPED return BOOLEAN is
+   OK : BOOLEAN;
+  begin
+    select
+      CURVE_TASK.STOPPED(OK);
+      OK := TRUE;
+    or
+      delay 0.0;
+      OK := FALSE;
+    end select;
+    return OK;
+  end CURVED_STOPED;
+
   procedure DRAW_CURVE is
-    SET : BOOLEAN;
+    OK : BOOLEAN;
     THE_BOUNDS : CURVE.T_BOUNDARIES;
-    THE_POINTS : constant POINTS.P_T_THE_POINTS := POINTS.P_THE_POINTS;
   begin
     SCREEN.PUT_TITLE(SCREEN.CURVE);
-    SCREEN.INFORM (SCREEN.I_WAIT);
-    MENU21.GET_BOUNDS (SET, THE_BOUNDS);
-    if not SET then
+    MENU21.GET_BOUNDS (OK, THE_BOUNDS);
+    if not OK then
+      -- Should not occure, but who knows
       raise PROGRAM_ERROR;
     end if;
-    declare
-      -- Resolution of problem
-      SOLUTION : constant RESOL.VECTOR
-               := RESOL.R_RESOLUTION (POINTS.P_THE_POINTS);
-      function MY_F_X (X : POINTS.P_T_COORDINATE) return POINTS.P_T_COORDINATE is
-      begin
-        return F_X (X, SOLUTION);
-      end MY_F_X;
-      procedure MY_DRAW is new CURVE.DRAW (MY_F_X);
-    begin
-      CON_IO.RESET_TERM;
-      MY_DRAW (THE_BOUNDS, THE_POINTS);
-    exception
-      when others =>
-        DO_RESTORE(FULL);
+    if not CURVED_STOPED then
+      SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
+    else
+      CURVE_TASK.START (OK);
+      CURVE_TASK.STARTED;
+      if not OK then
         SCREEN.ERROR (SCREEN.E_CURVE_PROBLEM);
-    end;
+      end if;
+    end if;
   exception
     when others =>
       SCREEN.ERROR (SCREEN.E_RESOLUTION_PROBLEM);
