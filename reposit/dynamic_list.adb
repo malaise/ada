@@ -414,6 +414,8 @@ package body DYNAMIC_LIST is
     -- start from
     if FROM_CURRENT then
       NEW_POS := LIST.CURRENT;
+      NEW_POS_FIRST := LIST.POS_FIRST;
+      NEW_POS_LAST := LIST.POS_LAST;
     else
       case WHERE is
         when NEXT =>
