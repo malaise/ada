@@ -269,10 +269,19 @@ package body Socket is
     Len : Natural;
     Sfr_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
-    if Message'Size rem Byte_Size /= 0 then
-      raise Soc_Len_Err;
+    if Message_Size = 0 then
+      -- Size not provided at instantiation, guess it from
+        -- provided type
+      if Message'Size rem Byte_Size /= 0 then
+        raise Soc_Len_Err;
+      end if;
+      Len := Message'Size / Byte_Size;
+    else
+      if Message_Size rem Byte_Size /= 0 then
+        raise Soc_Len_Err;
+      end if;
+      Len := Message_Size / Byte_Size;
     end if;
-    Len := Message'Size / Byte_Size;
     Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len,
                         Sfr_For_C);
     if Res >= 0 then
@@ -493,10 +502,21 @@ package body Socket is
                   Length  : in Natural := 0) is
     Len : Natural;
   begin
-    if Message'Size rem Byte_Size /= 0 then
-      raise Soc_Len_Err;
-    end if;
     if Length = 0 then
+      -- Size not provided at sending, use default
+      if Message_Size = 0 then
+        -- Size not provided at instantiation, guess it from
+          -- provided type
+        if Message'Size rem Byte_Size /= 0 then
+          raise Soc_Len_Err;
+        end if;
+        Len := Message'Size / Byte_Size;
+      else
+        if Message_Size rem Byte_Size /= 0 then
+          raise Soc_Len_Err;
+        end if;
+        Len := Message_Size / Byte_Size;
+      end if;
       Len := Message'Size / Byte_Size;
     else
       Len := Length;

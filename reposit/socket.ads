@@ -118,7 +118,10 @@ package Socket is
   -- May raise Soc_Len_Err if message size is to short in tcp_header
   -- May raise Soc_Len_Err if message'size is not multiple of 8
   generic
+    -- If Message_Size (in bits) is 0, the length is computed from
+    --  Message_Type'Size, which may be wrong with indefinite type.
     type Message_Type (<>) is private;
+    Message_Size : Natural := 0;
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
                      Length        : out Natural;
@@ -229,7 +232,10 @@ package Socket is
   -- May raise Soc_Would_Block if non blocking and overflow (call Re_Send)
   -- May raise Soc_Len_Err if message'size is not multiple of 8
   generic
+    -- If Message_Size (in bits) is 0, the length (if 0) is computed from
+    --  Message_Type'Size, which may be wrong with indefinite type.
     type Message_Type (<>) is private;
+    Message_Size : Natural := 0;
   procedure Send (Socket  : in Socket_Dscr;
                   Message : in Message_Type;
                   Length  : in Natural := 0);
