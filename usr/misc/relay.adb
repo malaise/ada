@@ -1,4 +1,4 @@
--- Usage: pipe <mode> <channel>
+-- Usage: relay <mode> <channel>
 -- <mode> ::= -s | -p
 -- -p : reads text from stdin, each line is published on the channel
 -- -s : subscribes to the channel and dump messages on stdout
@@ -9,7 +9,7 @@ with Ada.Text_Io;
 
 with Text_Handler, Argument, Sys_Calls, Event_Mng,
      Socket, Tcp_Util, Channels, Async_Stdin;
-procedure Pipe is
+procedure Relay is
 
   -- Message type
   Max_Data_Size : constant := 1024;
@@ -278,5 +278,5 @@ begin
     end if;
   end if;
 
-end Pipe;
+end Relay;
 
