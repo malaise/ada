@@ -42,6 +42,11 @@ package body Screen is
     loop
       Put_Then_Get(Cursor_Field, Cursor_Col, Result, True);
       exit when Result.Event = Afpx.Mouse_Button;
+      if Result.Event = Afpx.Signal_Event
+      or else (Result.Event = Afpx.Keyboard
+               and then Result.Keyboard_Key = Afpx.Break_Key) then
+        raise Exit_Requested;
+      end if;
     end loop;
     if Result.Field_No = 3 then
       return Common.Nim;
@@ -105,6 +110,11 @@ package body Screen is
       -- Activate play
       Set_Field_Activation (17, Nb_Selected /= 0);
       Put_Then_Get(Cursor_Field, Cursor_Col, Result, Redisplay);
+      if Result.Event = Afpx.Signal_Event
+      or else (Result.Event = Afpx.Keyboard
+               and then Result.Keyboard_Key = Afpx.Break_Key) then
+        raise Exit_Requested;
+      end if;
       if Result.Event = Afpx.Mouse_Button then
         case Result.Field_No is
           when 1 .. 16 =>
