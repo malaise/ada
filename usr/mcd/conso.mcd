@@ -38,12 +38,12 @@ w copyr "Current   fuel: " put T pushr call newl
 0 f pushr > [ E pushr call ] ifcall
 f pushr 4 * 1000 * c popr
 
-# Compute remaining fuel
-w pushr t pushr c pushr * 60 / -
-"Remaining fuel: " put  T pushr call newl
-
 # Check 0 < fuel_flow and compute remaining flight time
 c pushr w pushr 3600 * swap /
 1000 * 6 format daysof 8 12 strsub "h" 3 swap3 strrep
 "Flight    time:  " put putl
+
+# Compute remaining fuel
+w pushr t pushr c pushr * 60 / -
+"Remaining fuel: " put T pushr call newl
 
