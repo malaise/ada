@@ -38,6 +38,12 @@ package AFPX is
                          RESET_COLORS : in BOOLEAN := TRUE;
                          RESET_STRING : in BOOLEAN := TRUE);
 
+  -- Width of a field
+  -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
+  --              INVALID_FIELD (FIELD_NO too big)
+  function GET_FIELD_WIDTH (FIELD_NO : ABSOLUTE_FIELD_RANGE)
+                           return WIDTH_RANGE;
+
   -- Width and height of a field
   -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
   --              INVALID_FIELD (FIELD_NO too big)
