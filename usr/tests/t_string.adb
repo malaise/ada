@@ -4,8 +4,9 @@ procedure T_STRING is
   STR : STRING(1 .. 500);
   STR_LEN : NATURAL;
   LEN : POSITIVE;
-  RIGHT : BOOLEAN;
+  ALIGN_RIGHT : BOOLEAN;
   GAP : CHARACTER;
+  TRUNC_HEAD : BOOLEAN;
   SHOW_TRUNC : BOOLEAN;
 
 begin
@@ -13,8 +14,9 @@ begin
   loop
     MY_IO.PUT ("STR ? "); MY_IO.GET_LINE (STR, STR_LEN);
     MY_IO.PUT ("LEN ? "); MY_IO.GET(LEN);
-    MY_IO.PUT ("RIGHT ? "); MY_IO.GET(RIGHT);
+    MY_IO.PUT ("ALIGN_RIGHT ? "); MY_IO.GET(ALIGN_RIGHT);
     MY_IO.PUT ("GAP ? "); MY_IO.GET(GAP);
+    MY_IO.PUT ("TRUNC_HEAD ? "); MY_IO.GET(TRUNC_HEAD);
     MY_IO.PUT ("SHOW_TRUNC ? "); MY_IO.GET(SHOW_TRUNC);
     MY_IO.SKIP_LINE;
 
@@ -28,7 +30,8 @@ begin
 
     MY_IO.PUT_LINE (
         "Procuste: |" 
-      & STRING_MNG.PROCUSTE(STR(1 .. STR_LEN), LEN, RIGHT, GAP, SHOW_TRUNC)
+      & STRING_MNG.PROCUSTE(STR(1 .. STR_LEN), LEN, ALIGN_RIGHT, GAP,
+                            TRUNC_HEAD, SHOW_TRUNC)
       & "|");
     MY_IO.NEW_LINE;
   end loop;
