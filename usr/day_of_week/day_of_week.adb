@@ -21,6 +21,7 @@ procedure DAY_OF_WEEK is
   begin
     return C >= '0' and then C <= '9';
   end IS_DIGIT;
+
   function IS_DIGIT (S : STRING) return BOOLEAN is
   begin
     for I in S'RANGE loop
@@ -33,62 +34,65 @@ procedure DAY_OF_WEEK is
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG = 0  or else ARGUMENT.GET_NBRE_ARG = 1 then
-    declare
-      MONTH : CALENDAR.MONTH_NUMBER;
-      DAY : CALENDAR.DAY_NUMBER;
-    begin
-      if ARGUMENT.GET_NBRE_ARG = 0 then
-        T := CALENDAR.CLOCK;
-        declare
-          DUMMY_DURATION : CALENDAR.DAY_DURATION;
-        begin
-          CALENDAR.SPLIT (T, YEAR, MONTH, DAY, DUMMY_DURATION);
-        end;
-        TEXT_HANDLER.SET(TXT, NORMAL(DAY, 2, GAP => '0') & "/"
-                            & NORMAL(MONTH, 2, GAP => '0') & "/"
-                            & NORMAL(YEAR, 4, GAP => '0') );
-      else
-        ARGUMENT.GET_PARAMETER (TXT);
-        if TEXT_HANDLER.LENGTH(TXT) /= 10
-        or else TEXT_HANDLER.VALUE(TXT)(3) /= '/'
-        or else TEXT_HANDLER.VALUE(TXT)(6) /= '/' then
-          USAGE;
-          return;
-        end if;
-
-        if not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(1 .. 2))
-        or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(4 .. 5))
-        or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(7 .. 10)) then
-          USAGE;
-          return;
-        end if;
-
-        DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
-        MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
-        YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
-      end if;
-
-      declare
-        HOUR : DAY_MNG.T_HOURS := 0;
-        MINUTE : DAY_MNG.T_MINUTES := 0;
-        SECOND : DAY_MNG.T_SECONDS := 0;
-        MILLISEC : DAY_MNG.T_MILLISEC := 0;
-      begin
-        T :=  CALENDAR.TIME_OF
-          (YEAR, MONTH, DAY, DAY_MNG.PACK(HOUR, MINUTE, SECOND, MILLISEC));
-      end;
-    end;
-  else
+  if ARGUMENT.GET_NBRE_ARG /= 0  and then ARGUMENT.GET_NBRE_ARG /= 1 then
     USAGE;
     return;
   end if;
 
   declare
+    MONTH : CALENDAR.MONTH_NUMBER;
+    DAY : CALENDAR.DAY_NUMBER;
+  begin
+    if ARGUMENT.GET_NBRE_ARG = 0 then
+      -- Current date
+      T := CALENDAR.CLOCK;
+      declare
+        DUMMY_DURATION : CALENDAR.DAY_DURATION;
+      begin
+        CALENDAR.SPLIT (T, YEAR, MONTH, DAY, DUMMY_DURATION);
+      end;
+      TEXT_HANDLER.SET(TXT, NORMAL(DAY, 2, GAP => '0') & "/"
+                          & NORMAL(MONTH, 2, GAP => '0') & "/"
+                          & NORMAL(YEAR, 4, GAP => '0') );
+    else
+      -- Get date from arg 1
+      ARGUMENT.GET_PARAMETER (TXT);
+      if TEXT_HANDLER.LENGTH(TXT) /= 10
+      or else TEXT_HANDLER.VALUE(TXT)(3) /= '/'
+      or else TEXT_HANDLER.VALUE(TXT)(6) /= '/' then
+        USAGE;
+        return;
+      end if;
+
+      if not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(1 .. 2))
+      or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(4 .. 5))
+      or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(7 .. 10)) then
+        USAGE;
+        return;
+      end if;
+
+      DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
+      MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
+      YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
+    end if;
+
+    -- Build time of 0h00 of date
+    declare
+      HOUR : DAY_MNG.T_HOURS := 0;
+      MINUTE : DAY_MNG.T_MINUTES := 0;
+      SECOND : DAY_MNG.T_SECONDS := 0;
+      MILLISEC : DAY_MNG.T_MILLISEC := 0;
+    begin
+      T :=  CALENDAR.TIME_OF
+        (YEAR, MONTH, DAY, DAY_MNG.PACK(HOUR, MINUTE, SECOND, MILLISEC));
+    end;
+  end;
+
+  -- Compute delta from 01/01 and to 31/12 of year
+  declare
     T0 : CALENDAR.TIME;
     T1 : CALENDAR.TIME;
   begin
-
     T0 := CALENDAR.TIME_OF (YEAR, 1, 1, 0.0);
     DELTA_DATE_0 := PERPET."-" (T, T0);
     
@@ -101,7 +105,7 @@ begin
   end;
 
 
-
+  -- Display result
   TEXT_IO.PUT_LINE (TEXT_HANDLER.VALUE(TXT) & " is a "
        & PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T))
        & ", in week"
@@ -112,5 +116,6 @@ begin
        & "th day of the year,"
        & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_1.DAYS)
        & " days remaining.");
+
 end DAY_OF_WEEK;
 
