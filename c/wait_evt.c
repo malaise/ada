@@ -74,16 +74,31 @@ extern boolean evt_fd_set (int fd, boolean read) {
 
 
 /***** Sig Management   *****/
-#define NO_SIG -1
-#define DUMMY_SIG 0
-static int sig_received = NO_SIG;
+static int sig_received = SIG_NONE;
+static int last_sig = SIG_NONE;
 static boolean sig_handled = FALSE;
 static void signal_handler (int sig) {
+  if (sig < SIG_DUMMY) return;
+  if ( (sig == SIG_DUMMY) && (sig_received != SIG_NONE) ) return;
   sig_received = sig;
 }
 
 extern void send_signal (int sig) {
   signal_handler (sig);
+}
+
+extern int get_signal (void) {
+  if (last_sig == SIG_NONE) {
+    return (SIG_NONE);
+  } else if (last_sig == SIG_DUMMY) {
+    return (SIG_DUMMY);
+  } else if (last_sig == SIGINT) {
+    return (SIG_TERMINATE);
+  } else if (last_sig == SIGCHLD) {
+    return (SIG_CHILD);
+  } else {
+    return (SIG_UNKNOWN);
+  }
 }
 
 /***** WakeUp Management   *****/
@@ -118,6 +133,7 @@ static void init_evt (void) {
   /* Set handler if not set */
   if (! sig_handled) {
     (void) signal(SIGINT, signal_handler);
+    (void) signal(SIGCHLD, signal_handler);
     (void) signal(SIGPIPE, SIG_IGN);
     sig_handled = TRUE;
   }
@@ -167,10 +183,10 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
   for (;;) {
 
     /* Check for signal */
-    if (sig_received != NO_SIG) {
-      *p_read = (sig_received != DUMMY_SIG);
+    if (sig_received != SIG_NONE) {
+      last_sig = sig_received;
+      sig_received = SIG_NONE;
       *p_fd = SIG_EVENT;
-      sig_received = NO_SIG;
       evt_time_remaining (timeout_ms, &exp_time);
       return (OK);
     }

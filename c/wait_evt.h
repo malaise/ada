@@ -11,6 +11,15 @@ extern int evt_add_fd (int fd, boolean read);
 extern int evt_del_fd (int fd, boolean read);
 extern boolean evt_fd_set (int fd, boolean read);
 
+extern void send_signal (int sig);
+
+#define SIG_UNKNOWN  -2
+#define SIG_NONE     -1
+#define SIG_DUMMY     0
+#define SIG_TERMINATE 1
+#define SIG_CHILD     3
+extern int get_signal (void);
+
 extern void evt_wake_up (void);
 
 #define SIG_EVENT (-2)
