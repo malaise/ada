@@ -15,21 +15,63 @@ package body State_Machine is
   State_Array : array (State_List) of Transition_Access := (others => null);
   State_Nb : Integer := State_Array'Length;
 
+  -- The events and states callbacks
+  State_Cbs : array (State_List) of State_Report_Access
+            := (others => null);
+  Event_Cbs : array (Event_List) of Transition_Report_Access
+            := (others => null);
+  
+
   -- The current state
   The_Current_State : State_List;
 
   -- Still declaring?
   In_Declaration : Boolean := True;
 
+  -- To add a report callback on new state
+  procedure Add_State_Report (To_State : in State_List;
+                              Report : in State_Report_Access) is
+  begin
+    if State_Cbs(To_State) /= null then
+      raise Event_Already;
+    end if;
+    State_Cbs(To_State) := Report;
+  end Add_State_Report;
+
+  -- To add a report callback on event occurence
+  procedure Add_Event_Report (To_Event : in Event_List;
+                              Report : in Transition_Report_Access) is
+  begin
+    if Event_Cbs(To_Event) /= null then
+      raise Event_Already;
+    end if;
+    Event_Cbs(To_Event) := Report;
+  end Add_Event_Report;
+
   procedure Do_Transition (From_State : in State_List;
                            Transition : in Transition_Access;
                            Report     : in Boolean) is
   begin
-    -- Call user procedure
-    if Report and then Transition.Report /= null then
-       Transition.Report ( (From_State,
-                            Transition.Event,
-                            Transition.New_State) );
+    -- Call user report callbacks
+    if Report then
+      if Event_Cbs(Transition.Event) /= null then
+        Event_Cbs(Transition.Event) ( (True, 
+                                       From_State,
+                                       Transition.New_State,
+                                       Transition.Event) );
+      end if;
+      if Transition.Report /= null then
+        Transition.Report ( (True, 
+                             From_State,
+                             Transition.New_State,
+                             Transition.Event) );
+      end if;
+      if State_Cbs(Transition.New_State) /= null then
+        State_Cbs(Transition.New_State) ( (True, 
+                                           From_State,
+                                           Transition.New_State,
+                                           Transition.Event) );
+      end if;
     end if;
     The_Current_State := Transition.New_State;
   end Do_Transition;
@@ -187,6 +229,11 @@ package body State_Machine is
   begin
     if In_Declaration then
       raise Declaration_Not_Ended;
+    end if;
+    if State_Cbs(State) /= null then
+      State_Cbs(State) ( (False, 
+                          The_Current_State,
+                          State) );
     end if;
     The_Current_State := State;
     Do_Trues (True);

@@ -28,7 +28,7 @@ procedure T_State_Machine is
   end Get_Event;
 
 
-  procedure Put_Transition (Transition : in Transition_Rec) is
+  procedure Put_Change (Change : in State_Change_Rec) is
     procedure Puts (Str : in String) is
       Strmax : String(1 .. 8) := (others => ' ');
     begin
@@ -40,58 +40,82 @@ procedure T_State_Machine is
       end if;
     end Puts;
   begin
-    Puts(State_List'Image(Transition.Original_State));
+    Puts(State_List'Image(Change.Original_State));
     My_Io.Put(" -- ");
-    Puts(Event_List'Image(Transition.Event));
-    My_Io.Put(" -> ");
-    Puts(State_List'Image(Transition.Destination_State));
-    My_Io.New_Line;
-  end Put_Transition;
-
-  procedure Display_Transition (Transition : in Transition_Rec) is
-  begin
-    if Transition.Destination_State /= Transition.Original_State then
-      Put_Transition (Transition);
+    if Change.On_Event then
+      Puts(Event_List'Image(Change.Event));
+    else
+      Puts("Forced");
     end if;
-  end Display_Transition; 
-  
+    My_Io.Put(" -> ");
+    Puts(State_List'Image(Change.Destination_State));
+    My_Io.New_Line;
+  end Put_Change;
 
-  procedure My_Add_Transition (Transition : in Transition_Rec) is
+  procedure Display_Change (Msg : in String; Change : in State_Change_Rec) is
   begin
-    Msm.Add_Transition(Transition, Display_Transition'Unrestricted_Access);
-    Put_Transition(Transition);
+    if Change.Destination_State /= Change.Original_State then
+      My_Io.Put (Msg & ": ");
+      Put_Change (Change);
+    end if;
+  end Display_Change; 
+
+  procedure Report_Transition (Transition : in Transition_Rec) is
+  begin
+    Display_Change ("Transition", Transition);
+  end Report_Transition; 
+  procedure Report_Event (Transition : in Transition_Rec) is
+  begin
+    Display_Change ("Event", Transition);
+  end Report_Event; 
+  procedure Report_State (Change : in State_Change_Rec) is
+  begin
+    Display_Change ("State", Change);
+  end Report_State; 
+
+  procedure My_Add_Transition (From_State : in State_List;
+                               Event : Event_List;
+                               To_State : in State_List) is
+    Transition : Transition_Rec;
+  begin
+    Transition := (True, From_State, To_State, Event);
+    Msm.Add_Transition (Transition, Report_Transition'Unrestricted_Access);
+    Put_Change (Transition);
   end My_Add_Transition;
 
 begin
 
   My_Io.Put_Line("State machine definition:");
   -- Declare state machine
-  My_Add_Transition ( (Unknown,  Detach,    Detached) );
-  My_Add_Transition ( (Unknown,  Start,     Starting) );
-  My_Add_Transition ( (Unknown,  True,      Starting) );
-  My_Add_Transition ( (Unknown,  Attach,    Unknown) );
-  My_Add_Transition ( (Unknown,  Default,   Error)    );
-  My_Add_Transition ( (Starting, Detach,    Detached) );
-  My_Add_Transition ( (Starting, Start,     Starting) );
-  My_Add_Transition ( (Starting, Failure,   Failed)   );
-  My_Add_Transition ( (Starting, Success,   Ok)       );
-  My_Add_Transition ( (Starting, Attach,    Starting) );
-  My_Add_Transition ( (Starting, Default,   Error)    );
-  My_Add_Transition ( (Failed,   Detach,    Detached) );
-  My_Add_Transition ( (Failed,   Start,     Starting) );
-  My_Add_Transition ( (Failed,   Attach,    Failed)   );
-  My_Add_Transition ( (Failed,   Default,   Error)    );
-  My_Add_Transition ( (Ok,       Detach,    Detached) );
-  My_Add_Transition ( (Ok,       Failure,   Failed)   );
-  My_Add_Transition ( (Ok,       Attach,    Ok)       );
-  My_Add_Transition ( (Ok,       Default,   Error)    );
-  My_Add_Transition ( (Detached, Attach,    Unknown)  );
-  My_Add_Transition ( (Error,    Detach,    Detached) );
+  My_Add_Transition (Unknown,  Detach,    Detached);
+  My_Add_Transition (Unknown,  Start,     Starting);
+  My_Add_Transition (Unknown,  True,      Starting);
+  My_Add_Transition (Unknown,  Attach,    Unknown) ;
+  My_Add_Transition (Unknown,  Default,   Error)   ;
+  My_Add_Transition (Starting, Detach,    Detached);
+  My_Add_Transition (Starting, Start,     Starting);
+  My_Add_Transition (Starting, Failure,   Failed)  ;
+  My_Add_Transition (Starting, Success,   Ok)      ;
+  My_Add_Transition (Starting, Attach,    Starting);
+  My_Add_Transition (Starting, Default,   Error)   ;
+  My_Add_Transition (Failed,   Detach,    Detached);
+  My_Add_Transition (Failed,   Start,     Starting);
+  My_Add_Transition (Failed,   Attach,    Failed)  ;
+  My_Add_Transition (Failed,   Default,   Error)   ;
+  My_Add_Transition (Ok,       Detach,    Detached);
+  My_Add_Transition (Ok,       Failure,   Failed)  ;
+  My_Add_Transition (Ok,       Attach,    Ok)      ;
+  My_Add_Transition (Ok,       Default,   Error)   ;
+  My_Add_Transition (Detached, Attach,    Unknown) ;
+  My_Add_Transition (Error,    Detach,    Detached);
 -- For true_loop detection
---MY_ADD_TRANSITION ( (OK,       TRUE,      FAILED)   );
---MY_ADD_TRANSITION ( (FAILED,   TRUE,      OK)       );
+--MY_ADD_TRANSITION (OK,       TRUE,      FAILED)  ;
+--MY_ADD_TRANSITION (FAILED,   TRUE,      OK)      ;
   My_Io.Put_Line("End of state machine definition.");
   My_Io.New_Line;
+  My_Io.Put_Line("Reports on State=Unknown and Event=Default");
+  Msm.Add_State_Report(Unknown, Report_State'Unrestricted_Access);
+  Msm.Add_Event_Report(Default, Report_Event'Unrestricted_Access);
   End_Declaration;
 
   My_Io.Put_Line ("Initial state : " & State_List'Image(Current_State));

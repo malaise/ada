@@ -13,16 +13,42 @@ generic
 
 package State_Machine is
 
-  -- A transition
-  type Transition_Rec is record
+  -- General transition / event / state report
+  type State_Change_Rec (On_Event : Boolean := True) is record
     Original_State : State_List;
-    Event : Event_List;
     Destination_State : State_List;
+    case On_Event is
+      when True =>
+        Event : Event_List;
+      when False =>
+         null;
+    end case;
   end record;
 
+  -- Procedure to report a new state
+  --  (Callback on state)
+  type State_Report_Access is
+       access procedure (State_Change : in State_Change_Rec);
+
+  -- To add a report callback on new state
+  -- May raise Event_Already if this state already has a report callback
+  -- May raise Declaration_Ended if called after End_Declaration;
+  procedure Add_State_Report (To_State : in State_List;
+                              Report : in State_Report_Access);
+
+
+  -- A transition or event/transition report
+  subtype Transition_Rec is State_Change_Rec (On_Event => True);
+
   -- Procedure to report a transition
+  --  (Callback on event or transition)
   type Transition_Report_Access is
        access procedure (Transition : in Transition_Rec);
+
+  -- To add a report callback on event occurence
+  -- May raise Event_Already if this event already has a report callback
+  procedure Add_Event_Report (To_Event : in Event_List;
+                              Report : in Transition_Report_Access);
 
   -- To add a transition in the state machine
   -- May raise Event_Already if this event is already defined
@@ -31,8 +57,9 @@ package State_Machine is
   procedure Add_Transition (Transition : in Transition_Rec;
                             Report : in Transition_Report_Access := null);
 
+
   -- To end declarations
-  -- May raise Declaration_Ended if re-called after END_DECLARATION;
+  -- May raise Declaration_Ended if re-called after End_Declaration
   -- May raise True_Loop if True transitions from any state loop
   procedure End_Declaration;
 
