@@ -195,6 +195,9 @@ package body Tcp_Util is
     -- Inform client
     if Rec.Cb /= null then
       Rec.Cb (Port, Host,  Socket.Is_Open (Rec.Dscr), Rec.Dscr);
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result Cb called");
+      end if;
     end if;
   end Handle_Current_Result;
 
@@ -426,7 +429,7 @@ package body Tcp_Util is
   begin
     Set_Debug (Debug_Connect_Name, Debug_Connect);
     if Debug_Connect then
-      My_Io.Put_Line ("  Tcp_Util.Connect_To");
+      My_Io.Put_Line ("  Tcp_Util.Connect_To start");
     end if;
     -- Initialise record and insert it in list
     Rec.Protocol := Protocol;
@@ -453,7 +456,7 @@ package body Tcp_Util is
     Rec : Connecting_Rec;
   begin
     if Debug_Connect then
-      My_Io.Put_Line ("  Tcp_Util.Abort_Connect");
+      My_Io.Put_Line ("  Tcp_Util.Abort_Connect start");
     end if;
     -- Find rec
     Rec.Host := Host;
@@ -528,19 +531,33 @@ package body Tcp_Util is
     Port : Port_Num;
     Host : Host_Id;
   begin
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb start with fd " & Fd'Img
+                    & "  read " & Read'Img);
+    end if;
     -- Find record by fd
     Rec.Fd := Fd;
     Find_By_Fd (Acc_List, Rec, From_Current => False);
     Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb found rec "
+                    & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
+    end if;
 
     -- Accept
     Socket.Accept_Connection (Rec.Dscr, New_Dscr);
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb connection accepted");
+    end if;
 
     -- Call callback
     Host := Socket.Get_Destination_Host (New_Dscr);
     Port := Socket.Get_Destination_Port (New_Dscr);
     if Rec.Cb /= null then
       Rec.Cb (Rec.Port, Rec.Dscr, Port, Host, New_Dscr);
+      if Debug_Accept then
+        My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb Cb called");
+      end if;
     end if;
     return True;
   end Acception_Fd_Cb;
@@ -555,6 +572,9 @@ package body Tcp_Util is
     Rec : Accepting_Rec;
   begin
     Set_Debug (Debug_Accept_Name, Debug_Accept);
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Accept_From start");
+    end if;
     -- Initialise Rec
     Rec.Port := 0;
     Rec.Cb := Acception_Cb;
@@ -575,12 +595,19 @@ package body Tcp_Util is
     end case;
     Rec.Port := Socket.Get_Linked_To(Rec.Dscr);
     Num := Rec.Port;
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Accept_From linked");
+    end if;
 
     -- Add callback on fd
     X_Mng.X_Add_CallBack (Rec.Fd, True, Acception_Fd_Cb'access);
 
     -- Store Rec
     Acc_List_Mng.Insert (Acc_List, Rec);
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Tcp_Util.Accept_From insert rec "
+                    & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
+    end if;
     
   exception
     when others => 
@@ -596,10 +623,17 @@ package body Tcp_Util is
   procedure Abort_Accept (Num : in Port_Num) is
     Rec : Accepting_Rec;
   begin
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Accept start");
+    end if;
     -- Find rec and read
     Rec.Port := Num;
     Find_By_Port (Acc_List, Rec, From_Current => False);
     Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Accept found rec "
+                    & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
+    end if;
     -- Del callback, close and delete rec
     X_Mng.X_Del_CallBack (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
@@ -607,6 +641,9 @@ package body Tcp_Util is
        Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Next);
     else
        Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Prev);
+    end if;
+    if Debug_Accept then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
     end if;
   exception
     when Con_List_Mng.Not_In_List =>
@@ -656,10 +693,18 @@ package body Tcp_Util is
   return Boolean is
     Rec : Sending_Rec;
   begin
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Sending_Cb start with fd " & Fd'Img
+                    & "  read " & Read'Img);
+    end if;
     -- Find Rec from Fd and read
     Rec.Fd := Fd;
     Find_By_Fd (Sen_List, Rec, From_Current => False);
     Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Sending_Cb found rec "
+                    & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
+    end if;
 
     -- Try to re send
     begin
@@ -667,16 +712,28 @@ package body Tcp_Util is
     exception
       when Socket.Soc_Would_Block =>
         -- Still in overflow
+        if Debug_Overflow then
+          My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
+        end if;
         return False;
     end;
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Sending_Cb resent");
+    end if;
 
     -- End of overflow: unhook callback and del rec
     X_Mng.X_Del_CallBack (Rec.Fd, False);
     Delete_Current_Sen;
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Sending_Cb cleaned");
+    end if;
 
     -- Call user callbak
     if Rec.Cb /= null then
       Rec.Cb (Rec.Dscr);
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Sending_Cb Cb called");
+      end if;
     end if;
     return False;
   end Sending_Cb;
@@ -690,9 +747,15 @@ package body Tcp_Util is
     procedure Send is new Socket.Send (Message_Type);
   begin
     Set_Debug (Debug_Overflow_Name, Debug_Overflow);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Send start");
+    end if;
     -- Try to send
     begin
       Send (Dscr, Message, Length);
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Send done");
+      end if;
       return True;
     exception
       when Socket.Soc_Would_Block =>
@@ -704,9 +767,16 @@ package body Tcp_Util is
     Rec.Fd := Socket.Fd_Of (Dscr);
     Rec.Cb := End_Of_Overflow_Cb;
     Sen_List_Mng.Insert (Sen_List, Rec);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Send oveflow rec inserted at "
+                    & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
+    end if;
 
     -- Hook our callback in write
     X_Mng.X_Add_CallBack (Rec.Fd, False, Sending_Cb'access);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Send Cb hooked");
+    end if;
     return False;
   end Send;
       
@@ -714,6 +784,9 @@ package body Tcp_Util is
   procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
   begin
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close start");
+    end if;
     -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
     begin
@@ -723,6 +796,10 @@ package body Tcp_Util is
         raise No_Such;
     end;
     Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close found rec "
+                    & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
+    end if;
 
     -- Unhook callback and del rec
     X_Mng.X_Del_CallBack (Rec.Fd, False);
@@ -730,6 +807,9 @@ package body Tcp_Util is
 
     -- Close
     Socket.Close (Dscr);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close done");
+    end if;
   end Abort_Send_and_Close;
 
 end Tcp_Util;
