@@ -171,6 +171,7 @@ procedure T_Tcp_Util is
       return False;
     end if;
 
+    Received_Message.Str := (others => ' ');
     begin
       My_Read (The_Dscr, Received_Message, Len, False);
     exception
@@ -201,6 +202,11 @@ procedure T_Tcp_Util is
                    & Message.Str(1 .. Message.Len)
                    & "< num "
                    & Positive'Image(Message.Num));
+    if Message.Str(1 .. Message.Len) /= Str then
+      Ada.Text_Io.Put_Line ("Incorrect message received");
+      raise Program_Error;
+    end if;
+
 
     if not Server then
       Ada.Text_Io.Put_Line ("      Working");
