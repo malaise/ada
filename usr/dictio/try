@@ -1,9 +1,15 @@
+# These ones debug protocol
 #export DICTIO_DEBUG_STATUS=Y
-#export DICTIO_DEBUG_INTRA=Y
 #export DICTIO_DEBUG_FIGHT=Y
 #export DICTIO_DEBUG_SYNC=Y
 #export DICTIO_DEBUG_ONLINE=Y
+
+# These ones debug messages
 #export DICTIO_DEBUG_CLIENT=Y
+#export DICTIO_DEBUG_INTRA=Y
+
+# This one is not debug
 export DICTIO_DELAY_PER_KB=5
+
 ./dictio -ctest_tcp -fdictio.chn -pfido
 
