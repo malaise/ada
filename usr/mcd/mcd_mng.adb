@@ -70,7 +70,7 @@ package body MCD_MNG is
     -- BOOL->BOOL
     function BOLNEG  (X : ITEM_REC) return ITEM_REC;
 
-    -- BOOL,INTE,INTE->INT or BOOL,REAL,REAL->REAL
+    -- BOOL,*,*->*
     function IFTE    (X, A, B : ITEM_REC) return ITEM_REC;
 
     -- Argument does not mach operator
@@ -262,6 +262,8 @@ package body MCD_MNG is
           POP(A); PUSH (OPERATIONS.BOLNEG(A));
         when IFTE =>
           POP(C); POP(B); POP(A); PUSH (OPERATIONS.IFTE(A,B,C));
+        when ETFI =>
+          POP(C); POP(B); POP(A); PUSH (OPERATIONS.IFTE(C,A,B));
  
         when OBASE =>
           POP(A); IOS.SET_OBASE(A);

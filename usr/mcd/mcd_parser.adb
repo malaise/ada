@@ -5,6 +5,8 @@ package body PARSER is
   use MCD_MNG;
 
   subtype ITEM_CHRS_REC is MCD_MNG.ITEM_REC(MCD_MNG.CHRS);
+
+  -- Instruction stack for debug history
   package INSTR_STACK is new QUEUES.CIRC(7, ITEM_CHRS_REC);
 
   TXT, TXTS : TEXT_HANDLER.TEXT(INPUT_DISPATCHER.MAX_STRING_LG);
@@ -19,30 +21,30 @@ package body PARSER is
   end record;
 
   WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_REC :=
-  (ADD     => ("+ ", "push A + B               "),
-   SUB     => ("- ", "push A - B               "),
-   MULT    => ("* ", "push A * B               "),
-   DIV     => ("/ ", "push A / B               "),
-   REMIND  => ("% ", "push A  % B              "),
-   POW     => ("**", "push A ** B              "),
-   SWAP    => ("<>", "push B, push A           "),
+  (ADD     => ("+ ", "push B + A               "),
+   SUB     => ("- ", "push B - A               "),
+   MULT    => ("* ", "push B * A               "),
+   DIV     => ("/ ", "push B / A               "),
+   REMIND  => ("% ", "push B  % A              "),
+   POW     => ("**", "push B ** A              "),
+   SWAP    => ("<>", "push A, push B           "),
 
-   BITAND  => ("&&", "push A & B               "),
-   BITOR   => ("||", "push A | B               "),
-   BITXOR  => ("^^", "push A ^ B               "),
+   BITAND  => ("&&", "push B & A               "),
+   BITOR   => ("||", "push B | A               "),
+   BITXOR  => ("^^", "push B ^ A               "),
  
-   SHL     => ("<<", "push A << B              "),
-   SHR     => (">>", "push A >> B              "),
+   SHL     => ("<<", "push B << A              "),
+   SHR     => (">>", "push B >> A              "),
 
    MINUS   => ("+-", "push -A                  "),
    BITNEG  => ("~~", "push ~A                  "),
 
-   EQUAL   => ("= ", "push A = B               "),
-   DIFF    => ("/=", "push A /= B              "),
-   GREATER => ("> ", "push A > B               "),
-   SMALLER => ("< ", "push A < B               "),
-   GREATEQ => (">=", "push A >= B              "),
-   SMALLEQ => ("<=", "push A <= B              "),
+   EQUAL   => ("= ", "push B = A               "),
+   DIFF    => ("/=", "push B /= A              "),
+   GREATER => ("> ", "push B > A               "),
+   SMALLER => ("< ", "push B < A               "),
+   GREATEQ => (">=", "push B >= A              "),
+   SMALLEQ => ("<=", "push B <= A              "),
 
    TOREAL  => ("$ ", "push REAL(A)             "),
    TOINTE  => ("! ", "push INTE(A)             "),
@@ -52,28 +54,29 @@ package body PARSER is
 
    OBASE   => (">#", "set output base          "),
 
-   BOLAND  => ("& ", "push A and B             "),
-   BOLOR   => ("| ", "push A or B              "),
-   BOLXOR  => ("^ ", "push A xor B             "),
+   BOLAND  => ("& ", "push B and A             "),
+   BOLOR   => ("| ", "push B or A              "),
+   BOLXOR  => ("^ ", "push B xor A             "),
 
    BOLNEG  => ("~ ", "push not A               "),
  
    DUP     => ("><", "push A, push A           "),
    POP     => ("--", "pop                      "),
 
-   IFTE    => ("? ", "if A then B else C       "),
+   IFTE    => ("? ", "if C then B else A       "),
+   ETFI    => ("?~", "if A then C else B       "),
 
    SSIZE   => (". ", "push stack size          "),
   
-   POPR    => ("->", "A -> regB                "),
-   COPYR   => ("=>", "A -> regB, push A        "),
+   POPR    => ("->", "B -> regA                "),
+   COPYR   => ("=>", "B -> regA, push B        "),
    PUSHR   => ("<-", "push regA                "),
 
    CALL    => ("@ ", "call A                   "),
-   IFCALL  => ("?@", "if A then call B         "),
+   IFCALL  => ("?@", "if B then call A         "),
    RET     => ("_ ", "return                   "),
    RETN    => ("__", "return A levels (0=all)  "),
-   IFRETN  => ("?_", "if A return B levels     "),
+   IFRETN  => ("?_", "if B return A levels     "),
    RETACAL => ("_@", "return and call A        "),
 
    FORMAT  => ("//", "xx or xx.yyy format      "),
@@ -238,11 +241,13 @@ package body PARSER is
     PUT_LINE ("  <register>          ::= 'a' .. 'z'  | 'A' .. 'Z'");
     PUT_LINE ("  <string/subprogram> ::= '[' <text> ']'");
     PUT_LINE ("  <operator>          ::= <operator_name> | <operator_symbol>");
-    PUT_LINE ("Operators are: Name     Symbol   Action");
+    PUT_LINE ("Operators are: Name     Symbol   Action (A is top of stack, then B...)");
     for O in MCD_MNG.OPERATOR_LIST loop
       OPE_NAME:= (others => ' ');
-      OPE_NAME(1 .. MCD_MNG.OPERATOR_LIST'IMAGE(O)'LENGTH) := LOWER_STR(MCD_MNG.OPERATOR_LIST'IMAGE(O));
-      PUT_LINE("               " & OPE_NAME & "  " & WORDS(O).WORD & "       " & WORDS(O).COMMENT);
+      OPE_NAME(1 .. MCD_MNG.OPERATOR_LIST'IMAGE(O)'LENGTH)
+              := LOWER_STR(MCD_MNG.OPERATOR_LIST'IMAGE(O));
+      PUT_LINE("               " & OPE_NAME & "  " & WORDS(O).WORD & "       "
+             & WORDS(O).COMMENT);
     end loop;
   end PRINT_HELP;
     

@@ -49,6 +49,7 @@ package MCD_MNG is
    POP,
 
    IFTE,
+   ETFI,
   
    POPR,
    COPYR,
