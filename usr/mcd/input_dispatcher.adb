@@ -101,9 +101,11 @@ package body INPUT_DISPATCHER is
     end if;
     if STR = "" then
       CURR_IS_STDIN := TRUE;
-      CUR_INDEX := IND_STDIN;
-      CUR_LEN := LEN_STDIN;
-      CUR_STR(1 .. CUR_LEN) := STR_STDIN(1 .. LEN_STDIN);
+      if LEN_STDIN /= 0 then
+        CUR_INDEX := IND_STDIN;
+        CUR_LEN := LEN_STDIN;
+        CUR_STR(1 .. CUR_LEN) := STR_STDIN(1 .. LEN_STDIN);
+      end if;
     else
       if CURR_IS_STDIN then
         IND_STDIN := CUR_INDEX;
