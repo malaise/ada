@@ -1,7 +1,9 @@
 #!/bin/bash
-pexec -cfi make $*
 
-# Re do pexec (text file busy :-)
+# Re do pexec (otherwise text file busy :-)
 cd pexec
 make $*
+cd ..
+
+pexec -cfi make $*
 
