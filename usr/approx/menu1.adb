@@ -103,12 +103,12 @@ package body MENU1 is
         -- Else kept or lost
       end if;
     else
-      if FILE.F_EXISTS(TEXT_HANDLER.VALUE(FILE_NAME_TXT))
+      if FILE.F_EXISTS(TEXT_HANDLER.VALUE(TMP_FILE_NAME))
       and then not SCREEN.CONFIRM(SCREEN.C_FILE_EXISTS) then
         return;
       end if;
       begin
-        FILE.F_WRITE(TEXT_HANDLER.VALUE(FILE_NAME_TXT), POINTS.P_THE_POINTS);
+        FILE.F_WRITE(TEXT_HANDLER.VALUE(TMP_FILE_NAME), POINTS.P_THE_POINTS);
         POINTS.P_SAVED;
         TEXT_HANDLER.SET (FILE_NAME_TXT, TMP_FILE_NAME);
       exception
@@ -251,20 +251,21 @@ package body MENU1 is
               RESTORE := PARTIAL;
             when 25 =>
               -- Add point
-              AFPX.SET_FIELD_PROTECTION (0, TRUE);
+              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
               SCREEN.PUT_TITLE(SCREEN.ADD_1);
-              POINT_SET := FALSE;
-              READ_POINT(POINT_SET, A_POINT);
-              if POINT_SET then
+              loop
+                POINT_SET := FALSE;
+                READ_POINT(POINT_SET, A_POINT);
+                exit when not POINT_SET;
                 POINTS.P_UPD_POINT (POINTS.ADD, 1, A_POINT);
                 SET_POINTS_LIST;
                 DATA_CHANGED := TRUE;
-              end if;
-              AFPX.SET_FIELD_PROTECTION (0, FALSE);
+              end loop;
+              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, FALSE);
               RESTORE := PARTIAL;
-            when 26 | 27 =>
+            when 26 | 27 | AFPX.LIST_FIELD_NO =>
               -- Delete / modify a point
-              AFPX.SET_FIELD_PROTECTION (0, TRUE);
+              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
               -- Get index then point
               POINT_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
               A_POINT := POINTS.P_ONE_POINT(POINT_INDEX);
@@ -290,7 +291,7 @@ package body MENU1 is
                   DATA_CHANGED := TRUE;
                 end if;
               end if;
-              AFPX.SET_FIELD_PROTECTION (0, FALSE);
+              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, FALSE);
               RESTORE := PARTIAL;
             when 29 =>
               -- approximation
