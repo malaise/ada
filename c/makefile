@@ -24,8 +24,8 @@ test_x : libx_mng.a test_x.c x_export.h
 libx_mng.a : $(OBJS)
 	ar rvs libx_mng.a $(OBJS)
 
-libx_mng.so : libx_mng.a
-	ld -shared -o libx_mng.so libx_mng.a
+libx_mng.so : $(OBJS)
+	ld -shared -o libx_mng.so $(OBJS)
 
 $(DEST)/libx_mng.a : libx_mng.a
 	cp libx_mng.a $(DEST)
