@@ -1,6 +1,6 @@
 with Ada.Text_Io;
 with My_Math, Sys_Calls; use My_Math;
-with Inte_Io, Real_Io, Bool_Io;
+with Inte_Io, Real_Io, Bool_Io, Io_Flow;
 separate (Mcd_Mng)
 
 package body Ios is 
@@ -58,22 +58,12 @@ package body Ios is
     
     
   procedure Put (Item : in Item_Rec) is
+    Str : Item_Rec;
   begin
-    Check_Default_Formats;
-
     case Item.Kind is
-      when Inte =>
-        Inte_Io.Put(Item.Val_Inte);
-      when Real =>
-        Real_Io.Put(Item.Val_Real);
-      when Bool  =>
-        if Item.Val_Bool then
-          Ada.Text_Io.Put("True");
-        else
-          Ada.Text_Io.Put("False");
-        end if;
-      when Chrs =>
-        Ada.Text_Io.Put (Item.Val_Text(1 .. Item.Val_Len));
+      when Inte | Real | Bool | Chrs =>
+        Str := Strof (Item);
+        Io_Flow.Put (Str.Val_Text(1 .. Str.Val_Len));
       when others =>
         raise Invalid_Argument;
     end case;
@@ -87,7 +77,7 @@ package body Ios is
 
   procedure New_Line is
   begin
-    Ada.Text_Io.New_Line;
+    Io_Flow.New_Line;
   end New_Line;
 
   function Strreal (S : Item_Rec) return Item_Rec is
