@@ -10,13 +10,13 @@ typedef enum {not_connected, connecting, connected} connect_state;
 /* Structure pointed by the token */
 typedef struct {
         socket_protocol proto;
-	boolean		dest_set;
-	boolean		linked;
-        boolean		blocking;
-        connect_state	connection;
-	int		socket_id;
-	struct sockaddr_in send_struct;
-	struct sockaddr_in rece_struct;
+        boolean         dest_set;
+        boolean         linked;
+        boolean         blocking;
+        connect_state   connection;
+        int    socket_id;
+        struct sockaddr_in send_struct;
+        struct sockaddr_in rece_struct;
         char * send_tail;
         soc_length send_len;
         char * rece_head;
