@@ -281,7 +281,7 @@ package body DIRECTORY is
       raise NAME_ERROR;
     elsif SYS_CALLS.ERRNO = EINVAL then
       -- EINVAL : not a symbolic link
-      raise NAME_ERROR;
+      raise OPEN_ERROR;
     else
       raise ACCESS_ERROR;
     end if;
