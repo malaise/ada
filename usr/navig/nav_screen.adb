@@ -244,7 +244,7 @@ package body NAV_SCREEN is
         when UP => return PREV;
         when DOWN | PGDOWN | PGUP => return NEXT;
         when RET => return CUR_ACTION;
-        when ESC | TIMEOUT | FULL | MOUSE_BUTTON | BREAK => null;
+        when ESC | TIMEOUT | FULL | MOUSE_BUTTON | BREAK | CTRL_PGUP | CTRL_PGDOWN => null;
         when LEFT | STAB =>
           if CUR_ACTION /= OPERATION'FIRST then
             CUR_ACTION := OPERATION'PRED (CUR_ACTION);

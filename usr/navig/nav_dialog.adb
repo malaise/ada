@@ -334,6 +334,8 @@ package body NAV_DIALOG is
                 CURR_FIELD := NAV_DATA.T_LIST_DATA'FIRST;
               when CON_IO.PGDOWN =>
                 IN_ACTION := TRUE;
+              when CON_IO.CTRL_PGUP | CON_IO.CTRL_PGDOWN =>
+                null;
               when CON_IO.REFRESH =>
                 REFRESH := TRUE;
               when CON_IO.TIMEOUT | CON_IO.ESC |
