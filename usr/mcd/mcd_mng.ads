@@ -43,6 +43,7 @@ package Mcd_Mng is
    Acos,
    Atan,
 
+   Epsilon,
    Exp,
    Ln,
    Log,

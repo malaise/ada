@@ -553,6 +553,9 @@ package body Mcd_Mng is
           S := A;
 
         -- Exp, logs
+        when Epsilon =>
+          Push( (Kind => Real,
+                 Val_Real => 1.0E-10) );
         when Exp =>
           Push( (Kind => Real,
                  Val_Real => My_Math.Real(My_Math.E)) );

@@ -72,6 +72,7 @@ package body Parser is
    Acos     => (Nosy, "push ACos(A) in radiants      ", False),
    Atan     => (Nosy, "push ATan(A) in radiants      ", True),
 
+   Epsilon  => (Nosy, "push Epsilon (1.0E-10)        ", False),
    Exp      => (Nosy, "push E                        ", False),
    Ln       => (Nosy, "push ln(A)                    ", False),
    Log      => (Nosy, "push log(A)                   ", True),
