@@ -176,12 +176,19 @@ package Tcp_Util is
                     Length  : in Natural);
 
     -- Set reception and disconnection callbacks
-    --  disconnection callback may be null
+    --  (callbacks may be null)
     -- May raise No_Such if Dscr is not open
     procedure Set_Callbacks (
                     Dscr             : in Socket.Socket_Dscr;
                     Reception_Cb     : in Reception_Callback_Access;
                     Disconnection_Cb : in Disconnection_Callback_Access);
+
+    -- Remove the callbacks
+    -- To be called before closing a descriptor on which callbacks
+    --  have been set
+    -- May raise No_Such if callbacks have not been set
+    procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr);
+
   end Reception;
 
   -- EXCEPTIONS --

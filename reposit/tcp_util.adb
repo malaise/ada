@@ -962,10 +962,37 @@ package body Tcp_Util is
       Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
                  Read_Cb'Unrestricted_Access);
         
+      if Debug_Reception then
+        My_Io.Put_Line ("  Tcp_Util.Set_Callbacks on Fd " & The_Rec.Fd'Img);
+      end if;
     end Set_Callbacks;
 
-  end Reception;
+    procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr) is
+      The_Rec : Rece_Rec;
+    begin
+      The_Rec.Dscr := Dscr;
+      begin
+        Find_Dscr (Rece_List, The_Rec, From_Current => False);
+      exception
+        when Rece_List_Mng.Not_In_List =>
+          if Debug_Reception then
+            My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks Dscr not found");
+          end if;
+          raise No_Such;
+      end;
+        
+      -- Get from list
+      if Rece_List_Mng.Get_Position (Rece_List) = 1 then
+        Rece_List_Mng.Get (Rece_List, The_Rec, Rece_List_Mng.Next);
+      else
+        Rece_List_Mng.Get (Rece_List, The_Rec, Rece_List_Mng.Prev);
+      end if;
+      if Debug_Reception then
+        My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
+      end if;
+    end Remove_Callbacks;
 
+  end Reception;
 
 end Tcp_Util;
 
