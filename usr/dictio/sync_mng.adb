@@ -108,6 +108,9 @@ package body Sync_Mng is
         -- Ok or Error or too many Overflows.
         exit Retries when Result /= Intra_Dictio.Overflow
                           or else I = Max_Retry;
+        if Debug.Level_Array(Debug.Sync) then
+          Debug.Put ("Sync: Overflow");
+        end if; 
         Dummy := X_Mng.Select_No_X (Timeout);
         -- Increase timeout for next retry
         Timeout := Timeout * Timeout_Factor;
