@@ -1,5 +1,6 @@
 with Ada.Exceptions, Ada.Calendar;
-with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers;
+with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers,
+     Ada_Words;
 with Debug, Parse, Client_Com, Versions, Status;
 package body Dictio_Lib is
 
@@ -192,6 +193,9 @@ package body Dictio_Lib is
   begin
     if Name'Length > Max_Name_Len then
       raise Name_Too_Long;
+    end if;
+    if not Ada_Words.Is_Identifier (Name) then
+      raise Invalid_Name;
     end if;
   end Check_Name;
 

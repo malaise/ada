@@ -2,6 +2,8 @@ with Data_Base;
 package Dictio_Lib is
 
   -- Item is (Name, Data);
+  -- Name has to be an identifier:
+  --  <letter> [ { [ '_' ] <letter_or_digit> } ]
   Max_Name_Len : constant := Data_Base.Item_Name'Length;
   Max_Data_Len : constant := Data_Base.Item_Data'Length;
 
@@ -9,7 +11,7 @@ package Dictio_Lib is
   No_Dictio : exception;
 
   -- On Get/Set/Notify
-  Name_Too_Long, Data_Too_Long : exception;
+  Invalid_Name, Name_Too_Long, Data_Too_Long : exception;
 
   -- On Get
   No_Item : exception;
