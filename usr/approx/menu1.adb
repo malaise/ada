@@ -191,6 +191,7 @@ package body MENU1 is
     POINT_SET : BOOLEAN;
     POINT_INDEX : POSITIVE;
     DATA_CHANGED : BOOLEAN;
+    SAVED_INDEX : NATURAL;
 
     use AFPX;
 
@@ -218,17 +219,28 @@ package body MENU1 is
     CURSOR_COL := 0;
     REDISPLAY := FALSE;
     DATA_CHANGED := TRUE;
+    SAVED_INDEX := 0;
     loop
       case RESTORE is
         when NONE =>
           null;
         when PARTIAL =>
           AFPX.USE_DESCRIPTOR(1, FALSE);
+          if SAVED_INDEX /= 0 then
+            AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
+                                        SAVED_INDEX - 1, FALSE);
+            AFPX.UPDATE_LIST (AFPX.CENTER);
+          end if;
           SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
           SCREEN.PUT_FILE (TEXT_HANDLER.VALUE(FILE_NAME_TXT));
         when FULL =>
           AFPX.USE_DESCRIPTOR(1);
           SET_POINTS_LIST;
+          if SAVED_INDEX /= 0 then
+            AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
+                                        SAVED_INDEX - 1, FALSE);
+            AFPX.UPDATE_LIST (AFPX.CENTER);
+          end if;
           SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
           SCREEN.PUT_FILE (TEXT_HANDLER.VALUE(FILE_NAME_TXT));
       end case;
@@ -249,6 +261,7 @@ package body MENU1 is
       AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
       REDISPLAY := FALSE;
       RESTORE := NONE;
+      SAVED_INDEX := 0;
       case PTG_RESULT.EVENT is
         when AFPX.KEYBOARD =>
           case PTG_RESULT.KEYBOARD_KEY is
@@ -257,13 +270,6 @@ package body MENU1 is
             when AFPX.ESCAPE_KEY =>
               if EXIT_PROG then
                 -- The end
-                return;
-              else
-                RESTORE := PARTIAL;
-              end if;
-              SCREEN.PUT_TITLE(SCREEN.EXIT_APPROX);
-              if DIALOG.CONFIRM_LOST then
-                CON_IO.DESTROY;
                 return;
               else
                 RESTORE := PARTIAL;
@@ -311,6 +317,7 @@ package body MENU1 is
                 DATA_CHANGED := TRUE;
               end loop;
               AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, FALSE);
+              SAVED_INDEX := AFPX.LINE_LIST_MNG.LIST_LENGTH (AFPX.LINE_LIST);
               RESTORE := PARTIAL;
             when 26 | 27 | AFPX.LIST_FIELD_NO =>
               -- Delete / modify a point
@@ -319,13 +326,17 @@ package body MENU1 is
               POINT_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
               A_POINT := POINTS.P_ONE_POINT(POINT_INDEX);
               if PTG_RESULT.FIELD_NO = 26 then
-                -- Delete a points
+                -- Delete a point
                 SCREEN.PUT_TITLE(SCREEN.SUPPRESS_1);
                 AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0),
                     POINT_STR.ENCODE_REC(A_POINT).STR(1 .. SCREEN.GET_GET_WIDTH));
                 AFPX.SET_FIELD_ACTIVATION(SCREEN.GET_FLD, TRUE);
                 if SCREEN.CONFIRM(SCREEN.C_DELETE_POINT, TRUE) then
                   POINTS.P_UPD_POINT (POINTS.REMOVE, POINT_INDEX, A_POINT);
+                  SAVED_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
+                  if SAVED_INDEX = AFPX.LINE_LIST_MNG.LIST_LENGTH (AFPX.LINE_LIST) then
+                    SAVED_INDEX := SAVED_INDEX - 1;
+                  end if;
                   SET_POINTS_LIST;
                   DATA_CHANGED := TRUE;
                 end if;
@@ -336,6 +347,7 @@ package body MENU1 is
                 READ_POINT(POINT_SET, A_POINT);
                 if POINT_SET then
                   POINTS.P_UPD_POINT (POINTS.MODIFY, POINT_INDEX, A_POINT);
+                  SAVED_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
                   SET_POINTS_LIST;
                   DATA_CHANGED := TRUE;
                 end if;
@@ -345,6 +357,7 @@ package body MENU1 is
             when 29 =>
               -- approximation
               SCREEN.STORE_FILE;
+              SAVED_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
               MENU2.MAIN_SCREEN(DATA_CHANGED);
               RESTORE := FULL;
               DATA_CHANGED := FALSE;
