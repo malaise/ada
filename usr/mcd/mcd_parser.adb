@@ -156,7 +156,8 @@ package body Mcd_Parser is
    Strregi  => (Nosy, "push A converted to register  ", False),
    Strprog  => (Nosy, "push A converted to program   ", False),
    Strof    => (Nosy, "push formated string of A     ", False),
-   Normal   => (Nosy, "push normalised string of D   ", True), 
+   Normal   => (Nosy, "push normalised string of D   ", False), 
+   Maxlen   => (Nosy, "push max string length        ", True), 
 
    Clock    => (Nosy, "push current time             ", False),
    Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm", False),

@@ -794,6 +794,10 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Pop(C); Pop(D);
           Push (Ios.Normalof(D, C, B, A));
           S := A;
+        when MaxLen =>
+          A := (Kind => Inte, Val_Inte => Input_Dispatcher.Max_String_Lg);
+          Push (A);
+          S := A;
 
         -- Dates
         when Clock =>
