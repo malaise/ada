@@ -17,6 +17,7 @@ all:
 	amake one_of_arg.adb
 	amake pascal.adb
 	amake random.adb -largs $(LIBX_MNG) -lX11
+	amake rndsok.adb 
 	amake second.adb
 	amake stat.adb
 	cp stat $(DEST)
