@@ -75,6 +75,9 @@ static fd_set global_mask;
 static int last_fd = 0;
 
 int x_add_fd (int fd) {
+  if (last_fd == 0) {
+    FD_ZERO(&global_mask);
+  }
   FD_SET(fd, &global_mask);
   if (fd > last_fd) {
     last_fd = fd;
@@ -126,7 +129,7 @@ extern int x_select (int *p_fd, int *timeout_ms) {
 
 
 
-  /* Compute exp_time = cur_time + tiemout_ms */
+  /* Compute exp_time = cur_time + timeout_ms */
   blink_is_active = (curr_percent != 0);
   timeout_is_active = *timeout_ms >= 0;
   if (timeout_is_active) {
@@ -199,7 +202,7 @@ extern int x_select (int *p_fd, int *timeout_ms) {
         if ( (x_soc != -1) && (FD_ISSET(x_soc, &select_mask)) ) {
           *p_fd = X_EVENT;
         } else {
-          for (i = 0; i >= last_fd; i++) {
+          for (i = 0; i <= last_fd; i++) {
             if (FD_ISSET(i, &select_mask)) {
               *p_fd = i;
               break;
@@ -235,7 +238,6 @@ int x_initialise (char *server_name) {
 
     int result;
 
-    FD_ZERO(&global_mask);
     result = (lin_initialise (server_name) ? OK : ERR);
     if (!blink_bold()) {
       (void) x_start_blinking();
