@@ -1,0 +1,16 @@
+# Double register indirection
+# Store data in reg a
+"Ah que coucou!" a popr "Storing data in reg a" putl
+
+# Store reg a in reg B
+a B popr                "Storing reg a in reg B" putl
+
+# Get reg name from reg B
+B pushr                 "Getting reg name from reg B" putl
+
+# Get data from reg
+pushr                   "Getting data from reg" putl
+
+# Display
+"Data is: " put putl
+

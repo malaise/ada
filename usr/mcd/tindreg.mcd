@@ -1,0 +1,16 @@
+# Triple register indirection
+# Store data in reg a
+"Ah que coucou!" a popr "Storing data in reg a" putl
+
+# Store reg a in reg b
+a b popr                "Storing reg a in reg b" putl
+
+# Store reg b in reg c
+b c popr                "Storing reg b in reg c" putl
+
+# Get reg name from reg c, then name from name then data
+c pushr pushr pushr     "Getting data" putl
+
+# Display
+"Data is: " put putl
+
