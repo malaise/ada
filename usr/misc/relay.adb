@@ -7,7 +7,8 @@
 
 with Ada.Text_Io;
 
-with Text_Handler, Argument, Sys_Calls, X_Mng, Socket, Tcp_Util, Channels;
+with Text_Handler, Argument, Sys_Calls, X_Mng,
+     Socket, Tcp_Util, Channels, Async_Stdin;
 procedure Pipe is
 
   -- Message type
@@ -31,6 +32,9 @@ procedure Pipe is
   -- Event occured
   Event : Boolean;
 
+  -- Is stdin a tty
+  Is_A_Tty : Boolean;
+
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
@@ -48,6 +52,49 @@ procedure Pipe is
   end Channel_Read_Cb;
   package My_Channel is new Channels.Channel ("dummy", Message_Type,
                                               Channel_Read_Cb);
+
+  -- Sender may read stdin with this
+  function Stdin_Cb (Str : in String) return Boolean is
+    Len : Natural := Str'Length;
+  begin
+    if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
+      Len := Len - 1;
+      Done := True;
+    end if;
+    if Len > 1 and then (Str(Len) = Ascii.Lf
+                 or else Str(Len) = Ascii.Cr) then
+      Len := Len - 1;
+    end if;
+    if Len = 1 and then Str(Len) = Ascii.Lf then
+      Message(1) := Ascii.Cr;
+    else
+      Message (1 .. Len) := Str (1 .. Len);
+    end if;
+    if Len > 0 then
+      My_Channel.Write (Message, Len);
+    end if;
+    return True;
+  end Stdin_Cb;
+
+  -- Read data from not a tty (file?)
+  procedure Get_No_Tty is
+  begin
+    begin
+      Ada.Text_Io.Get_Line (Message, Len);
+    exception
+      when Ada.Text_Io.End_Error =>
+        Done := True;
+        return;
+    end;
+
+    if Len = 0 then
+      Message(1) := Ascii.Cr;
+      Len := 1;
+    end if;
+    My_Channel.Write (Message, Len);
+  end Get_No_Tty;
+    
+
   -- Subscriber reads with this
   Read_Dscr   : Socket.Socket_Dscr;
   Channel_Message : My_Channel.Channel_Message_Type;
@@ -188,6 +235,14 @@ begin
         Sys_Calls.Set_Error_Exit_Code;
         return;
     end;
+    begin
+      Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, Max_Data_Size);
+      Is_A_Tty := True;
+    exception
+      when Async_Stdin.Not_A_Tty =>
+        Event := X_Mng.Select_No_X (500);
+        Is_A_Tty := False;
+    end;
   end if;
   
 
@@ -196,31 +251,28 @@ begin
   loop
     if Mode = Subscribe then
 
-       Event := X_Mng.Select_No_X (1_000);
-       exit when Done;
+       Event := X_Mng.Select_No_X (-1);
 
      else
 
-       begin
-         Ada.Text_Io.Get_Line (Message, Len);
-       exception
-         when  Ada.Text_Io.End_Error =>
-           My_Channel.Del_All_Destinations;
-           Done := True;
-       end;
-
-       exit when Done;
-
-       if Len = 0 then
-         Message(1) := Ascii.Cr;
-         Len := 1;
+       if not Is_A_Tty then
+         Event := X_Mng.Select_No_X (0);
+         Get_No_Tty;
+       else
+         Event := X_Mng.Select_No_X (-1);
        end if;
-       Event := X_Mng.Select_No_X (0);
-       My_Channel.Write (Message, Len);
 
      end if;
+     exit when Done;
 
   end loop;
+
+  if Mode = Publish then
+    My_Channel.Del_All_Destinations;
+    if Is_A_Tty then
+      Async_Stdin.Set_Async;
+    end if;
+  end if;
 
 end Pipe;
 
