@@ -1,15 +1,15 @@
 with Ada.Text_Io;
-with Udp, X_Mng, Debug, Dynamic_List;
+with Socket, X_Mng, Debug, Dynamic_List;
 package body Connection is
 
   Server : Boolean := True;
   Own_Color : Space.Color_List := Space.White;
 
-  Soc : Udp.Socket_Dscr;
+  Soc : Socket.Socket_Dscr;
   Fd  : X_Mng.File_Desc;
   Server_Port_Num : constant := 50000;
-  Client_Host : Udp.Host_Id;
-  Client_Port : Udp.Port_Num;
+  Client_Host : Socket.Host_Id;
+  Client_Port : Socket.Port_Num;
 
   Type Message_Kind_List is (Init, Move, Error);
   type Error_List is (Busy, Color, Protocol);
@@ -53,8 +53,8 @@ package body Connection is
   --  client init retries
   We_Have_Moved : Boolean := False;
 
-  procedure Chess_Read is new Udp.Receive (Message_Type);
-  procedure Chess_Send is new Udp.Send    (Message_Type);
+  procedure Chess_Read is new Socket.Receive (Message_Type);
+  procedure Chess_Send is new Socket.Send    (Message_Type);
 
   procedure Raise_Error (Error : in Error_List) is
   begin
@@ -73,7 +73,7 @@ package body Connection is
     Len : Natural;
     Receive : Boolean;
     use type Space.Color_List;
-    use type Udp.Host_Id, Udp.Port_Num;
+    use type Socket.Host_Id, Socket.Port_Num;
   begin
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put ("In callback : ");
@@ -100,8 +100,8 @@ package body Connection is
               if Message.Color /= Own_Color then
                 -- Reply by our color and accept client
                 Chess_Send (Soc, (Init, Own_Color));
-                Client_Host := Udp.Get_Destination_Host (Soc);
-                Client_Port := Udp.Get_Destination_Port (Soc);
+                Client_Host := Socket.Get_Destination_Host (Soc);
+                Client_Port := Socket.Get_Destination_Port (Soc);
                 We_Are_Ready := True;
                 We_Have_Moved := False;
               else
@@ -129,8 +129,8 @@ package body Connection is
         -- We are ready
         if Server then
           -- Reject new client
-          if      Udp.Get_Destination_Host (Soc) /= Client_Host
-          or else Udp.Get_Destination_Port (Soc) /= Client_Port then
+          if      Socket.Get_Destination_Host (Soc) /= Client_Host
+          or else Socket.Get_Destination_Port (Soc) /= Client_Port then
             -- New client
             if Message.Kind = Init then
               Chess_Send (Soc, (Error, Busy));
@@ -138,7 +138,7 @@ package body Connection is
               Chess_Send (Soc, (Error, Protocol));
             end if;
             -- Restore
-            Udp.Set_Destination_Host_And_Port (Soc, Client_Host, Client_Port);
+            Socket.Set_Destination_Host_And_Port (Soc, Client_Host, Client_Port);
             return;
           elsif Message.Kind /= Move then
             if We_Have_Moved then
@@ -186,14 +186,14 @@ package body Connection is
     Own_Color := Color;
 
     -- Init socket
-    Udp.Open (Soc);
-    Fd := Udp.Fd_Of (Soc);
+    Socket.Open (Soc, Socket.Udp);
+    Fd := Socket.Fd_Of (Soc);
     X_Mng.X_Add_Callback (Fd, Call_Back'Access);
     if Server then
-      Udp.Link_Port (Soc, Server_Port_Num);
+      Socket.Link_Port (Soc, Server_Port_Num);
     else
-      Udp.Link_Dynamic (Soc);
-      Udp.Set_Destination_Name_And_Port (Soc,
+      Socket.Link_Dynamic (Soc);
+      Socket.Set_Destination_Name_And_Port (Soc,
            False, Server_Name, Server_Port_Num);
     end if;
 
@@ -208,7 +208,7 @@ package body Connection is
   procedure Close is
   begin
     X_Mng.X_Del_Callback (Fd);
-    Udp.Close (Soc);
+    Socket.Close (Soc);
   end Close;
 
   procedure Wait_Ready is

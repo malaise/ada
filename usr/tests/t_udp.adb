@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with My_Io, Argument, Udp, X_Mng, Text_Handler;
+with My_Io, Argument, Socket, X_Mng, Text_Handler;
 
 procedure T_Udp is
 
@@ -7,7 +7,7 @@ procedure T_Udp is
   Server : Boolean;
   Server_Name : Text_Handler.Text (80);
 
-  Soc : Udp.Socket_Dscr;
+  Soc : Socket.Socket_Dscr;
   Fd  : X_Mng.File_Desc;
 
   Server_Port_Name : constant String := "test_udp";
@@ -21,8 +21,8 @@ procedure T_Udp is
   Str : Constant String := "Ah que coucou!";
   Message : Message_Type;
 
-  procedure My_Send is new Udp.Send (Message_Type);
-  procedure My_Receive is new Udp.Receive (Message_Type);
+  procedure My_Send is new Socket.Send (Message_Type);
+  procedure My_Receive is new Socket.Receive (Message_Type);
 
   procedure Call_Back (F : in X_Mng.File_Desc) is
     use type X_Mng.File_Desc;
@@ -78,16 +78,16 @@ begin
   end if;
 
   -- Create socket, add callback
-  Udp.Open (Soc);
-  Fd := Udp.Fd_Of (Soc);
+  Socket.Open (Soc, Socket.Udp);
+  Fd := Socket.Fd_Of (Soc);
   X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
   
   -- Link, set server dest in client, client sends
   if Server then
-    Udp.Link_Service (Soc, Server_Port_Name);
+    Socket.Link_Service (Soc, Server_Port_Name);
   else
-    Udp.Link_Dynamic (Soc);
-    Udp.Set_Destination_Name_And_Service (Soc,
+    Socket.Link_Dynamic (Soc);
+    Socket.Set_Destination_Name_And_Service (Soc,
            False, Text_Handler.Value (Server_Name), Server_Port_Name);
     Message.Num := 1;
     Send;
@@ -109,7 +109,7 @@ begin
   end loop;
 
   X_Mng.X_Del_Callback (Fd);
-  Udp.Close (Soc);
+  Socket.Close (Soc);
 
 exception
   when Arg_Error =>
