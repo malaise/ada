@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/select.h>
 #include <signal.h>
 #include <string.h>
 #include <errno.h>
@@ -28,7 +29,7 @@ void print_date (void) {
 /* The percentage of blinking when colors are seeable */
 #define PERCENT_ON  75
 #define PERCENT_OFF (100 - PERCENT_ON)
-int curr_percent; 
+int curr_percent = 0; 
 
 timeout_t next_blink;
 
@@ -39,7 +40,7 @@ void x_do_blink (void);
 void x_do_blinking (void) {
 
   /* Protection */
-  if ( (next_blink.tv_sec == 0) && (next_blink.tv_usec == 0) ) {
+  if (curr_percent == 0) {
     return;
   }
   x_do_blink();
@@ -53,12 +54,11 @@ void x_do_blinking (void) {
 
 int x_stop_blinking (void) {
   
-  next_blink.tv_sec = 0;
-  next_blink.tv_usec = 0;
   /* Set to the non_blink state */
   if (curr_percent == PERCENT_OFF) {
     x_do_blink();
   }
+  curr_percent = 0;
   return (OK);
 }
 
@@ -69,39 +69,65 @@ int x_start_blinking (void) {
   return (OK);
 }
 
+/***** Fds Management   *****/
+static fd_set global_mask;
+
+static int last_fd = 0;
+
+int x_add_fd (int fd) {
+  FD_SET(fd, &global_mask);
+  if (fd > last_fd) {
+    last_fd = fd;
+  }
+  return (OK);
+}
+
+int x_del_fd (int fd) {
+  int i;
+
+  if (!FD_ISSET(fd, &global_mask)) {
+    return (ERR);
+  }
+  FD_CLR (fd, &global_mask);
+
+  for (i = NFDBITS - 1; i >= 0; i--) {
+    if (FD_ISSET(i, &global_mask)) {
+      last_fd = i;
+      return (OK);
+    }
+  }
+  last_fd = 0;
+  return (OK);
+}
 
 /***** Event management *****/
 
-/* Makes a select between the sockets described in the mask AND the */
+/* Makes a select between the sockets described in the global mask AND the */
 /*  the socket used by X for the events */
-/* p_mask can be NULL, then select is done only on X fd */
 /* The time out is in miliseconds (negative for blocking )
-/* The mask is made with the bits of ONE int. */ 
-/*  Failure if the mask is not big enough to contain the X socket id */
-/*  or if the X init has not been called or if select fails */
-/*  p_x_event is True if a x event is available */ 
-/*  The mask is set apart, corresponding to the state of the channels */
+/* If a X event is available, *p_fd is set to -1
+/* Else *p_fd is set to one valid fd (on which there is an event) */
+/*  or to -2 if no event */
+/* Failure if select fails */
 
-extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms) {
+extern int x_select (int *p_fd, int *timeout_ms) {
   fd_set select_mask;
+  int last_select_fd;
   int x_soc;
-  fd_set dscr_mask;
-  int n;
+  int i, n;
   timeout_t cur_time, exp_time, exp_select, timeout, *timeout_ptr;
-  int result;
   boolean timeout_is_active, blink_is_active;
 
 
-  /* Check X socket */
-  if (local_server.x_server == NULL) {
+  if (p_fd == (int*) NULL) {
     return (ERR);
   }
-  x_soc = ConnectionNumber (local_server.x_server);
+
 
 
 
   /* Compute exp_time = cur_time + tiemout_ms */
-  blink_is_active = ( (next_blink.tv_sec != 0) || (next_blink.tv_usec != 0) );
+  blink_is_active = (curr_percent != 0);
   timeout_is_active = *timeout_ms >= 0;
   if (timeout_is_active) {
     get_time (&exp_time);
@@ -113,7 +139,14 @@ extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms) {
     timeout_ptr = NULL;
   }
   
-  XFlush (local_server.x_server);
+
+  /* Check X socket */
+  if (local_server.x_server == NULL) {
+    x_soc = -1;
+  } else {
+    x_soc = ConnectionNumber (local_server.x_server);
+    XFlush (local_server.x_server);
+  }
 
   for (;;) {
     /* Compute exp_select : smallest of exp_time(timeout) and next_blink */
@@ -143,31 +176,35 @@ extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms) {
       }
       if ( (timeout_is_active) && time_is_reached (&exp_time) ) {
         /* Done on timeout */
-        *p_x_event = 0;
-        if (p_mask != (fd_set *)NULL) {
-          FD_CLR(x_soc, p_mask);
-        }
+        *p_fd = NO_EVENT;
         *timeout_ms = 0;
         return (OK);
       }
     } else {
-      /* Select : bits 0 to 31 */
       /* Compute mask for select */
-      if (p_mask != (fd_set *)NULL) {
-        bcopy ((char*)p_mask, (char*)&select_mask, sizeof(fd_set));
-      } else {
-        FD_ZERO (&select_mask);
+      bcopy ((char*)&global_mask, (char*)&select_mask, sizeof(fd_set));
+      last_select_fd = last_fd;
+      if (x_soc != -1) {
+        FD_SET(x_soc, &select_mask);
+        if (x_soc > last_select_fd) {
+          last_select_fd = x_soc;
+        }
       }
-      FD_SET(x_soc, &select_mask);
+      *p_fd = NO_EVENT;
 
-      n = select (32, &select_mask, NULL, NULL, timeout_ptr);
+      n = select (last_select_fd + 1, &select_mask, NULL, NULL, timeout_ptr);
 
       if (n > 0) {
         /* An Event : Separate X events from others */
-        *p_x_event = (FD_ISSET(x_soc, &select_mask) != 0);
-        if (p_mask != (fd_set *)NULL) {
-          bcopy ((char*)&select_mask, (char*)p_mask, sizeof(fd_set));
-          FD_CLR(x_soc, p_mask);
+        if ( (x_soc != -1) && (FD_ISSET(x_soc, &select_mask)) ) {
+          *p_fd = X_EVENT;
+        } else {
+          for (i = 0; i >= last_fd; i++) {
+            if (FD_ISSET(i, &select_mask)) {
+              *p_fd = i;
+              break;
+            }
+          }
         }
         if (*timeout_ms > 0) {
           get_time (&cur_time);
@@ -198,6 +235,7 @@ int x_initialise (char *server_name) {
 
     int result;
 
+    FD_ZERO(&global_mask);
     result = (lin_initialise (server_name) ? OK : ERR);
     if (!blink_bold()) {
       (void) x_start_blinking();
@@ -921,7 +959,7 @@ int x_blink(void) {
     if (local_server.x_server == NULL) return (OK);
 
     /* Check task is not active */
-    if (next_blink.tv_sec == 0) {
+    if (curr_percent != 0) {
       return (ERR);
     }
 

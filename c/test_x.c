@@ -49,8 +49,7 @@ void *line, *line_event;
 char name[50];
 char stra[81], stre[81];
 char digits[5];
-int i, j, k, l;
-fd_set m;
+int i, j, k, l, m;
 int kk[6];
 int bord, font;
 unsigned int b1;
@@ -162,24 +161,25 @@ int motion;
 
 
     /* Wait for events */
-    FD_ZERO(&m);
     delta = 2000;
 
     if (l == 0) {
       /* no event pending */
-      i = x_select (&m, &l, &delta);
+      i = x_select (&m, &delta);
     }
 
-    if (l != 0) {
+    if (m == X_EVENT) {
       x_process_event (&line_event, &k, &l);
       if (k == DISCARD) {
         /* Wrong X event i.e. expose... */
         continue;
       }
-    } else {
+    } else if (m == NO_EVENT) {
       /* Timeout */
       k = DISCARD;
       continue;
+    } else {
+      printf ("ERROR OTHER FD\n");
     }
 
     /* Keybord or TID */
