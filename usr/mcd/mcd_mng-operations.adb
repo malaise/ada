@@ -575,7 +575,13 @@ package body Operations is
     F := F * 100.0;
     F := My_Math.Real (My_Math.Round (F * 100000.0)) / 100000.0;
     M := My_Math.Int (F);
+    if M >= 60.0 then
+      raise Invalid_Argument;
+    end if;
     S := (F - M) * 100.0;
+    if S >= 60.0 then
+      raise Invalid_Argument;
+    end if;
 
     -- Compute hours and fracs of hours
     R := I + M / 60.0 + S / 3600.0;
