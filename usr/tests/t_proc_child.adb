@@ -20,6 +20,7 @@ procedure T_Proc_Child is
     Res := Sys_Calls.Read (Fd, Str'Address, Str'Length);
     if Res = 0 then
       Ada.Text_Io.Put_Line ("Child: Read 0");
+      Event_Mng.Del_Fd_Callback (Fd_In, True);
       return False;
     end if;
     Ada.Text_Io.Put_Line ("Child: Read >" & Str (1 .. Res) & "<");

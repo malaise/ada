@@ -40,6 +40,7 @@ procedure T_Proc_Father is
     Res := Sys_Calls.Read (Fd, Buf'Address, Buf'Length);
     if Res = 0 then
       Ada.Text_Io.Put_Line ("Father: Read 0");
+      Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_In, True);
       return False;
     end if;
     Ada.Text_Io.Put_Line ("Father: Read >" & Buf(1 .. Res) & "<");
