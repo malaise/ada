@@ -1,7 +1,7 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Calendar;
 
 with Text_Handler, Argument, Sys_Calls, Ip_Addr,
-     Timers, Socket, Tcp_Util, Event_Mng;
+     Normal, My_Math, Timers, Socket, Tcp_Util, Event_Mng;
 
 procedure Tcping is
 
@@ -53,6 +53,9 @@ procedure Tcping is
   -- Connect in progess
   Connecting : Boolean := False;
 
+  -- Time when connection started
+  Start_Time : Ada.Calendar.Time;
+
   -- Event received
   Event : Event_Mng.Out_Event_List;
 
@@ -97,13 +100,25 @@ procedure Tcping is
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr) is
     Loc_Dscr : Socket.Socket_Dscr := Dscr;
+    Dur : Duration;
+    R : My_Math.Real;
+    Int : My_Math.Inte;
+    Frac : Integer;
+    use type Ada.Calendar.Time, My_Math.Real;
   begin
     if Connected then
       -- Done, clean
+      Dur := Ada.Calendar.Clock - Start_Time;
+      R := My_Math.Real(Dur);
+      R := My_Math.Real (My_Math.Round (R * 1000.0)) / 1000.0;
+      Int :=  My_Math.Trunc (R);
+      Frac := Integer(My_Math.Trunc (My_Math.Frac (R) * 1000.0));
+
       Socket.Close (Loc_Dscr);
-      Ada.Text_Io.Put_Line ("Connected to " &
-         Image (Remote_Host_Id) &
-         " port" & Socket.Port_Num'Image(Remote_Port_Num));
+      Ada.Text_Io.Put_Line (
+         "Connected to " & Image (Remote_Host_Id) &
+         " port" & Socket.Port_Num'Image(Remote_Port_Num) &
+         " in" & Int'Img & "." & Normal (Frac, 3, Gap => '0') & "s.");
     else
        Ada.Text_Io.Put_Line ("Failed.");
     end if;
@@ -142,6 +157,7 @@ procedure Tcping is
     Connecting := True;
     Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port, Timeout, 1,
              Connect_Cb'Unrestricted_Access);
+    Start_Time := Ada.Calendar.Clock;
     return False;
   end Timer_Cb;
  
