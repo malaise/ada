@@ -117,6 +117,15 @@ int x_del_fd (int fd, boolean read) {
   return (OK);
 }
 
+extern boolean x_fd_set (int fd, boolean read) {
+  if (read) {
+    return (FD_ISSET(fd, &global_read_mask));
+  } else {
+    return (FD_ISSET(fd, &global_write_mask));
+  }
+}
+
+
 /***** Event management *****/
 
 /* Makes a select between the sockets described in the global mask AND the */
@@ -252,6 +261,9 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
       } else if (n < 0) {
         if (errno != EINTR) {
           /* Real error */
+#ifdef DEBUG
+            perror ("select");
+#endif
           return (ERR);
         }
       }
