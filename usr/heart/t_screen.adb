@@ -292,7 +292,8 @@ begin
           null;
         end if;
 
-
+      when others =>
+        null;
     end case;
 
   end loop;
