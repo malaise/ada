@@ -189,7 +189,8 @@ package body MENU2 is
       CURVE_TASK.STOPPED;
       OK := TRUE;
     or
-      delay 0.0;
+      -- wait a bit to let curve_task be ready to accept stop
+      delay 0.1;
       OK := FALSE;
     end select;
     return OK;
