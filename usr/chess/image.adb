@@ -81,7 +81,7 @@ package body Image is
       when Game.Stalemate =>
         Text_Handler.Append (Res, "==");
       when Game.CheckMate =>
-        Text_Handler.Append (Res, "++");
+        Text_Handler.Append (Res, "+=");
     end case;
     Str (1 .. Text_Handler.Length(Res)) := Text_Handler.Value (Res);
     return Str;
@@ -270,7 +270,7 @@ package body Image is
         Result := Game.Check;
       elsif Str2 = "==" then
         Result := Game.Stalemate;
-      elsif Str2 = "++" then
+      elsif Str2 = "+=" then
         Result := Game.Checkmate;
       else
         raise Value_Error;
