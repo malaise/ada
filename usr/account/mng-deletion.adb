@@ -52,13 +52,9 @@ package body Deletion is
       if Sel.Deleted then
         -- Remove current operation
         List_Util.Move_To_Current;
-        if Sel.No /= 1 then
-          Oper_List_Mng.Delete(Oper_List, Oper_List_Mng.Prev);
-        else
-          Oper_List_Mng.Delete(Oper_List, Oper_List_Mng.Next);
-        end if;
-        -- Remove current selection
-        Sel_List_Mng.Delete(Sel_List, Done => Moved);
+        Oper_List_Mng.Delete(Oper_List, Done => Moved);
+        -- Remove current selection, moving to Prev
+        Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev, Moved);
         -- Update counter
         Nb_Deleted := Nb_Deleted - 1;
         -- Either first item of selection is deleted here
