@@ -6,7 +6,24 @@ package body Socket is
   Byte_Size : constant := 8;
 
   subtype Result is Integer;
-  OK : constant Result := 0;
+  C_Soc_Ok : constant Result := 0;
+  C_Soc_Use_Err   : constant Result :=  -1;
+  C_Soc_Sys_Err   : constant Result :=  -2;
+  C_Soc_Dest_Err  : constant Result :=  -3;
+  C_Soc_Link_Err  : constant Result :=  -4;
+  C_Soc_Conn_Err  : constant Result :=  -5;
+  C_Soc_Bcast_Err : constant Result :=  -6;
+  C_Soc_Len_Err   : constant Result :=  -7;
+  C_Soc_Reply_Err : constant Result :=  -8;
+  C_Soc_Tail_Err  : constant Result :=  -9;
+  C_Soc_Proto_Err : constant Result := -10;
+
+  C_Soc_Conn_Refused   : constant Result := -21;
+  C_Soc_Name_Not_Found : constant Result := -22;
+  C_Soc_Would_Block    : constant Result := -23;
+  C_Soc_Conn_Lost      : constant Result := -24;
+  C_Soc_Addr_In_Use    : constant Result := -25;
+  C_Soc_Read_0         : constant Result := -26;
 
   type Boolean_For_C is new Boolean;
   for Boolean_For_C'Size use 4 * Byte_Size;
@@ -27,6 +44,9 @@ package body Socket is
   pragma Import (C, Soc_Open, "soc_open");
   function Soc_Close (S_Addr : System.Address) return Result;
   pragma Import (C, Soc_Close, "soc_close");
+  function Soc_Set_Blocking (S_Addr : System.Address;
+                             Block  : Boolean_For_C) return Result;
+  pragma Import (C, Soc_Set_Blocking, "soc_set_blocking");
 
   function Soc_Link_Service (S : System.Address;
                              Service : System.Address) return Result;
@@ -45,7 +65,6 @@ package body Socket is
   function Soc_Accept (S : System.Address; N :  System.Address) return Result;
   pragma Import (C, Soc_Accept, "soc_accept");
   function Soc_Receive (S : System.Address;
-                        P_Received    : System.Address;
                         Message       : System.Address;
                         Length        : System.Address;
                         Set_For_Reply : Boolean_For_C) return Result;
@@ -67,7 +86,7 @@ package body Socket is
   pragma Import (C, Soc_Set_Dest, "soc_set_dest");
 
   function Soc_Is_Connected (S : System.Address;
-                             P_Received : System.Address) return Result;
+                             P_Connected : System.Address) return Result;
   pragma Import (C, Soc_Is_Connected, "soc_is_connected");
 
   function Soc_Change_Dest_Host (S : System.Address;
@@ -100,6 +119,8 @@ package body Socket is
                      Message : System.Address;
                      Length  : Natural) return Result;
   pragma Import (C, Soc_Send, "soc_send");
+  function Soc_ReSend (S : System.Address) return Result;
+  pragma Import (C, Soc_ReSend, "soc_resend");
                      
   --------------------
   -- IMPLEMENTATION --
@@ -107,10 +128,31 @@ package body Socket is
   Res : Result;
 
   procedure Check_Ok is
+    -- Will be anonymous.
+    Soc_Unknown_Error : exception;
   begin
-    if Res /= OK then
-      raise Socket_Error;
+    if Res = C_Soc_Ok then
+      return;
     end if;
+    case Res is
+      when C_Soc_Use_Err   => raise Soc_Use_Err;
+      when C_Soc_Sys_Err   => raise Soc_Sys_Err;
+      when C_Soc_Dest_Err  => raise Soc_Dest_Err;
+      when C_Soc_Link_Err  => raise Soc_Link_Err;
+      when C_Soc_Conn_Err  => raise Soc_Conn_Err;
+      when C_Soc_Bcast_Err => raise Soc_Bcast_Err;
+      when C_Soc_Len_Err   => raise Soc_Len_Err;
+      when C_Soc_Reply_Err => raise Soc_Reply_Err;
+      when C_Soc_Tail_Err  => raise Soc_Tail_Err;
+      when C_Soc_Proto_Err => raise Soc_Proto_Err;
+      when C_Soc_Conn_Refused   => raise Soc_Conn_Refused;
+      when C_Soc_Name_Not_Found => raise Soc_Name_Not_Found;
+      when C_Soc_Would_Block    => raise Soc_Would_Block;
+      when C_Soc_Conn_Lost      => raise Soc_Conn_Lost;
+      when C_Soc_Addr_In_Use    => raise Soc_Addr_In_Use;
+      when C_Soc_Read_0         => raise Soc_Read_0;
+      when others => raise Soc_Unknown_Error;
+    end case;
   end Check_Ok;
 
   -- Open a socket
@@ -129,7 +171,6 @@ package body Socket is
     return Socket.Soc_Addr /= System.Null_Address;
   end Is_Open;
 
-
   -- Close a socket
   procedure Close (Socket : in out Socket_Dscr) is
   begin
@@ -137,6 +178,21 @@ package body Socket is
     Check_Ok;
   end Close;
 
+  -- Set a socket blocking or not
+  procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean) is
+  begin
+    Res := Soc_Set_Blocking (Socket.Soc_Addr, Boolean_For_C(Blocking));
+    Check_Ok;
+  end Set_Blocking;
+
+  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
+  function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc is
+    Fd : Integer;
+  begin
+    Res := Soc_Get_Id (Socket.Soc_Addr, Fd'Address);
+    Check_Ok;
+    return X_Mng.File_Desc(Fd);
+  end Fd_Of;
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
@@ -179,35 +235,19 @@ package body Socket is
     Check_Ok;
   end Accept_Connection;
 
-
-  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
-  function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc is
-    Fd : Integer;
-  begin
-    Res := Soc_Get_Id (Socket.Soc_Addr, Fd'Address);
-    Check_Ok;
-    return X_Mng.File_Desc(Fd);
-  end Fd_Of;
-
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
                      Length        : out Natural;
-                     Received      : out Boolean;
                      Set_For_Reply : in Boolean := False) is
-    Rec_For_C : Boolean_For_C;
     Len : Natural  := Message_Type'Size / Byte_Size;
     SFR_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
-    Res := Soc_Receive (Socket.Soc_Addr, Rec_For_C'Address, Message'Address,
-           Len'Address, SFR_For_C);
+    Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len'Address,
+                        SFR_For_C);
     Check_Ok;
-    Received := Boolean(Rec_For_C);
     Length := Len;
-  exception
-    when others =>
-      raise Socket_Error; 
   end Receive;
 
 
@@ -341,7 +381,7 @@ package body Socket is
         return Name(1 .. I-1);
       end if;
     end loop;
-    raise Socket_Error;
+    raise Soc_Len_Err;
   end Host_Name_Of;
 
   function Host_Id_Of (Name : String) return Host_Id is
@@ -368,6 +408,14 @@ package body Socket is
     Res := Soc_Send (Socket.Soc_Addr, Message'Address, Len);
     Check_Ok;
   end Send;
+
+  -- Try to send remaining of message after a Soc_Would_Block
+  --  on Send or Re_Send
+  procedure Re_Send (Socket  : in Socket_Dscr) is
+  begin
+    Res := Soc_ReSend (Socket.Soc_Addr);
+    Check_Ok;
+  end Re_Send;
 
 end Socket;
 

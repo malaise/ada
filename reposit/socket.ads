@@ -9,9 +9,6 @@ package Socket is
   -- Available protocols
   type Protocol_List is (Udp, Tcp, Tcp_Header);
 
-  -- Any problem? Look at the traces
-  Socket_Error : exception;
-
   -- A port
   type Port_Num is new Natural range 0 .. 65535;
 
@@ -37,7 +34,9 @@ package Socket is
   Soc_Conn_Refused,   -- Connection refused (no dest process)
   Soc_Name_Not_Found, -- Host/service name not found
   Soc_Would_Block,    -- Connection, send, receive would block
-  Soc_Conn_Lost:      -- Connection has been lost
+  Soc_Conn_Lost,      -- Connection has been lost
+  Soc_Addr_In_Use,    -- Address in use, maybe in close-wait state
+  Soc_Read_0:         -- Read returns 0, after a select => diconnection
                  exception;
 
   -- All calls may raise Soc_Use_Err or Soc_Sys_Err
@@ -55,7 +54,7 @@ package Socket is
   ---------------------------------
 
   -- Open a socket
-  procedure Open (Socket : in out Socket_Dscr;  Protocol : in Protocol_List);
+  procedure Open (Socket : in out Socket_Dscr; Protocol : in Protocol_List);
 
   -- Close a socket
   procedure Close (Socket : in out Socket_Dscr);
@@ -64,7 +63,7 @@ package Socket is
   function Is_Open (Socket : in Socket_Dscr) return Boolean;
 
   -- Set a socket blocking or not
-  procedure Set_Blocking (Socket : in Socket_Dscr);
+  procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean);
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
   function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc;
@@ -79,6 +78,7 @@ package Socket is
   -- May raise Soc_Link_Err or Soc_Con_Err if tcp and already
   --  linked or connected
   -- May raise Soc_Name_Not_Found if Service not found
+  -- May raise Soc_Addr_In_Use (socket may be in Close-Wait) wait a bit
   procedure Link_Service (Socket : in Socket_Dscr; Service  : in String);
   procedure Link_Port    (Socket : in Socket_Dscr; Port  : in Port_Num);
   procedure Link_Dynamic (Socket : in Socket_Dscr);
@@ -89,7 +89,7 @@ package Socket is
 
   -- Accept a new Tcp connection
   -- The socket must be open, tcp and linked
-  -- A new socket is open (tcp) with destination set
+  -- A new socket is open (tcp) with destination set, blocking
   -- May raise Soc_Proto_Err if socket is not tcp
   -- May raise Soc_Link_Err if socket is not linked
   procedure Accept_Connection (Socket : in Socket_Dscr;
@@ -102,6 +102,7 @@ package Socket is
   --                     or if socket is not linked and udp
   -- May raise Soc_Conn_err if socket is not connected and tcp
   -- May raise Soc_Conn_Lost if sender has closed (even in udp)
+  -- May raise Soc_Read_0 if sender has closed
   -- May raise Soc_Would_Block if the full sent message was not
   --  received, in tcp_header and udp
   -- May raise Soc_Len_Err if message size is to short in tcp_header
