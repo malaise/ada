@@ -406,7 +406,7 @@ package Generic_Con_Io is
     -- Button status: when MOTION, BUTTON is MOTION
     type Mouse_Button_Status_List is (Pressed, Released, Motion);
     -- List of button
-    type Mouse_Button_List is (Left, Middle, Right, Motion);
+    type Mouse_Button_List is (Left, Middle, Right, Motion, Up, Down);
     -- Mouse status
     -- Invalid press should be discarded
     -- Invalid release/motion are out of screen

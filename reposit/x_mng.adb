@@ -921,6 +921,10 @@ package body X_Mng is
       Button := Middle;
     elsif Loc_Button = 3 then
       Button := Right;
+    elsif Loc_Button = 4 then
+      Button := Up;
+    elsif Loc_Button = 5 then
+      Button := Down;
     end if;
   end X_Read_Tid;
 

@@ -35,7 +35,7 @@ package X_Mng is
   type Byte_Array is array (Positive range <>) of Byte;
 
   -- Mouse buttons
-  type Button_List is (None, Left, Middle, Right);
+  type Button_List is (None, Left, Middle, Right, Up, Down);
 
   -- Returned events (see Event_Mng and Timers)
   type Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard, Refresh,
