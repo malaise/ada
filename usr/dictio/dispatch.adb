@@ -48,6 +48,9 @@ package body Dispatch is
   procedure Quit is 
   begin
     Status.Set (Status.Dead);
+    while Event_Mng.Wait (100) loop
+      null;
+    end loop;
   end Quit; 
 
   procedure New_Intra (Diff : in Boolean;

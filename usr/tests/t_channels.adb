@@ -63,7 +63,8 @@ procedure T_Channels is
   end Signal_Cb;
 
   -- Time callback, no more waiting
-  function Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean is
   begin
     Go_Wait := False;
     return True;
@@ -85,7 +86,7 @@ procedure T_Channels is
                              Timer_Cb'Unrestricted_Access);
     end if;
     loop
-       Event_Mng.Wait (Integer (Dur) * 1_000);
+      Event_Mng.Wait (Integer (Dur) * 1_000);
       exit when Sig;
       -- Stops waiting on timer
       exit when not Go_Wait;

@@ -309,7 +309,10 @@ package body Tcp_Util is
   end Connection_Fd_Cb;
 
   -- Timer callback
-  function Connection_Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
+  function Connection_Timer_Cb (Id : Timers.Timer_Id;
+                                Data : Timers.Timer_Data := Timers.No_Data)
+           return Boolean is
+
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;

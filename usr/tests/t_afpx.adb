@@ -13,7 +13,8 @@ procedure T_Afpx is
   Flip_Flop : Boolean;
 
   Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
-  function Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean is
   begin
     Flip_Flop := not Flip_Flop;
     return True;

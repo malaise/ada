@@ -4,7 +4,8 @@ package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
 
-  function Timer_Cb (Id : Timers.Timer_Id) return Boolean;
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : Fight_Action;
 
@@ -56,7 +57,8 @@ package body Fight_Mng is
   end Event;
 
 
-  function Timer_Cb (Id : Timers.Timer_Id) return Boolean is
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean is
     Result : Nodes.Check_Result_List;
   begin
     Result := Nodes.Check;

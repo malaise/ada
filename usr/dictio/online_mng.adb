@@ -7,7 +7,8 @@ package body Online_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
 
-  function Timer_Cb (Id : Timers.Timer_Id) return Boolean;
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean;
 
   Alive_Period : constant Duration := 1.0;
 
@@ -140,7 +141,8 @@ package body Online_Mng is
 
   end Event;
 
-  function Timer_Cb (Id : Timers.Timer_Id) return Boolean is
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Master then

@@ -50,7 +50,8 @@ procedure T_Timers is
   Use_Afpx : Boolean := False;
 
   -- Generic callback
-  function CallBack (Id : in Timers.Timer_Id) return Boolean;
+  function CallBack (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean;
 
   -- Start a timer and store its id
   procedure Start (T : Timer_List;
@@ -82,7 +83,8 @@ procedure T_Timers is
   Max_Funny : constant Natural := 10;
 
   -- Generic callback
-  function CallBack (Id : in Timers.Timer_Id) return Boolean is
+  function CallBack (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean is
     use type Timers.Timer_Id;
     N : Positive;
   begin

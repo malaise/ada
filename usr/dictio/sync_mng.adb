@@ -25,7 +25,8 @@ package body Sync_Mng is
     end if;
   end Cancel_Timer;
 
-  function Timer_Rec_Cb (Id : in Timers.Timer_Id) return Boolean is
+  function Timer_Rec_Cb (Id : in Timers.Timer_Id;
+                         Data : Timers.Timer_Data) return Boolean is
   begin
     if Sync_Has_Been_Received then
       -- Still in sync
@@ -113,7 +114,8 @@ package body Sync_Mng is
 
   procedure Do_Sync;
 
-  function Timer_Sen_Cb (Id : in Timers.Timer_Id) return Boolean is
+  function Timer_Sen_Cb (Id : Timers.Timer_Id;
+                         Data : Timers.Timer_Data) return Boolean is
   begin
     Do_Sync;
     return False;

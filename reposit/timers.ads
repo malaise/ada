@@ -33,11 +33,16 @@ package Timers is
   type Timer_Id is private;
   function Image (Id : Timer_Id) return String;
 
-  -- Timer callback: called when the timer expires with one argument:
-  --  the timer Id
+  -- Timer callback: called when the timer expires with two argument:
+  --  the timer Id and the Data provided at timer creation
   -- Should return True if the timer expiration has to be reported by
   --    expire
-  type Timer_Callback is access function (Id : in Timer_Id) return Boolean;
+  subtype Timer_Data is Natural;
+  No_Data : constant Timer_Data := 0;
+
+  type Timer_Callback is access
+        function (Id : in Timer_Id; Data : in Timer_Data := No_Data)
+        return Boolean;
 
   -- Value returned by Next_Timer if no more timer
   No_Timer : constant Timer_Id;
@@ -48,7 +53,8 @@ package Timers is
   -- May raise No_More_Timer if resource exhausted
   No_More_Timer : exception;
   function Create (Delay_Spec : Delay_Rec;
-                   Callback   : Timer_Callback) return Timer_Id;
+                   Callback   : Timer_Callback;
+                   Data       : Timer_Data := No_Data) return Timer_Id;
 
   -- Delete a timer
   -- May raise Invalid_Timer if timer has no period and has expired
