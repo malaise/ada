@@ -1,4 +1,3 @@
-with text_io;
 with CALENDAR, TEXT_IO;
 with BIG_CON_IO, NORMAL, X_MNG, UPPER_CHAR;
 package body CURVE is
@@ -800,11 +799,6 @@ package body CURVE is
         PREV_SCALE_BOUNDS := MOUSE_BOUNDS;
       end if;
 
-text_io.put_line ("Screen bounds : X " & integer'image(screen_boundaries.x_min)
-                                       & integer'image(screen_boundaries.x_max)
-                & "                Y " & integer'image(screen_boundaries.y_min)
-                                       & integer'image(screen_boundaries.y_max));
-
       loop -- Main loop of mouse and keys actions
 
         if EVENT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
@@ -818,7 +812,6 @@ text_io.put_line ("Screen bounds : X " & integer'image(screen_boundaries.x_min)
               MOUSE_BOUNDS.X_MAX := MX;
               MOUSE_BOUNDS.Y_MIN := MY;
               MOUSE_BOUNDS.Y_MAX := MY;
-text_io.put_line ("pos : " & integer'image(MX) & integer'image(MY));
             end if;
           end if;
           -- Draw what has to be for initial/refresh
