@@ -11,9 +11,11 @@ m pushr 60 >=  E pushr ifcall
 h copyr isinte ~ E pushr ifcall
 h pushr 0 < E pushr ifcall
 h pushr 24 >=  E pushr ifcall
+False n popr
 
 # Display time
-[ newl 2 format h pushr put "h" put
+[ n pushr [ newl ] [ True n popr ] ifte call
+2 format h pushr put "h" put
 m pushr dup 10 < [ "0" put 1 format put ] [ put ] ifte call ] P copyr
 
 # Loop
