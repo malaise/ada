@@ -22,8 +22,10 @@ package body Dictio_Lib is
 
   procedure Close is
   begin
-    Event_Mng.Del_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True);
-    Socket.Close (Dictio_Dscr);
+    if Socket.Is_Open (Dictio_Dscr) then
+      Event_Mng.Del_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True);
+      Socket.Close (Dictio_Dscr);
+    end if;
     if Dictio_State_Cb /= null then
       Dictio_State_Cb (Unavailable);
     end if;
