@@ -1,4 +1,4 @@
-#Format N (int top stack) on i (second on stack) digits, padding with zeros
+# Format N (int top stack) on i (second on stack) digits, padding with zeros
 # make N positive. If N is negative: pope -, N = absv N and i = i - 1
 [ dup 0 < [ "-" pope absv swap 1 - swap ] [ "" pope ] ifte call
 # check i >= 0, else set 0. make image (with spaces)
@@ -10,12 +10,15 @@ dup strlen swap
 # loop: extract char at i test it is space
 [ dup pope swap dup dup pope strsub " " =
 # if: replace space by 0, else: adjust stack to Str i
-[ pushle pushle swap dup pope swap [ 0 ] swap strrep pushle swap ] [ pushle pushle ] ifte call
+[ pushle pushle swap dup pope swap "0" swap strrep pushle swap ]
+[ pushle pushle ] ifte call
 # end of loop?
-swap dup 1 = [ pop pushle pop 2 retn ] ifcall 1 - swap pushle dup pope retacal ] dup pope call
+swap dup 1 = [ pop pushle pop 2 retn ] ifcall
+1 - swap pushle dup pope retacal ] dup pope call
 pushle swap strcat ]
 
-#Format replaces a dms number by the string [+-]<hours>h<mins>m<secs>.<millisecs>s
+# Format a dms number, replacing it by the string
+#  [+-]<hours>h<mins>m<secs>.<millisecs>s
 [ 
 # Save hours and round msecs get mm.ssmmmm
 dup trunc pope frac absv 10.0e7 * round toreal 10.0e5 /
@@ -29,7 +32,8 @@ frac 100.0 * dup trunc strof "." strcat pushle swap strcat pope
 frac 1000.0 * trunc 3 format strof "s" strcat pushle swap strcat
 # Now we have MMmSS.MMMs with spaces
 # Subst space by 0 at offset B in A
-[ copye swap copye dup strsub " " = [ pushle "0" pushle strrep ] [ pushle pop pushle ] ifte call
+[ copye swap copye dup strsub " " = [ pushle "0" pushle strrep ]
+[ pushle pop pushle ] ifte call
 ] pope
 # Check/replace spaces in 10min, 10sec, 100 and 10 msec
 1 swap pushle copye call
