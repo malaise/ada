@@ -7,7 +7,7 @@ AFPX := true
 EXES := $(filter-out t_smart_int, $(UNITS))
 
 CLIBS := x_mng cutil X11
-CLIBS_t_ndbm := cndbm gdbm
+CLIBS_t_ndbm := cndbm gdbm gdbm_compat
 
 include $(TEMPLATES)/ada.mk
 
