@@ -1,10 +1,10 @@
 with My_Io, Text_Handler, Directory;
-procedure Recurs (
- Name_Of_Dir : in Boolean := True;
- In_Current : in Boolean := True;
- First_Level_Only : in Boolean := False;
- Leaves_Only : in Boolean := False;
- Stop_On_Error : in Boolean := True) is
+procedure Recurs (Name_Of_Dir : in Boolean := True;
+                  In_Current : in Boolean := True;
+                  First_Level_Only : in Boolean := False;
+                  Leaves_Only : in Boolean := False;
+                  Stop_On_Error : in Boolean := True;
+                  Follow_Links : in Boolean := False) is
 
   Current_Level : Natural := 0;
   Abort_Explore : exception;
@@ -87,6 +87,19 @@ procedure Recurs (
           -- A link to nowhere?
           Kind := Directory.Unknown;
       end;
+      -- Follow link recursively
+      if Follow_Links and then Kind = Directory.Link then
+        begin
+          Directory.Read_Link (Text_Handler.Value(New_Name), New_Name, True);
+          Directory.File_Stat (Text_Handler.Value(New_Name), Kind, Rights,
+                               Mtime);
+        exception
+          when Directory.Name_Error | Directory.Access_Error =>
+            -- A link to nowhere?
+            Kind := Directory.Unknown;
+        end;
+      end if;
+        
       if Kind = Directory.Dir
       and then Text_Handler.Value(New_Name) /= Dot_Dir 
       and then Text_Handler.Value(New_Name) /= Dot_Dot_Dir then

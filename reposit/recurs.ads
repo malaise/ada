@@ -6,6 +6,7 @@
 -- Stop after one level of subdirectories or not
 -- Do action only in leaves (directory with no subdirectory)
 -- Stops on error (DO_IN_DIR returning FALSE), or not
+-- Follow symbolic links (to directories) or not
 generic
   with function Do_In_Dir return Boolean;
 procedure Recurs (
@@ -13,5 +14,6 @@ procedure Recurs (
  In_Current : in Boolean := True;
  First_Level_Only : in Boolean := False;
  Leaves_Only : in Boolean := False;
- Stop_On_Error : in Boolean := True);
+ Stop_On_Error : in Boolean := True;
+ Follow_Links : in Boolean := False);
 

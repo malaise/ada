@@ -13,6 +13,7 @@ procedure Pexec is
   First_Level_Only : Boolean;
   Leaves_Only : Boolean;
   No_Stop_On_Error : Boolean;
+  Follow_Links : Boolean;
 
   Initial_Dir : Text_Handler.Text (Directory.Max_Dir_Name_Len);
 
@@ -53,13 +54,14 @@ begin
   Directory.Get_Current (Initial_Dir);
 
   Command.Parse (No_Action, No_Name_Of_Dir, Not_In_Current, First_Level_Only,
-                 Leaves_Only, No_Stop_On_Error);
+                 Leaves_Only, No_Stop_On_Error, Follow_Links);
 
   My_Recurs (Name_Of_Dir      => not No_Name_Of_Dir,
              In_Current       => not Not_In_Current,
              First_Level_Only => First_Level_Only,
              Leaves_Only      => Leaves_Only,
-             Stop_On_Error    => not No_Stop_On_Error);
+             Stop_On_Error    => not No_Stop_On_Error,
+             Follow_Links     => Follow_Links);
 
   Restore;
 exception

@@ -2,10 +2,10 @@ with My_Io, Text_Handler, Argument;
 package body Command is
 
   -- Pexec options definitions
-  Nbre_Max_Opt : constant := 6;
-  subtype Index_Opt is Positive range 1 .. Nbre_Max_Opt;
-  Opt_Key : constant array (Index_Opt) of Character
-          := ('a', 'd', 'c', 'f', 'l', 'i');
+  type Opt_Key_Array is array (Positive range <>) of Character;
+  Opt_Key : constant Opt_Key_Array := ('a', 'd', 'c', 'f', 'l', 'i', 's');
+  Nbre_Max_Opt : constant := Opt_Key'Length;
+  subtype Index_Opt is Positive range Opt_Key'Range;
 
   -- Parse already called...
   Parsed : Boolean := False;
@@ -22,19 +22,21 @@ package body Command is
   procedure Print_Usage is
   begin
     My_Io.Put_Line ("Usage : pexec [options] command [{;command}]");
-    My_Io.Put_Line (" options : -[a][d][c][f][l][i]");
+    My_Io.Put_Line (" options : -[a][d][c][f][l][i][s]");
     My_Io.Put_Line ("  a for do not print actions.");
     My_Io.Put_Line ("  d for do not print name of each dir.");
     My_Io.Put_Line ("  c for don't do in current dir.");
     My_Io.Put_Line ("  f for stop after 1st level of sub dir.");
     My_Io.Put_Line ("  l for do in leaves only (dirs with no subdir).");
     My_Io.Put_Line ("  i for ignore command errors.");
+    My_Io.Put_Line ("  s for follow symbolic links.");
   end Print_Usage;
 
   procedure Parse (
    No_Action,      No_Name_Of_Dir,
    Not_In_Current, First_Level_Only, Leaves_Only,
-   No_Stop_On_Error : out Boolean) is
+   No_Stop_On_Error,
+   Follow_Links : out Boolean) is
 
     -- Is 1st argument a pexec option
     Pexec_Options : Boolean;
@@ -51,7 +53,7 @@ package body Command is
     Pos : Positive;
 
     -- Local copies of out parameters
-    La, Ld, Lc, Lf, Ll, Li : Boolean;
+    La, Ld, Lc, Lf, Ll, Li, Ls : Boolean;
 
 
   begin
@@ -62,12 +64,14 @@ package body Command is
     Lf := False;
     Ll := False;
     Li := False;
+    Ls := False;
     No_Action        := La;
     No_Name_Of_Dir   := Ld;
     Not_In_Current   := Lc;
     First_Level_Only := Lf;
     Leaves_Only      := Lf;
     No_Stop_On_Error := Li;
+    Follow_Links     := Ls;
 
     -- Check that not already parsed
     if Parsed then
@@ -137,6 +141,7 @@ package body Command is
         elsif Str(I) = Opt_Key(4) then Lf := True;
         elsif Str(I) = Opt_Key(5) then Ll := True;
         elsif Str(I) = Opt_Key(6) then Li := True;
+        elsif Str(I) = Opt_Key(7) then Ls := True;
         end if;
 
       end loop;
@@ -261,6 +266,7 @@ package body Command is
     First_Level_Only := Lf;
     Leaves_Only      := Ll;
     No_Stop_On_Error := Li;
+    Follow_Links     := Ls;
 
   end Parse;
 
