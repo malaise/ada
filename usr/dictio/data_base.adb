@@ -1,3 +1,4 @@
+with ada.text_io;
 with Dynamic_List, Normal, Crc_10, Hash;
 with Parse;
 package body Data_Base is
@@ -64,11 +65,8 @@ package body Data_Base is
     Acc : Item_List_Mng.Element_Access;
     use type Item_List_Mng.Element_Access;
   begin
+    -- The one to store
     Itm := Item;
-    if Item.Crc = No_Item.Crc then
-      Itm.Crc := Crc_Of(Parse(Itm.Name) & Item.Kind
-                      & Item.Data(1 .. Item.Data_Len));
-    end if;
 
     if H_Use then
       Acc := H_Get (Item.Kind, Item.Name);
@@ -89,6 +87,15 @@ package body Data_Base is
       end;
     end if;
   end Set;
+
+  -- Set item, update Crc
+  procedure Set_Then_Get_Crc (Item : in out Item_Rec) is
+  begin
+    Item.Crc := Crc_Of(Parse(Item.Name) & Item.Kind
+                    & Item.Data(1 .. Item.Data_Len));
+
+    Set (Item);
+  end Set_Then_Get_Crc;
 
   procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec) is
     Itm : Item_Rec;

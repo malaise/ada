@@ -1,5 +1,5 @@
 with Ada.Exceptions, System;
-with Sys_Calls, Address_Ops, Socket, Tcp_Util, Channels;
+with Sys_Calls, Address_Ops, Socket, Tcp_Util, Channels, Mixed_Str;
 with Debug, Parse, Local_Host_Name, Status, Errors;
 package body Intra_Dictio is
 
@@ -185,6 +185,22 @@ package body Intra_Dictio is
     end if;
   end Kind_Image;
 
+  function Stat_Image (C : Character) return String is
+    Stat : Status.Status_List;
+  begin
+    Stat := Status.Status_List'Val(Character'Pos(C));
+    return Mixed_Str (Stat'Img);
+  end Stat_Image;
+
+  function Sync_Image (C : Character) return String is
+  begin
+    if Character'Pos (C) = Boolean'Pos (True) then
+      return "True";
+    else
+      return "False";
+    end if;
+  end Sync_Image;
+
   procedure Read_Cb (Message  : in Message_Rec;
                      Length   : in Channels.Message_Length;
                      Diffused : in Boolean) is
@@ -194,12 +210,12 @@ package body Intra_Dictio is
       return;
     end if;
     if Debug.Level_Array(Debug.Intra) then
-      Debug.Put ("Intra: receive Kind: " & Kind_Image(Message.Head.Kind)
-               & "  Diff: " & Diffused'Img
-               & "  Stat: " & Message.Head.Stat'Img
-               & "  Sync: " & Message.Head.Sync'Img
-               & "  Prio: " & Message.Head.Prio
-               & "  From: " & Parse (Message.Head.From));
+      Debug.Put ("Intra: receive Kind: " & Kind_Image (Message.Head.Kind)
+             & "  Diff: " & Mixed_Str (Diffused'Img)
+             & "  Stat: " & Stat_Image (Message.Head.Stat)
+             & "  Sync: " & Sync_Image (Message.Head.Sync)
+             & "  Prio: " & Message.Head.Prio
+             & "  From: " & Parse (Message.Head.From));
     end if;
     -- Call dispatcher
     if Client_Cb /= null then
@@ -229,8 +245,9 @@ package body Intra_Dictio is
     Local_Host_Name.Get (Message.Head.From);
      
     if Message.Item.Data_Len = 0 then
-      -- Header size
-      Len := 80;
+      -- Item without data
+      Len := Integer(Message.Item.Data(1)'Address
+                     - Message'Address + 4 - 1);
     else
       Len := Integer(Message.Item.Data(Message.Item.Data_Len)'Address
                      - Message'Address + 4);
@@ -238,16 +255,16 @@ package body Intra_Dictio is
     if Debug.Level_Array(Debug.Intra) then
       if To = "*" then
         Debug.Put ("Intra: bcast Kind: " & Kind_Image(Message.Head.Kind)
-                 & "  Stat: " & Message.Head.Stat'Img
+                 & "  Stat: " & Stat_Image(Message.Head.Stat)
                  & "  Len: " & Len'Img);
       elsif To = "" then
         Debug.Put ("Intra: reply Kind: " & Kind_Image(Message.Head.Kind)
-                 & "  Stat: " & Message.Head.Stat'Img
+                 & "  Stat: " & Stat_Image(Message.Head.Stat)
                  & "  Len: " & Len'Img);
       else
         Debug.Put ("Intra: send to: " & To
                  & "  Kind: " & Kind_Image(Message.Head.Kind)
-                 & "  Stat: " & Message.Head.Stat'Img
+                 & "  Stat: " & Stat_Image(Message.Head.Stat)
                  & "  Len: " & Len'Img);
       end if;
     end if;
@@ -319,7 +336,7 @@ package body Intra_Dictio is
     Msg : Message_Rec;
   begin
     Msg.Head.Kind := Stat_Kind;
-    Msg.Head.Stat := Character'Val(Status.Status_List'Pos(Status.Get));
+    Msg.Head.Stat := Character'Val(Status.Status_List'Pos(Stat));
     if Extra = "" then
       Msg.Item.Data_Len := 0;
     else

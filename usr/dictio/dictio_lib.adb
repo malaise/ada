@@ -328,6 +328,7 @@ package body Dictio_Lib is
     Msg.Item.Kind := "d";
     Msg.Item.Data_Len := Data'Length;
     Msg.Item.Data(1 .. Msg.Item.Data_Len) := Data;
+    Msg.Item.Crc := Data_base.No_Item.Crc;
     Send_Request;
   end Set;
 
@@ -391,6 +392,7 @@ package body Dictio_Lib is
     Msg.Item.Kind := "a";
     Msg.Item.Data_Len := What'Length;
     Msg.Item.Data(1 .. Msg.Item.Data_Len) := What;
+    Msg.Item.Crc := Data_base.No_Item.Crc;
     Send_Request;
   end Set_Alias;
 

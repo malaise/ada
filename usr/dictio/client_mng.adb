@@ -1,16 +1,28 @@
 with Ada.Calendar;
 with Socket, Tcp_Util, Dynamic_List, Event_Mng, Sys_Calls;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
-     Sync_Mng, Versions, Status;
+     Versions, Status;
 package body Client_Mng is
 
-
+  -- Init done?
   Init : Boolean := False;
+
+  -- Each time a modif is done in data base
+  Modif_Stamp : Ada.Calendar.Time := Ada.Calendar.Clock;
 
   Dictio_Status : Status.Stable_Status_List := Status.Dead;
   procedure Send_Status (Dscr : in Socket.Socket_Dscr);
 
   Accept_Port : Tcp_Util.Port_Num;
+
+  -- Send notification according to item kind
+  procedure Send_Notify (Item : Data_Base.Item_Rec)  is
+    use type Data_Base.Item_Rec;
+  begin
+    if Item.Kind = "d" then
+      Notify.Send (Item);
+    end if;
+  end Send_Notify;
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                    return Boolean is
@@ -93,7 +105,11 @@ package body Client_Mng is
           return False;
         end;
       when Client_Com.Set =>
-        Modified (Intra_Dictio.Data_Kind, Msg.Item);
+        Modif_Stamp := Ada.Calendar.Clock;
+        -- Store, get new Crc
+        Data_Base.Set_Then_Get_Crc (Msg.Item);
+        -- Send notifications and diffuse
+        Send_Notify (Msg.Item);
         Intra_Dictio.Send_Data (Msg.Item);
       when Client_Com.Notif_On =>
         Notify.Add (Dscr, Msg.Item.Name);
@@ -224,23 +240,14 @@ package body Client_Mng is
     Client_Fd.Del_All;
   end Quit;
 
-  Modif_Stamp : Ada.Calendar.Time := Ada.Calendar.Clock;
 
-  procedure Modified (Kind : in Character; Item : Data_Base.Item_Rec) is
+  procedure Modified (Item : in Data_Base.Item_Rec) is
+    use type Data_Base.Item_Rec;
   begin
-    if Kind = Intra_Dictio.Sync_Kind then
-      if Debug.Level_Array(Debug.Client_Data) then
-        Debug.Put ("Client: receive sync " & Parse(Item.Name));
-      end if;
-      Sync_Mng.Sync_Received;
-    else 
-      if Debug.Level_Array(Debug.Client_Data) then
-        Debug.Put ("Client: modified data " & Parse(Item.Name));
-      end if;
-    end if;
-    Data_Base.Set (Item);
-    Notify.Send (Item);
     Modif_Stamp := Ada.Calendar.Clock;
+    -- Intra data
+    Data_Base.Set (Item);
+    Send_Notify (Item);
   end Modified;
 
   function Stable return Boolean is

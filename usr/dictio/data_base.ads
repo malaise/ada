@@ -10,8 +10,8 @@ package Data_Base is
     Data_Len : Natural := 0;  -- Of data
     Name : Item_Name := (others => ' ');
     Kind : Item_Kind := (others => 'd');
-    Data : Item_Data := (others => ' ');
     Crc  : Item_Crc := (others => ' ');
+    Data : Item_Data := (others => ' ');
   end record;
   No_Item : constant Item_Rec := (0,
                                   (others => ' '),
@@ -19,9 +19,15 @@ package Data_Base is
                                   (others => ' '),
                                   (others => ' '));
 
+  -- Set item,
   procedure Set (Item : in Item_Rec);
+  -- Set item, update Crc
+  procedure Set_Then_Get_Crc (Item : in out Item_Rec);
+
+  -- Get item
   procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec);
 
+  -- Clear all
   procedure Reset;
 
   -- Item is No_Item when no more item

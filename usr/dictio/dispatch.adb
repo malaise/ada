@@ -83,10 +83,19 @@ package body Dispatch is
           Online_Mng.Event (From, Stat, Sync, Diff,
                             Item.Data(1 .. Item.Data_Len));
       end case;
-    else
-      -- Data or sync
-      -- Transfer to notify and data base
-      Client_Mng.Modified (Kind, Item);
+    elsif Kind = Intra_Dictio.Sync_Kind then
+      if Debug.Level_Array(Debug.Client_Data) then
+        Debug.Put ("Dispatch: receive sync " & Parse(Item.Name));
+      end if;
+      -- Sync: Store and notify
+      Sync_Mng.Sync_Received;
+      Client_Mng.Modified (Item);
+    else 
+      -- Data: Store and notify
+      if Debug.Level_Array(Debug.Client_Data) then
+        Debug.Put ("Dispatch: receive data " & Parse(Item.Name));
+      end if;
+      Client_Mng.Modified (Item);
     end if;
   end New_Intra;
 
