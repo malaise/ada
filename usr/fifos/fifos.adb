@@ -459,20 +459,20 @@ package body Fifos is
 
     package body Dictio is
 
-      Name_Suffix : Text_Handler.Text (Dictio_Lib.Max_Name_Len);
-      Default_Name_Suffix : constant String := "Fifo.";
-      Name_Suffix_Name : constant String := "FIFO_NAME_SUFFIX";
+      Name_Prefix : Text_Handler.Text (Dictio_Lib.Max_Name_Len);
+      Default_Name_Prefix : constant String := "Fifo.";
+      Name_Prefix_Name : constant String := "FIFO_NAME_SUFFIX";
       Separator : constant Character := ':';
 
       Init_Done : Boolean := False;
       Dictio_State : Dictio_Lib.Dictio_State_List := Dictio_Lib.Unavailable;
 
       function Fifo_Name_Of (Item_Name : String) return String is
-        Suff_Len : constant Integer := Text_Handler.Length (Name_Suffix);
+        Suff_Len : constant Integer := Text_Handler.Length (Name_Prefix);
       begin
         if Item_Name'Length <= Suff_Len
         or else Item_Name(1 .. Suff_Len)
-             /= Text_Handler.Value (Name_Suffix) then
+             /= Text_Handler.Value (Name_Prefix) then
           raise Data_Error;
         end if;
         return Item_Name(Suff_Len+1 .. Item_Name'Length);
@@ -567,12 +567,12 @@ package body Fifos is
         end if;
 
         -- Getenv name suffix
-        Text_Handler.Set (Name_Suffix, Default_Name_Suffix);
-        Environ.Get_Txt (Name_Suffix_Name, Name_Suffix);
+        Text_Handler.Set (Name_Prefix, Default_Name_Prefix);
+        Environ.Get_Txt (Name_Prefix_Name, Name_Prefix);
         -- Check a name based on this suffix is accepted by dictio
         if not Dictio_Lib.Is_Valid_Item_Name (
-             Text_Handler.Value (Name_Suffix) & "a") then
-          Text_Handler.Set (Name_Suffix, Default_Name_Suffix);
+             Text_Handler.Value (Name_Prefix) & "a") then
+          Text_Handler.Set (Name_Prefix, Default_Name_Prefix);
         end if;
 
         Init_Done := True;
@@ -590,11 +590,11 @@ package body Fifos is
                                             Port : in Tcp_Util.Port_Num) is
       begin
         Init;
-        if Text_Handler.Length (Name_Suffix) + Fifo_Name'Length
+        if Text_Handler.Length (Name_Prefix) + Fifo_Name'Length
          > Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
-        Dictio_Lib.Set (Text_Handler.Value (Name_Suffix)
+        Dictio_Lib.Set (Text_Handler.Value (Name_Prefix)
                       & Fifo_Name, Host & Separator
                       & Normal (Integer(Port), 5, Gap => '0'));
       exception
@@ -617,13 +617,13 @@ package body Fifos is
       begin
         Init;
         Got := False;
-        if Text_Handler.Length (Name_Suffix) + Fifo_Name'Length
+        if Text_Handler.Length (Name_Prefix) + Fifo_Name'Length
          > Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
 
         begin
-          Split (Dictio_Lib.Get (Text_Handler.Value (Name_Suffix) & Fifo_Name),
+          Split (Dictio_Lib.Get (Text_Handler.Value (Name_Prefix) & Fifo_Name),
                  Host, Port);
         exception
           when Dictio_Lib.No_Dictio =>
@@ -646,11 +646,11 @@ package body Fifos is
       procedure Notify (Fifo_Name : in String; On : in Boolean) is
       begin
         Init;
-        if Text_Handler.Length (Name_Suffix) + Fifo_Name'Length
+        if Text_Handler.Length (Name_Prefix) + Fifo_Name'Length
          > Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
-        Dictio_Lib.Notify (Text_Handler.Value (Name_Suffix) & Fifo_Name,
+        Dictio_Lib.Notify (Text_Handler.Value (Name_Prefix) & Fifo_Name,
                            True, On);
       exception
         when Dictio_Lib.No_Dictio =>
