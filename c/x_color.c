@@ -1,5 +1,6 @@
 /* Oct 23, 1998 : Use private color map                   (PM)     */
 #include <stdlib.h>
+#include <string.h>
 
 #include "x_color.h"
 
