@@ -28,15 +28,20 @@ package body STACK is
   procedure POP (ITEM : out ITEM_REC) is
     LITEM : ITEM_REC;
   begin
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
+      TEXT_IO.PUT ("Stack: Poping ");
+    end if;
     STACK_LIST.GET(LIST, LITEM, STACK_LIST.PREV);
     ITEM := LITEM;
     if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      TEXT_IO.PUT ("Stack: Poping ");
       DEBUG.PUT (LITEM);
       TEXT_IO.NEW_LINE;
     end if;
   exception
     when STACK_LIST.EMPTY_LIST =>
+      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
+        TEXT_IO.PUT_LINE("raises EMPTY_STACK");
+      end if;
       raise EMPTY_STACK;
   end POP;
 
