@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with Tcp_Util;
-with Data_Base, Status;
+with Args, Data_Base, Status;
 package Intra_Dictio is
 
   Stat_Kind : constant Character := Ada.Characters.Latin_1.Syn;
@@ -9,7 +9,6 @@ package Intra_Dictio is
 
   Extra_Crc : constant Character := 'C';
   Extra_Ver : constant Character := 'V';
-  Extra_Pri : constant Character := 'P';
 
   -- All characters between Key and next key (or end of Str) in Str
   function Extra_Of (Str : String; Key : Character) return String;
@@ -18,6 +17,7 @@ package Intra_Dictio is
     Diff : in Boolean;
     Stat : in Status.Status_List;
     Sync : in Boolean;
+    Prio : in Args.Prio_Str;
     From : in Tcp_Util.Host_Name;
     Kind : in Character;
     Item : in Data_Base.Item_Rec);

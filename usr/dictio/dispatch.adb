@@ -6,6 +6,7 @@ package body Dispatch is
   procedure New_Intra (Diff : in Boolean;
                        Stat : in Status.Status_List;
                        Sync : in Boolean;
+                       Prio : in Args.Prio_Str;
                        From : in Tcp_Util.Host_Name;
                        Kind : in Character;
                        Item : in Data_Base.Item_Rec);
@@ -59,6 +60,7 @@ package body Dispatch is
   procedure New_Intra (Diff : in Boolean;
                        Stat : in Status.Status_List;
                        Sync : in Boolean;
+                       Prio : in Args.Prio_Str;
                        From : in Tcp_Util.Host_Name;
                        Kind : in Character;
                        Item : in Data_Base.Item_Rec) is
@@ -70,17 +72,15 @@ package body Dispatch is
               and then Stat /= Status.Dead then
         if Debug.Level_Array(Debug.Fight) then
           Debug.Put ("Dispatch: reply status to: " & Parse(From)
-                   & "/" & Stat'Img
-                   & "-" & Item.Data(1 .. Item.Data_Len));
+                   & "/" & Stat'Img & "-" & Prio);
         end if;
-        Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra
-                                 & Intra_Dictio.Extra_Pri & Args.Get_Prio);
+        Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
       end if;
       case Status.Get is
         when Status.Starting | Status.Dead =>
           return;
         when Status.Init | Status.Fight =>
-          Fight_Mng.Event (From, Stat, Sync, Diff,
+          Fight_Mng.Event (From, Stat, Sync, Prio, Diff,
                           Item.Data(1 .. Item.Data_Len));
         when Status.Slave | Status.Master =>
           Online_Mng.Event (From, Stat, Sync, Diff,

@@ -1,6 +1,6 @@
 with Ada.Exceptions, System;
 with Sys_Calls, Address_Ops, Socket, Tcp_Util, Channels;
-with Args, Debug, Parse, Local_Host_Name, Status, Errors;
+with Debug, Parse, Local_Host_Name, Status, Errors;
 package body Intra_Dictio is
 
   Byte_Size : constant := System.Storage_Unit;
@@ -10,6 +10,7 @@ package body Intra_Dictio is
     Kind : Character;
     Stat : Status.Status_List;
     Sync : Boolean;
+    Prio : Args.Prio_Str;
   end record;
 
   type Message_Rec is record
@@ -104,6 +105,7 @@ package body Intra_Dictio is
     if Client_Cb /= null then
       Client_Cb (Diffused, Message.Head.Stat, 
                            Message.Head.Sync,
+                           Message.Head.Prio,
                            Message.Head.From,
                            Message.Head.Kind,
                            Message.Item);
@@ -122,6 +124,7 @@ package body Intra_Dictio is
       Message.Head.Stat := Status.Get;
     end if;
     Message.Head.Sync := Status.Sync;
+    Message.Head.Prio := Args.Get_Prio;
     Local_Host_Name.Get (Message.Head.From);
      
     if Message.Item = Data_Base.No_Item then

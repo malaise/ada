@@ -86,30 +86,33 @@ package body Online_Mng is
 
         -- Receive a Master while slave, check Crc and restart timer
         Current_Master := From;
-        if not Sync_Mng.In_Sync
-        and then Extra /= ""
-        and then Extra(1) = Intra_Dictio.Extra_Crc then
-          if Extra(2 .. Extra'Last) /= Data_Base.Get_Crc then
-            -- Crc Error: Re sync
-            if Debug.Level_Array(Debug.Online) then
-              Debug.Put ("Online: Crc error. Received >" & Extra
-                       & "< from: " & Parse(From)
-                       & ", got >" & Data_Base.Get_Crc & "<");
-            end if;
-            -- Invalid Crc. Re-sync.
-            Data_Base.Reset;
-            Status.Sync := False;
-            Sync_Mng.Start;
-          else
-            -- Crc OK:
-            if not Status.Sync then
+        if not Sync_Mng.In_Sync then
+          declare
+            Crc : constant String
+                := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc);
+          begin
+            if Crc /= "" and then Crc /= Data_Base.Get_Crc then
+              -- Crc Error: Re sync
               if Debug.Level_Array(Debug.Online) then
-                Debug.Put ("Online: Crc OK, synced.");
+                Debug.Put ("Online: Crc error. Received " & Crc
+                         & " from: " & Parse(From)
+                         & ", got " & Data_Base.Get_Crc);
               end if;
-              Status.Sync := True;
-              Client_Mng.Start;
+              -- Invalid Crc. Re-sync.
+              Data_Base.Reset;
+              Status.Sync := False;
+              Sync_Mng.Start;
+            else
+              -- Crc OK:
+              if not Status.Sync then
+                if Debug.Level_Array(Debug.Online) then
+                  Debug.Put ("Online: Crc OK, synced.");
+                end if;
+                Status.Sync := True;
+                Client_Mng.Start;
+              end if;
             end if;
-          end if;
+          end;
         end if;
 
         Timers.Delete (Tid);

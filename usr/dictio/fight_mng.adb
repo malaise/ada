@@ -1,5 +1,5 @@
 with Timers, Normal;
-with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio, Args;
+with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
@@ -14,8 +14,6 @@ package body Fight_Mng is
                      Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : Fight_Action;
-
-  My_Prio : String (1 .. Args.Prio_Str'length + 1);
 
   function In_Fight return Boolean is
     use type Timers.Timer_Id;
@@ -37,12 +35,11 @@ package body Fight_Mng is
     Nodes.Init_List;
     Fight_Actions := Actions;
     Last_Status := Status.Get;
-    My_Prio := Intra_Dictio.Extra_Pri & Args.Get_Prio;
 
     -- Change status
     Status.Set (New_Status, Immediate => True);
     if New_Status /= Last_Status then
-      Intra_Dictio.Send_Status (My_Prio);
+      Intra_Dictio.Send_Status;
     end if;
 
     -- End of fight timer
@@ -60,10 +57,10 @@ package body Fight_Mng is
   procedure Event (From : in Tcp_Util.Host_Name;
                    Stat : in Status.Status_List;
                    Sync : in Boolean;
+                   Prio : in Args.Prio_Str;
                    Diff : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
-    Got_Prio : Args.Prio_Str;
   begin
     if not In_Fight then
       if Debug.Level_Array(Debug.Fight) then
@@ -82,25 +79,10 @@ package body Fight_Mng is
       end if;
     end;
 
-    Got_Prio := Nodes.No_Prio;
-    declare
-      T_Prio : constant String
-             := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Pri);
-    begin
-      if T_Prio /= "" then
-        Got_Prio := T_Prio;
-      end if;
-    exception
-      when others =>
-        if Debug.Level_Array(Debug.Fight) then
-          Debug.Put ("Fight.Event: receive invalid prio " & Extra);
-        end if;
-    end;
-    Nodes.Set (From, Stat, Sync, Got_Prio);
+    Nodes.Set (From, Stat, Sync, Prio);
     if Debug.Level_Array(Debug.Fight) then
       Debug.Put ("Fight: received Stat: " & Stat'Img
-               & "  From: " & Parse (From)
-               & "  Extra: " & Extra);
+               & "  From: " & Parse (From));
     end if;
   end Event;
 
@@ -131,10 +113,9 @@ package body Fight_Mng is
   begin
     if In_Fight and then Last_Status /= Status.Fight then
       if Debug.Level_Array(Debug.Fight) then
-        Debug.Put ("Fight: send status " & Last_Status'Img
-                 & "-" & My_Prio);
+        Debug.Put ("Fight: send status " & Last_Status'Img);
       end if;
-      Intra_Dictio.Send_Status (Last_Status, My_Prio);
+      Intra_Dictio.Send_Status (Last_Status);
     end if;
     return False;
   end Perio_Cb;
