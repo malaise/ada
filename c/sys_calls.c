@@ -124,7 +124,7 @@ extern int get_immediate (int fd) {
         return ERROR;
       }
     } else if (n > 0) {
-      return ((char)c);
+      return ((unsigned char)c);
     } else {
       return CLOSED;
     }
