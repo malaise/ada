@@ -354,6 +354,31 @@ package body CURVE is
         end if;
       end SET_MOUSE_IN_FRAME;
 
+      procedure TOGGLE_HELP_MISC (MISC_INDEX : in T_MISC_LIST) is
+      begin
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.MAGENTA);
+        case MISC_INDEX is
+          when M_HELP =>
+            null;
+          when M_AXES =>
+            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 5,
+                       BIG_CON_IO.COL_RANGE_LAST - 7);
+            BIG_CON_IO.PUT ("*");
+          when M_POINTS =>
+            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 4,
+                       BIG_CON_IO.COL_RANGE_LAST - 7);
+            BIG_CON_IO.PUT ("*");
+          when M_CURVE =>
+            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 3,
+                       BIG_CON_IO.COL_RANGE_LAST - 7);
+            BIG_CON_IO.PUT ("*");
+          when M_SCALE =>
+            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 2,
+                       BIG_CON_IO.COL_RANGE_LAST - 7);
+            BIG_CON_IO.PUT ("*");
+        end case;
+      end TOGGLE_HELP_MISC;
+
       -- Draw help message
       procedure DRAW_HELP (ACTION : in DRAW_ACTION) is
 
@@ -416,7 +441,7 @@ package body CURVE is
           BIG_CON_IO.PUT ("SWITCHES:");
           BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 6,
                        BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("H   Help");
+          BIG_CON_IO.PUT ("H * Help");
           BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 5,
                        BIG_CON_IO.COL_RANGE_LAST - 9);
           BIG_CON_IO.PUT ("A   Axes");
@@ -435,7 +460,15 @@ package body CURVE is
         end if;
 
         -- New help mode
-        if ACTION = TOGGLE then MISC(M_HELP) := not MISC(M_HELP); end if;
+        if ACTION = TOGGLE then
+          MISC(M_HELP) := not MISC(M_HELP);
+          for I in T_MISC_LIST loop
+            if MISC (I) then
+              TOGGLE_HELP_MISC (I);
+            end if;
+          end loop;
+        end if;
+
       end DRAW_HELP;
 
       -- Draw all points
@@ -470,10 +503,16 @@ package body CURVE is
         end DRAW_POINT;
 
       begin
+
         BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.RED);
         for I in POINTS'RANGE loop
           DRAW_POINT (POINTS(I).X, POINTS(I).Y);
         end loop;
+
+        if MISC (M_HELP) then
+          TOGGLE_HELP_MISC (M_POINTS);
+        end if;
+
       end DRAW_POINTS;
 
       -- Draw an horizontal line (for frames and axes)
@@ -520,6 +559,10 @@ package body CURVE is
           end;
         end if;
 
+        if MISC (M_HELP) then
+          TOGGLE_HELP_MISC (M_AXES);
+        end if;
+
       end DRAW_AXES;
 
       -- Draw the curve
@@ -561,6 +604,11 @@ package body CURVE is
             when others => null;
           end;
         end loop;
+
+        if MISC (M_HELP) then
+          TOGGLE_HELP_MISC (M_CURVE);
+        end if;
+
         -- BIG_CON_IO.BELL(1);
       end DRAW_CURVE;
 
@@ -635,7 +683,13 @@ package body CURVE is
         end if;
 
         -- Toggle mode
-        if ACTION = TOGGLE then MISC(M_SCALE) := not MISC(M_SCALE); end if;
+        if ACTION = TOGGLE then
+           MISC(M_SCALE) := not MISC(M_SCALE);
+          if MISC (M_HELP) then
+            TOGGLE_HELP_MISC (M_SCALE);
+          end if;
+        end if;
+
       end DRAW_SCALE;
 
       -- Draw Z frame (when in drag)
@@ -742,7 +796,6 @@ package body CURVE is
       end if;
 
       loop -- Main loop of mouse and keys actions
-
 
         if EVENT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
           -- Discard refresh when in drag
