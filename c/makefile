@@ -16,18 +16,18 @@ $(DEST)/%.so : %.so
 	cp $< $(DEST)
 	chmod a+r $(DEST)/$<
 
-LIBS=libx_mng.a libutil.a
+LIBS=libx_mng.a libcutil.a
 SOLIBS=$(LIBS:%.a=%.so)
-DESTLIBS=$(LIBS:%lib%=$(DEST)/%lib%)
-DESTSOLIBS=$(SOLIBS:%lib%=$(DEST)/%lib%)
+DESTLIBS=$(LIBS:lib%=$(DEST)/lib%)
+DESTSOLIBS=$(SOLIBS:lib%=$(DEST)/lib%)
 
 
 all : $(DESTLIBS) $(DESTSOLIBS) test_x
 
 test_x.o : test_x.c x_export.h
 
-test_x : $(SOLIBS) test_x.o
-	$(CC) -pthread -o test_x test_x.o -L . libx_mng.so -lutil -lX11
+test_x : $(DESTSOLIBS) test_x.o
+	$(CC) -pthread -o test_x test_x.o -lx_mng -lcutil -lX11
 
 
 X_OBJS=x_color.o x_font.o x_line.o\
@@ -36,17 +36,17 @@ X_OBJS=x_color.o x_font.o x_line.o\
 libx_mng.a : $(X_OBJS)
 	ar crvs $@ $(X_OBJS)
 
-libx_mng.so : $(X_OBJS) libutil.so
-	ld -shared -all -o $@ $(X_OBJS) -L. -lutil -lX11 -lc
+libx_mng.so : $(X_OBJS) $(DEST)/libcutil.so
+	ld -shared -o $@ $(X_OBJS) -lcutil -lX11 -lc
 
 
 U_OBJS=timeval.o sys_calls.o wait_evt.o socket.o
 
-libutil.a : $(U_OBJS)
-	ar crvs libutil.a $(U_OBJS)
+libcutil.a : $(U_OBJS)
+	ar crvs libcutil.a $(U_OBJS)
 
-libutil.so : $(U_OBJS)
-	ld -shared -all -o $@ $(U_OBJS) -lc
+libcutil.so : $(U_OBJS)
+	ld -shared -o $@ $(U_OBJS) -lc
 
 OBJS=$(X_OBJS) $(U_OBJS) test_x.o
 
