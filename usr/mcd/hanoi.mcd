@@ -2,7 +2,7 @@
 4 format
 [ "Error, 3 arguments: <nb_disks> <from_column> <to_column> expected" putl
   "   nb_disks must be >= 0," putl
-  "   columns must be 1, 2 or 3 and different." putl
+  "   columns must be a, b or c and different." putl
 ssize popn retall ] E popr
 
 # Check 3 args
@@ -14,22 +14,25 @@ j popr i popr n popr
 # Init total moves
 0 t popr
 
-# Check arguments  1 <= i j <= 3  and  i /= j  and 1 <= n 
-i pushr isinte ~ E pushr ifcall
-j pushr isinte ~ E pushr ifcall
+# Check arguments  a <= i j <= c  and  i /= j  and 1 <= n 
+i pushr isreg ~ E pushr ifcall
+j pushr isreg ~ E pushr ifcall
 n pushr isinte ~ E pushr ifcall
-i pushr 1 < E pushr ifcall i pushr 3 > E pushr ifcall
-j pushr 1 < E pushr ifcall j pushr 3 > E pushr ifcall
+i pushr a < E pushr ifcall i pushr c > E pushr ifcall
+j pushr a < E pushr ifcall j pushr c > E pushr ifcall
 i pushr j pushr = E pushr ifcall
 n pushr 1 < E pushr ifcall
 
+# Store register name in register
+"a" a popr "b" b popr "c" c popr
+
 # Compute other axis from i, j and push it instead
-[ dup 1 = [ pop 2 = 3 2 ifte 2 retn ] ifcall
-2 = [ 3 = 1 3 ifte 2 retn ] ifcall 2 = 1 2 ifte ] K popr
+[ dup a = [ pop b = c b ifte 2 retn ] ifcall
+b = [ c = a c ifte 2 retn ] ifcall b = a b ifte ] K popr
 
 # M(i, j, d) Move a disk: display
-[ t pushr 1 + t popr "move disk" put put swap " from" put put
-" to" put putl ] M popr
+[ t pushr 1 + t popr "move disk" put put swap " from " put pushr put
+" to " put pushr putl ] M popr
 
 # Move disk 1: Move and return
 [ M pushr call 2 retn ] T popr
