@@ -519,7 +519,7 @@ package body Mng is
 
   -- The generic edition of an operation
   package Edition is
-    type Edit_List is (Create, Modify, View, Delete);
+    type Edit_List is (Create, Modify, Copy, Delete);
     procedure Edit (Edit_Type : in Edit_List);
   end Edition;
   package body Edition is separate;
@@ -564,13 +564,14 @@ package body Mng is
     Refresh_Screen(Center);
   end Edit_Oper;
 
-  -- View an operation
-  procedure View_Oper is
+  -- Copy an operation
+  procedure Copy_Oper is
   begin
-    Edition.Edit(Edition.View);
+    Edition.Edit(Edition.Copy);
     Screen.Reset;
-    Refresh_Screen(Center);
-  end View_Oper;
+    Compute_Amounts;
+    Refresh_Screen(Bottom);
+  end Copy_Oper;
 
   -- Delete an operation
   procedure Del_Oper is

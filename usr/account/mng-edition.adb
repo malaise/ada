@@ -3,12 +3,13 @@ With Con_Io;
 separate (Mng)
 package body Edition is
 
-  -- For checking unicity of reference
-  function Same_Ref (Op1, Op2 : Oper_Def.Oper_Rec) return Boolean is
+  -- For checking unicity of kind and reference
+  function Same_Kind_And_Ref (Op1, Op2 : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Kind_List;
   begin
-    return Op1.Reference = Op2.Reference;
-  end Same_Ref;
-  procedure Search_Ref is new Oper_List_Mng.Search(Same_Ref);
+    return Op1.Kind = Op2.Kind and then Op1.Reference = Op2.Reference;
+  end Same_Kind_And_Ref;
+  procedure Search_Kind_Ref is new Oper_List_Mng.Search(Same_Kind_And_Ref);
 
 
   -- Affectation of kind and status buttons
@@ -73,18 +74,15 @@ package body Edition is
         -- Disable No
         Afpx.Set_Field_Activation(10, False);
         Afpx.Set_Field_Activation(11, False);
-        -- Enable copy if list not empty
-        Afpx.Set_Field_Activation(36, not Oper_List_Mng.Is_Empty(Oper_List));
       when Modify =>
         Afpx.Encode_Field(9, (0, 0), "modification");
-        Afpx.Set_Field_Activation(36, False);
-      when View =>
-        Afpx.Encode_Field(9, (0, 0), "visualisation");
-        Afpx.Set_Field_Activation(36, False);
-        Protect_Data;
+      when Copy =>
+        Afpx.Encode_Field(9, (0, 0), "copy");
+        -- Disable No
+        Afpx.Set_Field_Activation(10, False);
+        Afpx.Set_Field_Activation(11, False);
       when Delete =>
         Afpx.Encode_Field(9, (0, 0), "deletion");
-        Afpx.Set_Field_Activation(36, False);
         Protect_Data;
     end case;
   end Prepare;
@@ -139,9 +137,9 @@ package body Edition is
   end Set_Buttons;
 
   -- Update buttons after a click
-  procedure Update_Buttons(Field  : in Afpx.Field_Range;
-                           Kind   : in out Oper_Def.Kind_List;
-                           Status : in out Oper_Def.Status_List) is
+  procedure Update_Buttons (Field  : in Afpx.Field_Range;
+                            Kind   : in out Oper_Def.Kind_List;
+                            Status : in out Oper_Def.Status_List) is
     use type Afpx.Field_Range, Oper_Def.Kind_List, Oper_Def.Status_List;
   begin
     for K in Oper_Def.Kind_List loop
@@ -174,33 +172,32 @@ package body Edition is
 
   procedure Protect_Movements (Edit_Type : in Edit_List) is
   begin
-    if Edit_Type = Create then
-      -- Always and only allow OK, Cancel, and ok_and_next
+    if Edit_Type = Create or else Edit_Type = Copy then
+      -- Always and only allow OK, Cancel,
+      --  and also Ok_And_Next if create
+      Afpx.Set_Field_Activation(37, False);
       Afpx.Set_Field_Activation(38, False);
-      Afpx.Set_Field_Activation(39, False);
-      Afpx.Set_Field_Activation(43, False);
+      Afpx.Set_Field_Activation(42, False);
+      if Edit_Type = Copy then
+        Afpx.Set_Field_Activation(41, False);
+      end if;
       return;
     end if;
 
     -- Now list cannot be empty: protect out-of-list
+    Afpx.Set_Field_Activation(37, Sel_List_Mng.Get_Position(Sel_List) /= 1);
     Afpx.Set_Field_Activation(38, Sel_List_Mng.Get_Position(Sel_List) /= 1);
-    Afpx.Set_Field_Activation(39, Sel_List_Mng.Get_Position(Sel_List) /= 1);
+    Afpx.Set_Field_Activation(41, Sel_List_Mng.Get_Position(Sel_List)
+                               /= Sel_List_Mng.List_Length(Sel_List));
     Afpx.Set_Field_Activation(42, Sel_List_Mng.Get_Position(Sel_List)
                                /= Sel_List_Mng.List_Length(Sel_List));
-    Afpx.Set_Field_Activation(43, Sel_List_Mng.Get_Position(Sel_List)
-                               /= Sel_List_Mng.List_Length(Sel_List));
 
-    if Edit_Type = View then
-      -- Only allow OK
-      Afpx.Set_Field_Activation(39, False);
-      Afpx.Set_Field_Activation(41, False);
-      Afpx.Set_Field_Activation(43, False);
-    elsif Edit_Type = Delete then
+    if Edit_Type = Delete then
       -- Only allow back
+      Afpx.Set_Field_Activation(37, False);
       Afpx.Set_Field_Activation(38, False);
-      Afpx.Set_Field_Activation(39, False);
+      Afpx.Set_Field_Activation(41, False);
       Afpx.Set_Field_Activation(42, False);
-      Afpx.Set_Field_Activation(43, False);
     end if;
   end Protect_Movements;
 
@@ -270,13 +267,13 @@ package body Edition is
     end if;
     Set_Unit;
     -- Kind and status (modifiable or not)
-    Set_Buttons(Edit_Type in Create .. Modify, Oper.Kind, Oper.Status);
+    Set_Buttons(Edit_Type in Create .. Copy, Oper.Kind, Oper.Status);
     -- 3 strings
     Afpx.Encode_Field(31, (0, 0), Oper.Destination);
     Afpx.Encode_Field(33, (0, 0), Oper.Comment);
     Afpx.Encode_Field(35, (0, 0), Oper.Reference);
     -- Deleted
-    Afpx.Set_Field_Activation(37, Deleted);
+    Afpx.Set_Field_Activation(36, Deleted);
   end Encode_Oper;
 
   procedure Update is
@@ -317,9 +314,7 @@ package body Edition is
     use type Oper_Def.Status_List, Oper_Def.Kind_List,
              Afpx.Absolute_Field_Range;
   begin
-    if Edit_Type = View then
-      return 0;
-    elsif Edit_Type = Delete then
+    if Edit_Type = Delete then
       -- Flag selected operation as deleted
       Deletion.Flag_Deleted;
       Update;
@@ -377,9 +372,9 @@ package body Edition is
         end if;
       end if;
 
-      -- Search
+      -- Search same kind (cheque) and same reference
       begin
-        Search_Ref(Oper_List, Oper, From_Current => False);
+        Search_Kind_Ref(Oper_List, Oper, From_Current => False);
         -- oh, oh. Found another one
       exception
         when Oper_List_Mng.Not_In_List =>
@@ -471,22 +466,27 @@ package body Edition is
         List_Util.Move_To_Current;
       end if;
       -- Set data
-      if Edit_Type = Create then
-        -- Default operation, credit defered.
-        Oper.Date := Oper_Def.Current_Date;
-        Oper.Amount := 0.0;
-        Oper.Kind := Oper_Def.Credit;
-        Oper.Status := Oper_Def.Defered;
-        Oper.Reference := (others => ' ');
-        Oper.Destination := (others => ' ');
-        Oper.Comment := (others => ' ');
-        Deleted := False;
-      else
-        Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
-        Deleted := Sel.Deleted;
-        -- Current operation
-        Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
-      end if;
+      case Edit_Type is
+        when Create =>
+          -- Default operation, credit defered.
+          Oper.Date := Oper_Def.Current_Date;
+          Oper.Amount := 0.0;
+          Oper.Kind := Oper_Def.Credit;
+          Oper.Status := Oper_Def.Defered;
+          Oper.Reference := (others => ' ');
+          Oper.Destination := (others => ' ');
+          Oper.Comment := (others => ' ');
+          Deleted := False;
+        when Copy =>
+          Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+          Adjust_Copy (Oper);
+          Deleted := False;
+        when Modify | Delete =>
+          Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+          Deleted := Sel.Deleted;
+          -- Current operation
+          Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      end case;
       -- Encode data
       Encode_Oper(Edit_Type, Oper, Deleted);
       Kind := Oper.Kind;
@@ -517,7 +517,7 @@ package body Edition is
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then
                   -- Check that OK_AND_NEXT button is active
-		  Afpx.Get_Field_Activation(42, Oknext_Active);
+		  Afpx.Get_Field_Activation(41, Oknext_Active);
                   if not Oknext_Active then
                     -- Ok and back
                     exit All_Edit;
@@ -555,17 +555,8 @@ package body Edition is
                   Cursor_Field := Afpx.Next_Cursor_Field(Ptg_Result.Field_No);
                   Cursor_Col := 0;
                 end if;
-              when 36 =>
-                -- Copy when create
-                Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
-                Adjust_Copy (Oper);
-                Encode_Oper(Edit_Type, Oper, False);
-                Kind := Oper.Kind;
-                Status := Oper.Status;
-                Cursor_Field := Afpx.Next_Cursor_Field(0);
-                Cursor_Col := 0;
 
-              when 38 =>
+              when 37 =>
                 -- OK and prev
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
@@ -575,34 +566,34 @@ package body Edition is
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
-              when 39 =>
+              when 38 =>
                 -- Cancel and prev
                 Cancel(Edit_Type);
                 Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
                 exit One_Edit;
-              when 40 =>
+              when 39 =>
                 -- OK and back
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 exit All_Edit when Cursor_Field = 0;
                 Screen.Ring(True);
-              when 41 =>
+              when 40 =>
                 -- Cancel and back
                 Cancel(Edit_Type);
                 exit All_Edit;
-              when 42 =>
+              when 41 =>
                 -- OK and next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then
-                  if Edit_Type /= Create then
+                  if Edit_Type /= Create and then Edit_Type /= Copy then
                     -- Next oper
                     Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
                   end if;
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
-              when 43 =>
+              when 42 =>
                 -- Cancel and next
                 Cancel(Edit_Type);
                 Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);

@@ -77,7 +77,7 @@
 #  BUTTON|   X Basic            X Basic
 #  GET   |   X Basic            X Basic     X Basic
 #  LIST  |   X Basic            X Basic     X Basic
-
+# Main menu
 DESCRIPTOR 1
   LIST
     GEOMETRY 2 1 18 71
@@ -258,20 +258,20 @@ DESCRIPTOR 1
       0 1 ADD
     END INIT
   END FIELD
-  # Edit cheque
+  # Copy cheque
   FIELD 25 BUTTON
     GEOMETRY 21 17 21 22
     COLORS cyan brown
     INIT
-      0 1 EDIT
+      0 1 COPY
     END INIT
   END FIELD
-  # View cheque
+  # Edit cheque
   FIELD 26 BUTTON
     GEOMETRY 21 25 21 30
     COLORS cyan brown
     INIT
-      0 1 VIEW
+      0 1 EDIT
     END INIT
   END FIELD
   # Delete cheque
@@ -526,6 +526,7 @@ DESCRIPTOR 2
 
 END DESCRIPTOR
 
+# Operation edition
 DESCRIPTOR 3
 
   # Account name and status
@@ -762,17 +763,8 @@ DESCRIPTOR 3
     COLORS cyan brown brown
   END FIELD
 
-  # RESET on CREATE
-  FIELD 36 BUTTON
-    GEOMETRY 4 34 6 42
-    COLORS cyan brown
-    INIT
-      1 1 C O P Y
-    END INIT
-  END FIELD
-
   # Deleted info
-  FIELD 37 PUT
+  FIELD 36 PUT
     GEOMETRY 20 2 20 8
     COLORS magenta not_blink black
     INIT
@@ -782,7 +774,7 @@ DESCRIPTOR 3
 
 
   # ok cancel and next and prev
-  FIELD 38 BUTTON
+  FIELD 37 BUTTON
     GEOMETRY 13 40 15 53
     COLORS cyan brown
     INIT
@@ -790,7 +782,7 @@ DESCRIPTOR 3
       2 3 and prev
     END INIT
   END FIELD
-  FIELD 39 BUTTON
+  FIELD 38 BUTTON
     GEOMETRY 13 57 15 69
     COLORS cyan brown
     INIT
@@ -799,14 +791,14 @@ DESCRIPTOR 3
     END INIT
   END FIELD
 
-  FIELD 40 BUTTON
+  FIELD 39 BUTTON
     GEOMETRY 17 40 19 53
     COLORS cyan brown
     INIT
       1 5 O K
     END INIT
   END FIELD
-  FIELD 41 BUTTON
+  FIELD 40 BUTTON
     GEOMETRY 17 57 19 69
     COLORS cyan brown
     INIT
@@ -814,7 +806,7 @@ DESCRIPTOR 3
     END INIT
   END FIELD
 
-  FIELD 42 BUTTON
+  FIELD 41 BUTTON
     GEOMETRY 21 40 23 53
     COLORS cyan brown
     INIT
@@ -822,7 +814,7 @@ DESCRIPTOR 3
       2 3 and next
     END INIT
   END FIELD
-  FIELD 43 BUTTON
+  FIELD 42 BUTTON
     GEOMETRY 21 57 23 69
     COLORS cyan brown
     INIT

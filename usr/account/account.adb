@@ -114,14 +114,14 @@ begin
 
           -- Oper actions
           when 24 =>
-            -- New
+            -- Add
             Mng.Add_Oper;
           when 25 =>
+            -- Copy
+            Mng.Copy_Oper;
+          when 26 =>
             -- Edit
             Mng.Edit_Oper;
-          when 26 =>
-            -- View
-            Mng.View_Oper;
           when 27 =>
             -- Delete
             Mng.Del_Oper;

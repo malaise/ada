@@ -28,7 +28,7 @@ package Mng is
   procedure Update_State;
   procedure Add_Oper;
   procedure Edit_Oper;
-  procedure View_Oper;
+  procedure Copy_Oper;
   procedure Del_Oper;
   procedure Garbage_Collect;
   procedure Search;
