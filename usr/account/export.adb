@@ -27,6 +27,20 @@ begin
   end if;
 
   begin
+    Ada.Text_Io.Open(File, Ada.Text_Io.Out_File,
+                     Argument.Get_Parameter(Occurence => 2));
+    Ada.Text_Io.Put_Line("Error. Ascii file " 
+                         & Argument.Get_Parameter(Occurence => 2)
+                         & " already exists");
+    Usage;
+    Ada.Text_Io.Close(File);
+    return;
+  exception
+    when Ada.Text_Io.Name_Error =>
+      null;
+  end;
+
+  begin
     File_Mng.Load(Argument.Get_Parameter(Occurence => 1), Oper_List, Can_Write);
   exception
     when File_Mng.F_Access_Error =>

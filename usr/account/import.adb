@@ -28,6 +28,22 @@ begin
   end if;
 
   begin
+    Ada.Text_Io.Open(File, Ada.Text_Io.Out_File,
+                     Argument.Get_Parameter(Occurence => 2));
+    raise Program_Error;
+    Ada.Text_Io.Close(File);
+  exception
+    when Ada.Text_Io.Name_Error =>
+      null;
+    when others =>
+      Ada.Text_Io.Put_Line("Error. Account file " 
+                           & Argument.Get_Parameter(Occurence => 2)
+                           & " already exists");
+      Usage;
+      return;
+  end;
+
+  begin
     Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 1));
   exception
