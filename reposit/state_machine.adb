@@ -6,7 +6,8 @@ package body State_Machine is
   type Transition_Cell is record
     Event : Event_List;
     New_State : State_List;
-    -- Other transition from this state
+    Report : Transition_Report_Access;
+    -- Other transitions from this state
     Next_Transition : Transition_Access;
   end record;
 
@@ -20,12 +21,15 @@ package body State_Machine is
   -- Still declaring?
   In_Declaration : Boolean := True;
 
-  procedure Do_Transition (From_State : in State_List; Transition : Transition_Access;
-                           Report : in Boolean) is
+  procedure Do_Transition (From_State : in State_List;
+                           Transition : in Transition_Access;
+                           Report     : in Boolean) is
   begin
     -- Call user procedure
-    if Report then
-       Report_Transition (From_State, Transition.Event, Transition.New_State);
+    if Report and then Transition.Report /= null then
+       Transition.Report ( (From_State,
+                            Transition.Event,
+                            Transition.New_State) );
     end if;
     The_Current_State := Transition.New_State;
   end Do_Transition;
@@ -36,8 +40,9 @@ package body State_Machine is
   procedure Do_Trues (Report : in Boolean);
 
   -- To add a transition in the state machine
-  -- May raise DECLARATION_ENDED if called after END_DECLARATION;
-  procedure Add_Transition (Transition : in Transition_Rec) is
+  -- May raise Declaration_Ended if called after End_Declaration;
+  procedure Add_Transition (Transition : in Transition_Rec;
+                            Report : in Transition_Report_Access := null) is
     Ta, Tap : Transition_Access;
   begin
     if not In_Declaration then
@@ -51,6 +56,7 @@ package body State_Machine is
       State_Array (Transition.Original_State) := new Transition_Cell'(
                  Event           => Transition.Event,
                  New_State       => Transition.Destination_State,
+                 Report          => Report,
                  Next_Transition => null );
     else
       -- Check not already defined
@@ -67,12 +73,13 @@ package body State_Machine is
       Tap.Next_Transition := new Transition_Cell'(
                  Event           => Transition.Event,
                  New_State       => Transition.Destination_State,
+                 Report          => Report,
                  Next_Transition => null );
     end if;
   end Add_Transition;
 
   -- To end declarations
-  -- May raise DECLARATION_ENDED if re-called after END_DECLARATION;
+  -- May raise Declaration_Ended if re-called after End_Declaration;
   procedure End_Declaration is
   begin
     if not In_Declaration then
@@ -102,10 +109,10 @@ package body State_Machine is
       raise Declaration_Not_Ended;
     end if;
     Ta := State_Array(The_Current_State);
-    -- Look for a TRUE transition
+    -- Look for a True transition
     loop
       if Ta = null then
-        -- No other transition (which means no TRUE transition) from this state
+        -- No other transition (which means no True transition) from this state
         return;
       end if;
       if Event_List'Image(Ta.Event) = "TRUE" then
@@ -123,8 +130,8 @@ package body State_Machine is
     end loop;
   end Do_Trues;
 
-  -- All following calls may raise DECLARATION_NOT_ENDED if
-  --  called before END_DECLARATION
+  -- All following calls may raise Declaration_Not_Ended if
+  --  called before End_Declaration
 
   -- An event: do a transition.
   function New_Event (Event : Event_List) return State_List is

@@ -6,12 +6,7 @@ procedure T_State_Machine is
 
   type Event_List is (True, Default, Start, Failure, Success, Attach, Detach);
 
-  procedure Display_Transition (Prev_State : in State_List;
-                                Event : in Event_List;
-                                New_State : in State_List);
-
-
-  package Msm is new State_Machine (State_List, Event_List, Display_Transition);
+  package Msm is new State_Machine (State_List, Event_List);
   use Msm;
 
   Cur_State : State_List;
@@ -53,19 +48,17 @@ procedure T_State_Machine is
     My_Io.New_Line;
   end Put_Transition;
 
-  procedure Display_Transition (Prev_State : in State_List;
-                                Event : in Event_List;
-                                New_State : in State_List) is
+  procedure Display_Transition (Transition : in Transition_Rec) is
   begin
-    if New_State /= Prev_State then
-      Put_Transition( (Prev_State, Event, New_State) );
+    if Transition.Destination_State /= Transition.Original_State then
+      Put_Transition (Transition);
     end if;
   end Display_Transition; 
   
 
   procedure My_Add_Transition (Transition : in Transition_Rec) is
   begin
-    Msm.Add_Transition(Transition);
+    Msm.Add_Transition(Transition, Display_Transition'Unrestricted_Access);
     Put_Transition(Transition);
   end My_Add_Transition;
 

@@ -5,16 +5,12 @@ generic
   type State_List is (<>);
 
   -- List of events
-  -- The TRUE event can be declared in this list to generate
+  -- The True event can be declared in this list to generate
   --  automatic transitions
-  -- The DEFAULT event can be declared in this list to generate
+  -- The Default event can be declared in this list to generate
   --  a transition on any unspecified event
   type Event_List is (<>);
 
-  -- Procedure to report a transition
-  with procedure Report_Transition (Prev_State : in State_List;
-                                    Event : in Event_List;
-                                    New_State : in State_List);
 package State_Machine is
 
   -- A transition
@@ -24,27 +20,32 @@ package State_Machine is
     Destination_State : State_List;
   end record;
 
+  -- Procedure to report a transition
+  type Transition_Report_Access is
+       access procedure (Transition : in Transition_Rec);
+
   -- To add a transition in the state machine
-  -- May raise EVENT_ALREADY if this event is already defined
+  -- May raise Event_Already if this event is already defined
   --  from the original state
-  -- May raise DECLARATION_ENDED if called after END_DECLARATION;
-  procedure Add_Transition (Transition : in Transition_Rec);
+  -- May raise Declaration_Ended if called after End_Declaration;
+  procedure Add_Transition (Transition : in Transition_Rec;
+                            Report : in Transition_Report_Access := null);
 
   -- To end declarations
-  -- May raise DECLARATION_ENDED if re-called after END_DECLARATION;
-  -- May raise TRUE_LOOP if TRUE transitions from any state loop
+  -- May raise Declaration_Ended if re-called after END_DECLARATION;
+  -- May raise True_Loop if True transitions from any state loop
   procedure End_Declaration;
 
 
-  -- All following calls may raise DECLARATION_NOT_ENDED if
-  --  called before END_DECLARATION
+  -- All following calls may raise Declaration_Not_Ended if
+  --  called before End_Declaration
 
   -- An event: do a transition. If the event is not defined for
-  --  current state, the DEFAULT (if any) transition is performed
-  --  otherwise (no DEFAULT) the state remains unchanged
-  -- A TRUE event has no effect if no DEFAULT is defined
-  --  (any potential TRUE transition would already have been done)
-  --  It generates the DEFAULT transition if it is defined
+  --  current state, the Default (if any) transition is performed
+  --  otherwise (no Default) the state remains unchanged
+  -- A True event has no effect if no Default is defined
+  --  (any potential True transition would already have been done)
+  --  It generates the Default transition if it is defined
   function New_Event (Event : Event_List) return State_List;
 
   procedure New_Event (Event : in Event_List);
