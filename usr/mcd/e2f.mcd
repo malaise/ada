@@ -20,9 +20,9 @@ strlen l copyr
 2 < E pushr ifcall
 
 # Extract unit - last char
-a pushr l pushr dup strsub u popr
+a pushr l pushr dup strsub u copyr
 # Unit is f or e
-u pushr [ f ] /= u pushr [ e ] /= & E pushr ifcall
+[ f ] /= u pushr [ e ] /= & E pushr ifcall
 
 # Extract amount value
 a pushr 1 l pushr 1 - strsub v copyr
@@ -34,14 +34,15 @@ v popr
 
 
 # Set conversion factor and result unit
-[ f ] r popr
-6.55957 u pushr [ f ] = [ 1.0 swap / [ e ] r popr ] ifcall
+6.55957 u pushr [ f ] = [ 1.0 swap / [ e ] r popr ] [ [ f ] r popr ] ifte call
 
 # Convert
 v pushr *
 
-# Display int.frac
+# Round, Display int.frac unit
 100.0 *
 tointe dup
-9 format 100 / put [ . ] put 2 format 100 % put r pushr putl
+9 format 100 / put [ . ] put
+100 % dup 10 < [ [ 0 ] put 1 format put ] [ 2 format put ] ifte call
+r pushr putl
 
