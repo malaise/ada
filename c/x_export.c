@@ -74,10 +74,10 @@ int x_start_blinking (void) {
 static fd_set global_read_mask;
 static fd_set global_write_mask;
 
-static int last_fd = 0;
+static int last_fd = -1;
 
 int x_add_fd (int fd, boolean read) {
-  if (last_fd == 0) {
+  if (last_fd == -1) {
     FD_ZERO(&global_read_mask);
     FD_ZERO(&global_read_mask);
   }
@@ -96,7 +96,7 @@ int x_del_fd (int fd, boolean read) {
   int i;
   fd_set *mask;
 
-  if (last_fd == 0) {
+  if (last_fd == -1) {
     return (ERR);
   }
 
@@ -123,7 +123,7 @@ int x_del_fd (int fd, boolean read) {
 }
 
 extern boolean x_fd_set (int fd, boolean read) {
-  if (last_fd == 0) {
+  if (last_fd == -1) {
     return (FALSE);
   }
   if (read) {
