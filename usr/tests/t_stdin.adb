@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Argument, Socket, X_Mng, Sys_Calls, Tcp_Util;
+with Argument, Socket, X_Mng, Tcp_Util, Async_Stdin;
 
 procedure T_Stdin is
 
@@ -12,7 +12,7 @@ procedure T_Stdin is
 
   Go_On : Boolean;
 
-  subtype Message_Type is String(1 .. 1024);
+  subtype Message_Type is String(Async_Stdin.Max_Chars_Range);
   procedure My_Send is new Socket.Send(Message_Type);
   procedure My_Receive is new Socket.Receive(Message_Type);
 
@@ -38,23 +38,18 @@ procedure T_Stdin is
   end Socket_Cb;
 
 
-  function Stdin_Cb(F : in X_Mng.File_Desc; Read : in Boolean)
-                    return Boolean is
+  function Stdin_Cb(Str : in String) return Boolean is
     Message : Message_Type;
-    Message_Len : Natural;
+    Len : Natural := Str'Length;
   begin
-    Ada.Text_Io.Get_Line(Message, Message_Len);
-    My_Send(Soc, Message, Message_Len);
-    Message(1) := Ascii.Lf;
-    My_Send(Soc, Message, 1);
-
-    return False;
-  exception
-    when Ada.Text_Io.End_Error =>
+    if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
+      Len := Len - 1;
       Go_On := False;
-      return True;
+    end if;
+    Message (1 .. Len) := Str (1 .. Len);
+    My_Send(Soc, Message, Len);
+    return True;
   end Stdin_Cb;
-
 
 begin
 
@@ -70,8 +65,17 @@ begin
     raise Arg_Error;
   end if;
 
+  -- Set async stdin
+  begin
+    Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 21);
+  exception
+    when Async_Stdin.Not_A_Tty =>
+      Ada.Text_Io.Put_Line("Cannot set stdin async");
+      return;
+  end;
+
   -- Connect
-  Socket.Open(Soc, Socket.Tcp);
+  Socket.Open(Soc, Socket.Tcp_Header);
   Fd := Socket.Fd_Of(Soc);
   Ada.Text_Io.Put_Line("Connecting to Host "
                 & Argument.Get_Parameter(Occurence => 1)
@@ -86,10 +90,10 @@ begin
       return;
   end;
   X_Mng.X_Add_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
-  X_Mng.X_Add_Callback(Sys_Calls.Stdin, True, Stdin_Cb'Unrestricted_Access);
 
 
   -- Main loop
+  Go_On := True;
   loop
     if X_Mng.Select_No_X(-1) then
       exit when not Go_On;
@@ -97,7 +101,7 @@ begin
   end loop;
 
   X_Mng.X_Del_Callback(Fd, True);
-  X_Mng.X_Del_Callback(Sys_Calls.Stdin, True);
+  Async_Stdin.Set_Async;
   Socket.Close(Soc);
 
 exception
@@ -107,5 +111,6 @@ exception
 
   when Error : others =>
     Ada.Text_Io.Put_Line("Exception: " & Ada.Exceptions.Exception_Name(Error));
+    Async_Stdin.Set_Async;
 end T_Stdin;
 
