@@ -2,20 +2,119 @@
 -- Each upper case character, if preceeded by an upper case
 --  is set to lower case.
 -- Strings and comments are not modified.
-with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions;
+with Ada.Text_Io, Ada.Exceptions;
 
-with Argument, Lower_Char;
+with Argument, Lower_Char, Bloc_Io;
 
 procedure Look_95 is
 
-  package Char_Io is new Ada.Direct_Io (Character);
+  package Reading is
+    procedure Open(File_Name : in String);
+    Name_Error : exception;
+
+    -- Closes and raises End_Of_File;
+    function Next_Char return Character;
+    End_Of_File : exception;
+
+    -- Forced close
+    procedure Close;
+
+    -- Modify last read char
+    procedure Update_Char(New_Char : in Character);
+  end Reading;
+
+  package body Reading is
+
+    package Char_Io is new Bloc_Io (Character);
+    File : Char_Io.File_Type;
+
+    Bloc_Size : constant Char_Io.Count := 1024;
+
+    File_Size : Char_Io.Count;
+    Nb_Bloc : Char_Io.Count;
+
+    Bloc : Char_Io.Element_Array(1 .. Bloc_Size);
+    Curr_Bloc : Char_Io.Count;
+
+    Sub_Index : Char_Io.Positive_Count;
+    Last_Index : Char_Io.Count;
+    Modified : Boolean;
+
+    procedure Open(File_Name : in String) is
+      use type Char_Io.Count;
+    begin
+      -- Open and init file metrics
+      Char_Io.Open(File, Char_Io.Inout_File, File_Name);
+      File_Size := Char_Io.Size(File);
+      Nb_Bloc := File_Size / Bloc_Size;
+      if File_Size rem Bloc_Size /= 0 then
+        Nb_Bloc := Nb_Bloc + 1;
+      end if;
+
+      -- Current indexes
+      Curr_Bloc := 0;
+      Modified := False;
+      if Nb_Bloc /= 1 then
+        Last_Index := Bloc_Size;
+      else
+        Last_Index := File_Size rem Bloc_Size;
+      end if;
+      Sub_Index := Last_Index;
+    exception
+      when Char_Io.Name_Error =>
+        raise Name_Error;
+    end Open;
+
+    procedure Close is
+    begin
+      Char_Io.Close(File);
+    end Close;
+
+    function Next_Char return Character is
+      use type Char_Io.Count;
+    begin
+      if Sub_Index = Last_Index then
+        -- End of bloc
+        if Modified then
+          -- Need to write before read
+Ada.Text_Io.Put_Line("Write B: " & Char_Io.Count'Image(Char_Io.Index(File))
+                     & " at " & Char_Io.Count'Image(
+                                  (Curr_Bloc - 1) * Bloc_Size + 1));
+          Char_Io.Write(File, Bloc(1 .. Last_Index),
+                        (Curr_Bloc - 1) * Bloc_Size + 1);
+Ada.Text_Io.Put_Line("Write A: " & Char_Io.Count'Image(Char_Io.Index(File)));
+          Modified := False;
+        end if;
+        if Curr_Bloc = Nb_Bloc then
+          -- No more bloc
+          Close;
+          raise End_Of_File;
+        end if;
+        -- Read next bloc
+        Curr_Bloc := Curr_Bloc + 1;
+        if Curr_Bloc = Nb_Bloc then
+          Last_Index := File_Size rem Bloc_Size;
+        end if;
+Ada.Text_Io.Put_Line("Read  B: " & Char_Io.Count'Image(Char_Io.Index(File)));
+        Char_Io.Read(File, Bloc(1 .. Last_Index));
+Ada.Text_Io.Put_Line("Read  A: " & Char_Io.Count'Image(Char_Io.Index(File)));
+        Sub_Index := 1;
+      else
+        Sub_Index := Sub_Index + 1;
+      end if;
+      return Bloc(Sub_Index);
+    end Next_Char;
+
+    procedure Update_Char(New_Char : in Character) is
+    begin
+      Bloc(Sub_Index) := New_Char;
+      Modified := True;
+    end Update_Char;
+
+  end Reading;
 
   -- Process one file
-  procedure Do_One (File_Name : in String) is
-    -- Current file
-    File : Char_Io.File_Type;
-    -- Current index in file
-    Index : Char_Io.Positive_Count;
+  procedure Do_One(File_Name : in String) is
 
     -- Current and prev character
     Char, Prev_Char : Character;
@@ -37,19 +136,17 @@ procedure Look_95 is
       return Char in 'A' .. 'Z';
     end Is_Upper;
 
-    use type Char_Io.Positive_Count;
-
   begin
     -- Open file
     begin
-      Char_Io.Open (File, Char_Io.InOut_File, File_Name);
+      Reading.Open(File_Name);
     exception
-      when Char_Io.Name_Error =>
-        Ada.Text_Io.Put_Line ("Error. Cannot open file " & File_Name
+      when Reading.Name_Error =>
+        Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
            & " skipping.");
         return;
       when Error : others =>
-        Ada.Text_Io.Put_Line ("Error. Cannot open file " & File_Name
+        Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
            & " Exception " & Ada.Exceptions.Exception_Name (Error)
            & " skipping.");
         return;
@@ -60,14 +157,18 @@ procedure Look_95 is
     In_String := False;
     In_Comment := False;
     Prev_Char := Ascii.Nul;
-    Index := 1;
 
     -- Conversion loop:
     -- If upper_case and previous also upper_case, write lower_case
-    while not Char_Io.End_Of_File (File) loop
+    loop
 
       -- Read char
-      Char_Io.Read (File, Char);
+      begin
+        Char := Reading.Next_Char;
+      exception
+        when Reading.End_Of_File =>
+          return;
+      end;
 
       -- Check in comment. Set Proceed.
       if In_Comment then
@@ -86,18 +187,22 @@ procedure Look_95 is
 
       -- Check in string. Update Proceed
       if Proceed and then Char = '"' then
-        In_String := not In_String;
+        if not In_String and then Prev_Char /= ''' then
+          In_String := True;
+        elsif In_String then
+          In_String := False;
+        end if;
       end if;
       if In_String then
         Proceed := False;
       end if;
 
       if Proceed then
-        Curr_Is_Upper := Is_Upper (Char);
+        Curr_Is_Upper := Is_Upper(Char);
 
         -- Convert?
         if Prev_Is_Upper and then Curr_Is_Upper then
-          Char_Io.Write (File, Lower_Char (Char), Index);
+          Reading.Update_Char(Lower_Char(Char));
         end if;
 
         -- Prepare for next char
@@ -107,21 +212,16 @@ procedure Look_95 is
         Prev_Is_Upper := False;
         Prev_Char := Ascii.Nul;
       end if;
-      Index := Index + 1;
 
     end loop;
       
-    -- Close
-    Char_Io.Close (File);
-
   exception
     when Error : others =>
       Ada.Text_Io.Put_Line (
            "Error. While processing file " & File_Name
-           & " at offset " & Char_Io.Positive_Count'Image (Index)
            & " Exception " & Ada.Exceptions.Exception_Name (Error)
            & " skipping.");
-      Char_Io.Close (File);
+      Reading.Close;
   end Do_One;
 
 begin
