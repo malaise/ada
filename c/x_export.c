@@ -1,0 +1,828 @@
+#include <sys/types.h>
+#include <sys/time.h>
+#include <signal.h>
+#include <string.h>
+#include <errno.h>
+
+#include "x_export.h"
+#include "x_screen.h"
+#include "x_line.h"
+#include "timeval.h"
+
+
+/* The maximum of sucessive bells */
+#define NBRE_MAX_BELL 5
+
+/* The delay in milli seconds after receiving 1st expose */
+/* before looking for any further expose (and filter) */
+#define DELAY_EXPOSE_MS 25
+
+void print_date (void) {
+  timeout_t cur_time;
+  get_time (&cur_time);
+  printf ("    >> %06d %06d << ",cur_time.tv_sec, cur_time.tv_usec);
+}
+
+/***** Blinking management *****/
+/* The percentage of blinking when colors are seeable */
+#define PERCENT_ON  75
+#define PERCENT_OFF (100 - PERCENT_ON)
+int curr_percent; 
+
+timeout_t next_blink;
+
+/* The real blinking routine */
+void x_do_blink (void);
+
+/* The blinking task */
+void x_do_blinking (void) {
+
+  /* Protection */
+  if ( (next_blink.tv_sec == 0) && (next_blink.tv_usec == 0) ) {
+    return;
+  }
+  x_do_blink();
+  if (curr_percent == PERCENT_OFF) {
+    curr_percent = PERCENT_ON;
+  } else {
+    curr_percent = PERCENT_OFF;
+  }
+  (void) incr_time (&next_blink, curr_percent * 10);
+}
+
+int x_stop_blinking (void) {
+  
+  next_blink.tv_sec = 0;
+  next_blink.tv_usec = 0;
+  /* Set to the non_blink state */
+  if (curr_percent == PERCENT_OFF) {
+    x_do_blink();
+  }
+}
+
+int x_start_blinking (void) {
+  curr_percent = PERCENT_ON;
+  get_time (&next_blink);
+  (void) incr_time (&next_blink, curr_percent * 10);
+}
+
+
+/***** Event management *****/
+
+/* Makes a select between the sockets described in the mask AND the */
+/*  the socket used by X for the events */
+/* p_mask can be NULL, then select is done only on X fd */
+/* The time out is in miliseconds (negative for blocking )
+/* The mask is made with the bits of ONE int. */ 
+/*  Failure if the mask is not big enough to contain the X socket id */
+/*  or if the X init has not been called or if select fails */
+/*  p_x_event is True if a x event is available */ 
+/*  The mask is set apart, corresponding to the state of the channels */
+
+extern int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms) {
+  fd_set select_mask;
+  int x_soc;
+  fd_set dscr_mask;
+  int n;
+  timeout_t cur_time, exp_time, exp_select, timeout, *timeout_ptr;
+  int result;
+  boolean timeout_is_active, blink_is_active;
+
+
+  /* Check X socket */
+  if (local_server.x_server == NULL) {
+    return (ERR);
+  }
+  x_soc = ConnectionNumber (local_server.x_server);
+
+
+
+  /* Compute exp_time = cur_time + tiemout_ms */
+  blink_is_active = ( (next_blink.tv_sec != 0) || (next_blink.tv_usec != 0) );
+  timeout_is_active = *timeout_ms >= 0;
+  if (timeout_is_active) {
+    get_time (&exp_time);
+    incr_time (&exp_time, *timeout_ms);
+  }
+  if (blink_is_active || timeout_is_active) {
+    timeout_ptr = &timeout;
+  } else {
+    timeout_ptr = NULL;
+  }
+  
+  XFlush (local_server.x_server);
+
+  for (;;) {
+    /* Compute exp_select : smallest of exp_time(timeout) and next_blink */
+    if (blink_is_active) {
+      if (timeout_is_active) {
+        if (comp_time (&exp_time, &next_blink) >= 0) {
+          exp_select = next_blink;
+        } else {
+          exp_select = exp_time;
+        }
+      } else {
+        exp_select = next_blink;
+      }
+    } else {
+      if (timeout_is_active) {
+        exp_select = exp_time;
+      }
+    }
+
+    timeout = exp_select;
+    get_time (&cur_time);
+    if (sub_time (&timeout, &cur_time) < 0) {
+      /* Select timeout is reached */
+      if ( (blink_is_active) && time_is_reached (&next_blink) ) {
+        /* Blink and continue */
+        x_do_blinking();
+      } if ( (timeout_is_active) && time_is_reached (&exp_time) ) {
+        /* Done on timeout */
+        *p_x_event = 0;
+        if (p_mask != (fd_set *)NULL) {
+          FD_CLR(x_soc, p_mask);
+        }
+        *timeout_ms = 0;
+        return (OK);
+      }
+    } else {
+      /* Select : bits 0 to 31 */
+      /* Compute mask for select */
+      if (p_mask != (fd_set *)NULL) {
+        bcopy ((char*)p_mask, (char*)&select_mask, sizeof(fd_set));
+      } else {
+        FD_ZERO (&select_mask);
+      }
+      FD_SET(x_soc, &select_mask);
+
+      n = select (32, &select_mask, NULL, NULL, timeout_ptr);
+
+      if (n > 0) {
+        /* An Event : Separate X events from others */
+        *p_x_event = (FD_ISSET(x_soc, &select_mask) != 0);
+        if (p_mask != (fd_set *)NULL) {
+          FD_CLR(x_soc, p_mask);
+        }
+        if (*timeout_ms > 0) {
+          get_time (&cur_time);
+          if (sub_time (&exp_time, &cur_time) >= 0) {
+            *timeout_ms = exp_time.tv_sec * 1000 + exp_time.tv_usec / 1000;
+          } else {
+            *timeout_ms = 0;
+          }
+        }
+        return (OK);
+      } else if (n < 0) {
+        if (errno != EINTR) {
+          /* Real error */
+          return (ERR);
+        }
+      }
+
+    }
+  }
+}
+
+/***** Line management *****/
+
+/* Initialise communication with the 'local' X server */
+/*  opening a little window */
+/* Hangs handler for blinking */
+int x_initialise (char *server_name) {
+
+    int result;
+
+    result = (lin_initialise (server_name) ? OK : ERR);
+    x_start_blinking();
+    return (result);
+}
+
+
+/* Opens a line */
+int x_open_line (int screen_id, int row, int column, int height, int width, 
+  int background, int border, int no_font, void **p_line_id) {
+
+    t_window *line;
+
+    line = lin_open (screen_id, row-1, column-1, 
+      height, width, background, border, no_font);
+    if (line != NULL) {
+        *p_line_id = (void*) line;
+        return (OK);
+    } else {
+        return (ERR);
+    }
+}
+
+/* Closes a line */
+/* The line_id is the token, previously given by open_line */
+int x_close_line (void *line_id) {
+    int result;
+
+    result = (lin_close( (t_window*) line_id) ? OK : ERR);
+
+    return (result);
+}
+
+/* Set line name */
+int x_set_line_name (void *line_id, char *line_name) {
+    int result;
+
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+        if (! lin_check(win_id)) {
+        return (ERR);
+    }
+    
+    result = XStoreName(local_server.x_server, win_id->x_window, line_name);
+    return ((result == Success) ? OK : ERR);
+}
+
+
+
+/* Flushes all the lines on this host line */
+int x_flush (void) {
+
+    /* Check that display is init */
+    if (local_server.x_server == NULL) {
+        return (ERR);
+    }
+
+    /* Flush the outputs */
+    XFlush (local_server.x_server); 
+
+    return (OK);
+}
+
+/* Clears a line */
+int x_clear_line (void *line_id) {
+    int result;
+
+
+    result = (lin_clear( (t_window*) line_id) ? OK : ERR);
+
+    return(result);
+}
+
+/***** Put and attributes management *****/
+
+/* Sets the attributes for a further put in the same window */
+int x_move (void *line_id, int row, int column) {
+
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+        if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Check position */
+    if (row < 0) {
+        row = 0;
+    }
+    if (column < 0) {
+        column = 0;
+    }
+
+    /* Store row and column */
+    win_id->cur_row = row;
+    win_id->cur_column = column;
+
+    return (OK);
+}
+
+/* Sets the attributes for a further put in the same window */
+int x_set_attributes (void *line_id, int paper, int ink,
+  boolean superbright, boolean underline, boolean blink, boolean reverse) {
+
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+        if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Checks that the colors are valid */
+    if ( (! col_check (paper)) || (! col_check (ink)) ) {
+        return (ERR);
+    }
+
+    /* Store underline attribute */
+    win_id->underline = underline;
+
+    /* No Blink */
+    if (win_id->server->image && blink) {
+        blink = False;
+    }
+
+    /* Update graphic context */
+    scr_set_attrib (win_id->server->x_server, 
+      win_id->x_graphic_context, win_id->server->x_font,
+      win_id->no_font, win_id->screen->color_id,
+      paper, ink, superbright, blink, reverse);
+
+    return (OK);
+
+}
+
+/* Writes a char whith the attributes previously set */
+/* The line_id is the token, previously given by open_line */
+/* The character is the one to be written */
+/* The output is not flushed */
+int x_put_char (void *line_id, int car) {
+
+    int x, y;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Compute pixels */
+    x = win_id->cur_column * 
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y = win_id->cur_row * 
+      fon_get_height (win_id->server->x_font[no_font]) +
+      fon_get_offset (win_id->server->x_font[no_font]);
+
+    /* Put char */
+    scr_put_char (win_id->server->x_server, 
+      win_id->x_graphic_context, 
+      win_id->x_window, x, y, (char)car);
+
+    /* Underline */
+    if (win_id->underline) {
+        scr_underline_char (win_id->server->x_server,
+          win_id->x_graphic_context, win_id->x_window, x, y);
+    }
+
+    win_id->cur_column ++;
+
+    return (OK);
+}
+
+/* Writes a char whith the attributes previously set */
+/* The line_id is the token, previously given by open_line */
+/* The character is the one to be written */
+/* The output is not flushed */
+int x_overwrite_char (void *line_id, int car) {
+
+    int x, y;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Compute pixels */
+    x = win_id->cur_column * 
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y = win_id->cur_row * 
+      fon_get_height (win_id->server->x_font[no_font]) +
+      fon_get_offset (win_id->server->x_font[no_font]);
+
+    /* Put char */
+    scr_overwrite_char (win_id->server->x_server, 
+      win_id->x_graphic_context, 
+      win_id->x_window, x, y, (char)car);
+
+    win_id->cur_column ++;
+
+    return (OK);
+}
+
+/* Writes a string whith the attributes previously set */
+/* The line_id is the token, previously given by open_line */
+/* The str is the adress of the first character to write */
+/* The length is the number of characters to write */
+/* The output is not flushed */
+int x_put_string (void *line_id, char *p_char, int number) {
+
+    int x, y;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Compute pixels */
+    x = win_id->cur_column *
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y = win_id->cur_row *
+      fon_get_height (win_id->server->x_font[no_font]) +
+      fon_get_offset (win_id->server->x_font[no_font]);
+
+    /* Put string */
+    scr_put_string (win_id->server->x_server,
+      win_id->x_graphic_context,
+      win_id->x_window, x, y, p_char, number);
+
+    /* Underline */
+    if (win_id->underline) {
+        scr_underline_string (win_id->server->x_server,
+          win_id->x_graphic_context, win_id->x_window, x, y, number);
+    }
+
+    /* Update cursor pos */
+    win_id->cur_column += number;
+
+    return (OK);
+}
+
+
+/* Writes a char on a line (characteristics are previously set) */
+/* x is a number of pixels of vertical translation (top down) */
+/* y                          horizontal translation (left right) */
+/* The output is not flushed */
+int x_put_char_pixels (void *line_id, int car, int x, int y) {
+
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Check position */
+    if (x < 0) {
+        x = 0;
+    }
+    if (x >= fon_get_width  (win_id->server->x_font[no_font])) {
+        x = fon_get_width  (win_id->server->x_font[no_font]) - 1;
+    }
+    if (y < 0) {
+        y = 0;
+    }
+    if (y > fon_get_height (win_id->server->x_font[no_font])) {
+        y = fon_get_height (win_id->server->x_font[no_font]) - 1;
+    }
+
+    /* Compute pixels */
+    x += win_id->cur_column * 
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y += win_id->cur_row * 
+      fon_get_height (win_id->server->x_font[no_font]) +
+      fon_get_offset (win_id->server->x_font[no_font]);
+
+    /* Put char */
+    scr_put_char (win_id->server->x_server, 
+      win_id->x_graphic_context, 
+      win_id->x_window, x, y, (char)car);
+
+    /* Underline */
+    if (win_id->underline) {
+      scr_underline_char (win_id->server->x_server,
+      win_id->x_graphic_context, 
+      win_id->x_window, x, y);
+    }
+
+    /* Update cursor pos */
+    win_id->cur_column ++;
+
+    return (OK);
+}
+
+
+int x_draw_area (void *line_id, int width, int height) {
+
+    int x_from, y_from;
+    int pix_width, pix_height;
+    t_window *win_id = (t_window*) line_id;
+    int no_font = win_id->no_font;
+ 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+
+    /* Compute pixels */
+    x_from = win_id->cur_column *
+      fon_get_width  (win_id->server->x_font[no_font]);
+    pix_width = width *
+      fon_get_width  (win_id->server->x_font[no_font]);
+    y_from = win_id->cur_row *
+      fon_get_height (win_id->server->x_font[no_font]);
+    pix_height = height *
+      fon_get_height (win_id->server->x_font[no_font]);
+
+    /* Put string */
+    scr_draw_array (win_id->server->x_server,
+      win_id->x_graphic_context,
+      win_id->x_window, x_from, y_from, pix_width, pix_height);
+
+    /* Update cursor pos */
+    win_id->cur_column += (width-1);
+    win_id->cur_row += (height-1);
+
+    return (OK);
+}
+
+
+
+/* Writes a char on a line with specified characteristics */
+/* The output is not flushed */
+int x_put_char_attributes (void *line_id, int car, int row, int column,
+  int paper, int ink,
+  boolean superbright, boolean underline, boolean blink, boolean reverse) {
+
+    if (x_move (line_id, row, column) == ERR) {
+        return (ERR);
+    }
+
+    if (x_set_attributes (line_id, paper, ink, 
+      superbright, underline, blink, reverse) == ERR) {
+        return (ERR);
+    }
+
+    return (x_put_char (line_id, car));
+}
+
+/***** Event management *****/
+/* Previous event stored if arrived just after an expose */
+static XEvent prev_event;
+static boolean prev_event_set = False;
+
+/* To wait a bit after first expose */
+void delay_ms (unsigned int msecs) {
+  struct timeval timeout;
+
+  timeout.tv_sec = 0;
+  timeout.tv_usec = msecs * 1000;
+
+  (void) select (0, NULL, NULL, NULL, &timeout);
+}
+  
+  
+/* Process the next X event */
+/* p_line_id is the line on which the event has occured */
+/* p_kind is 1 if the event is a key hit, 0 if it's a TID */
+/* p_kind is -1 if the event is discarted or if error */
+/* p_next is True if another event is available */
+int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
+
+    t_window *win_id;
+    XEvent event;
+    int n_events;
+    int result;
+
+  if (local_server.x_server == NULL) return (ERR);
+
+  /* Loop from which exit is done when */
+  /*  - no more event */
+  /*  - Event OK */
+  result = ERR;
+  while (result == ERR) {
+
+    if ( (next_blink.tv_sec != 0) || (next_blink.tv_usec != 0) ) {
+      if (time_is_reached (&next_blink) ) {
+        x_do_blinking();
+      }
+    }
+
+    if (prev_event_set) {
+      /* An event has already been got and stored (for skipping multi expose) */
+      memcpy (&event, &prev_event, sizeof(XEvent));
+      prev_event_set = False;
+
+    } else {
+      /* Initial reading of the number of pending messages to avoid blocking */
+      n_events = XPending (local_server.x_server);
+
+      if (n_events == 0) {
+        *p_kind = DISCARD;
+        *p_next = False;
+        result = OK;
+        break;
+      }
+      /* Error ? Exit from loop */
+      if (n_events < 0) {
+        *p_kind = DISCARD;
+        *p_next = False;
+        result = ERR;
+        break;
+      }
+
+      /* Some events are discarted */
+      XNextEvent (local_server.x_server, &event);
+    }
+
+    switch (event.type) {
+      case KeyPress :
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          /* Window not found : Check next event */
+          break;
+        }
+        if (key_chain (&event.xkey, win_id->key_buf, 
+         &win_id->nbre_key)) {
+          /* Key is valid */
+          *p_line_id = (void*)win_id;
+          *p_kind = KEYBOARD;
+          result = OK;
+        }
+      break;
+      case ButtonPress :
+      case ButtonRelease :
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        /* Store button */
+        if (event.xbutton.button == Button1) {
+           win_id->button = 1;
+        } else if (event.xbutton.button == Button2) {
+           win_id->button = 2;
+        } else if (event.xbutton.button == Button3) {
+           win_id->button = 3;
+        } else {
+           break; /* Next Event */
+        }
+        /* Store position */
+        win_id->tid_x = event.xbutton.x;
+        win_id->tid_y = event.xbutton.y;
+
+        *p_line_id = (void*) win_id;
+        if (event.type == ButtonPress) {
+          *p_kind = TID_PRESS;
+        } else {
+          *p_kind = TID_RELEASE;
+        }
+        result = OK;
+      break;
+      case Expose:
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        /* Wait a bit for any other expose to arrive */
+        delay_ms (DELAY_EXPOSE_MS);
+        /* Look forward to next events to discard multi expose */
+        /* Stop when not an expose event (and store for next call) or no more event */
+        for (;;) {
+          if (XPending (local_server.x_server) <= 0) {
+            break;
+          }
+          XNextEvent (local_server.x_server, &event);
+          if (event.type != Expose) {
+             /* Save event for next call */
+             memcpy (&prev_event, &event, sizeof(XEvent));
+             prev_event_set = True;
+             break;
+          }
+        }
+        *p_line_id = (void*) win_id;
+        *p_kind = REFRESH;
+        /* Erase the window */
+        (void) lin_clear(win_id);
+        XFlush (local_server.x_server); 
+        result = OK;
+      break;
+      default :
+        /* Other events discarded */
+      break;
+    } /* Switch */
+  } /* while */
+
+    /* Re read number of pending messages */
+    /*  (XNextEvent may flush the buffer) */
+    n_events = XPending (local_server.x_server);
+    *p_next = (n_events > 0);
+
+  return (result);
+} 
+
+/* Reads the position on TID */
+/* The line_id must be the one given by wait_event */
+/* p_button is set to the button 1, 2 or 3 */
+/* p_row and p_column are thje position of the "finger" on the TID */
+int x_read_tid (void *line_id, int *p_button, int *p_row, int *p_column) {
+
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Check that there is a TID event to read */
+    if (win_id->button == 0) {
+        return (ERR);
+    }
+
+
+    /* Return coordinates and button */
+    *p_row = (win_id->tid_y /
+         fon_get_height (win_id->server->x_font[win_id->no_font])) + 1;
+    *p_column = (win_id->tid_x / 
+         fon_get_width  (win_id->server->x_font[win_id->no_font])) + 1;
+    *p_button = win_id->button;
+    win_id->button = 0;
+
+    return (OK);
+}
+
+
+/* Reads the sequence of codes of a key (4 codes maxi) */
+/* The line_id must be the one given by wait_event */
+/* p_key is the the address of a table where to put the codes */
+/* p_nbre if for the number of codes for the key */
+int x_read_key (void *line_id, int *p_key, int *p_nbre) {
+
+    t_window *win_id = (t_window*) line_id;
+    int i;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Check that there is a key to read */
+    if (win_id->nbre_key == 0) {
+        return (ERR);
+    }
+
+    /* Read the key */
+    *p_nbre = win_id->nbre_key;
+    for (i = 0; i < win_id->nbre_key; i++) {
+        *p_key = win_id->key_buf[i];
+        p_key++;
+    }
+
+    /* All is read now */
+    win_id->nbre_key = 0;
+
+    return (OK);
+}
+
+
+/* Special Blink primitive must be called twice a second to generate */
+/* blink if blinking is stopped */
+int x_blink(void) {
+
+    /* Check that the server is initialised */
+    if (local_server.x_server == NULL) return (OK);
+
+    x_do_blink ();
+
+    return (OK);
+}
+
+/* The real blinking primitive */
+void x_do_blink (void) {
+
+    static boolean blinking;
+
+    /* Check that the server is initialised */
+    if (local_server.x_server == NULL) return;
+
+    /* Here we know if it is colors for blink or standard colors */
+    blinking = ! blinking;
+
+    lin_blink_colors(blinking);
+    XFlush (local_server.x_server);
+
+    return;
+}
+
+/* Rings a bell on the display */
+int x_bell (int nbre_bell) {
+
+    XKeyboardControl keyboard_state;
+    int i;
+
+    if (local_server.x_server == NULL) return (ERR);
+
+    /* Volume maxi, 400 Hz, and 100 ms */
+    keyboard_state.bell_percent = 100;
+    keyboard_state.bell_pitch = 400;
+    keyboard_state.bell_duration = 100;
+    XChangeKeyboardControl (local_server.x_server,
+      KBBellPercent | KBBellPitch | KBBellDuration, &keyboard_state);
+
+    /* Set at maximum number of bells if more that maxi is requested */
+    if (nbre_bell > NBRE_MAX_BELL) nbre_bell = NBRE_MAX_BELL;
+
+    for (i=1; i<=nbre_bell; i++) {
+        /* Bell at 100% of bell_percent (in keyboard_state) */
+        XBell (local_server.x_server, 100);
+    }
+
+    return (OK);
+
+}
+
