@@ -36,6 +36,13 @@ package body Channels is
   end Dscr_Match;
   procedure Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
 
+  function Host_Name_Match (D1, D2 : Dest_Rec) return Boolean is
+    use type Tcp_Util.Remote_Host;
+  begin
+    return D1.Host_Name = D2.Host_Name;
+  end Host_Name_Match;
+  procedure Host_Name_Search is new Dest_List_Mng.Search (Host_Name_Match);
+
   -- Sender
   type Send_Rec is record
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
@@ -660,20 +667,45 @@ package body Channels is
 
     end Write;
 
+    -- Send a message on a dscr
+    procedure Send (Dscr    : in Socket.Socket_Dscr;
+                    Message : in Message_Type;
+                    Length  : in Message_Length) is
+      Msg : Channel_Message_Type;
+      Len : Message_Length;
+      Res : Boolean;
+    begin
+      -- Build message and len
+      Msg.Diff := False;
+      Msg.Data := Message;
+      if Length = 0 then
+        Len := Message'Size / Byte_Size + Msg.Diff'Size / Byte_Size;
+      else
+        Len := Length + Msg.Diff'Size / Byte_Size;
+      end if;
+
+      -- Send on Dscr
+      begin
+        Res := Channel_Send (Dscr, null, Msg, Len);       
+      exception
+        when Socket.Soc_Tail_Err =>
+          raise Send_Overflow;
+        when others =>
+          raise Send_Failed;
+      end;
+    end Send;
+
     -- Reply to sender of last message received
     procedure Reply (Message : in Message_Type;
                      Length : in Message_Length := 0) is
       Dscr : Socket.Socket_Dscr;
-      Msg : Channel_Message_Type;
-      Len : Message_Length;
-      Res : Boolean;
       D_Rec : Dest_Rec;
       S_Rec : Send_Rec;
       use type Socket.Socket_Dscr;
     begin
       -- Get current socket
       if Reply_List_Mng.Is_Empty (Channel_Dscr.Replies) then
-          raise Not_In_Read;
+        raise Not_In_Read;
       end if;
       Reply_List_Mng.Read (Channel_Dscr.Replies, Dscr, Reply_List_Mng.Current);
 
@@ -693,25 +725,38 @@ package body Channels is
           end;
       end;
 
-      -- Build message and len
-      Msg.Diff := False;
-      Msg.Data := Message;
-      if Length = 0 then
-        Len := Message'Size / Byte_Size + Msg.Diff'Size / Byte_Size;
-      else
-        Len := Length + Msg.Diff'Size / Byte_Size;
-      end if;
-
       -- Reply on current
       begin
-        Res := Channel_Send (Dscr, null, Msg, Len);       
+        Send (Dscr, Message, Length);
       exception
-        when Socket.Soc_Tail_Err =>
+        when Send_Overflow =>
           raise Reply_Overflow;
-        when others =>
+        when Send_Failed =>
           raise Reply_Failed;
       end;
     end Reply;
+
+    -- Send a message to one destination
+    -- May raise Unknown_Destination if Host_Name is not known
+    -- May raise Send_Overflow if message cannot be sent due to overflow
+    -- May raise Send_Failed if message cannot be sent due to other error
+    procedure Send (Host_Name : in String;
+                    Message   : in Message_Type;
+                    Length    : in Message_Length := 0) is
+      D_Rec : Dest_Rec;
+    begin
+      -- Find destination from host name
+      D_Rec.Host_Name.Name := (others => ' ');
+      D_Rec.Host_Name.Name(1 .. Host_Name'Length) := Host_Name; 
+      begin
+        Host_Name_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
+      exception
+        when Dest_List_Mng.Not_In_List =>
+          raise Unknown_Destination;
+      end;
+      Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);      
+      Send (D_Rec.Dscr, Message, Length);
+    end Send;
 
   begin -- Channel
     Init;

@@ -35,6 +35,11 @@ package Channels is
   -- Reply sending has failed due to other error
   Reply_Failed : exception;
 
+  -- Message sending has failed due to overflow
+  Send_Overflow : exception;
+  -- Message sending has failed due to other error
+  Send_Failed : exception;
+
   -- File not found or syntax error in add_destinations
   File_Error : exception;
 
@@ -131,6 +136,14 @@ package Channels is
     -- May raise Reply_Failed if reply cannot be sent due to other error
     procedure Reply (Message : in Message_Type;
                      Length : in Message_Length := 0);
+
+    -- Send a message to one destination
+    -- May raise Unknown_Destination if Host_Name is not known
+    -- May raise Send_Overflow if message cannot be sent due to overflow
+    -- May raise Send_Failed if message cannot be sent due to other error
+    procedure Send (Host_Name : in String;
+                    Message   : in Message_Type;
+                    Length    : in Message_Length := 0);
 
   end Channel;
 
