@@ -52,6 +52,7 @@ begin
 
   exception
     when My_Get_Line.No_More_Line =>
+      My_Get_Line.Close;
       Text_Io.Put_Line ("Done.");
   end;
 
