@@ -3,7 +3,7 @@ package Pattern is
 
   -- Look successively in a rule (set of patterns) to find a pattern
   --   with which a given string matches.
-  type Rule_No is new Positive;
+  type Rule_No is private;
 
   -- A pattern is a list of terms separated by spaces or tabs
   --  (an empty pattern matches anything).
@@ -98,6 +98,9 @@ package Pattern is
   -- Check (R, "get foo  ");      calls Cb (R, 10, 1);       tail: foo
   -- Check (R, "get   alias foo") calls Cb (R, 10, 2);       tail: foo
 
-end Pattern;
+private
 
+  type Rule_No is new Positive;
+
+end Pattern;
 

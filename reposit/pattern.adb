@@ -436,13 +436,17 @@ package body Pattern is
 
   -- May raise No_Rule if no rule is available.
   function Get_Free_Rule return Rule_No is
+    Rule : Rule_No;
   begin
-    return Storage.Get_Free_Rule;
+    Rule := Storage.Get_Free_Rule;
+    Put_Debug ("Get_Free_Rule", "Allocating " & Rule'Img);
+    return Rule;
   end Get_Free_Rule;
 
   -- Delete all patterns of a rule
   procedure Del_Rule (Rule : in Rule_No) is
   begin
+    Put_Debug ("Del_Rule", "Deleting " & Rule'Img);
     Storage.Del_Rule (Rule);
   end Del_Rule;
 
