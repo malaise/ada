@@ -9,6 +9,7 @@ all:
 	cp beep $(DEST)
 	amake ddir.adb -largs $(LIBX_MNG) -lX11
 	cp ddir $(DEST)
+	amake e2f.adb
 	amake fact.adb
 	amake g.adb
 	amake hanoi.adb
