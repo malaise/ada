@@ -305,6 +305,17 @@ package body OPERATIONS is
     return (KIND => INTE, VAL_INTE => MATH.ROUND(X.VAL_REAL));
   end TOINTE;
 
+  function ISREAL  (X : ITEM_REC) return ITEM_REC is
+  begin
+    return (KIND => BOOL, VAL_BOOL => X.KIND = REAL);
+  end ISREAL;
+
+  function ISINTE  (X : ITEM_REC) return ITEM_REC is
+  begin
+    return (KIND => BOOL, VAL_BOOL => X.KIND = INTE);
+  end ISINTE;
+
+
   -- BOOL,BOOL->BOOL
   function BOLAND  (L, R : ITEM_REC) return ITEM_REC is
   begin

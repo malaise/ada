@@ -23,6 +23,9 @@ package body INPUT_DISPATCHER is
   -- Get first/next word from a string
   CUR_INDEX : POSITIVE;
 
+  -- String delimiter
+  SD : constant CHARACTER := '"';
+
   function IS_SEPARATOR (C : in CHARACTER) return BOOLEAN is
   begin
     return C = ' ' or else C = ASCII.HT;
@@ -30,6 +33,7 @@ package body INPUT_DISPATCHER is
 
   function NEXT_STR_WORD return STRING is
     TMP_INDEX, STOP_INDEX : POSITIVE;
+    IN_LIT : BOOLEAN := FALSE;
   begin
     -- Skip separators
     while CUR_INDEX <= CUR_LEN and then IS_SEPARATOR(CUR_STR(CUR_INDEX)) loop
@@ -42,17 +46,38 @@ package body INPUT_DISPATCHER is
 
     -- Got a start of word
     TMP_INDEX := CUR_INDEX;
-    -- Look for seprator
-    STOP_INDEX := TMP_INDEX + 1;
-    while STOP_INDEX <= CUR_LEN and then not IS_SEPARATOR(CUR_STR(STOP_INDEX)) loop
-      STOP_INDEX := STOP_INDEX + 1;
-    end loop;
 
-    -- This is the next start
-    CUR_INDEX := STOP_INDEX;
+    IN_LIT := CUR_STR(TMP_INDEX) = SD;
+    if IN_LIT then
+      STOP_INDEX := TMP_INDEX + 1;
+      -- Parse string literal, look for SD
+      while STOP_INDEX <= CUR_LEN and then CUR_STR(STOP_INDEX) /= SD loop
+        STOP_INDEX := STOP_INDEX + 1;
+      end loop;
+      if STOP_INDEX > CUR_LEN then
+        -- No SD before end of line
+        raise STRING_ERROR;
+      end if;
+      if STOP_INDEX + 1 <= CUR_LEN and then
+         not IS_SEPARATOR(CUR_STR(STOP_INDEX + 1)) then
+        -- SD is not followed by a separator
+        raise STRING_ERROR;
+      end if;
+      -- This is the next start
+      CUR_INDEX := STOP_INDEX + 1;
 
-    -- Stop is last char of word
-    STOP_INDEX := STOP_INDEX - 1;
+    else
+      -- Parse string, look for separator
+      STOP_INDEX := TMP_INDEX + 1;
+      while STOP_INDEX <= CUR_LEN and then not IS_SEPARATOR(CUR_STR(STOP_INDEX)) loop
+        STOP_INDEX := STOP_INDEX + 1;
+      end loop;
+      -- This is the next start
+      CUR_INDEX := STOP_INDEX;
+      -- Stop is last char of word
+      STOP_INDEX := STOP_INDEX - 1;
+    end if;
+
     return CUR_STR(TMP_INDEX .. STOP_INDEX);
   end NEXT_STR_WORD;
 

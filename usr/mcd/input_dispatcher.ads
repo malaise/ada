@@ -17,5 +17,8 @@ package INPUT_DISPATCHER is
   -- Empty if end of input flow
   function NEXT_WORD return STRING;
 
+  -- Error if end of string litteral not found
+  STRING_ERROR : exception;
+
 end INPUT_DISPATCHER;
 

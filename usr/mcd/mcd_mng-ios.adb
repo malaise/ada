@@ -14,7 +14,11 @@ package body IOS is
       when BOOL  =>
         BOOL_IO.PUT(ITEM.VAL_BOOL);
       when CHRS =>
-        TEXT_IO.PUT (ITEM.VAL_TEXT(1 .. ITEM.VAL_LEN));
+        if ITEM.VAL_TEXT(1) = '"' then
+          TEXT_IO.PUT (ITEM.VAL_TEXT(2 .. ITEM.VAL_LEN - 1));
+        else
+          TEXT_IO.PUT (ITEM.VAL_TEXT(1 .. ITEM.VAL_LEN));
+        end if;
       when others =>
         raise INVALID_ARGUMENT;
     end case;
