@@ -324,7 +324,7 @@ package body DYNAMIC_LIST is
                      NUMBER2      : in NATURAL;
                      WHERE        : in DIRECTION := NEXT;
                      FROM_CURRENT : in BOOLEAN   := FALSE) is
-    CURRENT_POSITION : constant NATURAL := GET_POSITION (LIST);
+    CURRENT_POSITION : constant POSITIVE := GET_POSITION (LIST);
     LINK1, LINK2 : LINK;
   begin
     -- move to elements and store links to them
@@ -358,7 +358,7 @@ package body DYNAMIC_LIST is
 
   -- get position from first or last item in list
   function GET_POSITION (LIST : LIST_TYPE;
-                         FROM : REFERENCE := FROM_FIRST) return NATURAL is
+                         FROM : REFERENCE := FROM_FIRST) return POSITIVE is
   begin
     CHECK(LIST);
     case FROM is
@@ -378,6 +378,13 @@ package body DYNAMIC_LIST is
   begin
     LIST.MODIFIED := FALSE;
   end MODIFICATION_ACK;
+
+  -- Copy the VAL list to TO list
+  procedure ASSIGN (TO : in out LIST_TYPE; VAL : in LIST_TYPE) is
+  begin
+    TO := VAL;
+    TO.MODIFIED := TRUE;
+  end ASSIGN;
 
   procedure SEARCH (LIST         : in out LIST_TYPE;
                     ITEM         : in ELEMENT_TYPE;

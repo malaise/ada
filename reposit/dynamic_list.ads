@@ -89,7 +89,7 @@ package DYNAMIC_LIST is
   -- For first item of list, GET_POSITION returns 1
   -- may raise EMPTY_LIST
   function GET_POSITION (LIST : LIST_TYPE;
-                         FROM : REFERENCE := FROM_FIRST) return NATURAL;
+                         FROM : REFERENCE := FROM_FIRST) return POSITIVE;
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
@@ -97,6 +97,9 @@ package DYNAMIC_LIST is
   --  testing
   function IS_MODIFIED (LIST : LIST_TYPE) return BOOLEAN;
   procedure MODIFICATION_ACK (LIST : in out LIST_TYPE);
+
+  -- Copy the VAL list to TO list
+  procedure ASSIGN (TO : in out LIST_TYPE; VAL : in LIST_TYPE);
 
   generic
     with function EQUAL (EL1, EL2 : ELEMENT_TYPE) return BOOLEAN is "=";
