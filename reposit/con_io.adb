@@ -611,6 +611,41 @@ package body CON_IO is
     end loop;
   end NEXT_X_EVENT;
 
+  procedure TRANSLATE_X_KEY (KEY     : in out NATURAL;
+                             IS_CHAR : in out BOOLEAN;
+                             CTRL    : in out BOOLEAN;
+                             SHIFT   : in out BOOLEAN) is
+  begin
+    -- No translation of chars
+    if IS_CHAR then
+      return;
+    end if;
+    case KEY is
+      when 16#8D# =>
+        -- Enter
+        KEY := 16#0D#;
+      when  16#AA# .. 16#B9# =>
+        -- Oper or Num
+        IS_CHAR := TRUE;
+        KEY := KEY - 16#80#;
+      when 16#95# .. 16#9C# =>
+        -- Key movement
+        KEY := KEY - 16#45#;
+      when 16#9D# =>
+        -- 5 not num : discard
+        KEY := 16#00#;
+      when 16#9E# =>
+        -- Insert
+        KEY := 16#63#;
+      when 16#9F# =>
+        -- Suppre
+        KEY := 16#FF#;
+      when others =>
+        -- No translation
+        null;
+    end case;
+  end TRANSLATE_X_KEY;
+
   procedure GET_X_KEY (KEY     : out NATURAL;
                        IS_CHAR : out BOOLEAN;
                        CTRL    : out BOOLEAN;
@@ -627,9 +662,11 @@ package body CON_IO is
 
     -- Optimisation
     if KBD_TAB.NBRE = 1 then
+      TRANSLATE_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
       return;
     elsif KBD_TAB.NBRE = 2 then
       IS_CHAR := FALSE;
+      TRANSLATE_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
       return;
     end if;
 
@@ -654,6 +691,7 @@ package body CON_IO is
       SHIFT := TRUE;
     end if;
     
+    TRANSLATE_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
   end GET_X_KEY;
 
   -- Gives first key code of keyboard buffer, (waits if it is empty)
@@ -702,6 +740,7 @@ package body CON_IO is
     PUT(CHAR, NAME);
     return CHAR;
   end GET;
+
 
   -- check if a key is available until a certain time.
   procedure GET_KEY_TIME (LAST_TIME     : in CALENDAR.TIME;
