@@ -1,8 +1,8 @@
-with Text_Io;
+with Ada.Text_Io;
 package body Point_Str is
 
-  package Coo_Io is new Text_Io.Float_Io(Points.P_T_Coordinate);
-  package Coo_Int_Io is new Text_Io.Integer_Io(Integer);
+  package Coo_Io is new Ada.Text_Io.Float_Io(Points.P_T_Coordinate);
+  package Coo_Int_Io is new Ada.Text_Io.Integer_Io(Integer);
 
   function Coordinate_Image (Coordinate : Points.P_T_Coordinate)
                             return Coordinate_String is
@@ -37,7 +37,7 @@ package body Point_Str is
       -- Float format
       Coo_Io.Get(Str, C, L);
     exception
-      when Text_Io.Data_Error =>
+      when Ada.Text_Io.Data_Error =>
          -- Int format
         Coo_Int_Io.Get(Str, I, L);
         C := Points.P_T_Coordinate (I);

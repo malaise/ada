@@ -1,11 +1,11 @@
-with Sequential_Io;
+with Ada.Sequential_Io;
 with Directory, Text_Handler, My_Math;
 package body File is
 
   Magic_X : constant Points.P_T_Coordinate := 21.21;
 
   -- Point sequential read/write
-  package F_Points_Io is new Sequential_Io (Points.P_T_One_Point);
+  package F_Points_Io is new Ada.Sequential_Io (Points.P_T_One_Point);
   use F_Points_Io;
 
   -- Read a file of points

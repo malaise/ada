@@ -1,10 +1,10 @@
-with Text_Io; use Text_Io;
+with Ada.Text_Io; use Ada.Text_Io;
 with U_Rand;
 
 procedure T_Urand is
-    package Float_Io is new Text_Io.Float_Io(Float);
+    package Float_Io is new Ada.Text_Io.Float_Io(Float);
     use Float_Io;
-    Test_File : Text_Io.File_Type;
+    Test_File : Ada.Text_Io.File_Type;
     File_Name : constant String := "T_URAND.DAT";
     subtype A_Result is String(1..11);
     type Results_Type is array(1..6) of A_Result;
@@ -24,7 +24,7 @@ begin
         Rnum := U_Rand.Next;
     end loop;
 
-    Text_Io.Create(File=>Test_File, Name=>File_Name);
+    Ada.Text_Io.Create(File=>Test_File, Name=>File_Name);
     for I in 1..6 loop
         Put(File=>Test_File,
             Item=>(2.0**24)*U_Rand.Next,
@@ -32,8 +32,8 @@ begin
         New_Line(Test_File);
     end loop;
 
-    Text_Io.Close(File=>Test_File);
-    Text_Io.Open(File=>Test_File, Mode=>In_File, Name=>File_Name);
+    Ada.Text_Io.Close(File=>Test_File);
+    Ada.Text_Io.Open(File=>Test_File, Mode=>In_File, Name=>File_Name);
     Put("Expected Results    "); Put_Line("Actual Results");
 
     for I in 1..6 loop

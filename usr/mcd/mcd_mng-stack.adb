@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Dynamic_List;
 separate (Mcd_Mng)
 
@@ -12,21 +12,21 @@ package body Stack is
     if Item.Kind not in Operand_Kind_List then
       if Debug.Debug_Level_Array(Debug.Stack) then
         if not Default_Stack then
-          Text_Io.Put ("Extra ");
+          Ada.Text_Io.Put ("Extra ");
         end if;
-        Text_Io.Put ("Stack: ERROR Pushing ");
+        Ada.Text_Io.Put ("Stack: ERROR Pushing ");
         Debug.Put (Item);
-        Text_Io.New_Line;
+        Ada.Text_Io.New_Line;
       end if;
       raise Invalid_Argument;
     end if;
     if Debug.Debug_Level_Array(Debug.Stack) then
       if not Default_Stack then
-        Text_Io.Put ("Extra ");
+        Ada.Text_Io.Put ("Extra ");
       end if;
-      Text_Io.Put ("Stack: Pushing ");
+      Ada.Text_Io.Put ("Stack: Pushing ");
       Debug.Put (Item);
-      Text_Io.New_Line;
+      Ada.Text_Io.New_Line;
     end if;
     if Default_Stack then
       Stack_List.Insert(List, Item);
@@ -40,9 +40,9 @@ package body Stack is
   begin
     if Debug.Debug_Level_Array(Debug.Stack) then
       if not Default_Stack then
-        Text_Io.Put ("Extra ");
+        Ada.Text_Io.Put ("Extra ");
       end if;
-      Text_Io.Put ("Stack: Poping ");
+      Ada.Text_Io.Put ("Stack: Poping ");
     end if;
     if Default_Stack then
       Stack_List.Get(List, Litem, Stack_List.Prev);
@@ -52,12 +52,12 @@ package body Stack is
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
       Debug.Put (Litem);
-      Text_Io.New_Line;
+      Ada.Text_Io.New_Line;
     end if;
   exception
     when Stack_List.Empty_List =>
       if Debug.Debug_Level_Array(Debug.Stack) then
-        Text_Io.Put_Line("raises EMPTY_STACK");
+        Ada.Text_Io.Put_Line("raises EMPTY_STACK");
       end if;
       raise Empty_Stack;
   end Pop;
@@ -67,9 +67,9 @@ package body Stack is
   begin
     if Debug.Debug_Level_Array(Debug.Stack) then
       if not Default_Stack then
-        Text_Io.Put ("Extra ");
+        Ada.Text_Io.Put ("Extra ");
       end if;
-      Text_Io.Put ("Stack: Reading ");
+      Ada.Text_Io.Put ("Stack: Reading ");
     end if;
     if Default_Stack then
       Stack_List.Read(List, Litem, Stack_List.Current);
@@ -79,12 +79,12 @@ package body Stack is
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
       Debug.Put (Litem);
-      Text_Io.New_Line;
+      Ada.Text_Io.New_Line;
     end if;
   exception
     when Stack_List.Empty_List =>
       if Debug.Debug_Level_Array(Debug.Stack) then
-        Text_Io.Put_Line("raises EMPTY_STACK");
+        Ada.Text_Io.Put_Line("raises EMPTY_STACK");
       end if;
       raise Empty_Stack;
   end Read;
@@ -99,9 +99,9 @@ package body Stack is
     end if;
     if Debug.Debug_Level_Array(Debug.Stack) then
       if not Default_Stack then
-        Text_Io.Put ("Extra ");
+        Ada.Text_Io.Put ("Extra ");
       end if;
-      Text_Io.Put_Line ("Stack: size " & Natural'Image(Size));
+      Ada.Text_Io.Put_Line ("Stack: size " & Natural'Image(Size));
     end if;
     return Size;
   end Stack_Size;
@@ -110,8 +110,8 @@ package body Stack is
     Litem : Item_Rec;
   begin
     if Debug.Debug_Level_Array(Debug.Stack) then
-        Text_Io.Put ("Extra ");
-      Text_Io.Put ("Stack: Poping first ");
+        Ada.Text_Io.Put ("Extra ");
+      Ada.Text_Io.Put ("Stack: Poping first ");
     end if;
     -- Get first pushed item
     Stack_List.Rewind(Extra_List);
@@ -119,7 +119,7 @@ package body Stack is
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
       Debug.Put (Litem);
-      Text_Io.New_Line;
+      Ada.Text_Io.New_Line;
     end if;
     -- Move back to last pushed item
     if not Stack_List.Is_Empty(Extra_List) then
@@ -128,7 +128,7 @@ package body Stack is
   exception
     when Stack_List.Empty_List =>
       if Debug.Debug_Level_Array(Debug.Stack) then
-        Text_Io.Put_Line("raises EMPTY_STACK");
+        Ada.Text_Io.Put_Line("raises EMPTY_STACK");
       end if;
       raise Empty_Stack;
   end Popf;
@@ -136,8 +136,8 @@ package body Stack is
   procedure Pushf (Item : in Item_Rec) is
   begin
     if Debug.Debug_Level_Array(Debug.Stack) then
-        Text_Io.Put ("Extra ");
-      Text_Io.Put ("Stack: pushing at first ");
+        Ada.Text_Io.Put ("Extra ");
+      Ada.Text_Io.Put ("Stack: pushing at first ");
     end if;
     if Stack_List.Is_Empty(Extra_List) then
       Stack_List.Insert(Extra_List, Item);

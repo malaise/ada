@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler;
 with Random;
 with Debug, Input_Dispatcher, Parser;
@@ -228,7 +228,7 @@ package body Mcd_Mng is
     procedure Do_Call is
     begin
       if Debug.Debug_Level_Array(Debug.Oper) then
-        Text_Io.Put_Line("Mng: Do_call");
+        Ada.Text_Io.Put_Line("Mng: Do_call");
       end if;
       Stack.Pop(A);
       if A.Kind /= Prog then
@@ -263,7 +263,7 @@ package body Mcd_Mng is
       Call_Stack_Level : Natural;
     begin
       if Debug.Debug_Level_Array(Debug.Oper) then
-        Text_Io.Put_Line("Mng: Do_ret");
+        Ada.Text_Io.Put_Line("Mng: Do_ret");
       end if;
       Call_Stack_Level := Call_Stack.Level;
       if not All_Levels then
@@ -381,9 +381,9 @@ package body Mcd_Mng is
       Push(Item);
     else -- Operator
       if Debug.Debug_Level_Array(Debug.Oper) then
-        Text_Io.Put("Mng: ");
+        Ada.Text_Io.Put("Mng: ");
         Debug.Put(Item);
-        Text_Io.New_Line;
+        Ada.Text_Io.New_Line;
       end if;
       case Item.Val_Oper is 
         -- These I do it myself

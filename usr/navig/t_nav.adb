@@ -1,5 +1,6 @@
+with Ada.Text_Io;
+with My_Io;
 with Nav_Types, Nav_Data;
-with My_Io, Text_Io;
 procedure T_Nav is
 Str : String (1..20);
 Lst : Natural;
@@ -8,7 +9,7 @@ Lst : Natural;
   subtype Ti is Positive range 1..7;
   I1, I2, I3 : Ti;
   Report : Nav_Data.T_Consistency;
-  package Cons_Io is new Text_Io.Enumeration_Io (Nav_Data.T_Consistency);
+  package Cons_Io is new Ada.Text_Io.Enumeration_Io (Nav_Data.T_Consistency);
 
   function Dot (S : String) return Natural is
   begin

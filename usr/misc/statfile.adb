@@ -1,32 +1,32 @@
-with Text_Io;
+with Ada.Text_Io;
 with Argument;
 with One_File_Statements;
 
 procedure Statfile is
 
   procedure Stat_One_File (List_File_Name : in String) is
-    List_File : Text_Io.File_Type;
+    List_File : Ada.Text_Io.File_Type;
     File_Name : String (1 .. 5000);
     File_Name_Len : Natural;
   begin
     begin
-      Text_Io.Open (List_File, Text_Io.In_File, List_File_Name);
+      Ada.Text_Io.Open (List_File, Ada.Text_Io.In_File, List_File_Name);
     exception
       when others => 
-        Text_Io.Put_Line ("Exception raised when opening list file "
+        Ada.Text_Io.Put_Line ("Exception raised when opening list file "
                         & List_File_Name & " SKIPPING");
         return;
     end;
 
-    while not Text_Io.End_Of_File (List_File) loop
+    while not Ada.Text_Io.End_Of_File (List_File) loop
       begin
-        Text_Io.Get_Line (List_File, File_Name, File_Name_Len);
+        Ada.Text_Io.Get_Line (List_File, File_Name, File_Name_Len);
       exception
         when others => 
-          Text_Io.Put_Line ("Exception raised when reading line "
-                          & Text_Io.Positive_Count'Image(Text_Io.Line(List_File))
+          Ada.Text_Io.Put_Line ("Exception raised when reading line "
+                          & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(List_File))
                           & " of list file " & List_File_Name & " SKIPPING");
-          Text_Io.Close (List_File);
+          Ada.Text_Io.Close (List_File);
           return;
       end;
       
@@ -34,13 +34,13 @@ procedure Statfile is
         One_File_Statements.Print_Statements_Of_File(File_Name(1 .. File_Name_Len));
       end if;
     end loop;
-    Text_Io.Close (List_File);
+    Ada.Text_Io.Close (List_File);
   end Stat_One_File; 
 
 begin
 
   for Arg in 1 .. Argument.Get_Nbre_Arg loop
-    Text_Io.Put_Line ("Processing list file " & String'(Argument.Get_Parameter(Arg)));
+    Ada.Text_Io.Put_Line ("Processing list file " & String'(Argument.Get_Parameter(Arg)));
     Stat_One_File(Argument.Get_Parameter(Arg));
   end loop;
 

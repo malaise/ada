@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler;
 with Debug, Mcd_Mng;
 package body Input_Dispatcher is
@@ -153,7 +153,7 @@ package body Input_Dispatcher is
   procedure Set_Input (Str : in String) is
   begin
     if Debug.Debug_Level_Array(Debug.Input) then
-      Text_Io.Put_Line ("Input_dispacher: Setting input to >"
+      Ada.Text_Io.Put_Line ("Input_dispacher: Setting input to >"
        & Str & "<");
     end if;
     if Str = "" then
@@ -173,7 +173,7 @@ package body Input_Dispatcher is
       Str_Parsed := False;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
-      Text_Io.Put_Line ("Input_dispacher: Input set to >"
+      Ada.Text_Io.Put_Line ("Input_dispacher: Input set to >"
        & Cur_Str(1 .. Cur_Len) & "< at " & Integer'Image(Cur_Index)
        & " len " & Integer'Image(Cur_Len));
     end if;
@@ -186,12 +186,12 @@ package body Input_Dispatcher is
   begin
     if Curr_Is_Stdin then
       if Debug.Debug_Level_Array(Debug.Input) then
-        Text_Io.Put_Line ("Input_dispacher: Remaining on stdin.");
+        Ada.Text_Io.Put_Line ("Input_dispacher: Remaining on stdin.");
       end if;
       raise Program_Error;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
-      Text_Io.Put_Line ("Input_dispacher: Remaining is >"
+      Ada.Text_Io.Put_Line ("Input_dispacher: Remaining is >"
        & Cur_Str(Cur_Index .. Cur_Len) & "<");
     end if;
     -- Current string may not be parsed (retacal in a function)
@@ -211,9 +211,9 @@ package body Input_Dispatcher is
         if Len_Stdin = 0 then
           -- Need to get a new string
           begin
-            Text_Io.Get_Line (Str_Stdin, Len_Stdin);
+            Ada.Text_Io.Get_Line (Str_Stdin, Len_Stdin);
           exception
-            when Text_Io.End_Error =>
+            when Ada.Text_Io.End_Error =>
               return "";
           end;
           if Len_Stdin /= 0 then

@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler;
 with Select_File;
 
@@ -19,7 +19,7 @@ begin
 
   loop
     Text_Handler.Set (File, My_Select_File (10, Text_Handler.Value(File), Read));
-    Text_Io.Put_Line (Text_Handler.Value(File));
+    Ada.Text_Io.Put_Line (Text_Handler.Value(File));
     exit when Text_Handler.Empty(File);
     Read := not Read;
   end loop;

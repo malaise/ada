@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Environ;
 with Bool_Io, Inte_Io, Real_Io;
 package body Debug is
@@ -31,13 +31,13 @@ package body Debug is
       when Bool =>
         Bool_Io.Put(Item.Val_Bool);
       when Chrs =>
-        Text_Io.Put ("""" & Item.Val_Text(1 .. Item.Val_Len) & """");
+        Ada.Text_Io.Put ("""" & Item.Val_Text(1 .. Item.Val_Len) & """");
       when Prog =>
-        Text_Io.Put ("[ " & Item.Val_Text(1 .. Item.Val_Len) & " ]");
+        Ada.Text_Io.Put ("[ " & Item.Val_Text(1 .. Item.Val_Len) & " ]");
       when Regi =>
-        Text_Io.Put (Item.Val_Regi);
+        Ada.Text_Io.Put (Item.Val_Regi);
       when Oper =>
-        Text_Io.Put (Operator_List'Image(Item.Val_Oper));
+        Ada.Text_Io.Put (Operator_List'Image(Item.Val_Oper));
     end case;
   end Put;
 

@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Argument, Text_Handler, Get_Line;
 with Points, Point_Str, File;
 
@@ -16,8 +16,8 @@ procedure Import is
 
   procedure Error (Msg : in String)  is
   begin
-    Text_Io.Put_Line ("ERROR: " & Msg);
-    Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <src_ascii_file> <dst_approx_file>");
+    Ada.Text_Io.Put_Line ("ERROR: " & Msg);
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <src_ascii_file> <dst_approx_file>");
   end Error;
 
 begin
@@ -34,7 +34,7 @@ begin
   begin
     My_Get_Line.Open(Argument.Get_Parameter(Occurence => 1));
   exception
-    when Text_Io.Name_Error =>
+    when Ada.Text_Io.Name_Error =>
       Error ("File " & Argument.Get_Parameter(Occurence => 1) & " not found");
       return;
     when others =>
@@ -48,7 +48,7 @@ begin
   loop
     My_Get_Line.Get_Words (Line);
     if My_Get_Line.Get_Word_Number /= 2 then
-      Error ("At line " & Text_Io.Positive_Count'Image(My_Get_Line.Get_Line_No)
+      Error ("At line " & Ada.Text_Io.Positive_Count'Image(My_Get_Line.Get_Line_No)
                         & " two reals expected");
       My_Get_Line.Close;
       return;
@@ -59,7 +59,7 @@ begin
       Point.Y := Point_Str.Coordinate_Value(Text_Handler.Value(Line(2)));
     exception
       when others =>
-        Error ("At line " & Text_Io.Positive_Count'Image(My_Get_Line.Get_Line_No)
+        Error ("At line " & Ada.Text_Io.Positive_Count'Image(My_Get_Line.Get_Line_No)
                           & " two reals expected");
         My_Get_Line.Close;
         return;
@@ -75,5 +75,5 @@ exception
     My_Get_Line.Close;
     File.F_Write(Argument.Get_Parameter(Occurence => 2),
                  Points.P_The_Points);
-    Text_Io.Put_Line ("Done.");
+    Ada.Text_Io.Put_Line ("Done.");
 end Import;

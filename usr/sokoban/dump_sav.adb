@@ -5,7 +5,7 @@ package Dump_Save is
 end Dump_Save;
 
 with Sok_Types;
-with Text_Io; use Text_Io;
+with Ada.Text_Io; use Ada.Text_Io;
 package body Dump_Save is
   File : File_Type;
   Open : Boolean := False;

@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Argument, Rnd, Sys_Calls, My_Math, Int_Io, Flo_Io, Get_Float;
 procedure Random is
 
@@ -8,8 +8,8 @@ procedure Random is
 
   Error : exception;
 
-  package Inte_Io is new Text_Io.Integer_Io(My_Math.Inte);
-  package Real_Io is new Text_Io.Float_Io(My_Math.Real);
+  package Inte_Io is new Ada.Text_Io.Integer_Io(My_Math.Inte);
+  package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
 
 begin
 

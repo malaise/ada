@@ -1,11 +1,11 @@
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler, Argument;
 with Menu1;
 procedure Approxp is
 
   procedure Usage is
   begin
-    Text_Io.Put_Line ("Usage " & Argument.Get_Program_Name
+    Ada.Text_Io.Put_Line ("Usage " & Argument.Get_Program_Name
                                & " [ <file_name> ]");
   end;
 

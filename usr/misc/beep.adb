@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Argument;
 procedure Beep is
   Nb_Beep : Positive;
@@ -19,12 +19,12 @@ begin
     Delta_Beep := 0.25;
   end if;
   for I in 1 .. Nb_Beep loop
-    Text_Io.Put (Ascii.Bel);
+    Ada.Text_Io.Put (Ascii.Bel);
     if I /= Nb_Beep then
       delay Delta_Beep;
     end if;
   end loop;
 exception
   when others =>
-    Text_Io.Put (Ascii.Bel);
+    Ada.Text_Io.Put (Ascii.Bel);
 end Beep;

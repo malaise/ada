@@ -1,6 +1,6 @@
 
 
-with My_Io, Text_Io; use My_Io; 
+with My_Io, Ada.Text_Io; use My_Io; 
 -- calcul de la factorielle d'un entier;
 
 procedure Fact is 

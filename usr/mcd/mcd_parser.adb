@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str;
 with Debug, Input_Dispatcher, Bool_Io, Inte_Io, Real_Io;
 package body Parser is
@@ -185,7 +185,7 @@ package body Parser is
 
     Text_Handler.Set (Txt, Input_Dispatcher.Next_Word);
     if Debug.Debug_Level_Array(Debug.Parser) then
-      Text_Io.Put_Line ("Parser: Getting >"
+      Ada.Text_Io.Put_Line ("Parser: Getting >"
                & Text_Handler.Value(Txt)  & "<");
     end if;
     Item_Chrs.Val_Len := Text_Handler.Length(Txt);
@@ -194,7 +194,7 @@ package body Parser is
     -- Eof
     if Text_Handler.Empty(Txt) then
       if Debug.Debug_Level_Array(Debug.Parser) then
-        Text_Io.Put_Line ("Parser: Eof");
+        Ada.Text_Io.Put_Line ("Parser: Eof");
       end if;
       Item_Chrs.Val_Len := 3;
       Item_Chrs.Val_Text(1 .. 3) := "EOF";
@@ -241,7 +241,7 @@ package body Parser is
         while Level /= 0 loop
           Text_Handler.Set(Txt, Input_Dispatcher.Next_Word);
           if Debug.Debug_Level_Array(Debug.Parser) then
-            Text_Io.Put_Line ("Parser: Getting >"
+            Ada.Text_Io.Put_Line ("Parser: Getting >"
                      & Text_Handler.Value(Txt)  & "<");
           end if;
           if Text_Handler.Value(Txt) = "[" then
@@ -363,7 +363,7 @@ package body Parser is
 
 
   procedure Print_Help is
-    use Text_Io;
+    use Ada.Text_Io;
     Ope_Name : String (1 .. Ope_Len);
   begin
     Put_Line ("Commands are read from standard input. No argument accepted.");

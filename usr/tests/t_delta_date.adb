@@ -1,23 +1,23 @@
-with Calendar, Text_Io;
+with Ada.Calendar, Ada.Text_Io;
 with Perpet, Day_Mng, Normal, My_Io;
 procedure T_Delta_Date is
 
-  package Dur_Io is new Text_Io.Fixed_Io (Calendar.Day_Duration);
+  package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
 
-  T1, T2 : Calendar.Time;
+  T1, T2 : Ada.Calendar.Time;
   D : Perpet.Delta_Rec;
 
   procedure Error is
   begin
     My_Io.Put(Ascii.Bel);
-    Text_Io.Skip_Line;
-    Text_Io.Skip_Line;
+    Ada.Text_Io.Skip_Line;
+    Ada.Text_Io.Skip_Line;
   end Error;
 
-  function Get return Calendar.Time is
-    Year : Calendar.Year_Number;
-    Month : Calendar.Month_Number;
-    Day : Calendar.Day_Number;
+  function Get return Ada.Calendar.Time is
+    Year : Ada.Calendar.Year_Number;
+    Month : Ada.Calendar.Month_Number;
+    Day : Ada.Calendar.Day_Number;
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
@@ -88,18 +88,19 @@ procedure T_Delta_Date is
             when others => Error;
           end;
         end loop;
-        return Calendar.Time_Of (Year, Month, Day, Day_Mng.Pack(Hour, Minute, Second, Millisec));
+        return Ada.Calendar.Time_Of (Year, Month, Day,
+                   Day_Mng.Pack(Hour, Minute, Second, Millisec));
       exception
-        when Calendar.Time_Error => Error;
+        when Ada.Calendar.Time_Error => Error;
       end;
     end loop;
   end Get;
 
-  procedure Put (Date : in Calendar.Time) is
-    Year : Calendar.Year_Number;
-    Month : Calendar.Month_Number;
-    Day : Calendar.Day_Number;
-    Secs : Calendar.Day_Duration;
+  procedure Put (Date : in Ada.Calendar.Time) is
+    Year : Ada.Calendar.Year_Number;
+    Month : Ada.Calendar.Month_Number;
+    Day : Ada.Calendar.Day_Number;
+    Secs : Ada.Calendar.Day_Duration;
     Hour : Day_Mng.T_Hours;
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
@@ -107,7 +108,7 @@ procedure T_Delta_Date is
 
     use My_Io;
   begin
-    Calendar.Split (Date, Year, Month, Day, Secs);
+    Ada.Calendar.Split (Date, Year, Month, Day, Secs);
     Day_Mng.Split (Secs, Hour, Minute, Second, Millisec);
     Put (Normal(Year, 4, Gap => '0')); Put ("/");
     Put (Normal(Month, 2, Gap => '0')); Put ("/");
@@ -130,7 +131,8 @@ begin
       T2 := Get;
       Put (T2);
       My_Io.Put (" is a ");
-      My_Io.Put_Line (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T2)));
+      My_Io.Put_Line (Perpet.Day_Of_Week_List'Image(
+                Perpet.Get_Day_Of_Week(T2)));
       D := Perpet."-"(T1, T2);
       My_Io.Put (" Date2 - Date1:");
       My_Io.Put (D.Days); My_Io.Put (" days ");
@@ -138,7 +140,7 @@ begin
     
       My_Io.New_Line (2);
     exception
-      when Calendar.Time_Error =>
+      when Ada.Calendar.Time_Error =>
         My_Io.Put_Line ("TIME_ERROR");
     end;
   end loop;

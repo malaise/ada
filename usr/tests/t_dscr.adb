@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Argument, Con_Io, Afpx, Normal;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
@@ -10,7 +10,7 @@ procedure T_Dscr is
 
   procedure Usage is
   begin
-    Text_Io.Put_Line("ERROR. Usage " & Argument.Get_Program_Name
+    Ada.Text_Io.Put_Line("ERROR. Usage " & Argument.Get_Program_Name
                                      & " [ <dscr_no> ]");
   end Usage;
 

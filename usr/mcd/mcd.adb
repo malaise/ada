@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with Argument, Sys_Calls;
 with Debug, Parser, Mcd_Mng;
 

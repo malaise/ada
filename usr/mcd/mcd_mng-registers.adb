@@ -63,9 +63,9 @@ package body Registers is
     end if;
     Registers_Array(Reg2Ind(To_Reg)) := Val;
     if Debug.Debug_Level_Array(Debug.Register) then
-      Text_Io.Put ("Register: Storing in " & To_Reg.Val_Regi & ": ");
+      Ada.Text_Io.Put ("Register: Storing in " & To_Reg.Val_Regi & ": ");
       Debug.Put (Val);
-      Text_Io.New_Line;
+      Ada.Text_Io.New_Line;
     end if;
   end Store;
     
@@ -77,9 +77,9 @@ package body Registers is
       raise Emtpy_Register;
     end if;
     if Debug.Debug_Level_Array(Debug.Register) then
-      Text_Io.Put ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
+      Ada.Text_Io.Put ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
       Debug.Put (Val);
-      Text_Io.New_Line;
+      Ada.Text_Io.New_Line;
     end if;
     return Val;
   end Retrieve;

@@ -2,7 +2,7 @@
 -- Reads this file describing a linear system (get_line & get_float)
 -- Solve linear system and put solution
 
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler, Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
 
 procedure T_Syslin is
@@ -22,7 +22,7 @@ procedure T_Syslin is
 begin
   -- Check syntax
   if Argument.Get_Nbre_Arg /= 1 then
-    Text_Io.Put_Line ("ERROR. Syntax : t_syslin <file_name>");
+    Ada.Text_Io.Put_Line ("ERROR. Syntax : t_syslin <file_name>");
     return;
   end if;
 
@@ -50,7 +50,7 @@ begin
       My_Get_Line.Open (Argument.Get_Parameter);
     exception
       when others =>
-        Text_Io.Put_Line ("ERROR opening file " & Argument.Get_Parameter & ".");
+        Ada.Text_Io.Put_Line ("ERROR opening file " & Argument.Get_Parameter & ".");
         raise;
     end;
 
@@ -60,13 +60,13 @@ begin
       My_Get_Line.Get_Whole_Line (Whole_Line);
       Dim := My_Get_Line.Get_Word_Number - 1;
       if Dim = 0 then
-        Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
+        Ada.Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
                           & " only one word in first line.");
         raise File_Error;
       end if;
     exception
-      when Text_Io.End_Error =>
-        Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
+      when Ada.Text_Io.End_Error =>
+        Ada.Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
                           & " file is empty.");
         raise File_Error;
     end;
@@ -86,11 +86,11 @@ begin
           Vector (I) := Get_Float.Get_Float(Text_Handler.Value(Line(Dim+1)));
         exception
           when others =>
-            Text_Io.Put_Line ("ERROR, when reading data at line "
+            Ada.Text_Io.Put_Line ("ERROR, when reading data at line "
                               & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
             raise File_Error;
         end;
-        Text_Io.Put_Line (">" & Text_Handler.Value(Whole_Line) & "<");
+        Ada.Text_Io.Put_Line (">" & Text_Handler.Value(Whole_Line) & "<");
 
         if I /= Dim then
           -- read next not empty line
@@ -98,7 +98,7 @@ begin
 
           -- Check number of words
           if My_Get_Line.Get_Word_Number /= Dim + 1 then
-            Text_Io.Put_Line ("ERROR in file. Wrong number of words at line "
+            Ada.Text_Io.Put_Line ("ERROR in file. Wrong number of words at line "
                               & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
             raise File_Error;
           end if;
@@ -109,7 +109,7 @@ begin
       -- Check nothing else in file
       begin
         Read_Next_Significant_Line;
-        Text_Io.Put_Line ("ERROR. Unexpected data at line "
+        Ada.Text_Io.Put_Line ("ERROR. Unexpected data at line "
                           & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
         My_Get_Line.Close;
         raise File_Error;
@@ -123,21 +123,21 @@ begin
         Solution :=  My_Syslin.Gauss(Matrix, Vector);
       exception
         when My_Syslin.Discriminent_Error =>
-          Text_Io.Put_Line ("Unable to solve: Discriminent is nul.");
+          Ada.Text_Io.Put_Line ("Unable to solve: Discriminent is nul.");
           return;
         when My_Syslin.Dimension_Error =>
-          Text_Io.Put_Line ("Unable to solve: ERROR in dimensions.");
+          Ada.Text_Io.Put_Line ("Unable to solve: ERROR in dimensions.");
           return;
         when others =>
-          Text_Io.Put_Line ("ERROR solving linear system.");
+          Ada.Text_Io.Put_Line ("ERROR solving linear system.");
           raise;
       end;
 
       -- Put solution
       for I in 1 .. Dim loop
-        Text_Io.Put ("X(" & Normal(I, 3) & ") = ");
+        Ada.Text_Io.Put ("X(" & Normal(I, 3) & ") = ");
         Flo_Io.Put (Solution(I), Aft => 6);
-        Text_Io.New_Line;
+        Ada.Text_Io.New_Line;
       end loop;
 
     end;

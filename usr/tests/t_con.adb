@@ -1,9 +1,6 @@
-with Ada.Exceptions;
-with Calendar;
-with My_Io, Normal;
+with Ada.Exceptions, Ada.Calendar;
+with My_Io, Normal, Argument, Timers;
 with Generic_Con_Io;
-with Argument;
-with Timers;
 
 procedure T_Con is
 
@@ -36,8 +33,8 @@ procedure T_Con is
              Delay_Seconds => 10.0);
     Pos : Positive;
     Ins : Boolean;
-    T0  : constant Calendar.Day_Duration
-        := Calendar.Seconds(Calendar.Clock);
+    T0  : constant Ada.Calendar.Day_Duration
+        := Ada.Calendar.Seconds(Ada.Calendar.Clock);
 
     Mouse_Event : Con_Io.Mouse_Event_Rec;
 
@@ -45,7 +42,7 @@ procedure T_Con is
       T : Natural;
     begin
       Move (0, 0, W3);
-      T := Natural(Calendar.Seconds(Calendar.Clock) - T0);
+      T := Natural(Ada.Calendar.Seconds(Ada.Calendar.Clock) - T0);
       Put (Natural'Image(T) & "   ", W3);
     end Show_Clock;
 

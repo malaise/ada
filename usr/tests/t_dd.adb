@@ -1,6 +1,5 @@
-with Text_Io;
-with Argument;
-with Dyn_Data;
+with Ada.Text_Io;
+with Argument, Dyn_Data;
 
 procedure T_Dd is
 
@@ -39,7 +38,7 @@ begin
     end if;
   exception
     when others =>
-      Text_Io.Put_Line ("Wrong argument. Usage : "
+      Ada.Text_Io.Put_Line ("Wrong argument. Usage : "
       & Argument.Get_Program_Name & " [ <nb_iteration> ]");
       raise Abort_Exception;
   end;
@@ -48,22 +47,26 @@ begin
     One_Cycle;
   exception
     when Storage_Error =>
-      Text_Io.Put_Line ("The test cannot be performed: "
+      Ada.Text_Io.Put_Line ("The test cannot be performed: "
           & "Even one iteration raises STORAGE_ERROR.");
-      Text_Io.Put_Line ("Lower MAX_DATA in source file, recompile and retry.");
+      Ada.Text_Io.Put_Line (
+            "Lower MAX_DATA in source file, recompile and retry.");
       raise Abort_Exception;
   end;
 
-  Text_Io.Put_Line ("This test succeeds if no STORAGE_ERROR is raised.");
-  Text_Io.Put ("Performinig ");
+  Ada.Text_Io.Put_Line ("This test succeeds if no STORAGE_ERROR is raised.");
+  Ada.Text_Io.Put ("Performinig ");
   if Nb_Loop = 0 then
-    Text_Io.Put (" infinite");
+    Ada.Text_Io.Put (" infinite");
   else
-    Text_Io.Put (Natural'Image(Nb_Loop));
+    Ada.Text_Io.Put (Natural'Image(Nb_Loop));
   end if;
-  Text_Io.Put_Line (" iterations, each of them consisting in");
-  Text_Io.Put_Line (" allocating " & Integer'Image(Max_Data) & " objects of "
-                    & Integer'Image(Data'Last) & " bytes then freeing them.");
+  Ada.Text_Io.Put_Line (" iterations, each of them consisting in");
+  Ada.Text_Io.Put_Line (" allocating "
+                      & Integer'Image(Max_Data)
+                      & " objects of "
+                      & Integer'Image(Data'Last)
+                      & " bytes then freeing them.");
 
 
   if Nb_Loop = 0 then
@@ -76,14 +79,14 @@ begin
     end loop;
   end if;
 
-  Text_Io.Put_Line ("Test successful.");
+  Ada.Text_Io.Put_Line ("Test successful.");
 exception
   when Storage_Error =>
-    Text_Io.Put_Line ("Test has failed.");
+    Ada.Text_Io.Put_Line ("Test has failed.");
   when Abort_Exception =>
     null;
   when others =>
-    Text_Io.Put_Line ("Unexpected exception was raised.");
+    Ada.Text_Io.Put_Line ("Unexpected exception was raised.");
     raise;
 end T_Dd;
 

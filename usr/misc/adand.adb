@@ -1,5 +1,5 @@
 -- Source file indenter. See procedure Usage.
-with Text_Io;
+with Ada.Text_Io;
 
 with Sys_Calls;
 
@@ -22,7 +22,7 @@ procedure Adand is
 
   Tld, Tlf, Ti : Text_Handler.Text(10);
 
-  F, Fb : Text_Io.File_Type;
+  F, Fb : Ada.Text_Io.File_Type;
 
   System_Call_Error : exception;
 
@@ -120,7 +120,7 @@ begin
 
   -- open file.bak file and create file
   begin
-    Text_Io.Open (Fb, Text_Io.In_File,
+    Ada.Text_Io.Open (Fb, Ada.Text_Io.In_File,
      Text_Handler.Value(File_Suf));
   exception
     when others =>
@@ -129,7 +129,7 @@ begin
       raise;
   end;
   begin
-    Text_Io.Create (F, Text_Io.Out_File,
+    Ada.Text_Io.Create (F, Ada.Text_Io.Out_File,
      Text_Handler.Value(File_Name));
   exception
     when others =>
@@ -140,7 +140,7 @@ begin
   L := 0;
   loop
     -- read file.bak line
-    Text_Io.Get_Line (Fb, Str, Lst);
+    Ada.Text_Io.Get_Line (Fb, Str, Lst);
     L := L + 1;
     if Lst /= 0 and then L>= Line_Deb and then L<=Line_Fin then
       -- if ld<=line<=lf and non empty then indent
@@ -164,16 +164,16 @@ begin
     end if;
 
     -- write line in file
-    Text_Io.Put_Line (F, Str(1..Lst));
+    Ada.Text_Io.Put_Line (F, Str(1..Lst));
 
-    exit when Text_Io.End_Of_File(Fb);
+    exit when Ada.Text_Io.End_Of_File(Fb);
 
   end loop;
-  Text_Io.New_Line (F);
+  Ada.Text_Io.New_Line (F);
 
   -- close files
-  Text_Io.Close (Fb);
-  Text_Io.Close (F);
+  Ada.Text_Io.Close (Fb);
+  Ada.Text_Io.Close (F);
 
   My_Io.Put_Line ("Done.");
 

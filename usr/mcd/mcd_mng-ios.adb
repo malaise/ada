@@ -1,4 +1,4 @@
-with Text_Io;
+with Ada.Text_Io;
 with My_Math, Sys_Calls; use My_Math;
 with Inte_Io, Real_Io, Bool_Io;
 separate (Mcd_Mng)
@@ -13,7 +13,7 @@ package body Ios is
     if Base.Kind /= Inte then
       raise Invalid_Argument;
     end if;
-    Inte_Io.Default_Base := Text_Io.Number_Base(Base.Val_Inte);
+    Inte_Io.Default_Base := Ada.Text_Io.Number_Base(Base.Val_Inte);
   exception
     when others =>
       raise Invalid_Argument;
@@ -25,16 +25,16 @@ package body Ios is
   begin
     case Item.Kind is
       when Inte =>
-        Inte_Io.Default_Width := Text_Io.Field (Item.Val_Inte);
+        Inte_Io.Default_Width := Ada.Text_Io.Field (Item.Val_Inte);
         Inte_Format_Set := True;
       when Real =>
         R := My_Math.Int(Item.Val_Real);
         I := My_Math.Round(R);
-        Real_Io.Default_Fore := Text_Io.Field(I);
+        Real_Io.Default_Fore := Ada.Text_Io.Field(I);
         -- Aft 0 .. 999
         R := My_Math.Frac(Item.Val_Real) * 1000.0;
         I := My_Math.Round(R);
-        Real_Io.Default_Aft := Text_Io.Field(I);
+        Real_Io.Default_Aft := Ada.Text_Io.Field(I);
         -- Exp 3
         Real_Io.Default_Exp := 4;
         Real_Format_Set := True;
@@ -68,12 +68,12 @@ package body Ios is
         Real_Io.Put(Item.Val_Real);
       when Bool  =>
         if Item.Val_Bool then
-          Text_Io.Put("True");
+          Ada.Text_Io.Put("True");
         else
-          Text_Io.Put("False");
+          Ada.Text_Io.Put("False");
         end if;
       when Chrs =>
-        Text_Io.Put (Item.Val_Text(1 .. Item.Val_Len));
+        Ada.Text_Io.Put (Item.Val_Text(1 .. Item.Val_Len));
       when others =>
         raise Invalid_Argument;
     end case;
@@ -87,7 +87,7 @@ package body Ios is
 
   procedure New_Line is
   begin
-    Text_Io.New_Line;
+    Ada.Text_Io.New_Line;
   end New_Line;
 
   function Strreal (S : Item_Rec) return Item_Rec is
@@ -177,7 +177,7 @@ package body Ios is
     -- String is at the end of Res
     -- Move it after some spaces at the beginning
     --  so that the whole takes Size characters
-    procedure Fix_Size (Size : in Text_Io.Field) is
+    procedure Fix_Size (Size : in Ada.Text_Io.Field) is
       First : Natural := 0;
       Len   : Positive;
     begin

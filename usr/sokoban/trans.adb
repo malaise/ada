@@ -1,4 +1,4 @@
-with Text_Io, Direct_Io;
+with Ada.Text_Io, Direct_Io;
 
 with My_Io, Normal, Argument;
 
@@ -22,7 +22,7 @@ procedure Trans is
   
 
   A_File_Name : constant String := "SOKOBAN.ASC";
-  A_File : Text_Io.File_Type;
+  A_File : Ada.Text_Io.File_Type;
   Char : Character;
 
   Dat_To_Asc : Boolean;
@@ -74,7 +74,7 @@ procedure Trans is
 begin -- trans
 
   if Argument.Get_Nbre_Arg /= 1 then
-    Text_Io.Put_Line ("Wrong arg");
+    Ada.Text_Io.Put_Line ("Wrong arg");
     return;
   end if;
   if Argument.Get_Parameter = "asc2dat" then
@@ -82,19 +82,19 @@ begin -- trans
   elsif Argument.Get_Parameter = "dat2asc" then
     Dat_To_Asc := True;
   else
-    Text_Io.Put_Line ("Wrong arg");
+    Ada.Text_Io.Put_Line ("Wrong arg");
     return;
   end if;
 
   if Dat_To_Asc then
     D.Open (D_File, D.In_File, D_File_Name);
     begin
-      Text_Io.Open (A_File, Text_Io.Out_File, A_File_Name);
-      Text_Io.Put_Line ("File exists");
+      Ada.Text_Io.Open (A_File, Ada.Text_Io.Out_File, A_File_Name);
+      Ada.Text_Io.Put_Line ("File exists");
       return;
     exception
-      when Text_Io.Name_Error =>
-        Text_Io.Create (A_File, Text_Io.Out_File, A_File_Name);
+      when Ada.Text_Io.Name_Error =>
+        Ada.Text_Io.Create (A_File, Ada.Text_Io.Out_File, A_File_Name);
     end;
 
 
@@ -106,24 +106,24 @@ begin -- trans
         for C in Sok_Types.Col_Range loop
           case Frame(R, C).Pattern is
             when Sok_Types.Wall =>
-              Text_Io.Put (A_File, 'w');
+              Ada.Text_Io.Put (A_File, 'w');
             when Free =>
               case Frame(R, C).Content is
                 when Sok_Types.Man =>
-                  Text_Io.Put (A_File, 'm');
+                  Ada.Text_Io.Put (A_File, 'm');
                 when Sok_Types.Box =>
-                  Text_Io.Put (A_File, 'b');
+                  Ada.Text_Io.Put (A_File, 'b');
                 when Sok_Types.Nothing =>
-                  Text_Io.Put (A_File, 'n');
+                  Ada.Text_Io.Put (A_File, 'n');
               end case;
             when Target =>
               case Frame(R, C).Content is
                 when Sok_Types.Man =>
-                  Text_Io.Put (A_File, 'M');
+                  Ada.Text_Io.Put (A_File, 'M');
                 when Sok_Types.Box =>
-                  Text_Io.Put (A_File, 'B');
+                  Ada.Text_Io.Put (A_File, 'B');
                 when Sok_Types.Nothing =>
-                  Text_Io.Put (A_File, 'N');
+                  Ada.Text_Io.Put (A_File, 'N');
               end case;
           end case;
         end loop;
@@ -131,10 +131,10 @@ begin -- trans
     end loop;
   else
 
-    Text_Io.Open (A_File, Text_Io.In_File, A_File_Name);
+    Ada.Text_Io.Open (A_File, Ada.Text_Io.In_File, A_File_Name);
     begin
       D.Open (D_File, D.Out_File, D_File_Name);
-      Text_Io.Put_Line ("File exists");
+      Ada.Text_Io.Put_Line ("File exists");
       return;
     exception
       when D.Name_Error =>
@@ -144,7 +144,7 @@ begin -- trans
     for F in Sok_Types.Frame_Range loop
       for R in Sok_Types.Row_Range loop
         for C in Sok_Types.Col_Range loop
-          Text_Io.Get (A_File, Char);
+          Ada.Text_Io.Get (A_File, Char);
           case Char is
             when 'w' =>
               Frame(R, C) := (Pattern => Sok_Types.Wall);
@@ -161,7 +161,7 @@ begin -- trans
             when 'N' =>
               Frame(R, C) := (Pattern => Sok_Types.Target, Content => Sok_Types.Nothing);
             when others =>
-              Text_Io.Put_Line ("Invalid character");
+              Ada.Text_Io.Put_Line ("Invalid character");
           end case;
         end loop;
       end loop;
@@ -171,9 +171,9 @@ begin -- trans
 
   end if;
 
-  Text_Io.Close (A_File);
+  Ada.Text_Io.Close (A_File);
   D.Close (D_File);
-  Text_Io.Put_Line ("Done");
+  Ada.Text_Io.Put_Line ("Done");
 
 end Trans;
 
