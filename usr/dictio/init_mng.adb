@@ -1,0 +1,35 @@
+with Intra_Dictio, Nodes, Fight_Mng;
+package body Init_Mng is
+
+  procedure Start is
+  begin
+    -- Status is unknown
+    Intra_Dictio.Send_Status;
+    Status.Set (Status.Init);
+
+    Fight_Mng.Start (1.0, 
+      (Nodes.Many_Master_Master => Status.Starting,
+       Nodes.Many_Master_Slave  => Status.Starting,
+       Nodes.One_Master_Master  => Status.Slave,
+       Nodes.One_Master_Slave   => Status.Slave,
+       Nodes.All_Init_Master    => Status.Master,
+       Nodes.All_Init_Slave     => Status.Slave,
+       Nodes.No_Master_Master   => Status.Starting,
+       Nodes.No_Master_Slave    => Status.Starting) );
+
+  end Start;
+
+
+  procedure Event (From : in Tcp_Util.Host_Name;
+                   Stat : in Status.Status_List;
+                   Diff : in Boolean) is
+    use type Status.Status_List;
+  begin
+    Fight_Mng.Event (From, Stat);
+    if Diff and then (Stat = Status.Starting or else Stat = Status.Fight) then
+      Intra_Dictio.Reply_Status;
+    end if;
+  end Event;
+
+end Init_Mng;
+

@@ -1,0 +1,103 @@
+with Dynamic_List, X_Mng;
+package body Client_Fd is
+
+  type Client_Rec is record
+    Soc : Socket.Socket_Dscr;
+    Fd  : Sys_Calls.File_Desc;
+  end record;
+
+  package Client_List_Mng is new Dynamic_List(Client_Rec);
+  Client_List : Client_List_Mng.List_Type;
+
+  function Fd_Match (El1, El2 : Client_Rec) return Boolean is
+    use type Sys_Calls.File_Desc;
+  begin
+    return El1.Fd = El2.Fd;
+  end Fd_Match;
+  procedure Search_Fd is new Client_List_Mng.Search(Fd_Match);
+
+  function Soc_Match (El1, El2 : Client_Rec) return Boolean is
+    use type Socket.Socket_Dscr;
+  begin
+    return El1.Soc = El2.Soc;
+  end Soc_Match;
+  procedure Search_Soc is new Client_List_Mng.Search(Soc_Match);
+
+  procedure Add_Client (Client : in Socket.Socket_Dscr) is
+    Rec : Client_Rec;
+  begin
+    Rec.Soc := Client;
+    Rec.Fd := Socket.Fd_Of (Client);
+    begin
+      Search_Fd (Client_List, Rec, From_Current => False);
+      raise Client_Error;
+    exception
+      when Client_List_Mng.Not_In_List =>
+        null;
+    end;
+    begin
+      Search_Soc (Client_List, Rec, From_Current => False);
+      raise Client_Error;
+    exception
+      when Client_List_Mng.Not_In_List =>
+        null;
+    end;
+    Client_List_Mng.Insert (Client_List, Rec);
+  end Add_Client;
+
+  procedure Del_Client (Client : in Socket.Socket_Dscr) is
+    Rec : Client_Rec;
+    use type Sys_Calls.File_Desc;
+  begin
+    Rec.Soc := Client;
+    begin
+      Search_Soc (Client_List, Rec, From_Current => False);
+    exception
+      when Client_List_Mng.Not_In_List =>
+        raise Client_Error;
+    end;
+    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    if Rec.Fd /= Socket.Fd_Of (Client) then
+      raise Client_Error;
+    end if;
+    if Client_List_Mng.Get_Position (Client_List) = 1 then
+      Client_List_Mng.Delete (Client_List, Client_List_Mng.Next);
+    else
+      Client_List_Mng.Delete (Client_List, Client_List_Mng.Prev);
+    end if;
+    X_Mng.X_Del_Callback (Rec.Fd, True);
+    Socket.Close (Rec.Soc);
+  end Del_Client;
+
+  procedure Del_All is
+    Rec : Client_Rec;
+  begin
+    Client_List_Mng.Move_To (Client_List, Client_List_Mng.Next, 0, False);
+    loop
+      Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+      X_Mng.X_Del_Callback (Rec.Fd, True);
+      Socket.Close (Rec.Soc);
+      Client_List_Mng.Delete (Client_List);
+    end loop;
+  exception
+    when Client_List_Mng.Empty_List | Client_List_Mng.Not_In_List =>
+      Client_List_Mng.Delete_List (Client_List);
+  end Del_All;
+
+
+  function Socket_Of (Fd : Sys_Calls.File_Desc) return Socket.Socket_Dscr is
+    Rec : Client_Rec;
+  begin
+    Rec.Fd := Fd;
+    begin
+      Search_Fd (Client_List, Rec, From_Current => False);
+    exception
+      when Client_List_Mng.Not_In_List =>
+        raise Client_Error;
+    end;
+    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    return Rec.Soc;
+  end Socket_Of;
+
+end Client_Fd;
+
