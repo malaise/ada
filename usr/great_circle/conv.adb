@@ -15,7 +15,7 @@ package body Conv is
     -- Full seconds
     Sr := My_Math.Frac(My_Math.Real(Deg));
     Sr := Sr * 60.0 * 60.0;
-    Si := Natural(My_Math.Trunc(Sr));
+    Si := Natural(My_Math.Round(Sr));
 
     -- Minutes
     R.Min := Si / 60;
