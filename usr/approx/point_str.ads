@@ -1,0 +1,19 @@
+with AFPX;
+with POINTS;
+package POINT_STR is
+
+  COORDINATE_STRING_LEN : constant := 16;
+  subtype COORDINATE_STRING is STRING ( 1 .. COORDINATE_STRING_LEN);
+
+  function COORDINATE_IMAGE (COORDINATE : POINTS.P_T_COORDINATE)
+                            return COORDINATE_STRING;
+
+  -- May raise CONSTRAINT_ERROR
+  function COORDINATE_VALUE (STR : STRING) return POINTS.P_T_COORDINATE;
+
+
+  function ENCODE_REC (POINT : POINTS.P_T_ONE_POINT) return AFPX.LINE_REC;
+
+  function DECODE_REC (REC : AFPX.LINE_REC) return POINTS.P_T_ONE_POINT;
+
+end POINT_STR;
