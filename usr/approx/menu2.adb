@@ -211,13 +211,14 @@ package body MENU2 is
     AFPX.USE_DESCRIPTOR(3);
     -- Try to keep previous data
     if DATA_CHANGED then
-      -- Or reset to max
+      -- Or reset degree to max
       if POINTS.P_NB - 1 < RESOL.R_T_DEGREE'LAST then
         RESOL.R_SET_DEGREE(POINTS.P_NB - 1);
       else
         RESOL.R_SET_DEGREE(RESOL.R_T_DEGREE'LAST);
       end if;
       RESOL.R_POINTS_MODIFICATION;
+      MENU21.RESET_BOUNDS;
     end if;
     SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
     SCREEN.PUT_FILE;
