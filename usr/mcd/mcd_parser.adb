@@ -83,8 +83,10 @@ package body Parser is
  
    Isreal   => (Nosy, "push True if A is a real      ", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),
+   Isbool   => (Nosy, "push True if A in a boolean   ", False),
    Isstr    => (Nosy, "push True if A is a string    ", False),
-   Isreg    => (Nosy, "push True if A is a register  ", True),
+   Isreg    => (Nosy, "push True if A is a register  ", False),
+   Isprog   => (Nosy, "push True if A is a subprog   ", True),
  
    Ssize    => (Nosy, "push stack size               ", False),
    Swap     => (Nosy, "push A, push B                ", False),

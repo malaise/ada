@@ -74,8 +74,10 @@ package body Mcd_Mng is
     -- *->BOOL
     function Isreal  (X : Item_Rec) return Item_Rec;
     function Isinte  (X : Item_Rec) return Item_Rec;
+    function Isbool  (X : Item_Rec) return Item_Rec;
     function Isstr   (X : Item_Rec) return Item_Rec;
     function Isreg   (X : Item_Rec) return Item_Rec;
+    function Isprog  (X : Item_Rec) return Item_Rec;
 
     -- BOOL,BOOL->BOOL
     function Boland  (L, R : Item_Rec) return Item_Rec;
@@ -420,10 +422,14 @@ package body Mcd_Mng is
           Pop(A); Push (Operations.Isreal(A));
         when Isinte =>
           Pop(A); Push (Operations.Isinte(A));
+        when Isbool =>
+          Pop(A); Push (Operations.Isbool(A));
         when Isstr =>
           Pop(A); Push (Operations.Isstr(A));
         when Isreg =>
           Pop(A); Push (Operations.Isreg(A));
+        when Isprog =>
+          Pop(A); Push (Operations.Isprog(A));
         when Boland =>
           Pop(A); Pop(B); Push (Operations.Boland(B,A));
         when Bolor =>

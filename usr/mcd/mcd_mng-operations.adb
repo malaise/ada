@@ -541,6 +541,11 @@ package body Operations is
     return (Kind => Bool, Val_Bool => X.Kind = Inte);
   end Isinte;
 
+  function Isbool  (X : Item_Rec) return Item_Rec is
+  begin
+    return (Kind => Bool, Val_Bool => X.Kind = Bool);
+  end Isbool;
+
   function Isstr  (X : Item_Rec) return Item_Rec is
   begin
     return (Kind => Bool, Val_Bool => X.Kind = Chrs);
@@ -550,6 +555,11 @@ package body Operations is
   begin
     return (Kind => Bool, Val_Bool => X.Kind = Regi);
   end Isreg;
+
+  function Isprog  (X : Item_Rec) return Item_Rec is
+  begin
+    return (Kind => Bool, Val_Bool => X.Kind = Prog);
+  end Isprog;
 
 
   -- BOOL,BOOL->BOOL

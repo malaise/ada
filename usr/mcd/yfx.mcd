@@ -1,4 +1,5 @@
 # The function
+dup isprog ~ [ "Error, function expected" putl ssize popn retall ] ifcall
 F popr
 
 # Epsilon
@@ -12,7 +13,7 @@ ssize popn retall ] E popr
 # Check 2 args
 ssize 2 /= E pushr ifcall
 
-# Store args j=max, i=min
+# Store args
 j popr i popr
 
 # Check they can be reals
@@ -28,15 +29,12 @@ i pushr F pushr call a copyr j pushr F pushr call b copyr *
 # Sort f(i) < f(j)
 a pushr b pushr > [ i pushr j pushr i popr j popr ] ifcall
 
-# Abs
-[ dup 0.0 < [ +- ] ifcall ] A popr
-
 # The main algo
 [
 # Compute (i+j)/2
 i pushr j pushr + 2.0 /
 # Abs(i - j) <= epsilon? If yes, this is the end
-i pushr j pushr - A pushr call e pushr <= [ putl retall ] ifcall
+i pushr j pushr - absv e pushr <= [ putl retall ] ifcall
 # r=f((i+j)/2)
 dup F pushr call
 
