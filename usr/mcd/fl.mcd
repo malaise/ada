@@ -10,6 +10,12 @@
 z <-
 ] I ->
 
+# Replace top of stack by its abs
+[ >< 0.0 < [ +- ] ?@ ] A ->
+
+# Can top of stack be assimilated to 0.0
+[ A <- @ 1.0e-17 < ] Z ->
+
 # Replace top of stack by its frac
 [ ><
 # Int
@@ -24,7 +30,7 @@ I <- @ - ] F ->
 # Make a real if needed
 >< [ $ ] <> ?! <> ?@
 # * 100,  Frac should be 0
->< 100.0 * F <- @ 0.0 /=  E <- ?@
+>< 100.0 * F <- @ Z <- @ ~ E <- ?@
 # Frac < 60
 >< F <- @ 100.0 * 60.0 >= E <- ?@
 # Push minutes then hours
