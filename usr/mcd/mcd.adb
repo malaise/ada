@@ -31,22 +31,28 @@ begin
    end loop;
    
    if not MCD_MNG.CHECK_EMPTY_STACK then
-     SYS_CALLS.PUT_LINE_ERROR ("Warning, the stack was not empty.");
+     SYS_CALLS.PUT_LINE_ERROR ("Warning: The stack was not empty.");
    end if;
 
 exception
   -- Clean mapping of exceptions
   when MCD_MNG.INVALID_ARGUMENT =>
-    raise INVALID_ARGUMENT;
+    SYS_CALLS.PUT_LINE_ERROR ("Error: Invalid argument");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
   when MCD_MNG.ARGUMENT_MISMATCH =>
-    raise ARGUMENT_MISMATCH;
+    SYS_CALLS.PUT_LINE_ERROR ("Error: Argument mismatch");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
   when MCD_MNG.INVALID_REGISTER =>
-    raise INVALID_REGISTER;
+    SYS_CALLS.PUT_LINE_ERROR ("Error: Invalid register");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
   when MCD_MNG.EMTPY_REGISTER =>
-    raise EMTPY_REGISTER;
+    SYS_CALLS.PUT_LINE_ERROR ("Error: Empty register");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
   when MCD_MNG.EMPTY_STACK =>
-    raise EMPTY_STACK;
+    SYS_CALLS.PUT_LINE_ERROR ("Error: Empty stack");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
   when PARSER.PARSING_ERROR =>
-    raise PARSING_ERROR;
+    SYS_CALLS.PUT_LINE_ERROR ("Error: Parsing error");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
 end MCD;
 
