@@ -21,28 +21,28 @@ package body Channels is
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
-  procedure Fd_Search is new Dest_List_Mng.Safe_Search (Fd_Match);
+  procedure Fd_Search is new Dest_List_Mng.Search (Fd_Match);
 
   function Host_Id_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Socket.Host_Id;
   begin
     return D1.Host_Id = D2.Host_Id;
   end Host_Id_Match;
-  procedure Host_Id_Search is new Dest_List_Mng.Safe_Search (Host_Id_Match);
+  procedure Host_Id_Search is new Dest_List_Mng.Search (Host_Id_Match);
 
   function Dscr_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return D1.Dscr = D2.Dscr;
   end Dscr_Match;
-  procedure Dscr_Search is new Dest_List_Mng.Safe_Search (Dscr_Match);
+  procedure Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
 
   function Host_Name_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Tcp_Util.Remote_Host;
   begin
     return D1.Host_Name = D2.Host_Name;
   end Host_Name_Match;
-  procedure Host_Name_Search is new Dest_List_Mng.Safe_Search (Host_Name_Match);
+  procedure Host_Name_Search is new Dest_List_Mng.Search (Host_Name_Match);
 
   -- Sender
   type Send_Rec is record
@@ -56,14 +56,14 @@ package body Channels is
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
-  procedure Fd_Search is new Send_List_Mng.Safe_Search (Fd_Match);
+  procedure Fd_Search is new Send_List_Mng.Search (Fd_Match);
 
   function Dscr_Match (D1, D2 : Send_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return D1.Dscr = D2.Dscr;
   end Dscr_Match;
-  procedure Dscr_Search is new Send_List_Mng.Safe_Search (Dscr_Match);
+  procedure Dscr_Search is new Send_List_Mng.Search (Dscr_Match);
 
   -- Reply
   package Reply_List_Mng is new Dynamic_List (Socket.Socket_Dscr);

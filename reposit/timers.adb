@@ -42,7 +42,7 @@ package body Timers is
   begin
     return T1.Id = T2.Id;
   end Id_Match;
-  procedure Search_Id is new Timer_List_Mng.Safe_Search (Id_Match);
+  procedure Search_Id is new Timer_List_Mng.Search (Id_Match);
 
   procedure Incr_Id is
   begin

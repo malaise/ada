@@ -19,7 +19,7 @@ package body Proc_Family is
   begin
     return E1.Child_Pid = E2.Child_Pid;
   end Same_Pid;
-  procedure Search_Pid is new Child_List_Mng.Safe_Search (Same_Pid);
+  procedure Search_Pid is new Child_List_Mng.Search (Same_Pid);
 
   -- Close a Fd, no exception
   procedure Close (Fd : in Sys_Calls.File_Desc) is

@@ -67,14 +67,14 @@ package body Tcp_Util is
   begin
     return R1.Timer = R2.Timer;
   end Timer_Match;
-  procedure Find_By_Timer is new Con_List_Mng.Safe_Search (Timer_Match);
+  procedure Find_By_Timer is new Con_List_Mng.Search (Timer_Match);
 
   -- Search Connecting_Rec by Host, Port
   function Dest_Match (R1, R2 : Connecting_Rec) return Boolean is
   begin
     return R1.Host = R2.Host and then R1.Port = R2.Port;
   end Dest_Match;
-  procedure Find_By_Dest is new Con_List_Mng.Safe_Search (Dest_Match);
+  procedure Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
 
   -- Search Connecting_Rec by Fd
   function Fd_Match (R1, R2 : Connecting_Rec) return Boolean is
@@ -82,7 +82,7 @@ package body Tcp_Util is
   begin
     return R1.Fd_Set and then R2.Fd_Set and then R1.Fd = R2.Fd;
   end Fd_Match;
-  procedure Find_By_Fd is new Con_List_Mng.Search (Fd_Match);
+  procedure Find_By_Fd is new Con_List_Mng.Unsafe_Search (Fd_Match);
 
   -- Delete current connection rec in list
   procedure Delete_Current_Con is
@@ -582,7 +582,7 @@ package body Tcp_Util is
   begin
     return R1.Fd = R2.Fd;
   end Fd_Match;
-  procedure Find_By_Fd is new Acc_List_Mng.Search (Fd_Match);
+  procedure Find_By_Fd is new Acc_List_Mng.Unsafe_Search (Fd_Match);
 
   --  Search Accepting_Rec by Port_Num
   function Port_Match (R1, R2 : Accepting_Rec) return Boolean is
@@ -590,7 +590,7 @@ package body Tcp_Util is
   begin
     return R1.Port = R2.Port;
   end Port_Match;
-  procedure Find_By_Port is new Acc_List_Mng.Safe_Search (Port_Match);
+  procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
 
   -- Callback on accept fd
   function Acception_Fd_Cb (Fd : in Event_Mng.File_Desc;
@@ -743,7 +743,7 @@ package body Tcp_Util is
   begin
     return R1.Dscr = R2.Dscr;
   end Dscr_Match;
-  procedure Find_By_Dscr is new Sen_List_Mng.Safe_Search (Dscr_Match);
+  procedure Find_By_Dscr is new Sen_List_Mng.Search (Dscr_Match);
 
   -- Search Sending_Rec by Fd
   function Fd_Match (R1, R2 : Sending_Rec) return Boolean is
@@ -751,7 +751,7 @@ package body Tcp_Util is
   begin
     return R1.Fd = R2.Fd;
   end Fd_Match;
-  procedure Find_By_Fd is new Sen_List_Mng.Search (Fd_Match);
+  procedure Find_By_Fd is new Sen_List_Mng.Unsafe_Search (Fd_Match);
 
   -- Delete current sending rec in list
   procedure Delete_Current_Sen is
@@ -921,14 +921,14 @@ package body Tcp_Util is
     begin
       return R1.Dscr = R2.Dscr;
     end Dscr_Match;
-    procedure Find_Dscr is new Rece_List_Mng.Safe_Search (Dscr_Match);
+    procedure Find_Dscr is new Rece_List_Mng.Search (Dscr_Match);
 
     function Fd_Match (R1, R2 : Rece_Rec) return Boolean is
       use type Event_Mng.File_Desc;
     begin
       return R1.Fd = R2.Fd;
     end Fd_Match;
-    procedure Find_Fd is new Rece_List_Mng.Safe_Search (Fd_Match);
+    procedure Find_Fd is new Rece_List_Mng.Search (Fd_Match);
 
     -- The one to use with Socket
     procedure Read is new Socket.Receive (Message_Type);

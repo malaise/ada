@@ -60,7 +60,7 @@ package body Async_Stdin is
         return Curr.Len >= Crit.Len
         and then Curr.Str(1 .. Crit.Len) = Crit.Str(1 .. Crit.Len);
       end Match;
-      procedure Search is new List_Mng.Safe_Search (Match);
+      procedure Search is new List_Mng.Search (Match);
 
 
       -- Searched pattern

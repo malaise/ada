@@ -72,7 +72,7 @@ package body Event_Mng is
   begin
     return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
   end Same_Fd;
-  procedure Cb_Search is new Cb_Mng.Safe_Search(Same_Fd);
+  procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
 
   procedure Add_Fd_Callback (Fd : in File_Desc; Read : in Boolean;
                              Callback : in Fd_Callback) is
