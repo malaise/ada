@@ -19,6 +19,7 @@ package body Timers is
     Id  : Timer_Id_Range;
     Exp : Exp_Rec;
     Cre : Ada.Calendar.Time;
+    Dat : Timer_Data;
     Cb  : Timer_Callback;
   end record;
 
@@ -82,7 +83,9 @@ package body Timers is
   -- May raise Invalid_Delay if Delay_Seconds is < 0
   -- Invalid_Delay : exception;
   function Create (Delay_Spec : Delay_Rec;
-                   Callback   : Timer_Callback) return Timer_Id is
+                   Callback   : Timer_Callback;
+                   Data       : Timer_Data := No_Data) return Timer_Id is
+
     Timer : Timer_Rec;
     This_Id : Timer_Id_Range;
     use Ada.Calendar;
@@ -102,6 +105,7 @@ package body Timers is
     -- Allocate Id and copy period and callback
     Timer.Id := Get_Next_Id;
     Timer.Exp.Period := Delay_Spec.Period;
+    Timer.Dat := Data;
     Timer.Cb := Callback;
 
     -- Insert in beginning of list and sort it
@@ -221,8 +225,11 @@ package body Timers is
         Sort (Timer_List);
       end if;
       -- Call callback
-      if Timer.Cb /= null then
-        if Timer.Cb ((Timer_Num => Timer.Id)) then
+      if Timer.Cb = null then
+        -- A timer with no cb is for generating events
+        One_True := True;
+      else
+        if Timer.Cb ( (Timer_Num => Timer.Id), Timer.Dat) then
           -- At least this CB has returned True
           One_True := True;
         end if;
