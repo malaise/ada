@@ -138,7 +138,7 @@ package Afpx is
   function Prev_Cursor_Field (From : Absolute_Field_Range)
   return Absolute_Field_Range;
 
-  -- List of items to put in list field in put_then_get
+  -- List of items to put in list field in Put_Then_Get
   subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last+1;
   type Line_Rec is record
     Str : String (1 .. Line_Len_Range'Last);
@@ -188,26 +188,28 @@ package Afpx is
                  Str : String) return Con_Io.Col_Range;
 
   -- Print the fields and the list (if Redisplay), then gets.
-  -- Redisplay should be set if modif if some other screen actions (con_io)
-  --  justify a redisplay
-  -- In List: mouse click changes current list element (Id_Selected)
-  --      double click ends put_then get 
-  --      up/down arrows, page up/down, Ctrl page up/down scroll list
-  -- In Put fields : nothing
-  -- In Get fields : cursor right/left, characters, backspace, delete,
-  --                  Home, end, insert edit field
-  --                 Tab, shift Tab  change field
-  --                 Return / Esc / Break to end put_then_get
-  --                 mouse click to move at home of field
-  -- In Button fields : mouse click then release ends put_then_get
+  -- Redisplay should be set if modif of some other screen actions (con_io)
+  --  justify a redisplay, by instance when Result.Event was Refresh.
+  -- In List:
+  --   mouse click changes current list element (Id_Selected),
+  --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
+  --   double click terminates Put_Then Get.
+  -- In Put fields: nothing.
+  -- In Get fields:
+  --    Right/Left arrow, character, Backspace, Delete,
+  --      Home, End, Ctrl Delete or Insert edits the field,
+  --    Tab or Ctrl Tab changes field (like Next:Prev_Cursor_Field),
+  --    Return / Esc / Break terminates Put_Then_Get,
+  --    mouse click moves to the field.
+  -- In Button fields: mouse click then release terminates Put_Then_Get.
   -- This call affects the content of Get fields, the cursor field and col,
-  -- and the current element of the list
+  --  and the current element of the list.
   -- If no field is Get (or all protected or desactivated,
   --  then cursor field and col are not significant, otherwise
   --  they are used at initialisation and set before the end.
   -- Exceptions :  No_Descriptor,
-  --               Invalid_Field, Invalid_Col (for cursor)
-  --               String_Too_Long (if an item in list is too long)
+  --               Invalid_Field, Invalid_Col (for cursor),
+  --               String_Too_Long (if an item in list is too long).
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Result        : out Result_Rec;
@@ -215,7 +217,9 @@ package Afpx is
                           Cursor_Col_Cb : in Cursor_Set_Col_Cb := null);
 
   -- At elaboration
-  Afpx_File_Not_Found, Afpx_File_Read_Error, Afpx_File_Version_Error : exception;
+  Afpx_File_Not_Found, Afpx_File_Read_Error,
+  Afpx_File_Version_Error : exception;
+
   -- On call
   No_Descriptor, Invalid_Field, Invalid_Square, Invalid_Row, Invalid_Col,
   String_Too_Long, Invalid_Color, List_In_Put : exception;

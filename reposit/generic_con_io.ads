@@ -215,10 +215,11 @@ package Generic_Con_Io is
     -- The string must be short enought to be put in 1 line at current position
     --  in the window.
     -- The current cursor position is updated by the call
-    -- The arrows, Insert, suppr, backspace, Home, End, PageUp and PageDown
-    --  Tab and Ctrl Tab, are managed. Ctrl Suppr clears the string.!
+    -- The Left and Right arrows, Insert, Del, Backspace, Home, End,
+    --  PageUp and PageDown Tab and Ctrl Tab, are managed internaly.
+    --  Ctrl Suppr clears the string.
     -- The get ends either:
-    --  if an Up/Down arrow, (ctrl) Page Up/Down is pressed,
+    --  if an Up/Down arrow, (Ctrl) Page Up/Down is pressed,
     --  if the cursor leaves the field (Left/Right arrow or character input),
     --  if Tab, Ctrl Tab, Return(Cr), Escape is pressed
     --  on CtrlC/CtrlBreak
@@ -236,7 +237,7 @@ package Generic_Con_Io is
     --  of Str
     -- If Str'length is 0 then last=0 and stat is significant (full if normal
     --  character), but pos_out is not significant.
-    -- Note that is Str'Lenght is 0, the cursor is hidden
+    -- Note that if Str'Lenght is 0, the cursor is hidden
     type Curs_Mvt is (Up, Down, Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
                       Left, Right, Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Timeout, Fd_Event, Timer_Event, 
