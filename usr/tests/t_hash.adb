@@ -6,13 +6,16 @@ with MY_IO;
 with TEXT_HANDLER;
 procedure T_HASH is
 
-  package MY_HASH is new HASH.HASH_MNG (512, INTEGER);
+  subtype DATA_ACCESS is POSITIVE;
+  procedure DUMP (I : in DATA_ACCESS);
+
+  package MY_HASH is new HASH.HASH_MNG (512, DATA_ACCESS, DUMP);
 
   subtype TXT_P is TEXT_HANDLER.TEXT(500);
   TXT : TXT_P;
   INPUT : STRING (1 .. TXT.MAX_LEN);
   LEN : NATURAL;
-  I : POSITIVE := 1;
+  I : DATA_ACCESS := 1;
 
   FOUND : MY_HASH.FOUND_REC;
 
@@ -28,6 +31,12 @@ procedure T_HASH is
   begin
     return NORMAL (I, 3, GAP => '0');
   end IMAGE;
+
+  procedure DUMP (I : in DATA_ACCESS) is
+  begin
+    MY_IO.PUT(IMAGE(I));
+  end DUMP;
+
 
 begin
 
@@ -75,5 +84,7 @@ begin
     end if;
 
   end loop;
+
+  MY_HASH.CLEAR_ALL;
 
 end T_HASH;
