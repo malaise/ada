@@ -5,11 +5,14 @@ package Human is
 
   -- When server: Color, and Name is file_name or empty
   -- When client: Color, and Name is server name
-  -- when Both:   Name is file_name or empty
+  -- When both:   Name is file_name or empty
+  -- When there is a file name, wait make user on server
+  --  validate each loaded movement
 
   procedure Play (Mode  : in Play_Mode;
                   Color : in Space.Color_List;
-                  Name  : in string);
+                  Name  : in string;
+                  Wait  : in Boolean);
   Load_Error : exception;
 
 end Human;

@@ -16,13 +16,14 @@ package body Human is
   procedure Do_Play;
   procedure Do_Wait;
 
-  procedure Load_Moves;
+  procedure Load_Moves (Wait : in Boolean);
   procedure Save_If_Server (Action : in Game.Valid_Action_Rec;
                             Result : in Game.Move_Status_List);
 
   procedure Play (Mode  : in Play_Mode;
                   Color : in Space.Color_List;
-                  Name  : in string) is
+                  Name  : in string;
+                  Wait  : in Boolean) is
     use type Space.Color_List; 
   begin
     Human.Mode := Mode;
@@ -33,7 +34,7 @@ package body Human is
     end if;
 
     -- File
-    if Mode /= CLient then
+    if Mode /= Client then
       if Name = "" then
         -- No file name specified, overwrite default
         File.Delete (Default_File_Name);
@@ -56,7 +57,7 @@ package body Human is
 
     Game.Init (Color);
 
-    Load_Moves;
+    Load_Moves (Wait);
 
     while not The_End loop
       if Mode = Both or else Move_Color = Color then
@@ -210,7 +211,7 @@ package body Human is
         
   end Do_Wait;
 
-  procedure Load_Moves is
+  procedure Load_Moves (Wait : in Boolean) is
     Action : Players.Action_Rec;
     Result : Game.Move_Status_List;
     Piece  : Pieces.Piece_Access;
@@ -268,6 +269,9 @@ package body Human is
                  or else Result = Game.Stalemate
                  or else Result = Game.Checkmate;
       exit when The_End;
+      if Mode /= Client and then Wait then
+        Screen.Put (Color, Move_Color, "Next", True);
+      end if;
       Move_Color := Space.Opponent (Move_Color);
     end loop;
     if Debug.Get (Debug.Human) then

@@ -8,6 +8,8 @@ procedure Chess is
   Mode : Human.Play_Mode;
   Color : Space.Color_List;
   Name : Text_Handler.Text (File.Max_File_Name_Len);
+  Tmp_Txt : Text_Handler.Text (File.Max_File_Name_Len);
+  Wait : Boolean;
   Invalid_Argument : exception;
 
   procedure Usage is
@@ -15,9 +17,9 @@ procedure Chess is
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
            & " [ { -D<debug_flag> } ] <mode>");
     Ada.Text_Io.Put_Line (" Modes:");
-    Ada.Text_Io.Put_Line ("  server: -S -c<color> [ -f<file_name> ]");
+    Ada.Text_Io.Put_Line ("  server: -S -c<color> [ -f<file_name> [ -w ] ]");
     Ada.Text_Io.Put_Line ("  client: -C -c<color> -s<server_host>");
-    Ada.Text_Io.Put_Line ("  both:   -B [ -f<file_name> ]");
+    Ada.Text_Io.Put_Line ("  both:   -B [ -f<file_name> [ -w ] ]");
   end Usage;
 
   procedure Parse_Debug (Flag : in String; Option : in Debug.Debug_List) is
@@ -137,7 +139,30 @@ begin
     end;
   end if;
 
-  Human.Play (Mode, Color, Text_Handler.Value (Name));
+  if Mode = Human.Client or else Text_Handler.Empty (Name) then
+    begin
+      Argument.Get_Parameter (Tmp_Txt, 1, "w");
+      raise Invalid_Argument;
+    exception
+      when Argument.Argument_Not_Found =>
+        Wait := False;
+    end;
+  else
+    begin
+      Argument.Get_Parameter (Tmp_Txt, 1, "w");
+      if not Text_Handler.Empty (Tmp_Txt) then
+        raise Invalid_Argument;
+      end if;
+      Wait := True;
+    exception
+      when Argument.Argument_Not_Found =>
+        Wait := False;
+    end;
+  end if;
+
+
+
+  Human.Play (Mode, Color, Text_Handler.Value (Name), Wait);
  
 exception
   when Invalid_Argument | Argument.Argument_Not_Found =>
