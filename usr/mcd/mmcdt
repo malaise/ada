@@ -5,7 +5,7 @@ if [ \( $# -eq 1 \) -a \( "$1" = "-h" \) ] ; then
   exit 1
 fi
 
-com=/tmp/mmcdt
+com=/tmp/.mmcdt.mcd
 if [ -f $com ] ; then
   rm -f $com
   if [ -f $com ] ; then
