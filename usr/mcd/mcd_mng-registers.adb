@@ -17,11 +17,11 @@ package body Registers is
     if Reg.Kind /= Regi then
       raise Invalid_Register;
     end if;
-    if Reg.Val_Regi in 'a' .. 'z' then
-      return Character'Pos(Reg.Val_Regi) -  Character'Pos('a') + 1;
-    elsif Reg.Val_Regi in 'A' .. 'Z' then
-      return Character'Pos(Reg.Val_Regi) -  Character'Pos('A') + 1
-           + Character'Pos('z') -  Character'Pos('a') + 1;
+    if Reg.Val_Regi in 'A' .. 'Z' then
+      return Character'Pos(Reg.Val_Regi) -  Character'Pos('A') + 1;
+    elsif Reg.Val_Regi in 'a' .. 'z' then
+      return Character'Pos(Reg.Val_Regi) -  Character'Pos('a') + 1
+           + Character'Pos('Z') -  Character'Pos('A') + 1;
     else
       raise Invalid_Register;
     end if;
@@ -32,8 +32,8 @@ package body Registers is
     if Reg.Kind /= Regi then
       raise Invalid_Register;
     end if;
-    if Reg.Val_Regi not in 'a' .. 'z'
-    and then Reg.Val_Regi not in 'A' .. 'Z' then
+    if Reg.Val_Regi not in 'A' .. 'Z'
+    and then Reg.Val_Regi not in 'a' .. 'z' then
       raise Invalid_Register;
     end if;
   end Check_Reg;
@@ -69,8 +69,10 @@ package body Registers is
   procedure Next (Reg : in out Item_Rec) is
   begin
     Check_Reg (Reg);
-    if Reg.Val_Regi in 'a' .. 'y' or else Reg.Val_Regi in 'A' .. 'Y' then
+    if Reg.Val_Regi in 'A' .. 'Y' or else Reg.Val_Regi in 'a' .. 'y' then
       Reg.Val_Regi := Character'Succ(Reg.Val_Regi);
+    elsif Reg.Val_Regi = 'Z' then
+      Reg.Val_Regi := 'a';
     else
       raise Invalid_Argument;
     end if;
@@ -79,8 +81,10 @@ package body Registers is
   procedure Prev (Reg : in out Item_Rec) is
   begin
     Check_Reg (Reg);
-    if Reg.Val_Regi in 'b' .. 'z' or else Reg.Val_Regi in 'B' .. 'Z' then
+    if Reg.Val_Regi in 'B' .. 'Z' or else Reg.Val_Regi in 'b' .. 'z' then
       Reg.Val_Regi := Character'Pred(Reg.Val_Regi);
+    elsif Reg.Val_Regi = 'a' then
+      Reg.Val_Regi := 'Z';
     else
       raise Invalid_Argument;
     end if;
