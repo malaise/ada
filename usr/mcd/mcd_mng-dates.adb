@@ -63,7 +63,6 @@ package body Dates is
     Mins   : Day_Mng.T_Minutes;
     Secs   : Day_Mng.T_Seconds;
     Millis : Day_Mng.T_Millisec;
-    use type My_Math.Real;
   begin
     if Time.Kind /= Inte or else Time.Val_Inte < 0 then
       raise Invalid_Argument;
@@ -101,6 +100,50 @@ package body Dates is
     when Constraint_Error =>
       raise Compute_Error;
   end Time_To_Date;
+
+  function Time_To_Days (Time : Item_Rec) return Item_Rec is
+    Days : Perpet.Day_Range;
+    Tmp_Inte : My_Math.Inte;
+    Seconds : Ada.Calendar.Day_Duration;
+    Days_Image : Item_Rec;
+    Hours  : Day_Mng.T_Hours;
+    Mins   : Day_Mng.T_Minutes;
+    Secs   : Day_Mng.T_Seconds;
+    Millis : Day_Mng.T_Millisec;
+    Date  : Item_Rec (Chrs);
+  begin
+    if Time.Kind /= Inte or else Time.Val_Inte < 0 then
+      raise Invalid_Argument;
+    end if;
+
+    -- Split Time in days and seconds
+    Days := Perpet.Day_Range (Time.Val_Inte / Millisecs_Per_Day);
+    Tmp_Inte := Time.Val_Inte rem Millisecs_Per_Day;
+    Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
+             + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
+                 
+
+    -- Get image (using format) of days
+    Days_Image := Ios.Strof ((Kind => Inte,
+                              Val_Inte => My_Math.Inte(Days)));
+    Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
+    
+    -- Format result in string
+    Date.Val_Len := Days_Image.Val_Len + 13;
+    if Date.Val_Len > Chars_Text'Length then
+      raise String_Len;
+    end if;
+    Date.Val_Text (1 .. Days_Image.Val_Len + 13) :=
+        Days_Image.Val_Text(1 .. Days_Image.Val_Len)
+      & "-" & Normal (Hours, 2, Gap => '0')
+      & ":" & Normal (Mins, 2,  Gap => '0')
+      & ":" & Normal (Secs, 2,  Gap => '0')
+      & "." & Normal (Millis, 3, Gap => '0');
+    return Date;
+  exception
+    when Constraint_Error =>
+      raise Compute_Error;
+  end Time_To_Days;
 
   function Date_To_Time (Date : Item_Rec) return Item_Rec is
     Year  : Ada.Calendar.Year_Number;

@@ -185,6 +185,7 @@ package body Mcd_Mng is
   package Dates is
     function Clock return Item_Rec;
     function Time_To_Date (Time : Item_Rec) return Item_Rec;
+    function Time_To_Days (Time : Item_Rec) return Item_Rec;
     function Date_To_Time (Date : Item_Rec) return Item_Rec;
   end Dates;
 
@@ -651,6 +652,8 @@ package body Mcd_Mng is
           Push (Dates.Clock);
         when Dateof =>
           Pop(A); Push (Dates.Time_To_Date(A));
+        when Daysof =>
+          Pop(A); Push (Dates.Time_To_Days(A));
         when Timeof =>
           Pop(A); Push (Dates.Date_To_Time(A));
 

@@ -122,6 +122,7 @@ package Mcd_Mng is
 
    Clock,
    Dateof,
+   Daysof,
    Timeof,
 
    Obase,

@@ -151,6 +151,7 @@ package body Parser is
 
    Clock    => (Nosy, "Push current time             ", False),
    Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm", False),
+   Daysof   => (Nosy, "int -> days-hh:mm:ss.mmm      ", False),
    Timeof   => (Nosy, "YYyy/mm/dd-hh:mm:ss.mmm -> int", True),
 
    Obase    => (Nosy, "set output base to A          ", False),
