@@ -4,6 +4,7 @@ package Pattern is
   -- Look successively in a rule (set of patterns) to find a pattern
   --   with which a given string matches.
   type Rule_No is private;
+  function Image (Rule : Rule_No) return String;
 
   -- A pattern is a list of terms separated by spaces or tabs
   --  (an empty pattern matches anything).
@@ -29,10 +30,10 @@ package Pattern is
   type Pattern_Id4Cb is new Natural;
   Same_Id : constant Pattern_Id4Cb := 0;
   subtype Pattern_Id is Pattern_Id4Cb range 1 .. Pattern_Id4Cb'Last;
-  type Match_Cb_Access is access function (Rule : in Rule_No;
-                                           Id   : in Pattern_Id;
-                                           Nb_Match : in Natural;
-                                           Iter : in Parser.Iterator)
+  type Match_Cb_Access is access function (Rule     : Rule_No;
+                                           Id       : Pattern_Id;
+                                           Nb_Match : Natural;
+                                           Iter     : Parser.Iterator)
                                  return Boolean;
 
 
@@ -62,7 +63,7 @@ package Pattern is
                    Str  : String;
                    Case_Sensitive : Boolean := True) return Boolean;
   procedure Check (Rule : in Rule_No;
-                   Str : in String;
+                   Str  : in String;
                    Case_Sensitive : in Boolean := True);
 
 

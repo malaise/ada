@@ -434,6 +434,13 @@ package body Pattern is
     Dummy := Check (Rule, Str);
   end Check;
 
+
+  -- Rule image
+  function Image (Rule : Rule_No) return String is
+  begin
+    return Rule'Img;
+  end Image;
+
   -- May raise No_Rule if no rule is available.
   function Get_Free_Rule return Rule_No is
     Rule : Rule_No;
