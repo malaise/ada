@@ -1,5 +1,5 @@
 with Calendar, System;
-with Dynamic_List, My_Io, Timers, Sys_Calls;
+with Dynamic_List, My_Io, Timers;
 package body X_Mng is
 
   -- Duration
@@ -45,6 +45,7 @@ package body X_Mng is
 
   -- Same FD
   function Same_Fd (Cb1, Cb2 : Cb_Rec) return Boolean is
+    use type Sys_Calls.File_Desc;
   begin
     return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
   end Same_Fd;

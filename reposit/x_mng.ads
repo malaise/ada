@@ -1,3 +1,4 @@
+with Sys_Calls;
 package X_Mng is
  
   ----- TYPES -----
@@ -40,7 +41,7 @@ package X_Mng is
                       Tid_Motion, Fd_Event, Timer_Event);
 
   -- Fd management
-  type File_Desc is new Natural;
+  subtype File_Desc is Sys_Calls.File_Desc;
   -- Each callback is called with the fd and indication of read/write event
   -- and should return True if fd event has to be reported by select
   type Fd_Callback is access
