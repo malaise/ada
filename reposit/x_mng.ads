@@ -93,6 +93,7 @@ package X_MNG is
                                   UNDERLINE   : in BOOLEAN := FALSE;
                                   BLINK       : in BOOLEAN := FALSE;
                                   INVERSE     : in BOOLEAN := FALSE);
+
   -- Sets the position for a further put in the same window
   -- The row and column are in characters, relative to the window
   procedure X_MOVE(LINE_ID     : in LINE;
@@ -108,6 +109,12 @@ package X_MNG is
                              UNDERLINE   : in BOOLEAN := FALSE;
                              BLINK       : in BOOLEAN := FALSE;
                              INVERSE     : in BOOLEAN := FALSE);
+
+  -- Sets the xor mode or a further put in the same window
+  -- The line_id is the token, previously given by open_line
+  -- if XOR_MORE is set, all further puts and drawings will be in xor
+  procedure X_SET_XOR_MODE(LINE_ID     : in LINE;
+                           XOR_MODE    : in BOOLEAN);
  
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
@@ -133,7 +140,7 @@ package X_MNG is
 
   -- Draws a rectangle (width * height) from current position
   --  with current foreground color.
-  --  New position is updated to lower-right square of rectangle.
+  -- New position is updated to lower-right square of rectangle.
   procedure X_DRAW_AREA(LINE_ID : in LINE;
                         WIDTH, HEIGHT : in POSITIVE);
 
@@ -155,17 +162,62 @@ package X_MNG is
                             KIND : out EVENT_KIND;
                             NEXT : out BOOLEAN);
  
-  -- Reads the position on TID
+  -- Reads the position on TID in ROW/COL or X/Y
   -- The line_id must be the one given by wait_event
   -- Button can be left, middle or right
   -- row and column are the position of the "finger" on the TID
-  procedure X_READ_TID(LINE_ID : in LINE; BUTTON : out BUTTON_LIST;
+  --  in row/col or X/Y(pixels)
+  procedure X_READ_TID(LINE_ID : in LINE; ROW_COL : in BOOLEAN;
+                       BUTTON : out BUTTON_LIST;
                        ROW, COLUMN : out INTEGER);
  
   -- Reads a key of a sequence
   -- The line_id must be the one given by wait_event
   -- key is the byte read
   procedure X_READ_KEY(LINE_ID : in LINE; KEY : out KBD_TAB_CODE);
+
+  ----- GRAPHIC MANAGEMENT -----
+  -- Writes a char on a line with current characteristics
+  --  attributes and xor mode
+  -- The line_id is the token, previously given by open_line
+  -- The current row and column are not affected
+  -- The character is the one to be written
+  -- The X and Y are position of the character
+  procedure X_PUT_CHAR_PIXELS(LINE_ID     : in LINE;
+                              CAR         : in BYTE;
+                              X, Y        : in NATURAL);
+
+  -- Get graphic info of window
+  -- The line_id is the token, previously given by open_line
+  -- Window size in pixels
+  -- Font size in pixels
+  -- Height offset from top of font
+  procedure X_GET_GRAPHIC_CHARACTERISTICS(LINE_ID       : in LINE;
+                                          WINDOW_WIDTH  : out NATURAL;
+                                          WINDOW_HEIGHT : out NATURAL;
+                                          FONT_WIDTH    : out NATURAL;
+                                          FONT_HEIGHT   : out NATURAL;
+                                          FONT_OFFSET   : out NATURAL);
+
+  -- Draw a point with current characteristics
+  --  attributes and xor mode
+  -- The line_id is the token, previously given by open_line
+  -- The X and Y are position of the point
+  procedure X_DRAW_POINT(LINE_ID       : in LINE;
+                         X, Y          : in NATURAL);
+
+  -- Draw a rectangle with current characteristics
+  --  attributes and xor mode
+  -- The line_id is the token, previously given by open_line
+  -- The X and Y are coordinates of the 4 segments
+  procedure X_DRAW_RECTANGLE(LINE_ID        : in LINE;
+                             X1, Y1, X2, Y2 : in NATURAL);
+
+  -- Get current position of pointer (independant from events)
+  -- The line_id is the token, previously given by open_line
+  -- The X and Y are coordinates of the pointer
+  procedure X_GET_CURRENT_POINTER_POSITION(LINE_ID : in LINE;
+                                           X, Y    : out INTEGER);
 
   ----- BLINK MANAGEMENT -----
 

@@ -34,11 +34,16 @@ package CON_IO is
   type BLINK_STATS is (CURRENT, BLINK, NOT_BLINK);
   subtype EFFECTIVE_BLINK_STATS is BLINK_STATS range BLINK .. NOT_BLINK;
 
+  -- list of possible XOR_MODE
+  type XOR_MODES is (CURRENT, XOR_ON, XOR_OFF);
+  subtype EFFECTIVE_XOR_MODES is XOR_MODES range XOR_ON .. XOR_OFF;
+
+
   -- standard attributes when reset
   DEFAULT_FOREGROUND : constant EFFECTIVE_COLORS := LIGHT_GRAY;
   DEFAULT_BACKGROUND : constant EFFECTIVE_BASIC_COLORS := BLACK;
   DEFAULT_BLINK_STAT : constant EFFECTIVE_BLINK_STATS := NOT_BLINK;
-
+  DEFAULT_XOR_MODE   : constant EFFECTIVE_XOR_MODES := XOR_OFF;
 
   type WINDOW is limited private;
 
@@ -56,7 +61,7 @@ package CON_IO is
   -- flushes data to X
   procedure FLUSH;
 
-  -- set / get colors
+  -- set / get colors, blink, xor
   procedure SET_FOREGROUND (FOREGROUND : in COLORS := CURRENT;
                             BLINK_STAT : in BLINK_STATS := CURRENT;
                             NAME       : in WINDOW := SCREEN);
@@ -69,6 +74,10 @@ package CON_IO is
     EFFECTIVE_BASIC_COLORS;
   function GET_BLINK_STAT(NAME : WINDOW := SCREEN) return
     EFFECTIVE_BLINK_STATS;
+
+  procedure SET_XOR_MODE(XOR_MODE : in XOR_MODES := CURRENT;
+                         NAME : in WINDOW := SCREEN);
+  function GET_XOR_MODE(NAME : WINDOW := SCREEN) return EFFECTIVE_XOR_MODES;
 
   -- get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
   function GET_ABSOLUTE_UPPER_LEFT  (NAME : WINDOW) return SQUARE;
@@ -239,24 +248,6 @@ package CON_IO is
                           CTRL          : out BOOLEAN;
                           SHIFT         : out BOOLEAN);
 
-  -- Button status
-  type MOUSE_BUTTON_STATUS_LIST is (PRESSED, RELEASED);
-  -- List of button
-  type MOUSE_BUTTON_LIST is (LEFT, MIDDLE, RIGHT);
-  -- Mouse status
-  type MOUSE_EVENT_REC is record
-    VALID : BOOLEAN;
-    BUTTON : MOUSE_BUTTON_LIST;
-    STATUS : MOUSE_BUTTON_STATUS_LIST;
-    ROW : ROW_RANGE;
-    COL : COL_RANGE;
-  end record;
-
-  -- Get a mouse event. If valid is FALSE, it means that a release
-  -- has occured outside the screen, then only BUTTON and status
-  -- are significant
-  procedure GET_MOUSE_EVENT (MOUSE_EVENT : out MOUSE_EVENT_REC);
-
   -- failure when allocating data for window
   OPEN_FAILURE        : exception;
   -- position out of screen (or out of window)
@@ -269,6 +260,81 @@ package CON_IO is
   -- String lenght incompatible with current position and window width
   --  for get and put_then get
   STRING_TOO_LONG     : exception;
+  -- for non window oriented calls (GET_KEY, GRAPHICS, MOUSE)
+  NOT_INIT : exception;
+
+  -- Graphic operations
+  package GRAPHICS is
+
+    -- Size of the line in pixels
+    -- These is the static size when line was created
+    subtype X_RANGE is NATURAL;
+    subtype Y_RANGE is NATURAL;
+    function X_MAX return X_RANGE;
+    function Y_MAX return Y_RANGE;
+
+
+    -- Put a char with screen foreground and current Xor mode
+    -- on screen background, no blink
+    -- No window if affected
+    procedure PUT (C : CHARACTER;
+                   X          : in X_RANGE;
+                   Y          : in Y_RANGE);
+
+    -- Draw a point with screen foreground and current Xor mode
+    -- on screen background, no blink
+    -- No window if affected
+    procedure POINT (X          : in X_RANGE;
+                     Y          : in Y_RANGE);
+
+
+    -- Draw a rectangle with screen foreground and current Xor mode
+    -- on screen background, no blink
+    -- No window if affected
+    procedure RECTANGLE (X1         : in X_RANGE;
+                         Y1         : in Y_RANGE;
+                         X2         : in X_RANGE;
+                         Y2         : in Y_RANGE);
+
+    -- Get dynmically the current position of pointer
+    -- If valid is FALSE, it means that the pointer
+    -- is currently the screen, then X and Y are not significant
+    procedure GET_CURRENT_POINTER_POS (VALID : out BOOLEAN;
+                                       X     : out X_RANGE;
+                                       Y     : out Y_RANGE);
+
+  end GRAPHICS;
+
+
+  -- We want mouse position in row_col or x_y
+  type COORDINATE_MODE_LIST is (ROW_COL, X_Y);
+
+  -- Button status
+  type MOUSE_BUTTON_STATUS_LIST is (PRESSED, RELEASED);
+  -- List of button
+  type MOUSE_BUTTON_LIST is (LEFT, MIDDLE, RIGHT);
+  -- Mouse status
+  type MOUSE_EVENT_REC (COORDINATE_MODE : COORDINATE_MODE_LIST := ROW_COL)
+                       is record
+    VALID : BOOLEAN;
+    BUTTON : MOUSE_BUTTON_LIST;
+    STATUS : MOUSE_BUTTON_STATUS_LIST;
+    case COORDINATE_MODE is
+      when ROW_COL =>
+        ROW : ROW_RANGE;
+        COL : COL_RANGE;
+      when X_Y =>
+        X : GRAPHICS.X_RANGE;
+        Y : GRAPHICS.Y_RANGE;
+    end case;
+  end record;
+
+  -- Get a mouse event. If valid is FALSE, it means that a release
+  -- has occured outside the screen, then only BUTTON and status
+  -- are significant
+  procedure GET_MOUSE_EVENT (
+    MOUSE_EVENT : out MOUSE_EVENT_REC;
+    COORDINATE_MODE : in COORDINATE_MODE_LIST := ROW_COL);
 
 private
 
@@ -280,6 +346,7 @@ private
       CURRENT_FOREGROUND : EFFECTIVE_COLORS;
       CURRENT_BACKGROUND : EFFECTIVE_BASIC_COLORS;
       CURRENT_BLINK_STAT : EFFECTIVE_BLINK_STATS;
+      CURRENT_XOR_MODE   : EFFECTIVE_XOR_MODES;
     end record;
 
   type WINDOW is access WINDOW_DATA;
@@ -290,7 +357,8 @@ private
     CURRENT_POS        => HOME,
     CURRENT_FOREGROUND => DEFAULT_FOREGROUND,
     CURRENT_BACKGROUND => DEFAULT_BACKGROUND,
-    CURRENT_BLINK_STAT => DEFAULT_BLINK_STAT);
+    CURRENT_BLINK_STAT => DEFAULT_BLINK_STAT,
+    CURRENT_XOR_MODE   => DEFAULT_XOR_MODE);
 
   SCREEN_WINDOW : constant WINDOW := new WINDOW_DATA'(SCREEN_DATA);
 

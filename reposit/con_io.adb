@@ -19,10 +19,25 @@ package body CON_IO is
 
   X_EVENT_WAITING : BOOLEAN := TRUE;
 
-  MOUSE_STATUS : MOUSE_EVENT_REC;
+  MOUSE_VALID : BOOLEAN;
+  MOUSE_STATUS : MOUSE_BUTTON_STATUS_LIST;
+
+  LINE_FOREGROUND : EFFECTIVE_COLORS := DEFAULT_FOREGROUND;
+  LINE_BACKGROUND : EFFECTIVE_BASIC_COLORS := DEFAULT_BACKGROUND;
+  LINE_BLINK_STAT : EFFECTIVE_BLINK_STATS := DEFAULT_BLINK_STAT;
+  LINE_XOR_MODE   : EFFECTIVE_XOR_MODES := DEFAULT_XOR_MODE;
+
+  X_MAX : GRAPHICS.X_RANGE;
+  Y_MAX : GRAPHICS.Y_RANGE;
 
   -- Dynamic alloc/desaloc of windows
   package DYN_WIN is new DYN_DATA(WINDOW_DATA, WINDOW);
+
+  procedure SET_ATTRIBUTES (FOREGROUND : in EFFECTIVE_COLORS;
+                            BLINK_STAT : in EFFECTIVE_BLINK_STATS;
+                            BACKGROUND : in EFFECTIVE_COLORS;
+                            XOR_MODE   : in EFFECTIVE_XOR_MODES;
+                            FORCED     : in BOOLEAN := FALSE);
 
   INIT_DONE : BOOLEAN := FALSE;
   procedure INIT is
@@ -30,6 +45,9 @@ package body CON_IO is
     ENV_SET, ENV_TRU : BOOLEAN;
     ENV_STR : STRING (1 .. FONT_NO_ENV_0'LENGTH);
     ENV_LEN : NATURAL;
+    FONT_WIDTH  : NATURAL;
+    FONT_HEIGHT : NATURAL;
+    FONT_OFFSET : NATURAL;
   begin
     if INIT_DONE then
       return;
@@ -41,8 +59,12 @@ package body CON_IO is
     end if;
     X_MNG.X_OPEN_LINE (LINE, ID);
     X_MNG.X_SET_LINE_NAME (ID, ARGUMENT.GET_PROGRAM_NAME);
-    MOUSE_STATUS.VALID := FALSE;
+    MOUSE_VALID := FALSE;
     INIT_DONE := TRUE;
+    X_MNG.X_GET_GRAPHIC_CHARACTERISTICS(ID, X_MAX, Y_MAX,
+          FONT_WIDTH, FONT_HEIGHT, FONT_OFFSET);
+    SET_ATTRIBUTES (LINE_FOREGROUND, LINE_BLINK_STAT, LINE_BACKGROUND,
+                    LINE_XOR_MODE, FORCED => TRUE);
   end INIT;
 
   -- screen characteristics
@@ -54,6 +76,9 @@ package body CON_IO is
   -- reset screen, windows and keyboard
   procedure RESET_TERM is
   begin
+    if not INIT_DONE then
+      raise NOT_INIT;
+    end if;
     X_MNG.X_CLEAR_LINE (ID);
   end RESET_TERM;
 
@@ -117,6 +142,26 @@ package body CON_IO is
     return NAME.CURRENT_BLINK_STAT;
   end GET_BLINK_STAT;
 
+  procedure SET_XOR_MODE(XOR_MODE : in XOR_MODES := CURRENT;
+                         NAME : in WINDOW := SCREEN) is
+  begin
+    if NAME = null then
+      raise WINDOW_NOT_OPEN;
+    end if;
+    if XOR_MODE /= CURRENT then
+      NAME.CURRENT_XOR_MODE := XOR_MODE;
+    end if;
+  end SET_XOR_MODE;
+
+  function GET_XOR_MODE(NAME : WINDOW := SCREEN) return EFFECTIVE_XOR_MODES is
+  begin
+    if NAME = null then
+      raise WINDOW_NOT_OPEN;
+    end if;
+    return NAME.CURRENT_XOR_MODE;
+  end GET_XOR_MODE;
+
+
   -- get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
   function GET_ABSOLUTE_UPPER_LEFT (NAME : WINDOW) return SQUARE is
   begin
@@ -137,6 +182,9 @@ package body CON_IO is
   -- get LOWER_RIGHT relative coordinates of a window (UPPER_LEFT is (0, 0)).
   function GET_RELATIVE_LOWER_RIGHT (NAME : WINDOW) return SQUARE is
   begin
+    if NAME = null then
+      raise WINDOW_NOT_OPEN;
+    end if;
     return (NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW,
             NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL);
   end GET_RELATIVE_LOWER_RIGHT;
@@ -164,6 +212,7 @@ package body CON_IO is
     NAME.CURRENT_FOREGROUND := DEFAULT_FOREGROUND;
     NAME.CURRENT_BACKGROUND := DEFAULT_BACKGROUND;
     NAME.CURRENT_BLINK_STAT := DEFAULT_BLINK_STAT;
+    NAME.CURRENT_XOR_MODE   := DEFAULT_XOR_MODE;
   exception
     when CONSTRAINT_ERROR =>
       raise INVALID_SQUARE;
@@ -171,6 +220,9 @@ package body CON_IO is
 
   function IS_OPEN (NAME : WINDOW) return BOOLEAN is
   begin
+    if not INIT_DONE then
+      raise NOT_INIT;
+    end if;
     return NAME /= null;
   end IS_OPEN;
 
@@ -220,12 +272,22 @@ package body CON_IO is
 
   procedure SET_ATTRIBUTES (FOREGROUND : in EFFECTIVE_COLORS;
                             BLINK_STAT : in EFFECTIVE_BLINK_STATS;
-                            BACKGROUND : in EFFECTIVE_COLORS) is
+                            BACKGROUND : in EFFECTIVE_COLORS;
+                            XOR_MODE   : in EFFECTIVE_XOR_MODES;
+                            FORCED     : in BOOLEAN := FALSE) is
   begin
-    X_MNG.X_SET_ATTRIBUTES (ID, COLORS'POS(BACKGROUND) - 1,
-                                COLORS'POS(FOREGROUND) - 1,
-                                BLINK => BLINK_STAT = BLINK,
-                                SUPERBRIGHT => TRUE);
+    if FORCED or else FOREGROUND /= LINE_FOREGROUND
+              or else BLINK_STAT /= LINE_BLINK_STAT
+              or else BACKGROUND /= LINE_BACKGROUND then
+      X_MNG.X_SET_ATTRIBUTES (ID, COLORS'POS(BACKGROUND) - 1,
+                                  COLORS'POS(FOREGROUND) - 1,
+                                  BLINK => BLINK_STAT = BLINK,
+                                  SUPERBRIGHT => TRUE);
+    end if;
+    if FORCED or else XOR_MODE /= LINE_XOR_MODE then
+      X_MNG.X_SET_XOR_MODE (ID, XOR_MODE = XOR_ON);
+      LINE_XOR_MODE := XOR_MODE;
+    end if;
   end SET_ATTRIBUTES;
 
   procedure QUICK_DRAW (UPPER_LEFT, LOWER_RIGHT : in SQUARE;
@@ -246,11 +308,11 @@ package body CON_IO is
       raise FRAME_IMPOSSIBLE;
     end if;
     if KIND = BLINK then
-      SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, BLINK, NAME.
-        CURRENT_BACKGROUND);
+      SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, BLINK, NAME.CURRENT_BACKGROUND,
+                      XOR_OFF);
     else
-      SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, NAME.CURRENT_BLINK_STAT, NAME.
-        CURRENT_BACKGROUND);
+      SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, NAME.CURRENT_BLINK_STAT,
+                      NAME.CURRENT_BACKGROUND, XOR_OFF);
     end if;
     -- draw corners
     MOVE(ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
@@ -324,13 +386,14 @@ package body CON_IO is
     -- upper left and lower right, set foreground as our background
     SET_ATTRIBUTES (NAME.CURRENT_BACKGROUND,
                     NAME.CURRENT_BLINK_STAT,
-                    NAME.CURRENT_BACKGROUND);
+                    NAME.CURRENT_BACKGROUND, XOR_OFF);
     X_MNG.X_MOVE (ID, NAME.UPPER_LEFT.ROW, NAME.UPPER_LEFT.COL);
     X_MNG.X_DRAW_AREA (ID, NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL + 1,
                            NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW + 1);
     SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND,
                     NAME.CURRENT_BLINK_STAT,
-                    NAME.CURRENT_BACKGROUND);
+                    NAME.CURRENT_BACKGROUND,
+                    NAME.CURRENT_XOR_MODE);
     MOVE (NAME => NAME);
     X_MNG.X_FLUSH;
   end CLEAR;
@@ -388,7 +451,7 @@ package body CON_IO is
       end if;
       X_MNG.X_MOVE(ID, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
                        NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
-      SET_ATTRIBUTES (FG, BL, BG);
+      SET_ATTRIBUTES (FG, BL, BG, NAME.CURRENT_XOR_MODE);
       X_MNG.X_PUT_CHAR (ID, CHARACTER'VAL(INT));
       X_MNG.X_MOVE(ID, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
                        NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
@@ -590,6 +653,9 @@ package body CON_IO is
     TIMEOUT : INTEGER := -1;
     use X_MNG;
   begin
+    if not INIT_DONE then
+      raise NOT_INIT;
+    end if;
     -- Wait for keyboard
     loop
       NEXT_X_EVENT (TIMEOUT, X_EVENT);
@@ -640,6 +706,9 @@ package body CON_IO is
     TIMEOUT_MS : INTEGER;
     use X_MNG, CALENDAR;
   begin
+    if not INIT_DONE then
+      raise NOT_INIT;
+    end if;
     if INFINITE_TIME then
       TIMEOUT_MS := -1;
     else
@@ -664,40 +733,12 @@ package body CON_IO is
         return;
       when X_MNG.TID_PRESS | X_MNG.TID_RELEASE =>
         EVENT := MOUSE_BUTTON;
+        MOUSE_VALID := TRUE;
         if X_EVENT = X_MNG.TID_PRESS then
-          MOUSE_STATUS.STATUS := PRESSED;
+          MOUSE_STATUS := PRESSED;
         else
-          MOUSE_STATUS.STATUS := RELEASED;
+          MOUSE_STATUS := RELEASED;
         end if;
-        declare
-          BUTTON : X_MNG.BUTTON_LIST;
-          ROW, COL : INTEGER;
-        begin
-          X_MNG.X_READ_TID (ID, BUTTON, ROW, COL);
-          case BUTTON is
-            when X_MNG.LEFT =>
-              MOUSE_STATUS.BUTTON := LEFT;
-            when X_MNG.MIDDLE =>
-              MOUSE_STATUS.BUTTON := MIDDLE;
-            when X_MNG.RIGHT =>
-              MOUSE_STATUS.BUTTON := RIGHT;
-          end case;
-          if ROW - 1 in ROW_RANGE and then COL - 1 in COL_RANGE then
-            MOUSE_STATUS.ROW := ROW - 1;
-            MOUSE_STATUS.COL := COL - 1;
-            MOUSE_STATUS.VALID := TRUE;
-          else
-            MOUSE_STATUS.ROW := ROW_RANGE'FIRST;
-            MOUSE_STATUS.COL := COL_RANGE'FIRST;
-            MOUSE_STATUS.VALID := FALSE;
-          end if;
-        exception
-          when X_MNG.X_FAILURE =>
-            MOUSE_STATUS.VALID := FALSE;
-            MOUSE_STATUS.BUTTON := LEFT;
-            MOUSE_STATUS.ROW := ROW_RANGE'FIRST;
-            MOUSE_STATUS.COL := COL_RANGE'FIRST;
-        end;
         return;
       when X_MNG.KEYBOARD =>
         GET_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
@@ -781,7 +822,7 @@ package body CON_IO is
       MOVE(FIRST_POS.ROW, FIRST_POS.COL + POS - 1, NAME);
       if SHOW then
         if INSERT then
-          X_MNG.X_OVERWRITE_CHAR (ID, 175);
+          X_MNG.X_OVERWRITE_CHAR (ID, 2);
         else
           X_MNG.X_OVERWRITE_CHAR (ID, 95);
         end if;
@@ -1051,12 +1092,153 @@ package body CON_IO is
     end loop;
   end PUT_THEN_GET;
 
+  package body GRAPHICS is
+
+    function X_MAX return X_RANGE is
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      return CON_IO.X_MAX;
+    end X_MAX;
+
+    function Y_MAX return Y_RANGE is
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      return CON_IO.Y_MAX;
+    end Y_MAX;
+
+    procedure SET_SCREEN_ATTRIBUTES is
+    begin
+      SET_ATTRIBUTES (SCREEN.CURRENT_FOREGROUND, NOT_BLINK,
+                      SCREEN.CURRENT_BACKGROUND,
+                      LINE_XOR_MODE);
+    end SET_SCREEN_ATTRIBUTES;
+
+    procedure PUT (C : CHARACTER;
+                   X          : in X_RANGE;
+                   Y          : in Y_RANGE) is
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      SET_SCREEN_ATTRIBUTES;
+      X_MNG.X_PUT_CHAR_PIXELS(ID, X_MNG.BYTE(CHARACTER'POS(C)), X, Y);
+    end PUT;
+
+    procedure POINT (X          : in X_RANGE;
+                     Y          : in Y_RANGE) is
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      SET_SCREEN_ATTRIBUTES;
+      X_MNG.X_DRAW_POINT(ID, X, Y);
+    end POINT;
+
+    procedure RECTANGLE (X1         : in X_RANGE;
+                         Y1         : in Y_RANGE;
+                         X2         : in X_RANGE;
+                         Y2         : in Y_RANGE) is
+    begin
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      SET_SCREEN_ATTRIBUTES;
+      X_MNG.X_DRAW_RECTANGLE(ID, X1, Y1, X2, Y2);
+    end RECTANGLE;
+
+
+    procedure GET_CURRENT_POINTER_POS (VALID : out BOOLEAN;
+                                       X     : out X_RANGE;
+                                       Y     : out Y_RANGE) is
+      LX, LY : INTEGER;
+    begin
+      VALID := FALSE;
+      if not INIT_DONE then
+        raise NOT_INIT;
+      end if;
+      X_MNG.X_GET_CURRENT_POINTER_POSITION(ID, LX, LY);
+      -- In screen? 
+      if       LX in GRAPHICS.X_RANGE and then LX <= X_MAX
+      and then LY in GRAPHICS.Y_RANGE and then LY <= Y_MAX then
+        X := LX;
+        Y := LY;
+        VALID := TRUE;
+      end if;
+    end GET_CURRENT_POINTER_POS;
+
+
+  end GRAPHICS;
+
   -- Get a mouse event. If valid is FALSE, it means that a release
   -- has occured outside the screen, then only BUTTON and status
   -- are significant
-  procedure GET_MOUSE_EVENT (MOUSE_EVENT : out MOUSE_EVENT_REC) is
+  procedure GET_MOUSE_EVENT (MOUSE_EVENT : out MOUSE_EVENT_REC;
+                    COORDINATE_MODE : in COORDINATE_MODE_LIST := ROW_COL) is
+    LOC_EVENT : MOUSE_EVENT_REC(COORDINATE_MODE);
+    BUTTON : X_MNG.BUTTON_LIST;
+    ROW, COL : INTEGER;
   begin
-    MOUSE_EVENT := MOUSE_STATUS;
+    if not INIT_DONE then
+      raise NOT_INIT;
+    end if;
+    -- Init result
+    LOC_EVENT.VALID := FALSE;
+    LOC_EVENT.BUTTON := MOUSE_BUTTON_LIST'FIRST;
+    LOC_EVENT.STATUS := MOUSE_BUTTON_STATUS_LIST'FIRST;
+    if COORDINATE_MODE = ROW_COL then
+      LOC_EVENT.ROW := ROW_RANGE'FIRST;
+      LOC_EVENT.COL := COL_RANGE'FIRST;
+    else
+      LOC_EVENT.X := GRAPHICS.X_RANGE'FIRST;
+      LOC_EVENT.Y := GRAPHICS.Y_RANGE'FIRST;
+    end if;
+
+    -- Mouse event pending?
+    if not MOUSE_VALID then
+      MOUSE_EVENT := LOC_EVENT;
+      return;
+    end if;
+    MOUSE_VALID := FALSE;
+
+    -- Event was a press or release?
+    LOC_EVENT.STATUS := MOUSE_STATUS;
+
+    -- Get button and pos
+    X_MNG.X_READ_TID (ID, COORDINATE_MODE = ROW_COL, BUTTON, ROW, COL);
+    case BUTTON is
+      when X_MNG.LEFT =>
+        LOC_EVENT.BUTTON := LEFT;
+      when X_MNG.MIDDLE =>
+        LOC_EVENT.BUTTON := MIDDLE;
+      when X_MNG.RIGHT =>
+        LOC_EVENT.BUTTON := RIGHT;
+    end case;
+
+    -- Coordinates
+    if COORDINATE_MODE = ROW_COL then
+      if ROW - 1 in ROW_RANGE and then COL - 1 in COL_RANGE then
+        LOC_EVENT.ROW := ROW - 1;
+        LOC_EVENT.COL := COL - 1;
+        LOC_EVENT.VALID := TRUE;
+      end if;
+    else
+      if       ROW in GRAPHICS.X_RANGE and then ROW <= X_MAX
+      and then COL in GRAPHICS.Y_RANGE and then COL <= Y_MAX then
+        LOC_EVENT.X := ROW;
+        LOC_EVENT.Y := COL;
+        LOC_EVENT.VALID := TRUE;
+      end if;
+    end if;
+    MOUSE_EVENT := LOC_EVENT;
+  exception
+    when X_MNG.X_FAILURE =>
+      MOUSE_EVENT := LOC_EVENT;
   end GET_MOUSE_EVENT;
 
 end CON_IO;
+
+ 

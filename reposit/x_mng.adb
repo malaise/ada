@@ -25,23 +25,20 @@ package body X_MNG is
 
 
     ------------------------------------------------------------------
-    -- Initialise X for one host
-    -- int x_initialise (server_name)
-    --    char *server_name
+    -------------------- T H E   I N T E R F A C E -------------------
     ------------------------------------------------------------------
-    function X_INITIALISE (SERVER_NAME : in SYSTEM.ADDRESS) return RESULT;
+    -- Initialise X for one host
+    -- int x_initialise (char *server_name);
+    ------------------------------------------------------------------
+    function X_INITIALISE (SERVER_NAME : SYSTEM.ADDRESS) return RESULT;
     pragma IMPORT (C, X_INITIALISE, "x_initialise");
 
     ------------------------------------------------------------------
     -- Opens a line
-    -- int x_open_line (screen_id, row, column, height, width,
-    --                  background, border, no_font, p_line_id)
-    --    int screen_id;
-    --    int row, column;
-    --    int height, width;
-    --    int background, border;
-    --    int no_font;
-    --    void **p_line_id;
+    -- int x_open_line (int screen_id, int row, int column,
+    --                  int height, int width,
+    --                  int background, int border, int no_font,
+    --                  void **p_line_id);
     ------------------------------------------------------------------
     function X_OPEN_LINE (SCREEN_ID          : INTEGER;
                           ROW, COLUMN        : INTEGER;
@@ -53,9 +50,7 @@ package body X_MNG is
  
     ------------------------------------------------------------------
     -- Set the name of a line
-    -- int x_set_line_name (line_id, line_name)
-    --    void *line_id;
-    --    char *line_name;
+    -- int x_set_line_name (void *line_id, char *line_name);
     ------------------------------------------------------------------
     function X_SET_LINE_NAME (LINE_ID   : SYSTEM.ADDRESS;
                               LINE_NAME : SYSTEM.ADDRESS) return RESULT;
@@ -63,36 +58,31 @@ package body X_MNG is
 
     ------------------------------------------------------------------
     -- Closes a line
-    -- int x_close_line (line_id)
-    --    void *line_id;
+    -- int x_close_line (void *line_id);
     ------------------------------------------------------------------
     function X_CLOSE_LINE(LINE_ID : LINE_FOR_C) return RESULT;
     pragma IMPORT(C, X_CLOSE_LINE, "x_close_line");
 
     ------------------------------------------------------------------
     -- Clears a line
-    -- int x_clear_line (line_id)
-    --    void *line_id;
+    -- int x_clear_line (void *line_id);
     ------------------------------------------------------------------
     function X_CLEAR_LINE(LINE_ID : LINE_FOR_C) return RESULT;
     pragma IMPORT(C, X_CLEAR_LINE, "x_clear_line");
 
     ------------------------------------------------------------------
     -- Flushes all the lines of the host (really display them)
-    -- int x_flush ()
+    -- int x_flush (void)
     ------------------------------------------------------------------
     function X_FLUSH return RESULT;
     pragma IMPORT(C, X_FLUSH, "x_flush");
 
     ------------------------------------------------------------------
     -- Writes a char on a line with specified characteristics
-    -- int x_put_char_attributes (line_id, car, row, column, paper, ink,
-    --                            superbright, underline, blink, reverse)
-    --    void    *line_id;
-    --    int     car;
-    --    int     row, column;
-    --    int     paper, ink;
-    --    boolean superbright, underline, blink, reverse;
+    -- int x_put_char_attributes (void *line_id; int car,
+    --                            int row, int column, int paper, int ink,
+    --                            boolean superbright, boolean underline,
+    --                            boolean blink, boolean reverse);
     ------------------------------------------------------------------
     function X_PUT_CHAR_ATTRIBUTES(LINE_ID     : LINE_FOR_C;
                                    CAR         : INTEGER;
@@ -105,22 +95,20 @@ package body X_MNG is
      return RESULT;
     pragma IMPORT(C, X_PUT_CHAR_ATTRIBUTES, "x_put_char_attributes");
 
-  ------------------------------------------------------------------
+    ------------------------------------------------------------------
     -- Sets the position for a further put in the same window
-    -- int x_move (line_id, row, column)
-    --    void    *line_id;
-    --    int     row, column;
+    -- int x_move (void *line_id, int row, int column);
+    ------------------------------------------------------------------
     function X_MOVE(LINE_ID     : LINE_FOR_C;
                     ROW, COLUMN : INTEGER) return RESULT;
     pragma IMPORT(C, X_MOVE, "x_move");
  
     ------------------------------------------------------------------
     -- Sets the attributes for a further put in the same window
-    -- int x_set_attributes (line_id, paper, ink,
-    --                       superbright, underline, blink, reverse)
-    --    void    *line_id;
-    --    int     paper, ink;
-    --    boolean superbright, underline, blink, reverse;
+    -- int x_set_attributes (void *line_id;
+    --                       int paper, int ink,
+    --                       boolean superbright, boolean underline,
+    --                       boolean blink, boolean reverse);
     ------------------------------------------------------------------
     function X_SET_ATTRIBUTES(LINE_ID     : LINE_FOR_C;
                               PAPER, INK  : INTEGER;
@@ -131,10 +119,16 @@ package body X_MNG is
     pragma IMPORT(C, X_SET_ATTRIBUTES, "x_set_attributes");
  
     ------------------------------------------------------------------
+    -- Set XOR mode for further outputs
+    -- int x_set_xor_mode (void *line_id, boolean xor_mode);
+    ------------------------------------------------------------------
+    function X_SET_XOR_MODE(LINE_ID : LINE_FOR_C;
+                            XOR_MODE  : BOOL_FOR_C) return RESULT;
+    pragma IMPORT(C, X_SET_XOR_MODE, "x_set_xor_mode");
+
+    ------------------------------------------------------------------
     -- Writes a char whith the attributes previously set
-    -- int x_put_char (line_id, car)
-    --    void *line_id;
-    --    int  car;
+    -- int x_put_char (void *line_id, int  car);
     ------------------------------------------------------------------
     function X_PUT_CHAR(LINE_ID : LINE_FOR_C;
                         CAR     : INTEGER) return RESULT;
@@ -142,9 +136,8 @@ package body X_MNG is
 
     ------------------------------------------------------------------
     -- Writes a char whith the attributes previously set
-    -- int x_put_char (line_id, car)
-    --    void *line_id;
-    --    int  car;
+    -- Does not erase character at current position
+    -- int x_overwrite_char (void *line_id, int  car);
     ------------------------------------------------------------------
     function X_OVERWRITE_CHAR(LINE_ID : LINE_FOR_C;
                               CAR     : INTEGER) return RESULT;
@@ -152,10 +145,7 @@ package body X_MNG is
 
     ------------------------------------------------------------------
     -- Writes a string with the attributes previously set
-    -- int x_put_string (line_id, p_char, number)
-    --    void *line_id;
-    --    char *p_char;
-    --    int number;
+    -- int x_put_string (void *line_id, char *p_char, int number);
     ------------------------------------------------------------------
     function X_PUT_STRING(LINE_ID  : LINE_FOR_C;
                           STR_ADDR : SYSTEM.ADDRESS;
@@ -166,6 +156,7 @@ package body X_MNG is
     -- Draws a rectangle (width * height) from current position
     --  with current background color.
     --  New position is updated to lower-left square of rectangle.
+    -- int x_draw_area (void *line_id, int width, int height);
     ------------------------------------------------------------------
     function X_DRAW_AREA(LINE_ID       : LINE_FOR_C;
                          WIDTH, HEIGHT : INTEGER) return RESULT;
@@ -173,7 +164,7 @@ package body X_MNG is
  
     ------------------------------------------------------------------
     -- Wait for some events
-    -- int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms)
+    -- int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms);
     ------------------------------------------------------------------
     function X_SELECT (P_MASK : SYSTEM.ADDRESS;
                        P_X_EVENT : SYSTEM.ADDRESS;
@@ -182,10 +173,7 @@ package body X_MNG is
 
     ------------------------------------------------------------------
     -- Process a X event (TID or Keyboard or other) 
-    -- int x_process_event (p_line_id, p_kind, p_next)
-    --    void **p_line_id;
-    --    int *p_kind;
-    --    boolean *p_next;
+    -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
     ------------------------------------------------------------------
     function X_PROCESS_EVENT(P_LINE_ID : SYSTEM.ADDRESS;
                              P_KEYB    : SYSTEM.ADDRESS;
@@ -194,22 +182,18 @@ package body X_MNG is
  
     ------------------------------------------------------------------
     -- Reads the position on TID
-    -- int x_read_tid (line_id, p_row, p_column)
-    --    void *line_id;
-    --    void *p_button;
-    --    int *p_row, *p_column;
+    -- int x_read_tid (void *line_id, boolean row_col,
+    --                 int *p_button, int *p_row, int *p_column);
     ------------------------------------------------------------------
     function X_READ_TID(LINE_ID         : LINE_FOR_C;
+                        ROW_COL         : BOOL_FOR_C;
                         P_BUTTON        : SYSTEM.ADDRESS;
                         P_ROW, P_COLUMN : SYSTEM.ADDRESS) return RESULT;
     pragma IMPORT(C, X_READ_TID, "x_read_tid");
 
     ------------------------------------------------------------------
     -- Reads a key of a sequence
-    -- int x_read_key (line_id, p_key, p_nbre)
-    --    void *line_id;
-    --    int *p_key;
-    --    int *p_nbre;
+    -- int x_read_key (void *line_id, int *p_key, int *p_nbre);
     ------------------------------------------------------------------
     function X_READ_KEY(LINE_ID : LINE_FOR_C;
                         P_KEYS  : SYSTEM.ADDRESS;
@@ -218,28 +202,82 @@ package body X_MNG is
  
     ------------------------------------------------------------------
     -- Assumes blinking of X
-    -- int x_blink()
+    -- int x_blink(void)
     ------------------------------------------------------------------
     function X_BLINK return RESULT;
     pragma IMPORT(C, X_BLINK, "x_blink");
 
     ------------------------------------------------------------------
     -- Stops the blinking task
-    -- int x_stop_blinking() 
+    -- int x_stop_blinking(void) 
     ------------------------------------------------------------------
     function X_STOP_BLINKING return RESULT;
     pragma IMPORT(C, X_STOP_BLINKING, "x_stop_blinking");
 
     ------------------------------------------------------------------
     -- Rings a bell several times
-    -- int x_bell (nbre_bell)
-    --    int nbre_bell;
+    -- int x_bell (int nbre_bell;
     ------------------------------------------------------------------
     function X_BELL (REPEAT : INTEGER) return RESULT;
     pragma IMPORT(C, X_BELL, "x_bell");
 
+    ------------------------------------------------------------------
+    -- Puts a char with current characteristics
+    --  at specified position in pixels
+    -- int x_put_char_pixels (void *line_id, int car, int x, int y);
+    ------------------------------------------------------------------
+    function X_PUT_CHAR_PIXELS(LINE_ID : LINE_FOR_C;
+                               CAR     : INTEGER;
+                               X, Y    : INTEGER) return RESULT;
+    pragma IMPORT(C, X_PUT_CHAR_PIXELS, "x_put_char_pixels");
 
     ------------------------------------------------------------------
+    -- Gets the graphic characteristics of a line when it was created
+    -- int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
+    --                  int *p_f_width, int *p_f_height, int *p_f_offset);
+    ------------------------------------------------------------------
+    function X_GET_GRAPHIC_CHARACTERISTICS(LINE_ID : LINE_FOR_C;
+                                           WINDOW_WIDTH  : SYSTEM.ADDRESS;
+                                           WINDOW_HEIGHT : SYSTEM.ADDRESS;
+                                           FONT_WIDTH    : SYSTEM.ADDRESS;
+                                           FONT_HEIGHT   : SYSTEM.ADDRESS;
+                                           FONT_OFFSET   : SYSTEM.ADDRESS)
+             return RESULT;
+    pragma IMPORT(C, X_GET_GRAPHIC_CHARACTERISTICS, "x_get_graph_charact");
+
+    ------------------------------------------------------------------
+    -- Draw a point with current characteristics
+    -- int x_draw_point (void *line_id, int x, int y);
+    ------------------------------------------------------------------
+    function X_DRAW_POINT(LINE_ID : LINE_FOR_C;
+                          X, Y    : INTEGER) return RESULT;
+    pragma IMPORT(C, X_DRAW_POINT, "x_draw_point");
+
+    ------------------------------------------------------------------
+    -- Draw a rectangle with current characteristics
+    -- int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
+    ------------------------------------------------------------------
+    function X_DRAW_RECTANGLE(LINE_ID : LINE_FOR_C;
+                              X1, Y1, X2, Y2 : NATURAL) return RESULT;
+    pragma IMPORT(C, X_DRAW_RECTANGLE, "x_draw_rectangle");
+
+    ------------------------------------------------------------------
+    -- Get current position in pixels, independently from events
+    -- int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
+    ------------------------------------------------------------------
+    function X_GET_CURRENT_POINTER_POSITION(LINE_ID : LINE_FOR_C;
+                                            X, Y : SYSTEM.ADDRESS)
+             return RESULT;
+    pragma IMPORT(C, X_GET_CURRENT_POINTER_POSITION, "x_get_pointer_pos");
+
+
+
+
+
+    ------------------------------------------------------------------
+    ------------------------ T H E   C O D E -------------------------
+    ------------------------------------------------------------------
+
     procedure X_INITIALISE (SERVER_NAME    : in STRING) is
 
         SERV_NAME_FOR_C : constant STRING(1 .. SERVER_NAME'LENGTH+1)
@@ -374,6 +412,17 @@ package body X_MNG is
  
 
     ------------------------------------------------------------------
+    procedure X_SET_XOR_MODE(LINE_ID     : in LINE;
+                             XOR_MODE    : in BOOLEAN) is
+    begin
+        if not INITIALISED or else
+         X_SET_XOR_MODE(LINE_ID.NO, FOR_C(XOR_MODE)) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_SET_XOR_MODE;
+ 
+
+    ------------------------------------------------------------------
     procedure X_PUT_CHAR(LINE_ID : in LINE; CAR : in CHARACTER) is
     begin
         if not INITIALISED or else
@@ -462,12 +511,14 @@ package body X_MNG is
 
  
     ------------------------------------------------------------------
-    procedure X_READ_TID(LINE_ID : in LINE; BUTTON : out BUTTON_LIST;
+    procedure X_READ_TID(LINE_ID : in LINE;
+                         ROW_COL : BOOLEAN;
+                         BUTTON : out BUTTON_LIST;
                          ROW, COLUMN : out INTEGER) is
         LOC_BUTTON : INTEGER;
     begin
         if not INITIALISED or else
-         X_READ_TID (LINE_ID.NO,
+         X_READ_TID (LINE_ID.NO, FOR_C(ROW_COL),
                      LOC_BUTTON'ADDRESS,
                      ROW'ADDRESS, 
                      COLUMN'ADDRESS) /= OK then
@@ -500,6 +551,71 @@ package body X_MNG is
         end loop;
         KEY.NBRE := NATURAL (LOC_NBRE);
     end X_READ_KEY;
+
+
+    ------------------------------------------------------------------
+    procedure X_PUT_CHAR_PIXELS(LINE_ID : in LINE; CAR : in BYTE;
+                                X, Y    : in NATURAL) is
+    begin
+        if not INITIALISED or else
+         X_PUT_CHAR_PIXELS (LINE_ID.NO, INTEGER(CAR), X, Y) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_PUT_CHAR_PIXELS;
+ 
+ 
+    ------------------------------------------------------------------
+    procedure X_GET_GRAPHIC_CHARACTERISTICS(LINE_ID       : in LINE;
+                                            WINDOW_WIDTH  : out NATURAL;
+                                            WINDOW_HEIGHT : out NATURAL;
+                                            FONT_WIDTH    : out NATURAL;
+                                            FONT_HEIGHT   : out NATURAL;
+                                            FONT_OFFSET   : out NATURAL) is
+    begin
+        if not INITIALISED or else
+        X_GET_GRAPHIC_CHARACTERISTICS(LINE_ID.NO,
+          WINDOW_WIDTH'ADDRESS, WINDOW_HEIGHT'ADDRESS,
+          FONT_WIDTH'ADDRESS, FONT_HEIGHT'ADDRESS, FONT_OFFSET'ADDRESS)
+            /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_GET_GRAPHIC_CHARACTERISTICS;
+
+
+    ------------------------------------------------------------------
+    procedure X_DRAW_POINT(LINE_ID       : in LINE;
+                           X, Y          : in NATURAL) is
+    begin
+        if not INITIALISED or else
+        X_DRAW_POINT(LINE_ID.NO, X, Y) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_DRAW_POINT;
+
+
+    ------------------------------------------------------------------
+    procedure X_DRAW_RECTANGLE(LINE_ID       : in LINE;
+                               X1, Y1, X2, Y2 : in NATURAL) is
+
+    begin
+        if not INITIALISED or else
+        X_DRAW_RECTANGLE(LINE_ID.NO, X1, Y1, X2, Y2) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_DRAW_RECTANGLE;
+
+
+    ------------------------------------------------------------------
+    procedure X_GET_CURRENT_POINTER_POSITION(LINE_ID : in LINE;
+                                             X, Y    : out INTEGER) is
+    begin
+        if not INITIALISED or else
+         X_GET_CURRENT_POINTER_POSITION (LINE_ID.NO,
+                     X'ADDRESS, 
+                     Y'ADDRESS) /= OK then
+            raise X_FAILURE;
+        end if;
+    end X_GET_CURRENT_POINTER_POSITION;
 
 
     ------------------------------------------------------------------
