@@ -49,7 +49,10 @@ package body Debug is
   begin
     Ada.Calendar.Split (Ada.Calendar.Clock, Year, Month, Day, Dur);
     Day_Mng.Split (Dur, Hour, Minute, Second, Millisec);
-    return Normal (Hour, 2, Gap => '0') & ":"
+    return Normal (Year, 4, Gap => '0') & "/"
+         & Normal (Month, 2, Gap => '0') & "/"
+         & Normal (Day, 2, Gap => '0') & "-"
+         & Normal (Hour, 2, Gap => '0') & ":"
          & Normal (Minute, 2, Gap => '0') & ":"
          & Normal (Second, 2, Gap => '0') & "."
          & Normal (Millisec, 3, Gap => '0');
