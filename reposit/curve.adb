@@ -1,5 +1,5 @@
 with CALENDAR, TEXT_IO;
-with BIG_CON_IO, NORMAL, X_MNG, UPPER_CHAR;
+with BIG_CON_IO, NORMAL, UPPER_CHAR;
 package body CURVE is
   use MY_MATH;
 
