@@ -1,3 +1,4 @@
+with Text_Handler;
 -- Store several strings in one, using Ascii.Nul as separator.
 package Many_Strings is
 
@@ -5,6 +6,7 @@ package Many_Strings is
 
   -- Concatenation
   function Cat (To : String; What : String) return String;
+  procedure Cat (To : in out Text_Handler.Text; What : in String);
 
   -- Decode (String_Error is raised by Nth if N > Nb)
   -- An empty string contains one (empty) string

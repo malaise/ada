@@ -8,6 +8,12 @@ package body Many_Strings is
     return To & Sep & What;
   end Cat;
 
+  procedure Cat (To : in out Text_Handler.Text; What : in String) is
+  begin
+    Text_Handler.Append (To, Sep & What);
+  end Cat;
+
+
   -- Decode
   function Nb (Str : String) return Positive is
     N : Natural;
