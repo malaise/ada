@@ -145,6 +145,8 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
             when others =>
               null;
           end case;
+        when AFPX.FD_EVENT =>
+          FD_CALLBACK;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;
       end case;
@@ -382,6 +384,8 @@ begin
             CHANGE_DIR(".");
           when others => null;
         end case;
+      when AFPX.FD_EVENT =>
+        FD_CALLBACK;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;

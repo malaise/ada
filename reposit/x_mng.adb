@@ -267,8 +267,8 @@ package body X_MNG is
   -- Wait for some events
   -- int x_select (int *p_fd, int *timeout_ms);
   ------------------------------------------------------------------
-  SELECT_NO_EVENT : constant INTEGER := -2;
-  SELECT_X_EVENT  : constant INTEGER := -1;
+  C_SELECT_NO_EVENT : constant INTEGER := -2;
+  C_SELECT_X_EVENT  : constant INTEGER := -1;
   function X_SELECT (P_FD : SYSTEM.ADDRESS;
                      TIMEOUT_MS : SYSTEM.ADDRESS) return RESULT;
   pragma IMPORT(C, X_SELECT, "x_select");
@@ -1013,44 +1013,42 @@ package body X_MNG is
   --------------- T H E   D I S P A T C H E R   B O D Y ------------
   ------------------------------------------------------------------
 
-  procedure XX_SELECT (TIMEOUT_MS : in INTEGER; X_EVENT : out BOOLEAN) is
+  type XX_SELECT_RESULT_LIST is (SELECT_X_EVENT, SELECT_FD, SELECT_TIMEOUT);
+
+  function XX_SELECT (TIMEOUT_MS : INTEGER) return XX_SELECT_RESULT_LIST is
     FD    : INTEGER;
     TIMEOUT : INTEGER;
     DUMMY : RESULT;
     CB_SEARCHED : CB_REC;
   begin
     TIMEOUT := TIMEOUT_MS;
-    loop
-      DUMMY := X_SELECT (FD'ADDRESS, TIMEOUT'ADDRESS);
-      if DEBUG then
-        MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD));
-      end if;
-      if FD = SELECT_X_EVENT then
-        X_EVENT := TRUE;
-        return;
-      elsif  FD = SELECT_NO_EVENT then
-        X_EVENT := FALSE;
-        return;
-      else
-        CB_SEARCHED.FD := FILE_DESC(FD);
-        CB_SEARCHED.CB := null;
-        begin
-          -- Search and read callback
-          CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
-          CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
-          -- Call it
-          CB_SEARCHED.CB (CB_SEARCHED.FD);
-        exception
-          when CB_MNG.NOT_IN_LIST =>
-          if DEBUG then
-            MY_IO.PUT_LINE ("**** XX_SELECT: " & INTEGER'IMAGE(FD) 
-                          & " fd not found ****");
-          end if;
-        end;
-      end if;
-    end loop;
+    DUMMY := X_SELECT (FD'ADDRESS, TIMEOUT'ADDRESS);
+    if DEBUG then
+      MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD));
+    end if;
+    if FD = C_SELECT_X_EVENT then
+      return SELECT_X_EVENT;
+    elsif FD = C_SELECT_NO_EVENT then
+      return SELECT_TIMEOUT;
+    else
+      CB_SEARCHED.FD := FILE_DESC(FD);
+      CB_SEARCHED.CB := null;
+      begin
+        -- Search and read callback
+        CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
+        CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
+        -- Call it
+        CB_SEARCHED.CB (CB_SEARCHED.FD);
+      exception
+        when CB_MNG.NOT_IN_LIST =>
+        if DEBUG then
+          MY_IO.PUT_LINE ("**** XX_SELECT: " & INTEGER'IMAGE(FD) 
+                        & " fd not found ****");
+        end if;
+      end;
+    end if;
+    return SELECT_FD;
   end XX_SELECT;
-
 
   procedure XX_PROCESS_EVENT (LINE_FOR_C_ID : out LINE_FOR_C;
                               KIND : out EVENT_KIND;
@@ -1078,7 +1076,7 @@ package body X_MNG is
     end record;
     CLIENTS : array (CLIENT_RANGE) of CLIENT_DESC_REC;
     -- The TIMEOUT/EVENT and CLIENT from WAIT to SOME_EVENT to GET_EVENT
-    SELECT_SOMETHING : BOOLEAN;
+    SELECT_RESULT : XX_SELECT_RESULT_LIST;
     SELECTED_CLIENT : CLIENT_RANGE;
     -- One event to give in SOME_EVENT
     SOME_EVENT_PRESENT : BOOLEAN;
@@ -1263,27 +1261,37 @@ package body X_MNG is
             if DEBUG then
               MY_IO.PUT_LINE ("        Wait select " & INTEGER'IMAGE(DELAY_MS));
             end if;
-            XX_SELECT (DELAY_MS, SELECT_SOMETHING);
-            if not SELECT_SOMETHING then
-              -- Timeout
-              SOME_EVENT_PRESENT := FALSE;
-              if DEBUG then
-                MY_IO.PUT_LINE ("            Wait select timeout for -> "
-                              & LINE_RANGE'IMAGE(SELECTED_CLIENT));
-              end if;
-              exit;
-            else
-              -- An event: Get&store it and it's client
-              XX_PROCESS_EVENT (LOC_LINE_FOR_C_ID, LOC_KIND, LOC_NEXT);
-              GET_CLIENT_FROM_LINE(LOC_LINE_FOR_C_ID, SELECTED_CLIENT,
-                                 SOME_EVENT_PRESENT);
-              exit when SOME_EVENT_PRESENT;
-              if DEBUG then
-                MY_IO.PUT_LINE ("            Wait select event for -> "
-                              & LINE_RANGE'IMAGE(SELECTED_CLIENT)
-                              & " found " & BOOLEAN'IMAGE(SOME_EVENT_PRESENT));
-              end if;
-            end if;
+            SELECT_RESULT := XX_SELECT (DELAY_MS);
+            case SELECT_RESULT is
+              when SELECT_TIMEOUT =>
+                -- Timeout
+                SOME_EVENT_PRESENT := FALSE;
+                if DEBUG then
+                  MY_IO.PUT_LINE ("            Wait select timeout for -> "
+                                & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+                end if;
+                exit;
+              when SELECT_X_EVENT =>
+                -- An event: Get&store it and it's client
+                XX_PROCESS_EVENT (LOC_LINE_FOR_C_ID, LOC_KIND, LOC_NEXT);
+                GET_CLIENT_FROM_LINE(LOC_LINE_FOR_C_ID, SELECTED_CLIENT,
+                                   SOME_EVENT_PRESENT);
+                if DEBUG then
+                  MY_IO.PUT_LINE ("            Wait select event for -> "
+                                & LINE_RANGE'IMAGE(SELECTED_CLIENT)
+                                & " found " & BOOLEAN'IMAGE(SOME_EVENT_PRESENT));
+                end if;
+                exit when SOME_EVENT_PRESENT;
+              when SELECT_FD =>
+                SOME_EVENT_PRESENT := TRUE;
+                LOC_KIND := FD_EVENT;
+                LOC_NEXT := FALSE;
+                if DEBUG then
+                  MY_IO.PUT_LINE ("            Wait select fd event for -> "
+                                & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+                end if;
+                exit;
+            end case;
           end loop;
         end if;
       or
@@ -1293,9 +1301,10 @@ package body X_MNG is
           if DEBUG then
             MY_IO.PUT_LINE ("Some_event " & LINE_RANGE'IMAGE(SELECTED_CLIENT)
                    & " -> "
-                   & BOOLEAN'IMAGE(SELECT_SOMETHING or else SOME_EVENT_PRESENT));
+                   & "Select result:" & XX_SELECT_RESULT_LIST'IMAGE(SELECT_RESULT)
+                   & ", Event present:" & BOOLEAN'IMAGE(SOME_EVENT_PRESENT));
           end if;
-          SOME := SELECT_SOMETHING or else SOME_EVENT_PRESENT;
+          SOME := SELECT_RESULT /= SELECT_TIMEOUT or else SOME_EVENT_PRESENT;
           NB_WAIT := NB_WAIT - 1;
         end SOME_EVENT;
       or
@@ -1371,18 +1380,20 @@ package body X_MNG is
 
   ------------------------------------------------------------------
   -- Specific select without X
-  procedure SELECT_NO_X (TIMEOUT_MS : in INTEGER) is
-    X_EVENT : BOOLEAN;
+  function SELECT_NO_X (TIMEOUT_MS : INTEGER) return BOOLEAN is
+    SELECT_RESULT : XX_SELECT_RESULT_LIST;
   begin
     if INITIALISED  then
       raise X_FAILURE;
     end if;
-    XX_SELECT (TIMEOUT_MS, X_EVENT);
-    if X_EVENT then
+    SELECT_RESULT := XX_SELECT (TIMEOUT_MS);
+    if SELECT_RESULT = SELECT_X_EVENT then
       if DEBUG then
         MY_IO.PUT_LINE ("**** SELECT_NO_X: Got a X event");
       end if;
       raise X_FAILURE;
+    else
+      return SELECT_RESULT = SELECT_FD;
     end if;
   end SELECT_NO_X;
 

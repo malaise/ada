@@ -1,4 +1,4 @@
-with MY_MATH;
+with MY_MATH, NULL_PROCEDURE;
 package CURVE is
   -- What is a point, a point data set
   subtype T_COORDINATE is MY_MATH.REAL;
@@ -42,6 +42,9 @@ package CURVE is
   generic
     -- Y = F(x)
     with function F (X : MY_MATH.REAL) return MY_MATH.REAL;
+
+    -- Any action to do when a fd_event has been received (see Afpx Fd_event)
+    with procedure FD_CALLBACK is NULL_PROCEDURE;
 
   -- Give boundaries and points array : It will draw the curves
   procedure DRAW (BOUNDARIES : in T_BOUNDARIES; POINTS : in T_THE_POINTS);

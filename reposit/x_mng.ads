@@ -31,7 +31,8 @@ package X_MNG is
 
   type BUTTON_LIST is (NONE, LEFT, MIDDLE, RIGHT);
     
-  type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH, TID_MOTION);
+  type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH,
+                      TID_MOTION, FD_EVENT);
 
   -- Fd management
   type FILE_DESC is new NATURAL;
@@ -213,18 +214,18 @@ package X_MNG is
 
   -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
   --  (or X_FAILURE will be raised)
-  -- Any callback on fd is invoked transparently
-  procedure SELECT_NO_X (TIMEOUT_MS : in INTEGER);
+  -- Return True if an FD event has occured
+  function SELECT_NO_X (TIMEOUT_MS : INTEGER) return BOOLEAN;
 
   -- Wait for some ms or until a X event is availble
   -- If timeout is < 0, infinite wait
   -- The remaining time is set
-  -- Any callback on fd is invoked transparently
   procedure X_SELECT (LINE_ID : in LINE;
                       TIMEOUT_MS : in out INTEGER; X_EVENT : out BOOLEAN);
 
   -- Processes a X Event (TID or Keyboard or other)
-  -- kind is KEYBOARD or TID, or DISCARD
+  -- kind is KEYBOARD or TID (PRESS or RELEASE or MOTION), or DISCARD
+  --  or REFRESH or FD_EVENT
   -- NEXT indicates if there is another event pendinig in X'queue
   procedure X_PROCESS_EVENT(LINE_ID : in LINE; 
                             KIND : out EVENT_KIND;
@@ -284,7 +285,8 @@ private
    TID_PRESS   => 2, 
    KEYBOARD    => 3,
    REFRESH     => 4,
-   TID_MOTION  => 5);
+   TID_MOTION  => 5,
+   FD_EVENT    => 9);
  
  subtype LINE_RANGE is NATURAL range 0 .. MAX_LINE_NUMBER;
   subtype CLIENT_RANGE is POSITIVE range 1 .. MAX_LINE_NUMBER;

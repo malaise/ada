@@ -207,6 +207,8 @@ package body MENU21 is
             when others =>
               null;
           end case; 
+        when AFPX.FD_EVENT =>
+          null;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;
       end case;

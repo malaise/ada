@@ -847,6 +847,10 @@ package body GENERIC_CON_IO is
 
       NEXT_X_EVENT (TIMEOUT_MS, X_EVENT);
       case X_EVENT is
+        when X_MNG.FD_EVENT =>
+          -- Fd event
+          EVENT := FD_EVENT;
+          return;
         when X_MNG.REFRESH =>
           -- Refresh
           EVENT := REFRESH;
@@ -897,6 +901,12 @@ package body GENERIC_CON_IO is
         GET_KEY_TIME(FALSE, EVENT, KEY, IS_CHAR, CTRL, SHIFT);
         if EVENT = REFRESH then
           KEY := 0;
+          IS_CHAR := TRUE;
+          CTRL := FALSE;
+          SHIFT := FALSE;
+          return;
+        elsif EVENT = FD_EVENT then
+          KEY := 1;
           IS_CHAR := TRUE;
           CTRL := FALSE;
           SHIFT := FALSE;
@@ -981,7 +991,7 @@ package body GENERIC_CON_IO is
         loop
           GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, LAST_TIME);
           if EVENT /= ESC then
-            -- No key ==> mouse or time out
+            -- No key ==> mouse, time out, refresh, fd...
             STAT := EVENT;
             return;
           elsif not IS_CHAR then
@@ -1088,7 +1098,7 @@ package body GENERIC_CON_IO is
           CURSOR (FALSE);
         end if;
         if EVENT /= ESC then
-          -- No key ==> mouse or time out or refresh
+          -- No key ==> mouse, time out, refresh, fd...
           STR := LSTR;
           LAST := PARSE;
           STAT := EVENT;
@@ -1308,6 +1318,8 @@ package body GENERIC_CON_IO is
             return ASCII.ESC;
           when BREAK =>
             return ASCII.EOT;
+          when FD_EVENT =>
+            return ASCII.STX;
           when REFRESH =>
             return ASCII.NUL;
           when MOUSE_BUTTON | TIMEOUT =>

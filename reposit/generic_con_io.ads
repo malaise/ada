@@ -187,8 +187,8 @@ package GENERIC_CON_IO is
     procedure PAUSE;
 
     -- Gets first character (echo or not)
-    -- No echo for RET, ESC, BREAK and REFRESH where
-    --  ASCII.CR, ESC, EOT and NUL are returned respectively
+    -- No echo for RET, ESC, BREAK, FD_EVENT and REFRESH where
+    --  ASCII.CR, ESC, EOT, STX and NUL are returned respectively
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
     function GET (NAME : WINDOW := SCREEN; ECHO : in BOOLEAN := TRUE) return CHARACTER;
@@ -215,11 +215,17 @@ package GENERIC_CON_IO is
     -- The current cursor position is updated by the call
     -- The arrows, Insert, suppr, backspace, Home, End, PageUp and PageDown
     --  Tab and Ctrl Tab, are managed. Ctrl Suppr clears the string.!
-    -- The get ends if an Up/Down arrow, (ctrl) Page Up/Down, Return(CR), Escape,
-    --  Tab or Control Tab is pressed or if the cursor leaves the field
-    --  (on character input or Right/Left arrow), on mouse click or release,
-    --  on time_out expiration or on CtrlC/CtrlBreak
+    -- The get ends either:
+    --  if an Up/Down arrow, (ctrl) Page Up/Down is pressed,
+    --  if the cursor leaves the field (Left/Right arrow or character input),
+    --  if Tab, Ctrl Tab, Return(CR), Escape is pressed
+    --  on CtrlC/CtrlBreak
+    --  on mouse click, release (or motion if enabled)
+    --  on time_out expiration
+    --  if a callback has been activated on a fd (see x_mng)
+    --  if a refresh is needed on the screen (see x_mng)
     -- Mouse_button event can only be generated if the mouse cursor is shown
+
     -- The returned string ends at last significant digit (gaps with spaces),
     --  tailling spaces are parsed out and last is the index in STR of
     --  the last non-space character
@@ -229,8 +235,8 @@ package GENERIC_CON_IO is
     --  character), but pos_out is not significant.
     -- Note that is STR'LENGHT is 0, the cursor is hidden
     type CURS_MVT is (UP, DOWN, PGUP, PGDOWN, CTRL_PGUP, CTRL_PGDOWN,
-                      LEFT, RIGHT, FULL, TAB, STAB,
-                      RET, ESC, BREAK, MOUSE_BUTTON, TIMEOUT, REFRESH);
+                      LEFT, RIGHT, FULL, TAB, STAB, RET, ESC, BREAK,
+                      MOUSE_BUTTON, TIMEOUT, FD_EVENT, REFRESH);
     procedure GET (STR        : out STRING;
                    LAST       : out NATURAL;
                    STAT       : out CURS_MVT;
@@ -277,6 +283,7 @@ package GENERIC_CON_IO is
     -- if not is_char, key is the key code. If is_char, key is the ascii code.
     -- CARE : is_char can be set and key not compatible with ADA characters.
     -- KEY = 0 and IS_CHAR and other flags FALSE indicate refresh has to be done
+    -- KEY = 1 and IS_CHAR and other flags FALSE indicate fd event has occured
     procedure GET_KEY (KEY     : out NATURAL;
                        IS_CHAR : out BOOLEAN;
                        CTRL    : out BOOLEAN;
@@ -372,7 +379,7 @@ package GENERIC_CON_IO is
     -- We want mouse position in row_col or x_y
     type COORDINATE_MODE_LIST is (ROW_COL, X_Y);
 
-    -- Button status: when MOTION, BUTTON is not MOTION
+    -- Button status: when MOTION, BUTTON is MOTION
     type MOUSE_BUTTON_STATUS_LIST is (PRESSED, RELEASED, MOTION);
     -- List of button
     type MOUSE_BUTTON_LIST is (LEFT, MIDDLE, RIGHT, MOTION);
@@ -395,7 +402,7 @@ package GENERIC_CON_IO is
     end record;
 
     -- Get a mouse event. If valid is FALSE, it means that a release
-    -- has occured outside the screen, then only BUTTON and status
+    -- has occured outside the screen, then only BUTTON and STATUS
     -- are significant
     procedure GET_MOUSE_EVENT (
       MOUSE_EVENT : out MOUSE_EVENT_REC;

@@ -97,8 +97,11 @@ begin
   -- Main loop
   loop
     for i in 1 .. 10 loop
-      X_Mng.Select_No_X (1000);
-      My_Io.Put_Line ("Timeout");
+      if X_Mng.Select_No_X (1000) then
+        My_Io.Put_Line ("Fd event");
+      else
+        My_Io.Put_Line ("Timeout");
+      end if;
     end loop;
     if not Server then
       Send;

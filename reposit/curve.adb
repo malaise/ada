@@ -831,6 +831,9 @@ package body CURVE is
           when BIG_CON_IO.REFRESH =>
             -- Redraw at next loop;
             null;
+          when BIG_CON_IO.FD_EVENT =>
+            -- Call any fd callback
+            FD_CALLBACK;
           when BIG_CON_IO.TIMEOUT =>
             -- Should not occure: GET(INFINITE_TIME)
             null;

@@ -129,6 +129,9 @@ begin
           when others =>
             null;
         end case;
+      when AFPX.FD_EVENT =>
+        AFPX.CLEAR_FIELD (2);
+         AFPX.ENCODE_FIELD (2, (1, 0), ">> Fd Event <<");
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;

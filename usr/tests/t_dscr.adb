@@ -73,6 +73,8 @@ begin
         end case;
       when AFPX.MOUSE_BUTTON =>
         null;
+      when AFPX.FD_EVENT =>
+        null;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;
