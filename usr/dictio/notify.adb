@@ -5,6 +5,7 @@ package body Notify is
   type Notif_Rec is record
     Client : Socket.Socket_Dscr := Socket.No_Socket;
     Item : Data_Base.Item_Name := (others => ' ');
+    Kind : Data_Base.Item_Kind := Data_Base.Data_Kind;
   end record;
   package Notif_List_Mng is new Dynamic_List (Notif_Rec);
   Notif_List : Notif_List_Mng.List_Type;
@@ -26,19 +27,22 @@ package body Notify is
   begin
     -- Here we search in criteria list
     -- Elt1 is the notification criteria, Elt2 is the item name
-    return Names.Match (Parse (Elt2.Item), Parse (Elt1.Item));
+    return Elt2.Kind = Elt1.Kind
+    and then Names.Match (Parse (Elt2.Item), Parse (Elt1.Item));
   end Item_Match;
   procedure Item_Search is new Notif_List_Mng.Search (Item_Match);
 
 
   procedure Add (Client : in Socket.Socket_Dscr;
-                 Item   : in Data_Base.Item_Name) is
+                 Item   : in Data_Base.Item_Name;
+                 Kind   : in Data_Base.Item_Kind) is
   begin
     if Debug.Level_Array(Debug.Client_Notify) then
       Debug.Put ("Client-notify.add: " & Parse(Item)
+               & " kind " & Kind
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
     end if;
-    Notif_List_Mng.Insert (Notif_List, (Client, Item));
+    Notif_List_Mng.Insert (Notif_List, (Client, Item, Kind));
   end Add;
 
 
@@ -53,22 +57,25 @@ package body Notify is
 
 
   procedure Del (Client : in Socket.Socket_Dscr;
-                 Item : in Data_Base.Item_Name) is
+                 Item   : in Data_Base.Item_Name;
+                 Kind   : in Data_Base.Item_Kind) is
     Rec : Notif_Rec;
   begin
-    Rec := (Client, Item);
+    Rec := (Client, Item, Kind);
     begin
       Full_Search (Notif_List, Rec, From_Current => False);
     exception
       when Notif_List_Mng.Not_In_List =>
         if Debug.Level_Array(Debug.Client_Notify) then
           Debug.Put ("Client-notify.del: not found " & Parse(Item)
-                   & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+               & " kind " & Kind
+               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
         end if;
         return;
     end;
     if Debug.Level_Array(Debug.Client_Notify) then
       Debug.Put ("Client-notify.del: " & Parse(Item)
+               & " kind " & Kind
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
     end if;
     Delete_Current;
@@ -84,7 +91,8 @@ package body Notify is
       if Debug.Level_Array(Debug.Client_Notify) then
         Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
         Debug.Put ("Client-notify.del_client: " & Parse(Rec.Item)
-                 & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
+               & " kind " & Rec.Kind
+               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
       end if;
       Delete_Current;
       Client_Search (Notif_List, Rec);
@@ -113,6 +121,7 @@ package body Notify is
     Msg.Item := Item;
     -- Search first notification record
     Rec.Item := Item.Name;
+    Rec.Kind := Item.Kind;
     Item_Search (Notif_List, Rec, From_Current => False);
     loop
       Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
@@ -122,7 +131,9 @@ package body Notify is
       begin
         Dummy := Client_Com.Dictio_Send (Rec.Client, null, Msg);
         if Debug.Level_Array(Debug.Client_Notify) then
-          Debug.Put ("Client-notify.send: " &  Parse(Item.Name) & " on " & Fd'Img);
+          Debug.Put ("Client-notify.send: " &  Parse(Item.Name)
+                   & " kind " & Item.Kind
+                   & " on " & Fd'Img);
         end if;
       exception
         when Socket.Soc_Tail_Err =>

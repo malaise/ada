@@ -134,10 +134,16 @@ package body Dictio_Lib is
         if Debug.Level_Array(Debug.Lib) then
           Debug.Put ("Dictio_Lib: received notify on: "
                    & Parse(Msg.Item.Name) & " "
+                   & Msg.Item.Kind & " "
                    & Msg.Item.Data(1 .. Msg.Item.Data_Len));
+        end if;
+        if Msg.Item.Kind /= Data_Base.Data_Kind
+        and then Msg.Item.Kind /= Data_Base.Alias_Kind then
+          return False;
         end if;
         if Notify_Cb /= null then
           Notify_Cb (Parse(Msg.Item.Name),
+                     Msg.Item.Kind = Data_Base.Data_Kind, 
                      Msg.Item.Data(1 .. Msg.Item.Data_Len));
         end if;
         return False;
@@ -362,7 +368,7 @@ package body Dictio_Lib is
 
   -- (Un)Notify on Item name
   -- May raise Name_Too_Long
-  procedure Notify (Name : in String; On : in Boolean) is
+  procedure Notify (Name : in String; Item : in Boolean; On : in Boolean) is
   begin
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: notify " & On'Img & " " & Name);
@@ -381,6 +387,11 @@ package body Dictio_Lib is
     end if;
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. Name'Length) := Name;
+    if Item then
+      Msg.Item.Kind := Data_Base.Data_Kind;
+    else
+      Msg.Item.Kind := Data_Base.Alias_Kind;
+    end if;
     Send_Request;
   end Notify;
 

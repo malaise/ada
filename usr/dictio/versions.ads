@@ -4,7 +4,7 @@ package Versions is
   Intra : constant String(1 .. 3) := "008";
 
   -- Version of Dictio <-> Client_lib protocol
-  Lib   : constant String(1 .. 3) := "005";
+  Lib   : constant String(1 .. 3) := "006";
 
 end Versions;
 

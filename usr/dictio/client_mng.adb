@@ -15,13 +15,10 @@ package body Client_Mng is
 
   Accept_Port : Tcp_Util.Port_Num;
 
-  -- Send notification according to item kind
+  -- Send notification
   procedure Send_Notify (Item : Data_Base.Item_Rec)  is
-    use type Data_Base.Item_Rec;
   begin
-    if Item.Kind = Data_Base.Data_Kind then
-      Notify.Send (Item);
-    end if;
+    Notify.Send (Item);
   end Send_Notify;
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
@@ -114,9 +111,9 @@ package body Client_Mng is
         Send_Notify (Msg.Item);
         Intra_Dictio.Send_Data (Msg.Item);
       when Client_Com.Notif_On =>
-        Notify.Add (Dscr, Msg.Item.Name);
+        Notify.Add (Dscr, Msg.Item.Name, Msg.Item.Kind);
       when Client_Com.Notif_Off =>
-        Notify.Del (Dscr, Msg.Item.Name);
+        Notify.Del (Dscr, Msg.Item.Name, Msg.Item.Kind);
       when Client_Com.Add_Host =>
         Intra_Dictio.Add_Host (Msg.Item.Data(1 .. Msg.Item.Data_Len));
       when Client_Com.Del_Host =>
