@@ -1,4 +1,5 @@
-with My_Io, X_Mng, Event_Mng, Argument, Text_Handler, Null_Procedure;
+with Ada.Calendar;
+with My_Io, X_Mng, Event_Mng, Timers, Argument, Text_Handler, Null_Procedure;
 use X_Mng;
 procedure T_X is
 
@@ -14,10 +15,9 @@ procedure T_X is
 
   Id : X_Mng.Line;
 
-  Timeout_Ms, Var_Timeout_Ms : Integer;
-  X_Event : Boolean;
+  Timeout : Duration;
+  Exp : Timers.Delay_Rec;
   Kind : X_Mng.Event_Kind;
-  Next : Boolean;
 
   Kbd_Codes : X_Mng.Kbd_Tab_Code;
   Tid_Button : X_Mng.Button_List;
@@ -39,16 +39,18 @@ procedure T_X is
                             Row, 8);
   end Put;
 
+  use type Ada.Calendar.Time;
+
 begin
   if Argument.Get_Nbre_Arg = 0 then
     X_Mng.X_Initialise ("");
-    Timeout_Ms := 1_000;
+    Timeout := 1.0;
   elsif Argument.Get_Nbre_Arg = 1 then
     X_Mng.X_Initialise (Argument.Get_Parameter(1));
-    Timeout_Ms := 1_000;
+    Timeout := 1.0;
   elsif Argument.Get_Nbre_Arg = 2 then
     X_Mng.X_Initialise (Argument.Get_Parameter(1));
-    Timeout_Ms := Integer'Value (Argument.Get_Parameter(2));
+    Timeout := Duration'Value (Argument.Get_Parameter(2));
   end if;
 
   X_Mng.X_Open_Line (Line_Def, Id);
@@ -56,11 +58,13 @@ begin
   -- Enable signal event
   Event_Mng.Set_Sig_Term_Callback (Null_Procedure'Access);
 
-  X_Event := True;
   Kind := X_Mng.Refresh;
+  Exp := (Delay_Kind => Timers.Delay_Exp,
+          Period => Timers.No_Period,
+          Expiration_Time => Ada.Calendar.Clock + Timeout);
   Main_Loop:
   loop
-    if X_Event and then Kind = X_Mng.Refresh then
+    if Kind = X_Mng.Refresh then
       X_Mng.X_Clear_Line (Id);
       X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False, False);
       for I in 0 .. 15 loop
@@ -75,42 +79,32 @@ begin
       X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False, False);
       X_Mng.X_Bell (Id, 1);
     end if;
-    Var_Timeout_Ms := Timeout_Ms;
-    X_Mng.X_Select (Id, Var_Timeout_Ms, X_Event);
-    if X_Event then
-      loop
-        X_Mng.X_Process_Event (Id, Kind, Next);
-        case Kind is
-          when X_Mng.Discard =>
-            Put (X_Mng.Event_Kind'Image(Kind));
-          when X_Mng.Refresh | X_Mng.Fd_Event 
-             | X_Mng.Timer_Event | X_Mng.Signal_Event =>
-            X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
-            Put (X_Mng.Event_Kind'Image(Kind));
-          when X_Mng.Tid_Press | X_Mng.Tid_Release =>
-            X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col);
-            Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
-                              & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col));
-            exit Main_Loop when Tid_Row = 1 and then Tid_Col = 1;
-          when X_Mng.Tid_Motion =>
-            null;
-          when X_Mng.Keyboard =>
-            X_Mng.X_Read_Key(Id, Kbd_Codes);
-            Text_Handler.Set (Txt, X_Mng.Event_Kind'Image(Kind));
-            for I in 1 .. Kbd_Codes.Nbre loop
-               Text_Handler.Append (Txt, " " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
-            end loop;
-            Put (Text_Handler.Value(Txt));
-            exit Main_Loop when Kbd_Codes.Nbre = 2
-                 and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;
-          end case;
-        exit when not Next;
-      end loop;
-    else
---    Put ("Timeout");
-      null;
-    end if;
-    My_Io.Put_Line (Integer'Image(Var_Timeout_Ms));
+    X_Mng.X_Wait_Event (Id, Exp, Kind);
+    case Kind is
+      when X_Mng.Refresh | X_Mng.Fd_Event 
+         | X_Mng.Timer_Event | X_Mng.Signal_Event =>
+        X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
+        Put (X_Mng.Event_Kind'Image(Kind));
+      when X_Mng.Tid_Press | X_Mng.Tid_Release =>
+        X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col);
+        Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
+                          & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col));
+        exit Main_Loop when Tid_Row = 1 and then Tid_Col = 1;
+      when X_Mng.Tid_Motion =>
+        null;
+      when X_Mng.Keyboard =>
+        X_Mng.X_Read_Key(Id, Kbd_Codes);
+        Text_Handler.Set (Txt, X_Mng.Event_Kind'Image(Kind));
+        for I in 1 .. Kbd_Codes.Nbre loop
+           Text_Handler.Append (Txt, " " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
+        end loop;
+        Put (Text_Handler.Value(Txt));
+        exit Main_Loop when Kbd_Codes.Nbre = 2
+             and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;
+      when X_Mng.No_Event =>
+        Put (X_Mng.Event_Kind'Image(Kind));
+        Exp.Expiration_Time := Exp.Expiration_Time + Timeout;
+    end case;
   end loop Main_Loop;
 
   X_Mng.X_Close_Line (Id);
