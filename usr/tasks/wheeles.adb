@@ -47,8 +47,8 @@ begin
       LEN : NATURAL;
     begin
       delay 1.0;
---      MY_IO.GET_LINE (STR, LEN); 
---      exit when STR(1..LEN) = "exit";
+      MY_IO.GET_LINE (STR, LEN); 
+      exit when STR(1..LEN) = "exit";
     exception
       when others => null;
     end;
