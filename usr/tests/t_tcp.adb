@@ -23,7 +23,8 @@ procedure T_Tcp is
   procedure My_Send is new Socket.Send (Message_Type);
   procedure My_Receive is new Socket.Receive (Message_Type);
 
-  procedure Call_Back (F : in X_Mng.File_Desc) is
+  function Call_Back (F : in X_Mng.File_Desc; Read : in Boolean)
+  return Boolean is
     use type X_Mng.File_Desc;
     Message_Len : Natural;
   begin
@@ -37,13 +38,13 @@ procedure T_Tcp is
           Socket.Accept_Connection (Accept_Soc, Tmp_Soc);
           Socket.Close (Tmp_Soc);
         end;
-        return;
+        return False;
       end if;
       Socket.Accept_Connection (Accept_Soc, Soc);
       Fd := Socket.Fd_Of (Soc);
       X_Mng.X_Add_Callback (Fd, True, Call_Back'Unrestricted_Access);
       My_Io.Put_Line ("accepts connection");
-      return;
+      return True;
     end if;
       
     if F /= Fd then
@@ -62,14 +63,14 @@ procedure T_Tcp is
         My_Io.Put_Line (" receives disconnection: Closing");
         X_Mng.X_Del_Callback (Fd, True);
         Socket.Close (Soc);
-        return;
+        return True;
     end;
     My_Io.Put_Line (" receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
                    & Positive'Image(Message.Num));
     if not Server then
-      return;
+      return False;
     end if;
     My_Io.Put_Line ("      Working");
     delay 5.0;
@@ -77,6 +78,7 @@ procedure T_Tcp is
     Message.Num := Message.Num + 1;
     My_Send (Soc, Message);
     My_Io.Put_Line ("      Reply sent");
+    return False;
   end Call_Back;
 
   function Client_Connect return Boolean is

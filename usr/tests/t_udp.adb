@@ -24,7 +24,8 @@ procedure T_Udp is
   procedure My_Send is new Socket.Send (Message_Type);
   procedure My_Receive is new Socket.Receive (Message_Type);
 
-  procedure Call_Back (F : in X_Mng.File_Desc) is
+  function Call_Back (F : in X_Mng.File_Desc; Read : in Boolean)
+  return Boolean is
     use type X_Mng.File_Desc;
     Message_Len : Natural;
   begin
@@ -43,20 +44,21 @@ procedure T_Udp is
     exception
       when Socket.Soc_Conn_Lost =>
         My_Io.Put_Line (" receives disconnection");
-        return;
+        return True;
     end;
     My_Io.Put_Line (" receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
                    & Positive'Image(Message.Num));
     if not Server then
-      return;
+      return False;
     end if;
     My_Io.Put_Line ("      Working");
     delay 5.0;
     My_Io.Put_Line ("      Replying");
     Message.Num := Message.Num + 1;
     My_Send (Soc, Message);
+    return False;
   end Call_Back;
 
   procedure Send is
