@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with CALENDAR;
 with MY_IO, NORMAL;
 with GENERIC_CON_IO;
@@ -9,6 +10,7 @@ procedure T_CON is
   task type TASK_T is
     entry START(I : in POSITIVE);
   end TASK_T;
+  for TASK_T'STORAGE_SIZE use 64 * 1024;
 
   NB_TASKS : constant := 2;
   T : array (1 .. NB_TASKS) of TASK_T;
@@ -56,8 +58,8 @@ procedure T_CON is
     accept START(I : in POSITIVE) do
       ME := I;
     end START;
-
     INIT;
+
     RESET_TERM;
     ENABLE_MOTION_EVENTS(TRUE);
     -- fenetre de saisie, fenetre d'affichage
@@ -156,8 +158,8 @@ procedure T_CON is
 
 
   exception
-    when others =>
-       MY_IO.PUT_LINE ("Exception");
+    when Error : others =>
+       MY_IO.PUT_LINE ("Exception " &  Ada.Exceptions.Exception_Name (Error));
        raise;
   end TASK_T;
 
