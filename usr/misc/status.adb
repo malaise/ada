@@ -41,7 +41,7 @@ begin
 
   -- Check that target file exists and get its modif date
   begin
-    DIRECTORY.FILE_STAT(ARGUMENT.GET_PARAMETER(1),
+    DIRECTORY.FILE_STAT(ARGUMENT.GET_PARAMETER(ARGUMENT.GET_NBRE_ARG),
                         KIND, RIGHTS, TARGET_MTIME);
   exception
     when DIRECTORY.NAME_ERROR =>
@@ -51,20 +51,21 @@ begin
       -- Other error
       SYS_CALLS.PUT_LINE_ERROR(
           "ACCESS ERROR: Cannot read status of target file "
-        & STRING'(ARGUMENT.GET_PARAMETER(1)));
+        & STRING'(ARGUMENT.GET_PARAMETER(ARGUMENT.GET_NBRE_ARG)));
       SYS_CALLS.SET_EXIT_CODE (EXIT_INTERNAL_ERROR);
       return;
   end;
   TARGET_TIME := DIRECTORY.TIME_OF(TARGET_MTIME);
 
   -- Check that each source exists and is before result
-  for ARG_NO in 2 .. ARGUMENT.GET_NBRE_ARG loop
+  for ARG_NO in 1 .. ARGUMENT.GET_NBRE_ARG - 1 loop
 
-    if STRING'(ARGUMENT.GET_PARAMETER(ARG_NO)) = ARGUMENT.GET_PARAMETER(1) then
+    if STRING'(ARGUMENT.GET_PARAMETER(ARG_NO)) =
+       ARGUMENT.GET_PARAMETER(ARGUMENT.GET_NBRE_ARG) then
       SYS_CALLS.PUT_LINE_ERROR(
          "SEMANTIC ERROR: Source file "
        & STRING'(ARGUMENT.GET_PARAMETER(ARG_NO))
-       & " is also the result file.");
+       & " is also the target file.");
       SYS_CALLS.PUT_LINE_ERROR("Usage: "
        & ARGUMENT.GET_PROGRAM_NAME & " { <source_file> } <target_file>");
       SYS_CALLS.SET_EXIT_CODE (EXIT_INTERNAL_ERROR);
