@@ -151,7 +151,7 @@ package body Event_Mng is
   -- Signal management --
   -----------------------
   Cb_Sig : Sig_Callback := Null_Procedure'Access;
-  
+
   procedure Set_Sig_Callback (Callback : in Sig_Callback) is
   begin
     Cb_Sig := Callback;
@@ -193,8 +193,9 @@ package body Event_Mng is
     Set_Debug;
     -- Compute final expiration
     if Timeout_Ms >= 0 then
-      Timeout_In := Duration (Timeout_Ms) / 1000.0; 
-      Final_Exp := (Infinite => False, Time => Ada.Calendar.Clock + Timeout_In);
+      Timeout_In := Duration (Timeout_Ms) / 1000.0;
+      Final_Exp := (Infinite => False,
+                    Time => Ada.Calendar.Clock + Timeout_In);
     else
       Timeout_In := Infinite_Timeout;
       Final_Exp := (Infinite => True);
@@ -275,7 +276,7 @@ package body Event_Mng is
 
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
-  begin      
+  begin
     Set_Debug;
     case Event.Kind is
       when Fd_Event =>
@@ -296,7 +297,8 @@ package body Event_Mng is
         exception
           when Cb_Mng.Not_In_List =>
             if Debug then
-              Ada.Text_Io.Put_Line ("**** Handle: " & File_Desc'Image(Event.Fd)
+              Ada.Text_Io.Put_Line ("**** Handle: "
+                                  & File_Desc'Image(Event.Fd)
                                   & " fd not found ****");
             end if;
         end;

@@ -32,7 +32,7 @@ package body Timers is
   end "<";
   procedure Sort is new Timer_List_Mng.Sort ("<");
 
-  -- Search Timer by Id 
+  -- Search Timer by Id
   function Id_Match (T1, T2 : Timer_Rec) return Boolean is
   begin
     return T1.Id = T2.Id;
@@ -65,7 +65,7 @@ package body Timers is
           Incr_Id;
           return Timer.Id;
       end;
-      -- Bad luck, this Id is in use. Try next. 
+      -- Bad luck, this Id is in use. Try next.
       Incr_Id;
       -- Check we have not tried ALL timers
       if Next_Timer_Id = Start_Id then
