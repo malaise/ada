@@ -42,6 +42,9 @@ exception
   when Mcd_Mng.Argument_Mismatch =>
     Sys_Calls.Put_Line_Error ("Error: Argument mismatch");
     Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.Compute_Error =>
+    Sys_Calls.Put_Line_Error ("Error: Compute error");
+    Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Invalid_Register =>
     Sys_Calls.Put_Line_Error ("Error: Invalid register");
     Sys_Calls.Set_Error_Exit_Code;
