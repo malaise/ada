@@ -8,7 +8,8 @@ procedure T_Parser is
   begin
     return C = Sep;
   end Is_Sep;
-  Is_Sep_Acc : Parser.Separing_Function := Is_Sep'Unrestricted_Access;
+  Is_Sep_Acc : constant Parser.Separing_Function
+             := Is_Sep'Unrestricted_Access;
 
 
   function Str return String is
@@ -36,7 +37,7 @@ begin
   end if;
     
   Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "'.");
-  Parser.Create (Str, Is_Sep_Acc, It);
+  Parser.Set (It, Str, Is_Sep_Acc);
 
   loop
     Ada.Text_Io.Put (">" & Parser.Next_Word (It) & "< ");
@@ -44,7 +45,7 @@ begin
   end loop;
   Ada.Text_Io.New_Line (2);
   
-  Parser.reset (It);
+  Parser.Reset (It);
 
   loop
     Parser.Next_Word (It);
@@ -56,8 +57,22 @@ begin
     exit when Parser.Current_Word (It) = "";
   end loop;
 
+  if Parser.First_Word (It) = "check"
+  and then Parser.Next_Word (It) = "size"
+  and then Parser.Next_Word (It) = "" then
+    Ada.Text_Io.Put_Line ("Checking size... Ctrl C to abort");
+    -- Size of process shall not grow
+    loop
+      declare
+        Itt : Parser.Iterator;
+      begin
+        Parser.Copy (Itt, It);
+        Parser.Set (Itt, Str, Is_Sep_Acc);
+      end;
+    end loop;
+  end if;
 
-  Parser.Delete (It);
+  Parser.Del (It);
   Ada.Text_Io.Put_Line ("Done.");
 
 end T_Parser;
