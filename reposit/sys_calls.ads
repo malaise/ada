@@ -38,7 +38,8 @@ package Sys_Calls is
   type Stdin_Mode_List is (
     Canonical,   -- Wait for CR, Echo, Blocking
     No_Echo,     -- Wait for CR, No echo, Blocking
-    Asynchronous -- No wait, No echo, Not Blocking
+    Asynchronous,-- No wait, Echo, Not Blocking
+    Transparent  -- No wait, No echo, Not Blocking
   );
   function Set_Stdin_Attr (Stdin_Mode : in Stdin_Mode_List) return Boolean;
 

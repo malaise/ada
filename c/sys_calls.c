@@ -38,6 +38,7 @@ extern int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
 #define NORMAL 0
 #define NOECHO 1
 #define ASYNC  2
+#define TRANSP 3
 
 int set_stdin_attr (int mode) {
 
@@ -58,6 +59,12 @@ int set_stdin_attr (int mode) {
       termattr.c_lflag &= ~ECHO;
     break;
     case ASYNC:
+      termattr.c_lflag &= ~ICANON;
+      termattr.c_lflag |= ECHO;
+      termattr.c_cc[VMIN] = 1;
+      termattr.c_cc[VTIME]= 0;
+    break;
+    case TRANSP:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag &= ~ECHO;
       termattr.c_cc[VMIN] = 1;
@@ -84,6 +91,7 @@ int set_stdin_attr (int mode) {
       res &= ~O_NONBLOCK;   
     break;
     case ASYNC:
+    case TRANSP:
        res |= O_NONBLOCK;
     break;
     default:

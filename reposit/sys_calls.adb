@@ -163,7 +163,8 @@ package body Sys_Calls is
   Modes_For_C : constant array (Stdin_Mode_List) of Integer := (
     Canonical    => 0,
     No_Echo      => 1,
-    Asynchronous => 2);
+    Asynchronous => 2,
+    Transparent  => 3);
   function C_Set_Stdin_Attr (Mode : Integer) return Integer;
   pragma Import (C, C_Set_Stdin_Attr, "set_stdin_attr");
 
