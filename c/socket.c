@@ -10,12 +10,20 @@
 
 #include "socket_prv.h"
 
+#ifndef SOCKET_NO_X
+#include "x_export.h"
+#else
+static int x_fd_set (int fd, boolean read) {
+  return (FALSE);
+}
+#endif
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
 #endif
 
 static void h_perror (const char *msg) {
-  printf ("%s: ", msg);
+  fprintf (stderr, "%s: ", msg);
   switch (h_errno) {
     case HOST_NOT_FOUND :
       fprintf (stderr, "Host not found");
@@ -122,6 +130,12 @@ extern int soc_close (soc_token *p_token) {
 
   /* Check that socket is open */
   if (*p_soc == NULL) return (SOC_USE_ERR);
+
+  /* Check that Fd is not used for select */
+  if (x_fd_set ((*p_soc)->socket_id, TRUE)
+   || x_fd_set ((*p_soc)->socket_id, FALSE) ) {
+    return (SOC_FD_IN_USE);
+  }
  
   close ((*p_soc)->socket_id);
   free (*p_soc);
@@ -201,7 +215,9 @@ static int soc_connect (soc_ptr soc) {
 
   /* Check result */
   if (result < 0) {
-    if (errno == ECONNREFUSED) {
+    if ( (errno == ECONNREFUSED)
+      || (errno == ETIMEDOUT)
+      || (errno == ENETUNREACH) ) {
       /* Not connected */
       return (SOC_CONN_REFUSED);
     } else if (errno == EINPROGRESS) {
@@ -563,7 +579,6 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
   struct iovec vector[VECTOR_LEN];
   soc_length len2send;
   char* msg2send;
-  char *tmpmsg;
   int vector_len;
 
   /* Check that socket is open */
@@ -629,6 +644,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
   if ( (cr == -1) && (errno == EAGAIN) ) {
     cr = 0;
   }
+
   
   /* Check result */
   if (cr == -1) {
@@ -649,41 +665,42 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
       soc->send_len = 0;
     }
     return (SOC_OK);
+  } else if (soc->blocking) {
+    /* Not blocked despite blocking */
+    return (SOC_CONN_LOST);
+  } else if ((cr == 0) && (soc->proto == udp_socket) ) {
+    /* Udp */
+    return (SOC_WOULD_BLOCK);
   } else {
-    /* Overflow: save tail */
-    msg2send = malloc (len2send - cr);
+    /* Tcp Overflow: save tail */
+    len2send  -= cr;
+    msg2send = malloc (len2send);
     if (msg2send == NULL) {
       perror ("malloc2");
       return (SOC_SYS_ERR);
     }
-    if (soc->proto == tcp_header_socket) {
-      if ( (soc->send_tail == NULL) && (cr < sizeof(header)) ) {
-        /* First send of vector and header not complitly sent */
-        /* Save rest of header and all message */
-        len2send = length + sizeof(header) - cr;
-        memcpy (msg2send, ((char*)&header) + cr, sizeof(header) - cr);
-        memcpy (msg2send + sizeof(header) - cr, (char*)message, length);
-      } else {
-        /* Header sent */
-        if (soc->send_tail != NULL) {
-          /* We were in overflow */
-          tmpmsg = soc->send_tail;
-          len2send = soc->send_len - cr;
-        } else {
-          tmpmsg = message;
-          len2send = sizeof(header) + length - cr;
-        }
-        memcpy (msg2send, tmpmsg, len2send);
+    if ( (soc->proto == tcp_header_socket)
+      && (soc->send_tail == NULL)
+      && (cr < sizeof(header)) ) {
+
+      /* First send of vector and header not completly sent */
+      /* Save rest of header and all message */
+      memcpy (msg2send, ((char*)&header) + cr, sizeof(header) - cr);
+      memcpy (msg2send + sizeof(header) - cr, (char*)message, length);
+
+    } else if (soc->send_tail == NULL) {
+      /* First send of vector but either header sent or no header */
+      /* Save rest of message */
+      if (soc->proto == tcp_header_socket) {
+        /* Cr = header + nbmessage. Start at cr - header */
+        cr -= sizeof(header);
       }
+      memcpy (msg2send , (char*)message + cr, len2send);
     } else {
-      if (soc->send_tail != NULL) {
-        len2send = soc->send_len - cr;
-        memcpy (msg2send, soc->send_tail, len2send); 
-      } else {
-        len2send = length - cr;
-        memcpy (msg2send, (char*)message, len2send); 
-      }
+      /* We were in overflow: save rest of tail */
+      memcpy (msg2send, soc->send_tail + cr, len2send);
     }
+
     /* Set new tail */
     if (soc->send_tail != NULL) {
       free (soc->send_tail);
@@ -1000,6 +1017,7 @@ extern int soc_receive (soc_token token,
       if (result == SOC_OK) {
         /* Disconnect if invalid magic num */
         if (ntohl(header.magic_number) != MAGIC_NUMBER) {
+          fprintf (stderr, "Bad magic number\n");
           return (SOC_CONN_LOST);
         }
         /* Header is read and correct. Save expected length */
