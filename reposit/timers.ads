@@ -3,22 +3,27 @@ package Timers is
 
   -- How to specify a timer, wait some seconds or until a specific time
   type Delay_List is (Delay_Sec, Delay_Exp);
+
+  -- May be returned by Wait_For
+  -- Do not use for timers
   Infinite_Seconds : constant Duration := -1.0;
 
   -- How to specify a period for a timer
   subtype Period_Range is Duration range 0.0 .. Duration'Last;
   No_Period : Period_Range := 0.0;
+  Default_Timeout : constant Duration := 1.0;
 
   type Delay_Rec (Delay_Kind : Delay_List := Delay_Sec) is record
     Period : Period_Range := No_Period;
     case Delay_Kind is
       when Delay_Sec =>
-        Delay_Seconds : Duration := Infinite_Seconds;
+        Delay_Seconds : Duration := Default_Timeout;
       when Delay_Exp =>
         Expiration_Time : Ada.Calendar.Time;
     end case;
   end record;
-  -- Infinite delay
+
+  -- Infinite delay. Do not use for timers
   Infinite_Delay : constant Delay_Rec(Delay_Sec)
                  := (Delay_Kind => Delay_Sec,
                      Period        => No_Period,
@@ -26,6 +31,7 @@ package Timers is
 
   -- Timer unique identifier
   type Timer_Id is private;
+  function Image (Id : Timer_Id) return String;
 
   -- Timer callback: called when the timer expires with one argument:
   --  the timer Id

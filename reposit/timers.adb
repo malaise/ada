@@ -1,6 +1,12 @@
 with Dynamic_List;
 package body  Timers is
 
+  -- Return an image of a timer
+  function Image (Id : Timer_Id) return String is
+  begin
+    return Id.Timer_Num'Img;
+  end Image;
+
   -- Allocated timer Ids
   subtype Timer_Id_Range is Positive;
   Next_Timer_Id : Positive := Positive'First;
