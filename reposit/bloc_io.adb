@@ -178,6 +178,15 @@ package  body Bloc_Io is
     elsif Res /= Size_T(Item'Length) then
       raise End_Error;
     end if;
+    -- Workaround to a bug on Tru64
+    -- Index is wrong when reading without index after
+    --  a write. Reading the index fixes it!!!
+    Bug_Fix:
+    declare
+      Dummy_Index : Positive_Count;
+    begin
+      Dummy_Index := Index(File);
+    end Bug_Fix;
   end Write;
 
   -- Amount of Elements in file
