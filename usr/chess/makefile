@@ -2,7 +2,7 @@ LIBC_DIR=$(HOME)/ada/c
 LIBX_MNG=x_mng
 LX=-largs -L$(LIBC_DIR) -l$(LIBX_MNG) -lX11
 
-EXE=t1
+EXE=chess
 
 all: $(EXE)
 
@@ -10,7 +10,7 @@ new:
 	rm -f $(EXE)
 	make
 	
-t1:
+chess:
 	amake $@ $(LX)
 
 clean:

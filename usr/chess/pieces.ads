@@ -43,15 +43,19 @@ package Pieces is
   function Pos_Of (Piece : Basic_Piece'Class)
                   return Space.Square_Coordinate;
 
-  -- Move a piece (temporary for thinking, or definitivly)
+  -- Move a piece (temporary for thinking, or definitively)
   procedure Move (Piece  : in Piece_Access;
                   To     : in Space.Square_Coordinate;
                   Commit : in Boolean);
+  -- Undo a temporary move
+  procedure Undo_Move (Piece  : in Piece_Access;
+                       To     : in Space.Square_Coordinate);
 
   -- Influence of a piece:
   -- Can move or take, or covers a piece of same field
   type Action_Kind_List is (Move, Castle, Take, Take_En_Passant,
                             Promote, Take_And_Promote, Cover);
+  subtype Promotion_Piece_List is Piece_Kind_List range Rook .. Queen;
   type Action_Rec (Kind : Action_Kind_List := Move) is record
     Dest : Space.Square_Coordinate := Space.Origin;
     case Kind is
@@ -61,7 +65,7 @@ package Pieces is
       when Castle =>
         Rook_From, Rook_Dest : Space.Square_Coordinate;
       when Promote | Take_And_Promote =>
-        New_Piece : Piece_Kind_List;
+        New_Piece : Promotion_Piece_List;
     end case;
   end record;
   type Action_Array is array (Positive range <>) of Action_Rec;

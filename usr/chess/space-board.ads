@@ -18,10 +18,12 @@ package Space.Board is
                           Commit : Boolean);
   procedure Restore_Piece (Piece : in Pieces.Piece_access);
 
-  -- Move a piece (If not commited, reverse movement can be done)
+  -- Move a piece (If not commited, reverse can be done by Undo_Move_Piece)
   procedure Move_Piece (From   : in Square_Coordinate;
                         To     : in Square_Coordinate;
                         Commit : in Boolean);
+  procedure Undo_Move_Piece (From   : in Square_Coordinate;
+                             To     : in Square_Coordinate);
 
   -- Null if empty
   function Piece_At (Square : Square_Coordinate) return Pieces.Piece_Access;

@@ -1,4 +1,6 @@
-with Pieces, Space.Board, Team, Screen;
+with Ada.Text_Io;
+
+with Pieces, Space.Board, Team, Screen, Debug;
 package body Game is
 
 
@@ -69,7 +71,7 @@ package body Game is
     end if;
 
     -- Move back
-    Space.Board.Move_Piece (History.Action.To.Dest, History.Action.From, False);
+    Space.Board.Undo_Move_Piece (History.Action.To.Dest, History.Action.From);
 
     -- Recreate taken piece
     if History.Action.To.Kind = Pieces.Take
@@ -80,7 +82,8 @@ package body Game is
 
     -- Undo Rook movement on Caslte
     if History.Action.To.Kind = Pieces.Castle then
-      Space.Board.Move_Piece (History.Action.To.Rook_Dest, History.Action.To.Rook_From, False);
+      Space.Board.Undo_Move_Piece (History.Action.To.Rook_Dest,
+                                   History.Action.To.Rook_From);
     end if;
 
   end Undo_Try;
@@ -139,14 +142,14 @@ package body Game is
     King := null;
     loop
       Tmp_Piece := Team.Get (Color);
+      if Tmp_Piece = null then
+        raise No_King;
+      end if;
       if Pieces.Id_Of(Tmp_Piece.all).Kind = Pieces.King then
         King := Tmp_Piece;
         exit;
       end if;
     end loop;
-    if King = null then
-      raise No_King;
-    end if;
     King_Square := Pieces.Pos_Of (King.all);
 
     -- Check King is not check
@@ -154,7 +157,8 @@ package body Game is
     loop
       Opp_Action := Players.Next_Action (Opp_Color);
       exit when not Opp_Action.Valid;
-      if Opp_Action.To.Kind = Pieces.Take
+      if (Opp_Action.To.Kind = Pieces.Take
+          or else Opp_Action.To.Kind = Pieces.Take_And_Promote)
       and then Opp_Action.To.Dest = King_Square then
         -- Opponent would take our king
         return True;
@@ -168,11 +172,32 @@ package body Game is
   function Can_Move (Color : Space.Color_List) return Boolean is
     Action : Players.Action_Rec;
     Opp_Color : constant Space.Color_List := Space.Opponent (Color);
+    Index : Positive;
     use type Pieces.Action_Kind_List;
+
+    procedure Debug_Check (In_Check : in Boolean) is
+    begin
+      if not Debug.Get (Debug.No_Check) then
+        return;
+      end if;
+      if In_Check then
+        Ada.Text_Io.Put ("In");
+      else
+        Ada.Text_Io.Put ("No");
+      end if;
+      Ada.Text_Io.Put (" check with ");
+      Debug.Put (Action);
+      Ada.Text_Io.New_Line;
+    end Debug_Check;
+
   begin
-    Players.Rewind_Actions (Color);
+    -- We cannot use sequential access to player's actions
+    --  because Players.Think (Opp_Color) on its king
+    --  makes one
+    Index := 1;
     loop
-      Action := Players.Next_Action (Color);
+      Action := Players.Get_Action (Color, Index);
+      Index := Index + 1;
       exit when not Action.Valid;
 
       if Action.To.Kind /= Pieces.Cover then
@@ -183,10 +208,12 @@ package body Game is
         if not In_Check (Color) then
           -- This is at least a valid move
           Undo_Try;
+          Debug_Check (False);
           return True;
         end if;
 
         Undo_Try;
+        Debug_Check (True);
       end if;
     end loop;
     -- No moves found

@@ -8,7 +8,25 @@ procedure Actions_Of_Pawn (Piece : in Pawn_Piece) is
   use type Space.Color_List, Space.Movement_Range;
   Col_Offsets : constant array (1 .. 2) of Space.Movement_Range
               := (-1, 1);
+  Promotion : Boolean;
   Pep_Error : exception;
+
+  subtype Promotion_Kind_List is Action_Kind_List range Promote .. Take_And_Promote;
+  procedure Insert_Promotions (Kind : Promotion_Kind_List;
+                               Dest : Space.Square_Coordinate) is
+    Action : Action_Rec;
+  begin
+    if Kind = Promote then
+      Action := (Promote, Dest, Promotion_Piece_List'First);
+    else
+      Action := (Take_And_Promote, Dest, Promotion_Piece_List'First);
+    end if;
+    for Piece_Kind in Promotion_Piece_List loop
+      Action.New_Piece := Piece_Kind;
+      Action_List_Mng.Insert(Action_List, Action);
+    end loop;
+  end Insert_Promotions;
+
 begin
 
   -- In which way are we progressing
@@ -18,11 +36,19 @@ begin
     Row_Offset := -1;
   end if;
 
+  -- Promotion (by move or take)
+  -- End of board?
+  Promotion := not Space.Compute_Movement (Piece.Square, 0, Row_Offset *2).Valid;
+
   -- Progression by one
   Space.Board.What_Is_At (Piece.Square, 0, Row_Offset, New_Pos, Dest_Piece);
   if New_Pos.Valid and then Dest_Piece = null then
     -- Free
-    Insert_Move (New_Pos.Square);
+    if not Promotion then
+      Insert_Move (New_Pos.Square);
+    else
+      Insert_Promotions (Promote, New_Pos.Square);
+    end if;
   end if;
 
   -- Progression by two
@@ -41,7 +67,11 @@ begin
     if New_Pos.Valid
     and then Dest_Piece /= null then
       if Dest_Piece.Color /= Piece.Color then
-        Insert_Take (New_Pos.Square);
+        if not Promotion then
+          Insert_Take (New_Pos.Square);
+        else
+          Insert_Promotions (Take_And_Promote, New_Pos.Square);
+        end if;
       else
         Insert_Cover (New_Pos.Square);
       end if;

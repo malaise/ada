@@ -42,6 +42,13 @@ package body Space.Board is
     Pieces.Move (The_Board(To.Col, To.Row), To, Commit);
   end Move_Piece;
 
+  procedure Undo_Move_Piece (From   : in Square_Coordinate;
+                             To     : in Square_Coordinate) is
+  begin
+    The_Board(To.Col, To.Row) := The_Board(From.Col, From.Row);
+    The_Board(From.Col, From.Row) := null;
+    Pieces.Undo_Move (The_Board(To.Col, To.Row), To);
+  end Undo_Move_Piece;
 
   -- Initialization of board
   procedure Init is

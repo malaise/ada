@@ -6,6 +6,8 @@ package body Pieces is
   -- Has a pawn moved by two just before
   Pawn_Moved_Two : array (Space.Color_list) of Piece_Access
                  := (others => null);
+  Saved_Pawn_Moved_Two : array (Space.Color_list) of Piece_Access
+                       := (others => null);
 
   -- List of valid moves
   package Action_List_Mng is new Dynamic_List(Action_Rec);
@@ -97,13 +99,14 @@ package body Pieces is
   end Pos_Of;
 
   -- Move a piece
+  function "-" (From, To : Space.Row_range) return Natural is
+  begin
+    return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To) );
+  end "-";
+
   procedure Move (Piece  : in Piece_Access;
                   To     : in Space.Square_Coordinate;
                   Commit : in Boolean) is
-    function "-" (From, To : Space.Row_range) return Natural is
-    begin
-      return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To) );
-    end "-";
   begin
     Check_Is_Not_Basic(Piece.all);
     if Commit then
@@ -113,9 +116,25 @@ package body Pieces is
         Pawn_Moved_Two(Piece.Color) := Piece;
       end if;
       Piece.Has_Moved := True;
+    else
+      Saved_Pawn_Moved_Two(Piece.Color) := Pawn_Moved_Two(Piece.Color);
+      Pawn_Moved_Two(Piece.Color) := null;
+      if Piece.Kind = Pawn
+      and then Piece.Square.Row - To.Row = 2 then
+        Pawn_Moved_Two(Piece.Color) := Piece;
+      end if;
     end if;
     Piece.Square := To;
   end Move;
+
+  -- Undo a temporary move
+  procedure Undo_Move (Piece  : in Piece_Access;
+                       To     : in Space.Square_Coordinate) is
+  begin
+    Check_Is_Not_Basic(Piece.all);
+    Pawn_Moved_Two(Piece.Color) := Saved_Pawn_Moved_Two(Piece.Color);
+    Piece.Square := To;
+  end Undo_Move;
 
   -- Insert movement if destination square is valid
   -- Return True if Square is valid and empty

@@ -1,4 +1,4 @@
-with Pieces, Space.Board, Players;
+with Space, Players;
 
 package Screen is
 
@@ -10,6 +10,10 @@ package Screen is
 
   -- Get a movement
   function Get (Color : Space.Color_List) return Players.Action_Rec;
+
+  -- Put message and wait (a bit or until return)
+  procedure Put (Color : Space.Color_List;
+                 Message : in String; Ack : in Boolean := False);
 
   -- Close the board
   procedure Close;
