@@ -89,6 +89,7 @@ procedure T_Channels is
   procedure Send (Msg : in Message_type) is
   begin
     Fifo.Write (Msg, Send_Cb => Send_Cb'Unrestricted_Access);
+    Wait (0.5);
   end Send;
 
   -- Message sent
@@ -147,8 +148,6 @@ begin
   loop
     Send (Message);
     Nb_Done := Nb_Done + 1;
-    -- Wait for replies
-    Wait (0.5);
     exit when Nb_Done = Nb_To_Do;
   end loop;
 
@@ -159,19 +158,16 @@ begin
     Fifo.Del_Destination (Argument.Get_Parameter(I));
     Ada.Text_Io.Put_Line ("Sending one message");
     Send (Message);
-    Wait (0.5);
   end loop;
 
   Ada.Text_Io.New_Line;
   Ada.Text_Io.Put_Line ("Deleting all dests and sending one message");
   Fifo.Del_All_Destinations;
   Send (Message);
-  Wait (0.5);
 
   Ada.Text_Io.New_Line;
   Ada.Text_Io.Put_Line ("Sending one message");
   Send (Message);
-  Wait (0.5);
 exception
   when Channels.Unknown_Channel =>
     Ada.Text_Io.Put_Line ("Unknown channel "
