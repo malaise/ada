@@ -60,8 +60,15 @@ package body Parser is
       return Empty;
     end if;
 
+    -- Check for first call to Next_Word on empty string
+    if Iter.First > Iter.Len then
+      Iter.State := Parsed;
+      return Empty;
+    end if;
+
     -- Init search of next character (non sep)
     Iter.First := Iter.Last + 1;
+
     if Iter.Is_Sep (Iter.Str(Iter.First)) then
       -- Skip separators
       Iter.Sep := Iter.First;
