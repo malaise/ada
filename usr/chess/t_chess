@@ -1,2 +1,2 @@
-chess -cwhite $* &
-chess -cblack -slocalhost $* &
+chess -S -cwhite $* &
+chess -C -cblack -slocalhost $* &
