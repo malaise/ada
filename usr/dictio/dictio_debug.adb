@@ -1,47 +1,24 @@
 with Ada.Text_Io, Ada.Calendar;
-with Sys_Calls, Normal, Day_Mng;
-use Sys_Calls;
+with Sys_Calls, Normal, Day_Mng, Environ;
 package body Debug is
-  Val : String (1 .. 1);
-  Set, Trunc : Boolean;
-  Len : Natural;
 
   procedure Init is
   begin
     Level_Array := (others => False);
 
-    Getenv ("DICTIO_DEBUG_STATUS", Set, Trunc, Val, Len);
-    Level_Array(Status) := Set;
-
-    Getenv ("DICTIO_DEBUG_INTRA", Set, Trunc, Val, Len);
-    Level_Array(Intra) := Set;
-
-    Getenv ("DICTIO_DEBUG_FIGHT", Set, Trunc, Val, Len);
-    Level_Array(Fight) := Set;
+    Level_Array(Status) := Environ.Is_Yes ("DICTIO_DEBUG_STATUS");
+    Level_Array(Intra) := Environ.Is_Yes ("DICTIO_DEBUG_INTRA");
+    Level_Array(Fight) := Environ.Is_Yes ("DICTIO_DEBUG_FIGHT");
+    Level_Array(Online) := Environ.Is_Yes ("DICTIO_DEBUG_ONLINE");
+    Level_Array(Client) := Environ.Is_Yes ("DICTIO_DEBUG_CLIENT");
+    Level_Array(Client_Data) := Environ.Is_Yes ("DICTIO_DEBUG_CLIENT_DATA");
+    Level_Array(Client_Notify) :=
+                Environ.Is_Yes ("DICTIO_DEBUG_CLIENT_NOTIFY");
+    Level_Array(Client_Alias) := Environ.Is_Yes ("DICTIO_DEBUG_CLIENT_ALIAS");
+    Level_Array(Sync) := Environ.Is_Yes ("DICTIO_DEBUG_SYNC");
+    Level_Array(Lib) := Environ.Is_Yes ("DICTIO_DEBUG_LIB");
     
-    Getenv ("DICTIO_DEBUG_ONLINE", Set, Trunc, Val, Len);
-    Level_Array(Online) := Set;
-    
-    Getenv ("DICTIO_DEBUG_CLIENT", Set, Trunc, Val, Len);
-    Level_Array(Client) := Set;
-    
-    Getenv ("DICTIO_DEBUG_CLIENT_DATA", Set, Trunc, Val, Len);
-    Level_Array(Client_Data) := Set;
-    
-    Getenv ("DICTIO_DEBUG_CLIENT_NOTIFY", Set, Trunc, Val, Len);
-    Level_Array(Client_Notify) := Set;
-
-    Getenv ("DICTIO_DEBUG_CLIENT_ALIAS", Set, Trunc, Val, Len);
-    Level_Array(Client_Alias) := Set;
-
-    Getenv ("DICTIO_DEBUG_SYNC", Set, Trunc, Val, Len);
-    Level_Array(Sync) := Set;
-    
-    Getenv ("DICTIO_DEBUG_LIB", Set, Trunc, Val, Len);
-    Level_Array(Lib) := Set;
-    
-    Getenv ("DICTIO_DEBUG_ALL", Set, Trunc, Val, Len);
-    if Set then
+    if Environ.Is_Yes ("DICTIO_DEBUG_ALL") then
       Level_Array := (others => True);
     end if;
   end Init;

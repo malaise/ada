@@ -1,5 +1,5 @@
 with Assertion, Event_Mng, String_Mng, Text_Handler, Normal, Event_Mng,
-     Sys_Calls;
+     Environ;
 with Dictio_Lib;
 package body Fifos is
 
@@ -568,11 +568,6 @@ package body Fifos is
       end Notify_Cb;
 
       procedure Init is
-        Env_Set   : Boolean;
-        Env_Trunc : Boolean;
-        Env_Value : String (1 .. Name_Suffix.Max_Len - 1);
-        Env_Len   : Natural;
-
         use type Dictio_Lib.Dictio_State_List;
       begin
         if Init_Done then
@@ -587,14 +582,11 @@ package body Fifos is
         end if;
 
         -- Getenv name suffix
-        Sys_Calls.Getenv (Name_Suffix_Name, Env_Set, Env_Trunc,
-                          Env_Value, Env_Len);
+        Text_Handler.Set (Name_Suffix, Default_Name_Suffix);
+        Environ.Get_Txt (Name_Suffix_Name, Name_Suffix);
         -- Check a name based on this suffix is accepted by dictio
-        if Env_Set and then not Env_Trunc and then Env_Len /= 0
-        and then Dictio_Lib.Is_Valid_Item_Name (
-                            Env_Value(1 .. Env_Len) & "a") then
-          Text_Handler.Set (Name_Suffix, Env_Value(1 .. Env_Len));
-        else
+        if not Dictio_Lib.Is_Valid_Item_Name (
+             Text_Handler.Value (Name_Suffix) & "a") then
           Text_Handler.Set (Name_Suffix, Default_Name_Suffix);
         end if;
 

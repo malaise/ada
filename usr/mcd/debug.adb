@@ -1,40 +1,21 @@
 with Text_Io;
-with Sys_Calls; use Sys_Calls;
+with Environ;
 with Bool_Io, Inte_Io, Real_Io;
 package body Debug is
-  Val : String (1 .. 1);
-  Set, Trunc : Boolean;
-  Len : Natural;
 
   procedure Init is
   begin
     Debug_Level_Array := (others => False);
 
-    Getenv ("MCD_DEBUG_PARSER", Set, Trunc, Val, Len);
-    Debug_Level_Array(Parser) := Set;
+    Debug_Level_Array(Parser) := Environ.Is_Yes ("MCD_DEBUG_PARSER");
+    Debug_Level_Array(Input) := Environ.Is_Yes ("MCD_DEBUG_INPUT");
+    Debug_Level_Array(Call) := Environ.Is_Yes ("MCD_DEBUG_CALL");
+    Debug_Level_Array(Stack) := Environ.Is_Yes ("MCD_DEBUG_STACK");
+    Debug_Level_Array(Register) := Environ.Is_Yes ("MCD_DEBUG_REGISTER");
+    Debug_Level_Array(Oper) := Environ.Is_Yes ("MCD_DEBUG_OPER");
+    Debug_Level_Array(History) := Environ.Is_Yes ("MCD_DEBUG_HISTORY");
 
-    Getenv ("MCD_DEBUG_INPUT", Set, Trunc, Val, Len);
-    Debug_Level_Array(Input) := Set;
-    
-    Getenv ("MCD_DEBUG_CALL", Set, Trunc, Val, Len);
-    Debug_Level_Array(Call) := Set;
-
-    Getenv ("MCD_DEBUG_STACK", Set, Trunc, Val, Len);
-    Debug_Level_Array(Stack) := Set;
-
-    Getenv ("MCD_DEBUG_REGISTER", Set, Trunc, Val, Len);
-    Debug_Level_Array(Register) := Set;
-
-    Getenv ("MCD_DEBUG_OPER", Set, Trunc, Val, Len);
-    Debug_Level_Array(Oper) := Set;
-
-    Getenv ("MCD_DEBUG_HISTORY", Set, Trunc, Val, Len);
-    if Set then
-      Debug_Level_Array(History) := Set;
-    end if;
-
-    Getenv ("MCD_DEBUG_ALL", Set, Trunc, Val, Len);
-    if Set then
+    if Environ.Is_Yes ("MCD_DEBUG_ALL") then
       Debug_Level_Array := (others => True);
     end if;
   end Init;

@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Calendar;
-with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers;
+with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers, Environ;
 with Debug, Parse, Client_Com, Versions, Status, Names;
 package body Dictio_Lib is
 
@@ -224,7 +224,6 @@ package body Dictio_Lib is
   Init_Done : Boolean := False;
 
   procedure Init is
-    Env_Set, Env_Trunc : Boolean;
     Env_Len : Natural;
     Expiration : Ada.Calendar.Time;
     use type Event_Mng.Out_Event_List, Ada.Calendar.Time;
@@ -234,22 +233,24 @@ package body Dictio_Lib is
     end if;
 
     Debug.Init;
-    Sys_Calls.Getenv (Dictio_Env_Host, Env_Set, Env_Trunc,
-                      Host.Name, Env_Len);
-    if Env_Set and then not Env_Trunc then
-      Host.Name (Env_Len+1 .. Host.Name'Last) := (others => ' ');
-    else
-      Host.Name := (others => ' ');
-      Host.Name (1 .. Default_Host'Length) := Default_Host;
-    end if;
-    Sys_Calls.Getenv (Dictio_Env_Port, Env_Set, Env_Trunc,
-                      Port.Name, Env_Len);
-    if Env_Set and then not Env_Trunc then
-      Port.Name (Env_Len+1 .. Port.Name'Last) := (others => ' ');
-    else
-      Port.Name := (others => ' ');
-      Port.Name (1 .. Default_Port'Length) := Default_Port;
-    end if;
+
+    -- Getenv host and port
+    Host.Name := (others => ' ');
+    Host.Name (1 .. Default_Host'Length) := Default_Host;
+    Env_Len := Default_Host'Length;
+    Environ.Get_Str (Dictio_Env_Host, Host.Name, Env_Len);
+    for I in Env_Len + 1 .. Host.Name'Last loop
+      Host.Name(I) := ' ';
+    end loop;
+
+    Port.Name := (others => ' ');
+    Port.Name (1 .. Default_Port'Length) := Default_Port;
+    Env_Len := Default_Port'Length;
+    Environ.Get_Str (Dictio_Env_Port, Port.Name, Env_Len);
+    for I in Env_Len + 1 .. Port.Name'Last loop
+      Port.Name(I) := ' ';
+    end loop;
+
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: init to " & Parse(Host.Name)
                & " / " & Parse(Port.Name));

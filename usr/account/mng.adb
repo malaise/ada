@@ -1,5 +1,6 @@
-with Text_Io;
-with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal, Sys_Calls;
+with Ada.Text_Io, Ada.Calendar;
+with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
+     Environ, Sys_Calls, Date_Image;
 with File_Mng, Oper_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
@@ -400,7 +401,7 @@ package body Mng is
 
   -- Print account
   procedure Print is
-    use Text_Io;
+    use Ada.Text_Io;
     Pfn : constant String := "Account.lpt";
     Pf : File_Type;
     Oper : Oper_Def.Oper_Rec;
@@ -415,20 +416,13 @@ package body Mng is
   begin
     -- Get lines per page
     declare
-      Set, Trunc : Boolean;
-      Val : String(1 .. 256);
-      Len : Natural;
       Min_Lines_Per_Page : constant Positive := 10;
       Default_Lines_Per_Page : constant Positive := 60;
     begin
-      Sys_Calls.Getenv("ACCOUNT_LPR_LINES_PER_PAGE", Set, Trunc, Val, Len);
-      if not Set or else Len = 0 or else Trunc then 
-        Lines_Per_Page := Default_Lines_Per_Page;
-      else
-        Lines_Per_Page := Positive'Value(Val(1 .. Len));
-      end if;
+      Lines_Per_Page := Default_Lines_Per_Page;
+      Environ.Get_Pos("ACCOUNT_LPR_LINES_PER_PAGE", Lines_Per_Page);
       if Lines_Per_Page < Min_Lines_Per_Page then
-        Lines_Per_Page := Default_Lines_Per_Page;
+        Lines_Per_Page := Min_Lines_Per_Page;
       end if;
     exception
       when others =>
@@ -445,7 +439,7 @@ package body Mng is
         return;
     end;
     Put_Line(Pf, "Account: " & Text_Handler.Value(Account_Name)
-               & "     at: " & Unit_Format.Date_Image(Oper_Def.Current_Date));
+               & "     at: " & Date_Image(Ada.Calendar.Clock) (1 .. 16));
     Put_Line(Pf, Page_Title);
     Line := 3;
 
@@ -513,16 +507,14 @@ package body Mng is
     
     -- Print
     declare
-      Dummy : Integer;
-      Set, Trunc : Boolean;
       Val : String(1 .. 256);
       Len : Natural;
+      Dummy : Integer;
     begin
-      Sys_Calls.Getenv("ACCOUNT_LPR_COMMAND", Set, Trunc, Val, Len);
-      if not Set or else Len = 0 then 
-        Len := 3;
-        Val(1 .. Len) := "lpr";
-      end if;
+      Len := 3;
+      Val (1 .. Len) := "lpr";
+
+      Environ.Get_Str("ACCOUNT_LPR_COMMAND", Val, Len);
       Dummy := Sys_Calls.Call_System (Val(1..Len) & " " & Pfn); 
     end;
 

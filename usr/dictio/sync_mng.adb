@@ -1,4 +1,4 @@
-with Timers, Event_Mng, Dynamic_List, Sys_Calls;
+with Timers, Event_Mng, Dynamic_List, Environ;
 with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors, Online_Mng, Args;
 package body Sync_Mng is
 
@@ -103,22 +103,15 @@ package body Sync_Mng is
   procedure Init is
     Default_Delay_Per_Kb : constant Natural := 1;
     Dur : Duration;
-    Val : String (1 .. 5);
-    Set, Trunc : Boolean;
-    Len : Natural;
   begin
-    Sys_Calls.Getenv ("DICTIO_DELAY_PER_KB", Set, Trunc, Val, Len);
-    if not Set or else Len = 0 or else Trunc then
-      Delay_Per_Kb := Default_Delay_Per_Kb;
-    else
-      begin
-        Dur := Duration'Value (Val(1 .. Len));
-        Delay_Per_Kb := Positive (Dur * 1000.0);
-      exception
-        when others =>
-          Delay_Per_Kb := Default_Delay_Per_Kb;
-      end;
-    end if;
+    begin
+      Dur := Duration(Default_Delay_Per_Kb) / 1000;
+      Environ.Get_Dur ("DICTIO_DELAY_PER_KB", Dur);
+      Delay_Per_Kb := Positive (Dur * 1000.0);
+    exception
+      when others =>
+        Delay_Per_Kb := Default_Delay_Per_Kb;
+    end;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync.Init: Delay per Kb set to " & Delay_Per_Kb'Img & " ms");
     end if;

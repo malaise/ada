@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Socket, Tcp_Util, Dynamic_List, Event_Mng, Sys_Calls;
+with Socket, Tcp_Util, Dynamic_List, Event_Mng, Environ;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
      Versions, Status, Alias;
 package body Client_Mng is
@@ -179,28 +179,22 @@ package body Client_Mng is
   Stable_Delay : Duration := 0.0;
 
   procedure Set_Delay is
-    Default_Val_Ms : constant Positive := 200;
+    Default_Stable_Delay : constant Duration := 0.2;
     Val_Ms : Positive;
-    Val : String (1 .. 5);
-    Set, Trunc : Boolean;
-    Len : Natural;
   begin
-    Sys_Calls.Getenv ("DICTIO_STABLE_DELAY", Set, Trunc, Val, Len);
-    if not Set or else Len = 0 or else Trunc then
-      Val_Ms := Default_Val_Ms;
-    else
-      begin
-        Stable_Delay := Duration'Value (Val(1 .. Len));
-        Val_Ms := Positive (Stable_Delay * 1000);
-      exception
-        when others =>
-          Val_Ms := Default_Val_Ms;
-      end;
-    end if;
+    begin
+      Stable_Delay := Default_Stable_Delay;
+      Environ.Get_Dur ("DICTIO_STABLE_DELAY", Stable_Delay);
+      -- Check that value in ms makes a valid positive
+      Val_Ms := Positive (Stable_Delay * 1000);
+    exception
+      when others =>
+        Stable_Delay := Default_Stable_Delay;
+        Val_Ms := Positive(Default_Stable_Delay * 1000);
+    end;
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: Stable delay set to " & Val_Ms'Img & " ms");
     end if;
-    Stable_Delay := Duration(Val_Ms) / 1000.0;
   end Set_Delay;
 
 
