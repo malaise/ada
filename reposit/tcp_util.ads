@@ -69,7 +69,7 @@ package Tcp_Util is
 
   -- For Connection_To
   -- Sets Connected to True if connection succeeds,
-  --  then Dscr is the one of the new socket
+  --  then Dscr is the one of the new socket connected, blocking
   -- Sets Connected to False if connection fails,
   --  then Dscr is Socket.No_Socket,
   type Connection_Callback_Access is
@@ -81,7 +81,7 @@ package Tcp_Util is
   -- For Acception_From
   -- The Local_Dscr is the one set by Accept_From
   -- Sets Connected to True if connection succeeds,
-  --  then Dscr is the one of the new socket
+  --  then Dscr is the one of the new socket, blocking
   -- Sets Connected to False if connection breaks (and then closed),
   --  then Dscr is the one of the broken (and now closed) socket
   type Acception_Callback_Access is
