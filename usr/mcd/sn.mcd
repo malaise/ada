@@ -1,0 +1,18 @@
+# Empty stack
+[ ssize 0 /= [ pop S pushr retacal ] ifcall ] S popr
+
+# Check stack is empty
+ssize 1 /= [ [ Error. One argument expected. ] putl S pushr call 0 retn ] ifcall
+
+n popr
+
+# Add stack to extra_stack (display) push results
+[ 1 +
+dup 5 format put [ " "  ] put
+dup pushle + copye 7 format putl
+dup n pushr = ifret
+P pushr retacal ] P popr
+
+0 copye
+P pushr call
+pop
