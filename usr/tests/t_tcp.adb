@@ -9,7 +9,7 @@ procedure T_Tcp is
 
   Soc, Accept_Soc : Socket.Socket_Dscr;
   Fd, Accept_Fd : X_Mng.File_Desc;
-  Server_Port_Name : constant String := "DTU";
+  Server_Port_Name : constant String := "test_tcp";
 
   type Message_Type is record
     Len : Positive;
