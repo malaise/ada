@@ -40,15 +40,20 @@ package body DIR_MNG is
                                    TEMPLATE) then
         FILE_REC.LEN := TEXT_HANDLER.LENGTH (FILE_NAME);
         FILE_REC.NAME (1 .. FILE_REC.LEN) := TEXT_HANDLER.VALUE (FILE_NAME);
-        if DIR = "" then
-          DIRECTORY.FILE_STAT (
-           TEXT_HANDLER.VALUE (FILE_NAME),
-           FILE_REC.KIND, FILE_RIGHTS);
-        else
-          DIRECTORY.FILE_STAT (
-           DIR & PATH_SEPARATOR & TEXT_HANDLER.VALUE (FILE_NAME),
-           FILE_REC.KIND, FILE_RIGHTS);
-        end if;
+        begin
+          if DIR = "" then
+            DIRECTORY.FILE_STAT (
+             TEXT_HANDLER.VALUE (FILE_NAME),
+             FILE_REC.KIND, FILE_RIGHTS);
+          else
+            DIRECTORY.FILE_STAT (
+             DIR & PATH_SEPARATOR & TEXT_HANDLER.VALUE (FILE_NAME),
+             FILE_REC.KIND, FILE_RIGHTS);
+          end if;
+        exception
+          when DIRECTORY.NAME_ERROR =>
+            FILE_REC.KIND := DIRECTORY.UNKNOWN;
+        end;
         FILE_LIST_MNG.INSERT (LIST => LIST,
                               ITEM => FILE_REC,
                               WHERE => FILE_LIST_MNG.NEXT);
