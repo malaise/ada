@@ -84,7 +84,7 @@ package body Event_Mng is
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
     begin
-      Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From_Current => False);
+      Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
       raise Event_Failure;
     exception
       when Cb_Mng.Not_In_List =>
@@ -119,7 +119,7 @@ package body Event_Mng is
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From_Current => False);
+    Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
     if Cb_Mng.Get_Position (Cb_List) /=  Cb_Mng.List_Length(Cb_List) then
       Cb_Mng.Delete (Cb_List, Cb_Mng.Next);
     else
@@ -426,7 +426,7 @@ package body Event_Mng is
         Cb_Searched.Cb := null;
         begin
           -- Search and read callback
-          Cb_Search (Cb_List, Cb_Searched, From_Current => False);
+          Cb_Search (Cb_List, Cb_Searched, From => Cb_Mng.Absolute);
           Cb_Mng.Read (Cb_List, Cb_Searched,  Cb_Mng.Current);
           -- Call it and propagate event if callback returns true
           if Cb_Searched.Cb /= null then

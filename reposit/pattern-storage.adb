@@ -37,7 +37,7 @@ package body Storage is
     for I in Rule_No'Range loop
       Term.Rule := I;
       begin
-        Search_Rule (Term_List, Term, From_Current => False);
+        Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute);
       exception
         when Term_List_Mng.Not_In_List =>
           -- This rule does not exist;
@@ -68,7 +68,11 @@ package body Storage is
       Term : Term_Rec;
     begin
       Term.Rule := Rule;
-      Search_Rule (Term_List, Term, From_Current => From_Current);
+      if From_Current then
+        Search_Rule (Term_List, Term, From => Term_List_Mng.From_Current);
+      else
+        Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute);
+      end if;
       return True;
     exception
       when Term_List_Mng.Not_In_List =>
@@ -95,7 +99,7 @@ package body Storage is
     begin
       Term.Rule := Rule;
       Term.Id := Id;
-      Search_Pattern (Term_List, Term, From_Current => False);
+      Search_Pattern (Term_List, Term, From => Term_List_Mng.Absolute);
     exception
       when Term_List_Mng.Not_In_List =>
         return False;
@@ -142,7 +146,7 @@ package body Storage is
       begin
         Term.Rule := Rule;
         Term.Id := Id;
-        Next_Pattern (Term_List, Term, From_Current => False);
+        Next_Pattern (Term_List, Term, From => Term_List_Mng.Absolute);
         -- Found a following pattern of this rule
         if Term_List_Mng.Get_Position (Term_List) /= 1 then
           -- We can move to prev cell, so next term can appended

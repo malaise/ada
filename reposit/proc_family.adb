@@ -58,7 +58,7 @@ package body Proc_Family is
 
     -- Find child in list
     begin
-      Search_Pid (Child_List, Child, From_Current => False);
+      Search_Pid (Child_List, Child, From => Child_List_Mng.Absolute);
     exception
       when Child_List_Mng.Not_In_List =>
         -- Skip

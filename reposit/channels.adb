@@ -204,7 +204,8 @@ package body Channels is
         -- Look for sender. Unhook Fd if not found (bug).
         S_Rec.Fd := Fd;
         begin
-          Fd_Search (Channel_Dscr.Sends, S_Rec, From_Current => False);
+          Fd_Search (Channel_Dscr.Sends, S_Rec,
+                     From => Send_List_Mng.Absolute);
         exception
           when Send_List_Mng.Not_In_List =>
             Event_Mng.Del_Fd_Callback (Fd, True);
@@ -216,7 +217,8 @@ package body Channels is
         -- Look for destination. Unhook Fd if not found (bug).
         D_Rec.Fd := Fd;
         begin
-          Fd_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
+          Fd_Search (Channel_Dscr.Dests, D_Rec,
+                     From => Dest_List_Mng.Absolute);
         exception
           when Dest_List_Mng.Not_In_List =>
             Event_Mng.Del_Fd_Callback (Fd, True);
@@ -395,7 +397,8 @@ package body Channels is
       -- Find record
       Dest.Host_Id := Remote_Host_Id;
       begin
-        Host_Id_Search (Channel_Dscr.Dests, Dest, From_Current => False);
+        Host_Id_Search (Channel_Dscr.Dests, Dest,
+                        From => Dest_List_Mng.Absolute);
       exception
         when Dest_List_Mng.Not_In_List =>
           -- Bug?
@@ -501,7 +504,8 @@ package body Channels is
           raise Unknown_Destination;
       end;
       begin
-        Host_Id_Search (Channel_Dscr.Dests, Dest,  From_Current => False);
+        Host_Id_Search (Channel_Dscr.Dests, Dest,
+                        From => Dest_List_Mng.Absolute);
         raise Destination_Already;
       exception
         when Dest_List_Mng.Not_In_List =>
@@ -576,7 +580,8 @@ package body Channels is
           raise Unknown_Destination;
       end;
       begin
-        Host_Id_Search (Channel_Dscr.Dests, Dest,  From_Current => False);
+        Host_Id_Search (Channel_Dscr.Dests, Dest,
+                        From => Dest_List_Mng.Absolute);
       exception
         when Dest_List_Mng.Not_In_List =>
           raise Unknown_Destination;
@@ -707,12 +712,14 @@ package body Channels is
       -- More probably in senders, but maybe in dests (if reply of a reply)
       begin
         S_Rec.Dscr := Dscr;
-        Dscr_Search (Channel_Dscr.Sends, S_Rec, From_Current => False);
+        Dscr_Search (Channel_Dscr.Sends, S_Rec,
+                     From => Send_List_Mng.Absolute);
       exception
         when Send_List_Mng.Not_In_List =>
           begin
             D_Rec.Dscr := Dscr;
-            Dscr_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
+            Dscr_Search (Channel_Dscr.Dests, D_Rec,
+                         From => Dest_List_Mng.Absolute);
           exception
             when Dest_List_Mng.Not_In_List =>
               raise Reply_Failed;
@@ -743,7 +750,8 @@ package body Channels is
       D_Rec.Host_Name.Name := (others => ' ');
       D_Rec.Host_Name.Name(1 .. Host_Name'Length) := Host_Name; 
       begin
-        Host_Name_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
+        Host_Name_Search (Channel_Dscr.Dests, D_Rec,
+                          From => Dest_List_Mng.Absolute);
       exception
         when Dest_List_Mng.Not_In_List =>
           raise Unknown_Destination;

@@ -63,7 +63,7 @@ package body Timers is
       Timer.Id := Next_Timer_Id;
       -- Check not allocated
       begin
-        Search_Id (Timer_List, Timer, From_Current => False);
+        Search_Id (Timer_List, Timer, From => Timer_List_Mng.Absolute);
       exception
         when Timer_List_Mng.Not_In_List =>
           -- Good
@@ -148,7 +148,7 @@ package body Timers is
     -- Search timer
     Timer.Id := Id.Timer_Num;
     begin
-      Search_Id (Timer_List, Timer, From_Current => False);
+      Search_Id (Timer_List, Timer, From => Timer_List_Mng.Absolute);
     exception
       when Timer_List_Mng.Not_In_List =>
         -- Not found

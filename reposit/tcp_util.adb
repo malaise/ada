@@ -304,7 +304,7 @@ package body Tcp_Util is
     -- Find record by fd
     Rec.Fd := Fd;
     Rec.Fd_Set := True;
-    Find_By_Fd (Con_List, Rec, From_Current => False);
+    Find_By_Fd (Con_List, Rec, From => Con_List_Mng.Absolute);
     Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb found rec "
@@ -357,7 +357,7 @@ package body Tcp_Util is
     if Rec.Timer /= Id then
       -- No good. Locate it
       Rec.Timer := Id;
-      Find_By_Timer (Con_List, Rec, From_Current => False);
+      Find_By_Timer (Con_List, Rec, From => Con_List_Mng.Absolute);
       Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     end if;
     if Debug_Connect then
@@ -519,7 +519,7 @@ package body Tcp_Util is
     -- Find rec
     Rec.Host := Host;
     Rec.Port := Port;
-    Find_By_Dest (Con_List, Rec, From_Current => False);
+    Find_By_Dest (Con_List, Rec, From => Con_List_Mng.Absolute);
     Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect found rec "
@@ -596,7 +596,7 @@ package body Tcp_Util is
     end if;
     -- Find record by fd
     Rec.Fd := Fd;
-    Find_By_Fd (Acc_List, Rec, From_Current => False);
+    Find_By_Fd (Acc_List, Rec, From => Acc_List_Mng.Absolute);
     Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb found rec "
@@ -687,7 +687,7 @@ package body Tcp_Util is
     end if;
     -- Find rec and read
     Rec.Port := Num;
-    Find_By_Port (Acc_List, Rec, From_Current => False);
+    Find_By_Port (Acc_List, Rec, From => Acc_List_Mng.Absolute);
     Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept found rec "
@@ -758,7 +758,7 @@ package body Tcp_Util is
     end if;
     -- Find Rec from Fd and read
     Rec.Fd := Fd;
-    Find_By_Fd (Sen_List, Rec, From_Current => False);
+    Find_By_Fd (Sen_List, Rec, From => Sen_List_Mng.Absolute);
     Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb found rec "
@@ -858,7 +858,7 @@ package body Tcp_Util is
     -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
     begin
-      Find_By_Dscr (Sen_List, Rec, From_Current => False);
+      Find_By_Dscr (Sen_List, Rec, From => Sen_List_Mng.Absolute);
     exception
       when Sen_List_Mng.Not_In_List =>
         raise No_Such;
@@ -953,7 +953,7 @@ package body Tcp_Util is
       -- Find dscr from Fd
       The_Rec.Fd := Fd;
       begin
-        Find_Fd (Rece_List, The_Rec, From_Current => False);
+        Find_Fd (Rece_List, The_Rec, From => Rece_List_Mng.Absolute);
       exception
         when Rece_List_Mng.Not_In_List =>
           if Debug_Reception then
@@ -1025,7 +1025,7 @@ package body Tcp_Util is
     begin
       The_Rec.Dscr := Dscr;
       begin
-        Find_Dscr (Rece_List, The_Rec, From_Current => False);
+        Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute);
       exception
         when Rece_List_Mng.Not_In_List =>
           if Debug_Reception then

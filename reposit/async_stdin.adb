@@ -157,7 +157,8 @@ package body Async_Stdin is
         end if;
 
         begin
-          Search (List, Searched_Rec, List_Mng.Prev, Occurence, True);
+          Search (List, Searched_Rec, List_Mng.Prev, Occurence,
+                  From => List_Mng.From_Current);
         exception
           when List_Mng.Not_In_List =>
             -- Restore Pos
