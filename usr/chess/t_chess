@@ -1,3 +1,2 @@
 chess -S -cwhite -p50000 $* &
 chess -C -cblack -slocalhost -p50000 $* &
-
