@@ -1,4 +1,4 @@
-with Ada.Text_Io, Direct_Io;
+with Ada.Text_Io, Ada.Direct_Io;
 
 with My_Io, Normal, Argument;
 
@@ -16,7 +16,7 @@ procedure Trans is
   type File_Frame_Tab is array (Sok_Types.Row_Range, Sok_Types.Col_Range)
     of File_Frame_Rec;
   File_Frame : File_Frame_Tab;
-  package D is new Direct_Io (File_Frame_Tab);
+  package D is new Ada.Direct_Io (File_Frame_Tab);
   D_File_Name : constant String := "SOKOBAN.DAT";
   D_File : D.File_Type;
   

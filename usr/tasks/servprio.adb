@@ -1,4 +1,4 @@
-with My_Io, Rnd, Text_Io, Schedule; use My_Io; 
+with My_Io, Rnd, Ada.Text_Io, Schedule; use My_Io; 
 procedure Servprio is 
 
   type Urgence is (Critique, Urgent, Normal, Lent); 
@@ -11,7 +11,7 @@ procedure Servprio is
   function My_Random is 
     new Rnd.Discr_Random(Urgence); 
 
-  Fich : Text_Io.File_Type; 
+  Fich : Ada.Text_Io.File_Type; 
   Nom  : constant String := ("servprio.dat"); 
 
   task Serveur is 
@@ -31,11 +31,11 @@ procedure Servprio is
                   Degre     : in Urgence; 
                   Client_No : in Client_Range) is 
   begin
-    Text_Io.Put(Fich, Auteur); 
-    Text_Io.Put(Fich, " de "); 
-    Text_Io.Put(Fich, Client_Range'Image(Client_No)); 
-    Text_Io.Put(Fich, " priorite "); 
-    Text_Io.Put_Line(Fich, Urgence'Image(Degre)); 
+    Ada.Text_Io.Put(Fich, Auteur); 
+    Ada.Text_Io.Put(Fich, " de "); 
+    Ada.Text_Io.Put(Fich, Client_Range'Image(Client_No)); 
+    Ada.Text_Io.Put(Fich, " priorite "); 
+    Ada.Text_Io.Put_Line(Fich, Urgence'Image(Degre)); 
   end Print; 
 
 
@@ -102,11 +102,11 @@ procedure Servprio is
       end loop; 
     end Fin; 
 
-    Text_Io.Put(Fich, "                           Fin client "); 
-    Text_Io.Put(Fich, Client_Range'Image(No)); 
-    Text_Io.Put(Fich, " , "); 
-    Text_Io.Put(Fich, Positive'Image(N_Loop)); 
-    Text_Io.Put_Line(Fich, " appels"); 
+    Ada.Text_Io.Put(Fich, "                           Fin client "); 
+    Ada.Text_Io.Put(Fich, Client_Range'Image(No)); 
+    Ada.Text_Io.Put(Fich, " , "); 
+    Ada.Text_Io.Put(Fich, Positive'Image(N_Loop)); 
+    Ada.Text_Io.Put_Line(Fich, " appels"); 
 
   exception
     when others => 
@@ -115,7 +115,7 @@ procedure Servprio is
   end Client; 
 
 begin
-  Text_Io.Create(Fich, Text_Io.Out_File, Nom); 
+  Ada.Text_Io.Create(Fich, Ada.Text_Io.Out_File, Nom); 
 
   for I in Client_Range loop
     Clients(I).Init(I); 
@@ -129,18 +129,18 @@ begin
 
   Serveur.Fin; 
 
-  Text_Io.Put_Line(Fich, "TOTAUX"); 
+  Ada.Text_Io.Put_Line(Fich, "TOTAUX"); 
   for I in Urgence loop
-    Text_Io.Put(Fich, Urgence'Image(I)); 
-    Text_Io.Put(Fich, " -> "); 
-    Text_Io.Put(Fich, Positive'Image(Totals(I))); 
-    Text_Io.Put(Fich, " & "); 
-    Text_Io.Put_Line(Fich, Positive'Image(Totalc(I))); 
+    Ada.Text_Io.Put(Fich, Urgence'Image(I)); 
+    Ada.Text_Io.Put(Fich, " -> "); 
+    Ada.Text_Io.Put(Fich, Positive'Image(Totals(I))); 
+    Ada.Text_Io.Put(Fich, " & "); 
+    Ada.Text_Io.Put_Line(Fich, Positive'Image(Totalc(I))); 
     Total_Appel := Total_Appel + Totalc(I); 
   end loop; 
-  Text_Io.Put_Line(Fich, " TOTAL APPELS : " & Positive'Image(Total_Appel)); 
+  Ada.Text_Io.Put_Line(Fich, " TOTAL APPELS : " & Positive'Image(Total_Appel)); 
 
-  Text_Io.Close(Fich); 
+  Ada.Text_Io.Close(Fich); 
 
 exception
   when others => 

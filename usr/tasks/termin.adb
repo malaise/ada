@@ -1,11 +1,11 @@
 -- dependance de taches
-with Text_Io;
+with Ada.Text_Io;
 procedure Termin is
-  use Text_Io;
+  use Ada.Text_Io;
 
   type T_Creation is (Par_Acces, Direct);
 
-  package Creation_Io is new Text_Io.Enumeration_Io (T_Creation);
+  package Creation_Io is new Ada.Text_Io.Enumeration_Io (T_Creation);
 
   Loops : constant array (T_Creation) of Positive := (4, 2);
 

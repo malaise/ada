@@ -1,5 +1,4 @@
-with Direct_Io;
-with Sequential_Io;
+with Ada.Direct_Io, Ada.Sequential_Io;
 with Normal;
 
 separate (Sok_Manager)
@@ -28,16 +27,16 @@ package body Sok_File is
   end record;
 
   -- for read frame
-  package Sok_File_Mng is new Direct_Io (File_Frame_Tab);
+  package Sok_File_Mng is new Ada.Direct_Io (File_Frame_Tab);
 
 
   -- for save and restore sate
-  package Sok_State_Mng is new Sequential_Io (File_State_Rec);
+  package Sok_State_Mng is new Ada.Sequential_Io (File_State_Rec);
   -- for save and restore saved movements
-  package Sok_Saved_Mng is new Sequential_Io (Sok_Movement.Saved_Data_Rec);
+  package Sok_Saved_Mng is new Ada.Sequential_Io (Sok_Movement.Saved_Data_Rec);
 
   -- for save and restore scores
-  package Sok_Score_Mng is new Direct_Io (Sok_Types.Score_Rec);
+  package Sok_Score_Mng is new Ada.Direct_Io (Sok_Types.Score_Rec);
 
   -- for read frame
   Sok_File_Name : constant String := "SOKOBAN.DAT";
