@@ -25,6 +25,8 @@ package SYS_CALLS is
                     ENV_VALUE : out STRING;
                     ENV_LEN   : out NATURAL);
 
+  -- Set exit code
+  procedure SET_EXIT_CODE (CODE : in NATURAL);
   -- Set error exit code
   procedure SET_ERROR_EXIT_CODE;
 

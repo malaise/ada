@@ -20,7 +20,8 @@ package DIR_MNG is
   --  and append them at the end of the current list
   -- Current is set to the last item appended or not changed if no file found.
   -- If DIR is empty, then current dir is assumed
-  -- May raise PATH_ERROR if DIR is not valid or not existing
+  -- May raise NAME_ERROR if DIR is not valid or not existing
+  -- May raise ACCESS_ERROR if DIR cannot be read
   procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
                       DIR  : in STRING := "";
                       TEMPLATE : in STRING := "");
@@ -34,6 +35,7 @@ package DIR_MNG is
   procedure FILE_SORT is new FILE_LIST_MNG.SORT(LESS_THAN);
 
   NAME_ERROR : exception renames DIRECTORY.NAME_ERROR;
+  ACCESS_ERROR : exception renames DIRECTORY.ACCESS_ERROR;
 
 end DIR_MNG;
 

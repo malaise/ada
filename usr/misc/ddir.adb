@@ -18,6 +18,9 @@ procedure DDIR is
       DIR_DSC := DIRECTORY.OPEN(DIR_NAME);
     exception
       when DIRECTORY.NAME_ERROR =>
+        MY_IO.PUT_LINE ("ERROR no such directory " & DIR_NAME);
+        return;
+      when DIRECTORY.ACCESS_ERROR =>
         MY_IO.PUT_LINE ("ERROR reading directory " & DIR_NAME);
         return;
     end;
@@ -33,7 +36,7 @@ procedure DDIR is
         DIRECTORY.FILE_STAT (DIR_NAME & "/" & TEXT_HANDLER.VALUE(ENTRY_NAME),
                              KIND, RIGHTS, MTIME);
       exception
-        when DIRECTORY.NAME_ERROR =>
+        when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
           -- A link to nowhere?
           KIND := DIRECTORY.UNKNOWN;
       end;
@@ -55,3 +58,4 @@ begin
     end loop;
   end if;
 end DDIR;
+

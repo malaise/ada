@@ -44,7 +44,7 @@ procedure RECURS (
     begin
       DIRECTORY.CHANGE_CURRENT (CURR_NAME);
     exception
-      when DIRECTORY.NAME_ERROR =>
+      when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
         MY_IO.NEW_LINE;
         MY_IO.PUT ("Error changing to directory " & CURR_NAME);
         if STOP_ON_ERROR then
@@ -83,7 +83,7 @@ procedure RECURS (
       begin
         DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(NEW_NAME), KIND, RIGHTS, MTIME);
       exception
-        when DIRECTORY.NAME_ERROR =>
+        when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
           -- A link to nowhere?
           KIND := DIRECTORY.UNKNOWN;
       end;
@@ -125,3 +125,4 @@ procedure RECURS (
 begin -- RECURS
   EXPLORE (DIRECTORY.GET_CURRENT);
 end recurs;
+

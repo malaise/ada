@@ -142,10 +142,15 @@ package body SYS_CALLS is
     end;
   end GETENV;
 
+  procedure SET_EXIT_CODE (CODE : in NATURAL) is
+  begin
+    ADA.COMMAND_LINE.SET_EXIT_STATUS (ADA.COMMAND_LINE.EXIT_STATUS(CODE));
+  end SET_EXIT_CODE;
+
   -- Set error exit code
   procedure SET_ERROR_EXIT_CODE is
   begin
-    ADA.COMMAND_LINE.SET_EXIT_STATUS (ADA.COMMAND_LINE.FAILURE);
+    SET_EXIT_CODE(1);
   end SET_ERROR_EXIT_CODE;
 
 end SYS_CALLS; 

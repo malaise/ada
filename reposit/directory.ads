@@ -20,6 +20,7 @@ package DIRECTORY is
   function OPEN (DIR_NAME : in STRING) return DIR_DESC;
   -- May raise OPEN_ERROR if dir desc is already open
   -- May raise NAME_ERROR if not found
+  -- May raise ACCESS_ERROR 
 
   -- Gets next entry of the opened directory
   function NEXT_ENTRY (DESC : DIR_DESC) return STRING;
@@ -55,7 +56,7 @@ package DIRECTORY is
                        KIND       : out FILE_KIND_LIST;
                        RIGHTS     : out NATURAL;
                        MODIF_TIME : out TIME_T);
-  -- May raise NAME_ERROR  
+  -- May raise NAME_ERROR or ACCESS_ERROR
 
   function TIME_OF (TIME : TIME_T) return CALENDAR.TIME;
   
@@ -65,14 +66,16 @@ package DIRECTORY is
                        TARGET : in out TEXT_HANDLER.TEXT;
                        RECURSIVE : in BOOLEAN := TRUE);
   -- May raise NAME_ERROR if FILE_NAME does not exist
+  --           ACCESS_ERROR if FILE_NAME cannot be read
   --           OPEN_ERROR if FILE_NAME is not a link
 
   -- Does file name match a pattern
   function FILE_MATCH (FILE_NAME : STRING; TEMPLATE : STRING) return BOOLEAN;
 
-  NAME_ERROR : exception;
-  OPEN_ERROR : exception;
-  END_ERROR  : exception;
+  NAME_ERROR   : exception;
+  OPEN_ERROR   : exception;
+  ACCESS_ERROR : exception;
+  END_ERROR    : exception;
 
   
 private

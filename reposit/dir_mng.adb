@@ -52,7 +52,7 @@ package body DIR_MNG is
              FILE_REC.KIND, FILE_RIGHTS, FILE_MTIME);
           end if;
         exception
-          when DIRECTORY.NAME_ERROR =>
+          when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
             FILE_REC.KIND := DIRECTORY.UNKNOWN;
         end;
         FILE_LIST_MNG.INSERT (LIST => LIST,

@@ -7,6 +7,11 @@ package body DIRECTORY is
 
   SEPARATOR : constant CHARACTER := '/';
 
+  -- For NAME_ERROR else ACCESS_ERROR
+  ENOENT : constant := 2;
+  -- For OPEN_ERROR else ACCESS_ERROR
+  EINVAL : constant := 22;
+
   type C_DIRENT_REC is record
     D_INO : LONG_INTEGER;
     D_OFF : LONG_INTEGER;
@@ -97,7 +102,11 @@ package body DIRECTORY is
     C_NEW_DIR : constant STRING := STR_FOR_C(NEW_DIR);
   begin
     if C_CHDIR (C_NEW_DIR'ADDRESS) = -1 then
-      raise NAME_ERROR;
+      if SYS_CALLS.ERRNO = ENOENT then
+        raise NAME_ERROR;
+      else
+        raise ACCESS_ERROR;
+      end if;
     end if;
   end CHANGE_CURRENT;
 
@@ -115,7 +124,11 @@ package body DIRECTORY is
     end if;
     DESC.DIR_ADDR := C_OPENDIR (C_DIR_NAME'ADDRESS);
     if DESC.DIR_ADDR = SYSTEM.NULL_ADDRESS then
-      raise NAME_ERROR;
+      if SYS_CALLS.ERRNO = ENOENT then
+        raise NAME_ERROR;
+      else
+        raise ACCESS_ERROR;
+      end if;
     end if;
     return DESC;
   end OPEN;
@@ -199,7 +212,11 @@ package body DIRECTORY is
   begin
     RES := C_STAT(C_FILE_NAME(C_FILE_NAME'FIRST)'ADDRESS, STAT'ADDRESS);
     if RES = -1 then
-      raise NAME_ERROR;
+      if SYS_CALLS.ERRNO = ENOENT then
+        raise NAME_ERROR;
+      else
+        raise ACCESS_ERROR;
+      end if;
     end if;
     MODE := INTEGER(STAT.ST_MODE) AND 8#00170000#;
     MODE := SHR (MODE, 12);
@@ -259,11 +276,14 @@ package body DIRECTORY is
     RES := C_READLINK (C_FILE_NAME'ADDRESS, STR'ADDRESS, STR'LENGTH);
     if RES /= -1 then
       return STR (1 .. RES);
-    elsif SYS_CALLS.ERRNO = 2 then
+    elsif SYS_CALLS.ERRNO = ENOENT then
       -- ENOENT : file not found
       raise NAME_ERROR;
+    elsif SYS_CALLS.ERRNO = EINVAL then
+      -- EINVAL : not a symbolic link
+      raise NAME_ERROR;
     else
-      raise OPEN_ERROR;
+      raise ACCESS_ERROR;
     end if;
   end READ_ONE_LINK;
 

@@ -102,6 +102,8 @@ begin
         exception
           when DIRECTORY.NAME_ERROR =>
             MY_IO.PUT_LINE ("???? ???");
+          when DIRECTORY.ACCESS_ERROR =>
+            MY_IO.PUT_LINE ("!!!! !!!");
         end;
       end loop;
     exception
@@ -120,6 +122,8 @@ begin
       exception
         when DIRECTORY.NAME_ERROR =>
           MY_IO.PUT_LINE ("-> Not found.");
+        when DIRECTORY.ACCESS_ERROR =>
+          MY_IO.PUT_LINE ("-> Permission.");
       end;
     end loop;
 
