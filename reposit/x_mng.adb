@@ -1,5 +1,10 @@
 with CALENDAR, SYSTEM;
+with MY_IO, TEXT_IO;
 package body X_MNG is
+
+  -- Duration outputs
+  package DUR_IO is new TEXT_IO.FIXED_IO(DURATION);
+  DEBUG : constant BOOLEAN := FALSE;
 
   -- Result of a call to C
   subtype RESULT is INTEGER;
@@ -1079,6 +1084,9 @@ package body X_MNG is
               CLIENTS(I).LINE_FOR_C_ID := NO_LINE_FOR_C;
               CLIENT := I;
               NB_CLIENTS := NB_CLIENTS + 1;
+              if DEBUG then
+                MY_IO.PUT_LINE ("Register -> " & LINE_RANGE'IMAGE(I));
+              end if;
               return;
             end if;
           end loop;
@@ -1087,6 +1095,9 @@ package body X_MNG is
         end REGISTER;
       or
         accept UNREGISTER (CLIENT : in out LINE_RANGE) do
+          if DEBUG then
+            MY_IO.PUT_LINE ("Unregister " & LINE_RANGE'IMAGE(CLIENT));
+          end if;
           -- Update administration
           if CLIENT /= NO_CLIENT_NO then
             CLIENTS(CLIENT).KNOWN := FALSE;
@@ -1113,16 +1124,30 @@ package body X_MNG is
         -- Client is ready to wait
         accept WAIT (CLIENT : in CLIENT_RANGE; TIMEOUT : in DURATION) do
           NB_WAIT := NB_WAIT + 1;
+          if DEBUG then
+            MY_IO.PUT ("Wait " & LINE_RANGE'IMAGE(CLIENT) & "  timeout: ");
+            DUR_IO.PUT(timeout);
+            MY_IO.NEW_LINE;
+            MY_IO.PUT_LINE ("    Waiting nb " & LINE_RANGE'IMAGE(NB_WAIT));
+          end if;
           -- Some pending event for this client?
           if not SOME_EVENT_PRESENT or else CLIENT /= SELECTED_CLIENT then
             -- This client will wait
             -- Compute expiration
             if TIMEOUT < 0.0 then
               CLIENTS(CLIENT).WAIT_INF := TRUE;
+              if DEBUG then
+                MY_IO.PUT_LINE ("    Wait inf");
+              end if;
             else
               CLIENTS(CLIENT).WAIT_INF := FALSE;
               CLIENTS(CLIENT).WAIT_EXP := CALENDAR.CLOCK + TIMEOUT;
+              if DEBUG then
+                MY_IO.PUT_LINE ("    Wait timeout");
+              end if;
             end if;
+          elsif DEBUG then
+            MY_IO.PUT_LINE ("    Wait client is selected");
           end if;
         end WAIT;
         -- Can we freeze the whole stuff?
@@ -1133,10 +1158,17 @@ package body X_MNG is
             -- This gives the client with smallest delay
             -- If all infinite, the first known
             COMPUTE_SMALLER_DELAY(DELAY_MS, SELECTED_CLIENT);
+            if DEBUG then
+              MY_IO.PUT_LINE ("        Wait select " & INTEGER'IMAGE(DELAY_MS));
+            end if;
             XX_SELECT (DELAY_MS, SELECT_SOMETHING);
             if not SELECT_SOMETHING then
               -- Timeout
               SOME_EVENT_PRESENT := FALSE;
+              if DEBUG then
+                MY_IO.PUT_LINE ("            Wait select timeout for -> "
+                              & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+              end if;
               exit;
             else
               -- An event: Get&store it and it's client
@@ -1144,6 +1176,11 @@ package body X_MNG is
               GET_CLIENT_FROM_LINE(LOC_LINE_FOR_C_ID, SELECTED_CLIENT,
                                  SOME_EVENT_PRESENT);
               exit when SOME_EVENT_PRESENT;
+              if DEBUG then
+                MY_IO.PUT_LINE ("            Wait select event for -> "
+                              & LINE_RANGE'IMAGE(SELECTED_CLIENT)
+                              & " found " & BOOLEAN'IMAGE(SOME_EVENT_PRESENT));
+              end if;
             end if;
           end loop;
         end if;
@@ -1151,7 +1188,12 @@ package body X_MNG is
         when NB_CLIENTS /= 0 and then NB_WAIT = NB_CLIENTS =>
         -- Release the client for stored event
         accept SOME_EVENT(SELECTED_CLIENT) (SOME : out BOOLEAN) do
-          SOME := SELECT_SOMETHING;
+          if DEBUG then
+            MY_IO.PUT_LINE ("Some_event " & LINE_RANGE'IMAGE(SELECTED_CLIENT)
+                   & " -> "
+                   & BOOLEAN'IMAGE(SELECT_SOMETHING or else SOME_EVENT_PRESENT));
+          end if;
+          SOME := SELECT_SOMETHING or else SOME_EVENT_PRESENT;
           NB_WAIT := NB_WAIT - 1;
         end SOME_EVENT;
       or
@@ -1162,30 +1204,61 @@ package body X_MNG is
             CLIENTS(CLIENT).REFRESH := FALSE;
             KIND := REFRESH;
             SOME := FALSE;
+            if DEBUG then
+              MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+                            & " -> artificial refresh");
+            end if;
             return;
           end if;
           if CLIENT /= SELECTED_CLIENT then
             -- Invalid client
             KIND := DISCARD;
             SOME := FALSE;
+            if DEBUG then
+              MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+                            & " -> not selected");
+            end if;
             return;
           end if;
-          -- Event got from previous wait?
+          -- Event got from previous wait or get_event?
           if SOME_EVENT_PRESENT then
             KIND := LOC_KIND;
             SOME := LOC_NEXT;
             SOME_EVENT_PRESENT := FALSE;
+            if DEBUG then
+              MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+                            & " -> from previous wait/get_event");
+            end if;
           else
             -- No stored event
-            XX_PROCESS_EVENT (LOC_LINE_FOR_C_ID, KIND, SOME);
+            XX_PROCESS_EVENT (LOC_LINE_FOR_C_ID, LOC_KIND, LOC_NEXT);
             -- New event for the same client?
             if LOC_LINE_FOR_C_ID /= CLIENTS(CLIENT).LINE_FOR_C_ID then
               -- Current client has to give up
               SOME := FALSE;
-              -- Find new client
+              KIND := DISCARD;
+              SOME_EVENT_PRESENT := TRUE;
+              -- Find client of the event
               GET_CLIENT_FROM_LINE(LOC_LINE_FOR_C_ID, SELECTED_CLIENT,
                                    SOME_EVENT_PRESENT);
-            end if;
+              if DEBUG then
+                MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+                              & " -> give up to "
+                              & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+              end if;
+            else
+              -- This event is for this client. Deliver.
+              SOME := LOC_NEXT;
+              KIND := LOC_KIND;
+              if DEBUG then
+                MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+                              & " -> got it");
+              end if;
+            end if; -- event is for client
+          end if; -- SOME_EVENT_PRESENT
+          if DEBUG then
+            MY_IO.PUT_LINE ("    Get_event -> " & EVENT_KIND'IMAGE(LOC_KIND)
+                          & " next: " & BOOLEAN'IMAGE(LOC_NEXT));
           end if;
         end GET_EVENT;
       or
