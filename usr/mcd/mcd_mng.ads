@@ -123,6 +123,7 @@ package Mcd_Mng is
    Strinte,
    Strbool,
    Strregi,
+   Strprog,
    Strof,
 
    Clock,

@@ -156,7 +156,21 @@ package body Ios is
     when others =>
       raise Invalid_Argument;
   end Strregi;
-    
+
+  function Strprog (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Prog);
+  begin
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    Res.Val_Len := S.Val_Len;
+    Res.Val_Text(1..Res.Val_Len) := S.Val_Text(1..Res.Val_Len);
+    return Res;
+  exception
+    when others =>
+      raise Invalid_Argument;
+  end Strprog;
+
   function Strof (Item : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
 
@@ -211,10 +225,13 @@ package body Ios is
         end if;
       when Chrs =>
         Res := Item;
+      when Prog =>
+        Res.Val_Len := Item.Val_Len;
+        Res.Val_Text(1 .. Res.Val_Len) := Item.Val_Text(1 .. Res.Val_Len);
       when Regi =>
         Res.Val_Len := 1;
         Res.Val_Text(1) := Item.Val_Regi;
-      when others =>
+      when Oper =>
         raise Invalid_Argument;
     end case;
     return Res;

@@ -152,6 +152,7 @@ package body Parser is
    Strinte  => (Nosy, "push A converted to integer   ", False),
    Strbool  => (Nosy, "push A converted to boolean   ", False),
    Strregi  => (Nosy, "push A converted to register  ", False),
+   Strprog  => (Nosy, "push A converted to program   ", False),
    Strof    => (Nosy, "push formated string of A     ", True),
 
    Clock    => (Nosy, "Push current time             ", False),

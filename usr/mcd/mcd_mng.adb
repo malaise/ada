@@ -167,6 +167,7 @@ package body Mcd_Mng is
     function Strreal (S : Item_Rec) return Item_Rec;
     function Strbool (S : Item_Rec) return Item_Rec;
     function Strregi (S : Item_Rec) return Item_Rec;
+    function Strprog (S : Item_Rec) return Item_Rec;
     function Strof (Item : Item_Rec) return Item_Rec;
     -- INVALID_ARGUMENT, ARGUMENT_MISMATCH : exception;
   end Ios;
@@ -669,6 +670,8 @@ package body Mcd_Mng is
           Pop(A); Push (Ios.Strbool(A));
         when Strregi =>
           Pop(A); Push (Ios.Strregi(A));
+        when Strprog =>
+          Pop(A); Push (Ios.Strprog(A));
         when Strof =>
           Pop(A); Push (Ios.Strof(A));
 
