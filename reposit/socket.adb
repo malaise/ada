@@ -116,7 +116,15 @@ package body Socket is
                               Port : System.Address) return Result;
   pragma Import (C, Soc_Get_Dest_Port, "soc_get_dest_port");
 
-
+  function Soc_Port_Name_Of (Port : Word; 
+                             Protocol : C_Protocol;
+                             Name : System.Address;
+                             Len  : Natural) return Result;
+  pragma Import (C, Soc_Port_Name_Of, "soc_port_name_of");
+  function Soc_Port_Of (Name : System.Address;
+                        Protocol : C_Protocol;
+                        Port : System.Address) return Result;
+  pragma Import (C, Soc_Port_Of, "soc_port_of");
   function Soc_Host_Name_Of (Host : System.Address; Name : System.Address;
                              Len  : Natural) return Result;
   pragma Import (C, Soc_Host_Name_Of, "soc_host_name_of");
@@ -393,6 +401,32 @@ package body Socket is
     return Port_Num(Port);
   end Get_Destination_Port;
 
+  -- Convert Port_Num to Port_Name and reverse (for a given protocol)
+  function Port_Name_Of (Port : Port_Num; Protocol : Protocol_List)
+                        return String is
+    Name : String (1 .. 1024);
+  begin
+    Res := Soc_Port_Name_Of (Word (Port), C_Protocol(Protocol),
+                             Name'Address, Name'Length);
+    Check_Ok;
+    for I in Name'Range loop
+      if Name(I) = Ascii.Nul then
+        return Name(1 .. I-1);
+      end if;
+    end loop;
+    raise Soc_Len_Err;
+  end Port_Name_Of;
+
+  function Port_Num_Of  (Name : String; Protocol : Protocol_List)
+                        return Port_Num is
+    Name_For_C : constant String := C_Str (Name);
+    Port : Word;
+  begin
+    Res := Soc_Port_Of (Name_For_C'Address, C_Protocol(Protocol),
+                        Port'Address);
+    Check_Ok;
+    return Port_Num(Port);
+  end Port_Num_Of;
 
   -- Convert Host_Id to Host_Name and reverse (not for LANs)
   function Host_Name_Of (Id : Host_Id) return String is

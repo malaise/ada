@@ -192,6 +192,13 @@ package Socket is
   function Get_Destination_Host (Socket : Socket_Dscr) return Host_Id;
   function Get_Destination_Port (Socket : Socket_Dscr) return Port_Num;
 
+  -- Convert Port_Num to Port_Name and reverse (for a given protocol)
+  -- May raise Soc_Name_Not_Found if Name/Num is not found
+  function Port_Name_Of (Port : Port_Num; Protocol : Protocol_List)
+                        return String;
+  function Port_Num_Of  (Name : String; Protocol : Protocol_List)
+                        return Port_Num;
+
   -- Convert Host_Id to Host_Name and reverse (not for LANs)
   -- May raise Soc_Name_Not_Found if Name is not found
   function Host_Name_Of (Id : Host_Id) return String;
