@@ -34,7 +34,7 @@ begin
 
 exception
   when others =>
-    DOS.SOUND (3);
+    CON_IO.BELL (3);
     END_OF_PROGRAM;
     raise;
 end HEART;

@@ -356,7 +356,7 @@ package body SOK_MANAGER is
                       return;
                   end case;
                 elsif KEY = SOK_INPUT.UNDO then
-                  DOS.SOUND;
+                  CON_IO.BELL;
                 elsif KEY = SOK_INPUT.REFRESH then
                   -- Refresh
                   SOK_DISPLAY.PUT_FRAME (STATE.FRAME);
@@ -433,7 +433,7 @@ package body SOK_MANAGER is
           STATE.POSITION := SAVED_POS;
         exception
           when SOK_SAVE.NO_MORE_SAVED_MOVEMENTS =>
-            DOS.SOUND;
+            CON_IO.BELL;
         end;
 
       end if; -- move or undo

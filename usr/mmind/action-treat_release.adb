@@ -149,12 +149,12 @@ begin
 
           end;
         else
-          DOS.SOUND;
+          CON_IO.BELL;
         end if;
         GO_ON := TRUE;
         EXIT_GAME := FALSE;
       when COLOR =>
-        DOS.SOUND;
+        CON_IO.BELL;
         GO_ON := TRUE;
         EXIT_GAME := FALSE;
       when PROPAL =>
@@ -189,7 +189,7 @@ begin
                               MOVED_COLOR);
             if LAST_CLICK.PROPAL_NO /= CUR_SELECTION.PROPAL_NO
             and then LAST_CLICK.COLUMN_NO /= CUR_SELECTION.COLUMN_NO then
-              DOS.SOUND;
+              CON_IO.BELL;
             end if;
           end if;
         end;
@@ -213,7 +213,7 @@ begin
       UPDATE_TRY (CUR_SELECTION.PROPAL_NO);
 
     else
-      DOS.SOUND;
+      CON_IO.BELL;
     end if;
     GO_ON := TRUE;
     EXIT_GAME := FALSE;
@@ -231,7 +231,7 @@ begin
         SCREEN.PUT_COLOR (LAST_CLICK.PROPAL_NO,
                           LAST_CLICK.COLUMN_NO,
                           MOVED_COLOR);
-        DOS.SOUND;
+        CON_IO.BELL;
       end;
     else
       -- Remove a color from propal (already cleared)
@@ -244,7 +244,7 @@ begin
     EXIT_GAME := FALSE;
   else
     if LAST_CLICK.SELECTION_KIND /= SCREEN.NOTHING then
-      DOS.SOUND;
+      CON_IO.BELL;
     end if;
     GO_ON := TRUE;
     EXIT_GAME := FALSE;

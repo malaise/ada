@@ -27,7 +27,7 @@ begin
         LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
                        SELECTION => SCREEN.NOTHING);
         SCREEN.PUT_HELP (SCREEN.DISCARDED);
-        DOS.SOUND;
+        CON_IO.BELL;
     end case;
 
   else
@@ -60,7 +60,7 @@ begin
             SCREEN.PUT_HELP (SCREEN.DISCARDED);
             LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
                            SELECTION => SCREEN.TRY);
-            DOS.SOUND;
+            CON_IO.BELL;
           end if;
         end;
 
@@ -96,7 +96,7 @@ begin
             SCREEN.PUT_HELP (SCREEN.DISCARDED);
             LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
                            SELECTION => SCREEN.PROPAL);
-            DOS.SOUND;
+            CON_IO.BELL;
           end if;
         end;
 
@@ -104,7 +104,7 @@ begin
         SCREEN.PUT_HELP (SCREEN.DISCARDED);
         LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
                        SELECTION => SCREEN.NOTHING);
-        DOS.SOUND;
+        CON_IO.BELL;
 
     end case;
 

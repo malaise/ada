@@ -44,7 +44,7 @@ exception
     CON_IO.RESET_TERM;
     raise;
   when others =>
-    DOS.SOUND (3);
+    CON_IO.BELL (3);
     delay 5.0;
     CON_IO.RESET_TERM;
     raise;
