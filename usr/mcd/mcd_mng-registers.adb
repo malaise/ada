@@ -25,7 +25,7 @@ package body REGISTERS is
 
   procedure STORE (VAL : in ITEM_REC; TO_REG : in ITEM_REC) is
   begin
-    if VAL.KIND not in INTE .. CHRS then
+    if VAL.KIND not in REGISTER_CONTENT_LIST then
       raise INVALID_ARGUMENT;
     end if;
     REGISTERS_ARRAY(REG2IND(TO_REG)) := VAL;
@@ -35,7 +35,7 @@ package body REGISTERS is
     VAL : ITEM_REC;
   begin
     VAL := REGISTERS_ARRAY(REG2IND(FROM_REG));
-    if VAL.KIND not in INTE .. CHRS then
+    if VAL.KIND not in REGISTER_CONTENT_LIST then
       raise EMTPY_REGISTER;
     end if;
     return VAL;
