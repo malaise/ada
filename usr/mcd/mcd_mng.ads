@@ -2,10 +2,9 @@ with My_Math;
 with Input_Dispatcher;
 package Mcd_Mng is
 
-  type Item_Kind_List is (Inte, Real, Bool, Chrs, Regi, Oper);
+  type Item_Kind_List is (Inte, Real, Bool, Chrs, Prog, Regi, Oper);
 
   type Operator_List is (
-   Nop,
 
    Add,
    Sub,
@@ -13,18 +12,15 @@ package Mcd_Mng is
    Div,
    Remind,
    Pow,
-   Swap,
+   Minus,
+   Absv,
 
    Bitand,
    Bitor,
    Bitxor,
-
+   Bitneg,
    Shl,
    Shr,
-   
-   Minus,
-   Absv,
-   Bitneg,
 
    Equal,
    Diff,
@@ -33,24 +29,9 @@ package Mcd_Mng is
    Greateq,
    Smalleq,
 
-   Toreal,
-   Round,
-   Trunc,
-
-   Int,
-   Frac,
-
-   Isreal,
-   Isinte,
-   Isstr,
-   Isreg,
-
-   Obase,
-
    Boland,
    Bolor,
    Bolxor,
-
    Bolneg,
 
    Pi,
@@ -61,28 +42,36 @@ package Mcd_Mng is
    Acos,
    Atan,
 
-   Dup,
+   Toreal,
+   Round,
+   Trunc,
+   Int,
+   Frac,
 
+   Isreal,
+   Isinte,
+   Isstr,
+   Isreg,
+
+   Ssize,
+   Swap,
+   Dup,
    Pop,
    Popn,
 
-   Ifthen,
-   Ifte,
-   Etfi,
-  
    Popr,
    Copyr,
    Pushr,
-
-   Ssize,
-   Rnd,
-   Sleep,
 
    Pope,
    Copye,
    Pushle,
    Pushfe,
    Esize,
+
+   Ifthen,
+   Ifte,
+   Etfi,
 
    Call,
    Ifcall,
@@ -111,6 +100,10 @@ package Mcd_Mng is
    Strbool,
    Strof,
 
+   Obase,
+   Nop,
+   Rnd,
+   Sleep,
    Help
    );
 
@@ -126,7 +119,7 @@ package Mcd_Mng is
         Val_Real : My_Math.Real;
       when Bool =>
         Val_Bool : Boolean;
-      when Chrs =>
+      when Chrs | Prog =>
         Val_Len  : Natural;
         Val_Text : Chars_Text;
       when Regi => 

@@ -1,4 +1,4 @@
-[ i pushr 1 + i copyr [ Loop No: ] put putl pushle copye retacal ] copye
+[ i pushr 1 + i copyr "Loop No: " put putl pushle copye retacal ] copye
 
 0 i popr
 10 format

@@ -17,6 +17,9 @@ package Input_Dispatcher is
   -- Empty if end of input flow
   function Next_Word return String;
 
+  -- String delimiter (returned by Next_Word)
+  Sd : constant Character := '"';
+
   -- Error if end of string litteral not found
   String_Error : exception;
 

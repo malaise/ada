@@ -1,8 +1,8 @@
 # Error and quit
 4 format
-[ [ Error, 3 arguments: <nb_disks> <from_column> <to_column> expected ] putl
-  [ "   nb_disks must be >= 0," ] putl
-  [ "   columns must be 1, 2 or 3 and different." ] putl
+[ "Error, 3 arguments: <nb_disks> <from_column> <to_column> expected" putl
+  "   nb_disks must be >= 0," putl
+  "   columns must be 1, 2 or 3 and different." putl
 ssize popn retall ] E popr
 
 # Check 3 args
@@ -28,8 +28,8 @@ n pushr 1 < E pushr ifcall
 2 = [ 3 = 1 3 ifte 2 retn ] ifcall 2 = 1 2 ifte ] K popr
 
 # M(i, j, d) Move a disk: display
-[ t pushr 1 + t popr [ "move disk" ] put put swap [ " from" ] put put
-[ " to" ] put putl ] M popr
+[ t pushr 1 + t popr "move disk" put put swap " from" put put
+" to" put putl ] M popr
 
 # Move disk 1: Move and return
 [ M pushr call 2 retn ] T popr
@@ -59,5 +59,5 @@ i pushr j pushr n pushr H pushr call
 
 # Done
 7 format
-[ Nb moves: ] put t pushr putl
+" Nb moves: " put t pushr putl
 

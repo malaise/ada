@@ -1,5 +1,5 @@
 # Check 1 arg >= 0
-[ [ Error: 0 <= N <= 7 expected. ] putl ssize popn retall ] E popr
+[ "Error: 0 <= N <= 7 expected." putl ssize popn retall ] E popr
 ssize 1 /= E pushr ifcall
 dup 0 < E pushr ifcall 
 dup 7 > E pushr ifcall 
@@ -7,12 +7,12 @@ dup 7 > E pushr ifcall
 dup putl
 r popr
 
-[ [ in 1 ] putl r pushr retn [ end 1 ] putl ] A popr
-[ [ in 2 ] putl A pushr call [ end 2 ] putl ] B popr
-[ [ in 3 ] putl B pushr call [ end 3 ] putl ] C popr
-[ [ in 4 ] putl C pushr call [ end 4 ] putl ] D popr
-[ [ in 5 ] putl D pushr call [ end 5 ] putl ] E popr
-[ [ in 6 ] putl E pushr call [ end 6 ] putl ] F popr
+[ "in 1" putl r pushr retn "end 1" putl ] A popr
+[ "in 2" putl A pushr call "end 2" putl ] B popr
+[ "in 3" putl B pushr call "end 3" putl ] C popr
+[ "in 4" putl C pushr call "end 4" putl ] D popr
+[ "in 5" putl D pushr call "end 5" putl ] E popr
+[ "in 6" putl E pushr call "end 6" putl ] F popr
 
-[ in M ] putl F pushr call [ end M ] putl
+"in M" putl F pushr call "end M" putl
 

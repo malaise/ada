@@ -123,7 +123,6 @@ package body Mcd_Mng is
 
     procedure Set_Obase (Base : in Item_Rec);
 
-    subtype Io_Kind_List is Item_Kind_List range Inte .. Bool;
     procedure Format (Item : in Item_Rec);
     procedure Put (Item : in Item_Rec);
     procedure Put_Line (Item : in Item_Rec);
@@ -173,7 +172,7 @@ package body Mcd_Mng is
         Text_Io.Put_Line("Mng: Do_call");
       end if;
       Pop(A);
-      if A.Kind /= Chrs then
+      if A.Kind /= Prog then
         raise Invalid_Argument;
       end if;
       if Call_Stack.Level /= 0 then
@@ -287,8 +286,8 @@ package body Mcd_Mng is
     The_End := False;
     -- Dispatch
     if Item.Kind /= Oper then
-        -- Push operand
-        Stack.Push(Item);
+      -- Push operand
+      Stack.Push(Item);
     else -- OPERATOR
       if Debug.Debug_Level_Array(Debug.Oper) then
         Text_Io.Put("Mng: ");

@@ -1,9 +1,9 @@
 # Francs <-> Euros conversion
 
 # Error and quit
-[ [ Error, 1 argument: <amount><unit> expected ] putl
-  [ "   amount : float or integer" ] putl
-  [ "   unit   :  f or e" ] putl
+[ "Error, 1 argument: <amount><unit> expected" putl
+  "   amount : float or integer" putl
+  "   unit   :  f or e" putl
 ssize popn retall ] E popr
 
 # Francs in an euro
@@ -20,33 +20,33 @@ strlen l copyr
 2 < E pushr ifcall
 
 # Extract unit - last char
-a pushr l pushr dup strsub u copyr
+a pushr l pushr dup strsub strlow u copyr
 # Unit is f or e
-[ f ] /= u pushr [ e ] /= & E pushr ifcall
+"f" /= u pushr "e" /= & E pushr ifcall
 
 # Extract amount value
 a pushr 1 l pushr 1 - strsub v copyr
 # locate '.'
-1 [ . ] v pushr strloc
+1 "." v pushr strloc
 # Convert to real
 0 = [ strinte toreal ] [ strreal ] ifte call
 v popr
 
 
 # Set conversion factor and result unit
-e pushr u pushr [ f ] = [ 1.0 swap / [ e ] r popr ] [ [ f ] r popr ] ifte call
+e pushr u pushr "f" = [ 1.0 swap / "e" r popr ] [ "f" r popr ] ifte call
 
 # Convert
 v pushr *
 
 # Display arg =
-a pushr put [ " = " ] put
+a pushr put " = " put
 
 # Round cents and display "int."
 100.0 *
 round dup
-1 format 100 / put [ . ] put
+1 format 100 / put "." put
 # Display frac (2 digits) and unit
-100 % dup 10 < [ [ 0 ] put 1 format put ] [ 2 format put ] ifte call
+100 % dup 10 < [ "0" put 1 format put ] [ 2 format put ] ifte call
 r pushr putl
 

@@ -15,17 +15,19 @@ if [ -f $com ] ; then
 fi
 touch $com
 
-while [ "$1" != "" ] ; do
+while [ $# -ne 0 ] ; do
   if [ "$1" = "-e" ] ; then
 
-    if [ ! -f $2 ] ; then
-      echo "Error. File $2 not found."
+    if [ ! -f "$2" ] ; then
+      echo "Error. File "$2" not found."
       exit 2
     fi
-    cat $2 >> $com
+    cat "$2" >> $com
     shift; shift
+  elif [ ! -z "$1" ] ; then
+    echo "$1" >> $com
+    shift
   else
-    echo $1 >> $com
     shift
   fi
 done

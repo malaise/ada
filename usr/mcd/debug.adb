@@ -50,7 +50,9 @@ package body Debug is
       when Bool =>
         Bool_Io.Put(Item.Val_Bool);
       when Chrs =>
-        Text_Io.Put (">" & Item.Val_Text(1 .. Item.Val_Len) & "<");
+        Text_Io.Put ("""" & Item.Val_Text(1 .. Item.Val_Len) & """");
+      when Prog =>
+        Text_Io.Put ("[ " & Item.Val_Text(1 .. Item.Val_Len) & " ]");
       when Regi =>
         Text_Io.Put (Item.Val_Regi);
       when Oper =>

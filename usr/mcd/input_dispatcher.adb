@@ -24,9 +24,6 @@ package body Input_Dispatcher is
   Cur_Index : Positive;
   Stop_Index : Positive;
 
-  -- String delimiter
-  Sd : constant Character := '"';
-
   function Is_Separator (C : in Character) return Boolean is
   begin
     return C = ' ' or else C = Ascii.Ht;
@@ -82,14 +79,11 @@ package body Input_Dispatcher is
       -- This is the next start
       Cur_Index := Stop_Index + 1;
 
-      -- Skip first and last Sds
-      Tmp_Index := Tmp_Index + 1;
-      Stop_Index := Stop_Index - 1;
-
     else
       -- Parse string, look for separator
       Stop_Index := Tmp_Index + 1;
-      while Stop_Index <= Cur_Len and then not Is_Separator(Cur_Str(Stop_Index)) loop
+      while Stop_Index <= Cur_Len
+      and then not Is_Separator(Cur_Str(Stop_Index)) loop
         Stop_Index := Stop_Index + 1;
       end loop;
       -- This is the next start

@@ -1,0 +1,17 @@
+# B is x % of A + B
+a popr b copyr
+toreal a pushr toreal + 1.0 swap / b pushr toreal * 100.0 *
+
+0 format
+b pushr put "/(" put a pushr put "+" put b pushr put ") = " put 
+
+# Format result
+100.0 *
+Trunc dup
+100 / put "." put
+# Display frac (2 digits) and unit
+100 % dup 10 < [ "0" put 1 format put ] [ 2 format put ] ifte call
+
+"%" putl
+
+

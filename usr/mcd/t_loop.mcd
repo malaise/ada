@@ -1,7 +1,7 @@
 # Check 1 arg >= 0 or no arg (=> 10)
-[ [ Error: N >= 0 or no argument expected. ] putl ssize popn retall ] pope
+[ "Error: N >= 0 or no argument expected." putl ssize popn retall ] pope
 ssize 1 > pushle copye ifcall
-ssize 0 = [ [ "Defaulting to " ] put 10 dup putl ] ifcall
+ssize 0 = [ "Defaulting to " put 10 dup putl ] ifcall
 dup 0 < pushle ifcall 
 
 [ 

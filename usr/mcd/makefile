@@ -1,9 +1,20 @@
-all:
-	amake mcd.adb
+LIBC_DIR=$(HOME)/ada/c
+LIBX_MNG=x_mng
+LX=-largs -L$(LIBC_DIR) -l$(LIBX_MNG) -lX11
+
+EXE=mcd
+
+all: $(EXE)
+
+mcd:
+	amake $@ $(LX)
+
+AFPX.DSC: AFPX.LIS
+	afpx_bld
 
 clean:
 	rm *.o *.ali
 
 clean_exe:
-	rm mcd
+	rm -f AFPX.DSC AFPX.FLD AFPX.INI $(EXE)
 

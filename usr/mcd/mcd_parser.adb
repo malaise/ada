@@ -5,6 +5,7 @@ package body Parser is
   use Mcd_Mng;
 
   subtype Item_Chrs_Rec is Mcd_Mng.Item_Rec(Mcd_Mng.Chrs);
+  subtype Item_Prog_Rec is Mcd_Mng.Item_Rec(Mcd_Mng.Prog);
 
   -- Instruction stack for debug history
   package Instr_Stack is new Queues.Circ(7, Item_Chrs_Rec);
@@ -28,116 +29,118 @@ package body Parser is
   type One_Rec is record
     Word : One_Word;
     Comment : One_Comment;
+    New_Line : Boolean;
   end record;
 
   -- The operators
   Words : constant array (Mcd_Mng.Operator_List) of One_Rec :=
-  (Nop      => (Nosy, "No operation                  "),
 
-   Add      => ("+ ", "push B + A                    "),
-   Sub      => ("- ", "push B - A                    "),
-   Mult     => ("* ", "push B * A                    "),
-   Div      => ("/ ", "push B / A                    "),
-   Remind   => ("% ", "push B % A (rest of division) "),
-   Pow      => ("**", "push B ** A (pow)             "),
-   Minus    => ("+-", "push -A                       "),
-   Absv     => (Nosy, "push |A|                      "),
+  (Add      => ("+ ", "push B + A                    ", False),
+   Sub      => ("- ", "push B - A                    ", False),
+   Mult     => ("* ", "push B * A                    ", False),
+   Div      => ("/ ", "push B / A                    ", False),
+   Remind   => ("% ", "push B % A (rest of division) ", False),
+   Pow      => ("**", "push B ** A (pow)             ", False),
+   Minus    => ("+-", "push -A                       ", False),
+   Absv     => (Nosy, "push |A|                      ", True),
 
-   Bitand   => ("&&", "push B & A (bit and)          "),
-   Bitor    => ("||", "push B | A (bit and)          "),
-   Bitxor   => ("^^", "push B ^ A (bit and)          "),
-   Bitneg   => ("~~", "push ~A    (bit neg)          "),
-   Shl      => ("<<", "push B << A (bits shift left) "),
-   Shr      => (">>", "push B >> A (bits shift right)"),
+   Bitand   => ("&&", "push B & A (bit and)          ", False),
+   Bitor    => ("||", "push B | A (bit and)          ", False),
+   Bitxor   => ("^^", "push B ^ A (bit and)          ", False),
+   Bitneg   => ("~~", "push ~A    (bit neg)          ", False),
+   Shl      => ("<<", "push B << A (bits shift left) ", False),
+   Shr      => (">>", "push B >> A (bits shift right)", True),
 
-   Equal    => ("= ", "push B = A                    "),
-   Diff     => ("/=", "push B /= A                   "),
-   Greater  => ("> ", "push B > A                    "),
-   Smaller  => ("< ", "push B < A                    "),
-   Greateq  => (">=", "push B >= A                   "),
-   Smalleq  => ("<=", "push B <= A                   "),
+   Equal    => ("= ", "push B = A                    ", False),
+   Diff     => ("/=", "push B /= A                   ", False),
+   Greater  => ("> ", "push B > A                    ", False),
+   Smaller  => ("< ", "push B < A                    ", False),
+   Greateq  => (">=", "push B >= A                   ", False),
+   Smalleq  => ("<=", "push B <= A                   ", True),
 
-   Boland   => ("& ", "push B and A                  "),
-   Bolor    => ("| ", "push B or A                   "),
-   Bolxor   => ("^ ", "push B xor A                  "),
-   Bolneg   => ("~ ", "push not A                    "),
+   Boland   => ("& ", "push B and A                  ", False),
+   Bolor    => ("| ", "push B or A                   ", False),
+   Bolxor   => ("^ ", "push B xor A                  ", False),
+   Bolneg   => ("~ ", "push not A                    ", True),
 
-   Pi       => (Nosy, "push PI                       "),
-   Sin      => (Nosy, "push Sin(A) A in radiants     "),
-   Cos      => (Nosy, "push Cos(A) A in radiants     "),
-   Tan      => (Nosy, "push Tan(A) A in radiants     "),
-   ASin     => (Nosy, "push ASin(A) in radiants      "),
-   ACos     => (Nosy, "push ACos(A) in radiants      "),
-   ATan     => (Nosy, "push ATan(A) in radiants      "),
+   Pi       => (Nosy, "push PI                       ", False),
+   Sin      => (Nosy, "push Sin(A) A in radiants     ", False),
+   Cos      => (Nosy, "push Cos(A) A in radiants     ", False),
+   Tan      => (Nosy, "push Tan(A) A in radiants     ", False),
+   ASin     => (Nosy, "push ASin(A) in radiants      ", False),
+   ACos     => (Nosy, "push ACos(A) in radiants      ", False),
+   ATan     => (Nosy, "push ATan(A) in radiants      ", True),
 
-   Toreal   => (Nosy, "push REAL(A)                  "),
-   Round    => (Nosy, "push INTE(A) (round)          "),
-   Trunc    => (Nosy, "push INTE(A) (int part)       "),
-   Int      => (Nosy, "push int part of A            "),
-   Frac     => (Nosy, "push frac part of A           "),
+   Toreal   => (Nosy, "push REAL(A)                  ", False),
+   Round    => (Nosy, "push INTE(A) (round)          ", False),
+   Trunc    => (Nosy, "push INTE(A) (int part)       ", False),
+   Int      => (Nosy, "push int part of A            ", False),
+   Frac     => (Nosy, "push frac part of A           ", True),
  
-   Isreal   => (Nosy, "push True if A is a real      "),
-   Isinte   => (Nosy, "push True if A in an integer  "),
-   Isstr    => (Nosy, "push True if A is a string    "),
-   Isreg    => (Nosy, "push True if A is a register  "),
+   Isreal   => (Nosy, "push True if A is a real      ", False),
+   Isinte   => (Nosy, "push True if A in an integer  ", False),
+   Isstr    => (Nosy, "push True if A is a string    ", False),
+   Isreg    => (Nosy, "push True if A is a register  ", True),
 
-   Obase    => (Nosy, "set output base to A          "),
  
-   Ssize    => (Nosy, "push stack size               "),
-   Swap     => (Nosy, "push A, push B                "),
-   Dup      => (Nosy, "push A, push A                "),
-   Pop      => (Nosy, "pop A                         "),
-   Popn     => (Nosy, "pop B A times                 "),
-   Rnd      => (Nosy, "push 0.0 <= RND < 1.0         "),
-   Sleep    => (Nosy, "sleep A seconds               "),
+   Ssize    => (Nosy, "push stack size               ", False),
+   Swap     => (Nosy, "push A, push B                ", False),
+   Dup      => (Nosy, "push A, push A                ", False),
+   Pop      => (Nosy, "pop A                         ", False),
+   Popn     => (Nosy, "pop B A times                 ", False),
 
-   Popr     => (Nosy, "B -> regA                     "),
-   Copyr    => (Nosy, "B -> regA, push B             "),
-   Pushr    => (Nosy, "push regA                     "),
+   Popr     => (Nosy, "B -> regA                     ", False),
+   Copyr    => (Nosy, "B -> regA, push B             ", False),
+   Pushr    => (Nosy, "push regA                     ", True),
 
-   Pope     => (Nosy, "pop A push_extra A            "),
-   Copye    => (Nosy, "pop A push_extra A push A     "),
-   Pushle   => (Nosy, "pop_extra last  X push X      "),
-   Pushfe   => (Nosy, "pop_extra first X push X      "),
-   Esize    => (Nosy, "push extra_stack size         "),
+   Pope     => (Nosy, "pop A push_extra A            ", False),
+   Copye    => (Nosy, "pop A push_extra A push A     ", False),
+   Pushle   => (Nosy, "pop_extra last  X push X      ", False),
+   Pushfe   => (Nosy, "pop_extra first X push X      ", False),
+   Esize    => (Nosy, "push extra_stack size         ", True),
 
-   Ifthen   => (Nosy, "if B then push A              "),
-   Ifte     => (Nosy, "if C then push B else push A  "),
-   Etfi     => (Nosy, "if A then push C else push B  "),
+   Ifthen   => (Nosy, "if B then push A              ", False),
+   Ifte     => (Nosy, "if C then push B else push A  ", False),
+   Etfi     => (Nosy, "if A then push C else push B  ", True),
 
-   Call     => (Nosy, "call A                        "),
-   Ifcall   => (Nosy, "if B then call A              "),
-   Ret      => (Nosy, "return                        "),
-   Retn     => (Nosy, "return A levels (0=none)      "),
-   Retall   => (Nosy, "return all levels             "),
-   Ifret    => (Nosy, "if A return                   "),
-   Ifretn   => (Nosy, "if B return A levels (0=none) "),
-   Ifretall => (Nosy, "if A return all levels        "),
-   Retacal  => (Nosy, "return and call A             "),
+   Call     => (Nosy, "call A                        ", False),
+   Ifcall   => (Nosy, "if B then call A              ", False),
+   Ret      => (Nosy, "return                        ", False),
+   Retn     => (Nosy, "return A levels (0=none)      ", False),
+   Retall   => (Nosy, "return all levels             ", False),
+   Ifret    => (Nosy, "if A return                   ", False),
+   Ifretn   => (Nosy, "if B return A levels (0=none) ", False),
+   Ifretall => (Nosy, "if A return all levels        ", False),
+   Retacal  => (Nosy, "return and call A             ", True),
 
-   Format   => (Nosy, "xx or xx.yyy format           "),
-   Put      => (Nosy, "put A                         "),
-   Newl     => (Nosy, "new line                      "),
-   Putl     => (Nosy, "put_line A                    "),
+   Format   => (Nosy, "xx or xx.yyy format           ", False),
+   Put      => (Nosy, "put A                         ", False),
+   Newl     => (Nosy, "new line                      ", False),
+   Putl     => (Nosy, "put_line A                    ", True),
 
-   Strlen   => (Nosy, "push length of A              "),
-   Strcat   => (Nosy, "push B & A                    "),
-   Strsub   => (Nosy, "push C(B..A)                  "),
-   Strloc   => (Nosy, "push C occurence of B in A    "),
-   Strrep   => (Nosy, "push A replaced by B at pos C "),
-   Strupp   => (Nosy, "push A in uppercase           "),
-   Strlow   => (Nosy, "push A in lowercase           "),
-   Strreal  => (Nosy, "push A converted to real      "),
-   Strinte  => (Nosy, "push A converted to inte      "),
-   Strbool  => (Nosy, "push A converted to bool      "),
-   Strof    => (Nosy, "push formated string of A     "),
+   Strlen   => (Nosy, "push length of A              ", False),
+   Strcat   => (Nosy, "push B & A                    ", False),
+   Strsub   => (Nosy, "push C(B..A)                  ", False),
+   Strloc   => (Nosy, "push C occurence of B in A    ", False),
+   Strrep   => (Nosy, "push A replaced by B at pos C ", False),
+   Strupp   => (Nosy, "push A in uppercase           ", False),
+   Strlow   => (Nosy, "push A in lowercase           ", False),
+   Strreal  => (Nosy, "push A converted to real      ", False),
+   Strinte  => (Nosy, "push A converted to inte      ", False),
+   Strbool  => (Nosy, "push A converted to bool      ", False),
+   Strof    => (Nosy, "push formated string of A     ", True),
 
-   Help     => (Nosy, "put help                      ") );
+   Obase    => (Nosy, "set output base to A          ", False),
+   Nop      => (Nosy, "no operation                  ", False),
+   Rnd      => (Nosy, "push 0.0 <= RND < 1.0         ", False),
+   Sleep    => (Nosy, "sleep A seconds               ", False),
+   Help     => (Nosy, "put help                      ", False) );
 
 
   function Next_Item return Mcd_Mng.Item_Rec is
     Level : Natural;
-    Item_Chrs, Saved_Item_Chrs : Item_Chrs_Rec;
+    Item_Chrs : Item_Chrs_Rec;
+    Item_Prog : Item_Prog_Rec;
     First_Word : Boolean;
     W : One_Word;
     C : Character;
@@ -182,6 +185,10 @@ package body Parser is
         Level := 1;
         while Level /= 0 loop
           Text_Handler.Set(Txt, Input_Dispatcher.Next_Word);
+          if Debug.Debug_Level_Array(Debug.Parser) then
+            Text_Io.Put_Line ("Parser: Getting >"
+                     & Text_Handler.Value(Txt)  & "<");
+          end if;
           if Text_Handler.Value(Txt) = "[" then
             Level := Level + 1;
           elsif Text_Handler.Value(Txt) = "]" then
@@ -196,18 +203,30 @@ package body Parser is
           end if;
           Text_Handler.Append (Txts, Txt);
         end loop;
-        Item_Chrs.Val_Len := Text_Handler.Length(Txts);
-        Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
+        Item_Prog.Val_Len := Text_Handler.Length(Txts);
+        Item_Prog.Val_Text(1 .. Item_Prog.Val_Len) := Text_Handler.Value(Txts);
         if Item_Chrs.Val_Len + 4 <= Input_Dispatcher.Max_String_Lg then
-          Saved_Item_Chrs.Val_Len := Text_Handler.Length(Txts) + 4;
-          Saved_Item_Chrs.Val_Text(1 .. Saved_Item_Chrs.Val_Len) := "[ " & Text_Handler.Value(Txts) & " ]";
+          Item_Chrs.Val_Len := Text_Handler.Length(Txts) + 4;
+          Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := "[ " & Text_Handler.Value(Txts) & " ]";
         else
-          Saved_Item_Chrs := Item_Chrs;
+          Item_Chrs.Val_Len := Text_Handler.Length(Txts);
+          Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
         end if;
-        Instr_Stack.Push(Saved_Item_Chrs);
-        return Item_Chrs;
+        Instr_Stack.Push(Item_Chrs);
+        return Item_Prog;
       end if;
 
+    end if;
+
+    if Text_Handler.Value(Txt)(1) = Input_Dispatcher.Sd
+    and then Text_Handler.Value(Txt)(Text_Handler.Length(Txt)) = Input_Dispatcher.Sd then
+      Item_Chrs.Val_Len := Text_Handler.Length(Txt);
+      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
+      Instr_Stack.Push(Item_Chrs);
+      Item_Chrs.Val_Len := Item_Chrs.Val_Len - 2;
+      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) :=
+             Item_Chrs.Val_Text(2 .. Item_Chrs.Val_Len + 1);
+      return Item_Chrs;
     end if;
 
     -- Parse OPER : string
@@ -289,11 +308,12 @@ package body Parser is
     Ope_Name : String (1 .. Ope_Len);
   begin
     Put_Line ("Commands are read from standard input. No argument accepted.");
-    Put_Line ("Separators are space and horiz tab.");
-    Put_Line ("Item ::= <integer> <real> <boolean> <operator> <register> <string/subprogram>");
-    Put_Line ("  <integer>           ::= <number> | <base>#<number># ");
-    Put_Line ("  <register>          ::= 'a' .. 'z'  | 'A' .. 'Z'");
-    Put_Line ("  <string/subprogram> ::= '[' <text> ']'");
+    Put_Line ("Separators are space and horizontal tab.");
+    Put_Line ("Item ::= <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
+    Put_Line ("  <integer>    ::= <number> | <base>#<number># ");
+    Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
+    Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
+    Put_Line ("  <string>     ::= ""<text>""");
     Put_Line ("Operators are: Name      Action (A is top of stack, then B...)");
     for O in Mcd_Mng.Operator_List loop
       Ope_Name:= (others => ' ');
@@ -304,6 +324,9 @@ package body Parser is
                 := Lower_Str(Mcd_Mng.Operator_List'Image(O));
       end if;
       Put_Line("               " & Ope_Name & "   " & Words(O).Comment);
+      if Words(O).New_Line then
+        New_Line;
+      end if;
     end loop;
   end Print_Help;
     
@@ -329,7 +352,6 @@ package body Parser is
       Sys_Calls.New_Line_Error;
     end if;
   end Dump_Stack;
-
 
 end Parser;
 

@@ -1,17 +1,18 @@
 # Check stack is empty
-ssize 1 /= [ [ Error. One argument expected. ] putl ssize popn retall ]
+ssize 1 /= [ "Error. One argument expected." putl ssize popn retall ]
 ifcall
 
 n popr
 
 # Add stack to extra_stack (display) push results
 [ 1 +
-dup 5 format put [ " "  ] put
+dup 5 format put " " put
 dup pushle + copye 7 format putl
 dup n pushr = ifret
 P pushr retacal ] P popr
 
 0 copye
-[ "    N      Sn" ] putl
+"    N      Sn" putl
 P pushr call
 pop
+

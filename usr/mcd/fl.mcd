@@ -2,7 +2,7 @@
 [ absv 1.0e-10 <= ] Z popr
 
 # Error, replace by 0.0 exit
-[ [ Invalid entry:  ] put v pushr putl pop 0.0 ] E popr
+[ "Invalid entry: " put v pushr putl pop 0.0 ] E popr
 
 # Check that top of stack is valid and fix it
 # Replace it by mn, hh
@@ -43,6 +43,6 @@ L pushr retacal ] L popr
 L pushr call
 
 # Display result
-h pushr 5 format put [ h ] put m pushr
-dup 10 < [ [ 0 ] put 1 format putl ] [ 2 format putl ] ifte call
+h pushr 5 format put "h" put m pushr
+dup 10 < [ "0" put 1 format putl ] [ 2 format putl ] ifte call
 

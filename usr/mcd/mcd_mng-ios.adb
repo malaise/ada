@@ -73,11 +73,7 @@ package body Ios is
           Text_Io.Put("False");
         end if;
       when Chrs =>
-        if Item.Val_Text(1) = '"' then
-          Text_Io.Put (Item.Val_Text(2 .. Item.Val_Len - 1));
-        else
-          Text_Io.Put (Item.Val_Text(1 .. Item.Val_Len));
-        end if;
+        Text_Io.Put (Item.Val_Text(1 .. Item.Val_Len));
       when others =>
         raise Invalid_Argument;
     end case;
@@ -141,7 +137,7 @@ package body Ios is
 
     -- String is at the end of RES
     -- Move it after some spaces at the beginning
-    --  so that the whoe takes SIZE characters
+    --  so that the whole takes SIZE characters
     procedure Fix_Size (Size : in Text_Io.Field) is
       First : Natural := 0;
       Len   : Positive;

@@ -1,12 +1,12 @@
 # The function
-[ dup * 10.0 - ] F popr
+F popr
 
 # Epsilon
 1.0E-10 e popr
 2.010 format
 
 # Error and quit
-[ [ Error, 2 real arguments expected: f(i) * f(j) < 0 ] putl
+[ "Error, 2 real arguments expected: f(i) * f(j) < 0" putl
 ssize popn retall ] E popr
 
 # Check 2 args

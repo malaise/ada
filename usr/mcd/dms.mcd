@@ -6,12 +6,12 @@
 
 #Smd make the reverse, taking a x.MMsszz (assuming zeros if shorter)
 # and puts x.y
-[ toreal dup int swap frac 100.0 * dup frac swap int 60.0 / 
+[ toreal dup int swap frac 10.0e7 * round toreal 10.0e5 * dup frac swap int 60.0 / 
 swap 100.0 * 3600.0 / + + ]
 
 #Format N (int top stack) on i (second on stack) digits, padding with zeros
 # make N positive. If N is negative: pope -, N = absv N and i = i - 1
-[ dup 0 < [ [ - ] pope absv swap 1 - swap ] [ [ "" ] pope ] ifte call
+[ dup 0 < [ "-" pope absv swap 1 - swap ] [ "" pope ] ifte call
 # check i >= 0, else set 0. make image (with spaces)
 swap dup 0 < [ pop 0 ] ifcall dup format swap strof
 # done if i = 0
@@ -19,7 +19,7 @@ swap 0 = [ pushle swap strcat 2 retn ] ifcall
 # prepare Stack is: Str i (initialised to len). Estack is: loop_prog
 dup strlen swap
 # loop: extract char at i test it is space
-[ dup pope swap dup dup pope strsub [ " " ] =
+[ dup pope swap dup dup pope strsub " " =
 # if: replace space by 0, else: adjust stack to Str i
 [ pushle pushle swap dup pope swap [ 0 ] swap strrep pushle swap ] [ pushle pushle ] ifte call
 # end of loop?
@@ -27,8 +27,8 @@ swap dup 1 = [ pop pushle pop 2 retn ] ifcall 1 - swap pushle dup pope retacal ]
 pushle swap strcat ]
 
 #Format replaces a dms number by the string [+-]<hours>h<mins>m<secs>.<millisecs>s
-[ 5 format dup trunc strof [ h ] strcat pope
-2 format frac absv 100.0 * dup trunc strof pushle swap strcat [ m ] strcat pope
-2 format frac 100.0 * dup trunc strof pushle swap strcat [ . ] strcat pope
-3 format frac 1000.0 * round strof pushle swap strcat [ s ] strcat ]
+[ 5 format dup trunc strof "h" strcat pope
+2 format frac absv 100.0 * dup trunc strof pushle swap strcat "m" strcat pope
+2 format frac 100.0 * dup trunc strof pushle swap strcat "." strcat pope
+3 format frac 1000.0 * round strof pushle swap strcat "s" strcat ]
 
