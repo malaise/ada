@@ -1,7 +1,7 @@
 -- Make a ADA 83 sources look like a Ada 95 one.
 -- Each upper case character, if preceeded by an upper case
 --  is set to lower case.
--- Strings and comments are not modified.
+-- Strings, comments and ibased literals are not modified.
 with Ada.Text_Io, Ada.Exceptions;
 
 with Argument, Lower_Char, Bloc_Io;
@@ -36,7 +36,7 @@ procedure Look_95 is
     Bloc : Char_Io.Element_Array(1 .. Bloc_Size);
     Curr_Bloc : Char_Io.Count;
 
-    Sub_Index : Char_Io.Positive_Count;
+    Sub_Index : Char_Io.Count;
     Last_Index : Char_Io.Count;
     Modified : Boolean;
 
@@ -54,15 +54,20 @@ procedure Look_95 is
       -- Current indexes
       Curr_Bloc := 0;
       Modified := False;
-      if Nb_Bloc /= 1 then
-        Last_Index := Bloc_Size;
-      else
-        Last_Index := File_Size rem Bloc_Size;
-      end if;
+      Last_Index := 0;
+      -- Simulate end of previous bloc (for reading new)
       Sub_Index := Last_Index;
     exception
       when Char_Io.Name_Error =>
         raise Name_Error;
+      when others =>
+        begin
+          Close;
+        exception
+          when others =>
+            null;
+        end;
+        raise;
     end Open;
 
     procedure Close is
@@ -89,7 +94,13 @@ procedure Look_95 is
         -- Read next bloc
         Curr_Bloc := Curr_Bloc + 1;
         if Curr_Bloc = Nb_Bloc then
-          Last_Index := File_Size rem Bloc_Size;
+          if File_Size rem Bloc_Size = 0 then
+            Last_Index := Bloc_Size;
+          else
+            Last_Index := File_Size rem Bloc_Size;
+          end if;
+        else
+          Last_Index := Bloc_Size;
         end if;
         Char_Io.Read(File, Bloc(1 .. Last_Index));
         Sub_Index := 1;
@@ -115,8 +126,8 @@ procedure Look_95 is
     -- Are they upper case
     Prev_Is_Upper, Curr_Is_Upper : Boolean;
 
-    -- Are we in a comment, in a string
-    In_Comment, In_String : Boolean;
+    -- Are we in a comment, in a string, in a literal
+    In_Comment, In_String, In_Literal : Boolean;
 
     -- Do we proceed current character
     Proceed : Boolean;
@@ -150,6 +161,7 @@ procedure Look_95 is
     Prev_Is_Upper := False;
     In_String := False;
     In_Comment := False;
+    In_Literal := False;
     Prev_Char := Ascii.Nul;
 
     -- Conversion loop:
@@ -188,6 +200,14 @@ procedure Look_95 is
         end if;
       end if;
       if In_String then
+        Proceed := False;
+      end if;
+
+      -- Check in literal. Update Proceed
+      if Proceed and then Char = '#' then
+        In_Literal := not In_Literal;
+      end if;
+      if In_Literal then
         Proceed := False;
       end if;
 
