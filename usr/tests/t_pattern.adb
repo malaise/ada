@@ -4,14 +4,15 @@ procedure T_Pattern is
 
   Done : Boolean := False;
 
-  Rule : Pattern.Rule_No;
+  Mr, Rule : Pattern.Rule_No;
 
   function Cli (Ru : in Pattern.Rule_No; 
                 Pa : in Pattern.Pattern_Id; 
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
   begin
-    Ada.Text_Io.Put ("Called Cb (" & Ru'Img & "," & Pa'Img & ","
+    Ada.Text_Io.Put ("Called Cb (" & Pattern.Image (Ru) & ","
+                                   & Pa'Img & ","
                                    & Nb'Img & ", tail: ");
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
@@ -140,6 +141,7 @@ procedure T_Pattern is
                 It : in Parser.Iterator) return Boolean is
   begin
     if Parser.Current_Word (It) = "" then
+      Pattern.Del_Rule (Rule);
       Ada.Text_Io.Put_Line ("Exiting");
       Done := True;
     else
@@ -157,14 +159,15 @@ procedure T_Pattern is
 begin
 
   -- Hook parser (rule 1)
-  Pattern.Set (1, 10, "set",   Set'Unrestricted_Access);
-  Pattern.Set (1, 20, "del",   Del'Unrestricted_Access);
-  Pattern.Set (1, 30, "check", Che'Unrestricted_Access);
-  Pattern.Set (1, 40, "help",  Hel'Unrestricted_Access);
-  Pattern.Set (1, 50, "exit",  Exi'Unrestricted_Access);
-  Pattern.Set (1, 60, "",      Def'Unrestricted_Access);
-  Pattern.Set (1, 51, "quit",  Exi'Unrestricted_Access);
-  Pattern.Set (1, 52, "q",     Exi'Unrestricted_Access);
+  Mr := Pattern.Get_Free_Rule;
+  Pattern.Set (Mr, 10, "set",   Set'Unrestricted_Access);
+  Pattern.Set (Mr, 20, "del",   Del'Unrestricted_Access);
+  Pattern.Set (Mr, 30, "check", Che'Unrestricted_Access);
+  Pattern.Set (Mr, 40, "help",  Hel'Unrestricted_Access);
+  Pattern.Set (Mr, 50, "exit",  Exi'Unrestricted_Access);
+  Pattern.Set (Mr, 60, "",      Def'Unrestricted_Access, 60);
+  Pattern.Set (Mr, 51, "quit",  Exi'Unrestricted_Access, 60);
+  Pattern.Set (Mr, 52, "q",     Exi'Unrestricted_Access, 60);
 
   -- Set rule
   Rule := Pattern.Get_Free_Rule;
@@ -172,8 +175,13 @@ begin
   loop
     Ada.Text_Io.Put ("> ");
     Ada.Text_Io.Get_Line (Buf, Len);
-    Pattern.Check (1, Lower_Str(Buf(1 .. Len)));
-    exit when Done;
+    begin
+      Pattern.Check (Mr, Lower_Str(Buf(1 .. Len)));
+      exit when Done;
+    exception
+      when Pattern.Invalid_Pattern =>
+        Ada.text_Io.Put_Line ("EXCEPTION: Invalid_Pattern");
+    end;
   end loop;
 
 end T_Pattern;
