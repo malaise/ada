@@ -36,6 +36,11 @@ package body Data_Base is
     end;
   end get;
 
+  procedure Reset is
+  begin
+    Item_List_Mng.Delete_List (Item_List);
+  end Reset;
+
   -- Item_Name is empty when no more item
   procedure Read_First (Item : out Item_Rec) is
   begin

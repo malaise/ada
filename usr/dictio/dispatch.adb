@@ -61,7 +61,8 @@ package body Dispatch is
         when Status.Init =>
           Init_Mng.Event (From, Stat, Diff);
         when Status.Slave | Status.Master | Status.Fight =>
-          Online_Mng.Event (From, Stat, Diff);
+          Online_Mng.Event (From, Stat, Diff,
+                            Item.Data(1 .. Item.Data_Len));
       end case;
     else
       -- Data or sync

@@ -18,12 +18,14 @@ package Intra_Dictio is
   procedure Init;
   procedure Quit;
 
-  procedure Send_Status;
+  procedure Send_Status (Extra : in String := "");
   procedure Reply_Status;
 
   procedure Send_Data (Item : in Data_Base.Item_Rec);
 
-  procedure Send_Sync_Data (Item : in Data_Base.Item_Rec);
+  type Reply_Result_List is (Ok, Overflow, Error);
+  function Reply_Sync_Data (Item : in Data_Base.Item_Rec)
+                            return Reply_Result_List;
 
 end Intra_Dictio;
 

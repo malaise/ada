@@ -4,9 +4,10 @@ package Online_Mng is
 
   procedure Start;
 
-  procedure Event (From : in Tcp_Util.Host_Name;
-                   Stat : in Status.Status_List;
-                   Diff : in Boolean); 
+  procedure Event (From  : in Tcp_Util.Host_Name;
+                   Stat  : in Status.Status_List;
+                   Diff  : in Boolean;
+                   Extra : in String := ""); 
 
 end Online_Mng;
 

@@ -1,5 +1,7 @@
 with Timers;
-with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes, Fight_Mng, Sync_Mng;
+with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes,
+     Fight_Mng, Sync_Mng, Crc, Data_Base;
+
 package body Online_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
@@ -51,9 +53,10 @@ package body Online_Mng is
     Fight_Mng.Start (1.0, Fight_Actions);
   end Start_Fight;
 
-  procedure Event (From : in Tcp_Util.Host_Name;
-                   Stat : in Status.Status_List;
-                   Diff : in Boolean) is
+  procedure Event (From  : in Tcp_Util.Host_Name;
+                   Stat  : in Status.Status_List;
+                   Diff  : in Boolean;
+                   Extra : in String := "") is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Fight then
@@ -61,6 +64,16 @@ package body Online_Mng is
     elsif Status.Get = Status.Slave then
       if Stat = Status.Master then
         -- Receive a Master while slave, restart timer
+        if Extra /= Crc.Get then
+          if Debug.Level_Array(Debug.Online) then
+            Debug.Put ("Online: Crc error. Received >" & Extra
+                     & "< from: " & Parse(From)
+                     & ", got >" & Crc.Get & "<");
+          end if;
+          -- Invalid Crc. Re-sync.
+          Data_Base.Reset;
+          Intra_Dictio.Send_Status;
+        end if;
         Timers.Delete (Tid);
         Start_Slave_Timeout;
       elsif Stat = Status.Dead then
@@ -112,7 +125,7 @@ package body Online_Mng is
   begin
     if Status.Get = Status.Master then
       -- Send alive message
-      Intra_Dictio.Send_Status;
+      Intra_Dictio.Send_Status (Crc.Get);
     else
       -- No alive message
       if Debug.Level_Array(Debug.Online) then

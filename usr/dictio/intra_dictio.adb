@@ -103,14 +103,16 @@ package body Intra_Dictio is
   end Read_Cb;
 
   procedure Send (Message : in out Message_Rec;
-                  Bcast   : in Boolean) is
+                  Bcast   : in Boolean;
+                  Result  : out Reply_Result_List) is
     Len : Natural;
     use Address_Ops; 
+    use type Data_Base.Item_Rec;
   begin
     Message.Head.Stat := Status.Get;
     Local_Host_Name.Get (Message.Head.From);
      
-    if Message.Head.Kind = Stat_Kind then
+    if Message.Item = Data_Base.No_Item then
       -- Header size
       Len := 72;
     else
@@ -130,20 +132,37 @@ package body Intra_Dictio is
     end if;
     if Bcast then
       Dictio_Channel.Write (Message, Len);
+      Result := Ok;
     else
       begin
         Dictio_Channel.Reply (Message, Len);
+        Result := Ok;
       exception
+        when Channels.Reply_Overflow =>
+          Result := Overflow;
         when Channels.Reply_Failed =>
-          null;
+          Result := Error;
       end;
     end if;
   end Send;
 
-  procedure Send_Status is
+  procedure Send (Message : in out Message_Rec;
+                  Bcast   : in Boolean) is
+    Result : Reply_Result_List;
+  begin
+    Send (Message, Bcast, Result);
+  end Send;
+
+  procedure Send_Status (Extra : in String := "") is
     Msg : Message_Rec;
   begin
     Msg.Head.Kind := Stat_Kind;
+    if Extra = "" then
+      Msg.Item.Data_Len := 0;
+    else
+      Msg.Item.Data_Len := Extra'Length;
+      Msg.Item.Data (1 .. Msg.Item.Data_Len) := Extra;
+    end if;
     Send (Msg, True);
   end Send_Status;
 
@@ -161,14 +180,20 @@ package body Intra_Dictio is
     Msg.Item := Item;
     Send (Msg, True);
   end Send_Data;
-  
-  procedure Send_Sync_Data (Item : in Data_Base.Item_Rec) is
+
+  function Reply_Sync_Data (Item : in Data_Base.Item_Rec)
+                            return Reply_Result_List is
     Msg : Message_Rec;
+    Result : Reply_Result_List;
   begin
     Msg.Head.Kind := Sync_Kind;
     Msg.Item := Item;
-    Send (Msg, True);
-  end Send_Sync_Data;
+    Send (Msg, True, Result);
+    if Debug.Level_Array(Debug.Intra) and then Result /= Ok then
+      Debug.Put ("Intra: sync reply failed on " & Result'Img);
+    end if;
+    return Result;
+  end Reply_Sync_Data;
 
 end Intra_Dictio;
 

@@ -14,7 +14,9 @@ package Data_Base is
   procedure Set (Item : in Item_Rec);
   procedure Get (Name : in Item_Name; Item : out Item_Rec);
 
-  -- Item_Name is empty when no more item
+  procedure Reset;
+
+  -- Item is No_Item when no more item
   procedure Read_First (Item : out Item_Rec);
   procedure Read_Next (Item : out Item_Rec);
 
