@@ -647,9 +647,9 @@ DESCRIPTOR 3
   END FIELD
   FIELD 19 BUTTON
     GEOMETRY 8 10 8 12
-    COLORS cyan brown
+    COLORS light_gray black
     INIT
-      0 1 e
+      0 0 (e)
     END INIT
   END FIELD
   FIELD 20 GET

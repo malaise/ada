@@ -205,9 +205,13 @@ package body Edition is
   procedure Set_Unit is
     use type Unit_Format.Units_List;
   begin
+    -- Forbid switch
+    Afpx.Set_Field_Protection(19, Protect => True);
     if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
+      Afpx.Reset_Field(19);
       Afpx.Encode_Field(19, (0, 1), "e");
     else
+      Afpx.Set_Field_Colors(19, Con_Io.Blue);
       Afpx.Encode_Field(19, (0, 1), "F");
     end if;
   end Set_Unit;
