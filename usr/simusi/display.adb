@@ -5,7 +5,7 @@ package body DISPLAY is
   NOT_FOUND : exception;
   NB_COTE_LINE : constant := 12;
 
-  OK : BOOLEAN;
+  OK : BOOLEAN := TRUE;
 
   procedure PUT_VAL (VAL : in COMMON.POS_FLOAT) is
   begin
@@ -75,7 +75,6 @@ package body DISPLAY is
   begin
     if KIND = COMMON.MANUFA then
       OTHER_KIND := COMMON.DESIGN;
-      OK := TRUE;
     else
       OTHER_KIND := COMMON.MANUFA;
     end if;
