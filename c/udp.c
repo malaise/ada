@@ -78,14 +78,6 @@ extern int soc_open (soc_token *p_token) {
     free (*p_soc);
     return (BS_ERROR);
   }
-  allow_sockopt = 1;
-  if (setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_DONTROUTE,
-                 &allow_sockopt, sizeof (allow_sockopt)) < 0) {
-    perror ("setsockopt2");
-    close ((*p_soc)->socket_id);
-    free (*p_soc);
-    return (BS_ERROR);
-  }
 
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
     perror ("fcntl");
