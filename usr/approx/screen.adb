@@ -196,7 +196,9 @@ package body Screen is
       when I_Ymin      => Encode_Info ("Enter Y min");
       when I_Xmax      => Encode_Info ("Enter X max");
       when I_Ymax      => Encode_Info ("Enter Y max");
-      when I_Degree    => Encode_Info ("Enter degree from 0 to Npoints - 1");
+      when I_Degree    => Encode_Info ("Enter degree from 0 to"
+                                     & Natural'Image(Points.P_Nb - 1)
+                                     & " (Npoints-1)");
       when I_Scales    => Encode_Info ("Select a scales kind");
       when I_Wait      =>
         Encode_Info ("Computing, please wait");
