@@ -258,6 +258,8 @@ package body NAV_SCREEN is
           else
             CUR_ACTION := OPERATION'FIRST;
           end if;
+        when FD_EVENT => 
+          null;
         when REFRESH => 
           return REFRESH;
       end case;

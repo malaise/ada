@@ -48,6 +48,7 @@ package body SOK_INPUT is
           when BREAK => raise BREAK_REQUESTED;
           when MOUSE_BUTTON => null;
           when TIMEOUT => null;
+          when FD_EVENT => null;
           when REFRESH =>
             return REFRESH;
         end case;
@@ -88,6 +89,7 @@ package body SOK_INPUT is
         when BREAK => raise BREAK_REQUESTED;
         when MOUSE_BUTTON => null;
         when TIMEOUT => null;
+        when FD_EVENT => null;
         when REFRESH => null;
       end case;
     end loop;
