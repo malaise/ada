@@ -29,6 +29,6 @@ clean:
 	rm *.o *.ali
 
 clean_exe:
-	rm adand beep ddir fact g hanoi impot_00 look_95 \
+	rm adand beep ddir fact g hanoi impot_02 look_95 \
 	   one_of_arg pascal random second stat statfile wait
 
