@@ -17,7 +17,7 @@ procedure Prime is
   procedure Search is new Plm.Search;
 
   -- What should we do
-  type Mode_List is (List, Factors, Hcd, Lcm);
+  type Mode_List is (List_All, List, Factors, Hcd, Lcm);
   Mode : Mode_List;
 
   -- Arguments, numbers
@@ -37,7 +37,7 @@ procedure Prime is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <mode>");
     Ada.Text_Io.Put_Line ("<mode> ::= <list> | <factors> | <hcd> | <lcm>");
-    Ada.Text_Io.Put_Line ("<list>    ::= -list");
+    Ada.Text_Io.Put_Line ("<list>    ::= -list [ <positive> ]");
     Ada.Text_Io.Put_Line ("<factors> ::= -fact <positive>");
     Ada.Text_Io.Put_Line ("<hcd>     ::= -hcd <positive> <positive>");
     Ada.Text_Io.Put_Line ("<lcm>     ::= -lcm <positive> <positive>");
@@ -138,7 +138,11 @@ begin
   begin
     if Argument.Get_Nbre_Arg = 1
     and then Argument.Get_Parameter = "-list" then
+      Mode := List_All;
+    elsif Argument.Get_Nbre_Arg = 2
+    and then Argument.Get_Parameter = "-list" then
       Mode := List;
+      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-fact" then
       Mode := Factors;
@@ -165,11 +169,19 @@ begin
   end;
 
   case Mode is
-    when List =>
+    when List_All =>
       -- List all prime numbers
       loop
         Put_Line (Prime_List.Next);
       end loop;
+    when List =>
+      -- List prime numbers up to N1
+      loop
+        N2 := Prime_List.Next;
+        exit when N2 > N1;
+        Put_Line (N2);
+      end loop;
+
     when Factors =>
       -- Decompose N1 in prime factors
       Decompose (N1, L1);
