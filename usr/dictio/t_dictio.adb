@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 with Text_Handler, Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls, Parser,
-     Lower_Str;
+     Lower_Str, Pattern;
 with Dictio_Lib;
 procedure T_Dictio is
 
@@ -16,47 +16,172 @@ procedure T_Dictio is
     Sig := True;
   end Sig_Cb;
 
-  function Next_Space (In_Str : String; From : in Positive) return Natural is
-  begin
-    for I in From .. In_Str'Last loop
-      if In_Str(I) = ' ' then
-        return I;
-      end if;
-    end loop;
-    return 0;
-  end Next_Space;
-
+  -- Parsing
   procedure Put_Help is
     procedure P (Str : in String) renames Ada.Text_Io.Put_Line;
   begin
     P ("Comands are:");
-    P ("  set    <name>    [ <data> ]         alias  <new_name> [ <of_name> ]");
-    P ("  get    [ alias ] <name>");
-    P ("  notify [ alias ] <pattern>          cancel [ alias ]  <pattern>");
-    P ("  add    <host>                       del    <host>");
-    P ("  help                                status");
-    P ("  quit");
+    P ("  set    [ alias ] <name> [ <data/name> ]  get    [ alias ] <name>");
+    P ("  notify [ alias ] <pattern>               cancel [ alias ]  <pattern>");
+    P ("  add    <host>                            del    <host>");
+    P ("  help                                     status");
+    P ("  quit | exit");
   end Put_Help;
 
-  function Is_Sep (C : Character) return Boolean is
+  Rule : Pattern.Rule_No;
+
+  Id_Set     : constant Pattern.Pattern_Id := 10;
+  Id_Get     : constant Pattern.Pattern_Id := 20;
+  Id_Notify  : constant Pattern.Pattern_Id := 21;
+  Id_Cancel  : constant Pattern.Pattern_Id := 22;
+  Id_Add     : constant Pattern.Pattern_Id := 30;
+  Id_Del     : constant Pattern.Pattern_Id := 31;
+  Id_Help    : constant Pattern.Pattern_Id := 40;
+  Id_Status  : constant Pattern.Pattern_Id := 41;
+  Id_Quit    : constant Pattern.Pattern_Id := 42;
+  Id_Exit    : constant Pattern.Pattern_Id := 43;
+  Id_Error   : constant Pattern.Pattern_Id := 99;
+
+  function Com_Opt_Fix_Opt (Rule : in Pattern.Rule_No;
+                            Id   : in Pattern.Pattern_Id;
+                            Nb_Match : in Natural;
+                            Iter : in Parser.Iterator) return Boolean is
+    Arg1 : constant String := Parser.Current_Word (Iter);
+    Arg2 : constant String := Parser.Next_Word (Iter);
+    Arg3 : constant String := Parser.Next_Word (Iter);
+    use type Pattern.Pattern_Id;
   begin
-    return C = ' ';
-  end Is_Sep;
+    -- Set [ alias ] <name> [ <data/name> ]
+    if Arg1 = "" or else Arg3 /= "" then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      return False;
+    end if;
+    if Nb_Match = 1 then
+      Dictio_Lib.Set (Arg1, Arg2);
+    elsif Nb_Match = 2 then
+      Dictio_Lib.Set_Alias (Arg1, Arg2);
+    else
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    end if;
+    return False;
+  end Com_Opt_Fix_Opt;
+
+  function Com_Opt_Fix (Rule : in Pattern.Rule_No;
+                        Id   : in Pattern.Pattern_Id;
+                        Nb_Match : in Natural;
+                        Iter : in Parser.Iterator) return Boolean is
+    Arg1 : constant String := Parser.Current_Word (Iter);
+    Arg2 : constant String := Parser.Next_Word (Iter);
+    Alias : constant Boolean := Nb_Match = 2;
+    use type Pattern.Pattern_Id;
+  begin
+    -- Get/Notify/Cancel [ alias ] <name>
+    if Arg1 = "" or else Arg2 /= "" then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      return False;
+    end if;
+    if Id = Id_Get then
+      if not Alias then
+        Ada.Text_Io.Put_Line ("CLIENT: got >"
+                            & Dictio_Lib.Get (Arg1) & "<");
+      else
+        Ada.Text_Io.Put_Line ("CLIENT: got alias >"
+                            & Dictio_Lib.Get_Alias (Arg1) & "<");
+      end if;
+    elsif Id = Id_Notify then
+      Dictio_Lib.Notify (Arg1, not Alias, True);
+    elsif Id = Id_Cancel then
+      Dictio_Lib.Notify (Arg1, not Alias, False);
+    else
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    end if;
+    return False;
+  end Com_Opt_Fix;
+
+  function Com_Fix (Rule : in Pattern.Rule_No;
+                    Id   : in Pattern.Pattern_Id;
+                    Nb_Match : in Natural;
+                    Iter : in Parser.Iterator) return Boolean is
+    Arg1 : constant String := Parser.Current_Word (Iter);
+    Arg2 : constant String := Parser.Next_Word (Iter);
+    use type Pattern.Pattern_Id;
+  begin
+    -- Add/Del <host>
+    if Arg1 = "" or else Arg2 /= "" then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      return False;
+    end if;
+    if Id = Id_Add then
+      Dictio_Lib.Add_Host (Arg1);
+    elsif Id = Id_Del then
+      Dictio_Lib.Del_Host (Arg1);
+    else
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    end if;
+    return False;
+  end Com_Fix;
+
+  function Com (Rule : in Pattern.Rule_No;
+                Id   : in Pattern.Pattern_Id;
+                Nb_Match : in Natural;
+                Iter : in Parser.Iterator) return Boolean is
+    Arg1 : constant String := Parser.Current_Word (Iter);
+    Alias : constant Boolean := Nb_Match = 2;
+    use type Pattern.Pattern_Id;
+  begin
+    -- Help/Status/Exit/Quit or error
+    if Arg1 /= "" then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      return False;
+    end if;
+    if Id = Id_Help then
+      Put_Help;
+    elsif Id = Id_Status then
+      Ada.Text_Io.Put_Line("CLIENT: Dictio status is " & Saved_State'Img);
+    elsif Id = Id_Quit or else Id = Id_Exit then
+      Event_Mng.Send_Dummy_Signal;
+      return True;
+    elsif Id = Id_Error then
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    else
+      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    end if;
+    return False;
+  end Com;
+
+  procedure Init_Parsing is
+  begin
+    Rule := Pattern.Get_Free_Rule;
+    Pattern.Set (Rule, Id_Set, "set [ alias ]",
+                 Com_Opt_Fix_Opt'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Get, "get [ alias ]",
+                 Com_Opt_Fix'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Notify, "notify [ alias ]",
+                 Com_Opt_Fix'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Cancel, "cancel [ alias ]",
+                 Com_Opt_Fix'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Add, "add",
+                 Com_Fix'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Del, "del",
+                 Com_Fix'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Help, "help",
+                 Com'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Status, "status",
+                 Com'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Quit, "quit",
+                 Com'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Exit, "exit",
+                 Com'Unrestricted_Access);
+    Pattern.Set (Rule, Id_Error, "",
+                 Com'Unrestricted_Access);
+  end Init_Parsing;
+
+  -- String from stdin
 
   function Stdin_Cb (Str : in String) return Boolean is
-    Iter : Parser.Iterator;
-    Key, Name, Last : Text_Handler.Text (Dictio_Lib.Max_Name_Len);
-    Data : Text_Handler.Text (Dictio_Lib.Max_Data_Len);
-    Alias : Boolean;
   begin
     -- Sanity checks and specific codes
     if Str'Length = 0 then
-      return True;
-    end if;
-    if Str'Length >= 1
-    and then Str(Str'Length) = Ada.Characters.Latin_1.Etx then
-      Ada.Text_Io.Put_Line ("CLIENT: Aborted");
-      Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
     if Str(Str'Length) = Ada.Characters.Latin_1.Eot then
@@ -70,121 +195,7 @@ procedure T_Dictio is
       return False;
     end if;
 
-    -- Parse
-    begin
-      Parser.Create (Str(1 .. Str'Last-1), Is_Sep'Unrestricted_Access, Iter);
-    exception
-      when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-        return False;
-    end;
-    begin
-      Text_Handler.Set (Key,  Lower_Str(Parser.Next_Word(Iter)));
-      Text_Handler.Set (Name, Parser.Next_Word(Iter));
-      Text_Handler.Set (Data, Parser.Next_Word(Iter));
-      Text_Handler.Set (Last, Parser.Next_Word(Iter));
-    exception
-      when Constraint_Error =>
-        Parser.Delete (Iter);
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-        return False;
-    end;
-    Parser.Delete (Iter);
-
-    -- Only key: Quit, help or status
-    if Text_Handler.Value (Key) = "quit"
-    or else Text_Handler.Value (Key) = "help"
-    or else Text_Handler.Value (Key) = "status" then
-      if not Text_Handler.Empty (Name) then
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-        return False;
-      end if;
-      if Text_Handler.Value (Key) = "quit" then
-        Ada.Text_Io.Put_Line ("CLIENT: Quit");
-        Event_Mng.Send_Dummy_Signal;
-        return True;
-      elsif Text_Handler.Value (Key) = "help" then
-        Put_Help;
-      elsif Text_Handler.Value (Key) = "status" then
-        Ada.Text_Io.Put_Line("CLIENT: Dictio status is " & Saved_State'Img);
-      else
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      end if;
-        return False;
-    end if;
-
-
-    -- Key & Name: Add, del
-    if Text_Handler.Value (Key) = "add"
-    or else Text_Handler.Value (Key) = "del" then
-      if Text_Handler.Empty (Name)
-      or else not Text_Handler.Empty (Data) then
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-        return False;
-      end if;
-      if Text_Handler.Value (Key) = "add" then
-        Dictio_Lib.Add_Host (Text_Handler.Value (Name));
-      elsif Text_Handler.Value (Key) = "del" then
-        Dictio_Lib.Del_Host (Text_Handler.Value (Name));
-      else
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      end if;
-      return False;
-    end if;
-
-    -- Key [ alias ] name: Get, notify, cancel
-    if Text_Handler.Value (Key) = "get" 
-    or else Text_Handler.Value (Key) = "notify"
-    or else Text_Handler.Value (Key) = "cancel" then
-      Alias := Lower_Str (Text_Handler.Value (Name)) = "alias";
-      if Alias then
-        -- Shift
-        Text_Handler.Set (Name, Data);
-        Text_Handler.Set (Data, Last);
-      end if;
-      if Text_Handler.Empty (Name)
-      or else not Text_Handler.Empty (Data) then
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-        return False;
-      end if;
-      if Text_Handler.Value (Key) = "get" then
-        if not Alias then
-          Ada.Text_Io.Put_Line ("CLIENT: got >"
-              & Dictio_Lib.Get (Text_Handler.Value (Name)) & "<");
-        else
-          Ada.Text_Io.Put_Line ("CLIENT: got alias >"
-              & Dictio_Lib.Get_Alias (Text_Handler.Value (Name)) & "<");
-        end if;
-      elsif Text_Handler.Value (Key) = "notify" then
-        Dictio_Lib.Notify (Text_Handler.Value (Name), not Alias, True);
-      elsif Text_Handler.Value (Key) = "cancel" then
-        Dictio_Lib.Notify (Text_Handler.Value (Name), not Alias, False);
-      else
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      end if;
-      return False;
-    end if;
-
-    -- Key & Name [ Data ]: Set, alias
-    if Text_Handler.Value (Key) = "set" 
-    or else Text_Handler.Value (Key) = "alias" then
-      if Text_Handler.Empty (Name)
-      or else not Text_Handler.Empty (Last) then
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-        return False;
-      end if;
-      if Text_Handler.Value (Key) = "set" then
-        Dictio_Lib.Set (Text_Handler.Value (Name), Text_Handler.Value (Data));
-      elsif Text_Handler.Value (Key) = "alias" then
-        Dictio_Lib.Set_Alias (Text_Handler.Value (Name), Text_Handler.Value (Data));
-      else
-        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      end if;
-      return False;
-    end if;
-
-    Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-    return False;
+    return Pattern.Check (Rule, Str(Str'First .. Str'Last - 1));
 
   exception
     when Dictio_Lib.No_Dictio =>
@@ -205,13 +216,15 @@ procedure T_Dictio is
       return False;
   end Stdin_Cb;
 
+  -- Dictio lib callbacks
+
   procedure Load;
 
   procedure Dictio_State_Cb (State : in Dictio_Lib.Dictio_State_List) is
     use type Dictio_Lib.Dictio_State_List;
   begin
     Saved_State := State;
-    if not Init then
+    if not Init and then not Sig then
       Ada.Text_Io.Put_Line("CLIENT: Dictio state is " & State'Img);
     end if;
     if State /= Dictio_Lib.Unavailable and then Init then
@@ -231,6 +244,8 @@ procedure T_Dictio is
     end if;
     Ada.Text_Io.Put_Line (" >" & Name & "< - >" & Data & "<");
   end Dictio_Notify_Cb;
+
+  -- Load dictio
   
   procedure Load is
     Name : String (1 .. 10);
@@ -288,6 +303,9 @@ begin
       Verbose := False;
   end;
 
+  -- Init parsing
+  Init_Parsing;
+
   -- Set async stdin
   if not Init then
     begin
@@ -308,7 +326,7 @@ begin
   Dictio_Lib.Notify_Cb := Dictio_Notify_Cb'Unrestricted_Access;
   Dictio_Lib.Init;
 
-  if not Init then
+  if not Init and then not Sig then
     Put_Help;
   end if;
   if not Sig then
