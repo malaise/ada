@@ -18,6 +18,7 @@ procedure RECURS (
     FULL_CURR_NAME, NEW_NAME : DIR_TXT;
     KIND : DIRECTORY.FILE_KIND_LIST;
     RIGHTS : NATURAL;
+    MTIME : DIRECTORY.TIME_T;
     NB_SONS : NATURAL;
     use DIRECTORY;
 
@@ -80,7 +81,7 @@ procedure RECURS (
           exit;
       end;
       begin
-        DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(NEW_NAME), KIND, RIGHTS);
+        DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(NEW_NAME), KIND, RIGHTS, MTIME);
       exception
         when DIRECTORY.NAME_ERROR =>
           -- A link to nowhere?

@@ -24,6 +24,7 @@ package body DIR_MNG is
     FILE_REC : FILE_ENTRY_REC;
     FILE_NAME : FILE_TXT;
     FILE_RIGHTS : NATURAL;
+    FILE_MTIME : DIRECTORY.TIME_T;
   begin
 
     if DIR = "" then
@@ -44,11 +45,11 @@ package body DIR_MNG is
           if DIR = "" then
             DIRECTORY.FILE_STAT (
              TEXT_HANDLER.VALUE (FILE_NAME),
-             FILE_REC.KIND, FILE_RIGHTS);
+             FILE_REC.KIND, FILE_RIGHTS, FILE_MTIME);
           else
             DIRECTORY.FILE_STAT (
              DIR & PATH_SEPARATOR & TEXT_HANDLER.VALUE (FILE_NAME),
-             FILE_REC.KIND, FILE_RIGHTS);
+             FILE_REC.KIND, FILE_RIGHTS, FILE_MTIME);
           end if;
         exception
           when DIRECTORY.NAME_ERROR =>

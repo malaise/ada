@@ -1,4 +1,5 @@
 with SYSTEM;
+with CALENDAR;
 with TEXT_HANDLER;
 package DIRECTORY is
 
@@ -36,6 +37,7 @@ package DIRECTORY is
 
   type FILE_KIND_LIST is (FILE, DIR, SYMBOLIC_LINK,
            BLOCK_DEVICE, CHARACTER_DEVICE, FIFO, SOCKET, UNKNOWN);
+  type TIME_T is private;
   -- RIGHTS are :
   --  1st bit OX
   --  2nd bit OW
@@ -50,9 +52,12 @@ package DIRECTORY is
   -- 11th bit GS (set GID)
   -- 12th bit US (set UID))
   procedure FILE_STAT (FILE_NAME : in STRING;
-                       KIND : out FILE_KIND_LIST; RIGHTS : out NATURAL);
+                       KIND       : out FILE_KIND_LIST;
+                       RIGHTS     : out NATURAL;
+                       MODIF_TIME : out TIME_T);
   -- May raise NAME_ERROR  
 
+  function TIME_OF (TIME : TIME_T) return CALENDAR.TIME;
   
   function READ_LINK (FILE_NAME : STRING; RECURSIVE : BOOLEAN := TRUE)
                       return STRING;
@@ -76,6 +81,7 @@ private
     DIR_ADDR : SYSTEM.ADDRESS := SYSTEM.NULL_ADDRESS;
   end record;
 
+  type TIME_T is new INTEGER;
 end DIRECTORY;
 
 

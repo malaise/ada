@@ -1,11 +1,13 @@
 DEST=/users/malaise/bin
+LIBX_MNG=-lx_mng
+
 
 all:
 	amake adand.adb
 	cp adand $(DEST)
 	amake beep.adb
 	cp beep $(DEST)
-	amake ddir.adb
+	amake ddir.adb -largs $(LIBX_MNG) -lX11
 	cp ddir $(DEST)
 	amake fact.adb
 	amake g.adb

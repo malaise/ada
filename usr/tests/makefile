@@ -12,7 +12,7 @@ do_all:
 	amake t_day_mng.adb
 	amake t_delta_date.adb
 	amake t_dd.adb
-	amake t_dir.adb
+	amake t_dir.adb $(LX)
 	amake t_dl.adb
 	amake t_dscr.adb $(LX)
 	amake t_except.adb

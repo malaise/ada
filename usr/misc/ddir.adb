@@ -11,6 +11,7 @@ procedure DDIR is
     ENTRY_NAME, FULL_DIR_NAME : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
     KIND : DIRECTORY.FILE_KIND_LIST;
     RIGHTS : NATURAL;
+    MTIME : DIRECTORY.TIME_T;
     use DIRECTORY;
   begin
     begin
@@ -30,7 +31,7 @@ procedure DDIR is
       end;
       begin
         DIRECTORY.FILE_STAT (DIR_NAME & "/" & TEXT_HANDLER.VALUE(ENTRY_NAME),
-                             KIND, RIGHTS);
+                             KIND, RIGHTS, MTIME);
       exception
         when DIRECTORY.NAME_ERROR =>
           -- A link to nowhere?

@@ -1,9 +1,11 @@
-with MY_IO, INT_IO, DIRECTORY, TEXT_HANDLER, ARGUMENT;
+with CALENDAR;
+with MY_IO, INT_IO, DIRECTORY, TEXT_HANDLER, ARGUMENT, DAY_MNG, NORMAL;
 procedure T_DIR is
   FILE_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
   DIR_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
   KIND : DIRECTORY.FILE_KIND_LIST;
   RIGHTS : NATURAL;
+  MTIME  : DIRECTORY.TIME_T;
   MAX_LEN : constant := 50;
   PAD : constant STRING (1 .. MAX_LEN) := (others => ' ');
 
@@ -39,6 +41,28 @@ procedure T_DIR is
     MY_IO.PUT(ZSTR);
   end PUT_RIGHTS;
 
+  procedure PUT_DATE (MTIME : in DIRECTORY.TIME_T) is
+    T : CALENDAR.TIME;
+    YEAR   : CALENDAR.YEAR_NUMBER;
+    MONTH  : CALENDAR.MONTH_NUMBER;
+    DAY    : CALENDAR.DAY_NUMBER;
+    DUR    : CALENDAR.DAY_DURATION;
+    HOURS    : DAY_MNG.T_HOURS;
+    MINUTES  : DAY_MNG.T_MINUTES;
+    SECONDS  : DAY_MNG.T_SECONDS;
+    MILLISEC : DAY_MNG.T_MILLISEC;
+  begin
+    T := DIRECTORY.TIME_OF(MTIME);
+    CALENDAR.SPLIT (T, YEAR, MONTH, DAY, DUR);
+    DAY_MNG.SPLIT (DUR, HOURS, MINUTES, SECONDS, MILLISEC);
+    MY_IO.PUT(" " &
+              NORMAL(YEAR, 4, GAP =>'0') & '/' &
+              NORMAL(MONTH, 2, GAP =>'0') & '/' &
+              NORMAL(DAY, 2, GAP =>'0') & ' '  &
+              NORMAL(HOURS, 2, GAP =>'0') & ':'  &
+              NORMAL(MINUTES, 2, GAP =>'0') & ':'  &
+              NORMAL(SECONDS, 2, GAP =>'0') );
+  end PUT_DATE;
 
   use DIRECTORY;
 begin
@@ -66,8 +90,9 @@ begin
         begin
           DIRECTORY.FILE_STAT (
              TEXT_HANDLER.VALUE (DIR_NAME) & '/' &
-             TEXT_HANDLER.VALUE (FILE_NAME), KIND, RIGHTS);
+             TEXT_HANDLER.VALUE (FILE_NAME), KIND, RIGHTS, MTIME);
           PUT_RIGHTS (RIGHTS);
+          PUT_DATE (MTIME);
           MY_IO.PUT_LINE (" " & DIRECTORY.FILE_KIND_LIST'IMAGE(KIND));
           if KIND = DIRECTORY.SYMBOLIC_LINK then
             MY_IO.PUT_LINE ("    ++++>" & DIRECTORY.READ_LINK (
@@ -102,6 +127,3 @@ begin
 
 end T_DIR;
 
-      
-     
-      

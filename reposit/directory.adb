@@ -1,4 +1,5 @@
 with SYS_CALLS, BIT_OPS;
+with DAY_MNG;
 package body DIRECTORY is
   use SYSTEM;
 
@@ -37,6 +38,15 @@ package body DIRECTORY is
     ST_UNUSED3 : LONG_INTEGER;
     ST_UNUSED4 : LONG_INTEGER;
     ST_UNUSED5 : LONG_INTEGER;
+  end record;
+
+  type MY_TM_T is record
+    TM_SEC  : INTEGER;
+    TM_MIN  : INTEGER;
+    TM_HOUR : INTEGER;
+    TM_MDAY : INTEGER;
+    TM_MON  : INTEGER;
+    TM_YEAR : INTEGER;
   end record;
 
   function C_STRLEN (S : SYSTEM.ADDRESS) return NATURAL;
@@ -178,7 +188,9 @@ package body DIRECTORY is
 
   -- type FILE_KIND_LIST is (FILE, DIR, DEVICE, FIFO_SOCKET);
   procedure FILE_STAT (FILE_NAME : in STRING;
-                       KIND : out FILE_KIND_LIST; RIGHTS : out NATURAL) is
+                       KIND       : out FILE_KIND_LIST;
+                       RIGHTS     : out NATURAL;
+                       MODIF_TIME : out TIME_T) is
     C_FILE_NAME : constant STRING := STR_FOR_C (FILE_NAME);
     STAT : C_STAT_REC;
     RES : INTEGER;
@@ -210,7 +222,27 @@ package body DIRECTORY is
         KIND := UNKNOWN;
     end case;
     RIGHTS := INTEGER(STAT.ST_MODE) AND 8#00007777#;
+    MODIF_TIME := TIME_T(STAT.ST_MTIME);
   end FILE_STAT;
+
+  function C_TIME_TO_TM (TIME_P : SYSTEM.ADDRESS;
+                         MY_TM_P : SYSTEM.ADDRESS)
+           return INTEGER;
+  pragma INTERFACE(C, C_TIME_TO_TM);
+  pragma INTERFACE_NAME(C_TIME_TO_TM, "time_to_tm");
+
+  function TIME_OF (TIME : TIME_T) return CALENDAR.TIME is
+    MY_TM  : MY_TM_T;
+    RESULT : INTEGER;
+  begin
+    RESULT := C_TIME_TO_TM (TIME'ADDRESS, MY_TM'ADDRESS);
+    if RESULT /= 0 then
+      raise CONSTRAINT_ERROR;
+    end if;
+    return CALENDAR.TIME_OF(
+      MY_TM.TM_YEAR, MY_TM.TM_MON, MY_TM.TM_MDAY,
+      DAY_MNG.PACK (MY_TM.TM_HOUR, MY_TM.TM_MIN, MY_TM.TM_SEC, 0));
+  end TIME_OF;
 
 
   function C_READLINK (PATH : SYSTEM.ADDRESS;
@@ -254,10 +286,11 @@ package body DIRECTORY is
     DIR, TXT : TEXT_HANDLER.TEXT(MAX_DIR_NAME_LEN);
     KIND : FILE_KIND_LIST;
     RIGHTS : NATURAL;
+    MTIME  : TIME_T;
     use TEXT_HANDLER;
   begin
     -- Check file_name  is a link
-    FILE_STAT (FILE_NAME, KIND, RIGHTS);
+    FILE_STAT (FILE_NAME, KIND, RIGHTS, MTIME);
     if KIND /= SYMBOLIC_LINK then
       raise OPEN_ERROR;
     end if;
@@ -283,7 +316,7 @@ package body DIRECTORY is
       end if;
       EXTRACT_PATH(TEXT_HANDLER.VALUE(TXT), DIR);
       
-      FILE_STAT(TEXT_HANDLER.VALUE(TXT), KIND, RIGHTS);
+      FILE_STAT(TEXT_HANDLER.VALUE(TXT), KIND, RIGHTS, MTIME);
       exit when KIND /= SYMBOLIC_LINK;
     end loop;
     return TEXT_HANDLER.VALUE(TXT);
