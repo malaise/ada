@@ -211,7 +211,8 @@ package Afpx is
   --    mouse click moves to the field.
   -- In Button fields: mouse click then release terminates Put_Then_Get.
   -- This call affects the content of Get fields, the cursor field and col,
-  --  and the current element of the list.
+  --  and the current element of the list, it calls Modification_Ack on the
+  --  Line_List (see Dynamic_List).
   -- If no field is Get (or all protected or desactivated,
   --  then cursor field and col are not significant, otherwise
   --  they are used at initialisation and set before the end.

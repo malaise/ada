@@ -409,8 +409,7 @@ package body Af_Ptg is
   end Get_Cursor_Col;
 
   -- Print the fields and the list, then gets
-  procedure Ptg (
-                 Cursor_Field  : in out Afpx_Typ.Field_Range;
+  procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                  Cursor_Col    : in out Con_Io.Col_Range;
                  Result        : out Result_Rec;
                  Redisplay     : in Boolean;
@@ -426,6 +425,7 @@ package body Af_Ptg is
     Foreground : Con_Io.Effective_Colors;
     Background : Con_Io.Effective_Basic_Colors;
     Done : Boolean;
+    Need_Redisplay : Boolean;
 
     use Afpx_Typ; 
     use type Con_Io.Curs_Mvt;
@@ -448,42 +448,50 @@ package body Af_Ptg is
       Af_List.Set_Selected (Line_List_Mng.Get_Position(Line_List));
     end if;
 
-    -- Redisplay list if requested or needed
-    if (Redisplay or else Line_List_Mng.Is_Modified (Line_List))
-    and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-      -- list defined
-      if List_Present then
-        if Af_List.Get_Status.Id_Top = 0 then
-          -- First time we display a non empty list
-          Af_List.Display(1);
-        else
-          Af_List.Display(Af_List.Get_Status.Id_Top);
-        end if;
-      elsif not Af_Dscr.Fields(Lfn).Activated then
-        -- List not active
-        Erase_Field (Lfn);
-      else
-        -- Empty list
-        Af_List.Display(1);
-      end if;
-    end if;
-
-    -- Redisplay all fields if requested or needed
-    if Redisplay or else Af_Dscr.Current_Dscr.Modified then
-      for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-        if Af_Dscr.Fields(I).Activated then
-          Put_Field (I, Normal);
-        else
-          Erase_Field (I);
-        end if;
-      end loop;
-    end if;
-
     -- A new field at start up if some get field
     New_Field := Get_Active;
 
+    Need_Redisplay := Redisplay;
+
     -- The infinite loop
     loop
+
+      -- Redisplay list if requested or needed
+      if (Need_Redisplay or else Line_List_Mng.Is_Modified (Line_List))
+      and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+        -- list defined
+        if List_Present then
+          if Af_List.Get_Status.Id_Top = 0 then
+            -- First time we display a non empty list
+            Af_List.Display(1);
+          else
+            Af_List.Display(Af_List.Get_Status.Id_Top);
+          end if;
+        elsif not Af_Dscr.Fields(Lfn).Activated then
+          -- List not active
+          Erase_Field (Lfn);
+        else
+          -- Empty list
+          Af_List.Display(1);
+        end if;
+      end if;
+      Line_List_Mng.Modification_Ack (Line_List);
+
+      -- Redisplay all fields if requested or needed
+      if Need_Redisplay or else Af_Dscr.Current_Dscr.Modified then
+        for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
+          if Af_Dscr.Fields(I).Activated then
+            Put_Field (I, Normal);
+          else
+            Erase_Field (I);
+          end if;
+        end loop;
+      end if;
+      Af_Dscr.Current_Dscr.Modified := False;
+
+      -- No more forced redisplay
+      Need_Redisplay := False;
+
       -- Get field, set colors when field changes
       if New_Field then
         Field := Af_Dscr.Fields(Cursor_Field);
@@ -697,7 +705,6 @@ package body Af_Ptg is
       exit when Done;
     end loop;
 
-    Af_Dscr.Current_Dscr.Modified := False;
   end Ptg;
 
 end Af_Ptg;
