@@ -5,16 +5,16 @@ procedure T_Pattern is
   Done : Boolean := False;
 
   Mr, Rule : Pattern.Rule_No;
+  High_Id : Pattern.Pattern_Id := Pattern.Pattern_Id'First;
 
   function Cli (Ru : in Pattern.Rule_No; 
                 Pa : in Pattern.Pattern_Id; 
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
   begin
-    Ada.Text_Io.Put ("Called Cb (Rule=" & Pattern.Image (Ru)
-                   & ", Id=" & Pa'Img
-                   & ", Matches=" & Nb'Img
-                   & ", tail: ");
+    Ada.Text_Io.Put ("Called Cb (" & Pattern.Image (Ru) & ","
+                                   & Pa'Img & ","
+                                   & Nb'Img & ", tail: ");
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
       Parser.Next_Word (It);
@@ -62,6 +62,13 @@ procedure T_Pattern is
       when Constraint_Error =>
         Ada.Text_Io.Put_Line ("Invalid pattern id " & Parser.Current_Word(It));
         return False;
+    end;
+    declare
+      use type Pattern.Pattern_Id;
+    begin
+      if New_Pa > High_Id then
+        High_Id := New_Pa;
+      end if;
     end;
 
     if Last = 0 then
@@ -120,6 +127,43 @@ procedure T_Pattern is
     return False;
   end Che;
 
+  function Put (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id; 
+                Nb : in Natural;
+                It : in Parser.Iterator) return Boolean is
+    Str : constant String := Parser.Current_Word (It);
+    Str1 : constant String := Parser.Next_Word (It);
+    New_Pa : Pattern.Pattern_Id;
+  begin
+    if Str /= "" then
+      if Str1 /= "" then
+        Ada.Text_Io.Put_Line ("Invalid pattern id " & Str & " " & Str1);
+        return False;
+      end if;
+      -- First word is pattern id
+      begin
+        New_Pa := Pattern.Pattern_Id'Value (Str);
+      exception
+        when Constraint_Error =>
+          Ada.Text_Io.Put_Line ("Invalid pattern id " & Str);
+          return False;
+      end;
+      Ada.Text_Io.Put_Line (New_Pa'Img & " -> " & Pattern.Image (Rule, New_Pa));
+      return False;
+    end if;
+
+    for I in 1 .. High_Id loop
+      begin
+        Ada.Text_Io.Put_Line (I'Img & " -> " & Pattern.Image (Rule, I));
+      exception
+        when Pattern.Invalid_Pattern =>
+          null;
+      end;
+    end loop;
+    return False;
+
+  end Put;
+
   function Hel (Ru : in Pattern.Rule_No;
                 Pa : in Pattern.Pattern_Id; 
                 Nb : in Natural;
@@ -128,6 +172,7 @@ procedure T_Pattern is
     Ada.Text_Io.Put_Line ("The following commands are supported:");
     Ada.Text_Io.Put_Line ("  set <id> <pattern>");
     Ada.Text_Io.Put_Line ("  del <id>");
+    Ada.Text_Io.Put_Line ("  put [ <id> ]");
     Ada.Text_Io.Put_Line ("  check <string>");
     Ada.Text_Io.Put_Line ("  exit, quit or q");
     return False;
@@ -175,9 +220,10 @@ begin
   Pattern.Set (Mr, 30, "check", Che'Unrestricted_Access);
   Pattern.Set (Mr, 40, "help",  Hel'Unrestricted_Access);
   Pattern.Set (Mr, 50, "exit",  Exi'Unrestricted_Access, 50);
-  Pattern.Set (Mr, 60, "",      Def'Unrestricted_Access);
+  Pattern.Set (Mr, 99, "",      Def'Unrestricted_Access);
   Pattern.Set (Mr, 51, "quit",  Exi'Unrestricted_Access, 50);
   Pattern.Set (Mr, 52, "q",     Exi'Unrestricted_Access, 50);
+  Pattern.Set (Mr, 70, "put",   Put'Unrestricted_Access);
 
   -- Set rule
   Rule := Pattern.Get_Free_Rule;
