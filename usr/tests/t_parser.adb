@@ -10,27 +10,33 @@ procedure T_Parser is
   end Is_Sep;
   Is_Sep_Acc : Parser.Separing_Function := Is_Sep'Unrestricted_Access;
 
-  Occ : Natural;
+
+  function Str return String is
+  begin
+    if Argument.Get_Nbre_Arg = 1 then
+      return "";
+    else
+      return Argument.Get_Parameter(Occurence => 2);
+    end if;
+  end Str;
+
   It : Parser.Iterator;
 
 begin
 
-  if Argument.Get_Nbre_Arg = 1 then
-    Occ := 1;
-  elsif Argument.Get_Nbre_Arg = 2
+  if (Argument.Get_Nbre_Arg = 1
+      or else Argument.Get_Nbre_Arg = 2)
   and then Argument.Get_Parameter(Occurence => 1)'Length = 1 then
     Sep := Argument.Get_Parameter(Occurence => 1)(1);
-    Occ := 2;
   else
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-      & " [ <separator_char> ] <string_to_parse>");
+      & " <separator_char> [ <string_to_parse> ]");
     Sys_Calls.Set_Error_Exit_Code;
     return;
   end if;
     
-  Ada.Text_Io.Put_Line ("Parsing " & Argument.Get_Parameter(Occurence => Occ)
-                      & " with separator '" & Sep & "'.");
-  Parser.Create (Argument.Get_Parameter (Occurence => Occ), Is_Sep_Acc, It);
+  Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "'.");
+  Parser.Create (Str, Is_Sep_Acc, It);
 
 
   loop
