@@ -177,7 +177,8 @@ package body Tcp_Util is
   end End_Async_Connect;
 
   -- Callback on connect fd
-  procedure Connection_Fd_CB (Fd : in X_Mng.File_Desc) is
+  function Connection_Fd_CB (Fd : in X_Mng.File_Desc;
+                             Read : in Boolean) return Boolean is
     Rec : Connecting_Rec;
     Go_On : Boolean;
     use type Socket.Socket_Dscr;
@@ -196,10 +197,12 @@ package body Tcp_Util is
       -- Store closed Dscr for timer callback
       Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
     end if;
+    -- Propagate event if no Go_On
+    return not Go_On;
   end Connection_Fd_CB;
 
   -- Timer callback
-  procedure Connection_Timer_CB (Id : in Timers.Timer_Id) is
+  function Connection_Timer_CB (Id : in Timers.Timer_Id) return Boolean is
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
@@ -221,9 +224,10 @@ package body Tcp_Util is
 
     -- Cancel pending async connect. Check end of tries
     if Socket.Is_Open (Rec.Dscr) then
+      Socket.Close (Rec.Dscr);
       End_Async_Connect (Rec, Go_On);
       if not Go_On then
-        return;
+        return True;
       end if;
     end if;
 
@@ -234,17 +238,17 @@ package body Tcp_Util is
     if Socket.Is_Open (Rec.Dscr) and then Connected then
       -- Connected synchronous success
       Handle_Current_Result (Rec);
-      return;
+      return True;
     elsif not Socket.Is_Open (Rec.Dscr) then
       -- Connect synchronous failure: Check number of tries
       if Rec.Curr_Try = Rec.Nb_Tries then
         Handle_Current_Result (Rec);
-        return;
+        return True;
       end if;
     end if;
 
     -- Asynchronous pending
-    if not  Socket.Is_Open (Rec.Dscr) then
+    if Socket.Is_Open (Rec.Dscr) then
       -- Connection pending
       -- Save Dscr, Fd and pending status
       Rec.Fd := Socket.Fd_Of (Rec.Dscr);
@@ -264,17 +268,19 @@ package body Tcp_Util is
     end if;  
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
     Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
-       
+    return False;       
   end Connection_Timer_CB;
 
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
-  procedure Connect_To (Protocol      : in Tcp_Protocol_List;
-                        Host          : in Remote_Host;
-                        Port          : in Remote_Port;
-                        Delta_Retry   : in Duration := 1.0;
-                        Nb_Tries      : in Natural := 1;
-                        Connection_CB : in Connection_Callback_Access) is
+  -- Return True if synchronous result
+  function Connect_To (Protocol      : in Tcp_Protocol_List;
+                       Host          : in Remote_Host;
+                       Port          : in Remote_Port;
+                       Delta_Retry   : in Duration := 1.0;
+                       Nb_Tries      : in Natural := 1;
+                       Connection_CB : in Connection_Callback_Access)
+           return Boolean is
     Rec : Connecting_Rec;
   begin
     -- Initialise record and insert it in list
@@ -291,7 +297,7 @@ package body Tcp_Util is
 
     -- Try to connect: call timer callback
     -- Our Rec should be the only one with No_Timer
-    Connection_Timer_CB (Timers.No_Timer);
+    return Connection_Timer_CB (Timers.No_Timer);
 
   end Connect_To;
 
@@ -346,7 +352,8 @@ package body Tcp_Util is
   procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
 
   -- Callback on accept fd
-  procedure Acception_Fd_CB (Fd : in X_Mng.File_Desc) is
+  function Acception_Fd_CB (Fd : in X_Mng.File_Desc;
+                            Read : in Boolean) return Boolean is
     Rec : Accepting_Rec;
     New_Dscr : Socket.Socket_Dscr;
     Port : Port_Num;
@@ -366,6 +373,7 @@ package body Tcp_Util is
     if Rec.CB /= null then
       Rec.CB (Rec.Port, Rec.Dscr, Port, Host, New_Dscr);
     end if;
+    return True;
   end Acception_Fd_CB;
 
   -- Accept connections to a local port

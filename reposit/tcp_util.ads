@@ -97,12 +97,15 @@ package Tcp_Util is
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
   -- Infinite retries if Nb_Tries = 0;
-  procedure Connect_To (Protocol      : in Tcp_Protocol_List;
-                        Host          : in Remote_Host;
-                        Port          : in Remote_Port;
-                        Delta_Retry   : in Duration := 1.0;
-                        Nb_Tries      : in Natural := 1;
-                        Connection_CB : in Connection_Callback_Access);
+  -- Returns True if immediate result could be achieved
+  --  (then callback has already been called)
+  function Connect_To (Protocol      : in Tcp_Protocol_List;
+                       Host          : in Remote_Host;
+                       Port          : in Remote_Port;
+                       Delta_Retry   : in Duration := 1.0;
+                       Nb_Tries      : in Natural := 1;
+                       Connection_CB : in Connection_Callback_Access)
+           return Boolean;
 
   -- Abort a pending connection
   -- May raise No_Such
