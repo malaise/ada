@@ -9,7 +9,7 @@ typedef struct {
   int tm_year;      /* Years since 1900                  */
 } my_tm_t;
 
-int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
+extern int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
 
   struct tm *tm_p;
 
@@ -27,3 +27,4 @@ int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
     return (0);
   }
 }
+
