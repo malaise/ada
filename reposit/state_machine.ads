@@ -7,6 +7,8 @@ generic
   -- List of events
   -- The TRUE event can be declared in this list to generate
   --  automatic transitions
+  -- The DEFAULT event can be declared in this list to generate
+  --  a transition on any unspecified event
   type EVENT_LIST is (<>);
 
   -- Procedure to report a transition

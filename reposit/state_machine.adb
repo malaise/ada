@@ -129,6 +129,7 @@ package body STATE_MACHINE is
 
   procedure NEW_EVENT (EVENT : in EVENT_LIST) is
     TA : TRANSITION_ACCESS;
+    DEFAULTA : TRANSITION_ACCESS := null;
   begin
     if IN_DECLARATION then
       raise DECLARATION_NOT_ENDED;
@@ -137,6 +138,11 @@ package body STATE_MACHINE is
     loop
       if TA = null then
         -- No other transition for this state (not found)
+        -- Do default if defined (found)
+        if DEFAULTA /= null then
+          DO_TRANSITION (THE_CURRENT_STATE, DEFAULTA, TRUE);
+          DO_TRUES (TRUE);
+        end if;
         return;
       end if;
       if TA.EVENT = EVENT then
@@ -145,6 +151,10 @@ package body STATE_MACHINE is
         DO_TRUES (TRUE);
         return;
       else
+        if EVENT_LIST'IMAGE(TA.EVENT) = "DEFAULT" then
+          -- Default transition found. Store it.
+          DEFAULTA := TA;
+        end if;
         TA := TA.NEXT_TRANSITION;
       end if;
     end loop;
