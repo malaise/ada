@@ -134,19 +134,19 @@ package body INPUT_DISPATCHER is
   --  or if no word already got from current string
   function GET_REMAINING return STRING is
   begin
-    if CURR_IS_STDIN or else not STR_PARSED then
+    if CURR_IS_STDIN then
       if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
-        if CURR_IS_STDIN then
-          TEXT_IO.PUT_LINE ("Input_dispacher: Remaining on stdin.");
-        else
-          TEXT_IO.PUT_LINE ("Input_dispacher: Remaining on unparsed.");
-        end if;
+        TEXT_IO.PUT_LINE ("Input_dispacher: Remaining on stdin.");
       end if;
       raise PROGRAM_ERROR;
     end if;
     if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
       TEXT_IO.PUT_LINE ("Input_dispacher: Remaining is >"
        & CUR_STR(CUR_INDEX .. CUR_LEN) & "<");
+    end if;
+    -- Current string may not be parsed (retacal in a function)
+    if not CURR_IS_STDIN and then not STR_PARSED then
+      CUR_INDEX := 1;
     end if;
     return CUR_STR(CUR_INDEX .. CUR_LEN);
   end GET_REMAINING;
