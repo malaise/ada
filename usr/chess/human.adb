@@ -106,6 +106,7 @@ package body Human is
     end if;
     if Mode /= Both then
       Connection.Close;
+      Screen.Wait (0.2);
     end if;
     Screen.Close;
   end Play;
@@ -214,7 +215,7 @@ package body Human is
     end if;
     -- Wait until opponent move
     loop
-      Screen.Wait (Color, Move_Color);
+      Screen.Wait_Event (Color, Move_Color);
       exit when Connection.Action_Received;
     end loop;
     Action := Connection.Receive;
@@ -259,7 +260,7 @@ package body Human is
         end if;
       else
         loop
-          Screen.Wait (Color, Move_Color);
+          Screen.Wait_Event (Color, Move_Color);
           exit when Connection.Action_Received;
         end loop;
         Action := Connection.Receive;

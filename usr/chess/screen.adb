@@ -437,8 +437,8 @@ package body Screen is
   end Put;
 
   -- Wait until fd event
-  procedure Wait (Disp_Color : in Space.Color_List;
-                  Move_Color : in Space.Color_List) is
+  procedure Wait_Event (Disp_Color : in Space.Color_List;
+                        Move_Color : in Space.Color_List) is
     Str  : String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
@@ -467,6 +467,35 @@ package body Screen is
       elsif Stat = Con_Io.Refresh then
         Display_Board (Disp_Color);
         Display_Promotion (Move_Color);
+      end if;
+    end loop;
+  end Wait_Event;
+
+  -- Wait for a moment
+  procedure Wait (Delay_Sec : in Duration) is
+    Str  : String (1 .. 0);
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos  : Positive;
+    Ins  : Boolean;
+
+    Timeout : Con_Io.Delay_Rec;
+
+    use type Con_Io.Curs_Mvt;
+  begin
+    Timeout := (Timers.Delay_Sec, Con_Io.No_Period, Delay_Sec);
+    Ins := False;
+
+    loop
+      Con_Io.Set_Background (Main_Back);
+      Con_Io.Set_Foreground (Main_Back);
+      Con_Io.Move (23, 1);
+
+      Pos := 1;
+      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
+             Time_Out => Timeout);
+      if Stat = Con_Io.Timeout then
+        return;
       end if;
     end loop;
   end Wait;

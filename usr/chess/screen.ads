@@ -28,8 +28,11 @@ package Screen is
                       Result : in Game.Move_Status_List);
 
   -- Wait for a Fd event
-  procedure Wait (Disp_Color : in Space.Color_List;
-                  Move_Color : in Space.Color_List);
+  procedure Wait_Event (Disp_Color : in Space.Color_List;
+                        Move_Color : in Space.Color_List);
+
+  -- Wait for a moment
+  procedure Wait (Delay_Sec : in Duration);
 
   -- Close the board
   procedure Close;
