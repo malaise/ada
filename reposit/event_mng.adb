@@ -107,6 +107,10 @@ package body Event_Mng is
     if not Res then
       raise Event_Failure;
     end if;
+    if Debug then
+      Ada.Text_Io.Put_Line ("Event_Mng.Add_Fd_Callback "
+                          & Fd'Img & " " & Read'Img);
+    end if;
   exception
     when others =>
       raise Event_Failure;
@@ -130,6 +134,10 @@ package body Event_Mng is
     end if;
     if not Res then
       raise Event_Failure;
+    end if;
+    if Debug then
+      Ada.Text_Io.Put_Line ("Event_Mng.Del_Fd_Callback "
+                          & Fd'Img & " " & Read'Img);
     end if;
   exception
     when others =>
@@ -177,12 +185,21 @@ package body Event_Mng is
 
   procedure Send_Signal is
   begin
+    if Debug then
+      Ada.Text_Io.Put_Line ("Event_Mng.Send_Signal");
+    end if;
     C_Send_Signal (C_Sig_Dummy);
   end Send_Signal;
   
   function Get_Signal_Kind return Signal_Kind_List is
+    Sig : Integer;
   begin
-    case C_Get_Signal is
+    Sig := C_Get_Signal;
+    if Debug then
+      Ada.Text_Io.Put_Line (
+       "Event_Mng.Get_Signal_Kind: C_Get_Signal => " & Sig'Img);
+    end if;
+    case Sig is
       when C_Sig_Unknown =>
         return Unknown_Sig;
       when C_Sig_None =>
@@ -243,15 +260,16 @@ package body Event_Mng is
       -- Wait
       Timeout_Wait := Integer (Timeout_Dur * 1000.0);
       if Debug then
-        Ada.Text_Io.Put_Line ("  Timeout_Wait: " & Timeout_Wait'Img);
+        Ada.Text_Io.Put_Line ("Event_Mng.Wait timeout " & Timeout_Wait'Img);
       end if;
       C_Res := C_Wait (Fd'Address, Read'Address, Timeout_Wait'Address);
       if Debug then
         if C_Res /= Ok then
-          Ada.Text_Io.Put_Line ("  C_Wait -> ERROR");
+          Ada.Text_Io.Put_Line ("Event_Mng.Wait.C_Wait -> ERROR");
           return No_Event;
         else
-          Ada.Text_Io.Put_Line ("  C_Wait -> " & Integer'Image(Fd)
+          Ada.Text_Io.Put_Line ("Event_Mng.Wait.C_Wait -> "
+                                         & Integer'Image(Fd)
                                          & " " & Bool_For_C'Image(Read));
         end if;
       end if;
@@ -272,11 +290,11 @@ package body Event_Mng is
       else
         Handle_Res := No_Event;
         if Debug then
-          Ada.Text_Io.Put_Line ("  Wait -> Invalid fd");
+          Ada.Text_Io.Put_Line ("Event_Mng.Wait Invalid fd");
         end if;
       end if;
       if Debug then
-        Ada.Text_Io.Put_Line ("  Wait.Handle -> " & Handle_Res'Img);
+        Ada.Text_Io.Put_Line ("Event_Mng.Wait Handle -> " & Handle_Res'Img);
       end if;
 
       -- Done on event or timeout
@@ -317,7 +335,7 @@ package body Event_Mng is
       Pause_Level := Data - 1;
     end if;
     if Debug then
-      Ada.Text_Io.Put_Line ("  Pause.Cb " & Data'Img);
+      Ada.Text_Io.Put_Line ("Event_Mng.Pause.Cb " & Data'Img);
     end if;
     return True;
   end Pause_Cb;
@@ -328,19 +346,20 @@ package body Event_Mng is
      Wait_Timeout : Integer;
      Dummy : Boolean;
   begin
+    Set_Debug;
 
     -- Increment global pause level and store ours
     Pause_Level := Pause_Level + 1;
     Loc_Level := Pause_Level;
     if Debug then
-      Ada.Text_Io.Put_Line ("  Pause.Push " & Loc_Level'Img);
+      Ada.Text_Io.Put_Line ("Event_Mng.Pause Push " & Loc_Level'Img);
     end if;
 
     -- Arm or simulate timer
     if Timeout_Ms < 0 then
       Wait_Timeout := Infinite_Ms;
       if Debug then
-        Ada.Text_Io.Put_Line ("  Pause.Infinite");
+        Ada.Text_Io.Put_Line ("Event_Mng.Pause.Infinite");
       end if;
     elsif Timeout_Ms = 0 then
       Dummy := Pause_Cb (Timers.No_Timer, Pause_Level);
@@ -362,11 +381,13 @@ package body Event_Mng is
       if Wait (Wait_Timeout) = Sig_Event then
         -- Exit all pauses on signal
         if Debug then
-          Ada.Text_Io.Put_Line ("  Pause.Signal");
+          Ada.Text_Io.Put_Line ("Event_Mng.Pause Signal " & Pause_Level'Img);
         end if;
         if Pause_Level /= 0 then
           Pause_Level := Pause_Level - 1;
-          Send_Signal;
+          if Pause_Level /= 0 then
+            Send_Signal;
+          end if;
         end if;
         exit;
       end if;
@@ -387,6 +408,9 @@ package body Event_Mng is
     Signal_Kind : Signal_Kind_List;
   begin
     Set_Debug;
+    if Debug then
+      Ada.Text_Io.Put_Line ("Event_Mng.Handle event " & Event.Kind'Img);
+    end if;
     case Event.Kind is
       when Fd_Event =>
         -- A FD event
@@ -406,13 +430,21 @@ package body Event_Mng is
         exception
           when Cb_Mng.Not_In_List =>
             if Debug then
-              Ada.Text_Io.Put_Line ("**** Handle: "
+              Ada.Text_Io.Put_Line ("**** Event_Mng.Handle: "
                                   & File_Desc'Image(Event.Fd)
                                   & " fd not found ****");
             end if;
         end;
+        if Debug then
+          Ada.Text_Io.Put_Line ("Event_Mng.Handle Cb called on fd "
+                 & Event.Fd'Img & " " & Event.Read'Img);
+        end if;
       when Sig_Event =>
         Signal_Kind := Get_Signal_Kind;
+        if Debug then
+          Ada.Text_Io.Put_Line ("Event_Mng.Handle " & Signal_Kind'Img
+                   & " with cb: " & Boolean'Image(Cb_Sig /= null));
+        end if;
         case Signal_Kind is
           when Unknown_Sig | No_Sig =>
             -- No_Event
