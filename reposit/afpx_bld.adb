@@ -1,627 +1,627 @@
-with TEXT_IO, DIRECT_IO;
-with CON_IO, GET_LINE, TEXT_HANDLER, NORMAL, ARGUMENT, DIRECTORY;
-with AFPX_TYP;
-use  AFPX_TYP;
+with Text_Io, Direct_Io;
+with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory;
+with Afpx_Typ;
+use  Afpx_Typ;
 -- Read AFPX.LIS, check
 -- Build AFPX.DSC list of DESCR_REC
 --       AFPX.FLD list of FIELDS_ARRAY
 --       AFPX.INI list of CHAR_STR
-procedure AFPX_BLD is
+procedure Afpx_Bld is
 
   -- Inputs name
-  DEFAULT_LIST_FILE_NAME : constant STRING := "AFPX.LIS";
-  LIST_FILE_NAME : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN * 2);
+  Default_List_File_Name : constant String := "Afpx.Lis";
+  List_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len * 2);
 
   -- GET_LINE of descriptor file
-  package DSCR_GET is new GET_LINE (MAX_WORD_LEN => 80, 
-                                    MAX_WORD_NB  => 45,
-                                    MAX_LINE_LEN => 132,
-                                    COMMENT      => '#');
-  DSCR_LINE : DSCR_GET.LINE_ARRAY;
-  DSCR_WORDS : DSCR_GET.WORD_COUNT;
+  package Dscr_Get is new Get_Line (Max_Word_Len => 80, 
+                                    Max_Word_Nb  => 45,
+                                    Max_Line_Len => 132,
+                                    Comment      => '#');
+  Dscr_Line : Dscr_Get.Line_Array;
+  Dscr_Words : Dscr_Get.Word_Count;
 
   -- Direct_io of descriptors, fields, init strings
-  package DSCR_IO is new DIRECT_IO (AFPX_TYP.DESCRIPTORS_ARRAY);
-  DSCR_FILE : DSCR_IO.FILE_TYPE;
-  package FLD_IO  is new DIRECT_IO (AFPX_TYP.FIELDS_ARRAY);
-  FLD_FILE : FLD_IO.FILE_TYPE;
-  package INIT_IO is new DIRECT_IO (AFPX_TYP.CHAR_STR);
-  INIT_FILE : INIT_IO.FILE_TYPE;
+  package Dscr_Io is new Direct_Io (Afpx_Typ.Descriptors_Array);
+  Dscr_File : Dscr_Io.File_Type;
+  package Fld_Io  is new Direct_Io (Afpx_Typ.Fields_Array);
+  Fld_File : Fld_Io.File_Type;
+  package Init_Io is new Direct_Io (Afpx_Typ.Char_Str);
+  Init_File : Init_Io.File_Type;
 
   -- List of descriptors
-  DESCRIPTORS : AFPX_TYP.DESCRIPTORS_ARRAY;
+  Descriptors : Afpx_Typ.Descriptors_Array;
 
   -- List of fields
-  FIELDS : AFPX_TYP.FIELDS_ARRAY;
+  Fields : Afpx_Typ.Fields_Array;
 
   -- Index in INIT_STR
-  INIT_INDEX : POSITIVE;
+  Init_Index : Positive;
 
   -- Initial characters of the fields
-  INIT_STR : AFPX_TYP.CHAR_STR;
+  Init_Str : Afpx_Typ.Char_Str;
 
   -- Errors
-  ARGUMENT_ERROR : exception;
-  FILE_SYNTAX_ERROR : exception;
-  FILE_NOT_FOUND : exception;
+  Argument_Error : exception;
+  File_Syntax_Error : exception;
+  File_Not_Found : exception;
 
   -- Expected number of arguments
-  EXPECTED_ARGS : NATURAL;
+  Expected_Args : Natural;
 
-  procedure NEXT_LINE is
+  procedure Next_Line is
   begin
-    DSCR_GET.READ_NEXT_LINE;
-    DSCR_WORDS := DSCR_GET.GET_WORD_NUMBER;
-    DSCR_GET.GET_WORDS(DSCR_LINE);
-  end NEXT_LINE;
+    Dscr_Get.Read_Next_Line;
+    Dscr_Words := Dscr_Get.Get_Word_Number;
+    Dscr_Get.Get_Words(Dscr_Line);
+  end Next_Line;
 
-  procedure DUMP_LINE is
+  procedure Dump_Line is
   begin
-    TEXT_IO.PUT(TEXT_IO.POSITIVE_COUNT'IMAGE(DSCR_GET.GET_LINE_NO) & " : ");
-    for I in 1 .. DSCR_WORDS loop
-      TEXT_IO.PUT(">" & TEXT_HANDLER.VALUE(DSCR_LINE(I)) & "< ");
+    Text_Io.Put(Text_Io.Positive_Count'Image(Dscr_Get.Get_Line_No) & " : ");
+    for I in 1 .. Dscr_Words loop
+      Text_Io.Put(">" & Text_Handler.Value(Dscr_Line(I)) & "< ");
     end loop;
-    TEXT_IO.NEW_LINE;
-  end DUMP_LINE;
+    Text_Io.New_Line;
+  end Dump_Line;
 
-  procedure CLOSE (ON_ERROR : in BOOLEAN) is
+  procedure Close (On_Error : in Boolean) is
   begin
     begin
-      DSCR_GET.CLOSE;
+      Dscr_Get.Close;
     exception
       when others =>
         null;
     end;
-    if ON_ERROR and then DSCR_IO.IS_OPEN (DSCR_FILE) then
+    if On_Error and then Dscr_Io.Is_Open (Dscr_File) then
       begin
-        DSCR_IO.DELETE (DSCR_FILE);
+        Dscr_Io.Delete (Dscr_File);
       exception
         when others =>
           null;
       end;
       begin
-        FLD_IO.DELETE (FLD_FILE);
+        Fld_Io.Delete (Fld_File);
       exception
         when others =>
           null;
       end;
       begin
-        INIT_IO.DELETE (INIT_FILE);
+        Init_Io.Delete (Init_File);
       exception
         when others =>
           null;
       end;
     else
       begin
-        DSCR_IO.CLOSE (DSCR_FILE);
+        Dscr_Io.Close (Dscr_File);
       exception
         when others =>
           null;
       end;
       begin
-        FLD_IO.CLOSE (FLD_FILE);
+        Fld_Io.Close (Fld_File);
       exception
         when others =>
           null;
       end;
       begin
-        INIT_IO.CLOSE (INIT_FILE);
+        Init_Io.Close (Init_File);
       exception
         when others =>
           null;
       end;
     end if;
-  end CLOSE;
+  end Close;
 
-  function FIRST_WORD return STRING is
+  function First_Word return String is
   begin
-    return TEXT_HANDLER.VALUE(DSCR_LINE(1));
+    return Text_Handler.Value(Dscr_Line(1));
   end;
 
-  function END_OF (KEYWORD : STRING) return BOOLEAN is
+  function End_Of (Keyword : String) return Boolean is
   begin
-    return DSCR_WORDS = 2 and then
-           FIRST_WORD = "END" and then
-           TEXT_HANDLER.VALUE(DSCR_LINE(2)) = KEYWORD;
-  end END_OF;
+    return Dscr_Words = 2 and then
+           First_Word = "End" and then
+           Text_Handler.Value(Dscr_Line(2)) = Keyword;
+  end End_Of;
 
-  procedure FILE_ERROR (MSG : in STRING := "") is
+  procedure File_Error (Msg : in String := "") is
   begin
-    if MSG = "" then
-      TEXT_IO.PUT_LINE ("SYNTAX ERROR.");
+    if Msg = "" then
+      Text_Io.Put_Line ("Syntax Error.");
     else
-      TEXT_IO.PUT_LINE ("SYNTAX ERROR : " & MSG & ".");
+      Text_Io.Put_Line ("Syntax Error : " & Msg & ".");
     end if;
-    TEXT_IO.PUT (" In file " & TEXT_HANDLER.VALUE(LIST_FILE_NAME)
+    Text_Io.Put (" In file " & Text_Handler.Value(List_File_Name)
                & " at line ");
-    DUMP_LINE;
-    raise FILE_SYNTAX_ERROR;
-  end FILE_ERROR;
+    Dump_Line;
+    raise File_Syntax_Error;
+  end File_Error;
 
   -- Check and store upper_left (and lower right in size) and colors
-  procedure LOAD_GEO_COLOR (FN : in AFPX_TYP.ABSOLUTE_FIELD_RANGE) is
+  procedure Load_Geo_Color (Fn : in Afpx_Typ.Absolute_Field_Range) is
   begin
-    if FIRST_WORD /= "GEOMETRY" or else DSCR_WORDS /= 5 then
-      FILE_ERROR ("GEOMETRY <upper_row> <left_col> <lower_row> <right_col> expected");
+    if First_Word /= "Geometry" or else Dscr_Words /= 5 then
+      File_Error ("Geometry <upper_row> <left_col> <lower_row> <right_col> expected");
     end if;
     begin
       -- Load upper_right and lower left
-      FIELDS(FN).UPPER_LEFT.ROW :=
-       CON_IO.ROW_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(2)));
-      FIELDS(FN).UPPER_LEFT.COL :=
-       CON_IO.COL_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(3)));
-      FIELDS(FN).LOWER_RIGHT.ROW :=
-       CON_IO.ROW_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(4)));
-      FIELDS(FN).LOWER_RIGHT.COL :=
-       CON_IO.COL_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(5)));
+      Fields(Fn).Upper_Left.Row :=
+       Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(2)));
+      Fields(Fn).Upper_Left.Col :=
+       Con_Io.Col_Range'Value(Text_Handler.Value(Dscr_Line(3)));
+      Fields(Fn).Lower_Right.Row :=
+       Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(4)));
+      Fields(Fn).Lower_Right.Col :=
+       Con_Io.Col_Range'Value(Text_Handler.Value(Dscr_Line(5)));
     exception
       when others =>
-        FILE_ERROR ("Invalid geometry");
+        File_Error ("Invalid geometry");
     end;
-    if      FIELDS(FN).UPPER_LEFT.ROW > FIELDS(FN).LOWER_RIGHT.ROW
-    or else FIELDS(FN).UPPER_LEFT.COL > FIELDS(FN).LOWER_RIGHT.COL
+    if      Fields(Fn).Upper_Left.Row > Fields(Fn).Lower_Right.Row
+    or else Fields(Fn).Upper_Left.Col > Fields(Fn).Lower_Right.Col
     then
-      FILE_ERROR ("Invalid geometry. Upper_left < lower_right");
+      File_Error ("Invalid geometry. Upper_left < lower_right");
     end if;
 
     -- Compute size
-    FIELDS(FN).HEIGHT :=
-     FIELDS(FN).LOWER_RIGHT.ROW - FIELDS(FN).UPPER_LEFT.ROW + 1;
-    FIELDS(FN).WIDTH :=
-     FIELDS(FN).LOWER_RIGHT.COL - FIELDS(FN).UPPER_LEFT.COL + 1;
+    Fields(Fn).Height :=
+     Fields(Fn).Lower_Right.Row - Fields(Fn).Upper_Left.Row + 1;
+    Fields(Fn).Width :=
+     Fields(Fn).Lower_Right.Col - Fields(Fn).Upper_Left.Col + 1;
 
     -- One ROW for GET fields
-    if FIELDS(FN).KIND = AFPX_TYP.GET and then FIELDS(FN).HEIGHT /= 1 then
-      FILE_ERROR ("Invalid geometry. GET fields must have ONE row");
+    if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
+      File_Error ("Invalid geometry. Get fields must have One row");
     end if;
 
-    NEXT_LINE;
+    Next_Line;
 
     -- Parse colors
-    if FIRST_WORD /= "COLORS" then
-      FILE_ERROR ("Keyword COLORS expected");
+    if First_Word /= "Colors" then
+      File_Error ("Keyword Colors expected");
     end if;
     begin
-      if FN = 0 or else FIELDS(FN).KIND = AFPX_TYP.GET then
-        if DSCR_WORDS /= 4 then
-          FILE_ERROR ("COLORS <foreground> <background> <selected> expected");
+      if Fn = 0 or else Fields(Fn).Kind = Afpx_Typ.Get then
+        if Dscr_Words /= 4 then
+          File_Error ("Colors <foreground> <background> <selected> expected");
         end if;
-        FIELDS(FN).COLORS.FOREGROUND :=
-         CON_IO.EFFECTIVE_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(2)));
-        FIELDS(FN).COLORS.BLINK_STAT := CON_IO.NOT_BLINK;
-        FIELDS(FN).COLORS.BACKGROUND :=
-         CON_IO.EFFECTIVE_BASIC_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(3)));
-        FIELDS(FN).COLORS.SELECTED :=
-         CON_IO.EFFECTIVE_BASIC_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(4)));
+        Fields(Fn).Colors.Foreground :=
+         Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
+        Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+        Fields(Fn).Colors.Background :=
+         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(3)));
+        Fields(Fn).Colors.Selected :=
+         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(4)));
 
-      elsif FIELDS(FN).KIND = PUT then
-        if DSCR_WORDS /= 4 then
-          FILE_ERROR ("COLORS <foreground> <blink> <background> expected");
+      elsif Fields(Fn).Kind = Put then
+        if Dscr_Words /= 4 then
+          File_Error ("Colors <foreground> <blink> <background> expected");
         end if;
-        FIELDS(FN).COLORS.FOREGROUND :=
-         CON_IO.EFFECTIVE_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(2)));
-        FIELDS(FN).COLORS.BLINK_STAT :=
-         CON_IO.EFFECTIVE_BLINK_STATS'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(3)));
-        FIELDS(FN).COLORS.BACKGROUND :=
-         CON_IO.EFFECTIVE_BASIC_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(4)));
-        FIELDS(FN).COLORS.SELECTED := FIELDS(FN).COLORS.BACKGROUND;
+        Fields(Fn).Colors.Foreground :=
+         Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
+        Fields(Fn).Colors.Blink_Stat :=
+         Con_Io.Effective_Blink_Stats'Value(Text_Handler.Value(Dscr_Line(3)));
+        Fields(Fn).Colors.Background :=
+         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(4)));
+        Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
 
-      elsif FIELDS(FN).KIND = BUTTON then
-        if DSCR_WORDS /= 3 then
-          FILE_ERROR ("COLORS <foreground> <background> expected");
+      elsif Fields(Fn).Kind = Button then
+        if Dscr_Words /= 3 then
+          File_Error ("Colors <foreground> <background> expected");
         end if;
-        FIELDS(FN).COLORS.FOREGROUND :=
-         CON_IO.EFFECTIVE_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(2)));
-        FIELDS(FN).COLORS.BLINK_STAT := CON_IO.NOT_BLINK;
-        FIELDS(FN).COLORS.BACKGROUND :=
-         CON_IO.EFFECTIVE_BASIC_COLORS'VALUE (TEXT_HANDLER.VALUE(DSCR_LINE(3)));
-        FIELDS(FN).COLORS.SELECTED := FIELDS(FN).COLORS.BACKGROUND;
+        Fields(Fn).Colors.Foreground :=
+         Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
+        Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+        Fields(Fn).Colors.Background :=
+         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(3)));
+        Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
       end if;
     exception
-      when FILE_SYNTAX_ERROR =>
+      when File_Syntax_Error =>
         raise;
       when others =>
-        FILE_ERROR ("Invalid colors specification");
+        File_Error ("Invalid colors specification");
     end;
 
     -- Foreground has to be basic for all but PUT fields
-    if (FN = 0 or else FIELDS(FN).KIND /= PUT)
-    and then FIELDS(FN).COLORS.FOREGROUND
-             not in CON_IO.EFFECTIVE_BASIC_COLORS then
+    if (Fn = 0 or else Fields(Fn).Kind /= Put)
+    and then Fields(Fn).Colors.Foreground
+             not in Con_Io.Effective_Basic_Colors then
       -- For list, GET and BUTTON, FOREGROUND has to be basic
-      FILE_ERROR ("For all but PUT fields, FOREGROUND has to be basic color");
+      File_Error ("For all but Put fields, Foreground has to be basic color");
     end if;
-    NEXT_LINE;
-  end LOAD_GEO_COLOR;
+    Next_Line;
+  end Load_Geo_Color;
 
-  procedure LOAD_LIST is
+  procedure Load_List is
   begin
-    if DSCR_WORDS /= 1 then
-      FILE_ERROR ("LIST expected");
+    if Dscr_Words /= 1 then
+      File_Error ("List expected");
     end if;
     -- In LIST
-    FIELDS(0).KIND := AFPX_TYP.BUTTON;
-    FIELDS(0).ACTIVATED := TRUE;
-    FIELDS(0).ISPROTECTED := FALSE;
-    NEXT_LINE;
-    LOAD_GEO_COLOR (0);
-    if not END_OF ("LIST") then
-      FILE_ERROR ("END LIST expected");
+    Fields(0).Kind := Afpx_Typ.Button;
+    Fields(0).Activated := True;
+    Fields(0).Isprotected := False;
+    Next_Line;
+    Load_Geo_Color (0);
+    if not End_Of ("List") then
+      File_Error ("End List expected");
     end if;
-    FIELDS(0).CHAR_INDEX := 1;
-    NEXT_LINE;
-  end LOAD_LIST;
+    Fields(0).Char_Index := 1;
+    Next_Line;
+  end Load_List;
 
-  procedure LOC_LOAD_FIELD (NO : in AFPX_TYP.FIELD_RANGE)  is
-    FIRST_INIT : BOOLEAN;
-    PREV_INIT_SQUARE : CON_IO.SQUARE;
+  procedure Loc_Load_Field (No : in Afpx_Typ.Field_Range)  is
+    First_Init : Boolean;
+    Prev_Init_Square : Con_Io.Square;
     -- Location in field of init string
-    FINIT_SQUARE : CON_IO.SQUARE;
+    Finit_Square : Con_Io.Square;
     -- Whole init line got from get_line
-    FINIT_LINE   : DSCR_GET.LINE_TXT;
+    Finit_Line   : Dscr_Get.Line_Txt;
     -- Init string
-    FINIT_STR    : STRING (1 .. FINIT_LINE.MAX_LEN);
-    FINIT_LEN    : NATURAL;
-    FINIT_START  : POSITIVE;
+    Finit_Str    : String (1 .. Finit_Line.Max_Len);
+    Finit_Len    : Natural;
+    Finit_Start  : Positive;
     -- Index in CHAR_STR of beginning of INIT string
-    FINIT_INDEX : AFPX_TYP.CHAR_STR_RANGE;
+    Finit_Index : Afpx_Typ.Char_Str_Range;
   begin
-    if DSCR_WORDS /= 3 then
-      FILE_ERROR ("FIELD <field_no> <field_type> expected");
+    if Dscr_Words /= 3 then
+      File_Error ("Field <field_no> <field_type> expected");
     end if;
     begin
-      if AFPX_TYP.FIELD_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(2))) /=
-      NO then
-        raise CONSTRAINT_ERROR;
+      if Afpx_Typ.Field_Range'Value(Text_Handler.Value(Dscr_Line(2))) /=
+      No then
+        raise Constraint_Error;
       end if;
     exception
       when others =>
-        FILE_ERROR ("Invalid field number. They must crescent positives");
+        File_Error ("Invalid field number. They must crescent positives");
     end;
     begin
-      FIELDS(NO).KIND :=
-        AFPX_TYP.FIELD_KIND_LIST'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(3)));
+      Fields(No).Kind :=
+        Afpx_Typ.Field_Kind_List'Value(Text_Handler.Value(Dscr_Line(3)));
     exception
       when others =>
-        FILE_ERROR ("Invalid field type. PUT, GET or BUTTON expected");
+        File_Error ("Invalid field type. Put, Get or Button expected");
     end;
-    FIELDS(NO).ACTIVATED := TRUE;
-    FIELDS(NO).ISPROTECTED := FALSE;
-    NEXT_LINE;
-    LOAD_GEO_COLOR (NO);
+    Fields(No).Activated := True;
+    Fields(No).Isprotected := False;
+    Next_Line;
+    Load_Geo_Color (No);
 
-    FIELDS(NO).CHAR_INDEX := INIT_INDEX;
-    FINIT_LEN := FIELDS(NO).HEIGHT * FIELDS(NO).WIDTH;
+    Fields(No).Char_Index := Init_Index;
+    Finit_Len := Fields(No).Height * Fields(No).Width;
     begin
-      INIT_INDEX := INIT_INDEX + FINIT_LEN + 1;
+      Init_Index := Init_Index + Finit_Len + 1;
     exception
       when others =>
-        FILE_ERROR ("Too many init characters");
+        File_Error ("Too many init characters");
     end;
 
-    if FIRST_WORD = "INIT" then
+    if First_Word = "Init" then
 
-      if DSCR_WORDS /= 1 then
-        FILE_ERROR ("INIT expected");
+      if Dscr_Words /= 1 then
+        File_Error ("Init expected");
       end if;
-      NEXT_LINE;
+      Next_Line;
 
-      FIRST_INIT := TRUE;
-      PREV_INIT_SQUARE := (0, 0);
-      while not END_OF ("INIT") loop
+      First_Init := True;
+      Prev_Init_Square := (0, 0);
+      while not End_Of ("Init") loop
         -- Check init syntax and length of string
-        if DSCR_WORDS < 2 then
-          FILE_ERROR ("Invalid init. <row> <col> [ <str> ] expected");
+        if Dscr_Words < 2 then
+          File_Error ("Invalid init. <row> <col> [ <str> ] expected");
         end if;
         begin
-          FINIT_SQUARE.ROW :=
-           CON_IO.ROW_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(1)));
-          FINIT_SQUARE.COL :=
-           CON_IO.ROW_RANGE'VALUE(TEXT_HANDLER.VALUE(DSCR_LINE(2)));
+          Finit_Square.Row :=
+           Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(1)));
+          Finit_Square.Col :=
+           Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(2)));
         exception
           when others =>
-            FILE_ERROR ("Invalid init row or column");
+            File_Error ("Invalid init row or column");
         end;
         -- Check init squares crescent
-        if not FIRST_INIT then
-          if FINIT_SQUARE.ROW < PREV_INIT_SQUARE.ROW then
-            FILE_ERROR ("Invalid init row. Must be crescent");
-          elsif    FINIT_SQUARE.ROW  = PREV_INIT_SQUARE.ROW
-          and then FINIT_SQUARE.COL <= PREV_INIT_SQUARE.COL then
-            FILE_ERROR ("Invalid init col. Must be crescent and not overlap");
+        if not First_Init then
+          if Finit_Square.Row < Prev_Init_Square.Row then
+            File_Error ("Invalid init row. Must be crescent");
+          elsif    Finit_Square.Row  = Prev_Init_Square.Row
+          and then Finit_Square.Col <= Prev_Init_Square.Col then
+            File_Error ("Invalid init col. Must be crescent and not overlap");
           end if;
         end if;
-        FIRST_INIT := FALSE;
-        PREV_INIT_SQUARE := FINIT_SQUARE;
+        First_Init := False;
+        Prev_Init_Square := Finit_Square;
         -- Check init square in field
-        if not AFPX_TYP.IN_FIELD (FIELDS(NO), FINIT_SQUARE) then
-          FILE_ERROR ("Init row or col not in field");
+        if not Afpx_Typ.In_Field (Fields(No), Finit_Square) then
+          File_Error ("Init row or col not in field");
         end if;
         -- Get the whole line to extract init string
-        DSCR_GET.GET_WHOLE_LINE (FINIT_LINE);
-        FINIT_LEN := TEXT_HANDLER.LENGTH (FINIT_LINE);
-        FINIT_STR (1 .. FINIT_LEN) := TEXT_HANDLER.VALUE (FINIT_LINE);
-        FINIT_START := 1;
+        Dscr_Get.Get_Whole_Line (Finit_Line);
+        Finit_Len := Text_Handler.Length (Finit_Line);
+        Finit_Str (1 .. Finit_Len) := Text_Handler.Value (Finit_Line);
+        Finit_Start := 1;
         -- Skeep spaces after string
-        while   FINIT_STR(FINIT_LEN) = ' '
-        or else FINIT_STR(FINIT_LEN) = ASCII.HT loop
-          FINIT_LEN := FINIT_LEN - 1;
+        while   Finit_Str(Finit_Len) = ' '
+        or else Finit_Str(Finit_Len) = Ascii.Ht loop
+          Finit_Len := Finit_Len - 1;
         end loop;
         -- Skeep spaces before row
-        while   FINIT_STR(FINIT_START) = ' '
-        or else FINIT_STR(FINIT_START) = ASCII.HT loop
-          FINIT_START := FINIT_START + 1;
+        while   Finit_Str(Finit_Start) = ' '
+        or else Finit_Str(Finit_Start) = Ascii.Ht loop
+          Finit_Start := Finit_Start + 1;
         end loop;
         -- Skip row
-        while    FINIT_STR(FINIT_START) /= ' '
-        and then FINIT_STR(FINIT_START) /= ASCII.HT loop
-          FINIT_START := FINIT_START + 1;
+        while    Finit_Str(Finit_Start) /= ' '
+        and then Finit_Str(Finit_Start) /= Ascii.Ht loop
+          Finit_Start := Finit_Start + 1;
         end loop;
         -- Skeep spaces between row and col
-        while   FINIT_STR(FINIT_START) = ' '
-        or else FINIT_STR(FINIT_START) = ASCII.HT loop
-          FINIT_START := FINIT_START + 1;
+        while   Finit_Str(Finit_Start) = ' '
+        or else Finit_Str(Finit_Start) = Ascii.Ht loop
+          Finit_Start := Finit_Start + 1;
         end loop;
         -- Skip col
-        while    FINIT_START <= FINIT_LEN
-        and then FINIT_STR(FINIT_START) /= ' '
-        and then FINIT_STR(FINIT_START) /= ASCII.HT loop
-          FINIT_START := FINIT_START + 1;
+        while    Finit_Start <= Finit_Len
+        and then Finit_Str(Finit_Start) /= ' '
+        and then Finit_Str(Finit_Start) /= Ascii.Ht loop
+          Finit_Start := Finit_Start + 1;
         end loop;
-        if FINIT_START /= FINIT_LEN then
+        if Finit_Start /= Finit_Len then
           -- There is a init string. Skeep spaces between col and str
-          while   FINIT_START <= FINIT_LEN
-          and then (        FINIT_STR(FINIT_START) = ' '
-                    or else FINIT_STR(FINIT_START) = ASCII.HT) loop
-            FINIT_START := FINIT_START + 1;
+          while   Finit_Start <= Finit_Len
+          and then (        Finit_Str(Finit_Start) = ' '
+                    or else Finit_Str(Finit_Start) = Ascii.Ht) loop
+            Finit_Start := Finit_Start + 1;
           end loop;
           -- Set effective init string
-          FINIT_STR (1 .. FINIT_LEN - FINIT_START + 1) :=
-                 FINIT_STR (FINIT_START .. FINIT_LEN);
-          FINIT_LEN := FINIT_LEN - FINIT_START + 1;
+          Finit_Str (1 .. Finit_Len - Finit_Start + 1) :=
+                 Finit_Str (Finit_Start .. Finit_Len);
+          Finit_Len := Finit_Len - Finit_Start + 1;
           -- Check FINIT col + string length compatible with field width
-          if not AFPX_TYP.IN_FIELD (FIELDS(NO),
-                  (FINIT_SQUARE.ROW, FINIT_SQUARE.COL + FINIT_LEN - 1)) then
-            FILE_ERROR ("Init string too long for this col in this field");
+          if not Afpx_Typ.In_Field (Fields(No),
+                  (Finit_Square.Row, Finit_Square.Col + Finit_Len - 1)) then
+            File_Error ("Init string too long for this col in this field");
           end if;
           -- Update prev_init_square col to last char of init string
-          PREV_INIT_SQUARE.COL := FINIT_SQUARE.COL + FINIT_LEN - 1;
+          Prev_Init_Square.Col := Finit_Square.Col + Finit_Len - 1;
           -- Copy in init string
-          FINIT_INDEX := FIELDS(NO).CHAR_INDEX
-           + FINIT_SQUARE.ROW * FIELDS(NO).WIDTH
-           + FINIT_SQUARE.COL;
-          INIT_STR (FINIT_INDEX .. FINIT_INDEX + FINIT_LEN - 1) :=
-            FINIT_STR (1 .. FINIT_LEN);
+          Finit_Index := Fields(No).Char_Index
+           + Finit_Square.Row * Fields(No).Width
+           + Finit_Square.Col;
+          Init_Str (Finit_Index .. Finit_Index + Finit_Len - 1) :=
+            Finit_Str (1 .. Finit_Len);
         end if;
-        NEXT_LINE;
+        Next_Line;
       end loop;
-      NEXT_LINE;
+      Next_Line;
     end if;
-    if not END_OF ("FIELD") then
-      FILE_ERROR ("END FIELD expected");
+    if not End_Of ("Field") then
+      File_Error ("End Field expected");
     end if;
-    NEXT_LINE;
-  end LOC_LOAD_FIELD;
+    Next_Line;
+  end Loc_Load_Field;
 
-  procedure CHECK_OVERLAP (DSCR_NO  : in DESCRIPTOR_RANGE;
-                           FI1, FI2 : in ABSOLUTE_FIELD_RANGE) is
-    F1 : FIELD_REC renames FIELDS(FI1);
-    F2 : FIELD_REC renames FIELDS(FI2);
+  procedure Check_Overlap (Dscr_No  : in Descriptor_Range;
+                           Fi1, Fi2 : in Absolute_Field_Range) is
+    F1 : Field_Rec renames Fields(Fi1);
+    F2 : Field_Rec renames Fields(Fi2);
 
   begin
             -- F1 above F2
-    if      F1.UPPER_LEFT.ROW  > F2.LOWER_RIGHT.ROW
+    if      F1.Upper_Left.Row  > F2.Lower_Right.Row
             -- F1 below F2
-    or else F1.LOWER_RIGHT.ROW < F2.UPPER_LEFT.ROW
+    or else F1.Lower_Right.Row < F2.Upper_Left.Row
             -- F1 left to F2
-    or else F1.UPPER_LEFT.COL  > F2.LOWER_RIGHT.COL
+    or else F1.Upper_Left.Col  > F2.Lower_Right.Col
             --  F1 right to F2
-    or else F1.LOWER_RIGHT.COL < F2.UPPER_LEFT.COL
+    or else F1.Lower_Right.Col < F2.Upper_Left.Col
     then
       -- No overlap
       return;
     end if;
-    if FI1 = 0 then
-      TEXT_IO.PUT ("ERROR : LIST");
+    if Fi1 = 0 then
+      Text_Io.Put ("Error : List");
     else
-      TEXT_IO.PUT ("ERROR : Field " & AFPX_TYP.FIELD_RANGE'IMAGE(FI1));
+      Text_Io.Put ("Error : Field " & Afpx_Typ.Field_Range'Image(Fi1));
     end if;
-    TEXT_IO.PUT_LINE (" and Field " & AFPX_TYP.FIELD_RANGE'IMAGE(FI2)
+    Text_Io.Put_Line (" and Field " & Afpx_Typ.Field_Range'Image(Fi2)
                       & " of descriptor "
-                      & AFPX_TYP.DESCRIPTOR_RANGE'IMAGE(DSCR_NO)
+                      & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
                       & " overlap.");
-    raise FILE_SYNTAX_ERROR;
-  end CHECK_OVERLAP;
+    raise File_Syntax_Error;
+  end Check_Overlap;
 
-  procedure LOAD_DSCRS (CHECK_ONLY : in BOOLEAN) is
-    DSCR_INDEX : AFPX_TYP.DESCRIPTOR_RANGE;
-    DSCR_NO    : AFPX_TYP.DESCRIPTOR_RANGE;
-    ERROR_MSG : TEXT_HANDLER.TEXT(60);
-    EOF_ALLOWED : BOOLEAN := FALSE;
+  procedure Load_Dscrs (Check_Only : in Boolean) is
+    Dscr_Index : Afpx_Typ.Descriptor_Range;
+    Dscr_No    : Afpx_Typ.Descriptor_Range;
+    Error_Msg : Text_Handler.Text(60);
+    Eof_Allowed : Boolean := False;
 
   begin
     -- Open list file.
     begin
-      DSCR_GET.OPEN (TEXT_HANDLER.VALUE(LIST_FILE_NAME));
+      Dscr_Get.Open (Text_Handler.Value(List_File_Name));
     exception
-      when TEXT_IO.NAME_ERROR =>
-        TEXT_IO.PUT_LINE ("ERROR : File " & TEXT_HANDLER.VALUE(LIST_FILE_NAME)
+      when Text_Io.Name_Error =>
+        Text_Io.Put_Line ("Error : File " & Text_Handler.Value(List_File_Name)
                           & " not found.");
-        raise FILE_NOT_FOUND;
+        raise File_Not_Found;
     end;
     -- If not check_only, delete then create binary files
-    if not CHECK_ONLY then
+    if not Check_Only then
       begin
-        DSCR_IO.OPEN (DSCR_FILE, DSCR_IO.IN_FILE,
-                      TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.DSCR_FILE_NAME);
-        DSCR_IO.DELETE (DSCR_FILE);
+        Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
+                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+        Dscr_Io.Delete (Dscr_File);
       exception
-        when DSCR_IO.NAME_ERROR => null;
+        when Dscr_Io.Name_Error => null;
       end;
-      DSCR_IO.CREATE (DSCR_FILE, DSCR_IO.OUT_FILE,
-                      TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.DSCR_FILE_NAME);
+      Dscr_Io.Create (Dscr_File, Dscr_Io.Out_File,
+                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
 
       begin
-        FLD_IO.OPEN (FLD_FILE, FLD_IO.IN_FILE,
-                     TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.FLD_FILE_NAME);
-        FLD_IO.DELETE (FLD_FILE);
+        Fld_Io.Open (Fld_File, Fld_Io.In_File,
+                     Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+        Fld_Io.Delete (Fld_File);
       exception
-        when FLD_IO.NAME_ERROR => null;
+        when Fld_Io.Name_Error => null;
       end;
-      FLD_IO.CREATE (FLD_FILE, FLD_IO.OUT_FILE,
-                     TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.FLD_FILE_NAME);
+      Fld_Io.Create (Fld_File, Fld_Io.Out_File,
+                     Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
 
       begin
-        INIT_IO.OPEN (INIT_FILE, INIT_IO.IN_FILE,
-                      TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.INIT_FILE_NAME);
-        INIT_IO.DELETE (INIT_FILE);
+        Init_Io.Open (Init_File, Init_Io.In_File,
+                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+        Init_Io.Delete (Init_File);
       exception
-        when INIT_IO.NAME_ERROR => null;
+        when Init_Io.Name_Error => null;
       end;
-      INIT_IO.CREATE (INIT_FILE, INIT_IO.OUT_FILE,
-                      TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.INIT_FILE_NAME);
+      Init_Io.Create (Init_File, Init_Io.Out_File,
+                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
     end if;
 
     -- Initialize the descriptors array as not used
-    for I in AFPX_TYP.DESCRIPTOR_RANGE loop
-      DESCRIPTORS(I).VERSION  := AFPX_TYP.AFPX_VERSION;
-      DESCRIPTORS(I).MODIFIED := FALSE;
-      DESCRIPTORS(I).DSCR_INDEX := AFPX_TYP.DESCRIPTOR_RANGE'FIRST;
-      DESCRIPTORS(I).NB_FIELDS := 0;
+    for I in Afpx_Typ.Descriptor_Range loop
+      Descriptors(I).Version  := Afpx_Typ.Afpx_Version;
+      Descriptors(I).Modified := False;
+      Descriptors(I).Dscr_Index := Afpx_Typ.Descriptor_Range'First;
+      Descriptors(I).Nb_Fields := 0;
     end loop;
 
-    TEXT_HANDLER.SET (ERROR_MSG, "DESCRIPTOR <descriptor_number> expected");
-    DSCR_WORDS := DSCR_GET.GET_WORD_NUMBER;
-    DSCR_GET.GET_WORDS(DSCR_LINE);
+    Text_Handler.Set (Error_Msg, "Descriptor <descriptor_number> expected");
+    Dscr_Words := Dscr_Get.Get_Word_Number;
+    Dscr_Get.Get_Words(Dscr_Line);
 
     -- Loop on descriptors
     -- Descriprors are stored in the descriptor file at DSCR_NO
     -- Fields and init tables are stored in their files at DSCR_INDEX
-    DSCR_INDEX := 1;
-    DSCRS:
+    Dscr_Index := 1;
+    Dscrs:
     loop
-      EOF_ALLOWED := FALSE;
+      Eof_Allowed := False;
       -- DESCRIPTOR line
-      TEXT_HANDLER.SET (ERROR_MSG, "DESCRIPTOR <descriptor_number> expected");
-      if DSCR_WORDS /= 2 then
-        FILE_ERROR (TEXT_HANDLER.VALUE (ERROR_MSG));
+      Text_Handler.Set (Error_Msg, "Descriptor <descriptor_number> expected");
+      if Dscr_Words /= 2 then
+        File_Error (Text_Handler.Value (Error_Msg));
       end if;
-      if FIRST_WORD /= "DESCRIPTOR" then
-        FILE_ERROR (TEXT_HANDLER.VALUE (ERROR_MSG));
+      if First_Word /= "Descriptor" then
+        File_Error (Text_Handler.Value (Error_Msg));
       end if;
       begin
-        DSCR_NO := AFPX_TYP.DESCRIPTOR_RANGE'VALUE (
-                               TEXT_HANDLER.VALUE(DSCR_LINE(2)));
+        Dscr_No := Afpx_Typ.Descriptor_Range'Value (
+                               Text_Handler.Value(Dscr_Line(2)));
       exception
         when others =>
-        FILE_ERROR (TEXT_HANDLER.VALUE (ERROR_MSG));
+        File_Error (Text_Handler.Value (Error_Msg));
       end;
-      TEXT_IO.PUT_LINE ("   descriptor " &
-                        NORMAL(INTEGER(DSCR_NO), 2, GAP => '0'));
+      Text_Io.Put_Line ("   descriptor " &
+                        Normal(Integer(Dscr_No), 2, Gap => '0'));
       -- Dscr no has to be uniq
-      if DESCRIPTORS(DSCR_NO).MODIFIED then
-        FILE_ERROR ("DESCRIPTOR " & AFPX_TYP.DESCRIPTOR_RANGE'IMAGE(DSCR_NO)
+      if Descriptors(Dscr_No).Modified then
+        File_Error ("Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
                                   & " already defined");
       end if;
       -- Init dscr and fields array. No list at init
-      DESCRIPTORS(DSCR_NO).MODIFIED := TRUE;
-      DESCRIPTORS(DSCR_NO).DSCR_INDEX := DSCR_INDEX;
-      DESCRIPTORS(DSCR_NO).NB_FIELDS := 0;
-      INIT_INDEX := 1;
-      INIT_STR := (others => ' ');
-      NEXT_LINE;
+      Descriptors(Dscr_No).Modified := True;
+      Descriptors(Dscr_No).Dscr_Index := Dscr_Index;
+      Descriptors(Dscr_No).Nb_Fields := 0;
+      Init_Index := 1;
+      Init_Str := (others => ' ');
+      Next_Line;
 
-      if FIRST_WORD = "LIST" then
-        LOAD_LIST;
+      if First_Word = "List" then
+        Load_List;
       else
-        FIELDS(0).KIND := PUT;
+        Fields(0).Kind := Put;
       end if;
-      while FIRST_WORD = "FIELD" loop
-        if DESCRIPTORS(DSCR_NO).NB_FIELDS /= AFPX_TYP.FIELD_RANGE 'LAST then
-          DESCRIPTORS(DSCR_NO).NB_FIELDS := DESCRIPTORS(DSCR_NO).NB_FIELDS + 1;
+      while First_Word = "Field" loop
+        if Descriptors(Dscr_No).Nb_Fields /= Afpx_Typ.Field_Range 'Last then
+          Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
         else
-          FILE_ERROR ("Too many fields. Maximum is"
-           & FIELD_RANGE'IMAGE(AFPX_TYP.FIELD_RANGE'LAST) & " per descriptor");
+          File_Error ("Too many fields. Maximum is"
+           & Field_Range'Image(Afpx_Typ.Field_Range'Last) & " per descriptor");
         end if;
-        LOC_LOAD_FIELD (DESCRIPTORS(DSCR_NO).NB_FIELDS);
+        Loc_Load_Field (Descriptors(Dscr_No).Nb_Fields);
       end loop;
 
-      if not END_OF ("DESCRIPTOR") then
-        if DESCRIPTORS(DSCR_NO).NB_FIELDS = 0
-        and then FIELDS(0).KIND = AFPX_TYP.PUT then
+      if not End_Of ("Descriptor") then
+        if Descriptors(Dscr_No).Nb_Fields = 0
+        and then Fields(0).Kind = Afpx_Typ.Put then
           -- No list nor field
-          FILE_ERROR ("LIST, FIELD, or END DESCRIPTOR expected");
+          File_Error ("List, Field, or End Descriptor expected");
         else
           -- Some list or fields
-          FILE_ERROR ("FIELD, or END DESCRIPTOR expected");
+          File_Error ("Field, or End Descriptor expected");
         end if;
       end if;
 
       -- Check no overlapping of fields
-      if FIELDS(0).KIND /= PUT then
+      if Fields(0).Kind /= Put then
         -- Check list and each field
-        for J in 1 .. DESCRIPTORS(DSCR_NO).NB_FIELDS loop
-          CHECK_OVERLAP (DSCR_NO, 0, J);
+        for J in 1 .. Descriptors(Dscr_No).Nb_Fields loop
+          Check_Overlap (Dscr_No, 0, J);
         end loop;
       end if;
       -- Check each field with others
-      for I in 1 .. DESCRIPTORS(DSCR_NO).NB_FIELDS - 1 loop
-        for J in I + 1 .. DESCRIPTORS(DSCR_NO).NB_FIELDS loop
-          CHECK_OVERLAP (DSCR_NO, I, J);
+      for I in 1 .. Descriptors(Dscr_No).Nb_Fields - 1 loop
+        for J in I + 1 .. Descriptors(Dscr_No).Nb_Fields loop
+          Check_Overlap (Dscr_No, I, J);
         end loop;
       end loop;
 
       -- if not check_only, write fields and init
-      if not CHECK_ONLY then
-        FLD_IO.WRITE  (FLD_FILE , FIELDS,   FLD_IO.POSITIVE_COUNT(DSCR_INDEX));
-        INIT_IO.WRITE (INIT_FILE, INIT_STR, INIT_IO.POSITIVE_COUNT(DSCR_INDEX));
+      if not Check_Only then
+        Fld_Io.Write  (Fld_File , Fields,   Fld_Io.Positive_Count(Dscr_Index));
+        Init_Io.Write (Init_File, Init_Str, Init_Io.Positive_Count(Dscr_Index));
       end if;
 
-      DSCR_INDEX := DSCR_INDEX + 1;
-      EOF_ALLOWED := TRUE;
-      NEXT_LINE;
-    end loop DSCRS;
+      Dscr_Index := Dscr_Index + 1;
+      Eof_Allowed := True;
+      Next_Line;
+    end loop Dscrs;
 
     -- Should never go there.
     -- Exit loop DSCRS on exception DSCR_GET.NO_MORE_LINE
-    raise CONSTRAINT_ERROR;
+    raise Constraint_Error;
 
   exception
-    when DSCR_GET.NO_MORE_LINE =>
-      if EOF_ALLOWED then
+    when Dscr_Get.No_More_Line =>
+      if Eof_Allowed then
         -- if not check_only, write descriptors and close files
-        if not CHECK_ONLY then
-          DSCR_IO.WRITE (DSCR_FILE, DESCRIPTORS);
+        if not Check_Only then
+          Dscr_Io.Write (Dscr_File, Descriptors);
         end if;
-        CLOSE(FALSE);
+        Close(False);
       else
-        FILE_ERROR ("Unexpected end of file");
-        CLOSE (TRUE);
-        raise FILE_SYNTAX_ERROR;
+        File_Error ("Unexpected end of file");
+        Close (True);
+        raise File_Syntax_Error;
       end if;
-    when DSCR_GET.TOO_MANY_WORDS =>
-      FILE_ERROR ("Too many words");
-      CLOSE (TRUE);
-      raise FILE_SYNTAX_ERROR;
-    when DSCR_GET.LINE_TOO_LONG =>
-      FILE_ERROR ("Line too long");
-      CLOSE (TRUE);
-      raise FILE_SYNTAX_ERROR;
-    when DSCR_GET.WORD_TOO_LONG =>
-      FILE_ERROR ("Word too long");
-      CLOSE (TRUE);
-      raise FILE_SYNTAX_ERROR;
+    when Dscr_Get.Too_Many_Words =>
+      File_Error ("Too many words");
+      Close (True);
+      raise File_Syntax_Error;
+    when Dscr_Get.Line_Too_Long =>
+      File_Error ("Line too long");
+      Close (True);
+      raise File_Syntax_Error;
+    when Dscr_Get.Word_Too_Long =>
+      File_Error ("Word too long");
+      Close (True);
+      raise File_Syntax_Error;
     when others =>
-      CLOSE (TRUE);
+      Close (True);
       raise;
-  end LOAD_DSCRS;
+  end Load_Dscrs;
 
 
 begin
   -- Help
   begin
-    ARGUMENT.GET_PARAMETER (LIST_FILE_NAME, PARAM_KEY => "h");
-    TEXT_IO.PUT_LINE ("Usage: " & ARGUMENT.GET_PROGRAM_NAME
+    Argument.Get_Parameter (List_File_Name, Param_Key => "h");
+    Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
                     & " [ -l<afpx_list_file> ] [ -d<destination_dir> ]");
     return;
   exception
@@ -630,63 +630,63 @@ begin
   end;
 
   -- Source file and dest path arguments
-  EXPECTED_ARGS := 0;
+  Expected_Args := 0;
   begin
-    ARGUMENT.GET_PARAMETER (LIST_FILE_NAME, PARAM_KEY => "l");
-    if TEXT_HANDLER.EMPTY (LIST_FILE_NAME) then
-      raise ARGUMENT_ERROR;
+    Argument.Get_Parameter (List_File_Name, Param_Key => "l");
+    if Text_Handler.Empty (List_File_Name) then
+      raise Argument_Error;
     end if;
     -- Argument found
-    EXPECTED_ARGS := EXPECTED_ARGS + 1;
+    Expected_Args := Expected_Args + 1;
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
-      TEXT_HANDLER.SET (LIST_FILE_NAME, DEFAULT_LIST_FILE_NAME);
+    when Argument.Argument_Not_Found =>
+      Text_Handler.Set (List_File_Name, Default_List_File_Name);
     when others =>
-      raise ARGUMENT_ERROR;
+      raise Argument_Error;
   end;
 
   begin
-    ARGUMENT.GET_PARAMETER (AFPX_TYP.DEST_PATH, PARAM_KEY => "d");
-    if TEXT_HANDLER.EMPTY (AFPX_TYP.DEST_PATH) then
-      raise ARGUMENT_ERROR;
+    Argument.Get_Parameter (Afpx_Typ.Dest_Path, Param_Key => "d");
+    if Text_Handler.Empty (Afpx_Typ.Dest_Path) then
+      raise Argument_Error;
     end if;
     -- Argument found
-    EXPECTED_ARGS := EXPECTED_ARGS + 1;
+    Expected_Args := Expected_Args + 1;
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
-      TEXT_HANDLER.SET (AFPX_TYP.DEST_PATH, ".");
+    when Argument.Argument_Not_Found =>
+      Text_Handler.Set (Afpx_Typ.Dest_Path, ".");
     when others =>
-      raise ARGUMENT_ERROR;
+      raise Argument_Error;
   end;
 
-  if ARGUMENT.GET_NBRE_ARG /= EXPECTED_ARGS then
-    raise ARGUMENT_ERROR;
+  if Argument.Get_Nbre_Arg /= Expected_Args then
+    raise Argument_Error;
   end if;
 
-  TEXT_IO.PUT_LINE ("Reading " & TEXT_HANDLER.VALUE(LIST_FILE_NAME));
-  TEXT_IO.PUT_LINE ("Writing in " & TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH));
-  TEXT_HANDLER.APPEND (AFPX_TYP.DEST_PATH, "/");
+  Text_Io.Put_Line ("Reading " & Text_Handler.Value(List_File_Name));
+  Text_Io.Put_Line ("Writing in " & Text_Handler.Value(Afpx_Typ.Dest_Path));
+  Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
 
   -- First check
-  TEXT_IO.PUT_LINE ("Checking:");
-  LOAD_DSCRS(TRUE);
+  Text_Io.Put_Line ("Checking:");
+  Load_Dscrs(True);
   -- Then write
-  TEXT_IO.PUT_LINE ("Building:");
-  LOAD_DSCRS(FALSE);
-  TEXT_IO.PUT_LINE ("Done.");
+  Text_Io.Put_Line ("Building:");
+  Load_Dscrs(False);
+  Text_Io.Put_Line ("Done.");
 exception
-  when ARGUMENT_ERROR =>
-    CLOSE (TRUE);
-    TEXT_IO.PUT_LINE ("Argument error. Try -h option.");
-  when FILE_NOT_FOUND =>
-    CLOSE (TRUE);
-    TEXT_IO.PUT_LINE ("Directory or file not found. Try -h option.");
-  when FILE_SYNTAX_ERROR =>
-    CLOSE (TRUE);
-    TEXT_IO.PUT_LINE ("Syntax error.");
+  when Argument_Error =>
+    Close (True);
+    Text_Io.Put_Line ("Argument error. Try -h option.");
+  when File_Not_Found =>
+    Close (True);
+    Text_Io.Put_Line ("Directory or file not found. Try -h option.");
+  when File_Syntax_Error =>
+    Close (True);
+    Text_Io.Put_Line ("Syntax error.");
   when others =>
-    CLOSE (TRUE);
-    TEXT_IO.PUT_LINE ("Unexpected exception.");
+    Close (True);
+    Text_Io.Put_Line ("Unexpected exception.");
     raise;
-end AFPX_BLD;
+end Afpx_Bld;
 

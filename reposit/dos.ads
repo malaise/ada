@@ -1,5 +1,5 @@
-package DOS is
+package Dos is
 
-  procedure SOUND (N_TIMES : in POSITIVE := 1);
+  procedure Sound (N_Times : in Positive := 1);
 
-end DOS;
+end Dos;

@@ -1,104 +1,104 @@
-with CALENDAR;
-with SYSTEM;
-package body TASK_MNG is
+with Calendar;
+with System;
+package body Task_Mng is
 
-  type TASK_STATE_LIST is (STOPPED, RUNNING, ABORTED);
+  type Task_State_List is (Stopped, Running, Aborted);
 
   -- The effective period of task and its state
-  REAL_PERIOD : DURATION := ACTIVATION_PERIOD;
+  Real_Period : Duration := Activation_Period;
 
   -- The current state of the task
-  TASK_STATE : TASK_STATE_LIST := STOPPED;
+  Task_State : Task_State_List := Stopped;
 
-  task THE_TASK is
-    pragma PRIORITY (SYSTEM.PRIORITY'FIRST);
+  task The_Task is
+    pragma Priority (System.Priority'First);
     -- change task's state
-    entry SET_STATE;
+    entry Set_State;
     -- activate
-    entry SCHEDULE;
-  end THE_TASK;
+    entry Schedule;
+  end The_Task;
 
-  procedure SET_TASK_STATE (NEW_STATE : in TASK_STATE_LIST) is
+  procedure Set_Task_State (New_State : in Task_State_List) is
   begin
-    if not THE_TASK'CALLABLE then
-      raise TASK_ABORTED;
+    if not The_Task'Callable then
+      raise Task_Aborted;
     end if;
-    if TASK_STATE = ABORTED then
-      raise TASK_ABORTED;
+    if Task_State = Aborted then
+      raise Task_Aborted;
     end if;
-    if NEW_STATE = TASK_STATE then
+    if New_State = Task_State then
       return;
     end if;
 
-    TASK_STATE := NEW_STATE;
-    if NEW_STATE /= ABORTED then
-      THE_TASK.SET_STATE;
+    Task_State := New_State;
+    if New_State /= Aborted then
+      The_Task.Set_State;
     else
       select
         -- Try to warn the task
-        THE_TASK.SET_STATE;
+        The_Task.Set_State;
       or
         delay 1.0;
         -- kill the task which does not answer
-        abort THE_TASK;
+        abort The_Task;
       end select;
     end if;
-  end SET_TASK_STATE;
+  end Set_Task_State;
 
-  task body THE_TASK is
-    use CALENDAR;
+  task body The_Task is
+    use Calendar;
     -- Next activation date
-    NEXT_GO : CALENDAR.TIME;
+    Next_Go : Calendar.Time;
   begin
     loop
 
       select
-        accept SET_STATE;
+        accept Set_State;
         -- Tasks's state changes
-        if TASK_STATE = RUNNING then
+        if Task_State = Running then
           -- Task starts : activate it immediatly
-          NEXT_GO := CALENDAR.CLOCK;
+          Next_Go := Calendar.Clock;
         end if;
       or
-        when TASK_STATE = RUNNING =>
-          accept SCHEDULE do
+        when Task_State = Running =>
+          accept Schedule do
             -- Call_back in rendez-vous for re-entrance
-            if CALENDAR.CLOCK >= NEXT_GO then
-              NEXT_GO := NEXT_GO + REAL_PERIOD;
+            if Calendar.Clock >= Next_Go then
+              Next_Go := Next_Go + Real_Period;
               begin
-                CALL_BACK;
+                Call_Back;
               exception
                 when others =>
-                  TASK_STATE := ABORTED;
+                  Task_State := Aborted;
               end;
             end if;
-          end SCHEDULE;
+          end Schedule;
       or
         terminate;
       end select;
 
     end loop;
-  end THE_TASK;
+  end The_Task;
 
 
   -- If period is <= 0 return default at init, previous otherwise
   -- If period is <  minimum return minimum
   -- Else return period
-  function CHECK_PERIOD (NEW_PERIOD : DURATION; INIT : BOOLEAN := FALSE)
-                        return DURATION is
+  function Check_Period (New_Period : Duration; Init : Boolean := False)
+                        return Duration is
   begin
-    if NEW_PERIOD <= 0.0 then
-      if not INIT then
-        return REAL_PERIOD;
+    if New_Period <= 0.0 then
+      if not Init then
+        return Real_Period;
       else
-        return DEF_PERIOD;
+        return Def_Period;
       end if;
-    elsif NEW_PERIOD < MIN_PERIOD then
-      return MIN_PERIOD;
+    elsif New_Period < Min_Period then
+      return Min_Period;
     else
-      return NEW_PERIOD;
+      return New_Period;
     end if;
-  end CHECK_PERIOD;
+  end Check_Period;
 
 
   -- At elaboration, the task is ready but not started.
@@ -106,55 +106,55 @@ package body TASK_MNG is
   -- A null or negative period is fobidden and discarded (default value).
   -- If the task if already started, its period is updated.
   -- If the task has been aborted, exception is raised.
-  procedure START (NEW_PERIOD : in DURATION := ACTIVATION_PERIOD) is
+  procedure Start (New_Period : in Duration := Activation_Period) is
   begin
-    REAL_PERIOD := CHECK_PERIOD(NEW_PERIOD);
+    Real_Period := Check_Period(New_Period);
     -- Warn task about new state
-    SET_TASK_STATE (RUNNING);
-  end START;
+    Set_Task_State (Running);
+  end Start;
 
   -- When the the task is started, stops it.
   -- If the task is already stopped, no effect.
   -- If the task has been aborted, exception is raised.
-  procedure STOP is
+  procedure Stop is
   begin
     -- Warn task about new state
-    SET_TASK_STATE (STOPPED);
-  end STOP;
+    Set_Task_State (Stopped);
+  end Stop;
 
   -- Aborts the task, mandatory for the main program to exit.
   -- If the task is already aborted, exception is raised.
-  procedure ABORT_TASK is
+  procedure Abort_Task is
   begin
     -- Try to warn the task
-    SET_TASK_STATE (ABORTED);
-  end ABORT_TASK;
+    Set_Task_State (Aborted);
+  end Abort_Task;
 
 
   -- Returns the current period of activation.
   -- If the task is already aborted, exception is raised.
-  function GET_PERIOD return DURATION is
+  function Get_Period return Duration is
   begin
-    if TASK_STATE /= ABORTED then
-      return REAL_PERIOD;
+    if Task_State /= Aborted then
+      return Real_Period;
     else
-      raise TASK_ABORTED;
+      raise Task_Aborted;
     end if;
-  end GET_PERIOD;
+  end Get_Period;
 
-  procedure SCHEDULE is
+  procedure Schedule is
   begin
-    case TASK_STATE is
-      when STOPPED =>
+    case Task_State is
+      when Stopped =>
         return;
-      when RUNNING =>
-        THE_TASK.SCHEDULE;
-      when ABORTED =>
+      when Running =>
+        The_Task.Schedule;
+      when Aborted =>
         return;
     end case;
-  end SCHEDULE;
+  end Schedule;
 
 begin
   -- store the initial period
-  REAL_PERIOD := CHECK_PERIOD(ACTIVATION_PERIOD, TRUE);
-end TASK_MNG;
+  Real_Period := Check_Period(Activation_Period, True);
+end Task_Mng;

@@ -21,17 +21,17 @@
 
 generic
 
-  type TYP_OBJECT is private;
-  type TYP_INDEX is (<>);
-  with function "<" (A, B: TYP_OBJECT) return BOOLEAN;
-  type TYP_ARRAY is array (TYP_INDEX range <>) of TYP_OBJECT;
+  type Typ_Object is private;
+  type Typ_Index is (<>);
+  with function "<" (A, B: Typ_Object) return Boolean;
+  type Typ_Array is array (Typ_Index range <>) of Typ_Object;
 
-package SORTS is
+package Sorts is
 
-  procedure BUBBLE_SORT (SLICE : in out TYP_ARRAY); -- bubble sort
-  procedure HEAP_SORT   (SLICE : in out TYP_ARRAY); -- heapsort
-  procedure QUICK_SORT  (SLICE : in out TYP_ARRAY); -- quicksort
+  procedure Bubble_Sort (Slice : in out Typ_Array); -- bubble sort
+  procedure Heap_Sort   (Slice : in out Typ_Array); -- heapsort
+  procedure Quick_Sort  (Slice : in out Typ_Array); -- quicksort
 
-  SORT_ERROR : exception;
+  Sort_Error : exception;
 
-end SORTS;
+end Sorts;

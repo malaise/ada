@@ -245,10 +245,10 @@ package body Socket is
                      Length        : out Natural;
                      Set_For_Reply : in Boolean := False) is
     Len : Natural  := Message_Type'Size / Byte_Size;
-    SFR_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
+    Sfr_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
     Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len,
-                        SFR_For_C);
+                        Sfr_For_C);
     if Res >= 0 then
       Length := Res;
       return;

@@ -1,41 +1,41 @@
-package POLYGON_MNG is
+package Polygon_Mng is
 
   -- Representation of a point
-  type FLOAT_POINT_REC is record
-    X : FLOAT;
-    Y : FLOAT;
+  type Float_Point_Rec is record
+    X : Float;
+    Y : Float;
   end record;
   -- Representation of a polygon
-  type FLOAT_POINTS_ARRAY is array (POSITIVE range <>) of FLOAT_POINT_REC;
+  type Float_Points_Array is array (Positive range <>) of Float_Point_Rec;
 
   -- Representations of a point
-  type INT_POINT_REC is record
-    X : INTEGER;
-    Y : INTEGER;
+  type Int_Point_Rec is record
+    X : Integer;
+    Y : Integer;
   end record;
   -- Representation of a polygon
-  type INT_POINTS_ARRAY is array (POSITIVE range <>) of INT_POINT_REC;
+  type Int_Points_Array is array (Positive range <>) of Int_Point_Rec;
 
   -- Relationships between points and areas
-  type BELONGING_RESULTS is (OUT_OF_AREA, SUMMIT, BOUNDARY, INSIDE_AREA);
+  type Belonging_Results is (Out_Of_Area, Summit, Boundary, Inside_Area);
 
-  procedure BELONG_TO_AREA
-      (POLYGON        : in FLOAT_POINTS_ARRAY;
-       POINT_TO_CHECK : in FLOAT_POINT_REC;
-       ACCURACY       : in FLOAT;
-       RESULT         : out BELONGING_RESULTS);
+  procedure Belong_To_Area
+      (Polygon        : in Float_Points_Array;
+       Point_To_Check : in Float_Point_Rec;
+       Accuracy       : in Float;
+       Result         : out Belonging_Results);
 
-  function IS_CONNEXE (POLYGON : FLOAT_POINTS_ARRAY) return BOOLEAN;
+  function Is_Connexe (Polygon : Float_Points_Array) return Boolean;
 
-  procedure BELONG_TO_AREA
-      (POLYGON        : in INT_POINTS_ARRAY;
-       POINT_TO_CHECK : in INT_POINT_REC;
-       ACCURACY       : in FLOAT;
-       RESULT         : out BELONGING_RESULTS);
+  procedure Belong_To_Area
+      (Polygon        : in Int_Points_Array;
+       Point_To_Check : in Int_Point_Rec;
+       Accuracy       : in Float;
+       Result         : out Belonging_Results);
 
-  function IS_CONNEXE (POLYGON : INT_POINTS_ARRAY) return BOOLEAN;
+  function Is_Connexe (Polygon : Int_Points_Array) return Boolean;
 
-  NOT_A_POLYGON : exception;
+  Not_A_Polygon : exception;
 
-end POLYGON_MNG;
+end Polygon_Mng;
 

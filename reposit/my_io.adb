@@ -1,120 +1,120 @@
-package body MY_IO is
+package body My_Io is
 
-  ERROR_MESSAGE  : constant STRING := "WRONG FORMAT. Try again";
-  SEPARE_MESSAGE : constant STRING := " : ";
+  Error_Message  : constant String := "Wrong Format. Try again";
+  Separe_Message : constant String := " : ";
 
-  procedure PUT_LINE(ITEM  : in BOOLEAN;
-                     WIDTH : in TEXT_IO.FIELD := BOOL_IO.DEFAULT_WIDTH;
-                     SET   : in TEXT_IO.TYPE_SET := BOOL_IO.DEFAULT_SETTING) is
+  procedure Put_Line(Item  : in Boolean;
+                     Width : in Text_Io.Field := Bool_Io.Default_Width;
+                     Set   : in Text_Io.Type_Set := Bool_Io.Default_Setting) is
   begin
-    BOOL_IO.PUT(ITEM, WIDTH, SET);
-    TEXT_IO.NEW_LINE;
-  end PUT_LINE;
+    Bool_Io.Put(Item, Width, Set);
+    Text_Io.New_Line;
+  end Put_Line;
 
-  procedure PUT_LINE(ITEM : in CHARACTER) is
+  procedure Put_Line(Item : in Character) is
   begin
-    TEXT_IO.PUT(ITEM);
-    TEXT_IO.NEW_LINE;
-  end PUT_LINE;
+    Text_Io.Put(Item);
+    Text_Io.New_Line;
+  end Put_Line;
 
-  procedure PUT_LINE(ITEM  : in INTEGER;
-                     WIDTH : in TEXT_IO.FIELD := INT_IO.DEFAULT_WIDTH;
-                     BASE  : in TEXT_IO.NUMBER_BASE := INT_IO.DEFAULT_BASE) is
+  procedure Put_Line(Item  : in Integer;
+                     Width : in Text_Io.Field := Int_Io.Default_Width;
+                     Base  : in Text_Io.Number_Base := Int_Io.Default_Base) is
   begin
-    INT_IO.PUT(ITEM, WIDTH, BASE);
-    TEXT_IO.NEW_LINE;
-  end PUT_LINE;
+    Int_Io.Put(Item, Width, Base);
+    Text_Io.New_Line;
+  end Put_Line;
 
-  procedure PUT_LINE(ITEM  : in LONG_LONG_INTEGER;
-                     WIDTH : in TEXT_IO.FIELD := LONG_IO.DEFAULT_WIDTH;
-                     BASE  : in TEXT_IO.NUMBER_BASE := LONG_IO.DEFAULT_BASE) is
+  procedure Put_Line(Item  : in Long_Long_Integer;
+                     Width : in Text_Io.Field := Long_Io.Default_Width;
+                     Base  : in Text_Io.Number_Base := Long_Io.Default_Base) is
   begin
-    LONG_IO.PUT(ITEM, WIDTH, BASE);
-    TEXT_IO.NEW_LINE;
-  end PUT_LINE;
+    Long_Io.Put(Item, Width, Base);
+    Text_Io.New_Line;
+  end Put_Line;
 
-  procedure PUT_LINE(ITEM : in FLOAT;
-                     FORE : in TEXT_IO.FIELD := FLO_IO.DEFAULT_FORE;
-                     AFT  : in TEXT_IO.FIELD := FLO_IO.DEFAULT_AFT;
-                     EXP  : in TEXT_IO.FIELD := DEFAULT_EXP) is
+  procedure Put_Line(Item : in Float;
+                     Fore : in Text_Io.Field := Flo_Io.Default_Fore;
+                     Aft  : in Text_Io.Field := Flo_Io.Default_Aft;
+                     Exp  : in Text_Io.Field := Default_Exp) is
   begin
-    FLO_IO.PUT(ITEM, FORE, AFT, EXP);
-    TEXT_IO.NEW_LINE;
-  end PUT_LINE;
+    Flo_Io.Put(Item, Fore, Aft, Exp);
+    Text_Io.New_Line;
+  end Put_Line;
 
 
-  procedure SAFE_GET(PROMPT : in STRING;
-                     ITEM   : out INTEGER) is
-    STR                       : STRING(1 .. INTEGER'WIDTH);
-    LAST_READ, LAST_CONVERTED : NATURAL;
+  procedure Safe_Get(Prompt : in String;
+                     Item   : out Integer) is
+    Str                       : String(1 .. Integer'Width);
+    Last_Read, Last_Converted : Natural;
   begin
-    PUT(PROMPT & SEPARE_MESSAGE);
+    Put(Prompt & Separe_Message);
     loop
       begin
-        TEXT_IO.GET_LINE(STR, LAST_READ);
-        INT_IO.GET(STR(1 .. LAST_READ), ITEM, LAST_CONVERTED);
-        if LAST_CONVERTED /= LAST_READ then
-          raise TEXT_IO.DATA_ERROR;
+        Text_Io.Get_Line(Str, Last_Read);
+        Int_Io.Get(Str(1 .. Last_Read), Item, Last_Converted);
+        if Last_Converted /= Last_Read then
+          raise Text_Io.Data_Error;
         end if;
         return;
       exception
         when others =>
-          PUT(ERROR_MESSAGE & SEPARE_MESSAGE);
+          Put(Error_Message & Separe_Message);
       end;
     end loop;
-  end SAFE_GET;
+  end Safe_Get;
 
-  procedure SAFE_GET(PROMPT : in STRING;
-                     ITEM   : out LONG_LONG_INTEGER) is
-    STR                       : STRING(1 .. LONG_LONG_INTEGER'WIDTH);
-    LAST_READ, LAST_CONVERTED : NATURAL;
+  procedure Safe_Get(Prompt : in String;
+                     Item   : out Long_Long_Integer) is
+    Str                       : String(1 .. Long_Long_Integer'Width);
+    Last_Read, Last_Converted : Natural;
   begin
-    PUT(PROMPT & SEPARE_MESSAGE);
+    Put(Prompt & Separe_Message);
     loop
       begin
-        TEXT_IO.GET_LINE(STR, LAST_READ);
-        LONG_IO.GET(STR(1 .. LAST_READ), ITEM, LAST_CONVERTED);
-        if LAST_CONVERTED /= LAST_READ then
-          raise TEXT_IO.DATA_ERROR;
+        Text_Io.Get_Line(Str, Last_Read);
+        Long_Io.Get(Str(1 .. Last_Read), Item, Last_Converted);
+        if Last_Converted /= Last_Read then
+          raise Text_Io.Data_Error;
         end if;
         return;
       exception
         when others =>
-          PUT(ERROR_MESSAGE & SEPARE_MESSAGE);
+          Put(Error_Message & Separe_Message);
       end;
     end loop;
-  end SAFE_GET;
+  end Safe_Get;
 
-  procedure SAFE_GET(PROMPT : in STRING;
-                     ITEM   : out FLOAT) is
-    STR                       : STRING(1 .. 132);
-    LAST_READ, LAST_CONVERTED : NATURAL;
-    INT_VAL                   : LONG_LONG_INTEGER;
+  procedure Safe_Get(Prompt : in String;
+                     Item   : out Float) is
+    Str                       : String(1 .. 132);
+    Last_Read, Last_Converted : Natural;
+    Int_Val                   : Long_Long_Integer;
   begin
-    PUT(PROMPT & SEPARE_MESSAGE);
+    Put(Prompt & Separe_Message);
     loop
       begin
         begin
-          TEXT_IO.GET_LINE(STR, LAST_READ);
-          FLO_IO.GET(STR(1 .. LAST_READ), ITEM, LAST_CONVERTED);
-          if LAST_CONVERTED /= LAST_READ then
-            raise TEXT_IO.DATA_ERROR;
+          Text_Io.Get_Line(Str, Last_Read);
+          Flo_Io.Get(Str(1 .. Last_Read), Item, Last_Converted);
+          if Last_Converted /= Last_Read then
+            raise Text_Io.Data_Error;
           end if;
           return;
         exception
           when others =>
-            LONG_IO.GET(STR(1 .. LAST_READ), INT_VAL, LAST_CONVERTED);
-            if LAST_CONVERTED /= LAST_READ then
-              raise TEXT_IO.DATA_ERROR;
+            Long_Io.Get(Str(1 .. Last_Read), Int_Val, Last_Converted);
+            if Last_Converted /= Last_Read then
+              raise Text_Io.Data_Error;
             end if;
-            ITEM := FLOAT(INT_VAL);
+            Item := Float(Int_Val);
             return;
         end;
       exception
         when others =>
-          PUT(ERROR_MESSAGE & SEPARE_MESSAGE);
+          Put(Error_Message & Separe_Message);
       end;
     end loop;
-  end SAFE_GET;
+  end Safe_Get;
 
-end MY_IO;
+end My_Io;

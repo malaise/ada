@@ -1,20 +1,20 @@
-package GET_FLOAT is
+package Get_Float is
 
   -- Get a float (converts int if needed)
   -- May raise CONSTRAINT_ERROR
-  function GET_FLOAT (STR : STRING) return FLOAT;
+  function Get_Float (Str : String) return Float;
 
-  type INT_FLOAT_REC (IS_FLOAT : BOOLEAN := TRUE) is record
-    case IS_FLOAT is
-      when TRUE =>
-        FLOAT_VALUE : FLOAT;
-      when FALSE =>
-        INT_VALUE : INTEGER;
+  type Int_Float_Rec (Is_Float : Boolean := True) is record
+    case Is_Float is
+      when True =>
+        Float_Value : Float;
+      when False =>
+        Int_Value : Integer;
     end case;
   end record;
 
   -- Gets a float or an integer
-  function GET_INT_FLOAT (STR : STRING) return INT_FLOAT_REC;
+  function Get_Int_Float (Str : String) return Int_Float_Rec;
 
-end GET_FLOAT;
+end Get_Float;
 

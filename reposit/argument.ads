@@ -1,6 +1,6 @@
-with TEXT_HANDLER;
+with Text_Handler;
 
-package ARGUMENT is
+package Argument is
 
   -- Extracts arguments from command line:
 
@@ -57,77 +57,77 @@ package ARGUMENT is
 
 
   -- the maximum length supported for one argument
-  MAX_LEN_ARG : constant := 1024;
+  Max_Len_Arg : constant := 1024;
 
 
   -- Key to get any key argument (-<anything>)
-  function ANY_KEY return STRING;
+  function Any_Key return String;
   -- Key to get any not key argument (with no '-' at the beginning)
-  function NOT_KEY return STRING;
+  function Not_Key return String;
   -- Key to get any argument
-  function ANY_ARG return STRING;
+  function Any_Arg return String;
 
 
   -- Most simple way to use
-  function GET_PARAMETER (
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) return STRING;
+  function Get_Parameter (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return String;
 
   -- same but with string and length
-  procedure GET_PARAMETER (
-   PARAMETER : out STRING;
-   PARAM_LENGTH : out NATURAL;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG);
+  procedure Get_Parameter (
+   Parameter : out String;
+   Param_Length : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg);
 
   -- same with text
-  procedure GET_PARAMETER (
-   PARAMETER : in out TEXT_HANDLER.TEXT;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG);
+  procedure Get_Parameter (
+   Parameter : in out Text_Handler.Text;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg);
 
 
   -- result is string and position
-  procedure GET_PARAM_AND_POS (
-   PARAMETER : out STRING;
-   PARAM_LENGTH : out NATURAL;
-   POSITION : out NATURAL;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG);
+  procedure Get_Param_And_Pos (
+   Parameter : out String;
+   Param_Length : out Natural;
+   Position : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg);
 
   -- result is text and position
-  procedure GET_PARAM_AND_POS (
-   PARAMETER : in out TEXT_HANDLER.TEXT;
-   POSITION : out NATURAL;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG);
+  procedure Get_Param_And_Pos (
+   Parameter : in out Text_Handler.Text;
+   Position : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg);
 
 
   -- position only
-  function GET_POSITION (
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) return NATURAL;
+  function Get_Position (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return Natural;
 
   -- number of arguments (0 if no argument)
-  function GET_NBRE_ARG return NATURAL;
+  function Get_Nbre_Arg return Natural;
 
 
   -- analyse of ARGUMENT(0)
 
   -- path of program  from ARGUMENT(0) (with last /)
-  function GET_PROGRAM_PATH return STRING;
-  procedure GET_PROGRAM_PATH (PATH : out STRING;
-                              PATH_LENGTH : out NATURAL);
-  procedure GET_PROGRAM_PATH (PATH : in out TEXT_HANDLER.TEXT);
+  function Get_Program_Path return String;
+  procedure Get_Program_Path (Path : out String;
+                              Path_Length : out Natural);
+  procedure Get_Program_Path (Path : in out Text_Handler.Text);
 
   -- name of program from ARGUMENT(0)
-  function GET_PROGRAM_NAME return STRING;
-  procedure GET_PROGRAM_NAME (NAME : out STRING;
-                              NAME_LENGTH : out NATURAL);
-  procedure GET_PROGRAM_NAME (NAME : in out TEXT_HANDLER.TEXT);
+  function Get_Program_Name return String;
+  procedure Get_Program_Name (Name : out String;
+                              Name_Length : out Natural);
+  procedure Get_Program_Name (Name : in out Text_Handler.Text);
 
-  ARGUMENT_NOT_FOUND, ARGUMENT_TOO_LONG : exception;
+  Argument_Not_Found, Argument_Too_Long : exception;
 
-end ARGUMENT;
+end Argument;
 
 

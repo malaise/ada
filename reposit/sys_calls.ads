@@ -1,35 +1,35 @@
-package SYS_CALLS is
+package Sys_Calls is
 
   -- Call system
-  function CALL_SYSTEM (COMMAND : STRING) return INTEGER;
+  function Call_System (Command : String) return Integer;
 
   -- Unlink a file
-  function UNLINK (FILE_NAME : STRING) return BOOLEAN;
+  function Unlink (File_Name : String) return Boolean;
 
   -- Rename/move a file
-  function RENAME (SRC, DEST : STRING) return BOOLEAN;
+  function Rename (Src, Dest : String) return Boolean;
 
   -- Errno and associated string
-  function ERRNO return INTEGER;
-  function STR_ERROR (ERR : INTEGER) return STRING;
+  function Errno return Integer;
+  function Str_Error (Err : Integer) return String;
 
   -- Put line on stderr
-  procedure PUT_ERROR (STR : in STRING);
-  procedure PUT_LINE_ERROR (STR : in STRING);
-  procedure NEW_LINE_ERROR;
+  procedure Put_Error (Str : in String);
+  procedure Put_Line_Error (Str : in String);
+  procedure New_Line_Error;
 
   -- Getenv and truncates if necessary
-  procedure GETENV (ENV_NAME : in STRING;
-                    ENV_SET   : out BOOLEAN;
-                    ENV_TRUNC : out BOOLEAN;
-                    ENV_VALUE : out STRING;
-                    ENV_LEN   : out NATURAL);
+  procedure Getenv (Env_Name : in String;
+                    Env_Set   : out Boolean;
+                    Env_Trunc : out Boolean;
+                    Env_Value : out String;
+                    Env_Len   : out Natural);
 
   -- Set exit code
-  procedure SET_EXIT_CODE (CODE : in NATURAL);
+  procedure Set_Exit_Code (Code : in Natural);
   -- Set error exit code
-  procedure SET_ERROR_EXIT_CODE;
+  procedure Set_Error_Exit_Code;
 
-end SYS_CALLS; 
+end Sys_Calls; 
 
  

@@ -1,64 +1,64 @@
-with FLO_IO, INT_IO, IO_EXCEPTIONS;
-package body GET_FLOAT is
+with Flo_Io, Int_Io, Io_Exceptions;
+package body Get_Float is
 
-  function GET_FLOAT (STR : STRING) return FLOAT is
-    INT_FLOAT : INT_FLOAT_REC;
+  function Get_Float (Str : String) return Float is
+    Int_Float : Int_Float_Rec;
   begin
-    INT_FLOAT := GET_INT_FLOAT(STR);
-    if INT_FLOAT.IS_FLOAT then
-      return INT_FLOAT.FLOAT_VALUE;
+    Int_Float := Get_Int_Float(Str);
+    if Int_Float.Is_Float then
+      return Int_Float.Float_Value;
     else
-      return FLOAT(INT_FLOAT.INT_VALUE);
+      return Float(Int_Float.Int_Value);
     end if;
-  end GET_FLOAT;
+  end Get_Float;
 
-  function GET_INT_FLOAT (STR : STRING) return INT_FLOAT_REC is
-    F : FLOAT;
-    L : POSITIVE;
-    I : INTEGER;
-    STR_LEN : NATURAL;
-    GOT_A_FLOAT : BOOLEAN;
-    DOT_FOUND : BOOLEAN;
+  function Get_Int_Float (Str : String) return Int_Float_Rec is
+    F : Float;
+    L : Positive;
+    I : Integer;
+    Str_Len : Natural;
+    Got_A_Float : Boolean;
+    Dot_Found : Boolean;
   begin
     -- Locate last significant character of STR
-    STR_LEN := 0;
-    DOT_FOUND := FALSE;
-    for J in reverse STR'RANGE loop
-      if STR_LEN = 0 and then STR(J) /= ' ' then
-        STR_LEN := J + 1 - STR'FIRST;
+    Str_Len := 0;
+    Dot_Found := False;
+    for J in reverse Str'Range loop
+      if Str_Len = 0 and then Str(J) /= ' ' then
+        Str_Len := J + 1 - Str'First;
       end if;
-      if STR(J) = '.' then
-        DOT_FOUND := TRUE;
+      if Str(J) = '.' then
+        Dot_Found := True;
       end if;
     end loop;
-    if STR_LEN = 0 then
-      raise CONSTRAINT_ERROR;
+    if Str_Len = 0 then
+      raise Constraint_Error;
     end if; 
 
-    GOT_A_FLOAT := DOT_FOUND;
-    if DOT_FOUND then
+    Got_A_Float := Dot_Found;
+    if Dot_Found then
       -- Float format
-      FLO_IO.GET(STR, F, L);
+      Flo_Io.Get(Str, F, L);
     else
       -- Int format
-      INT_IO.GET(STR, I, L);
+      Int_Io.Get(Str, I, L);
     end if;
 
 
-    if L /= STR'LAST then
-      raise CONSTRAINT_ERROR;
+    if L /= Str'Last then
+      raise Constraint_Error;
     end if;
 
-    if GOT_A_FLOAT then
-      return (IS_FLOAT => TRUE, FLOAT_VALUE => F);
+    if Got_A_Float then
+      return (Is_Float => True, Float_Value => F);
     else
-      return (IS_FLOAT => FALSE, INT_VALUE => I);
+      return (Is_Float => False, Int_Value => I);
     end if;
 
   exception
     when others =>
-      raise CONSTRAINT_ERROR;
-  end GET_INT_FLOAT;
+      raise Constraint_Error;
+  end Get_Int_Float;
 
-end GET_FLOAT;
+end Get_Float;
 

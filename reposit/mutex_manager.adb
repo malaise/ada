@@ -1,62 +1,62 @@
-package body MUTEX_MANAGER is
+package body Mutex_Manager is
 
   -- the task which implements the mutex
-  task body MUT_TASK is
+  task body Mut_Task is
     -- Mutex is free at creation
-    FREE : BOOLEAN := TRUE;
+    Free : Boolean := True;
   begin
     loop
       select
-        when FREE =>
+        when Free =>
           -- Mutex can be got only if it is free
-          accept MUT_GET do
-            FREE := FALSE;
-          end MUT_GET;
+          accept Mut_Get do
+            Free := False;
+          end Mut_Get;
       or
-        accept MUT_REL(STATUS : out BOOLEAN) do
+        accept Mut_Rel(Status : out Boolean) do
           -- Mutex is released, but status is set to false if it was already free
-          STATUS := not FREE;
-          FREE := TRUE;
-        end MUT_REL;
+          Status := not Free;
+          Free := True;
+        end Mut_Rel;
       or
         -- For clean termination
         terminate;
       end select;
     end loop;
-  end MUT_TASK;
+  end Mut_Task;
 
 
   -- The entry point
-  function GET_MUTEX (A_MUTEX      : MUTEX;
-                      WAITING_TIME : DURATION) return BOOLEAN is
-    RESULT : BOOLEAN;
+  function Get_Mutex (A_Mutex      : Mutex;
+                      Waiting_Time : Duration) return Boolean is
+    Result : Boolean;
   begin
-    if WAITING_TIME < 0.0 then
+    if Waiting_Time < 0.0 then
       -- Negative delay : unconditional waiting
-      A_MUTEX.POINTER.MUT_GET;
-      RESULT := TRUE;
+      A_Mutex.Pointer.Mut_Get;
+      Result := True;
     else
       -- Delay
       select
-        A_MUTEX.POINTER.MUT_GET;
-        RESULT := TRUE;
+        A_Mutex.Pointer.Mut_Get;
+        Result := True;
       or
-        delay WAITING_TIME;
-        RESULT := FALSE;
+        delay Waiting_Time;
+        Result := False;
       end select;
     end if;
-    return RESULT;
-  end GET_MUTEX;
+    return Result;
+  end Get_Mutex;
  
-  procedure RELEASE_MUTEX (A_MUTEX : in MUTEX) is
-    MUT_STATUS : BOOLEAN;
+  procedure Release_Mutex (A_Mutex : in Mutex) is
+    Mut_Status : Boolean;
   begin
     -- Request releasing
-    A_MUTEX.POINTER.MUT_REL(MUT_STATUS);
-    if not MUT_STATUS then
+    A_Mutex.Pointer.Mut_Rel(Mut_Status);
+    if not Mut_Status then
       -- The mutex was already free
-      raise MUTEX_ALREADY_FREE;
+      raise Mutex_Already_Free;
     end if;
-  end RELEASE_MUTEX;
+  end Release_Mutex;
 
-end MUTEX_MANAGER;
+end Mutex_Manager;

@@ -1,2 +1,2 @@
-with TEXT_IO;
-package LONG_IO is new TEXT_IO.INTEGER_IO (LONG_LONG_INTEGER);
+with Text_Io;
+package Long_Io is new Text_Io.Integer_Io (Long_Long_Integer);

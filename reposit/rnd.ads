@@ -1,30 +1,30 @@
 
-package RND is
-  pragma ELABORATE_BODY(RND);
+package Rnd is
+  pragma Elaborate_Body(Rnd);
 
   -- Initialisation of sequence,
   --   on  INIT if 0.0 <= INIT < 1.0
   --   randomly otherwise
-  procedure RANDOMIZE (INIT : in FLOAT := 1.0);
+  procedure Randomize (Init : in Float := 1.0);
 
   generic
-    type NUM is (<>);
+    type Num is (<>);
   -- Next element in sequence: MINI <= R <= MAXI
-  function DISCR_RANDOM (MINI : NUM := NUM'FIRST;
-                         MAXI : NUM := NUM'LAST) return NUM;
+  function Discr_Random (Mini : Num := Num'First;
+                         Maxi : Num := Num'Last) return Num;
 
   -- Next element in sequence: MINI <= R <= MAXI
-  function INT_RANDOM (MINI : INTEGER := 0;
-                       MAXI : INTEGER := 1) return INTEGER;
+  function Int_Random (Mini : Integer := 0;
+                       Maxi : Integer := 1) return Integer;
 
   -- Next element in sequence: MINI <= R < MAXI
-  function FLOAT_RANDOM (MINI : FLOAT := 0.0;
-                         MAXI : FLOAT := 1.0) return FLOAT;
+  function Float_Random (Mini : Float := 0.0;
+                         Maxi : Float := 1.0) return Float;
 
   -- Next element in sequence: MINI <= R < MAXI
-  function DUR_RANDOM (MINI : DURATION := 0.0;
-                       MAXI : DURATION := 1.0) return DURATION;
+  function Dur_Random (Mini : Duration := 0.0;
+                       Maxi : Duration := 1.0) return Duration;
 
 
-end RND;
+end Rnd;
 

@@ -1,4 +1,4 @@
-procedure SCHEDULE is
+procedure Schedule is
 begin
   delay 0.01;
-end SCHEDULE;
+end Schedule;

@@ -1,11 +1,11 @@
-function LOWER_CHAR (CHAR : CHARACTER) return CHARACTER is
-  OFFSET  : constant INTEGER   := CHARACTER'POS('A') - CHARACTER'POS('a');
+function Lower_Char (Char : Character) return Character is
+  Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
 begin
 
-  if CHAR in 'A' .. 'Z' then
-    return CHARACTER'VAL( CHARACTER'POS(CHAR) - OFFSET );
+  if Char in 'A' .. 'Z' then
+    return Character'Val( Character'Pos(Char) - Offset );
   else
-    return CHAR;
+    return Char;
   end if;
 
-end LOWER_CHAR;
+end Lower_Char;

@@ -1,366 +1,366 @@
-with SYS_CALLS, BIT_OPS;
-with DAY_MNG;
-package body DIRECTORY is
-  use SYSTEM;
+with Sys_Calls, Bit_Ops;
+with Day_Mng;
+package body Directory is
+  use System;
 
-  subtype DIR_STR is STRING (1 .. 256);
+  subtype Dir_Str is String (1 .. 256);
 
-  SEPARATOR : constant CHARACTER := '/';
+  Separator : constant Character := '/';
 
   -- For NAME_ERROR else ACCESS_ERROR
-  ENOENT : constant := 2;
+  Enoent : constant := 2;
   -- For OPEN_ERROR else ACCESS_ERROR
-  EINVAL : constant := 22;
+  Einval : constant := 22;
 
-  type C_DIRENT_REC is record
-    D_INO : LONG_INTEGER;
-    D_OFF : LONG_INTEGER;
-    D_RECLEN : SHORT_INTEGER;
-    D_TYPE : CHARACTER;
-    D_NAME : DIR_STR;
+  type C_Dirent_Rec is record
+    D_Ino : Long_Integer;
+    D_Off : Long_Integer;
+    D_Reclen : Short_Integer;
+    D_Type : Character;
+    D_Name : Dir_Str;
   end record;
 
-  type C_STAT_REC is record
-    ST_DEV1 : LONG_INTEGER;
-    ST_DEV2 : LONG_INTEGER;
-    ST_PAD1 : SHORT_INTEGER;
-    ST_INO : LONG_INTEGER;
-    ST_MODE : INTEGER;
-    ST_LINK : INTEGER;
-    ST_UID : INTEGER;
-    ST_GID : INTEGER;
-    ST_RDEV1 : LONG_INTEGER;
-    ST_RDEV2 : LONG_INTEGER;
-    ST_PAD2 : SHORT_INTEGER;
-    ST_SIZE : LONG_INTEGER;
-    ST_BLOCKSIZE : LONG_INTEGER;
-    ST_BLOCKS : LONG_INTEGER;
-    ST_ATIME : LONG_INTEGER;
-    ST_UNUSED1 : LONG_INTEGER;
-    ST_MTIME : LONG_INTEGER;
-    ST_UNUSED2 : LONG_INTEGER;
-    ST_CTIME : LONG_INTEGER;
-    ST_UNUSED3 : LONG_INTEGER;
-    ST_UNUSED4 : LONG_INTEGER;
-    ST_UNUSED5 : LONG_INTEGER;
+  type C_Stat_Rec is record
+    St_Dev1 : Long_Integer;
+    St_Dev2 : Long_Integer;
+    St_Pad1 : Short_Integer;
+    St_Ino : Long_Integer;
+    St_Mode : Integer;
+    St_Link : Integer;
+    St_Uid : Integer;
+    St_Gid : Integer;
+    St_Rdev1 : Long_Integer;
+    St_Rdev2 : Long_Integer;
+    St_Pad2 : Short_Integer;
+    St_Size : Long_Integer;
+    St_Blocksize : Long_Integer;
+    St_Blocks : Long_Integer;
+    St_Atime : Long_Integer;
+    St_Unused1 : Long_Integer;
+    St_Mtime : Long_Integer;
+    St_Unused2 : Long_Integer;
+    St_Ctime : Long_Integer;
+    St_Unused3 : Long_Integer;
+    St_Unused4 : Long_Integer;
+    St_Unused5 : Long_Integer;
   end record;
 
-  type MY_TM_T is record
-    TM_SEC  : INTEGER;
-    TM_MIN  : INTEGER;
-    TM_HOUR : INTEGER;
-    TM_MDAY : INTEGER;
-    TM_MON  : INTEGER;
-    TM_YEAR : INTEGER;
+  type My_Tm_T is record
+    Tm_Sec  : Integer;
+    Tm_Min  : Integer;
+    Tm_Hour : Integer;
+    Tm_Mday : Integer;
+    Tm_Mon  : Integer;
+    Tm_Year : Integer;
   end record;
 
-  function C_STRLEN (S : SYSTEM.ADDRESS) return NATURAL;
-  pragma IMPORT (C, C_STRLEN, "strlen");
+  function C_Strlen (S : System.Address) return Natural;
+  pragma Import (C, C_Strlen, "strlen");
 
-  function C_STRCPY (DEST, SRC : SYSTEM.ADDRESS) return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_STRCPY, "strcpy");
+  function C_Strcpy (Dest, Src : System.Address) return System.Address;
+  pragma Import (C, C_Strcpy, "strcpy");
 
-  function C_MEMCPY (DEST, SRC : SYSTEM.ADDRESS; SIZE : INTEGER) return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_MEMCPY, "memcpy");
+  function C_Memcpy (Dest, Src : System.Address; Size : Integer) return System.Address;
+  pragma Import (C, C_Memcpy, "memcpy");
 
 
-  function STR_FOR_C (STR : STRING) return STRING is
+  function Str_For_C (Str : String) return String is
   begin
-    return STR & ASCII.NUL;
-  end STR_FOR_C;
+    return Str & Ascii.Nul;
+  end Str_For_C;
 
 
-  function C_GETCWD (BUF : SYSTEM.ADDRESS; SIZE : INTEGER) return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_GETCWD, "getcwd");
+  function C_Getcwd (Buf : System.Address; Size : Integer) return System.Address;
+  pragma Import (C, C_Getcwd, "getcwd");
 
   -- Returns current working directory
-  function GET_CURRENT return STRING is
-    ADDR : SYSTEM.ADDRESS;
-    RESULT : STRING (1 .. MAX_DIR_NAME_LEN);
-    LEN : NATURAL;
+  function Get_Current return String is
+    Addr : System.Address;
+    Result : String (1 .. Max_Dir_Name_Len);
+    Len : Natural;
   begin
-    ADDR := C_GETCWD (RESULT(RESULT'FIRST)'ADDRESS, RESULT'LENGTH);
-    if ADDR = SYSTEM.NULL_ADDRESS then
+    Addr := C_Getcwd (Result(Result'First)'Address, Result'Length);
+    if Addr = System.Null_Address then
       -- Buffer too small
-      raise CONSTRAINT_ERROR;
+      raise Constraint_Error;
     end if;
-    LEN := C_STRLEN (RESULT(RESULT'FIRST)'ADDRESS);
-    return RESULT (1 .. LEN);
-  end GET_CURRENT;
+    Len := C_Strlen (Result(Result'First)'Address);
+    return Result (1 .. Len);
+  end Get_Current;
 
-  procedure GET_CURRENT (CUR_DIR : in out TEXT_HANDLER.TEXT) is
+  procedure Get_Current (Cur_Dir : in out Text_Handler.Text) is
   begin
-    TEXT_HANDLER.SET (CUR_DIR, GET_CURRENT);
-  end GET_CURRENT;
+    Text_Handler.Set (Cur_Dir, Get_Current);
+  end Get_Current;
 
 
-  function C_CHDIR (PATH : SYSTEM.ADDRESS) return INTEGER;
-  pragma IMPORT (C, C_CHDIR, "chdir");
+  function C_Chdir (Path : System.Address) return Integer;
+  pragma Import (C, C_Chdir, "chdir");
 
   -- Changes current working directory
-  procedure CHANGE_CURRENT (NEW_DIR : in STRING) is
-    C_NEW_DIR : constant STRING := STR_FOR_C(NEW_DIR);
+  procedure Change_Current (New_Dir : in String) is
+    C_New_Dir : constant String := Str_For_C(New_Dir);
   begin
-    if C_CHDIR (C_NEW_DIR'ADDRESS) = -1 then
-      if SYS_CALLS.ERRNO = ENOENT then
-        raise NAME_ERROR;
+    if C_Chdir (C_New_Dir'Address) = -1 then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
       else
-        raise ACCESS_ERROR;
+        raise Access_Error;
       end if;
     end if;
-  end CHANGE_CURRENT;
+  end Change_Current;
 
 
-  function C_OPENDIR (NAME : SYSTEM.ADDRESS) return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_OPENDIR, "opendir");
+  function C_Opendir (Name : System.Address) return System.Address;
+  pragma Import (C, C_Opendir, "opendir");
 
   -- Opens a directory for list of entries
-  function OPEN (DIR_NAME : in STRING) return DIR_DESC is
-    C_DIR_NAME : constant STRING := STR_FOR_C(DIR_NAME);
-    DESC : DIR_DESC;
+  function Open (Dir_Name : in String) return Dir_Desc is
+    C_Dir_Name : constant String := Str_For_C(Dir_Name);
+    Desc : Dir_Desc;
   begin
-    if DESC.DIR_ADDR /= SYSTEM.NULL_ADDRESS then
-      raise OPEN_ERROR;
+    if Desc.Dir_Addr /= System.Null_Address then
+      raise Open_Error;
     end if;
-    DESC.DIR_ADDR := C_OPENDIR (C_DIR_NAME'ADDRESS);
-    if DESC.DIR_ADDR = SYSTEM.NULL_ADDRESS then
-      if SYS_CALLS.ERRNO = ENOENT then
-        raise NAME_ERROR;
+    Desc.Dir_Addr := C_Opendir (C_Dir_Name'Address);
+    if Desc.Dir_Addr = System.Null_Address then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
       else
-        raise ACCESS_ERROR;
+        raise Access_Error;
       end if;
     end if;
-    return DESC;
-  end OPEN;
+    return Desc;
+  end Open;
 
 
-  function C_READDIR (DIR : SYSTEM.ADDRESS) return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_READDIR, "readdir");
+  function C_Readdir (Dir : System.Address) return System.Address;
+  pragma Import (C, C_Readdir, "readdir");
 
   -- Gets next entry of the opened directory
-  function NEXT_ENTRY (DESC : DIR_DESC) return STRING is
-    DIRENT : C_DIRENT_REC;
-    ADDR, DUMMY : SYSTEM.ADDRESS;
-    LEN : NATURAL;
+  function Next_Entry (Desc : Dir_Desc) return String is
+    Dirent : C_Dirent_Rec;
+    Addr, Dummy : System.Address;
+    Len : Natural;
   begin
     -- Check dir desc
-    if DESC.DIR_ADDR = SYSTEM.NULL_ADDRESS then
-      raise OPEN_ERROR;
+    if Desc.Dir_Addr = System.Null_Address then
+      raise Open_Error;
     end if;
 
     -- Read entry and check validity
-    ADDR := C_READDIR (DESC.DIR_ADDR);
-    if ADDR = SYSTEM.NULL_ADDRESS then
-      raise END_ERROR;
+    Addr := C_Readdir (Desc.Dir_Addr);
+    if Addr = System.Null_Address then
+      raise End_Error;
     end if;
 
     -- Copy address to record
-    DUMMY := C_MEMCPY (DIRENT'ADDRESS, ADDR, DIRENT'SIZE/SYSTEM.STORAGE_UNIT);
-    LEN := C_STRLEN(DIRENT.D_NAME'ADDRESS);
+    Dummy := C_Memcpy (Dirent'Address, Addr, Dirent'Size/System.Storage_Unit);
+    Len := C_Strlen(Dirent.D_Name'Address);
     -- Done
-    return DIRENT.D_NAME (1 .. LEN);
-  end NEXT_ENTRY;
+    return Dirent.D_Name (1 .. Len);
+  end Next_Entry;
 
-  procedure NEXT_ENTRY (DESC : in DIR_DESC; DIR_ENTRY : in out TEXT_HANDLER.TEXT) is
+  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Text_Handler.Text) is
   begin
-    TEXT_HANDLER.SET (DIR_ENTRY, NEXT_ENTRY (DESC));
-  end NEXT_ENTRY;
+    Text_Handler.Set (Dir_Entry, Next_Entry (Desc));
+  end Next_Entry;
 
 
-  procedure C_REWINDDIR (DIR : SYSTEM.ADDRESS);
-  pragma IMPORT (C, C_REWINDDIR, "rewinddir");
+  procedure C_Rewinddir (Dir : System.Address);
+  pragma Import (C, C_Rewinddir, "rewinddir");
 
   -- Reset entries for the first 
-  procedure REWIND (DESC : in DIR_DESC) is
+  procedure Rewind (Desc : in Dir_Desc) is
   begin
     -- Check dir desc
-    if DESC.DIR_ADDR = SYSTEM.NULL_ADDRESS then
-      raise OPEN_ERROR;
+    if Desc.Dir_Addr = System.Null_Address then
+      raise Open_Error;
     end if;
-    C_REWINDDIR (DESC.DIR_ADDR);
-  end REWIND;
+    C_Rewinddir (Desc.Dir_Addr);
+  end Rewind;
 
 
-  procedure C_CLOSEDIR (DIR : SYSTEM.ADDRESS);
-  pragma IMPORT (C, C_CLOSEDIR, "closedir");
+  procedure C_Closedir (Dir : System.Address);
+  pragma Import (C, C_Closedir, "closedir");
 
   -- Closes a directory
-  procedure CLOSE (DESC : in out DIR_DESC) is
+  procedure Close (Desc : in out Dir_Desc) is
   begin
-    if DESC.DIR_ADDR = SYSTEM.NULL_ADDRESS then
-      raise OPEN_ERROR;
+    if Desc.Dir_Addr = System.Null_Address then
+      raise Open_Error;
     end if;
-    C_CLOSEDIR (DESC.DIR_ADDR);
-    DESC.DIR_ADDR := SYSTEM.NULL_ADDRESS;
-  end CLOSE;
+    C_Closedir (Desc.Dir_Addr);
+    Desc.Dir_Addr := System.Null_Address;
+  end Close;
 
 
-  function C_STAT (FILE_NAME : SYSTEM.ADDRESS; STAT : SYSTEM.ADDRESS)
-  return INTEGER;
-  pragma IMPORT (C, C_STAT, "lstat");
+  function C_Stat (File_Name : System.Address; Stat : System.Address)
+  return Integer;
+  pragma Import (C, C_Stat, "lstat");
 
   -- type FILE_KIND_LIST is (FILE, DIR, DEVICE, FIFO_SOCKET);
-  procedure FILE_STAT (FILE_NAME : in STRING;
-                       KIND       : out FILE_KIND_LIST;
-                       RIGHTS     : out NATURAL;
-                       MODIF_TIME : out TIME_T) is
-    C_FILE_NAME : constant STRING := STR_FOR_C (FILE_NAME);
-    STAT : C_STAT_REC;
-    RES : INTEGER;
-    MODE : INTEGER;
-    use BIT_OPS;
+  procedure File_Stat (File_Name : in String;
+                       Kind       : out File_Kind_List;
+                       Rights     : out Natural;
+                       Modif_Time : out Time_T) is
+    C_File_Name : constant String := Str_For_C (File_Name);
+    Stat : C_Stat_Rec;
+    Res : Integer;
+    Mode : Integer;
+    use Bit_Ops;
   begin
-    RES := C_STAT(C_FILE_NAME(C_FILE_NAME'FIRST)'ADDRESS, STAT'ADDRESS);
-    if RES = -1 then
-      if SYS_CALLS.ERRNO = ENOENT then
-        raise NAME_ERROR;
+    Res := C_Stat(C_File_Name(C_File_Name'First)'Address, Stat'Address);
+    if Res = -1 then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
       else
-        raise ACCESS_ERROR;
+        raise Access_Error;
       end if;
     end if;
-    MODE := INTEGER(STAT.ST_MODE) AND 8#00170000#;
-    MODE := SHR (MODE, 12);
-    case MODE is
+    Mode := Integer(Stat.St_Mode) And 8#00170000#;
+    Mode := Shr (Mode, 12);
+    case Mode is
       when 8#14# =>
-        KIND := SOCKET;
+        Kind := Socket;
       when 8#12# =>
-        KIND := LINK;
+        Kind := Link;
       when 8#10# =>
-        KIND := FILE;
+        Kind := File;
       when 8#06# =>
-        KIND := BLOCK_DEVICE;
+        Kind := Block_Device;
       when 8#04# =>
-        KIND := DIR;
+        Kind := Dir;
       when 8#02# =>
-        KIND := CHARACTER_DEVICE;
+        Kind := Character_Device;
       when 8#01# =>
-        KIND := PIPE;
+        Kind := Pipe;
       when others =>
-        KIND := UNKNOWN;
+        Kind := Unknown;
     end case;
-    RIGHTS := INTEGER(STAT.ST_MODE) AND 8#00007777#;
-    MODIF_TIME := TIME_T(STAT.ST_MTIME);
-  end FILE_STAT;
+    Rights := Integer(Stat.St_Mode) And 8#00007777#;
+    Modif_Time := Time_T(Stat.St_Mtime);
+  end File_Stat;
 
-  function C_TIME_TO_TM (TIME_P : SYSTEM.ADDRESS;
-                         MY_TM_P : SYSTEM.ADDRESS)
-           return INTEGER;
-  pragma INTERFACE(C, C_TIME_TO_TM);
-  pragma INTERFACE_NAME(C_TIME_TO_TM, "time_to_tm");
+  function C_Time_To_Tm (Time_P : System.Address;
+                         My_Tm_P : System.Address)
+           return Integer;
+  pragma Interface(C, C_Time_To_Tm);
+  pragma Interface_Name(C_Time_To_Tm, "time_to_tm");
 
-  function TIME_OF (TIME : TIME_T) return CALENDAR.TIME is
-    MY_TM  : MY_TM_T;
-    RESULT : INTEGER;
+  function Time_Of (Time : Time_T) return Calendar.Time is
+    My_Tm  : My_Tm_T;
+    Result : Integer;
   begin
-    RESULT := C_TIME_TO_TM (TIME'ADDRESS, MY_TM'ADDRESS);
-    if RESULT /= 0 then
-      raise CONSTRAINT_ERROR;
+    Result := C_Time_To_Tm (Time'Address, My_Tm'Address);
+    if Result /= 0 then
+      raise Constraint_Error;
     end if;
-    return CALENDAR.TIME_OF(
-      MY_TM.TM_YEAR, MY_TM.TM_MON, MY_TM.TM_MDAY,
-      DAY_MNG.PACK (MY_TM.TM_HOUR, MY_TM.TM_MIN, MY_TM.TM_SEC, 0));
-  end TIME_OF;
+    return Calendar.Time_Of(
+      My_Tm.Tm_Year, My_Tm.Tm_Mon, My_Tm.Tm_Mday,
+      Day_Mng.Pack (My_Tm.Tm_Hour, My_Tm.Tm_Min, My_Tm.Tm_Sec, 0));
+  end Time_Of;
 
 
-  function C_READLINK (PATH : SYSTEM.ADDRESS;
-                       BUF : SYSTEM.ADDRESS; BUFSIZ : INTEGER) return INTEGER;
-  pragma IMPORT (C, C_READLINK, "readlink");
+  function C_Readlink (Path : System.Address;
+                       Buf : System.Address; Bufsiz : Integer) return Integer;
+  pragma Import (C, C_Readlink, "readlink");
 
   -- May raise NAME_ERROR if FILE_NAME does not exist
   --           OPEN_ERROR if FILE_NAME is not a link
-  function READ_ONE_LINK (FILE_NAME : STRING) return STRING is
-    STR : STRING(1 .. MAX_DIR_NAME_LEN);
-    C_FILE_NAME : constant STRING := STR_FOR_C(FILE_NAME);
-    RES : INTEGER;
+  function Read_One_Link (File_Name : String) return String is
+    Str : String(1 .. Max_Dir_Name_Len);
+    C_File_Name : constant String := Str_For_C(File_Name);
+    Res : Integer;
   begin
-    RES := C_READLINK (C_FILE_NAME'ADDRESS, STR'ADDRESS, STR'LENGTH);
-    if RES /= -1 then
-      return STR (1 .. RES);
-    elsif SYS_CALLS.ERRNO = ENOENT then
+    Res := C_Readlink (C_File_Name'Address, Str'Address, Str'Length);
+    if Res /= -1 then
+      return Str (1 .. Res);
+    elsif Sys_Calls.Errno = Enoent then
       -- ENOENT : file not found
-      raise NAME_ERROR;
-    elsif SYS_CALLS.ERRNO = EINVAL then
+      raise Name_Error;
+    elsif Sys_Calls.Errno = Einval then
       -- EINVAL : not a symbolic link
-      raise OPEN_ERROR;
+      raise Open_Error;
     else
-      raise ACCESS_ERROR;
+      raise Access_Error;
     end if;
-  end READ_ONE_LINK;
+  end Read_One_Link;
 
-  procedure EXTRACT_PATH (FROM : in STRING; TO : in out TEXT_HANDLER.TEXT) is
+  procedure Extract_Path (From : in String; To : in out Text_Handler.Text) is
   begin
-    if FROM(FROM'FIRST) /= SEPARATOR then
-      TEXT_HANDLER.EMPTY(TO);
+    if From(From'First) /= Separator then
+      Text_Handler.Empty(To);
       return;
     end if;
-    for I in reverse FROM'RANGE loop
-      if FROM(I) = SEPARATOR then
-        TEXT_HANDLER.SET (TO, FROM(FROM'FIRST .. I - 1));
+    for I in reverse From'Range loop
+      if From(I) = Separator then
+        Text_Handler.Set (To, From(From'First .. I - 1));
         exit;
       end if;
     end loop;
-  end EXTRACT_PATH;
+  end Extract_Path;
 
-  function READ_LINK (FILE_NAME : STRING;
-                      RECURSIVE : BOOLEAN := TRUE) return STRING is
-    DIR, TXT : TEXT_HANDLER.TEXT(MAX_DIR_NAME_LEN);
-    KIND : FILE_KIND_LIST;
-    RIGHTS : NATURAL;
-    MTIME  : TIME_T;
-    use TEXT_HANDLER;
+  function Read_Link (File_Name : String;
+                      Recursive : Boolean := True) return String is
+    Dir, Txt : Text_Handler.Text(Max_Dir_Name_Len);
+    Kind : File_Kind_List;
+    Rights : Natural;
+    Mtime  : Time_T;
+    use Text_Handler;
   begin
     -- Check file_name  is a link
-    FILE_STAT (FILE_NAME, KIND, RIGHTS, MTIME);
-    if KIND /= LINK then
-      raise OPEN_ERROR;
+    File_Stat (File_Name, Kind, Rights, Mtime);
+    if Kind /= Link then
+      raise Open_Error;
     end if;
-    if not RECURSIVE then
-      return READ_ONE_LINK(FILE_NAME);
+    if not Recursive then
+      return Read_One_Link(File_Name);
     end if;
 
     -- Prepend current dir if relative, store path
-    TEXT_HANDLER.SET (TXT, FILE_NAME);
-    if TEXT_HANDLER.VALUE(TXT)(1) /= SEPARATOR then
-      GET_CURRENT(DIR);
-      TEXT_HANDLER.SET (TXT, DIR & '/' & TXT);
+    Text_Handler.Set (Txt, File_Name);
+    if Text_Handler.Value(Txt)(1) /= Separator then
+      Get_Current(Dir);
+      Text_Handler.Set (Txt, Dir & '/' & Txt);
     end if;
-    EXTRACT_PATH(TEXT_HANDLER.VALUE(TXT), DIR);
+    Extract_Path(Text_Handler.Value(Txt), Dir);
 
     loop
       -- Current is a link
-      TEXT_HANDLER.SET (TXT, READ_ONE_LINK(TEXT_HANDLER.VALUE(TXT)));
+      Text_Handler.Set (Txt, Read_One_Link(Text_Handler.Value(Txt)));
 
       -- Prepend path if relative, store path
-      if TEXT_HANDLER.VALUE(TXT)(1) /= SEPARATOR then
-        TEXT_HANDLER.SET (TXT, DIR & '/' & TXT);
+      if Text_Handler.Value(Txt)(1) /= Separator then
+        Text_Handler.Set (Txt, Dir & '/' & Txt);
       end if;
-      EXTRACT_PATH(TEXT_HANDLER.VALUE(TXT), DIR);
+      Extract_Path(Text_Handler.Value(Txt), Dir);
       
-      FILE_STAT(TEXT_HANDLER.VALUE(TXT), KIND, RIGHTS, MTIME);
-      exit when KIND /= LINK;
+      File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime);
+      exit when Kind /= Link;
     end loop;
-    return TEXT_HANDLER.VALUE(TXT);
-  end READ_LINK;
+    return Text_Handler.Value(Txt);
+  end Read_Link;
 
-  procedure READ_LINK (FILE_NAME : in STRING;
-                       TARGET : in out TEXT_HANDLER.TEXT;
-                       RECURSIVE : in BOOLEAN := TRUE) is
+  procedure Read_Link (File_Name : in String;
+                       Target : in out Text_Handler.Text;
+                       Recursive : in Boolean := True) is
   begin
-    TEXT_HANDLER.SET (TARGET, READ_LINK(FILE_NAME, RECURSIVE));
-  end READ_LINK;
+    Text_Handler.Set (Target, Read_Link(File_Name, Recursive));
+  end Read_Link;
 
 
-  function C_FNMATCH (PATTERN : SYSTEM.ADDRESS; STRINGS : SYSTEM.ADDRESS;
-                      FLAGS : INTEGER) return INTEGER;
-  pragma IMPORT (C, C_FNMATCH, "fnmatch");
+  function C_Fnmatch (Pattern : System.Address; Strings : System.Address;
+                      Flags : Integer) return Integer;
+  pragma Import (C, C_Fnmatch, "fnmatch");
 
   -- Does file name match a pattern
-  function FILE_MATCH (FILE_NAME : STRING; TEMPLATE : STRING) return BOOLEAN is
-    C_FILE_NAME : constant STRING := STR_FOR_C (FILE_NAME);
-    C_TEMPLATE : constant STRING := STR_FOR_C (TEMPLATE);
+  function File_Match (File_Name : String; Template : String) return Boolean is
+    C_File_Name : constant String := Str_For_C (File_Name);
+    C_Template : constant String := Str_For_C (Template);
   begin
-    return C_FNMATCH(C_TEMPLATE'ADDRESS, C_FILE_NAME'ADDRESS, 0) = 0;
-  end FILE_MATCH;
-end DIRECTORY;
+    return C_Fnmatch(C_Template'Address, C_File_Name'Address, 0) = 0;
+  end File_Match;
+end Directory;
 
 

@@ -1,2 +1,2 @@
-with TEXT_IO;
-package FLO_IO is new TEXT_IO.FLOAT_IO (FLOAT);
+with Text_Io;
+package Flo_Io is new Text_Io.Float_Io (Float);

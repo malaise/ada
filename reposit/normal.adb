@@ -8,79 +8,79 @@
 --   or at left (not RIGHT) and fill with GAP
 -- GAP : When string is shorter than len, fill empty positions with GAP
 
-function NORMAL (I : INTEGER; LEN : POSITIVE;
- RIGHT : BOOLEAN := TRUE; GAP : CHARACTER := ' ') return STRING is
-  L : POSITIVE := INTEGER'IMAGE(I)'LAST;
-  SI : STRING (1 .. L) := INTEGER'IMAGE(I);
-  SM : STRING (1 .. LEN);
+function Normal (I : Integer; Len : Positive;
+ Right : Boolean := True; Gap : Character := ' ') return String is
+  L : Positive := Integer'Image(I)'Last;
+  Si : String (1 .. L) := Integer'Image(I);
+  Sm : String (1 .. Len);
 
   -- Real -> integer : round or trunc
-  function TRUNC (X : in FLOAT) return INTEGER is
-    INT : INTEGER;
+  function Trunc (X : in Float) return Integer is
+    Int : Integer;
   begin
-    INT := INTEGER (X);
+    Int := Integer (X);
     -- Adjust to 1
     if X > 0.0 then
       -- If x>0 error is 1 too much
-      if FLOAT (INT) > X then INT := INT - 1; end if;
-      return INT;
+      if Float (Int) > X then Int := Int - 1; end if;
+      return Int;
     else
       -- If x<0 error is 1 too less
-      if FLOAT (INT) < X then INT := INT + 1; end if;
-      return INT;
+      if Float (Int) < X then Int := Int + 1; end if;
+      return Int;
     end if;
   exception
-    when others => raise CONSTRAINT_ERROR;
-  end TRUNC;
+    when others => raise Constraint_Error;
+  end Trunc;
 
-  function ROUND (X : in FLOAT) return INTEGER is
-    RESULTAT : INTEGER;
+  function Round (X : in Float) return Integer is
+    Resultat : Integer;
   begin
     if X > 0.0 then
-      RESULTAT := TRUNC  (X + 0.5);
+      Resultat := Trunc  (X + 0.5);
     else
-      RESULTAT := TRUNC  (X - 0.5);
+      Resultat := Trunc  (X - 0.5);
     end if;
-    return RESULTAT;
+    return Resultat;
   exception
-    when others => raise CONSTRAINT_ERROR;
-  end ROUND;
+    when others => raise Constraint_Error;
+  end Round;
 
 
 begin
   -- Skip first char if space
-  if SI(1) = ' ' then
+  if Si(1) = ' ' then
     L := L - 1;
-    SI (1 .. L) := SI (2 .. L + 1);
+    Si (1 .. L) := Si (2 .. L + 1);
   end if;
-  if L > LEN then
+  if L > Len then
     -- Round I at LEN digits
     declare
       -- Round I at len digits
-      R : FLOAT := FLOAT(I) / (10.0 ** (L-LEN) );
-      NI : INTEGER := INTEGER(ROUND (R));
-      NL : INTEGER := INTEGER'IMAGE(NI)'LAST;
+      R : Float := Float(I) / (10.0 ** (L-Len) );
+      Ni : Integer := Integer(Round (R));
+      Nl : Integer := Integer'Image(Ni)'Last;
     begin
       -- Correction when i.e. 999.6 is rounded to 1000 : keep 999
-      if INTEGER'IMAGE(NI)(1) = ' ' then
-        NL := NL - 1;
+      if Integer'Image(Ni)(1) = ' ' then
+        Nl := Nl - 1;
       end if;
-      if NL > LEN then
-        NI := INTEGER(TRUNC (R) );
+      if Nl > Len then
+        Ni := Integer(Trunc (R) );
       end if;
       -- Should be OK now
-      return NORMAL (NI, LEN, RIGHT);
+      return Normal (Ni, Len, Right);
     end;
   else -- L <= LEN
     -- Gap with gap_character, in SM
-    if RIGHT then
-      SM (1 .. LEN-L) := (others => GAP);
-      SM (LEN-L+1 .. LEN) := SI (1 ..L);
+    if Right then
+      Sm (1 .. Len-L) := (others => Gap);
+      Sm (Len-L+1 .. Len) := Si (1 ..L);
     else
-      SM (1 .. L) := SI (1 .. L);
-      SM (L+1 .. LEN) := (others => GAP);
+      Sm (1 .. L) := Si (1 .. L);
+      Sm (L+1 .. Len) := (others => Gap);
     end if;
-    return SM;
+    return Sm;
   end if;
-end NORMAL;
+end Normal;
 

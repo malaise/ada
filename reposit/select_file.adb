@@ -1,58 +1,58 @@
-with TEXT_HANDLER, CON_IO, AFPX, DIRECTORY, DIR_MNG, STRING_MNG;
+with Text_Handler, Con_Io, Afpx, Directory, Dir_Mng, String_Mng;
 
-function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
-                      CURRENT_FILE : STRING;
-                      FOR_READ : BOOLEAN) return STRING is
+function Select_File (Descriptor : Afpx.Descriptor_Range;
+                      Current_File : String;
+                      For_Read : Boolean) return String is
 
-  CURSOR_FIELD : AFPX.FIELD_RANGE;
-  CURSOR_COL   : CON_IO.COL_RANGE;
-  REDISPLAY    : BOOLEAN;
-  PTG_RESULT   : AFPX.RESULT_REC;
+  Cursor_Field : Afpx.Field_Range;
+  Cursor_Col   : Con_Io.Col_Range;
+  Redisplay    : Boolean;
+  Ptg_Result   : Afpx.Result_Rec;
 
   -- Text/get fields
   -- 1 is the fixed title
-  TITLE_FLD    : constant AFPX.FIELD_RANGE := 2;
-  FILE_FLD     : constant AFPX.FIELD_RANGE := 4;
-  GET_FLD      : constant AFPX.FIELD_RANGE := 5;
-  INFO_FLD     : constant AFPX.FIELD_RANGE := 6;
+  Title_Fld    : constant Afpx.Field_Range := 2;
+  File_Fld     : constant Afpx.Field_Range := 4;
+  Get_Fld      : constant Afpx.Field_Range := 5;
+  Info_Fld     : constant Afpx.Field_Range := 6;
   -- The scroll buttons
-  subtype LIST_SCROLL_FLD_RANGE is AFPX.FIELD_RANGE range 7 .. 12;
+  subtype List_Scroll_Fld_Range is Afpx.Field_Range range 7 .. 12;
   -- Action buttons
-  REREAD_FLD   : constant AFPX.FIELD_RANGE := 13;
-  OK_FLD       : constant AFPX.FIELD_RANGE := 14;
-  CANCEL_FLD   : constant AFPX.FIELD_RANGE := 15;
+  Reread_Fld   : constant Afpx.Field_Range := 13;
+  Ok_Fld       : constant Afpx.Field_Range := 14;
+  Cancel_Fld   : constant Afpx.Field_Range := 15;
 
-  type ERROR_LIST is (E_FILE_NOT_FOUND, E_IO_ERROR, E_FILE_NAME);
+  type Error_List is (E_File_Not_Found, E_Io_Error, E_File_Name);
 
-  GET_WIDTH    : NATURAL := 0;
-  GET_CONTENT  : AFPX.STR_TXT;
-  GET_OK       : BOOLEAN;
-  DIR_LIST     : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-  FILE_REC     : DIR_MNG.FILE_ENTRY_REC;
-  VALID        : BOOLEAN;
-  POS_IN_LIST  : NATURAL;
-  IS_A_DIR     : BOOLEAN;
+  Get_Width    : Natural := 0;
+  Get_Content  : Afpx.Str_Txt;
+  Get_Ok       : Boolean;
+  Dir_List     : Dir_Mng.File_List_Mng.List_Type;
+  File_Rec     : Dir_Mng.File_Entry_Rec;
+  Valid        : Boolean;
+  Pos_In_List  : Natural;
+  Is_A_Dir     : Boolean;
 
 
   -- Return width of GET field
-  function GET_GET_WIDTH return AFPX.WIDTH_RANGE is
-    HEIGHT : AFPX.HEIGHT_RANGE;
+  function Get_Get_Width return Afpx.Width_Range is
+    Height : Afpx.Height_Range;
   begin
-    if GET_WIDTH = 0 then
-      AFPX.GET_FIELD_SIZE (GET_FLD, HEIGHT, GET_WIDTH);
+    if Get_Width = 0 then
+      Afpx.Get_Field_Size (Get_Fld, Height, Get_Width);
     end if;
-    return GET_WIDTH;
-  end GET_GET_WIDTH;
+    return Get_Width;
+  end Get_Get_Width;
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure PARSE_SPACES (TXT : in out TEXT_HANDLER.TEXT;
-                          OK : out BOOLEAN) is
-    STR : constant STRING := TEXT_HANDLER.VALUE(TXT);
-    L : NATURAL;
+  procedure Parse_Spaces (Txt : in out Text_Handler.Text;
+                          Ok : out Boolean) is
+    Str : constant String := Text_Handler.Value(Txt);
+    L : Natural;
   begin
     L := 0;
-    for I in reverse STR'RANGE loop
-      if STR(I) /= ' ' and then STR(I) /= ASCII.HT then
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' and then Str(I) /= Ascii.Ht then
         -- Significant char
         if L = 0 then
           L := I;
@@ -61,346 +61,346 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
         -- space
         if L /= 0 then
           -- Space before significant char
-          OK := FALSE;
+          Ok := False;
           return;
         end if;
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
-    TEXT_HANDLER.SET (TXT, STR(1 .. L));
-    OK := TRUE;
-  end PARSE_SPACES;
+    Text_Handler.Set (Txt, Str(1 .. L));
+    Ok := True;
+  end Parse_Spaces;
 
   -- Put file name
-  procedure PUT_FILE (FILE_NAME : in STRING) is
-    HEIGHT : AFPX.HEIGHT_RANGE;
-    WIDTH  : AFPX.WIDTH_RANGE;
+  procedure Put_File (File_Name : in String) is
+    Height : Afpx.Height_Range;
+    Width  : Afpx.Width_Range;
   begin
-    AFPX.GET_FIELD_SIZE(FILE_FLD, HEIGHT, WIDTH);
-    AFPX.ENCODE_FIELD(FILE_FLD, (0, 0), 
-      STRING_MNG.PROCUSTE(FILE_NAME, WIDTH));
-  end PUT_FILE;
+    Afpx.Get_Field_Size(File_Fld, Height, Width);
+    Afpx.Encode_Field(File_Fld, (0, 0), 
+      String_Mng.Procuste(File_Name, Width));
+  end Put_File;
 
   -- Encode in info field
-  procedure ENCODE_INFO (STR : in STRING) is
+  procedure Encode_Info (Str : in String) is
   begin
-    AFPX.CLEAR_FIELD (INFO_FLD);
-    AFPX.ENCODE_FIELD (INFO_FLD, (0, 0), STR);
-  end ENCODE_INFO;
+    Afpx.Clear_Field (Info_Fld);
+    Afpx.Encode_Field (Info_Fld, (0, 0), Str);
+  end Encode_Info;
 
   -- Scroll the list
-  procedure SCROLL (FLD_NO : in LIST_SCROLL_FLD_RANGE) is
+  procedure Scroll (Fld_No : in List_Scroll_Fld_Range) is
   begin
-    case FLD_NO is
-      when 07 => AFPX.UPDATE_LIST(AFPX.TOP);
-      when 08 => AFPX.UPDATE_LIST(AFPX.PAGE_UP);
-      when 09 => AFPX.UPDATE_LIST(AFPX.UP);
-      when 10 => AFPX.UPDATE_LIST(AFPX.DOWN);
-      when 11 => AFPX.UPDATE_LIST(AFPX.PAGE_DOWN);
-      when 12 => AFPX.UPDATE_LIST(AFPX.BOTTOM);
+    case Fld_No is
+      when 07 => Afpx.Update_List(Afpx.Top);
+      when 08 => Afpx.Update_List(Afpx.Page_Up);
+      when 09 => Afpx.Update_List(Afpx.Up);
+      when 10 => Afpx.Update_List(Afpx.Down);
+      when 11 => Afpx.Update_List(Afpx.Page_Down);
+      when 12 => Afpx.Update_List(Afpx.Bottom);
     end case;
-  end SCROLL;
+  end Scroll;
 
   -- Ptg on OK (and cancel) buttons
-  function CONFIRM return BOOLEAN is
-    CURSOR_FIELD : AFPX.FIELD_RANGE := 1;
-    CURSOR_COL : CON_IO.COL_RANGE := 0;
-    REDISPLAY : BOOLEAN := FALSE;
-    PTG_RESULT : AFPX.RESULT_REC;
-    GET_PROT : BOOLEAN;
-    GET_ACT : BOOLEAN;
-    RES : BOOLEAN;
+  function Confirm return Boolean is
+    Cursor_Field : Afpx.Field_Range := 1;
+    Cursor_Col : Con_Io.Col_Range := 0;
+    Redisplay : Boolean := False;
+    Ptg_Result : Afpx.Result_Rec;
+    Get_Prot : Boolean;
+    Get_Act : Boolean;
+    Res : Boolean;
   begin
     -- Protect get field
-    AFPX.GET_FIELD_PROTECTION (GET_FLD, GET_PROT);
-    if not GET_PROT then
-      AFPX.SET_FIELD_PROTECTION (GET_FLD, TRUE);
+    Afpx.Get_Field_Protection (Get_Fld, Get_Prot);
+    if not Get_Prot then
+      Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
-    AFPX.SET_FIELD_COLORS(GET_FLD, BACKGROUND => CON_IO.BLACK);
+    Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Black);
     loop
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
-              RES := TRUE;
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
+              Res := True;
               exit;
-            when AFPX.ESCAPE_KEY =>
-              RES := FALSE;
+            when Afpx.Escape_Key =>
+              Res := False;
               exit;
-            when AFPX.BREAK_KEY =>
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
-            when LIST_SCROLL_FLD_RANGE'FIRST .. LIST_SCROLL_FLD_RANGE'LAST =>
-              SCROLL(PTG_RESULT.FIELD_NO);
-            when OK_FLD =>
-              RES := TRUE;
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
+              Scroll(Ptg_Result.Field_No);
+            when Ok_Fld =>
+              Res := True;
               exit;
-            when CANCEL_FLD =>
-              RES := FALSE;
+            when Cancel_Fld =>
+              Res := False;
               exit;
             when others =>
               null;
           end case;
-        when AFPX.FD_EVENT =>
-          FD_CALLBACK;
-        when AFPX.TIMER_EVENT =>
-          TIMER_CALLBACK;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
+        when Afpx.Fd_Event =>
+          Fd_Callback;
+        when Afpx.Timer_Event =>
+          Timer_Callback;
+        when Afpx.Refresh =>
+          Redisplay := True;
       end case;
     end loop;
     -- Restore GET field
-    AFPX.GET_FIELD_ACTIVATION (GET_FLD, GET_ACT);
-    AFPX.RESET_FIELD (GET_FLD, RESET_STRING => FALSE);
-    AFPX.SET_FIELD_ACTIVATION (GET_FLD, GET_ACT);
-    if not GET_PROT then
-      AFPX.SET_FIELD_PROTECTION (GET_FLD, FALSE);
+    Afpx.Get_Field_Activation (Get_Fld, Get_Act);
+    Afpx.Reset_Field (Get_Fld, Reset_String => False);
+    Afpx.Set_Field_Activation (Get_Fld, Get_Act);
+    if not Get_Prot then
+      Afpx.Set_Field_Protection (Get_Fld, False);
     end if;
-    return RES;
-  end CONFIRM;
+    return Res;
+  end Confirm;
 
 
-  procedure ERROR (MSG : in ERROR_LIST) is
-    RES : BOOLEAN;
+  procedure Error (Msg : in Error_List) is
+    Res : Boolean;
   begin
-    CON_IO.BELL(1);
-    AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
-    AFPX.SET_FIELD_ACTIVATION (REREAD_FLD, FALSE);
-    AFPX.SET_FIELD_ACTIVATION (CANCEL_FLD, FALSE);
-    AFPX.SET_FIELD_COLORS(INFO_FLD, FOREGROUND => CON_IO.ORANGE,
-                                    BLINK_STAT => CON_IO.BLINK);
-    case MSG is
-      when E_FILE_NOT_FOUND     => ENCODE_INFO ("File not found");
-      when E_IO_ERROR           => ENCODE_INFO ("Error accessing file");
-      when E_FILE_NAME          => ENCODE_INFO ("Error invalid file name");
+    Con_Io.Bell(1);
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Set_Field_Activation (Reread_Fld, False);
+    Afpx.Set_Field_Activation (Cancel_Fld, False);
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
+                                    Blink_Stat => Con_Io.Blink);
+    case Msg is
+      when E_File_Not_Found     => Encode_Info ("File not found");
+      when E_Io_Error           => Encode_Info ("Error accessing file");
+      when E_File_Name          => Encode_Info ("Error invalid file name");
     end case;
 
-    RES := CONFIRM;
+    Res := Confirm;
 
-    AFPX.RESET_FIELD(INFO_FLD);
-    AFPX.SET_FIELD_ACTIVATION (CANCEL_FLD, TRUE);
-    AFPX.SET_FIELD_ACTIVATION (REREAD_FLD, TRUE);
-    AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, FALSE);
-    CURSOR_FIELD := GET_FLD;
-  end ERROR;
+    Afpx.Reset_Field(Info_Fld);
+    Afpx.Set_Field_Activation (Cancel_Fld, True);
+    Afpx.Set_Field_Activation (Reread_Fld, True);
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+    Cursor_Field := Get_Fld;
+  end Error;
 
-  function IS_DIR (FILE : STRING) return BOOLEAN is
-    KIND : DIRECTORY.FILE_KIND_LIST;
-    RIGHTS : NATURAL;
-    MTIME : DIRECTORY.TIME_T;
-    FILE_TXT : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
-    use DIRECTORY;
+  function Is_Dir (File : String) return Boolean is
+    Kind : Directory.File_Kind_List;
+    Rights : Natural;
+    Mtime : Directory.Time_T;
+    File_Txt : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+    use Directory;
   begin
-    TEXT_HANDLER.SET (FILE_TXT, FILE);
-    DIRECTORY.FILE_STAT(TEXT_HANDLER.VALUE(FILE_TXT), KIND, RIGHTS, MTIME);
-    if KIND = DIRECTORY.LINK then
-      DIRECTORY.READ_LINK(TEXT_HANDLER.VALUE(FILE_TXT), FILE_TXT);
-      DIRECTORY.FILE_STAT(TEXT_HANDLER.VALUE(FILE_TXT), KIND, RIGHTS, MTIME);
+    Text_Handler.Set (File_Txt, File);
+    Directory.File_Stat(Text_Handler.Value(File_Txt), Kind, Rights, Mtime);
+    if Kind = Directory.Link then
+      Directory.Read_Link(Text_Handler.Value(File_Txt), File_Txt);
+      Directory.File_Stat(Text_Handler.Value(File_Txt), Kind, Rights, Mtime);
     end if;
-    return KIND = DIRECTORY.DIR;
-  end IS_DIR;
+    return Kind = Directory.Dir;
+  end Is_Dir;
 
-  procedure CHANGE_DIR (NEW_DIR : in STRING) is
-    HEIGHT : AFPX.HEIGHT_RANGE;
-    WIDTH  : AFPX.WIDTH_RANGE;
-    DIR_ITEM : DIR_MNG.FILE_ENTRY_REC;
-    CHAR : CHARACTER;
-    AFPX_ITEM : AFPX.LINE_REC;
+  procedure Change_Dir (New_Dir : in String) is
+    Height : Afpx.Height_Range;
+    Width  : Afpx.Width_Range;
+    Dir_Item : Dir_Mng.File_Entry_Rec;
+    Char : Character;
+    Afpx_Item : Afpx.Line_Rec;
   begin
     -- Clear get field
-    CURSOR_COL := 0;
+    Cursor_Col := 0;
 
     -- change dir
-    DIRECTORY.CHANGE_CURRENT(NEW_DIR);
+    Directory.Change_Current(New_Dir);
     -- Title
-    if DIRECTORY.GET_CURRENT = "/" then
-      PUT_FILE ("/*");
+    if Directory.Get_Current = "/" then
+      Put_File ("/*");
     else
-      PUT_FILE (DIRECTORY.GET_CURRENT & "/*");
+      Put_File (Directory.Get_Current & "/*");
     end if;
 
     -- Set AFPX list
     -- Get list width
-    AFPX.GET_FIELD_SIZE(AFPX.LIST_FIELD_NO, HEIGHT, WIDTH);
+    Afpx.Get_Field_Size(Afpx.List_Field_No, Height, Width);
     -- Read dir and move to first
-    DIR_MNG.FILE_LIST_MNG.DELETE_LIST (DIR_LIST);
-    DIR_MNG.LIST_DIR (DIR_LIST, ".");
-    DIR_MNG.FILE_SORT (DIR_LIST);
-    DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST, DIR_MNG.FILE_LIST_MNG.NEXT,
-                                 0 , FALSE);
+    Dir_Mng.File_List_Mng.Delete_List (Dir_List);
+    Dir_Mng.List_Dir (Dir_List, ".");
+    Dir_Mng.File_Sort (Dir_List);
+    Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
+                                 0 , False);
     -- Clear AFPX list
-    AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
+    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
     loop
-      DIR_MNG.FILE_LIST_MNG.READ (DIR_LIST, DIR_ITEM,
-                                  DIR_MNG.FILE_LIST_MNG.CURRENT);
-      case DIR_ITEM.KIND is
-        when DIRECTORY.FILE =>
-          CHAR := ' ';
-        when DIRECTORY.DIR =>
-          CHAR := '/';
-        when DIRECTORY.LINK =>
-          CHAR := '@';
-        when DIRECTORY.BLOCK_DEVICE | DIRECTORY.CHARACTER_DEVICE =>
-          CHAR := '>';
-        when DIRECTORY.PIPE =>
-          CHAR := '|';
-        when DIRECTORY.SOCKET =>
-          CHAR := '=';
-        when DIRECTORY.UNKNOWN =>
+      Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
+                                  Dir_Mng.File_List_Mng.Current);
+      case Dir_Item.Kind is
+        when Directory.File =>
+          Char := ' ';
+        when Directory.Dir =>
+          Char := '/';
+        when Directory.Link =>
+          Char := '@';
+        when Directory.Block_Device | Directory.Character_Device =>
+          Char := '>';
+        when Directory.Pipe =>
+          Char := '|';
+        when Directory.Socket =>
+          Char := '=';
+        when Directory.Unknown =>
           -- device, fifo ...
-          CHAR := '?';
+          Char := '?';
       end case;
-      AFPX_ITEM.LEN := WIDTH;
-      AFPX_ITEM.STR (1 .. WIDTH) :=
-        STRING_MNG.PROCUSTE(DIR_ITEM.NAME (1 .. DIR_ITEM.LEN) & ' ' & CHAR,
-                            WIDTH);
-      AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, AFPX_ITEM);
-      exit when DIR_MNG.FILE_LIST_MNG.GET_POSITION (DIR_LIST)
-           = DIR_MNG.FILE_LIST_MNG.LIST_LENGTH (DIR_LIST);
-      DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST);
+      Afpx_Item.Len := Width;
+      Afpx_Item.Str (1 .. Width) :=
+        String_Mng.Procuste(Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
+                            Width);
+      Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
+      exit when Dir_Mng.File_List_Mng.Get_Position (Dir_List)
+           = Dir_Mng.File_List_Mng.List_Length (Dir_List);
+      Dir_Mng.File_List_Mng.Move_To (Dir_List);
     end loop;
     -- Move to beginning of AFPX list
-    AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
-       0, FALSE);
-    AFPX.UPDATE_LIST(AFPX.TOP);
+    Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+       0, False);
+    Afpx.Update_List(Afpx.Top);
 
-  end CHANGE_DIR;
+  end Change_Dir;
 
 begin
-  AFPX.USE_DESCRIPTOR(DESCRIPTOR);
+  Afpx.Use_Descriptor(Descriptor);
 
   -- Call client specific init
-  INIT_PROCEDURE;
+  Init_Procedure;
 
-  AFPX.ENCODE_FIELD (INFO_FLD, (0, 0), "Select or enter file name");
+  Afpx.Encode_Field (Info_Fld, (0, 0), "Select or enter file name");
   -- Title
-  if FOR_READ then
-    AFPX.ENCODE_FIELD (TITLE_FLD, (0, 0), "Load a file");
+  if For_Read then
+    Afpx.Encode_Field (Title_Fld, (0, 0), "Load a file");
   else
-    AFPX.ENCODE_FIELD (TITLE_FLD, (0, 0), "Save in a file");
+    Afpx.Encode_Field (Title_Fld, (0, 0), "Save in a file");
   end if;
 
   -- Encode current file name in get field
-  if CURRENT_FILE'LENGTH <= GET_GET_WIDTH then
-    TEXT_HANDLER.SET (GET_CONTENT, 
-      STRING_MNG.PROCUSTE(CURRENT_FILE, GET_GET_WIDTH));
+  if Current_File'Length <= Get_Get_Width then
+    Text_Handler.Set (Get_Content, 
+      String_Mng.Procuste(Current_File, Get_Get_Width));
   else
-    TEXT_HANDLER.EMPTY(GET_CONTENT);
+    Text_Handler.Empty(Get_Content);
   end if;
-  AFPX.ENCODE_FIELD (GET_FLD, (0, 0), GET_CONTENT);
+  Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
 
   
 
   -- File name
-  CHANGE_DIR (".");
+  Change_Dir (".");
 
-  CURSOR_FIELD := GET_FLD;
-  REDISPLAY := FALSE;
+  Cursor_Field := Get_Fld;
+  Redisplay := False;
   loop
 
-    AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-    REDISPLAY := FALSE;
-    case PTG_RESULT.EVENT is
-      when AFPX.KEYBOARD =>
-        case PTG_RESULT.KEYBOARD_KEY is
-          when AFPX.RETURN_KEY =>
-            AFPX.DECODE_FIELD (GET_FLD, 0, GET_CONTENT);
-            PARSE_SPACES (GET_CONTENT, GET_OK);
-            GET_OK := GET_OK and then not TEXT_HANDLER.EMPTY(GET_CONTENT);
-            if not GET_OK then
-              ERROR (E_FILE_NAME);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Redisplay := False;
+    case Ptg_Result.Event is
+      when Afpx.Keyboard =>
+        case Ptg_Result.Keyboard_Key is
+          when Afpx.Return_Key =>
+            Afpx.Decode_Field (Get_Fld, 0, Get_Content);
+            Parse_Spaces (Get_Content, Get_Ok);
+            Get_Ok := Get_Ok and then not Text_Handler.Empty(Get_Content);
+            if not Get_Ok then
+              Error (E_File_Name);
             else
               -- Value to return if not dir
-              FILE_REC.LEN := TEXT_HANDLER.LENGTH(GET_CONTENT);
-              FILE_REC.NAME(1 .. FILE_REC.LEN) :=
-                        TEXT_HANDLER.VALUE(GET_CONTENT);
+              File_Rec.Len := Text_Handler.Length(Get_Content);
+              File_Rec.Name(1 .. File_Rec.Len) :=
+                        Text_Handler.Value(Get_Content);
               begin
-                IS_A_DIR := IS_DIR (TEXT_HANDLER.VALUE(GET_CONTENT));
-                if IS_A_DIR then 
+                Is_A_Dir := Is_Dir (Text_Handler.Value(Get_Content));
+                if Is_A_Dir then 
                   -- Change dir
-                  AFPX.CLEAR_FIELD (GET_FLD);
-                  CHANGE_DIR(TEXT_HANDLER.VALUE(GET_CONTENT));
+                  Afpx.Clear_Field (Get_Fld);
+                  Change_Dir(Text_Handler.Value(Get_Content));
                 else 
                   -- Valid file entered
-                  VALID := TRUE;
+                  Valid := True;
                   exit;
                 end if;
               exception
-                when DIRECTORY.NAME_ERROR =>
+                when Directory.Name_Error =>
                   -- File not found
-                  if FOR_READ then
+                  if For_Read then
                     -- Read non existing file
-                    ERROR (E_FILE_NOT_FOUND);
+                    Error (E_File_Not_Found);
                   else
                     -- Save on new file
-                    VALID := TRUE;
+                    Valid := True;
                     exit;
                   end if;
                 when others =>
-                  ERROR (E_IO_ERROR);
+                  Error (E_Io_Error);
               end;
             end if;
-          when AFPX.ESCAPE_KEY =>
-            VALID := FALSE;
+          when Afpx.Escape_Key =>
+            Valid := False;
             exit;
-          when AFPX.BREAK_KEY =>
+          when Afpx.Break_Key =>
             null;
         end case;
 
-      when AFPX.MOUSE_BUTTON =>
-        case PTG_RESULT.FIELD_NO is
-          when LIST_SCROLL_FLD_RANGE'FIRST .. LIST_SCROLL_FLD_RANGE'LAST =>
-            SCROLL(PTG_RESULT.FIELD_NO);
+      when Afpx.Mouse_Button =>
+        case Ptg_Result.Field_No is
+          when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
+            Scroll(Ptg_Result.Field_No);
 
           -- Ok button or double click in list
-          when OK_FLD | AFPX.LIST_FIELD_NO =>
-            POS_IN_LIST := AFPX.LINE_LIST_MNG.GET_POSITION(AFPX.LINE_LIST);
-            DIR_MNG.FILE_LIST_MNG.MOVE_TO(DIR_LIST,
-                   NUMBER => POS_IN_LIST - 1,
-                   FROM_CURRENT => FALSE);
-            DIR_MNG.FILE_LIST_MNG.READ(DIR_LIST, FILE_REC, 
-                   DIR_MNG.FILE_LIST_MNG.CURRENT);
+          when Ok_Fld | Afpx.List_Field_No =>
+            Pos_In_List := Afpx.Line_List_Mng.Get_Position(Afpx.Line_List);
+            Dir_Mng.File_List_Mng.Move_To(Dir_List,
+                   Number => Pos_In_List - 1,
+                   From_Current => False);
+            Dir_Mng.File_List_Mng.Read(Dir_List, File_Rec, 
+                   Dir_Mng.File_List_Mng.Current);
             begin
-              if IS_DIR (FILE_REC.NAME(1 .. FILE_REC.LEN)) then
-                AFPX.CLEAR_FIELD (GET_FLD);
-                CHANGE_DIR(FILE_REC.NAME(1 .. FILE_REC.LEN));
+              if Is_Dir (File_Rec.Name(1 .. File_Rec.Len)) then
+                Afpx.Clear_Field (Get_Fld);
+                Change_Dir(File_Rec.Name(1 .. File_Rec.Len));
               else 
                 -- File selected
-                VALID := TRUE;
+                Valid := True;
                 exit;
               end if;
             exception
               when others =>
-                ERROR (E_IO_ERROR);
+                Error (E_Io_Error);
             end;
 
-          when CANCEL_FLD =>
-            VALID := FALSE;
+          when Cancel_Fld =>
+            Valid := False;
             exit;
-          when REREAD_FLD =>
+          when Reread_Fld =>
             -- Reread current directory
-            CHANGE_DIR(".");
+            Change_Dir(".");
           when others => null;
         end case;
-      when AFPX.FD_EVENT =>
-        FD_CALLBACK;
-      when AFPX.TIMER_EVENT =>
-        TIMER_CALLBACK;
-      when AFPX.REFRESH =>
-        REDISPLAY := TRUE;
+      when Afpx.Fd_Event =>
+        Fd_Callback;
+      when Afpx.Timer_Event =>
+        Timer_Callback;
+      when Afpx.Refresh =>
+        Redisplay := True;
     end case;
   end loop;
  
-  DIR_MNG.FILE_LIST_MNG.DELETE_LIST(DIR_LIST);
-  AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
-  if VALID then
-    return FILE_REC.NAME(1 .. FILE_REC.LEN);
+  Dir_Mng.File_List_Mng.Delete_List(Dir_List);
+  Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+  if Valid then
+    return File_Rec.Name(1 .. File_Rec.Len);
   else
     return "";
   end if;
 
-end SELECT_FILE;
+end Select_File;

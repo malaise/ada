@@ -1,52 +1,52 @@
-package body SYSLIN is
+package body Syslin is
 
   -- The heart (art) of solving
-  function GAUSS (A : MATRIX; B : VECTOR) return VECTOR is
+  function Gauss (A : Matrix; B : Vector) return Vector is
 
     -- Dimension of the system
-    subtype DIMENSION is POSITIVE range 1 ..  B'LENGTH;
+    subtype Dimension is Positive range 1 ..  B'Length;
     -- The solution
-    SOLUTION    : VECTOR(DIMENSION);
+    Solution    : Vector(Dimension);
     -- The pivot and its line
-    PIVOT       : NUMBER;
-    PIVOT_LINE  : DIMENSION;
+    Pivot       : Number;
+    Pivot_Line  : Dimension;
     -- The number above which we consider a number as nul
-    EPSILON     : constant NUMBER := NUMBER'EPSILON;
+    Epsilon     : constant Number := Number'Epsilon;
     -- Working matrix and vector for triangulation
-    A_T         : MATRIX(DIMENSION, DIMENSION);
-    B_T         : VECTOR(DIMENSION);
+    A_T         : Matrix(Dimension, Dimension);
+    B_T         : Vector(Dimension);
   begin
 
     -- A has to be square
-    if A'LENGTH(1) /= A'LENGTH(2) then
-      raise DIMENSION_ERROR;
+    if A'Length(1) /= A'Length(2) then
+      raise Dimension_Error;
     end if;
 
     -- A and B must have same length
-    if A'LENGTH(1) /= B'LENGTH then
-      raise DIMENSION_ERROR;
+    if A'Length(1) /= B'Length then
+      raise Dimension_Error;
     end if;
 
     -- B (and thus A) of dimension > 0
-    if B'LENGTH < 1 then
-      raise DIMENSION_ERROR;
+    if B'Length < 1 then
+      raise Dimension_Error;
     end if;
 
     -- A and B indexes starting from 1
-    if      A'FIRST(1) /= DIMENSION'FIRST
-    or else A'FIRST(2) /= DIMENSION'FIRST
-    or else B'FIRST    /= DIMENSION'FIRST then
-      raise DIMENSION_ERROR;
+    if      A'First(1) /= Dimension'First
+    or else A'First(2) /= Dimension'First
+    or else B'First    /= Dimension'First then
+      raise Dimension_Error;
     end if;
 
     -- Case where dimension is 1
-    if B'LENGTH = 1 then
+    if B'Length = 1 then
       -- Test wether pivot (A(1,1)) is not nul
-      if A(A'FIRST(1), A'FIRST(2)) < EPSILON then
-        raise DISCRIMINENT_ERROR;
+      if A(A'First(1), A'First(2)) < Epsilon then
+        raise Discriminent_Error;
       end if;
-      SOLUTION(SOLUTION'FIRST) := B(B'FIRST) / A(A'FIRST(1), A'FIRST(2));
-      return SOLUTION;
+      Solution(Solution'First) := B(B'First) / A(A'First(1), A'First(2));
+      return Solution;
     end if;
 
     -- Load working matrix and vector
@@ -54,38 +54,38 @@ package body SYSLIN is
     B_T := B;
 
     -- Triangulation of the matrix
-    for LINE in DIMENSION'FIRST .. DIMENSION'PRED(DIMENSION'LAST) loop
+    for Line in Dimension'First .. Dimension'Pred(Dimension'Last) loop
 
       -- Search for biggest pivot as possible
       --  from current line to last line, in current column (which is current line index)
-      PIVOT := abs A_T(LINE, LINE);
-      PIVOT_LINE := LINE;
-      for SUB_LINE in DIMENSION'SUCC(LINE) .. DIMENSION'LAST loop
-        if abs(A_T(SUB_LINE, LINE)) > PIVOT then
-          PIVOT := abs(A_T(SUB_LINE, LINE));
-          PIVOT_LINE := SUB_LINE;
+      Pivot := abs A_T(Line, Line);
+      Pivot_Line := Line;
+      for Sub_Line in Dimension'Succ(Line) .. Dimension'Last loop
+        if abs(A_T(Sub_Line, Line)) > Pivot then
+          Pivot := abs(A_T(Sub_Line, Line));
+          Pivot_Line := Sub_Line;
         end if;
       end loop;
 
       -- Test wether pivot is not nul
-      if PIVOT < EPSILON then
-        raise DISCRIMINENT_ERROR;
+      if Pivot < Epsilon then
+        raise Discriminent_Error;
       end if;
 
       -- Exchange current line with pivot line (in matrix and vector)
-      if PIVOT_LINE /= LINE then
+      if Pivot_Line /= Line then
         declare
-          subtype SLICE is DIMENSION range LINE .. DIMENSION'LAST;
-          NUMBER_AUX : NUMBER;
+          subtype Slice is Dimension range Line .. Dimension'Last;
+          Number_Aux : Number;
         begin
-          for COLUMN in SLICE loop
-            NUMBER_AUX := A_T(LINE, COLUMN);
-            A_T(LINE, COLUMN) := A_T(PIVOT_LINE, COLUMN);
-            A_T(PIVOT_LINE, COLUMN) := NUMBER_AUX;
+          for Column in Slice loop
+            Number_Aux := A_T(Line, Column);
+            A_T(Line, Column) := A_T(Pivot_Line, Column);
+            A_T(Pivot_Line, Column) := Number_Aux;
           end loop;
-          NUMBER_AUX := B_T(LINE);
-          B_T(LINE) := B_T(PIVOT_LINE);
-          B_T(PIVOT_LINE) := NUMBER_AUX;
+          Number_Aux := B_T(Line);
+          B_T(Line) := B_T(Pivot_Line);
+          B_T(Pivot_Line) := Number_Aux;
         end;
       end if;
 
@@ -95,14 +95,14 @@ package body SYSLIN is
       --  for each column c on line s, substract factor * A(l,c) to A(s,c)
       --  substract factor * B(l) to B(s)
       -- So all A(s,l+1) = 0
-      for SUB_LINE in DIMENSION'SUCC(LINE) .. DIMENSION'LAST loop
+      for Sub_Line in Dimension'Succ(Line) .. Dimension'Last loop
         declare
-          FACTOR : NUMBER := A_T(SUB_LINE, LINE) / A_T(LINE, LINE);
+          Factor : Number := A_T(Sub_Line, Line) / A_T(Line, Line);
         begin
-          for COLUMN in DIMENSION'SUCC(LINE) .. DIMENSION'LAST loop
-            A_T(SUB_LINE, COLUMN) := A_T(SUB_LINE, COLUMN) - FACTOR * A_T(LINE, COLUMN);
+          for Column in Dimension'Succ(Line) .. Dimension'Last loop
+            A_T(Sub_Line, Column) := A_T(Sub_Line, Column) - Factor * A_T(Line, Column);
           end loop;
-          B_T(SUB_LINE) := B_T(SUB_LINE) - FACTOR * B_T(LINE);
+          B_T(Sub_Line) := B_T(Sub_Line) - Factor * B_T(Line);
         end;
       end loop;
 
@@ -111,8 +111,8 @@ package body SYSLIN is
     -- The mattrix A is now triangular
 
     -- Test wether last component is not nul
-    if abs(A_T(DIMENSION'LAST, DIMENSION'LAST)) < EPSILON then
-      raise DISCRIMINENT_ERROR;
+    if abs(A_T(Dimension'Last, Dimension'Last)) < Epsilon then
+      raise Discriminent_Error;
     end if;
 
     -- Resolution "in stairs"
@@ -120,20 +120,20 @@ package body SYSLIN is
     -- then A(l-1, l-1) * x(l-1) + A(l-1, l) * x(l) = B(l-1) => x(l-1)
     -- then A(l-2, l-2) * x(l-2) + A(l-2, l-1) * x(l-1) +  A(l-2, l * x(l) = B(l-2)
     --                            <----------- computed in TMP ----------->
-    SOLUTION(DIMENSION'LAST) := B_T(DIMENSION'LAST) / A_T(DIMENSION'LAST, DIMENSION'LAST);
-    for LINE in reverse DIMENSION'FIRST .. DIMENSION'PRED(DIMENSION'LAST) loop
+    Solution(Dimension'Last) := B_T(Dimension'Last) / A_T(Dimension'Last, Dimension'Last);
+    for Line in reverse Dimension'First .. Dimension'Pred(Dimension'Last) loop
       declare
-        TMP : NUMBER := 0.0;
+        Tmp : Number := 0.0;
       begin
-        for COLUMN in DIMENSION'SUCC(LINE) .. DIMENSION'LAST loop
-          TMP := TMP + A_T(LINE, COLUMN) * SOLUTION(COLUMN);
+        for Column in Dimension'Succ(Line) .. Dimension'Last loop
+          Tmp := Tmp + A_T(Line, Column) * Solution(Column);
         end loop;
-        SOLUTION(LINE) := (B_T(LINE) - TMP) / A_T(LINE, LINE);
+        Solution(Line) := (B_T(Line) - Tmp) / A_T(Line, Line);
       end;
     end loop;
 
-    return SOLUTION;
+    return Solution;
 
-  end GAUSS;
+  end Gauss;
 
-end SYSLIN;
+end Syslin;

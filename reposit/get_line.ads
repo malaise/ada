@@ -1,42 +1,42 @@
 -- Opens a file and reads lines
 -- Parses words separated by space or tab
-with TEXT_IO;
-with TEXT_HANDLER;
+with Text_Io;
+with Text_Handler;
 
 generic
 
   -- These two are used while parsing the line
-  MAX_WORD_LEN : in POSITIVE;
-  MAX_WORD_NB  : in POSITIVE;
+  Max_Word_Len : in Positive;
+  Max_Word_Nb  : in Positive;
   -- Only this one is used while loading a line
-  MAX_LINE_LEN : in POSITIVE;
+  Max_Line_Len : in Positive;
   -- If this comment character is set, then only significant
   -- lines (not empty nor starting with comment) are loaded
-  COMMENT : in CHARACTER := ASCII.NUL;
+  Comment : in Character := Ascii.Nul;
 
-package GET_LINE is
+package Get_Line is
 
-  subtype WORD_TXT is TEXT_HANDLER.TEXT(MAX_LEN => MAX_WORD_LEN);
-  subtype WORD_RANGE is POSITIVE range 1 .. MAX_WORD_NB;
-  subtype WORD_COUNT is NATURAL  range 0 .. MAX_WORD_NB;
-  type LINE_ARRAY is array (WORD_RANGE) of WORD_TXT;
-  subtype LINE_TXT is TEXT_HANDLER.TEXT(MAX_LEN => MAX_LINE_LEN);
+  subtype Word_Txt is Text_Handler.Text(Max_Len => Max_Word_Len);
+  subtype Word_Range is Positive range 1 .. Max_Word_Nb;
+  subtype Word_Count is Natural  range 0 .. Max_Word_Nb;
+  type Line_Array is array (Word_Range) of Word_Txt;
+  subtype Line_Txt is Text_Handler.Text(Max_Len => Max_Line_Len);
 
   -- Opens the file. Exceptions are the one of TEXT_IO.OPEN (IN_FILE)
   -- Loads the first line
-  procedure OPEN (FILE_NAME : in STRING);
+  procedure Open (File_Name : in String);
 
   -- Closes the file
   -- Exceptions are the one of TEXT_IO.CLOSE
-  procedure CLOSE;
+  procedure Close;
 
   -- The following features may raise
-  NOT_OPEN : exception;
+  Not_Open : exception;
 
   -- Loads next line of file
-  procedure READ_NEXT_LINE;
-  NO_MORE_LINE   : exception;
-  LINE_TOO_LONG  : exception;
+  procedure Read_Next_Line;
+  No_More_Line   : exception;
+  Line_Too_Long  : exception;
 
   --------------------------------------------------
   -- As soon as a line is loaded the following
@@ -44,26 +44,26 @@ package GET_LINE is
   --------------------------------------------------
 
   -- Current line number (not parsed)
-  function GET_LINE_NO return TEXT_IO.POSITIVE_COUNT;
+  function Get_Line_No return Text_Io.Positive_Count;
 
   -- Get the whole line (not parsed)
-  procedure GET_WHOLE_LINE (LINE : in out LINE_TXT);
+  procedure Get_Whole_Line (Line : in out Line_Txt);
 
   -- Get the first significant word of the line (not parsed)
-  function GET_FIRST_WORD return STRING;
+  function Get_First_Word return String;
 
   --------------------------------------------------
   -- The two following features trigger a parsing
   --  of the loaded line and may raise
   --------------------------------------------------
-  TOO_MANY_WORDS : exception;
-  WORD_TOO_LONG  : exception;
+  Too_Many_Words : exception;
+  Word_Too_Long  : exception;
 
   -- Number of words in currently loaded line
-  function GET_WORD_NUMBER return WORD_COUNT;
+  function Get_Word_Number return Word_Count;
 
   -- Words of the currently loaded line
-  procedure GET_WORDS (LINE : in out LINE_ARRAY);
+  procedure Get_Words (Line : in out Line_Array);
 
-end GET_LINE;
+end Get_Line;
 

@@ -1,53 +1,53 @@
-with ADA.NUMERICS;
-package MY_MATH is
+with Ada.Numerics;
+package My_Math is
 
-  subtype INTE is LONG_LONG_INTEGER;
+  subtype Inte is Long_Long_Integer;
   --  subtype REAL is LONG_FLOAT;
   -- This should generate the overflow checks
-  type REAL is digits 15 range -1.5E308 .. 1.5E308;
+  type Real is digits 15 range -1.5E308 .. 1.5E308;
 
   -- Types and constants for trigonometry
   -- pi constant
-  PI : constant := ADA.NUMERICS.PI;
+  Pi : constant := Ada.Numerics.Pi;
   -- e constant
-  E : constant := ADA.NUMERICS.E;
+  E : constant := Ada.Numerics.E;
   -- possible units for trigonometric constants 
-  type ANGLE_UNIT is (RADIAN, DEGREE);
+  type Angle_Unit is (Radian, Degree);
 
   -- Integer part and fractional part of a real
   -- R := INT(R) + FRAC(R)
-  function INT  (X : REAL) return REAL;
-  function FRAC (X : REAL) return REAL;
+  function Int  (X : Real) return Real;
+  function Frac (X : Real) return Real;
 
   -- From real to int : round or trunc
-  function ROUND (X : REAL) return INTE;
-  function TRUNC (X : REAL) return INTE;
+  function Round (X : Real) return Inte;
+  function Trunc (X : Real) return Inte;
 
   -- Power and sqrt
-  function "**" (NUMBER, EXPONENT : REAL) return REAL;
-  function SQRT (X : REAL) return REAL;
+  function "**" (Number, Exponent : Real) return Real;
+  function Sqrt (X : Real) return Real;
 
   -- 10 based Log
-  function LOG_10 (X : REAL) return REAL;
+  function Log_10 (X : Real) return Real;
 
   -- Logarithmic functions based on E
-  function EXP (X : REAL := 1.0) return REAL;
-  function LN  (X : REAL) return REAL;
+  function Exp (X : Real := 1.0) return Real;
+  function Ln  (X : Real) return Real;
 
   -- Trigonometric functions
-  function SIN (X : REAL; MODE : ANGLE_UNIT := RADIAN) return REAL;
-  function COS (X : REAL; MODE : ANGLE_UNIT := RADIAN) return REAL;
-  function TG  (X : REAL; MODE : ANGLE_UNIT := RADIAN) return REAL;
+  function Sin (X : Real; Mode : Angle_Unit := Radian) return Real;
+  function Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
+  function Tg  (X : Real; Mode : Angle_Unit := Radian) return Real;
 
   -- Invers trigonometric functions
   -- arc sinus returned on -pi/2 .. pi/2
-  function ARC_SIN (X : REAL; MODE : ANGLE_UNIT := RADIAN) return REAL;
+  function Arc_Sin (X : Real; Mode : Angle_Unit := Radian) return Real;
   -- arc cosinus returned on 0 .. pi
-  function ARC_COS (X : REAL; MODE : ANGLE_UNIT := RADIAN) return REAL;
+  function Arc_Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
   -- arc tangente returned on -pi/2 .. pi/2
-  function ARC_TG  (X : REAL; MODE : ANGLE_UNIT := RADIAN) return REAL;
+  function Arc_Tg  (X : Real; Mode : Angle_Unit := Radian) return Real;
 
   -- exception raised in case of error
-  MATH_ERROR : exception;
+  Math_Error : exception;
 
-end MY_MATH;
+end My_Math;

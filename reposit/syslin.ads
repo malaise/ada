@@ -1,23 +1,23 @@
 generic
 
-  type NUMBER is digits <>;
+  type Number is digits <>;
 
-package SYSLIN is
+package Syslin is
   -- A is a square matrix and B is a vector of same dimension
   -- Resolution of A.X=B, where X is the vector of unknown values
 
   -- The 3 sub types of indexes must have the same LENGTH
   --  and be from 1 to LENGTH
-  type VECTOR is array(POSITIVE range <>) of NUMBER;
-  type MATRIX is array(POSITIVE range <>, POSITIVE range <>) of NUMBER;
+  type Vector is array(Positive range <>) of Number;
+  type Matrix is array(Positive range <>, Positive range <>) of Number;
 
   -- The returned vector is indexed from 1 .. LENGTH
-  function GAUSS (A : MATRIX; B : VECTOR) return VECTOR;
+  function Gauss (A : Matrix; B : Vector) return Vector;
 
   -- If the matrix is not a square, or if indexes do not have same LENGTH
-  DIMENSION_ERROR   : exception; 
+  Dimension_Error   : exception; 
 
   -- If the discriminent is nul
-  DISCRIMINENT_ERROR : exception; 
+  Discriminent_Error : exception; 
 
-end SYSLIN; 
+end Syslin; 

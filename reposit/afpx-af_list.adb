@@ -1,392 +1,392 @@
-separate (AFPX)
-package body AF_LIST is
+separate (Afpx)
+package body Af_List is
 
-  STATUS : STATUS_REC;
-  OPENED : BOOLEAN := FALSE;
+  Status : Status_Rec;
+  Opened : Boolean := False;
 
-  LIST_WINDOW : CON_IO.WINDOW;
+  List_Window : Con_Io.Window;
 
   -- Reset/Compute status
-  procedure RESET;
-  procedure COMPUTE (FIRST_ITEM_ID : in POSITIVE);
+  procedure Reset;
+  procedure Compute (First_Item_Id : in Positive);
 
   -- Open / Re-open the list window
-  procedure OPEN is
-    use AFPX_TYP;
+  procedure Open is
+    use Afpx_Typ;
   begin
     -- Check there is a descriptor
-    AF_DSCR.CHECK;
+    Af_Dscr.Check;
     -- Close previous window
-    if CON_IO.IS_OPEN (LIST_WINDOW) then
-      CON_IO.CLOSE (LIST_WINDOW);
+    if Con_Io.Is_Open (List_Window) then
+      Con_Io.Close (List_Window);
     end if;
     -- Check there is a window in the dscr
-    if AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
-      CON_IO.OPEN (LIST_WINDOW,
-                   AF_DSCR.FIELDS(LFN).UPPER_LEFT,
-                   AF_DSCR.FIELDS(LFN).LOWER_RIGHT);
-      OPENED := TRUE;
+    if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+      Con_Io.Open (List_Window,
+                   Af_Dscr.Fields(Lfn).Upper_Left,
+                   Af_Dscr.Fields(Lfn).Lower_Right);
+      Opened := True;
       -- Start at top
-      STATUS.ID_SELECTED := 0;
-      RESET;
+      Status.Id_Selected := 0;
+      Reset;
     else
-      OPENED := FALSE;
+      Opened := False;
     end if;
 
-  end OPEN;
+  end Open;
 
-  procedure MOVE (ID : in POSITIVE) is
+  procedure Move (Id : in Positive) is
   begin
-    LINE_LIST_MNG.MOVE_TO (LINE_LIST, LINE_LIST_MNG.NEXT, ID - 1, FALSE);
-  end MOVE;
+    Line_List_Mng.Move_To (Line_List, Line_List_Mng.Next, Id - 1, False);
+  end Move;
 
-  procedure GET_CURRENT_ITEM (ITEM : out LINE_REC) is
+  procedure Get_Current_Item (Item : out Line_Rec) is
   begin
-    LINE_LIST_MNG.READ (LINE_LIST, ITEM, LINE_LIST_MNG.NEXT);
+    Line_List_Mng.Read (Line_List, Item, Line_List_Mng.Next);
   exception
-    when LINE_LIST_MNG.NOT_IN_LIST =>
-      LINE_LIST_MNG.READ (LINE_LIST, ITEM, LINE_LIST_MNG.CURRENT);
-  end GET_CURRENT_ITEM;
+    when Line_List_Mng.Not_In_List =>
+      Line_List_Mng.Read (Line_List, Item, Line_List_Mng.Current);
+  end Get_Current_Item;
 
-  procedure PUT (ROW : in CON_IO.ROW_RANGE; STATE : in AF_PTG.STATE_LIST;
-                 ITEM : in LINE_REC) is
-    STR : STRING (1 .. AF_DSCR.FIELDS(LFN).WIDTH) := (others => ' ');
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
+  procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List;
+                 Item : in Line_Rec) is
+    Str : String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
+    Foreground : Con_Io.Effective_Colors;
+    Background : Con_Io.Effective_Basic_Colors;
   begin
     -- Set colors
-    AF_PTG.SET_COLORS (AF_DSCR.FIELDS(LFN), STATE,
-                       FOREGROUND, BACKGROUND);
+    Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), State,
+                       Foreground, Background);
     -- Set str
-    if ITEM.LEN > STR'LAST then
-      STR := ITEM.STR (STR'RANGE);
+    if Item.Len > Str'Last then
+      Str := Item.Str (Str'Range);
     else
-      STR (1 .. ITEM.LEN) := ITEM.STR (1 .. ITEM.LEN);
+      Str (1 .. Item.Len) := Item.Str (1 .. Item.Len);
     end if;
     -- Move
-    CON_IO.MOVE ( (ROW, 0), LIST_WINDOW);
+    Con_Io.Move ( (Row, 0), List_Window);
     -- Put
-    CON_IO.PUT (S => STR,
-                NAME => LIST_WINDOW,
-                FOREGROUND => FOREGROUND,
-                BLINK_STAT => AF_DSCR.FIELDS(0).COLORS.BLINK_STAT,
-                BACKGROUND => BACKGROUND,
-                MOVE => FALSE);
-  end PUT;
+    Con_Io.Put (S => Str,
+                Name => List_Window,
+                Foreground => Foreground,
+                Blink_Stat => Af_Dscr.Fields(0).Colors.Blink_Stat,
+                Background => Background,
+                Move => False);
+  end Put;
 
-  procedure CLEAR (ROW : in CON_IO.ROW_RANGE) is
-    STR : constant STRING (1 .. AF_DSCR.FIELDS(LFN).WIDTH) := (others => ' ');
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
+  procedure Clear (Row : in Con_Io.Row_Range) is
+    Str : constant String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
+    Foreground : Con_Io.Effective_Colors;
+    Background : Con_Io.Effective_Basic_Colors;
   begin
     -- Set colors
-    AF_PTG.SET_COLORS (AF_DSCR.FIELDS(LFN), AF_PTG.NORMAL,
-                       FOREGROUND, BACKGROUND);
+    Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), Af_Ptg.Normal,
+                       Foreground, Background);
     -- Move
-    CON_IO.MOVE ( (ROW, 0), LIST_WINDOW);
+    Con_Io.Move ( (Row, 0), List_Window);
     -- Put
-    CON_IO.PUT (S => STR,
-                NAME => LIST_WINDOW,
-                FOREGROUND => FOREGROUND,
-                BLINK_STAT => AF_DSCR.FIELDS(LFN).COLORS.BLINK_STAT,
-                BACKGROUND => BACKGROUND,
-                MOVE => FALSE);
-  end CLEAR;
+    Con_Io.Put (S => Str,
+                Name => List_Window,
+                Foreground => Foreground,
+                Blink_Stat => Af_Dscr.Fields(Lfn).Colors.Blink_Stat,
+                Background => Background,
+                Move => False);
+  end Clear;
 
-  procedure PUT (ROW : in CON_IO.ROW_RANGE; STATE : in AF_PTG.STATE_LIST) is
-    ID : POSITIVE;
-    ITEM : LINE_REC;
+  procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List) is
+    Id : Positive;
+    Item : Line_Rec;
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
-    ID := STATUS.ID_TOP + ROW;
-    MOVE (ID);
-    GET_CURRENT_ITEM (ITEM);
-    PUT (ROW, STATE, ITEM);
+    Id := Status.Id_Top + Row;
+    Move (Id);
+    Get_Current_Item (Item);
+    Put (Row, State, Item);
   exception
     when others =>
-      raise AFPX_INTERNAL_ERROR;
-  end PUT;
+      raise Afpx_Internal_Error;
+  end Put;
 
 
-  procedure SET_COLORS is
+  procedure Set_Colors is
   begin
-    CON_IO.SET_FOREGROUND (AF_DSCR.FIELDS(LFN).COLORS.FOREGROUND,
-                           AF_DSCR.FIELDS(LFN).COLORS.BLINK_STAT, LIST_WINDOW);
-    CON_IO.SET_BACKGROUND (AF_DSCR.FIELDS(LFN).COLORS.BACKGROUND, LIST_WINDOW);
-  end SET_COLORS;
+    Con_Io.Set_Foreground (Af_Dscr.Fields(Lfn).Colors.Foreground,
+                           Af_Dscr.Fields(Lfn).Colors.Blink_Stat, List_Window);
+    Con_Io.Set_Background (Af_Dscr.Fields(Lfn).Colors.Background, List_Window);
+  end Set_Colors;
 
   -- Reset status
-  procedure RESET is
+  procedure Reset is
   begin
-      STATUS.NB_ROWS := 0;
-      STATUS.ID_TOP := 0;
-      STATUS.ID_BOTTOM := 0;
-      STATUS.ID_SELECTED := 0;
-  end RESET;
+      Status.Nb_Rows := 0;
+      Status.Id_Top := 0;
+      Status.Id_Bottom := 0;
+      Status.Id_Selected := 0;
+  end Reset;
 
   -- Compute status
-  procedure COMPUTE (FIRST_ITEM_ID : in POSITIVE) is
+  procedure Compute (First_Item_Id : in Positive) is
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
-    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
-      RESET;
+    if Line_List_Mng.Is_Empty (Line_List) then
+      Reset;
       return;
     end if;
 
-    if STATUS.ID_SELECTED > LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
-      raise LINE_LIST_MNG.NOT_IN_LIST;
+    if Status.Id_Selected > Line_List_Mng.List_Length (Line_List) then
+      raise Line_List_Mng.Not_In_List;
     end if;
     -- top + height - 1 <= length => can display HEIGHT items
-    if LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) - FIRST_ITEM_ID >=
-       AF_DSCR.FIELDS(LFN).HEIGHT then
+    if Line_List_Mng.List_Length (Line_List) - First_Item_Id >=
+       Af_Dscr.Fields(Lfn).Height then
       -- Can display HEIGHT items
-      STATUS.NB_ROWS := AF_DSCR.FIELDS(LFN).HEIGHT;
-      STATUS.ID_TOP := FIRST_ITEM_ID;
-    elsif LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) <
-          AF_DSCR.FIELDS(LFN).HEIGHT then
+      Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
+      Status.Id_Top := First_Item_Id;
+    elsif Line_List_Mng.List_Length (Line_List) <
+          Af_Dscr.Fields(Lfn).Height then
       -- Cannot display LIST length items whatever first
-      STATUS.NB_ROWS := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST);
-      STATUS.ID_TOP := 1;
+      Status.Nb_Rows := Line_List_Mng.List_Length (Line_List);
+      Status.Id_Top := 1;
     else
       -- Can display HEIGHT items but not with this first.
       -- Set top to display last page
-      STATUS.NB_ROWS := AF_DSCR.FIELDS(LFN).HEIGHT;
-      STATUS.ID_TOP := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
-                     - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
+      Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
+      Status.Id_Top := Line_List_Mng.List_Length (Line_List)
+                     - Af_Dscr.Fields(Lfn).Height + 1;
     end if;
-    STATUS.ID_BOTTOM := STATUS.ID_TOP + STATUS.NB_ROWS - 1;
+    Status.Id_Bottom := Status.Id_Top + Status.Nb_Rows - 1;
     -- Select by default
-    if STATUS.ID_SELECTED = 0 then
-      STATUS.ID_SELECTED := STATUS.ID_TOP;
+    if Status.Id_Selected = 0 then
+      Status.Id_Selected := Status.Id_Top;
     end if;
   exception
     when others =>
-      raise AFPX_INTERNAL_ERROR;
-  end COMPUTE;
+      raise Afpx_Internal_Error;
+  end Compute;
 
   -- Display the list, starting from FIRST_ITEM
-  procedure DISPLAY (FIRST_ITEM_ID : in POSITIVE) is
-    ITEM : LINE_REC;
+  procedure Display (First_Item_Id : in Positive) is
+    Item : Line_Rec;
   begin
     -- Set status
-    COMPUTE (FIRST_ITEM_ID);
+    Compute (First_Item_Id);
 
-    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
-      SET_COLORS;
-      CON_IO.CLEAR (LIST_WINDOW);
+    if Line_List_Mng.Is_Empty (Line_List) then
+      Set_Colors;
+      Con_Io.Clear (List_Window);
       return;
     end if;
 
     -- Display list
-    MOVE (STATUS.ID_TOP);
-    for I in 1 .. STATUS.NB_ROWS loop
-      GET_CURRENT_ITEM (ITEM);
-      if not AF_DSCR.FIELDS(LFN).ISPROTECTED
-      and then STATUS.ID_TOP + I - 1 = STATUS.ID_SELECTED then
-        PUT (I - 1, AF_PTG.SELECTED, ITEM);
+    Move (Status.Id_Top);
+    for I in 1 .. Status.Nb_Rows loop
+      Get_Current_Item (Item);
+      if not Af_Dscr.Fields(Lfn).Isprotected
+      and then Status.Id_Top + I - 1 = Status.Id_Selected then
+        Put (I - 1, Af_Ptg.Selected, Item);
       else
-        PUT (I - 1, AF_PTG.NORMAL, ITEM);
+        Put (I - 1, Af_Ptg.Normal, Item);
       end if;
     end loop;
-    MOVE (STATUS.ID_SELECTED);
+    Move (Status.Id_Selected);
 
     -- Display empty end of list (if any)
-    for I in STATUS.NB_ROWS + 1 .. AF_DSCR.FIELDS(LFN).HEIGHT loop
-      CLEAR (I - 1);
+    for I in Status.Nb_Rows + 1 .. Af_Dscr.Fields(Lfn).Height loop
+      Clear (I - 1);
     end loop;
 
 
   exception
     when others =>
-      raise AFPX_INTERNAL_ERROR;
-  end DISPLAY;
+      raise Afpx_Internal_Error;
+  end Display;
 
   -- Actions on the list
   -- type ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN);
 
   -- Update the list due to an action
-  procedure UPDATE (ACTION : in LIST_ACTION_LIST) is
-    FIRST_ITEM_ID : NATURAL;
+  procedure Update (Action : in List_Action_List) is
+    First_Item_Id : Natural;
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
     -- Update may be called before 1st PTG
-    if STATUS.ID_SELECTED = 0 then
-      COMPUTE (1);
+    if Status.Id_Selected = 0 then
+      Compute (1);
     end if;
     -- List is empty
-    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
+    if Line_List_Mng.Is_Empty (Line_List) then
       return;
     end if;
 
     -- Update selection, cause current may have changed
     -- called by user
-    AF_LIST.SET_SELECTED (LINE_LIST_MNG.GET_POSITION(LINE_LIST));
+    Af_List.Set_Selected (Line_List_Mng.Get_Position(Line_List));
 
     -- Recompute cause list may have changed
-    COMPUTE (STATUS.ID_TOP);
+    Compute (Status.Id_Top);
 
     -- Nothing to scroll
-    if STATUS.NB_ROWS /= AF_DSCR.FIELDS(LFN).HEIGHT then
+    if Status.Nb_Rows /= Af_Dscr.Fields(Lfn).Height then
       return;
     end if;
 
-    case ACTION is
-      when UP =>
+    case Action is
+      when Up =>
         -- Scroll 1 row down
-        if STATUS.ID_TOP /= 1 then
-          FIRST_ITEM_ID := STATUS.ID_TOP - 1;
-          DISPLAY (FIRST_ITEM_ID);
+        if Status.Id_Top /= 1 then
+          First_Item_Id := Status.Id_Top - 1;
+          Display (First_Item_Id);
         end if;
-      when DOWN =>
+      when Down =>
         -- Scroll 1 row down
-        if STATUS.ID_BOTTOM /= LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
-          FIRST_ITEM_ID := STATUS.ID_TOP + 1;
-          DISPLAY (FIRST_ITEM_ID);
+        if Status.Id_Bottom /= Line_List_Mng.List_Length (Line_List) then
+          First_Item_Id := Status.Id_Top + 1;
+          Display (First_Item_Id);
         end if;
-      when PAGE_DOWN =>
+      when Page_Down =>
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
-        if LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) - STATUS.ID_BOTTOM >
-        AF_DSCR.FIELDS(LFN).HEIGHT then
-          FIRST_ITEM_ID := STATUS.ID_TOP + AF_DSCR.FIELDS(LFN).HEIGHT;
-        elsif STATUS.ID_BOTTOM /= LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
+        if Line_List_Mng.List_Length (Line_List) - Status.Id_Bottom >
+        Af_Dscr.Fields(Lfn).Height then
+          First_Item_Id := Status.Id_Top + Af_Dscr.Fields(Lfn).Height;
+        elsif Status.Id_Bottom /= Line_List_Mng.List_Length (Line_List) then
           -- End at last item
-          FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
-                           - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
+          First_Item_Id := Line_List_Mng.List_Length (Line_List)
+                           - Af_Dscr.Fields(Lfn).Height + 1;
         else
           -- Already at bottom of list
           return;
         end if;
-        DISPLAY (FIRST_ITEM_ID);
-      when PAGE_UP =>
+        Display (First_Item_Id);
+      when Page_Up =>
         -- Display previous page
         -- top - height > 1 => top - height exists
-        if STATUS.ID_TOP > AF_DSCR.FIELDS(LFN).HEIGHT + 1 then
-          FIRST_ITEM_ID := STATUS.ID_TOP - AF_DSCR.FIELDS(LFN).HEIGHT;
-        elsif STATUS.ID_TOP /= 1 then
+        if Status.Id_Top > Af_Dscr.Fields(Lfn).Height + 1 then
+          First_Item_Id := Status.Id_Top - Af_Dscr.Fields(Lfn).Height;
+        elsif Status.Id_Top /= 1 then
           -- Start at first item
-          FIRST_ITEM_ID := 1;
+          First_Item_Id := 1;
         else
           -- Already at top of list
           return;
         end if;
-        DISPLAY (FIRST_ITEM_ID);
-      when TOP =>
+        Display (First_Item_Id);
+      when Top =>
         -- Move to top of list
-        if STATUS.ID_TOP = 1 then
+        if Status.Id_Top = 1 then
           -- Already at top of list
           return;
         end if;
-        FIRST_ITEM_ID := 1;
-        DISPLAY (FIRST_ITEM_ID);
-      when BOTTOM =>
+        First_Item_Id := 1;
+        Display (First_Item_Id);
+      when Bottom =>
         -- Move to bottom of list
-        if STATUS.ID_BOTTOM = LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
+        if Status.Id_Bottom = Line_List_Mng.List_Length (Line_List) then
           -- Already at bottom of list
           return;
         end if;
-        FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
-                         - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
-        DISPLAY (FIRST_ITEM_ID);
-      when CENTER =>
+        First_Item_Id := Line_List_Mng.List_Length (Line_List)
+                         - Af_Dscr.Fields(Lfn).Height + 1;
+        Display (First_Item_Id);
+      when Center =>
         -- Center current LIST item in window (do ower best)
         declare
           -- List length
-          LEN : constant POSITIVE := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST);
+          Len : constant Positive := Line_List_Mng.List_Length (Line_List);
           -- Current position in list
-          POS : constant POSITIVE
-              := LINE_LIST_MNG.GET_POSITION (LINE_LIST);
+          Pos : constant Positive
+              := Line_List_Mng.Get_Position (Line_List);
           -- Row in window to put it
-          HEIGHT : constant POSITIVE := AF_DSCR.FIELDS(LFN).HEIGHT;
-          MIDROW : constant NATURAL := HEIGHT / 2;
-          LASTROW : constant NATURAL := HEIGHT - 1;
+          Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
+          Midrow : constant Natural := Height / 2;
+          Lastrow : constant Natural := Height - 1;
         begin
-          if POS - 1 < MIDROW then
-            UPDATE(TOP);
-          elsif LEN - POS < LASTROW - MIDROW then
-            UPDATE(BOTTOM);
+          if Pos - 1 < Midrow then
+            Update(Top);
+          elsif Len - Pos < Lastrow - Midrow then
+            Update(Bottom);
           else
-            FIRST_ITEM_ID := POS - MIDROW;
-            DISPLAY (FIRST_ITEM_ID);
+            First_Item_Id := Pos - Midrow;
+            Display (First_Item_Id);
           end if;
         end;
 
     end case;
   exception
     when others =>
-      raise AFPX_INTERNAL_ERROR;
-  end UPDATE;
+      raise Afpx_Internal_Error;
+  end Update;
 
   -- Set the current item (selected_color) of the lis
-  procedure SET_SELECTED (ITEM_ID : in POSITIVE) is
+  procedure Set_Selected (Item_Id : in Positive) is
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
-    if ITEM_ID > LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
-      raise LINE_LIST_MNG.NOT_IN_LIST;
+    if Item_Id > Line_List_Mng.List_Length (Line_List) then
+      raise Line_List_Mng.Not_In_List;
     end if;
-    STATUS.ID_SELECTED := ITEM_ID;
-  end SET_SELECTED;
+    Status.Id_Selected := Item_Id;
+  end Set_Selected;
 
   -- Status of the list
-  function GET_STATUS return STATUS_REC is
+  function Get_Status return Status_Rec is
   begin
-    return STATUS;
-  end GET_STATUS;
+    return Status;
+  end Get_Status;
 
-  procedure SET_CURRENT is
+  procedure Set_Current is
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
-    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
+    if Line_List_Mng.Is_Empty (Line_List) then
       return;
     end if;
-    MOVE (STATUS.ID_SELECTED);
+    Move (Status.Id_Selected);
   exception
     when others =>
-      raise AFPX_INTERNAL_ERROR;
-  end SET_CURRENT;
+      raise Afpx_Internal_Error;
+  end Set_Current;
 
   -- Is an ID, a row displayed
-  function ID_DISPLAYED (ID : POSITIVE) return BOOLEAN is
+  function Id_Displayed (Id : Positive) return Boolean is
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
-    return ID >= STATUS.ID_TOP and then ID <= STATUS.ID_BOTTOM;
-  end ID_DISPLAYED;
+    return Id >= Status.Id_Top and then Id <= Status.Id_Bottom;
+  end Id_Displayed;
 
-  function ROW_DISPLAYED (ROW : CON_IO.ROW_RANGE) return BOOLEAN is
+  function Row_Displayed (Row : Con_Io.Row_Range) return Boolean is
   begin
-    if not OPENED then
-      raise NOT_OPENED;
+    if not Opened then
+      raise Not_Opened;
     end if;
-    return ROW < STATUS.NB_ROWS;
-  end ROW_DISPLAYED;
+    return Row < Status.Nb_Rows;
+  end Row_Displayed;
 
   -- ROW <-> Item ID
-  function TO_ROW (ID : POSITIVE) return CON_IO.ROW_RANGE is
+  function To_Row (Id : Positive) return Con_Io.Row_Range is
   begin
-    if not ID_DISPLAYED (ID) then
-      raise AFPX_INTERNAL_ERROR;
+    if not Id_Displayed (Id) then
+      raise Afpx_Internal_Error;
     end if;
-    return ID - STATUS.ID_TOP;
-  end TO_ROW;
+    return Id - Status.Id_Top;
+  end To_Row;
 
-  function TO_ID  (ROW : CON_IO.ROW_RANGE) return POSITIVE is
+  function To_Id  (Row : Con_Io.Row_Range) return Positive is
   begin
-    if not ROW_DISPLAYED (ROW) then
-      raise AFPX_INTERNAL_ERROR;
+    if not Row_Displayed (Row) then
+      raise Afpx_Internal_Error;
     end if;
-    return ROW + STATUS.ID_TOP;
-  end TO_ID;
+    return Row + Status.Id_Top;
+  end To_Id;
 
-end AF_LIST;
+end Af_List;

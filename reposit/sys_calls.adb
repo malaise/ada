@@ -1,158 +1,158 @@
-with SYSTEM;
-with INTERFACES.C_STREAMS;
-with INTERFACES.C.STRINGS;
-with ADA.COMMAND_LINE;
+with System;
+with Interfaces.C_Streams;
+with Interfaces.C.Strings;
+with Ada.Command_Line;
 
-package body SYS_CALLS is
+package body Sys_Calls is
 
-  function C_STRLEN (S : SYSTEM.ADDRESS) return NATURAL;
-  pragma IMPORT (C, C_STRLEN, "strlen");
+  function C_Strlen (S : System.Address) return Natural;
+  pragma Import (C, C_Strlen, "strlen");
 
-  function C_STRCPY (DEST, SRC : SYSTEM.ADDRESS) return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_STRCPY, "strcpy");
+  function C_Strcpy (Dest, Src : System.Address) return System.Address;
+  pragma Import (C, C_Strcpy, "strcpy");
 
-  function C_MEMCPY (DEST, SRC : SYSTEM.ADDRESS; SIZE : INTEGER)
-  return SYSTEM.ADDRESS;
-  pragma IMPORT (C, C_MEMCPY, "memcpy");
+  function C_Memcpy (Dest, Src : System.Address; Size : Integer)
+  return System.Address;
+  pragma Import (C, C_Memcpy, "memcpy");
 
-  function STR_FOR_C (STR : STRING) return STRING is
+  function Str_For_C (Str : String) return String is
   begin
-    return STR & ASCII.NUL;
-  end STR_FOR_C;
+    return Str & Ascii.Nul;
+  end Str_For_C;
 
-  function STR_FROM_C (STR_ADDR : INTERFACES.C.STRINGS.CHARS_PTR) return STRING is
+  function Str_From_C (Str_Addr : Interfaces.C.Strings.Chars_Ptr) return String is
   begin
-    return INTERFACES.C.STRINGS.VALUE(STR_ADDR);
+    return Interfaces.C.Strings.Value(Str_Addr);
   exception
-    when INTERFACES.C.STRINGS.DEREFERENCE_ERROR =>
+    when Interfaces.C.Strings.Dereference_Error =>
       return "";
-  end STR_FROM_C;
+  end Str_From_C;
 
-  function CALL_SYSTEM (COMMAND : STRING) return INTEGER is
-    COMMAND4C : constant STRING := STR_FOR_C (COMMAND);
+  function Call_System (Command : String) return Integer is
+    Command4C : constant String := Str_For_C (Command);
 
-    function C_SYSTEM (COMMAND : SYSTEM.ADDRESS) return INTEGER;
-    pragma IMPORT (C, C_SYSTEM, "system");
-
-  begin
-    return C_SYSTEM (COMMAND4C'ADDRESS);
-  end CALL_SYSTEM;
-
-  function UNLINK (FILE_NAME : STRING) return BOOLEAN is
-    FILE_NAME4C : constant STRING := STR_FOR_C (FILE_NAME);
-    RES : INTEGER;
-
-    function C_UNLINK (PATHNAME: SYSTEM.ADDRESS) return INTEGER;
-    pragma IMPORT (C, C_UNLINK, "unlink");
+    function C_System (Command : System.Address) return Integer;
+    pragma Import (C, C_System, "system");
 
   begin
-    RES := C_UNLINK (FILE_NAME4C'ADDRESS);
-    return RES = 0;
-  end UNLINK;  
+    return C_System (Command4C'Address);
+  end Call_System;
 
-  function RENAME (SRC, DEST : STRING) return BOOLEAN is
-    SRC4C : constant STRING := STR_FOR_C (SRC);
-    DEST4C : constant STRING := STR_FOR_C (DEST);
-    RES : INTEGER;
+  function Unlink (File_Name : String) return Boolean is
+    File_Name4C : constant String := Str_For_C (File_Name);
+    Res : Integer;
 
-    function C_RENAME (OLDPATH, NEWPATH : SYSTEM.ADDRESS) return INTEGER;
-    pragma IMPORT (C, C_RENAME, "rename");
+    function C_Unlink (Pathname: System.Address) return Integer;
+    pragma Import (C, C_Unlink, "unlink");
+
   begin
-    RES := C_RENAME (SRC4C'ADDRESS, DEST4C'ADDRESS);
-    return RES = 0;
-  end RENAME;
+    Res := C_Unlink (File_Name4C'Address);
+    return Res = 0;
+  end Unlink;  
 
-  function ERRNO return INTEGER is
-    function C_GET_ERRNO return INTEGER;
-    pragma IMPORT (C, C_GET_ERRNO, "__get_errno");
+  function Rename (Src, Dest : String) return Boolean is
+    Src4C : constant String := Str_For_C (Src);
+    Dest4C : constant String := Str_For_C (Dest);
+    Res : Integer;
+
+    function C_Rename (Oldpath, Newpath : System.Address) return Integer;
+    pragma Import (C, C_Rename, "rename");
   begin
-    return C_GET_ERRNO;
-  end ERRNO;
+    Res := C_Rename (Src4C'Address, Dest4C'Address);
+    return Res = 0;
+  end Rename;
+
+  function Errno return Integer is
+    function C_Get_Errno return Integer;
+    pragma Import (C, C_Get_Errno, "__get_errno");
+  begin
+    return C_Get_Errno;
+  end Errno;
    
  
-  function STR_ERROR (ERR : INTEGER) return STRING is
+  function Str_Error (Err : Integer) return String is
 
-    function C_STRERROR (ERRNUM: INTEGER) return INTERFACES.C.STRINGS.CHARS_PTR;
-    pragma IMPORT (C, C_STRERROR, "strerror");
+    function C_Strerror (Errnum: Integer) return Interfaces.C.Strings.Chars_Ptr;
+    pragma Import (C, C_Strerror, "strerror");
 
   begin
-    return STR_FROM_C (C_STRERROR (ERR));
-  end STR_ERROR;
+    return Str_From_C (C_Strerror (Err));
+  end Str_Error;
 
 
-  procedure PUT_ERROR (STR : in STRING) is
-    I : INTERFACES.C_STREAMS.INT;
-    C_STR : constant STRING := STR & ASCII.NUL;
+  procedure Put_Error (Str : in String) is
+    I : Interfaces.C_Streams.Int;
+    C_Str : constant String := Str & Ascii.Nul;
   begin
-    I := INTERFACES.C_STREAMS.FPUTS (C_STR'ADDRESS,
-                 INTERFACES.C_STREAMS.STDERR);
-  end PUT_ERROR;
+    I := Interfaces.C_Streams.Fputs (C_Str'Address,
+                 Interfaces.C_Streams.Stderr);
+  end Put_Error;
 
-  procedure NEW_LINE_ERROR is
-    I : INTERFACES.C_STREAMS.INT;
-    C_STR : constant STRING := ASCII.LF & ASCII.NUL;
+  procedure New_Line_Error is
+    I : Interfaces.C_Streams.Int;
+    C_Str : constant String := Ascii.Lf & Ascii.Nul;
   begin
-    I := INTERFACES.C_STREAMS.FPUTS (C_STR'ADDRESS,
-                 INTERFACES.C_STREAMS.STDERR);
-  end NEW_LINE_ERROR;
+    I := Interfaces.C_Streams.Fputs (C_Str'Address,
+                 Interfaces.C_Streams.Stderr);
+  end New_Line_Error;
 
-  procedure PUT_LINE_ERROR (STR : in STRING) is
+  procedure Put_Line_Error (Str : in String) is
   begin
-    PUT_ERROR (STR);
-    NEW_LINE_ERROR;
-  end PUT_LINE_ERROR;
+    Put_Error (Str);
+    New_Line_Error;
+  end Put_Line_Error;
 
   -- Getenv and truncates if necessary
-  procedure GETENV (ENV_NAME : in STRING;
-                    ENV_SET   : out BOOLEAN;
-                    ENV_TRUNC : out BOOLEAN;
-                    ENV_VALUE : out STRING;
-                    ENV_LEN   : out NATURAL) is
-    NAME4C : constant STRING := STR_FOR_C (ENV_NAME);
-    ADDR : SYSTEM.ADDRESS;
+  procedure Getenv (Env_Name : in String;
+                    Env_Set   : out Boolean;
+                    Env_Trunc : out Boolean;
+                    Env_Value : out String;
+                    Env_Len   : out Natural) is
+    Name4C : constant String := Str_For_C (Env_Name);
+    Addr : System.Address;
 
-    function C_GETENV (NAME : in SYSTEM.ADDRESS) return SYSTEM.ADDRESS;
-    pragma IMPORT (C, C_GETENV, "getenv");
+    function C_Getenv (Name : in System.Address) return System.Address;
+    pragma Import (C, C_Getenv, "getenv");
 
-    use SYSTEM;
+    use System;
   begin
-    ADDR := C_GETENV (NAME4C'ADDRESS);
-    if ADDR = SYSTEM.NULL_ADDRESS then
-      ENV_SET := FALSE;
-      ENV_TRUNC := FALSE;
-      ENV_LEN := 0;
+    Addr := C_Getenv (Name4C'Address);
+    if Addr = System.Null_Address then
+      Env_Set := False;
+      Env_Trunc := False;
+      Env_Len := 0;
       return;
     end if;
 
-    ENV_SET := TRUE;
+    Env_Set := True;
     declare
-      RESULT : STRING (1 .. C_STRLEN(ADDR));
-      DUMMY_ADDR : SYSTEM.ADDRESS;
+      Result : String (1 .. C_Strlen(Addr));
+      Dummy_Addr : System.Address;
     begin
-      DUMMY_ADDR := C_MEMCPY (RESULT'ADDRESS, ADDR, RESULT'LENGTH);
-      if RESULT'LENGTH <= ENV_VALUE'LENGTH then
-        ENV_TRUNC := FALSE;
-        ENV_LEN := RESULT'LENGTH;
-        ENV_VALUE (ENV_VALUE'FIRST .. ENV_VALUE'FIRST + RESULT'LENGTH - 1) := RESULT;
+      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
+      if Result'Length <= Env_Value'Length then
+        Env_Trunc := False;
+        Env_Len := Result'Length;
+        Env_Value (Env_Value'First .. Env_Value'First + Result'Length - 1) := Result;
       else
-        ENV_TRUNC := TRUE;
-        ENV_LEN := ENV_VALUE'LENGTH;
-        ENV_VALUE := RESULT (RESULT'FIRST .. RESULT'FIRST + ENV_VALUE'LENGTH - 1);
+        Env_Trunc := True;
+        Env_Len := Env_Value'Length;
+        Env_Value := Result (Result'First .. Result'First + Env_Value'Length - 1);
       end if;
     end;
-  end GETENV;
+  end Getenv;
 
-  procedure SET_EXIT_CODE (CODE : in NATURAL) is
+  procedure Set_Exit_Code (Code : in Natural) is
   begin
-    ADA.COMMAND_LINE.SET_EXIT_STATUS (ADA.COMMAND_LINE.EXIT_STATUS(CODE));
-  end SET_EXIT_CODE;
+    Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Exit_Status(Code));
+  end Set_Exit_Code;
 
   -- Set error exit code
-  procedure SET_ERROR_EXIT_CODE is
+  procedure Set_Error_Exit_Code is
   begin
-    SET_EXIT_CODE(1);
-  end SET_ERROR_EXIT_CODE;
+    Set_Exit_Code(1);
+  end Set_Error_Exit_Code;
 
-end SYS_CALLS; 
+end Sys_Calls; 
 
  

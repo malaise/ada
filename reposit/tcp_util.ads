@@ -113,7 +113,7 @@ package Tcp_Util is
                        Port          : in Remote_Port;
                        Delta_Retry   : in Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
-                       Connection_CB : in Connection_Callback_Access)
+                       Connection_Cb : in Connection_Callback_Access)
            return Boolean;
 
   -- Abort a pending connection
@@ -128,7 +128,7 @@ package Tcp_Util is
   -- Num is its port num (usefull when dynamical)
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
-                         Acception_CB : in Acception_Callback_Access;
+                         Acception_Cb : in Acception_Callback_Access;
                          Dscr         : in out Socket.Socket_Dscr;
                          Num          : out Port_Num);
 
@@ -145,7 +145,7 @@ package Tcp_Util is
   generic
     type Message_Type is private;
   function Send (Dscr               : in Socket.Socket_Dscr;
-                 End_Of_Overflow_CB : in End_Overflow_Callback_Access;
+                 End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean;
 

@@ -20,7 +20,7 @@ package body Tcp_Util is
     Port : Remote_Port;
     Delta_Retry : Duration;
     Nb_Tries : Natural;
-    CB : Connection_Callback_Access;
+    Cb : Connection_Callback_Access;
     Timer : Timers.Timer_Id;
     Dscr : Socket.Socket_Dscr;
     Fd   : X_Mng.File_Desc;
@@ -143,8 +143,8 @@ package body Tcp_Util is
       host := Socket.No_Host;
     end if;
     -- Inform client
-    if Rec.CB /= null then
-      Rec.CB (Port, Host,  Socket.Is_Open (Rec.Dscr), Rec.Dscr);
+    if Rec.Cb /= null then
+      Rec.Cb (Port, Host,  Socket.Is_Open (Rec.Dscr), Rec.Dscr);
     end if;
   end Handle_Current_Result;
 
@@ -187,7 +187,7 @@ package body Tcp_Util is
   end End_Async_Connect;
 
   -- Callback on connect fd
-  function Connection_Fd_CB (Fd : in X_Mng.File_Desc;
+  function Connection_Fd_Cb (Fd : in X_Mng.File_Desc;
                              Read : in Boolean) return Boolean is
     Rec : Connecting_Rec;
     Go_On : Boolean;
@@ -212,10 +212,10 @@ package body Tcp_Util is
     end if;
     -- Propagate event if no Go_On
     return not Go_On;
-  end Connection_Fd_CB;
+  end Connection_Fd_Cb;
 
   -- Timer callback
-  function Connection_Timer_CB (Id : in Timers.Timer_Id) return Boolean is
+  function Connection_Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
@@ -265,8 +265,8 @@ package body Tcp_Util is
       -- Save Dscr, Fd and pending status
       Rec.Fd := Socket.Fd_Of (Rec.Dscr);
       -- Add callback on fd
-      X_Mng.X_Add_CallBack (Rec.Fd, True, Connection_Fd_CB'access);
-      X_Mng.X_Add_CallBack (Rec.Fd, False, Connection_Fd_CB'access);
+      X_Mng.X_Add_CallBack (Rec.Fd, True, Connection_Fd_Cb'access);
+      X_Mng.X_Add_CallBack (Rec.Fd, False, Connection_Fd_Cb'access);
     end if;
 
     -- Synchronous failure or pending: arm timer at first try
@@ -276,12 +276,12 @@ package body Tcp_Util is
           Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
                          Period        => Rec.Delta_Retry,
                          Delay_Seconds =>  Rec.Delta_Retry),
-          Callback => Connection_Timer_CB'access);
+          Callback => Connection_Timer_Cb'access);
     end if;  
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
     Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
     return False;       
-  end Connection_Timer_CB;
+  end Connection_Timer_Cb;
 
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
@@ -291,7 +291,7 @@ package body Tcp_Util is
                        Port          : in Remote_Port;
                        Delta_Retry   : in Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
-                       Connection_CB : in Connection_Callback_Access)
+                       Connection_Cb : in Connection_Callback_Access)
            return Boolean is
     Rec : Connecting_Rec;
   begin
@@ -301,7 +301,7 @@ package body Tcp_Util is
     Rec.Port := Port;
     Rec.Delta_Retry := Delta_Retry;
     Rec.Nb_Tries := Nb_Tries;
-    Rec.CB := Connection_CB;
+    Rec.Cb := Connection_Cb;
     Rec.Timer := Timers.No_Timer;
     Rec.Dscr := Socket.No_Socket;
     Rec.Curr_Try := 0;
@@ -309,7 +309,7 @@ package body Tcp_Util is
 
     -- Try to connect: call timer callback
     -- Our Rec should be the only one with No_Timer
-    return Connection_Timer_CB (Timers.No_Timer);
+    return Connection_Timer_Cb (Timers.No_Timer);
 
   end Connect_To;
 
@@ -341,7 +341,7 @@ package body Tcp_Util is
   -- Accepting connection
   type Accepting_Rec is record
     Port : Port_Num;
-    CB   : Acception_Callback_Access;
+    Cb   : Acception_Callback_Access;
     Dscr : Socket.Socket_Dscr;
     Fd   : X_Mng.File_Desc;
   end record;
@@ -365,7 +365,7 @@ package body Tcp_Util is
   procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
 
   -- Callback on accept fd
-  function Acception_Fd_CB (Fd : in X_Mng.File_Desc;
+  function Acception_Fd_Cb (Fd : in X_Mng.File_Desc;
                             Read : in Boolean) return Boolean is
     Rec : Accepting_Rec;
     New_Dscr : Socket.Socket_Dscr;
@@ -383,24 +383,24 @@ package body Tcp_Util is
     -- Call callback
     Host := Socket.Get_Destination_Host (New_Dscr);
     Port := Socket.Get_Destination_Port (New_Dscr);
-    if Rec.CB /= null then
-      Rec.CB (Rec.Port, Rec.Dscr, Port, Host, New_Dscr);
+    if Rec.Cb /= null then
+      Rec.Cb (Rec.Port, Rec.Dscr, Port, Host, New_Dscr);
     end if;
     return True;
-  end Acception_Fd_CB;
+  end Acception_Fd_Cb;
 
   -- Accept connections to a local port
   -- Dscr is set to the socket accepting connections
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
-                         Acception_CB : in Acception_Callback_Access;
+                         Acception_Cb : in Acception_Callback_Access;
                          Dscr         : in out Socket.Socket_Dscr;
                          Num          : out Port_Num) is
     Rec : Accepting_Rec;
   begin
     -- Initialise Rec
     Rec.Port := 0;
-    Rec.CB := Acception_CB;
+    Rec.Cb := Acception_Cb;
     Rec.Dscr := Socket.No_Socket;
 
     -- Open socket
@@ -420,7 +420,7 @@ package body Tcp_Util is
     Num := Rec.Port;
 
     -- Add callback on fd
-    X_Mng.X_Add_CallBack (Rec.Fd, True, Acception_Fd_CB'access);
+    X_Mng.X_Add_CallBack (Rec.Fd, True, Acception_Fd_Cb'access);
 
     -- Store Rec
     Acc_List_Mng.Insert (Acc_List, Rec);
@@ -457,7 +457,7 @@ package body Tcp_Util is
   type Sending_Rec is record
     Dscr : Socket.Socket_Dscr;
     Fd   : X_Mng.File_Desc;
-    CB : End_Overflow_Callback_Access;
+    Cb : End_Overflow_Callback_Access;
   end record;
 
   Package Sen_List_Mng is new Dynamic_List (Sending_Rec);
@@ -490,7 +490,7 @@ package body Tcp_Util is
   end Delete_Current_Sen;
 
   -- Sending callback on fd
-  function Sending_CB (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  function Sending_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
   return Boolean is
     Rec : Sending_Rec;
   begin
@@ -513,15 +513,15 @@ package body Tcp_Util is
     Delete_Current_Sen;
 
     -- Call user callbak
-    if Rec.CB /= null then
-      Rec.CB (Rec.Dscr);
+    if Rec.Cb /= null then
+      Rec.Cb (Rec.Dscr);
     end if;
     return False;
-  end Sending_CB;
+  end Sending_Cb;
 
   -- Send message, handling overflow
   function Send (Dscr               : in Socket.Socket_Dscr;
-                 End_Of_Overflow_CB : in End_Overflow_Callback_Access;
+                 End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean is
     Rec : Sending_Rec;
@@ -539,11 +539,11 @@ package body Tcp_Util is
     -- Handle overflow : build and store rec
     Rec.Dscr := Dscr;
     Rec.Fd := Socket.Fd_Of (Dscr);
-    Rec.CB := End_Of_Overflow_CB;
+    Rec.Cb := End_Of_Overflow_Cb;
     Sen_List_Mng.Insert (Sen_List, Rec);
 
     -- Hook our callback in write
-    X_Mng.X_Add_CallBack (Rec.Fd, False, Sending_CB'access);
+    X_Mng.X_Add_CallBack (Rec.Fd, False, Sending_Cb'access);
     return False;
   end Send;
       

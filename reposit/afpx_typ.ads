@@ -1,92 +1,92 @@
-with CON_IO, TEXT_HANDLER, DIRECTORY;
-package AFPX_TYP is
+with Con_Io, Text_Handler, Directory;
+package Afpx_Typ is
 
   -- Version of AFPX
-  AFPX_VERSION : constant FLOAT := 2.1;
+  Afpx_Version : constant Float := 2.1;
 
   -- Files path
-  DEST_PATH : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN + 1);
+  Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
 
   -- Files name
-  DSCR_FILE_NAME : constant STRING := "AFPX.DSC";
-  FLD_FILE_NAME  : constant STRING := "AFPX.FLD";
-  INIT_FILE_NAME : constant STRING := "AFPX.INI";
+  Dscr_File_Name : constant String := "Afpx.Dsc";
+  Fld_File_Name  : constant String := "Afpx.Fld";
+  Init_File_Name : constant String := "Afpx.Ini";
 
   -- Descriptor, field index
-  type DESCRIPTOR_RANGE is new POSITIVE range 1 .. 50;
-  type ABSOLUTE_FIELD_RANGE is new NATURAL range 0 .. 200;
-  subtype FIELD_RANGE is ABSOLUTE_FIELD_RANGE
-          range 1 .. ABSOLUTE_FIELD_RANGE 'LAST;
+  type Descriptor_Range is new Positive range 1 .. 50;
+  type Absolute_Field_Range is new Natural range 0 .. 200;
+  subtype Field_Range is Absolute_Field_Range
+          range 1 .. Absolute_Field_Range 'Last;
 
   -- A descriptor
-  type DSCR_REC is record
+  type Dscr_Rec is record
     -- To be checked prior to loading
-    VERSION    : FLOAT;
+    Version    : Float;
     -- To generate refresh. True in file if used
-    MODIFIED   : BOOLEAN;
+    Modified   : Boolean;
     -- In the file: index of the dscr for fields and init.
     -- In memory, its No
-    DSCR_INDEX : DESCRIPTOR_RANGE;
+    Dscr_Index : Descriptor_Range;
     -- Nb of fields of the dscr
-    NB_FIELDS  : ABSOLUTE_FIELD_RANGE;
+    Nb_Fields  : Absolute_Field_Range;
   end record;
-  type DESCRIPTORS_ARRAY is array (DESCRIPTOR_RANGE) of DSCR_REC;
+  type Descriptors_Array is array (Descriptor_Range) of Dscr_Rec;
 
   -- Field kind
-  type FIELD_KIND_LIST is (PUT, BUTTON, GET);
+  type Field_Kind_List is (Put, Button, Get);
 
   -- Field colors
-  type COLORS_REC is record
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BLINK_STAT : CON_IO.EFFECTIVE_BLINK_STATS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
-    SELECTED   : CON_IO.EFFECTIVE_BASIC_COLORS;
+  type Colors_Rec is record
+    Foreground : Con_Io.Effective_Colors;
+    Blink_Stat : Con_Io.Effective_Blink_Stats;
+    Background : Con_Io.Effective_Basic_Colors;
+    Selected   : Con_Io.Effective_Basic_Colors;
   end record;
 
   -- Width and height of a field
-  subtype HEIGHT_RANGE is POSITIVE range 1 .. CON_IO.ROW_RANGE_LAST + 1;
-  subtype WIDTH_RANGE  is POSITIVE range 1 .. CON_IO.COL_RANGE_LAST + 1;
+  subtype Height_Range is Positive range 1 .. Con_Io.Row_Range_Last + 1;
+  subtype Width_Range  is Positive range 1 .. Con_Io.Col_Range_Last + 1;
 
   -- Characters of the fields
-  MAX_INIT_LEN : constant INTEGER :=
-   (CON_IO.ROW_RANGE_LAST + 1) * (CON_IO.COL_RANGE_LAST + 1);
-  subtype CHAR_STR_RANGE is POSITIVE range 1 .. MAX_INIT_LEN;
+  Max_Init_Len : constant Integer :=
+   (Con_Io.Row_Range_Last + 1) * (Con_Io.Col_Range_Last + 1);
+  subtype Char_Str_Range is Positive range 1 .. Max_Init_Len;
 
   -- A field
-  type FIELD_REC is record
+  type Field_Rec is record
     -- First (0) field is the LIST.
     --   Set if KIND is BUTTON, and not if KIND is PUT
     -- Others are fields
-    KIND : FIELD_KIND_LIST;
+    Kind : Field_Kind_List;
     -- Field activation
-    ACTIVATED : BOOLEAN;
+    Activated : Boolean;
     -- Field protection for GET / BUTTON fields
-    ISPROTECTED : BOOLEAN;
+    Isprotected : Boolean;
     -- Upper left, lower_right corners of the field
-    UPPER_LEFT, LOWER_RIGHT : CON_IO.SQUARE;
+    Upper_Left, Lower_Right : Con_Io.Square;
     -- Width, height
-    HEIGHT : HEIGHT_RANGE;
-    WIDTH  : WIDTH_RANGE;
+    Height : Height_Range;
+    Width  : Width_Range;
     -- Colors
-    COLORS : COLORS_REC;
+    Colors : Colors_Rec;
     -- Index in CHAR_STR of start of field content
-    CHAR_INDEX : CHAR_STR_RANGE;
+    Char_Index : Char_Str_Range;
   end record;
 
   -- The array of fields of current descriptor
-  type FIELDS_ARRAY is array (ABSOLUTE_FIELD_RANGE) of FIELD_REC;
+  type Fields_Array is array (Absolute_Field_Range) of Field_Rec;
 
   -- The init/current charcters of current descriptor
-  subtype CHAR_STR is STRING (CHAR_STR_RANGE);
+  subtype Char_Str is String (Char_Str_Range);
 
 
   -- Check is square (relative to field) is in field
-  function IN_FIELD (FIELD  : in FIELD_REC;
-                     SQUARE : in CON_IO.SQUARE) return BOOLEAN;
+  function In_Field (Field  : in Field_Rec;
+                     Square : in Con_Io.Square) return Boolean;
 
   -- Check is square (absolute) is in field
-  function IN_FIELD_ABSOLUTE (FIELD  : in FIELD_REC;
-                              SQUARE : in CON_IO.SQUARE) return BOOLEAN;
+  function In_Field_Absolute (Field  : in Field_Rec;
+                              Square : in Con_Io.Square) return Boolean;
 
-end AFPX_TYP;
+end Afpx_Typ;
 

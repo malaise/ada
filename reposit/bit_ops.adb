@@ -1,111 +1,111 @@
-with UNCHECKED_CONVERSION;
-with SYSTEM.BIT_OPS;
-with INTERFACES;
+with Unchecked_Conversion;
+with System.Bit_Ops;
+with Interfaces;
 
-package body BIT_OPS is
+package body Bit_Ops is
 
-  function TO_UNSIGNED_32 is new UNCHECKED_CONVERSION
-    (SOURCE => INTEGER, TARGET => INTERFACES.UNSIGNED_32);
-  function TO_INTEGER is new UNCHECKED_CONVERSION
-    (SOURCE => INTERFACES.UNSIGNED_32, TARGET => INTEGER);
+  function To_Unsigned_32 is new Unchecked_Conversion
+    (Source => Integer, Target => Interfaces.Unsigned_32);
+  function To_Integer is new Unchecked_Conversion
+    (Source => Interfaces.Unsigned_32, Target => Integer);
 
-  function TO_UNSIGNED_64 is new UNCHECKED_CONVERSION
-    (SOURCE => LONG_LONG_INTEGER, TARGET => INTERFACES.UNSIGNED_64);
-  function TO_LONG_LONG_INTEGER is new UNCHECKED_CONVERSION
-    (SOURCE => INTERFACES.UNSIGNED_64, TARGET => LONG_LONG_INTEGER);
+  function To_Unsigned_64 is new Unchecked_Conversion
+    (Source => Long_Long_Integer, Target => Interfaces.Unsigned_64);
+  function To_Long_Long_Integer is new Unchecked_Conversion
+    (Source => Interfaces.Unsigned_64, Target => Long_Long_Integer);
 
-  function "AND" (LEFT, RIGHT : INTEGER) return INTEGER is
-    RES : INTEGER;
+  function "And" (Left, Right : Integer) return Integer is
+    Res : Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_AND (LEFT'ADDRESS, LEFT'SIZE,
-                            RIGHT'ADDRESS, RIGHT'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "AND";
+    System.Bit_Ops.Bit_And (Left'Address, Left'Size,
+                            Right'Address, Right'Size,
+                            Res'Address);
+    return Res;
+  end "And";
 
-  function "OR"  (LEFT, RIGHT : INTEGER) return INTEGER is
-    RES : INTEGER;
+  function "Or"  (Left, Right : Integer) return Integer is
+    Res : Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_OR (LEFT'ADDRESS, LEFT'SIZE,
-                            RIGHT'ADDRESS, RIGHT'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "OR";
+    System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
+                            Right'Address, Right'Size,
+                            Res'Address);
+    return Res;
+  end "Or";
 
-  function "XOR" (LEFT, RIGHT : INTEGER) return INTEGER is
-    RES : INTEGER;
+  function "Xor" (Left, Right : Integer) return Integer is
+    Res : Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_XOR (LEFT'ADDRESS, LEFT'SIZE,
-                            RIGHT'ADDRESS, RIGHT'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "XOR";
+    System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
+                            Right'Address, Right'Size,
+                            Res'Address);
+    return Res;
+  end "Xor";
 
-  function "NOT" (VAL : INTEGER) return INTEGER is
-    RES : INTEGER;
+  function "Not" (Val : Integer) return Integer is
+    Res : Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_NOT (VAL'ADDRESS, VAL'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "NOT";
+    System.Bit_Ops.Bit_Not (Val'Address, Val'Size,
+                            Res'Address);
+    return Res;
+  end "Not";
 
-  function SHL (VAL : INTEGER; BITS : INTEGER) return INTEGER is
+  function Shl (Val : Integer; Bits : Integer) return Integer is
   begin
-    return TO_INTEGER(INTERFACES.SHIFT_LEFT(TO_UNSIGNED_32(VAL), BITS));
-  end SHL;
+    return To_Integer(Interfaces.Shift_Left(To_Unsigned_32(Val), Bits));
+  end Shl;
 
-  function SHR (VAL : INTEGER; BITS : INTEGER) return INTEGER is
+  function Shr (Val : Integer; Bits : Integer) return Integer is
   begin
-    return TO_INTEGER(INTERFACES.SHIFT_RIGHT(TO_UNSIGNED_32(VAL), BITS));
-  end SHR;
+    return To_Integer(Interfaces.Shift_Right(To_Unsigned_32(Val), Bits));
+  end Shr;
 
-  function "AND" (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER is
-    RES : LONG_LONG_INTEGER;
+  function "And" (Left, Right : Long_Long_Integer) return Long_Long_Integer is
+    Res : Long_Long_Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_AND (LEFT'ADDRESS, LEFT'SIZE,
-                            RIGHT'ADDRESS, RIGHT'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "AND";
+    System.Bit_Ops.Bit_And (Left'Address, Left'Size,
+                            Right'Address, Right'Size,
+                            Res'Address);
+    return Res;
+  end "And";
 
-  function "OR"  (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER is
-    RES : LONG_LONG_INTEGER;
+  function "Or"  (Left, Right : Long_Long_Integer) return Long_Long_Integer is
+    Res : Long_Long_Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_OR (LEFT'ADDRESS, LEFT'SIZE,
-                            RIGHT'ADDRESS, RIGHT'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "OR";
+    System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
+                            Right'Address, Right'Size,
+                            Res'Address);
+    return Res;
+  end "Or";
 
-  function "XOR" (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER is
-    RES : LONG_LONG_INTEGER;
+  function "Xor" (Left, Right : Long_Long_Integer) return Long_Long_Integer is
+    Res : Long_Long_Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_XOR (LEFT'ADDRESS, LEFT'SIZE,
-                            RIGHT'ADDRESS, RIGHT'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "XOR";
+    System.Bit_Ops.Bit_Xor (Left'Address, Left'Size,
+                            Right'Address, Right'Size,
+                            Res'Address);
+    return Res;
+  end "Xor";
 
-  function "NOT" (VAL : LONG_LONG_INTEGER) return LONG_LONG_INTEGER is
-    RES : LONG_LONG_INTEGER;
+  function "Not" (Val : Long_Long_Integer) return Long_Long_Integer is
+    Res : Long_Long_Integer;
   begin
-    SYSTEM.BIT_OPS.BIT_NOT (VAL'ADDRESS, VAL'SIZE,
-                            RES'ADDRESS);
-    return RES;
-  end "NOT";
+    System.Bit_Ops.Bit_Not (Val'Address, Val'Size,
+                            Res'Address);
+    return Res;
+  end "Not";
 
-  function SHL (VAL : LONG_LONG_INTEGER; BITS : INTEGER)
-  return LONG_LONG_INTEGER is
+  function Shl (Val : Long_Long_Integer; Bits : Integer)
+  return Long_Long_Integer is
   begin
-    return TO_LONG_LONG_INTEGER(
-      INTERFACES.SHIFT_LEFT(TO_UNSIGNED_64(VAL), BITS));
-  end SHL;
+    return To_Long_Long_Integer(
+      Interfaces.Shift_Left(To_Unsigned_64(Val), Bits));
+  end Shl;
 
-  function SHR (VAL : LONG_LONG_INTEGER; BITS : INTEGER)
-  return LONG_LONG_INTEGER is
+  function Shr (Val : Long_Long_Integer; Bits : Integer)
+  return Long_Long_Integer is
   begin
-    return TO_LONG_LONG_INTEGER(
-      INTERFACES.SHIFT_RIGHT(TO_UNSIGNED_64(VAL), BITS));
-  end SHR;
+    return To_Long_Long_Integer(
+      Interfaces.Shift_Right(To_Unsigned_64(Val), Bits));
+  end Shr;
 
-end BIT_OPS;
+end Bit_Ops;

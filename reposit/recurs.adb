@@ -1,128 +1,128 @@
-with MY_IO, TEXT_HANDLER, DIRECTORY;
-procedure RECURS (
- NAME_OF_DIR : in BOOLEAN := TRUE;
- IN_CURRENT : in BOOLEAN := TRUE;
- FIRST_LEVEL_ONLY : in BOOLEAN := FALSE;
- LEAVES_ONLY : in BOOLEAN := FALSE;
- STOP_ON_ERROR : in BOOLEAN := TRUE) is
+with My_Io, Text_Handler, Directory;
+procedure Recurs (
+ Name_Of_Dir : in Boolean := True;
+ In_Current : in Boolean := True;
+ First_Level_Only : in Boolean := False;
+ Leaves_Only : in Boolean := False;
+ Stop_On_Error : in Boolean := True) is
 
-  CURRENT_LEVEL : NATURAL := 0;
-  ABORT_EXPLORE : exception;
-  DOT_DIR     : constant STRING := ".";
-  DOT_DOT_DIR : constant STRING := "..";
+  Current_Level : Natural := 0;
+  Abort_Explore : exception;
+  Dot_Dir     : constant String := ".";
+  Dot_Dot_Dir : constant String := "..";
 
-  subtype DIR_TXT is TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
+  subtype Dir_Txt is Text_Handler.Text (Directory.Max_Dir_Name_Len);
 
-  procedure EXPLORE (CURR_NAME : in STRING) is
-    DIR_DSC : DIRECTORY.DIR_DESC;
-    FULL_CURR_NAME, NEW_NAME : DIR_TXT;
-    KIND : DIRECTORY.FILE_KIND_LIST;
-    RIGHTS : NATURAL;
-    MTIME : DIRECTORY.TIME_T;
-    NB_SONS : NATURAL;
-    use DIRECTORY;
+  procedure Explore (Curr_Name : in String) is
+    Dir_Dsc : Directory.Dir_Desc;
+    Full_Curr_Name, New_Name : Dir_Txt;
+    Kind : Directory.File_Kind_List;
+    Rights : Natural;
+    Mtime : Directory.Time_T;
+    Nb_Sons : Natural;
+    use Directory;
 
-    procedure DO_HERE is
+    procedure Do_Here is
     begin
       -- Display current drive and directory
-      if NAME_OF_DIR then
-        MY_IO.NEW_LINE;
-        MY_IO.PUT ("==> ");
-        MY_IO.PUT (TEXT_HANDLER.VALUE(FULL_CURR_NAME));
-        MY_IO.PUT_LINE (" <==");
+      if Name_Of_Dir then
+        My_Io.New_Line;
+        My_Io.Put ("==> ");
+        My_Io.Put (Text_Handler.Value(Full_Curr_Name));
+        My_Io.Put_Line (" <==");
       end if;
 
-      if not DO_IN_DIR and then STOP_ON_ERROR then
-        MY_IO.PUT_LINE (" *** Abort ***");
-        raise ABORT_EXPLORE;
+      if not Do_In_Dir and then Stop_On_Error then
+        My_Io.Put_Line (" *** Abort ***");
+        raise Abort_Explore;
       end if;
-    end DO_HERE;
+    end Do_Here;
 
   begin
 
     -- Go in current directory
     begin
-      DIRECTORY.CHANGE_CURRENT (CURR_NAME);
+      Directory.Change_Current (Curr_Name);
     exception
-      when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
-        MY_IO.NEW_LINE;
-        MY_IO.PUT ("Error changing to directory " & CURR_NAME);
-        if STOP_ON_ERROR then
-          MY_IO.PUT_LINE (" *** Abort ***");
-          raise ABORT_EXPLORE;
+      when Directory.Name_Error | Directory.Access_Error =>
+        My_Io.New_Line;
+        My_Io.Put ("Error changing to directory " & Curr_Name);
+        if Stop_On_Error then
+          My_Io.Put_Line (" *** Abort ***");
+          raise Abort_Explore;
         else
-           MY_IO.NEW_LINE;
+           My_Io.New_Line;
            return;
         end if;
     end;
 
-    DIRECTORY.GET_CURRENT (FULL_CURR_NAME);
+    Directory.Get_Current (Full_Curr_Name);
 
     -- Do current dir when not LEAVES_ONLY
-    if not LEAVES_ONLY then
-      if CURRENT_LEVEL /= 0 or else IN_CURRENT then
+    if not Leaves_Only then
+      if Current_Level /= 0 or else In_Current then
         -- Check if do action in intial dir
-        DO_HERE;
+        Do_Here;
       end if;
       -- Optim: Done it if first level only
-      if CURRENT_LEVEL = 1 and then FIRST_LEVEL_ONLY then
+      if Current_Level = 1 and then First_Level_Only then
         return;
       end if;
     end if;
 
     -- Go to next sub dir
-    NB_SONS := 0;
-    DIR_DSC := DIRECTORY.OPEN(TEXT_HANDLER.VALUE(FULL_CURR_NAME));
+    Nb_Sons := 0;
+    Dir_Dsc := Directory.Open(Text_Handler.Value(Full_Curr_Name));
     loop
       begin
-        DIRECTORY.NEXT_ENTRY (DIR_DSC, NEW_NAME);
+        Directory.Next_Entry (Dir_Dsc, New_Name);
       exception
-        when DIRECTORY.END_ERROR =>
+        when Directory.End_Error =>
           exit;
       end;
       begin
-        DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(NEW_NAME), KIND, RIGHTS, MTIME);
+        Directory.File_Stat (Text_Handler.Value(New_Name), Kind, Rights, Mtime);
       exception
-        when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
+        when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?
-          KIND := DIRECTORY.UNKNOWN;
+          Kind := Directory.Unknown;
       end;
-      if KIND = DIRECTORY.DIR
-      and then TEXT_HANDLER.VALUE(NEW_NAME) /= DOT_DIR 
-      and then TEXT_HANDLER.VALUE(NEW_NAME) /= DOT_DOT_DIR then
+      if Kind = Directory.Dir
+      and then Text_Handler.Value(New_Name) /= Dot_Dir 
+      and then Text_Handler.Value(New_Name) /= Dot_Dot_Dir then
         -- Restart with next son if not FIRST_LEVEL_ONLY
-        if CURRENT_LEVEL /= 1 or else not FIRST_LEVEL_ONLY then
-          CURRENT_LEVEL := CURRENT_LEVEL + 1;
-          EXPLORE (TEXT_HANDLER.VALUE(NEW_NAME));
-          CURRENT_LEVEL := CURRENT_LEVEL - 1;
-          DIRECTORY.CHANGE_CURRENT (TEXT_HANDLER.VALUE(FULL_CURR_NAME));
+        if Current_Level /= 1 or else not First_Level_Only then
+          Current_Level := Current_Level + 1;
+          Explore (Text_Handler.Value(New_Name));
+          Current_Level := Current_Level - 1;
+          Directory.Change_Current (Text_Handler.Value(Full_Curr_Name));
         end if;
-        NB_SONS := NB_SONS + 1;
+        Nb_Sons := Nb_Sons + 1;
       end if;
     end loop;
-    DIRECTORY.CLOSE(DIR_DSC);
+    Directory.Close(Dir_Dsc);
 
 
     -- When LEAVES_ONLY, do current dir after counting sons
-    if NB_SONS = 0 and then LEAVES_ONLY then
+    if Nb_Sons = 0 and then Leaves_Only then
       -- Check if do action in current dir
-      if CURRENT_LEVEL /= 0 or else IN_CURRENT then
-        DO_HERE;
+      if Current_Level /= 0 or else In_Current then
+        Do_Here;
       end if;
     end if;
 
   exception
-    when ABORT_EXPLORE =>
-      if CURRENT_LEVEL = 0 then
+    when Abort_Explore =>
+      if Current_Level = 0 then
         -- Back to start directory
-        DIRECTORY.CHANGE_CURRENT (TEXT_HANDLER.VALUE(FULL_CURR_NAME));
+        Directory.Change_Current (Text_Handler.Value(Full_Curr_Name));
       else
-        CURRENT_LEVEL := CURRENT_LEVEL - 1;
+        Current_Level := Current_Level - 1;
         raise;
       end if;
-  end EXPLORE;
+  end Explore;
 
 begin -- RECURS
-  EXPLORE (DIRECTORY.GET_CURRENT);
+  Explore (Directory.Get_Current);
 end recurs;
 

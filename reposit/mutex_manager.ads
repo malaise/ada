@@ -1,40 +1,40 @@
-with SYSTEM;
+with System;
 
 -- Mutex management
-package MUTEX_MANAGER is
+package Mutex_Manager is
 
-  pragma ELABORATE_BODY(MUTEX_MANAGER);
+  pragma Elaborate_Body(Mutex_Manager);
   -- Mutex object, free at creation
-  type MUTEX is limited private;
+  type Mutex is limited private;
 
   -- Get un mutex.
   --  If dealy is negative, wait until mutex is got
   --  If delay is null, try and give up if not free
   --  If delay is positive, try during the specified delay
-  function GET_MUTEX (A_MUTEX      : MUTEX;
-                      WAITING_TIME : DURATION) return BOOLEAN;
+  function Get_Mutex (A_Mutex      : Mutex;
+                      Waiting_Time : Duration) return Boolean;
 
   -- Release a mutex. Exception is raised if the mutex was already free.
-  procedure RELEASE_MUTEX (A_MUTEX : in MUTEX);
+  procedure Release_Mutex (A_Mutex : in Mutex);
 
-  MUTEX_ALREADY_FREE : exception;
+  Mutex_Already_Free : exception;
 
 private
 
-  task type MUT_TASK is
+  task type Mut_Task is
     -- Prio max
-    pragma PRIORITY(SYSTEM.PRIORITY'LAST);
+    pragma Priority(System.Priority'Last);
 
-    entry MUT_GET;
-    entry MUT_REL(STATUS : out BOOLEAN);
-  end MUT_TASK;
+    entry Mut_Get;
+    entry Mut_Rel(Status : out Boolean);
+  end Mut_Task;
 
-  type MUT_PTR is access MUT_TASK;
+  type Mut_Ptr is access Mut_Task;
 
   -- Create a new mutex
-  type MUTEX is record
-    POINTER : MUT_PTR := new MUT_TASK;
+  type Mutex is record
+    Pointer : Mut_Ptr := new Mut_Task;
   end record;
 
-end MUTEX_MANAGER;
+end Mutex_Manager;
 

@@ -1,213 +1,213 @@
-package body GET_LINE is
+package body Get_Line is
 
 
-  F : TEXT_IO.FILE_TYPE;
-  CURRENT_LINE : LINE_ARRAY;
-  NB_WORDS : WORD_COUNT;
-  CURRENT_LINE_NO : TEXT_IO.COUNT;
-  CUR : POSITIVE;
-  CURRENT_WHOLE_LINE : LINE_TXT;
-  FIRST_WORD : LINE_TXT;
-  PARSED : BOOLEAN;
-  BUFF : STRING (1 .. MAX_LINE_LEN+1);
-  WORD : WORD_TXT;
-  LAST : NATURAL;
+  F : Text_Io.File_Type;
+  Current_Line : Line_Array;
+  Nb_Words : Word_Count;
+  Current_Line_No : Text_Io.Count;
+  Cur : Positive;
+  Current_Whole_Line : Line_Txt;
+  First_Word : Line_Txt;
+  Parsed : Boolean;
+  Buff : String (1 .. Max_Line_Len+1);
+  Word : Word_Txt;
+  Last : Natural;
 
   -- Opens the file. Exceptions are the one of TEXT_IO.OPEN (IN_FILE)
   -- Loads the first line
-  procedure OPEN (FILE_NAME : in STRING) is
+  procedure Open (File_Name : in String) is
   begin
-    CURRENT_LINE_NO := 0;
-    TEXT_IO.OPEN (F, TEXT_IO.IN_FILE, FILE_NAME);
-    READ_NEXT_LINE;
-  end OPEN;
+    Current_Line_No := 0;
+    Text_Io.Open (F, Text_Io.In_File, File_Name);
+    Read_Next_Line;
+  end Open;
 
-  procedure CLOSE is
+  procedure Close is
   begin
-    TEXT_IO.CLOSE (F);
-  end CLOSE;
+    Text_Io.Close (F);
+  end Close;
 
   -- Next word of BUFF (from CUR). "" if no more word.
-  function GET_NEXT_WORD return STRING is
-    F, L : POSITIVE;
-    IN_WORD : BOOLEAN := TRUE;
+  function Get_Next_Word return String is
+    F, L : Positive;
+    In_Word : Boolean := True;
   begin
-    if CUR > LAST then
+    if Cur > Last then
       return "";
     end if;
-    F := CUR;
-    for I in CUR .. LAST loop
-      if BUFF(I) = ' ' or BUFF(I) = ASCII.HT then
-        if IN_WORD then
+    F := Cur;
+    for I in Cur .. Last loop
+      if Buff(I) = ' ' or Buff(I) = Ascii.Ht then
+        if In_Word then
           L := I;
-          IN_WORD := FALSE;
+          In_Word := False;
         end if;
       else
-        if not IN_WORD then
-            CUR := I;
-            return BUFF (F .. L-1);
+        if not In_Word then
+            Cur := I;
+            return Buff (F .. L-1);
         end if;
       end if;
     end loop;
-    CUR := LAST + 1;
-    if IN_WORD then
-      return BUFF (F .. LAST);
+    Cur := Last + 1;
+    if In_Word then
+      return Buff (F .. Last);
     else
       return "";
     end if;
-  end GET_NEXT_WORD;
+  end Get_Next_Word;
 
   -- Reset CUR and parse leading spaces
-  procedure RESET_WORD is
+  procedure Reset_Word is
   begin
-    NB_WORDS := 0;
-    for I in 1 .. LAST loop
-      if BUFF(I) = ' ' or BUFF(I) = ASCII.HT then
+    Nb_Words := 0;
+    for I in 1 .. Last loop
+      if Buff(I) = ' ' or Buff(I) = Ascii.Ht then
         null;
       else
-        CUR := I;
+        Cur := I;
         return;
       end if;
     end loop;
-    CUR := LAST + 1;
-  end RESET_WORD;
+    Cur := Last + 1;
+  end Reset_Word;
 
   -- Current line number
-  function GET_LINE_NO return TEXT_IO.POSITIVE_COUNT is
+  function Get_Line_No return Text_Io.Positive_Count is
   begin
-    if not TEXT_IO.IS_OPEN (F) then
-      raise NOT_OPEN;
+    if not Text_Io.Is_Open (F) then
+      raise Not_Open;
     end if;
-    return CURRENT_LINE_NO;
-  end GET_LINE_NO;
+    return Current_Line_No;
+  end Get_Line_No;
 
   -- Get next line
-  procedure READ_NEXT_LINE is
+  procedure Read_Next_Line is
   begin
-    PARSED := FALSE;
-    if not TEXT_IO.IS_OPEN (F) then
-      raise NOT_OPEN;
+    Parsed := False;
+    if not Text_Io.Is_Open (F) then
+      raise Not_Open;
     end if;
 
     loop
       -- Get line from file
       begin
-        TEXT_IO.GET_LINE (F, BUFF, LAST);
+        Text_Io.Get_Line (F, Buff, Last);
       exception
-        when TEXT_IO.END_ERROR =>
-          raise NO_MORE_LINE;
+        when Text_Io.End_Error =>
+          raise No_More_Line;
       end;
 
-      CURRENT_LINE_NO := TEXT_IO. "+" (CURRENT_LINE_NO, 1);
+      Current_Line_No := Text_Io. "+" (Current_Line_No, 1);
 
       -- Check got line length
-      if LAST = BUFF'LAST then
-        raise LINE_TOO_LONG;
+      if Last = Buff'Last then
+        raise Line_Too_Long;
       end if;
 
       -- Store the line as it is in CURRENT_WHOLE_LINE
-      TEXT_HANDLER.SET (CURRENT_WHOLE_LINE, BUFF(1 .. LAST));
+      Text_Handler.Set (Current_Whole_Line, Buff(1 .. Last));
 
       -- Remove trailing spaces
-      while LAST > 0
-       and then (BUFF(LAST) = ' ' or else BUFF(LAST) = ASCII.HT) loop
-        LAST := LAST - 1;
+      while Last > 0
+       and then (Buff(Last) = ' ' or else Buff(Last) = Ascii.Ht) loop
+        Last := Last - 1;
       end loop;
 
       -- Remove leading spaces
-      RESET_WORD;
+      Reset_Word;
 
       -- Parse first word
-      TEXT_HANDLER.SET (FIRST_WORD, GET_NEXT_WORD);
+      Text_Handler.Set (First_Word, Get_Next_Word);
 
       -- Done when no check of comments
       -- else go on if empty or comment
-      exit when COMMENT = ASCII.NUL
-      or else (not TEXT_HANDLER.EMPTY(FIRST_WORD)
-               and then TEXT_HANDLER.VALUE(FIRST_WORD)(1) /= COMMENT);
+      exit when Comment = Ascii.Nul
+      or else (not Text_Handler.Empty(First_Word)
+               and then Text_Handler.Value(First_Word)(1) /= Comment);
     end loop;
 
-  end READ_NEXT_LINE;
+  end Read_Next_Line;
 
 
   -- Get the whole line (not parsed)
-  procedure GET_WHOLE_LINE (LINE : in out LINE_TXT) is
+  procedure Get_Whole_Line (Line : in out Line_Txt) is
   begin
-    TEXT_HANDLER.SET (LINE, CURRENT_WHOLE_LINE);
-  end GET_WHOLE_LINE;
+    Text_Handler.Set (Line, Current_Whole_Line);
+  end Get_Whole_Line;
 
 
     -- Get the first significant word of the line (not parsed)
-  function GET_FIRST_WORD return STRING is
+  function Get_First_Word return String is
   begin
-    if not TEXT_IO.IS_OPEN (F) then
-      raise NOT_OPEN;
+    if not Text_Io.Is_Open (F) then
+      raise Not_Open;
     end if;
-    return TEXT_HANDLER.VALUE(FIRST_WORD);
-  end GET_FIRST_WORD;
+    return Text_Handler.Value(First_Word);
+  end Get_First_Word;
 
 
 
-  procedure PARSE_WORDS is
+  procedure Parse_Words is
   begin
-    if PARSED then
+    if Parsed then
       return;
     end if;
-    RESET_WORD;
+    Reset_Word;
     -- Parse words
     loop
       -- Check word length
       begin
-        TEXT_HANDLER.SET (WORD, GET_NEXT_WORD);
+        Text_Handler.Set (Word, Get_Next_Word);
       exception
-        when CONSTRAINT_ERROR =>
-          raise WORD_TOO_LONG;
+        when Constraint_Error =>
+          raise Word_Too_Long;
       end;
 
       -- Check no more word in line
-      if TEXT_HANDLER.LENGTH(WORD) = 0 then
+      if Text_Handler.Length(Word) = 0 then
         exit;
       end if;
 
       -- Check word count
-      if NB_WORDS = WORD_RANGE'LAST then
-        raise TOO_MANY_WORDS;
+      if Nb_Words = Word_Range'Last then
+        raise Too_Many_Words;
       end if;
 
       -- Store word
-      NB_WORDS := NB_WORDS + 1;
-      TEXT_HANDLER.SET (CURRENT_LINE(NB_WORDS), WORD);
+      Nb_Words := Nb_Words + 1;
+      Text_Handler.Set (Current_Line(Nb_Words), Word);
     end loop;
-    PARSED := TRUE;
-  end PARSE_WORDS;
+    Parsed := True;
+  end Parse_Words;
 
 
   -- Number of words in currently loaded line
-  function GET_WORD_NUMBER return WORD_COUNT is
+  function Get_Word_Number return Word_Count is
   begin
-    if not TEXT_IO.IS_OPEN (F) then
-      raise NOT_OPEN;
+    if not Text_Io.Is_Open (F) then
+      raise Not_Open;
     end if;
-    PARSE_WORDS;
-    return NB_WORDS;
-  end GET_WORD_NUMBER;
+    Parse_Words;
+    return Nb_Words;
+  end Get_Word_Number;
 
 
   -- Words of the currently loaded line
-  procedure GET_WORDS (LINE : in out LINE_ARRAY) is
+  procedure Get_Words (Line : in out Line_Array) is
   begin
-    if not TEXT_IO.IS_OPEN (F) then
-      raise NOT_OPEN;
+    if not Text_Io.Is_Open (F) then
+      raise Not_Open;
     end if;
-    PARSE_WORDS;
-    for I in 1 .. NB_WORDS loop
-      TEXT_HANDLER.SET (LINE(I), CURRENT_LINE(I));
+    Parse_Words;
+    for I in 1 .. Nb_Words loop
+      Text_Handler.Set (Line(I), Current_Line(I));
     end loop;
-    for I in INTEGER(NB_WORDS) + 1 .. WORD_RANGE'LAST loop
-      TEXT_HANDLER.SET (LINE(I), "");
+    for I in Integer(Nb_Words) + 1 .. Word_Range'Last loop
+      Text_Handler.Set (Line(I), "");
     end loop;
-  end GET_WORDS;
+  end Get_Words;
 
 
-end GET_LINE;
+end Get_Line;
 

@@ -1,69 +1,69 @@
 -- P. MALAISE
-with SYSTEM;
-package TEXT_HANDLER is
+with System;
+package Text_Handler is
 
-  subtype MAX_LEN_RANGE is INTEGER range 0 .. 32*1024;
+  subtype Max_Len_Range is Integer range 0 .. 32*1024;
 
-  type TEXT (MAX_LEN : MAX_LEN_RANGE) is limited private;
+  type Text (Max_Len : Max_Len_Range) is limited private;
 
-  EMPTY_TEXT : constant TEXT;
+  Empty_Text : constant Text;
 
-  function LENGTH (T : TEXT) return MAX_LEN_RANGE;
-  function VALUE  (T : TEXT) return STRING;
-  function EMPTY  (T : TEXT) return BOOLEAN;
+  function Length (T : Text) return Max_Len_Range;
+  function Value  (T : Text) return String;
+  function Empty  (T : Text) return Boolean;
 
-  procedure EMPTY (T : in out TEXT);
+  procedure Empty (T : in out Text);
 
-  function TO_TEXT (S : STRING;    MAX_LEN : MAX_LEN_RANGE) return TEXT;
-  function TO_TEXT (C : CHARACTER; MAX_LEN : MAX_LEN_RANGE) return TEXT;
-  function TO_TEXT (S : STRING)    return TEXT;
-  function TO_TEXT (C : CHARACTER) return TEXT;
+  function To_Text (S : String;    Max_Len : Max_Len_Range) return Text;
+  function To_Text (C : Character; Max_Len : Max_Len_Range) return Text;
+  function To_Text (S : String)    return Text;
+  function To_Text (C : Character) return Text;
 
-  function "&" (LEFT : TEXT;      RIGHT : TEXT)      return TEXT;
-  function "&" (LEFT : TEXT;      RIGHT : STRING)    return TEXT;
-  function "&" (LEFT : STRING;    RIGHT : TEXT)      return TEXT;
-  function "&" (LEFT : TEXT;      RIGHT : CHARACTER) return TEXT;
-  function "&" (LEFT : CHARACTER; RIGHT : TEXT)      return TEXT;
+  function "&" (Left : Text;      Right : Text)      return Text;
+  function "&" (Left : Text;      Right : String)    return Text;
+  function "&" (Left : String;    Right : Text)      return Text;
+  function "&" (Left : Text;      Right : Character) return Text;
+  function "&" (Left : Character; Right : Text)      return Text;
 
-  function "="  (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN;
-  function "<"  (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN;
-  function "<=" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN;
-  function ">"  (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN;
-  function ">=" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN;
+  function "="  (Left : Text; Right : Text) return Boolean;
+  function "<"  (Left : Text; Right : Text) return Boolean;
+  function "<=" (Left : Text; Right : Text) return Boolean;
+  function ">"  (Left : Text; Right : Text) return Boolean;
+  function ">=" (Left : Text; Right : Text) return Boolean;
 
-  procedure SET (TO : in out TEXT; VALUE : in TEXT);
-  procedure SET (TO : in out TEXT; VALUE : in STRING);
-  procedure SET (TO : in out TEXT; VALUE : in CHARACTER);
+  procedure Set (To : in out Text; Value : in Text);
+  procedure Set (To : in out Text; Value : in String);
+  procedure Set (To : in out Text; Value : in Character);
 
-  procedure APPEND (TO : in out TEXT; TAIL : in TEXT);
-  procedure APPEND (TO : in out TEXT; TAIL : in STRING);
-  procedure APPEND (TO : in out TEXT; TAIL : in CHARACTER);
+  procedure Append (To : in out Text; Tail : in Text);
+  procedure Append (To : in out Text; Tail : in String);
+  procedure Append (To : in out Text; Tail : in Character);
 
-  procedure AMEND (TO : in out TEXT; BY : in TEXT;
-   POSITION : in MAX_LEN_RANGE);
-  procedure AMEND (TO : in out TEXT; BY : in STRING;
-   POSITION : in MAX_LEN_RANGE);
-  procedure AMEND (TO : in out TEXT; BY : in CHARACTER;
-   POSITION : in MAX_LEN_RANGE);
+  procedure Amend (To : in out Text; By : in Text;
+   Position : in Max_Len_Range);
+  procedure Amend (To : in out Text; By : in String;
+   Position : in Max_Len_Range);
+  procedure Amend (To : in out Text; By : in Character;
+   Position : in Max_Len_Range);
 
-  function LOCATE (WITHIN : TEXT; FRAGMENT : TEXT; OCCURENCE : POSITIVE := 1)
-   return MAX_LEN_RANGE;
-  function LOCATE (WITHIN : TEXT; FRAGMENT : STRING; OCCURENCE : POSITIVE := 1)
-   return MAX_LEN_RANGE;
-  function LOCATE (WITHIN : TEXT; FRAGMENT : CHARACTER; OCCURENCE : POSITIVE := 1)
-   return MAX_LEN_RANGE;
+  function Locate (Within : Text; Fragment : Text; Occurence : Positive := 1)
+   return Max_Len_Range;
+  function Locate (Within : Text; Fragment : String; Occurence : Positive := 1)
+   return Max_Len_Range;
+  function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1)
+   return Max_Len_Range;
 
   -- Appends ASCII.NULL to FROM.VAL (FROM.MAX_LEN must be long enough).
   -- STRING_ADDRESS is FROM.VAL'ADDRESS and can then be passed to a C function.
-  procedure STRING_FOR_C (FROM : in out TEXT; STRING_ADDRESS : out SYSTEM.ADDRESS);
+  procedure String_For_C (From : in out Text; String_Address : out System.Address);
 
 private
 
-  type TEXT (MAX_LEN : MAX_LEN_RANGE) is record
-    LEN : MAX_LEN_RANGE := 0;
-    VAL : STRING (1..MAX_LEN);
+  type Text (Max_Len : Max_Len_Range) is record
+    Len : Max_Len_Range := 0;
+    Val : String (1..Max_Len);
   end record;
 
-  EMPTY_TEXT : constant TEXT := (MAX_LEN => 0, LEN => 0, VAL => "");
+  Empty_Text : constant Text := (Max_Len => 0, Len => 0, Val => "");
 
-end TEXT_HANDLER;
+end Text_Handler;

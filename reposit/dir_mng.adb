@@ -1,77 +1,77 @@
-package body DIR_MNG is
+package body Dir_Mng is
 
-  DIR_INTERNAL_ERROR : exception;
+  Dir_Internal_Error : exception;
 
-  PATH_SEPARATOR : constant CHARACTER := '/';
+  Path_Separator : constant Character := '/';
 
-  function LESS_THAN (EL1, EL2 : in FILE_ENTRY_REC) return BOOLEAN is
-    use DIRECTORY;
+  function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean is
+    use Directory;
   begin
     -- Only one is dir
-    if EL1.KIND /= EL2.KIND and then
-     (EL1.KIND = DIRECTORY.DIR or else EL2.KIND = DIRECTORY.DIR) then
-      return EL1.KIND = DIRECTORY.DIR;
+    if El1.Kind /= El2.Kind and then
+     (El1.Kind = Directory.Dir or else El2.Kind = Directory.Dir) then
+      return El1.Kind = Directory.Dir;
     else
-      return EL1.NAME (1 .. EL1.LEN) < EL2.NAME (1 .. EL2.LEN);
+      return El1.Name (1 .. El1.Len) < El2.Name (1 .. El2.Len);
     end if;
-  end LESS_THAN;
+  end Less_Than;
 
 
-  procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
-                      DIR  : in STRING := "";
-                      TEMPLATE : in STRING := "") is
-    DIR_DESC : DIRECTORY.DIR_DESC;
-    FILE_REC : FILE_ENTRY_REC;
-    FILE_NAME : FILE_TXT;
-    FILE_RIGHTS : NATURAL;
-    FILE_MTIME : DIRECTORY.TIME_T;
+  procedure List_Dir (List : in out File_List_Mng.List_Type;
+                      Dir  : in String := "";
+                      Template : in String := "") is
+    Dir_Desc : Directory.Dir_Desc;
+    File_Rec : File_Entry_Rec;
+    File_Name : File_Txt;
+    File_Rights : Natural;
+    File_Mtime : Directory.Time_T;
   begin
 
-    if DIR = "" then
-      DIR_DESC := DIRECTORY.OPEN (".");
+    if Dir = "" then
+      Dir_Desc := Directory.Open (".");
     else
-      DIR_DESC := DIRECTORY.OPEN (DIR);
+      Dir_Desc := Directory.Open (Dir);
     end if;
 
     loop
-      TEXT_HANDLER.SET (FILE_NAME, DIRECTORY.NEXT_ENTRY (DIR_DESC));
+      Text_Handler.Set (File_Name, Directory.Next_Entry (Dir_Desc));
 
-      if TEMPLATE = ""
-      or else DIRECTORY.FILE_MATCH(TEXT_HANDLER.VALUE (FILE_NAME),
-                                   TEMPLATE) then
-        FILE_REC.LEN := TEXT_HANDLER.LENGTH (FILE_NAME);
-        FILE_REC.NAME (1 .. FILE_REC.LEN) := TEXT_HANDLER.VALUE (FILE_NAME);
+      if Template = ""
+      or else Directory.File_Match(Text_Handler.Value (File_Name),
+                                   Template) then
+        File_Rec.Len := Text_Handler.Length (File_Name);
+        File_Rec.Name (1 .. File_Rec.Len) := Text_Handler.Value (File_Name);
         begin
-          if DIR = "" then
-            DIRECTORY.FILE_STAT (
-             TEXT_HANDLER.VALUE (FILE_NAME),
-             FILE_REC.KIND, FILE_RIGHTS, FILE_MTIME);
+          if Dir = "" then
+            Directory.File_Stat (
+             Text_Handler.Value (File_Name),
+             File_Rec.Kind, File_Rights, File_Mtime);
           else
-            DIRECTORY.FILE_STAT (
-             DIR & PATH_SEPARATOR & TEXT_HANDLER.VALUE (FILE_NAME),
-             FILE_REC.KIND, FILE_RIGHTS, FILE_MTIME);
+            Directory.File_Stat (
+             Dir & Path_Separator & Text_Handler.Value (File_Name),
+             File_Rec.Kind, File_Rights, File_Mtime);
           end if;
         exception
-          when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
-            FILE_REC.KIND := DIRECTORY.UNKNOWN;
+          when Directory.Name_Error | Directory.Access_Error =>
+            File_Rec.Kind := Directory.Unknown;
         end;
-        FILE_LIST_MNG.INSERT (LIST => LIST,
-                              ITEM => FILE_REC,
-                              WHERE => FILE_LIST_MNG.NEXT);
+        File_List_Mng.Insert (List => List,
+                              Item => File_Rec,
+                              Where => File_List_Mng.Next);
       end if;
     end loop;
   exception
-    when DIRECTORY.END_ERROR =>
-      DIRECTORY.CLOSE (DIR_DESC);
-  end LIST_DIR;
+    when Directory.End_Error =>
+      Directory.Close (Dir_Desc);
+  end List_Dir;
 
-  procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
-                      DIR  : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT;
-                      TEMPLATE : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT) is
+  procedure List_Dir (List : in out File_List_Mng.List_Type;
+                      Dir  : in File_Txt := Text_Handler.Empty_Text;
+                      Template : in File_Txt := Text_Handler.Empty_Text) is
   begin
-    LIST_DIR (LIST, TEXT_HANDLER.VALUE(DIR), TEXT_HANDLER.VALUE(TEMPLATE));
-  end LIST_DIR;
+    List_Dir (List, Text_Handler.Value(Dir), Text_Handler.Value(Template));
+  end List_Dir;
 
 
-end DIR_MNG;
+end Dir_Mng;
 

@@ -1,3 +1,3 @@
-with GENERIC_CON_IO;
-package CON_IO is new GENERIC_CON_IO.ONE_CON_IO(1);
+with Generic_Con_Io;
+package Con_Io is new Generic_Con_Io.One_Con_Io(1);
 

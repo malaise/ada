@@ -1,89 +1,89 @@
-with TEXT_IO, INT_IO, FLO_IO, LONG_IO, BOOL_IO;
-package MY_IO is 
+with Text_Io, Int_Io, Flo_Io, Long_Io, Bool_Io;
+package My_Io is 
 
-  DEFAULT_EXP : TEXT_IO.FIELD := 4; 
+  Default_Exp : Text_Io.Field := 4; 
 
-  procedure PUT(ITEM  : in BOOLEAN; 
-                WIDTH : in TEXT_IO.FIELD := BOOL_IO.DEFAULT_WIDTH; 
-                SET   : in TEXT_IO.TYPE_SET := BOOL_IO.DEFAULT_SETTING)
-    renames BOOL_IO.PUT;
+  procedure Put(Item  : in Boolean; 
+                Width : in Text_Io.Field := Bool_Io.Default_Width; 
+                Set   : in Text_Io.Type_Set := Bool_Io.Default_Setting)
+    renames Bool_Io.Put;
 
-  procedure PUT(ITEM : in CHARACTER) renames TEXT_IO.PUT;
+  procedure Put(Item : in Character) renames Text_Io.Put;
 
-  procedure PUT(ITEM  : in INTEGER;
-                WIDTH : in TEXT_IO.FIELD := INT_IO.DEFAULT_WIDTH;
-                BASE  : in TEXT_IO.NUMBER_BASE := INT_IO.DEFAULT_BASE)
-    renames INT_IO.PUT;
+  procedure Put(Item  : in Integer;
+                Width : in Text_Io.Field := Int_Io.Default_Width;
+                Base  : in Text_Io.Number_Base := Int_Io.Default_Base)
+    renames Int_Io.Put;
 
-  procedure PUT(ITEM  : in LONG_LONG_INTEGER;
-                WIDTH : in TEXT_IO.FIELD := LONG_IO.DEFAULT_WIDTH;
-                BASE  : in TEXT_IO.NUMBER_BASE := LONG_IO.DEFAULT_BASE)
-    renames LONG_IO.PUT;
+  procedure Put(Item  : in Long_Long_Integer;
+                Width : in Text_Io.Field := Long_Io.Default_Width;
+                Base  : in Text_Io.Number_Base := Long_Io.Default_Base)
+    renames Long_Io.Put;
 
-  procedure PUT(ITEM : in FLOAT;
-                FORE : in TEXT_IO.FIELD := FLO_IO.DEFAULT_FORE;
-                AFT  : in TEXT_IO.FIELD := FLO_IO.DEFAULT_AFT;
-                EXP  : in TEXT_IO.FIELD := DEFAULT_EXP) renames FLO_IO.PUT;
+  procedure Put(Item : in Float;
+                Fore : in Text_Io.Field := Flo_Io.Default_Fore;
+                Aft  : in Text_Io.Field := Flo_Io.Default_Aft;
+                Exp  : in Text_Io.Field := Default_Exp) renames Flo_Io.Put;
 
-  procedure PUT(ITEM : in STRING) renames TEXT_IO.PUT;
+  procedure Put(Item : in String) renames Text_Io.Put;
 
-  procedure PUT_LINE(ITEM  : in BOOLEAN;
-                     WIDTH : in TEXT_IO.FIELD := BOOL_IO.DEFAULT_WIDTH;
-                     SET   : in TEXT_IO.TYPE_SET := BOOL_IO.DEFAULT_SETTING);
+  procedure Put_Line(Item  : in Boolean;
+                     Width : in Text_Io.Field := Bool_Io.Default_Width;
+                     Set   : in Text_Io.Type_Set := Bool_Io.Default_Setting);
 
-  procedure PUT_LINE(ITEM : in CHARACTER);
+  procedure Put_Line(Item : in Character);
 
-  procedure PUT_LINE(ITEM  : in INTEGER;
-                     WIDTH : in TEXT_IO.FIELD := INT_IO.DEFAULT_WIDTH;
-                     BASE  : in TEXT_IO.NUMBER_BASE := INT_IO.DEFAULT_BASE);
+  procedure Put_Line(Item  : in Integer;
+                     Width : in Text_Io.Field := Int_Io.Default_Width;
+                     Base  : in Text_Io.Number_Base := Int_Io.Default_Base);
 
-  procedure PUT_LINE(ITEM  : in LONG_LONG_INTEGER;
-                     WIDTH : in TEXT_IO.FIELD := LONG_IO.DEFAULT_WIDTH;
-                     BASE  : in TEXT_IO.NUMBER_BASE := LONG_IO.DEFAULT_BASE);
+  procedure Put_Line(Item  : in Long_Long_Integer;
+                     Width : in Text_Io.Field := Long_Io.Default_Width;
+                     Base  : in Text_Io.Number_Base := Long_Io.Default_Base);
 
-  procedure PUT_LINE(ITEM : in FLOAT;
-                     FORE : in TEXT_IO.FIELD := FLO_IO.DEFAULT_FORE;
-                     AFT  : in TEXT_IO.FIELD := FLO_IO.DEFAULT_AFT;
-                     EXP  : in TEXT_IO.FIELD := DEFAULT_EXP);
+  procedure Put_Line(Item : in Float;
+                     Fore : in Text_Io.Field := Flo_Io.Default_Fore;
+                     Aft  : in Text_Io.Field := Flo_Io.Default_Aft;
+                     Exp  : in Text_Io.Field := Default_Exp);
 
-  procedure PUT_LINE(ITEM : in STRING) renames TEXT_IO.PUT_LINE;
+  procedure Put_Line(Item : in String) renames Text_Io.Put_Line;
 
-  procedure NEW_LINE(SPACING : in TEXT_IO.POSITIVE_COUNT := 1)
-    renames TEXT_IO.NEW_LINE;
+  procedure New_Line(Spacing : in Text_Io.Positive_Count := 1)
+    renames Text_Io.New_Line;
 
-  procedure GET(ITEM : out BOOLEAN) renames BOOL_IO.GET;
+  procedure Get(Item : out Boolean) renames Bool_Io.Get;
 
-  procedure GET(ITEM : out CHARACTER) renames TEXT_IO.GET;
+  procedure Get(Item : out Character) renames Text_Io.Get;
 
-  procedure GET(ITEM  : out INTEGER;
-                WIDTH : in TEXT_IO.FIELD := 0) renames INT_IO.GET;
+  procedure Get(Item  : out Integer;
+                Width : in Text_Io.Field := 0) renames Int_Io.Get;
 
-  procedure GET(ITEM  : out LONG_LONG_INTEGER;
-                WIDTH : in TEXT_IO.FIELD := 0) renames LONG_IO.GET;
+  procedure Get(Item  : out Long_Long_Integer;
+                Width : in Text_Io.Field := 0) renames Long_Io.Get;
 
-  procedure GET(ITEM  : out FLOAT;
-                WIDTH : in TEXT_IO.FIELD := 0) renames FLO_IO.GET;
+  procedure Get(Item  : out Float;
+                Width : in Text_Io.Field := 0) renames Flo_Io.Get;
 
-  procedure GET(ITEM : out STRING) renames TEXT_IO.GET;
+  procedure Get(Item : out String) renames Text_Io.Get;
 
-  procedure GET_LINE(ITEM : out STRING;
-                     LAST : out NATURAL) renames TEXT_IO.GET_LINE;
+  procedure Get_Line(Item : out String;
+                     Last : out Natural) renames Text_Io.Get_Line;
 
   -- Display prompt, then get item until no error
-  procedure SAFE_GET(PROMPT : in STRING;
-                     ITEM   : out INTEGER);
+  procedure Safe_Get(Prompt : in String;
+                     Item   : out Integer);
 
-  procedure SAFE_GET(PROMPT : in STRING;
-                     ITEM   : out LONG_LONG_INTEGER);
+  procedure Safe_Get(Prompt : in String;
+                     Item   : out Long_Long_Integer);
 
-  procedure SAFE_GET(PROMPT : in STRING;
-                     ITEM   : out FLOAT);
+  procedure Safe_Get(Prompt : in String;
+                     Item   : out Float);
 
-  procedure SKIP_LINE(SPACING : in TEXT_IO.POSITIVE_COUNT := 1)
-    renames TEXT_IO.SKIP_LINE;
+  procedure Skip_Line(Spacing : in Text_Io.Positive_Count := 1)
+    renames Text_Io.Skip_Line;
 
-  function END_OF_LINE return BOOLEAN renames TEXT_IO.END_OF_LINE;
+  function End_Of_Line return Boolean renames Text_Io.End_Of_Line;
 
-  procedure FLUSH renames TEXT_IO.FLUSH;
+  procedure Flush renames Text_Io.Flush;
 
-end MY_IO;
+end My_Io;

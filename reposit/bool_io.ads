@@ -1,2 +1,2 @@
-with TEXT_IO;
-package BOOL_IO is new TEXT_IO.ENUMERATION_IO(BOOLEAN);
+with Text_Io;
+package Bool_Io is new Text_Io.Enumeration_Io(Boolean);

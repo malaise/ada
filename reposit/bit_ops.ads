@@ -1,17 +1,17 @@
-package BIT_OPS is
+package Bit_Ops is
 
-  function "AND" (LEFT, RIGHT : INTEGER) return INTEGER;
-  function "OR"  (LEFT, RIGHT : INTEGER) return INTEGER;
-  function "XOR" (LEFT, RIGHT : INTEGER) return INTEGER;
-  function "NOT" (VAL : INTEGER) return INTEGER;
-  function SHL (VAL : INTEGER; BITS : INTEGER) return INTEGER;
-  function SHR (VAL : INTEGER; BITS : INTEGER) return INTEGER;
+  function "And" (Left, Right : Integer) return Integer;
+  function "Or"  (Left, Right : Integer) return Integer;
+  function "Xor" (Left, Right : Integer) return Integer;
+  function "Not" (Val : Integer) return Integer;
+  function Shl (Val : Integer; Bits : Integer) return Integer;
+  function Shr (Val : Integer; Bits : Integer) return Integer;
 
-  function "AND" (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
-  function "OR"  (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
-  function "XOR" (LEFT, RIGHT : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
-  function "NOT" (VAL : LONG_LONG_INTEGER) return LONG_LONG_INTEGER;
-  function SHL (VAL : LONG_LONG_INTEGER; BITS : INTEGER) return LONG_LONG_INTEGER;
-  function SHR (VAL : LONG_LONG_INTEGER; BITS : INTEGER) return LONG_LONG_INTEGER;
+  function "And" (Left, Right : Long_Long_Integer) return Long_Long_Integer;
+  function "Or"  (Left, Right : Long_Long_Integer) return Long_Long_Integer;
+  function "Xor" (Left, Right : Long_Long_Integer) return Long_Long_Integer;
+  function "Not" (Val : Long_Long_Integer) return Long_Long_Integer;
+  function Shl (Val : Long_Long_Integer; Bits : Integer) return Long_Long_Integer;
+  function Shr (Val : Long_Long_Integer; Bits : Integer) return Long_Long_Integer;
 
-end BIT_OPS;
+end Bit_Ops;

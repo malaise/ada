@@ -2,38 +2,38 @@ generic
 
   -- List of states
   -- The initial state of the machine will be First of the list
-  type STATE_LIST is (<>);
+  type State_List is (<>);
 
   -- List of events
   -- The TRUE event can be declared in this list to generate
   --  automatic transitions
   -- The DEFAULT event can be declared in this list to generate
   --  a transition on any unspecified event
-  type EVENT_LIST is (<>);
+  type Event_List is (<>);
 
   -- Procedure to report a transition
-  with procedure REPORT_TRANSITION (PREV_STATE : in STATE_LIST;
-                                    EVENT : in EVENT_LIST;
-                                    NEW_STATE : in STATE_LIST);
-package STATE_MACHINE is
+  with procedure Report_Transition (Prev_State : in State_List;
+                                    Event : in Event_List;
+                                    New_State : in State_List);
+package State_Machine is
 
   -- A transition
-  type TRANSITION_REC is record
-    ORIGINAL_STATE : STATE_LIST;
-    EVENT : EVENT_LIST;
-    DESTINATION_STATE : STATE_LIST;
+  type Transition_Rec is record
+    Original_State : State_List;
+    Event : Event_List;
+    Destination_State : State_List;
   end record;
 
   -- To add a transition in the state machine
   -- May raise EVENT_ALREADY if this event is already defined
   --  from the original state
   -- May raise DECLARATION_ENDED if called after END_DECLARATION;
-  procedure ADD_TRANSITION (TRANSITION : in TRANSITION_REC);
+  procedure Add_Transition (Transition : in Transition_Rec);
 
   -- To end declarations
   -- May raise DECLARATION_ENDED if re-called after END_DECLARATION;
   -- May raise TRUE_LOOP if TRUE transitions from any state loop
-  procedure END_DECLARATION;
+  procedure End_Declaration;
 
 
   -- All following calls may raise DECLARATION_NOT_ENDED if
@@ -44,20 +44,20 @@ package STATE_MACHINE is
   --  otherwise (no DEFAULT) the state remains unchanged
   -- Any TRUE event has no effect (any potential TRUE transition
   --  would already have been done)
-  function NEW_EVENT (EVENT : EVENT_LIST) return STATE_LIST;
+  function New_Event (Event : Event_List) return State_List;
 
-  procedure NEW_EVENT (EVENT : in EVENT_LIST);
+  procedure New_Event (Event : in Event_List);
 
   -- Get current state
-  function CURRENT_STATE return STATE_LIST;
+  function Current_State return State_List;
 
   -- To force a new state without event
-  procedure SET_STATE (STATE : in STATE_LIST);
+  procedure Set_State (State : in State_List);
 
 
-  DECLARATION_ENDED, DECLARATION_NOT_ENDED : exception;
-  TRUE_LOOP : exception;
-  EVENT_ALREADY : exception;
+  Declaration_Ended, Declaration_Not_Ended : exception;
+  True_Loop : exception;
+  Event_Already : exception;
 
-end STATE_MACHINE;
+end State_Machine;
 

@@ -1,86 +1,86 @@
-with TEXT_HANDLER, CON_IO, DYNAMIC_LIST;
+with Text_Handler, Con_Io, Dynamic_List;
 
-package AFPX is
+package Afpx is
 
   -- Descriptor, field index
-  type DESCRIPTOR_RANGE is new POSITIVE range 1 .. 50;
-  type ABSOLUTE_FIELD_RANGE is new NATURAL range 0 .. 200;
-  subtype FIELD_RANGE is ABSOLUTE_FIELD_RANGE
-          range 1 .. ABSOLUTE_FIELD_RANGE 'LAST;
-  LIST_FIELD_NO : constant ABSOLUTE_FIELD_RANGE := 0;
+  type Descriptor_Range is new Positive range 1 .. 50;
+  type Absolute_Field_Range is new Natural range 0 .. 200;
+  subtype Field_Range is Absolute_Field_Range
+          range 1 .. Absolute_Field_Range 'Last;
+  List_Field_No : constant Absolute_Field_Range := 0;
 
   -- The content of one row of one field (encode, decode)
-  subtype STR_TXT is TEXT_HANDLER.TEXT (CON_IO.COL_RANGE_LAST + 1);
+  subtype Str_Txt is Text_Handler.Text (Con_Io.Col_Range_Last + 1);
 
   -- Width and height of a field
-  subtype HEIGHT_RANGE is POSITIVE range 1 .. CON_IO.ROW_RANGE_LAST + 1;
-  subtype WIDTH_RANGE  is POSITIVE range 1 .. CON_IO.COL_RANGE_LAST + 1;
+  subtype Height_Range is Positive range 1 .. Con_Io.Row_Range_Last + 1;
+  subtype Width_Range  is Positive range 1 .. Con_Io.Col_Range_Last + 1;
 
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost
   -- By default, the CON_IO screen is cleared
   -- Exceptions : NO_DESCRIPTOR (DESCRIPTOR not found)
-  procedure USE_DESCRIPTOR (DESCRIPTOR_NO : in DESCRIPTOR_RANGE;
-                            CLEAR_SCREEN : in BOOLEAN := TRUE);
+  procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
+                            Clear_Screen : in Boolean := True);
 
   -- Clear the content of a field
   -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
   --              INVALID_FIELD (FIELD_NO too big)
-  procedure CLEAR_FIELD (FIELD_NO : in FIELD_RANGE);
+  procedure Clear_Field (Field_No : in Field_Range);
 
   -- Reset the field from initial definition in file 
   --  colors and / or  content,
   -- The field becomes activated and not protected.
   -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
   --              INVALID_FIELD (FIELD_NO too big)
-  procedure RESET_FIELD (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
-                         RESET_COLORS : in BOOLEAN := TRUE;
-                         RESET_STRING : in BOOLEAN := TRUE);
+  procedure Reset_Field (Field_No : in Absolute_Field_Range;
+                         Reset_Colors : in Boolean := True;
+                         Reset_String : in Boolean := True);
 
   -- Width of a field
   -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
   --              INVALID_FIELD (FIELD_NO too big)
-  function GET_FIELD_WIDTH (FIELD_NO : ABSOLUTE_FIELD_RANGE)
-                           return WIDTH_RANGE;
+  function Get_Field_Width (Field_No : Absolute_Field_Range)
+                           return Width_Range;
 
   -- Width and height of a field
   -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
   --              INVALID_FIELD (FIELD_NO too big)
-  procedure GET_FIELD_SIZE (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
-                            HEIGHT : out HEIGHT_RANGE;
-                            WIDTH  : out WIDTH_RANGE);
+  procedure Get_Field_Size (Field_No : in Absolute_Field_Range;
+                            Height : out Height_Range;
+                            Width  : out Width_Range);
 
   -- Encode a string in a field.
   -- The ROW is filled with spaces, then with STR starting at COL
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
   --              INVALID_SQUARE (not in field),
   --              STRING_TOO_LONG (due to SQUARE.COL)
-  procedure ENCODE_FIELD (FIELD_NO : in FIELD_RANGE;
-                          FROM_POS : in CON_IO.SQUARE;
-                          STR      : in STRING);
-  procedure ENCODE_FIELD (FIELD_NO : in FIELD_RANGE;
-                          FROM_POS : in CON_IO.SQUARE;
-                          STR      : in STR_TXT);
+  procedure Encode_Field (Field_No : in Field_Range;
+                          From_Pos : in Con_Io.Square;
+                          Str      : in String);
+  procedure Encode_Field (Field_No : in Field_Range;
+                          From_Pos : in Con_Io.Square;
+                          Str      : in Str_Txt);
 
   -- Decode the content of a row of a field
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD, INVALID_ROW
-  function DECODE_FIELD (FIELD_NO : FIELD_RANGE;
-                         ROW      : CON_IO.ROW_RANGE)
-                        return STRING;
-  procedure DECODE_FIELD (FIELD_NO : in FIELD_RANGE;
-                          ROW      : in CON_IO.ROW_RANGE;
-                          STR      : in out STR_TXT);
+  function Decode_Field (Field_No : Field_Range;
+                         Row      : Con_Io.Row_Range)
+                        return String;
+  procedure Decode_Field (Field_No : in Field_Range;
+                          Row      : in Con_Io.Row_Range;
+                          Str      : in out Str_Txt);
 
 
   -- Get field colors
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
-  procedure GET_FIELD_COLORS (
-    FIELD_NO   : in ABSOLUTE_FIELD_RANGE;
-    FOREGROUND : out CON_IO.EFFECTIVE_COLORS;
-    BLINK_STAT : out CON_IO.EFFECTIVE_BLINK_STATS;
-    BACKGROUND : out CON_IO.EFFECTIVE_BASIC_COLORS;
-    SELECTED   : out CON_IO.EFFECTIVE_BASIC_COLORS);
+  procedure Get_Field_Colors (
+    Field_No   : in Absolute_Field_Range;
+    Foreground : out Con_Io.Effective_Colors;
+    Blink_Stat : out Con_Io.Effective_Blink_Stats;
+    Background : out Con_Io.Effective_Basic_Colors;
+    Selected   : out Con_Io.Effective_Basic_Colors);
 
   -- Set field colors
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
@@ -88,22 +88,22 @@ package AFPX is
   --       - FOREGROUND has to be BASIC_COLORS for list, get and button fields
   --       - SELECTED has to be CURRENT for put and button fields
   --       - BLINK_STAT has to be CURRENT except for put fields
-  procedure SET_FIELD_COLORS (
-    FIELD_NO   : in ABSOLUTE_FIELD_RANGE;
-    FOREGROUND : in CON_IO.COLORS       := CON_IO.CURRENT;
-    BLINK_STAT : in CON_IO.BLINK_STATS  := CON_IO.CURRENT;
-    BACKGROUND : in CON_IO.BASIC_COLORS := CON_IO.CURRENT;
-    SELECTED   : in CON_IO.BASIC_COLORS := CON_IO.CURRENT);
+  procedure Set_Field_Colors (
+    Field_No   : in Absolute_Field_Range;
+    Foreground : in Con_Io.Colors       := Con_Io.Current;
+    Blink_Stat : in Con_Io.Blink_Stats  := Con_Io.Current;
+    Background : in Con_Io.Basic_Colors := Con_Io.Current;
+    Selected   : in Con_Io.Basic_Colors := Con_Io.Current);
 
   -- Activate/Desactivate a field for further put_then_gets
   -- All fields are activated by default (when USE_DESCRIPTOR or RESET_FIELD)
   -- A non active field is not displayed by put_then get
   --  (when USE_DESCRIPTOR or RESET_FIELD)
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
-  procedure SET_FIELD_ACTIVATION (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
-                                  ACTIVATE : in BOOLEAN);
-  procedure GET_FIELD_ACTIVATION (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
-                                  ACTIVATE : out BOOLEAN);
+  procedure Set_Field_Activation (Field_No : in Absolute_Field_Range;
+                                  Activate : in Boolean);
+  procedure Get_Field_Activation (Field_No : in Absolute_Field_Range;
+                                  Activate : out Boolean);
 
   -- Protect/Unprotect a GET or BUTTON for further put_then_gets
   -- A protected get field is displayed like a put field (but cannot blink)
@@ -111,63 +111,63 @@ package AFPX is
   -- A protected list is displayed (but no item can be selected)
   -- All get/button/list fields are unprotected by default
   -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
-  procedure SET_FIELD_PROTECTION (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
-                                  PROTECT  : in BOOLEAN);
-  procedure GET_FIELD_PROTECTION (FIELD_NO : in ABSOLUTE_FIELD_RANGE;
-                                  PROTECT  : out BOOLEAN);
+  procedure Set_Field_Protection (Field_No : in Absolute_Field_Range;
+                                  Protect  : in Boolean);
+  procedure Get_Field_Protection (Field_No : in Absolute_Field_Range;
+                                  Protect  : out Boolean);
 
   -- Erase all the fields of the descriptor from the screen
   --  (Fill them with current screen's background color)
   -- Exceptions : NO_DESCRIPTOR
-  procedure ERASE;
+  procedure Erase;
 
   -- Put a descriptor content
   -- Any list has to be des activated
   -- Exceptions : NO_DESCRIPTOR, LIST_IN_PUT;
-  procedure PUT;
+  procedure Put;
 
   -- Computes next cursor field after current one:
   --  The criteria is the next unprotected and active get field
   --  If FROM is 0, then the first field matching is returned
   --  Else the next matching after FROM is returned
   -- 0 is returned if no matching field is found
-  function NEXT_CURSOR_FIELD (FROM : ABSOLUTE_FIELD_RANGE)
-  return ABSOLUTE_FIELD_RANGE;
+  function Next_Cursor_Field (From : Absolute_Field_Range)
+  return Absolute_Field_Range;
 
   -- Same with previous field
-  function PREV_CURSOR_FIELD (FROM : ABSOLUTE_FIELD_RANGE)
-  return ABSOLUTE_FIELD_RANGE;
+  function Prev_Cursor_Field (From : Absolute_Field_Range)
+  return Absolute_Field_Range;
 
   -- List of items to put in list field in put_then_get
-  subtype LINE_LEN_RANGE is NATURAL range 0 .. CON_IO.COL_RANGE'LAST+1;
-  type LINE_REC is record
-    STR : STRING (1 .. LINE_LEN_RANGE'LAST);
-    LEN : LINE_LEN_RANGE;
+  subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last+1;
+  type Line_Rec is record
+    Str : String (1 .. Line_Len_Range'Last);
+    Len : Line_Len_Range;
   end record;
 
-  package LINE_LIST_MNG is new DYNAMIC_LIST (LINE_REC);
-  LINE_LIST : LINE_LIST_MNG.LIST_TYPE;
+  package Line_List_Mng is new Dynamic_List (Line_Rec);
+  Line_List : Line_List_Mng.List_Type;
   -- Actions on the list
-  type LIST_ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN,
-                            TOP, BOTTOM, CENTER);
+  type List_Action_List is (Up, Down, Page_Up, Page_Down,
+                            Top, Bottom, Center);
 
   -- Update the list due to an action
   -- Exceptions : INVALID_FIELD if no list in current descriptor,
-  procedure UPDATE_LIST (ACTION : in LIST_ACTION_LIST);
+  procedure Update_List (Action : in List_Action_List);
 
   -- See Con_io.Curs_Mvt
-  type EVENT_LIST is (KEYBOARD, MOUSE_BUTTON,
-                      FD_EVENT, TIMER_EVENT, REFRESH);
-  type KEYBOARD_KEY_LIST is (RETURN_KEY, ESCAPE_KEY, BREAK_KEY);
+  type Event_List is (Keyboard, Mouse_Button,
+                      Fd_Event, Timer_Event, Refresh);
+  type Keyboard_Key_List is (Return_Key, Escape_Key, Break_Key);
 
-  type RESULT_REC (EVENT : EVENT_LIST := KEYBOARD) is record
-    ID_SELECTED : NATURAL;
-    case EVENT is
-      when KEYBOARD =>
-        KEYBOARD_KEY : KEYBOARD_KEY_LIST;
-      when MOUSE_BUTTON =>
-        FIELD_NO : ABSOLUTE_FIELD_RANGE;
-      when FD_EVENT | TIMER_EVENT | REFRESH =>
+  type Result_Rec (Event : Event_List := Keyboard) is record
+    Id_Selected : Natural;
+    case Event is
+      when Keyboard =>
+        Keyboard_Key : Keyboard_Key_List;
+      when Mouse_Button =>
+        Field_No : Absolute_Field_Range;
+      when Fd_Event | Timer_Event | Refresh =>
         null;
     end case;
   end record;
@@ -192,17 +192,17 @@ package AFPX is
   -- Exceptions :  NO_DESCRIPTOR,
   --               INVALID_FIELD, INVALID_COL (for cursor)
   --               STRING_TOO_LONG (if an item in list is too long)
-  procedure PUT_THEN_GET (CURSOR_FIELD : in out FIELD_RANGE;
-                          CURSOR_COL   : in out CON_IO.COL_RANGE;
-                          RESULT       : out RESULT_REC;
-                          REDISPLAY    : in BOOLEAN := FALSE);
+  procedure Put_Then_Get (Cursor_Field : in out Field_Range;
+                          Cursor_Col   : in out Con_Io.Col_Range;
+                          Result       : out Result_Rec;
+                          Redisplay    : in Boolean := False);
 
   -- At elaboration
-  AFPX_FILE_NOT_FOUND, AFPX_FILE_READ_ERROR, AFPX_FILE_VERSION_ERROR : exception;
+  Afpx_File_Not_Found, Afpx_File_Read_Error, Afpx_File_Version_Error : exception;
   -- On call
-  NO_DESCRIPTOR, INVALID_FIELD, INVALID_SQUARE, INVALID_ROW, INVALID_COL,
-  STRING_TOO_LONG, INVALID_COLOR, LIST_IN_PUT : exception;
+  No_Descriptor, Invalid_Field, Invalid_Square, Invalid_Row, Invalid_Col,
+  String_Too_Long, Invalid_Color, List_In_Put : exception;
 
 
-end AFPX;
+end Afpx;
 

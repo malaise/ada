@@ -1,396 +1,396 @@
-package body PERPET is
+package body Perpet is
 
-  type TIME_REC is record
-    YEAR    : CALENDAR.YEAR_NUMBER;
-    MONTH   : CALENDAR.MONTH_NUMBER;
-    DAY     : CALENDAR.DAY_NUMBER;
-    SECONDS : CALENDAR.DAY_DURATION;
+  type Time_Rec is record
+    Year    : Calendar.Year_Number;
+    Month   : Calendar.Month_Number;
+    Day     : Calendar.Day_Number;
+    Seconds : Calendar.Day_Duration;
   end record;
 
   -- Is a year leap
-  function IS_LEAP_YEAR (YEAR  : CALENDAR.YEAR_NUMBER) return BOOLEAN is
+  function Is_Leap_Year (Year  : Calendar.Year_Number) return Boolean is
   begin
     -- Year is multiple of 4 and not 100, or multiple of 400
     -- the parenthesis tend to optimize:
     --  return FALSE asap in case of year not multiple of 4
-    return YEAR rem 4 = 0 and then
-     (YEAR rem 100 /= 0 or else YEAR rem 400 = 0);
-  end IS_LEAP_YEAR;
+    return Year rem 4 = 0 and then
+     (Year rem 100 /= 0 or else Year rem 400 = 0);
+  end Is_Leap_Year;
 
   -- Number of days of a month
-  function NB_DAYS_MONTH (
-   YEAR  : CALENDAR.YEAR_NUMBER;
-   MONTH : CALENDAR.MONTH_NUMBER) return CALENDAR.DAY_NUMBER is
-    LAST_DAY_ARRAY : constant array (CALENDAR.MONTH_NUMBER) of
-     CALENDAR.DAY_NUMBER :=
+  function Nb_Days_Month (
+   Year  : Calendar.Year_Number;
+   Month : Calendar.Month_Number) return Calendar.Day_Number is
+    Last_Day_Array : constant array (Calendar.Month_Number) of
+     Calendar.Day_Number :=
      (01 => 31, 02 => 28, 03 => 31, 04 => 30, 05 => 31, 06 => 30,
       07 => 31, 08 => 31, 09 => 30, 10 => 31, 11 => 30, 12 => 31);
   begin
-    if MONTH /= 2 then return LAST_DAY_ARRAY(MONTH); end if;
+    if Month /= 2 then return Last_Day_Array(Month); end if;
 
     -- February
-    if IS_LEAP_YEAR (YEAR) then
+    if Is_Leap_Year (Year) then
       -- Leap year
-      return LAST_DAY_ARRAY(MONTH) + 1;
+      return Last_Day_Array(Month) + 1;
     else
       -- Non leap year
-      return LAST_DAY_ARRAY(MONTH);
+      return Last_Day_Array(Month);
     end if;
-  end NB_DAYS_MONTH;
+  end Nb_Days_Month;
 
   -- Number of days of a year
-  function NB_DAYS_YEAR (YEAR : CALENDAR.YEAR_NUMBER) return DAY_RANGE is
+  function Nb_Days_Year (Year : Calendar.Year_Number) return Day_Range is
   begin
-    if IS_LEAP_YEAR (YEAR) then
+    if Is_Leap_Year (Year) then
       -- Leap year
       return 366;
     else
       -- Non leap year
       return 365;
     end if;
-  end NB_DAYS_YEAR;
+  end Nb_Days_Year;
 
   -- Check date validity
-  function IS_VALID (
-   YEAR  : CALENDAR.YEAR_NUMBER;
-   MONTH : CALENDAR.MONTH_NUMBER;
-   DAY   : CALENDAR.DAY_NUMBER) return BOOLEAN is
+  function Is_Valid (
+   Year  : Calendar.Year_Number;
+   Month : Calendar.Month_Number;
+   Day   : Calendar.Day_Number) return Boolean is
   begin
-    return DAY <= NB_DAYS_MONTH (YEAR, MONTH);
-  end IS_VALID;
+    return Day <= Nb_Days_Month (Year, Month);
+  end Is_Valid;
 
   -- TIME_REC operations
-  function SPLIT (DATE : CALENDAR.TIME) return TIME_REC is
-    REC : TIME_REC;
+  function Split (Date : Calendar.Time) return Time_Rec is
+    Rec : Time_Rec;
   begin
 
-    CALENDAR.SPLIT (DATE => DATE,
-                    YEAR    => REC.YEAR,
-                    MONTH   => REC.MONTH,
-                    DAY     => REC.DAY,
-                    SECONDS => REC.SECONDS);
-    return REC;
-  end SPLIT;
+    Calendar.Split (Date => Date,
+                    Year    => Rec.Year,
+                    Month   => Rec.Month,
+                    Day     => Rec.Day,
+                    Seconds => Rec.Seconds);
+    return Rec;
+  end Split;
 
-  function TIME_OF (REC : TIME_REC) return CALENDAR.TIME is
+  function Time_Of (Rec : Time_Rec) return Calendar.Time is
   begin
-    return CALENDAR.TIME_OF (YEAR    => REC.YEAR,
-                             MONTH   => REC.MONTH,
-                             DAY     => REC.DAY,
-                             SECONDS => REC.SECONDS);
-  end TIME_OF;
+    return Calendar.Time_Of (Year    => Rec.Year,
+                             Month   => Rec.Month,
+                             Day     => Rec.Day,
+                             Seconds => Rec.Seconds);
+  end Time_Of;
 
   -- Add years & months to a time_rec
-  function "+" (DATE : TIME_REC; MONTHS : DURATION_REC) return TIME_REC is
-    SUM : INTEGER;
-    D : TIME_REC := DATE;
+  function "+" (Date : Time_Rec; Months : Duration_Rec) return Time_Rec is
+    Sum : Integer;
+    D : Time_Rec := Date;
   begin
-    D.YEAR := D.YEAR + MONTHS.YEARS;
-    SUM := D.MONTH + MONTHS.MONTHS;
-    if SUM > 12 then
-      D.MONTH := SUM - 12;
-      D.YEAR := D.YEAR + 1;
+    D.Year := D.Year + Months.Years;
+    Sum := D.Month + Months.Months;
+    if Sum > 12 then
+      D.Month := Sum - 12;
+      D.Year := D.Year + 1;
     else
-      D.MONTH := SUM;
+      D.Month := Sum;
     end if;
     -- trunc
-    SUM := NB_DAYS_MONTH (D.YEAR, D.MONTH);
-    if D.DAY > SUM then
-      D.DAY := SUM;
+    Sum := Nb_Days_Month (D.Year, D.Month);
+    if D.Day > Sum then
+      D.Day := Sum;
     end if;
     return D;
   exception
-    when others => raise TIME_ERROR;
+    when others => raise Time_Error;
   end "+";
 
   -- Substract years & months from a time_rec
-  function "-" (DATE : TIME_REC; MONTHS : DURATION_REC) return TIME_REC is
-    SUM : INTEGER;
-    D : TIME_REC := DATE;
+  function "-" (Date : Time_Rec; Months : Duration_Rec) return Time_Rec is
+    Sum : Integer;
+    D : Time_Rec := Date;
   begin
-    D.YEAR := D.YEAR - MONTHS.YEARS;
-    SUM := D.MONTH - MONTHS.MONTHS;
-    if SUM < 1 then
-      D.MONTH := SUM + 12;
-      D.YEAR := D.YEAR - 1;
+    D.Year := D.Year - Months.Years;
+    Sum := D.Month - Months.Months;
+    if Sum < 1 then
+      D.Month := Sum + 12;
+      D.Year := D.Year - 1;
     else
-      D.MONTH := SUM;
+      D.Month := Sum;
     end if;
     -- trunc
-    SUM := NB_DAYS_MONTH (D.YEAR, D.MONTH);
-    if D.DAY > SUM then
-      D.DAY := SUM;
+    Sum := Nb_Days_Month (D.Year, D.Month);
+    if D.Day > Sum then
+      D.Day := Sum;
     end if;
     return D;
   exception
-    when others => raise TIME_ERROR;
+    when others => raise Time_Error;
   end "-";
 
   -- Add years & months to a time
-  function "+" (DATE : CALENDAR.TIME; MONTHS : DURATION_REC)
-   return CALENDAR.TIME is
+  function "+" (Date : Calendar.Time; Months : Duration_Rec)
+   return Calendar.Time is
   begin
-    return TIME_OF (SPLIT(DATE) + MONTHS);
+    return Time_Of (Split(Date) + Months);
   exception
-    when others => raise TIME_ERROR;
+    when others => raise Time_Error;
   end "+";
 
   -- Substract years & months from a time
-  function "-" (DATE : CALENDAR.TIME; MONTHS : DURATION_REC)
-   return CALENDAR.TIME is
+  function "-" (Date : Calendar.Time; Months : Duration_Rec)
+   return Calendar.Time is
   begin
-    return TIME_OF (SPLIT(DATE) - MONTHS);
+    return Time_Of (Split(Date) - Months);
   exception
-    when others => raise TIME_ERROR;
+    when others => raise Time_Error;
   end "-";
 
 
   -- tries to go to 1st of next month
   -- If not, remaining is set to 0
-  procedure NEXT_MONTH (
-   DATE      : in out TIME_REC;
-   REMAINING : in out DAY_RANGE) is
-    SUM : INTEGER;
+  procedure Next_Month (
+   Date      : in out Time_Rec;
+   Remaining : in out Day_Range) is
+    Sum : Integer;
   begin
-    SUM := NB_DAYS_MONTH (DATE.YEAR, DATE.MONTH);
-    if SUM - DATE.DAY >= REMAINING then
+    Sum := Nb_Days_Month (Date.Year, Date.Month);
+    if Sum - Date.Day >= Remaining then
       -- Not enough days remaining. Same Month
-      DATE.DAY := DATE.DAY + REMAINING;
-      REMAINING := 0;
+      Date.Day := Date.Day + Remaining;
+      Remaining := 0;
     else
       -- 1st of next month
-      REMAINING := REMAINING - (SUM - DATE.DAY + 1);
-      DATE.DAY := 1;
-      DATE := DATE + (YEARS => 0, MONTHS => 1);
+      Remaining := Remaining - (Sum - Date.Day + 1);
+      Date.Day := 1;
+      Date := Date + (Years => 0, Months => 1);
     end if;
-  end NEXT_MONTH;
+  end Next_Month;
 
   -- tries to go to last of previous month
   -- If not, remaining is set to 0
-  procedure PREV_MONTH (
-   DATE      : in out TIME_REC;
-   REMAINING : in out DAY_RANGE) is
+  procedure Prev_Month (
+   Date      : in out Time_Rec;
+   Remaining : in out Day_Range) is
   begin
-    if DATE.DAY > REMAINING then
+    if Date.Day > Remaining then
       -- Not enough days remaining. Same Month
-      DATE.DAY := DATE.DAY - REMAINING;
-      REMAINING := 0;
+      Date.Day := Date.Day - Remaining;
+      Remaining := 0;
     else
       -- last of previous month
-      REMAINING := REMAINING - DATE.DAY;
-      DATE := DATE - (YEARS => 0, MONTHS => 1);
-      DATE.DAY := NB_DAYS_MONTH (DATE.YEAR, DATE.MONTH);
+      Remaining := Remaining - Date.Day;
+      Date := Date - (Years => 0, Months => 1);
+      Date.Day := Nb_Days_Month (Date.Year, Date.Month);
     end if;
-  end PREV_MONTH;
+  end Prev_Month;
 
 
   -- Add days to a time
-  function "+" (DATE : CALENDAR.TIME; DAYS : DAY_RANGE)
-   return CALENDAR.TIME is
-    REC : TIME_REC := SPLIT (DATE);
-    REMAINING : DAY_RANGE := DAYS;
-    SUM : INTEGER;
+  function "+" (Date : Calendar.Time; Days : Day_Range)
+   return Calendar.Time is
+    Rec : Time_Rec := Split (Date);
+    Remaining : Day_Range := Days;
+    Sum : Integer;
   begin
     -- try to go to 1st january next year
     loop
-      if REMAINING = 0 then
+      if Remaining = 0 then
         -- done
-        return TIME_OF(REC);
+        return Time_Of(Rec);
       end if;
-      exit when REC.MONTH = 1 and then REC.DAY = 1;
-      NEXT_MONTH (REC, REMAINING);
+      exit when Rec.Month = 1 and then Rec.Day = 1;
+      Next_Month (Rec, Remaining);
     end loop;
 
     -- try to add years
     loop
-      SUM := NB_DAYS_YEAR (REC.YEAR);
-      exit when REMAINING < SUM;
-      REMAINING := REMAINING - SUM;
-      REC.YEAR := REC.YEAR + 1;
+      Sum := Nb_Days_Year (Rec.Year);
+      exit when Remaining < Sum;
+      Remaining := Remaining - Sum;
+      Rec.Year := Rec.Year + 1;
     end loop;
 
     -- Complete date
-    while REMAINING /= 0 loop
-      NEXT_MONTH (REC, REMAINING);
+    while Remaining /= 0 loop
+      Next_Month (Rec, Remaining);
     end loop;
 
-    return TIME_OF(REC);
+    return Time_Of(Rec);
   end "+";
 
   -- Substract days from a time
-  function "-" (DATE : CALENDAR.TIME; DAYS : DAY_RANGE)
-   return CALENDAR.TIME is
-    REC : TIME_REC := SPLIT (DATE);
-    REMAINING : DAY_RANGE := DAYS;
-    SUM : INTEGER;
+  function "-" (Date : Calendar.Time; Days : Day_Range)
+   return Calendar.Time is
+    Rec : Time_Rec := Split (Date);
+    Remaining : Day_Range := Days;
+    Sum : Integer;
   begin
     -- try to go to 31th december previous year
     loop
-      if REMAINING = 0 then
+      if Remaining = 0 then
         -- done
-        return TIME_OF(REC);
+        return Time_Of(Rec);
       end if;
-      exit when REC.MONTH = 12 and then REC.DAY = 31;
-      PREV_MONTH (REC, REMAINING);
+      exit when Rec.Month = 12 and then Rec.Day = 31;
+      Prev_Month (Rec, Remaining);
     end loop;
 
     -- try to substract years
     loop
-      SUM := NB_DAYS_YEAR (REC.YEAR);
-      exit when REMAINING < SUM;
-      REMAINING := REMAINING - SUM;
-      REC.YEAR := REC.YEAR - 1;
+      Sum := Nb_Days_Year (Rec.Year);
+      exit when Remaining < Sum;
+      Remaining := Remaining - Sum;
+      Rec.Year := Rec.Year - 1;
     end loop;
 
     -- Complete date
-    while REMAINING /= 0 loop
-      PREV_MONTH (REC, REMAINING);
+    while Remaining /= 0 loop
+      Prev_Month (Rec, Remaining);
     end loop;
 
-    return TIME_OF(REC);
+    return Time_Of(Rec);
   end "-";
 
   -- Nb of days and secs between two dates
-  function "-" (DATE_1, DATE_2 : CALENDAR.TIME)
-    return DELTA_REC is
-    DELTA_VAL : DELTA_REC;
-    REC_1, REC_2 : TIME_REC;
-    use CALENDAR;
+  function "-" (Date_1, Date_2 : Calendar.Time)
+    return Delta_Rec is
+    Delta_Val : Delta_Rec;
+    Rec_1, Rec_2 : Time_Rec;
+    use Calendar;
   begin
-    if DATE_1 < DATE_2 then
-      raise TIME_ERROR;
+    if Date_1 < Date_2 then
+      raise Time_Error;
     end if;
-    DELTA_VAL.DAYS := 0;
-    DELTA_VAL.SECS := 0.0;
-    if DATE_1 = DATE_2 then
-      return DELTA_VAL;
+    Delta_Val.Days := 0;
+    Delta_Val.Secs := 0.0;
+    if Date_1 = Date_2 then
+      return Delta_Val;
     end if;
-    REC_1 := SPLIT(DATE_1);
-    REC_2 := SPLIT(DATE_2);
+    Rec_1 := Split(Date_1);
+    Rec_2 := Split(Date_2);
 
-    if REC_2.YEAR = REC_1.YEAR
-    and then REC_2.MONTH = REC_1.MONTH
-    and then REC_2.DAY = REC_1.DAY then
+    if Rec_2.Year = Rec_1.Year
+    and then Rec_2.Month = Rec_1.Month
+    and then Rec_2.Day = Rec_1.Day then
       -- Same day
-      DELTA_VAL.SECS := REC_1.SECONDS - REC_2.SECONDS;
-      return DELTA_VAL;
+      Delta_Val.Secs := Rec_1.Seconds - Rec_2.Seconds;
+      return Delta_Val;
     end if;
 
     -- End of day 2, beginning of day 1
-    if REC_1.SECONDS >= REC_2.SECONDS then
-      DELTA_VAL.DAYS := 1;
-      DELTA_VAL.SECS := REC_1.SECONDS - REC_2.SECONDS;
+    if Rec_1.Seconds >= Rec_2.Seconds then
+      Delta_Val.Days := 1;
+      Delta_Val.Secs := Rec_1.Seconds - Rec_2.Seconds;
     else
-      DELTA_VAL.SECS := REC_1.SECONDS + (86_400.0 - REC_2.SECONDS);
+      Delta_Val.Secs := Rec_1.Seconds + (86_400.0 - Rec_2.Seconds);
     end if;
 
-    if REC_2.YEAR = REC_1.YEAR
-    and then REC_2.MONTH = REC_1.MONTH then
+    if Rec_2.Year = Rec_1.Year
+    and then Rec_2.Month = Rec_1.Month then
       -- Same month
-      DELTA_VAL.DAYS := DELTA_VAL.DAYS + (REC_1.DAY - 1) - REC_2.DAY;
-      return DELTA_VAL;
+      Delta_Val.Days := Delta_Val.Days + (Rec_1.Day - 1) - Rec_2.Day;
+      return Delta_Val;
     end if;
 
     -- End of month 2, beginning of month 1
-    DELTA_VAL.DAYS := DELTA_VAL.DAYS + NB_DAYS_MONTH (REC_2.YEAR, REC_2.MONTH) - REC_2.DAY;
-    DELTA_VAL.DAYS := (DELTA_VAL.DAYS + REC_1.DAY) - 1;
+    Delta_Val.Days := Delta_Val.Days + Nb_Days_Month (Rec_2.Year, Rec_2.Month) - Rec_2.Day;
+    Delta_Val.Days := (Delta_Val.Days + Rec_1.Day) - 1;
 
-    if REC_2.YEAR = REC_1.YEAR then
-      for MONTH in REC_2.MONTH + 1 .. REC_1.MONTH - 1 loop
-        DELTA_VAL.DAYS := DELTA_VAL.DAYS + NB_DAYS_MONTH (REC_2.YEAR, MONTH);
+    if Rec_2.Year = Rec_1.Year then
+      for Month in Rec_2.Month + 1 .. Rec_1.Month - 1 loop
+        Delta_Val.Days := Delta_Val.Days + Nb_Days_Month (Rec_2.Year, Month);
       end loop;
-      return DELTA_VAL;
+      return Delta_Val;
     end if;
 
     -- End of year 2, beginning of year 1
-    if REC_2.MONTH /= 12 then
-      for MONTH in REC_2.MONTH + 1 .. 12 loop
-        DELTA_VAL.DAYS := DELTA_VAL.DAYS + NB_DAYS_MONTH (REC_2.YEAR, MONTH);
+    if Rec_2.Month /= 12 then
+      for Month in Rec_2.Month + 1 .. 12 loop
+        Delta_Val.Days := Delta_Val.Days + Nb_Days_Month (Rec_2.Year, Month);
       end loop;
     end if;
-    if REC_1.MONTH /= 1 then
-      for MONTH in 1 .. REC_1.MONTH -1 loop
-        DELTA_VAL.DAYS := DELTA_VAL.DAYS + NB_DAYS_MONTH (REC_1.YEAR, MONTH);
+    if Rec_1.Month /= 1 then
+      for Month in 1 .. Rec_1.Month -1 loop
+        Delta_Val.Days := Delta_Val.Days + Nb_Days_Month (Rec_1.Year, Month);
       end loop;
     end if;
 
     -- Add years
-    for YEAR in REC_2.YEAR + 1 .. REC_1.YEAR - 1 loop
-      DELTA_VAL.DAYS := DELTA_VAL.DAYS + NB_DAYS_YEAR (YEAR);
+    for Year in Rec_2.Year + 1 .. Rec_1.Year - 1 loop
+      Delta_Val.Days := Delta_Val.Days + Nb_Days_Year (Year);
     end loop;
 
-    return DELTA_VAL;
+    return Delta_Val;
 
   end "-";
 
   -- type DAY_OF_WEEK_LIST is (MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, STURDAY, SUNDAY);
-  function GET_DAY_OF_WEEK (DATE : CALENDAR.TIME) return DAY_OF_WEEK_LIST is
-    DELTA_DAYS : DAY_RANGE;
-    REF_REC : constant TIME_REC := (
-     YEAR => CALENDAR.YEAR_NUMBER'FIRST,
-     MONTH => CALENDAR.MONTH_NUMBER'FIRST,
-     DAY =>  CALENDAR.DAY_NUMBER'FIRST,
-     SECONDS => 0.0);
-    REF_DATE : constant CALENDAR.TIME := TIME_OF (REF_REC);
-    REF_DAY_OF_WEEK : constant DAY_OF_WEEK_LIST := TUESDAY;
+  function Get_Day_Of_Week (Date : Calendar.Time) return Day_Of_Week_List is
+    Delta_Days : Day_Range;
+    Ref_Rec : constant Time_Rec := (
+     Year => Calendar.Year_Number'First,
+     Month => Calendar.Month_Number'First,
+     Day =>  Calendar.Day_Number'First,
+     Seconds => 0.0);
+    Ref_Date : constant Calendar.Time := Time_Of (Ref_Rec);
+    Ref_Day_Of_Week : constant Day_Of_Week_List := Tuesday;
   begin
-    DELTA_DAYS := "-" (DATE, REF_DATE).DAYS;
-    return DAY_OF_WEEK_LIST'VAL ( (DELTA_DAYS + DAY_OF_WEEK_LIST'POS(REF_DAY_OF_WEEK)) rem 7);
-  end GET_DAY_OF_WEEK;
+    Delta_Days := "-" (Date, Ref_Date).Days;
+    return Day_Of_Week_List'Val ( (Delta_Days + Day_Of_Week_List'Pos(Ref_Day_Of_Week)) rem 7);
+  end Get_Day_Of_Week;
 
   -- subtype WEEK_OF_YEAR_RANGE is NATURAL range 1 .. 53;
-  function GET_WEEK_OF_YEAR (DATE : CALENDAR.TIME) return WEEK_OF_YEAR_RANGE is
-    REC_0 : TIME_REC;
-    DATE_0 : CALENDAR.TIME;
-    DAY_DATE_0 : DAY_OF_WEEK_LIST;
-    WEEK_OF_WEEK_0 : WEEK_OF_YEAR_RANGE;
-    DATE_0_OFFSET : DAY_RANGE;
+  function Get_Week_Of_Year (Date : Calendar.Time) return Week_Of_Year_Range is
+    Rec_0 : Time_Rec;
+    Date_0 : Calendar.Time;
+    Day_Date_0 : Day_Of_Week_List;
+    Week_Of_Week_0 : Week_Of_Year_Range;
+    Date_0_Offset : Day_Range;
 
-    DELTA_DAYS : DELTA_REC;
+    Delta_Days : Delta_Rec;
 
-    MAX_NB_DAYS_A_WEEK : constant := DAY_OF_WEEK_LIST'POS(DAY_OF_WEEK_LIST'LAST) + 1;
-    WEEK_OFFSET : NATURAL range 0 .. WEEK_OF_YEAR_RANGE'LAST;
-    WEEK_OF_DATE : WEEK_OF_YEAR_RANGE;
+    Max_Nb_Days_A_Week : constant := Day_Of_Week_List'Pos(Day_Of_Week_List'Last) + 1;
+    Week_Offset : Natural range 0 .. Week_Of_Year_Range'Last;
+    Week_Of_Date : Week_Of_Year_Range;
   begin
     -- 01/01 of the year
-    REC_0 := SPLIT (DATE);
-    REC_0.MONTH := 1;
-    REC_0.DAY := 1;
-    REC_0.SECONDS := 0.0;
-    DATE_0 := TIME_OF(REC_0);
+    Rec_0 := Split (Date);
+    Rec_0.Month := 1;
+    Rec_0.Day := 1;
+    Rec_0.Seconds := 0.0;
+    Date_0 := Time_Of(Rec_0);
     -- Day of week of it
-    DAY_DATE_0 := GET_DAY_OF_WEEK(DATE_0);
+    Day_Date_0 := Get_Day_Of_Week(Date_0);
     -- No of first week is 1 if day_date_0 is Monday .. Thursday
-    if DAY_DATE_0 <= THURSDAY then
-      WEEK_OF_WEEK_0 := 1;
+    if Day_Date_0 <= Thursday then
+      Week_Of_Week_0 := 1;
     else
       -- 52 or 53? The same as day before day_0
-      WEEK_OF_WEEK_0 := GET_WEEK_OF_YEAR(DATE_0 - 1);
+      Week_Of_Week_0 := Get_Week_Of_Year(Date_0 - 1);
     end if;
     -- Number of days of first week in the previous year
-    DATE_0_OFFSET := DAY_OF_WEEK_LIST'POS(DAY_DATE_0);
+    Date_0_Offset := Day_Of_Week_List'Pos(Day_Date_0);
 
     -- Nb of days between date and 01/01
-    DELTA_DAYS := DATE - DATE_0;
+    Delta_Days := Date - Date_0;
     -- Nb of days between date and Monday of first week
-    DELTA_DAYS.DAYS := DELTA_DAYS.DAYS + DATE_0_OFFSET;
+    Delta_Days.Days := Delta_Days.Days + Date_0_Offset;
 
     -- Week offset from first week
-    WEEK_OFFSET := DELTA_DAYS.DAYS / MAX_NB_DAYS_A_WEEK;
+    Week_Offset := Delta_Days.Days / Max_Nb_Days_A_Week;
     -- Week no
-    if WEEK_OFFSET = 0 then
+    if Week_Offset = 0 then
       -- First week
-      WEEK_OF_DATE := WEEK_OF_WEEK_0;
-    elsif WEEK_OF_WEEK_0 = 1 then
+      Week_Of_Date := Week_Of_Week_0;
+    elsif Week_Of_Week_0 = 1 then
       -- Week 1 + offset
-      WEEK_OF_DATE := WEEK_OFFSET + 1;
+      Week_Of_Date := Week_Offset + 1;
     else
       -- 52/53 -> 0, + offset
-      WEEK_OF_DATE := WEEK_OFFSET;
+      Week_Of_Date := Week_Offset;
     end if; 
-    return WEEK_OF_DATE;
+    return Week_Of_Date;
     
-  end GET_WEEK_OF_YEAR;
+  end Get_Week_Of_Year;
 
 
-end PERPET;
+end Perpet;

@@ -1,70 +1,70 @@
-with TEXT_IO;
-with MY_MATH;
-package C_NBRES is
+with Text_Io;
+with My_Math;
+package C_Nbres is
 
-  subtype REAL is MY_MATH.REAL;
+  subtype Real is My_Math.Real;
 
-  package MY_REAL_IO is new TEXT_IO.FLOAT_IO (REAL);
+  package My_Real_Io is new Text_Io.Float_Io (Real);
 
-  type COMPLEX is private;
-  I : constant COMPLEX;
+  type Complex is private;
+  I : constant Complex;
 
-  type RADIAN is new REAL;
-  subtype REDUCTED_RADIAN is RADIAN range 0.0 .. 2.0 * MY_MATH.PI;
+  type Radian is new Real;
+  subtype Reducted_Radian is Radian range 0.0 .. 2.0 * My_Math.Pi;
 
-  type DEGREE is new REAL;
-  subtype REDUCTED_DEGREE is DEGREE range 0.0 .. 360.0;
+  type Degree is new Real;
+  subtype Reducted_Degree is Degree range 0.0 .. 360.0;
 
-  function REDUCT (A : RADIAN) return REDUCTED_RADIAN;
-  function REDUCT (A : DEGREE) return REDUCTED_DEGREE;
+  function Reduct (A : Radian) return Reducted_Radian;
+  function Reduct (A : Degree) return Reducted_Degree;
 
-  function TO_DEGREE (A : RADIAN) return REDUCTED_DEGREE;
-  function TO_RADIAN (A : DEGREE) return REDUCTED_RADIAN;
+  function To_Degree (A : Radian) return Reducted_Degree;
+  function To_Radian (A : Degree) return Reducted_Radian;
 
-  subtype TYP_MODULE is REAL range 0.0 .. REAL'LAST;
-  function CREATE_COMPLEX (M : TYP_MODULE; A : RADIAN) return COMPLEX;
-  function CREATE_COMPLEX (M : TYP_MODULE; A : DEGREE) return COMPLEX;
-  function MODULE (C : COMPLEX) return TYP_MODULE;
-  function ANGLE_RADIAN (C : COMPLEX) return REDUCTED_RADIAN;
-  function ANGLE_DEGREE (C : COMPLEX) return REDUCTED_DEGREE;
+  subtype Typ_Module is Real range 0.0 .. Real'Last;
+  function Create_Complex (M : Typ_Module; A : Radian) return Complex;
+  function Create_Complex (M : Typ_Module; A : Degree) return Complex;
+  function Module (C : Complex) return Typ_Module;
+  function Angle_Radian (C : Complex) return Reducted_Radian;
+  function Angle_Degree (C : Complex) return Reducted_Degree;
 
-  function PART_REAL (C : COMPLEX) return REAL;
-  function PART_IMAG (C : COMPLEX) return REAL;
-  function CREATE_COMPLEX (REAL_PART, IMAG_PART : REAL) return COMPLEX;
-  function CREATE_COMPLEX (REAL_PART : REAL)            return COMPLEX;
+  function Part_Real (C : Complex) return Real;
+  function Part_Imag (C : Complex) return Real;
+  function Create_Complex (Real_Part, Imag_Part : Real) return Complex;
+  function Create_Complex (Real_Part : Real)            return Complex;
 
-  function "+" (X, Y : COMPLEX)           return COMPLEX;
-  function "+" (X : REAL;    Y : COMPLEX) return COMPLEX;
-  function "+" (X : COMPLEX; Y : REAL)    return COMPLEX;
-  function "+" (X : REAL;    Y : REAL)    return COMPLEX;
+  function "+" (X, Y : Complex)           return Complex;
+  function "+" (X : Real;    Y : Complex) return Complex;
+  function "+" (X : Complex; Y : Real)    return Complex;
+  function "+" (X : Real;    Y : Real)    return Complex;
 
-  function "-" (X, Y : COMPLEX)           return COMPLEX;
-  function "-" (X : REAL;    Y : COMPLEX) return COMPLEX;
-  function "-" (X : COMPLEX; Y : REAL)    return COMPLEX;
-  function "-" (X : REAL;    Y : REAL)    return COMPLEX;
+  function "-" (X, Y : Complex)           return Complex;
+  function "-" (X : Real;    Y : Complex) return Complex;
+  function "-" (X : Complex; Y : Real)    return Complex;
+  function "-" (X : Real;    Y : Real)    return Complex;
 
-  function "*" (X, Y : COMPLEX)           return COMPLEX;
-  function "*" (X : REAL;    Y : COMPLEX) return COMPLEX;
-  function "*" (X : COMPLEX; Y : REAL)    return COMPLEX;
-  function "*" (X : REAL;    Y : REAL)    return COMPLEX;
+  function "*" (X, Y : Complex)           return Complex;
+  function "*" (X : Real;    Y : Complex) return Complex;
+  function "*" (X : Complex; Y : Real)    return Complex;
+  function "*" (X : Real;    Y : Real)    return Complex;
 
-  function "/" (X, Y : COMPLEX)           return COMPLEX;
-  function "/" (X : REAL;    Y : COMPLEX) return COMPLEX;
-  function "/" (X : COMPLEX; Y : REAL)    return COMPLEX;
-  function "/" (X : REAL;    Y : REAL)    return COMPLEX;
+  function "/" (X, Y : Complex)           return Complex;
+  function "/" (X : Real;    Y : Complex) return Complex;
+  function "/" (X : Complex; Y : Real)    return Complex;
+  function "/" (X : Real;    Y : Real)    return Complex;
 
-  function "**" (X : COMPLEX; Y : REAL)   return COMPLEX;
+  function "**" (X : Complex; Y : Real)   return Complex;
 
-  procedure PUT (C : in COMPLEX);
-  procedure GET (C : out COMPLEX);
+  procedure Put (C : in Complex);
+  procedure Get (C : out Complex);
 
   private
-    type COMPLEX is record
-      PART_REAL : REAL;
-      PART_IMAG : REAL;
+    type Complex is record
+      Part_Real : Real;
+      Part_Imag : Real;
     end record;
 
-    I : constant COMPLEX := (0.0, 1.0);
+    I : constant Complex := (0.0, 1.0);
 
-end C_NBRES;
+end C_Nbres;
 

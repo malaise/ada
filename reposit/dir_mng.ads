@@ -1,20 +1,20 @@
-with TEXT_HANDLER;
-with DYNAMIC_LIST;
-with DIRECTORY;
-package DIR_MNG is
+with Text_Handler;
+with Dynamic_List;
+with Directory;
+package Dir_Mng is
 
-  subtype FILE_STR_RANGE is POSITIVE range 1 .. DIRECTORY.MAX_DIR_NAME_LEN;
-  subtype FILE_STR is STRING (FILE_STR_RANGE);
-  subtype FILE_TXT is TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
+  subtype File_Str_Range is Positive range 1 .. Directory.Max_Dir_Name_Len;
+  subtype File_Str is String (File_Str_Range);
+  subtype File_Txt is Text_Handler.Text (Directory.Max_Dir_Name_Len);
 
-  subtype FILE_KIND_LIST is DIRECTORY.FILE_KIND_LIST;
+  subtype File_Kind_List is Directory.File_Kind_List;
 
-  type FILE_ENTRY_REC is record
-    NAME : FILE_STR;
-    LEN  : FILE_STR_RANGE;
-    KIND : FILE_KIND_LIST;
+  type File_Entry_Rec is record
+    Name : File_Str;
+    Len  : File_Str_Range;
+    Kind : File_Kind_List;
   end record;
-  package FILE_LIST_MNG is new DYNAMIC_LIST (ELEMENT_TYPE => FILE_ENTRY_REC);
+  package File_List_Mng is new Dynamic_List (Element_Type => File_Entry_Rec);
 
   -- List files of a directory
   --  and append them at the end of the current list
@@ -22,20 +22,20 @@ package DIR_MNG is
   -- If DIR is empty, then current dir is assumed
   -- May raise NAME_ERROR if DIR is not valid or not existing
   -- May raise ACCESS_ERROR if DIR cannot be read
-  procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
-                      DIR  : in STRING := "";
-                      TEMPLATE : in STRING := "");
-  procedure LIST_DIR (LIST : in out FILE_LIST_MNG.LIST_TYPE;
-                      DIR  : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT;
-                      TEMPLATE : in FILE_TXT := TEXT_HANDLER.EMPTY_TEXT);
+  procedure List_Dir (List : in out File_List_Mng.List_Type;
+                      Dir  : in String := "";
+                      Template : in String := "");
+  procedure List_Dir (List : in out File_List_Mng.List_Type;
+                      Dir  : in File_Txt := Text_Handler.Empty_Text;
+                      Template : in File_Txt := Text_Handler.Empty_Text);
 
   -- To sort files. Directories, then others, by name.
-  function LESS_THAN (EL1, EL2 : in FILE_ENTRY_REC) return BOOLEAN;
+  function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean;
   -- Sorts 
-  procedure FILE_SORT is new FILE_LIST_MNG.SORT(LESS_THAN);
+  procedure File_Sort is new File_List_Mng.Sort(Less_Than);
 
-  NAME_ERROR : exception renames DIRECTORY.NAME_ERROR;
-  ACCESS_ERROR : exception renames DIRECTORY.ACCESS_ERROR;
+  Name_Error : exception renames Directory.Name_Error;
+  Access_Error : exception renames Directory.Access_Error;
 
-end DIR_MNG;
+end Dir_Mng;
 

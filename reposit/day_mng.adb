@@ -1,63 +1,63 @@
-with MY_MATH;
-package body DAY_MNG is
-  use MY_MATH;
+with My_Math;
+package body Day_Mng is
+  use My_Math;
 
-  MIN_IN_HOR : constant := 60;
-  SEC_IN_MIN : constant := 60;
-  MIL_IN_SEC : constant := 1_000;
+  Min_In_Hor : constant := 60;
+  Sec_In_Min : constant := 60;
+  Mil_In_Sec : constant := 1_000;
 
   -- split a day duration in hours, minutes, seconds and milliseconds
-  procedure SPLIT (DUR : in CALENDAR.DAY_DURATION;
-   HOURS    : out T_HOURS;
-   MINUTES  : out T_MINUTES;
-   SECONDS  : out T_SECONDS;
-   MILLISEC : out T_MILLISEC) is
-    RDUR : MY_MATH.REAL;
-    SEC : MY_MATH.REAL;
-    H   : T_HOURS;
-    M   : T_MINUTES;
-    S   : T_SECONDS;
+  procedure Split (Dur : in Calendar.Day_Duration;
+   Hours    : out T_Hours;
+   Minutes  : out T_Minutes;
+   Seconds  : out T_Seconds;
+   Millisec : out T_Millisec) is
+    Rdur : My_Math.Real;
+    Sec : My_Math.Real;
+    H   : T_Hours;
+    M   : T_Minutes;
+    S   : T_Seconds;
   begin
     -- Round millisecs
-    RDUR := MY_MATH.REAL(MY_MATH.ROUND(MY_MATH.REAL(DUR) * MY_MATH.REAL(MIL_IN_SEC)))
-          / MY_MATH.REAL(MIL_IN_SEC);
+    Rdur := My_Math.Real(My_Math.Round(My_Math.Real(Dur) * My_Math.Real(Mil_In_Sec)))
+          / My_Math.Real(Mil_In_Sec);
 
     -- Millisecs
-    MILLISEC := T_MILLISEC (MY_MATH.FRAC(RDUR) * MY_MATH.REAL(MIL_IN_SEC));
+    Millisec := T_Millisec (My_Math.Frac(Rdur) * My_Math.Real(Mil_In_Sec));
 
     -- Seconds in the day
-    SEC := MY_MATH.INT (RDUR);
+    Sec := My_Math.Int (Rdur);
 
     -- split seconds
-    H := T_HOURS(MY_MATH.TRUNC(SEC / MY_MATH.REAL(MIN_IN_HOR * SEC_IN_MIN) ));
-    SEC := SEC - MY_MATH.REAL(H) * MY_MATH.REAL(MIN_IN_HOR * SEC_IN_MIN);
-    M := T_MINUTES(MY_MATH.TRUNC(SEC / MY_MATH.REAL(SEC_IN_MIN) ));
-    SEC := SEC - MY_MATH.REAL(M) * MY_MATH.REAL(SEC_IN_MIN);
-    S := T_SECONDS(MY_MATH.TRUNC(SEC) );
+    H := T_Hours(My_Math.Trunc(Sec / My_Math.Real(Min_In_Hor * Sec_In_Min) ));
+    Sec := Sec - My_Math.Real(H) * My_Math.Real(Min_In_Hor * Sec_In_Min);
+    M := T_Minutes(My_Math.Trunc(Sec / My_Math.Real(Sec_In_Min) ));
+    Sec := Sec - My_Math.Real(M) * My_Math.Real(Sec_In_Min);
+    S := T_Seconds(My_Math.Trunc(Sec) );
 
     -- out values
-    HOURS := H;
-    MINUTES := M;
-    SECONDS := S;
+    Hours := H;
+    Minutes := M;
+    Seconds := S;
 
-  end SPLIT;
+  end Split;
 
 
   -- pack hours, minutes, seconds and milliseconds into a day duration
-  function PACK (
-   HOURS    : T_HOURS;
-   MINUTES  : T_MINUTES;
-   SECONDS  : T_SECONDS;
-   MILLISEC : T_MILLISEC) return CALENDAR.DAY_DURATION is
-    DUR : CALENDAR.DAY_DURATION;
+  function Pack (
+   Hours    : T_Hours;
+   Minutes  : T_Minutes;
+   Seconds  : T_Seconds;
+   Millisec : T_Millisec) return Calendar.Day_Duration is
+    Dur : Calendar.Day_Duration;
   begin
-    DUR := CALENDAR.DAY_DURATION (
-     CALENDAR.DAY_DURATION(MILLISEC) / MIL_IN_SEC);
-    DUR := DUR + CALENDAR.DAY_DURATION (SECONDS);
-    DUR := DUR + CALENDAR.DAY_DURATION (MINUTES * SEC_IN_MIN);
-    DUR := DUR + CALENDAR.DAY_DURATION (HOURS * SEC_IN_MIN * MIN_IN_HOR);
-    return DUR;
-  end PACK;
+    Dur := Calendar.Day_Duration (
+     Calendar.Day_Duration(Millisec) / Mil_In_Sec);
+    Dur := Dur + Calendar.Day_Duration (Seconds);
+    Dur := Dur + Calendar.Day_Duration (Minutes * Sec_In_Min);
+    Dur := Dur + Calendar.Day_Duration (Hours * Sec_In_Min * Min_In_Hor);
+    return Dur;
+  end Pack;
 
-end DAY_MNG;
+end Day_Mng;
 

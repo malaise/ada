@@ -1,197 +1,197 @@
-package body SORTS is
+package body Sorts is
 
   -- Exchange two objects
-  procedure EXCHANGE (X, Y : in out TYP_OBJECT) is
-    AUXI : TYP_OBJECT;
+  procedure Exchange (X, Y : in out Typ_Object) is
+    Auxi : Typ_Object;
   begin
-    AUXI := X;
+    Auxi := X;
     X := Y;
-    Y := AUXI;
-  end EXCHANGE;
+    Y := Auxi;
+  end Exchange;
 
   -----------------
   -- Bubble sort --
   -----------------
-  procedure BUBBLE_SORT (SLICE : in out TYP_ARRAY) is
+  procedure Bubble_Sort (Slice : in out Typ_Array) is
   begin
-    if SLICE'LENGTH = 0 then return; end if;
+    if Slice'Length = 0 then return; end if;
     declare
-      FIRST_INDEX : constant TYP_INDEX := SLICE'FIRST;
-      LAST_INDEX  : constant TYP_INDEX := SLICE'LAST;
+      First_Index : constant Typ_Index := Slice'First;
+      Last_Index  : constant Typ_Index := Slice'Last;
     begin
-      for INDEX in FIRST_INDEX .. TYP_INDEX'PRED(LAST_INDEX) loop
-        for BUBBLE in TYP_INDEX'SUCC(INDEX) .. LAST_INDEX loop
-          if SLICE(BUBBLE) < SLICE(INDEX) then
-            EXCHANGE (SLICE(INDEX), SLICE(BUBBLE) );
+      for Index in First_Index .. Typ_Index'Pred(Last_Index) loop
+        for Bubble in Typ_Index'Succ(Index) .. Last_Index loop
+          if Slice(Bubble) < Slice(Index) then
+            Exchange (Slice(Index), Slice(Bubble) );
           end if;
         end loop;
       end loop;
     end;
   exception
     when others =>
-      raise SORT_ERROR;
-  end BUBBLE_SORT;
+      raise Sort_Error;
+  end Bubble_Sort;
 
   ---------------------------
   -- Heapsort (tournament) --
   ---------------------------
-  procedure HEAP_SORT (SLICE : in out TYP_ARRAY) is
+  procedure Heap_Sort (Slice : in out Typ_Array) is
   begin
-    if SLICE'LENGTH = 0 then return; end if;
+    if Slice'Length = 0 then return; end if;
 
     declare
-      FIRST_INDEX : constant TYP_INDEX := SLICE'FIRST;
-      LAST_INDEX  : constant TYP_INDEX := SLICE'LAST;
+      First_Index : constant Typ_Index := Slice'First;
+      Last_Index  : constant Typ_Index := Slice'Last;
       -- number of  elements to sort
-      ARRAY_LENGTH : constant INTEGER := SLICE'LENGTH;
+      Array_Length : constant Integer := Slice'Length;
       -- heap an its indexes
-      subtype TYP_INDEX_HEAP is INTEGER range 1 .. ARRAY_LENGTH;
-      HEAP : array (TYP_INDEX_HEAP) of TYP_OBJECT;
-      HEAP_INDEX, SON_INDEX, FATHER_INDEX : TYP_INDEX_HEAP;
-      FIRST_LEAF, LAST_LEAF : TYP_INDEX_HEAP;
+      subtype Typ_Index_Heap is Integer range 1 .. Array_Length;
+      Heap : array (Typ_Index_Heap) of Typ_Object;
+      Heap_Index, Son_Index, Father_Index : Typ_Index_Heap;
+      First_Leaf, Last_Leaf : Typ_Index_Heap;
 
     begin
       -- Construction of heap
-      HEAP_INDEX := 1;
-      HEAP(HEAP_INDEX) := SLICE(FIRST_INDEX);
+      Heap_Index := 1;
+      Heap(Heap_Index) := Slice(First_Index);
 
-      BUILD:
-      for ARRAY_INDEX in TYP_INDEX'SUCC(FIRST_INDEX) .. LAST_INDEX loop
+      Build:
+      for Array_Index in Typ_Index'Succ(First_Index) .. Last_Index loop
         -- insert object at the bottom of the heap
-        HEAP_INDEX := HEAP_INDEX + 1;
-        HEAP(HEAP_INDEX) := SLICE(ARRAY_INDEX);
+        Heap_Index := Heap_Index + 1;
+        Heap(Heap_Index) := Slice(Array_Index);
 
         -- we will insert object at its right place in heap
-        SON_INDEX := HEAP_INDEX;
-        FATHER_INDEX := SON_INDEX / 2;
+        Son_Index := Heap_Index;
+        Father_Index := Son_Index / 2;
 
-        SORTING:
+        Sorting:
         loop
           -- the father must be greater than its son
-          if not (HEAP(SON_INDEX) < HEAP(FATHER_INDEX)) then
-            EXCHANGE (HEAP(FATHER_INDEX), HEAP(SON_INDEX));
+          if not (Heap(Son_Index) < Heap(Father_Index)) then
+            Exchange (Heap(Father_Index), Heap(Son_Index));
             -- exit if al the heap has been seen
-            exit SORTING when FATHER_INDEX = 1;
+            exit Sorting when Father_Index = 1;
             -- new indexes for father and son
-            SON_INDEX := FATHER_INDEX;
-            FATHER_INDEX := SON_INDEX / 2;
+            Son_Index := Father_Index;
+            Father_Index := Son_Index / 2;
           else
             -- exit as soon as no exchange
-            exit SORTING;
+            exit Sorting;
           end if;
-        end loop SORTING;
-      end loop BUILD;
+        end loop Sorting;
+      end loop Build;
 
       -- destruction of heap by taking the top at each time
-      HEAP_INDEX := TYP_INDEX_HEAP'LAST;
+      Heap_Index := Typ_Index_Heap'Last;
 
-      DESTRUCTION:
-      for ARRAY_INDEX in reverse
-       TYP_INDEX'SUCC(FIRST_INDEX) .. LAST_INDEX loop
-        SLICE(ARRAY_INDEX) := HEAP(1);
+      Destruction:
+      for Array_Index in reverse
+       Typ_Index'Succ(First_Index) .. Last_Index loop
+        Slice(Array_Index) := Heap(1);
         -- Put the last heap element at the top
-        HEAP(1) := HEAP(HEAP_INDEX);
+        Heap(1) := Heap(Heap_Index);
         -- indexes of leaves: (firat_leaf, heap_index-1)
-        FIRST_LEAF := ( (HEAP_INDEX - 1) / 2) + 1;
-        LAST_LEAF := HEAP_INDEX - 1;
+        First_Leaf := ( (Heap_Index - 1) / 2) + 1;
+        Last_Leaf := Heap_Index - 1;
         -- re-sort the top
-        FATHER_INDEX := 1;
+        Father_Index := 1;
 
-        RESORT:
-        while FATHER_INDEX < FIRST_LEAF loop
+        Resort:
+        while Father_Index < First_Leaf loop
           -- selection of greatest son or son at left (if equal)
-          SON_INDEX := 2 * FATHER_INDEX;
+          Son_Index := 2 * Father_Index;
           -- if right son exists and if greater
-          if SON_INDEX < LAST_LEAF and then
-           HEAP(SON_INDEX) < HEAP(SON_INDEX + 1) then
+          if Son_Index < Last_Leaf and then
+           Heap(Son_Index) < Heap(Son_Index + 1) then
             -- take right son
-            SON_INDEX := SON_INDEX + 1;
+            Son_Index := Son_Index + 1;
           end if;
           -- father must be greater that its gretest son
-          if HEAP(FATHER_INDEX) < HEAP(SON_INDEX) then
-            EXCHANGE (HEAP(FATHER_INDEX), HEAP(SON_INDEX));
-            FATHER_INDEX := SON_INDEX;
+          if Heap(Father_Index) < Heap(Son_Index) then
+            Exchange (Heap(Father_Index), Heap(Son_Index));
+            Father_Index := Son_Index;
           else
             -- if no exchange, the heap is OK
-            exit RESORT;
+            exit Resort;
           end if;
-        end loop RESORT;
+        end loop Resort;
 
-        HEAP_INDEX := HEAP_INDEX - 1;
-      end loop DESTRUCTION;
+        Heap_Index := Heap_Index - 1;
+      end loop Destruction;
 
       -- Store the top 
-      SLICE(FIRST_INDEX) := HEAP(1);
+      Slice(First_Index) := Heap(1);
     exception
       when others =>
-        raise SORT_ERROR;
+        raise Sort_Error;
     end;
-  end HEAP_SORT;
+  end Heap_Sort;
 
   ---------------
   -- quicksort --
   ---------------
-  procedure QUICK_SORT (SLICE : in out TYP_ARRAY) is
+  procedure Quick_Sort (Slice : in out Typ_Array) is
   begin
-    if SLICE'LENGTH = 0 then return; end if;
+    if Slice'Length = 0 then return; end if;
 
     declare
 
       -- recursive procedure which sorts a slice of the array
-      procedure QUICK (LEFT, RIGHT : in TYP_INDEX) is
+      procedure Quick (Left, Right : in Typ_Index) is
         -- middle of the slice
-        I_FRONTIER : constant TYP_INDEX :=
-         TYP_INDEX'VAL( (TYP_INDEX'POS(LEFT)+TYP_INDEX'POS(RIGHT)) /2);
-        FRONTIER : constant TYP_OBJECT := SLICE(I_FRONTIER);
+        I_Frontier : constant Typ_Index :=
+         Typ_Index'Val( (Typ_Index'Pos(Left)+Typ_Index'Pos(Right)) /2);
+        Frontier : constant Typ_Object := Slice(I_Frontier);
         -- indexes in both halfs of the slice
-        I_LEFT, I_RIGHT : TYP_INDEX;
+        I_Left, I_Right : Typ_Index;
       begin
-        I_LEFT := LEFT;
-        I_RIGHT := RIGHT;
+        I_Left := Left;
+        I_Right := Right;
         loop
 
           -- first element at left of slice and not positioned ok
           --  regarding the frontier
-          while SLICE(I_LEFT) < FRONTIER loop
-            I_LEFT := TYP_INDEX'SUCC(I_LEFT);
+          while Slice(I_Left) < Frontier loop
+            I_Left := Typ_Index'Succ(I_Left);
           end loop;
           -- last  element a right of slice and not positioned ok
           --  regarding the frontier
-          while FRONTIER < SLICE(I_RIGHT) loop
-            I_RIGHT := TYP_INDEX'PRED(I_RIGHT);
+          while Frontier < Slice(I_Right) loop
+            I_Right := Typ_Index'Pred(I_Right);
           end loop;
 
           -- exchange and go to next elements if not both in frontier
-          if I_LEFT < I_RIGHT then
-            EXCHANGE (SLICE(I_LEFT), SLICE(I_RIGHT));
-            I_LEFT := TYP_INDEX'SUCC (I_LEFT);
-            I_RIGHT := TYP_INDEX'PRED (I_RIGHT);
-          elsif I_LEFT = I_RIGHT then
+          if I_Left < I_Right then
+            Exchange (Slice(I_Left), Slice(I_Right));
+            I_Left := Typ_Index'Succ (I_Left);
+            I_Right := Typ_Index'Pred (I_Right);
+          elsif I_Left = I_Right then
             -- go to next elements if not crossed and not to end
-            if I_LEFT /= RIGHT then
-              I_LEFT := TYP_INDEX'SUCC (I_LEFT);
+            if I_Left /= Right then
+              I_Left := Typ_Index'Succ (I_Left);
             end if;
-            if I_RIGHT /= LEFT then
-              I_RIGHT := TYP_INDEX'PRED (I_RIGHT);
+            if I_Right /= Left then
+              I_Right := Typ_Index'Pred (I_Right);
             end if;
           end if;
 
           -- leave if crossed now
-          exit when I_LEFT > I_RIGHT or else
-                   (I_LEFT = RIGHT and then I_RIGHT = LEFT);
+          exit when I_Left > I_Right or else
+                   (I_Left = Right and then I_Right = Left);
         end loop;
 
         -- sort both new slices
-        if LEFT   < I_RIGHT then QUICK(LEFT,   I_RIGHT); end if;
-        if I_LEFT < RIGHT   then QUICK(I_LEFT, RIGHT);   end if;
-      end QUICK;
+        if Left   < I_Right then Quick(Left,   I_Right); end if;
+        if I_Left < Right   then Quick(I_Left, Right);   end if;
+      end Quick;
 
     begin
-      QUICK (SLICE'FIRST, SLICE'LAST);
+      Quick (Slice'First, Slice'Last);
     end;
   exception
     when others =>
-      raise SORT_ERROR;
-  end QUICK_SORT;
+      raise Sort_Error;
+  end Quick_Sort;
 
-end SORTS;
+end Sorts;

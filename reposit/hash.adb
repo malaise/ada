@@ -1,182 +1,182 @@
-with MY_IO;
-with BIT_OPS;
-with DYN_DATA;
-package body HASH is
+with My_Io;
+with Bit_Ops;
+with Dyn_Data;
+package body Hash is
 
-  function MAX_HASH_FUNC (KEY : STRING) return MAX_HASH_RANGE is
-    INT : INTEGER := 0;
-    BH, BL : INTEGER;
-    use BIT_OPS;
+  function Max_Hash_Func (Key : String) return Max_Hash_Range is
+    Int : Integer := 0;
+    Bh, Bl : Integer;
+    use Bit_Ops;
 
   begin
-    BH := 0;
-    BL := 0;
-    for I in KEY'RANGE loop
-      BL := BL xor CHARACTER'POS(KEY(I));
-      BH := (BH +  CHARACTER'POS(KEY(I))) and 16#007F#;
+    Bh := 0;
+    Bl := 0;
+    for I in Key'Range loop
+      Bl := Bl xor Character'Pos(Key(I));
+      Bh := (Bh +  Character'Pos(Key(I))) and 16#007F#;
     end loop;
     -- lowest bit is same in BH and BL, reset in BH
-    BH := SHL (BH and 16#7E#, 3);  -- Max  7F = ..1111110... = 127
-    BL := BL and 16#007F#;         -- Max  7F = .....1111111 = 127
-    INT := BH xor BL;              -- Max 3FF = 001111111111 = 1023
-    return MAX_HASH_RANGE (INT);
-  end MAX_HASH_FUNC;
+    Bh := Shl (Bh and 16#7E#, 3);  -- Max  7F = ..1111110... = 127
+    Bl := Bl and 16#007F#;         -- Max  7F = .....1111111 = 127
+    Int := Bh xor Bl;              -- Max 3FF = 001111111111 = 1023
+    return Max_Hash_Range (Int);
+  end Max_Hash_Func;
 
 
-  package body HASH_MNG is
+  package body Hash_Mng is
 
     -- Data organization:
     --  An array (0 .. HASH_SIZE) of FIRST_CELL_REC
     --  Each of them pointing possibly to a CELL_REC which itself...
-    type CELL_REC;
-    type CELL_ACCESS is access CELL_REC;
+    type Cell_Rec;
+    type Cell_Access is access Cell_Rec;
 
-    type CELL_REC is record
-      DATA : DATA_ACESS;
-      NEXT : CELL_ACCESS := null;
+    type Cell_Rec is record
+      Data : Data_Acess;
+      Next : Cell_Access := null;
     end record;
 
 
-    type FIRST_CELL_REC is record
-      FIRST     : CELL_ACCESS := null;
-      CURRENT   : CELL_ACCESS := null;
+    type First_Cell_Rec is record
+      First     : Cell_Access := null;
+      Current   : Cell_Access := null;
     end record;
 
-    subtype HASH_RANGE is MAX_HASH_RANGE range 0 .. HASH_SIZE;
+    subtype Hash_Range is Max_Hash_Range range 0 .. Hash_Size;
 
     -- The entries of the table
-    FIRST_ARRAY : array (HASH_RANGE) of FIRST_CELL_REC;
+    First_Array : array (Hash_Range) of First_Cell_Rec;
 
-    NOT_FOUND_REC : constant FOUND_REC
-                  := (FOUND => FALSE);
+    Not_Found_Rec : constant Found_Rec
+                  := (Found => False);
 
     -- To manage the linked cells
-    package DYN_HASH is new DYN_DATA (CELL_REC, CELL_ACCESS);
+    package Dyn_Hash is new Dyn_Data (Cell_Rec, Cell_Access);
 
 
-    function HASH_FUNC (KEY : STRING) return HASH_RANGE is
+    function Hash_Func (Key : String) return Hash_Range is
     begin
-      return MAX_HASH_FUNC(KEY) rem HASH_SIZE;
-    end HASH_FUNC;
+      return Max_Hash_Func(Key) rem Hash_Size;
+    end Hash_Func;
 
     -- To store association KEY <-> INDEX
-    procedure STORE (KEY : in STRING; DATA : in DATA_ACESS) is
-      I : constant HASH_RANGE := HASH_FUNC(KEY);
-      CA, N : CELL_ACCESS;
+    procedure Store (Key : in String; Data : in Data_Acess) is
+      I : constant Hash_Range := Hash_Func(Key);
+      Ca, N : Cell_Access;
     begin
-      CA := DYN_HASH.ALLOCATE ((DATA => DATA, NEXT  => null));
+      Ca := Dyn_Hash.Allocate ((Data => Data, Next  => null));
 
       -- Append
-      if FIRST_ARRAY(I).FIRST = null then
-        FIRST_ARRAY(I).FIRST := CA;
+      if First_Array(I).First = null then
+        First_Array(I).First := Ca;
       else
-        N := FIRST_ARRAY(I).FIRST;
-        while N.NEXT /= null loop
-          N := N.NEXT;
+        N := First_Array(I).First;
+        while N.Next /= null loop
+          N := N.Next;
         end loop;
-        N.NEXT := CA;
+        N.Next := Ca;
       end if;
 
-    end STORE;
+    end Store;
 
     -- To remove a stored association KEY <-> INDEX
-    procedure REMOVE (KEY : in STRING) is
-      I : constant HASH_RANGE := HASH_FUNC(KEY);
-      CA : CELL_ACCESS;
-      CU : CELL_ACCESS;
+    procedure Remove (Key : in String) is
+      I : constant Hash_Range := Hash_Func(Key);
+      Ca : Cell_Access;
+      Cu : Cell_Access;
     begin
-      CU := FIRST_ARRAY(I).CURRENT;
-      CA := FIRST_ARRAY(I).FIRST;
+      Cu := First_Array(I).Current;
+      Ca := First_Array(I).First;
       -- Empty or not found
-      if CA = null or else CU = null then
-        raise NOT_FOUND;
+      if Ca = null or else Cu = null then
+        raise Not_Found;
       end if;
 
       -- Reset current
-      FIRST_ARRAY(I).CURRENT := null;
+      First_Array(I).Current := null;
 
-      if CA = CU then
+      if Ca = Cu then
         -- Special case when current is first
-        FIRST_ARRAY(I).FIRST := CA.NEXT; 
+        First_Array(I).First := Ca.Next; 
       else
         -- Find previous of current
-        while CA.NEXT /= CU loop
-          CA := CA.NEXT;
+        while Ca.Next /= Cu loop
+          Ca := Ca.Next;
         end loop;
-        CA.NEXT := CU.NEXT;
+        Ca.Next := Cu.Next;
       end if;
 
       -- Get rid of current
-      DYN_HASH.FREE (CU);
+      Dyn_Hash.Free (Cu);
 
-    end REMOVE;
+    end Remove;
 
-    procedure RESET_FIND (KEY : STRING) is
-      I : constant HASH_RANGE := HASH_FUNC(KEY);
+    procedure Reset_Find (Key : String) is
+      I : constant Hash_Range := Hash_Func(Key);
     begin
-      FIRST_ARRAY(I).CURRENT := null;
-    end RESET_FIND;
+      First_Array(I).Current := null;
+    end Reset_Find;
 
     -- To get next INDEX matching KEY
-    function FIND_NEXT (KEY : STRING) return FOUND_REC is
-      I : constant HASH_RANGE := HASH_FUNC(KEY);
-      CU : CELL_ACCESS;
+    function Find_Next (Key : String) return Found_Rec is
+      I : constant Hash_Range := Hash_Func(Key);
+      Cu : Cell_Access;
     begin
-      if FIRST_ARRAY(I).CURRENT = null then
-        CU := FIRST_ARRAY(I).FIRST;
+      if First_Array(I).Current = null then
+        Cu := First_Array(I).First;
       else
-        CU := FIRST_ARRAY(I).CURRENT.NEXT;
+        Cu := First_Array(I).Current.Next;
       end if;
 
-      FIRST_ARRAY(I).CURRENT := CU;
+      First_Array(I).Current := Cu;
 
-      if CU = null then
-        return NOT_FOUND_REC;
+      if Cu = null then
+        return Not_Found_Rec;
       else
-        return (FOUND => TRUE, DATA => CU.DATA);
+        return (Found => True, Data => Cu.Data);
       end if;
 
-    end FIND_NEXT;
+    end Find_Next;
 
-    procedure DUMP (KEY : in STRING) is
-      I : constant HASH_RANGE := HASH_FUNC(KEY);
-      CA : CELL_ACCESS := FIRST_ARRAY(I).FIRST;
+    procedure Dump (Key : in String) is
+      I : constant Hash_Range := Hash_Func(Key);
+      Ca : Cell_Access := First_Array(I).First;
     begin
-      MY_IO.PUT_LINE ("Hash " & HASH_RANGE'IMAGE(I));
-      if CA = null then
-        MY_IO.PUT_line (" No data found");
+      My_Io.Put_Line ("Hash " & Hash_Range'Image(I));
+      if Ca = null then
+        My_Io.Put_line (" No data found");
       end if;
-      while CA /= null loop
-        MY_IO.PUT (" Data found ");
-        if CA = FIRST_ARRAY(I).CURRENT then
-          MY_IO.PUT (" => ");
+      while Ca /= null loop
+        My_Io.Put (" Data found ");
+        if Ca = First_Array(I).Current then
+          My_Io.Put (" => ");
         else
-          MY_IO.PUT (" -> ");
+          My_Io.Put (" -> ");
         end if;
         
-        DUMP (CA.DATA);
-        MY_IO.NEW_LINE;
-        CA := CA.NEXT;
+        Dump (Ca.Data);
+        My_Io.New_Line;
+        Ca := Ca.Next;
       end loop;
-    end DUMP;
+    end Dump;
 
-    procedure CLEAR_ALL is
-      CA, CN : CELL_ACCESS;
+    procedure Clear_All is
+      Ca, Cn : Cell_Access;
     begin
-      for I in HASH_RANGE loop
-        CA := FIRST_ARRAY(I).FIRST;
-        FIRST_ARRAY(I).FIRST := null;
-        FIRST_ARRAY(I).CURRENT := null;
+      for I in Hash_Range loop
+        Ca := First_Array(I).First;
+        First_Array(I).First := null;
+        First_Array(I).Current := null;
 
-        while CA /= null loop
-          CN := CA.NEXT;
-          DYN_HASH.FREE (CA);
-          CA := CN;
+        while Ca /= null loop
+          Cn := Ca.Next;
+          Dyn_Hash.Free (Ca);
+          Ca := Cn;
         end loop;
       end loop;
-    end CLEAR_ALL;
+    end Clear_All;
 
-  end HASH_MNG;
+  end Hash_Mng;
 
-end HASH;
+end Hash;
 

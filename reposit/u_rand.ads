@@ -17,24 +17,24 @@
 -- Ada Letters and is considered public domain.  PCK                    --
 --------------------------------------------------------------------------
 
-package U_RAND is 
+package U_Rand is 
 
   M1 : constant := 179;
   M2 : constant := M1 - 10;
 
-  subtype SEED_RANGE_1 is INTEGER range 1 .. M1 - 1;
-  subtype SEED_RANGE_2 is INTEGER range 1 .. M2 - 1;
+  subtype Seed_Range_1 is Integer range 1 .. M1 - 1;
+  subtype Seed_Range_2 is Integer range 1 .. M2 - 1;
 
-  DEFAULT_I : constant SEED_RANGE_1 := 12;
-  DEFAULT_J : constant SEED_RANGE_1 := 34;
-  DEFAULT_K : constant SEED_RANGE_1 := 56;
-  DEFAULT_L : constant SEED_RANGE_1 := 78;
+  Default_I : constant Seed_Range_1 := 12;
+  Default_J : constant Seed_Range_1 := 34;
+  Default_K : constant Seed_Range_1 := 56;
+  Default_L : constant Seed_Range_1 := 78;
 
-  procedure START(NEW_I : in SEED_RANGE_1 := DEFAULT_I;
-                  NEW_J : in SEED_RANGE_1 := DEFAULT_J;
-                  NEW_K : in SEED_RANGE_1 := DEFAULT_K;
-                  NEW_L : in SEED_RANGE_2 := DEFAULT_L);
+  procedure Start(New_I : in Seed_Range_1 := Default_I;
+                  New_J : in Seed_Range_1 := Default_J;
+                  New_K : in Seed_Range_1 := Default_K;
+                  New_L : in Seed_Range_2 := Default_L);
 
-  function NEXT return FLOAT;
+  function Next return Float;
 
-end U_RAND;
+end U_Rand;

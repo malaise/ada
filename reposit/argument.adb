@@ -1,240 +1,240 @@
-with LOC_ARG;
-use LOC_ARG;
-package body ARGUMENT is
+with Loc_Arg;
+use Loc_Arg;
+package body Argument is
 
-  KEY_PREFIX : constant CHARACTER := '-';
+  Key_Prefix : constant Character := '-';
 
-  PATH_SEPARATOR : constant CHARACTER := '/';
+  Path_Separator : constant Character := '/';
 
-  STR : STRING (1..MAX_LEN_ARG);
+  Str : String (1..Max_Len_Arg);
 
-  function NOT_KEY return STRING is
+  function Not_Key return String is
   begin
-    return "" & ASCII.DEL;
-  end NOT_KEY;
+    return "" & Ascii.Del;
+  end Not_Key;
 
-  function ANY_ARG return STRING is
+  function Any_Arg return String is
   begin
-    return "" & ASCII.NUL;
-  end ANY_ARG;
+    return "" & Ascii.Nul;
+  end Any_Arg;
 
-  function ANY_KEY return STRING is
+  function Any_Key return String is
   begin
     return " ";
-  end ANY_KEY;
+  end Any_Key;
 
 
-  function GET_PARAMETER (
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) return STRING is
-    LEN : NATURAL;
+  function Get_Parameter (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return String is
+    Len : Natural;
   begin
-    GET_PARAMETER (STR, LEN, OCCURENCE, PARAM_KEY);
-    return STR (1 .. LEN);
-  end GET_PARAMETER;
+    Get_Parameter (Str, Len, Occurence, Param_Key);
+    return Str (1 .. Len);
+  end Get_Parameter;
 
-  procedure GET_PARAMETER (
-   PARAMETER : out STRING;
-   PARAM_LENGTH : out NATURAL;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) is
-    POSITION : NATURAL;
+  procedure Get_Parameter (
+   Parameter : out String;
+   Param_Length : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Position : Natural;
   begin
-    GET_PARAM_AND_POS (PARAMETER, PARAM_LENGTH, POSITION,
-     OCCURENCE, PARAM_KEY);
-  end GET_PARAMETER;
+    Get_Param_And_Pos (Parameter, Param_Length, Position,
+     Occurence, Param_Key);
+  end Get_Parameter;
 
-  procedure GET_PARAMETER (
-   PARAMETER : in out TEXT_HANDLER.TEXT;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) is
-    POSITION : NATURAL;
+  procedure Get_Parameter (
+   Parameter : in out Text_Handler.Text;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Position : Natural;
   begin
-    GET_PARAM_AND_POS (PARAMETER, POSITION,
-     OCCURENCE, PARAM_KEY);
+    Get_Param_And_Pos (Parameter, Position,
+     Occurence, Param_Key);
   end;
 
 
 
-  procedure GET_PARAM_AND_POS (
-   PARAMETER : out STRING;
-   PARAM_LENGTH : out NATURAL;
-   POSITION : out NATURAL;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) is
+  procedure Get_Param_And_Pos (
+   Parameter : out String;
+   Param_Length : out Natural;
+   Position : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
 
-    COMFORM_OCCURENCE : NATURAL := 0;
-    IN_OCCURENCE : NATURAL := OCCURENCE;
-    FIRST_CHAR : POSITIVE;
+    Comform_Occurence : Natural := 0;
+    In_Occurence : Natural := Occurence;
+    First_Char : Positive;
   begin
     -- Init result for case of error
-    PARAM_LENGTH := 0;
-    POSITION := 0;
+    Param_Length := 0;
+    Position := 0;
 
     -- test if occurence is 0
-    if IN_OCCURENCE=0 then
-      if PARAM_KEY /= ANY_ARG and then PARAM_KEY /= NOT_KEY then
-        raise ARGUMENT_NOT_FOUND;
+    if In_Occurence=0 then
+      if Param_Key /= Any_Arg and then Param_Key /= Not_Key then
+        raise Argument_Not_Found;
       end if;
-      if PARAMETER'LENGTH < DATA(0)'LENGTH then
-        raise ARGUMENT_TOO_LONG;
+      if Parameter'Length < Data(0)'Length then
+        raise Argument_Too_Long;
       end if;
       -- affect string
-      PARAM_LENGTH := DATA(0)'LENGTH;
-      PARAMETER(1 .. DATA(0)'LENGTH) := DATA(0)(1..DATA(0)'LENGTH);
-      POSITION := 0;
+      Param_Length := Data(0)'Length;
+      Parameter(1 .. Data(0)'Length) := Data(0)(1..Data(0)'Length);
+      Position := 0;
       return;
     end if;
 
     -- Compute 1st char of argument to return
-    if PARAM_KEY=ANY_ARG or else PARAM_KEY=NOT_KEY then
-      FIRST_CHAR := 1;
-    elsif PARAM_KEY = ANY_KEY then
+    if Param_Key=Any_Arg or else Param_Key=Not_Key then
+      First_Char := 1;
+    elsif Param_Key = Any_Key then
       -- any key : start after '-'
-      FIRST_CHAR := 2;
+      First_Char := 2;
     else
       -- specific key : start after -<key>
-      FIRST_CHAR := PARAM_KEY'LENGTH + 2;
+      First_Char := Param_Key'Length + 2;
     end if;
 
     -- analyse arguments of command line,
-    for I in 1 .. COUNT loop
+    for I in 1 .. Count loop
       -- Check if argument conforms
-      if PARAM_KEY = ANY_ARG then
+      if Param_Key = Any_Arg then
         -- any parameter comforms
-        COMFORM_OCCURENCE := COMFORM_OCCURENCE + 1;
-      elsif PARAM_KEY = NOT_KEY and then DATA(I)(1) /= KEY_PREFIX then
+        Comform_Occurence := Comform_Occurence + 1;
+      elsif Param_Key = Not_Key and then Data(I)(1) /= Key_Prefix then
         -- any parameter not preceeded by separator comforms
-        COMFORM_OCCURENCE := COMFORM_OCCURENCE + 1;
-      elsif PARAM_KEY = ANY_KEY and then DATA(I)(1) = KEY_PREFIX then
+        Comform_Occurence := Comform_Occurence + 1;
+      elsif Param_Key = Any_Key and then Data(I)(1) = Key_Prefix then
         -- any parameter preceeded by separator comforms
-        COMFORM_OCCURENCE := COMFORM_OCCURENCE + 1;
-      elsif DATA(I)(1) = KEY_PREFIX
-       and then DATA(I)'LENGTH >= PARAM_KEY'LENGTH + 1
-       and then DATA(I)(2 .. PARAM_KEY'LENGTH+1) = PARAM_KEY then
+        Comform_Occurence := Comform_Occurence + 1;
+      elsif Data(I)(1) = Key_Prefix
+       and then Data(I)'Length >= Param_Key'Length + 1
+       and then Data(I)(2 .. Param_Key'Length+1) = Param_Key then
         -- Check that first char is PREFIX
         -- and that length of parameter is >= than '-'<key>
         -- and that argument after '-' matches PARAM_KEY
-        COMFORM_OCCURENCE := COMFORM_OCCURENCE + 1;
+        Comform_Occurence := Comform_Occurence + 1;
       end if;
 
-      if COMFORM_OCCURENCE = IN_OCCURENCE then
+      if Comform_Occurence = In_Occurence then
         -- Comforming occurence is found. Check length
-        if PARAMETER'LENGTH < DATA(I)'LENGTH - (FIRST_CHAR-1) then
-          raise ARGUMENT_TOO_LONG;
+        if Parameter'Length < Data(I)'Length - (First_Char-1) then
+          raise Argument_Too_Long;
         else
           -- affect string (FIRST_CHAR..LEN)
-          PARAM_LENGTH := DATA(I)'LENGTH - (FIRST_CHAR-1);
-          PARAMETER(1 .. DATA(I)'LENGTH-(FIRST_CHAR-1))
-           := DATA(I)(FIRST_CHAR..DATA(I)'LENGTH);
-          POSITION := I;
+          Param_Length := Data(I)'Length - (First_Char-1);
+          Parameter(1 .. Data(I)'Length-(First_Char-1))
+           := Data(I)(First_Char..Data(I)'Length);
+          Position := I;
           return;
         end if;
       end if;
       -- next argument
     end loop;
-    raise ARGUMENT_NOT_FOUND;
+    raise Argument_Not_Found;
   exception
     -- Propagate the cause of problem.
-    when ARGUMENT_TOO_LONG | ARGUMENT_NOT_FOUND =>
+    when Argument_Too_Long | Argument_Not_Found =>
       raise;
     when others =>
       -- In case of other problem : not found.
-      raise ARGUMENT_NOT_FOUND;
-  end GET_PARAM_AND_POS;
+      raise Argument_Not_Found;
+  end Get_Param_And_Pos;
 
-  procedure GET_PARAM_AND_POS (
-   PARAMETER : in out TEXT_HANDLER.TEXT;
-   POSITION : out NATURAL;
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) is
-    STR : STRING (1..PARAMETER.MAX_LEN);
-    LEN : NATURAL;
+  procedure Get_Param_And_Pos (
+   Parameter : in out Text_Handler.Text;
+   Position : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Str : String (1..Parameter.Max_Len);
+    Len : Natural;
   begin
-    GET_PARAM_AND_POS (STR, LEN, POSITION, OCCURENCE, PARAM_KEY);
-    TEXT_HANDLER.SET (PARAMETER, STR(1 .. LEN));
-  end GET_PARAM_AND_POS;
+    Get_Param_And_Pos (Str, Len, Position, Occurence, Param_Key);
+    Text_Handler.Set (Parameter, Str(1 .. Len));
+  end Get_Param_And_Pos;
 
- function GET_POSITION (
-   OCCURENCE : in NATURAL := 1;
-   PARAM_KEY : in STRING := ANY_ARG) return NATURAL is
-    LEN : NATURAL;
-    POS : NATURAL;
+ function Get_Position (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return Natural is
+    Len : Natural;
+    Pos : Natural;
   begin
-    GET_PARAM_AND_POS (STR, LEN, POS, OCCURENCE, PARAM_KEY);
-    return POS;
-  end GET_POSITION;
+    Get_Param_And_Pos (Str, Len, Pos, Occurence, Param_Key);
+    return Pos;
+  end Get_Position;
 
-  function GET_NBRE_ARG return NATURAL is
+  function Get_Nbre_Arg return Natural is
   begin
-    return COUNT;
-  end GET_NBRE_ARG;
+    return Count;
+  end Get_Nbre_Arg;
 
   -- Analyse of argument(0)
 
   -- Path of program from ARG(0) (wirh last /)
-  function LAST_DELIMITER (PATH_PROG : STRING) return NATURAL is
+  function Last_Delimiter (Path_Prog : String) return Natural is
   begin
-    for I in reverse PATH_PROG'RANGE loop
-      if PATH_PROG(I) = PATH_SEPARATOR then
+    for I in reverse Path_Prog'Range loop
+      if Path_Prog(I) = Path_Separator then
         return I;
       end if;
     end loop;
     return 0;
-  end LAST_DELIMITER;
+  end Last_Delimiter;
 
 
-  function GET_PROGRAM_PATH return STRING is
-    LEN : NATURAL;
+  function Get_Program_Path return String is
+    Len : Natural;
   begin
     -- program path
-    GET_PROGRAM_PATH (STR, LEN);
-    return STR (1 .. LEN);
-  end GET_PROGRAM_PATH;
+    Get_Program_Path (Str, Len);
+    return Str (1 .. Len);
+  end Get_Program_Path;
 
-  procedure GET_PROGRAM_PATH (PATH : out STRING; PATH_LENGTH : out NATURAL) is
-    LEN : NATURAL;
+  procedure Get_Program_Path (Path : out String; Path_Length : out Natural) is
+    Len : Natural;
   begin
     -- program path and name
-    GET_PARAMETER (STR, LEN, 0, ANY_ARG);
-    LEN := LAST_DELIMITER(STR (1 .. LEN));
+    Get_Parameter (Str, Len, 0, Any_Arg);
+    Len := Last_Delimiter(Str (1 .. Len));
 
-    PATH_LENGTH := LEN;
-    PATH (1 .. LEN) := STR (1 .. LEN);
-  end GET_PROGRAM_PATH;
+    Path_Length := Len;
+    Path (1 .. Len) := Str (1 .. Len);
+  end Get_Program_Path;
 
-  procedure GET_PROGRAM_PATH (PATH : in out TEXT_HANDLER.TEXT) is
+  procedure Get_Program_Path (Path : in out Text_Handler.Text) is
   begin
-    TEXT_HANDLER.SET (PATH, GET_PROGRAM_PATH);
-  end GET_PROGRAM_PATH;
+    Text_Handler.Set (Path, Get_Program_Path);
+  end Get_Program_Path;
 
   -- name of program from ARGUMENT(0)
-  function GET_PROGRAM_NAME return STRING is
-    LEN : NATURAL;
+  function Get_Program_Name return String is
+    Len : Natural;
   begin
     -- program name
-    GET_PROGRAM_NAME (STR, LEN);
-    return STR (1 .. LEN);
-  end GET_PROGRAM_NAME;
+    Get_Program_Name (Str, Len);
+    return Str (1 .. Len);
+  end Get_Program_Name;
 
-  procedure GET_PROGRAM_NAME (NAME : out STRING;
-                              NAME_LENGTH : out NATURAL) is
-    LEN : NATURAL;
-    START : NATURAL;
+  procedure Get_Program_Name (Name : out String;
+                              Name_Length : out Natural) is
+    Len : Natural;
+    Start : Natural;
   begin
     -- program path and name
-    GET_PARAMETER (STR, LEN, 0, ANY_ARG);
-    START := LAST_DELIMITER(STR (1 .. LEN)) + 1;
+    Get_Parameter (Str, Len, 0, Any_Arg);
+    Start := Last_Delimiter(Str (1 .. Len)) + 1;
 
-    NAME_LENGTH := LEN - START + 1;
-    NAME (1 .. LEN - START + 1) := STR (START .. LEN);
-  end GET_PROGRAM_NAME;
+    Name_Length := Len - Start + 1;
+    Name (1 .. Len - Start + 1) := Str (Start .. Len);
+  end Get_Program_Name;
 
 
-  procedure GET_PROGRAM_NAME (NAME : in out TEXT_HANDLER.TEXT) is
+  procedure Get_Program_Name (Name : in out Text_Handler.Text) is
   begin
-    TEXT_HANDLER.SET (NAME, GET_PROGRAM_NAME);
-  end GET_PROGRAM_NAME;
+    Text_Handler.Set (Name, Get_Program_Name);
+  end Get_Program_Name;
 
-end ARGUMENT;
+end Argument;
 

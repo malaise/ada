@@ -1,54 +1,54 @@
-with CALENDAR, SYSTEM;
-with DYNAMIC_LIST, MY_IO, TIMERS, SYS_CALLS;
-package body X_MNG is
+with Calendar, System;
+with Dynamic_List, My_Io, Timers, Sys_Calls;
+package body X_Mng is
 
   -- Duration
-  INFINITE_TIMEOUT : constant DURATION := TIMERS.INFINITE_SECONDS;
+  Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
 
-  DEBUG_VAR_NAME : constant STRING := "X_MNG_DEBUG";
-  DEBUG : BOOLEAN := FALSE;
+  Debug_Var_Name : constant String := "X_Mng_Debug";
+  Debug : Boolean := False;
 
   -- Result of a call to C
-  subtype RESULT is INTEGER;
-  OK : constant RESULT := 0;
+  subtype Result is Integer;
+  Ok : constant Result := 0;
 
   -- Line access for X
-  subtype LINE_FOR_C  is SYSTEM.ADDRESS;
-  NO_LINE_FOR_C : constant LINE_FOR_C := SYSTEM.NULL_ADDRESS;
+  subtype Line_For_C  is System.Address;
+  No_Line_For_C : constant Line_For_C := System.Null_Address;
 
   -- True if the connection to X has been initialised
-  INITIALISED : BOOLEAN := FALSE; 
+  Initialised : Boolean := False; 
  
   -- Boolean on 32 bits for C
-  type BOOL_FOR_C is new BOOLEAN;
-  for BOOL_FOR_C'SIZE use 32;
-  for BOOL_FOR_C use (FALSE => 0, TRUE => 1);
+  type Bool_For_C is new Boolean;
+  for Bool_For_C'Size use 32;
+  for Bool_For_C use (False => 0, True => 1);
 
-  function FOR_C(ADA_BOOLEAN : in BOOLEAN) return BOOL_FOR_C is
+  function For_C(Ada_Boolean : in Boolean) return Bool_For_C is
   begin
-    return BOOL_FOR_C'VAL(BOOLEAN'POS(ADA_BOOLEAN));
-  end FOR_C;
+    return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
+  end For_C;
 
-  function FOR_ADA(C_BOOLEAN : in BOOL_FOR_C) return BOOLEAN is
+  function For_Ada(C_Boolean : in Bool_For_C) return Boolean is
   begin
-    return BOOLEAN'VAL(BOOL_FOR_C'POS(C_BOOLEAN));
-  end FOR_ADA;
+    return Boolean'Val(Bool_For_C'Pos(C_Boolean));
+  end For_Ada;
 
   -- Callback list
-  type CB_REC is record
-    FD : FILE_DESC;
-    READ : BOOLEAN;
-    CB : FD_CALLBACK;
+  type Cb_Rec is record
+    Fd : File_Desc;
+    Read : Boolean;
+    Cb : Fd_Callback;
   end record;
-  package CB_MNG is new DYNAMIC_LIST(CB_REC);
-  CB_LIST : CB_MNG.LIST_TYPE;
+  package Cb_Mng is new Dynamic_List(Cb_Rec);
+  Cb_List : Cb_Mng.List_Type;
 
   -- Same FD
-  function SAME_FD (CB1, CB2 : CB_REC) return BOOLEAN is
+  function Same_Fd (Cb1, Cb2 : Cb_Rec) return Boolean is
   begin
-    return CB1.READ = CB2.READ and then CB1.FD = CB2.FD;
-  end SAME_FD;
-  procedure CB_SEARCH is new CB_MNG.SEARCH(SAME_FD);
+    return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
+  end Same_Fd;
+  procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
 
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
@@ -56,8 +56,8 @@ package body X_MNG is
   -- Initialise X for one host
   -- int x_initialise (char *server_name);
   ------------------------------------------------------------------
-  function X_INITIALISE (SERVER_NAME : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_INITIALISE, "x_initialise");
+  function X_Initialise (Server_Name : System.Address) return Result;
+  pragma Import(C, X_Initialise, "x_initialise");
 
   ------------------------------------------------------------------
   -- Opens a line
@@ -66,42 +66,42 @@ package body X_MNG is
   --                  int background, int border, int no_font,
   --                  void **p_line_id);
   ------------------------------------------------------------------
-  function X_OPEN_LINE (SCREEN_ID          : INTEGER;
-                        ROW, COLUMN        : INTEGER;
-                        HEIGHT, WIDTH      : INTEGER;
-                        BACKGROUND, BORDER : INTEGER;
-                        NO_FONT            : INTEGER;
-                        P_LINE_ID          : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_OPEN_LINE, "x_open_line");
+  function X_Open_Line (Screen_Id          : Integer;
+                        Row, Column        : Integer;
+                        Height, Width      : Integer;
+                        Background, Border : Integer;
+                        No_Font            : Integer;
+                        P_Line_Id          : System.Address) return Result;
+  pragma Import(C, X_Open_Line, "x_open_line");
  
   ------------------------------------------------------------------
   -- Closes a line
   -- int x_close_line (void *line_id);
   ------------------------------------------------------------------
-  function X_CLOSE_LINE(LINE_ID : LINE_FOR_C) return RESULT;
-  pragma IMPORT(C, X_CLOSE_LINE, "x_close_line");
+  function X_Close_Line(Line_Id : Line_For_C) return Result;
+  pragma Import(C, X_Close_Line, "x_close_line");
 
   ------------------------------------------------------------------
   -- Set the name of a line
   -- int x_set_line_name (void *line_id, char *line_name);
   ------------------------------------------------------------------
-  function X_SET_LINE_NAME (LINE_ID   : LINE_FOR_C;
-                            LINE_NAME : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_SET_LINE_NAME, "x_set_line_name");
+  function X_Set_Line_Name (Line_Id   : Line_For_C;
+                            Line_Name : System.Address) return Result;
+  pragma Import(C, X_Set_Line_Name, "x_set_line_name");
 
   ------------------------------------------------------------------
   -- Flushes all the lines of the host (really display them)
   -- int x_flush (void)
   ------------------------------------------------------------------
-  function X_FLUSH return RESULT;
-  pragma IMPORT(C, X_FLUSH, "x_flush");
+  function X_Flush return Result;
+  pragma Import(C, X_Flush, "x_flush");
 
   ------------------------------------------------------------------
   -- Clears a line
   -- int x_clear_line (void *line_id);
   ------------------------------------------------------------------
-  function X_CLEAR_LINE(LINE_ID : LINE_FOR_C) return RESULT;
-  pragma IMPORT(C, X_CLEAR_LINE, "x_clear_line");
+  function X_Clear_Line(Line_Id : Line_For_C) return Result;
+  pragma Import(C, X_Clear_Line, "x_clear_line");
 
   ------------------------------------------------------------------
   -- Sets the attributes for a further put in the same window
@@ -110,30 +110,30 @@ package body X_MNG is
   --                       boolean superbright, boolean underline,
   --                       boolean blink, boolean reverse);
   ------------------------------------------------------------------
-  function X_SET_ATTRIBUTES(LINE_ID     : LINE_FOR_C;
-                            PAPER, INK  : INTEGER;
-                            SUPERBRIGHT : BOOL_FOR_C;
-                            UNDERLINE   : BOOL_FOR_C;
-                            BLINK       : BOOL_FOR_C;
-                            INVERSE     : BOOL_FOR_C) return RESULT;
-  pragma IMPORT(C, X_SET_ATTRIBUTES, "x_set_attributes");
+  function X_Set_Attributes(Line_Id     : Line_For_C;
+                            Paper, Ink  : Integer;
+                            Superbright : Bool_For_C;
+                            Underline   : Bool_For_C;
+                            Blink       : Bool_For_C;
+                            Inverse     : Bool_For_C) return Result;
+  pragma Import(C, X_Set_Attributes, "x_set_attributes");
  
   ------------------------------------------------------------------
   -- Set XOR mode for further outputs
   -- int x_set_xor_mode (void *line_id, boolean xor_mode);
   ------------------------------------------------------------------
-  function X_SET_XOR_MODE(LINE_ID : LINE_FOR_C;
-                          XOR_MODE  : BOOL_FOR_C) return RESULT;
-  pragma IMPORT(C, X_SET_XOR_MODE, "x_set_xor_mode");
+  function X_Set_Xor_Mode(Line_Id : Line_For_C;
+                          Xor_Mode  : Bool_For_C) return Result;
+  pragma Import(C, X_Set_Xor_Mode, "x_set_xor_mode");
 
   ------------------------------------------------------------------
   -- Writes a char whith the attributes previously set
   -- int x_put_char (void *line_id, int  car, int row, int column);
   ------------------------------------------------------------------
-  function X_PUT_CHAR(LINE_ID     : LINE_FOR_C;
-                      CAR         : INTEGER;
-                      ROW, COLUMN : in INTEGER) return RESULT;
-  pragma IMPORT(C, X_PUT_CHAR, "x_put_char");
+  function X_Put_Char(Line_Id     : Line_For_C;
+                      Car         : Integer;
+                      Row, Column : in Integer) return Result;
+  pragma Import(C, X_Put_Char, "x_put_char");
 
   ------------------------------------------------------------------
   -- Writes a char whith the attributes previously set
@@ -141,21 +141,21 @@ package body X_MNG is
   -- int x_overwrite_char (void *line_id, int  car,
   --                       int row, int column);
   ------------------------------------------------------------------
-  function X_OVERWRITE_CHAR(LINE_ID     : LINE_FOR_C;
-                            CAR         : INTEGER;
-                            ROW, COLUMN : in INTEGER) return RESULT;
-  pragma IMPORT(C, X_OVERWRITE_CHAR, "x_overwrite_char");
+  function X_Overwrite_Char(Line_Id     : Line_For_C;
+                            Car         : Integer;
+                            Row, Column : in Integer) return Result;
+  pragma Import(C, X_Overwrite_Char, "x_overwrite_char");
 
   ------------------------------------------------------------------
   -- Writes a string at location with the attributes previously set
   -- int x_put_stringt (void *line_id, char *p_char, int number,
   --                    int row, int column);
   ------------------------------------------------------------------
-  function X_PUT_STRING(LINE_ID     : LINE_FOR_C;
-                        STR_ADDR    : SYSTEM.ADDRESS;
-                        LENGTH      : INTEGER;
-                        ROW, COLUMN : INTEGER) return RESULT;
-  pragma IMPORT(C, X_PUT_STRING, "x_put_string");
+  function X_Put_String(Line_Id     : Line_For_C;
+                        Str_Addr    : System.Address;
+                        Length      : Integer;
+                        Row, Column : Integer) return Result;
+  pragma Import(C, X_Put_String, "x_put_string");
 
   ------------------------------------------------------------------
   -- Writes a char on a line with specified characteristics
@@ -164,16 +164,16 @@ package body X_MNG is
   --                            boolean superbright, boolean underline,
   --                            boolean blink, boolean reverse);
   ------------------------------------------------------------------
-  function X_PUT_CHAR_ATTRIBUTES(LINE_ID     : LINE_FOR_C;
-                                 CAR         : INTEGER;
-                                 ROW, COLUMN : INTEGER;
-                                 PAPER, INK  : INTEGER;
-                                 SUPERBRIGHT : BOOL_FOR_C;
-                                 UNDERLINE   : BOOL_FOR_C;
-                                 BLINK       : BOOL_FOR_C;
-                                 INVERSE     : BOOL_FOR_C) 
-   return RESULT;
-  pragma IMPORT(C, X_PUT_CHAR_ATTRIBUTES, "x_put_char_attributes");
+  function X_Put_Char_Attributes(Line_Id     : Line_For_C;
+                                 Car         : Integer;
+                                 Row, Column : Integer;
+                                 Paper, Ink  : Integer;
+                                 Superbright : Bool_For_C;
+                                 Underline   : Bool_For_C;
+                                 Blink       : Bool_For_C;
+                                 Inverse     : Bool_For_C) 
+   return Result;
+  pragma Import(C, X_Put_Char_Attributes, "x_put_char_attributes");
 
   ------------------------------------------------------------------
   -- Draws a rectangle (width * height) from position
@@ -181,66 +181,66 @@ package body X_MNG is
   --  New position is updated to lower-left square of rectangle.
   -- int x_draw_area (void *line_id, int width, int height);
   ------------------------------------------------------------------
-  function X_DRAW_AREA(LINE_ID       : LINE_FOR_C;
-                       WIDTH, HEIGHT : INTEGER;
-                       ROW, COLUMN   : INTEGER) return RESULT;
-  pragma IMPORT(C, X_DRAW_AREA, "x_draw_area");
+  function X_Draw_Area(Line_Id       : Line_For_C;
+                       Width, Height : Integer;
+                       Row, Column   : Integer) return Result;
+  pragma Import(C, X_Draw_Area, "x_draw_area");
  
   ------------------------------------------------------------------
   -- Puts a char with current characteristics
   --  at specified position in pixels
   -- int x_put_char_pixels (void *line_id, int car, int x, int y);
   ------------------------------------------------------------------
-  function X_PUT_CHAR_PIXELS(LINE_ID : LINE_FOR_C;
-                             CAR     : INTEGER;
-                             X, Y    : INTEGER) return RESULT;
-  pragma IMPORT(C, X_PUT_CHAR_PIXELS, "x_put_char_pixels");
+  function X_Put_Char_Pixels(Line_Id : Line_For_C;
+                             Car     : Integer;
+                             X, Y    : Integer) return Result;
+  pragma Import(C, X_Put_Char_Pixels, "x_put_char_pixels");
 
   ------------------------------------------------------------------
   -- Gets the graphic characteristics of a line when it was created
   -- int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
   --                  int *p_f_width, int *p_f_height, int *p_f_offset);
   ------------------------------------------------------------------
-  function X_GET_GRAPHIC_CHARACTERISTICS(LINE_ID : LINE_FOR_C;
-                                         WINDOW_WIDTH  : SYSTEM.ADDRESS;
-                                         WINDOW_HEIGHT : SYSTEM.ADDRESS;
-                                         FONT_WIDTH    : SYSTEM.ADDRESS;
-                                         FONT_HEIGHT   : SYSTEM.ADDRESS;
-                                         FONT_OFFSET   : SYSTEM.ADDRESS)
-           return RESULT;
-  pragma IMPORT(C, X_GET_GRAPHIC_CHARACTERISTICS, "x_get_graph_charact");
+  function X_Get_Graphic_Characteristics(Line_Id : Line_For_C;
+                                         Window_Width  : System.Address;
+                                         Window_Height : System.Address;
+                                         Font_Width    : System.Address;
+                                         Font_Height   : System.Address;
+                                         Font_Offset   : System.Address)
+           return Result;
+  pragma Import(C, X_Get_Graphic_Characteristics, "x_get_graph_charact");
 
   ------------------------------------------------------------------
   -- Draw a point with current characteristics
   -- int x_draw_point (void *line_id, int x, int y);
   ------------------------------------------------------------------
-  function X_DRAW_POINT(LINE_ID : LINE_FOR_C;
-                        X, Y    : INTEGER) return RESULT;
-  pragma IMPORT(C, X_DRAW_POINT, "x_draw_point");
+  function X_Draw_Point(Line_Id : Line_For_C;
+                        X, Y    : Integer) return Result;
+  pragma Import(C, X_Draw_Point, "x_draw_point");
 
   ------------------------------------------------------------------
   -- Draw a line with current characteristics
   -- int x_draw_line (void *line_id, int x1, int y1, int x2, int y2);
   ------------------------------------------------------------------
-  function X_DRAW_LINE(LINE_ID : LINE_FOR_C;
-                       X1, Y1, X2, Y2 : NATURAL) return RESULT;
-  pragma IMPORT(C, X_DRAW_LINE, "x_draw_line");
+  function X_Draw_Line(Line_Id : Line_For_C;
+                       X1, Y1, X2, Y2 : Natural) return Result;
+  pragma Import(C, X_Draw_Line, "x_draw_line");
 
   ------------------------------------------------------------------
   -- Draw a rectangle with current characteristics
   -- int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
   ------------------------------------------------------------------
-  function X_DRAW_RECTANGLE(LINE_ID : LINE_FOR_C;
-                            X1, Y1, X2, Y2 : NATURAL) return RESULT;
-  pragma IMPORT(C, X_DRAW_RECTANGLE, "x_draw_rectangle");
+  function X_Draw_Rectangle(Line_Id : Line_For_C;
+                            X1, Y1, X2, Y2 : Natural) return Result;
+  pragma Import(C, X_Draw_Rectangle, "x_draw_rectangle");
 
   ------------------------------------------------------------------
   -- Fill a rectangle with current characteristics
   -- int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
   ------------------------------------------------------------------
-  function X_FILL_RECTANGLE(LINE_ID : LINE_FOR_C;
-                            X1, Y1, X2, Y2 : NATURAL) return RESULT;
-  pragma IMPORT(C, X_FILL_RECTANGLE, "x_fill_rectangle");
+  function X_Fill_Rectangle(Line_Id : Line_For_C;
+                            X1, Y1, X2, Y2 : Natural) return Result;
+  pragma Import(C, X_Fill_Rectangle, "x_fill_rectangle");
 
   ------------------------------------------------------------------
   -- Draw points in a rectangle, starting at x1, y1 and of width * height pixels
@@ -248,152 +248,152 @@ package body X_MNG is
   --                      unsigned char points[]);
 
   ------------------------------------------------------------------
-  function X_DRAW_POINTS(LINE_ID : LINE_FOR_C;
-                         X1, Y1 : NATURAL;
-                         WIDTH, HEIGHT : in NATURAL; 
-                         POINTS : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_DRAW_POINTS, "x_draw_points");
+  function X_Draw_Points(Line_Id : Line_For_C;
+                         X1, Y1 : Natural;
+                         Width, Height : in Natural; 
+                         Points : System.Address) return Result;
+  pragma Import(C, X_Draw_Points, "x_draw_points");
 
   ------------------------------------------------------------------
   -- Get current position in pixels, independently from events
   -- int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
   ------------------------------------------------------------------
-  function X_GET_CURRENT_POINTER_POSITION(LINE_ID : LINE_FOR_C;
-                                          X, Y : SYSTEM.ADDRESS)
-           return RESULT;
-  pragma IMPORT(C, X_GET_CURRENT_POINTER_POSITION, "x_get_pointer_pos");
+  function X_Get_Current_Pointer_Position(Line_Id : Line_For_C;
+                                          X, Y : System.Address)
+           return Result;
+  pragma Import(C, X_Get_Current_Pointer_Position, "x_get_pointer_pos");
 
   ------------------------------------------------------------------
   -- Set mouse pointer in graphic (cross) or standard (arrow)
   -- int x_set_graphic_pointer (void *line_id, boolean graphic);
   ------------------------------------------------------------------
-  function X_SET_GRAPHIC_POINTER(LINE_ID : LINE_FOR_C;
-                                 GRAPHIC : BOOL_FOR_C) return RESULT;
-  pragma IMPORT(C, X_SET_GRAPHIC_POINTER, "x_set_graphic_pointer");
+  function X_Set_Graphic_Pointer(Line_Id : Line_For_C;
+                                 Graphic : Bool_For_C) return Result;
+  pragma Import(C, X_Set_Graphic_Pointer, "x_set_graphic_pointer");
 
   ------------------------------------------------------------------
   -- Add a fd for select
   -- int x_add_fd (int fd, boolean read);
   ------------------------------------------------------------------
-  function X_ADD_FD (FD : INTEGER; READ : BOOL_FOR_C) return RESULT;
-  pragma IMPORT(C, X_ADD_FD, "x_add_fd");
+  function X_Add_Fd (Fd : Integer; Read : Bool_For_C) return Result;
+  pragma Import(C, X_Add_Fd, "x_add_fd");
 
   ------------------------------------------------------------------
   -- Del a fd from select
   -- int x_del_fd (int fd, boolean read);
   ------------------------------------------------------------------
-  function X_DEL_FD (FD : INTEGER; READ : BOOL_FOR_C) return RESULT;
-  pragma IMPORT(C, X_DEL_FD, "x_del_fd");
+  function X_Del_Fd (Fd : Integer; Read : Bool_For_C) return Result;
+  pragma Import(C, X_Del_Fd, "x_del_fd");
 
   ------------------------------------------------------------------
   -- Is a fd set for select
   -- boolean x_fd_set (int fd, boolean read);
   ------------------------------------------------------------------
-  function X_FD_SET (FD : INTEGER; READ : BOOL_FOR_C) return BOOL_FOR_C;
-  pragma IMPORT(C, X_FD_SET, "x_fd_set");
+  function X_Fd_Set (Fd : Integer; Read : Bool_For_C) return Bool_For_C;
+  pragma Import(C, X_Fd_Set, "x_fd_set");
 
   ------------------------------------------------------------------
   -- Wait for some events
   -- int x_select (int *p_fd, int *timeout_ms);
   ------------------------------------------------------------------
-  C_SELECT_NO_EVENT : constant INTEGER := -2;
-  C_SELECT_X_EVENT  : constant INTEGER := -1;
-  function X_SELECT (P_FD : SYSTEM.ADDRESS;
-                     P_READ : SYSTEM.ADDRESS;
-                     TIMEOUT_MS : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_SELECT, "x_select");
+  C_Select_No_Event : constant Integer := -2;
+  C_Select_X_Event  : constant Integer := -1;
+  function X_Select (P_Fd : System.Address;
+                     P_Read : System.Address;
+                     Timeout_Ms : System.Address) return Result;
+  pragma Import(C, X_Select, "x_select");
 
   ------------------------------------------------------------------
   -- Process a X event (TID or Keyboard or other) 
   -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
   ------------------------------------------------------------------
-  function X_PROCESS_EVENT(P_LINE_ID : SYSTEM.ADDRESS;
-                           P_KEYB    : SYSTEM.ADDRESS;
-                           P_NEXT    : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_PROCESS_EVENT, "x_process_event");
+  function X_Process_Event(P_Line_Id : System.Address;
+                           P_Keyb    : System.Address;
+                           P_Next    : System.Address) return Result;
+  pragma Import(C, X_Process_Event, "x_process_event");
  
   ------------------------------------------------------------------
   -- Reads the position on TID
   -- int x_read_tid (void *line_id, boolean row_col,
   --                 int *p_button, int *p_row, int *p_column);
   ------------------------------------------------------------------
-  function X_READ_TID(LINE_ID         : LINE_FOR_C;
-                      ROW_COL         : BOOL_FOR_C;
-                      P_BUTTON        : SYSTEM.ADDRESS;
-                      P_ROW, P_COLUMN : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_READ_TID, "x_read_tid");
+  function X_Read_Tid(Line_Id         : Line_For_C;
+                      Row_Col         : Bool_For_C;
+                      P_Button        : System.Address;
+                      P_Row, P_Column : System.Address) return Result;
+  pragma Import(C, X_Read_Tid, "x_read_tid");
 
   ------------------------------------------------------------------
   -- Reads a key of a sequence
   -- int x_read_key (void *line_id, int *p_key, int *p_nbre);
   ------------------------------------------------------------------
-  function X_READ_KEY(LINE_ID : LINE_FOR_C;
-                      P_KEYS  : SYSTEM.ADDRESS;
-                      P_NBRE  : SYSTEM.ADDRESS) return RESULT;
-  pragma IMPORT(C, X_READ_KEY, "x_read_key");
+  function X_Read_Key(Line_Id : Line_For_C;
+                      P_Keys  : System.Address;
+                      P_Nbre  : System.Address) return Result;
+  pragma Import(C, X_Read_Key, "x_read_key");
 
   ------------------------------------------------------------------
   -- Enable / disable cursor motion events
   -- extern int x_enable_motion_events (void *line_id, boolean enable_motion);
   ------------------------------------------------------------------
-  function X_ENABLE_MOTION_EVENTS (LINE_ID : LINE_FOR_C;
-                                   MOTION_ENABLE : BOOL_FOR_C) return RESULT;
-  pragma IMPORT(C, X_ENABLE_MOTION_EVENTS, "x_enable_motion_events");
+  function X_Enable_Motion_Events (Line_Id : Line_For_C;
+                                   Motion_Enable : Bool_For_C) return Result;
+  pragma Import(C, X_Enable_Motion_Events, "x_enable_motion_events");
  
   ------------------------------------------------------------------
   -- Assumes blinking of X
   -- int x_blink(void)
   ------------------------------------------------------------------
-  function X_BLINK return RESULT;
-  pragma IMPORT(C, X_BLINK, "x_blink");
+  function X_Blink return Result;
+  pragma Import(C, X_Blink, "x_blink");
 
   ------------------------------------------------------------------
   -- Stops the blinking task
   -- int x_stop_blinking(void) 
   ------------------------------------------------------------------
-  function X_STOP_BLINKING return RESULT;
-  pragma IMPORT(C, X_STOP_BLINKING, "x_stop_blinking");
+  function X_Stop_Blinking return Result;
+  pragma Import(C, X_Stop_Blinking, "x_stop_blinking");
 
   ------------------------------------------------------------------
   -- Start the blinking task
   -- int x_start_blinking(void) 
   ------------------------------------------------------------------
-  function X_START_BLINKING return RESULT;
-  pragma IMPORT(C, X_START_BLINKING, "x_start_blinking");
+  function X_Start_Blinking return Result;
+  pragma Import(C, X_Start_Blinking, "x_start_blinking");
 
   ------------------------------------------------------------------
   -- Rings a bell several times
   -- int x_bell (int nbre_bell;
   ------------------------------------------------------------------
-  function X_BELL (REPEAT : INTEGER) return RESULT;
-  pragma IMPORT(C, X_BELL, "x_bell");
+  function X_Bell (Repeat : Integer) return Result;
+  pragma Import(C, X_Bell, "x_bell");
 
 
   ------------------------------------------------------------------
   --------------- T H E   D I S P A T C H E R   S P E C ------------
   ------------------------------------------------------------------
   -- Dispatcher of X calls and X events
-  task DISPATCHER is
+  task Dispatcher is
     -- Start it
-    entry START;
+    entry Start;
 
     -- Register / Unregister
-    entry REGISTER (CLIENT : out LINE_RANGE);
-    entry UNREGISTER (CLIENT : in out LINE_RANGE);
+    entry Register (Client : out Line_Range);
+    entry Unregister (Client : in out Line_Range);
 
     -- Two calls to encapsulate a call to X
-    entry CALL_ON  (CLIENT : in CLIENT_RANGE;
-                    LINE_FOR_C_ID : out LINE_FOR_C);
-    entry CALL_OFF (CLIENT : in CLIENT_RANGE;
-                    NEW_LINE_FOR_C_ID : in LINE_FOR_C);
+    entry Call_On  (Client : in Client_Range;
+                    Line_For_C_Id : out Line_For_C);
+    entry Call_Off (Client : in Client_Range;
+                    New_Line_For_C_Id : in Line_For_C);
 
     -- Ready to wait
-    entry WAIT (CLIENT : in CLIENT_RANGE; TIMEOUT : in DURATION);
+    entry Wait (Client : in Client_Range; Timeout : in Duration);
     -- Relay wait
-    entry SOME_EVENT(CLIENT_RANGE) (SOME : out BOOLEAN);
-    entry GET_EVENT (CLIENT : in CLIENT_RANGE; KIND : out EVENT_KIND;
-                                               SOME : out BOOLEAN);
-  end DISPATCHER;
+    entry Some_Event(Client_Range) (Some : out Boolean);
+    entry Get_Event (Client : in Client_Range; Kind : out Event_Kind;
+                                               Some : out Boolean);
+  end Dispatcher;
 
 
 
@@ -401,775 +401,775 @@ package body X_MNG is
   ------------------------ T H E   C A L L S -----------------------
   ------------------------------------------------------------------
 
-  procedure X_INITIALISE (SERVER_NAME : in STRING) is
+  procedure X_Initialise (Server_Name : in String) is
 
-    SERV_NAME_FOR_C : constant STRING(1 .. SERVER_NAME'LENGTH+1)
-                    := SERVER_NAME & ASCII.NUL;
+    Serv_Name_For_C : constant String(1 .. Server_Name'Length+1)
+                    := Server_Name & Ascii.Nul;
   begin
-    if not INITIALISED then
-      if X_INITIALISE (SERV_NAME_FOR_C(SERV_NAME_FOR_C'FIRST)'ADDRESS)
-                      /= OK then
-        raise X_FAILURE;
+    if not Initialised then
+      if X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address)
+                      /= Ok then
+        raise X_Failure;
       end if;
 
       declare
-        SET : BOOLEAN;
-        TRU : BOOLEAN;
-        VAL : STRING (1 .. 1);
-        LEN : NATURAL;
+        Set : Boolean;
+        Tru : Boolean;
+        Val : String (1 .. 1);
+        Len : Natural;
       begin
-        SYS_CALLS.GETENV (DEBUG_VAR_NAME, SET, TRU, VAL, LEN);
-        if SET and then (VAL(1) = 'y' or else VAL(1) = 'Y') then
-          DEBUG := TRUE;
+        Sys_Calls.Getenv (Debug_Var_Name, Set, Tru, Val, Len);
+        if Set and then (Val(1) = 'y' or else Val(1) = 'Y') then
+          Debug := True;
         end if;
       exception
         when others =>
           null;
       end;
 
-      DISPATCHER.START;
-      INITIALISED := TRUE;
+      Dispatcher.Start;
+      Initialised := True;
     end if;
-  end X_INITIALISE;
+  end X_Initialise;
 
   ------------------------------------------------------------------
-  procedure X_OPEN_LINE(LINE_DEFINITION : in LINE_DEFINITION_REC;
-                        LINE_ID         : in out LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Open_Line(Line_Definition : in Line_Definition_Rec;
+                        Line_Id         : in out Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID /= NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id /= No_Client then
+      raise X_Failure;
     end if;
     -- Register
-    DISPATCHER.REGISTER(LINE_ID.NO);
-    if LINE_ID = NO_CLIENT then
+    Dispatcher.Register(Line_Id.No);
+    if Line_Id = No_Client then
       -- Too many clients
-      raise X_FAILURE;
+      raise X_Failure;
     end if;
     -- open window
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_OPEN_LINE (LINE_DEFINITION.SCREEN_ID,
-                        LINE_DEFINITION.ROW,
-                        LINE_DEFINITION.COLUMN, 
-                        LINE_DEFINITION.HEIGHT,
-                        LINE_DEFINITION.WIDTH, 
-                        LINE_DEFINITION.BACKGROUND,
-                        LINE_DEFINITION.BORDER, 
-                        LINE_DEFINITION.NO_FONT,
-                        LINE_FOR_C_ID'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      DISPATCHER.UNREGISTER(LINE_ID.NO);
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Open_Line (Line_Definition.Screen_Id,
+                        Line_Definition.Row,
+                        Line_Definition.Column, 
+                        Line_Definition.Height,
+                        Line_Definition.Width, 
+                        Line_Definition.Background,
+                        Line_Definition.Border, 
+                        Line_Definition.No_Font,
+                        Line_For_C_Id'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      Dispatcher.Unregister(Line_Id.No);
+      raise X_Failure;
     end if;
-  end X_OPEN_LINE;
+  end X_Open_Line;
 
   ------------------------------------------------------------------
-  procedure X_CLOSE_LINE(LINE_ID : in out LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Close_Line(Line_Id : in out Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_CLOSE_LINE(LINE_FOR_C_ID) = OK;
-    RES := RES and then X_FLUSH = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Close_Line(Line_For_C_Id) = Ok;
+    Res := Res and then X_Flush = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     -- Unregister
-    DISPATCHER.UNREGISTER(LINE_ID.NO);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Unregister(Line_Id.No);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_CLOSE_LINE;
+  end X_Close_Line;
 
   ------------------------------------------------------------------
-  procedure X_SET_LINE_NAME (LINE_ID : in LINE;
-                             LINE_NAME : in STRING) is
-    LINE_NAME_FOR_C : constant STRING(1 .. LINE_NAME'LENGTH+1)
-                    := LINE_NAME & ASCII.NUL;
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Set_Line_Name (Line_Id : in Line;
+                             Line_Name : in String) is
+    Line_Name_For_C : constant String(1 .. Line_Name'Length+1)
+                    := Line_Name & Ascii.Nul;
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_SET_LINE_NAME(LINE_FOR_C_ID,
-                       LINE_NAME_FOR_C(LINE_NAME_FOR_C'FIRST)'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Set_Line_Name(Line_For_C_Id,
+                       Line_Name_For_C(Line_Name_For_C'First)'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_SET_LINE_NAME;
+  end X_Set_Line_Name;
 
   ------------------------------------------------------------------
-  procedure X_FLUSH (LINE_ID : in LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Flush (Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_FLUSH = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Flush = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_FLUSH;   
+  end X_Flush;   
 
   ------------------------------------------------------------------
-  procedure X_CLEAR_LINE(LINE_ID : in LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Clear_Line(Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_CLEAR_LINE(LINE_FOR_C_ID) = OK;
-    RES := RES and then X_FLUSH = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Clear_Line(Line_For_C_Id) = Ok;
+    Res := Res and then X_Flush = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_CLEAR_LINE;
+  end X_Clear_Line;
 
 
   ------------------------------------------------------------------
-  procedure X_SET_ATTRIBUTES(LINE_ID     : in LINE;
-                             PAPER, INK  : in COLOR;
-                             SUPERBRIGHT : in BOOLEAN := FALSE;
-                             UNDERLINE   : in BOOLEAN := FALSE;
-                             BLINK       : in BOOLEAN := FALSE;
-                             INVERSE     : in BOOLEAN:= FALSE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Set_Attributes(Line_Id     : in Line;
+                             Paper, Ink  : in Color;
+                             Superbright : in Boolean := False;
+                             Underline   : in Boolean := False;
+                             Blink       : in Boolean := False;
+                             Inverse     : in Boolean:= False) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_SET_ATTRIBUTES(LINE_FOR_C_ID, 
-                            INTEGER(PAPER), INTEGER(INK), 
-                            FOR_C(SUPERBRIGHT), FOR_C(UNDERLINE),
-                            FOR_C(BLINK), FOR_C(INVERSE)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Set_Attributes(Line_For_C_Id, 
+                            Integer(Paper), Integer(Ink), 
+                            For_C(Superbright), For_C(Underline),
+                            For_C(Blink), For_C(Inverse)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_SET_ATTRIBUTES;
+  end X_Set_Attributes;
  
   ------------------------------------------------------------------
-  procedure X_SET_XOR_MODE(LINE_ID     : in LINE;
-                           XOR_MODE    : in BOOLEAN) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Set_Xor_Mode(Line_Id     : in Line;
+                           Xor_Mode    : in Boolean) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_SET_XOR_MODE(LINE_FOR_C_ID, FOR_C(XOR_MODE)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Set_Xor_Mode(Line_For_C_Id, For_C(Xor_Mode)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_SET_XOR_MODE;
+  end X_Set_Xor_Mode;
 
   ------------------------------------------------------------------
-  procedure X_PUT_CHAR(LINE_ID : in LINE; CAR : in CHARACTER;
-                       ROW, COLUMN : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Put_Char(Line_Id : in Line; Car : in Character;
+                       Row, Column : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_PUT_CHAR (LINE_FOR_C_ID,
-                       INTEGER(CHARACTER'POS(CAR)),
-                       INTEGER(ROW), INTEGER(COLUMN)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Put_Char (Line_For_C_Id,
+                       Integer(Character'Pos(Car)),
+                       Integer(Row), Integer(Column)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_PUT_CHAR;
+  end X_Put_Char;
  
   ------------------------------------------------------------------
-  procedure X_PUT_CHAR(LINE_ID : in LINE; CAR : in BYTE;
-                       ROW, COLUMN : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Put_Char(Line_Id : in Line; Car : in Byte;
+                       Row, Column : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_PUT_CHAR (LINE_FOR_C_ID, INTEGER(CAR),
-                       INTEGER(ROW), INTEGER(COLUMN)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Put_Char (Line_For_C_Id, Integer(Car),
+                       Integer(Row), Integer(Column)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_PUT_CHAR;
+  end X_Put_Char;
  
   ------------------------------------------------------------------
-  procedure X_OVERWRITE_CHAR(LINE_ID : in LINE; CAR : in BYTE;
-                             ROW, COLUMN : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Overwrite_Char(Line_Id : in Line; Car : in Byte;
+                             Row, Column : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_OVERWRITE_CHAR (LINE_FOR_C_ID, INTEGER(CAR),
-                             INTEGER(ROW), INTEGER(COLUMN)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Overwrite_Char (Line_For_C_Id, Integer(Car),
+                             Integer(Row), Integer(Column)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_OVERWRITE_CHAR;
+  end X_Overwrite_Char;
  
   ------------------------------------------------------------------
-  procedure X_PUT_STRING(LINE_ID     : in LINE;
-                         STR         : in STRING;
-                         ROW, COLUMN : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Put_String(Line_Id     : in Line;
+                         Str         : in String;
+                         Row, Column : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_PUT_STRING (LINE_FOR_C_ID,
-                         STR (STR'FIRST)'ADDRESS, STR'LENGTH,
-                         INTEGER(ROW), INTEGER(COLUMN)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Put_String (Line_For_C_Id,
+                         Str (Str'First)'Address, Str'Length,
+                         Integer(Row), Integer(Column)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_PUT_STRING;
+  end X_Put_String;
 
   ------------------------------------------------------------------
-  procedure X_PUT_CHAR_ATTRIBUTES(LINE_ID     : in LINE;
-                                  CAR         : in CHARACTER;
-                                  ROW, COLUMN : in NATURAL;
-                                  PAPER, INK  : in COLOR;
-                                  SUPERBRIGHT : in BOOLEAN := FALSE;
-                                  UNDERLINE   : in BOOLEAN := FALSE;
-                                  BLINK       : in BOOLEAN := FALSE;
-                                  INVERSE     : in BOOLEAN := FALSE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Put_Char_Attributes(Line_Id     : in Line;
+                                  Car         : in Character;
+                                  Row, Column : in Natural;
+                                  Paper, Ink  : in Color;
+                                  Superbright : in Boolean := False;
+                                  Underline   : in Boolean := False;
+                                  Blink       : in Boolean := False;
+                                  Inverse     : in Boolean := False) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_PUT_CHAR_ATTRIBUTES (
-                              LINE_FOR_C_ID, 
-                              INTEGER(CHARACTER'POS(CAR)),
-                              INTEGER(ROW), 
-                              INTEGER(COLUMN),
-                              INTEGER(PAPER),
-                              INTEGER(INK), 
-                              FOR_C(SUPERBRIGHT),
-                              FOR_C(UNDERLINE),
-                              FOR_C(BLINK),
-                              FOR_C(INVERSE)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Put_Char_Attributes (
+                              Line_For_C_Id, 
+                              Integer(Character'Pos(Car)),
+                              Integer(Row), 
+                              Integer(Column),
+                              Integer(Paper),
+                              Integer(Ink), 
+                              For_C(Superbright),
+                              For_C(Underline),
+                              For_C(Blink),
+                              For_C(Inverse)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_PUT_CHAR_ATTRIBUTES;
+  end X_Put_Char_Attributes;
  
   ------------------------------------------------------------------
-  procedure  X_DRAW_AREA(LINE_ID : in LINE;
-                         WIDTH, HEIGHT : in POSITIVE;
-                         ROW, COLUMN : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure  X_Draw_Area(Line_Id : in Line;
+                         Width, Height : in Positive;
+                         Row, Column : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_DRAW_AREA (LINE_FOR_C_ID,
-                        INTEGER(WIDTH), INTEGER(HEIGHT),
-                        INTEGER(ROW), INTEGER(COLUMN)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Draw_Area (Line_For_C_Id,
+                        Integer(Width), Integer(Height),
+                        Integer(Row), Integer(Column)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_DRAW_AREA;
+  end X_Draw_Area;
 
 
   ------------------------------------------------------------------
-  procedure X_PUT_CHAR_PIXELS(LINE_ID : in LINE; CAR : in BYTE;
-                              X, Y    : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Put_Char_Pixels(Line_Id : in Line; Car : in Byte;
+                              X, Y    : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-       RES := X_PUT_CHAR_PIXELS (LINE_FOR_C_ID, INTEGER(CAR), X, Y) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+       Res := X_Put_Char_Pixels (Line_For_C_Id, Integer(Car), X, Y) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_PUT_CHAR_PIXELS;
+  end X_Put_Char_Pixels;
  
   ------------------------------------------------------------------
-  procedure X_GET_GRAPHIC_CHARACTERISTICS(LINE_ID       : in LINE;
-                                          WINDOW_WIDTH  : out NATURAL;
-                                          WINDOW_HEIGHT : out NATURAL;
-                                          FONT_WIDTH    : out NATURAL;
-                                          FONT_HEIGHT   : out NATURAL;
-                                          FONT_OFFSET   : out NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Get_Graphic_Characteristics(Line_Id       : in Line;
+                                          Window_Width  : out Natural;
+                                          Window_Height : out Natural;
+                                          Font_Width    : out Natural;
+                                          Font_Height   : out Natural;
+                                          Font_Offset   : out Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_GET_GRAPHIC_CHARACTERISTICS(LINE_FOR_C_ID,
-        WINDOW_WIDTH'ADDRESS, WINDOW_HEIGHT'ADDRESS,
-        FONT_WIDTH'ADDRESS, FONT_HEIGHT'ADDRESS, FONT_OFFSET'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Get_Graphic_Characteristics(Line_For_C_Id,
+        Window_Width'Address, Window_Height'Address,
+        Font_Width'Address, Font_Height'Address, Font_Offset'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_GET_GRAPHIC_CHARACTERISTICS;
+  end X_Get_Graphic_Characteristics;
 
   ------------------------------------------------------------------
-  procedure X_DRAW_POINT(LINE_ID       : in LINE;
-                         X, Y          : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Draw_Point(Line_Id       : in Line;
+                         X, Y          : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_DRAW_POINT(LINE_FOR_C_ID, X, Y) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Draw_Point(Line_For_C_Id, X, Y) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_DRAW_POINT;
+  end X_Draw_Point;
 
   ------------------------------------------------------------------
-  procedure X_DRAW_LINE(LINE_ID       : in LINE;
-                        X1, Y1, X2, Y2 : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Draw_Line(Line_Id       : in Line;
+                        X1, Y1, X2, Y2 : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_DRAW_LINE(LINE_FOR_C_ID, X1, Y1, X2, Y2) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Draw_Line(Line_For_C_Id, X1, Y1, X2, Y2) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_DRAW_LINE;
+  end X_Draw_Line;
 
   ------------------------------------------------------------------
-  procedure X_DRAW_RECTANGLE(LINE_ID       : in LINE;
-                             X1, Y1, X2, Y2 : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Draw_Rectangle(Line_Id       : in Line;
+                             X1, Y1, X2, Y2 : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_DRAW_RECTANGLE(LINE_FOR_C_ID, X1, Y1, X2, Y2) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Draw_Rectangle(Line_For_C_Id, X1, Y1, X2, Y2) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_DRAW_RECTANGLE;
+  end X_Draw_Rectangle;
 
   ------------------------------------------------------------------
-  procedure X_FILL_RECTANGLE(LINE_ID       : in LINE;
-                             X1, Y1, X2, Y2 : in NATURAL) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Fill_Rectangle(Line_Id       : in Line;
+                             X1, Y1, X2, Y2 : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_FILL_RECTANGLE(LINE_FOR_C_ID, X1, Y1, X2, Y2) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Fill_Rectangle(Line_For_C_Id, X1, Y1, X2, Y2) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_FILL_RECTANGLE;
+  end X_Fill_Rectangle;
 
   ------------------------------------------------------------------
-  procedure X_DRAW_POINTS(LINE_ID       : in LINE;
-                          X, Y          : in NATURAL;
-                          WIDTH, HEIGHT : in NATURAL; 
-                          POINTS        : in BYTE_ARRAY) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Draw_Points(Line_Id       : in Line;
+                          X, Y          : in Natural;
+                          Width, Height : in Natural; 
+                          Points        : in Byte_Array) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    if POINTS'LENGTH /= WIDTH * HEIGHT then
-       raise X_FAILURE;
+    if Points'Length /= Width * Height then
+       raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_DRAW_POINTS(LINE_FOR_C_ID, X, Y, WIDTH, HEIGHT,
-              POINTS(POINTS'FIRST)'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Draw_Points(Line_For_C_Id, X, Y, Width, Height,
+              Points(Points'First)'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_DRAW_POINTS;
+  end X_Draw_Points;
 
   ------------------------------------------------------------------
-  procedure X_GET_CURRENT_POINTER_POSITION(LINE_ID : in LINE;
-                                           X, Y    : out INTEGER) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Get_Current_Pointer_Position(Line_Id : in Line;
+                                           X, Y    : out Integer) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_GET_CURRENT_POINTER_POSITION (LINE_FOR_C_ID,
-                   X'ADDRESS, Y'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Get_Current_Pointer_Position (Line_For_C_Id,
+                   X'Address, Y'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_GET_CURRENT_POINTER_POSITION;
+  end X_Get_Current_Pointer_Position;
 
   ------------------------------------------------------------------
-  procedure X_SET_GRAPHIC_POINTER(LINE_ID : in LINE;
-                                  GRAPHIC : in BOOLEAN) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Set_Graphic_Pointer(Line_Id : in Line;
+                                  Graphic : in Boolean) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_SET_GRAPHIC_POINTER(LINE_FOR_C_ID,
-                            FOR_C(GRAPHIC)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Set_Graphic_Pointer(Line_For_C_Id,
+                            For_C(Graphic)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_SET_GRAPHIC_POINTER;
+  end X_Set_Graphic_Pointer;
 
   ------------------------------------------------------------------
-  procedure X_ADD_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN;
-                            CALLBACK : in FD_CALLBACK) is
-    RES : BOOLEAN;
-    CB_SEARCHED : CB_REC;
+  procedure X_Add_Callback (Fd : in File_Desc; Read : in Boolean;
+                            Callback : in Fd_Callback) is
+    Res : Boolean;
+    Cb_Searched : Cb_Rec;
   begin
     -- Check no cb for this fd yet
-    CB_SEARCHED.FD := FD;
-    CB_SEARCHED.READ := READ;
-    CB_SEARCHED.CB := null;
+    Cb_Searched.Fd := Fd;
+    Cb_Searched.Read := Read;
+    Cb_Searched.Cb := null;
     begin
-      CB_SEARCH (CB_LIST, CB_SEARCHED, CB_MNG.PREV, FROM_CURRENT => FALSE);
-      raise X_FAILURE;
+      Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From_Current => False);
+      raise X_Failure;
     exception
-      when CB_MNG.NOT_IN_LIST =>
+      when Cb_Mng.Not_In_List =>
         null;
     end;
     -- Append
-    if not CB_MNG.IS_EMPTY (CB_LIST) then
-      CB_MNG.MOVE_TO (CB_LIST, CB_MNG.PREV, 0, FALSE);
+    if not Cb_Mng.Is_Empty (Cb_List) then
+      Cb_Mng.Move_To (Cb_List, Cb_Mng.Prev, 0, False);
     end if;
-    CB_MNG.INSERT (CB_LIST, (FD, READ, CALLBACK));
+    Cb_Mng.Insert (Cb_List, (Fd, Read, Callback));
     -- Add fd to select
-    RES := X_ADD_FD (INTEGER(FD), BOOL_FOR_C(READ)) = OK;
-    if not RES then
-      raise X_FAILURE;
+    Res := X_Add_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
+    if not Res then
+      raise X_Failure;
     end if;
   exception
     when others =>
-      raise X_FAILURE;
-  end X_ADD_CALLBACK;
+      raise X_Failure;
+  end X_Add_Callback;
 
   ------------------------------------------------------------------
-  procedure X_DEL_CALLBACK (FD : in FILE_DESC; READ : in BOOLEAN) is
-    RES : BOOLEAN;
-    CB_SEARCHED : CB_REC;
+  procedure X_Del_Callback (Fd : in File_Desc; Read : in Boolean) is
+    Res : Boolean;
+    Cb_Searched : Cb_Rec;
   begin
     -- Del fd from select
-    RES := X_DEL_FD (INTEGER(FD), BOOL_FOR_C(READ)) = OK;
+    Res := X_Del_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
     -- del from list
-    CB_SEARCHED.FD := FD;
-    CB_SEARCHED.READ := READ;
-    CB_SEARCHED.CB := null;
-    CB_SEARCH (CB_LIST, CB_SEARCHED, CB_MNG.PREV, FROM_CURRENT => FALSE);
-    if CB_MNG.GET_POSITION (CB_LIST) /=  CB_MNG.LIST_LENGTH(CB_LIST) then
-      CB_MNG.DELETE (CB_LIST, CB_MNG.NEXT);
+    Cb_Searched.Fd := Fd;
+    Cb_Searched.Read := Read;
+    Cb_Searched.Cb := null;
+    Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From_Current => False);
+    if Cb_Mng.Get_Position (Cb_List) /=  Cb_Mng.List_Length(Cb_List) then
+      Cb_Mng.Delete (Cb_List, Cb_Mng.Next);
     else
-      CB_MNG.DELETE (CB_LIST, CB_MNG.PREV);
+      Cb_Mng.Delete (Cb_List, Cb_Mng.Prev);
     end if;
-    if not RES then
-      raise X_FAILURE;
+    if not Res then
+      raise X_Failure;
     end if;
   exception
     when others =>
-      raise X_FAILURE;
-  end X_DEL_CALLBACK;
+      raise X_Failure;
+  end X_Del_Callback;
   
   ------------------------------------------------------------------
-  function X_CALLBACK_SET (FD : in FILE_DESC; READ : in BOOLEAN)
-  return BOOLEAN is
-    RES : BOOL_FOR_C;
+  function X_Callback_Set (Fd : in File_Desc; Read : in Boolean)
+  return Boolean is
+    Res : Bool_For_C;
   begin
-    RES := X_FD_SET (INTEGER(FD), BOOL_FOR_C(READ));
-    return BOOLEAN(RES);
-  end X_CALLBACK_SET;
+    Res := X_Fd_Set (Integer(Fd), Bool_For_C(Read));
+    return Boolean(Res);
+  end X_Callback_Set;
 
   ------------------------------------------------------------------
-  procedure X_SELECT (LINE_ID : in LINE; TIMEOUT_MS : in out INTEGER;
-                      X_EVENT : out BOOLEAN) is
-    EXP : CALENDAR.TIME;
-    use CALENDAR;
-    TIMEOUT : DURATION;
+  procedure X_Select (Line_Id : in Line; Timeout_Ms : in out Integer;
+                      X_Event : out Boolean) is
+    Exp : Calendar.Time;
+    use Calendar;
+    Timeout : Duration;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
     -- Compute expiration and set timeout in duration
-    EXP := CALENDAR.CLOCK;
-    if TIMEOUT_MS > 0 then
-      TIMEOUT := DURATION (TIMEOUT_MS) / 1_000.0;
-      EXP := EXP + TIMEOUT;
+    Exp := Calendar.Clock;
+    if Timeout_Ms > 0 then
+      Timeout := Duration (Timeout_Ms) / 1_000.0;
+      Exp := Exp + Timeout;
     else
-      TIMEOUT := INFINITE_TIMEOUT;
+      Timeout := Infinite_Timeout;
     end if;
     -- Ready to wait
-    DISPATCHER.WAIT(LINE_ID.NO, TIMEOUT);
+    Dispatcher.Wait(Line_Id.No, Timeout);
     -- Here we wait
-    DISPATCHER.SOME_EVENT(LINE_ID.NO)(X_EVENT);
+    Dispatcher.Some_Event(Line_Id.No)(X_Event);
     -- Compute remaining time
-    if TIMEOUT_MS > 0 then
-      TIMEOUT_MS := INTEGER ( (EXP - CALENDAR.CLOCK) * 1_000.0);
-      if TIMEOUT_MS < 0 then
-        TIMEOUT_MS := 0;
+    if Timeout_Ms > 0 then
+      Timeout_Ms := Integer ( (Exp - Calendar.Clock) * 1_000.0);
+      if Timeout_Ms < 0 then
+        Timeout_Ms := 0;
       end if;
     end if;
-  end X_SELECT;
+  end X_Select;
 
   ------------------------------------------------------------------
-  procedure X_PROCESS_EVENT(LINE_ID : in LINE; 
-                            KIND    : out EVENT_KIND;
-                            NEXT    : out BOOLEAN) is
+  procedure X_Process_Event(Line_Id : in Line; 
+                            Kind    : out Event_Kind;
+                            Next    : out Boolean) is
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.GET_EVENT(LINE_ID.NO, KIND, NEXT);
-  end X_PROCESS_EVENT;
+    Dispatcher.Get_Event(Line_Id.No, Kind, Next);
+  end X_Process_Event;
 
   ------------------------------------------------------------------
-  procedure X_READ_TID(LINE_ID : in LINE;
-                       ROW_COL : in BOOLEAN;
-                       BUTTON : out BUTTON_LIST;
-                       ROW, COLUMN : out INTEGER) is
-    LOC_BUTTON : INTEGER;
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Read_Tid(Line_Id : in Line;
+                       Row_Col : in Boolean;
+                       Button : out Button_List;
+                       Row, Column : out Integer) is
+    Loc_Button : Integer;
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_READ_TID (LINE_FOR_C_ID, FOR_C(ROW_COL),
-                       LOC_BUTTON'ADDRESS,
-                       ROW'ADDRESS, 
-                       COLUMN'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Read_Tid (Line_For_C_Id, For_C(Row_Col),
+                       Loc_Button'Address,
+                       Row'Address, 
+                       Column'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
     -- check returned coordinates
-    if LOC_BUTTON = 0 then
-      BUTTON := NONE;
-    elsif LOC_BUTTON = 1 then
-      BUTTON := LEFT;
-    elsif LOC_BUTTON = 2 then
-      BUTTON := MIDDLE;
-    elsif LOC_BUTTON = 3 then
-      BUTTON := RIGHT;
+    if Loc_Button = 0 then
+      Button := None;
+    elsif Loc_Button = 1 then
+      Button := Left;
+    elsif Loc_Button = 2 then
+      Button := Middle;
+    elsif Loc_Button = 3 then
+      Button := Right;
     end if;
-  end X_READ_TID;
+  end X_Read_Tid;
 
   ------------------------------------------------------------------
-  procedure X_READ_KEY(LINE_ID : in LINE; KEY : out KBD_TAB_CODE) is
-      LOC_TAB : array (NATURAL range 1..KBD_MAX_CODE) of INTEGER;
-      LOC_NBRE : INTEGER;
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Read_Key(Line_Id : in Line; Key : out Kbd_Tab_Code) is
+      Loc_Tab : array (Natural range 1..Kbd_Max_Code) of Integer;
+      Loc_Nbre : Integer;
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_READ_KEY (LINE_FOR_C_ID, LOC_TAB'ADDRESS, LOC_NBRE'ADDRESS) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Read_Key (Line_For_C_Id, Loc_Tab'Address, Loc_Nbre'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
     -- Fill table
-    for I in KBD_INDEX_CODE range KBD_INDEX_CODE'FIRST..NATURAL(LOC_NBRE) loop
-        KEY.TAB(I) := BYTE(LOC_TAB(I));
+    for I in Kbd_Index_Code range Kbd_Index_Code'First..Natural(Loc_Nbre) loop
+        Key.Tab(I) := Byte(Loc_Tab(I));
     end loop;
-    KEY.NBRE := NATURAL (LOC_NBRE);
-  end X_READ_KEY;
+    Key.Nbre := Natural (Loc_Nbre);
+  end X_Read_Key;
 
   ------------------------------------------------------------------
-  procedure X_ENABLE_MOTION_EVENTS (LINE_ID : in LINE; MOTION_ENABLE : in BOOLEAN) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Enable_Motion_Events (Line_Id : in Line; Motion_Enable : in Boolean) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_ENABLE_MOTION_EVENTS (LINE_FOR_C_ID, FOR_C(MOTION_ENABLE)) = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Enable_Motion_Events (Line_For_C_Id, For_C(Motion_Enable)) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_ENABLE_MOTION_EVENTS;
+  end X_Enable_Motion_Events;
 
 
   ------------------------------------------------------------------
-  procedure X_BLINK_ALTERNATE (LINE_ID : in LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Blink_Alternate (Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_BLINK = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-  end X_BLINK_ALTERNATE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Blink = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+  end X_Blink_Alternate;
 
   ------------------------------------------------------------------
-  procedure X_STOP_BLINKING_TASK (LINE_ID : in LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Stop_Blinking_Task (Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_STOP_BLINKING = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-  end X_STOP_BLINKING_TASK;  
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Stop_Blinking = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+  end X_Stop_Blinking_Task;  
 
   ------------------------------------------------------------------
-  procedure X_START_BLINKING_TASK (LINE_ID : in LINE) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Start_Blinking_Task (Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_START_BLINKING = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-  end X_START_BLINKING_TASK;  
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Start_Blinking = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+  end X_Start_Blinking_Task;  
 
   ------------------------------------------------------------------
-  procedure X_BELL (LINE_ID : in LINE; REPEAT : in BELL_REPEAT) is
-    LINE_FOR_C_ID : LINE_FOR_C;
-    RES : BOOLEAN;
+  procedure X_Bell (Line_Id : in Line; Repeat : in Bell_Repeat) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
   begin
-    if not INITIALISED or else LINE_ID = NO_CLIENT then
-      raise X_FAILURE;
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
     end if;
-    DISPATCHER.CALL_ON (LINE_ID.NO, LINE_FOR_C_ID);
-    RES := X_BELL (INTEGER(REPEAT)) = OK;
-    RES := RES and then X_FLUSH = OK;
-    DISPATCHER.CALL_OFF(LINE_ID.NO, LINE_FOR_C_ID);
-    if not RES then
-      raise X_FAILURE;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Bell (Integer(Repeat)) = Ok;
+    Res := Res and then X_Flush = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
     end if;
-  end X_BELL;
+  end X_Bell;
 
 
   ------------------------------------------------------------------
   --------------- T H E   D I S P A T C H E R   B O D Y ------------
   ------------------------------------------------------------------
 
-  type XX_SELECT_RESULT_LIST is (SELECT_X_EVENT, SELECT_FD, SELECT_TIMER,
-                                 SELECT_TIMEOUT);
+  type Xx_Select_Result_List is (Select_X_Event, Select_Fd, Select_Timer,
+                                 Select_Timeout);
 
-  function XX_SELECT (TIMEOUT_IN : DURATION) return XX_SELECT_RESULT_LIST is
-    FD    : INTEGER;
-    READ  : BOOL_FOR_C;
-    TIMEOUT_DUR, TIMEOUT_TIM : DURATION;
-    FINAL_EXP : CALENDAR.TIME;
-    TIMEOUT_MS : INTEGER;
-    DUMMY : RESULT;
-    CB_SEARCHED : CB_REC;
-    use CALENDAR;
+  function Xx_Select (Timeout_In : Duration) return Xx_Select_Result_List is
+    Fd    : Integer;
+    Read  : Bool_For_C;
+    Timeout_Dur, Timeout_Tim : Duration;
+    Final_Exp : Calendar.Time;
+    Timeout_Ms : Integer;
+    Dummy : Result;
+    Cb_Searched : Cb_Rec;
+    use Calendar;
   begin
     -- Compute final expiration
-    if TIMEOUT_IN /= INFINITE_TIMEOUT then
-      FINAL_EXP := CALENDAR.CLOCK + TIMEOUT_IN;
+    if Timeout_In /= Infinite_Timeout then
+      Final_Exp := Calendar.Clock + Timeout_In;
     end if;
 
     loop
       -- Final timeout from the one specified
-      if TIMEOUT_IN /= INFINITE_TIMEOUT then
-        TIMEOUT_DUR := FINAL_EXP - CALENDAR.CLOCK;
+      if Timeout_In /= Infinite_Timeout then
+        Timeout_Dur := Final_Exp - Calendar.Clock;
         -- Reached?
-        if TIMEOUT_DUR < 0.0 then
-            TIMEOUT_DUR := 0.0;
+        if Timeout_Dur < 0.0 then
+            Timeout_Dur := 0.0;
         end if;
       else
-        TIMEOUT_DUR := 0.0;
+        Timeout_Dur := 0.0;
       end if;
 
       -- Netx timer timeout
-      TIMEOUT_TIM := TIMERS.WAIT_FOR;
+      Timeout_Tim := Timers.Wait_For;
 
       -- Compute smaller timeout between timers and the one requested
-      if TIMEOUT_TIM = INFINITE_TIMEOUT then
+      if Timeout_Tim = Infinite_Timeout then
         -- No timer
-        if TIMEOUT_IN = INFINITE_TIMEOUT then
+        if Timeout_In = Infinite_Timeout then
           -- No timer and infinite timeout: infinite
-          TIMEOUT_DUR := INFINITE_TIMEOUT;
+          Timeout_Dur := Infinite_Timeout;
         else
           -- No timer and timeout set: keep timeout
           null;
         end if;
       else
         -- Some timer
-        if TIMEOUT_IN = INFINITE_TIMEOUT then
+        if Timeout_In = Infinite_Timeout then
           -- Some timer and infinite timeout: take timer
-          TIMEOUT_DUR := TIMEOUT_TIM;
+          Timeout_Dur := Timeout_Tim;
         else
           -- Some timer and a timeout set: take smallest
-          if TIMEOUT_TIM <= TIMEOUT_DUR then
+          if Timeout_Tim <= Timeout_Dur then
             -- Timer is smallest
-            TIMEOUT_DUR := TIMEOUT_TIM;
+            Timeout_Dur := Timeout_Tim;
           else
             -- Keep timeout
             null;
@@ -1178,420 +1178,420 @@ package body X_MNG is
       end if;
 
       -- The real select
-      TIMEOUT_MS := INTEGER (TIMEOUT_DUR * 1000.0);
-      DUMMY := X_SELECT (FD'ADDRESS, READ'ADDRESS, TIMEOUT_MS'ADDRESS);
-      if DEBUG then
-        if DUMMY /= OK then
-          MY_IO.PUT_LINE ("  XX_SELECT -> ERROR");
-          return SELECT_TIMEOUT;
+      Timeout_Ms := Integer (Timeout_Dur * 1000.0);
+      Dummy := X_Select (Fd'Address, Read'Address, Timeout_Ms'Address);
+      if Debug then
+        if Dummy /= Ok then
+          My_Io.Put_Line ("  Xx_Select -> Error");
+          return Select_Timeout;
         else
-          MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD)
-                                      & " " & BOOL_FOR_C'IMAGE(READ));
+          My_Io.Put_Line ("  Xx_Select -> " & Integer'Image(Fd)
+                                      & " " & Bool_For_C'Image(Read));
         end if;
       end if;
 
       -- Results
-      if FD = C_SELECT_X_EVENT then
+      if Fd = C_Select_X_Event then
         -- A X event
-        return SELECT_X_EVENT;
-      elsif FD = C_SELECT_NO_EVENT then
+        return Select_X_Event;
+      elsif Fd = C_Select_No_Event then
         -- Nothing. Expire timers or return timeout
-        if TIMERS.EXPIRE then
-          return SELECT_TIMER;
+        if Timers.Expire then
+          return Select_Timer;
         end if;
-        if TIMEOUT_IN /= INFINITE_TIMEOUT
-        and then CALENDAR.CLOCK > FINAL_EXP then
+        if Timeout_In /= Infinite_Timeout
+        and then Calendar.Clock > Final_Exp then
           -- Requested timeout reached
-          return SELECT_TIMEOUT;
+          return Select_Timeout;
         end if;
       else
         -- A FD event
-        CB_SEARCHED.FD := FILE_DESC(FD);
-        CB_SEARCHED.READ := BOOLEAN(READ);
-        CB_SEARCHED.CB := null;
+        Cb_Searched.Fd := File_Desc(Fd);
+        Cb_Searched.Read := Boolean(Read);
+        Cb_Searched.Cb := null;
         begin
           -- Search and read callback
-          CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
-          CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
+          Cb_Search (Cb_List, Cb_Searched, From_Current => False);
+          Cb_Mng.Read (Cb_List, Cb_Searched,  Cb_Mng.Current);
           -- Call it and propagate event if callback returns true
-          if CB_SEARCHED.CB /= null then
-            if CB_SEARCHED.CB (CB_SEARCHED.FD, CB_SEARCHED.READ) then
-              return SELECT_FD;
+          if Cb_Searched.Cb /= null then
+            if Cb_Searched.Cb (Cb_Searched.Fd, Cb_Searched.Read) then
+              return Select_Fd;
             end if;
           end if;
         exception
-          when CB_MNG.NOT_IN_LIST =>
-          if DEBUG then
-            MY_IO.PUT_LINE ("**** XX_SELECT: " & INTEGER'IMAGE(FD) 
+          when Cb_Mng.Not_In_List =>
+          if Debug then
+            My_Io.Put_Line ("**** Xx_Select: " & Integer'Image(Fd) 
                           & " fd not found ****");
           end if;
         end;
         -- No callback or returned False
       end if;
     end loop;
-  end XX_SELECT;
+  end Xx_Select;
 
-  procedure XX_PROCESS_EVENT (LINE_FOR_C_ID : out LINE_FOR_C;
-                              KIND : out EVENT_KIND;
-                              NEXT : out BOOLEAN) is
-    DUMMY : RESULT;
-    NEXT_FOR_C : BOOL_FOR_C;
+  procedure Xx_Process_Event (Line_For_C_Id : out Line_For_C;
+                              Kind : out Event_Kind;
+                              Next : out Boolean) is
+    Dummy : Result;
+    Next_For_C : Bool_For_C;
   begin
-    DUMMY := X_PROCESS_EVENT (LINE_FOR_C_ID'ADDRESS,
-                              KIND'ADDRESS, NEXT_FOR_C'ADDRESS);
-    NEXT := FOR_ADA(NEXT_FOR_C);
-  end XX_PROCESS_EVENT;
+    Dummy := X_Process_Event (Line_For_C_Id'Address,
+                              Kind'Address, Next_For_C'Address);
+    Next := For_Ada(Next_For_C);
+  end Xx_Process_Event;
 
-  task body DISPATCHER is
+  task body Dispatcher is
     -- The clients
-    NB_CLIENTS : LINE_RANGE;
-    NB_WAIT : LINE_RANGE;
-    type CLIENT_DESC_REC is record
-      KNOWN : BOOLEAN;
+    Nb_Clients : Line_Range;
+    Nb_Wait : Line_Range;
+    type Client_Desc_Rec is record
+      Known : Boolean;
       -- Will be LINE_FOR_C
-      LINE_FOR_C_ID : LINE_FOR_C;
-      WAIT_INF : BOOLEAN;
-      WAIT_EXP : CALENDAR.TIME;
+      Line_For_C_Id : Line_For_C;
+      Wait_Inf : Boolean;
+      Wait_Exp : Calendar.Time;
       -- Refreshing this client due to a unregister
-      REFRESH : BOOLEAN;
+      Refresh : Boolean;
     end record;
-    CLIENTS : array (CLIENT_RANGE) of CLIENT_DESC_REC;
+    Clients : array (Client_Range) of Client_Desc_Rec;
     -- The TIMEOUT/EVENT and CLIENT from WAIT to SOME_EVENT to GET_EVENT
-    SELECT_RESULT : XX_SELECT_RESULT_LIST;
-    SELECTED_CLIENT : CLIENT_RANGE;
+    Select_Result : Xx_Select_Result_List;
+    Selected_Client : Client_Range;
     -- One event to give in SOME_EVENT
-    SOME_EVENT_PRESENT : BOOLEAN;
-    LOC_KIND : EVENT_KIND;
-    LOC_NEXT : BOOLEAN;
+    Some_Event_Present : Boolean;
+    Loc_Kind : Event_Kind;
+    Loc_Next : Boolean;
     -- Local X line
-    LOC_LINE_FOR_C_ID : LINE_FOR_C;
-    use SYSTEM, CALENDAR;
+    Loc_Line_For_C_Id : Line_For_C;
+    use System, Calendar;
     -- Delay or INFINITE_TIMEOUT
-    DELAY_DUR : DURATION;
+    Delay_Dur : Duration;
   
-    procedure COMPUTE_SMALLER_DELAY(SMALLER_DELAY : out DURATION;
-                                    SELECTED_CLIENT : out CLIENT_RANGE) is
-      INFINITE : BOOLEAN;
-      DUR, MIN_DUR : DURATION; 
-      CURRENT_TIME : CALENDAR.TIME := CALENDAR.CLOCK;
+    procedure Compute_Smaller_Delay(Smaller_Delay : out Duration;
+                                    Selected_Client : out Client_Range) is
+      Infinite : Boolean;
+      Dur, Min_Dur : Duration; 
+      Current_Time : Calendar.Time := Calendar.Clock;
     begin
 
-      INFINITE := TRUE;
-      MIN_DUR := DURATION'LAST;
-      SELECTED_CLIENT := CLIENT_RANGE'FIRST;
+      Infinite := True;
+      Min_Dur := Duration'Last;
+      Selected_Client := Client_Range'First;
       -- Look for smallest delay. Check if all infinite.
-      for I in CLIENT_RANGE loop
-        if CLIENTS(I).KNOWN then
-          if not CLIENTS(I).WAIT_INF then
-            INFINITE := FALSE;
-            DUR := CLIENTS(I).WAIT_EXP - CURRENT_TIME;
-            if DUR < 0.0 then
-              DUR := 0.0;
+      for I in Client_Range loop
+        if Clients(I).Known then
+          if not Clients(I).Wait_Inf then
+            Infinite := False;
+            Dur := Clients(I).Wait_Exp - Current_Time;
+            if Dur < 0.0 then
+              Dur := 0.0;
             end if;
-            if DUR < MIN_DUR then
-              MIN_DUR := DUR;
-              SELECTED_CLIENT := I;
+            if Dur < Min_Dur then
+              Min_Dur := Dur;
+              Selected_Client := I;
             end if;
           end if;
         end if;
       end loop;
-      if INFINITE then
-        SMALLER_DELAY := INFINITE_TIMEOUT;
+      if Infinite then
+        Smaller_Delay := Infinite_Timeout;
       else
-        SMALLER_DELAY := MIN_DUR;
+        Smaller_Delay := Min_Dur;
       end if;
-    end COMPUTE_SMALLER_DELAY;
+    end Compute_Smaller_Delay;
 
-    procedure GET_CLIENT_FROM_LINE(LINE_FOR_C_ID : in LINE_FOR_C;
-                                   CLIENT : in out CLIENT_RANGE;
-                                   FOUND : out BOOLEAN) is
+    procedure Get_Client_From_Line(Line_For_C_Id : in Line_For_C;
+                                   Client : in out Client_Range;
+                                   Found : out Boolean) is
     begin
       -- Same as current?
-      if CLIENTS(CLIENT).KNOWN
-      and then CLIENTS(CLIENT).LINE_FOR_C_ID = LINE_FOR_C_ID then
-        FOUND := TRUE;
+      if Clients(Client).Known
+      and then Clients(Client).Line_For_C_Id = Line_For_C_Id then
+        Found := True;
         return;
       end if;
-      for I in CLIENT_RANGE loop
-        if CLIENTS(I).KNOWN
-        and then CLIENTS(I).LINE_FOR_C_ID = LINE_FOR_C_ID then
-          FOUND := TRUE;
-          CLIENT := I;
+      for I in Client_Range loop
+        if Clients(I).Known
+        and then Clients(I).Line_For_C_Id = Line_For_C_Id then
+          Found := True;
+          Client := I;
           return;
         end if;
       end loop;
-      CLIENT := CLIENT_RANGE'FIRST;
-      FOUND := FALSE;
-    end GET_CLIENT_FROM_LINE;
+      Client := Client_Range'First;
+      Found := False;
+    end Get_Client_From_Line;
 
   begin
     -- Do you need me?
     select
-      accept START;
+      accept Start;
     or
       terminate;
     end select;
     -- No client known
-    NB_CLIENTS := 0;
-    NB_WAIT := 0;
-    for I in CLIENT_RANGE loop
-      CLIENTS(I).KNOWN := FALSE;
+    Nb_Clients := 0;
+    Nb_Wait := 0;
+    for I in Client_Range loop
+      Clients(I).Known := False;
     end loop;
     -- No event
-    SOME_EVENT_PRESENT := FALSE;
+    Some_Event_Present := False;
     -- To avoid a warning: may not have a value
-    SELECTED_CLIENT := CLIENT_RANGE'FIRST;
-    LOC_KIND := DISCARD;
-    LOC_NEXT := FALSE;
+    Selected_Client := Client_Range'First;
+    Loc_Kind := Discard;
+    Loc_Next := False;
 
     loop
       select
         -- Accept call to X, one at a time
-        accept CALL_ON (CLIENT : in CLIENT_RANGE;
-                        LINE_FOR_C_ID : out LINE_FOR_C) do
-          LINE_FOR_C_ID := CLIENTS(CLIENT).LINE_FOR_C_ID;
-        end CALL_ON;
-        accept CALL_OFF (CLIENT : in CLIENT_RANGE;
-                         NEW_LINE_FOR_C_ID : in LINE_FOR_C) do
-          CLIENTS(CLIENT).LINE_FOR_C_ID := NEW_LINE_FOR_C_ID;
-        end CALL_OFF;
+        accept Call_On (Client : in Client_Range;
+                        Line_For_C_Id : out Line_For_C) do
+          Line_For_C_Id := Clients(Client).Line_For_C_Id;
+        end Call_On;
+        accept Call_Off (Client : in Client_Range;
+                         New_Line_For_C_Id : in Line_For_C) do
+          Clients(Client).Line_For_C_Id := New_Line_For_C_Id;
+        end Call_Off;
       or
-        accept REGISTER (CLIENT : out LINE_RANGE) do
+        accept Register (Client : out Line_Range) do
           -- Find a slot
-          for I in CLIENT_RANGE loop
-            if not CLIENTS(I).KNOWN then
-              CLIENTS(I).KNOWN := TRUE;
-              CLIENTS(I).REFRESH := FALSE;
-              CLIENTS(I).LINE_FOR_C_ID := NO_LINE_FOR_C;
-              CLIENT := I;
-              NB_CLIENTS := NB_CLIENTS + 1;
-              if DEBUG then
-                MY_IO.PUT_LINE ("Register -> " & LINE_RANGE'IMAGE(I));
+          for I in Client_Range loop
+            if not Clients(I).Known then
+              Clients(I).Known := True;
+              Clients(I).Refresh := False;
+              Clients(I).Line_For_C_Id := No_Line_For_C;
+              Client := I;
+              Nb_Clients := Nb_Clients + 1;
+              if Debug then
+                My_Io.Put_Line ("Register -> " & Line_Range'Image(I));
               end if;
               return;
             end if;
           end loop;
           -- Too many clients
-          CLIENT := NO_CLIENT_NO;
-        end REGISTER;
+          Client := No_Client_No;
+        end Register;
       or
-        accept UNREGISTER (CLIENT : in out LINE_RANGE) do
-          if DEBUG then
-            MY_IO.PUT_LINE ("Unregister " & LINE_RANGE'IMAGE(CLIENT));
+        accept Unregister (Client : in out Line_Range) do
+          if Debug then
+            My_Io.Put_Line ("Unregister " & Line_Range'Image(Client));
           end if;
           -- Update administration
-          if CLIENT /= NO_CLIENT_NO then
-            CLIENTS(CLIENT).KNOWN := FALSE;
-            NB_CLIENTS := NB_CLIENTS - 1;
+          if Client /= No_Client_No then
+            Clients(Client).Known := False;
+            Nb_Clients := Nb_Clients - 1;
           end if;
-          CLIENT := NO_CLIENT_NO;
+          Client := No_Client_No;
           -- Generate a dummy refresh event for all client
           -- Wake up all waiting clients
-          for I in CLIENT_RANGE loop
-            if CLIENTS(I).KNOWN then
-              CLIENTS(I).REFRESH := TRUE;
+          for I in Client_Range loop
+            if Clients(I).Known then
+              Clients(I).Refresh := True;
               select
-                accept SOME_EVENT(I) (SOME : out BOOLEAN) do
-                  SOME := TRUE;
-                  NB_WAIT := NB_WAIT - 1;
-                end SOME_EVENT;
+                accept Some_Event(I) (Some : out Boolean) do
+                  Some := True;
+                  Nb_Wait := Nb_Wait - 1;
+                end Some_Event;
               or
                 delay 0.0;
               end select; 
             end if;
           end loop;
-        end UNREGISTER;
+        end Unregister;
       or
         -- Client is ready to wait
-        accept WAIT (CLIENT : in CLIENT_RANGE; TIMEOUT : in DURATION) do
-          NB_WAIT := NB_WAIT + 1;
-          if DEBUG then
-            MY_IO.PUT_LINE ("Wait " & LINE_RANGE'IMAGE(CLIENT)
-                          & "  timeout: " & DURATION'IMAGE(TIMEOUT));
-            MY_IO.PUT_LINE ("    Waiting nb " & LINE_RANGE'IMAGE(NB_WAIT));
+        accept Wait (Client : in Client_Range; Timeout : in Duration) do
+          Nb_Wait := Nb_Wait + 1;
+          if Debug then
+            My_Io.Put_Line ("Wait " & Line_Range'Image(Client)
+                          & "  timeout: " & Duration'Image(Timeout));
+            My_Io.Put_Line ("    Waiting nb " & Line_Range'Image(Nb_Wait));
           end if;
           -- Some pending event for this client?
-          if not SOME_EVENT_PRESENT or else CLIENT /= SELECTED_CLIENT then
+          if not Some_Event_Present or else Client /= Selected_Client then
             -- This client will wait
             -- Compute expiration
-            if TIMEOUT < 0.0 then
-              CLIENTS(CLIENT).WAIT_INF := TRUE;
-              if DEBUG then
-                MY_IO.PUT_LINE ("    Wait inf");
+            if Timeout < 0.0 then
+              Clients(Client).Wait_Inf := True;
+              if Debug then
+                My_Io.Put_Line ("    Wait inf");
               end if;
             else
-              CLIENTS(CLIENT).WAIT_INF := FALSE;
-              CLIENTS(CLIENT).WAIT_EXP := CALENDAR.CLOCK + TIMEOUT;
-              if DEBUG then
-                MY_IO.PUT_LINE ("    Wait timeout");
+              Clients(Client).Wait_Inf := False;
+              Clients(Client).Wait_Exp := Calendar.Clock + Timeout;
+              if Debug then
+                My_Io.Put_Line ("    Wait timeout");
               end if;
             end if;
-          elsif DEBUG then
-            MY_IO.PUT_LINE ("    Wait client is selected");
+          elsif Debug then
+            My_Io.Put_Line ("    Wait client is selected");
           end if;
-        end WAIT;
+        end Wait;
         -- Can we freeze the whole stuff?
         --  no event and all clients waiting
-        if not SOME_EVENT_PRESENT and then NB_WAIT = NB_CLIENTS then
+        if not Some_Event_Present and then Nb_Wait = Nb_Clients then
           -- Loop until timeout or valid client for the event is found
           loop
             -- This gives the client with smallest delay
             -- If all infinite, the first known
-            COMPUTE_SMALLER_DELAY(DELAY_DUR, SELECTED_CLIENT);
-            if DEBUG then
-              MY_IO.PUT_LINE ("        Wait select " & DURATION'IMAGE(DELAY_DUR));
+            Compute_Smaller_Delay(Delay_Dur, Selected_Client);
+            if Debug then
+              My_Io.Put_Line ("        Wait select " & Duration'Image(Delay_Dur));
             end if;
-            SELECT_RESULT := XX_SELECT (DELAY_DUR);
-            case SELECT_RESULT is
-              when SELECT_TIMEOUT =>
+            Select_Result := Xx_Select (Delay_Dur);
+            case Select_Result is
+              when Select_Timeout =>
                 -- Timeout
-                SOME_EVENT_PRESENT := FALSE;
-                if DEBUG then
-                  MY_IO.PUT_LINE ("            Wait select timeout for -> "
-                                & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+                Some_Event_Present := False;
+                if Debug then
+                  My_Io.Put_Line ("            Wait select timeout for -> "
+                                & Line_Range'Image(Selected_Client));
                 end if;
                 exit;
-              when SELECT_X_EVENT =>
+              when Select_X_Event =>
                 -- An event: Get&store it and it's client
-                XX_PROCESS_EVENT (LOC_LINE_FOR_C_ID, LOC_KIND, LOC_NEXT);
-                GET_CLIENT_FROM_LINE(LOC_LINE_FOR_C_ID, SELECTED_CLIENT,
-                                   SOME_EVENT_PRESENT);
-                if DEBUG then
-                  MY_IO.PUT_LINE ("            Wait select event for -> "
-                                & LINE_RANGE'IMAGE(SELECTED_CLIENT)
-                                & " found " & BOOLEAN'IMAGE(SOME_EVENT_PRESENT));
+                Xx_Process_Event (Loc_Line_For_C_Id, Loc_Kind, Loc_Next);
+                Get_Client_From_Line(Loc_Line_For_C_Id, Selected_Client,
+                                   Some_Event_Present);
+                if Debug then
+                  My_Io.Put_Line ("            Wait select event for -> "
+                                & Line_Range'Image(Selected_Client)
+                                & " found " & Boolean'Image(Some_Event_Present));
                 end if;
-                exit when SOME_EVENT_PRESENT;
-              when SELECT_FD =>
-                SOME_EVENT_PRESENT := TRUE;
-                LOC_KIND := FD_EVENT;
-                LOC_NEXT := FALSE;
-                if DEBUG then
-                  MY_IO.PUT_LINE ("            Wait select fd event for -> "
-                                & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+                exit when Some_Event_Present;
+              when Select_Fd =>
+                Some_Event_Present := True;
+                Loc_Kind := Fd_Event;
+                Loc_Next := False;
+                if Debug then
+                  My_Io.Put_Line ("            Wait select fd event for -> "
+                                & Line_Range'Image(Selected_Client));
                 end if;
                 exit;
-              when SELECT_TIMER =>
-                SOME_EVENT_PRESENT := TRUE;
-                LOC_KIND := TIMER_EVENT;
-                LOC_NEXT := FALSE;
-                if DEBUG then
-                  MY_IO.PUT_LINE ("            Wait select timer event for -> "
-                                & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+              when Select_Timer =>
+                Some_Event_Present := True;
+                Loc_Kind := Timer_Event;
+                Loc_Next := False;
+                if Debug then
+                  My_Io.Put_Line ("            Wait select timer event for -> "
+                                & Line_Range'Image(Selected_Client));
                 end if;
                 exit;
             end case;
           end loop;
         end if;
       or
-        when NB_CLIENTS /= 0 and then NB_WAIT = NB_CLIENTS =>
+        when Nb_Clients /= 0 and then Nb_Wait = Nb_Clients =>
         -- Release the client for stored event
-        accept SOME_EVENT(SELECTED_CLIENT) (SOME : out BOOLEAN) do
-          if DEBUG then
-            MY_IO.PUT_LINE ("Some_event " & LINE_RANGE'IMAGE(SELECTED_CLIENT)
+        accept Some_Event(Selected_Client) (Some : out Boolean) do
+          if Debug then
+            My_Io.Put_Line ("Some_event " & Line_Range'Image(Selected_Client)
                    & " -> "
-                   & "Select result:" & XX_SELECT_RESULT_LIST'IMAGE(SELECT_RESULT)
-                   & ", Event present:" & BOOLEAN'IMAGE(SOME_EVENT_PRESENT));
+                   & "Select result:" & Xx_Select_Result_List'Image(Select_Result)
+                   & ", Event present:" & Boolean'Image(Some_Event_Present));
           end if;
-          SOME := SELECT_RESULT /= SELECT_TIMEOUT or else SOME_EVENT_PRESENT;
-          NB_WAIT := NB_WAIT - 1;
-        end SOME_EVENT;
+          Some := Select_Result /= Select_Timeout or else Some_Event_Present;
+          Nb_Wait := Nb_Wait - 1;
+        end Some_Event;
       or
-        accept GET_EVENT (CLIENT : in CLIENT_RANGE; KIND : out EVENT_KIND;
-                                                    SOME : out BOOLEAN) do
+        accept Get_Event (Client : in Client_Range; Kind : out Event_Kind;
+                                                    Some : out Boolean) do
           -- Artificial refresh for this client?
-          if CLIENTS(CLIENT).REFRESH then
-            CLIENTS(CLIENT).REFRESH := FALSE;
-            KIND := REFRESH;
-            SOME := FALSE;
-            if DEBUG then
-              MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+          if Clients(Client).Refresh then
+            Clients(Client).Refresh := False;
+            Kind := Refresh;
+            Some := False;
+            if Debug then
+              My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
                             & " -> artificial refresh");
             end if;
             return;
           end if;
-          if CLIENT /= SELECTED_CLIENT then
+          if Client /= Selected_Client then
             -- Invalid client
-            KIND := DISCARD;
-            SOME := FALSE;
-            if DEBUG then
-              MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+            Kind := Discard;
+            Some := False;
+            if Debug then
+              My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
                             & " -> not selected");
             end if;
             return;
           end if;
           -- Event got from previous wait or get_event?
-          if SOME_EVENT_PRESENT then
-            KIND := LOC_KIND;
-            SOME := LOC_NEXT;
-            SOME_EVENT_PRESENT := FALSE;
-            if DEBUG then
-              MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+          if Some_Event_Present then
+            Kind := Loc_Kind;
+            Some := Loc_Next;
+            Some_Event_Present := False;
+            if Debug then
+              My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
                             & " -> from previous wait/get_event");
             end if;
           else
             -- No stored event
-            XX_PROCESS_EVENT (LOC_LINE_FOR_C_ID, LOC_KIND, LOC_NEXT);
+            Xx_Process_Event (Loc_Line_For_C_Id, Loc_Kind, Loc_Next);
             -- New event for the same client?
-            if LOC_LINE_FOR_C_ID /= CLIENTS(CLIENT).LINE_FOR_C_ID then
+            if Loc_Line_For_C_Id /= Clients(Client).Line_For_C_Id then
               -- Current client has to give up
-              SOME := FALSE;
-              KIND := DISCARD;
-              SOME_EVENT_PRESENT := TRUE;
+              Some := False;
+              Kind := Discard;
+              Some_Event_Present := True;
               -- Find client of the event
-              GET_CLIENT_FROM_LINE(LOC_LINE_FOR_C_ID, SELECTED_CLIENT,
-                                   SOME_EVENT_PRESENT);
-              if DEBUG then
-                MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+              Get_Client_From_Line(Loc_Line_For_C_Id, Selected_Client,
+                                   Some_Event_Present);
+              if Debug then
+                My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
                               & " -> give up to "
-                              & LINE_RANGE'IMAGE(SELECTED_CLIENT));
+                              & Line_Range'Image(Selected_Client));
               end if;
             else
               -- This event is for this client. Deliver.
-              SOME := LOC_NEXT;
-              KIND := LOC_KIND;
-              if DEBUG then
-                MY_IO.PUT_LINE ("Get_event " & LINE_RANGE'IMAGE(CLIENT)
+              Some := Loc_Next;
+              Kind := Loc_Kind;
+              if Debug then
+                My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
                               & " -> got it");
               end if;
             end if; -- event is for client
           end if; -- SOME_EVENT_PRESENT
-          if DEBUG then
-            MY_IO.PUT_LINE ("    Get_event -> " & EVENT_KIND'IMAGE(LOC_KIND)
-                          & " next: " & BOOLEAN'IMAGE(LOC_NEXT));
+          if Debug then
+            My_Io.Put_Line ("    Get_event -> " & Event_Kind'Image(Loc_Kind)
+                          & " next: " & Boolean'Image(Loc_Next));
           end if;
-        end GET_EVENT;
+        end Get_Event;
       or
         terminate;
       end select;
     end loop;
-  end DISPATCHER;
+  end Dispatcher;
 
   ------------------------------------------------------------------
   -- Specific select without X
-  function SELECT_NO_X (TIMEOUT_MS : INTEGER) return BOOLEAN is
-    SELECT_RESULT : XX_SELECT_RESULT_LIST;
+  function Select_No_X (Timeout_Ms : Integer) return Boolean is
+    Select_Result : Xx_Select_Result_List;
   begin
-    if INITIALISED  then
-      raise X_FAILURE;
+    if Initialised  then
+      raise X_Failure;
     end if;
-    if TIMEOUT_MS < 0 then
-      SELECT_RESULT := XX_SELECT (TIMERS.INFINITE_SECONDS);
+    if Timeout_Ms < 0 then
+      Select_Result := Xx_Select (Timers.Infinite_Seconds);
     else
-      SELECT_RESULT := XX_SELECT (DURATION(TIMEOUT_MS) / 1000.0);
+      Select_Result := Xx_Select (Duration(Timeout_Ms) / 1000.0);
     end if;
-    case SELECT_RESULT is
-      when SELECT_X_EVENT =>
-        if DEBUG then
-          MY_IO.PUT_LINE ("**** SELECT_NO_X: Got a X event");
+    case Select_Result is
+      when Select_X_Event =>
+        if Debug then
+          My_Io.Put_Line ("**** Select_No_X: Got a X event");
         end if;
-        raise X_FAILURE;
-      when SELECT_FD | SELECT_TIMER =>
-        return TRUE;
-      when SELECT_TIMEOUT =>
-        return FALSE;
+        raise X_Failure;
+      when Select_Fd | Select_Timer =>
+        return True;
+      when Select_Timeout =>
+        return False;
     end case;
-  end SELECT_NO_X;
+  end Select_No_X;
 
-end X_MNG;
+end X_Mng;
 

@@ -2,58 +2,58 @@
 -- The user needs to associate a unique acess to each data
 --  (index in an array, acess type...)
 
-package HASH is
+package Hash is
 
   -- Maximum size of primary hash table : 1023 (1Kb),
   -- due to the implemented hashing function
-  MAX_HASH_VALUE : constant := 16#3FF#;
-  type MAX_HASH_RANGE is new INTEGER range 0 .. MAX_HASH_VALUE;
+  Max_Hash_Value : constant := 16#3Ff#;
+  type Max_Hash_Range is new Integer range 0 .. Max_Hash_Value;
 
   generic
     -- Size of primary hash table
-    HASH_SIZE : MAX_HASH_RANGE := MAX_HASH_VALUE;
+    Hash_Size : Max_Hash_Range := Max_Hash_Value;
     -- acess to data, managed by client
-    type DATA_ACESS is private;
+    type Data_Acess is private;
     -- Procedure to dump data in DUMP
-    with procedure DUMP (DATA : in DATA_ACESS);
-  package HASH_MNG is
+    with procedure Dump (Data : in Data_Acess);
+  package Hash_Mng is
 
     -- Returned result of FIND_NEXT
-    type FOUND_REC (FOUND : BOOLEAN := TRUE) is record
-      case FOUND is
-        when TRUE =>
-          DATA : DATA_ACESS; -- significant only if FOUND
-        when FALSE =>
+    type Found_Rec (Found : Boolean := True) is record
+      case Found is
+        when True =>
+          Data : Data_Acess; -- significant only if FOUND
+        when False =>
           null;
       end case;
     end record;
 
     -- To store association KEY <-> INDEX
     -- Last found is not reset
-    procedure STORE (KEY : in STRING; DATA : in DATA_ACESS);
+    procedure Store (Key : in String; Data : in Data_Acess);
 
     -- To reset finding index for matching KEY
-    procedure RESET_FIND (KEY : STRING);
+    procedure Reset_Find (Key : String);
 
     -- To get first, then next INDEX matching KEY
     -- Last found is reset if not found
-    function FIND_NEXT (KEY : STRING) return FOUND_REC;
+    function Find_Next (Key : String) return Found_Rec;
 
     -- To remove last found association KEY <-> INDEX
     -- Last found is reset
     -- May raise NOT_FOUND if last found is reset
-    procedure REMOVE (KEY : in STRING);
+    procedure Remove (Key : in String);
 
     -- Dump hash value of key and lists all data found for key
-    procedure DUMP (KEY : in STRING);
+    procedure Dump (Key : in String);
 
     -- Remove all the data stored in the hash table
-    procedure CLEAR_ALL;
+    procedure Clear_All;
 
-  end HASH_MNG;
+  end Hash_Mng;
 
   -- Raised on REMOVE if last found is not set
-  NOT_FOUND : exception;
+  Not_Found : exception;
 
-end HASH;
+end Hash;
 

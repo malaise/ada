@@ -1,10 +1,10 @@
-function UPPER_CHAR (CHAR : CHARACTER) return CHARACTER is
-  OFFSET  : constant INTEGER   := CHARACTER'POS('A') - CHARACTER'POS('a');
+function Upper_Char (Char : Character) return Character is
+  Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
 begin
 
-  if CHAR in 'a' .. 'z' then
-    return CHARACTER'VAL( CHARACTER'POS(CHAR) + OFFSET );
+  if Char in 'a' .. 'z' then
+    return Character'Val( Character'Pos(Char) + Offset );
   else
-    return CHAR;
+    return Char;
   end if;
-end UPPER_CHAR;
+end Upper_Char;

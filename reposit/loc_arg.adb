@@ -1,21 +1,21 @@
-with ADA.COMMAND_LINE;
-package body LOC_ARG is
+with Ada.Command_Line;
+package body Loc_Arg is
 
   -- returns 1 if the current prog has 1 arg (0 if no arg)
-  function COUNT return NATURAL is
+  function Count return Natural is
   begin
-    return ADA.COMMAND_LINE.ARGUMENT_COUNT;
-  end COUNT;
+    return Ada.Command_Line.Argument_Count;
+  end Count;
 
   -- returns n th parameter of current prog (prog name if n=0)
-  function DATA (POS : NATURAL) return STRING is
+  function Data (Pos : Natural) return String is
   begin
-    if POS = 0 then
-      return ADA.COMMAND_LINE.Command_Name;
+    if Pos = 0 then
+      return Ada.Command_Line.Command_Name;
     else
-      return ADA.COMMAND_LINE.Argument(POS);
+      return Ada.Command_Line.Argument(Pos);
     end if;  
-  end DATA;
+  end Data;
 
-end LOC_ARG;
+end Loc_Arg;
 

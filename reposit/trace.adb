@@ -1,42 +1,42 @@
-with TEXT_IO;
-with NORMAL;
-package body TRACE is
+with Text_Io;
+with Normal;
+package body Trace is
 
-  FILE            : TEXT_IO.FILE_TYPE;
-  TRACE_FILE_NAME : constant STRING := "_trace_";
-  COUNT           : POSITIVE        := POSITIVE'FIRST;
-  ACTIVATED       : BOOLEAN := TRUE;
-  CREATED         : BOOLEAN := FALSE;
+  File            : Text_Io.File_Type;
+  Trace_File_Name : constant String := "_trace_";
+  Count           : Positive        := Positive'First;
+  Activated       : Boolean := True;
+  Created         : Boolean := False;
 
-  procedure ACTIVATE (ON : in BOOLEAN := TRUE) is
+  procedure Activate (On : in Boolean := True) is
   begin
-    ACTIVATED := ON;
-  end ACTIVATE;
+    Activated := On;
+  end Activate;
 
-  procedure CREATE is
+  procedure Create is
   begin
-    TEXT_IO.CREATE (FILE => FILE, MODE => TEXT_IO.OUT_FILE,
-     NAME => TRACE_FILE_NAME);
-    CREATED := TRUE;
-  end CREATE;
+    Text_Io.Create (File => File, Mode => Text_Io.Out_File,
+     Name => Trace_File_Name);
+    Created := True;
+  end Create;
 
-  procedure PUT (MESSAGE : in STRING := "") is
+  procedure Put (Message : in String := "") is
   begin
-    if not ACTIVATED then
+    if not Activated then
       return;
     end if;
-    if not CREATED then
-      CREATE;
+    if not Created then
+      Create;
     end if;
-    TEXT_IO.PUT_LINE (
-     FILE => FILE,
-     ITEM => NORMAL(COUNT, 5) & " ->" & MESSAGE & "<");
-    if COUNT /= POSITIVE'LAST then
-      COUNT := POSITIVE'SUCC(COUNT);
+    Text_Io.Put_Line (
+     File => File,
+     Item => Normal(Count, 5) & " ->" & Message & "<");
+    if Count /= Positive'Last then
+      Count := Positive'Succ(Count);
     else
-      COUNT := POSITIVE'FIRST;
+      Count := Positive'First;
     end if;
-  end PUT;
+  end Put;
 
-end TRACE;
+end Trace;
 

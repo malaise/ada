@@ -1,289 +1,289 @@
-package body C_NBRES is
+package body C_Nbres is
 
-  use MY_MATH;
+  use My_Math;
 
   -- ANGLES en RADIAN
-  package POLAR is
+  package Polar is
 
-    type POLAR is record
-      MODULE   : REAL;
-      ARGUMENT : REAL;
+    type Polar is record
+      Module   : Real;
+      Argument : Real;
     end record;
 
-    function TO_POLAR   (X : COMPLEX) return POLAR;
-    function TO_COMPLEX (X : POLAR)   return COMPLEX;
+    function To_Polar   (X : Complex) return Polar;
+    function To_Complex (X : Polar)   return Complex;
 
-  end POLAR;
+  end Polar;
 
-  package body POLAR is
+  package body Polar is
 
-    function TO_POLAR (X : COMPLEX) return POLAR is
-      X_POL : POLAR;
+    function To_Polar (X : Complex) return Polar is
+      X_Pol : Polar;
     begin
-      X_POL.MODULE := SQRT
-       (X.PART_REAL * X.PART_REAL + X.PART_IMAG * X.PART_IMAG);
-      if (X.PART_REAL /= 0.0) then
-        X_POL.ARGUMENT := ARC_TG (X.PART_IMAG / X.PART_REAL);
+      X_Pol.Module := Sqrt
+       (X.Part_Real * X.Part_Real + X.Part_Imag * X.Part_Imag);
+      if (X.Part_Real /= 0.0) then
+        X_Pol.Argument := Arc_Tg (X.Part_Imag / X.Part_Real);
       else
-        X_POL.ARGUMENT := PI / 2.0;
+        X_Pol.Argument := Pi / 2.0;
       end if;
-      if X.PART_REAL < 0.0 then
-        X_POL.ARGUMENT := X_POL.ARGUMENT + PI;
+      if X.Part_Real < 0.0 then
+        X_Pol.Argument := X_Pol.Argument + Pi;
       end if;
-      return (X_POL);
-    end TO_POLAR;
+      return (X_Pol);
+    end To_Polar;
 
-    function TO_COMPLEX (X : POLAR)  return COMPLEX is
-      X_CART : COMPLEX;
+    function To_Complex (X : Polar)  return Complex is
+      X_Cart : Complex;
     begin
-      X_CART.PART_REAL := X.MODULE * COS (X.ARGUMENT);
-      X_CART.PART_IMAG := X.MODULE * SIN (X.ARGUMENT);
-      return (X_CART);
-    end TO_COMPLEX;
+      X_Cart.Part_Real := X.Module * Cos (X.Argument);
+      X_Cart.Part_Imag := X.Module * Sin (X.Argument);
+      return (X_Cart);
+    end To_Complex;
 
-  end POLAR;
+  end Polar;
 
 
-  function REDUCT (A : RADIAN) return REDUCTED_RADIAN is
-    N : INTE;
-    TWO_PI : constant RADIAN := REDUCTED_RADIAN'LAST;
-    R : RADIAN;
+  function Reduct (A : Radian) return Reducted_Radian is
+    N : Inte;
+    Two_Pi : constant Radian := Reducted_Radian'Last;
+    R : Radian;
   begin
-    N := TRUNC (REAL(A / (TWO_PI)));
-    R := A - RADIAN(N) * RADIAN(TWO_PI);
-    if R < 0.0 then R := R + TWO_PI; end if;
+    N := Trunc (Real(A / (Two_Pi)));
+    R := A - Radian(N) * Radian(Two_Pi);
+    if R < 0.0 then R := R + Two_Pi; end if;
     return R;
-  end REDUCT;
+  end Reduct;
 
-  function REDUCT (A : DEGREE)  return REDUCTED_DEGREE is
-    N : INTE;
-    ONE_CIRCLE : constant DEGREE := REDUCTED_DEGREE'LAST;
-    R : DEGREE;
+  function Reduct (A : Degree)  return Reducted_Degree is
+    N : Inte;
+    One_Circle : constant Degree := Reducted_Degree'Last;
+    R : Degree;
   begin
-    N := TRUNC (REAL(A / (ONE_CIRCLE)));
-    R := A - DEGREE(N) * DEGREE(ONE_CIRCLE);
-    if R < 0.0 then R := R + ONE_CIRCLE; end if;
+    N := Trunc (Real(A / (One_Circle)));
+    R := A - Degree(N) * Degree(One_Circle);
+    if R < 0.0 then R := R + One_Circle; end if;
     return R;
-  end REDUCT;
+  end Reduct;
 
-  function TO_DEGREE (A : RADIAN) return REDUCTED_DEGREE is
-    R : REAL;
+  function To_Degree (A : Radian) return Reducted_Degree is
+    R : Real;
   begin
-    R := REAL(REDUCT(A)/REDUCTED_RADIAN'LAST) * REAL(REDUCTED_DEGREE'LAST);
-    return REDUCTED_DEGREE (R);
-  end TO_DEGREE;
+    R := Real(Reduct(A)/Reducted_Radian'Last) * Real(Reducted_Degree'Last);
+    return Reducted_Degree (R);
+  end To_Degree;
 
-  function TO_RADIAN (A : DEGREE) return REDUCTED_RADIAN is
-    R : REAL;
+  function To_Radian (A : Degree) return Reducted_Radian is
+    R : Real;
   begin
-    R := REAL(REDUCT(A)/REDUCTED_DEGREE'LAST) * REAL(REDUCTED_RADIAN'LAST);
-    return REDUCTED_RADIAN (R);
-  end TO_RADIAN;
+    R := Real(Reduct(A)/Reducted_Degree'Last) * Real(Reducted_Radian'Last);
+    return Reducted_Radian (R);
+  end To_Radian;
 
 
-  function CREATE_COMPLEX (M : TYP_MODULE; A : RADIAN) return COMPLEX is
+  function Create_Complex (M : Typ_Module; A : Radian) return Complex is
   begin
-    return POLAR.TO_COMPLEX (
-     (MODULE => REAL(M), ARGUMENT => REAL(REDUCT(A))));
-  end CREATE_COMPLEX;
+    return Polar.To_Complex (
+     (Module => Real(M), Argument => Real(Reduct(A))));
+  end Create_Complex;
 
-  function CREATE_COMPLEX (M : TYP_MODULE; A : DEGREE) return COMPLEX is
+  function Create_Complex (M : Typ_Module; A : Degree) return Complex is
   begin
-    return POLAR.TO_COMPLEX (
-     (MODULE => REAL(M), ARGUMENT => REAL(TO_RADIAN(A))) );
-  end CREATE_COMPLEX;
+    return Polar.To_Complex (
+     (Module => Real(M), Argument => Real(To_Radian(A))) );
+  end Create_Complex;
 
-  function MODULE (C : COMPLEX) return TYP_MODULE is
-    M : REAL := POLAR.TO_POLAR (C).MODULE;
+  function Module (C : Complex) return Typ_Module is
+    M : Real := Polar.To_Polar (C).Module;
   begin
-    return TYP_MODULE (abs(M));
-  end MODULE;
+    return Typ_Module (abs(M));
+  end Module;
 
-  function ANGLE_RADIAN (C : COMPLEX) return REDUCTED_RADIAN is
+  function Angle_Radian (C : Complex) return Reducted_Radian is
   begin
-    return REDUCT(RADIAN(POLAR.TO_POLAR(C).ARGUMENT));
-  end ANGLE_RADIAN;
+    return Reduct(Radian(Polar.To_Polar(C).Argument));
+  end Angle_Radian;
 
-  function ANGLE_DEGREE (C : COMPLEX) return REDUCTED_DEGREE is
+  function Angle_Degree (C : Complex) return Reducted_Degree is
   begin
-    return REDUCT (TO_DEGREE(ANGLE_RADIAN(C)));
-  end ANGLE_DEGREE;
+    return Reduct (To_Degree(Angle_Radian(C)));
+  end Angle_Degree;
 
 
 
-  function PART_REAL (C : COMPLEX) return REAL is
+  function Part_Real (C : Complex) return Real is
   begin
-    return C.PART_REAL;
-  end PART_REAL;
+    return C.Part_Real;
+  end Part_Real;
 
-  function PART_IMAG (C : COMPLEX) return REAL is
+  function Part_Imag (C : Complex) return Real is
   begin
-    return C.PART_IMAG;
-  end PART_IMAG;
+    return C.Part_Imag;
+  end Part_Imag;
 
-  function CREATE_COMPLEX (REAL_PART, IMAG_PART : REAL) return COMPLEX is
+  function Create_Complex (Real_Part, Imag_Part : Real) return Complex is
   begin
-    return (PART_REAL => REAL_PART, PART_IMAG => IMAG_PART);
-  end CREATE_COMPLEX;
+    return (Part_Real => Real_Part, Part_Imag => Imag_Part);
+  end Create_Complex;
 
-  function CREATE_COMPLEX (REAL_PART : REAL) return COMPLEX is
+  function Create_Complex (Real_Part : Real) return Complex is
   begin
-    return (PART_REAL => REAL_PART, PART_IMAG => 0.0);
-  end CREATE_COMPLEX;
+    return (Part_Real => Real_Part, Part_Imag => 0.0);
+  end Create_Complex;
 
   -----------------------------------------------------------------------------
 
-  function "+" (X, Y : COMPLEX) return COMPLEX is
+  function "+" (X, Y : Complex) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL + Y.PART_REAL,
-            PART_IMAG => X.PART_IMAG + Y.PART_IMAG);
+    return (Part_Real => X.Part_Real + Y.Part_Real,
+            Part_Imag => X.Part_Imag + Y.Part_Imag);
   end "+";
 
-  function "+" (X : REAL; Y : COMPLEX) return COMPLEX is
+  function "+" (X : Real; Y : Complex) return Complex is
   begin
-    return (PART_REAL => X   + Y.PART_REAL,
-            PART_IMAG =>       Y.PART_IMAG);
+    return (Part_Real => X   + Y.Part_Real,
+            Part_Imag =>       Y.Part_Imag);
   end "+";
 
-  function "+" (X : COMPLEX; Y : REAL) return COMPLEX is
+  function "+" (X : Complex; Y : Real) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL + Y,
-            PART_IMAG => X.PART_IMAG);
+    return (Part_Real => X.Part_Real + Y,
+            Part_Imag => X.Part_Imag);
   end "+";
 
-  function "+" (X : REAL; Y : REAL) return COMPLEX is
+  function "+" (X : Real; Y : Real) return Complex is
   begin
-    return (PART_REAL => X + Y,
-            PART_IMAG => 0.0);
+    return (Part_Real => X + Y,
+            Part_Imag => 0.0);
   end "+";
 
   -----------------------------------------------------------------------------
 
-  function "-" (X, Y : COMPLEX) return COMPLEX is
+  function "-" (X, Y : Complex) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL - Y.PART_REAL,
-            PART_IMAG => X.PART_IMAG - Y.PART_IMAG);
+    return (Part_Real => X.Part_Real - Y.Part_Real,
+            Part_Imag => X.Part_Imag - Y.Part_Imag);
   end "-";
 
-  function "-" (X : REAL; Y : COMPLEX) return COMPLEX is
+  function "-" (X : Real; Y : Complex) return Complex is
   begin
-    return (PART_REAL => X   - Y.PART_REAL,
-            PART_IMAG =>     - Y.PART_IMAG);
+    return (Part_Real => X   - Y.Part_Real,
+            Part_Imag =>     - Y.Part_Imag);
   end "-";
 
-  function "-" (X : COMPLEX; Y : REAL) return COMPLEX is
+  function "-" (X : Complex; Y : Real) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL - Y,
-            PART_IMAG => X.PART_IMAG);
+    return (Part_Real => X.Part_Real - Y,
+            Part_Imag => X.Part_Imag);
   end "-";
 
-  function "-" (X : REAL; Y : REAL) return COMPLEX is
+  function "-" (X : Real; Y : Real) return Complex is
   begin
-    return (PART_REAL => X - Y,
-            PART_IMAG => 0.0);
+    return (Part_Real => X - Y,
+            Part_Imag => 0.0);
   end "-";
 
   -----------------------------------------------------------------------------
 
-  function "*" (X, Y : COMPLEX) return COMPLEX is
+  function "*" (X, Y : Complex) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL * Y.PART_REAL
-                       - X.PART_IMAG * Y.PART_IMAG,
-            PART_IMAG => X.PART_REAL * Y.PART_IMAG
-                       + X.PART_IMAG * Y.PART_REAL);
+    return (Part_Real => X.Part_Real * Y.Part_Real
+                       - X.Part_Imag * Y.Part_Imag,
+            Part_Imag => X.Part_Real * Y.Part_Imag
+                       + X.Part_Imag * Y.Part_Real);
   end "*";
 
-  function "*" (X : REAL; Y : COMPLEX) return COMPLEX is
+  function "*" (X : Real; Y : Complex) return Complex is
   begin
-    return (PART_REAL => X * Y.PART_REAL,
-            PART_IMAG => X * Y.PART_IMAG);
+    return (Part_Real => X * Y.Part_Real,
+            Part_Imag => X * Y.Part_Imag);
   end "*";
 
-  function "*" (X : COMPLEX; Y : REAL) return COMPLEX is
+  function "*" (X : Complex; Y : Real) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL * Y,
-            PART_IMAG => X.PART_IMAG * Y);
+    return (Part_Real => X.Part_Real * Y,
+            Part_Imag => X.Part_Imag * Y);
   end "*";
 
-  function "*" (X : REAL; Y : REAL) return COMPLEX is
+  function "*" (X : Real; Y : Real) return Complex is
   begin
-    return (PART_REAL => X * Y,
-            PART_IMAG => 0.0);
+    return (Part_Real => X * Y,
+            Part_Imag => 0.0);
   end "*";
 
   -----------------------------------------------------------------------------
 
-  function "/" (X, Y : COMPLEX) return COMPLEX is
-    MODULE_Y : REAL := Y.PART_REAL * Y.PART_REAL
-                     + Y.PART_IMAG * Y.PART_IMAG;
+  function "/" (X, Y : Complex) return Complex is
+    Module_Y : Real := Y.Part_Real * Y.Part_Real
+                     + Y.Part_Imag * Y.Part_Imag;
   begin
-    return (PART_REAL =>
-                ( (X.PART_REAL * Y.PART_REAL) + (X.PART_IMAG * Y.PART_IMAG) )
-                / MODULE_Y ,
-      PART_IMAG =>
-                ( (X.PART_IMAG * Y.PART_REAL) - (X.PART_REAL * Y.PART_IMAG) )
-                / MODULE_Y );
+    return (Part_Real =>
+                ( (X.Part_Real * Y.Part_Real) + (X.Part_Imag * Y.Part_Imag) )
+                / Module_Y ,
+      Part_Imag =>
+                ( (X.Part_Imag * Y.Part_Real) - (X.Part_Real * Y.Part_Imag) )
+                / Module_Y );
   end "/";
 
-  function "/" (X : REAL; Y : COMPLEX) return COMPLEX is
-    MODULE_Y : REAL := Y.PART_REAL * Y.PART_REAL
-                     + Y.PART_IMAG * Y.PART_IMAG;
+  function "/" (X : Real; Y : Complex) return Complex is
+    Module_Y : Real := Y.Part_Real * Y.Part_Real
+                     + Y.Part_Imag * Y.Part_Imag;
   begin
-    return (PART_REAL => (  X * Y.PART_REAL / MODULE_Y),
-            PART_IMAG => (- X * Y.PART_IMAG / MODULE_Y) );
+    return (Part_Real => (  X * Y.Part_Real / Module_Y),
+            Part_Imag => (- X * Y.Part_Imag / Module_Y) );
   end "/";
 
-  function "/" (X : COMPLEX; Y : REAL) return COMPLEX is
+  function "/" (X : Complex; Y : Real) return Complex is
   begin
-    return (PART_REAL => X.PART_REAL / Y,
-            PART_IMAG => X.PART_IMAG / Y);
+    return (Part_Real => X.Part_Real / Y,
+            Part_Imag => X.Part_Imag / Y);
   end "/";
 
-  function "/" (X : REAL; Y : REAL) return COMPLEX is
+  function "/" (X : Real; Y : Real) return Complex is
   begin
-    return (PART_REAL => X / Y,
-            PART_IMAG => 0.0);
+    return (Part_Real => X / Y,
+            Part_Imag => 0.0);
   end "/";
 
   -----------------------------------------------------------------------------
 
-  function "**" (X : COMPLEX; Y : REAL) return COMPLEX is
-    X_POLAR : POLAR.POLAR;
-    RES_COMPLEX : COMPLEX;
+  function "**" (X : Complex; Y : Real) return Complex is
+    X_Polar : Polar.Polar;
+    Res_Complex : Complex;
   begin
-    X_POLAR := POLAR.TO_POLAR (X);
-    X_POLAR := (MODULE   => X_POLAR.MODULE ** Y,
-                ARGUMENT => X_POLAR.ARGUMENT *  Y);
-    RES_COMPLEX := POLAR.TO_COMPLEX (X_POLAR);
-    return RES_COMPLEX;
+    X_Polar := Polar.To_Polar (X);
+    X_Polar := (Module   => X_Polar.Module ** Y,
+                Argument => X_Polar.Argument *  Y);
+    Res_Complex := Polar.To_Complex (X_Polar);
+    return Res_Complex;
   end "**";
 
   -------------------------------------------------------------------------------
 
-  use MY_REAL_IO;
+  use My_Real_Io;
 
-  procedure PUT (C : in COMPLEX) is
-    IMAG_PART : REAL := PART_IMAG (C);
+  procedure Put (C : in Complex) is
+    Imag_Part : Real := Part_Imag (C);
   begin
-    PUT (PART_REAL (C) );
-    if (IMAG_PART >= 0.0) then
-      TEXT_IO.PUT (" +");
+    Put (Part_Real (C) );
+    if (Imag_Part >= 0.0) then
+      Text_Io.Put (" +");
     else
-      TEXT_IO.PUT (" -");
+      Text_Io.Put (" -");
     end if;
-    PUT ( abs (IMAG_PART) );
-    TEXT_IO.PUT (" * i ");
-  end PUT;
+    Put ( abs (Imag_Part) );
+    Text_Io.Put (" * i ");
+  end Put;
 
-  procedure GET (C : out COMPLEX) is
-    REAL_PART, IMAG_PART : REAL;
+  procedure Get (C : out Complex) is
+    Real_Part, Imag_Part : Real;
   begin
-    TEXT_IO.PUT ("Reel? ");
-    GET (REAL_PART);
-    TEXT_IO.PUT ("Imag? ");
-    GET (IMAG_PART);
-    C := CREATE_COMPLEX (REAL_PART, IMAG_PART);
-  end GET;
+    Text_Io.Put ("Reel? ");
+    Get (Real_Part);
+    Text_Io.Put ("Imag? ");
+    Get (Imag_Part);
+    C := Create_Complex (Real_Part, Imag_Part);
+  end Get;
 
 
-end C_NBRES;
+end C_Nbres;

@@ -1,291 +1,291 @@
-with CALENDAR, TEXT_IO;
-with BIG_CON_IO, NORMAL, UPPER_CHAR;
-package body CURVE is
-  use MY_MATH;
+with Calendar, Text_Io;
+with Big_Con_Io, Normal, Upper_Char;
+package body Curve is
+  use My_Math;
 
-  package P_IO is new TEXT_IO.FLOAT_IO (T_COORDINATE);
+  package P_Io is new Text_Io.Float_Io (T_Coordinate);
 
   -- Find lowest and greatest X of points
-  procedure X_BOUNDARIES (
-   POINTS       : in T_THE_POINTS;
-   X_MIN, X_MAX : out T_COORDINATE) is
-    LOC_X_MIN, LOC_X_MAX : T_COORDINATE;
+  procedure X_Boundaries (
+   Points       : in T_The_Points;
+   X_Min, X_Max : out T_Coordinate) is
+    Loc_X_Min, Loc_X_Max : T_Coordinate;
   begin
-    if POINTS'LENGTH = 0 then
-      LOC_X_MIN := T_COORDINATE'FIRST;
-      LOC_X_MAX := T_COORDINATE'LAST;
+    if Points'Length = 0 then
+      Loc_X_Min := T_Coordinate'First;
+      Loc_X_Max := T_Coordinate'Last;
     else
-      LOC_X_MIN := T_COORDINATE'LAST;
-      LOC_X_MAX := T_COORDINATE'FIRST;
+      Loc_X_Min := T_Coordinate'Last;
+      Loc_X_Max := T_Coordinate'First;
 
-      for I in POINTS'RANGE loop
-        if POINTS(I).X < LOC_X_MIN then
-          LOC_X_MIN := POINTS(I).X;
+      for I in Points'Range loop
+        if Points(I).X < Loc_X_Min then
+          Loc_X_Min := Points(I).X;
         end if;
-        if POINTS(I).X > LOC_X_MAX then
-          LOC_X_MAX := POINTS(I).X;
+        if Points(I).X > Loc_X_Max then
+          Loc_X_Max := Points(I).X;
         end if;
       end loop;
     end if;
 
-    X_MIN := LOC_X_MIN;
-    X_MAX := LOC_X_MAX;
-  end X_BOUNDARIES;
+    X_Min := Loc_X_Min;
+    X_Max := Loc_X_Max;
+  end X_Boundaries;
 
   -- Coordinate to string
-  function COO_TO_STR (C : T_COORDINATE) return STRING is
-    STR : STRING (1..13);
+  function Coo_To_Str (C : T_Coordinate) return String is
+    Str : String (1..13);
   begin
-    P_IO.PUT (STR, C, 5, 3);
-    return STR;
-  end COO_TO_STR;
+    P_Io.Put (Str, C, 5, 3);
+    return Str;
+  end Coo_To_Str;
 
   -- Draw and redraw curves until escape
-  procedure DRAW (BOUNDARIES : in T_BOUNDARIES;
-                  POINTS : in T_THE_POINTS) is
+  procedure Draw (Boundaries : in T_Boundaries;
+                  Points : in T_The_Points) is
 
     -- Miscellaneous drawings on screen : help, axes, scales, points
-    type T_MISC_LIST is (M_HELP, M_AXES, M_SCALE, M_POINTS, M_CURVE);
-    type T_MISC is array (T_MISC_LIST) of BOOLEAN;
-    MISC : T_MISC := (others => FALSE);
+    type T_Misc_List is (M_Help, M_Axes, M_Scale, M_Points, M_Curve);
+    type T_Misc is array (T_Misc_List) of Boolean;
+    Misc : T_Misc := (others => False);
 
     -- Possible ZOOM_NO values
-    subtype ZOOM_NO_RANGE is NATURAL range 0 .. 9;
+    subtype Zoom_No_Range is Natural range 0 .. 9;
 
     -- Current and last stored Zoom window
-    CURR_ZOOM_NO, LAST_ZOOM_NO : ZOOM_NO_RANGE;
-    ZOOM_ARRAY : array (ZOOM_NO_RANGE) of T_BOUNDARIES;
+    Curr_Zoom_No, Last_Zoom_No : Zoom_No_Range;
+    Zoom_Array : array (Zoom_No_Range) of T_Boundaries;
 
 
     -- Result of DRAW_ONE
-    DRAW_RESULT : BOOLEAN;
+    Draw_Result : Boolean;
 
     -- Compute real position (x, y) to screen position (x, y)
-    package CONVERT is
+    package Convert is
 
       -- Screen coordinates of the frame
-      type T_SCREEN_BOUNDARIES is record
-        X_MIN, X_MAX : BIG_CON_IO.GRAPHICS.X_RANGE;
-        Y_MIN, Y_MAX : BIG_CON_IO.GRAPHICS.Y_RANGE;
+      type T_Screen_Boundaries is record
+        X_Min, X_Max : Big_Con_Io.Graphics.X_Range;
+        Y_Min, Y_Max : Big_Con_Io.Graphics.Y_Range;
       end record;
 
       -- Current limits (in pixels) of drawing
-      function GET_SCREEN_BOUNDARIES return T_SCREEN_BOUNDARIES;
+      function Get_Screen_Boundaries return T_Screen_Boundaries;
 
       -- Is point (pixels) inside the frame (raise OUT_OF_FRAME if not)
-      procedure IN_FRAME (X_S, Y_S : in INTEGER);
+      procedure In_Frame (X_S, Y_S : in Integer);
 
       -- From real to screen and reverse
-      function X_REAL_SCREEN (X_REAL : T_COORDINATE)
-                             return BIG_CON_IO.GRAPHICS.X_RANGE;
-      function Y_REAL_SCREEN (Y_REAL : T_COORDINATE)
-                             return BIG_CON_IO.GRAPHICS.Y_RANGE;
-      function X_SCREEN_REAL (X_SCREEN : BIG_CON_IO.GRAPHICS.X_RANGE)
-               return T_COORDINATE;
-      function Y_SCREEN_REAL (Y_SCREEN : BIG_CON_IO.GRAPHICS.Y_RANGE)
-               return T_COORDINATE;
+      function X_Real_Screen (X_Real : T_Coordinate)
+                             return Big_Con_Io.Graphics.X_Range;
+      function Y_Real_Screen (Y_Real : T_Coordinate)
+                             return Big_Con_Io.Graphics.Y_Range;
+      function X_Screen_Real (X_Screen : Big_Con_Io.Graphics.X_Range)
+               return T_Coordinate;
+      function Y_Screen_Real (Y_Screen : Big_Con_Io.Graphics.Y_Range)
+               return T_Coordinate;
 
-      EPSILON : constant T_COORDINATE := T_COORDINATE'EPSILON;
+      Epsilon : constant T_Coordinate := T_Coordinate'Epsilon;
       
       -- Computes every conversion according to new boundaries
-      procedure MAJ (BOUNDS : in T_BOUNDARIES);
+      procedure Maj (Bounds : in T_Boundaries);
 
       -- Raised by MAJ if Xmax-Xmin <= EPSILON
       --            or    Ymax-Ymin <= EPSILON
-      MAJ_ERROR : exception;
+      Maj_Error : exception;
 
-    end CONVERT;
+    end Convert;
 
 
-    package body CONVERT is
+    package body Convert is
 
       -- Screen and real coordinates of frame
-      REAL_BOUNDARIES : T_BOUNDARIES;
-      SCREEN_BOUNDARIES : T_SCREEN_BOUNDARIES;
+      Real_Boundaries : T_Boundaries;
+      Screen_Boundaries : T_Screen_Boundaries;
 
       -- Conversion from real to screen :  screen = real * factor + offset
-      type T_CONVERSION is record
-        OFFSET_X, OFFSET_Y : MY_MATH.REAL;
-        FACTOR_X, FACTOR_Y : MY_MATH.REAL;
+      type T_Conversion is record
+        Offset_X, Offset_Y : My_Math.Real;
+        Factor_X, Factor_Y : My_Math.Real;
       end record;
-      CONVERSION : T_CONVERSION;
+      Conversion : T_Conversion;
 
       -- Raised if point is not in frame
-      OUT_OF_FRAME : exception;
+      Out_Of_Frame : exception;
 
       -- Display / hide wait message
-      procedure WAIT_MESSAGE is
-        MSG : constant STRING := "COMPUTING. Please wait ...";
+      procedure Wait_Message is
+        Msg : constant String := "Computing. Please wait ...";
       begin
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_BLUE);
-        BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST,
-                     BIG_CON_IO.COL_RANGE_LAST - MSG'LENGTH);
-        BIG_CON_IO.PUT (MSG);
-        BIG_CON_IO.FLUSH;
-      end WAIT_MESSAGE;
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Light_Blue);
+        Big_Con_Io.Move (Big_Con_Io.Row_Range_Last,
+                     Big_Con_Io.Col_Range_Last - Msg'Length);
+        Big_Con_Io.Put (Msg);
+        Big_Con_Io.Flush;
+      end Wait_Message;
 
       -- Screen coordinates of the frame
-      function GET_SCREEN_BOUNDARIES return T_SCREEN_BOUNDARIES is
+      function Get_Screen_Boundaries return T_Screen_Boundaries is
       begin
-        return SCREEN_BOUNDARIES;
-      end GET_SCREEN_BOUNDARIES;
+        return Screen_Boundaries;
+      end Get_Screen_Boundaries;
 
       -- Is point (pixels) inside the frame (raise OUT_OF_FRAME if not)
-      procedure IN_FRAME (X_S, Y_S : in INTEGER) is
+      procedure In_Frame (X_S, Y_S : in Integer) is
       begin
-        if      X_S < SCREEN_BOUNDARIES.X_MIN
-        or else X_S > SCREEN_BOUNDARIES.X_MAX then
-          raise OUT_OF_FRAME;
+        if      X_S < Screen_Boundaries.X_Min
+        or else X_S > Screen_Boundaries.X_Max then
+          raise Out_Of_Frame;
         end if;
-        if      Y_S < SCREEN_BOUNDARIES.Y_MIN
-        or else Y_S > SCREEN_BOUNDARIES.Y_MAX then
-          raise OUT_OF_FRAME;
+        if      Y_S < Screen_Boundaries.Y_Min
+        or else Y_S > Screen_Boundaries.Y_Max then
+          raise Out_Of_Frame;
         end if;
-      end IN_FRAME;
+      end In_Frame;
 
       -- screen <-> real conversions
-      function X_REAL_SCREEN (X_REAL : T_COORDINATE)
-                             return BIG_CON_IO.GRAPHICS.X_RANGE is
-        X_INT : INTEGER;
-        X_SCR : BIG_CON_IO.GRAPHICS.X_RANGE;
+      function X_Real_Screen (X_Real : T_Coordinate)
+                             return Big_Con_Io.Graphics.X_Range is
+        X_Int : Integer;
+        X_Scr : Big_Con_Io.Graphics.X_Range;
       begin
-        X_INT := INTEGER (CONVERSION.OFFSET_X + X_REAL * CONVERSION.FACTOR_X);
-        X_SCR := X_INT;
-        return X_SCR;
+        X_Int := Integer (Conversion.Offset_X + X_Real * Conversion.Factor_X);
+        X_Scr := X_Int;
+        return X_Scr;
       exception
-        when others => raise OUT_OF_FRAME;
-      end X_REAL_SCREEN;
+        when others => raise Out_Of_Frame;
+      end X_Real_Screen;
 
-      function Y_REAL_SCREEN (Y_REAL : T_COORDINATE)
-                             return BIG_CON_IO.GRAPHICS.Y_RANGE is
-        Y_INT : INTEGER;
-        Y_SCR : BIG_CON_IO.GRAPHICS.Y_RANGE;
+      function Y_Real_Screen (Y_Real : T_Coordinate)
+                             return Big_Con_Io.Graphics.Y_Range is
+        Y_Int : Integer;
+        Y_Scr : Big_Con_Io.Graphics.Y_Range;
       begin
-        Y_INT := INTEGER (CONVERSION.OFFSET_Y + Y_REAL * CONVERSION.FACTOR_Y);
-        Y_SCR := Y_INT;
-        return Y_SCR;
+        Y_Int := Integer (Conversion.Offset_Y + Y_Real * Conversion.Factor_Y);
+        Y_Scr := Y_Int;
+        return Y_Scr;
       exception
-        when others => raise OUT_OF_FRAME;
-      end Y_REAL_SCREEN;
+        when others => raise Out_Of_Frame;
+      end Y_Real_Screen;
 
-      function X_SCREEN_REAL (X_SCREEN : BIG_CON_IO.GRAPHICS.X_RANGE)
-                             return T_COORDINATE is
+      function X_Screen_Real (X_Screen : Big_Con_Io.Graphics.X_Range)
+                             return T_Coordinate is
       begin
-        return (T_COORDINATE(X_SCREEN)-CONVERSION.OFFSET_X)
-             / CONVERSION.FACTOR_X;
-      end X_SCREEN_REAL;
+        return (T_Coordinate(X_Screen)-Conversion.Offset_X)
+             / Conversion.Factor_X;
+      end X_Screen_Real;
 
-      function Y_SCREEN_REAL (Y_SCREEN : BIG_CON_IO.GRAPHICS.Y_RANGE)
-                             return T_COORDINATE is
+      function Y_Screen_Real (Y_Screen : Big_Con_Io.Graphics.Y_Range)
+                             return T_Coordinate is
       begin
-        return (T_COORDINATE(Y_SCREEN)-CONVERSION.OFFSET_Y)
-             / CONVERSION.FACTOR_Y;
-      end Y_SCREEN_REAL;
+        return (T_Coordinate(Y_Screen)-Conversion.Offset_Y)
+             / Conversion.Factor_Y;
+      end Y_Screen_Real;
 
       -- Compute real_boundaries, screen_boundaries and conversion
       -- from the points and new boundaries
-      procedure MAJ (BOUNDS : in T_BOUNDARIES) is
-        X_REAL, Y_REAL : T_COORDINATE;
+      procedure Maj (Bounds : in T_Boundaries) is
+        X_Real, Y_Real : T_Coordinate;
       begin
         -- Display wait message
-        WAIT_MESSAGE;
+        Wait_Message;
 
-        if      BOUNDS.SCALE = FREE_SCREEN
-        or else BOUNDS.SCALE = FREE_NORMED then
+        if      Bounds.Scale = Free_Screen
+        or else Bounds.Scale = Free_Normed then
           -- Real boundaries are provided by the caller
-          REAL_BOUNDARIES := BOUNDS;
+          Real_Boundaries := Bounds;
         else
           -- Real y boundaries must be computed
           -- (x provided, y of points and curve for y)
-          REAL_BOUNDARIES := (SCALE => FREE_SCREEN,
-           X_MIN => BOUNDS.X_MIN,
-           Y_MIN => MY_MATH.REAL'LAST,
-           X_MAX => BOUNDS.X_MAX,
-           Y_MAX => MY_MATH.REAL'FIRST);
+          Real_Boundaries := (Scale => Free_Screen,
+           X_Min => Bounds.X_Min,
+           Y_Min => My_Math.Real'Last,
+           X_Max => Bounds.X_Max,
+           Y_Max => My_Math.Real'First);
 
           -- Find lowest and greatest Y of points in X_min .. X_max
-          for I in POINTS'RANGE loop
-            if POINTS(I).X
-               in REAL_BOUNDARIES.X_MIN .. REAL_BOUNDARIES.X_MAX then
-              if POINTS(I).Y < REAL_BOUNDARIES.Y_MIN then
-                REAL_BOUNDARIES.Y_MIN := POINTS(I).Y;
+          for I in Points'Range loop
+            if Points(I).X
+               in Real_Boundaries.X_Min .. Real_Boundaries.X_Max then
+              if Points(I).Y < Real_Boundaries.Y_Min then
+                Real_Boundaries.Y_Min := Points(I).Y;
               end if;
-              if POINTS(I).Y > REAL_BOUNDARIES.Y_MAX then
-                REAL_BOUNDARIES.Y_MAX := POINTS(I).Y;
+              if Points(I).Y > Real_Boundaries.Y_Max then
+                Real_Boundaries.Y_Max := Points(I).Y;
               end if;
             end if;
           end loop;
         end if;
 
         -- Compute X conversion
-        if REAL_BOUNDARIES.X_MAX - REAL_BOUNDARIES.X_MIN <= EPSILON then
-          raise MAJ_ERROR;
+        if Real_Boundaries.X_Max - Real_Boundaries.X_Min <= Epsilon then
+          raise Maj_Error;
         end if;
-        CONVERSION.FACTOR_X :=
-          MY_MATH.REAL (BIG_CON_IO.GRAPHICS.X_MAX - BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
-          / (REAL_BOUNDARIES.X_MAX - REAL_BOUNDARIES.X_MIN);
-        CONVERSION.OFFSET_X  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
-         - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
+        Conversion.Factor_X :=
+          My_Math.Real (Big_Con_Io.Graphics.X_Max - Big_Con_Io.Graphics.X_Range'First)
+          / (Real_Boundaries.X_Max - Real_Boundaries.X_Min);
+        Conversion.Offset_X  := My_Math.Real (Big_Con_Io.Graphics.X_Range'First)
+         - Real_Boundaries.X_Min * Conversion.Factor_X;
 
         -- Now X scale is computed, we can compute curve and update Ys
-        if BOUNDS.SCALE /= FREE_SCREEN and then
-           BOUNDS.SCALE /= FREE_NORMED then
+        if Bounds.Scale /= Free_Screen and then
+           Bounds.Scale /= Free_Normed then
           -- Find lowest and greatest y of curve
-          for X in BIG_CON_IO.GRAPHICS.X_RANGE'FIRST .. BIG_CON_IO.GRAPHICS.X_MAX loop
-            X_REAL := X_SCREEN_REAL (X);
-            Y_REAL := F (X_REAL);
-            if Y_REAL < REAL_BOUNDARIES.Y_MIN then
-              REAL_BOUNDARIES.Y_MIN := Y_REAL;
+          for X in Big_Con_Io.Graphics.X_Range'First .. Big_Con_Io.Graphics.X_Max loop
+            X_Real := X_Screen_Real (X);
+            Y_Real := F (X_Real);
+            if Y_Real < Real_Boundaries.Y_Min then
+              Real_Boundaries.Y_Min := Y_Real;
             end if;
-            if Y_REAL > REAL_BOUNDARIES.Y_MAX then
-              REAL_BOUNDARIES.Y_MAX := Y_REAL;
+            if Y_Real > Real_Boundaries.Y_Max then
+              Real_Boundaries.Y_Max := Y_Real;
             end if;
           end loop;
         end if;
 
         -- Compute Y conversion
-        if REAL_BOUNDARIES.Y_MAX - REAL_BOUNDARIES.Y_MIN <= EPSILON then
-          raise MAJ_ERROR;
+        if Real_Boundaries.Y_Max - Real_Boundaries.Y_Min <= Epsilon then
+          raise Maj_Error;
         end if;
-        CONVERSION.FACTOR_Y :=
-          MY_MATH.REAL (BIG_CON_IO.GRAPHICS.Y_MAX - BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
-          / (REAL_BOUNDARIES.Y_MAX - REAL_BOUNDARIES.Y_MIN);
-        CONVERSION.OFFSET_Y  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
-        - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
+        Conversion.Factor_Y :=
+          My_Math.Real (Big_Con_Io.Graphics.Y_Max - Big_Con_Io.Graphics.Y_Range'First)
+          / (Real_Boundaries.Y_Max - Real_Boundaries.Y_Min);
+        Conversion.Offset_Y  := My_Math.Real (Big_Con_Io.Graphics.Y_Range'First)
+        - Real_Boundaries.Y_Min * Conversion.Factor_Y;
 
         -- If Scale is normed, factors must be the same on X and Y
         -- (the lowest)
-        if      BOUNDS.SCALE = FREE_NORMED
-        or else BOUNDS.SCALE = CURVE_NORMED then
-          if CONVERSION.FACTOR_X < CONVERSION.FACTOR_Y then
-            CONVERSION.FACTOR_Y := CONVERSION.FACTOR_X;
+        if      Bounds.Scale = Free_Normed
+        or else Bounds.Scale = Curve_Normed then
+          if Conversion.Factor_X < Conversion.Factor_Y then
+            Conversion.Factor_Y := Conversion.Factor_X;
           else
-            CONVERSION.FACTOR_X := CONVERSION.FACTOR_Y;
+            Conversion.Factor_X := Conversion.Factor_Y;
           end if;
           -- Update conversion
-          CONVERSION.OFFSET_X  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
-          - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
-          CONVERSION.OFFSET_Y  := MY_MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
-          - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
+          Conversion.Offset_X  := My_Math.Real (Big_Con_Io.Graphics.X_Range'First)
+          - Real_Boundaries.X_Min * Conversion.Factor_X;
+          Conversion.Offset_Y  := My_Math.Real (Big_Con_Io.Graphics.Y_Range'First)
+          - Real_Boundaries.Y_Min * Conversion.Factor_Y;
         end if;
 
         -- Compute screen boundaries
-        SCREEN_BOUNDARIES.X_MIN := X_REAL_SCREEN (REAL_BOUNDARIES.X_MIN);
-        SCREEN_BOUNDARIES.X_MAX := X_REAL_SCREEN (REAL_BOUNDARIES.X_MAX);
-        SCREEN_BOUNDARIES.Y_MIN := Y_REAL_SCREEN (REAL_BOUNDARIES.Y_MIN);
-        SCREEN_BOUNDARIES.Y_MAX := Y_REAL_SCREEN (REAL_BOUNDARIES.Y_MAX);
+        Screen_Boundaries.X_Min := X_Real_Screen (Real_Boundaries.X_Min);
+        Screen_Boundaries.X_Max := X_Real_Screen (Real_Boundaries.X_Max);
+        Screen_Boundaries.Y_Min := Y_Real_Screen (Real_Boundaries.Y_Min);
+        Screen_Boundaries.Y_Max := Y_Real_Screen (Real_Boundaries.Y_Max);
 
         -- Hide wait message
-        WAIT_MESSAGE;
+        Wait_Message;
 
       exception
         when others =>
           -- Hide wait message
-          WAIT_MESSAGE;
+          Wait_Message;
           raise;
-      end MAJ;
+      end Maj;
 
-    end CONVERT;
+    end Convert;
 
 
     -- Draw a curve and miscellaneous drawings on request
@@ -293,786 +293,786 @@ package body CURVE is
     --     and TRUE is retuned
     -- -> when new ZOOM number is selected, then TRUE is returned
     -- -> when Escape, FALSE is returned
-    function DRAW_ONE return BOOLEAN is
+    function Draw_One return Boolean is
 
-      use CONVERT;
+      use Convert;
 
       -- Draw first, show/hide or update, for scales or help
-      type DRAW_ACTION is (INIT, TOGGLE, UPDATE);
+      type Draw_Action is (Init, Toggle, Update);
 
       -- Nothing to draw, new zoom mode, or update for zoom frame
-      type DRAW_FRAME_ACTION is (NONE, TOGGLE, UPDATE, REDRAW);
-      ZOOM_FRAME_ACTION : DRAW_FRAME_ACTION;
+      type Draw_Frame_Action is (None, Toggle, Update, Redraw);
+      Zoom_Frame_Action : Draw_Frame_Action;
 
       -- Previous values of scale/frame (for update)
       -- Updated by drawing functions
-      PREV_SCALE_BOUNDS : T_SCREEN_BOUNDARIES;
-      PREV_FRAME_BOUNDS : T_SCREEN_BOUNDARIES;
+      Prev_Scale_Bounds : T_Screen_Boundaries;
+      Prev_Frame_Bounds : T_Screen_Boundaries;
 
       -- Zoom modes: init, drag, done
       -- To be set : CURR before calls to DRAW_HELP and DRAW_Z_FRAME (TOGGLE)
       --             PREV after  calls to DRAW_HELP and DRAW_Z_FRAME (TOGGLE)
       -- PREV_ZOOM_MODE is set to CUR_ZOOM_MODE by DRAW_Z_FRAME(TOGGLE)
-      type ZOOM_MODE_LIST is (INIT, DRAG, DONE);
-      CURR_ZOOM_MODE, PREV_ZOOM_MODE : ZOOM_MODE_LIST;
+      type Zoom_Mode_List is (Init, Drag, Done);
+      Curr_Zoom_Mode, Prev_Zoom_Mode : Zoom_Mode_List;
 
       -- Current screen boundaries
-      SCREEN_BOUNDARIES : constant T_SCREEN_BOUNDARIES
-                        := GET_SCREEN_BOUNDARIES;
+      Screen_Boundaries : constant T_Screen_Boundaries
+                        := Get_Screen_Boundaries;
       -- Current mouse pos/boundaries
-      MOUSE_BOUNDS : T_SCREEN_BOUNDARIES;
+      Mouse_Bounds : T_Screen_Boundaries;
 
       -- For waiting for an event
-      STR  : STRING (1 .. 1);
-      LAST : NATURAL;
-      STAT : BIG_CON_IO.CURS_MVT;
-      POS  : POSITIVE;
-      INS  : BOOLEAN;
+      Str  : String (1 .. 1);
+      Last : Natural;
+      Stat : Big_Con_Io.Curs_Mvt;
+      Pos  : Positive;
+      Ins  : Boolean;
       -- Input command
-      CHAR : CHARACTER;
+      Char : Character;
       -- Mouse event
-      MOUSE_EVENT : BIG_CON_IO.MOUSE_EVENT_REC(BIG_CON_IO.X_Y);
+      Mouse_Event : Big_Con_Io.Mouse_Event_Rec(Big_Con_Io.X_Y);
       -- Status (pos) at start / end of drag
-      CLICKED_STATUS : BIG_CON_IO.MOUSE_EVENT_REC(BIG_CON_IO.X_Y);
+      Clicked_Status : Big_Con_Io.Mouse_Event_Rec(Big_Con_Io.X_Y);
 
-      MVALID : BOOLEAN;
-      MX : BIG_CON_IO.GRAPHICS.X_RANGE;
-      MY : BIG_CON_IO.GRAPHICS.Y_RANGE;
+      Mvalid : Boolean;
+      Mx : Big_Con_Io.Graphics.X_Range;
+      My : Big_Con_Io.Graphics.Y_Range;
 
       -- Set mouse position within screen boundaries
       -- Invert Y
-      procedure SET_MOUSE_IN_FRAME(X : in out BIG_CON_IO.GRAPHICS.X_RANGE;
-                                   Y : in out BIG_CON_IO.GRAPHICS.Y_RANGE) is
+      procedure Set_Mouse_In_Frame(X : in out Big_Con_Io.Graphics.X_Range;
+                                   Y : in out Big_Con_Io.Graphics.Y_Range) is
       begin
-        if X < SCREEN_BOUNDARIES.X_MIN then
-          X := SCREEN_BOUNDARIES.X_MIN;
-        elsif X > SCREEN_BOUNDARIES.X_MAX then
-          X := SCREEN_BOUNDARIES.X_MAX;
+        if X < Screen_Boundaries.X_Min then
+          X := Screen_Boundaries.X_Min;
+        elsif X > Screen_Boundaries.X_Max then
+          X := Screen_Boundaries.X_Max;
         end if;
-        if Y < SCREEN_BOUNDARIES.Y_MIN then
-          Y := SCREEN_BOUNDARIES.Y_MIN;
-        elsif Y > SCREEN_BOUNDARIES.Y_MAX then
-          Y := SCREEN_BOUNDARIES.Y_MAX;
+        if Y < Screen_Boundaries.Y_Min then
+          Y := Screen_Boundaries.Y_Min;
+        elsif Y > Screen_Boundaries.Y_Max then
+          Y := Screen_Boundaries.Y_Max;
         end if;
-      end SET_MOUSE_IN_FRAME;
+      end Set_Mouse_In_Frame;
 
-      procedure TOGGLE_HELP_MISC (MISC_INDEX : in T_MISC_LIST) is
+      procedure Toggle_Help_Misc (Misc_Index : in T_Misc_List) is
       begin
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.MAGENTA);
-        case MISC_INDEX is
-          when M_HELP =>
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Magenta);
+        case Misc_Index is
+          when M_Help =>
             null;
-          when M_AXES =>
-            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 5,
-                       BIG_CON_IO.COL_RANGE_LAST - 7);
-            BIG_CON_IO.PUT ("*");
-          when M_POINTS =>
-            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 4,
-                       BIG_CON_IO.COL_RANGE_LAST - 7);
-            BIG_CON_IO.PUT ("*");
-          when M_CURVE =>
-            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 3,
-                       BIG_CON_IO.COL_RANGE_LAST - 7);
-            BIG_CON_IO.PUT ("*");
-          when M_SCALE =>
-            BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 2,
-                       BIG_CON_IO.COL_RANGE_LAST - 7);
-            BIG_CON_IO.PUT ("*");
+          when M_Axes =>
+            Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 5,
+                       Big_Con_Io.Col_Range_Last - 7);
+            Big_Con_Io.Put ("*");
+          when M_Points =>
+            Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 4,
+                       Big_Con_Io.Col_Range_Last - 7);
+            Big_Con_Io.Put ("*");
+          when M_Curve =>
+            Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 3,
+                       Big_Con_Io.Col_Range_Last - 7);
+            Big_Con_Io.Put ("*");
+          when M_Scale =>
+            Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 2,
+                       Big_Con_Io.Col_Range_Last - 7);
+            Big_Con_Io.Put ("*");
         end case;
-      end TOGGLE_HELP_MISC;
+      end Toggle_Help_Misc;
 
       -- Draw help message
-      procedure DRAW_HELP (ACTION : in DRAW_ACTION) is
+      procedure Draw_Help (Action : in Draw_Action) is
 
         -- Dedicated message according to zoom mode (hide/show)
-        procedure PUT_MODE (MODE : in ZOOM_MODE_LIST) is
+        procedure Put_Mode (Mode : in Zoom_Mode_List) is
         begin
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 10,
-                       BIG_CON_IO.COL_RANGE_LAST - 17);
-          case MODE is
-            when INIT =>
-              BIG_CON_IO.PUT ("Point & click L");
-            when DRAG =>
-              BIG_CON_IO.PUT ("Drag L & release");
-            when DONE =>
-              BIG_CON_IO.PUT ("L or R click");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 10,
+                       Big_Con_Io.Col_Range_Last - 17);
+          case Mode is
+            when Init =>
+              Big_Con_Io.Put ("Point & click L");
+            when Drag =>
+              Big_Con_Io.Put ("Drag L & release");
+            when Done =>
+              Big_Con_Io.Put ("L or R click");
           end case;
-        end PUT_MODE;
+        end Put_Mode;
 
       begin
         -- Optimization : most frequent case (update and same mode or no help)
-        if ACTION = UPDATE and then
-           (CURR_ZOOM_MODE = PREV_ZOOM_MODE or else not MISC(M_HELP)) then
+        if Action = Update and then
+           (Curr_Zoom_Mode = Prev_Zoom_Mode or else not Misc(M_Help)) then
           return;
         end if;
 
         -- Help on zoom only if mouse
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.MAGENTA);
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Magenta);
 
         -- Previous mode to hide : Something drawn and new thing different
-        if MISC(M_HELP) and then
-             ((ACTION = UPDATE and then
-               CURR_ZOOM_MODE /= PREV_ZOOM_MODE) or else
-              ACTION = TOGGLE)                   then
-          PUT_MODE (PREV_ZOOM_MODE);
+        if Misc(M_Help) and then
+             ((Action = Update and then
+               Curr_Zoom_Mode /= Prev_Zoom_Mode) or else
+              Action = Toggle)                   then
+          Put_Mode (Prev_Zoom_Mode);
         end if;
 
         -- New mode to draw : toggle to new or update
-        if (MISC(M_HELP) and then
-            ACTION = UPDATE and then
-            CURR_ZOOM_MODE /= PREV_ZOOM_MODE)          or else
-           (not MISC(M_HELP) and then ACTION = TOGGLE) or else
-           (ACTION = INIT)                             then
-          PUT_MODE (CURR_ZOOM_MODE);
+        if (Misc(M_Help) and then
+            Action = Update and then
+            Curr_Zoom_Mode /= Prev_Zoom_Mode)          or else
+           (not Misc(M_Help) and then Action = Toggle) or else
+           (Action = Init)                             then
+          Put_Mode (Curr_Zoom_Mode);
         end if;
 
         -- Global help
-        if ACTION = TOGGLE or else ACTION = INIT then
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 9,
-                       BIG_CON_IO.COL_RANGE_LAST - 17);
-          BIG_CON_IO.PUT ("Current ZOOM: " & NORMAL(CURR_ZOOM_NO, 1) );
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 8,
-                       BIG_CON_IO.COL_RANGE_LAST - 17);
-          BIG_CON_IO.PUT ("0.." & NORMAL(LAST_ZOOM_NO, 1) & ": other ZOOM");
+        if Action = Toggle or else Action = Init then
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 9,
+                       Big_Con_Io.Col_Range_Last - 17);
+          Big_Con_Io.Put ("Current Zoom: " & Normal(Curr_Zoom_No, 1) );
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 8,
+                       Big_Con_Io.Col_Range_Last - 17);
+          Big_Con_Io.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other Zoom");
 
           -- if mouse not installed : color is set here
-          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.MAGENTA);
+          Big_Con_Io.Set_Foreground (Big_Con_Io.Magenta);
 
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 7,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("SWITCHES:");
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 6,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("H * Help");
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 5,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("A   Axes");
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 4,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("P   Points");
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 3,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("C   Curve");
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 2,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("S   Scales");
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 1,
-                       BIG_CON_IO.COL_RANGE_LAST - 9);
-          BIG_CON_IO.PUT ("Esc Exit");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 7,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("Switches:");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 6,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("H * Help");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 5,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("A   Axes");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 4,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("P   Points");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 3,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("C   Curve");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 2,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("S   Scales");
+          Big_Con_Io.Move (Big_Con_Io.Row_Range_Last - 1,
+                       Big_Con_Io.Col_Range_Last - 9);
+          Big_Con_Io.Put ("Esc Exit");
         end if;
 
         -- New help mode
-        if ACTION = TOGGLE then
-          MISC(M_HELP) := not MISC(M_HELP);
-          for I in T_MISC_LIST loop
-            if MISC (I) then
-              TOGGLE_HELP_MISC (I);
+        if Action = Toggle then
+          Misc(M_Help) := not Misc(M_Help);
+          for I in T_Misc_List loop
+            if Misc (I) then
+              Toggle_Help_Misc (I);
             end if;
           end loop;
         end if;
-      end DRAW_HELP;
+      end Draw_Help;
 
       -- Draw all points
-      procedure DRAW_POINTS is
+      procedure Draw_Points is
 
         -- Draw a point knowing its real coordinates
-        procedure DRAW_POINT (X, Y : in T_COORDINATE) is
-          X_S : BIG_CON_IO.GRAPHICS.X_RANGE;
-          Y_S : BIG_CON_IO.GRAPHICS.Y_RANGE;
-          type PIX is record
-            X, Y: INTEGER;
+        procedure Draw_Point (X, Y : in T_Coordinate) is
+          X_S : Big_Con_Io.Graphics.X_Range;
+          Y_S : Big_Con_Io.Graphics.Y_Range;
+          type Pix is record
+            X, Y: Integer;
           end record;
-          type T_POINT_PIXELS is array (POSITIVE range <>) of PIX;
-          POINT_PIXELS : T_POINT_PIXELS (1..15) :=
+          type T_Point_Pixels is array (Positive range <>) of Pix;
+          Point_Pixels : T_Point_Pixels (1..15) :=
                ( (-2, -2), (-2,  2), ( 2, -2), (  2,  2), (-1, -1),
                  (-1,  0), (-1,  1), ( 1, -1), (  1,  0), ( 1,  1),
                  ( 0, -2), ( 0, -1), ( 0,  0), (  0,  1), ( 0,  2) );
         begin
-          X_S := X_REAL_SCREEN (X);
-          Y_S := Y_REAL_SCREEN (Y);
-          for I in POINT_PIXELS'RANGE loop
+          X_S := X_Real_Screen (X);
+          Y_S := Y_Real_Screen (Y);
+          for I in Point_Pixels'Range loop
             begin
-              IN_FRAME (X_S + POINT_PIXELS(I).X, Y_S + POINT_PIXELS(I).Y);
-              BIG_CON_IO.GRAPHICS.DRAW_POINT (X_S + POINT_PIXELS(I).X,
-                                          Y_S + POINT_PIXELS(I).Y);
+              In_Frame (X_S + Point_Pixels(I).X, Y_S + Point_Pixels(I).Y);
+              Big_Con_Io.Graphics.Draw_Point (X_S + Point_Pixels(I).X,
+                                          Y_S + Point_Pixels(I).Y);
             exception
               when others => null;
             end;
           end loop;
         exception
           when others => null;
-        end DRAW_POINT;
+        end Draw_Point;
 
       begin
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.RED);
-        for I in POINTS'RANGE loop
-          DRAW_POINT (POINTS(I).X, POINTS(I).Y);
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Red);
+        for I in Points'Range loop
+          Draw_Point (Points(I).X, Points(I).Y);
         end loop;
-        if MISC (M_HELP) then
-          TOGGLE_HELP_MISC (M_POINTS);
+        if Misc (M_Help) then
+          Toggle_Help_Misc (M_Points);
         end if;
-      end DRAW_POINTS;
+      end Draw_Points;
 
       -- Draw an horizontal line (for frames and axes)
-      procedure DRAW_X (X_MIN, X_MAX : in NATURAL; Y : in NATURAL) is
+      procedure Draw_X (X_Min, X_Max : in Natural; Y : in Natural) is
       begin
-        BIG_CON_IO.GRAPHICS.DRAW_LINE (X_MIN, Y, X_MAX, Y);
-      end DRAW_X;
+        Big_Con_Io.Graphics.Draw_Line (X_Min, Y, X_Max, Y);
+      end Draw_X;
 
       -- Draw a vertical line (for frames and axes)
-      procedure DRAW_Y (X : in NATURAL; Y_MIN, Y_MAX : in NATURAL) is
+      procedure Draw_Y (X : in Natural; Y_Min, Y_Max : in Natural) is
       begin
-        BIG_CON_IO.GRAPHICS.DRAW_LINE (X, Y_MIN, X, Y_MAX);
-      end DRAW_Y;
+        Big_Con_Io.Graphics.Draw_Line (X, Y_Min, X, Y_Max);
+      end Draw_Y;
 
       -- Draw axes of the curve
-      procedure DRAW_AXES is
-        X_0, Y_0 : NATURAL;
-        INTERSEC : BOOLEAN := TRUE;
+      procedure Draw_Axes is
+        X_0, Y_0 : Natural;
+        Intersec : Boolean := True;
       begin
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_BLUE);
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Light_Blue);
         -- Horizontal
         begin
-          Y_0 := Y_REAL_SCREEN (0.0);
-          IN_FRAME (0, Y_0);
-          DRAW_X(SCREEN_BOUNDARIES.X_MIN+1, SCREEN_BOUNDARIES.X_MAX-1, Y_0);
+          Y_0 := Y_Real_Screen (0.0);
+          In_Frame (0, Y_0);
+          Draw_X(Screen_Boundaries.X_Min+1, Screen_Boundaries.X_Max-1, Y_0);
         exception
-          when others => INTERSEC := FALSE;
+          when others => Intersec := False;
         end;
         -- Vertical
         begin
-          X_0 := X_REAL_SCREEN (0.0);
-          IN_FRAME (X_0, 0);
-          DRAW_Y (X_0, SCREEN_BOUNDARIES.Y_MIN+1, SCREEN_BOUNDARIES.Y_MAX-1);
+          X_0 := X_Real_Screen (0.0);
+          In_Frame (X_0, 0);
+          Draw_Y (X_0, Screen_Boundaries.Y_Min+1, Screen_Boundaries.Y_Max-1);
         exception
-          when others => INTERSEC := FALSE;
+          when others => Intersec := False;
         end;
         -- Re draw intersection of axes
-        if INTERSEC then
+        if Intersec then
           begin
-            IN_FRAME (X_0, Y_0);
-            BIG_CON_IO.GRAPHICS.DRAW_POINT (X_0, Y_0);
+            In_Frame (X_0, Y_0);
+            Big_Con_Io.Graphics.Draw_Point (X_0, Y_0);
           exception
             when others => null;
           end;
         end if;
-        if MISC (M_HELP) then
-          TOGGLE_HELP_MISC (M_AXES);
+        if Misc (M_Help) then
+          Toggle_Help_Misc (M_Axes);
         end if;
 
-      end DRAW_AXES;
+      end Draw_Axes;
 
       -- Draw the curve
-      procedure DRAW_CURVE is
-        Y_S : INTEGER;
-        X_R, Y_R : MY_MATH.REAL;
+      procedure Draw_Curve is
+        Y_S : Integer;
+        X_R, Y_R : My_Math.Real;
 
         -- Draw the frame around the curve
-        procedure DRAW_FRAME is
+        procedure Draw_Frame is
         begin
-          BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_OFF);
-          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.WHITE);
-          DRAW_X (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.X_MAX,
-                  SCREEN_BOUNDARIES.Y_MIN);
-          DRAW_Y (SCREEN_BOUNDARIES.X_MAX, SCREEN_BOUNDARIES.Y_MIN,
-                  SCREEN_BOUNDARIES.Y_MAX);
-          DRAW_X (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.X_MAX,
-                  SCREEN_BOUNDARIES.Y_MAX);
-          DRAW_Y (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.Y_MIN,
-                  SCREEN_BOUNDARIES.Y_MAX);
-          BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_ON);
-        end DRAW_FRAME;
+          Big_Con_Io.Set_Xor_Mode (Big_Con_Io.Xor_Off);
+          Big_Con_Io.Set_Foreground (Big_Con_Io.White);
+          Draw_X (Screen_Boundaries.X_Min, Screen_Boundaries.X_Max,
+                  Screen_Boundaries.Y_Min);
+          Draw_Y (Screen_Boundaries.X_Max, Screen_Boundaries.Y_Min,
+                  Screen_Boundaries.Y_Max);
+          Draw_X (Screen_Boundaries.X_Min, Screen_Boundaries.X_Max,
+                  Screen_Boundaries.Y_Max);
+          Draw_Y (Screen_Boundaries.X_Min, Screen_Boundaries.Y_Min,
+                  Screen_Boundaries.Y_Max);
+          Big_Con_Io.Set_Xor_Mode (Big_Con_Io.Xor_On);
+        end Draw_Frame;
 
       begin
         -- Draw frame
-        DRAW_FRAME;
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_GREEN);
+        Draw_Frame;
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Light_Green);
         -- Draw pixel for each possible X screen
-        for X_S in BIG_CON_IO.GRAPHICS.X_RANGE
-                 range SCREEN_BOUNDARIES.X_MIN .. SCREEN_BOUNDARIES.X_MAX loop
+        for X_S in Big_Con_Io.Graphics.X_Range
+                 range Screen_Boundaries.X_Min .. Screen_Boundaries.X_Max loop
           begin
             -- Xscreen -> Xreal -> Yreal -> Yscreen
-            X_R := X_SCREEN_REAL (X_S);
+            X_R := X_Screen_Real (X_S);
             Y_R := F (X_R);
-            Y_S := Y_REAL_SCREEN (Y_R);
-            IN_FRAME (X_S, Y_S);
-            BIG_CON_IO.GRAPHICS.DRAW_POINT (X_S, Y_S);
+            Y_S := Y_Real_Screen (Y_R);
+            In_Frame (X_S, Y_S);
+            Big_Con_Io.Graphics.Draw_Point (X_S, Y_S);
           exception
             when others => null;
           end;
         end loop;
-        if MISC (M_HELP) then
-          TOGGLE_HELP_MISC (M_CURVE);
+        if Misc (M_Help) then
+          Toggle_Help_Misc (M_Curve);
         end if;
         -- BIG_CON_IO.BELL(1);
-      end DRAW_CURVE;
+      end Draw_Curve;
 
 
       -- Draw scales. Only external if no mouse
       --  Also mouse position / drag current limits if mouse
-      procedure DRAW_SCALE (ACTION : in DRAW_ACTION;
-                            ZOOM_BOUNDS : in T_SCREEN_BOUNDARIES) is
-        type SCALE_POS is (X_MIN, X_MAX, Y_MIN, Y_MAX);
+      procedure Draw_Scale (Action : in Draw_Action;
+                            Zoom_Bounds : in T_Screen_Boundaries) is
+        type Scale_Pos is (X_Min, X_Max, Y_Min, Y_Max);
 
         -- Draw/hide one Zoom scale value
-        procedure PUT_SCALE (SCALE : in T_COORDINATE; POS : in SCALE_POS) is
+        procedure Put_Scale (Scale : in T_Coordinate; Pos : in Scale_Pos) is
         begin
-          case POS is
-            when X_MIN =>
-              BIG_CON_IO.MOVE (13, 1);
-            when X_MAX =>
-              BIG_CON_IO.MOVE (13, 66);
-            when Y_MIN =>
-              BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE'PRED(BIG_CON_IO.ROW_RANGE'PRED(
-                            BIG_CON_IO.ROW_RANGE_LAST)), 30);
-            when Y_MAX =>
-              BIG_CON_IO.MOVE (2, 30);
+          case Pos is
+            when X_Min =>
+              Big_Con_Io.Move (13, 1);
+            when X_Max =>
+              Big_Con_Io.Move (13, 66);
+            when Y_Min =>
+              Big_Con_Io.Move (Big_Con_Io.Row_Range'Pred(Big_Con_Io.Row_Range'Pred(
+                            Big_Con_Io.Row_Range_Last)), 30);
+            when Y_Max =>
+              Big_Con_Io.Move (2, 30);
           end case;
-          BIG_CON_IO.PUT (COO_TO_STR(SCALE));
-        end PUT_SCALE;
+          Big_Con_Io.Put (Coo_To_Str(Scale));
+        end Put_Scale;
       begin
         -- Optimization : most frequent case
         -- update and same value or no scale
-        if ACTION = UPDATE and then
-           (ZOOM_BOUNDS = PREV_SCALE_BOUNDS or else not MISC(M_SCALE)) then
+        if Action = Update and then
+           (Zoom_Bounds = Prev_Scale_Bounds or else not Misc(M_Scale)) then
           return;
         end if;
 
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.CYAN);
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Cyan);
 
         -- Previous scale to hide : Something drawn and new values different
-        if MISC(M_SCALE) then
-          if (ACTION = UPDATE and then ZOOM_BOUNDS /= PREV_SCALE_BOUNDS)
-          or else ACTION = TOGGLE then
-            PUT_SCALE (X_SCREEN_REAL(PREV_SCALE_BOUNDS.X_MIN), X_MIN);
-            PUT_SCALE (X_SCREEN_REAL(PREV_SCALE_BOUNDS.X_MAX), X_MAX);
-            PUT_SCALE (Y_SCREEN_REAL(PREV_SCALE_BOUNDS.Y_MIN), Y_MIN);
-            PUT_SCALE (Y_SCREEN_REAL(PREV_SCALE_BOUNDS.Y_MAX), Y_MAX);
+        if Misc(M_Scale) then
+          if (Action = Update and then Zoom_Bounds /= Prev_Scale_Bounds)
+          or else Action = Toggle then
+            Put_Scale (X_Screen_Real(Prev_Scale_Bounds.X_Min), X_Min);
+            Put_Scale (X_Screen_Real(Prev_Scale_Bounds.X_Max), X_Max);
+            Put_Scale (Y_Screen_Real(Prev_Scale_Bounds.Y_Min), Y_Min);
+            Put_Scale (Y_Screen_Real(Prev_Scale_Bounds.Y_Max), Y_Max);
           end if;
         end if;
 
         -- New scale to draw : new values update or toggle to new
-        if (MISC(M_SCALE) and then ACTION = UPDATE and then
-                              ZOOM_BOUNDS /= PREV_SCALE_BOUNDS)
-           or else (ACTION = TOGGLE and then not MISC(M_SCALE))
-           or else (ACTION = INIT   and then     MISC(M_SCALE)) then
-          PUT_SCALE (X_SCREEN_REAL(ZOOM_BOUNDS.X_MIN), X_MIN);
-          PUT_SCALE (X_SCREEN_REAL(ZOOM_BOUNDS.X_MAX), X_MAX);
-          PUT_SCALE (Y_SCREEN_REAL(ZOOM_BOUNDS.Y_MIN), Y_MIN);
-          PUT_SCALE (Y_SCREEN_REAL(ZOOM_BOUNDS.Y_MAX), Y_MAX);
-          PREV_SCALE_BOUNDS := ZOOM_BOUNDS;
+        if (Misc(M_Scale) and then Action = Update and then
+                              Zoom_Bounds /= Prev_Scale_Bounds)
+           or else (Action = Toggle and then not Misc(M_Scale))
+           or else (Action = Init   and then     Misc(M_Scale)) then
+          Put_Scale (X_Screen_Real(Zoom_Bounds.X_Min), X_Min);
+          Put_Scale (X_Screen_Real(Zoom_Bounds.X_Max), X_Max);
+          Put_Scale (Y_Screen_Real(Zoom_Bounds.Y_Min), Y_Min);
+          Put_Scale (Y_Screen_Real(Zoom_Bounds.Y_Max), Y_Max);
+          Prev_Scale_Bounds := Zoom_Bounds;
         end if;
 
-        if      ACTION = TOGGLE
-        or else (ACTION = INIT and then MISC (M_SCALE)) then
+        if      Action = Toggle
+        or else (Action = Init and then Misc (M_Scale)) then
           -- External scales
-          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_GRAY);
-          BIG_CON_IO.MOVE (1, 30);
-          BIG_CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MAX)));
-          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE'PRED(BIG_CON_IO.ROW_RANGE_LAST), 30);
-          BIG_CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MIN)));
-          BIG_CON_IO.MOVE (12, 1);
-          BIG_CON_IO.PUT (COO_TO_STR(X_SCREEN_REAL(SCREEN_BOUNDARIES.X_MIN)));
-          BIG_CON_IO.MOVE (12, 66);
-          BIG_CON_IO.PUT (COO_TO_STR(X_SCREEN_REAL(SCREEN_BOUNDARIES.X_MAX)));
+          Big_Con_Io.Set_Foreground (Big_Con_Io.Light_Gray);
+          Big_Con_Io.Move (1, 30);
+          Big_Con_Io.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Max)));
+          Big_Con_Io.Move (Big_Con_Io.Row_Range'Pred(Big_Con_Io.Row_Range_Last), 30);
+          Big_Con_Io.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Min)));
+          Big_Con_Io.Move (12, 1);
+          Big_Con_Io.Put (Coo_To_Str(X_Screen_Real(Screen_Boundaries.X_Min)));
+          Big_Con_Io.Move (12, 66);
+          Big_Con_Io.Put (Coo_To_Str(X_Screen_Real(Screen_Boundaries.X_Max)));
         end if;
 
         -- Toggle mode
-        if ACTION = TOGGLE then
-           MISC(M_SCALE) := not MISC(M_SCALE);
+        if Action = Toggle then
+           Misc(M_Scale) := not Misc(M_Scale);
         end if;
 
         -- Update help
-        if ACTION = INIT or else ACTION = TOGGLE then
-          if MISC (M_HELP) then
-            TOGGLE_HELP_MISC (M_SCALE);
+        if Action = Init or else Action = Toggle then
+          if Misc (M_Help) then
+            Toggle_Help_Misc (M_Scale);
           end if;
         end if;
-      end DRAW_SCALE;
+      end Draw_Scale;
 
       -- Draw Z frame (when in drag)
-      procedure DRAW_Z_FRAME (ACTION : in DRAW_FRAME_ACTION := UPDATE;
-                              ZOOM_BOUNDS : in T_SCREEN_BOUNDARIES) is
+      procedure Draw_Z_Frame (Action : in Draw_Frame_Action := Update;
+                              Zoom_Bounds : in T_Screen_Boundaries) is
 
         -- Draw/hide a zoom frame
-        procedure PUT_FRAME (BOUNDS : in T_SCREEN_BOUNDARIES) is
+        procedure Put_Frame (Bounds : in T_Screen_Boundaries) is
         begin
-          BIG_CON_IO.GRAPHICS.DRAW_RECTANGLE (
-             BOUNDS.X_MIN,
-             BOUNDS.Y_MIN,
-             BOUNDS.X_MAX,
-             BOUNDS.Y_MAX);
-        end PUT_FRAME;
+          Big_Con_Io.Graphics.Draw_Rectangle (
+             Bounds.X_Min,
+             Bounds.Y_Min,
+             Bounds.X_Max,
+             Bounds.Y_Max);
+        end Put_Frame;
 
       begin
         -- Redraw (refresh when done)
-        if ACTION = REDRAW then
-          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.CYAN);
-          PUT_FRAME(PREV_FRAME_BOUNDS);
+        if Action = Redraw then
+          Big_Con_Io.Set_Foreground (Big_Con_Io.Cyan);
+          Put_Frame(Prev_Frame_Bounds);
           return;
         end if;
 
         -- Optimization : most frequent case
         -- Update and same frame, or update and not in drag
-        if ACTION = UPDATE
-        and then (CURR_ZOOM_MODE /= DRAG
-                      or else ZOOM_BOUNDS = PREV_FRAME_BOUNDS) then
+        if Action = Update
+        and then (Curr_Zoom_Mode /= Drag
+                      or else Zoom_Bounds = Prev_Frame_Bounds) then
           return;
         end if;
-        if ACTION = NONE then
+        if Action = None then
           return;
         end if;
 
         -- If action = update, then cur mode is drag and bounds are new
-        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.CYAN);
+        Big_Con_Io.Set_Foreground (Big_Con_Io.Cyan);
 
         -- Previous frame to hide : new drag or drag -> done or done -> init
-        if ACTION = UPDATE
-           or else CURR_ZOOM_MODE /= DRAG then
-          PUT_FRAME (PREV_FRAME_BOUNDS);
+        if Action = Update
+           or else Curr_Zoom_Mode /= Drag then
+          Put_Frame (Prev_Frame_Bounds);
         end if;
 
         -- New frame to draw : new drag or init -> drag or drag -> done
-        if ACTION = UPDATE
-        or else CURR_ZOOM_MODE /= INIT then
-          PUT_FRAME(ZOOM_BOUNDS);
-          PREV_FRAME_BOUNDS := ZOOM_BOUNDS;
+        if Action = Update
+        or else Curr_Zoom_Mode /= Init then
+          Put_Frame(Zoom_Bounds);
+          Prev_Frame_Bounds := Zoom_Bounds;
         end if;
         -- Toggle zoom mode
-        if ACTION = TOGGLE then
-          PREV_ZOOM_MODE := CURR_ZOOM_MODE;
+        if Action = Toggle then
+          Prev_Zoom_Mode := Curr_Zoom_Mode;
         end if;
-      end DRAW_Z_FRAME;
+      end Draw_Z_Frame;
 
       -- Exchange x_min and x_max if necessary. Same on Y.
       -- (For mouse scales when in drag)
-      procedure SORT_BOUNDS (BOUNDS : in out T_SCREEN_BOUNDARIES) is
-        TMP : NATURAL;
+      procedure Sort_Bounds (Bounds : in out T_Screen_Boundaries) is
+        Tmp : Natural;
       begin
-        if BOUNDS.X_MIN > BOUNDS.X_MAX then
-          TMP := BOUNDS.X_MIN;
-          BOUNDS.X_MIN := BOUNDS.X_MAX;
-          BOUNDS.X_MAX := TMP;
+        if Bounds.X_Min > Bounds.X_Max then
+          Tmp := Bounds.X_Min;
+          Bounds.X_Min := Bounds.X_Max;
+          Bounds.X_Max := Tmp;
         end if;
-        if BOUNDS.Y_MIN > BOUNDS.Y_MAX then
-          TMP := BOUNDS.Y_MIN;
-          BOUNDS.Y_MIN := BOUNDS.Y_MAX;
-          BOUNDS.Y_MAX := TMP;
+        if Bounds.Y_Min > Bounds.Y_Max then
+          Tmp := Bounds.Y_Min;
+          Bounds.Y_Min := Bounds.Y_Max;
+          Bounds.Y_Max := Tmp;
         end if;
-      end SORT_BOUNDS;
+      end Sort_Bounds;
 
-      procedure CANCEL_ZOOM is
+      procedure Cancel_Zoom is
       begin
-        CURR_ZOOM_MODE := INIT;
+        Curr_Zoom_Mode := Init;
         -- Reset zoom and hide zoom frame.
-        DRAW_HELP (UPDATE);
-        ZOOM_FRAME_ACTION := TOGGLE;
-        BIG_CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
-      end CANCEL_ZOOM;
+        Draw_Help (Update);
+        Zoom_Frame_Action := Toggle;
+        Big_Con_Io.Enable_Motion_Events (Misc(M_Scale));
+      end Cancel_Zoom;
 
-    use BIG_CON_IO;
+    use Big_Con_Io;
     begin -- DRAW_ONE
 
       -- Init context
-      PREV_ZOOM_MODE := INIT;
-      CURR_ZOOM_MODE := INIT;
-      STAT := BIG_CON_IO.REFRESH;
-      BIG_CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
-      MISC(M_CURVE) := TRUE;
+      Prev_Zoom_Mode := Init;
+      Curr_Zoom_Mode := Init;
+      Stat := Big_Con_Io.Refresh;
+      Big_Con_Io.Enable_Motion_Events (Misc(M_Scale));
+      Misc(M_Curve) := True;
 
-      BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
-      if MVALID then
-        SET_MOUSE_IN_FRAME(MX, MY);
-        MOUSE_BOUNDS.X_MIN := MX;
-        MOUSE_BOUNDS.X_MAX := MX;
-        MOUSE_BOUNDS.Y_MIN := MY;
-        MOUSE_BOUNDS.Y_MAX := MY;
-        CLICKED_STATUS.X := MX;
-        CLICKED_STATUS.Y := MY;
-        PREV_FRAME_BOUNDS := MOUSE_BOUNDS;
-        PREV_SCALE_BOUNDS := MOUSE_BOUNDS;
+      Big_Con_Io.Graphics.Get_Current_Pointer_Pos (Mvalid, Mx, My);
+      if Mvalid then
+        Set_Mouse_In_Frame(Mx, My);
+        Mouse_Bounds.X_Min := Mx;
+        Mouse_Bounds.X_Max := Mx;
+        Mouse_Bounds.Y_Min := My;
+        Mouse_Bounds.Y_Max := My;
+        Clicked_Status.X := Mx;
+        Clicked_Status.Y := My;
+        Prev_Frame_Bounds := Mouse_Bounds;
+        Prev_Scale_Bounds := Mouse_Bounds;
       end if;
 
       loop -- Main loop of mouse and keys actions
 
-        if STAT = BIG_CON_IO.REFRESH and then CURR_ZOOM_MODE /= DRAG then
+        if Stat = Big_Con_Io.Refresh and then Curr_Zoom_Mode /= Drag then
           -- Discard refresh when in drag
           -- Frozen mouse when done
-          if CURR_ZOOM_MODE /= DONE then
-            BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
-            if MVALID then
-              SET_MOUSE_IN_FRAME(MX, MY);
-              MOUSE_BOUNDS.X_MIN := MX;
-              MOUSE_BOUNDS.X_MAX := MX;
-              MOUSE_BOUNDS.Y_MIN := MY;
-              MOUSE_BOUNDS.Y_MAX := MY;
+          if Curr_Zoom_Mode /= Done then
+            Big_Con_Io.Graphics.Get_Current_Pointer_Pos (Mvalid, Mx, My);
+            if Mvalid then
+              Set_Mouse_In_Frame(Mx, My);
+              Mouse_Bounds.X_Min := Mx;
+              Mouse_Bounds.X_Max := Mx;
+              Mouse_Bounds.Y_Min := My;
+              Mouse_Bounds.Y_Max := My;
             end if;
           end if;
           -- Draw what has to be for initial/refresh
-          BIG_CON_IO.CLEAR;
-          if MISC(M_CURVE)  then DRAW_CURVE; end if;
-          if MISC(M_AXES)   then DRAW_AXES; end if;
-          if MISC(M_POINTS) then DRAW_POINTS; end if;
-          if MISC(M_HELP)   then DRAW_HELP(INIT); end if;
-          if MISC(M_SCALE)  then DRAW_SCALE(INIT, MOUSE_BOUNDS); end if;
-          if CURR_ZOOM_MODE = DONE then
+          Big_Con_Io.Clear;
+          if Misc(M_Curve)  then Draw_Curve; end if;
+          if Misc(M_Axes)   then Draw_Axes; end if;
+          if Misc(M_Points) then Draw_Points; end if;
+          if Misc(M_Help)   then Draw_Help(Init); end if;
+          if Misc(M_Scale)  then Draw_Scale(Init, Mouse_Bounds); end if;
+          if Curr_Zoom_Mode = Done then
             -- MOUSE_BOUNDS not used
-            DRAW_Z_FRAME (REDRAW, MOUSE_BOUNDS);
+            Draw_Z_Frame (Redraw, Mouse_Bounds);
           end if;
         end if;
 
         -- Infinite wait
-        BIG_CON_IO.GET (STR, LAST, STAT, POS, INS, ECHO => FALSE);
+        Big_Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
 
-        case STAT is
-          when BIG_CON_IO.BREAK =>
+        case Stat is
+          when Big_Con_Io.Break =>
             -- End of curve
-            return FALSE;
-          when BIG_CON_IO.REFRESH =>
+            return False;
+          when Big_Con_Io.Refresh =>
             -- Redraw at next loop;
             null;
-          when BIG_CON_IO.FD_EVENT =>
+          when Big_Con_Io.Fd_Event =>
             -- Call any fd callback
-            FD_CALLBACK;
-          when BIG_CON_IO.TIMEOUT =>
+            Fd_Callback;
+          when Big_Con_Io.Timeout =>
             -- Should not occure: GET(INFINITE_TIME)
             null;
-          when BIG_CON_IO.ESC =>
-            if CURR_ZOOM_MODE = INIT then
+          when Big_Con_Io.Esc =>
+            if Curr_Zoom_Mode = Init then
               -- Initial zoom mode. Exit drawings.
-              return FALSE;
-            elsif CURR_ZOOM_MODE = DONE then
+              return False;
+            elsif Curr_Zoom_Mode = Done then
               -- End of zoom mode. Cancel zoom.
-              CANCEL_ZOOM;
-              DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
+              Cancel_Zoom;
+              Draw_Z_Frame (Zoom_Frame_Action, Mouse_Bounds);
             end if;
-          when BIG_CON_IO.FULL =>
+          when Big_Con_Io.Full =>
             -- KEY pressed
-            CHAR := STR(1);
-            if UPPER_CHAR(CHAR) = 'A' then
+            Char := Str(1);
+            if Upper_Char(Char) = 'A' then
               -- Toggle axes
-              DRAW_AXES;
-              MISC(M_AXES) := not MISC(M_AXES);
-            elsif UPPER_CHAR(CHAR) = 'S' then
+              Draw_Axes;
+              Misc(M_Axes) := not Misc(M_Axes);
+            elsif Upper_Char(Char) = 'S' then
               -- Toggle scales
-              DRAW_SCALE (TOGGLE, MOUSE_BOUNDS);
-              BIG_CON_IO.ENABLE_MOTION_EVENTS (
-                 MISC(M_SCALE) or else CURR_ZOOM_MODE = DRAG);
-            elsif UPPER_CHAR(CHAR) = 'P' then
+              Draw_Scale (Toggle, Mouse_Bounds);
+              Big_Con_Io.Enable_Motion_Events (
+                 Misc(M_Scale) or else Curr_Zoom_Mode = Drag);
+            elsif Upper_Char(Char) = 'P' then
               -- Toggle points
-              DRAW_POINTS;
-              MISC(M_POINTS) := not MISC(M_POINTS);
-            elsif UPPER_CHAR(CHAR) = 'H' then
+              Draw_Points;
+              Misc(M_Points) := not Misc(M_Points);
+            elsif Upper_Char(Char) = 'H' then
               -- Toggle help
-              DRAW_HELP(TOGGLE);
-            elsif UPPER_CHAR(CHAR) = 'C' then
+              Draw_Help(Toggle);
+            elsif Upper_Char(Char) = 'C' then
               -- Toggle curve
-              MISC(M_CURVE) := not MISC(M_CURVE);
-              DRAW_CURVE;
-            elsif CHAR >= '0' and then
-                  CHAR <= CHARACTER'VAL(LAST_ZOOM_NO + CHARACTER'POS('0')) then
+              Misc(M_Curve) := not Misc(M_Curve);
+              Draw_Curve;
+            elsif Char >= '0' and then
+                  Char <= Character'Val(Last_Zoom_No + Character'Pos('0')) then
               -- New zoom level selection
-              CURR_ZOOM_NO := CHARACTER'POS(CHAR) - CHARACTER'POS('0');
+              Curr_Zoom_No := Character'Pos(Char) - Character'Pos('0');
               -- Compute new conversions
-              MAJ (ZOOM_ARRAY(CURR_ZOOM_NO));
-              return TRUE;
-            elsif CHAR = '+' then
-              if CURR_ZOOM_NO /= ZOOM_NO_RANGE'LAST then
-                CURR_ZOOM_NO := CURR_ZOOM_NO + 1;
+              Maj (Zoom_Array(Curr_Zoom_No));
+              return True;
+            elsif Char = '+' then
+              if Curr_Zoom_No /= Zoom_No_Range'Last then
+                Curr_Zoom_No := Curr_Zoom_No + 1;
                 -- Compute new conversions
-                MAJ (ZOOM_ARRAY(CURR_ZOOM_NO));
-                return TRUE;
+                Maj (Zoom_Array(Curr_Zoom_No));
+                return True;
               else
-                BIG_CON_IO.BELL(3);
+                Big_Con_Io.Bell(3);
               end if;
-            elsif CHAR = '-' then
-              if CURR_ZOOM_NO /= ZOOM_NO_RANGE'FIRST then
-                CURR_ZOOM_NO := CURR_ZOOM_NO - 1;
+            elsif Char = '-' then
+              if Curr_Zoom_No /= Zoom_No_Range'First then
+                Curr_Zoom_No := Curr_Zoom_No - 1;
                 -- Compute new conversions
-                MAJ (ZOOM_ARRAY(CURR_ZOOM_NO));
-                return TRUE;
+                Maj (Zoom_Array(Curr_Zoom_No));
+                return True;
               else
-                BIG_CON_IO.BELL(3);
+                Big_Con_Io.Bell(3);
               end if;
             else
               -- Invalid key
-              BIG_CON_IO.BELL(3);
+              Big_Con_Io.Bell(3);
             end if;
 
-          when BIG_CON_IO.MOUSE_BUTTON =>
+          when Big_Con_Io.Mouse_Button =>
             -- New button status
-            BIG_CON_IO.GET_MOUSE_EVENT (MOUSE_EVENT, BIG_CON_IO.X_Y);
-            SET_MOUSE_IN_FRAME(MOUSE_EVENT.X, MOUSE_EVENT.Y);
+            Big_Con_Io.Get_Mouse_Event (Mouse_Event, Big_Con_Io.X_Y);
+            Set_Mouse_In_Frame(Mouse_Event.X, Mouse_Event.Y);
             -- Update scales and frame according to zoom mode
-            if CURR_ZOOM_MODE = INIT then
+            if Curr_Zoom_Mode = Init then
               -- Before DRAG : follow cur pos
-              MOUSE_BOUNDS.X_MIN := MOUSE_EVENT.X;
-              MOUSE_BOUNDS.X_MAX := MOUSE_EVENT.X;
-              MOUSE_BOUNDS.Y_MIN := MOUSE_EVENT.Y;
-              MOUSE_BOUNDS.Y_MAX := MOUSE_EVENT.Y;
-            elsif CURR_ZOOM_MODE = DRAG then
+              Mouse_Bounds.X_Min := Mouse_Event.X;
+              Mouse_Bounds.X_Max := Mouse_Event.X;
+              Mouse_Bounds.Y_Min := Mouse_Event.Y;
+              Mouse_Bounds.Y_Max := Mouse_Event.Y;
+            elsif Curr_Zoom_Mode = Drag then
               -- Drag : clicked_pos and cur pos
-              MOUSE_BOUNDS.X_MIN := MOUSE_EVENT.X;
-              MOUSE_BOUNDS.X_MAX := CLICKED_STATUS.X;
-              MOUSE_BOUNDS.Y_MIN := MOUSE_EVENT.Y;
-              MOUSE_BOUNDS.Y_MAX := CLICKED_STATUS.Y;
-              SORT_BOUNDS (MOUSE_BOUNDS);
-              ZOOM_FRAME_ACTION := UPDATE;
+              Mouse_Bounds.X_Min := Mouse_Event.X;
+              Mouse_Bounds.X_Max := Clicked_Status.X;
+              Mouse_Bounds.Y_Min := Mouse_Event.Y;
+              Mouse_Bounds.Y_Max := Clicked_Status.Y;
+              Sort_Bounds (Mouse_Bounds);
+              Zoom_Frame_Action := Update;
             end if;
 
-            case CURR_ZOOM_MODE is
-              when INIT =>
-                if MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = BIG_CON_IO.LEFT
-                and then MOUSE_EVENT.STATUS = BIG_CON_IO.PRESSED then
+            case Curr_Zoom_Mode is
+              when Init =>
+                if Mouse_Event.Valid
+                and then Mouse_Event.Button = Big_Con_Io.Left
+                and then Mouse_Event.Status = Big_Con_Io.Pressed then
                 
-                  CURR_ZOOM_MODE := DRAG;
-                  DRAW_HELP (UPDATE);
+                  Curr_Zoom_Mode := Drag;
+                  Draw_Help (Update);
                   -- Store what has to be done with zoom frame
-                  CLICKED_STATUS := MOUSE_EVENT;
-                  ZOOM_FRAME_ACTION := TOGGLE;
-                  BIG_CON_IO.ENABLE_MOTION_EVENTS (TRUE);
+                  Clicked_Status := Mouse_Event;
+                  Zoom_Frame_Action := Toggle;
+                  Big_Con_Io.Enable_Motion_Events (True);
                 else
                   -- no change
-                  ZOOM_FRAME_ACTION := NONE;
+                  Zoom_Frame_Action := None;
                 end if;
-              when DRAG =>
-                if       MOUSE_EVENT.BUTTON = BIG_CON_IO.LEFT
-                and then MOUSE_EVENT.STATUS = BIG_CON_IO.RELEASED then
+              when Drag =>
+                if       Mouse_Event.Button = Big_Con_Io.Left
+                and then Mouse_Event.Status = Big_Con_Io.Released then
                   -- release
-                  if      MOUSE_EVENT.X = CLICKED_STATUS.X
-                  or else MOUSE_EVENT.Y = CLICKED_STATUS.Y then
+                  if      Mouse_Event.X = Clicked_Status.X
+                  or else Mouse_Event.Y = Clicked_Status.Y then
                     -- No zoom possible : Cancel
-                    CANCEL_ZOOM;
+                    Cancel_Zoom;
                   else
                     -- Drag done
-                    BIG_CON_IO.ENABLE_MOTION_EVENTS (FALSE);
-                    CURR_ZOOM_MODE := DONE;
-                    DRAW_HELP (UPDATE);
+                    Big_Con_Io.Enable_Motion_Events (False);
+                    Curr_Zoom_Mode := Done;
+                    Draw_Help (Update);
                     -- Store what has to be done with zoom frame
-                    ZOOM_FRAME_ACTION := TOGGLE;
+                    Zoom_Frame_Action := Toggle;
                   end if;
                 end if;
-              when DONE =>
-                if MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = BIG_CON_IO.LEFT
-                and then MOUSE_EVENT.STATUS = BIG_CON_IO.PRESSED then
+              when Done =>
+                if Mouse_Event.Valid
+                and then Mouse_Event.Button = Big_Con_Io.Left
+                and then Mouse_Event.Status = Big_Con_Io.Pressed then
                   -- Click left : Validate
                   -- Zoom status is DONE. Validate new scales in Curr_zoom_no+1
                   declare
-                    ROOT_BOUNDS : T_BOUNDARIES
-                                  renames ZOOM_ARRAY(ZOOM_NO_RANGE'FIRST);
-                    NEW_BOUNDS :  T_BOUNDARIES;
-                    NEW_ZOOM_NO : ZOOM_NO_RANGE;
+                    Root_Bounds : T_Boundaries
+                                  renames Zoom_Array(Zoom_No_Range'First);
+                    New_Bounds :  T_Boundaries;
+                    New_Zoom_No : Zoom_No_Range;
                   begin
 
-                    if CURR_ZOOM_NO /= ZOOM_NO_RANGE'LAST then
-                      NEW_ZOOM_NO := CURR_ZOOM_NO + 1;
+                    if Curr_Zoom_No /= Zoom_No_Range'Last then
+                      New_Zoom_No := Curr_Zoom_No + 1;
                     else
-                      NEW_ZOOM_NO := CURR_ZOOM_NO;
+                      New_Zoom_No := Curr_Zoom_No;
                     end if;
                     -- New_bounds.scale mode is FREE_SCREEN or FREE_NORMED
                     --  according to initial scale type
-                    if ROOT_BOUNDS.SCALE = CURVE_SCREEN or else
-                       ROOT_BOUNDS.SCALE = FREE_SCREEN then
-                      NEW_BOUNDS := (SCALE => FREE_SCREEN,
-                         X_MIN => X_SCREEN_REAL(MOUSE_BOUNDS.X_MIN),
-                         X_MAX => X_SCREEN_REAL(MOUSE_BOUNDS.X_MAX),
-                         Y_MIN => Y_SCREEN_REAL(MOUSE_BOUNDS.Y_MIN),
-                         Y_MAX => Y_SCREEN_REAL(MOUSE_BOUNDS.Y_MAX) );
+                    if Root_Bounds.Scale = Curve_Screen or else
+                       Root_Bounds.Scale = Free_Screen then
+                      New_Bounds := (Scale => Free_Screen,
+                         X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
+                         X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
+                         Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
+                         Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
                     else  -- NORMED
-                      NEW_BOUNDS := (SCALE => FREE_NORMED,
-                         X_MIN => X_SCREEN_REAL(MOUSE_BOUNDS.X_MIN),
-                         X_MAX => X_SCREEN_REAL(MOUSE_BOUNDS.X_MAX),
-                         Y_MIN => Y_SCREEN_REAL(MOUSE_BOUNDS.Y_MIN),
-                         Y_MAX => Y_SCREEN_REAL(MOUSE_BOUNDS.Y_MAX) );
+                      New_Bounds := (Scale => Free_Normed,
+                         X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
+                         X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
+                         Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
+                         Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
                     end if;
                     -- Compute new conversions
                     begin
-                      MAJ (NEW_BOUNDS);
+                      Maj (New_Bounds);
                       -- No exception, store it
-                      CURR_ZOOM_NO := NEW_ZOOM_NO;
-                      LAST_ZOOM_NO := CURR_ZOOM_NO;
-                      ZOOM_ARRAY(CURR_ZOOM_NO) := NEW_BOUNDS;
-                      BIG_CON_IO.ENABLE_MOTION_EVENTS (FALSE);
-                      return TRUE;
+                      Curr_Zoom_No := New_Zoom_No;
+                      Last_Zoom_No := Curr_Zoom_No;
+                      Zoom_Array(Curr_Zoom_No) := New_Bounds;
+                      Big_Con_Io.Enable_Motion_Events (False);
+                      return True;
                     exception
                       when others =>
-                        CANCEL_ZOOM;
-                        BIG_CON_IO.BELL(3);
+                        Cancel_Zoom;
+                        Big_Con_Io.Bell(3);
                     end;
                   end;
 
-                elsif MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = BIG_CON_IO.RIGHT
-                and then MOUSE_EVENT.STATUS = BIG_CON_IO.PRESSED then
-                  CANCEL_ZOOM;
+                elsif Mouse_Event.Valid
+                and then Mouse_Event.Button = Big_Con_Io.Right
+                and then Mouse_Event.Status = Big_Con_Io.Pressed then
+                  Cancel_Zoom;
                 else
                   -- no change in init or done
-                  ZOOM_FRAME_ACTION := NONE;
+                  Zoom_Frame_Action := None;
                 end if;
 
             end case; -- Current zoom mode
 
             -- perform zoom frame drawing
-            if MOUSE_EVENT.VALID
-            or else MOUSE_EVENT.STATUS /= BIG_CON_IO.PRESSED then
-              DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
+            if Mouse_Event.Valid
+            or else Mouse_Event.Status /= Big_Con_Io.Pressed then
+              Draw_Z_Frame (Zoom_Frame_Action, Mouse_Bounds);
             end if;
           when others =>
             -- Ret, arrows, Pg*...
             -- Invalid key
-            BIG_CON_IO.BELL(3);
+            Big_Con_Io.Bell(3);
             
         end case; -- event
 
         -- perform scales drawing
-        DRAW_SCALE (UPDATE, MOUSE_BOUNDS);
+        Draw_Scale (Update, Mouse_Bounds);
 
       end loop;
 
-    end DRAW_ONE;
+    end Draw_One;
 
   begin -- DRAW
     -- Initialise graphics
-    BIG_CON_IO.INIT;
-    BIG_CON_IO.SET_FOREGROUND (BLINK_STAT => BIG_CON_IO.NOT_BLINK);
+    Big_Con_Io.Init;
+    Big_Con_Io.Set_Foreground (Blink_Stat => Big_Con_Io.Not_Blink);
 
-    BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_ON);
-    BIG_CON_IO.SET_POINTER_SHAPE(BIG_CON_IO.CROSS);
+    Big_Con_Io.Set_Xor_Mode (Big_Con_Io.Xor_On);
+    Big_Con_Io.Set_Pointer_Shape(Big_Con_Io.Cross);
 
     -- Initialise zooms storing
-    ZOOM_ARRAY(ZOOM_NO_RANGE'FIRST) := BOUNDARIES;
-    CURR_ZOOM_NO := ZOOM_NO_RANGE'FIRST;
-    LAST_ZOOM_NO := ZOOM_NO_RANGE'FIRST;
+    Zoom_Array(Zoom_No_Range'First) := Boundaries;
+    Curr_Zoom_No := Zoom_No_Range'First;
+    Last_Zoom_No := Zoom_No_Range'First;
     -- Compute first conversions
-    CONVERT.MAJ(ZOOM_ARRAY(ZOOM_NO_RANGE'FIRST));
+    Convert.Maj(Zoom_Array(Zoom_No_Range'First));
 
     loop
       begin
-        DRAW_RESULT := DRAW_ONE;
+        Draw_Result := Draw_One;
       exception
         when others =>
-          if CURR_ZOOM_NO = ZOOM_NO_RANGE'FIRST then
+          if Curr_Zoom_No = Zoom_No_Range'First then
             -- Exception in first draw is fatal
             raise;
           else
             -- try to go back to previous (which should be ok).
             -- At least, we raise after 9 attempts!
-            CURR_ZOOM_NO := CURR_ZOOM_NO - 1;
-            CONVERT.MAJ(ZOOM_ARRAY(CURR_ZOOM_NO));
-            DRAW_RESULT := TRUE;
-            BIG_CON_IO.BELL(3);
+            Curr_Zoom_No := Curr_Zoom_No - 1;
+            Convert.Maj(Zoom_Array(Curr_Zoom_No));
+            Draw_Result := True;
+            Big_Con_Io.Bell(3);
           end if;
       end;
 
-      if not DRAW_RESULT then
+      if not Draw_Result then
         -- Exit drawings
-        BIG_CON_IO.DESTROY;
+        Big_Con_Io.Destroy;
         exit;
       else
         -- New drawing : clear graphic
-        BIG_CON_IO.RESET_TERM;
+        Big_Con_Io.Reset_Term;
       end if;
 
     end loop;
@@ -1081,28 +1081,28 @@ package body CURVE is
   exception
     when others =>
       begin
-        BIG_CON_IO.DESTROY;
+        Big_Con_Io.Destroy;
       exception
         when others => null;
       end;
       raise;
-  end DRAW;
+  end Draw;
 
-  function INIT return BOOLEAN is
+  function Init return Boolean is
   begin
-    BIG_CON_IO.INIT;
-    return TRUE;
+    Big_Con_Io.Init;
+    return True;
   exception
-    when BIG_CON_IO.INIT_FAILURE =>
-      return FALSE;
-  end INIT;
+    when Big_Con_Io.Init_Failure =>
+      return False;
+  end Init;
 
-  procedure DESTROY is
+  procedure Destroy is
   begin
-    BIG_CON_IO.DESTROY;
+    Big_Con_Io.Destroy;
   exception
     when others =>
       null;
-  end DESTROY;
-end CURVE;
+  end Destroy;
+end Curve;
 

@@ -1,272 +1,272 @@
 
-  with ADA.NUMERICS.GENERIC_ELEMENTARY_FUNCTIONS;
+  with Ada.Numerics.Generic_Elementary_Functions;
 
-with CALENDAR, TEXT_IO;
-package body MY_MATH is
+with Calendar, Text_Io;
+package body My_Math is
 
 
-  package MATH is new ADA.NUMERICS.GENERIC_ELEMENTARY_FUNCTIONS (REAL);
+  package Math is new Ada.Numerics.Generic_Elementary_Functions (Real);
 
 
 
 -- CONSTANTS FOR COMPUTING
 --------------------------
   -- greatest number that can be exponented
-  LN_MAX               : REAL;
+  Ln_Max               : Real;
   -- ln (10)
-  LN_10                : REAL;
+  Ln_10                : Real;
   -- Multiples et sub multiples of pi
-  TWO_PI               : constant := 2.0*PI;
-  PI_TWO               : constant := PI/2.0;
-  PI_FOUR              : constant := PI/4.0;
-  PI_HUNDRED_HEIGHTY   : constant := PI/180.0;
+  Two_Pi               : constant := 2.0*Pi;
+  Pi_Two               : constant := Pi/2.0;
+  Pi_Four              : constant := Pi/4.0;
+  Pi_Hundred_Heighty   : constant := Pi/180.0;
 
 
   -- Integer part of a real
-  function INT (X : REAL) return REAL is
+  function Int (X : Real) return Real is
 
-    package REAL_TEXT_IO is
-      new TEXT_IO.FLOAT_IO(REAL);
+    package Real_Text_Io is
+      new Text_Io.Float_Io(Real);
 
-    NEG   : BOOLEAN := FALSE;
-    DIG   : constant POSITIVE := 15;  -- digits of real
-    EXP   : constant POSITIVE := 4;  -- +123
-    TOTAL : constant POSITIVE := 2 + DIG + 1 + EXP + 1;
+    Neg   : Boolean := False;
+    Dig   : constant Positive := 15;  -- digits of real
+    Exp   : constant Positive := 4;  -- +123
+    Total : constant Positive := 2 + Dig + 1 + Exp + 1;
     -- b-1.<14digits>E+123; (b = 1 extra space)
-    subtype TYP_INDEX_STR is POSITIVE range 1 .. TOTAL;
-    STR_AUX   : STRING(TYP_INDEX_STR);
-    STR_EXP   : STRING(1 .. EXP);
-    RESULT    : REAL;
-    EXPONENT  : INTEGER;
-    INDEX_STR : INTEGER;
+    subtype Typ_Index_Str is Positive range 1 .. Total;
+    Str_Aux   : String(Typ_Index_Str);
+    Str_Exp   : String(1 .. Exp);
+    Result    : Real;
+    Exponent  : Integer;
+    Index_Str : Integer;
   begin
     if X < 0.0 then
-      NEG := TRUE;
+      Neg := True;
     end if;
 
     -- store  x in a string
-    REAL_TEXT_IO.PUT(STR_AUX, abs(X), DIG - 1, EXP);
+    Real_Text_Io.Put(Str_Aux, abs(X), Dig - 1, Exp);
 
     -- compute exponent
-    STR_EXP(1 .. EXP) := STR_AUX(TOTAL - EXP + 1 .. TOTAL);
-    EXPONENT := INTEGER'VALUE(STR_EXP);
-    if EXPONENT < 0 then
+    Str_Exp(1 .. Exp) := Str_Aux(Total - Exp + 1 .. Total);
+    Exponent := Integer'Value(Str_Exp);
+    if Exponent < 0 then
 
       -- no integer part
-      RESULT := 0.0;
-    elsif EXPONENT < DIG - 1 then
+      Result := 0.0;
+    elsif Exponent < Dig - 1 then
 
       -- reset fraction digits to 0
-      for INDEX in TOTAL - EXP - DIG + 1 + EXPONENT .. TOTAL - EXP - 1 loop
-        STR_AUX(INDEX) := '0';
+      for Index in Total - Exp - Dig + 1 + Exponent .. Total - Exp - 1 loop
+        Str_Aux(Index) := '0';
       end loop;
 
       -- convert result to real
-      REAL_TEXT_IO.GET(STR_AUX, RESULT, INDEX_STR);
+      Real_Text_Io.Get(Str_Aux, Result, Index_Str);
     else
 
       -- no fraction part (number to big)
-      RESULT := X;
+      Result := X;
     end if;
 
-    if NEG then
-      return -RESULT;
+    if Neg then
+      return -Result;
     else
-      return RESULT;
+      return Result;
     end if;
-  end INT;
+  end Int;
 
-  function FRAC (X : REAL) return REAL is
+  function Frac (X : Real) return Real is
   begin
-    return X - INT(X);
-  end FRAC;
+    return X - Int(X);
+  end Frac;
 
   -- Real to inte : round or trunc
-  function ROUND (X : REAL) return INTE is
-    RESULTAT : INTE;
+  function Round (X : Real) return Inte is
+    Resultat : Inte;
   begin
     if X > 0.0 then
-      RESULTAT := TRUNC(X + 0.5);
+      Resultat := Trunc(X + 0.5);
     else
-      RESULTAT := TRUNC(X - 0.5);
+      Resultat := Trunc(X - 0.5);
     end if;
-    return RESULTAT;
+    return Resultat;
   exception
     when others =>
-      raise MATH_ERROR;
-  end ROUND;
+      raise Math_Error;
+  end Round;
 
-  function TRUNC (X : REAL) return INTE is
-    INT : INTE;
+  function Trunc (X : Real) return Inte is
+    Int : Inte;
   begin
-    INT := INTE(X);
+    Int := Inte(X);
 
     -- adjust +- 1
     if X > 0.0 then
 
       -- if x > 0 error by exceed
-      if REAL(INT) > X then
-        INT := INT - 1;
+      if Real(Int) > X then
+        Int := Int - 1;
       end if;
 
     else
 
       -- if x < 0 error by default
-      if REAL(INT) < X then
-        INT := INT + 1;
+      if Real(Int) < X then
+        Int := Int + 1;
       end if;
 
     end if;
 
-    return INT;
+    return Int;
   exception
     when others =>
-      raise MATH_ERROR;
-  end TRUNC;
+      raise Math_Error;
+  end Trunc;
 
   -- power
-  function "**" (NUMBER, EXPONENT : REAL) return REAL is
+  function "**" (Number, Exponent : Real) return Real is
   begin
-   return MATH."**" (NUMBER, EXPONENT);
+   return Math."**" (Number, Exponent);
   exception
     when others =>
-      raise MATH_ERROR;
+      raise Math_Error;
   end "**";
 
   -- square root
-  function SQRT (X : REAL) return REAL is
+  function Sqrt (X : Real) return Real is
   begin
     if X < 0.0 then
-      raise MATH_ERROR;
+      raise Math_Error;
     end if;
-    return MATH.SQRT (X);
+    return Math.Sqrt (X);
   exception
     when others =>
-      raise MATH_ERROR;
-  end SQRT;
+      raise Math_Error;
+  end Sqrt;
 
   -- Based 10 log
-  function LOG_10 (X : REAL) return REAL is
+  function Log_10 (X : Real) return Real is
   begin
     if X < 0.0 then
-      raise MATH_ERROR;
+      raise Math_Error;
     end if;
-    return LN(X)/LN_10;
+    return Ln(X)/Ln_10;
   exception
     when others =>
-      raise MATH_ERROR;
-  end LOG_10;
+      raise Math_Error;
+  end Log_10;
 
-  function EXP (X : REAL := 1.0) return REAL is
+  function Exp (X : Real := 1.0) return Real is
   begin
     return E ** X;
-  end EXP;
+  end Exp;
 
-  function LN (X : REAL) return REAL is
+  function Ln (X : Real) return Real is
   begin
     if X < 0.0 then
-      raise MATH_ERROR;
+      raise Math_Error;
     end if;
-    return MATH.LOG (X);
+    return Math.Log (X);
   exception
     when others =>
-      raise MATH_ERROR;
-  end LN;
+      raise Math_Error;
+  end Ln;
 
-  function SIN (X    : REAL;
-                MODE : ANGLE_UNIT := RADIAN) return REAL is
-    Y      : REAL;
+  function Sin (X    : Real;
+                Mode : Angle_Unit := Radian) return Real is
+    Y      : Real;
   begin
-    if MODE = RADIAN then
+    if Mode = Radian then
       Y := X;
     else
-      Y := X * PI_HUNDRED_HEIGHTY;
+      Y := X * Pi_Hundred_Heighty;
     end if;
-    return MATH.SIN (Y);
+    return Math.Sin (Y);
   exception
     when others =>
-      raise MATH_ERROR;
-  end SIN;
+      raise Math_Error;
+  end Sin;
 
-  function COS (X    : REAL;
-                MODE : ANGLE_UNIT := RADIAN) return REAL is
-    Y      : REAL;
+  function Cos (X    : Real;
+                Mode : Angle_Unit := Radian) return Real is
+    Y      : Real;
   begin
-    if MODE = RADIAN then
+    if Mode = Radian then
       Y := X;
     else
-      Y := X * PI_HUNDRED_HEIGHTY;
+      Y := X * Pi_Hundred_Heighty;
     end if;
-    return MATH.COS (Y);
+    return Math.Cos (Y);
   exception
     when others =>
-      raise MATH_ERROR;
-  end COS;
+      raise Math_Error;
+  end Cos;
 
-  function TG (X    : REAL;
-               MODE : ANGLE_UNIT := RADIAN) return REAL is
-    Y       : REAL;
+  function Tg (X    : Real;
+               Mode : Angle_Unit := Radian) return Real is
+    Y       : Real;
   begin
-    if MODE = RADIAN then
+    if Mode = Radian then
       Y := X;
     else
-      Y := X * PI_HUNDRED_HEIGHTY;
+      Y := X * Pi_Hundred_Heighty;
     end if;
-    return MATH.TAN (Y);
+    return Math.Tan (Y);
   exception
     when others =>
-      raise MATH_ERROR;
-  end TG;
+      raise Math_Error;
+  end Tg;
 
-  function ARC_SIN (X    : REAL;
-                    MODE : ANGLE_UNIT := RADIAN) return REAL is
-    Y : REAL;
+  function Arc_Sin (X    : Real;
+                    Mode : Angle_Unit := Radian) return Real is
+    Y : Real;
   begin
     if abs (X) > 1.0 then
-      raise MATH_ERROR;
+      raise Math_Error;
     end if;
-    Y := MATH.ARCSIN (X);
-    if MODE = DEGREE then
-      Y := Y / PI_HUNDRED_HEIGHTY;
+    Y := Math.Arcsin (X);
+    if Mode = Degree then
+      Y := Y / Pi_Hundred_Heighty;
     end if;
     return Y;
   exception
     when others =>
-      raise MATH_ERROR;
-  end ARC_SIN;
+      raise Math_Error;
+  end Arc_Sin;
 
-  function ARC_COS (X    : REAL;
-                    MODE : ANGLE_UNIT := RADIAN) return REAL is
-    Y   : REAL;
+  function Arc_Cos (X    : Real;
+                    Mode : Angle_Unit := Radian) return Real is
+    Y   : Real;
   begin
     if abs (X) > 1.0 then
-      raise MATH_ERROR;
+      raise Math_Error;
     end if;
-    Y := MATH.ARCCOS (X);
-    if MODE = DEGREE then
-      Y := Y / PI_HUNDRED_HEIGHTY;
+    Y := Math.Arccos (X);
+    if Mode = Degree then
+      Y := Y / Pi_Hundred_Heighty;
     end if;
     return Y;
   exception
     when others =>
-      raise MATH_ERROR;
-  end ARC_COS;
+      raise Math_Error;
+  end Arc_Cos;
 
-  function ARC_TG (X    : REAL;
-                   MODE : ANGLE_UNIT := RADIAN) return REAL is
-    Y       : REAL;
+  function Arc_Tg (X    : Real;
+                   Mode : Angle_Unit := Radian) return Real is
+    Y       : Real;
   begin
-    Y := MATH.ARCTAN (X);
-    if MODE = DEGREE then
-      Y := Y / PI_HUNDRED_HEIGHTY;
+    Y := Math.Arctan (X);
+    if Mode = Degree then
+      Y := Y / Pi_Hundred_Heighty;
     end if;
     return Y;
   exception
     when others =>
-      raise MATH_ERROR;
-  end ARC_TG;
+      raise Math_Error;
+  end Arc_Tg;
 
 begin
-  LN_MAX := LN(REAL'LARGE);
-  LN_10 := LN(10.0);
-end MY_MATH;
+  Ln_Max := Ln(Real'Large);
+  Ln_10 := Ln(10.0);
+end My_Math;

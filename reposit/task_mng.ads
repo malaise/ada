@@ -1,6 +1,6 @@
 generic
 
-  ACTIVATION_PERIOD : DURATION := 1.0;
+  Activation_Period : Duration := 1.0;
 
   -- The user defines this procedure which will be called regulary.
   -- The main program must call "delay" or schedule regulary
@@ -13,37 +13,37 @@ generic
   --  (for ACTIVATION_PERIOD or NEW_PERIOD of START) less then MIN_PERIOD
   --  becomes MIN_PERIOD.
 
-  with procedure CALL_BACK;
+  with procedure Call_Back;
 
-package TASK_MNG is
+package Task_Mng is
 
   -- default period at activation (instanciation)
-  DEF_PERIOD : constant DURATION := 1.0;
-  MIN_PERIOD : constant DURATION := 0.5;
+  Def_Period : constant Duration := 1.0;
+  Min_Period : constant Duration := 0.5;
 
   -- At elaboration, the task is ready but not started.
   -- This call starts effectively the task, eventually with a new period.
   -- If the task if already started, its period is updated.
   -- If the task has been aborted, exception is raised.
   -- If the period is <= 0, the task is started with previous period
-  procedure START (NEW_PERIOD : in DURATION := ACTIVATION_PERIOD);
+  procedure Start (New_Period : in Duration := Activation_Period);
 
-  TASK_ABORTED : exception;
+  Task_Aborted : exception;
 
   -- When the the task is started, stops it.
   -- If the task is already stopped, no effect.
   -- If the task has been aborted, exception is raised.
-  procedure STOP;
+  procedure Stop;
 
   -- Aborts the task, mandatory for the main program to exit.
   -- If the task is already aborted, exception is raised.
-  procedure ABORT_TASK;
+  procedure Abort_Task;
 
   -- Returns the current period of activation.
   -- If the task is already aborted, exception is raised.
-  function GET_PERIOD return DURATION;
+  function Get_Period return Duration;
 
   -- To activate (if period is reached) the call back
-  procedure SCHEDULE;
+  procedure Schedule;
 
-end TASK_MNG;
+end Task_Mng;

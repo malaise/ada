@@ -1,10 +1,10 @@
-package STRING_MNG is
+package String_Mng is
 
   -- Parces spaces and tabs (ASCII.HT) from the head/tail of a string
   -- Returns the position of the first/last character or 0 if
   --  all the string is spaces or tabs (or empty)
-  function PARSE_SPACES (STR : STRING; FROM_HEAD : BOOLEAN := TRUE)
-                        return NATURAL;
+  function Parse_Spaces (Str : String; From_Head : Boolean := True)
+                        return Natural;
 
   -- Puts a string STR in a string of fixed length LEN.
   -- If STR is shorter than LEN, it is aligned at right or left and padded
@@ -20,10 +20,10 @@ package STRING_MNG is
   -- SHOW_TRUNC : When string is longer than LEN, if SHOW_TRUNC is set,
   --         then STR is truncated to LEN-2 and starts (TRUNC_HEAD) with " >"
   --         or ends (not TRUNC_HEAD) with " <"
-  function PROCUSTE (STR : STRING; LEN : POSITIVE;
-           ALIGN_LEFT : BOOLEAN := TRUE; GAP : CHARACTER := ' ';
-           TRUNC_HEAD : BOOLEAN := TRUE; SHOW_TRUNC : BOOLEAN := TRUE)
-           return STRING;
+  function Procuste (Str : String; Len : Positive;
+           Align_Left : Boolean := True; Gap : Character := ' ';
+           Trunc_Head : Boolean := True; Show_Trunc : Boolean := True)
+           return String;
 
-end STRING_MNG;
+end String_Mng;
 

@@ -1,8 +1,8 @@
-with SYS_CALLS;
-procedure CLEAR_SCREEN is
-  COMMAND : constant STRING := "clear";
-  RES : INTEGER;
+with Sys_Calls;
+procedure Clear_Screen is
+  Command : constant String := "clear";
+  Res : Integer;
 begin
-  RES := SYS_CALLS.CALL_SYSTEM (COMMAND);
-end CLEAR_SCREEN;
+  Res := Sys_Calls.Call_System (Command);
+end Clear_Screen;
 

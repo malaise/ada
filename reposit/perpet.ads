@@ -1,74 +1,74 @@
-with CALENDAR;
-package PERPET is
+with Calendar;
+package Perpet is
 
   -- Number of days of a month
-  function NB_DAYS_MONTH (
-   YEAR  : CALENDAR.YEAR_NUMBER;
-   MONTH : CALENDAR.MONTH_NUMBER) return CALENDAR.DAY_NUMBER;
+  function Nb_Days_Month (
+   Year  : Calendar.Year_Number;
+   Month : Calendar.Month_Number) return Calendar.Day_Number;
 
   -- Check date validity
-  function IS_VALID (
-   YEAR  : CALENDAR.YEAR_NUMBER;
-   MONTH : CALENDAR.MONTH_NUMBER;
-   DAY   : CALENDAR.DAY_NUMBER) return BOOLEAN;
+  function Is_Valid (
+   Year  : Calendar.Year_Number;
+   Month : Calendar.Month_Number;
+   Day   : Calendar.Day_Number) return Boolean;
 
-  subtype DAY_RANGE is NATURAL;
+  subtype Day_Range is Natural;
 
   -- Is a year leap
-  function IS_LEAP_YEAR (
-   YEAR  : CALENDAR.YEAR_NUMBER) return BOOLEAN;
+  function Is_Leap_Year (
+   Year  : Calendar.Year_Number) return Boolean;
 
   -- Number of days of a year
-  function NB_DAYS_YEAR (
-   YEAR  : CALENDAR.YEAR_NUMBER) return DAY_RANGE;
+  function Nb_Days_Year (
+   Year  : Calendar.Year_Number) return Day_Range;
 
 
-  subtype YEAR_RANGE is INTEGER range
-   0 .. CALENDAR.YEAR_NUMBER'LAST - CALENDAR.YEAR_NUMBER'FIRST;
+  subtype Year_Range is Integer range
+   0 .. Calendar.Year_Number'Last - Calendar.Year_Number'First;
 
-  subtype MONTH_RANGE is INTEGER range 0 .. CALENDAR.MONTH_NUMBER'LAST;
+  subtype Month_Range is Integer range 0 .. Calendar.Month_Number'Last;
   -- Years & Months to add (or substract). Months are truncated :
   --     Jan 31 + 1 month -> Feb 28 (or 29)
   --     Jan 31 + 3 month -> Apr 30
   -- and Mar 31 - 1 month -> Feb 28 (or 29)
-  type DURATION_REC is record
-    YEARS  : YEAR_RANGE;
-    MONTHS : MONTH_RANGE;
+  type Duration_Rec is record
+    Years  : Year_Range;
+    Months : Month_Range;
   end record;
 
   -- Add years & months to a date
-  function "+" (DATE : CALENDAR.TIME; MONTHS : DURATION_REC)
-   return CALENDAR.TIME;
+  function "+" (Date : Calendar.Time; Months : Duration_Rec)
+   return Calendar.Time;
 
   -- Substract years & months from a date
-  function "-" (DATE : CALENDAR.TIME; MONTHS : DURATION_REC)
-    return CALENDAR.TIME;
+  function "-" (Date : Calendar.Time; Months : Duration_Rec)
+    return Calendar.Time;
 
   -- Add days to a date
-  function "+" (DATE : CALENDAR.TIME; DAYS : DAY_RANGE)
-   return CALENDAR.TIME;
+  function "+" (Date : Calendar.Time; Days : Day_Range)
+   return Calendar.Time;
 
   -- Substract days from a date
-  function "-" (DATE : CALENDAR.TIME; DAYS : DAY_RANGE)
-    return CALENDAR.TIME;
+  function "-" (Date : Calendar.Time; Days : Day_Range)
+    return Calendar.Time;
 
-  type DELTA_REC is record
-    DAYS : DAY_RANGE;
-    SECS : CALENDAR.DAY_DURATION;
+  type Delta_Rec is record
+    Days : Day_Range;
+    Secs : Calendar.Day_Duration;
   end record;
 
   -- Nb of days and secs between two dates
   --  If DATE_1 < DATE_2, TIME_ERROR will be raised
-  function "-" (DATE_1, DATE_2 : CALENDAR.TIME)
-    return DELTA_REC;
+  function "-" (Date_1, Date_2 : Calendar.Time)
+    return Delta_Rec;
 
-  type DAY_OF_WEEK_LIST is (MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY);
-  function GET_DAY_OF_WEEK (DATE : CALENDAR.TIME) return DAY_OF_WEEK_LIST;
+  type Day_Of_Week_List is (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday);
+  function Get_Day_Of_Week (Date : Calendar.Time) return Day_Of_Week_List;
 
-  subtype WEEK_OF_YEAR_RANGE is NATURAL range 1 .. 53;
-  function GET_WEEK_OF_YEAR (DATE : CALENDAR.TIME) return WEEK_OF_YEAR_RANGE;
+  subtype Week_Of_Year_Range is Natural range 1 .. 53;
+  function Get_Week_Of_Year (Date : Calendar.Time) return Week_Of_Year_Range;
 
   -- On overflow of year range
-  TIME_ERROR : exception renames CALENDAR.TIME_ERROR;
+  Time_Error : exception renames Calendar.Time_Error;
 
-end PERPET;
+end Perpet;

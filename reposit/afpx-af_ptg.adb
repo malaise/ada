@@ -1,206 +1,206 @@
-with CALENDAR;
-separate (AFPX)
-package body AF_PTG is
+with Calendar;
+separate (Afpx)
+package body Af_Ptg is
 
-  type MOUSE_ACTION_REC(KIND : AFPX_TYP.FIELD_KIND_LIST := AFPX_TYP.PUT)
+  type Mouse_Action_Rec(Kind : Afpx_Typ.Field_Kind_List := Afpx_Typ.Put)
   is record
-    case KIND is
-      when AFPX_TYP.PUT =>
+    case Kind is
+      when Afpx_Typ.Put =>
         -- Nothing to do, discarded, or list action already handled,
         -- no action put
         null;
-      when AFPX_TYP.GET | AFPX_TYP.BUTTON =>
+      when Afpx_Typ.Get | Afpx_Typ.Button =>
         -- Click and release in a GET field
         -- Double click in list
         -- Click and release in a BUTTON field
-        FIELD_NO : AFPX_TYP.ABSOLUTE_FIELD_RANGE;
+        Field_No : Afpx_Typ.Absolute_Field_Range;
     end case;
   end record;
 
-  LAST_POS : CON_IO.SQUARE;
+  Last_Pos : Con_Io.Square;
 
-  LAST_SELECTED_ID : NATURAL;
-  LAST_SELECTION_TIME : CALENDAR.TIME;
-  DOUBLE_CLICK_DELAY  : constant CALENDAR.DAY_DURATION := 0.2;
+  Last_Selected_Id : Natural;
+  Last_Selection_Time : Calendar.Time;
+  Double_Click_Delay  : constant Calendar.Day_Duration := 0.2;
 
   -- Sets Foreground and background according to state
-  procedure SET_COLORS (FIELD : in AFPX_TYP.FIELD_REC;
-                        STATE : in STATE_LIST;
-                        FOREGROUND : out CON_IO.EFFECTIVE_COLORS;
-                        BACKGROUND : out CON_IO.EFFECTIVE_BASIC_COLORS) is
+  procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
+                        State : in State_List;
+                        Foreground : out Con_Io.Effective_Colors;
+                        Background : out Con_Io.Effective_Basic_Colors) is
   begin
     -- Set colors
-    case STATE is
-      when NORMAL =>
-        FOREGROUND := FIELD.COLORS.FOREGROUND;
-        BACKGROUND := FIELD.COLORS.BACKGROUND;
-      when CLICKED =>
-        FOREGROUND := FIELD.COLORS.BACKGROUND;
-        BACKGROUND := FIELD.COLORS.FOREGROUND;
-      when SELECTED =>
-        FOREGROUND := FIELD.COLORS.FOREGROUND;
-        BACKGROUND := FIELD.COLORS.SELECTED;
+    case State is
+      when Normal =>
+        Foreground := Field.Colors.Foreground;
+        Background := Field.Colors.Background;
+      when Clicked =>
+        Foreground := Field.Colors.Background;
+        Background := Field.Colors.Foreground;
+      when Selected =>
+        Foreground := Field.Colors.Foreground;
+        Background := Field.Colors.Selected;
     end case;
-  end SET_COLORS;
+  end Set_Colors;
 
   -- Put a whole field in attribute
-  procedure PUT_FIELD (FIELD_NO : in AFPX_TYP.FIELD_RANGE;
-                       STATE    : in STATE_LIST) is
-    FIELD : constant AFPX_TYP.FIELD_REC := AF_DSCR.FIELDS(FIELD_NO);
-    CHAR_INDEX : AFPX_TYP.CHAR_STR_RANGE;
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
+  procedure Put_Field (Field_No : in Afpx_Typ.Field_Range;
+                       State    : in State_List) is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
+    Char_Index : Afpx_Typ.Char_Str_Range;
+    Foreground : Con_Io.Effective_Colors;
+    Background : Con_Io.Effective_Basic_Colors;
   begin
     -- Set colors
-    SET_COLORS (FIELD, STATE, FOREGROUND, BACKGROUND);
+    Set_Colors (Field, State, Foreground, Background);
 
     -- Set index to start of field's data
-    CHAR_INDEX := FIELD.CHAR_INDEX;
+    Char_Index := Field.Char_Index;
     -- Put SPACES in each row
-    for I in 1 .. FIELD.HEIGHT loop
+    for I in 1 .. Field.Height loop
       -- Go to row, left of field
-      CON_IO.MOVE (FIELD.UPPER_LEFT.ROW + I - 1, FIELD.UPPER_LEFT.COL);
-      CON_IO.PUT (
-        S => AF_DSCR.CHARS(CHAR_INDEX .. CHAR_INDEX + FIELD.WIDTH - 1),
-        NAME       => CON_IO.SCREEN,
-        FOREGROUND => FOREGROUND,
-        BLINK_STAT => FIELD.COLORS.BLINK_STAT,
-        BACKGROUND => BACKGROUND,
-        MOVE       => FALSE);
+      Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
+      Con_Io.Put (
+        S => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
+        Name       => Con_Io.Screen,
+        Foreground => Foreground,
+        Blink_Stat => Field.Colors.Blink_Stat,
+        Background => Background,
+        Move       => False);
       -- Update CHAR_INDEX to first char of next row (except after last row)
-      if I /= FIELD.HEIGHT then
-        CHAR_INDEX := CHAR_INDEX + FIELD.WIDTH;
+      if I /= Field.Height then
+        Char_Index := Char_Index + Field.Width;
       end if;
     end loop;
-  end PUT_FIELD;
+  end Put_Field;
 
   -- Put a whole row of a field in attribute
-  procedure PUT_ROW (FIELD_NO : in AFPX_TYP.FIELD_RANGE;
-                     ROW      : in CON_IO.ROW_RANGE;
-                     STATE    : in STATE_LIST) is
-    FIELD : constant AFPX_TYP.FIELD_REC := AF_DSCR.FIELDS(FIELD_NO);
-    CHAR_INDEX : AFPX_TYP.CHAR_STR_RANGE;
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
+  procedure Put_Row (Field_No : in Afpx_Typ.Field_Range;
+                     Row      : in Con_Io.Row_Range;
+                     State    : in State_List) is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
+    Char_Index : Afpx_Typ.Char_Str_Range;
+    Foreground : Con_Io.Effective_Colors;
+    Background : Con_Io.Effective_Basic_Colors;
   begin
     -- Set colors
-    SET_COLORS (FIELD, STATE, FOREGROUND, BACKGROUND);
+    Set_Colors (Field, State, Foreground, Background);
     -- Check Row in field
-    if not AFPX_TYP.IN_FIELD (FIELD, (ROW, 0)) then
-      raise AFPX_INTERNAL_ERROR;
+    if not Afpx_Typ.In_Field (Field, (Row, 0)) then
+      raise Afpx_Internal_Error;
     end if;
 
     -- Set index to start of row's data
-    CHAR_INDEX := FIELD.CHAR_INDEX + ROW * FIELD.WIDTH;
+    Char_Index := Field.Char_Index + Row * Field.Width;
     -- Go to row, left of field
-    CON_IO.MOVE (FIELD.UPPER_LEFT.ROW + ROW, FIELD.UPPER_LEFT.COL);
-    CON_IO.PUT (
-      S => AF_DSCR.CHARS(CHAR_INDEX .. CHAR_INDEX + FIELD.WIDTH - 1),
-      NAME       => CON_IO.SCREEN,
-      FOREGROUND => FOREGROUND,
-      BLINK_STAT => FIELD.COLORS.BLINK_STAT,
-      BACKGROUND => BACKGROUND,
-      MOVE       => FALSE);
-  end PUT_ROW;
+    Con_Io.Move (Field.Upper_Left.Row + Row, Field.Upper_Left.Col);
+    Con_Io.Put (
+      S => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
+      Name       => Con_Io.Screen,
+      Foreground => Foreground,
+      Blink_Stat => Field.Colors.Blink_Stat,
+      Background => Background,
+      Move       => False);
+  end Put_Row;
 
   -- Put a string somwhere in a field
-  procedure PUT_STR (FIELD_NO : in AFPX_TYP.FIELD_RANGE;
-                     POS      : in CON_IO.SQUARE;
-                     STR      : in STRING;
-                     STATE    : in STATE_LIST) is
-    FIELD : constant AFPX_TYP.FIELD_REC := AF_DSCR.FIELDS(FIELD_NO);
-    CHAR_INDEX : AFPX_TYP.CHAR_STR_RANGE;
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
-    LEN        : POSITIVE;
+  procedure Put_Str (Field_No : in Afpx_Typ.Field_Range;
+                     Pos      : in Con_Io.Square;
+                     Str      : in String;
+                     State    : in State_List) is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
+    Char_Index : Afpx_Typ.Char_Str_Range;
+    Foreground : Con_Io.Effective_Colors;
+    Background : Con_Io.Effective_Basic_Colors;
+    Len        : Positive;
   begin
     -- Set colors
-    SET_COLORS (FIELD, STATE, FOREGROUND, BACKGROUND);
+    Set_Colors (Field, State, Foreground, Background);
     -- Check POS in field
-    if not AFPX_TYP.IN_FIELD (FIELD, (POS.ROW, POS.COL)) then
-      raise AFPX_INTERNAL_ERROR;
+    if not Afpx_Typ.In_Field (Field, (Pos.Row, Pos.Col)) then
+      raise Afpx_Internal_Error;
     end if;
 
     -- Set index to start of row's data
-    CHAR_INDEX := FIELD.CHAR_INDEX + POS.ROW * FIELD.WIDTH + POS.COL;
+    Char_Index := Field.Char_Index + Pos.Row * Field.Width + Pos.Col;
     -- Go to row, left of field
-    CON_IO.MOVE (FIELD.UPPER_LEFT.ROW + POS.ROW,
-                 FIELD.UPPER_LEFT.COL + POS.COL);
+    Con_Io.Move (Field.Upper_Left.Row + Pos.Row,
+                 Field.Upper_Left.Col + Pos.Col);
     -- Adjust str length to truncate it if is too long
-    if AFPX_TYP.IN_FIELD (FIELD, (POS.ROW, POS.COL + STR'LENGTH - 1)) then
-      LEN := STR'LENGTH;
+    if Afpx_Typ.In_Field (Field, (Pos.Row, Pos.Col + Str'Length - 1)) then
+      Len := Str'Length;
     else
-      LEN := FIELD.WIDTH - POS.COL;
+      Len := Field.Width - Pos.Col;
     end if;
 
-    CON_IO.PUT (
-      S          => STR (STR'FIRST .. STR'FIRST + LEN - 1),
-      NAME       => CON_IO.SCREEN,
-      FOREGROUND => FOREGROUND,
-      BLINK_STAT => FIELD.COLORS.BLINK_STAT,
-      BACKGROUND => BACKGROUND,
-      MOVE       => FALSE);
-  end PUT_STR;
+    Con_Io.Put (
+      S          => Str (Str'First .. Str'First + Len - 1),
+      Name       => Con_Io.Screen,
+      Foreground => Foreground,
+      Blink_Stat => Field.Colors.Blink_Stat,
+      Background => Background,
+      Move       => False);
+  end Put_Str;
 
   -- Erase a field (screen_background, screen_background)
-  procedure ERASE_FIELD (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE) is
-    FIELD : constant AFPX_TYP.FIELD_REC := AF_DSCR.FIELDS(FIELD_NO);
-    SPACES : constant STRING (1 .. FIELD.WIDTH) := (others => ' ');
+  procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range) is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
+    Spaces : constant String (1 .. Field.Width) := (others => ' ');
   begin
     -- Put SPACES in each row
-    for I in 1 .. FIELD.HEIGHT loop
+    for I in 1 .. Field.Height loop
       -- Go to row, left of field
-      CON_IO.MOVE (FIELD.UPPER_LEFT.ROW + I - 1, FIELD.UPPER_LEFT.COL);
-      CON_IO.PUT (S          => SPACES,
-                  NAME       => CON_IO.SCREEN,
-                  FOREGROUND => CON_IO.GET_BACKGROUND(CON_IO.SCREEN),
-                  BLINK_STAT => CON_IO.NOT_BLINK,
-                  BACKGROUND => CON_IO.GET_BACKGROUND(CON_IO.SCREEN),
-                  MOVE       => FALSE);
+      Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
+      Con_Io.Put (S          => Spaces,
+                  Name       => Con_Io.Screen,
+                  Foreground => Con_Io.Get_Background(Con_Io.Screen),
+                  Blink_Stat => Con_Io.Not_Blink,
+                  Background => Con_Io.Get_Background(Con_Io.Screen),
+                  Move       => False);
     end loop;
-  end ERASE_FIELD;
+  end Erase_Field;
 
-  function VALID_CLICK return BOOLEAN is
-    MOUSE_STATUS : CON_IO.MOUSE_EVENT_REC;
-    VALID : BOOLEAN;
-    use CON_IO;
+  function Valid_Click return Boolean is
+    Mouse_Status : Con_Io.Mouse_Event_Rec;
+    Valid : Boolean;
+    use Con_Io;
   begin
     -- Check if mouse button is clicked
-    CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
-    VALID := MOUSE_STATUS.BUTTON = CON_IO.LEFT
-             and then MOUSE_STATUS.STATUS = CON_IO.PRESSED;
-    if VALID then
-      LAST_POS := (MOUSE_STATUS.ROW, MOUSE_STATUS.COL);
+    Con_Io.Get_Mouse_Event (Mouse_Status);
+    Valid := Mouse_Status.Button = Con_Io.Left
+             and then Mouse_Status.Status = Con_Io.Pressed;
+    if Valid then
+      Last_Pos := (Mouse_Status.Row, Mouse_Status.Col);
     end if;
-    return VALID;
-  end VALID_CLICK;
+    return Valid;
+  end Valid_Click;
 
-  function LAST_CLICK return CON_IO.SQUARE is
+  function Last_Click return Con_Io.Square is
   begin
-    return LAST_POS;
-  end LAST_CLICK;
+    return Last_Pos;
+  end Last_Click;
 
-  function WAIT_RELEASE return CON_IO.SQUARE is
-    STR : STRING (1 .. 0);
-    LAST : NATURAL;
-    STAT : CON_IO.CURS_MVT;
-    POS : POSITIVE;
-    INS : BOOLEAN;
-    MOUSE_STATUS : CON_IO.MOUSE_EVENT_REC;
-    use CON_IO;
+  function Wait_Release return Con_Io.Square is
+    Str : String (1 .. 0);
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos : Positive;
+    Ins : Boolean;
+    Mouse_Status : Con_Io.Mouse_Event_Rec;
+    use Con_Io;
   begin
     -- Wait until button released
     loop
-      CON_IO.GET (STR, LAST, STAT, POS, INS, ECHO => FALSE);
-      if STAT = CON_IO.MOUSE_BUTTON then
-        CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
-        exit when MOUSE_STATUS.BUTTON = CON_IO.LEFT
-             and then MOUSE_STATUS.STATUS = CON_IO.RELEASED;
+      Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
+      if Stat = Con_Io.Mouse_Button then
+        Con_Io.Get_Mouse_Event (Mouse_Status);
+        exit when Mouse_Status.Button = Con_Io.Left
+             and then Mouse_Status.Status = Con_Io.Released;
       end if;
     end loop;
     -- Get pos when last released
-    return (MOUSE_STATUS.ROW, MOUSE_STATUS.COL);
-  end WAIT_RELEASE;
+    return (Mouse_Status.Row, Mouse_Status.Col);
+  end Wait_Release;
 
   -- Handle a click action.
   -- Discard any position not in clickable field
@@ -209,405 +209,405 @@ package body AF_PTG is
   -- Restore BUTTON color
   -- GET selection is left to be achieved (restoring previous and setting
   --  new color)
-  procedure HANDLE_CLICK (LIST_PRESENT : in BOOLEAN;
-                          RESULT : out MOUSE_ACTION_REC) is
-    CURSOR_POS : constant CON_IO.SQUARE := CON_IO.POSITION;
-    VALID_FIELD : BOOLEAN;
-    CLICK_POS : CON_IO.SQUARE;
-    CLICK_FIELD : AFPX_TYP.ABSOLUTE_FIELD_RANGE;
-    RELEASE_POS : CON_IO.SQUARE;
-    CLICK_ROW_LIST : CON_IO.ROW_RANGE;
-    CLICK_ON_SELECTED : BOOLEAN;
-    FIELD : AFPX_TYP.FIELD_REC;
-    LIST_STATUS : AF_LIST.STATUS_REC;
-    CLICK_TIME : CALENDAR.TIME;
-    LOC_LAST_SELECTED_ID : NATURAL;
-    use AFPX_TYP;
-    use CALENDAR;
+  procedure Handle_Click (List_Present : in Boolean;
+                          Result : out Mouse_Action_Rec) is
+    Cursor_Pos : constant Con_Io.Square := Con_Io.Position;
+    Valid_Field : Boolean;
+    Click_Pos : Con_Io.Square;
+    Click_Field : Afpx_Typ.Absolute_Field_Range;
+    Release_Pos : Con_Io.Square;
+    Click_Row_List : Con_Io.Row_Range;
+    Click_On_Selected : Boolean;
+    Field : Afpx_Typ.Field_Rec;
+    List_Status : Af_List.Status_Rec;
+    Click_Time : Calendar.Time;
+    Loc_Last_Selected_Id : Natural;
+    use Afpx_Typ;
+    use Calendar;
 
   begin
     -- Save and reset last selected id
-    LOC_LAST_SELECTED_ID := LAST_SELECTED_ID;
-    LAST_SELECTED_ID := 0;
+    Loc_Last_Selected_Id := Last_Selected_Id;
+    Last_Selected_Id := 0;
 
     -- Result event discarded
-    RESULT := (KIND => AFPX_TYP.PUT);
-    if not VALID_CLICK then
+    Result := (Kind => Afpx_Typ.Put);
+    if not Valid_Click then
       return;
     end if;
 
-    VALID_FIELD := TRUE;
+    Valid_Field := True;
     -- Get pos, find field
-    CLICK_POS := LAST_CLICK;
-    CLICK_TIME := CALENDAR.CLOCK;
-    if LIST_PRESENT and then IN_FIELD_ABSOLUTE(LFN, CLICK_POS)
-    and then not AF_DSCR.FIELDS(LFN).ISPROTECTED then
-      CLICK_FIELD := LFN;
-      CLICK_ROW_LIST := CLICK_POS.ROW - AF_DSCR.FIELDS(LFN).UPPER_LEFT.ROW;
-      LIST_STATUS := AF_LIST.GET_STATUS;
+    Click_Pos := Last_Click;
+    Click_Time := Calendar.Clock;
+    if List_Present and then In_Field_Absolute(Lfn, Click_Pos)
+    and then not Af_Dscr.Fields(Lfn).Isprotected then
+      Click_Field := Lfn;
+      Click_Row_List := Click_Pos.Row - Af_Dscr.Fields(Lfn).Upper_Left.Row;
+      List_Status := Af_List.Get_Status;
       -- Check that an item is displayed at this row
-      if CLICK_ROW_LIST >= LIST_STATUS.NB_ROWS then
+      if Click_Row_List >= List_Status.Nb_Rows then
         -- No data in this row
-        VALID_FIELD := FALSE;
+        Valid_Field := False;
       end if;
       -- Click on already selected item?
-      if AF_LIST.ID_DISPLAYED (LIST_STATUS.ID_SELECTED) then
-        CLICK_ON_SELECTED :=
-          CLICK_ROW_LIST = AF_LIST.TO_ROW (LIST_STATUS.ID_SELECTED);
+      if Af_List.Id_Displayed (List_Status.Id_Selected) then
+        Click_On_Selected :=
+          Click_Row_List = Af_List.To_Row (List_Status.Id_Selected);
       else
-        CLICK_ON_SELECTED := FALSE;
+        Click_On_Selected := False;
      end if;
     else
       -- Try to find a button
-      CLICK_FIELD := 0;
-      for I in 1 .. AF_DSCR.CURRENT_DSCR.NB_FIELDS loop
-        if AF_DSCR.FIELDS(I).KIND /= AFPX_TYP.PUT and then
-           AF_DSCR.FIELDS(I).ACTIVATED            and then
-           not AF_DSCR.FIELDS(I).ISPROTECTED      and then
-           IN_FIELD_ABSOLUTE(I, CLICK_POS) then
-          CLICK_FIELD := I;
+      Click_Field := 0;
+      for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
+        if Af_Dscr.Fields(I).Kind /= Afpx_Typ.Put and then
+           Af_Dscr.Fields(I).Activated            and then
+           not Af_Dscr.Fields(I).Isprotected      and then
+           In_Field_Absolute(I, Click_Pos) then
+          Click_Field := I;
           exit;
         end if;
       end loop;
-      if CLICK_FIELD = 0 then
+      if Click_Field = 0 then
         -- Invalid field
-        VALID_FIELD := FALSE;
+        Valid_Field := False;
       end if;
     end if;
-    if VALID_FIELD then
+    if Valid_Field then
       -- reverse colors of field/row
-      if CLICK_FIELD = LFN then
+      if Click_Field = Lfn then
         -- Reverse
-        AF_LIST.PUT (CLICK_ROW_LIST, CLICKED);
+        Af_List.Put (Click_Row_List, Clicked);
       else
-        PUT_FIELD (CLICK_FIELD, CLICKED);
+        Put_Field (Click_Field, Clicked);
       end if;
     end if;
 
     -- Wait release. No keyboard input
-    RELEASE_POS := WAIT_RELEASE;
+    Release_Pos := Wait_Release;
 
     -- Done if click not valid
-    if not VALID_FIELD then
-      CON_IO.MOVE (CURSOR_POS);
+    if not Valid_Field then
+      Con_Io.Move (Cursor_Pos);
       return;
     end if;
-    FIELD := AF_DSCR.FIELDS(CLICK_FIELD);
+    Field := Af_Dscr.Fields(Click_Field);
 
     -- Check release in same field/row than click
-    if not IN_FIELD_ABSOLUTE (CLICK_FIELD, RELEASE_POS) then
-      VALID_FIELD := FALSE;
-    elsif CLICK_FIELD = LFN and then RELEASE_POS.ROW /= CLICK_POS.ROW then
-      VALID_FIELD := FALSE;
+    if not In_Field_Absolute (Click_Field, Release_Pos) then
+      Valid_Field := False;
+    elsif Click_Field = Lfn and then Release_Pos.Row /= Click_Pos.Row then
+      Valid_Field := False;
     end if;
 
-    if CLICK_FIELD = LFN then
-      if CLICK_ON_SELECTED then
+    if Click_Field = Lfn then
+      if Click_On_Selected then
         -- Valid or not, restore selected
-        AF_LIST.PUT (CLICK_ROW_LIST, SELECTED);
+        Af_List.Put (Click_Row_List, Selected);
         -- Check double_click
-        if AF_LIST.TO_ID(CLICK_ROW_LIST) = LOC_LAST_SELECTED_ID
-          and then LAST_SELECTION_TIME >= CLICK_TIME - DOUBLE_CLICK_DELAY then
-            RESULT := (KIND => AFPX_TYP.BUTTON, FIELD_NO => CLICK_FIELD);
+        if Af_List.To_Id(Click_Row_List) = Loc_Last_Selected_Id
+          and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
+            Result := (Kind => Afpx_Typ.Button, Field_No => Click_Field);
         else
           -- Valid click. Store for next click to check double click
-          LIST_STATUS := AF_LIST.GET_STATUS;
-          LAST_SELECTED_ID := LIST_STATUS.ID_SELECTED;
-          LAST_SELECTION_TIME := CLICK_TIME;
+          List_Status := Af_List.Get_Status;
+          Last_Selected_Id := List_Status.Id_Selected;
+          Last_Selection_Time := Click_Time;
         end if;
       else
-        if not VALID_FIELD then
+        if not Valid_Field then
           -- Invalid release, restore clicked field as normal
-          AF_LIST.PUT (CLICK_ROW_LIST, NORMAL);
+          Af_List.Put (Click_Row_List, Normal);
         else
           -- Valid release
           -- Un-select previous if it was shown
-          if AF_LIST.ID_DISPLAYED (LIST_STATUS.ID_SELECTED) then
-            AF_LIST.PUT (AF_LIST.TO_ROW(LIST_STATUS.ID_SELECTED), NORMAL);
+          if Af_List.Id_Displayed (List_Status.Id_Selected) then
+            Af_List.Put (Af_List.To_Row(List_Status.Id_Selected), Normal);
           end if;
           -- change selected if valid and new
-          AF_LIST.PUT (CLICK_ROW_LIST, SELECTED);
+          Af_List.Put (Click_Row_List, Selected);
           -- Set new selected
-          AF_LIST.SET_SELECTED (AF_LIST.TO_ID(CLICK_ROW_LIST));
-          AF_LIST.SET_CURRENT;
+          Af_List.Set_Selected (Af_List.To_Id(Click_Row_List));
+          Af_List.Set_Current;
         end if;
         -- Valid click. Store for next click to check double click
-        LIST_STATUS := AF_LIST.GET_STATUS;
-        LAST_SELECTED_ID := LIST_STATUS.ID_SELECTED;
-        LAST_SELECTION_TIME := CLICK_TIME;
+        List_Status := Af_List.Get_Status;
+        Last_Selected_Id := List_Status.Id_Selected;
+        Last_Selection_Time := Click_Time;
       end if;
       -- Result is PUT
-    elsif FIELD.KIND = AFPX_TYP.GET then
+    elsif Field.Kind = Afpx_Typ.Get then
       -- If field is get: restore color if not valid
-      if not VALID_FIELD then
-        PUT_FIELD (CLICK_FIELD, NORMAL);
-        RESULT := (KIND => AFPX_TYP.PUT);
+      if not Valid_Field then
+        Put_Field (Click_Field, Normal);
+        Result := (Kind => Afpx_Typ.Put);
       else
-        RESULT := (KIND => AFPX_TYP.GET, FIELD_NO => CLICK_FIELD);
+        Result := (Kind => Afpx_Typ.Get, Field_No => Click_Field);
       end if;
     else
       -- If field is button: restore color
-      PUT_FIELD (CLICK_FIELD, NORMAL);
-      if VALID_FIELD then
-        RESULT := (KIND => AFPX_TYP.BUTTON, FIELD_NO => CLICK_FIELD);
+      Put_Field (Click_Field, Normal);
+      if Valid_Field then
+        Result := (Kind => Afpx_Typ.Button, Field_No => Click_Field);
       end if;
     end if;
 
     -- Skip any keyboard entry during handle click
-    CON_IO.MOVE (CURSOR_POS);
-  end HANDLE_CLICK;
+    Con_Io.Move (Cursor_Pos);
+  end Handle_Click;
 
 
   -- Print the fields and the list, then gets
-  procedure PTG (
-                 CURSOR_FIELD : in out AFPX_TYP.FIELD_RANGE;
-                 CURSOR_COL   : in out CON_IO.COL_RANGE;
-                 RESULT       : out RESULT_REC;
-                 REDISPLAY    : in BOOLEAN;
-                 GET_ACTIVE   : in BOOLEAN) is
-    LIST_PRESENT : BOOLEAN;
-    NEW_FIELD : BOOLEAN;
-    FIELD : AFPX_TYP.FIELD_REC;
-    LAST : NATURAL;
-    STAT : CON_IO.CURS_MVT;
-    POS : POSITIVE;
-    INSERT : BOOLEAN;
-    FOREGROUND : CON_IO.EFFECTIVE_COLORS;
-    BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
-    DONE : BOOLEAN;
+  procedure Ptg (
+                 Cursor_Field : in out Afpx_Typ.Field_Range;
+                 Cursor_Col   : in out Con_Io.Col_Range;
+                 Result       : out Result_Rec;
+                 Redisplay    : in Boolean;
+                 Get_Active   : in Boolean) is
+    List_Present : Boolean;
+    New_Field : Boolean;
+    Field : Afpx_Typ.Field_Rec;
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos : Positive;
+    Insert : Boolean;
+    Foreground : Con_Io.Effective_Colors;
+    Background : Con_Io.Effective_Basic_Colors;
+    Done : Boolean;
 
-    use AFPX_TYP;
+    use Afpx_Typ;
 
   begin
     -- Reset last selection for double click
-    LAST_SELECTED_ID := 0;
+    Last_Selected_Id := 0;
 
     -- List present : defined, activated and not empty
-    LIST_PRESENT := AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON
-           and then AF_DSCR.FIELDS(LFN).ACTIVATED
-           and then not LINE_LIST_MNG.IS_EMPTY(LINE_LIST);
+    List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
+           and then Af_Dscr.Fields(Lfn).Activated
+           and then not Line_List_Mng.Is_Empty(Line_List);
     -- Init list if needed
-    if LIST_PRESENT then
-      AF_LIST.SET_SELECTED (LINE_LIST_MNG.GET_POSITION(LINE_LIST));
+    if List_Present then
+      Af_List.Set_Selected (Line_List_Mng.Get_Position(Line_List));
     end if;
 
     -- Redisplay list if requested or needed
-    if (REDISPLAY or else LINE_LIST_MNG.IS_MODIFIED (LINE_LIST))
-    and then AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
+    if (Redisplay or else Line_List_Mng.Is_Modified (Line_List))
+    and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
       -- list defined
-      if LIST_PRESENT then
-        if AF_LIST.GET_STATUS.ID_TOP = 0 then
+      if List_Present then
+        if Af_List.Get_Status.Id_Top = 0 then
           -- First time we display a non empty list
-          AF_LIST.DISPLAY(1);
+          Af_List.Display(1);
         else
-          AF_LIST.DISPLAY(AF_LIST.GET_STATUS.ID_TOP);
+          Af_List.Display(Af_List.Get_Status.Id_Top);
         end if;
-      elsif not AF_DSCR.FIELDS(LFN).ACTIVATED then
+      elsif not Af_Dscr.Fields(Lfn).Activated then
         -- List not active
-        ERASE_FIELD (LFN);
+        Erase_Field (Lfn);
       else
         -- Empty list
-        AF_LIST.DISPLAY(1);
+        Af_List.Display(1);
       end if;
     end if;
 
     -- Redisplay all fields if requested or needed
-    if REDISPLAY or else AF_DSCR.CURRENT_DSCR.MODIFIED then
-      for I in 1 .. AF_DSCR.CURRENT_DSCR.NB_FIELDS loop
-        if AF_DSCR.FIELDS(I).ACTIVATED then
-          PUT_FIELD (I, NORMAL);
+    if Redisplay or else Af_Dscr.Current_Dscr.Modified then
+      for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
+        if Af_Dscr.Fields(I).Activated then
+          Put_Field (I, Normal);
         else
-          ERASE_FIELD (I);
+          Erase_Field (I);
         end if;
       end loop;
     end if;
 
     -- A new field at start up if some get field
-    NEW_FIELD := GET_ACTIVE;
+    New_Field := Get_Active;
 
     -- The infinite loop
     loop
       -- Get field, set colors when field changes
-      if NEW_FIELD then
-        FIELD := AF_DSCR.FIELDS(CURSOR_FIELD);
-        SET_COLORS (FIELD, SELECTED, FOREGROUND, BACKGROUND);
-        INSERT := FALSE;
-        NEW_FIELD := FALSE;
+      if New_Field then
+        Field := Af_Dscr.Fields(Cursor_Field);
+        Set_Colors (Field, Selected, Foreground, Background);
+        Insert := False;
+        New_Field := False;
       end if;
-      if GET_ACTIVE then
-        POS := CURSOR_COL + 1;
+      if Get_Active then
+        Pos := Cursor_Col + 1;
         -- Move at beginning of field and put_then_get
-        CON_IO.MOVE (FIELD.UPPER_LEFT.ROW, FIELD.UPPER_LEFT.COL);
-        CON_IO.PUT_THEN_GET (
-         STR    => AF_DSCR.CHARS
-                    (FIELD.CHAR_INDEX .. FIELD.CHAR_INDEX + FIELD.WIDTH - 1),
-         LAST   => LAST,
-         STAT   => STAT,
-         POS    => POS,
-         INSERT => INSERT,
-         NAME   => CON_IO.SCREEN,
-         FOREGROUND => FOREGROUND,
-         BLINK_STAT => FIELD.COLORS.BLINK_STAT,
-         BACKGROUND => BACKGROUND);
-        CURSOR_COL := POS - 1;
+        Con_Io.Move (Field.Upper_Left.Row, Field.Upper_Left.Col);
+        Con_Io.Put_Then_Get (
+         Str    => Af_Dscr.Chars
+                    (Field.Char_Index .. Field.Char_Index + Field.Width - 1),
+         Last   => Last,
+         Stat   => Stat,
+         Pos    => Pos,
+         Insert => Insert,
+         Name   => Con_Io.Screen,
+         Foreground => Foreground,
+         Blink_Stat => Field.Colors.Blink_Stat,
+         Background => Background);
+        Cursor_Col := Pos - 1;
       else
         -- Blind get
-        CON_IO.MOVE (CON_IO.ROW_RANGE'LAST, CON_IO.COL_RANGE'LAST);
-        CON_IO.PUT_THEN_GET (
-         STR    => AF_DSCR.CHARS (1 .. 0),
-         LAST   => LAST,
-         STAT   => STAT,
-         POS    => POS,
-         INSERT => INSERT,
-         NAME   => CON_IO.SCREEN,
-         FOREGROUND => CON_IO.GET_BACKGROUND(CON_IO.SCREEN),
-         BLINK_STAT => CON_IO.NOT_BLINK,
-         BACKGROUND => CON_IO.GET_BACKGROUND(CON_IO.SCREEN));
+        Con_Io.Move (Con_Io.Row_Range'Last, Con_Io.Col_Range'Last);
+        Con_Io.Put_Then_Get (
+         Str    => Af_Dscr.Chars (1 .. 0),
+         Last   => Last,
+         Stat   => Stat,
+         Pos    => Pos,
+         Insert => Insert,
+         Name   => Con_Io.Screen,
+         Foreground => Con_Io.Get_Background(Con_Io.Screen),
+         Blink_Stat => Con_Io.Not_Blink,
+         Background => Con_Io.Get_Background(Con_Io.Screen));
        end if;
 
-      DONE := FALSE;
+      Done := False;
       -- Now the BIG case
-      case STAT is
-        when CON_IO.UP =>
+      case Stat is
+        when Con_Io.Up =>
           -- List scroll down
-          if LIST_PRESENT then
-            AF_LIST.UPDATE (UP);
+          if List_Present then
+            Af_List.Update (Up);
           end if;
-        when CON_IO.DOWN =>
+        when Con_Io.Down =>
           -- List scroll up
-          if LIST_PRESENT then
-            AF_LIST.UPDATE (DOWN);
+          if List_Present then
+            Af_List.Update (Down);
           end if;
-        when CON_IO.PGUP =>
+        when Con_Io.Pgup =>
           -- List page up
-          if LIST_PRESENT then
-            AF_LIST.UPDATE (PAGE_UP);
+          if List_Present then
+            Af_List.Update (Page_Up);
           end if;
-        when CON_IO.PGDOWN =>
+        when Con_Io.Pgdown =>
           -- List page down
-          if LIST_PRESENT then
-            AF_LIST.UPDATE (PAGE_DOWN);
+          if List_Present then
+            Af_List.Update (Page_Down);
           end if;
-        when CON_IO.CTRL_PGUP =>
+        when Con_Io.Ctrl_Pgup =>
           -- List page up
-          if LIST_PRESENT then
-            AF_LIST.UPDATE (TOP);
+          if List_Present then
+            Af_List.Update (Top);
           end if;
-        when CON_IO.CTRL_PGDOWN =>
+        when Con_Io.Ctrl_Pgdown =>
           -- List page down
-          if LIST_PRESENT then
-            AF_LIST.UPDATE (BOTTOM);
+          if List_Present then
+            Af_List.Update (Bottom);
           end if;
-        when CON_IO.RIGHT | CON_IO.FULL | CON_IO.TAB =>
-          if GET_ACTIVE then
+        when Con_Io.Right | Con_Io.Full | Con_Io.Tab =>
+          if Get_Active then
             -- Beginning of next get field
             -- Restore normal color of previous field
-            PUT_FIELD (CURSOR_FIELD, NORMAL);
-            CURSOR_FIELD := NEXT_GET_FIELD (CURSOR_FIELD);
-            CURSOR_COL := 0;
-            NEW_FIELD := TRUE;
+            Put_Field (Cursor_Field, Normal);
+            Cursor_Field := Next_Get_Field (Cursor_Field);
+            Cursor_Col := 0;
+            New_Field := True;
           end if;
-        when CON_IO.LEFT =>
-          if GET_ACTIVE then
+        when Con_Io.Left =>
+          if Get_Active then
             -- End of prev get field
             -- Restore normal color of previous field
-            PUT_FIELD (CURSOR_FIELD, NORMAL);
-            CURSOR_FIELD := PREV_GET_FIELD (CURSOR_FIELD);
-            CURSOR_COL := AF_DSCR.FIELDS(CURSOR_FIELD).WIDTH - 1;
-            NEW_FIELD := TRUE;
+            Put_Field (Cursor_Field, Normal);
+            Cursor_Field := Prev_Get_Field (Cursor_Field);
+            Cursor_Col := Af_Dscr.Fields(Cursor_Field).Width - 1;
+            New_Field := True;
           end if;
-        when CON_IO.STAB =>
-          if GET_ACTIVE then
+        when Con_Io.Stab =>
+          if Get_Active then
             -- Beginning of prev get field
             -- Restore normal color of previous field
-            PUT_FIELD (CURSOR_FIELD, NORMAL);
-            CURSOR_FIELD := PREV_GET_FIELD (CURSOR_FIELD);
-            CURSOR_COL := 0;
-            NEW_FIELD := TRUE;
+            Put_Field (Cursor_Field, Normal);
+            Cursor_Field := Prev_Get_Field (Cursor_Field);
+            Cursor_Col := 0;
+            New_Field := True;
           end if;
-        when CON_IO.RET =>
+        when Con_Io.Ret =>
           -- End put_then_get on keyboard ret
-          if LIST_PRESENT then
-            AF_LIST.SET_CURRENT;
+          if List_Present then
+            Af_List.Set_Current;
           end if;
-          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                     EVENT        => KEYBOARD,
-                     KEYBOARD_KEY => RETURN_KEY);
-          DONE := TRUE;
-        when CON_IO.ESC =>
+          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                     Event        => Keyboard,
+                     Keyboard_Key => Return_Key);
+          Done := True;
+        when Con_Io.Esc =>
           -- End put_then_get on keyboard esc
-          if LIST_PRESENT then
-            AF_LIST.SET_CURRENT;
+          if List_Present then
+            Af_List.Set_Current;
           end if;
-          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                     EVENT        => KEYBOARD,
-                     KEYBOARD_KEY => ESCAPE_KEY);
-          DONE := TRUE;
-        when CON_IO.MOUSE_BUTTON =>
+          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                     Event        => Keyboard,
+                     Keyboard_Key => Escape_Key);
+          Done := True;
+        when Con_Io.Mouse_Button =>
           declare
-            CLICK_RESULT : MOUSE_ACTION_REC;
+            Click_Result : Mouse_Action_Rec;
           begin
-            HANDLE_CLICK (LIST_PRESENT, CLICK_RESULT);
-            case CLICK_RESULT.KIND is
-              when AFPX_TYP.PUT =>
+            Handle_Click (List_Present, Click_Result);
+            case Click_Result.Kind is
+              when Afpx_Typ.Put =>
                 null;
-              when AFPX_TYP.GET =>
-                if CLICK_RESULT.FIELD_NO /= CURSOR_FIELD then
+              when Afpx_Typ.Get =>
+                if Click_Result.Field_No /= Cursor_Field then
                   -- Restore normal color of previous field
-                  PUT_FIELD (CURSOR_FIELD, NORMAL);
+                  Put_Field (Cursor_Field, Normal);
                   -- Change field
-                  CURSOR_FIELD := CLICK_RESULT.FIELD_NO;
-                  CURSOR_COL := 0;
-                  NEW_FIELD := TRUE;
+                  Cursor_Field := Click_Result.Field_No;
+                  Cursor_Col := 0;
+                  New_Field := True;
                 end if;
-              when AFPX_TYP.BUTTON =>
+              when Afpx_Typ.Button =>
                 -- End of put_then_get
-                if LIST_PRESENT then
-                  AF_LIST.SET_CURRENT;
+                if List_Present then
+                  Af_List.Set_Current;
                 end if;
-                RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                           EVENT        => MOUSE_BUTTON,
-                           FIELD_NO     => ABSOLUTE_FIELD_RANGE(CLICK_RESULT.FIELD_NO));
-                DONE := TRUE;
+                Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                           Event        => Mouse_Button,
+                           Field_No     => Absolute_Field_Range(Click_Result.Field_No));
+                Done := True;
             end case;
           end;
-        when CON_IO.BREAK =>
-          if LIST_PRESENT then
-            AF_LIST.SET_CURRENT;
+        when Con_Io.Break =>
+          if List_Present then
+            Af_List.Set_Current;
           end if;
-          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                     EVENT        => KEYBOARD,
-                     KEYBOARD_KEY => BREAK_KEY);
-          DONE := TRUE;
-        when CON_IO.REFRESH =>
-          if LIST_PRESENT then
-            AF_LIST.SET_CURRENT;
+          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                     Event        => Keyboard,
+                     Keyboard_Key => Break_Key);
+          Done := True;
+        when Con_Io.Refresh =>
+          if List_Present then
+            Af_List.Set_Current;
           end if;
-          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                     EVENT        => REFRESH);
-          DONE := TRUE;
-        when CON_IO.FD_EVENT =>
-          if LIST_PRESENT then
-            AF_LIST.SET_CURRENT;
+          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                     Event        => Refresh);
+          Done := True;
+        when Con_Io.Fd_Event =>
+          if List_Present then
+            Af_List.Set_Current;
           end if;
-          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                     EVENT        => FD_EVENT);
-          DONE := TRUE;
-        when CON_IO.TIMER_EVENT =>
-          if LIST_PRESENT then
-            AF_LIST.SET_CURRENT;
+          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                     Event        => Fd_Event);
+          Done := True;
+        when Con_Io.Timer_Event =>
+          if List_Present then
+            Af_List.Set_Current;
           end if;
-          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
-                     EVENT        => TIMER_EVENT);
-          DONE := TRUE;
-        when CON_IO.TIMEOUT =>
+          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
+                     Event        => Timer_Event);
+          Done := True;
+        when Con_Io.Timeout =>
           null;
       end case;
 
-      exit when DONE;
+      exit when Done;
     end loop;
 
-    AF_DSCR.CURRENT_DSCR.MODIFIED := FALSE;
-  end PTG;
+    Af_Dscr.Current_Dscr.Modified := False;
+  end Ptg;
 
-end AF_PTG;
+end Af_Ptg;

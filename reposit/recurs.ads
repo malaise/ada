@@ -7,11 +7,11 @@
 -- Do action only in leaves (directory with no subdirectory)
 -- Stops on error (DO_IN_DIR returning FALSE), or not
 generic
-  with function DO_IN_DIR return BOOLEAN;
-procedure RECURS (
- NAME_OF_DIR : in BOOLEAN := TRUE;
- IN_CURRENT : in BOOLEAN := TRUE;
- FIRST_LEVEL_ONLY : in BOOLEAN := FALSE;
- LEAVES_ONLY : in BOOLEAN := FALSE;
- STOP_ON_ERROR : in BOOLEAN := TRUE);
+  with function Do_In_Dir return Boolean;
+procedure Recurs (
+ Name_Of_Dir : in Boolean := True;
+ In_Current : in Boolean := True;
+ First_Level_Only : in Boolean := False;
+ Leaves_Only : in Boolean := False;
+ Stop_On_Error : in Boolean := True);
 

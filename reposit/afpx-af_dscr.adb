@@ -1,152 +1,152 @@
-with DIRECT_IO;
-with SYS_CALLS, TEXT_HANDLER;
-separate (AFPX)
-package body AF_DSCR is
+with Direct_Io;
+with Sys_Calls, Text_Handler;
+separate (Afpx)
+package body Af_Dscr is
 
   -- Direct_io of descriptors, fields, init strings
-  package DSCR_IO is new DIRECT_IO (AFPX_TYP.DESCRIPTORS_ARRAY);
-  DSCR_FILE : DSCR_IO.FILE_TYPE;
-  package FLD_IO  is new DIRECT_IO (AFPX_TYP.FIELDS_ARRAY);
-  FLD_FILE : FLD_IO.FILE_TYPE;
-  package INIT_IO is new DIRECT_IO (AFPX_TYP.CHAR_STR);
-  INIT_FILE : INIT_IO.FILE_TYPE;
+  package Dscr_Io is new Direct_Io (Afpx_Typ.Descriptors_Array);
+  Dscr_File : Dscr_Io.File_Type;
+  package Fld_Io  is new Direct_Io (Afpx_Typ.Fields_Array);
+  Fld_File : Fld_Io.File_Type;
+  package Init_Io is new Direct_Io (Afpx_Typ.Char_Str);
+  Init_File : Init_Io.File_Type;
 
   -- Has a descriptor been set
-  DSCR_SET : BOOLEAN := FALSE;
+  Dscr_Set : Boolean := False;
 
   -- Colors from file
-  INIT_COLORS : array (AFPX_TYP.ABSOLUTE_FIELD_RANGE) of AFPX_TYP.COLORS_REC;
+  Init_Colors : array (Afpx_Typ.Absolute_Field_Range) of Afpx_Typ.Colors_Rec;
 
   -- Chars from file
-  INIT_STR : AFPX_TYP.CHAR_STR;
+  Init_Str : Afpx_Typ.Char_Str;
 
   -- Descriptor read
-  DSCRS : AFPX_TYP.DESCRIPTORS_ARRAY;
+  Dscrs : Afpx_Typ.Descriptors_Array;
 
   -- Load a descriptor
-  procedure LOAD_DSCR (DSCR_NO : in AFPX_TYP.DESCRIPTOR_RANGE) is
-    DSCR_INDEX : AFPX_TYP.DESCRIPTOR_RANGE;
+  procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range) is
+    Dscr_Index : Afpx_Typ.Descriptor_Range;
   begin
 
     -- Check it is defined
-    if not DSCRS(DSCR_NO).MODIFIED then
-      raise NO_DESCRIPTOR;
+    if not Dscrs(Dscr_No).Modified then
+      raise No_Descriptor;
     end if;
 
     -- Save index of descriptor for field and init files
-    DSCR_INDEX := DSCRS(DSCR_NO).DSCR_INDEX;
+    Dscr_Index := Dscrs(Dscr_No).Dscr_Index;
 
     -- Copy descriptor, read fields and chars
-    CURRENT_DSCR := DSCRS(DSCR_NO);
-    CURRENT_DSCR.DSCR_INDEX := DSCR_NO;
+    Current_Dscr := Dscrs(Dscr_No);
+    Current_Dscr.Dscr_Index := Dscr_No;
 
-    FLD_IO.READ  (FLD_FILE , FIELDS,   FLD_IO.POSITIVE_COUNT(DSCR_INDEX));
-    INIT_IO.READ (INIT_FILE, INIT_STR, INIT_IO.POSITIVE_COUNT(DSCR_INDEX));
+    Fld_Io.Read  (Fld_File , Fields,   Fld_Io.Positive_Count(Dscr_Index));
+    Init_Io.Read (Init_File, Init_Str, Init_Io.Positive_Count(Dscr_Index));
 
     -- Save colors, copy chars
     for I in
-    AFPX_TYP.ABSOLUTE_FIELD_RANGE'FIRST .. DSCRS(DSCR_NO).NB_FIELDS loop
-      INIT_COLORS(I) := FIELDS(I).COLORS;
+    Afpx_Typ.Absolute_Field_Range'First .. Dscrs(Dscr_No).Nb_Fields loop
+      Init_Colors(I) := Fields(I).Colors;
     end loop;
-    CHARS := INIT_STR;
+    Chars := Init_Str;
 
-    DSCR_SET := TRUE;
+    Dscr_Set := True;
 
-  end LOAD_DSCR;
+  end Load_Dscr;
 
   -- Check if a descriptor i in use
-  procedure CHECK is
+  procedure Check is
   begin
-    if not DSCR_SET then
-      raise NO_DESCRIPTOR;
+    if not Dscr_Set then
+      raise No_Descriptor;
     end if;
-  end CHECK;
+  end Check;
 
 
   -- Check if a descriptor i in use and if field is valid
-  procedure CHECK (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE) is
-    use AFPX_TYP;
+  procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range) is
+    use Afpx_Typ;
   begin
-    CHECK;
+    Check;
 
-    if FIELD_NO = LFN then
-      if FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
+    if Field_No = Lfn then
+      if Fields(Lfn).Kind = Afpx_Typ.Button then
         -- A list in the descriptor
         return;
       end if;
     else
-      if FIELD_NO <= CURRENT_DSCR.NB_FIELDS then
+      if Field_No <= Current_Dscr.Nb_Fields then
         -- This field is in the descriptor
         return;
       end if;
     end if;
     -- No such field/list
-    raise INVALID_FIELD;
-  end CHECK;
+    raise Invalid_Field;
+  end Check;
 
   -- Load a field
-  procedure LOAD_FIELD (FIELD_NO : in AFPX_TYP.ABSOLUTE_FIELD_RANGE;
-        LOAD_COLORS : in BOOLEAN;
-        LOAD_CHARS  : in BOOLEAN) is
-    FIELD : constant AFPX_TYP.FIELD_REC := FIELDS(FIELD_NO);
-    NB_CHARS : constant POSITIVE := FIELD.HEIGHT * FIELD.WIDTH;
-    use AFPX_TYP;
+  procedure Load_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
+        Load_Colors : in Boolean;
+        Load_Chars  : in Boolean) is
+    Field : constant Afpx_Typ.Field_Rec := Fields(Field_No);
+    Nb_Chars : constant Positive := Field.Height * Field.Width;
+    use Afpx_Typ;
   begin
-    CHECK (FIELD_NO);
-    FIELDS(FIELD_NO).ACTIVATED := TRUE;
-    FIELDS(FIELD_NO).ISPROTECTED := FALSE;
-    if LOAD_COLORS then
-      FIELDS(FIELD_NO).COLORS := INIT_COLORS(FIELD_NO);
+    Check (Field_No);
+    Fields(Field_No).Activated := True;
+    Fields(Field_No).Isprotected := False;
+    if Load_Colors then
+      Fields(Field_No).Colors := Init_Colors(Field_No);
     end if;
 
-    if LOAD_CHARS and then FIELD_NO /= 0 then
+    if Load_Chars and then Field_No /= 0 then
       -- Copy the nb_chars from init_str to char_str
-      for I in FIELD.CHAR_INDEX .. FIELD.CHAR_INDEX + NB_CHARS - 1 loop
-        CHARS(I) := INIT_STR(I);
+      for I in Field.Char_Index .. Field.Char_Index + Nb_Chars - 1 loop
+        Chars(I) := Init_Str(I);
       end loop;
     end if;
   exception
     when others =>
-      raise AFPX_INTERNAL_ERROR;
-  end LOAD_FIELD;
+      raise Afpx_Internal_Error;
+  end Load_Field;
 
 begin
   -- Try to getenv data dir then to open the files
   declare
-    FILE_DIR_ENV_NAME : constant STRING := "AFPX_DATA_DIR";
-    ENV_SET, ENV_TRUNC : BOOLEAN;
-    ENV_VALUE : STRING (1 .. AFPX_TYP.DEST_PATH.MAX_LEN - 1);
-    ENV_LEN : NATURAL;
+    File_Dir_Env_Name : constant String := "Afpx_Data_Dir";
+    Env_Set, Env_Trunc : Boolean;
+    Env_Value : String (1 .. Afpx_Typ.Dest_Path.Max_Len - 1);
+    Env_Len : Natural;
   begin
-    SYS_CALLS.GETENV(FILE_DIR_ENV_NAME, ENV_SET, ENV_TRUNC, ENV_VALUE, ENV_LEN);
-    if ENV_SET and then not ENV_TRUNC and then ENV_LEN /= 0 then
-      TEXT_HANDLER.SET (AFPX_TYP.DEST_PATH, ENV_VALUE (1 .. ENV_LEN));
+    Sys_Calls.Getenv(File_Dir_Env_Name, Env_Set, Env_Trunc, Env_Value, Env_Len);
+    if Env_Set and then not Env_Trunc and then Env_Len /= 0 then
+      Text_Handler.Set (Afpx_Typ.Dest_Path, Env_Value (1 .. Env_Len));
     else
-      TEXT_HANDLER.SET (AFPX_TYP.DEST_PATH, ".");
+      Text_Handler.Set (Afpx_Typ.Dest_Path, ".");
     end if;
-    TEXT_HANDLER.APPEND (AFPX_TYP.DEST_PATH, "/");
+    Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
 
-    DSCR_IO.OPEN (DSCR_FILE, DSCR_IO.IN_FILE,
-                  TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.DSCR_FILE_NAME);
-    FLD_IO.OPEN  (FLD_FILE,  FLD_IO.IN_FILE,
-                  TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.FLD_FILE_NAME);
-    INIT_IO.OPEN (INIT_FILE, INIT_IO.IN_FILE,
-                  TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH) & AFPX_TYP.INIT_FILE_NAME);
+    Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
+                  Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+    Fld_Io.Open  (Fld_File,  Fld_Io.In_File,
+                  Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+    Init_Io.Open (Init_File, Init_Io.In_File,
+                  Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
   exception
     when others =>
-      raise AFPX_FILE_NOT_FOUND;
+      raise Afpx_File_Not_Found;
   end;
 
   -- Read first descriptor
   begin
-    DSCR_IO.READ (DSCR_FILE, DSCRS, 1);
+    Dscr_Io.Read (Dscr_File, Dscrs, 1);
   exception
     when others =>
-      raise AFPX_FILE_READ_ERROR;
+      raise Afpx_File_Read_Error;
   end;
 
   -- Check AFPX version
-  if DSCRS(1).VERSION /= AFPX_TYP.AFPX_VERSION then
-    raise AFPX_FILE_VERSION_ERROR;
+  if Dscrs(1).Version /= Afpx_Typ.Afpx_Version then
+    raise Afpx_File_Version_Error;
   end if;
-end AF_DSCR;
+end Af_Dscr;

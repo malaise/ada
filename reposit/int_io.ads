@@ -1,2 +1,2 @@
-with TEXT_IO;
-package INT_IO is new TEXT_IO.INTEGER_IO (INTEGER);
+with Text_Io;
+package Int_Io is new Text_Io.Integer_Io (Integer);

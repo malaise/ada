@@ -12,7 +12,7 @@ package body  Timers is
   type Timer_Rec is record
     Id : Timer_Id_Range;
     Exp : Exp_Rec;
-    CB  : Timer_Callback;
+    Cb  : Timer_Callback;
   end record;
 
   package Timer_List_Mng is new Dynamic_List (Timer_Rec);
@@ -84,7 +84,7 @@ package body  Timers is
     -- Allocate Id and copy period and callback
     Timer.Id := Get_Next_Id;
     Timer.Exp.Period := Delay_Spec.Period;
-    Timer.CB := Callback;
+    Timer.Cb := Callback;
 
     -- Insert in beginning of list and sort it
     if not Timer_List_Mng.Is_Empty (Timer_List) then
@@ -196,8 +196,8 @@ package body  Timers is
         Sort (Timer_List);
       end if;
       -- Call callback
-      if Timer.CB /= null then
-        if Timer.CB ((Timer_Num => Timer.Id)) then
+      if Timer.Cb /= null then
+        if Timer.Cb ((Timer_Num => Timer.Id)) then
           -- At least this CB has returned True
           One_True := True;
         end if;

@@ -1,22 +1,22 @@
-package body AFPX_TYP is
+package body Afpx_Typ is
 
   -- Check is square (relative to field) is in field
-  function IN_FIELD (FIELD  : in FIELD_REC;
-                     SQUARE : in CON_IO.SQUARE) return BOOLEAN is
+  function In_Field (Field  : in Field_Rec;
+                     Square : in Con_Io.Square) return Boolean is
   begin
-    return   SQUARE.ROW < FIELD.HEIGHT
-    and then SQUARE.COL < FIELD.WIDTH;
-  end IN_FIELD;
+    return   Square.Row < Field.Height
+    and then Square.Col < Field.Width;
+  end In_Field;
 
   -- Check is square (absolute) is in field
-  function IN_FIELD_ABSOLUTE (FIELD  : in FIELD_REC;
-                              SQUARE : in CON_IO.SQUARE) return BOOLEAN is
+  function In_Field_Absolute (Field  : in Field_Rec;
+                              Square : in Con_Io.Square) return Boolean is
   begin
-    return   SQUARE.ROW >= FIELD.UPPER_LEFT.ROW
-    and then SQUARE.ROW <= FIELD.LOWER_RIGHT.ROW
-    and then SQUARE.COL >= FIELD.UPPER_LEFT.COL
-    and then SQUARE.COL <= FIELD.LOWER_RIGHT.COL;
-  end IN_FIELD_ABSOLUTE;
+    return   Square.Row >= Field.Upper_Left.Row
+    and then Square.Row <= Field.Lower_Right.Row
+    and then Square.Col >= Field.Upper_Left.Col
+    and then Square.Col <= Field.Lower_Right.Col;
+  end In_Field_Absolute;
 
-end AFPX_TYP;
+end Afpx_Typ;
 

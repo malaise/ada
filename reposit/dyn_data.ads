@@ -1,22 +1,22 @@
 -- Allocates and frees cells of data access,
 --  using a free list to re-use free cells.
 generic
-  type DATA_TYPE is private;
-  type DATA_ACCESS_TYPE is access DATA_TYPE;
+  type Data_Type is private;
+  type Data_Access_Type is access Data_Type;
 
-package DYN_DATA is
+package Dyn_Data is
 
   -- Allocates a new cell.
   -- The result is the access to a pre allocated area for DATA_TYPE.
-  function ALLOCATE return DATA_ACCESS_TYPE;
+  function Allocate return Data_Access_Type;
 
   -- Allocates a new cell and fills it with DATA
   -- The result is the access to a pre allocated area for DATA_TYPE,
   --  storing DATA
-  function ALLOCATE (DATA : DATA_TYPE) return DATA_ACCESS_TYPE;
+  function Allocate (Data : Data_Type) return Data_Access_Type;
 
   -- Frees a cell. DATA_ACCESS is set to null.
-  procedure FREE (DATA_ACCESS : in out DATA_ACCESS_TYPE);
+  procedure Free (Data_Access : in out Data_Access_Type);
 
-end DYN_DATA;
+end Dyn_Data;
 

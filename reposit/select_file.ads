@@ -1,14 +1,14 @@
-with AFPX, NULL_PROCEDURE;
+with Afpx, Null_Procedure;
 generic
   -- Any initialisation to do after descriptor activation
-  with procedure INIT_PROCEDURE;
+  with procedure Init_Procedure;
   -- Any action to do when a fd_event has been received (see Afpx Fd_event)
-  with procedure FD_CALLBACK is NULL_PROCEDURE;
+  with procedure Fd_Callback is Null_Procedure;
   -- Any action to do when a Timer_event has occured (see Afpx Fd_event)
-  with procedure TIMER_CALLBACK is NULL_PROCEDURE;
+  with procedure Timer_Callback is Null_Procedure;
 
-function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
-                      CURRENT_FILE : STRING;
-                      FOR_READ : BOOLEAN) return STRING;
+function Select_File (Descriptor : Afpx.Descriptor_Range;
+                      Current_File : String;
+                      For_Read : Boolean) return String;
 
 

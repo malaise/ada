@@ -1,468 +1,468 @@
-with UNCHECKED_DEALLOCATION;
-package body DYNAMIC_LIST is
+with Unchecked_Deallocation;
+package body Dynamic_List is
 
-  type ELEMENT_ARRAY is array (POSITIVE range <>) of ELEMENT_TYPE;
+  type Element_Array is array (Positive range <>) of Element_Type;
 
-  FREE_LIST : LINK := NULL;
+  Free_List : Link := Null;
 
-  function IS_EMPTY (LIST : LIST_TYPE) return BOOLEAN is
+  function Is_Empty (List : List_Type) return Boolean is
   begin
-    return LIST.FIRST = null;
-  end IS_EMPTY;
+    return List.First = null;
+  end Is_Empty;
 
-  procedure CHECK (LIST : in LIST_TYPE) is
+  procedure Check (List : in List_Type) is
   begin
-    if IS_EMPTY(LIST) then
-      raise EMPTY_LIST;
+    if Is_Empty(List) then
+      raise Empty_List;
     end if;
-  end CHECK;
+  end Check;
 
-  procedure CHECK_IN(POS : in LINK) is
+  procedure Check_In(Pos : in Link) is
   begin
-    if POS = null then
-      raise NOT_IN_LIST;
+    if Pos = null then
+      raise Not_In_List;
     end if;
-  end CHECK_IN;
+  end Check_In;
 
   -- delete the full list
-  procedure DELETE_LIST (LIST : in out LIST_TYPE;
-                         DEALLOCATE : in BOOLEAN := TRUE) is
-    LOCAL : LINK;
-    procedure DEALLOCATION_OF is new
-     UNCHECKED_DEALLOCATION(OBJECT=>CELL, NAME=>LINK);
+  procedure Delete_List (List : in out List_Type;
+                         Deallocate : in Boolean := True) is
+    Local : Link;
+    procedure Deallocation_Of is new
+     Unchecked_Deallocation(Object=>Cell, Name=>Link);
   begin
-    if DEALLOCATE then
+    if Deallocate then
       -- deallocate the list
-      while LIST.FIRST /= null loop
-        LOCAL := LIST.FIRST;
-        LIST.FIRST := LIST.FIRST.NEXT;
-        DEALLOCATION_OF(LOCAL);
+      while List.First /= null loop
+        Local := List.First;
+        List.First := List.First.Next;
+        Deallocation_Of(Local);
       end loop;
       -- deallocate the free list
-      while FREE_LIST /= null loop
-        LOCAL := FREE_LIST;
-        FREE_LIST := FREE_LIST.NEXT;
-        DEALLOCATION_OF(LOCAL);
+      while Free_List /= null loop
+        Local := Free_List;
+        Free_List := Free_List.Next;
+        Deallocation_Of(Local);
       end loop;
     else
       -- Insert the list in beginning of free list
-      if LIST.FIRST /= null then
-        LIST.LAST.NEXT := FREE_LIST;
-        if FREE_LIST /= null then
-          FREE_LIST.PREV := LIST.LAST;
+      if List.First /= null then
+        List.Last.Next := Free_List;
+        if Free_List /= null then
+          Free_List.Prev := List.Last;
         end if;
-        FREE_LIST := LIST.FIRST;
+        Free_List := List.First;
       end if;
     end if;
-    LIST := (MODIFIED => TRUE, POS_FIRST | POS_LAST => 0,
-     CURRENT => null, FIRST => null, LAST => null);
-  end DELETE_LIST;
+    List := (Modified => True, Pos_First | Pos_Last => 0,
+     Current => null, First => null, Last => null);
+  end Delete_List;
 
   -- read the current item
-  procedure READ (LIST : in out LIST_TYPE;
-                  ITEM : out ELEMENT_TYPE;
-                  MOVE : in MOVEMENT := NEXT) is
+  procedure Read (List : in out List_Type;
+                  Item : out Element_Type;
+                  Move : in Movement := Next) is
   begin
-    CHECK(LIST);
-    ITEM := LIST.CURRENT.VALUE;
-    if MOVE /= CURRENT then
-      MOVE_TO (LIST, MOVE);
+    Check(List);
+    Item := List.Current.Value;
+    if Move /= Current then
+      Move_To (List, Move);
     end if;
     -- Modification done my MOVE_TO
-  end READ;
+  end Read;
 
   -- modify the current item
-  procedure MODIFY (LIST : in out LIST_TYPE;
-                    ITEM : in ELEMENT_TYPE;
-                    MOVE : in MOVEMENT := NEXT) is
+  procedure Modify (List : in out List_Type;
+                    Item : in Element_Type;
+                    Move : in Movement := Next) is
   begin
-    CHECK(LIST);
-    LIST.CURRENT.VALUE := ITEM;
-    if MOVE /= CURRENT then
-      MOVE_TO (LIST, MOVE);
+    Check(List);
+    List.Current.Value := Item;
+    if Move /= Current then
+      Move_To (List, Move);
     end if;
-    LIST.MODIFIED := TRUE;
-  end MODIFY;
+    List.Modified := True;
+  end Modify;
 
   -- put a new element in the list
-  procedure INSERT (LIST  : in out LIST_TYPE;
-                    ITEM  : in ELEMENT_TYPE;
-                    WHERE : in DIRECTION := NEXT) is
-    NEW_CELL : LINK;
+  procedure Insert (List  : in out List_Type;
+                    Item  : in Element_Type;
+                    Where : in Direction := Next) is
+    New_Cell : Link;
   begin
-    LIST.MODIFIED := TRUE;
-    if FREE_LIST = null then
+    List.Modified := True;
+    if Free_List = null then
       -- create the first element of the list
-      NEW_CELL := new CELL;
+      New_Cell := new Cell;
     else
-      NEW_CELL := FREE_LIST;
-      FREE_LIST := FREE_LIST.NEXT;
+      New_Cell := Free_List;
+      Free_List := Free_List.Next;
     end if;
     -- fill new cell
-    NEW_CELL.VALUE := ITEM;
-    if IS_EMPTY (LIST) then
-      NEW_CELL.NEXT := null;
-      NEW_CELL.PREV := null;
-      LIST.POS_FIRST := 1;
-      LIST.POS_LAST := 1;
+    New_Cell.Value := Item;
+    if Is_Empty (List) then
+      New_Cell.Next := null;
+      New_Cell.Prev := null;
+      List.Pos_First := 1;
+      List.Pos_Last := 1;
     else
-      case WHERE is
-        when NEXT =>
-          NEW_CELL.NEXT := LIST.CURRENT.NEXT;
-          NEW_CELL.PREV := LIST.CURRENT;
-          LIST.POS_FIRST := LIST.POS_FIRST + 1;
-        when PREV =>
-          NEW_CELL.NEXT := LIST.CURRENT;
-          NEW_CELL.PREV := LIST.CURRENT.PREV;
-          LIST.POS_LAST := LIST.POS_LAST + 1;
+      case Where is
+        when Next =>
+          New_Cell.Next := List.Current.Next;
+          New_Cell.Prev := List.Current;
+          List.Pos_First := List.Pos_First + 1;
+        when Prev =>
+          New_Cell.Next := List.Current;
+          New_Cell.Prev := List.Current.Prev;
+          List.Pos_Last := List.Pos_Last + 1;
       end case;
     end if;
     -- update neibours
-    LIST.CURRENT := NEW_CELL;
-    if NEW_CELL.PREV /= null then
-      NEW_CELL.PREV.NEXT := NEW_CELL;
+    List.Current := New_Cell;
+    if New_Cell.Prev /= null then
+      New_Cell.Prev.Next := New_Cell;
     else
-      LIST.FIRST := NEW_CELL;
+      List.First := New_Cell;
     end if;
-    if NEW_CELL.NEXT /= null then
-      NEW_CELL.NEXT.PREV := NEW_CELL;
+    if New_Cell.Next /= null then
+      New_Cell.Next.Prev := New_Cell;
     else
-      LIST.LAST := NEW_CELL;
+      List.Last := New_Cell;
     end if;
 
   exception
-    when STORAGE_ERROR =>
-      raise FULL_LIST;
-  end INSERT;
+    when Storage_Error =>
+      raise Full_List;
+  end Insert;
 
   -- suppress the current element from the list
-  procedure DELETE (LIST : in out LIST_TYPE; MOVE : in DIRECTION := NEXT) is
-    DEL_CELL : LINK;
+  procedure Delete (List : in out List_Type; Move : in Direction := Next) is
+    Del_Cell : Link;
   begin
-    CHECK(LIST);
+    Check(List);
 
-    if LIST.POS_FIRST = 1 and then LIST.POS_LAST = 1 then
+    if List.Pos_First = 1 and then List.Pos_Last = 1 then
       -- Last item of the list
       null;
     else
       -- check movement
-      if MOVE = NEXT then
-        CHECK_IN(LIST.CURRENT.NEXT);
-      elsif MOVE = PREV then
-        CHECK_IN (LIST.CURRENT.PREV);
+      if Move = Next then
+        Check_In(List.Current.Next);
+      elsif Move = Prev then
+        Check_In (List.Current.Prev);
       end if;
     end if;
 
-    LIST.MODIFIED := TRUE;
+    List.Modified := True;
     -- disconnect
-    if LIST.CURRENT.NEXT /= null then
-      LIST.CURRENT.NEXT.PREV := LIST.CURRENT.PREV;
+    if List.Current.Next /= null then
+      List.Current.Next.Prev := List.Current.Prev;
     else
-      LIST.LAST := LIST.CURRENT.PREV;
+      List.Last := List.Current.Prev;
     end if;
-    if LIST.CURRENT.PREV /= null then
-      LIST.CURRENT.PREV.NEXT := LIST.CURRENT.NEXT;
+    if List.Current.Prev /= null then
+      List.Current.Prev.Next := List.Current.Next;
     else
-      LIST.FIRST := LIST.CURRENT.NEXT;
+      List.First := List.Current.Next;
     end if;
     -- move
-    DEL_CELL := LIST.CURRENT;
-    case MOVE is
-      when NEXT =>
-        LIST.CURRENT := LIST.CURRENT.NEXT;
-        LIST.POS_LAST := LIST.POS_LAST - 1;
-      when PREV =>
-        LIST.CURRENT := LIST.CURRENT.PREV;
-        LIST.POS_FIRST := LIST.POS_FIRST - 1;
+    Del_Cell := List.Current;
+    case Move is
+      when Next =>
+        List.Current := List.Current.Next;
+        List.Pos_Last := List.Pos_Last - 1;
+      when Prev =>
+        List.Current := List.Current.Prev;
+        List.Pos_First := List.Pos_First - 1;
     end case;
     -- insert in free list
-    if FREE_LIST /= null then
-      FREE_LIST.PREV := DEL_CELL;
+    if Free_List /= null then
+      Free_List.Prev := Del_Cell;
     end if;
-    DEL_CELL.PREV := null;
-    DEL_CELL.NEXT := FREE_LIST;
-    FREE_LIST := DEL_CELL;
+    Del_Cell.Prev := null;
+    Del_Cell.Next := Free_List;
+    Free_List := Del_Cell;
     -- check the special case when list is empty
     --  (set pos_first AND pos_last to 0)
-    if LIST.CURRENT = null then
-      LIST.POS_FIRST := 0;
-      LIST.POS_LAST := 0;
+    if List.Current = null then
+      List.Pos_First := 0;
+      List.Pos_Last := 0;
     end if;
-  end DELETE;
+  end Delete;
 
 
   -- reads and deletes the current element
-  procedure GET (LIST : in out LIST_TYPE;
-                 ITEM : out ELEMENT_TYPE;
-                 MOVE : in DIRECTION := NEXT) is
+  procedure Get (List : in out List_Type;
+                 Item : out Element_Type;
+                 Move : in Direction := Next) is
   begin
-    READ(LIST, ITEM, CURRENT);
-    DELETE(LIST, MOVE);
+    Read(List, Item, Current);
+    Delete(List, Move);
     -- Modified flag changed by DELETE
-  end GET;
+  end Get;
 
   -- changes current position
-  procedure MOVE_TO (LIST         : in out LIST_TYPE;
-                     WHERE        : in DIRECTION := NEXT;
-                     NUMBER       : in NATURAL := 1;
-                     FROM_CURRENT : in BOOLEAN := TRUE) is
-    NEW_POS                     : LINK;
-    NEW_POS_FIRST, NEW_POS_LAST : NATURAL;
+  procedure Move_To (List         : in out List_Type;
+                     Where        : in Direction := Next;
+                     Number       : in Natural := 1;
+                     From_Current : in Boolean := True) is
+    New_Pos                     : Link;
+    New_Pos_First, New_Pos_Last : Natural;
   begin
-    CHECK(LIST);
+    Check(List);
     -- start from
-    if FROM_CURRENT then
-      NEW_POS := LIST.CURRENT;
-      NEW_POS_FIRST := LIST.POS_FIRST;
-      NEW_POS_LAST := LIST.POS_LAST;
+    if From_Current then
+      New_Pos := List.Current;
+      New_Pos_First := List.Pos_First;
+      New_Pos_Last := List.Pos_Last;
     else
-      case WHERE is
-        when NEXT =>
-          NEW_POS := LIST.FIRST;
-          NEW_POS_FIRST := 1;
-          NEW_POS_LAST := LIST_LENGTH(LIST);
-        when PREV =>
-          NEW_POS := LIST.LAST;
-          NEW_POS_FIRST := LIST_LENGTH(LIST);
-          NEW_POS_LAST := 1;
+      case Where is
+        when Next =>
+          New_Pos := List.First;
+          New_Pos_First := 1;
+          New_Pos_Last := List_Length(List);
+        when Prev =>
+          New_Pos := List.Last;
+          New_Pos_First := List_Length(List);
+          New_Pos_Last := 1;
       end case;
     end if;
     -- move
-    case WHERE is
-      when NEXT =>
-        for I in 1 .. NUMBER loop
-          CHECK_IN (NEW_POS.NEXT);
-          NEW_POS := NEW_POS.NEXT;
-          NEW_POS_FIRST := NEW_POS_FIRST + 1;
-          NEW_POS_LAST := NEW_POS_LAST - 1;
+    case Where is
+      when Next =>
+        for I in 1 .. Number loop
+          Check_In (New_Pos.Next);
+          New_Pos := New_Pos.Next;
+          New_Pos_First := New_Pos_First + 1;
+          New_Pos_Last := New_Pos_Last - 1;
         end loop;
-      when PREV =>
-        for I in 1 .. NUMBER loop
-          CHECK_IN (NEW_POS.PREV);
-          NEW_POS := NEW_POS.PREV;
-          NEW_POS_FIRST := NEW_POS_FIRST - 1;
-          NEW_POS_LAST := NEW_POS_LAST + 1;
+      when Prev =>
+        for I in 1 .. Number loop
+          Check_In (New_Pos.Prev);
+          New_Pos := New_Pos.Prev;
+          New_Pos_First := New_Pos_First - 1;
+          New_Pos_Last := New_Pos_Last + 1;
         end loop;
     end case;
     -- realy move if no problem
-    LIST.CURRENT := NEW_POS;
-    LIST.POS_FIRST := NEW_POS_FIRST;
-    LIST.POS_LAST := NEW_POS_LAST;
-    LIST.MODIFIED := TRUE;
-  end MOVE_TO;
+    List.Current := New_Pos;
+    List.Pos_First := New_Pos_First;
+    List.Pos_Last := New_Pos_Last;
+    List.Modified := True;
+  end Move_To;
 
   -- permute two elements knowing links to them
   -- (internal procedure for permute and sort)
-  procedure PERMUTE (LIST : in out LIST_TYPE; LEFT, RIGHT : in LINK) is
-    TMP_NEXT, TMP_PREV : LINK;
+  procedure Permute (List : in out List_Type; Left, Right : in Link) is
+    Tmp_Next, Tmp_Prev : Link;
   begin
 
-    TMP_PREV := LEFT.PREV;
-    TMP_NEXT := LEFT.NEXT;
-    if LEFT.NEXT /= RIGHT and then LEFT.PREV /= RIGHT then
+    Tmp_Prev := Left.Prev;
+    Tmp_Next := Left.Next;
+    if Left.Next /= Right and then Left.Prev /= Right then
       -- no adjacent cells
       -- exchange neighbours links
-      if LEFT.PREV /= null then
-        LEFT.PREV.NEXT := RIGHT;
+      if Left.Prev /= null then
+        Left.Prev.Next := Right;
       else
-        LIST.FIRST := RIGHT;
+        List.First := Right;
       end if;
-      if LEFT.NEXT /= null then
-        LEFT.NEXT.PREV := RIGHT;
+      if Left.Next /= null then
+        Left.Next.Prev := Right;
       else
-        LIST.LAST := RIGHT;
+        List.Last := Right;
       end if;
-      if RIGHT.PREV /= null then
-        RIGHT.PREV.NEXT := LEFT;
+      if Right.Prev /= null then
+        Right.Prev.Next := Left;
       else
-        LIST.FIRST := LEFT;
+        List.First := Left;
       end if;
-      if RIGHT.NEXT /= null then
-        RIGHT.NEXT.PREV := LEFT;
+      if Right.Next /= null then
+        Right.Next.Prev := Left;
       else
-        LIST.LAST := LEFT;
+        List.Last := Left;
       end if;
 
       -- exchange swapped cells links to neighbours
-      LEFT.PREV := RIGHT.PREV;
-      LEFT.NEXT := RIGHT.NEXT;
-      RIGHT.PREV := TMP_PREV;
-      RIGHT.NEXT := TMP_NEXT;
-    elsif LEFT.NEXT = RIGHT then
+      Left.Prev := Right.Prev;
+      Left.Next := Right.Next;
+      Right.Prev := Tmp_Prev;
+      Right.Next := Tmp_Next;
+    elsif Left.Next = Right then
       -- left just before right
       -- exchange neighbours links
-      if LEFT.PREV /= null then
-        LEFT.PREV.NEXT := RIGHT;
+      if Left.Prev /= null then
+        Left.Prev.Next := Right;
       else
-        LIST.FIRST := RIGHT;
+        List.First := Right;
       end if;
-      if RIGHT.NEXT /= null then
-        RIGHT.NEXT.PREV := LEFT;
+      if Right.Next /= null then
+        Right.Next.Prev := Left;
       else
-        LIST.LAST := LEFT;
+        List.Last := Left;
       end if;
 
       -- exchange swapped cells links to neighbours
-      LEFT.PREV := RIGHT;
-      LEFT.NEXT := RIGHT.NEXT;
-      RIGHT.PREV := TMP_PREV;
-      RIGHT.NEXT := LEFT;
-    elsif LEFT.PREV = RIGHT then
+      Left.Prev := Right;
+      Left.Next := Right.Next;
+      Right.Prev := Tmp_Prev;
+      Right.Next := Left;
+    elsif Left.Prev = Right then
       -- left just after right
       -- exchange neighbours links
-      if LEFT.NEXT /= null then
-        LEFT.NEXT.PREV := RIGHT;
+      if Left.Next /= null then
+        Left.Next.Prev := Right;
       else
-        LIST.LAST := RIGHT;
+        List.Last := Right;
       end if;
-      if RIGHT.PREV /= null then
-        RIGHT.PREV.NEXT := LEFT;
+      if Right.Prev /= null then
+        Right.Prev.Next := Left;
       else
-        LIST.FIRST := LEFT;
+        List.First := Left;
       end if;
 
       -- exchange swapped cells links to neighbours
-      LEFT.PREV := RIGHT.PREV;
-      LEFT.NEXT := RIGHT;
-      RIGHT.PREV := LEFT;
-      RIGHT.NEXT := TMP_NEXT;
+      Left.Prev := Right.Prev;
+      Left.Next := Right;
+      Right.Prev := Left;
+      Right.Next := Tmp_Next;
     else
-      raise PROGRAM_ERROR;
+      raise Program_Error;
     end if;
-    LIST.MODIFIED := TRUE;
-  end PERMUTE;
+    List.Modified := True;
+  end Permute;
 
   -- permutes 2 elements
-  procedure PERMUTE (LIST      : in out LIST_TYPE;
-                     NUMBER1      : in NATURAL;
-                     NUMBER2      : in NATURAL;
-                     WHERE        : in DIRECTION := NEXT;
-                     FROM_CURRENT : in BOOLEAN   := FALSE) is
-    CURRENT_POSITION : constant POSITIVE := GET_POSITION (LIST);
-    LINK1, LINK2 : LINK;
+  procedure Permute (List      : in out List_Type;
+                     Number1      : in Natural;
+                     Number2      : in Natural;
+                     Where        : in Direction := Next;
+                     From_Current : in Boolean   := False) is
+    Current_Position : constant Positive := Get_Position (List);
+    Link1, Link2 : Link;
   begin
     -- move to elements and store links to them
-    MOVE_TO (LIST, WHERE, NUMBER1, FROM_CURRENT);
-    LINK1 := LIST.CURRENT;
-    MOVE_TO (LIST, WHERE, NUMBER2, FROM_CURRENT);
-    LINK2 := LIST.CURRENT;
+    Move_To (List, Where, Number1, From_Current);
+    Link1 := List.Current;
+    Move_To (List, Where, Number2, From_Current);
+    Link2 := List.Current;
 
     -- permute items
-    PERMUTE (LIST, LINK1, LINK2);
+    Permute (List, Link1, Link2);
 
     -- Restore initial position
-    MOVE_TO (LIST, NEXT, CURRENT_POSITION - 1, FROM_CURRENT => FALSE);
-    LIST.MODIFIED := TRUE;
+    Move_To (List, Next, Current_Position - 1, From_Current => False);
+    List.Modified := True;
   exception
-    when NOT_IN_LIST =>
+    when Not_In_List =>
       -- Restore initial position
-      MOVE_TO (LIST, NEXT, CURRENT_POSITION - 1, FROM_CURRENT => FALSE);
+      Move_To (List, Next, Current_Position - 1, From_Current => False);
       raise;
-  end PERMUTE;
+  end Permute;
 
   -- returns the number of elements in the list (0 if empty)
-  function LIST_LENGTH (LIST : LIST_TYPE) return NATURAL is
+  function List_Length (List : List_Type) return Natural is
   begin
-    if IS_EMPTY(LIST) then
+    if Is_Empty(List) then
       return 0;
     else
-      return LIST.POS_FIRST + LIST.POS_LAST - 1;
+      return List.Pos_First + List.Pos_Last - 1;
     end if;
-  end LIST_LENGTH;
+  end List_Length;
 
   -- get position from first or last item in list
-  function GET_POSITION (LIST : LIST_TYPE;
-                         FROM : REFERENCE := FROM_FIRST) return POSITIVE is
+  function Get_Position (List : List_Type;
+                         From : Reference := From_First) return Positive is
   begin
-    CHECK(LIST);
-    case FROM is
-      when FROM_FIRST =>
-        return LIST.POS_FIRST;
-      when FROM_LAST =>
-        return LIST.POS_LAST;
+    Check(List);
+    case From is
+      when From_First =>
+        return List.Pos_First;
+      when From_Last =>
+        return List.Pos_Last;
     end case;
-  end GET_POSITION;
+  end Get_Position;
 
-  function IS_MODIFIED (LIST : LIST_TYPE) return BOOLEAN is
+  function Is_Modified (List : List_Type) return Boolean is
   begin
-    return LIST.MODIFIED;
-  end IS_MODIFIED;
+    return List.Modified;
+  end Is_Modified;
 
-  procedure MODIFICATION_ACK (LIST : in out LIST_TYPE)is
+  procedure Modification_Ack (List : in out List_Type)is
   begin
-    LIST.MODIFIED := FALSE;
-  end MODIFICATION_ACK;
+    List.Modified := False;
+  end Modification_Ack;
 
   -- Copy the VAL list to TO list
-  procedure ASSIGN (TO : in out LIST_TYPE; VAL : in LIST_TYPE) is
+  procedure Assign (To : in out List_Type; Val : in List_Type) is
   begin
-    TO := VAL;
-    TO.MODIFIED := TRUE;
-  end ASSIGN;
+    To := Val;
+    To.Modified := True;
+  end Assign;
 
-  procedure SEARCH (LIST         : in out LIST_TYPE;
-                    ITEM         : in ELEMENT_TYPE;
-                    WHERE        : in DIRECTION := NEXT;
-                    OCCURENCE    : in POSITIVE := 1;
-                    FROM_CURRENT : in BOOLEAN := TRUE) is
-    NEW_POS                     : LINK;
-    NEW_POS_FIRST, NEW_POS_LAST : NATURAL;
+  procedure Search (List         : in out List_Type;
+                    Item         : in Element_Type;
+                    Where        : in Direction := Next;
+                    Occurence    : in Positive := 1;
+                    From_Current : in Boolean := True) is
+    New_Pos                     : Link;
+    New_Pos_First, New_Pos_Last : Natural;
   begin
-    if IS_EMPTY (LIST) then
-      raise NOT_IN_LIST;
+    if Is_Empty (List) then
+      raise Not_In_List;
     end if;
     -- start from
-    if FROM_CURRENT then
-      NEW_POS := LIST.CURRENT;
-      NEW_POS_FIRST := LIST.POS_FIRST;
-      NEW_POS_LAST := LIST.POS_LAST;
+    if From_Current then
+      New_Pos := List.Current;
+      New_Pos_First := List.Pos_First;
+      New_Pos_Last := List.Pos_Last;
     else
-      case WHERE is
-        when NEXT =>
-          NEW_POS := LIST.FIRST;
-          NEW_POS_FIRST := 1;
-          NEW_POS_LAST := LIST_LENGTH(LIST);
-        when PREV =>
-          NEW_POS := LIST.LAST;
-          NEW_POS_FIRST := LIST_LENGTH(LIST);
-          NEW_POS_LAST := 1;
+      case Where is
+        when Next =>
+          New_Pos := List.First;
+          New_Pos_First := 1;
+          New_Pos_Last := List_Length(List);
+        when Prev =>
+          New_Pos := List.Last;
+          New_Pos_First := List_Length(List);
+          New_Pos_Last := 1;
       end case;
     end if;
     -- move
-    case WHERE is
-      when NEXT =>
-        for I in 1 .. OCCURENCE loop
+    case Where is
+      when Next =>
+        for I in 1 .. Occurence loop
           loop
-            exit when EQUAL(NEW_POS.VALUE, ITEM);
-            CHECK_IN(NEW_POS.NEXT);
-            NEW_POS := NEW_POS.NEXT;
-            NEW_POS_FIRST := NEW_POS_FIRST + 1;
-            NEW_POS_LAST := NEW_POS_LAST - 1;
+            exit when Equal(New_Pos.Value, Item);
+            Check_In(New_Pos.Next);
+            New_Pos := New_Pos.Next;
+            New_Pos_First := New_Pos_First + 1;
+            New_Pos_Last := New_Pos_Last - 1;
           end loop;
         end loop;
-      when PREV =>
-        for I in 1 .. OCCURENCE loop
+      when Prev =>
+        for I in 1 .. Occurence loop
           loop
-            exit when EQUAL(NEW_POS.VALUE, ITEM);
-            CHECK_IN(NEW_POS.PREV);
-            NEW_POS := NEW_POS.PREV;
-            NEW_POS_FIRST := NEW_POS_FIRST - 1;
-            NEW_POS_LAST := NEW_POS_LAST + 1;
+            exit when Equal(New_Pos.Value, Item);
+            Check_In(New_Pos.Prev);
+            New_Pos := New_Pos.Prev;
+            New_Pos_First := New_Pos_First - 1;
+            New_Pos_Last := New_Pos_Last + 1;
           end loop;
         end loop;
     end case;
 
-    LIST.CURRENT := NEW_POS;
-    LIST.POS_FIRST := NEW_POS_FIRST;
-    LIST.POS_LAST := NEW_POS_LAST;
-    LIST.MODIFIED := TRUE;
-  end SEARCH;
+    List.Current := New_Pos;
+    List.Pos_First := New_Pos_First;
+    List.Pos_Last := New_Pos_Last;
+    List.Modified := True;
+  end Search;
 
 
-  procedure SORT (LIST : in out LIST_TYPE) is
-    LAST : constant NATURAL := LIST_LENGTH (LIST);
+  procedure Sort (List : in out List_Type) is
+    Last : constant Natural := List_Length (List);
   begin
-    if LAST <= 1 then
+    if Last <= 1 then
       -- No or 1 element. No sort.
       return;
     end if;
@@ -470,71 +470,71 @@ package body DYNAMIC_LIST is
     declare
 
       -- recursive procedure which sorts a slice of the list
-      procedure QUICK (LEFT, RIGHT : in POSITIVE) is
+      procedure Quick (Left, Right : in Positive) is
         -- middle of the slice
-        I_FRONTIER : constant POSITIVE := (LEFT + RIGHT) / 2;
-        L_FRONTIER : LINK;
+        I_Frontier : constant Positive := (Left + Right) / 2;
+        L_Frontier : Link;
         -- indexes in both halfs of the slice
-        I_LEFT, I_RIGHT : POSITIVE;
-        L_LEFT, L_RIGHT : LINK;
+        I_Left, I_Right : Positive;
+        L_Left, L_Right : Link;
      begin
-        I_LEFT := LEFT;
-        I_RIGHT := RIGHT;
+        I_Left := Left;
+        I_Right := Right;
         -- set link to frontier
-        MOVE_TO (LIST, NEXT, I_FRONTIER-1, FALSE);
-        L_FRONTIER := LIST.CURRENT;
+        Move_To (List, Next, I_Frontier-1, False);
+        L_Frontier := List.Current;
 
         loop
 
           -- first element at left of slice and not positioned ok
           --  regarding the frontier
-          MOVE_TO (LIST, NEXT, I_LEFT-1, FALSE);
-          while LESS_THAN (LIST.CURRENT.VALUE, L_FRONTIER.VALUE) loop
-            MOVE_TO (LIST, NEXT, 1, TRUE);
+          Move_To (List, Next, I_Left-1, False);
+          while Less_Than (List.Current.Value, L_Frontier.Value) loop
+            Move_To (List, Next, 1, True);
           end loop;
-          L_LEFT := LIST.CURRENT;
-          I_LEFT := GET_POSITION (LIST);
+          L_Left := List.Current;
+          I_Left := Get_Position (List);
 
           -- last  element a right of slice and not positioned ok
           --  regarding the frontier
-          MOVE_TO (LIST, NEXT, I_RIGHT-1, FALSE);
-          while LESS_THAN (L_FRONTIER.VALUE, LIST.CURRENT.VALUE) loop
-            MOVE_TO (LIST, PREV, 1, TRUE);
+          Move_To (List, Next, I_Right-1, False);
+          while Less_Than (L_Frontier.Value, List.Current.Value) loop
+            Move_To (List, Prev, 1, True);
           end loop;
-          L_RIGHT := LIST.CURRENT;
-          I_RIGHT := GET_POSITION (LIST);
+          L_Right := List.Current;
+          I_Right := Get_Position (List);
 
           -- exchange and go to next elements if not both in frontier
-          if I_LEFT < I_RIGHT then
-            PERMUTE (LIST, L_LEFT, L_RIGHT);
-            I_LEFT  := I_LEFT  + 1;
-            I_RIGHT := I_RIGHT - 1;
-          elsif I_LEFT = I_RIGHT then
+          if I_Left < I_Right then
+            Permute (List, L_Left, L_Right);
+            I_Left  := I_Left  + 1;
+            I_Right := I_Right - 1;
+          elsif I_Left = I_Right then
             -- go to next elements if not crossed
-            if I_LEFT /= RIGHT then
-              I_LEFT  := I_LEFT  + 1;
+            if I_Left /= Right then
+              I_Left  := I_Left  + 1;
             end if;
-            if I_RIGHT /= LEFT then
-              I_RIGHT := I_RIGHT - 1;
+            if I_Right /= Left then
+              I_Right := I_Right - 1;
             end if;
           end if;
 
           -- leave if crossed now
-          exit when I_LEFT > I_RIGHT or else
-                   (I_LEFT = RIGHT and then I_RIGHT = LEFT);
+          exit when I_Left > I_Right or else
+                   (I_Left = Right and then I_Right = Left);
         end loop;
 
         -- sort both new slices
-        if LEFT   < I_RIGHT then QUICK(LEFT,   I_RIGHT); end if;
-        if I_LEFT < RIGHT   then QUICK(I_LEFT, RIGHT);   end if;
-      end QUICK;
+        if Left   < I_Right then Quick(Left,   I_Right); end if;
+        if I_Left < Right   then Quick(I_Left, Right);   end if;
+      end Quick;
 
     begin
-      QUICK (1, LAST);
+      Quick (1, Last);
     end;
     -- move to first item
-    MOVE_TO (LIST, NEXT, 0, FALSE);
-    LIST.MODIFIED := TRUE;
-  end SORT;
+    Move_To (List, Next, 0, False);
+    List.Modified := True;
+  end Sort;
 
-end DYNAMIC_LIST;
+end Dynamic_List;

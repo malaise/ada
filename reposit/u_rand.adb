@@ -18,41 +18,41 @@
 --------------------------------------------------------------------------
 
 
-package body U_RAND is
+package body U_Rand is
   M3     : constant := 97;
-  INIT_C : constant := 362436.0/16777216.0;
-  CD     : constant := 7654321.0/16777216.0;
-  CM     : constant := 16777213.0/16777216.0;
+  Init_C : constant := 362436.0/16777216.0;
+  Cd     : constant := 7654321.0/16777216.0;
+  Cm     : constant := 16777213.0/16777216.0;
 
-  subtype RANGE_1 is INTEGER range 0 .. M1 - 1;
-  subtype RANGE_2 is INTEGER range 0 .. M2 - 1;
-  subtype RANGE_3 is INTEGER range 1 .. M3;
+  subtype Range_1 is Integer range 0 .. M1 - 1;
+  subtype Range_2 is Integer range 0 .. M2 - 1;
+  subtype Range_3 is Integer range 1 .. M3;
 
-  I, J, K : RANGE_1;
-  NI, NJ  : INTEGER;
-  L       : RANGE_2;
-  C       : FLOAT;
-  U       : array(RANGE_3) of FLOAT;
+  I, J, K : Range_1;
+  Ni, Nj  : Integer;
+  L       : Range_2;
+  C       : Float;
+  U       : array(Range_3) of Float;
 
-  procedure START(NEW_I : in SEED_RANGE_1 := DEFAULT_I;
-                  NEW_J : in SEED_RANGE_1 := DEFAULT_J;
-                  NEW_K : in SEED_RANGE_1 := DEFAULT_K;
-                  NEW_L : in SEED_RANGE_2 := DEFAULT_L) is
-    S, T : FLOAT;
-    M    : RANGE_1;
+  procedure Start(New_I : in Seed_Range_1 := Default_I;
+                  New_J : in Seed_Range_1 := Default_J;
+                  New_K : in Seed_Range_1 := Default_K;
+                  New_L : in Seed_Range_2 := Default_L) is
+    S, T : Float;
+    M    : Range_1;
   begin
-    I := NEW_I;
-    J := NEW_J;
-    K := NEW_K;
-    L := NEW_L;
-    NI := RANGE_3'LAST;
-    NJ := (RANGE_3'LAST/3) + 1;
-    C := INIT_C;
+    I := New_I;
+    J := New_J;
+    K := New_K;
+    L := New_L;
+    Ni := Range_3'Last;
+    Nj := (Range_3'Last/3) + 1;
+    C := Init_C;
 
-    for II in RANGE_3 loop
+    for Ii in Range_3 loop
       S := 0.0;
       T := 0.5;
-      for JJ in 1 .. 24 loop
+      for Jj in 1 .. 24 loop
         M := (((J*I) mod M1)*K) mod M1;
         I := J;
         J := K;
@@ -63,38 +63,38 @@ package body U_RAND is
         end if;
         T := 0.5*T;
       end loop;
-      U(II) := S;
+      U(Ii) := S;
     end loop;
-  end START;
+  end Start;
 
-  function NEXT return FLOAT is
-    TEMP : FLOAT;
+  function Next return Float is
+    Temp : Float;
   begin
-    TEMP := U(NI) - U(NJ);
-    if TEMP < 0.0 then
-      TEMP := TEMP + 1.0;
+    Temp := U(Ni) - U(Nj);
+    if Temp < 0.0 then
+      Temp := Temp + 1.0;
     end if;
-    U(NI) := TEMP;
-    NI := NI - 1;
-    if NI = 0 then
-      NI := RANGE_3'LAST;
+    U(Ni) := Temp;
+    Ni := Ni - 1;
+    if Ni = 0 then
+      Ni := Range_3'Last;
     end if;
-    NJ := NJ - 1;
-    if NJ = 0 then
-      NJ := RANGE_3'LAST;
+    Nj := Nj - 1;
+    if Nj = 0 then
+      Nj := Range_3'Last;
     end if;
-    C := C - CD;
+    C := C - Cd;
     if C < 0.0 then
-      C := C + CM;
+      C := C + Cm;
     end if;
-    TEMP := TEMP - C;
-    if TEMP < 0.0 then
-      TEMP := TEMP + 1.0;
+    Temp := Temp - C;
+    if Temp < 0.0 then
+      Temp := Temp + 1.0;
     end if;
-    return TEMP;
-  end NEXT;
+    return Temp;
+  end Next;
 
 begin
   -- initialize table U
-  START;
-end U_RAND;
+  Start;
+end U_Rand;

@@ -1,88 +1,88 @@
-with CALENDAR, MUTEX_MANAGER, MATH;
-package body RND is
+with Calendar, Mutex_Manager, Math;
+package body Rnd is
  
-  type LONG_INTEGER is new INTEGER;
+  type Long_Integer is new Integer;
  
   -- Generator of pseudo random : remanent variable
-  RND_NBRE : FLOAT;
+  Rnd_Nbre : Float;
  
-  LOCK     : MUTEX_MANAGER.MUTEX;
+  Lock     : Mutex_Manager.Mutex;
 
   -- Initialise sequence
-  procedure RANDOMIZE(INIT : in FLOAT := 1.0) is
+  procedure Randomize(Init : in Float := 1.0) is
     -- Result of mutex query : always TRUE because call is blocking
-    OK : BOOLEAN;
+    Ok : Boolean;
  
     -- Random number 
     -- Number of seconds in current day is N.xxx
     -- Result is 0.xxx
-    function INIT_RND return FLOAT is
-      DUREE : constant DURATION := abs(CALENDAR.SECONDS(CALENDAR.CLOCK));
+    function Init_Rnd return Float is
+      Duree : constant Duration := abs(Calendar.Seconds(Calendar.Clock));
     begin
-      return FLOAT(DUREE - DURATION(MATH.TRUNC(MATH.REAL(DUREE))));
-    end INIT_RND;
+      return Float(Duree - Duration(Math.Trunc(Math.Real(Duree))));
+    end Init_Rnd;
  
   begin
     -- 0 <= init < 1 : valid, else random
-    OK := MUTEX_MANAGER.GET_MUTEX(LOCK, -1.0);
-    if 0.0 <= INIT and then INIT < 1.0 then
-      RND_NBRE := INIT;
+    Ok := Mutex_Manager.Get_Mutex(Lock, -1.0);
+    if 0.0 <= Init and then Init < 1.0 then
+      Rnd_Nbre := Init;
     else
-      RND_NBRE := INIT_RND;
+      Rnd_Nbre := Init_Rnd;
     end if;
-    MUTEX_MANAGER.RELEASE_MUTEX(LOCK);
-  end RANDOMIZE;
+    Mutex_Manager.Release_Mutex(Lock);
+  end Randomize;
  
  
   -- Next element in sequence
-  function RANDOM(MINI : FLOAT := 0.0;
-                  MAXI : FLOAT := 1.0) return FLOAT is
-    RND_2 : FLOAT;
-    PI    : constant := 3.141592653589793;
-    OK    : BOOLEAN;
+  function Random(Mini : Float := 0.0;
+                  Maxi : Float := 1.0) return Float is
+    Rnd_2 : Float;
+    Pi    : constant := 3.141592653589793;
+    Ok    : Boolean;
   begin
-    OK := MUTEX_MANAGER.GET_MUTEX(LOCK, -1.0);
+    Ok := Mutex_Manager.Get_Mutex(Lock, -1.0);
     -- (rnd + pi) ** 5
-    RND_NBRE := RND_NBRE + PI;
-    RND_2 := RND_NBRE * RND_NBRE;
-    RND_NBRE := RND_2 * RND_2 * RND_NBRE;
+    Rnd_Nbre := Rnd_Nbre + Pi;
+    Rnd_2 := Rnd_Nbre * Rnd_Nbre;
+    Rnd_Nbre := Rnd_2 * Rnd_2 * Rnd_Nbre;
     -- decimal part
-    RND_NBRE := RND_NBRE - FLOAT(MATH.TRUNC(MATH.REAL(RND_NBRE)));
-    MUTEX_MANAGER.RELEASE_MUTEX(LOCK);
+    Rnd_Nbre := Rnd_Nbre - Float(Math.Trunc(Math.Real(Rnd_Nbre)));
+    Mutex_Manager.Release_Mutex(Lock);
     -- here 0 <= RND < 1
-    if MINI >= MAXI then
-      return RND_NBRE;
+    if Mini >= Maxi then
+      return Rnd_Nbre;
     else
-      return MINI + (RND_NBRE * (MAXI - MINI));
+      return Mini + (Rnd_Nbre * (Maxi - Mini));
     end if;
-  end RANDOM;
+  end Random;
  
-  function DISCR_RANDOM(MINI : NUM := NUM'FIRST;
-                        MAXI : NUM := NUM'LAST) return NUM is
+  function Discr_Random(Mini : Num := Num'First;
+                        Maxi : Num := Num'Last) return Num is
   begin
-    return NUM'VAL(INTEGER(MATH.TRUNC(MATH.REAL(RANDOM(FLOAT(NUM'POS(MINI)),
-                                                             FLOAT(NUM'POS(MAXI) + 1))))));
-  end DISCR_RANDOM;
+    return Num'Val(Integer(Math.Trunc(Math.Real(Random(Float(Num'Pos(Mini)),
+                                                             Float(Num'Pos(Maxi) + 1))))));
+  end Discr_Random;
  
-  function INT_RANDOM(MINI : INTEGER := 0;
-                      MAXI : INTEGER := 1) return INTEGER is
+  function Int_Random(Mini : Integer := 0;
+                      Maxi : Integer := 1) return Integer is
   begin
-    return INTEGER(MATH.TRUNC(MATH.REAL(RANDOM(FLOAT(MINI), FLOAT(MAXI + 1)))));
-  end INT_RANDOM;
+    return Integer(Math.Trunc(Math.Real(Random(Float(Mini), Float(Maxi + 1)))));
+  end Int_Random;
  
-  function FLOAT_RANDOM(MINI : FLOAT := 0.0;
-                        MAXI : FLOAT := 1.0) return FLOAT is
+  function Float_Random(Mini : Float := 0.0;
+                        Maxi : Float := 1.0) return Float is
   begin
-    return RANDOM(MINI, MAXI);
-  end FLOAT_RANDOM;
+    return Random(Mini, Maxi);
+  end Float_Random;
  
-  function DUR_RANDOM(MINI : DURATION := 0.0;
-                      MAXI : DURATION := 1.0) return DURATION is
+  function Dur_Random(Mini : Duration := 0.0;
+                      Maxi : Duration := 1.0) return Duration is
   begin
-    return DURATION(RANDOM(FLOAT(MINI), FLOAT(MAXI)));
-  end DUR_RANDOM;
+    return Duration(Random(Float(Mini), Float(Maxi)));
+  end Dur_Random;
  
 begin
-  RANDOMIZE;
-end RND;
+  Randomize;
+end Rnd;
 

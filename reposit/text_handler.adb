@@ -1,246 +1,246 @@
-package body TEXT_HANDLER is
+package body Text_Handler is
 
-  function LENGTH (T : TEXT) return MAX_LEN_RANGE is
+  function Length (T : Text) return Max_Len_Range is
   begin
-    return T.LEN;
-  end LENGTH;
+    return T.Len;
+  end Length;
 
-  function VALUE  (T : TEXT) return STRING is
+  function Value  (T : Text) return String is
   begin
-    return T.VAL (1 .. LENGTH(T));
-  end VALUE;
+    return T.Val (1 .. Length(T));
+  end Value;
 
-  function EMPTY  (T : TEXT) return BOOLEAN is
+  function Empty  (T : Text) return Boolean is
   begin
-    return LENGTH (T) = 0;
-  end EMPTY;
+    return Length (T) = 0;
+  end Empty;
 
-  procedure EMPTY (T : in out TEXT) is
+  procedure Empty (T : in out Text) is
   begin
-    T.LEN := 0;
-  end EMPTY;
+    T.Len := 0;
+  end Empty;
 
-  function TO_TEXT (S : STRING; MAX_LEN : MAX_LEN_RANGE) return TEXT is
-    T : TEXT (MAX_LEN);
+  function To_Text (S : String; Max_Len : Max_Len_Range) return Text is
+    T : Text (Max_Len);
   begin
-    T.LEN := S'LENGTH;
-    T.VAL (1 .. LENGTH(T)) := S;
+    T.Len := S'Length;
+    T.Val (1 .. Length(T)) := S;
     return T;
-  end TO_TEXT;
+  end To_Text;
 
-  function TO_TEXT (C : CHARACTER; MAX_LEN : MAX_LEN_RANGE) return TEXT
+  function To_Text (C : Character; Max_Len : Max_Len_Range) return Text
    is
-    T : TEXT (MAX_LEN);
+    T : Text (Max_Len);
   begin
-    T.LEN := 1;
-    T.VAL (1) := C;
+    T.Len := 1;
+    T.Val (1) := C;
     return T;
-  end TO_TEXT;
+  end To_Text;
 
-  function TO_TEXT (S : STRING) return TEXT is
-    T : TEXT (S'LENGTH);
+  function To_Text (S : String) return Text is
+    T : Text (S'Length);
   begin
-    T.LEN := T.MAX_LEN;
-    T.VAL := S;
+    T.Len := T.Max_Len;
+    T.Val := S;
     return T;
-  end TO_TEXT;
+  end To_Text;
 
-  function TO_TEXT (C : CHARACTER) return TEXT is
-    T : TEXT (1);
+  function To_Text (C : Character) return Text is
+    T : Text (1);
   begin
-    T.LEN := 1;
-    T.VAL (1) := C;
+    T.Len := 1;
+    T.Val (1) := C;
     return T;
-  end TO_TEXT;
+  end To_Text;
 
 
-  function "&" (LEFT : TEXT; RIGHT : TEXT) return TEXT is
-    T : TEXT (LEFT.MAX_LEN + RIGHT.MAX_LEN);
+  function "&" (Left : Text; Right : Text) return Text is
+    T : Text (Left.Max_Len + Right.Max_Len);
   begin
-    T.LEN := LENGTH(LEFT) + LENGTH(RIGHT);
-    T.VAL(1 .. LENGTH(T)) := VALUE(LEFT) & VALUE(RIGHT); 
-    return T;
-  end "&";
-
-  function "&" (LEFT : TEXT; RIGHT : STRING) return TEXT is
-    T : TEXT (LEFT.MAX_LEN + RIGHT'LENGTH);
-  begin
-    T.LEN := LENGTH(LEFT) + RIGHT'LENGTH;
-    T.VAL(1 .. LENGTH(T)) := VALUE(LEFT) & RIGHT;
+    T.Len := Length(Left) + Length(Right);
+    T.Val(1 .. Length(T)) := Value(Left) & Value(Right); 
     return T;
   end "&";
 
-  function "&" (LEFT : STRING; RIGHT : TEXT) return TEXT is
-    T : TEXT (LEFT'LENGTH + RIGHT.MAX_LEN);
+  function "&" (Left : Text; Right : String) return Text is
+    T : Text (Left.Max_Len + Right'Length);
   begin
-    T.LEN := LEFT'LENGTH + LENGTH(RIGHT);
-    T.VAL(1 .. LENGTH(T)) := LEFT & VALUE(RIGHT);
+    T.Len := Length(Left) + Right'Length;
+    T.Val(1 .. Length(T)) := Value(Left) & Right;
     return T;
   end "&";
 
-  function "&" (LEFT : TEXT; RIGHT : CHARACTER) return TEXT is
-    T : TEXT (LEFT.MAX_LEN + 1);
+  function "&" (Left : String; Right : Text) return Text is
+    T : Text (Left'Length + Right.Max_Len);
   begin
-    T.LEN := LENGTH(LEFT) + 1;
-    T.VAL(1 .. LENGTH(T)) := VALUE(LEFT) & RIGHT;
+    T.Len := Left'Length + Length(Right);
+    T.Val(1 .. Length(T)) := Left & Value(Right);
     return T;
   end "&";
 
-  function "&" (LEFT : CHARACTER; RIGHT : TEXT) return TEXT is
-    T : TEXT (1 + RIGHT.MAX_LEN);
+  function "&" (Left : Text; Right : Character) return Text is
+    T : Text (Left.Max_Len + 1);
   begin
-    T.LEN := 1 + LENGTH(RIGHT);
-    T.VAL(1 .. LENGTH(T)) := LEFT & VALUE(RIGHT);
+    T.Len := Length(Left) + 1;
+    T.Val(1 .. Length(T)) := Value(Left) & Right;
+    return T;
+  end "&";
+
+  function "&" (Left : Character; Right : Text) return Text is
+    T : Text (1 + Right.Max_Len);
+  begin
+    T.Len := 1 + Length(Right);
+    T.Val(1 .. Length(T)) := Left & Value(Right);
     return T;
   end "&";
 
 
-  function "=" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN is
+  function "=" (Left : Text; Right : Text) return Boolean is
   begin
-    return VALUE(LEFT) = VALUE(RIGHT);
+    return Value(Left) = Value(Right);
   end "=";
 
-  function "<" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN is
+  function "<" (Left : Text; Right : Text) return Boolean is
   begin
-    return VALUE(LEFT) < VALUE(RIGHT);
+    return Value(Left) < Value(Right);
   end "<";
 
-  function "<=" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN is
+  function "<=" (Left : Text; Right : Text) return Boolean is
   begin
-    return VALUE(LEFT) <= VALUE(RIGHT);
+    return Value(Left) <= Value(Right);
   end "<=";
 
-  function ">" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN is
+  function ">" (Left : Text; Right : Text) return Boolean is
   begin
-    return VALUE(LEFT) > VALUE(RIGHT);
+    return Value(Left) > Value(Right);
   end ">";
 
-  function ">=" (LEFT : TEXT; RIGHT : TEXT) return BOOLEAN is
+  function ">=" (Left : Text; Right : Text) return Boolean is
   begin
-    return VALUE(LEFT) >= VALUE(RIGHT);
+    return Value(Left) >= Value(Right);
   end ">=";
 
 
-  procedure SET (TO : in out TEXT; VALUE : in TEXT) is
+  procedure Set (To : in out Text; Value : in Text) is
   begin
-    TO.VAL(1..LENGTH(VALUE)) := TEXT_HANDLER.VALUE(VALUE);
-    TO.LEN := LENGTH(VALUE);
-  end SET;
+    To.Val(1..Length(Value)) := Text_Handler.Value(Value);
+    To.Len := Length(Value);
+  end Set;
 
-  procedure SET (TO : in out TEXT; VALUE : in STRING) is
+  procedure Set (To : in out Text; Value : in String) is
   begin
-    TO.VAL(1..VALUE'LENGTH) := VALUE;
-    TO.LEN := VALUE'LENGTH;
-  end SET;
+    To.Val(1..Value'Length) := Value;
+    To.Len := Value'Length;
+  end Set;
 
-  procedure SET (TO : in out TEXT; VALUE : in CHARACTER) is
+  procedure Set (To : in out Text; Value : in Character) is
   begin
-    TO.VAL(1) := VALUE;
-    TO.LEN := 1;
-  end SET;
+    To.Val(1) := Value;
+    To.Len := 1;
+  end Set;
 
 
-  procedure APPEND (TO : in out TEXT; TAIL : in TEXT) is
+  procedure Append (To : in out Text; Tail : in Text) is
   begin
-    TO.VAL(LENGTH(TO)+1 .. LENGTH(TO)+LENGTH(TAIL)) := VALUE(TAIL);
-    TO.LEN := LENGTH(TO) + LENGTH(TAIL);
-  end APPEND;
+    To.Val(Length(To)+1 .. Length(To)+Length(Tail)) := Value(Tail);
+    To.Len := Length(To) + Length(Tail);
+  end Append;
 
-  procedure APPEND (TO : in out TEXT; TAIL : in STRING) is
+  procedure Append (To : in out Text; Tail : in String) is
   begin
-    TO.VAL(LENGTH(TO)+1 .. LENGTH(TO)+TAIL'LENGTH) := TAIL;
-    TO.LEN := LENGTH(TO) + TAIL'LENGTH;
-  end APPEND;
+    To.Val(Length(To)+1 .. Length(To)+Tail'Length) := Tail;
+    To.Len := Length(To) + Tail'Length;
+  end Append;
 
-  procedure APPEND (TO : in out TEXT; TAIL : in CHARACTER) is
+  procedure Append (To : in out Text; Tail : in Character) is
   begin
-    TO.VAL(LENGTH(TO)+1) := TAIL;
-    TO.LEN := LENGTH(TO) + 1;
-  end APPEND;
+    To.Val(Length(To)+1) := Tail;
+    To.Len := Length(To) + 1;
+  end Append;
 
 
-  procedure AMEND (TO : in out TEXT; BY : in TEXT; 
-                   POSITION : in MAX_LEN_RANGE) is
+  procedure Amend (To : in out Text; By : in Text; 
+                   Position : in Max_Len_Range) is
   begin
-    AMEND (TO, BY.VAL (1 .. BY.LEN), POSITION);
-  end AMEND;
+    Amend (To, By.Val (1 .. By.Len), Position);
+  end Amend;
 
-  procedure AMEND (TO : in out TEXT; BY : in STRING; 
-                   POSITION : in MAX_LEN_RANGE) is
+  procedure Amend (To : in out Text; By : in String; 
+                   Position : in Max_Len_Range) is
   begin
-    if POSITION > TO.LEN then
-      raise CONSTRAINT_ERROR;
+    if Position > To.Len then
+      raise Constraint_Error;
     end if;
-    if POSITION + BY'LENGTH - 1 > TO.MAX_LEN then
-      raise CONSTRAINT_ERROR;
+    if Position + By'Length - 1 > To.Max_Len then
+      raise Constraint_Error;
     end if;
-    if POSITION + BY'LENGTH - 1 > TO.LEN then
-      TO.LEN := POSITION + BY'LENGTH - 1;
-      TO.VAL (POSITION .. TO.LEN) := BY;
+    if Position + By'Length - 1 > To.Len then
+      To.Len := Position + By'Length - 1;
+      To.Val (Position .. To.Len) := By;
     else
-      TO.VAL (POSITION .. POSITION + BY'LENGTH - 1) := BY;
+      To.Val (Position .. Position + By'Length - 1) := By;
     end if;
 
-  end AMEND;
+  end Amend;
 
-  procedure AMEND (TO : in out TEXT; BY : in CHARACTER; 
-                   POSITION : in MAX_LEN_RANGE) is
-    S : constant STRING (1 .. 1) := BY & "";
+  procedure Amend (To : in out Text; By : in Character; 
+                   Position : in Max_Len_Range) is
+    S : constant String (1 .. 1) := By & "";
   begin
-    AMEND (TO, S, POSITION);
-  end AMEND;
+    Amend (To, S, Position);
+  end Amend;
 
 
-  function LOCATE (WITHIN : TEXT; FRAGMENT : TEXT; OCCURENCE : POSITIVE := 1) 
-   return MAX_LEN_RANGE is
-    FOUND_OCCURENCE : NATURAL := 0;
+  function Locate (Within : Text; Fragment : Text; Occurence : Positive := 1) 
+   return Max_Len_Range is
+    Found_Occurence : Natural := 0;
   begin
-    for I in 1 .. LENGTH(WITHIN) - LENGTH(FRAGMENT) + 1 loop
-      if VALUE(WITHIN)(I .. I+LENGTH(FRAGMENT)-1) = VALUE(FRAGMENT) then
-        FOUND_OCCURENCE := FOUND_OCCURENCE + 1;
-        if FOUND_OCCURENCE = OCCURENCE then
+    for I in 1 .. Length(Within) - Length(Fragment) + 1 loop
+      if Value(Within)(I .. I+Length(Fragment)-1) = Value(Fragment) then
+        Found_Occurence := Found_Occurence + 1;
+        if Found_Occurence = Occurence then
           return I;
         end if;
       end if;
     end loop;
     return 0;
-  end LOCATE;
+  end Locate;
 
 
-  function LOCATE (WITHIN : TEXT; FRAGMENT : STRING; OCCURENCE : POSITIVE := 1) 
-   return MAX_LEN_RANGE is
-    FOUND_OCCURENCE : NATURAL := 0;
+  function Locate (Within : Text; Fragment : String; Occurence : Positive := 1) 
+   return Max_Len_Range is
+    Found_Occurence : Natural := 0;
   begin
-    for I in 1 .. LENGTH(WITHIN) - FRAGMENT'LENGTH + 1 loop
-      if VALUE(WITHIN)(I .. I+FRAGMENT'LENGTH-1) = FRAGMENT then
-        FOUND_OCCURENCE := FOUND_OCCURENCE + 1;
-        if FOUND_OCCURENCE = OCCURENCE then
+    for I in 1 .. Length(Within) - Fragment'Length + 1 loop
+      if Value(Within)(I .. I+Fragment'Length-1) = Fragment then
+        Found_Occurence := Found_Occurence + 1;
+        if Found_Occurence = Occurence then
           return I;
         end if;
       end if;
     end loop;
     return 0;
-  end LOCATE;
+  end Locate;
 
-  function LOCATE (WITHIN : TEXT; FRAGMENT : CHARACTER; OCCURENCE : POSITIVE := 1) 
-   return MAX_LEN_RANGE is
-    FOUND_OCCURENCE : NATURAL := 0;
+  function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1) 
+   return Max_Len_Range is
+    Found_Occurence : Natural := 0;
   begin
-    for I in 1 .. LENGTH(WITHIN) loop
-      if VALUE(WITHIN)(I) = FRAGMENT then
-        FOUND_OCCURENCE := FOUND_OCCURENCE + 1;
-        if FOUND_OCCURENCE = OCCURENCE then
+    for I in 1 .. Length(Within) loop
+      if Value(Within)(I) = Fragment then
+        Found_Occurence := Found_Occurence + 1;
+        if Found_Occurence = Occurence then
           return I;
         end if;
       end if;
     end loop;
     return 0;
-  end LOCATE;
+  end Locate;
 
-  procedure STRING_FOR_C (FROM : in out TEXT; STRING_ADDRESS : out SYSTEM.ADDRESS) is
+  procedure String_For_C (From : in out Text; String_Address : out System.Address) is
   begin
-    FROM.VAL(LENGTH(FROM) + 1) := ASCII.NUL;
-    STRING_ADDRESS := FROM.VAL'ADDRESS;
-  end STRING_FOR_C;
+    From.Val(Length(From) + 1) := Ascii.Nul;
+    String_Address := From.Val'Address;
+  end String_For_C;
 
-end TEXT_HANDLER;
+end Text_Handler;

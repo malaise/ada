@@ -1,48 +1,48 @@
-package body POLYGON_MNG is
+package body Polygon_Mng is
 
-  procedure BELONG_TO_AREA (POLYGON        : in FLOAT_POINTS_ARRAY;
-                            POINT_TO_CHECK : in FLOAT_POINT_REC;
-                            ACCURACY       : in FLOAT;
-                            RESULT         : out BELONGING_RESULTS) is
+  procedure Belong_To_Area (Polygon        : in Float_Points_Array;
+                            Point_To_Check : in Float_Point_Rec;
+                            Accuracy       : in Float;
+                            Result         : out Belonging_Results) is
     
 
-    ISI, ISF, ISC          : INTEGER;
-    A1, A2, A3, B1, B2, B3 : FLOAT;
-    P, C, E1, E2           : FLOAT;
-    D, Y1                  : FLOAT;
-    ACCURACY_2             : FLOAT;
-    ITI                    : INTEGER;
-    TEMP_RESULT            : BELONGING_RESULTS;
+    Isi, Isf, Isc          : Integer;
+    A1, A2, A3, B1, B2, B3 : Float;
+    P, C, E1, E2           : Float;
+    D, Y1                  : Float;
+    Accuracy_2             : Float;
+    Iti                    : Integer;
+    Temp_Result            : Belonging_Results;
 
   begin
     -- At least three points are required to define a polygon
-    if POLYGON'LENGTH < 3 then
-      raise NOT_A_POLYGON;
+    if Polygon'Length < 3 then
+      raise Not_A_Polygon;
     end if;
 
     -- Check to see if the point is inside or outside of the polygon
-    TEMP_RESULT := OUT_OF_AREA;
-    ITI := 0;
-    ACCURACY_2 := ACCURACY ** 2;
-    ISF := 0;
-    A1 := POLYGON(POLYGON'FIRST).X - POINT_TO_CHECK.X;
-    B1 := POLYGON(POLYGON'FIRST).Y - POINT_TO_CHECK.Y;
+    Temp_Result := Out_Of_Area;
+    Iti := 0;
+    Accuracy_2 := Accuracy ** 2;
+    Isf := 0;
+    A1 := Polygon(Polygon'First).X - Point_To_Check.X;
+    B1 := Polygon(Polygon'First).Y - Point_To_Check.Y;
     if A1 > 0.0 then
-      ISF := 1;
+      Isf := 1;
     elsif A1 < 0.0 then
-      ISF := -1;
+      Isf := -1;
     end if;
-    ISI := ISF;
-    ISC := ISF;
-    for I in POLYGON'RANGE loop
-      if I /= POLYGON'LAST then
-        A2 := POLYGON(I + 1).X - POINT_TO_CHECK.X;
-        B2 := POLYGON(I + 1).Y - POINT_TO_CHECK.Y;
+    Isi := Isf;
+    Isc := Isf;
+    for I in Polygon'Range loop
+      if I /= Polygon'Last then
+        A2 := Polygon(I + 1).X - Point_To_Check.X;
+        B2 := Polygon(I + 1).Y - Point_To_Check.Y;
       else
         -- last segment : the second point of the segment is the first point of
         --                the polygon
-        A2 := POLYGON(POLYGON'FIRST).X - POINT_TO_CHECK.X;
-        B2 := POLYGON(POLYGON'FIRST).Y - POINT_TO_CHECK.Y;
+        A2 := Polygon(Polygon'First).X - Point_To_Check.X;
+        B2 := Polygon(Polygon'First).Y - Point_To_Check.Y;
       end if;
       A3 := A2 - A1;
       B3 := B2 - B1;
@@ -50,165 +50,165 @@ package body POLYGON_MNG is
       C := A3 ** 2 + B3 ** 2;
       E1 := A1 ** 2 + B1 ** 2;
       E2 := A2 ** 2 + B2 ** 2;
-      if E1 <= ACCURACY_2 or else E2 <= ACCURACY_2 then
-        TEMP_RESULT := SUMMIT;
+      if E1 <= Accuracy_2 or else E2 <= Accuracy_2 then
+        Temp_Result := Summit;
         exit;
       end if;
       if C + E1 > E2 and then C + E2 > E1 then
         D := P ** 2 / C;
-        if D <= ACCURACY_2 then
-          TEMP_RESULT := BOUNDARY;
+        if D <= Accuracy_2 then
+          Temp_Result := Boundary;
           exit;
         end if;
       end if;
       if A2 > 0.0 then
-        ISF := 1;
+        Isf := 1;
       elsif A2 < 0.0 then
-        ISF := -1;
+        Isf := -1;
       end if;
       --
-      if ISI = 0 then
-        ISI := ISF;
+      if Isi = 0 then
+        Isi := Isf;
       end if;
       A1 := A2;
       B1 := B2;
-      if ISC /= ISF then
-        if ISC /= 0 then
+      if Isc /= Isf then
+        if Isc /= 0 then
           Y1 := P / A3;
           if Y1 > 0.0 then
-            ITI := ITI + 1;
+            Iti := Iti + 1;
           end if;
         end if;
-        ISC := ISF;
+        Isc := Isf;
       end if;
 
     end loop;
 
-    if TEMP_RESULT = OUT_OF_AREA then
-      if ISF /= ISI then
+    if Temp_Result = Out_Of_Area then
+      if Isf /= Isi then
         if B2 > 0.0 then
-          ITI := ITI + 1;
+          Iti := Iti + 1;
         end if;
       end if;
-      if ITI /= ITI / 2 * 2 then
-        TEMP_RESULT := INSIDE_AREA;
+      if Iti /= Iti / 2 * 2 then
+        Temp_Result := Inside_Area;
       end if;
     end if;
-    RESULT := TEMP_RESULT;
+    Result := Temp_Result;
 
-  end BELONG_TO_AREA;
+  end Belong_To_Area;
 
-  function "-" (PL, PR : FLOAT_POINT_REC) return FLOAT_POINT_REC is
+  function "-" (Pl, Pr : Float_Point_Rec) return Float_Point_Rec is
   begin
-    return (X => PL.X - PR.X, Y=> PL.Y - PR.Y);
+    return (X => Pl.X - Pr.X, Y=> Pl.Y - Pr.Y);
   end "-";
 
-  procedure SEGMENTS_INTERSECT (PS1, QS1, PS2, QS2 : in  FLOAT_POINT_REC;
-                                INTERSECT          :    out BOOLEAN;
-                                I_POINT            :    out FLOAT_POINT_REC) is
+  procedure Segments_Intersect (Ps1, Qs1, Ps2, Qs2 : in  Float_Point_Rec;
+                                Intersect          :    out Boolean;
+                                I_Point            :    out Float_Point_Rec) is
 
-    DET                   : FLOAT;
-    COEF1, COEF2          : FLOAT;
-    VECT1, VECT2, VECTQ12 : FLOAT_POINT_REC;
+    Det                   : Float;
+    Coef1, Coef2          : Float;
+    Vect1, Vect2, Vectq12 : Float_Point_Rec;
 
   begin
-    VECT1 := PS1 - QS1;
-    VECT2 := PS2 - QS2;
-    I_POINT := (X => 0.0, Y => 0.0);
-    DET := VECT1.Y * VECT2.X - VECT1.X * VECT2.Y;
+    Vect1 := Ps1 - Qs1;
+    Vect2 := Ps2 - Qs2;
+    I_Point := (X => 0.0, Y => 0.0);
+    Det := Vect1.Y * Vect2.X - Vect1.X * Vect2.Y;
 
     -- If the determinant is null (segments parallel)
-    if abs DET < 0.5 then
-      INTERSECT := FALSE;
+    if abs Det < 0.5 then
+      Intersect := False;
     else
-      VECTQ12 := QS1 - QS2;
-      COEF1 := (VECT2.Y * VECTQ12.X - VECT2.X * VECTQ12.Y) / DET;
-      COEF2 := (VECT1.Y * VECTQ12.X - VECT1.X * VECTQ12.Y) / DET;
-      if       COEF1 < 1.0 and then COEF1 > 0.0
-      and then COEF2 < 1.0 and then COEF2 > 0.0 then
-        INTERSECT := TRUE;
-        I_POINT.X := VECT1.X * COEF1 + QS1.X;
-        I_POINT.Y := VECT1.Y * COEF1 + QS1.Y;
+      Vectq12 := Qs1 - Qs2;
+      Coef1 := (Vect2.Y * Vectq12.X - Vect2.X * Vectq12.Y) / Det;
+      Coef2 := (Vect1.Y * Vectq12.X - Vect1.X * Vectq12.Y) / Det;
+      if       Coef1 < 1.0 and then Coef1 > 0.0
+      and then Coef2 < 1.0 and then Coef2 > 0.0 then
+        Intersect := True;
+        I_Point.X := Vect1.X * Coef1 + Qs1.X;
+        I_Point.Y := Vect1.Y * Coef1 + Qs1.Y;
       else
-        INTERSECT := FALSE;
+        Intersect := False;
       end if;
     end if;
 
-  end SEGMENTS_INTERSECT;
+  end Segments_Intersect;
 
-  function IS_CONNEXE (POLYGON : FLOAT_POINTS_ARRAY) return BOOLEAN is
+  function Is_Connexe (Polygon : Float_Points_Array) return Boolean is
 
-    INTERSECT : BOOLEAN;
-    I_POINT   : FLOAT_POINT_REC;
+    Intersect : Boolean;
+    I_Point   : Float_Point_Rec;
 
   begin
     -- At least three points are required to define a polygon
-    if POLYGON'LENGTH < 3 then
-      raise NOT_A_POLYGON;
+    if Polygon'Length < 3 then
+      raise Not_A_Polygon;
     end if;
 
-    for NEXT_POINT_NB in POLYGON'FIRST + 2 .. POLYGON'LAST - 1 loop
-      for PREVIOUS_POINT_NB in POLYGON'FIRST .. NEXT_POINT_NB - 2 loop
-        SEGMENTS_INTERSECT (PS1       => POLYGON(NEXT_POINT_NB),
-                            QS1       => POLYGON(NEXT_POINT_NB + 1),
-                            PS2       => POLYGON(PREVIOUS_POINT_NB),
-                            QS2       => POLYGON(PREVIOUS_POINT_NB + 1),
-                            INTERSECT => INTERSECT,
-                            I_POINT   => I_POINT);
-        if INTERSECT then
-          return FALSE;
+    for Next_Point_Nb in Polygon'First + 2 .. Polygon'Last - 1 loop
+      for Previous_Point_Nb in Polygon'First .. Next_Point_Nb - 2 loop
+        Segments_Intersect (Ps1       => Polygon(Next_Point_Nb),
+                            Qs1       => Polygon(Next_Point_Nb + 1),
+                            Ps2       => Polygon(Previous_Point_Nb),
+                            Qs2       => Polygon(Previous_Point_Nb + 1),
+                            Intersect => Intersect,
+                            I_Point   => I_Point);
+        if Intersect then
+          return False;
         end if;
       end loop;
     end loop;
 
-    for POINT_NB in POLYGON'FIRST + 1 .. POLYGON'LAST - 2 loop
-      SEGMENTS_INTERSECT (PS1       => POLYGON(POLYGON'LAST),
-                          QS1       => POLYGON(POLYGON'FIRST),
-                          PS2       => POLYGON(POINT_NB),
-                          QS2       => POLYGON(POINT_NB + 1),
-                          INTERSECT => INTERSECT,
-                          I_POINT   => I_POINT);
-      if INTERSECT then
-        return FALSE;
+    for Point_Nb in Polygon'First + 1 .. Polygon'Last - 2 loop
+      Segments_Intersect (Ps1       => Polygon(Polygon'Last),
+                          Qs1       => Polygon(Polygon'First),
+                          Ps2       => Polygon(Point_Nb),
+                          Qs2       => Polygon(Point_Nb + 1),
+                          Intersect => Intersect,
+                          I_Point   => I_Point);
+      if Intersect then
+        return False;
       end if;
     end loop;
 
-    return TRUE;
+    return True;
 
-  end IS_CONNEXE;
+  end Is_Connexe;
 
-  function TO_FLOAT (POINT : INT_POINT_REC) return FLOAT_POINT_REC is
+  function To_Float (Point : Int_Point_Rec) return Float_Point_Rec is
   begin
-    return (X => FLOAT(POINT.X), Y => FLOAT(POINT.Y));
-  end TO_FLOAT;
+    return (X => Float(Point.X), Y => Float(Point.Y));
+  end To_Float;
 
-  procedure TO_FLOAT (INT_POLYGON : in INT_POINTS_ARRAY; FLOAT_POLYGON : out FLOAT_POINTS_ARRAY) is
-    J : POSITIVE;
+  procedure To_Float (Int_Polygon : in Int_Points_Array; Float_Polygon : out Float_Points_Array) is
+    J : Positive;
   begin
-    for I in INT_POLYGON'RANGE loop
-      J := I - INT_POLYGON'FIRST + FLOAT_POLYGON'FIRST;
-      FLOAT_POLYGON (J) := TO_FLOAT(INT_POLYGON(I));
+    for I in Int_Polygon'Range loop
+      J := I - Int_Polygon'First + Float_Polygon'First;
+      Float_Polygon (J) := To_Float(Int_Polygon(I));
     end loop;
-  end TO_FLOAT;
+  end To_Float;
   
-  procedure BELONG_TO_AREA (POLYGON        : in INT_POINTS_ARRAY;
-                            POINT_TO_CHECK : in INT_POINT_REC;
-                            ACCURACY       : in FLOAT;
-                            RESULT         : out BELONGING_RESULTS) is
-    FLOAT_POLYGON : FLOAT_POINTS_ARRAY(1 .. POLYGON'LENGTH);
-    FLOAT_POINT_TO_CHECK : FLOAT_POINT_REC;
+  procedure Belong_To_Area (Polygon        : in Int_Points_Array;
+                            Point_To_Check : in Int_Point_Rec;
+                            Accuracy       : in Float;
+                            Result         : out Belonging_Results) is
+    Float_Polygon : Float_Points_Array(1 .. Polygon'Length);
+    Float_Point_To_Check : Float_Point_Rec;
   begin
-    TO_FLOAT (POLYGON, FLOAT_POLYGON);
-    FLOAT_POINT_TO_CHECK := TO_FLOAT (POINT_TO_CHECK);
-    BELONG_TO_AREA (FLOAT_POLYGON, FLOAT_POINT_TO_CHECK, ACCURACY, RESULT);
-  end  BELONG_TO_AREA;
+    To_Float (Polygon, Float_Polygon);
+    Float_Point_To_Check := To_Float (Point_To_Check);
+    Belong_To_Area (Float_Polygon, Float_Point_To_Check, Accuracy, Result);
+  end  Belong_To_Area;
 
-  function IS_CONNEXE (POLYGON : INT_POINTS_ARRAY) return BOOLEAN is
-    FLOAT_POLYGON : FLOAT_POINTS_ARRAY(1 .. POLYGON'LENGTH);
+  function Is_Connexe (Polygon : Int_Points_Array) return Boolean is
+    Float_Polygon : Float_Points_Array(1 .. Polygon'Length);
   begin
-    TO_FLOAT (POLYGON, FLOAT_POLYGON);
-    return IS_CONNEXE (FLOAT_POLYGON);
-  end IS_CONNEXE;
+    To_Float (Polygon, Float_Polygon);
+    return Is_Connexe (Float_Polygon);
+  end Is_Connexe;
 
-end POLYGON_MNG;
+end Polygon_Mng;
 

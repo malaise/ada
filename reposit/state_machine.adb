@@ -1,186 +1,186 @@
-package body STATE_MACHINE is
+package body State_Machine is
 
   -- A transition
-  type TRANSITION_CELL;
-  type TRANSITION_ACCESS is access TRANSITION_CELL;
-  type TRANSITION_CELL is record
-    EVENT : EVENT_LIST;
-    NEW_STATE : STATE_LIST;
+  type Transition_Cell;
+  type Transition_Access is access Transition_Cell;
+  type Transition_Cell is record
+    Event : Event_List;
+    New_State : State_List;
     -- Other transition from this state
-    NEXT_TRANSITION : TRANSITION_ACCESS;
+    Next_Transition : Transition_Access;
   end record;
 
   -- The states, each one is an access to first transition
-  STATE_ARRAY : array (STATE_LIST) of TRANSITION_ACCESS := (others => null);
-  STATE_NB : INTEGER := STATE_ARRAY'LENGTH;
+  State_Array : array (State_List) of Transition_Access := (others => null);
+  State_Nb : Integer := State_Array'Length;
 
   -- The current state
-  THE_CURRENT_STATE : STATE_LIST;
+  The_Current_State : State_List;
 
   -- Still declaring?
-  IN_DECLARATION : BOOLEAN := TRUE;
+  In_Declaration : Boolean := True;
 
-  procedure DO_TRANSITION (FROM_STATE : in STATE_LIST; TRANSITION : TRANSITION_ACCESS;
-                           REPORT : in BOOLEAN) is
+  procedure Do_Transition (From_State : in State_List; Transition : Transition_Access;
+                           Report : in Boolean) is
   begin
     -- Call user procedure
-    if REPORT then
-       REPORT_TRANSITION (FROM_STATE, TRANSITION.EVENT, TRANSITION.NEW_STATE);
+    if Report then
+       Report_Transition (From_State, Transition.Event, Transition.New_State);
     end if;
-    THE_CURRENT_STATE := TRANSITION.NEW_STATE;
-  end DO_TRANSITION;
+    The_Current_State := Transition.New_State;
+  end Do_Transition;
 
 
   -- Do all True transitions from the current state
   -- detects loops
-  procedure DO_TRUES (REPORT : in BOOLEAN);
+  procedure Do_Trues (Report : in Boolean);
 
   -- To add a transition in the state machine
   -- May raise DECLARATION_ENDED if called after END_DECLARATION;
-  procedure ADD_TRANSITION (TRANSITION : in TRANSITION_REC) is
-    TA, TAP : TRANSITION_ACCESS;
+  procedure Add_Transition (Transition : in Transition_Rec) is
+    Ta, Tap : Transition_Access;
   begin
-    if not IN_DECLARATION then
-      raise DECLARATION_ENDED;
+    if not In_Declaration then
+      raise Declaration_Ended;
     end if;
 
-    TA := STATE_ARRAY(TRANSITION.ORIGINAL_STATE);
+    Ta := State_Array(Transition.Original_State);
 
-    if TA = null then
+    if Ta = null then
       -- First transition from this state
-      STATE_ARRAY (TRANSITION.ORIGINAL_STATE) := new TRANSITION_CELL'(
-                 EVENT           => TRANSITION.EVENT,
-                 NEW_STATE       => TRANSITION.DESTINATION_STATE,
-                 NEXT_TRANSITION => null );
+      State_Array (Transition.Original_State) := new Transition_Cell'(
+                 Event           => Transition.Event,
+                 New_State       => Transition.Destination_State,
+                 Next_Transition => null );
     else
       -- Check not already defined
       loop
-        if TA.EVENT = TRANSITION.EVENT then
+        if Ta.Event = Transition.Event then
           -- This event already defined from this state
-          raise EVENT_ALREADY;
+          raise Event_Already;
         end if;
-        TAP := TA;
-        TA := TAP.NEXT_TRANSITION;
-        exit when TA = null;
+        Tap := Ta;
+        Ta := Tap.Next_Transition;
+        exit when Ta = null;
       end loop;
 
-      TAP.NEXT_TRANSITION := new TRANSITION_CELL'(
-                 EVENT           => TRANSITION.EVENT,
-                 NEW_STATE       => TRANSITION.DESTINATION_STATE,
-                 NEXT_TRANSITION => null );
+      Tap.Next_Transition := new Transition_Cell'(
+                 Event           => Transition.Event,
+                 New_State       => Transition.Destination_State,
+                 Next_Transition => null );
     end if;
-  end ADD_TRANSITION;
+  end Add_Transition;
 
   -- To end declarations
   -- May raise DECLARATION_ENDED if re-called after END_DECLARATION;
-  procedure END_DECLARATION is
+  procedure End_Declaration is
   begin
-    if not IN_DECLARATION then
-      raise DECLARATION_ENDED;
+    if not In_Declaration then
+      raise Declaration_Ended;
     end if;
-    IN_DECLARATION := FALSE;
+    In_Declaration := False;
     -- Do all true transitions from any state,
     --  do first state last and report it only
     -- All tests but the last one check true_loop
     --  last one (first state) cannot have true loop then
     --  (it would have been detected by a check on the
     --   destination state of this true event).
-    for START_STATE in reverse STATE_LIST loop
-      THE_CURRENT_STATE := START_STATE;
-      DO_TRUES (START_STATE = STATE_LIST'FIRST);
+    for Start_State in reverse State_List loop
+      The_Current_State := Start_State;
+      Do_Trues (Start_State = State_List'First);
     end loop;
-  end END_DECLARATION;
+  end End_Declaration;
 
-  procedure DO_TRUES (REPORT : in BOOLEAN) is
-    TA : TRANSITION_ACCESS;
-    NB_TRUE : NATURAL := 0;
+  procedure Do_Trues (Report : in Boolean) is
+    Ta : Transition_Access;
+    Nb_True : Natural := 0;
   begin
-    if IN_DECLARATION then
-      raise DECLARATION_NOT_ENDED;
+    if In_Declaration then
+      raise Declaration_Not_Ended;
     end if;
-    TA := STATE_ARRAY(THE_CURRENT_STATE);
+    Ta := State_Array(The_Current_State);
     -- Look for a TRUE transition
     loop
-      if TA = null then
+      if Ta = null then
         -- No other transition (which means no TRUE transition) from this state
         return;
       end if;
-      if EVENT_LIST'IMAGE(TA.EVENT) = "TRUE" then
+      if Event_List'Image(Ta.Event) = "True" then
         -- Transition is TRUE, follow it
-        DO_TRANSITION (THE_CURRENT_STATE, TA, REPORT);
-        TA := STATE_ARRAY(THE_CURRENT_STATE);
+        Do_Transition (The_Current_State, Ta, Report);
+        Ta := State_Array(The_Current_State);
         -- Count true transitions to detect loops
-        NB_TRUE := NB_TRUE + 1;
-        if NB_TRUE = STATE_NB then
-          raise TRUE_LOOP;
+        Nb_True := Nb_True + 1;
+        if Nb_True = State_Nb then
+          raise True_Loop;
         end if;
       else
-        TA := TA.NEXT_TRANSITION;
+        Ta := Ta.Next_Transition;
       end if;
     end loop;
-  end DO_TRUES;
+  end Do_Trues;
 
   -- All following calls may raise DECLARATION_NOT_ENDED if
   --  called before END_DECLARATION
 
   -- An event: do a transition.
-  function NEW_EVENT (EVENT : EVENT_LIST) return STATE_LIST is
+  function New_Event (Event : Event_List) return State_List is
   begin
-    NEW_EVENT (EVENT);
-    return THE_CURRENT_STATE;
-  end NEW_EVENT;
+    New_Event (Event);
+    return The_Current_State;
+  end New_Event;
 
-  procedure NEW_EVENT (EVENT : in EVENT_LIST) is
-    TA : TRANSITION_ACCESS;
-    DEFAULTA : TRANSITION_ACCESS := null;
+  procedure New_Event (Event : in Event_List) is
+    Ta : Transition_Access;
+    Defaulta : Transition_Access := null;
   begin
-    if IN_DECLARATION then
-      raise DECLARATION_NOT_ENDED;
+    if In_Declaration then
+      raise Declaration_Not_Ended;
     end if;
-    TA := STATE_ARRAY(THE_CURRENT_STATE);
+    Ta := State_Array(The_Current_State);
     loop
-      if TA = null then
+      if Ta = null then
         -- No other transition for this state (not found)
         -- Do default if defined (found)
-        if DEFAULTA /= null then
-          DO_TRANSITION (THE_CURRENT_STATE, DEFAULTA, TRUE);
-          DO_TRUES (TRUE);
+        if Defaulta /= null then
+          Do_Transition (The_Current_State, Defaulta, True);
+          Do_Trues (True);
         end if;
         return;
       end if;
-      if TA.EVENT = EVENT then
+      if Ta.Event = Event then
         -- Transition event matches
-        DO_TRANSITION (THE_CURRENT_STATE, TA, TRUE);
-        DO_TRUES (TRUE);
+        Do_Transition (The_Current_State, Ta, True);
+        Do_Trues (True);
         return;
       else
-        if EVENT_LIST'IMAGE(TA.EVENT) = "DEFAULT" then
+        if Event_List'Image(Ta.Event) = "Default" then
           -- Default transition found. Store it.
-          DEFAULTA := TA;
+          Defaulta := Ta;
         end if;
-        TA := TA.NEXT_TRANSITION;
+        Ta := Ta.Next_Transition;
       end if;
     end loop;
-  end NEW_EVENT;
+  end New_Event;
 
   -- Get current state
-  function CURRENT_STATE return STATE_LIST is
+  function Current_State return State_List is
   begin
-    if IN_DECLARATION then
-      raise DECLARATION_NOT_ENDED;
+    if In_Declaration then
+      raise Declaration_Not_Ended;
     end if;
-    return THE_CURRENT_STATE;
-  end CURRENT_STATE;
+    return The_Current_State;
+  end Current_State;
 
   -- To force a new state without event
-  procedure SET_STATE (STATE : in STATE_LIST) is
+  procedure Set_State (State : in State_List) is
   begin
-    if IN_DECLARATION then
-      raise DECLARATION_NOT_ENDED;
+    if In_Declaration then
+      raise Declaration_Not_Ended;
     end if;
-    THE_CURRENT_STATE := STATE;
-    DO_TRUES (TRUE);
-  end SET_STATE;
+    The_Current_State := State;
+    Do_Trues (True);
+  end Set_State;
 
-end STATE_MACHINE;
+end State_Machine;
 

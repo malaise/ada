@@ -1,1024 +1,1024 @@
-with ARGUMENT, DYN_DATA, SYS_CALLS;
-package body GENERIC_CON_IO is
+with Argument, Dyn_Data, Sys_Calls;
+package body Generic_Con_Io is
 
-  X_INIT_DONE : BOOLEAN := FALSE;
+  X_Init_Done : Boolean := False;
 
-  procedure X_INITIALISE is
+  procedure X_Initialise is
   begin
-    if not X_INIT_DONE then
-      X_MNG.X_INITIALISE ("");
-      X_INIT_DONE := TRUE;
+    if not X_Init_Done then
+      X_Mng.X_Initialise ("");
+      X_Init_Done := True;
     end if;
-  end X_INITIALISE;
+  end X_Initialise;
 
-  package body ONE_CON_IO is
+  package body One_Con_Io is
 
-    FONT_ENV_NAME : constant STRING := "CON_IO_FONT";
-    FONT_ENV_SMALL : constant STRING := "small";
-    FONT_ENV_LARGE : constant STRING := "large";
+    Font_Env_Name : constant String := "Con_Io_Font";
+    Font_Env_Small : constant String := "small";
+    Font_Env_Large : constant String := "large";
 
-    ID : X_MNG.LINE;
-    LINE_DEF : constant X_MNG.LINE_DEFINITION_REC := (
-      SCREEN_ID => 0,
-      ROW => 1,
-      COLUMN => 1,
-      HEIGHT => ROW_RANGE_LAST - ROW_RANGE_FIRST + 1,
-      WIDTH => COL_RANGE_LAST - COL_RANGE_FIRST + 1,
-      BACKGROUND => 0,
-      BORDER => 0,
-      NO_FONT => FONT_NO);
+    Id : X_Mng.Line;
+    Line_Def : constant X_Mng.Line_Definition_Rec := (
+      Screen_Id => 0,
+      Row => 1,
+      Column => 1,
+      Height => Row_Range_Last - Row_Range_First + 1,
+      Width => Col_Range_Last - Col_Range_First + 1,
+      Background => 0,
+      Border => 0,
+      No_Font => Font_No);
 
-    type BORDER_LIST is (ERASE, SIMPLE, BLINK);
+    type Border_List is (Erase, Simple, Blink);
 
-    X_EVENT_WAITING : BOOLEAN;
-    MOTION_ENABLING : BOOLEAN;
+    X_Event_Waiting : Boolean;
+    Motion_Enabling : Boolean;
 
     -- DISCARD or TID_xxx
-    MOUSE_STATUS : X_MNG.EVENT_KIND;
+    Mouse_Status : X_Mng.Event_Kind;
 
-    LINE_FOREGROUND : EFFECTIVE_COLORS := DEFAULT_FOREGROUND;
-    LINE_BACKGROUND : EFFECTIVE_BASIC_COLORS := DEFAULT_BACKGROUND;
-    LINE_BLINK_STAT : EFFECTIVE_BLINK_STATS := DEFAULT_BLINK_STAT;
-    LINE_XOR_MODE   : EFFECTIVE_XOR_MODES := DEFAULT_XOR_MODE;
+    Line_Foreground : Effective_Colors := Default_Foreground;
+    Line_Background : Effective_Basic_Colors := Default_Background;
+    Line_Blink_Stat : Effective_Blink_Stats := Default_Blink_Stat;
+    Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
 
-    X_MAX : GRAPHICS.X_RANGE;
-    Y_MAX : GRAPHICS.Y_RANGE;
-    FONT_WIDTH  : NATURAL;
-    FONT_HEIGHT : NATURAL;
-    FONT_OFFSET : NATURAL;
+    X_Max : Graphics.X_Range;
+    Y_Max : Graphics.Y_Range;
+    Font_Width  : Natural;
+    Font_Height : Natural;
+    Font_Offset : Natural;
 
     -- Dynamic alloc/desaloc of windows
-    package DYN_WIN is new DYN_DATA(WINDOW_DATA, WINDOW);
+    package Dyn_Win is new Dyn_Data(Window_Data, Window);
 
-    procedure SET_ATTRIBUTES (FOREGROUND : in EFFECTIVE_COLORS;
-                              BLINK_STAT : in EFFECTIVE_BLINK_STATS;
-                              BACKGROUND : in EFFECTIVE_COLORS;
-                              XOR_MODE   : in EFFECTIVE_XOR_MODES;
-                              FORCED     : in BOOLEAN := FALSE);
+    procedure Set_Attributes (Foreground : in Effective_Colors;
+                              Blink_Stat : in Effective_Blink_Stats;
+                              Background : in Effective_Colors;
+                              Xor_Mode   : in Effective_Xor_Modes;
+                              Forced     : in Boolean := False);
 
-    INIT_DONE : BOOLEAN := FALSE;
-    procedure INIT is
-      LINE : X_MNG.LINE_DEFINITION_REC := LINE_DEF;
-      ENV_SET, ENV_TRU : BOOLEAN;
-      ENV_STR : STRING (1 .. FONT_ENV_SMALL'LENGTH);
-      ENV_LEN : NATURAL;
+    Init_Done : Boolean := False;
+    procedure Init is
+      Line : X_Mng.Line_Definition_Rec := Line_Def;
+      Env_Set, Env_Tru : Boolean;
+      Env_Str : String (1 .. Font_Env_Small'Length);
+      Env_Len : Natural;
     begin
-      if INIT_DONE then
+      if Init_Done then
         return;
       end if;
-      X_INITIALISE;
-      SYS_CALLS.GETENV (FONT_ENV_NAME, ENV_SET, ENV_TRU, ENV_STR, ENV_LEN);
-      if ENV_SET and then not ENV_TRU then
-        if ENV_STR (1 .. ENV_LEN) = FONT_ENV_SMALL
-        and then FONT_NO /= FONT_NO_RANGE'FIRST then
-          LINE.NO_FONT := FONT_NO - 1;
-        elsif ENV_STR (1 .. ENV_LEN) = FONT_ENV_LARGE
-        and then FONT_NO /= FONT_NO_RANGE'LAST then
-          LINE.NO_FONT := FONT_NO + 1;
+      X_Initialise;
+      Sys_Calls.Getenv (Font_Env_Name, Env_Set, Env_Tru, Env_Str, Env_Len);
+      if Env_Set and then not Env_Tru then
+        if Env_Str (1 .. Env_Len) = Font_Env_Small
+        and then Font_No /= Font_No_Range'First then
+          Line.No_Font := Font_No - 1;
+        elsif Env_Str (1 .. Env_Len) = Font_Env_Large
+        and then Font_No /= Font_No_Range'Last then
+          Line.No_Font := Font_No + 1;
         end if;
       end if;
-      X_MNG.X_OPEN_LINE (LINE, ID);
-      X_MNG.X_SET_LINE_NAME (ID, ARGUMENT.GET_PROGRAM_NAME);
-      MOUSE_STATUS := X_MNG.DISCARD;
-      X_EVENT_WAITING := TRUE;
-      MOTION_ENABLING := FALSE;
-      INIT_DONE := TRUE;
-      X_MNG.X_GET_GRAPHIC_CHARACTERISTICS(ID, X_MAX, Y_MAX,
-            FONT_WIDTH, FONT_HEIGHT, FONT_OFFSET);
+      X_Mng.X_Open_Line (Line, Id);
+      X_Mng.X_Set_Line_Name (Id, Argument.Get_Program_Name);
+      Mouse_Status := X_Mng.Discard;
+      X_Event_Waiting := True;
+      Motion_Enabling := False;
+      Init_Done := True;
+      X_Mng.X_Get_Graphic_Characteristics(Id, X_Max, Y_Max,
+            Font_Width, Font_Height, Font_Offset);
       -- Max is width - 1 so that range is 0 .. max
-      X_MAX := X_MAX - 1;
-      Y_MAX := Y_MAX - 1;
-      SET_ATTRIBUTES (DEFAULT_FOREGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
-                      DEFAULT_XOR_MODE, FORCED => TRUE);
-      FLUSH;
+      X_Max := X_Max - 1;
+      Y_Max := Y_Max - 1;
+      Set_Attributes (Default_Foreground, Default_Blink_Stat, Default_Background,
+                      Default_Xor_Mode, Forced => True);
+      Flush;
     exception
       when others =>
-        raise INIT_FAILURE;
-    end INIT;
+        raise Init_Failure;
+    end Init;
 
-    procedure DESTROY is
+    procedure Destroy is
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
-      X_MNG.X_CLOSE_LINE(ID);
-      INIT_DONE := FALSE;
-    end DESTROY;
+      X_Mng.X_Close_Line(Id);
+      Init_Done := False;
+    end Destroy;
 
     -- screen characteristics
-    function SCREEN return WINDOW is
+    function Screen return Window is
     begin
-      return SCREEN_WINDOW;
-    end SCREEN;
+      return Screen_Window;
+    end Screen;
 
     -- reset screen, windows and keyboard
-    procedure RESET_TERM is
+    procedure Reset_Term is
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
-      X_MNG.X_CLEAR_LINE (ID);
+      X_Mng.X_Clear_Line (Id);
       -- Set current attributes in cache
-      SET_ATTRIBUTES (DEFAULT_FOREGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
-                      DEFAULT_XOR_MODE, FORCED => TRUE);
-    end RESET_TERM;
+      Set_Attributes (Default_Foreground, Default_Blink_Stat, Default_Background,
+                      Default_Xor_Mode, Forced => True);
+    end Reset_Term;
 
     -- flushes X
-    procedure FLUSH is
+    procedure Flush is
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
-      X_MNG.X_FLUSH (ID);
-    end FLUSH;
+      X_Mng.X_Flush (Id);
+    end Flush;
 
     -- set / get colors
-    procedure SET_FOREGROUND (FOREGROUND : in COLORS      := CURRENT;
-                              BLINK_STAT : in BLINK_STATS := CURRENT;
-                              NAME       : in WINDOW      := SCREEN) is
+    procedure Set_Foreground (Foreground : in Colors      := Current;
+                              Blink_Stat : in Blink_Stats := Current;
+                              Name       : in Window      := Screen) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if FOREGROUND /= CURRENT then
-        NAME.CURRENT_FOREGROUND := FOREGROUND;
+      if Foreground /= Current then
+        Name.Current_Foreground := Foreground;
       end if;
-      if BLINK_STAT /= CURRENT then
-        NAME.CURRENT_BLINK_STAT := BLINK_STAT;
+      if Blink_Stat /= Current then
+        Name.Current_Blink_Stat := Blink_Stat;
       end if;
-    end SET_FOREGROUND;
+    end Set_Foreground;
 
-    procedure SET_BACKGROUND (BACKGROUND : in BASIC_COLORS := CURRENT;
-                              NAME       : in WINDOW       := SCREEN) is
+    procedure Set_Background (Background : in Basic_Colors := Current;
+                              Name       : in Window       := Screen) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if BACKGROUND /= CURRENT then
-        NAME.CURRENT_BACKGROUND := BACKGROUND;
+      if Background /= Current then
+        Name.Current_Background := Background;
       end if;
-    end SET_BACKGROUND;
+    end Set_Background;
 
-    function GET_FOREGROUND (NAME : WINDOW := SCREEN)
-      return EFFECTIVE_COLORS is
+    function Get_Foreground (Name : Window := Screen)
+      return Effective_Colors is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.CURRENT_FOREGROUND;
-    end GET_FOREGROUND;
+      return Name.Current_Foreground;
+    end Get_Foreground;
 
-    function GET_BACKGROUND (NAME : WINDOW := SCREEN)
-      return EFFECTIVE_BASIC_COLORS is
+    function Get_Background (Name : Window := Screen)
+      return Effective_Basic_Colors is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.CURRENT_BACKGROUND;
-    end GET_BACKGROUND;
+      return Name.Current_Background;
+    end Get_Background;
 
-    function GET_BLINK_STAT (NAME : WINDOW := SCREEN)
-      return EFFECTIVE_BLINK_STATS is
+    function Get_Blink_Stat (Name : Window := Screen)
+      return Effective_Blink_Stats is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.CURRENT_BLINK_STAT;
-    end GET_BLINK_STAT;
+      return Name.Current_Blink_Stat;
+    end Get_Blink_Stat;
 
-    procedure SET_XOR_MODE(XOR_MODE : in XOR_MODES := CURRENT;
-                           NAME : in WINDOW := SCREEN) is
+    procedure Set_Xor_Mode(Xor_Mode : in Xor_Modes := Current;
+                           Name : in Window := Screen) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if XOR_MODE /= CURRENT then
-        NAME.CURRENT_XOR_MODE := XOR_MODE;
+      if Xor_Mode /= Current then
+        Name.Current_Xor_Mode := Xor_Mode;
       end if;
-    end SET_XOR_MODE;
+    end Set_Xor_Mode;
 
-    function GET_XOR_MODE(NAME : WINDOW := SCREEN) return EFFECTIVE_XOR_MODES is
+    function Get_Xor_Mode(Name : Window := Screen) return Effective_Xor_Modes is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.CURRENT_XOR_MODE;
-    end GET_XOR_MODE;
+      return Name.Current_Xor_Mode;
+    end Get_Xor_Mode;
 
 
     -- get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
-    function GET_ABSOLUTE_UPPER_LEFT (NAME : WINDOW) return SQUARE is
+    function Get_Absolute_Upper_Left (Name : Window) return Square is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.UPPER_LEFT;
-    end GET_ABSOLUTE_UPPER_LEFT;
+      return Name.Upper_Left;
+    end Get_Absolute_Upper_Left;
 
-    function GET_ABSOLUTE_LOWER_RIGHT (NAME : WINDOW) return SQUARE is
+    function Get_Absolute_Lower_Right (Name : Window) return Square is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.UPPER_LEFT;
-    end GET_ABSOLUTE_LOWER_RIGHT;
+      return Name.Upper_Left;
+    end Get_Absolute_Lower_Right;
 
     -- get LOWER_RIGHT relative coordinates of a window (UPPER_LEFT is (0, 0)).
-    function GET_RELATIVE_LOWER_RIGHT (NAME : WINDOW) return SQUARE is
+    function Get_Relative_Lower_Right (Name : Window) return Square is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return (NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW,
-              NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL);
-    end GET_RELATIVE_LOWER_RIGHT;
+      return (Name.Lower_Right.Row - Name.Upper_Left.Row,
+              Name.Lower_Right.Col - Name.Upper_Left.Col);
+    end Get_Relative_Lower_Right;
 
     -- open a window
-    procedure OPEN (NAME                    : in out WINDOW;
-                    UPPER_LEFT, LOWER_RIGHT : in SQUARE) is
+    procedure Open (Name                    : in out Window;
+                    Upper_Left, Lower_Right : in Square) is
     begin
-      if NAME /= null then
-        raise WINDOW_ALREADY_OPEN;
+      if Name /= null then
+        raise Window_Already_Open;
       end if;
-      if UPPER_LEFT.ROW > LOWER_RIGHT.ROW or else
-         UPPER_LEFT.COL > LOWER_RIGHT.COL then
-        raise INVALID_SQUARE;
+      if Upper_Left.Row > Lower_Right.Row or else
+         Upper_Left.Col > Lower_Right.Col then
+        raise Invalid_Square;
       end if;
       begin
-        NAME := DYN_WIN.ALLOCATE (SCREEN_DATA);
+        Name := Dyn_Win.Allocate (Screen_Data);
       exception
-        when STORAGE_ERROR =>
-          raise OPEN_FAILURE;
+        when Storage_Error =>
+          raise Open_Failure;
       end;
-      NAME.UPPER_LEFT := UPPER_LEFT;
-      NAME.LOWER_RIGHT := LOWER_RIGHT;
-      NAME.CURRENT_POS := HOME;
-      NAME.CURRENT_FOREGROUND := DEFAULT_FOREGROUND;
-      NAME.CURRENT_BACKGROUND := DEFAULT_BACKGROUND;
-      NAME.CURRENT_BLINK_STAT := DEFAULT_BLINK_STAT;
-      NAME.CURRENT_XOR_MODE   := DEFAULT_XOR_MODE;
+      Name.Upper_Left := Upper_Left;
+      Name.Lower_Right := Lower_Right;
+      Name.Current_Pos := Home;
+      Name.Current_Foreground := Default_Foreground;
+      Name.Current_Background := Default_Background;
+      Name.Current_Blink_Stat := Default_Blink_Stat;
+      Name.Current_Xor_Mode   := Default_Xor_Mode;
     exception
-      when CONSTRAINT_ERROR =>
-        raise INVALID_SQUARE;
-    end OPEN;
+      when Constraint_Error =>
+        raise Invalid_Square;
+    end Open;
 
-    function IS_OPEN (NAME : WINDOW) return BOOLEAN is
+    function Is_Open (Name : Window) return Boolean is
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
-      return NAME /= null;
-    end IS_OPEN;
+      return Name /= null;
+    end Is_Open;
 
     -- TRUE if the absolute square (relative to screen) is in the window.
     -- FALSE otherwise
-    function IN_WINDOW (ABSOLUTE_SQUARE : SQUARE;
-                        NAME            : WINDOW) return BOOLEAN is
+    function In_Window (Absolute_Square : Square;
+                        Name            : Window) return Boolean is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return   ABSOLUTE_SQUARE.ROW >= NAME.UPPER_LEFT.ROW
-      and then ABSOLUTE_SQUARE.ROW <= NAME.LOWER_RIGHT.ROW
-      and then ABSOLUTE_SQUARE.COL >= NAME.UPPER_LEFT.COL
-      and then ABSOLUTE_SQUARE.COL <= NAME.LOWER_RIGHT.COL;
-    end IN_WINDOW;
+      return   Absolute_Square.Row >= Name.Upper_Left.Row
+      and then Absolute_Square.Row <= Name.Lower_Right.Row
+      and then Absolute_Square.Col >= Name.Upper_Left.Col
+      and then Absolute_Square.Col <= Name.Lower_Right.Col;
+    end In_Window;
 
     -- Returns the relative square (relative to window), being the same
     --  physical position as the absolute square (relative to screen).
     -- May raise INVALID_SQUARE if the absolute position is not in window.
-    function TO_RELATIVE (ABSOLUTE_SQUARE : SQUARE;
-                          NAME            : WINDOW) return SQUARE is
+    function To_Relative (Absolute_Square : Square;
+                          Name            : Window) return Square is
     begin
-      if not IN_WINDOW(ABSOLUTE_SQUARE, NAME) then
-        raise INVALID_SQUARE;
+      if not In_Window(Absolute_Square, Name) then
+        raise Invalid_Square;
       end if;
-      return (ROW => ABSOLUTE_SQUARE.ROW - NAME.UPPER_LEFT.ROW,
-              COL => ABSOLUTE_SQUARE.COL - NAME.UPPER_LEFT.COL);
-    end TO_RELATIVE;
+      return (Row => Absolute_Square.Row - Name.Upper_Left.Row,
+              Col => Absolute_Square.Col - Name.Upper_Left.Col);
+    end To_Relative;
 
     -- Returns the absolute square (in screen) corresponding to the relative
     --  square in the window
     -- May raise INVALID_SQUARE if the relative square is not in window
-    function TO_ABSOLUTE (RELATIVE_SQUARE : SQUARE;
-                          NAME            : WINDOW) return SQUARE is
+    function To_Absolute (Relative_Square : Square;
+                          Name            : Window) return Square is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if (RELATIVE_SQUARE.ROW > NAME.LOWER_RIGHT.ROW-NAME.UPPER_LEFT.ROW) or else
-         (RELATIVE_SQUARE.COL > NAME.LOWER_RIGHT.COL-NAME.UPPER_LEFT.COL) then
-        raise INVALID_SQUARE;
+      if (Relative_Square.Row > Name.Lower_Right.Row-Name.Upper_Left.Row) or else
+         (Relative_Square.Col > Name.Lower_Right.Col-Name.Upper_Left.Col) then
+        raise Invalid_Square;
       end if;
-      return (ROW => RELATIVE_SQUARE.ROW + NAME.UPPER_LEFT.ROW, COL =>
-        RELATIVE_SQUARE.COL + NAME.UPPER_LEFT.COL);
-    end TO_ABSOLUTE;
+      return (Row => Relative_Square.Row + Name.Upper_Left.Row, Col =>
+        Relative_Square.Col + Name.Upper_Left.Col);
+    end To_Absolute;
 
-    procedure SET_ATTRIBUTES (FOREGROUND : in EFFECTIVE_COLORS;
-                              BLINK_STAT : in EFFECTIVE_BLINK_STATS;
-                              BACKGROUND : in EFFECTIVE_COLORS;
-                              XOR_MODE   : in EFFECTIVE_XOR_MODES;
-                              FORCED     : in BOOLEAN := FALSE) is
+    procedure Set_Attributes (Foreground : in Effective_Colors;
+                              Blink_Stat : in Effective_Blink_Stats;
+                              Background : in Effective_Colors;
+                              Xor_Mode   : in Effective_Xor_Modes;
+                              Forced     : in Boolean := False) is
     begin
-      if FORCED or else FOREGROUND /= LINE_FOREGROUND
-                or else BLINK_STAT /= LINE_BLINK_STAT
-                or else BACKGROUND /= LINE_BACKGROUND then
-        X_MNG.X_SET_ATTRIBUTES (ID, COLORS'POS(BACKGROUND) - 1,
-                                    COLORS'POS(FOREGROUND) - 1,
-                                    BLINK => BLINK_STAT = BLINK,
-                                    SUPERBRIGHT => TRUE);
-        LINE_FOREGROUND := FOREGROUND;
-        LINE_BLINK_STAT := BLINK_STAT;
-        LINE_BACKGROUND := BACKGROUND;
+      if Forced or else Foreground /= Line_Foreground
+                or else Blink_Stat /= Line_Blink_Stat
+                or else Background /= Line_Background then
+        X_Mng.X_Set_Attributes (Id, Colors'Pos(Background) - 1,
+                                    Colors'Pos(Foreground) - 1,
+                                    Blink => Blink_Stat = Blink,
+                                    Superbright => True);
+        Line_Foreground := Foreground;
+        Line_Blink_Stat := Blink_Stat;
+        Line_Background := Background;
       end if;
-      if FORCED or else XOR_MODE /= LINE_XOR_MODE then
-        X_MNG.X_SET_XOR_MODE (ID, XOR_MODE = XOR_ON);
-        LINE_XOR_MODE := XOR_MODE;
+      if Forced or else Xor_Mode /= Line_Xor_Mode then
+        X_Mng.X_Set_Xor_Mode (Id, Xor_Mode = Xor_On);
+        Line_Xor_Mode := Xor_Mode;
       end if;
-    end SET_ATTRIBUTES;
+    end Set_Attributes;
 
-    procedure QUICK_DRAW (UPPER_LEFT, LOWER_RIGHT : in SQUARE;
-                          KIND                    : in BORDER_LIST;
-                          NAME                    : in WINDOW) is
+    procedure Quick_Draw (Upper_Left, Lower_Right : in Square;
+                          Kind                    : in Border_List;
+                          Name                    : in Window) is
 
-      type DESCRIPT is array(1 .. 6) of X_MNG.BYTE;
-      DESC : constant array(BORDER_LIST) of DESCRIPT := (
-        ERASE  => (others => CHARACTER'POS(' ')),
-        SIMPLE => (13, 12, 11, 14, 18, 25),
-        BLINK  => (13, 12, 11, 14, 18, 25));
+      type Descript is array(1 .. 6) of X_Mng.Byte;
+      Desc : constant array(Border_List) of Descript := (
+        Erase  => (others => Character'Pos(' ')),
+        Simple => (13, 12, 11, 14, 18, 25),
+        Blink  => (13, 12, 11, 14, 18, 25));
     begin
     -- check
-      if UPPER_LEFT.ROW = ROW_RANGE'FIRST or else
-         UPPER_LEFT.COL = COL_RANGE'FIRST or else
-         LOWER_RIGHT.ROW = ROW_RANGE'LAST or else
-         LOWER_RIGHT.COL = COL_RANGE'LAST then
-        raise FRAME_IMPOSSIBLE;
+      if Upper_Left.Row = Row_Range'First or else
+         Upper_Left.Col = Col_Range'First or else
+         Lower_Right.Row = Row_Range'Last or else
+         Lower_Right.Col = Col_Range'Last then
+        raise Frame_Impossible;
       end if;
-      case KIND is
-        when BLINK =>
-          SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, BLINK,
-                          NAME.CURRENT_BACKGROUND, NAME.CURRENT_XOR_MODE);
-        when SIMPLE =>
-          SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, NOT_BLINK,
-                          NAME.CURRENT_BACKGROUND, NAME.CURRENT_XOR_MODE);
-        when ERASE =>
-          SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND, NAME.CURRENT_BLINK_STAT,
-                          NAME.CURRENT_BACKGROUND, XOR_OFF);
+      case Kind is
+        when Blink =>
+          Set_Attributes (Name.Current_Foreground, Blink,
+                          Name.Current_Background, Name.Current_Xor_Mode);
+        when Simple =>
+          Set_Attributes (Name.Current_Foreground, Not_Blink,
+                          Name.Current_Background, Name.Current_Xor_Mode);
+        when Erase =>
+          Set_Attributes (Name.Current_Foreground, Name.Current_Blink_Stat,
+                          Name.Current_Background, Xor_Off);
       end case;
       -- draw corners
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(1),
-            ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(2),
-            ROW_RANGE'PRED(UPPER_LEFT.ROW), COL_RANGE'SUCC(LOWER_RIGHT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(3),
-            ROW_RANGE'SUCC(LOWER_RIGHT.ROW), COL_RANGE'SUCC(LOWER_RIGHT.COL));
-      X_MNG.X_PUT_CHAR (ID, DESC(KIND)(4),
-            ROW_RANGE'SUCC(LOWER_RIGHT.ROW), COL_RANGE'PRED(UPPER_LEFT.COL));
+      X_Mng.X_Put_Char (Id, Desc(Kind)(1),
+            Row_Range'Pred(Upper_Left.Row), Col_Range'Pred(Upper_Left.Col));
+      X_Mng.X_Put_Char (Id, Desc(Kind)(2),
+            Row_Range'Pred(Upper_Left.Row), Col_Range'Succ(Lower_Right.Col));
+      X_Mng.X_Put_Char (Id, Desc(Kind)(3),
+            Row_Range'Succ(Lower_Right.Row), Col_Range'Succ(Lower_Right.Col));
+      X_Mng.X_Put_Char (Id, Desc(Kind)(4),
+            Row_Range'Succ(Lower_Right.Row), Col_Range'Pred(Upper_Left.Col));
       -- draw horiz
-      for I in UPPER_LEFT.COL .. LOWER_RIGHT.COL loop
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(5),
-              ROW_RANGE'PRED(UPPER_LEFT.ROW), I);
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(5),
-              ROW_RANGE'SUCC(LOWER_RIGHT.ROW), I);
+      for I in Upper_Left.Col .. Lower_Right.Col loop
+        X_Mng.X_Put_Char (Id, Desc(Kind)(5),
+              Row_Range'Pred(Upper_Left.Row), I);
+        X_Mng.X_Put_Char (Id, Desc(Kind)(5),
+              Row_Range'Succ(Lower_Right.Row), I);
       end loop;
       -- draw verti
-      for I in UPPER_LEFT.ROW .. LOWER_RIGHT.ROW loop
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(6),
-              I, COL_RANGE'PRED(UPPER_LEFT.COL));
-        X_MNG.X_PUT_CHAR (ID, DESC(KIND)(6),
-              I, COL_RANGE'SUCC(LOWER_RIGHT.COL));
+      for I in Upper_Left.Row .. Lower_Right.Row loop
+        X_Mng.X_Put_Char (Id, Desc(Kind)(6),
+              I, Col_Range'Pred(Upper_Left.Col));
+        X_Mng.X_Put_Char (Id, Desc(Kind)(6),
+              I, Col_Range'Succ(Lower_Right.Col));
       end loop;
-    end QUICK_DRAW;
+    end Quick_Draw;
 
     -- draw a frame around a window
-    procedure FRAME (BLINK : in BOOLEAN := FALSE;
-                     NAME : in WINDOW) is
+    procedure Frame (Blink : in Boolean := False;
+                     Name : in Window) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if BLINK then
-        QUICK_DRAW(NAME.UPPER_LEFT, NAME.LOWER_RIGHT, ONE_CON_IO.BLINK, NAME);
+      if Blink then
+        Quick_Draw(Name.Upper_Left, Name.Lower_Right, One_Con_Io.Blink, Name);
       else
-        QUICK_DRAW(NAME.UPPER_LEFT, NAME.LOWER_RIGHT, SIMPLE, NAME);
+        Quick_Draw(Name.Upper_Left, Name.Lower_Right, Simple, Name);
       end if;
-    end FRAME;
+    end Frame;
 
-    procedure CLEAR_FRAME (NAME : in WINDOW) is
+    procedure Clear_Frame (Name : in Window) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      QUICK_DRAW(NAME.UPPER_LEFT, NAME.LOWER_RIGHT, ERASE, NAME);
-    end CLEAR_FRAME;
+      Quick_Draw(Name.Upper_Left, Name.Lower_Right, Erase, Name);
+    end Clear_Frame;
 
 
     -- make window re-usable (have to re_open it)
-    procedure CLOSE (NAME : in out WINDOW) is
+    procedure Close (Name : in out Window) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      DYN_WIN.FREE(NAME);
-    end CLOSE;
+      Dyn_Win.Free(Name);
+    end Close;
 
     -- move cursor for use with put or get
-    procedure MOVE (POSITION : in SQUARE := HOME;
-                    NAME     : in WINDOW := SCREEN) is
+    procedure Move (Position : in Square := Home;
+                    Name     : in Window := Screen) is
     begin
-      MOVE(POSITION.ROW, POSITION.COL, NAME);
-    end MOVE;
+      Move(Position.Row, Position.Col, Name);
+    end Move;
 
-    procedure CLEAR (NAME : in WINDOW := SCREEN) is
+    procedure Clear (Name : in Window := Screen) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
       -- upper left and lower right, set foreground as our background
-      SET_ATTRIBUTES (NAME.CURRENT_BACKGROUND,
-                      NOT_BLINK,
-                      NAME.CURRENT_BACKGROUND, XOR_OFF);
-      X_MNG.X_DRAW_AREA (ID, NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL + 1,
-                             NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW + 1,
-                             NAME.UPPER_LEFT.ROW, NAME.UPPER_LEFT.COL);
-      SET_ATTRIBUTES (NAME.CURRENT_FOREGROUND,
-                      NAME.CURRENT_BLINK_STAT,
-                      NAME.CURRENT_BACKGROUND,
-                      NAME.CURRENT_XOR_MODE);
-      MOVE (NAME => NAME);
-      X_MNG.X_FLUSH (ID);
-    end CLEAR;
+      Set_Attributes (Name.Current_Background,
+                      Not_Blink,
+                      Name.Current_Background, Xor_Off);
+      X_Mng.X_Draw_Area (Id, Name.Lower_Right.Col - Name.Upper_Left.Col + 1,
+                             Name.Lower_Right.Row - Name.Upper_Left.Row + 1,
+                             Name.Upper_Left.Row, Name.Upper_Left.Col);
+      Set_Attributes (Name.Current_Foreground,
+                      Name.Current_Blink_Stat,
+                      Name.Current_Background,
+                      Name.Current_Xor_Mode);
+      Move (Name => Name);
+      X_Mng.X_Flush (Id);
+    end Clear;
 
-    procedure MOVE (ROW  : in ROW_RANGE;
-                    COL  : in COL_RANGE;
-                    NAME : in WINDOW := SCREEN) is
+    procedure Move (Row  : in Row_Range;
+                    Col  : in Col_Range;
+                    Name : in Window := Screen) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if (ROW > NAME.LOWER_RIGHT.ROW - NAME.UPPER_LEFT.ROW) or else
-         (COL > NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL) then
-        raise INVALID_SQUARE;
+      if (Row > Name.Lower_Right.Row - Name.Upper_Left.Row) or else
+         (Col > Name.Lower_Right.Col - Name.Upper_Left.Col) then
+        raise Invalid_Square;
       end if;
-      NAME.CURRENT_POS := (ROW, COL);
-    end MOVE;
+      Name.Current_Pos := (Row, Col);
+    end Move;
 
-    function POSITION (NAME : WINDOW := SCREEN) return SQUARE is
+    function Position (Name : Window := Screen) return Square is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      return NAME.CURRENT_POS;
-    end POSITION;
+      return Name.Current_Pos;
+    end Position;
 
-    procedure BELL (REPEAT : in POSITIVE := 1) is
+    procedure Bell (Repeat : in Positive := 1) is
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
-      if REPEAT in X_MNG.BELL_REPEAT then
-        X_MNG.X_BELL (ID, REPEAT);
+      if Repeat in X_Mng.Bell_Repeat then
+        X_Mng.X_Bell (Id, Repeat);
       else
-        X_MNG.X_BELL (ID, X_MNG.BELL_REPEAT'LAST);
+        X_Mng.X_Bell (Id, X_Mng.Bell_Repeat'Last);
       end if;
-    end BELL;
+    end Bell;
 
     -- Get window attributes when current, and set the whole
-    procedure SET_ATTRIBUTES_FROM_WINDOW (
-                       NAME       : in WINDOW;
-                       FOREGROUND : in COLORS;
-                       BLINK_STAT : in BLINK_STATS;
-                       BACKGROUND : in BASIC_COLORS) is
-      FG : EFFECTIVE_COLORS;
-      BL : EFFECTIVE_BLINK_STATS;
-      BG : EFFECTIVE_BASIC_COLORS;
+    procedure Set_Attributes_From_Window (
+                       Name       : in Window;
+                       Foreground : in Colors;
+                       Blink_Stat : in Blink_Stats;
+                       Background : in Basic_Colors) is
+      Fg : Effective_Colors;
+      Bl : Effective_Blink_Stats;
+      Bg : Effective_Basic_Colors;
     begin
-      if FOREGROUND = CURRENT then
-        FG := NAME.CURRENT_FOREGROUND;
+      if Foreground = Current then
+        Fg := Name.Current_Foreground;
       else
-        FG := FOREGROUND;
+        Fg := Foreground;
       end if;
-      if BLINK_STAT = CURRENT then
-        BL := NAME.CURRENT_BLINK_STAT;
+      if Blink_Stat = Current then
+        Bl := Name.Current_Blink_Stat;
       else
-        BL := BLINK_STAT;
+        Bl := Blink_Stat;
       end if;
-      if BACKGROUND = CURRENT then
-        BG := NAME.CURRENT_BACKGROUND;
+      if Background = Current then
+        Bg := Name.Current_Background;
       else
-        BG := BACKGROUND;
+        Bg := Background;
       end if;
-      SET_ATTRIBUTES (FG, BL, BG, NAME.CURRENT_XOR_MODE);
-    end SET_ATTRIBUTES_FROM_WINDOW;
+      Set_Attributes (Fg, Bl, Bg, Name.Current_Xor_Mode);
+    end Set_Attributes_From_Window;
 
     -- Writes a character at the current cursor position and with attributes.
     -- Position is not updated.
-    procedure PUT_INT (INT        : in INT_CHAR;
-                       NAME       : in WINDOW := SCREEN;
-                       FOREGROUND : in COLORS := CURRENT;
-                       BLINK_STAT : in BLINK_STATS := CURRENT;
-                       BACKGROUND : in BASIC_COLORS := CURRENT) is
+    procedure Put_Int (Int        : in Int_Char;
+                       Name       : in Window := Screen;
+                       Foreground : in Colors := Current;
+                       Blink_Stat : in Blink_Stats := Current;
+                       Background : in Basic_Colors := Current) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if INT /= CHARACTER'POS(ASCII.CR) then
-        SET_ATTRIBUTES_FROM_WINDOW (NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+      if Int /= Character'Pos(Ascii.Cr) then
+        Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
         -- put character
-        X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(INT),
-                          NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
-                          NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
+        X_Mng.X_Put_Char (Id, X_Mng.Byte(Int),
+                          Name.Upper_Left.Row + Name.Current_Pos.Row,
+                          Name.Upper_Left.Col + Name.Current_Pos.Col);
       end if;
-    end PUT_INT;
+    end Put_Int;
 
-    procedure PUT_NOT_MOVE (C          : in CHARACTER;
-                            NAME       : in WINDOW := SCREEN;
-                            FOREGROUND : in COLORS;
-                            BLINK_STAT : in BLINK_STATS;
-                            BACKGROUND : in BASIC_COLORS) is
+    procedure Put_Not_Move (C          : in Character;
+                            Name       : in Window := Screen;
+                            Foreground : in Colors;
+                            Blink_Stat : in Blink_Stats;
+                            Background : in Basic_Colors) is
     begin
-      PUT_INT(CHARACTER'POS(C), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
-    end PUT_NOT_MOVE;
+      Put_Int(Character'Pos(C), Name, Foreground, Blink_Stat, Background);
+    end Put_Not_Move;
 
     -- Increment col by one or row by one...
-    procedure MOVE_ONE (NAME : in WINDOW := SCREEN) is
+    procedure Move_One (Name : in Window := Screen) is
     begin
-      if NAME.CURRENT_POS.COL /= NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL then
+      if Name.Current_Pos.Col /= Name.Lower_Right.Col - Name.Upper_Left.Col then
         -- next col
-        NAME.CURRENT_POS.COL := COL_RANGE'SUCC(NAME.CURRENT_POS.COL);
+        Name.Current_Pos.Col := Col_Range'Succ(Name.Current_Pos.Col);
       else
         -- 1st col
-        NAME.CURRENT_POS.COL := COL_RANGE'FIRST;
-        if NAME.CURRENT_POS.ROW /=
-           NAME.LOWER_RIGHT.ROW  - NAME.UPPER_LEFT.ROW then
+        Name.Current_Pos.Col := Col_Range'First;
+        if Name.Current_Pos.Row /=
+           Name.Lower_Right.Row  - Name.Upper_Left.Row then
           -- next_line
-          NAME.CURRENT_POS.ROW := ROW_RANGE'SUCC(NAME.CURRENT_POS.ROW);
+          Name.Current_Pos.Row := Row_Range'Succ(Name.Current_Pos.Row);
         else
           -- No scroll :-( first row
-          NAME.CURRENT_POS.ROW := ROW_RANGE'FIRST;
+          Name.Current_Pos.Row := Row_Range'First;
         end if;
       end if;
-    end MOVE_ONE;
+    end Move_One;
 
     -- Writes a character at the current cursor position and with attributes.
     -- CR only is interpreted
-    procedure PUT (C          : in CHARACTER;
-                   NAME       : in WINDOW := SCREEN;
-                   FOREGROUND : in COLORS := CURRENT;
-                   BLINK_STAT : in BLINK_STATS := CURRENT;
-                   BACKGROUND : in BASIC_COLORS := CURRENT;
-                   MOVE       : in BOOLEAN := TRUE) is
+    procedure Put (C          : in Character;
+                   Name       : in Window := Screen;
+                   Foreground : in Colors := Current;
+                   Blink_Stat : in Blink_Stats := Current;
+                   Background : in Basic_Colors := Current;
+                   Move       : in Boolean := True) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      if C /= ASCII.CR then
-        PUT_NOT_MOVE(C, NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+      if C /= Ascii.Cr then
+        Put_Not_Move(C, Name, Foreground, Blink_Stat, Background);
       end if;
-      if MOVE then
-        if C = ASCII.CR then
+      if Move then
+        if C = Ascii.Cr then
           -- End of current row
-          NAME.CURRENT_POS.COL := NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL;
+          Name.Current_Pos.Col := Name.Lower_Right.Col - Name.Upper_Left.Col;
         end if;
-        MOVE_ONE (NAME);
+        Move_One (Name);
       end if;
-    end PUT;
+    end Put;
 
     -- Idem with a string
-    procedure PUT (S          : in STRING;
-                   NAME       : in WINDOW := SCREEN;
-                   FOREGROUND : in COLORS := CURRENT;
-                   BLINK_STAT : in BLINK_STATS := CURRENT;
-                   BACKGROUND : in BASIC_COLORS := CURRENT;
-                   MOVE       : in BOOLEAN := TRUE) is
-      SFIRST, SLAST, RLAST : NATURAL;
-      SAVED_POS : constant SQUARE := NAME.CURRENT_POS;
-      WIN_LAST_COL : constant COL_RANGE
-                   := NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL;
-      PCR : BOOLEAN;
+    procedure Put (S          : in String;
+                   Name       : in Window := Screen;
+                   Foreground : in Colors := Current;
+                   Blink_Stat : in Blink_Stats := Current;
+                   Background : in Basic_Colors := Current;
+                   Move       : in Boolean := True) is
+      Sfirst, Slast, Rlast : Natural;
+      Saved_Pos : constant Square := Name.Current_Pos;
+      Win_Last_Col : constant Col_Range
+                   := Name.Lower_Right.Col - Name.Upper_Left.Col;
+      Pcr : Boolean;
 
-      procedure X_PUT (STR : in STRING) is
+      procedure X_Put (Str : in String) is
       begin
-        if STR'LENGTH /= 0 then
-          X_MNG.X_PUT_STRING (ID, STR, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
-                                       NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
+        if Str'Length /= 0 then
+          X_Mng.X_Put_String (Id, Str, Name.Upper_Left.Row + Name.Current_Pos.Row,
+                                       Name.Upper_Left.Col + Name.Current_Pos.Col);
         end if;
-      end X_PUT;
+      end X_Put;
 
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
       -- Check empty string
       if S = "" then
         return;
       end if;
-      SET_ATTRIBUTES_FROM_WINDOW (NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+      Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
       -- Put chunks of string due to CRs or too long slices
-      SFIRST := S'FIRST;
+      Sfirst := S'First;
       loop
-        SLAST  := S'FIRST;
-        PCR := FALSE;
+        Slast  := S'First;
+        Pcr := False;
         -- Look for CR or end of string
-        while SLAST /= S'LAST and then S(SLAST) /= ASCII.CR loop
-          SLAST := SLAST + 1;
+        while Slast /= S'Last and then S(Slast) /= Ascii.Cr loop
+          Slast := Slast + 1;
         end loop;
         -- Skip CR
-        if S(SLAST) = ASCII.CR then
-          RLAST := SLAST - 1;
-          PCR := TRUE;
+        if S(Slast) = Ascii.Cr then
+          Rlast := Slast - 1;
+          Pcr := True;
         else
-          RLAST := SLAST;
+          Rlast := Slast;
         end if;
         -- Truncate to fit window
         -- Last - first <= Win_las_col - Pos 
-        if NAME.CURRENT_POS.COL + RLAST - SFIRST  > WIN_LAST_COL then
-           RLAST := SFIRST + WIN_LAST_COL - NAME.CURRENT_POS.COL;
+        if Name.Current_Pos.Col + Rlast - Sfirst  > Win_Last_Col then
+           Rlast := Sfirst + Win_Last_Col - Name.Current_Pos.Col;
         end if;
         -- Put the chunk
-        X_PUT (S(SFIRST .. RLAST));
+        X_Put (S(Sfirst .. Rlast));
         -- Update position : last character + one
-        ONE_CON_IO.MOVE (NAME.CURRENT_POS.ROW,
-                         NAME.CURRENT_POS.COL + RLAST - SFIRST,
-                         NAME);
-        MOVE_ONE (NAME);
+        One_Con_Io.Move (Name.Current_Pos.Row,
+                         Name.Current_Pos.Col + Rlast - Sfirst,
+                         Name);
+        Move_One (Name);
         -- Issue CR
-        if PCR then
-          PUT(ASCII.CR, NAME);
+        if Pcr then
+          Put(Ascii.Cr, Name);
         end if;
         -- Move to next chunk
-        exit when SLAST = S'LAST;
-        SFIRST := SLAST + 1;
+        exit when Slast = S'Last;
+        Sfirst := Slast + 1;
       end loop;
 
       -- Resore pos
-      if not MOVE then
-        ONE_CON_IO.MOVE (SAVED_POS, NAME);
+      if not Move then
+        One_Con_Io.Move (Saved_Pos, Name);
       end if;
 
-    end PUT;
+    end Put;
 
     -- Idem but appends a CR
-    procedure PUT_LINE (S          : in STRING;
-                        NAME       : in WINDOW := SCREEN;
-                        FOREGROUND : in COLORS := CURRENT;
-                        BLINK_STAT : in BLINK_STATS := CURRENT;
-                        BACKGROUND : in BASIC_COLORS := CURRENT) is
+    procedure Put_Line (S          : in String;
+                        Name       : in Window := Screen;
+                        Foreground : in Colors := Current;
+                        Blink_Stat : in Blink_Stats := Current;
+                        Background : in Basic_Colors := Current) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
       -- Puts the string
-      PUT(S, NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+      Put(S, Name, Foreground, Blink_Stat, Background);
       -- New line
-      NEW_LINE(NAME);
-    end PUT_LINE;
+      New_Line(Name);
+    end Put_Line;
 
     -- Puts CR
-    procedure NEW_LINE (NAME   : in WINDOW := SCREEN;
-                        NUMBER : in POSITIVE := 1) is
+    procedure New_Line (Name   : in Window := Screen;
+                        Number : in Positive := 1) is
     begin
-      if NAME = null then
-        raise WINDOW_NOT_OPEN;
+      if Name = null then
+        raise Window_Not_Open;
       end if;
-      for I in 1 .. NUMBER loop
-        PUT(ASCII.CR, NAME);
+      for I in 1 .. Number loop
+        Put(Ascii.Cr, Name);
       end loop;
-    end NEW_LINE;
+    end New_Line;
 
-    procedure NEXT_X_EVENT (TIMEOUT_MS : in out INTEGER;
-                            X_EVENT : out X_MNG.EVENT_KIND) is
-      EVENT : BOOLEAN;
-      LOC_X_EVENT : X_MNG.EVENT_KIND;
-      use X_MNG;
+    procedure Next_X_Event (Timeout_Ms : in out Integer;
+                            X_Event : out X_Mng.Event_Kind) is
+      Event : Boolean;
+      Loc_X_Event : X_Mng.Event_Kind;
+      use X_Mng;
     begin
       loop
-        if not X_EVENT_WAITING then
+        if not X_Event_Waiting then
           -- Wait
-          X_MNG.X_SELECT (ID, TIMEOUT_MS, EVENT);
-          if not EVENT then
-            X_EVENT := X_MNG.DISCARD;
+          X_Mng.X_Select (Id, Timeout_Ms, Event);
+          if not Event then
+            X_Event := X_Mng.Discard;
             return;
           end if;
         end if;
-        X_MNG.X_PROCESS_EVENT (ID, LOC_X_EVENT, X_EVENT_WAITING);
-        if LOC_X_EVENT /= X_MNG.DISCARD then
-          X_EVENT := LOC_X_EVENT;
+        X_Mng.X_Process_Event (Id, Loc_X_Event, X_Event_Waiting);
+        if Loc_X_Event /= X_Mng.Discard then
+          X_Event := Loc_X_Event;
           return;
         end if;
       end loop;
-    end NEXT_X_EVENT;
+    end Next_X_Event;
 
-    procedure TRANSLATE_X_KEY (KEY     : in out NATURAL;
-                               IS_CHAR : in out BOOLEAN;
-                               CTRL    : in out BOOLEAN;
-                               SHIFT   : in out BOOLEAN) is
+    procedure Translate_X_Key (Key     : in out Natural;
+                               Is_Char : in out Boolean;
+                               Ctrl    : in out Boolean;
+                               Shift   : in out Boolean) is
     begin
       -- No translation of chars
-      if IS_CHAR then
+      if Is_Char then
         return;
       end if;
-      case KEY is
+      case Key is
         when 16#8D# =>
           -- Enter
-          KEY := 16#0D#;
-        when  16#AA# .. 16#B9# =>
+          Key := 16#0D#;
+        when  16#Aa# .. 16#B9# =>
           -- Oper or Num
-          IS_CHAR := TRUE;
-          KEY := KEY - 16#80#;
+          Is_Char := True;
+          Key := Key - 16#80#;
         when 16#95# .. 16#9C# =>
           -- Key movement
-          KEY := KEY - 16#45#;
+          Key := Key - 16#45#;
         when 16#9D# =>
           -- 5 not num : discard
-          KEY := 16#00#;
+          Key := 16#00#;
         when 16#9E# =>
           -- Insert
-          KEY := 16#63#;
+          Key := 16#63#;
         when 16#9F# =>
           -- Suppre
-          KEY := 16#FF#;
+          Key := 16#Ff#;
         when others =>
           -- No translation
           null;
       end case;
-    end TRANSLATE_X_KEY;
+    end Translate_X_Key;
 
-    procedure GET_X_KEY (KEY     : out NATURAL;
-                         IS_CHAR : out BOOLEAN;
-                         CTRL    : out BOOLEAN;
-                         SHIFT   : out BOOLEAN) is
-      KBD_TAB : X_MNG.KBD_TAB_CODE;
-      LOC_KEY : NATURAL;
-      LOC_IS_CHAR : BOOLEAN;
-      LOC_CTRL : BOOLEAN;
-      LOC_SHIFT : BOOLEAN;
-      use X_MNG;
+    procedure Get_X_Key (Key     : out Natural;
+                         Is_Char : out Boolean;
+                         Ctrl    : out Boolean;
+                         Shift   : out Boolean) is
+      Kbd_Tab : X_Mng.Kbd_Tab_Code;
+      Loc_Key : Natural;
+      Loc_Is_Char : Boolean;
+      Loc_Ctrl : Boolean;
+      Loc_Shift : Boolean;
+      use X_Mng;
     begin
-      X_MNG.X_READ_KEY(ID, KBD_TAB);
+      X_Mng.X_Read_Key(Id, Kbd_Tab);
 
-      LOC_KEY := NATURAL (KBD_TAB.TAB(KBD_TAB.NBRE));
-      LOC_IS_CHAR := TRUE;
-      LOC_CTRL := FALSE;
-      LOC_SHIFT := FALSE;
+      Loc_Key := Natural (Kbd_Tab.Tab(Kbd_Tab.Nbre));
+      Loc_Is_Char := True;
+      Loc_Ctrl := False;
+      Loc_Shift := False;
 
       -- Optimisation
-      if KBD_TAB.NBRE = 1 then
-        TRANSLATE_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
-        KEY := LOC_KEY;
-        IS_CHAR := LOC_IS_CHAR;
-        CTRL := LOC_CTRL;
-        SHIFT := LOC_SHIFT;
+      if Kbd_Tab.Nbre = 1 then
+        Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
+        Key := Loc_Key;
+        Is_Char := Loc_Is_Char;
+        Ctrl := Loc_Ctrl;
+        Shift := Loc_Shift;
         return;
-      elsif KBD_TAB.NBRE = 2 then
-        LOC_IS_CHAR := FALSE;
-        TRANSLATE_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
-        KEY := LOC_KEY;
-        IS_CHAR := LOC_IS_CHAR;
-        CTRL := LOC_CTRL;
-        SHIFT := LOC_SHIFT;
+      elsif Kbd_Tab.Nbre = 2 then
+        Loc_Is_Char := False;
+        Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
+        Key := Loc_Key;
+        Is_Char := Loc_Is_Char;
+        Ctrl := Loc_Ctrl;
+        Shift := Loc_Shift;
         return;
       end if;
 
-      if KBD_TAB.NBRE mod 2 = 0 then
-        LOC_IS_CHAR := FALSE;
-        KBD_TAB.NBRE := KBD_TAB.NBRE - 2;
+      if Kbd_Tab.Nbre mod 2 = 0 then
+        Loc_Is_Char := False;
+        Kbd_Tab.Nbre := Kbd_Tab.Nbre - 2;
       else
-        LOC_IS_CHAR := TRUE;
-        KBD_TAB.NBRE := KBD_TAB.NBRE - 1;
+        Loc_Is_Char := True;
+        Kbd_Tab.Nbre := Kbd_Tab.Nbre - 1;
       end if;
 
-      if KBD_TAB.TAB(2) = 16#E3# then
+      if Kbd_Tab.Tab(2) = 16#E3# then
         -- Ctrl
-        LOC_CTRL := TRUE;
+        Loc_Ctrl := True;
       else
         -- Shift
-        LOC_SHIFT := TRUE;
+        Loc_Shift := True;
       end if;
-      if KBD_TAB.NBRE = 4 then
+      if Kbd_Tab.Nbre = 4 then
         -- Ctrl Shift
-        LOC_CTRL := TRUE;
-        LOC_SHIFT := TRUE;
+        Loc_Ctrl := True;
+        Loc_Shift := True;
       end if;
       
-      TRANSLATE_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
-      KEY := LOC_KEY;
-      IS_CHAR := LOC_IS_CHAR;
-      CTRL := LOC_CTRL;
-      SHIFT := LOC_SHIFT;
-    end GET_X_KEY;
+      Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
+      Key := Loc_Key;
+      Is_Char := Loc_Is_Char;
+      Ctrl := Loc_Ctrl;
+      Shift := Loc_Shift;
+    end Get_X_Key;
 
     -- check if a key is available until a certain time.
-    procedure GET_KEY_TIME (CHECK_BREAK : in BOOLEAN;
-                            EVENT       : out EVENT_LIST;
-                            KEY         : out NATURAL;
-                            IS_CHAR     : out BOOLEAN;
-                            CTRL        : out BOOLEAN;
-                            SHIFT       : out BOOLEAN;
-                            TIME_OUT    : in DELAY_REC := INFINITE_DELAY) is
+    procedure Get_Key_Time (Check_Break : in Boolean;
+                            Event       : out Event_List;
+                            Key         : out Natural;
+                            Is_Char     : out Boolean;
+                            Ctrl        : out Boolean;
+                            Shift       : out Boolean;
+                            Time_Out    : in Delay_Rec := Infinite_Delay) is
 
-      X_EVENT : X_MNG.EVENT_KIND;
-      CUR_TIME : CALENDAR.TIME;
-      DUR : DURATION;
-      TIMEOUT_MS : INTEGER;
-      LOC_KEY : NATURAL;
-      LOC_IS_CHAR : BOOLEAN;
-      LOC_CTRL : BOOLEAN;
-      LOC_SHIFT : BOOLEAN;
-      use X_MNG, CALENDAR;
-      use type TIMERS.DELAY_REC, TIMERS.DELAY_LIST;
+      X_Event : X_Mng.Event_Kind;
+      Cur_Time : Calendar.Time;
+      Dur : Duration;
+      Timeout_Ms : Integer;
+      Loc_Key : Natural;
+      Loc_Is_Char : Boolean;
+      Loc_Ctrl : Boolean;
+      Loc_Shift : Boolean;
+      use X_Mng, Calendar;
+      use type Timers.Delay_Rec, Timers.Delay_List;
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
 
-      if TIME_OUT = INFINITE_DELAY then
-        TIMEOUT_MS := -1;
-      elsif TIME_OUT.DELAY_KIND = TIMERS.DELAY_SEC then
-        TIMEOUT_MS := INTEGER (FLOAT(TIME_OUT.DELAY_SECONDS) * 1_000.0);
+      if Time_Out = Infinite_Delay then
+        Timeout_Ms := -1;
+      elsif Time_Out.Delay_Kind = Timers.Delay_Sec then
+        Timeout_Ms := Integer (Float(Time_Out.Delay_Seconds) * 1_000.0);
       else
-        CUR_TIME := CALENDAR.CLOCK;
-        if CUR_TIME > TIME_OUT.EXPIRATION_TIME then
-          TIMEOUT_MS := 0;
+        Cur_Time := Calendar.Clock;
+        if Cur_Time > Time_Out.Expiration_Time then
+          Timeout_Ms := 0;
         else
-          DUR := TIME_OUT.EXPIRATION_TIME - CUR_TIME;
-          TIMEOUT_MS := INTEGER (FLOAT(DUR) * 1_000.0);
+          Dur := Time_Out.Expiration_Time - Cur_Time;
+          Timeout_Ms := Integer (Float(Dur) * 1_000.0);
         end if;
       end if;
 
-      NEXT_X_EVENT (TIMEOUT_MS, X_EVENT);
-      case X_EVENT is
-        when X_MNG.TIMER_EVENT =>
+      Next_X_Event (Timeout_Ms, X_Event);
+      case X_Event is
+        when X_Mng.Timer_Event =>
           -- Fd event
-          EVENT := TIMER_EVENT;
+          Event := Timer_Event;
           return;
-        when X_MNG.FD_EVENT =>
+        when X_Mng.Fd_Event =>
           -- Fd event
-          EVENT := FD_EVENT;
+          Event := Fd_Event;
           return;
-        when X_MNG.REFRESH =>
+        when X_Mng.Refresh =>
           -- Refresh
-          EVENT := REFRESH;
+          Event := Refresh;
           return;
-        when X_MNG.DISCARD =>
+        when X_Mng.Discard =>
           -- Timeout
-          EVENT := TIMEOUT;
+          Event := Timeout;
           return;
-        when X_MNG.TID_PRESS | X_MNG.TID_RELEASE | X_MNG.TID_MOTION =>
-          EVENT := MOUSE_BUTTON;
-          MOUSE_STATUS := X_EVENT;
+        when X_Mng.Tid_Press | X_Mng.Tid_Release | X_Mng.Tid_Motion =>
+          Event := Mouse_Button;
+          Mouse_Status := X_Event;
           return;
-        when X_MNG.KEYBOARD =>
-          GET_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
-          KEY := LOC_KEY;
-          IS_CHAR := LOC_IS_CHAR;
-          CTRL := LOC_CTRL;
-          SHIFT := LOC_SHIFT;
+        when X_Mng.Keyboard =>
+          Get_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
+          Key := Loc_Key;
+          Is_Char := Loc_Is_Char;
+          Ctrl := Loc_Ctrl;
+          Shift := Loc_Shift;
           -- Check break
-          if CHECK_BREAK then
-            if (LOC_KEY = CHARACTER'POS('c') or else LOC_KEY = 0)
-            and then LOC_IS_CHAR and then LOC_CTRL and then not LOC_SHIFT then
+          if Check_Break then
+            if (Loc_Key = Character'Pos('c') or else Loc_Key = 0)
+            and then Loc_Is_Char and then Loc_Ctrl and then not Loc_Shift then
               -- Ctrl C or Ctrl break
-              EVENT := BREAK;
+              Event := Break;
               return;
             end if;
           end if;
           -- Escape for any other keyboard key 
-          EVENT := ESC;
+          Event := Esc;
           return;
       end case;
 
-    end GET_KEY_TIME;
+    end Get_Key_Time;
 
     -- Gives first key code of keyboard buffer, (waits if it is empty)
     -- no echo
-    procedure GET_KEY (KEY     : out NATURAL;
-                       IS_CHAR : out BOOLEAN;
-                       CTRL    : out BOOLEAN;
-                       SHIFT   : out BOOLEAN) is
-      EVENT : EVENT_LIST;
+    procedure Get_Key (Key     : out Natural;
+                       Is_Char : out Boolean;
+                       Ctrl    : out Boolean;
+                       Shift   : out Boolean) is
+      Event : Event_List;
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
       -- Wait for keyboard
       loop
-        GET_KEY_TIME(FALSE, EVENT, KEY, IS_CHAR, CTRL, SHIFT);
-        if EVENT = REFRESH then
-          KEY := 0;
-          IS_CHAR := TRUE;
-          CTRL := FALSE;
-          SHIFT := FALSE;
+        Get_Key_Time(False, Event, Key, Is_Char, Ctrl, Shift);
+        if Event = Refresh then
+          Key := 0;
+          Is_Char := True;
+          Ctrl := False;
+          Shift := False;
           return;
-        elsif EVENT = FD_EVENT then
-          KEY := 1;
-          IS_CHAR := TRUE;
-          CTRL := FALSE;
-          SHIFT := FALSE;
+        elsif Event = Fd_Event then
+          Key := 1;
+          Is_Char := True;
+          Ctrl := False;
+          Shift := False;
           return;
-        elsif EVENT = ESC then
+        elsif Event = Esc then
           -- A key
           return;
         end if;
       end loop;
-    end GET_KEY;
+    end Get_Key;
         
 
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
-    procedure PUT_THEN_GET (STR        : in out STRING;
-                            LAST       : out NATURAL;
-                            STAT       : out CURS_MVT;
-                            POS        : in out POSITIVE;
-                            INSERT     : in out BOOLEAN;
-                            NAME       : in WINDOW := SCREEN;
-                            FOREGROUND : in COLORS := CURRENT;
-                            BLINK_STAT : in BLINK_STATS := CURRENT;
-                            BACKGROUND : in BASIC_COLORS := CURRENT;
-                            TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY;
-                            ECHO       : in BOOLEAN := TRUE) is
-      WIDTH         : constant NATURAL := STR'LENGTH;
-      LSTR          : STRING(1 .. WIDTH) := STR;
-      KEY           : NATURAL;
-      IS_CHAR       : BOOLEAN;
-      CTRL, SHIFT   : BOOLEAN;
-      REDRAW        : BOOLEAN;
-      FIRST_POS     : constant SQUARE := NAME.CURRENT_POS;
-      LAST_TIME     : DELAY_REC;
-      EVENT         : EVENT_LIST;
+    procedure Put_Then_Get (Str        : in out String;
+                            Last       : out Natural;
+                            Stat       : out Curs_Mvt;
+                            Pos        : in out Positive;
+                            Insert     : in out Boolean;
+                            Name       : in Window := Screen;
+                            Foreground : in Colors := Current;
+                            Blink_Stat : in Blink_Stats := Current;
+                            Background : in Basic_Colors := Current;
+                            Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                            Echo       : in Boolean := True) is
+      Width         : constant Natural := Str'Length;
+      Lstr          : String(1 .. Width) := Str;
+      Key           : Natural;
+      Is_Char       : Boolean;
+      Ctrl, Shift   : Boolean;
+      Redraw        : Boolean;
+      First_Pos     : constant Square := Name.Current_Pos;
+      Last_Time     : Delay_Rec;
+      Event         : Event_List;
 
-      function PARSE return NATURAL is
+      function Parse return Natural is
       begin
-        for I in reverse 1 .. WIDTH loop
-          if LSTR(I) /= ' ' then
+        for I in reverse 1 .. Width loop
+          if Lstr(I) /= ' ' then
             -- this character is the last meaningfull
-            return STR'FIRST + I - 1;
+            return Str'First + I - 1;
           end if;
         end loop;
         -- all is spaces
         return 0;
-      end PARSE;
+      end Parse;
 
-      procedure CURSOR (SHOW : in BOOLEAN) is
-        ABSOLUTE_POS : SQUARE;
+      procedure Cursor (Show : in Boolean) is
+        Absolute_Pos : Square;
       begin
-        MOVE(FIRST_POS.ROW, FIRST_POS.COL + POS - 1, NAME);
-        ABSOLUTE_POS := TO_ABSOLUTE (NAME.CURRENT_POS, NAME);
-        if SHOW then
-          if INSERT then
-            X_MNG.X_OVERWRITE_CHAR (ID, 16#5E#,
-                  ABSOLUTE_POS.ROW, ABSOLUTE_POS.COL);
+        Move(First_Pos.Row, First_Pos.Col + Pos - 1, Name);
+        Absolute_Pos := To_Absolute (Name.Current_Pos, Name);
+        if Show then
+          if Insert then
+            X_Mng.X_Overwrite_Char (Id, 16#5E#,
+                  Absolute_Pos.Row, Absolute_Pos.Col);
           else
-            X_MNG.X_OVERWRITE_CHAR (ID, 16#5F#,
-                  ABSOLUTE_POS.ROW, ABSOLUTE_POS.COL);
+            X_Mng.X_Overwrite_Char (Id, 16#5F#,
+                  Absolute_Pos.Row, Absolute_Pos.Col);
           end if;
         else
-          X_MNG.X_PUT_CHAR (ID, LSTR(POS),
-                ABSOLUTE_POS.ROW, ABSOLUTE_POS.COL);
+          X_Mng.X_Put_Char (Id, Lstr(Pos),
+                Absolute_Pos.Row, Absolute_Pos.Col);
         end if;
-      end CURSOR;
+      end Cursor;
 
 
-      use type TIMERS.DELAY_REC, TIMERS.DELAY_LIST;
+      use type Timers.Delay_Rec, Timers.Delay_List;
     begin
       -- Time at which the get ends
-      if TIME_OUT = TIMERS.INFINITE_DELAY or else TIME_OUT.DELAY_KIND = TIMERS.DELAY_EXP then
-        LAST_TIME := TIME_OUT;
+      if Time_Out = Timers.Infinite_Delay or else Time_Out.Delay_Kind = Timers.Delay_Exp then
+        Last_Time := Time_Out;
       else
-        LAST_TIME := (DELAY_KIND => TIMERS.DELAY_EXP,
-                      PERIOD     => TIMERS.NO_PERIOD,
-                      EXPIRATION_TIME => CALENDAR."+"(CALENDAR.CLOCK, TIME_OUT.DELAY_SECONDS) );
+        Last_Time := (Delay_Kind => Timers.Delay_Exp,
+                      Period     => Timers.No_Period,
+                      Expiration_Time => Calendar."+"(Calendar.Clock, Time_Out.Delay_Seconds) );
       end if;
 
       -- Emtpy string
-      if WIDTH = 0 then
-        LAST := STR'LAST;
+      if Width = 0 then
+        Last := Str'Last;
 
         loop
-          GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, LAST_TIME);
-          if EVENT /= ESC then
+          Get_Key_Time (True, Event, Key, Is_Char, Ctrl, Shift, Last_Time);
+          if Event /= Esc then
             -- No key ==> mouse, time out, refresh, fd...
-            STAT := EVENT;
+            Stat := Event;
             return;
-          elsif not IS_CHAR then
+          elsif not Is_Char then
             -- Function key
-            case KEY is
+            case Key is
               when 16#0D# =>
                 -- Return
-                STAT := RET;
+                Stat := Ret;
                 return;
               when 16#1B# =>
                 -- Escape
-                STAT := ESC;
+                Stat := Esc;
                 return;
               when 16#09# =>
-                if CTRL then 
+                if Ctrl then 
                   -- Ctrl Tab
-                  STAT := STAB;
+                  Stat := Stab;
                 else
                   -- Tab
-                  STAT := TAB;
+                  Stat := Tab;
                 end if;
                 return;
               when 16#08# =>
@@ -1026,55 +1026,55 @@ package body GENERIC_CON_IO is
                 null;
               when 16#50# =>
                 -- Home
-                STAT := LEFT;
+                Stat := Left;
                 return;
               when 16#57# =>
                 -- End
-                STAT := RIGHT;
+                Stat := Right;
                 return;
               when 16#51# =>
                 -- <--
-                STAT := LEFT;
+                Stat := Left;
                 return;
               when 16#53# =>
                 -- -->
-                STAT := RIGHT;
+                Stat := Right;
                 return;
               when 16#52# =>
                 -- Up
-                STAT := UP;
+                Stat := Up;
                 return;
               when 16#55# =>
                 -- Page Up
-                if not CTRL then
-                  STAT := PGUP;
+                if not Ctrl then
+                  Stat := Pgup;
                 else
-                  STAT := CTRL_PGUP;
+                  Stat := Ctrl_Pgup;
                 end if;
                 return;
               when 16#54# =>
                 -- Down
-                STAT := DOWN;
+                Stat := Down;
                 return;
               when 16#56# =>
                 -- Page Down
-                if not CTRL then
-                  STAT := PGDOWN;
+                if not Ctrl then
+                  Stat := Pgdown;
                 else
-                  STAT := CTRL_PGDOWN;
+                  Stat := Ctrl_Pgdown;
                 end if;
                 return;
               when 16#63# =>
                 -- Insert
-                INSERT := not INSERT;
+                Insert := not Insert;
               when others =>
                 null;
             end case;
           else  -- IS_CHAR
-            if KEY >= CHARACTER'POS(' ')
-            and then KEY <= CHARACTER'POS(CHARACTER'LAST) then
+            if Key >= Character'Pos(' ')
+            and then Key <= Character'Pos(Character'Last) then
               -- every other valid char
-              STAT := FULL;
+              Stat := Full;
               return;
             end if;
           end if;  -- function key or normal key
@@ -1082,217 +1082,217 @@ package body GENERIC_CON_IO is
       end if;  -- string'length = 0
 
       -- Check width and current_pos / window's width
-      if WIDTH > NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL  + 1 then
-        raise STRING_TOO_LONG;
+      if Width > Name.Lower_Right.Col - Name.Upper_Left.Col  + 1 then
+        raise String_Too_Long;
       end if;
 
       -- put the string
-      MOVE(FIRST_POS, NAME);
-      if ECHO then
-        PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
+      Move(First_Pos, Name);
+      if Echo then
+        Put(Lstr, Name, Foreground, Blink_Stat, Background, Move => False);
       end if;
 
       loop
         -- show cursor
-        if ECHO then
-          CURSOR (TRUE);
+        if Echo then
+          Cursor (True);
         end if;
-        REDRAW := FALSE;
+        Redraw := False;
         -- try to get a key
-        GET_KEY_TIME (TRUE, EVENT, KEY, IS_CHAR, CTRL, SHIFT, LAST_TIME);
+        Get_Key_Time (True, Event, Key, Is_Char, Ctrl, Shift, Last_Time);
         -- hide cursor
-        if ECHO then
-          CURSOR (FALSE);
+        if Echo then
+          Cursor (False);
         end if;
-        if EVENT /= ESC then
+        if Event /= Esc then
           -- No key ==> mouse, time out, refresh, fd...
-          STR := LSTR;
-          LAST := PARSE;
-          STAT := EVENT;
+          Str := Lstr;
+          Last := Parse;
+          Stat := Event;
           return;
-        elsif  not IS_CHAR then
-          case KEY is
+        elsif  not Is_Char then
+          case Key is
             when 16#0D# =>
               -- Return
-              STR := LSTR;
-              LAST := PARSE;
-              STAT := RET;
+              Str := Lstr;
+              Last := Parse;
+              Stat := Ret;
               return;
             when 16#1B# =>
               -- Escape
-              STR := LSTR;
-              LAST := PARSE;
-              STAT := ESC;
+              Str := Lstr;
+              Last := Parse;
+              Stat := Esc;
               return;
             when 16#09# =>
-              if CTRL then
+              if Ctrl then
                 -- Ctrl Tab
-                STR := LSTR;
-                LAST := PARSE;
-                STAT := STAB;
+                Str := Lstr;
+                Last := Parse;
+                Stat := Stab;
               else
                 -- Tab
-                STR := LSTR;
-                LAST := PARSE;
-                STAT := TAB;
+                Str := Lstr;
+                Last := Parse;
+                Stat := Tab;
               end if;
               return;
             when 16#08# =>
               -- backspace
-              if POS /= 1 then
-                POS := POS - 1;
-                LSTR(POS .. WIDTH - 1) := LSTR(POS + 1 .. WIDTH);
-                LSTR(WIDTH) := ' ';
-                REDRAW := TRUE;
+              if Pos /= 1 then
+                Pos := Pos - 1;
+                Lstr(Pos .. Width - 1) := Lstr(Pos + 1 .. Width);
+                Lstr(Width) := ' ';
+                Redraw := True;
               end if;
             when 16#50# =>
               -- Home
-              POS := 1;
+              Pos := 1;
             when 16#57# =>
               -- End
-              POS := WIDTH;
+              Pos := Width;
             when 16#51# =>
               -- <--
-              if POS /= 1 then
-                POS := POS - 1;
+              if Pos /= 1 then
+                Pos := Pos - 1;
               else
-                STR := LSTR;
-                LAST := PARSE;
-                STAT := LEFT;
+                Str := Lstr;
+                Last := Parse;
+                Stat := Left;
                 return;
               end if;
             when 16#53# =>
               -- -->
-              if POS /= WIDTH then
-                POS := POS + 1;
+              if Pos /= Width then
+                Pos := Pos + 1;
               else
-                STR := LSTR;
-                LAST := PARSE;
-                STAT := RIGHT;
+                Str := Lstr;
+                Last := Parse;
+                Stat := Right;
                 return;
               end if;
             when 16#52# =>
               -- Up
-              STR := LSTR;
-              LAST := PARSE;
-              STAT := UP;
+              Str := Lstr;
+              Last := Parse;
+              Stat := Up;
               return;
             when 16#55# =>
               -- Page Up
-              STR := LSTR;
-              LAST := PARSE;
-              if not CTRL then
-                STAT := PGUP;
+              Str := Lstr;
+              Last := Parse;
+              if not Ctrl then
+                Stat := Pgup;
               else
-                STAT := CTRL_PGUP;
+                Stat := Ctrl_Pgup;
               end if;
               return;
             when 16#54# =>
               -- Down
-              STR := LSTR;
-              LAST := PARSE;
-              STAT := DOWN;
+              Str := Lstr;
+              Last := Parse;
+              Stat := Down;
               return;
             when 16#56# =>
               -- Page Down
-              STR := LSTR;
-              LAST := PARSE;
-              if not CTRL then
-                STAT := PGDOWN;
+              Str := Lstr;
+              Last := Parse;
+              if not Ctrl then
+                Stat := Pgdown;
               else
-                STAT := CTRL_PGDOWN;
+                Stat := Ctrl_Pgdown;
               end if;
               return;
             when 16#63# =>
               -- Insert
-              INSERT := not INSERT;
-            when 16#FF# =>
-              if not CTRL then
+              Insert := not Insert;
+            when 16#Ff# =>
+              if not Ctrl then
                 -- Suppr
-                LSTR(POS .. WIDTH - 1) := LSTR(POS + 1 .. WIDTH);
-                LSTR(WIDTH) := ' ';
-                REDRAW := TRUE;
+                Lstr(Pos .. Width - 1) := Lstr(Pos + 1 .. Width);
+                Lstr(Width) := ' ';
+                Redraw := True;
               else
                 -- Ctrl Suppr : clear field + home
-                POS := 1;
-                LSTR(1 .. WIDTH) := (others => ' ');
-                REDRAW := TRUE;
+                Pos := 1;
+                Lstr(1 .. Width) := (others => ' ');
+                Redraw := True;
               end if;
             when others =>
               null;
           end case;
         else  -- is_char
-          if KEY >= CHARACTER'POS(' ')
-          and then KEY <= CHARACTER'POS(CHARACTER'LAST) then
+          if Key >= Character'Pos(' ')
+          and then Key <= Character'Pos(Character'Last) then
             -- all other valid chars
-            if INSERT then
-              if POS /= WIDTH then
-                LSTR(POS + 1 .. WIDTH) := LSTR(POS .. WIDTH - 1);
-                REDRAW := TRUE;
+            if Insert then
+              if Pos /= Width then
+                Lstr(Pos + 1 .. Width) := Lstr(Pos .. Width - 1);
+                Redraw := True;
               end if;
             end if;
-            LSTR(POS) := CHARACTER'VAL(KEY);
-            if POS /= WIDTH then
-              POS := POS + 1;
+            Lstr(Pos) := Character'Val(Key);
+            if Pos /= Width then
+              Pos := Pos + 1;
             else
-              STR := LSTR;
-              LAST := PARSE;
-              STAT := FULL;
+              Str := Lstr;
+              Last := Parse;
+              Stat := Full;
               return;
             end if;
-            if not REDRAW and then ECHO then
-              PUT(CHARACTER'VAL(KEY), NAME, FOREGROUND, BLINK_STAT, BACKGROUND);
+            if not Redraw and then Echo then
+              Put(Character'Val(Key), Name, Foreground, Blink_Stat, Background);
             end if;
           end if;
         end if;  -- is_char
 
         -- redraw if necessary
-        if REDRAW and then ECHO then
-          MOVE(FIRST_POS, NAME);
-          PUT(LSTR, NAME, FOREGROUND, BLINK_STAT, BACKGROUND, MOVE => FALSE);
+        if Redraw and then Echo then
+          Move(First_Pos, Name);
+          Put(Lstr, Name, Foreground, Blink_Stat, Background, Move => False);
        end if;
       end loop;
-    end PUT_THEN_GET;
+    end Put_Then_Get;
 
     -- Gets a string of at most width characters
-    procedure GET (STR        : out STRING;
-                   LAST       : out NATURAL;
-                   STAT       : out CURS_MVT;
-                   POS        : out POSITIVE;
-                   INSERT     : out BOOLEAN;
-                   NAME       : in WINDOW := SCREEN;
-                   FOREGROUND : in COLORS := CURRENT;
-                   BLINK_STAT : in BLINK_STATS := CURRENT;
-                   BACKGROUND : in BASIC_COLORS := CURRENT;
-                   TIME_OUT   : in DELAY_REC :=  INFINITE_DELAY;
-                   ECHO       : in BOOLEAN := TRUE) is
-      LSTR : STRING(STR'RANGE ) := (others => ' ');
-      LPOS : POSITIVE;
-      LINS : BOOLEAN;
+    procedure Get (Str        : out String;
+                   Last       : out Natural;
+                   Stat       : out Curs_Mvt;
+                   Pos        : out Positive;
+                   Insert     : out Boolean;
+                   Name       : in Window := Screen;
+                   Foreground : in Colors := Current;
+                   Blink_Stat : in Blink_Stats := Current;
+                   Background : in Basic_Colors := Current;
+                   Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                   Echo       : in Boolean := True) is
+      Lstr : String(Str'Range ) := (others => ' ');
+      Lpos : Positive;
+      Lins : Boolean;
     begin
-      LPOS := 1;
-      LINS := FALSE;
-      PUT_THEN_GET(LSTR, LAST, STAT, LPOS, LINS, NAME,
-          FOREGROUND, BLINK_STAT, BACKGROUND, TIME_OUT, ECHO);
-      STR := LSTR;
-      POS := LPOS;
-      INSERT := LINS;
-    end GET;
+      Lpos := 1;
+      Lins := False;
+      Put_Then_Get(Lstr, Last, Stat, Lpos, Lins, Name,
+          Foreground, Blink_Stat, Background, Time_Out, Echo);
+      Str := Lstr;
+      Pos := Lpos;
+      Insert := Lins;
+    end Get;
 
     -- Take first character of keyboard buffer (no echo) or refresh event
-    procedure PAUSE is
-      STR  : STRING(1 .. 0);
-      LAST : NATURAL;
-      STAT : CURS_MVT;
-      POS  : POSITIVE;
-      INS  : BOOLEAN;
+    procedure Pause is
+      Str  : String(1 .. 0);
+      Last : Natural;
+      Stat : Curs_Mvt;
+      Pos  : Positive;
+      Ins  : Boolean;
     begin
       loop
         -- STR is empty so no echo at all
-        GET(STR, LAST, STAT, POS, INS);
-        exit when STAT /= MOUSE_BUTTON;
+        Get(Str, Last, Stat, Pos, Ins);
+        exit when Stat /= Mouse_Button;
       end loop;
-    end PAUSE;
+    end Pause;
 
 
     -- Gets first character (echo or not)
@@ -1300,342 +1300,342 @@ package body GENERIC_CON_IO is
     --  ASCII.CR, ESC, EOT and NUL are returned respectively
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
-    function GET (NAME : WINDOW := SCREEN; ECHO : in BOOLEAN := TRUE) return CHARACTER is
-      STR  : STRING(1 .. 1);
-      LAST : NATURAL;
-      STAT : CURS_MVT;
-      POS  : POSITIVE;
-      INS  : BOOLEAN;
+    function Get (Name : Window := Screen; Echo : in Boolean := True) return Character is
+      Str  : String(1 .. 1);
+      Last : Natural;
+      Stat : Curs_Mvt;
+      Pos  : Positive;
+      Ins  : Boolean;
     begin
       loop
-        STR := (others => ' ');
-        POS := 1;
-        INS := FALSE;
-        PUT_THEN_GET(STR, LAST, STAT, POS, INS, NAME, ECHO => ECHO);
-        case STAT is
-          when UP .. RIGHT | TAB .. STAB =>
+        Str := (others => ' ');
+        Pos := 1;
+        Ins := False;
+        Put_Then_Get(Str, Last, Stat, Pos, Ins, Name, Echo => Echo);
+        case Stat is
+          when Up .. Right | Tab .. Stab =>
             -- Cursor movement
             null;
-          when FULL =>
+          when Full =>
             -- Character input
-            return STR(1);
-          when RET =>
-            return ASCII.CR;
-          when ESC =>
-            return ASCII.ESC;
-          when BREAK =>
-            return ASCII.EOT;
-          when FD_EVENT =>
-            return ASCII.STX;
-          when TIMER_EVENT =>
-            return ASCII.SYN;
-          when REFRESH =>
-            return ASCII.NUL;
-          when MOUSE_BUTTON | TIMEOUT =>
+            return Str(1);
+          when Ret =>
+            return Ascii.Cr;
+          when Esc =>
+            return Ascii.Esc;
+          when Break =>
+            return Ascii.Eot;
+          when Fd_Event =>
+            return Ascii.Stx;
+          when Timer_Event =>
+            return Ascii.Syn;
+          when Refresh =>
+            return Ascii.Nul;
+          when Mouse_Button | Timeout =>
             -- Ignore mouse. Timeout impossible.
             null;
         end case;
       end loop;
-    end GET;
+    end Get;
 
-    procedure ENABLE_MOTION_EVENTS (MOTION_ENABLED : in BOOLEAN) is
+    procedure Enable_Motion_Events (Motion_Enabled : in Boolean) is
     begin
-      if MOTION_ENABLED /= MOTION_ENABLING then
-        X_MNG.X_ENABLE_MOTION_EVENTS(ID, MOTION_ENABLED);
-        MOTION_ENABLING := MOTION_ENABLED;
+      if Motion_Enabled /= Motion_Enabling then
+        X_Mng.X_Enable_Motion_Events(Id, Motion_Enabled);
+        Motion_Enabling := Motion_Enabled;
       end if;
-    end ENABLE_MOTION_EVENTS;
+    end Enable_Motion_Events;
 
-    package body GRAPHICS is
+    package body Graphics is
 
-      function X_MAX return X_RANGE is
+      function X_Max return X_Range is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        return ONE_CON_IO.X_MAX;
-      end X_MAX;
+        return One_Con_Io.X_Max;
+      end X_Max;
 
-      function Y_MAX return Y_RANGE is
+      function Y_Max return Y_Range is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        return ONE_CON_IO.Y_MAX;
-      end Y_MAX;
+        return One_Con_Io.Y_Max;
+      end Y_Max;
 
       -- Font characteristics
-      function FONT_WIDTH  return NATURAL is
+      function Font_Width  return Natural is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        return ONE_CON_IO.FONT_WIDTH;
-      end FONT_WIDTH;
+        return One_Con_Io.Font_Width;
+      end Font_Width;
 
-      function FONT_HEIGHT return NATURAL is
+      function Font_Height return Natural is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        return ONE_CON_IO.FONT_HEIGHT;
-      end FONT_HEIGHT;
+        return One_Con_Io.Font_Height;
+      end Font_Height;
 
-      function FONT_OFFSET return NATURAL is
+      function Font_Offset return Natural is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        return ONE_CON_IO.FONT_OFFSET;
-      end FONT_OFFSET;
+        return One_Con_Io.Font_Offset;
+      end Font_Offset;
 
 
-      procedure SET_SCREEN_ATTRIBUTES is
+      procedure Set_Screen_Attributes is
       begin
-        SET_ATTRIBUTES (SCREEN.CURRENT_FOREGROUND,
-                        SCREEN.CURRENT_BLINK_STAT,
-                        SCREEN.CURRENT_BACKGROUND,
-                        SCREEN.CURRENT_XOR_MODE);
-      end SET_SCREEN_ATTRIBUTES;
+        Set_Attributes (Screen.Current_Foreground,
+                        Screen.Current_Blink_Stat,
+                        Screen.Current_Background,
+                        Screen.Current_Xor_Mode);
+      end Set_Screen_Attributes;
 
-      procedure PUT (C : in CHARACTER;
-                     X : in X_RANGE;
-                     Y : in Y_RANGE) is
+      procedure Put (C : in Character;
+                     X : in X_Range;
+                     Y : in Y_Range) is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        X_MNG.X_PUT_CHAR_PIXELS(ID, X_MNG.BYTE(CHARACTER'POS(C)),
-                                X, ONE_CON_IO.Y_MAX - Y);
-      end PUT;
+        Set_Screen_Attributes;
+        X_Mng.X_Put_Char_Pixels(Id, X_Mng.Byte(Character'Pos(C)),
+                                X, One_Con_Io.Y_Max - Y);
+      end Put;
 
-      procedure PUT (S : in STRING;
-                     X : in X_RANGE;
-                     Y : in Y_RANGE) is
-        LX : X_RANGE;
-        LY : Y_RANGE;
+      procedure Put (S : in String;
+                     X : in X_Range;
+                     Y : in Y_Range) is
+        Lx : X_Range;
+        Ly : Y_Range;
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        LX := X;
-        LY := ONE_CON_IO.Y_MAX - Y;
-        for I in S'RANGE loop
-          X_MNG.X_PUT_CHAR_PIXELS(ID, X_MNG.BYTE(CHARACTER'POS(S(I))),
-                                  LX, LY);
-          LX := LX + FONT_WIDTH;
+        Set_Screen_Attributes;
+        Lx := X;
+        Ly := One_Con_Io.Y_Max - Y;
+        for I in S'Range loop
+          X_Mng.X_Put_Char_Pixels(Id, X_Mng.Byte(Character'Pos(S(I))),
+                                  Lx, Ly);
+          Lx := Lx + Font_Width;
         end loop;
-      end PUT;
+      end Put;
 
-      procedure DRAW_POINT (X : in X_RANGE;
-                            Y : in Y_RANGE) is
+      procedure Draw_Point (X : in X_Range;
+                            Y : in Y_Range) is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        X_MNG.X_DRAW_POINT(ID, X, ONE_CON_IO.Y_MAX - Y);
-      end DRAW_POINT;
+        Set_Screen_Attributes;
+        X_Mng.X_Draw_Point(Id, X, One_Con_Io.Y_Max - Y);
+      end Draw_Point;
 
-      procedure DRAW_LINE (X1 : in X_RANGE;
-                           Y1 : in Y_RANGE;
-                           X2 : in X_RANGE;
-                           Y2 : in Y_RANGE) is
+      procedure Draw_Line (X1 : in X_Range;
+                           Y1 : in Y_Range;
+                           X2 : in X_Range;
+                           Y2 : in Y_Range) is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        X_MNG.X_DRAW_LINE(ID, X1, ONE_CON_IO.Y_MAX - Y1, X2, ONE_CON_IO.Y_MAX - Y2);
-      end DRAW_LINE;
+        Set_Screen_Attributes;
+        X_Mng.X_Draw_Line(Id, X1, One_Con_Io.Y_Max - Y1, X2, One_Con_Io.Y_Max - Y2);
+      end Draw_Line;
 
 
-      procedure DRAW_RECTANGLE (X1 : in X_RANGE;
-                                Y1 : in Y_RANGE;
-                                X2 : in X_RANGE;
-                                Y2 : in Y_RANGE) is
+      procedure Draw_Rectangle (X1 : in X_Range;
+                                Y1 : in Y_Range;
+                                X2 : in X_Range;
+                                Y2 : in Y_Range) is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        X_MNG.X_DRAW_RECTANGLE(ID, X1, ONE_CON_IO.Y_MAX - Y1, X2, ONE_CON_IO.Y_MAX - Y2);
-      end DRAW_RECTANGLE;
+        Set_Screen_Attributes;
+        X_Mng.X_Draw_Rectangle(Id, X1, One_Con_Io.Y_Max - Y1, X2, One_Con_Io.Y_Max - Y2);
+      end Draw_Rectangle;
 
-      procedure FILL_RECTANGLE (X1 : in X_RANGE;
-                                Y1 : in Y_RANGE;
-                                X2 : in X_RANGE;
-                                Y2 : in Y_RANGE) is
+      procedure Fill_Rectangle (X1 : in X_Range;
+                                Y1 : in Y_Range;
+                                X2 : in X_Range;
+                                Y2 : in Y_Range) is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        X_MNG.X_FILL_RECTANGLE(ID, X1, ONE_CON_IO.Y_MAX - Y1, X2, ONE_CON_IO.Y_MAX - Y2);
-      end FILL_RECTANGLE;
+        Set_Screen_Attributes;
+        X_Mng.X_Fill_Rectangle(Id, X1, One_Con_Io.Y_Max - Y1, X2, One_Con_Io.Y_Max - Y2);
+      end Fill_Rectangle;
 
-      procedure DRAW_POINTS(X, Y          : in NATURAL;
-                            WIDTH, HEIGHT : in NATURAL; 
-                            POINTS        : in BYTE_ARRAY) is
+      procedure Draw_Points(X, Y          : in Natural;
+                            Width, Height : in Natural; 
+                            Points        : in Byte_Array) is
       begin
-        if not INIT_DONE then
-          raise NOT_INIT;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        SET_SCREEN_ATTRIBUTES;
-        X_MNG.X_DRAW_POINTS(ID, X, ONE_CON_IO.Y_MAX - Y, WIDTH, HEIGHT, POINTS);
-      end DRAW_POINTS; 
+        Set_Screen_Attributes;
+        X_Mng.X_Draw_Points(Id, X, One_Con_Io.Y_Max - Y, Width, Height, Points);
+      end Draw_Points; 
 
-      procedure GET_CURRENT_POINTER_POS (VALID : out BOOLEAN;
-                                         X     : out X_RANGE;
-                                         Y     : out Y_RANGE) is
-        LX, LY : INTEGER;
+      procedure Get_Current_Pointer_Pos (Valid : out Boolean;
+                                         X     : out X_Range;
+                                         Y     : out Y_Range) is
+        Lx, Ly : Integer;
       begin
-        VALID := FALSE;
-        if not INIT_DONE then
-          raise NOT_INIT;
+        Valid := False;
+        if not Init_Done then
+          raise Not_Init;
         end if;
-        X_MNG.X_GET_CURRENT_POINTER_POSITION(ID, LX, LY);
+        X_Mng.X_Get_Current_Pointer_Position(Id, Lx, Ly);
         -- In screen? (avoiding function call for X/Y_MAX) 
-        if       LX in GRAPHICS.X_RANGE and then LX <= ONE_CON_IO.X_MAX
-        and then LY in GRAPHICS.Y_RANGE and then LY <= ONE_CON_IO.Y_MAX then
-          X := LX;
-          Y := ONE_CON_IO.Y_MAX - LY;
-          VALID := TRUE;
+        if       Lx in Graphics.X_Range and then Lx <= One_Con_Io.X_Max
+        and then Ly in Graphics.Y_Range and then Ly <= One_Con_Io.Y_Max then
+          X := Lx;
+          Y := One_Con_Io.Y_Max - Ly;
+          Valid := True;
         end if;
-      end GET_CURRENT_POINTER_POS;
+      end Get_Current_Pointer_Pos;
 
 
-    end GRAPHICS;
+    end Graphics;
 
     -- Set pointer shape
-    procedure SET_POINTER_SHAPE (POINTER_SHAPE : in POINTER_SHAPE_LIST) is
+    procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List) is
     begin
-      X_MNG.X_SET_GRAPHIC_POINTER(ID, POINTER_SHAPE=CROSS);
-    end SET_POINTER_SHAPE;
+      X_Mng.X_Set_Graphic_Pointer(Id, Pointer_Shape=Cross);
+    end Set_Pointer_Shape;
 
 
     -- Get a mouse event. If valid is FALSE, it means that a release
     -- has occured outside the screen, then only BUTTON and status
     -- are significant
-    procedure GET_MOUSE_EVENT (MOUSE_EVENT : out MOUSE_EVENT_REC;
-                      COORDINATE_MODE : in COORDINATE_MODE_LIST := ROW_COL) is
-      LOC_EVENT : MOUSE_EVENT_REC(COORDINATE_MODE);
-      BUTTON : X_MNG.BUTTON_LIST;
-      ROW, COL : INTEGER;
-      use X_MNG;
+    procedure Get_Mouse_Event (Mouse_Event : out Mouse_Event_Rec;
+                      Coordinate_Mode : in Coordinate_Mode_List := Row_Col) is
+      Loc_Event : Mouse_Event_Rec(Coordinate_Mode);
+      Button : X_Mng.Button_List;
+      Row, Col : Integer;
+      use X_Mng;
     begin
-      if not INIT_DONE then
-        raise NOT_INIT;
+      if not Init_Done then
+        raise Not_Init;
       end if;
       -- Init result : Press not valid
-      LOC_EVENT.VALID := FALSE;
-      LOC_EVENT.STATUS := PRESSED;
-      LOC_EVENT.BUTTON := MOUSE_BUTTON_LIST'FIRST;
-      if COORDINATE_MODE = ROW_COL then
-        LOC_EVENT.ROW := ROW_RANGE'FIRST;
-        LOC_EVENT.COL := COL_RANGE'FIRST;
+      Loc_Event.Valid := False;
+      Loc_Event.Status := Pressed;
+      Loc_Event.Button := Mouse_Button_List'First;
+      if Coordinate_Mode = Row_Col then
+        Loc_Event.Row := Row_Range'First;
+        Loc_Event.Col := Col_Range'First;
       else
-        LOC_EVENT.X := GRAPHICS.X_RANGE'FIRST;
-        LOC_EVENT.Y := GRAPHICS.Y_RANGE'FIRST;
+        Loc_Event.X := Graphics.X_Range'First;
+        Loc_Event.Y := Graphics.Y_Range'First;
       end if;
-      MOUSE_EVENT := LOC_EVENT;
+      Mouse_Event := Loc_Event;
 
       -- Mouse event pending?
-      if MOUSE_STATUS = X_MNG.DISCARD then
+      if Mouse_Status = X_Mng.Discard then
         return;
       end if;
 
       -- Get button and pos
-      X_MNG.X_READ_TID (ID, COORDINATE_MODE = ROW_COL, BUTTON, ROW, COL);
+      X_Mng.X_Read_Tid (Id, Coordinate_Mode = Row_Col, Button, Row, Col);
 
       -- Event was a press release or motion?
-      case MOUSE_STATUS is
-        when X_MNG.TID_PRESS | X_MNG.TID_RELEASE =>
+      case Mouse_Status is
+        when X_Mng.Tid_Press | X_Mng.Tid_Release =>
 
-          case BUTTON is
-            when X_MNG.NONE =>
+          case Button is
+            when X_Mng.None =>
               return;
-            when X_MNG.LEFT =>
-              LOC_EVENT.BUTTON := LEFT;
-            when X_MNG.MIDDLE =>
-              LOC_EVENT.BUTTON := MIDDLE;
-            when X_MNG.RIGHT =>
-              LOC_EVENT.BUTTON := RIGHT;
+            when X_Mng.Left =>
+              Loc_Event.Button := Left;
+            when X_Mng.Middle =>
+              Loc_Event.Button := Middle;
+            when X_Mng.Right =>
+              Loc_Event.Button := Right;
           end case;
-          if MOUSE_STATUS = X_MNG.TID_PRESS then
-            LOC_EVENT.STATUS := PRESSED;
+          if Mouse_Status = X_Mng.Tid_Press then
+            Loc_Event.Status := Pressed;
           else
-            LOC_EVENT.STATUS := RELEASED;
+            Loc_Event.Status := Released;
           end if;
-        when X_MNG.TID_MOTION =>
-          if BUTTON /= X_MNG.NONE or else not MOTION_ENABLING then
+        when X_Mng.Tid_Motion =>
+          if Button /= X_Mng.None or else not Motion_Enabling then
             return;
           end if;
-          LOC_EVENT.STATUS := MOTION;
-          LOC_EVENT.BUTTON := MOTION;
+          Loc_Event.Status := Motion;
+          Loc_Event.Button := Motion;
         when others =>
           return;
       end case;
 
       -- Coordinates
-      if COORDINATE_MODE = ROW_COL then
-        if ROW - 1 in ROW_RANGE and then COL - 1 in COL_RANGE then
+      if Coordinate_Mode = Row_Col then
+        if Row - 1 in Row_Range and then Col - 1 in Col_Range then
           -- In screen
-          LOC_EVENT.VALID := TRUE;
-          LOC_EVENT.ROW := ROW - 1;
-          LOC_EVENT.COL := COL - 1;
+          Loc_Event.Valid := True;
+          Loc_Event.Row := Row - 1;
+          Loc_Event.Col := Col - 1;
         else
           -- Out of screen : set to boundaries
-          LOC_EVENT.VALID := FALSE;
-          if ROW - 1 in ROW_RANGE then
-            LOC_EVENT.ROW := ROW - 1;
-          elsif ROW - 1 < ROW_RANGE'FIRST then
-            LOC_EVENT.ROW := ROW_RANGE'FIRST;
-          elsif ROW - 1 > ROW_RANGE'LAST then
-            LOC_EVENT.ROW := ROW_RANGE'LAST;
+          Loc_Event.Valid := False;
+          if Row - 1 in Row_Range then
+            Loc_Event.Row := Row - 1;
+          elsif Row - 1 < Row_Range'First then
+            Loc_Event.Row := Row_Range'First;
+          elsif Row - 1 > Row_Range'Last then
+            Loc_Event.Row := Row_Range'Last;
           end if;
-          if COL - 1 in COL_RANGE then
-            LOC_EVENT.COL := COL - 1;
-          elsif COL - 1 < COL_RANGE'FIRST then
-            LOC_EVENT.COL := COL_RANGE'FIRST;
-          elsif COL - 1 > COL_RANGE'LAST then
-            LOC_EVENT.COL := COL_RANGE'LAST;
+          if Col - 1 in Col_Range then
+            Loc_Event.Col := Col - 1;
+          elsif Col - 1 < Col_Range'First then
+            Loc_Event.Col := Col_Range'First;
+          elsif Col - 1 > Col_Range'Last then
+            Loc_Event.Col := Col_Range'Last;
           end if;
         end if;
       else
-        if       ROW in GRAPHICS.X_RANGE and then ROW <= ONE_CON_IO.X_MAX
-        and then COL in GRAPHICS.Y_RANGE and then COL <= ONE_CON_IO.Y_MAX then
-          LOC_EVENT.VALID := TRUE;
-          LOC_EVENT.X := ROW;
-          LOC_EVENT.Y := ONE_CON_IO.Y_MAX - COL;
+        if       Row in Graphics.X_Range and then Row <= One_Con_Io.X_Max
+        and then Col in Graphics.Y_Range and then Col <= One_Con_Io.Y_Max then
+          Loc_Event.Valid := True;
+          Loc_Event.X := Row;
+          Loc_Event.Y := One_Con_Io.Y_Max - Col;
         else
-          LOC_EVENT.VALID := FALSE;
-          if ROW in GRAPHICS.X_RANGE and then ROW <= ONE_CON_IO.X_MAX then
-            LOC_EVENT.X := ROW;
-          elsif ROW < GRAPHICS.X_RANGE'FIRST then
-            LOC_EVENT.X := GRAPHICS.X_RANGE'FIRST;
-          elsif ROW > X_MAX then
-            LOC_EVENT.X := X_MAX;
+          Loc_Event.Valid := False;
+          if Row in Graphics.X_Range and then Row <= One_Con_Io.X_Max then
+            Loc_Event.X := Row;
+          elsif Row < Graphics.X_Range'First then
+            Loc_Event.X := Graphics.X_Range'First;
+          elsif Row > X_Max then
+            Loc_Event.X := X_Max;
           end if;
-          if COL in GRAPHICS.Y_RANGE and then COL <= ONE_CON_IO.Y_MAX then
-            LOC_EVENT.Y := Y_MAX - COL;
-          elsif COL < GRAPHICS.Y_RANGE'FIRST then
-            LOC_EVENT.Y := Y_MAX;
-          elsif COL > Y_MAX then
-            LOC_EVENT.Y := GRAPHICS.Y_RANGE'FIRST;
+          if Col in Graphics.Y_Range and then Col <= One_Con_Io.Y_Max then
+            Loc_Event.Y := Y_Max - Col;
+          elsif Col < Graphics.Y_Range'First then
+            Loc_Event.Y := Y_Max;
+          elsif Col > Y_Max then
+            Loc_Event.Y := Graphics.Y_Range'First;
           end if;
         end if;
       end if;
-      MOUSE_EVENT := LOC_EVENT;
-      MOUSE_STATUS := X_MNG.DISCARD;
+      Mouse_Event := Loc_Event;
+      Mouse_Status := X_Mng.Discard;
     exception
-      when X_MNG.X_FAILURE =>
+      when X_Mng.X_Failure =>
         null;
-    end GET_MOUSE_EVENT;
+    end Get_Mouse_Event;
 
-  end ONE_CON_IO;
+  end One_Con_Io;
 
-end GENERIC_CON_IO;
+end Generic_Con_Io;
    

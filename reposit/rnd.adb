@@ -1,123 +1,123 @@
-with SYSTEM, MUTEX_MANAGER;
-with U_RAND;
-package body RND is
+with System, Mutex_Manager;
+with U_Rand;
+package body Rnd is
 
-  type C_STRUCT_TIMEVAL is record
-    SEC : INTEGER;
-    USEC : INTEGER;
+  type C_Struct_Timeval is record
+    Sec : Integer;
+    Usec : Integer;
   end record;
-  function C_GETTIMEOFDAY (TV : SYSTEM.ADDRESS; TZ : SYSTEM.ADDRESS)
-  return INTEGER;
-  pragma IMPORT (C, C_GETTIMEOFDAY, "gettimeofday");
+  function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
+  return Integer;
+  pragma Import (C, C_Gettimeofday, "gettimeofday");
 
   -- protection of critical sections
-  LOCK : MUTEX_MANAGER.MUTEX;
+  Lock : Mutex_Manager.Mutex;
 
   -- trunc a real, for randomize and random
-  function LONG_TRUNC (X : FLOAT) return LONG_LONG_INTEGER is
-    MAX : constant FLOAT := FLOAT (LONG_LONG_INTEGER'LAST);
-    MIN : constant FLOAT := FLOAT (LONG_LONG_INTEGER'FIRST);
-    INT : LONG_LONG_INTEGER;
+  function Long_Trunc (X : Float) return Long_Long_Integer is
+    Max : constant Float := Float (Long_Long_Integer'Last);
+    Min : constant Float := Float (Long_Long_Integer'First);
+    Int : Long_Long_Integer;
   begin
-    if (X > MAX) or else (X < MIN) then raise CONSTRAINT_ERROR; end if;
-    INT := LONG_LONG_INTEGER (X);
+    if (X > Max) or else (X < Min) then raise Constraint_Error; end if;
+    Int := Long_Long_Integer (X);
     -- adjust at +/- 1
     if X > 0.0 then
       -- if x > 0 error by excess
-      if FLOAT (INT) > X then INT := INT - 1; end if;
-      return INT;
+      if Float (Int) > X then Int := Int - 1; end if;
+      return Int;
     else
       -- if  x < 0 error by default
-      if FLOAT (INT) < X then INT := INT + 1; end if;
-      return INT;
+      if Float (Int) < X then Int := Int + 1; end if;
+      return Int;
     end if;
   exception
-    when others => raise CONSTRAINT_ERROR;
-  end LONG_TRUNC;
+    when others => raise Constraint_Error;
+  end Long_Trunc;
 
   -- initialisation of sequence
-  procedure RANDOMIZE (INIT : in FLOAT := 1.0) is
+  procedure Randomize (Init : in Float := 1.0) is
     -- the result of mutex allocation is always true, because infinite waiting
-    OK : BOOLEAN;
-    F : FLOAT;
-    I : U_RAND.SEED_RANGE_1;
+    Ok : Boolean;
+    F : Float;
+    I : U_Rand.Seed_Range_1;
 
     -- gives a "random" number
-    function INIT_ALEAT return FLOAT is
-      TV : C_STRUCT_TIMEVAL;
-      DUMMY : INTEGER;
+    function Init_Aleat return Float is
+      Tv : C_Struct_Timeval;
+      Dummy : Integer;
     begin
-      DUMMY := C_GETTIMEOFDAY (TV'ADDRESS, SYSTEM.NULL_ADDRESS);
-      return FLOAT(TV.USEC) / 1.0E6;
-    end INIT_ALEAT;
+      Dummy := C_Gettimeofday (Tv'Address, System.Null_Address);
+      return Float(Tv.Usec) / 1.0E6;
+    end Init_Aleat;
 
   begin
     -- 0 <= init <= 1 : OK, otherwise random
-    if 0.0 <= INIT and then INIT < 1.0 then
-      F := INIT;
+    if 0.0 <= Init and then Init < 1.0 then
+      F := Init;
     else
-      F := INIT_ALEAT;
+      F := Init_Aleat;
     end if;
-    I := U_RAND.SEED_RANGE_1 (F * FLOAT(U_RAND.SEED_RANGE_1'LAST - 1) + 1.0);
+    I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
     
-    OK := MUTEX_MANAGER.GET_MUTEX (LOCK, -1.0);
-    U_RAND.START (NEW_I => I);
-    MUTEX_MANAGER.RELEASE_MUTEX (LOCK);
-  end RANDOMIZE;
+    Ok := Mutex_Manager.Get_Mutex (Lock, -1.0);
+    U_Rand.Start (New_I => I);
+    Mutex_Manager.Release_Mutex (Lock);
+  end Randomize;
 
 
   -- Next element in sequence
-  function RANDOM (MINI : FLOAT := 0.0; MAXI : FLOAT := 1.0)
-    return FLOAT is
+  function Random (Mini : Float := 0.0; Maxi : Float := 1.0)
+    return Float is
     -- Returned value
-    VAL : FLOAT;
-    OK : BOOLEAN;
+    Val : Float;
+    Ok : Boolean;
   begin
-    OK := MUTEX_MANAGER.GET_MUTEX (LOCK, -1.0);
-    VAL := U_RAND.NEXT;
-    MUTEX_MANAGER.RELEASE_MUTEX (LOCK);
+    Ok := Mutex_Manager.Get_Mutex (Lock, -1.0);
+    Val := U_Rand.Next;
+    Mutex_Manager.Release_Mutex (Lock);
     -- Here 0 <= VAL < 1
-    if MINI >= MAXI then
-      return VAL;
+    if Mini >= Maxi then
+      return Val;
     else
-      return MINI + (VAL * (MAXI - MINI) );
+      return Mini + (Val * (Maxi - Mini) );
     end if;
-  end RANDOM;
+  end Random;
 
-  function DISCR_RANDOM (MINI : NUM := NUM'FIRST; MAXI : NUM := NUM'LAST)
-    return NUM is
+  function Discr_Random (Mini : Num := Num'First; Maxi : Num := Num'Last)
+    return Num is
   begin
     return
-      NUM'VAL (
-        INTEGER (
-          LONG_TRUNC (
-            RANDOM (FLOAT (NUM'POS (MINI)), FLOAT (NUM'POS (MAXI)) + 1.0)
+      Num'Val (
+        Integer (
+          Long_Trunc (
+            Random (Float (Num'Pos (Mini)), Float (Num'Pos (Maxi)) + 1.0)
           )
         )
       );
-  end DISCR_RANDOM;
+  end Discr_Random;
 
-  function INT_RANDOM (MINI : INTEGER := 0; MAXI : INTEGER := 1)
-    return INTEGER is
+  function Int_Random (Mini : Integer := 0; Maxi : Integer := 1)
+    return Integer is
   begin
     return
-      INTEGER (
-       LONG_TRUNC (RANDOM (FLOAT (MINI), FLOAT (MAXI) + 1.0) )
+      Integer (
+       Long_Trunc (Random (Float (Mini), Float (Maxi) + 1.0) )
       );
-  end INT_RANDOM;
+  end Int_Random;
 
-  function FLOAT_RANDOM (MINI : FLOAT := 0.0; MAXI : FLOAT := 1.0)
-    return FLOAT is
+  function Float_Random (Mini : Float := 0.0; Maxi : Float := 1.0)
+    return Float is
   begin
     return
-      RANDOM (MINI, MAXI);
-  end FLOAT_RANDOM;
+      Random (Mini, Maxi);
+  end Float_Random;
 
-  function DUR_RANDOM (MINI : DURATION := 0.0; MAXI : DURATION := 1.0)
-    return DURATION is
+  function Dur_Random (Mini : Duration := 0.0; Maxi : Duration := 1.0)
+    return Duration is
   begin
     return
-      DURATION (RANDOM (FLOAT(MINI), FLOAT(MAXI) ) );
-  end DUR_RANDOM;
+      Duration (Random (Float(Mini), Float(Maxi) ) );
+  end Dur_Random;
 
-end RND;
+end Rnd;
