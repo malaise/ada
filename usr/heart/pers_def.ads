@@ -5,7 +5,7 @@ package Pers_Def is
   subtype Person_Name_Str is String (1 .. 20);
   subtype Person_Activity_Str is String (1 .. 10);
 
-  -- Unique ID of a person.
+  -- Unique Id of a person.
   type Pid_Range is new Natural range 000 .. 999;
 
   -- Heart rate. 0 in person time zones if not set

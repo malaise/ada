@@ -39,31 +39,31 @@ package body Mcd_Mng is
 
     function Is_True (X : Item_Rec) return Boolean;
 
-    -- INTE,INTE->INTE or REAL,REAL->REAL
+    -- Inte,Inte->Inte or Real,Real->Real
     function Add     (L, R : Item_Rec) return Item_Rec;
     function Sub     (L, R : Item_Rec) return Item_Rec;
     function Mult    (L, R : Item_Rec) return Item_Rec;
     function Div     (L, R : Item_Rec) return Item_Rec;
     function Pow     (L, R : Item_Rec) return Item_Rec;
 
-    -- INTE,INTE->INTE
+    -- Inte,Inte->Inte
     function Remind  (L, R : Item_Rec) return Item_Rec;
 
-    -- INTE,INTE->INTE
+    -- Inte,Inte->Inte
     function Bitand  (L, R : Item_Rec) return Item_Rec;
     function Bitor   (L, R : Item_Rec) return Item_Rec;
     function Bitxor  (L, R : Item_Rec) return Item_Rec;
     function Shl     (L, R : Item_Rec) return Item_Rec;
     function Shr     (L, R : Item_Rec) return Item_Rec;
 
-    -- INTE->INTE or REAL->REAL
+    -- Inte->Inte or Real->Real
     function Minus   (X : Item_Rec) return Item_Rec;
     function Absv    (X : Item_Rec) return Item_Rec;
 
-    -- INTE->INTE
+    -- Inte->Inte
     function Bitneg  (X : Item_Rec) return Item_Rec;
 
-    -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
+    -- Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
     function Equal   (L, R : Item_Rec) return Item_Rec;
     function Diff    (L, R : Item_Rec) return Item_Rec;
     function Greater (L, R : Item_Rec) return Item_Rec;
@@ -71,21 +71,21 @@ package body Mcd_Mng is
     function Greateq (L, R : Item_Rec) return Item_Rec;
     function Smalleq (L, R : Item_Rec) return Item_Rec;
 
-    -- INTE->REAL
+    -- Inte->Real
     function Toreal  (X : Item_Rec) return Item_Rec;
 
-    -- REAL -> INTE
+    -- Real -> Inte
     function Round   (X : Item_Rec) return Item_Rec;
     function Trunc   (X : Item_Rec) return Item_Rec;
 
-    -- REAL->REAL
+    -- Real->Real
     function Int     (X : Item_Rec) return Item_Rec;
     function Frac    (X : Item_Rec) return Item_Rec;
     function Dms     (X : Item_Rec) return Item_Rec;
     function Msd     (X : Item_Rec) return Item_Rec;
     function Sqrt    (X : Item_Rec) return Item_Rec;
 
-    -- *->BOOL
+    -- *->Bool
     function Isreal  (X : Item_Rec) return Item_Rec;
     function Isinte  (X : Item_Rec) return Item_Rec;
     function Isbool  (X : Item_Rec) return Item_Rec;
@@ -93,18 +93,18 @@ package body Mcd_Mng is
     function Isreg   (X : Item_Rec) return Item_Rec;
     function Isprog  (X : Item_Rec) return Item_Rec;
 
-    -- BOOL,BOOL->BOOL
+    -- Bool,Bool->Bool
     function Boland  (L, R : Item_Rec) return Item_Rec;
     function Bolor   (L, R : Item_Rec) return Item_Rec;
     function Bolxor  (L, R : Item_Rec) return Item_Rec;
 
-    -- BOOL->BOOL
+    -- Bool->Bool
     function Bolneg  (X : Item_Rec) return Item_Rec;
 
-    -- BOOL,*,*->*
+    -- Bool,*,*->*
     function Ifte    (X, A, B : Item_Rec) return Item_Rec;
 
-    -- REAL -> REAL
+    -- Real -> Real
     function Sin     (X : Item_Rec) return Item_Rec;
     function Cos     (X : Item_Rec) return Item_Rec;
     function Tan     (X : Item_Rec) return Item_Rec;
@@ -116,9 +116,9 @@ package body Mcd_Mng is
 
 
     -- Argument does not mach operator
-    -- INVALID_ARGUMENT : exception;
+    -- Invalid_Argument : exception;
     -- Arguments are not compatible to each other
-    -- ARGUMENT_MISMATCH : exception;
+    -- Argument_Mismatch : exception;
   end Operations;
 
   package Registers is
@@ -267,7 +267,7 @@ package body Mcd_Mng is
       end if;
       Call_Stack_Level := Call_Stack.Level;
       if not All_Levels then
-        -- has to be INTE and val NATURAL
+        -- Has to be Inte and val NaturaL
         begin
           L := Natural(Levels.Val_Inte);
         exception
@@ -288,7 +288,7 @@ package body Mcd_Mng is
           The_End := True;
           return;
         else
-          -- RETACAL from level 0
+          -- Retacal from level 0
           raise Invalid_Argument;
         end if;
       end if;
@@ -316,7 +316,7 @@ package body Mcd_Mng is
       N : Natural;
     begin
       Stack.Pop(A);
-      -- has to be INTE and val NATURAL
+      -- Has to be Inte and val Natural
       begin
         N := Natural(A.Val_Inte);
       exception
@@ -373,13 +373,13 @@ package body Mcd_Mng is
 
     use Stack;
   begin
-    -- Default, except RET
+    -- Default, except Ret
     The_End := False;
     -- Dispatch
     if Item.Kind /= Oper then
       -- Push operand
       Push(Item);
-    else -- OPERATOR
+    else -- Operator
       if Debug.Debug_Level_Array(Debug.Oper) then
         Text_Io.Put("Mng: ");
         Debug.Put(Item);
@@ -725,7 +725,7 @@ package body Mcd_Mng is
           Do_Ret(False);
           Do_Call;
 
-        -- PUTs
+        -- Puts
         when Format =>
           Pop(A); Ios.Format(A);
           S := A;

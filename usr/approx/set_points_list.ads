@@ -1,3 +1,3 @@
--- Set the AFPX_list from points
+-- Set the Afpx_List from points
 procedure Set_Points_List;
 

@@ -9,8 +9,8 @@ package body My_Math is
 
 
 
--- CONSTANTS FOR COMPUTING
---------------------------
+  -- Constants for computing
+  --------------------------
   -- greatest number that can be exponented
   Ln_Max               : Real;
   -- ln (10)

@@ -218,7 +218,7 @@ package body Sok_File is
       Sok_Saved_Mng.Open (Sok_Saved_File, Sok_Saved_Mng.In_File,
        Sok_Saved_Name);
     exception
-      when -- SOK_STATE_MNG.NAME_ERROR |
+      when -- Sok_State_Mng.Name_Error |
            Sok_Saved_Mng.Name_Error =>
         raise Frame_File_Not_Found;
     end;

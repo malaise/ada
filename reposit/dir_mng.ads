@@ -19,9 +19,9 @@ package Dir_Mng is
   -- List files of a directory
   --  and append them at the end of the current list
   -- Current is set to the last item appended or not changed if no file found.
-  -- If DIR is empty, then current dir is assumed
-  -- May raise NAME_ERROR if DIR is not valid or not existing
-  -- May raise ACCESS_ERROR if DIR cannot be read
+  -- If Dir is empty, then current dir is assumed
+  -- May raise Name_Error if Dir is not valid or not existing
+  -- May raise Access_Error if Dir cannot be read
   procedure List_Dir (List : in out File_List_Mng.List_Type;
                       Dir  : in String := "";
                       Template : in String := "");

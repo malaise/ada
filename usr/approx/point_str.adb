@@ -12,7 +12,7 @@ package body Point_Str is
     return Str;
   end Coordinate_Image;
 
-  -- May raise CONSTRAINT_ERROR
+  -- May raise Constraint_Error
   function Coordinate_Value (Str : String) return Points.P_T_Coordinate is
     C : Points.P_T_Coordinate;
     L : Positive;
@@ -20,7 +20,7 @@ package body Point_Str is
     Str_Len : Natural;
   begin
 
-    -- Locate last significant character of STR
+    -- Locate last significant character of Str
     Str_Len := 0;
     for J in reverse Str'Range loop
       if Str(J) /= ' ' then

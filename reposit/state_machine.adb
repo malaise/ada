@@ -158,7 +158,7 @@ package body State_Machine is
         return;
       end if;
       if Event_List'Image(Ta.Event) = "TRUE" then
-        -- Transition is TRUE, follow it
+        -- Transition is True, follow it
         Do_Transition (The_Current_State, Ta, Report);
         Ta := State_Array(The_Current_State);
         -- Count true transitions to detect loops

@@ -191,7 +191,7 @@ package body Parser is
     Item_Chrs.Val_Len := Text_Handler.Length(Txt);
     Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
 
-    -- EOF
+    -- Eof
     if Text_Handler.Empty(Txt) then
       if Debug.Debug_Level_Array(Debug.Parser) then
         Text_Io.Put_Line ("Parser: Eof");
@@ -226,7 +226,7 @@ package body Parser is
       raise Parsing_Error;
     end if;
 
-    -- Parse [ or REGI
+    -- Parse [ or Regi
     if Text_Handler.Length(Txt) = 1 then
       
       if Mcd_Mng.Is_Register(C) then
@@ -286,7 +286,7 @@ package body Parser is
 
     end if;
 
-    -- Parse OPER : string
+    -- Parse Oper : string
     declare
       Op : Mcd_Mng.Operator_List;
     begin
@@ -302,7 +302,7 @@ package body Parser is
     end;
 
 
-    -- Parse OPER : symbol
+    -- Parse Oper : symbol
     if Text_Handler.Length(Txt) <= 2 then
       if Text_Handler.Length(Txt) = 2 then
         W := Text_Handler.Value(Txt);
@@ -319,7 +319,7 @@ package body Parser is
     end if;
 
 
-    -- Parse INTE REAL BOOL
+    -- Parse Inte Real Bool
     begin
       Bool_Io.Get(Text_Handler.Value(Txt), B, L);
       if L = Text_Handler.Length(Txt) then

@@ -54,7 +54,7 @@ package Socket is
   -- When a socket is non  blocking the calls which may raise Soc_Would_Block
   --   and what to do are:
   -- Receive, then wait for read on fd and re-Read with same arguments
-  -- Send, then wait for write on fd and call Re_Send until OK
+  -- Send, then wait for write on fd and call Re_Send until Ok
   -- Set_Destination on tcp (connect) then wait for write on fd
   --  then check result by calling Is_Connected
   ---------------------------------

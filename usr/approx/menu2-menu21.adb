@@ -68,7 +68,7 @@ package body Menu21 is
     end if;
   end Put_Bounds;
 
-  -- COMPUTE_X should be set only when scale is curve*
+  -- Compute_X should be set only when scale is curve*
   procedure Set_Bounds (Scale : in Curve.T_Scale;
                         Compute_X : in Boolean := False) is
     Loc_Bounds : Curve.T_Boundaries(Scale);

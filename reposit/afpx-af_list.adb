@@ -140,19 +140,19 @@ package body Af_List is
     if Status.Id_Selected > Line_List_Mng.List_Length (Line_List) then
       raise Line_List_Mng.Not_In_List;
     end if;
-    -- top + height - 1 <= length => can display HEIGHT items
+    -- top + height - 1 <= length => can display Height items
     if Line_List_Mng.List_Length (Line_List) - First_Item_Id >=
        Af_Dscr.Fields(Lfn).Height then
-      -- Can display HEIGHT items
+      -- Can display Height items
       Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
       Status.Id_Top := First_Item_Id;
     elsif Line_List_Mng.List_Length (Line_List) <
           Af_Dscr.Fields(Lfn).Height then
-      -- Cannot display LIST length items whatever first
+      -- Cannot display List_Length items whatever first
       Status.Nb_Rows := Line_List_Mng.List_Length (Line_List);
       Status.Id_Top := 1;
     else
-      -- Can display HEIGHT items but not with this first.
+      -- Can display Height items but not with this first.
       -- Set top to display last page
       Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
       Status.Id_Top := Line_List_Mng.List_Length (Line_List)
@@ -168,7 +168,7 @@ package body Af_List is
       raise Afpx_Internal_Error;
   end Compute;
 
-  -- Display the list, starting from FIRST_ITEM
+  -- Display the list, starting from First_Item
   procedure Display (First_Item_Id : in Positive) is
     Item : Line_Rec;
   begin
@@ -206,7 +206,7 @@ package body Af_List is
   end Display;
 
   -- Actions on the list
-  -- type ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN);
+  -- type Action_List is (Up, Down, Page_Up, Page_Down);
 
   -- Update the list due to an action
   procedure Update (Action : in List_Action_List) is
@@ -215,7 +215,7 @@ package body Af_List is
     if not Opened then
       raise Not_Opened;
     end if;
-    -- Update may be called before 1st PTG
+    -- Update may be called before 1st Ptg
     if Status.Id_Selected = 0 then
       Compute (1);
     end if;
@@ -295,7 +295,7 @@ package body Af_List is
                          - Af_Dscr.Fields(Lfn).Height + 1;
         Display (First_Item_Id);
       when Center =>
-        -- Center current LIST item in window (do ower best)
+        -- Center current List item in window (do ower best)
         declare
           -- List length
           Len : constant Positive := Line_List_Mng.List_Length (Line_List);
@@ -355,7 +355,7 @@ package body Af_List is
       raise Afpx_Internal_Error;
   end Set_Current;
 
-  -- Is an ID, a row displayed
+  -- Is an Id, a row displayed
   function Id_Displayed (Id : Positive) return Boolean is
   begin
     if not Opened then
@@ -372,7 +372,7 @@ package body Af_List is
     return Row < Status.Nb_Rows;
   end Row_Displayed;
 
-  -- ROW <-> Item ID
+  -- Row <-> Item Id
   function To_Row (Id : Positive) return Con_Io.Row_Range is
   begin
     if not Id_Displayed (Id) then
@@ -390,3 +390,4 @@ package body Af_List is
   end To_Id;
 
 end Af_List;
+

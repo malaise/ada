@@ -7,7 +7,7 @@ package Common is
   subtype Full_Bar_Range is Natural range 0 .. 7;
   subtype Bar_Range is Full_Bar_Range range 1 .. Full_Bar_Range'Last;
 
-  -- Number of Bars per ROW
+  -- Number of Bars per Row
   type Bar_Per_Row_Tab is array (Row_Range) of Bar_Range;
   Bar_Per_Row : constant Bar_Per_Row_Tab := (
    1 => 7,

@@ -20,9 +20,9 @@ begin
     when Screen.Menu =>
       if Playing then
         Screen.Put_Start_Giveup (Start => False, Selected => False);
-        -- DEBUG
-        -- if CUR_SELECTION.SELECTION_KIND = SCREEN.EXIT_GAME then
-        -- PUT_SECRET;
+        -- Debug
+        -- if Cur_Selection.Selection_Kind = Screen.Exit_Game then
+        --   Put_Secret;
         -- end if;
       else
         Screen.Put_Start_Giveup (Start => True, Selected => False);
@@ -109,7 +109,7 @@ begin
                    Level => I,
                    Color => Free_State.Propal_Color(I) );
                 end loop;
-                -- answered impossible because of NEXT_FREE
+                -- answered impossible because of Next_Free
                 if Prop_State.Try = Common.Can_Try then
                   Screen.Put_Try (Cur_Selection.Try_No, Can_Try);
                 else

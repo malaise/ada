@@ -8,7 +8,7 @@ package body Mesu_Gra is
   X_First : constant Natural := 0;
   -- To be computed: 4 * font_width
   Xs_First : Con_Io.Graphics.X_Range := 43;
-  -- To be computed: X_MAX
+  -- To be computed: X_Max
   Xs_Last  : Con_Io.Graphics.X_Range;
   -- To be computed: last sample in time
   X_Last  : Natural;
@@ -18,7 +18,7 @@ package body Mesu_Gra is
   Y_Step   : constant Pers_Def.Bpm_Range := 25;
   -- To be computed: 2 * font height
   Ys_First : Con_Io.Graphics.Y_Range;
-  -- To be computed: Y_MAX - MAX_NB_MESURE * font height
+  -- To be computed: Y_Max - Max_Nb_Mesure * font height
   Ys_Last  : Con_Io.Graphics.Y_Range;
 
   -- Scale factors from reality to screen
@@ -40,7 +40,7 @@ package body Mesu_Gra is
   subtype Mesure_Range is Natural range 0 .. Max_Nb_Mesure;
   Mesure_Array : array (1 .. Max_Nb_Mesure) of Mesure_Cell;
   Nb_Mesure : Mesure_Range;
-  -- No of mesure of last TZ drawn
+  -- No of mesure of last Tz drawn
   Prev_Tz : Mesure_Range;
 
 
@@ -104,7 +104,7 @@ package body Mesu_Gra is
     Y, Y1, Y2 : Integer;
   begin
     if Xa = Xb then
-      -- Vertical line. Must have YA <= YB
+      -- Vertical line. Must have Ya <= Yb
       if Ya <= Yb then
         for Y in Ya .. Yb loop
           Pixel (Xa, Y, In_Graphic);
@@ -179,14 +179,14 @@ package body Mesu_Gra is
       null;
   end Draw_Line;
 
-  -- Graphic layout (help, scales, TZ)
+  -- Graphic layout (help, scales, Tz)
   procedure Draw_Layout is
     Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Brown;
     Scale_Color : constant Con_Io.Effective_Colors := Con_Io.Blue;
     -- Scale step on X in seconds
     Secs_Scale_Step : constant := 600;
     Secs : Natural;
-    -- Scale step on Y in BPM
+    -- Scale step on Y in Bpm
     Bpm : Pers_Def.Bpm_Range;
     X : Con_Io.Graphics.X_Range;
     Y : Con_Io.Graphics.Y_Range;
@@ -218,8 +218,8 @@ package body Mesu_Gra is
         Put (Normal (Secs / 60, 3));
       end if;
     end loop;
-    -- Vertical scale : one + each 25 BPM
-    --                  BPM for each +
+    -- Vertical scale : one + each 25 Bpm
+    --                  Bpm for each +
     for I in Y_First / Y_Step .. Y_Last / Y_Step loop
       Bpm := Pers_Def.Bpm_Range(I) * Y_Step;
       Y := Y_To_Screen (Bpm);
@@ -341,7 +341,7 @@ package body Mesu_Gra is
     Char      : Character;
     No_Mesure : Mesure_Range;
 
-    -- Check if same TZ
+    -- Check if same Tz
     procedure Check_Same_Tz is
       First_Drown_Mesure : Mesure_Range := 0;
     begin
@@ -352,7 +352,7 @@ package body Mesu_Gra is
             -- This one is the first drown mesure
             First_Drown_Mesure := Mesu;
           else
-            -- Compare this TZs to the ones of first drown mesure
+            -- Compare this Tz to the ones of first drown mesure
             for I in Pers_Def.Person_Tz_Array'Range loop
               if Mesure_Array(Mesu).Mesure.Tz(I) /=
                  Mesure_Array(First_Drown_Mesure).Mesure.Tz(I) then
@@ -437,21 +437,21 @@ package body Mesu_Gra is
 
     Main_Loop:
     loop
-      -- GET key
+      -- Get key
       Char := Con_Io.Get(Echo => False);
-      -- exit when Escape
+      -- Exit when Escape
       if Char = Ascii.Esc then
         Exit_Program := False;
         exit Main_Loop;
       elsif Char = 'T' or else Char = 't' then
         if Tz_Drown then
-          -- Hide TZs
+          -- Hide Tzs
           Draw_Tz(False);
           Tz_Drown := False;
         else
           Check_Same_Tz;
           if Same_Tz then
-            -- Draw TZs
+            -- Draw Tzs
             Draw_Tz(True);
             Tz_Drown := True;
           end if;
@@ -462,12 +462,12 @@ package body Mesu_Gra is
         if No_Mesure <= Nb_Mesure then
           if not Mesure_Array(No_Mesure).Drown then
             Mesure_Array(No_Mesure).Drown := True;
-            -- Drawing a new record : check if TZ to be hidden
+            -- Drawing a new record : check if Tz to be hidden
             if Tz_Drown then
               Check_Same_Tz;
               if not Same_Tz then
-                -- This mesure has a TZ incompatible with the drown TZs
-                -- Hide TZ
+                -- This mesure has a Tz incompatible with the drown Tzs
+                -- Hide Tz
                 Draw_Tz(False);
                 Tz_Drown := False;
               end if;

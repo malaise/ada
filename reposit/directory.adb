@@ -159,8 +159,8 @@ package body Directory is
   pragma Interface(C, C_Readlink);
   pragma Interface_Name(C_Readlink, "readlink");
 
-  -- May raise NAME_ERROR if FILE_NAME does not exist
-  --           OPEN_ERROR if FILE_NAME is not a link
+  -- May raise Name_Error if File_Name does not exist
+  --           Open_Error if File_Name is not a link
   function Read_One_Link (File_Name : String) return String is
     Str : String(1 .. Max_Dir_Name_Len);
     C_File_Name : constant String := Str_For_C(File_Name);
@@ -170,10 +170,10 @@ package body Directory is
     if Res /= -1 then
       return Str (1 .. Res);
     elsif Sys_Calls.Errno = Enoent then
-      -- ENOENT : file not found
+      -- Enoent : file not found
       raise Name_Error;
     elsif Sys_Calls.Errno = Einval then
-      -- EINVAL : not a symbolic link
+      -- Einval : not a symbolic link
       raise Open_Error;
     else
       raise Access_Error;

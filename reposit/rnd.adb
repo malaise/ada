@@ -52,7 +52,7 @@ package body Rnd is
     end Init_Aleat;
 
   begin
-    -- 0 <= init <= 1 : OK, otherwise random
+    -- 0 <= init <= 1 : Ok, otherwise random
     if 0.0 <= Init and then Init < 1.0 then
       F := Init;
     else
@@ -76,7 +76,7 @@ package body Rnd is
     Ok := Mutex_Manager.Get_Mutex (Lock, -1.0);
     Val := U_Rand.Next;
     Mutex_Manager.Release_Mutex (Lock);
-    -- Here 0 <= VAL < 1
+    -- Here 0 <= Val < 1
     if Mini >= Maxi then
       return Val;
     else

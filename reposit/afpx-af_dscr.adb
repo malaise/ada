@@ -145,7 +145,7 @@ begin
       raise Afpx_File_Read_Error;
   end;
 
-  -- Check AFPX version
+  -- Check Afpx version
   if Dscrs(1).Version /= Afpx_Typ.Afpx_Version then
     raise Afpx_File_Version_Error;
   end if;

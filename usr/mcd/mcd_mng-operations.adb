@@ -36,7 +36,7 @@ package body Operations is
    or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
   end Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
 
-  -- INTE,INTE->INTE or REAL,REAL->REAL
+  -- Inte,Inte->Inte or Real,Real->Real
   function Add     (L, R : Item_Rec) return Item_Rec is
   begin
     if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
@@ -141,7 +141,7 @@ package body Operations is
       raise Compute_Error;
   end Pow;
 
-  -- INTE,INTE->INTE
+  -- Inte,Inte->Inte
   function Remind  (L, R : Item_Rec) return Item_Rec is
   begin
     if L.Kind /= Inte or else R.Kind /= Inte then
@@ -155,7 +155,7 @@ package body Operations is
       raise Compute_Error;
   end Remind;
 
-  -- INTE,INTE->INTE
+  -- Inte,Inte->Inte
   function Bitand  (L, R : Item_Rec) return Item_Rec is
     use Bit_Ops;
   begin
@@ -226,7 +226,7 @@ package body Operations is
       raise Compute_Error;
   end Shr;
 
-  -- INTE->INTE or REAL->REAL
+  -- Inte->Inte or Real->Real
   function Minus   (X : Item_Rec) return Item_Rec is
   begin
     if not Is_Inte_Or_Real(X) then
@@ -244,7 +244,7 @@ package body Operations is
       raise Compute_Error;
   end Minus;
 
-  -- INTE->INTE or REAL->REAL
+  -- Inte->Inte or Real->Real
   function Absv   (X : Item_Rec) return Item_Rec is
   begin
     if not Is_Inte_Or_Real(X) then
@@ -262,7 +262,7 @@ package body Operations is
       raise Compute_Error;
   end Absv;
 
-  -- INTE->INTE
+  -- Inte->Inte
   function Bitneg  (X : Item_Rec) return Item_Rec is
     use Bit_Ops;
   begin
@@ -277,8 +277,8 @@ package body Operations is
       raise Compute_Error;
   end Bitneg;
 
-  -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
-  -- REGI,REGI->BOOL or CHARS,CHARS->BOOL
+  -- Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
+  -- Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
   begin
     if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
@@ -447,7 +447,7 @@ package body Operations is
       raise Compute_Error;
   end Smalleq;
 
-  -- INTE->REAL
+  -- Inte->Real
   function Toreal  (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind = Real then
@@ -464,7 +464,7 @@ package body Operations is
       raise Compute_Error;
   end Toreal;
 
-  -- REAL->INTE
+  -- Real->Inte
   function Round (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind = Inte then
@@ -497,7 +497,7 @@ package body Operations is
       raise Compute_Error;
   end Trunc;
 
-  -- REAL->REAL
+  -- Real->Real
   function Int (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind = Inte then
@@ -602,7 +602,7 @@ package body Operations is
       raise Compute_Error;
   end Sqrt;
 
-  -- *->BOOL
+  -- *->Bool
   function Isreal  (X : Item_Rec) return Item_Rec is
   begin
     return (Kind => Bool, Val_Bool => X.Kind = Real);
@@ -634,7 +634,7 @@ package body Operations is
   end Isprog;
 
 
-  -- BOOL,BOOL->BOOL
+  -- Bool,Bool->Bool
   function Boland  (L, R : Item_Rec) return Item_Rec is
   begin
     if L.Kind /= Bool or else R.Kind /= Bool then
@@ -675,7 +675,7 @@ package body Operations is
   end Bolxor;
 
 
-  -- BOOL->BOOL
+  -- Bool->Bool
   function Bolneg  (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind /= Bool then
@@ -689,7 +689,7 @@ package body Operations is
       raise Compute_Error;
   end Bolneg;
 
-  -- BOOL,*,*->*
+  -- Bool,*,*->*
   function Ifte    (X, A, B : Item_Rec) return Item_Rec is
   begin
     if X.Kind /= Bool then
@@ -710,7 +710,7 @@ package body Operations is
       raise Compute_Error;
   end Ifte;
 
-  -- REAL -> REAL
+  -- Real -> Real
   function Sin     (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind /= Real then

@@ -1,7 +1,7 @@
 with Con_Io, Afpx, Normal, Get_Line, Text_Handler;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng;
 use Afpx;
--- with MESU_NAM;
+-- with Mesu_Nam;
 -- Edition, Creation, deletion of mesure
 package body Mesu_Edi is
 
@@ -15,7 +15,7 @@ package body Mesu_Edi is
     Afpx.Encode_Field (04, (00, 00), Person.Name);
     Afpx.Encode_Field (06, (00, 00), Person.Activity);
 
-    -- TZ, Date, comment, sampling
+    -- Tz, Date, comment, sampling
     for I in Pers_Def.Person_Tz_Array'Range loop
       Afpx.Encode_Field (Afpx.Field_Range(8 + I), (00, 00),
                          Str_Mng.To_Str(Mesure.Tz(I)));
@@ -74,7 +74,7 @@ package body Mesu_Edi is
     -- Remove trailing spaces
     for I in reverse Import_File_Name'Range loop
       if Import_File_Name(I) /= ' ' then
-        -- Always occures cause IMPORT_FILE_NAME /= IMPORT_FILE_NAME_DEF
+        -- Always occures cause Import_File_Name /= Import_File_Name_Def
         Import_File_Name_Last := I;
         exit;
       end if;
@@ -83,13 +83,13 @@ package body Mesu_Edi is
     -- Open file
     Get_Sample.Open(File_Name => Import_File_Name(Import_File_Name'First .. Import_File_Name_Last));
 
-    -- Read, decode, store in SAMPLES
+    -- Read, decode, store in Samples
     loop
       -- Split line in words
       Get_Sample.Get_Words (Sample_Line);
       -- Not empty nor a comment
       for I in 1 .. Get_Sample.Get_Word_Number loop
-        -- Decode a BPM
+        -- Decode a Bpm
         Samples(Samples_Index) := Pers_Def.Bpm_Range'Value (
                                      Text_Handler.Value (Sample_Line(I)));
         Samples_Index := Samples_Index + 1;
@@ -107,14 +107,14 @@ package body Mesu_Edi is
     -- Close file
     Get_Sample.Close;
 
-    -- So far so good... Copy SAMPLES in mesure
+    -- So far so good... Copy Samples in mesure
     Mesure.Samples := Samples;
 
     -- Done
     Ok := True;
   exception
     when others =>
-      -- OK is FALSE. Close file if open.
+      -- Ok is False. Close file if open.
       begin
         Get_Sample.Close;
       exception
@@ -126,7 +126,7 @@ package body Mesu_Edi is
 
   -- Edit a mesure.
   -- If date or person changes, then the file name may be affected.
-  -- If FILE_NAME is empty as input, then it is a creation and file_name
+  -- If File_Name is empty as input, then it is a creation and file_name
   --  is affected
   procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str;
                   Exit_Program : out Boolean) is
@@ -179,10 +179,10 @@ package body Mesu_Edi is
                 Pos_Pers - 1, False);
             Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
                 Pers_Def.Person_List_Mng.Current);
-            -- Copy PID
+            -- Copy Pid
             Mesure.Pid := Person.Pid;
             if not For_Valid then
-              -- Encode TZ
+              -- Encode Tz
               Afpx.Encode_Field (09, (00,00), Str_Mng.To_Str(Person.Tz(1)));
               Afpx.Encode_Field (10, (00,00), Str_Mng.To_Str(Person.Tz(2)));
               Afpx.Encode_Field (11, (00,00), Str_Mng.To_Str(Person.Tz(3)));
@@ -192,7 +192,7 @@ package body Mesu_Edi is
               -- Go to date
               Current_Field := 16;
             else
-              -- Next check : TZ
+              -- Next check : Tz
               Current_Field := 09;
             end if;
             Locok := True;
@@ -205,7 +205,7 @@ package body Mesu_Edi is
           end if;
 
         when 09 .. 14 =>
-          -- In TZ check it
+          -- In Tz check it
           Bpm_S := Afpx.Decode_Field (Current_Field, 00);
           Str_Mng.Parse(Bpm_S);
           Locok := not Str_Mng.Has_Holes(Bpm_S);
@@ -375,7 +375,7 @@ package body Mesu_Edi is
     Cursor_Col := 0;
     Redisplay := False;
 
-    -- Loop of PTGs
+    -- Loop of Ptgs
     loop
       Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
@@ -390,7 +390,7 @@ package body Mesu_Edi is
 
           case Ptg_Result.Keyboard_Key is
             when Return_Key =>
-              -- Check field and go to next if OK
+              -- Check field and go to next if Ok
               Check_Field (Cursor_Field, False, Ok);
             when Escape_Key =>
               -- Clear current field
@@ -440,7 +440,7 @@ package body Mesu_Edi is
               exit when not Ok or else Cursor_Field = 04;
             end loop;
 
-            -- Check no hole in TZ, crescent
+            -- Check no hole in Tz, crescent
             if Ok then
               for I in Pers_Def.Person_Tz_Array'Range loop
                 Cursor_Field := Afpx.Field_Range(08 + I);
@@ -484,7 +484,7 @@ package body Mesu_Edi is
               or else Mesure.Date /= Date_S
               or else Pid_S /= Str_Mng.Pid_Str(Mesure.Pid) then
                 -- Necessity to create a new file_name.
-                -- Build new file name (find_slot) -> set NO_S
+                -- Build new file name (find_slot) -> set No_S
                 Pid_S := Str_Mng.Pid_Str(Mesure.Pid);
                 No_S := Mesu_Nam.Find_Slot (Date => Mesure.Date,
                                             Pid  => Pid_S);
@@ -520,9 +520,9 @@ package body Mesu_Edi is
             end loop;
             Afpx.Clear_Field(124);
 
-          end if; -- PTG_RESULT.FIELD_NO = valid or cancel
+          end if; -- Ptg_Result.Field_No = valid or cancel
 
-      end case; -- RESULT.EVENT
+      end case; -- Result.Event
 
     end loop;
 
@@ -561,7 +561,7 @@ package body Mesu_Edi is
     Afpx.Encode_Field (01, (00,00), "Deletion");
 
     -- Protect fields
-    -- Person name, activity, TZ
+    -- Person name, activity, Tz
     Protect (04);
     Protect (06);
     for I in Pers_Def.Person_Tz_Array'Range loop
@@ -590,7 +590,7 @@ package body Mesu_Edi is
     Cursor_Col := 0;
     Redisplay := False;
 
-    -- Loop of PTGs
+    -- Loop of ptgs
     loop
       Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
@@ -623,12 +623,13 @@ package body Mesu_Edi is
             Mesu_Fil.Delete (File_Name);
             Exit_Program := False;
             exit;
-          end if; -- PTG_RESULT.FIELD_NO = valid or cancel
+          end if; -- Ptg_Result.Field_No = valid or cancel
 
-      end case; -- RESULT.EVENT
+      end case; -- Result.Event
 
     end loop;
 
   end Delete;
 
 end Mesu_Edi;
+

@@ -40,7 +40,7 @@ package Generic_Con_Io is
     type Blink_Stats is (Current, Blink, Not_Blink);
     subtype Effective_Blink_Stats is Blink_Stats range Blink .. Not_Blink;
 
-    -- List of possible XOR_MODE for graphics
+    -- List of possible Xor_Mode for graphics
     type Xor_Modes is (Current, Xor_On, Xor_Off);
     subtype Effective_Xor_Modes is Xor_Modes range Xor_On .. Xor_Off;
 
@@ -90,11 +90,11 @@ package Generic_Con_Io is
                            Name : in Window := Screen);
     function Get_Xor_Mode(Name : Window := Screen) return Effective_Xor_Modes;
 
-    -- Get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
+    -- Get Upper_Left / Lower_Right absolute coordinates of a window
     function Get_Absolute_Upper_Left  (Name : Window) return Square;
     function Get_Absolute_Lower_Right (Name : Window) return Square;
 
-    -- Get LOWER_RIGHT relative coordinates of a window (UPPER_LEFT is (0, 0)).
+    -- Get Lower_Right relative coordinates of a window (Upper_Left is (0, 0)).
     function Get_Relative_Lower_Right (Name : Window) return Square;
 
 
@@ -103,26 +103,26 @@ package Generic_Con_Io is
                     Upper_Left, Lower_Right : in Square);
     function Is_Open (Name : Window) return Boolean;
 
-    -- TRUE if the absolute square (relative to screen) is in the window.
-    -- FALSE otherwise
+    -- True if the absolute square (relative to screen) is in the window.
+    -- False otherwise
     function In_Window (Absolute_Square : Square;
                         Name            : Window) return Boolean;
 
     -- Returns the relative square (relative to window), being the same
     --  physical position as the absolute square (relative to screen).
-    -- May raise INVALID_SQUARE if the absolute position is not in window.
+    -- May raise Invalid_Square if the absolute position is not in window.
     function To_Relative (Absolute_Square : Square;
                           Name            : Window) return Square;
 
     -- Returns the absolute square (in screen) corresponding to the relative
     --  square in the window
-    -- May raise INVALID_SQUARE if the relative square is not in window
+    -- May raise Invalid_Square if the relative square is not in window
     function To_Absolute (Relative_Square : Square;
                           Name            : Window) return Square;
 
     -- Draw a frame around a window (must be open)
     -- the frame is OUTSIDE the window (so no frame for screen)
-    -- FRAME_IMPOSSIBLE if part of the frame is not in the screen
+    -- Frame_Impossible if part of the frame is not in the screen
     procedure Frame (Blink : in Boolean := False;
                      Name : in Window);
     procedure Clear_Frame (Name : in Window);
@@ -147,8 +147,9 @@ package Generic_Con_Io is
 
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.
-    -- CR is the only special ASCII character which is interpreted.
-    -- If not MOVE, the cursor position is not updated (CR would be ignored then)
+    -- Cr is the only special Ascii character which is interpreted.
+    -- If not Move, the cursor position is not updated
+    --  (Cr would be ignored then)
     procedure Put (C          : in Character;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
@@ -157,8 +158,8 @@ package Generic_Con_Io is
                    Move       : in Boolean := True);
 
     -- Idem with a string
-    -- If not MOVE, the cursor position is not updated
-    --  (last CR would be ignored then)
+    -- If not Move, the cursor position is not updated
+    --  (last Cr would be ignored then)
     procedure Put (S          : in String;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
@@ -166,14 +167,14 @@ package Generic_Con_Io is
                    Background : in Basic_Colors := Current;
                    Move       : in Boolean := True);
 
-    -- Idem but appends a CR
+    -- Idem but appends a Cr
     procedure Put_Line (S          : in String;
                         Name       : in Window := Screen;
                         Foreground : in Colors := Current;
                         Blink_Stat : in Blink_Stats := Current;
                         Background : in Basic_Colors := Current);
 
-    -- Same than PUT(CHAR) not MOVE, but allows semi graphic characters
+    -- Same than Put(Char) not Move, but allows semi graphic characters
     subtype Int_Char is Natural range 0 .. 255;
     procedure Put_Int (Int        : in Int_Char;
                        Name       : in Window := Screen;
@@ -181,7 +182,7 @@ package Generic_Con_Io is
                        Blink_Stat : in Blink_Stats := Current;
                        Background : in Basic_Colors := Current);
 
-    -- Puts CR
+    -- Puts Cr
     procedure New_Line (Name   : in Window := Screen;
                         Number : in Positive := 1);
 
@@ -190,18 +191,18 @@ package Generic_Con_Io is
     procedure Pause;
 
     -- Gets first character (echo or not)
-    -- No echo for RET,      ESC, BREAK, FD_EVENT, TIMER_EVENT, SIGNAL_EVENT
-    -- and REFRESH where
-    --             ASCII.CR, ESC, EOT,   STX,      SYN,         SI          
-    -- and NUL are returned respectively
+    -- No echo for Ret,      Esc, Break, Fd_Event, Timer_Event, Signal_Event
+    -- and Refresh where
+    --             Ascii.Cr, Esc, Eot,   Stx,      Syn,         Si          
+    -- and Nul are returned respectively
 
-    -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
+    -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
     --  discarded (get does not return).
     function Get (Name : Window := Screen; Echo : in Boolean := True)
                  return Character;
 
     -- How to specify a delay, wait some seconds or until a specific time
-    -- PERIOD is not significant
+    -- Period is not significant
     subtype Delay_List is Timers.Delay_List;
     Infinite_Seconds : constant Duration := Timers.Infinite_Seconds;
     subtype Period_Range is Timers.Period_Range;
@@ -219,7 +220,7 @@ package Generic_Con_Io is
     -- The get ends either:
     --  if an Up/Down arrow, (ctrl) Page Up/Down is pressed,
     --  if the cursor leaves the field (Left/Right arrow or character input),
-    --  if Tab, Ctrl Tab, Return(CR), Escape is pressed
+    --  if Tab, Ctrl Tab, Return(Cr), Escape is pressed
     --  on CtrlC/CtrlBreak
     --  on mouse click, release (or motion if enabled)
     --  on time_out expiration
@@ -229,13 +230,13 @@ package Generic_Con_Io is
     -- Mouse_button event can only be generated if the mouse cursor is shown
 
     -- The returned string ends at last significant digit (gaps with spaces),
-    --  tailling spaces are parsed out and last is the index in STR of
+    --  tailling spaces are parsed out and last is the index in Str of
     --  the last non-space character
     -- The in and out positions mean 1 for 1st character ..., not indexes
-    --  of STR
-    -- If STR'length is 0 then last=0 and stat is significant (full if normal
+    --  of Str
+    -- If Str'length is 0 then last=0 and stat is significant (full if normal
     --  character), but pos_out is not significant.
-    -- Note that is STR'LENGHT is 0, the cursor is hidden
+    -- Note that is Str'Lenght is 0, the cursor is hidden
     type Curs_Mvt is (Up, Down, Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
                       Left, Right, Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Timeout, Fd_Event, Timer_Event, 
@@ -266,14 +267,14 @@ package Generic_Con_Io is
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True);
 
-    -- Avoid GET_KEY_TIME and GET_KEY functions which may depend on keyboard.
+    -- Avoid Get_Key_Time and Get_Key functions which may depend on keyboard.
 
-    -- Get_key_time can return if key pressed (ESC event),
+    -- Get_key_time can return if key pressed (Esc event),
     -- mouse action, refresh or timeout
     subtype Event_List is Curs_Mvt range Esc .. Refresh;
 
     -- Check if a key is available, or another event, until a certain time. 
-    -- ESC means any key. No echo.
+    -- Esc means any key. No echo.
     procedure Get_Key_Time (Check_Break : in Boolean;
                             Event       : out Event_List;
                             Key         : out Natural;
@@ -284,11 +285,11 @@ package Generic_Con_Io is
 
     -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
     -- if not is_char, key is the key code. If is_char, key is the ascii code.
-    -- CARE : is_char can be set and key not compatible with ADA characters.
-    -- KEY = 0 and IS_CHAR and other flags FALSE: refresh has to be done
-    -- KEY = 1 and IS_CHAR and other flags FALSE: fd event has occured
-    -- KEY = 2 and IS_CHAR and other flags FALSE: timer event has occured
-    -- KEY = 3 and IS_CHAR and other flags FALSE: signal event has occured
+    -- CARE : is_char can be set and key not compatible with Ada characters.
+    -- Key = 0 and Is_Char and other flags False: refresh has to be done
+    -- Key = 1 and Is_Char and other flags False: fd event has occured
+    -- Key = 2 and Is_Char and other flags False: timer event has occured
+    -- Key = 3 and Is_Char and other flags False: signal event has occured
     procedure Get_Key (Key     : out Natural;
                        Is_Char : out Boolean;
                        Ctrl    : out Boolean;
@@ -311,10 +312,10 @@ package Generic_Con_Io is
     -- String lenght incompatible with current position and window width
     --  for get and put_then get
     String_Too_Long     : exception;
-    -- For non window oriented calls (GET_KEY, GRAPHICS, MOUSE)
+    -- For non window oriented calls (Get_Key, Graphics, Mouse)
     Not_Init : exception;
 
-    -- Graphic operations on SCREEN window
+    -- Graphic operations on Screen window
     package Graphics is
 
       -- Size of the line in pixels
@@ -386,7 +387,7 @@ package Generic_Con_Io is
                             Points        : in Byte_Array);
 
       -- Get dynmically the current position of pointer
-      -- If valid is FALSE, it means that the pointer
+      -- If valid is False, it means that the pointer
       -- is currently out of the screen, then X and Y are not significant
       procedure Get_Current_Pointer_Pos (Valid : out Boolean;
                                          X     : out X_Range;
@@ -395,7 +396,7 @@ package Generic_Con_Io is
     end Graphics;
 
     -- Set mouse pointer shape
-    --  ARROW by default
+    --  Arrow by default
     type Pointer_Shape_List is (Arrow, Cross);
     procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List);
     
@@ -403,7 +404,7 @@ package Generic_Con_Io is
     -- We want mouse position in row_col or x_y
     type Coordinate_Mode_List is (Row_Col, X_Y);
 
-    -- Button status: when MOTION, BUTTON is MOTION
+    -- Button status: when Motion, Button is Motion
     type Mouse_Button_Status_List is (Pressed, Released, Motion);
     -- List of button
     type Mouse_Button_List is (Left, Middle, Right, Motion, Up, Down);
@@ -425,8 +426,8 @@ package Generic_Con_Io is
       end case;
     end record;
 
-    -- Get a mouse event. If valid is FALSE, it means that a release
-    -- has occured outside the screen, then only BUTTON and STATUS
+    -- Get a mouse event. If valid is False, it means that a release
+    -- has occured outside the screen, then only Button and Status
     -- are significant
     procedure Get_Mouse_Event (
       Mouse_Event : out Mouse_Event_Rec;

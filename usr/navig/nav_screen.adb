@@ -129,7 +129,7 @@ package body Nav_Screen is
     end case;
   end Fld_Row;
 
-  -- COL of a field in get and result areas
+  -- Col of a field in get and result areas
   function Fld_Col (Field : Nav_Data.T_List_Data) return Row_Range is
   begin
     case Field is
@@ -233,7 +233,7 @@ package body Nav_Screen is
     Cur_Action := Compute;
     Stat := Right;
     loop
-      -- infinite get with GET_BACK on GET_BACK
+      -- infinite get with Get_Back on Get_Back
       if Stat /= Timeout then
         Move (0, Act_Col(Cur_Action), W_Act);
         Put ('X', W_Act, Background => Get_Back);
@@ -399,7 +399,7 @@ package body Nav_Screen is
   end Abort_Clock;
 
 
-begin -- NAV_SCREEN
+begin -- Nav_Screen
   Con_Io.Open (W_Title, ( 0,  0), ( 7, 79));
   Con_Io.Open (W_Mask,  ( 8,  0), (22, 79));
   Con_Io.Open (W_Help,  ( 8,  0), (22, 79));

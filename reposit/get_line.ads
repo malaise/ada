@@ -1,6 +1,6 @@
 -- Opens a file and reads lines
 -- Parses words separated by space or tab
-with Text_Io;
+with Ada.Text_Io;
 with Text_Handler;
 
 generic
@@ -23,12 +23,12 @@ package Get_Line is
   type Line_Array is array (Word_Range) of Word_Txt;
   subtype Line_Txt is Text_Handler.Text(Max_Len => Max_Line_Len);
 
-  -- Opens the file. Exceptions are the one of Text_Io.Open (In_File)
+  -- Opens the file. Exceptions are the one of Ada.Text_Io.Open (In_File)
   -- Loads the first line
   procedure Open (File_Name : in String);
 
   -- Closes the file
-  -- Exceptions are the one of Text_Io.Close
+  -- Exceptions are the one of Ada.Text_Io.Close
   procedure Close;
 
   -- The following features may raise
@@ -45,7 +45,7 @@ package Get_Line is
   --------------------------------------------------
 
   -- Current line number (not parsed)
-  function Get_Line_No return Text_Io.Positive_Count;
+  function Get_Line_No return Ada.Text_Io.Positive_Count;
 
   -- Get the whole line (not parsed)
   procedure Get_Whole_Line (Line : in out Line_Txt);

@@ -230,7 +230,7 @@ package body Timers is
         One_True := True;
       else
         if Timer.Cb ( (Timer_Num => Timer.Id), Timer.Dat) then
-          -- At least this CB has returned True
+          -- At least this Cb has returned True
           One_True := True;
         end if;
       end if;

@@ -71,14 +71,14 @@ package body Nav_Data is
   function Check (Problem : T_Data) return T_Consistency is separate;
 
 
-  -- if DRIFT is known, compute plan angle and traj angles before
+  -- if Drift is known, compute plan angle and traj angles before
   --  global computation
   procedure Set_Before (Data : in out T_Data) is separate;
 
-  -- if DRIFT is unknown, compute it after global computation
+  -- if Drift is unknown, compute it after global computation
   procedure Set_Drift_After (Data : in out T_Data) is separate;
 
-  -- when only unknown is TRAJ_S after set_before
+  -- when only unknown is Traj_S after set_before
   procedure Comp_Trajs (Data : in out T_Data) is separate;
 
   -- When 1 vector is unknown compute it by addition or substraction of
@@ -86,10 +86,10 @@ package body Nav_Data is
   function Add (X, Y : Nav_Types.T_Vector) return Nav_Types.T_Vector
    is separate;
 
-  -- When PLAN.SPEED and TRAJ.SPEED are unknown
+  -- When Plan.Speed and Traj.Speed are unknown
   procedure Comp_Speed (Data : in out T_Data) is separate;
 
-  -- When PLAN.ANGLE and TRAJ.SPEED are unknown
+  -- When Plan.Angle and Traj.Speed are unknown
   procedure Comp_Nav (Data : in out T_Data) is separate;
 
 
@@ -113,14 +113,14 @@ package body Nav_Data is
       return;
     end if;
 
-    -- Drift is known : compute TRAJ angle or PLAN angle, or both
+    -- Drift is known : compute Traj angle or Plan angle, or both
     if Data.Set (Drift) then
       Set_Before (Data);
     end if;
 
     if Data.Set(Drift) and then Data.Set(Traj_A) and then Data.Set(Plan_A)
     and then Data.Set(Wind_A) and then Data.Set(Plan_S) and then Data.Set(Wind_S) then
-      -- after set_before, last unknown is TRAJ_S
+      -- after set_before, last unknown is Traj_S
       Comp_Trajs (Data);
       Data.Set (Traj_S) := True;
     else
@@ -128,31 +128,31 @@ package body Nav_Data is
       -- 2 data are unknown toward the 6 data of the 3 vectors
       --  Compute the 3 vectors
       if not Data.Set(Wind_S) and then not Data.Set(Wind_A) then
-        -- WIND := TRAJ - PLAN
+        -- Wind := Traj - Plan
         Data.Wind := Add (Data.Traj, Nav_Types.T_Vector'(
          Speed => Data.Plan.Speed,
          Angle => Nav_Types."+" (Data.Plan.Angle, 180) ) );
         Data.Set(Wind_A) := True;
         Data.Set(Wind_S) := True;
       elsif not Data.Set(Plan_S) and then not Data.Set(Plan_A) then
-        -- PLAN := TRAJ - WIND
+        -- Plan := Traj - Wind
         Data.Plan := Add (Data.Traj, Nav_Types.T_Vector'(
          Speed => Data.Wind.Speed,
          Angle => Nav_Types."+" (Data.Wind.Angle, 180) ) );
         Data.Set(Plan_A) := True;
         Data.Set(Plan_S) := True;
       elsif not Data.Set(Traj_S) and then not Data.Set(Traj_A) then
-        -- TRAJ := PLAN + WIND
+        -- Traj := Plan + Wind
         Data.Traj := Add (Data.Plan, Data.Wind);
         Data.Set(Traj_A) := True;
         Data.Set(Traj_S) := True;
       elsif not Data.Set(Plan_S) and then not Data.Set(Traj_S) then
-        -- PLAN.SPEED and TRAJ.SPEED unknown
+        -- Plan.Speed and Traj.Speed unknown
         Comp_Speed (Data);
         Data.Set(Plan_S) := True;
         Data.Set(Traj_S) := True;
       elsif not Data.Set(Plan_A) and then not Data.Set(Traj_S) then
-        -- PLAN.ANGLE and TRAJ.SPEED unknown
+        -- Plan.Angle and Traj.Speed unknown
         Comp_Nav (Data);
         Data.Set(Plan_A) := True;
         Data.Set(Traj_S) := True;
@@ -160,7 +160,7 @@ package body Nav_Data is
         raise Resol_Error;
       end if;
 
-      -- DRIFT is not known : compute it with TRAJ and PLAN angles
+      -- Drift is not known : compute it with Traj and Plan angles
       if not Data.Set (Drift) then
         Set_Drift_After (Data);
       end if;
@@ -180,3 +180,4 @@ package body Nav_Data is
   end Resolution;
 
 end Nav_Data;
+

@@ -31,7 +31,7 @@ begin
     A_Set : Boolean;
     use Nav_Types;
   begin
-    -- See if PLAN_A and TRAJ_A are set
+    -- See if Plan_A and Traj_A are set
     if Set(Drift) then
       A_Set := Set(Plan_A) or else Set(Traj_A);
     else
@@ -59,7 +59,7 @@ begin
          Ta = Wa or else Ta = Wa + 180 then
         return Angle_Err;
       end if;
-      -- check that WIND and PLAN are on both sides of TRAJ
+      -- check that Wind and Plan are on both sides of Traj
       if (Wa < Ta or else Wa > Ta + 180) and then
          (Pa < Ta or else Pa > Ta + 180) then
         return Angle_Err;

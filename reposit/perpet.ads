@@ -58,7 +58,7 @@ package Perpet is
   end record;
 
   -- Nb of days and secs between two dates
-  --  If DATE_1 < DATE_2, TIME_ERROR will be raised
+  --  If Date_1 < Date_2, Time_Error will be raised
   function "-" (Date_1, Date_2 : Calendar.Time)
     return Delta_Rec;
 

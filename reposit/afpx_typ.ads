@@ -1,7 +1,7 @@
 with Con_Io, Text_Handler, Directory;
 package Afpx_Typ is
 
-  -- Version of AFPX
+  -- Version of Afpx
   Afpx_Version : constant Float := 2.1;
 
   -- Files path
@@ -54,13 +54,13 @@ package Afpx_Typ is
 
   -- A field
   type Field_Rec is record
-    -- First (0) field is the LIST.
-    --   Set if KIND is BUTTON, and not if KIND is PUT
+    -- First (0) field is the List.
+    --   Set if Kind is Button, and not if Kind is Put
     -- Others are fields
     Kind : Field_Kind_List;
     -- Field activation
     Activated : Boolean;
-    -- Field protection for GET / BUTTON fields
+    -- Field protection for Get / Button fields
     Isprotected : Boolean;
     -- Upper left, lower_right corners of the field
     Upper_Left, Lower_Right : Con_Io.Square;
@@ -69,7 +69,7 @@ package Afpx_Typ is
     Width  : Width_Range;
     -- Colors
     Colors : Colors_Rec;
-    -- Index in CHAR_STR of start of field content
+    -- Index in Char_Str of start of field content
     Char_Index : Char_Str_Range;
   end record;
 

@@ -1,7 +1,7 @@
 package Get_Float is
 
   -- Get a float (converts int if needed)
-  -- May raise CONSTRAINT_ERROR
+  -- May raise Constraint_Error
   function Get_Float (Str : String) return Float;
 
   type Int_Float_Rec (Is_Float : Boolean := True) is record

@@ -7,23 +7,23 @@ package body Dyn_Data is
     Next : Cell_Access;
   end record;
 
-  -- There is a linked list of data_access (pointing to free data) : FREE_DATA.
+  -- There is a linked list of data_access (pointing to free data) : Free_Data.
   -- This list needs cells.
-  -- Each time a data is allocated, the cell describing it in FREE_DATA
-  -- becomes useless and is moved in another list FREE_CELL.
+  -- Each time a data is allocated, the cell describing it in Free_Data
+  -- becomes useless and is moved in another list Free_Cell.
   --
   --                 +---------+ +---------+
   --                 |free DATA| |free DATA|
   --                 +---------+ +---------+
   --                     ^           ^
   --                     |           |
-  -- FIRST_FREE_DATA -> Cell ----> Cell ----> Null
+  -- First_Free_Data -> Cell ----> Cell ----> Null
   --
   --
   --                    Null        Null
   --                     ^           ^
   --                     |           |
-  -- FIRST_FREE_CELL -> Cell ----> Cell ----> Null
+  -- First_Free_Cell -> Cell ----> Cell ----> Null
   --
 
 
@@ -75,7 +75,7 @@ package body Dyn_Data is
     Current_Cell_Access : Cell_Access;
   begin
 
-    -- Check if DATA_ACCESS is not null
+    -- Check if Data_Access is not null
     if Data_Access = null then
       raise Constraint_Error;
     end if;

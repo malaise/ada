@@ -33,32 +33,32 @@ package body Sok_Display is
     Con_Io.Init;
     Con_Io.Reset_Term;
 
-    -- TITLE      : row 00 to 00 col 00 to 57 (01 row, 57 col)
+    -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
     Con_Io.Open (Title_Win, (00, 00), (00, 55) );
 
-    -- TIME ZONE  : row 00 to 00 col 57 to 76 (01 row 20 col)
+    -- Time zone  : row 00 to 00 col 57 to 76 (01 row 20 col)
     Con_Io.Open (Time_Win,  (00, 57), (00, 76) );
 
-    -- FRAME      : row 02 to 17 col 05 to 42 (16 row 38 col) (38=19*2)
+    -- Frame      : row 02 to 17 col 05 to 42 (16 row 38 col) (38=19*2)
     Con_Io.Open (Frame_Win, (02, 05), (17, 42) );
 
-    -- STATE_LINE : row 20 to 20 col 10 to 75 (01 row 66 col)
+    -- State line : row 20 to 20 col 10 to 75 (01 row 66 col)
     Con_Io.Open (Line_Win,  (20, 10), (20, 75) );
 
-    -- SCORE_LINE : row 21 to 20 col 10 to 75 (01 row 66 col)
+    -- Score line : row 21 to 20 col 10 to 75 (01 row 66 col)
     Con_Io.Open (Score_Win,  (21, 10), (21, 75) );
 
-    -- HELP BESIDE: row 05 to 15 col 55 to 77 (left to frame)
+    -- Help beside: row 05 to 15 col 55 to 77 (left to frame)
     Con_Io.Open (Help_Win,  (05, 55), (15, 77) );
     Con_Io.Set_Foreground (Con_Io.Light_Green, Name => Help_Win);
 
-    -- MENU       : row 19 to 21 col 02 to 79 (bottom)
+    -- Menu       : row 19 to 21 col 02 to 79 (bottom)
     Con_Io.Open (Menu_Win,  (19, 00), (21, 79) );
 
-    -- ERROR      : row 19 to 21 col 02 to 79 (bottom)
+    -- Error      : row 19 to 21 col 02 to 79 (bottom)
     Con_Io.Open (Error_Win, (19, 00), (21, 79) );
 
-    -- GET        : row 22 to 25 col 19 to 59 (bottom)
+    -- Get        : row 22 to 25 col 19 to 59 (bottom)
     Con_Io.Open (Get_Win,   (22, 19), (24, 59) );
 
   end Init;

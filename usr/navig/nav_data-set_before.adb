@@ -1,23 +1,23 @@
 with My_Math;
 separate (Nav_Data)
 
--- if DRIFT is known, compute plan angle or traj angles before
+-- if Drift is known, compute plan angle or traj angles before
 --  global computation
 procedure Set_Before (Data : in out T_Data) is
   use Nav_Types;
 begin
   if Data.Set (Traj_A) then
-    -- TRAJ.ANGLE is set : PLAN.ANGLE := TRAJ.ANGLE - DRIFT
+    -- Traj.Angle is set : Plan.Angle := Traj.Angle - Drift
     Data.Plan.Angle := Data.Traj.Angle - Data.Drift;
     Data.Set (Plan_A) := True;
   elsif Data.Set (Plan_A) then
-    -- PLAN.ANGLE is set : TRAJ.ANGLE := PLAN.ANGLE + DRIFT
+    -- Plan.Angle is set : Traj.Angle := Plan.Angle + Drift
     Data.Traj.Angle := Data.Plan.Angle + Data.Drift;
     Data.Set (Traj_A) := True;
   else
 
-    -- TRAJ_ANGLE and PLAN_ANGLE are not set. 3rd unknown is TRAJ_SPEED
-    -- TRAJ_A = 90 + WIND_A - ARC_COS ( PLAN_S/WIND_S*COS(90+DRIFT) )
+    -- Traj_Angle and Plan_Angle are not set. 3rd unknown is Traj_Speed
+    -- Traj_A = 90 + Wind_A - Arc_Cos ( Plan_S/Wind_S*Cos(90+Drift) )
     declare
       R : Real;
     begin
@@ -35,3 +35,4 @@ begin
 
   end if;
 end Set_Before;
+

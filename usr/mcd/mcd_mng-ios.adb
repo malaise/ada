@@ -31,11 +31,11 @@ package body Ios is
         R := My_Math.Int(Item.Val_Real);
         I := My_Math.Round(R);
         Real_Io.Default_Fore := Text_Io.Field(I);
-        -- AFT 0 .. 999
+        -- Aft 0 .. 999
         R := My_Math.Frac(Item.Val_Real) * 1000.0;
         I := My_Math.Round(R);
         Real_Io.Default_Aft := Text_Io.Field(I);
-        -- EXP 3
+        -- Exp 3
         Real_Io.Default_Exp := 4;
         Real_Format_Set := True;
       when others =>
@@ -174,9 +174,9 @@ package body Ios is
   function Strof (Item : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
 
-    -- String is at the end of RES
+    -- String is at the end of Res
     -- Move it after some spaces at the beginning
-    --  so that the whole takes SIZE characters
+    --  so that the whole takes Size characters
     procedure Fix_Size (Size : in Text_Io.Field) is
       First : Natural := 0;
       Len   : Positive;

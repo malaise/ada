@@ -51,9 +51,10 @@ package body Dialog is
   end Parse_Leading_Space;
 
   -- Get a coordinate
-  --  If SET is set IN, then a put_then_get is performed, else a get
-  --  Validity is checked and SET is set OUT according to the final result
-  -- subtype D_COORDINATE_LIST is SCREEN.S_INFO_LIST range (SCREEN.I_X .. SCREEN.I_YMAX);
+  --  If Set is set in, then a Put_Then_Get is performed, else a Get
+  --  Validity is checked and Set is set out according to the final result
+  -- subtype D_Coordinate_List is Screen.S_Info_List
+  --         range (Screen.I_X .. Screen.I_Ymax);
   procedure Read_Coordinate (Kind : in D_Coordinate_List;
            Set : in out Boolean; Coordinate : in out Points.P_T_Coordinate;
            Subtitle : in Boolean := False) is
@@ -265,7 +266,7 @@ package body Dialog is
     My_Fld : constant Afpx.Field_Range := 32;
     Go_On : Boolean;
   begin
-    -- Enable FX, enable and protect y (get field)
+    -- Enable Fx, enable and protect y (get field)
     Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Cyan);
     Afpx.Set_Field_Activation(Screen.Get_Fld, True);
     Afpx.Set_Field_Protection(Screen.Get_Fld, True);

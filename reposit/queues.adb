@@ -4,10 +4,10 @@ package body Queues is
     Pile : array (1 .. Size) of Item;
     Ptr : Natural range 0 .. Size := 0;
 
-    -- PTR is the last pushed except if stack is empty 
+    -- Ptr is the last pushed except if stack is empty 
     --  the it is 0.
 
-    -- push an item
+    -- Push an item
     procedure Push (X : in Item) is
     begin
       if Ptr = Size then
@@ -17,7 +17,7 @@ package body Queues is
       Pile (Ptr) := X;
     end Push;
 
-    -- pop an item
+    -- Pop an item
     procedure Pop (X : out Item) is
     begin
       if Ptr = 0  then
@@ -27,7 +27,7 @@ package body Queues is
       Ptr := Ptr - 1;
     end Pop;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the first to be popped (ptr)
     procedure Look_First (X : out Item; No : in No_Range := 1) is
     begin
@@ -41,7 +41,7 @@ package body Queues is
       end if;
     end Look_First;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the last to be popped 
     procedure Look_Last (X : out Item; No : in No_Range := 1) is
     begin
@@ -55,7 +55,7 @@ package body Queues is
       end if;
     end Look_Last;
 
-    -- remove first item and shift
+    -- Remove first item and shift
     procedure Discard_Last is
     begin
       if Ptr = 0 then
@@ -76,12 +76,12 @@ package body Queues is
 
     Full : Boolean := False;
 
-    -- PTR_IN  points to the last pushed
-    -- PTR_OUT points to the first to pop
+    -- Ptr_In  points to the last pushed
+    -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
 
-    -- push an item
+    -- Push an item
     procedure Push (X : in Item) is
     begin
       if Ptr_In = Ptr_Out and then Full then
@@ -92,7 +92,7 @@ package body Queues is
       Full := (Ptr_In = Ptr_Out);
     end Push;
 
-    -- pop an item
+    -- Pop an item
     procedure Pop (X : out Item) is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -103,7 +103,7 @@ package body Queues is
       Full := False;
     end Pop;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the last pushed
     procedure Look_Last (X : out Item; No : in No_Range := 1) is
       Loc : Natural range 0 .. Size - 1;
@@ -113,9 +113,9 @@ package body Queues is
       end if;
       Loc := (Ptr_In - No + 1) mod Size;
 
-      -- Good if PTR_OUT < LOC <= PTR_IN
-      -- or      LOC <= PTR_IN <= PTR_OUT
-      -- or             PTR_IN <= PTR_OUT < LOC
+      -- Good if Ptr_Out < Loc <= Ptr_In
+      -- or      Loc <= Ptr_In <= Ptr_Out
+      -- or             Ptr_In <= Ptr_Out < Loc
 
       if      (Ptr_Out <  Ptr_In
                 and then (Loc <= Ptr_Out or else  Ptr_In < Loc) )
@@ -127,7 +127,7 @@ package body Queues is
       end if;
     end Look_Last;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the first to be popped
     procedure Look_First (X : out Item; No : in No_Range := 1) is
       Loc : Natural range 0 .. Size - 1;
@@ -137,9 +137,9 @@ package body Queues is
       end if;
       Loc := (Ptr_Out + No) mod Size;
 
-      -- Good if PTR_OUT < LOC <= PTR_IN
-      -- or      LOC <= PTR_IN <= PTR_OUT
-      -- or             PTR_IN <= PTR_OUT < LOC
+      -- Good if Ptr_Out < Loc <= Ptr_In
+      -- or      Loc <= Ptr_In <= Ptr_Out
+      -- or             Ptr_In <= Ptr_Out < Loc
 
       if      (Ptr_Out <  Ptr_In
                 and then (Loc <= Ptr_Out or else  Ptr_In < Loc) )
@@ -151,7 +151,7 @@ package body Queues is
       end if;
     end Look_First;
 
-    -- discard last pushed 
+    -- Discard last pushed 
     procedure Discard_Last is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -172,45 +172,45 @@ package body Queues is
 
     Full : Boolean := False;
 
-    -- PTR_IN  points to the last pushed
-    -- PTR_OUT points to the first to pop
+    -- Ptr_In  points to the last pushed
+    -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
 
-    -- push an item
+    -- Push an item
     procedure Push (X : in Item; P : in Priority := Priority'Last) is
       I, J : Typ_Ptr;
     begin
       if Ptr_In = Ptr_Out and then Full then
-        -- file pleine
+        -- Fifo full
         raise Prio_Full;
       elsif Ptr_In = Ptr_Out then
-        -- file vide, ranger x en place
+        -- Fifo empty, store X at its place
         Ptr_In := (Ptr_In + 1) mod Size;
         File (Ptr_In) := X;
         File_Prio (Ptr_In) := P;
       else
-        -- creer une place vide
+        -- Create empty slot
         Ptr_In := (Ptr_In + 1) mod Size;
         -- decrire toutes les places
         I := Ptr_In;
         loop
           J := (I-1) mod Size;
-          -- comparer les prio et test de borne
+          -- Compare prios and test limits
           exit when (J = Ptr_Out) or else (File_Prio (J) >= P);
-          -- decalage
+          -- Shift
           File (I) := File (J);
           File_Prio (I) := File_Prio (J);
           I := J;
         end loop;
-        -- rangement de x
+        -- Store X
         File (I) := X;
         File_Prio (I) := P;
       end if;
       Full := (Ptr_In = Ptr_Out);
     end Push;
 
-    -- pop item with highest priority 
+    -- Pop item with highest priority 
     procedure Pop (X : out Item) is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -221,7 +221,7 @@ package body Queues is
       Full := False;
     end Pop;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the last to be popped (lowest prio)
     procedure Look_Last (X : out Item; No : in No_Range := 1) is
       Loc : Natural range 0 .. Size - 1;
@@ -231,9 +231,9 @@ package body Queues is
       end if;
       Loc := (Ptr_In - No + 1) mod Size;
 
-      -- Good if PTR_OUT < LOC <= PTR_IN
-      -- or      LOC <= PTR_IN <= PTR_OUT
-      -- or             PTR_IN <= PTR_OUT < LOC
+      -- Good if Ptr_Out < Loc <= Ptr_In
+      -- or      Loc <= Ptr_In <= Ptr_Out
+      -- or             Ptr_In <= Ptr_Out < Loc
 
       if      (Ptr_Out <  Ptr_In
                 and then (Loc <= Ptr_Out or else  Ptr_In < Loc) )
@@ -245,7 +245,7 @@ package body Queues is
       end if;
     end Look_Last;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the first to be popped (highest prio)
     procedure Look_First (X : out Item; No : in No_Range := 1) is
       Loc : Natural range 0 .. Size - 1;
@@ -255,9 +255,9 @@ package body Queues is
       end if;
       Loc := (Ptr_Out + No) mod Size;
 
-      -- Good if PTR_OUT < LOC <= PTR_IN
-      -- or      LOC <= PTR_IN <= PTR_OUT
-      -- or             PTR_IN <= PTR_OUT < LOC
+      -- Good if Ptr_Out < Loc <= Ptr_In
+      -- or      Loc <= Ptr_In <= Ptr_Out
+      -- or             Ptr_In <= Ptr_Out < Loc
 
       if      (Ptr_Out <  Ptr_In
                 and then (Loc <= Ptr_Out or else  Ptr_In < Loc) )
@@ -269,7 +269,7 @@ package body Queues is
       end if;
     end Look_First;
 
-    -- remove last item to be popped (lowest prio)
+    -- Remove last item to be popped (lowest prio)
     procedure Discard_Last is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -288,12 +288,12 @@ package body Queues is
 
     Full : Boolean := False;
 
-    -- PTR_IN  points to the last pushed
-    -- PTR_OUT points to the first to pop
+    -- Ptr_In  points to the last pushed
+    -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
 
-    -- push an item
+    -- Push an item
     procedure Push (X : in Item) is
     begin
       if Ptr_In = Ptr_Out and then Full then
@@ -305,7 +305,7 @@ package body Queues is
       Full := (Ptr_In = Ptr_Out);
     end Push;
 
-    -- pop an item
+    -- Pop an item
     procedure Pop (X : out Item) is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -316,7 +316,7 @@ package body Queues is
       Full := False;
     end Pop;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the last pushed
     procedure Look_Last (X : out Item; No : in No_Range := 1) is
       Loc : Natural range 0 .. Size - 1;
@@ -326,9 +326,9 @@ package body Queues is
       end if;
       Loc := (Ptr_In - No + 1) mod Size;
 
-      -- Good if PTR_OUT < LOC <= PTR_IN
-      -- or      LOC <= PTR_IN <= PTR_OUT
-      -- or             PTR_IN <= PTR_OUT < LOC
+      -- Good if Ptr_Out < Loc <= Ptr_In
+      -- or      Loc <= Ptr_In <= Ptr_Out
+      -- or             Ptr_In <= Ptr_Out < Loc
 
       if      (Ptr_Out <  Ptr_In
                 and then (Loc <= Ptr_Out or else  Ptr_In < Loc) )
@@ -340,7 +340,7 @@ package body Queues is
       end if;
     end Look_Last;
 
-    -- read without popping
+    -- Read without popping
     -- 1 gives the first to be popped
     procedure Look_First (X : out Item; No : in No_Range := 1) is
       Loc : Natural range 0 .. Size - 1;
@@ -350,9 +350,9 @@ package body Queues is
       end if;
       Loc := (Ptr_Out + No) mod Size;
 
-      -- Good if PTR_OUT < LOC <= PTR_IN
-      -- or      LOC <= PTR_IN <= PTR_OUT
-      -- or             PTR_IN <= PTR_OUT < LOC
+      -- Good if Ptr_Out < Loc <= Ptr_In
+      -- or      Loc <= Ptr_In <= Ptr_Out
+      -- or             Ptr_In <= Ptr_Out < Loc
 
       if      (Ptr_Out <  Ptr_In
                 and then (Loc <= Ptr_Out or else  Ptr_In < Loc) )
@@ -364,7 +364,7 @@ package body Queues is
       end if;
     end Look_First;
 
-    -- discard last pushed 
+    -- Discard last pushed 
     procedure Discard_Last is
     begin
       if Ptr_Out = Ptr_In and then not Full then

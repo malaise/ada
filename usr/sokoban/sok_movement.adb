@@ -1,6 +1,6 @@
 with Sok_Display;
 
--- Movement manager of SOKOBAN
+-- Movement manager of Sokoban
 package body Sok_Movement is
 
 
@@ -203,7 +203,7 @@ package body Sok_Movement is
             -- another man, or a box at old man position !!
             raise Illegal_Movement;
           when Sok_Types.Nothing =>
-            -- OK check if also box has to be moved
+            -- Ok check if also box has to be moved
             case Saved_Data.Result is
               when Done =>
                 Loc_Result := Done;
@@ -225,7 +225,7 @@ package body Sok_Movement is
                         -- another man or nothing !!
                         raise Illegal_Movement;
                       when Sok_Types.Box =>
-                        -- OK, pop box
+                        -- Ok, pop box
                         if Cur_Man_Square.Pattern = Cur_Box_Square.Pattern then
                           -- a pop from free to free or from target to target
                           Loc_Result := Box_Moved;

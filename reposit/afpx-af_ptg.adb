@@ -10,9 +10,9 @@ package body Af_Ptg is
         -- no action put
         null;
       when Afpx_Typ.Get | Afpx_Typ.Button =>
-        -- Click and release in a GET field
+        -- Click and release in a Get field
         -- Double click in list
-        -- Click and release in a BUTTON field
+        -- Click and release in a Button field
         Field_No : Afpx_Typ.Absolute_Field_Range;
     end case;
   end record;
@@ -56,7 +56,7 @@ package body Af_Ptg is
 
     -- Set index to start of field's data
     Char_Index := Field.Char_Index;
-    -- Put SPACES in each row
+    -- Put spaces in each row
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
       Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
@@ -67,7 +67,7 @@ package body Af_Ptg is
         Blink_Stat => Field.Colors.Blink_Stat,
         Background => Background,
         Move       => False);
-      -- Update CHAR_INDEX to first char of next row (except after last row)
+      -- Update Char_Index to first char of next row (except after last row)
       if I /= Field.Height then
         Char_Index := Char_Index + Field.Width;
       end if;
@@ -116,7 +116,7 @@ package body Af_Ptg is
   begin
     -- Set colors
     Set_Colors (Field, State, Foreground, Background);
-    -- Check POS in field
+    -- Check Pos is in field
     if not Afpx_Typ.In_Field (Field, (Pos.Row, Pos.Col)) then
       raise Afpx_Internal_Error;
     end if;
@@ -147,7 +147,7 @@ package body Af_Ptg is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
     Spaces : constant String (1 .. Field.Width) := (others => ' ');
   begin
-    -- Put SPACES in each row
+    -- Put spaces in each row
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
       Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
@@ -219,8 +219,8 @@ package body Af_Ptg is
   -- Discard any position not in clickable field
   -- Reverse colors of field (or row of list)
   -- Wait for release
-  -- Restore BUTTON color
-  -- GET selection is left to be achieved (restoring previous and setting
+  -- Restore Button color
+  -- Get selection is left to be achieved (restoring previous and setting
   --  new color)
   procedure Handle_Click (List_Present : in Boolean;
                           Result : out Mouse_Action_Rec) is
@@ -349,7 +349,7 @@ package body Af_Ptg is
         Last_Selected_Id := List_Status.Id_Selected;
         Last_Selection_Time := Click_Time;
       end if;
-      -- Result is PUT
+      -- Result is Put
     elsif Field.Kind = Afpx_Typ.Get then
       -- If field is get: restore color if not valid
       if not Valid_Field then
@@ -484,7 +484,7 @@ package body Af_Ptg is
        end if;
 
       Done := False;
-      -- Now the BIG case
+      -- Now the big case
       case Stat is
         when Con_Io.Up =>
           -- List scroll down

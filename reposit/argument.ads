@@ -14,49 +14,49 @@ package Argument is
   -- This makes it possible to specify arguments in any order in the
   --  command line and to pick them in the program.
 
-  -- NOT_KEY indicates to pick any argument not preceded by '-'
+  -- Not_Key indicates to pick any argument not preceded by '-'
   --  (all the argument is returned)
-  -- ANY_ARG indicates to pick any argument
+  -- Any_Arg indicates to pick any argument
   --  (all the argument is returned)
-  -- ANY_KEY indicates to pick any argument preceeded by a '-',
+  -- Any_Key indicates to pick any argument preceeded by a '-',
   --  (the string following th '-' is returned)
   -- any other string indicates to pick any argument beginning
   --  with '-' then the key string (the remaining characters are returned)
-  --  an empty STRING is similar to ANY_KEY.
+  --  an empty String is similar to Any_Key.
 
   -- The parameter 'occurence' may specify to pick the n th occurence
   --  of a parameter comforming the criteria, the returned value is the
   --  position of the parameter in the command line.
   -- If the given value is 0 then program name is returned if param key
-  --  is NOT_KEY or ANY_ARG (else argument will not be found).
+  --  is Not_Key or Any_Arg (else argument will not be found).
 
   -- If the proper separator is not provided in the command line, then the
-  --  argument will not be found with ANY_KEY nor with a key string.
+  --  argument will not be found with Any_Key nor with a key string.
   -- A command line like "program -A" will make an empty string to
   --  be returned if A is the key.
 
   -- Given the command line: "prog -Ka1 -Na2 a3 -Na4 -p a5"
-  --   KEY    OCCURENCE   returns     PARAM   POS
+  --   Key    Occurence   returns     Param   Pos
   --   "K"        1                    "a1"    1
-  --   "K"        2                raises ARGUMENT_NOT_FOUND
+  --   "K"        2                raises Argument_Not_Found
   --   "N"        2                    "a4"    4
   --   "Na"       2                    "4"     4
   --   "p"        1                    ""      5
   --   ""         3                    "Na4"   4
-  --  ANY_KEY     3                    "Na4"   4
-  --  ANY_ARG     0                    "prog"  0
-  --  ANY_ARG     4                    "-Na4"  4
-  --  NOT_KEY     1                    "a3"    3
-  --  NOT_KEY     3                raises ARGUMENT_NOT_FOUND
+  --  Any_Key     3                    "Na4"   4
+  --  Any_Arg     0                    "prog"  0
+  --  Any_Arg     4                    "-Na4"  4
+  --  Not_Key     1                    "a3"    3
+  --  Not_Key     3                raises Argument_Not_Found
 
   -- The sequence "-p a5" can be picked by calling:
-  --  KEY="p", OCCURENCE=1. Then checking that empty string is returned
+  --  Key="p", Occurence=1. Then checking that empty string is returned
   --  and storing position (pos). Then calling:
-  --  KEY=ANY_ARG, OCCURENCE=pos+1. CHecking that the returned string
+  --  Key=Any_Arg, Occurence=pos+1. Checking that the returned string
   --  is not empty.
 
 
-  -- the maximum length supported for one argument
+  -- The maximum length supported for one argument
   Max_Len_Arg : constant := 1024;
 
 
@@ -73,21 +73,21 @@ package Argument is
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return String;
 
-  -- same but with string and length
+  -- Same but with string and length
   procedure Get_Parameter (
    Parameter : out String;
    Param_Length : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
 
-  -- same with text
+  -- Same with text
   procedure Get_Parameter (
    Parameter : in out Text_Handler.Text;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
 
 
-  -- result is string and position
+  -- Result is string and position
   procedure Get_Param_And_Pos (
    Parameter : out String;
    Param_Length : out Natural;
@@ -95,7 +95,7 @@ package Argument is
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
 
-  -- result is text and position
+  -- Result is text and position
   procedure Get_Param_And_Pos (
    Parameter : in out Text_Handler.Text;
    Position : out Natural;
@@ -103,24 +103,24 @@ package Argument is
    Param_Key : in String := Any_Arg);
 
 
-  -- position only
+  -- Position only
   function Get_Position (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Natural;
 
-  -- number of arguments (0 if no argument)
+  -- Number of arguments (0 if no argument)
   function Get_Nbre_Arg return Natural;
 
 
-  -- analyse of ARGUMENT(0)
+  -- Analyse of Argument(0)
 
-  -- path of program  from ARGUMENT(0) (with last /)
+  -- Path of program  from Argument(0) (with last /)
   function Get_Program_Path return String;
   procedure Get_Program_Path (Path : out String;
                               Path_Length : out Natural);
   procedure Get_Program_Path (Path : in out Text_Handler.Text);
 
-  -- name of program from ARGUMENT(0)
+  -- Name of program from Argument(0)
   function Get_Program_Name return String;
   procedure Get_Program_Name (Name : out String;
                               Name_Length : out Natural);
@@ -129,5 +129,4 @@ package Argument is
   Argument_Not_Found, Argument_Too_Long : exception;
 
 end Argument;
-
 

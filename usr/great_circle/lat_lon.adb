@@ -8,7 +8,7 @@ package body Lat_Lon is
   -- 000.00.00 <= Lon.Coord <= 180.00.00
   function Is_Lat_Lon_Ok (Lat_Lon_Geo : Lat_Lon_Geo_Rec) return Boolean is
   begin
-    -- Check lat coord, deg < MAX_LAT, or deg = MAX_LAT and min=sec=0
+    -- Check lat coord, deg < Max_Lat, or deg = Max_Lat and min=sec=0
     if Lat_Lon_Geo.Lat.Coord.Deg > Max_Lat then
       return False;
     end if;
@@ -18,7 +18,7 @@ package body Lat_Lon is
       return False;
     end if;
 
-    -- Check lon coord, deg < MAX_LON, or deg = MAX_LON and min=sec=0
+    -- Check lon coord, deg < Max_Lon, or deg = Max_Lon and min=sec=0
     if Lat_Lon_Geo.Lon.Coord.Deg > Max_Lon then
       return False;
     end if;

@@ -20,7 +20,7 @@ package body Grid_1 is
     end if;
   end Filter;
 
-  -- Init DATA
+  -- Init Data
   procedure Initialize (Key : in String) is
     Row : Row_Coordinate;
     Col : Col_Coordinate;

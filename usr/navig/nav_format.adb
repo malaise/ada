@@ -92,7 +92,7 @@ package body Nav_Format is
       L := L - 1;
     end loop;
     if Str'Length = 0 or else Str(F) = ' ' then
-      -- only spaces : ERR
+      -- only spaces : Err
       Pos := Str'First;
       Res := Error;
       return;
@@ -128,13 +128,13 @@ package body Nav_Format is
      elsif C = '.' then
        Pos := I;
        if Dot then
-         -- a second dot : ERR
+         -- a second dot : Err
          Res := Error;
          return;
        else
          Dot := True;
          if not Digit_Found then
-           -- begin with DOT???
+           -- begin with Dot???
            Res := Error;
            return;
          end if;
@@ -321,3 +321,4 @@ package body Nav_Format is
  end Value;
 
 end Nav_Format;
+

@@ -1,13 +1,13 @@
 separate (Nav_Data)
 
--- When PLAN.ANGLE and TRAJ.SPEED are unknown
+-- When Plan.Angle and Traj.Speed are unknown
 procedure Comp_Nav (Data : in out T_Data) is
   R : Real;
   Cw, Cp : Real;
   use Nav_Types;
 begin
-  -- PLAN.ANGLE := TRAJ.ANGLE - ARC_SIN (WIND.SPEED / PLAN.SPEED
-  --  * SIN (WIND.ANGLE - TRAJ.ANGLE)
+  -- Plan.Angle := Traj.Angle - Arc_Sin (Wind.Speed / Plan.Speed
+  --  * Sin (Wind.Angle - Traj.Angle)
   R := My_Math.Sin (To_Real(Angle =>Data.Wind.Angle - Data.Traj.Angle),
    My_Math.Degree);
   R := My_Math.Arc_Sin (
@@ -15,8 +15,8 @@ begin
         My_Math.Degree);
   Data.Plan.Angle := Data.Traj.Angle - To_Angle (R);
 
-  -- TRAJ.SPEED := WIND.SPEED * COS(TRAJ_ANGLE - WIND_ANGLE) +
-  --  PLAN.SPEED * COS(PLAN.ANGLE - TRAJ_ANGLE)
+  -- Traj.Speed := Wind.Speed * Cos (Traj_Angle - Wind_Angle) +
+  --  Plan.Speed * Cos (Plan.Angle - Traj_Angle)
   Cw := My_Math.Cos(To_Real(Angle => Data.Traj.Angle - Data.Wind.Angle),
    My_Math.Degree);
   Cp := My_Math.Cos(To_Real(Angle => Data.Plan.Angle - Data.Traj.Angle),
@@ -26,3 +26,4 @@ begin
 exception
   when My_Math.Math_Error => raise Comp_Err;
 end Comp_Nav;
+

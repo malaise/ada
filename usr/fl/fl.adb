@@ -5,7 +5,7 @@ with Fl_Time, Fl_Get;
 procedure Fl is
 
   Tt, T : Fl_Time.Time_Type;
-  Max_Hour_Dig : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
+  Max_Hour_Dig : constant := 9; -- Fl_Time.Hours_Range'Width;
   With_Cost : Boolean;
   Cost, Tmp_Cost : Float;
   use Fl_Time;

@@ -173,7 +173,7 @@ package body Edition is
   procedure Protect_Movements (Edit_Type : in Edit_List) is
   begin
     if Edit_Type = Create or else Edit_Type = Copy then
-      -- Always and only allow OK, Cancel,
+      -- Always and only allow Ok, Cancel,
       --  and also Ok_And_Next if create
       Afpx.Set_Field_Activation(37, False);
       Afpx.Set_Field_Activation(38, False);
@@ -302,7 +302,7 @@ package body Edition is
     end if;
   end Cancel;
 
-  -- Check data. If OK, write/delete it and return 0,
+  -- Check data. If Ok, write/delete it and return 0,
   --   otherwise return the field of error
   function Validate (Edit_Type : in Edit_List;
                      Kind : Oper_Def.Kind_List;
@@ -456,7 +456,7 @@ package body Edition is
     -- Deleted flag read from selection list
     Sel : Sel_Rec;
     Deleted : Boolean;
-    -- Is OK_and_NEXT active when keyboard Return
+    -- Is Ok_And_Next active when keyboard Return
     Oknext_Active : Boolean;
     use type Afpx.Absolute_Field_Range, Oper_Def.Kind_List;
   begin
@@ -495,7 +495,7 @@ package body Edition is
       Encode_Oper(Edit_Type, Oper, Deleted);
       Kind := Oper.Kind;
       Status := Oper.Status;
-      -- Prepare PTG
+      -- Prepare Ptg
       Cursor_Field := Afpx.Next_Cursor_Field(0);
       if Cursor_Field = 0 then
         -- No get field
@@ -506,7 +506,7 @@ package body Edition is
       -- Protect movements
       Protect_Movements(Edit_Type);
 
-      -- PTGs
+      -- Ptgs
       One_Edit:
       loop
         Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
@@ -516,11 +516,11 @@ package body Edition is
           when Afpx.Keyboard =>
             case Ptg_Result.Keyboard_Key is
               when Afpx.Return_Key =>
-                -- OK and back or next
+                -- Ok and back or next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then
-                  -- Check that OK_AND_NEXT button is active
+                  -- Check that Ok_And_Next button is active
 		  Afpx.Get_Field_Activation(41, Oknext_Active);
                   if not Oknext_Active then
                     -- Ok and back
@@ -534,7 +534,7 @@ package body Edition is
                   end if;
                 end if;
                 Screen.Ring(True);
-                -- Return = OK
+                -- Return = Ok
                 Screen.Ring(True);
               when Afpx.Escape_Key =>
                 -- Escape = Cancel
@@ -561,7 +561,7 @@ package body Edition is
                 end if;
 
               when 37 =>
-                -- OK and prev
+                -- Ok and prev
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then
@@ -576,7 +576,7 @@ package body Edition is
                 Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
                 exit One_Edit;
               when 39 =>
-                -- OK and back
+                -- Ok and back
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 exit All_Edit when Cursor_Field = 0;
@@ -586,7 +586,7 @@ package body Edition is
                 Cancel(Edit_Type);
                 exit All_Edit;
               when 41 =>
-                -- OK and next
+                -- Ok and next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then

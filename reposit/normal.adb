@@ -1,12 +1,12 @@
--- Puts an INTEGER in a string of fixed length.
+-- Puts an Integer in a string of fixed length.
 -- If I is shorter than max, it is aligned at right or left
 -- If I is longer, it is rounded if possible (or truncated)
 
 -- I : Integer value to put in the returned string
--- LEN : Number of characters of the returned string
--- RIGHT : If string is shorter than LEN character, align it at RIGHT
---   or at left (not RIGHT) and fill with GAP
--- GAP : When string is shorter than len, fill empty positions with GAP
+-- Len : Number of characters of the returned string
+-- Right : If string is shorter than Len character, align it at Right
+--   or at left (not Right) and fill with Gap
+-- Gap : When string is shorter than len, fill empty positions with Gap
 
 function Normal (I : Integer; Len : Positive;
  Right : Boolean := True; Gap : Character := ' ') return String is
@@ -54,7 +54,7 @@ begin
     Si (1 .. L) := Si (2 .. L + 1);
   end if;
   if L > Len then
-    -- Round I at LEN digits
+    -- Round I at Len digits
     declare
       -- Round I at len digits
       R : Float := Float(I) / (10.0 ** (L-Len) );
@@ -68,11 +68,11 @@ begin
       if Nl > Len then
         Ni := Integer(Trunc (R) );
       end if;
-      -- Should be OK now
+      -- Should be Ok now
       return Normal (Ni, Len, Right);
     end;
-  else -- L <= LEN
-    -- Gap with gap_character, in SM
+  else -- L <= Len
+    -- Gap with gap_character, in Sm
     if Right then
       Sm (1 .. Len-L) := (others => Gap);
       Sm (Len-L+1 .. Len) := Si (1 ..L);

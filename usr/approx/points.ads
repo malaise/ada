@@ -29,9 +29,9 @@ package Points is
   function P_Empty return Boolean;
   function P_Nb    return Natural;
 
-  -- Storage size exceeded (P_STORE, ADD)
+  -- Storage size exceeded (P_Store, Add)
   P_Too_Many : exception;
-  -- INDEX greater than number of point (REMOVE, MODIFY)
+  -- Index greater than number of point (Remove, Modify)
   P_Index_Out : exception;
 
 end Points;

@@ -4,20 +4,20 @@ generic
 
   -- The user defines this procedure which will be called regulary.
   -- The main program must call "delay" or schedule regulary
-  --  (no GET except the ones with timeout of CON_IO).
+  --  (no Get except the ones with timeout of Con_Io).
   -- The call back is called only when the schedule procedure is called
   --  (the first time after activation date is reached)
   -- The activation will be aborted if the procedure raises an exception.
   -- If the period is too small, the task may "keep the hand" definitively,
-  --  so the duration has a minimum : MIN_PERIOD. Any period value
-  --  (for ACTIVATION_PERIOD or NEW_PERIOD of START) less then MIN_PERIOD
-  --  becomes MIN_PERIOD.
+  --  so the duration has a minimum : Min_Period. Any period value
+  --  (for Activation_Period or New_Period of Start) less then Min_Period
+  --  becomes Min_Period.
 
   with procedure Call_Back;
 
 package Task_Mng is
 
-  -- default period at activation (instanciation)
+  -- Default period at activation (instanciation)
   Def_Period : constant Duration := 1.0;
   Min_Period : constant Duration := 0.5;
 
@@ -47,3 +47,4 @@ package Task_Mng is
   procedure Schedule;
 
 end Task_Mng;
+

@@ -21,7 +21,7 @@ package body Pers_Mng is
     -- Move to beginning
     Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
      0, False);
-    -- Read persons, look for PID
+    -- Read persons, look for Pid
     for I in 1 .. List_Length loop
       if I /= List_Length then
         Pers_Def.Person_List_Mng.Read (List, Person,
@@ -32,7 +32,7 @@ package body Pers_Mng is
       end if;
 
       if Person.Pid = Pid then
-        -- Return when PID found
+        -- Return when Pid found
         Pos := I;
         Loc_Pos := I;
         -- Move to this pos
@@ -62,7 +62,7 @@ package body Pers_Mng is
     -- Move to beginning
     Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
      0, False);
-    -- Read persons, look for (NAME, ACTIVITY)
+    -- Read persons, look for (Name, Activity)
     for I in 1 .. List_Length loop
       if I /= List_Length then
         Pers_Def.Person_List_Mng.Read (List, Person,
@@ -73,7 +73,7 @@ package body Pers_Mng is
       end if;
 
       if Person.Name = Name and then Person.Activity = Activity then
-        --Return when NAME and ACTIVITY found
+        -- Return when Name and Activity found
         Pos := I;
         Loc_Pos := I;
         -- Move to this pos
@@ -86,19 +86,19 @@ package body Pers_Mng is
 
   end Search;
 
-  -- The EXPAND call affects the current position in list
-  -- NAME must not be empty otherwise nothing is expanded
-  -- ACTIVITY can be empty or partial
-  -- If ACTIVITY is empty:
-  --   If NAME allows only one and only one name expansion then
-  --     it is expanded if necessary and POS is set to 0
+  -- The Expand call affects the current position in list
+  -- Name must not be empty otherwise nothing is expanded
+  -- Activity can be empty or partial
+  -- If Activity is empty:
+  --   If Name allows only one and only one name expansion then
+  --     it is expanded if necessary and Pos is set to 0
   --   Else
-  --     POS is set to -1 (not found or not one possible expansion)
-  -- Else (ACTIVITY is set)
-  --   If NAME and ACTIVITY allow one and only one expansion, then
-  --     NAME is expanded if necessary and POS is set to its position
+  --     Pos is set to -1 (not found or not one possible expansion)
+  -- Else (Activity is set)
+  --   If Name and Activity allow one and only one expansion, then
+  --     Name is expanded if necessary and Pos is set to its position
   --   Else
-  --     POS is set to -1
+  --     Pos is set to -1
   procedure Expand (List     : in out Pers_Def.Person_List;
                     Name     : in out Pers_Def.Person_Name_Str;
                     Activity : in out Pers_Def.Person_Activity_Str;
@@ -129,7 +129,7 @@ package body Pers_Mng is
       return;
     end if;
 
-    -- Locate end of NAME
+    -- Locate end of Name
     Last_Name := Name'Last;
     for I in reverse Name'Range loop
       if Name(I) /= ' ' then
@@ -139,7 +139,7 @@ package body Pers_Mng is
     end loop;
     First_Name := Name'First;
     Len_Name := Last_Name - First_Name + 1;
-    -- Locate end of ACTIVITY
+    -- Locate end of Activity
     Last_Activity := Activity'Last;
     for I in reverse Activity'Range loop
       if Activity(I) /= ' ' then
@@ -324,13 +324,13 @@ package body Pers_Mng is
 
   end Select_By_Activity;
 
-  -- The INSERT call affects the order and current position in list
+  -- The Insert call affects the order and current position in list
   -- Current pos in list becomes this person's one
-  -- The person's pid is not significant ain the IN value,
-  --  and set in the OUT value
-  -- It may raise NOT_SOLE if the (NAME, ACTIVITY) already exists in list
+  -- The person's pid is not significant in the In value,
+  --  and set in the Out value
+  -- It may raise Not_Sole if the (Name, Activity) already exists in list
 
-  -- Insert a new person in the list. (Its NAME+ACTIVITY must be sole)
+  -- Insert a new person in the list. (Its Name+Activity must be sole)
   procedure Insert (List : in out Pers_Def.Person_List;
                     Person : in out Pers_Def.Person_Rec) is
     List_Length : constant Natural
@@ -340,8 +340,8 @@ package body Pers_Mng is
     Found : Boolean;
   begin
     if List_Length /= 0 then
-      -- Search if this (NAME, ACTIVITY) is already in LIST
-      -- Mark used PIDs
+      -- Search if this (Name, Activity) is already in List
+      -- Mark used Pids
       Pers_Def.Person_List_Mng.Move_To (List,
        Pers_Def.Person_List_Mng.Next, 0, False);
       for I in 1 .. List_Length loop
@@ -358,7 +358,7 @@ package body Pers_Mng is
         end if;
         Pid_Array (Curr_Person.Pid) := True;
       end loop;
-      -- Look for first free PID
+      -- Look for first free Pid
       Found := False;
       for I in Pers_Def.Pid_Range loop
         if not Pid_Array(I) then
@@ -380,3 +380,4 @@ package body Pers_Mng is
   end Insert;
 
 end Pers_Mng;
+

@@ -80,7 +80,7 @@ package body File_Mng is
 
     Oper_Io.Close (File);
 
-    -- Everything OK. Overwrite the existing list. Go to end.
+    -- Everything is Ok. Overwrite the existing list. Go to end.
     Oper_List_Mng.Delete_List (Oper_List);
     Oper_List_Mng.Assign (Oper_List, Loc_List);
     Oper_List_Mng.Move_To (Oper_List, Oper_List_Mng.Prev, 0, False);

@@ -43,7 +43,7 @@ begin
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Item : Dir_Mng.File_Entry_Rec;
   begin
-    -- List directory and store it in AFPX list
+    -- List directory and store it in Afpx list
     if Argument.Get_Nbre_Arg = 1 then
       Dir_Mng.List_Dir (Dir_List, "");
     else
@@ -51,7 +51,7 @@ begin
                         Argument.Get_Parameter (Occurence => 2));
     end if;
 
-    -- Sort, move to first, copy in afpx list
+    -- Sort, move to first, copy in Afpx list
     Dir_Sort (Dir_List);
     Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
                                   0 , False);

@@ -71,7 +71,7 @@ package Dynamic_List is
                      From_Current : in Boolean := True);
 
   -- permute 2 elements
-  --  if From_CUrrent is True,  then numbers of elements are relative from
+  --  if From_Current is True,  then numbers of elements are relative from
   --   current
   --  if From_Current is False, then counting is from the first
   --   item in the list (Next), or the last (Prev).

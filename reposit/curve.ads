@@ -13,7 +13,7 @@ package Curve is
   type T_Scale is (Curve_Screen, Curve_Normed, Free_Screen, Free_Normed);
 
   type T_Boundaries(Scale : T_Scale := Curve_Screen) is record
-    -- Always fix x range (X_BOUNDARIES allows to extract then from points)
+    -- Always fix x range (X_Boundaries allows to extract then from points)
     X_Min : T_Coordinate := 0.0;
     X_Max : T_Coordinate := 0.0;
     case Scale is
@@ -32,11 +32,11 @@ package Curve is
    Points       : in T_The_Points;
    X_Min, X_Max : out T_Coordinate);
 
-  -- Can be (not mandatory) called before a DRAW to make initialisation
+  -- Can be (not mandatory) called before a Draw to make initialisation
   -- of window and test the result
   function Init return Boolean;
 
-  -- Should be called after INIT if DRAW cannot be or is not called
+  -- Should be called after Init if Draw cannot be or is not called
   procedure Destroy;
 
   generic

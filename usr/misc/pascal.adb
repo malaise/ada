@@ -1,8 +1,8 @@
---  Triangle de PASCAL
+-- Triangle de Pascal
 
 with My_Io; use My_Io;
 -- Calcul des elements des 33 premieres lignes du
---  TRIANGLE DE PASCAL
+--  triangle de Pascal
 procedure Pascal is
 
   -- element calcule et sorti

@@ -9,7 +9,6 @@ procedure T_Mut is
   Critical_Section_Duration : constant := 10.0;
 
   procedure Exec (Max_Task : in Positive) is
-    -- Max seems to be 4173 on DEC5000 and 2583 on DEC3100
     Crit_Lock : Mutex;
    
     subtype Range_Task is Positive range 1 .. Max_Task;
@@ -37,10 +36,10 @@ procedure T_Mut is
       procedure Prompt(I : in Range_Task; Set : in Boolean) is
       begin
         if Set then 
-          -- call by GET
+          -- call by Get
           Current_I := I;
         else
-          -- call by PUT
+          -- call by Put
           if not In_Get then return; end if;
         end if;
 
@@ -73,8 +72,8 @@ procedure T_Mut is
     end Input;
 
     -- Get action
-    -- return FALSE if termination
-    -- get mutex then release and return TRUE otherwise
+    -- return False if termination
+    -- get mutex then release and return True otherwise
     function Critical(Num : in Range_Task) return Boolean is
       C : Character;
       Tab : constant String := "    ";
@@ -111,7 +110,7 @@ procedure T_Mut is
       accept Num(I : in Range_Task) do
         Index := I;
       end Num;
-      -- work until termination requested in CRITIQUE
+      -- work until termination requested in Critical
       loop
         Schedule;
         exit when not Critical(Index);
@@ -122,7 +121,7 @@ procedure T_Mut is
    
    
    
-  begin -- EXEC
+  begin -- Exec
     My_Io.New_Line(2);
     -- give to each actor it's name
     for I in Range_Task loop
@@ -144,7 +143,7 @@ procedure T_Mut is
     My_Io.Put_Line (S & ". Syntaxe: t_mut [nbre_tasks]");
   end Error;
 
-begin -- T_MUT
+begin -- T_Mut
   N_Args := Argument.Get_Nbre_Arg;
 
   if N_Args > 1 then
@@ -165,3 +164,4 @@ exception
     Error ("Internal error");
     raise;
 end T_Mut;
+

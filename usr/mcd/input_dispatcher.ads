@@ -5,11 +5,11 @@ package Input_Dispatcher is
   Max_String_Lg : constant := 1024;
 
   -- Set input flow to a new string
-  --  or stdin if STR is empty
+  --  or stdin if Str is empty
   procedure Set_Input (Str : in String);
 
   -- Get the ungot words of current string
-  -- PROGRAM_ERROR is current input is stdin
+  -- Program_Error is current input is stdin
   --  or if no word already got from current string
   function Get_Remaining return String;
 

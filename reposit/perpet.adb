@@ -12,7 +12,7 @@ package body Perpet is
   begin
     -- Year is multiple of 4 and not 100, or multiple of 400
     -- the parenthesis tend to optimize:
-    --  return FALSE asap in case of year not multiple of 4
+    --  return False asap in case of year not multiple of 4
     return Year rem 4 = 0 and then
      (Year rem 100 /= 0 or else Year rem 400 = 0);
   end Is_Leap_Year;
@@ -59,7 +59,7 @@ package body Perpet is
     return Day <= Nb_Days_Month (Year, Month);
   end Is_Valid;
 
-  -- TIME_REC operations
+  -- Time_Rec operations
   function Split (Date : Calendar.Time) return Time_Rec is
     Rec : Time_Rec;
   begin
@@ -323,7 +323,8 @@ package body Perpet is
 
   end "-";
 
-  -- type DAY_OF_WEEK_LIST is (MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, STURDAY, SUNDAY);
+  -- type Day_Of_Week_List is (Monday, Tuesday, Wednesday, Thursday, Friday,
+  --                           Saturday, Sunday);
   function Get_Day_Of_Week (Date : Calendar.Time) return Day_Of_Week_List is
     Delta_Days : Day_Range;
     Ref_Rec : constant Time_Rec := (
@@ -338,7 +339,7 @@ package body Perpet is
     return Day_Of_Week_List'Val ( (Delta_Days + Day_Of_Week_List'Pos(Ref_Day_Of_Week)) rem 7);
   end Get_Day_Of_Week;
 
-  -- subtype WEEK_OF_YEAR_RANGE is NATURAL range 1 .. 53;
+  -- subtype Week_Of_Year_Range is Natural range 1 .. 53;
   function Get_Week_Of_Year (Date : Calendar.Time) return Week_Of_Year_Range is
     Rec_0 : Time_Rec;
     Date_0 : Calendar.Time;

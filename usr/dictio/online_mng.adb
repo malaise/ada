@@ -119,7 +119,7 @@ package body Online_Mng is
             Status.Sync := False;
             Sync_Mng.Start;
           elsif not Status.Sync then
-            -- Crc OK and not synced
+            -- Crc Ok and not synced
             if Debug.Level_Array(Debug.Online) then
               Debug.Put ("Online: Crc OK, synced");
             end if;

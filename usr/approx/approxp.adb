@@ -15,17 +15,17 @@ begin
     return;
   elsif Argument.Get_Nbre_Arg = 1 then
 -- Verdix bug:
--- Global variable STR in ARGUMENT body is set when calling
---    GET_PARAMETER, but GET_PARAMETER returns the address
---    (dop vector) of STR that we will pass to MENU1.MAIN_SCREEN
---    instead of a copy. THIS IS THE BUG
--- So, when CON_IO calls ARGUMENT.GET_PROGRAM_NAME, this overwrites
---    this STR variable which changes indirectly the INIT_FILE_NAME
---    of MAIN_SCREEN
--- The workaround is to make a copy of ARGUMENT.GET_PARAMETER
+-- Global variable Str in Argument body is set when calling
+--    Get_Parameter, but Get_Parameter returns the address
+--    (dop vector) of Str that we will pass to Menu1.Main_Screen
+--    instead of a copy. THIS IS THE BUG.
+-- So, when Con_Io calls Argument.Get_Program_Name, this overwrites
+--    this Str variable which changes indirectly the Init_File_Name
+--    of Main_Screen
+-- The workaround is to make a copy of Argument.Get_Parameter
 --
 -- Original code => bug:
---    MENU1.MAIN_SCREEN (ARGUMENT.GET_PARAMETER);
+--    Menu1.Main_Screen (Argument.Get_Parameter);
 -- New code:
     declare
       File_Name_Txt : Text_Handler.Text(Argument.Max_Len_Arg);
@@ -38,4 +38,4 @@ begin
     Menu1.Main_Screen ("");
   end if;
 end Approxp;
-    
+

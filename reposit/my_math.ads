@@ -2,8 +2,8 @@ with Ada.Numerics;
 package My_Math is
 
   subtype Inte is Long_Long_Integer;
-  --  subtype REAL is LONG_FLOAT;
   -- This should generate the overflow checks
+  --  (was subtype Real is Long_Float;)
   type Real is digits 15 range -1.5E308 .. 1.5E308;
 
   -- Types and constants for trigonometry
@@ -15,7 +15,7 @@ package My_Math is
   type Angle_Unit is (Radian, Degree);
 
   -- Integer part and fractional part of a real
-  -- R := INT(R) + FRAC(R)
+  -- R := Int(R) + Frac(R)
   function Int  (X : Real) return Real;
   function Frac (X : Real) return Real;
 

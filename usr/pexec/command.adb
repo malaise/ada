@@ -10,7 +10,7 @@ package body Command is
   -- Parse already called...
   Parsed : Boolean := False;
 
-  -- Result of parsing : set NBRE_PARAM and PARAM array
+  -- Result of parsing : set Nbre_Param and Param array
   Max_Nbre_Param : constant := 16;
   Max_Len_Param : constant := 132;
 
@@ -44,7 +44,7 @@ package body Command is
     -- To get arguments
     First_Pos : Natural;
     Arg : Text_Handler.Text (Max_Len_Param);
-    -- String copy of ARG
+    -- String copy of Arg
     Str : String (1 .. Max_Len_Param);
     Len : Positive;
 
@@ -236,7 +236,7 @@ package body Command is
 
         elsif I = Pos then
 
-          -- end of STR
+          -- end of Str
           Last := I;
 
           -- Skip leading spaces

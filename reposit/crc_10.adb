@@ -35,10 +35,10 @@ package body Crc_10 is
     Res : Integer;
     use Bit_Ops;
   begin
-    -- lowest bit is same in BH and BL, reset in BH
-    Tbh := Shl (Bh and 16#7E#, 3);  -- Max  7F = ..1111110... = 127
-    Tbl := Bl and 16#007F#;         -- Max  7F = .....1111111 = 127
-    Res := Tbh xor Tbl;             -- Max 3FF = 001111111111 = 1023
+    -- lowest bit is same in Bh and Bl, reset in Bh
+    Tbh := Shl (Bh and 16#7E#, 3);  -- Max  7f = ..1111110... = 127
+    Tbl := Bl and 16#007F#;         -- Max  7f = .....1111111 = 127
+    Res := Tbh xor Tbl;             -- Max 3ff = 001111111111 = 1023
     return Max_Crc_Range (Res);
   end Get;
 

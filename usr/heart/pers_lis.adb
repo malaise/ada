@@ -115,7 +115,7 @@ package body Pers_Lis is
             Locok := Tz /= Pers_Def.Bpm_Range'First;
           end if;
           if Locok then
-            -- TZ must be crescent
+            -- Tz must be crescent
             if Current_Field /= 16
             and then Tz /= Pers_Def.Bpm_Range'First then
               Locok := Tz > Person.Tz (Integer(Current_Field) - 16);
@@ -238,7 +238,7 @@ package body Pers_Lis is
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
       Redisplay := False;
 
-      -- Move in persons list according to AFPX selection
+      -- Move in persons list according to Afpx selection
       Pers_Def.Person_List_Mng.Move_To(
               Pers_Def.The_Persons, Next,
               Afpx.Line_List_Mng.Get_Position(Line_List) - 1,
@@ -255,7 +255,7 @@ package body Pers_Lis is
 
           case Ptg_Result.Keyboard_Key is
             when Return_Key =>
-              -- Check field and go to next if OK
+              -- Check field and go to next if Ok
               Check_Field (Cursor_Field, Ok);
             when Escape_Key =>
               -- Clear current field
@@ -368,7 +368,7 @@ package body Pers_Lis is
                 begin
                   Rest_Rate := Person.Tz(1);
                   Delta_Rate := My_Math.Real (Person.Tz(6) - Person.Tz(1));
-                  -- REST_RATE + 50% .. 90% of DELTA
+                  -- Rest_Rate + 50% .. 90% of Delta
                   for I in 1 .. 5 loop
                     Percent := My_Math.Real (50 + (I - 1) * 10) / 100.0;
                     Person.Tz(I) :=

@@ -1,10 +1,10 @@
 package body Get_Line is
 
 
-  F : Text_Io.File_Type;
+  F : Ada.Text_Io.File_Type;
   Current_Line : Line_Array;
   Nb_Words : Word_Count;
-  Current_Line_No : Text_Io.Count;
+  Current_Line_No : Ada.Text_Io.Count;
   Cur : Positive;
   Current_Whole_Line : Line_Txt;
   First_Word : Line_Txt;
@@ -13,21 +13,21 @@ package body Get_Line is
   Word : Word_Txt;
   Last : Natural;
 
-  -- Opens the file. Exceptions are the one of TEXT_IO.OPEN (IN_FILE)
+  -- Opens the file. Exceptions are the one of Ada.Text_Io.Open (In_File)
   -- Loads the first line
   procedure Open (File_Name : in String) is
   begin
     Current_Line_No := 0;
-    Text_Io.Open (F, Text_Io.In_File, File_Name);
+    Ada.Text_Io.Open (F, Ada.Text_Io.In_File, File_Name);
     Read_Next_Line;
   end Open;
 
   procedure Close is
   begin
-    Text_Io.Close (F);
+    Ada.Text_Io.Close (F);
   end Close;
 
-  -- Next word of BUFF (from CUR). "" if no more word.
+  -- Next word of Buff (from Cur). "" if no more word.
   function Get_Next_Word return String is
     F, L : Positive;
     In_Word : Boolean := True;
@@ -57,7 +57,7 @@ package body Get_Line is
     end if;
   end Get_Next_Word;
 
-  -- Reset CUR and parse leading spaces
+  -- Reset Cur and parse leading spaces
   procedure Reset_Word is
   begin
     Nb_Words := 0;
@@ -73,9 +73,9 @@ package body Get_Line is
   end Reset_Word;
 
   -- Current line number
-  function Get_Line_No return Text_Io.Positive_Count is
+  function Get_Line_No return Ada.Text_Io.Positive_Count is
   begin
-    if not Text_Io.Is_Open (F) then
+    if not Ada.Text_Io.Is_Open (F) then
       raise Not_Open;
     end if;
     return Current_Line_No;
@@ -85,27 +85,27 @@ package body Get_Line is
   procedure Read_Next_Line is
   begin
     Parsed := False;
-    if not Text_Io.Is_Open (F) then
+    if not Ada.Text_Io.Is_Open (F) then
       raise Not_Open;
     end if;
 
     loop
       -- Get line from file
       begin
-        Text_Io.Get_Line (F, Buff, Last);
+        Ada.Text_Io.Get_Line (F, Buff, Last);
       exception
-        when Text_Io.End_Error =>
+        when Ada.Text_Io.End_Error =>
           raise No_More_Line;
       end;
 
-      Current_Line_No := Text_Io. "+" (Current_Line_No, 1);
+      Current_Line_No := Ada.Text_Io. "+" (Current_Line_No, 1);
 
       -- Check got line length
       if Last = Buff'Last then
         raise Line_Too_Long;
       end if;
 
-      -- Store the line as it is in CURRENT_WHOLE_LINE
+      -- Store the line as it is in Current_Whole_Line
       Text_Handler.Set (Current_Whole_Line, Buff(1 .. Last));
 
       -- Remove trailing spaces
@@ -146,7 +146,7 @@ package body Get_Line is
     -- Get the first significant word of the line (not parsed)
   function Get_First_Word return String is
   begin
-    if not Text_Io.Is_Open (F) then
+    if not Ada.Text_Io.Is_Open (F) then
       raise Not_Open;
     end if;
     return Text_Handler.Value(First_Word);
@@ -191,7 +191,7 @@ package body Get_Line is
   -- Number of words in currently loaded line
   function Get_Word_Number return Word_Count is
   begin
-    if not Text_Io.Is_Open (F) then
+    if not Ada.Text_Io.Is_Open (F) then
       raise Not_Open;
     end if;
     Parse_Words;
@@ -202,7 +202,7 @@ package body Get_Line is
   -- Words of the currently loaded line
   procedure Get_Words (Line : in out Line_Array) is
   begin
-    if not Text_Io.Is_Open (F) then
+    if not Ada.Text_Io.Is_Open (F) then
       raise Not_Open;
     end if;
     Parse_Words;

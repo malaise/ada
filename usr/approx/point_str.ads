@@ -8,7 +8,7 @@ package Point_Str is
   function Coordinate_Image (Coordinate : Points.P_T_Coordinate)
                             return Coordinate_String;
 
-  -- May raise CONSTRAINT_ERROR
+  -- May raise Constraint_Error
   function Coordinate_Value (Str : String) return Points.P_T_Coordinate;
 
 

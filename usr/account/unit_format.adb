@@ -139,7 +139,7 @@ package body Unit_Format is
   end Last_Dig;
 
   -- Amount: -12345678.12
-  -- subtype AMOUNT_STR is STRING (1 .. 12);
+  -- subtype Amount_Str is String (1 .. 12);
   -- From an amount (in euros) return 'image (euros/francs)
   function Image (Amount_In_Euros : Oper_Def.Amount_Range;
                   Align_Left : in Boolean) return Amount_Str is
@@ -211,8 +211,8 @@ package body Unit_Format is
       raise Format_Error;
   end Value;
 
-  -- Amount of an operation in LIST: -12345.12
-  -- subtype SHORT_AMOUNT_STR is STRING (1 .. 9);
+  -- Amount of an operation in List: -12345.12
+  -- subtype Short_Amount_Str is String (1 .. 9);
   -- From an amount (in euros) return 'image (euros/francs)
   -- Truncation rule:
   --  Sign is kept, three lower digits of unit removed,
@@ -239,7 +239,7 @@ package body Unit_Format is
         I : My_Math.Inte;
         use My_Math;
       begin
-        -- Get INT value
+        -- Get Int value
         Real_Io.Get(Str, R, L);
         R := R / 1000.0;
         I := My_Math.Round(R);

@@ -1,7 +1,7 @@
 with Sok_Types;
 with Sok_Input;
 
--- Movement manager of SOKOBAN
+-- Movement manager of Sokoban
 package Sok_Movement is
 
 
@@ -50,8 +50,8 @@ package Sok_Movement is
    Prev_Position : out Sok_Types.Coordinate_Rec);
 
 
-  -- raised on DO_MOVEMENT if movement is not coherent
-  -- or     on UNDO_MOVEMENT if it is not coherent
+  -- raised on Do_Movement if movement is not coherent
+  -- or     on Undo_Movement if it is not coherent
   Illegal_Movement : exception;
 
 end Sok_Movement;

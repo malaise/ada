@@ -119,7 +119,7 @@ package body Syslin is
     -- Last line is A(l,l) * x(l) = B(l)  => x(l)
     -- then A(l-1, l-1) * x(l-1) + A(l-1, l) * x(l) = B(l-1) => x(l-1)
     -- then A(l-2, l-2) * x(l-2) + A(l-2, l-1) * x(l-1) +  A(l-2, l * x(l) = B(l-2)
-    --                            <----------- computed in TMP ----------->
+    --                            <----------- computed in Tmp ----------->
     Solution(Dimension'Last) := B_T(Dimension'Last) / A_T(Dimension'Last, Dimension'Last);
     for Line in reverse Dimension'First .. Dimension'Pred(Dimension'Last) loop
       declare

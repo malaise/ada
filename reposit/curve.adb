@@ -49,7 +49,7 @@ package body Curve is
     type T_Misc is array (T_Misc_List) of Boolean;
     Misc : T_Misc := (others => False);
 
-    -- Possible ZOOM_NO values
+    -- Possible Zoom_No values
     subtype Zoom_No_Range is Natural range 0 .. 9;
 
     -- Current and last stored Zoom window
@@ -57,7 +57,7 @@ package body Curve is
     Zoom_Array : array (Zoom_No_Range) of T_Boundaries;
 
 
-    -- Result of DRAW_ONE
+    -- Result of Draw_One
     Draw_Result : Boolean;
 
     -- Compute real position (x, y) to screen position (x, y)
@@ -72,7 +72,7 @@ package body Curve is
       -- Current limits (in pixels) of drawing
       function Get_Screen_Boundaries return T_Screen_Boundaries;
 
-      -- Is point (pixels) inside the frame (raise OUT_OF_FRAME if not)
+      -- Is point (pixels) inside the frame (raise Out_Of_Frame if not)
       procedure In_Frame (X_S, Y_S : in Integer);
 
       -- From real to screen and reverse
@@ -90,8 +90,8 @@ package body Curve is
       -- Computes every conversion according to new boundaries
       procedure Maj (Bounds : in T_Boundaries);
 
-      -- Raised by MAJ if Xmax-Xmin <= EPSILON
-      --            or    Ymax-Ymin <= EPSILON
+      -- Raised by MAJ if Xmax-Xmin <= Epsilon
+      --            or    Ymax-Ymin <= Epsilon
       Maj_Error : exception;
 
     end Convert;
@@ -130,7 +130,7 @@ package body Curve is
         return Screen_Boundaries;
       end Get_Screen_Boundaries;
 
-      -- Is point (pixels) inside the frame (raise OUT_OF_FRAME if not)
+      -- Is point (pixels) inside the frame (raise Out_Of_Frame if not)
       procedure In_Frame (X_S, Y_S : in Integer) is
       begin
         if      X_S < Screen_Boundaries.X_Min
@@ -290,9 +290,9 @@ package body Curve is
 
     -- Draw a curve and miscellaneous drawings on request
     -- -> when zoom defines new scale, new bounds are stored
-    --     and TRUE is retuned
-    -- -> when new ZOOM number is selected, then TRUE is returned
-    -- -> when Escape, FALSE is returned
+    --     and True is retuned
+    -- -> when new Zoom number is selected, then True is returned
+    -- -> when Escape, False is returned
     function Draw_One return Boolean is
 
       use Convert;
@@ -310,9 +310,9 @@ package body Curve is
       Prev_Frame_Bounds : T_Screen_Boundaries;
 
       -- Zoom modes: init, drag, done
-      -- To be set : CURR before calls to DRAW_HELP and DRAW_Z_FRAME (TOGGLE)
-      --             PREV after  calls to DRAW_HELP and DRAW_Z_FRAME (TOGGLE)
-      -- PREV_ZOOM_MODE is set to CUR_ZOOM_MODE by DRAW_Z_FRAME(TOGGLE)
+      -- To be set : Curr before calls to Draw_Help and Draw_Z_Frame (Toggle)
+      --             Prev after  calls to Draw_Help and Draw_Z_Frame (Toggle)
+      -- Prev_Zoom_Mode is set to Cur_Zoom_Mode by Draw_Z_Frame (Toggle)
       type Zoom_Mode_List is (Init, Drag, Done);
       Curr_Zoom_Mode, Prev_Zoom_Mode : Zoom_Mode_List;
 
@@ -604,7 +604,7 @@ package body Curve is
         if Misc (M_Help) then
           Toggle_Help_Misc (M_Curve);
         end if;
-        -- BIG_CON_IO.BELL(1);
+        -- Big_Con_Io.Bell(1);
       end Draw_Curve;
 
 
@@ -771,7 +771,7 @@ package body Curve is
       end Cancel_Zoom;
 
     use Big_Con_Io;
-    begin -- DRAW_ONE
+    begin -- Draw_One
 
       -- Init context
       Prev_Zoom_Mode := Init;
@@ -816,7 +816,7 @@ package body Curve is
           if Misc(M_Help)   then Draw_Help(Init); end if;
           if Misc(M_Scale)  then Draw_Scale(Init, Mouse_Bounds); end if;
           if Curr_Zoom_Mode = Done then
-            -- MOUSE_BOUNDS not used
+            -- Mouse_Bounds not used
             Draw_Z_Frame (Redraw, Mouse_Bounds);
           end if;
         end if;
@@ -841,7 +841,7 @@ package body Curve is
             -- Call any signal callback
             Signal_Callback;
           when Big_Con_Io.Timeout =>
-            -- Should not occure: GET(INFINITE_TIME)
+            -- Should not occure: Get(Infinite_Time)
             null;
           when Big_Con_Io.Esc =>
             if Curr_Zoom_Mode = Init then
@@ -853,7 +853,7 @@ package body Curve is
               Draw_Z_Frame (Zoom_Frame_Action, Mouse_Bounds);
             end if;
           when Big_Con_Io.Full =>
-            -- KEY pressed
+            -- Key pressed
             Char := Str(1);
             if Upper_Char(Char) = 'A' then
               -- Toggle axes
@@ -911,7 +911,7 @@ package body Curve is
             Set_Mouse_In_Frame(Mouse_Event.X, Mouse_Event.Y);
             -- Update scales and frame according to zoom mode
             if Curr_Zoom_Mode = Init then
-              -- Before DRAG : follow cur pos
+              -- Before Drag : follow cur pos
               Mouse_Bounds.X_Min := Mouse_Event.X;
               Mouse_Bounds.X_Max := Mouse_Event.X;
               Mouse_Bounds.Y_Min := Mouse_Event.Y;
@@ -964,7 +964,7 @@ package body Curve is
                 and then Mouse_Event.Button = Big_Con_Io.Left
                 and then Mouse_Event.Status = Big_Con_Io.Pressed then
                   -- Click left : Validate
-                  -- Zoom status is DONE. Validate new scales in Curr_zoom_no+1
+                  -- Zoom status is Done. Validate new scales in Curr_Zoom_No+1
                   declare
                     Root_Bounds : T_Boundaries
                                   renames Zoom_Array(Zoom_No_Range'First);
@@ -977,7 +977,7 @@ package body Curve is
                     else
                       New_Zoom_No := Curr_Zoom_No;
                     end if;
-                    -- New_bounds.scale mode is FREE_SCREEN or FREE_NORMED
+                    -- New_Bounds.Scale mode is Free_Screen or Free_Normed
                     --  according to initial scale type
                     if Root_Bounds.Scale = Curve_Screen or else
                        Root_Bounds.Scale = Free_Screen then
@@ -986,7 +986,7 @@ package body Curve is
                          X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
                          Y_Min => Y_Screen_Real(Mouse_Bounds.Y_Min),
                          Y_Max => Y_Screen_Real(Mouse_Bounds.Y_Max) );
-                    else  -- NORMED
+                    else  -- Normed
                       New_Bounds := (Scale => Free_Normed,
                          X_Min => X_Screen_Real(Mouse_Bounds.X_Min),
                          X_Max => X_Screen_Real(Mouse_Bounds.X_Max),
@@ -1039,7 +1039,7 @@ package body Curve is
 
     end Draw_One;
 
-  begin -- DRAW
+  begin -- Draw
     -- Initialise graphics
     Big_Con_Io.Init;
     Big_Con_Io.Set_Foreground (Blink_Stat => Big_Con_Io.Not_Blink);

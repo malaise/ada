@@ -21,7 +21,7 @@ package File is
 
   -- Read next move (white then black then white...)
   -- Returns a not valid action at end of file
-  -- File_error on IO error;
+  -- File_error on Io error;
   -- Format_Error if invalid format
   function Read return Players.Action_Rec;
 

@@ -11,39 +11,39 @@ package Directory is
 
   -- Changes current working directory
   procedure Change_Current (New_Dir : in String);
-  -- May raise NAME_ERROR
+  -- May raise Name_Error
 
 
   type Dir_Desc is private;
 
   -- Opens a directory for list of entries
   function Open (Dir_Name : in String) return Dir_Desc;
-  -- May raise OPEN_ERROR if dir desc is already open
-  -- May raise NAME_ERROR if not found
-  -- May raise ACCESS_ERROR 
+  -- May raise Open_Error if dir desc is already open
+  -- May raise Name_Error if not found
+  -- May raise Access_Error 
 
   -- Gets next entry of the opened directory
   function Next_Entry (Desc : Dir_Desc) return String;
   procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Text_Handler.Text);
-  -- May raise OPEN_ERROR if dir desc is not open
-  -- Will raise END_ERROR if no more entry
+  -- May raise Open_Error if dir desc is not open
+  -- Will raise End_Error if no more entry
 
   -- Reset entries for the first 
   procedure Rewind (Desc : in Dir_Desc);
-  -- May raise OPEN_ERROR if dir desc is not open
+  -- May raise Open_Error if dir desc is not open
 
   -- Closes a directory
   procedure Close (Desc : in out Dir_Desc);
-  -- May raise OPEN_ERROR if dir desc is not open
+  -- May raise Open_Error if dir desc is not open
 
   function Read_Link (File_Name : String; Recursive : Boolean := True)
                       return String;
   procedure Read_Link (File_Name : in String;
                        Target : in out Text_Handler.Text;
                        Recursive : in Boolean := True);
-  -- May raise NAME_ERROR if FILE_NAME does not exist
-  --           ACCESS_ERROR if FILE_NAME cannot be read
-  --           OPEN_ERROR if FILE_NAME is not a link
+  -- May raise Name_Error if File_Name does not exist
+  --           Access_Error if File_Name cannot be read
+  --           Open_Error if File_Name is not a link
 
   -- Does file name match a pattern
   function File_Match (File_Name : String; Template : String) return Boolean;

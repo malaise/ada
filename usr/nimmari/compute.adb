@@ -26,7 +26,7 @@ package body Compute is
     Nb_Rows_More_One : Natural := 0;
   begin
     Result := Played;
-    -- Compute MATTRIX and SIGMA
+    -- Compute Mattrix and Sigma
     declare
       Sum : Natural;
     begin
@@ -88,7 +88,7 @@ package body Compute is
     end if;
 
     -- Can we win (sigma not all false)
-    -- if yes keep first true COL in SIGMA
+    -- if yes keep first true Col in Sigma
     Winning := False;
     for J in Power_Range loop
       if Sigma(J) then
@@ -101,7 +101,7 @@ package body Compute is
     if Winning then
 
       declare
-        -- number of TRUE in MATTRIX (x, COL)
+        -- number of True in Mattrix (x, Col)
         R, N : Natural;
       begin
         -- Compute R
@@ -123,7 +123,7 @@ package body Compute is
         end loop;
       end;
 
-      -- play: for each TRUE in sigma, change corresponding col in selected row
+      -- play: for each True in Sigma, change corresponding col in selected row
       for I in Col .. Power_Range'Last loop
         if Sigma (I) then
            Mattrix (Selected_Row, I) := not Mattrix (Selected_Row, I);
@@ -143,7 +143,7 @@ package body Compute is
       -- Loosing : play random
       -- Choose a non empty row
       declare
-        -- number of ROWS with SUM /= 0
+        -- number of Rows with Sum /= 0
         R, N : Natural;
       begin
         -- Compute R

@@ -20,7 +20,7 @@ package body Get_Float is
     Got_A_Float : Boolean;
     Dot_Found : Boolean;
   begin
-    -- Locate last significant character of STR
+    -- Locate last significant character of Str
     Str_Len := 0;
     Dot_Found := False;
     for J in reverse Str'Range loop

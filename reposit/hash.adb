@@ -5,8 +5,8 @@ package body Hash is
   package body Hash_Mng is
 
     -- Data organization:
-    --  An array (0 .. HASH_SIZE) of FIRST_CELL_REC
-    --  Each of them pointing possibly to a CELL_REC which itself...
+    --  An array (0 .. Hash_Size) of First_Cell_Rec
+    --  Each of them pointing possibly to a Cell_Rec which itself...
     type Cell_Rec;
     type Cell_Access is access Cell_Rec;
 
@@ -41,7 +41,7 @@ package body Hash is
       return Crc_10.Get rem Hash_Size;
     end Hash_Func;
 
-    -- To store association KEY <-> INDEX
+    -- To store association Key <-> Index
     procedure Store (Key : in String; Data : in Data_Acess) is
       I : constant Hash_Range := Hash_Func(Key);
       Ca, N : Cell_Access;
@@ -61,7 +61,7 @@ package body Hash is
 
     end Store;
 
-    -- To remove a stored association KEY <-> INDEX
+    -- To remove a stored association Key <-> Index
     procedure Remove (Key : in String) is
       I : constant Hash_Range := Hash_Func(Key);
       Ca : Cell_Access;
@@ -99,7 +99,7 @@ package body Hash is
       First_Array(I).Current := null;
     end Reset_Find;
 
-    -- To get next INDEX matching KEY
+    -- To get next Index matching Key
     function Find_Next (Key : String) return Found_Rec is
       I : constant Hash_Range := Hash_Func(Key);
       Cu : Cell_Access;

@@ -17,15 +17,15 @@ package body Afpx is
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
    
-    -- Load a descriptor rais NO_DESCRIPTOR if invalid no
+    -- Load a descriptor, raise No_Descriptor if invalid no
     --  failure of version check
     procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range);
    
-    -- Check if a descriptor has been used (raise NO_DESCRPTOR)
+    -- Check if a descriptor has been used (raise No_Descriptor)
     procedure Check;
    
-    -- Check if a descriptor has been used (raise NO_DESCRPTOR)
-    --  and if FIELD_NO is valid in it (raise INVALID_FIELD)
+    -- Check if a descriptor has been used (raise No_Descriptor)
+    --  and if Field_No is valid in it (raise Invalid_Field)
     procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range);
    
     -- Load a field's characters and/or colors from init
@@ -182,7 +182,7 @@ package body Afpx is
     -- Open / Re-open the list window
     procedure Open;
    
-    -- Display the list, starting from FIRST_ITEM
+    -- Display the list, starting from First_Item
     -- Has to be called each time the list changes
     --  or colors are modified
     procedure Display (First_Item_Id : in Positive);
@@ -207,17 +207,17 @@ package body Afpx is
    
     function Get_Status return Status_Rec;
    
-    -- Set current item of list according to ID_SELECTED
+    -- Set current item of list according to Id_Selected
     procedure Set_Current;
    
     -- Put a row in a state
     procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List);
    
-    -- Is an ID, a row displayed
+    -- Is an Id, a row displayed
     function Id_Displayed (Id : Positive) return Boolean;
     function Row_Displayed (Row : Con_Io.Row_Range) return Boolean;
    
-    -- ROW <-> Item ID
+    -- Row <-> Item Id
     function To_Row (Id : Positive) return Con_Io.Row_Range;
     function To_Id  (Row : Con_Io.Row_Range) return Positive;
    
@@ -306,7 +306,7 @@ package body Afpx is
       raise Invalid_Square;
     end if;
    
-    -- Check that FROM_POS.COL + STR is length compatible with field width
+    -- Check that From_Pos.Col + Str is length compatible with field width
     if Str'Length /= 0
         and then not Afpx_Typ.In_Field (Field,
             (From_Pos.Row, From_Pos.Col + Str'Length - 1)) then
@@ -345,7 +345,7 @@ package body Afpx is
     end if;
     -- Copy in init string
     Init_Index := Field.Char_Index + Row * Field.Width;
-    -- Return FIELD.WIDTH characters
+    -- Return Field.Width characters
     Text_Handler.Set (Str,
          Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1));
   end Decode_Field;
@@ -392,18 +392,18 @@ package body Afpx is
   begin
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
-    -- Check FOREGROUND is BASIC_COLORS for list, get and button fields
+    -- Check Foreground is Basic_Colors for list, get and button fields
     if Foreground not in Con_Io.Basic_Colors
         and then Field.Kind /= Afpx_Typ.Put then
       raise Invalid_Color;
     end if;
-    -- Check BLINK_STAT is CURRENT except for PUT
+    -- Check Blink_Stat is Current except for Put
     if Blink_Stat /= Con_Io.Current
         and then (Field.Kind /= Afpx_Typ.Put) then
       raise Invalid_Color;
     end if;
    
-    -- Check SELECTED is CURRENT for put and button fields
+    -- Check Selected is Current for put and button fields
     if Selected /= Con_Io.Current
         and then (Field.Kind = Afpx_Typ.Put
                   or else Field.Kind = Afpx_Typ.Button) then
@@ -448,10 +448,10 @@ package body Afpx is
     Activate := Af_Dscr.Fields(Fn).Activated;
   end Get_Field_Activation;
 
-  -- Protect/Unprotect a GET for further put_then_gets
+  -- Protect/Unprotect a Get for further put_then_gets
   -- A non active field is not displayed by put_then get
-  -- All fields are activated by default (when USE_DESCRIPTOR or RESET_FIELD)
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
+  -- All fields are activated by default (when Use_Descriptor or Reset_Field)
+  -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Protection (Field_No : in Absolute_Field_Range;
                                   Protect  : in Boolean) is
     Fn : constant Afpx_Typ.Absolute_Field_Range

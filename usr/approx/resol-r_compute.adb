@@ -39,7 +39,7 @@ package body R_Compute is
       end loop;
     end loop;
 
-    -- Build At * A mattrix : T_A_A (R,C) = SUM[K=1..n] (A(R,K)*A(C,K))
+    -- Build At * A mattrix : T_A_A (R,C) = Sum[K=1..n] (A(R,K)*A(C,K))
     for Row_A in Index_Degree loop
       for Column_Ta in Index_Degree loop
         declare
@@ -55,7 +55,7 @@ package body R_Compute is
     end loop;
     T_A_A := T_A_A_Loc;
 
-    -- Build Y * Y vector : A_Y (I) = SUM[K=1..n] A(I,K)*Y(K)
+    -- Build Y * Y vector : A_Y (I) = Sum[K=1..n] A(I,K)*Y(K)
     -- Y(K) is Points(K).Y
     for Row_A in Index_Degree loop
       declare

@@ -32,7 +32,7 @@ package body String_Mng is
   -- If Str is shorter than Len, it is aligned at right or left and padded
   -- If Str is longer  than Len, it's head ot tail is truncated
 
-  -- Str : StrING to put in the returned string
+  -- Str : String to put in the returned string
   -- Len : Number of characters of the returned string
   -- Align_Left : If string is shorter than Len characters,
   --     align it at left or at right (not Align_Left) and fill with Gap,

@@ -48,7 +48,7 @@ package body Sok_Save is
   end Pop;
 
   -- look first pushed or next pushed
-  -- type LOOK_REF_LIST is (FIRST, NEXT);
+  -- type Look_Ref_List is (First, Next);
   function Look (Ref : Look_Ref_List) return Sok_Movement.Saved_Data_Rec is
     Movement : Sok_Movement.Saved_Data_Rec;
   begin

@@ -4,21 +4,21 @@ with Pers_Def;
 package body Mesu_Nam is
 
   -- The result. File name (or file template)
-  -- subtype FILE_NAME_STR is STRING (1 .. 12);
+  -- subtype File_Name_Str is String (1 .. 12);
 
 
   -- "YYyyMmDd" or "        "
-  -- subtype FILE_DATE_STR is STRING (1 .. 8);
+  -- subtype File_Date_Str is String (1 .. 8);
 
   -- from "00" to "99" or "  "
-  -- subtype FILE_NO_STR is STRING (1 .. 2);
+  -- subtype File_No_Str is String (1 .. 2);
 
   -- from "000" to "999" or "   "
-  -- subtype FILE_PID_STR is STRING (1 .. 3);
+  -- subtype File_Pid_Str is String (1 .. 3);
 
   -- Date in file name : no hundredth of years
   subtype Date_For_File_Str is String (1 .. 6);
-  -- If a xx is less than DISCR then it is 20xx, else 19xx
+  -- If a xx is less than Discr then it is 20xx, else 19xx
   Discriminant_For_Dates : constant String (1 .. 2) := "90";
 
   function Trunc (Date_Str : File_Date_Str) return Date_For_File_Str is
@@ -93,7 +93,7 @@ package body Mesu_Nam is
    end Valid_File_Def;
 
   -- Build a file name (or a template if some " ")
-  -- May raise FILE_NAME_ERROR if some fields have wrong format
+  -- May raise File_Name_Error if some fields have wrong format
   --  or date is not valid
   function Build_File_Name (Date : File_Date_Str := Wild_Date_Str;
                             No   : File_No_Str   := Wild_No_Str;
@@ -142,7 +142,7 @@ package body Mesu_Nam is
 
 
   -- Split a file name (or a template)
-  -- May raise FILE_NAME_ERROR if some fields have wrong format
+  -- May raise File_Name_Error if some fields have wrong format
   --  or date is not valid
   procedure Split_File_Name (File_Name : in File_Name_Str;
                              Date      : out File_Date_Str;
@@ -163,8 +163,8 @@ package body Mesu_Nam is
   end Split_File_Name;
 
   -- Find first file_no_str available for given date and pid
-  -- May return WILD_NO_STR if no more_slot available
-  -- May raise FILE_NAME_ERROR if date or pid has wild
+  -- May return Wild_No_Str if no more_slot available
+  -- May raise File_Name_Error if date or pid has wild
   function Find_Slot (Date : File_Date_Str;
                       Pid  : File_Pid_Str) return File_No_Str is
     File_Template : File_Name_Str;

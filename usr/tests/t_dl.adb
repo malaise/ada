@@ -2,8 +2,8 @@ with Text_Io;
 with Dynamic_List, Dynamic_List.Basic, Normal, Rnd;
 procedure T_Dl is
   package My_List is new Dynamic_List(Element_Type => Integer);
-  procedure My_Search is new My_List.Search;   -- ("=" of INTEGER)
-  procedure My_Sort is new My_List.Sort("<");  -- ("<" of INTEGER)
+  procedure My_Search is new My_List.Search;   -- ("=" of Integer)
+  procedure My_Sort is new My_List.Sort("<");  -- ("<" of Integer)
 
   package My_Blist is new My_List.Basic;
   procedure My_Find is new My_Blist.Find_First (My_Search);

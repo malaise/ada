@@ -73,7 +73,7 @@ package body Event_Mng is
   package Cb_Mng is new Dynamic_List(Cb_Rec);
   Cb_List : Cb_Mng.List_Type;
 
-  -- Same FD
+  -- Same Fd
   function Same_Fd (Cb1, Cb2 : Cb_Rec) return Boolean is
     use type Sys_Calls.File_Desc;
   begin

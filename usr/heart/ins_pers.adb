@@ -126,7 +126,7 @@ begin
   end if;
   -- Save list
   Pers_Fil.Save;
-  -- OK. Display PID.
+  -- Ok. Display Pid.
 
 exception
   when others =>

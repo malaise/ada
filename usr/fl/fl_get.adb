@@ -12,7 +12,7 @@ package body Fl_Get is
   end Parse_Minutes;
 
   function Get_Time return Fl_Time.Time_Type is
-    Max_Hour_Dig : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
+    Max_Hour_Dig : constant := 9; -- Fl_Time.Hours_Range'Width;
     Str : String(1 .. Max_Hour_Dig + 2 + 1);
     F, L, P :  Natural;
     Time : Fl_Time.Time_Type := (True, 0, 0);

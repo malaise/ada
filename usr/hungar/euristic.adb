@@ -94,7 +94,7 @@ package body Euristic is
     Nb_Zero : Natural range 0 .. Zero_Desc_Range'Last;
 
     -- Instantiate sorting
-    -- Free zeros first, in order of crescent SIGMA, then slashed then squared zeros
+    -- Free zeros first, in order of crescent Sigma, then slashed then squared zeros
     function "<" (Left, Right : Zero_Desc_Rec) return Boolean is
     begin
       if Left.State = Free then
@@ -155,7 +155,7 @@ package body Euristic is
       Try_To_Solve:
       declare
         -- Mattrix of zeros : each zero has either an index in zero desc
-        --  or 0 if content of MATTRIX is not zero
+        --  or 0 if content of Mattrix is not zero
         Cross_Ref : array (1 .. Mattrix.Dim, 1 .. Mattrix.Dim) of Natural
                   := (others => (others => 0));
         -- The zero selected (one of the zeros with min sigma)
@@ -311,7 +311,7 @@ package body Euristic is
     -- Set zero transfer tab (free means not a zero)
     Transfer := (others => (others => Free));
     for I in 1 .. Nb_Zero loop
-      -- No zero free remain in ZERO_DESC
+      -- No zero free remain in Zero_Desc
       Transfer(Zero_Desc(I).Row, Zero_Desc(I).Col) := Zero_Desc(I).State;
     end loop;
 

@@ -276,11 +276,11 @@ package body Screen is
       Put_Level (I, Selected => False);
     end loop;
 
-    -- Draw EXIT
+    -- Draw Exit
     Con_Io.Move (Name => Exit_Win);
     Con_Io.Put  (" E X I T ", Name => Exit_Win, Move => False);
 
-    -- no try
+    -- No try
     for I in Common.Propal_Range loop
       Put_Try (I, Cannot_Try);
     end loop;

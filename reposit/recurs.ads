@@ -1,11 +1,11 @@
--- executes the procedure DO_IN_DIR in the current directory and
+-- Executes the procedure Do_In_Dir in the current directory and
 --  in each directory of the sub-tree
 
--- Displays "==> COMPLETE_PATH <==" when entering each dir, or not
+-- Displays "==> complete_path <==" when entering each dir, or not
 -- Do action in current directory also, or not
 -- Stop after one level of subdirectories or not
 -- Do action only in leaves (directory with no subdirectory)
--- Stops on error (DO_IN_DIR returning FALSE), or not
+-- Stops on error (Do_In_Dir returning False), or not
 -- Follow symbolic links (to directories) or not
 generic
   with function Do_In_Dir return Boolean;

@@ -18,7 +18,7 @@ package String_Mng is
   -- Trunc_Head : If string is longer than Len characters, trunc it's head
   --     or its tail
   -- Show_Trunc : When string is longer than Len, if Show_Trunc is set,
-  --         then STR is truncated to Len-2 and starts (Trunc_Head) with " >"
+  --         then Str is truncated to Len-2 and starts (Trunc_Head) with " >"
   --         or ends (not Trunc_Head) with " <"
   function Procuste (Str : String; Len : Positive;
            Align_Left : Boolean := True; Gap : Character := ' ';

@@ -104,7 +104,7 @@ package body X_Mng is
   pragma Import(C, X_Set_Attributes, "x_set_attributes");
  
   ------------------------------------------------------------------
-  -- Set XOR mode for further outputs
+  -- Set Xor mode for further outputs
   -- int x_set_xor_mode (void *line_id, boolean xor_mode);
   ------------------------------------------------------------------
   function X_Set_Xor_Mode(Line_Id : Line_For_C;
@@ -270,7 +270,7 @@ package body X_Mng is
   pragma Import(C, X_Select, "x_select");
 
   ------------------------------------------------------------------
-  -- Process a X event (TID or Keyboard or other) 
+  -- Process a X event (Tid or Keyboard or other) 
   -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
   ------------------------------------------------------------------
   function X_Process_Event(P_Line_Id : System.Address;
@@ -279,7 +279,7 @@ package body X_Mng is
   pragma Import(C, X_Process_Event, "x_process_event");
  
   ------------------------------------------------------------------
-  -- Reads the position on TID
+  -- Reads the position on Tid
   -- int x_read_tid (void *line_id, boolean row_col,
   --                 int *p_button, int *p_row, int *p_column);
   ------------------------------------------------------------------
@@ -1125,7 +1125,7 @@ package body X_Mng is
     Nb_Wait : Line_Range;
     type Client_Desc_Rec is record
       Known : Boolean;
-      -- Will be LINE_FOR_C
+      -- Will be Line_For_C
       Line_For_C_Id : Line_For_C;
       Wait_Inf : Boolean;
       Wait_Exp : Ada.Calendar.Time;
@@ -1133,17 +1133,17 @@ package body X_Mng is
       Refresh : Boolean;
     end record;
     Clients : array (Client_Range) of Client_Desc_Rec;
-    -- The TIMEOUT/EVENT and CLIENT from WAIT to SOME_EVENT to GET_EVENT
+    -- The Timeout/Event and Client from Wait to Some_Event to Get_Event
     Select_Result : Xx_Select_Result_List;
     Selected_Client : Client_Range;
-    -- One event to give in SOME_EVENT
+    -- One event to give in Some_Event
     Some_Event_Present : Boolean;
     Loc_Kind : Event_Kind;
     Loc_Next : Boolean;
     -- Local X line
     Loc_Line_For_C_Id : Line_For_C;
     use type Ada.Calendar.Time, System.Address;
-    -- Delay or INFINITE_TIMEOUT
+    -- Delay or Infinite_Timeout
     Delay_Dur : Duration;
   
     procedure Compute_Smaller_Delay(Smaller_Delay : out Duration;
@@ -1456,7 +1456,7 @@ package body X_Mng is
                               & " -> got it");
               end if;
             end if; -- event is for client
-          end if; -- SOME_EVENT_PRESENT
+          end if; -- Some_Event_Present
           if Debug then
             My_Io.Put_Line ("    Get_event -> " & Event_Kind'Image(Loc_Kind)
                           & " next: " & Boolean'Image(Loc_Next));

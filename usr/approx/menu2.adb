@@ -19,7 +19,7 @@ package body Menu2 is
   end Curve_Data;
 
   task Curve_Task is
-    -- Start computation, SOLUTION is computed on main stack
+    -- Start computation, Solution is computed on main stack
     entry Start (Solution : in Resol.Vector; Ok : out Boolean);
     entry Stopped;
   end;
@@ -195,7 +195,7 @@ package body Menu2 is
       Curve_Task.Stopped;
       Ok := True;
     or
-      -- Wait a bit to let CURVE_TASK be ready to accept STOPPED
+      -- Wait a bit to let Curve_Task be ready to accept Stopped
       delay 0.1;
       Ok := False;
     end select;
@@ -209,7 +209,7 @@ package body Menu2 is
     Screen.Inform(Screen.I_Wait);
     Curve_Task.Start (Resol.R_Resolution (Points.P_The_Points), Ok);
     Screen.Inform(Screen.I_Clear);
-    -- Accept started if start OK
+    -- Accept started if start Ok
     if not Ok then
       Screen.Error (Screen.E_Curve_Problem);
     end if;

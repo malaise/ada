@@ -68,8 +68,8 @@ package Sys_Calls is
 
   -- Modes for a tty. Return True if success
   type Tty_Mode_List is (
-    Canonical,   -- Wait for CR, Echo, Blocking
-    No_Echo,     -- Wait for CR, No echo, Blocking
+    Canonical,   -- Wait for Cr, Echo, Blocking
+    No_Echo,     -- Wait for Cr, No echo, Blocking
     Asynchronous,-- No wait, Echo, Not Blocking
     Transparent  -- No wait, No echo, Not Blocking
   );

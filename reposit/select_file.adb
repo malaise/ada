@@ -34,7 +34,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
   Is_A_Dir     : Boolean;
 
 
-  -- Return width of GET field
+  -- Return width of Get field
   function Get_Get_Width return Afpx.Width_Range is
     Height : Afpx.Height_Range;
   begin
@@ -101,7 +101,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
     end case;
   end Scroll;
 
-  -- Ptg on OK (and cancel) buttons
+  -- Ptg on Ok (and cancel) buttons
   function Confirm return Boolean is
     Cursor_Field : Afpx.Field_Range := 1;
     Cursor_Col : Con_Io.Col_Range := 0;
@@ -155,7 +155,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
           Redisplay := True;
       end case;
     end loop;
-    -- Restore GET field
+    -- Restore Get field
     Afpx.Get_Field_Activation (Get_Fld, Get_Act);
     Afpx.Reset_Field (Get_Fld, Reset_String => False);
     Afpx.Set_Field_Activation (Get_Fld, Get_Act);
@@ -225,7 +225,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
       Put_File (Directory.Get_Current & "/*");
     end if;
 
-    -- Set AFPX list
+    -- Set Afpx list
     -- Get list width
     Afpx.Get_Field_Size(Afpx.List_Field_No, Height, Width);
     -- Read dir and move to first
@@ -234,7 +234,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
     Dir_Mng.File_Sort (Dir_List);
     Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
                                  0 , False);
-    -- Clear AFPX list
+    -- Clear Afpx list
     Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
     loop
       Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
@@ -265,7 +265,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
            = Dir_Mng.File_List_Mng.List_Length (Dir_List);
       Dir_Mng.File_List_Mng.Move_To (Dir_List);
     end loop;
-    -- Move to beginning of AFPX list
+    -- Move to beginning of Afpx list
     Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
        0, False);
     Afpx.Update_List(Afpx.Top);

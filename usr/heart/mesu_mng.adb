@@ -239,7 +239,7 @@ package body Mesu_Mng is
 
             case Ptg_Result.Keyboard_Key is
               when Return_Key =>
-                -- Check field and go to next if OK
+                -- Check field and go to next if Ok
                 Check_Field (Cursor_Field, False, Ok);
               when Escape_Key =>
                 -- Clear current field
@@ -291,7 +291,7 @@ package body Mesu_Mng is
               Mesu_Sel.Undo;
               Allow_Undo := False;
             elsif Ptg_Result.Field_No = 18 then
-              -- Activiy DB
+              -- Activiy Db
               Mesu_Sel.Save;
               Pers_Lis.List (Exit_Program);
               Mesu_Sel.Load;

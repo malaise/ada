@@ -3,16 +3,16 @@ with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory;
 with Afpx_Typ;
 use  Afpx_Typ;
 -- Read AFPX.LIS, check
--- Build AFPX.DSC list of DESCR_REC
---       AFPX.FLD list of FIELDS_ARRAY
---       AFPX.INI list of CHAR_STR
+-- Build AFPX.DSC list of Descr_Rec
+--       AFPX.FLD list of Fields_Array
+--       AFPX.INI list of Char_Str
 procedure Afpx_Bld is
 
   -- Inputs name
   Default_List_File_Name : constant String := "AFPX.LIS";
   List_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len * 2);
 
-  -- GET_LINE of descriptor file
+  -- Get_Line of descriptor file
   package Dscr_Get is new Get_Line (Max_Word_Len => 80, 
                                     Max_Word_Nb  => 45,
                                     Max_Line_Len => 132,
@@ -34,7 +34,7 @@ procedure Afpx_Bld is
   -- List of fields
   Fields : Afpx_Typ.Fields_Array;
 
-  -- Index in INIT_STR
+  -- Index in Init_Str
   Init_Index : Positive;
 
   -- Initial characters of the fields
@@ -170,7 +170,7 @@ procedure Afpx_Bld is
     Fields(Fn).Width :=
      Fields(Fn).Lower_Right.Col - Fields(Fn).Upper_Left.Col + 1;
 
-    -- One ROW for GET fields
+    -- One Row for Get fields
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
       File_Error ("Invalid geometry. GET fields must have ONE row");
     end if;
@@ -224,11 +224,11 @@ procedure Afpx_Bld is
         File_Error ("Invalid colors specification");
     end;
 
-    -- Foreground has to be basic for all but PUT fields
+    -- Foreground has to be basic for all but Put fields
     if (Fn = 0 or else Fields(Fn).Kind /= Put)
     and then Fields(Fn).Colors.Foreground
              not in Con_Io.Effective_Basic_Colors then
-      -- For list, GET and BUTTON, FOREGROUND has to be basic
+      -- For list, Get and Button, Foreground has to be basic
       File_Error ("For all but PUT fields, FOREGROUND has to be basic color");
     end if;
     Next_Line;
@@ -239,7 +239,7 @@ procedure Afpx_Bld is
     if Dscr_Words /= 1 then
       File_Error ("LIST expected");
     end if;
-    -- In LIST
+    -- In List
     Fields(0).Kind := Afpx_Typ.Button;
     Fields(0).Activated := True;
     Fields(0).Isprotected := False;
@@ -263,7 +263,7 @@ procedure Afpx_Bld is
     Finit_Str    : String (1 .. Finit_Line.Max_Len);
     Finit_Len    : Natural;
     Finit_Start  : Positive;
-    -- Index in CHAR_STR of beginning of INIT string
+    -- Index in Char_Str of beginning of Init string
     Finit_Index : Afpx_Typ.Char_Str_Range;
   begin
     if Dscr_Words /= 3 then
@@ -379,7 +379,7 @@ procedure Afpx_Bld is
           Finit_Str (1 .. Finit_Len - Finit_Start + 1) :=
                  Finit_Str (Finit_Start .. Finit_Len);
           Finit_Len := Finit_Len - Finit_Start + 1;
-          -- Check FINIT col + string length compatible with field width
+          -- Check Finit col + string length compatible with field width
           if not Afpx_Typ.In_Field (Fields(No),
                   (Finit_Square.Row, Finit_Square.Col + Finit_Len - 1)) then
             File_Error ("Init string too long for this col in this field");
@@ -495,13 +495,13 @@ procedure Afpx_Bld is
     Dscr_Get.Get_Words(Dscr_Line);
 
     -- Loop on descriptors
-    -- Descriprors are stored in the descriptor file at DSCR_NO
-    -- Fields and init tables are stored in their files at DSCR_INDEX
+    -- Descriprors are stored in the descriptor file at Dscr_No
+    -- Fields and init tables are stored in their files at Dscr_Index
     Dscr_Index := 1;
     Dscrs:
     loop
       Eof_Allowed := False;
-      -- DESCRIPTOR line
+      -- Descriptor line
       Text_Handler.Set (Error_Msg, "DESCRIPTOR <descriptor_number> expected");
       if Dscr_Words /= 2 then
         File_Error (Text_Handler.Value (Error_Msg));
@@ -518,7 +518,7 @@ procedure Afpx_Bld is
       end;
       Text_Io.Put_Line ("   descriptor " &
                         Normal(Integer(Dscr_No), 2, Gap => '0'));
-      -- Dscr no has to be uniq
+      -- Dscr no has to be unique
       if Descriptors(Dscr_No).Modified then
         File_Error ("DESCRIPTOR " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
                                   & " already defined");
@@ -583,7 +583,7 @@ procedure Afpx_Bld is
     end loop Dscrs;
 
     -- Should never go there.
-    -- Exit loop DSCRS on exception DSCR_GET.NO_MORE_LINE
+    -- Exit loop Dscrs on exception Dscr_Get.No_More_Line
     raise Constraint_Error;
 
   exception

@@ -24,7 +24,7 @@ package body Nav_Dialog is
    Nav_Format.Imag(Result_Data.Drift, False)'Last;
 
 
-  -- to PUT all the data fields to get
+  -- to Put all the data fields to get
   procedure Put_Data (Data : in Nav_Data.T_Data) is
   begin
     Nav_Screen.Put (
@@ -174,7 +174,7 @@ package body Nav_Dialog is
     use Nav_Format; -- for = tests
   begin
 
-    -- get value and update data value if SET
+    -- get value and update data value if Set
     case Curr_Field is
       when Nav_Data.Wind_S =>
         Nav_Format.Value (Str, Speed, Res, Pos);
@@ -225,7 +225,7 @@ package body Nav_Dialog is
     In_Action : Boolean;
     -- data field if not in action
     Curr_Field : Nav_Data.T_List_Data;
-    -- ACTION position if in action
+    -- Action position if in action
     Curr_Action : Nav_Screen.Action;
     -- if error
     Blink : Boolean;
@@ -268,7 +268,7 @@ package body Nav_Dialog is
       end if;
 
       -- show error : may be set also if check error
-      Blink := Fmt_Error; -- or CHK_ERROR
+      Blink := Fmt_Error; -- or Chk_Error
 
       if not In_Action then
 

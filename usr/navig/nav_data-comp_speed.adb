@@ -1,9 +1,9 @@
 separate (Nav_Data)
--- When PLAN.SPEED and TRAJ.SPEED are unknown
+-- When Plan.Speed and Traj.Speed are unknown
 procedure Comp_Speed (Data : in out T_Data) is
   -- angle_traj-angle_wind ...
   A_T_W, A_T_P, A_P_W, A_P_T : Real;
-  -- sin(ATW)/sin(ATP) and sin(APW)/sin(APS)
+  -- sin(Atw)/sin(Atp) and sin(Apw)/sin(Aps)
   S_Wp, S_Ws : Real;
   use Nav_Types;
 begin
@@ -17,8 +17,8 @@ begin
   S_Wp := abs (My_Math.Sin (A_T_W, My_Math.Degree) / My_Math.Sin (A_T_P, My_Math.Degree));
   S_Ws := abs (My_Math.Sin (A_P_W, My_Math.Degree) / My_Math.Sin (A_P_T, My_Math.Degree));
 
-  -- PLAN.SPEED := WIND.SPEED * S_WP
-  --  and TRAJ.SPEED := WIND.SPEED * S_WS
+  -- Plan.Speed := Wind.Speed * S_Wp
+  --  and Traj.Speed := Wind.Speed * S_Ws
   Data.Plan.Speed := Data.Wind.Speed * Nav_Types.T_Speed(S_Wp);
   Data.Traj.Speed := Data.Wind.Speed * Nav_Types.T_Speed(S_Ws);
 end Comp_Speed;

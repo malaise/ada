@@ -33,7 +33,7 @@ package body Generic_Con_Io is
     X_Event_Waiting : Boolean;
     Motion_Enabling : Boolean;
 
-    -- DISCARD or TID_xxx
+    -- Discard or Tid_xxx
     Mouse_Status : X_Mng.Event_Kind;
 
     Line_Foreground : Effective_Colors := Default_Foreground;
@@ -105,13 +105,13 @@ package body Generic_Con_Io is
       Init_Done := False;
     end Destroy;
 
-    -- screen characteristics
+    -- Screen characteristics
     function Screen return Window is
     begin
       return Screen_Window;
     end Screen;
 
-    -- reset screen, windows and keyboard
+    -- Reset screen, windows and keyboard
     procedure Reset_Term is
     begin
       if not Init_Done then
@@ -123,7 +123,7 @@ package body Generic_Con_Io is
                       Default_Xor_Mode, Forced => True);
     end Reset_Term;
 
-    -- flushes X
+    -- Flushes X
     procedure Flush is
     begin
       if not Init_Done then
@@ -132,7 +132,7 @@ package body Generic_Con_Io is
       X_Mng.X_Flush (Id);
     end Flush;
 
-    -- set / get colors
+    -- Set / get colors
     procedure Set_Foreground (Foreground : in Colors      := Current;
                               Blink_Stat : in Blink_Stats := Current;
                               Name       : in Window      := Screen) is
@@ -206,7 +206,7 @@ package body Generic_Con_Io is
     end Get_Xor_Mode;
 
 
-    -- get UPPER_LEFT / LOWER_RIGHT absolute coordinates of a window
+    -- Get Upper_Left / Lower_Right absolute coordinates of a window
     function Get_Absolute_Upper_Left (Name : Window) return Square is
     begin
       if Name = null then
@@ -223,7 +223,7 @@ package body Generic_Con_Io is
       return Name.Upper_Left;
     end Get_Absolute_Lower_Right;
 
-    -- get LOWER_RIGHT relative coordinates of a window (UPPER_LEFT is (0, 0)).
+    -- Get Lower_Right relative coordinates of a window (Upper_Left is (0, 0)).
     function Get_Relative_Lower_Right (Name : Window) return Square is
     begin
       if Name = null then
@@ -233,7 +233,7 @@ package body Generic_Con_Io is
               Name.Lower_Right.Col - Name.Upper_Left.Col);
     end Get_Relative_Lower_Right;
 
-    -- open a window
+    -- Open a window
     procedure Open (Name                    : in out Window;
                     Upper_Left, Lower_Right : in Square) is
     begin
@@ -270,8 +270,8 @@ package body Generic_Con_Io is
       return Name /= null;
     end Is_Open;
 
-    -- TRUE if the absolute square (relative to screen) is in the window.
-    -- FALSE otherwise
+    -- True if the absolute square (relative to screen) is in the window.
+    -- False otherwise
     function In_Window (Absolute_Square : Square;
                         Name            : Window) return Boolean is
     begin
@@ -286,7 +286,7 @@ package body Generic_Con_Io is
 
     -- Returns the relative square (relative to window), being the same
     --  physical position as the absolute square (relative to screen).
-    -- May raise INVALID_SQUARE if the absolute position is not in window.
+    -- May raise Invalid_Square if the absolute position is not in window.
     function To_Relative (Absolute_Square : Square;
                           Name            : Window) return Square is
     begin
@@ -299,7 +299,7 @@ package body Generic_Con_Io is
 
     -- Returns the absolute square (in screen) corresponding to the relative
     --  square in the window
-    -- May raise INVALID_SQUARE if the relative square is not in window
+    -- May raise Invalid_Square if the relative square is not in window
     function To_Absolute (Relative_Square : Square;
                           Name            : Window) return Square is
     begin
@@ -347,7 +347,7 @@ package body Generic_Con_Io is
         Simple => (13, 12, 11, 14, 18, 25),
         Blink  => (13, 12, 11, 14, 18, 25));
     begin
-    -- check
+    -- Check
       if Upper_Left.Row = Row_Range'First or else
          Upper_Left.Col = Col_Range'First or else
          Lower_Right.Row = Row_Range'Last or else
@@ -365,7 +365,7 @@ package body Generic_Con_Io is
           Set_Attributes (Name.Current_Foreground, Name.Current_Blink_Stat,
                           Name.Current_Background, Xor_Off);
       end case;
-      -- draw corners
+      -- Draw corners
       X_Mng.X_Put_Char (Id, Desc(Kind)(1),
             Row_Range'Pred(Upper_Left.Row), Col_Range'Pred(Upper_Left.Col));
       X_Mng.X_Put_Char (Id, Desc(Kind)(2),
@@ -374,14 +374,14 @@ package body Generic_Con_Io is
             Row_Range'Succ(Lower_Right.Row), Col_Range'Succ(Lower_Right.Col));
       X_Mng.X_Put_Char (Id, Desc(Kind)(4),
             Row_Range'Succ(Lower_Right.Row), Col_Range'Pred(Upper_Left.Col));
-      -- draw horiz
+      -- Draw horiz
       for I in Upper_Left.Col .. Lower_Right.Col loop
         X_Mng.X_Put_Char (Id, Desc(Kind)(5),
               Row_Range'Pred(Upper_Left.Row), I);
         X_Mng.X_Put_Char (Id, Desc(Kind)(5),
               Row_Range'Succ(Lower_Right.Row), I);
       end loop;
-      -- draw verti
+      -- Draw verti
       for I in Upper_Left.Row .. Lower_Right.Row loop
         X_Mng.X_Put_Char (Id, Desc(Kind)(6),
               I, Col_Range'Pred(Upper_Left.Col));
@@ -390,7 +390,7 @@ package body Generic_Con_Io is
       end loop;
     end Quick_Draw;
 
-    -- draw a frame around a window
+    -- Draw a frame around a window
     procedure Frame (Blink : in Boolean := False;
                      Name : in Window) is
     begin
@@ -413,7 +413,7 @@ package body Generic_Con_Io is
     end Clear_Frame;
 
 
-    -- make window re-usable (have to re_open it)
+    -- Make window re-usable (have to re_open it)
     procedure Close (Name : in out Window) is
     begin
       if Name = null then
@@ -422,7 +422,7 @@ package body Generic_Con_Io is
       Dyn_Win.Free(Name);
     end Close;
 
-    -- move cursor for use with put or get
+    -- Move cursor for use with put or get
     procedure Move (Position : in Square := Home;
                     Name     : in Window := Screen) is
     begin
@@ -434,7 +434,7 @@ package body Generic_Con_Io is
       if Name = null then
         raise Window_Not_Open;
       end if;
-      -- upper left and lower right, set foreground as our background
+      -- Upper left and lower right, set foreground as our background
       Set_Attributes (Name.Current_Background,
                       Not_Blink,
                       Name.Current_Background, Xor_Off);
@@ -524,7 +524,7 @@ package body Generic_Con_Io is
       end if;
       if Int /= Character'Pos(Ascii.Cr) then
         Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
-        -- put character
+        -- Put character
         X_Mng.X_Put_Char (Id, X_Mng.Byte(Int),
                           Name.Upper_Left.Row + Name.Current_Pos.Row,
                           Name.Upper_Left.Col + Name.Current_Pos.Col);
@@ -544,14 +544,14 @@ package body Generic_Con_Io is
     procedure Move_One (Name : in Window := Screen) is
     begin
       if Name.Current_Pos.Col /= Name.Lower_Right.Col - Name.Upper_Left.Col then
-        -- next col
+        -- Next col
         Name.Current_Pos.Col := Col_Range'Succ(Name.Current_Pos.Col);
       else
         -- 1st col
         Name.Current_Pos.Col := Col_Range'First;
         if Name.Current_Pos.Row /=
            Name.Lower_Right.Row  - Name.Upper_Left.Row then
-          -- next_line
+          -- Next line
           Name.Current_Pos.Row := Row_Range'Succ(Name.Current_Pos.Row);
         else
           -- No scroll :-( first row
@@ -651,7 +651,7 @@ package body Generic_Con_Io is
         Sfirst := Slast + 1;
       end loop;
 
-      -- Resore pos
+      -- Restore pos
       if not Move then
         One_Con_Io.Move (Saved_Pos, Name);
       end if;
@@ -968,11 +968,11 @@ package body Generic_Con_Io is
       begin
         for I in reverse 1 .. Width loop
           if Lstr(I) /= ' ' then
-            -- this character is the last meaningfull
+            -- This character is the last meaningfull
             return Str'First + I - 1;
           end if;
         end loop;
-        -- all is spaces
+        -- All is spaces
         return 0;
       end Parse;
 
@@ -1088,16 +1088,16 @@ package body Generic_Con_Io is
               when others =>
                 null;
             end case;
-          else  -- IS_CHAR
+          else  -- Is_Char
             if Key >= Character'Pos(' ')
             and then Key <= Character'Pos(Character'Last) then
               -- every other valid char
               Stat := Full;
               return;
             end if;
-          end if;  -- function key or normal key
-        end loop;  -- dicard any unaccepted key
-      end if;  -- string'length = 0
+          end if;  -- Function key or normal key
+        end loop;  -- Dicard any unaccepted key
+      end if;  -- String'length = 0
 
       -- Check width and current_pos / window's width
       if Width > Name.Lower_Right.Col - Name.Upper_Left.Col  + 1 then
@@ -1306,7 +1306,7 @@ package body Generic_Con_Io is
       Ins  : Boolean;
     begin
       loop
-        -- STR is empty so no echo at all
+        -- Str is empty so no echo at all
         Get(Str, Last, Stat, Pos, Ins);
         exit when Stat /= Mouse_Button;
       end loop;
@@ -1314,9 +1314,9 @@ package body Generic_Con_Io is
 
 
     -- Gets first character (echo or not)
-    -- No echo for RET, ESC, BREAK and REFRESH where
-    --  ASCII.CR, ESC, EOT and NUL are returned respectively
-    -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
+    -- No echo for Ret, Esc, Break and Refresh where
+    --  Ascii.Cr, Esc, Eot and Nul are returned respectively
+    -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
     --  discarded (get does not return).
     function Get (Name : Window := Screen; Echo : in Boolean := True)
                  return Character is
@@ -1518,7 +1518,7 @@ package body Generic_Con_Io is
           raise Not_Init;
         end if;
         X_Mng.X_Get_Current_Pointer_Position(Id, Lx, Ly);
-        -- In screen? (avoiding function call for X/Y_MAX) 
+        -- In screen? (avoiding function call for X/Y_Max) 
         if       Lx in Graphics.X_Range and then Lx <= One_Con_Io.X_Max
         and then Ly in Graphics.Y_Range and then Ly <= One_Con_Io.Y_Max then
           X := Lx;
@@ -1537,8 +1537,8 @@ package body Generic_Con_Io is
     end Set_Pointer_Shape;
 
 
-    -- Get a mouse event. If valid is FALSE, it means that a release
-    -- has occured outside the screen, then only BUTTON and status
+    -- Get a mouse event. If valid is False, it means that a release
+    -- has occured outside the screen, then only Button and status
     -- are significant
     procedure Get_Mouse_Event (Mouse_Event : out Mouse_Event_Rec;
                       Coordinate_Mode : in Coordinate_Mode_List := Row_Col) is

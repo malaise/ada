@@ -17,7 +17,7 @@ procedure Status is
   -- The final exit code
   Exit_Code : Integer;
 
-  -- Info unused but got with FILE_STAT
+  -- Info unused but got with File_Stat
   Kind : Directory.File_Kind_List;
   Rights : Natural;
 

@@ -21,7 +21,7 @@ package Resol is
 
   -- Problem during computation
   R_Resol_Error : exception;
-  -- Degree greater than N points - 1 (raised by R_RESOLUTION)
+  -- Degree greater than N points - 1 (raised by R_Resolution)
   R_Degree_Out  : exception;
 
 end Resol;

@@ -36,7 +36,7 @@ procedure T_Afpx is
 begin
   Afpx.Use_Descriptor(1);
 
-  -- List directory and store it in AFPX list
+  -- List directory and store it in Afpx list
   if Argument.Get_Nbre_Arg = 0 then
     Dir_Mng.List_Dir (Dir_List, "");
   else

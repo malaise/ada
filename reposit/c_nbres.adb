@@ -2,7 +2,7 @@ package body C_Nbres is
 
   use My_Math;
 
-  -- ANGLES en RADIAN
+  -- Angles in radian
   package Polar is
 
     type Polar is record
@@ -287,3 +287,4 @@ package body C_Nbres is
 
 
 end C_Nbres;
+

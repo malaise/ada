@@ -68,7 +68,7 @@ package body One_File_Statements is
           -- Count the number of levels of parentheses
           Levels := Levels + 1;
 
-          -- Read ahead until the whole construct is closed, LEVEL = 0
+          -- Read ahead until the whole construct is closed, Level = 0
           while Levels > 0 loop
             Get (File, C);
             if C = '(' then
@@ -126,7 +126,7 @@ package body One_File_Statements is
       raise;
   end Count_Statements_Of_File;
 
-  -- If FILE_NAME is empty, put total so far and reset it
+  -- If File_Name is empty, put total so far and reset it
   procedure Print_Statements_Of_File (
              File_Name : String;
              Put_It : in Boolean := True) is

@@ -11,13 +11,13 @@ package body Input_Dispatcher is
   Len_Stdin : Natural := 0;
   Ind_Stdin : Positive;
 
-  -- Data from STDIN/SET_INPUT
+  -- Data from Stdin/Set_Input
   Cur_Str : String (1 .. Max_String_Lg);
   Cur_Len : Positive;
 
   Str_Parsed : Boolean;
 
-  -- Extracted from current STR
+  -- Extracted from current Str
   Word : Text_Handler.Text (Max_String_Lg);
 
   -- Get first/next word from a string
@@ -105,7 +105,7 @@ package body Input_Dispatcher is
            
           end if;
         elsif Stop_Index = Cur_Len then
-          -- No SD before end of line
+          -- No Sd before end of line
           Stop_Index := Cur_Len;
           raise String_Error;
         end if;
@@ -149,7 +149,7 @@ package body Input_Dispatcher is
   end First_Str_Word;
 
   -- Set input flow to a new string
-  --  or stdin if STR is empty
+  --  or stdin if Str is empty
   procedure Set_Input (Str : in String) is
   begin
     if Debug.Debug_Level_Array(Debug.Input) then

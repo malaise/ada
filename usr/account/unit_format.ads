@@ -9,7 +9,7 @@ package Unit_Format is
   procedure Set_Unit_To (Unit : Units_List);
   procedure Switch_Unit;
 
-  --  May be raised by any IMAGE/VALUE
+  --  May be raised by any Image/Value
   Format_Error : exception;
 
   -- Date: 25/10/2001
@@ -46,7 +46,7 @@ package Unit_Format is
   function Value (Str : Amount_Str) return Oper_Def.Amount_Range;
 
 
-  -- Amount of an operation in LIST: -12345.12
+  -- Amount of an operation in List: -12345.12
   subtype Short_Amount_Str is String (1 .. 9);
   -- From an amount (in euros) return 'image (euros/francs)
   -- Truncation rule:

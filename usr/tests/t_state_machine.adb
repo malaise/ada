@@ -109,8 +109,8 @@ begin
   My_Add_Transition (Detached, Attach,    Unknown) ;
   My_Add_Transition (Error,    Detach,    Detached);
 -- For true_loop detection
---MY_ADD_TRANSITION (OK,       TRUE,      FAILED)  ;
---MY_ADD_TRANSITION (FAILED,   TRUE,      OK)      ;
+--My_Add_Transition (Ok,       True,      Failed)  ;
+--My_Add_Transition (Failed,   True,      Ok)      ;
   My_Io.Put_Line("End of state machine definition.");
   My_Io.New_Line;
   My_Io.Put_Line("Reports on State=Unknown and Event=Default");

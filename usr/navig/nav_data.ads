@@ -22,8 +22,8 @@ package Nav_Data is
    Known_Err, -- Must be 3 unknown data
    Angle_Err, -- If all 3 angles are known, must have different directions
    Wind_Err,  -- Wind must be completly known or unknown
-   Traj_Err,  -- If TRAJ_A is unknown, TRAJ_S must be unknown
-   Drift_Err, -- If drift is known, one in TRAJ_A or PLAN_A must be unknown
+   Traj_Err,  -- If Traj_A is unknown, Traj_S must be unknown
+   Drift_Err, -- If Drift is known, one in Traj_A or Plan_A must be unknown
    Val_Err,   -- If problem of computation (incompatible values)
    Ok);       -- Data are consistent
 

@@ -112,9 +112,9 @@ package body Argument is
       elsif Data(I)(1) = Key_Prefix
        and then Data(I)'Length >= Param_Key'Length + 1
        and then Data(I)(2 .. Param_Key'Length+1) = Param_Key then
-        -- Check that first char is PREFIX
+        -- Check that first char is Prefix
         -- and that length of parameter is >= than '-'<key>
-        -- and that argument after '-' matches PARAM_KEY
+        -- and that argument after '-' matches Param_Key
         Comform_Occurence := Comform_Occurence + 1;
       end if;
 
@@ -123,7 +123,7 @@ package body Argument is
         if Parameter'Length < Data(I)'Length - (First_Char-1) then
           raise Argument_Too_Long;
         else
-          -- affect string (FIRST_CHAR..LEN)
+          -- Affect string (First_Char..Len)
           Param_Length := Data(I)'Length - (First_Char-1);
           Parameter(1 .. Data(I)'Length-(First_Char-1))
            := Data(I)(First_Char..Data(I)'Length);
@@ -131,7 +131,7 @@ package body Argument is
           return;
         end if;
       end if;
-      -- next argument
+      -- Next argument
     end loop;
     raise Argument_Not_Found;
   exception
@@ -172,7 +172,7 @@ package body Argument is
 
   -- Analyse of argument(0)
 
-  -- Path of program from ARG(0) (wirh last /)
+  -- Path of program from Arg(0) (wirh last /)
   function Last_Delimiter (Path_Prog : String) return Natural is
   begin
     for I in reverse Path_Prog'Range loop
@@ -187,7 +187,7 @@ package body Argument is
   function Get_Program_Path return String is
     Len : Natural;
   begin
-    -- program path
+    -- Program path
     Get_Program_Path (Str, Len);
     return Str (1 .. Len);
   end Get_Program_Path;
@@ -195,7 +195,7 @@ package body Argument is
   procedure Get_Program_Path (Path : out String; Path_Length : out Natural) is
     Len : Natural;
   begin
-    -- program path and name
+    -- Program path and name
     Get_Parameter (Str, Len, 0, Any_Arg);
     Len := Last_Delimiter(Str (1 .. Len));
 
@@ -208,11 +208,11 @@ package body Argument is
     Text_Handler.Set (Path, Get_Program_Path);
   end Get_Program_Path;
 
-  -- name of program from ARGUMENT(0)
+  -- Name of program from Argument(0)
   function Get_Program_Name return String is
     Len : Natural;
   begin
-    -- program name
+    -- Program name
     Get_Program_Name (Str, Len);
     return Str (1 .. Len);
   end Get_Program_Name;
@@ -222,7 +222,7 @@ package body Argument is
     Len : Natural;
     Start : Natural;
   begin
-    -- program path and name
+    -- Program path and name
     Get_Parameter (Str, Len, 0, Any_Arg);
     Start := Last_Delimiter(Str (1 .. Len)) + 1;
 

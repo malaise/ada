@@ -1,6 +1,6 @@
 with Afpx;
 with Points, Point_Str;
--- Set the AFPX_list from points
+-- Set the Afpx_List from points
 procedure Set_Points_List is
 begin
   Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);

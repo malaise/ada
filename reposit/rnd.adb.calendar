@@ -10,7 +10,7 @@ package body Rnd is
 
   -- Initialise sequence
   procedure Randomize(Init : in Float := 1.0) is
-    -- Result of mutex query : always TRUE because call is blocking
+    -- Result of mutex query : always True because call is blocking
     Ok : Boolean;
  
     -- Random number 
@@ -49,7 +49,7 @@ package body Rnd is
     -- decimal part
     Rnd_Nbre := Rnd_Nbre - Float(Math.Trunc(Math.Real(Rnd_Nbre)));
     Mutex_Manager.Release_Mutex(Lock);
-    -- here 0 <= RND < 1
+    -- here 0 <= Rnd < 1
     if Mini >= Maxi then
       return Rnd_Nbre;
     else

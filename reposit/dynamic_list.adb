@@ -68,7 +68,7 @@ package body Dynamic_List is
     if Move /= Current then
       Move_To (List, Move);
     end if;
-    -- Modification done my MOVE_TO
+    -- Modification done my Move_To
   end Read;
 
   -- modify the current item
@@ -183,7 +183,7 @@ package body Dynamic_List is
     Del_Cell.Next := Free_List;
     Free_List := Del_Cell;
     -- check the special case when list is empty
-    --  (set pos_first AND pos_last to 0)
+    --  (set pos_first and pos_last to 0)
     if List.Current = null then
       List.Pos_First := 0;
       List.Pos_Last := 0;
@@ -198,7 +198,7 @@ package body Dynamic_List is
   begin
     Read(List, Item, Current);
     Delete(List, Move);
-    -- Modified flag changed by DELETE
+    -- Modified flag changed by Delete
   end Get;
 
   -- changes current position

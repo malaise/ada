@@ -19,7 +19,7 @@ package Mesu_Fil is
   -- Pid and date of the mesure are used to build the file name
   procedure Delete (File_Name : in Mesu_Nam.File_Name_Str);
 
-  -- File not found, IO error
+  -- File not found, Io error
   Io_Error : exception;
 
   File_Name_Error : exception renames Mesu_Nam.File_Name_Error;

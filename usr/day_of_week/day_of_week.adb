@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Text_Io;
-with Perpet, Argument, Day_Mng, Text_Handler, Normal, Lower_Str;
+with Perpet, Argument, Day_Mng, Text_Handler, Normal, Mixed_Str;
 procedure Day_Of_Week is
 
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
@@ -37,13 +37,6 @@ procedure Day_Of_Week is
     end loop;
     return True;
   end Is_Digit;
-
-  -- NAME -> Name
-  function Format (Str : String) return String is
-  begin
-    return Str(Str'First)
-         & Lower_Str(Str(Integer'Succ(Str'First) .. Str'Last));
-  end Format;
 
 begin
 
@@ -148,11 +141,11 @@ begin
 
   -- Display result
   Ada.Text_Io.Put_Line (Text_Handler.Value (Txt) & " is "
-       & Format (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
+       & Mixed_Str (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
        & " "
        & Normal (Day, 2, Gap => '0')
        & " "
-       & Format (Perpet.Month_Name_List'Image(Perpet.Get_Month_Name (Month)))
+       & Mixed_Str (Perpet.Month_Name_List'Image(Perpet.Get_Month_Name (Month)))
        & ", in week"
        & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
        & ",");

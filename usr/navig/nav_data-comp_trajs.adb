@@ -1,7 +1,7 @@
 separate (Nav_Data)
--- when only unknown is TRAJ_S after set_before
+-- when only unknown is Traj_S after set_before
 procedure Comp_Trajs (Data : in out T_Data) is
-  -- TRAJ_S = WIND_S*COS(TRAJ_A-WIND_A) + PLAN_S*COS(TRAJ_A-PLAN_A)
+  -- Traj_S = Wind_S * Cos (Traj_A - Wind_A) + Plan_S * Cos (Traj_A - Plan_A)
   Crtw, Crtp : Real;
   use Nav_Types;
 begin
@@ -14,3 +14,4 @@ begin
 exception
   when others => raise Comp_Err;
 end Comp_Trajs;
+

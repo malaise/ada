@@ -51,7 +51,7 @@ package body Mng is
   package Sel_List_Mng is new Dynamic_List(Sel_Rec);
   Sel_List : Sel_List_Mng.List_Type;
 
-  -- Set current in sel list from AFPX selected
+  -- Set current in sel list from Afpx selected
   procedure Set_Current (No : in Oper_Nb_Range) is
   begin
     if No in Oper_Range then
@@ -60,7 +60,7 @@ package body Mng is
   end Set_Current;
       
 
-  -- Builds the AFPX line from oper
+  -- Builds the Afpx line from oper
   function Oper_To_Line (No : Oper_Range;
                          Oper : Oper_Def.Oper_Rec) return Afpx.Line_Rec is
     Line : Afpx.Line_Rec;
@@ -153,7 +153,7 @@ package body Mng is
   end List_Util;
       
 
-  -- Reset the AFPX list from the sel list
+  -- Reset the Afpx list from the sel list
   procedure Reset_List is
     Oper : Oper_Def.Oper_Rec;
   begin

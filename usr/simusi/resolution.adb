@@ -19,9 +19,9 @@ package body Resolution is
   end record;
 
   package Cote_Search is
-    -- Init LEVEL
+    -- Init Level
     procedure Init;
-    -- May increment LEVEL
+    -- May increment Level
     function Next_Cote return Log_Cote_Rec;
   end Cote_Search;
 
@@ -131,7 +131,7 @@ package body Resolution is
 
 
   -- Search in G the sequence of cotes which make
-  -- COTE.
+  -- Cote.
   function Search_Way (Cote : Log_Cote_Rec)
                       return Display.Way_Vector is
     Way : Display.Way_Vector(1 .. Data.Eff_Line_Range'Last);
@@ -161,7 +161,7 @@ package body Resolution is
     Prev := Cote.Start;
     Next := 0;
     loop
-      -- Increment NEXT
+      -- Increment Next
       if Next /= Data.Eff_Line_Range'Last then
         Next := Next + 1;
         -- Search (cur, next) in g

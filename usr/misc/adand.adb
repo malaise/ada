@@ -1,4 +1,4 @@
--- Source file indenter. See procedure USAGE.
+-- Source file indenter. See procedure Usage.
 with Text_Io;
 
 with Sys_Calls;
@@ -94,7 +94,7 @@ begin
   declare
     No_Err : Boolean;
   begin
-    -- build .BAK file name
+    -- build .bak file name
     Text_Handler.Set (File_Suf, File_Name);
     Text_Handler.Append (File_Suf, Sav_Suf);
 

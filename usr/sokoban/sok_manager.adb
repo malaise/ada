@@ -216,10 +216,10 @@ package body Sok_Manager is
     end loop;
   end Set_Blink;
 
-  -- if return is GO_ON, nothing to do
-  -- if return is RESTART_FRAME, part of state has been set
-  --  if RESET_ALL, only NO_FRAME is set (read)
-  --  if UPDATE_TIME, only time has to be updated (restore)
+  -- if return is Go_On, nothing to do
+  -- if return is Restart_Frame, part of state has been set
+  --  if Reset_All, only No_Frame is set (read)
+  --  if Update_Time, only time has to be updated (restore)
   function Sok_Menu (Allow_Write : Boolean) return Menu_Result_Rec is separate;
 
 
@@ -281,11 +281,11 @@ package body Sok_Manager is
             -- movement without box moving
             State.Moves := State.Moves + 1;
           when Sok_Movement.Box_Moved =>
-            -- Same number of box OK
+            -- Same number of box Ok
             State.Moves  := State.Moves  + 1;
             State.Pushes := State.Pushes + 1;
           when Sok_Movement.Box_Ok_More =>
-            -- One more box OK
+            -- One more box Ok
             State.Moves  := State.Moves  + 1;
             State.Pushes := State.Pushes + 1;
             State.Box_Ok := State.Box_Ok + 1;
@@ -379,7 +379,7 @@ package body Sok_Manager is
               return;
             end if;
           when Sok_Movement.Box_Ok_Less =>
-            -- One less box OK
+            -- One less box Ok
             State.Moves  := State.Moves  + 1;
             State.Pushes := State.Pushes + 1;
             State.Box_Ok := State.Box_Ok - 1;
@@ -416,16 +416,16 @@ package body Sok_Manager is
               -- movement without box moving
               State.Moves := State.Moves - 1;
             when Sok_Movement.Box_Moved =>
-              -- Same number of box OK
+              -- Same number of box Ok
               State.Moves  := State.Moves  - 1;
               State.Pushes := State.Pushes - 1;
             when Sok_Movement.Box_Ok_More =>
-              -- One more box OK
+              -- One more box Ok
               State.Moves  := State.Moves  - 1;
               State.Pushes := State.Pushes - 1;
               State.Box_Ok := State.Box_Ok + 1;
             when Sok_Movement.Box_Ok_Less =>
-              -- One less box OK
+              -- One less box Ok
               State.Moves  := State.Moves  - 1;
               State.Pushes := State.Pushes - 1;
               State.Box_Ok := State.Box_Ok - 1;

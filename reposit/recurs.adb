@@ -58,7 +58,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
 
     Directory.Get_Current (Full_Curr_Name);
 
-    -- Do current dir when not LEAVES_ONLY
+    -- Do current dir when not Leaves_Only
     if not Leaves_Only then
       if Current_Level /= 0 or else In_Current then
         -- Check if do action in intial dir
@@ -103,7 +103,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       if Kind = Directory.Dir
       and then Text_Handler.Value(New_Name) /= Dot_Dir 
       and then Text_Handler.Value(New_Name) /= Dot_Dot_Dir then
-        -- Restart with next son if not FIRST_LEVEL_ONLY
+        -- Restart with next son if not First_Level_Only
         if Current_Level /= 1 or else not First_Level_Only then
           Current_Level := Current_Level + 1;
           Explore (Text_Handler.Value(New_Name));
@@ -116,7 +116,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
     Directory.Close(Dir_Dsc);
 
 
-    -- When LEAVES_ONLY, do current dir after counting sons
+    -- When Leaves_Only, do current dir after counting sons
     if Nb_Sons = 0 and then Leaves_Only then
       -- Check if do action in current dir
       if Current_Level /= 0 or else In_Current then
@@ -135,7 +135,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       end if;
   end Explore;
 
-begin -- RECURS
+begin -- Recurs
   Explore (Directory.Get_Current);
 end Recurs;
 

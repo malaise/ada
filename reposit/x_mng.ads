@@ -96,7 +96,7 @@ package X_Mng is
 
   -- Sets the xor mode or a further put in the same window
   -- The line_id is the token, previously given by open_line
-  -- if XOR_MORE is set, all further puts and drawings will be in xor
+  -- if Xor_More is set, all further puts and drawings will be in xor
   procedure X_Set_Xor_Mode(Line_Id     : in Line;
                            Xor_Mode    : in Boolean);
 
@@ -231,18 +231,18 @@ package X_Mng is
   procedure X_Select (Line_Id : in Line;
                       Timeout_Ms : in out Integer; X_Event : out Boolean);
 
-  -- Processes a X Event (TID or Keyboard or other)
+  -- Processes a X Event (Tid or Keyboard or other)
   -- kind is Keyboard or Tid (Press or Release or Motion), or Discard
   --  or Refresh or Fd_Event or Timer_Event or Signal_Event
-  -- NEXT indicates if there is another event pendinig in X'queue
+  -- Next indicates if there is another event pendinig in X'queue
   procedure X_Process_Event(Line_Id : in Line; 
                             Kind : out Event_Kind;
                             Next : out Boolean);
  
-  -- Reads the position on TID in ROW/COL or X/Y
+  -- Reads the position on Tid in Row/Col or X/Y
   -- The line_id must be the one given by wait_event
   -- Button can be left, middle or right
-  -- row and column are the position of the "finger" on the TID
+  -- row and column are the position of the "finger" on the Tid
   --  in row/col or X/Y(pixels)
   procedure X_Read_Tid(Line_Id : in Line; Row_Col : in Boolean;
                        Button : out Button_List;
@@ -262,7 +262,7 @@ package X_Mng is
   -- This procedure hides the the text which has blink attribute
   --  (gives the same ink as paper) or restores it, alternatively.
   -- It has no effect UNLESS the internal task has been
-  --  stoped with X_STOP_BLINKING_TASK. 
+  --  stoped with X_Stop_Blinking_Task. 
   -- In this case, it has to be called twice a second to provide
   --  blinking effect.
   procedure X_Blink_Alternate(Line_Id : in Line);
@@ -271,7 +271,7 @@ package X_Mng is
   --  manages the blinking of text.
   -- If a process calls this procedure, no blinking of text will
   --  be impliciptly assumed any more, and the process must
-  --  call X_BLINK_ALTERNATE regulary;
+  --  call X_Blink_Alternate regulary;
   procedure X_Stop_Blinking_Task(Line_Id : in Line);
 
   -- This procedure restarts  the task which, internaly to x_vdu_mng,
@@ -304,7 +304,7 @@ private
   No_Client_No : constant Line_Range := 0;
 
   type Line is record
-    -- NO_CLIENT
+    -- No_Client
     No : Line_Range := No_Client_No;
   end record;
 

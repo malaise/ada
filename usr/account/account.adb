@@ -26,7 +26,7 @@ procedure Account is
     end if;
   end Set_Unit;
 
-  -- We have to quit program: raises QUIT_PROGRAM
+  -- We have to quit program: raises Quit_Program
   Quit_Program : exception;
   procedure Quit is separate;
     

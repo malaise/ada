@@ -10,8 +10,8 @@ package Dialog is
                           Ok : out Boolean);
 
   -- Get a coordinate
-  --  If SET is set IN, then a put_then_get is performed, else a get
-  --  Validity is checked and SET is set OUT according to the final result
+  --  If Set is set in, then a Put_Then_Get is performed, else a get
+  --  Validity is checked and Set is set out according to the final result
   subtype D_Coordinate_List is Screen.S_Info_List range Screen.I_X .. Screen.I_Ymax;
   procedure Read_Coordinate (Kind : in D_Coordinate_List;
            Set : in out Boolean; Coordinate : in out Points.P_T_Coordinate;

@@ -58,7 +58,7 @@ procedure Ex1 is
     loop
       Print("Requete de", No);
       Serveur.Service (No);
---      SCHEDULE;
+--      Schedule;
     end loop;
 
   exception

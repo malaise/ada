@@ -8,7 +8,7 @@ package body File is
   package F_Points_Io is new Sequential_Io (Points.P_T_One_Point);
   use F_Points_Io;
 
-  -- read a file of points
+  -- Read a file of points
   function F_Read (Name : F_T_File_Name) return Points.P_T_The_Points is
     Size : Natural;
     File : File_Type;
@@ -33,7 +33,7 @@ package body File is
       raise F_Io_Error;
     end if;
     
-    -- read the SIZE points
+    -- Read the Size points
     declare
       The_Points : Points.P_T_The_Points (1 .. Size);
     begin
@@ -96,3 +96,4 @@ package body File is
   end F_Exists;
 
 end File;
+

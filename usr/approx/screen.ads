@@ -6,7 +6,7 @@ package Screen is
   Get_Fld           : constant Afpx.Field_Range := 9;
   -- The scrool buttons
   subtype List_Scroll_Fld_Range is Afpx.Field_Range range 11 .. 16;
-  -- The OK/Cancel buttons
+  -- The Ok/Cancel buttons
   Ok_Button_Fld     : constant Afpx.Field_Range := 18;
   Cancel_Button_Fld : constant Afpx.Field_Range := 19;
   -- The exit/back button
@@ -18,7 +18,7 @@ package Screen is
   -- All the menues dependant fields
   subtype Menu_Fld_Range is Afpx.Field_Range range 20 .. 31;
 
-  -- Return width of GET field
+  -- Return width of Get field
   function Get_Get_Width return Afpx.Width_Range;
 
   -- Max width of degree

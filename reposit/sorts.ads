@@ -1,9 +1,9 @@
 ----------------------------------------------------------------------
--- Creation: 25/09/1988                            --Pascal MALAISE --
+-- Creation: 25/09/1988                           -- Pascal MALAISE --
 -- Last update : 14/02/1989                                         --
 ----------------------------------------------------------------------
--- tris BUBBLE, HEAPSORT and QUICKSORT generics                     --
--- INSTANCIATION:                                                   --
+-- Bubble, Heapsort and Quicksort generic sorting                   --
+-- Instanciation:                                                   --
 --   define type typ_object of elements to sort (not limited)       --
 --                   typ_index of indexes of array (discret)        --
 --                   typ_array of array NOT CONTRAINED              --
@@ -13,10 +13,10 @@
 --                                                                  --
 --  The procedures sort in crescent order (inducted by the          --
 --   comparison fonction) any slice of the array                    --
---  The exception SORT_ERROR is raised in any exception             --
+--  The exception Sort_Error is raised in any exception             --
 --   circumstance (i.e. memory overflow)                            --
 -- WARNING : It is mandarory for the "<" function to be strict      --
---       (A < A MUST return FALSE)                                  --
+--       (A < A MUST return False)                                  --
 ----------------------------------------------------------------------
 
 generic

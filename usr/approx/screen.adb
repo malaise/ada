@@ -14,7 +14,7 @@ package body Screen is
 
   Get_Width : Natural := 0;
 
-  -- Return width of GET field
+  -- Return width of Get field
   function Get_Get_Width return Afpx.Width_Range is
     Height : Afpx.Height_Range;
   begin
@@ -123,7 +123,7 @@ package body Screen is
     Afpx.Encode_Field (Info_Fld, (0, 0), Msg);
   end Encode_Info;
 
-  -- Ptg on OK (and cancel) buttons
+  -- Ptg on Ok (and Cancel) buttons
   function S_Confirm return Boolean is
     Cursor_Field : Afpx.Field_Range := 1;
     Cursor_Col : Con_Io.Col_Range := 0;
@@ -173,7 +173,7 @@ package body Screen is
           Redisplay := True;
       end case;
     end loop;
-    -- Restore GET field
+    -- Restore Get field
     Afpx.Get_Field_Activation (Get_Fld, Get_Act);
     Afpx.Reset_Field (Get_Fld, Reset_String => False);
     Afpx.Set_Field_Activation (Get_Fld, Get_Act);
@@ -295,10 +295,10 @@ package body Screen is
 
   procedure Init_For_Main1 (Cursor_Field : out Afpx.Field_Range) is
   begin
-    -- Disable OK & cancel
+    -- Disable Ok & cancel
     Afpx.Set_Field_Activation(Ok_Button_Fld, False);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
-    -- Disable GET
+    -- Disable Get
     Afpx.Set_Field_Activation(Get_Fld, False); 
     -- So whatever cursor field
     Cursor_Field := 1;
@@ -314,7 +314,7 @@ package body Screen is
     Clear_Menu(Subtitle);
     -- Inhibit exit field
     Afpx.Set_Field_Activation (Exit_Button_Fld, False);
-    -- GET, Ok or cancel
+    -- Get, Ok or cancel
     Afpx.Set_Field_Activation(Get_Fld, True);
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, True);
@@ -340,10 +340,10 @@ package body Screen is
 
   procedure Init_For_Main2 (Cursor_Field : out Afpx.Field_Range) is
   begin
-    -- Disable OK & cancel
+    -- Disable Ok & Cancel
     Afpx.Set_Field_Activation(Ok_Button_Fld, False);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
-    -- Disable GET
+    -- Disable Get
     Afpx.Set_Field_Activation(Get_Fld, False); 
     -- So whatever cursor field
     Cursor_Field := 1;
@@ -356,9 +356,9 @@ package body Screen is
 
   procedure Init_For_Main21 (Cursor_Field : out Afpx.Field_Range) is
   begin
-    -- Disallow CANCEL
+    -- Disallow Cancel
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
-    -- Disable GET
+    -- Disable Get
     Afpx.Set_Field_Activation(Get_Fld, False); 
     -- So whatever cursor field
     Cursor_Field := 1;

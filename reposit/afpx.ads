@@ -19,43 +19,43 @@ package Afpx is
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost
-  -- By default, the CON_IO screen is cleared
-  -- Exceptions : NO_DESCRIPTOR (DESCRIPTOR not found)
+  -- By default, the Con_Io screen is cleared
+  -- Exceptions : No_Descriptor (Descriptor not found)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True);
 
   -- Clear the content of a field
-  -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
-  --              INVALID_FIELD (FIELD_NO too big)
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big)
   procedure Clear_Field (Field_No : in Field_Range);
 
   -- Reset the field from initial definition in file 
   --  colors and / or  content,
   -- The field becomes activated and not protected.
-  -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
-  --              INVALID_FIELD (FIELD_NO too big)
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big)
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
                          Reset_Colors : in Boolean := True;
                          Reset_String : in Boolean := True);
 
   -- Width of a field
-  -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
-  --              INVALID_FIELD (FIELD_NO too big)
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big)
   function Get_Field_Width (Field_No : Absolute_Field_Range)
                            return Width_Range;
 
   -- Width and height of a field
-  -- Exceptions : NO_DESCRIPTOR (no DESCRIPTOR in use),
-  --              INVALID_FIELD (FIELD_NO too big)
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big)
   procedure Get_Field_Size (Field_No : in Absolute_Field_Range;
                             Height : out Height_Range;
                             Width  : out Width_Range);
 
   -- Encode a string in a field.
-  -- The ROW is filled with spaces, then with STR starting at COL
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
-  --              INVALID_SQUARE (not in field),
-  --              STRING_TOO_LONG (due to SQUARE.COL)
+  -- The Row is filled with spaces, then with Str starting at Col
+  -- Exceptions : No_Descriptor, Invalid_Field
+  --              Invalid_Square (not in field),
+  --              String_Too_Long (due to Square.Col)
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Square;
                           Str      : in String);
@@ -64,7 +64,7 @@ package Afpx is
                           Str      : in Str_Txt);
 
   -- Decode the content of a row of a field
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD, INVALID_ROW
+  -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Row_Range)
                         return String;
@@ -74,7 +74,7 @@ package Afpx is
 
 
   -- Get field colors
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
+  -- Exceptions : No_Descriptor, Invalid_Field
   procedure Get_Field_Colors (
     Field_No   : in Absolute_Field_Range;
     Foreground : out Con_Io.Effective_Colors;
@@ -83,11 +83,11 @@ package Afpx is
     Selected   : out Con_Io.Effective_Basic_Colors);
 
   -- Set field colors
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
-  --              INVALID_COLOR
-  --       - FOREGROUND has to be BASIC_COLORS for list, get and button fields
-  --       - SELECTED has to be CURRENT for put and button fields
-  --       - BLINK_STAT has to be CURRENT except for put fields
+  -- Exceptions : No_Descriptor, Invalid_Field
+  --              Invalid_Color
+  --       - Foreground has to be Basic_Colors for list, get and button fields
+  --       - Selected has to be Current for put and button fields
+  --       - Blink_Stat has to be Current except for put fields
   procedure Set_Field_Colors (
     Field_No   : in Absolute_Field_Range;
     Foreground : in Con_Io.Colors       := Con_Io.Current;
@@ -96,21 +96,21 @@ package Afpx is
     Selected   : in Con_Io.Basic_Colors := Con_Io.Current);
 
   -- Activate/Desactivate a field for further put_then_gets
-  -- All fields are activated by default (when USE_DESCRIPTOR or RESET_FIELD)
+  -- All fields are activated by default (when Use_Descriptor or Reset_Field)
   -- A non active field is not displayed by put_then get
-  --  (when USE_DESCRIPTOR or RESET_FIELD)
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
+  --  (when Use_Descriptor or Reset_Field)
+  -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Activation (Field_No : in Absolute_Field_Range;
                                   Activate : in Boolean);
   procedure Get_Field_Activation (Field_No : in Absolute_Field_Range;
                                   Activate : out Boolean);
 
-  -- Protect/Unprotect a GET or BUTTON for further put_then_gets
+  -- Protect/Unprotect a Get or Button for further put_then_gets
   -- A protected get field is displayed like a put field (but cannot blink)
   -- A protected button field is displayed like a put (but no click/release)
   -- A protected list is displayed (but no item can be selected)
   -- All get/button/list fields are unprotected by default
-  -- Exceptions : NO_DESCRIPTOR, INVALID_FIELD
+  -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Protection (Field_No : in Absolute_Field_Range;
                                   Protect  : in Boolean);
   procedure Get_Field_Protection (Field_No : in Absolute_Field_Range;
@@ -118,18 +118,18 @@ package Afpx is
 
   -- Erase all the fields of the descriptor from the screen
   --  (Fill them with current screen's background color)
-  -- Exceptions : NO_DESCRIPTOR
+  -- Exceptions : No_Descriptor
   procedure Erase;
 
   -- Put a descriptor content
   -- Any list has to be des activated
-  -- Exceptions : NO_DESCRIPTOR, LIST_IN_PUT;
+  -- Exceptions : No_Descriptor, List_In_Put;
   procedure Put;
 
   -- Computes next cursor field after current one:
   --  The criteria is the next unprotected and active get field
-  --  If FROM is 0, then the first field matching is returned
-  --  Else the next matching after FROM is returned
+  --  If From is 0, then the first field matching is returned
+  --  Else the next matching after From is returned
   -- 0 is returned if no matching field is found
   function Next_Cursor_Field (From : Absolute_Field_Range)
   return Absolute_Field_Range;
@@ -152,7 +152,7 @@ package Afpx is
                             Top, Bottom, Center);
 
   -- Update the list due to an action
-  -- Exceptions : INVALID_FIELD if no list in current descriptor,
+  -- Exceptions : Invalid_Field if no list in current descriptor,
   procedure Update_List (Action : in List_Action_List);
 
   -- See Con_io.Curs_Mvt
@@ -172,26 +172,26 @@ package Afpx is
     end case;
   end record;
 
-  -- Print the fields and the list (if REDISPLAY), then gets.
-  -- REDISPLAY should be set if modif if some other screen actions (con_io)
+  -- Print the fields and the list (if Redisplay), then gets.
+  -- Redisplay should be set if modif if some other screen actions (con_io)
   --  justify a redisplay
-  -- In LIST: mouse click changes current list element (ID_SELECTED)
+  -- In List: mouse click changes current list element (Id_Selected)
   --      double click ends put_then get 
   --      up/down arrows, page up/down, Ctrl page up/down scroll list
-  -- In PUT fields : nothing
-  -- In GET fields : cursor right/left, characters, bakcspace, delete,
+  -- In Put fields : nothing
+  -- In Get fields : cursor right/left, characters, backspace, delete,
   --                  Home, end, insert edit field
   --                 Tab, shift Tab  change field
   --                 Return / Esc / Break to end put_then_get
   --                 mouse click to move at home of field
-  -- In BUTTON fields : mouse click then release ends put_then_get
-  -- This call affects the content of GET fields, the cursor field and col,
+  -- In Button fields : mouse click then release ends put_then_get
+  -- This call affects the content of Get fields, the cursor field and col,
   -- and the current element of the list
-  -- If no field is GET (or all protected or desactivated,
+  -- If no field is Get (or all protected or desactivated,
   --  then cursor field and col are not significant
-  -- Exceptions :  NO_DESCRIPTOR,
-  --               INVALID_FIELD, INVALID_COL (for cursor)
-  --               STRING_TOO_LONG (if an item in list is too long)
+  -- Exceptions :  No_Descriptor,
+  --               Invalid_Field, Invalid_Col (for cursor)
+  --               String_Too_Long (if an item in list is too long)
   procedure Put_Then_Get (Cursor_Field : in out Field_Range;
                           Cursor_Col   : in out Con_Io.Col_Range;
                           Result       : out Result_Rec;

@@ -16,7 +16,7 @@ package Screen is
   procedure Encode_Nb_Oper (Oper : in Natural; Selected : in Natural);
   procedure Encode_Saved (Saved : in Boolean);
 
-  -- Set the "TO FRANCS/EUROS" button according to current unit
+  -- Set the "To Francs/Euros" button according to current unit
   procedure Update_To_Unit;
 
   -- Encore summary
