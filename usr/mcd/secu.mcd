@@ -1,12 +1,11 @@
-# Clear stack
-[ ssize 0 = [ 0 retn ] ifcall pop Z pushr retacal ] Z popr
-
-# Check 1 arg int
-[ [ Error. 1 int argument expected ] putl Z pushr call ] E popr
+# Check 1 arg int len 13
+[ [ Error. 1 int argument expected (13 digits). ] putl
+  ssize popn retall ] E popr
 ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
+0 format dup strof strlen 13 /= E pushr ifcall
 
 97 d copyr %
 
-+- d pushr + putl
++- d pushr + 2 format [ "cle: " ] put putl
 
