@@ -328,10 +328,10 @@ package body Mng is
 
   end Load;
 
-  procedure Save (Rescue : in Boolean := False) is
+  procedure Save (Mode : Save_Mode_List) is
     Tmp_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
   begin
-    if Rescue then
+    if Mode = Rescue then
       List_Util.Insert_Amount(Root_Amount);
       File_Mng.Save("Tmp", Oper_List);
       Root_Amount := List_Util.Get_Amount;
@@ -343,11 +343,15 @@ package body Mng is
     Loading := False;
     if Text_Handler.Empty(Account_Name)
     or else not Screen.Confirm_Action(Screen.Overwrite_File) then
+      -- User discards overwritting
+      if Mode = Cancel then
+        return;
+      end if;
       Text_Handler.Set(Tmp_Name, Account_Select_File(2, "", False));
       Screen.Reset;
       Refresh_Screen(Bottom);
       if Text_Handler.Empty(Tmp_Name) then
-        -- User discards
+        -- User discards selecting new file name
         return;
       end if;
       Text_Handler.Set(Account_Name, Tmp_Name);

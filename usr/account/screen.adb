@@ -220,14 +220,14 @@ package body Screen is
       when Overwrite_Account =>
         Ring(False);
         Afpx.Encode_Field (40, (0, 0),
-          "Account is not saved and will be overwritten. Confirm?");
+          "Creating: Current account will be overwritten. Confirm?");
       when Overwrite_File =>
         Afpx.Encode_Field (40, (0, 0),
-          "Account file exists and will be overwritten. Confirm?");
+          "Saving: File exists and will be overwritten. Confirm?");
       when Quit_Unsaved =>
         Ring(False);
         Afpx.Encode_Field (40, (0, 0),
-          "Account is not saved and will be lost. Confirm?");
+          "Exiting: Current account will be lost. Confirm?");
     end case;
     -- Get answer
     Result := My_Ptg;

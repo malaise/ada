@@ -144,7 +144,7 @@ begin
             Mng.Load("");
           when 34 =>
             -- Save
-            Mng.Save;
+            Mng.Save(Mng.Select_New);
           when 35 =>
             -- Print
             Mng.Print;
@@ -162,7 +162,7 @@ begin
             Quit;
           when others =>
             Screen.Ack_Error(Screen.Internal_Error);
-            Mng.Save(Rescue => True);
+            Mng.Save(Mng.Rescue);
         end case;
       when Afpx.Refresh =>
         Redisplay := True;
@@ -190,6 +190,6 @@ exception
     exception
       when others => null;
     end;
-    Mng.Save(Rescue => True);
+    Mng.Save(Mng.Rescue);
 end Account; 
 

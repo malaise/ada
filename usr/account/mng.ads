@@ -13,8 +13,12 @@ package Mng is
   -- Modify the account. Load and clear check it is saved.
   -- Load a file. If file name is "" then ask for it
   procedure Load (File_Name : in String);
-  -- Save current file after confirmation or in rescue file
-  procedure Save (Rescue : in Boolean := False);
+  -- Save current file
+  --  Confirm and if not, select new file
+  --  Confirm and if not, cancel
+  --  In rescue file
+  type Save_Mode_List is (Select_New, Cancel, Rescue);
+  procedure Save (Mode :  Save_Mode_List);
   -- Clear current account (and file name)
   procedure Clear;
   -- Sort operation by date or by abs(amount)
