@@ -1,12 +1,18 @@
 -- Make a ADA 83 sources look like a Ada 95 one.
--- Each upper case character, if preceeded by an upper case
---  is set to lower case.
+-- Reserved words are in lower_case and others in Mixed_Case.
 -- Strings, comments and based literals are not modified.
+--
 -- Verbose mode lists all processed files with a "=" (not modified)
 --  or a "*" (modified).
 -- Silent mode does not list any file.
 -- Default mode lists all the modified files (with no "*").
 -- Test mode as well but does not modify.
+--
+-- Warnings can be activated (no correction is done):
+--  when last character is not a New_Line,
+--  when two consecutive upper case are found in comment.
+--
+-- Debug displays the modified words.
 
 with Ada.Text_Io, Ada.Exceptions;
 
@@ -60,6 +66,7 @@ procedure Look_95 is
     Sub_Index : Char_Io.Count;
     Last_Index : Char_Io.Count;
     Modified : Boolean;
+    Prev_Modified : Boolean;
 
     procedure Open(File_Name : in String) is
       use type Char_Io.Count;
@@ -75,6 +82,7 @@ procedure Look_95 is
       -- Current indexes
       Curr_Bloc_No := 0;
       Modified := False;
+      Prev_Modified := False;
       Last_Index := 0;
       Curr_Count := 0;
       -- Simulate end of previous bloc (for reading new)
@@ -103,15 +111,18 @@ procedure Look_95 is
     begin
       if Sub_Index = Last_Index then
         -- End of bloc
-        if Modified then
+        if Prev_Modified then
           -- Need to write before read
+          Char_Io.Write(File, Prev_Bloc(1 .. Bloc_Size),
+                        (Curr_Bloc_No - 2) * Bloc_Size + 1);
+        end if;
+        -- Shift blocks by one
+        Prev_Bloc(1 .. Last_Index) := Curr_Bloc(1 .. Last_Index);
+        Prev_Modified := Modified;
+        if Curr_Bloc_No = Nb_Bloc then
+          -- No more bloc. Save last bloc
           Char_Io.Write(File, Curr_Bloc(1 .. Last_Index),
                         (Curr_Bloc_No - 1) * Bloc_Size + 1);
-          Prev_Bloc(1 .. Last_Index) := Curr_Bloc(1 .. Last_Index);
-          Modified := False;
-        end if;
-        if Curr_Bloc_No = Nb_Bloc then
-          -- No more bloc
           Close;
           raise End_Of_File;
         end if;
@@ -126,6 +137,7 @@ procedure Look_95 is
         else
           Last_Index := Bloc_Size;
         end if;
+        Modified := False;
         Char_Io.Read(File, Curr_Bloc(1 .. Last_Index),
                      (Curr_Bloc_No - 1) * Bloc_Size + 1);
         Sub_Index := 1;
@@ -205,13 +217,12 @@ procedure Look_95 is
       -- Index of first char of current bloc
       Bloc_Index := ((Curr_Count - 1) / Bloc_Size) * Bloc_Size + 1;
 
-      -- Write prev if needed,
+      -- Write prev if needed, compute rest of chars to write and where
       if At_Index < Bloc_Index then
         Nb_Char := Natural(Bloc_Index - At_Index);
         Cp2Bloc (Str, Str'First, Nb_Char,
                  Prev_Bloc, Bloc_Size - Count(Nb_Char) + 1);
-        Char_Io.Write(File, Prev_Bloc,
-                        (Curr_Bloc_No - 2) * Bloc_Size + 1);
+        Prev_Modified := True;
         Nb_Char := Str'Length - Nb_Char;
         Start_Index := Bloc_Index;
       else
@@ -219,7 +230,7 @@ procedure Look_95 is
         Start_Index := At_Index;
       end if;
 
-      -- Set Modified if needed
+      -- Save remaining in current bloc
       if Last_Index >= Bloc_Index then
         -- Index in Curr_Block of start of string
         Start_Index := (Start_Index - 1) rem  Bloc_Size + 1;
@@ -232,17 +243,24 @@ procedure Look_95 is
 
   end Reading;
 
-  -- This one is static because it is big
+  -- These ones are static because they are big
+  -- Current line for warnings
   Line : Text_Handler.Text (Text_Handler.Max_Len_Range'Last);
+  -- Current word and exception when it is full
+  Word_Error : exception;
+  Word : Text_Handler.Text (Text_Handler.Max_Len_Range'Last);
 
   -- Process one file
   function Do_One(File_Name : in String;
                   Do_It : in Boolean;
-                  Warn_Comments : in Boolean;
-                  Warn_Words : in Boolean) return Boolean is
+                  Warn_Comment, Warn_Newline : in Boolean) return Boolean is
 
     -- Current and prev character
     Char, Prev_Char : Character;
+
+    -- Last character when eod of file
+    Last_Char : Character;
+
     -- Are they upper case
     Prev_Is_Upper, Curr_Is_Upper : Boolean;
 
@@ -264,15 +282,12 @@ procedure Look_95 is
     -- At least one warning has been detected on current line
     Warnings : Boolean;
 
-    -- No reserved word is larger than 9, so 10 is enough
-    Word : Text_Handler.Text (10);
+    -- Absolute index of word start in file
+    Word_Index : Reading.Positive_Count;
 
     -- Significant character (not newline nor string)
     --  before current word was '
     Prev_Tick : Boolean;
-
-    -- Character in resulting file
-    Final_Char : Character;
 
     -- Is Char an upper case
     function Is_Upper (Char : Character) return Boolean is
@@ -284,11 +299,25 @@ procedure Look_95 is
     procedure Check_Word is
       Str : constant String := Text_Handler.Value (Word);
       Is_Keyword : Boolean;
+      procedure Change_Word (New_Str : in String) is
+      begin
+        if Do_It then
+          Reading.Update_Str (New_Str, Word_Index);
+        end if;
+        Modified := True;
+        if Debug then
+          Ada.Text_Io.Put_Line ("In file " & File_Name
+                              & " at line" & Line_No'Img
+                              & ": " & Str
+                              & "->" & New_Str);
+        end if;
+      end Change_Word;
+
     begin
       if Text_Handler.Empty (Word) then
         return;
       end if;
-      caSe Ada_Words.Check_Keyword (Str) is
+      case Ada_Words.Check_Keyword (Str) is
         when Ada_Words.Is_Keyword =>
           Is_Keyword := True;
         when Ada_Words.May_Be_Keyword =>
@@ -296,9 +325,13 @@ procedure Look_95 is
         when Ada_Words.Is_Not_Keyword =>
           Is_Keyword := False;
       end case;
-      if (Is_Keyword and then Str /= Lower_Str (Str))
-      or else (not Is_Keyword and then Str /= Mixed_Str (Str)) then
-        Warnings := True;
+      if Is_Keyword and then Str /= Lower_Str (Str) then
+        Change_Word (Lower_Str (Str));
+        return;
+      end if;
+      if not Is_Keyword and then Str /= Mixed_Str (Str) then
+        Change_Word (Mixed_Str (Str));
+        return;
       end if;
 
     end Check_Word;
@@ -307,7 +340,7 @@ procedure Look_95 is
     procedure Check_Line is
     begin
       if Warnings then
-        Ada.Text_Io.Put_Line("Warning in file " & File_Name
+        Ada.Text_Io.Put_Line("Warning. In file " & File_Name
                            & " at line" & Line_No'Img);
         Ada.Text_Io.Put_Line("--> " & Text_Handler.Value (Line));
         Warnings := False;
@@ -338,6 +371,7 @@ procedure Look_95 is
     In_Comment := False;
     In_Literal := False;
     Prev_Char := Ascii.Nul;
+    Last_Char := Ascii.Nul;
     Modified := False;
     Warnings := False;
     Line_No := 1;
@@ -350,10 +384,16 @@ procedure Look_95 is
       -- Read char
       begin
         Char := Reading.Next_Char;
+        Last_Char := Char;
       exception
         when Reading.End_Of_File =>
           -- Done: Check warnings
           Check_Line;
+          if Last_Char /= New_Line and then Warn_Newline then
+            Ada.Text_Io.Put_Line("Warning. Missing last Newline in file "
+                               & File_Name
+                               & " at line" & Line_No'Img);
+          end if;
           exit;
       end;
 
@@ -419,19 +459,6 @@ procedure Look_95 is
         Curr_Is_Upper := Is_Upper(Char);
       end if;
 
-      -- Final check
-      Final_Char := Char;
-      if Proceed then
-        -- Convert?
-        if Prev_Is_Upper and then Curr_Is_Upper then
-          Modified := True;
-          if Do_It then
-            Final_Char := Lower_Char(Char);
-            Reading.Update_Char(Final_Char);
-          end if;
-        end if;
-      end if;
-
       -- Update line char for warnings if possible
       if Char /= New_Line then
         begin
@@ -441,25 +468,17 @@ procedure Look_95 is
             -- Line is too to big for Line text!
             null;
         end;
-        if Debug then
-          Ada.Text_Io.Put (Final_Char);
-        end if;
-      else
-        if Debug then
-          Ada.Text_Io.New_Line;
-        end if;
       end if;
 
-      -- Warning on words
-      if Warn_Words
-      and then not In_Comment
+      -- Check word
+      if not In_Comment
       and then not In_String
       and then not In_Literal then
-        if Ada_Words.Is_Separator(Final_Char) 
-        or else Ada_Words.Is_Delimiter(Final_Char) then
+        if Ada_Words.Is_Separator(Char) 
+        or else Ada_Words.Is_Delimiter(Char) then
           -- End of word, check it
           -- The tricky way to avoid checking character literal is
-          --  to dicard a word of one char with Prev_Tick set
+          --  to dicard a word of one char with Prev_Tick set!
           if Text_Handler.Length (Word) /= 1 or else not Prev_Tick then
             Check_Word;
           end if;
@@ -468,17 +487,20 @@ procedure Look_95 is
           Prev_Tick := Char = ''';
         else
           -- In word: append if possible
+          if Text_Handler.Empty (Word) then
+            Word_Index := Reading.Curr_Index;
+          end if;
           begin
-            Text_Handler.Append (Word, Final_Char);
+            Text_Handler.Append (Word, Char);
           exception
             when Constraint_Error =>
-              null;
+              raise Word_Error;
           end;
         end if;
       end if;
 
       -- Warning in comments
-      if Warn_Comments
+      if Warn_Comment
       and then In_Comment
       and then Prev_Is_Upper and then Curr_Is_Upper then
         Warnings := True;
@@ -505,13 +527,13 @@ procedure Look_95 is
            & " skipping.");
       Reading.Close;
       Text_Handler.Empty (Line);
+      Text_Handler.Empty (Word);
       return Modified;
   end Do_One;
 
   type Verbose_Level_List is (Normal, Silent, Verbose, Test);
   Verbose_Level : Verbose_Level_List;
-  Comments : Boolean;
-  Words : Boolean;
+  Warn_Comment, Warn_Newline : Boolean;
 
 begin
 
@@ -519,17 +541,17 @@ begin
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "-h" then
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-         & " [ { -d | -v | -s | -t | -n | -c | -w <file> } ]");
-    Ada.Text_Io.Put_Line ("Debug print debug info");
+         & " [ { -v | -s | -t | -n | -C | -N <file> } ]");
     Ada.Text_Io.Put_Line ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
-    Ada.Text_Io.Put_Line ("Warnings on comments or words");
+    Ada.Text_Io.Put_Line ("Warnings: on upper_Case in comments");
+    Ada.Text_Io.Put_Line ("          or missing last New_Line");
     return;
   end if;
 
   Verbose_Level := Normal;
-  Comments := False;
-  Words := False;
+  Warn_Comment := False;
+  Warn_Newline := False;
 
   -- Process all remaining arguments (file names)
   for I in 1 .. Argument.Get_Nbre_Arg loop
@@ -545,16 +567,15 @@ begin
       Verbose_Level := Normal;
     elsif Argument.Get_Parameter (I) = "-t" then
       Verbose_Level := Test;
-    elsif Argument.Get_Parameter (I) = "-c" then
-      Comments := True;
-    elsif Argument.Get_Parameter (I) = "-w" then
-      Words := True;
+    elsif Argument.Get_Parameter (I) = "-C" then
+      Warn_Comment := True;
+    elsif Argument.Get_Parameter (I) = "-N" then
+      Warn_Newline := True;
     else
       -- Process file
       if Do_One (Argument.Get_Parameter (I),
                  Verbose_Level /= Test,
-                 Comments,
-                 Words) then
+                 Warn_Comment, Warn_Newline) then
         -- Trace altered files if not silent
         if Verbose_Level /= Silent then
           Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
