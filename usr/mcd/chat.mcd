@@ -43,7 +43,7 @@ copye call ] R popr
 
 # Main loop
 [
-# Put random 1 .. 13 on top
+# Put random 1 .. M on top
 rnd M pushr toreal * trunc 1 +
 # Display num
 2 format dup put ": " put
@@ -56,7 +56,4 @@ Z pushr put " " put pushr put "." putl
 # Loop
 pushle copye retacal ]
 copye call ] R popr
-
-
-
 
