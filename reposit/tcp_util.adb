@@ -994,6 +994,7 @@ package body Tcp_Util is
       if Debug_Reception then
         My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
       end if;
+      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dscr), True);
     end Remove_Callbacks;
 
   end Reception;
