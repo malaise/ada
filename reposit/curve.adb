@@ -1005,5 +1005,12 @@ package body CURVE is
       return FALSE;
   end INIT;
 
+  procedure DESTROY is
+  begin
+    BIG_CON_IO.DESTROY;
+  exception
+    when others =>
+      null;
+  end DESTROY;
 end CURVE;
 

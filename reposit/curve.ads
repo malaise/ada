@@ -36,6 +36,9 @@ package CURVE is
   -- of window and test the result
   function INIT return BOOLEAN;
 
+  -- Should be called after INIT is DRAW cannot be called
+  procedure DESTROY;
+
   generic
     -- Y = F(x)
     with function F (X : MATH.REAL) return MATH.REAL;
