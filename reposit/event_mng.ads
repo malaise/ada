@@ -28,7 +28,7 @@ package Event_Mng is
   -----------------------
   -- Signal management --
   -----------------------
-  -- Called on Sig Int
+  -- Called on Sig Int or after Send_Signal
   type Sig_Callback is access procedure;
   -- Register a callback on termination signal (SigInt)
   -- Call it with null to disable generation of Signal_Event by Wait
@@ -37,11 +37,16 @@ package Event_Mng is
   -- Is a callback set on signals
   function Sig_Callback_Set return Boolean;
 
+  -- Emulate signal reception
+  procedure Send_Signal;
+
 
   -------------------
   -- Waiting point --
   -------------------
   -- Wait until some event callback return True, or until timeout
+  -- Any negative timeout means infinite
+  Infinite_Ms : constant Integer := -1;
   type Out_Event_List is (Timer_Event, Fd_Event, Sig_Event, No_Event);
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
@@ -50,6 +55,8 @@ package Event_Mng is
   -- Force re-evaluation (and expiration) of timers while in Wait
   procedure Wake_Up;
 
+  -- Waits for the specified delay or Sig_Event
+  procedure Pause (Timeout_Ms : in Integer);
 
   ----------------------
   -- Event management --
@@ -61,7 +68,9 @@ package Event_Mng is
       when Fd_Event =>
         Fd : File_Desc;
         Read : Boolean;
-      when Sig_Event | No_Event =>
+      when Sig_Event =>
+        Dummy_Sig : Boolean;
+      when No_Event =>
         null;
     end case;
   end record;

@@ -1076,7 +1076,8 @@ package body X_Mng is
 
       -- A Event for Event_Mng
       if Fd = C_Select_Sig_Event then
-        Handle_Res := Event_Mng.Handle ((Kind => Event_Mng.Sig_Event));
+        Handle_Res := Event_Mng.Handle ((Kind => Event_Mng.Sig_Event,
+                                         Dummy_Sig => Read = False));
       elsif Fd = C_Select_No_Event then
         Handle_Res := Event_Mng.Handle ((Kind => Event_Mng.No_Event));
       elsif Fd >= 0 then

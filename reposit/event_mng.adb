@@ -150,6 +150,9 @@ package body Event_Mng is
   -----------------------
   -- Signal management --
   -----------------------
+  procedure C_Send_Signal (Num : Integer);
+  pragma Import(C, C_Send_Signal, "send_signal");
+
   Cb_Sig : Sig_Callback := Null_Procedure'Access;
 
   procedure Set_Sig_Callback (Callback : in Sig_Callback) is
@@ -162,6 +165,11 @@ package body Event_Mng is
   begin
     return Cb_Sig /= null;
   end Sig_Callback_Set;
+
+  procedure Send_Signal is
+  begin
+    C_Send_Signal (0);
+  end Send_Signal;
 
   ------------------------------------------------------------------
 
@@ -224,14 +232,16 @@ package body Event_Mng is
       -- Results
       if Fd = C_Sig_Event then
         -- Signal
-        Handle_Res := Handle ((Kind => Sig_Event));
-      elsif Fd >= 0 then
-        Handle_Res := Handle ((Kind => Fd_Event,
-                        Fd => File_Desc(Fd),
-                        Read => For_Ada(Read)));
-      elsif Fd = C_No_Event then
-        -- Nothing. Expire timers
+        Handle_Res := Handle ((Kind => Sig_Event, Dummy_Sig => Read = True));
+      elsif Fd = C_No_Event or else Fd >= 0 then
+        -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
+        if Handle_Res = No_Event and then Fd >= 0 then 
+        -- No timer and fd: fd
+          Handle_Res := Handle ((Kind => Fd_Event,
+                          Fd => File_Desc(Fd),
+                          Read => For_Ada(Read)));
+        end if;
       else
         Handle_Res := No_Event;
         if Debug then
@@ -268,6 +278,77 @@ package body Event_Mng is
     Event := Wait (Timeout_Ms);
   end Wait;
 
+  -- The pause
+  Pause_Level : Natural := 0;
+
+  function Pause_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data) return Boolean is
+  begin
+    -- Check this expiration versus current pause level
+    if Pause_Level >= Data then
+      -- Pop up to current level
+      Pause_Level := Data - 1;
+    end if;
+    if Debug then
+      Ada.Text_Io.Put_Line ("  Pause.Cb " & Data'Img);
+    end if;
+    return True;
+  end Pause_Cb;
+
+  procedure Pause (Timeout_Ms : in Integer) is
+     Tid : Timers.Timer_Id := Timers.No_Timer;
+     Loc_Level : Positive;
+     Wait_Timeout : Integer;
+     Dummy : Boolean;
+  begin
+
+    -- Increment global pause level and store ours
+    Pause_Level := Pause_Level + 1;
+    Loc_Level := Pause_Level;
+    if Debug then
+      Ada.Text_Io.Put_Line ("  Pause.Push " & Loc_Level'Img);
+    end if;
+
+    -- Arm or simulate timer
+    if Timeout_Ms < 0 then
+      Wait_Timeout := Infinite_Ms;
+      if Debug then
+        Ada.Text_Io.Put_Line ("  Pause.Infinite");
+      end if;
+    elsif Timeout_Ms = 0 then
+      Dummy := Pause_Cb (Timers.No_Timer, Pause_Level);
+      Wait_Timeout := 0;
+    else
+      -- Arm a timer
+      Tid := Timers.Create ( (Timers.Delay_Sec,
+                              Timers.No_Period,
+                              Duration(Timeout_Ms)/1000.0),
+                             Pause_Cb'access,
+                             Pause_Level);
+      Wait_Timeout := Infinite_Ms;
+    end if;
+
+    -- Wait for this or a lower level pause expiration
+    -- or signal
+    loop
+
+      if Wait (Wait_Timeout) = Sig_Event then
+        -- Exit all pauses on signal
+        if Debug then
+          Ada.Text_Io.Put_Line ("  Pause.Signal");
+        end if;
+        if Pause_Level /= 0 then
+          Pause_Level := Pause_Level - 1;
+          Send_Signal;
+        end if;
+        exit;
+      end if;
+
+      exit when Pause_Level < Loc_Level;
+    end loop;
+  end Pause;
+
+  --
 
   procedure Wake_Up is
   begin
@@ -303,8 +384,13 @@ package body Event_Mng is
             end if;
         end;
       when Sig_Event =>
-        if Cb_Sig /= null then
-          Cb_Sig.all;
+        if Event.Dummy_Sig then
+          if Cb_Sig /= null then
+            Cb_Sig.all;
+            return Sig_Event;
+          end if;
+        else
+          -- Dummy signal: no Cb but always event
           return Sig_Event;
         end if;
       when No_Event =>
