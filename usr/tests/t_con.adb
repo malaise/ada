@@ -5,13 +5,20 @@ with ARGUMENT;
 
 procedure T_CON is
 
-  task type TASK_T;
-  T1, T2 : TASK_T;
+  
+  task type TASK_T is
+    entry START(I : in POSITIVE);
+  end TASK_T;
+
+  NB_TASKS : constant := 2;
+  T : array (1 .. NB_TASKS) of TASK_T;
 
   task body TASK_T is
 
     package CON_IO is new GENERIC_CON_IO.ONE_CON_IO(1);
     use CON_IO;
+
+    ME : POSITIVE;
 
     W1, W2, W3 : WINDOW;
     STR : STRING (1..25);
@@ -46,6 +53,9 @@ procedure T_CON is
     exception
       when ARGUMENT.ARGUMENT_NOT_FOUND => null;
     end;
+    accept START(I : in POSITIVE) do
+      ME := I;
+    end START;
 
     INIT;
     RESET_TERM;
@@ -76,6 +86,7 @@ procedure T_CON is
     loop
         CLEAR (W2);
         PUT (">" & STR(1..LAST) & "<" & CURS_MVT'IMAGE(STAT), W2 );
+        MY_IO.PUT_LINE ( POSITIVE'IMAGE(ME) & " >" & STR(1..LAST) & "<" & CURS_MVT'IMAGE(STAT));
         if STAT = ESC then
           STR (1 .. WIDTH) := (others => ' ');
           POS := 1;
@@ -152,5 +163,7 @@ procedure T_CON is
 
 
 begin
-  null;
+  for I in T'RANGE loop
+    T(I).START(I);
+  end loop;
 end T_CON;
