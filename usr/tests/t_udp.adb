@@ -83,6 +83,9 @@ begin
   -- Server or client
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-s" then
     Server := True;
+  elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-s" then
+    Server := True;
+    Argument.Get_Parameter (Server_Name, 2);
   elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-c" then
     Server := False;
     Argument.Get_Parameter (Server_Name, 2);
@@ -99,11 +102,27 @@ begin
   
   -- Link, set server dest in client, client sends
   if Server then
+    if not Text_Handler.Empty (Server_Name) then
+      -- Ipm lan
+      Socket.Set_Destination_Name_And_Service (Soc,
+           True, Text_Handler.Value (Server_Name), Server_Port_Name);
+    end if;
     Socket.Link_Service (Soc, Server_Port_Name);
+
   else
     Socket.Link_Dynamic (Soc);
-    Socket.Set_Destination_Name_And_Service (Soc,
-           False, Text_Handler.Value (Server_Name), Server_Port_Name);
+    -- Check host
+    declare
+      Dest_Host_Id : Socket.Host_Id;
+    begin
+      Dest_Host_Id := Socket.Host_Id_Of (Text_Handler.Value (Server_Name));
+      Socket.Set_Destination_Name_And_Service (Soc,
+         False, Text_Handler.Value (Server_Name), Server_Port_Name);
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        Socket.Set_Destination_Name_And_Service (Soc,
+         True, Text_Handler.Value (Server_Name), Server_Port_Name);
+    end;
     Message.Num := 1;
     Send;
   end if;
@@ -133,7 +152,7 @@ begin
 exception
   when Arg_Error =>
     My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                   & " -c <server_host> | -s");
+                   & " -c <server_host_or_lan> | -s [ <server_lan> ]");
 
   when Error : others =>
     My_Io.Put_Line ("Exception: " & Ada.Exceptions.Exception_Name (Error));
