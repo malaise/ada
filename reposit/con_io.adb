@@ -66,8 +66,8 @@ package body CON_IO is
     INIT_DONE := TRUE;
     X_MNG.X_GET_GRAPHIC_CHARACTERISTICS(ID, X_MAX, Y_MAX,
           FONT_WIDTH, FONT_HEIGHT, FONT_OFFSET);
-    SET_ATTRIBUTES (LINE_FOREGROUND, LINE_BLINK_STAT, LINE_BACKGROUND,
-                    LINE_XOR_MODE, FORCED => TRUE);
+    SET_ATTRIBUTES (DEFAULT_FOREGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
+                    DEFAULT_XOR_MODE, FORCED => TRUE);
   end INIT;
 
   -- screen characteristics
@@ -83,6 +83,9 @@ package body CON_IO is
       raise NOT_INIT;
     end if;
     X_MNG.X_CLEAR_LINE (ID);
+    -- Set current attributes in cache
+    SET_ATTRIBUTES (DEFAULT_FOREGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
+                    DEFAULT_XOR_MODE, FORCED => TRUE);
   end RESET_TERM;
 
   -- flushes X
@@ -395,7 +398,7 @@ package body CON_IO is
     end if;
     -- upper left and lower right, set foreground as our background
     SET_ATTRIBUTES (NAME.CURRENT_BACKGROUND,
-                    NAME.CURRENT_BLINK_STAT,
+                    NOT_BLINK,
                     NAME.CURRENT_BACKGROUND, XOR_OFF);
     X_MNG.X_MOVE (ID, NAME.UPPER_LEFT.ROW, NAME.UPPER_LEFT.COL);
     X_MNG.X_DRAW_AREA (ID, NAME.LOWER_RIGHT.COL - NAME.UPPER_LEFT.COL + 1,
@@ -462,7 +465,7 @@ package body CON_IO is
       X_MNG.X_MOVE(ID, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
                        NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
       SET_ATTRIBUTES (FG, BL, BG, NAME.CURRENT_XOR_MODE);
-      X_MNG.X_PUT_CHAR (ID, CHARACTER'VAL(INT));
+      X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(INT));
       X_MNG.X_MOVE(ID, NAME.UPPER_LEFT.ROW + NAME.CURRENT_POS.ROW,
                        NAME.UPPER_LEFT.COL + NAME.CURRENT_POS.COL);
     end if;
@@ -1174,7 +1177,8 @@ package body CON_IO is
 
     procedure SET_SCREEN_ATTRIBUTES is
     begin
-      SET_ATTRIBUTES (SCREEN.CURRENT_FOREGROUND, NOT_BLINK,
+      SET_ATTRIBUTES (SCREEN.CURRENT_FOREGROUND,
+                      SCREEN.CURRENT_BLINK_STAT,
                       SCREEN.CURRENT_BACKGROUND,
                       SCREEN.CURRENT_XOR_MODE);
     end SET_SCREEN_ATTRIBUTES;
