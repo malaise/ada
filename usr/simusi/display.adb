@@ -17,6 +17,15 @@ package body DISPLAY is
     MY_IO.PUT (IT, FORE => 3, AFT => 3, EXP => 0);
   end PUT_IT;
 
+  function OTHER_KIND (KIND : COMMON.COTE_KIND) return COMMON.COTE_KIND is
+  begin
+    if KIND = COMMON.MANUFA then
+      return COMMON.DESIGN;
+    else
+      return COMMON.MANUFA;
+    end if;
+  end OTHER_KIND;
+
   procedure SEARCH (KIND : in COMMON.COTE_KIND;
                     START, STOP : in DATA.EFF_LINE_RANGE;
                     COTE_NO : out DATA.EFF_COTE_RANGE;
@@ -68,20 +77,15 @@ package body DISPLAY is
                    COTE : in DATA.EFF_COTE_RANGE;
                    WAY  : in WAY_VECTOR) is
     COTE_NO : DATA.EFF_COTE_RANGE;
-    OTHER_KIND : COMMON.COTE_KIND;
     PLUS : BOOLEAN;
     NB_PRINTED : NATURAL := 0;
     VAL : FLOAT;
+    LAST : constant NATURAL := WAY'LAST;
   begin
-    if KIND = COMMON.MANUFA then
-      OTHER_KIND := COMMON.DESIGN;
-    else
-      OTHER_KIND := COMMON.MANUFA;
-    end if;
-    MY_IO.PUT (CHAR(OTHER_KIND) & NORMAL(COTE, 3, TRUE, '0') & ": ");
+    MY_IO.PUT (CHAR(OTHER_KIND(KIND)) & NORMAL(COTE, 3, TRUE, '0') & ": ");
 
     VAL := 0.0;
-    for I in DATA.EFF_LINE_RANGE range 2 .. WAY'LAST loop
+    for I in DATA.EFF_LINE_RANGE range 2 .. LAST loop
       SEARCH (KIND, WAY(I-1), WAY(I), COTE_NO, PLUS);
       if ARG_PARSING.VERBOSE then
         if NB_PRINTED >= NB_COTE_LINE
@@ -139,7 +143,7 @@ package body DISPLAY is
                         COTE : in DATA.EFF_COTE_RANGE) is
   begin
     SYS_CALLS.PUT_ERROR ("No way for ");
-    SYS_CALLS.PUT_LINE_ERROR (CHAR(KIND) & NORMAL(COTE, 3, TRUE, '0'));
+    SYS_CALLS.PUT_LINE_ERROR (CHAR(OTHER_KIND(KIND)) & NORMAL(COTE, 3, TRUE, '0'));
   end PUT_NO_WAY;
 
   procedure PRINT_TITTLE (KIND : in COMMON.COTE_KIND) is
