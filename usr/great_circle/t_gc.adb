@@ -52,10 +52,10 @@ procedure T_Gc is
     end if;
   end Next_Field_Cb;
 
-  procedure Decode_Point (First_Fld, Last_Fld : in Afpx.Field_range;
+  procedure Decode_Point (First_Fld, Last_Fld : in Afpx.Field_Range;
                           Point : out Lat_Lon.Lat_Lon_Geo_Rec;
                           Ok : out Boolean;
-                          Cursor : in out Afpx.Field_range) is
+                          Cursor : in out Afpx.Field_Range) is
     Point_Txt : Text_Handler.Text(String_Util.Coord_Str'Length);
   begin
     Text_Handler.Empty(Point_Txt);
