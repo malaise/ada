@@ -99,7 +99,7 @@ package Socket is
 
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply if not tcp
-  -- May raise Soc_Reply_err if Set_For_Reply and tcp
+  -- May raise Soc_Reply_Err if Set_For_Reply and tcp
   -- May raise Soc_Link_Err if socket is linked and tcp
   --                     or if socket is not linked and udp
   -- May raise Soc_Conn_err if socket is not connected and tcp
@@ -108,8 +108,9 @@ package Socket is
   -- May raise Soc_Would_Block if the full sent message was not
   --  received, in tcp_header and udp
   -- May raise Soc_Len_Err if message size is to short in tcp_header
+  -- May raise Soc_Len_Err if message'size is not multiple of 8
   generic
-    type Message_Type is private;
+    type Message_Type (<>) is private;
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
                      Length        : out Natural;
@@ -197,8 +198,9 @@ package Socket is
   --   had raised Soc_Would_Block (Re_Send should have been used)
   -- May raise Soc_Conn_Lost if destination has closed
   -- May raise Soc_Would_Block if non blocking and overflow (call Re_Send)
+  -- May raise Soc_Len_Err if message'size is not multiple of 8
   generic
-    type Message_Type is private;
+    type Message_Type (<>) is private;
   procedure Send (Socket  : in Socket_Dscr;
                   Message : in Message_Type;
                   Length  : in Natural := 0);

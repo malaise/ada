@@ -247,9 +247,13 @@ package body Socket is
                      Message       : out Message_Type;
                      Length        : out Natural;
                      Set_For_Reply : in Boolean := False) is
-    Len : Natural  := Message_Type'Size / Byte_Size;
+    Len : Natural;
     Sfr_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
   begin
+    if Message'Size rem Byte_Size /= 0 then
+      raise Soc_Len_Err;
+    end if;
+    Len := Message'Size / Byte_Size;
     Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len,
                         Sfr_For_C);
     if Res >= 0 then
@@ -418,8 +422,11 @@ package body Socket is
                   Length  : in Natural := 0) is
     Len : Natural;
   begin
+    if Message'Size rem Byte_Size /= 0 then
+      raise Soc_Len_Err;
+    end if;
     if Length = 0 then
-      Len := Message_Type'Size / Byte_Size;
+      Len := Message'Size / Byte_Size;
     else
       Len := Length;
     end if;
