@@ -14,7 +14,7 @@ else
     amake -c $i
   done
   # Link afpx_bld
-  amake afpx_bld -largs /users/malaise/ada/c/libx_mng.a -lX11
+  amake afpx_bld -largs -lx_mng -lX11
   cp afpx_bld /users/malaise/bin/
   # Restore view to ourself
   export ADA_VIEW=${OLD_ADA_VIEW}

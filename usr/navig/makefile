@@ -1,9 +1,8 @@
-C_DIR=/users/malaise/ada/c
 
 all: navig
 
 navig:
-	amake -g navig.adb -largs $(C_DIR)/libx_mng.a -lX11
+	amake -g navig.adb -largs -lx_mng -lX11
 
 clean:
 	rm *.o *.ali navig

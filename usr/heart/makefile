@@ -1,9 +1,9 @@
-C_DIR=/users/malaise/ada/c
+LIBX_MNG=-lx_mng
 
 all: do_heart AFPX.DSC
 
 do_heart:
-	amake heart.adb -largs $(C_DIR)/libx_mng.a -lX11
+	amake heart.adb -largs $(LIBX_MNG) -lX11
 
 AFPX.DSC: AFPX.LIS
 	afpx_bld

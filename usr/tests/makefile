@@ -1,4 +1,4 @@
-LIBX_MNG=/users/malaise/ada/c/libx_mng.a
+LIBX_MNG=-lx_mng
 
 all: do_all AFPX.DSC
 
