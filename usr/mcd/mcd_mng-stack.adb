@@ -121,7 +121,7 @@ package body Stack is
       Debug.Put (Litem);
       Text_Io.New_Line;
     end if;
-    -- Move back to las pushed item
+    -- Move back to last pushed item
     if not Stack_List.Is_Empty(Extra_List) then
       Stack_List.Move_To(Extra_List, Stack_List.Prev, 0, False);
     end if;
@@ -132,6 +132,25 @@ package body Stack is
       end if;
       raise Empty_Stack;
   end Popf;
+
+  procedure Pushf (Item : in Item_Rec) is
+  begin
+    if Debug.Debug_Level_Array(Debug.Stack) then
+        Text_Io.Put ("Extra ");
+      Text_Io.Put ("Stack: pushing at first ");
+    end if;
+    if Stack_List.Is_Empty(Extra_List) then
+      Stack_List.Insert(Extra_List, Item);
+      return;
+    end if;
+
+    -- Insert before first
+    Stack_List.Move_To(Extra_List, Stack_List.Next, 0, False);
+    Stack_List.insert(Extra_List, item, Stack_List.Prev);
+
+    -- Move back to last pushed item
+    Stack_List.Move_To(Extra_List, Stack_List.Prev, 0, False);
+  end Pushf;
 
 end Stack;
 

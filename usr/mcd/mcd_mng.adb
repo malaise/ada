@@ -21,7 +21,11 @@ package body Mcd_Mng is
 
     function Stack_Size (Default_Stack : Boolean := True) return Natural;
 
+    -- Pop first pushed in extra stack
     procedure Popf (Item : out Item_Rec);
+
+    -- Push before first pushed in extra stack
+    procedure Pushf (Item : in Item_Rec);
   end Stack;
 
   package Operations is
@@ -190,14 +194,13 @@ package body Mcd_Mng is
                        renames Registers.Is_Register;
 
   procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
-    use Stack;
 
     procedure Do_Call is
     begin
       if Debug.Debug_Level_Array(Debug.Oper) then
         Text_Io.Put_Line("Mng: Do_call");
       end if;
-      Pop(A);
+      Stack.Pop(A);
       if A.Kind /= Prog then
         raise Invalid_Argument;
       end if;
@@ -273,7 +276,7 @@ package body Mcd_Mng is
 
     procedure Do_Ret (Allow_Level_0 : in Boolean := True) is
     begin
-      Pop(A);
+      Stack.Pop(A);
       Do_Retn(False, A, Allow_Level_0);
     end Do_Ret;
     
@@ -281,7 +284,7 @@ package body Mcd_Mng is
     procedure Do_Popn is
       N : Natural;
     begin
-      Pop(A);
+      Stack.Pop(A);
       -- has to be INTE and val NATURAL
       begin
         N := Natural(A.Val_Inte);
@@ -289,15 +292,15 @@ package body Mcd_Mng is
         when others => raise Invalid_Argument;
       end;
       for I in 1 .. N loop
-        Pop(A);
+        Stack.Pop(A);
       end loop;
     end Do_Popn;
 
     procedure Do_Clear_Extra is
       Rec : Item_Rec;
     begin
-     For I in 1 .. Stack.Stack_Size(False) loop
-       Stack.Pop(Rec, False);
+     For I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
+       Stack.Pop (Rec, Default_Stack => False);
      end loop;
     end Do_Clear_Extra;
 
@@ -307,13 +310,17 @@ package body Mcd_Mng is
       if Times.Kind /= Inte or else Times.Val_Inte < 0 then
         raise Mcd_Mng.Invalid_Argument;
       end if;
+      if Stack.Stack_Size (Default_Stack => False) = 0  then
+        return;
+      end if;
       for I in 1 .. Times.Val_Inte loop
         if First then
-          Popf (Rec);
+          Stack.Popf (Rec);
+          Stack.Push (Rec, Default_Stack => False);
         else
-          Pop (Rec, Default_Stack => False);
+          Stack.Pop (Rec, Default_Stack => False);
+          Stack.Pushf (Rec);
         end if;
-        Push (Rec, Default_Stack => False);
       end loop;
     end Do_Rotate_Extra;
 
@@ -332,6 +339,7 @@ package body Mcd_Mng is
         raise Invalid_Argument;
     end Do_Delay;
 
+    use Stack;
   begin
     -- Default, except RET
     The_End := False;
