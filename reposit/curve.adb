@@ -1,5 +1,5 @@
 with CALENDAR, TEXT_IO;
-with CON_IO, DOS, NORMAL, X_MNG, UPPER_CHAR;
+with BIG_CON_IO, DOS, NORMAL, X_MNG, UPPER_CHAR;
 package body CURVE is
 
   package P_IO is new TEXT_IO.FLOAT_IO (T_COORDINATE);
@@ -64,8 +64,8 @@ package body CURVE is
 
       -- Screen coordinates of the frame
       type T_SCREEN_BOUNDARIES is record
-        X_MIN, X_MAX : CON_IO.GRAPHICS.X_RANGE;
-        Y_MIN, Y_MAX : CON_IO.GRAPHICS.Y_RANGE;
+        X_MIN, X_MAX : BIG_CON_IO.GRAPHICS.X_RANGE;
+        Y_MIN, Y_MAX : BIG_CON_IO.GRAPHICS.Y_RANGE;
       end record;
 
       -- Current limits (in pixels) of drawing
@@ -76,12 +76,12 @@ package body CURVE is
 
       -- From real to screen and reverse
       function X_REAL_SCREEN (X_REAL : T_COORDINATE)
-                             return CON_IO.GRAPHICS.X_RANGE;
+                             return BIG_CON_IO.GRAPHICS.X_RANGE;
       function Y_REAL_SCREEN (Y_REAL : T_COORDINATE)
-                             return CON_IO.GRAPHICS.Y_RANGE;
-      function X_SCREEN_REAL (X_SCREEN : CON_IO.GRAPHICS.X_RANGE)
+                             return BIG_CON_IO.GRAPHICS.Y_RANGE;
+      function X_SCREEN_REAL (X_SCREEN : BIG_CON_IO.GRAPHICS.X_RANGE)
                return T_COORDINATE;
-      function Y_SCREEN_REAL (Y_SCREEN : CON_IO.GRAPHICS.Y_RANGE)
+      function Y_SCREEN_REAL (Y_SCREEN : BIG_CON_IO.GRAPHICS.Y_RANGE)
                return T_COORDINATE;
 
       EPSILON : constant T_COORDINATE := T_COORDINATE'EPSILON;
@@ -116,11 +116,11 @@ package body CURVE is
       procedure WAIT_MESSAGE is
         MSG : constant STRING := "COMPUTING. Please wait ...";
       begin
-        CON_IO.SET_FOREGROUND (CON_IO.LIGHT_BLUE);
-        CON_IO.MOVE (CON_IO.ROW_RANGE_LAST,
-                     CON_IO.COL_RANGE_LAST - MSG'LENGTH);
-        CON_IO.PUT (MSG);
-        CON_IO.FLUSH;
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_BLUE);
+        BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST,
+                     BIG_CON_IO.COL_RANGE_LAST - MSG'LENGTH);
+        BIG_CON_IO.PUT (MSG);
+        BIG_CON_IO.FLUSH;
       end WAIT_MESSAGE;
 
       -- Screen coordinates of the frame
@@ -144,9 +144,9 @@ package body CURVE is
 
       -- screen <-> real conversions
       function X_REAL_SCREEN (X_REAL : T_COORDINATE)
-                             return CON_IO.GRAPHICS.X_RANGE is
+                             return BIG_CON_IO.GRAPHICS.X_RANGE is
         X_INT : INTEGER;
-        X_SCR : CON_IO.GRAPHICS.X_RANGE;
+        X_SCR : BIG_CON_IO.GRAPHICS.X_RANGE;
       begin
         X_INT := INTEGER (CONVERSION.OFFSET_X + X_REAL * CONVERSION.FACTOR_X);
         X_SCR := X_INT;
@@ -156,9 +156,9 @@ package body CURVE is
       end X_REAL_SCREEN;
 
       function Y_REAL_SCREEN (Y_REAL : T_COORDINATE)
-                             return CON_IO.GRAPHICS.Y_RANGE is
+                             return BIG_CON_IO.GRAPHICS.Y_RANGE is
         Y_INT : INTEGER;
-        Y_SCR : CON_IO.GRAPHICS.Y_RANGE;
+        Y_SCR : BIG_CON_IO.GRAPHICS.Y_RANGE;
       begin
         Y_INT := INTEGER (CONVERSION.OFFSET_Y + Y_REAL * CONVERSION.FACTOR_Y);
         Y_SCR := Y_INT;
@@ -167,14 +167,14 @@ package body CURVE is
         when others => raise OUT_OF_FRAME;
       end Y_REAL_SCREEN;
 
-      function X_SCREEN_REAL (X_SCREEN : CON_IO.GRAPHICS.X_RANGE)
+      function X_SCREEN_REAL (X_SCREEN : BIG_CON_IO.GRAPHICS.X_RANGE)
                              return T_COORDINATE is
       begin
         return (T_COORDINATE(X_SCREEN)-CONVERSION.OFFSET_X)
              / CONVERSION.FACTOR_X;
       end X_SCREEN_REAL;
 
-      function Y_SCREEN_REAL (Y_SCREEN : CON_IO.GRAPHICS.Y_RANGE)
+      function Y_SCREEN_REAL (Y_SCREEN : BIG_CON_IO.GRAPHICS.Y_RANGE)
                              return T_COORDINATE is
       begin
         return (T_COORDINATE(Y_SCREEN)-CONVERSION.OFFSET_Y)
@@ -221,16 +221,16 @@ package body CURVE is
           raise MAJ_ERROR;
         end if;
         CONVERSION.FACTOR_X :=
-          MATH.REAL (CON_IO.GRAPHICS.X_MAX - CON_IO.GRAPHICS.X_RANGE'FIRST)
+          MATH.REAL (BIG_CON_IO.GRAPHICS.X_MAX - BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
           / (REAL_BOUNDARIES.X_MAX - REAL_BOUNDARIES.X_MIN);
-        CONVERSION.OFFSET_X  := MATH.REAL (CON_IO.GRAPHICS.X_RANGE'FIRST)
+        CONVERSION.OFFSET_X  := MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
          - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
 
         -- Now X scale is computed, we can compute curve and update Ys
         if BOUNDS.SCALE /= FREE_SCREEN and then
            BOUNDS.SCALE /= FREE_NORMED then
           -- Find lowest and greatest y of curve
-          for X in CON_IO.GRAPHICS.X_RANGE'FIRST .. CON_IO.GRAPHICS.X_MAX loop
+          for X in BIG_CON_IO.GRAPHICS.X_RANGE'FIRST .. BIG_CON_IO.GRAPHICS.X_MAX loop
             X_REAL := X_SCREEN_REAL (X);
             Y_REAL := F (X_REAL);
             if Y_REAL < REAL_BOUNDARIES.Y_MIN then
@@ -247,9 +247,9 @@ package body CURVE is
           raise MAJ_ERROR;
         end if;
         CONVERSION.FACTOR_Y :=
-          MATH.REAL (CON_IO.GRAPHICS.Y_MAX - CON_IO.GRAPHICS.Y_RANGE'FIRST)
+          MATH.REAL (BIG_CON_IO.GRAPHICS.Y_MAX - BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
           / (REAL_BOUNDARIES.Y_MAX - REAL_BOUNDARIES.Y_MIN);
-        CONVERSION.OFFSET_Y  := MATH.REAL (CON_IO.GRAPHICS.Y_RANGE'FIRST)
+        CONVERSION.OFFSET_Y  := MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
         - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
 
         -- If Scale is normed, factors must be the same on X and Y
@@ -262,9 +262,9 @@ package body CURVE is
             CONVERSION.FACTOR_X := CONVERSION.FACTOR_Y;
           end if;
           -- Update conversion
-          CONVERSION.OFFSET_X  := MATH.REAL (CON_IO.GRAPHICS.X_RANGE'FIRST)
+          CONVERSION.OFFSET_X  := MATH.REAL (BIG_CON_IO.GRAPHICS.X_RANGE'FIRST)
           - REAL_BOUNDARIES.X_MIN * CONVERSION.FACTOR_X;
-          CONVERSION.OFFSET_Y  := MATH.REAL (CON_IO.GRAPHICS.Y_RANGE'FIRST)
+          CONVERSION.OFFSET_Y  := MATH.REAL (BIG_CON_IO.GRAPHICS.Y_RANGE'FIRST)
           - REAL_BOUNDARIES.Y_MIN * CONVERSION.FACTOR_Y;
         end if;
 
@@ -322,24 +322,24 @@ package body CURVE is
       MOUSE_BOUNDS : T_SCREEN_BOUNDARIES;
 
       -- For waiting for an event
-      EVENT : CON_IO.EVENT_LIST;
+      EVENT : BIG_CON_IO.EVENT_LIST;
       KEY   : NATURAL; 
       IS_CHAR, CTRL, SHIFT : BOOLEAN;
       -- Input command
       CHAR : CHARACTER;
       -- Mouse event
-      MOUSE_EVENT : CON_IO.MOUSE_EVENT_REC(CON_IO.X_Y);
+      MOUSE_EVENT : BIG_CON_IO.MOUSE_EVENT_REC(BIG_CON_IO.X_Y);
       -- Status (pos) at start of drag
-      CLICKED_STATUS : CON_IO.MOUSE_EVENT_REC(CON_IO.X_Y);
+      CLICKED_STATUS : BIG_CON_IO.MOUSE_EVENT_REC(BIG_CON_IO.X_Y);
 
       MVALID : BOOLEAN;
-      MX : CON_IO.GRAPHICS.X_RANGE;
-      MY : CON_IO.GRAPHICS.Y_RANGE;
+      MX : BIG_CON_IO.GRAPHICS.X_RANGE;
+      MY : BIG_CON_IO.GRAPHICS.Y_RANGE;
 
       -- Set mouse position within screen boundaries
       -- Invert Y
-      procedure SET_MOUSE_IN_FRAME(X : in out CON_IO.GRAPHICS.X_RANGE;
-                                   Y : in out CON_IO.GRAPHICS.Y_RANGE) is
+      procedure SET_MOUSE_IN_FRAME(X : in out BIG_CON_IO.GRAPHICS.X_RANGE;
+                                   Y : in out BIG_CON_IO.GRAPHICS.Y_RANGE) is
       begin
         if X < SCREEN_BOUNDARIES.X_MIN then
           X := SCREEN_BOUNDARIES.X_MIN;
@@ -359,15 +359,15 @@ package body CURVE is
         -- Dedicated message according to zoom mode (hide/show)
         procedure PUT_MODE (MODE : in ZOOM_MODE_LIST) is
         begin
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 10,
-                       CON_IO.COL_RANGE_LAST - 17);
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 10,
+                       BIG_CON_IO.COL_RANGE_LAST - 17);
           case MODE is
             when INIT =>
-              CON_IO.PUT ("Point & click L");
+              BIG_CON_IO.PUT ("Point & click L");
             when DRAG =>
-              CON_IO.PUT ("Drag L & release");
+              BIG_CON_IO.PUT ("Drag L & release");
             when DONE =>
-              CON_IO.PUT ("L or R click");
+              BIG_CON_IO.PUT ("L or R click");
           end case;
         end PUT_MODE;
 
@@ -379,7 +379,7 @@ package body CURVE is
         end if;
 
         -- Help on zoom only if mouse
-        CON_IO.SET_FOREGROUND (CON_IO.MAGENTA);
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.MAGENTA);
 
         -- Previous mode to hide : Something drawn and new thing different
         if MISC(M_HELP) and then
@@ -400,37 +400,37 @@ package body CURVE is
 
         -- Global help
         if ACTION = TOGGLE or else ACTION = INIT then
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 9,
-                       CON_IO.COL_RANGE_LAST - 17);
-          CON_IO.PUT ("Current ZOOM: " & NORMAL(CURR_ZOOM_NO, 1) );
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 8,
-                       CON_IO.COL_RANGE_LAST - 17);
-          CON_IO.PUT ("0.." & NORMAL(LAST_ZOOM_NO, 1) & ": other ZOOM");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 9,
+                       BIG_CON_IO.COL_RANGE_LAST - 17);
+          BIG_CON_IO.PUT ("Current ZOOM: " & NORMAL(CURR_ZOOM_NO, 1) );
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 8,
+                       BIG_CON_IO.COL_RANGE_LAST - 17);
+          BIG_CON_IO.PUT ("0.." & NORMAL(LAST_ZOOM_NO, 1) & ": other ZOOM");
 
           -- if mouse not installed : color is set here
-          CON_IO.SET_FOREGROUND (CON_IO.MAGENTA);
+          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.MAGENTA);
 
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 7,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("SWITCHES:");
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 6,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("H   Help");
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 5,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("A   Axes");
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 4,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("P   Points");
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 3,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("C   Curve");
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 2,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("S   Scales");
-          CON_IO.MOVE (CON_IO.ROW_RANGE_LAST - 1,
-                       CON_IO.COL_RANGE_LAST - 9);
-          CON_IO.PUT ("Esc Exit");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 7,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("SWITCHES:");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 6,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("H   Help");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 5,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("A   Axes");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 4,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("P   Points");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 3,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("C   Curve");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 2,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("S   Scales");
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE_LAST - 1,
+                       BIG_CON_IO.COL_RANGE_LAST - 9);
+          BIG_CON_IO.PUT ("Esc Exit");
         end if;
 
         -- New help mode
@@ -442,8 +442,8 @@ package body CURVE is
 
         -- Draw a point knowing its real coordinates
         procedure DRAW_POINT (X, Y : in T_COORDINATE) is
-          X_S : CON_IO.GRAPHICS.X_RANGE;
-          Y_S : CON_IO.GRAPHICS.Y_RANGE;
+          X_S : BIG_CON_IO.GRAPHICS.X_RANGE;
+          Y_S : BIG_CON_IO.GRAPHICS.Y_RANGE;
           type PIX is record
             X, Y: INTEGER;
           end record;
@@ -458,7 +458,7 @@ package body CURVE is
           for I in POINT_PIXELS'RANGE loop
             begin
               IN_FRAME (X_S + POINT_PIXELS(I).X, Y_S + POINT_PIXELS(I).Y);
-              CON_IO.GRAPHICS.DRAW_POINT (X_S + POINT_PIXELS(I).X,
+              BIG_CON_IO.GRAPHICS.DRAW_POINT (X_S + POINT_PIXELS(I).X,
                                           Y_S + POINT_PIXELS(I).Y);
             exception
               when others => null;
@@ -469,7 +469,7 @@ package body CURVE is
         end DRAW_POINT;
 
       begin
-        CON_IO.SET_FOREGROUND (CON_IO.RED);
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.RED);
         for I in POINTS'RANGE loop
           DRAW_POINT (POINTS(I).X, POINTS(I).Y);
         end loop;
@@ -478,13 +478,13 @@ package body CURVE is
       -- Draw an horizontal line (for frames and axes)
       procedure DRAW_X (X_MIN, X_MAX : in NATURAL; Y : in NATURAL) is
       begin
-        CON_IO.GRAPHICS.DRAW_LINE (X_MIN, Y, X_MAX, Y);
+        BIG_CON_IO.GRAPHICS.DRAW_LINE (X_MIN, Y, X_MAX, Y);
       end DRAW_X;
 
       -- Draw a vertical line (for frames and axes)
       procedure DRAW_Y (X : in NATURAL; Y_MIN, Y_MAX : in NATURAL) is
       begin
-        CON_IO.GRAPHICS.DRAW_LINE (X, Y_MIN, X, Y_MAX);
+        BIG_CON_IO.GRAPHICS.DRAW_LINE (X, Y_MIN, X, Y_MAX);
       end DRAW_Y;
 
       -- Draw axes of the curve
@@ -492,7 +492,7 @@ package body CURVE is
         X_0, Y_0 : NATURAL;
         INTERSEC : BOOLEAN := TRUE;
       begin
-        CON_IO.SET_FOREGROUND (CON_IO.LIGHT_BLUE);
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_BLUE);
         -- Horizontal
         begin
           Y_0 := Y_REAL_SCREEN (0.0);
@@ -513,7 +513,7 @@ package body CURVE is
         if INTERSEC then
           begin
             IN_FRAME (X_0, Y_0);
-            CON_IO.GRAPHICS.DRAW_POINT (X_0, Y_0);
+            BIG_CON_IO.GRAPHICS.DRAW_POINT (X_0, Y_0);
           exception
             when others => null;
           end;
@@ -529,8 +529,8 @@ package body CURVE is
         -- Draw the frame around the curve
         procedure DRAW_FRAME is
         begin
-          CON_IO.SET_XOR_MODE (CON_IO.XOR_OFF);
-          CON_IO.SET_FOREGROUND (CON_IO.WHITE);
+          BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_OFF);
+          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.WHITE);
           DRAW_X (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.X_MAX,
                   SCREEN_BOUNDARIES.Y_MIN);
           DRAW_Y (SCREEN_BOUNDARIES.X_MAX, SCREEN_BOUNDARIES.Y_MIN,
@@ -539,15 +539,15 @@ package body CURVE is
                   SCREEN_BOUNDARIES.Y_MAX);
           DRAW_Y (SCREEN_BOUNDARIES.X_MIN, SCREEN_BOUNDARIES.Y_MIN,
                   SCREEN_BOUNDARIES.Y_MAX);
-          CON_IO.SET_XOR_MODE (CON_IO.XOR_ON);
+          BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_ON);
         end DRAW_FRAME;
 
       begin
         -- Draw frame
         DRAW_FRAME;
-        CON_IO.SET_FOREGROUND (CON_IO.LIGHT_GREEN);
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_GREEN);
         -- Draw pixel for each possible X screen
-        for X_S in CON_IO.GRAPHICS.X_RANGE
+        for X_S in BIG_CON_IO.GRAPHICS.X_RANGE
                  range SCREEN_BOUNDARIES.X_MIN .. SCREEN_BOUNDARIES.X_MAX loop
           begin
             -- Xscreen -> Xreal -> Yreal -> Yscreen
@@ -555,7 +555,7 @@ package body CURVE is
             Y_R := F (X_R);
             Y_S := Y_REAL_SCREEN (Y_R);
             IN_FRAME (X_S, Y_S);
-            CON_IO.GRAPHICS.DRAW_POINT (X_S, Y_S);
+            BIG_CON_IO.GRAPHICS.DRAW_POINT (X_S, Y_S);
           exception
             when others => null;
           end;
@@ -575,16 +575,16 @@ package body CURVE is
         begin
           case POS is
             when X_MIN =>
-              CON_IO.MOVE (13, 1);
+              BIG_CON_IO.MOVE (13, 1);
             when X_MAX =>
-              CON_IO.MOVE (13, 66);
+              BIG_CON_IO.MOVE (13, 66);
             when Y_MIN =>
-              CON_IO.MOVE (CON_IO.ROW_RANGE'PRED(CON_IO.ROW_RANGE'PRED(
-                            CON_IO.ROW_RANGE_LAST)), 30);
+              BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE'PRED(BIG_CON_IO.ROW_RANGE'PRED(
+                            BIG_CON_IO.ROW_RANGE_LAST)), 30);
             when Y_MAX =>
-              CON_IO.MOVE (2, 30);
+              BIG_CON_IO.MOVE (2, 30);
           end case;
-          CON_IO.PUT (COO_TO_STR(SCALE));
+          BIG_CON_IO.PUT (COO_TO_STR(SCALE));
         end PUT_SCALE;
       begin
         -- Optimization : most frequent case
@@ -594,7 +594,7 @@ package body CURVE is
           return;
         end if;
 
-        CON_IO.SET_FOREGROUND (CON_IO.CYAN);
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.CYAN);
 
         -- Previous scale to hide : Something drawn and new values different
         if MISC(M_SCALE) then
@@ -622,15 +622,15 @@ package body CURVE is
         if      ACTION = TOGGLE
         or else (ACTION = INIT and then MISC (M_SCALE)) then
           -- External scales
-          CON_IO.SET_FOREGROUND (CON_IO.LIGHT_GRAY);
-          CON_IO.MOVE (1, 30);
-          CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MAX)));
-          CON_IO.MOVE (CON_IO.ROW_RANGE'PRED(CON_IO.ROW_RANGE_LAST), 30);
-          CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MIN)));
-          CON_IO.MOVE (12, 1);
-          CON_IO.PUT (COO_TO_STR(X_SCREEN_REAL(SCREEN_BOUNDARIES.X_MIN)));
-          CON_IO.MOVE (12, 66);
-          CON_IO.PUT (COO_TO_STR(X_SCREEN_REAL(SCREEN_BOUNDARIES.X_MAX)));
+          BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.LIGHT_GRAY);
+          BIG_CON_IO.MOVE (1, 30);
+          BIG_CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MAX)));
+          BIG_CON_IO.MOVE (BIG_CON_IO.ROW_RANGE'PRED(BIG_CON_IO.ROW_RANGE_LAST), 30);
+          BIG_CON_IO.PUT (COO_TO_STR(Y_SCREEN_REAL(SCREEN_BOUNDARIES.Y_MIN)));
+          BIG_CON_IO.MOVE (12, 1);
+          BIG_CON_IO.PUT (COO_TO_STR(X_SCREEN_REAL(SCREEN_BOUNDARIES.X_MIN)));
+          BIG_CON_IO.MOVE (12, 66);
+          BIG_CON_IO.PUT (COO_TO_STR(X_SCREEN_REAL(SCREEN_BOUNDARIES.X_MAX)));
         end if;
 
         -- Toggle mode
@@ -644,7 +644,7 @@ package body CURVE is
         -- Draw/hide a zoom frame
         procedure PUT_FRAME (BOUNDS : in T_SCREEN_BOUNDARIES) is
         begin
-          CON_IO.GRAPHICS.DRAW_RECTANGLE (
+          BIG_CON_IO.GRAPHICS.DRAW_RECTANGLE (
              BOUNDS.X_MIN,
              BOUNDS.Y_MIN,
              BOUNDS.X_MAX,
@@ -664,7 +664,7 @@ package body CURVE is
         end if;
 
         -- If action = update, then cur mode is drag and bounds are new
-        CON_IO.SET_FOREGROUND (CON_IO.CYAN);
+        BIG_CON_IO.SET_FOREGROUND (BIG_CON_IO.CYAN);
 
         -- Previous frame to hide : new drag or drag -> done or done -> init
         if ACTION = UPDATE
@@ -707,19 +707,19 @@ package body CURVE is
         -- Reset zoom and hide zoom frame.
         DRAW_HELP (UPDATE);
         ZOOM_FRAME_ACTION := TOGGLE;
-        CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
+        BIG_CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
       end CANCEL_ZOOM;
 
-    use CON_IO;
+    use BIG_CON_IO;
     begin -- DRAW_ONE
 
       -- Init context
       PREV_ZOOM_MODE := INIT;
       CURR_ZOOM_MODE := INIT;
-      EVENT := CON_IO.REFRESH;
-      CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
+      EVENT := BIG_CON_IO.REFRESH;
+      BIG_CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
 
-      CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
+      BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
       if MVALID then
         SET_MOUSE_IN_FRAME(MX, MY);
         MOUSE_BOUNDS.X_MIN := MX;
@@ -734,8 +734,8 @@ package body CURVE is
 
       loop -- Main loop of mouse and keys actions
 
-        if EVENT = CON_IO.REFRESH then
-          CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
+        if EVENT = BIG_CON_IO.REFRESH then
+          BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
           if MVALID then
             SET_MOUSE_IN_FRAME(MX, MY);
             MOUSE_BOUNDS.X_MIN := MX;
@@ -752,17 +752,17 @@ package body CURVE is
         end if;
 
         -- Infinite wait
-        CON_IO.GET_KEY_TIME (CALENDAR.CLOCK, TRUE, TRUE,
+        BIG_CON_IO.GET_KEY_TIME (CALENDAR.CLOCK, TRUE, TRUE,
               EVENT, KEY, IS_CHAR, CTRL, SHIFT);
 
         case EVENT is
-          when CON_IO.BREAK =>
+          when BIG_CON_IO.BREAK =>
             -- End of curve
             return FALSE;
-          when CON_IO.REFRESH =>
+          when BIG_CON_IO.REFRESH =>
             -- Redraw at next loop;
             null;
-          when CON_IO.TIMEOUT =>
+          when BIG_CON_IO.TIMEOUT =>
             -- Should not occure: GET_KEY_TIME(INFINITE_TIME)
             null;
           when ESC =>
@@ -783,7 +783,7 @@ package body CURVE is
             elsif UPPER_CHAR(CHAR) = 'S' then
               -- Toggle scales
               DRAW_SCALE (TOGGLE, MOUSE_BOUNDS);
-              CON_IO.ENABLE_MOTION_EVENTS (
+              BIG_CON_IO.ENABLE_MOTION_EVENTS (
                  MISC(M_SCALE) or else CURR_ZOOM_MODE = DRAG);
             elsif UPPER_CHAR(CHAR) = 'P' then
               -- Toggle points
@@ -814,7 +814,7 @@ package body CURVE is
 
           when MOUSE_BUTTON =>
             -- New button status
-            CON_IO.GET_MOUSE_EVENT (MOUSE_EVENT, CON_IO.X_Y);
+            BIG_CON_IO.GET_MOUSE_EVENT (MOUSE_EVENT, BIG_CON_IO.X_Y);
             SET_MOUSE_IN_FRAME(MOUSE_EVENT.X, MOUSE_EVENT.Y);
             -- Update scales and frame according to zoom mode
             if CURR_ZOOM_MODE = INIT then
@@ -836,22 +836,22 @@ package body CURVE is
             case CURR_ZOOM_MODE is
               when INIT =>
                 if MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = CON_IO.LEFT
-                and then MOUSE_EVENT.STATUS = CON_IO.PRESSED then
+                and then MOUSE_EVENT.BUTTON = BIG_CON_IO.LEFT
+                and then MOUSE_EVENT.STATUS = BIG_CON_IO.PRESSED then
                 
                   CURR_ZOOM_MODE := DRAG;
                   DRAW_HELP (UPDATE);
                   -- Store what has to be done with zoom frame
                   CLICKED_STATUS := MOUSE_EVENT;
                   ZOOM_FRAME_ACTION := TOGGLE;
-                  CON_IO.ENABLE_MOTION_EVENTS (TRUE);
+                  BIG_CON_IO.ENABLE_MOTION_EVENTS (TRUE);
                 else
                   -- no change
                   ZOOM_FRAME_ACTION := NONE;
                 end if;
               when DRAG =>
-                if       MOUSE_EVENT.BUTTON = CON_IO.LEFT
-                and then MOUSE_EVENT.STATUS = CON_IO.RELEASED then
+                if       MOUSE_EVENT.BUTTON = BIG_CON_IO.LEFT
+                and then MOUSE_EVENT.STATUS = BIG_CON_IO.RELEASED then
                   -- release
                   if      MOUSE_EVENT.X = CLICKED_STATUS.X
                   or else MOUSE_EVENT.Y = CLICKED_STATUS.Y then
@@ -859,7 +859,7 @@ package body CURVE is
                     CANCEL_ZOOM;
                   else
                     -- Drag done
-                    CON_IO.ENABLE_MOTION_EVENTS (FALSE);
+                    BIG_CON_IO.ENABLE_MOTION_EVENTS (FALSE);
                     CURR_ZOOM_MODE := DONE;
                     DRAW_HELP (UPDATE);
                     -- Store what has to be done with zoom frame
@@ -868,8 +868,8 @@ package body CURVE is
                 end if;
               when DONE =>
                 if MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = CON_IO.LEFT
-                and then MOUSE_EVENT.STATUS = CON_IO.PRESSED then
+                and then MOUSE_EVENT.BUTTON = BIG_CON_IO.LEFT
+                and then MOUSE_EVENT.STATUS = BIG_CON_IO.PRESSED then
                   -- Click left : Validate
                   -- Zoom status is DONE. Validate new scales in Curr_zoom_no+1
                   declare
@@ -907,7 +907,7 @@ package body CURVE is
                       CURR_ZOOM_NO := NEW_ZOOM_NO;
                       LAST_ZOOM_NO := CURR_ZOOM_NO;
                       ZOOM_ARRAY(CURR_ZOOM_NO) := NEW_BOUNDS;
-                      CON_IO.ENABLE_MOTION_EVENTS (FALSE);
+                      BIG_CON_IO.ENABLE_MOTION_EVENTS (FALSE);
                       return TRUE;
                     exception
                       when others =>
@@ -917,8 +917,8 @@ package body CURVE is
                   end;
 
                 elsif MOUSE_EVENT.VALID
-                and then MOUSE_EVENT.BUTTON = CON_IO.RIGHT
-                and then MOUSE_EVENT.STATUS = CON_IO.PRESSED then
+                and then MOUSE_EVENT.BUTTON = BIG_CON_IO.RIGHT
+                and then MOUSE_EVENT.STATUS = BIG_CON_IO.PRESSED then
                   CANCEL_ZOOM;
                 else
                   -- no change in init or done
@@ -929,7 +929,7 @@ package body CURVE is
 
             -- perform zoom frame drawing
             if MOUSE_EVENT.VALID
-            or else MOUSE_EVENT.STATUS /= CON_IO.PRESSED then
+            or else MOUSE_EVENT.STATUS /= BIG_CON_IO.PRESSED then
               DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
             end if;
         end case; -- event
@@ -943,12 +943,12 @@ package body CURVE is
 
   begin -- DRAW
     -- Initialise graphics
-    CON_IO.INIT;
-    CON_IO.SET_FOREGROUND (BLINK_STAT => CON_IO.NOT_BLINK);
+    BIG_CON_IO.INIT;
+    BIG_CON_IO.SET_FOREGROUND (BLINK_STAT => BIG_CON_IO.NOT_BLINK);
 
     X_MNG.X_STOP_BLINKING_TASK;
-    CON_IO.SET_XOR_MODE (CON_IO.XOR_ON);
-    CON_IO.SET_POINTER_SHAPE(CON_IO.CROSS);
+    BIG_CON_IO.SET_XOR_MODE (BIG_CON_IO.XOR_ON);
+    BIG_CON_IO.SET_POINTER_SHAPE(BIG_CON_IO.CROSS);
 
     -- Initialise zooms storing
     ZOOM_ARRAY(ZOOM_NO_RANGE'FIRST) := BOUNDARIES;
@@ -977,14 +977,12 @@ package body CURVE is
 
       if not DRAW_RESULT then
         -- Exit drawings
-        CON_IO.RESET_TERM;
         X_MNG.X_START_BLINKING_TASK;
-        CON_IO.SET_XOR_MODE (CON_IO.XOR_OFF);
-        CON_IO.SET_POINTER_SHAPE(CON_IO.ARROW);
+        BIG_CON_IO.DESTROY;
         exit;
       else
         -- New drawing : clear graphic
-        CON_IO.RESET_TERM;
+        BIG_CON_IO.RESET_TERM;
       end if;
 
     end loop;
@@ -992,10 +990,8 @@ package body CURVE is
 
   exception
     when others =>
-      CON_IO.RESET_TERM;
       X_MNG.X_START_BLINKING_TASK;
-      CON_IO.SET_XOR_MODE (CON_IO.XOR_OFF);
-      CON_IO.SET_POINTER_SHAPE(CON_IO.ARROW);
+      BIG_CON_IO.DESTROY;
       raise;
   end DRAW;
 
