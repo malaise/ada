@@ -42,7 +42,8 @@ procedure T_Tcp_Util is
     if Server then
       if not In_Ovf then
         if My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access, Message) then
-          Ada.Text_Io.Put_Line (Msg & " sent num " & Integer'Image(Message.Num));
+          Ada.Text_Io.Put_Line (Msg & " sent num "
+                                    & Integer'Image(Message.Num));
           return True;
         else
           In_Ovf := True;
@@ -79,7 +80,8 @@ procedure T_Tcp_Util is
       Ada.Text_Io.Put_Line ("End of overflow on invalid dscr");
       return;
     end if;
-    Ada.Text_Io.Put_Line ("End of overflow Cb ->                    End of overflow");
+    Ada.Text_Io.Put_Line (
+       "End of overflow Cb ->                    End of overflow");
     In_Ovf := False;
   end End_Ovf_Cb;
 
@@ -311,12 +313,12 @@ begin
 
 exception
   when Arg_Error =>
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <mode> <port>");
+    Ada.Text_Io.Put_Line ("Usage: "
+            & Argument.Get_Program_Name & " <mode> <port>");
     Ada.Text_Io.Put_Line (" <mode> ::= -c<server_host> | -s");
     Ada.Text_Io.Put_Line (" <port> ::= -P<port_name> | -p<port_num>");
   when Error : others =>
     Ada.Text_Io.Put_Line ("Exception: "
                    & Ada.Exceptions.Exception_Name (Error));
 end T_Tcp_Util;
-
 
