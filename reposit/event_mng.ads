@@ -1,8 +1,6 @@
 with Sys_Calls;
 package Event_Mng is
 
-
-
   -------------------
   -- Fd management --
   -------------------
@@ -24,7 +22,6 @@ package Event_Mng is
   function Fd_Callback_Set (Fd : in File_Desc; Read : in Boolean)
   return Boolean;
 
-
   -----------------------
   -- Signal management --
   -----------------------
@@ -32,8 +29,9 @@ package Event_Mng is
   type Sig_Callback is access procedure;
 
   -- Register a callback on signal
-  -- Call it with null to disable generation of Signal_Event by Wait
-  -- Default is event generation with no_action callback
+  -- Wait will generate Signal_Event as soon as there is a callback, so:
+  --   Unregister with null, then no Signal_Event will be returned,
+  --   Register an empty procedure for the event only. This is the default.
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback);
   procedure Set_Sig_Child_Callback (Callback : in Sig_Callback);
 
