@@ -2,6 +2,7 @@
 [ "Error: N >= 0 or no argument expected." putl ssize popn retall ] pope
 ssize 1 > pushle copye ifcall
 ssize 0 = [ "Defaulting to " put 10 dup putl ] ifcall
+dup isinte ~ pushle copye ifcall
 dup 0 < pushle ifcall 
 
 [ 
@@ -20,4 +21,5 @@ call
 
 # Remove counter
 pop
-
+pushle
+pop
