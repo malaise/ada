@@ -3,7 +3,7 @@ package body Many_Strings is
   Sep : constant Character := Ascii.Nul;
 
   -- Concatenation
-  function Cat (To : String; What : String) return String is
+  function Cat (To : Many_String; What : String) return Many_String is
   begin
     return To & Sep & What;
   end Cat;
@@ -15,7 +15,7 @@ package body Many_Strings is
 
 
   -- Decode
-  function Nb (Str : String) return Positive is
+  function Nb (Str : Many_String) return Positive is
     N : Natural;
   begin
     N := 1;
@@ -27,7 +27,7 @@ package body Many_Strings is
     return N;
   end Nb;
     
-  function Nth (Str : String; N : Positive) return String is
+  function Nth (Str : Many_String; N : Positive) return String is
     Last : constant Natural := Str'Last;
 
     -- Returns 0 if not found
