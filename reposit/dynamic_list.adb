@@ -24,6 +24,18 @@ package body Dynamic_List is
     end if;
   end Check_In;
 
+  function Check_In(Pos : in Link) return Boolean is
+  begin
+    return Pos /= null;
+  end Check_In;
+
+  procedure Check_Cb (List : in List_Type) is
+  begin
+    if List.In_Cb then
+      raise In_Callback;
+    end if;
+  end Check_Cb;
+
   -- delete the full list
   procedure Delete_List (List : in out List_Type;
                          Deallocate : in Boolean := True) is
@@ -31,6 +43,7 @@ package body Dynamic_List is
     procedure Deallocation_Of is new
      Unchecked_Deallocation(Object=>Cell, Name=>Link);
   begin
+    Check_Cb(List);
     if Deallocate then
       -- deallocate the list
       while List.First /= null loop
@@ -54,7 +67,7 @@ package body Dynamic_List is
         Free_List := List.First;
       end if;
     end if;
-    List := (Modified => True, Pos_First | Pos_Last => 0,
+    List := (Modified => True, In_Cb => False, Pos_First | Pos_Last => 0,
      Current => null, First => null, Last => null);
   end Delete_List;
 
@@ -87,6 +100,7 @@ package body Dynamic_List is
                   Item : out Element_Type;
                   Move : in Movement := Next) is
   begin
+    Check_Cb(List);
     Check(List);
     Item := List.Current.Value;
     if Move /= Current then
@@ -99,6 +113,7 @@ package body Dynamic_List is
                   Move : in Movement := Next;
                   Done : out Boolean) is
   begin
+    Check_Cb(List);
     Check(List);
     Item := List.Current.Value;
     -- Modified is set by Move_To
@@ -118,6 +133,7 @@ package body Dynamic_List is
                     Item : in Element_Type;
                     Move : in Movement := Next) is
   begin
+    Check_Cb(List);
     Check(List);
     List.Current.Value := Item;
     if Move /= Current then
@@ -131,6 +147,7 @@ package body Dynamic_List is
                     Move : in Movement := Next;
                     Done : out Boolean) is
   begin
+    Check_Cb(List);
     Check(List);
     List.Current.Value := Item;
     List.Modified := True;
@@ -151,6 +168,7 @@ package body Dynamic_List is
                     Where : in Direction := Next) is
     New_Cell : Link;
   begin
+    Check_Cb(List);
     List.Modified := True;
     if Free_List = null then
       -- create the first element of the list
@@ -201,6 +219,7 @@ package body Dynamic_List is
   procedure Delete (List : in out List_Type; Move : in Direction := Next) is
     Del_Cell : Link;
   begin
+    Check_Cb(List);
     Check(List);
 
     if List.Pos_First = 1 and then List.Pos_Last = 1 then
@@ -299,6 +318,7 @@ package body Dynamic_List is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Natural;
   begin
+    Check_Cb(List);
     Check(List);
     -- start from
     if From_Current then
@@ -344,6 +364,7 @@ package body Dynamic_List is
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   procedure Rewind (List : in out List_Type; Where : in Direction := Next) is
   begin
+    Check_Cb(List);
     Check(List);
     -- Care here: List_Length reads Pos_First and Pos_Last!
     if Where = Next then
@@ -509,6 +530,7 @@ package body Dynamic_List is
   -- Copy the Val list to To list
   procedure Assign (To : in out List_Type; Val : in List_Type) is
   begin
+    Check_Cb(To);
     To := Val;
     To.Modified := True;
   end Assign;
@@ -525,34 +547,47 @@ package body Dynamic_List is
 
 
   -- Search
-  procedure Search (List         : in out List_Type;
-                    Criteria     : in Element_Type;
-                    Where        : in Direction := Next;
-                    Occurence    : in Positive := 1;
-                    From         : in Search_Kind_List) is
+  procedure Search_Match (List      : in out List_Type;
+                          Found     : out Boolean;
+                          Match     : in Match_Access;
+                          Criteria  : in Element_Type;
+                          Where     : in Direction := Next;
+                          Occurence : in Positive := 1;
+                          From      : in Search_Kind_List) is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Natural;
 
-    procedure Next_Pos is
+    function Next_Pos return Boolean is
     begin
-      Check_In(New_Pos.Next);
+      if not Check_In(New_Pos.Next) then
+        return False;
+      end if;
       New_Pos := New_Pos.Next;
       New_Pos_First := New_Pos_First + 1;
       New_Pos_Last := New_Pos_Last - 1;
+      return True;
     end Next_Pos;
 
-    procedure Prev_Pos is
+    function Prev_Pos return Boolean is
     begin
-      Check_In(New_Pos.Prev);
+      if not Check_In(New_Pos.Prev) then
+        return False;
+      end if;
       New_Pos := New_Pos.Prev;
       New_Pos_First := New_Pos_First - 1;
       New_Pos_Last := New_Pos_Last + 1;
+      return True;
     end Prev_Pos;
 
   begin
+    Check_Cb(List);
+    -- Default
+    Found := False;
     if Is_Empty (List) then
-      raise Not_In_List;
+      return;
     end if;
+    -- Forbid calls from application
+    List.In_Cb := True;
     -- start from
     if From /= Absolute then
       New_Pos := List.Current;
@@ -575,51 +610,112 @@ package body Dynamic_List is
       when Next =>
         for I in 1 .. Occurence loop
           if I /= 1 or else From = Skip_Current then
-            Next_Pos;
+            exit when not Next_Pos;
           end if;
           loop
-            exit when Match(New_Pos.Value, Criteria);
-            Next_Pos;
+            Found := Match = null;
+            exit when Found;
+            Found := Match(New_Pos.Value, Criteria);
+            exit when Found;
+            exit when not Next_Pos;
           end loop;
         end loop;
       when Prev =>
         for I in 1 .. Occurence loop
           if I /= 1 or else From = Skip_Current then
-            Prev_Pos;
+            exit when not Prev_Pos;
           end if;
           loop
-            exit when Match(New_Pos.Value, Criteria);
-            Prev_Pos;
+            Found := Match = null;
+            exit when Found;
+            Found := Match(New_Pos.Value, Criteria);
+            exit when Found;
+            exit when not Prev_Pos;
           end loop;
         end loop;
     end case;
 
-    List.Current := New_Pos;
-    List.Pos_First := New_Pos_First;
-    List.Pos_Last := New_Pos_Last;
-    List.Modified := True;
+    if Found then
+      -- No chaange if not found
+      List.Current := New_Pos;
+      List.Pos_First := New_Pos_First;
+      List.Pos_Last := New_Pos_Last;
+      List.Modified := True;
+    end if;
+    List.In_Cb := False;
+  end Search_Match;
+
+  procedure Search (List      : in out List_Type;
+                    Found     : out Boolean;
+                    Criteria  : in Element_Type;
+                    Where     : in Direction := Next;
+                    Occurence : in Positive := 1;
+                    From      : in Search_Kind_List) is
+    function Loc_Match (Current, Criteria : Element_Type) return Boolean is
+    begin
+      return Match (Current, Criteria);
+    end Loc_Match;
+  begin
+    Search_Match (List, Found, Loc_Match'Unrestricted_Access,
+                  Criteria, Where, Occurence, From);
   end Search;
 
-  procedure Safe_Search (List         : in out List_Type;
-                         Found        : out Boolean;
-                         Criteria     : in Element_Type;
-                         Where        : in Direction := Next;
-                         Occurence    : in Positive := 1;
-                         From         : in Search_Kind_List) is
-    procedure My_Search is new Search (Match);
+  procedure Unsafe_Search (List      : in out List_Type;
+                           Criteria  : in Element_Type;
+                           Where     : in Direction := Next;
+                           Occurence : in Positive := 1;
+                           From      : in Search_Kind_List) is
+    Found : Boolean;
+    function Loc_Match (Current, Criteria : Element_Type) return Boolean is
+    begin
+      return Match (Current, Criteria);
+    end Loc_Match;
   begin
-    My_Search (List, Criteria, Where, Occurence, From);
-    Found := True;
-  exception
-    when Not_In_List =>
-      Found := False;
-  end Safe_Search;
+    Search_Match (List, Found, Loc_Match'Unrestricted_Access,
+                  Criteria, Where, Occurence, From);
+    if not Found then
+      raise Not_In_List;
+    end if;
+  end Unsafe_Search;
+
+  -- Iterate
+  procedure Iterate (List      : in out List_Type;
+                     Match     : in Match_Access;
+                     Criteria  : in Element_Type;
+                     Where     : in Direction := Next;
+                     From      : in Search_Kind_List;
+                     Iteration : in Iteration_Access) is
+    Found : Boolean;
+    Go_On : Boolean;
+  begin
+    Check_Cb(List);
+    -- By default
+    Go_On := True;
+    -- Search first matching item
+    Search_Match (List, Found, Match, Criteria, Where, 1, From);
+    loop
+      exit when not Found;
+      if Iteration /= null then
+        -- Forbid calls from application
+        List.In_Cb := True;
+        -- Call cb
+        Iteration (List.Current.Value, Go_On);
+        List.In_Cb := False;
+        List.Modified := True;
+        -- Cb wants to stop processing now
+        exit when not Go_On;
+      end if;
+      -- Search next matching item
+      Search_Match (List, Found, Match, Criteria, Where, 1, Skip_Current);
+    end loop;
+  end Iterate;
 
 
   -- Sort
   procedure Sort (List : in out List_Type) is
     Last : constant Natural := List_Length (List);
   begin
+    Check_Cb(List);
     if Last <= 1 then
       -- No or 1 element. No sort.
       return;
@@ -696,3 +792,4 @@ package body Dynamic_List is
   end Sort;
 
 end Dynamic_List;
+
