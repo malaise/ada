@@ -5,7 +5,7 @@ with SELECT_FILE;
 procedure T_SELECT_FILE is
 
   READ : BOOLEAN;
-  FILE : TEXT_HANDLER.TEXT(128);
+  FILE : TEXT_HANDLER.TEXT(500);
 
   procedure INIT is
   begin
@@ -24,3 +24,4 @@ begin
     READ := not READ;
   end loop;
 end T_SELECT_FILE;
+
