@@ -13,16 +13,31 @@ begin
 
   Debug.Init;
 
+  -- Check at most one arg
+  if Argument.Get_Nbre_Arg > 1 then
+    Mcd_Parser.Print_Help;
+    return;
+  end if;
+
+  -- Check for fifo
   begin
     declare
-      Str : constant String := Argument.Get_Parameter (1, "h");
+      Str : constant String := Argument.Get_Parameter (1, "f");
     begin
-      Mcd_Parser.Print_Help;
-      return;
+      -- -f. A fifo must be provided
+      if Str = "" then
+        Mcd_Parser.Print_Help;
+        return;
+      end if;
+      -- A fifo is provided
     end;
   exception
     when Argument.Argument_Not_Found =>
-      null;
+      if Argument.Get_Nbre_Arg /= 0 then
+        -- Unrecognised argument
+        Mcd_Parser.Print_Help;
+        return;
+      end if;
     when others =>
       Mcd_Parser.Print_Help;
       return;
