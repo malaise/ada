@@ -38,72 +38,21 @@ extern int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
   }
 }
 
-#define NORMAL 0
-#define NOECHO 1
-#define ASYNC  2
-#define TRANSP 3
+int set_blocking (int fd, int blocking) {
+  int flg;
 
-extern int set_stdin_attr (int mode) {
-
-  struct termios termattr;
-  int res;
-
-  if (tcgetattr(0, &termattr) != 0) {
+  flg = fcntl (fd, F_GETFL, 0);
+  if (flg < 0) {
     return (-1);
   }
 
-  switch (mode) {
-    case NORMAL:
-      termattr.c_lflag |= ICANON;
-      termattr.c_lflag |= ECHO;
-    break;
-    case NOECHO:
-      termattr.c_lflag |= ICANON;
-      termattr.c_lflag &= ~ECHO;
-    break;
-    case ASYNC:
-      termattr.c_lflag &= ~ICANON;
-      termattr.c_lflag |= ECHO;
-      termattr.c_cc[VMIN] = 1;
-      termattr.c_cc[VTIME]= 0;
-    break;
-    case TRANSP:
-      termattr.c_lflag &= ~ICANON;
-      termattr.c_lflag &= ~ECHO;
-      termattr.c_cc[VMIN] = 1;
-      termattr.c_cc[VTIME]= 0;
-    break;
-    default:
-      errno = EINVAL;
-      return (-1);
-    break;
+  if (blocking) {
+    flg &= ~O_NONBLOCK;   
+  } else {
+    flg |= O_NONBLOCK;
   }
 
-
-  if (tcsetattr (0, TCSANOW, &termattr) != 0) {
-    return (-1);
-  }
-
-  res = fcntl (0, F_GETFL, 0);
-  if (res < 0) {
-    return (-1);
-  }
-  switch (mode) {
-    case NORMAL:
-    case NOECHO:
-      res &= ~O_NONBLOCK;   
-    break;
-    case ASYNC:
-    case TRANSP:
-       res |= O_NONBLOCK;
-    break;
-    default:
-      errno = EINVAL;
-      return (-1);
-    break;
-  }
-
-  if (fcntl (0, F_SETFL, res)  == -1) {
+  if (fcntl (fd, F_SETFL, flg)  == -1) {
     return (-1);
   }
 
@@ -111,15 +60,67 @@ extern int set_stdin_attr (int mode) {
 
 }
 
-extern int get_immediate_stdin (void) {
+#define NORMAL 0
+#define NOECHO 1
+#define ASYNC  2
+#define TRANSP 3
+
+extern int set_tty_attr (int fd, int mode) {
+
+  struct termios termattr;
+  int blk;
+
+  if (tcgetattr(fd, &termattr) != 0) {
+    return (-1);
+  }
+
+  switch (mode) {
+    case NORMAL:
+      termattr.c_lflag |= ICANON;
+      termattr.c_lflag |= ECHO;
+      blk = 1;
+    break;
+    case NOECHO:
+      termattr.c_lflag |= ICANON;
+      termattr.c_lflag &= ~ECHO;
+      blk = 1;
+    break;
+    case ASYNC:
+      termattr.c_lflag &= ~ICANON;
+      termattr.c_lflag |= ECHO;
+      termattr.c_cc[VMIN] = 1;
+      termattr.c_cc[VTIME]= 0;
+      blk = 0;
+    break;
+    case TRANSP:
+      termattr.c_lflag &= ~ICANON;
+      termattr.c_lflag &= ~ECHO;
+      termattr.c_cc[VMIN] = 1;
+      termattr.c_cc[VTIME]= 0;
+      blk = 0;
+    break;
+    default:
+      errno = EINVAL;
+      return (-1);
+    break;
+  }
+
+  if (tcsetattr (fd, TCSANOW, &termattr) != 0) {
+    return (-1);
+  }
+
+  return set_blocking (fd, blk);
+}
+
+extern int get_immediate (int fd) {
 
   ssize_t n;
   char c;
 
-  n = read (0, &c, 1);
+  n = read (fd, &c, 1);
 
   if ( (n < 0) && (errno != EWOULDBLOCK) ) {
-    perror ("get_immediate_stdin/read");
+    perror ("get_immediate/read");
     return (-1);
   } else if (n > 0) {
     return ((char)c);
@@ -152,6 +153,21 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
   struct stat stat_struct;
 
   if (lstat (path, &stat_struct) != 0) {
+    return (-1);
+  }
+
+  simple_stat_struct->mode = stat_struct.st_mode;
+  simple_stat_struct->mtime = stat_struct.st_mtime;
+
+  return (0);
+
+}
+
+extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
+
+  struct stat stat_struct;
+
+  if (fstat (fd, &stat_struct) != 0) {
     return (-1);
   }
 
