@@ -774,6 +774,15 @@ int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         *p_line_id = (void*) win_id;
         *p_kind = REFRESH;
         result = OK;
+      case EnterNotify:
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        *p_line_id = (void*) win_id;
+        *p_kind = REFRESH;
+        result = OK;
       break;
       default :
         /* Other events discarded */
