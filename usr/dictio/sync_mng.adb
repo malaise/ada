@@ -1,5 +1,5 @@
-with Timers, Event_Mng;
-with Status, Intra_Dictio, Data_Base, Debug;
+with Timers, Event_Mng, Dynamic_List, Sys_Calls;
+with Status, Intra_Dictio, Data_Base, Parse, Debug;
 package body Sync_Mng is
 
   Sending_Sync : Boolean := False;
@@ -7,6 +7,8 @@ package body Sync_Mng is
   Timer_Id : Timers.Timer_Id := Timers.No_Timer;
   Sync_Has_Been_Received : Boolean;
   Nb_Syn_Received : Natural := 0;
+
+  Sync_Timeout : constant Duration := 1.0;
 
 
   function Timer_Active return Boolean is
@@ -23,7 +25,7 @@ package body Sync_Mng is
     end if;
   end Cancel_Timer;
 
-  function Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
+  function Timer_Rec_Cb (Id : in Timers.Timer_Id) return Boolean is
   begin
     if Sync_Has_Been_Received then
       -- Still in sync
@@ -35,15 +37,17 @@ package body Sync_Mng is
       end if;
     end if;
     return False;
-  end Timer_Cb;
+  end Timer_Rec_Cb;
 
   procedure Start is
   begin
     Cancel_Timer;
     Nb_Syn_Received := 0;
     Intra_Dictio.Send_Status;
-    Timer_Id := Timers.Create ( (Timers.Delay_Sec, 1.0, 1.0),
-                                Timer_Cb'access);
+    Timer_Id := Timers.Create ( (Timers.Delay_Sec,
+                                 Sync_Timeout,
+                                 2 * Sync_Timeout),
+                                Timer_Rec_Cb'access);
     Sync_Has_Been_Received := False;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Start");
@@ -76,60 +80,151 @@ package body Sync_Mng is
   Max_Retry : constant := 3;
   First_Timeout : constant Natural := 100;
   Timeout_Factor : constant := 2;
+
+  Delay_Per_Kb : Natural := 0;
+
+  procedure Set_Delay is
+    Default_Delay_Per_Kb : constant Natural := 1;
+    Val : String (1 .. 4);
+    Set, Trunc : Boolean;
+    Len : Natural;
+  begin
+    if Delay_Per_Kb /= 0 then
+      return;
+    end if;
+    Sys_Calls.Getenv ("DICTIO_DELAY_PER_KB", Set, Trunc, Val, Len);
+    if not Set or else Len = 0 or else Trunc then
+      Delay_Per_Kb := Default_Delay_Per_Kb;
+    else
+      begin
+        Delay_Per_Kb := Positive'Value (Val(1 .. Len));
+      exception
+        when others =>
+          Delay_Per_Kb := Default_Delay_Per_Kb;
+      end;
+    end if;
+    if Debug.Level_Array(Debug.Sync) then
+      Debug.Put ("Sync: Delay per Kb set to" & Delay_Per_Kb'Img & " ms");
+    end if;
+  end Set_Delay;
+
+  package Sync_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
+  Sync_List : Sync_List_Mng.List_Type;
+
+  procedure Do_Sync;
+
+  function Timer_Sen_Cb (Id : in Timers.Timer_Id) return Boolean is
+  begin
+    Do_Sync;
+    return False;
+  end Timer_Sen_Cb;
   
-  procedure Send is
+  procedure Send (To : Tcp_Util.Host_Name) is
+    Tid : Timers.Timer_Id := Timers.No_Timer;
+  begin
+    if Sending_Sync then
+      -- Reject new dest if already syncing
+      return;
+    end if;
+    if Sync_List_Mng.Is_Empty (Sync_List) then
+      -- First dest, arm timer
+      Tid := Timers.Create ( (Timers.Delay_Sec,
+                              Timers.No_Period,
+                              Sync_Timeout),
+                              Timer_Sen_Cb'access);
+    end if;
+    if Debug.Level_Array(Debug.Sync) then
+      Debug.Put ("Sync: Adding dest " & Parse (To));
+    end if;
+    Sync_List_Mng.Insert (Sync_List, To);
+  end Send;
+      
+
+  procedure Do_Sync is
     Item : Data_Base.Item_Rec;
     Result : Intra_Dictio.Reply_Result_List;
     Timeout : Natural;
-    Nb_Items : Natural;
+    Dest : Tcp_Util.Host_Name;
+    Bytes_Sent : Natural;
     use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List;
   begin
-    Sending_Sync := True;
+    Set_Delay;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Sending " & Natural'Image(Data_Base.Nb_Item)
                & " items");
     end if; 
+
+    Sending_Sync := True;
     Data_Base.Read_First (Item);
-    Nb_Items := 0;
+    Bytes_Sent := 0;
 
     Items:
     while Item /= Data_Base.No_Item loop
-      Timeout := First_Timeout;
 
-      Retries:
-      for I in 1 .. Max_Retry loop
-        Result := Intra_Dictio.Reply_Sync_Data (Item);
-        -- Ok or Error or too many Overflows.
-        exit Retries when Result /= Intra_Dictio.Overflow
-                          or else I = Max_Retry;
-        if Debug.Level_Array(Debug.Sync) then
-          Debug.Put ("Sync: Overflow");
-        end if; 
-        Event_Mng.Wait (Timeout);
-        -- Increase timeout for next retry
-        Timeout := Timeout * Timeout_Factor;
-      end loop Retries;
+      Sync_List_Mng.Move_To (Sync_List, Sync_List_Mng.Next, 0, False);
+      Dests:
+      loop
+        Sync_List_Mng.Read (Sync_List, Dest, Sync_List_Mng.Current);
 
-      if Result = Intra_Dictio.Ok then
-        Nb_Items := Nb_Items + 1;
-        Event_Mng.Wait (1);
-      else
-        -- Give up if too many overflows or other error
-        if Debug.Level_Array(Debug.Sync) then
-          Debug.Put ("Sync: Giving up due to " & Result'Img);
-        end if; 
-        exit Items;
-      end if;
+        Timeout := First_Timeout;
+        Retries:
+        for I in 1 .. Max_Retry loop
+          Result := Intra_Dictio.Send_Sync_Data (Dest, Item);
+          -- Ok or Error or too many Overflows.
+          exit Retries when Result /= Intra_Dictio.Overflow
+                            or else I = Max_Retry;
+          if Debug.Level_Array(Debug.Sync) then
+            Debug.Put ("Sync: Overflow to " & Parse (Dest));
+          end if; 
+          Event_Mng.Wait (Timeout);
+          -- Increase timeout for next retry
+          Timeout := Timeout * Timeout_Factor;
+        end loop Retries;
+
+        if Result /= Intra_Dictio.Ok then
+          -- Give up with this destination if too many overflows or other error
+          if Debug.Level_Array(Debug.Sync) then
+            Debug.Put ("Sync: Giving up " & Parse (Dest) & " due to " & Result'Img);
+          end if;
+          if Sync_List_Mng.Get_Position (Sync_List) = 1 then
+            Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Next);
+          else
+            Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Prev);
+          end if;
+          exit Items when Sync_List_Mng.Is_Empty (Sync_List);
+        else
+          -- Flow limitation
+          Bytes_Sent := Bytes_Sent + 110 + Item.Data_Len;
+          if Bytes_Sent >= 1024 then
+            Bytes_Sent := 0;
+            Event_Mng.Wait (Delay_Per_Kb);
+          else
+            Event_Mng.Wait (0);
+          end if;
+        end if;
+
+        if Sync_List_Mng.Get_Position (Sync_List)
+        /= Sync_List_Mng.List_Length (Sync_List) then
+          -- Next Dest
+          Sync_List_Mng.Move_To (Sync_List);
+        else
+          exit Dests;
+        end if;
+
+      end loop Dests;
 
       Data_Base.Read_Next (Item);
 
     end loop Items;
 
+    if not Sync_List_Mng.Is_Empty (Sync_List) then
+      Sync_List_Mng.Delete_List (Sync_List, True);
+    end if;
     if Debug.Level_Array(Debug.Sync) then
-      Debug.Put ("Sync: Sent " & Nb_Items'Img & " items");
+      Debug.Put ("Sync: Done");
     end if; 
     Sending_Sync := False;
-  end Send;
+  end Do_Sync;
 
 end Sync_Mng;
 

@@ -122,12 +122,9 @@ package body Online_Mng is
       elsif Stat = Status.Slave and then not Sync_Mng.In_Sync then
         -- Synchronise initialising slave
         if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: sync " & Parse(From) );
+          Debug.Put ("Online: syncing " & Parse(From) );
         end if;
-        Sync_Mng.Send;
-        if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: end of sync " & Parse(From) );
-        end if;
+        Sync_Mng.Send (From);
       end if;
     end if;
     if Status.Get /= Status.Fight and then Stat = Status.Fight then

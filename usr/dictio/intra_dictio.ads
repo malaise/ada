@@ -28,8 +28,9 @@ package Intra_Dictio is
   procedure Send_Data (Item : in Data_Base.Item_Rec);
 
   type Reply_Result_List is (Ok, Overflow, Error);
-  function Reply_Sync_Data (Item : in Data_Base.Item_Rec)
-                            return Reply_Result_List;
+  function Send_Sync_Data (To : in String;
+                           Item : in Data_Base.Item_Rec)
+           return Reply_Result_List;
 
 end Intra_Dictio;
 

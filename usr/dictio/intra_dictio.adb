@@ -106,8 +106,8 @@ package body Intra_Dictio is
     end if;
   end Read_Cb;
 
-  procedure Send (Message : in out Message_Rec;
-                  Bcast   : in Boolean;
+  procedure Send (To      : in String;
+                  Message : in out Message_Rec;
                   Result  : out Reply_Result_List) is
     Len : Natural;
     use Address_Ops; 
@@ -125,37 +125,50 @@ package body Intra_Dictio is
                      - Message'Address + 4);
     end if;
     if Debug.Level_Array(Debug.Intra) then
-      if Bcast then
+      if To = "*" then
         Debug.Put ("Intra: bcast Kind: " & Kind_Image(Message.Head.Kind)
                  & "  Stat: " & Message.Head.Stat'Img
                  & "  Len: " & Len'Img);
-      else
+      elsif To = "" then
         Debug.Put ("Intra: reply Kind: " & Kind_Image(Message.Head.Kind)
+                 & "  Stat: " & Message.Head.Stat'Img
+                 & "  Len: " & Len'Img);
+      else
+        Debug.Put ("Intra: send to: " & To
+                 & "  Kind: " & Kind_Image(Message.Head.Kind)
                  & "  Stat: " & Message.Head.Stat'Img
                  & "  Len: " & Len'Img);
       end if;
     end if;
-    if Bcast then
+    if To = "*" then
       Dictio_Channel.Write (Message, Len);
       Result := Ok;
-    else
+    elsif To = "" then
       begin
         Dictio_Channel.Reply (Message, Len);
-        Result := Ok;
       exception
         when Channels.Reply_Overflow =>
           Result := Overflow;
         when Channels.Reply_Failed =>
           Result := Error;
       end;
+    else
+      begin
+        Dictio_Channel.Send (To, Message, Len);
+        Result := Ok;
+      exception
+        when Channels.Send_Overflow =>
+          Result := Overflow;
+        when Channels.Send_Failed =>
+          Result := Error;
+      end;
     end if;
   end Send;
 
-  procedure Send (Message : in out Message_Rec;
-                  Bcast   : in Boolean) is
+  procedure Send (To : in String; Message : in out Message_Rec) is
     Result : Reply_Result_List;
   begin
-    Send (Message, Bcast, Result);
+    Send (To, Message, Result);
   end Send;
 
   procedure Send_Status (Extra : in String := "") is
@@ -168,7 +181,7 @@ package body Intra_Dictio is
       Msg.Item.Data_Len := Extra'Length;
       Msg.Item.Data (1 .. Msg.Item.Data_Len) := Extra;
     end if;
-    Send (Msg, True);
+    Send ("*", Msg);
   end Send_Status;
 
   procedure Reply_Status (Extra : in String := "") is
@@ -181,7 +194,7 @@ package body Intra_Dictio is
       Msg.Item.Data_Len := Extra'Length;
       Msg.Item.Data (1 .. Msg.Item.Data_Len) := Extra;
     end if;
-    Send (Msg, False);
+    Send ("", Msg);
   end Reply_Status;
 
   procedure Send_Data (Item : in Data_Base.Item_Rec) is
@@ -189,22 +202,23 @@ package body Intra_Dictio is
   begin
     Msg.Head.Kind := Data_Kind;
     Msg.Item := Item;
-    Send (Msg, True);
+    Send ("*", Msg);
   end Send_Data;
 
-  function Reply_Sync_Data (Item : in Data_Base.Item_Rec)
-                            return Reply_Result_List is
+  function Send_Sync_Data (To : in String;
+                           Item : in Data_Base.Item_Rec)
+           return Reply_Result_List is
     Msg : Message_Rec;
     Result : Reply_Result_List;
   begin
     Msg.Head.Kind := Sync_Kind;
     Msg.Item := Item;
-    Send (Msg, False, Result);
+    Send (To, Msg, Result);
     if Debug.Level_Array(Debug.Intra) and then Result /= Ok then
       Debug.Put ("Intra: sync reply failed on " & Result'Img);
     end if;
     return Result;
-  end Reply_Sync_Data;
+  end Send_Sync_Data;
 
 end Intra_Dictio;
 

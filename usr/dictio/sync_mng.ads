@@ -1,3 +1,4 @@
+with Tcp_Util;
 package Sync_Mng is
 
   type End_Of_Sync_Callback is access procedure;
@@ -9,8 +10,8 @@ package Sync_Mng is
   procedure Sync_Received;
 
 
-  -- Send sync to slave 
-  procedure Send;
+  -- Add a new slave to next sync
+  procedure Send (To : Tcp_Util.Host_Name);
   
   -- Are we receiving or sending sync
   function In_Sync return Boolean;
