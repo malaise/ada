@@ -450,10 +450,13 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  # no EXIT
-  FIELD 17 PUT
-    GEOMETRY 20 0 20 1
-    COLORS black not_blink black
+  # Reread
+  FIELD 17 BUTTON
+    GEOMETRY 11 2 13 9
+    COLORS cyan brown
+    INIT
+      1 1 REREAD
+    END INIT
   END FIELD
 
   # Ok Cancel

@@ -116,6 +116,9 @@ begin
        SCREEN.PROCUSTE(TEXT_HANDLER.VALUE(FILE_NAME_TXT), SCREEN.GET_GET_WIDTH));
   end if;
   AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0), GET_CONTENT);
+
+  -- Activate REREAD (inhibited by SCREEN.INIT_FOR_GET)
+  AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, TRUE);
   
   -- Set Nb of points and save_status
   SCREEN.PUT_POINT_STATUS;
@@ -193,13 +196,16 @@ begin
           when SCREEN.CANCEL_BUTTON_FLD =>
             TEXT_HANDLER.EMPTY(GET_CONTENT);
             exit;
+          when SCREEN.EXIT_BUTTON_FLD =>
+            -- Reread current directory
+            CHANGE_DIR(".");
           when others => null;
         end case;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;
   end loop;
-
+ 
   DIR_MNG.FILE_LIST_MNG.DELETE_LIST(DIR_LIST);
   return TEXT_HANDLER.VALUE(GET_CONTENT);
 
