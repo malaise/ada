@@ -3,7 +3,10 @@ cur=`pwd`
 
 cd reposit
 make $*
+cd $cur
 
+cd c
+make $*
 cd $cur
 
 cd usr
