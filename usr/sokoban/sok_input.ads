@@ -4,6 +4,8 @@ package SOK_INPUT is
 
   function GET_KEY return KEY_LIST;
 
+  procedure PAUSE;
+
   BREAK_REQUESTED : exception;
 
   procedure END_OF_PROGRAM;

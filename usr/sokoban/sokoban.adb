@@ -43,6 +43,6 @@ begin
   end if;
 exception
   when others =>
-    delay 5.0;
+    delay 2.0;
     raise;
 end SOKOBAN;

@@ -86,7 +86,12 @@ package body SOK_MANAGER is
     begin
 
       -- init for first frame
-      SOK_DISPLAY.INIT;
+      begin
+        SOK_DISPLAY.INIT;
+      exception
+        when others =>
+        raise SOK_INPUT.BREAK_REQUESTED;
+      end;
       STATE.NO_FRAME := FIRST_FRAME;
       FRAME_RESULT := RESET_ALL;
       begin
@@ -188,6 +193,7 @@ package body SOK_MANAGER is
     when SOK_INPUT.BREAK_REQUESTED =>
       END_OF_PROGRAM;
     when others =>
+      SOK_INPUT.PAUSE;
       SOK_DISPLAY.CLEAR_ERROR;
       END_OF_PROGRAM;
   end PLAY_GAME;

@@ -68,6 +68,19 @@ package body SOK_INPUT is
     end loop;
   end GET_KEY;
 
+  procedure PAUSE is
+    EVENT : CON_IO.EVENT_LIST;
+    KEY : NATURAL;
+    IS_CHAR, CTRL, SHIFT : BOOLEAN;
+    use CON_IO;
+  begin
+    loop
+      CON_IO.GET_KEY_TIME (CALENDAR.CLOCK + 1.0, TRUE, TRUE,
+         EVENT, KEY, IS_CHAR, CTRL, SHIFT);
+      exit when EVENT = CON_IO.ESC or else EVENT = CON_IO.BREAK;
+    end loop;
+  end PAUSE;
+
   procedure END_OF_PROGRAM is
   begin
     null;
