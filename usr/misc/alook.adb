@@ -202,7 +202,7 @@ procedure Look_95 is
       if Warnings then
         Ada.Text_Io.Put_Line("Warning in file " & File_Name
                            & " at line" & Line_No'Img);
-        Ada.Text_Io.Put_Line("----> " & Text_Handler.Value (Line));
+        Ada.Text_Io.Put_Line("--> " & Text_Handler.Value (Line));
         Warnings := False;
       end if;
       Text_Handler.Empty (Line);
@@ -266,17 +266,18 @@ procedure Look_95 is
       end if;
 
       -- Check in comment
-      if Proceed then
-        if In_Comment then
-          Proceed := False;
-        elsif not In_String
-        and then Char = '-'
-        and then Prev_Char = '-' then
-          -- Entering comment
-          In_Comment := True;
-          Proceed := False;
-          Text_Handler.Empty (Word);
-        end if;
+      if Proceed
+      and then not In_Comment
+      and then not In_String
+      and then Char = '-'
+      and then Prev_Char = '-' then
+        -- Entering comment
+        In_Comment := True;
+        Proceed := False;
+        Text_Handler.Empty (Word);
+      end if;
+      if In_Comment then
+        Proceed := False;
       end if;
 
       -- Check in string. Update Proceed
@@ -284,21 +285,27 @@ procedure Look_95 is
         if not In_String and then Prev_Char /= ''' then
           -- Entering string
           In_String := True;
-          Proceed := False;
           Text_Handler.Empty (Word);
         elsif In_String then
+          -- Leaving String
           In_String := False;
+          Proceed := False;
         end if;
+      end if;
+      if In_String then
+        Proceed := False;
       end if;
 
       -- Check in literal. Update Proceed
       if Proceed and then Char = '#' and then Prev_Char /= ''' then
         if not In_Literal then
           -- Entering literal
-          Proceed := False;
           Text_Handler.Empty (Word);
         end if;
         In_Literal := not In_Literal;
+      end if;
+      if In_Literal then
+        Proceed := False;
       end if;
 
       if Proceed or else In_Comment then
@@ -308,7 +315,6 @@ procedure Look_95 is
       -- Final check
       Final_Char := Char;
       if Proceed then
-
         -- Convert?
         if Prev_Is_Upper and then Curr_Is_Upper then
           Modified := True;
@@ -317,7 +323,6 @@ procedure Look_95 is
             Reading.Update_Char(Final_Char);
           end if;
         end if;
-
       end if;
 
       -- Update line char for warnings if possible
@@ -332,15 +337,21 @@ procedure Look_95 is
       end if;
 
       -- Warning on words
-      if Warn_Words and then
-      not In_Comment and then
-      not In_String then
+      if Warn_Words
+      and then not In_Comment
+      and then not In_String
+      and then not In_Literal then
         if Ada_Words.Is_Separator(Final_Char) 
         or else Ada_Words.Is_Delimiter(Final_Char) then
           -- End of word, check it
-          Check_Word;
-           -- Not in word
-           Text_Handler.Empty (Word);
+          -- The tricky way to avoid checking character literal is
+          --  to dicard a word of one char with Prev_Tick set
+          if Text_Handler.Length (Word) /= 1 or else not Prev_Tick then
+            Check_Word;
+          end if;
+          -- Not in word
+          Text_Handler.Empty (Word);
+          Prev_Tick := Char = ''';
         else
           -- In word: append if possible
           begin
@@ -350,7 +361,6 @@ procedure Look_95 is
               null;
           end;
         end if;
-        Prev_Tick := Char = ''';
       end if;
 
       -- Warning in comments
