@@ -1,7 +1,8 @@
--- Usage: prime -list           list prime numbers
---        prime -fact <number>  decomposition of number in prime factors
---        prime -hcd <n1> <n2>  highest common divisor
---        prime -lcm <n1> <n2>  lowest common multiple
+-- Usage: prime -list [ <number> ] list prime numbers up to a number
+--        prime -is <number>       is a number prime
+--        prime -fact <number>     decomposition of number in prime factors
+--        prime -hcd <n1> <n2>     highest common divisor
+--        prime -lcm <n1> <n2>     lowest common multiple
 
 with Ada.Text_Io;
 with Argument, Dynamic_List;
@@ -17,7 +18,7 @@ procedure Prime is
   procedure Search is new Plm.Search;
 
   -- What should we do
-  type Mode_List is (List_All, List, Factors, Hcd, Lcm);
+  type Mode_List is (List_All, List, Is_Prime, Factors, Hcd, Lcm);
   Mode : Mode_List;
 
   -- Arguments, numbers
@@ -36,8 +37,9 @@ procedure Prime is
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <mode>");
-    Ada.Text_Io.Put_Line ("<mode> ::= <list> | <factors> | <hcd> | <lcm>");
+    Ada.Text_Io.Put_Line ("<mode> ::= <list> | <is> | <factors> | <hcd> | <lcm>");
     Ada.Text_Io.Put_Line ("<list>    ::= -list [ <positive> ]");
+    Ada.Text_Io.Put_Line ("<list>    ::= -is <positive>");
     Ada.Text_Io.Put_Line ("<factors> ::= -fact <positive>");
     Ada.Text_Io.Put_Line ("<hcd>     ::= -hcd <positive> <positive>");
     Ada.Text_Io.Put_Line ("<lcm>     ::= -lcm <positive> <positive>");
@@ -144,6 +146,10 @@ begin
       Mode := List;
       N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
+    and then Argument.Get_Parameter = "-is" then
+      Mode := Is_Prime;
+      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
+    elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-fact" then
       Mode := Factors;
       N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
@@ -181,6 +187,18 @@ begin
         exit when N2 > N1;
         Put_Line (N2);
       end loop;
+
+    when Is_Prime =>
+      loop
+        N2 := Prime_List.Next;
+        exit when N2 >= N1;
+      end loop;
+      Ada.Text_Io.Put (Long_Long_Positive'Image(N1));
+      if N1 = N2 then
+        Ada.Text_Io.Put_Line (" is prime.");
+      else
+        Ada.Text_Io.Put_Line (" is not prime.");
+      end if;
 
     when Factors =>
       -- Decompose N1 in prime factors
