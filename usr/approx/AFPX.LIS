@@ -359,50 +359,20 @@ DESCRIPTOR 2
     COLORS cyan not_blink black
   END FIELD
 
-  # Points
-  FIELD 5 PUT
-    GEOMETRY 1 68 1 71
-    COLORS cyan not_blink black
-  END FIELD
-
-  FIELD 6 PUT
-    GEOMETRY 1 73 1 78
-    COLORS light_gray not_blink black
-    INIT
-      0 0 points
-    END INIT
-  END FIELD
-
-  FIELD 7 PUT
-    GEOMETRY 2 71 2 73
-    COLORS white blink black
-    INIT
-      0 0 NOT
-    END INIT
-  END FIELD
-
-  FIELD 8 PUT
-    GEOMETRY 3 70 3 74
-    COLORS light_gray not_blink black
-    INIT
-      0 0 saved
-    END INIT
-  END FIELD
-
   # Get
-  FIELD 9 GET
+  FIELD 5 GET
     GEOMETRY 23 1 23 33
     COLORS cyan brown brown
   END FIELD
 
   # Messages
-  FIELD 10 PUT
+  FIELD 6 PUT
     GEOMETRY 23 35 23 78
     COLORS light_gray not_blink black
   END FIELD
 
   # List actions
-  FIELD 11 BUTTON
+  FIELD 7 BUTTON
     GEOMETRY 5 69 5 77
     COLORS cyan brown
     INIT
@@ -410,7 +380,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 12 BUTTON
+  FIELD 8 BUTTON
     GEOMETRY 7 69 9 77
     COLORS cyan brown
     INIT
@@ -418,7 +388,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 13 BUTTON
+  FIELD 9 BUTTON
     GEOMETRY 11 69 11 77
     COLORS cyan brown
     INIT
@@ -426,7 +396,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 14 BUTTON
+  FIELD 10 BUTTON
     GEOMETRY 15 69 15 77
     COLORS cyan brown
     INIT
@@ -434,7 +404,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 15 BUTTON
+  FIELD 11 BUTTON
     GEOMETRY 17 69 19 77
     COLORS cyan brown
     INIT
@@ -442,7 +412,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 16 BUTTON
+  FIELD 12 BUTTON
     GEOMETRY 21 69 21 77
     COLORS cyan brown
     INIT
@@ -451,7 +421,7 @@ DESCRIPTOR 2
   END FIELD
 
   # Reread
-  FIELD 17 BUTTON
+  FIELD 13 BUTTON
     GEOMETRY 11 2 13 9
     COLORS cyan brown
     INIT
@@ -460,7 +430,7 @@ DESCRIPTOR 2
   END FIELD
 
   # Ok Cancel
-  FIELD 18 BUTTON
+  FIELD 14 BUTTON
     GEOMETRY 15 2 17 9
     COLORS cyan brown
     INIT
@@ -468,7 +438,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 19 BUTTON
+  FIELD 15 BUTTON
     GEOMETRY 19 2 21 9
     COLORS cyan brown
     INIT
@@ -476,65 +446,37 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  # No menu specific parts
-  FIELD 20 PUT
-    GEOMETRY 3 0 3 0
-    COLORS black not_blink black
+  # Any other field here
+
+
+  # Points
+  FIELD 16 PUT
+    GEOMETRY 1 68 1 71
+    COLORS cyan not_blink black
   END FIELD
 
-  FIELD 21 PUT
-    GEOMETRY 5 0 5 0
-    COLORS black not_blink black
+  FIELD 17 PUT
+    GEOMETRY 1 73 1 78
+    COLORS light_gray not_blink black
+    INIT
+      0 0 points
+    END INIT
   END FIELD
 
-  FIELD 22 PUT
-    GEOMETRY 5 1 5 1
-    COLORS black not_blink black
+  FIELD 18 PUT
+    GEOMETRY 2 71 2 73
+    COLORS white blink black
+    INIT
+      0 0 NOT
+    END INIT
   END FIELD
 
-  FIELD 23 PUT
-    GEOMETRY 5 2 5 2
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 24 PUT
-    GEOMETRY 8 0 8 0
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 25 PUT
-    GEOMETRY 10 0 10 0
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 26 PUT
-    GEOMETRY 10 1 10 1
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 27 PUT
-    GEOMETRY 10 2 10 2
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 28 PUT
-    GEOMETRY 13 0 13 0
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 29 PUT
-    GEOMETRY 14 0 14 0
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 30 PUT
-    GEOMETRY 14 1 14 1
-    COLORS black not_blink black
-  END FIELD
-
-  FIELD 31 PUT
-    GEOMETRY 14 2 14 2
-    COLORS black not_blink black
+  FIELD 19 PUT
+    GEOMETRY 3 70 3 74
+    COLORS light_gray not_blink black
+    INIT
+      0 0 saved
+    END INIT
   END FIELD
 
 END DESCRIPTOR

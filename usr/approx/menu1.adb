@@ -1,10 +1,26 @@
-with CON_IO, AFPX, DIRECTORY, TEXT_HANDLER;
+with CON_IO, AFPX, DIRECTORY, TEXT_HANDLER, SELECT_FILE, NORMAL;
 with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, POINT_STR, MENU2;
 package body MENU1 is
 
   type RESTORE_LIST is (NONE, PARTIAL, FULL); 
   CURSOR_FIELD : AFPX.FIELD_RANGE;
   FILE_NAME_TXT : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
+
+  procedure PUT_POINT_STATUS is
+    -- Width of nb_point
+    HEIGHT : AFPX.HEIGHT_RANGE;
+    WIDTH  : AFPX.WIDTH_RANGE;
+  begin
+    AFPX.GET_FIELD_SIZE(16, HEIGHT, WIDTH);
+    AFPX.ENCODE_FIELD(16, (0, 0), NORMAL(POINTS.P_NB, WIDTH));
+    if POINTS.P_SAVED then
+      AFPX.CLEAR_FIELD(18);
+    else
+      AFPX.RESET_FIELD(18);
+    end if;
+  end PUT_POINT_STATUS;
+
+  function MY_SELECT_FILE is new SELECT_FILE(PUT_POINT_STATUS);
 
   procedure ENCODE_FILE_IN_GET (FILE_NAME : in STRING) is
   begin
@@ -64,9 +80,6 @@ package body MENU1 is
     return FALSE;
   end READ_FILE;
 
-  -- Select a file. "" if canceled
-  function SELECT_FILE (FOR_READ : BOOLEAN) return STRING is separate;
-
   procedure LOAD_SAVE (LOAD : in BOOLEAN; RESTORE : out RESTORE_LIST) is
     TMP_FILE_NAME : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
   begin
@@ -92,7 +105,8 @@ package body MENU1 is
               
     -- Select file
     RESTORE := FULL;
-    TEXT_HANDLER.SET (TMP_FILE_NAME, SELECT_FILE(LOAD));
+    TEXT_HANDLER.SET (TMP_FILE_NAME,
+                      MY_SELECT_FILE(2, TEXT_HANDLER.VALUE(FILE_NAME_TXT), LOAD));
     if TEXT_HANDLER.EMPTY (TMP_FILE_NAME) then
       -- Cancelled
      return;
