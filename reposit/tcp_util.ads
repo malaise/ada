@@ -19,7 +19,7 @@ package Tcp_Util is
                      range Port_Name_Spec .. Port_Num_Spec;
 
   -- Port name and num
-  Max_Port_Name_Len : constant := 50;
+  Max_Port_Name_Len : constant := 64;
   subtype Port_Name is String (1 .. Max_Port_Name_Len);
   subtype Port_Num is Socket.Port_Num;
 
@@ -53,7 +53,7 @@ package Tcp_Util is
   -- Kinds of host definition
   type Remote_Host_List is (Host_Name_Spec, Host_Id_Spec);
   -- Host name and id
-  Max_Host_Name_Len : constant := 50;
+  Max_Host_Name_Len : constant := 64;
   subtype Host_Name is String (1 .. Max_Host_Name_Len);
   subtype Host_Id is Socket.Host_Id;
 
