@@ -7,7 +7,6 @@ package body Sync_Mng is
   Timer_Id : Timers.Timer_Id := Timers.No_Timer;
   Sync_Has_Been_Received : Boolean;
   Nb_Syn_Received : Natural := 0;
-  Eos_Cb : End_Of_Sync_Callback := null;
 
 
   function Timer_Active return Boolean is
@@ -31,9 +30,6 @@ package body Sync_Mng is
       Sync_Has_Been_Received := False;
     else
       Cancel_Timer;
-      if Eos_Cb /= null then
-        Eos_Cb.all;
-      end if;
       if Debug.Level_Array(Debug.Sync) then
         Debug.Put ("Sync: End, received " & Nb_Syn_Received'Img & " sync");
       end if;
@@ -41,10 +37,9 @@ package body Sync_Mng is
     return False;
   end Timer_Cb;
 
-  procedure Start (End_Of_Sync_Cb : End_Of_Sync_Callback := null) is
+  procedure Start is
   begin
     Cancel_Timer;
-    Eos_Cb := End_Of_Sync_Cb;
     Nb_Syn_Received := 0;
     Intra_Dictio.Send_Status;
     Timer_Id := Timers.Create ( (Timers.Delay_Sec, 1.0, 1.0),
@@ -58,7 +53,6 @@ package body Sync_Mng is
   procedure Cancel is
   begin
     Cancel_Timer;
-    Eos_Cb := null;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Cancel");
     end if;
@@ -77,7 +71,7 @@ package body Sync_Mng is
     return Timer_Active or else Sending_Sync;
   end In_Sync;
 
-
+  ------------------------------------------------------------
 
   Max_Retry : constant := 3;
   First_Timeout : constant Natural := 100;

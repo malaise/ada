@@ -3,7 +3,7 @@ package Sync_Mng is
   type End_Of_Sync_Callback is access procedure;
 
   -- Start/Abort a sync reception sequence
-  procedure Start (End_Of_Sync_Cb : End_Of_Sync_Callback := null);
+  procedure Start;
   procedure Cancel;
   -- Inform that a sync has been received
   procedure Sync_Received;

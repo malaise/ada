@@ -4,8 +4,7 @@ with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
 package body Client_Mng is
 
 
-  type State_List is (Not_Init, Waiting, Allow);
-  State : State_List := Not_Init;
+  Init : Boolean := False;
 
   Dictio_Status : Status.Stable_Status_List := Status.Dead;
   procedure Send_Status (Dscr : in Socket.Socket_Dscr);
@@ -158,35 +157,20 @@ package body Client_Mng is
   end Accept_Cb;
 
 
-  procedure Allow_Clients is
+  procedure Start is
     Port : Tcp_Util.Local_Port;
     Port_Name : constant String := Args.Get_Client_Port;
     Dscr : Socket.Socket_Dscr;
   begin
-    if Debug.Level_Array(Debug.Client) then
-      Debug.Put ("Client: allow");
-    end if;
-    Port.Name(1 .. Port_Name'Length) := Port_Name;
-    Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
-                          Dscr, Accept_Port);
-    State := Allow;
-  end Allow_Clients;
-
-
-  procedure Start (Sync : in Boolean) is
-  begin
-    if State /= Not_Init then
+    if Init then
       return;
     end if;
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: start");
     end if;
-    State := Waiting;
-    if Sync then
-      Sync_Mng.Start (Allow_Clients'access);
-    else
-      Allow_Clients;
-    end if;
+    Port.Name(1 .. Port_Name'Length) := Port_Name;
+    Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
+                          Dscr, Accept_Port);
   end Start;
 
 
@@ -196,20 +180,14 @@ package body Client_Mng is
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: quit");
     end if;
-    case State is
-      when Not_Init =>
-        null;
-      when Waiting =>
-        if Sync_Mng.In_Sync then
-          Sync_Mng.Cancel;
-        end if;
-      when Allow =>
-        -- Delete all notify
-        Notify.Del_All;
-        -- Abort accept and close all client sockets
-        Tcp_Util.Abort_Accept (Accept_Port);
-        Client_Fd.Del_All;
-      end case;
+    if not Init then
+      return;
+    end if;
+    -- Delete all notify
+    Notify.Del_All;
+    -- Abort accept and close all client sockets
+    Tcp_Util.Abort_Accept (Accept_Port);
+    Client_Fd.Del_All;
   end Quit;
 
   procedure Modified (Kind : in Character; Item : Data_Base.Item_Rec) is

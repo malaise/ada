@@ -1,6 +1,7 @@
 with Timers;
 with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes,
-     Fight_Mng, Sync_Mng, Data_Base, Sync_Mng, Versions;
+     Fight_Mng, Sync_Mng, Data_Base, Sync_Mng, Versions,
+     Client_Mng;
 
 package body Online_Mng is
 
@@ -28,18 +29,25 @@ package body Online_Mng is
   end Start_Slave_Timeout;
 
 
-  procedure Start is
+  procedure Start (First : in Boolean) is
     T : Timers.Delay_Rec;
     use type Status.Status_List;
     use type Timers.Timer_Id;
   begin
     if Status.Get = Status.Slave then
       Start_Slave_Timeout;
+      if First then
+        Sync_Mng.Start;
+      end if;
     else
+      -- Master
       T.Delay_Seconds := 0.0;
       T.Period := Alive_Period;
       Tid := Timers.Create (T, Timer_Cb'Access);
       Status.Sync := True;
+      if First then
+        Client_Mng.Start;
+      end if;
     end if;
   
     if Debug.Level_Array(Debug.Online) then
@@ -82,11 +90,13 @@ package body Online_Mng is
             Sync_Mng.Start;
           else
             -- Crc OK:
-            if Debug.Level_Array(Debug.Online)
-            and then not Status.Sync then
-              Debug.Put ("Online: Crc OK, synced.");
+            if not Status.Sync then
+              if Debug.Level_Array(Debug.Online) then
+                Debug.Put ("Online: Crc OK, synced.");
+              end if;
+              Status.Sync := True;
+              Client_Mng.Start;
             end if;
-            Status.Sync := True;
           end if;
         end if;
 
@@ -120,7 +130,6 @@ package body Online_Mng is
         end if;
       end if;
     end if;
-
     if Status.Get /= Status.Fight and then Stat = Status.Fight then
       if Debug.Level_Array(Debug.Online) then
         Debug.Put ("Online: fight cause fight from: "

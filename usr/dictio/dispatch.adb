@@ -90,18 +90,12 @@ package body Dispatch is
         if Prev_Status = Status.Master then
           Intra_Dictio.Send_Status;
         end if;
+        Sync_Mng.Cancel;
         Client_Mng.Quit;
         Intra_Dictio.Quit;
       when Status.Slave | Status.Master =>
-        Online_Mng.Start;
-        if Prev_Status = Status.Init
-        and then New_Status = Status.Slave then
-          -- Start client, allowing after sync
-          Client_Mng.Start (True);
-        else
-          -- Start client immediately
-          Client_Mng.Start (False);
-        end if;
+        -- Start client
+        Online_Mng.Start (Prev_Status = Status.Init);
       when Status.Fight =>
         null;
     end case;
