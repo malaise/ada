@@ -35,6 +35,7 @@ begin
   Response.New_Code;
 
   declare
+    Buffer : String(1 .. 80);
     Str : String(1 .. Integer(Common.Get_Stored_Level));
     Len : Natural;
     Prop : Response.Color_Rec(Common.Get_Stored_Level);
@@ -48,19 +49,19 @@ begin
       loop
         begin
           Ada.Text_Io.Put(Normal(I, 2) & "? ");
-          Ada.Text_Io.get_Line(Str, Len);
+          Ada.Text_Io.get_Line(Buffer, Len);
           if Len /= Str'Length then
             raise Constraint_Error;
           end if;
+          Str := Buffer(1 .. Len);
           for I in 1 .. Len loop
             Prop.Color(Common.Level_Range(I))
                  := Common.Eff_Color_Range'Value(Str(I) & "");
           end loop;
-          Ada.Text_Io.Skip_Line;
           exit Get;
         exception
           when others =>
-            Ada.Text_Io.Skip_Line;
+            null;
         end;
       end loop Get;
 
