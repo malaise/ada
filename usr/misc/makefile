@@ -17,6 +17,7 @@ all:
 	amake mlbx_overflow.adb
 	amake one_of_arg.adb
 	amake pascal.adb
+	amake prime.adb
 	amake random.adb -largs $(LIBX_MNG) -lX11
 	amake rndsok.adb 
 	amake second.adb
@@ -32,5 +33,6 @@ clean:
 
 clean_exe:
 	rm adand beep ddir fact g hanoi impot_02 look_95 \
-	   one_of_arg pascal random second stat statfile wait
+	   mlbx_overflow one_of_arg pascal prime random rndsok second \
+	   stat statfile wait
 
