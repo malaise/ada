@@ -4,7 +4,7 @@
 #
 # <descriptor_def> ::= DESCRIPTOR <descriptor_no>
 #                        [ <list_def>  ]
-#                        { <field_def> }
+#                        [ { <field_def> } ]
 #                      END DESCRIPTOR
 #
 # <list_def>  ::= LIST
@@ -22,13 +22,13 @@
 #                           COLORS   <colors>
 #
 # <geometry> ::= <upper_left_row> <upper_left_col>
-#                          <lower_right_row> <lower_right_col>
+#                <lower_right_row> <lower_right_col>
 #
 # <colors> ::= <foreground_color> [ <blink> ]
 #                          <background_color> [ <selected_color> ]
 #
 # <init_def> ::= INIT
-#                  { <init_line> }
+#                  [ { <init_line> } ]
 #                END INIT
 #
 # <init_line> ::= <init_row> <init_col> [ <init_string> ]
@@ -36,34 +36,38 @@
 #
 # Semantic of the descriptor file
 # -------------------------------
-# - <descriptor_no> has to be positive and sole (no double)
+# - <descriptor_no> has to be positive range 1 .. 50 and sole (no double)
 # - LIST has to be defined none or once per descriptor
-# - <field_no> have to be strictly crescent within one descriptor, no "hole",
-#   no double
-# - <field_no> within FIELD_RANGE
+# - <field_no> have to be within FIELD_RANGE (1 .. 200), strictly crescent
+#                    within one descriptor, no "hole", no double
 # - <geometry> must define at least one row and one col
-# - <geometry> of a GET field must define only ONE row
-# - <geometry> must not make field overlapping with another
+# - <geometry> must not make the field overlap with another field of the
+#                    descriptor
+# - <geometry> of a GET field must define only one row
 # - <foreground_color> must be of COLORS for PUT fields
-#                     and of BASIC_COLORS for BUTTON, GET and LIST
+#                    and of BASIC_COLORS for BUTTON, GET and LIST
 # - <background_color> and <selected_color> must be BASIC_COLORS
 # - <blink> is mandatory for PUT fields and must not be specified
 #                    for LIST, BUTTON and GET fields
 # - <selected_color> is mandatory for LIST and GET fields and
 #                    must not be specified for PUT and BUTTON
 # - <init_row> have to be compatible with <geometry>
-#                       crescent, no double (holes allowed)
+#                    crescent, no double (holes allowed)
 # - <init_col> have to be compatible with <geometry>
 # - <init_string> have to be compatible with <geometry> and <init_col>
 #
 # Infos
 # -----
+# Separator is space or tabulation
+# Comments are lines with '#' as first signficant character
 # Rows are from 0 to 24
 # Cols are from 0 to 79
 # Basic colors are BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY
-# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
-#                              LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE
-# Blink is "blink" or "not_blink"
+# Colors are basic colors plus DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, ORANGE,
+#                              YELLOW, WHITE
+# Blink is "BLINK" or "NOT_BLINK"
+# Upper case is mandatory for keywords, not significant for colors and blink,
+#  significant for init_string
 #
 # Summary of color combinations
 # -----------------------------
@@ -73,7 +77,6 @@
 #  BUTTON|   X Basic            X Basic
 #  GET   |   X Basic            X Basic     X Basic
 #  LIST  |   X Basic            X Basic     X Basic
-
 
 
 DESCRIPTOR 1
@@ -106,8 +109,8 @@ DESCRIPTOR 1
        12 2 I always play first at the beginning of a game, which gives you the
        13 3  possibility to win each game.
        16 2 Two variants are available:
-       17 3 - at Nim, the player who takes the last stick loses
-       18 3 - at Marienbad, the winner is the one who takes the last stick.
+       17 3 - at Nim, the winner is the one who takes the last stick,
+       18 3 - at Marienbad, the player who takes the last stick loses.
      END INIT
    END FIELD
 
@@ -255,9 +258,6 @@ DESCRIPTOR 2
    FIELD 20 PUT
      GEOMETRY 0 34 0 42
      COLORS blue not_blink black
-     INIT
-       0 0 MARIENBAD
-     END INIT
    END FIELD
 
    # Who wins
@@ -266,4 +266,10 @@ DESCRIPTOR 2
      COLORS light_green blink black
    END FIELD
 
+   # Play
+   FIELD 22 BUTTON
+     GEOMETRY 21 03 23 18
+     COLORS blue green 
+   END FIELD
 END DESCRIPTOR
+

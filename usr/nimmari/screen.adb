@@ -59,14 +59,17 @@ package body SCREEN is
     SCORE (HUMAN_SCORE, MACHINE_SCORE);
     if GAME = COMMON.NIM then
       ENCODE_FIELD (20, (0,0), "   Nim   ");
+      ENCODE_FIELD (22, (1,1), "Play Marienbad");
     else
       ENCODE_FIELD (20, (0,0), "Marienbad");
+      ENCODE_FIELD (22, (1,1), "   Play Nim");
     end if;
     STATUS := (others => FREE);
     for I in FIELD_RANGE'(1) .. 16 loop
       SET_FIELD_ACTIVATION (I, TRUE); 
       SET_FIELD_COLORS (I, BACKGROUND => CON_IO.GREEN);
     end loop;
+    SET_FIELD_ACTIVATION (22, FALSE);
   end RESET;
 
   procedure PLAY is
@@ -159,7 +162,7 @@ package body SCREEN is
 
 
   procedure UPDATE (ROW : in COMMON.ROW_RANGE; BARS : in COMMON.FULL_BAR_RANGE;
-                    RESULT : in COMPUTE.RESULT_LIST) is
+                    RESULT : in COMPUTE.RESULT_LIST; CHANGE_GAME : out BOOLEAN) is
     NB_TO_REMOVE, J : NATURAL;
     -- For put then get
     CURSOR_FIELD : FIELD_RANGE := FIELD_RANGE'FIRST;
@@ -167,6 +170,7 @@ package body SCREEN is
     PTG_RESULT : RESULT_REC;
     use COMPUTE;
   begin
+    CHANGE_GAME := FALSE;
     -- Current content
     NB_TO_REMOVE := 0;
     for I in FIRST_INDEX_OF_ROW(ROW) .. LAST_INDEX_OF_ROW(ROW) loop
@@ -216,15 +220,21 @@ package body SCREEN is
       end if;
       SET_FIELD_ACTIVATION (17, TRUE);
       ENCODE_FIELD (17, (1, 1), "P l a y");
+      SET_FIELD_ACTIVATION (22, TRUE);
       loop
         PUT_THEN_GET(CURSOR_FIELD, CURSOR_COL, PTG_RESULT, TRUE);
-        exit when PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON and then PTG_RESULT.FIELD_NO = 17;
+        if PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON and then PTG_RESULT.FIELD_NO = 22 then
+          CHANGE_GAME := TRUE;
+        end if;
+        exit when PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON
+                  and then (PTG_RESULT.FIELD_NO = 17 or else PTG_RESULT.FIELD_NO = 22);
         if PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON and then PTG_RESULT.FIELD_NO = 18 then
           raise EXIT_REQUESTED;
         end if;
       end loop;
       RESET_FIELD (17);
       RESET_FIELD (21);
+      SET_FIELD_ACTIVATION (22, FALSE);
     end if;
   end UPDATE;
 

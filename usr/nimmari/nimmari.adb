@@ -5,8 +5,9 @@ procedure NIMMARI is
   BARS : COMMON.FULL_BAR_RANGE;
   HUMAN, MACHINE : NATURAL := 0;
   RESULT : COMPUTE.RESULT_LIST;
+  CHANGE_GAME : BOOLEAN;
 
-  use COMPUTE;
+  use COMMON, COMPUTE;
 begin
   COMPUTE.INIT;
   GAME := SCREEN.INTRO;
@@ -30,7 +31,7 @@ begin
       end if;
 
       -- Display result
-      SCREEN.UPDATE (ROW, BARS, RESULT);
+      SCREEN.UPDATE (ROW, BARS, RESULT, CHANGE_GAME);
 
       -- exit when end
       exit ONE_GO when RESULT /= COMPUTE.PLAYED;
@@ -40,9 +41,18 @@ begin
 
     end loop ONE_GO;
 
+    if CHANGE_GAME then
+      if GAME = COMMON.NIM then
+        GAME := COMMON.MARIENBAD;
+      else
+        GAME := COMMON.NIM;
+      end if;
+    end if;
+
   end loop ONE_GAME;
 
 exception
   when SCREEN.EXIT_REQUESTED =>
     null;
 end NIMMARI;
+

@@ -15,7 +15,7 @@ package SCREEN is
 
 
   procedure UPDATE (ROW : in COMMON.ROW_RANGE; BARS : in COMMON.FULL_BAR_RANGE;
-                    RESULT : in COMPUTE.RESULT_LIST);
+                    RESULT : in COMPUTE.RESULT_LIST; CHANGE_GAME : out BOOLEAN);
 
   procedure SCORE (HUMAN, MACHINE : in NATURAL);
 
