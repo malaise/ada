@@ -68,28 +68,27 @@ procedure T_Tcp is
     My_Io.Put_Line ("      Reply sent");
   end Call_Back;
 
-  procedure Client_Connect is
+  function Client_Connect return Boolean is
   begin
     Socket.Open (Soc, Socket.Tcp);
     Fd := Socket.Fd_Of (Soc);
     My_Io.Put_Line ("Client connecting");
-    begin
-      Socket.Set_Destination_Name_And_Service (Soc,
+    Socket.Set_Destination_Name_And_Service (Soc,
            False, Text_Handler.Value (Server_Name), Server_Port_Name);
-    exception
-      when Socket.Socket_Error =>
-        My_Io.Put_Line ("Client connection has failed. Closing");
-        Socket.Close (Soc);
-        return;
-    end;
-    X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
+    if not Socket.Is_Connected (Soc) then
+      My_Io.Put_Line ("Client connection has failed. Closing");
+      Socket.Close (Soc);
+      return False;
+    else
+      X_Mng.X_Add_Callback (Fd, Call_Back'Unrestricted_Access);
+      return True;
+    end if;
   end Client_Connect;
 
   procedure Client_Send is
   begin
     if not Socket.Is_Open (Soc) then
-      Client_Connect;
-      if not Socket.Is_Open (Soc) then
+      if not Client_Connect then
         return;
       end if;
     end if;
