@@ -27,7 +27,8 @@ package Socket is
   Soc_Len_Err,   -- Lenght (message or name) too short
   Soc_Reply_Err, -- Set_for_reply must not be set
   Soc_Tail_Err,  -- Sent mesg len is not 0 while prev send raised Soc_Woul_Block
-  Soc_Proto_Err: -- Call not allowed for this protocol
+  Soc_Proto_Err, -- Call not allowed for this protocol
+  Soc_Fd_In_Use: -- Close while fd is used by x_select (see X_Mng)
                  exception;
 
   -- Exceptions for failures
@@ -57,6 +58,7 @@ package Socket is
   procedure Open (Socket : in out Socket_Dscr; Protocol : in Protocol_List);
 
   -- Close a socket
+  -- May raise Soc_In_Use
   procedure Close (Socket : in out Socket_Dscr);
 
   -- Is a socket open
