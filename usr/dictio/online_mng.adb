@@ -22,6 +22,15 @@ package body Online_Mng is
      Nodes.No_Master_Master   => Status.Master,
      Nodes.No_Master_Slave    => Status.Slave);
 
+  procedure Delete_Timer is
+    use type Timers.Timer_Id;
+  begin
+    if Tid /= Timers.No_Timer then
+      Timers.Delete (Tid);
+    end if;
+    Tid := Timers.No_Timer;
+  end Delete_Timer;
+
   procedure Start_Slave_Timeout is
     T : Timers.Delay_Rec;
   begin
@@ -40,7 +49,6 @@ package body Online_Mng is
   procedure Start (First : in Boolean) is
     T : Timers.Delay_Rec;
     use type Status.Status_List;
-    use type Timers.Timer_Id;
   begin
     Reset_Master;
     if Status.Get = Status.Slave then
@@ -66,11 +74,13 @@ package body Online_Mng is
   end Start;
 
   procedure Start_Fight is
+    use type Timers.Timer_Id;
   begin
     Reset_Master;
     if Sync_Mng.In_Sync then
       Sync_Mng.Cancel;
     end if;
+    Delete_Timer;
     Fight_Mng.Start (Status.Fight, 1.0, Fight_Actions);
   end Start_Fight;
 
@@ -115,7 +125,7 @@ package body Online_Mng is
           end;
         end if;
 
-        Timers.Delete (Tid);
+        Delete_Timer;
         Start_Slave_Timeout;
       elsif Stat = Status.Dead then
         -- Receive a Dead while slave, start Fight
@@ -123,8 +133,8 @@ package body Online_Mng is
           Debug.Put ("Online: fight due to death of: "
                    & Parse(From) );
         end if;
-        Timers.Delete (Tid);
         Start_Fight;
+        return;
       else
         -- Receive other status, check that this is not from previously known master
         if Current_Master /= No_Master and then From = Current_Master then
@@ -132,8 +142,8 @@ package body Online_Mng is
             Debug.Put ("Online: fight due to master new status "
                        & Parse(From) & "/" & Stat'Img);
           end if;
-          Timers.Delete (Tid);
           Start_Fight;
+          return;
         end if;
       end if;
 
@@ -144,8 +154,8 @@ package body Online_Mng is
           Debug.Put ("Online: fight cause another master: "
                    & Parse(From) );
         end if;
-        Timers.Delete (Tid);
         Start_Fight;
+        return;
       elsif Stat = Status.Slave and then not Sync and then not Sync_Mng.In_Sync then
         -- Synchronise slave which is not Synchronised
         if Debug.Level_Array(Debug.Online) then
@@ -161,8 +171,8 @@ package body Online_Mng is
         Debug.Put ("Online: fight cause fight from: "
                  & Parse(From) );
       end if;
-      Timers.Delete (Tid);
       Start_Fight;
+      return;
     end if;
 
   end Event;
@@ -179,6 +189,7 @@ package body Online_Mng is
       if Debug.Level_Array(Debug.Online) then
         Debug.Put ("Online: fight due to alive timeout");
       end if;
+      Tid := Timers.No_Timer;
       Start_Fight;
     end if;
     return False;
