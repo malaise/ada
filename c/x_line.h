@@ -10,7 +10,7 @@
 #include "x_key.h"
 
 /* #define EVENT_MASK ButtonReleaseMask | ButtonPressMask | KeyPressMask | ExposureMask | ResizeRedirectMask | StructureNotifyMask */
-#define EVENT_MASK ButtonReleaseMask | ButtonPressMask | KeyPressMask | ExposureMask
+#define EVENT_MASK ButtonReleaseMask | ButtonPressMask | KeyPressMask | ExposureMask | EnterWindowMask
 #define MSG_SIZE_INT    5 /* X value */
 
 typedef struct {
