@@ -50,6 +50,13 @@ package body Channels is
   end Fd_Match;
   procedure Fd_Search is new Send_List_Mng.Search (Fd_Match);
 
+  function Dscr_Match (D1, D2 : Send_Rec) return Boolean is
+    use type Socket.Socket_Dscr;
+  begin
+    return D1.Dscr = D2.Dscr;
+  end Dscr_Match;
+  procedure Dscr_Search is new Send_List_Mng.Search (Dscr_Match);
+
   -- Reply
   package Reply_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
 
@@ -145,7 +152,7 @@ package body Channels is
 
     procedure Init is
     begin
-      -- Save Channel_Name from instantiation 
+      -- Save Channel_Name from instantiation
       if Channel_Dscr.Init then
         return;
       end if;
@@ -186,7 +193,7 @@ package body Channels is
 
     -- General reception callback
     function Read_Cb (Sender : in Boolean; Fd : in X_Mng.File_Desc)
-                     return Boolean is 
+                     return Boolean is
       S_Rec : Send_Rec;
       D_Rec : Dest_Rec;
       Dscr : Socket.Socket_Dscr;
@@ -276,7 +283,7 @@ package body Channels is
     end Read_Cb;
 
     function Rec_Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is 
+                     return Boolean is
     begin
       return Read_Cb (True, Fd);
     end Rec_Read_Cb;
@@ -325,8 +332,8 @@ package body Channels is
       end if;
       -- Build port record
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name); 
-      
+          := Text_Handler.Value (Channel_Dscr.Name);
+
       -- Accept
       begin
         Tcp_Util.Accept_From (Socket.Tcp_Header, Port,
@@ -373,7 +380,7 @@ package body Channels is
     ----------------------
 
     function Snd_Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is 
+                     return Boolean is
     begin
       return Read_Cb (False, Fd);
     end Snd_Read_Cb;
@@ -415,12 +422,12 @@ package body Channels is
       -- Build host and port records
       if Host_Name'Length > Tcp_Util.Max_Host_Name_Len then
         raise Name_Too_Long;
-      end if; 
+      end if;
       Host := (Kind => Tcp_Util.Host_Name_Spec, Name => (others => ' '));
-      Host.Name (1 .. Host_Name'Length) := Host_Name; 
+      Host.Name (1 .. Host_Name'Length) := Host_Name;
       Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name); 
+          := Text_Handler.Value (Channel_Dscr.Name);
     end Build_Host_Port;
 
     -- Add destinations from file
@@ -471,7 +478,7 @@ package body Channels is
     exception
       when others =>
         Host_List_Mng.Delete_List (List, Deallocate => True);
-        raise;      
+        raise;
     end Add_Destinations;
 
     -- Add a new recipient
@@ -589,7 +596,7 @@ package body Channels is
       end if;
 
       -- Delete all connections
-      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False); 
+      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False);
       loop
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         Close_Current_Connection;
@@ -625,7 +632,7 @@ package body Channels is
       end if;
 
       -- Send to all connected destinations
-      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False); 
+      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False);
       loop
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
@@ -660,6 +667,8 @@ package body Channels is
       Msg : Channel_Message_Type;
       Len : Message_Length;
       Res : Boolean;
+      D_Rec : Dest_Rec;
+      S_Rec : Send_Rec;
       use type Socket.Socket_Dscr;
     begin
       -- Get current socket
@@ -667,6 +676,22 @@ package body Channels is
           raise Not_In_Read;
       end if;
       Reply_List_Mng.Read (Channel_Dscr.Replies, Dscr, Reply_List_Mng.Current);
+
+      -- Check it is still known (not closed)
+      -- More probably in senders, but maybe in dests (if reply of a reply)
+      begin
+        S_Rec.Dscr := Dscr;
+        Dscr_Search (Channel_Dscr.Sends, S_Rec, From_Current => False);
+      exception
+        when Send_List_Mng.Not_In_List =>
+          begin
+            D_Rec.Dscr := Dscr;
+            Dscr_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
+          exception
+            when Dest_List_Mng.Not_In_List =>
+              raise Reply_Failed;
+          end;
+      end;
 
       -- Build message and len
       Msg.Diff := False;
@@ -679,7 +704,7 @@ package body Channels is
 
       -- Reply on current
       begin
-        Res := Channel_Send (Dscr, null, Msg, Len);       
+        Res := Channel_Send (Dscr, null, Msg, Len);
       exception
         when Socket.Soc_Tail_Err =>
           raise Reply_Overflow;
