@@ -1,12 +1,9 @@
-# Clear stack
-[ ssize 0 = [ 0 retn ] ifcall pop Z pushr retacal ] Z popr
-
 # Error and quit
 4 format
 [ [ Error, 3 arguments: <nb_disks> <from_column> <to_column> expected ] putl
   [ "   nb_disks must be >= 0," ] putl
   [ "   columns must be 1, 2 or 3 and different." ] putl
-Z pushr call ] E popr
+ssize popn 0 retn ] E popr
 
 # Check 3 args
 ssize 3 /= E pushr ifcall
