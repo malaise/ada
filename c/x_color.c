@@ -4,10 +4,10 @@
 
 #include <stdlib.h>
 
-#define N_PLANES 0
 #define X_COLOR_MAP_STRATEGY "X_COLOR_MAP"
 #define PRIVATE_COLOR_MAP "PRIVATE"
 
+#define N_PLANES 0
 XColor color_value[NBRE_COLOR];
 
 /* Loads the colors in the server */
