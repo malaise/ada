@@ -42,6 +42,16 @@ package body Assertion is
     Assertion.Action := Set.Action;
   end Set;
 
+  -- Get action value
+  function Get return Action_List is
+  begin
+    if not Init_Done then
+      -- Init is necessary
+      Init;
+    end if;
+    return Action;
+  end Get;
+
   -- Do nothing if What is True,
   -- else check environment variable ASSERT_ACTION
   --  If set to TRACE, trace assertion error
