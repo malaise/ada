@@ -152,6 +152,9 @@ package body Client_Mng is
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: quit");
     end if;
+    if not Init_Done then
+      return;
+    end if;
     -- Delete all notify
     Notify.Del_All;
     -- Abort accept and close all client sockets
