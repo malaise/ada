@@ -37,9 +37,9 @@ package Pattern is
                                  return Boolean;
 
 
-  -- (Re)define a pattern in a rule.
+  -- Define a pattern in a rule.
   -- Id4Cb will be the Id provided to Match_Cb when pattern matches.
-  -- It can be Same_Id (same value as Id) or another value:
+  -- It can be Same_Id (same value as Id) or another value.
   -- May raise Invalid_Pattern if Pattern is not valid.
   -- May raise Pattern_Exists if this pattern Id is already set.
   procedure Set (Rule     : in Rule_No;
