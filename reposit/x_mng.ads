@@ -37,20 +37,10 @@ package X_Mng is
   -- Mouse buttons
   type Button_List is (None, Left, Middle, Right);
 
-  -- Returned events (see timers)
+  -- Returned events (see Event_Mng and Timers)
   type Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard, Refresh,
                       Tid_Motion, Fd_Event, Timer_Event, Signal_Event);
 
-  -- Fd management
-  subtype File_Desc is Sys_Calls.File_Desc;
-  -- Each callback is called with the fd and indication of read/write event
-  -- and should return True if fd event has to be reported by select
-  type Fd_Callback is access
-    function (Fd : in File_Desc; Read : in Boolean) return Boolean;
-
-  -- Signal management
-  type Signal_Callback is access procedure;
- 
   ----- EXCEPTIONS -----
 
   X_Failure : exception;
@@ -235,31 +225,6 @@ package X_Mng is
                                   Graphic : in Boolean);
 
   ----- EVENT MANAGEMENT -----
-  -- Register a callback on a fd for read or write.
-  -- The callback will be called (within X_SELECT) with the fd and read
-  procedure X_Add_Callback (Fd : in File_Desc; Read : in Boolean;
-                            Callback : in Fd_Callback);
-  -- Unregister the callback from a fd in a mode
-  procedure X_Del_Callback (Fd : in File_Desc; Read : in Boolean);
-  -- Is a callback registered on a fd in a mode
-  function X_Callback_Set (Fd : in File_Desc; Read : in Boolean)
-  return Boolean;
-
-  -- Register a callback on termination signal (SigInt)
-  -- Call it with null to disable generation of Signal_Event by Select
-  -- Default is event generation with no callback
-  procedure X_Set_Signal (Callback : in Signal_Callback);
-  -- Is a callback set on signals
-  function X_Signal_Set return Boolean;
-
-  -- Force re-evaluation (and expiration) of timers
-  procedure X_Wake_Up;
-
-  -- Wait for some ms. Initialisation MUST NOT HAVE BEEN DONE
-  --  (or X_FAILURE will be raised)
-  -- Return True if an event has occured
-  function Select_No_X (Timeout_Ms : Integer) return Boolean;
-
   -- Wait for some ms or until a X event is availble
   -- If timeout is < 0, infinite wait
   -- The remaining time is set
@@ -267,8 +232,8 @@ package X_Mng is
                       Timeout_Ms : in out Integer; X_Event : out Boolean);
 
   -- Processes a X Event (TID or Keyboard or other)
-  -- kind is KEYBOARD or TID (PRESS or RELEASE or MOTION), or DISCARD
-  --  or REFRESH or FD_EVENT
+  -- kind is Keyboard or Tid (Press or Release or Motion), or Discard
+  --  or Refresh or Fd_Event or Timer_Event or Signal_Event
   -- NEXT indicates if there is another event pendinig in X'queue
   procedure X_Process_Event(Line_Id : in Line; 
                             Kind : out Event_Kind;

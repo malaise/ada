@@ -1,4 +1,4 @@
-with X_Mng, Sys_Calls, Text_Handler;
+with Event_Mng, Sys_Calls, Text_Handler;
 package body Async_Stdin is
 
   -- The user callback
@@ -45,7 +45,7 @@ package body Async_Stdin is
       else
         Cb := null;
         Result := Sys_Calls.Set_Stdin_Attr (Sys_Calls.Canonical);
-        X_Mng.X_Del_Callback (Sys_Calls.Stdin, True);
+        Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
       end if;
     else
       if Cb = null then
@@ -54,7 +54,7 @@ package body Async_Stdin is
       if Result then
         Cb := User_Callback;
         Max := Max_Chars;
-        X_Mng.X_Add_Callback (Sys_Calls.Stdin, True, Fd_Callback'access);
+        Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True, Fd_Callback'access);
       else
         raise Not_A_Tty;
       end if;

@@ -1,4 +1,4 @@
-with Dynamic_List, X_Mng;
+with Dynamic_List, Event_Mng;
 package body Timers is
 
   -- Return an image of a timer
@@ -110,7 +110,7 @@ package body Timers is
     This_Id := Timer.Id;
     Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
     if Timer.Id = This_Id then
-      X_Mng.X_Wake_Up;
+      Event_Mng.Wake_Up;
     end if;
 
     -- Done
@@ -250,6 +250,63 @@ package body Timers is
     end if;
     return Result;
   end Wait_For;
+
+  -- Compute next timeout from Expiration and timers
+  function Next_Timeout (Expiration : Expiration_Rec) return Duration is
+    Timeout_Dur, Timeout_Tim : Duration;
+    use type Ada.Calendar.Time;
+  begin
+    -- Final timeout from the one specified
+    if not Expiration.Infinite then
+      Timeout_Dur := Expiration.Time - Ada.Calendar.Clock;
+      -- Reached?
+      if Timeout_Dur < 0.0 then
+        Timeout_Dur := 0.0;
+      end if;
+    else
+      Timeout_Dur := 0.0;
+    end if;
+
+    -- Next timer timeout
+    Timeout_Tim := Timers.Wait_For;
+
+    -- Compute smaller timeout between timers and the one requested
+    if Timeout_Tim = Infinite_Seconds then
+      -- No timer
+      if Expiration.Infinite then
+        -- No timer and infinite timeout: infinite
+        Timeout_Dur := Infinite_Seconds;
+      else
+        -- No timer and timeout set: keep timeout
+        null;
+      end if;
+    else
+      -- Some timer
+      if Expiration.Infinite then
+        -- Some timer and infinite timeout: take timer
+        Timeout_Dur := Timeout_Tim;
+      else
+        -- Some timer and a timeout set: take smallest
+        if Timeout_Tim <= Timeout_Dur then
+          -- Timer is smallest
+          Timeout_Dur := Timeout_Tim;
+        else
+          -- Keep timeout
+          null;
+        end if;
+      end if;
+    end if;
+
+    return Timeout_Dur;
+  end Next_Timeout;
+
+  -- Is expiration reached
+  function Is_Reached (Expiration : Expiration_Rec) return Boolean is
+    use type Ada.Calendar.Time;
+  begin
+    return not Expiration.Infinite
+    and then Ada.Calendar.Clock > Expiration.Time;
+  end Is_Reached;
 
 end Timers;
 

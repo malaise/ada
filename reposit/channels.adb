@@ -1,5 +1,5 @@
 with System, Ada.Calendar;
-with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list, X_Mng;
+with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list, Event_Mng;
 package body Channels is
 
   Byte_Size : constant := System.Storage_Unit;
@@ -11,12 +11,12 @@ package body Channels is
     Host_Name : Tcp_Util.Remote_Host (Tcp_Util.Host_Name_Spec);
     Host_Id : Socket.Host_Id;
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
-    Fd : Sys_Calls.File_Desc;
+    Fd : Event_Mng.File_Desc;
   end record;
   package Dest_List_Mng is new Dynamic_List(Dest_Rec);
 
   function Fd_Match (D1, D2 : Dest_Rec) return Boolean is
-    use type Sys_Calls.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
@@ -39,12 +39,12 @@ package body Channels is
   -- Sender
   type Send_Rec is record
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
-    Fd : Sys_Calls.File_Desc;
+    Fd : Event_Mng.File_Desc;
   end record;
   package Send_List_Mng is new Dynamic_List(Send_Rec);
 
   function Fd_Match (D1, D2 : Send_Rec) return Boolean is
-    use type Sys_Calls.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
@@ -152,7 +152,7 @@ package body Channels is
 
     procedure Init is
     begin
-      -- Save Channel_Name from instantiation
+      -- Save Channel_Name from instantiation 
       if Channel_Dscr.Init then
         return;
       end if;
@@ -192,8 +192,8 @@ package body Channels is
                           Dscr            : in Socket.Socket_Dscr);
 
     -- General reception callback
-    function Read_Cb (Sender : in Boolean; Fd : in X_Mng.File_Desc)
-                     return Boolean is
+    function Read_Cb (Sender : in Boolean; Fd : in Event_Mng.File_Desc)
+                     return Boolean is 
       S_Rec : Send_Rec;
       D_Rec : Dest_Rec;
       Dscr : Socket.Socket_Dscr;
@@ -207,7 +207,7 @@ package body Channels is
           Fd_Search (Channel_Dscr.Sends, S_Rec, From_Current => False);
         exception
           when Send_List_Mng.Not_In_List =>
-            X_Mng.X_Del_Callback (Fd, True);
+            Event_Mng.Del_Fd_Callback (Fd, True);
             return False;
         end;
         Send_List_Mng.Read (Channel_Dscr.Sends, S_Rec, Send_List_Mng.Current);
@@ -219,7 +219,7 @@ package body Channels is
           Fd_Search (Channel_Dscr.Dests, D_Rec, From_Current => False);
         exception
           when Send_List_Mng.Not_In_List =>
-            X_Mng.X_Del_Callback (Fd, True);
+            Event_Mng.Del_Fd_Callback (Fd, True);
             return False;
         end;
         Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);
@@ -231,7 +231,7 @@ package body Channels is
       exception
         when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
           -- Sender / Dest has disconnected
-          X_Mng.X_Del_Callback (Fd, True);
+          Event_Mng.Del_Fd_Callback (Fd, True);
           Close (Dscr);
           if Sender then
             Delete_Current_Send;
@@ -260,7 +260,7 @@ package body Channels is
           return False;
         when Socket.Soc_Len_Err =>
           -- Invalid length
-          X_Mng.X_Del_Callback (Fd, True);
+          Event_Mng.Del_Fd_Callback (Fd, True);
           Close (Dscr);
           if Sender then
             Delete_Current_Send;
@@ -282,8 +282,8 @@ package body Channels is
       return True;
     end Read_Cb;
 
-    function Rec_Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is
+    function Rec_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+                     return Boolean is 
     begin
       return Read_Cb (True, Fd);
     end Rec_Read_Cb;
@@ -312,7 +312,7 @@ package body Channels is
                                Fd   => Socket.Fd_Of (New_Dscr)));
 
         -- Hook fd to receive data
-        X_Mng.X_Add_Callback (Socket.Fd_Of (New_Dscr), True,
+        Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True,
                               Rec_Read_Cb'Unrestricted_Access);
         Socket.Set_Blocking (New_Dscr, False);
       end if;
@@ -332,8 +332,8 @@ package body Channels is
       end if;
       -- Build port record
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name);
-
+          := Text_Handler.Value (Channel_Dscr.Name); 
+      
       -- Accept
       begin
         Tcp_Util.Accept_From (Socket.Tcp_Header, Port,
@@ -366,7 +366,7 @@ package body Channels is
         loop
           Send_List_Mng.Read (Channel_Dscr.Sends, Rec, Send_List_Mng.Current);
           -- Unhook fd receiving data
-          X_Mng.X_Del_Callback (Socket.Fd_Of (Rec.Dscr), True);
+          Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Rec.Dscr), True);
           Close (Rec.Dscr);
           exit when Send_List_Mng.Get_Position (Channel_Dscr.Sends)
                   = Send_List_Mng.List_Length (Channel_Dscr.Sends);
@@ -379,8 +379,8 @@ package body Channels is
 
     ----------------------
 
-    function Snd_Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is
+    function Snd_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+                     return Boolean is 
     begin
       return Read_Cb (False, Fd);
     end Snd_Read_Cb;
@@ -409,7 +409,7 @@ package body Channels is
       Dest_List_Mng.Modify (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
 
       -- Hook fd to receive data (replies)
-      X_Mng.X_Add_Callback (Socket.Fd_Of (Dscr), True,
+      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
                             Snd_Read_Cb'Unrestricted_Access);
       Socket.Set_Blocking (Dscr, False);
     end Connect_Cb;
@@ -422,12 +422,12 @@ package body Channels is
       -- Build host and port records
       if Host_Name'Length > Tcp_Util.Max_Host_Name_Len then
         raise Name_Too_Long;
-      end if;
+      end if; 
       Host := (Kind => Tcp_Util.Host_Name_Spec, Name => (others => ' '));
-      Host.Name (1 .. Host_Name'Length) := Host_Name;
+      Host.Name (1 .. Host_Name'Length) := Host_Name; 
       Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name);
+          := Text_Handler.Value (Channel_Dscr.Name); 
     end Build_Host_Port;
 
     -- Add destinations from file
@@ -478,7 +478,7 @@ package body Channels is
     exception
       when others =>
         Host_List_Mng.Delete_List (List, Deallocate => True);
-        raise;
+        raise;      
     end Add_Destinations;
 
     -- Add a new recipient
@@ -550,7 +550,7 @@ package body Channels is
         Tcp_Util.Abort_Connect (Dest.Host_Name, Port);
       else
         -- Unhook fd and close
-        X_Mng.X_Del_Callback (Dest.Fd, True);
+        Event_Mng.Del_Fd_Callback (Dest.Fd, True);
         Close (Dest.Dscr);
       end if;
       -- Delete rec
@@ -596,7 +596,7 @@ package body Channels is
       end if;
 
       -- Delete all connections
-      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False);
+      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False); 
       loop
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         Close_Current_Connection;
@@ -632,7 +632,7 @@ package body Channels is
       end if;
 
       -- Send to all connected destinations
-      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False);
+      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False); 
       loop
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
@@ -704,7 +704,7 @@ package body Channels is
 
       -- Reply on current
       begin
-        Res := Channel_Send (Dscr, null, Msg, Len);
+        Res := Channel_Send (Dscr, null, Msg, Len);       
       exception
         when Socket.Soc_Tail_Err =>
           raise Reply_Overflow;

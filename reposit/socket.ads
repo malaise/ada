@@ -1,5 +1,5 @@
 with System;
-with X_Mng;
+with Sys_Calls;
 package Socket is
 
   -- The socket descriptor
@@ -68,7 +68,7 @@ package Socket is
   procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean);
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
-  function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc;
+  function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --

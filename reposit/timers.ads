@@ -66,6 +66,20 @@ package Timers is
 
   -- Delay until next timer expires (or Infinite_Seconds)
   function Wait_For return Duration;
+
+
+  -- Compute next timeout from Expiration and timers
+  type Expiration_Rec (Infinite : Boolean := True) is record
+    case Infinite is
+      when True => null;
+      when False => Time : Ada.calendar.Time;
+    end case;
+  end record;
+  function Next_Timeout (Expiration : Expiration_Rec) return Duration;
+
+  -- Is expiration reached
+  function Is_Reached (Expiration : Expiration_Rec) return Boolean;
+
 private
 
   type Timer_Id is record

@@ -1,10 +1,11 @@
-with Calendar, System;
-with Dynamic_List, My_Io, Timers, Address_Ops, Null_Procedure;
+with Ada.Calendar;
+with My_Io, Address_Ops, Event_Mng, Timers;
 package body X_Mng is
 
   -- Duration
   Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
 
+  -- Debug
   Debug_Var_Name : constant String := "X_MNG_DEBUG";
   Debug : Boolean := False;
 
@@ -33,26 +34,6 @@ package body X_Mng is
   begin
     return Boolean'Val(Bool_For_C'Pos(C_Boolean));
   end For_Ada;
-
-  -- Callback list
-  type Cb_Rec is record
-    Fd : File_Desc;
-    Read : Boolean;
-    Cb : Fd_Callback;
-  end record;
-  package Cb_Mng is new Dynamic_List(Cb_Rec);
-  Cb_List : Cb_Mng.List_Type;
-
-  -- Same FD
-  function Same_Fd (Cb1, Cb2 : Cb_Rec) return Boolean is
-    use type Sys_Calls.File_Desc;
-  begin
-    return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
-  end Same_Fd;
-  procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
-
-  -- Signal callback
-  Cb_Sig : Signal_Callback := Null_Procedure'Access;
 
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
@@ -275,40 +256,14 @@ package body X_Mng is
                                  Graphic : Bool_For_C) return Result;
   pragma Import(C, X_Set_Graphic_Pointer, "x_set_graphic_pointer");
 
-  ------------------------------------------------------------------
-  -- Add a fd for select
-  -- int x_add_fd (int fd, boolean read);
-  ------------------------------------------------------------------
-  function X_Add_Fd (Fd : Integer; Read : Bool_For_C) return Result;
-  pragma Import(C, X_Add_Fd, "x_add_fd");
-
-  ------------------------------------------------------------------
-  -- Del a fd from select
-  -- int x_del_fd (int fd, boolean read);
-  ------------------------------------------------------------------
-  function X_Del_Fd (Fd : Integer; Read : Bool_For_C) return Result;
-  pragma Import(C, X_Del_Fd, "x_del_fd");
-
-  ------------------------------------------------------------------
-  -- Is a fd set for select
-  -- boolean x_fd_set (int fd, boolean read);
-  ------------------------------------------------------------------
-  function X_Fd_Set (Fd : Integer; Read : Bool_For_C) return Bool_For_C;
-  pragma Import(C, X_Fd_Set, "x_fd_set");
-
-  ------------------------------------------------------------------
-  -- Wake-up the select
-  ------------------------------------------------------------------
-  procedure C_X_Wake_Up;
-  pragma Import(C, C_X_Wake_Up, "x_wake_up");
 
   ------------------------------------------------------------------
   -- Wait for some events
-  -- int x_select (int *p_fd, int *timeout_ms);
+  -- int x_select (int *p_fd, int *p_read, int *timeout_ms);
   ------------------------------------------------------------------
-  C_Select_Sig_Event : constant Integer := -3;
-  C_Select_No_Event  : constant Integer := -2;
-  C_Select_X_Event   : constant Integer := -1;
+  C_Select_No_Event  : constant Integer := -1;
+  C_Select_Sig_Event : constant Integer := -2;
+  C_Select_X_Event   : constant Integer := -3;
   function X_Select (P_Fd : System.Address;
                      P_Read : System.Address;
                      Timeout_Ms : System.Address) return Result;
@@ -891,98 +846,17 @@ package body X_Mng is
   end X_Set_Graphic_Pointer;
 
   ------------------------------------------------------------------
-  procedure X_Add_Callback (Fd : in File_Desc; Read : in Boolean;
-                            Callback : in Fd_Callback) is
-    Res : Boolean;
-    Cb_Searched : Cb_Rec;
-  begin
-    -- Check no cb for this fd yet
-    Cb_Searched.Fd := Fd;
-    Cb_Searched.Read := Read;
-    Cb_Searched.Cb := null;
-    begin
-      Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From_Current => False);
-      raise X_Failure;
-    exception
-      when Cb_Mng.Not_In_List =>
-        null;
-    end;
-    -- Append
-    if not Cb_Mng.Is_Empty (Cb_List) then
-      Cb_Mng.Move_To (Cb_List, Cb_Mng.Prev, 0, False);
-    end if;
-    Cb_Mng.Insert (Cb_List, (Fd, Read, Callback));
-    -- Add fd to select
-    Res := X_Add_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
-    if not Res then
-      raise X_Failure;
-    end if;
-  exception
-    when others =>
-      raise X_Failure;
-  end X_Add_Callback;
-
-  ------------------------------------------------------------------
-  procedure X_Del_Callback (Fd : in File_Desc; Read : in Boolean) is
-    Res : Boolean;
-    Cb_Searched : Cb_Rec;
-  begin
-    -- Del fd from select
-    Res := X_Del_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
-    -- del from list
-    Cb_Searched.Fd := Fd;
-    Cb_Searched.Read := Read;
-    Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From_Current => False);
-    if Cb_Mng.Get_Position (Cb_List) /=  Cb_Mng.List_Length(Cb_List) then
-      Cb_Mng.Delete (Cb_List, Cb_Mng.Next);
-    else
-      Cb_Mng.Delete (Cb_List, Cb_Mng.Prev);
-    end if;
-    if not Res then
-      raise X_Failure;
-    end if;
-  exception
-    when others =>
-      raise X_Failure;
-  end X_Del_Callback;
-  
-  ------------------------------------------------------------------
-  function X_Callback_Set (Fd : in File_Desc; Read : in Boolean)
-  return Boolean is
-    Res : Bool_For_C;
-  begin
-    Res := X_Fd_Set (Integer(Fd), Bool_For_C(Read));
-    return Boolean(Res);
-  end X_Callback_Set;
-
-  ------------------------------------------------------------------
-  -- Register a callback on terminations signals
-  -- Call it with null to disable
-  procedure X_Set_Signal (Callback : in Signal_Callback) is
-  begin
-    Cb_Sig := Callback;
-  end X_Set_Signal;
-
-  ------------------------------------------------------------------
-  -- Is a callback set on signals
-  function X_Signal_Set return Boolean is
-  begin
-    return Cb_Sig /= null;
-  end X_Signal_Set;
-
-  ------------------------------------------------------------------
   procedure X_Select (Line_Id : in Line; Timeout_Ms : in out Integer;
                       X_Event : out Boolean) is
-    Exp : Calendar.Time;
-    use Calendar;
+    Exp : Ada.Calendar.Time;
+    use Ada.Calendar;
     Timeout : Duration;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
     end if;
     -- Compute expiration and set timeout in duration
-    Exp := Calendar.Clock;
+    Exp := Ada.Calendar.Clock;
     if Timeout_Ms > 0 then
       Timeout := Duration (Timeout_Ms) / 1_000.0;
       Exp := Exp + Timeout;
@@ -995,7 +869,7 @@ package body X_Mng is
     Dispatcher.Some_Event(Line_Id.No)(X_Event);
     -- Compute remaining time
     if Timeout_Ms > 0 then
-      Timeout_Ms := Integer ( (Exp - Calendar.Clock) * 1_000.0);
+      Timeout_Ms := Integer ( (Exp - Ada.Calendar.Clock) * 1_000.0);
       if Timeout_Ms < 0 then
         Timeout_Ms := 0;
       end if;
@@ -1157,65 +1031,31 @@ package body X_Mng is
   function Xx_Select (Timeout_In : Duration) return Xx_Select_Result_List is
     Fd    : Integer;
     Read  : Bool_For_C;
-    Timeout_Dur, Timeout_Tim : Duration;
-    Final_Exp : Calendar.Time;
+    Final_Exp : Timers.Expiration_Rec;
+    Timeout_Dur : Duration;
     Timeout_Ms : Integer;
-    Dummy : Result;
-    Cb_Searched : Cb_Rec;
-    use Calendar;
+    C_Res : Result;
+    Handle_Res : Event_Mng.Out_Event_List;
+    In_Event : Event_Mng.Event_Rec;
+    use type  Ada.Calendar.Time;
   begin
     -- Compute final expiration
-    if Timeout_In /= Infinite_Timeout then
-      Final_Exp := Calendar.Clock + Timeout_In;
+    if Timeout_In = Infinite_Timeout then
+      Final_Exp := (Infinite => True);
+    else
+      Final_Exp := (Infinite => False, Time => Ada.Calendar.Clock + Timeout_In);
     end if;
 
     loop
-      -- Final timeout from the one specified
-      if Timeout_In /= Infinite_Timeout then
-        Timeout_Dur := Final_Exp - Calendar.Clock;
-        -- Reached?
-        if Timeout_Dur < 0.0 then
-            Timeout_Dur := 0.0;
-        end if;
-      else
-        Timeout_Dur := 0.0;
-      end if;
-
-      -- Netx timer timeout
-      Timeout_Tim := Timers.Wait_For;
 
       -- Compute smaller timeout between timers and the one requested
-      if Timeout_Tim = Infinite_Timeout then
-        -- No timer
-        if Timeout_In = Infinite_Timeout then
-          -- No timer and infinite timeout: infinite
-          Timeout_Dur := Infinite_Timeout;
-        else
-          -- No timer and timeout set: keep timeout
-          null;
-        end if;
-      else
-        -- Some timer
-        if Timeout_In = Infinite_Timeout then
-          -- Some timer and infinite timeout: take timer
-          Timeout_Dur := Timeout_Tim;
-        else
-          -- Some timer and a timeout set: take smallest
-          if Timeout_Tim <= Timeout_Dur then
-            -- Timer is smallest
-            Timeout_Dur := Timeout_Tim;
-          else
-            -- Keep timeout
-            null;
-          end if;
-        end if;
-      end if;
+      Timeout_Dur := Timers.Next_Timeout (Final_Exp);
 
       -- The real select
       Timeout_Ms := Integer (Timeout_Dur * 1000.0);
-      Dummy := X_Select (Fd'Address, Read'Address, Timeout_Ms'Address);
+      C_Res := X_Select (Fd'Address, Read'Address, Timeout_Ms'Address);
       if Debug then
-        if Dummy /= Ok then
+        if C_Res /= Ok then
           My_Io.Put_Line ("  XX_SELECT -> ERROR");
           return Select_Timeout;
         else
@@ -1228,45 +1068,39 @@ package body X_Mng is
       if Fd = C_Select_X_Event then
         -- A X event
         return Select_X_Event;
-      elsif Fd = C_Select_No_Event then
-        -- Nothing. Expire timers or return timeout
-        if Timers.Expire then
-          return Select_Timer;
-        end if;
-        if Timeout_In /= Infinite_Timeout
-        and then Calendar.Clock > Final_Exp then
-          -- Requested timeout reached
-          return Select_Timeout;
-        end if;
-      elsif Fd = C_Select_Sig_Event then
-        if Cb_Sig /= null then
-          Cb_Sig.all;
-          return Select_Signal;
-        end if;
-      else
-        -- A FD event
-        Cb_Searched.Fd := File_Desc(Fd);
-        Cb_Searched.Read := Boolean(Read);
-        Cb_Searched.Cb := null;
-        begin
-          -- Search and read callback
-          Cb_Search (Cb_List, Cb_Searched, From_Current => False);
-          Cb_Mng.Read (Cb_List, Cb_Searched,  Cb_Mng.Current);
-          -- Call it and propagate event if callback returns true
-          if Cb_Searched.Cb /= null then
-            if Cb_Searched.Cb (Cb_Searched.Fd, Cb_Searched.Read) then
-              return Select_Fd;
-            end if;
-          end if;
-        exception
-          when Cb_Mng.Not_In_List =>
-          if Debug then
-            My_Io.Put_Line ("**** XX_SELECT: " & Integer'Image(Fd) 
-                          & " fd not found ****");
-          end if;
-        end;
-        -- No callback or returned False
       end if;
+
+      -- A Event for Event_Mng
+      if Fd = C_Select_Sig_Event then
+        Handle_Res := Event_Mng.Handle ((Kind => Event_Mng.Sig_Event));
+      elsif Fd = C_Select_No_Event then
+        Handle_Res := Event_Mng.Handle ((Kind => Event_Mng.No_Event));
+      elsif Fd >= 0 then
+        Handle_Res := Event_Mng.Handle ((Kind => Event_Mng.Fd_Event,
+                                        Fd => Event_Mng.File_Desc(Fd),
+                                        Read => For_Ada(Read)));
+      else
+        Handle_Res := Event_Mng.No_Event;
+        if Debug then
+          My_Io.Put_Line ("  Xx_Select -> Invalid fd");
+        end if;
+      end if;
+
+      -- Done on event or timeout
+      case Handle_Res is
+        when Event_Mng.Timer_Event =>
+          return Select_Timer;
+        when Event_Mng.Fd_Event =>
+          return Select_Fd;
+        when Event_Mng.Sig_Event =>
+          return Select_Signal;
+        when Event_Mng.No_Event =>
+          if Timers.Is_Reached (Final_Exp) then
+            -- Requested timeout reached
+            return Select_Timeout;
+          end if;
+      end case;
+
     end loop;
   end Xx_Select;
 
@@ -1290,7 +1124,7 @@ package body X_Mng is
       -- Will be LINE_FOR_C
       Line_For_C_Id : Line_For_C;
       Wait_Inf : Boolean;
-      Wait_Exp : Calendar.Time;
+      Wait_Exp : Ada.Calendar.Time;
       -- Refreshing this client due to a unregister
       Refresh : Boolean;
     end record;
@@ -1304,7 +1138,7 @@ package body X_Mng is
     Loc_Next : Boolean;
     -- Local X line
     Loc_Line_For_C_Id : Line_For_C;
-    use System, Calendar;
+    use type Ada.Calendar.Time, System.Address;
     -- Delay or INFINITE_TIMEOUT
     Delay_Dur : Duration;
   
@@ -1312,7 +1146,7 @@ package body X_Mng is
                                     Selected_Client : out Client_Range) is
       Infinite : Boolean;
       Dur, Min_Dur : Duration; 
-      Current_Time : Calendar.Time := Calendar.Clock;
+      Current_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
     begin
 
       Infinite := True;
@@ -1475,7 +1309,7 @@ package body X_Mng is
               end if;
             else
               Clients(Client).Wait_Inf := False;
-              Clients(Client).Wait_Exp := Calendar.Clock + Timeout;
+              Clients(Client).Wait_Exp := Ada.Calendar.Clock + Timeout;
               if Debug then
                 My_Io.Put_Line ("    Wait timeout");
               end if;
@@ -1629,39 +1463,6 @@ package body X_Mng is
       end select;
     end loop;
   end Dispatcher;
-
-  ------------------------------------------------------------------
-  -- Specific select without X
-  function Select_No_X (Timeout_Ms : Integer) return Boolean is
-    Select_Result : Xx_Select_Result_List;
-  begin
-    if Initialised  then
-      raise X_Failure;
-    end if;
-    Set_Debug;
-    if Timeout_Ms < 0 then
-      Select_Result := Xx_Select (Timers.Infinite_Seconds);
-    else
-      Select_Result := Xx_Select (Duration(Timeout_Ms) / 1000.0);
-    end if;
-    case Select_Result is
-      when Select_X_Event =>
-        if Debug then
-          My_Io.Put_Line ("**** SELECT_NO_X: Got a X event");
-        end if;
-        raise X_Failure;
-      when Select_Fd | Select_Timer | Select_Signal =>
-        return True;
-      when Select_Timeout =>
-        return False;
-    end case;
-  end Select_No_X;
-
-  ------------------------------------------------------------------
-  procedure X_Wake_Up is
-  begin
-    C_X_Wake_Up;
-  end X_Wake_Up;
 
 end X_Mng;
 

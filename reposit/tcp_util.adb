@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Sys_Calls, Dynamic_List, Timers, X_Mng, My_Io;
+with Sys_Calls, Dynamic_List, Timers, Event_Mng, My_Io;
 package body Tcp_Util is
 
   -- Remove tailing spaces
@@ -45,7 +45,7 @@ package body Tcp_Util is
     Cb : Connection_Callback_Access;
     Timer : Timers.Timer_Id;
     Dscr : Socket.Socket_Dscr;
-    Fd   : X_Mng.File_Desc;
+    Fd   : Event_Mng.File_Desc;
     Fd_Set : Boolean;
     Curr_Try : Natural;
   end record;
@@ -70,7 +70,7 @@ package body Tcp_Util is
 
   -- Search Connecting_Rec by Fd
   function Fd_Match (R1, R2 : Connecting_Rec) return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     return R1.Fd_Set and then R2.Fd_Set and then R1.Fd = R2.Fd;
   end Fd_Match;
@@ -220,8 +220,8 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.End_Async_Connect del Cbs on fd "
                     & Rec.Fd'Img);
     end if;
-    X_Mng.X_Del_CallBack (Rec.Fd, True);
-    X_Mng.X_Del_CallBack (Rec.Fd, False);
+    Event_Mng.Del_Fd_Callback (Rec.Fd, True);
+    Event_Mng.Del_Fd_Callback (Rec.Fd, False);
 
     -- Close if failure and still open
     if not Success and then Socket.Is_Open (Rec.Dscr) then
@@ -262,7 +262,7 @@ package body Tcp_Util is
   end End_Async_Connect;
 
   -- Callback on connect fd
-  function Connection_Fd_Cb (Fd : in X_Mng.File_Desc;
+  function Connection_Fd_Cb (Fd : in Event_Mng.File_Desc;
                              Read : in Boolean) return Boolean is
     Rec : Connecting_Rec;
     Go_On : Boolean;
@@ -383,8 +383,8 @@ package body Tcp_Util is
       Rec.Fd := Socket.Fd_Of (Rec.Dscr);
       Rec.Fd_Set := True;
       -- Add callback on fd
-      X_Mng.X_Add_CallBack (Rec.Fd, True, Connection_Fd_Cb'access);
-      X_Mng.X_Add_CallBack (Rec.Fd, False, Connection_Fd_Cb'access);
+      Event_Mng.Add_Fd_Callback (Rec.Fd, True, Connection_Fd_Cb'access);
+      Event_Mng.Add_Fd_Callback (Rec.Fd, False, Connection_Fd_Cb'access);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb asynchronous pending"
                         & " on fd " & Rec.Fd'Img);
@@ -474,8 +474,8 @@ package body Tcp_Util is
         My_Io.Put_Line ("  Tcp_Util.Abort_Connect del Cbs on fd "
                       & Rec.Fd'Img);
       end if;
-      X_Mng.X_Del_CallBack (Rec.Fd, True);
-      X_Mng.X_Del_CallBack (Rec.Fd, False);
+      Event_Mng.Del_Fd_Callback (Rec.Fd, True);
+      Event_Mng.Del_Fd_Callback (Rec.Fd, False);
       Socket.Close (Rec.Dscr);
     end if;
     -- Cancel timer
@@ -505,14 +505,14 @@ package body Tcp_Util is
     Port : Port_Num;
     Cb   : Acception_Callback_Access;
     Dscr : Socket.Socket_Dscr;
-    Fd   : X_Mng.File_Desc;
+    Fd   : Event_Mng.File_Desc;
   end record;
   package Acc_List_Mng is new Dynamic_List (Accepting_Rec);
   Acc_List : Acc_List_Mng.List_Type;
 
   -- Search Accepting_Rec by Fd
   function Fd_Match (R1, R2 : Accepting_Rec) return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     return R1.Fd = R2.Fd;
   end Fd_Match;
@@ -527,7 +527,7 @@ package body Tcp_Util is
   procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
 
   -- Callback on accept fd
-  function Acception_Fd_Cb (Fd : in X_Mng.File_Desc;
+  function Acception_Fd_Cb (Fd : in Event_Mng.File_Desc;
                             Read : in Boolean) return Boolean is
     Rec : Accepting_Rec;
     New_Dscr : Socket.Socket_Dscr;
@@ -603,7 +603,7 @@ package body Tcp_Util is
     end if;
 
     -- Add callback on fd
-    X_Mng.X_Add_CallBack (Rec.Fd, True, Acception_Fd_Cb'access);
+    Event_Mng.Add_Fd_Callback (Rec.Fd, True, Acception_Fd_Cb'access);
 
     -- Store Rec
     Acc_List_Mng.Insert (Acc_List, Rec);
@@ -638,7 +638,7 @@ package body Tcp_Util is
                     & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
     end if;
     -- Del callback, close and delete rec
-    X_Mng.X_Del_CallBack (Rec.Fd, True);
+    Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
     if Acc_List_Mng.Get_Position (Acc_List) = 1 then
        Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Next);
@@ -658,7 +658,7 @@ package body Tcp_Util is
   -- Sending 
   type Sending_Rec is record
     Dscr : Socket.Socket_Dscr;
-    Fd   : X_Mng.File_Desc;
+    Fd   : Event_Mng.File_Desc;
     Cb : End_Overflow_Callback_Access;
   end record;
 
@@ -675,7 +675,7 @@ package body Tcp_Util is
 
   -- Search Sending_Rec by Fd
   function Fd_Match (R1, R2 : Sending_Rec) return Boolean is
-    use type X_Mng.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     return R1.Fd = R2.Fd;
   end Fd_Match;
@@ -692,7 +692,7 @@ package body Tcp_Util is
   end Delete_Current_Sen;
 
   -- Sending callback on fd
-  function Sending_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  function Sending_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean is
     Rec : Sending_Rec;
   begin
@@ -729,7 +729,7 @@ package body Tcp_Util is
     end if;
 
     -- End of overflow: unhook callback and del rec
-    X_Mng.X_Del_CallBack (Rec.Fd, False);
+    Event_Mng.Del_Fd_Callback (Rec.Fd, False);
     Delete_Current_Sen;
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb cleaned");
@@ -777,7 +777,7 @@ package body Tcp_Util is
     end if;
 
     -- Hook our callback in write
-    X_Mng.X_Add_CallBack (Rec.Fd, False, Sending_Cb'access);
+    Event_Mng.Add_Fd_Callback (Rec.Fd, False, Sending_Cb'access);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Send Cb hooked");
     end if;
@@ -813,7 +813,7 @@ package body Tcp_Util is
     end if;
 
     -- Unhook callback and del rec
-    X_Mng.X_Del_CallBack (Rec.Fd, False);
+    Event_Mng.Del_Fd_Callback (Rec.Fd, False);
     Delete_Current_Sen;
 
     -- Close

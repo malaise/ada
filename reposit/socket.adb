@@ -195,12 +195,12 @@ package body Socket is
   end Set_Blocking;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
-  function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc is
+  function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is
     Fd : Integer;
   begin
     Res := Soc_Get_Id (Socket.Soc_Addr, Fd'Address);
     Check_Ok;
-    return X_Mng.File_Desc(Fd);
+    return Sys_Calls.File_Desc(Fd);
   end Fd_Of;
 
   -------------------------------------

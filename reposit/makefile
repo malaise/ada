@@ -1,5 +1,7 @@
 LIBX_MNG=-lx_mng
-LX=-largs $(LIBX_MNG) -lX11
+LIBUTIL=-lcutil
+LX=-largs $(LIBX_MNG) $(LIBUTIL) -lX11
+LU=-largs $(LIBUTIL)
 
 all: reposit afpx_bld clear_screen
 
@@ -17,7 +19,7 @@ afpx_bld:
 	gnatmake $(ADA_OPT) $@ $(LX)
 
 clear_screen:
-	gnatmake $(ADA_OPT) $@ $(LX)
+	gnatmake $(ADA_OPT) $@ $(LU)
 
 clean:
 	-rm *.o *.ali b~*
