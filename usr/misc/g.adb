@@ -106,15 +106,33 @@ begin
         My_Io.Put (Num, 10); 
         exit Party when Num = 0;
         My_Io.Put (
-         "  '4' -1   '5' 0   '6' +1   'q' quit ? ");
+         "  '<-' -1   'V' 0   '->' +1   'q' quit ? ");
 
         declare
           Char : Character;
         begin
           Ada.Text_Io.Get_Immediate (Char);
-          if Char /= Ascii.Lf and then Char /= Ascii.Cr then
-            Ada.Text_Io.New_Line;
+          Ada.Text_Io.New_Line;
+          if Char = 'q' or Char = 'Q' then
+            Clear_Screen;
+            return;
           end if;
+          if Char = Ascii.Esc then
+            Ada.Text_Io.Get_Immediate (Char);
+            if Char = '[' then
+              Ada.Text_Io.Get_Immediate (Char);
+              if Char = 'D' then
+                Char := '4';
+              elsif Char = 'C'then
+                Char := '6';
+              elsif Char = 'B'then
+                Char := '5';
+              else
+                Char := ' ';
+              end if;
+            end if;
+          end if;
+
           if Char = '4' then
             Got_Res := Minus_1;
             exit Get;
@@ -124,9 +142,6 @@ begin
           elsif Char = '5' then
             Got_Res := Zero;
             exit Get;
-          elsif Char = 'q' or Char = 'Q' then
-            Clear_Screen;
-            return;
           end if;
         end;
 
