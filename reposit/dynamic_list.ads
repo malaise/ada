@@ -101,6 +101,7 @@ package DYNAMIC_LIST is
   procedure MODIFICATION_ACK (LIST : in out LIST_TYPE);
 
   -- Copy the VAL list to TO list
+  -- CARE: Risk of side effect because LIST_TYPE only is duplicated
   procedure ASSIGN (TO : in out LIST_TYPE; VAL : in LIST_TYPE);
 
   generic
