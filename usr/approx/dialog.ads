@@ -14,7 +14,8 @@ package DIALOG is
   --  Validity is checked and SET is set OUT according to the final result
   subtype D_COORDINATE_LIST is SCREEN.S_INFO_LIST range SCREEN.I_X .. SCREEN.I_YMAX;
   procedure READ_COORDINATE (KIND : in D_COORDINATE_LIST;
-           SET : in out BOOLEAN; COORDINATE : in out POINTS.P_T_COORDINATE);
+           SET : in out BOOLEAN; COORDINATE : in out POINTS.P_T_COORDINATE;
+           SUBTITLE : in BOOLEAN := FALSE);
 
   -- Get/update degree
   procedure READ_DEGREE;

@@ -55,7 +55,8 @@ package body DIALOG is
   --  Validity is checked and SET is set OUT according to the final result
   -- subtype D_COORDINATE_LIST is SCREEN.S_INFO_LIST range (SCREEN.I_X .. SCREEN.I_YMAX);
   procedure READ_COORDINATE (KIND : in D_COORDINATE_LIST;
-           SET : in out BOOLEAN; COORDINATE : in out POINTS.P_T_COORDINATE) is
+           SET : in out BOOLEAN; COORDINATE : in out POINTS.P_T_COORDINATE;
+           SUBTITLE : in BOOLEAN := FALSE) is
     CURSOR_FIELD : AFPX.FIELD_RANGE;
     CURSOR_COL : CON_IO.COL_RANGE := 0;
     REDISPLAY : BOOLEAN := FALSE;
@@ -94,7 +95,7 @@ package body DIALOG is
     end DECODE;
 
   begin
-    SCREEN.INIT_FOR_GET (CURSOR_FIELD);
+    SCREEN.INIT_FOR_GET (CURSOR_FIELD, SUBTITLE);
     if SET then
       ENCODE;
     else
@@ -249,7 +250,7 @@ package body DIALOG is
     -- Go to top
     AFPX.UPDATE_LIST (AFPX.TOP);
     -- Let screen/afpx do the job
-    SCREEN.ERROR (SCREEN.E_DONE);
+    SCREEN.ERROR (SCREEN.E_DONE, SUBTITLE => TRUE);
   end PUT_POLYNOM;
 
   -- Display y=f(x)
@@ -272,7 +273,7 @@ package body DIALOG is
       POINT_STR.COORDINATE_IMAGE(POINT.Y));
     
     -- Let screen/afpx do the job
-    GO_ON := SCREEN.CONFIRM (SCREEN.C_GO_ON, FALSE);
+    GO_ON := SCREEN.CONFIRM (SCREEN.C_GO_ON, FALSE, SUBTITLE => TRUE);
     -- Clean up
     AFPX.SET_FIELD_COLORS (MY_FLD, FOREGROUND => CON_IO.BLACK);
     AFPX.CLEAR_FIELD(MY_FLD);

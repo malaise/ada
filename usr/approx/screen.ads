@@ -56,15 +56,17 @@ package SCREEN is
                           range E_DONE .. E_TOO_MANY_POINTS;
 
   procedure INFORM  (MSG : in S_INFO_LIST);
-  function  CONFIRM (MSG : S_CONFIRM_LIST; ALERT : BOOLEAN) return BOOLEAN; 
-  procedure ERROR   (MSG : in S_ERROR_LIST);
+  function  CONFIRM (MSG : S_CONFIRM_LIST; ALERT : BOOLEAN;
+                     SUBTITLE : BOOLEAN := FALSE) return BOOLEAN; 
+  procedure ERROR   (MSG : in S_ERROR_LIST; SUBTITLE : in BOOLEAN := FALSE);
 
 
   -- Update number and status of points
   procedure PUT_POINT_STATUS;
 
   -- Init for file search, for get coordinate...
-  procedure INIT_FOR_GET (CURSOR_FIELD : out AFPX.FIELD_RANGE);
+  procedure INIT_FOR_GET (CURSOR_FIELD : out AFPX.FIELD_RANGE;
+                          SUBTITLE : in BOOLEAN := FALSE);
 
   -- Init screen for main menu1
   procedure INIT_FOR_MAIN1 (CURSOR_FIELD : out AFPX.FIELD_RANGE);

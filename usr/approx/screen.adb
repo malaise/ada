@@ -103,11 +103,16 @@ package body SCREEN is
   end SCROLL;
 
   -- Clear all menu dependant fields
-  procedure CLEAR_MENU is
+  procedure CLEAR_MENU (SUBTITLE : in BOOLEAN := FALSE) is
+    use AFPX;
   begin
     -- Inhibit all menu dependant fields
     for I in MENU_FLD_RANGE loop
-      AFPX.SET_FIELD_ACTIVATION (I, FALSE);
+      if not SUBTITLE or else
+        (I /= MENU_FLD_RANGE'FIRST and then
+         I /= MENU_FLD_RANGE'SUCC(MENU_FLD_RANGE'FIRST) ) then
+        AFPX.SET_FIELD_ACTIVATION (I, FALSE);
+      end if;
     end loop;
   end CLEAR_MENU;
 
@@ -205,11 +210,12 @@ package body SCREEN is
   end INFORM;
 
 
-  function CONFIRM (MSG : S_CONFIRM_LIST; ALERT : BOOLEAN) return BOOLEAN is
+  function CONFIRM (MSG : S_CONFIRM_LIST; ALERT : BOOLEAN;
+                    SUBTITLE : BOOLEAN := FALSE) return BOOLEAN is
     RES : BOOLEAN;
   begin
     -- No menu. Ok or cancel
-    CLEAR_MENU;
+    CLEAR_MENU(SUBTITLE);
     -- Inhibit exit field
     AFPX.SET_FIELD_ACTIVATION (EXIT_BUTTON_FLD, FALSE);
     AFPX.SET_FIELD_ACTIVATION(OK_BUTTON_FLD, TRUE);
@@ -233,11 +239,11 @@ package body SCREEN is
   end CONFIRM;
 
 
-  procedure ERROR (MSG : in S_ERROR_LIST) is
+  procedure ERROR (MSG : in S_ERROR_LIST; SUBTITLE : in BOOLEAN := FALSE) is
     RES : BOOLEAN;
   begin
     -- No menu. Ok
-    CLEAR_MENU;
+    CLEAR_MENU(SUBTITLE);
     -- Inhibit exit field
     AFPX.SET_FIELD_ACTIVATION(EXIT_BUTTON_FLD, FALSE);
     AFPX.SET_FIELD_ACTIVATION(OK_BUTTON_FLD, TRUE);
@@ -297,10 +303,11 @@ package body SCREEN is
   end INIT_FOR_MAIN1;
 
   -- Init for file search
-  procedure INIT_FOR_GET (CURSOR_FIELD : out AFPX.FIELD_RANGE) is
+  procedure INIT_FOR_GET (CURSOR_FIELD : out AFPX.FIELD_RANGE;
+                          SUBTITLE : in BOOLEAN := FALSE) is
   begin
     -- No menu.
-    CLEAR_MENU;
+    CLEAR_MENU(SUBTITLE);
     -- Inhibit exit field
     AFPX.SET_FIELD_ACTIVATION (EXIT_BUTTON_FLD, FALSE);
     -- GET, Ok or cancel
