@@ -159,6 +159,35 @@ package body Sys_Calls is
     return 0;
   end Stdin;
 
+  -- Set mode for Stdin
+  Modes_For_C : constant array (Stdin_Mode_List) of Integer := (
+    Canonical    => 0,
+    No_Echo      => 1,
+    Asynchronous => 2);
+  function C_Set_Stdin_Attr (Mode : Integer) return Integer;
+  pragma Import (C, C_Set_Stdin_Attr, "set_stdin_attr");
+
+  function Set_Stdin_Attr (Stdin_Mode : in Stdin_Mode_List) return Boolean is
+  begin
+    return C_Set_Stdin_Attr (Modes_For_C(Stdin_Mode)) = 0;
+  end Set_Stdin_Attr;
+
+  -- Get char from stdin
+  function C_Get_Immediate_Stdin return Integer;
+  pragma Import (C, C_Get_Immediate_Stdin, "get_immediate_stdin");
+  procedure Get_Immediate_Stdin (C : out Character; Available : out Boolean) is
+    Res : Integer;
+  begin
+    Res := C_Get_Immediate_Stdin;
+    if Res = -1 then
+      Available := False;
+      C := Ascii.Nul;
+    else
+      Available := True;
+      C := Character'Val(Res);
+    end if;
+  end Get_Immediate_Stdin;
+
 end Sys_Calls; 
 
  

@@ -34,6 +34,17 @@ package Sys_Calls is
   type File_Desc is new Natural;
   function Stdin return File_Desc;
 
+  -- Modes for Stdin. Return True if success
+  type Stdin_Mode_List is (
+    Canonical,   -- Wait for CR, Echo, Blocking
+    No_Echo,     -- Wait for CR, No echo, Blocking
+    Asynchronous -- No wait, No echo, Not Blocking
+  );
+  function Set_Stdin_Attr (Stdin_Mode : in Stdin_Mode_List) return Boolean;
+
+  -- Non blocking get of a character on stdin (in Asynchronous mode)
+  procedure Get_Immediate_Stdin (C : out Character; Available : out Boolean);
+
 end Sys_Calls; 
 
  
