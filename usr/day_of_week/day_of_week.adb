@@ -47,11 +47,6 @@ procedure Day_Of_Week is
 
 begin
 
-  if Argument.Get_Nbre_Arg /= 0  and then Argument.Get_Nbre_Arg /= 1 then
-    Usage;
-    return;
-  end if;
-
   if Argument.Get_Nbre_Arg = 0 then
     -- Current date
     T := Ada.Calendar.Clock;
@@ -129,7 +124,7 @@ begin
   -- Compute sentence
   Day_No := Delta_Date_0.Days + 1;
   if (Day_No rem 100) / 10 /= 1 then
-    -- In the firt tenth of this hundred
+    -- 1..9 and 20..99 
     case Day_No rem 10 is
       when 1 =>
         Th := "st";
@@ -141,6 +136,7 @@ begin
         Th := "th";
     end case;
   else
+    -- 10..19
     Th := "th";
   end if;
 
