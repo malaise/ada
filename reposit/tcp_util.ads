@@ -1,24 +1,28 @@
 with Socket;
 package Tcp_Util is
 
-  -- GENERAL CONVENTION --
-  ------------------------
+  -- GENERAL CONVENTIONS --
+  -------------------------
   -- Padd strings with spaces in records
 
+
   -- PROTOCOL DEFINITION --
+  -------------------------
   subtype Tcp_Protocol_List is Socket.Protocol_List range
-     Socket.Tcp .. Socket.Tcp_Header;
+                               Socket.Tcp .. Socket.Tcp_Header;
 
   -- PORT DEFINITION --
   ---------------------
   -- Kinds of port definition
   type Local_Port_List is (Port_Name_Spec, Port_Num_Spec, Port_Dynamic_Spec);
-  subtype Remote_Port_List is Local_Port_List range Port_Name_Spec .. Port_Num_Spec;
+  subtype Remote_Port_List is Local_Port_List
+                     range Port_Name_Spec .. Port_Num_Spec;
 
   -- Port name and num
   Max_Port_Name_Len : constant := 50;
   subtype Port_Name is String (1 .. Max_Port_Name_Len);
   subtype Port_Num is Socket.Port_Num;
+
 
   -- Specification of a local port to bind to
   type Local_Port (Kind : Local_Port_List := Port_Name_Spec) is record
@@ -31,6 +35,7 @@ package Tcp_Util is
         null;
     end case;
   end record;
+
 
   -- Specification of a remote port to connect or send to
   type Remote_Port (Kind : Remote_Port_List := Port_Name_Spec) is record
@@ -52,6 +57,7 @@ package Tcp_Util is
   subtype Host_Name is String (1 .. Max_Host_Name_Len);
   subtype Host_Id is Socket.Host_Id;
 
+
   -- Specification of a remote host to connect or send to
   type Remote_Host (Kind : Remote_Host_List := Host_Name_Spec) is record
     case Kind is
@@ -63,11 +69,9 @@ package Tcp_Util is
   end record;
 
 
-  -- CONNECTION CALLBACK --
-  -------------------------
-  -- Connection / Disconnection callbacks
-
-  -- For Connection_To
+  -- CALLBACKS --
+  ---------------
+  -- Connection / Disconnection callback
   -- Sets Connected to True if connection succeeds,
   --  then Dscr is the one of the new socket connected, blocking
   -- Sets Connected to False if connection fails,
@@ -78,7 +82,8 @@ package Tcp_Util is
                       Connected       : in Boolean;
                       Dscr            : in Socket.Socket_Dscr);
 
-  -- For Acception_From
+
+  -- Acception callback
   -- The Local_Dscr is the one set by Accept_From
   -- Sets Connected to True if connection succeeds,
   --  then Dscr is the one of the new socket, blocking
@@ -92,8 +97,12 @@ package Tcp_Util is
                       New_Dscr        : in Socket.Socket_Dscr);
 
 
-  -- PROCEDURES --
-  ----------------
+  -- Default end of overflow callback
+  type End_Overflow_Callback_Access is
+    access procedure (Dscr : in Socket.Socket_Dscr);
+
+  -- CONNECTION PROCEDURES --
+  ---------------------------
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
   -- Infinite retries if Nb_Tries = 0;
@@ -112,6 +121,8 @@ package Tcp_Util is
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port);
 
+  -- ACCEPTION PROCEDURE --
+  -------------------------
   -- Accept connections to a local port
   -- Dscr is open and set to the accepting connections
   -- Num is its port num (usefull when dynamical)
@@ -125,6 +136,30 @@ package Tcp_Util is
   -- May raise No_Such
   procedure Abort_Accept (Num : in Port_Num);
 
+
+  -- SEND PROCEDURES --
+  ---------------------
+  -- If send is ok returns True else
+  -- Returns false and manages to re-send when possible until
+  --  all message is sent, then calls End_Of_Overflow_Callback
+  generic
+    type Message_Type is private;
+  function Send (Dscr               : in Socket.Socket_Dscr;
+                 End_Of_Overflow_CB : in End_Overflow_Callback_Access;
+                 Message            : in Message_Type;
+                 Length             : in Natural := 0) return Boolean;
+
+  -- If a socket in overflow (send has returned True and End_Of_Overflow_CB
+  --  has not be called yet) has to be closed, then Abort_Send_and_Close
+  -- has to be called instead  of Socket.Close
+  -- The socket is closed
+  -- May raise No_Such
+  procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr);
+
+  -- EXCEPTIONS --
+  ----------------
+  -- Raise when aborting unknown connection/acception
+  -- Or a send which is not in overflow
   No_Such : exception;
 
 end Tcp_Util;

@@ -324,6 +324,7 @@ package body Tcp_Util is
       raise No_Such;
   end Abort_Connect;
 
+  --------------------------------------------------------------------------
 
   -- Accepting connection
   type Accepting_Rec is record
@@ -436,6 +437,122 @@ package body Tcp_Util is
     when Con_List_Mng.Not_In_List =>
       raise No_Such;
   end Abort_Accept;
+
+  --------------------------------------------------------------------------
+
+  -- Sending 
+  type Sending_Rec is record
+    Dscr : Socket.Socket_Dscr;
+    Fd   : X_Mng.File_Desc;
+    CB : End_Overflow_Callback_Access;
+  end record;
+
+  Package Sen_List_Mng is new Dynamic_List (Sending_Rec);
+  Sen_List : Sen_List_Mng.List_Type;
+
+  -- Search Sending_Rec by Dscr
+  function Dscr_Match (R1, R2 : Sending_Rec) return Boolean is
+    use type Socket.Socket_Dscr;
+  begin
+    return R1.Dscr = R2.Dscr;
+  end Dscr_Match;
+  procedure Find_By_Dscr is new Sen_List_Mng.Search (Dscr_Match);
+
+  -- Search Sending_Rec by Fd
+  function Fd_Match (R1, R2 : Sending_Rec) return Boolean is
+    use type X_Mng.File_Desc;
+  begin
+    return R1.Fd = R2.Fd;
+  end Fd_Match;
+  procedure Find_By_Fd is new Sen_List_Mng.Search (Fd_Match);
+
+  -- Delete current sending rec in list
+  procedure Delete_Current_Sen is
+  begin
+    if Sen_List_Mng.Get_Position (Sen_List) = 1 then
+       Sen_List_Mng.Delete (Sen_List, Sen_List_Mng.Next);
+    else
+       Sen_List_Mng.Delete (Sen_List, Sen_List_Mng.Prev);
+    end if;
+  end Delete_Current_Sen;
+
+  -- Sending callback on fd
+  function Sending_CB (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  return Boolean is
+    Rec : Sending_Rec;
+  begin
+    -- Find Rec from Fd
+    Rec.Fd := Fd;
+    Find_By_Fd (Sen_List, Rec, From_Current => False);
+
+    -- Try to re send
+    begin
+      Socket.Re_Send (Rec.Dscr);
+    exception
+      when Socket.Soc_Would_Block =>
+        -- Still in overflow
+        return False;
+    end;
+
+    -- End of overflow: unhook callback and del rec
+    X_Mng.X_Del_CallBack (Rec.Fd, False);
+    Delete_Current_Sen;
+
+    -- Call user callbak
+    if Rec.CB /= null then
+      Rec.CB (Rec.Dscr);
+    end if;
+    return False;
+  end Sending_CB;
+
+  -- Send message, handling overflow
+  function Send (Dscr               : in Socket.Socket_Dscr;
+                 End_Of_Overflow_CB : in End_Overflow_Callback_Access;
+                 Message            : in Message_Type;
+                 Length             : in Natural := 0) return Boolean is
+    Rec : Sending_Rec;
+    procedure Send is new Socket.Send (Message_Type);
+  begin
+    -- Try to send
+    begin
+      Send (Dscr, Message, Length);
+      return True;
+    exception
+      when Socket.Soc_Would_Block =>
+        null;
+    end;
+
+    -- Handle overflow : build and store rec
+    Rec.Dscr := Dscr;
+    Rec.Fd := Socket.Fd_Of (Dscr);
+    Rec.CB := End_Of_Overflow_CB;
+    Sen_List_Mng.Insert (Sen_List, Rec);
+
+    -- Hook our callback in write
+    X_Mng.X_Add_CallBack (Rec.Fd, False, Sending_CB'access);
+    return False;
+  end Send;
+      
+  -- Cancel overflow management and closes
+  procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr) is
+    Rec : Sending_Rec;
+  begin
+    -- Find Rec from Dscr
+    Rec.Dscr := Dscr;
+    begin
+      Find_By_Dscr (Sen_List, Rec, From_Current => False);
+    exception
+      when Sen_List_Mng.Not_In_List =>
+        raise No_Such;
+    end;
+
+    -- Unhook callback and del rec
+    X_Mng.X_Del_CallBack (Rec.Fd, False);
+    Delete_Current_Sen;
+
+    -- Close
+    Socket.Close (Dscr);
+  end Abort_Send_and_Close;
 
 end Tcp_Util;
 
