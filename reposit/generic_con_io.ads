@@ -170,7 +170,7 @@ package GENERIC_CON_IO is
                         BLINK_STAT : in BLINK_STATS := CURRENT;
                         BACKGROUND : in BASIC_COLORS := CURRENT);
 
-    -- same than PUT(CHAR) not MOVE, but allows semi graphic characters
+    -- Same than PUT(CHAR) not MOVE, but allows semi graphic characters
     subtype INT_CHAR is NATURAL range 0 .. 255;
     procedure PUT_INT (INT        : in INT_CHAR;
                        NAME       : in WINDOW := SCREEN;
@@ -182,8 +182,6 @@ package GENERIC_CON_IO is
     procedure NEW_LINE (NAME   : in WINDOW := SCREEN;
                         NUMBER : in POSITIVE := 1);
 
-    -- Take first character of keyboard buffer (no echo) or refresh event
-    procedure PAUSE;
 
     -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
     -- if not is_char, key is the key code. If is_char, key is the ascii code.
@@ -194,8 +192,14 @@ package GENERIC_CON_IO is
                        CTRL    : out BOOLEAN;
                        SHIFT   : out BOOLEAN);
 
+    -- Take first character of keyboard buffer (no echo) or refresh event
+    procedure PAUSE;
+
     -- Gets first character (echo)
-    -- On refresh event ASCII.NUL is retuned (no echo)
+    -- No echo for RET, ESC, BREAK and REFRESH where
+    --  ASCII.CR, ESC, EOT and NUL are returned respectively
+    -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
+    --  discarded (get does not return).
     function GET (NAME : WINDOW := SCREEN) return CHARACTER;
 
     -- How to specify a delay, wait some seconds or until a specific time
@@ -263,7 +267,7 @@ package GENERIC_CON_IO is
     -- mouse action, refresh or timeout
     subtype EVENT_LIST is CURS_MVT range ESC .. REFRESH;
 
-    -- check if a key is available, or another event, until a certain time. 
+    -- Check if a key is available, or another event, until a certain time. 
     -- ESC means any key
     procedure GET_KEY_TIME (CHECK_BREAK : in BOOLEAN;
                             EVENT       : out EVENT_LIST;
