@@ -40,9 +40,13 @@ procedure AFPX_BLD is
   -- Initial characters of the fields
   INIT_STR : AFPX_TYP.CHAR_STR;
 
-  -- Error
+  -- Errors
+  ARGUMENT_ERROR : exception;
   FILE_SYNTAX_ERROR : exception;
   FILE_NOT_FOUND : exception;
+
+  -- Expected number of arguments
+  EXPECTED_ARGS : NATURAL;
 
   procedure NEXT_LINE is
   begin
@@ -616,35 +620,51 @@ begin
   begin
     ARGUMENT.GET_PARAMETER (LIST_FILE_NAME, PARAM_KEY => "h");
     TEXT_IO.PUT_LINE ("Usage: " & ARGUMENT.GET_PROGRAM_NAME
-                    & " [ -l <afpx_list_file> ] [ -d <destination_dir> ]");
+                    & " [ -l<afpx_list_file> ] [ -d<destination_dir> ]");
     return;
   exception
     when others =>
       null;
   end;
+
   -- Source file and dest path arguments
+  EXPECTED_ARGS := 0;
   begin
     ARGUMENT.GET_PARAMETER (LIST_FILE_NAME, PARAM_KEY => "l");
+    if TEXT_HANDLER.EMPTY (LIST_FILE_NAME) then
+      raise ARGUMENT_ERROR;
+    end if;
+    -- Argument found
+    EXPECTED_ARGS := EXPECTED_ARGS + 1;
   exception
+    when ARGUMENT.ARGUMENT_NOT_FOUND =>
+      TEXT_HANDLER.SET (LIST_FILE_NAME, DEFAULT_LIST_FILE_NAME);
     when others =>
-      TEXT_HANDLER.EMPTY (LIST_FILE_NAME);
+      raise ARGUMENT_ERROR;
   end;
-  if TEXT_HANDLER.EMPTY (LIST_FILE_NAME) then
-    TEXT_HANDLER.SET (LIST_FILE_NAME, DEFAULT_LIST_FILE_NAME);
-  end if;
-  TEXT_IO.PUT_LINE ("Reading " & TEXT_HANDLER.VALUE(LIST_FILE_NAME));
 
   begin
     ARGUMENT.GET_PARAMETER (AFPX_TYP.DEST_PATH, PARAM_KEY => "d");
+    if TEXT_HANDLER.EMPTY (AFPX_TYP.DEST_PATH) then
+      raise ARGUMENT_ERROR;
+    end if;
+    -- Argument found
+    EXPECTED_ARGS := EXPECTED_ARGS + 1;
   exception
+    when ARGUMENT.ARGUMENT_NOT_FOUND =>
+      TEXT_HANDLER.SET (AFPX_TYP.DEST_PATH, ".");
     when others =>
-      TEXT_HANDLER.EMPTY (AFPX_TYP.DEST_PATH);
+      raise ARGUMENT_ERROR;
   end;
-  if TEXT_HANDLER.EMPTY (AFPX_TYP.DEST_PATH) then
-    TEXT_HANDLER.SET (AFPX_TYP.DEST_PATH, ".");
+
+  if ARGUMENT.GET_NBRE_ARG /= EXPECTED_ARGS then
+    raise ARGUMENT_ERROR;
   end if;
+
+  TEXT_IO.PUT_LINE ("Reading " & TEXT_HANDLER.VALUE(LIST_FILE_NAME));
   TEXT_IO.PUT_LINE ("Writing in " & TEXT_HANDLER.VALUE(AFPX_TYP.DEST_PATH));
   TEXT_HANDLER.APPEND (AFPX_TYP.DEST_PATH, "/");
+
   -- First check
   TEXT_IO.PUT_LINE ("Checking:");
   LOAD_DSCRS(TRUE);
@@ -653,8 +673,18 @@ begin
   LOAD_DSCRS(FALSE);
   TEXT_IO.PUT_LINE ("Done.");
 exception
+  when ARGUMENT_ERROR =>
+    CLOSE (TRUE);
+    TEXT_IO.PUT_LINE ("Argument error. Try -h option.");
+  when FILE_NOT_FOUND =>
+    CLOSE (TRUE);
+    TEXT_IO.PUT_LINE ("Directory or file not found. Try -h option.");
+  when FILE_SYNTAX_ERROR =>
+    CLOSE (TRUE);
+    TEXT_IO.PUT_LINE ("Syntax error.");
   when others =>
     CLOSE (TRUE);
-    TEXT_IO.PUT_LINE ("Try -h option.");
+    TEXT_IO.PUT_LINE ("Unexpected exception.");
     raise;
 end AFPX_BLD;
+
