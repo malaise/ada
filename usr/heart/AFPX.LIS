@@ -81,7 +81,7 @@ DESCRIPTOR 1
 
   # List of records selected
   LIST
-    GEOMETRY 08 01 24 65
+    GEOMETRY 07 01 23 65
     COLORS light_gray blue green
   END LIST
 
@@ -238,7 +238,7 @@ DESCRIPTOR 1
 
   # Number of recors in list
   FIELD 20 PUT
-    GEOMETRY 06 06 06 65
+    GEOMETRY 06 57 06 78
     COLORS cyan not_blink black
     INIT
       00 00 xxxxx records selected
@@ -247,7 +247,7 @@ DESCRIPTOR 1
 
   # Tittle of list
   FIELD 21 PUT
-    GEOMETRY 07 01 07 52
+    GEOMETRY 06 01 06 52
     COLORS light_gray not_blink black
     INIT
       00 00 Person
@@ -259,7 +259,7 @@ DESCRIPTOR 1
 
   # Unselect button
   FIELD 22 BUTTON
-    GEOMETRY 08 67 10 78
+    GEOMETRY 07 67 09 78
     COLORS brown blue
     INIT
       01 02 Unselect
@@ -268,7 +268,7 @@ DESCRIPTOR 1
 
   # Draw button
   FIELD 23 BUTTON
-    GEOMETRY 12 67 14 78
+    GEOMETRY 11 67 13 78
     COLORS brown blue
     INIT
       01 04 Draw
@@ -277,7 +277,7 @@ DESCRIPTOR 1
 
   # Print button
   FIELD 24 BUTTON
-    GEOMETRY 16 67 16 78
+    GEOMETRY 15 67 15 78
     COLORS brown blue
     INIT
       00 03 Print
@@ -286,7 +286,7 @@ DESCRIPTOR 1
 
   # Create button
   FIELD 25 BUTTON
-    GEOMETRY 18 67 20 78
+    GEOMETRY 17 67 19 78
     COLORS brown blue
     INIT
       01 03 Create
@@ -295,7 +295,7 @@ DESCRIPTOR 1
 
   # Edit button
   FIELD 26 BUTTON
-    GEOMETRY 22 67 22 78
+    GEOMETRY 21 67 21 78
     COLORS brown blue
     INIT
       00 04 Edit
@@ -304,7 +304,7 @@ DESCRIPTOR 1
 
   # Delete button
   FIELD 27 BUTTON
-    GEOMETRY 24 67 24 78
+    GEOMETRY 23 67 23 78
     COLORS brown blue
     INIT
       00 03 Delete
