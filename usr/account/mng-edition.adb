@@ -465,6 +465,8 @@ package body EDITION is
       if CURSOR_FIELD = 0 then
         -- No get field
         CURSOR_FIELD := 1;
+      else
+        CURSOR_COL := 0;
       end if;
       -- Protect movements
       PROTECT_MOVEMENTS(EDIT_TYPE);
@@ -518,6 +520,10 @@ package body EDITION is
               when 22 .. 25 | 27 .. 29 =>
                 -- Kind and status buttons
                 UPDATE_BUTTONS(PTG_RESULT.FIELD_NO, KIND, STATUS);
+                if EDIT_TYPE = CREATE then
+                  CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(PTG_RESULT.FIELD_NO);
+                  CURSOR_COL := 0;
+                end if;
               when 36 =>
                 -- Copy when create
                 OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
@@ -530,6 +536,7 @@ package body EDITION is
                 KIND := OPER.KIND;
                 STATUS := OPER.STATUS;
                 CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(0);
+                CURSOR_COL := 0;
 
               when 38 =>
                 -- OK and prev
