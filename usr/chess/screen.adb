@@ -1,21 +1,23 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Text_Io;
 
 with Big_Con_Io, Normal, Lower_Str, Lower_Char, Upper_Char, Day_Mng;
 
-with Pieces, Space.Board, Image;
+with Pieces, Space.Board, Image, Debug;
 
 package body Screen is
 
   package Con_Io renames Big_Con_Io;
 
-  Screen_Row_Offset : constant Con_Io.Row_Range := 3;
-  Screen_Col_Offset : constant Con_Io.Col_range := 5;
+  -- Are we waiting for promotion selection
+  Getting_Promotion : Boolean := False;
 
   Fore_White : constant Con_Io.Effective_Colors := Con_Io.Orange;
   Fore_Black : constant Con_Io.Effective_Colors := Con_Io.Red;
   Back_White : constant Con_Io.Effective_Basic_Colors := Con_Io.Cyan;
   Back_Black : constant Con_Io.Effective_Basic_Colors := Con_Io.Black;
-  Main_Back  : constant Con_Io.Effective_Basic_Colors := Con_Io.Brown;
+
+  Main_Fore : constant Con_Io.Effective_Colors := Con_Io.White;
+  Main_Back : constant Con_Io.Effective_Basic_Colors := Con_Io.Brown;
 
 
   -- Foreground color of messages, moves and for get
@@ -38,144 +40,108 @@ package body Screen is
   end Moves;
   package body Moves is separate;
 
-  function To_Con_Io_Square (Color : in Space.Color_List;
-                             Square : Space.Square_Coordinate)
-                             return Con_Io.Square is
-    use type Space.Color_List;
-  begin
-    if Color = Space.White then 
-      return (Row => Space.Row_Range'Pos(Space.Row_Range'Last)
-                   - Space.Row_Range'Pos(Square.Row)
-                   + Screen_Row_Offset,
-              Col => Space.Col_Range'Pos(Square.Col) + Screen_Col_Offset);
-    else
-      return (Row => Space.Row_Range'Pos(Square.Row) + Screen_Row_Offset - 1,
-              Col => Space.Col_Range'Pos(Space.Col_Range'Last)
-                   - Space.Col_Range'Pos(Square.Col)
-                   + Screen_Col_Offset);
-    end if;
-  end To_Con_Io_Square;
+  -- Used by text and graphic internally
+  type Square_Result_Rec (Valid : Boolean := False) is record
+    case Valid is
+      when true =>
+        Square : Space.Square_Coordinate;
+      when False =>
+        null;
+    end case;
+  end record;
 
+  -- Text and Graphic
+  Graphic_Mode : constant Boolean := False;
+  -- Graphic_Mode : constant Boolean := True;
+
+  -- Mouse event
+  type Mouse_Event_List is (Discard, Release_Out, Click, Release);
+  type Mouse_Event_Rec (Kind : Mouse_Event_List := Discard) is record
+    case Kind is
+      when Click | Release =>
+        Square : Space.Square_Coordinate;
+      when Discard | Release_Out =>
+        null;
+    end case;
+  end record;
+
+  package Text is
+    procedure Init_Board (Color : in Space.Color_List);
+    procedure Display_Square (Color : in Space.Color_List;
+                              Square : in Space.Square_Coordinate);
+    function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec;
+    procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean);
+    function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List;
+  end Text;
+  package body Text is separate;
+  package Graphic is
+    procedure Init_Board (Color : in Space.Color_List);
+    procedure Display_Square (Color : in Space.Color_List;
+                              Square : in Space.Square_Coordinate);
+    function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec;
+    procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean);
+    function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List;
+  end Graphic;
+  package body Graphic is separate;
+ 
+  procedure Init_Board (Color : in Space.Color_List) is
+  begin
+    if Graphic_Mode then
+      Graphic.Init_Board (Color);
+    else
+      Text.Init_Board (Color);
+    end if;
+  end Init_Board;
   procedure Display_Square (Color : in Space.Color_List;
                             Square : in Space.Square_Coordinate) is
-    Back : Con_Io.Effective_Basic_Colors;
-    Fore : Con_Io.Effective_Colors;
-    Id   : Pieces.Piece_Id;
-
-    Char : Character;
-    use type Space.Color_List, Pieces.Piece_Access, Pieces.Piece_Kind_List;
   begin
-    -- get background
-    if Space.Color_Of_Square(Square) = Space.White then
-      Back := Back_White;
+    if Graphic_Mode then
+      Graphic.Display_Square (Color, Square);
     else
-      Back := Back_Black;
+      Text.Display_Square (Color, Square);
     end if;
-
-    -- Set Foreground and character
-    if Space.Board.Piece_At(Square) = null then
-      -- Empty square
-      Fore := Back;
-      Char := ' ';
-    else
-      -- Set Foreground
-      Id := Pieces.Id_Of(Space.Board.Piece_At(Square).all);
-      if Id.Kind = Pieces.Pawn then
-        Char := 'i';
-      else
-         Char := Image.Piece_Image(Id.Kind)(1);
-      end if;
-
-      if Id.Color = Space.White then
-        Fore := Fore_White;
-      else
-        Fore := Fore_Black;
-      end if;
-    end if;
-
-    -- Move and put 
-    Con_Io.Move(To_Con_Io_Square(Color, Square));
-    Con_Io.Put(Char,
-               Foreground => Fore,
-               Blink_Stat => Con_Io.Blink,
-               Background => Back,
-               Move => False);
-
   end Display_Square;
+
+  function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec is
+  begin
+    if Graphic_Mode then
+      return Graphic.Get_Mouse_Event (Color);
+    else
+      return Text.Get_Mouse_Event (Color);
+    end if;
+  end Get_Mouse_Event;
+
+  procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean) is
+  begin
+    if Graphic_Mode then
+      Graphic.Display_Promotion (Color, Show);
+    else
+      Text.Display_Promotion (Color, Show);
+    end if;
+  end Display_Promotion;
+
+  function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List is
+  begin
+    if Graphic_Mode then
+      return Graphic.Get_Promotion (Click);
+    else
+      return Text.Get_Promotion (Click);
+    end if;
+  end Get_Promotion;
 
 
   -- Redisplay the board
   procedure Display_Board (Color : in Space.Color_List) is
-    use type Space.Color_List;
-    Con_Row : Con_Io.Row_Range;
-    Con_Col : Con_Io.Col_Range;
-
-    procedure Put (Row : in Space.Row_Range) is
-    begin
-      Con_Io.Put(Normal(Integer(Row), 1), Move => False);
-    end Put;
-    procedure Put (Col : in Space.Col_Range) is
-    begin
-      Con_Io.Put(Lower_Str(Space.Col_Range'Image(Col)), Move => False);
-    end Put;
-
   begin
     Con_Io.Init;
     Con_Io.Set_Background (Main_Back);
-    Con_Io.Set_Foreground (Con_Io.White);
+    Con_Io.Set_Foreground (Main_Fore);
     Con_Io.Clear;
-    -- + Try some graphic
-    Try:
-    declare
-      X0 : constant Con_Io.Graphics.X_Range := 50;
-      Y0 : constant Con_Io.Graphics.Y_Range
-         := Con_Io.Graphics.Y_Max - 40;
-      Size : Constant Natural := 45;
-      Len  : Constant Natural := 8 * Size;
-    begin
-      for I in 0 .. 8 loop
-        Con_Io.Graphics.Draw_Line (X0 + (I * Size), Y0,
-                                   X0 + (I * Size), Y0 - Len);
-        Con_Io.Graphics.Draw_Line (X0, Y0 - (I * Size),
-                                   X0 + Len, Y0 - (I * Size));
-      end loop;
-   end Try;
-    -- - Try some graphic
+    Init_Board (Color);
     for Row in Space.Row_Range loop
       for Col in Space.Col_Range loop
         Display_Square (Color, (Col, Row) );
       end loop;
-    end loop;
-    for Row in Space.Row_Range loop
-      if Color = Space.White then
-        Con_Row := Space.Row_Range'Pos(Space.Row_Range'Last)
-                 - Space.Row_Range'Pos(Row)
-                 + Screen_Row_Offset;
-      else
-        Con_Row := Space.Row_Range'Pos(Row) + Screen_Row_Offset - 1;
-      end if;
-      Con_Io.Move(Con_Row, Screen_Col_Offset - 2);
-      Put (Row);
-      Con_Io.Move(Row => Con_Row,
-                  Col => Screen_Col_Offset
-                       + Space.Col_Range'Pos(Space.Col_Range'Last)
-                       + 2);
-      Put (Row);
-    end loop;
-    for Col in Space.Col_Range loop
-      if Color = Space.White then
-        Con_Col := Space.Col_Range'Pos(Col) + Screen_Col_Offset;
-      else
-        Con_Col := Space.Col_Range'Pos(Space.Col_Range'Last)
-                 - Space.Col_Range'Pos(Col)
-                 + Screen_Col_Offset;
-      end if;
-      Con_Io.Move(Row => Space.Row_Range'Pos(Space.Row_Range'Last)
-                       + Screen_Row_Offset + 1,
-                  Col => Con_Col);
-      Put (Col);
-      Con_Io.Move(Screen_Row_Offset - 2, Con_Col);
-      Put (Col);
     end loop;
     Moves.Put_Moves;
     Con_Io.Flush;        
@@ -193,14 +159,8 @@ package body Screen is
     Con_Io.Flush;        
   end Update_Board;
 
-  -- Get, Ack, Wait
-  procedure Erase is
-    Erase_Str :  constant String (1 .. 80) := (others => ' ');
-  begin
-    Con_Io.Move (23, 1);
-    Con_Io.Put (Erase_Str, Foreground => Main_Back);
-  end Erase;
 
+  -- Time
   Start_Time : Ada.Calendar.Time;
 
   procedure Put_Time (Color : Space.Color_List) is
@@ -221,14 +181,15 @@ package body Screen is
     Con_Io.Put (Normal(Hours, 2, Gap => '0') & 'h'
         & ' ' & Normal(Minutes, 2, Gap => '0') & 'm'
         & ' ' & Normal(Secs, 2, Gap => '0') & 's',
-        Foreground => Fore (Color) );
+        Foreground => Fore (Color),
+        Background => Main_Back );
   end Put_Time;
 
 
   procedure Erase_Time (Color : Space.Color_List) is
   begin
     Con_Io.Move (2, 65);
-    Con_Io.Put ("               ", Foreground => Main_Back);
+    Con_Io.Put ("               ", Foreground => Main_Back, Background => Main_Back);
   end Erase_Time;
 
   procedure Reset_Time is
@@ -236,6 +197,88 @@ package body Screen is
     Start_Time := Ada.Calendar.Clock;
   end Reset_Time;
   
+  -- Get, Ack, Wait
+  procedure Erase is
+    Erase_Str :  constant String (1 .. 80) := (others => ' ');
+  begin
+    Con_Io.Move (23, 1);
+    Con_Io.Put (Erase_Str, Foreground => Main_Back);
+  end Erase;
+
+  -- Mouse 
+  Clicked_Pos, Released_Pos : Square_Result_Rec;
+  Clicked_Promo, Released_Promo : Pieces.Piece_Kind_List;
+  procedure Manage_Mouse (Color : in Space.Color_List;
+                          From, To : out Square_Result_Rec;
+                          Promo    : out Pieces.Piece_Kind_List) is
+    Mouse_Event : Mouse_Event_Rec;
+    Piece : Pieces.Piece_Access;
+
+    use type Space.Row_Range, Space.Color_List;
+    use type Pieces.Piece_Access, Pieces.Piece_Kind_List;
+  begin
+    From := (Valid => False);
+    To := (Valid => False);
+    Promo := Pieces.Pawn;
+
+    if not Getting_Promotion then
+      Mouse_Event := Get_Mouse_Event (Color);
+      case Mouse_Event.Kind is
+        when Click =>
+          Clicked_Pos := (True, Mouse_Event.Square);
+        when Release =>
+          -- Check click is valid and there is a piece
+          if not Clicked_Pos.Valid then
+            return;
+          end if;
+          Piece :=  Space.Board.Piece_At(Clicked_Pos.Square);
+          if Piece = null then
+            Clicked_Pos := (Valid => False);
+            return;
+          end if;
+          -- OK. Store release and check promotion
+          Released_Pos := (True, Mouse_Event.Square);
+          if Pieces.Id_Of(Piece.all).Kind = Pieces.Pawn
+          and then ( (Color = Space.White
+                      and then Released_Pos.Square.Row = 8)
+                    or else (Color = Space.Black
+                             and then Released_Pos.Square.Row = 1) ) then
+            -- Put promotion
+            Getting_Promotion := True;
+            Display_Promotion (Color, True);
+            Clicked_Promo := Pieces.Pawn;
+            Released_Promo := Pieces.Pawn;
+          else
+            -- Normal move
+            From := Clicked_Pos;
+            To := Released_Pos;
+            return;
+          end if;
+        when Discard | Release_Out =>
+          Clicked_Pos := (Valid => False);
+      end case;
+    else
+      -- Promotion
+      if Clicked_Promo = Pieces.Pawn then
+        Clicked_Promo := Get_Promotion (True);
+      else
+        Released_Promo := Get_Promotion (False);
+        if Clicked_Promo /= Pieces.Pawn and then Clicked_Promo = Released_Promo then
+          Getting_Promotion := False;
+          Display_Promotion (Color, False);
+          From := Clicked_Pos;
+          To := Released_Pos;
+          Promo := Clicked_Promo;
+        else
+          Clicked_Promo := Pieces.Pawn;
+          Released_Promo := Pieces.Pawn;
+        end if;
+      end if;
+    end if;
+  end Manage_Mouse;
+
+
+
   function Get (Color : Space.Color_List) return Players.Action_Rec is
     Str  : String (1 .. 5);
     Last : Natural;
@@ -245,6 +288,7 @@ package body Screen is
 
     Conv_Ok : Boolean;
     From, To : Space.Square_Coordinate;
+    Mouse_From, Mouse_To : Square_Result_Rec;
     Promo : Pieces.Piece_Kind_List;
 
     Action : Players.Action_Rec;
@@ -258,12 +302,13 @@ package body Screen is
     Put_Time (Color);
 
     loop
+      Con_Io.Set_Foreground (Fore (Color));
+      Con_Io.Set_Background (Main_Back);
       Con_Io.Move (23, 1);
-      Con_Io.Put ("Move:", Foreground => Fore (Color));
+      Con_Io.Put ("Move:");
 
       Con_Io.Move (23, 7);
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
-             Foreground => Fore (Color),
              Time_Out => (Con_Io.Delay_Sec, 0.1));
       Put_Time (Color);
       if Stat = Con_Io.Ret then
@@ -309,6 +354,15 @@ package body Screen is
             return Action;
           end if;
         end if;
+      elsif Stat = Con_Io.Mouse_Button then
+        Manage_Mouse (Color, Mouse_From, Mouse_To, Promo);
+        if Mouse_From.Valid then
+          Action := Players.Find_Action (Color, Mouse_From.Square, Mouse_To.Square, Promo);
+          if Action.Valid then
+            Erase;
+            return Action;
+          end if;
+        end if;
       elsif Stat = Con_Io.Refresh then
         Display_Board (Color);
       elsif Stat = Con_Io.Break then
@@ -341,8 +395,10 @@ package body Screen is
     Ins := False;
 
     loop
+      Con_Io.Set_Background (Main_Back);
+      Con_Io.Set_Foreground (Fore (Color));
       Con_Io.Move (23, 1);
-      Con_Io.Put (Message, Foreground => Fore (Color) );
+      Con_Io.Put (Message);
 
       Pos := 1;
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
@@ -379,6 +435,8 @@ package body Screen is
     Put_Time (Color);
 
     loop
+      Con_Io.Set_Background (Main_Back);
+      Con_Io.Set_Foreground (Main_Back);
       Con_Io.Move (23, 1);
 
       Pos := 1;
