@@ -1,6 +1,7 @@
 with SYSTEM;
 with INTERFACES.C_STREAMS;
 with INTERFACES.C.STRINGS;
+with ADA.COMMAND_LINE;
 
 package body SYS_CALLS is
 
@@ -140,6 +141,13 @@ package body SYS_CALLS is
       end if;
     end;
   end GETENV;
+
+  -- Set error exit code
+  procedure SET_ERROR_EXIT_CODE is
+  begin
+    ADA.COMMAND_LINE.SET_EXIT_STATUS (ADA.COMMAND_LINE.FAILURE);
+  end SET_ERROR_EXIT_CODE;
+
 end SYS_CALLS; 
 
  

@@ -24,6 +24,10 @@ package SYS_CALLS is
                     ENV_TRUNC : out BOOLEAN;
                     ENV_VALUE : out STRING;
                     ENV_LEN   : out NATURAL);
+
+  -- Set error exit code
+  procedure SET_ERROR_EXIT_CODE;
+
 end SYS_CALLS; 
 
  
