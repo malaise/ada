@@ -474,6 +474,7 @@ package body Tcp_Util is
       end if;
       X_Mng.X_Del_CallBack (Rec.Fd, True);
       X_Mng.X_Del_CallBack (Rec.Fd, False);
+      Socket.Close (Rec.Dscr);
     end if;
     -- Cancel timer
     if Debug_Connect then
