@@ -23,7 +23,8 @@ package body Tcp_Util is
     CB : Connection_Callback_Access;
     Timer : Timers.Timer_Id;
     Dscr : Socket.Socket_Dscr;
-    Curr_Try : Positive;
+    Fd   : X_Mng.File_Desc;
+    Curr_Try : Natural;
   end record;
 
   Package Con_List_Mng is new Dynamic_List (Connecting_Rec);
@@ -37,23 +38,47 @@ package body Tcp_Util is
   end Timer_Match;
   procedure Find_By_Timer is new Con_List_Mng.Search (Timer_Match);
 
-  --  Search Connecting_Rec by Host, Port
+  -- Search Connecting_Rec by Host, Port
   function Dest_Match (R1, R2 : Connecting_Rec) return Boolean is
   begin
     return R1.Host = R2.Host and then R1.Port = R2.Port;
   end Dest_Match;
   procedure Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
 
+  -- Search Connecting_Rec by Fd
+  function Fd_Match (R1, R2 : Connecting_Rec) return Boolean is
+    use type X_Mng.File_Desc;
+  begin
+    return R1.Fd = R2.Fd;
+  end Fd_Match;
+  procedure Find_By_Fd is new Con_List_Mng.Search (Fd_Match);
+
+  -- Delete current connection rec in list
+  procedure Delete_Current_Con is
+  begin
+    if Con_List_Mng.Get_Position (Con_List) = 1 then
+       Con_List_Mng.Delete (Con_List, Con_List_Mng.Next);
+    else
+       Con_List_Mng.Delete (Con_List, Con_List_Mng.Prev);
+    end if;
+  end Delete_Current_Con;
 
   -- Try to open a socket and connect
-  -- Return Socket.No_Scket is failed
-  function Try_Connect (Protocol : in Tcp_Protocol_List;
-                        Host     : in Remote_Host;
-                        Port     : in Remote_Port) return Socket.Socket_Dscr is
-    Dscr :  Socket.Socket_Dscr;
+  -- Dscr is open and non blocking, or No_Socket if failure
+  -- Sets connected if connection established
+  procedure Try_Connect (
+           Protocol : in Tcp_Protocol_List;
+           Host     : in Remote_Host;
+           Port     : in Remote_Port;
+           Dscr      : in out Socket.Socket_Dscr;
+           Connected : out Boolean) is
+    use type  Socket.Socket_Dscr;
   begin
-    -- Open
+
+    -- Open non blocking
     Socket.Open (Dscr, Protocol);
+    Socket.Set_Blocking (Dscr, False);
+
     -- Connect
     case Host.Kind is
       when Host_Name_Spec =>
@@ -75,23 +100,109 @@ package body Tcp_Util is
                                    Host.Id, Port.Num);
         end case;
     end case;
-    if not Socket.Is_Connected (Dscr) then
-       Socket.Close (Dscr);
+    if Socket.Is_Connected (Dscr) then
+      Connected := True;
+    else
+      Socket.Close (Dscr);
+      Connected := False;
     end if;
-    return Dscr;
   exception
-    when Socket.Socket_Error =>
+    when Socket.Soc_Conn_Refused =>
       -- Not open or not connected
       if Socket.Is_Open (Dscr) then
         Socket.Close (Dscr);
       end if;
-      return Socket.No_Socket;
-  end;
+    when Socket.Soc_Would_Block =>
+      Connected := False;
+  end Try_Connect;
 
-  procedure Connection_Timer_CB (Id : in Timers.Timer_Id) is
-    Rec : Connecting_Rec;
+  -- Handle a connection success/failure according to Rec.Dscr (open or not)
+  -- Cancel timer
+  -- Delete connection rec
+  -- Get dest if success
+  -- Call callback
+  procedure Handle_Current_Result (Rec : in Connecting_Rec) is
     Port : Port_Num;
     Host : Host_Id;
+    use type Timers.Timer_Id;
+    use type Socket.Socket_Dscr;
+  begin
+    -- Remove management data
+    if Rec.Timer /= Timers.No_Timer then
+      Timers.Delete (Rec.Timer);
+    end if;
+    Delete_Current_Con;
+    if Socket.Is_Open (Rec.Dscr) then
+      -- Connected
+      Host := Socket.Get_Destination_Host (Rec.Dscr);
+      Port := Socket.Get_Destination_Port (Rec.Dscr);
+      Socket.Set_Blocking (Rec.Dscr, True);
+    else
+      -- Givving up
+      Port := 0;
+      host := Socket.No_Host;
+    end if;
+    -- Inform client
+    if Rec.CB /= null then
+      Rec.CB (Port, Host,  Socket.Is_Open (Rec.Dscr), Rec.Dscr);
+    end if;
+  end Handle_Current_Result;
+
+  -- End a successfull or pending or failed async connect
+  --  according to Rec.Dscr (open or not)
+  -- Remove Fd callback
+  -- If failure: Check tries
+  -- Handle global failure if no more try
+  procedure End_Async_Connect (Rec : in Connecting_Rec;
+                               Go_On : out Boolean) is
+  begin
+    -- Remove Fd callback and close
+    X_Mng.X_Del_CallBack (Rec.Fd, True);
+    X_Mng.X_Del_CallBack (Rec.Fd, False);
+
+    if Socket.Is_Open (Rec.Dscr) then
+      -- Connection success
+      Handle_Current_Result (Rec);
+      Go_On := False;
+    else
+      -- This try failure
+      -- Give up if no more try
+      if Rec.Curr_Try = Rec.Nb_Tries then
+        Handle_Current_Result (Rec);
+        Go_On := False;
+      else
+        Go_On := True;
+      end if;
+    end if;
+  end End_Async_Connect;
+
+  -- Callback on connect fd
+  procedure Connection_Fd_CB (Fd : in X_Mng.File_Desc) is
+    Rec : Connecting_Rec;
+    Go_On : Boolean;
+    use type Socket.Socket_Dscr;
+  begin
+    -- Find record by fd
+    Rec.Fd := Fd;
+    Find_By_Fd (Con_List, Rec, From_Current => False);
+    Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+
+    -- This try result?
+    if not Socket.Is_Connected (Rec.Dscr) then
+      Socket.Close (Rec.Dscr);
+    end if;
+    End_Async_Connect (Rec, Go_On);
+    if Go_On then
+      -- Store closed Dscr for timer callback
+      Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
+    end if;
+  end Connection_Fd_CB;
+
+  -- Timer callback
+  procedure Connection_Timer_CB (Id : in Timers.Timer_Id) is
+    Rec : Connecting_Rec;
+    Connected : Boolean;
+    Go_On : Boolean;
     use type Timers.Timer_Id;
     use type Socket.Socket_Dscr;
   begin
@@ -104,45 +215,57 @@ package body Tcp_Util is
       Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     end if;
 
-    -- Try to connect
-    Rec.Dscr :=  Try_Connect (Rec.Protocol, Rec.Host, Rec.Port);
+    -- Either first try, or previous failed (sync or not)
+    --  or async connect is pending
+    -- Rec.Curr_Try is current try number
 
-    if Rec.Dscr /= Socket.No_Socket then
-      -- Yes. Connected. Cancel timer and call callback
-      if Rec.Timer /= Timers.No_Timer then
-        Timers.Delete (Rec.Timer);
-      end if;
-      Host := Socket.Get_Destination_Host (Rec.Dscr);
-      Port := Socket.Get_Destination_Port (Rec.Dscr);
-      if Rec.CB /= null then
-        Rec.CB (Port, Host, True, Rec.Dscr);
-      end if;
-    else
-      -- Nop. Check number of tries
-      if Rec.Curr_Try = Rec.Nb_Tries then
-        -- Give up
-        Timers.Delete (Rec.Timer);
-        if Rec.CB /= null then
-          Rec.CB (0, Socket.No_Host, False, Socket.No_Socket);
-        end if;
-      else
-        -- Allow further retries
-        if Rec.Curr_Try = 1 then
-          -- First attempt failure: start timer
-          Rec.Timer := Timers.Create (
-              Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
-                             Period        => Rec.Delta_Retry,
-                             Delay_Seconds =>  Rec.Delta_Retry),
-              Callback => Connection_Timer_CB'access);
-        end if;  
-        Rec.Curr_Try :=  Rec.Curr_Try + 1;
-        -- Store timer id or at least Curr_Try
-        Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
+    -- Cancel pending async connect. Check end of tries
+    if Socket.Is_Open (Rec.Dscr) then
+      End_Async_Connect (Rec, Go_On);
+      if not Go_On then
+        return;
       end if;
     end if;
+
+    -- Try to connect
+    Try_Connect (Rec.Protocol, Rec.Host, Rec.Port, Rec.Dscr, Connected);
+    Rec.Curr_Try :=  Rec.Curr_Try + 1;
+
+    if Socket.Is_Open (Rec.Dscr) and then Connected then
+      -- Connected synchronous success
+      Handle_Current_Result (Rec);
+      return;
+    elsif not Socket.Is_Open (Rec.Dscr) then
+      -- Connect synchronous failure: Check number of tries
+      if Rec.Curr_Try = Rec.Nb_Tries then
+        Handle_Current_Result (Rec);
+        return;
+      end if;
+    end if;
+
+    -- Asynchronous pending
+    if not  Socket.Is_Open (Rec.Dscr) then
+      -- Connection pending
+      -- Save Dscr, Fd and pending status
+      Rec.Fd := Socket.Fd_Of (Rec.Dscr);
+      -- Add callback on fd
+      X_Mng.X_Add_CallBack (Rec.Fd, True, Connection_Fd_CB'access);
+      X_Mng.X_Add_CallBack (Rec.Fd, False, Connection_Fd_CB'access);
+    end if;
+
+    -- Synchronous failure or pending: arm timer at first try
+    if Rec.Curr_Try = 1 then
+      -- First attempt failure: start timer
+      Rec.Timer := Timers.Create (
+          Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
+                         Period        => Rec.Delta_Retry,
+                         Delay_Seconds =>  Rec.Delta_Retry),
+          Callback => Connection_Timer_CB'access);
+    end if;  
+    -- Store Rec: Fd, Timer_Id, Curr_Try ...
+    Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
        
   end Connection_Timer_CB;
-
 
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
@@ -163,7 +286,7 @@ package body Tcp_Util is
     Rec.CB := Connection_CB;
     Rec.Timer := Timers.No_Timer;
     Rec.Dscr := Socket.No_Socket;
-    Rec.Curr_Try := 1;
+    Rec.Curr_Try := 0;
     Con_List_Mng.Insert (Con_List, Rec);
 
     -- Try to connect: call timer callback
@@ -276,13 +399,13 @@ package body Tcp_Util is
     Num := Rec.Port;
 
     -- Add callback on fd
-    X_Mng.X_Add_CallBack (Rec.Fd, Acception_Fd_CB'access);
+    X_Mng.X_Add_CallBack (Rec.Fd, True, Acception_Fd_CB'access);
 
     -- Store Rec
     Acc_List_Mng.Insert (Acc_List, Rec);
     
   exception
-    when Socket.Socket_Error => 
+    when others => 
       -- Not open or not bind
       if Socket.Is_Open (Dscr) then
         Socket.Close (Dscr);
@@ -299,7 +422,7 @@ package body Tcp_Util is
     Rec.Port := Num;
     Find_By_Port (Acc_List, Rec, From_Current => False);
     -- Del callback and close
-    X_Mng.X_Del_CallBack (Rec.Fd);
+    X_Mng.X_Del_CallBack (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
   exception
     when Con_List_Mng.Not_In_List =>
