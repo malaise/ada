@@ -1,3 +1,4 @@
+with TEXT_IO;
 separate (MCD_MNG)
 
 package body REGISTERS is
@@ -16,8 +17,8 @@ package body REGISTERS is
     if REG.VAL_REGI in 'a' .. 'z' then
       return CHARACTER'POS(REG.VAL_REGI) -  CHARACTER'POS('a') + 1;
     elsif REG.VAL_REGI in 'A' .. 'Z' then
-      return CHARACTER'POS(REG.VAL_REGI) -  CHARACTER'POS('A')
-          +  CHARACTER'POS('z') -  CHARACTER'POS('a') + 1;
+      return CHARACTER'POS(REG.VAL_REGI) -  CHARACTER'POS('A') + 1
+           + CHARACTER'POS('z') -  CHARACTER'POS('a') + 1;
     else
        raise INVALID_REGISTER;
     end if;
@@ -29,6 +30,11 @@ package body REGISTERS is
       raise INVALID_ARGUMENT;
     end if;
     REGISTERS_ARRAY(REG2IND(TO_REG)) := VAL;
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.REGISTER) then
+      TEXT_IO.PUT ("Register: Storing in " & TO_REG.VAL_REGI & ": ");
+      DEBUG.PUT (VAL);
+      TEXT_IO.NEW_LINE;
+    end if;
   end STORE;
     
   function  RETRIEVE (FROM_REG : in ITEM_REC) return ITEM_REC is
@@ -37,6 +43,11 @@ package body REGISTERS is
     VAL := REGISTERS_ARRAY(REG2IND(FROM_REG));
     if VAL.KIND not in REGISTER_CONTENT_LIST then
       raise EMTPY_REGISTER;
+    end if;
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.REGISTER) then
+      TEXT_IO.PUT ("Register: Retrieving from " & FROM_REG.VAL_REGI & ": ");
+      DEBUG.PUT (VAL);
+      TEXT_IO.NEW_LINE;
     end if;
     return VAL;
   end RETRIEVE;
