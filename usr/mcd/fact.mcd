@@ -1,9 +1,6 @@
-# Clear stack
-[ ssize 0 = [ 0 retn ] ifcall pop Z pushr retacal ] Z popr
-
 # Check 1 arg >= 0
 5 format 7.007 format
-[ [ Error: 1 argument N >= 0 expected. ] putl Z pushr call ] E popr
+[ [ Error: 1 argument N >= 0 expected. ] putl ssize popn retall ] E popr
 ssize 1 /= E pushr ifcall
 dup 0 < E pushr ifcall
 
@@ -12,8 +9,11 @@ dup 0 < E pushr ifcall
 [ dup 0 = [ pop 1.0 2 retn ] [ dup 1 - ] ifte call F pushr call
   toreal swap toreal * ] F popr
 
-# F(n)
+# Put n
 dup
+put [ " ! = " ] put
+
+# Compute and put F(n)
 F pushr call
-swap put [ " ! = " ] put putl
+putl
 
