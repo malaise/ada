@@ -27,15 +27,15 @@ procedure T_Dictio is
   end Next_Space;
 
   procedure Put_Help is
+    procedure P (Str : in String) renames Ada.Text_Io.Put_Line;
   begin
-    Ada.Text_Io.Put_Line ("Comands are:");
-    Ada.Text_Io.Put_Line ("  set     <name> <data>          get      <name>");
-    Ada.Text_Io.Put_Line ("  notify  <name>                 cancel   <name>");
-    Ada.Text_Io.Put_Line ("  notifya <name>                 cancela  <name>");
-    Ada.Text_Io.Put_Line ("  alias   <name> <name>          getalias <name>");
-    Ada.Text_Io.Put_Line ("  add     <host>                 del      <host>");
-    Ada.Text_Io.Put_Line ("  help                           status");
-    Ada.Text_Io.Put_Line ("  quit");
+    P ("Comands are:");
+    P ("  set    <name>    [ <data> ]         alias  <new_name> [ <of_name> ]");
+    P ("  get    [ alias ] <name>");
+    P ("  notify [ alias ] <pattern>          cancel [ alias ]  <pattern>");
+    P ("  add    <host>                       del    <host>");
+    P ("  help                                status");
+    P ("  quit");
   end Put_Help;
 
   function Is_Sep (C : Character) return Boolean is
@@ -47,6 +47,7 @@ procedure T_Dictio is
     Iter : Parser.Iterator;
     Key, Name, Last : Text_Handler.Text (Dictio_Lib.Max_Name_Len);
     Data : Text_Handler.Text (Dictio_Lib.Max_Data_Len);
+    Alias : Boolean;
   begin
     -- Sanity checks and specific codes
     if Str'Length = 0 then
@@ -113,35 +114,15 @@ procedure T_Dictio is
     end if;
 
 
-    -- Key & Name: Get, notify, cancel, unalias, add, del
-    if Text_Handler.Value (Key) = "get" 
-    or else Text_Handler.Value (Key) = "notify"
-    or else Text_Handler.Value (Key) = "cancel"
-    or else Text_Handler.Value (Key) = "notifya"
-    or else Text_Handler.Value (Key) = "cancela"
-    or else Text_Handler.Value (Key) = "getalias"
-    or else Text_Handler.Value (Key) = "add"
+    -- Key & Name: Add, del
+    if Text_Handler.Value (Key) = "add"
     or else Text_Handler.Value (Key) = "del" then
       if Text_Handler.Empty (Name)
       or else not Text_Handler.Empty (Data) then
         Ada.Text_Io.Put_Line ("CLIENT: Discarded");
         return False;
       end if;
-      if Text_Handler.Value (Key) = "get" then
-        Ada.Text_Io.Put_Line ("CLIENT: got >"
-              & Dictio_Lib.Get (Text_Handler.Value (Name)) & "<");
-      elsif Text_Handler.Value (Key) = "notify" then
-        Dictio_Lib.Notify (Text_Handler.Value (Name), True, True);
-      elsif Text_Handler.Value (Key) = "cancel" then
-        Dictio_Lib.Notify (Text_Handler.Value (Name), True, False);
-      elsif Text_Handler.Value (Key) = "notifya" then
-        Dictio_Lib.Notify (Text_Handler.Value (Name), False, True);
-      elsif Text_Handler.Value (Key) = "cancela" then
-        Dictio_Lib.Notify (Text_Handler.Value (Name), False, False);
-      elsif Text_Handler.Value (Key) = "getalias" then
-        Ada.Text_Io.Put_Line ("CLIENT: got alias >"
-              & Dictio_Lib.Get_Alias (Text_Handler.Value (Name)) & "<");
-      elsif Text_Handler.Value (Key) = "add" then
+      if Text_Handler.Value (Key) = "add" then
         Dictio_Lib.Add_Host (Text_Handler.Value (Name));
       elsif Text_Handler.Value (Key) = "del" then
         Dictio_Lib.Del_Host (Text_Handler.Value (Name));
@@ -151,7 +132,40 @@ procedure T_Dictio is
       return False;
     end if;
 
-    -- Key & Name [ Data ]: Set or alias
+    -- Key [ alias ] name: Get, notify, cancel
+    if Text_Handler.Value (Key) = "get" 
+    or else Text_Handler.Value (Key) = "notify"
+    or else Text_Handler.Value (Key) = "cancel" then
+      Alias := Lower_Str (Text_Handler.Value (Name)) = "alias";
+      if Alias then
+        -- Shift
+        Text_Handler.Set (Name, Data);
+        Text_Handler.Set (Data, Last);
+      end if;
+      if Text_Handler.Empty (Name)
+      or else not Text_Handler.Empty (Data) then
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+        return False;
+      end if;
+      if Text_Handler.Value (Key) = "get" then
+        if not Alias then
+          Ada.Text_Io.Put_Line ("CLIENT: got >"
+              & Dictio_Lib.Get (Text_Handler.Value (Name)) & "<");
+        else
+          Ada.Text_Io.Put_Line ("CLIENT: got alias >"
+              & Dictio_Lib.Get_Alias (Text_Handler.Value (Name)) & "<");
+        end if;
+      elsif Text_Handler.Value (Key) = "notify" then
+        Dictio_Lib.Notify (Text_Handler.Value (Name), not Alias, True);
+      elsif Text_Handler.Value (Key) = "cancel" then
+        Dictio_Lib.Notify (Text_Handler.Value (Name), not Alias, False);
+      else
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      end if;
+      return False;
+    end if;
+
+    -- Key & Name [ Data ]: Set, alias
     if Text_Handler.Value (Key) = "set" 
     or else Text_Handler.Value (Key) = "alias" then
       if Text_Handler.Empty (Name)
