@@ -647,7 +647,7 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
     end if;
   exception
-    when Con_List_Mng.Not_In_List =>
+    when Acc_List_Mng.Not_In_List =>
       raise No_Such;
   end Abort_Accept;
 
