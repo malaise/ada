@@ -79,7 +79,9 @@ package body PARSER is
    FORMAT  => ("//", "xx or xx.yyy fmt    "),
    PUT     => (", ", "put A               "),
    NEWL    => (": ", "new line            "),
-   PUTL    => ("; ", "put_line A          "));
+   PUTL    => ("; ", "put_line A          "),
+
+   HELP    => ("??", "put help            ") );
 
 
   function NEXT_ITEM return MCD_MNG.ITEM_REC is

@@ -1,5 +1,5 @@
 with TEXT_HANDLER;
-with DEBUG, INPUT_DISPATCHER;
+with DEBUG, INPUT_DISPATCHER, PARSER;
 package body MCD_MNG is
 
 
@@ -318,6 +318,9 @@ package body MCD_MNG is
           POP(A); IOS.PUT_LINE(A);
         when NEWL =>
           IOS.NEW_LINE;
+
+        when HELP =>
+          PARSER.PRINT_HELP;
       end case;
     end if;
   end NEW_ITEM;

@@ -66,7 +66,9 @@ package MCD_MNG is
    FORMAT,
    PUT,
    NEWL,
-   PUTL
+   PUTL,
+
+   HELP
    );
 
 
