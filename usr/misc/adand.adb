@@ -169,6 +169,7 @@ begin
     exit when Text_Io.End_Of_File(Fb);
 
   end loop;
+  Text_Io.New_Line (F);
 
   -- close files
   Text_Io.Close (Fb);
