@@ -47,6 +47,7 @@ package MCD_MNG is
    DUP,
 
    POP,
+   POPN,
 
    IFTHEN,
    IFTE,

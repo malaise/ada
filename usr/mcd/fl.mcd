@@ -1,67 +1,67 @@
 # Replace top of stack by its int (uses register z)
 [
 # Round v in z
->< >< ! $  z => <> 0.0 >= 
+dup dup tointe toreal  z copyr swap 0.0 >= 
 # v >= 0.0 : if v < R then R:=R-1
-[ < [ z <- 1.0 - z -> ] ?@ ]
+[ < [ z pushr 1.0 - z popr ] ifcall ]
 # v < 0.0  : if v > R then R:=R+1
-[ > [ z <- 1.0 + z -> ] ?@ ]
-? @
-z <-
-] I ->
+[ > [ z pushr 1.0 + z popr ] ifcall ]
+ifte call
+z pushr
+] I popr
 
 # Replace top of stack by its abs
-[ >< 0.0 < [ +- ] ?@ ] A ->
+[ dup 0.0 < [ +- ] ifcall ] A popr
 
 # Can top of stack be assimilated to 0.0
-[ A <- @ 1.0e-17 < ] Z ->
+[ A pushr call 1.0e-17 < ] Z popr
 
 # Replace top of stack by its frac
-[ ><
+[ dup
 # Int
-I <- @ - ] F ->
+I pushr call - ] F popr
 
 # Error, replace by 0.0 exit
-[ [ Invalid entry:  ] , v <- ; -- 0.0 ] E ->
+[ [ Invalid entry:  ] put v pushr putl pop 0.0 ] E popr
 
 # Check that top of stack is valid and fix it
 # Replace it by mn, hh
 [
 # Make a real if needed
->< [ $ ] <> ?! <> ?@
+dup [ toreal ] swap isinte swap ifcall
 # * 100,  Frac should be 0
->< 100.0 * F <- @ Z <- @ ~ E <- ?@
+dup 100.0 * F pushr call Z pushr call ~ E pushr ifcall
 # Frac < 60
->< F <- @ 100.0 * 60.0 >= E <- ?@
+dup F pushr call 100.0 * 60.0 >= E pushr ifcall
 # Push minutes then hours
->< F <- @ 100.0 * !
-<> I <- @ !
-] C ->
+dup F pushr call 100.0 * tointe
+swap I pushr call tointe
+] C popr
 
 # Loop
 [
 # Return if no more data in stack
-. 0 = 1 ?_ 
+ssize 0 = 1 ifretn
 # Store value for error tracing
-v => 
+v copyr
 # Check 
-C <- @
+C pushr call
 # Add
-h <- + h ->
-m <- + m =>
+h pushr + h popr
+m pushr + m copyr
 # Propagate the carry
-60 > [ m <- 60 - m -> h <- 1 h -> ] ?@
+60 > [ m pushr 60 - m popr h pushr 1 h popr ] ifcall
 # Loop
-L <- _@ ] L ->
+L pushr retacal ] L popr
 
 # Init sum and format
-0 h ->
-0 m ->
-3.003 //
+0 h popr
+0 m popr
+3.003 format
 
 # Loop on data
-L <- @
+L pushr call
 
 # Display result
-h <- 5 // , [ h ] , m <-  2 // ;
+h pushr 5 format put [ h ] put m pushr  2 format putl
 

@@ -213,6 +213,22 @@ package body MCD_MNG is
       INPUT_DISPATCHER.SET_INPUT(TEXT_HANDLER.VALUE(CALL_ENTRY));
     end DO_RET;
 
+    procedure DO_POPN is
+      N : NATURAL;
+    begin
+      POP(A);
+      -- has to be INTE and val NATURAL
+      begin
+        N := NATURAL(A.VAL_INTE);
+      exception
+        when others => raise INVALID_ARGUMENT;
+      end;
+      for I in 1 .. N loop
+        POP(A);
+      end loop;
+    end DO_POPN;
+
+
   begin
     -- Default, except RET
     THE_END := FALSE;
@@ -234,6 +250,9 @@ package body MCD_MNG is
           READ(A); PUSH(A);
         when POP =>
           POP(A);
+
+        when POPN =>
+          DO_POPN;
 
         -- These are operations
         when ADD =>
