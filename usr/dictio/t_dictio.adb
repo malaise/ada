@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with X_Mng, Async_Stdin, Rnd, Argument;
+with Event_Mng, Async_Stdin, Rnd, Argument;
 with Dictio_Lib;
 procedure T_Dictio is
 
@@ -149,8 +149,6 @@ procedure T_Dictio is
     end loop;
   end Load;
 
-  Res : Boolean;
-
 begin
   begin
     if Argument.Get_Parameter (1, "i") = "" then
@@ -183,7 +181,7 @@ begin
       return;
   end;
 
-  X_Mng.X_Set_Signal (Sig_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Callback (Sig_Cb'Unrestricted_Access);
 
   Rnd.Randomize;
 
@@ -196,7 +194,7 @@ begin
            "g <name> / s <name> <data> / n <name> / c <name> / q");
   end if;
   loop
-    Res := X_Mng.Select_No_X (-1);
+    Event_Mng.Wait (-1);
     exit when Sig;
   end loop;
 

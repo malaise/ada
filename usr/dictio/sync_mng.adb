@@ -1,4 +1,4 @@
-with Timers, X_Mng;
+with Timers, Event_Mng;
 with Status, Intra_Dictio, Data_Base, Debug;
 package body Sync_Mng is
 
@@ -87,7 +87,6 @@ package body Sync_Mng is
     Result : Intra_Dictio.Reply_Result_List;
     Timeout : Natural;
     Nb_Items : Natural;
-    Dummy : Boolean;
     use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List;
   begin
     Sending_Sync := True;
@@ -111,14 +110,14 @@ package body Sync_Mng is
         if Debug.Level_Array(Debug.Sync) then
           Debug.Put ("Sync: Overflow");
         end if; 
-        Dummy := X_Mng.Select_No_X (Timeout);
+        Event_Mng.Wait (Timeout);
         -- Increase timeout for next retry
         Timeout := Timeout * Timeout_Factor;
       end loop Retries;
 
       if Result = Intra_Dictio.Ok then
         Nb_Items := Nb_Items + 1;
-        Dummy := X_Mng.Select_No_X (1);
+        Event_Mng.Wait (1);
       else
         -- Give up if too many overflows or other error
         if Debug.Level_Array(Debug.Sync) then

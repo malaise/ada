@@ -1,4 +1,4 @@
-with Socket, Tcp_Util, Dynamic_List, X_Mng, Sys_Calls;
+with Socket, Tcp_Util, Dynamic_List, Event_Mng;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio,
      Sync_Mng, Versions;
 package body Client_Mng is
@@ -9,7 +9,7 @@ package body Client_Mng is
 
   Accept_Port : Tcp_Util.Port_Num;
 
-  function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                    return Boolean is
     Dscr : Socket.Socket_Dscr;
     Msg : Client_Com.Dictio_Client_Rec;
@@ -115,10 +115,10 @@ package body Client_Mng is
     end if;
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: new client accepted -> "
-               & Sys_Calls.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
+               & Event_Mng.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
     end if;
     Client_Fd.Add_Client (New_Dscr);
-    X_Mng.X_Add_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'access);
+    Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'access);
 
     -- Send version
     declare
@@ -136,7 +136,7 @@ package body Client_Mng is
       when Socket.Soc_Conn_Lost =>
         if Debug.Level_Array(Debug.Client) then
           Debug.Put ("Client: lost connection with "
-                   & Sys_Calls.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
+                   & Event_Mng.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
         end if;
         Client_Fd.Del_Client (New_Dscr);
     end;

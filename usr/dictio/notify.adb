@@ -1,4 +1,4 @@
-with Dynamic_List, Socket, X_Mng;
+with Dynamic_List, Socket, Event_Mng;
 with Client_Com, Client_Fd, Debug, Parse;
 package body Notify is
 
@@ -85,7 +85,7 @@ package body Notify is
   procedure Send (Item : in Data_Base.Item_Rec) is
     Rec : Notif_Rec;
     Msg : Client_Com.Dictio_Client_Rec;
-    Fd : X_Mng.File_Desc;
+    Fd : Event_Mng.File_Desc;
   begin
     Msg.Action := Client_Com.Notif_On;
     Msg.Item := Item;

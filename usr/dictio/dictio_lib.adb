@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Socket, Tcp_Util, X_Mng, Sys_Calls;
+with Socket, Tcp_Util, Event_Mng, Sys_Calls;
 with Debug, Parse, Client_Com, Versions;
 package body Dictio_Lib is
 
@@ -22,14 +22,14 @@ package body Dictio_Lib is
 
   procedure Close is
   begin
-    X_Mng.X_Del_Callback (Socket.fd_Of (Dictio_Dscr), True);
+    Event_Mng.Del_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True);
     Socket.Close (Dictio_Dscr);
     if Available_Cb /= null then
       Available_Cb (False);
     end if;
   end Close;
 
-  function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean) return Boolean is
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean) return Boolean is
     Len : Natural;
   begin
     Read_Msg:
@@ -109,7 +109,7 @@ package body Dictio_Lib is
       Debug.Put ("Dictio_Lib: connected");
     end if;
     Dictio_Dscr := Dscr;
-    X_Mng.X_Add_Callback (Socket.fd_Of (Dictio_Dscr), True, Read_Cb'access);
+    Event_Mng.Add_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True, Read_Cb'access);
 
     Msg.Action := Client_Com.Version;
     Msg.Item.Name := (others => ' ');

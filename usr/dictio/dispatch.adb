@@ -1,4 +1,4 @@
-with Tcp_Util, X_Mng;
+with Tcp_Util, Event_Mng;
 with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args;
 package body Dispatch is
 
@@ -19,14 +19,15 @@ package body Dispatch is
   procedure Handle_New_Status;
 
   procedure Init is
+    use type Event_Mng.Out_Event_List;
   begin
     Args.Init;
     Status.Set (Handle_New_Status'Access);
-    X_Mng.X_Set_Signal (Signal'Access);
+    Event_Mng.Set_Sig_Callback (Signal'Access);
     Intra_Dictio.Init;
     Intra_Dictio.Set_Read_Cb (New_Intra'Access);
 
-    while X_Mng.Select_No_X (100) loop
+    while Event_Mng.Wait (100) loop
       null;
     end loop;
     Init_Mng.Start;
@@ -34,10 +35,9 @@ package body Dispatch is
 
 
   procedure Run is
-    Dummy : Boolean;
   begin
     while not Signal_Received loop
-      Dummy := X_Mng.Select_No_X (-1);
+      Event_Mng.Wait (-1);
     end loop;
   end;
 

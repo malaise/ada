@@ -1,16 +1,16 @@
-with Dynamic_List, X_Mng;
+with Dynamic_List;
 package body Client_Fd is
 
   type Client_Rec is record
     Soc : Socket.Socket_Dscr;
-    Fd  : Sys_Calls.File_Desc;
+    Fd  : Event_Mng.File_Desc;
   end record;
 
   package Client_List_Mng is new Dynamic_List(Client_Rec);
   Client_List : Client_List_Mng.List_Type;
 
   function Fd_Match (El1, El2 : Client_Rec) return Boolean is
-    use type Sys_Calls.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     return El1.Fd = El2.Fd;
   end Fd_Match;
@@ -47,7 +47,7 @@ package body Client_Fd is
 
   procedure Del_Client (Client : in Socket.Socket_Dscr) is
     Rec : Client_Rec;
-    use type Sys_Calls.File_Desc;
+    use type Event_Mng.File_Desc;
   begin
     Rec.Soc := Client;
     begin
@@ -65,7 +65,7 @@ package body Client_Fd is
     else
       Client_List_Mng.Delete (Client_List, Client_List_Mng.Prev);
     end if;
-    X_Mng.X_Del_Callback (Rec.Fd, True);
+    Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Socket.Close (Rec.Soc);
   end Del_Client;
 
@@ -75,7 +75,7 @@ package body Client_Fd is
     Client_List_Mng.Move_To (Client_List, Client_List_Mng.Next, 0, False);
     loop
       Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
-      X_Mng.X_Del_Callback (Rec.Fd, True);
+      Event_Mng.Del_Fd_Callback (Rec.Fd, True);
       Socket.Close (Rec.Soc);
       Client_List_Mng.Delete (Client_List);
     end loop;
@@ -85,7 +85,7 @@ package body Client_Fd is
   end Del_All;
 
 
-  function Socket_Of (Fd : Sys_Calls.File_Desc) return Socket.Socket_Dscr is
+  function Socket_Of (Fd : Event_Mng.File_Desc) return Socket.Socket_Dscr is
     Rec : Client_Rec;
   begin
     Rec.Fd := Fd;
