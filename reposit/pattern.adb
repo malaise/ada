@@ -73,6 +73,8 @@ package body Pattern is
     end record;
 
     procedure Rewind (Rule : in Rule_No);
+
+    -- After Rewind or Pattern_Exists
     function Next_Term (Lower_Case : Boolean) return Term_Rec;
 
   end Storage;
@@ -228,6 +230,86 @@ package body Pattern is
       raise Invalid_Pattern;
     end if;
   end Del;
+
+
+  -- Returns the String image of a pattern
+  -- May raise Invalid_Pattern if Pattern is not valid.
+  function Image (Rule : Rule_No; Id : Pattern_Id) return String is
+    Term : Storage.Term_Rec;
+    Len : Natural;
+    Dummy : Boolean;
+    Index : Natural;
+    use type Storage.Str_Access;
+  begin
+    Init;
+    Check_Rule (Rule);
+    if not Storage.Pattern_Exists (Rule, Id) then
+      raise Invalid_Pattern;
+    end if;
+    Put_Debug ("Image", "Image of pattern rule " & Image (Rule)
+                      & ", id " & Id'Img);
+
+    -- Count characters needed
+    Len := 0;
+    loop
+      Term := Storage.Next_Term (False);
+      exit when Term.Str_Acc = null or else Term.Id /= Id;
+      Len := Len + Term.Str_Acc.all'Length + 1;
+      if Term.Optio then
+        Len := Len + 4;
+      end if;
+      if Term.Repet then
+        Len := Len + 4;
+      end if;
+    end loop;
+    Put_Debug ("Image", "Computed length: " & Natural'Image (Len- 1));
+    if Len = 1 then
+      return "";
+    end if;
+
+    -- Rewind and concat
+    Dummy := Storage.Pattern_Exists (Rule, Id);
+    Index := 1;
+    declare
+      subtype Image_Str is String (1 .. Len);
+      type Image_Access is access Image_Str;
+      Str_Acc : Image_Access := new Image_Str;
+    begin
+      loop
+        Term := Storage.Next_Term (False);
+        exit when Term.Str_Acc = null or else Term.Id /= Id;
+
+
+        if Term.Optio then
+          Str_Acc(Index .. Index + 1) := "[ ";
+          Index := Index + 2;
+        end if;
+        if Term.Repet then
+          Str_Acc(Index .. Index + 1) := "{ ";
+          Index := Index + 2;
+        end if;
+
+        Len := Term.Str_Acc.all'Length;
+        Str_Acc(Index .. Index + Len) := Term.Str_Acc.all & " ";
+        Index := Index + Len + 1;
+
+        if Term.Repet then
+          Str_Acc(Index .. Index + 1) := "} ";
+          Index := Index + 2;
+        end if;
+
+        if Term.Optio then
+          Str_Acc(Index .. Index + 1) := "] ";
+          Index := Index + 2;
+        end if;
+      end loop;
+      -- Back one space and one pos
+      Index := Index - 2;
+      Put_Debug ("Image", "Got " & Str_Acc(1 .. Index)
+               & ", length: " & Index'Img);
+      return Str_Acc(1 .. Index);
+    end;
+  end Image;
 
 
   -- Check Str versus patterns in crescent order if Ids

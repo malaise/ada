@@ -16,7 +16,7 @@ package body Storage is
            and then Curr.Str_Acc /= null
            and then Curr.Id = Crit.Id;
   end Pattern_Match;
-  procedure Search_Pattern is new Term_List_Mng.Safe_Search (Pattern_Match);
+  procedure Search_Pattern is new Term_List_Mng.Search (Pattern_Match);
 
   -- Search first term of next pattern of same rule
   function Pattern_After (Curr, Crit : Term_Rec) return Boolean is
@@ -25,14 +25,14 @@ package body Storage is
            and then Curr.Str_Acc /= null
            and then Curr.Id > Crit.Id;
   end Pattern_After;
-  procedure Next_Pattern is new Term_List_Mng.Safe_Search (Pattern_After);
+  procedure Next_Pattern is new Term_List_Mng.Search (Pattern_After);
 
   -- Search first term of first pattern of rule
   function Rule_Match (Curr, Crit : Term_Rec) return Boolean is
   begin
     return Curr.Rule = Crit.Rule;
   end Rule_Match;
-  procedure Search_Rule is new Term_List_Mng.Safe_Search (Rule_Match);
+  procedure Search_Rule is new Term_List_Mng.Search (Rule_Match);
 
   -- Return an unused rule
   function Get_Free_Rule return Rule_No is
@@ -88,6 +88,9 @@ package body Storage is
 
 
   -- Check if pattern Id exists
+  -- For usage Next_Term
+  The_End : Boolean := False;
+  The_Rule : Rule_No := No_Rule_No;
   function Pattern_Exists (Rule : in Rule_No; Id : Pattern_Id) return Boolean is
     Term : Term_Rec;
     Found : Boolean;
@@ -96,6 +99,8 @@ package body Storage is
     Term.Rule := Rule;
     Term.Id := Id;
     Search_Pattern (Term_List, Found, Term, From => Term_List_Mng.Absolute);
+    The_End := not Found;
+    The_Rule := Rule;
     return Found;
   end Pattern_Exists;
 
@@ -189,8 +194,6 @@ package body Storage is
   end Add_Term;
 
   -- Get terms one by one
-  The_End : Boolean := False;
-  The_Rule : Rule_No := No_Rule_No;
   procedure Rewind (Rule : Rule_No) is
   begin                 
     if not Term_List_Mng.Is_Empty (Term_List) then

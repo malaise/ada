@@ -53,7 +53,9 @@ package Pattern is
   -- May raise Invalid_Pattern if the Id is not set.
   procedure Del (Rule : in Rule_No; Id : in Pattern_Id);
 
-
+  -- Returns the String image of a pattern
+  -- May raise Invalid_Pattern if Pattern is not valid.
+  function Image (Rule : Rule_No; Id : Pattern_Id) return String;
 
   -- Check Str versus patterns of a rule, in crescent order if Ids.
   -- Returns whether or not a match was found (and then a Cb called)
