@@ -1,10 +1,11 @@
 with CALENDAR, SYSTEM;
-with MY_IO, TEXT_IO;
+with DYNAMIC_LIST, MY_IO, TEXT_IO;
 package body X_MNG is
 
   -- Duration outputs
   package DUR_IO is new TEXT_IO.FIXED_IO(DURATION);
   DEBUG : constant BOOLEAN := FALSE;
+  -- DEBUG : constant BOOLEAN := TRUE;
 
   -- Result of a call to C
   subtype RESULT is INTEGER;
@@ -32,6 +33,20 @@ package body X_MNG is
     return BOOLEAN'VAL(BOOL_FOR_C'POS(C_BOOLEAN));
   end FOR_ADA;
 
+  -- Callback list
+  type CB_REC is record
+    FD : FILE_DESC;
+    CB : FD_CALLBACK;
+  end record;
+  package CB_MNG is new DYNAMIC_LIST(CB_REC);
+  CB_LIST : CB_MNG.LIST_TYPE;
+
+  -- Same FD
+  function SAME_FD (CB1, CB2 : CB_REC) return BOOLEAN is
+  begin
+    return CB1.FD = CB2.FD;
+  end SAME_FD;
+  procedure CB_SEARCH is new CB_MNG.SEARCH(SAME_FD);
 
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
@@ -235,11 +250,26 @@ package body X_MNG is
   pragma IMPORT(C, X_SET_GRAPHIC_POINTER, "x_set_graphic_pointer");
 
   ------------------------------------------------------------------
-  -- Wait for some events
-  -- int x_select (fd_set *p_mask, boolean *p_x_event, int *timeout_ms);
+  -- Add a fd for select
+  -- int x_add_fd (int fd);
   ------------------------------------------------------------------
-  function X_SELECT (P_MASK : SYSTEM.ADDRESS;
-                     P_X_EVENT : SYSTEM.ADDRESS;
+  function X_ADD_FD (FD : INTEGER) return RESULT;
+  pragma IMPORT(C, X_ADD_FD, "x_add_fd");
+
+  ------------------------------------------------------------------
+  -- Del a fd from select
+  -- int x_del_fd (int fd);
+  ------------------------------------------------------------------
+  function X_DEL_FD (FD : INTEGER) return RESULT;
+  pragma IMPORT(C, X_DEL_FD, "x_del_fd");
+
+  ------------------------------------------------------------------
+  -- Wait for some events
+  -- int x_select (int *p_fd, int *timeout_ms);
+  ------------------------------------------------------------------
+  SELECT_NO_EVENT : constant INTEGER := -2;
+  SELECT_X_EVENT  : constant INTEGER := -1;
+  function X_SELECT (P_FD : SYSTEM.ADDRESS;
                      TIMEOUT_MS : SYSTEM.ADDRESS) return RESULT;
   pragma IMPORT(C, X_SELECT, "x_select");
 
@@ -760,6 +790,49 @@ package body X_MNG is
   end X_SET_GRAPHIC_POINTER;
 
   ------------------------------------------------------------------
+  procedure X_ADD_CALLBACK (FD : in FILE_DESC; CALLBACK : in FD_CALLBACK) is
+    RES : BOOLEAN;
+  begin
+    -- Append
+    if not CB_MNG.IS_EMPTY (CB_LIST) then
+      CB_MNG.MOVE_TO (CB_LIST, CB_MNG.PREV, 0, FALSE);
+    end if;
+    CB_MNG.INSERT (CB_LIST, (FD, CALLBACK));
+    -- Add fd to select
+    RES := X_ADD_FD (INTEGER(FD)) = OK;
+    if not RES then
+      raise X_FAILURE;
+    end if;
+  exception
+    when others =>
+      raise X_FAILURE;
+  end X_ADD_CALLBACK;
+
+  ------------------------------------------------------------------
+  procedure X_DEL_CALLBACK (FD : in FILE_DESC) is
+    RES : BOOLEAN;
+    CB_SEARCHED : CB_REC;
+  begin
+    -- Del fd from select
+    RES := X_DEL_FD (INTEGER(FD)) = OK;
+    -- del from list
+    CB_SEARCHED.FD := FD;
+    CB_SEARCHED.CB := null;
+    CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
+    if CB_MNG.GET_POSITION (CB_LIST) /=  CB_MNG.LIST_LENGTH(CB_LIST) then
+      CB_MNG.DELETE (CB_LIST, CB_MNG.NEXT);
+    else
+      CB_MNG.DELETE (CB_LIST, CB_MNG.PREV);
+    end if;
+    if not RES then
+      raise X_FAILURE;
+    end if;
+  exception
+    when others =>
+      raise X_FAILURE;
+  end X_DEL_CALLBACK;
+  
+  ------------------------------------------------------------------
   procedure X_SELECT (LINE_ID : in LINE; TIMEOUT_MS : in out INTEGER;
                       X_EVENT : out BOOLEAN) is
     EXP : CALENDAR.TIME;
@@ -941,12 +1014,41 @@ package body X_MNG is
   ------------------------------------------------------------------
 
   procedure XX_SELECT (TIMEOUT_MS : in INTEGER; X_EVENT : out BOOLEAN) is
+    FD    : INTEGER;
+    TIMEOUT : INTEGER;
     DUMMY : RESULT;
-    EVENT_FOR_C : BOOL_FOR_C;
+    CB_SEARCHED : CB_REC;
   begin
-    DUMMY := X_SELECT (SYSTEM.NULL_ADDRESS,
-                       EVENT_FOR_C'ADDRESS, TIMEOUT_MS'ADDRESS);
-    X_EVENT := FOR_ADA(EVENT_FOR_C);
+    TIMEOUT := TIMEOUT_MS;
+    loop
+      DUMMY := X_SELECT (FD'ADDRESS, TIMEOUT'ADDRESS);
+      if DEBUG then
+        MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD));
+      end if;
+      if FD = SELECT_X_EVENT then
+        X_EVENT := TRUE;
+        return;
+      elsif  FD = SELECT_NO_EVENT then
+        X_EVENT := FALSE;
+        return;
+      else
+        CB_SEARCHED.FD := FILE_DESC(FD);
+        CB_SEARCHED.CB := null;
+        begin
+          -- Search and read callback
+          CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
+          CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
+          -- Call it
+          CB_SEARCHED.CB (CB_SEARCHED.FD);
+        exception
+          when CB_MNG.NOT_IN_LIST =>
+          if DEBUG then
+            MY_IO.PUT_LINE ("**** XX_SELECT: " & INTEGER'IMAGE(FD) 
+                          & " fd not found ****");
+          end if;
+        end;
+      end if;
+    end loop;
   end XX_SELECT;
 
 

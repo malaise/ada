@@ -31,10 +31,11 @@ package X_MNG is
 
   type BUTTON_LIST is (NONE, LEFT, MIDDLE, RIGHT);
     
-  -- mask of socket ids on which select events
-  type EXTERNAL_MASK is new INTEGER;
-
   type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH, TID_MOTION);
+
+  -- Fd management
+  type FILE_DESC is new NATURAL;
+  type FD_CALLBACK is access procedure (FD : in FILE_DESC);
  
   ----- EXCEPTIONS -----
 
@@ -204,10 +205,16 @@ package X_MNG is
                                   GRAPHIC : in BOOLEAN);
 
   ----- EVENT MANAGEMENT -----
+  -- Register a callback on a fd.
+  -- The callback will be called (within X_SELECT) with one arg: the fd
+  procedure X_ADD_CALLBACK (FD : in FILE_DESC; CALLBACK : in FD_CALLBACK);
+  -- Unregister the callback from a fd
+  procedure X_DEL_CALLBACK (FD : in FILE_DESC);
 
   -- Wait for some ms or until a X event is availble
   -- If timeout is < 0, infinite wait
   -- The remaining time is set
+  -- Any callback on fd is invoked transparently
   procedure X_SELECT (LINE_ID : in LINE;
                       TIMEOUT_MS : in out INTEGER; X_EVENT : out BOOLEAN);
 
