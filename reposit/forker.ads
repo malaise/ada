@@ -117,6 +117,10 @@ package Forker is
     end case;
   end record;
 
+  -- Size to provide for reading report
+  subtype Size_Report_Rec is Report_Rec(Exit_Report);
+  Report_Size : constant Integer := Size_Report_Rec'Size;
+
   -- Exit report status decoding
   type Exit_Cause_List is (Normal, Signal, Stop);
   procedure Decode_Exit (Status : in Integer;
