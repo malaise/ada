@@ -151,7 +151,7 @@ package Tcp_Util is
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean;
 
-  -- If a socket in overflow (send has returned True and End_Of_Overflow_CB
+  -- If a socket in overflow (send has returned False and End_Of_Overflow_CB
   --  has not be called yet) has to be closed, then Abort_Send_and_Close
   -- has to be called instead of Socket.Close
   -- The socket is closed.
