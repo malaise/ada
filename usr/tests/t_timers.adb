@@ -19,7 +19,7 @@ procedure T_Timers is
   -- Row Management
   F : constant Afpx.Field_Range := 1;
   Cur_Row : Natural := 0;
- Erase : Boolean := False;
+  Erase : Boolean := False;
   procedure Put_Line (Str : in String) is
     S : String(1 .. Afpx.Get_Field_Width(F)) := (others => ' ');
     H : Afpx.Height_Range;
