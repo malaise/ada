@@ -2,7 +2,7 @@
 
 # Error and quit
 [ "Error, 1 argument: <amount>[<unit>] expected" putl
-  "   amount : float or integer" putl
+  "   amount : integer or float" putl
   "   unit   :  f or e (default e)" putl
 ssize popn retall ] E popr
 
@@ -36,8 +36,10 @@ a pushr 1 l pushr strsub v copyr
 1 "." v pushr strloc
 # Convert to real
 0 = [ strinte toreal ] [ strreal ] ifte call
-v popr
+v copyr
 
+# Check not more than two digits of cents
+100.0 * frac 0.0 /= E pushr ifcall
 
 # Set conversion factor and result unit
 e pushr u pushr "f" = [ 1.0 swap / "e" r popr ] [ "f" r popr ] ifte call
