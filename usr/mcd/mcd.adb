@@ -64,47 +64,47 @@ begin
 exception
   -- Clean mapping of exceptions
   when Mcd_Mng.Invalid_Argument =>
-    Sys_Calls.Put_Line_Error ("Error: Invalid argument");
+    Sys_Calls.Put_Line_Error ("Mcd error: Invalid argument");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Argument_Mismatch =>
-    Sys_Calls.Put_Line_Error ("Error: Argument mismatch");
+    Sys_Calls.Put_Line_Error ("Mcd error: Argument mismatch");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Compute_Error =>
-    Sys_Calls.Put_Line_Error ("Error: Compute error");
+    Sys_Calls.Put_Line_Error ("Mcd error: Compute error");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Invalid_Register =>
-    Sys_Calls.Put_Line_Error ("Error: Invalid register");
+    Sys_Calls.Put_Line_Error ("Mcd error: Invalid register");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Emtpy_Register =>
-    Sys_Calls.Put_Line_Error ("Error: Empty register");
+    Sys_Calls.Put_Line_Error ("Mcd error: Empty register");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Empty_Stack =>
-    Sys_Calls.Put_Line_Error ("Error: Empty stack");
+    Sys_Calls.Put_Line_Error ("Mcd error: Empty stack");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.String_Len =>
-    Sys_Calls.Put_Line_Error ("Error: String length error");
+    Sys_Calls.Put_Line_Error ("Mcd error: String length error");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.File_Error =>
-    Sys_Calls.Put_Line_Error ("Error: File IO error");
+    Sys_Calls.Put_Line_Error ("Mcd error: File IO error");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Parser.Parsing_Error =>
-    Sys_Calls.Put_Line_Error ("Error: Parsing error");
+    Sys_Calls.Put_Line_Error ("Mcd error: Parsing error");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Io_Flow.Fifo_Error =>
-    Sys_Calls.Put_Line_Error ("Error: Fifo error");
+    Sys_Calls.Put_Line_Error ("Mcd error: Fifo error");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Error:others =>
-    Sys_Calls.Put_Line_Error ("Error: exception "
+    Sys_Calls.Put_Line_Error ("Mcd error: exception "
                             & Ada.Exceptions.Exception_Name (Error));
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
