@@ -46,10 +46,11 @@ package body Dispatch is
   end;
 
   procedure Quit is 
+    use type Status.Status_List;
   begin
     Status.Set (Status.Dead);
-    while Event_Mng.Wait (100) loop
-      null;
+    while Status.Get /= Status.Dead loop
+      Event_Mng.Wait (10);
     end loop;
   end Quit; 
 
