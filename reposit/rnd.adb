@@ -36,7 +36,7 @@ package body RND is
   end LONG_TRUNC;
 
   -- initialisation of sequence
-  procedure RANDOMIZE (INIT : in FLOAT := 2.0) is
+  procedure RANDOMIZE (INIT : in FLOAT := 1.0) is
     -- the result of mutex allocation is always true, because infinite waiting
     OK : BOOLEAN;
     F : FLOAT;
@@ -53,7 +53,7 @@ package body RND is
 
   begin
     -- 0 <= init <= 1 : OK, otherwise random
-    if (0.0 <= INIT) and then (INIT <= 1.0) then
+    if 0.0 <= INIT and then INIT < 1.0 then
       F := INIT;
     else
       F := INIT_ALEAT;
