@@ -109,12 +109,15 @@ package body Socket is
   pragma Import (C, Soc_Get_Dest_Port, "soc_get_dest_port");
 
 
-  function Soc_Host_Name_Of (Host : Host_Id; Name : System.Address;
+  function Soc_Host_Name_Of (Host : System.Address; Name : System.Address;
                              Len  : Natural) return Result;
   pragma Import (C, Soc_Host_Name_Of, "soc_host_name_of");
   function Soc_Host_Of (Name : System.Address;
                         Id   : System.Address) return Result;
   pragma Import (C, Soc_Host_Of, "soc_host_of");
+  function Soc_Get_Local_Host(Id : System.Address) return Result;
+  pragma Import (C, Soc_Get_Local_Host, "soc_get_local_host");
+
 
   function Soc_Send (S : System.Address;
                      Message : System.Address;
@@ -380,7 +383,7 @@ package body Socket is
   function Host_Name_Of (Id : Host_Id) return String is
     Name : String (1 .. 1024);
   begin
-    Res := Soc_Host_Name_Of (Id, Name'Address, Name'Length);
+    Res := Soc_Host_Name_Of (Id'Address, Name'Address, Name'Length);
     Check_Ok;
     for I in Name'Range loop
       if Name(I) = Ascii.Nul then
@@ -397,7 +400,16 @@ package body Socket is
     Res := Soc_Host_Of (Name_For_C'Address, Id'Address);
     Check_Ok;
     return Id;
-  end  Host_Id_Of;
+  end Host_Id_Of;
+
+  -- Get local Host_id
+  function Local_Host_Id return Host_Id is
+    Id : Host_Id;
+  begin
+    Res := Soc_Get_Local_Host (Id'Address);
+    Check_Ok;
+    return Id;
+  end Local_Host_Id;
   
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent

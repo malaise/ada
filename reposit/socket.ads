@@ -185,6 +185,9 @@ package Socket is
   -- May raise Soc_Name_Not_Found if Name is not found
   function Host_Name_Of (Id : Host_Id) return String;
   function Host_Id_Of   (Name : String) return Host_Id;
+
+  -- Get local Host_id
+  function Local_Host_Id return Host_Id;
   
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
