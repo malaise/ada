@@ -80,7 +80,7 @@
 
 DESCRIPTOR 1
   LIST
-    GEOMETRY 1 1 17 71
+    GEOMETRY 2 1 18 71
     COLORS cyan brown red
   END LIST
 
@@ -88,9 +88,6 @@ DESCRIPTOR 1
   FIELD 1 PUT
     GEOMETRY 0 1 0 25
     COLORS light_gray not_blink black
-INIT
-  0 0 ...................ca_pas
-END INIT
   END FIELD
   FIELD 2 PUT
     GEOMETRY 0 26 0 26
@@ -104,9 +101,6 @@ END INIT
   FIELD 3 PUT
     GEOMETRY 0 28 0 31
     COLORS light_gray not_blink black
-INIT
-  0 0 .128
-END INIT
   END FIELD
   FIELD 4 PUT
     GEOMETRY 0 33 0 39
@@ -125,107 +119,109 @@ END INIT
     END INIT
   END FIELD
 
-  # Real amount
+  # List title
   FIELD 6 PUT
-    GEOMETRY 18 1 18 5
+    GEOMETRY 1 1 1 71
+    COLORS light_gray not_blink black
+    INIT
+      #    0         1         2         3         4         5         6         7
+      #    01234567890123456789012345678901234567890123456789012345678901234567890
+      0 2    No|  Date  |  Amount |Stat|Kind|Destinat. |Comment        |Reference
+      #    3021|25/10/01|-12345.12|    |    |1234567890|123456789012345|1234567890
+      # Status: Yes No Def    Kind: Cheq Cred Xfer Draw
+      
+    END INIT
+  END FIELD
+
+  # Real amount
+  FIELD 7 PUT
+    GEOMETRY 19 1 19 5
     COLORS light_gray not_blink black
     INIT
       0 0 Real:
     END INIT
   END FIELD
-  FIELD 7 PUT
-    GEOMETRY 18 6 18 15
+  FIELD 8 PUT
+    GEOMETRY 19 6 19 17
     COLORS light_gray not_blink black
-INIT
-  0 0 ...1234.12
-END INIT
   END FIELD
 
   # Account
-  FIELD 8 PUT
-    GEOMETRY 18 19 18 26
+  FIELD 9 PUT
+    GEOMETRY 19 19 19 26
     COLORS light_gray not_blink black
     INIT
       0 0 Account:
     END INIT
   END FIELD
-  FIELD 9 PUT
-    GEOMETRY 18 27 18 36
+  FIELD 10 PUT
+    GEOMETRY 19 27 19 38
     COLORS light_gray not_blink black
-INIT
-  0 0 ...1234.12
-END INIT
   END FIELD
 
   # Defered
-  FIELD 10 PUT
-    GEOMETRY 18 40 18 47
+  FIELD 11 PUT
+    GEOMETRY 19 40 19 47
     COLORS light_gray not_blink black
     INIT
       0 0 Defered:
     END INIT
   END FIELD
-  FIELD 11 PUT
-    GEOMETRY 18 48 18 57
+  FIELD 12 PUT
+    GEOMETRY 19 48 19 59
     COLORS light_gray not_blink black
-INIT
-  0 0 ...1234.12
-END INIT
   END FIELD
 
   # Margin
-  FIELD 12 PUT
-    GEOMETRY 18 61 18 67
+  FIELD 13 PUT
+    GEOMETRY 19 61 19 67
     COLORS light_gray not_blink black
     INIT
       0 0 Margin:
     END INIT
   END FIELD
-  FIELD 13 PUT
-    GEOMETRY 18 68 18 77
+  FIELD 14 PUT
+    GEOMETRY 19 68 19 79
     COLORS light_gray not_blink black
-INIT
-  0 0 ...1234.12
-END INIT
   END FIELD
 
   # List Action
-  FIELD 14 BUTTON
+  FIELD 15 BUTTON
     GEOMETRY 1 73 1 78
     COLORS cyan brown
     INIT
       0 1 Top
     END INIT
   END FIELD
-  FIELD 15 BUTTON
+  FIELD 16 BUTTON
     GEOMETRY 3 73 5 78
     COLORS cyan brown
     INIT
      1 1 PgUp
     END INIT
   END FIELD
-  FIELD 16 BUTTON
+  FIELD 17 BUTTON
     GEOMETRY 7 73 7 78
     COLORS cyan brown
     INIT
       0 2 Up
     END INIT
   END FIELD
-  FIELD 17 BUTTON
+  FIELD 18 BUTTON
     GEOMETRY 10 73 10 78
     COLORS cyan brown
     INIT
       0 1 Down
     END INIT
   END FIELD
-  FIELD 18 BUTTON
+  FIELD 19 BUTTON
     GEOMETRY 12 73 14 78
     COLORS cyan brown
     INIT
       1 0 PgDown
     END INIT
   END FIELD
-  FIELD 19 BUTTON
+  FIELD 20 BUTTON
     GEOMETRY 16 73 16 78
     COLORS cyan brown
     INIT
@@ -234,64 +230,64 @@ END INIT
   END FIELD
 
   # Cheque actions
-  FIELD 20 PUT
-    GEOMETRY 20 1 20 6
+  FIELD 21 PUT
+    GEOMETRY 21 1 21 6
     COLORS light_gray not_blink black
     INIT
       0 0 Cheque
     END INIT
   END FIELD
   # New cheque
-  FIELD 21 BUTTON
-    GEOMETRY 20 10 20 14
+  FIELD 22 BUTTON
+    GEOMETRY 21 10 21 14
     COLORS cyan brown
     INIT
-      0 1 NEW
+      0 1 ADD
     END INIT
   END FIELD
   # Edit cheque
-  FIELD 22 BUTTON
-    GEOMETRY 20 17 20 22
+  FIELD 23 BUTTON
+    GEOMETRY 21 17 21 22
     COLORS cyan brown
     INIT
       0 1 EDIT
     END INIT
   END FIELD
   # View cheque
-  FIELD 23 BUTTON
-    GEOMETRY 20 25 20 30
+  FIELD 24 BUTTON
+    GEOMETRY 21 25 21 30
     COLORS cyan brown
     INIT
       0 1 VIEW
     END INIT
   END FIELD
   # Delete cheque
-  FIELD 24 BUTTON
-    GEOMETRY 20 33 20 40
+  FIELD 25 BUTTON
+    GEOMETRY 21 33 21 40
     COLORS cyan brown
     INIT
       0 1 DELETE
     END INIT
   END FIELD
   # Clean up to
-  FIELD 25 BUTTON
-    GEOMETRY 20 43 20 56
+  FIELD 26 BUTTON
+    GEOMETRY 21 43 21 56
     COLORS cyan brown
     INIT
       0 1 UPDATE UP TO
     END INIT
   END FIELD
   # Search cheques
-  FIELD 26 BUTTON
-    GEOMETRY 20 59 20 66
+  FIELD 27 BUTTON
+    GEOMETRY 21 59 21 66
     COLORS cyan brown
     INIT
       0 1 SEARCH
     END INIT
   END FIELD
   # Show all cheques
-  FIELD 27 BUTTON
-    GEOMETRY 20 69 20 78
+  FIELD 28 BUTTON
+    GEOMETRY 21 69 21 78
     COLORS blue brown
     INIT
       0 1 SHOW ALL
@@ -299,48 +295,56 @@ END INIT
   END FIELD
 
   # Account actions
-  FIELD 28 PUT
-    GEOMETRY 22 1 22 7
+  FIELD 29 PUT
+    GEOMETRY 23 1 23 7
     COLORS light_gray not_blink black
     INIT
       0 0 Account
     END INIT
   END FIELD
   # Create account
-  FIELD 29 BUTTON
-    GEOMETRY 22 10 22 17
+  FIELD 30 BUTTON
+    GEOMETRY 23 10 23 17
     COLORS cyan brown
     INIT
       0 1 CREATE
     END INIT
   END FIELD
   # Load account
-  FIELD 30 BUTTON
-    GEOMETRY 22 20 22 25
+  FIELD 31 BUTTON
+    GEOMETRY 23 20 23 25
     COLORS cyan brown
     INIT
       0 1 LOAD
     END INIT
   END FIELD
   # Save account
-  FIELD 31 BUTTON
-    GEOMETRY 22 28 22 33
+  FIELD 32 BUTTON
+    GEOMETRY 23 28 23 33
     COLORS cyan brown
     INIT
       0 1 SAVE
     END INIT
   END FIELD
   # Print account
-  FIELD 32 BUTTON
-    GEOMETRY 22 36 22 42
+  FIELD 33 BUTTON
+    GEOMETRY 23 36 23 42
     COLORS cyan brown
     INIT
       0 1 PRINT
     END INIT
   END FIELD
+  # Switch unit
+  FIELD 34 BUTTON
+    GEOMETRY 23 45 23 55
+    COLORS cyan brown
+    INIT
+      0 1 TO FRANCS
+    END INIT
+  END FIELD
   # Exit account
-  FIELD 33 BUTTON
-    GEOMETRY 22 45 22 50
+  FIELD 35 BUTTON
+    GEOMETRY 23 58 23 63
     COLORS cyan brown
     INIT
       0 1 EXIT
@@ -348,13 +352,27 @@ END INIT
   END FIELD
 
   # Message
-  FIELD 34 PUT
-    GEOMETRY 24 1 24 78
+  FIELD 36 PUT
+    GEOMETRY 24 1 24 65
     COLORS orange not_blink black
-INIT
-  0 0 Error
-END INIT
   END FIELD
+
+  # Yes/No
+  FIELD 37 BUTTON
+    GEOMETRY 24 69 24 73
+    COLORS cyan brown
+    INIT
+      0 1 YES
+    END INIT
+  END FIELD
+  FIELD 38 BUTTON
+    GEOMETRY 24 75 24 78
+    COLORS cyan brown
+    INIT
+      0 1 NO
+    END INIT
+  END FIELD
+
 END DESCRIPTOR
 
 
@@ -484,6 +502,241 @@ DESCRIPTOR 2
   END FIELD
 
   # Any other field here
+
+END DESCRIPTOR
+
+DESCRIPTOR 3
+
+  # Account name
+  FIELD 1 PUT
+    GEOMETRY 0 1 0 25
+    COLORS light_gray not_blink black
+  END FIELD
+  FIELD 2 PUT
+    GEOMETRY 0 26 0 26
+    COLORS light_gray not_blink black
+    INIT 
+      0 0 :
+    END INIT
+  END FIELD
+  # Nb cheques
+  FIELD 3 PUT
+    GEOMETRY 0 28 0 31
+    COLORS light_gray not_blink black
+  END FIELD
+  FIELD 4 PUT
+    GEOMETRY 0 33 0 39
+    COLORS light_gray not_blink black
+    INIT
+      0 0 cheques
+    END INIT
+  END FIELD
+  # Saved or NOT SAVED
+  FIELD 5 PUT
+    GEOMETRY 0 41 0 49
+    COLORS light_gray not_blink black
+    INIT
+      0 0 saved
+    END INIT
+  END FIELD
+
+  # Title
+  FIELD 6 PUT
+    GEOMETRY 2 23 2 31
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Operation
+    END INIT
+  END FIELD
+  # Action
+  FIELD 7 PUT
+    GEOMETRY 2 33 2 45
+    COLORS light_gray not_blink black
+  END FIELD
+
+  # Date
+  FIELD 8 PUT
+    GEOMETRY 5 2 5 6
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Date:
+    END INIT
+  END FIELD
+  FIELD 9 GET
+    GEOMETRY 5 8 5 9
+    COLORS cyan brown brown
+  END FIELD
+  FIELD 10 PUT
+    GEOMETRY 5 10 5 10
+    COLORS light_gray not_blink black
+    INIT
+      0 0 /
+    END INIT
+  END FIELD
+  FIELD 11 GET
+    GEOMETRY 5 11 5 12
+    COLORS cyan brown brown
+  END FIELD
+  FIELD 12 PUT
+    GEOMETRY 5 13 5 15
+    COLORS light_gray not_blink black
+    INIT
+      0 0 /20
+    END INIT
+  END FIELD
+  FIELD 13 GET
+    GEOMETRY 5 16 5 17
+    COLORS cyan brown brown
+  END FIELD
+
+  # Amount
+  FIELD 14 PUT
+    GEOMETRY 7 2 7 8
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Amount:
+    END INIT
+  END FIELD
+  FIELD 15 GET
+    GEOMETRY 7 10 7 21
+    COLORS cyan brown brown
+  END FIELD
+  FIELD 16 BUTTON
+    GEOMETRY 7 23 7 25
+    COLORS cyan brown
+    INIT
+      0 1 e
+    END INIT
+  END FIELD
+
+  # Kind
+  FIELD 17 PUT
+    GEOMETRY 9 2 9 7
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Kind:
+    END INIT
+  END FIELD
+  FIELD 18 BUTTON
+    GEOMETRY 9 9 9 16
+    COLORS cyan brown
+    INIT
+      0 1 Cheque
+    END INIT
+  END FIELD
+  FIELD 19 BUTTON
+    GEOMETRY 9 19 9 31
+    COLORS cyan brown
+    INIT
+      0 1 Credit Card
+    END INIT
+  END FIELD
+  FIELD 20 BUTTON
+    GEOMETRY 9 34 9 43
+    COLORS cyan brown
+    INIT
+      0 1 Transfer
+    END INIT
+  END FIELD
+  FIELD 21 BUTTON
+    GEOMETRY 9 46 9 55
+    COLORS cyan brown
+    INIT
+      0 1 Withdraw
+    END INIT
+  END FIELD
+
+  # Status
+  FIELD 22 PUT
+    GEOMETRY 11 2 11 9
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Entered:
+    END INIT
+  END FIELD
+  FIELD 23 BUTTON
+    GEOMETRY 11 11 11 15
+    COLORS cyan brown 
+    INIT
+      0 1 Yes
+    END INIT
+  END FIELD
+  FIELD 24 BUTTON
+    GEOMETRY 11 18 11 21
+    COLORS cyan brown 
+    INIT
+      0 1 No
+    END INIT
+  END FIELD
+  FIELD 25 BUTTON
+    GEOMETRY 11 24 11 32
+    COLORS cyan brown 
+    INIT
+      0 1 Defered
+    END INIT
+  END FIELD
+
+  # Destination
+  FIELD 26 PUT
+    GEOMETRY 13 2 13 13
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Destination:
+    END INIT
+  END FIELD
+  FIELD 27 GET
+    GEOMETRY 13 15 13 24
+    COLORS cyan brown brown
+  END FIELD
+
+  # Comment
+  FIELD 28 PUT
+    GEOMETRY 15 2 15 9
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Comment:
+    END INIT
+  END FIELD
+  FIELD 29 GET
+    GEOMETRY 15 11 15 30
+    COLORS cyan brown brown
+  END FIELD
+
+  # Reference
+  FIELD 30 PUT
+    GEOMETRY 17 2 17 11
+    COLORS light_gray not_blink black
+    INIT
+      0 0 Reference:
+    END INIT
+  END FIELD
+  FIELD 31 GET
+    GEOMETRY 17 13 17 22
+    COLORS cyan brown brown
+  END FIELD
+
+  # ok | ok and again | cancel
+  FIELD 32 BUTTON
+    GEOMETRY 21 13 23 25
+    COLORS cyan brown
+    INIT
+      1 5 O K
+    END INIT
+  END FIELD
+  FIELD 33 BUTTON
+    GEOMETRY 21 30 23 43
+    COLORS cyan brown
+    INIT
+      1 1 OK and AGAIN
+    END INIT
+  END FIELD
+  FIELD 34 BUTTON
+    GEOMETRY 21 48 23 60
+    COLORS cyan brown
+    INIT
+      1 1 C A N C E L
+    END INIT
+  END FIELD
 
 END DESCRIPTOR
 

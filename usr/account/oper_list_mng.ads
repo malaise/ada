@@ -1,0 +1,6 @@
+with DYNAMIC_LIST;
+with OPER_DEF;
+
+package OPER_LIST_MNG is new DYNAMIC_LIST
+      (ELEMENT_TYPE => OPER_DEF.OPER_REC);
+
