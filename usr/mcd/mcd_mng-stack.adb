@@ -38,6 +38,19 @@ package body STACK is
       raise EMPTY_STACK;
   end POP;
 
+  procedure READ (ITEM : out ITEM_REC) is
+  begin
+    STACK_LIST.READ(LIST, ITEM, STACK_LIST.CURRENT);
+    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
+      TEXT_IO.PUT ("Stack: Reading ");
+      DEBUG.PUT (ITEM);
+      TEXT_IO.NEW_LINE;
+    end if;
+  exception
+    when STACK_LIST.EMPTY_LIST =>
+      raise EMPTY_STACK;
+  end READ;
+
   function STACK_SIZE return NATURAL is
   begin
     return STACK_LIST.LIST_LENGTH(LIST);

@@ -33,6 +33,9 @@ package MCD_MNG is
    TOREAL,
    TOINTE,
 
+   ISREAL,
+   ISINTE,
+
    BOLAND,
    BOLOR,
    BOLXOR,
@@ -46,6 +49,7 @@ package MCD_MNG is
    IFTE,
   
    POPR,
+   COPYR,
    PUSHR,
 
    SSIZE,

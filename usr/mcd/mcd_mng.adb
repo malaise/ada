@@ -14,6 +14,7 @@ package body MCD_MNG is
     procedure PUSH (ITEM : in ITEM_REC);
 
     procedure POP (ITEM : out ITEM_REC);
+    procedure READ (ITEM : out ITEM_REC);
 
     function STACK_SIZE return NATURAL;
   end STACK;
@@ -53,11 +54,13 @@ package body MCD_MNG is
     function GREATEQ (L, R : ITEM_REC) return ITEM_REC;
     function SMALLEQ (L, R : ITEM_REC) return ITEM_REC;
 
-    -- INTE->REAL
+    -- INTE<->REAL
     function TOREAL  (X : ITEM_REC) return ITEM_REC;
+    function TOINTE  (X : ITEM_REC) return ITEM_REC;
 
-    -- REAL->INTE
-    function TOINTE (X : ITEM_REC) return ITEM_REC;
+    -- INTE->BOOL REAL->BOOL
+    function ISREAL  (X : ITEM_REC) return ITEM_REC;
+    function ISINTE  (X : ITEM_REC) return ITEM_REC;
 
     -- BOOL,BOOL->BOOL
     function BOLAND  (L, R : ITEM_REC) return ITEM_REC;
@@ -186,7 +189,7 @@ package body MCD_MNG is
         when SWAP =>
           POP(B); POP(A); PUSH(B); PUSH(A);
         when DUP =>
-          POP(A); PUSH(A); PUSH(A);
+          READ(A); PUSH(A);
         when POP =>
           POP(A);
 
@@ -233,6 +236,10 @@ package body MCD_MNG is
           POP(A); PUSH (OPERATIONS.TOREAL(A));
         when TOINTE =>
           POP(A); PUSH (OPERATIONS.TOINTE(A));
+        when ISREAL =>
+          POP(A); PUSH (OPERATIONS.ISREAL(A));
+        when ISINTE =>
+          POP(A); PUSH (OPERATIONS.ISINTE(A));
         when BOLAND =>
           POP(B); POP(A); PUSH (OPERATIONS.BOLAND(A,B));
         when BOLOR =>
@@ -248,6 +255,9 @@ package body MCD_MNG is
         when POPR =>
           -- A B -> store A in reg B
           POP(B); POP(A); REGISTERS.STORE(A, B);
+        when COPYR =>
+          -- A B -> store A in reg B
+          POP(B); READ(A); REGISTERS.STORE(A, B);
         when PUSHR =>
           -- A -> push content of reg B
           POP(B); PUSH(REGISTERS.RETRIEVE(B));

@@ -37,6 +37,9 @@ package body PARSER is
    TOREAL  => "$ ",
    TOINTE  => "! ",
 
+   ISREAL  => "?$",
+   ISINTE  => "?!",
+
    BOLAND  => "& ",
    BOLOR   => "| ",
    BOLXOR  => "^ ",
@@ -51,6 +54,7 @@ package body PARSER is
    SSIZE   => ". ",
   
    POPR    => "->",
+   COPYR   => "=>",
    PUSHR   => "<-",
 
    CALL    => "@ ",
