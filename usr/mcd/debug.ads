@@ -1,7 +1,7 @@
 with MCD_MNG;
 package DEBUG is
 
-  type DEBUG_LEVEL_LIST is (PARSER, INPUT, CALL, STACK, HISTORY);
+  type DEBUG_LEVEL_LIST is (PARSER, INPUT, CALL, STACK, REGISTER, HISTORY);
   DEBUG_LEVEL_ARRAY : array (DEBUG_LEVEL_LIST) of BOOLEAN;
 
   procedure INIT;
@@ -9,3 +9,4 @@ package DEBUG is
   procedure PUT (ITEM : in MCD_MNG.ITEM_REC);
 
 end DEBUG;
+
