@@ -757,6 +757,10 @@ int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
            win_id->button = 2;
         } else if (event.xbutton.button == Button3) {
            win_id->button = 3;
+        } else if (event.xbutton.button == Button4) {
+           win_id->button = 4;
+        } else if (event.xbutton.button == Button5) {
+           win_id->button = 5;
         } else {
            break; /* Next Event */
         }
