@@ -10,6 +10,9 @@
 
 #include "socket_prv.h"
 
+/* This is used to check, when closing a socket, that its fd is not */
+/*  set in wait_evt */
+/* Socket can be used without this feature (no check performed) */
 #ifndef SOCKET_NO_EVT
 #include "wait_evt.h"
 #else
@@ -22,33 +25,7 @@ static int evt_fd_set (int fd, boolean read) {
 #define MAXHOSTNAMELEN 64
 #endif
 
-/**********************************************/
-/*
-static void h_perror (const char *msg) {
-  fprintf (stderr, "%s: ", msg);
-  switch (h_errno) {
-    case HOST_NOT_FOUND :
-      fprintf (stderr, "Host not found");
-    break;
-    case TRY_AGAIN :
-      fprintf (stderr, "Try again");
-    break;
-    case NO_RECOVERY :
-      fprintf (stderr, "Nonrecoverable error");
-    break;
-    case NO_ADDRESS :
-      fprintf (stderr, "No address");
-    break;
-    default :
-      fprintf (stderr, "Unknown error");
-    break;
-  }
-  fprintf (stderr, "\n");
-}
-*/
-/**********************************************/
-
-/* Init a socket (for open and accept) */
+/* Init a socket (used by open and accept) */
 static int soc_init (soc_ptr *p_soc,
                      int fd,
                      socket_protocol protocol) {
@@ -61,7 +38,7 @@ static int soc_init (soc_ptr *p_soc,
   /* Create structure */
   *p_soc = (soc_ptr) malloc (sizeof (soc_struct));
   if (*p_soc==NULL) {
-    perror ("malloc1");
+    perror("malloc(soc_struct)");
     return (SOC_SYS_ERR);
   }
 
@@ -86,13 +63,13 @@ static int soc_init (soc_ptr *p_soc,
   (*p_soc)->rece_len = 0;
   (*p_soc)->expect_len = 0;
 
-  /* Allow UDP broadcast or TCP ReuseAddr */
+  /* Allow UDP broadcast */
   allow_sockopt = 1;
   if (protocol == udp_socket) {
     result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_BROADCAST,
                    &allow_sockopt, sizeof (allow_sockopt));
     if (result == -1) {
-      perror ("setsockopt1");
+      perror("setsockopt(so_broadcast)");
       close ((*p_soc)->socket_id);
       free (*p_soc);
       *p_soc = NULL;
@@ -100,10 +77,11 @@ static int soc_init (soc_ptr *p_soc,
     }
   }
 
+  /* Allow UDP broadcast or TCP ReuseAddr */
   result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEADDR,
                  &allow_sockopt, sizeof (allow_sockopt));
   if (result == -1) {
-    perror ("setsockopt2");
+    perror("setsockopt(so_reuseaddr)");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
@@ -112,7 +90,7 @@ static int soc_init (soc_ptr *p_soc,
 
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
-    perror ("fcntl_cloexec_open");
+    perror("fcntl_cloexec_open");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
@@ -124,8 +102,8 @@ static int soc_init (soc_ptr *p_soc,
   (*p_soc)->linked = FALSE;
   (*p_soc)->connection = not_connected;
   return (SOC_OK);
-
 }
+
 /* Open a socket */
 extern int soc_open (soc_token *p_token,
                      socket_protocol protocol) {
@@ -145,7 +123,7 @@ extern int soc_open (soc_token *p_token,
     fd = socket(AF_INET, SOCK_STREAM, 0);
   }
   if ( fd == -1) {
-    perror ("socket");
+    perror("socket");
     free (*p_soc);
     *p_soc = NULL;
     return (SOC_SYS_ERR);
@@ -172,7 +150,6 @@ extern int soc_close (soc_token *p_token) {
   free (*p_soc);
   *p_soc = NULL;
   return (SOC_OK);
-
 }
 
 /* Gets the id of a socket (for select, ioctl ... ) */
@@ -207,7 +184,7 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   /* Get status */
   status = fcntl (soc->socket_id, F_GETFL, 0);
   if (status < 0) {
-    perror ("fcntl_get_block");
+    perror("fcntl_get_block");
     return (SOC_SYS_ERR);
   }
 
@@ -220,7 +197,7 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
 
   /* Fcntl for having blocking ios */
   if (fcntl (soc->socket_id, F_SETFL, status)  == -1) {
-    perror ("fcntl_set_block");
+    perror("fcntl_set_block");
     return (SOC_SYS_ERR);
   }
 
@@ -258,7 +235,7 @@ static int soc_connect (soc_ptr soc) {
     } else if (errno == EALREADY) {
       return (SOC_CONN_ERR);
     } else {
-      perror ("connect");
+      perror("connect");
       return (SOC_SYS_ERR);
     }
   }
@@ -266,7 +243,6 @@ static int soc_connect (soc_ptr soc) {
   /* Ok */
   soc->connection = connected;
   return (SOC_OK);
-
 }
 
 
@@ -577,7 +553,7 @@ extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
   host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
   net_mask = inet_netof(host_address);
   if (net_mask == -1) {
-    perror ("inet_netof");
+    perror("inet_netof");
     return (SOC_SYS_ERR);
   }
 
@@ -593,7 +569,6 @@ extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
   strcpy (lan_name, netentp->n_name);
   /* Ok */
   return (SOC_OK);
-
 }
 
 /* Get the destination port */
@@ -701,6 +676,7 @@ extern int soc_port_of (const char *port_name,
   /* Ok */
   return (SOC_OK);
 }
+
 /* Gets local host */
 extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len) {
@@ -811,7 +787,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
       return (SOC_CONN_LOST);
     } else {
       /* Error */
-      perror ("send");
+      perror("send");
       return (SOC_SYS_ERR);
     }
   } else if (cr == len2send) {
@@ -833,7 +809,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
     len2send  -= cr;
     msg2send = malloc (len2send);
     if (msg2send == NULL) {
-      perror ("malloc2");
+      perror("malloc(len2send)");
       return (SOC_SYS_ERR);
     }
     if ( (soc->proto == tcp_header_socket)
@@ -881,7 +857,6 @@ extern int soc_resend (soc_token token) {
 
   /* Send */
   return (soc_send (token, NULL, 0));
-
 }
 
 /*******************************************************************/
@@ -918,7 +893,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
     if (errno == EADDRINUSE) {
       return (SOC_ADDR_IN_USE);
     } else {
-      perror ("bind");
+      perror("bind");
       return (SOC_SYS_ERR);
     }
   }
@@ -934,7 +909,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
   /* Listen for tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (listen (soc->socket_id, SOMAXCONN) < 0) {
-      perror ("listen");
+      perror("listen");
       return (SOC_SYS_ERR);
     }
   }
@@ -954,7 +929,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
     ipm_addr.imr_interface.s_addr = INADDR_ANY;
     if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                     (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
-      perror ("setsockopt3");
+      perror("setsockopt(ip_add_membership)");
       return (SOC_SYS_ERR);
     }
   }
@@ -994,7 +969,6 @@ extern int soc_link_service (soc_token token, const char *service) {
   /* Bind */
   return bind_and_co (token, FALSE);
 }
-
 
 /* Links the socket to a port specified by it's value */
 /* The socket must be open and not already linked */
@@ -1058,7 +1032,7 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
   /* Get the structure */
   if (getsockname (soc->socket_id,
    (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
-    perror ("getsockname");
+    perror("getsockname");
     return (SOC_SYS_ERR);
   }
 
@@ -1115,7 +1089,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
       return (SOC_CONN_LOST);
     } else {
       /* Reception error */
-      perror ("recv");
+      perror("recv");
       return (SOC_SYS_ERR);
     }
   } else if (res == 0) {
@@ -1142,7 +1116,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
       soc->rece_len = res;
       soc->rece_head = malloc (total_len);
       if (soc->rece_head == NULL) {
-        perror ("malloc3");
+        perror("malloc(total_len)");
         return (SOC_SYS_ERR);
       }
       memcpy (soc->rece_head, buffer, res);
@@ -1261,7 +1235,7 @@ extern int soc_receive (soc_token token,
       return (SOC_CONN_LOST);
     } else {
       /* Reception error */
-      perror ("recv");
+      perror("recvfrom");
       return (SOC_SYS_ERR);
     }
   } else if (result == 0) {
@@ -1310,7 +1284,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Check result */
   if (fd < 0) {
-    perror ("accept");
+    perror("accept");
     return (SOC_SYS_ERR);
   }
 
@@ -1354,7 +1328,7 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   len = sizeof (status);
   res = getsockopt(soc->socket_id, SOL_SOCKET, SO_ERROR, &status, &len);
   if (res == -1) {
-    perror ("getsockopt");
+    perror("getsockopt");
     soc->connection = not_connected;
     return (SOC_SYS_ERR);
   }
@@ -1368,6 +1342,5 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   }
 
   return (SOC_OK);
-
 }
 
