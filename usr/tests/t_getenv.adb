@@ -1,5 +1,6 @@
 with MY_IO;
 with SYS_CALLS;
+with ARGUMENT;
 procedure T_GETENV is
 
   SET : BOOLEAN;
@@ -9,7 +10,11 @@ procedure T_GETENV is
 
 begin
 
-  SYS_CALLS.GETENV ("GETENV", SET, TRU, RES, LEN);
+  if ARGUMENT.GET_NBRE_ARG = 0 then
+    SYS_CALLS.GETENV ("GETENV", SET, TRU, RES, LEN);
+  else
+    SYS_CALLS.GETENV (ARGUMENT.GET_PARAMETER(1), SET, TRU, RES, LEN);
+  end if;
   if not SET then
     MY_IO.PUT_LINE ("Not set");
   else
