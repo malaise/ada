@@ -6,8 +6,11 @@ package body Registers is
   Nb_Of_Registers : constant := 2 * 26;
   subtype Register_Range is Positive range 1 .. Nb_Of_Registers;
 
-  Registers_Array : array (Register_Range) of Item_Rec :=
-    (others => (Kind => Oper, Val_Oper => Operator_List'First));
+  Empty_Rec : constant Item_Rec
+            := (Kind => Oper, Val_Oper => Operator_List'First);
+
+  Registers_Array : array (Register_Range) of Item_Rec
+                  := (others => Empty_Rec);
 
   function Reg2Ind (Reg : in Item_Rec) return Register_Range is
   begin
@@ -51,6 +54,13 @@ package body Registers is
     end if;
     return Val;
   end Retrieve;
+
+  procedure Clear_All is
+  begin
+    for R in Registers_Array'Range loop
+      Registers_Array(R) := Empty_Rec;
+    end loop;
+  end Clear_All;
 
 end Registers;
 

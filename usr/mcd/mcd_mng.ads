@@ -62,12 +62,14 @@ package Mcd_Mng is
    Popr,
    Copyr,
    Pushr,
+   Clearreg,
 
    Pope,
    Copye,
    Pushle,
    Pushfe,
    Esize,
+   Cleare,
 
    Ifthen,
    Ifte,

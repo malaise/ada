@@ -109,10 +109,11 @@ package body Mcd_Mng is
     procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec); 
     function  Retrieve (From_Reg : in Item_Rec) return Item_Rec;
 
+    procedure Clear_All;
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
     -- INVALID_REGISTER : exception;
 
-    -- Valid contents are INTE REAL BOOL SUBP CHRS
+    -- Valid contents are INTE REAL BOOL PROG CHRS
     -- INVALID_ARGUMENT : exception;
 
     -- Nothing to retrieve
@@ -266,6 +267,14 @@ package body Mcd_Mng is
         Pop(A);
       end loop;
     end Do_Popn;
+
+    procedure Do_Clear_Extra is
+      Rec : Item_Rec;
+    begin
+     For I in 1 .. Stack.Stack_Size(False) loop
+       Stack.Pop(Rec, False);
+     end loop;
+    end Do_Clear_Extra;
 
     procedure Do_Delay(The_Delay : in Item_Rec) is
     begin
@@ -421,6 +430,8 @@ package body Mcd_Mng is
         when Pushr =>
           -- A -> push content of reg A
           Pop(A); Push(Registers.Retrieve(A));
+        when Clearreg =>
+          Registers.Clear_All;
 
         -- Stack size
         when Ssize =>
@@ -443,6 +454,8 @@ package body Mcd_Mng is
            Push( (Kind => Inte,
                   Val_Inte => My_Math.Inte(Stack.Stack_Size(
                                 Default_Stack => False))));
+        when Cleare =>
+           Do_Clear_Extra;
 
 
         -- These ones are subprogram

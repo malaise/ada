@@ -81,7 +81,6 @@ package body Parser is
    Isinte   => (Nosy, "push True if A in an integer  ", False),
    Isstr    => (Nosy, "push True if A is a string    ", False),
    Isreg    => (Nosy, "push True if A is a register  ", True),
-
  
    Ssize    => (Nosy, "push stack size               ", False),
    Swap     => (Nosy, "push A, push B                ", False),
@@ -91,13 +90,15 @@ package body Parser is
 
    Popr     => (Nosy, "B -> regA                     ", False),
    Copyr    => (Nosy, "B -> regA, push B             ", False),
-   Pushr    => (Nosy, "push regA                     ", True),
+   Pushr    => (Nosy, "push regA                     ", False),
+   Clearreg => (Nosy, "clear all registers           ", True),
 
    Pope     => (Nosy, "pop A push_extra A            ", False),
    Copye    => (Nosy, "pop A push_extra A push A     ", False),
    Pushle   => (Nosy, "pop_extra last  X push X      ", False),
    Pushfe   => (Nosy, "pop_extra first X push X      ", False),
-   Esize    => (Nosy, "push extra_stack size         ", True),
+   Esize    => (Nosy, "push extra_stack size         ", False),
+   Cleare   => (Nosy, "clear extra_stack             ", True),
 
    Ifthen   => (Nosy, "if B then push A              ", False),
    Ifte     => (Nosy, "if C then push B else push A  ", False),
