@@ -443,6 +443,9 @@ package body Sys_Calls is
   function C_Getppid return Integer;
   pragma Import (C, C_Getppid, "getppid");
 
+  function C_Kill (Dest_Pid : Integer; Signal : Integer) return Integer;
+  pragma Import (C, C_Kill, "getppid");
+
   function Get_Pid return Pid is
   begin
     return Pid(C_Getpid);
@@ -452,6 +455,15 @@ package body Sys_Calls is
   begin
     return Pid(C_Getppid);
   end Get_Parent_Pid;
+
+  procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural) is
+  begin
+    if C_Kill (Integer(Dest_Pid), Signal_No) /= 0 then
+      raise System_Error;
+    end if;
+  end Kill;
+ 
+
 
   -- Process procreation (fork)
   function C_Procreate return Integer;

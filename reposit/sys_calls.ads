@@ -107,6 +107,9 @@ package Sys_Calls is
   -- Get current / parent pid
   function Get_Pid return Pid;
   function Get_Parent_Pid return Pid;
+
+  -- Kill a process
+  procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural);
  
   -- Process procreation (fork)
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid);
