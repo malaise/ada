@@ -1,5 +1,6 @@
 #include "x_screen.h"
 #include "x_color.h"
+#include "x_font.h"
 
 #define STD_MASK GCForeground | GCBackground | GCFont
 

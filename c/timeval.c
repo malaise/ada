@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <stdio.h>
 #include "timeval.h"
 
 #define MILLION  1000000

@@ -186,7 +186,7 @@ extern int soc_receive (soc_token token,
 
 /* Tcp specific calls */
 
-/* Accept a connection.
+/* Accept a connection. */
 /* The socket must be open, tcp or tcp_header and linked */
 /* A new socket is created (tcp or tcp_header, same as token) with dest set */
 extern int soc_accept (soc_token token, soc_token *p_token);

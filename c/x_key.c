@@ -3,6 +3,7 @@
 
 #include "x_key.h"
 #include <X11/keysym.h>
+#include <X11/Xutil.h>
 
 
 #define HIG_BYTE 0xFF00

@@ -22,7 +22,8 @@
 void print_date (void) {
   timeout_t cur_time;
   get_time (&cur_time);
-  printf ("    >> %06d %06d << ",cur_time.tv_sec, cur_time.tv_usec);
+  printf ("    >> %06d %06d << ", (int)cur_time.tv_sec,
+                                  (int)cur_time.tv_usec);
 }
 
 /***** Blinking management *****/
@@ -135,14 +136,14 @@ extern boolean x_fd_set (int fd, boolean read) {
 
 /***** Event management *****/
 
-/* Makes a select between the sockets described in the global mask AND the */
-/*  the socket used by X for the events */
-/* The time out is in miliseconds (negative for blocking )
+/* Makes a select between the sockets described in the global mask AND the  */
+/*  the socket used by X for the events                                     */
+/* The time out is in miliseconds (negative for blocking )                  */
 /* If a X event is available, *p_fd is set to X_EVENT (-1) and read to true */
-/* Else *p_fd is set to one valid fd on which there is an event and */
-/*  read is set accordingly */
-/* Else *p_fd is set to NO_EVENT (-2) and read is meaningless */
-/* Failure if select fails */
+/* Else *p_fd is set to one valid fd on which there is an event and         */
+/*  read is set accordingly                                                 */
+/* Else *p_fd is set to NO_EVENT (-2) and read is meaningless               */
+/* Failure if select fails                                                  */
 
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   fd_set select_read_mask, select_write_mask;

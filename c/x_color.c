@@ -130,6 +130,7 @@ int col_get_std (int background, int foreground, unsigned long color_id[]) {
         return (color_id[foreground]);
       break;
     }
+    return (-1);
 }
 
 /* Gives the blinking value for a color */
@@ -146,6 +147,7 @@ int col_get_blk (int background, int foreground, unsigned long color_id[]) {
         return (color_id[foreground]);
       break;
     }
+    return (-1);
 }
 
 /* Sets the color map in non_blinking or in blinking state */
