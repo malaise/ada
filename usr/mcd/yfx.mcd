@@ -1,0 +1,51 @@
+# The function
+[ dup * 10.0 - ] F popr
+
+# Epsilon
+1.0E-10 e popr
+2.010 format
+
+# Error and quit
+[ [ Error, 2 real arguments expected: f(i) * f(j) < 0 ] putl
+ssize popn retall ] E popr
+
+# Check 2 args
+ssize 2 /= E pushr ifcall
+
+# Store args j=max, i=min
+j popr i popr
+
+# Check they can be reals
+i pushr dup isinte [ toreal ] ifcall
+dup isreal ~ [ pop E pushr call ] ifcall i popr
+j pushr dup isinte [ toreal ] ifcall
+dup isreal ~ [ pop E pushr call ] ifcall j popr
+
+# Check f(i) * f(j) < 0.0
+i pushr F pushr call a copyr j pushr F pushr call b copyr *
+0.0 >= E pushr ifcall
+
+# Sort f(i) < f(j)
+a pushr b pushr > [ i pushr j pushr i popr j popr ] ifcall
+
+# Abs
+[ dup 0.0 < [ +- ] ifcall ] A popr
+
+# The main algo
+[
+# Compute (i+j)/2
+i pushr j pushr + 2.0 /
+# Abs(i - j) <= epsilon? If yes, this is the end
+i pushr j pushr - A pushr call e pushr <= [ putl retall ] ifcall
+# r=f((i+j)/2)
+dup F pushr call
+
+# Replace i by (i+j)/2 if r<0, else replace j
+0.0 > j i ifte popr
+
+# Loop
+L pushr retacal
+] L popr
+
+L pushr call
+
