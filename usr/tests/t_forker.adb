@@ -77,7 +77,7 @@ begin
   Req_Num := 0;
   loop  
     Ada.Text_Io.New_Line;
-    Ada.Text_Io.Put("Start Kill Read (s k r) ? ");
+    Ada.Text_Io.Put("Start Kill Exit Ping Read (s k e p r) ? ");
     Ada.Text_Io.Get_Line (Buff, Len);
 
     if Len = 1 and then Buff(1) = 's' then
@@ -185,6 +185,27 @@ begin
 
       My_Send (Soc, Req);
 
+    elsif Len = 1 and then Buff(1) = 'e' then
+      Req := (Kind => Forker.Forker_Exit_Request,
+              Forker_Exit_Data => (Exit_Code => 0) );
+      loop
+        Ada.Text_Io.Put ("Exit code ? ");
+        Ada.Text_Io.Get_Line (Buff, Len);
+        begin
+          Req.Forker_Exit_Data.Exit_Code := Natural'Value(Buff(1 .. Len));
+          exit;
+        exception
+          when others => null;
+        end;
+      end loop;
+
+      My_Send (Soc, Req);
+
+    elsif Len = 1 and then Buff(1) = 'p' then
+      Req := (Kind => Forker.Ping_Request);
+
+      My_Send (Soc, Req);
+
     elsif Len = 1 and then Buff(1) = 'r' then
       begin
         My_Receive (Soc, Rep, Len, False);
@@ -209,8 +230,13 @@ begin
             Forker.Decode_Exit (Rep.Exit_Result.Status, Cause, Code);
             Ada.Text_Io.Put_Line ("Exit: command"
               & Natural'Image(Rep.Exit_Result.Number)
+              & " pid" & Forker.Pid_Result'Image(Rep.Exit_Result.Exit_Pid)
               & " Cause " & Lower_Str(Forker.Exit_Cause_List'Image(Cause))
               & " Code" & Natural'Image(Code));
+          when Forker.Forker_Exit_Report =>
+            Ada.Text_Io.Put_Line ("Forker exited");
+          when Forker.Pong_Report =>
+            Ada.Text_Io.Put_Line ("Pong");
         end case;
       end if;
 

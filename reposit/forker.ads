@@ -11,7 +11,8 @@ package Forker is
   -- REQUEST --
   -------------
   -- Request kind
-  type Request_List is (Start_Request, Kill_Request);
+  type Request_List is (Start_Request, Kill_Request,
+                        Forker_Exit_Request, Ping_Request);
 
   -- Sizing: Program-arguments and Environ are stored at format
   -- <field>Nul<field>Nul ... <field>NulNul
@@ -52,6 +53,11 @@ package Forker is
     Signal : Natural;
   end record;
 
+  -- Forker exit request
+  type Forker_Exit_Request_Rec is record
+    Exit_Code : Natural;
+  end record;
+
   -- Request
   type Request_Rec (Kind : Request_List := Start_Request) is record
     case Kind is
@@ -59,6 +65,10 @@ package Forker is
         Start_Data : Start_Request_Rec;
       when Kill_Request =>
         Kill_Data : Kill_Request_Rec;
+      when Forker_Exit_Request =>
+        Forker_Exit_Data : Forker_Exit_Request_Rec;
+      when Ping_Request =>
+        null;
     end case;
   end record;
 
@@ -67,7 +77,8 @@ package Forker is
   -- REPORT --
   ------------
   -- Report kind
-  type Report_List is (Start_Report, Kill_Report, Exit_Report);
+  type Report_List is (Start_Report, Kill_Report, Exit_Report,
+                       Forker_Exit_Report, Pong_Report);
   -- Started/killed pid or -1 if error
   subtype Pid_Result is Integer range -1 .. Integer'Last;
 
@@ -86,6 +97,7 @@ package Forker is
   -- Exit report
   type Exit_Report_Rec is record
     Number : Command_Number;
+    Exit_Pid : Pid_Result;
     Status : Integer;
   end record;
 
@@ -98,6 +110,10 @@ package Forker is
         Kill_Result : Kill_Report_Rec;
       when Exit_Report =>
         Exit_Result : Exit_Report_Rec;
+      when Forker_Exit_Report =>
+        null;
+      when Pong_Report =>
+        null;
     end case;
   end record;
 
