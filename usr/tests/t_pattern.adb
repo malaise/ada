@@ -64,10 +64,14 @@ procedure T_Pattern is
         return False;
     end;
 
-    Pattern.Set (Rule,
-                 New_Pa,
-                 Parse (Str(Last + 1 .. Str'Last)),
-                 Cli'Unrestricted_Access);
+    if Last = 0 then
+      Pattern.Set (Rule, New_Pa, "", Cli'Unrestricted_Access);
+    else
+      Pattern.Set (Rule,
+                   New_Pa,
+                   Parse (Str(Last + 1 .. Str'Last)),
+                   Cli'Unrestricted_Access);
+    end if;
     return False;
   end Set;
 
@@ -100,9 +104,15 @@ procedure T_Pattern is
                 It : in Parser.Iterator) return Boolean is
     Str : constant String := Parser.Image (It);
     First : constant Natural := Parser.First_Index (It);
+    Res : Boolean;
   begin
     -- Check remaining of string
-    if Pattern.Check (Rule, Parse (Str(First .. Str'Last))) then
+    if Parser.Last_Index (It) = 0 then
+      Res := Pattern.Check (Rule, "");
+    else
+      Res := Pattern.Check (Rule, Parse (Str(First .. Str'Last)));
+    end if;
+    if Res then
       Ada.Text_Io.Put_Line ("Check ok");
     else
       Ada.Text_Io.Put_Line ("Check nok");
@@ -142,7 +152,6 @@ procedure T_Pattern is
                 It : in Parser.Iterator) return Boolean is
   begin
     if Parser.Current_Word (It) = "" then
-      Pattern.Del_Rule (Rule);
       Ada.Text_Io.Put_Line ("Exiting");
       Done := True;
     else
@@ -165,10 +174,10 @@ begin
   Pattern.Set (Mr, 20, "del",   Del'Unrestricted_Access);
   Pattern.Set (Mr, 30, "check", Che'Unrestricted_Access);
   Pattern.Set (Mr, 40, "help",  Hel'Unrestricted_Access);
-  Pattern.Set (Mr, 50, "exit",  Exi'Unrestricted_Access);
-  Pattern.Set (Mr, 60, "",      Def'Unrestricted_Access, 60);
-  Pattern.Set (Mr, 51, "quit",  Exi'Unrestricted_Access, 60);
-  Pattern.Set (Mr, 52, "q",     Exi'Unrestricted_Access, 60);
+  Pattern.Set (Mr, 50, "exit",  Exi'Unrestricted_Access, 50);
+  Pattern.Set (Mr, 60, "",      Def'Unrestricted_Access);
+  Pattern.Set (Mr, 51, "quit",  Exi'Unrestricted_Access, 50);
+  Pattern.Set (Mr, 52, "q",     Exi'Unrestricted_Access, 50);
 
   -- Set rule
   Rule := Pattern.Get_Free_Rule;
@@ -182,10 +191,10 @@ begin
     exception
       when Pattern.Invalid_Pattern =>
         Ada.Text_Io.Put_Line ("EXCEPTION: Invalid_Pattern");
-      when Pattern.Pattern_Exists =>
-        Ada.Text_Io.Put_Line ("EXCEPTION: Pattern_Exists");
     end;
   end loop;
+  Pattern.Del_Rule (Mr);
+  Pattern.Del_Rule (Rule);
 
 end T_Pattern;
 
