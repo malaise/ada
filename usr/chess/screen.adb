@@ -1,10 +1,14 @@
-with Ada.Calendar, Ada.Text_Io;
+with Ada.Calendar;
 
 with Big_Con_Io, Normal, Lower_Str, Lower_Char, Upper_Char, Day_Mng;
 
 with Pieces, Space.Board, Image, Debug;
 
 package body Screen is
+
+  -- Text or Graphic
+  -- Graphic_Mode : constant Boolean := False;
+  Graphic_Mode : constant Boolean := True;
 
   package Con_Io renames Big_Con_Io;
 
@@ -50,10 +54,6 @@ package body Screen is
     end case;
   end record;
 
-  -- Text and Graphic
-  Graphic_Mode : constant Boolean := False;
-  -- Graphic_Mode : constant Boolean := True;
-
   -- Mouse event
   type Mouse_Event_List is (Discard, Release_Out, Click, Release);
   type Mouse_Event_Rec (Kind : Mouse_Event_List := Discard) is record
@@ -70,7 +70,7 @@ package body Screen is
     procedure Display_Square (Color : in Space.Color_List;
                               Square : in Space.Square_Coordinate);
     function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec;
-    procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean);
+    procedure Display_Promotion (Move_Color : in Space.Color_List);
     function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List;
   end Text;
   package body Text is separate;
@@ -79,7 +79,7 @@ package body Screen is
     procedure Display_Square (Color : in Space.Color_List;
                               Square : in Space.Square_Coordinate);
     function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec;
-    procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean);
+    procedure Display_Promotion (Move_Color : in Space.Color_List);
     function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List;
   end Graphic;
   package body Graphic is separate;
@@ -111,12 +111,12 @@ package body Screen is
     end if;
   end Get_Mouse_Event;
 
-  procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean) is
+  procedure Display_Promotion (Move_Color : in Space.Color_List) is
   begin
     if Graphic_Mode then
-      Graphic.Display_Promotion (Color, Show);
+      Graphic.Display_Promotion (Move_Color);
     else
-      Text.Display_Promotion (Color, Show);
+      Text.Display_Promotion (Move_Color);
     end if;
   end Display_Promotion;
 
@@ -156,7 +156,6 @@ package body Screen is
     for N in Squares'Range loop
       Display_Square(Color, Squares(N));
     end loop;
-    Con_Io.Flush;        
   end Update_Board;
 
 
@@ -199,7 +198,7 @@ package body Screen is
   
   -- Get, Ack, Wait
   procedure Erase is
-    Erase_Str :  constant String (1 .. 80) := (others => ' ');
+    Erase_Str :  constant String (1 .. 50) := (others => ' ');
   begin
     Con_Io.Move (23, 1);
     Con_Io.Put (Erase_Str, Foreground => Main_Back);
@@ -208,7 +207,8 @@ package body Screen is
   -- Mouse 
   Clicked_Pos, Released_Pos : Square_Result_Rec;
   Clicked_Promo, Released_Promo : Pieces.Piece_Kind_List;
-  procedure Manage_Mouse (Color : in Space.Color_List;
+  procedure Manage_Mouse (Disp_Color : in Space.Color_List;
+                          Move_Color : Space.Color_List;
                           From, To : out Square_Result_Rec;
                           Promo    : out Pieces.Piece_Kind_List) is
     Mouse_Event : Mouse_Event_Rec;
@@ -222,7 +222,7 @@ package body Screen is
     Promo := Pieces.Pawn;
 
     if not Getting_Promotion then
-      Mouse_Event := Get_Mouse_Event (Color);
+      Mouse_Event := Get_Mouse_Event (Disp_Color);
       case Mouse_Event.Kind is
         when Click =>
           Clicked_Pos := (True, Mouse_Event.Square);
@@ -239,13 +239,13 @@ package body Screen is
           -- OK. Store release and check promotion
           Released_Pos := (True, Mouse_Event.Square);
           if Pieces.Id_Of(Piece.all).Kind = Pieces.Pawn
-          and then ( (Color = Space.White
+          and then ( (Move_Color = Space.White
                       and then Released_Pos.Square.Row = 8)
-                    or else (Color = Space.Black
+                    or else (Move_Color = Space.Black
                              and then Released_Pos.Square.Row = 1) ) then
             -- Put promotion
             Getting_Promotion := True;
-            Display_Promotion (Color, True);
+            Display_Promotion (Move_Color);
             Clicked_Promo := Pieces.Pawn;
             Released_Promo := Pieces.Pawn;
           else
@@ -265,7 +265,7 @@ package body Screen is
         Released_Promo := Get_Promotion (False);
         if Clicked_Promo /= Pieces.Pawn and then Clicked_Promo = Released_Promo then
           Getting_Promotion := False;
-          Display_Promotion (Color, False);
+          Display_Promotion (Move_Color);
           From := Clicked_Pos;
           To := Released_Pos;
           Promo := Clicked_Promo;
@@ -279,7 +279,8 @@ package body Screen is
 
 
 
-  function Get (Color : Space.Color_List) return Players.Action_Rec is
+  function Get (Disp_Color : Space.Color_List;
+                Move_Color : Space.Color_List) return Players.Action_Rec is
     Str  : String (1 .. 5);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
@@ -295,14 +296,18 @@ package body Screen is
 
     use type Con_Io.Curs_Mvt, Space.Color_List;
   begin
+    Clicked_Pos := (Valid => False);
+    Getting_Promotion := False;
+    Display_Promotion (Move_Color);
+
     Str := (others => ' ');
     Ins := False;
     Pos := 1;
 
-    Put_Time (Color);
+    Put_Time (Move_Color);
 
     loop
-      Con_Io.Set_Foreground (Fore (Color));
+      Con_Io.Set_Foreground (Fore (Move_Color));
       Con_Io.Set_Background (Main_Back);
       Con_Io.Move (23, 1);
       Con_Io.Put ("Move:");
@@ -310,7 +315,7 @@ package body Screen is
       Con_Io.Move (23, 7);
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => (Con_Io.Delay_Sec, 0.1));
-      Put_Time (Color);
+      Put_Time (Move_Color);
       if Stat = Con_Io.Ret then
         if Str(1) = ' ' then
           Str(1 .. Str'Length-1) := Str(2 .. Str'Length);
@@ -348,23 +353,29 @@ package body Screen is
         end if;
 
         if Conv_Ok then
-          Action := Players.Find_Action (Color, From, To, Promo);
+          Action := Players.Find_Action (Move_Color, From, To, Promo);
           if Action.Valid then
             Erase;
+            Getting_Promotion := False;
+            Display_Promotion (Move_Color);
             return Action;
           end if;
         end if;
       elsif Stat = Con_Io.Mouse_Button then
-        Manage_Mouse (Color, Mouse_From, Mouse_To, Promo);
+        Manage_Mouse (Disp_Color, Move_Color, Mouse_From, Mouse_To, Promo);
         if Mouse_From.Valid then
-          Action := Players.Find_Action (Color, Mouse_From.Square, Mouse_To.Square, Promo);
+          Action := Players.Find_Action (Move_Color,
+                        Mouse_From.Square, Mouse_To.Square, Promo);
           if Action.Valid then
             Erase;
+            Getting_Promotion := False;
+            Display_Promotion (Move_Color);
             return Action;
           end if;
         end if;
       elsif Stat = Con_Io.Refresh then
-        Display_Board (Color);
+        Display_Board (Disp_Color);
+        Display_Promotion (Move_Color);
       elsif Stat = Con_Io.Break then
         Erase;
         return (Valid => False);
@@ -373,7 +384,8 @@ package body Screen is
 
   end Get;
 
-  procedure Put (Color : in Space.Color_List;
+  procedure Put (Disp_Color : in Space.Color_List;
+                 Move_Color : in Space.Color_List;
                  Message : in String; Ack : in Boolean := False) is
     Str  : String (1 .. 0);
     Last : Natural;
@@ -387,16 +399,17 @@ package body Screen is
   begin
     if Ack then
       Timeout := Con_Io.Infinite_Delay;
-      Erase_Time (Color);
+      Erase_Time (Move_Color);
     else
       Timeout := (Con_Io.Delay_Sec, 1.0);
-      Put_Time (Color);
+      Put_Time (Move_Color);
     end if;
     Ins := False;
+    Put_Time (Move_Color);
 
     loop
       Con_Io.Set_Background (Main_Back);
-      Con_Io.Set_Foreground (Fore (Color));
+      Con_Io.Set_Foreground (Fore (Move_Color));
       Con_Io.Move (23, 1);
       Con_Io.Put (Message);
 
@@ -404,13 +417,14 @@ package body Screen is
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => Timeout);
       if not Ack then
-        Put_Time (Color);
+        Put_Time (Move_Color);
       end if;
       if Stat = Con_Io.Ret or else Stat = Con_Io.Timeout then
         Erase;
         return;
       elsif Stat = Con_Io.Refresh then
-        Display_Board (Color);
+        Display_Board (Disp_Color);
+        Display_Promotion (Move_Color);
       elsif Stat = Con_Io.Break then
         Erase;
         return;
@@ -419,7 +433,8 @@ package body Screen is
   end Put;
 
   -- Wait a bit
-  procedure Wait (Color : Space.Color_List) is
+  procedure Wait (Disp_Color : in Space.Color_List;
+                  Move_Color : in Space.Color_List) is
     Str  : String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
@@ -432,7 +447,7 @@ package body Screen is
   begin
     Timeout := (Con_Io.Delay_Sec, 0.5);
     Ins := False;
-    Put_Time (Color);
+    Put_Time (Move_Color);
 
     loop
       Con_Io.Set_Background (Main_Back);
@@ -442,11 +457,12 @@ package body Screen is
       Pos := 1;
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => Timeout);
-      Put_Time (Color);
+      Put_Time (Move_Color);
       if Stat = Con_Io.Fd_Event then
         return;
       elsif Stat = Con_Io.Refresh then
-        Display_Board (Color);
+        Display_Board (Disp_Color);
+        Display_Promotion (Move_Color);
       end if;
     end loop;
   end Wait;
@@ -457,6 +473,7 @@ package body Screen is
   begin
     Moves.Add_Move (Color, Action, Result);
     Moves.Put_Moves;
+    Con_Io.Flush;
   end Put_Move;
     
   procedure Close is

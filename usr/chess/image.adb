@@ -17,9 +17,10 @@ package body Image is
 
   -- Return Pawn if not found
   function Piece_Value (Char : in Character) return Pieces.Piece_Kind_List is
+    use type Pieces.Piece_Kind_List;
   begin
-    for Piece in Pieces.Promotion_Piece_List loop
-      if Char = Piece_Image (Piece)(1) then
+    for Piece in Pieces.Piece_Kind_List loop
+      if Piece /= Pieces.Pawn and then Char = Piece_Image (Piece)(1) then
         return Piece;
       end if;
     end loop;

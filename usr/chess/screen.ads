@@ -13,11 +13,13 @@ package Screen is
   procedure Reset_Time;
 
   -- Get a movement
-  function Get (Color : Space.Color_List) return Players.Action_Rec;
+  function Get (Disp_Color : Space.Color_List;
+                Move_Color : Space.Color_List) return Players.Action_Rec;
 
   -- Put message and wait (a bit or until return)
   -- Time is erased if Ack
-  procedure Put (Color : Space.Color_List;
+  procedure Put (Disp_Color : in Space.Color_List;
+                 Move_Color : in Space.Color_List;
                  Message : in String; Ack : in Boolean := False);
 
   -- Put a move
@@ -26,7 +28,8 @@ package Screen is
                       Result : in Game.Move_Status_List);
 
   -- Wait for a Fd event
-  procedure Wait (Color : Space.Color_List);
+  procedure Wait (Disp_Color : in Space.Color_List;
+                  Move_Color : in Space.Color_List);
 
   -- Close the board
   procedure Close;

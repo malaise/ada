@@ -1,3 +1,4 @@
+with Ada.Text_Io;
 separate (Screen)
 
 package body Graphic is
@@ -10,9 +11,15 @@ package body Graphic is
   Size : Constant Natural := 45;
   Size2 : Constant Natural := Size / 2;
   Len  : Constant Natural := 8 * Size;
+
+  -- Offsets (middle of square)
   X0 : constant Con_Io.Graphics.X_Range := 60;
   -- Set at init
   Y0 :  Con_Io.Graphics.Y_Range;
+
+  Promotion_X : constant Con_Io.Graphics.X_range := 495;
+  Promotion_Y_Offset :  Con_Io.Graphics.Y_Range;
+
   -- For characters
   X_Offset : Natural;
   Y_Offset : Natural;
@@ -24,14 +31,42 @@ package body Graphic is
   begin            
     if Color = Space.White then 
       return (X => X0 + Space.Col_Range'Pos(Square.Col) * Size,
-              Y => Y0 + Space.Row_Range'Pos(Square.Row) * Size);
+              Y => Y0 + (Space.Row_Range'Pos(Square.Row) - 1) * Size);
     else   
       return (X => X0 + (Space.Col_Range'Pos(Space.Col_Range'Last)
                        - Space.Col_Range'Pos(Square.Col)) * Size,
               Y => Y0 + (Space.Row_Range'Pos(Space.Row_Range'Last)
-                       - Space.Row_Range'Pos(Square.Row) + 1) * Size);
+                       - Space.Row_Range'Pos(Square.Row)) * Size);
     end if; 
   end To_Con_Io_Square;
+
+  function To_Space_Square (Color : Space.Color_List;
+                            X : Con_Io.Graphics.X_Range;
+                            Y : Con_Io.Graphics.Y_Range)
+                           return Square_Result_Rec is
+    Result : Square_Result_Rec (True);
+    use type Space.Color_List;
+  begin
+    if      X <  X0 - Size2
+    or else X >= X0 + Len - Size2
+    or else Y <  Y0 - Size2
+    or else Y >= Y0 + Len - Size2 then
+      return (Valid => False);
+    end if;
+    if Color = Space.White then
+      Result.Square.Col := Space.Col_Range'Val ((X + Size2  - X0) / Size);
+      Result.Square.Row := Space.Row_Range'Val ((Y + Size2  - Y0) / Size + 1);
+    else
+      Result.Square.Col :=
+           Space.Col_Range'Val (Space.Col_Range'Pos(Space.Col_Range'Last)
+                              - ((X + Size2  - X0) / Size));
+      Result.Square.Row :=
+           Space.Row_Range'Val (Space.Row_Range'Pos(Space.Row_Range'Last)
+                              - (Y + Size2  - Y0) / Size);
+    end if;
+    return Result;
+  end To_Space_Square;
+
 
   procedure Display_Square (Color : in Space.Color_List;
                             Square : in Space.Square_Coordinate) is
@@ -54,10 +89,6 @@ package body Graphic is
     -- Fill square
     Con_Io.Set_Foreground (Back);
     Con_Io.Set_Background (Back);
---    for X in Pos.X - Size2 .. Pos.X + Size2 loop
---      Con_Io.Graphics.Draw_Line (X, Pos.Y - Size2,
---                                 X, Pos.Y + Size2);
---    end loop;
     Con_Io.Graphics.Fill_Rectangle (Pos.X - Size2, Pos.Y - Size2,
                                     Pos.X + Size2, Pos.Y + Size2);
 
@@ -99,9 +130,10 @@ package body Graphic is
     use type Space.Color_List;
   begin
     -- Compute offsets
-    Y0 := Con_Io.Graphics.Y_Max - X0 - Len;
+    Y0 := Con_Io.Graphics.Y_Max - X0 - Len + Size;
     X_Offset := Con_Io.Graphics.Font_Width  / 2;
     Y_Offset := (Con_Io.Graphics.Font_Height - Con_Io.Graphics.Font_Offset) / 2 + 4;
+    Promotion_Y_Offset := Y0 + Size;
 
     -- Print Rows/Cols names
     if Color = Space.White then
@@ -130,19 +162,121 @@ package body Graphic is
       
   end Init_Board;
 
-  procedure Display_Promotion (Color : in Space.Color_List; Show : in Boolean) is
+  procedure Display_Promotion (Move_Color : in Space.Color_List) is
+    Fore : Con_Io.Effective_Colors;
+    Back : Con_Io.Effective_Basic_Colors;
+    use type Space.Color_List;
+    use type Con_IO.Colors;
   begin
-    null;
+    if Getting_Promotion then
+      if Move_Color = Space.White then
+        Back := Back_White;
+        Fore := Fore_White;
+      else
+        Fore := Fore_Black;
+        Back := Back_Black;
+      end if;
+      for P in Pieces.Promotion_Piece_List loop
+        Con_Io.Set_Foreground (Back);
+        Con_Io.Set_Background (Back);
+        Con_Io.Graphics.Fill_Rectangle (
+               Promotion_X - Size2,
+               Promotion_Y_Offset
+                + Pieces.Promotion_Piece_List'Pos(P) * Size
+                - Size2,
+               Promotion_X + Size2,
+                Promotion_Y_Offset
+                + Pieces.Promotion_Piece_List'Pos(P) * Size
+                + Size2);
+
+        if Back = Back_White then
+          Back := Back_Black;
+        else
+          Back := Back_White;
+        end if;
+
+        Con_Io.Set_Foreground (Fore);
+        Con_Io.Graphics.Put(Image.Piece_Image(P)(1),
+                            Promotion_X - X_Offset,
+                            Promotion_Y_Offset
+                             + Pieces.Promotion_Piece_List'Pos(P) * Size
+                             - Y_Offset);
+      end loop;
+    
+    else
+      Con_Io.Set_Foreground (Main_Back);
+      Con_Io.Graphics.Fill_Rectangle (
+          Promotion_X - Size2,
+          Promotion_Y_Offset
+           + Pieces.Promotion_Piece_List'Pos(
+               Pieces.Promotion_Piece_List'First) * Size
+           - Size2,
+          Promotion_X + Size2,
+          Promotion_Y_Offset
+           + Pieces.Promotion_Piece_List'Pos(
+               Pieces.Promotion_Piece_List'Last) * Size
+           + Size2);
+    end if;
+
   end Display_Promotion;
 
   function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec is
+    Con_Io_Rec : Con_Io.Mouse_Event_Rec;
+    Got_Square : Square_result_Rec;
+    Result : Mouse_Event_Rec;
+    use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
-    return (Kind => Discard);
+    -- Get and check Con_Io event
+    Con_Io.Get_Mouse_Event (Con_Io_Rec, Con_Io.X_Y);
+    if Con_Io_Rec.Button /= Con_Io.Left
+    or else Con_Io_Rec.Status = Con_Io.Motion then
+      return (Kind => Discard);
+    end if;
+    if not Con_Io_Rec.Valid then
+      return (Kind => Release_Out);
+    end if;
+
+    Got_Square := To_Space_Square (Color, Con_Io_Rec.X, Con_Io_Rec.Y);
+    if not Got_Square.Valid then
+      if Con_Io_Rec.Status = Con_Io.Pressed then
+        return (Kind => Discard);
+      else
+        return (Kind => Release_Out);
+      end if;
+    else
+      if Con_Io_Rec.Status = Con_Io.Pressed then
+        return (Click, Got_Square.Square);
+      else
+        return (Release, Got_Square.Square);
+      end if;
+    end if;
   end Get_Mouse_Event;
 
   function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List is
+    Con_Io_Rec : Con_Io.Mouse_Event_Rec;
+    use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
+    Con_Io.Get_Mouse_Event (Con_Io_Rec, Con_Io.X_Y);
+    if Con_Io_Rec.Valid
+    and then Con_Io_Rec.Button = Con_Io.Left
+    and then Con_Io_Rec.X >= Promotion_X - Size2
+    and then Con_Io_Rec.X <  Promotion_X + Size2
+    and then Con_Io_Rec.Y >= Promotion_Y_Offset
+                             + Pieces.Promotion_Piece_List'Pos(
+                                 Pieces.Promotion_Piece_List'First) * Size
+                             - Size2
+    and then Con_Io_Rec.Y <  Promotion_Y_Offset
+                             + Pieces.Promotion_Piece_List'Pos(
+                                 Pieces.Promotion_Piece_List'Last) * Size
+                             + Size2 then
+      if (Click and then Con_Io_Rec.Status = Con_Io.Pressed)
+      or else (not Click and then Con_Io_Rec.Status = Con_Io.Released) then
+        return Pieces.Promotion_Piece_List'Val(
+           (Con_Io_Rec.Y + Size2 - Promotion_Y_Offset) / Size);
+      end if;
+    end if;
     return Pieces.Pawn;
   end Get_Promotion;
+
 end Graphic;
 

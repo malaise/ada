@@ -42,13 +42,17 @@ package body Text is
       return (Valid => False);
     end if;
     if Color = Space.White then 
-      Result.Square.Row := Space.Row_Range'Val(Space.Row_Range'Pos(Space.Row_Range'Last)
-                                            - (Con_Io_Square.Row - Screen_Row_Offset));
-      Result.Square.Col := Space.Col_Range'Val(Con_Io_Square.Col - Screen_Col_Offset);
+      Result.Square.Row :=
+           Space.Row_Range'Val(Space.Row_Range'Pos(Space.Row_Range'Last)
+                             - (Con_Io_Square.Row - Screen_Row_Offset));
+      Result.Square.Col :=
+           Space.Col_Range'Val(Con_Io_Square.Col - Screen_Col_Offset);
     else
-      Result.Square.Row := Space.Row_Range'Val(Con_Io_Square.Row - Screen_Row_Offset + 1);
-      Result.Square.Col := Space.Col_Range'Val(Space.Col_Range'Pos(Space.Col_Range'Last)
-                                            - (Con_Io_Square.Col - Screen_Col_Offset));
+      Result.Square.Row :=
+           Space.Row_Range'Val(Con_Io_Square.Row - Screen_Row_Offset + 1);
+      Result.Square.Col :=
+           Space.Col_Range'Val(Space.Col_Range'Pos(Space.Col_Range'Last)
+                             - (Con_Io_Square.Col - Screen_Col_Offset));
     end if;
     return Result;
   end To_Space_Square;
@@ -147,16 +151,13 @@ package body Text is
       Con_Io.Move(Screen_Row_Offset - 2, Con_Col);
       Put (Col);
     end loop;
-    if Getting_Promotion then
-      Display_Promotion (Color, True);
-    end if;
   end Init_Board;
 
-  procedure Display_Promotion (Color : Space.Color_List; Show : in Boolean) is
+  procedure Display_Promotion (Move_Color : Space.Color_List) is
     Fore : Con_Io.Effective_Colors;
     use type Space.Color_List;
   begin
-    if Color = Space.White then
+    if Move_Color = Space.White then
       Fore := Fore_White;
     else
       Fore := Fore_Black;
@@ -164,7 +165,7 @@ package body Text is
     for P in Pieces.Promotion_Piece_List loop
       Con_Io.Move (Promotion_Row_Offset + Pieces.Promotion_Piece_List'Pos(P),
                    Promotion_Col);
-      if Show then
+      if Getting_Promotion then
         Con_Io.Put (Image.Piece_Image(P)(1),
                     Foreground => Fore, Background => Main_Back);
       else

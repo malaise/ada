@@ -7,10 +7,11 @@ package body Human is
 
   Default_File_Name : constant String := "Default.chs";
 
+  Mode : Play_Mode;
   Color : Space.Color_List;
+
   Move_Color : Space.Color_List;
   The_End : Boolean := False;
-  Server : Boolean;
 
   procedure Do_Play;
   procedure Do_Wait;
@@ -19,68 +20,84 @@ package body Human is
   procedure Save_If_Server (Action : in Game.Valid_Action_Rec;
                             Result : in Game.Move_Status_List);
 
-  procedure Play (Server_Name : in String;
-                  File_Name   : in String;
-                  Color  : in Space.Color_List) is
+  procedure Play (Mode  : in Play_Mode;
+                  Color : in Space.Color_List;
+                  Name  : in string) is
     use type Space.Color_List; 
   begin
-    Server := Server_Name = "";
+    Human.Mode := Mode;
     Human.Color := Color;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("Human start. Color is " & Space.Color_List'Image(Human.Color)
-         & " and server is " & Boolean'Image(Server));
+      Ada.Text_Io.Put_Line ("Human start in mode " & Play_Mode'Image(Mode)
+         & " with color " & Space.Color_List'Image(Color));
     end if;
-    if Server then
-      if File_Name = "" then
+
+    -- File
+    if Mode /= CLient then
+      if Name = "" then
         -- No file name specified, overwrite default
         File.Delete (Default_File_Name);
         File.Open (Default_File_Name);
       else
         -- Load and append to specified file
-        File.Open (File_Name);
+        File.Open (Name);
       end if;
     end if;
-    Connection.Init (Server_Name, Color);
-    Connection.Wait_Ready;
+
+    -- Client/Server
+    if Mode /= Both then
+      if Mode = Server then
+        Connection.Init ("", Color);
+      else
+        Connection.Init (Name, Color);
+      end if;
+      Connection.Wait_Ready;
+    end if;
 
     Game.Init (Color);
 
     Load_Moves;
 
-    if Color = Move_Color and then not The_End then
-      Do_Play;
-    end if;
-    if not The_End then
-      loop
-        Do_Wait;
-        exit when The_End;
+    while not The_End loop
+      if Mode = Both or else Move_Color = Color then
         Do_Play;
-        exit when The_End;
-      end loop;
-    end if;
+      else
+        Do_Wait;
+      end if;
+      Move_Color := Space.Opponent (Move_Color);
+    end loop;
 
-    if Server then
+    if Mode /= Client then
       File.Close;
     end if;
-    Connection.Close;
+    if Mode /= Both then
+      Connection.Close;
+    end if;
     Screen.Close;
   end Play;
 
   -- Put action status. Ok means Exit
   procedure Put (Result : in Game.Move_Status_List) is
+    Ink_Color : Space.Color_List;
   begin
+    if Mode = Both then
+      Ink_Color := Move_Color;
+    else
+      Ink_Color := Color;
+    end if;
     case Result is
       when Game.Nok =>
         -- Our king would be in check
-        Screen.Put (Color, "Your King would be in check.", True);
+        Screen.Put (Color, Ink_Color,
+                    "Your King would be in check.");
       when Game.Ok =>
-        Screen.Put (Color, "Exit", True);
+        Screen.Put (Color, Ink_Color, "Exit", True);
       when Game.Check =>
-        Screen.Put (Color, "Check!");
+        Screen.Put (Color, Ink_Color, "Check!");
       when Game.Stalemate =>
-        Screen.Put(Color, "Stalemate??", True);
+        Screen.Put (Color, Ink_Color, "Stalemate??", True);
       when Game.Checkmate =>
-        Screen.Put(Color, "Checkmate!!", True);
+        Screen.Put (Color, Ink_Color, "Checkmate!!", True);
     end case;
   end Put;
 
@@ -95,9 +112,9 @@ package body Human is
 
     if Debug.Get (Debug.Moves) then
       -- Dump Actions
-      Players.Rewind_Actions (Color);
+      Players.Rewind_Actions (Move_Color);
       loop
-        Action := Players.Next_Action (Color);
+        Action := Players.Next_Action (Move_Color);
         exit when not Action.Valid;
         Debug.Put (Action);
         Ada.Text_Io.New_Line;
@@ -108,14 +125,15 @@ package body Human is
 
     Get_One:
     loop
-      Action := Screen.Get(Color);
+      Action := Screen.Get(Color, Move_Color);
       -- User exit?
       if not Action.Valid then
         The_End := True;
         exit Get_One;
       end if;
       if Debug.Some then
-        Ada.Text_Io.Put (">> Playing: ");
+        Ada.Text_Io.Put (">> " & Space.Color_List'Image(Move_Color)
+                       & " Playing: ");
         Debug.Put(Action);
         Ada.Text_Io.New_Line;
       end if;
@@ -127,10 +145,12 @@ package body Human is
     end loop Get_One;
 
     -- Send valid action
-    Connection.Send (Action);
+    if Mode = Server then
+      Connection.Send (Action);
+    end if;
     -- Put any significant result
     if not The_End then
-      Screen.Put_Move (Color, Action, Result);
+      Screen.Put_Move (Move_Color, Action, Result);
       Save_If_Server (Action, Result);
     end if;
     if Result /= Game.Ok and then not The_End then
@@ -160,7 +180,7 @@ package body Human is
     end if;
     -- Wait until opponent move
     loop
-      Screen.Wait (Color);
+      Screen.Wait (Color, Move_Color);
       exit when Connection.Action_Received;
     end loop;
     Action := Connection.Receive;
@@ -199,12 +219,14 @@ package body Human is
   begin
     Move_Color := Space.White;
     loop
-      if Server then
+      if Mode /= Client then
         Action := File.Read;
-        Connection.Send (Action);
+        if Mode = Server then
+          Connection.Send (Action);
+        end if;
       else
         loop
-          Screen.Wait (Color);
+          Screen.Wait (Color, Move_Color);
           exit when Connection.Action_Received;
         end loop;
         Action := Connection.Receive;
@@ -215,7 +237,7 @@ package body Human is
         if not Players.Action_Exists (Move_Color, Action)
         or else Piece = null
         or else Pieces.Id_Of (Piece.all).Kind /=  Action.Piece then
-          Screen.Put (Color, "Invalid action", True);
+          Screen.Put (Color, Move_Color, "Invalid action", True);
           if Debug.Get (Debug.Human) then
             Ada.Text_Io.Put ("Loading invalid action ");
             Debug.Put (Action);
@@ -235,7 +257,7 @@ package body Human is
       Result := Game.Do_Move (Action);
       -- Put any significant result
       Screen.Put_Move (Move_Color, Action, Result);
-      if Result /= Game.Ok then
+      if Result /= Game.Ok and then Result /= Game.Check then
         Put (Result);
       end if;
       if Result = Game.Nok then
@@ -254,15 +276,17 @@ package body Human is
   exception
     when Load_Error => 
       -- Send Exit
-      Connection.Send ((Valid => False));
-      Connection.Send ((Valid => False));
+      if Mode /= Both then
+        Connection.Send ((Valid => False));
+        Connection.Send ((Valid => False));
+      end if;
       raise;
   end Load_Moves;
 
   procedure Save_If_Server (Action : in Game.Valid_Action_Rec;
                             Result : in Game.Move_Status_List) is
   begin
-    if Server then
+    if Mode /= Client then
       File.Write (Action, Result);
     end if;
   end Save_If_Server;
