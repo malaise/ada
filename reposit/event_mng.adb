@@ -206,6 +206,9 @@ package body Event_Mng is
 
       -- Wait
       Timeout_Wait := Integer (Timeout_Dur * 1000.0);
+      if Debug then
+        Ada.Text_Io.Put_Line ("  Timeout_Wait: " & Timeout_Wait'Img);
+      end if;
       C_Res := C_Wait (Fd'Address, Read'Address, Timeout_Wait'Address);
       if Debug then
         if C_Res /= Ok then
@@ -233,6 +236,9 @@ package body Event_Mng is
         if Debug then
           Ada.Text_Io.Put_Line ("  Wait -> Invalid fd");
         end if;
+      end if;
+      if Debug then
+        Ada.Text_Io.Put_Line ("  Wait.Handle -> " & Handle_Res'Img);
       end if;
 
       -- Done on event or timeout
