@@ -1,4 +1,3 @@
-with debug, ada.text_io;
 with Players;
 separate(Pieces)
 procedure Actions_Of_King (Piece : in King_Piece) is
@@ -28,11 +27,14 @@ procedure Actions_Of_King (Piece : in King_Piece) is
     end Same_Square;
     procedure Find_Square is new Action_List_Mng.Search (Same_Square);
 
+    use type Space.Color_List;
+
   begin
     -- Rook must not have moved
     Tmp_Piece := Space.Board.Piece_At ((Rook_Col(Small), Piece.Square.Row));
     if Tmp_Piece = null
     or else Tmp_Piece.Kind /= Rook
+    or else Tmp_Piece.Color /= Piece.Color
     or else Tmp_Piece.Has_Moved then
       return;
     end if;
@@ -85,9 +87,6 @@ procedure Actions_Of_King (Piece : in King_Piece) is
         begin
           Find_Square (King_Way, Opp_Action.To, From_Current => False);
           -- We are under attack on our way (or current pos)
-Ada.Text_Io.Put ("Castle attacked by ");
-Debug.Put (Opp_Action);
-Ada.Text_Io.New_Line;
           Action_List_Mng.Delete_List (King_Way);
           return;
         exception
