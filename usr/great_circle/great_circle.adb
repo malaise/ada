@@ -44,7 +44,9 @@ package body Great_Circle is
 
   function Rad2Spheric (Rad : Lat_Lon.Lat_Lon_Rad_Rec) return Spheric_Rec is
   begin
-    return (T => Real(Rad.X), P => Real(C_Nbres.Reduct(Conv.Pi / 2.0 - Rad.Y)));
+    -- Theta is the co-latitude (Pi/2 - Lat), Phi is the longitude
+    return (T => Real(C_Nbres.Reduct(Conv.Pi / 2.0 - Rad.X)),
+            P => Real(Rad.Y));
   end Rad2Spheric;
 
   type Vector_Rec is record
@@ -56,18 +58,33 @@ package body Great_Circle is
     Nu : Real;
     use My_Math;
   begin
-    Nu := Sin(A.T) * Sin(B.T) * Cos(A.P - B.P) + Cos(A.T) * Cos(B.T);
-    V.A := Nu * Sin(B.T) * Cos(B.P) - Sin(A.T) * Cos(A.P);
-    V.B := Nu * Sin(B.T) * Sin(B.P) - Sin(A.T) * Sin(A.P);
-    V.C := Nu * Cos(B.T) - Cos(A.T);
+    Nu := Sin(A.T) * Sin(B.T) * Cos(B.P - A.P) + Cos(A.T) * Cos(B.T);
+    V.A := Nu * Sin(A.T) * Cos(A.P) - Sin(B.T) * Cos(B.P);
+    V.B := Nu * Sin(A.T) * Sin(A.P) - Sin(B.T) * Sin(B.P);
+    V.C := Nu * Cos(A.T) - Cos(B.T);
     return V;
   end Vector_Of;
 
-  function Vector_Len (V : Vector_Rec) return Real is
+  function Scalar_Product (V1, V2 : Vector_Rec) return Real is
     use type My_Math.Real;
   begin
-    return My_Math.Sqrt (V.A * V.A + V.B * V.B + V.C * V.C);
-  end Vector_Len;
+    return V1.A * V2.A + V1.B * V2.B + V1.C * V2.C;
+  end Scalar_Product;
+
+  function Vectorial_Product (V1, V2 : Vector_Rec) return Vector_Rec is
+    use type My_Math.Real;
+  begin
+    return (A => V1.B * V2.C - V2.B * V1.C,
+            B => V1.C * V2.A - V2.C * V1.A,
+            C => V1.A * V2.B - V2.A * V1.B);
+  end Vectorial_Product;
+
+  function Vector_Norm (V : Vector_Rec) return Real is
+    use type My_Math.Real;
+  begin
+    return My_Math.Sqrt(Scalar_Product(V, V));
+  end Vector_Norm;
+
 
   -- Compute heading and distance form point A to point B
   procedure Compute_Route (A, B : in Lat_Lon.Lat_Lon_Geo_Rec;
@@ -166,12 +183,10 @@ package body Great_Circle is
     -- Compute Arc of result
     Distance := Route_Radius * abs Angle_Result;
 
-    if Debug then
-      Ada.Text_Io.Put_Line ("Xa = " & String_Util.Dist2Str(Chord_Xa));
-      Ada.Text_Io.Put_Line ("Xb = " & String_Util.Dist2Str(Chord_Xb));
-      Ada.Text_Io.Put_Line ("Y  = " & String_Util.Dist2Str(Chord_Y));
-    end if;
-
+    if Distance < Epsilon then
+      Heading := (0, 0, 0);
+      return;
+    end if;      
 
     -- Compute heading
     if Debug then
@@ -187,57 +202,25 @@ package body Great_Circle is
         Ada.Text_Io.Put_Line ("Nu = " & String_Util.Angle2Str(
             Conv.Rad2Geo(Result_Rad_Angle)));
       end;
-
-      -- Project chords of lat and long in tangent plan
-      declare
-        P_Chord_Xa, P_Chord_Y : Real;
-        use type Real;
-      begin
-        P_Chord_Xa := Real(Chord_Xa) * My_Math.Cos(
-            Real(Lat_Lon_Rad_Delta.X / 2.0));
-        P_Chord_Y  :=  Real(Chord_Y) * My_Math.Cos(
-            Real(Lat_Lon_Rad_Delta.Y / 2.0));
-        begin
-          Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-               My_Math.Arc_Tg(P_Chord_Xa / P_Chord_Y))));
-        exception
-          when others =>
-            -- Arc tangent infinite: A and B on same parallel
-            if Lat_Lon_Rad_Delta.X >= 0.0 then
-              -- B is east of A
-              Result_Rad_Angle := Conv.Pi / 2.0;
-            else
-              -- B is west of A
-              Result_Rad_Angle := 3.0 * Conv.Pi / 2.0;
-            end if;
-        end;
-       
-        -- Fix result if B is at south of A
-        -- or if A and B are on the same meridian
-        Fix_Angle;
-        Ada.Text_Io.Put_Line ("Pr = " & String_Util.Angle2Str(
-            Conv.Rad2Geo(Result_Rad_Angle)));
-      end;
     end if;
 
     -- Angle in tangent plan
     declare
       -- Tangents in A to A meridien and to AB
       Tang_A_North, Tang_A_B : Vector_Rec;
-      Cos_Angle : Real;
+      Sin_Angle : Real;
       use type My_Math.Real;
     begin
       Tang_A_North := Vector_Of(Rad2Spheric(Lat_Lon_Rad_A), (P => 0.0, T => 0.0));
-      Tang_A_B := Vector_Of(Rad2Spheric(Lat_Lon_Rad_A), Rad2Spheric(Lat_Lon_Rad_A));
-      -- Vectorial product
-      Cos_Angle := Tang_A_North.A * Tang_A_B.A
-                 + Tang_A_North.B * Tang_A_B.B
-                 + Tang_A_North.C * Tang_A_B.C;
-      Cos_Angle := Cos_Angle / Vector_Len(Tang_A_North) /Vector_Len(Tang_A_B);
+      Tang_A_B := Vector_Of(Rad2Spheric(Lat_Lon_Rad_A),
+                            Rad2Spheric(Lat_Lon_Rad_B));
+      -- Vectorial product has a norm of Norm1 * Norm2 * SinAngle
+      Sin_Angle := Vector_Norm(Vectorial_Product(Tang_A_North, Tang_A_B))
+                 / Vector_Norm(Tang_A_North) / Vector_Norm(Tang_A_B);
       Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-               My_Math.Arc_Cos(Cos_Angle))));
+               My_Math.Arc_Sin(Sin_Angle))));
     end;
-       
+
     -- Fix result if B is at south of A
     -- or if A and B are on the same meridian
     Fix_Angle;
