@@ -15,6 +15,7 @@ package body Tcp_Util is
 
   -- Connecting or connected connection
   type Connecting_Rec is record
+    Protocol : Tcp_Protocol_List;
     Host : Remote_Host;
     Port : Remote_Port;
     Delta_Retry : Duration;
@@ -46,12 +47,13 @@ package body Tcp_Util is
 
   -- Try to open a socket and connect
   -- Return Socket.No_Scket is failed
-  function Try_Connect (Host : in Remote_Host;
-                        Port : in Remote_Port) return Socket.Socket_Dscr is
+  function Try_Connect (Protocol : in Tcp_Protocol_List;
+                        Host     : in Remote_Host;
+                        Port     : in Remote_Port) return Socket.Socket_Dscr is
     Dscr :  Socket.Socket_Dscr;
   begin
     -- Open
-    Socket.Open (Dscr, Socket.Tcp);
+    Socket.Open (Dscr, Protocol);
     -- Connect
     case Host.Kind is
       when Host_Name_Spec =>
@@ -103,7 +105,7 @@ package body Tcp_Util is
     end if;
 
     -- Try to connect
-    Rec.Dscr :=  Try_Connect (Rec.Host, Rec.Port);
+    Rec.Dscr :=  Try_Connect (Rec.Protocol, Rec.Host, Rec.Port);
 
     if Rec.Dscr /= Socket.No_Socket then
       -- Yes. Connected. Cancel timer and call callback
@@ -144,14 +146,16 @@ package body Tcp_Util is
 
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
-  procedure Connect_To (Host : in Remote_Host;
-                        Port : in Remote_Port;
-                        Delta_Retry : in Duration := 1.0;
-                        Nb_Tries    : in Natural := 1;
+  procedure Connect_To (Protocol      : in Tcp_Protocol_List;
+                        Host          : in Remote_Host;
+                        Port          : in Remote_Port;
+                        Delta_Retry   : in Duration := 1.0;
+                        Nb_Tries      : in Natural := 1;
                         Connection_CB : in Connection_Callback_Access) is
     Rec : Connecting_Rec;
   begin
     -- Initialise record and insert it in list
+    Rec.Protocol := Protocol;
     Rec.Host := Host;
     Rec.Port := Port;
     Rec.Delta_Retry := Delta_Retry;
@@ -169,7 +173,7 @@ package body Tcp_Util is
   end Connect_To;
 
   -- Abort a pending connection
-  -- May raise Non_Such
+  -- May raise No_Such
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port) is
     Rec : Connecting_Rec;
@@ -188,14 +192,14 @@ package body Tcp_Util is
     end if;
   exception
     when Con_List_Mng.Not_In_List =>
-      raise Non_Such;
+      raise No_Such;
   end Abort_Connect;
 
 
   -- Accepting connection
   type Accepting_Rec is record
     Port : Port_Num;
-    CB : Acception_Callback_Access;
+    CB   : Acception_Callback_Access;
     Dscr : Socket.Socket_Dscr;
     Fd   : X_Mng.File_Desc;
   end record;
@@ -243,19 +247,20 @@ package body Tcp_Util is
 
   -- Accept connections to a local port
   -- Dscr is set to the socket accepting connections
-  procedure Accept_From (Port : in Local_Port;
-                         Connection_CB : in Acception_Callback_Access;
-                         Dscr : in out Socket.Socket_Dscr;
-                         Num : out Port_Num) is
+  procedure Accept_From (Protocol     : in Tcp_Protocol_List;
+                         Port         : in Local_Port;
+                         Acception_CB : in Acception_Callback_Access;
+                         Dscr         : in out Socket.Socket_Dscr;
+                         Num          : out Port_Num) is
     Rec : Accepting_Rec;
   begin
     -- Initialise Rec
     Rec.Port := 0;
-    Rec.CB := Connection_CB;
+    Rec.CB := Acception_CB;
     Rec.Dscr := Socket.No_Socket;
 
     -- Open socket
-    Socket.Open (Dscr, Socket.Tcp);
+    Socket.Open (Dscr, Protocol);
     Rec.Dscr := Dscr;
     Rec.Fd := Socket.Fd_Of (Rec.Dscr);
     -- Bind socket
@@ -286,7 +291,7 @@ package body Tcp_Util is
   end Accept_From;
 
   -- Abort further accepts on port
-  -- May raise Non_Such
+  -- May raise No_Such
   procedure Abort_Accept (Num : in Port_Num) is
     Rec : Accepting_Rec;
   begin
@@ -298,7 +303,7 @@ package body Tcp_Util is
     Socket.Close (Rec.Dscr);
   exception
     when Con_List_Mng.Not_In_List =>
-      raise Non_Such;
+      raise No_Such;
   end Abort_Accept;
 
 end Tcp_Util;

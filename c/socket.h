@@ -24,7 +24,7 @@
 #define word unsigned short int
 
 /* Protocols */
-typedef enum {udp_socket=0, tcp_socket=1} socket_protocol;
+typedef enum {udp_socket=0, tcp_socket=1, tcp_header_socket=2} socket_protocol;
 
 /* token socket : a pointer (abstract data type) */
 /* Has to be initialised to init_soc */
@@ -140,8 +140,8 @@ extern int soc_receive (soc_token token, boolean *p_received,
 /* Tcp specific calls */
 
 /* Accept a connection.
-/* The socket must be open, tcp and linked */
-/* A new socket is created (tcp) with dest set */
+/* The socket must be open, tcp or tcp_header and linked */
+/* A new socket is created (tcp or tcp_header, same as token) with dest set */
 extern int soc_accept (soc_token token, soc_token *p_token);
 
 /* Is a tcp socket connected fllowing a soc_set_... or a soc_accept */

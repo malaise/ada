@@ -7,7 +7,7 @@ package Socket is
   No_Socket : constant Socket_Dscr;
 
   -- Available protocols
-  type Protocol_List is (Udp, Tcp);
+  type Protocol_List is (Udp, Tcp, Tcp_Header);
 
   -- Any problem? Look at the traces
   Socket_Error : exception;

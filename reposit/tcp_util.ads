@@ -3,8 +3,11 @@ package Tcp_Util is
 
   -- GENERAL CONVENTION --
   ------------------------
-  -- Padd strings witj spaces in records
+  -- Padd strings with spaces in records
 
+  -- PROTOCOL DEFINITION --
+  subtype Tcp_Protocol_List is Socket.Protocol_List range
+     Socket.Tcp .. Socket.Tcp_Header;
 
   -- PORT DEFINITION --
   ---------------------
@@ -94,29 +97,32 @@ package Tcp_Util is
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
   -- Infinite retries if Nb_Tries = 0;
-  procedure Connect_To (Host : in Remote_Host;
-                        Port : in Remote_Port;
-                        Delta_Retry : in Duration := 1.0;
-                        Nb_Tries    : in Natural := 1;
+  procedure Connect_To (Protocol      : in Tcp_Protocol_List;
+                        Host          : in Remote_Host;
+                        Port          : in Remote_Port;
+                        Delta_Retry   : in Duration := 1.0;
+                        Nb_Tries      : in Natural := 1;
                         Connection_CB : in Connection_Callback_Access);
 
   -- Abort a pending connection
-  -- May raise Non_Such
+  -- May raise No_Such
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port);
 
   -- Accept connections to a local port
-  -- Dscr is set to the socket accepting connections
-  procedure Accept_From (Port : in Local_Port;
-                         Connection_CB : in Acception_Callback_Access;
-                         Dscr : in out Socket.Socket_Dscr;
-                         Num : out Port_Num);
+  -- Dscr is open and set to the accepting connections
+  -- Num is its port num (usefull when dynamical)
+  procedure Accept_From (Protocol     : in Tcp_Protocol_List;
+                         Port         : in Local_Port;
+                         Acception_CB : in Acception_Callback_Access;
+                         Dscr         : in out Socket.Socket_Dscr;
+                         Num          : out Port_Num);
 
   -- Abort further accepts on port
-  -- May raise Non_Such
+  -- May raise No_Such
   procedure Abort_Accept (Num : in Port_Num);
 
-  Non_Such : exception;
+  No_Such : exception;
 
 end Tcp_Util;
 
