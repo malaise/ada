@@ -1,25 +1,25 @@
-separate (NAV_DATA)
+separate (Nav_Data)
 -- When PLAN.SPEED and TRAJ.SPEED are unknown
-procedure COMP_SPEED (DATA : in out T_DATA) is
+procedure Comp_Speed (Data : in out T_Data) is
   -- angle_traj-angle_wind ...
-  A_T_W, A_T_P, A_P_W, A_P_T : REAL;
+  A_T_W, A_T_P, A_P_W, A_P_T : Real;
   -- sin(ATW)/sin(ATP) and sin(APW)/sin(APS)
-  S_WP, S_WS : REAL;
-  use NAV_TYPES;
+  S_Wp, S_Ws : Real;
+  use Nav_Types;
 begin
   -- Compute angles substractions
-  A_T_W := TO_REAL (ANGLE => DATA.TRAJ.ANGLE - DATA.WIND.ANGLE);
-  A_T_P := TO_REAL (ANGLE => DATA.TRAJ.ANGLE - DATA.PLAN.ANGLE);
-  A_P_W := TO_REAL (ANGLE => DATA.PLAN.ANGLE - DATA.WIND.ANGLE);
-  A_P_T := TO_REAL (ANGLE => DATA.PLAN.ANGLE - DATA.TRAJ.ANGLE);
+  A_T_W := To_Real (Angle => Data.Traj.Angle - Data.Wind.Angle);
+  A_T_P := To_Real (Angle => Data.Traj.Angle - Data.Plan.Angle);
+  A_P_W := To_Real (Angle => Data.Plan.Angle - Data.Wind.Angle);
+  A_P_T := To_Real (Angle => Data.Plan.Angle - Data.Traj.Angle);
 
   -- Compute angles sin rapports
-  S_WP := abs (MY_MATH.SIN (A_T_W, MY_MATH.DEGREE) / MY_MATH.SIN (A_T_P, MY_MATH.DEGREE));
-  S_WS := abs (MY_MATH.SIN (A_P_W, MY_MATH.DEGREE) / MY_MATH.SIN (A_P_T, MY_MATH.DEGREE));
+  S_Wp := abs (My_Math.Sin (A_T_W, My_Math.Degree) / My_Math.Sin (A_T_P, My_Math.Degree));
+  S_Ws := abs (My_Math.Sin (A_P_W, My_Math.Degree) / My_Math.Sin (A_P_T, My_Math.Degree));
 
   -- PLAN.SPEED := WIND.SPEED * S_WP
   --  and TRAJ.SPEED := WIND.SPEED * S_WS
-  DATA.PLAN.SPEED := DATA.WIND.SPEED * NAV_TYPES.T_SPEED(S_WP);
-  DATA.TRAJ.SPEED := DATA.WIND.SPEED * NAV_TYPES.T_SPEED(S_WS);
-end COMP_SPEED;
+  Data.Plan.Speed := Data.Wind.Speed * Nav_Types.T_Speed(S_Wp);
+  Data.Traj.Speed := Data.Wind.Speed * Nav_Types.T_Speed(S_Ws);
+end Comp_Speed;
 

@@ -2,57 +2,57 @@
 -- One argument : file name
 -- Tests get_line
 
-with TEXT_IO;
-with TEXT_HANDLER, ARGUMENT, GET_LINE, NORMAL;
+with Text_Io;
+with Text_Handler, Argument, Get_Line, Normal;
 
-procedure T_GET_LINE is
+procedure T_Get_Line is
 
-  MAX_LINE_LEN : constant := 1024;
-  MAX_WORD_NB  : constant := 500;
-  MAX_WORD_LEN : constant := 30;
+  Max_Line_Len : constant := 1024;
+  Max_Word_Nb  : constant := 500;
+  Max_Word_Len : constant := 30;
 
 begin
   -- Check syntax
-  if ARGUMENT.GET_NBRE_ARG /= 1 then
-    TEXT_IO.PUT_LINE ("ERROR. Syntax : t_get_line <file_name>");
+  if Argument.Get_Nbre_Arg /= 1 then
+    Text_Io.Put_Line ("ERROR. Syntax : t_get_line <file_name>");
     return;
   end if;
 
   declare
-    package MY_GET_LINE is new GET_LINE (
-      MAX_WORD_LEN => MAX_WORD_LEN,
-      MAX_WORD_NB  => MAX_WORD_NB,
-      MAX_LINE_LEN => MAX_LINE_LEN,
-      COMMENT      => '#');
+    package My_Get_Line is new Get_Line (
+      Max_Word_Len => Max_Word_Len,
+      Max_Word_Nb  => Max_Word_Nb,
+      Max_Line_Len => Max_Line_Len,
+      Comment      => '#');
 
-    LINE  : MY_GET_LINE.LINE_ARRAY;
+    Line  : My_Get_Line.Line_Array;
 
   begin
 
     -- open file
     begin
-      MY_GET_LINE.OPEN (ARGUMENT.GET_PARAMETER);
+      My_Get_Line.Open (Argument.Get_Parameter);
     exception
       when others =>
-        TEXT_IO.PUT_LINE ("ERROR opening file " & ARGUMENT.GET_PARAMETER & ".");
+        Text_Io.Put_Line ("ERROR opening file " & Argument.Get_Parameter & ".");
         raise;
     end;
 
 
     loop
-      MY_GET_LINE.GET_WORDS (LINE);
-      TEXT_IO.PUT (NORMAL (INTEGER (MY_GET_LINE.GET_LINE_NO), 3, GAP => '0') & " -> ");
-      TEXT_IO.PUT (NORMAL (MY_GET_LINE.GET_WORD_NUMBER, 3) & ":");
-      for I in 1 .. MY_GET_LINE.GET_WORD_NUMBER loop
-        TEXT_IO.PUT (">" & TEXT_HANDLER.VALUE (LINE(I)) & "<");
+      My_Get_Line.Get_Words (Line);
+      Text_Io.Put (Normal (Integer (My_Get_Line.Get_Line_No), 3, Gap => '0') & " -> ");
+      Text_Io.Put (Normal (My_Get_Line.Get_Word_Number, 3) & ":");
+      for I in 1 .. My_Get_Line.Get_Word_Number loop
+        Text_Io.Put (">" & Text_Handler.Value (Line(I)) & "<");
       end loop;
-      TEXT_IO.NEW_LINE;
-      MY_GET_LINE.READ_NEXT_LINE;
+      Text_Io.New_Line;
+      My_Get_Line.Read_Next_Line;
     end loop;
 
   exception
-    when MY_GET_LINE.NO_MORE_LINE =>
-      TEXT_IO.PUT_LINE ("Done.");
+    when My_Get_Line.No_More_Line =>
+      Text_Io.Put_Line ("Done.");
   end;
 
-end T_GET_LINE;
+end T_Get_Line;

@@ -1,56 +1,56 @@
-with TEXT_IO; use TEXT_IO;
-with U_RAND;
+with Text_Io; use Text_Io;
+with U_Rand;
 
-procedure T_URAND is
-    package FLOAT_IO is new TEXT_IO.FLOAT_IO(FLOAT);
-    use FLOAT_IO;
-    TEST_FILE : TEXT_IO.FILE_TYPE;
-    FILE_NAME : constant STRING := "T_URAND.DAT";
-    subtype A_RESULT is STRING(1..11);
-    type RESULTS_TYPE is array(1..6) of A_RESULT;
-    ACTUAL_RESULTS : RESULTS_TYPE;
-    EOS : NATURAL;
-    RESULTS_OK : BOOLEAN := TRUE;
-    EXPECTED_RESULTS : RESULTS_TYPE := (1=>" 6533892.00",
+procedure T_Urand is
+    package Float_Io is new Text_Io.Float_Io(Float);
+    use Float_Io;
+    Test_File : Text_Io.File_Type;
+    File_Name : constant String := "T_URAND.DAT";
+    subtype A_Result is String(1..11);
+    type Results_Type is array(1..6) of A_Result;
+    Actual_Results : Results_Type;
+    Eos : Natural;
+    Results_Ok : Boolean := True;
+    Expected_Results : Results_Type := (1=>" 6533892.00",
                                         2=>"14220222.00",
                                         3=>" 7275067.00",
                                         4=>" 6172232.00",
                                         5=>" 8354498.00",
                                         6=>"10633180.00");
 
-    RNUM : FLOAT;
+    Rnum : Float;
 begin
     for I in 1..20000 loop
-        RNUM := U_RAND.NEXT;
+        Rnum := U_Rand.Next;
     end loop;
 
-    TEXT_IO.CREATE(FILE=>TEST_FILE, NAME=>FILE_NAME);
+    Text_Io.Create(File=>Test_File, Name=>File_Name);
     for I in 1..6 loop
-        PUT(FILE=>TEST_FILE,
-            ITEM=>(2.0**24)*U_RAND.NEXT,
-            FORE=>8, AFT=>2, EXP=>0);
-        NEW_LINE(TEST_FILE);
+        Put(File=>Test_File,
+            Item=>(2.0**24)*U_Rand.Next,
+            Fore=>8, Aft=>2, Exp=>0);
+        New_Line(Test_File);
     end loop;
 
-    TEXT_IO.CLOSE(FILE=>TEST_FILE);
-    TEXT_IO.OPEN(FILE=>TEST_FILE, MODE=>IN_FILE, NAME=>File_NAME);
-    PUT("Expected Results    "); PUT_LINE("Actual Results");
+    Text_Io.Close(File=>Test_File);
+    Text_Io.Open(File=>Test_File, Mode=>In_File, Name=>File_Name);
+    Put("Expected Results    "); Put_Line("Actual Results");
 
     for I in 1..6 loop
-        GET_LINE(FILE=>TEST_FILE, ITEM=>ACTUAL_RESULTS(I), LAST=>EOS);
-        SKIP_LINE(TEST_FILE);
-        PUT(EXPECTED_RESULTS(I)); PUT("         ");
-        PUT_LINE(ACTUAL_RESULTS(I));
-        if ACTUAL_RESULTS(I) /= EXPECTED_RESULTS(I) then
-            RESULTS_OK := FALSE;
+        Get_Line(File=>Test_File, Item=>Actual_Results(I), Last=>Eos);
+        Skip_Line(Test_File);
+        Put(Expected_Results(I)); Put("         ");
+        Put_Line(Actual_Results(I));
+        if Actual_Results(I) /= Expected_Results(I) then
+            Results_Ok := False;
         end if;
     end loop;
 
-    NEW_LINE(2);
-    if not RESULTS_OK then
-        PUT_LINE("!! CAUTION!! Random Number Generator inconsistent on this inplementation");
+    New_Line(2);
+    if not Results_Ok then
+        Put_Line("!! CAUTION!! Random Number Generator inconsistent on this inplementation");
     else
-        PUT_lINE("Random Number Generator Consistent");
+        Put_lIne("Random Number Generator Consistent");
     end if;
-end T_URAND;
+end T_Urand;
 

@@ -1,109 +1,109 @@
-with DIRECT_IO;
-with PERS_DEF;
-use PERS_DEF;
-package body PERS_FIL is
+with Direct_Io;
+with Pers_Def;
+use Pers_Def;
+package body Pers_Fil is
 
   -- Direct_io of persons
-  package PERSON_IO is new DIRECT_IO (ELEMENT_TYPE => PERS_DEF.PERSON_REC);
-  PERSON_FILE : PERSON_IO.FILE_TYPE;
-  PERSON_FILE_NAME : constant STRING := "PERSONS.LST";
+  package Person_Io is new Direct_Io (Element_Type => Pers_Def.Person_Rec);
+  Person_File : Person_Io.File_Type;
+  Person_File_Name : constant String := "PERSONS.LST";
 
 
-  procedure OPEN is
+  procedure Open is
   begin
     -- Try to open existing file
     begin
-      PERSON_IO.OPEN (PERSON_FILE, PERSON_IO.INOUT_FILE, PERSON_FILE_NAME);
+      Person_Io.Open (Person_File, Person_Io.Inout_File, Person_File_Name);
     exception
-      when PERSON_IO.NAME_ERROR =>
-        PERSON_IO.CREATE (PERSON_FILE, PERSON_IO.INOUT_FILE, PERSON_FILE_NAME);
+      when Person_Io.Name_Error =>
+        Person_Io.Create (Person_File, Person_Io.Inout_File, Person_File_Name);
     end;
   exception
     when others =>
-      raise IO_ERROR;
-  end OPEN;
+      raise Io_Error;
+  end Open;
 
   -- Load the list from the file. (Erasing the current list)
-  procedure LOAD is
-    PERSON : PERS_DEF.PERSON_REC;
+  procedure Load is
+    Person : Pers_Def.Person_Rec;
   begin
 
     -- Open file
-    OPEN;
+    Open;
     -- Clear list
-    PERS_DEF.PERSON_LIST_MNG.DELETE_LIST (THE_PERSONS);
+    Pers_Def.Person_List_Mng.Delete_List (The_Persons);
 
     -- Read persons from file and insert them in list
-    while not PERSON_IO.END_OF_FILE (PERSON_FILE) loop
-      PERSON_IO.READ (PERSON_FILE, PERSON);
-      PERS_DEF.PERSON_LIST_MNG.INSERT (THE_PERSONS, PERSON,
-       PERS_DEF.PERSON_LIST_MNG.NEXT);
+    while not Person_Io.End_Of_File (Person_File) loop
+      Person_Io.Read (Person_File, Person);
+      Pers_Def.Person_List_Mng.Insert (The_Persons, Person,
+       Pers_Def.Person_List_Mng.Next);
     end loop;
 
     -- Close file
-    PERSON_IO.CLOSE (PERSON_FILE);
+    Person_Io.Close (Person_File);
     -- Move to begining of list
-    if not PERS_DEF.PERSON_LIST_MNG.IS_EMPTY(THE_PERSONS) then
-      PERS_DEF.PERSON_LIST_MNG.MOVE_TO (THE_PERSONS,
-       PERS_DEF.PERSON_LIST_MNG.NEXT, 0, FALSE);
+    if not Pers_Def.Person_List_Mng.Is_Empty(The_Persons) then
+      Pers_Def.Person_List_Mng.Move_To (The_Persons,
+       Pers_Def.Person_List_Mng.Next, 0, False);
     end if;
 
   exception
-    when PERS_DEF.PERSON_LIST_MNG.FULL_LIST =>
-      raise FULL_LIST_ERROR;
+    when Pers_Def.Person_List_Mng.Full_List =>
+      raise Full_List_Error;
     when others =>
-      raise IO_ERROR;
-  end LOAD;
+      raise Io_Error;
+  end Load;
 
 
   -- Save the list to file. (List not affected)
-  procedure SAVE is
-    PERSON : PERS_DEF.PERSON_REC;
-    LIST_LENGTH : constant NATURAL
-                := PERS_DEF.PERSON_LIST_MNG.LIST_LENGTH (THE_PERSONS);
-    INIT_POS    : NATURAL;
+  procedure Save is
+    Person : Pers_Def.Person_Rec;
+    List_Length : constant Natural
+                := Pers_Def.Person_List_Mng.List_Length (The_Persons);
+    Init_Pos    : Natural;
   begin
 
     -- Delete file and create a new empty one
-    OPEN;
-    PERSON_IO.DELETE (PERSON_FILE);
-    OPEN;
+    Open;
+    Person_Io.Delete (Person_File);
+    Open;
 
     -- Scan list only if not empty
-    if LIST_LENGTH /= 0 then
+    if List_Length /= 0 then
       -- Save current position
-      INIT_POS := PERS_DEF.PERSON_LIST_MNG.GET_POSITION (THE_PERSONS);
+      Init_Pos := Pers_Def.Person_List_Mng.Get_Position (The_Persons);
       -- Move to beginning of list
-      PERS_DEF.PERSON_LIST_MNG.MOVE_TO (THE_PERSONS,
-       PERS_DEF.PERSON_LIST_MNG.NEXT, 0, FALSE);
+      Pers_Def.Person_List_Mng.Move_To (The_Persons,
+       Pers_Def.Person_List_Mng.Next, 0, False);
 
       -- Read persons from list and write them to file
-      for I in 1 .. LIST_LENGTH loop
-        if I /= LIST_LENGTH then
-          PERS_DEF.PERSON_LIST_MNG.READ (THE_PERSONS, PERSON);
+      for I in 1 .. List_Length loop
+        if I /= List_Length then
+          Pers_Def.Person_List_Mng.Read (The_Persons, Person);
         else
           -- Do not move after reading last person
-          PERS_DEF.PERSON_LIST_MNG.READ (THE_PERSONS, PERSON,
-           PERS_DEF.PERSON_LIST_MNG.CURRENT);
+          Pers_Def.Person_List_Mng.Read (The_Persons, Person,
+           Pers_Def.Person_List_Mng.Current);
         end if;
-        PERSON_IO.WRITE (PERSON_FILE, PERSON);
+        Person_Io.Write (Person_File, Person);
       end loop;
 
       -- Move to initial position in list
-      PERS_DEF.PERSON_LIST_MNG.MOVE_TO (THE_PERSONS,
-       PERS_DEF.PERSON_LIST_MNG.NEXT, INIT_POS - 1, FALSE);
+      Pers_Def.Person_List_Mng.Move_To (The_Persons,
+       Pers_Def.Person_List_Mng.Next, Init_Pos - 1, False);
     end if;
 
     -- Close file
-    PERSON_IO.CLOSE (PERSON_FILE);
+    Person_Io.Close (Person_File);
 
   exception
-    when PERS_DEF.PERSON_LIST_MNG.EMPTY_LIST |
-         PERS_DEF.PERSON_LIST_MNG.NOT_IN_LIST =>
-      raise PERS_FIL_INTERNAL_ERROR;
+    when Pers_Def.Person_List_Mng.Empty_List |
+         Pers_Def.Person_List_Mng.Not_In_List =>
+      raise Pers_Fil_Internal_Error;
     when others =>
-      raise IO_ERROR;
-  end SAVE;
+      raise Io_Error;
+  end Save;
 
-end PERS_FIL;
+end Pers_Fil;
 

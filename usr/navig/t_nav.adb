@@ -1,186 +1,186 @@
-with NAV_TYPES, NAV_DATA;
-with MY_IO, TEXT_IO;
-procedure T_NAV is
+with Nav_Types, Nav_Data;
+with My_Io, Text_Io;
+procedure T_Nav is
 str : string (1..20);
 lst : natural;
 
-  DATA_IN, DATA_OUT : NAV_DATA.T_DATA;
-  subtype TI is POSITIVE range 1..7;
-  I1, I2, I3 : TI;
-  REPORT : NAV_DATA.T_CONSISTENCY;
-  package CONS_IO is new TEXT_IO.ENUMERATION_IO (NAV_DATA.T_CONSISTENCY);
+  Data_In, Data_Out : Nav_Data.T_Data;
+  subtype Ti is Positive range 1..7;
+  I1, I2, I3 : Ti;
+  Report : Nav_Data.T_Consistency;
+  package Cons_Io is new Text_Io.Enumeration_Io (Nav_Data.T_Consistency);
 
-  function DOT (S : STRING) return NATURAL is
+  function Dot (S : String) return Natural is
   begin
-    for I in S'RANGE loop
+    for I in S'Range loop
       if S(I)='.' then return I; end if;
     end loop;
     return 0;
-  end DOT;
+  end Dot;
 
-  function GET_INDICE (MSG : STRING) return TI is
-    S : STRING (1..10);
-    L : NATURAL;
+  function Get_Indice (Msg : String) return Ti is
+    S : String (1..10);
+    L : Natural;
   begin
     loop
       begin
-        MY_IO.PUT (MSG & " unknown ? ");
-        MY_IO.GET_LINE (S, L);
-        return TI'VALUE (S(1..L));
+        My_Io.Put (Msg & " unknown ? ");
+        My_Io.Get_Line (S, L);
+        return Ti'Value (S(1..L));
       exception
-        when others => MY_IO.PUT_LINE ("ERREUR...");
+        when others => My_Io.Put_Line ("ERREUR...");
       end;
     end loop;
-  end GET_INDICE;
+  end Get_Indice;
 
-  function GET_ANGLE (MSG : STRING) return NAV_TYPES.T_ANGLE is
-    S : STRING (1..10);
-    L : NATURAL;
-    D : NATURAL;
-    A : NAV_TYPES.T_ANGLE;
+  function Get_Angle (Msg : String) return Nav_Types.T_Angle is
+    S : String (1..10);
+    L : Natural;
+    D : Natural;
+    A : Nav_Types.T_Angle;
   begin
     loop
       begin
-        MY_IO.PUT (MSG & " angle ? ");
-        MY_IO.GET_LINE (S, L);
-        D := DOT (S(1..L));
+        My_Io.Put (Msg & " angle ? ");
+        My_Io.Get_Line (S, L);
+        D := Dot (S(1..L));
         if D = 0 then
-          A.DEGREES := NAV_TYPES.T_DEGREE'VALUE (S(1..L));
-          A.MINUTES := 0;
+          A.Degrees := Nav_Types.T_Degree'Value (S(1..L));
+          A.Minutes := 0;
         else
-          A.DEGREES := NAV_TYPES.T_DEGREE'VALUE (S(1..D-1));
-          A.MINUTES := NAV_TYPES.T_MINUTE'VALUE (S(D+1..L));
+          A.Degrees := Nav_Types.T_Degree'Value (S(1..D-1));
+          A.Minutes := Nav_Types.T_Minute'Value (S(D+1..L));
         end if;
         return A;
       exception
-        when others => MY_IO.PUT_LINE ("ERREUR...");
+        when others => My_Io.Put_Line ("ERREUR...");
       end;
     end loop;
-  end GET_ANGLE;
+  end Get_Angle;
 
-  function GET_DRIFT (MSG : STRING) return NAV_TYPES.T_DRIFT is
-    S : STRING (1..10);
-    L : NATURAL;
-    D : NATURAL;
-    A : NAV_TYPES.T_DRIFT;
+  function Get_Drift (Msg : String) return Nav_Types.T_Drift is
+    S : String (1..10);
+    L : Natural;
+    D : Natural;
+    A : Nav_Types.T_Drift;
   begin
     loop
       begin
-        MY_IO.PUT (MSG & " angle ? ");
-        MY_IO.GET_LINE (S, L);
+        My_Io.Put (Msg & " angle ? ");
+        My_Io.Get_Line (S, L);
         if S(1)='-'  then
           S(1..L-1) := S(2..L);
           L := L - 1;
-          A.POSITIV := FALSE;
+          A.Positiv := False;
         else
-          A.POSITIV := TRUE;
+          A.Positiv := True;
         end if;
-        D := DOT (S(1..L));
+        D := Dot (S(1..L));
         if D = 0 then
-          A.DEGREES := NAV_TYPES.T_DEG_DRIFT'VALUE (S(1..L));
-          A.MINUTES := 0;
+          A.Degrees := Nav_Types.T_Deg_Drift'Value (S(1..L));
+          A.Minutes := 0;
         else
-          A.DEGREES := NAV_TYPES.T_DEG_DRIFT'VALUE (S(1..D-1));
-          A.MINUTES := NAV_TYPES.T_MINUTE'VALUE (S(D+1..L));
+          A.Degrees := Nav_Types.T_Deg_Drift'Value (S(1..D-1));
+          A.Minutes := Nav_Types.T_Minute'Value (S(D+1..L));
         end if;
         return A;
       exception
-        when others => MY_IO.PUT_LINE ("ERREUR...");
+        when others => My_Io.Put_Line ("ERREUR...");
       end;
     end loop;
-  end GET_DRIFT;
+  end Get_Drift;
 
-  function GET_SPEED (MSG : STRING) return NAV_TYPES.T_SPEED is
-    S : STRING (1..10);
-    L : NATURAL;
+  function Get_Speed (Msg : String) return Nav_Types.T_Speed is
+    S : String (1..10);
+    L : Natural;
   begin
     loop
       begin
-        MY_IO.PUT (MSG & " speed ? ");
-        MY_IO.GET_LINE (S, L);
-        return NAV_TYPES.T_SPEED (POSITIVE'VALUE (S(1..L)));
+        My_Io.Put (Msg & " speed ? ");
+        My_Io.Get_Line (S, L);
+        return Nav_Types.T_Speed (Positive'Value (S(1..L)));
       exception
-        when others => MY_IO.PUT_LINE ("ERREUR...");
+        when others => My_Io.Put_Line ("ERREUR...");
       end;
     end loop;
-  end GET_SPEED;
+  end Get_Speed;
 
 begin
-  MY_IO.PUT_LINE ("1 : WIND SPEED");
-  MY_IO.PUT_LINE ("2 : WIND ANGLE");
-  MY_IO.PUT_LINE ("3 : PLAN SPEED");
-  MY_IO.PUT_LINE ("4 : PLAN ANGLE");
-  MY_IO.PUT_LINE ("5 : TRAJ SPEED");
-  MY_IO.PUT_LINE ("6 : TRAJ ANGLE");
-  MY_IO.PUT_LINE ("7 : DRIFT");
-  I1 := GET_INDICE ("1st");
+  My_Io.Put_Line ("1 : WIND SPEED");
+  My_Io.Put_Line ("2 : WIND ANGLE");
+  My_Io.Put_Line ("3 : PLAN SPEED");
+  My_Io.Put_Line ("4 : PLAN ANGLE");
+  My_Io.Put_Line ("5 : TRAJ SPEED");
+  My_Io.Put_Line ("6 : TRAJ ANGLE");
+  My_Io.Put_Line ("7 : DRIFT");
+  I1 := Get_Indice ("1st");
   loop
-    I2 := GET_INDICE ("2nd");
+    I2 := Get_Indice ("2nd");
     exit when I2 /= I1;
   end loop;
   loop
-    I3 := GET_INDICE ("3rd");
+    I3 := Get_Indice ("3rd");
     exit when I3 /= I1 and then I3 /= I2;
   end loop;
-  DATA_IN.SET(NAV_DATA.WIND_S) := I1 /= 1 and then I2 /= 1 and then I3 /= 1;
-  DATA_IN.SET(NAV_DATA.WIND_A) := I1 /= 2 and then I2 /= 2 and then I3 /= 2;
-  DATA_IN.SET(NAV_DATA.PLAN_S) := I1 /= 3 and then I2 /= 3 and then I3 /= 3;
-  DATA_IN.SET(NAV_DATA.PLAN_A) := I1 /= 4 and then I2 /= 4 and then I3 /= 4;
-  DATA_IN.SET(NAV_DATA.TRAJ_S) := I1 /= 5 and then I2 /= 5 and then I3 /= 5;
-  DATA_IN.SET(NAV_DATA.TRAJ_A) := I1 /= 6 and then I2 /= 6 and then I3 /= 6;
-  DATA_IN.SET(NAV_DATA.DRIFT)  := I1 /= 7 and then I2 /= 7 and then I3 /= 7;
+  Data_In.Set(Nav_Data.Wind_S) := I1 /= 1 and then I2 /= 1 and then I3 /= 1;
+  Data_In.Set(Nav_Data.Wind_A) := I1 /= 2 and then I2 /= 2 and then I3 /= 2;
+  Data_In.Set(Nav_Data.Plan_S) := I1 /= 3 and then I2 /= 3 and then I3 /= 3;
+  Data_In.Set(Nav_Data.Plan_A) := I1 /= 4 and then I2 /= 4 and then I3 /= 4;
+  Data_In.Set(Nav_Data.Traj_S) := I1 /= 5 and then I2 /= 5 and then I3 /= 5;
+  Data_In.Set(Nav_Data.Traj_A) := I1 /= 6 and then I2 /= 6 and then I3 /= 6;
+  Data_In.Set(Nav_Data.Drift)  := I1 /= 7 and then I2 /= 7 and then I3 /= 7;
 
-  if DATA_IN.SET (NAV_DATA.WIND_S) then
-    DATA_IN.WIND.SPEED := GET_SPEED("wind");
+  if Data_In.Set (Nav_Data.Wind_S) then
+    Data_In.Wind.Speed := Get_Speed("wind");
   end if;
-  if DATA_IN.SET (NAV_DATA.WIND_A) then
-    DATA_IN.WIND.ANGLE := GET_ANGLE ("wind");
-  end if;
-
-  if DATA_IN.SET (NAV_DATA.PLAN_S) then
-    DATA_IN.PLAN.SPEED := GET_SPEED("plan");
-  end if;
-  if DATA_IN.SET (NAV_DATA.PLAN_A) then
-    DATA_IN.PLAN.ANGLE := GET_ANGLE ("plan");
+  if Data_In.Set (Nav_Data.Wind_A) then
+    Data_In.Wind.Angle := Get_Angle ("wind");
   end if;
 
-  if DATA_IN.SET (NAV_DATA.TRAJ_S) then
-    DATA_IN.TRAJ.SPEED := GET_SPEED("traj");
+  if Data_In.Set (Nav_Data.Plan_S) then
+    Data_In.Plan.Speed := Get_Speed("plan");
   end if;
-  if DATA_IN.SET (NAV_DATA.TRAJ_A) then
-    DATA_IN.TRAJ.ANGLE := GET_ANGLE ("traj");
-  end if;
-
-
-  if DATA_IN.SET (NAV_DATA.DRIFT) then
-    DATA_IN.DRIFT := GET_DRIFT ("drift");
+  if Data_In.Set (Nav_Data.Plan_A) then
+    Data_In.Plan.Angle := Get_Angle ("plan");
   end if;
 
-  NAV_DATA.RESOLUTION (DATA_IN, REPORT, DATA_OUT);
-  MY_IO.NEW_LINE;
-  CONS_IO.PUT (REPORT);
-  MY_IO.NEW_LINE;
-  if NAV_DATA."/=" (REPORT, NAV_DATA.OK) then return; end if;
+  if Data_In.Set (Nav_Data.Traj_S) then
+    Data_In.Traj.Speed := Get_Speed("traj");
+  end if;
+  if Data_In.Set (Nav_Data.Traj_A) then
+    Data_In.Traj.Angle := Get_Angle ("traj");
+  end if;
 
-  MY_IO.PUT ("WIND SPEED "); MY_IO.PUT_LINE (DATA_OUT.WIND.SPEED);
-  MY_IO.PUT ("WIND ANGLE "); MY_IO.PUT (INTEGER(DATA_OUT.WIND.ANGLE.DEGREES));
-  MY_IO.PUT ("."); MY_IO.PUT_LINE (INTEGER(DATA_OUT.WIND.ANGLE.MINUTES));
 
-  MY_IO.PUT ("PLAN SPEED "); MY_IO.PUT_LINE (DATA_OUT.PLAN.SPEED);
-  MY_IO.PUT ("PLAN ANGLE "); MY_IO.PUT (INTEGER(DATA_OUT.PLAN.ANGLE.DEGREES));
-  MY_IO.PUT ("."); MY_IO.PUT_LINE (INTEGER(DATA_OUT.PLAN.ANGLE.MINUTES));
+  if Data_In.Set (Nav_Data.Drift) then
+    Data_In.Drift := Get_Drift ("drift");
+  end if;
 
-  MY_IO.PUT ("TRAJ SPEED "); MY_IO.PUT_LINE (DATA_OUT.TRAJ.SPEED);
-  MY_IO.PUT ("TRAJ ANGLE "); MY_IO.PUT (INTEGER(DATA_OUT.TRAJ.ANGLE.DEGREES));
-  MY_IO.PUT ("."); MY_IO.PUT_LINE (INTEGER(DATA_OUT.TRAJ.ANGLE.MINUTES));
+  Nav_Data.Resolution (Data_In, Report, Data_Out);
+  My_Io.New_Line;
+  Cons_Io.Put (Report);
+  My_Io.New_Line;
+  if Nav_Data."/=" (Report, Nav_Data.Ok) then return; end if;
 
-  MY_IO.PUT ("DRIFT ");
-  if DATA_OUT.DRIFT.POSITIV then
-    MY_IO.PUT ("+");
+  My_Io.Put ("WIND SPEED "); My_Io.Put_Line (Data_Out.Wind.Speed);
+  My_Io.Put ("WIND ANGLE "); My_Io.Put (Integer(Data_Out.Wind.Angle.Degrees));
+  My_Io.Put ("."); My_Io.Put_Line (Integer(Data_Out.Wind.Angle.Minutes));
+
+  My_Io.Put ("PLAN SPEED "); My_Io.Put_Line (Data_Out.Plan.Speed);
+  My_Io.Put ("PLAN ANGLE "); My_Io.Put (Integer(Data_Out.Plan.Angle.Degrees));
+  My_Io.Put ("."); My_Io.Put_Line (Integer(Data_Out.Plan.Angle.Minutes));
+
+  My_Io.Put ("TRAJ SPEED "); My_Io.Put_Line (Data_Out.Traj.Speed);
+  My_Io.Put ("TRAJ ANGLE "); My_Io.Put (Integer(Data_Out.Traj.Angle.Degrees));
+  My_Io.Put ("."); My_Io.Put_Line (Integer(Data_Out.Traj.Angle.Minutes));
+
+  My_Io.Put ("DRIFT ");
+  if Data_Out.Drift.Positiv then
+    My_Io.Put ("+");
   else
-    MY_IO.PUT ("-");
+    My_Io.Put ("-");
   end if;
-  MY_IO.PUT (INTEGER(DATA_OUT.DRIFT.DEGREES)); MY_IO.PUT (".");
-  MY_IO.PUT_LINE (INTEGER(DATA_OUT.DRIFT.MINUTES));
-end T_NAV;
+  My_Io.Put (Integer(Data_Out.Drift.Degrees)); My_Io.Put (".");
+  My_Io.Put_Line (Integer(Data_Out.Drift.Minutes));
+end T_Nav;
 

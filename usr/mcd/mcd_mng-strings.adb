@@ -1,139 +1,139 @@
-with TEXT_HANDLER, UPPER_STR, LOWER_STR;
-separate(MCD_MNG)
+with Text_Handler, Upper_Str, Lower_Str;
+separate(Mcd_Mng)
 
-package body STRINGS is
+package body Strings is
 
-  procedure CHECK_CHRS (X : in ITEM_REC) is
+  procedure Check_Chrs (X : in Item_Rec) is
   begin
-    if X.KIND /= CHRS then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Chrs then
+      raise Invalid_Argument;
     end if;
-  end CHECK_CHRS;
+  end Check_Chrs;
 
-  procedure CHECK_INTE (X : in ITEM_REC) is
+  procedure Check_Inte (X : in Item_Rec) is
   begin
-    if X.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-  end CHECK_INTE;
+  end Check_Inte;
 
-  function STRCAT (S1, S2 : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(CHRS);
+  function Strcat (S1, S2 : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
   begin
-    CHECK_CHRS(S1);
-    CHECK_CHRS(S2);
+    Check_Chrs(S1);
+    Check_Chrs(S2);
 
-    if S1.VAL_LEN + S2.VAL_LEN > CHARS_TEXT'LENGTH then
-      raise STRING_LEN;
+    if S1.Val_Len + S2.Val_Len > Chars_Text'Length then
+      raise String_Len;
     end if;
-    RES.VAL_LEN := S1.VAL_LEN + S2.VAL_LEN;
-    RES.VAL_TEXT(1 .. RES.VAL_LEN) := S1.VAL_TEXT(1 .. S1.VAL_LEN)
-                                    & S2.VAL_TEXT(1 .. S2.VAL_LEN);
-    return RES;
-  end STRCAT;
+    Res.Val_Len := S1.Val_Len + S2.Val_Len;
+    Res.Val_Text(1 .. Res.Val_Len) := S1.Val_Text(1 .. S1.Val_Len)
+                                    & S2.Val_Text(1 .. S2.Val_Len);
+    return Res;
+  end Strcat;
 
-  function STRSUB (S, I1, I2 : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(CHRS);
+  function Strsub (S, I1, I2 : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
   begin
-    CHECK_CHRS(S);
-    CHECK_INTE(I1);
-    CHECK_INTE(I2);
+    Check_Chrs(S);
+    Check_Inte(I1);
+    Check_Inte(I2);
 
     -- Empty string
-    if I2.VAL_INTE = 0 or else I2.VAL_INTE < I1.VAL_INTE then
-      RES.VAL_LEN := 0;
-      return RES;
+    if I2.Val_Inte = 0 or else I2.Val_Inte < I1.Val_Inte then
+      Res.Val_Len := 0;
+      return Res;
     end if;
 
 
-    if I1.VAL_INTE < 1 or else I1.VAL_INTE > MY_MATH.INTE(S.VAL_LEN) then
-      raise ARGUMENT_MISMATCH;
+    if I1.Val_Inte < 1 or else I1.Val_Inte > My_Math.Inte(S.Val_Len) then
+      raise Argument_Mismatch;
     end if;
-    if I2.VAL_INTE < 1 or else I2.VAL_INTE > MY_MATH.INTE(S.VAL_LEN) then
-      raise ARGUMENT_MISMATCH;
+    if I2.Val_Inte < 1 or else I2.Val_Inte > My_Math.Inte(S.Val_Len) then
+      raise Argument_Mismatch;
     end if;
-    RES.VAL_LEN := NATURAL(I2.VAL_INTE) - NATURAL(I1.VAL_INTE) + 1;
-    RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
-            S.VAL_TEXT(NATURAL(I1.VAL_INTE) .. NATURAL(I2.VAL_INTE));
-    return RES;
+    Res.Val_Len := Natural(I2.Val_Inte) - Natural(I1.Val_Inte) + 1;
+    Res.Val_Text(1 .. Res.Val_Len) :=
+            S.Val_Text(Natural(I1.Val_Inte) .. Natural(I2.Val_Inte));
+    return Res;
 
-  end STRSUB;
+  end Strsub;
 
-  function STRLOC (OCC, PAT, S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(INTE);
+  function Strloc (Occ, Pat, S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Inte);
   begin
-    CHECK_CHRS(S);
-    CHECK_CHRS(PAT);
-    CHECK_INTE(OCC);
+    Check_Chrs(S);
+    Check_Chrs(Pat);
+    Check_Inte(Occ);
 
-    if OCC.VAL_INTE < 1 or else OCC.VAL_INTE > MY_MATH.INTE(POSITIVE'LAST) then
-      raise ARGUMENT_MISMATCH;
+    if Occ.Val_Inte < 1 or else Occ.Val_Inte > My_Math.Inte(Positive'Last) then
+      raise Argument_Mismatch;
     end if;
 
     declare
-      TXT : TEXT_HANDLER.TEXT(TEXT_HANDLER.MAX_LEN_RANGE(S.VAL_LEN));
+      Txt : Text_Handler.Text(Text_Handler.Max_Len_Range(S.Val_Len));
     begin
-      TEXT_HANDLER.SET(TXT, S.VAL_TEXT(1 .. S.VAL_LEN));
-      RES.VAL_INTE := MY_MATH.INTE(
-          TEXT_HANDLER.LOCATE(WITHIN    => TXT,
-                              FRAGMENT  => PAT.VAL_TEXT(1 .. PAT.VAL_LEN),
-                              OCCURENCE => POSITIVE(OCC.VAL_INTE)) );
+      Text_Handler.Set(Txt, S.Val_Text(1 .. S.Val_Len));
+      Res.Val_Inte := My_Math.Inte(
+          Text_Handler.Locate(Within    => Txt,
+                              Fragment  => Pat.Val_Text(1 .. Pat.Val_Len),
+                              Occurence => Positive(Occ.Val_Inte)) );
     end;
-    return RES;
-  end STRLOC;
+    return Res;
+  end Strloc;
 
-  function STRREP (I, PAT, S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(CHRS);
+  function Strrep (I, Pat, S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
   begin
-    CHECK_CHRS(S);
-    CHECK_CHRS(PAT);
-    CHECK_INTE(I);
+    Check_Chrs(S);
+    Check_Chrs(Pat);
+    Check_Inte(I);
 
-    if I.VAL_INTE < 1 or else I.VAL_INTE > MY_MATH.INTE(S.VAL_LEN) then
-      raise ARGUMENT_MISMATCH;
+    if I.Val_Inte < 1 or else I.Val_Inte > My_Math.Inte(S.Val_Len) then
+      raise Argument_Mismatch;
     end if;
 
     declare
-      TXT : TEXT_HANDLER.TEXT(CHARS_TEXT'LENGTH);
+      Txt : Text_Handler.Text(Chars_Text'Length);
     begin
-      TEXT_HANDLER.SET(TXT, S.VAL_TEXT(1 .. S.VAL_LEN));
-      TEXT_HANDLER.AMEND(TO => TXT, 
-                         BY => PAT.VAL_TEXT(1 .. PAT.VAL_LEN),
-                         POSITION => TEXT_HANDLER.MAX_LEN_RANGE(I.VAL_INTE) );
-      RES.VAL_LEN := TEXT_HANDLER.LENGTH(TXT);
-      RES.VAL_TEXT(1 .. RES.VAL_LEN) := TEXT_HANDLER.VALUE(TXT);
+      Text_Handler.Set(Txt, S.Val_Text(1 .. S.Val_Len));
+      Text_Handler.Amend(To => Txt, 
+                         By => Pat.Val_Text(1 .. Pat.Val_Len),
+                         Position => Text_Handler.Max_Len_Range(I.Val_Inte) );
+      Res.Val_Len := Text_Handler.Length(Txt);
+      Res.Val_Text(1 .. Res.Val_Len) := Text_Handler.Value(Txt);
     end;
-    return RES;
+    return Res;
   exception
-    when CONSTRAINT_ERROR =>
-      raise STRING_LEN;
-  end STRREP;
+    when Constraint_Error =>
+      raise String_Len;
+  end Strrep;
 
-  function STRLEN (S : ITEM_REC) return ITEM_REC is
+  function Strlen (S : Item_Rec) return Item_Rec is
   begin
-    CHECK_CHRS(S);
-    return (KIND => INTE, VAL_INTE => MY_MATH.INTE(S.VAL_LEN));
-  end STRLEN;
+    Check_Chrs(S);
+    return (Kind => Inte, Val_Inte => My_Math.Inte(S.Val_Len));
+  end Strlen;
 
-  function STRUPP (S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(CHRS);
+  function Strupp (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
   begin
-    CHECK_CHRS(S);
-    RES.VAL_LEN := S.VAL_LEN;
-    RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
-      UPPER_STR(S.VAL_TEXT(1 .. S.VAL_LEN));
-    return RES;
-  end STRUPP;
+    Check_Chrs(S);
+    Res.Val_Len := S.Val_Len;
+    Res.Val_Text(1 .. Res.Val_Len) :=
+      Upper_Str(S.Val_Text(1 .. S.Val_Len));
+    return Res;
+  end Strupp;
 
-  function STRLOW (S : ITEM_REC) return ITEM_REC is
-    RES : ITEM_REC(CHRS);
+  function Strlow (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
   begin
-    CHECK_CHRS(S);
-    RES.VAL_LEN := S.VAL_LEN;
-    RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
-      LOWER_STR(S.VAL_TEXT(1 .. S.VAL_LEN));
-    return RES;
-  end STRLOW;
+    Check_Chrs(S);
+    Res.Val_Len := S.Val_Len;
+    Res.Val_Text(1 .. Res.Val_Len) :=
+      Lower_Str(S.Val_Text(1 .. S.Val_Len));
+    return Res;
+  end Strlow;
 
-end STRINGS;
+end Strings;
 

@@ -1,113 +1,113 @@
-with MY_IO, X_MNG, ARGUMENT, TEXT_HANDLER;
-use X_MNG;
+with My_Io, X_Mng, Argument, Text_Handler;
+use X_Mng;
 procedure T_X is
 
-  LINE_DEF : constant X_MNG.LINE_DEFINITION_REC := (
-    SCREEN_ID => 0,
-    ROW => 10,
-    COLUMN => 20,
-    HEIGHT => 50,
-    WIDTH => 80,
-    BACKGROUND => 0,
-    BORDER => 1,
-    NO_FONT => 1);
+  Line_Def : constant X_Mng.Line_Definition_Rec := (
+    Screen_Id => 0,
+    Row => 10,
+    Column => 20,
+    Height => 50,
+    Width => 80,
+    Background => 0,
+    Border => 1,
+    No_Font => 1);
 
-  ID : X_MNG.LINE;
+  Id : X_Mng.Line;
 
-  TIMEOUT_MS, VAR_TIMEOUT_MS : INTEGER;
-  X_EVENT : BOOLEAN;
-  KIND : X_MNG.EVENT_KIND;
-  NEXT : BOOLEAN;
+  Timeout_Ms, Var_Timeout_Ms : Integer;
+  X_Event : Boolean;
+  Kind : X_Mng.Event_Kind;
+  Next : Boolean;
 
-  KBD_CODES : X_MNG.KBD_TAB_CODE;
-  TID_BUTTON : X_MNG.BUTTON_LIST;
-  TID_ROW, TID_COL : INTEGER;
+  Kbd_Codes : X_Mng.Kbd_Tab_Code;
+  Tid_Button : X_Mng.Button_List;
+  Tid_Row, Tid_Col : Integer;
 
-  TXT : TEXT_HANDLER.TEXT(80);
-  subtype ROW_RANGE is NATURAL range 10 .. 30;
-  ROW : ROW_RANGE := ROW_RANGE'FIRST;
+  Txt : Text_Handler.Text(80);
+  subtype Row_Range is Natural range 10 .. 30;
+  Row : Row_Range := Row_Range'First;
 
-  procedure PUT (STR : in STRING) is
+  procedure Put (Str : in String) is
   begin
-    X_MNG.X_PUT_STRING (ID, " ", ROW, 8);
-    if ROW /= ROW_RANGE'LAST then
-      ROW := ROW_RANGE'SUCC(ROW);
+    X_Mng.X_Put_String (Id, " ", Row, 8);
+    if Row /= Row_Range'Last then
+      Row := Row_Range'Succ(Row);
     else
-      ROW := ROW_RANGE'FIRST;
+      Row := Row_Range'First;
     end if;
-    X_MNG.X_PUT_STRING (ID, "> " & STR & "                       ",
-                            ROW, 8);
-  end PUT;
+    X_Mng.X_Put_String (Id, "> " & Str & "                       ",
+                            Row, 8);
+  end Put;
 
 begin
-  if ARGUMENT.GET_NBRE_ARG = 0 then
-    X_MNG.X_INITIALISE ("");
-    TIMEOUT_MS := 1_000;
-  elsif ARGUMENT.GET_NBRE_ARG = 1 then
-    X_MNG.X_INITIALISE (ARGUMENT.GET_PARAMETER(1));
-    TIMEOUT_MS := 1_000;
-  elsif ARGUMENT.GET_NBRE_ARG = 2 then
-    X_MNG.X_INITIALISE (ARGUMENT.GET_PARAMETER(1));
-    TIMEOUT_MS := INTEGER'VALUE (ARGUMENT.GET_PARAMETER(2));
+  if Argument.Get_Nbre_Arg = 0 then
+    X_Mng.X_Initialise ("");
+    Timeout_Ms := 1_000;
+  elsif Argument.Get_Nbre_Arg = 1 then
+    X_Mng.X_Initialise (Argument.Get_Parameter(1));
+    Timeout_Ms := 1_000;
+  elsif Argument.Get_Nbre_Arg = 2 then
+    X_Mng.X_Initialise (Argument.Get_Parameter(1));
+    Timeout_Ms := Integer'Value (Argument.Get_Parameter(2));
   end if;
 
-  X_MNG.X_OPEN_LINE (LINE_DEF, ID);
+  X_Mng.X_Open_Line (Line_Def, Id);
 
-  X_MNG.X_SET_ATTRIBUTES (ID, 0, 5, TRUE, FALSE, FALSE, FALSE);
+  X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False, False);
   for I in 0 .. 15 loop
     for J in 0 .. 15 loop
-      X_MNG.X_PUT_CHAR (ID, X_MNG.BYTE(16 * I + J), 8 + I, 60 + J);
+      X_Mng.X_Put_Char (Id, X_Mng.Byte(16 * I + J), 8 + I, 60 + J);
     end loop;
   end loop;
 
-  X_EVENT := TRUE;
-  KIND := X_MNG.REFRESH;
-  MAIN_LOOP:
+  X_Event := True;
+  Kind := X_Mng.Refresh;
+  Main_Loop:
   loop
-    if X_EVENT and then KIND = X_MNG.REFRESH then
-      X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, TRUE, FALSE);
-      X_MNG.X_PUT_STRING (ID, "Ah que coucou", 5, 10);
-      X_MNG.X_SET_ATTRIBUTES (ID, 1, 4);
-      X_MNG.X_DRAW_AREA (ID, 50, 2, 7, 10);
-      X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, FALSE, FALSE);
-      X_MNG.X_BELL (ID, 1);
+    if X_Event and then Kind = X_Mng.Refresh then
+      X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
+      X_Mng.X_Put_String (Id, "Ah que coucou", 5, 10);
+      X_Mng.X_Set_Attributes (Id, 1, 4);
+      X_Mng.X_Draw_Area (Id, 50, 2, 7, 10);
+      X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False, False);
+      X_Mng.X_Bell (Id, 1);
     end if;
-    VAR_TIMEOUT_MS := TIMEOUT_MS;
-    X_MNG.X_SELECT (ID, VAR_TIMEOUT_MS, X_EVENT);
-    if X_EVENT then
+    Var_Timeout_Ms := Timeout_Ms;
+    X_Mng.X_Select (Id, Var_Timeout_Ms, X_Event);
+    if X_Event then
       loop
-        X_MNG.X_PROCESS_EVENT (ID, KIND, NEXT);
-        case KIND is
-          when X_MNG.DISCARD =>
-            PUT (X_MNG.EVENT_KIND'IMAGE(KIND));
-          when X_MNG.REFRESH | X_MNG.FD_EVENT | X_MNG.TIMER_EVENT =>
-            X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, TRUE, FALSE);
-            PUT (X_MNG.EVENT_KIND'IMAGE(KIND));
-          when X_MNG.TID_PRESS | X_MNG.TID_RELEASE =>
-            X_MNG.X_READ_TID (ID, TRUE, TID_BUTTON, TID_ROW, TID_COL);
-            PUT (X_MNG.EVENT_KIND'IMAGE(KIND) & " " & X_MNG.BUTTON_LIST'IMAGE(TID_BUTTON)
-                              & " " & INTEGER'IMAGE(TID_ROW)  & " " & INTEGER'IMAGE(TID_COL));
-            exit MAIN_LOOP when TID_ROW = 1 and then TID_COL = 1;
-          when X_MNG.TID_MOTION =>
+        X_Mng.X_Process_Event (Id, Kind, Next);
+        case Kind is
+          when X_Mng.Discard =>
+            Put (X_Mng.Event_Kind'Image(Kind));
+          when X_Mng.Refresh | X_Mng.Fd_Event | X_Mng.Timer_Event =>
+            X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
+            Put (X_Mng.Event_Kind'Image(Kind));
+          when X_Mng.Tid_Press | X_Mng.Tid_Release =>
+            X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col);
+            Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
+                              & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col));
+            exit Main_Loop when Tid_Row = 1 and then Tid_Col = 1;
+          when X_Mng.Tid_Motion =>
             null;
-          when X_MNG.KEYBOARD =>
-            X_MNG.X_READ_KEY(ID, KBD_CODES);
-            TEXT_HANDLER.SET (TXT, X_MNG.EVENT_KIND'IMAGE(KIND));
-            for I in 1 .. KBD_CODES.NBRE loop
-               TEXT_HANDLER.APPEND (TXT, " " & X_MNG.BYTE'IMAGE(KBD_CODES.TAB(I)));
+          when X_Mng.Keyboard =>
+            X_Mng.X_Read_Key(Id, Kbd_Codes);
+            Text_Handler.Set (Txt, X_Mng.Event_Kind'Image(Kind));
+            for I in 1 .. Kbd_Codes.Nbre loop
+               Text_Handler.Append (Txt, " " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
             end loop;
-            PUT (TEXT_HANDLER.VALUE(TXT));
-            exit MAIN_LOOP when KBD_CODES.NBRE = 2
-                 and then KBD_CODES.TAB(1) = 255 and then KBD_CODES.TAB(2) = 27;
+            Put (Text_Handler.Value(Txt));
+            exit Main_Loop when Kbd_Codes.Nbre = 2
+                 and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;
           end case;
-        exit when not NEXT;
+        exit when not Next;
       end loop;
     else
 --      PUT ("Timeout");
 null;
     end if;
-    MY_IO.PUT_LINE (INTEGER'IMAGE(VAR_TIMEOUT_MS));
-  end loop MAIN_LOOP;
+    My_Io.Put_Line (Integer'Image(Var_Timeout_Ms));
+  end loop Main_Loop;
 
-  X_MNG.X_CLOSE_LINE (ID);
+  X_Mng.X_Close_Line (Id);
 end T_X;

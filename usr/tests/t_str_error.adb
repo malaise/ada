@@ -1,10 +1,10 @@
-with MY_IO, SYS_CALLS, NORMAL;
-procedure T_STR_ERROR is
+with My_Io, Sys_Calls, Normal;
+procedure T_Str_Error is
 begin
 
   for I in 1 .. 256 loop
-    exit when SYS_CALLS.STR_ERROR(I) = "";
-    MY_IO.PUT_LINE (NORMAL(I, 3) & " -> " & SYS_CALLS.STR_ERROR(I) );
+    exit when Sys_Calls.Str_Error(I) = "";
+    My_Io.Put_Line (Normal(I, 3) & " -> " & Sys_Calls.Str_Error(I) );
   end loop;
 
-end T_STR_ERROR;
+end T_Str_Error;

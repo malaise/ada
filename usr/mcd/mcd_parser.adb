@@ -1,224 +1,224 @@
-with TEXT_IO;
-with TEXT_HANDLER, MY_MATH, QUEUES, SYS_CALLS, LOWER_STR;
-with DEBUG, INPUT_DISPATCHER, BOOL_IO, INTE_IO, REAL_IO;
-package body PARSER is
-  use MCD_MNG;
+with Text_Io;
+with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str;
+with Debug, Input_Dispatcher, Bool_Io, Inte_Io, Real_Io;
+package body Parser is
+  use Mcd_Mng;
 
-  subtype ITEM_CHRS_REC is MCD_MNG.ITEM_REC(MCD_MNG.CHRS);
+  subtype Item_Chrs_Rec is Mcd_Mng.Item_Rec(Mcd_Mng.Chrs);
 
   -- Instruction stack for debug history
-  package INSTR_STACK is new QUEUES.CIRC(7, ITEM_CHRS_REC);
+  package Instr_Stack is new Queues.Circ(7, Item_Chrs_Rec);
 
-  TXT, TXTS : TEXT_HANDLER.TEXT(INPUT_DISPATCHER.MAX_STRING_LG);
+  Txt, Txts : Text_Handler.Text(Input_Dispatcher.Max_String_Lg);
 
-  INPUT_ERROR : BOOLEAN := FALSE;
+  Input_Error : Boolean := False;
 
   -- Length of an operator
-  OPE_LEN : constant := 8;
+  Ope_Len : constant := 8;
 
   -- Length of a symbol
-  subtype ONE_WORD is STRING(1 .. 2);
+  subtype One_Word is String(1 .. 2);
   -- No symbol
-  NOSY : constant ONE_WORD := (others => ' ');
+  Nosy : constant One_Word := (others => ' ');
 
   -- Length of the comment
-  subtype ONE_COMMENT is STRING (1 .. 30);
+  subtype One_Comment is String (1 .. 30);
 
   -- One operator definition
-  type ONE_REC is record
-    WORD : ONE_WORD;
-    COMMENT : ONE_COMMENT;
+  type One_Rec is record
+    Word : One_Word;
+    Comment : One_Comment;
   end record;
 
   -- The operators
-  WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_REC :=
-  (NOP      => (NOSY, "No operation                  "),
+  Words : constant array (Mcd_Mng.Operator_List) of One_Rec :=
+  (Nop      => (Nosy, "No operation                  "),
 
-   ADD      => ("+ ", "push B + A                    "),
-   SUB      => ("- ", "push B - A                    "),
-   MULT     => ("* ", "push B * A                    "),
-   DIV      => ("/ ", "push B / A                    "),
-   REMIND   => ("% ", "push B % A (rest of division) "),
-   POW      => ("**", "push B ** A (pow)             "),
-   MINUS    => ("+-", "push -A                       "),
-   ABSV     => (NOSY, "push |A|                      "),
+   Add      => ("+ ", "push B + A                    "),
+   Sub      => ("- ", "push B - A                    "),
+   Mult     => ("* ", "push B * A                    "),
+   Div      => ("/ ", "push B / A                    "),
+   Remind   => ("% ", "push B % A (rest of division) "),
+   Pow      => ("**", "push B ** A (pow)             "),
+   Minus    => ("+-", "push -A                       "),
+   Absv     => (Nosy, "push |A|                      "),
 
-   BITAND   => ("&&", "push B & A (bit and)          "),
-   BITOR    => ("||", "push B | A (bit and)          "),
-   BITXOR   => ("^^", "push B ^ A (bit and)          "),
-   BITNEG   => ("~~", "push ~A    (bit neg)          "),
-   SHL      => ("<<", "push B << A (bits shift left) "),
-   SHR      => (">>", "push B >> A (bits shift right)"),
+   Bitand   => ("&&", "push B & A (bit and)          "),
+   Bitor    => ("||", "push B | A (bit and)          "),
+   Bitxor   => ("^^", "push B ^ A (bit and)          "),
+   Bitneg   => ("~~", "push ~A    (bit neg)          "),
+   Shl      => ("<<", "push B << A (bits shift left) "),
+   Shr      => (">>", "push B >> A (bits shift right)"),
 
-   EQUAL    => ("= ", "push B = A                    "),
-   DIFF     => ("/=", "push B /= A                   "),
-   GREATER  => ("> ", "push B > A                    "),
-   SMALLER  => ("< ", "push B < A                    "),
-   GREATEQ  => (">=", "push B >= A                   "),
-   SMALLEQ  => ("<=", "push B <= A                   "),
+   Equal    => ("= ", "push B = A                    "),
+   Diff     => ("/=", "push B /= A                   "),
+   Greater  => ("> ", "push B > A                    "),
+   Smaller  => ("< ", "push B < A                    "),
+   Greateq  => (">=", "push B >= A                   "),
+   Smalleq  => ("<=", "push B <= A                   "),
 
-   BOLAND   => ("& ", "push B and A                  "),
-   BOLOR    => ("| ", "push B or A                   "),
-   BOLXOR   => ("^ ", "push B xor A                  "),
-   BOLNEG   => ("~ ", "push not A                    "),
+   Boland   => ("& ", "push B and A                  "),
+   Bolor    => ("| ", "push B or A                   "),
+   Bolxor   => ("^ ", "push B xor A                  "),
+   Bolneg   => ("~ ", "push not A                    "),
 
-   TOREAL   => (NOSY, "push REAL(A)                  "),
-   ROUND    => (NOSY, "push INTE(A) (round)          "),
-   TRUNC    => (NOSY, "push INTE(A) (int part)       "),
-   INT      => (NOSY, "push int part of A            "),
-   FRAC     => (NOSY, "push frac part of A           "),
+   Toreal   => (Nosy, "push REAL(A)                  "),
+   Round    => (Nosy, "push INTE(A) (round)          "),
+   Trunc    => (Nosy, "push INTE(A) (int part)       "),
+   Int      => (Nosy, "push int part of A            "),
+   Frac     => (Nosy, "push frac part of A           "),
  
-   ISREAL   => (NOSY, "push True if A is a real      "),
-   ISINTE   => (NOSY, "push True if A in an integer  "),
-   ISSTR    => (NOSY, "push True if A is a string    "),
-   ISREG    => (NOSY, "push True if A is a register  "),
+   Isreal   => (Nosy, "push True if A is a real      "),
+   Isinte   => (Nosy, "push True if A in an integer  "),
+   Isstr    => (Nosy, "push True if A is a string    "),
+   Isreg    => (Nosy, "push True if A is a register  "),
 
-   OBASE    => (NOSY, "set output base to A          "),
+   Obase    => (Nosy, "set output base to A          "),
  
-   SSIZE    => (NOSY, "push stack size               "),
-   SWAP     => (NOSY, "push A, push B                "),
-   DUP      => (NOSY, "push A, push A                "),
-   POP      => (NOSY, "pop A                         "),
-   POPN     => (NOSY, "pop B A times                 "),
-   RND      => (NOSY, "push 0.0 <= RND < 1.0         "),
-   SLEEP    => (NOSY, "sleep A seconds               "),
+   Ssize    => (Nosy, "push stack size               "),
+   Swap     => (Nosy, "push A, push B                "),
+   Dup      => (Nosy, "push A, push A                "),
+   Pop      => (Nosy, "pop A                         "),
+   Popn     => (Nosy, "pop B A times                 "),
+   Rnd      => (Nosy, "push 0.0 <= RND < 1.0         "),
+   Sleep    => (Nosy, "sleep A seconds               "),
 
-   POPR     => (NOSY, "B -> regA                     "),
-   COPYR    => (NOSY, "B -> regA, push B             "),
-   PUSHR    => (NOSY, "push regA                     "),
+   Popr     => (Nosy, "B -> regA                     "),
+   Copyr    => (Nosy, "B -> regA, push B             "),
+   Pushr    => (Nosy, "push regA                     "),
 
-   POPE     => (NOSY, "pop A push_extra A            "),
-   COPYE    => (NOSY, "pop A push_extra A push A     "),
-   PUSHLE   => (NOSY, "pop_extra last  X push X      "),
-   PUSHFE   => (NOSY, "pop_extra first X push X      "),
-   ESIZE    => (NOSY, "push extra_stack size         "),
+   Pope     => (Nosy, "pop A push_extra A            "),
+   Copye    => (Nosy, "pop A push_extra A push A     "),
+   Pushle   => (Nosy, "pop_extra last  X push X      "),
+   Pushfe   => (Nosy, "pop_extra first X push X      "),
+   Esize    => (Nosy, "push extra_stack size         "),
 
-   IFTHEN   => (NOSY, "if B then push A              "),
-   IFTE     => (NOSY, "if C then push B else push A  "),
-   ETFI     => (NOSY, "if A then push C else push B  "),
+   Ifthen   => (Nosy, "if B then push A              "),
+   Ifte     => (Nosy, "if C then push B else push A  "),
+   Etfi     => (Nosy, "if A then push C else push B  "),
 
-   CALL     => (NOSY, "call A                        "),
-   IFCALL   => (NOSY, "if B then call A              "),
-   RET      => (NOSY, "return                        "),
-   RETN     => (NOSY, "return A levels (0=none)      "),
-   RETALL   => (NOSY, "return all levels             "),
-   IFRET    => (NOSY, "if A return                   "),
-   IFRETN   => (NOSY, "if B return A levels (0=none) "),
-   IFRETALL => (NOSY, "if A return all levels        "),
-   RETACAL  => (NOSY, "return and call A             "),
+   Call     => (Nosy, "call A                        "),
+   Ifcall   => (Nosy, "if B then call A              "),
+   Ret      => (Nosy, "return                        "),
+   Retn     => (Nosy, "return A levels (0=none)      "),
+   Retall   => (Nosy, "return all levels             "),
+   Ifret    => (Nosy, "if A return                   "),
+   Ifretn   => (Nosy, "if B return A levels (0=none) "),
+   Ifretall => (Nosy, "if A return all levels        "),
+   Retacal  => (Nosy, "return and call A             "),
 
-   FORMAT   => (NOSY, "xx or xx.yyy format           "),
-   PUT      => (NOSY, "put A                         "),
-   NEWL     => (NOSY, "new line                      "),
-   PUTL     => (NOSY, "put_line A                    "),
+   Format   => (Nosy, "xx or xx.yyy format           "),
+   Put      => (Nosy, "put A                         "),
+   Newl     => (Nosy, "new line                      "),
+   Putl     => (Nosy, "put_line A                    "),
 
-   STRLEN   => (NOSY, "push length of A              "),
-   STRCAT   => (NOSY, "push B & A                    "),
-   STRSUB   => (NOSY, "push C(B..A)                  "),
-   STRLOC   => (NOSY, "push C occurence of B in A    "),
-   STRREP   => (NOSY, "push A replaced by B at pos C "),
-   STRUPP   => (NOSY, "push A in uppercase           "),
-   STRLOW   => (NOSY, "push A in lowercase           "),
-   STRREAL  => (NOSY, "push A converted to real      "),
-   STRINTE  => (NOSY, "push A converted to inte      "),
-   STRBOOL  => (NOSY, "push A converted to bool      "),
-   STROF    => (NOSY, "push formated string of A     "),
+   Strlen   => (Nosy, "push length of A              "),
+   Strcat   => (Nosy, "push B & A                    "),
+   Strsub   => (Nosy, "push C(B..A)                  "),
+   Strloc   => (Nosy, "push C occurence of B in A    "),
+   Strrep   => (Nosy, "push A replaced by B at pos C "),
+   Strupp   => (Nosy, "push A in uppercase           "),
+   Strlow   => (Nosy, "push A in lowercase           "),
+   Strreal  => (Nosy, "push A converted to real      "),
+   Strinte  => (Nosy, "push A converted to inte      "),
+   Strbool  => (Nosy, "push A converted to bool      "),
+   Strof    => (Nosy, "push formated string of A     "),
 
-   HELP     => (NOSY, "put help                      ") );
+   Help     => (Nosy, "put help                      ") );
 
 
-  function NEXT_ITEM return MCD_MNG.ITEM_REC is
-    LEVEL : NATURAL;
-    ITEM_CHRS, SAVED_ITEM_CHRS : ITEM_CHRS_REC;
-    FIRST_WORD : BOOLEAN;
-    W : ONE_WORD;
-    C : CHARACTER;
-    B : BOOLEAN;
-    I : MY_MATH.INTE;
-    R : MY_MATH.REAL;
-    L : POSITIVE;
-    N : NATURAL;
+  function Next_Item return Mcd_Mng.Item_Rec is
+    Level : Natural;
+    Item_Chrs, Saved_Item_Chrs : Item_Chrs_Rec;
+    First_Word : Boolean;
+    W : One_Word;
+    C : Character;
+    B : Boolean;
+    I : My_Math.Inte;
+    R : My_Math.Real;
+    L : Positive;
+    N : Natural;
   begin
 
-    TEXT_HANDLER.SET (TXT, INPUT_DISPATCHER.NEXT_WORD);
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
-      TEXT_IO.PUT_LINE ("Parser: Getting >"
-               & TEXT_HANDLER.VALUE(TXT)  & "<");
+    Text_Handler.Set (Txt, Input_Dispatcher.Next_Word);
+    if Debug.Debug_Level_Array(Debug.Parser) then
+      Text_Io.Put_Line ("Parser: Getting >"
+               & Text_Handler.Value(Txt)  & "<");
     end if;
-    ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXT);
-    ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) := TEXT_HANDLER.VALUE(TXT);
+    Item_Chrs.Val_Len := Text_Handler.Length(Txt);
+    Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
 
     -- EOF
-    if TEXT_HANDLER.EMPTY(TXT) then
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
-        TEXT_IO.PUT_LINE ("Parser: Eof");
+    if Text_Handler.Empty(Txt) then
+      if Debug.Debug_Level_Array(Debug.Parser) then
+        Text_Io.Put_Line ("Parser: Eof");
       end if;
-      ITEM_CHRS.VAL_LEN := 3;
-      ITEM_CHRS.VAL_TEXT(1 .. 3) := "EOF";
-      INSTR_STACK.PUSH(ITEM_CHRS);
-      return (KIND => OPER, VAL_OPER => RET);
+      Item_Chrs.Val_Len := 3;
+      Item_Chrs.Val_Text(1 .. 3) := "EOF";
+      Instr_Stack.Push(Item_Chrs);
+      return (Kind => Oper, Val_Oper => Ret);
     end if;
 
-    C := TEXT_HANDLER.VALUE(TXT)(1);
+    C := Text_Handler.Value(Txt)(1);
 
     -- Parse [ or REGI
-    if TEXT_HANDLER.LENGTH(TXT) = 1 then
+    if Text_Handler.Length(Txt) = 1 then
       
       if C in 'a' .. 'z' or else C in 'A' .. 'Z' then
         -- A register
-        INSTR_STACK.PUSH(ITEM_CHRS);
-        return (KIND => MCD_MNG.REGI, VAL_REGI => C);
+        Instr_Stack.Push(Item_Chrs);
+        return (Kind => Mcd_Mng.Regi, Val_Regi => C);
       elsif C = '[' then
         -- Get rid of strings
-        TEXT_HANDLER.EMPTY(TXTS);
-        FIRST_WORD := TRUE;
-        LEVEL := 1;
-        while LEVEL /= 0 loop
-          TEXT_HANDLER.SET(TXT, INPUT_DISPATCHER.NEXT_WORD);
-          if TEXT_HANDLER.VALUE(TXT) = "[" then
-            LEVEL := LEVEL + 1;
-          elsif TEXT_HANDLER.VALUE(TXT) = "]" then
-            LEVEL := LEVEL - 1;
-            exit when LEVEL = 0;
+        Text_Handler.Empty(Txts);
+        First_Word := True;
+        Level := 1;
+        while Level /= 0 loop
+          Text_Handler.Set(Txt, Input_Dispatcher.Next_Word);
+          if Text_Handler.Value(Txt) = "[" then
+            Level := Level + 1;
+          elsif Text_Handler.Value(Txt) = "]" then
+            Level := Level - 1;
+            exit when Level = 0;
           end if;
           -- No space before first word
-          if FIRST_WORD then
-            FIRST_WORD  := FALSE;
+          if First_Word then
+            First_Word  := False;
           else
-            TEXT_HANDLER.APPEND (TXTS, ' ');
+            Text_Handler.Append (Txts, ' ');
           end if;
-          TEXT_HANDLER.APPEND (TXTS, TXT);
+          Text_Handler.Append (Txts, Txt);
         end loop;
         -- Remove leading and tailing "
-        N := TEXT_HANDLER.LENGTH(TXTS);
+        N := Text_Handler.Length(Txts);
         if N > 0
-        and then TEXT_HANDLER.VALUE(TXTS)(1) = '"'
+        and then Text_Handler.Value(Txts)(1) = '"'
         and then TEXT_HANDLER.VALUE(TXTS)(N) = '"' then
-          TEXT_HANDLER.SET(TXTS, TEXT_HANDLER.VALUE(TXTS)(2 .. N-1));
+          Text_Handler.Set(Txts, Text_Handler.Value(Txts)(2 .. N-1));
         end if;
-        ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXTS);
-        ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) := TEXT_HANDLER.VALUE(TXTS);
-        if ITEM_CHRS.VAL_LEN + 4 <= INPUT_DISPATCHER.MAX_STRING_LG then
-          SAVED_ITEM_CHRS.VAL_LEN := TEXT_HANDLER.LENGTH(TXTS) + 4;
-          SAVED_ITEM_CHRS.VAL_TEXT(1 .. SAVED_ITEM_CHRS.VAL_LEN) := "[ " & TEXT_HANDLER.VALUE(TXTS) & " ]";
+        Item_Chrs.Val_Len := Text_Handler.Length(Txts);
+        Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
+        if Item_Chrs.Val_Len + 4 <= Input_Dispatcher.Max_String_Lg then
+          Saved_Item_Chrs.Val_Len := Text_Handler.Length(Txts) + 4;
+          Saved_Item_Chrs.Val_Text(1 .. Saved_Item_Chrs.Val_Len) := "[ " & Text_Handler.Value(Txts) & " ]";
         else
-          SAVED_ITEM_CHRS := ITEM_CHRS;
+          Saved_Item_Chrs := Item_Chrs;
         end if;
-        INSTR_STACK.PUSH(SAVED_ITEM_CHRS);
-        return ITEM_CHRS;
+        Instr_Stack.Push(Saved_Item_Chrs);
+        return Item_Chrs;
       end if;
 
     end if;
 
     -- Parse OPER : string
     declare
-      OP : MCD_MNG.OPERATOR_LIST;
+      Op : Mcd_Mng.Operator_List;
     begin
-      OP := MCD_MNG.OPERATOR_LIST'VALUE(TEXT_HANDLER.VALUE(TXT));
+      Op := Mcd_Mng.Operator_List'Value(Text_Handler.Value(Txt));
       -- Allow string only if no symbol defined
-      if WORDS(OP).WORD = NOSY then
-        INSTR_STACK.PUSH(ITEM_CHRS);
-        return (KIND => MCD_MNG.OPER, VAL_OPER => OP);
+      if Words(Op).Word = Nosy then
+        Instr_Stack.Push(Item_Chrs);
+        return (Kind => Mcd_Mng.Oper, Val_Oper => Op);
       end if;
     exception
       -- Does not match
@@ -226,17 +226,17 @@ package body PARSER is
     end;
 
     -- Parse OPER : synbol
-    if TEXT_HANDLER.LENGTH(TXT) <= 2 then
-      if TEXT_HANDLER.LENGTH(TXT) = 2 then
-        W := TEXT_HANDLER.VALUE(TXT);
+    if Text_Handler.Length(Txt) <= 2 then
+      if Text_Handler.Length(Txt) = 2 then
+        W := Text_Handler.Value(Txt);
       else
-        W(1) := TEXT_HANDLER.VALUE(TXT)(1);
+        W(1) := Text_Handler.Value(Txt)(1);
         W(2) := ' ';
       end if;
-      for O in MCD_MNG.OPERATOR_LIST loop
-        if WORDS(O).WORD = W then
-          INSTR_STACK.PUSH(ITEM_CHRS);
-          return (KIND => MCD_MNG.OPER, VAL_OPER => O);
+      for O in Mcd_Mng.Operator_List loop
+        if Words(O).Word = W then
+          Instr_Stack.Push(Item_Chrs);
+          return (Kind => Mcd_Mng.Oper, Val_Oper => O);
         end if;
       end loop;
     end if;
@@ -244,93 +244,93 @@ package body PARSER is
 
     -- Parse INTE REAL BOOL
     begin
-      BOOL_IO.GET(TEXT_HANDLER.VALUE(TXT), B, L);
-      if L = TEXT_HANDLER.LENGTH(TXT) then
-        INSTR_STACK.PUSH(ITEM_CHRS);
-        return (KIND => MCD_MNG.BOOL, VAL_BOOL => B);
+      Bool_Io.Get(Text_Handler.Value(Txt), B, L);
+      if L = Text_Handler.Length(Txt) then
+        Instr_Stack.Push(Item_Chrs);
+        return (Kind => Mcd_Mng.Bool, Val_Bool => B);
       end if;
     exception
       when others => null;
     end;
     begin
-      INTE_IO.GET(TEXT_HANDLER.VALUE(TXT), I, L);
-      if L = TEXT_HANDLER.LENGTH(TXT) then
-        INSTR_STACK.PUSH(ITEM_CHRS);
-        return (KIND => MCD_MNG.INTE, VAL_INTE => I);
+      Inte_Io.Get(Text_Handler.Value(Txt), I, L);
+      if L = Text_Handler.Length(Txt) then
+        Instr_Stack.Push(Item_Chrs);
+        return (Kind => Mcd_Mng.Inte, Val_Inte => I);
       end if;
     exception
       when others => null;
     end;
     begin
-      REAL_IO.GET(TEXT_HANDLER.VALUE(TXT), R, L);
-      if L = TEXT_HANDLER.LENGTH(TXT) then
-        INSTR_STACK.PUSH(ITEM_CHRS);
-        return (KIND => MCD_MNG.REAL, VAL_REAL => R);
+      Real_Io.Get(Text_Handler.Value(Txt), R, L);
+      if L = Text_Handler.Length(Txt) then
+        Instr_Stack.Push(Item_Chrs);
+        return (Kind => Mcd_Mng.Real, Val_Real => R);
       end if;
     exception
       when others => null;
     end;
     
     -- Cannot recognise anything
-    INSTR_STACK.PUSH(ITEM_CHRS);
-    raise PARSING_ERROR;  
+    Instr_Stack.Push(Item_Chrs);
+    raise Parsing_Error;  
     
   exception
-    when INPUT_DISPATCHER.STRING_ERROR =>
-      INPUT_ERROR := TRUE;
-      raise PARSING_ERROR;
+    when Input_Dispatcher.String_Error =>
+      Input_Error := True;
+      raise Parsing_Error;
     when others =>
-      raise PARSING_ERROR;  
-  end NEXT_ITEM;
+      raise Parsing_Error;  
+  end Next_Item;
 
 
-  procedure PRINT_HELP is
-    use TEXT_IO;
-    OPE_NAME : STRING (1 .. OPE_LEN);
+  procedure Print_Help is
+    use Text_Io;
+    Ope_Name : String (1 .. Ope_Len);
   begin
-    PUT_LINE ("Commands are read from standard input. No argument accepted.");
-    PUT_LINE ("Separators are space and horiz tab.");
-    PUT_LINE ("Item ::= <integer> <real> <boolean> <operator> <register> <string/subprogram>");
-    PUT_LINE ("  <integer>           ::= <number> | <base>#<number># ");
-    PUT_LINE ("  <register>          ::= 'a' .. 'z'  | 'A' .. 'Z'");
-    PUT_LINE ("  <string/subprogram> ::= '[' <text> ']'");
-    PUT_LINE ("  <operator>          ::= <operator_name> | <operator_symbol>");
-    PUT_LINE ("Operators are: Name      Action (A is top of stack, then B...)");
-    for O in MCD_MNG.OPERATOR_LIST loop
-      OPE_NAME:= (others => ' ');
-      if WORDS(O).WORD /= NOSY then
-        OPE_NAME(1 .. 2) := WORDS(O).WORD;
+    Put_Line ("Commands are read from standard input. No argument accepted.");
+    Put_Line ("Separators are space and horiz tab.");
+    Put_Line ("Item ::= <integer> <real> <boolean> <operator> <register> <string/subprogram>");
+    Put_Line ("  <integer>           ::= <number> | <base>#<number># ");
+    Put_Line ("  <register>          ::= 'a' .. 'z'  | 'A' .. 'Z'");
+    Put_Line ("  <string/subprogram> ::= '[' <text> ']'");
+    Put_Line ("  <operator>          ::= <operator_name> | <operator_symbol>");
+    Put_Line ("Operators are: Name      Action (A is top of stack, then B...)");
+    for O in Mcd_Mng.Operator_List loop
+      Ope_Name:= (others => ' ');
+      if Words(O).Word /= Nosy then
+        Ope_Name(1 .. 2) := Words(O).Word;
       else 
-        OPE_NAME(1 .. MCD_MNG.OPERATOR_LIST'IMAGE(O)'LENGTH)
-                := LOWER_STR(MCD_MNG.OPERATOR_LIST'IMAGE(O));
+        Ope_Name(1 .. Mcd_Mng.Operator_List'Image(O)'Length)
+                := Lower_Str(Mcd_Mng.Operator_List'Image(O));
       end if;
-      PUT_LINE("               " & OPE_NAME & "   " & WORDS(O).COMMENT);
+      Put_Line("               " & Ope_Name & "   " & Words(O).Comment);
     end loop;
-  end PRINT_HELP;
+  end Print_Help;
     
-  procedure DUMP_STACK is
-    ITEM_CHRS : ITEM_CHRS_REC;
+  procedure Dump_Stack is
+    Item_Chrs : Item_Chrs_Rec;
   begin
-    if not DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.HISTORY) then
+    if not Debug.Debug_Level_Array(Debug.History) then
       return;
     end if;
-    SYS_CALLS.PUT_LINE_ERROR ("History:");
+    Sys_Calls.Put_Line_Error ("History:");
     loop
       begin
-        INSTR_STACK.POP(ITEM_CHRS);
-        SYS_CALLS.PUT_ERROR (ITEM_CHRS.VAL_TEXT(1 .. ITEM_CHRS.VAL_LEN) & " ");
+        Instr_Stack.Pop(Item_Chrs);
+        Sys_Calls.Put_Error (Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) & " ");
       exception
-        when INSTR_STACK.CIRC_EMPTY =>
+        when Instr_Stack.Circ_Empty =>
          exit;
       end;
     end loop;
-    if INPUT_ERROR then
-      SYS_CALLS.PUT_LINE_ERROR (INPUT_DISPATCHER.ERROR_STRING);
+    if Input_Error then
+      Sys_Calls.Put_Line_Error (Input_Dispatcher.Error_String);
     else
-      SYS_CALLS.NEW_LINE_ERROR;
+      Sys_Calls.New_Line_Error;
     end if;
-  end DUMP_STACK;
+  end Dump_Stack;
 
 
-end PARSER;
+end Parser;
 

@@ -1,6 +1,6 @@
-with SOK_TYPES;
-package SOK_MANAGER is
+with Sok_Types;
+package Sok_Manager is
 
-  procedure PLAY_GAME (FIRST_FRAME : in SOK_TYPES.FRAME_RANGE);
+  procedure Play_Game (First_Frame : in Sok_Types.Frame_Range);
 
-end SOK_MANAGER;
+end Sok_Manager;

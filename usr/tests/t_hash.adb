@@ -1,90 +1,90 @@
-with DOS;
-with UPPER_STR;
-with NORMAL;
-with HASH;
-with MY_IO;
-with TEXT_HANDLER;
-procedure T_HASH is
+with Dos;
+with Upper_Str;
+with Normal;
+with Hash;
+with My_Io;
+with Text_Handler;
+procedure T_Hash is
 
-  subtype DATA_ACCESS is POSITIVE;
-  procedure DUMP (I : in DATA_ACCESS);
+  subtype Data_Access is Positive;
+  procedure Dump (I : in Data_Access);
 
-  package MY_HASH is new HASH.HASH_MNG (512, DATA_ACCESS, DUMP);
+  package My_Hash is new Hash.Hash_Mng (512, Data_Access, Dump);
 
-  subtype TXT_P is TEXT_HANDLER.TEXT(500);
-  TXT : TXT_P;
-  INPUT : STRING (1 .. TXT.MAX_LEN);
-  LEN : NATURAL;
-  I : DATA_ACCESS := 1;
+  subtype Txt_P is Text_Handler.Text(500);
+  Txt : Txt_P;
+  Input : String (1 .. Txt.Max_Len);
+  Len : Natural;
+  I : Data_Access := 1;
 
-  FOUND : MY_HASH.FOUND_REC;
+  Found : My_Hash.Found_Rec;
 
-  function STR (TXT : TXT_P) return STRING is
+  function Str (Txt : Txt_P) return String is
   begin
-    return TEXT_HANDLER.VALUE(TXT) (3 .. TEXT_HANDLER.LENGTH(TXT));
+    return Text_Handler.Value(Txt) (3 .. Text_Handler.Length(Txt));
   exception
     when others =>
       return "";
-  end STR;
+  end Str;
 
-  function IMAGE (I : POSITIVE) return STRING is
+  function Image (I : Positive) return String is
   begin
-    return NORMAL (I, 3, GAP => '0');
-  end IMAGE;
+    return Normal (I, 3, Gap => '0');
+  end Image;
 
-  procedure DUMP (I : in DATA_ACCESS) is
+  procedure Dump (I : in Data_Access) is
   begin
-    MY_IO.PUT(IMAGE(I));
-  end DUMP;
+    My_Io.Put(Image(I));
+  end Dump;
 
 
 begin
 
   loop
-    MY_IO.NEW_LINE;
+    My_Io.New_Line;
 
-    MY_IO.PUT ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, EXIT ? ");
-    MY_IO.GET_LINE (INPUT, LEN);
-    TEXT_HANDLER.SET (TXT, INPUT(1 .. LEN));
-    if TEXT_HANDLER.LENGTH(TXT) >= 3 and then TEXT_HANDLER.VALUE(TXT)(2) = ' ' then
-      case TEXT_HANDLER.VALUE(TXT)(1) is
+    My_Io.Put ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, EXIT ? ");
+    My_Io.Get_Line (Input, Len);
+    Text_Handler.Set (Txt, Input(1 .. Len));
+    if Text_Handler.Length(Txt) >= 3 and then Text_Handler.Value(Txt)(2) = ' ' then
+      case Text_Handler.Value(Txt)(1) is
         when 'S' | 's' =>
-          MY_HASH.STORE (STR(TXT), I);
-          MY_IO.PUT_LINE (IMAGE(I) & " stored with key >" & STR(TXT) & "<.");
+          My_Hash.Store (Str(Txt), I);
+          My_Io.Put_Line (Image(I) & " stored with key >" & Str(Txt) & "<.");
           I := I + 1;
         when 'Z' | 'z' =>
-          MY_HASH.RESET_FIND (STR(TXT));
-          MY_IO.PUT_LINE ("Search reset for key >" & STR(TXT) & "<.");
+          My_Hash.Reset_Find (Str(Txt));
+          My_Io.Put_Line ("Search reset for key >" & Str(Txt) & "<.");
         when 'F' | 'f' =>
-          FOUND := MY_HASH.FIND_NEXT (STR(TXT));
-          if FOUND.FOUND then
-            MY_IO.PUT_LINE ("Found " & IMAGE(FOUND.DATA) & " with key >" & STR(TXT) & "<.");
+          Found := My_Hash.Find_Next (Str(Txt));
+          if Found.Found then
+            My_Io.Put_Line ("Found " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
           else
-            MY_IO.PUT_LINE ("No data found for key >" & STR(TXT) & "<.");
+            My_Io.Put_Line ("No data found for key >" & Str(Txt) & "<.");
           end if;
         when 'R'| 'r' =>
           begin
-            MY_HASH.REMOVE (STR(TXT));
-            MY_IO.PUT_LINE ("Current data for key >" & STR(TXT) & "< removed.");
+            My_Hash.Remove (Str(Txt));
+            My_Io.Put_Line ("Current data for key >" & Str(Txt) & "< removed.");
           exception
-            when HASH.NOT_FOUND =>
-              MY_IO.PUT_LINE ("Exception NOT_FOUND raised when removing data for key >"
-                             & STR(TXT) & "<.");
+            when Hash.Not_Found =>
+              My_Io.Put_Line ("Exception NOT_FOUND raised when removing data for key >"
+                             & Str(Txt) & "<.");
           end;
         when 'D' | 'd' =>
-          MY_IO.PUT_LINE ("Dumping data for key >" & STR(TXT) & "<:");
-          MY_HASH.DUMP(STR(TXT));
+          My_Io.Put_Line ("Dumping data for key >" & Str(Txt) & "<:");
+          My_Hash.Dump(Str(Txt));
         when others =>
-          DOS.SOUND;
+          Dos.Sound;
       end case;
-    elsif UPPER_STR (TEXT_HANDLER.VALUE(TXT)) = "EXIT" then
+    elsif Upper_Str (Text_Handler.Value(Txt)) = "EXIT" then
       exit;
     else
-      DOS.SOUND;
+      Dos.Sound;
     end if;
 
   end loop;
 
-  MY_HASH.CLEAR_ALL;
+  My_Hash.Clear_All;
 
-end T_HASH;
+end T_Hash;

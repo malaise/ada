@@ -1,70 +1,70 @@
-with MY_IO; use MY_IO;
-with NAV_TYPES, NAV_FORMAT;
-use  NAV_TYPES, NAV_FORMAT;
+with My_Io; use My_Io;
+with Nav_Types, Nav_Format;
+use  Nav_Types, Nav_Format;
 
-procedure T_FORM is
-  STR_SPEED : STRING (1 .. 6);
-  STR_ANGLE : STRING (1 .. 6);
-  STR_DRIFT : STRING (1 .. 7);
-  RES : FORMAT_RESULT;
-  POS : POSITIVE;
-  SPEED : T_SPEED;
-  ANGLE : T_ANGLE;
-  DRIFT : T_DRIFT;
-  LST : NATURAL;
+procedure T_Form is
+  Str_Speed : String (1 .. 6);
+  Str_Angle : String (1 .. 6);
+  Str_Drift : String (1 .. 7);
+  Res : Format_Result;
+  Pos : Positive;
+  Speed : T_Speed;
+  Angle : T_Angle;
+  Drift : T_Drift;
+  Lst : Natural;
 
-  procedure PUT (RES : in FORMAT_RESULT; POS : in POSITIVE) is
+  procedure Put (Res : in Format_Result; Pos : in Positive) is
   begin
-    case RES is
-      when SET   => PUT_LINE ("SET");
-      when UNSET => PUT_LINE ("UNSET");
-      when ERROR => PUT_LINE ("ERROR at pos " & INTEGER'IMAGE(POS) );
+    case Res is
+      when Set   => Put_Line ("SET");
+      when Unset => Put_Line ("UNSET");
+      when Error => Put_Line ("ERROR at pos " & Integer'Image(Pos) );
     end case;
-  end PUT;
+  end Put;
 
 begin
 
   loop
     begin
-      PUT ("SPEED ? "); GET_LINE (STR_SPEED, LST);
-      STR_SPEED (LST+1 .. STR_SPEED'LAST) := (others => ' ');
-      VALUE (STR_SPEED, SPEED, RES, POS);
-      PUT (RES, POS);
-      if RES = SET then
-        PUT ("VALUE : "); PUT_LINE (SPEED);
+      Put ("SPEED ? "); Get_Line (Str_Speed, Lst);
+      Str_Speed (Lst+1 .. Str_Speed'Last) := (others => ' ');
+      Value (Str_Speed, Speed, Res, Pos);
+      Put (Res, Pos);
+      if Res = Set then
+        Put ("VALUE : "); Put_Line (Speed);
       end if;
-      if RES /= ERROR then
-        PUT ("IMAGE : "); PUT_LINE (IMAG(SPEED, RES=SET));
-      end if;
-
-      PUT ("ANGLE ? "); GET_LINE (STR_ANGLE, LST);
-      STR_ANGLE (LST+1 .. STR_ANGLE'LAST) := (others => ' ');
-      VALUE (STR_ANGLE, ANGLE, RES, POS);
-      PUT (RES, POS);
-      if RES = SET then
-        PUT ("VALUE : "); PUT (INTEGER(ANGLE.DEGREES));
-        PUT_LINE (INTEGER(ANGLE.MINUTES));
-      end if;
-      if RES /= ERROR then
-        PUT ("IMAGE : "); PUT_LINE (IMAG(ANGLE, RES=SET));
+      if Res /= Error then
+        Put ("IMAGE : "); Put_Line (Imag(Speed, Res=Set));
       end if;
 
-      PUT ("DRIFT ? "); GET_LINE (STR_DRIFT, LST);
-      STR_DRIFT (LST+1 .. STR_DRIFT'LAST) := (others => ' ');
-      VALUE (STR_DRIFT, DRIFT, RES, POS);
-      PUT (RES, POS);
-      if RES = SET then
-        PUT ("VALUE : ");
-        if not DRIFT.POSITIV then PUT ('-'); else PUT ('+'); end if;
-        PUT (INTEGER(DRIFT.DEGREES));
-        PUT_LINE (INTEGER(DRIFT.MINUTES));
+      Put ("ANGLE ? "); Get_Line (Str_Angle, Lst);
+      Str_Angle (Lst+1 .. Str_Angle'Last) := (others => ' ');
+      Value (Str_Angle, Angle, Res, Pos);
+      Put (Res, Pos);
+      if Res = Set then
+        Put ("VALUE : "); Put (Integer(Angle.Degrees));
+        Put_Line (Integer(Angle.Minutes));
       end if;
-      if RES /= ERROR then
-        PUT ("IMAGE : "); PUT_LINE (IMAG(DRIFT, RES=SET));
+      if Res /= Error then
+        Put ("IMAGE : "); Put_Line (Imag(Angle, Res=Set));
+      end if;
+
+      Put ("DRIFT ? "); Get_Line (Str_Drift, Lst);
+      Str_Drift (Lst+1 .. Str_Drift'Last) := (others => ' ');
+      Value (Str_Drift, Drift, Res, Pos);
+      Put (Res, Pos);
+      if Res = Set then
+        Put ("VALUE : ");
+        if not Drift.Positiv then Put ('-'); else Put ('+'); end if;
+        Put (Integer(Drift.Degrees));
+        Put_Line (Integer(Drift.Minutes));
+      end if;
+      if Res /= Error then
+        Put ("IMAGE : "); Put_Line (Imag(Drift, Res=Set));
       end if;
     exception
       when others => raise;
     end;
   end loop;
-end T_FORM;
+end T_Form;
 

@@ -1,27 +1,27 @@
-with SOK_TYPES;
-with SOK_MOVEMENT;
+with Sok_Types;
+with Sok_Movement;
 
 -- salvage of movements for undo, save/restore ...
-package SOK_SAVE is
+package Sok_Save is
   -- Max nbre of saved movements
-  NBRE_SAVE : constant := 2000; -- 64 Kb
+  Nbre_Save : constant := 2000; -- 64 Kb
 
   -- when new frame, reset stack
-  procedure RESET;
+  procedure Reset;
 
   -- circular buffer of saved movements for undo
-  procedure PUSH (MAN_MOVEMENT : in SOK_MOVEMENT.SAVED_DATA_REC);
-  function POP  return SOK_MOVEMENT.SAVED_DATA_REC;
+  procedure Push (Man_Movement : in Sok_Movement.Saved_Data_Rec);
+  function Pop  return Sok_Movement.Saved_Data_Rec;
 
 
   -- look first pushed or next pushed
-  type LOOK_REF_LIST is (FIRST, NEXT);
+  type Look_Ref_List is (First, Next);
   -- look first will return first pushed movemtny and so on ...
-  function LOOK (REF : LOOK_REF_LIST) return SOK_MOVEMENT.SAVED_DATA_REC;
+  function Look (Ref : Look_Ref_List) return Sok_Movement.Saved_Data_Rec;
 
 
   -- on pop if circular buffer is empty
   -- on look if no more movement to look
-  NO_MORE_SAVED_MOVEMENTS : exception;
+  No_More_Saved_Movements : exception;
 
-end SOK_SAVE;
+end Sok_Save;

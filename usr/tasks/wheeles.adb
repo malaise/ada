@@ -1,62 +1,62 @@
-with MY_IO;
-procedure WHEELES is
+with My_Io;
+procedure Wheeles is
 
-  NB_WHEELES : constant := 3;
-  subtype WHEELES_RANGE is POSITIVE range 1 .. NB_WHEELES;
+  Nb_Wheeles : constant := 3;
+  subtype Wheeles_Range is Positive range 1 .. Nb_Wheeles;
 
-  task type T_WHEELE is
-    entry START (NO : in WHEELES_RANGE);
-    entry STOP;
-  end T_WHEELE;
+  task type T_Wheele is
+    entry Start (No : in Wheeles_Range);
+    entry Stop;
+  end T_Wheele;
 
-  WHEELES_ARRAY : array (WHEELES_RANGE) of T_WHEELE;
+  Wheeles_Array : array (Wheeles_Range) of T_Wheele;
 
-  task body T_WHEELE is
-    NO : WHEELES_RANGE;
+  task body T_Wheele is
+    No : Wheeles_Range;
   begin
-    accept START (NO : in WHEELES_RANGE) do
-      T_WHEELE.NO := NO;
-      MY_IO.PUT_LINE ("Task " & WHEELES_RANGE'IMAGE(NO) & " is starting.");
-    end START;
-    MY_IO.PUT_LINE ("Task " & WHEELES_RANGE'IMAGE(NO) & " is started.");
+    accept Start (No : in Wheeles_Range) do
+      T_Wheele.No := No;
+      My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is starting.");
+    end Start;
+    My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is started.");
 
     loop
-      MY_IO.PUT_LINE ("Task " & WHEELES_RANGE'IMAGE(NO) & " is running.");
+      My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is running.");
       select 
-        accept STOP do
-          MY_IO.PUT_LINE ("Task " & WHEELES_RANGE'IMAGE(NO) & " is exiting.");
-        end STOP;
+        accept Stop do
+          My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is exiting.");
+        end Stop;
         exit;
       or
         delay 0.01;
       end select;
     end loop;
-    MY_IO.PUT_LINE ("Task " & WHEELES_RANGE'IMAGE(NO) & " is exited.");
-  end T_WHEELE;
+    My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is exited.");
+  end T_Wheele;
 
 
 begin
-  MY_IO.PUT_LINE ("Starting tasks.");
-  for I in WHEELES_RANGE loop
-    WHEELES_ARRAY(I).START(I);
+  My_Io.Put_Line ("Starting tasks.");
+  for I in Wheeles_Range loop
+    Wheeles_Array(I).Start(I);
   end loop;
 
   loop
     declare
-      STR : STRING (1 .. 132);
-      LEN : NATURAL;
+      Str : String (1 .. 132);
+      Len : Natural;
     begin
       delay 1.0;
-      MY_IO.GET_LINE (STR, LEN); 
-      exit when STR(1..LEN) = "exit";
+      My_Io.Get_Line (Str, Len); 
+      exit when Str(1..Len) = "exit";
     exception
       when others => null;
     end;
   end loop;
-  MY_IO.PUT_LINE ("Stopping tasks.");
+  My_Io.Put_Line ("Stopping tasks.");
 
-  for I in WHEELES_RANGE loop
-    WHEELES_ARRAY(I).STOP;
+  for I in Wheeles_Range loop
+    Wheeles_Array(I).Stop;
   end loop;
-  MY_IO.PUT_LINE ("Exiting.");
-end WHEELES;
+  My_Io.Put_Line ("Exiting.");
+end Wheeles;

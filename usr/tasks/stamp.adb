@@ -1,48 +1,48 @@
-with MY_IO, RND, DOS, CALENDAR;
-use MY_IO;
-procedure STAMP is
+with My_Io, Rnd, Dos, Calendar;
+use My_Io;
+procedure Stamp is
 
-  pragma PRIORITY (5);
+  pragma Priority (5);
 
-  I : NATURAL := 0;
+  I : Natural := 0;
 
-  task ST is
-    pragma PRIORITY (20);
-  end ST;
+  task St is
+    pragma Priority (20);
+  end St;
 
-  task SCAN is
-    entry START;
-    pragma PRIORITY (10);
-  end SCAN;
+  task Scan is
+    entry Start;
+    pragma Priority (10);
+  end Scan;
 
-  task body ST is
-    use CALENDAR;
-    GAP : constant DURATION := 1.0;
-    NEXT_EVENT : TIME;
+  task body St is
+    use Calendar;
+    Gap : constant Duration := 1.0;
+    Next_Event : Time;
   begin
-    NEXT_EVENT := CLOCK + GAP;
+    Next_Event := Clock + Gap;
     loop
-      delay NEXT_EVENT - CLOCK;
-      DOS.SOUND;
-      NEW_LINE;
-      PUT (I);
-      PUT_LINE ("           Stamp");
+      delay Next_Event - Clock;
+      Dos.Sound;
+      New_Line;
+      Put (I);
+      Put_Line ("           Stamp");
       I := 0;
-      NEXT_EVENT := NEXT_EVENT + GAP;
+      Next_Event := Next_Event + Gap;
     end loop;
-  end ST;
+  end St;
 
-  task body SCAN is
-    MAX_WIN : constant POSITIVE := 5;
+  task body Scan is
+    Max_Win : constant Positive := 5;
   begin
-    accept START;
+    accept Start;
     loop
       I := I+ 1;
-      PUT (I,2); NEW_LINE;
-      delay RND.DUR_RANDOM(0.0, 0.1);
+      Put (I,2); New_Line;
+      delay Rnd.Dur_Random(0.0, 0.1);
     end loop;
-  end SCAN;
+  end Scan;
 
 begin
-  SCAN.START;
-end STAMP;
+  Scan.Start;
+end Stamp;

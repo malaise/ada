@@ -1,4 +1,4 @@
-with TEXT_IO;
-with MY_MATH;
-package REAL_IO is new TEXT_IO.FLOAT_IO       (MY_MATH.REAL);
+with Text_Io;
+with My_Math;
+package Real_Io is new Text_Io.Float_Io       (My_Math.Real);
 

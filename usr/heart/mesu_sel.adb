@@ -1,538 +1,538 @@
-with SEQUENTIAL_IO;
-with DIR_MNG;
-with PERS_MNG, STR_MNG, MESU_FIL;
+with Sequential_Io;
+with Dir_Mng;
+with Pers_Mng, Str_Mng, Mesu_Fil;
 
 -- Mesure selection management
-package body MESU_SEL is
-  use AFPX, AFPX.LINE_LIST_MNG;
+package body Mesu_Sel is
+  use Afpx, Afpx.Line_List_Mng;
 
-  SAVED_LIST : AFPX.LINE_LIST_MNG.LIST_TYPE;
+  Saved_List : Afpx.Line_List_Mng.List_Type;
 
-  LIST_FILE_NAME : constant STRING := "SELECTIO.LST";
+  List_File_Name : constant String := "SELECTIO.LST";
 
 
-  package LIST_IO is new SEQUENTIAL_IO (MESU_NAM.FILE_NAME_STR);
-  LIST_FILE : LIST_IO.FILE_TYPE;
+  package List_Io is new Sequential_Io (Mesu_Nam.File_Name_Str);
+  List_File : List_Io.File_Type;
 
-  procedure COPY_LIST (FROM, TO : in out AFPX.LINE_LIST_MNG.LIST_TYPE) is
-    POS : POSITIVE;
-    LINE : AFPX.LINE_REC;
+  procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is
+    Pos : Positive;
+    Line : Afpx.Line_Rec;
   begin
     -- Delete dest list
-    DELETE_LIST (TO);
+    Delete_List (To);
     -- Done if list is empty
-    if IS_EMPTY (FROM) then
+    if Is_Empty (From) then
       return;
     end if;
     -- Save pos, move to beginning
-    POS := GET_POSITION (FROM);
-    MOVE_TO (FROM, NEXT, 0, FALSE);
+    Pos := Get_Position (From);
+    Move_To (From, Next, 0, False);
     -- Copy items
     begin
       loop
-        READ (FROM, LINE);
-        INSERT (TO, LINE);
+        Read (From, Line);
+        Insert (To, Line);
       end loop;
     exception
-      when NOT_IN_LIST =>
+      when Not_In_List =>
         -- Last item
-        READ (FROM, LINE, CURRENT);
-        INSERT (TO, LINE);
+        Read (From, Line, Current);
+        Insert (To, Line);
     end;
     -- Restore pos, set it in saved_list
-    MOVE_TO (FROM, NEXT, POS - 1, FALSE);
-    MOVE_TO (TO, NEXT, POS - 1, FALSE);
-  end COPY_LIST;
+    Move_To (From, Next, Pos - 1, False);
+    Move_To (To, Next, Pos - 1, False);
+  end Copy_List;
 
 
-  procedure SAVE_LIST is
+  procedure Save_List is
   begin
-    COPY_LIST (FROM => LINE_LIST, TO => SAVED_LIST);
-  end SAVE_LIST;
+    Copy_List (From => Line_List, To => Saved_List);
+  end Save_List;
 
-  function DATE_MATCH (DATE, AFTER, BEFORE : MESU_DEF.DATE_STR)
-  return BOOLEAN is
+  function Date_Match (Date, After, Before : Mesu_Def.Date_Str)
+  return Boolean is
   begin
-    if STR_MNG.IS_SPACES (AFTER) and then STR_MNG.IS_SPACES (BEFORE) then
+    if Str_Mng.Is_Spaces (After) and then Str_Mng.Is_Spaces (Before) then
       -- No criteria : date matches
-      return TRUE;
-    elsif STR_MNG.IS_SPACES (AFTER) then
+      return True;
+    elsif Str_Mng.Is_Spaces (After) then
       -- Only before : Date has to be < before
-      return DATE < BEFORE;
-    elsif STR_MNG.IS_SPACES (BEFORE) then
+      return Date < Before;
+    elsif Str_Mng.Is_Spaces (Before) then
       -- Only after : date has to be >= after
-      return DATE >= AFTER;
-    elsif AFTER <= BEFORE then
+      return Date >= After;
+    elsif After <= Before then
       -- After <= Before : has to be after <= date < before
-      return DATE >= AFTER and then DATE < BEFORE;
+      return Date >= After and then Date < Before;
     else
       -- After > Before : has to be after >= date or  date < before
-      return DATE >= AFTER or else DATE < BEFORE;
+      return Date >= After or else Date < Before;
     end if;
-  end DATE_MATCH;
+  end Date_Match;
 
-  function SAME_FILE (L1, L2 : LINE_REC) return BOOLEAN is
-    F1, F2 : MESU_NAM.FILE_NAME_STR;
+  function Same_File (L1, L2 : Line_Rec) return Boolean is
+    F1, F2 : Mesu_Nam.File_Name_Str;
   begin
-    STR_MNG.FORMAT_LIST_TO_MESURE (L1, F1);
-    STR_MNG.FORMAT_LIST_TO_MESURE (L2, F2);
+    Str_Mng.Format_List_To_Mesure (L1, F1);
+    Str_Mng.Format_List_To_Mesure (L2, F2);
     return F1 = F2;
-  end SAME_FILE;
+  end Same_File;
 
-  function LESS_THAN (L1, L2 : LINE_REC) return BOOLEAN is
-    F1, F2 : MESU_NAM.FILE_NAME_STR;
-    D1, D2 : MESU_NAM.FILE_DATE_STR;
-    N1, N2 : MESU_NAM.FILE_NO_STR;
-    P1, P2 : MESU_NAM.FILE_PID_STR;
+  function Less_Than (L1, L2 : Line_Rec) return Boolean is
+    F1, F2 : Mesu_Nam.File_Name_Str;
+    D1, D2 : Mesu_Nam.File_Date_Str;
+    N1, N2 : Mesu_Nam.File_No_Str;
+    P1, P2 : Mesu_Nam.File_Pid_Str;
   begin
     -- Do not sort on file_name cause 2000 (=>00) < 1999 (=>99)
-    STR_MNG.FORMAT_LIST_TO_MESURE (L1, F1);
-    MESU_NAM.SPLIT_FILE_NAME (F1, D1, N1, P1);
-    STR_MNG.FORMAT_LIST_TO_MESURE (L2, F2);
-    MESU_NAM.SPLIT_FILE_NAME (F2, D2, N2, P2);
+    Str_Mng.Format_List_To_Mesure (L1, F1);
+    Mesu_Nam.Split_File_Name (F1, D1, N1, P1);
+    Str_Mng.Format_List_To_Mesure (L2, F2);
+    Mesu_Nam.Split_File_Name (F2, D2, N2, P2);
     --  Splitting file name gives full year number
     return D1 & N1 & P1 < D2 & N2 & P2;
-  end LESS_THAN;
+  end Less_Than;
 
 
-  procedure FILE_SEARCH is new LINE_LIST_MNG.SEARCH (SAME_FILE);
-  procedure FILE_SORT   is new LINE_LIST_MNG.SORT   (LESS_THAN);
+  procedure File_Search is new Line_List_Mng.Search (Same_File);
+  procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
 
 
   -- Add records to selection
-  procedure ADD_SELECTION (CRITERIA : in CRITERIA_REC) is
-    SAVED_POS : NATURAL;
-    POS       : POSITIVE;
-    FIRST_PERS, LAST_PERS : NATURAL;
-    THE_FILES : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-    FILE : DIR_MNG.FILE_ENTRY_REC;
-    PERSON : PERS_DEF.PERSON_REC;
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    DATE_S : MESU_NAM.FILE_DATE_STR;
-    NO_S   : MESU_NAM.FILE_NO_STR;
-    PID_S  : MESU_NAM.FILE_PID_STR;
-    OK     : BOOLEAN;
-    MESURE : MESU_DEF.MESURE_REC;
-    LINE   : AFPX.LINE_REC;
+  procedure Add_Selection (Criteria : in Criteria_Rec) is
+    Saved_Pos : Natural;
+    Pos       : Positive;
+    First_Pers, Last_Pers : Natural;
+    The_Files : Dir_Mng.File_List_Mng.List_Type;
+    File : Dir_Mng.File_Entry_Rec;
+    Person : Pers_Def.Person_Rec;
+    File_Name : Mesu_Nam.File_Name_Str;
+    Date_S : Mesu_Nam.File_Date_Str;
+    No_S   : Mesu_Nam.File_No_Str;
+    Pid_S  : Mesu_Nam.File_Pid_Str;
+    Ok     : Boolean;
+    Mesure : Mesu_Def.Mesure_Rec;
+    Line   : Afpx.Line_Rec;
   begin
-    if PERS_DEF.PERSON_LIST_MNG.IS_EMPTY (PERS_DEF.THE_PERSONS) then
+    if Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons) then
       return;
     end if;
 
     -- Save current position
-    if IS_EMPTY (LINE_LIST) then
-      SAVED_POS := 0;
+    if Is_Empty (Line_List) then
+      Saved_Pos := 0;
     else
-      SAVED_POS := GET_POSITION (LINE_LIST);
+      Saved_Pos := Get_Position (Line_List);
     end if;
     -- Save list
-    SAVE_LIST;
+    Save_List;
 
     -- Set first and last person indexes
-    if STR_MNG.IS_SPACES (CRITERIA.NAME) then
+    if Str_Mng.Is_Spaces (Criteria.Name) then
       -- No name => all persons
-      FIRST_PERS := 1;
-      LAST_PERS := PERS_DEF.PERSON_LIST_MNG.LIST_LENGTH (PERS_DEF.THE_PERSONS);
-    elsif STR_MNG.IS_SPACES (CRITERIA.ACTIVITY) then
+      First_Pers := 1;
+      Last_Pers := Pers_Def.Person_List_Mng.List_Length (Pers_Def.The_Persons);
+    elsif Str_Mng.Is_Spaces (Criteria.Activity) then
       -- Name no activity => select by name
-      PERS_MNG.SELECT_BY_NAME (PERS_DEF.THE_PERSONS, CRITERIA.NAME,
-                               FIRST_PERS, LAST_PERS);
+      Pers_Mng.Select_By_Name (Pers_Def.The_Persons, Criteria.Name,
+                               First_Pers, Last_Pers);
     else
       -- Name and activity set => one person
-      PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS, CRITERIA.NAME, CRITERIA.ACTIVITY,
-                       FIRST_PERS);
-      LAST_PERS := FIRST_PERS;
+      Pers_Mng.Search (Pers_Def.The_Persons, Criteria.Name, Criteria.Activity,
+                       First_Pers);
+      Last_Pers := First_Pers;
     end if;
 
     -- For each person, list the files
-    PERS_DEF.PERSON_LIST_MNG.MOVE_TO (PERS_DEF.THE_PERSONS,
-                                      PERS_DEF.PERSON_LIST_MNG.NEXT,
-                                      FIRST_PERS - 1, FALSE);
-    for I in FIRST_PERS .. LAST_PERS loop
+    Pers_Def.Person_List_Mng.Move_To (Pers_Def.The_Persons,
+                                      Pers_Def.Person_List_Mng.Next,
+                                      First_Pers - 1, False);
+    for I in First_Pers .. Last_Pers loop
       -- Get person's pid
-      PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-                                     PERS_DEF.PERSON_LIST_MNG.CURRENT);
+      Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+                                     Pers_Def.Person_List_Mng.Current);
       -- Build ????????.<pid>
-      FILE_NAME := MESU_NAM.BUILD_FILE_NAME (PID => STR_MNG.PID_STR (PERSON.PID));
+      File_Name := Mesu_Nam.Build_File_Name (Pid => Str_Mng.Pid_Str (Person.Pid));
       -- Add to file list
-      DIR_MNG.LIST_DIR (THE_FILES, "", FILE_NAME);
+      Dir_Mng.List_Dir (The_Files, "", File_Name);
 
       -- Next person
-      if I /= LAST_PERS then
-        PERS_DEF.PERSON_LIST_MNG.MOVE_TO (PERS_DEF.THE_PERSONS);
+      if I /= Last_Pers then
+        Pers_Def.Person_List_Mng.Move_To (Pers_Def.The_Persons);
       end if;
     end loop;
 
-    if DIR_MNG.FILE_LIST_MNG.IS_EMPTY (THE_FILES) then
+    if Dir_Mng.File_List_Mng.Is_Empty (The_Files) then
       -- No new file. Pos not affected and file list is empty.
       return;
     end if;
 
 
     -- Add files in line list
-    DIR_MNG.FILE_LIST_MNG.MOVE_TO (THE_FILES, DIR_MNG.FILE_LIST_MNG.NEXT,
-                                   0, FALSE);
+    Dir_Mng.File_List_Mng.Move_To (The_Files, Dir_Mng.File_List_Mng.Next,
+                                   0, False);
     loop
-      DIR_MNG.FILE_LIST_MNG.READ (THE_FILES, FILE,
-                                  DIR_MNG.FILE_LIST_MNG.CURRENT);
-      FILE_NAME := FILE.NAME (1 .. FILE.LEN);
-      MESU_NAM.SPLIT_FILE_NAME (FILE_NAME, DATE_S, NO_S, PID_S);
+      Dir_Mng.File_List_Mng.Read (The_Files, File,
+                                  Dir_Mng.File_List_Mng.Current);
+      File_Name := File.Name (1 .. File.Len);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
       -- check date
-     OK := DATE_MATCH (DATE_S, CRITERIA.DATE_AFT, CRITERIA.DATE_BEF);
+     Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);
 
-      if OK then
+      if Ok then
         -- check pairs
         -- Get person & mesure to build afpx line rec
-        PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS,
-                         PERS_DEF.PID_RANGE'VALUE(PID_S), FIRST_PERS);
-        PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-                                       PERS_DEF.PERSON_LIST_MNG.CURRENT);
-        MESURE := MESU_FIL.LOAD (FILE_NAME);
-        STR_MNG.FORMAT_MESURE_TO_LIST (PERSON, MESURE, NO_S, LINE);
+        Pers_Mng.Search (Pers_Def.The_Persons,
+                         Pers_Def.Pid_Range'Value(Pid_S), First_Pers);
+        Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+                                       Pers_Def.Person_List_Mng.Current);
+        Mesure := Mesu_Fil.Load (File_Name);
+        Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
-        if not IS_EMPTY(LINE_LIST) then
-          POS := GET_POSITION (LINE_LIST);
+        if not Is_Empty(Line_List) then
+          Pos := Get_Position (Line_List);
           begin
-            FILE_SEARCH (LINE_LIST, LINE, NEXT, 1, FALSE);
+            File_Search (Line_List, Line, Next, 1, False);
             -- Line already exists
-            OK := FALSE;
+            Ok := False;
           exception
-            when NOT_IN_LIST =>
+            when Not_In_List =>
               -- Line is not in list
-              OK := TRUE;
+              Ok := True;
           end;
-          MOVE_TO (LINE_LIST, NEXT, POS - 1, FALSE);
+          Move_To (Line_List, Next, Pos - 1, False);
         end if;
       end if;
 
       -- Merge
-      if OK then
-        INSERT (LINE_LIST, LINE);
+      if Ok then
+        Insert (Line_List, Line);
       end if;
 
       -- Next file
-      exit when DIR_MNG.FILE_LIST_MNG.GET_POSITION (THE_FILES)
-              = DIR_MNG.FILE_LIST_MNG.LIST_LENGTH  (THE_FILES);
+      exit when Dir_Mng.File_List_Mng.Get_Position (The_Files)
+              = Dir_Mng.File_List_Mng.List_Length  (The_Files);
 
-      DIR_MNG.FILE_LIST_MNG.MOVE_TO (THE_FILES);
+      Dir_Mng.File_List_Mng.Move_To (The_Files);
     end loop;
 
     -- sort by name activity date
-    FILE_SORT (LINE_LIST);
+    File_Sort (Line_List);
 
     -- restore / set pos
-    if SAVED_POS /= 0 then
-      MOVE_TO (LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
-    elsif not IS_EMPTY (LINE_LIST) then
+    if Saved_Pos /= 0 then
+      Move_To (Line_List, Next, Saved_Pos - 1, False);
+    elsif not Is_Empty (Line_List) then
       -- List was empty, move to first
-      MOVE_TO (LINE_LIST, NEXT, 0, FALSE);
+      Move_To (Line_List, Next, 0, False);
     end if;
 
     -- Delete files list
-    DIR_MNG.FILE_LIST_MNG.DELETE_LIST (THE_FILES);
-  end ADD_SELECTION;
+    Dir_Mng.File_List_Mng.Delete_List (The_Files);
+  end Add_Selection;
 
   -- Remove records from selection
-  procedure REM_SELECTION (CRITERIA : in CRITERIA_REC) is
-    SAVED_POS, CURR_POS : POSITIVE;
-    LINE   : AFPX.LINE_REC;
-    OK : BOOLEAN;
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    DATE_S : MESU_NAM.FILE_DATE_STR;
-    NO_S   : MESU_NAM.FILE_NO_STR;
-    PID_S  : MESU_NAM.FILE_PID_STR;
-    POS_PERS : POSITIVE;
-    PERSON : PERS_DEF.PERSON_REC;
+  procedure Rem_Selection (Criteria : in Criteria_Rec) is
+    Saved_Pos, Curr_Pos : Positive;
+    Line   : Afpx.Line_Rec;
+    Ok : Boolean;
+    File_Name : Mesu_Nam.File_Name_Str;
+    Date_S : Mesu_Nam.File_Date_Str;
+    No_S   : Mesu_Nam.File_No_Str;
+    Pid_S  : Mesu_Nam.File_Pid_Str;
+    Pos_Pers : Positive;
+    Person : Pers_Def.Person_Rec;
   begin
     -- Save current position
-    if IS_EMPTY (LINE_LIST) then
+    if Is_Empty (Line_List) then
       return;
     else
-      SAVED_POS := GET_POSITION (LINE_LIST);
+      Saved_Pos := Get_Position (Line_List);
     end if;
     -- Save list
-    SAVE_LIST;
+    Save_List;
 
     -- for each in list
-    MOVE_TO (LINE_LIST, NEXT, 0, FALSE);
+    Move_To (Line_List, Next, 0, False);
     loop
       -- Get line, file_name, split
-      READ (LINE_LIST, LINE, CURRENT);
-      STR_MNG.FORMAT_LIST_TO_MESURE (LINE, FILE_NAME);
-      MESU_NAM.SPLIT_FILE_NAME (FILE_NAME, DATE_S, NO_S, PID_S);
+      Read (Line_List, Line, Current);
+      Str_Mng.Format_List_To_Mesure (Line, File_Name);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
 
-      OK := TRUE;
-      if not STR_MNG.IS_SPACES (CRITERIA.NAME) then
+      Ok := True;
+      if not Str_Mng.Is_Spaces (Criteria.Name) then
         -- Person name set : Get person and check names
-        PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS, PERS_DEF.PID_RANGE'VALUE(PID_S),
-                         POS_PERS);
-        PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-                                       PERS_DEF.PERSON_LIST_MNG.CURRENT);
-        OK := PERSON.NAME = CRITERIA.NAME;
-        if OK and then not STR_MNG.IS_SPACES (CRITERIA.ACTIVITY) then
+        Pers_Mng.Search (Pers_Def.The_Persons, Pers_Def.Pid_Range'Value(Pid_S),
+                         Pos_Pers);
+        Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+                                       Pers_Def.Person_List_Mng.Current);
+        Ok := Person.Name = Criteria.Name;
+        if Ok and then not Str_Mng.Is_Spaces (Criteria.Activity) then
           -- Activity set : check activity
-          OK := PERSON.ACTIVITY = CRITERIA.ACTIVITY;
+          Ok := Person.Activity = Criteria.Activity;
         end if;
       end if;
 
       -- Check date
-      if OK then
-        OK := DATE_MATCH (DATE_S, CRITERIA.DATE_AFT, CRITERIA.DATE_BEF);
+      if Ok then
+        Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);
       end if;
 
       -- Delete line. Update saved pos if deleting initial current line
-      if OK then
-        CURR_POS := GET_POSITION (LINE_LIST);
-        if CURR_POS /= LIST_LENGTH (LINE_LIST) then
-          DELETE (LINE_LIST);
-          if CURR_POS < SAVED_POS then
-            SAVED_POS := SAVED_POS - 1;
-          elsif CURR_POS = SAVED_POS then
-            SAVED_POS := GET_POSITION (LINE_LIST);
+      if Ok then
+        Curr_Pos := Get_Position (Line_List);
+        if Curr_Pos /= List_Length (Line_List) then
+          Delete (Line_List);
+          if Curr_Pos < Saved_Pos then
+            Saved_Pos := Saved_Pos - 1;
+          elsif Curr_Pos = Saved_Pos then
+            Saved_Pos := Get_Position (Line_List);
           end if;
         else
-          DELETE (LINE_LIST, PREV);
-          if CURR_POS = SAVED_POS and then not IS_EMPTY (LINE_LIST) then
-            SAVED_POS := GET_POSITION (LINE_LIST);
+          Delete (Line_List, Prev);
+          if Curr_Pos = Saved_Pos and then not Is_Empty (Line_List) then
+            Saved_Pos := Get_Position (Line_List);
           end if;
           exit;
         end if;
       else
         -- Next line except if list empty or end of list
-        exit when IS_EMPTY (LINE_LIST) or else
-                  GET_POSITION (LINE_LIST) = LIST_LENGTH (LINE_LIST);
-        MOVE_TO (LINE_LIST);
+        exit when Is_Empty (Line_List) or else
+                  Get_Position (Line_List) = List_Length (Line_List);
+        Move_To (Line_List);
       end if;
 
     end loop;
 
     -- Restore pos
-    if not IS_EMPTY (LINE_LIST) then
-      MOVE_TO (LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
+    if not Is_Empty (Line_List) then
+      Move_To (Line_List, Next, Saved_Pos - 1, False);
     end if;
 
-  end REM_SELECTION;
+  end Rem_Selection;
 
   -- Add a record to selection
-  procedure ADD_SELECTION (NAME : in MESU_NAM.FILE_NAME_STR) is
-    LINE   : AFPX.LINE_REC;
-    DATE_S : MESU_NAM.FILE_DATE_STR;
-    NO_S   : MESU_NAM.FILE_NO_STR;
-    PID_S  : MESU_NAM.FILE_PID_STR;
-    POS_PERS : POSITIVE;
-    PERSON : PERS_DEF.PERSON_REC;
-    MESURE : MESU_DEF.MESURE_REC;
+  procedure Add_Selection (Name : in Mesu_Nam.File_Name_Str) is
+    Line   : Afpx.Line_Rec;
+    Date_S : Mesu_Nam.File_Date_Str;
+    No_S   : Mesu_Nam.File_No_Str;
+    Pid_S  : Mesu_Nam.File_Pid_Str;
+    Pos_Pers : Positive;
+    Person : Pers_Def.Person_Rec;
+    Mesure : Mesu_Def.Mesure_Rec;
   begin
 
-    MESU_NAM.SPLIT_FILE_NAME (NAME, DATE_S, NO_S, PID_S);
+    Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
 
     -- Get person and mesure
-    PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS,
-                     PERS_DEF.PID_RANGE'VALUE(PID_S), POS_PERS);
-    PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-                                   PERS_DEF.PERSON_LIST_MNG.CURRENT);
-    MESURE := MESU_FIL.LOAD (NAME);
+    Pers_Mng.Search (Pers_Def.The_Persons,
+                     Pers_Def.Pid_Range'Value(Pid_S), Pos_Pers);
+    Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+                                   Pers_Def.Person_List_Mng.Current);
+    Mesure := Mesu_Fil.Load (Name);
 
     -- Build line
-    STR_MNG.FORMAT_MESURE_TO_LIST (PERSON, MESURE, NO_S, LINE);
+    Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
     -- Insert
-    INSERT (LINE_LIST, LINE);
+    Insert (Line_List, Line);
 
     -- sort by name activity date
-    FILE_SORT (LINE_LIST);
+    File_Sort (Line_List);
 
     -- Current set to inserted
-    FILE_SEARCH (LINE_LIST, LINE, NEXT, 1, FALSE);
-  end ADD_SELECTION;
+    File_Search (Line_List, Line, Next, 1, False);
+  end Add_Selection;
 
   -- Remove a record from selection
-  procedure REM_SELECTION (NAME : in MESU_NAM.FILE_NAME_STR) is
-    SAVED_POS, CURR_POS : POSITIVE;
-    LINE   : AFPX.LINE_REC;
-    DATE_S : MESU_NAM.FILE_DATE_STR;
-    NO_S   : MESU_NAM.FILE_NO_STR;
-    PID_S  : MESU_NAM.FILE_PID_STR;
-    POS_PERS : POSITIVE;
-    PERSON : PERS_DEF.PERSON_REC;
-    MESURE : MESU_DEF.MESURE_REC;
+  procedure Rem_Selection (Name : in Mesu_Nam.File_Name_Str) is
+    Saved_Pos, Curr_Pos : Positive;
+    Line   : Afpx.Line_Rec;
+    Date_S : Mesu_Nam.File_Date_Str;
+    No_S   : Mesu_Nam.File_No_Str;
+    Pid_S  : Mesu_Nam.File_Pid_Str;
+    Pos_Pers : Positive;
+    Person : Pers_Def.Person_Rec;
+    Mesure : Mesu_Def.Mesure_Rec;
   begin
     -- Save current position
-    if IS_EMPTY (LINE_LIST) then
+    if Is_Empty (Line_List) then
       return;
     else
-      SAVED_POS := GET_POSITION (LINE_LIST);
+      Saved_Pos := Get_Position (Line_List);
     end if;
 
     -- Save list
-    SAVE_LIST;
+    Save_List;
 
     -- Split file name
-    MESU_NAM.SPLIT_FILE_NAME (NAME, DATE_S, NO_S, PID_S);
+    Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
 
     -- Get person and mesure
-    PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS,
-                     PERS_DEF.PID_RANGE'VALUE(PID_S), POS_PERS);
-    PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-                                   PERS_DEF.PERSON_LIST_MNG.CURRENT);
-    MESURE := MESU_FIL.LOAD (NAME);
+    Pers_Mng.Search (Pers_Def.The_Persons,
+                     Pers_Def.Pid_Range'Value(Pid_S), Pos_Pers);
+    Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+                                   Pers_Def.Person_List_Mng.Current);
+    Mesure := Mesu_Fil.Load (Name);
 
     -- Build line
-    STR_MNG.FORMAT_MESURE_TO_LIST (PERSON, MESURE, NO_S, LINE);
+    Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
     -- Search record
-    FILE_SEARCH (LINE_LIST, LINE, NEXT, 1, FALSE);
+    File_Search (Line_List, Line, Next, 1, False);
 
     -- Delete line. Update saved pos if deleting initial current line
-    CURR_POS := GET_POSITION (LINE_LIST);
-    if CURR_POS /= LIST_LENGTH (LINE_LIST) then
-      DELETE (LINE_LIST);
-      if CURR_POS < SAVED_POS then
-        SAVED_POS := SAVED_POS - 1;
-      elsif CURR_POS = SAVED_POS then
-        SAVED_POS := GET_POSITION (LINE_LIST);
+    Curr_Pos := Get_Position (Line_List);
+    if Curr_Pos /= List_Length (Line_List) then
+      Delete (Line_List);
+      if Curr_Pos < Saved_Pos then
+        Saved_Pos := Saved_Pos - 1;
+      elsif Curr_Pos = Saved_Pos then
+        Saved_Pos := Get_Position (Line_List);
       end if;
     else
-      DELETE (LINE_LIST, PREV);
-      if CURR_POS = SAVED_POS and then not IS_EMPTY (LINE_LIST) then
-        SAVED_POS := GET_POSITION (LINE_LIST);
+      Delete (Line_List, Prev);
+      if Curr_Pos = Saved_Pos and then not Is_Empty (Line_List) then
+        Saved_Pos := Get_Position (Line_List);
       end if;
     end if;
-    if NOT IS_EMPTY (LINE_LIST) then
-      MOVE_TO (LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
+    if Not Is_Empty (Line_List) then
+      Move_To (Line_List, Next, Saved_Pos - 1, False);
     end if;
 
-  end REM_SELECTION;
+  end Rem_Selection;
 
   -- Remove a record from selection
-  procedure REM_SELECTION (LINE : in AFPX.LINE_REC) is
-    SAVED_POS, CURR_POS : POSITIVE;
-    PERSON : PERS_DEF.PERSON_REC;
-    MESURE : MESU_DEF.MESURE_REC;
+  procedure Rem_Selection (Line : in Afpx.Line_Rec) is
+    Saved_Pos, Curr_Pos : Positive;
+    Person : Pers_Def.Person_Rec;
+    Mesure : Mesu_Def.Mesure_Rec;
   begin
     -- Save current position
-    if IS_EMPTY (LINE_LIST) then
+    if Is_Empty (Line_List) then
       return;
     else
-      SAVED_POS := GET_POSITION (LINE_LIST);
+      Saved_Pos := Get_Position (Line_List);
     end if;
 
     -- Save list
-    SAVE_LIST;
+    Save_List;
 
     -- Search record
-    FILE_SEARCH (LINE_LIST, LINE, NEXT, 1, FALSE);
+    File_Search (Line_List, Line, Next, 1, False);
 
     -- Delete line. Update saved pos if deleting initial current line
-    CURR_POS := GET_POSITION (LINE_LIST);
-    if CURR_POS /= LIST_LENGTH (LINE_LIST) then
-      DELETE (LINE_LIST);
-      if CURR_POS < SAVED_POS then
-        SAVED_POS := SAVED_POS - 1;
-      elsif CURR_POS = SAVED_POS then
-        SAVED_POS := GET_POSITION (LINE_LIST);
+    Curr_Pos := Get_Position (Line_List);
+    if Curr_Pos /= List_Length (Line_List) then
+      Delete (Line_List);
+      if Curr_Pos < Saved_Pos then
+        Saved_Pos := Saved_Pos - 1;
+      elsif Curr_Pos = Saved_Pos then
+        Saved_Pos := Get_Position (Line_List);
       end if;
     else
-      DELETE (LINE_LIST, PREV);
-      if CURR_POS = SAVED_POS and then not IS_EMPTY (LINE_LIST) then
-        SAVED_POS := GET_POSITION (LINE_LIST);
+      Delete (Line_List, Prev);
+      if Curr_Pos = Saved_Pos and then not Is_Empty (Line_List) then
+        Saved_Pos := Get_Position (Line_List);
       end if;
     end if;
-    if NOT IS_EMPTY (LINE_LIST) then
-      MOVE_TO (LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
+    if Not Is_Empty (Line_List) then
+      Move_To (Line_List, Next, Saved_Pos - 1, False);
     end if;
 
-  end REM_SELECTION;
+  end Rem_Selection;
 
 
-  procedure CLOSE is
+  procedure Close is
   begin
-    LIST_IO.CLOSE (LIST_FILE);
+    List_Io.Close (List_File);
   exception
     when others => null;
-  end CLOSE;
+  end Close;
 
   -- Load the selection from file
-  procedure LOAD is
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    use LIST_IO;
+  procedure Load is
+    File_Name : Mesu_Nam.File_Name_Str;
+    use List_Io;
   begin
-    DELETE_LIST (LINE_LIST);
+    Delete_List (Line_List);
     -- Open file
     begin
-      OPEN (LIST_FILE, IN_FILE, LIST_FILE_NAME);
+      Open (List_File, In_File, List_File_Name);
     exception
-      when NAME_ERROR =>
+      when Name_Error =>
         return;
     end;
 
     -- Read file
-    while not END_OF_FILE (LIST_FILE) loop
-      READ (LIST_FILE, FILE_NAME);
-      ADD_SELECTION (FILE_NAME);
+    while not End_Of_File (List_File) loop
+      Read (List_File, File_Name);
+      Add_Selection (File_Name);
     end loop;
 
-    CLOSE;
+    Close;
 
-  end LOAD;
+  end Load;
 
 
 
   -- Save the selection to file
-  procedure SAVE is
-    SAVED_POS  : POSITIVE;
-    LINE   : AFPX.LINE_REC;
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    DONE : BOOLEAN;
-    use LIST_IO;
+  procedure Save is
+    Saved_Pos  : Positive;
+    Line   : Afpx.Line_Rec;
+    File_Name : Mesu_Nam.File_Name_Str;
+    Done : Boolean;
+    use List_Io;
   begin
     -- Delete previous file
     begin
-      OPEN (LIST_FILE, IN_FILE, LIST_FILE_NAME);
-      DELETE (LIST_FILE);
+      Open (List_File, In_File, List_File_Name);
+      Delete (List_File);
     exception
-      when NAME_ERROR => null;
+      when Name_Error => null;
     end;
 
     -- Create file
-    CREATE (LIST_FILE, OUT_FILE, LIST_FILE_NAME);
+    Create (List_File, Out_File, List_File_Name);
 
     -- Save current position
-    if IS_EMPTY (LINE_LIST) then
-      CLOSE;
+    if Is_Empty (Line_List) then
+      Close;
       return;
     else
-      SAVED_POS := GET_POSITION (LINE_LIST);
+      Saved_Pos := Get_Position (Line_List);
     end if;
 
-    MOVE_TO (LINE_LIST, NEXT, 0, FALSE);
+    Move_To (Line_List, Next, 0, False);
     -- Copy items
     loop
       begin
-        READ (LINE_LIST, LINE);
-        DONE := FALSE;
+        Read (Line_List, Line);
+        Done := False;
       exception
-        when NOT_IN_LIST =>
+        when Not_In_List =>
           -- Last item
-          READ (LINE_LIST, LINE, CURRENT);
-          DONE := TRUE;
+          Read (Line_List, Line, Current);
+          Done := True;
       end;
-      STR_MNG.FORMAT_LIST_TO_MESURE (LINE, FILE_NAME);
-      WRITE (LIST_FILE, FILE_NAME);
+      Str_Mng.Format_List_To_Mesure (Line, File_Name);
+      Write (List_File, File_Name);
 
-      exit when DONE;
+      exit when Done;
     end loop;
 
     -- Restore pos, set it in saved_list
-    MOVE_TO (LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
+    Move_To (Line_List, Next, Saved_Pos - 1, False);
 
-    CLOSE;
-  end SAVE;
+    Close;
+  end Save;
 
   -- Undo (if possible) previous action on selection
-  procedure UNDO is
+  procedure Undo is
   begin
-    COPY_LIST (FROM => SAVED_LIST, TO => LINE_LIST);
-  end UNDO;
+    Copy_List (From => Saved_List, To => Line_List);
+  end Undo;
 
-end MESU_SEL;
+end Mesu_Sel;

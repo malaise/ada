@@ -1,18 +1,18 @@
-with CON_IO;
-with SOK_INPUT;
+with Con_Io;
+with Sok_Input;
 
-procedure T_INPUT is
-  KEY : SOK_INPUT.KEY_LIST;
+procedure T_Input is
+  Key : Sok_Input.Key_List;
 begin
 
-  CON_IO.INIT;
-  CON_IO.RESET_TERM;
+  Con_Io.Init;
+  Con_Io.Reset_Term;
   loop
-    KEY := SOK_INPUT.GET_KEY;
-    CON_IO.PUT (" " & SOK_INPUT.KEY_LIST'IMAGE(KEY) & "    " & ASCII.CR);
+    Key := Sok_Input.Get_Key;
+    Con_Io.Put (" " & Sok_Input.Key_List'Image(Key) & "    " & Ascii.Cr);
   end loop;
 exception
-  when SOK_INPUT.BREAK_REQUESTED =>
-    CON_IO.PUT ("Break" & "      " & ASCII.CR);
-    SOK_INPUT.END_OF_PROGRAM;
-end T_INPUT;
+  when Sok_Input.Break_Requested =>
+    Con_Io.Put ("Break" & "      " & Ascii.Cr);
+    Sok_Input.End_Of_Program;
+end T_Input;

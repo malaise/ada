@@ -141,7 +141,7 @@ begin
         end if;
         Some_Time_Put := True;
         My_Io.Put (Natural'Image(Val) & " " & Msg);
-        if VAL > 1 then
+        if Val > 1 then
           My_Io.Put ("s");
         end if;
       end Put_Time;

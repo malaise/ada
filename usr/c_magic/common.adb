@@ -61,7 +61,7 @@ package body Common is
   end Frac;
 
   -- Recursive procedure to try a a level
-  procedure TRY (CUR : LEN_RANGE);
+  procedure Try (Cur : Len_Range);
 
   -- Init of array and file and start first try
   procedure Search (Dim : in Dim_Range) is

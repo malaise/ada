@@ -1,34 +1,34 @@
-with TEXT_IO, MY_IO, CALENDAR; use MY_IO; 
+with Text_Io, My_Io, Calendar; use My_Io; 
 -- Simulation du jeu des tours de hanoi
 
-procedure HANOI is 
+procedure Hanoi is 
 
-  type TYP_SUPPORT is (A, B, C); 
-  ORIGINE, DESTINATION : TYP_SUPPORT; 
-  package SUPPORT_IO is 
-    new TEXT_IO.ENUMERATION_IO(TYP_SUPPORT); 
-  SUPPORTS_IDENTIQUES : exception; 
+  type Typ_Support is (A, B, C); 
+  Origine, Destination : Typ_Support; 
+  package Support_Io is 
+    new Text_Io.Enumeration_Io(Typ_Support); 
+  Supports_Identiques : exception; 
 
-  subtype TYP_NUMERO_DE_DISQUE is POSITIVE; 
-  NOMBRE_DE_DISQUES      : TYP_NUMERO_DE_DISQUE; 
+  subtype Typ_Numero_De_Disque is Positive; 
+  Nombre_De_Disques      : Typ_Numero_De_Disque; 
 
-  NOMBRE_DE_DEPLACEMENTS : LONG_LONG_INTEGER;
-  COMPTEUR_OVERFLOW      : exception;
+  Nombre_De_Deplacements : Long_Long_Integer;
+  Compteur_Overflow      : exception;
 
-  REPONSE                : CHARACTER;
-  TRACE                  : BOOLEAN;
+  Reponse                : Character;
+  Trace                  : Boolean;
 
-  TEMPS                  : CALENDAR.TIME;
-  SECONDE                : CALENDAR.DAY_DURATION;
-  package DURATION_IO is
-    new TEXT_IO.FIXED_IO(DURATION);
+  Temps                  : Calendar.Time;
+  Seconde                : Calendar.Day_Duration;
+  package Duration_Io is
+    new Text_Io.Fixed_Io(Duration);
 
-  function DETERMINE_INTERMEDIAIRE (
-   PREMIER_SUPPORT, DEUXIEME_SUPPORT : TYP_SUPPORT) return TYP_SUPPORT is
+  function Determine_Intermediaire (
+   Premier_Support, Deuxieme_Support : Typ_Support) return Typ_Support is
   begin
-    case PREMIER_SUPPORT is
+    case Premier_Support is
       when A =>
-        case DEUXIEME_SUPPORT is
+        case Deuxieme_Support is
           when B =>
             return C;
           when C =>
@@ -37,7 +37,7 @@ procedure HANOI is
             null;
         end case;
       when B =>
-        case DEUXIEME_SUPPORT is
+        case Deuxieme_Support is
           when C =>
             return A;
           when A =>
@@ -46,7 +46,7 @@ procedure HANOI is
             null;
         end case;
       when C =>
-        case DEUXIEME_SUPPORT is
+        case Deuxieme_Support is
           when A =>
             return B;
           when B =>
@@ -55,149 +55,149 @@ procedure HANOI is
             null;
         end case;
     end case;
-    PUT_LINE("PROBLEME: Deux supports identiques.");
-    raise SUPPORTS_IDENTIQUES;
-  end DETERMINE_INTERMEDIAIRE;
+    Put_Line("PROBLEME: Deux supports identiques.");
+    raise Supports_Identiques;
+  end Determine_Intermediaire;
 
-  procedure DEPLACER (
-   ORIGINE, INTERMEDIAIRE, DESTINATION : in TYP_SUPPORT;
-   NUMERO_DE_DISQUE                    : in TYP_NUMERO_DE_DISQUE) is
+  procedure Deplacer (
+   Origine, Intermediaire, Destination : in Typ_Support;
+   Numero_De_Disque                    : in Typ_Numero_De_Disque) is
   begin
     begin
-      DEPLACER(ORIGINE, DESTINATION, INTERMEDIAIRE, TYP_NUMERO_DE_DISQUE'PRED(
-        NUMERO_DE_DISQUE));
+      Deplacer(Origine, Destination, Intermediaire, Typ_Numero_De_Disque'Pred(
+        Numero_De_Disque));
     exception
-      when CONSTRAINT_ERROR =>
+      when Constraint_Error =>
         null;
     end; 
 
-    if TRACE then 
-      PUT("Deplacer le disque "); 
-      PUT(NUMERO_DE_DISQUE); 
-      PUT(" de "); 
-      SUPPORT_IO.PUT(ORIGINE); 
-      PUT(" vers "); 
-      SUPPORT_IO.PUT(DESTINATION); 
-      PUT_LINE("."); 
+    if Trace then 
+      Put("Deplacer le disque "); 
+      Put(Numero_De_Disque); 
+      Put(" de "); 
+      Support_Io.Put(Origine); 
+      Put(" vers "); 
+      Support_Io.Put(Destination); 
+      Put_Line("."); 
     end if; 
 
     begin
-      NOMBRE_DE_DEPLACEMENTS := LONG_LONG_INTEGER'SUCC(NOMBRE_DE_DEPLACEMENTS); 
+      Nombre_De_Deplacements := Long_Long_Integer'Succ(Nombre_De_Deplacements); 
     exception
       when others => 
-        raise COMPTEUR_OVERFLOW; 
+        raise Compteur_Overflow; 
     end; 
 
     begin
-      DEPLACER(INTERMEDIAIRE, ORIGINE, DESTINATION, TYP_NUMERO_DE_DISQUE'PRED(
-        NUMERO_DE_DISQUE)); 
+      Deplacer(Intermediaire, Origine, Destination, Typ_Numero_De_Disque'Pred(
+        Numero_De_Disque)); 
     exception
-      when CONSTRAINT_ERROR => 
+      when Constraint_Error => 
         null; 
     end; 
 
-  end DEPLACER; 
+  end Deplacer; 
 
 begin -- hanoi
-  PUT_LINE("Probleme des tours de HANOI:"); 
+  Put_Line("Probleme des tours de HANOI:"); 
   loop
-    NEW_LINE; 
+    New_Line; 
 
     loop
       begin
-        PUT("Entrez le support de depart (a, b, c) ? "); 
-        SUPPORT_IO.GET(ORIGINE); 
-        NEW_LINE; 
+        Put("Entrez le support de depart (a, b, c) ? "); 
+        Support_Io.Get(Origine); 
+        New_Line; 
         exit;
       exception
         when others => 
-          SKIP_LINE; 
-          PUT_LINE("ERREUR de saisie, recommencez."); 
+          Skip_Line; 
+          Put_Line("ERREUR de saisie, recommencez."); 
       end; 
     end loop; 
 
     loop
       begin
-        PUT("Entrez le support d'arrivee (a, b, c) ? "); 
-        SUPPORT_IO.GET(DESTINATION); 
-        if (DESTINATION = ORIGINE) then 
-          raise SUPPORTS_IDENTIQUES; 
+        Put("Entrez le support d'arrivee (a, b, c) ? "); 
+        Support_Io.Get(Destination); 
+        if (Destination = Origine) then 
+          raise Supports_Identiques; 
         end if; 
-        NEW_LINE; 
+        New_Line; 
         exit; 
       exception
-        when SUPPORTS_IDENTIQUES => 
-          SKIP_LINE; 
-          PUT_LINE("ERREUR, les deux supports sont identiques. Recommencez."); 
+        when Supports_Identiques => 
+          Skip_Line; 
+          Put_Line("ERREUR, les deux supports sont identiques. Recommencez."); 
         when others => 
-          SKIP_LINE; 
-          PUT_LINE("ERREUR de saisie, recommencez."); 
+          Skip_Line; 
+          Put_Line("ERREUR de saisie, recommencez."); 
       end; 
     end loop; 
 
     loop
       begin
-        PUT("Entrez le nombre de disques (au moins 1) ? "); 
-        GET(NOMBRE_DE_DISQUES); 
-        NEW_LINE; 
+        Put("Entrez le nombre de disques (au moins 1) ? "); 
+        Get(Nombre_De_Disques); 
+        New_Line; 
         exit; 
       exception
         when others => 
-          SKIP_LINE; 
-          PUT_LINE("ERREUR, recommencez."); 
+          Skip_Line; 
+          Put_Line("ERREUR, recommencez."); 
       end; 
     end loop; 
 
     loop
       begin
-        PUT("Voulez-vous une trace detaillee (O/N) ? "); 
-        GET(REPONSE); 
-        if (REPONSE /= 'o') and then (REPONSE /= 'O') and then
-           (REPONSE /= 'n') and then (REPONSE /= 'N') then
-          raise CONSTRAINT_ERROR;
+        Put("Voulez-vous une trace detaillee (O/N) ? "); 
+        Get(Reponse); 
+        if (Reponse /= 'o') and then (Reponse /= 'O') and then
+           (Reponse /= 'n') and then (Reponse /= 'N') then
+          raise Constraint_Error;
         end if; 
-        NEW_LINE; 
-        TRACE := ((REPONSE = 'o') or else (REPONSE = 'O'));
+        New_Line; 
+        Trace := ((Reponse = 'o') or else (Reponse = 'O'));
         exit; 
       exception
         when others => 
-          SKIP_LINE; 
-          PUT_LINE("ERREUR, recommencez."); 
+          Skip_Line; 
+          Put_Line("ERREUR, recommencez."); 
       end; 
     end loop; 
 
-    NEW_LINE; 
+    New_Line; 
 
     begin
-      NOMBRE_DE_DEPLACEMENTS := 0; 
-      TEMPS := CALENDAR.CLOCK; 
-      DEPLACER(ORIGINE, DETERMINE_INTERMEDIAIRE(ORIGINE, DESTINATION), 
-        DESTINATION, NOMBRE_DE_DISQUES); 
-      SECONDE := CALENDAR."-"(CALENDAR.CLOCK, TEMPS); 
+      Nombre_De_Deplacements := 0; 
+      Temps := Calendar.Clock; 
+      Deplacer(Origine, Determine_Intermediaire(Origine, Destination), 
+        Destination, Nombre_De_Disques); 
+      Seconde := Calendar."-"(Calendar.Clock, Temps); 
 
-      NEW_LINE; 
-      PUT("Transfert de "); 
-      PUT(NOMBRE_DE_DISQUES); 
-      PUT(" disques de "); 
-      SUPPORT_IO.PUT(ORIGINE); 
-      PUT(" vers "); 
-      SUPPORT_IO.PUT(DESTINATION); 
-      PUT_LINE(" ."); 
+      New_Line; 
+      Put("Transfert de "); 
+      Put(Nombre_De_Disques); 
+      Put(" disques de "); 
+      Support_Io.Put(Origine); 
+      Put(" vers "); 
+      Support_Io.Put(Destination); 
+      Put_Line(" ."); 
 
-      PUT("Operation effectuee en "); 
-      PUT(NOMBRE_DE_DEPLACEMENTS); 
-      PUT_LINE(" deplacements "); 
-      PUT(" et en "); 
-      DURATION_IO.PUT(SECONDE); 
-      PUT_LINE(" secondes."); 
+      Put("Operation effectuee en "); 
+      Put(Nombre_De_Deplacements); 
+      Put_Line(" deplacements "); 
+      Put(" et en "); 
+      Duration_Io.Put(Seconde); 
+      Put_Line(" secondes."); 
 
     exception
-      when COMPTEUR_OVERFLOW => 
-        PUT("Depassement de la capacite du compteur. Mettez moins de disques.")
+      when Compteur_Overflow => 
+        Put("Depassement de la capacite du compteur. Mettez moins de disques.")
           ; 
     end; 
 
   end loop; 
 
-end HANOI; 
+end Hanoi; 
 

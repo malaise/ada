@@ -1,66 +1,66 @@
-with RND;
-package body RESPONSE is
+with Rnd;
+package body Response is
 
 
-  SECRET : COLOR_REC;
+  Secret : Color_Rec;
 
-  function COLOR_RANDOM is new RND.DISCR_RANDOM (COMMON.EFF_COLOR_RANGE);
+  function Color_Random is new Rnd.Discr_Random (Common.Eff_Color_Range);
 
-  procedure NEW_CODE is
-    CURRENT_LEVEL : COMMON.LAST_LEVEL_RANGE := COMMON.GET_LEVEL;
+  procedure New_Code is
+    Current_Level : Common.Last_Level_Range := Common.Get_Level;
   begin
-    SECRET := (LEVEL => CURRENT_LEVEL,
-              COLOR => (others => COMMON.EFF_COLOR_RANGE'FIRST) );
+    Secret := (Level => Current_Level,
+              Color => (others => Common.Eff_Color_Range'First) );
 
-    for I in COMMON.LEVEL_RANGE
-     range COMMON.LEVEL_RANGE'FIRST .. CURRENT_LEVEL loop
-      SECRET.COLOR(I) := COLOR_RANDOM;
+    for I in Common.Level_Range
+     range Common.Level_Range'First .. Current_Level loop
+      Secret.Color(I) := Color_Random;
     end loop;
-  end NEW_CODE;
+  end New_Code;
 
 
-  function RESPOND (PROPAL : COLOR_REC) return RESPONSE_REC is
+  function Respond (Propal : Color_Rec) return Response_Rec is
 
-    subtype COLUMN_RANGE is COMMON.LEVEL_RANGE range
-     COMMON.LEVEL_RANGE'FIRST .. SECRET.LEVEL;
-    SEEN_CODE, SEEN_PROPAL : array (COLUMN_RANGE) of BOOLEAN
-                         := (others => FALSE);
-    RESPONSE : RESPONSE_REC := (PLACED_OK => 0, COLORS_OK=> 0);
-    use COMMON;
+    subtype Column_Range is Common.Level_Range range
+     Common.Level_Range'First .. Secret.Level;
+    Seen_Code, Seen_Propal : array (Column_Range) of Boolean
+                         := (others => False);
+    Response : Response_Rec := (Placed_Ok => 0, Colors_Ok=> 0);
+    use Common;
   begin
-    if SECRET.LEVEL /= PROPAL.LEVEL then raise CONSTRAINT_ERROR; end if;
+    if Secret.Level /= Propal.Level then raise Constraint_Error; end if;
 
-    for COL in COLUMN_RANGE loop
-      if SECRET.COLOR(COL) = PROPAL.COLOR(COL) then
-        RESPONSE.PLACED_OK := RESPONSE.PLACED_OK + 1;
-        SEEN_CODE(COL) := TRUE;
-        SEEN_PROPAL(COL) := TRUE;
+    for Col in Column_Range loop
+      if Secret.Color(Col) = Propal.Color(Col) then
+        Response.Placed_Ok := Response.Placed_Ok + 1;
+        Seen_Code(Col) := True;
+        Seen_Propal(Col) := True;
       end if;
     end loop;
 
-    for COL_PROPAL in COLUMN_RANGE loop
-      if not SEEN_PROPAL (COL_PROPAL) then
+    for Col_Propal in Column_Range loop
+      if not Seen_Propal (Col_Propal) then
         -- not a black
-        for COL_CODE in COLUMN_RANGE loop
-          if not SEEN_CODE(COL_CODE) and then
-           SECRET.COLOR(COL_CODE) = PROPAL.COLOR(COL_PROPAL) then
-            RESPONSE.COLORS_OK := RESPONSE.COLORS_OK + 1;
-            SEEN_CODE(COL_CODE) := TRUE;
-            SEEN_PROPAL(COL_PROPAL) := TRUE;
+        for Col_Code in Column_Range loop
+          if not Seen_Code(Col_Code) and then
+           Secret.Color(Col_Code) = Propal.Color(Col_Propal) then
+            Response.Colors_Ok := Response.Colors_Ok + 1;
+            Seen_Code(Col_Code) := True;
+            Seen_Propal(Col_Propal) := True;
             exit;
           end if;
         end loop;
       end if;
     end loop;
 
-    return RESPONSE;
-  end RESPOND;
+    return Response;
+  end Respond;
 
 
 
-  function  GET_CODE return COLOR_REC is
+  function  Get_Code return Color_Rec is
   begin
-    return SECRET;
-  end GET_CODE;
+    return Secret;
+  end Get_Code;
 
-end RESPONSE;
+end Response;

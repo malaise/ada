@@ -1,28 +1,28 @@
-with NAV_TYPES;
+with Nav_Types;
 -- to convert got strings in data fields, and fields in string to be put
-package NAV_FORMAT is
+package Nav_Format is
 
-  type FORMAT_RESULT is (SET, UNSET, ERROR);
+  type Format_Result is (Set, Unset, Error);
 
   -- from speed to string
-  function IMAG (SPEED : NAV_TYPES.T_SPEED; SET : BOOLEAN := TRUE)
-   return STRING;
+  function Imag (Speed : Nav_Types.T_Speed; Set : Boolean := True)
+   return String;
   -- from string to angle
-  function IMAG (ANGLE : NAV_TYPES.T_ANGLE; SET : BOOLEAN := TRUE)
-   return STRING;
+  function Imag (Angle : Nav_Types.T_Angle; Set : Boolean := True)
+   return String;
   -- from string to drift
-  function IMAG (DRIFT : NAV_TYPES.T_DRIFT; SET : BOOLEAN := TRUE)
-   return STRING;
+  function Imag (Drift : Nav_Types.T_Drift; Set : Boolean := True)
+   return String;
 
   -- from string to speed
   -- if error, then pos is it's position
-  procedure VALUE (STR : in STRING;
-   SPEED : out NAV_TYPES.T_SPEED; RES : out FORMAT_RESULT; POS : out POSITIVE);
+  procedure Value (Str : in String;
+   Speed : out Nav_Types.T_Speed; Res : out Format_Result; Pos : out Positive);
   -- from string to angle
-  procedure VALUE (STR : in STRING;
-   ANGLE : out NAV_TYPES.T_ANGLE; RES : out FORMAT_RESULT; POS : out POSITIVE);
+  procedure Value (Str : in String;
+   Angle : out Nav_Types.T_Angle; Res : out Format_Result; Pos : out Positive);
   -- from drift to speed
-  procedure VALUE (STR : in STRING;
-   DRIFT : out NAV_TYPES.T_DRIFT; RES : out FORMAT_RESULT; POS : out POSITIVE);
+  procedure Value (Str : in String;
+   Drift : out Nav_Types.T_Drift; Res : out Format_Result; Pos : out Positive);
 
-end NAV_FORMAT;
+end Nav_Format;

@@ -1,122 +1,122 @@
-with DIRECT_IO;
-with NORMAL, TEXT_HANDLER;
-with PERS_DEF;
-package body MESU_FIL is
+with Direct_Io;
+with Normal, Text_Handler;
+with Pers_Def;
+package body Mesu_Fil is
 
 
   -- A mesure in file (same as in definition but without pid)
-  type FILE_REC is record
-    SAMPLING_DELTA : MESU_DEF.SAMPLING_DELTA_RANGE := 60;
-    COMMENT : MESU_DEF.COMMENT_STR := (others => ' ');
+  type File_Rec is record
+    Sampling_Delta : Mesu_Def.Sampling_Delta_Range := 60;
+    Comment : Mesu_Def.Comment_Str := (others => ' ');
     -- Time zones for the mesure
-    TZ : PERS_DEF.PERSON_TZ_ARRAY := (others => PERS_DEF.BPM_RANGE'FIRST);
-    SAMPLES : MESU_DEF.MAX_SAMPLE_ARRAY
-            := (others => PERS_DEF.BPM_RANGE'FIRST);
+    Tz : Pers_Def.Person_Tz_Array := (others => Pers_Def.Bpm_Range'First);
+    Samples : Mesu_Def.Max_Sample_Array
+            := (others => Pers_Def.Bpm_Range'First);
   end record;
 
 
   -- Direct_io of mesures
-  package MESURE_IO is new DIRECT_IO (ELEMENT_TYPE => FILE_REC);
-  MESURE_FILE : MESURE_IO.FILE_TYPE;
+  package Mesure_Io is new Direct_Io (Element_Type => File_Rec);
+  Mesure_File : Mesure_Io.File_Type;
 
-  procedure OPEN (FILE_NAME : in STRING; CREATE : BOOLEAN := TRUE) is
+  procedure Open (File_Name : in String; Create : Boolean := True) is
   begin
     -- Try to open existing file
     begin
-      MESURE_IO.OPEN (MESURE_FILE, MESURE_IO.INOUT_FILE, FILE_NAME);
+      Mesure_Io.Open (Mesure_File, Mesure_Io.Inout_File, File_Name);
     exception
-      when MESURE_IO.NAME_ERROR =>
-        if CREATE then
-          MESURE_IO.CREATE (MESURE_FILE, MESURE_IO.INOUT_FILE, FILE_NAME);
+      when Mesure_Io.Name_Error =>
+        if Create then
+          Mesure_Io.Create (Mesure_File, Mesure_Io.Inout_File, File_Name);
         else
-          raise FILE_NOT_FOUND_ERROR;
+          raise File_Not_Found_Error;
         end if;
     end;
   exception
-    when FILE_NOT_FOUND_ERROR =>
+    when File_Not_Found_Error =>
       raise;
     when others =>
-      raise IO_ERROR;
-  end OPEN;
+      raise Io_Error;
+  end Open;
 
-  procedure CLOSE is
+  procedure Close is
   begin
-    MESURE_IO.CLOSE (MESURE_FILE);
+    Mesure_Io.Close (Mesure_File);
   exception
     when others =>
       null;
-  end CLOSE;
+  end Close;
 
-  function LOAD (FILE_NAME : MESU_NAM.FILE_NAME_STR)
-  return MESU_DEF.MESURE_REC is
-    MESURE : MESU_DEF.MESURE_REC;
-    TMP : FILE_REC;
-    DATE : MESU_NAM.FILE_DATE_STR;
-    NO   : MESU_NAM.FILE_NO_STR;
-    PID  : MESU_NAM.FILE_PID_STR;
+  function Load (File_Name : Mesu_Nam.File_Name_Str)
+  return Mesu_Def.Mesure_Rec is
+    Mesure : Mesu_Def.Mesure_Rec;
+    Tmp : File_Rec;
+    Date : Mesu_Nam.File_Date_Str;
+    No   : Mesu_Nam.File_No_Str;
+    Pid  : Mesu_Nam.File_Pid_Str;
   begin
-    MESU_NAM.SPLIT_FILE_NAME (FILE_NAME, DATE, NO, PID);
-    if      DATE = MESU_NAM.WILD_DATE_STR
-    or else NO   = MESU_NAM.WILD_NO_STR
-    or else PID  = MESU_NAM.WILD_PID_STR then
-      raise FILE_NAME_ERROR;
+    Mesu_Nam.Split_File_Name (File_Name, Date, No, Pid);
+    if      Date = Mesu_Nam.Wild_Date_Str
+    or else No   = Mesu_Nam.Wild_No_Str
+    or else Pid  = Mesu_Nam.Wild_Pid_Str then
+      raise File_Name_Error;
     end if;
-    OPEN (FILE_NAME, FALSE);
-    MESURE_IO.READ (MESURE_FILE, TMP);
-    MESURE_IO.CLOSE (MESURE_FILE);
-    MESURE := (PID => PERS_DEF.PID_RANGE'VALUE(PID),
-               DATE => DATE,
-               SAMPLING_DELTA => TMP.SAMPLING_DELTA,
-               COMMENT => TMP.COMMENT,
-               TZ => TMP.TZ,
-               SAMPLES => TMP.SAMPLES);
+    Open (File_Name, False);
+    Mesure_Io.Read (Mesure_File, Tmp);
+    Mesure_Io.Close (Mesure_File);
+    Mesure := (Pid => Pers_Def.Pid_Range'Value(Pid),
+               Date => Date,
+               Sampling_Delta => Tmp.Sampling_Delta,
+               Comment => Tmp.Comment,
+               Tz => Tmp.Tz,
+               Samples => Tmp.Samples);
 
-    return MESURE;
+    return Mesure;
   exception
-    when FILE_NOT_FOUND_ERROR =>
+    when File_Not_Found_Error =>
       raise;
     when others =>
-      CLOSE;
-      raise IO_ERROR;
-  end LOAD;
+      Close;
+      raise Io_Error;
+  end Load;
 
-  procedure SAVE (FILE_NO : in MESU_NAM.FILE_NO_STR;
-                  MESURE  : in MESU_DEF.MESURE_REC) is
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    TMP : FILE_REC;
+  procedure Save (File_No : in Mesu_Nam.File_No_Str;
+                  Mesure  : in Mesu_Def.Mesure_Rec) is
+    File_Name : Mesu_Nam.File_Name_Str;
+    Tmp : File_Rec;
   begin
-    if FILE_NO = MESU_NAM.WILD_NO_STR then
-      raise FILE_NAME_ERROR;
+    if File_No = Mesu_Nam.Wild_No_Str then
+      raise File_Name_Error;
     end if;
-    FILE_NAME := MESU_NAM.BUILD_FILE_NAME (MESURE.DATE, FILE_NO,
-                          NORMAL(INTEGER(MESURE.PID), 3, GAP => '0'));
-    TMP := (SAMPLING_DELTA => MESURE.SAMPLING_DELTA,
-            COMMENT => MESURE.COMMENT,
-            TZ => MESURE.TZ,
-            SAMPLES => MESURE.SAMPLES);
-    OPEN (FILE_NAME);
-    MESURE_IO.WRITE (MESURE_FILE, TMP);
-    MESURE_IO.CLOSE (MESURE_FILE);
+    File_Name := Mesu_Nam.Build_File_Name (Mesure.Date, File_No,
+                          Normal(Integer(Mesure.Pid), 3, Gap => '0'));
+    Tmp := (Sampling_Delta => Mesure.Sampling_Delta,
+            Comment => Mesure.Comment,
+            Tz => Mesure.Tz,
+            Samples => Mesure.Samples);
+    Open (File_Name);
+    Mesure_Io.Write (Mesure_File, Tmp);
+    Mesure_Io.Close (Mesure_File);
   exception
     when others =>
-      CLOSE;
-      raise IO_ERROR;
-  end SAVE;
+      Close;
+      raise Io_Error;
+  end Save;
 
   -- Delete a mesure file
   -- Pid and date of the mesure are used to build the file name
-  procedure DELETE (FILE_NAME : in MESU_NAM.FILE_NAME_STR) is
+  procedure Delete (File_Name : in Mesu_Nam.File_Name_Str) is
   begin
     -- No space in file_name
-    if TEXT_HANDLER.LOCATE (TEXT_HANDLER.TO_TEXT(FILE_NAME), ' ') /= 0 then
-      raise FILE_NAME_ERROR;
+    if Text_Handler.Locate (Text_Handler.To_Text(File_Name), ' ') /= 0 then
+      raise File_Name_Error;
     end if;
-    OPEN (FILE_NAME);
-    MESURE_IO.DELETE (MESURE_FILE);
+    Open (File_Name);
+    Mesure_Io.Delete (Mesure_File);
   exception
     when others =>
-      CLOSE;
-      raise IO_ERROR;
-  end DELETE;
+      Close;
+      raise Io_Error;
+  end Delete;
 
-end MESU_FIL;
+end Mesu_Fil;

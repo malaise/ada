@@ -1,116 +1,116 @@
-with TEXT_IO, NORMAL, DOS, AFPX, SYS_CALLS;
-with STR_MNG, MESU_FIL, PERS_DEF, MESU_DEF, MESU_NAM, PERS_MNG;
-package body MESU_PRT is
+with Text_Io, Normal, Dos, Afpx, Sys_Calls;
+with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng;
+package body Mesu_Prt is
 
-  PRINTER_NAME : constant STRING := "";
-  PRINTER_COMMAND : constant STRING := "heart_print";
-  PRINTER      : TEXT_IO.FILE_TYPE;
+  Printer_Name : constant String := "";
+  Printer_Command : constant String := "heart_print";
+  Printer      : Text_Io.File_Type;
 
-  procedure PRINT_REC (PERSON : in PERS_DEF.PERSON_REC;
-                       MESURE : in MESU_DEF.MESURE_REC) is
-    LAST_OF_LINE : BOOLEAN;
-    use TEXT_IO;
-    use PERS_DEF;
+  procedure Print_Rec (Person : in Pers_Def.Person_Rec;
+                       Mesure : in Mesu_Def.Mesure_Rec) is
+    Last_Of_Line : Boolean;
+    use Text_Io;
+    use Pers_Def;
   begin
-    if not IS_OPEN (PRINTER) then
-      CREATE (PRINTER, OUT_FILE, PRINTER_NAME);
+    if not Is_Open (Printer) then
+      Create (Printer, Out_File, Printer_Name);
     end if;
-    PUT_LINE (PRINTER, "Person: " & PERSON.NAME & "    " & PERSON.ACTIVITY
-                      & "    Date: " & STR_MNG.TO_PRINTED_STR(MESURE.DATE));
-    PUT (PRINTER, "Comment: " & MESURE.COMMENT
-                & "   Delta: " & NORMAL(INTEGER(MESURE.SAMPLING_DELTA), 3)
+    Put_Line (Printer, "Person: " & Person.Name & "    " & Person.Activity
+                      & "    Date: " & Str_Mng.To_Printed_Str(Mesure.Date));
+    Put (Printer, "Comment: " & Mesure.Comment
+                & "   Delta: " & Normal(Integer(Mesure.Sampling_Delta), 3)
                 & "    TZ: ");
-    for I in PERS_DEF.PERSON_TZ_ARRAY'RANGE loop
-      PUT (PRINTER, STR_MNG.TO_STR(MESURE.TZ(I)) & " ");
+    for I in Pers_Def.Person_Tz_Array'Range loop
+      Put (Printer, Str_Mng.To_Str(Mesure.Tz(I)) & " ");
     end loop;
-    NEW_LINE (PRINTER);
-    LAST_OF_LINE := FALSE;
-    for I in MESU_DEF.SAMPLE_NB_RANGE loop
-      exit when MESURE.SAMPLES(I) = PERS_DEF.BPM_RANGE'FIRST;
-      PUT (PRINTER, STR_MNG.TO_STR(MESURE.SAMPLES(I)));
-      LAST_OF_LINE := I mod 20 = 0;
-      if LAST_OF_LINE then
+    New_Line (Printer);
+    Last_Of_Line := False;
+    for I in Mesu_Def.Sample_Nb_Range loop
+      exit when Mesure.Samples(I) = Pers_Def.Bpm_Range'First;
+      Put (Printer, Str_Mng.To_Str(Mesure.Samples(I)));
+      Last_Of_Line := I mod 20 = 0;
+      if Last_Of_Line then
         -- After last of row
-        NEW_LINE (PRINTER);
+        New_Line (Printer);
       else
-        PUT (PRINTER, " ");
+        Put (Printer, " ");
       end if;
     end loop;
-    if not LAST_OF_LINE then
-      NEW_LINE (PRINTER);
+    if not Last_Of_Line then
+      New_Line (Printer);
     end if;
-  end PRINT_REC;
+  end Print_Rec;
 
-  procedure PRINT_SEPARATOR is
+  procedure Print_Separator is
   begin
-    TEXT_IO.PUT_LINE (PRINTER,
+    Text_Io.Put_Line (Printer,
 "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
-  end PRINT_SEPARATOR;
+  end Print_Separator;
 
-  procedure FORM_FEED is
+  procedure Form_Feed is
   begin
-    TEXT_IO.NEW_PAGE(PRINTER);
-    TEXT_IO.CLOSE(PRINTER);
-  end FORM_FEED;
+    Text_Io.New_Page(Printer);
+    Text_Io.Close(Printer);
+  end Form_Feed;
 
-  procedure PRINT is
-    SAVED_POS : NATURAL;
-    LINE      : AFPX.LINE_REC;
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    DATE_S    : MESU_NAM.FILE_DATE_STR;
-    NO_S      : MESU_NAM.FILE_NO_STR;
-    PID_S     : MESU_NAM.FILE_PID_STR;
-    POS_PERS  : NATURAL;
-    PERSON    : PERS_DEF.PERSON_REC;
-    MESURE    : MESU_DEF.MESURE_REC;
-    DUMMY     : INTEGER;
+  procedure Print is
+    Saved_Pos : Natural;
+    Line      : Afpx.Line_Rec;
+    File_Name : Mesu_Nam.File_Name_Str;
+    Date_S    : Mesu_Nam.File_Date_Str;
+    No_S      : Mesu_Nam.File_No_Str;
+    Pid_S     : Mesu_Nam.File_Pid_Str;
+    Pos_Pers  : Natural;
+    Person    : Pers_Def.Person_Rec;
+    Mesure    : Mesu_Def.Mesure_Rec;
+    Dummy     : Integer;
 
-    use AFPX.LINE_LIST_MNG;
+    use Afpx.Line_List_Mng;
   begin
     -- List is not empty
-    SAVED_POS := GET_POSITION (AFPX.LINE_LIST);
+    Saved_Pos := Get_Position (Afpx.Line_List);
 
     -- for each in list
-    MOVE_TO (AFPX.LINE_LIST, NEXT, 0, FALSE);
+    Move_To (Afpx.Line_List, Next, 0, False);
 
-    AFPX.USE_DESCRIPTOR (4);
-    AFPX.PUT;
+    Afpx.Use_Descriptor (4);
+    Afpx.Put;
 
-    PRINT:
+    Print:
     loop
       -- Get line, file_name, split
-      READ (AFPX.LINE_LIST, LINE, CURRENT);
-      STR_MNG.FORMAT_LIST_TO_MESURE (LINE, FILE_NAME);
-      MESU_NAM.SPLIT_FILE_NAME (FILE_NAME, DATE_S, NO_S, PID_S);
+      Read (Afpx.Line_List, Line, Current);
+      Str_Mng.Format_List_To_Mesure (Line, File_Name);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
       -- Get person
-      PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS, PERS_DEF.PID_RANGE'VALUE(PID_S),
-                       POS_PERS);
-      PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-                                     PERS_DEF.PERSON_LIST_MNG.CURRENT);
+      Pers_Mng.Search (Pers_Def.The_Persons, Pers_Def.Pid_Range'Value(Pid_S),
+                       Pos_Pers);
+      Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+                                     Pers_Def.Person_List_Mng.Current);
       -- Get mesure
-      MESURE := MESU_FIL.LOAD (FILE_NAME);
+      Mesure := Mesu_Fil.Load (File_Name);
 
-      PRINT_REC (PERSON, MESURE);
+      Print_Rec (Person, Mesure);
 
       -- Next line except if list empty or end of list
-      exit when IS_EMPTY (AFPX.LINE_LIST) or else
-                GET_POSITION (AFPX.LINE_LIST) = LIST_LENGTH (AFPX.LINE_LIST);
+      exit when Is_Empty (Afpx.Line_List) or else
+                Get_Position (Afpx.Line_List) = List_Length (Afpx.Line_List);
 
-      MOVE_TO (AFPX.LINE_LIST);
-      PRINT_SEPARATOR;
-    end loop PRINT;
+      Move_To (Afpx.Line_List);
+      Print_Separator;
+    end loop Print;
 
-    FORM_FEED;
+    Form_Feed;
 
     -- Print
-    DUMMY := SYS_CALLS.CALL_SYSTEM(PRINTER_COMMAND & " " & PRINTER_NAME);
+    Dummy := Sys_Calls.Call_System(Printer_Command & " " & Printer_Name);
 
     -- Restore pos
-    MOVE_TO (AFPX.LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
+    Move_To (Afpx.Line_List, Next, Saved_Pos - 1, False);
 
   exception
     when others =>
-      MOVE_TO (AFPX.LINE_LIST, NEXT, SAVED_POS - 1, FALSE);
-  end PRINT;
+      Move_To (Afpx.Line_List, Next, Saved_Pos - 1, False);
+  end Print;
 
-end MESU_PRT;
+end Mesu_Prt;

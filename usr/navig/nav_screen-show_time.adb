@@ -1,29 +1,29 @@
 -- time displaying
-with CALENDAR;
-with NORMAL, DAY_MNG;
+with Calendar;
+with Normal, Day_Mng;
 
-separate (NAV_SCREEN)
-procedure SHOW_TIME is
-  YEAR  : CALENDAR.YEAR_NUMBER;
-  MONTH : CALENDAR.MONTH_NUMBER;
-  DAY   : CALENDAR.DAY_NUMBER;
-  DUR   : CALENDAR.DAY_DURATION;
-  HOR : DAY_MNG.T_HOURS;
-  MIN : DAY_MNG.T_MINUTES;
-  SEC : DAY_MNG.T_SECONDS;
-  MIL : DAY_MNG.T_MILLISEC;
+separate (Nav_Screen)
+procedure Show_Time is
+  Year  : Calendar.Year_Number;
+  Month : Calendar.Month_Number;
+  Day   : Calendar.Day_Number;
+  Dur   : Calendar.Day_Duration;
+  Hor : Day_Mng.T_Hours;
+  Min : Day_Mng.T_Minutes;
+  Sec : Day_Mng.T_Seconds;
+  Mil : Day_Mng.T_Millisec;
 begin
   -- get date and time
-  CALENDAR.SPLIT (CALENDAR.CLOCK, YEAR, MONTH, DAY, DUR);
+  Calendar.Split (Calendar.Clock, Year, Month, Day, Dur);
   -- compute time hours, minutes and seconds
-  DAY_MNG.SPLIT (DUR, HOR, MIN, SEC, MIL);
+  Day_Mng.Split (Dur, Hor, Min, Sec, Mil);
   -- put
-  CON_IO.MOVE ( (0, 0), W_TIME);
-  CON_IO.PUT (
+  Con_Io.Move ( (0, 0), W_Time);
+  Con_Io.Put (
    S =>
-    NORMAL(DAY, 2, TRUE, '0') & "/" & NORMAL(MONTH, 2, TRUE, '0') &
-    "/" & NORMAL(YEAR, 4, TRUE, '0') & " " &
-    NORMAL(HOR, 2, TRUE, '0') & ":" & NORMAL(MIN, 2, TRUE, '0') & ":" &
-    NORMAL(SEC, 2, TRUE, '0'),
-   NAME => W_TIME);
-end SHOW_TIME;
+    Normal(Day, 2, True, '0') & "/" & Normal(Month, 2, True, '0') &
+    "/" & Normal(Year, 4, True, '0') & " " &
+    Normal(Hor, 2, True, '0') & ":" & Normal(Min, 2, True, '0') & ":" &
+    Normal(Sec, 2, True, '0'),
+   Name => W_Time);
+end Show_Time;

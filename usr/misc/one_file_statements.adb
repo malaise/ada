@@ -1,58 +1,58 @@
-with TEXT_IO;
-with NORMAL;
+with Text_Io;
+with Normal;
 
-package body ONE_FILE_STATEMENTS is
+package body One_File_Statements is
 
-  TOTAL : NATURAL := 0;
-  FILE_ERROR : exception;
-  function COUNT_STATEMENTS_OF_FILE (FILE_NAME : STRING) return NATURAL is
+  Total : Natural := 0;
+  File_Error : exception;
+  function Count_Statements_Of_File (File_Name : String) return Natural is
 
-    FILE  : TEXT_IO.FILE_TYPE;
-    C     : CHARACTER := ' ';
-    STATEMENTS : NATURAL := 0;
-    LEVELS : NATURAL := 0;
+    File  : Text_Io.File_Type;
+    C     : Character := ' ';
+    Statements : Natural := 0;
+    Levels : Natural := 0;
 
-    procedure GET (FILE : in TEXT_IO.FILE_TYPE; C : out CHARACTER) is
+    procedure Get (File : in Text_Io.File_Type; C : out Character) is
     begin
-      TEXT_IO.GET (FILE, C);
+      Text_Io.Get (File, C);
     exception
-      when TEXT_IO.END_ERROR =>
+      when Text_Io.End_Error =>
         raise;
       when others =>
-        TEXT_IO.PUT_LINE ("Exception raised when reading line "
-                        & TEXT_IO.POSITIVE_COUNT'IMAGE(TEXT_IO.LINE(FILE))
-                        & " of file " & FILE_NAME);
-        raise FILE_ERROR;
-    end GET;
+        Text_Io.Put_Line ("Exception raised when reading line "
+                        & Text_Io.Positive_Count'Image(Text_Io.Line(File))
+                        & " of file " & File_Name);
+        raise File_Error;
+    end Get;
 
-    procedure CLOSE (FILE : in out TEXT_IO.FILE_TYPE) is
+    procedure Close (File : in out Text_Io.File_Type) is
     begin
-      TEXT_IO.CLOSE (FILE);
+      Text_Io.Close (File);
     exception
       when others => null;
-    end CLOSE;
+    end Close;
 
   begin
 
     begin
-      TEXT_IO.OPEN (FILE, TEXT_IO.IN_FILE, FILE_NAME);
+      Text_Io.Open (File, Text_Io.In_File, File_Name);
     exception
       when others =>
-        TEXT_IO.PUT_LINE ("Exception raised when opening file " & FILE_NAME);
-        raise FILE_ERROR;
+        Text_Io.Put_Line ("Exception raised when opening file " & File_Name);
+        raise File_Error;
     end;
 
     loop
 
-      GET (FILE, C);
+      Get (File, C);
 
       -- Check for comment on the line
       if C = '-' then
-        GET (FILE, C);
+        Get (File, C);
         -- Which is signaled by the '-' following a '-'
         if C = '-' then
           -- Then just skip the rest of the line and go to the next
-          TEXT_IO.SKIP_LINE (FILE);
+          Text_Io.Skip_Line (File);
         end if;
       end if;
 
@@ -85,7 +85,7 @@ package body ONE_FILE_STATEMENTS is
           -- Treat them in parallel, one must lead off
           if C = '"' then
             loop
-              GET (FILE, C);
+              Get (File, C);
               -- Loop until  the close comes
               -- If there is a doubled character it just starts again
               exit when C = '"';
@@ -93,107 +93,107 @@ package body ONE_FILE_STATEMENTS is
           elsif C = '%' then
             -- The '%' is handled exactly the same way as '"'
             loop
-              GET (FILE, C);
+              Get (File, C);
               exit when C = '%';
             end loop;
           end if;
 
         elsif C = ''' then
           -- Character literals are just three characters long including '
-          GET (FILE, C);
-          GET (FILE, C);
+          Get (File, C);
+          Get (File, C);
         end if;
 
     elsif C = ';' then
       -- Any ';' that can be found at this point after all exclusions
       -- must be a valid "line of code terminator"
-      STATEMENTS := STATEMENTS + 1;
+      Statements := Statements + 1;
     end if;
   end loop;
 
   exception
-    when TEXT_IO.END_ERROR =>
-      CLOSE (FILE);
-      return STATEMENTS;
-    when FILE_ERROR =>
-      CLOSE (FILE);
+    when Text_Io.End_Error =>
+      Close (File);
+      return Statements;
+    when File_Error =>
+      Close (File);
       raise;
     when others =>
-      CLOSE (FILE);
-      TEXT_IO.PUT_LINE ("Exception raised when processing line "
-                      & TEXT_IO.POSITIVE_COUNT'IMAGE(TEXT_IO.LINE(FILE))
-                      & " of file " & FILE_NAME);
+      Close (File);
+      Text_Io.Put_Line ("Exception raised when processing line "
+                      & Text_Io.Positive_Count'Image(Text_Io.Line(File))
+                      & " of file " & File_Name);
       raise;
-  end COUNT_STATEMENTS_OF_FILE;
+  end Count_Statements_Of_File;
 
   -- If FILE_NAME is empty, put total so far and reset it
-  procedure PRINT_STATEMENTS_OF_FILE (
-             FILE_NAME : STRING;
-             PUT_IT : in BOOLEAN := TRUE) is
+  procedure Print_Statements_Of_File (
+             File_Name : String;
+             Put_It : in Boolean := True) is
 
-    FILE_NAME_LEN : constant NATURAL := FILE_NAME'LENGTH;
-    COUNT : INTEGER range -1 ..INTEGER'LAST;
-    MAX_TAB : constant := 60;
-    MAX_DIG : constant := 8;
-    GAP : constant STRING := "  ";
+    File_Name_Len : constant Natural := File_Name'Length;
+    Count : Integer range -1 ..Integer'Last;
+    Max_Tab : constant := 60;
+    Max_Dig : constant := 8;
+    Gap : constant String := "  ";
   begin
 
-    if FILE_NAME = "" then
-      if PUT_IT then
-        for I in INTEGER range 1 .. MAX_TAB + GAP'LENGTH + MAX_DIG + 1 loop
-          TEXT_IO.PUT ("-");
+    if File_Name = "" then
+      if Put_It then
+        for I in Integer range 1 .. Max_Tab + Gap'Length + Max_Dig + 1 loop
+          Text_Io.Put ("-");
         end loop;
-        TEXT_IO.NEW_LINE;
+        Text_Io.New_Line;
 
         declare
-          TOTAL_STR : constant STRING := "TOTAL statements";
+          Total_Str : constant String := "TOTAL statements";
         begin
-          TEXT_IO.PUT (TOTAL_STR);
-          for I in INTEGER range TOTAL_STR'LENGTH .. MAX_TAB loop
-            TEXT_IO.PUT (" ");
+          Text_Io.Put (Total_Str);
+          for I in Integer range Total_Str'Length .. Max_Tab loop
+            Text_Io.Put (" ");
           end loop;
         end;
-        TEXT_IO.PUT_LINE (GAP & NORMAL(TOTAL, MAX_DIG));
+        Text_Io.Put_Line (Gap & Normal(Total, Max_Dig));
       end if;
-      TOTAL := 0;
+      Total := 0;
 
     else 
 
       begin
-        COUNT := ONE_FILE_STATEMENTS.COUNT_STATEMENTS_OF_FILE(FILE_NAME);
+        Count := One_File_Statements.Count_Statements_Of_File(File_Name);
       exception
         when others =>
-          COUNT := -1;
+          Count := -1;
       end;
 
-      if PUT_IT then
-        TEXT_IO.PUT (FILE_NAME);
-        if FILE_NAME_LEN < MAX_TAB then
-          TEXT_IO.PUT (" ");
-          for I in FILE_NAME_LEN+2 .. MAX_TAB loop
-            TEXT_IO.PUT (".");
+      if Put_It then
+        Text_Io.Put (File_Name);
+        if File_Name_Len < Max_Tab then
+          Text_Io.Put (" ");
+          for I in File_Name_Len+2 .. Max_Tab loop
+            Text_Io.Put (".");
           end loop;
-        elsif FILE_NAME_LEN > MAX_TAB then
-          TEXT_IO.NEW_LINE;
-          for I in INTEGER range 1 .. MAX_TAB loop
-            TEXT_IO.PUT (".");
+        elsif File_Name_Len > Max_Tab then
+          Text_Io.New_Line;
+          for I in Integer range 1 .. Max_Tab loop
+            Text_Io.Put (".");
           end loop;
         end if;
 
-        if COUNT >= 0 then
-          TEXT_IO.PUT_LINE (GAP & NORMAL(COUNT, MAX_DIG));
+        if Count >= 0 then
+          Text_Io.Put_Line (Gap & Normal(Count, Max_Dig));
         else
-          TEXT_IO.PUT_LINE (GAP & " SKIPPED");
+          Text_Io.Put_Line (Gap & " SKIPPED");
         end if;
       end if;
 
-      if COUNT >= 0 then
-        TOTAL := TOTAL + COUNT;
+      if Count >= 0 then
+        Total := Total + Count;
       end if;
 
     end if;
 
-  end PRINT_STATEMENTS_OF_FILE;
+  end Print_Statements_Of_File;
 
-end ONE_FILE_STATEMENTS;
+end One_File_Statements;
 

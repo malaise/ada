@@ -1,23 +1,23 @@
-with MY_IO;
-with SYS_CALLS;
-with ARGUMENT;
-procedure T_GETENV is
+with My_Io;
+with Sys_Calls;
+with Argument;
+procedure T_Getenv is
 
-  SET : BOOLEAN;
-  TRU : BOOLEAN;
-  RES : STRING (1..5);
-  LEN : NATURAL;
+  Set : Boolean;
+  Tru : Boolean;
+  Res : String (1..5);
+  Len : Natural;
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG = 0 then
-    SYS_CALLS.GETENV ("GETENV", SET, TRU, RES, LEN);
+  if Argument.Get_Nbre_Arg = 0 then
+    Sys_Calls.Getenv ("GETENV", Set, Tru, Res, Len);
   else
-    SYS_CALLS.GETENV (ARGUMENT.GET_PARAMETER(1), SET, TRU, RES, LEN);
+    Sys_Calls.Getenv (Argument.Get_Parameter(1), Set, Tru, Res, Len);
   end if;
-  if not SET then
-    MY_IO.PUT_LINE ("Not set");
+  if not Set then
+    My_Io.Put_Line ("Not set");
   else
-     MY_IO.PUT_LINE (">" & RES (1 .. LEN) & "< truncated: " & BOOLEAN'IMAGE(TRU));
+     My_Io.Put_Line (">" & Res (1 .. Len) & "< truncated: " & Boolean'Image(Tru));
   end if;
-end T_GETENV;
+end T_Getenv;

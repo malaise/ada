@@ -1,28 +1,28 @@
 -- Reads (checks) a pair of simusi data files
 
-with NORMAL, MY_IO;
-use MY_IO;
+with Normal, My_Io;
+use My_Io;
 
-with COMMON, DATA;
-use COMMON, DATA;
+with Common, Data;
+use Common, Data;
 
-procedure T_FILE is
+procedure T_File is
 begin
 
-    for I in MANUFAS'RANGE loop
-      PUT (NORMAL(I, 3) & " : " & NORMAL(MANUFAS(I).START, 3) & " --> "
-         & NORMAL(MANUFAS(I).STOP, 3));
-      PUT (" +- ");
-      PUT_LINE (MANUFAS(I).INTER, FORE => 3, AFT => 3, EXP => 0);
+    for I in Manufas'Range loop
+      Put (Normal(I, 3) & " : " & Normal(Manufas(I).Start, 3) & " --> "
+         & Normal(Manufas(I).Stop, 3));
+      Put (" +- ");
+      Put_Line (Manufas(I).Inter, Fore => 3, Aft => 3, Exp => 0);
     end loop;
-    for I in DESIGNS'RANGE loop
-      PUT (NORMAL(I, 3) & " : " & NORMAL(DESIGNS(I).START, 3) & " --> "
-         & NORMAL(DESIGNS(I).STOP, 3) );
-      PUT (" =  ");
-      PUT (DESIGNS(I).VALUE, FORE => 4, AFT => 3, EXP => 0);
-      PUT (" +- ");
-      PUT_LINE (DESIGNS(I).INTER, FORE => 3, AFT => 3, EXP => 0);
+    for I in Designs'Range loop
+      Put (Normal(I, 3) & " : " & Normal(Designs(I).Start, 3) & " --> "
+         & Normal(Designs(I).Stop, 3) );
+      Put (" =  ");
+      Put (Designs(I).Value, Fore => 4, Aft => 3, Exp => 0);
+      Put (" +- ");
+      Put_Line (Designs(I).Inter, Fore => 3, Aft => 3, Exp => 0);
     end loop;
 
-end T_FILE;
+end T_File;
     

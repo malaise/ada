@@ -1,162 +1,162 @@
-with CALENDAR;
-with MY_IO;
-with U_RAND;
-with CLEAR_SCREEN;
+with Calendar;
+with My_Io;
+with U_Rand;
+with Clear_Screen;
 procedure G is
   -- generated number
-  subtype NUMBER is NATURAL range 0 .. 999_999_999;
-  NUM : NUMBER;
+  subtype Number is Natural range 0 .. 999_999_999;
+  Num : Number;
 
   -- result of division of current value
-  type DIV_RES is (MINUS_1, ZERO, PLUS_1);
-  DIV_ERROR : exception;
+  type Div_Res is (Minus_1, Zero, Plus_1);
+  Div_Error : exception;
 
-  GOT_RES, RES : DIV_RES;
-  SUCCESS : BOOLEAN;
+  Got_Res, Res : Div_Res;
+  Success : Boolean;
 
-  procedure INIT is
-    N : POSITIVE;
+  procedure Init is
+    N : Positive;
   begin
-    N := POSITIVE (CALENDAR.SECONDS(CALENDAR.CLOCK));
-    N := (N mod (U_RAND.SEED_RANGE_2'LAST)) + 1;
-    U_RAND.START (NEW_L => N);
-  end INIT;
+    N := Positive (Calendar.Seconds(Calendar.Clock));
+    N := (N mod (U_Rand.Seed_Range_2'Last)) + 1;
+    U_Rand.Start (New_L => N);
+  end Init;
 
-  function RAND return POSITIVE is
-    subtype DIGIT is NATURAL range 0 .. 9;
-    subtype R_DIGIT is FLOAT range 
-     FLOAT (DIGIT'FIRST) .. FLOAT (DIGIT'LAST + 1);
-    RET : POSITIVE;
-    function TRUNC (R : in R_DIGIT) return DIGIT is
-      D : NATURAL;
+  function Rand return Positive is
+    subtype Digit is Natural range 0 .. 9;
+    subtype R_Digit is Float range 
+     Float (Digit'First) .. Float (Digit'Last + 1);
+    Ret : Positive;
+    function Trunc (R : in R_Digit) return Digit is
+      D : Natural;
     begin
-      D := NATURAL (R);
-      if FLOAT (D) > R then
+      D := Natural (R);
+      if Float (D) > R then
         D := D - 1;
       end if;
       return D;
-    end TRUNC;
-    function NEW_DIGIT (ALLOW_0 : in BOOLEAN) return DIGIT is
-      R : R_DIGIT;
-      D : DIGIT;
+    end Trunc;
+    function New_Digit (Allow_0 : in Boolean) return Digit is
+      R : R_Digit;
+      D : Digit;
     begin
       loop
-        R := U_RAND.NEXT * R_DIGIT'LAST;
-        D := TRUNC (R);
-        exit when ALLOW_0 or else D /= 0;
+        R := U_Rand.Next * R_Digit'Last;
+        D := Trunc (R);
+        exit when Allow_0 or else D /= 0;
       end loop;
       return D;
-    end NEW_DIGIT;
+    end New_Digit;
 
   begin
-    RET := NEW_DIGIT (ALLOW_0 => FALSE);
+    Ret := New_Digit (Allow_0 => False);
     for i in 1 .. 8 loop
-      RET := RET * 10 + NEW_DIGIT (ALLOW_0 => TRUE);
+      Ret := Ret * 10 + New_Digit (Allow_0 => True);
     end loop;
-    return RET;
-  end RAND;
+    return Ret;
+  end Rand;
 
-  procedure DIV (N : in NUMBER; 
-   NEW_N : out NUMBER; RES : out DIV_RES) is
-    N0 : NATURAL;
-    function TRUNC (R : in FLOAT) return NATURAL is
-      N : NATURAL;
+  procedure Div (N : in Number; 
+   New_N : out Number; Res : out Div_Res) is
+    N0 : Natural;
+    function Trunc (R : in Float) return Natural is
+      N : Natural;
     begin
-      N := NATURAL (R);
-      if FLOAT (N) > R then
+      N := Natural (R);
+      if Float (N) > R then
         N := N - 1;
       end if;
       return N;
-    end TRUNC;
+    end Trunc;
   begin
     N0 := N rem 3;
     if N0 = 0 then
-      RES := ZERO;
-      NEW_N := N / 3;
+      Res := Zero;
+      New_N := N / 3;
     elsif N0 = 1 then
-      RES := MINUS_1;
-      NEW_N := (N-1) / 3;
+      Res := Minus_1;
+      New_N := (N-1) / 3;
     elsif N0 = 2 then
-      RES := PLUS_1;
-      NEW_N := (N+1) / 3;
+      Res := Plus_1;
+      New_N := (N+1) / 3;
     else
-      raise PROGRAM_ERROR;
+      raise Program_Error;
     end if;
     return;
-  end DIV;
+  end Div;
 
 begin
-  CLEAR_SCREEN;
-  INIT;
+  Clear_Screen;
+  Init;
 
-  GAME:
+  Game:
   loop
-    NUM := RAND;
-    SUCCESS := TRUE;
-    MY_IO.PUT ("   ");
+    Num := Rand;
+    Success := True;
+    My_Io.Put ("   ");
 
-    PARTY:
+    Party:
     loop
 
-      GET:
+      Get:
       loop
-        MY_IO.PUT ("--> ");
-        MY_IO.PUT (NUM, 10); 
-        exit PARTY when NUM = 0;
-        MY_IO.PUT (
+        My_Io.Put ("--> ");
+        My_Io.Put (Num, 10); 
+        exit Party when Num = 0;
+        My_Io.Put (
          "  '4' -1   '5' 0   '6' +1   'q' quitter ? ");
         declare
-          STR : STRING (1 .. 132);
-          LST : NATURAL;
+          Str : String (1 .. 132);
+          Lst : Natural;
           
         begin
-          MY_IO.GET_LINE (STR, LST);
-          if LST = 1 then
-            if STR(1) = '4' then
-              GOT_RES := MINUS_1;
-              exit GET;
-            elsif STR(1) = '6' then
-              GOT_RES := PLUS_1;
-              exit GET;
-            elsif STR(1) = '5' then
-              GOT_RES := ZERO;
-              exit GET;
-            elsif STR(1) = 'q' or STR(1) = 'Q' then
-              CLEAR_SCREEN;
+          My_Io.Get_Line (Str, Lst);
+          if Lst = 1 then
+            if Str(1) = '4' then
+              Got_Res := Minus_1;
+              exit Get;
+            elsif Str(1) = '6' then
+              Got_Res := Plus_1;
+              exit Get;
+            elsif Str(1) = '5' then
+              Got_Res := Zero;
+              exit Get;
+            elsif Str(1) = 'q' or Str(1) = 'Q' then
+              Clear_Screen;
               return;
             end if;
           end if;
         end;
-        MY_IO.PUT ("ERR");
-      end loop GET;
+        My_Io.Put ("ERR");
+      end loop Get;
 
-      DIV (NUM, NUM, RES);
-      if RES /= GOT_RES then
-        SUCCESS := FALSE;
-        CASE RES is
-          when ZERO =>
-            MY_IO.PUT_LINE (" Erreur, c'etait  0");
-          when PLUS_1 =>
-            MY_IO.PUT_LINE (" Erreur, c'etait +1");
-          when MINUS_1 =>
-            MY_IO.PUT_LINE (" Erreur, c'etait -1");
+      Div (Num, Num, Res);
+      if Res /= Got_Res then
+        Success := False;
+        Case Res is
+          when Zero =>
+            My_Io.Put_Line (" Erreur, c'etait  0");
+          when Plus_1 =>
+            My_Io.Put_Line (" Erreur, c'etait +1");
+          when Minus_1 =>
+            My_Io.Put_Line (" Erreur, c'etait -1");
         end case;
       end if;
-      case RES is
-        when ZERO =>
-          MY_IO.PUT (" 0 ");
-        when PLUS_1 =>
-          MY_IO.PUT ("+1 ");
-        when MINUS_1 =>
-          MY_IO.PUT ("-1 ");
+      case Res is
+        when Zero =>
+          My_Io.Put (" 0 ");
+        when Plus_1 =>
+          My_Io.Put ("+1 ");
+        when Minus_1 =>
+          My_Io.Put ("-1 ");
       end case;
-    end loop PARTY;
+    end loop Party;
 
-    MY_IO.PUT ("   ");
-    if SUCCESS then MY_IO.PUT_LINE (" Sans faute, BRAVO.");
-    else MY_IO.PUT_LINE (" Des erreurs...");
+    My_Io.Put ("   ");
+    if Success then My_Io.Put_Line (" Sans faute, BRAVO.");
+    else My_Io.Put_Line (" Des erreurs...");
     end if;
-    MY_IO.NEW_LINE; 
-  end loop GAME;
+    My_Io.New_Line; 
+  end loop Game;
 
 end G;

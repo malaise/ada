@@ -178,7 +178,7 @@ package body Graphic is
     Back : Con_Io.Effective_Basic_Colors;
     Bits : Bitmaps.Piece_Map_Access;
     use type Space.Color_List;
-    use type Con_IO.Colors;
+    use type Con_Io.Colors;
   begin
     if Getting_Promotion then
       if Move_Color = Space.White then

@@ -1,21 +1,21 @@
-with POINTS;
-package FILE is
+with Points;
+package File is
 
-  subtype F_T_FILE_NAME is STRING;
+  subtype F_T_File_Name is String;
 
   -- Read points from file
-  function F_READ (NAME : F_T_FILE_NAME) return POINTS.P_T_THE_POINTS;
+  function F_Read (Name : F_T_File_Name) return Points.P_T_The_Points;
 
   -- Write points to file
-  procedure F_WRITE (NAME : in F_T_FILE_NAME;
-    THE_POINTS : in POINTS.P_T_THE_POINTS);
+  procedure F_Write (Name : in F_T_File_Name;
+    The_Points : in Points.P_T_The_Points);
 
   -- Check if file exists
-  function F_EXISTS (NAME : F_T_FILE_NAME) return BOOLEAN;
+  function F_Exists (Name : F_T_File_Name) return Boolean;
 
   -- File not found (or protected...)
-  F_ACCESS_ERROR : exception;
+  F_Access_Error : exception;
   -- read/Write error
-  F_IO_ERROR     : exception;
+  F_Io_Error     : exception;
 
-end FILE;
+end File;

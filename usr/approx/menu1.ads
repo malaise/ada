@@ -1,6 +1,6 @@
-with FILE;
-package MENU1 is
+with File;
+package Menu1 is
 
-  procedure MAIN_SCREEN (INIT_FILE_NAME : in FILE.F_T_FILE_NAME);
+  procedure Main_Screen (Init_File_Name : in File.F_T_File_Name);
 
-end MENU1;
+end Menu1;

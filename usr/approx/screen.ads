@@ -1,86 +1,86 @@
-with AFPX, TEXT_HANDLER;
-with POINTS, FILE;
-package SCREEN is
+with Afpx, Text_Handler;
+with Points, File;
+package Screen is
 
   -- The get field
-  GET_FLD           : constant AFPX.FIELD_RANGE := 9;
+  Get_Fld           : constant Afpx.Field_Range := 9;
   -- The scrool buttons
-  subtype LIST_SCROLL_FLD_RANGE is AFPX.FIELD_RANGE range 11 .. 16;
+  subtype List_Scroll_Fld_Range is Afpx.Field_Range range 11 .. 16;
   -- The OK/Cancel buttons
-  OK_BUTTON_FLD     : constant AFPX.FIELD_RANGE := 18;
-  CANCEL_BUTTON_FLD : constant AFPX.FIELD_RANGE := 19;
+  Ok_Button_Fld     : constant Afpx.Field_Range := 18;
+  Cancel_Button_Fld : constant Afpx.Field_Range := 19;
   -- The exit/back button
-  EXIT_BUTTON_FLD : constant AFPX.FIELD_RANGE := 17;
+  Exit_Button_Fld : constant Afpx.Field_Range := 17;
 
   -- The F(xxxxx)= field
-  YFX_PUT_FLD : constant AFPX.FIELD_RANGE := 30;
+  Yfx_Put_Fld : constant Afpx.Field_Range := 30;
 
   -- All the menues dependant fields
-  subtype MENU_FLD_RANGE is AFPX.FIELD_RANGE range 20 .. 31;
+  subtype Menu_Fld_Range is Afpx.Field_Range range 20 .. 31;
 
   -- Return width of GET field
-  function GET_GET_WIDTH return AFPX.WIDTH_RANGE;
+  function Get_Get_Width return Afpx.Width_Range;
 
   -- Max width of degree
-  MAX_DEGREE_WIDTH : constant := 4;
+  Max_Degree_Width : constant := 4;
 
   -- Put a title
-  type S_ACTION_LIST is (DATA, READ_POINTS, WRITE_POINTS, NEW_POINTS,
-      MODIFY_1, ADD_1, SUPPRESS_1, APPROXIMATE, SORT_POINTS,
-      GET_DEGREE, POLYNOM, Y_F_X, SCALES, BOUNDARIES, CURVE, EXIT_APPROX);
-  procedure PUT_TITLE (S_ACTION : in S_ACTION_LIST; OPTION : in BOOLEAN := FALSE);
+  type S_Action_List is (Data, Read_Points, Write_Points, New_Points,
+      Modify_1, Add_1, Suppress_1, Approximate, Sort_Points,
+      Get_Degree, Polynom, Y_F_X, Scales, Boundaries, Curve, Exit_Approx);
+  procedure Put_Title (S_Action : in S_Action_List; Option : in Boolean := False);
 
   -- Truncate head of string:  "> " & truncated head
   -- Or or padds with spaces
-  function PROCUSTE (STR : STRING; LEN : POSITIVE) return STRING;
+  function Procuste (Str : String; Len : Positive) return String;
 
   -- Put file name
-  procedure PUT_FILE (FILE_NAME : in FILE.F_T_FILE_NAME);
+  procedure Put_File (File_Name : in File.F_T_File_Name);
 
   -- Scroll the list
-  procedure SCROLL (FLD_NO : in LIST_SCROLL_FLD_RANGE);
+  procedure Scroll (Fld_No : in List_Scroll_Fld_Range);
 
   -- Put/hide info. Display error. Confirm
-  type S_MESSAGE_LIST is (
-      I_CLEAR, I_FILE_NAME, I_X, I_Y, I_XMIN, I_YMIN, I_XMAX, I_YMAX,
-      I_DEGREE, I_SCALES, I_WAIT, 
-      C_FILE_EXISTS, C_DELETE_POINT, C_GO_ON, C_DATA_LOST,
-      E_DONE, E_FILE_NOT_FOUND, E_IO_ERROR, E_FILE_NAME,
-      E_NO_DATA, E_WRONG_DEGREE, E_WRONG_COORDINATE,
-      E_RESOLUTION_PROBLEM, E_CURVE_PROBLEM, E_CURVE_ACTIVE,
-      E_TOO_MANY_POINTS);
+  type S_Message_List is (
+      I_Clear, I_File_Name, I_X, I_Y, I_Xmin, I_Ymin, I_Xmax, I_Ymax,
+      I_Degree, I_Scales, I_Wait, 
+      C_File_Exists, C_Delete_Point, C_Go_On, C_Data_Lost,
+      E_Done, E_File_Not_Found, E_Io_Error, E_File_Name,
+      E_No_Data, E_Wrong_Degree, E_Wrong_Coordinate,
+      E_Resolution_Problem, E_Curve_Problem, E_Curve_Active,
+      E_Too_Many_Points);
 
-  subtype S_INFO_LIST is S_MESSAGE_LIST range I_CLEAR .. I_WAIT;
-  subtype S_CONFIRM_LIST is S_MESSAGE_LIST range C_FILE_EXISTS .. C_DATA_LOST;
-  subtype S_ERROR_LIST is S_MESSAGE_LIST
-                          range E_DONE .. E_TOO_MANY_POINTS;
+  subtype S_Info_List is S_Message_List range I_Clear .. I_Wait;
+  subtype S_Confirm_List is S_Message_List range C_File_Exists .. C_Data_Lost;
+  subtype S_Error_List is S_Message_List
+                          range E_Done .. E_Too_Many_Points;
 
-  procedure INFORM  (MSG : in S_INFO_LIST);
-  function  CONFIRM (MSG : S_CONFIRM_LIST; ALERT : BOOLEAN;
-                     SUBTITLE : BOOLEAN := FALSE) return BOOLEAN; 
-  procedure ERROR   (MSG : in S_ERROR_LIST; SUBTITLE : in BOOLEAN := FALSE);
+  procedure Inform  (Msg : in S_Info_List);
+  function  Confirm (Msg : S_Confirm_List; Alert : Boolean;
+                     Subtitle : Boolean := False) return Boolean; 
+  procedure Error   (Msg : in S_Error_List; Subtitle : in Boolean := False);
 
 
   -- Update number and status of points
-  procedure PUT_POINT_STATUS;
+  procedure Put_Point_Status;
 
   -- Init for file search, for get coordinate...
-  procedure INIT_FOR_GET (CURSOR_FIELD : out AFPX.FIELD_RANGE;
-                          SUBTITLE : in BOOLEAN := FALSE);
+  procedure Init_For_Get (Cursor_Field : out Afpx.Field_Range;
+                          Subtitle : in Boolean := False);
 
   -- Init screen for main menu1
-  procedure INIT_FOR_MAIN1 (CURSOR_FIELD : out AFPX.FIELD_RANGE);
+  procedure Init_For_Main1 (Cursor_Field : out Afpx.Field_Range);
 
   -- Store current file_name for further menus
   -- Put stored file
-  procedure STORE_FILE;
-  procedure PUT_FILE;
+  procedure Store_File;
+  procedure Put_File;
 
   -- Init screen for main menu2
-  procedure INIT_FOR_MAIN2 (CURSOR_FIELD : out AFPX.FIELD_RANGE);
+  procedure Init_For_Main2 (Cursor_Field : out Afpx.Field_Range);
 
   -- Init screen for main submenu21
-  procedure INIT_FOR_MAIN21 (CURSOR_FIELD : out AFPX.FIELD_RANGE);
+  procedure Init_For_Main21 (Cursor_Field : out Afpx.Field_Range);
 
-end SCREEN;
+end Screen;
 

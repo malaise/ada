@@ -53,10 +53,10 @@ procedure T_Timers is
   procedure Start (T : Timer_List;
                    D : in Duration;
                    P : in Timers.Period_Range;
-                   CB : in Boolean) is
+                   Cb : in Boolean) is
     A : Timers.Timer_Callback;
   begin
-   if CB
+   if Cb
      then A := CallBack'Unrestricted_Access;
    else
      A := null;
@@ -80,7 +80,7 @@ procedure T_Timers is
     declare
       W : Afpx.Width_Range;
     begin
-      W := AFpx.Get_FIeld_Width (F);
+      W := Afpx.Get_Field_Width (F);
       Use_Afpx := True;
     exception
       when Afpx.No_Descriptor =>

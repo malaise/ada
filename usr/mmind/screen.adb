@@ -1,185 +1,185 @@
-with NORMAL;
-package body SCREEN is
+with Normal;
+package body Screen is
 
   -------------------------------
   -- GLOBAL SCREEN DEFINITIONS --
   -------------------------------
-  GLOBAL_WIN, SECRET_WIN, PROPAL_WIN, TRY_WIN,
-   COLOR_WIN, HELP_WIN, MENU_WIN, LEVEL_WIN, EXIT_WIN : CON_IO.WINDOW;
+  Global_Win, Secret_Win, Propal_Win, Try_Win,
+   Color_Win, Help_Win, Menu_Win, Level_Win, Exit_Win : Con_Io.Window;
 
   -- Fixed geometry
-  PROPAL_COL_WIDTH : constant CON_IO.COL_RANGE :=  2;
-  PROPAL_LAST_ROW  : constant CON_IO.ROW_RANGE := 22;
-  PROPAL_FIRST_ROW : constant CON_IO.ROW_RANGE :=
-   PROPAL_LAST_ROW - (CON_IO.ROW_RANGE(COMMON.MAX_NUMBER_PROPAL)-1) * 2;
-  PROPAL_LAST_COL  : constant CON_IO.COL_RANGE := 15;
-  TRY_FIRST_COL    : constant CON_IO.COL_RANGE := 22;
-  COLOR_COL_WIDTH  : constant CON_IO.COL_RANGE :=  2;
-  COLOR_FIRST_ROW  : constant CON_IO.ROW_RANGE :=  7;
-  COLOR_LAST_ROW   : constant CON_IO.ROW_RANGE :=
-   COLOR_FIRST_ROW + (CON_IO.ROW_RANGE(COMMON.MAX_NUMBER_COLOR)-1) * 2;
-  COLOR_FIRST_COL  : constant CON_IO.COL_RANGE := 36;
-  COLOR_LAST_COL   : constant CON_IO.COL_RANGE :=
-   COLOR_FIRST_COL + COLOR_COL_WIDTH - 1;
-  MENU_ROW : constant CON_IO.ROW_RANGE := 22;
-  MENU_FIRST_COL : constant CON_IO.COL_RANGE := 46;
-  MENU_LAST_COL : constant CON_IO.COL_RANGE := 56;
-  LEVEL_FIRST_COL : constant CON_IO.COL_RANGE := 59;
-  LEVEL_LAST_COL : constant CON_IO.COL_RANGE := 65;
-  EXIT_FIRST_COL : constant CON_IO.COL_RANGE := 68;
-  EXIT_LAST_COL : constant CON_IO.COL_RANGE := 76;
+  Propal_Col_Width : constant Con_Io.Col_Range :=  2;
+  Propal_Last_Row  : constant Con_Io.Row_Range := 22;
+  Propal_First_Row : constant Con_Io.Row_Range :=
+   Propal_Last_Row - (Con_Io.Row_Range(Common.Max_Number_Propal)-1) * 2;
+  Propal_Last_Col  : constant Con_Io.Col_Range := 15;
+  Try_First_Col    : constant Con_Io.Col_Range := 22;
+  Color_Col_Width  : constant Con_Io.Col_Range :=  2;
+  Color_First_Row  : constant Con_Io.Row_Range :=  7;
+  Color_Last_Row   : constant Con_Io.Row_Range :=
+   Color_First_Row + (Con_Io.Row_Range(Common.Max_Number_Color)-1) * 2;
+  Color_First_Col  : constant Con_Io.Col_Range := 36;
+  Color_Last_Col   : constant Con_Io.Col_Range :=
+   Color_First_Col + Color_Col_Width - 1;
+  Menu_Row : constant Con_Io.Row_Range := 22;
+  Menu_First_Col : constant Con_Io.Col_Range := 46;
+  Menu_Last_Col : constant Con_Io.Col_Range := 56;
+  Level_First_Col : constant Con_Io.Col_Range := 59;
+  Level_Last_Col : constant Con_Io.Col_Range := 65;
+  Exit_First_Col : constant Con_Io.Col_Range := 68;
+  Exit_Last_Col : constant Con_Io.Col_Range := 76;
 
   -- Level dependant gemetry
-  CURRENT_LEVEL : COMMON.LAST_LEVEL_RANGE;
-  PROPAL_FIRST_COL : CON_IO.COL_RANGE;
-  TRY_LAST_COL     : CON_IO.COL_RANGE;
+  Current_Level : Common.Last_Level_Range;
+  Propal_First_Col : Con_Io.Col_Range;
+  Try_Last_Col     : Con_Io.Col_Range;
 
   -- Color definitions
-  COLOR_DEFINITION : constant array (COMMON.COLOR_RANGE) of
-   CON_IO.EFFECTIVE_COLORS := (
-       0 => CON_IO.BROWN,
-       1 => CON_IO.BLUE,
-       2 => CON_IO.GREEN,
-       3 => CON_IO.CYAN,
-       4 => CON_IO.RED,
-       5 => CON_IO.MAGENTA,
-       6 => CON_IO.LIGHT_GRAY,
-       7 => CON_IO.ORANGE,
-       8 => CON_IO.YELLOW);
+  Color_Definition : constant array (Common.Color_Range) of
+   Con_Io.Effective_Colors := (
+       0 => Con_Io.Brown,
+       1 => Con_Io.Blue,
+       2 => Con_Io.Green,
+       3 => Con_Io.Cyan,
+       4 => Con_Io.Red,
+       5 => Con_Io.Magenta,
+       6 => Con_Io.Light_Gray,
+       7 => Con_Io.Orange,
+       8 => Con_Io.Yellow);
 
-  FOREGROUND_COLOR  : constant CON_IO.EFFECTIVE_COLORS := CON_IO.DARK_GRAY;
-  BACKGROUND_COLOR  : constant CON_IO.EFFECTIVE_BASIC_COLORS :=
-   COLOR_DEFINITION(0);
+  Foreground_Color  : constant Con_Io.Effective_Colors := Con_Io.Dark_Gray;
+  Background_Color  : constant Con_Io.Effective_Basic_Colors :=
+   Color_Definition(0);
 
   -- When possible to try
-  TRY_COLOR : constant CON_IO.EFFECTIVE_COLORS := CON_IO.WHITE;
+  Try_Color : constant Con_Io.Effective_Colors := Con_Io.White;
   -- When click in try or menu window
-  BACKGROUND_SELECT : constant CON_IO.EFFECTIVE_BASIC_COLORS :=
-   CON_IO.LIGHT_GRAY;
+  Background_Select : constant Con_Io.Effective_Basic_Colors :=
+   Con_Io.Light_Gray;
   -- Used to answer
-  OK_COLOR  : constant CON_IO.EFFECTIVE_COLORS := CON_IO.BLACK;
-  NOK_COLOR : constant CON_IO.EFFECTIVE_COLORS := CON_IO.WHITE;
+  Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Black;
+  Nok_Color : constant Con_Io.Effective_Colors := Con_Io.White;
 
-  PIN_INT : constant CON_IO.INT_CHAR := CHARACTER'POS('!');
+  Pin_Int : constant Con_Io.Int_Char := Character'Pos('!');
 
 
-  procedure SET_MOUSE_DEFAULT_COLOR is
+  procedure Set_Mouse_Default_Color is
   begin
     null;
-  end SET_MOUSE_DEFAULT_COLOR;
+  end Set_Mouse_Default_Color;
 
-  procedure SET_MOUSE_COLOR (COLOR : in COMMON.EFF_COLOR_RANGE) is
+  procedure Set_Mouse_Color (Color : in Common.Eff_Color_Range) is
   begin
     null;
-  end SET_MOUSE_COLOR;
+  end Set_Mouse_Color;
 
 
   -- Square, in PROPAL_WIN for a propal & level
-  function PROPAL_SQUARE (PROPAL : COMMON.PROPAL_RANGE;
-                          LEVEL  : COMMON.LEVEL_RANGE) return CON_IO.SQUARE is
-    LOWER_RIGHT : constant CON_IO.SQUARE :=
-     CON_IO.GET_RELATIVE_LOWER_RIGHT (PROPAL_WIN);
+  function Propal_Square (Propal : Common.Propal_Range;
+                          Level  : Common.Level_Range) return Con_Io.Square is
+    Lower_Right : constant Con_Io.Square :=
+     Con_Io.Get_Relative_Lower_Right (Propal_Win);
   begin
-    return (LOWER_RIGHT.ROW - (CON_IO.ROW_RANGE(PROPAL)-1) * 2,
-            (CON_IO.COL_RANGE(LEVEL)-1) * (PROPAL_COL_WIDTH+1) );
-  end PROPAL_SQUARE;
+    return (Lower_Right.Row - (Con_Io.Row_Range(Propal)-1) * 2,
+            (Con_Io.Col_Range(Level)-1) * (Propal_Col_Width+1) );
+  end Propal_Square;
 
 
 
 
   -- init the screen, the windows, draw borders
-  procedure INIT (LEVEL : in COMMON.LAST_LEVEL_RANGE) is
-    SQUARE : CON_IO.SQUARE;
-    use COMMON;
+  procedure Init (Level : in Common.Last_Level_Range) is
+    Square : Con_Io.Square;
+    use Common;
   begin
-    if not CON_IO.IS_OPEN (GLOBAL_WIN) then
-      CON_IO.RESET_TERM;
+    if not Con_Io.Is_Open (Global_Win) then
+      Con_Io.Reset_Term;
       -- open windows
-      CON_IO.OPEN (GLOBAL_WIN, (1, 1), (23, 78));
-      CON_IO.OPEN (COLOR_WIN,  (COLOR_FIRST_ROW,  COLOR_FIRST_COL),
-                               (COLOR_LAST_ROW,   COLOR_LAST_COL) );
-      CON_IO.OPEN (HELP_WIN,   (4, MENU_FIRST_COL),(MENU_ROW-3, 76) );
-      CON_IO.OPEN (MENU_WIN,   (MENU_ROW,  MENU_FIRST_COL),
-                               (MENU_ROW,  MENU_LAST_COL) );
-      CON_IO.OPEN (LEVEL_WIN,  (MENU_ROW,  LEVEL_FIRST_COL),
-                               (MENU_ROW,  LEVEL_LAST_COL) );
-      CON_IO.OPEN (EXIT_WIN,   (MENU_ROW,  EXIT_FIRST_COL),
-                               (MENU_ROW,  EXIT_LAST_COL) );
+      Con_Io.Open (Global_Win, (1, 1), (23, 78));
+      Con_Io.Open (Color_Win,  (Color_First_Row,  Color_First_Col),
+                               (Color_Last_Row,   Color_Last_Col) );
+      Con_Io.Open (Help_Win,   (4, Menu_First_Col),(Menu_Row-3, 76) );
+      Con_Io.Open (Menu_Win,   (Menu_Row,  Menu_First_Col),
+                               (Menu_Row,  Menu_Last_Col) );
+      Con_Io.Open (Level_Win,  (Menu_Row,  Level_First_Col),
+                               (Menu_Row,  Level_Last_Col) );
+      Con_Io.Open (Exit_Win,   (Menu_Row,  Exit_First_Col),
+                               (Menu_Row,  Exit_Last_Col) );
       -- Set default colors
-      CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => GLOBAL_WIN);
-      CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => GLOBAL_WIN);
-      CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => COLOR_WIN);
-      CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => COLOR_WIN);
-      CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => HELP_WIN);
-      CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => HELP_WIN);
-      CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => MENU_WIN);
-      CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => MENU_WIN);
-      CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => LEVEL_WIN);
-      CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => LEVEL_WIN);
-      CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => EXIT_WIN);
-      CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => EXIT_WIN);
+      Con_Io.Set_Foreground (Foreground_Color, Name => Global_Win);
+      Con_Io.Set_Background (Background_Color, Name => Global_Win);
+      Con_Io.Set_Foreground (Foreground_Color, Name => Color_Win);
+      Con_Io.Set_Background (Background_Color, Name => Color_Win);
+      Con_Io.Set_Foreground (Foreground_Color, Name => Help_Win);
+      Con_Io.Set_Background (Background_Color, Name => Help_Win);
+      Con_Io.Set_Foreground (Foreground_Color, Name => Menu_Win);
+      Con_Io.Set_Background (Background_Color, Name => Menu_Win);
+      Con_Io.Set_Foreground (Foreground_Color, Name => Level_Win);
+      Con_Io.Set_Background (Background_Color, Name => Level_Win);
+      Con_Io.Set_Foreground (Foreground_Color, Name => Exit_Win);
+      Con_Io.Set_Background (Background_Color, Name => Exit_Win);
     else
-      CON_IO.CLOSE (SECRET_WIN);
-      CON_IO.CLOSE (PROPAL_WIN);
-      CON_IO.CLOSE (TRY_WIN);
+      Con_Io.Close (Secret_Win);
+      Con_Io.Close (Propal_Win);
+      Con_Io.Close (Try_Win);
     end if;
 
 
     -- compute level dependant geometry
-    CURRENT_LEVEL := LEVEL;
-    PROPAL_FIRST_COL := PROPAL_LAST_COL
-     - (CON_IO.COL_RANGE(CURRENT_LEVEL)-1) * (PROPAL_COL_WIDTH+1)
-     - (PROPAL_COL_WIDTH-1);
-    TRY_LAST_COL := TRY_FIRST_COL + (CON_IO.COL_RANGE(CURRENT_LEVEL)-1);
+    Current_Level := Level;
+    Propal_First_Col := Propal_Last_Col
+     - (Con_Io.Col_Range(Current_Level)-1) * (Propal_Col_Width+1)
+     - (Propal_Col_Width-1);
+    Try_Last_Col := Try_First_Col + (Con_Io.Col_Range(Current_Level)-1);
 
-    CON_IO.OPEN (SECRET_WIN, (1, PROPAL_FIRST_COL), (1, PROPAL_LAST_COL) );
-    CON_IO.OPEN (PROPAL_WIN, (PROPAL_FIRST_ROW, PROPAL_FIRST_COL),
-                             (PROPAL_LAST_ROW,  PROPAL_LAST_COL) );
-    CON_IO.OPEN (TRY_WIN,    (PROPAL_FIRST_ROW, TRY_FIRST_COL),
-                             (PROPAL_LAST_ROW,  TRY_LAST_COL) );
-    CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => SECRET_WIN);
-    CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => SECRET_WIN);
-    CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => PROPAL_WIN);
-    CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => PROPAL_WIN);
-    CON_IO.SET_FOREGROUND (FOREGROUND_COLOR, NAME => TRY_WIN);
-    CON_IO.SET_BACKGROUND (BACKGROUND_COLOR, NAME => TRY_WIN);
+    Con_Io.Open (Secret_Win, (1, Propal_First_Col), (1, Propal_Last_Col) );
+    Con_Io.Open (Propal_Win, (Propal_First_Row, Propal_First_Col),
+                             (Propal_Last_Row,  Propal_Last_Col) );
+    Con_Io.Open (Try_Win,    (Propal_First_Row, Try_First_Col),
+                             (Propal_Last_Row,  Try_Last_Col) );
+    Con_Io.Set_Foreground (Foreground_Color, Name => Secret_Win);
+    Con_Io.Set_Background (Background_Color, Name => Secret_Win);
+    Con_Io.Set_Foreground (Foreground_Color, Name => Propal_Win);
+    Con_Io.Set_Background (Background_Color, Name => Propal_Win);
+    Con_Io.Set_Foreground (Foreground_Color, Name => Try_Win);
+    Con_Io.Set_Background (Background_Color, Name => Try_Win);
 
     -- Redraw and frames
-    CON_IO.CLEAR (GLOBAL_WIN);
-    CON_IO.FRAME (NAME => GLOBAL_WIN);
-    CON_IO.FRAME (NAME => SECRET_WIN);
-    CON_IO.FRAME (NAME => PROPAL_WIN);
-    CON_IO.FRAME (NAME => TRY_WIN);
-    CON_IO.FRAME (NAME => COLOR_WIN);
-    CON_IO.FRAME (NAME => HELP_WIN);
-    CON_IO.FRAME (NAME => LEVEL_WIN);
-    CON_IO.FRAME (NAME => MENU_WIN);
-    CON_IO.FRAME (NAME => EXIT_WIN);
+    Con_Io.Clear (Global_Win);
+    Con_Io.Frame (Name => Global_Win);
+    Con_Io.Frame (Name => Secret_Win);
+    Con_Io.Frame (Name => Propal_Win);
+    Con_Io.Frame (Name => Try_Win);
+    Con_Io.Frame (Name => Color_Win);
+    Con_Io.Frame (Name => Help_Win);
+    Con_Io.Frame (Name => Level_Win);
+    Con_Io.Frame (Name => Menu_Win);
+    Con_Io.Frame (Name => Exit_Win);
 
     -- Draw lines in propal and try frames
-    for J in COMMON.LEVEL_RANGE'FIRST .. LEVEL loop
-      for I in COMMON.PROPAL_RANGE loop
-        SQUARE := PROPAL_SQUARE (I, J);
-        if J /= CURRENT_LEVEL then
+    for J in Common.Level_Range'First .. Level loop
+      for I in Common.Propal_Range loop
+        Square := Propal_Square (I, J);
+        if J /= Current_Level then
           -- Draw | of propal
-          CON_IO.MOVE (SQUARE.ROW, SQUARE.COL + PROPAL_COL_WIDTH, PROPAL_WIN);
-          CON_IO.PUT_INT (25, NAME => PROPAL_WIN);
+          Con_Io.Move (Square.Row, Square.Col + Propal_Col_Width, Propal_Win);
+          Con_Io.Put_Int (25, Name => Propal_Win);
         end if;
-        if I /= COMMON.PROPAL_RANGE'LAST then
+        if I /= Common.Propal_Range'Last then
           -- Draw -- of propal
-          for K in 1 .. PROPAL_COL_WIDTH loop
-            CON_IO.MOVE (SQUARE.ROW-1, SQUARE.COL+K-1, PROPAL_WIN);
-            CON_IO.PUT_INT (18, NAME => PROPAL_WIN);
+          for K in 1 .. Propal_Col_Width loop
+            Con_Io.Move (Square.Row-1, Square.Col+K-1, Propal_Win);
+            Con_Io.Put_Int (18, Name => Propal_Win);
           end loop;
-          if J /= CURRENT_LEVEL then
+          if J /= Current_Level then
             -- Draw + of propal
-            CON_IO.MOVE (SQUARE.ROW-1, SQUARE.COL+PROPAL_COL_WIDTH, PROPAL_WIN);
-            CON_IO.PUT_INT (15, NAME => PROPAL_WIN);
+            Con_Io.Move (Square.Row-1, Square.Col+Propal_Col_Width, Propal_Win);
+            Con_Io.Put_Int (15, Name => Propal_Win);
           end if;
 
           -- Draw - of try
-          CON_IO.MOVE (SQUARE.ROW-1, CON_IO.COL_RANGE(J)-1, TRY_WIN);
-          CON_IO.PUT_INT (18, NAME => TRY_WIN);
+          Con_Io.Move (Square.Row-1, Con_Io.Col_Range(J)-1, Try_Win);
+          Con_Io.Put_Int (18, Name => Try_Win);
         end if;
 
       end loop;
@@ -187,553 +187,553 @@ package body SCREEN is
     end loop;
 
     -- Adapt secret, propal and try frames
-    CON_IO.MOVE (0, PROPAL_FIRST_COL-1);
-    CON_IO.PUT_INT (24, FOREGROUND => FOREGROUND_COLOR,
-                        BACKGROUND => BACKGROUND_COLOR);
-    CON_IO.MOVE (0, PROPAL_LAST_COL+1);
-    CON_IO.PUT_INT (24, FOREGROUND => FOREGROUND_COLOR,
-                        BACKGROUND => BACKGROUND_COLOR);
+    Con_Io.Move (0, Propal_First_Col-1);
+    Con_Io.Put_Int (24, Foreground => Foreground_Color,
+                        Background => Background_Color);
+    Con_Io.Move (0, Propal_Last_Col+1);
+    Con_Io.Put_Int (24, Foreground => Foreground_Color,
+                        Background => Background_Color);
 
-    for I in COMMON.PROPAL_RANGE'FIRST ..
-             COMMON.PROPAL_RANGE'PRED(COMMON.PROPAL_RANGE'LAST) loop
+    for I in Common.Propal_Range'First ..
+             Common.Propal_Range'Pred(Common.Propal_Range'Last) loop
       -- |- in propal
-      CON_IO.MOVE (PROPAL_LAST_ROW - 1 - (CON_IO.ROW_RANGE(I)-1) * 2,
-                   PROPAL_FIRST_COL - 1);
-      CON_IO.PUT_INT (21, FOREGROUND => FOREGROUND_COLOR,
-                          BACKGROUND => BACKGROUND_COLOR);
+      Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
+                   Propal_First_Col - 1);
+      Con_Io.Put_Int (21, Foreground => Foreground_Color,
+                          Background => Background_Color);
       -- -| in propal
-      CON_IO.MOVE (PROPAL_LAST_ROW - 1 - (CON_IO.ROW_RANGE(I)-1) * 2,
-                   PROPAL_LAST_COL + 1);
-      CON_IO.PUT_INT (22, FOREGROUND => FOREGROUND_COLOR,
-                          BACKGROUND => BACKGROUND_COLOR);
+      Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
+                   Propal_Last_Col + 1);
+      Con_Io.Put_Int (22, Foreground => Foreground_Color,
+                          Background => Background_Color);
       -- |- in try
-      CON_IO.MOVE (PROPAL_LAST_ROW - 1 - (CON_IO.ROW_RANGE(I)-1) * 2,
-                   TRY_FIRST_COL - 1);
-      CON_IO.PUT_INT (21, FOREGROUND => FOREGROUND_COLOR,
-                          BACKGROUND => BACKGROUND_COLOR);
+      Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
+                   Try_First_Col - 1);
+      Con_Io.Put_Int (21, Foreground => Foreground_Color,
+                          Background => Background_Color);
       -- -| in propal
-      CON_IO.MOVE (PROPAL_LAST_ROW - 1 - (CON_IO.ROW_RANGE(I)-1) * 2,
-                   TRY_LAST_COL + 1);
-      CON_IO.PUT_INT (22, FOREGROUND => FOREGROUND_COLOR,
-                          BACKGROUND => BACKGROUND_COLOR);
+      Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
+                   Try_Last_Col + 1);
+      Con_Io.Put_Int (22, Foreground => Foreground_Color,
+                          Background => Background_Color);
     end loop;
 
-   for J in COMMON.LEVEL_RANGE'FIRST .. CURRENT_LEVEL - 1 loop
+   for J in Common.Level_Range'First .. Current_Level - 1 loop
       -- T in propal
-      CON_IO.MOVE (PROPAL_FIRST_ROW - 1,
-                   PROPAL_FIRST_COL + PROPAL_COL_WIDTH +
-                   (CON_IO.COL_RANGE(J)- 1) * (PROPAL_COL_WIDTH+1) );
-      CON_IO.PUT_INT (24, FOREGROUND => FOREGROUND_COLOR,
-                          BACKGROUND => BACKGROUND_COLOR);
+      Con_Io.Move (Propal_First_Row - 1,
+                   Propal_First_Col + Propal_Col_Width +
+                   (Con_Io.Col_Range(J)- 1) * (Propal_Col_Width+1) );
+      Con_Io.Put_Int (24, Foreground => Foreground_Color,
+                          Background => Background_Color);
       -- L in propal
-      CON_IO.MOVE (PROPAL_LAST_ROW + 1,
-                   PROPAL_FIRST_COL + PROPAL_COL_WIDTH +
-                   (CON_IO.COL_RANGE(J)- 1) * (PROPAL_COL_WIDTH+1) );
-      CON_IO.PUT_INT (23, FOREGROUND => FOREGROUND_COLOR,
-                          BACKGROUND => BACKGROUND_COLOR);
+      Con_Io.Move (Propal_Last_Row + 1,
+                   Propal_First_Col + Propal_Col_Width +
+                   (Con_Io.Col_Range(J)- 1) * (Propal_Col_Width+1) );
+      Con_Io.Put_Int (23, Foreground => Foreground_Color,
+                          Background => Background_Color);
     end loop;
 
 
     -- Draw propal numbers
-    for I in COMMON.PROPAL_RANGE loop
-      CON_IO.MOVE (PROPAL_LAST_ROW - (CON_IO.ROW_RANGE(I)-1) * 2,
-                   PROPAL_LAST_COL + 3);
-      CON_IO.PUT (NORMAL (INTEGER(I), 2), FOREGROUND => FOREGROUND_COLOR,
-                                          BACKGROUND => BACKGROUND_COLOR);
+    for I in Common.Propal_Range loop
+      Con_Io.Move (Propal_Last_Row - (Con_Io.Row_Range(I)-1) * 2,
+                   Propal_Last_Col + 3);
+      Con_Io.Put (Normal (Integer(I), 2), Foreground => Foreground_Color,
+                                          Background => Background_Color);
     end loop;
 
     -- Draw colors
-    for I in COMMON.EFF_COLOR_RANGE loop
-      CON_IO.MOVE ((CON_IO.ROW_RANGE(I)-1) * 2, 0, COLOR_WIN);
-      CON_IO.PUT_INT (PIN_INT, FOREGROUND => COLOR_DEFINITION(I),
-                           NAME => COLOR_WIN);
-      CON_IO.MOVE ((CON_IO.ROW_RANGE(I)-1) * 2, 1, COLOR_WIN);
-      CON_IO.PUT_INT (PIN_INT, FOREGROUND => COLOR_DEFINITION(I),
-                           NAME => COLOR_WIN);
-      if I /= COMMON.EFF_COLOR_RANGE'LAST then
-        CON_IO.MOVE ((CON_IO.ROW_RANGE(I)-1) * 2 + 1, 0, COLOR_WIN);
-        CON_IO.PUT_INT (18, NAME => COLOR_WIN);
-        CON_IO.MOVE ((CON_IO.ROW_RANGE(I)-1) * 2 + 1, 1, COLOR_WIN);
-        CON_IO.PUT_INT (18, NAME => COLOR_WIN);
+    for I in Common.Eff_Color_Range loop
+      Con_Io.Move ((Con_Io.Row_Range(I)-1) * 2, 0, Color_Win);
+      Con_Io.Put_Int (Pin_Int, Foreground => Color_Definition(I),
+                           Name => Color_Win);
+      Con_Io.Move ((Con_Io.Row_Range(I)-1) * 2, 1, Color_Win);
+      Con_Io.Put_Int (Pin_Int, Foreground => Color_Definition(I),
+                           Name => Color_Win);
+      if I /= Common.Eff_Color_Range'Last then
+        Con_Io.Move ((Con_Io.Row_Range(I)-1) * 2 + 1, 0, Color_Win);
+        Con_Io.Put_Int (18, Name => Color_Win);
+        Con_Io.Move ((Con_Io.Row_Range(I)-1) * 2 + 1, 1, Color_Win);
+        Con_Io.Put_Int (18, Name => Color_Win);
 
-        CON_IO.MOVE (COLOR_FIRST_ROW + (CON_IO.ROW_RANGE(I)-1) * 2 + 1,
-                     COLOR_FIRST_COL - 1);
-        CON_IO.PUT_INT (21, FOREGROUND => FOREGROUND_COLOR,
-                            BACKGROUND => BACKGROUND_COLOR);
-        CON_IO.MOVE (COLOR_FIRST_ROW + (CON_IO.ROW_RANGE(I)-1) * 2 + 1,
-                     COLOR_LAST_COL + 1);
-        CON_IO.PUT_INT (22, FOREGROUND => FOREGROUND_COLOR,
-                            BACKGROUND => BACKGROUND_COLOR);
+        Con_Io.Move (Color_First_Row + (Con_Io.Row_Range(I)-1) * 2 + 1,
+                     Color_First_Col - 1);
+        Con_Io.Put_Int (21, Foreground => Foreground_Color,
+                            Background => Background_Color);
+        Con_Io.Move (Color_First_Row + (Con_Io.Row_Range(I)-1) * 2 + 1,
+                     Color_Last_Col + 1);
+        Con_Io.Put_Int (22, Foreground => Foreground_Color,
+                            Background => Background_Color);
       end if;
     end loop;
 
     -- Draw title
-    CON_IO.MOVE (1, TRY_LAST_COL + 2, GLOBAL_WIN);
-    CON_IO.PUT ("M A S T E R   M I N D", GLOBAL_WIN);
+    Con_Io.Move (1, Try_Last_Col + 2, Global_Win);
+    Con_Io.Put ("M A S T E R   M I N D", Global_Win);
 
     -- Draw level
-    for I in COMMON.LAST_LEVEL_RANGE loop
-      PUT_LEVEL (I, SELECTED => FALSE);
+    for I in Common.Last_Level_Range loop
+      Put_Level (I, Selected => False);
     end loop;
 
     -- Draw EXIT
-    CON_IO.MOVE (NAME => EXIT_WIN);
-    CON_IO.PUT  (" E X I T ", NAME => EXIT_WIN, MOVE => FALSE);
+    Con_Io.Move (Name => Exit_Win);
+    Con_Io.Put  (" E X I T ", Name => Exit_Win, Move => False);
 
     -- no try
-    for I in COMMON.PROPAL_RANGE loop
-      PUT_TRY (I, CANNOT_TRY);
+    for I in Common.Propal_Range loop
+      Put_Try (I, Cannot_Try);
     end loop;
 
-  end INIT;
+  end Init;
 
-  procedure CLEAR is
+  procedure Clear is
   begin
-    CON_IO.RESET_TERM;
-    CON_IO.MOVE;
-  end CLEAR;
+    Con_Io.Reset_Term;
+    Con_Io.Move;
+  end Clear;
 
 
   ------------
   -- PROPAL --
   ------------
-  procedure PUT_DEFAULT_POS (
-   PROPAL : in COMMON.PROPAL_RANGE;
-   LEVEL  : in COMMON.LEVEL_RANGE;
-   SHOW   : in BOOLEAN) is
+  procedure Put_Default_Pos (
+   Propal : in Common.Propal_Range;
+   Level  : in Common.Level_Range;
+   Show   : in Boolean) is
 
-    COLOR : CON_IO.EFFECTIVE_COLORS;
-    INTS  : ARRAY (1 .. 2) of CON_IO.INT_CHAR;
-    SQUARE : CON_IO.SQUARE;
-    use COMMON;
+    Color : Con_Io.Effective_Colors;
+    Ints  : Array (1 .. 2) of Con_Io.Int_Char;
+    Square : Con_Io.Square;
+    use Common;
   begin
-    if LEVEL > CURRENT_LEVEL then
-      raise CONSTRAINT_ERROR;
+    if Level > Current_Level then
+      raise Constraint_Error;
     end if;
 
     -- Set color and square in global
-    if SHOW then
-      COLOR := CON_IO.WHITE;
-      INTS (1) := 21;
-      INTS (2) := 22;
+    if Show then
+      Color := Con_Io.White;
+      Ints (1) := 21;
+      Ints (2) := 22;
     else
-      COLOR := FOREGROUND_COLOR;
-      INTS (1) := 25;
-      INTS (2) := 25;
+      Color := Foreground_Color;
+      Ints (1) := 25;
+      Ints (2) := 25;
     end if;
-    SQUARE := PROPAL_SQUARE (PROPAL, LEVEL);
-    SQUARE := CON_IO.TO_ABSOLUTE (SQUARE, PROPAL_WIN);
-    SQUARE := CON_IO.TO_RELATIVE (SQUARE, GLOBAL_WIN);
+    Square := Propal_Square (Propal, Level);
+    Square := Con_Io.To_Absolute (Square, Propal_Win);
+    Square := Con_Io.To_Relative (Square, Global_Win);
 
     -- Draw frame of square
-    CON_IO.MOVE (SQUARE.ROW, SQUARE.COL-1 , NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (INTS(1), FOREGROUND => COLOR, NAME => GLOBAL_WIN);
-    CON_IO.MOVE (SQUARE.ROW, SQUARE.COL+PROPAL_COL_WIDTH, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (INTS(2), FOREGROUND => COLOR, NAME => GLOBAL_WIN);
-    for K in 1 .. PROPAL_COL_WIDTH loop
-      CON_IO.MOVE (SQUARE.ROW - 1, SQUARE.COL + K - 1, NAME => GLOBAL_WIN);
-      CON_IO.PUT_INT (18, FOREGROUND => COLOR, NAME => GLOBAL_WIN);
-      CON_IO.MOVE (SQUARE.ROW + 1, SQUARE.COL + K - 1, NAME => GLOBAL_WIN);
-      CON_IO.PUT_INT (18, FOREGROUND => COLOR, NAME => GLOBAL_WIN);
+    Con_Io.Move (Square.Row, Square.Col-1 , Name => Global_Win);
+    Con_Io.Put_Int (Ints(1), Foreground => Color, Name => Global_Win);
+    Con_Io.Move (Square.Row, Square.Col+Propal_Col_Width, Name => Global_Win);
+    Con_Io.Put_Int (Ints(2), Foreground => Color, Name => Global_Win);
+    for K in 1 .. Propal_Col_Width loop
+      Con_Io.Move (Square.Row - 1, Square.Col + K - 1, Name => Global_Win);
+      Con_Io.Put_Int (18, Foreground => Color, Name => Global_Win);
+      Con_Io.Move (Square.Row + 1, Square.Col + K - 1, Name => Global_Win);
+      Con_Io.Put_Int (18, Foreground => Color, Name => Global_Win);
     end loop;
 
-  end PUT_DEFAULT_POS;
+  end Put_Default_Pos;
 
-  procedure PUT_TRY (
-   PROPAL   : in COMMON.PROPAL_RANGE;
-   TRY_STATE : in PUT_TRY_LIST) is
-    SQUARE : CON_IO.SQUARE;
+  procedure Put_Try (
+   Propal   : in Common.Propal_Range;
+   Try_State : in Put_Try_List) is
+    Square : Con_Io.Square;
   begin
-    SQUARE.ROW := PROPAL_SQUARE (PROPAL, COMMON.LEVEL_RANGE'FIRST).ROW;
-    SQUARE.COL := 0;
-    for I in COMMON.LEVEL_RANGE'FIRST .. CURRENT_LEVEL loop
-      CON_IO.MOVE (SQUARE.ROW, SQUARE.COL+CON_IO.COL_RANGE(I)-1, TRY_WIN);
-      case TRY_STATE is
-        when CANNOT_TRY =>
-          CON_IO.PUT ('X', NAME => TRY_WIN, MOVE => FALSE);
-        when CAN_TRY =>
-          CON_IO.PUT ('?', FOREGROUND => TRY_COLOR, NAME => TRY_WIN,
-           MOVE => FALSE);
-        when SELECTED =>
-          CON_IO.PUT ('?', FOREGROUND => BACKGROUND_COLOR,
-                           BACKGROUND => BACKGROUND_SELECT, NAME => TRY_WIN,
-                           MOVE => FALSE);
+    Square.Row := Propal_Square (Propal, Common.Level_Range'First).Row;
+    Square.Col := 0;
+    for I in Common.Level_Range'First .. Current_Level loop
+      Con_Io.Move (Square.Row, Square.Col+Con_Io.Col_Range(I)-1, Try_Win);
+      case Try_State is
+        when Cannot_Try =>
+          Con_Io.Put ('X', Name => Try_Win, Move => False);
+        when Can_Try =>
+          Con_Io.Put ('?', Foreground => Try_Color, Name => Try_Win,
+           Move => False);
+        when Selected =>
+          Con_Io.Put ('?', Foreground => Background_Color,
+                           Background => Background_Select, Name => Try_Win,
+                           Move => False);
       end case;
     end loop;
 
-  end PUT_TRY;
+  end Put_Try;
 
-  procedure PUT_COLOR (
-   PROPAL : in COMMON.PROPAL_RANGE;
-   LEVEL  : in COMMON.LEVEL_RANGE;
-   COLOR  : in COMMON.COLOR_RANGE) is
-    SQUARE : CON_IO.SQUARE;
-    use COMMON;
+  procedure Put_Color (
+   Propal : in Common.Propal_Range;
+   Level  : in Common.Level_Range;
+   Color  : in Common.Color_Range) is
+    Square : Con_Io.Square;
+    use Common;
   begin
-    if LEVEL > CURRENT_LEVEL then
-      raise CONSTRAINT_ERROR;
+    if Level > Current_Level then
+      raise Constraint_Error;
     end if;
-    SQUARE := PROPAL_SQUARE (PROPAL, LEVEL);
-    for I in 1 .. PROPAL_COL_WIDTH loop
-      CON_IO.MOVE (SQUARE.ROW, SQUARE.COL+I-1, PROPAL_WIN);
-      if COLOR /= COMMON.COLOR_RANGE'FIRST then
-        CON_IO.PUT_INT (PIN_INT, FOREGROUND => COLOR_DEFINITION(COLOR),
-         NAME => PROPAL_WIN);
+    Square := Propal_Square (Propal, Level);
+    for I in 1 .. Propal_Col_Width loop
+      Con_Io.Move (Square.Row, Square.Col+I-1, Propal_Win);
+      if Color /= Common.Color_Range'First then
+        Con_Io.Put_Int (Pin_Int, Foreground => Color_Definition(Color),
+         Name => Propal_Win);
       else
-        CON_IO.PUT (' ', FOREGROUND => FOREGROUND_COLOR, MOVE => FALSE,
-         NAME => PROPAL_WIN);
+        Con_Io.Put (' ', Foreground => Foreground_Color, Move => False,
+         Name => Propal_Win);
       end if;
     end loop;
 
-  end PUT_COLOR;
+  end Put_Color;
 
-  procedure PUT_ANSWER (
-   PROPAL : in COMMON.PROPAL_RANGE;
-   PLACED_OK, COLORS_OK : in NATURAL) is
-    SQUARE : CON_IO.SQUARE;
-    use COMMON;
+  procedure Put_Answer (
+   Propal : in Common.Propal_Range;
+   Placed_Ok, Colors_Ok : in Natural) is
+    Square : Con_Io.Square;
+    use Common;
   begin
-    if COLORS_OK + PLACED_OK > NATURAL(CURRENT_LEVEL) then
-      raise CONSTRAINT_ERROR;
+    if Colors_Ok + Placed_Ok > Natural(Current_Level) then
+      raise Constraint_Error;
     end if;
 
-    SQUARE.ROW := PROPAL_SQUARE (PROPAL, COMMON.LEVEL_RANGE'FIRST).ROW;
-    SQUARE.COL := 0;
+    Square.Row := Propal_Square (Propal, Common.Level_Range'First).Row;
+    Square.Col := 0;
     -- Clear
-    for I in COMMON.LEVEL_RANGE'FIRST .. CURRENT_LEVEL loop
-      CON_IO.MOVE (SQUARE.ROW, SQUARE.COL+CON_IO.COL_RANGE(I)-1, TRY_WIN);
-      CON_IO.PUT (' ', MOVE => FALSE, NAME => TRY_WIN);
+    for I in Common.Level_Range'First .. Current_Level loop
+      Con_Io.Move (Square.Row, Square.Col+Con_Io.Col_Range(I)-1, Try_Win);
+      Con_Io.Put (' ', Move => False, Name => Try_Win);
     end loop;
     -- Put
-    for I in 1 .. PLACED_OK loop
-      CON_IO.MOVE (SQUARE, TRY_WIN);
-      CON_IO.PUT_INT (1, FOREGROUND => OK_COLOR, NAME => TRY_WIN);
-      SQUARE.COL := SQUARE.COL + 1;
+    for I in 1 .. Placed_Ok loop
+      Con_Io.Move (Square, Try_Win);
+      Con_Io.Put_Int (1, Foreground => Ok_Color, Name => Try_Win);
+      Square.Col := Square.Col + 1;
     end loop;
-    for I in 1 .. COLORS_OK loop
-      CON_IO.MOVE (SQUARE, TRY_WIN);
-      CON_IO.PUT_INT (1, FOREGROUND => NOK_COLOR, NAME => TRY_WIN);
-      SQUARE.COL := SQUARE.COL + 1;
+    for I in 1 .. Colors_Ok loop
+      Con_Io.Move (Square, Try_Win);
+      Con_Io.Put_Int (1, Foreground => Nok_Color, Name => Try_Win);
+      Square.Col := Square.Col + 1;
     end loop;
 
-  end PUT_ANSWER;
+  end Put_Answer;
 
   ------------
   -- SECRET --
   ------------
-  procedure PUT_SECRET_COLOR (
-   LEVEL  : in COMMON.LEVEL_RANGE;
-   COLOR  : in COMMON.COLOR_RANGE) is
-    SQUARE : CON_IO.SQUARE;
+  procedure Put_Secret_Color (
+   Level  : in Common.Level_Range;
+   Color  : in Common.Color_Range) is
+    Square : Con_Io.Square;
   begin
-    SQUARE.ROW := 0;
-    SQUARE.COL := PROPAL_SQUARE (1, LEVEL).COL;
-    for I in 1 .. PROPAL_COL_WIDTH loop
-      CON_IO.MOVE (SQUARE.ROW, SQUARE.COL+I-1, SECRET_WIN);
-      CON_IO.PUT_INT (PIN_INT, FOREGROUND => COLOR_DEFINITION(COLOR),
-       NAME => SECRET_WIN);
+    Square.Row := 0;
+    Square.Col := Propal_Square (1, Level).Col;
+    for I in 1 .. Propal_Col_Width loop
+      Con_Io.Move (Square.Row, Square.Col+I-1, Secret_Win);
+      Con_Io.Put_Int (Pin_Int, Foreground => Color_Definition(Color),
+       Name => Secret_Win);
     end loop;
 
-  end PUT_SECRET_COLOR;
+  end Put_Secret_Color;
 
   ----------
   -- MENU --
   ----------
-  procedure PUT_START_GIVEUP (START : in BOOLEAN; SELECTED : in BOOLEAN) is
-    FORE : CON_IO.EFFECTIVE_COLORS;
-    BACK : CON_IO.EFFECTIVE_BASIC_COLORS;
+  procedure Put_Start_Giveup (Start : in Boolean; Selected : in Boolean) is
+    Fore : Con_Io.Effective_Colors;
+    Back : Con_Io.Effective_Basic_Colors;
   begin
-    if SELECTED then
-      FORE := BACKGROUND_COLOR;
-      BACK := BACKGROUND_SELECT;
+    if Selected then
+      Fore := Background_Color;
+      Back := Background_Select;
     else
-      FORE := FOREGROUND_COLOR;
-      BACK := BACKGROUND_COLOR;
+      Fore := Foreground_Color;
+      Back := Background_Color;
     end if;
-    CON_IO.MOVE (NAME => MENU_WIN);
-    if START then
-      CON_IO.PUT (" S T A R T ",
-       FOREGROUND => FORE,
-       BACKGROUND => BACK,
-       NAME => MENU_WIN,
-       MOVE => FALSE);
+    Con_Io.Move (Name => Menu_Win);
+    if Start then
+      Con_Io.Put (" S T A R T ",
+       Foreground => Fore,
+       Background => Back,
+       Name => Menu_Win,
+       Move => False);
     else
-      CON_IO.PUT ("  GIVE UP  ",
-       FOREGROUND => FORE,
-       BACKGROUND => BACK,
-       NAME => MENU_WIN,
-       MOVE => FALSE);
+      Con_Io.Put ("  GIVE UP  ",
+       Foreground => Fore,
+       Background => Back,
+       Name => Menu_Win,
+       Move => False);
     end if;
 
-  end PUT_START_GIVEUP;
+  end Put_Start_Giveup;
 
   -----------
   -- LEVEL --
   -----------
-  procedure PUT_LEVEL (LEVEL_NO : in COMMON.LAST_LEVEL_RANGE;
-   SELECTED : in BOOLEAN) is
-    COL : constant CON_IO.ROW_RANGE :=
-     CON_IO.ROW_RANGE (LEVEL_NO) -
-     CON_IO.ROW_RANGE (COMMON.LAST_LEVEL_RANGE'FIRST);
-    FORE : CON_IO.EFFECTIVE_COLORS;
-    BACK : CON_IO.EFFECTIVE_BASIC_COLORS;
+  procedure Put_Level (Level_No : in Common.Last_Level_Range;
+   Selected : in Boolean) is
+    Col : constant Con_Io.Row_Range :=
+     Con_Io.Row_Range (Level_No) -
+     Con_Io.Row_Range (Common.Last_Level_Range'First);
+    Fore : Con_Io.Effective_Colors;
+    Back : Con_Io.Effective_Basic_Colors;
   begin
-    if SELECTED then
-      FORE := BACKGROUND_COLOR;
-      BACK := BACKGROUND_SELECT;
+    if Selected then
+      Fore := Background_Color;
+      Back := Background_Select;
     else
-      FORE := FOREGROUND_COLOR;
-      BACK := BACKGROUND_COLOR;
+      Fore := Foreground_Color;
+      Back := Background_Color;
     end if;
-    CON_IO.MOVE (0, COL * 2 + 1, NAME => LEVEL_WIN);
-    CON_IO.PUT (NORMAL (INTEGER(LEVEL_NO), 1),
-     FOREGROUND => FORE,
-     BACKGROUND => BACK,
-     NAME => LEVEL_WIN,
-     MOVE => FALSE);
-  end PUT_LEVEL;
+    Con_Io.Move (0, Col * 2 + 1, Name => Level_Win);
+    Con_Io.Put (Normal (Integer(Level_No), 1),
+     Foreground => Fore,
+     Background => Back,
+     Name => Level_Win,
+     Move => False);
+  end Put_Level;
 
-  procedure PUT_CURRENT_LEVEL (LEVEL_NO : in COMMON.LAST_LEVEL_RANGE) is
-    COL : constant CON_IO.ROW_RANGE :=
-     CON_IO.ROW_RANGE (LEVEL_NO) -
-     CON_IO.ROW_RANGE (COMMON.LAST_LEVEL_RANGE'FIRST);
+  procedure Put_Current_Level (Level_No : in Common.Last_Level_Range) is
+    Col : constant Con_Io.Row_Range :=
+     Con_Io.Row_Range (Level_No) -
+     Con_Io.Row_Range (Common.Last_Level_Range'First);
   begin
-    CON_IO.FRAME (NAME => LEVEL_WIN);
-    CON_IO.MOVE (MENU_ROW - 2, LEVEL_FIRST_COL + 2 * COL,
-     NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (24, NAME => GLOBAL_WIN);
-    CON_IO.MOVE (MENU_ROW,     LEVEL_FIRST_COL + 2 * COL,
-     NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (23, NAME => GLOBAL_WIN);
-  end PUT_CURRENT_LEVEL;
+    Con_Io.Frame (Name => Level_Win);
+    Con_Io.Move (Menu_Row - 2, Level_First_Col + 2 * Col,
+     Name => Global_Win);
+    Con_Io.Put_Int (24, Name => Global_Win);
+    Con_Io.Move (Menu_Row,     Level_First_Col + 2 * Col,
+     Name => Global_Win);
+    Con_Io.Put_Int (23, Name => Global_Win);
+  end Put_Current_Level;
 
 
-  procedure PUT_EXIT (SELECTED : in BOOLEAN) is
+  procedure Put_Exit (Selected : in Boolean) is
   begin
-    CON_IO.MOVE (NAME => EXIT_WIN);
-    if SELECTED then
-      CON_IO.PUT  (" E X I T ",
-       NAME => EXIT_WIN,
-       FOREGROUND => BACKGROUND_COLOR,
-       BACKGROUND => BACKGROUND_SELECT,
-       MOVE => FALSE);
+    Con_Io.Move (Name => Exit_Win);
+    if Selected then
+      Con_Io.Put  (" E X I T ",
+       Name => Exit_Win,
+       Foreground => Background_Color,
+       Background => Background_Select,
+       Move => False);
     else
-      CON_IO.PUT  (" E X I T ", NAME => EXIT_WIN, MOVE => FALSE);
+      Con_Io.Put  (" E X I T ", Name => Exit_Win, Move => False);
     end if;
-  end PUT_EXIT;
+  end Put_Exit;
 
   ----------
   -- HELP --
   ----------
-  procedure PUT_HELP (HELP : HELP_STATE) is
+  procedure Put_Help (Help : Help_State) is
   begin
-    CON_IO.CLEAR (NAME => HELP_WIN);
-    case HELP is
-      when RELEASED =>
-        CON_IO.MOVE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("Select :",                      NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> A color to set",            NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     it in a proposition.",     NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> A proposition to clear",    NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     or move it.",              NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> A try to get answer",       NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     to a try.",                NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> A menu option :",           NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     Give-up.",                 NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     Exit.",                    NAME => HELP_WIN);
-      when CLICK_COLOR =>
-        CON_IO.MOVE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("Release on :",                  NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> A position to affect it",   NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     at this position.",        NAME => HELP_WIN);
-      when CLICK_PROPAL =>
-        CON_IO.MOVE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("Release on :",                  NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> an empty square to move",   NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     this color.",              NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> outside propositions",      NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     to clear this color.",     NAME => HELP_WIN);
-      when CLICK_OTHER =>
-        CON_IO.MOVE (NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN, NUMBER => 2);
-        CON_IO.PUT_LINE ("Release on the same item",      NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" to validate.",                 NAME => HELP_WIN);
-      when START =>
-        CON_IO.MOVE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("Select :",                      NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" -> A menu option :",           NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     Start.",                   NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     Level (3 4 5).",           NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("     Exit.",                    NAME => HELP_WIN);
-      when DISCARDED =>
-        CON_IO.MOVE (NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN, NUMBER => 2);
-        CON_IO.PUT_LINE ("WRONG CLICK POSITION",          NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("Release anywhere",              NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" and click again.",             NAME => HELP_WIN);
+    Con_Io.Clear (Name => Help_Win);
+    case Help is
+      when Released =>
+        Con_Io.Move (Name => Help_Win);
+        Con_Io.Put_Line ("Select :",                      Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> A color to set",            Name => Help_Win);
+        Con_Io.Put_Line ("     it in a proposition.",     Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> A proposition to clear",    Name => Help_Win);
+        Con_Io.Put_Line ("     or move it.",              Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> A try to get answer",       Name => Help_Win);
+        Con_Io.Put_Line ("     to a try.",                Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> A menu option :",           Name => Help_Win);
+        Con_Io.Put_Line ("     Give-up.",                 Name => Help_Win);
+        Con_Io.Put_Line ("     Exit.",                    Name => Help_Win);
+      when Click_Color =>
+        Con_Io.Move (Name => Help_Win);
+        Con_Io.Put_Line ("Release on :",                  Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> A position to affect it",   Name => Help_Win);
+        Con_Io.Put_Line ("     at this position.",        Name => Help_Win);
+      when Click_Propal =>
+        Con_Io.Move (Name => Help_Win);
+        Con_Io.Put_Line ("Release on :",                  Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> an empty square to move",   Name => Help_Win);
+        Con_Io.Put_Line ("     this color.",              Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> outside propositions",      Name => Help_Win);
+        Con_Io.Put_Line ("     to clear this color.",     Name => Help_Win);
+      when Click_Other =>
+        Con_Io.Move (Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win, Number => 2);
+        Con_Io.Put_Line ("Release on the same item",      Name => Help_Win);
+        Con_Io.Put_Line (" to validate.",                 Name => Help_Win);
+      when Start =>
+        Con_Io.Move (Name => Help_Win);
+        Con_Io.Put_Line ("Select :",                      Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" -> A menu option :",           Name => Help_Win);
+        Con_Io.Put_Line ("     Start.",                   Name => Help_Win);
+        Con_Io.Put_Line ("     Level (3 4 5).",           Name => Help_Win);
+        Con_Io.Put_Line ("     Exit.",                    Name => Help_Win);
+      when Discarded =>
+        Con_Io.Move (Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win, Number => 2);
+        Con_Io.Put_Line ("WRONG CLICK POSITION",          Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line ("Release anywhere",              Name => Help_Win);
+        Con_Io.Put_Line (" and click again.",             Name => Help_Win);
     end case;
 
-  end PUT_HELP;
+  end Put_Help;
 
   -----------
   -- COLOR --
   -----------
-  procedure PUT_SELECTED_COLOR (
-   COLOR : in COMMON.EFF_COLOR_RANGE;
-   SELECTED : in BOOLEAN) is
-    FORE : CON_IO.EFFECTIVE_COLORS;
-    INTS  : ARRAY (1 .. 2) of CON_IO.INT_CHAR;
-    SQUARE : CON_IO.SQUARE;
-    use COMMON;
+  procedure Put_Selected_Color (
+   Color : in Common.Eff_Color_Range;
+   Selected : in Boolean) is
+    Fore : Con_Io.Effective_Colors;
+    Ints  : Array (1 .. 2) of Con_Io.Int_Char;
+    Square : Con_Io.Square;
+    use Common;
   begin
     -- Set color and square in global
-    if SELECTED then
-      FORE := CON_IO.WHITE;
-      INTS (1) := 21;
-      INTS (2) := 22;
+    if Selected then
+      Fore := Con_Io.White;
+      Ints (1) := 21;
+      Ints (2) := 22;
     else
-      FORE := FOREGROUND_COLOR;
-      INTS (1) := 25;
-      INTS (2) := 25;
+      Fore := Foreground_Color;
+      Ints (1) := 25;
+      Ints (2) := 25;
     end if;
 
-    CON_IO.MOVE ((CON_IO.ROW_RANGE(COLOR)-1) * 2, 0, NAME => COLOR_WIN);
-    SQUARE := CON_IO.POSITION (COLOR_WIN);
-    SQUARE := CON_IO.TO_ABSOLUTE (SQUARE, COLOR_WIN);
-    SQUARE := CON_IO.TO_RELATIVE (SQUARE, GLOBAL_WIN);
+    Con_Io.Move ((Con_Io.Row_Range(Color)-1) * 2, 0, Name => Color_Win);
+    Square := Con_Io.Position (Color_Win);
+    Square := Con_Io.To_Absolute (Square, Color_Win);
+    Square := Con_Io.To_Relative (Square, Global_Win);
 
     -- Draw frame of square
-    CON_IO.MOVE (SQUARE.ROW, SQUARE.COL-1, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (INTS(1), FOREGROUND => FORE, NAME => GLOBAL_WIN);
-    CON_IO.MOVE (SQUARE.ROW, SQUARE.COL+2, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (INTS(2), FOREGROUND => FORE, NAME => GLOBAL_WIN);
+    Con_Io.Move (Square.Row, Square.Col-1, Name => Global_Win);
+    Con_Io.Put_Int (Ints(1), Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row, Square.Col+2, Name => Global_Win);
+    Con_Io.Put_Int (Ints(2), Foreground => Fore, Name => Global_Win);
 
-    CON_IO.MOVE (SQUARE.ROW+1, SQUARE.COL, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (18, FOREGROUND => FORE, NAME => GLOBAL_WIN);
-    CON_IO.MOVE (SQUARE.ROW+1, SQUARE.COL+1, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (18, FOREGROUND => FORE, NAME => GLOBAL_WIN);
-    CON_IO.MOVE (SQUARE.ROW-1, SQUARE.COL, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (18, FOREGROUND => FORE, NAME => GLOBAL_WIN);
-    CON_IO.MOVE (SQUARE.ROW-1, SQUARE.COL+1, NAME => GLOBAL_WIN);
-    CON_IO.PUT_INT (18, FOREGROUND => FORE, NAME => GLOBAL_WIN);
+    Con_Io.Move (Square.Row+1, Square.Col, Name => Global_Win);
+    Con_Io.Put_Int (18, Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row+1, Square.Col+1, Name => Global_Win);
+    Con_Io.Put_Int (18, Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row-1, Square.Col, Name => Global_Win);
+    Con_Io.Put_Int (18, Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row-1, Square.Col+1, Name => Global_Win);
+    Con_Io.Put_Int (18, Foreground => Fore, Name => Global_Win);
 
-  end PUT_SELECTED_COLOR;
+  end Put_Selected_Color;
 
   -----------
   -- MOUSE --
   -----------
   -- call before mouse selection
-  procedure SHOW_MOUSE is
+  procedure Show_Mouse is
   begin
     null;
-  end SHOW_MOUSE;
+  end Show_Mouse;
 
   -- call before any put
-  procedure HIDE_MOUSE is
+  procedure Hide_Mouse is
   begin
     null;
-  end HIDE_MOUSE;
+  end Hide_Mouse;
 
 
   ---------------
   -- SELECTION --
   ---------------
-  function TO_PROPAL (ROW : CON_IO.ROW_RANGE) return COMMON.PROPAL_RANGE is
+  function To_Propal (Row : Con_Io.Row_Range) return Common.Propal_Range is
   begin
     return
-     COMMON.PROPAL_RANGE (
-      CON_IO.ROW_RANGE (COMMON.MAX_NUMBER_PROPAL) - (ROW / 2) );
-  end TO_PROPAL;
+     Common.Propal_Range (
+      Con_Io.Row_Range (Common.Max_Number_Propal) - (Row / 2) );
+  end To_Propal;
 
-  procedure GET_SELECTED (
-   WHERE : in CON_IO.SQUARE;
-   WHAT  : out SELECTION_REC) is
-    SQUARE : CON_IO.SQUARE;
-    use COMMON;
+  procedure Get_Selected (
+   Where : in Con_Io.Square;
+   What  : out Selection_Rec) is
+    Square : Con_Io.Square;
+    use Common;
   begin
-    WHAT := (SELECTION_KIND => NOTHING, SELECTION => NOTHING);
+    What := (Selection_Kind => Nothing, Selection => Nothing);
 
     begin
-      SQUARE := CON_IO.TO_RELATIVE (WHERE, PROPAL_WIN);
-      if SQUARE.ROW mod 2 /= 0 then
-        WHAT.SELECTION := PROPAL;
+      Square := Con_Io.To_Relative (Where, Propal_Win);
+      if Square.Row mod 2 /= 0 then
+        What.Selection := Propal;
         return;
       end if;
-      if SQUARE.COL mod (PROPAL_COL_WIDTH+1) = PROPAL_COL_WIDTH then
-        WHAT.SELECTION := PROPAL;
+      if Square.Col mod (Propal_Col_Width+1) = Propal_Col_Width then
+        What.Selection := Propal;
         return;
       end if;
 
-      WHAT := (SELECTION_KIND => PROPAL,
-               PROPAL_NO => TO_PROPAL (SQUARE.ROW),
-               COLUMN_NO => COMMON.LEVEL_RANGE(
-                             (SQUARE.COL / (PROPAL_COL_WIDTH+1))+1) );
+      What := (Selection_Kind => Propal,
+               Propal_No => To_Propal (Square.Row),
+               Column_No => Common.Level_Range(
+                             (Square.Col / (Propal_Col_Width+1))+1) );
     exception
-      when CON_IO.INVALID_SQUARE => null;
+      when Con_Io.Invalid_Square => null;
     end;
 
     begin
-      SQUARE := CON_IO.TO_RELATIVE (WHERE, TRY_WIN);
-      if SQUARE.ROW mod 2 /= 0 then
-        WHAT.SELECTION := TRY;
+      Square := Con_Io.To_Relative (Where, Try_Win);
+      if Square.Row mod 2 /= 0 then
+        What.Selection := Try;
         return;
       end if;
-      WHAT := (SELECTION_KIND => TRY,
-               TRY_NO => TO_PROPAL (SQUARE.ROW) );
+      What := (Selection_Kind => Try,
+               Try_No => To_Propal (Square.Row) );
     exception
-      when CON_IO.INVALID_SQUARE => null;
+      when Con_Io.Invalid_Square => null;
     end;
 
     begin
-      SQUARE := CON_IO.TO_RELATIVE (WHERE, COLOR_WIN);
-      if SQUARE.ROW mod 2 /= 0 then
-        WHAT.SELECTION := COLOR;
+      Square := Con_Io.To_Relative (Where, Color_Win);
+      if Square.Row mod 2 /= 0 then
+        What.Selection := Color;
         return;
       end if;
-      WHAT := (
-       SELECTION_KIND => COLOR,
-       COLOR_NO => COMMON.EFF_COLOR_RANGE (1 + (SQUARE.ROW / 2)) );
+      What := (
+       Selection_Kind => Color,
+       Color_No => Common.Eff_Color_Range (1 + (Square.Row / 2)) );
     exception
-      when CON_IO.INVALID_SQUARE => null;
+      when Con_Io.Invalid_Square => null;
     end;
 
     begin
-      SQUARE := CON_IO.TO_RELATIVE (WHERE, MENU_WIN);
-      WHAT := (SELECTION_KIND => MENU);
+      Square := Con_Io.To_Relative (Where, Menu_Win);
+      What := (Selection_Kind => Menu);
     exception
-      when CON_IO.INVALID_SQUARE => null;
+      when Con_Io.Invalid_Square => null;
     end;
 
     begin
-      SQUARE := CON_IO.TO_RELATIVE (WHERE, LEVEL_WIN);
-      if (SQUARE.COL + 1) mod 2 /= 0 then
-        WHAT.SELECTION := LEVEL;
+      Square := Con_Io.To_Relative (Where, Level_Win);
+      if (Square.Col + 1) mod 2 /= 0 then
+        What.Selection := Level;
         return;
       end if;
-      WHAT := (
-       SELECTION_KIND => LEVEL,
-       LEVEL_NO => COMMON.LAST_LEVEL_RANGE (
-        (SQUARE.COL - 1) / 2 + INTEGER (COMMON.LAST_LEVEL_RANGE'FIRST)) );
+      What := (
+       Selection_Kind => Level,
+       Level_No => Common.Last_Level_Range (
+        (Square.Col - 1) / 2 + Integer (Common.Last_Level_Range'First)) );
     exception
-      when CON_IO.INVALID_SQUARE => null;
+      when Con_Io.Invalid_Square => null;
     end;
 
     begin
-      SQUARE := CON_IO.TO_RELATIVE (WHERE, EXIT_WIN);
-      WHAT := (SELECTION_KIND => EXIT_GAME);
+      Square := Con_Io.To_Relative (Where, Exit_Win);
+      What := (Selection_Kind => Exit_Game);
     exception
-      when CON_IO.INVALID_SQUARE => null;
+      when Con_Io.Invalid_Square => null;
     end;
 
-  end GET_SELECTED;
+  end Get_Selected;
 
-end SCREEN;
+end Screen;

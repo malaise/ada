@@ -1,37 +1,37 @@
 -- Type of a navigation question, resolution  with check of data coherency
 
-with NAV_TYPES;
+with Nav_Types;
 
-package NAV_DATA is
+package Nav_Data is
 
   -- The different values which can be set or not
-  type T_LIST_DATA is (WIND_S, WIND_A, PLAN_S, PLAN_A, TRAJ_S, TRAJ_A, DRIFT);
-  type T_DATA_SET  is array (T_LIST_DATA) of BOOLEAN;
+  type T_List_Data is (Wind_S, Wind_A, Plan_S, Plan_A, Traj_S, Traj_A, Drift);
+  type T_Data_Set  is array (T_List_Data) of Boolean;
 
   -- A complete definition of a nav problem
-  type T_DATA is record
-   WIND : NAV_TYPES.T_VECTOR;
-   PLAN : NAV_TYPES.T_VECTOR;
-   TRAJ : NAV_TYPES.T_VECTOR;
-   DRIFT : NAV_TYPES.T_DRIFT;
-   SET  : T_DATA_SET := (others => FALSE);
+  type T_Data is record
+   Wind : Nav_Types.T_Vector;
+   Plan : Nav_Types.T_Vector;
+   Traj : Nav_Types.T_Vector;
+   Drift : Nav_Types.T_Drift;
+   Set  : T_Data_Set := (others => False);
   end record;
 
   -- The possible reports of a problem check
-  type T_CONSISTENCY is (
-   KNOWN_ERR, -- Must be 3 unknown data
-   ANGLE_ERR, -- If all 3 angles are known, must have different directions
-   WIND_ERR,  -- Wind must be completly known or unknown
-   TRAJ_ERR,  -- If TRAJ_A is unknown, TRAJ_S must be unknown
-   DRIFT_ERR, -- If drift is known, one in TRAJ_A or PLAN_A must be unknown
-   VAL_ERR,   -- If problem of computation (incompatible values)
-   OK);       -- Data are consistent
+  type T_Consistency is (
+   Known_Err, -- Must be 3 unknown data
+   Angle_Err, -- If all 3 angles are known, must have different directions
+   Wind_Err,  -- Wind must be completly known or unknown
+   Traj_Err,  -- If TRAJ_A is unknown, TRAJ_S must be unknown
+   Drift_Err, -- If drift is known, one in TRAJ_A or PLAN_A must be unknown
+   Val_Err,   -- If problem of computation (incompatible values)
+   Ok);       -- Data are consistent
 
-  procedure RESOLUTION (PROBLEM : in T_DATA;
-   CHECK : out T_CONSISTENCY; SOLUTION : out T_DATA);
+  procedure Resolution (Problem : in T_Data;
+   Check : out T_Consistency; Solution : out T_Data);
 
-  RESOL_ERROR : exception;
+  Resol_Error : exception;
 
-end NAV_DATA;
+end Nav_Data;
 
 

@@ -1,184 +1,184 @@
-with CON_IO, AFPX, CURVE, MY_MATH;
-with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, RESOL;
-package body MENU2 is
+with Con_Io, Afpx, Curve, My_Math;
+with Points, Screen, Set_Points_List, Dialog, Resol;
+package body Menu2 is
 
-  type RESTORE_LIST is (NONE, PARTIAL, LIST, FULL); 
-  CURSOR_FIELD : AFPX.FIELD_RANGE;
+  type Restore_List is (None, Partial, List, Full); 
+  Cursor_Field : Afpx.Field_Range;
 
-  package CURVE_DATA is
-    NB_POINTS : NATURAL;
-    THE_POINTS : POINTS.P_T_THE_POINTS(1 .. POINTS.MAX_NUMBER);
-    THE_DEGREE : RESOL.R_T_DEGREE;
-    THE_SOLUTION : RESOL.VECTOR (1 .. RESOL.R_T_DEGREE'LAST + 1);
-    THE_BOUNDS : CURVE.T_BOUNDARIES;
-    THE_BOUNDS_SET : BOOLEAN;
-    function CURVE_F_X (X : POINTS.P_T_COORDINATE)
-                       return POINTS.P_T_COORDINATE;
-    procedure CURVE_DRAW (BOUNDARIES : in CURVE.T_BOUNDARIES;
-                          POINTS : in CURVE.T_THE_POINTS);
-  end CURVE_DATA;
+  package Curve_Data is
+    Nb_Points : Natural;
+    The_Points : Points.P_T_The_Points(1 .. Points.Max_Number);
+    The_Degree : Resol.R_T_Degree;
+    The_Solution : Resol.Vector (1 .. Resol.R_T_Degree'Last + 1);
+    The_Bounds : Curve.T_Boundaries;
+    The_Bounds_Set : Boolean;
+    function Curve_F_X (X : Points.P_T_Coordinate)
+                       return Points.P_T_Coordinate;
+    procedure Curve_Draw (Boundaries : in Curve.T_Boundaries;
+                          Points : in Curve.T_The_Points);
+  end Curve_Data;
 
-  task CURVE_TASK is
+  task Curve_Task is
     -- Start computation, SOLUTION is computed on main stack
-    entry START (SOLUTION : in RESOL.VECTOR; OK : out BOOLEAN);
-    entry STOPPED;
+    entry Start (Solution : in Resol.Vector; Ok : out Boolean);
+    entry Stopped;
   end;
 
-  package MENU21 is
+  package Menu21 is
 
     -- Return the bounds previoulsy set (if set)
-    function BOUNDS_SET return BOOLEAN;
-    procedure RESET_BOUNDS;
-    procedure GET_BOUNDS (SET : out BOOLEAN; BOUNDS : out CURVE.T_BOUNDARIES);
+    function Bounds_Set return Boolean;
+    procedure Reset_Bounds;
+    procedure Get_Bounds (Set : out Boolean; Bounds : out Curve.T_Boundaries);
 
     -- Interactive selection of bounds
-    procedure MAIN_SCREEN;
+    procedure Main_Screen;
 
-  end MENU21;
-  package body MENU21 is separate;
+  end Menu21;
+  package body Menu21 is separate;
 
-  procedure ERROR (MSG : in SCREEN.S_ERROR_LIST) is
+  procedure Error (Msg : in Screen.S_Error_List) is
   begin
-    SCREEN.ERROR(MSG);
+    Screen.Error(Msg);
     -- Restore screen
-    AFPX.USE_DESCRIPTOR(3, FALSE);
-    SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
-  end ERROR;
+    Afpx.Use_Descriptor(3, False);
+    Screen.Init_For_Main2 (Cursor_Field);
+  end Error;
 
-  procedure DO_RESTORE (RESTORE : in RESTORE_LIST) is
-    ACTIVATE_NO_CURVE : constant BOOLEAN := CURVED_STOPPED;
+  procedure Do_Restore (Restore : in Restore_List) is
+    Activate_No_Curve : constant Boolean := Curved_Stopped;
   begin
-    case RESTORE is
-      when NONE =>
+    case Restore is
+      when None =>
         null;
-      when PARTIAL =>
-        AFPX.USE_DESCRIPTOR(3, FALSE);
-        SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
-        SCREEN.PUT_FILE;
-      when LIST =>
+      when Partial =>
+        Afpx.Use_Descriptor(3, False);
+        Screen.Init_For_Main2 (Cursor_Field);
+        Screen.Put_File;
+      when List =>
         -- polynom display needs reset of list
-        AFPX.USE_DESCRIPTOR(3, FALSE);
-        SET_POINTS_LIST;
-        SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
-        SCREEN.PUT_FILE;
-      when FULL =>
-        AFPX.USE_DESCRIPTOR(3, TRUE);
-        SET_POINTS_LIST;
-        SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
-        SCREEN.PUT_FILE;
+        Afpx.Use_Descriptor(3, False);
+        Set_Points_List;
+        Screen.Init_For_Main2 (Cursor_Field);
+        Screen.Put_File;
+      when Full =>
+        Afpx.Use_Descriptor(3, True);
+        Set_Points_List;
+        Screen.Init_For_Main2 (Cursor_Field);
+        Screen.Put_File;
     end case;
     -- Activate or not according to curve activity
     -- Back
-    AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, ACTIVATE_NO_CURVE);
+    Afpx.Set_Field_Activation (Screen.Exit_Button_Fld, Activate_No_Curve);
     -- Set degree
-    AFPX.SET_FIELD_ACTIVATION (22, ACTIVATE_NO_CURVE);
+    Afpx.Set_Field_Activation (22, Activate_No_Curve);
     -- Draw
-    AFPX.SET_FIELD_ACTIVATION (31, ACTIVATE_NO_CURVE);
+    Afpx.Set_Field_Activation (31, Activate_No_Curve);
     -- Set/View bounds
-    if ACTIVATE_NO_CURVE then
-      AFPX.ENCODE_FIELD(29, (1, 1), " Set");
+    if Activate_No_Curve then
+      Afpx.Encode_Field(29, (1, 1), " Set");
     else
-      AFPX.ENCODE_FIELD(29, (1, 1), "View");
+      Afpx.Encode_Field(29, (1, 1), "View");
     end if;
-  end DO_RESTORE;
+  end Do_Restore;
 
-  function F_X (X : POINTS.P_T_COORDINATE;
-                    POLYNOM : RESOL.VECTOR) return POINTS.P_T_COORDINATE is
-     Y : POINTS.P_T_COORDINATE := 0.0;
-     BUBBLE : POINTS.P_T_COORDINATE := 1.0;
-     use MY_MATH;
+  function F_X (X : Points.P_T_Coordinate;
+                    Polynom : Resol.Vector) return Points.P_T_Coordinate is
+     Y : Points.P_T_Coordinate := 0.0;
+     Bubble : Points.P_T_Coordinate := 1.0;
+     use My_Math;
   begin
      -- Y = F(X) from vector
-     for I in POLYNOM'RANGE loop
-       Y := Y + POLYNOM(I) * BUBBLE;
-       BUBBLE := BUBBLE * X;
+     for I in Polynom'Range loop
+       Y := Y + Polynom(I) * Bubble;
+       Bubble := Bubble * X;
      end loop;
      return Y;
    end F_X;
 
-  procedure COMPUTE_XY (POINT : out POINTS.P_T_ONE_POINT;  OK : out BOOLEAN) is
-   LP : POINTS.P_T_ONE_POINT;
-   SET : BOOLEAN;
+  procedure Compute_Xy (Point : out Points.P_T_One_Point;  Ok : out Boolean) is
+   Lp : Points.P_T_One_Point;
+   Set : Boolean;
   begin
-    SCREEN.PUT_TITLE(SCREEN.Y_F_X);
+    Screen.Put_Title(Screen.Y_F_X);
     -- Get X
-    SET := FALSE;
-    DIALOG.READ_COORDINATE (SCREEN.I_X, SET, LP.X, SUBTITLE => TRUE);
-    AFPX.SET_FIELD_ACTIVATION (SCREEN.GET_FLD, FALSE);
-    if not SET then
-      OK := FALSE;
+    Set := False;
+    Dialog.Read_Coordinate (Screen.I_X, Set, Lp.X, Subtitle => True);
+    Afpx.Set_Field_Activation (Screen.Get_Fld, False);
+    if not Set then
+      Ok := False;
       return;
     end if;
 
     -- Compute Y
-    SCREEN.INFORM(SCREEN.I_WAIT);
-    OK := TRUE;
+    Screen.Inform(Screen.I_Wait);
+    Ok := True;
     begin
       declare
         -- Resolution of problem
-        SOLUTION : constant RESOL.VECTOR
-                 := RESOL.R_RESOLUTION (POINTS.P_THE_POINTS);
+        Solution : constant Resol.Vector
+                 := Resol.R_Resolution (Points.P_The_Points);
       begin
-        LP.Y := F_X(LP.X, SOLUTION);
+        Lp.Y := F_X(Lp.X, Solution);
       end;
     exception
       when others =>
-        SCREEN.ERROR (SCREEN.E_RESOLUTION_PROBLEM);
-        OK := FALSE;
+        Screen.Error (Screen.E_Resolution_Problem);
+        Ok := False;
     end;
-    SCREEN.INFORM(SCREEN.I_CLEAR);
-    POINT := LP;
-  end COMPUTE_XY;
+    Screen.Inform(Screen.I_Clear);
+    Point := Lp;
+  end Compute_Xy;
 
-  package body CURVE_DATA is
-    function CURVE_F_X (X : POINTS.P_T_COORDINATE)
-                    return POINTS.P_T_COORDINATE is
+  package body Curve_Data is
+    function Curve_F_X (X : Points.P_T_Coordinate)
+                    return Points.P_T_Coordinate is
     begin
-      return F_X (X, THE_SOLUTION(1 .. THE_DEGREE + 1));
-    end CURVE_F_X;
-    procedure MY_DRAW is new CURVE.DRAW (CURVE_F_X);
-    procedure CURVE_DRAW (BOUNDARIES : in CURVE.T_BOUNDARIES;
-                          POINTS : in CURVE.T_THE_POINTS) is
+      return F_X (X, The_Solution(1 .. The_Degree + 1));
+    end Curve_F_X;
+    procedure My_Draw is new Curve.Draw (Curve_F_X);
+    procedure Curve_Draw (Boundaries : in Curve.T_Boundaries;
+                          Points : in Curve.T_The_Points) is
     begin
-      MY_DRAW (BOUNDARIES, POINTS);
-    end CURVE_DRAW;
-  end CURVE_DATA;
+      My_Draw (Boundaries, Points);
+    end Curve_Draw;
+  end Curve_Data;
 
-  task body CURVE_TASK is
-    DRAW_IT : BOOLEAN;
-    INIT_OK : BOOLEAN;
-    use CURVE_DATA;
+  task body Curve_Task is
+    Draw_It : Boolean;
+    Init_Ok : Boolean;
+    use Curve_Data;
   begin
     loop
       select
-        accept START (SOLUTION : in RESOL.VECTOR; OK : out BOOLEAN) do
+        accept Start (Solution : in Resol.Vector; Ok : out Boolean) do
           begin
-            NB_POINTS := POINTS.P_NB;
-            THE_POINTS(1 .. NB_POINTS) := POINTS.P_THE_POINTS;
-            THE_DEGREE := RESOL.R_DEGREE;
-            THE_SOLUTION (1 .. THE_DEGREE + 1) := SOLUTION;
-            MENU21.GET_BOUNDS (THE_BOUNDS_SET, THE_BOUNDS);
-            DRAW_IT := THE_BOUNDS_SET;
+            Nb_Points := Points.P_Nb;
+            The_Points(1 .. Nb_Points) := Points.P_The_Points;
+            The_Degree := Resol.R_Degree;
+            The_Solution (1 .. The_Degree + 1) := Solution;
+            Menu21.Get_Bounds (The_Bounds_Set, The_Bounds);
+            Draw_It := The_Bounds_Set;
           exception
             when others =>
-              DRAW_IT := FALSE;
+              Draw_It := False;
           end;
-          if DRAW_IT then
-            DRAW_IT := CURVE.INIT;
+          if Draw_It then
+            Draw_It := Curve.Init;
           end if;
-          OK := DRAW_IT;
-        end START;
+          Ok := Draw_It;
+        end Start;
       or
-        accept STOPPED do
-          DRAW_IT := FALSE;
-        end STOPPED;
+        accept Stopped do
+          Draw_It := False;
+        end Stopped;
       or
         terminate;
       end select;
 
-      if DRAW_IT then
+      if Draw_It then
         begin
-           CURVE_DRAW (THE_BOUNDS, THE_POINTS(1 .. NB_POINTS));
+           Curve_Draw (The_Bounds, The_Points(1 .. Nb_Points));
         exception
           when others =>
             -- Draw error
@@ -186,158 +186,158 @@ package body MENU2 is
         end;
       end if;  
     end loop;
-  end CURVE_TASK;
+  end Curve_Task;
 
-  function CURVED_STOPPED return BOOLEAN is
-   OK : BOOLEAN;
+  function Curved_Stopped return Boolean is
+   Ok : Boolean;
   begin
     select
-      CURVE_TASK.STOPPED;
-      OK := TRUE;
+      Curve_Task.Stopped;
+      Ok := True;
     or
       -- Wait a bit to let CURVE_TASK be ready to accept STOPPED
       delay 0.1;
-      OK := FALSE;
+      Ok := False;
     end select;
-    return OK;
-  end CURVED_STOPPED;
+    return Ok;
+  end Curved_Stopped;
 
-  procedure DRAW_CURVE is
-    OK : BOOLEAN;
+  procedure Draw_Curve is
+    Ok : Boolean;
   begin
-    SCREEN.PUT_TITLE(SCREEN.CURVE);
-    SCREEN.INFORM(SCREEN.I_WAIT);
-    CURVE_TASK.START (RESOL.R_RESOLUTION (POINTS.P_THE_POINTS), OK);
-    SCREEN.INFORM(SCREEN.I_CLEAR);
+    Screen.Put_Title(Screen.Curve);
+    Screen.Inform(Screen.I_Wait);
+    Curve_Task.Start (Resol.R_Resolution (Points.P_The_Points), Ok);
+    Screen.Inform(Screen.I_Clear);
     -- Accept started if start OK
-    if not OK then
-      SCREEN.ERROR (SCREEN.E_CURVE_PROBLEM);
+    if not Ok then
+      Screen.Error (Screen.E_Curve_Problem);
     end if;
   exception
     when others =>
-      SCREEN.ERROR (SCREEN.E_RESOLUTION_PROBLEM);
-  end DRAW_CURVE;
+      Screen.Error (Screen.E_Resolution_Problem);
+  end Draw_Curve;
 
 
-  procedure MAIN_SCREEN (DATA_CHANGED : in BOOLEAN) is
-    CURSOR_COL : CON_IO.COL_RANGE;
-    REDISPLAY : BOOLEAN;
-    PTG_RESULT : AFPX.RESULT_REC;
-    RESTORE : RESTORE_LIST;
+  procedure Main_Screen (Data_Changed : in Boolean) is
+    Cursor_Col : Con_Io.Col_Range;
+    Redisplay : Boolean;
+    Ptg_Result : Afpx.Result_Rec;
+    Restore : Restore_List;
 
-    use AFPX;
+    use Afpx;
 
   begin
-    AFPX.USE_DESCRIPTOR(3);
+    Afpx.Use_Descriptor(3);
     -- Try to keep previous data
-    if DATA_CHANGED then
+    if Data_Changed then
       -- Or reset degree to max
-      if POINTS.P_NB - 1 < RESOL.R_T_DEGREE'LAST then
-        RESOL.R_SET_DEGREE(POINTS.P_NB - 1);
+      if Points.P_Nb - 1 < Resol.R_T_Degree'Last then
+        Resol.R_Set_Degree(Points.P_Nb - 1);
       else
-        RESOL.R_SET_DEGREE(RESOL.R_T_DEGREE'LAST);
+        Resol.R_Set_Degree(Resol.R_T_Degree'Last);
       end if;
-      RESOL.R_POINTS_MODIFICATION;
-      MENU21.RESET_BOUNDS;
+      Resol.R_Points_Modification;
+      Menu21.Reset_Bounds;
     end if;
-    SCREEN.INIT_FOR_MAIN2 (CURSOR_FIELD);
-    SCREEN.PUT_FILE;
+    Screen.Init_For_Main2 (Cursor_Field);
+    Screen.Put_File;
 
     -- Update Nb of points and save_status
-    SCREEN.PUT_POINT_STATUS;
+    Screen.Put_Point_Status;
 
-    CURSOR_COL := 0;
-    REDISPLAY := FALSE;
-    RESTORE := NONE;
+    Cursor_Col := 0;
+    Redisplay := False;
+    Restore := None;
 
     loop
-      DO_RESTORE (RESTORE);
+      Do_Restore (Restore);
 
 
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      RESTORE := NONE;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      Restore := None;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
               null;
-            when AFPX.ESCAPE_KEY =>
-              if not CURVED_STOPPED then
-                SCREEN.ERROR (SCREEN.E_CURVE_ACTIVE);
-                RESTORE := PARTIAL;
+            when Afpx.Escape_Key =>
+              if not Curved_Stopped then
+                Screen.Error (Screen.E_Curve_Active);
+                Restore := Partial;
               else
                 return;
               end if;
-            when AFPX.BREAK_KEY =>
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
-            when SCREEN.LIST_SCROLL_FLD_RANGE'FIRST ..
-                 SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
-              SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
-            when SCREEN.EXIT_BUTTON_FLD =>
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when Screen.List_Scroll_Fld_Range'First ..
+                 Screen.List_Scroll_Fld_Range'Last =>
+              Screen.Scroll(Ptg_Result.Field_No);
+            when Screen.Exit_Button_Fld =>
               return;
             when 22 =>
-              DIALOG.READ_DEGREE;
-              RESTORE := PARTIAL;
+              Dialog.Read_Degree;
+              Restore := Partial;
             when 25 =>
               -- Display polynom
-              SCREEN.PUT_TITLE(SCREEN.POLYNOM, TRUE);
-              SCREEN.INFORM(SCREEN.I_WAIT);
+              Screen.Put_Title(Screen.Polynom, True);
+              Screen.Inform(Screen.I_Wait);
               -- Display
               begin
-                DIALOG.PUT_POLYNOM (RESOL.R_RESOLUTION(POINTS.P_THE_POINTS));
+                Dialog.Put_Polynom (Resol.R_Resolution(Points.P_The_Points));
               exception
                 when others =>
-                  SCREEN.ERROR (SCREEN.E_RESOLUTION_PROBLEM);
+                  Screen.Error (Screen.E_Resolution_Problem);
               end;
-              RESTORE := LIST;
+              Restore := List;
             when 27 =>
               -- Y=f(x)
               declare
-                POINT : POINTS.P_T_ONE_POINT;
-                OK : BOOLEAN;
+                Point : Points.P_T_One_Point;
+                Ok : Boolean;
               begin
                 loop
-                  COMPUTE_XY (POINT, OK);
-                  if OK then 
-                    OK := DIALOG.PUT_YFX (POINT);
+                  Compute_Xy (Point, Ok);
+                  if Ok then 
+                    Ok := Dialog.Put_Yfx (Point);
                   end if;
-                  exit when not OK;
+                  exit when not Ok;
                 end loop;
               end;
-              RESTORE := PARTIAL;
+              Restore := Partial;
             when 29 =>
               -- Set boudaries
-              MENU21.MAIN_SCREEN;
-              RESTORE := FULL;
+              Menu21.Main_Screen;
+              Restore := Full;
             when 31 =>
               -- Draw
               -- Set bounds if needed
-              if not MENU21.BOUNDS_SET then
-                MENU21.MAIN_SCREEN;
-                RESTORE := FULL;
+              if not Menu21.Bounds_Set then
+                Menu21.Main_Screen;
+                Restore := Full;
               else
-                RESTORE := NONE;
+                Restore := None;
               end if;
-              if MENU21.BOUNDS_SET then
+              if Menu21.Bounds_Set then
                 -- Restore for wait/error
-                DO_RESTORE(RESTORE);
-                DRAW_CURVE;
+                Do_Restore(Restore);
+                Draw_Curve;
               end if;
-              RESTORE := FULL;
+              Restore := Full;
             when others =>
               null;
           end case; 
-        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+        when Afpx.Fd_Event | Afpx.Timer_Event =>
           null;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
+        when Afpx.Refresh =>
+          Redisplay := True;
       end case;
     end loop;
 
-  end MAIN_SCREEN;
+  end Main_Screen;
 
-end MENU2;
+end Menu2;

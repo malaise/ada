@@ -1,89 +1,89 @@
-with TEXT_IO;
-with ARGUMENT;
-with DYN_DATA;
+with Text_Io;
+with Argument;
+with Dyn_Data;
 
-procedure T_DD is
+procedure T_Dd is
 
-  subtype DATA is STRING (1 .. 1024);
-  type DATA_ACCESS is access DATA;
+  subtype Data is String (1 .. 1024);
+  type Data_Access is access Data;
 
-  package MY_DYN_DATA is new DYN_DATA (DATA, DATA_ACCESS);
+  package My_Dyn_Data is new Dyn_Data (Data, Data_Access);
 
-  MAX_DATA : constant := 256;
+  Max_Data : constant := 256;
 
-  DATA_ACCESS_ARRAY : array (1 .. MAX_DATA) of DATA_ACCESS;
+  Data_Access_Array : array (1 .. Max_Data) of Data_Access;
 
-  NB_LOOP : NATURAL;
+  Nb_Loop : Natural;
 
-  ABORT_EXCEPTION : exception;
+  Abort_Exception : exception;
 
-  procedure ONE_CYCLE is
+  procedure One_Cycle is
   begin
-    for J in 1 .. MAX_DATA loop
-      DATA_ACCESS_ARRAY(J) := MY_DYN_DATA.ALLOCATE;
+    for J in 1 .. Max_Data loop
+      Data_Access_Array(J) := My_Dyn_Data.Allocate;
     end loop;
 
-    for J in 1 .. MAX_DATA loop
-      MY_DYN_DATA.FREE (DATA_ACCESS_ARRAY(J));
+    for J in 1 .. Max_Data loop
+      My_Dyn_Data.Free (Data_Access_Array(J));
     end loop;
-  end ONE_CYCLE;
+  end One_Cycle;
 
 begin
   begin
-    if ARGUMENT.GET_NBRE_ARG = 0 then
-      NB_LOOP := 0;
-    elsif ARGUMENT.GET_NBRE_ARG = 1 then
-      NB_LOOP := NATURAL'VALUE(ARGUMENT.GET_PARAMETER);
+    if Argument.Get_Nbre_Arg = 0 then
+      Nb_Loop := 0;
+    elsif Argument.Get_Nbre_Arg = 1 then
+      Nb_Loop := Natural'Value(Argument.Get_Parameter);
     else
-      raise CONSTRAINT_ERROR;
+      raise Constraint_Error;
     end if;
   exception
     when others =>
-      TEXT_IO.PUT_LINE ("Wrong argument. Usage : "
-      & ARGUMENT.GET_PROGRAM_NAME & " [ <nb_iteration> ]");
-      raise ABORT_EXCEPTION;
+      Text_Io.Put_Line ("Wrong argument. Usage : "
+      & Argument.Get_Program_Name & " [ <nb_iteration> ]");
+      raise Abort_Exception;
   end;
 
   begin
-    ONE_CYCLE;
+    One_Cycle;
   exception
-    when STORAGE_ERROR =>
-      TEXT_IO.PUT_LINE ("The test cannot be performed: "
+    when Storage_Error =>
+      Text_Io.Put_Line ("The test cannot be performed: "
           & "Even one iteration raises STORAGE_ERROR.");
-      TEXT_IO.PUT_LINE ("Lower MAX_DATA in source file, recompile and retry.");
-      raise ABORT_EXCEPTION;
+      Text_Io.Put_Line ("Lower MAX_DATA in source file, recompile and retry.");
+      raise Abort_Exception;
   end;
 
-  TEXT_IO.PUT_LINE ("This test succeeds if no STORAGE_ERROR is raised.");
-  TEXT_IO.PUT ("Performinig ");
-  if NB_LOOP = 0 then
-    TEXT_IO.PUT (" infinite");
+  Text_Io.Put_Line ("This test succeeds if no STORAGE_ERROR is raised.");
+  Text_Io.Put ("Performinig ");
+  if Nb_Loop = 0 then
+    Text_Io.Put (" infinite");
   else
-    TEXT_IO.PUT (NATURAL'IMAGE(NB_LOOP));
+    Text_Io.Put (Natural'Image(Nb_Loop));
   end if;
-  TEXT_IO.PUT_LINE (" iterations, each of them consisting in");
-  TEXT_IO.PUT_LINE (" allocating " & INTEGER'IMAGE(MAX_DATA) & " objects of "
-                    & INTEGER'IMAGE(DATA'LAST) & " bytes then freeing them.");
+  Text_Io.Put_Line (" iterations, each of them consisting in");
+  Text_Io.Put_Line (" allocating " & Integer'Image(Max_Data) & " objects of "
+                    & Integer'Image(Data'Last) & " bytes then freeing them.");
 
 
-  if NB_LOOP = 0 then
+  if Nb_Loop = 0 then
     loop
-      ONE_CYCLE;
+      One_Cycle;
     end loop;
   else
-    for I in 1 .. NB_LOOP loop
-      ONE_CYCLE;
+    for I in 1 .. Nb_Loop loop
+      One_Cycle;
     end loop;
   end if;
 
-  TEXT_IO.PUT_LINE ("Test successful.");
+  Text_Io.Put_Line ("Test successful.");
 exception
-  when STORAGE_ERROR =>
-    TEXT_IO.PUT_LINE ("Test has failed.");
-  when ABORT_EXCEPTION =>
+  when Storage_Error =>
+    Text_Io.Put_Line ("Test has failed.");
+  when Abort_Exception =>
     null;
   when others =>
-    TEXT_IO.PUT_LINE ("Unexpected exception was raised.");
+    Text_Io.Put_Line ("Unexpected exception was raised.");
     raise;
-end T_DD;
+end T_Dd;
 

@@ -1,39 +1,39 @@
-with MY_IO, STRING_MNG;
-procedure T_STRING is
+with My_Io, String_Mng;
+procedure T_String is
 
-  STR : STRING(1 .. 500);
-  STR_LEN : NATURAL;
-  LEN : POSITIVE;
-  ALIGN_RIGHT : BOOLEAN;
-  GAP : CHARACTER;
-  TRUNC_HEAD : BOOLEAN;
-  SHOW_TRUNC : BOOLEAN;
+  Str : String(1 .. 500);
+  Str_Len : Natural;
+  Len : Positive;
+  Align_Right : Boolean;
+  Gap : Character;
+  Trunc_Head : Boolean;
+  Show_Trunc : Boolean;
 
 begin
 
   loop
-    MY_IO.PUT ("STR ? "); MY_IO.GET_LINE (STR, STR_LEN);
-    MY_IO.PUT ("LEN ? "); MY_IO.GET(LEN);
-    MY_IO.PUT ("ALIGN_RIGHT ? "); MY_IO.GET(ALIGN_RIGHT);
-    MY_IO.PUT ("GAP ? "); MY_IO.GET(GAP);
-    MY_IO.PUT ("TRUNC_HEAD ? "); MY_IO.GET(TRUNC_HEAD);
-    MY_IO.PUT ("SHOW_TRUNC ? "); MY_IO.GET(SHOW_TRUNC);
-    MY_IO.SKIP_LINE;
+    My_Io.Put ("STR ? "); My_Io.Get_Line (Str, Str_Len);
+    My_Io.Put ("LEN ? "); My_Io.Get(Len);
+    My_Io.Put ("ALIGN_RIGHT ? "); My_Io.Get(Align_Right);
+    My_Io.Put ("GAP ? "); My_Io.Get(Gap);
+    My_Io.Put ("TRUNC_HEAD ? "); My_Io.Get(Trunc_Head);
+    My_Io.Put ("SHOW_TRUNC ? "); My_Io.Get(Show_Trunc);
+    My_Io.Skip_Line;
 
-    MY_IO.PUT_LINE ("String: |" & STR(1 .. STR_LEN) & "|   len: "
-                  & INTEGER'IMAGE(STR_LEN));
-    MY_IO.PUT_LINE (
+    My_Io.Put_Line ("String: |" & Str(1 .. Str_Len) & "|   len: "
+                  & Integer'Image(Str_Len));
+    My_Io.Put_Line (
         "First: " 
-      & NATURAL'IMAGE(STRING_MNG.PARSE_SPACES(STR(1 .. STR_LEN), TRUE))
+      & Natural'Image(String_Mng.Parse_Spaces(Str(1 .. Str_Len), True))
       & " Last: "
-      & NATURAL'IMAGE(STRING_MNG.PARSE_SPACES(STR(1 .. STR_LEN), FALSE)));
+      & Natural'Image(String_Mng.Parse_Spaces(Str(1 .. Str_Len), False)));
 
-    MY_IO.PUT_LINE (
+    My_Io.Put_Line (
         "Procuste: |" 
-      & STRING_MNG.PROCUSTE(STR(1 .. STR_LEN), LEN, ALIGN_RIGHT, GAP,
-                            TRUNC_HEAD, SHOW_TRUNC)
+      & String_Mng.Procuste(Str(1 .. Str_Len), Len, Align_Right, Gap,
+                            Trunc_Head, Show_Trunc)
       & "|");
-    MY_IO.NEW_LINE;
+    My_Io.New_Line;
   end loop;
-end T_STRING;
+end T_String;
 

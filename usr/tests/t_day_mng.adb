@@ -1,15 +1,15 @@
-with TEXT_IO, CALENDAR;
-with DAY_MNG;
+with Text_Io, Calendar;
+with Day_Mng;
 
-procedure T_DAY_MNG is
+procedure T_Day_Mng is
 
-  package DUR_IO is new TEXT_IO.FIXED_IO (CALENDAR.DAY_DURATION);
+  package Dur_Io is new Text_Io.Fixed_Io (Calendar.Day_Duration);
 
-  DUR : CALENDAR.DAY_DURATION;
-  HOURS    : DAY_MNG.T_HOURS;
-  MINUTES  : DAY_MNG.T_MINUTES;
-  SECONDS  : DAY_MNG.T_SECONDS;
-  MILLISEC : DAY_MNG.T_MILLISEC;
+  Dur : Calendar.Day_Duration;
+  Hours    : Day_Mng.T_Hours;
+  Minutes  : Day_Mng.T_Minutes;
+  Seconds  : Day_Mng.T_Seconds;
+  Millisec : Day_Mng.T_Millisec;
 
   
 begin
@@ -18,28 +18,28 @@ begin
 
     loop
       begin
-        TEXT_IO.PUT ("Enter a duration: ");
-        DUR_IO.GET(DUR);
+        Text_Io.Put ("Enter a duration: ");
+        Dur_Io.Get(Dur);
         exit;
       exception
         when others =>
-          TEXT_IO.PUT_LINE ("Error.");
+          Text_Io.Put_Line ("Error.");
       end;
     end loop;
 
-    DAY_MNG.SPLIT (DUR, HOURS, MINUTES, SECONDS, MILLISEC);
+    Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
 
-    TEXT_IO.PUT_LINE (DAY_MNG.T_HOURS'IMAGE(HOURS) & " h  "
-                    & DAY_MNG.T_MINUTES'IMAGE(MINUTES) & " min  "
-                    & DAY_MNG.T_SECONDS'IMAGE(SECONDS) & " sec  "
-                    & DAY_MNG.T_MILLISEC'IMAGE(MILLISEC) & " msec");
+    Text_Io.Put_Line (Day_Mng.T_Hours'Image(Hours) & " h  "
+                    & Day_Mng.T_Minutes'Image(Minutes) & " min  "
+                    & Day_Mng.T_Seconds'Image(Seconds) & " sec  "
+                    & Day_Mng.T_Millisec'Image(Millisec) & " msec");
 
-    DUR := DAY_MNG.PACK (HOURS, MINUTES, SECONDS, MILLISEC);
+    Dur := Day_Mng.Pack (Hours, Minutes, Seconds, Millisec);
 
-    DUR_IO.PUT(DUR);
-    TEXT_IO.NEW_LINE;
+    Dur_Io.Put(Dur);
+    Text_Io.New_Line;
 
   end loop;
 
-end T_DAY_MNG;
+end T_Day_Mng;
 

@@ -1,164 +1,164 @@
-with CALENDAR;
-with CON_IO, RND;
-with COMMON, SCREEN, RESPONSE;
-package body ACTION is
+with Calendar;
+with Con_Io, Rnd;
+with Common, Screen, Response;
+package body Action is
 
 
-  LEVEL : COMMON.LAST_LEVEL_RANGE;
+  Level : Common.Last_Level_Range;
 
-  PLAYING : BOOLEAN;
+  Playing : Boolean;
 
-  CUR_SELECTION : SCREEN.SELECTION_REC;
-  LAST_CLICK : SCREEN.SELECTION_REC;
+  Cur_Selection : Screen.Selection_Rec;
+  Last_Click : Screen.Selection_Rec;
 
-  FIRST_FREE : COMMON.PROPAL_RANGE;
+  First_Free : Common.Propal_Range;
 
-  procedure INIT is
+  procedure Init is
   begin
-    CON_IO.INIT;
-    RND.RANDOMIZE;
-    LEVEL := COMMON.GET_LEVEL;
-  end INIT;
+    Con_Io.Init;
+    Rnd.Randomize;
+    Level := Common.Get_Level;
+  end Init;
 
-  procedure END_ACTION is
+  procedure End_Action is
   begin
     null;
-  end END_ACTION;
+  end End_Action;
 
-  procedure UPDATE_TRY (PROPAL : in COMMON.PROPAL_RANGE) is
-    PROP_STATE : COMMON.PROPAL_STATE_REC := COMMON.GET_PROPAL_STATE (PROPAL);
-    use COMMON;
+  procedure Update_Try (Propal : in Common.Propal_Range) is
+    Prop_State : Common.Propal_State_Rec := Common.Get_Propal_State (Propal);
+    use Common;
   begin
-    for I in COMMON.LEVEL_RANGE
-     range COMMON.LEVEL_RANGE'FIRST .. LEVEL loop
-      if PROP_STATE.PROPAL_COLOR(I) = 0 then
-        COMMON.SET_TRY_STATE (PROPAL, COMMON.NOT_SET);
-        SCREEN.PUT_TRY (PROPAL, SCREEN.CANNOT_TRY);
+    for I in Common.Level_Range
+     range Common.Level_Range'First .. Level loop
+      if Prop_State.Propal_Color(I) = 0 then
+        Common.Set_Try_State (Propal, Common.Not_Set);
+        Screen.Put_Try (Propal, Screen.Cannot_Try);
         return;
       end if;
     end loop;
-    COMMON.SET_TRY_STATE (PROPAL, COMMON.CAN_TRY);
-    SCREEN.PUT_TRY (PROPAL, SCREEN.CAN_TRY);
-  end UPDATE_TRY;
+    Common.Set_Try_State (Propal, Common.Can_Try);
+    Screen.Put_Try (Propal, Screen.Can_Try);
+  end Update_Try;
 
 
-  procedure TREAT_CLICK is separate;
+  procedure Treat_Click is separate;
 
-  procedure TREAT_RELEASE (GO_ON, EXIT_GAME : out BOOLEAN) is separate;
+  procedure Treat_Release (Go_On, Exit_Game : out Boolean) is separate;
 
 
   -- True if start again, False if exit
-  function PLAY return BOOLEAN is
-    CLICKED : BOOLEAN := FALSE;
-    GO_ON, EXIT_GAME : BOOLEAN;
+  function Play return Boolean is
+    Clicked : Boolean := False;
+    Go_On, Exit_Game : Boolean;
   begin
     -- Start new game - playing
-    LEVEL := COMMON.GET_LEVEL;
-    COMMON.RESET_STATE;
-    SCREEN.INIT (LEVEL);
-    SCREEN.SET_MOUSE_DEFAULT_COLOR;
+    Level := Common.Get_Level;
+    Common.Reset_State;
+    Screen.Init (Level);
+    Screen.Set_Mouse_Default_Color;
 
-    FIRST_FREE := COMMON.PROPAL_RANGE'FIRST;
-    RESPONSE.NEW_CODE;
+    First_Free := Common.Propal_Range'First;
+    Response.New_Code;
 
-    PLAYING := TRUE;
-    SCREEN.PUT_START_GIVEUP (START => FALSE, SELECTED => FALSE);
-    SCREEN.PUT_HELP (SCREEN.RELEASED);
-    SCREEN.PUT_CURRENT_LEVEL (LEVEL);
+    Playing := True;
+    Screen.Put_Start_Giveup (Start => False, Selected => False);
+    Screen.Put_Help (Screen.Released);
+    Screen.Put_Current_Level (Level);
 
 
-    MAIN:
+    Main:
     loop
 
       declare
-        STR : STRING (1 .. 0);
-        LAST : NATURAL;
-        STAT : CON_IO.CURS_MVT;
-        POS : POSITIVE;
-        INS : BOOLEAN;
-        MOUSE_STATUS : CON_IO.MOUSE_EVENT_REC;
-        use SCREEN, CON_IO;
+        Str : String (1 .. 0);
+        Last : Natural;
+        Stat : Con_Io.Curs_Mvt;
+        Pos : Positive;
+        Ins : Boolean;
+        Mouse_Status : Con_Io.Mouse_Event_Rec;
+        use Screen, Con_Io;
       begin
-        WAIT_EVENT:
+        Wait_Event:
         loop
-          CON_IO.GET (STR, LAST, STAT, POS, INS, ECHO => FALSE);
-          if STAT = CON_IO.MOUSE_BUTTON then
-            CON_IO.GET_MOUSE_EVENT (MOUSE_STATUS);
-            if MOUSE_STATUS.BUTTON = CON_IO.LEFT then
+          Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
+          if Stat = Con_Io.Mouse_Button then
+            Con_Io.Get_Mouse_Event (Mouse_Status);
+            if Mouse_Status.Button = Con_Io.Left then
               -- exit on new event
-              exit WAIT_EVENT when CLICKED
-                 xor (MOUSE_STATUS.STATUS = CON_IO.PRESSED);
+              exit Wait_Event when Clicked
+                 xor (Mouse_Status.Status = Con_Io.Pressed);
             end if;
-          elsif STAT = CON_IO.REFRESH then
-            SCREEN.INIT (LEVEL);
+          elsif Stat = Con_Io.Refresh then
+            Screen.Init (Level);
             -- Put colors
             declare
-              PROPAL : COMMON.PROPAL_STATE_REC(LEVEL);
-              PLACED_OK, COLORS_OK : NATURAL;
-              use COMMON;
+              Propal : Common.Propal_State_Rec(Level);
+              Placed_Ok, Colors_Ok : Natural;
+              use Common;
             begin
-              for I in COMMON.PROPAL_RANGE loop
-                PROPAL := COMMON.GET_PROPAL_STATE(I);
-                for J in 1 .. LEVEL loop
-                  SCREEN.PUT_COLOR (I, J, PROPAL.PROPAL_COLOR(J));
+              for I in Common.Propal_Range loop
+                Propal := Common.Get_Propal_State(I);
+                for J in 1 .. Level loop
+                  Screen.Put_Color (I, J, Propal.Propal_Color(J));
                 end loop;
-                if PROPAL.TRY = COMMON.CAN_TRY then
-                  SCREEN.PUT_TRY (I, SCREEN.CAN_TRY);
-                elsif PROPAL.TRY = COMMON.ANSWERED then
-                  COMMON.GET_ANSWER (I, PLACED_OK, COLORS_OK);
-                  SCREEN.PUT_ANSWER (I, PLACED_OK, COLORS_OK);
+                if Propal.Try = Common.Can_Try then
+                  Screen.Put_Try (I, Screen.Can_Try);
+                elsif Propal.Try = Common.Answered then
+                  Common.Get_Answer (I, Placed_Ok, Colors_Ok);
+                  Screen.Put_Answer (I, Placed_Ok, Colors_Ok);
                 end if;
               end loop;
             end;
-            if PLAYING then
-              SCREEN.PUT_START_GIVEUP (START => FALSE, SELECTED => FALSE);
-              SCREEN.PUT_HELP (SCREEN.RELEASED);
-              SCREEN.PUT_CURRENT_LEVEL (LEVEL);
+            if Playing then
+              Screen.Put_Start_Giveup (Start => False, Selected => False);
+              Screen.Put_Help (Screen.Released);
+              Screen.Put_Current_Level (Level);
             else
               declare
-                CODE : RESPONSE.COLOR_REC(LEVEL);
+                Code : Response.Color_Rec(Level);
               begin
-                CODE := RESPONSE.GET_CODE;
-                for J in 1 .. LEVEL loop
-                  SCREEN.PUT_SECRET_COLOR(J, CODE.COLOR(J));
+                Code := Response.Get_Code;
+                for J in 1 .. Level loop
+                  Screen.Put_Secret_Color(J, Code.Color(J));
                 end loop;
               end;
-              SCREEN.PUT_START_GIVEUP (START => TRUE, SELECTED => FALSE);
-              SCREEN.PUT_HELP (SCREEN.START);
-              SCREEN.PUT_CURRENT_LEVEL (COMMON.GET_STORED_LEVEL);
+              Screen.Put_Start_Giveup (Start => True, Selected => False);
+              Screen.Put_Help (Screen.Start);
+              Screen.Put_Current_Level (Common.Get_Stored_Level);
             end if;
-          elsif STAT = CON_IO.BREAK then
-            SCREEN.CLEAR;
-            END_ACTION;
-            return FALSE;
+          elsif Stat = Con_Io.Break then
+            Screen.Clear;
+            End_Action;
+            return False;
           end if;
-        end loop WAIT_EVENT;
-        CLICKED := not CLICKED;
-        SCREEN.GET_SELECTED ( WHERE => (ROW => MOUSE_STATUS.ROW,
-                                        COL => MOUSE_STATUS.COL),
-                              WHAT => CUR_SELECTION);
+        end loop Wait_Event;
+        Clicked := not Clicked;
+        Screen.Get_Selected ( Where => (Row => Mouse_Status.Row,
+                                        Col => Mouse_Status.Col),
+                              What => Cur_Selection);
       end;
 
 
-      if CLICKED then
-        TREAT_CLICK;
+      if Clicked then
+        Treat_Click;
       else
-        TREAT_RELEASE (GO_ON, EXIT_GAME);
-        exit MAIN when not GO_ON;
+        Treat_Release (Go_On, Exit_Game);
+        exit Main when not Go_On;
       end if;
 
-    end loop MAIN;
+    end loop Main;
 
-    if EXIT_GAME then
-      SCREEN.CLEAR;
-      END_ACTION;
+    if Exit_Game then
+      Screen.Clear;
+      End_Action;
     end if;
 
-    return not EXIT_GAME;
+    return not Exit_Game;
   exception
     when others =>
-      CON_IO.MOVE;
-      return EXIT_GAME;
-  end PLAY;
+      Con_Io.Move;
+      return Exit_Game;
+  end Play;
 
-end ACTION;
+end Action;

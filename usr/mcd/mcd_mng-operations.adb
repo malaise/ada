@@ -1,442 +1,442 @@
-with BIT_OPS;
-separate (MCD_MNG)
+with Bit_Ops;
+separate (Mcd_Mng)
 
-package body OPERATIONS is
-  use MY_MATH;
+package body Operations is
+  use My_Math;
 
-  function IS_TRUE (X : ITEM_REC) return BOOLEAN is
+  function Is_True (X : Item_Rec) return Boolean is
   begin
-    if X.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Bool then
+      raise Invalid_Argument;
     end if;
-    return X.VAL_BOOL;
-  end IS_TRUE;
+    return X.Val_Bool;
+  end Is_True;
 
-  function IS_INTE_OR_REAL (X : ITEM_REC) return BOOLEAN is
+  function Is_Inte_Or_Real (X : Item_Rec) return Boolean is
   begin
-    return X.KIND = INTE or else X.KIND = REAL;
-  end IS_INTE_OR_REAL;
+    return X.Kind = Inte or else X.Kind = Real;
+  end Is_Inte_Or_Real;
 
-  function IS_INTE_OR_REAL_OR_BOOL (X : ITEM_REC) return BOOLEAN is
+  function Is_Inte_Or_Real_Or_Bool (X : Item_Rec) return Boolean is
   begin
-    return X.KIND = INTE or else X.KIND = REAL or else X.KIND = BOOL;
-  end IS_INTE_OR_REAL_OR_BOOL;
+    return X.Kind = Inte or else X.Kind = Real or else X.Kind = Bool;
+  end Is_Inte_Or_Real_Or_Bool;
 
-  function IS_INTE_OR_REAL_OR_BOOL_OR_CHARS (X : ITEM_REC) return BOOLEAN is
+  function Is_Inte_Or_Real_Or_Bool_Or_Chars (X : Item_Rec) return Boolean is
   begin
-    return X.KIND = INTE or else X.KIND = REAL or else X.KIND = BOOL or else X.KIND = CHRS;
-  end IS_INTE_OR_REAL_OR_BOOL_OR_CHARS;
+    return X.Kind = Inte or else X.Kind = Real or else X.Kind = Bool or else X.Kind = Chrs;
+  end Is_Inte_Or_Real_Or_Bool_Or_Chars;
 
   -- INTE,INTE->INTE or REAL,REAL->REAL
-  function ADD     (L, R : ITEM_REC) return ITEM_REC is
+  function Add     (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL(L) or else not IS_INTE_OR_REAL(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => L.VAL_INTE + R.VAL_INTE);
+    if L.Kind = Inte then
+      return (Kind => Inte, Val_Inte => L.Val_Inte + R.Val_Inte);
     else
-      return (KIND => REAL, VAL_REAL => L.VAL_REAL + R.VAL_REAL);
+      return (Kind => Real, Val_Real => L.Val_Real + R.Val_Real);
     end if;
-  end ADD;
+  end Add;
         
-  function SUB     (L, R : ITEM_REC) return ITEM_REC is
+  function Sub     (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL(L) or else not IS_INTE_OR_REAL(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => L.VAL_INTE - R.VAL_INTE);
+    if L.Kind = Inte then
+      return (Kind => Inte, Val_Inte => L.Val_Inte - R.Val_Inte);
     else
-      return (KIND => REAL, VAL_REAL => L.VAL_REAL - R.VAL_REAL);
+      return (Kind => Real, Val_Real => L.Val_Real - R.Val_Real);
     end if;
-  end SUB;
+  end Sub;
 
-  function MULT    (L, R : ITEM_REC) return ITEM_REC is
+  function Mult    (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL(L) or else not IS_INTE_OR_REAL(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => L.VAL_INTE * R.VAL_INTE);
+    if L.Kind = Inte then
+      return (Kind => Inte, Val_Inte => L.Val_Inte * R.Val_Inte);
     else
-      return (KIND => REAL, VAL_REAL => L.VAL_REAL * R.VAL_REAL);
+      return (Kind => Real, Val_Real => L.Val_Real * R.Val_Real);
     end if;
-  end MULT;
+  end Mult;
 
-  function DIV     (L, R : ITEM_REC) return ITEM_REC is
+  function Div     (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL(L) or else not IS_INTE_OR_REAL(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => L.VAL_INTE / R.VAL_INTE);
+    if L.Kind = Inte then
+      return (Kind => Inte, Val_Inte => L.Val_Inte / R.Val_Inte);
     else
-      return (KIND => REAL, VAL_REAL => L.VAL_REAL / R.VAL_REAL);
+      return (Kind => Real, Val_Real => L.Val_Real / R.Val_Real);
     end if;
-  end DIV;
+  end Div;
 
-  function POW     (L, R : ITEM_REC) return ITEM_REC is
-    use MY_MATH; -- for real ** real
+  function Pow     (L, R : Item_Rec) return Item_Rec is
+    use My_Math; -- for real ** real
   begin
-    if not IS_INTE_OR_REAL(L) or else not IS_INTE_OR_REAL(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => ROUND(MY_MATH.REAL(L.VAL_INTE)
-                                           ** MY_MATH.REAL(R.VAL_INTE)));
+    if L.Kind = Inte then
+      return (Kind => Inte, Val_Inte => Round(My_Math.Real(L.Val_Inte)
+                                           ** My_Math.Real(R.Val_Inte)));
     else
-      return (KIND => REAL, VAL_REAL => L.VAL_REAL ** R.VAL_REAL);
+      return (Kind => Real, Val_Real => L.Val_Real ** R.Val_Real);
     end if;
-  end POW;
+  end Pow;
 
   -- INTE,INTE->INTE
-  function REMIND  (L, R : ITEM_REC) return ITEM_REC is
+  function Remind  (L, R : Item_Rec) return Item_Rec is
   begin
-    if L.KIND /= INTE or else R.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Inte or else R.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => L.VAL_INTE rem R.VAL_INTE);
-  end REMIND;
+    return (Kind => Inte, Val_Inte => L.Val_Inte rem R.Val_Inte);
+  end Remind;
 
   -- INTE,INTE->INTE
-  function BITAND  (L, R : ITEM_REC) return ITEM_REC is
-    use BIT_OPS;
+  function Bitand  (L, R : Item_Rec) return Item_Rec is
+    use Bit_Ops;
   begin
-    if L.KIND /= INTE or else R.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Inte or else R.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => L.VAL_INTE and R.VAL_INTE);
-  end BITAND;
+    return (Kind => Inte, Val_Inte => L.Val_Inte and R.Val_Inte);
+  end Bitand;
 
-  function BITOR   (L, R : ITEM_REC) return ITEM_REC is
-    use BIT_OPS;
+  function Bitor   (L, R : Item_Rec) return Item_Rec is
+    use Bit_Ops;
   begin
-    if L.KIND /= INTE or else R.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Inte or else R.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => L.VAL_INTE or R.VAL_INTE);
-  end BITOR;
+    return (Kind => Inte, Val_Inte => L.Val_Inte or R.Val_Inte);
+  end Bitor;
 
-  function BITXOR  (L, R : ITEM_REC) return ITEM_REC is
-    use BIT_OPS;
+  function Bitxor  (L, R : Item_Rec) return Item_Rec is
+    use Bit_Ops;
   begin
-    if L.KIND /= INTE or else R.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Inte or else R.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => L.VAL_INTE xor R.VAL_INTE);
-  end BITXOR;
+    return (Kind => Inte, Val_Inte => L.Val_Inte xor R.Val_Inte);
+  end Bitxor;
 
-  function SHL     (L, R : ITEM_REC) return ITEM_REC is
-    use BIT_OPS;
+  function Shl     (L, R : Item_Rec) return Item_Rec is
+    use Bit_Ops;
   begin
-    if L.KIND /= INTE or else R.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Inte or else R.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => SHL(L.VAL_INTE, INTEGER(R.VAL_INTE)));
-  end SHL;
+    return (Kind => Inte, Val_Inte => Shl(L.Val_Inte, Integer(R.Val_Inte)));
+  end Shl;
 
-  function SHR     (L, R : ITEM_REC) return ITEM_REC is
-    use BIT_OPS;
+  function Shr     (L, R : Item_Rec) return Item_Rec is
+    use Bit_Ops;
   begin
-    if L.KIND /= INTE or else R.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Inte or else R.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => SHR(L.VAL_INTE, INTEGER(R.VAL_INTE)));
-  end SHR;
-
-  -- INTE->INTE or REAL->REAL
-  function MINUS   (X : ITEM_REC) return ITEM_REC is
-  begin
-    if not IS_INTE_OR_REAL(X) then
-      raise INVALID_ARGUMENT;
-    end if;
-    if X.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => - X.VAL_INTE);
-    else
-      return (KIND => REAL, VAL_REAL => - X.VAL_REAL);
-    end if;
-  end MINUS;
+    return (Kind => Inte, Val_Inte => Shr(L.Val_Inte, Integer(R.Val_Inte)));
+  end Shr;
 
   -- INTE->INTE or REAL->REAL
-  function ABSV   (X : ITEM_REC) return ITEM_REC is
+  function Minus   (X : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL(X) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real(X) then
+      raise Invalid_Argument;
     end if;
-    if X.KIND = INTE then
-      return (KIND => INTE, VAL_INTE => abs X.VAL_INTE);
+    if X.Kind = Inte then
+      return (Kind => Inte, Val_Inte => - X.Val_Inte);
     else
-      return (KIND => REAL, VAL_REAL => abs X.VAL_REAL);
+      return (Kind => Real, Val_Real => - X.Val_Real);
     end if;
-  end ABSV;
+  end Minus;
+
+  -- INTE->INTE or REAL->REAL
+  function Absv   (X : Item_Rec) return Item_Rec is
+  begin
+    if not Is_Inte_Or_Real(X) then
+      raise Invalid_Argument;
+    end if;
+    if X.Kind = Inte then
+      return (Kind => Inte, Val_Inte => abs X.Val_Inte);
+    else
+      return (Kind => Real, Val_Real => abs X.Val_Real);
+    end if;
+  end Absv;
 
   -- INTE->INTE
-  function BITNEG  (X : ITEM_REC) return ITEM_REC is
-    use BIT_OPS;
+  function Bitneg  (X : Item_Rec) return Item_Rec is
+    use Bit_Ops;
   begin
-    if X.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => not X.VAL_INTE);
-  end BITNEG;
+    return (Kind => Inte, Val_Inte => not X.Val_Inte);
+  end Bitneg;
 
   -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
-  function EQUAL   (L, R : ITEM_REC) return ITEM_REC is
+  function Equal   (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_INTE = R.VAL_INTE);
-    elsif L.KIND = REAL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL = R.VAL_REAL);
-    elsif L.KIND = BOOL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL = R.VAL_BOOL);
+    if L.Kind = Inte then
+      return (Kind => Bool, Val_Bool => L.Val_Inte = R.Val_Inte);
+    elsif L.Kind = Real then
+      return (Kind => Bool, Val_Bool => L.Val_Real = R.Val_Real);
+    elsif L.Kind = Bool then
+      return (Kind => Bool, Val_Bool => L.Val_Bool = R.Val_Bool);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) = R.VAL_TEXT(1 .. R.VAL_LEN));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) = R.Val_Text(1 .. R.Val_Len));
     end if;
-  end EQUAL;
+  end Equal;
 
-  function DIFF    (L, R : ITEM_REC) return ITEM_REC is
+  function Diff    (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_INTE /= R.VAL_INTE);
-    elsif L.KIND = REAL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL /= R.VAL_REAL);
-    elsif L.KIND = BOOL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL /= R.VAL_BOOL);
+    if L.Kind = Inte then
+      return (Kind => Bool, Val_Bool => L.Val_Inte /= R.Val_Inte);
+    elsif L.Kind = Real then
+      return (Kind => Bool, Val_Bool => L.Val_Real /= R.Val_Real);
+    elsif L.Kind = Bool then
+      return (Kind => Bool, Val_Bool => L.Val_Bool /= R.Val_Bool);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) /= R.VAL_TEXT(1 .. R.VAL_LEN));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) /= R.Val_Text(1 .. R.Val_Len));
     end if;
-  end DIFF;
+  end Diff;
 
-  function GREATER (L, R : ITEM_REC) return ITEM_REC is
+  function Greater (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_INTE > R.VAL_INTE);
-    elsif L.KIND = REAL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL > R.VAL_REAL);
-    elsif L.KIND = BOOL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL > R.VAL_BOOL);
+    if L.Kind = Inte then
+      return (Kind => Bool, Val_Bool => L.Val_Inte > R.Val_Inte);
+    elsif L.Kind = Real then
+      return (Kind => Bool, Val_Bool => L.Val_Real > R.Val_Real);
+    elsif L.Kind = Bool then
+      return (Kind => Bool, Val_Bool => L.Val_Bool > R.Val_Bool);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) > R.VAL_TEXT(1 .. R.VAL_LEN));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) > R.Val_Text(1 .. R.Val_Len));
     end if;
-  end GREATER;
+  end Greater;
 
-  function SMALLER (L, R : ITEM_REC) return ITEM_REC is
+  function Smaller (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_INTE < R.VAL_INTE);
-    elsif L.KIND = REAL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL < R.VAL_REAL);
-    elsif L.KIND = BOOL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL < R.VAL_BOOL);
+    if L.Kind = Inte then
+      return (Kind => Bool, Val_Bool => L.Val_Inte < R.Val_Inte);
+    elsif L.Kind = Real then
+      return (Kind => Bool, Val_Bool => L.Val_Real < R.Val_Real);
+    elsif L.Kind = Bool then
+      return (Kind => Bool, Val_Bool => L.Val_Bool < R.Val_Bool);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_TEXT(1 .. L.VAL_LEN) < R.VAL_TEXT(1 .. R.VAL_LEN));
+      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len) < R.Val_Text(1 .. R.Val_Len));
     end if;
-  end SMALLER;
+  end Smaller;
 
-  function GREATEQ (L, R : ITEM_REC) return ITEM_REC is
+  function Greateq (L, R : Item_Rec) return Item_Rec is
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_INTE >= R.VAL_INTE);
-    elsif L.KIND = REAL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL >= R.VAL_REAL);
+    if L.Kind = Inte then
+      return (Kind => Bool, Val_Bool => L.Val_Inte >= R.Val_Inte);
+    elsif L.Kind = Real then
+      return (Kind => Bool, Val_Bool => L.Val_Real >= R.Val_Real);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL >= R.VAL_BOOL);
+      return (Kind => Bool, Val_Bool => L.Val_Bool >= R.Val_Bool);
     end if;
-  end GREATEQ;
+  end Greateq;
 
-  function SMALLEQ (L, R : ITEM_REC) return ITEM_REC is 
+  function Smalleq (L, R : Item_Rec) return Item_Rec is 
   begin
-    if not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(L) or else not IS_INTE_OR_REAL_OR_BOOL_OR_CHARS(R) then
-      raise INVALID_ARGUMENT;
+    if not Is_Inte_Or_Real_Or_Bool_Or_Chars(L) or else not Is_Inte_Or_Real_Or_Bool_Or_Chars(R) then
+      raise Invalid_Argument;
     end if;
-    if L.KIND /= R.KIND then
-      raise ARGUMENT_MISMATCH;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
     end if;
-    if L.KIND = INTE then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_INTE <= R.VAL_INTE);
-    elsif L.KIND = REAL then
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL <= R.VAL_REAL);
+    if L.Kind = Inte then
+      return (Kind => Bool, Val_Bool => L.Val_Inte <= R.Val_Inte);
+    elsif L.Kind = Real then
+      return (Kind => Bool, Val_Bool => L.Val_Real <= R.Val_Real);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL <= R.VAL_BOOL);
+      return (Kind => Bool, Val_Bool => L.Val_Bool <= R.Val_Bool);
     end if;
-  end SMALLEQ;
+  end Smalleq;
 
   -- INTE->REAL
-  function TOREAL  (X : ITEM_REC) return ITEM_REC is
+  function Toreal  (X : Item_Rec) return Item_Rec is
   begin
-    if X.KIND = REAL then
+    if X.Kind = Real then
       return X;
     end if;
-    if X.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    return (KIND => REAL, VAL_REAL => MY_MATH.REAL(X.VAL_INTE));
-  end TOREAL;
+    return (Kind => Real, Val_Real => My_Math.Real(X.Val_Inte));
+  end Toreal;
 
   -- REAL->INTE
-  function ROUND (X : ITEM_REC) return ITEM_REC is
+  function Round (X : Item_Rec) return Item_Rec is
   begin
-    if X.KIND = INTE then
+    if X.Kind = Inte then
       return X;
     end if;
-    if X.KIND /= REAL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Real then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => MY_MATH.ROUND(X.VAL_REAL));
-  end ROUND;
+    return (Kind => Inte, Val_Inte => My_Math.Round(X.Val_Real));
+  end Round;
 
-  function TRUNC (X : ITEM_REC) return ITEM_REC is
+  function Trunc (X : Item_Rec) return Item_Rec is
   begin
-    if X.KIND = INTE then
+    if X.Kind = Inte then
       return X;
     end if;
-    if X.KIND /= REAL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Real then
+      raise Invalid_Argument;
     end if;
-    return (KIND => INTE, VAL_INTE => MY_MATH.TRUNC(X.VAL_REAL));
-  end TRUNC;
+    return (Kind => Inte, Val_Inte => My_Math.Trunc(X.Val_Real));
+  end Trunc;
 
   -- REAL->REAL
-  function INT (X : ITEM_REC) return ITEM_REC is
+  function Int (X : Item_Rec) return Item_Rec is
   begin
-    if X.KIND = INTE then
+    if X.Kind = Inte then
       return X;
     end if;
-    if X.KIND /= REAL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Real then
+      raise Invalid_Argument;
     end if;
-    return (KIND => REAL, VAL_REAL => MY_MATH.INT(X.VAL_REAL));
-  end INT;
+    return (Kind => Real, Val_Real => My_Math.Int(X.Val_Real));
+  end Int;
 
-  function FRAC (X : ITEM_REC) return ITEM_REC is
+  function Frac (X : Item_Rec) return Item_Rec is
   begin
-    if X.KIND = INTE then
+    if X.Kind = Inte then
       return X;
     end if;
-    if X.KIND /= REAL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Real then
+      raise Invalid_Argument;
     end if;
-    return (KIND => REAL, VAL_REAL => MY_MATH.FRAC(X.VAL_REAL));
-  end FRAC;
+    return (Kind => Real, Val_Real => My_Math.Frac(X.Val_Real));
+  end Frac;
 
   -- *->BOOL
-  function ISREAL  (X : ITEM_REC) return ITEM_REC is
+  function Isreal  (X : Item_Rec) return Item_Rec is
   begin
-    return (KIND => BOOL, VAL_BOOL => X.KIND = REAL);
-  end ISREAL;
+    return (Kind => Bool, Val_Bool => X.Kind = Real);
+  end Isreal;
 
-  function ISINTE  (X : ITEM_REC) return ITEM_REC is
+  function Isinte  (X : Item_Rec) return Item_Rec is
   begin
-    return (KIND => BOOL, VAL_BOOL => X.KIND = INTE);
-  end ISINTE;
+    return (Kind => Bool, Val_Bool => X.Kind = Inte);
+  end Isinte;
 
-  function ISSTR  (X : ITEM_REC) return ITEM_REC is
+  function Isstr  (X : Item_Rec) return Item_Rec is
   begin
-    return (KIND => BOOL, VAL_BOOL => X.KIND = CHRS);
-  end ISSTR;
+    return (Kind => Bool, Val_Bool => X.Kind = Chrs);
+  end Isstr;
 
-  function ISREG  (X : ITEM_REC) return ITEM_REC is
+  function Isreg  (X : Item_Rec) return Item_Rec is
   begin
-    return (KIND => BOOL, VAL_BOOL => X.KIND = REGI);
-  end ISREG;
+    return (Kind => Bool, Val_Bool => X.Kind = Regi);
+  end Isreg;
 
 
   -- BOOL,BOOL->BOOL
-  function BOLAND  (L, R : ITEM_REC) return ITEM_REC is
+  function Boland  (L, R : Item_Rec) return Item_Rec is
   begin
-    if L.KIND /= BOOL or else R.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Bool or else R.Kind /= Bool then
+      raise Invalid_Argument;
     end if;
-    return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL and then R.VAL_BOOL);
-  end BOLAND;
+    return (Kind => Bool, Val_Bool => L.Val_Bool and then R.Val_Bool);
+  end Boland;
 
-  function BOLOR   (L, R : ITEM_REC) return ITEM_REC is
+  function Bolor   (L, R : Item_Rec) return Item_Rec is
   begin
-    if L.KIND /= BOOL or else R.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Bool or else R.Kind /= Bool then
+      raise Invalid_Argument;
     end if;
-    return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL or else R.VAL_BOOL);
-  end BOLOR;
+    return (Kind => Bool, Val_Bool => L.Val_Bool or else R.Val_Bool);
+  end Bolor;
 
-  function BOLXOR  (L, R : ITEM_REC) return ITEM_REC is
+  function Bolxor  (L, R : Item_Rec) return Item_Rec is
   begin
-    if L.KIND /= BOOL or else R.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
+    if L.Kind /= Bool or else R.Kind /= Bool then
+      raise Invalid_Argument;
     end if;
-    return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL /= R.VAL_BOOL);
-  end BOLXOR;
+    return (Kind => Bool, Val_Bool => L.Val_Bool /= R.Val_Bool);
+  end Bolxor;
 
 
   -- BOOL->BOOL
-  function BOLNEG  (X : ITEM_REC) return ITEM_REC is
+  function Bolneg  (X : Item_Rec) return Item_Rec is
   begin
-    if X.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Bool then
+      raise Invalid_Argument;
     end if;
-    return (KIND => BOOL, VAL_BOOL => not X.VAL_BOOL);
-  end BOLNEG;
+    return (Kind => Bool, Val_Bool => not X.Val_Bool);
+  end Bolneg;
 
   -- BOOL,*,*->*
-  function IFTE    (X, A, B : ITEM_REC) return ITEM_REC is
+  function Ifte    (X, A, B : Item_Rec) return Item_Rec is
   begin
-    if X.KIND /= BOOL then
-      raise INVALID_ARGUMENT;
+    if X.Kind /= Bool then
+      raise Invalid_Argument;
     end if;
-    if A.KIND /= B.KIND then
-      raise ARGUMENT_MISMATCH;
+    if A.Kind /= B.Kind then
+      raise Argument_Mismatch;
     end if;
-    if X.VAL_BOOL then
+    if X.Val_Bool then
       return A;
     else
       return B;
     end if;
-  end IFTE;
+  end Ifte;
 
-end OPERATIONS;
+end Operations;
 

@@ -1,6 +1,6 @@
-with DYNAMIC_LIST;
-with OPER_DEF;
+with Dynamic_List;
+with Oper_Def;
 
-package OPER_LIST_MNG is new DYNAMIC_LIST
-      (ELEMENT_TYPE => OPER_DEF.OPER_REC);
+package Oper_List_Mng is new Dynamic_List
+      (Element_Type => Oper_Def.Oper_Rec);
 

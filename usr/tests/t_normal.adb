@@ -1,15 +1,15 @@
-with MY_IO, NORMAL;
-procedure T_NORMAL is
-  I : INTEGER;
-  LEN : POSITIVE;
-  RIGHT : BOOLEAN;
-  GAP : CHARACTER;
+with My_Io, Normal;
+procedure T_Normal is
+  I : Integer;
+  Len : Positive;
+  Right : Boolean;
+  Gap : Character;
 begin
 
   loop
     loop
       begin
-        MY_IO.PUT ("I ? : "); MY_IO.GET (I);
+        My_Io.Put ("I ? : "); My_Io.Get (I);
         exit;
       exception
         when others => null;
@@ -17,7 +17,7 @@ begin
     end loop;
     loop
       begin
-        MY_IO.PUT ("LEN ? : "); MY_IO.GET (LEN);
+        My_Io.Put ("LEN ? : "); My_Io.Get (Len);
         exit;
       exception
         when others => null;
@@ -25,7 +25,7 @@ begin
     end loop;
     loop
       begin
-        MY_IO.PUT ("RIGHT ? : "); MY_IO.GET (RIGHT);
+        My_Io.Put ("RIGHT ? : "); My_Io.Get (Right);
         exit;
       exception
         when others => null;
@@ -33,16 +33,16 @@ begin
     end loop;
     loop
       begin
-        MY_IO.PUT ("GAP ? : "); MY_IO.GET (GAP);
+        My_Io.Put ("GAP ? : "); My_Io.Get (Gap);
         exit;
       exception
         when others => null;
       end;
     end loop;
 
-    MY_IO.PUT_LINE ("0         1          2         3         4         5");
-    MY_IO.PUT_LINE ("0123456789012345678980123456789012345678901234567890");
-    MY_IO.PUT_LINE ('>' & NORMAL (I, LEN, RIGHT, GAP) & '<');
-    MY_IO.NEW_LINE;
+    My_Io.Put_Line ("0         1          2         3         4         5");
+    My_Io.Put_Line ("0123456789012345678980123456789012345678901234567890");
+    My_Io.Put_Line ('>' & Normal (I, Len, Right, Gap) & '<');
+    My_Io.New_Line;
   end loop;
-end T_NORMAL;
+end T_Normal;

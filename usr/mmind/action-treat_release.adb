@@ -1,258 +1,258 @@
-with MY_IO, CON_IO;
-with DOS;
-separate (ACTION)
-procedure TREAT_RELEASE (GO_ON, EXIT_GAME : out BOOLEAN) is
+with My_Io, Con_Io;
+with Dos;
+separate (Action)
+procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
 
-  procedure PUT_SECRET is
-    SECRET : RESPONSE.COLOR_REC := RESPONSE.GET_CODE;
+  procedure Put_Secret is
+    Secret : Response.Color_Rec := Response.Get_Code;
   begin
-    for I in COMMON.LEVEL_RANGE
-     range COMMON.LEVEL_RANGE'FIRST .. LEVEL loop
-      SCREEN.PUT_SECRET_COLOR(I, SECRET.COLOR(I));
+    for I in Common.Level_Range
+     range Common.Level_Range'First .. Level loop
+      Screen.Put_Secret_Color(I, Secret.Color(I));
     end loop;
-  end PUT_SECRET;
+  end Put_Secret;
 
-  use COMMON, SCREEN;
+  use Common, Screen;
 
 begin
   -- cancel click
-  case LAST_CLICK.SELECTION_KIND is
-    when SCREEN.MENU =>
-      if PLAYING then
-        SCREEN.PUT_START_GIVEUP (START => FALSE, SELECTED => FALSE);
+  case Last_Click.Selection_Kind is
+    when Screen.Menu =>
+      if Playing then
+        Screen.Put_Start_Giveup (Start => False, Selected => False);
         -- DEBUG
         -- if CUR_SELECTION.SELECTION_KIND = SCREEN.EXIT_GAME then
         -- PUT_SECRET;
         -- end if;
       else
-        SCREEN.PUT_START_GIVEUP (START => TRUE, SELECTED => FALSE);
+        Screen.Put_Start_Giveup (Start => True, Selected => False);
       end if;
-    when SCREEN.LEVEL =>
-      SCREEN.PUT_LEVEL (LAST_CLICK.LEVEL_NO, SELECTED => FALSE);
-    when SCREEN.EXIT_GAME =>
-      SCREEN.PUT_EXIT (SELECTED => FALSE);
-    when SCREEN.TRY =>
-      SCREEN.PUT_TRY (PROPAL => LAST_CLICK.TRY_NO,
-                      TRY_STATE => SCREEN.CAN_TRY);
-    when SCREEN.COLOR =>
-      SCREEN.PUT_SELECTED_COLOR (COLOR => LAST_CLICK.COLOR_NO,
-                                 SELECTED => FALSE);
-      SCREEN.SET_MOUSE_DEFAULT_COLOR;
-    when SCREEN.PROPAL =>
-      SCREEN.PUT_DEFAULT_POS (LAST_CLICK.PROPAL_NO,
-                              LAST_CLICK.COLUMN_NO,
-                              SHOW => FALSE);
-      SCREEN.SET_MOUSE_DEFAULT_COLOR;
+    when Screen.Level =>
+      Screen.Put_Level (Last_Click.Level_No, Selected => False);
+    when Screen.Exit_Game =>
+      Screen.Put_Exit (Selected => False);
+    when Screen.Try =>
+      Screen.Put_Try (Propal => Last_Click.Try_No,
+                      Try_State => Screen.Can_Try);
+    when Screen.Color =>
+      Screen.Put_Selected_Color (Color => Last_Click.Color_No,
+                                 Selected => False);
+      Screen.Set_Mouse_Default_Color;
+    when Screen.Propal =>
+      Screen.Put_Default_Pos (Last_Click.Propal_No,
+                              Last_Click.Column_No,
+                              Show => False);
+      Screen.Set_Mouse_Default_Color;
     when others=>
       null;
   end case;
 
   -- treat release
-  if LAST_CLICK.SELECTION_KIND = CUR_SELECTION.SELECTION_KIND then
-    case CUR_SELECTION.SELECTION_KIND is
-      when SCREEN.EXIT_GAME =>
-        GO_ON := FALSE;
-        EXIT_GAME := TRUE;
+  if Last_Click.Selection_Kind = Cur_Selection.Selection_Kind then
+    case Cur_Selection.Selection_Kind is
+      when Screen.Exit_Game =>
+        Go_On := False;
+        Exit_Game := True;
 
-      when SCREEN.LEVEL =>
-        COMMON.STORE_LEVEL (CUR_SELECTION.LEVEL_NO);
-        SCREEN.PUT_CURRENT_LEVEL (CUR_SELECTION.LEVEL_NO);
-        GO_ON := TRUE;
-        EXIT_GAME := FALSE;
+      when Screen.Level =>
+        Common.Store_Level (Cur_Selection.Level_No);
+        Screen.Put_Current_Level (Cur_Selection.Level_No);
+        Go_On := True;
+        Exit_Game := False;
 
-      when SCREEN.MENU =>
-        if PLAYING then
+      when Screen.Menu =>
+        if Playing then
           -- give up
-          PUT_SECRET;
-          SCREEN.PUT_START_GIVEUP (START => TRUE, SELECTED => FALSE);
-          GO_ON := TRUE;
-          EXIT_GAME := FALSE;
+          Put_Secret;
+          Screen.Put_Start_Giveup (Start => True, Selected => False);
+          Go_On := True;
+          Exit_Game := False;
         else
           -- restart
-          COMMON.SET_LEVEL_TO_STORED;
-          SCREEN.PUT_START_GIVEUP (START => FALSE, SELECTED => FALSE);
-          GO_ON := FALSE;
-          EXIT_GAME := FALSE;
+          Common.Set_Level_To_Stored;
+          Screen.Put_Start_Giveup (Start => False, Selected => False);
+          Go_On := False;
+          Exit_Game := False;
         end if;
-        PLAYING := not PLAYING;
+        Playing := not Playing;
 
-      when TRY =>
-        if LAST_CLICK.TRY_NO = CUR_SELECTION.TRY_NO then
+      when Try =>
+        if Last_Click.Try_No = Cur_Selection.Try_No then
           -- valid try (already tested on click)
           declare
-            FREE_STATE : COMMON.PROPAL_STATE_REC;
-            COLOR : RESPONSE.COLOR_REC (LEVEL);
-            RESP : RESPONSE.RESPONSE_REC;
+            Free_State : Common.Propal_State_Rec;
+            Color : Response.Color_Rec (Level);
+            Resp : Response.Response_Rec;
           begin
-            if CUR_SELECTION.TRY_NO /= FIRST_FREE then
+            if Cur_Selection.Try_No /= First_Free then
               declare
-                PROP_STATE : COMMON.PROPAL_STATE_REC;
+                Prop_State : Common.Propal_State_Rec;
               begin
-                FREE_STATE := COMMON.GET_PROPAL_STATE (CUR_SELECTION.TRY_NO);
-                PROP_STATE := COMMON.GET_PROPAL_STATE (FIRST_FREE);
+                Free_State := Common.Get_Propal_State (Cur_Selection.Try_No);
+                Prop_State := Common.Get_Propal_State (First_Free);
                 -- Switch propals
-                COMMON.SET_PROPAL_STATE (
-                 PROPAL => CUR_SELECTION.TRY_NO,
-                 STATE  => PROP_STATE);
-                COMMON.SET_PROPAL_STATE (
-                 PROPAL => FIRST_FREE,
-                 STATE  => FREE_STATE);
+                Common.Set_Propal_State (
+                 Propal => Cur_Selection.Try_No,
+                 State  => Prop_State);
+                Common.Set_Propal_State (
+                 Propal => First_Free,
+                 State  => Free_State);
                 -- update screen of propals and try
-                for I in COMMON.LEVEL_RANGE
-                 range COMMON.LEVEL_RANGE'FIRST .. LEVEL loop
-                  SCREEN.PUT_COLOR (
-                   PROPAL => CUR_SELECTION.TRY_NO,
-                   LEVEL => I,
-                   COLOR => PROP_STATE.PROPAL_COLOR(I) );
-                  SCREEN.PUT_COLOR (
-                   PROPAL => FIRST_FREE,
-                   LEVEL => I,
-                   COLOR => FREE_STATE.PROPAL_COLOR(I) );
+                for I in Common.Level_Range
+                 range Common.Level_Range'First .. Level loop
+                  Screen.Put_Color (
+                   Propal => Cur_Selection.Try_No,
+                   Level => I,
+                   Color => Prop_State.Propal_Color(I) );
+                  Screen.Put_Color (
+                   Propal => First_Free,
+                   Level => I,
+                   Color => Free_State.Propal_Color(I) );
                 end loop;
                 -- answered impossible because of NEXT_FREE
-                if PROP_STATE.TRY = COMMON.CAN_TRY then
-                  SCREEN.PUT_TRY (CUR_SELECTION.TRY_NO, CAN_TRY);
+                if Prop_State.Try = Common.Can_Try then
+                  Screen.Put_Try (Cur_Selection.Try_No, Can_Try);
                 else
-                  SCREEN.PUT_TRY (CUR_SELECTION.TRY_NO, SCREEN.CANNOT_TRY);
+                  Screen.Put_Try (Cur_Selection.Try_No, Screen.Cannot_Try);
                 end if;
               end;
             else
-              FREE_STATE := COMMON.GET_PROPAL_STATE (FIRST_FREE);
+              Free_State := Common.Get_Propal_State (First_Free);
             end if;
 
             -- build color rec and update screen
-            for I in COMMON.LEVEL_RANGE
-             range COMMON.LEVEL_RANGE'FIRST .. LEVEL loop
-              COLOR.COLOR(I) := FREE_STATE.PROPAL_COLOR(I);
+            for I in Common.Level_Range
+             range Common.Level_Range'First .. Level loop
+              Color.Color(I) := Free_State.Propal_Color(I);
             end loop;
 
             -- respond
-            RESP := RESPONSE.RESPOND (COLOR);
-            SCREEN.PUT_ANSWER (
-             PROPAL => FIRST_FREE,
-             PLACED_OK => RESP.PLACED_OK,
-             COLORS_OK => RESP.COLORS_OK);
+            Resp := Response.Respond (Color);
+            Screen.Put_Answer (
+             Propal => First_Free,
+             Placed_Ok => Resp.Placed_Ok,
+             Colors_Ok => Resp.Colors_Ok);
 
             -- answered
-            COMMON.SET_TRY_STATE (FIRST_FREE, COMMON.ANSWERED);
-            COMMON.SET_ANSWER (FIRST_FREE, RESP.PLACED_OK, RESP.COLORS_OK);
+            Common.Set_Try_State (First_Free, Common.Answered);
+            Common.Set_Answer (First_Free, Resp.Placed_Ok, Resp.Colors_Ok);
 
             -- Check end of game
-            if FIRST_FREE = COMMON.MAX_NUMBER_PROPAL or else
-               RESP.PLACED_OK = NATURAL (LEVEL) then
-              PLAYING := FALSE;
-              SCREEN.PUT_START_GIVEUP (START => TRUE, SELECTED => FALSE);
-              PUT_SECRET;
+            if First_Free = Common.Max_Number_Propal or else
+               Resp.Placed_Ok = Natural (Level) then
+              Playing := False;
+              Screen.Put_Start_Giveup (Start => True, Selected => False);
+              Put_Secret;
             else
-              FIRST_FREE := COMMON.PROPAL_RANGE'SUCC(FIRST_FREE);
+              First_Free := Common.Propal_Range'Succ(First_Free);
             end if;
 
           end;
         else
-          CON_IO.BELL;
+          Con_Io.Bell;
         end if;
-        GO_ON := TRUE;
-        EXIT_GAME := FALSE;
-      when COLOR =>
-        CON_IO.BELL;
-        GO_ON := TRUE;
-        EXIT_GAME := FALSE;
-      when PROPAL =>
+        Go_On := True;
+        Exit_Game := False;
+      when Color =>
+        Con_Io.Bell;
+        Go_On := True;
+        Exit_Game := False;
+      when Propal =>
         -- Move color in propal
         declare
-          PROP_STATE : COMMON.PROPAL_STATE_REC;
-          PREV_STATE : COMMON.PROPAL_STATE_REC;
-          MOVED_COLOR : COMMON.EFF_COLOR_RANGE;
+          Prop_State : Common.Propal_State_Rec;
+          Prev_State : Common.Propal_State_Rec;
+          Moved_Color : Common.Eff_Color_Range;
         begin
-          PROP_STATE := COMMON.GET_PROPAL_STATE (CUR_SELECTION.PROPAL_NO);
-          PREV_STATE := COMMON.GET_PROPAL_STATE (LAST_CLICK.PROPAL_NO);
-          MOVED_COLOR := PREV_STATE.PROPAL_COLOR(LAST_CLICK.COLUMN_NO);
-          if PROP_STATE.PROPAL_COLOR(CUR_SELECTION.COLUMN_NO) =
-           COMMON.COLOR_RANGE'FIRST then
+          Prop_State := Common.Get_Propal_State (Cur_Selection.Propal_No);
+          Prev_State := Common.Get_Propal_State (Last_Click.Propal_No);
+          Moved_Color := Prev_State.Propal_Color(Last_Click.Column_No);
+          if Prop_State.Propal_Color(Cur_Selection.Column_No) =
+           Common.Color_Range'First then
             -- Dest is free : move color
-            COMMON.SET_COLOR (LAST_CLICK.PROPAL_NO,
-                              LAST_CLICK.COLUMN_NO,
-                              COMMON.COLOR_RANGE'FIRST);
-            UPDATE_TRY (LAST_CLICK.PROPAL_NO);
+            Common.Set_Color (Last_Click.Propal_No,
+                              Last_Click.Column_No,
+                              Common.Color_Range'First);
+            Update_Try (Last_Click.Propal_No);
 
-            COMMON.SET_COLOR (CUR_SELECTION.PROPAL_NO,
-                              CUR_SELECTION.COLUMN_NO,
-                              MOVED_COLOR);
-            SCREEN.PUT_COLOR (CUR_SELECTION.PROPAL_NO,
-                              CUR_SELECTION.COLUMN_NO,
-                              MOVED_COLOR);
-            UPDATE_TRY (CUR_SELECTION.PROPAL_NO);
+            Common.Set_Color (Cur_Selection.Propal_No,
+                              Cur_Selection.Column_No,
+                              Moved_Color);
+            Screen.Put_Color (Cur_Selection.Propal_No,
+                              Cur_Selection.Column_No,
+                              Moved_Color);
+            Update_Try (Cur_Selection.Propal_No);
           else
             -- Dest is used : restore color of clicked square
-            SCREEN.PUT_COLOR (LAST_CLICK.PROPAL_NO,
-                              LAST_CLICK.COLUMN_NO,
-                              MOVED_COLOR);
-            if LAST_CLICK.PROPAL_NO /= CUR_SELECTION.PROPAL_NO
-            and then LAST_CLICK.COLUMN_NO /= CUR_SELECTION.COLUMN_NO then
-              CON_IO.BELL;
+            Screen.Put_Color (Last_Click.Propal_No,
+                              Last_Click.Column_No,
+                              Moved_Color);
+            if Last_Click.Propal_No /= Cur_Selection.Propal_No
+            and then Last_Click.Column_No /= Cur_Selection.Column_No then
+              Con_Io.Bell;
             end if;
           end if;
         end;
-        GO_ON := TRUE;
-        EXIT_GAME := FALSE;
-      when NOTHING =>
-        GO_ON := TRUE;
-        EXIT_GAME := FALSE;
+        Go_On := True;
+        Exit_Game := False;
+      when Nothing =>
+        Go_On := True;
+        Exit_Game := False;
     end case;
 
-  elsif LAST_CLICK.SELECTION_KIND = COLOR and then
-        CUR_SELECTION.SELECTION_KIND = PROPAL then
+  elsif Last_Click.Selection_Kind = Color and then
+        Cur_Selection.Selection_Kind = Propal then
     -- check that propal is valid
-    if CUR_SELECTION.PROPAL_NO >= FIRST_FREE then
-      COMMON.SET_COLOR (PROPAL => CUR_SELECTION.PROPAL_NO,
-                        LEVEL  => CUR_SELECTION.COLUMN_NO,
-                        COLOR  => LAST_CLICK.COLOR_NO);
-      SCREEN.PUT_COLOR(PROPAL => CUR_SELECTION.PROPAL_NO,
-                       LEVEL  => CUR_SELECTION.COLUMN_NO,
-                       COLOR  => LAST_CLICK.COLOR_NO);
-      UPDATE_TRY (CUR_SELECTION.PROPAL_NO);
+    if Cur_Selection.Propal_No >= First_Free then
+      Common.Set_Color (Propal => Cur_Selection.Propal_No,
+                        Level  => Cur_Selection.Column_No,
+                        Color  => Last_Click.Color_No);
+      Screen.Put_Color(Propal => Cur_Selection.Propal_No,
+                       Level  => Cur_Selection.Column_No,
+                       Color  => Last_Click.Color_No);
+      Update_Try (Cur_Selection.Propal_No);
 
     else
-      CON_IO.BELL;
+      Con_Io.Bell;
     end if;
-    GO_ON := TRUE;
-    EXIT_GAME := FALSE;
+    Go_On := True;
+    Exit_Game := False;
 
-  elsif LAST_CLICK.SELECTION_KIND = PROPAL then
-    if CUR_SELECTION.SELECTION_KIND = SCREEN.NOTHING and then
-       CUR_SELECTION.SELECTION = SCREEN.PROPAL then
+  elsif Last_Click.Selection_Kind = Propal then
+    if Cur_Selection.Selection_Kind = Screen.Nothing and then
+       Cur_Selection.Selection = Screen.Propal then
       -- Restore color
       declare
-        PREV_STATE : COMMON.PROPAL_STATE_REC;
-        MOVED_COLOR : COMMON.EFF_COLOR_RANGE;
+        Prev_State : Common.Propal_State_Rec;
+        Moved_Color : Common.Eff_Color_Range;
       begin
-        PREV_STATE := COMMON.GET_PROPAL_STATE (LAST_CLICK.PROPAL_NO);
-        MOVED_COLOR := PREV_STATE.PROPAL_COLOR(LAST_CLICK.COLUMN_NO);
-        SCREEN.PUT_COLOR (LAST_CLICK.PROPAL_NO,
-                          LAST_CLICK.COLUMN_NO,
-                          MOVED_COLOR);
-        CON_IO.BELL;
+        Prev_State := Common.Get_Propal_State (Last_Click.Propal_No);
+        Moved_Color := Prev_State.Propal_Color(Last_Click.Column_No);
+        Screen.Put_Color (Last_Click.Propal_No,
+                          Last_Click.Column_No,
+                          Moved_Color);
+        Con_Io.Bell;
       end;
     else
       -- Remove a color from propal (already cleared)
-      COMMON.SET_COLOR (LAST_CLICK.PROPAL_NO,
-                        LAST_CLICK.COLUMN_NO,
-                        COMMON.COLOR_RANGE'FIRST);
-      UPDATE_TRY (LAST_CLICK.PROPAL_NO);
+      Common.Set_Color (Last_Click.Propal_No,
+                        Last_Click.Column_No,
+                        Common.Color_Range'First);
+      Update_Try (Last_Click.Propal_No);
     end if;
-    GO_ON := TRUE;
-    EXIT_GAME := FALSE;
+    Go_On := True;
+    Exit_Game := False;
   else
-    if LAST_CLICK.SELECTION_KIND /= SCREEN.NOTHING then
-      CON_IO.BELL;
+    if Last_Click.Selection_Kind /= Screen.Nothing then
+      Con_Io.Bell;
     end if;
-    GO_ON := TRUE;
-    EXIT_GAME := FALSE;
+    Go_On := True;
+    Exit_Game := False;
   end if;
 
-  if PLAYING then
-    SCREEN.PUT_HELP (SCREEN.RELEASED);
+  if Playing then
+    Screen.Put_Help (Screen.Released);
   else
-    SCREEN.PUT_HELP (SCREEN.START);
+    Screen.Put_Help (Screen.Start);
   end if;
-end TREAT_RELEASE;
+end Treat_Release;

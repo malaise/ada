@@ -1,120 +1,120 @@
-package body COMMON is
+package body Common is
 
-  type FIX_PROPAL_STATE_REC is record
-    PROPAL_COLOR : PROPAL_COLOR_ARRAY(1 .. MAX_LEVEL) := (others => 0);
-    TRY          : TRY_LIST := NOT_SET;
-    PLACED_OK    : NATURAL := 0;
-    COLORS_OK    : NATURAL := 0;
+  type Fix_Propal_State_Rec is record
+    Propal_Color : Propal_Color_Array(1 .. Max_Level) := (others => 0);
+    Try          : Try_List := Not_Set;
+    Placed_Ok    : Natural := 0;
+    Colors_Ok    : Natural := 0;
   end record;
-  INIT_FIX_PROPAL_STATE : constant FIX_PROPAL_STATE_REC := (
-    PROPAL_COLOR => (others => 0),
-    TRY          => NOT_SET,
-    PLACED_OK    => 0,
-    COLORS_OK    => 0);
+  Init_Fix_Propal_State : constant Fix_Propal_State_Rec := (
+    Propal_Color => (others => 0),
+    Try          => Not_Set,
+    Placed_Ok    => 0,
+    Colors_Ok    => 0);
 
-  STATE_LEVEL_STORED : LAST_LEVEL_RANGE;
-  STATE_LEVEL : LAST_LEVEL_RANGE;
-  LEVEL_STORED : BOOLEAN := FALSE;
-  LEVEL_SET   : BOOLEAN := FALSE;
-  STATE_DATA  : array (PROPAL_RANGE) of FIX_PROPAL_STATE_REC;
+  State_Level_Stored : Last_Level_Range;
+  State_Level : Last_Level_Range;
+  Level_Stored : Boolean := False;
+  Level_Set   : Boolean := False;
+  State_Data  : array (Propal_Range) of Fix_Propal_State_Rec;
 
   -- Level of the game
   --  Store the one selected (may not be the one of current propal)
-  procedure STORE_LEVEL (LEVEL : in LAST_LEVEL_RANGE) is
+  procedure Store_Level (Level : in Last_Level_Range) is
   begin
-    STATE_LEVEL_STORED := LEVEL;
-    LEVEL_STORED := TRUE;
-  end STORE_LEVEL;
+    State_Level_Stored := Level;
+    Level_Stored := True;
+  end Store_Level;
 
   --  Set propal to level stored
-  procedure SET_LEVEL_TO_STORED is
+  procedure Set_Level_To_Stored is
   begin
-    if not LEVEL_STORED then raise CONSTRAINT_ERROR; end if;
-    STATE_LEVEL := STATE_LEVEL_STORED;
-    LEVEL_SET := TRUE;
-    RESET_STATE;
-  end SET_LEVEL_TO_STORED;
+    if not Level_Stored then raise Constraint_Error; end if;
+    State_Level := State_Level_Stored;
+    Level_Set := True;
+    Reset_State;
+  end Set_Level_To_Stored;
 
-  procedure CHECK_LEVEL is
+  procedure Check_Level is
   begin
-    if not LEVEL_SET then raise CONSTRAINT_ERROR; end if;
-  end CHECK_LEVEL;
+    if not Level_Set then raise Constraint_Error; end if;
+  end Check_Level;
 
-  function GET_STORED_LEVEL return LAST_LEVEL_RANGE is
+  function Get_Stored_Level return Last_Level_Range is
   begin
-    if not LEVEL_STORED then raise CONSTRAINT_ERROR; end if;
-    return STATE_LEVEL_STORED;
-  end GET_STORED_LEVEL;
+    if not Level_Stored then raise Constraint_Error; end if;
+    return State_Level_Stored;
+  end Get_Stored_Level;
 
-  function GET_LEVEL return LAST_LEVEL_RANGE is
+  function Get_Level return Last_Level_Range is
   begin
-    CHECK_LEVEL;
-    return STATE_LEVEL;
-  end GET_LEVEL;
+    Check_Level;
+    return State_Level;
+  end Get_Level;
 
-  function GET_PROPAL_STATE (PROPAL : PROPAL_RANGE) return PROPAL_STATE_REC is
+  function Get_Propal_State (Propal : Propal_Range) return Propal_State_Rec is
   begin
-    CHECK_LEVEL;
-    return (LEVEL        => STATE_LEVEL,
-            PROPAL_COLOR => STATE_DATA(PROPAL).PROPAL_COLOR(1 .. STATE_LEVEL),
-            TRY          => STATE_DATA(PROPAL).TRY );
-  end GET_PROPAL_STATE;
+    Check_Level;
+    return (Level        => State_Level,
+            Propal_Color => State_Data(Propal).Propal_Color(1 .. State_Level),
+            Try          => State_Data(Propal).Try );
+  end Get_Propal_State;
 
-  procedure SET_PROPAL_STATE (
-   PROPAL : in PROPAL_RANGE;
-   STATE  : in PROPAL_STATE_REC) is
+  procedure Set_Propal_State (
+   Propal : in Propal_Range;
+   State  : in Propal_State_Rec) is
   begin
-    CHECK_LEVEL;
-    if STATE.LEVEL /= STATE_LEVEL then raise CONSTRAINT_ERROR; end if;
-    STATE_DATA(PROPAL).PROPAL_COLOR(1 .. STATE_LEVEL) := STATE.PROPAL_COLOR;
-    STATE_DATA(PROPAL).TRY := STATE.TRY;
-  end SET_PROPAL_STATE;
+    Check_Level;
+    if State.Level /= State_Level then raise Constraint_Error; end if;
+    State_Data(Propal).Propal_Color(1 .. State_Level) := State.Propal_Color;
+    State_Data(Propal).Try := State.Try;
+  end Set_Propal_State;
 
-  procedure SET_COLOR (
-   PROPAL : in PROPAL_RANGE;
-   LEVEL  : in LEVEL_RANGE;
-   COLOR  : in COLOR_RANGE) is
+  procedure Set_Color (
+   Propal : in Propal_Range;
+   Level  : in Level_Range;
+   Color  : in Color_Range) is
   begin
-    CHECK_LEVEL;
-    STATE_DATA(PROPAL).PROPAL_COLOR(LEVEL) := COLOR;
-  end SET_COLOR;
+    Check_Level;
+    State_Data(Propal).Propal_Color(Level) := Color;
+  end Set_Color;
 
-  procedure SET_TRY_STATE (
-   PROPAL : in PROPAL_RANGE;
-   TRY    : in TRY_LIST) is
+  procedure Set_Try_State (
+   Propal : in Propal_Range;
+   Try    : in Try_List) is
   begin
-    CHECK_LEVEL;
-    STATE_DATA(PROPAL).TRY := TRY;
-  end SET_TRY_STATE;
+    Check_Level;
+    State_Data(Propal).Try := Try;
+  end Set_Try_State;
 
-  procedure SET_ANSWER (
-   PROPAL : in PROPAL_RANGE;
-   PLACED_OK, COLORS_OK : in NATURAL) is
+  procedure Set_Answer (
+   Propal : in Propal_Range;
+   Placed_Ok, Colors_Ok : in Natural) is
   begin
-    CHECK_LEVEL;
-    if STATE_DATA(PROPAL).TRY /= ANSWERED then
-      raise CONSTRAINT_ERROR;
+    Check_Level;
+    if State_Data(Propal).Try /= Answered then
+      raise Constraint_Error;
     end if;
-    STATE_DATA(PROPAL).PLACED_OK := PLACED_OK;
-    STATE_DATA(PROPAL).COLORS_OK := COLORS_OK;
-  end SET_ANSWER;
+    State_Data(Propal).Placed_Ok := Placed_Ok;
+    State_Data(Propal).Colors_Ok := Colors_Ok;
+  end Set_Answer;
 
-  procedure GET_ANSWER (
-   PROPAL : in PROPAL_RANGE;
-   PLACED_OK, COLORS_OK : out NATURAL) is
+  procedure Get_Answer (
+   Propal : in Propal_Range;
+   Placed_Ok, Colors_Ok : out Natural) is
   begin
-    CHECK_LEVEL;
-    if STATE_DATA(PROPAL).TRY /= ANSWERED then
-      raise CONSTRAINT_ERROR;
+    Check_Level;
+    if State_Data(Propal).Try /= Answered then
+      raise Constraint_Error;
     end if;
-    PLACED_OK := STATE_DATA(PROPAL).PLACED_OK;
-    COLORS_OK := STATE_DATA(PROPAL).COLORS_OK;
-  end GET_ANSWER;
+    Placed_Ok := State_Data(Propal).Placed_Ok;
+    Colors_Ok := State_Data(Propal).Colors_Ok;
+  end Get_Answer;
 
-  procedure RESET_STATE is
+  procedure Reset_State is
   begin
-    CHECK_LEVEL;
-    STATE_DATA := (others => INIT_FIX_PROPAL_STATE);
-  end RESET_STATE;
+    Check_Level;
+    State_Data := (others => Init_Fix_Propal_State);
+  end Reset_State;
 
-end COMMON;
+end Common;

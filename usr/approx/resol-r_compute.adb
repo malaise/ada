@@ -1,9 +1,9 @@
-with MY_MATH;
-separate (RESOL)
-package body R_COMPUTE is
-  use MY_SYSLIN;
+with My_Math;
+separate (Resol)
+package body R_Compute is
+  use My_Syslin;
 
-  subtype NUMBER is POINTS.P_T_COORDINATE;
+  subtype Number is Points.P_T_Coordinate;
 
   -- Given the points array, build A matrix (n points, degree d).
   -- Xi is Points(i).X
@@ -17,67 +17,67 @@ package body R_COMPUTE is
   -- Return At * A (At = transposed of A) and A * Y
   --  At * A is a square matrix d*d
   --  A * Y is a vector d
-  procedure DO_MATRIXES (THE_POINTS : in POINTS.P_T_THE_POINTS;
-    T_A_A : out MATRIX; A_Y : out VECTOR) is
-    subtype INDEX_POINT is POSITIVE range THE_POINTS'RANGE;
+  procedure Do_Matrixes (The_Points : in Points.P_T_The_Points;
+    T_A_A : out Matrix; A_Y : out Vector) is
+    subtype Index_Point is Positive range The_Points'Range;
 
-    subtype INDEX_DEGREE is POSITIVE range 1..THE_DEGREE;
-    A_LOC : MATRIX (INDEX_DEGREE, INDEX_POINT);
-    T_A_A_LOC : MATRIX (INDEX_DEGREE, INDEX_DEGREE);
-    A_Y_LOC : VECTOR (INDEX_DEGREE);
-    use MY_MATH;
+    subtype Index_Degree is Positive range 1..The_Degree;
+    A_Loc : Matrix (Index_Degree, Index_Point);
+    T_A_A_Loc : Matrix (Index_Degree, Index_Degree);
+    A_Y_Loc : Vector (Index_Degree);
+    use My_Math;
   begin
     -- Build local A matrix
-    for COLUMN in INDEX_POINT loop
-      A_LOC (INDEX_DEGREE'FIRST, COLUMN) := 1.0;
+    for Column in Index_Point loop
+      A_Loc (Index_Degree'First, Column) := 1.0;
     end loop;
-    for ROW in INDEX_DEGREE range
-     INDEX_DEGREE'SUCC(INDEX_DEGREE'FIRST) .. INDEX_DEGREE'LAST loop
-      for COLUMN in INDEX_POINT loop
-        A_LOC (ROW, COLUMN) :=
-         A_LOC (INDEX_DEGREE'PRED(ROW), COLUMN) * THE_POINTS(COLUMN).X;
+    for Row in Index_Degree range
+     Index_Degree'Succ(Index_Degree'First) .. Index_Degree'Last loop
+      for Column in Index_Point loop
+        A_Loc (Row, Column) :=
+         A_Loc (Index_Degree'Pred(Row), Column) * The_Points(Column).X;
       end loop;
     end loop;
 
     -- Build At * A mattrix : T_A_A (R,C) = SUM[K=1..n] (A(R,K)*A(C,K))
-    for ROW_A in INDEX_DEGREE loop
-      for COLUMN_TA in INDEX_DEGREE loop
+    for Row_A in Index_Degree loop
+      for Column_Ta in Index_Degree loop
         declare
-          BUBBLE :NUMBER := 0.0;
+          Bubble :Number := 0.0;
         begin
-          for COLUMN_A_ROW_TA in INDEX_POINT loop
-            BUBBLE := BUBBLE + A_LOC (ROW_A, COLUMN_A_ROW_TA)
-            * A_LOC (COLUMN_TA, COLUMN_A_ROW_TA);
+          for Column_A_Row_Ta in Index_Point loop
+            Bubble := Bubble + A_Loc (Row_A, Column_A_Row_Ta)
+            * A_Loc (Column_Ta, Column_A_Row_Ta);
           end loop;
-          T_A_A_LOC (ROW_A, COLUMN_TA) := BUBBLE;
+          T_A_A_Loc (Row_A, Column_Ta) := Bubble;
         end;
       end loop;
     end loop;
-    T_A_A := T_A_A_LOC;
+    T_A_A := T_A_A_Loc;
 
     -- Build Y * Y vector : A_Y (I) = SUM[K=1..n] A(I,K)*Y(K)
     -- Y(K) is Points(K).Y
-    for ROW_A in INDEX_DEGREE loop
+    for Row_A in Index_Degree loop
       declare
-        BUBBLE : NUMBER := 0.0;
+        Bubble : Number := 0.0;
       begin
-        for COLUMN_A in INDEX_POINT loop
-          BUBBLE := BUBBLE + A_LOC (ROW_A, COLUMN_A)
-          * THE_POINTS (COLUMN_A).Y;
+        for Column_A in Index_Point loop
+          Bubble := Bubble + A_Loc (Row_A, Column_A)
+          * The_Points (Column_A).Y;
         end loop;
-        A_Y_LOC (ROW_A) := BUBBLE;
+        A_Y_Loc (Row_A) := Bubble;
       end;
     end loop;
-    A_Y := A_Y_LOC;
+    A_Y := A_Y_Loc;
 
-  end DO_MATRIXES;
+  end Do_Matrixes;
 
   -- Use my_syslin to solve A*X=B
-  function SYSTEM (A : MATRIX; B : VECTOR) return VECTOR is
+  function System (A : Matrix; B : Vector) return Vector is
   begin
-    return MY_SYSLIN.GAUSS (A,B);
+    return My_Syslin.Gauss (A,B);
   exception
-    when others => raise R_RESOL_ERROR;
-  end SYSTEM;
+    when others => raise R_Resol_Error;
+  end System;
 
-end R_COMPUTE;
+end R_Compute;

@@ -122,7 +122,7 @@ package body Display is
       My_Io.Put ("IT specified: ");
       Put_It (Data.Designs(Cote).Inter);
       My_Io.Put("   IT done: ");
-      Put_It (VAL);
+      Put_It (Val);
       if Val > Data.Designs(Cote).Inter then
         My_Io.Put_Line (" NOT OK");
         Ok := False;

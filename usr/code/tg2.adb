@@ -2,7 +2,7 @@ with Ada.Text_Io; -- For exception trace
 with My_Io;
 with Grid_2;
 
-procedure TG2 is
+procedure Tg2 is
   Key : constant String := "C'est la cle 2";
   Str1 : constant Grid_2.Long_String := "Ah que coucou!";
   Str2 : Grid_2.Long_String (1 .. Str1'Length);

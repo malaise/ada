@@ -2,9 +2,9 @@ with Ada.Text_Io;
 with Argument, Normal, My_Io, Get_Float;
 with Fl_Time, Fl_Get;
 
-procedure FL is
+procedure Fl is
 
-  TT, T : Fl_Time.Time_Type;
+  Tt, T : Fl_Time.Time_Type;
   Max_Hour_Dig : constant := 9; -- FL_TIME.HOURS_RANGE'WIDTH;
   With_Cost : Boolean;
   Cost, Tmp_Cost : Float;
@@ -28,7 +28,7 @@ begin
   Ada.Text_Io.New_Line (2);
 
   -- Initialise
-  TT := (True, 0, 0);
+  Tt := (True, 0, 0);
   Cost := 0.0;
   Tmp_Cost := 0.0;
 
@@ -36,7 +36,7 @@ begin
     -- Display
     Ada.Text_Io.Put ("--> ");
 
-    if TT.Positiv then
+    if Tt.Positiv then
       Ada.Text_Io.Put (' ');
     else
       Ada.Text_Io.Put ('-');
@@ -45,7 +45,7 @@ begin
     Ada.Text_Io.Put ('.');
     Ada.Text_Io.Put (NormaL(Integer(Tt.Minutes), 2, Gap => '0'));
     if With_Cost then
-       Ada.Text_Io.PUT ("     This cost: ");
+       Ada.Text_Io.Put ("     This cost: ");
        My_Io.Put(Tmp_Cost, Fore => 4, Aft => 2, Exp => 0);
        Ada.Text_Io.Put ("  Total cost: ");
        My_Io.Put_Line(Cost, Fore => 5, Aft => 2, Exp => 0);

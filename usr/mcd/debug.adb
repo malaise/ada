@@ -1,61 +1,61 @@
-with TEXT_IO;
-with SYS_CALLS; use SYS_CALLS;
-with BOOL_IO, INTE_IO, REAL_IO;
-package body DEBUG is
-  VAL : STRING (1 .. 1);
-  SET, TRUNC : BOOLEAN;
-  LEN : NATURAL;
+with Text_Io;
+with Sys_Calls; use Sys_Calls;
+with Bool_Io, Inte_Io, Real_Io;
+package body Debug is
+  Val : String (1 .. 1);
+  Set, Trunc : Boolean;
+  Len : Natural;
 
-  procedure INIT is
+  procedure Init is
   begin
-    DEBUG_LEVEL_ARRAY := (others => FALSE);
+    Debug_Level_Array := (others => False);
 
-    GETENV ("MCD_DEBUG_PARSER", SET, TRUNC, VAL, LEN);
-    DEBUG_LEVEL_ARRAY(PARSER) := SET;
+    Getenv ("MCD_DEBUG_PARSER", Set, Trunc, Val, Len);
+    Debug_Level_Array(Parser) := Set;
 
-    GETENV ("MCD_DEBUG_INPUT", SET, TRUNC, VAL, LEN);
-    DEBUG_LEVEL_ARRAY(INPUT) := SET;
+    Getenv ("MCD_DEBUG_INPUT", Set, Trunc, Val, Len);
+    Debug_Level_Array(Input) := Set;
     
-    GETENV ("MCD_DEBUG_CALL", SET, TRUNC, VAL, LEN);
-    DEBUG_LEVEL_ARRAY(CALL) := SET;
+    Getenv ("MCD_DEBUG_CALL", Set, Trunc, Val, Len);
+    Debug_Level_Array(Call) := Set;
 
-    GETENV ("MCD_DEBUG_STACK", SET, TRUNC, VAL, LEN);
-    DEBUG_LEVEL_ARRAY(STACK) := SET;
+    Getenv ("MCD_DEBUG_STACK", Set, Trunc, Val, Len);
+    Debug_Level_Array(Stack) := Set;
 
-    GETENV ("MCD_DEBUG_REGISTER", SET, TRUNC, VAL, LEN);
-    DEBUG_LEVEL_ARRAY(REGISTER) := SET;
+    Getenv ("MCD_DEBUG_REGISTER", Set, Trunc, Val, Len);
+    Debug_Level_Array(Register) := Set;
 
-    GETENV ("MCD_DEBUG_OPER", SET, TRUNC, VAL, LEN);
-    DEBUG_LEVEL_ARRAY(OPER) := SET;
+    Getenv ("MCD_DEBUG_OPER", Set, Trunc, Val, Len);
+    Debug_Level_Array(Oper) := Set;
 
-    GETENV ("MCD_DEBUG_HISTORY", SET, TRUNC, VAL, LEN);
-    if SET then
-      DEBUG_LEVEL_ARRAY(HISTORY) := SET;
+    Getenv ("MCD_DEBUG_HISTORY", Set, Trunc, Val, Len);
+    if Set then
+      Debug_Level_Array(History) := Set;
     end if;
 
-    GETENV ("MCD_DEBUG_ALL", SET, TRUNC, VAL, LEN);
-    if SET then
-      DEBUG_LEVEL_ARRAY := (others => TRUE);
+    Getenv ("MCD_DEBUG_ALL", Set, Trunc, Val, Len);
+    if Set then
+      Debug_Level_Array := (others => True);
     end if;
-  end INIT;
+  end Init;
 
-  procedure PUT (ITEM : in MCD_MNG.ITEM_REC) is
-    use MCD_MNG;
+  procedure Put (Item : in Mcd_Mng.Item_Rec) is
+    use Mcd_Mng;
   begin
-    case ITEM.KIND is
-      when INTE =>
-        INTE_IO.PUT(ITEM.VAL_INTE);
-      when REAL =>
-        REAL_IO.PUT(ITEM.VAL_REAL);
-      when BOOL =>
-        BOOL_IO.PUT(ITEM.VAL_BOOL);
-      when CHRS =>
-        TEXT_IO.PUT (">" & ITEM.VAL_TEXT(1 .. ITEM.VAL_LEN) & "<");
-      when REGI =>
-        TEXT_IO.PUT (ITEM.VAL_REGI);
-      when OPER =>
-        TEXT_IO.PUT (OPERATOR_LIST'IMAGE(ITEM.VAL_OPER));
+    case Item.Kind is
+      when Inte =>
+        Inte_Io.Put(Item.Val_Inte);
+      when Real =>
+        Real_Io.Put(Item.Val_Real);
+      when Bool =>
+        Bool_Io.Put(Item.Val_Bool);
+      when Chrs =>
+        Text_Io.Put (">" & Item.Val_Text(1 .. Item.Val_Len) & "<");
+      when Regi =>
+        Text_Io.Put (Item.Val_Regi);
+      when Oper =>
+        Text_Io.Put (Operator_List'Image(Item.Val_Oper));
     end case;
-  end PUT;
+  end Put;
 
-end DEBUG;
+end Debug;

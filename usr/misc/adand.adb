@@ -1,186 +1,186 @@
 -- Source file indenter. See procedure USAGE.
-with TEXT_IO;
+with Text_Io;
 
-with SYS_CALLS;
+with Sys_Calls;
 
-with MY_IO, TEXT_HANDLER, ARGUMENT;
+with My_Io, Text_Handler, Argument;
 
-procedure ADAND is
-  LINE_DEB, LINE_FIN : POSITIVE;
-  L : NATURAL;
+procedure Adand is
+  Line_Deb, Line_Fin : Positive;
+  L : Natural;
 
-  subtype INDENT_RANGE is INTEGER range -12 .. +12;
-  IND : INDENT_RANGE;
+  subtype Indent_Range is Integer range -12 .. +12;
+  Ind : Indent_Range;
 
-  FILE_NAME : TEXT_HANDLER.TEXT(1024);
-  SAV_SUF : constant STRING := ".bak";
-  FILE_SUF : TEXT_HANDLER.TEXT(1024);
+  File_Name : Text_Handler.Text(1024);
+  Sav_Suf : constant String := ".bak";
+  File_Suf : Text_Handler.Text(1024);
 
-  STR_MAX : constant := 500;
-  STR : STRING(1..STR_MAX+1);
-  LST : NATURAL;
+  Str_Max : constant := 500;
+  Str : String(1..Str_Max+1);
+  Lst : Natural;
 
-  TLD, TLF, TI : TEXT_HANDLER.TEXT(10);
+  Tld, Tlf, Ti : Text_Handler.Text(10);
 
-  F, FB : TEXT_IO.FILE_TYPE;
+  F, Fb : Text_Io.File_Type;
 
-  SYSTEM_CALL_ERROR : exception;
+  System_Call_Error : exception;
 
-  procedure USAGE is
+  procedure Usage is
   begin
-    MY_IO.PUT_LINE ("Usage: indent "
+    My_Io.Put_Line ("Usage: indent "
      & "[-F]file_name [-ffirst_line] [-llast_line] [-i[+|-]col]");
-  end USAGE;
+  end Usage;
 
 
 begin
 
   -- parse arguments (file_name, lines, indentation)
   begin
-    ARGUMENT.GET_PARAMETER(FILE_NAME, 1, ARGUMENT.NOT_KEY);
+    Argument.Get_Parameter(File_Name, 1, Argument.Not_Key);
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
+    when Argument.Argument_Not_Found =>
 
       begin
-        ARGUMENT.GET_PARAMETER(FILE_NAME, 1, "F");
+        Argument.Get_Parameter(File_Name, 1, "F");
       exception
-        when ARGUMENT.ARGUMENT_NOT_FOUND =>
-          USAGE;
+        when Argument.Argument_Not_Found =>
+          Usage;
           raise;
-        when CONSTRAINT_ERROR =>
-          MY_IO.PUT_LINE ("File name too long to store.");
+        when Constraint_Error =>
+          My_Io.Put_Line ("File name too long to store.");
           raise;
       end;
 
-    when CONSTRAINT_ERROR =>
-      MY_IO.PUT_LINE ("File name too long to store.");
+    when Constraint_Error =>
+      My_Io.Put_Line ("File name too long to store.");
       raise;
   end;
 
   begin
-    ARGUMENT.GET_PARAMETER(TLD, 1, "f");
-    LINE_DEB := POSITIVE'VALUE(TEXT_HANDLER.VALUE(TLD));
+    Argument.Get_Parameter(Tld, 1, "f");
+    Line_Deb := Positive'Value(Text_Handler.Value(Tld));
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
-      LINE_DEB := 1;
-    when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-      USAGE;
+    when Argument.Argument_Not_Found =>
+      Line_Deb := 1;
+    when Constraint_Error | Numeric_Error =>
+      Usage;
       raise;
   end;
 
   begin
-    ARGUMENT.GET_PARAMETER(TLF, 1, "l");
-    LINE_FIN := POSITIVE'VALUE(TEXT_HANDLER.VALUE(TLF));
+    Argument.Get_Parameter(Tlf, 1, "l");
+    Line_Fin := Positive'Value(Text_Handler.Value(Tlf));
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
-      LINE_FIN := POSITIVE'LAST;
-    when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-      USAGE;
+    when Argument.Argument_Not_Found =>
+      Line_Fin := Positive'Last;
+    when Constraint_Error | Numeric_Error =>
+      Usage;
       raise;
   end;
 
   begin
-    ARGUMENT.GET_PARAMETER(TI, 1, "i");
-    IND := INDENT_RANGE'VALUE(TEXT_HANDLER.VALUE(TI));
+    Argument.Get_Parameter(Ti, 1, "i");
+    Ind := Indent_Range'Value(Text_Handler.Value(Ti));
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
-      IND := 2;
-    when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-      USAGE;
+    when Argument.Argument_Not_Found =>
+      Ind := 2;
+    when Constraint_Error | Numeric_Error =>
+      Usage;
       raise;
   end;
 
   -- mv file to file.bak
   declare
-    NO_ERR : BOOLEAN;
+    No_Err : Boolean;
   begin
     -- build .BAK file name
-    TEXT_HANDLER.SET (FILE_SUF, FILE_NAME);
-    TEXT_HANDLER.APPEND (FILE_SUF, SAV_SUF);
+    Text_Handler.Set (File_Suf, File_Name);
+    Text_Handler.Append (File_Suf, Sav_Suf);
 
     -- eventualy remove .bak file
-    NO_ERR := SYS_CALLS.UNLINK (TEXT_HANDLER.VALUE(FILE_SUF));
+    No_Err := Sys_Calls.Unlink (Text_Handler.Value(File_Suf));
     -- rename file to file.bak
-    NO_ERR := SYS_CALLS.RENAME (TEXT_HANDLER.VALUE(FILE_NAME),
-            TEXT_HANDLER.VALUE(FILE_SUF));
-    if not NO_ERR then
-      raise SYSTEM_CALL_ERROR;
+    No_Err := Sys_Calls.Rename (Text_Handler.Value(File_Name),
+            Text_Handler.Value(File_Suf));
+    if not No_Err then
+      raise System_Call_Error;
     end if;
   exception
-    when SYSTEM_CALL_ERROR =>
-      MY_IO.PUT_LINE ("ERROR : " & SYS_CALLS.STR_ERROR(SYS_CALLS.ERRNO)
+    when System_Call_Error =>
+      My_Io.Put_Line ("ERROR : " & Sys_Calls.Str_Error(Sys_Calls.Errno)
        & " renaming file "
-       & TEXT_HANDLER.VALUE(FILE_NAME) & " to "
-       & TEXT_HANDLER.VALUE(FILE_SUF));
+       & Text_Handler.Value(File_Name) & " to "
+       & Text_Handler.Value(File_Suf));
       raise;
-    when CONSTRAINT_ERROR =>
-      MY_IO.PUT_LINE ("File name too long to build commands.");
+    when Constraint_Error =>
+      My_Io.Put_Line ("File name too long to build commands.");
       raise;
   end;
 
   -- open file.bak file and create file
   begin
-    TEXT_IO.OPEN (FB, TEXT_IO.IN_FILE,
-     TEXT_HANDLER.VALUE(FILE_SUF));
+    Text_Io.Open (Fb, Text_Io.In_File,
+     Text_Handler.Value(File_Suf));
   exception
     when others =>
-      MY_IO.PUT_LINE ("Error opening file " &
-       TEXT_HANDLER.VALUE(FILE_SUF));
+      My_Io.Put_Line ("Error opening file " &
+       Text_Handler.Value(File_Suf));
       raise;
   end;
   begin
-    TEXT_IO.CREATE (F, TEXT_IO.OUT_FILE,
-     TEXT_HANDLER.VALUE(FILE_NAME));
+    Text_Io.Create (F, Text_Io.Out_File,
+     Text_Handler.Value(File_Name));
   exception
     when others =>
-      MY_IO.PUT_LINE ("Error creating file " &
-       TEXT_HANDLER.VALUE(FILE_NAME));
+      My_Io.Put_Line ("Error creating file " &
+       Text_Handler.Value(File_Name));
   end;
 
   L := 0;
   loop
     -- read file.bak line
-    TEXT_IO.GET_LINE (FB, STR, LST);
+    Text_Io.Get_Line (Fb, Str, Lst);
     L := L + 1;
-    if LST /= 0 and then L>= LINE_DEB and then L<=LINE_FIN then
+    if Lst /= 0 and then L>= Line_Deb and then L<=Line_Fin then
       -- if ld<=line<=lf and non empty then indent
-      if IND > 0 then
-        if LST + IND <= STR_MAX then
-          STR (IND+1 .. IND+LST) := STR (1 .. LST);
-          STR (1 .. IND) := (others => ' ');
-          LST := LST + IND;
+      if Ind > 0 then
+        if Lst + Ind <= Str_Max then
+          Str (Ind+1 .. Ind+Lst) := Str (1 .. Lst);
+          Str (1 .. Ind) := (others => ' ');
+          Lst := Lst + Ind;
         end if;
-      elsif IND < 0 then
+      elsif Ind < 0 then
         declare
-          MIND : constant POSITIVE := - IND;
-          SPACES : constant STRING (1..MIND) := (others => ' ');
+          Mind : constant Positive := - Ind;
+          Spaces : constant String (1..Mind) := (others => ' ');
         begin
-          if LST >= MIND and then STR (1 .. MIND) = SPACES then
-            STR (1 .. LST - MIND) := STR (MIND+1 .. LST);
-            LST := LST - MIND;
+          if Lst >= Mind and then Str (1 .. Mind) = Spaces then
+            Str (1 .. Lst - Mind) := Str (Mind+1 .. Lst);
+            Lst := Lst - Mind;
           end if;
         end;
       end if;
     end if;
 
     -- write line in file
-    TEXT_IO.PUT_LINE (F, STR(1..LST));
+    Text_Io.Put_Line (F, Str(1..Lst));
 
-    exit when TEXT_IO.END_OF_FILE(FB);
+    exit when Text_Io.End_Of_File(Fb);
 
   end loop;
 
   -- close files
-  TEXT_IO.CLOSE (FB);
-  TEXT_IO.CLOSE (F);
+  Text_Io.Close (Fb);
+  Text_Io.Close (F);
 
-  MY_IO.PUT_LINE ("Done.");
+  My_Io.Put_Line ("Done.");
 
 exception
   when others =>
-    MY_IO.PUT_LINE ("Exception "
+    My_Io.Put_Line ("Exception "
      & "raised when processing file "
-     & TEXT_HANDLER.VALUE (FILE_NAME));
+     & Text_Handler.Value (File_Name));
     raise;
-end ADAND;
+end Adand;
 

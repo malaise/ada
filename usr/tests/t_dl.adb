@@ -1,172 +1,172 @@
-with TEXT_IO;
-with DYNAMIC_LIST, NORMAL, RND;
-procedure T_DL is
-  package MY_LIST is new DYNAMIC_LIST(ELEMENT_TYPE => INTEGER);
-  procedure MY_SEARCH is new MY_LIST.SEARCH;   -- ("=" of INTEGER)
-  procedure MY_SORT is new MY_LIST.SORT("<");  -- ("<" of INTEGER)
+with Text_Io;
+with Dynamic_List, Normal, Rnd;
+procedure T_Dl is
+  package My_List is new Dynamic_List(Element_Type => Integer);
+  procedure My_Search is new My_List.Search;   -- ("=" of INTEGER)
+  procedure My_Sort is new My_List.Sort("<");  -- ("<" of INTEGER)
 
-  LIST : MY_LIST.LIST_TYPE;
-  ITEM : INTEGER;
+  List : My_List.List_Type;
+  Item : Integer;
 
-  procedure PUT (I : in INTEGER; NEW_LINE : in BOOLEAN := FALSE) is
+  procedure Put (I : in Integer; New_Line : in Boolean := False) is
   begin
-    TEXT_IO.PUT (NORMAL (I, 2, GAP => '0') & ' ');
-    if NEW_LINE then TEXT_IO.NEW_LINE; end if;
-  end PUT;
+    Text_Io.Put (Normal (I, 2, Gap => '0') & ' ');
+    if New_Line then Text_Io.New_Line; end if;
+  end Put;
 
-  procedure DUMP is
-    POS : NATURAL;
+  procedure Dump is
+    Pos : Natural;
   begin
-    if MY_LIST.LIST_LENGTH(LIST) = 0 then
-      TEXT_IO.NEW_LINE;
+    if My_List.List_Length(List) = 0 then
+      Text_Io.New_Line;
       return;
     end if;
 
-    POS := MY_LIST.GET_POSITION (LIST);
-    MY_LIST.MOVE_TO (LIST, MY_LIST.NEXT, 0, FALSE);
+    Pos := My_List.Get_Position (List);
+    My_List.Move_To (List, My_List.Next, 0, False);
     loop
-      MY_LIST.READ (LIST, ITEM, MY_LIST.NEXT);
-      PUT (ITEM);
+      My_List.Read (List, Item, My_List.Next);
+      Put (Item);
     end loop;
   exception
-    when MY_LIST.NOT_IN_LIST =>
-      MY_LIST.READ (LIST, ITEM, MY_LIST.CURRENT);
-      PUT (ITEM, TRUE);
-      MY_LIST.MOVE_TO (LIST, MY_LIST.NEXT, POS-1, FALSE);
-  end DUMP;
+    when My_List.Not_In_List =>
+      My_List.Read (List, Item, My_List.Current);
+      Put (Item, True);
+      My_List.Move_To (List, My_List.Next, Pos-1, False);
+  end Dump;
 
 begin
 
   -- add 10 elements to the list
-  TEXT_IO.PUT_LINE("Adds 10 elements");
+  Text_Io.Put_Line("Adds 10 elements");
   for I in 1 .. 10 loop
-    MY_LIST.INSERT(LIST, I, MY_LIST.NEXT);
+    My_List.Insert(List, I, My_List.Next);
   end loop;
 
   -- read 5 elements from list in reverse
-  TEXT_IO.PUT("Reads 5 elements from the last one: ");
-  MY_LIST.MOVE_TO(LIST, MY_LIST.PREV, 0, FALSE);
+  Text_Io.Put("Reads 5 elements from the last one: ");
+  My_List.Move_To(List, My_List.Prev, 0, False);
   for I in 1 .. 5 loop
-    MY_LIST.READ(LIST, ITEM, MY_LIST.PREV);
-    PUT(ITEM);
+    My_List.Read(List, Item, My_List.Prev);
+    Put(Item);
   end loop;
-  TEXT_IO.NEW_LINE;
+  Text_Io.New_Line;
 
   -- dump
-  TEXT_IO.PUT("List length: ");
-  PUT(MY_LIST.LIST_LENGTH(LIST), TRUE);
+  Text_Io.Put("List length: ");
+  Put(My_List.List_Length(List), True);
 
   -- delete 5th
-  TEXT_IO.PUT_LINE("Deletes the current");
-  MY_LIST.DELETE(LIST);
+  Text_Io.Put_Line("Deletes the current");
+  My_List.Delete(List);
 
   -- list length
-  TEXT_IO.PUT("List length: ");
-  PUT(MY_LIST.LIST_LENGTH(LIST), TRUE);
+  Text_Io.Put("List length: ");
+  Put(My_List.List_Length(List), True);
 
   -- read 7 elements from first
-  TEXT_IO.PUT("Reads 7 elements from the first one: ");
-  MY_LIST.MOVE_TO(LIST, MY_LIST.NEXT, 0, FALSE);
+  Text_Io.Put("Reads 7 elements from the first one: ");
+  My_List.Move_To(List, My_List.Next, 0, False);
   for I in 1 .. 7 loop
-    MY_LIST.READ(LIST, ITEM);
-    PUT(ITEM);
+    My_List.Read(List, Item);
+    Put(Item);
   end loop;
-  TEXT_IO.NEW_LINE;
+  Text_Io.New_Line;
 
   -- add 50 before current
-  TEXT_IO.PUT_LINE("Adds the element 50 before current position");
-  MY_LIST.INSERT(LIST, 50, MY_LIST.PREV);
+  Text_Io.Put_Line("Adds the element 50 before current position");
+  My_List.Insert(List, 50, My_List.Prev);
 
   -- list length
-  TEXT_IO.PUT("List length: ");
-  PUT(MY_LIST.LIST_LENGTH(LIST), TRUE);
+  Text_Io.Put("List length: ");
+  Put(My_List.List_Length(List), True);
 
   -- read 9 elements from the last
-  TEXT_IO.PUT("Reads 9 elements from the last one: ");
-  MY_LIST.MOVE_TO(LIST, MY_LIST.PREV, 0, FALSE);
+  Text_Io.Put("Reads 9 elements from the last one: ");
+  My_List.Move_To(List, My_List.Prev, 0, False);
   for I in 1 .. 9 loop
-    MY_LIST.READ(LIST, ITEM, MY_LIST.PREV);
-    PUT(ITEM);
+    My_List.Read(List, Item, My_List.Prev);
+    Put(Item);
   end loop;
-  TEXT_IO.NEW_LINE;
+  Text_Io.New_Line;
 
   -- permute 1st and 4th elements, then search 3 from last
-  TEXT_IO.PUT_LINE("Permute 1st and 4th elements, then seach 3 from last");
-  MY_LIST.PERMUTE (LIST, 0, 3, MY_LIST.NEXT, FALSE);
-  MY_SEARCH (LIST, 3, MY_LIST.PREV, 1, FALSE);
+  Text_Io.Put_Line("Permute 1st and 4th elements, then seach 3 from last");
+  My_List.Permute (List, 0, 3, My_List.Next, False);
+  My_Search (List, 3, My_List.Prev, 1, False);
 
   -- get pos from first and current item
-  TEXT_IO.PUT("Get current pos from first: ");
-  PUT(MY_LIST.GET_POSITION (LIST));
-  TEXT_IO.PUT(" Get current item: ");
-  MY_LIST.GET (LIST, ITEM);
-  PUT(ITEM, TRUE);
+  Text_Io.Put("Get current pos from first: ");
+  Put(My_List.Get_Position (List));
+  Text_Io.Put(" Get current item: ");
+  My_List.Get (List, Item);
+  Put(Item, True);
 
   -- dump
-  TEXT_IO.PUT("List (length: ");
-  PUT (MY_LIST.LIST_LENGTH(LIST), FALSE);
-  TEXT_IO.PUT (") : ");
-  DUMP;
+  Text_Io.Put("List (length: ");
+  Put (My_List.List_Length(List), False);
+  Text_Io.Put (") : ");
+  Dump;
 
   -- search 50 from first
-  TEXT_IO.PUT_LINE("Seach 50 from first");
+  Text_Io.Put_Line("Seach 50 from first");
   begin
-    MY_SEARCH(LIST, 50, MY_LIST.NEXT, 1, FALSE);
+    My_Search(List, 50, My_List.Next, 1, False);
   exception
-    when MY_LIST.NOT_IN_LIST => TEXT_IO.PUT_LINE ("NOT IN LIST");
+    when My_List.Not_In_List => Text_Io.Put_Line ("NOT IN LIST");
   end;
 
   -- dump the list
   begin
     loop
-      TEXT_IO.PUT("Pos from first: ");
-      PUT (MY_LIST.GET_POSITION (LIST), FALSE);
-      TEXT_IO.PUT("Pos from last: ");
-      PUT (MY_LIST.GET_POSITION (LIST, MY_LIST.FROM_LAST), FALSE);
-      TEXT_IO.PUT("Current item, go to next: ");
-      MY_LIST.READ(LIST, ITEM);
-      PUT(ITEM, TRUE);
+      Text_Io.Put("Pos from first: ");
+      Put (My_List.Get_Position (List), False);
+      Text_Io.Put("Pos from last: ");
+      Put (My_List.Get_Position (List, My_List.From_Last), False);
+      Text_Io.Put("Current item, go to next: ");
+      My_List.Read(List, Item);
+      Put(Item, True);
     end loop;
   exception
-    when MY_LIST.NOT_IN_LIST =>
-      TEXT_IO.PUT_LINE("NOT IN LIST");
+    when My_List.Not_In_List =>
+      Text_Io.Put_Line("NOT IN LIST");
   end;
 
-  TEXT_IO.PUT("Pos from first: ");
-  PUT(MY_LIST.GET_POSITION (LIST), FALSE);
-  TEXT_IO.PUT("Pos from last: ");
-  PUT(MY_LIST.GET_POSITION (LIST, MY_LIST.FROM_LAST), FALSE);
-  TEXT_IO.PUT("Current item, stay: ");
-  MY_LIST.READ(LIST, ITEM, MY_LIST.CURRENT);
-  PUT(ITEM, TRUE);
+  Text_Io.Put("Pos from first: ");
+  Put(My_List.Get_Position (List), False);
+  Text_Io.Put("Pos from last: ");
+  Put(My_List.Get_Position (List, My_List.From_Last), False);
+  Text_Io.Put("Current item, stay: ");
+  My_List.Read(List, Item, My_List.Current);
+  Put(Item, True);
 
-  TEXT_IO.PUT("Current item, stay: ");
-  MY_LIST.READ(LIST, ITEM, MY_LIST.CURRENT);
-  PUT(ITEM, TRUE);
+  Text_Io.Put("Current item, stay: ");
+  My_List.Read(List, Item, My_List.Current);
+  Put(Item, True);
 
-  TEXT_IO.PUT_LINE("Delete fully the list");
-  MY_LIST.DELETE_LIST (LIST);
+  Text_Io.Put_Line("Delete fully the list");
+  My_List.Delete_List (List);
 
-  TEXT_IO.PUT("Get current pos from first: ");
+  Text_Io.Put("Get current pos from first: ");
   begin
-    PUT(MY_LIST.GET_POSITION(LIST), TRUE);
+    Put(My_List.Get_Position(List), True);
   exception
-    when MY_LIST.EMPTY_LIST => TEXT_IO.PUT_LINE("EMPTY LIST");
+    when My_List.Empty_List => Text_Io.Put_Line("EMPTY LIST");
   end;
 
   -- list length
-  TEXT_IO.PUT("List length: ");
-  PUT(MY_LIST.LIST_LENGTH(LIST), TRUE);
+  Text_Io.Put("List length: ");
+  Put(My_List.List_Length(List), True);
 
-  TEXT_IO.PUT ("Make the following random list: ");
-  RND.RANDOMIZE;
-  for I in 1 .. RND.INT_RANDOM (0, 10) loop
-    MY_LIST.INSERT (LIST, RND.INT_RANDOM(0, 50));
+  Text_Io.Put ("Make the following random list: ");
+  Rnd.Randomize;
+  for I in 1 .. Rnd.Int_Random (0, 10) loop
+    My_List.Insert (List, Rnd.Int_Random(0, 50));
   end loop;
-  DUMP;
-  MY_SORT(LIST);
-  TEXT_IO.PUT ("After sorting it: ");
-  DUMP;
+  Dump;
+  My_Sort(List);
+  Text_Io.Put ("After sorting it: ");
+  Dump;
 
 
-end T_DL;
+end T_Dl;

@@ -1,30 +1,30 @@
-with RND, MY_IO;
-use MY_IO;
-procedure T_RND is
+with Rnd, My_Io;
+use My_Io;
+procedure T_Rnd is
 
-  type COULEUR is (BLEU, ROUGE, JAUNE, VIOLET, VERT, ORANGE, BLANC, NOIR);
+  type Couleur is (Bleu, Rouge, Jaune, Violet, Vert, Orange, Blanc, Noir);
 
-  function MY_RANDOM is new RND.DISCR_RANDOM (COULEUR);
+  function My_Random is new Rnd.Discr_Random (Couleur);
 
-  TABLEAU : array (COULEUR) of NATURAL := (others => 0);
+  Tableau : array (Couleur) of Natural := (others => 0);
 
-  ESSAI : COULEUR;
+  Essai : Couleur;
 
-  TOT : NATURAL := 0;
+  Tot : Natural := 0;
 begin
-  RND.RANDOMIZE;
+  Rnd.Randomize;
   for I in 1 .. 1_000 loop
-    ESSAI := MY_RANDOM (ROUGE, BLANC);
-    TABLEAU(ESSAI) := TABLEAU(ESSAI) + 1;
+    Essai := My_Random (Rouge, Blanc);
+    Tableau(Essai) := Tableau(Essai) + 1;
   end loop;
-  for I in COULEUR loop
-    PUT (COULEUR'image (I));
-    PUT (" -> ");
-    PUT (TABLEAU (I));
-    TOT := TOT + TABLEAU (I);
-    NEW_LINE;
+  for I in Couleur loop
+    Put (Couleur'image (I));
+    Put (" -> ");
+    Put (Tableau (I));
+    Tot := Tot + Tableau (I);
+    New_Line;
   end loop;
-  PUT ("total :" );
-  PUT (TOT);
-  NEW_LINE;
-end T_RND;
+  Put ("total :" );
+  Put (Tot);
+  New_Line;
+end T_Rnd;

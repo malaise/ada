@@ -1,8 +1,8 @@
-package MENU2 is
+package Menu2 is
 
-  procedure MAIN_SCREEN (DATA_CHANGED : in BOOLEAN);
+  procedure Main_Screen (Data_Changed : in Boolean);
 
   -- Is the curve stopped (can we exit)
-  function CURVED_STOPPED return BOOLEAN;
-end MENU2;
+  function Curved_Stopped return Boolean;
+end Menu2;
 

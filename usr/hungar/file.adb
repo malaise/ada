@@ -72,7 +72,7 @@ package body File is
       Loc_Kind := Types.Mattrix_Kind_List'Value (Text_Handler.Value(Line(1)));
     exception
       when others =>
-        Ada.Text_Io.Put_Line ("ERROR in file " & FILE_NAME
+        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
               & ", only one word, WISH or REGRET, allowed in first line.");
         My_Get_Line.Close;
         raise Read_Error;
@@ -162,7 +162,7 @@ package body File is
       if Types."=" (Loc_Kind, Types.Wish) then
         -- Make a regret mattrix by substracting each to 10_000
         for I in 1 .. Dim loop
-          for J in 1 .. DIM loop
+          for J in 1 .. Dim loop
             Loc_Mattrix(I, J) := 10_000 - Loc_Mattrix(I, J);
           end loop;
         end loop;

@@ -1,381 +1,381 @@
-with CON_IO, AFPX, DIRECTORY, TEXT_HANDLER, SELECT_FILE, NORMAL;
-with POINTS, SCREEN, SET_POINTS_LIST, DIALOG, POINT_STR, MENU2;
-package body MENU1 is
+with Con_Io, Afpx, Directory, Text_Handler, Select_File, Normal;
+with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2;
+package body Menu1 is
 
-  type RESTORE_LIST is (NONE, PARTIAL, FULL); 
-  CURSOR_FIELD : AFPX.FIELD_RANGE;
-  FILE_NAME_TXT : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
+  type Restore_List is (None, Partial, Full); 
+  Cursor_Field : Afpx.Field_Range;
+  File_Name_Txt : Text_Handler.Text (Directory.Max_Dir_Name_Len);
 
-  procedure PUT_POINT_STATUS is
+  procedure Put_Point_Status is
     -- Width of nb_point
-    HEIGHT : AFPX.HEIGHT_RANGE;
-    WIDTH  : AFPX.WIDTH_RANGE;
+    Height : Afpx.Height_Range;
+    Width  : Afpx.Width_Range;
   begin
-    AFPX.GET_FIELD_SIZE(16, HEIGHT, WIDTH);
-    AFPX.ENCODE_FIELD(16, (0, 0), NORMAL(POINTS.P_NB, WIDTH));
-    if POINTS.P_SAVED then
-      AFPX.CLEAR_FIELD(18);
+    Afpx.Get_Field_Size(16, Height, Width);
+    Afpx.Encode_Field(16, (0, 0), Normal(Points.P_Nb, Width));
+    if Points.P_Saved then
+      Afpx.Clear_Field(18);
     else
-      AFPX.RESET_FIELD(18);
+      Afpx.Reset_Field(18);
     end if;
-  end PUT_POINT_STATUS;
+  end Put_Point_Status;
 
-  function MY_SELECT_FILE is new SELECT_FILE(PUT_POINT_STATUS);
+  function My_Select_File is new Select_File(Put_Point_Status);
 
-  procedure ENCODE_FILE_IN_GET (FILE_NAME : in STRING) is
+  procedure Encode_File_In_Get (File_Name : in String) is
   begin
-    AFPX.SET_FIELD_ACTIVATION (SCREEN.GET_FLD, TRUE);
-    AFPX.SET_FIELD_PROTECTION (SCREEN.GET_FLD, TRUE);
-    AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0),
-       SCREEN.PROCUSTE(FILE_NAME, SCREEN.GET_GET_WIDTH));
-  end ENCODE_FILE_IN_GET;
+    Afpx.Set_Field_Activation (Screen.Get_Fld, True);
+    Afpx.Set_Field_Protection (Screen.Get_Fld, True);
+    Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
+       Screen.Procuste(File_Name, Screen.Get_Get_Width));
+  end Encode_File_In_Get;
   
 
-  procedure ERROR (MSG : in SCREEN.S_ERROR_LIST) is
+  procedure Error (Msg : in Screen.S_Error_List) is
   begin
-    SCREEN.ERROR(MSG);
+    Screen.Error(Msg);
     -- Restore screen
-    AFPX.USE_DESCRIPTOR(1, FALSE);
-    SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
-  end ERROR;
+    Afpx.Use_Descriptor(1, False);
+    Screen.Init_For_Main1 (Cursor_Field);
+  end Error;
 
-  function EXIT_PROG return BOOLEAN is
+  function Exit_Prog return Boolean is
   begin
-    SCREEN.PUT_TITLE(SCREEN.EXIT_APPROX);
-    if DIALOG.CONFIRM_LOST then
+    Screen.Put_Title(Screen.Exit_Approx);
+    if Dialog.Confirm_Lost then
       -- The end
-      CON_IO.DESTROY;
-      return TRUE;
+      Con_Io.Destroy;
+      return True;
     end if;
-    return FALSE;
-  end EXIT_PROG;
+    return False;
+  end Exit_Prog;
 
   -- Read a data file
-  function READ_FILE (FILE_NAME : in FILE.F_T_FILE_NAME) return BOOLEAN is
+  function Read_File (File_Name : in File.F_T_File_Name) return Boolean is
   begin
-    SCREEN.PUT_TITLE (SCREEN.READ_POINTS);
-    ENCODE_FILE_IN_GET (FILE_NAME);
-    if FILE.F_EXISTS(FILE_NAME) then
-      SCREEN.PUT_TITLE (SCREEN.READ_POINTS);
-      TEXT_HANDLER.SET (FILE_NAME_TXT, FILE_NAME);
+    Screen.Put_Title (Screen.Read_Points);
+    Encode_File_In_Get (File_Name);
+    if File.F_Exists(File_Name) then
+      Screen.Put_Title (Screen.Read_Points);
+      Text_Handler.Set (File_Name_Txt, File_Name);
       begin
         -- Get data in points and list
-        POINTS.P_STORE (FILE.F_READ(FILE_NAME));
-        POINTS.P_SAVED;
-        SET_POINTS_LIST;
-        SCREEN.PUT_TITLE (SCREEN.DATA);
-        return TRUE;
+        Points.P_Store (File.F_Read(File_Name));
+        Points.P_Saved;
+        Set_Points_List;
+        Screen.Put_Title (Screen.Data);
+        return True;
       exception
-        when FILE.F_ACCESS_ERROR | FILE.F_IO_ERROR =>
+        when File.F_Access_Error | File.F_Io_Error =>
           -- Error reading. Prev data is lost :-(
-          POINTS.P_CLEAR;
-          SET_POINTS_LIST;
-          TEXT_HANDLER.EMPTY (FILE_NAME_TXT);
-          ERROR(SCREEN.E_IO_ERROR);
+          Points.P_Clear;
+          Set_Points_List;
+          Text_Handler.Empty (File_Name_Txt);
+          Error(Screen.E_Io_Error);
       end;
     else
       -- Error but prev data is kept
-      ERROR(SCREEN.E_FILE_NOT_FOUND);
+      Error(Screen.E_File_Not_Found);
     end if;
-    return FALSE;
-  end READ_FILE;
+    return False;
+  end Read_File;
 
-  procedure LOAD_SAVE (LOAD : in BOOLEAN; RESTORE : out RESTORE_LIST) is
-    TMP_FILE_NAME : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
+  procedure Load_Save (Load : in Boolean; Restore : out Restore_List) is
+    Tmp_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len);
   begin
-    RESTORE := NONE;
+    Restore := None;
     -- Title
-    if LOAD then
-      SCREEN.PUT_TITLE(SCREEN.READ_POINTS);
+    if Load then
+      Screen.Put_Title(Screen.Read_Points);
     else
-      SCREEN.PUT_TITLE(SCREEN.WRITE_POINTS);
+      Screen.Put_Title(Screen.Write_Points);
     end if;
-    if not LOAD and then POINTS.P_EMPTY then
+    if not Load and then Points.P_Empty then
       -- Error when saving no data
-      ERROR (SCREEN.E_NO_DATA);
-      RESTORE := PARTIAL;
+      Error (Screen.E_No_Data);
+      Restore := Partial;
       return;
-    elsif LOAD and then not POINTS.P_SAVED then
+    elsif Load and then not Points.P_Saved then
       -- Confirm loss when loading and unsaved points
-      RESTORE := PARTIAL;
-      if not DIALOG.CONFIRM_LOST then
+      Restore := Partial;
+      if not Dialog.Confirm_Lost then
         return;
       end if;
     end if;
               
     -- Select file
-    RESTORE := FULL;
+    Restore := Full;
     declare
-      KIND : DIRECTORY.FILE_KIND_LIST;
-      RIGHTS : NATURAL;
-      MODIF_TIME : DIRECTORY.TIME_T;
-      use DIRECTORY;
+      Kind : Directory.File_Kind_List;
+      Rights : Natural;
+      Modif_Time : Directory.Time_T;
+      use Directory;
     begin
-      TEXT_HANDLER.SET (TMP_FILE_NAME,
-                      MY_SELECT_FILE(2, TEXT_HANDLER.VALUE(FILE_NAME_TXT),
-                                     LOAD));
-      if TEXT_HANDLER.EMPTY (TMP_FILE_NAME) then
+      Text_Handler.Set (Tmp_File_Name,
+                      My_Select_File(2, Text_Handler.Value(File_Name_Txt),
+                                     Load));
+      if Text_Handler.Empty (Tmp_File_Name) then
         -- Cancelled
        return;
       end if;
-      DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(TMP_FILE_NAME),
-                           KIND, RIGHTS, MODIF_TIME);
-      if KIND = DIRECTORY.LINK then
+      Directory.File_Stat (Text_Handler.Value(Tmp_File_Name),
+                           Kind, Rights, Modif_Time);
+      if Kind = Directory.Link then
         -- Follow link recursively
-        DIRECTORY.READ_LINK (TEXT_HANDLER.VALUE(TMP_FILE_NAME),
-                             TMP_FILE_NAME);
-        DIRECTORY.FILE_STAT (TEXT_HANDLER.VALUE(TMP_FILE_NAME),
-                             KIND, RIGHTS, MODIF_TIME);
+        Directory.Read_Link (Text_Handler.Value(Tmp_File_Name),
+                             Tmp_File_Name);
+        Directory.File_Stat (Text_Handler.Value(Tmp_File_Name),
+                             Kind, Rights, Modif_Time);
       end if;
     end;
       
       
 
     -- Restore (for errors)
-    AFPX.USE_DESCRIPTOR(1);
-    SET_POINTS_LIST;
-    SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
-    SCREEN.PUT_FILE (TEXT_HANDLER.VALUE(FILE_NAME_TXT));
-    ENCODE_FILE_IN_GET (TEXT_HANDLER.VALUE(TMP_FILE_NAME));
-    RESTORE := PARTIAL;
+    Afpx.Use_Descriptor(1);
+    Set_Points_List;
+    Screen.Init_For_Main1 (Cursor_Field);
+    Screen.Put_File (Text_Handler.Value(File_Name_Txt));
+    Encode_File_In_Get (Text_Handler.Value(Tmp_File_Name));
+    Restore := Partial;
     -- load or save
-    if LOAD then
-      if READ_FILE (TEXT_HANDLER.VALUE(TMP_FILE_NAME)) then
+    if Load then
+      if Read_File (Text_Handler.Value(Tmp_File_Name)) then
         -- Done,
-        TEXT_HANDLER.SET (FILE_NAME_TXT, TMP_FILE_NAME);
+        Text_Handler.Set (File_Name_Txt, Tmp_File_Name);
         -- Else kept or lost
       end if;
     else
-      if FILE.F_EXISTS(TEXT_HANDLER.VALUE(TMP_FILE_NAME))
-      and then not SCREEN.CONFIRM(SCREEN.C_FILE_EXISTS, TRUE) then
+      if File.F_Exists(Text_Handler.Value(Tmp_File_Name))
+      and then not Screen.Confirm(Screen.C_File_Exists, True) then
         return;
       end if;
       begin
-        FILE.F_WRITE(TEXT_HANDLER.VALUE(TMP_FILE_NAME), POINTS.P_THE_POINTS);
-        POINTS.P_SAVED;
-        TEXT_HANDLER.SET (FILE_NAME_TXT, TMP_FILE_NAME);
+        File.F_Write(Text_Handler.Value(Tmp_File_Name), Points.P_The_Points);
+        Points.P_Saved;
+        Text_Handler.Set (File_Name_Txt, Tmp_File_Name);
       exception
         when others =>
-          ERROR (SCREEN.E_IO_ERROR);
+          Error (Screen.E_Io_Error);
       end;
     end if;  
-  end LOAD_SAVE;
+  end Load_Save;
 
-  procedure READ_POINT (SET : in out BOOLEAN; POINT : in out POINTS.P_T_ONE_POINT) is
-    LP : POINTS.P_T_ONE_POINT;
-    OK : BOOLEAN;
+  procedure Read_Point (Set : in out Boolean; Point : in out Points.P_T_One_Point) is
+    Lp : Points.P_T_One_Point;
+    Ok : Boolean;
   begin
-    OK := SET;
-    LP := POINT;
-    DIALOG.READ_COORDINATE(SCREEN.I_X, OK, LP.X);
-    if not OK then
-      SET := FALSE;
+    Ok := Set;
+    Lp := Point;
+    Dialog.Read_Coordinate(Screen.I_X, Ok, Lp.X);
+    if not Ok then
+      Set := False;
       return;
     end if;
-    OK := SET;
-    DIALOG.READ_COORDINATE(SCREEN.I_Y, OK, LP.Y);
-    if not OK then
-      SET := FALSE;
+    Ok := Set;
+    Dialog.Read_Coordinate(Screen.I_Y, Ok, Lp.Y);
+    if not Ok then
+      Set := False;
       return;
     end if;
-    POINT := LP;
-    SET := TRUE;
-  end READ_POINT;
+    Point := Lp;
+    Set := True;
+  end Read_Point;
 
-  procedure MAIN_SCREEN (INIT_FILE_NAME : in FILE.F_T_FILE_NAME) is
-    CURSOR_COL : CON_IO.COL_RANGE;
-    REDISPLAY : BOOLEAN;
-    PTG_RESULT : AFPX.RESULT_REC;
-    RESTORE : RESTORE_LIST;
-    A_POINT : POINTS.P_T_ONE_POINT;
-    POINT_SET : BOOLEAN;
-    POINT_INDEX : POSITIVE;
-    DATA_CHANGED : BOOLEAN;
-    SAVED_INDEX : NATURAL;
+  procedure Main_Screen (Init_File_Name : in File.F_T_File_Name) is
+    Cursor_Col : Con_Io.Col_Range;
+    Redisplay : Boolean;
+    Ptg_Result : Afpx.Result_Rec;
+    Restore : Restore_List;
+    A_Point : Points.P_T_One_Point;
+    Point_Set : Boolean;
+    Point_Index : Positive;
+    Data_Changed : Boolean;
+    Saved_Index : Natural;
 
-    use AFPX;
+    use Afpx;
 
   begin
-    AFPX.USE_DESCRIPTOR(1);
-    SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
-    TEXT_HANDLER.EMPTY (FILE_NAME_TXT);
-    SCREEN.PUT_FILE ("");
+    Afpx.Use_Descriptor(1);
+    Screen.Init_For_Main1 (Cursor_Field);
+    Text_Handler.Empty (File_Name_Txt);
+    Screen.Put_File ("");
 
     -- Get field width
 
     -- File?
-    if INIT_FILE_NAME /= "" then
-      if READ_FILE (INIT_FILE_NAME) then
-        TEXT_HANDLER.SET (FILE_NAME_TXT, INIT_FILE_NAME);
+    if Init_File_Name /= "" then
+      if Read_File (Init_File_Name) then
+        Text_Handler.Set (File_Name_Txt, Init_File_Name);
       end if;
-      RESTORE := PARTIAL;
+      Restore := Partial;
     else
-      RESTORE := NONE;
+      Restore := None;
     end if;
 
     -- Update Nb of points and save_status
-    SCREEN.PUT_POINT_STATUS;
+    Screen.Put_Point_Status;
 
-    CURSOR_COL := 0;
-    REDISPLAY := FALSE;
-    DATA_CHANGED := TRUE;
-    SAVED_INDEX := 0;
+    Cursor_Col := 0;
+    Redisplay := False;
+    Data_Changed := True;
+    Saved_Index := 0;
     loop
-      case RESTORE is
-        when NONE =>
+      case Restore is
+        when None =>
           null;
-        when PARTIAL =>
-          AFPX.USE_DESCRIPTOR(1, FALSE);
-          if SAVED_INDEX /= 0 then
-            AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
-                                        SAVED_INDEX - 1, FALSE);
-            AFPX.UPDATE_LIST (AFPX.CENTER);
+        when Partial =>
+          Afpx.Use_Descriptor(1, False);
+          if Saved_Index /= 0 then
+            Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+                                        Saved_Index - 1, False);
+            Afpx.Update_List (Afpx.Center);
           end if;
-          SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
-          SCREEN.PUT_FILE (TEXT_HANDLER.VALUE(FILE_NAME_TXT));
-        when FULL =>
-          AFPX.USE_DESCRIPTOR(1);
-          SET_POINTS_LIST;
-          if SAVED_INDEX /= 0 then
-            AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
-                                        SAVED_INDEX - 1, FALSE);
-            AFPX.UPDATE_LIST (AFPX.CENTER);
+          Screen.Init_For_Main1 (Cursor_Field);
+          Screen.Put_File (Text_Handler.Value(File_Name_Txt));
+        when Full =>
+          Afpx.Use_Descriptor(1);
+          Set_Points_List;
+          if Saved_Index /= 0 then
+            Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+                                        Saved_Index - 1, False);
+            Afpx.Update_List (Afpx.Center);
           end if;
-          SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
-          SCREEN.PUT_FILE (TEXT_HANDLER.VALUE(FILE_NAME_TXT));
+          Screen.Init_For_Main1 (Cursor_Field);
+          Screen.Put_File (Text_Handler.Value(File_Name_Txt));
       end case;
 
       -- Delete/modify/approximation/sort
-      if POINTS.P_NB = 0 then
-        AFPX.SET_FIELD_ACTIVATION (26, FALSE);
-        AFPX.SET_FIELD_ACTIVATION (27, FALSE);
-        AFPX.SET_FIELD_ACTIVATION (29, FALSE);
-        AFPX.SET_FIELD_ACTIVATION (31, FALSE);
+      if Points.P_Nb = 0 then
+        Afpx.Set_Field_Activation (26, False);
+        Afpx.Set_Field_Activation (27, False);
+        Afpx.Set_Field_Activation (29, False);
+        Afpx.Set_Field_Activation (31, False);
       else
-        AFPX.SET_FIELD_ACTIVATION (26, TRUE);
-        AFPX.SET_FIELD_ACTIVATION (27, TRUE);
-        AFPX.SET_FIELD_ACTIVATION (29, TRUE);
-        AFPX.SET_FIELD_ACTIVATION (31, TRUE);
+        Afpx.Set_Field_Activation (26, True);
+        Afpx.Set_Field_Activation (27, True);
+        Afpx.Set_Field_Activation (29, True);
+        Afpx.Set_Field_Activation (31, True);
       end if;
 
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      RESTORE := NONE;
-      SAVED_INDEX := 0;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      Restore := None;
+      Saved_Index := 0;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
               null;
-            when AFPX.ESCAPE_KEY =>
-              if EXIT_PROG then
+            when Afpx.Escape_Key =>
+              if Exit_Prog then
                 -- The end
                 return;
               else
-                RESTORE := PARTIAL;
+                Restore := Partial;
               end if;
-            when AFPX.BREAK_KEY =>
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
-            when SCREEN.LIST_SCROLL_FLD_RANGE'FIRST ..
-                 SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
-              SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
-            when SCREEN.EXIT_BUTTON_FLD =>
-              if EXIT_PROG then
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when Screen.List_Scroll_Fld_Range'First ..
+                 Screen.List_Scroll_Fld_Range'Last =>
+              Screen.Scroll(Ptg_Result.Field_No);
+            when Screen.Exit_Button_Fld =>
+              if Exit_Prog then
                 -- The end
                 return;
               else
-                RESTORE := PARTIAL;
+                Restore := Partial;
               end if;
             when 21 | 22 =>
-              LOAD_SAVE(PTG_RESULT.FIELD_NO = 21, RESTORE);
-              DATA_CHANGED := TRUE;
+              Load_Save(Ptg_Result.Field_No = 21, Restore);
+              Data_Changed := True;
             when 23 =>
               -- New points
-              SCREEN.PUT_TITLE(SCREEN.NEW_POINTS);
-              if DIALOG.CONFIRM_LOST then
-                POINTS.P_CLEAR;
-                SET_POINTS_LIST;
-                TEXT_HANDLER.EMPTY(FILE_NAME_TXT);
+              Screen.Put_Title(Screen.New_Points);
+              if Dialog.Confirm_Lost then
+                Points.P_Clear;
+                Set_Points_List;
+                Text_Handler.Empty(File_Name_Txt);
                 -- Update file_name, nb of points and save_status
-                TEXT_HANDLER.EMPTY (FILE_NAME_TXT);
+                Text_Handler.Empty (File_Name_Txt);
               end if;
-              DATA_CHANGED := TRUE;
-              RESTORE := PARTIAL;
+              Data_Changed := True;
+              Restore := Partial;
             when 25 =>
               -- Add point
-              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
-              SCREEN.PUT_TITLE(SCREEN.ADD_1);
+              Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+              Screen.Put_Title(Screen.Add_1);
               loop
-                POINT_SET := FALSE;
-                READ_POINT(POINT_SET, A_POINT);
-                exit when not POINT_SET;
-                POINTS.P_UPD_POINT (POINTS.ADD, 1, A_POINT);
-                SET_POINTS_LIST;
-                DATA_CHANGED := TRUE;
+                Point_Set := False;
+                Read_Point(Point_Set, A_Point);
+                exit when not Point_Set;
+                Points.P_Upd_Point (Points.Add, 1, A_Point);
+                Set_Points_List;
+                Data_Changed := True;
               end loop;
-              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, FALSE);
-              SAVED_INDEX := AFPX.LINE_LIST_MNG.LIST_LENGTH (AFPX.LINE_LIST);
-              RESTORE := PARTIAL;
-            when 26 | 27 | AFPX.LIST_FIELD_NO =>
+              Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+              Saved_Index := Afpx.Line_List_Mng.List_Length (Afpx.Line_List);
+              Restore := Partial;
+            when 26 | 27 | Afpx.List_Field_No =>
               -- Delete / modify a point
-              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, TRUE);
+              Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
               -- Get index then point
-              POINT_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
-              A_POINT := POINTS.P_ONE_POINT(POINT_INDEX);
-              if PTG_RESULT.FIELD_NO = 26 then
+              Point_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+              A_Point := Points.P_One_Point(Point_Index);
+              if Ptg_Result.Field_No = 26 then
                 -- Delete a point
-                SCREEN.PUT_TITLE(SCREEN.SUPPRESS_1);
-                AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0),
-                    POINT_STR.ENCODE_REC(A_POINT).STR(1 .. SCREEN.GET_GET_WIDTH));
-                AFPX.SET_FIELD_ACTIVATION(SCREEN.GET_FLD, TRUE);
-                if SCREEN.CONFIRM(SCREEN.C_DELETE_POINT, TRUE) then
-                  POINTS.P_UPD_POINT (POINTS.REMOVE, POINT_INDEX, A_POINT);
-                  SAVED_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
-                  if SAVED_INDEX = AFPX.LINE_LIST_MNG.LIST_LENGTH (AFPX.LINE_LIST) then
-                    SAVED_INDEX := SAVED_INDEX - 1;
+                Screen.Put_Title(Screen.Suppress_1);
+                Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
+                    Point_Str.Encode_Rec(A_Point).Str(1 .. Screen.Get_Get_Width));
+                Afpx.Set_Field_Activation(Screen.Get_Fld, True);
+                if Screen.Confirm(Screen.C_Delete_Point, True) then
+                  Points.P_Upd_Point (Points.Remove, Point_Index, A_Point);
+                  Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                  if Saved_Index = Afpx.Line_List_Mng.List_Length (Afpx.Line_List) then
+                    Saved_Index := Saved_Index - 1;
                   end if;
-                  SET_POINTS_LIST;
-                  DATA_CHANGED := TRUE;
+                  Set_Points_List;
+                  Data_Changed := True;
                 end if;
               else
                 -- Modify
-                SCREEN.PUT_TITLE(SCREEN.MODIFY_1);
-                POINT_SET := TRUE;
-                READ_POINT(POINT_SET, A_POINT);
-                if POINT_SET then
-                  POINTS.P_UPD_POINT (POINTS.MODIFY, POINT_INDEX, A_POINT);
-                  SAVED_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
-                  SET_POINTS_LIST;
-                  DATA_CHANGED := TRUE;
+                Screen.Put_Title(Screen.Modify_1);
+                Point_Set := True;
+                Read_Point(Point_Set, A_Point);
+                if Point_Set then
+                  Points.P_Upd_Point (Points.Modify, Point_Index, A_Point);
+                  Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                  Set_Points_List;
+                  Data_Changed := True;
                 end if;
               end if;
-              AFPX.SET_FIELD_PROTECTION (AFPX.LIST_FIELD_NO, FALSE);
-              RESTORE := PARTIAL;
+              Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+              Restore := Partial;
             when 29 =>
               -- approximation
-              SCREEN.STORE_FILE;
-              SAVED_INDEX := AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST);
-              MENU2.MAIN_SCREEN(DATA_CHANGED);
-              RESTORE := FULL;
-              DATA_CHANGED := FALSE;
+              Screen.Store_File;
+              Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+              Menu2.Main_Screen(Data_Changed);
+              Restore := Full;
+              Data_Changed := False;
             when 31 =>
               -- Sort
-              POINTS.P_SORT;
-              SET_POINTS_LIST;
-              DATA_CHANGED := TRUE;
+              Points.P_Sort;
+              Set_Points_List;
+              Data_Changed := True;
             when others =>
               null;
           end case; 
-        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+        when Afpx.Fd_Event | Afpx.Timer_Event =>
           null;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
+        when Afpx.Refresh =>
+          Redisplay := True;
       end case;
     end loop;
 
-  end MAIN_SCREEN;
+  end Main_Screen;
 
-end MENU1;
+end Menu1;

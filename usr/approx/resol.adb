@@ -1,67 +1,67 @@
-package body RESOL is
+package body Resol is
 
-  subtype T_DEGREE is NATURAL range 1 .. R_T_DEGREE'LAST + 1;
+  subtype T_Degree is Natural range 1 .. R_T_Degree'Last + 1;
 
-  THE_DEGREE : T_DEGREE := 1;
+  The_Degree : T_Degree := 1;
   -- Previous solution still accurate
-  RESOLVED : BOOLEAN := FALSE;
-  PREVIOUS_SOLUTION : VECTOR (1..T_DEGREE'LAST);
+  Resolved : Boolean := False;
+  Previous_Solution : Vector (1..T_Degree'Last);
 
   -- Computation of the solution
-  package R_COMPUTE is
-    subtype MATRIX is MY_SYSLIN.MATRIX;
+  package R_Compute is
+    subtype Matrix is My_Syslin.Matrix;
     -- Build At * A matrix and B * Y vector from points
-    procedure DO_MATRIXES (THE_POINTS : in POINTS.P_T_THE_POINTS;
-      T_A_A : out MATRIX; A_Y : out VECTOR);
+    procedure Do_Matrixes (The_Points : in Points.P_T_The_Points;
+      T_A_A : out Matrix; A_Y : out Vector);
     -- Solve (At*A)*X=B*Y
-    function SYSTEM (A : MATRIX; B : VECTOR) return VECTOR;
-  end R_COMPUTE;
-  package body R_COMPUTE is separate;
+    function System (A : Matrix; B : Vector) return Vector;
+  end R_Compute;
+  package body R_Compute is separate;
 
   -- Try to re-use previous result, otherwise solve
-  function R_RESOLUTION (THE_POINTS : POINTS.P_T_THE_POINTS) return VECTOR is
+  function R_Resolution (The_Points : Points.P_T_The_Points) return Vector is
   begin
-    if not RESOLVED then
-      if THE_DEGREE > THE_POINTS'LENGTH then raise R_DEGREE_OUT; end if;
+    if not Resolved then
+      if The_Degree > The_Points'Length then raise R_Degree_Out; end if;
       declare
-        T_A_A : R_COMPUTE.MATRIX(1..THE_DEGREE, 1..THE_DEGREE);
-        A_Y : VECTOR(1..THE_DEGREE);
+        T_A_A : R_Compute.Matrix(1..The_Degree, 1..The_Degree);
+        A_Y : Vector(1..The_Degree);
       begin
-        RESOLVED := TRUE;
-        R_COMPUTE.DO_MATRIXES (THE_POINTS, T_A_A, A_Y);
-        PREVIOUS_SOLUTION (1..THE_DEGREE) := R_COMPUTE.SYSTEM (T_A_A, A_Y);
+        Resolved := True;
+        R_Compute.Do_Matrixes (The_Points, T_A_A, A_Y);
+        Previous_Solution (1..The_Degree) := R_Compute.System (T_A_A, A_Y);
       exception
         when others =>
-          RESOLVED := FALSE;
-          raise R_RESOL_ERROR;
+          Resolved := False;
+          raise R_Resol_Error;
       end;
     end if;
-    return PREVIOUS_SOLUTION (1..THE_DEGREE);
+    return Previous_Solution (1..The_Degree);
   exception
     when others =>
-      RESOLVED := FALSE;
-      raise R_RESOL_ERROR;
-  end R_RESOLUTION;
+      Resolved := False;
+      raise R_Resol_Error;
+  end R_Resolution;
 
   -- The System degree is polynomial degree + 1
-  procedure R_SET_DEGREE (DEGREE : in R_T_DEGREE) is
+  procedure R_Set_Degree (Degree : in R_T_Degree) is
   begin
-    if DEGREE + 1 /= THE_DEGREE then
-      RESOLVED := FALSE;
-      THE_DEGREE := DEGREE + 1;
+    if Degree + 1 /= The_Degree then
+      Resolved := False;
+      The_Degree := Degree + 1;
     end if;
   exception
-    when others => raise R_DEGREE_OUT;
-  end R_SET_DEGREE;
+    when others => raise R_Degree_Out;
+  end R_Set_Degree;
 
-  function R_DEGREE return R_T_DEGREE is
+  function R_Degree return R_T_Degree is
   begin
-    return THE_DEGREE - 1;
-  end R_DEGREE;
+    return The_Degree - 1;
+  end R_Degree;
 
-  procedure R_POINTS_MODIFICATION is
+  procedure R_Points_Modification is
   begin
-    RESOLVED := FALSE;
-  end R_POINTS_MODIFICATION;
+    Resolved := False;
+  end R_Points_Modification;
 
-end RESOL;
+end Resol;

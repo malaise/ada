@@ -1,3 +1,3 @@
-with POINTS, SYSLIN;
+with Points, Syslin;
 -- Use of syslin on coordinates
-package MY_SYSLIN is new SYSLIN (POINTS.P_T_COORDINATE);
+package My_Syslin is new Syslin (Points.P_T_Coordinate);

@@ -1,56 +1,56 @@
-with TEXT_IO;
-separate (MCD_MNG)
+with Text_Io;
+separate (Mcd_Mng)
 
-package body REGISTERS is
+package body Registers is
 
-  NB_OF_REGISTERS : constant := 2 * 26;
-  subtype REGISTER_RANGE is POSITIVE range 1 .. NB_OF_REGISTERS;
+  Nb_Of_Registers : constant := 2 * 26;
+  subtype Register_Range is Positive range 1 .. Nb_Of_Registers;
 
-  REGISTERS_ARRAY : array (REGISTER_RANGE) of ITEM_REC :=
-    (others => (KIND => OPER, VAL_OPER => OPERATOR_LIST'FIRST));
+  Registers_Array : array (Register_Range) of Item_Rec :=
+    (others => (Kind => Oper, Val_Oper => Operator_List'First));
 
-  function REG2IND (REG : in ITEM_REC) return REGISTER_RANGE is
+  function Reg2Ind (Reg : in Item_Rec) return Register_Range is
   begin
-    if REG.KIND /= REGI then
-      raise INVALID_REGISTER;
+    if Reg.Kind /= Regi then
+      raise Invalid_Register;
     end if;
-    if REG.VAL_REGI in 'a' .. 'z' then
-      return CHARACTER'POS(REG.VAL_REGI) -  CHARACTER'POS('a') + 1;
-    elsif REG.VAL_REGI in 'A' .. 'Z' then
-      return CHARACTER'POS(REG.VAL_REGI) -  CHARACTER'POS('A') + 1
-           + CHARACTER'POS('z') -  CHARACTER'POS('a') + 1;
+    if Reg.Val_Regi in 'a' .. 'z' then
+      return Character'Pos(Reg.Val_Regi) -  Character'Pos('a') + 1;
+    elsif Reg.Val_Regi in 'A' .. 'Z' then
+      return Character'Pos(Reg.Val_Regi) -  Character'Pos('A') + 1
+           + Character'Pos('z') -  Character'Pos('a') + 1;
     else
-       raise INVALID_REGISTER;
+       raise Invalid_Register;
     end if;
-  end REG2IND;
+  end Reg2Ind;
 
-  procedure STORE (VAL : in ITEM_REC; TO_REG : in ITEM_REC) is
+  procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec) is
   begin
-    if VAL.KIND not in REGISTER_CONTENT_LIST then
-      raise INVALID_ARGUMENT;
+    if Val.Kind not in Register_Content_List then
+      raise Invalid_Argument;
     end if;
-    REGISTERS_ARRAY(REG2IND(TO_REG)) := VAL;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.REGISTER) then
-      TEXT_IO.PUT ("Register: Storing in " & TO_REG.VAL_REGI & ": ");
-      DEBUG.PUT (VAL);
-      TEXT_IO.NEW_LINE;
+    Registers_Array(Reg2Ind(To_Reg)) := Val;
+    if Debug.Debug_Level_Array(Debug.Register) then
+      Text_Io.Put ("Register: Storing in " & To_Reg.Val_Regi & ": ");
+      Debug.Put (Val);
+      Text_Io.New_Line;
     end if;
-  end STORE;
+  end Store;
     
-  function  RETRIEVE (FROM_REG : in ITEM_REC) return ITEM_REC is
-    VAL : ITEM_REC;
+  function  Retrieve (From_Reg : in Item_Rec) return Item_Rec is
+    Val : Item_Rec;
   begin
-    VAL := REGISTERS_ARRAY(REG2IND(FROM_REG));
-    if VAL.KIND not in REGISTER_CONTENT_LIST then
-      raise EMTPY_REGISTER;
+    Val := Registers_Array(Reg2Ind(From_Reg));
+    if Val.Kind not in Register_Content_List then
+      raise Emtpy_Register;
     end if;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.REGISTER) then
-      TEXT_IO.PUT ("Register: Retrieving from " & FROM_REG.VAL_REGI & ": ");
-      DEBUG.PUT (VAL);
-      TEXT_IO.NEW_LINE;
+    if Debug.Debug_Level_Array(Debug.Register) then
+      Text_Io.Put ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
+      Debug.Put (Val);
+      Text_Io.New_Line;
     end if;
-    return VAL;
-  end RETRIEVE;
+    return Val;
+  end Retrieve;
 
-end REGISTERS;
+end Registers;
 

@@ -1,33 +1,33 @@
-with PERS_DEF;
-package MESU_DEF is
+with Pers_Def;
+package Mesu_Def is
 
   -- Date in string YyyyMmDd
-  subtype DATE_STR is STRING (1 .. 8);
+  subtype Date_Str is String (1 .. 8);
 
   -- Delta in seconds between 2 samplings
-  type SAMPLING_DELTA_RANGE is new POSITIVE range 1 .. 120;
+  type Sampling_Delta_Range is new Positive range 1 .. 120;
 
   -- Comment for a mesure
-  subtype COMMENT_STR is STRING (1 .. 20);
+  subtype Comment_Str is String (1 .. 20);
 
   -- Number of samplings
-  subtype SAMPLE_NB_RANGE is POSITIVE range 1 .. 100;
+  subtype Sample_Nb_Range is Positive range 1 .. 100;
 
   -- Values
-  type SAMPLE_ARRAY is array (SAMPLE_NB_RANGE range <>) of
-   PERS_DEF.BPM_RANGE;
-  subtype MAX_SAMPLE_ARRAY is SAMPLE_ARRAY (SAMPLE_NB_RANGE);
+  type Sample_Array is array (Sample_Nb_Range range <>) of
+   Pers_Def.Bpm_Range;
+  subtype Max_Sample_Array is Sample_Array (Sample_Nb_Range);
 
   -- A mesure
-  type MESURE_REC is record
-    PID : PERS_DEF.PID_RANGE;
+  type Mesure_Rec is record
+    Pid : Pers_Def.Pid_Range;
     -- YYYYMMDD
-    DATE : DATE_STR := (others => ' ');
-    SAMPLING_DELTA : SAMPLING_DELTA_RANGE := 120;
-    COMMENT : COMMENT_STR := (others => ' ');
+    Date : Date_Str := (others => ' ');
+    Sampling_Delta : Sampling_Delta_Range := 120;
+    Comment : Comment_Str := (others => ' ');
     -- Time zones for the mesure
-    TZ : PERS_DEF.PERSON_TZ_ARRAY := (others => PERS_DEF.BPM_RANGE'FIRST);
-    SAMPLES : MAX_SAMPLE_ARRAY := (others => PERS_DEF.BPM_RANGE'FIRST);
+    Tz : Pers_Def.Person_Tz_Array := (others => Pers_Def.Bpm_Range'First);
+    Samples : Max_Sample_Array := (others => Pers_Def.Bpm_Range'First);
   end record;
 
-end MESU_DEF;
+end Mesu_Def;

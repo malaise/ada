@@ -1,16 +1,16 @@
-separate (NAV_DATA)
+separate (Nav_Data)
 -- when only unknown is TRAJ_S after set_before
-procedure COMP_TRAJS (DATA : in out T_DATA) is
+procedure Comp_Trajs (Data : in out T_Data) is
   -- TRAJ_S = WIND_S*COS(TRAJ_A-WIND_A) + PLAN_S*COS(TRAJ_A-PLAN_A)
-  CRTW, CRTP : REAL;
-  use NAV_TYPES;
+  Crtw, Crtp : Real;
+  use Nav_Types;
 begin
-  CRTW := MY_MATH.COS ( TO_REAL
-   (NAV_TYPES.T_ANGLE'(DATA.TRAJ.ANGLE - DATA.WIND.ANGLE) ), MY_MATH.DEGREE );
-  CRTP := MY_MATH.COS ( TO_REAL
-   (NAV_TYPES.T_ANGLE'(DATA.TRAJ.ANGLE - DATA.PLAN.ANGLE) ), MY_MATH.DEGREE );
-  DATA.TRAJ.SPEED := NAV_TYPES.T_SPEED (MY_MATH.REAL(DATA.WIND.SPEED) * CRTW
-                                      + MY_MATH.REAL(DATA.PLAN.SPEED) * CRTP);
+  Crtw := My_Math.Cos ( To_Real
+   (Nav_Types.T_Angle'(Data.Traj.Angle - Data.Wind.Angle) ), My_Math.Degree );
+  Crtp := My_Math.Cos ( To_Real
+   (Nav_Types.T_Angle'(Data.Traj.Angle - Data.Plan.Angle) ), My_Math.Degree );
+  Data.Traj.Speed := Nav_Types.T_Speed (My_Math.Real(Data.Wind.Speed) * Crtw
+                                      + My_Math.Real(Data.Plan.Speed) * Crtp);
 exception
-  when others => raise COMP_ERR;
-end COMP_TRAJS;
+  when others => raise Comp_Err;
+end Comp_Trajs;

@@ -1,9 +1,9 @@
-with SCREEN;
-separate (ACCOUNT)
-procedure QUIT is
+with Screen;
+separate (Account)
+procedure Quit is
 begin
-  if MNG.IS_SAVED or else SCREEN.CONFIRM_ACTION(SCREEN.QUIT_UNSAVED) then 
-    raise QUIT_PROGRAM;
+  if Mng.Is_Saved or else Screen.Confirm_Action(Screen.Quit_Unsaved) then 
+    raise Quit_Program;
   end if;
-end QUIT;
+end Quit;
 

@@ -1,13 +1,13 @@
-package SOK_INPUT is
+package Sok_Input is
 
-  type KEY_LIST is (LEFT, RIGHT, UP, DOWN, UNDO, ESC, NEXT, REFRESH);
+  type Key_List is (Left, Right, Up, Down, Undo, Esc, Next, Refresh);
 
-  function GET_KEY return KEY_LIST;
+  function Get_Key return Key_List;
 
-  procedure PAUSE;
+  procedure Pause;
 
-  BREAK_REQUESTED : exception;
+  Break_Requested : exception;
 
-  procedure END_OF_PROGRAM;
+  procedure End_Of_Program;
 
-end SOK_INPUT;
+end Sok_Input;

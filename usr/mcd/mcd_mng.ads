@@ -1,141 +1,141 @@
-with MY_MATH;
-with INPUT_DISPATCHER;
-package MCD_MNG is
+with My_Math;
+with Input_Dispatcher;
+package Mcd_Mng is
 
-  type ITEM_KIND_LIST is (INTE, REAL, BOOL, CHRS, REGI, OPER);
+  type Item_Kind_List is (Inte, Real, Bool, Chrs, Regi, Oper);
 
-  type OPERATOR_LIST is (
-   NOP,
+  type Operator_List is (
+   Nop,
 
-   ADD,
-   SUB,
-   MULT,
-   DIV,
-   REMIND,
-   POW,
-   SWAP,
+   Add,
+   Sub,
+   Mult,
+   Div,
+   Remind,
+   Pow,
+   Swap,
 
-   BITAND,
-   BITOR,
-   BITXOR,
+   Bitand,
+   Bitor,
+   Bitxor,
 
-   SHL,
-   SHR,
+   Shl,
+   Shr,
    
-   MINUS,
-   ABSV,
-   BITNEG,
+   Minus,
+   Absv,
+   Bitneg,
 
-   EQUAL,
-   DIFF,
-   GREATER,
-   SMALLER,
-   GREATEQ,
-   SMALLEQ,
+   Equal,
+   Diff,
+   Greater,
+   Smaller,
+   Greateq,
+   Smalleq,
 
-   TOREAL,
-   ROUND,
-   TRUNC,
+   Toreal,
+   Round,
+   Trunc,
 
-   INT,
-   FRAC,
+   Int,
+   Frac,
 
-   ISREAL,
-   ISINTE,
-   ISSTR,
-   ISREG,
+   Isreal,
+   Isinte,
+   Isstr,
+   Isreg,
 
-   OBASE,
+   Obase,
 
-   BOLAND,
-   BOLOR,
-   BOLXOR,
+   Boland,
+   Bolor,
+   Bolxor,
 
-   BOLNEG,
+   Bolneg,
 
-   DUP,
+   Dup,
 
-   POP,
-   POPN,
+   Pop,
+   Popn,
 
-   IFTHEN,
-   IFTE,
-   ETFI,
+   Ifthen,
+   Ifte,
+   Etfi,
   
-   POPR,
-   COPYR,
-   PUSHR,
+   Popr,
+   Copyr,
+   Pushr,
 
-   SSIZE,
-   RND,
-   SLEEP,
+   Ssize,
+   Rnd,
+   Sleep,
 
-   POPE,
-   COPYE,
-   PUSHLE,
-   PUSHFE,
-   ESIZE,
+   Pope,
+   Copye,
+   Pushle,
+   Pushfe,
+   Esize,
 
-   CALL,
-   IFCALL,
-   RET,
-   RETN,
-   RETALL,
-   IFRET,
-   IFRETN,
-   IFRETALL,
-   RETACAL,
+   Call,
+   Ifcall,
+   Ret,
+   Retn,
+   Retall,
+   Ifret,
+   Ifretn,
+   Ifretall,
+   Retacal,
 
-   FORMAT,
-   PUT,
-   NEWL,
-   PUTL,
+   Format,
+   Put,
+   Newl,
+   Putl,
 
-   STRLEN,
-   STRCAT,
-   STRSUB,
-   STRLOC,
-   STRREP,
-   STRUPP,
-   STRLOW,
-   STRREAL,
-   STRINTE,
-   STRBOOL,
-   STROF,
+   Strlen,
+   Strcat,
+   Strsub,
+   Strloc,
+   Strrep,
+   Strupp,
+   Strlow,
+   Strreal,
+   Strinte,
+   Strbool,
+   Strof,
 
-   HELP
+   Help
    );
 
 
-  subtype CHARS_TEXT is STRING (1 .. INPUT_DISPATCHER.MAX_STRING_LG);
-  subtype REGISTER_LIST is CHARACTER;
+  subtype Chars_Text is String (1 .. Input_Dispatcher.Max_String_Lg);
+  subtype Register_List is Character;
 
-  type ITEM_REC (KIND : ITEM_KIND_LIST := ITEM_KIND_LIST'FIRST) is record
-    case KIND is
-      when INTE =>
-        VAL_INTE : MY_MATH.INTE;
-      when REAL =>
-        VAL_REAL : MY_MATH.REAL;
-      when BOOL =>
-        VAL_BOOL : BOOLEAN;
-      when CHRS =>
-        VAL_LEN  : NATURAL;
-        VAL_TEXT : CHARS_TEXT;
-      when REGI => 
-        VAL_REGI : REGISTER_LIST;
-      when OPER =>
-        VAL_OPER : OPERATOR_LIST;
+  type Item_Rec (Kind : Item_Kind_List := Item_Kind_List'First) is record
+    case Kind is
+      when Inte =>
+        Val_Inte : My_Math.Inte;
+      when Real =>
+        Val_Real : My_Math.Real;
+      when Bool =>
+        Val_Bool : Boolean;
+      when Chrs =>
+        Val_Len  : Natural;
+        Val_Text : Chars_Text;
+      when Regi => 
+        Val_Regi : Register_List;
+      when Oper =>
+        Val_Oper : Operator_List;
     end case;
   end record;
 
 
   -- Treat a new item
-  procedure NEW_ITEM (ITEM : in ITEM_REC; THE_END : out BOOLEAN);
+  procedure New_Item (Item : in Item_Rec; The_End : out Boolean);
 
-  function CHECK_EMPTY_STACK return BOOLEAN;
+  function Check_Empty_Stack return Boolean;
 
-  INVALID_ARGUMENT, ARGUMENT_MISMATCH, INVALID_REGISTER, EMTPY_REGISTER,
-  EMPTY_STACK, STRING_LEN : exception;
+  Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
+  Empty_Stack, String_Len : exception;
 
-end MCD_MNG;
+end Mcd_Mng;
 

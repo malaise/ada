@@ -1,6 +1,6 @@
-with AFPX;
-package MESU_PRT is
+with Afpx;
+package Mesu_Prt is
 
-  procedure PRINT;
+  procedure Print;
 
-end MESU_PRT;
+end Mesu_Prt;

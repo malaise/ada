@@ -1,50 +1,50 @@
-with TEXT_IO;
-with ARGUMENT;
-with ONE_FILE_STATEMENTS;
+with Text_Io;
+with Argument;
+with One_File_Statements;
 
-procedure STATFILE is
+procedure Statfile is
 
-  procedure STAT_ONE_FILE (LIST_FILE_NAME : in STRING) is
-    LIST_FILE : TEXT_IO.FILE_TYPE;
-    FILE_NAME : STRING (1 .. 5000);
-    FILE_NAME_LEN : NATURAL;
+  procedure Stat_One_File (List_File_Name : in String) is
+    List_File : Text_Io.File_Type;
+    File_Name : String (1 .. 5000);
+    File_Name_Len : Natural;
   begin
     begin
-      TEXT_IO.OPEN (LIST_FILE, TEXT_IO.IN_FILE, LIST_FILE_NAME);
+      Text_Io.Open (List_File, Text_Io.In_File, List_File_Name);
     exception
       when others => 
-        TEXT_IO.PUT_LINE ("Exception raised when opening list file "
-                        & LIST_FILE_NAME & " SKIPPING");
+        Text_Io.Put_Line ("Exception raised when opening list file "
+                        & List_File_Name & " SKIPPING");
         return;
     end;
 
-    while not TEXT_IO.END_OF_FILE (LIST_FILE) loop
+    while not Text_Io.End_Of_File (List_File) loop
       begin
-        TEXT_IO.GET_LINE (LIST_FILE, FILE_NAME, FILE_NAME_LEN);
+        Text_Io.Get_Line (List_File, File_Name, File_Name_Len);
       exception
         when others => 
-          TEXT_IO.PUT_LINE ("Exception raised when reading line "
-                          & TEXT_IO.POSITIVE_COUNT'IMAGE(TEXT_IO.LINE(LIST_FILE))
-                          & " of list file " & LIST_FILE_NAME & " SKIPPING");
-          TEXT_IO.CLOSE (LIST_FILE);
+          Text_Io.Put_Line ("Exception raised when reading line "
+                          & Text_Io.Positive_Count'Image(Text_Io.Line(List_File))
+                          & " of list file " & List_File_Name & " SKIPPING");
+          Text_Io.Close (List_File);
           return;
       end;
       
-      if FILE_NAME_LEN /= 0 then
-        ONE_FILE_STATEMENTS.PRINT_STATEMENTS_OF_FILE(FILE_NAME(1 .. FILE_NAME_LEN));
+      if File_Name_Len /= 0 then
+        One_File_Statements.Print_Statements_Of_File(File_Name(1 .. File_Name_Len));
       end if;
     end loop;
-    TEXT_IO.CLOSE (LIST_FILE);
-  end STAT_ONE_FILE; 
+    Text_Io.Close (List_File);
+  end Stat_One_File; 
 
 begin
 
-  for ARG in 1 .. ARGUMENT.GET_NBRE_ARG loop
-    TEXT_IO.PUT_LINE ("Processing list file " & STRING'(ARGUMENT.GET_PARAMETER(ARG)));
-    STAT_ONE_FILE(ARGUMENT.GET_PARAMETER(ARG));
+  for Arg in 1 .. Argument.Get_Nbre_Arg loop
+    Text_Io.Put_Line ("Processing list file " & String'(Argument.Get_Parameter(Arg)));
+    Stat_One_File(Argument.Get_Parameter(Arg));
   end loop;
 
-  ONE_FILE_STATEMENTS.PRINT_STATEMENTS_OF_FILE("");
+  One_File_Statements.Print_Statements_Of_File("");
 
-end STATFILE;
+end Statfile;
 

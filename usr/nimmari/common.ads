@@ -1,21 +1,21 @@
-package COMMON is
+package Common is
 
   -- The rows
-  subtype ROW_RANGE is POSITIVE range 1 .. 4;
+  subtype Row_Range is Positive range 1 .. 4;
 
   -- The bars
-  subtype FULL_BAR_RANGE is NATURAL range 0 .. 7;
-  subtype BAR_RANGE is FULL_BAR_RANGE range 1 .. FULL_BAR_RANGE'LAST;
+  subtype Full_Bar_Range is Natural range 0 .. 7;
+  subtype Bar_Range is Full_Bar_Range range 1 .. Full_Bar_Range'Last;
 
   -- Number of Bars per ROW
-  type BAR_PER_ROW_TAB is array (ROW_RANGE) of BAR_RANGE;
-  BAR_PER_ROW : constant BAR_PER_ROW_TAB := (
+  type Bar_Per_Row_Tab is array (Row_Range) of Bar_Range;
+  Bar_Per_Row : constant Bar_Per_Row_Tab := (
    1 => 7,
    2 => 5,
    3 => 3,
    4 => 1);
 
   -- King of game
-  type GAME_LIST is (NIM, MARIENBAD);
+  type Game_List is (Nim, Marienbad);
 
-end COMMON;
+end Common;

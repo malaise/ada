@@ -1,58 +1,58 @@
-with COMMON, SCREEN, COMPUTE;
-procedure NIMMARI is
-  GAME : COMMON.GAME_LIST;
-  ROW : COMMON.ROW_RANGE;
-  BARS : COMMON.FULL_BAR_RANGE;
-  HUMAN, MACHINE : NATURAL := 0;
-  RESULT : COMPUTE.RESULT_LIST;
-  CHANGE_GAME : BOOLEAN;
+with Common, Screen, Compute;
+procedure Nimmari is
+  Game : Common.Game_List;
+  Row : Common.Row_Range;
+  Bars : Common.Full_Bar_Range;
+  Human, Machine : Natural := 0;
+  Result : Compute.Result_List;
+  Change_Game : Boolean;
 
-  use COMMON, COMPUTE;
+  use Common, Compute;
 begin
-  COMPUTE.INIT;
-  GAME := SCREEN.INTRO;
+  Compute.Init;
+  Game := Screen.Intro;
 
-  ONE_GAME:
+  One_Game:
   loop
-    SCREEN.RESET (GAME);
-    SCREEN.SCORE (HUMAN, MACHINE);
-    ONE_GO:
+    Screen.Reset (Game);
+    Screen.Score (Human, Machine);
+    One_Go:
     loop
       -- Compute game, check end
-      COMPUTE.PLAY (GAME, RESULT, ROW, BARS);
+      Compute.Play (Game, Result, Row, Bars);
 
       -- Update score
-      if RESULT = COMPUTE.WON or else RESULT = COMPUTE.PLAYED_AND_WON then
-        MACHINE := MACHINE + 1;
-        SCREEN.SCORE (HUMAN, MACHINE);
-      elsif RESULT = COMPUTE.LOST or else RESULT = COMPUTE.PLAYED_AND_LOST then
-        HUMAN := HUMAN + 1;
-        SCREEN.SCORE (HUMAN, MACHINE);
+      if Result = Compute.Won or else Result = Compute.Played_And_Won then
+        Machine := Machine + 1;
+        Screen.Score (Human, Machine);
+      elsif Result = Compute.Lost or else Result = Compute.Played_And_Lost then
+        Human := Human + 1;
+        Screen.Score (Human, Machine);
       end if;
 
       -- Display result
-      SCREEN.UPDATE (ROW, BARS, RESULT, CHANGE_GAME);
+      Screen.Update (Row, Bars, Result, Change_Game);
 
       -- exit when end
-      exit ONE_GO when RESULT /= COMPUTE.PLAYED;
+      exit One_Go when Result /= Compute.Played;
 
       -- User plays
-      SCREEN.PLAY;
+      Screen.Play;
 
-    end loop ONE_GO;
+    end loop One_Go;
 
-    if CHANGE_GAME then
-      if GAME = COMMON.NIM then
-        GAME := COMMON.MARIENBAD;
+    if Change_Game then
+      if Game = Common.Nim then
+        Game := Common.Marienbad;
       else
-        GAME := COMMON.NIM;
+        Game := Common.Nim;
       end if;
     end if;
 
-  end loop ONE_GAME;
+  end loop One_Game;
 
 exception
-  when SCREEN.EXIT_REQUESTED =>
+  when Screen.Exit_Requested =>
     null;
-end NIMMARI;
+end Nimmari;
 

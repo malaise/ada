@@ -1,485 +1,485 @@
-with NORMAL;
-with DAY_MNG;
-with CON_IO;
-with TIMERS;
-with DOS;
-with SOK_INPUT;
-with SOK_TIME;
+with Normal;
+with Day_Mng;
+with Con_Io;
+with Timers;
+with Dos;
+with Sok_Input;
+with Sok_Time;
 
 -- displaying of sokoban
-package body SOK_DISPLAY is
+package body Sok_Display is
 
-  LEN_MOVES  : constant := 5;
-  LEN_PUSHES : constant := 5;
-  LEN_DAYS   : constant := 3;
+  Len_Moves  : constant := 5;
+  Len_Pushes : constant := 5;
+  Len_Days   : constant := 3;
 
-  TITLE_WIN : CON_IO.WINDOW;
-  FRAME_WIN : CON_IO.WINDOW;
-  LINE_WIN  : CON_IO.WINDOW;
-  SCORE_WIN : CON_IO.WINDOW;
-  TIME_WIN  : CON_IO.WINDOW;
-  HELP_WIN  : CON_IO.WINDOW;
-  MENU_WIN  : CON_IO.WINDOW;
-  ERROR_WIN : CON_IO.WINDOW;
-  GET_WIN   : CON_IO.WINDOW;
+  Title_Win : Con_Io.Window;
+  Frame_Win : Con_Io.Window;
+  Line_Win  : Con_Io.Window;
+  Score_Win : Con_Io.Window;
+  Time_Win  : Con_Io.Window;
+  Help_Win  : Con_Io.Window;
+  Menu_Win  : Con_Io.Window;
+  Error_Win : Con_Io.Window;
+  Get_Win   : Con_Io.Window;
 
-  CURRENT_ACTION : ACTION_LIST;
-  CURRENT_ALLOW_WRITE : BOOLEAN;
+  Current_Action : Action_List;
+  Current_Allow_Write : Boolean;
 
-  procedure INIT is
-    HELP_ROW : constant := 1;
-    HELP_COL : constant := 1;
+  procedure Init is
+    Help_Row : constant := 1;
+    Help_Col : constant := 1;
   begin
-    CON_IO.INIT;
-    CON_IO.RESET_TERM;
+    Con_Io.Init;
+    Con_Io.Reset_Term;
 
     -- TITLE      : row 00 to 00 col 00 to 57 (01 row, 57 col)
-    CON_IO.OPEN (TITLE_WIN, (00, 00), (00, 55) );
+    Con_Io.Open (Title_Win, (00, 00), (00, 55) );
 
     -- TIME ZONE  : row 00 to 00 col 57 to 76 (01 row 20 col)
-    CON_IO.OPEN (TIME_WIN,  (00, 57), (00, 76) );
+    Con_Io.Open (Time_Win,  (00, 57), (00, 76) );
 
     -- FRAME      : row 02 to 17 col 05 to 42 (16 row 38 col) (38=19*2)
-    CON_IO.OPEN (FRAME_WIN, (02, 05), (17, 42) );
+    Con_Io.Open (Frame_Win, (02, 05), (17, 42) );
 
     -- STATE_LINE : row 20 to 20 col 10 to 75 (01 row 66 col)
-    CON_IO.OPEN (LINE_WIN,  (20, 10), (20, 75) );
+    Con_Io.Open (Line_Win,  (20, 10), (20, 75) );
 
     -- SCORE_LINE : row 21 to 20 col 10 to 75 (01 row 66 col)
-    CON_IO.OPEN (SCORE_WIN,  (21, 10), (21, 75) );
+    Con_Io.Open (Score_Win,  (21, 10), (21, 75) );
 
     -- HELP BESIDE: row 05 to 15 col 55 to 77 (left to frame)
-    CON_IO.OPEN (HELP_WIN,  (05, 55), (15, 77) );
-    CON_IO.SET_FOREGROUND (CON_IO.LIGHT_GREEN, NAME => HELP_WIN);
+    Con_Io.Open (Help_Win,  (05, 55), (15, 77) );
+    Con_Io.Set_Foreground (Con_Io.Light_Green, Name => Help_Win);
 
     -- MENU       : row 19 to 21 col 02 to 79 (bottom)
-    CON_IO.OPEN (MENU_WIN,  (19, 00), (21, 79) );
+    Con_Io.Open (Menu_Win,  (19, 00), (21, 79) );
 
     -- ERROR      : row 19 to 21 col 02 to 79 (bottom)
-    CON_IO.OPEN (ERROR_WIN, (19, 00), (21, 79) );
+    Con_Io.Open (Error_Win, (19, 00), (21, 79) );
 
     -- GET        : row 22 to 25 col 19 to 59 (bottom)
-    CON_IO.OPEN (GET_WIN,   (22, 19), (24, 59) );
+    Con_Io.Open (Get_Win,   (22, 19), (24, 59) );
 
-  end INIT;
+  end Init;
 
-  procedure PUT_HELP (HELP : in ACTION_LIST) is
+  procedure Put_Help (Help : in Action_List) is
   begin
-    CON_IO.CLEAR (HELP_WIN);
-    case HELP is
-      when FRAME =>
-        CON_IO.PUT_LINE (" Arrows", NAME => HELP_WIN);
-        CON_IO.PUT ("  for movements", NAME => HELP_WIN);
-        CON_IO.NEW_LINE (HELP_WIN, 2);
+    Con_Io.Clear (Help_Win);
+    case Help is
+      when Frame =>
+        Con_Io.Put_Line (" Arrows", Name => Help_Win);
+        Con_Io.Put ("  for movements", Name => Help_Win);
+        Con_Io.New_Line (Help_Win, 2);
 
-        CON_IO.PUT_LINE (" u  or  Backspace", NAME => HELP_WIN);
-        CON_IO.PUT ("  for undo", NAME => HELP_WIN);
-        CON_IO.NEW_LINE (HELP_WIN, 2);
+        Con_Io.Put_Line (" u  or  Backspace", Name => Help_Win);
+        Con_Io.Put ("  for undo", Name => Help_Win);
+        Con_Io.New_Line (Help_Win, 2);
 
-        CON_IO.PUT_LINE (" Ctrl Break or Ctrl C", NAME => HELP_WIN);
-        CON_IO.PUT ("  to quit", NAME => HELP_WIN);
-      when DONE =>
-        CON_IO.PUT_LINE ("  - FRAME completed -", BLINK_STAT => CON_IO.BLINK,
-                         NAME => HELP_WIN);
-        CON_IO.NEW_LINE (HELP_WIN, 2);
+        Con_Io.Put_Line (" Ctrl Break or Ctrl C", Name => Help_Win);
+        Con_Io.Put ("  to quit", Name => Help_Win);
+      when Done =>
+        Con_Io.Put_Line ("  - FRAME completed -", Blink_Stat => Con_Io.Blink,
+                         Name => Help_Win);
+        Con_Io.New_Line (Help_Win, 2);
 
-        CON_IO.PUT_LINE (" Space or Return", NAME => HELP_WIN);
-        CON_IO.PUT ("  for next frame", NAME => HELP_WIN);
-        CON_IO.NEW_LINE (HELP_WIN, 2);
+        Con_Io.Put_Line (" Space or Return", Name => Help_Win);
+        Con_Io.Put ("  for next frame", Name => Help_Win);
+        Con_Io.New_Line (Help_Win, 2);
 
-        CON_IO.PUT_LINE (" Ctrl Break or Ctrl C", NAME => HELP_WIN);
-        CON_IO.PUT ("  to quit", NAME => HELP_WIN);
-      when WRITE =>
-        CON_IO.MOVE ( (02, 00), NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Save current", NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("  frame and movements", NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Only one frame saved", NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("  at a time", NAME => HELP_WIN);
-      when READ =>
-        CON_IO.MOVE ( (02, 00), NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Restore last saved", NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("  frame and movements", NAME => HELP_WIN);
-        CON_IO.NEW_LINE (NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Only one frame saved", NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("  at a time", NAME => HELP_WIN);
-      when RESET =>
-        CON_IO.MOVE ( (03, 00), NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Restart current frame", NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("  from the beginning", NAME => HELP_WIN);
-      when GET_NEW =>
-        CON_IO.MOVE ( (03, 00), NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Start a new frame", NAME => HELP_WIN);
-        CON_IO.PUT_LINE ("  from the beginning", NAME => HELP_WIN);
-      when BREAK =>
-        CON_IO.MOVE ( (05, 00), NAME => HELP_WIN);
-        CON_IO.PUT_LINE (" Exit SOKOBAN", NAME => HELP_WIN);
+        Con_Io.Put_Line (" Ctrl Break or Ctrl C", Name => Help_Win);
+        Con_Io.Put ("  to quit", Name => Help_Win);
+      when Write =>
+        Con_Io.Move ( (02, 00), Name => Help_Win);
+        Con_Io.Put_Line (" Save current", Name => Help_Win);
+        Con_Io.Put_Line ("  frame and movements", Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" Only one frame saved", Name => Help_Win);
+        Con_Io.Put_Line ("  at a time", Name => Help_Win);
+      when Read =>
+        Con_Io.Move ( (02, 00), Name => Help_Win);
+        Con_Io.Put_Line (" Restore last saved", Name => Help_Win);
+        Con_Io.Put_Line ("  frame and movements", Name => Help_Win);
+        Con_Io.New_Line (Name => Help_Win);
+        Con_Io.Put_Line (" Only one frame saved", Name => Help_Win);
+        Con_Io.Put_Line ("  at a time", Name => Help_Win);
+      when Reset =>
+        Con_Io.Move ( (03, 00), Name => Help_Win);
+        Con_Io.Put_Line (" Restart current frame", Name => Help_Win);
+        Con_Io.Put_Line ("  from the beginning", Name => Help_Win);
+      when Get_New =>
+        Con_Io.Move ( (03, 00), Name => Help_Win);
+        Con_Io.Put_Line (" Start a new frame", Name => Help_Win);
+        Con_Io.Put_Line ("  from the beginning", Name => Help_Win);
+      when Break =>
+        Con_Io.Move ( (05, 00), Name => Help_Win);
+        Con_Io.Put_Line (" Exit SOKOBAN", Name => Help_Win);
 
     end case;
 
-    case HELP is
-      when FRAME | DONE =>
-        CON_IO.MOVE ( (09, 00) ,HELP_WIN);
-        CON_IO.PUT_LINE (" Esc", NAME => HELP_WIN);
-        CON_IO.PUT ("  for command menu", NAME => HELP_WIN);
+    case Help is
+      when Frame | Done =>
+        Con_Io.Move ( (09, 00) ,Help_Win);
+        Con_Io.Put_Line (" Esc", Name => Help_Win);
+        Con_Io.Put ("  for command menu", Name => Help_Win);
       when others =>
-        CON_IO.MOVE ( (09, 00) ,HELP_WIN);
-        CON_IO.PUT_LINE (" Esc", NAME => HELP_WIN);
-        CON_IO.PUT ("  to play again", NAME => HELP_WIN);
+        Con_Io.Move ( (09, 00) ,Help_Win);
+        Con_Io.Put_Line (" Esc", Name => Help_Win);
+        Con_Io.Put ("  to play again", Name => Help_Win);
     end case;
-  end PUT_HELP;
+  end Put_Help;
 
   -- puts all the frame
-  procedure PUT_FRAME (FRAME : in SOK_TYPES.FRAME_TAB) is
+  procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
-    CON_IO.MOVE ( (00, 20), NAME => TITLE_WIN);
-    CON_IO.PUT ("S O K O B A N", TITLE_WIN,
-     FOREGROUND => CON_IO.WHITE, MOVE => FALSE);
-    CON_IO.MOVE ( (0, 50), TITLE_WIN);
-    CON_IO.PUT ("Time :", TITLE_WIN, MOVE => FALSE);
+    Con_Io.Move ( (00, 20), Name => Title_Win);
+    Con_Io.Put ("S O K O B A N", Title_Win,
+     Foreground => Con_Io.White, Move => False);
+    Con_Io.Move ( (0, 50), Title_Win);
+    Con_Io.Put ("Time :", Title_Win, Move => False);
 
-    CON_IO.CLEAR (FRAME_WIN);
-    for I in SOK_TYPES.ROW_RANGE loop
-      for J in SOK_TYPES.COL_RANGE loop
-        PUT_SQUARE (FRAME (I,J), (ROW =>I, COL =>J) );
+    Con_Io.Clear (Frame_Win);
+    for I in Sok_Types.Row_Range loop
+      for J in Sok_Types.Col_Range loop
+        Put_Square (Frame (I,J), (Row =>I, Col =>J) );
       end loop;
     end loop;
-  end PUT_FRAME;
+  end Put_Frame;
 
   -- puts a square
-  procedure PUT_SQUARE (SQUARE     : in SOK_TYPES.SQUARE_REC;
-                        COORDINATE : in SOK_TYPES.COORDINATE_REC;
-                        BLINK      : in BOOLEAN := FALSE) is
+  procedure Put_Square (Square     : in Sok_Types.Square_Rec;
+                        Coordinate : in Sok_Types.Coordinate_Rec;
+                        Blink      : in Boolean := False) is
   begin
 
-    CON_IO.MOVE ((COORDINATE.ROW - 1, (COORDINATE.COL - 1) * 2),
-     NAME => FRAME_WIN);
-    case SQUARE.PATTERN is
-      when SOK_TYPES.WALL =>
-        CON_IO.PUT ("  ", FRAME_WIN, BACKGROUND => CON_IO.LIGHT_GRAY,
-         MOVE => FALSE);
-      when SOK_TYPES.TARGET =>
-        case SQUARE.CONTENT is
-          when SOK_TYPES.NOTHING =>
-            CON_IO.PUT ("* ", FRAME_WIN, FOREGROUND => CON_IO.RED,
-             MOVE => FALSE);
-          when SOK_TYPES.MAN =>
-            CON_IO.PUT ("!!", FRAME_WIN, FOREGROUND => CON_IO.RED,
-             MOVE => FALSE);
-          when SOK_TYPES.BOX =>
-            if BLINK then
-              CON_IO.PUT ("[]", FRAME_WIN,
-                                FOREGROUND => CON_IO.RED,
-                                BLINK_STAT => CON_IO.BLINK,
-                                MOVE => FALSE);
+    Con_Io.Move ((Coordinate.Row - 1, (Coordinate.Col - 1) * 2),
+     Name => Frame_Win);
+    case Square.Pattern is
+      when Sok_Types.Wall =>
+        Con_Io.Put ("  ", Frame_Win, Background => Con_Io.Light_Gray,
+         Move => False);
+      when Sok_Types.Target =>
+        case Square.Content is
+          when Sok_Types.Nothing =>
+            Con_Io.Put ("* ", Frame_Win, Foreground => Con_Io.Red,
+             Move => False);
+          when Sok_Types.Man =>
+            Con_Io.Put ("!!", Frame_Win, Foreground => Con_Io.Red,
+             Move => False);
+          when Sok_Types.Box =>
+            if Blink then
+              Con_Io.Put ("[]", Frame_Win,
+                                Foreground => Con_Io.Red,
+                                Blink_Stat => Con_Io.Blink,
+                                Move => False);
             else
-              CON_IO.PUT ("[]", FRAME_WIN,
-                                FOREGROUND => CON_IO.RED,
-                                BLINK_STAT => CON_IO.NOT_BLINK,
-                                MOVE => FALSE);
+              Con_Io.Put ("[]", Frame_Win,
+                                Foreground => Con_Io.Red,
+                                Blink_Stat => Con_Io.Not_Blink,
+                                Move => False);
             end if;
         end case;
-      when SOK_TYPES.FREE =>
-        case SQUARE.CONTENT is
-          when SOK_TYPES.NOTHING =>
-            CON_IO.PUT ("  ", FRAME_WIN, MOVE => FALSE);
-          when SOK_TYPES.MAN =>
-            CON_IO.PUT ("!!", FRAME_WIN,  FOREGROUND => CON_IO.CYAN,
-                        MOVE => FALSE);
-          when SOK_TYPES.BOX =>
-            CON_IO.PUT ("[]", FRAME_WIN, MOVE => FALSE);
+      when Sok_Types.Free =>
+        case Square.Content is
+          when Sok_Types.Nothing =>
+            Con_Io.Put ("  ", Frame_Win, Move => False);
+          when Sok_Types.Man =>
+            Con_Io.Put ("!!", Frame_Win,  Foreground => Con_Io.Cyan,
+                        Move => False);
+          when Sok_Types.Box =>
+            Con_Io.Put ("[]", Frame_Win, Move => False);
         end case;
     end case;
-  end PUT_SQUARE;
+  end Put_Square;
 
 
   -- puts the down line
-  procedure PUT_LINE (MOVES : in NATURAL; PUSHES : in NATURAL;
-                      BOXES_IN : in NATURAL; NB_BOXES : in POSITIVE;
-                      FRAME : in SOK_TYPES.FRAME_RANGE) is
+  procedure Put_Line (Moves : in Natural; Pushes : in Natural;
+                      Boxes_In : in Natural; Nb_Boxes : in Positive;
+                      Frame : in Sok_Types.Frame_Range) is
   begin
-    CON_IO.MOVE (NAME => LINE_WIN);
-    CON_IO.PUT ("Frame : "      & NORMAL (FRAME, 2),          LINE_WIN);
-    CON_IO.PUT ("    Moves : "  & NORMAL (MOVES, LEN_MOVES),  LINE_WIN);
-    CON_IO.PUT ("    Pushes : " & NORMAL (PUSHES, LEN_MOVES), LINE_WIN);
-    CON_IO.PUT ("    Boxes : " & NORMAL (BOXES_IN, 2) & '/' & NORMAL (NB_BOXES, 2), LINE_WIN,
-     MOVE => FALSE);
-  end PUT_LINE;
+    Con_Io.Move (Name => Line_Win);
+    Con_Io.Put ("Frame : "      & Normal (Frame, 2),          Line_Win);
+    Con_Io.Put ("    Moves : "  & Normal (Moves, Len_Moves),  Line_Win);
+    Con_Io.Put ("    Pushes : " & Normal (Pushes, Len_Moves), Line_Win);
+    Con_Io.Put ("    Boxes : " & Normal (Boxes_In, 2) & '/' & Normal (Nb_Boxes, 2), Line_Win,
+     Move => False);
+  end Put_Line;
 
-  function TIME_IMAGE (DAY : NATURAL; TIME : CALENDAR.DAY_DURATION) return STRING is
-    HOURS    : DAY_MNG.T_HOURS;
-    MINUTES  : DAY_MNG.T_MINUTES;
-    SECONDS  : DAY_MNG.T_SECONDS;
-    MILLISEC : DAY_MNG.T_MILLISEC;
-    STR : STRING (1 .. LEN_DAYS+16);
+  function Time_Image (Day : Natural; Time : Calendar.Day_Duration) return String is
+    Hours    : Day_Mng.T_Hours;
+    Minutes  : Day_Mng.T_Minutes;
+    Seconds  : Day_Mng.T_Seconds;
+    Millisec : Day_Mng.T_Millisec;
+    Str : String (1 .. Len_Days+16);
   begin
-    DAY_MNG.SPLIT (TIME, HOURS, MINUTES, SECONDS, MILLISEC);
-    if DAY = 0 then
-      STR(1 .. LEN_DAYS+5) := "   " & "     ";
-    elsif DAY = 1 then
-      STR(1 .. LEN_DAYS+5) := NORMAL (DAY, LEN_DAYS) & " day ";
+    Day_Mng.Split (Time, Hours, Minutes, Seconds, Millisec);
+    if Day = 0 then
+      Str(1 .. Len_Days+5) := "   " & "     ";
+    elsif Day = 1 then
+      Str(1 .. Len_Days+5) := Normal (Day, Len_Days) & " day ";
     else
-      STR(1 .. LEN_DAYS+5) := NORMAL (DAY, LEN_DAYS) & " days";
+      Str(1 .. Len_Days+5) := Normal (Day, Len_Days) & " days";
     end if;
-    STR(LEN_DAYS+6 .. LEN_DAYS+16) := " " &
-                NORMAL (HOURS,   2, GAP => '0') & "h" &
-                NORMAL (MINUTES, 2, GAP => '0') & "mn" &
-                NORMAL (SECONDS, 2, GAP => '0') & "s";
-    return STR;
-  end TIME_IMAGE;
+    Str(Len_Days+6 .. Len_Days+16) := " " &
+                Normal (Hours,   2, Gap => '0') & "h" &
+                Normal (Minutes, 2, Gap => '0') & "mn" &
+                Normal (Seconds, 2, Gap => '0') & "s";
+    return Str;
+  end Time_Image;
 
-  procedure PUT_TIME (DAY : in NATURAL; TIME : in CALENDAR.DAY_DURATION) is
+  procedure Put_Time (Day : in Natural; Time : in Calendar.Day_Duration) is
 
   begin
-    CON_IO.MOVE (NAME => TIME_WIN);
-    CON_IO.PUT (TIME_IMAGE(DAY, TIME),
-                TIME_WIN,
-                MOVE => FALSE);
-  end PUT_TIME;
+    Con_Io.Move (Name => Time_Win);
+    Con_Io.Put (Time_Image(Day, Time),
+                Time_Win,
+                Move => False);
+  end Put_Time;
 
-  procedure PUT_SCORE (SCORE : in SOK_TYPES.SCORE_REC) is
+  procedure Put_Score (Score : in Sok_Types.Score_Rec) is
   begin
-    CON_IO.MOVE (NAME => SCORE_WIN);
-    if SCORE.SET then
-      CON_IO.PUT ("Best results", SCORE_WIN);
-      CON_IO.PUT ("  Moves : "  & NORMAL (SCORE.MOVES, LEN_MOVES),  SCORE_WIN);
-      CON_IO.PUT ("    Pushes : " & NORMAL (SCORE.PUSHES, LEN_MOVES), SCORE_WIN);
-      CON_IO.PUT ("  " & TIME_IMAGE(SCORE.DAY, SCORE.DUR),
-                  SCORE_WIN,
-                  MOVE => FALSE);
+    Con_Io.Move (Name => Score_Win);
+    if Score.Set then
+      Con_Io.Put ("Best results", Score_Win);
+      Con_Io.Put ("  Moves : "  & Normal (Score.Moves, Len_Moves),  Score_Win);
+      Con_Io.Put ("    Pushes : " & Normal (Score.Pushes, Len_Moves), Score_Win);
+      Con_Io.Put ("  " & Time_Image(Score.Day, Score.Dur),
+                  Score_Win,
+                  Move => False);
     else
-      CON_IO.CLEAR (SCORE_WIN);
+      Con_Io.Clear (Score_Win);
     end if;
-  end PUT_SCORE;
+  end Put_Score;
 
-  procedure PUT_ACTION (ACTION : in MENU_ACTION_LIST; SELECTED : in BOOLEAN) is
-    COLOR : CON_IO.EFFECTIVE_COLORS;
-    BLINK : CON_IO.EFFECTIVE_BLINK_STATS;
-    LEN_FIELD : constant := 11;
-    PAD       : constant :=  4;
-    WRITE_COL   : constant := PAD;
-    READ_COL    : constant := WRITE_COL   + LEN_FIELD + PAD;
-    RESET_COL   : constant := READ_COL    + LEN_FIELD + PAD;
-    GET_NEW_COL : constant := RESET_COL   + LEN_FIELD + PAD;
-    BREAK_COL   : constant := GET_NEW_COL + LEN_FIELD + PAD;
+  procedure Put_Action (Action : in Menu_Action_List; Selected : in Boolean) is
+    Color : Con_Io.Effective_Colors;
+    Blink : Con_Io.Effective_Blink_Stats;
+    Len_Field : constant := 11;
+    Pad       : constant :=  4;
+    Write_Col   : constant := Pad;
+    Read_Col    : constant := Write_Col   + Len_Field + Pad;
+    Reset_Col   : constant := Read_Col    + Len_Field + Pad;
+    Get_New_Col : constant := Reset_Col   + Len_Field + Pad;
+    Break_Col   : constant := Get_New_Col + Len_Field + Pad;
   begin
-    if not SELECTED then
-      COLOR := CON_IO.LIGHT_GRAY;
-      BLINK := CON_IO.NOT_BLINK;
+    if not Selected then
+      Color := Con_Io.Light_Gray;
+      Blink := Con_Io.Not_Blink;
     else
-      COLOR := CON_IO.GREEN;
-      BLINK := CON_IO.BLINK;
+      Color := Con_Io.Green;
+      Blink := Con_Io.Blink;
     end if;
 
-    case ACTION is
-      when WRITE =>
-        if CURRENT_ALLOW_WRITE then
-          CON_IO.MOVE ( (0, WRITE_COL), MENU_WIN);
-          CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-           BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-          CON_IO.MOVE ( (1, WRITE_COL), MENU_WIN);
-          CON_IO.PUT ("   SAVE    ", MENU_WIN, FOREGROUND => COLOR,
-           BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-          CON_IO.MOVE ( (2, WRITE_COL), MENU_WIN);
-          CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-           BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
+    case Action is
+      when Write =>
+        if Current_Allow_Write then
+          Con_Io.Move ( (0, Write_Col), Menu_Win);
+          Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+           Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+          Con_Io.Move ( (1, Write_Col), Menu_Win);
+          Con_Io.Put ("   SAVE    ", Menu_Win, Foreground => Color,
+           Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+          Con_Io.Move ( (2, Write_Col), Menu_Win);
+          Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+           Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
         else
-          CON_IO.MOVE ( (1, WRITE_COL), MENU_WIN);
-          CON_IO.PUT ("   SAVE    ", MENU_WIN, MOVE => FALSE);
+          Con_Io.Move ( (1, Write_Col), Menu_Win);
+          Con_Io.Put ("   SAVE    ", Menu_Win, Move => False);
         end if;
-      when READ =>
-        CON_IO.MOVE ( (0, READ_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (1, READ_COL), MENU_WIN);
-        CON_IO.PUT ("  RESTORE  ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (2, READ_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-      when RESET =>
-        CON_IO.MOVE ( (0, RESET_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (1, RESET_COL), MENU_WIN);
-        CON_IO.PUT ("   RESET   ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (2, RESET_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-      when GET_NEW =>
-        CON_IO.MOVE ( (0, GET_NEW_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (1, GET_NEW_COL), MENU_WIN);
-        CON_IO.PUT (" GOTO NEW  ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (2, GET_NEW_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-      when BREAK =>
-        CON_IO.MOVE ( (0, BREAK_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (1, BREAK_COL), MENU_WIN);
-        CON_IO.PUT ("    EXIT   ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
-        CON_IO.MOVE ( (2, BREAK_COL), MENU_WIN);
-        CON_IO.PUT ("           ", MENU_WIN, FOREGROUND => COLOR,
-         BLINK_STAT => BLINK, BACKGROUND => CON_IO.BLUE, MOVE => FALSE);
+      when Read =>
+        Con_Io.Move ( (0, Read_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (1, Read_Col), Menu_Win);
+        Con_Io.Put ("  RESTORE  ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (2, Read_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+      when Reset =>
+        Con_Io.Move ( (0, Reset_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (1, Reset_Col), Menu_Win);
+        Con_Io.Put ("   RESET   ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (2, Reset_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+      when Get_New =>
+        Con_Io.Move ( (0, Get_New_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (1, Get_New_Col), Menu_Win);
+        Con_Io.Put (" GOTO NEW  ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (2, Get_New_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+      when Break =>
+        Con_Io.Move ( (0, Break_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (1, Break_Col), Menu_Win);
+        Con_Io.Put ("    EXIT   ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
+        Con_Io.Move ( (2, Break_Col), Menu_Win);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
+         Blink_Stat => Blink, Background => Con_Io.Blue, Move => False);
     end case;
-  end PUT_ACTION;
+  end Put_Action;
 
-  procedure PUT_MENU (
-   INIT_ACTION : in MENU_ACTION_LIST;
-   ALLOW_WRITE : in BOOLEAN) is
+  procedure Put_Menu (
+   Init_Action : in Menu_Action_List;
+   Allow_Write : in Boolean) is
   begin
-    if not ALLOW_WRITE and then INIT_ACTION = WRITE then
-      raise CONSTRAINT_ERROR;
+    if not Allow_Write and then Init_Action = Write then
+      raise Constraint_Error;
     end if;
-    CURRENT_ACTION := INIT_ACTION;
-    CURRENT_ALLOW_WRITE := ALLOW_WRITE;
-    for I in MENU_ACTION_LIST loop
-      PUT_ACTION (I, I = INIT_ACTION);
+    Current_Action := Init_Action;
+    Current_Allow_Write := Allow_Write;
+    for I in Menu_Action_List loop
+      Put_Action (I, I = Init_Action);
     end loop;
-  end PUT_MENU;
+  end Put_Menu;
 
-  procedure UPDATE_MENU (NEW_ACTION : in MENU_ACTION_LIST) is
+  procedure Update_Menu (New_Action : in Menu_Action_List) is
   begin
-    PUT_ACTION (CURRENT_ACTION, FALSE);
-    CURRENT_ACTION := NEW_ACTION;
-    PUT_ACTION (CURRENT_ACTION, TRUE);
-  end UPDATE_MENU;
+    Put_Action (Current_Action, False);
+    Current_Action := New_Action;
+    Put_Action (Current_Action, True);
+  end Update_Menu;
 
-  procedure CLEAR_MENU is
+  procedure Clear_Menu is
   begin
-    CON_IO.CLEAR (MENU_WIN);
-  end CLEAR_MENU;
+    Con_Io.Clear (Menu_Win);
+  end Clear_Menu;
 
-  procedure PUT_ERROR (ERROR : in ERROR_LIST) is
+  procedure Put_Error (Error : in Error_List) is
   begin
-    CON_IO.SET_BACKGROUND (CON_IO.RED, NAME => ERROR_WIN);
-    CON_IO.CLEAR (ERROR_WIN);
-    CON_IO.MOVE ( (1, 30) , ERROR_WIN);
-    case ERROR is
-      when NO_DATA =>
-        CON_IO.PUT ("DATA FILE NOT FOUND", ERROR_WIN);
-      when READ =>
-        CON_IO.PUT ("ERROR READING DATA", ERROR_WIN);
+    Con_Io.Set_Background (Con_Io.Red, Name => Error_Win);
+    Con_Io.Clear (Error_Win);
+    Con_Io.Move ( (1, 30) , Error_Win);
+    case Error is
+      when No_Data =>
+        Con_Io.Put ("DATA FILE NOT FOUND", Error_Win);
+      when Read =>
+        Con_Io.Put ("ERROR READING DATA", Error_Win);
 
-      when NO_FRAME =>
-        CON_IO.PUT ("NO FRAME SAVED", ERROR_WIN);
-      when RESTORE =>
-        CON_IO.PUT ("ERROR RESTORING FRAME", ERROR_WIN);
-      when SAVE =>
-        CON_IO.PUT ("ERROR SAVING FRAME", ERROR_WIN);
+      when No_Frame =>
+        Con_Io.Put ("NO FRAME SAVED", Error_Win);
+      when Restore =>
+        Con_Io.Put ("ERROR RESTORING FRAME", Error_Win);
+      when Save =>
+        Con_Io.Put ("ERROR SAVING FRAME", Error_Win);
 
-      when INIT_SCORE =>
-        CON_IO.PUT ("ERROR INITIALIZING SCORES", ERROR_WIN);
-      when SCORE_IO =>
-        CON_IO.PUT ("ERROR READ/WRITE SCORE", ERROR_WIN);
+      when Init_Score =>
+        Con_Io.Put ("ERROR INITIALIZING SCORES", Error_Win);
+      when Score_Io =>
+        Con_Io.Put ("ERROR READ/WRITE SCORE", Error_Win);
 
-      when INTERNAL =>
-        CON_IO.PUT ("INTERNAL ERROR", ERROR_WIN);
+      when Internal =>
+        Con_Io.Put ("INTERNAL ERROR", Error_Win);
 
-      when FORMAT =>
-        CON_IO.PUT ("ERROR. NUMBER REQUIRED (1 .. 50)", ERROR_WIN);
+      when Format =>
+        Con_Io.Put ("ERROR. NUMBER REQUIRED (1 .. 50)", Error_Win);
     end case;
-    CON_IO.MOVE ( (2, 65), ERROR_WIN);
-    CON_IO.PUT ("Hit a key", ERROR_WIN);
-  end PUT_ERROR;
+    Con_Io.Move ( (2, 65), Error_Win);
+    Con_Io.Put ("Hit a key", Error_Win);
+  end Put_Error;
 
-  procedure CLEAR_ERROR is
+  procedure Clear_Error is
   begin
-    CON_IO.SET_BACKGROUND (CON_IO.DEFAULT_BACKGROUND, ERROR_WIN);
-    CON_IO.CLEAR (ERROR_WIN);
-  end CLEAR_ERROR;
+    Con_Io.Set_Background (Con_Io.Default_Background, Error_Win);
+    Con_Io.Clear (Error_Win);
+  end Clear_Error;
 
   -- get frame number
-  procedure GET_NO_FRAME (NO : out SOK_TYPES.FRAME_RANGE; RESULT : out GET_RESULT_LIST) is
+  procedure Get_No_Frame (No : out Sok_Types.Frame_Range; Result : out Get_Result_List) is
 
-    STR : STRING (1..2) := (others => ' ');
-    LAST : NATURAL;
-    STAT : CON_IO.CURS_MVT;
-    POS  : POSITIVE := 1;
-    INS  : BOOLEAN := FALSE;
+    Str : String (1..2) := (others => ' ');
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos  : Positive := 1;
+    Ins  : Boolean := False;
   begin
-    CON_IO.SET_BACKGROUND (CON_IO.CYAN, GET_WIN);
-    CON_IO.SET_FOREGROUND (CON_IO.BLACK, NAME => GET_WIN);
-    CON_IO.CLEAR (GET_WIN);
-    CON_IO.MOVE ( (01, 07), GET_WIN);
-    CON_IO.PUT ("Enter frame no (" &
-                NORMAL (SOK_TYPES.FRAME_RANGE'FIRST, 1) &
+    Con_Io.Set_Background (Con_Io.Cyan, Get_Win);
+    Con_Io.Set_Foreground (Con_Io.Black, Name => Get_Win);
+    Con_Io.Clear (Get_Win);
+    Con_Io.Move ( (01, 07), Get_Win);
+    Con_Io.Put ("Enter frame no (" &
+                Normal (Sok_Types.Frame_Range'First, 1) &
                 " to " &
-                NORMAL (SOK_TYPES.FRAME_RANGE'LAST, 2) &
-                ") : ", GET_WIN);
-    CON_IO.MOVE ( (02, 02), GET_WIN);
-    CON_IO.PUT ("Enter to validate, Escape to give_up", GET_WIN);
+                Normal (Sok_Types.Frame_Range'Last, 2) &
+                ") : ", Get_Win);
+    Con_Io.Move ( (02, 02), Get_Win);
+    Con_Io.Put ("Enter to validate, Escape to give_up", Get_Win);
 
     loop
-      CON_IO.MOVE ( (01, 34), GET_WIN);
-      CON_IO.PUT_THEN_GET (STR, LAST, STAT, POS, INS, GET_WIN,
-       FOREGROUND => CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK,
-       TIME_OUT => (DELAY_KIND => TIMERS.DELAY_SEC,
-                    PERIOD     => CON_IO.NO_PERIOD,
-                    DELAY_SECONDS => 1.0) );
+      Con_Io.Move ( (01, 34), Get_Win);
+      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins, Get_Win,
+       Foreground => Con_Io.Light_Gray, Background => Con_Io.Black,
+       Time_Out => (Delay_Kind => Timers.Delay_Sec,
+                    Period     => Con_Io.No_Period,
+                    Delay_Seconds => 1.0) );
 
-      case STAT is
-        when CON_IO.ESC =>
-          RESULT := ESC;
+      case Stat is
+        when Con_Io.Esc =>
+          Result := Esc;
           exit;
 
-        when CON_IO.REFRESH =>
-          RESULT := REFRESH;
+        when Con_Io.Refresh =>
+          Result := Refresh;
           exit;
 
-        when CON_IO.BREAK =>
-          raise SOK_INPUT.BREAK_REQUESTED;
+        when Con_Io.Break =>
+          raise Sok_Input.Break_Requested;
 
-        when CON_IO.TIMEOUT =>
-          SOK_TIME.DISP_TIME;
+        when Con_Io.Timeout =>
+          Sok_Time.Disp_Time;
 
-        when CON_IO.RET =>
+        when Con_Io.Ret =>
           -- digit or space allowed
-          for I in STR'RANGE loop
-            if STR(I) not in '0' .. '9' and then STR(I) /= ' ' then
-              raise FORMAT_ERROR;
+          for I in Str'Range loop
+            if Str(I) not in '0' .. '9' and then Str(I) /= ' ' then
+              raise Format_Error;
             end if;
           end loop;
           -- not empty
-          if LAST = 0 then
-            RESULT := ESC;
+          if Last = 0 then
+            Result := Esc;
             exit;
           end if;
           begin
-            NO := SOK_TYPES.FRAME_RANGE'VALUE (STR (1..LAST));
-            RESULT := SET;
+            No := Sok_Types.Frame_Range'Value (Str (1..Last));
+            Result := Set;
             exit;
           exception
-            when CONSTRAINT_ERROR =>
-              raise FORMAT_ERROR;
+            when Constraint_Error =>
+              raise Format_Error;
           end;
         when others =>
           null;
         end case;
     end loop;
 
-    CON_IO.SET_BACKGROUND (CON_IO.DEFAULT_BACKGROUND, GET_WIN);
-    CON_IO.CLEAR (GET_WIN);
+    Con_Io.Set_Background (Con_Io.Default_Background, Get_Win);
+    Con_Io.Clear (Get_Win);
 
   exception
-    when FORMAT_ERROR =>
-      CON_IO.SET_BACKGROUND (CON_IO.DEFAULT_BACKGROUND, GET_WIN);
-      CON_IO.CLEAR (GET_WIN);
+    when Format_Error =>
+      Con_Io.Set_Background (Con_Io.Default_Background, Get_Win);
+      Con_Io.Clear (Get_Win);
       raise;
-  end GET_NO_FRAME;
+  end Get_No_Frame;
 
 
 
-  procedure END_OF_PROGRAM is
+  procedure End_Of_Program is
   begin
-    CON_IO.CLEAR;
-  end END_OF_PROGRAM;
+    Con_Io.Clear;
+  end End_Of_Program;
 
 
-end SOK_DISPLAY;
+end Sok_Display;

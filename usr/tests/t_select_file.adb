@@ -1,27 +1,27 @@
-with TEXT_IO;
-with TEXT_HANDLER;
-with SELECT_FILE;
+with Text_Io;
+with Text_Handler;
+with Select_File;
 
-procedure T_SELECT_FILE is
+procedure T_Select_File is
 
-  READ : BOOLEAN;
-  FILE : TEXT_HANDLER.TEXT(500);
+  Read : Boolean;
+  File : Text_Handler.Text(500);
 
-  procedure INIT is
+  procedure Init is
   begin
-    NULL;
-  end INIT;
+    Null;
+  end Init;
 
-  function MY_SELECT_FILE is new SELECT_FILE(INIT);
+  function My_Select_File is new Select_File(Init);
 
 begin
-  READ := TRUE;
+  Read := True;
 
   loop
-    TEXT_HANDLER.SET (FILE, MY_SELECT_FILE (10, TEXT_HANDLER.VALUE(FILE), READ));
-    TEXT_IO.PUT_LINE (TEXT_HANDLER.VALUE(FILE));
-    exit when TEXT_HANDLER.EMPTY(FILE);
-    READ := not READ;
+    Text_Handler.Set (File, My_Select_File (10, Text_Handler.Value(File), Read));
+    Text_Io.Put_Line (Text_Handler.Value(File));
+    exit when Text_Handler.Empty(File);
+    Read := not Read;
   end loop;
-end T_SELECT_FILE;
+end T_Select_File;
 

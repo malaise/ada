@@ -1,6 +1,6 @@
-package MESU_GRA is
+package Mesu_Gra is
 
-  MAX_NB_MESURE : constant := 9;
-  procedure GRAPHIC (EXIT_PROGRAM : out BOOLEAN);
+  Max_Nb_Mesure : constant := 9;
+  procedure Graphic (Exit_Program : out Boolean);
 
-end MESU_GRA;
+end Mesu_Gra;

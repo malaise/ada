@@ -1,20 +1,20 @@
-with OPER_LIST_MNG;
-package FILE_MNG is
+with Oper_List_Mng;
+package File_Mng is
 
 
   -- Overwrites the list from file content
-  procedure LOAD (FILE_NAME : in STRING;
-                  OPER_LIST : in out OPER_LIST_MNG.LIST_TYPE;
-                  CAN_WRITE : out BOOLEAN);
+  procedure Load (File_Name : in String;
+                  Oper_List : in out Oper_List_Mng.List_Type;
+                  Can_Write : out Boolean);
 
   -- Save the list in file
-  procedure SAVE (FILE_NAME : in STRING;
-                  OPER_LIST : in OPER_LIST_MNG.LIST_TYPE);
+  procedure Save (File_Name : in String;
+                  Oper_List : in Oper_List_Mng.List_Type);
 
   -- File not found on load, or protected on save
-  F_ACCESS_ERROR : exception;
+  F_Access_Error : exception;
   -- Read/Write error
-  F_IO_ERROR     : exception;
+  F_Io_Error     : exception;
 
-end FILE_MNG;
+end File_Mng;
 

@@ -1,38 +1,38 @@
-with SOK_MOVEMENT;
+with Sok_Movement;
 
-package DUMP_SAVE is
-  procedure DUMP (MVT : in SOK_MOVEMENT.SAVED_DATA_REC; PUSHED : in BOOLEAN);
-end DUMP_SAVE;
+package Dump_Save is
+  procedure Dump (Mvt : in Sok_Movement.Saved_Data_Rec; Pushed : in Boolean);
+end Dump_Save;
 
-with SOK_TYPES;
-with TEXT_IO; use TEXT_IO;
-package body DUMP_SAVE is
-  FILE : FILE_TYPE;
-  OPEN : BOOLEAN := FALSE;
+with Sok_Types;
+with Text_Io; use Text_Io;
+package body Dump_Save is
+  File : File_Type;
+  Open : Boolean := False;
 
-  procedure DUMP (MVT : in SOK_MOVEMENT.SAVED_DATA_REC; PUSHED : in BOOLEAN) is
+  procedure Dump (Mvt : in Sok_Movement.Saved_Data_Rec; Pushed : in Boolean) is
   begin
-    if not OPEN then
-      CREATE (FILE, OUT_FILE, "dump");
-      OPEN := TRUE;
+    if not Open then
+      Create (File, Out_File, "dump");
+      Open := True;
     end if;
 
-    if PUSHED then
-      PUT_LINE ("PUSHED");
+    if Pushed then
+      Put_Line ("PUSHED");
     else
-      PUT_LINE ("POPED");
+      Put_Line ("POPED");
     end if;
 
-    PUT_LINE ("POS_ORIG " &
-     SOK_TYPES.ROW_RANGE'IMAGE(MVT.POS_ORIG.ROW) & " " &
-     SOK_TYPES.COL_RANGE'IMAGE(MVT.POS_ORIG.COL) );
+    Put_Line ("POS_ORIG " &
+     Sok_Types.Row_Range'Image(Mvt.Pos_Orig.Row) & " " &
+     Sok_Types.Col_Range'Image(Mvt.Pos_Orig.Col) );
 
-    PUT_LINE ("MOVEMENT " & SOK_MOVEMENT.MOVEMENT_LIST'IMAGE (MVT.MOVEMENT) );
+    Put_Line ("MOVEMENT " & Sok_Movement.Movement_List'Image (Mvt.Movement) );
 
-    PUT_LINE ("RESULT " & SOK_MOVEMENT.SAVED_RESULT_LIST'IMAGE (MVT.RESULT) );
+    Put_Line ("RESULT " & Sok_Movement.Saved_Result_List'Image (Mvt.Result) );
 
-    PUT_LINE ("---------------------");
-  end DUMP;
+    Put_Line ("---------------------");
+  end Dump;
 
-end DUMP_SAVE;
+end Dump_Save;
 

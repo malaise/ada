@@ -1,84 +1,84 @@
-separate (NAV_DATA)
+separate (Nav_Data)
 
-function CHECK (PROBLEM : T_DATA) return T_CONSISTENCY is
-  SET : constant T_DATA_SET := PROBLEM.SET;
+function Check (Problem : T_Data) return T_Consistency is
+  Set : constant T_Data_Set := Problem.Set;
 begin
   -- Check number of unkown data
-  UNKNOWN_CHECK:
+  Unknown_Check:
   declare
-    N_UNKNOWN : NATURAL := 0;
+    N_Unknown : Natural := 0;
   begin
-    for I in T_LIST_DATA loop
-      if not SET(I) then N_UNKNOWN := N_UNKNOWN + 1; end if;
+    for I in T_List_Data loop
+      if not Set(I) then N_Unknown := N_Unknown + 1; end if;
     end loop;
-    if N_UNKNOWN /= 3 then
-      return KNOWN_ERR;
+    if N_Unknown /= 3 then
+      return Known_Err;
     end if;
-  end UNKNOWN_CHECK;
+  end Unknown_Check;
 
   -- Check drift.
-  if SET(DRIFT) then
+  if Set(Drift) then
     -- one in traj angle or plan angle must be unknown
-    if SET(PLAN_A) and then SET(TRAJ_A) then
-      return DRIFT_ERR;
+    if Set(Plan_A) and then Set(Traj_A) then
+      return Drift_Err;
     end if;
   end if;
 
   -- Check the 3 vector angles
-  ANGLE_CHECK:
+  Angle_Check:
   declare
-    PA, TA, WA : NAV_TYPES.T_ANGLE;
-    A_SET : BOOLEAN;
-    use NAV_TYPES;
+    Pa, Ta, Wa : Nav_Types.T_Angle;
+    A_Set : Boolean;
+    use Nav_Types;
   begin
     -- See if PLAN_A and TRAJ_A are set
-    if SET(DRIFT) then
-      A_SET := SET(PLAN_A) or else SET(TRAJ_A);
+    if Set(Drift) then
+      A_Set := Set(Plan_A) or else Set(Traj_A);
     else
-      A_SET := SET(PLAN_A) and then SET(TRAJ_A);
+      A_Set := Set(Plan_A) and then Set(Traj_A);
     end if;
-    A_SET := A_SET and then SET(WIND_A);
+    A_Set := A_Set and then Set(Wind_A);
 
-    if A_SET then
-      if SET(DRIFT) then
-        if SET(PLAN_A) then
-          PA := PROBLEM.PLAN.ANGLE;
-          TA := PA + PROBLEM.DRIFT;
+    if A_Set then
+      if Set(Drift) then
+        if Set(Plan_A) then
+          Pa := Problem.Plan.Angle;
+          Ta := Pa + Problem.Drift;
         else
-          TA := PROBLEM.TRAJ.ANGLE;
-          PA := TA - PROBLEM.DRIFT;
+          Ta := Problem.Traj.Angle;
+          Pa := Ta - Problem.Drift;
         end if;
       else
-        PA := PROBLEM.PLAN.ANGLE;
-        TA := PROBLEM.TRAJ.ANGLE;
+        Pa := Problem.Plan.Angle;
+        Ta := Problem.Traj.Angle;
       end if;
-      WA := PROBLEM.WIND.ANGLE;
+      Wa := Problem.Wind.Angle;
       -- check that the 3 angles are mod 180 different
-      if WA = PA or else WA = PA + 180 or else
-         PA = TA or else PA = TA + 180 or else
-         TA = WA or else TA = WA + 180 then
-        return ANGLE_ERR;
+      if Wa = Pa or else Wa = Pa + 180 or else
+         Pa = Ta or else Pa = Ta + 180 or else
+         Ta = Wa or else Ta = Wa + 180 then
+        return Angle_Err;
       end if;
       -- check that WIND and PLAN are on both sides of TRAJ
-      if (WA < TA or else WA > TA + 180) and then
-         (PA < TA or else PA > TA + 180) then
-        return ANGLE_ERR;
-      elsif (WA > TA and then WA < TA + 180) and then
-            (PA > TA and then PA < TA + 180) then
-        return ANGLE_ERR;
+      if (Wa < Ta or else Wa > Ta + 180) and then
+         (Pa < Ta or else Pa > Ta + 180) then
+        return Angle_Err;
+      elsif (Wa > Ta and then Wa < Ta + 180) and then
+            (Pa > Ta and then Pa < Ta + 180) then
+        return Angle_Err;
       end if;
 
     end if;
-  end ANGLE_CHECK;
+  end Angle_Check;
 
-  if SET(WIND_S) /= SET(WIND_A) then
+  if Set(Wind_S) /= Set(Wind_A) then
     -- Check wind. Angle and speed both set or both not set.
-    return WIND_ERR;
-  elsif (not SET(TRAJ_A)) and then SET(TRAJ_S) then
+    return Wind_Err;
+  elsif (not Set(Traj_A)) and then Set(Traj_S) then
     -- Check trajectory. If angle is unknown then speed must be unknown
-    return TRAJ_ERR;
+    return Traj_Err;
   end if;
 
-  return OK;
+  return Ok;
 
-end CHECK;
+end Check;

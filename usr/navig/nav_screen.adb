@@ -1,406 +1,406 @@
 -- all the primitives to access the screen
-with SYSTEM;
-with TASK_MNG, TIMERS;
-package body NAV_SCREEN is
-  use CON_IO;
+with System;
+with Task_Mng, Timers;
+package body Nav_Screen is
+  use Con_Io;
 
   -- the 8 needed windows
-  W_TITLE, W_MASK, W_GET, W_RES, W_ACT, W_ERR, W_HELP, W_TIME : WINDOW;
+  W_Title, W_Mask, W_Get, W_Res, W_Act, W_Err, W_Help, W_Time : Window;
 
   -- the left column of get ang result areas
-  COL_GET : constant COL_RANGE := 29;
-  COL_RES : constant COL_RANGE := 70;
+  Col_Get : constant Col_Range := 29;
+  Col_Res : constant Col_Range := 70;
   -- start column in mask and width of dots and arrows
-  COL_LINE : constant COL_RANGE := 37;
-  WIDTH_LINE : constant POSITIVE := 32;
+  Col_Line : constant Col_Range := 37;
+  Width_Line : constant Positive := 32;
   -- columns of actions
-  COMP_WID : constant COL_RANGE :=  7;
-  QUIT_WID : constant COL_RANGE :=  4;
-  HELP_WID : constant COL_RANGE :=  9;
-  CLEA_WID : constant COL_RANGE :=  5;
-  ACT_OFF : constant := 5;
+  Comp_Wid : constant Col_Range :=  7;
+  Quit_Wid : constant Col_Range :=  4;
+  Help_Wid : constant Col_Range :=  9;
+  Clea_Wid : constant Col_Range :=  5;
+  Act_Off : constant := 5;
 
   -- background color of all get fields
-  GET_BACK : constant EFFECTIVE_BASIC_COLORS := BLUE;
+  Get_Back : constant Effective_Basic_Colors := Blue;
   -- foreground color of results
-  RES_FORE : constant EFFECTIVE_COLORS := LIGHT_GREEN;
+  Res_Fore : constant Effective_Colors := Light_Green;
 
   -- delay max of a get (data or action) in seconds.
-  DELTA_GET : CONSTANT CON_IO.DELAY_REC(TIMERS.DELAY_SEC) := 
-    (DELAY_KIND => TIMERS.DELAY_SEC,
-     PERIOD => NO_PERIOD,
-     DELAY_SECONDS => 0.5);
+  Delta_Get : Constant Con_Io.Delay_Rec(Timers.Delay_Sec) := 
+    (Delay_Kind => Timers.Delay_Sec,
+     Period => No_Period,
+     Delay_Seconds => 0.5);
   -- number of deltas before clearing err messages
-  TIME_OUT_GET : constant := 6;
+  Time_Out_Get : constant := 6;
 
   -- time displaying
-  procedure SHOW_TIME is separate;
+  procedure Show_Time is separate;
 
-  package TIME_TASK_MNG is new TASK_MNG (CALL_BACK => SHOW_TIME);
+  package Time_Task_Mng is new Task_Mng (Call_Back => Show_Time);
 
   -- Clear all the screen
-  procedure RESET is
+  procedure Reset is
   begin
-    RESET_TERM;
-  end RESET;
+    Reset_Term;
+  end Reset;
 
   -- To write the title
-  procedure TITLE is
+  procedure Title is
   begin
-    TIME_TASK_MNG.START;
-    MOVE ((0, 30), W_TITLE);
-    PUT ("AERONAUTICAL NAVIGATION", W_TITLE, LIGHT_BLUE);
+    Time_Task_Mng.Start;
+    Move ((0, 30), W_Title);
+    Put ("AERONAUTICAL NAVIGATION", W_Title, Light_Blue);
 
-    MOVE ((2, 0), W_TITLE);
-    PUT ("Keys: Enter, arrows, Ins, Del, Backspace, Home, End, Page Up,"
-     & " Page Down", W_TITLE);
-    MOVE ((3, 9), W_TITLE);
-    PUT ("digits, '.', '?', '+', '-'", W_TITLE);
+    Move ((2, 0), W_Title);
+    Put ("Keys: Enter, arrows, Ins, Del, Backspace, Home, End, Page Up,"
+     & " Page Down", W_Title);
+    Move ((3, 9), W_Title);
+    Put ("digits, '.', '?', '+', '-'", W_Title);
 
-    MOVE ((4, 0), W_TITLE);
-    PUT ("Format: speeds positives in knots or km/h (0.0 .. 999.9)",
-     W_TITLE);
-    MOVE ((5, 8), W_TITLE);
-    PUT ("angles positives in degrees and minutes (0.00 .. 359.59)",
-     W_TITLE);
-    MOVE ((6, 8), W_TITLE);
-    PUT ("drift in degrees and minutes (-90.00 .. +90.00)",
-     W_TITLE);
-    MOVE ((7, 8), W_TITLE);
-    PUT ("? in a field to clear it", W_TITLE);
+    Move ((4, 0), W_Title);
+    Put ("Format: speeds positives in knots or km/h (0.0 .. 999.9)",
+     W_Title);
+    Move ((5, 8), W_Title);
+    Put ("angles positives in degrees and minutes (0.00 .. 359.59)",
+     W_Title);
+    Move ((6, 8), W_Title);
+    Put ("drift in degrees and minutes (-90.00 .. +90.00)",
+     W_Title);
+    Move ((7, 8), W_Title);
+    Put ("? in a field to clear it", W_Title);
 
-    TIME_TASK_MNG.SCHEDULE;
+    Time_Task_Mng.Schedule;
 
-  end TITLE;
+  end Title;
 
   -- To put the mask (all fixed text around) for the get the problem and
   --  for the put of the result
-  procedure PUT_MASK is
-    COL : COL_RANGE;
+  procedure Put_Mask is
+    Col : Col_Range;
   begin
-    MOVE ( (1, COL_GET), W_MASK); PUT ("Data", W_MASK);
-    MOVE ( (1, COL_RES), W_MASK); PUT ("Results", W_MASK);
-    MOVE ( ( 3,  0), W_MASK); PUT ("Wind : ", W_MASK);
-    MOVE ( ( 6,  0), W_MASK); PUT ("Plane : ", W_MASK);
-    MOVE ( ( 9,  0), W_MASK); PUT ("Trajectory : ", W_MASK);
-    MOVE ( (12,  0), W_MASK); PUT ("Drift : ", W_MASK);
-    MOVE ( ( 3, 14), W_MASK); PUT ("speed", W_MASK);
-    MOVE ( ( 4, 14), W_MASK); PUT ("from", W_MASK);
-    MOVE ( ( 6, 14), W_MASK); PUT ("air speed", W_MASK);
-    MOVE ( ( 7, 14), W_MASK); PUT ("heading", W_MASK);
-    MOVE ( ( 9, 14), W_MASK); PUT ("ground speed", W_MASK);
-    MOVE ( (10, 14), W_MASK); PUT ("route", W_MASK);
+    Move ( (1, Col_Get), W_Mask); Put ("Data", W_Mask);
+    Move ( (1, Col_Res), W_Mask); Put ("Results", W_Mask);
+    Move ( ( 3,  0), W_Mask); Put ("Wind : ", W_Mask);
+    Move ( ( 6,  0), W_Mask); Put ("Plane : ", W_Mask);
+    Move ( ( 9,  0), W_Mask); Put ("Trajectory : ", W_Mask);
+    Move ( (12,  0), W_Mask); Put ("Drift : ", W_Mask);
+    Move ( ( 3, 14), W_Mask); Put ("speed", W_Mask);
+    Move ( ( 4, 14), W_Mask); Put ("from", W_Mask);
+    Move ( ( 6, 14), W_Mask); Put ("air speed", W_Mask);
+    Move ( ( 7, 14), W_Mask); Put ("heading", W_Mask);
+    Move ( ( 9, 14), W_Mask); Put ("ground speed", W_Mask);
+    Move ( (10, 14), W_Mask); Put ("route", W_Mask);
 
-    COL := 0;
+    Col := 0;
 
-    MOVE ( (0, COL), W_ACT);
-    PUT ("Compute", W_ACT, BACKGROUND => DEFAULT_BACKGROUND);
-    MOVE ( (0, COL + COMP_WID + 1), W_ACT); PUT (' ', W_ACT);
-    COL := COL + COMP_WID + ACT_OFF;
+    Move ( (0, Col), W_Act);
+    Put ("Compute", W_Act, Background => Default_Background);
+    Move ( (0, Col + Comp_Wid + 1), W_Act); Put (' ', W_Act);
+    Col := Col + Comp_Wid + Act_Off;
 
-    MOVE ( (0, COL), W_ACT);
-    PUT ("Quit", W_ACT, BACKGROUND => DEFAULT_BACKGROUND);
-    MOVE ( (0, COL + QUIT_WID + 1), W_ACT); PUT (' ', W_ACT);
-    COL := COL + QUIT_WID + ACT_OFF;
+    Move ( (0, Col), W_Act);
+    Put ("Quit", W_Act, Background => Default_Background);
+    Move ( (0, Col + Quit_Wid + 1), W_Act); Put (' ', W_Act);
+    Col := Col + Quit_Wid + Act_Off;
 
-    MOVE ( (0, COL), W_ACT);
-    PUT ("Call help", W_ACT, BACKGROUND => DEFAULT_BACKGROUND);
-    MOVE ( (0, COL + HELP_WID + 1), W_ACT); PUT (' ', W_ACT);
-    COL := COL + HELP_WID + ACT_OFF;
+    Move ( (0, Col), W_Act);
+    Put ("Call help", W_Act, Background => Default_Background);
+    Move ( (0, Col + Help_Wid + 1), W_Act); Put (' ', W_Act);
+    Col := Col + Help_Wid + Act_Off;
 
-    MOVE ( (0, COL), W_ACT);
-    PUT ("Clear", W_ACT, BACKGROUND => DEFAULT_BACKGROUND);
-    MOVE ( (0, COL + CLEA_WID + 1), W_ACT); PUT (' ', W_ACT);
+    Move ( (0, Col), W_Act);
+    Put ("Clear", W_Act, Background => Default_Background);
+    Move ( (0, Col + Clea_Wid + 1), W_Act); Put (' ', W_Act);
 
-  end PUT_MASK;
+  end Put_Mask;
 
   -- row of a field in get and result areas
-  function FLD_ROW (FIELD : NAV_DATA.T_LIST_DATA) return ROW_RANGE is
+  function Fld_Row (Field : Nav_Data.T_List_Data) return Row_Range is
   begin
-    case FIELD is
-      when NAV_DATA.WIND_S => return 0;
-      when NAV_DATA.WIND_A => return 1;
-      when NAV_DATA.PLAN_S => return 3;
-      when NAV_DATA.PLAN_A => return 4;
-      when NAV_DATA.TRAJ_S => return 6;
-      when NAV_DATA.TRAJ_A => return 7;
-      when NAV_DATA.DRIFT  => return 9;
+    case Field is
+      when Nav_Data.Wind_S => return 0;
+      when Nav_Data.Wind_A => return 1;
+      when Nav_Data.Plan_S => return 3;
+      when Nav_Data.Plan_A => return 4;
+      when Nav_Data.Traj_S => return 6;
+      when Nav_Data.Traj_A => return 7;
+      when Nav_Data.Drift  => return 9;
     end case;
-  end FLD_ROW;
+  end Fld_Row;
 
   -- COL of a field in get and result areas
-  function FLD_COL (FIELD : NAV_DATA.T_LIST_DATA) return ROW_RANGE is
+  function Fld_Col (Field : Nav_Data.T_List_Data) return Row_Range is
   begin
-    case FIELD is
-      when NAV_DATA.WIND_S | NAV_DATA.PLAN_S | NAV_DATA.TRAJ_S => return 1;
-      when NAV_DATA.WIND_A | NAV_DATA.PLAN_A | NAV_DATA.TRAJ_A => return 1;
-      when NAV_DATA.DRIFT  => return 0;
+    case Field is
+      when Nav_Data.Wind_S | Nav_Data.Plan_S | Nav_Data.Traj_S => return 1;
+      when Nav_Data.Wind_A | Nav_Data.Plan_A | Nav_Data.Traj_A => return 1;
+      when Nav_Data.Drift  => return 0;
     end case;
-  end FLD_COL;
+  end Fld_Col;
 
   -- get a problem data field
-  procedure GET (FIELD : in NAV_DATA.T_LIST_DATA; BLINK : in BOOLEAN := FALSE;
-   STR : in out STRING; POS : in out POSITIVE; INSERT : in out BOOLEAN;
-   NEXT : out MOVEMENT) is
-    LAST : NATURAL;
-    NXT : MOVEMENT;
+  procedure Get (Field : in Nav_Data.T_List_Data; Blink : in Boolean := False;
+   Str : in out String; Pos : in out Positive; Insert : in out Boolean;
+   Next : out Movement) is
+    Last : Natural;
+    Nxt : Movement;
   begin
-    for I in 1 .. TIME_OUT_GET loop
-      MOVE ( (FLD_ROW(FIELD), FLD_COL(FIELD)), W_GET);
-      if BLINK then
-        CON_IO.PUT_THEN_GET (STR, LAST, NXT, POS, INSERT, W_GET, RED,
-         CON_IO.BLINK, TIME_OUT => DELTA_GET);
+    for I in 1 .. Time_Out_Get loop
+      Move ( (Fld_Row(Field), Fld_Col(Field)), W_Get);
+      if Blink then
+        Con_Io.Put_Then_Get (Str, Last, Nxt, Pos, Insert, W_Get, Red,
+         Con_Io.Blink, Time_Out => Delta_Get);
       else
-        CON_IO.PUT_THEN_GET (STR, LAST, NXT, POS, INSERT, W_GET,
-         TIME_OUT => DELTA_GET);
+        Con_Io.Put_Then_Get (Str, Last, Nxt, Pos, Insert, W_Get,
+         Time_Out => Delta_Get);
       end if;
-      TIME_TASK_MNG.SCHEDULE;
-      exit when NXT /= TIMEOUT;
+      Time_Task_Mng.Schedule;
+      exit when Nxt /= Timeout;
     end loop;
-    NEXT := NXT;
-  end GET;
+    Next := Nxt;
+  end Get;
 
   -- put the formated field when successfully got
-  procedure PUT (FIELD : in NAV_DATA.T_LIST_DATA; STR : in STRING;
-   BLINK : in BOOLEAN := FALSE) is
+  procedure Put (Field : in Nav_Data.T_List_Data; Str : in String;
+   Blink : in Boolean := False) is
   begin
-    MOVE ( (FLD_ROW(FIELD), FLD_COL(FIELD)), W_GET);
-    if BLINK then
-      PUT (STR, W_GET, RED, CON_IO.BLINK);
+    Move ( (Fld_Row(Field), Fld_Col(Field)), W_Get);
+    if Blink then
+      Put (Str, W_Get, Red, Con_Io.Blink);
     else
-      PUT (STR, W_GET);
+      Put (Str, W_Get);
     end if;
-  end PUT;
+  end Put;
 
   -- put a field of the result
-  procedure PUT_RESULT (FIELD : in NAV_DATA.T_LIST_DATA; STR : in STRING) is
+  procedure Put_Result (Field : in Nav_Data.T_List_Data; Str : in String) is
   begin
-    MOVE ( (FLD_ROW(FIELD), FLD_COL(FIELD)), W_RES);
-    PUT (STR, W_RES);
-  end PUT_RESULT;
+    Move ( (Fld_Row(Field), Fld_Col(Field)), W_Res);
+    Put (Str, W_Res);
+  end Put_Result;
 
 
   -- draw a line of dots between field in got area and it in result area
-  procedure DOT (FIELD : in NAV_DATA.T_LIST_DATA) is
-    DOTS : constant STRING (1 .. WIDTH_LINE) := (others => '.');
+  procedure Dot (Field : in Nav_Data.T_List_Data) is
+    Dots : constant String (1 .. Width_Line) := (others => '.');
   begin
     -- move (+3 cause in w_mask and not in w_get nor w_put)
-    MOVE ( (FLD_ROW(FIELD) + 3, COL_LINE), W_MASK);
-    PUT (DOTS, W_MASK, RES_FORE);
-  end DOT;
+    Move ( (Fld_Row(Field) + 3, Col_Line), W_Mask);
+    Put (Dots, W_Mask, Res_Fore);
+  end Dot;
 
   -- draw an arrow between a clear field in got area and the result
-  procedure ARROW (FIELD : in NAV_DATA.T_LIST_DATA) is
-    MINUS : constant STRING (1 .. WIDTH_LINE-1) := (others => '-');
+  procedure Arrow (Field : in Nav_Data.T_List_Data) is
+    Minus : constant String (1 .. Width_Line-1) := (others => '-');
   begin
-    MOVE ( (FLD_ROW(FIELD) + 3, COL_LINE), W_MASK);
-    PUT (MINUS & '>', W_MASK, RES_FORE);
-  end ARROW;
+    Move ( (Fld_Row(Field) + 3, Col_Line), W_Mask);
+    Put (Minus & '>', W_Mask, Res_Fore);
+  end Arrow;
 
   -- clears a line of dots or an arrow
-  procedure CLEAR_LINE (FIELD : in NAV_DATA.T_LIST_DATA) is
-    SPACES : constant STRING (1 .. WIDTH_LINE) := (others => ' ');
+  procedure Clear_Line (Field : in Nav_Data.T_List_Data) is
+    Spaces : constant String (1 .. Width_Line) := (others => ' ');
   begin
-    MOVE ( (FLD_ROW(FIELD) + 3, COL_LINE), W_MASK);
-    PUT (SPACES, W_MASK);
-  end CLEAR_LINE;
+    Move ( (Fld_Row(Field) + 3, Col_Line), W_Mask);
+    Put (Spaces, W_Mask);
+  end Clear_Line;
 
-  function GET_ACTION return ACTION is
-    STR : STRING (1 .. 0);
-    LAST : NATURAL;
-    STAT : CURS_MVT;
-    POS : POSITIVE;
-    INS : BOOLEAN;
-    CUR_ACTION : ACTION;
-    subtype OPERATION is ACTION range COMPUTE .. CLEAR;
+  function Get_Action return Action is
+    Str : String (1 .. 0);
+    Last : Natural;
+    Stat : Curs_Mvt;
+    Pos : Positive;
+    Ins : Boolean;
+    Cur_Action : Action;
+    subtype Operation is Action range Compute .. Clear;
 
-    function ACT_COL (OPER : OPERATION) return COL_RANGE is
+    function Act_Col (Oper : Operation) return Col_Range is
     begin
-      case OPER is
-        when COMPUTE =>
-         return COMP_WID + 1;
-        when QUIT    =>
-         return COMP_WID + ACT_OFF + QUIT_WID + 1;
-        when HELP    =>
-         return COMP_WID + ACT_OFF + QUIT_WID + ACT_OFF + HELP_WID + 1;
-        when CLEAR   =>
-         return COMP_WID + ACT_OFF + QUIT_WID + ACT_OFF + HELP_WID
-          + ACT_OFF + CLEA_WID + 1;
+      case Oper is
+        when Compute =>
+         return Comp_Wid + 1;
+        when Quit    =>
+         return Comp_Wid + Act_Off + Quit_Wid + 1;
+        when Help    =>
+         return Comp_Wid + Act_Off + Quit_Wid + Act_Off + Help_Wid + 1;
+        when Clear   =>
+         return Comp_Wid + Act_Off + Quit_Wid + Act_Off + Help_Wid
+          + Act_Off + Clea_Wid + 1;
       end case;
-    end ACT_COL;
+    end Act_Col;
   begin
-    CUR_ACTION := COMPUTE;
-    STAT := RIGHT;
+    Cur_Action := Compute;
+    Stat := Right;
     loop
       -- infinite get with GET_BACK on GET_BACK
-      if STAT /= TIMEOUT then
-        MOVE (0, ACT_COL(CUR_ACTION), W_ACT);
-        PUT ('X', W_ACT, BACKGROUND => GET_BACK);
+      if Stat /= Timeout then
+        Move (0, Act_Col(Cur_Action), W_Act);
+        Put ('X', W_Act, Background => Get_Back);
       end if;
-      MOVE (0, ACT_COL(CUR_ACTION), W_ACT);
-      GET (STR, LAST, STAT, POS, INS, W_ACT, TIME_OUT => DELTA_GET);
-      TIME_TASK_MNG.SCHEDULE;
-      if STAT /= TIMEOUT then
-        PUT (' ', W_ACT, BACKGROUND => GET_BACK);
+      Move (0, Act_Col(Cur_Action), W_Act);
+      Get (Str, Last, Stat, Pos, Ins, W_Act, Time_Out => Delta_Get);
+      Time_Task_Mng.Schedule;
+      if Stat /= Timeout then
+        Put (' ', W_Act, Background => Get_Back);
       end if;
-      case STAT is
-        when UP => return PREV;
-        when DOWN | PGDOWN | PGUP => return NEXT;
-        when RET => return CUR_ACTION;
-        when ESC | TIMEOUT | FULL | MOUSE_BUTTON | BREAK | CTRL_PGUP | CTRL_PGDOWN => null;
-        when LEFT | STAB =>
-          if CUR_ACTION /= OPERATION'FIRST then
-            CUR_ACTION := OPERATION'PRED (CUR_ACTION);
+      case Stat is
+        when Up => return Prev;
+        when Down | Pgdown | Pgup => return Next;
+        when Ret => return Cur_Action;
+        when Esc | Timeout | Full | Mouse_Button | Break | Ctrl_Pgup | Ctrl_Pgdown => null;
+        when Left | Stab =>
+          if Cur_Action /= Operation'First then
+            Cur_Action := Operation'Pred (Cur_Action);
           else
-            CUR_ACTION := OPERATION'LAST;
+            Cur_Action := Operation'Last;
           end if;
-        when RIGHT | TAB =>
-          if CUR_ACTION /= OPERATION'LAST then
-            CUR_ACTION := OPERATION'SUCC (CUR_ACTION);
+        when Right | Tab =>
+          if Cur_Action /= Operation'Last then
+            Cur_Action := Operation'Succ (Cur_Action);
           else
-            CUR_ACTION := OPERATION'FIRST;
+            Cur_Action := Operation'First;
           end if;
-        when FD_EVENT | TIMER_EVENT => 
+        when Fd_Event | Timer_Event => 
           null;
-        when REFRESH => 
-          return REFRESH;
+        when Refresh => 
+          return Refresh;
       end case;
     end loop;
-  end GET_ACTION;
+  end Get_Action;
 
   -- displays the "wrong format" error message
-  procedure ERR_FORMAT is
+  procedure Err_Format is
   begin
-    MOVE ( (0, 0), W_ERR);
-    PUT ("ERROR : Wrong input format or bad value.", W_ERR);
-  end ERR_FORMAT;
+    Move ( (0, 0), W_Err);
+    Put ("ERROR : Wrong input format or bad value.", W_Err);
+  end Err_Format;
 
   -- display an error adapted to the detected inconsistency of data
   --  (result of check)
-  procedure ERR_CHECK (ERROR : in NAV_DATA.T_CONSISTENCY) is
+  procedure Err_Check (Error : in Nav_Data.T_Consistency) is
   begin
-    move ( (0, 0), W_ERR);
-    PUT ("ERROR : ", W_ERR);
-    case ERROR is
-      when NAV_DATA.KNOWN_ERR =>
-        PUT ("Only 3 fields must be unknown.", W_ERR);
-      when NAV_DATA.ANGLE_ERR =>
-        PUT ("The 3 known angles are not consistent.", W_ERR);
-      when NAV_DATA.WIND_ERR =>
-        PUT ("The wind must be fully known or fully unknown.", W_ERR);
-      when NAV_DATA.TRAJ_ERR =>
-        PUT("If the route is unknown, the ground speed must be unknown as well.",
-         W_ERR);
-      when NAV_DATA.DRIFT_ERR =>
-        PUT ( "If the drift is known, the heading or the route must be unknown.",
-         W_ERR);
-      when NAV_DATA.VAL_ERR =>
-        PUT ("The values are not compatible.", W_ERR);
-      when NAV_DATA.OK => null;
+    move ( (0, 0), W_Err);
+    Put ("ERROR : ", W_Err);
+    case Error is
+      when Nav_Data.Known_Err =>
+        Put ("Only 3 fields must be unknown.", W_Err);
+      when Nav_Data.Angle_Err =>
+        Put ("The 3 known angles are not consistent.", W_Err);
+      when Nav_Data.Wind_Err =>
+        Put ("The wind must be fully known or fully unknown.", W_Err);
+      when Nav_Data.Traj_Err =>
+        Put("If the route is unknown, the ground speed must be unknown as well.",
+         W_Err);
+      when Nav_Data.Drift_Err =>
+        Put ( "If the drift is known, the heading or the route must be unknown.",
+         W_Err);
+      when Nav_Data.Val_Err =>
+        Put ("The values are not compatible.", W_Err);
+      when Nav_Data.Ok => null;
     end case;
-  end ERR_CHECK;
+  end Err_Check;
 
-  procedure CLEAR_ERR is
+  procedure Clear_Err is
   begin
-    CON_IO.CLEAR (W_ERR);
-  end CLEAR_ERR;
+    Con_Io.Clear (W_Err);
+  end Clear_Err;
 
 
   -- Ask the operator wether he realy wants to quit
-  function CONFIRM_QUIT return BOOLEAN is
-    STR : STRING (1 .. 0);
-    LAST : NATURAL;
-    STAT : CURS_MVT;
-    POS : POSITIVE;
-    INS : BOOLEAN;
+  function Confirm_Quit return Boolean is
+    Str : String (1 .. 0);
+    Last : Natural;
+    Stat : Curs_Mvt;
+    Pos : Positive;
+    Ins : Boolean;
   begin
-    PUT ("Confirm you want to quit by entering 'Return' : ", W_ERR);
+    Put ("Confirm you want to quit by entering 'Return' : ", W_Err);
     loop
-      MOVE ( (0, 49), W_ERR);
-      GET (STR, LAST, STAT, POS, INS, W_ERR, TIME_OUT => DELTA_GET);
-      TIME_TASK_MNG.SCHEDULE;
-      exit when STAT /= CON_IO.TIMEOUT;
+      Move ( (0, 49), W_Err);
+      Get (Str, Last, Stat, Pos, Ins, W_Err, Time_Out => Delta_Get);
+      Time_Task_Mng.Schedule;
+      exit when Stat /= Con_Io.Timeout;
     end loop;
-    CLEAR (W_ERR);
-    if STAT = RET then
-      ABORT_CLOCK;
+    Clear (W_Err);
+    if Stat = Ret then
+      Abort_Clock;
     end if;
-    return STAT = RET;
-  end CONFIRM_QUIT;
+    return Stat = Ret;
+  end Confirm_Quit;
 
   -- displays the help screen
-  procedure PUT_HELP is
-    STR : STRING (1..0);
-    LST : NATURAL;
-    STAT : CON_IO.CURS_MVT;
-    POS : POSITIVE;
-    INS : BOOLEAN;
+  procedure Put_Help is
+    Str : String (1..0);
+    Lst : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos : Positive;
+    Ins : Boolean;
   begin
-    CLEAR (W_HELP);
-    MOVE ((0, 8), W_HELP);
-    PUT ("heading and trailing spaces are ignored", W_HELP);
-    MOVE ((1, 8), W_HELP);
-    PUT ("decimal are optional for speeds and angles", W_HELP);
-    MOVE ((2, 8), W_HELP);
-    PUT ("+ is optional for the drift", W_HELP);
-    MOVE ((4, 0), W_HELP);
-    PUT ("Constraints: ", W_HELP);
-    MOVE ((4, 13), W_HELP);
-    PUT ("There must be 3 unknown fields", W_HELP);
-    MOVE ((5, 13), W_HELP);
-    PUT ("The 3 angles (wind, heading, route) must be different, and", W_HELP);
-    MOVE ((6, 14), W_HELP);
-    PUT ("heading and wind must be on different sides of the route", W_HELP);
-    MOVE ((7, 13), W_HELP);
-    PUT ("The wind must be fully known or fully unknown", W_HELP);
-    MOVE ((8, 13), W_HELP);
-    PUT ("If the route is unknown, the ground speed must be unknown as well", W_HELP);
-    MOVE ((9, 13), W_HELP);
-    PUT ("If the drift is known, the heading or the route must be unknown",
-     W_HELP);
-    MOVE ((10, 13), W_HELP);
-    PUT ("The wind and the air speed must allow to follow the route",
-     W_HELP);
+    Clear (W_Help);
+    Move ((0, 8), W_Help);
+    Put ("heading and trailing spaces are ignored", W_Help);
+    Move ((1, 8), W_Help);
+    Put ("decimal are optional for speeds and angles", W_Help);
+    Move ((2, 8), W_Help);
+    Put ("+ is optional for the drift", W_Help);
+    Move ((4, 0), W_Help);
+    Put ("Constraints: ", W_Help);
+    Move ((4, 13), W_Help);
+    Put ("There must be 3 unknown fields", W_Help);
+    Move ((5, 13), W_Help);
+    Put ("The 3 angles (wind, heading, route) must be different, and", W_Help);
+    Move ((6, 14), W_Help);
+    Put ("heading and wind must be on different sides of the route", W_Help);
+    Move ((7, 13), W_Help);
+    Put ("The wind must be fully known or fully unknown", W_Help);
+    Move ((8, 13), W_Help);
+    Put ("If the route is unknown, the ground speed must be unknown as well", W_Help);
+    Move ((9, 13), W_Help);
+    Put ("If the drift is known, the heading or the route must be unknown",
+     W_Help);
+    Move ((10, 13), W_Help);
+    Put ("The wind and the air speed must allow to follow the route",
+     W_Help);
 
-    MOVE ((13, 0), W_HELP);
-    PUT ("Enter Return to go back to the data ", W_HELP);
+    Move ((13, 0), W_Help);
+    Put ("Enter Return to go back to the data ", W_Help);
     loop
-      MOVE ((13, 45), W_HELP);
-      GET (STR, LST, STAT, POS, INS, W_HELP,
-       DEFAULT_BACKGROUND, DEFAULT_BLINK_STAT, DEFAULT_BACKGROUND,
-       DELTA_GET);
-      TIME_TASK_MNG.SCHEDULE;
-      if STAT = CON_IO.REFRESH then
-        TITLE;
+      Move ((13, 45), W_Help);
+      Get (Str, Lst, Stat, Pos, Ins, W_Help,
+       Default_Background, Default_Blink_Stat, Default_Background,
+       Delta_Get);
+      Time_Task_Mng.Schedule;
+      if Stat = Con_Io.Refresh then
+        Title;
       end if;
-      exit when STAT = CON_IO.RET or STAT = CON_IO.REFRESH;
+      exit when Stat = Con_Io.Ret or Stat = Con_Io.Refresh;
     end loop;
-    CLEAR (W_HELP);
-  end PUT_HELP;
+    Clear (W_Help);
+  end Put_Help;
 
-  procedure ABORT_CLOCK is
+  procedure Abort_Clock is
   begin
-    MOVE ( (0, 0), W_ACT);
-    TIME_TASK_MNG.ABORT_TASK;
+    Move ( (0, 0), W_Act);
+    Time_Task_Mng.Abort_Task;
   exception
-    when TIME_TASK_MNG.TASK_ABORTED =>
+    when Time_Task_Mng.Task_Aborted =>
       null;
-  end ABORT_CLOCK;
+  end Abort_Clock;
 
 
 begin -- NAV_SCREEN
-  CON_IO.OPEN (W_TITLE, ( 0,  0), ( 7, 79));
-  CON_IO.OPEN (W_MASK,  ( 8,  0), (22, 79));
-  CON_IO.OPEN (W_HELP,  ( 8,  0), (22, 79));
-  CON_IO.OPEN (W_GET,   (11, COL_GET), (20, COL_GET + 7));
-  CON_IO.OPEN (W_RES,   (11, COL_RES), (20, COL_RES + 7));
-  CON_IO.OPEN (W_ACT,   (22,  0), (22, 79));
-  CON_IO.OPEN (W_ERR,   (24,  2), (24, 79));
-  CON_IO.OPEN (W_TIME,  ( 0, 60), ( 0, 79));
-  SET_BACKGROUND (GET_BACK, W_GET);
-  SET_BACKGROUND (GET_BACK, W_ACT);
-  SET_FOREGROUND (RES_FORE, NOT_BLINK, W_RES);
-  SET_FOREGROUND (RED, NOT_BLINK, W_ERR);
-  SET_FOREGROUND (LIGHT_BLUE, NAME => W_TIME);
-end NAV_SCREEN;
+  Con_Io.Open (W_Title, ( 0,  0), ( 7, 79));
+  Con_Io.Open (W_Mask,  ( 8,  0), (22, 79));
+  Con_Io.Open (W_Help,  ( 8,  0), (22, 79));
+  Con_Io.Open (W_Get,   (11, Col_Get), (20, Col_Get + 7));
+  Con_Io.Open (W_Res,   (11, Col_Res), (20, Col_Res + 7));
+  Con_Io.Open (W_Act,   (22,  0), (22, 79));
+  Con_Io.Open (W_Err,   (24,  2), (24, 79));
+  Con_Io.Open (W_Time,  ( 0, 60), ( 0, 79));
+  Set_Background (Get_Back, W_Get);
+  Set_Background (Get_Back, W_Act);
+  Set_Foreground (Res_Fore, Not_Blink, W_Res);
+  Set_Foreground (Red, Not_Blink, W_Err);
+  Set_Foreground (Light_Blue, Name => W_Time);
+end Nav_Screen;
 

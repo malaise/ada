@@ -1,58 +1,58 @@
 -- dependance de taches
-with TEXT_IO;
-procedure TERMIN is
-  use TEXT_IO;
+with Text_Io;
+procedure Termin is
+  use Text_Io;
 
-  type T_CREATION is (PAR_ACCES, DIRECT);
+  type T_Creation is (Par_Acces, Direct);
 
-  package CREATION_IO is new TEXT_IO.ENUMERATION_IO (T_CREATION);
+  package Creation_Io is new Text_Io.Enumeration_Io (T_Creation);
 
-  LOOPS : constant array (T_CREATION) of POSITIVE := (4, 2);
+  Loops : constant array (T_Creation) of Positive := (4, 2);
 
   -- priorite du programme principal
-  pragma PRIORITY (5);
+  pragma Priority (5);
 
   -- type de tache
-  task type T_TACHE is
-    entry INIT (NOM : in T_CREATION);
-    pragma PRIORITY (1);
-  end T_TACHE;
+  task type T_Tache is
+    entry Init (Nom : in T_Creation);
+    pragma Priority (1);
+  end T_Tache;
 
-  type T_PTR_TACHE is access T_TACHE;
+  type T_Ptr_Tache is access T_Tache;
 
-  SEPARATEUR : constant STRING := "-------------";
+  Separateur : constant String := "-------------";
 
-  task body T_TACHE is
-    NOM : T_CREATION;
+  task body T_Tache is
+    Nom : T_Creation;
   begin
-    accept INIT (NOM : in T_CREATION) do
-      T_TACHE.NOM := INIT.NOM;
-    end INIT;
-    PUT ("tache "); CREATION_IO.PUT (NOM, T_CREATION'width);
-    PUT_LINE (" lancee");
-    for I in 1..LOOPS(NOM) loop
+    accept Init (Nom : in T_Creation) do
+      T_Tache.Nom := Init.Nom;
+    end Init;
+    Put ("tache "); Creation_Io.Put (Nom, T_Creation'width);
+    Put_Line (" lancee");
+    for I in 1..Loops(Nom) loop
       delay 0.5;
-      PUT ("tache ");CREATION_IO.PUT (NOM, T_CREATION'width);
-      PUT_LINE (" active");
+      Put ("tache ");Creation_Io.Put (Nom, T_Creation'width);
+      Put_Line (" active");
     end loop;
-    PUT ("tache "); CREATION_IO.PUT (NOM, T_CREATION'width);
-    PUT_LINE (" achevee");
-  end T_TACHE;
+    Put ("tache "); Creation_Io.Put (Nom, T_Creation'width);
+    Put_Line (" achevee");
+  end T_Tache;
 
 begin
-  PUT_LINE ("Une tache depend du bloc ou elle est declaree, sauf une tache "
+  Put_Line ("Une tache depend du bloc ou elle est declaree, sauf une tache "
     & "accedee,");
-  PUT_LINE (" laquelle depend du bloc qui declare le type acces:");
-  NEW_LINE (2);
+  Put_Line (" laquelle depend du bloc qui declare le type acces:");
+  New_Line (2);
 
   declare
-    PA : T_PTR_TACHE := new T_TACHE;
-    PB : T_TACHE;
+    Pa : T_Ptr_Tache := new T_Tache;
+    Pb : T_Tache;
   begin
-    PUT (SEPARATEUR); PUT (" Debut bloc "); PUT_LINE (SEPARATEUR);
-    PA.INIT (PAR_ACCES);
-    PB.INIT (DIRECT);
+    Put (Separateur); Put (" Debut bloc "); Put_Line (Separateur);
+    Pa.Init (Par_Acces);
+    Pb.Init (Direct);
   end;
-  PUT (SEPARATEUR); PUT (" Fin   bloc "); PUT_LINE (SEPARATEUR);
+  Put (Separateur); Put (" Fin   bloc "); Put_Line (Separateur);
 
-end TERMIN;
+end Termin;

@@ -1,124 +1,124 @@
-with MY_MATH, SORTS;
-package body POINTS is
+with My_Math, Sorts;
+package body Points is
 
-  subtype T_RANGE is POSITIVE range 1 .. MAX_NUMBER;
+  subtype T_Range is Positive range 1 .. Max_Number;
 
   -- Points storage
-  type T_STORAGE is
+  type T_Storage is
     record
-      NUMBER     : NATURAL range 0 .. MAX_NUMBER := 0;
-      THE_POINTS : P_T_THE_POINTS(T_RANGE);
-      SAVED      : BOOLEAN := TRUE;
+      Number     : Natural range 0 .. Max_Number := 0;
+      The_Points : P_T_The_Points(T_Range);
+      Saved      : Boolean := True;
     end record;
-  STORAGE : T_STORAGE;
+  Storage : T_Storage;
 
-  function LT (PL, PR : in P_T_ONE_POINT) return BOOLEAN is
-    use MY_MATH;
+  function Lt (Pl, Pr : in P_T_One_Point) return Boolean is
+    use My_Math;
   begin
-    return PL.X < PR.X or else
-         (PL.X = PR.X and then PL.Y < PR.Y);
-  end LT;
+    return Pl.X < Pr.X or else
+         (Pl.X = Pr.X and then Pl.Y < Pr.Y);
+  end Lt;
 
-  package POINTS_SORT is new SORTS (
-    TYP_OBJECT => P_T_ONE_POINT,
-    TYP_INDEX  => POSITIVE,
-    "<"        => LT,
-    TYP_ARRAY  => P_T_THE_POINTS);
+  package Points_Sort is new Sorts (
+    Typ_Object => P_T_One_Point,
+    Typ_Index  => Positive,
+    "<"        => Lt,
+    Typ_Array  => P_T_The_Points);
 
-  function P_THE_POINTS return P_T_THE_POINTS is
+  function P_The_Points return P_T_The_Points is
   begin
-    return STORAGE.THE_POINTS(1 .. STORAGE.NUMBER);
-  end P_THE_POINTS;
+    return Storage.The_Points(1 .. Storage.Number);
+  end P_The_Points;
 
-  function P_ONE_POINT (INDEX : in POSITIVE) return P_T_ONE_POINT is
+  function P_One_Point (Index : in Positive) return P_T_One_Point is
   begin
-    if INDEX < 1 or else INDEX > STORAGE.NUMBER then
-      raise P_INDEX_OUT;
+    if Index < 1 or else Index > Storage.Number then
+      raise P_Index_Out;
     end if;
-    return STORAGE.THE_POINTS(INDEX);
-  end P_ONE_POINT;
+    return Storage.The_Points(Index);
+  end P_One_Point;
 
   -- Store points
-  procedure P_STORE(THE_POINTS : in P_T_THE_POINTS) is
+  procedure P_Store(The_Points : in P_T_The_Points) is
   begin
     -- Raise constraint error if the number of points is too big
-    STORAGE.NUMBER := THE_POINTS'LENGTH;
-    if STORAGE.NUMBER > 0 then
-      STORAGE.THE_POINTS(1 .. STORAGE.NUMBER) :=
-       THE_POINTS(THE_POINTS'RANGE);
+    Storage.Number := The_Points'Length;
+    if Storage.Number > 0 then
+      Storage.The_Points(1 .. Storage.Number) :=
+       The_Points(The_Points'Range);
     end if;
-    STORAGE.SAVED := TRUE;
+    Storage.Saved := True;
   exception
-    when CONSTRAINT_ERROR =>
-      raise P_TOO_MANY;
-  end P_STORE;
+    when Constraint_Error =>
+      raise P_Too_Many;
+  end P_Store;
 
   -- Clear storage
-  procedure P_CLEAR is
+  procedure P_Clear is
   begin
-    STORAGE.NUMBER := 0;
-    STORAGE.SAVED := TRUE;
-  end P_CLEAR;
+    Storage.Number := 0;
+    Storage.Saved := True;
+  end P_Clear;
 
   -- Sort
-  procedure P_SORT is
+  procedure P_Sort is
   begin
-    POINTS_SORT.QUICK_SORT(STORAGE.THE_POINTS(1 .. STORAGE.NUMBER));
-  end P_SORT;
+    Points_Sort.Quick_Sort(Storage.The_Points(1 .. Storage.Number));
+  end P_Sort;
   
 
   -- Take a point update into account
-  procedure P_UPD_POINT(ACTION : in P_T_UPD_ACTION;
-                        INDEX  : in POSITIVE := 1;
-                        POINT  : in P_T_ONE_POINT := (X => 0.0, Y => 0.0)) is
+  procedure P_Upd_Point(Action : in P_T_Upd_Action;
+                        Index  : in Positive := 1;
+                        Point  : in P_T_One_Point := (X => 0.0, Y => 0.0)) is
   begin
-    case ACTION is
-      when ADD =>
+    case Action is
+      when Add =>
         -- Append new point
         begin
-          STORAGE.NUMBER := STORAGE.NUMBER + 1;
+          Storage.Number := Storage.Number + 1;
         exception
-          when CONSTRAINT_ERROR =>
-            raise P_TOO_MANY;
+          when Constraint_Error =>
+            raise P_Too_Many;
         end;
-        STORAGE.THE_POINTS(STORAGE.NUMBER) := POINT;
-      when REMOVE =>
-        if INDEX < 1 or else INDEX > STORAGE.NUMBER then
-          raise P_INDEX_OUT;
+        Storage.The_Points(Storage.Number) := Point;
+      when Remove =>
+        if Index < 1 or else Index > Storage.Number then
+          raise P_Index_Out;
         end if;
         -- Shift points
-        STORAGE.NUMBER := STORAGE.NUMBER - 1;
-        STORAGE.THE_POINTS(INDEX .. STORAGE.NUMBER) :=
-          STORAGE.THE_POINTS(INDEX + 1 .. STORAGE.NUMBER + 1);
-      when MODIFY =>
+        Storage.Number := Storage.Number - 1;
+        Storage.The_Points(Index .. Storage.Number) :=
+          Storage.The_Points(Index + 1 .. Storage.Number + 1);
+      when Modify =>
         -- Store new content
-        if INDEX < 1 or else INDEX > STORAGE.NUMBER then
-          raise P_INDEX_OUT;
+        if Index < 1 or else Index > Storage.Number then
+          raise P_Index_Out;
         end if;
-        STORAGE.THE_POINTS(INDEX) := POINT;
+        Storage.The_Points(Index) := Point;
     end case;
     -- The new set is not saved
-    STORAGE.SAVED := FALSE;
-  end P_UPD_POINT;
+    Storage.Saved := False;
+  end P_Upd_Point;
 
-  procedure P_SAVED is
+  procedure P_Saved is
   begin
-    STORAGE.SAVED := TRUE;
-  end P_SAVED;
+    Storage.Saved := True;
+  end P_Saved;
 
-  function P_SAVED return BOOLEAN is
+  function P_Saved return Boolean is
   begin
-    return STORAGE.SAVED;
-  end P_SAVED;
+    return Storage.Saved;
+  end P_Saved;
 
-  function P_EMPTY return BOOLEAN is
+  function P_Empty return Boolean is
   begin
-    return STORAGE.NUMBER = 0;
-  end P_EMPTY;
+    return Storage.Number = 0;
+  end P_Empty;
 
-  function P_NB return NATURAL is
+  function P_Nb return Natural is
   begin
-    return STORAGE.NUMBER;
-  end P_NB;
+    return Storage.Number;
+  end P_Nb;
 
-end POINTS;
+end Points;

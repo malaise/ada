@@ -1,8 +1,8 @@
-with MY_IO, RND;
-procedure IOLE is
+with My_Io, Rnd;
+procedure Iole is
 
   task T1 is
-    entry REQUEST;
+    entry Request;
   end T1;
 
   task T2;
@@ -11,9 +11,9 @@ procedure IOLE is
   begin
     loop
       select
-        accept REQUEST do
-          MY_IO.PUT_LINE ("Request");
-        end REQUEST;
+        accept Request do
+          My_Io.Put_Line ("Request");
+        end Request;
       or
         terminate;
       end select;
@@ -23,14 +23,14 @@ procedure IOLE is
   task body T2 is
   begin
     loop
-      delay RND.DUR_RANDOM (0.0, 0.1);
-      MY_IO.PUT_LINE ("Event");
+      delay Rnd.Dur_Random (0.0, 0.1);
+      My_Io.Put_Line ("Event");
     end loop;
   end T2;
 
 begin
   loop
-    delay RND.DUR_RANDOM (0.0, 0.2);
-    T1.REQUEST;
+    delay Rnd.Dur_Random (0.0, 0.2);
+    T1.Request;
   end loop;
-end IOLE;
+end Iole;

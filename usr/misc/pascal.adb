@@ -1,66 +1,66 @@
 --  Triangle de PASCAL
 
-with MY_IO; use MY_IO;
+with My_Io; use My_Io;
 -- Calcul des elements des 33 premieres lignes du
 --  TRIANGLE DE PASCAL
-procedure PASCAL is
+procedure Pascal is
 
   -- element calcule et sorti
-  ELEMENT      : LONG_LONG_INTEGER;
+  Element      : Long_Long_Integer;
   -- table des resultats
-  NO_LIGNE_MAX : constant INTEGER := 33;
-  INDICE_MAX   : constant INTEGER := NO_LIGNE_MAX + 1;
-  subtype TYP_NO_LIGNE is INTEGER range 0 .. NO_LIGNE_MAX;
-  subtype TYP_INDICE is INTEGER range 1 .. INDICE_MAX;
-  TABLE : array(TYP_NO_LIGNE, TYP_INDICE) of LONG_LONG_INTEGER :=
+  No_Ligne_Max : constant Integer := 33;
+  Indice_Max   : constant Integer := No_Ligne_Max + 1;
+  subtype Typ_No_Ligne is Integer range 0 .. No_Ligne_Max;
+  subtype Typ_Indice is Integer range 1 .. Indice_Max;
+  Table : array(Typ_No_Ligne, Typ_Indice) of Long_Long_Integer :=
    (others => (others => 0));
 
 begin
-  PUT("Calcul des ");
-  PUT(NO_LIGNE_MAX);
-  PUT_LINE(" premieres lignes du Triangle de PASCAL:");
-  NEW_LINE;
+  Put("Calcul des ");
+  Put(No_Ligne_Max);
+  Put_Line(" premieres lignes du Triangle de PASCAL:");
+  New_Line;
 
-  PRINCIPALE : for NO_LIGNE in TYP_NO_LIGNE loop
+  Principale : for No_Ligne in Typ_No_Ligne loop
 
     -- numero de ligne pour le calcul
-    PUT(NO_LIGNE);
-    PUT_LINE(" : ");
+    Put(No_Ligne);
+    Put_Line(" : ");
 
-    PUT("   ");
-    for INDICE in TYP_INDICE range TYP_INDICE'FIRST .. TYP_NO_LIGNE'SUCC(
-      NO_LIGNE) loop
+    Put("   ");
+    for Indice in Typ_Indice range Typ_Indice'First .. Typ_No_Ligne'Succ(
+      No_Ligne) loop
 
       -- 6 elements par ligne d'ecran
-      if ((INDICE - 1) mod 6 = 0) and then (INDICE /= 1) then
-        NEW_LINE;
-        PUT("-> ");
+      if ((Indice - 1) mod 6 = 0) and then (Indice /= 1) then
+        New_Line;
+        Put("-> ");
       end if; 
 
       -- elements de la ligne separes par '/'
-      if INDICE = TYP_INDICE'FIRST then 
-        ELEMENT := 1; 
+      if Indice = Typ_Indice'First then 
+        Element := 1; 
       else 
-        ELEMENT := TABLE(TYP_NO_LIGNE'PRED(NO_LIGNE), TYP_INDICE'PRED(INDICE)) +
-                      TABLE(TYP_NO_LIGNE'PRED(NO_LIGNE), INDICE); 
+        Element := Table(Typ_No_Ligne'Pred(No_Ligne), Typ_Indice'Pred(Indice)) +
+                      Table(Typ_No_Ligne'Pred(No_Ligne), Indice); 
       end if; 
-      TABLE(NO_LIGNE, INDICE) := ELEMENT; 
-      PUT(ELEMENT); 
-      if INDICE /= TYP_INDICE'SUCC(NO_LIGNE) then 
-        PUT('/'); 
+      Table(No_Ligne, Indice) := Element; 
+      Put(Element); 
+      if Indice /= Typ_Indice'Succ(No_Ligne) then 
+        Put('/'); 
       end if; 
     end loop; 
 
     -- fin du traitement
-    NEW_LINE; 
-    NEW_LINE; 
-  end loop PRINCIPALE; 
+    New_Line; 
+    New_Line; 
+  end loop Principale; 
 
 exception
 
   -- un element est trop grand
   when others => 
-    PUT_LINE("PROBLEME: Degre trop grand."); 
-    NEW_LINE; 
-end PASCAL; 
+    Put_Line("PROBLEME: Degre trop grand."); 
+    New_Line; 
+end Pascal; 
 

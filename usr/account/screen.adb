@@ -1,229 +1,229 @@
-with STRING_MNG, NORMAL, CON_IO, AFPX;
-package body SCREEN is
-  type MODES_LIST is (DEFAULT, CONFIRM, ACK);
+with String_Mng, Normal, Con_Io, Afpx;
+package body Screen is
+  type Modes_List is (Default, Confirm, Ack);
 
-  EDIT_ALLOWED : BOOLEAN := FALSE;
-  SUBLIST_ACTIVE : BOOLEAN := FALSE;
+  Edit_Allowed : Boolean := False;
+  Sublist_Active : Boolean := False;
 
-  procedure UPDATE_TO_UNIT is
-    use type UNIT_FORMAT.UNITS_LIST;
+  procedure Update_To_Unit is
+    use type Unit_Format.Units_List;
   begin
-    if UNIT_FORMAT.GET_CURRENT_UNIT = UNIT_FORMAT.EUROS then
-      AFPX.RESET_FIELD(36);
+    if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
+      Afpx.Reset_Field(36);
     else
-      AFPX.CLEAR_FIELD(36);
-      AFPX.SET_FIELD_COLORS(36, FOREGROUND => CON_IO.BLUE);
-      AFPX.ENCODE_FIELD(36, (0, 1), "TO EUROS");
+      Afpx.Clear_Field(36);
+      Afpx.Set_Field_Colors(36, Foreground => Con_Io.Blue);
+      Afpx.Encode_Field(36, (0, 1), "TO EUROS");
     end if;
-  end UPDATE_TO_UNIT;
+  end Update_To_Unit;
 
-  procedure SET_MODE (MODE : in MODES_LIST) is
+  procedure Set_Mode (Mode : in Modes_List) is
   begin
     -- List unprotected in default
-    AFPX.SET_FIELD_PROTECTION(AFPX.LIST_FIELD_NO, MODE /= DEFAULT);
+    Afpx.Set_Field_Protection(Afpx.List_Field_No, Mode /= Default);
     -- Oper buttons
-    for F in AFPX.FIELD_RANGE'(23) .. 24 loop
-      AFPX.SET_FIELD_ACTIVATION(F, MODE = DEFAULT);
+    for F in Afpx.Field_Range'(23) .. 24 loop
+      Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
-    for F in AFPX.FIELD_RANGE'(25) .. 28 loop
-      AFPX.SET_FIELD_ACTIVATION(F, MODE = DEFAULT and then EDIT_ALLOWED);
+    for F in Afpx.Field_Range'(25) .. 28 loop
+      Afpx.Set_Field_Activation(F, Mode = Default and then Edit_Allowed);
     end loop;
-    if SUBLIST_ACTIVE then
-      AFPX.ENCODE_FIELD(29, (0, 1), "UN SEL");
+    if Sublist_Active then
+      Afpx.Encode_Field(29, (0, 1), "UN SEL");
     else
-      AFPX.RESET_FIELD(29, RESET_COLORS => FALSE);
+      Afpx.Reset_Field(29, Reset_Colors => False);
     end if;
-    AFPX.SET_FIELD_ACTIVATION(29, MODE = DEFAULT and then EDIT_ALLOWED);
-    AFPX.SET_FIELD_ACTIVATION(30, MODE = DEFAULT and then SUBLIST_ACTIVE);
+    Afpx.Set_Field_Activation(29, Mode = Default and then Edit_Allowed);
+    Afpx.Set_Field_Activation(30, Mode = Default and then Sublist_Active);
     -- Account buttons
-    for F in AFPX.FIELD_RANGE'(31) .. 38 loop
-       AFPX.SET_FIELD_ACTIVATION(F, MODE = DEFAULT);
+    for F in Afpx.Field_Range'(31) .. 38 loop
+       Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
     -- To francs/Euros button
-    if MODE = DEFAULT then
-      UPDATE_TO_UNIT;
+    if Mode = Default then
+      Update_To_Unit;
     end if;
     -- Message
-    AFPX.CLEAR_FIELD(39);
+    Afpx.Clear_Field(39);
     -- Confirm Ack
-    AFPX.SET_FIELD_ACTIVATION(40, MODE /= DEFAULT);
-    if MODE = CONFIRM then
-      AFPX.RESET_FIELD(40, RESET_COLORS => FALSE);
-    elsif MODE = ACK then
-      AFPX.ENCODE_FIELD(40, (0, 1), "ACK");
+    Afpx.Set_Field_Activation(40, Mode /= Default);
+    if Mode = Confirm then
+      Afpx.Reset_Field(40, Reset_Colors => False);
+    elsif Mode = Ack then
+      Afpx.Encode_Field(40, (0, 1), "ACK");
     end if;
 
-    AFPX.SET_FIELD_ACTIVATION(41, MODE = CONFIRM);
-  end SET_MODE;
+    Afpx.Set_Field_Activation(41, Mode = Confirm);
+  end Set_Mode;
 
-  procedure ALLOW_EDIT (ALLOW : in BOOLEAN) is
+  procedure Allow_Edit (Allow : in Boolean) is
   begin
-    EDIT_ALLOWED := ALLOW;
-    for F in AFPX.FIELD_RANGE'(25) .. 29 loop
-      AFPX.SET_FIELD_ACTIVATION(F, EDIT_ALLOWED);
+    Edit_Allowed := Allow;
+    for F in Afpx.Field_Range'(25) .. 29 loop
+      Afpx.Set_Field_Activation(F, Edit_Allowed);
     end loop;
-  end ALLOW_EDIT;
+  end Allow_Edit;
 
-  procedure SUBLIST (ACTIVE : in BOOLEAN) is
+  procedure Sublist (Active : in Boolean) is
   begin
-    SUBLIST_ACTIVE := ACTIVE;
-    if SUBLIST_ACTIVE then
-      AFPX.ENCODE_FIELD(29, (0, 1), "UN SEL");
+    Sublist_Active := Active;
+    if Sublist_Active then
+      Afpx.Encode_Field(29, (0, 1), "UN SEL");
     else
-       AFPX.RESET_FIELD(29, RESET_COLORS => FALSE);
+       Afpx.Reset_Field(29, Reset_Colors => False);
     end if;
-    AFPX.SET_FIELD_ACTIVATION(30, SUBLIST_ACTIVE);
-  end SUBLIST;
+    Afpx.Set_Field_Activation(30, Sublist_Active);
+  end Sublist;
 
   -- Reset to default screen
-  procedure RESET is
+  procedure Reset is
   begin
-    AFPX.USE_DESCRIPTOR(1);
-    AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
-    SET_MODE(DEFAULT);
-  end RESET;
+    Afpx.Use_Descriptor(1);
+    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+    Set_Mode(Default);
+  end Reset;
 
 
-  procedure ENCODE_FILE_NAME (FILE_NAME : in STRING) is
+  procedure Encode_File_Name (File_Name : in String) is
   begin
-    AFPX.ENCODE_FIELD(1, (0, 0),
-         STRING_MNG.PROCUSTE(FILE_NAME,
-                           AFPX.GET_FIELD_WIDTH(1)));
-  end ENCODE_FILE_NAME;
+    Afpx.Encode_Field(1, (0, 0),
+         String_Mng.Procuste(File_Name,
+                           Afpx.Get_Field_Width(1)));
+  end Encode_File_Name;
 
-  procedure ENCODE_NB_OPER (OPER : in NATURAL; SELECTED : in NATURAL) is
+  procedure Encode_Nb_Oper (Oper : in Natural; Selected : in Natural) is
   begin
     -- Set account number
-    AFPX.ENCODE_FIELD(3, (0, 0),
-        NORMAL(OPER, AFPX.GET_FIELD_WIDTH(3)));
-    if OPER <= 1 then
-      AFPX.ENCODE_FIELD(4, (0, 0), "operation ");
+    Afpx.Encode_Field(3, (0, 0),
+        Normal(Oper, Afpx.Get_Field_Width(3)));
+    if Oper <= 1 then
+      Afpx.Encode_Field(4, (0, 0), "operation ");
     else
-      AFPX.ENCODE_FIELD(4, (0, 0), "operations");
+      Afpx.Encode_Field(4, (0, 0), "operations");
     end if;
-    AFPX.SET_FIELD_ACTIVATION(6, SUBLIST_ACTIVE);
-    AFPX.ENCODE_FIELD(6, (0, 0),
-               NORMAL(SELECTED, AFPX.GET_FIELD_WIDTH(6)));
-    AFPX.SET_FIELD_ACTIVATION(7, SUBLIST_ACTIVE);
-  end ENCODE_NB_OPER;
+    Afpx.Set_Field_Activation(6, Sublist_Active);
+    Afpx.Encode_Field(6, (0, 0),
+               Normal(Selected, Afpx.Get_Field_Width(6)));
+    Afpx.Set_Field_Activation(7, Sublist_Active);
+  end Encode_Nb_Oper;
 
-  procedure ENCODE_SAVED (SAVED : in BOOLEAN) is
+  procedure Encode_Saved (Saved : in Boolean) is
   begin
-     if SAVED then
-       AFPX.RESET_FIELD(5, RESET_COLORS => TRUE, RESET_STRING => TRUE);
+     if Saved then
+       Afpx.Reset_Field(5, Reset_Colors => True, Reset_String => True);
      else
-       AFPX.ENCODE_FIELD(5, (0, 0), "NOT SAVED");
-       AFPX.SET_FIELD_COLORS (5, CON_IO.RED);
+       Afpx.Encode_Field(5, (0, 0), "NOT SAVED");
+       Afpx.Set_Field_Colors (5, Con_Io.Red);
      end if;
-  end ENCODE_SAVED;
+  end Encode_Saved;
 
-  procedure ENCODE_SUMMARY(REAL_AMOUNT, ACCOUNT_AMOUNT,
-                           DEFERED_AMOUNT, MARGIN_AMOUNT :
-                                    in OPER_DEF.AMOUNT_RANGE) is
+  procedure Encode_Summary(Real_Amount, Account_Amount,
+                           Defered_Amount, Margin_Amount :
+                                    in Oper_Def.Amount_Range) is
   begin
-    AFPX.ENCODE_FIELD (10, (0, 0), UNIT_FORMAT.IMAGE(REAL_AMOUNT, TRUE));
-    AFPX.ENCODE_FIELD (12, (0, 0), UNIT_FORMAT.IMAGE(ACCOUNT_AMOUNT, TRUE));
-    AFPX.ENCODE_FIELD (14, (0, 0), UNIT_FORMAT.IMAGE(DEFERED_AMOUNT, TRUE));
-    AFPX.ENCODE_FIELD (16, (0, 0), UNIT_FORMAT.IMAGE(MARGIN_AMOUNT, TRUE));
-  end ENCODE_SUMMARY;
+    Afpx.Encode_Field (10, (0, 0), Unit_Format.Image(Real_Amount, True));
+    Afpx.Encode_Field (12, (0, 0), Unit_Format.Image(Account_Amount, True));
+    Afpx.Encode_Field (14, (0, 0), Unit_Format.Image(Defered_Amount, True));
+    Afpx.Encode_Field (16, (0, 0), Unit_Format.Image(Margin_Amount, True));
+  end Encode_Summary;
 
-  function MY_PTG return BOOLEAN is
+  function My_Ptg return Boolean is
     -- Afpx put_then_get stuff
-    CURSOR_FIELD : AFPX.ABSOLUTE_FIELD_RANGE := 1;
-    CURSOR_COL   : CON_IO.COL_RANGE := 0;
-    PTG_RESULT   : AFPX.RESULT_REC;
-    REDISPLAY    : BOOLEAN := FALSE;
+    Cursor_Field : Afpx.Absolute_Field_Range := 1;
+    Cursor_Col   : Con_Io.Col_Range := 0;
+    Ptg_Result   : Afpx.Result_Rec;
+    Redisplay    : Boolean := False;
   begin
     loop
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
-              return TRUE;
-            when AFPX.ESCAPE_KEY =>
-              return FALSE;
-            when AFPX.BREAK_KEY =>
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
+              return True;
+            when Afpx.Escape_Key =>
+              return False;
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
             when 40 =>
-              return TRUE;
+              return True;
             when 41 =>
-              return FALSE;
+              return False;
             when others =>
               null;
           end case;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
-        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
-          REDISPLAY := TRUE;
+        when Afpx.Refresh =>
+          Redisplay := True;
+        when Afpx.Fd_Event | Afpx.Timer_Event =>
+          Redisplay := True;
       end case;
     end loop;
-  end MY_PTG;
+  end My_Ptg;
 
-  function CONFIRM_ACTION (ACTION : ACTION_LIST) return BOOLEAN is
-    RESULT : BOOLEAN;
+  function Confirm_Action (Action : Action_List) return Boolean is
+    Result : Boolean;
   begin
-    SET_MODE(CONFIRM);
-    case ACTION is
-      when OVERWRITE_ACCOUNT =>
-        RING(FALSE);
-        AFPX.ENCODE_FIELD (39, (0, 0),
+    Set_Mode(Confirm);
+    case Action is
+      when Overwrite_Account =>
+        Ring(False);
+        Afpx.Encode_Field (39, (0, 0),
           "Account is not saved and will be overwritten. Confirm?");
-      when OVERWRITE_FILE =>
-        AFPX.ENCODE_FIELD (39, (0, 0),
+      when Overwrite_File =>
+        Afpx.Encode_Field (39, (0, 0),
           "Account file exists and will be overwritten. Confirm?");
-      when QUIT_UNSAVED =>
-        RING(FALSE);
-        AFPX.ENCODE_FIELD (39, (0, 0),
+      when Quit_Unsaved =>
+        Ring(False);
+        Afpx.Encode_Field (39, (0, 0),
           "Account is not saved and will be lost. Confirm?");
     end case;
     -- Get answer
-    RESULT := MY_PTG;
-    SET_MODE(DEFAULT);
-    return RESULT;
-  end CONFIRM_ACTION;
+    Result := My_Ptg;
+    Set_Mode(Default);
+    return Result;
+  end Confirm_Action;
 
-  procedure ACK_ERROR (ERROR : in ERROR_LIST) is
+  procedure Ack_Error (Error : in Error_List) is
   begin
-    SET_MODE(ACK);
-    RING(TRUE);
-    case ERROR is
-      when FILE_ACCESS =>
-        AFPX.ENCODE_FIELD (39, (0, 0),
+    Set_Mode(Ack);
+    Ring(True);
+    case Error is
+      when File_Access =>
+        Afpx.Encode_Field (39, (0, 0),
           "File not found or not an account or access denied");
-      when FILE_IO =>
-        AFPX.ENCODE_FIELD (39, (0, 0), "File read or write error");
-      when FILE_READ_ONLY =>
-        AFPX.ENCODE_FIELD (39, (0, 0), "File is read-only");
-      when FILE_NAME_TOO_LONG =>
-        AFPX.ENCODE_FIELD (39, (0, 0), "File name too long");
-      when ACCOUNT_FULL =>
-        AFPX.ENCODE_FIELD (39, (0, 0), "Sorry, the account is full");
-      when NOT_IMPLEMENTED =>
-        AFPX.ENCODE_FIELD (39, (0, 0), "Sorry, not implmeneted yet");
-      when INTERNAL_ERROR =>
-        AFPX.ENCODE_FIELD (39, (0, 0), "Internal error. Saving in Tmp");
+      when File_Io =>
+        Afpx.Encode_Field (39, (0, 0), "File read or write error");
+      when File_Read_Only =>
+        Afpx.Encode_Field (39, (0, 0), "File is read-only");
+      when File_Name_Too_Long =>
+        Afpx.Encode_Field (39, (0, 0), "File name too long");
+      when Account_Full =>
+        Afpx.Encode_Field (39, (0, 0), "Sorry, the account is full");
+      when Not_Implemented =>
+        Afpx.Encode_Field (39, (0, 0), "Sorry, not implmeneted yet");
+      when Internal_Error =>
+        Afpx.Encode_Field (39, (0, 0), "Internal error. Saving in Tmp");
     end case;
     -- Loop until ack
-    while not MY_PTG loop
+    while not My_Ptg loop
       null;
     end loop;
-    SET_MODE(DEFAULT);
-  end ACK_ERROR;
+    Set_Mode(Default);
+  end Ack_Error;
  
   -- Ring alarm / question bell
-  procedure RING (ALARM : in BOOLEAN) is
+  procedure Ring (Alarm : in Boolean) is
   begin
-    if ALARM then
-      CON_IO.BELL(3);
+    if Alarm then
+      Con_Io.Bell(3);
     else
-      CON_IO.BELL(1);
+      Con_Io.Bell(1);
     end if;
-  end RING;
+  end Ring;
 
-end SCREEN;
+end Screen;
 

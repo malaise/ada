@@ -1,238 +1,238 @@
-with FLO_IO, LONG_IO, MY_MATH, MY_IO, CLEAR_SCREEN;
-use MY_IO;
-procedure IMPOT_98 is
+with Flo_Io, Long_Io, My_Math, My_Io, Clear_Screen;
+use My_Io;
+procedure Impot_98 is
 
   -- Tout montant en francs
-  type SOMME is digits 12 range -1_000_000_000.00 .. 1_000_000_000.00;
+  type Somme is digits 12 range -1_000_000_000.00 .. 1_000_000_000.00;
 
   -- le salaire net imposable
-  SALAIRE : SOMME;
+  Salaire : Somme;
   -- le revenu brut global
-  REVENU_BRUT_GLOBAL : SOMME;
+  Revenu_Brut_Global : Somme;
 
   -- les charges deduites
-  CHARGES_DEDUITES : SOMME;
+  Charges_Deduites : Somme;
   -- le revenu net
-  REVENU_NET_IMPOSABLE : SOMME;
+  Revenu_Net_Imposable : Somme;
 
   -- le nombre de parts, le quotient familial et l'impot i
-  NBRE_PART : POSITIVE;     -- Le nombre saisi * 10
-  QUOTIENT_FAMILIAL : SOMME;
-  IMPOT_I : SOMME;
+  Nbre_Part : Positive;     -- Le nombre saisi * 10
+  Quotient_Familial : Somme;
+  Impot_I : Somme;
 
   -- l'impot apres correction
-  IMPOT_APRES_CORRECTION : SOMME;
+  Impot_Apres_Correction : Somme;
 
   -- l'impot apres deduction
-  IMPOT_APRES_DEDUCTION  : SOMME;
+  Impot_Apres_Deduction  : Somme;
 
   -- l'impot a payer ...
-  IMPOT_A_PAYER : SOMME;
+  Impot_A_Payer : Somme;
 
   -- les resultats intermediaires des calculs
-  RESULTAT : SOMME;
+  Resultat : Somme;
 
   -- pour lire un float tres securise
-  function GET_REAL return MY_MATH.REAL is
-    CHAINE : STRING(1..132);
-    DERNIER : NATURAL;
-    VALEUR : FLOAT;
-    INT_VAL : MY_MATH.INTE;
+  function Get_Real return My_Math.Real is
+    Chaine : String(1..132);
+    Dernier : Natural;
+    Valeur : Float;
+    Int_Val : My_Math.Inte;
   begin
-    MY_IO.GET_LINE (CHAINE, DERNIER);
+    My_Io.Get_Line (Chaine, Dernier);
     begin
-      FLO_IO.GET (CHAINE(1..DERNIER), VALEUR, DERNIER);
-      return MY_MATH.REAL(VALEUR);
+      Flo_Io.Get (Chaine(1..Dernier), Valeur, Dernier);
+      return My_Math.Real(Valeur);
     exception
       when others =>
-        LONG_IO.GET(CHAINE(1..DERNIER), INT_VAL, DERNIER);
-        return MY_MATH.REAL (INT_VAL);
+        Long_Io.Get(Chaine(1..Dernier), Int_Val, Dernier);
+        return My_Math.Real (Int_Val);
     end;
-  end GET_REAL;
+  end Get_Real;
 
   -- Pour lire une somme avec une invite
-  function GET_SOMME (MESSAGE : STRING) return SOMME is
-    VAL : MY_MATH.REAL;
+  function Get_Somme (Message : String) return Somme is
+    Val : My_Math.Real;
   begin
     loop
       begin
-        PUT (MESSAGE & " : ");
-        VAL := GET_REAL;
-        return SOMME(VAL);
+        Put (Message & " : ");
+        Val := Get_Real;
+        return Somme(Val);
       exception
-        when others => PUT_LINE ("ERREUR. Recommencez.");
+        when others => Put_Line ("ERREUR. Recommencez.");
       end;
     end loop;
-  end GET_SOMME;
+  end Get_Somme;
 
   -- Pour lire le nombre de parts avec une invite
   --  rend le nombre * 10
-  function GET_PART (MESSAGE : STRING) return POSITIVE is
-    VAL : MY_MATH.REAL;
-    FRAC : MY_MATH.REAL;
-    use MY_MATH;
+  function Get_Part (Message : String) return Positive is
+    Val : My_Math.Real;
+    Frac : My_Math.Real;
+    use My_Math;
   begin
     loop
       begin
-        PUT (MESSAGE);
-        PUT (" : ");
-        VAL := GET_REAL;
-        FRAC := MY_MATH.FRAC (VAL);
-        if (FRAC /= 0.0) and then (FRAC /= 0.5) then
-          raise CONSTRAINT_ERROR;
+        Put (Message);
+        Put (" : ");
+        Val := Get_Real;
+        Frac := My_Math.Frac (Val);
+        if (Frac /= 0.0) and then (Frac /= 0.5) then
+          raise Constraint_Error;
         end if;
-        if (VAL <= 0.0) then
-          raise CONSTRAINT_ERROR;
+        if (Val <= 0.0) then
+          raise Constraint_Error;
         end if;
-        return POSITIVE(MY_MATH.INT (VAL * 10.0) );
+        return Positive(My_Math.Int (Val * 10.0) );
       exception
-        when others => PUT_LINE ("ERREUR. Recommencez.");
+        when others => Put_Line ("ERREUR. Recommencez.");
       end;
     end loop;
-  end GET_PART;
+  end Get_Part;
 
   -- Pour imprimer une somme entre 2 messages
-  procedure ECRIT (MES_1 : in STRING; VALEUR : in SOMME; MES_2 : in STRING) is
+  procedure Ecrit (Mes_1 : in String; Valeur : in Somme; Mes_2 : in String) is
   begin
-    PUT (MES_1 & ' ');
-    PUT (FLOAT(VALEUR), 11, 2, 0);
-    PUT_LINE (' ' & MES_2);
-  end ECRIT;
+    Put (Mes_1 & ' ');
+    Put (Float(Valeur), 11, 2, 0);
+    Put_Line (' ' & Mes_2);
+  end Ecrit;
 
 
 begin
-  CLEAR_SCREEN;
+  Clear_Screen;
 
   -- 1. CALCUL DU REVENU BRUT GLOBAL
   declare
     -- les deductions plafonnees
-    DEDUCTION_1, DEDUCTION_2 : SOMME;
+    Deduction_1, Deduction_2 : Somme;
     -- les plafonds
     -- deduction 10%
-    PLAFOND_1_H : constant SOMME := 077_4600.00;
+    Plafond_1_H : constant Somme := 077_4600.00;
     -- abattement 20%
-    PLAFOND_2_H : constant SOMME := 141_400.00;
+    Plafond_2_H : constant Somme := 141_400.00;
   begin
     -- le salaire net imposable
-    SALAIRE := GET_SOMME ("Entrez votre salaire net imposable");
-    RESULTAT := SALAIRE;
+    Salaire := Get_Somme ("Entrez votre salaire net imposable");
+    Resultat := Salaire;
 
     -- 1.1. deduction 10%
-    DEDUCTION_1 := RESULTAT * (10.0 / 100.0);
-    if (DEDUCTION_1 > PLAFOND_1_H) then
-      DEDUCTION_1 := PLAFOND_1_H;
+    Deduction_1 := Resultat * (10.0 / 100.0);
+    if (Deduction_1 > Plafond_1_H) then
+      Deduction_1 := Plafond_1_H;
     end if;
-    RESULTAT := RESULTAT - DEDUCTION_1;
+    Resultat := Resultat - Deduction_1;
     -- ecrit ("apres deduction 10% et plafonds : ",resultat,"");
 
     -- 1.3. abattement 20%
-    DEDUCTION_2 := RESULTAT * (20.0 / 100.0);
-    if (DEDUCTION_2 > PLAFOND_2_H) then
-      DEDUCTION_2 := PLAFOND_2_H;
+    Deduction_2 := Resultat * (20.0 / 100.0);
+    if (Deduction_2 > Plafond_2_H) then
+      Deduction_2 := Plafond_2_H;
     end if;
-    RESULTAT := RESULTAT - DEDUCTION_2;
+    Resultat := Resultat - Deduction_2;
     -- ecrit ("apres deduction 20% et plafonds : ",inter, "");
 
     -- le revenu
-    REVENU_BRUT_GLOBAL := RESULTAT;
-    ECRIT ("Revenu brut global   : ",REVENU_BRUT_GLOBAL,"F");
+    Revenu_Brut_Global := Resultat;
+    Ecrit ("Revenu brut global   : ",Revenu_Brut_Global,"F");
   end;
 
   -- 2. CALCUL DU REVENU NET IMPOSABLE
   declare
-    use MY_MATH;
+    use My_Math;
   begin
     -- 2.1. deductions diverses
-    CHARGES_DEDUITES := 0.0;
-    RESULTAT := RESULTAT - CHARGES_DEDUITES;
+    Charges_Deduites := 0.0;
+    Resultat := Resultat - Charges_Deduites;
 
     -- arrondi a la dizaine de francs inferieure}
-    RESULTAT := SOMME (MY_MATH.INTE (MY_MATH.REAL (RESULTAT/10.0) * 10.0) );
-    REVENU_NET_IMPOSABLE := RESULTAT;
-    ECRIT ("Revenu net imposable : ", REVENU_NET_IMPOSABLE,"F");
+    Resultat := Somme (My_Math.Inte (My_Math.Real (Resultat/10.0) * 10.0) );
+    Revenu_Net_Imposable := Resultat;
+    Ecrit ("Revenu net imposable : ", Revenu_Net_Imposable,"F");
   end;
 
   -- 3. 4. 5. NOMBRE DE PARTS, QUOTIENT FAMILIAL et de L'IMPOT << I >>
   declare
 
     -- numero de tranche
-    type INDICE_TRANCHE is new POSITIVE range 1..7;
-    NO_TRANCHE : INDICE_TRANCHE := INDICE_TRANCHE'FIRST;
+    type Indice_Tranche is new Positive range 1..7;
+    No_Tranche : Indice_Tranche := Indice_Tranche'First;
     -- les tranches
-    type DESCRIPTEUR_TRANCHE_FAMILIALE is record
-      SOMME_MAX : SOMME;
-      COEFFICIENT : NATURAL;
-      FIXE : SOMME;
+    type Descripteur_Tranche_Familiale is record
+      Somme_Max : Somme;
+      Coefficient : Natural;
+      Fixe : Somme;
     end record;
-    type LISTE_TRANCHES_FAMILIALES is array (INDICE_TRANCHE range <>)
-     of DESCRIPTEUR_TRANCHE_FAMILIALE;
-    LES_TRANCHES_FAMILIALES : constant LISTE_TRANCHES_FAMILIALES := (
-      1=> ( SOMME_MAX=>026_100.0, COEFFICIENT=>000, FIXE=>00_000.00),
-      2=> ( SOMME_MAX=>051_340.0, COEFFICIENT=>105, FIXE=>02_740.50),
-      3=> ( SOMME_MAX=>090_370.0, COEFFICIENT=>240, FIXE=>09_671.40),
-      4=> ( SOMME_MAX=>146_320.0, COEFFICIENT=>330, FIXE=>17_804.70),
-      5=> ( SOMME_MAX=>238_080.0, COEFFICIENT=>430, FIXE=>32_436.70),
-      6=> ( SOMME_MAX=>292_600.0, COEFFICIENT=>480, FIXE=>44_340.70),
-      7=> ( SOMME_MAX=>SOMME'LAST,COEFFICIENT=>540, FIXE=>61_956.60));
+    type Liste_Tranches_Familiales is array (Indice_Tranche range <>)
+     of Descripteur_Tranche_Familiale;
+    Les_Tranches_Familiales : constant Liste_Tranches_Familiales := (
+      1=> ( Somme_Max=>026_100.0, Coefficient=>000, Fixe=>00_000.00),
+      2=> ( Somme_Max=>051_340.0, Coefficient=>105, Fixe=>02_740.50),
+      3=> ( Somme_Max=>090_370.0, Coefficient=>240, Fixe=>09_671.40),
+      4=> ( Somme_Max=>146_320.0, Coefficient=>330, Fixe=>17_804.70),
+      5=> ( Somme_Max=>238_080.0, Coefficient=>430, Fixe=>32_436.70),
+      6=> ( Somme_Max=>292_600.0, Coefficient=>480, Fixe=>44_340.70),
+      7=> ( Somme_Max=>Somme'Last,Coefficient=>540, Fixe=>61_956.60));
   begin
     -- saisie du nombre de parts
-    NBRE_PART := GET_PART ("Entrez le nombre de parts");
+    Nbre_Part := Get_Part ("Entrez le nombre de parts");
 
     -- quotient familial
-    QUOTIENT_FAMILIAL := RESULTAT / (SOMME(NBRE_PART) / 10.0 );
-    ECRIT ("Quotient familial    : ", QUOTIENT_FAMILIAL,"F");
+    Quotient_Familial := Resultat / (Somme(Nbre_Part) / 10.0 );
+    Ecrit ("Quotient familial    : ", Quotient_Familial,"F");
 
     -- determination de la tranche
-    while (QUOTIENT_FAMILIAL>LES_TRANCHES_FAMILIALES(NO_TRANCHE).SOMME_MAX)
+    while (Quotient_Familial>Les_Tranches_Familiales(No_Tranche).Somme_Max)
     loop
-      NO_TRANCHE := NO_TRANCHE + 1;
+      No_Tranche := No_Tranche + 1;
     end loop;
     -- calcul de l'impot << i >>
-    RESULTAT := RESULTAT
-     * (SOMME (LES_TRANCHES_FAMILIALES(NO_TRANCHE).COEFFICIENT) / 1_000.0);
-    RESULTAT := RESULTAT
-     - ( SOMME (NBRE_PART) / 10.0 ) * LES_TRANCHES_FAMILIALES(NO_TRANCHE).FIXE;
-    IMPOT_I := RESULTAT;
-    PUT ("Tranche No : "); PUT (INTEGER(NO_TRANCHE),2); NEW_LINE;
-    ECRIT ("Impot <<i>>          : ", IMPOT_I,"F");
+    Resultat := Resultat
+     * (Somme (Les_Tranches_Familiales(No_Tranche).Coefficient) / 1_000.0);
+    Resultat := Resultat
+     - ( Somme (Nbre_Part) / 10.0 ) * Les_Tranches_Familiales(No_Tranche).Fixe;
+    Impot_I := Resultat;
+    Put ("Tranche No : "); Put (Integer(No_Tranche),2); New_Line;
+    Ecrit ("Impot <<i>>          : ", Impot_I,"F");
   end;
 
   -- 6. CALCUL DE L'IMPOT APRES CORRECTION
   begin
-    IMPOT_APRES_CORRECTION := RESULTAT;
+    Impot_Apres_Correction := Resultat;
   end;
 
   -- 7. CALCUL DE L'IMPOT APRES DEDUCTION
   declare
-    DONS, ASSURANCE : SOMME;
-    PLAFOND : SOMME;
+    Dons, Assurance : Somme;
+    Plafond : Somme;
   begin
-    DONS := GET_SOMME ("Montant des dons aux oeuvres d'interet general");
+    Dons := Get_Somme ("Montant des dons aux oeuvres d'interet general");
     -- Plafond des dons ig : 1.25 du revenu net imposable
-    PLAFOND := 1.25 * REVENU_NET_IMPOSABLE;
-    if DONS > PLAFOND then
-      DONS := PLAFOND;
+    Plafond := 1.25 * Revenu_Net_Imposable;
+    if Dons > Plafond then
+      Dons := Plafond;
     end if;
     -- Deduction : 40% des ig
-    RESULTAT := RESULTAT - 0.4 * DONS;
+    Resultat := Resultat - 0.4 * Dons;
 
-    ASSURANCE := GET_SOMME ("Montant des primes assurance vie");
+    Assurance := Get_Somme ("Montant des primes assurance vie");
     -- Plafond des dons av : 4000 (+ 1000/enfant non implemente)
-    PLAFOND := 4000.0;
-    if ASSURANCE > PLAFOND then
-      ASSURANCE := PLAFOND;
+    Plafond := 4000.0;
+    if Assurance > Plafond then
+      Assurance := Plafond;
     end if;
     -- Deduction : 25% des av
-    RESULTAT := RESULTAT - 0.25 * ASSURANCE;
+    Resultat := Resultat - 0.25 * Assurance;
 
-    IMPOT_APRES_DEDUCTION := RESULTAT;
+    Impot_Apres_Deduction := Resultat;
   end;
 
   -- IMPOT A PAYER
   begin
-    IMPOT_A_PAYER := RESULTAT;
-    NEW_LINE;
-    ECRIT ("Votre impot a payer est de", IMPOT_A_PAYER, "Francs.");
+    Impot_A_Payer := Resultat;
+    New_Line;
+    Ecrit ("Votre impot a payer est de", Impot_A_Payer, "Francs.");
   end;
 
 end; -- IMPOT_xx

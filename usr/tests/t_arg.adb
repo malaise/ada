@@ -1,81 +1,81 @@
-with TEXT_HANDLER, ARGUMENT, MY_IO, UPPER_CHAR;
-use  MY_IO;
+with Text_Handler, Argument, My_Io, Upper_Char;
+use  My_Io;
 
-procedure T_ARG is
+procedure T_Arg is
 
-  subtype REP_KEY_RANGE is CHARACTER;
-  REP_KEY : REP_KEY_RANGE;
+  subtype Rep_Key_Range is Character;
+  Rep_Key : Rep_Key_Range;
 
-  OCC : NATURAL;
+  Occ : Natural;
 
-  KEY : TEXT_HANDLER.TEXT(ARGUMENT.MAX_LEN_ARG);
-  ARG : TEXT_HANDLER.TEXT(ARGUMENT.MAX_LEN_ARG);
+  Key : Text_Handler.Text(Argument.Max_Len_Arg);
+  Arg : Text_Handler.Text(Argument.Max_Len_Arg);
 
-  POS : NATURAL;
+  Pos : Natural;
 
-  PROG_PATH : STRING (1 .. ARGUMENT.MAX_LEN_ARG);
-  PROG_NAME : STRING (1 .. ARGUMENT.MAX_LEN_ARG);
-  LEN : NATURAL;
+  Prog_Path : String (1 .. Argument.Max_Len_Arg);
+  Prog_Name : String (1 .. Argument.Max_Len_Arg);
+  Len : Natural;
 
-  procedure GET_TXT (TXT : in out TEXT_HANDLER.TEXT) is
-    STR : STRING (1 .. TXT.MAX_LEN);
-    LEN : NATURAL;
+  procedure Get_Txt (Txt : in out Text_Handler.Text) is
+    Str : String (1 .. Txt.Max_Len);
+    Len : Natural;
   begin
-    SKIP_LINE;
-    GET_LINE (STR, LEN);
-    TEXT_HANDLER.SET (TXT, STR(1..LEN));
+    Skip_Line;
+    Get_Line (Str, Len);
+    Text_Handler.Set (Txt, Str(1..Len));
   exception
-    when others => raise CONSTRAINT_ERROR;
-  end GET_TXT;
+    when others => raise Constraint_Error;
+  end Get_Txt;
 
 
 begin
-  ARGUMENT.GET_PROGRAM_PATH (PROG_PATH, LEN);
-  PUT ('>' & PROG_PATH (1 .. LEN) & "< >");
-  ARGUMENT.GET_PROGRAM_NAME (PROG_NAME, LEN);
-  PUT_LINE (PROG_NAME (1 .. LEN) & '<');
+  Argument.Get_Program_Path (Prog_Path, Len);
+  Put ('>' & Prog_Path (1 .. Len) & "< >");
+  Argument.Get_Program_Name (Prog_Name, Len);
+  Put_Line (Prog_Name (1 .. Len) & '<');
 
-  PUT_LINE (NATURAL'IMAGE(ARGUMENT.GET_NBRE_ARG) & " arguments.");
+  Put_Line (Natural'Image(Argument.Get_Nbre_Arg) & " arguments.");
   loop
     loop
       begin
-        PUT_LINE ("E : Exit");
-        PUT_LINE ("K : Key");
-        PUT_LINE ("Y : anY_key");
-        PUT_LINE ("N : Not_key");
-        PUT_LINE ("A : Any_arg");
-        PUT ("Enter the letter of your choice : ");
-        GET (REP_KEY);
-        REP_KEY := UPPER_CHAR(REP_KEY);
-        exit when REP_KEY = 'E'
-        or else REP_KEY = 'K'
-        or else REP_KEY = 'Y'
-        or else REP_KEY = 'N'
-        or else REP_KEY = 'A';
+        Put_Line ("E : Exit");
+        Put_Line ("K : Key");
+        Put_Line ("Y : anY_key");
+        Put_Line ("N : Not_key");
+        Put_Line ("A : Any_arg");
+        Put ("Enter the letter of your choice : ");
+        Get (Rep_Key);
+        Rep_Key := Upper_Char(Rep_Key);
+        exit when Rep_Key = 'E'
+        or else Rep_Key = 'K'
+        or else Rep_Key = 'Y'
+        or else Rep_Key = 'N'
+        or else Rep_Key = 'A';
       exception
         when others => null;
       end;
     end loop;
 
-    case REP_KEY is
+    case Rep_Key is
       when 'E' =>
         exit;
       when 'K' =>
         loop
           begin
-            PUT ("Enter KEY ? ");
-            GET_TXT (KEY);
+            Put ("Enter KEY ? ");
+            Get_Txt (Key);
             exit;
           exception
             when others => null;
           end;
         end loop;
       when 'Y' =>
-        TEXT_HANDLER.SET (KEY, ARGUMENT.ANY_KEY);
+        Text_Handler.Set (Key, Argument.Any_Key);
       when 'N' =>
-        TEXT_HANDLER.SET (KEY, ARGUMENT.NOT_KEY);
+        Text_Handler.Set (Key, Argument.Not_Key);
       when 'A' =>
-        TEXT_HANDLER.SET (KEY, ARGUMENT.ANY_ARG);
+        Text_Handler.Set (Key, Argument.Any_Arg);
       when others =>
         null;
     end case;
@@ -83,30 +83,30 @@ begin
 
     loop
       begin
-        PUT ("Enter OCCURENCE ? ");
-        GET (OCC);
+        Put ("Enter OCCURENCE ? ");
+        Get (Occ);
         exit;
       exception
         when others => null;
       end;
     end loop;
     begin
-      ARGUMENT.GET_PARAM_AND_POS (ARG, POS, OCC, TEXT_HANDLER.VALUE(KEY));
-      PUT_LINE ("Argument : >" & TEXT_HANDLER.VALUE(ARG) & "<");
-      for I in 1 .. TEXT_HANDLER.LENGTH(ARG) loop
-        PUT_LINE ("Char ->" & TEXT_HANDLER.VALUE(ARG)(I) & "< " &
-         INTEGER'IMAGE (CHARACTER'POS(TEXT_HANDLER.VALUE(ARG)(I)) ) );
+      Argument.Get_Param_And_Pos (Arg, Pos, Occ, Text_Handler.Value(Key));
+      Put_Line ("Argument : >" & Text_Handler.Value(Arg) & "<");
+      for I in 1 .. Text_Handler.Length(Arg) loop
+        Put_Line ("Char ->" & Text_Handler.Value(Arg)(I) & "< " &
+         Integer'Image (Character'Pos(Text_Handler.Value(Arg)(I)) ) );
       end loop;
 
-      PUT (" found at position "); PUT_LINE (POS, 3);
+      Put (" found at position "); Put_Line (Pos, 3);
     exception
-      when ARGUMENT.ARGUMENT_NOT_FOUND =>
-        PUT_LINE ("Exception ARGUMENT_NOT_FOUND raised.");
-      when ARGUMENT.ARGUMENT_TOO_LONG =>
-        PUT_LINE ("Exception ARGUMENT_TOO_LONG raised.");
+      when Argument.Argument_Not_Found =>
+        Put_Line ("Exception ARGUMENT_NOT_FOUND raised.");
+      when Argument.Argument_Too_Long =>
+        Put_Line ("Exception ARGUMENT_TOO_LONG raised.");
       when others =>
-        PUT_LINE ("Exception raised.");
+        Put_Line ("Exception raised.");
     end;
-    NEW_LINE;
+    New_Line;
   end loop;
-end T_ARG;
+end T_Arg;

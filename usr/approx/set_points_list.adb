@@ -1,24 +1,24 @@
-with AFPX;
-with POINTS, POINT_STR;
+with Afpx;
+with Points, Point_Str;
 -- Set the AFPX_list from points
-procedure SET_POINTS_LIST is
+procedure Set_Points_List is
 begin
-  AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
-  if POINTS.P_EMPTY then
+  Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+  if Points.P_Empty then
     return;
   end if;
 
   declare
-    THE_POINTS : constant POINTS.P_T_THE_POINTS(1 .. POINTS.P_NB) := POINTS.P_THE_POINTS;
+    The_Points : constant Points.P_T_The_Points(1 .. Points.P_Nb) := Points.P_The_Points;
   begin
-    for I in THE_POINTS'RANGE loop
-      AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST,
-                                 POINT_STR.ENCODE_REC(THE_POINTS(I)));
+    for I in The_Points'Range loop
+      Afpx.Line_List_Mng.Insert (Afpx.Line_List,
+                                 Point_Str.Encode_Rec(The_Points(I)));
     end loop;
   end;
   -- Rewind
-  AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT, NUMBER => 0, FROM_CURRENT => FALSE);
+  Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next, Number => 0, From_Current => False);
   -- Go to top
-  AFPX.UPDATE_LIST (AFPX.TOP);
-end SET_POINTS_LIST;
+  Afpx.Update_List (Afpx.Top);
+end Set_Points_List;
 

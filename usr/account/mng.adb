@@ -1,596 +1,596 @@
-with TEXT_IO;
-with TEXT_HANDLER, DYNAMIC_LIST, DIRECTORY, AFPX, SELECT_FILE, NORMAL, SYS_CALLS;
-with FILE_MNG, OPER_LIST_MNG, SCREEN, UNIT_FORMAT;
+with Text_Io;
+with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal, Sys_Calls;
+with File_Mng, Oper_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
-package body MNG is
+package body Mng is
 
   -- Sorted operations
-  OPER_LIST : OPER_LIST_MNG.LIST_TYPE;
-  procedure SORT is new OPER_LIST_MNG.SORT (OPER_DEF.BEFORE);
+  Oper_List : Oper_List_Mng.List_Type;
+  procedure Sort is new Oper_List_Mng.Sort (Oper_Def.Before);
 
   -- Name and status of current account
-  ACCOUNT_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
-  ACCOUNT_SAVED : BOOLEAN := TRUE;
+  Account_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+  Account_Saved : Boolean := True;
 
   -- Are we working with sublist or all selection
-  IN_SUBLIST : BOOLEAN := FALSE;
+  In_Sublist : Boolean := False;
 
   -- The one in first record of file
-  ROOT_AMOUNT : OPER_DEF.AMOUNT_RANGE;
+  Root_Amount : Oper_Def.Amount_Range;
 
   -- The ones computed
-  REAL_AMOUNT, ACCOUNT_AMOUNT, DEFERED_AMOUNT,
-               MARGIN_AMOUNT : OPER_DEF.AMOUNT_RANGE;
+  Real_Amount, Account_Amount, Defered_Amount,
+               Margin_Amount : Oper_Def.Amount_Range;
 
   -- Callback for selection when Loading/saving file
-  LOADING : BOOLEAN;
-  procedure INIT_SELECT_FILE is
+  Loading : Boolean;
+  procedure Init_Select_File is
   begin
-    AFPX.CLEAR_FIELD(1);
-    if LOADING then
-      AFPX.ENCODE_FIELD(1, (0, 0), "Loading an account");
+    Afpx.Clear_Field(1);
+    if Loading then
+      Afpx.Encode_Field(1, (0, 0), "Loading an account");
     else
-      AFPX.ENCODE_FIELD(1, (0, 0), "Saving an account");
+      Afpx.Encode_Field(1, (0, 0), "Saving an account");
     end if;
-  end INIT_SELECT_FILE;
-  function ACCOUNT_SELECT_FILE is new SELECT_FILE(INIT_SELECT_FILE);
+  end Init_Select_File;
+  function Account_Select_File is new Select_File(Init_Select_File);
 
   -- Selection list
-  type SEL_REC is record
-    NO : OPER_RANGE;
-    DELETED : BOOLEAN := FALSE;
+  type Sel_Rec is record
+    No : Oper_Range;
+    Deleted : Boolean := False;
   end record;
-  package SEL_LIST_MNG is new DYNAMIC_LIST(SEL_REC);
-  SEL_LIST : SEL_LIST_MNG.LIST_TYPE;
+  package Sel_List_Mng is new Dynamic_List(Sel_Rec);
+  Sel_List : Sel_List_Mng.List_Type;
 
   -- Set current in sel list from AFPX selected
-  procedure SET_CURRENT (NO : in OPER_NB_RANGE) is
+  procedure Set_Current (No : in Oper_Nb_Range) is
   begin
-    if NO in OPER_RANGE then
-      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, NO - 1, FALSE);
+    if No in Oper_Range then
+      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, No - 1, False);
     end if;
-  end SET_CURRENT;
+  end Set_Current;
       
 
   -- Builds the AFPX line from oper
-  function OPER_TO_LINE (NO : OPER_RANGE;
-                         OPER : OPER_DEF.OPER_REC) return AFPX.LINE_REC is
-    LINE : AFPX.LINE_REC;
-    SEP : constant CHARACTER := '|';
+  function Oper_To_Line (No : Oper_Range;
+                         Oper : Oper_Def.Oper_Rec) return Afpx.Line_Rec is
+    Line : Afpx.Line_Rec;
+    Sep : constant Character := '|';
   begin
-    LINE.LEN := AFPX.GET_FIELD_WIDTH(8);
-    LINE.STR(1 .. 71) :=
-                NORMAL(NO, 4) & SEP
-              & UNIT_FORMAT.SHORT_DATE_IMAGE(OPER.DATE) & SEP
-              & UNIT_FORMAT.SHORT_IMAGE(OPER.AMOUNT) & SEP
-              & ' ' & UNIT_FORMAT.SHORT_STATUS_IMAGE(OPER.STATUS) & SEP
-              & UNIT_FORMAT.SHORT_KIND_IMAGE(OPER.KIND) & SEP
-              & OPER.DESTINATION(1 .. 10) & SEP
-              & OPER.COMMENT(1 .. 15) & SEP
-              & OPER.REFERENCE;
-    return LINE;
-  end OPER_TO_LINE;
+    Line.Len := Afpx.Get_Field_Width(8);
+    Line.Str(1 .. 71) :=
+                Normal(No, 4) & Sep
+              & Unit_Format.Short_Date_Image(Oper.Date) & Sep
+              & Unit_Format.Short_Image(Oper.Amount) & Sep
+              & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep
+              & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
+              & Oper.Destination(1 .. 10) & Sep
+              & Oper.Comment(1 .. 15) & Sep
+              & Oper.Reference;
+    return Line;
+  end Oper_To_Line;
 
-  package LIST_UTIL is
+  package List_Util is
     -- Build initial selection with all opers
-    procedure RESET_SELECTION;
+    procedure Reset_Selection;
 
     -- Move in oper list to currently selected in sel list
-    procedure MOVE_TO_CURRENT;
+    procedure Move_To_Current;
 
     -- These work only if lists are not modified between calls
-    procedure SAVE_POS (MOVE_TO_FIRST : in BOOLEAN := TRUE);
-    procedure RESTORE_POS;
+    procedure Save_Pos (Move_To_First : in Boolean := True);
+    procedure Restore_Pos;
 
     -- Don't use selection list between insert and get
-    procedure INSERT_AMOUNT (AMOUNT : in OPER_DEF.AMOUNT_RANGE);
-    function GET_AMOUNT return OPER_DEF.AMOUNT_RANGE;
-  end LIST_UTIL;
+    procedure Insert_Amount (Amount : in Oper_Def.Amount_Range);
+    function Get_Amount return Oper_Def.Amount_Range;
+  end List_Util;
 
-  package body LIST_UTIL is
+  package body List_Util is
 
-    procedure RESET_SELECTION is
+    procedure Reset_Selection is
     begin
-      SEL_LIST_MNG.DELETE_LIST(SEL_LIST, DEALLOCATE => FALSE);
-      for I in 1 .. OPER_LIST_MNG.LIST_LENGTH(OPER_LIST) loop
-        SEL_LIST_MNG.INSERT(SEL_LIST, (NO => I, DELETED => FALSE));
+      Sel_List_Mng.Delete_List(Sel_List, Deallocate => False);
+      for I in 1 .. Oper_List_Mng.List_Length(Oper_List) loop
+        Sel_List_Mng.Insert(Sel_List, (No => I, Deleted => False));
       end loop;
-      IN_SUBLIST := FALSE;
-      SCREEN.SUBLIST(IN_SUBLIST);
-    end RESET_SELECTION;
+      In_Sublist := False;
+      Screen.Sublist(In_Sublist);
+    end Reset_Selection;
 
 
-    procedure MOVE_TO_CURRENT is
-      SEL : SEL_REC;
+    procedure Move_To_Current is
+      Sel : Sel_Rec;
     begin
-      SEL_LIST_MNG.READ(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, SEL.NO - 1, FALSE);
-    end MOVE_TO_CURRENT;
+      Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+      Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, Sel.No - 1, False);
+    end Move_To_Current;
 
 
-    LOC_POS : OPER_RANGE;
+    Loc_Pos : Oper_Range;
 
-    procedure SAVE_POS (MOVE_TO_FIRST : in BOOLEAN := TRUE) is
+    procedure Save_Pos (Move_To_First : in Boolean := True) is
     begin
-      LOC_POS := SEL_LIST_MNG.GET_POSITION(SEL_LIST);
-      if MOVE_TO_FIRST then
-        SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, 0, FALSE);
+      Loc_Pos := Sel_List_Mng.Get_Position(Sel_List);
+      if Move_To_First then
+        Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
       end if;
-    end SAVE_POS;
+    end Save_Pos;
 
-    procedure RESTORE_POS is
+    procedure Restore_Pos is
     begin
-      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, LOC_POS-1, FALSE);
-    end RESTORE_POS;
+      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, Loc_Pos-1, False);
+    end Restore_Pos;
 
 
-    procedure INSERT_AMOUNT (AMOUNT : in OPER_DEF.AMOUNT_RANGE) is
-      OPER : OPER_DEF.OPER_REC;
+    procedure Insert_Amount (Amount : in Oper_Def.Amount_Range) is
+      Oper : Oper_Def.Oper_Rec;
     begin
-      OPER.AMOUNT := AMOUNT;
-      if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
+      Oper.Amount := Amount;
+      if not Oper_List_Mng.Is_Empty(Oper_List) then
+        Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
       end if;
-      OPER_LIST_MNG.INSERT(OPER_LIST, OPER, OPER_LIST_MNG.PREV);
-    end INSERT_AMOUNT;
+      Oper_List_Mng.Insert(Oper_List, Oper, Oper_List_Mng.Prev);
+    end Insert_Amount;
 
-    function GET_AMOUNT return OPER_DEF.AMOUNT_RANGE is
-      OPER : OPER_DEF.OPER_REC;
+    function Get_Amount return Oper_Def.Amount_Range is
+      Oper : Oper_Def.Oper_Rec;
     begin
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
-      OPER_LIST_MNG.GET(OPER_LIST, OPER, OPER_LIST_MNG.NEXT);
-      return OPER.AMOUNT;
-    end GET_AMOUNT;
+      Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+      Oper_List_Mng.Get(Oper_List, Oper, Oper_List_Mng.Next);
+      return Oper.Amount;
+    end Get_Amount;
       
-  end LIST_UTIL;
+  end List_Util;
       
 
   -- Reset the AFPX list from the sel list
-  procedure RESET_LIST is
-    OPER : OPER_DEF.OPER_REC;
+  procedure Reset_List is
+    Oper : Oper_Def.Oper_Rec;
   begin
-    AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
-    if SEL_LIST_MNG.IS_EMPTY(SEL_LIST) then
+    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+    if Sel_List_Mng.Is_Empty(Sel_List) then
       return;
     end if;
 
     -- Save pos and move to beginning of selection
-    LIST_UTIL.SAVE_POS;
+    List_Util.Save_Pos;
     loop
-      LIST_UTIL.MOVE_TO_CURRENT;
-      OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-      AFPX.LINE_LIST_MNG.INSERT(AFPX.LINE_LIST,
-                  OPER_TO_LINE(OPER_LIST_MNG.GET_POSITION(OPER_LIST),
-                  OPER));
-      exit when SEL_LIST_MNG.GET_POSITION(SEL_LIST)
-              = SEL_LIST_MNG.LIST_LENGTH(SEL_LIST);
-      SEL_LIST_MNG.MOVE_TO(SEL_LIST);
+      List_Util.Move_To_Current;
+      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      Afpx.Line_List_Mng.Insert(Afpx.Line_List,
+                  Oper_To_Line(Oper_List_Mng.Get_Position(Oper_List),
+                  Oper));
+      exit when Sel_List_Mng.Get_Position(Sel_List)
+              = Sel_List_Mng.List_Length(Sel_List);
+      Sel_List_Mng.Move_To(Sel_List);
     end loop;
-    LIST_UTIL.RESTORE_POS;
-    AFPX.LINE_LIST_MNG.MOVE_TO(AFPX.LINE_LIST,
-                     AFPX.LINE_LIST_MNG.NEXT,
-                     SEL_LIST_MNG.GET_POSITION(SEL_LIST) - 1, FALSE);
-  end RESET_LIST;
+    List_Util.Restore_Pos;
+    Afpx.Line_List_Mng.Move_To(Afpx.Line_List,
+                     Afpx.Line_List_Mng.Next,
+                     Sel_List_Mng.Get_Position(Sel_List) - 1, False);
+  end Reset_List;
 
   -- Compute amounts from all account operations
-  procedure COMPUTE_AMOUNTS is
-    OPER : OPER_DEF.OPER_REC;
-    use type OPER_DEF.AMOUNT_RANGE;
+  procedure Compute_Amounts is
+    Oper : Oper_Def.Oper_Rec;
+    use type Oper_Def.Amount_Range;
   begin
     -- Initial values
-    REAL_AMOUNT := ROOT_AMOUNT;
-    ACCOUNT_AMOUNT := ROOT_AMOUNT;
-    DEFERED_AMOUNT := 0.0;
-    MARGIN_AMOUNT  := ROOT_AMOUNT;
-    if OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
+    Real_Amount := Root_Amount;
+    Account_Amount := Root_Amount;
+    Defered_Amount := 0.0;
+    Margin_Amount  := Root_Amount;
+    if Oper_List_Mng.Is_Empty(Oper_List) then
       return;
     end if;
 
     -- All operations
-    OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
+    Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
     loop
-      OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-      REAL_AMOUNT := REAL_AMOUNT + OPER.AMOUNT;
-      case OPER.STATUS is
-        when OPER_DEF.ENTERED =>
-          ACCOUNT_AMOUNT := ACCOUNT_AMOUNT + OPER.AMOUNT;
-          MARGIN_AMOUNT := MARGIN_AMOUNT + OPER.AMOUNT;
-        when OPER_DEF.NOT_ENTERED =>
-          if OPER.AMOUNT < 0.0 then
-            MARGIN_AMOUNT := MARGIN_AMOUNT + OPER.AMOUNT;
+      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      Real_Amount := Real_Amount + Oper.Amount;
+      case Oper.Status is
+        when Oper_Def.Entered =>
+          Account_Amount := Account_Amount + Oper.Amount;
+          Margin_Amount := Margin_Amount + Oper.Amount;
+        when Oper_Def.Not_Entered =>
+          if Oper.Amount < 0.0 then
+            Margin_Amount := Margin_Amount + Oper.Amount;
           end if;
-        when OPER_DEF.DEFERED =>
-          DEFERED_AMOUNT := DEFERED_AMOUNT + OPER.AMOUNT;
-          if OPER.AMOUNT < 0.0 then
-            MARGIN_AMOUNT := MARGIN_AMOUNT + OPER.AMOUNT;
+        when Oper_Def.Defered =>
+          Defered_Amount := Defered_Amount + Oper.Amount;
+          if Oper.Amount < 0.0 then
+            Margin_Amount := Margin_Amount + Oper.Amount;
           end if;
       end case;
-      exit when OPER_LIST_MNG.GET_POSITION(OPER_LIST)
-              = OPER_LIST_MNG.LIST_LENGTH(OPER_LIST);
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST);
+      exit when Oper_List_Mng.Get_Position(Oper_List)
+              = Oper_List_Mng.List_Length(Oper_List);
+      Oper_List_Mng.Move_To(Oper_List);
     end loop;
-  end COMPUTE_AMOUNTS;
+  end Compute_Amounts;
 
   -- Ecode amounts values
-  procedure ENCODE_AMOUNTS is
+  procedure Encode_Amounts is
   begin
-    SCREEN.ENCODE_SUMMARY(REAL_AMOUNT, ACCOUNT_AMOUNT,
-                          DEFERED_AMOUNT, MARGIN_AMOUNT);
-  end ENCODE_AMOUNTS;
+    Screen.Encode_Summary(Real_Amount, Account_Amount,
+                          Defered_Amount, Margin_Amount);
+  end Encode_Amounts;
 
   -- Refresh all, to be called each time an oper or the account changes
-  type LIST_UPDATE_LIST is (BOTTOM, CENTER, UNCHANGED);
-  procedure REFRESH_SCREEN (LIST_UPDATE : in LIST_UPDATE_LIST) is
+  type List_Update_List is (Bottom, Center, Unchanged);
+  procedure Refresh_Screen (List_Update : in List_Update_List) is
   begin
-    SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
-    SCREEN.ENCODE_NB_OPER(OPER_LIST_MNG.LIST_LENGTH(OPER_LIST),
-                          SEL_LIST_MNG.LIST_LENGTH(SEL_LIST));
-    SCREEN.ENCODE_SAVED(ACCOUNT_SAVED);
-    RESET_LIST;
-    if LIST_UPDATE = BOTTOM then
-      AFPX.UPDATE_LIST(AFPX.BOTTOM);
-    elsif LIST_UPDATE = CENTER then
-      AFPX.UPDATE_LIST(AFPX.CENTER);
+    Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+    Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
+                          Sel_List_Mng.List_Length(Sel_List));
+    Screen.Encode_Saved(Account_Saved);
+    Reset_List;
+    if List_Update = Bottom then
+      Afpx.Update_List(Afpx.Bottom);
+    elsif List_Update = Center then
+      Afpx.Update_List(Afpx.Center);
     end if;
-    ENCODE_AMOUNTS;
-    SCREEN.UPDATE_TO_UNIT;
-    SCREEN.ALLOW_EDIT(not SEL_LIST_MNG.IS_EMPTY(SEL_LIST));
-  end REFRESH_SCREEN;
+    Encode_Amounts;
+    Screen.Update_To_Unit;
+    Screen.Allow_Edit(not Sel_List_Mng.Is_Empty(Sel_List));
+  end Refresh_Screen;
 
 
   -- Load from file
-  procedure LOAD (FILE_NAME : in STRING) is
-    OPER : OPER_DEF.OPER_REC;
-    CAN_WRITE : BOOLEAN;
+  procedure Load (File_Name : in String) is
+    Oper : Oper_Def.Oper_Rec;
+    Can_Write : Boolean;
   begin
-    if not ACCOUNT_SAVED
-    and then not SCREEN.CONFIRM_ACTION(SCREEN.OVERWRITE_ACCOUNT) then
+    if not Account_Saved
+    and then not Screen.Confirm_Action(Screen.Overwrite_Account) then
       -- User discards overwritting current account
       return;
     end if;
 
-    if FILE_NAME /= "" then
+    if File_Name /= "" then
       -- Store file name
       begin
-        TEXT_HANDLER.SET(ACCOUNT_NAME, FILE_NAME);
+        Text_Handler.Set(Account_Name, File_Name);
       exception
-        when CONSTRAINT_ERROR =>
-          SCREEN.ACK_ERROR(SCREEN.FILE_NAME_TOO_LONG);
-          ACCOUNT_SAVED := FALSE;
-          REFRESH_SCREEN(UNCHANGED);
+        when Constraint_Error =>
+          Screen.Ack_Error(Screen.File_Name_Too_Long);
+          Account_Saved := False;
+          Refresh_Screen(Unchanged);
           return;
       end;
     else
       -- Let user select file
-      LOADING := TRUE;
-      TEXT_HANDLER.SET(ACCOUNT_NAME, ACCOUNT_SELECT_FILE(2, "", TRUE));
-      SCREEN.RESET;
-      REFRESH_SCREEN(BOTTOM);
+      Loading := True;
+      Text_Handler.Set(Account_Name, Account_Select_File(2, "", True));
+      Screen.Reset;
+      Refresh_Screen(Bottom);
     end if;
 
     -- In case of load error
-    SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
+    Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
     -- If error occures afeter this point we clear the account
-    if not TEXT_HANDLER.EMPTY(ACCOUNT_NAME) then
+    if not Text_Handler.Empty(Account_Name) then
       -- Load
       begin
-        FILE_MNG.LOAD(TEXT_HANDLER.VALUE(ACCOUNT_NAME), OPER_LIST, CAN_WRITE);
+        File_Mng.Load(Text_Handler.Value(Account_Name), Oper_List, Can_Write);
       exception
-        when FILE_MNG.F_ACCESS_ERROR =>
-          SCREEN.ACK_ERROR(SCREEN.FILE_ACCESS);
-          CLEAR;
+        when File_Mng.F_Access_Error =>
+          Screen.Ack_Error(Screen.File_Access);
+          Clear;
           return;
-        when FILE_MNG.F_IO_ERROR =>
-          SCREEN.ACK_ERROR(SCREEN.FILE_IO);
-          CLEAR;
+        when File_Mng.F_Io_Error =>
+          Screen.Ack_Error(Screen.File_Io);
+          Clear;
           return;
       end;
       -- Get root amount
-      ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
+      Root_Amount := List_Util.Get_Amount;
       -- Build initial selection with all
-      SORT(OPER_LIST);
-      LIST_UTIL.RESET_SELECTION;
+      Sort(Oper_List);
+      List_Util.Reset_Selection;
       -- Set data
-      ACCOUNT_SAVED := TRUE;
-      COMPUTE_AMOUNTS;
+      Account_Saved := True;
+      Compute_Amounts;
       -- Set screen
-      REFRESH_SCREEN(BOTTOM);
-      if not CAN_WRITE then
-        SCREEN.ACK_ERROR(SCREEN.FILE_READ_ONLY);
+      Refresh_Screen(Bottom);
+      if not Can_Write then
+        Screen.Ack_Error(Screen.File_Read_Only);
       end if;
     else
       -- User cancelled selection
-      CLEAR;
+      Clear;
     end if;
 
-  end LOAD;
+  end Load;
 
-  procedure SAVE (RESCUE : in BOOLEAN := FALSE) is
-    TMP_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
+  procedure Save (Rescue : in Boolean := False) is
+    Tmp_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
   begin
-    if RESCUE then
-      LIST_UTIL.INSERT_AMOUNT(ROOT_AMOUNT);
-      FILE_MNG.SAVE("Tmp", OPER_LIST);
-      ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
+    if Rescue then
+      List_Util.Insert_Amount(Root_Amount);
+      File_Mng.Save("Tmp", Oper_List);
+      Root_Amount := List_Util.Get_Amount;
       return;
     end if;
       
     -- Confirm file overwritting
     --  or select file
-    LOADING := FALSE;
-    if TEXT_HANDLER.EMPTY(ACCOUNT_NAME)
-    or else not SCREEN.CONFIRM_ACTION(SCREEN.OVERWRITE_FILE) then
-      TEXT_HANDLER.SET(TMP_NAME, ACCOUNT_SELECT_FILE(2, "", FALSE));
-      SCREEN.RESET;
-      REFRESH_SCREEN(BOTTOM);
-      if TEXT_HANDLER.EMPTY(TMP_NAME) then
+    Loading := False;
+    if Text_Handler.Empty(Account_Name)
+    or else not Screen.Confirm_Action(Screen.Overwrite_File) then
+      Text_Handler.Set(Tmp_Name, Account_Select_File(2, "", False));
+      Screen.Reset;
+      Refresh_Screen(Bottom);
+      if Text_Handler.Empty(Tmp_Name) then
         -- User discards
         return;
       end if;
-      TEXT_HANDLER.SET(ACCOUNT_NAME, TMP_NAME);
-      SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
+      Text_Handler.Set(Account_Name, Tmp_Name);
+      Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
     end if;
     -- Insert root amount
-    LIST_UTIL.INSERT_AMOUNT(ROOT_AMOUNT);
+    List_Util.Insert_Amount(Root_Amount);
     -- Save
     begin
-      FILE_MNG.SAVE(TEXT_HANDLER.VALUE(ACCOUNT_NAME), OPER_LIST);
+      File_Mng.Save(Text_Handler.Value(Account_Name), Oper_List);
     exception
-      when FILE_MNG.F_ACCESS_ERROR =>
-        SCREEN.ACK_ERROR(SCREEN.FILE_ACCESS);
-        ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
+      when File_Mng.F_Access_Error =>
+        Screen.Ack_Error(Screen.File_Access);
+        Root_Amount := List_Util.Get_Amount;
         return;
-      when FILE_MNG.F_IO_ERROR =>
-        SCREEN.ACK_ERROR(SCREEN.FILE_IO);
-        ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
+      when File_Mng.F_Io_Error =>
+        Screen.Ack_Error(Screen.File_Io);
+        Root_Amount := List_Util.Get_Amount;
         return;
     end;
-    ROOT_AMOUNT := LIST_UTIL.GET_AMOUNT;
+    Root_Amount := List_Util.Get_Amount;
     -- Update data and screen
-    ACCOUNT_SAVED := TRUE;
-    REFRESH_SCREEN(CENTER);
-  end SAVE;
+    Account_Saved := True;
+    Refresh_Screen(Center);
+  end Save;
 
-  procedure CLEAR is
-    OPER : OPER_DEF.OPER_REC;
+  procedure Clear is
+    Oper : Oper_Def.Oper_Rec;
   begin
-    if not ACCOUNT_SAVED
-    and then not SCREEN.CONFIRM_ACTION(SCREEN.OVERWRITE_ACCOUNT) then
+    if not Account_Saved
+    and then not Screen.Confirm_Action(Screen.Overwrite_Account) then
       return;
     end if;
     -- Set data
-    TEXT_HANDLER.EMPTY(ACCOUNT_NAME);
-    SEL_LIST_MNG.DELETE_LIST(SEL_LIST, DEALLOCATE => FALSE);
-    OPER_LIST_MNG.DELETE_LIST(OPER_LIST);
-    ROOT_AMOUNT := 0.0;
-    ACCOUNT_SAVED := TRUE;
-    COMPUTE_AMOUNTS;
+    Text_Handler.Empty(Account_Name);
+    Sel_List_Mng.Delete_List(Sel_List, Deallocate => False);
+    Oper_List_Mng.Delete_List(Oper_List);
+    Root_Amount := 0.0;
+    Account_Saved := True;
+    Compute_Amounts;
     -- Set screen
-    IN_SUBLIST := FALSE;
-    SCREEN.SUBLIST(IN_SUBLIST);
-    REFRESH_SCREEN(BOTTOM);
-  end CLEAR;
+    In_Sublist := False;
+    Screen.Sublist(In_Sublist);
+    Refresh_Screen(Bottom);
+  end Clear;
 
   -- Print account
-  procedure PRINT is
-    use TEXT_IO;
-    PFN : constant STRING := "Printed.lpt";
-    PF : FILE_TYPE;
-    OPER : OPER_DEF.OPER_REC;
-    SEP : constant CHARACTER := '|';
-    INDEX : OPER_RANGE;
+  procedure Print is
+    use Text_Io;
+    Pfn : constant String := "Printed.lpt";
+    Pf : File_Type;
+    Oper : Oper_Def.Oper_Rec;
+    Sep : constant Character := '|';
+    Index : Oper_Range;
   begin
     begin
-      CREATE(PF, OUT_FILE, PFN);
+      Create(Pf, Out_File, Pfn);
     exception
       when others =>
-        SCREEN.ACK_ERROR(SCREEN.FILE_ACCESS);
-        REFRESH_SCREEN(CENTER);
+        Screen.Ack_Error(Screen.File_Access);
+        Refresh_Screen(Center);
         return;
     end;
-    PUT_LINE(PF, "Account: " & TEXT_HANDLER.VALUE(ACCOUNT_NAME)
-               & "     at: " & UNIT_FORMAT.DATE_IMAGE(OPER_DEF.CURRENT_DATE));
+    Put_Line(Pf, "Account: " & Text_Handler.Value(Account_Name)
+               & "     at: " & Unit_Format.Date_Image(Oper_Def.Current_Date));
     --            --1234 123456789  123456789012 1234 1234 12345678901234567890 12345678901234567890 1234567890
-    PUT_LINE(PF, "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference");
+    Put_Line(Pf, "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference");
 
-    if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-      OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
-      INDEX := 1;
+    if not Oper_List_Mng.Is_Empty(Oper_List) then
+      Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+      Index := 1;
       loop
-        OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-        PUT_LINE(PF, "  " & NORMAL(INDEX, 4) & SEP
-                   & UNIT_FORMAT.DATE_IMAGE(OPER.DATE) & SEP
-                   & UNIT_FORMAT.IMAGE(OPER.AMOUNT, FALSE) & SEP
-                   & ' ' & UNIT_FORMAT.SHORT_STATUS_IMAGE(OPER.STATUS) & SEP
-                   & UNIT_FORMAT.SHORT_KIND_IMAGE(OPER.KIND) & SEP
-                   & OPER.DESTINATION & SEP
-                   & OPER.COMMENT & SEP
-                   & OPER.REFERENCE);
-        exit when OPER_LIST_MNG.GET_POSITION(OPER_LIST)
-                = OPER_LIST_MNG.LIST_LENGTH(OPER_LIST);
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST);
-        INDEX := INDEX + 1;
+        Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+        Put_Line(Pf, "  " & Normal(Index, 4) & Sep
+                   & Unit_Format.Date_Image(Oper.Date) & Sep
+                   & Unit_Format.Image(Oper.Amount, False) & Sep
+                   & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep
+                   & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
+                   & Oper.Destination & Sep
+                   & Oper.Comment & Sep
+                   & Oper.Reference);
+        exit when Oper_List_Mng.Get_Position(Oper_List)
+                = Oper_List_Mng.List_Length(Oper_List);
+        Oper_List_Mng.Move_To(Oper_List);
+        Index := Index + 1;
       end loop;
     end if;
     -- Print summary
-    PUT_LINE(PF, "Real: "     &  UNIT_FORMAT.IMAGE(REAL_AMOUNT, FALSE)
-               & " Account: " &  UNIT_FORMAT.IMAGE(ACCOUNT_AMOUNT, FALSE)
-               & " Defered: " &  UNIT_FORMAT.IMAGE(DEFERED_AMOUNT, FALSE)
-               & " Margin: "  &  UNIT_FORMAT.IMAGE(MARGIN_AMOUNT, FALSE));
-    NEW_PAGE(PF);
-    FLUSH(PF);
+    Put_Line(Pf, "Real: "     &  Unit_Format.Image(Real_Amount, False)
+               & " Account: " &  Unit_Format.Image(Account_Amount, False)
+               & " Defered: " &  Unit_Format.Image(Defered_Amount, False)
+               & " Margin: "  &  Unit_Format.Image(Margin_Amount, False));
+    New_Page(Pf);
+    Flush(Pf);
     
     -- Print
     declare
-      DUMMY : INTEGER;
-      SET, TRUNC : BOOLEAN;
-      VAL : STRING(1 .. 256);
-      LEN : NATURAL;
+      Dummy : Integer;
+      Set, Trunc : Boolean;
+      Val : String(1 .. 256);
+      Len : Natural;
     begin
-      SYS_CALLS.GETENV("ACCOUNT_LPR_COMMAND", SET, TRUNC, VAL, LEN);
-      if not SET or else LEN = 0 then 
-        LEN := 3;
-        VAL(1 .. LEN) := "lpr";
+      Sys_Calls.Getenv("ACCOUNT_LPR_COMMAND", Set, Trunc, Val, Len);
+      if not Set or else Len = 0 then 
+        Len := 3;
+        Val(1 .. Len) := "lpr";
       end if;
-      DUMMY := SYS_CALLS.CALL_SYSTEM (VAL(1..LEN) & " " & PFN); 
+      Dummy := Sys_Calls.Call_System (Val(1..Len) & " " & Pfn); 
     end;
 
     -- Delete & close
-    DELETE(PF);
+    Delete(Pf);
 
   exception
     when others =>
-      SCREEN.ACK_ERROR(SCREEN.FILE_IO);
-      REFRESH_SCREEN(CENTER);
+      Screen.Ack_Error(Screen.File_Io);
+      Refresh_Screen(Center);
       return;
-  end PRINT; 
+  end Print; 
 
   -- Update the displayed amounts
-  procedure CHANGE_UNIT is
-    use type UNIT_FORMAT.UNITS_LIST;
+  procedure Change_Unit is
+    use type Unit_Format.Units_List;
   begin
-    UNIT_FORMAT.SWITCH_UNIT;
+    Unit_Format.Switch_Unit;
     -- Redisplay
-    REFRESH_SCREEN(CENTER);
-  end CHANGE_UNIT;
+    Refresh_Screen(Center);
+  end Change_Unit;
 
   -- Sort
-  procedure SORT is
+  procedure Sort is
   begin
-    SORT(OPER_LIST); 
-    LIST_UTIL.RESET_SELECTION;
-    REFRESH_SCREEN(BOTTOM);
-  end SORT;
+    Sort(Oper_List); 
+    List_Util.Reset_Selection;
+    Refresh_Screen(Bottom);
+  end Sort;
 
   -- Deletion management
-  package DELETION is
+  package Deletion is
     -- Flag currently selected operation as deleted or not
-    procedure FLAG_DELETED;
-    procedure FLAG_UNDELETED;
+    procedure Flag_Deleted;
+    procedure Flag_Undeleted;
 
     -- Get number of flagged operations
-    function GET_NB_DELETED return OPER_NB_RANGE;
+    function Get_Nb_Deleted return Oper_Nb_Range;
 
     -- Delete all flagged operation
-    procedure COMMIT_DELETIONS;
-  end DELETION;
-  package body DELETION is separate;
+    procedure Commit_Deletions;
+  end Deletion;
+  package body Deletion is separate;
 
   -- The generic edition of an operation
-  package EDITION is
-    type EDIT_LIST is (CREATE, MODIFY, VIEW, DELETE);
-    procedure EDIT (EDIT_TYPE : in EDIT_LIST);
-  end EDITION;
-  package body EDITION is separate;
+  package Edition is
+    type Edit_List is (Create, Modify, View, Delete);
+    procedure Edit (Edit_Type : in Edit_List);
+  end Edition;
+  package body Edition is separate;
 
   -- Update status of operation
-  procedure UPDATE_STATE is
-    OPER : OPER_DEF.OPER_REC;
+  procedure Update_State is
+    Oper : Oper_Def.Oper_Rec;
   begin
-    LIST_UTIL.MOVE_TO_CURRENT;
-    OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-    case OPER.STATUS is
-      when OPER_DEF.ENTERED =>
-        if OPER_DEF.KIND_CAN_BE_DEFERED(OPER.KIND) then
-          OPER.STATUS := OPER_DEF.DEFERED;
+    List_Util.Move_To_Current;
+    Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+    case Oper.Status is
+      when Oper_Def.Entered =>
+        if Oper_Def.Kind_Can_Be_Defered(Oper.Kind) then
+          Oper.Status := Oper_Def.Defered;
         else
-          OPER.STATUS := OPER_DEF.NOT_ENTERED;
+          Oper.Status := Oper_Def.Not_Entered;
         end if;
-      when OPER_DEF.NOT_ENTERED | OPER_DEF.DEFERED =>
-        OPER.STATUS := OPER_DEF.ENTERED;
+      when Oper_Def.Not_Entered | Oper_Def.Defered =>
+        Oper.Status := Oper_Def.Entered;
     end case;
-    OPER_LIST_MNG.MODIFY(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-    ACCOUNT_SAVED := FALSE;
-    COMPUTE_AMOUNTS;
-    REFRESH_SCREEN(UNCHANGED);
-  end UPDATE_STATE;
+    Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
+    Account_Saved := False;
+    Compute_Amounts;
+    Refresh_Screen(Unchanged);
+  end Update_State;
 
   -- Create a new operation
-  procedure ADD_OPER is
+  procedure Add_Oper is
   begin
-    EDITION.EDIT(EDITION.CREATE);
-    SCREEN.RESET;
-    COMPUTE_AMOUNTS;
-    REFRESH_SCREEN(BOTTOM);
-  end ADD_OPER;
+    Edition.Edit(Edition.Create);
+    Screen.Reset;
+    Compute_Amounts;
+    Refresh_Screen(Bottom);
+  end Add_Oper;
 
   -- Edit an operation
-  procedure EDIT_OPER is
+  procedure Edit_Oper is
   begin
-    EDITION.EDIT(EDITION.MODIFY);
-    SCREEN.RESET;
-    COMPUTE_AMOUNTS;
-    REFRESH_SCREEN(CENTER);
-  end EDIT_OPER;
+    Edition.Edit(Edition.Modify);
+    Screen.Reset;
+    Compute_Amounts;
+    Refresh_Screen(Center);
+  end Edit_Oper;
 
   -- View an operation
-  procedure VIEW_OPER is
+  procedure View_Oper is
   begin
-    EDITION.EDIT(EDITION.VIEW);
-    SCREEN.RESET;
-    REFRESH_SCREEN(CENTER);
-  end VIEW_OPER;
+    Edition.Edit(Edition.View);
+    Screen.Reset;
+    Refresh_Screen(Center);
+  end View_Oper;
 
   -- Delete an operation
-  procedure DEL_OPER is
+  procedure Del_Oper is
   begin
-    EDITION.EDIT(EDITION.DELETE);
-    SCREEN.RESET;
-    COMPUTE_AMOUNTS;
-    REFRESH_SCREEN(CENTER);
-  end DEL_OPER;
+    Edition.Edit(Edition.Delete);
+    Screen.Reset;
+    Compute_Amounts;
+    Refresh_Screen(Center);
+  end Del_Oper;
 
   -- Remove all entered operations up to current
   -- Update root amount
-  procedure GARBAGE_COLLECT is
-    POS : POSITIVE;
-    OPER : OPER_DEF.OPER_REC;
-    use type OPER_DEF.STATUS_LIST, OPER_DEF.AMOUNT_RANGE;
+  procedure Garbage_Collect is
+    Pos : Positive;
+    Oper : Oper_Def.Oper_Rec;
+    use type Oper_Def.Status_List, Oper_Def.Amount_Range;
   begin
-    if OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
+    if Oper_List_Mng.Is_Empty(Oper_List) then
       return;
     end if;
     -- Get number of oper to check and start from the beginning
-    POS := SEL_LIST_MNG.GET_POSITION(SEL_LIST);
-    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, 0, FALSE);
+    Pos := Sel_List_Mng.Get_Position(Sel_List);
+    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
     -- Check up to pos included
-    for I in 1 .. POS loop
-      LIST_UTIL.MOVE_TO_CURRENT;
-      OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
+    for I in 1 .. Pos loop
+      List_Util.Move_To_Current;
+      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
       -- Remove if entered
-      if OPER.STATUS = OPER_DEF.ENTERED then
-        ROOT_AMOUNT := ROOT_AMOUNT + OPER.AMOUNT;
-        DELETION.FLAG_DELETED;
-        ACCOUNT_SAVED := FALSE;
+      if Oper.Status = Oper_Def.Entered then
+        Root_Amount := Root_Amount + Oper.Amount;
+        Deletion.Flag_Deleted;
+        Account_Saved := False;
       end if;
       -- Done when orig pos is processed
-      exit when I = POS;
+      exit when I = Pos;
       -- Move to next
-      SEL_LIST_MNG.MOVE_TO(SEL_LIST);
+      Sel_List_Mng.Move_To(Sel_List);
     end loop;
-    DELETION.COMMIT_DELETIONS;
-    COMPUTE_AMOUNTS;
-    REFRESH_SCREEN(CENTER);
-  end GARBAGE_COLLECT;
+    Deletion.Commit_Deletions;
+    Compute_Amounts;
+    Refresh_Screen(Center);
+  end Garbage_Collect;
 
   -- Make a sub selection of operations
-  procedure SEARCH is separate;
+  procedure Search is separate;
 
   -- Reset selection to the full list
-  procedure SHOW_ALL is
+  procedure Show_All is
   begin
-    IN_SUBLIST := FALSE;
-    SCREEN.SUBLIST(IN_SUBLIST);
-    LIST_UTIL.RESET_SELECTION;
-    REFRESH_SCREEN(BOTTOM);
-  end SHOW_ALL;
+    In_Sublist := False;
+    Screen.Sublist(In_Sublist);
+    List_Util.Reset_Selection;
+    Refresh_Screen(Bottom);
+  end Show_All;
 
   -- Get data
-  function IS_SAVED return BOOLEAN is
+  function Is_Saved return Boolean is
   begin
-    return ACCOUNT_SAVED;
-  end IS_SAVED;
+    return Account_Saved;
+  end Is_Saved;
 
-end MNG;
+end Mng;
 

@@ -1,28 +1,28 @@
-separate (NAV_DATA)
+separate (Nav_Data)
 
 -- When PLAN.ANGLE and TRAJ.SPEED are unknown
-procedure COMP_NAV (DATA : in out T_DATA) is
-  R : REAL;
-  CW, CP : REAL;
-  use NAV_TYPES;
+procedure Comp_Nav (Data : in out T_Data) is
+  R : Real;
+  Cw, Cp : Real;
+  use Nav_Types;
 begin
   -- PLAN.ANGLE := TRAJ.ANGLE - ARC_SIN (WIND.SPEED / PLAN.SPEED
   --  * SIN (WIND.ANGLE - TRAJ.ANGLE)
-  R := MY_MATH.SIN (TO_REAL(ANGLE =>DATA.WIND.ANGLE - DATA.TRAJ.ANGLE),
-   MY_MATH.DEGREE);
-  R := MY_MATH.ARC_SIN (
-        MY_MATH.REAL(DATA.WIND.SPEED) / MY_MATH.REAL(DATA.PLAN.SPEED) * R,
-        MY_MATH.DEGREE);
-  DATA.PLAN.ANGLE := DATA.TRAJ.ANGLE - TO_ANGLE (R);
+  R := My_Math.Sin (To_Real(Angle =>Data.Wind.Angle - Data.Traj.Angle),
+   My_Math.Degree);
+  R := My_Math.Arc_Sin (
+        My_Math.Real(Data.Wind.Speed) / My_Math.Real(Data.Plan.Speed) * R,
+        My_Math.Degree);
+  Data.Plan.Angle := Data.Traj.Angle - To_Angle (R);
 
   -- TRAJ.SPEED := WIND.SPEED * COS(TRAJ_ANGLE - WIND_ANGLE) +
   --  PLAN.SPEED * COS(PLAN.ANGLE - TRAJ_ANGLE)
-  CW := MY_MATH.COS(TO_REAL(ANGLE => DATA.TRAJ.ANGLE - DATA.WIND.ANGLE),
-   MY_MATH.DEGREE);
-  CP := MY_MATH.COS(TO_REAL(ANGLE => DATA.PLAN.ANGLE - DATA.TRAJ.ANGLE),
-   MY_MATH.DEGREE);
-  DATA.TRAJ.SPEED := NAV_TYPES.T_SPEED (MY_MATH.REAL(DATA.WIND.SPEED) * CW
-                                      + MY_MATH.REAL(DATA.PLAN.SPEED) * CP);
+  Cw := My_Math.Cos(To_Real(Angle => Data.Traj.Angle - Data.Wind.Angle),
+   My_Math.Degree);
+  Cp := My_Math.Cos(To_Real(Angle => Data.Plan.Angle - Data.Traj.Angle),
+   My_Math.Degree);
+  Data.Traj.Speed := Nav_Types.T_Speed (My_Math.Real(Data.Wind.Speed) * Cw
+                                      + My_Math.Real(Data.Plan.Speed) * Cp);
 exception
-  when MY_MATH.MATH_ERROR => raise COMP_ERR;
-end COMP_NAV;
+  when My_Math.Math_Error => raise Comp_Err;
+end Comp_Nav;

@@ -2,105 +2,105 @@
 -- Reads this file describing a linear system (get_line & get_float)
 -- Solve linear system and put solution
 
-with TEXT_IO;
-with TEXT_HANDLER, ARGUMENT, NORMAL, SYSLIN, FLO_IO, GET_LINE, GET_FLOAT;
+with Text_Io;
+with Text_Handler, Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
 
-procedure T_SYSLIN is
+procedure T_Syslin is
 
-  package MY_SYSLIN is new SYSLIN(FLOAT);
+  package My_Syslin is new Syslin(Float);
 
-  MAX_LINE_LEN : constant := 1024;
-  MAX_WORD_NB  : constant := 500;
-  MAX_WORD_LEN : constant := 15;
+  Max_Line_Len : constant := 1024;
+  Max_Word_Nb  : constant := 500;
+  Max_Word_Len : constant := 15;
 
   -- Matrix dimension
-  DIM : POSITIVE := 1;
+  Dim : Positive := 1;
 
-  FILE_ERROR : exception;
+  File_Error : exception;
 
 
 begin
   -- Check syntax
-  if ARGUMENT.GET_NBRE_ARG /= 1 then
-    TEXT_IO.PUT_LINE ("ERROR. Syntax : t_syslin <file_name>");
+  if Argument.Get_Nbre_Arg /= 1 then
+    Text_Io.Put_Line ("ERROR. Syntax : t_syslin <file_name>");
     return;
   end if;
 
   declare
-    package MY_GET_LINE is new GET_LINE (
-      MAX_WORD_LEN => MAX_WORD_LEN,
-      MAX_WORD_NB  => MAX_WORD_NB,
-      MAX_LINE_LEN => MAX_LINE_LEN,
-      COMMENT => '#');
+    package My_Get_Line is new Get_Line (
+      Max_Word_Len => Max_Word_Len,
+      Max_Word_Nb  => Max_Word_Nb,
+      Max_Line_Len => Max_Line_Len,
+      Comment => '#');
 
-    LINE  : MY_GET_LINE.LINE_ARRAY;
-    WHOLE_LINE : MY_GET_LINE.LINE_TXT;
+    Line  : My_Get_Line.Line_Array;
+    Whole_Line : My_Get_Line.Line_Txt;
 
-    procedure READ_NEXT_SIGNIFICANT_LINE is
+    procedure Read_Next_Significant_Line is
     begin
-      MY_GET_LINE.READ_NEXT_LINE;
-      MY_GET_LINE.GET_WORDS (LINE);
-      MY_GET_LINE.GET_WHOLE_LINE (WHOLE_LINE);
-    end READ_NEXT_SIGNIFICANT_LINE;
+      My_Get_Line.Read_Next_Line;
+      My_Get_Line.Get_Words (Line);
+      My_Get_Line.Get_Whole_Line (Whole_Line);
+    end Read_Next_Significant_Line;
 
   begin
 
     -- open file
     begin
-      MY_GET_LINE.OPEN (ARGUMENT.GET_PARAMETER);
+      My_Get_Line.Open (Argument.Get_Parameter);
     exception
       when others =>
-        TEXT_IO.PUT_LINE ("ERROR opening file " & ARGUMENT.GET_PARAMETER & ".");
+        Text_Io.Put_Line ("ERROR opening file " & Argument.Get_Parameter & ".");
         raise;
     end;
 
     -- Compute dimension from first line : nb of words - 1
     begin
-      MY_GET_LINE.GET_WORDS (LINE);
-      MY_GET_LINE.GET_WHOLE_LINE (WHOLE_LINE);
-      DIM := MY_GET_LINE.GET_WORD_NUMBER - 1;
-      if DIM = 0 then
-        TEXT_IO.PUT_LINE ("ERROR in file " & ARGUMENT.GET_PARAMETER
+      My_Get_Line.Get_Words (Line);
+      My_Get_Line.Get_Whole_Line (Whole_Line);
+      Dim := My_Get_Line.Get_Word_Number - 1;
+      if Dim = 0 then
+        Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
                           & " only one word in first line.");
-        raise FILE_ERROR;
+        raise File_Error;
       end if;
     exception
-      when TEXT_IO.END_ERROR =>
-        TEXT_IO.PUT_LINE ("ERROR in file " & ARGUMENT.GET_PARAMETER
+      when Text_Io.End_Error =>
+        Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
                           & " file is empty.");
-        raise FILE_ERROR;
+        raise File_Error;
     end;
 
     -- Load matrix and vector from file.
     declare
-      MATRIX : MY_SYSLIN.MATRIX(1..DIM, 1..DIM);
-      VECTOR : MY_SYSLIN.VECTOR(1..DIM);
-      SOLUTION : MY_SYSLIN.VECTOR(1..DIM);
+      Matrix : My_Syslin.Matrix(1..Dim, 1..Dim);
+      Vector : My_Syslin.Vector(1..Dim);
+      Solution : My_Syslin.Vector(1..Dim);
     begin
-      for I in 1 .. DIM loop
+      for I in 1 .. Dim loop
         -- Parse current line in matrix and vector
         begin
-          for J in 1 .. DIM loop
-            MATRIX (I, J) := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J)));
+          for J in 1 .. Dim loop
+            Matrix (I, J) := Get_Float.Get_Float(Text_Handler.Value(Line(J)));
           end loop;
-          VECTOR (I) := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(DIM+1)));
+          Vector (I) := Get_Float.Get_Float(Text_Handler.Value(Line(Dim+1)));
         exception
           when others =>
-            TEXT_IO.PUT_LINE ("ERROR, when reading data at line "
-                              & INTEGER'IMAGE(MY_GET_LINE.GET_WORD_NUMBER) & ".");
-            raise FILE_ERROR;
+            Text_Io.Put_Line ("ERROR, when reading data at line "
+                              & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
+            raise File_Error;
         end;
-        TEXT_IO.PUT_LINE (">" & TEXT_HANDLER.VALUE(WHOLE_LINE) & "<");
+        Text_Io.Put_Line (">" & Text_Handler.Value(Whole_Line) & "<");
 
-        if I /= DIM then
+        if I /= Dim then
           -- read next not empty line
-          READ_NEXT_SIGNIFICANT_LINE;
+          Read_Next_Significant_Line;
 
           -- Check number of words
-          if MY_GET_LINE.GET_WORD_NUMBER /= DIM + 1 then
-            TEXT_IO.PUT_LINE ("ERROR in file. Wrong number of words at line "
-                              & INTEGER'IMAGE(MY_GET_LINE.GET_WORD_NUMBER) & ".");
-            raise FILE_ERROR;
+          if My_Get_Line.Get_Word_Number /= Dim + 1 then
+            Text_Io.Put_Line ("ERROR in file. Wrong number of words at line "
+                              & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
+            raise File_Error;
           end if;
         end if;
 
@@ -108,39 +108,39 @@ begin
 
       -- Check nothing else in file
       begin
-        READ_NEXT_SIGNIFICANT_LINE;
-        TEXT_IO.PUT_LINE ("ERROR. Unexpected data at line "
-                          & INTEGER'IMAGE(MY_GET_LINE.GET_WORD_NUMBER) & ".");
-        MY_GET_LINE.CLOSE;
-        raise FILE_ERROR;
+        Read_Next_Significant_Line;
+        Text_Io.Put_Line ("ERROR. Unexpected data at line "
+                          & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
+        My_Get_Line.Close;
+        raise File_Error;
       exception
-        when MY_GET_LINE.NO_MORE_LINE =>
-          MY_GET_LINE.CLOSE;
+        when My_Get_Line.No_More_Line =>
+          My_Get_Line.Close;
       end;
 
       -- Solve
       begin
-        SOLUTION :=  MY_SYSLIN.GAUSS(MATRIX, VECTOR);
+        Solution :=  My_Syslin.Gauss(Matrix, Vector);
       exception
-        when MY_SYSLIN.DISCRIMINENT_ERROR =>
-          TEXT_IO.PUT_LINE ("Unable to solve: Discriminent is nul.");
+        when My_Syslin.Discriminent_Error =>
+          Text_Io.Put_Line ("Unable to solve: Discriminent is nul.");
           return;
-        when MY_SYSLIN.DIMENSION_ERROR =>
-          TEXT_IO.PUT_LINE ("Unable to solve: ERROR in dimensions.");
+        when My_Syslin.Dimension_Error =>
+          Text_Io.Put_Line ("Unable to solve: ERROR in dimensions.");
           return;
         when others =>
-          TEXT_IO.PUT_LINE ("ERROR solving linear system.");
+          Text_Io.Put_Line ("ERROR solving linear system.");
           raise;
       end;
 
       -- Put solution
-      for I in 1 .. DIM loop
-        TEXT_IO.PUT ("X(" & NORMAL(I, 3) & ") = ");
-        FLO_IO.PUT (SOLUTION(I), AFT => 6);
-        TEXT_IO.NEW_LINE;
+      for I in 1 .. Dim loop
+        Text_Io.Put ("X(" & Normal(I, 3) & ") = ");
+        Flo_Io.Put (Solution(I), Aft => 6);
+        Text_Io.New_Line;
       end loop;
 
     end;
   end;
   -- Done
-end T_SYSLIN;
+end T_Syslin;

@@ -1,48 +1,48 @@
-with MY_IO;
-use MY_IO; 
-procedure GARDE is 
+with My_Io;
+use My_Io; 
+procedure Garde is 
 
-  COND : BOOLEAN; 
+  Cond : Boolean; 
 
-  task SERVEUR is 
-    entry INIT; 
-    entry SERVICE_TRUE(CLIENT : in INTEGER); 
-    entry SERVICE_FALSE(CLIENT : in INTEGER); 
-  end SERVEUR; 
+  task Serveur is 
+    entry Init; 
+    entry Service_True(Client : in Integer); 
+    entry Service_False(Client : in Integer); 
+  end Serveur; 
 
-  task CLIENT_1 is 
-    entry INIT; 
-  end CLIENT_1; 
+  task Client_1 is 
+    entry Init; 
+  end Client_1; 
 
-  task CLIENT_2 is 
-    entry INIT; 
-  end CLIENT_2; 
+  task Client_2 is 
+    entry Init; 
+  end Client_2; 
 
-  task body SERVEUR is 
+  task body Serveur is 
   begin
-    accept INIT; 
+    accept Init; 
 
     loop
-      PUT("  Serveur sur select : condition "); 
-      PUT_LINE(COND); 
+      Put("  Serveur sur select : condition "); 
+      Put_Line(Cond); 
       select
-        when COND => 
-          accept SERVICE_TRUE(CLIENT : in INTEGER) do
-            PUT("  Service TRUE de "); 
-            PUT(CLIENT); 
-            PUT(" condition "); 
-            PUT_LINE(COND); 
+        when Cond => 
+          accept Service_True(Client : in Integer) do
+            Put("  Service TRUE de "); 
+            Put(Client); 
+            Put(" condition "); 
+            Put_Line(Cond); 
             delay (0.5); 
-          end SERVICE_TRUE; 
+          end Service_True; 
       or 
-        when  not COND => 
-          accept SERVICE_FALSE(CLIENT : in INTEGER) do
-            PUT("  Service FALSE de"); 
-            PUT(CLIENT); 
-            PUT(" condition "); 
-            PUT_LINE(COND); 
+        when  not Cond => 
+          accept Service_False(Client : in Integer) do
+            Put("  Service FALSE de"); 
+            Put(Client); 
+            Put(" condition "); 
+            Put_Line(Cond); 
             delay (0.5); 
-          end SERVICE_FALSE; 
+          end Service_False; 
       or 
         terminate; 
       end select; 
@@ -51,45 +51,45 @@ procedure GARDE is
 
   exception
     when others => 
-      PUT_LINE("  exception Serveur"); 
-  end SERVEUR; 
+      Put_Line("  exception Serveur"); 
+  end Serveur; 
 
 
-  task body CLIENT_1 is 
+  task body Client_1 is 
   begin
-    accept INIT; 
-    PUT_LINE("Client 1 requete TRUE"); 
-    SERVEUR.SERVICE_TRUE(1); 
-    PUT_LINE("Client 1 servi TRUE"); 
+    accept Init; 
+    Put_Line("Client 1 requete TRUE"); 
+    Serveur.Service_True(1); 
+    Put_Line("Client 1 servi TRUE"); 
   exception
     when others => 
-      PUT_LINE("exception Client 1"); 
-  end CLIENT_1; 
+      Put_Line("exception Client 1"); 
+  end Client_1; 
 
-  task body CLIENT_2 is 
+  task body Client_2 is 
   begin
-    accept INIT; 
+    accept Init; 
     delay 10.0; 
-    PUT_LINE(" Client 2 requete FALSE"); 
-    SERVEUR.SERVICE_FALSE(2); 
-    PUT_LINE(" Client 2 servi FALSE"); 
+    Put_Line(" Client 2 requete FALSE"); 
+    Serveur.Service_False(2); 
+    Put_Line(" Client 2 servi FALSE"); 
   exception
     when others => 
-      PUT_LINE("exception Client 2"); 
-  end CLIENT_2; 
+      Put_Line("exception Client 2"); 
+  end Client_2; 
 
 begin
-  COND := FALSE; 
-  PUT_LINE("        Prog condition FALSE"); 
-  SERVEUR.INIT; 
-  CLIENT_1.INIT; 
-  CLIENT_2.INIT; 
+  Cond := False; 
+  Put_Line("        Prog condition FALSE"); 
+  Serveur.Init; 
+  Client_1.Init; 
+  Client_2.Init; 
   delay 3.0; 
-  COND := TRUE; 
-  PUT_LINE("        Prog condition TRUE"); 
+  Cond := True; 
+  Put_Line("        Prog condition TRUE"); 
   delay 3.0; 
-  PUT_LINE("        fin Prog"); 
+  Put_Line("        fin Prog"); 
 exception
   when others => 
-    PUT_LINE("        exception Prog"); 
-end GARDE; 
+    Put_Line("        exception Prog"); 
+end Garde; 

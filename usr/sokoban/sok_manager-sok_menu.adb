@@ -1,158 +1,158 @@
 separate (sok_manager)
 
-function SOK_MENU (ALLOW_WRITE : BOOLEAN) return MENU_RESULT_REC is
+function Sok_Menu (Allow_Write : Boolean) return Menu_Result_Rec is
 
-  CUR_ACTION : SOK_DISPLAY.MENU_ACTION_LIST := SOK_DISPLAY.RESET;
-  KEY : SOK_INPUT.KEY_LIST;
+  Cur_Action : Sok_Display.Menu_Action_List := Sok_Display.Reset;
+  Key : Sok_Input.Key_List;
 
-  subtype MENU_ERROR_LIST is SOK_DISPLAY.ERROR_LIST
-   range SOK_DISPLAY.NO_FRAME .. SOK_DISPLAY.SCORE_IO;
-  procedure PUT_MENU_ERROR (ERROR : in MENU_ERROR_LIST) is
+  subtype Menu_Error_List is Sok_Display.Error_List
+   range Sok_Display.No_Frame .. Sok_Display.Score_Io;
+  procedure Put_Menu_Error (Error : in Menu_Error_List) is
   begin
-    SOK_DISPLAY.PUT_ERROR (ERROR);
+    Sok_Display.Put_Error (Error);
     declare
-      KEY : SOK_INPUT.KEY_LIST;
+      Key : Sok_Input.Key_List;
     begin
-      KEY := SOK_INPUT.GET_KEY;
+      Key := Sok_Input.Get_Key;
     exception
-      when SOK_INPUT.BREAK_REQUESTED =>
-        SOK_DISPLAY.CLEAR_ERROR;
+      when Sok_Input.Break_Requested =>
+        Sok_Display.Clear_Error;
         raise;
       when others =>
-        SOK_DISPLAY.CLEAR_ERROR;
+        Sok_Display.Clear_Error;
     end;
-  end PUT_MENU_ERROR;
+  end Put_Menu_Error;
 
-  procedure BACK is
+  procedure Back is
   begin
-    SOK_DISPLAY.CLEAR_MENU;
-    SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.FRAME);
-  end BACK;
+    Sok_Display.Clear_Menu;
+    Sok_Display.Put_Help (Sok_Display.Frame);
+  end Back;
 
-  procedure REDISPLAY is
+  procedure Redisplay is
   begin
-    SOK_DISPLAY.PUT_FRAME (STATE.FRAME);
-    if not ALLOW_WRITE then
-      SET_BLINK (STATE.FRAME, TRUE);
+    Sok_Display.Put_Frame (State.Frame);
+    if not Allow_Write then
+      Set_Blink (State.Frame, True);
     end if;
-    SOK_DISPLAY.PUT_HELP (CUR_ACTION);
-    SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
-    SOK_TIME.DISP_TIME;
-  end REDISPLAY;
+    Sok_Display.Put_Help (Cur_Action);
+    Sok_Display.Put_Menu (Cur_Action, Allow_Write);
+    Sok_Time.Disp_Time;
+  end Redisplay;
 
-  use SOK_DISPLAY;
+  use Sok_Display;
 begin
-  SOK_DISPLAY.CLEAR_MENU;
-  SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
+  Sok_Display.Clear_Menu;
+  Sok_Display.Put_Menu (Cur_Action, Allow_Write);
   loop
-    SOK_DISPLAY.PUT_HELP (CUR_ACTION);
-    KEY := SOK_INPUT.GET_KEY;
-    case KEY is
-      when SOK_INPUT.RIGHT =>
-        if CUR_ACTION /= SOK_DISPLAY.MENU_ACTION_LIST'LAST then
-          CUR_ACTION := SOK_DISPLAY.MENU_ACTION_LIST'SUCC (CUR_ACTION);
+    Sok_Display.Put_Help (Cur_Action);
+    Key := Sok_Input.Get_Key;
+    case Key is
+      when Sok_Input.Right =>
+        if Cur_Action /= Sok_Display.Menu_Action_List'Last then
+          Cur_Action := Sok_Display.Menu_Action_List'Succ (Cur_Action);
         else
-          CUR_ACTION := SOK_DISPLAY.MENU_ACTION_LIST'FIRST;
+          Cur_Action := Sok_Display.Menu_Action_List'First;
         end if;
-        if CUR_ACTION = SOK_DISPLAY.WRITE and not ALLOW_WRITE then
-          CUR_ACTION := SOK_DISPLAY.READ;
+        if Cur_Action = Sok_Display.Write and not Allow_Write then
+          Cur_Action := Sok_Display.Read;
         end if;
-        SOK_DISPLAY.UPDATE_MENU (CUR_ACTION);
-      when SOK_INPUT.LEFT =>
-        if CUR_ACTION /= SOK_DISPLAY.MENU_ACTION_LIST'FIRST then
-          CUR_ACTION := SOK_DISPLAY.MENU_ACTION_LIST'PRED (CUR_ACTION);
+        Sok_Display.Update_Menu (Cur_Action);
+      when Sok_Input.Left =>
+        if Cur_Action /= Sok_Display.Menu_Action_List'First then
+          Cur_Action := Sok_Display.Menu_Action_List'Pred (Cur_Action);
         else
-          CUR_ACTION := SOK_DISPLAY.MENU_ACTION_LIST'LAST;
+          Cur_Action := Sok_Display.Menu_Action_List'Last;
         end if;
-        if CUR_ACTION = SOK_DISPLAY.WRITE and not ALLOW_WRITE then
-          CUR_ACTION := SOK_DISPLAY.BREAK;
+        if Cur_Action = Sok_Display.Write and not Allow_Write then
+          Cur_Action := Sok_Display.Break;
         end if;
-        SOK_DISPLAY.UPDATE_MENU (CUR_ACTION);
-      when SOK_INPUT.UP | SOK_INPUT.DOWN | SOK_INPUT.UNDO =>
+        Sok_Display.Update_Menu (Cur_Action);
+      when Sok_Input.Up | Sok_Input.Down | Sok_Input.Undo =>
         null;
-      when SOK_INPUT.NEXT =>
+      when Sok_Input.Next =>
         -- validation
-        SOK_DISPLAY.CLEAR_MENU;
-        case CUR_ACTION is
-          when SOK_DISPLAY.READ =>
-            SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
+        Sok_Display.Clear_Menu;
+        case Cur_Action is
+          when Sok_Display.Read =>
+            Sok_Display.Put_Menu (Cur_Action, Allow_Write);
             begin
-              SOK_FILE.RESTORE (STATE);
-              STATE.SCORE := SOK_FILE.READ_SCORE(STATE.NO_FRAME);
-              BACK;
-              return (RESULT => RESTART_FRAME, UPDATE_STATE => UPDATE_TIME);
+              Sok_File.Restore (State);
+              State.Score := Sok_File.Read_Score(State.No_Frame);
+              Back;
+              return (Result => Restart_Frame, Update_State => Update_Time);
             exception
-              when SOK_FILE.FRAME_FILE_NOT_FOUND =>
-                PUT_MENU_ERROR (NO_FRAME);
-                BACK;
-                return (RESULT => GO_ON);
-              when SOK_FILE.ERROR_READING_FRAME =>
-                PUT_MENU_ERROR (RESTORE);
-                BACK;
-                return (RESULT => GO_ON);
-              when SOK_FILE.SCORE_IO_ERROR =>
-                PUT_MENU_ERROR (SCORE_IO);
-                STATE.SCORE.SET := FALSE;
-                BACK;
-                return (RESULT => GO_ON);
+              when Sok_File.Frame_File_Not_Found =>
+                Put_Menu_Error (No_Frame);
+                Back;
+                return (Result => Go_On);
+              when Sok_File.Error_Reading_Frame =>
+                Put_Menu_Error (Restore);
+                Back;
+                return (Result => Go_On);
+              when Sok_File.Score_Io_Error =>
+                Put_Menu_Error (Score_Io);
+                State.Score.Set := False;
+                Back;
+                return (Result => Go_On);
             end;
-          when SOK_DISPLAY.WRITE =>
-            SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
+          when Sok_Display.Write =>
+            Sok_Display.Put_Menu (Cur_Action, Allow_Write);
             begin
-              SOK_FILE.SAVE (STATE);
-              BACK;
-              return (RESULT => GO_ON);
+              Sok_File.Save (State);
+              Back;
+              return (Result => Go_On);
             exception
-              when SOK_FILE.ERROR_WRITING_FRAME =>
-                PUT_MENU_ERROR (SAVE);
-                BACK;
-                return (RESULT => GO_ON);
+              when Sok_File.Error_Writing_Frame =>
+                Put_Menu_Error (Save);
+                Back;
+                return (Result => Go_On);
             end;
-          when SOK_DISPLAY.RESET =>
-            BACK;
-            return (RESULT => RESTART_FRAME, UPDATE_STATE => RESET_ALL);
-          when SOK_DISPLAY.GET_NEW =>
+          when Sok_Display.Reset =>
+            Back;
+            return (Result => Restart_Frame, Update_State => Reset_All);
+          when Sok_Display.Get_New =>
             -- Loop while redisplay
             loop
-              SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
+              Sok_Display.Put_Menu (Cur_Action, Allow_Write);
               declare
-                GOT_NO : SOK_TYPES.FRAME_RANGE;
-                RESULT : SOK_DISPLAY.GET_RESULT_LIST;
+                Got_No : Sok_Types.Frame_Range;
+                Result : Sok_Display.Get_Result_List;
               begin
-                SOK_DISPLAY.GET_NO_FRAME (GOT_NO, RESULT);
-                case RESULT is
-                  when SOK_DISPLAY.SET =>
-                    BACK;
-                    STATE.NO_FRAME := GOT_NO;
-                    return (RESULT => RESTART_FRAME, UPDATE_STATE => RESET_ALL);
-                  when SOK_DISPLAY.REFRESH =>
-                    REDISPLAY;
-                  when SOK_DISPLAY.ESC =>
+                Sok_Display.Get_No_Frame (Got_No, Result);
+                case Result is
+                  when Sok_Display.Set =>
+                    Back;
+                    State.No_Frame := Got_No;
+                    return (Result => Restart_Frame, Update_State => Reset_All);
+                  when Sok_Display.Refresh =>
+                    Redisplay;
+                  when Sok_Display.Esc =>
                     exit;
                 end case;
               exception
-                when SOK_DISPLAY.FORMAT_ERROR =>
-                  PUT_MENU_ERROR (FORMAT);
-                  BACK;
-                  SOK_DISPLAY.CLEAR_MENU;
-                  SOK_DISPLAY.PUT_MENU (CUR_ACTION, ALLOW_WRITE);
+                when Sok_Display.Format_Error =>
+                  Put_Menu_Error (Format);
+                  Back;
+                  Sok_Display.Clear_Menu;
+                  Sok_Display.Put_Menu (Cur_Action, Allow_Write);
               end;
             end loop;
-          when SOK_DISPLAY.BREAK =>
-            BACK;
-            raise SOK_INPUT.BREAK_REQUESTED;
+          when Sok_Display.Break =>
+            Back;
+            raise Sok_Input.Break_Requested;
         end case;
-      when SOK_INPUT.ESC =>
-        if ALLOW_WRITE then
-          SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.FRAME);
+      when Sok_Input.Esc =>
+        if Allow_Write then
+          Sok_Display.Put_Help (Sok_Display.Frame);
         else
-          SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.DONE);
+          Sok_Display.Put_Help (Sok_Display.Done);
         end if;
-        SOK_DISPLAY.CLEAR_MENU;
-        return (RESULT => GO_ON);
-      when SOK_INPUT.REFRESH =>
-        REDISPLAY;
+        Sok_Display.Clear_Menu;
+        return (Result => Go_On);
+      when Sok_Input.Refresh =>
+        Redisplay;
     end case;
   end loop;
 
-end SOK_MENU;
+end Sok_Menu;

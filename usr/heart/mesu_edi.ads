@@ -1,7 +1,7 @@
 
-with MESU_NAM;
+with Mesu_Nam;
 -- Edition, Creation, deletion of mesure
-package MESU_EDI is
+package Mesu_Edi is
 
   -- Edit a mesure.
   -- If date or person changes, then the file name may be affected.
@@ -9,13 +9,13 @@ package MESU_EDI is
   --  is affected
   -- If EXIT_PROGRAM then FILE_NAME is not significant
   -- If FILE_NAME is set to empty, the edition has been canceled
-  procedure EDIT (FILE_NAME : in out MESU_NAM.FILE_NAME_STR;
-                  EXIT_PROGRAM : out BOOLEAN);
+  procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str;
+                  Exit_Program : out Boolean);
 
   -- Delete a mesure.
   -- If EXIT_PROGRAM then FILE_NAME is not significant
   -- If FILE_NAME is set to empty, the edition has been canceled
-  procedure DELETE (FILE_NAME : in out MESU_NAM.FILE_NAME_STR;
-                    EXIT_PROGRAM : out BOOLEAN);
+  procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str;
+                    Exit_Program : out Boolean);
 
-end MESU_EDI;
+end Mesu_Edi;

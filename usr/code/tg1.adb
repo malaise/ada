@@ -34,7 +34,7 @@ begin
   end loop;
   My_Io.Put_Line ("Code : " & Text_Handler.Value(Code));
 
-  Text_Handler.Set (TEXT, "");
+  Text_Handler.Set (Text, "");
   for I in 1 .. Text_Handler.Length(Code) loop
     if I mod 2 = 1 then
       Rec.Row := Text_Handler.Value(Code)(I);

@@ -1,18 +1,18 @@
-package PERS_FIL is
+package Pers_Fil is
 
   -- Load the list from the file. (Erasing the current list)
   -- Current pos set to first item (if not empty)
-  procedure LOAD;
+  procedure Load;
 
   -- Save the list to file. (List not affected)
-  procedure SAVE;
+  procedure Save;
 
   -- Error on file open, create, read, write
-  IO_ERROR : exception;
+  Io_Error : exception;
   -- Error on list write
-  FULL_LIST_ERROR : exception;
+  Full_List_Error : exception;
   -- Fatal internal error
-  PERS_FIL_INTERNAL_ERROR : exception;
+  Pers_Fil_Internal_Error : exception;
 
-end PERS_FIL;
+end Pers_Fil;
 

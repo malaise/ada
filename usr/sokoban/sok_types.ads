@@ -1,45 +1,45 @@
 -- Common types for sokoban
-package SOK_TYPES is
+package Sok_Types is
 
   -- Array of a frame
-  subtype ROW_RANGE is POSITIVE range 1 .. 16;
-  subtype COL_RANGE is positive range 1 .. 19;
+  subtype Row_Range is Positive range 1 .. 16;
+  subtype Col_Range is positive range 1 .. 19;
 
   -- Fixed background of the square
-  type PATTERN_LIST is (WALL, FREE, TARGET);
+  type Pattern_List is (Wall, Free, Target);
   -- changeable content of a square
-  type CONTENT_LIST is (MAN, BOX, NOTHING);
+  type Content_List is (Man, Box, Nothing);
 
   -- A square
-  type SQUARE_REC (PATTERN : PATTERN_LIST := FREE) is record
-    case PATTERN is
+  type Square_Rec (Pattern : Pattern_List := Free) is record
+    case Pattern is
       -- nothing on a wall
-      when WALL => null;
+      when Wall => null;
       -- man or box or nothing
-      when FREE | TARGET =>
-        CONTENT : CONTENT_LIST;
+      when Free | Target =>
+        Content : Content_List;
     end case;
   end record;
 
   -- A frame
-  type FRAME_TAB is array (ROW_RANGE, COL_RANGE) of SQUARE_REC;
+  type Frame_Tab is array (Row_Range, Col_Range) of Square_Rec;
 
   -- Frame number
-  subtype FRAME_RANGE is POSITIVE range 1 .. 50;
+  subtype Frame_Range is Positive range 1 .. 50;
 
   -- square position in frame
-  type COORDINATE_REC is record
-    ROW : ROW_RANGE;
-    COL : COL_RANGE;
+  type Coordinate_Rec is record
+    Row : Row_Range;
+    Col : Col_Range;
   end record;
 
 
   -- best score of each frame
-  type SCORE_REC is record
-    SET : BOOLEAN;
-    DAY : NATURAL;
-    DUR : DURATION;
-    MOVES : NATURAL;
-    PUSHES : NATURAL;
+  type Score_Rec is record
+    Set : Boolean;
+    Day : Natural;
+    Dur : Duration;
+    Moves : Natural;
+    Pushes : Natural;
   end record;
-end SOK_TYPES;
+end Sok_Types;

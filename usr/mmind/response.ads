@@ -1,24 +1,24 @@
-with COMMON;
-package RESPONSE is
+with Common;
+package Response is
 
 
-  procedure NEW_CODE;
+  procedure New_Code;
 
 
-  type COLOR_ARRAY is array (COMMON.LEVEL_RANGE range <>) of
-   COMMON.EFF_COLOR_RANGE;
-  type COLOR_REC (LEVEL : COMMON.LAST_LEVEL_RANGE := COMMON.MIN_LEVEL)
+  type Color_Array is array (Common.Level_Range range <>) of
+   Common.Eff_Color_Range;
+  type Color_Rec (Level : Common.Last_Level_Range := Common.Min_Level)
    is record
-    COLOR : COLOR_ARRAY (1 .. LEVEL);
+    Color : Color_Array (1 .. Level);
   end record;
 
-  function GET_CODE return COLOR_REC;
+  function Get_Code return Color_Rec;
 
-  type RESPONSE_REC is record
-    PLACED_OK : NATURAL;
-    COLORS_OK  : NATURAL;
+  type Response_Rec is record
+    Placed_Ok : Natural;
+    Colors_Ok  : Natural;
   end record;
 
-  function RESPOND (PROPAL : COLOR_REC) return RESPONSE_REC;
+  function Respond (Propal : Color_Rec) return Response_Rec;
 
-end RESPONSE;
+end Response;

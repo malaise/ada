@@ -1,24 +1,24 @@
-with NAV_DATA, NAV_SCREEN;
+with Nav_Data, Nav_Screen;
 -- Management of the dialog with the operator
 
-package NAV_DIALOG is
+package Nav_Dialog is
 
-  procedure INIT;
+  procedure Init;
 
   -- Action to be managed by the dialog (get -> compute or quit)
-  subtype ACTION is NAV_SCREEN.ACTION
-   range NAV_SCREEN.COMPUTE .. NAV_SCREEN.QUIT;
+  subtype Action is Nav_Screen.Action
+   range Nav_Screen.Compute .. Nav_Screen.Quit;
 
   -- get data and then the action
-  procedure GET (DATA : in out NAV_DATA.T_DATA; TO_DO : out ACTION);
+  procedure Get (Data : in out Nav_Data.T_Data; To_Do : out Action);
 
   -- put the result
-  procedure PUT (RESULT : in NAV_DATA.T_DATA);
+  procedure Put (Result : in Nav_Data.T_Data);
   -- put consistency error message during a while
-  procedure PUT (ERROR : in NAV_DATA.T_CONSISTENCY);
+  procedure Put (Error : in Nav_Data.T_Consistency);
 
-  procedure ABORT_CLOCK renames NAV_SCREEN.ABORT_CLOCK;
+  procedure Abort_Clock renames Nav_Screen.Abort_Clock;
 
-end NAV_DIALOG;
+end Nav_Dialog;
 
 

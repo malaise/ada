@@ -1,114 +1,114 @@
-with DOS;
-separate (ACTION)
-procedure TREAT_CLICK is
+with Dos;
+separate (Action)
+procedure Treat_Click is
 begin
 
-  if not PLAYING then
+  if not Playing then
 
-    case CUR_SELECTION.SELECTION_KIND is
+    case Cur_Selection.Selection_Kind is
 
-      when SCREEN.MENU =>
-        SCREEN.PUT_HELP (SCREEN.CLICK_OTHER);
-        SCREEN.PUT_START_GIVEUP (START => TRUE, SELECTED => TRUE);
-        LAST_CLICK := CUR_SELECTION;
+      when Screen.Menu =>
+        Screen.Put_Help (Screen.Click_Other);
+        Screen.Put_Start_Giveup (Start => True, Selected => True);
+        Last_Click := Cur_Selection;
 
-      when SCREEN.LEVEL =>
-        SCREEN.PUT_HELP (SCREEN.CLICK_OTHER);
-        SCREEN.PUT_LEVEL (CUR_SELECTION.LEVEL_NO,
-                          SELECTED => TRUE);
-        LAST_CLICK := CUR_SELECTION;
+      when Screen.Level =>
+        Screen.Put_Help (Screen.Click_Other);
+        Screen.Put_Level (Cur_Selection.Level_No,
+                          Selected => True);
+        Last_Click := Cur_Selection;
 
-      when SCREEN.EXIT_GAME =>
-        SCREEN.PUT_HELP (SCREEN.CLICK_OTHER);
-        SCREEN.PUT_EXIT (SELECTED => TRUE);
-        LAST_CLICK := CUR_SELECTION;
+      when Screen.Exit_Game =>
+        Screen.Put_Help (Screen.Click_Other);
+        Screen.Put_Exit (Selected => True);
+        Last_Click := Cur_Selection;
 
       when others =>
-        LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
-                       SELECTION => SCREEN.NOTHING);
-        SCREEN.PUT_HELP (SCREEN.DISCARDED);
-        CON_IO.BELL;
+        Last_Click := (Selection_Kind => Screen.Nothing,
+                       Selection => Screen.Nothing);
+        Screen.Put_Help (Screen.Discarded);
+        Con_Io.Bell;
     end case;
 
   else
 
-    case CUR_SELECTION.SELECTION_KIND is
+    case Cur_Selection.Selection_Kind is
 
-      when SCREEN.MENU =>
-        SCREEN.PUT_HELP (SCREEN.CLICK_OTHER);
-        SCREEN.PUT_START_GIVEUP (START => FALSE, SELECTED => TRUE);
-        LAST_CLICK := CUR_SELECTION;
+      when Screen.Menu =>
+        Screen.Put_Help (Screen.Click_Other);
+        Screen.Put_Start_Giveup (Start => False, Selected => True);
+        Last_Click := Cur_Selection;
 
-      when SCREEN.EXIT_GAME =>
-        SCREEN.PUT_HELP (SCREEN.CLICK_OTHER);
-        SCREEN.PUT_EXIT (SELECTED => TRUE);
-        LAST_CLICK := CUR_SELECTION;
+      when Screen.Exit_Game =>
+        Screen.Put_Help (Screen.Click_Other);
+        Screen.Put_Exit (Selected => True);
+        Last_Click := Cur_Selection;
 
-      when SCREEN.TRY =>
+      when Screen.Try =>
         declare
-          TRY_STATE : COMMON.TRY_LIST :=
-           COMMON.GET_PROPAL_STATE (CUR_SELECTION.TRY_NO).TRY;
-          use COMMON;
+          Try_State : Common.Try_List :=
+           Common.Get_Propal_State (Cur_Selection.Try_No).Try;
+          use Common;
         begin
           -- Check that this propal is completed and not already answered
-          if TRY_STATE = COMMON.CAN_TRY then
-            SCREEN.PUT_HELP (SCREEN.CLICK_OTHER);
-            SCREEN.PUT_TRY (PROPAL => CUR_SELECTION.TRY_NO,
-                            TRY_STATE => SCREEN.SELECTED);
-            LAST_CLICK := CUR_SELECTION;
+          if Try_State = Common.Can_Try then
+            Screen.Put_Help (Screen.Click_Other);
+            Screen.Put_Try (Propal => Cur_Selection.Try_No,
+                            Try_State => Screen.Selected);
+            Last_Click := Cur_Selection;
           else
-            SCREEN.PUT_HELP (SCREEN.DISCARDED);
-            LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
-                           SELECTION => SCREEN.TRY);
-            CON_IO.BELL;
+            Screen.Put_Help (Screen.Discarded);
+            Last_Click := (Selection_Kind => Screen.Nothing,
+                           Selection => Screen.Try);
+            Con_Io.Bell;
           end if;
         end;
 
-      when SCREEN.COLOR =>
-        SCREEN.PUT_HELP (SCREEN.CLICK_COLOR);
-        SCREEN.PUT_SELECTED_COLOR (COLOR => CUR_SELECTION.COLOR_NO,
-                                   SELECTED => TRUE);
-        SCREEN.SET_MOUSE_COLOR (COLOR => CUR_SELECTION.COLOR_NO);
-        LAST_CLICK := CUR_SELECTION;
+      when Screen.Color =>
+        Screen.Put_Help (Screen.Click_Color);
+        Screen.Put_Selected_Color (Color => Cur_Selection.Color_No,
+                                   Selected => True);
+        Screen.Set_Mouse_Color (Color => Cur_Selection.Color_No);
+        Last_Click := Cur_Selection;
 
-      when SCREEN.PROPAL =>
+      when Screen.Propal =>
         declare
-          PROPAL_STATE : COMMON.PROPAL_STATE_REC :=
-           COMMON.GET_PROPAL_STATE (CUR_SELECTION.PROPAL_NO);
-          use COMMON;
+          Propal_State : Common.Propal_State_Rec :=
+           Common.Get_Propal_State (Cur_Selection.Propal_No);
+          use Common;
         begin
           -- Check that this propal is completed and not already answered
-          if PROPAL_STATE.TRY /= COMMON.ANSWERED and then
-             PROPAL_STATE.PROPAL_COLOR(CUR_SELECTION.COLUMN_NO)
-              /= COMMON.COLOR_RANGE'FIRST then
-            SCREEN.PUT_HELP (SCREEN.CLICK_PROPAL);
+          if Propal_State.Try /= Common.Answered and then
+             Propal_State.Propal_Color(Cur_Selection.Column_No)
+              /= Common.Color_Range'First then
+            Screen.Put_Help (Screen.Click_Propal);
             -- Attempt to move a color in propal. Clear square
-            SCREEN.PUT_DEFAULT_POS (CUR_SELECTION.PROPAL_NO,
-                                    CUR_SELECTION.COLUMN_NO,
-                                    SHOW => TRUE);
-            SCREEN.PUT_COLOR(PROPAL => CUR_SELECTION.PROPAL_NO,
-                             LEVEL  => CUR_SELECTION.COLUMN_NO,
-                             COLOR  => COMMON.COLOR_RANGE'FIRST);
-            SCREEN.SET_MOUSE_COLOR (
-             COLOR => PROPAL_STATE.PROPAL_COLOR(CUR_SELECTION.COLUMN_NO));
-            LAST_CLICK := CUR_SELECTION;
+            Screen.Put_Default_Pos (Cur_Selection.Propal_No,
+                                    Cur_Selection.Column_No,
+                                    Show => True);
+            Screen.Put_Color(Propal => Cur_Selection.Propal_No,
+                             Level  => Cur_Selection.Column_No,
+                             Color  => Common.Color_Range'First);
+            Screen.Set_Mouse_Color (
+             Color => Propal_State.Propal_Color(Cur_Selection.Column_No));
+            Last_Click := Cur_Selection;
           else
-            SCREEN.PUT_HELP (SCREEN.DISCARDED);
-            LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
-                           SELECTION => SCREEN.PROPAL);
-            CON_IO.BELL;
+            Screen.Put_Help (Screen.Discarded);
+            Last_Click := (Selection_Kind => Screen.Nothing,
+                           Selection => Screen.Propal);
+            Con_Io.Bell;
           end if;
         end;
 
       when others =>
-        SCREEN.PUT_HELP (SCREEN.DISCARDED);
-        LAST_CLICK := (SELECTION_KIND => SCREEN.NOTHING,
-                       SELECTION => SCREEN.NOTHING);
-        CON_IO.BELL;
+        Screen.Put_Help (Screen.Discarded);
+        Last_Click := (Selection_Kind => Screen.Nothing,
+                       Selection => Screen.Nothing);
+        Con_Io.Bell;
 
     end case;
 
   end if;
 
 
-end TREAT_CLICK;
+end Treat_Click;

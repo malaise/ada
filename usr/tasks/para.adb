@@ -1,116 +1,116 @@
-with MY_IO;
+with My_Io;
  
-procedure PARA is
+procedure Para is
  
-  RESULT : BOOLEAN;
-  ERROR  : exception;
+  Result : Boolean;
+  Error  : exception;
  
-  task type COMPUTER is
-    entry START(OK : in BOOLEAN);
-    entry STOP(OK : out BOOLEAN);
-    entry KILL;
-  end COMPUTER;
+  task type Computer is
+    entry Start(Ok : in Boolean);
+    entry Stop(Ok : out Boolean);
+    entry Kill;
+  end Computer;
 
-  COMP_1, COMP_2 : COMPUTER;
+  Comp_1, Comp_2 : Computer;
 
 
-  task body COMPUTER is
-    LOC          : BOOLEAN;
+  task body Computer is
+    Loc          : Boolean;
   begin
-    WORK :
+    Work :
     loop
 
-      SECURE :
+      Secure :
       begin
 
-        TREAT :
+        Treat :
         begin
 
           select
-            accept START(OK : in BOOLEAN) do
-              LOC := OK;
-            end START;
+            accept Start(Ok : in Boolean) do
+              Loc := Ok;
+            end Start;
           or
-            accept KILL;
-            exit WORK;
+            accept Kill;
+            exit Work;
           end select;
 
           for I in 1 .. 10 loop
             delay 0.0;
           end loop;
-          if not LOC then
-            raise ERROR;
+          if not Loc then
+            raise Error;
           end if;
-          accept STOP(OK : out BOOLEAN) do
-            OK := LOC;
-          end STOP;
+          accept Stop(Ok : out Boolean) do
+            Ok := Loc;
+          end Stop;
         exception
-          when ERROR =>
-            accept STOP(OK : out BOOLEAN) do
-              OK := FALSE;
+          when Error =>
+            accept Stop(Ok : out Boolean) do
+              Ok := False;
               raise;
-            end STOP;
-        end TREAT;
+            end Stop;
+        end Treat;
 
       exception
         when others =>
           null;
-      end SECURE;
+      end Secure;
 
-    end loop WORK;
+    end loop Work;
 
-  end COMPUTER;
+  end Computer;
 
 
 begin    -- para
   begin
     for I in 1 .. 10 loop
-      COMP_1.START(TRUE);
-      COMP_2.START(TRUE);
-      COMP_1.STOP(RESULT);
-      COMP_2.STOP(RESULT);
+      Comp_1.Start(True);
+      Comp_2.Start(True);
+      Comp_1.Stop(Result);
+      Comp_2.Stop(Result);
     end loop;
-    MY_IO.PUT_LINE("Successfull calls achived");
+    My_Io.Put_Line("Successfull calls achived");
   exception
     when others =>
-      MY_IO.PUT_LINE("EXCEPTION " & " raised during successfull calls!");
+      My_Io.Put_Line("EXCEPTION " & " raised during successfull calls!");
   end;
 
-  COMP_1.START(FALSE);
-  COMP_2.START(FALSE);
+  Comp_1.Start(False);
+  Comp_2.Start(False);
   begin
-    COMP_1.STOP(RESULT);
+    Comp_1.Stop(Result);
   exception
-    when ERROR =>
-      MY_IO.PUT_LINE("Exception ERROR successfully transmitted from 1");
+    when Error =>
+      My_Io.Put_Line("Exception ERROR successfully transmitted from 1");
       raise;
-    when TASKING_ERROR =>
-      MY_IO.PUT_LINE("Exception TASKING_ERROR successfully transmitted from 1");
+    when Tasking_Error =>
+      My_Io.Put_Line("Exception TASKING_ERROR successfully transmitted from 1");
       raise;
-    when PROGRAM_ERROR =>
-      MY_IO.PUT_LINE("Exception PROGRAM_ERROR successfully transmitted from 1");
+    when Program_Error =>
+      My_Io.Put_Line("Exception PROGRAM_ERROR successfully transmitted from 1");
       raise;
-    when STORAGE_ERROR =>
-      MY_IO.PUT_LINE("Exception STORAGE_ERROR successfully transmitted from 1");
+    when Storage_Error =>
+      My_Io.Put_Line("Exception STORAGE_ERROR successfully transmitted from 1");
       raise;
-    when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-      MY_IO.PUT_LINE(
+    when Constraint_Error | Numeric_Error =>
+      My_Io.Put_Line(
        "Exception CONSTRAINT - NUMERIC ERROR successfully transmitted from 1");
       raise;
     when others =>
-      MY_IO.PUT_LINE("Other EXCEPTION raised during unsuccessfull call to 1!");
+      My_Io.Put_Line("Other EXCEPTION raised during unsuccessfull call to 1!");
       raise;
   end;
   begin
-    COMP_2.STOP(RESULT);
+    Comp_2.Stop(Result);
   exception
-    when ERROR =>
-      MY_IO.PUT_LINE("Exception ERROR successfully transmitted from 2");
+    when Error =>
+      My_Io.Put_Line("Exception ERROR successfully transmitted from 2");
       raise;
     when others =>
-      MY_IO.PUT_LINE("Other EXCEPTION raised during unsuccessfull call to 2!");
+      My_Io.Put_Line("Other EXCEPTION raised during unsuccessfull call to 2!");
       raise;
   end;
-  COMP_1.KILL;
-  COMP_2.KILL;
-end PARA;
+  Comp_1.Kill;
+  Comp_2.Kill;
+end Para;

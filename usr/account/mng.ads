@@ -1,40 +1,40 @@
-with OPER_DEF;
+with Oper_Def;
 -- Manage the whole acount status
-package MNG is
+package Mng is
   -- Nb of operations in current account
-  MAX_NB_OPER : constant := 9999;
-  subtype OPER_NB_RANGE is NATURAL range 0 .. MAX_NB_OPER;
-  subtype OPER_RANGE is POSITIVE range 1 .. MAX_NB_OPER;
+  Max_Nb_Oper : constant := 9999;
+  subtype Oper_Nb_Range is Natural range 0 .. Max_Nb_Oper;
+  subtype Oper_Range is Positive range 1 .. Max_Nb_Oper;
 
   -- Update current (selected) operation
   -- Does nothing with 0 (empty list)
-  procedure SET_CURRENT (NO : in OPER_NB_RANGE);
+  procedure Set_Current (No : in Oper_Nb_Range);
 
   -- Modify the account. Load and clear check it is saved.
   -- Load a file. If file name is "" then ask for it
-  procedure LOAD (FILE_NAME : in STRING);
+  procedure Load (File_Name : in String);
   -- Save current file after confirmation or in rescue file
-  procedure SAVE (RESCUE : in BOOLEAN := FALSE);
+  procedure Save (Rescue : in Boolean := False);
   -- Clear current account (and file name)
-  procedure CLEAR;
+  procedure Clear;
   -- Sort operation
-  procedure SORT;
+  procedure Sort;
   -- Print listing
-  procedure PRINT;
+  procedure Print;
   -- Update the displayed amounts of opers, sums
-  procedure CHANGE_UNIT;
+  procedure Change_Unit;
 
   -- Modify operations
-  procedure UPDATE_STATE;
-  procedure ADD_OPER;
-  procedure EDIT_OPER;
-  procedure VIEW_OPER;
-  procedure DEL_OPER;
-  procedure GARBAGE_COLLECT;
-  procedure SEARCH;
-  procedure SHOW_ALL;
+  procedure Update_State;
+  procedure Add_Oper;
+  procedure Edit_Oper;
+  procedure View_Oper;
+  procedure Del_Oper;
+  procedure Garbage_Collect;
+  procedure Search;
+  procedure Show_All;
 
   -- Get data
-  function IS_SAVED return BOOLEAN;
+  function Is_Saved return Boolean;
 
-end MNG;
+end Mng;

@@ -1,40 +1,40 @@
-with OPER_DEF, UNIT_FORMAT;
+with Oper_Def, Unit_Format;
 -- Manage the screen fields
-package SCREEN is
+package Screen is
 
   -- Allow oper edition buttons (edit/view, delete, clean_up, search)
   --  and Show_all button at next reset, confirm, ack
   -- False by default
-  procedure ALLOW_EDIT (ALLOW : in BOOLEAN);
-  procedure SUBLIST (ACTIVE : in BOOLEAN);
+  procedure Allow_Edit (Allow : in Boolean);
+  procedure Sublist (Active : in Boolean);
 
   -- Set to default mode
-  procedure RESET;
+  procedure Reset;
 
   -- Encode header fields
-  procedure ENCODE_FILE_NAME (FILE_NAME : in STRING);
-  procedure ENCODE_NB_OPER (OPER : in NATURAL; SELECTED : in NATURAL);
-  procedure ENCODE_SAVED (SAVED : in BOOLEAN);
+  procedure Encode_File_Name (File_Name : in String);
+  procedure Encode_Nb_Oper (Oper : in Natural; Selected : in Natural);
+  procedure Encode_Saved (Saved : in Boolean);
 
   -- Set the "TO FRANCS/EUROS" button according to current unit
-  procedure UPDATE_TO_UNIT;
+  procedure Update_To_Unit;
 
   -- Encore summary
-  procedure ENCODE_SUMMARY(REAL_AMOUNT, ACCOUNT_AMOUNT,
-                           DEFERED_AMOUNT, MARGIN_AMOUNT :
-                                    in OPER_DEF.AMOUNT_RANGE);
+  procedure Encode_Summary(Real_Amount, Account_Amount,
+                           Defered_Amount, Margin_Amount :
+                                    in Oper_Def.Amount_Range);
 
   -- Confirm
-  type ACTION_LIST is (OVERWRITE_ACCOUNT, OVERWRITE_FILE, QUIT_UNSAVED);
-  function CONFIRM_ACTION (ACTION : ACTION_LIST) return BOOLEAN;
+  type Action_List is (Overwrite_Account, Overwrite_File, Quit_Unsaved);
+  function Confirm_Action (Action : Action_List) return Boolean;
 
   -- Ack an error
-  type ERROR_LIST is (FILE_ACCESS, FILE_IO, FILE_READ_ONLY, FILE_NAME_TOO_LONG,
-                      ACCOUNT_FULL, NOT_IMPLEMENTED, INTERNAL_ERROR);
-  procedure ACK_ERROR (ERROR : in ERROR_LIST);
+  type Error_List is (File_Access, File_Io, File_Read_Only, File_Name_Too_Long,
+                      Account_Full, Not_Implemented, Internal_Error);
+  procedure Ack_Error (Error : in Error_List);
 
   -- Ring alarm / question bell
-  procedure RING (ALARM : in BOOLEAN);
+  procedure Ring (Alarm : in Boolean);
 
-end SCREEN;
+end Screen;
 

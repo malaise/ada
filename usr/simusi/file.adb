@@ -226,7 +226,7 @@ package body File is
     end loop;
 
     -- Check line nos and line usage
-    Line_Usage := (others => FALSE);
+    Line_Usage := (others => False);
     for I in 1 .. Nb_Design loop
       if      Designs(I).Start > Nb_Design + 1
       or else Designs(i).Stop  > Nb_Design + 1 then

@@ -66,11 +66,11 @@ package body Fl_Get is
       Time.Minutes := Parse_Minutes (Str (P + 1 .. L));
     else
       -- dot somewhere
-      Time.Hours := Fl_Time.Hours_Range'Value (STR (F .. P - 1));
+      Time.Hours := Fl_Time.Hours_Range'Value (Str (F .. P - 1));
       Time.Minutes := Parse_Minutes (Str (P + 1 .. L));
     end if;
 
-    return TIME;
+    return Time;
 
   exception
     when Quit | Clear => raise;

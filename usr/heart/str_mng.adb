@@ -1,109 +1,109 @@
-with NORMAL, PERPET, NORMAL;
-package body STR_MNG is
+with Normal, Perpet, Normal;
+package body Str_Mng is
 
   -- Is the str only spaces
-  function IS_SPACES (STR : STRING) return BOOLEAN is
-    SPACES : constant STRING (STR'RANGE) := (others => ' ');
+  function Is_Spaces (Str : String) return Boolean is
+    Spaces : constant String (Str'Range) := (others => ' ');
   begin
-    return STR = SPACES;
-  end IS_SPACES;
+    return Str = Spaces;
+  end Is_Spaces;
 
   -- Has the str some spaces
-  function HAS_SPACES (STR : STRING) return BOOLEAN is
+  function Has_Spaces (Str : String) return Boolean is
   begin
-    for I in STR'RANGE loop
-      if STR(I) = ' ' then
-        return TRUE;
+    for I in Str'Range loop
+      if Str(I) = ' ' then
+        return True;
       end if;
     end loop;
-    return FALSE;
-  end HAS_SPACES;
+    return False;
+  end Has_Spaces;
 
   -- Parse spaces from a string
-  procedure PARSE (STR : in out STRING) is
-   F, O : NATURAL;
-   PREV_SPACE : BOOLEAN;
+  procedure Parse (Str : in out String) is
+   F, O : Natural;
+   Prev_Space : Boolean;
   begin
-    if IS_SPACES (STR) then
+    if Is_Spaces (Str) then
       return;
     end if;
 
-    O := STR'FIRST - 1;
+    O := Str'First - 1;
     -- Skip heading spaces : F first significant char
-    for I in STR'RANGE loop
+    for I in Str'Range loop
       F := I;
-      exit when STR(I) /= ' ';
+      exit when Str(I) /= ' ';
     end loop;
 
     -- Skip multi spaces between words
-    PREV_SPACE := FALSE;
-    for I in F .. STR'LAST loop
-      if STR(I) /= ' ' then
-        PREV_SPACE := FALSE;
+    Prev_Space := False;
+    for I in F .. Str'Last loop
+      if Str(I) /= ' ' then
+        Prev_Space := False;
         O := O + 1;
-        STR(O) := STR(I);
+        Str(O) := Str(I);
       else
-        if not PREV_SPACE then
+        if not Prev_Space then
           O := O + 1;
-          STR(O) := STR(I);
-          PREV_SPACE := TRUE;
+          Str(O) := Str(I);
+          Prev_Space := True;
         end if;
       end if;
     end loop;
     -- O index the last significant char or last space
-    if STR(O) = ' ' then
+    if Str(O) = ' ' then
       O := O - 1;
     end if;
     -- Fill tail with spaces
-    STR (O + 1 .. STR'LAST) := (others => ' ');
-  end PARSE;
+    Str (O + 1 .. Str'Last) := (others => ' ');
+  end Parse;
 
   -- True if a parsed string has spaces in the middle
-  function HAS_HOLES (STR : STRING) return BOOLEAN is
-    SPACE_FOUND : BOOLEAN;
+  function Has_Holes (Str : String) return Boolean is
+    Space_Found : Boolean;
   begin
 
-    SPACE_FOUND := FALSE;
-    for I in STR'RANGE loop
-      if STR(I) = ' ' then
-        SPACE_FOUND := TRUE;
+    Space_Found := False;
+    for I in Str'Range loop
+      if Str(I) = ' ' then
+        Space_Found := True;
       else
-        if SPACE_FOUND then
+        if Space_Found then
           -- Not a space and a space found previously
-          return TRUE;
+          return True;
         end if;
       end if;
     end loop;
-    return FALSE;
-  end HAS_HOLES;
+    return False;
+  end Has_Holes;
 
   -- 0 <-> spaces
   -- others <-> value
-  function TO_STR (BPM : PERS_DEF.BPM_RANGE) return BPM_STR is
-    use PERS_DEF;
+  function To_Str (Bpm : Pers_Def.Bpm_Range) return Bpm_Str is
+    use Pers_Def;
   begin
-    if BPM = PERS_DEF.BPM_RANGE'FIRST then
-      return BPM_STR'(others => ' ');
+    if Bpm = Pers_Def.Bpm_Range'First then
+      return Bpm_Str'(others => ' ');
     else
       -- Align right
-      return NORMAL(INTEGER(BPM), BPM_STR'LENGTH);
+      return Normal(Integer(Bpm), Bpm_Str'Length);
     end if;
-  end To_STR;
+  end To_Str;
 
-  function TO_BPM (STR : BPM_STR) return PERS_DEF.BPM_RANGE is
-    LOC_STR : BPM_STR := STR;
+  function To_Bpm (Str : Bpm_Str) return Pers_Def.Bpm_Range is
+    Loc_Str : Bpm_Str := Str;
   begin
-    if IS_SPACES (LOC_STR) then
+    if Is_Spaces (Loc_Str) then
       return 0;
     end if;
-    PARSE (LOC_STR);
-    return PERS_DEF.BPM_RANGE'VALUE(LOC_STR);
-  end TO_BPM;
+    Parse (Loc_Str);
+    return Pers_Def.Bpm_Range'Value(Loc_Str);
+  end To_Bpm;
 
-  function PID_STR (PID : PERS_DEF.PID_RANGE) return MESU_NAM.FILE_PID_STR is
+  function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str is
   begin
-    return NORMAL (INTEGER(PID), 3, GAP => '0');
-  end PID_STR;
+    return Normal (Integer(Pid), 3, Gap => '0');
+  end Pid_Str;
 
 
 
@@ -114,193 +114,193 @@ package body STR_MNG is
 --  end record;
   -- An input date can be before or after
   -- Check its validity and build date YYyyNnDd
-  procedure CHECK_DATE (INPUT  : in DATE_STR_REC;
-                        AFTER  : in BOOLEAN;
-                        OUTPUT : out MESU_DEF.DATE_STR;
-                        VALID  : out BOOLEAN) is
-    YEARS  : CALENDAR.YEAR_NUMBER;
-    MONTHS : CALENDAR.MONTH_NUMBER;
-    DAYS   : CALENDAR.DAY_NUMBER;
-    CURRENT_TIME : constant CALENDAR.TIME := CALENDAR.CLOCK;
-    DUMMY  : CALENDAR.TIME;
+  procedure Check_Date (Input  : in Date_Str_Rec;
+                        After  : in Boolean;
+                        Output : out Mesu_Def.Date_Str;
+                        Valid  : out Boolean) is
+    Years  : Calendar.Year_Number;
+    Months : Calendar.Month_Number;
+    Days   : Calendar.Day_Number;
+    Current_Time : constant Calendar.Time := Calendar.Clock;
+    Dummy  : Calendar.Time;
   begin
     -- No space or all spaces in each field
-    if      (not IS_SPACES(INPUT.DAY)   and then HAS_SPACES(INPUT.DAY))
-    or else (not IS_SPACES(INPUT.MONTH) and then HAS_SPACES(INPUT.MONTH))
-    or else (not IS_SPACES(INPUT.YEAR)  and then HAS_SPACES(INPUT.YEAR)) then
-      VALID := FALSE;
+    if      (not Is_Spaces(Input.Day)   and then Has_Spaces(Input.Day))
+    or else (not Is_Spaces(Input.Month) and then Has_Spaces(Input.Month))
+    or else (not Is_Spaces(Input.Year)  and then Has_Spaces(Input.Year)) then
+      Valid := False;
       return;
     end if;
     -- Parse
-    if IS_SPACES (INPUT.YEAR) then
+    if Is_Spaces (Input.Year) then
       -- No year => current year
-      YEARS := CALENDAR.YEAR (CURRENT_TIME);
-      if IS_SPACES (INPUT.MONTH) then
+      Years := Calendar.Year (Current_Time);
+      if Is_Spaces (Input.Month) then
         -- No year no month => current month
-        MONTHS := CALENDAR.MONTH(CURRENT_TIME);
+        Months := Calendar.Month(Current_Time);
       else
         -- Month set
-        MONTHS := CALENDAR.MONTH_NUMBER'VALUE(INPUT.MONTH);
+        Months := Calendar.Month_Number'Value(Input.Month);
       end if;
-      if IS_SPACES (INPUT.DAY) then
-        if IS_SPACES (INPUT.MONTH) then
+      if Is_Spaces (Input.Day) then
+        if Is_Spaces (Input.Month) then
           -- ss ss ssss => current day
-          DAYS := CALENDAR.DAY (CURRENT_TIME);
+          Days := Calendar.Day (Current_Time);
         else
           -- ss mm ssss => begin/end of month of current year
-          if AFTER then
-            DAYS := PERPET.NB_DAYS_MONTH (YEARS, MONTHS);
+          if After then
+            Days := Perpet.Nb_Days_Month (Years, Months);
           else
-            DAYS := CALENDAR.DAY_NUMBER'FIRST;
+            Days := Calendar.Day_Number'First;
           end if;
         end if;
       else
         -- dd ss ssss  or  dd mm ssss
-        DAYS := CALENDAR.DAY_NUMBER'VALUE(INPUT.DAY);
+        Days := Calendar.Day_Number'Value(Input.Day);
       end if;
     else
       -- Year is set
-      YEARS := CALENDAR.YEAR_NUMBER'VALUE(INPUT.YEAR);
-      if IS_SPACES (INPUT.MONTH) then
+      Years := Calendar.Year_Number'Value(Input.Year);
+      if Is_Spaces (Input.Month) then
         -- dd ss yyyy forbidden
-        if not IS_SPACES (INPUT.DAY) then
-          VALID := FALSE;
+        if not Is_Spaces (Input.Day) then
+          Valid := False;
           return;
         end if;
         -- Year and no month => first/last month
-        if AFTER then
-          MONTHS := CALENDAR.MONTH_NUMBER'LAST;
+        if After then
+          Months := Calendar.Month_Number'Last;
         else
-          MONTHS := CALENDAR.MONTH_NUMBER'FIRST;
+          Months := Calendar.Month_Number'First;
         end if;
       else
         -- Month set
-        MONTHS := CALENDAR.MONTH_NUMBER'VALUE(INPUT.MONTH);
+        Months := Calendar.Month_Number'Value(Input.Month);
       end if;
-      if IS_SPACES (INPUT.DAY) then
+      if Is_Spaces (Input.Day) then
         -- First/last of date
-        if AFTER then
-          DAYS := PERPET.NB_DAYS_MONTH (YEARS, MONTHS);
+        if After then
+          Days := Perpet.Nb_Days_Month (Years, Months);
         else
-          DAYS := CALENDAR.DAY_NUMBER'FIRST;
+          Days := Calendar.Day_Number'First;
         end if;
       else
         -- dd ss ssss  or  dd mm ssss
-        DAYS := CALENDAR.DAY_NUMBER'VALUE(INPUT.DAY);
+        Days := Calendar.Day_Number'Value(Input.Day);
       end if;
     end if;
     -- Does all this stuff make a valid date?
-    DUMMY := CALENDAR.TIME_OF (YEARS, MONTHS, DAYS);
-    OUTPUT := NORMAL (YEARS,  4, GAP => '0')
-            & NORMAL (MONTHS, 2, GAP => '0')
-            & NORMAL (DAYS,   2, GAP => '0');
-    VALID := TRUE;
+    Dummy := Calendar.Time_Of (Years, Months, Days);
+    Output := Normal (Years,  4, Gap => '0')
+            & Normal (Months, 2, Gap => '0')
+            & Normal (Days,   2, Gap => '0');
+    Valid := True;
   exception
     when others =>
-      VALID := FALSE;
-  end CHECK_DATE;
+      Valid := False;
+  end Check_Date;
 
   -- Build a rec
-  procedure TO_REC (DATE : in MESU_DEF.DATE_STR;
-                    REC  : out DATE_STR_REC) is
+  procedure To_Rec (Date : in Mesu_Def.Date_Str;
+                    Rec  : out Date_Str_Rec) is
   begin
-    REC.YEAR  := DATE(1 .. 4);
-    REC.MONTH := DATE(5 .. 6);
-    REC.DAY   := DATE(7 .. 8);
-  end TO_REC;
+    Rec.Year  := Date(1 .. 4);
+    Rec.Month := Date(5 .. 6);
+    Rec.Day   := Date(7 .. 8);
+  end To_Rec;
 
   -- A printed date is Dd/Mm/YYyy
-  function TO_PRINTED_STR (DATE : MESU_DEF.DATE_STR) return PRINTED_DATE_STR is
-    S : constant STRING(1 .. 10) := DATE(7 .. 8) & '/' & DATE(5 .. 6) & '/' & DATE(1 .. 4);
+  function To_Printed_Str (Date : Mesu_Def.Date_Str) return Printed_Date_Str is
+    S : constant String(1 .. 10) := Date(7 .. 8) & '/' & Date(5 .. 6) & '/' & Date(1 .. 4);
   begin
     return S;
-  end TO_PRINTED_STR;
+  end To_Printed_Str;
 
-  function TO_DATE_STR (PRINTED_DATE : PRINTED_DATE_STR)
-                        return MESU_DEF.DATE_STR is
-    S : constant MESU_DEF.DATE_STR
-      := PRINTED_DATE(7 .. 10) & PRINTED_DATE(4 .. 5) & PRINTED_DATE (1 .. 2);
+  function To_Date_Str (Printed_Date : Printed_Date_Str)
+                        return Mesu_Def.Date_Str is
+    S : constant Mesu_Def.Date_Str
+      := Printed_Date(7 .. 10) & Printed_Date(4 .. 5) & Printed_Date (1 .. 2);
   begin
     return S;
-  end TO_DATE_STR;
+  end To_Date_Str;
 
-  function CURRENT_DATE (OFFSET : OFFSET_RANGE := 0)
-  return MESU_DEF.DATE_STR is
-    CURRENT_TIME : CALENDAR.TIME := CALENDAR.CLOCK;
-    YEARS  : CALENDAR.YEAR_NUMBER;
-    MONTHS : CALENDAR.MONTH_NUMBER;
-    DAYS   : CALENDAR.DAY_NUMBER;
-    SECS   : CALENDAR.DAY_DURATION;
-    use PERPET;
+  function Current_Date (Offset : Offset_Range := 0)
+  return Mesu_Def.Date_Str is
+    Current_Time : Calendar.Time := Calendar.Clock;
+    Years  : Calendar.Year_Number;
+    Months : Calendar.Month_Number;
+    Days   : Calendar.Day_Number;
+    Secs   : Calendar.Day_Duration;
+    use Perpet;
   begin
-    if OFFSET /= 0 then
-      CURRENT_TIME := CURRENT_TIME - (YEARS => 0, MONTHS => OFFSET);
+    if Offset /= 0 then
+      Current_Time := Current_Time - (Years => 0, Months => Offset);
     end if;
-    CALENDAR.SPLIT (CURRENT_TIME, YEARS, MONTHS, DAYS, SECS);
-    return NORMAL (YEARS,  4, GAP => '0')
-         & NORMAL (MONTHS, 2, GAP => '0')
-         & NORMAL (DAYS,   2, GAP => '0');
-  end CURRENT_DATE;
+    Calendar.Split (Current_Time, Years, Months, Days, Secs);
+    return Normal (Years,  4, Gap => '0')
+         & Normal (Months, 2, Gap => '0')
+         & Normal (Days,   2, Gap => '0');
+  end Current_Date;
 
-  function CURRENT_DATE_PRINTED (OFFSET : OFFSET_RANGE := 0)
-  return PRINTED_DATE_STR is
+  function Current_Date_Printed (Offset : Offset_Range := 0)
+  return Printed_Date_Str is
   begin
-    return TO_PRINTED_STR (CURRENT_DATE(OFFSET));
-  end CURRENT_DATE_PRINTED;
+    return To_Printed_Str (Current_Date(Offset));
+  end Current_Date_Printed;
 
-  procedure CURRENT_DATE_REC (DATE_REC : out DATE_STR_REC;
-                              OFFSET : in OFFSET_RANGE := 0) is
-    DATE : constant MESU_DEF.DATE_STR := CURRENT_DATE (OFFSET);
+  procedure Current_Date_Rec (Date_Rec : out Date_Str_Rec;
+                              Offset : in Offset_Range := 0) is
+    Date : constant Mesu_Def.Date_Str := Current_Date (Offset);
   begin
-    DATE_REC.YEAR  := DATE(1 .. 4);
-    DATE_REC.MONTH := DATE(5 .. 6);
-    DATE_REC.DAY   := DATE(7 .. 8);
-  end CURRENT_DATE_REC;
+    Date_Rec.Year  := Date(1 .. 4);
+    Date_Rec.Month := Date(5 .. 6);
+    Date_Rec.Day   := Date(7 .. 8);
+  end Current_Date_Rec;
 
   -- From a person rec to person in list
-  procedure FORMAT_PERSON_TO_LIST (PERSON    : in PERS_DEF.PERSON_REC;
-                                   LIST_PERS : out AFPX.LINE_REC) is
+  procedure Format_Person_To_List (Person    : in Pers_Def.Person_Rec;
+                                   List_Pers : out Afpx.Line_Rec) is
   begin
-    LIST_PERS.STR := (others => ' ');
-    LIST_PERS.LEN := 32;
-    LIST_PERS.STR (01 .. 20) := PERSON.NAME;
-    LIST_PERS.STR (22 .. 31) := PERSON.ACTIVITY;
-  end FORMAT_PERSON_TO_LIST;
+    List_Pers.Str := (others => ' ');
+    List_Pers.Len := 32;
+    List_Pers.Str (01 .. 20) := Person.Name;
+    List_Pers.Str (22 .. 31) := Person.Activity;
+  end Format_Person_To_List;
 
-  procedure FORMAT_LIST_TO_PERSON (LIST_PERS : in AFPX.LINE_REC;
-                                   PERSON    : out PERS_DEF.PERSON_REC) is
+  procedure Format_List_To_Person (List_Pers : in Afpx.Line_Rec;
+                                   Person    : out Pers_Def.Person_Rec) is
   begin
-    PERSON.NAME := LIST_PERS.STR (01 .. 20);
-    PERSON.ACTIVITY := LIST_PERS.STR (23 .. 32);
-  end FORMAT_LIST_TO_PERSON;
+    Person.Name := List_Pers.Str (01 .. 20);
+    Person.Activity := List_Pers.Str (23 .. 32);
+  end Format_List_To_Person;
 
 
   -- From a mesure rec to mesure in list
-  procedure FORMAT_MESURE_TO_LIST (PERSON    : in PERS_DEF.PERSON_REC;
-                                   MESURE    : in MESU_DEF.MESURE_REC;
-                                   MESU_NO   : in MESU_NAM.FILE_NO_STR;
-                                   LIST_MESU : out AFPX.LINE_REC) is
+  procedure Format_Mesure_To_List (Person    : in Pers_Def.Person_Rec;
+                                   Mesure    : in Mesu_Def.Mesure_Rec;
+                                   Mesu_No   : in Mesu_Nam.File_No_Str;
+                                   List_Mesu : out Afpx.Line_Rec) is
   begin
-    FORMAT_PERSON_TO_LIST (PERSON, LIST_MESU);
-    LIST_MESU.LEN := 71;
-    LIST_MESU.STR(35 .. 44) := TO_PRINTED_STR (MESURE.DATE);
-    LIST_MESU.STR(46 .. 65) := MESURE.COMMENT;
-    LIST_MESU.STR(67 .. 69) := PID_STR(PERSON.PID);
-    LIST_MESU.STR(70 .. 71) := MESU_NO;
-  end FORMAT_MESURE_TO_LIST;
+    Format_Person_To_List (Person, List_Mesu);
+    List_Mesu.Len := 71;
+    List_Mesu.Str(35 .. 44) := To_Printed_Str (Mesure.Date);
+    List_Mesu.Str(46 .. 65) := Mesure.Comment;
+    List_Mesu.Str(67 .. 69) := Pid_Str(Person.Pid);
+    List_Mesu.Str(70 .. 71) := Mesu_No;
+  end Format_Mesure_To_List;
 
-  procedure FORMAT_LIST_TO_MESURE (LIST_MESU : in AFPX.LINE_REC;
-                                   FILE_NAME : out MESU_NAM.FILE_NAME_STR) is
-    DATE : constant PRINTED_DATE_STR      := LIST_MESU.STR(35 .. 44);
-    NO   : constant MESU_NAM.FILE_NO_STR  := LIST_MESU.STR(70 .. 71);
-    PID  : constant MESU_NAM.FILE_PID_STR := LIST_MESU.STR(67 .. 69);
+  procedure Format_List_To_Mesure (List_Mesu : in Afpx.Line_Rec;
+                                   File_Name : out Mesu_Nam.File_Name_Str) is
+    Date : constant Printed_Date_Str      := List_Mesu.Str(35 .. 44);
+    No   : constant Mesu_Nam.File_No_Str  := List_Mesu.Str(70 .. 71);
+    Pid  : constant Mesu_Nam.File_Pid_Str := List_Mesu.Str(67 .. 69);
 
   begin
-    FILE_NAME :=
-     MESU_NAM.BUILD_FILE_NAME (DATE => TO_DATE_STR (DATE),
-                               NO   => NO,
-                               PID  => PID);
-  end FORMAT_LIST_TO_MESURE;
+    File_Name :=
+     Mesu_Nam.Build_File_Name (Date => To_Date_Str (Date),
+                               No   => No,
+                               Pid  => Pid);
+  end Format_List_To_Mesure;
 
 
-end STR_MNG;
+end Str_Mng;

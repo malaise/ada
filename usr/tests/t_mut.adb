@@ -1,167 +1,167 @@
-with MY_IO, MUTEX_MANAGER, SCHEDULE, ARGUMENT;
-use MUTEX_MANAGER;
+with My_Io, Mutex_Manager, Schedule, Argument;
+use Mutex_Manager;
 
-procedure T_MUT is
-  pragma PRIORITY(10);
+procedure T_Mut is
+  pragma Priority(10);
 
-  N_ARGS : NATURAL;
-  N_TASKS : POSITIVE;
-  CRITICAL_SECTION_DURATION : constant := 10.0;
+  N_Args : Natural;
+  N_Tasks : Positive;
+  Critical_Section_Duration : constant := 10.0;
 
-  procedure EXEC (MAX_TASK : in POSITIVE) is
+  procedure Exec (Max_Task : in Positive) is
     -- Max seems to be 4173 on DEC5000 and 2583 on DEC3100
-    CRIT_LOCK : MUTEX;
+    Crit_Lock : Mutex;
    
-    subtype RANGE_TASK is POSITIVE range 1 .. MAX_TASK;
+    subtype Range_Task is Positive range 1 .. Max_Task;
    
     task type T is
-     pragma PRIORITY(10);
-      entry NUM(I : in RANGE_TASK);
-      entry DONE;
+     pragma Priority(10);
+      entry Num(I : in Range_Task);
+      entry Done;
     end T;
    
-    TA : array (RANGE_TASK) of T;
+    Ta : array (Range_Task) of T;
    
-    package INPUT is
-      procedure GET(I : in RANGE_TASK; C : out CHARACTER);
-      procedure PUT(S : in STRING; I : in  RANGE_TASK);
-    end INPUT;
+    package Input is
+      procedure Get(I : in Range_Task; C : out Character);
+      procedure Put(S : in String; I : in  Range_Task);
+    end Input;
    
-    package body INPUT is
-      IN_GET : BOOLEAN := FALSE;
-      CURRENT_I : RANGE_TASK;
-      IO_LOCK : MUTEX;
+    package body Input is
+      In_Get : Boolean := False;
+      Current_I : Range_Task;
+      Io_Lock : Mutex;
 
-      TAB : constant STRING (1..4) := (others => ' ');
+      Tab : constant String (1..4) := (others => ' ');
 
-      procedure PROMPT(I : in RANGE_TASK; SET : in BOOLEAN) is
+      procedure Prompt(I : in Range_Task; Set : in Boolean) is
       begin
-        if SET then 
+        if Set then 
           -- call by GET
-          CURRENT_I := I;
+          Current_I := I;
         else
           -- call by PUT
-          if not IN_GET then return; end if;
+          if not In_Get then return; end if;
         end if;
 
-        MY_IO.PUT("Task: ");
-        MY_IO.PUT(CURRENT_I, 3);
-        MY_IO. PUT(" : Bloqued, Immediate, Wait (5s), Terminate ? ");
-      end PROMPT;
+        My_Io.Put("Task: ");
+        My_Io.Put(Current_I, 3);
+        My_Io. Put(" : Bloqued, Immediate, Wait (5s), Terminate ? ");
+      end Prompt;
 
-      procedure GET(I : in RANGE_TASK; C : out CHARACTER)  is
-        B : BOOLEAN;
+      procedure Get(I : in Range_Task; C : out Character)  is
+        B : Boolean;
       begin
-        B := GET_MUTEX(IO_LOCK, -1.0);
-        IN_GET := TRUE;
-        PROMPT (I, TRUE);
-        MY_IO.GET(C);
-        IN_GET := FALSE;
-        RELEASE_MUTEX(IO_LOCK);
-      end GET;
+        B := Get_Mutex(Io_Lock, -1.0);
+        In_Get := True;
+        Prompt (I, True);
+        My_Io.Get(C);
+        In_Get := False;
+        Release_Mutex(Io_Lock);
+      end Get;
 
-      procedure PUT(S : in STRING; I : in  RANGE_TASK) is
+      procedure Put(S : in String; I : in  Range_Task) is
       begin
-        if IN_GET then
-          MY_IO.NEW_LINE;
+        if In_Get then
+          My_Io.New_Line;
         end if;
-        MY_IO.PUT (TAB & S & ' ');
-        MY_IO.PUT(I, 3);
-        MY_IO.NEW_LINE;
-        PROMPT (1, FALSE);
-      end PUT;
-    end INPUT;
+        My_Io.Put (Tab & S & ' ');
+        My_Io.Put(I, 3);
+        My_Io.New_Line;
+        Prompt (1, False);
+      end Put;
+    end Input;
 
     -- Get action
     -- return FALSE if termination
     -- get mutex then release and return TRUE otherwise
-    function CRITICAL(NUM : in RANGE_TASK) return BOOLEAN is
-      C : CHARACTER;
-      TAB : constant STRING := "    ";
-      B : BOOLEAN;
+    function Critical(Num : in Range_Task) return Boolean is
+      C : Character;
+      Tab : constant String := "    ";
+      B : Boolean;
     begin
-      INPUT.GET(NUM, C);
+      Input.Get(Num, C);
    
       if (C = 't') or  (C = 'T') then
-        return FALSE;
+        return False;
       elsif (C = 'b') or (C = 'B') then
-        B := GET_MUTEX(CRIT_LOCK, -1.0);
+        B := Get_Mutex(Crit_Lock, -1.0);
       elsif (C = 'i') or (C = 'I') then
-        B := GET_MUTEX(CRIT_LOCK, 0.0);
+        B := Get_Mutex(Crit_Lock, 0.0);
       elsif (C = 'w') or (C = 'W') then
-        B := GET_MUTEX(CRIT_LOCK, 3.0);
+        B := Get_Mutex(Crit_Lock, 3.0);
       else
-        return TRUE;
+        return True;
       end if;
       if B then
-        INPUT.PUT("Start of critical section for", NUM);
-        delay CRITICAL_SECTION_DURATION;
-        INPUT.PUT("End   of critical section for", NUM);
-        RELEASE_MUTEX(CRIT_LOCK);
+        Input.Put("Start of critical section for", Num);
+        delay Critical_Section_Duration;
+        Input.Put("End   of critical section for", Num);
+        Release_Mutex(Crit_Lock);
       else
-        INPUT.PUT("Mutex not free for", NUM);
+        Input.Put("Mutex not free for", Num);
       end if;
-      return TRUE;
-    end CRITICAL;
+      return True;
+    end Critical;
    
     task body T is
-      INDEX : RANGE_TASK;
+      Index : Range_Task;
     begin
       -- get name
-      accept NUM(I : in RANGE_TASK) do
-        INDEX := I;
-      end NUM;
+      accept Num(I : in Range_Task) do
+        Index := I;
+      end Num;
       -- work until termination requested in CRITIQUE
       loop
-        SCHEDULE;
-        exit when not CRITICAL(INDEX);
+        Schedule;
+        exit when not Critical(Index);
       end loop;
       -- Ready to end
-      accept DONE;
+      accept Done;
     end T;
    
    
    
   begin -- EXEC
-    MY_IO.NEW_LINE(2);
+    My_Io.New_Line(2);
     -- give to each actor it's name
-    for I in RANGE_TASK loop
-      TA(I).NUM(I);
+    for I in Range_Task loop
+      Ta(I).Num(I);
     end loop;
 
     -- wait until termination of each actor
-    for I in RANGE_TASK loop
-      TA(I).DONE;
+    for I in Range_Task loop
+      Ta(I).Done;
     end loop;
 
-    MY_IO.NEW_LINE;
-    MY_IO.PUT_LINE ("Done.");
-    MY_IO.NEW_LINE;
-  end EXEC;
+    My_Io.New_Line;
+    My_Io.Put_Line ("Done.");
+    My_Io.New_Line;
+  end Exec;
 
-  procedure ERROR (S : in STRING) is
+  procedure Error (S : in String) is
   begin
-    MY_IO.PUT_LINE (S & ". Syntaxe: t_mut [nbre_tasks]");
-  end ERROR;
+    My_Io.Put_Line (S & ". Syntaxe: t_mut [nbre_tasks]");
+  end Error;
 
 begin -- T_MUT
-  N_ARGS := ARGUMENT.GET_NBRE_ARG;
+  N_Args := Argument.Get_Nbre_Arg;
 
-  if N_ARGS > 1 then
-    ERROR ("Syntax error");
-  elsif N_ARGS = 1 then
-    N_TASKS := POSITIVE'VALUE (ARGUMENT.GET_PARAMETER(1));
-    EXEC(N_TASKS);
+  if N_Args > 1 then
+    Error ("Syntax error");
+  elsif N_Args = 1 then
+    N_Tasks := Positive'Value (Argument.Get_Parameter(1));
+    Exec(N_Tasks);
   else
-    EXEC(2);
+    Exec(2);
   end if;
 
 exception
-  when CONSTRAINT_ERROR | NUMERIC_ERROR =>
-    ERROR ("Wrong argument");
-  when STORAGE_ERROR =>
-    ERROR ("Argument too big");
+  when Constraint_Error | Numeric_Error =>
+    Error ("Wrong argument");
+  when Storage_Error =>
+    Error ("Argument too big");
   when others =>
-    ERROR ("Internal error");
+    Error ("Internal error");
     raise;
-end T_MUT;
+end T_Mut;

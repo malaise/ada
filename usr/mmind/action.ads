@@ -1,9 +1,9 @@
-package ACTION is
-  NO_MOUSE : exception;
+package Action is
+  No_Mouse : exception;
 
-  procedure INIT;
+  procedure Init;
 
   -- True if start again, False if exit
-  function PLAY return BOOLEAN;
+  function Play return Boolean;
 
-end ACTION;
+end Action;

@@ -1,7 +1,7 @@
-with CALENDAR;
-with PERPET, NORMAL, TEXT_HANDLER, DIR_MNG;
-with PERS_DEF;
-package body MESU_NAM is
+with Calendar;
+with Perpet, Normal, Text_Handler, Dir_Mng;
+with Pers_Def;
+package body Mesu_Nam is
 
   -- The result. File name (or file template)
   -- subtype FILE_NAME_STR is STRING (1 .. 12);
@@ -17,225 +17,225 @@ package body MESU_NAM is
   -- subtype FILE_PID_STR is STRING (1 .. 3);
 
   -- Date in file name : no hundredth of years
-  subtype DATE_FOR_FILE_STR is STRING (1 .. 6);
+  subtype Date_For_File_Str is String (1 .. 6);
   -- If a xx is less than DISCR then it is 20xx, else 19xx
-  DISCRIMINANT_FOR_DATES : constant STRING (1 .. 2) := "90";
+  Discriminant_For_Dates : constant String (1 .. 2) := "90";
 
-  function TRUNC (DATE_STR : FILE_DATE_STR) return DATE_FOR_FILE_STR is
-    S : constant STRING(1 .. 6) := DATE_STR (3 .. 8);
+  function Trunc (Date_Str : File_Date_Str) return Date_For_File_Str is
+    S : constant String(1 .. 6) := Date_Str (3 .. 8);
   begin
     return S;
-  end TRUNC;
+  end Trunc;
 
-  function ROUND (DATE_FOR_FILE : DATE_FOR_FILE_STR) return FILE_DATE_STR is
+  function Round (Date_For_File : Date_For_File_Str) return File_Date_Str is
   begin
-	if DATE_FOR_FILE (1 .. 2) < DISCRIMINANT_FOR_DATES then
-	  return "20" & DATE_FOR_FILE;
+	if Date_For_File (1 .. 2) < Discriminant_For_Dates then
+	  return "20" & Date_For_File;
 	else
-	  return "19" & DATE_FOR_FILE;
+	  return "19" & Date_For_File;
 	end if;
-  end ROUND;
+  end Round;
 
 
-  function VALID_DATE (DATE : FILE_DATE_STR) return BOOLEAN is
-    YEAR  : CALENDAR.YEAR_NUMBER;
-	MONTH : CALENDAR.MONTH_NUMBER;
-	DAY  : CALENDAR.DAY_NUMBER;
+  function Valid_Date (Date : File_Date_Str) return Boolean is
+    Year  : Calendar.Year_Number;
+	Month : Calendar.Month_Number;
+	Day  : Calendar.Day_Number;
   begin
-	YEAR  := CALENDAR.YEAR_NUMBER'VALUE(DATE(1..4));
-	MONTH := CALENDAR.MONTH_NUMBER'VALUE(DATE(5..6));
-	DAY   := CALENDAR.DAY_NUMBER'VALUE(DATE(7..8));
-    return DAY <= PERPET.NB_DAYS_MONTH (YEAR, MONTH);
+	Year  := Calendar.Year_Number'Value(Date(1..4));
+	Month := Calendar.Month_Number'Value(Date(5..6));
+	Day   := Calendar.Day_Number'Value(Date(7..8));
+    return Day <= Perpet.Nb_Days_Month (Year, Month);
   exception
     when others =>
-	  return FALSE;
-  end VALID_DATE;
+	  return False;
+  end Valid_Date;
 
-  function VALID_NO (NO : STRING) return BOOLEAN is
+  function Valid_No (No : String) return Boolean is
   begin
-	return NO'LENGTH = 2 and then NO >= "00" and then NO <= "99";
+	return No'Length = 2 and then No >= "00" and then No <= "99";
   exception
     when others =>
-	  return FALSE;
-  end VALID_NO;
+	  return False;
+  end Valid_No;
 
-  function VALID_PID (PID : in STRING) return BOOLEAN is
-    PID_VAL : PERS_DEF.PID_RANGE;
+  function Valid_Pid (Pid : in String) return Boolean is
+    Pid_Val : Pers_Def.Pid_Range;
   begin
-    if PID'LENGTH /= 3 then
-      return FALSE;
+    if Pid'Length /= 3 then
+      return False;
     end if;
-	PID_VAL := PERS_DEF.PID_RANGE'VALUE(PID);
-	return TRUE;
+	Pid_Val := Pers_Def.Pid_Range'Value(Pid);
+	return True;
   exception
 	when others =>
-	  return FALSE;
-  end VALID_PID;
+	  return False;
+  end Valid_Pid;
 
   -- Check wether fields are valid
-  function VALID_FILE_DEF (DATE : FILE_DATE_STR := WILD_DATE_STR;
-                            NO   : FILE_NO_STR   := WILD_NO_STR;
-                            PID  : FILE_PID_STR  := WILD_PID_STR)
-   return BOOLEAN is
+  function Valid_File_Def (Date : File_Date_Str := Wild_Date_Str;
+                            No   : File_No_Str   := Wild_No_Str;
+                            Pid  : File_Pid_Str  := Wild_Pid_Str)
+   return Boolean is
   begin
-    if DATE /= WILD_DATE_STR and then not VALID_DATE (DATE) then
-      return FALSE;
-    elsif NO /= WILD_NO_STR and then not VALID_NO (NO) then
-      return FALSE;
-    elsif PID /= WILD_PID_STR and then not VALID_PID (PID) then
-      return FALSE;
+    if Date /= Wild_Date_Str and then not Valid_Date (Date) then
+      return False;
+    elsif No /= Wild_No_Str and then not Valid_No (No) then
+      return False;
+    elsif Pid /= Wild_Pid_Str and then not Valid_Pid (Pid) then
+      return False;
     else
-      return TRUE;
+      return True;
     end if;
   exception
 	when others =>
-	  return FALSE;
-   end VALID_FILE_DEF;
+	  return False;
+   end Valid_File_Def;
 
   -- Build a file name (or a template if some " ")
   -- May raise FILE_NAME_ERROR if some fields have wrong format
   --  or date is not valid
-  function BUILD_FILE_NAME (DATE : FILE_DATE_STR := WILD_DATE_STR;
-                            NO   : FILE_NO_STR   := WILD_NO_STR;
-                            PID  : FILE_PID_STR  := WILD_PID_STR)
-   return FILE_NAME_STR is
+  function Build_File_Name (Date : File_Date_Str := Wild_Date_Str;
+                            No   : File_No_Str   := Wild_No_Str;
+                            Pid  : File_Pid_Str  := Wild_Pid_Str)
+   return File_Name_Str is
   begin
-	if not VALID_FILE_DEF (DATE, NO, PID) then
-	  raise FILE_NAME_ERROR;
+	if not Valid_File_Def (Date, No, Pid) then
+	  raise File_Name_Error;
 	end if;
-	if DATE = WILD_DATE_STR then
-      return DATE(1..6) & NO & "." & PID;
+	if Date = Wild_Date_Str then
+      return Date(1..6) & No & "." & Pid;
 	else
-      return TRUNC(DATE) & NO & "." & PID;
+      return Trunc(Date) & No & "." & Pid;
 	end if;
-  end BUILD_FILE_NAME;
+  end Build_File_Name;
 
   -- Check wether fields are valid
-  function VALID_FILE_NAME (FILE_NAME : FILE_NAME_STR) return BOOLEAN is
-    DATE : FILE_DATE_STR;
+  function Valid_File_Name (File_Name : File_Name_Str) return Boolean is
+    Date : File_Date_Str;
   begin
-	if FILE_NAME(9) /= '.' then
-	  return FALSE;
+	if File_Name(9) /= '.' then
+	  return False;
 	end if;
 
-	if FILE_NAME(1 .. 6) = "??????" then
-	  DATE := "??" & FILE_NAME;
+	if File_Name(1 .. 6) = "??????" then
+	  Date := "??" & File_Name;
 	else
-      DATE := ROUND (FILE_NAME(1 .. 6));
-	  if not VALID_DATE (DATE) then
-		return FALSE;
+      Date := Round (File_Name(1 .. 6));
+	  if not Valid_Date (Date) then
+		return False;
 	  end if;
     end if;
-      if FILE_NAME(7 .. 8) /= WILD_NO_STR
-	  and then not VALID_NO (FILE_NAME(7 .. 8)) then
-        return FALSE;
+      if File_Name(7 .. 8) /= Wild_No_Str
+	  and then not Valid_No (File_Name(7 .. 8)) then
+        return False;
       end if;
-	if FILE_NAME(10 .. 12) /= WILD_PID_STR
-	and then not VALID_PID (FILE_NAME(10 .. 12)) then
-	  return FALSE;
+	if File_Name(10 .. 12) /= Wild_Pid_Str
+	and then not Valid_Pid (File_Name(10 .. 12)) then
+	  return False;
 	end if;
-	return TRUE;
+	return True;
   exception
 	when others =>
-	  return FALSE;
-  end VALID_FILE_NAME;
+	  return False;
+  end Valid_File_Name;
 
 
   -- Split a file name (or a template)
   -- May raise FILE_NAME_ERROR if some fields have wrong format
   --  or date is not valid
-  procedure SPLIT_FILE_NAME (FILE_NAME : in FILE_NAME_STR;
-                             DATE      : out FILE_DATE_STR;
-                             NO        : out FILE_NO_STR;
-                             PID       : out FILE_PID_STR)  is
+  procedure Split_File_Name (File_Name : in File_Name_Str;
+                             Date      : out File_Date_Str;
+                             No        : out File_No_Str;
+                             Pid       : out File_Pid_Str)  is
   begin
-    if not VALID_FILE_NAME (FILE_NAME => FILE_NAME) then
-      raise FILE_NAME_ERROR;
+    if not Valid_File_Name (File_Name => File_Name) then
+      raise File_Name_Error;
 	end if;
-	if FILE_NAME(1 .. 6) = "??????" then
-	  DATE := "??" & FILE_NAME(1 .. 6);
+	if File_Name(1 .. 6) = "??????" then
+	  Date := "??" & File_Name(1 .. 6);
 	else
-	  DATE := ROUND (FILE_NAME(1 .. 6));
+	  Date := Round (File_Name(1 .. 6));
 	end if;
 
-	NO := FILE_NAME(7 .. 8);
-	PID := FILE_NAME(10 .. 12);
-  end SPLIT_FILE_NAME;
+	No := File_Name(7 .. 8);
+	Pid := File_Name(10 .. 12);
+  end Split_File_Name;
 
   -- Find first file_no_str available for given date and pid
   -- May return WILD_NO_STR if no more_slot available
   -- May raise FILE_NAME_ERROR if date or pid has wild
-  function FIND_SLOT (DATE : FILE_DATE_STR;
-                      PID  : FILE_PID_STR) return FILE_NO_STR is
-    FILE_TEMPLATE : FILE_NAME_STR;
-    LIST : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-    FILE : DIR_MNG.FILE_ENTRY_REC;
-    L_DATE : FILE_DATE_STR;
-    L_NO   : FILE_NO_STR;
-    L_PID  : FILE_PID_STR;
-    RET_NO : FILE_NO_STR;
-    FILE_NAME : FILE_NAME_STR;
+  function Find_Slot (Date : File_Date_Str;
+                      Pid  : File_Pid_Str) return File_No_Str is
+    File_Template : File_Name_Str;
+    List : Dir_Mng.File_List_Mng.List_Type;
+    File : Dir_Mng.File_Entry_Rec;
+    L_Date : File_Date_Str;
+    L_No   : File_No_Str;
+    L_Pid  : File_Pid_Str;
+    Ret_No : File_No_Str;
+    File_Name : File_Name_Str;
 
-    function LESS_THAN (L, R : DIR_MNG.FILE_ENTRY_REC) return BOOLEAN is
+    function Less_Than (L, R : Dir_Mng.File_Entry_Rec) return Boolean is
     begin
-      return L.NAME < R.NAME;
-    end LESS_THAN;
+      return L.Name < R.Name;
+    end Less_Than;
 
-    procedure MY_SORT is new DIR_MNG.FILE_LIST_MNG.SORT(LESS_THAN);
+    procedure My_Sort is new Dir_Mng.File_List_Mng.Sort(Less_Than);
 
-      use DIR_MNG.FILE_LIST_MNG;
+      use Dir_Mng.File_List_Mng;
   begin
     -- Check no wild_char
-    if      TEXT_HANDLER.LOCATE (TEXT_HANDLER.TO_TEXT(DATE), WILD_CHAR) /= 0
-    or else TEXT_HANDLER.LOCATE (TEXT_HANDLER.TO_TEXT(PID),  WILD_CHAR) /= 0 then
-      raise FILE_NAME_ERROR;
+    if      Text_Handler.Locate (Text_Handler.To_Text(Date), Wild_Char) /= 0
+    or else Text_Handler.Locate (Text_Handler.To_Text(Pid),  Wild_Char) /= 0 then
+      raise File_Name_Error;
     end if;
     -- build date??.pid
-    FILE_TEMPLATE := BUILD_FILE_NAME (DATE => DATE, PID => PID);
+    File_Template := Build_File_Name (Date => Date, Pid => Pid);
     -- Search list of matching files
-    DIR_MNG.LIST_DIR (LIST, "", FILE_TEMPLATE);
+    Dir_Mng.List_Dir (List, "", File_Template);
 
     -- Sort (by no because same date and pid)
-    MY_SORT (LIST);
+    My_Sort (List);
     -- Look for lowest
-    RET_NO := "00";
-    if IS_EMPTY (LIST) then
-      return RET_NO;
+    Ret_No := "00";
+    if Is_Empty (List) then
+      return Ret_No;
     end if;
-    MOVE_TO (LIST, NEXT, 0, FALSE);
+    Move_To (List, Next, 0, False);
     -- loop in list
     loop
       -- Get file name
-      READ (LIST, FILE, CURRENT);
-      FILE_NAME := FILE.NAME (1 .. FILE.LEN);
-      SPLIT_FILE_NAME(FILE_NAME, L_DATE, L_NO, L_PID);
+      Read (List, File, Current);
+      File_Name := File.Name (1 .. File.Len);
+      Split_File_Name(File_Name, L_Date, L_No, L_Pid);
 
-      if L_NO /= RET_NO then
+      if L_No /= Ret_No then
         -- Ret_no is an empty slot
         exit;
-      elsif RET_NO = "99" then
+      elsif Ret_No = "99" then
         -- No free slot
-        RET_NO := WILD_NO_STR;
+        Ret_No := Wild_No_Str;
         exit;
       else
         -- Next slot
-        RET_NO := NORMAL(INTEGER'VALUE(RET_NO) + 1, 2, GAP => '0');
-        if GET_POSITION(LIST) = LIST_LENGTH(LIST) then
+        Ret_No := Normal(Integer'Value(Ret_No) + 1, 2, Gap => '0');
+        if Get_Position(List) = List_Length(List) then
           -- End of list
           exit;
         else
           -- Go to next entry
-          MOVE_TO (LIST);
+          Move_To (List);
         end if;
       end if;
 
     end loop;
 
     -- Done. Garbage collect!
-    DELETE_LIST (LIST);
-    return RET_NO;
-  end FIND_SLOT;
+    Delete_List (List);
+    return Ret_No;
+  end Find_Slot;
 
 
 
-end MESU_NAM;
+end Mesu_Nam;

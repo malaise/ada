@@ -1,133 +1,133 @@
-with CALENDAR;
-with MY_IO, INT_IO, DIRECTORY, TEXT_HANDLER, ARGUMENT, DAY_MNG, NORMAL;
-procedure T_DIR is
-  FILE_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
-  DIR_NAME : TEXT_HANDLER.TEXT(DIRECTORY.MAX_DIR_NAME_LEN);
-  KIND : DIRECTORY.FILE_KIND_LIST;
-  RIGHTS : NATURAL;
-  MTIME  : DIRECTORY.TIME_T;
-  MAX_LEN : constant := 50;
-  PAD : constant STRING (1 .. MAX_LEN) := (others => ' ');
+with Calendar;
+with My_Io, Int_Io, Directory, Text_Handler, Argument, Day_Mng, Normal;
+procedure T_Dir is
+  File_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+  Dir_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+  Kind : Directory.File_Kind_List;
+  Rights : Natural;
+  Mtime  : Directory.Time_T;
+  Max_Len : constant := 50;
+  Pad : constant String (1 .. Max_Len) := (others => ' ');
 
-  function GET_NEW_DIR return STRING is
-    STR : STRING (1 .. 1024);
-    LEN : NATURAL;
+  function Get_New_Dir return String is
+    Str : String (1 .. 1024);
+    Len : Natural;
   begin
-    MY_IO.PUT ("Enter new directory: ");
-    MY_IO.GET_LINE (STR, LEN);
-    return STR (1 .. LEN);
-  end  GET_NEW_DIR;
+    My_Io.Put ("Enter new directory: ");
+    My_Io.Get_Line (Str, Len);
+    return Str (1 .. Len);
+  end  Get_New_Dir;
 
-  procedure PUT_RIGHTS (RIGHTS : in NATURAL) is
-    STR : STRING(1 .. 7) := (others => ' ');
-    ZSTR : STRING(1 .. 4) := (others => '0');
-    F,L : NATURAL;
+  procedure Put_Rights (Rights : in Natural) is
+    Str : String(1 .. 7) := (others => ' ');
+    Zstr : String(1 .. 4) := (others => '0');
+    F,L : Natural;
   begin
-    INT_IO.PUT (STR, RIGHTS, BASE => 8);
-    for I in STR'RANGE loop
-      if STR(I) = '#' then
+    Int_Io.Put (Str, Rights, Base => 8);
+    for I in Str'Range loop
+      if Str(I) = '#' then
         F := I+1;
         exit;
       end if;
     end loop;
-    for I in reverse STR'RANGE loop
-      if STR(I) = '#' then
+    for I in reverse Str'Range loop
+      if Str(I) = '#' then
         L := I - 1;
         exit;
       end if;
     end loop;
 
-    ZSTR(4-L+F .. 4) := STR(F .. L);
-    MY_IO.PUT(ZSTR);
-  end PUT_RIGHTS;
+    Zstr(4-L+F .. 4) := Str(F .. L);
+    My_Io.Put(Zstr);
+  end Put_Rights;
 
-  procedure PUT_DATE (MTIME : in DIRECTORY.TIME_T) is
-    T : CALENDAR.TIME;
-    YEAR   : CALENDAR.YEAR_NUMBER;
-    MONTH  : CALENDAR.MONTH_NUMBER;
-    DAY    : CALENDAR.DAY_NUMBER;
-    DUR    : CALENDAR.DAY_DURATION;
-    HOURS    : DAY_MNG.T_HOURS;
-    MINUTES  : DAY_MNG.T_MINUTES;
-    SECONDS  : DAY_MNG.T_SECONDS;
-    MILLISEC : DAY_MNG.T_MILLISEC;
+  procedure Put_Date (Mtime : in Directory.Time_T) is
+    T : Calendar.Time;
+    Year   : Calendar.Year_Number;
+    Month  : Calendar.Month_Number;
+    Day    : Calendar.Day_Number;
+    Dur    : Calendar.Day_Duration;
+    Hours    : Day_Mng.T_Hours;
+    Minutes  : Day_Mng.T_Minutes;
+    Seconds  : Day_Mng.T_Seconds;
+    Millisec : Day_Mng.T_Millisec;
   begin
-    T := DIRECTORY.TIME_OF(MTIME);
-    CALENDAR.SPLIT (T, YEAR, MONTH, DAY, DUR);
-    DAY_MNG.SPLIT (DUR, HOURS, MINUTES, SECONDS, MILLISEC);
-    MY_IO.PUT(" " &
-              NORMAL(YEAR, 4, GAP =>'0') & '/' &
-              NORMAL(MONTH, 2, GAP =>'0') & '/' &
-              NORMAL(DAY, 2, GAP =>'0') & ' '  &
-              NORMAL(HOURS, 2, GAP =>'0') & ':'  &
-              NORMAL(MINUTES, 2, GAP =>'0') & ':'  &
-              NORMAL(SECONDS, 2, GAP =>'0') );
-  end PUT_DATE;
+    T := Directory.Time_Of(Mtime);
+    Calendar.Split (T, Year, Month, Day, Dur);
+    Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
+    My_Io.Put(" " &
+              Normal(Year, 4, Gap =>'0') & '/' &
+              Normal(Month, 2, Gap =>'0') & '/' &
+              Normal(Day, 2, Gap =>'0') & ' '  &
+              Normal(Hours, 2, Gap =>'0') & ':'  &
+              Normal(Minutes, 2, Gap =>'0') & ':'  &
+              Normal(Seconds, 2, Gap =>'0') );
+  end Put_Date;
 
-  use DIRECTORY;
+  use Directory;
 begin
 
   loop
 
-    MY_IO.PUT_LINE ("PWD ->" & DIRECTORY.GET_CURRENT & "<");
+    My_Io.Put_Line ("PWD ->" & Directory.Get_Current & "<");
 
     declare
-      DSC : DIRECTORY.DIR_DESC;
+      Dsc : Directory.Dir_Desc;
     begin
-      if ARGUMENT.GET_NBRE_ARG /= 0 then
-        ARGUMENT.GET_PARAMETER(DIR_NAME);
+      if Argument.Get_Nbre_Arg /= 0 then
+        Argument.Get_Parameter(Dir_Name);
       else
-        DIRECTORY.GET_CURRENT(DIR_NAME);
+        Directory.Get_Current(Dir_Name);
       end if;
-      DSC := DIRECTORY.OPEN(TEXT_HANDLER.VALUE(DIR_NAME));
-      if TEXT_HANDLER.VALUE(DIR_NAME) = "/" then
-        TEXT_HANDLER.EMPTY(DIR_NAME);
+      Dsc := Directory.Open(Text_Handler.Value(Dir_Name));
+      if Text_Handler.Value(Dir_Name) = "/" then
+        Text_Handler.Empty(Dir_Name);
       end if;
       loop
-        DIRECTORY.NEXT_ENTRY(DSC, FILE_NAME);
-        MY_IO.PUT ("  ---->" & TEXT_HANDLER.VALUE (FILE_NAME) & "< ");
-        MY_IO.PUT (PAD(1 .. MAX_LEN - TEXT_HANDLER.LENGTH(FILE_NAME)));
+        Directory.Next_Entry(Dsc, File_Name);
+        My_Io.Put ("  ---->" & Text_Handler.Value (File_Name) & "< ");
+        My_Io.Put (Pad(1 .. Max_Len - Text_Handler.Length(File_Name)));
         begin
-          DIRECTORY.FILE_STAT (
-             TEXT_HANDLER.VALUE (DIR_NAME) & '/' &
-             TEXT_HANDLER.VALUE (FILE_NAME), KIND, RIGHTS, MTIME);
-          PUT_RIGHTS (RIGHTS);
-          PUT_DATE (MTIME);
-          MY_IO.PUT_LINE (" " & DIRECTORY.FILE_KIND_LIST'IMAGE(KIND));
-          if KIND = DIRECTORY.LINK then
-            MY_IO.PUT_LINE ("    ++++>" & DIRECTORY.READ_LINK (
-                TEXT_HANDLER.VALUE (DIR_NAME) & '/' &
-                TEXT_HANDLER.VALUE (FILE_NAME)) & '<');
+          Directory.File_Stat (
+             Text_Handler.Value (Dir_Name) & '/' &
+             Text_Handler.Value (File_Name), Kind, Rights, Mtime);
+          Put_Rights (Rights);
+          Put_Date (Mtime);
+          My_Io.Put_Line (" " & Directory.File_Kind_List'Image(Kind));
+          if Kind = Directory.Link then
+            My_Io.Put_Line ("    ++++>" & Directory.Read_Link (
+                Text_Handler.Value (Dir_Name) & '/' &
+                Text_Handler.Value (File_Name)) & '<');
           end if;
         exception
-          when DIRECTORY.NAME_ERROR =>
-            MY_IO.PUT_LINE ("???? ???");
-          when DIRECTORY.ACCESS_ERROR =>
-            MY_IO.PUT_LINE ("!!!! !!!");
+          when Directory.Name_Error =>
+            My_Io.Put_Line ("???? ???");
+          when Directory.Access_Error =>
+            My_Io.Put_Line ("!!!! !!!");
         end;
       end loop;
     exception
-      when DIRECTORY.END_ERROR =>
-        DIRECTORY.CLOSE (DSC);
+      when Directory.End_Error =>
+        Directory.Close (Dsc);
     end;
-    if ARGUMENT.GET_NBRE_ARG /= 0 then
+    if Argument.Get_Nbre_Arg /= 0 then
       return;
     end if;
 
-    MY_IO.NEW_LINE;
+    My_Io.New_Line;
     loop
       begin
-        DIRECTORY.CHANGE_CURRENT(GET_NEW_DIR);
+        Directory.Change_Current(Get_New_Dir);
         exit;
       exception
-        when DIRECTORY.NAME_ERROR =>
-          MY_IO.PUT_LINE ("-> Not found.");
-        when DIRECTORY.ACCESS_ERROR =>
-          MY_IO.PUT_LINE ("-> Permission.");
+        when Directory.Name_Error =>
+          My_Io.Put_Line ("-> Not found.");
+        when Directory.Access_Error =>
+          My_Io.Put_Line ("-> Permission.");
       end;
     end loop;
 
   end loop;
 
-end T_DIR;
+end T_Dir;
 

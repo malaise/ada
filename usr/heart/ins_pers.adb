@@ -1,138 +1,138 @@
-with TEXT_HANDLER, ARGUMENT, MY_IO, NORMAL;
-with PERS_DEF, PERS_FIL, PERS_MNG;
+with Text_Handler, Argument, My_Io, Normal;
+with Pers_Def, Pers_Fil, Pers_Mng;
 
-procedure INS_PERS is
-  PERSON, GOT_PERSON : PERS_DEF.PERSON_REC;
-  NN, NA, NT : POSITIVE;
-  NAME_TXT : TEXT_HANDLER.TEXT (PERSON.NAME'LENGTH);
-  ACTI_TXT : TEXT_HANDLER.TEXT (PERSON.ACTIVITY'LENGTH);
-  POS : NATURAL;
-  C : CHARACTER;
-  LIST_LENGTH : NATURAL;
+procedure Ins_Pers is
+  Person, Got_Person : Pers_Def.Person_Rec;
+  Nn, Na, Nt : Positive;
+  Name_Txt : Text_Handler.Text (Person.Name'Length);
+  Acti_Txt : Text_Handler.Text (Person.Activity'Length);
+  Pos : Natural;
+  C : Character;
+  List_Length : Natural;
 
-  procedure PUT (PERSON : in PERS_DEF.PERSON_REC;
-                 DISPLAY_PID : in BOOLEAN := FALSE) is
+  procedure Put (Person : in Pers_Def.Person_Rec;
+                 Display_Pid : in Boolean := False) is
   begin
-    MY_IO.PUT ("NAME: >" & PERSON.NAME & "<");
-    MY_IO.PUT ("  ACTIVITY: >" & PERSON.ACTIVITY & "<");
-    if DISPLAY_PID then
-      MY_IO.PUT_LINE ("  PID: " & NORMAL(INTEGER(PERSON.PID), 3) );
+    My_Io.Put ("NAME: >" & Person.Name & "<");
+    My_Io.Put ("  ACTIVITY: >" & Person.Activity & "<");
+    if Display_Pid then
+      My_Io.Put_Line ("  PID: " & Normal(Integer(Person.Pid), 3) );
     else
-      MY_IO.NEW_LINE;
+      My_Io.New_Line;
     end if;
-    MY_IO.PUT (" Training Zones: ");
-    for I in PERSON.TZ'RANGE loop
-      MY_IO.PUT (NORMAL(INTEGER(PERSON.TZ(I)), 4));
+    My_Io.Put (" Training Zones: ");
+    for I in Person.Tz'Range loop
+      My_Io.Put (Normal(Integer(Person.Tz(I)), 4));
     end loop;
-    MY_IO.NEW_LINE;
-  end PUT;
+    My_Io.New_Line;
+  end Put;
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG = 1 and then ARGUMENT.GET_PARAMETER = "-l" then
+  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-l" then
     -- Load list
-    PERS_FIL.LOAD;
-    if PERS_DEF.PERSON_LIST_MNG.IS_EMPTY (PERS_DEF.THE_PERSONS) then
-      MY_IO.PUT_LINE ("The list is empty.");
+    Pers_Fil.Load;
+    if Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons) then
+      My_Io.Put_Line ("The list is empty.");
     else
-      LIST_LENGTH :=
-       PERS_DEF.PERSON_LIST_MNG.LIST_LENGTH (PERS_DEF.THE_PERSONS);
-      for I in 1 .. LIST_LENGTH loop
-        if I /= LIST_LENGTH then
-          PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON);
+      List_Length :=
+       Pers_Def.Person_List_Mng.List_Length (Pers_Def.The_Persons);
+      for I in 1 .. List_Length loop
+        if I /= List_Length then
+          Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person);
         else
           -- Do not move after reading last person
-          PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, PERSON,
-           PERS_DEF.PERSON_LIST_MNG.CURRENT);
+          Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
+           Pers_Def.Person_List_Mng.Current);
         end if;
-        PUT(PERSON, TRUE);
+        Put(Person, True);
       end loop;
     end if;
-    MY_IO.NEW_LINE;
-    MY_IO.PUT_LINE ("Done.");
+    My_Io.New_Line;
+    My_Io.Put_Line ("Done.");
     return;
   end if;
 
   -- Parse arguments in person record
-  NN := ARGUMENT.GET_POSITION (PARAM_KEY => "n");
-  if NN /= 1 then
-    raise CONSTRAINT_ERROR;
+  Nn := Argument.Get_Position (Param_Key => "n");
+  if Nn /= 1 then
+    raise Constraint_Error;
   end if;
-  NA := ARGUMENT.GET_POSITION (PARAM_KEY => "a");
-  NT := ARGUMENT.GET_POSITION (PARAM_KEY => "t");
-  if      ARGUMENT.GET_PARAMETER (PARAM_KEY => "n") /= ""
-  or else ARGUMENT.GET_PARAMETER (PARAM_KEY => "a") /= ""
-  or else ARGUMENT.GET_PARAMETER (PARAM_KEY => "t") /= "" then
-    raise CONSTRAINT_ERROR;
+  Na := Argument.Get_Position (Param_Key => "a");
+  Nt := Argument.Get_Position (Param_Key => "t");
+  if      Argument.Get_Parameter (Param_Key => "n") /= ""
+  or else Argument.Get_Parameter (Param_Key => "a") /= ""
+  or else Argument.Get_Parameter (Param_Key => "t") /= "" then
+    raise Constraint_Error;
   end if;
 
-  if NT < NA or else NT /= ARGUMENT.GET_NBRE_ARG - PERSON.TZ'LENGTH then
-    raise CONSTRAINT_ERROR;
+  if Nt < Na or else Nt /= Argument.Get_Nbre_Arg - Person.Tz'Length then
+    raise Constraint_Error;
   end if;
-  for I in 2 .. NA - 1 loop
-    TEXT_HANDLER.APPEND (NAME_TXT, STRING'(ARGUMENT.GET_PARAMETER (I)));
-    if I /= NA - 1 then
-      TEXT_HANDLER.APPEND (NAME_TXT, ' ');
+  for I in 2 .. Na - 1 loop
+    Text_Handler.Append (Name_Txt, String'(Argument.Get_Parameter (I)));
+    if I /= Na - 1 then
+      Text_Handler.Append (Name_Txt, ' ');
     end if;
   end loop;
-  PERSON.NAME(1 .. TEXT_HANDLER.LENGTH(NAME_TXT)) := TEXT_HANDLER.VALUE (NAME_TXT);
-  for I in NA + 1 .. NT - 1 loop
-    TEXT_HANDLER.APPEND (ACTI_TXT, STRING'(ARGUMENT.GET_PARAMETER (I)));
-    if I /= NT - 1 then
-      TEXT_HANDLER.APPEND (ACTI_TXT, ' ');
+  Person.Name(1 .. Text_Handler.Length(Name_Txt)) := Text_Handler.Value (Name_Txt);
+  for I in Na + 1 .. Nt - 1 loop
+    Text_Handler.Append (Acti_Txt, String'(Argument.Get_Parameter (I)));
+    if I /= Nt - 1 then
+      Text_Handler.Append (Acti_Txt, ' ');
     end if;
   end loop;
-  PERSON.ACTIVITY(1 .. TEXT_HANDLER.LENGTH(ACTI_TXT)) := TEXT_HANDLER.VALUE (ACTI_TXT);
-  for I in NT + 1 .. ARGUMENT.GET_NBRE_ARG loop
-    PERSON.TZ(I-NT) := PERS_DEF.BPM_RANGE'VALUE(ARGUMENT.GET_PARAMETER(I));
+  Person.Activity(1 .. Text_Handler.Length(Acti_Txt)) := Text_Handler.Value (Acti_Txt);
+  for I in Nt + 1 .. Argument.Get_Nbre_Arg loop
+    Person.Tz(I-Nt) := Pers_Def.Bpm_Range'Value(Argument.Get_Parameter(I));
   end loop;
 
   -- Load list
-  PERS_FIL.LOAD;
+  Pers_Fil.Load;
   -- Check wether this person exists
-  PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS, PERSON.NAME, PERSON.ACTIVITY, POS);
-  if POS = 0 then
+  Pers_Mng.Search (Pers_Def.The_Persons, Person.Name, Person.Activity, Pos);
+  if Pos = 0 then
     -- Display and ask confirm
-    PUT (PERSON);
-    MY_IO.PUT ("This person will be inserted. OK? (Y/N) : ");
-    MY_IO.GET (C);
+    Put (Person);
+    My_Io.Put ("This person will be inserted. OK? (Y/N) : ");
+    My_Io.Get (C);
     if C /= 'Y' and then C /= 'y' then
-      MY_IO.PUT_LINE ("Aborted");
+      My_Io.Put_Line ("Aborted");
       return;
     end if;
     -- Insert
-    PERS_MNG.INSERT (PERS_DEF.THE_PERSONS, PERSON);
-    MY_IO.NEW_LINE;
-    MY_IO.PUT_LINE ("Done. PID is " & NORMAL(INTEGER(PERSON.PID), 3) );
+    Pers_Mng.Insert (Pers_Def.The_Persons, Person);
+    My_Io.New_Line;
+    My_Io.Put_Line ("Done. PID is " & Normal(Integer(Person.Pid), 3) );
   else
-    PERS_DEF.PERSON_LIST_MNG.READ (PERS_DEF.THE_PERSONS, GOT_PERSON,
-     PERS_DEF.PERSON_LIST_MNG.CURRENT);
-    PERSON.PID := GOT_PERSON.PID;
-    MY_IO.PUT_LINE ("The person in list");
-    PUT (GOT_PERSON, TRUE);
-    MY_IO.NEW_LINE;
-    MY_IO.PUT_LINE ("Will be replaced by");
-    PUT (PERSON, TRUE);
-    MY_IO.PUT ("OK? (Y/N) : ");
-    MY_IO.GET (C);
+    Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Got_Person,
+     Pers_Def.Person_List_Mng.Current);
+    Person.Pid := Got_Person.Pid;
+    My_Io.Put_Line ("The person in list");
+    Put (Got_Person, True);
+    My_Io.New_Line;
+    My_Io.Put_Line ("Will be replaced by");
+    Put (Person, True);
+    My_Io.Put ("OK? (Y/N) : ");
+    My_Io.Get (C);
     if C /= 'Y' and then C /= 'y' then
-      MY_IO.PUT_LINE ("Aborted");
+      My_Io.Put_Line ("Aborted");
       return;
     end if;
-    PERS_DEF.PERSON_LIST_MNG.MODIFY (PERS_DEF.THE_PERSONS, PERSON,
-     PERS_DEF.PERSON_LIST_MNG.CURRENT);
-    MY_IO.NEW_LINE;
-    MY_IO.PUT_LINE ("Done.");
+    Pers_Def.Person_List_Mng.Modify (Pers_Def.The_Persons, Person,
+     Pers_Def.Person_List_Mng.Current);
+    My_Io.New_Line;
+    My_Io.Put_Line ("Done.");
   end if;
   -- Save list
-  PERS_FIL.SAVE;
+  Pers_Fil.Save;
   -- OK. Display PID.
 
 exception
   when others =>
-    MY_IO.PUT_LINE ("USAGE : " & ARGUMENT.GET_PROGRAM_NAME
+    My_Io.Put_Line ("USAGE : " & Argument.Get_Program_Name
               & " -n <person name> -a <activity> -t <6 training zones>");
-    MY_IO.PUT_LINE (" or   : " & ARGUMENT.GET_PROGRAM_NAME & " -l");
-    MY_IO.PUT_LINE ("Each training zone must be between 0 and 250");
+    My_Io.Put_Line (" or   : " & Argument.Get_Program_Name & " -l");
+    My_Io.Put_Line ("Each training zone must be between 0 and 250");
     raise;
-end INS_PERS;
+end Ins_Pers;

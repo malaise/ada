@@ -1,70 +1,70 @@
 -- Purpose: solve a.x2 + b.x + c = 0
-with TEXT_IO;
-with ARGUMENT, MY_IO, MY_MATH, GET_FLOAT;
-use MY_MATH;
-procedure SECOND is
+with Text_Io;
+with Argument, My_Io, My_Math, Get_Float;
+use My_Math;
+procedure Second is
 
-  A, B, C : MY_MATH.REAL;
+  A, B, C : My_Math.Real;
 
   -- Discriminant
-  D : MY_MATH.REAL;
+  D : My_Math.Real;
 
-  package REAL_IO is new TEXT_IO.FLOAT_IO (MY_MATH.REAL);
+  package Real_Io is new Text_Io.Float_Io (My_Math.Real);
   
 begin
 
   -- Check number of arguments
-  if ARGUMENT.GET_NBRE_ARG /= 3 then
-    MY_IO.PUT_LINE ("ERROR. 3 arguments expected, a, b and c.");
+  if Argument.Get_Nbre_Arg /= 3 then
+    My_Io.Put_Line ("ERROR. 3 arguments expected, a, b and c.");
     return;
   end if;
 
   -- Parse arguments
   begin
-    A := MY_MATH.REAL (GET_FLOAT.GET_FLOAT (ARGUMENT.GET_PARAMETER(1)));
-    B := MY_MATH.REAL (GET_FLOAT.GET_FLOAT (ARGUMENT.GET_PARAMETER(2)));
-    C := MY_MATH.REAL (GET_FLOAT.GET_FLOAT (ARGUMENT.GET_PARAMETER(3)));
+    A := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(1)));
+    B := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(2)));
+    C := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(3)));
   exception
     when others =>
-      MY_IO.PUT_LINE ("ERROR in an argument. 3 arguments expected, a, b and c.");
+      My_Io.Put_Line ("ERROR in an argument. 3 arguments expected, a, b and c.");
       return;
   end;
 
-  REAL_IO.PUT(A); MY_IO.PUT(" * x2 + ");
-  REAL_IO.PUT(B); MY_IO.PUT(" * x + ");
-  REAL_IO.PUT(C); MY_IO.PUT(" = 0");
-  MY_IO.NEW_LINE;
+  Real_Io.Put(A); My_Io.Put(" * x2 + ");
+  Real_Io.Put(B); My_Io.Put(" * x + ");
+  Real_Io.Put(C); My_Io.Put(" = 0");
+  My_Io.New_Line;
 
   -- A = 0 ?
   if A = 0.0 then
     if B = 0.0 then
       if C = 0.0 then
-        MY_IO.PUT_LINE ("Inifinity of solutions.");
+        My_Io.Put_Line ("Inifinity of solutions.");
       else
-        MY_IO.PUT_LINE ("No solution.");
+        My_Io.Put_Line ("No solution.");
       end if;
     else
-      MY_IO.PUT ("One solution: ");
-      REAL_IO.PUT (-C/B);
-        MY_IO.NEW_LINE;
+      My_Io.Put ("One solution: ");
+      Real_Io.Put (-C/B);
+        My_Io.New_Line;
     end if;
   else
     D := B * B - 4.0 * A * C;
     if D >= 0.0 then
-      MY_IO.PUT ("Two solutions: ");
-      REAL_IO.PUT ((-B + MY_MATH.SQRT(D)) / (2.0 * A));
-      MY_IO.PUT (" and ");
-      REAL_IO.PUT ((-B - MY_MATH.SQRT(D)) / (2.0 * A));
-      MY_IO.NEW_LINE;
+      My_Io.Put ("Two solutions: ");
+      Real_Io.Put ((-B + My_Math.Sqrt(D)) / (2.0 * A));
+      My_Io.Put (" and ");
+      Real_Io.Put ((-B - My_Math.Sqrt(D)) / (2.0 * A));
+      My_Io.New_Line;
     else
-      MY_IO.PUT_LINE ("Two complex solutions: ");
-      REAL_IO.PUT ((-B) / (2.0 * A) );
-      MY_IO.PUT (" +/-");
-      REAL_IO.PUT (MY_MATH.SQRT(-D) / (2.0 * A));
-      MY_IO.PUT (" * i ");
-      MY_IO.NEW_LINE;
+      My_Io.Put_Line ("Two complex solutions: ");
+      Real_Io.Put ((-B) / (2.0 * A) );
+      My_Io.Put (" +/-");
+      Real_Io.Put (My_Math.Sqrt(-D) / (2.0 * A));
+      My_Io.Put (" * i ");
+      My_Io.New_Line;
     end if;
   end if;
 
-end SECOND;
+end Second;
 

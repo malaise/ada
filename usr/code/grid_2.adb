@@ -55,7 +55,7 @@ package body Grid_2 is
         N := 0;
         for I in 1 .. C - 1 loop
           -- General column amount
-          N := N - (First_Row - 1) + LAST_ROW;
+          N := N - (First_Row - 1) + Last_Row;
           if I < First_Col then
             -- Before first col, so -1
             N := N - 1;
@@ -97,7 +97,7 @@ package body Grid_2 is
         end if;
       end loop;
     end loop;
-    return STR;
+    return Str;
   end Encode;
 
   function Decode (Key : in String; Text : Long_String)

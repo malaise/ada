@@ -1,18 +1,18 @@
 -- When 1 vector is unknown compute it by addition or substraction of
 --  the 2 others
-with C_NBRES;
-separate (NAV_DATA)
-function ADD (X, Y : NAV_TYPES.T_VECTOR) return NAV_TYPES.T_VECTOR is
-  CX, CY, CR : C_NBRES.COMPLEX;
+with C_Nbres;
+separate (Nav_Data)
+function Add (X, Y : Nav_Types.T_Vector) return Nav_Types.T_Vector is
+  Cx, Cy, Cr : C_Nbres.Complex;
 begin
-  CX := C_NBRES.CREATE_COMPLEX(C_NBRES.REAL(X.SPEED),
-                               C_NBRES.DEGREE(TO_REAL(X.ANGLE)) );
-  CY := C_NBRES.CREATE_COMPLEX(C_NBRES.REAL(Y.SPEED),
-                               C_NBRES.DEGREE(TO_REAL(Y.ANGLE)) );
-  CR := C_NBRES."+" (CX, CY);
+  Cx := C_Nbres.Create_Complex(C_Nbres.Real(X.Speed),
+                               C_Nbres.Degree(To_Real(X.Angle)) );
+  Cy := C_Nbres.Create_Complex(C_Nbres.Real(Y.Speed),
+                               C_Nbres.Degree(To_Real(Y.Angle)) );
+  Cr := C_Nbres."+" (Cx, Cy);
 
   return (
-   SPEED => NAV_TYPES.T_SPEED(C_NBRES.MODULE(CR)),
-   ANGLE => TO_ANGLE(REAL(C_NBRES.ANGLE_DEGREE(CR))) );
-end ADD;
+   Speed => Nav_Types.T_Speed(C_Nbres.Module(Cr)),
+   Angle => To_Angle(Real(C_Nbres.Angle_Degree(Cr))) );
+end Add;
 

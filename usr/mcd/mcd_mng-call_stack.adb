@@ -1,51 +1,51 @@
-WITH TEXT_IO;
-with DYNAMIC_LIST;
-separate (MCD_MNG)
+With Text_Io;
+with Dynamic_List;
+separate (Mcd_Mng)
 
-package body CALL_STACK is 
+package body Call_Stack is 
 
-  type CALL_ENTRY_REC is RECORD
-    STR : CHARS_TEXT;
-    LEN : NATURAL;
+  type Call_Entry_Rec is Record
+    Str : Chars_Text;
+    Len : Natural;
   end record;
-  CALL_ENTRY : CALL_ENTRY_REC;
+  Call_Entry : Call_Entry_Rec;
 
 
-  package CALL_STACK_LIST is new DYNAMIC_LIST (CALL_ENTRY_REC);
-  LIST : CALL_STACK_LIST.LIST_TYPE;
+  package Call_Stack_List is new Dynamic_List (Call_Entry_Rec);
+  List : Call_Stack_List.List_Type;
 
-  procedure PUSH (ITEM : in STRING) is
+  procedure Push (Item : in String) is
   begin
-    CALL_ENTRY.LEN := ITEM'LENGTH;
-    CALL_ENTRY.STR (1 .. CALL_ENTRY.LEN) := ITEM;
-    CALL_STACK_LIST.INSERT(LIST, CALL_ENTRY);
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.CALL) then
-      TEXT_IO.PUT_LINE ("Call_stack: Pushing >" & ITEM & "<"
+    Call_Entry.Len := Item'Length;
+    Call_Entry.Str (1 .. Call_Entry.Len) := Item;
+    Call_Stack_List.Insert(List, Call_Entry);
+    if Debug.Debug_Level_Array(Debug.Call) then
+      Text_Io.Put_Line ("Call_stack: Pushing >" & Item & "<"
         & "   Level is "
-        & INTEGER'IMAGE(CALL_STACK_LIST.LIST_LENGTH(LIST)));
+        & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
-  end PUSH;
+  end Push;
 
-  function  POP return STRING is
+  function  Pop return String is
   begin
-    CALL_STACK_LIST.GET(LIST, CALL_ENTRY, CALL_STACK_LIST.PREV);
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.CALL) then
-      TEXT_IO.PUT_LINE ("Call_stack: Poping >"
-        & CALL_ENTRY.STR(1 .. CALL_ENTRY.LEN) & "<"
+    Call_Stack_List.Get(List, Call_Entry, Call_Stack_List.Prev);
+    if Debug.Debug_Level_Array(Debug.Call) then
+      Text_Io.Put_Line ("Call_stack: Poping >"
+        & Call_Entry.Str(1 .. Call_Entry.Len) & "<"
         & "   Level is "
-        & INTEGER'IMAGE(CALL_STACK_LIST.LIST_LENGTH(LIST)));
+        & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
-    return CALL_ENTRY.STR(1 .. CALL_ENTRY.LEN);
-  end POP;
+    return Call_Entry.Str(1 .. Call_Entry.Len);
+  end Pop;
 
-  function LEVEL return NATURAL is
+  function Level return Natural is
   begin
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.CALL) then
-      TEXT_IO.PUT_LINE ("Call_stack: Level "
-        & INTEGER'IMAGE(CALL_STACK_LIST.LIST_LENGTH(LIST)));
+    if Debug.Debug_Level_Array(Debug.Call) then
+      Text_Io.Put_Line ("Call_stack: Level "
+        & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
-    return CALL_STACK_LIST.LIST_LENGTH(LIST);
-  end LEVEL;
+    return Call_Stack_List.List_Length(List);
+  end Level;
 
-end CALL_STACK;
+end Call_Stack;
 

@@ -1,22 +1,22 @@
-with COMMON, COMPUTE;
+with Common, Compute;
 
-package SCREEN is
+package Screen is
 
-  EXIT_REQUESTED : exception;
+  Exit_Requested : exception;
 
-  function INTRO return COMMON.GAME_LIST;
-
-
-  procedure RESET (GAME : in COMMON.GAME_LIST);
-
-  procedure PLAY;
-
-  function CONTENT (ROW : COMMON.ROW_RANGE) return COMMON.FULL_BAR_RANGE;
+  function Intro return Common.Game_List;
 
 
-  procedure UPDATE (ROW : in COMMON.ROW_RANGE; BARS : in COMMON.FULL_BAR_RANGE;
-                    RESULT : in COMPUTE.RESULT_LIST; CHANGE_GAME : out BOOLEAN);
+  procedure Reset (Game : in Common.Game_List);
 
-  procedure SCORE (HUMAN, MACHINE : in NATURAL);
+  procedure Play;
 
-end SCREEN;
+  function Content (Row : Common.Row_Range) return Common.Full_Bar_Range;
+
+
+  procedure Update (Row : in Common.Row_Range; Bars : in Common.Full_Bar_Range;
+                    Result : in Compute.Result_List; Change_Game : out Boolean);
+
+  procedure Score (Human, Machine : in Natural);
+
+end Screen;

@@ -1,32 +1,32 @@
-with NAV_SCREEN, NAV_DATA, NAV_DIALOG;
-procedure NAVIG is
-  DATA, RESULT : NAV_DATA.T_DATA;
-  ACTION : NAV_DIALOG.ACTION;
-  STATUS : NAV_DATA.T_CONSISTENCY;
+with Nav_Screen, Nav_Data, Nav_Dialog;
+procedure Navig is
+  Data, Result : Nav_Data.T_Data;
+  Action : Nav_Dialog.Action;
+  Status : Nav_Data.T_Consistency;
 begin
-  NAV_DIALOG.INIT;
+  Nav_Dialog.Init;
   loop
 
     -- get data and the action
-    NAV_DIALOG.GET (DATA, ACTION);
-    if NAV_SCREEN."=" (ACTION, NAV_SCREEN.QUIT) then
+    Nav_Dialog.Get (Data, Action);
+    if Nav_Screen."=" (Action, Nav_Screen.Quit) then
       return;
     end if;
 
     -- compute
-    NAV_DATA.RESOLUTION (DATA, STATUS, RESULT);
+    Nav_Data.Resolution (Data, Status, Result);
 
-    if NAV_DATA."=" (STATUS, NAV_DATA.OK) then
+    if Nav_Data."=" (Status, Nav_Data.Ok) then
       -- put the result
-      NAV_DIALOG.PUT (RESULT);
+      Nav_Dialog.Put (Result);
     else
       -- put consistency error message during a while
-      NAV_DIALOG.PUT (STATUS);
+      Nav_Dialog.Put (Status);
     end if;
 
   end loop;
 exception
   when others =>
-    NAV_DIALOG.ABORT_CLOCK;
+    Nav_Dialog.Abort_Clock;
     raise;
-end NAVIG;
+end Navig;

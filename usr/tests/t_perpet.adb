@@ -1,136 +1,136 @@
-with CALENDAR, TEXT_IO;
-with PERPET, MY_IO;
-procedure T_PERPET is
+with Calendar, Text_Io;
+with Perpet, My_Io;
+procedure T_Perpet is
 
-  T : CALENDAR.TIME;
-  R : PERPET.DURATION_REC;
-  D  : PERPET.DAY_RANGE;
+  T : Calendar.Time;
+  R : Perpet.Duration_Rec;
+  D  : Perpet.Day_Range;
 
-  procedure ERROR is
+  procedure Error is
   begin
-    MY_IO.PUT(ASCII.BEL);
-    TEXT_IO.SKIP_LINE;
-    TEXT_IO.SKIP_LINE;
-  end ERROR;
+    My_Io.Put(Ascii.Bel);
+    Text_Io.Skip_Line;
+    Text_Io.Skip_Line;
+  end Error;
 
-  function GET return CALENDAR.TIME is
-    YEAR : CALENDAR.YEAR_NUMBER;
-    MONTH : CALENDAR.MONTH_NUMBER;
-    DAY : CALENDAR.DAY_NUMBER;
-    use MY_IO;
+  function Get return Calendar.Time is
+    Year : Calendar.Year_Number;
+    Month : Calendar.Month_Number;
+    Day : Calendar.Day_Number;
+    use My_Io;
   begin
     loop
       begin
         loop
           begin
-            PUT ("Year -> "); GET (YEAR);
+            Put ("Year -> "); Get (Year);
             exit;
           exception
-            when others => ERROR;
+            when others => Error;
           end;
         end loop;
 
         loop
           begin
-            PUT ("Month -> "); GET (MONTH);
+            Put ("Month -> "); Get (Month);
             exit;
           exception
-            when others => ERROR;
+            when others => Error;
           end;
         end loop;
 
         loop
           begin
-            PUT ("Day -> "); GET (DAY);
+            Put ("Day -> "); Get (Day);
             exit;
           exception
-            when others => ERROR;
+            when others => Error;
           end;
         end loop;
 
-        return CALENDAR.TIME_OF (YEAR, MONTH, DAY, 0.0);
+        return Calendar.Time_Of (Year, Month, Day, 0.0);
       exception
-        when CALENDAR.TIME_ERROR => ERROR;
+        when Calendar.Time_Error => Error;
       end;
     end loop;
-  end GET;
+  end Get;
 
-  function GET return PERPET.DURATION_REC is
-    DUR : PERPET.DURATION_REC;
-    use MY_IO;
+  function Get return Perpet.Duration_Rec is
+    Dur : Perpet.Duration_Rec;
+    use My_Io;
   begin
     loop
       begin
-        PUT ("Years -> "); GET (DUR.YEARS);
+        Put ("Years -> "); Get (Dur.Years);
         exit;
       exception
-        when others => ERROR;
+        when others => Error;
       end;
     end loop;
 
     loop
       begin
-        PUT ("Months -> "); GET (DUR.MONTHS);
+        Put ("Months -> "); Get (Dur.Months);
         exit;
       exception
-        when others => ERROR;
+        when others => Error;
       end;
     end loop;
 
-    return DUR;
-  end GET;
+    return Dur;
+  end Get;
 
 
-  function GET return PERPET.DAY_RANGE is
-    D : PERPET.DAY_RANGE;
-    use MY_IO;
+  function Get return Perpet.Day_Range is
+    D : Perpet.Day_Range;
+    use My_Io;
   begin
     loop
       begin
-        PUT ("Days -> "); GET (D);
+        Put ("Days -> "); Get (D);
         exit;
       exception
-        when others => ERROR;
+        when others => Error;
       end;
     end loop;
 
     return D;
-  end GET;
+  end Get;
 
-  procedure PUT (DATE : in CALENDAR.TIME) is
-    YEAR : CALENDAR.YEAR_NUMBER;
-    MONTH : CALENDAR.MONTH_NUMBER;
-    DAY : CALENDAR.DAY_NUMBER;
-    SECONDS : CALENDAR.DAY_DURATION;
-    use MY_IO;
+  procedure Put (Date : in Calendar.Time) is
+    Year : Calendar.Year_Number;
+    Month : Calendar.Month_Number;
+    Day : Calendar.Day_Number;
+    Seconds : Calendar.Day_Duration;
+    use My_Io;
   begin
-    CALENDAR.SPLIT (DATE, YEAR, MONTH, DAY, SECONDS);
-    PUT (YEAR); PUT (" ");
-    PUT (MONTH); PUT (" ");
-    PUT (DAY); PUT (" ");
-    MY_IO.NEW_LINE;
-  end PUT;
+    Calendar.Split (Date, Year, Month, Day, Seconds);
+    Put (Year); Put (" ");
+    Put (Month); Put (" ");
+    Put (Day); Put (" ");
+    My_Io.New_Line;
+  end Put;
 
 begin
-  MY_IO.PUT_LINE ("Base :");
-  T := GET;
-  MY_IO.NEW_LINE;
+  My_Io.Put_Line ("Base :");
+  T := Get;
+  My_Io.New_Line;
   loop
     begin
-      MY_IO.PUT_LINE ("Delta :");
-      R := GET;
-      MY_IO.PUT (" Base + Delta:"); PUT (PERPET."+"(T, R));
-      MY_IO.PUT (" Base - Delta:"); PUT (PERPET."-"(T, R));
-      MY_IO.NEW_LINE;
+      My_Io.Put_Line ("Delta :");
+      R := Get;
+      My_Io.Put (" Base + Delta:"); Put (Perpet."+"(T, R));
+      My_Io.Put (" Base - Delta:"); Put (Perpet."-"(T, R));
+      My_Io.New_Line;
 
-      MY_IO.PUT_LINE ("Delta :");
-      D := GET;
-      MY_IO.PUT (" Base + Delta:"); PUT (PERPET."+"(T, D));
-      MY_IO.PUT (" Base - Delta:"); PUT (PERPET."-"(T, D));
-      MY_IO.NEW_LINE (2);
+      My_Io.Put_Line ("Delta :");
+      D := Get;
+      My_Io.Put (" Base + Delta:"); Put (Perpet."+"(T, D));
+      My_Io.Put (" Base - Delta:"); Put (Perpet."-"(T, D));
+      My_Io.New_Line (2);
     exception
-      when CALENDAR.TIME_ERROR =>
-        MY_IO.PUT_LINE ("TIME_ERROR");
+      when Calendar.Time_Error =>
+        My_Io.Put_Line ("TIME_ERROR");
     end;
   end loop;
-end T_PERPET;
+end T_Perpet;

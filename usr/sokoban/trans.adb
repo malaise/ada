@@ -1,129 +1,129 @@
-with TEXT_IO, DIRECT_IO;
+with Text_Io, Direct_Io;
 
-with MY_IO, NORMAL, ARGUMENT;
+with My_Io, Normal, Argument;
 
-with SOK_TYPES;
-use SOK_TYPES;
+with Sok_Types;
+use Sok_Types;
 
-procedure TRANS is
+procedure Trans is
 
-  FRAME : SOK_TYPES.FRAME_TAB;
+  Frame : Sok_Types.Frame_Tab;
 
-  type FILE_FRAME_REC is record
-    PATTERN : SOK_TYPES.PATTERN_LIST;
-    CONTENT : SOK_TYPES.CONTENT_LIST;
-  end RECORD;
-  type FILE_FRAME_TAB is array (SOK_TYPES.ROW_RANGE, SOK_TYPES.COL_RANGE)
-    of FILE_FRAME_REC;
-  FILE_FRAME : FILE_FRAME_TAB;
-  package D is new DIRECT_IO (FILE_FRAME_TAB);
-  D_FILE_NAME : constant STRING := "SOKOBAN.DAT";
-  D_FILE : D.FILE_TYPE;
+  type File_Frame_Rec is record
+    Pattern : Sok_Types.Pattern_List;
+    Content : Sok_Types.Content_List;
+  end Record;
+  type File_Frame_Tab is array (Sok_Types.Row_Range, Sok_Types.Col_Range)
+    of File_Frame_Rec;
+  File_Frame : File_Frame_Tab;
+  package D is new Direct_Io (File_Frame_Tab);
+  D_File_Name : constant String := "SOKOBAN.DAT";
+  D_File : D.File_Type;
   
 
-  A_FILE_NAME : constant STRING := "SOKOBAN.ASC";
-  A_FILE : TEXT_IO.FILE_TYPE;
-  CHAR : CHARACTER;
+  A_File_Name : constant String := "SOKOBAN.ASC";
+  A_File : Text_Io.File_Type;
+  Char : Character;
 
-  DAT_TO_ASC : BOOLEAN;
+  Dat_To_Asc : Boolean;
 
   -- to convert from a frame to a frame on file
-  procedure FROM_FRAME_TO_FILE (FRAME : in  SOK_TYPES.FRAME_TAB;
-                                FILE  : out FILE_FRAME_TAB) is
+  procedure From_Frame_To_File (Frame : in  Sok_Types.Frame_Tab;
+                                File  : out File_Frame_Tab) is
   begin
-    for I in SOK_TYPES.ROW_RANGE loop
-      for J in SOK_TYPES.COL_RANGE loop
-        case FRAME(I,J).PATTERN is
-          when SOK_TYPES.WALL =>
-            FILE(I,J) := (PATTERN => SOK_TYPES.WALL,
-                          CONTENT => SOK_TYPES.NOTHING);
-          when SOK_TYPES.FREE =>
-            FILE(I,J) := (PATTERN => SOK_TYPES.FREE,
-                          CONTENT => FRAME(I,J).CONTENT);
-          when SOK_TYPES.TARGET =>
-            FILE(I,J) := (PATTERN => SOK_TYPES.TARGET,
-                          CONTENT => FRAME(I,J).CONTENT);
+    for I in Sok_Types.Row_Range loop
+      for J in Sok_Types.Col_Range loop
+        case Frame(I,J).Pattern is
+          when Sok_Types.Wall =>
+            File(I,J) := (Pattern => Sok_Types.Wall,
+                          Content => Sok_Types.Nothing);
+          when Sok_Types.Free =>
+            File(I,J) := (Pattern => Sok_Types.Free,
+                          Content => Frame(I,J).Content);
+          when Sok_Types.Target =>
+            File(I,J) := (Pattern => Sok_Types.Target,
+                          Content => Frame(I,J).Content);
 
         end case;
       end loop;
     end loop;
-  end FROM_FRAME_TO_FILE;
+  end From_Frame_To_File;
 
   -- to convert from a frame on file to a frame
-  procedure FROM_FILE_TO_FRAME (FILE  : in  FILE_FRAME_TAB;
-                                FRAME : out SOK_TYPES.FRAME_TAB) is
+  procedure From_File_To_Frame (File  : in  File_Frame_Tab;
+                                Frame : out Sok_Types.Frame_Tab) is
   begin
-    for I in SOK_TYPES.ROW_RANGE loop
-      for J in SOK_TYPES.COL_RANGE loop
-        case FILE(I,J).PATTERN is
-          when SOK_TYPES.WALL =>
-            FRAME(I,J) := (PATTERN => SOK_TYPES.WALL);
-          when SOK_TYPES.FREE =>
-            FRAME(I,J) := (PATTERN => SOK_TYPES.FREE,
-                           CONTENT => FILE(I, J).CONTENT);
-          when SOK_TYPES.TARGET =>
-            FRAME(I,J) := (PATTERN => SOK_TYPES.TARGET,
-                           CONTENT => FILE(I, J).CONTENT);
+    for I in Sok_Types.Row_Range loop
+      for J in Sok_Types.Col_Range loop
+        case File(I,J).Pattern is
+          when Sok_Types.Wall =>
+            Frame(I,J) := (Pattern => Sok_Types.Wall);
+          when Sok_Types.Free =>
+            Frame(I,J) := (Pattern => Sok_Types.Free,
+                           Content => File(I, J).Content);
+          when Sok_Types.Target =>
+            Frame(I,J) := (Pattern => Sok_Types.Target,
+                           Content => File(I, J).Content);
 
         end case;
       end loop;
     end loop;
-  end FROM_FILE_TO_FRAME;
+  end From_File_To_Frame;
 
 
 begin -- trans
 
-  if ARGUMENT.GET_NBRE_ARG /= 1 then
-    TEXT_IO.PUT_LINE ("Wrong arg");
+  if Argument.Get_Nbre_Arg /= 1 then
+    Text_Io.Put_Line ("Wrong arg");
     return;
   end if;
-  if ARGUMENT.GET_PARAMETER = "asc2dat" then
-    DAT_TO_ASC := FALSE;
-  elsif ARGUMENT.GET_PARAMETER = "dat2asc" then
-    DAT_TO_ASC := TRUE;
+  if Argument.Get_Parameter = "asc2dat" then
+    Dat_To_Asc := False;
+  elsif Argument.Get_Parameter = "dat2asc" then
+    Dat_To_Asc := True;
   else
-    TEXT_IO.PUT_LINE ("Wrong arg");
+    Text_Io.Put_Line ("Wrong arg");
     return;
   end if;
 
-  if DAT_TO_ASC then
-    D.OPEN (D_FILE, D.IN_FILE, D_FILE_NAME);
+  if Dat_To_Asc then
+    D.Open (D_File, D.In_File, D_File_Name);
     begin
-      TEXT_IO.OPEN (A_FILE, TEXT_IO.OUT_FILE, A_FILE_NAME);
-      TEXT_IO.PUT_LINE ("File exists");
+      Text_Io.Open (A_File, Text_Io.Out_File, A_File_Name);
+      Text_Io.Put_Line ("File exists");
       return;
     exception
-      when TEXT_IO.NAME_ERROR =>
-        TEXT_IO.CREATE (A_FILE, TEXT_IO.OUT_FILE, A_FILE_NAME);
+      when Text_Io.Name_Error =>
+        Text_Io.Create (A_File, Text_Io.Out_File, A_File_Name);
     end;
 
 
 
-    for F in SOK_TYPES.FRAME_RANGE loop
-      D.READ (D_FILE, FILE_FRAME);
-      FROM_FILE_TO_FRAME (FILE_FRAME, FRAME);
-      for R in SOK_TYPES.ROW_RANGE loop
-        for C in SOK_TYPES.COL_RANGE loop
-          case FRAME(R, C).PATTERN is
-            when SOK_TYPES.WALL =>
-              TEXT_IO.PUT (A_FILE, 'w');
-            when FREE =>
-              case FRAME(R, C).CONTENT is
-                when SOK_TYPES.MAN =>
-                  TEXT_IO.PUT (A_FILE, 'm');
-                when SOK_TYPES.BOX =>
-                  TEXT_IO.PUT (A_FILE, 'b');
-                when SOK_TYPES.NOTHING =>
-                  TEXT_IO.PUT (A_FILE, 'n');
+    for F in Sok_Types.Frame_Range loop
+      D.Read (D_File, File_Frame);
+      From_File_To_Frame (File_Frame, Frame);
+      for R in Sok_Types.Row_Range loop
+        for C in Sok_Types.Col_Range loop
+          case Frame(R, C).Pattern is
+            when Sok_Types.Wall =>
+              Text_Io.Put (A_File, 'w');
+            when Free =>
+              case Frame(R, C).Content is
+                when Sok_Types.Man =>
+                  Text_Io.Put (A_File, 'm');
+                when Sok_Types.Box =>
+                  Text_Io.Put (A_File, 'b');
+                when Sok_Types.Nothing =>
+                  Text_Io.Put (A_File, 'n');
               end case;
-            when TARGET =>
-              case FRAME(R, C).CONTENT is
-                when SOK_TYPES.MAN =>
-                  TEXT_IO.PUT (A_FILE, 'M');
-                when SOK_TYPES.BOX =>
-                  TEXT_IO.PUT (A_FILE, 'B');
-                when SOK_TYPES.NOTHING =>
-                  TEXT_IO.PUT (A_FILE, 'N');
+            when Target =>
+              case Frame(R, C).Content is
+                when Sok_Types.Man =>
+                  Text_Io.Put (A_File, 'M');
+                when Sok_Types.Box =>
+                  Text_Io.Put (A_File, 'B');
+                when Sok_Types.Nothing =>
+                  Text_Io.Put (A_File, 'N');
               end case;
           end case;
         end loop;
@@ -131,49 +131,49 @@ begin -- trans
     end loop;
   else
 
-    TEXT_IO.OPEN (A_FILE, TEXT_IO.IN_FILE, A_FILE_NAME);
+    Text_Io.Open (A_File, Text_Io.In_File, A_File_Name);
     begin
-      D.OPEN (D_FILE, D.OUT_FILE, D_FILE_NAME);
-      TEXT_IO.PUT_LINE ("File exists");
+      D.Open (D_File, D.Out_File, D_File_Name);
+      Text_Io.Put_Line ("File exists");
       return;
     exception
-      when D.NAME_ERROR =>
-        D.CREATE (D_FILE, D.OUT_FILE, D_FILE_NAME);
+      when D.Name_Error =>
+        D.Create (D_File, D.Out_File, D_File_Name);
     end;
 
-    for F in SOK_TYPES.FRAME_RANGE loop
-      for R in SOK_TYPES.ROW_RANGE loop
-        for C in SOK_TYPES.COL_RANGE loop
-          TEXT_IO.GET (A_FILE, CHAR);
-          case CHAR is
+    for F in Sok_Types.Frame_Range loop
+      for R in Sok_Types.Row_Range loop
+        for C in Sok_Types.Col_Range loop
+          Text_Io.Get (A_File, Char);
+          case Char is
             when 'w' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.WALL);
+              Frame(R, C) := (Pattern => Sok_Types.Wall);
             when 'm' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.FREE, CONTENT => SOK_TYPES.MAN);
+              Frame(R, C) := (Pattern => Sok_Types.Free, Content => Sok_Types.Man);
             when 'b' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.FREE, CONTENT => SOK_TYPES.BOX);
+              Frame(R, C) := (Pattern => Sok_Types.Free, Content => Sok_Types.Box);
             when 'n' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.FREE, CONTENT => SOK_TYPES.NOTHING);
+              Frame(R, C) := (Pattern => Sok_Types.Free, Content => Sok_Types.Nothing);
             when 'M' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.TARGET, CONTENT => SOK_TYPES.MAN);
+              Frame(R, C) := (Pattern => Sok_Types.Target, Content => Sok_Types.Man);
             when 'B' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.TARGET, CONTENT => SOK_TYPES.BOX);
+              Frame(R, C) := (Pattern => Sok_Types.Target, Content => Sok_Types.Box);
             when 'N' =>
-              FRAME(R, C) := (PATTERN => SOK_TYPES.TARGET, CONTENT => SOK_TYPES.NOTHING);
+              Frame(R, C) := (Pattern => Sok_Types.Target, Content => Sok_Types.Nothing);
             when others =>
-              TEXT_IO.PUT_LINE ("Invalid character");
+              Text_Io.Put_Line ("Invalid character");
           end case;
         end loop;
       end loop;
-      FROM_FRAME_TO_FILE (FRAME, FILE_FRAME);
-      D.WRITE (D_FILE, FILE_FRAME);
+      From_Frame_To_File (Frame, File_Frame);
+      D.Write (D_File, File_Frame);
     end loop;
 
   end if;
 
-  TEXT_IO.CLOSE (A_FILE);
-  D.CLOSE (D_FILE);
-  TEXT_IO.PUT_LINE ("Done");
+  Text_Io.Close (A_File);
+  D.Close (D_File);
+  Text_Io.Put_Line ("Done");
 
-end TRANS;
+end Trans;
 

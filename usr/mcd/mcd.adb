@@ -1,61 +1,61 @@
-with TEXT_IO;
-with ARGUMENT, SYS_CALLS;
-with DEBUG, PARSER, MCD_MNG;
+with Text_Io;
+with Argument, Sys_Calls;
+with Debug, Parser, Mcd_Mng;
 
-procedure MCD is
-  ITEM : MCD_MNG.ITEM_REC;
-  THE_END : BOOLEAN;
-  INVALID_ARGUMENT, ARGUMENT_MISMATCH, INVALID_REGISTER, EMTPY_REGISTER,
-                    EMPTY_STACK : exception;
-  PARSING_ERROR : exception;
+procedure Mcd is
+  Item : Mcd_Mng.Item_Rec;
+  The_End : Boolean;
+  Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
+                    Empty_Stack : exception;
+  Parsing_Error : exception;
 
 begin
 
-  DEBUG.INIT;
+  Debug.Init;
 
-  if ARGUMENT.GET_NBRE_ARG /= 0 then
-    PARSER.PRINT_HELP;
+  if Argument.Get_Nbre_Arg /= 0 then
+    Parser.Print_Help;
     return;
   end if;
 
   loop 
     begin
-      ITEM := PARSER.NEXT_ITEM;
-      MCD_MNG.NEW_ITEM(ITEM, THE_END);
-      exit when THE_END;
+      Item := Parser.Next_Item;
+      Mcd_Mng.New_Item(Item, The_End);
+      exit when The_End;
     exception
       when others =>
-        PARSER.DUMP_STACK;
+        Parser.Dump_Stack;
         raise;
     end;
    end loop;
    
-   if not MCD_MNG.CHECK_EMPTY_STACK then
-     SYS_CALLS.PUT_LINE_ERROR ("Warning: The stack was not empty.");
+   if not Mcd_Mng.Check_Empty_Stack then
+     Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
    end if;
 
 exception
   -- Clean mapping of exceptions
-  when MCD_MNG.INVALID_ARGUMENT =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: Invalid argument");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-  when MCD_MNG.ARGUMENT_MISMATCH =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: Argument mismatch");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-  when MCD_MNG.INVALID_REGISTER =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: Invalid register");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-  when MCD_MNG.EMTPY_REGISTER =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: Empty register");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-  when MCD_MNG.EMPTY_STACK =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: Empty stack");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-  when MCD_MNG.STRING_LEN =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: String length error");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-  when PARSER.PARSING_ERROR =>
-    SYS_CALLS.PUT_LINE_ERROR ("Error: Parsing error");
-    SYS_CALLS.SET_ERROR_EXIT_CODE;
-end MCD;
+  when Mcd_Mng.Invalid_Argument =>
+    Sys_Calls.Put_Line_Error ("Error: Invalid argument");
+    Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.Argument_Mismatch =>
+    Sys_Calls.Put_Line_Error ("Error: Argument mismatch");
+    Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.Invalid_Register =>
+    Sys_Calls.Put_Line_Error ("Error: Invalid register");
+    Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.Emtpy_Register =>
+    Sys_Calls.Put_Line_Error ("Error: Empty register");
+    Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.Empty_Stack =>
+    Sys_Calls.Put_Line_Error ("Error: Empty stack");
+    Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.String_Len =>
+    Sys_Calls.Put_Line_Error ("Error: String length error");
+    Sys_Calls.Set_Error_Exit_Code;
+  when Parser.Parsing_Error =>
+    Sys_Calls.Put_Line_Error ("Error: Parsing error");
+    Sys_Calls.Set_Error_Exit_Code;
+end Mcd;
 

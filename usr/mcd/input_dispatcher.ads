@@ -1,27 +1,27 @@
-package INPUT_DISPATCHER is
+package Input_Dispatcher is
 
   -- Max line length on stdin
   -- Max string length
-  MAX_STRING_LG : constant := 1024;
+  Max_String_Lg : constant := 1024;
 
   -- Set input flow to a new string
   --  or stdin if STR is empty
-  procedure SET_INPUT (STR : in STRING);
+  procedure Set_Input (Str : in String);
 
   -- Get the ungot words of current string
   -- PROGRAM_ERROR is current input is stdin
   --  or if no word already got from current string
-  function GET_REMAINING return STRING;
+  function Get_Remaining return String;
 
   -- Get next word from current input
   -- Empty if end of input flow
-  function NEXT_WORD return STRING;
+  function Next_Word return String;
 
   -- Error if end of string litteral not found
-  STRING_ERROR : exception;
+  String_Error : exception;
 
   -- The string on which the error occured
-  function ERROR_STRING return STRING;
+  function Error_String return String;
 
-end INPUT_DISPATCHER;
+end Input_Dispatcher;
 

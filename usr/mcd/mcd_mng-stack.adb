@@ -1,137 +1,137 @@
-with TEXT_IO;
-with DYNAMIC_LIST;
-separate (MCD_MNG)
+with Text_Io;
+with Dynamic_List;
+separate (Mcd_Mng)
 
-package body STACK is 
+package body Stack is 
 
-  package STACK_LIST is new DYNAMIC_LIST (ITEM_REC);
-  LIST, EXTRA_LIST : STACK_LIST.LIST_TYPE;
+  package Stack_List is new Dynamic_List (Item_Rec);
+  List, Extra_List : Stack_List.List_Type;
 
-  procedure PUSH (ITEM : in ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE) is
+  procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True) is
   begin
-    if ITEM.KIND not in OPERAND_KIND_LIST then
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-        if not DEFAULT_STACK then
-          TEXT_IO.PUT ("Extra ");
+    if Item.Kind not in Operand_Kind_List then
+      if Debug.Debug_Level_Array(Debug.Stack) then
+        if not Default_Stack then
+          Text_Io.Put ("Extra ");
         end if;
-        TEXT_IO.PUT ("Stack: ERROR Pushing ");
-        DEBUG.PUT (ITEM);
-        TEXT_IO.NEW_LINE;
+        Text_Io.Put ("Stack: ERROR Pushing ");
+        Debug.Put (Item);
+        Text_Io.New_Line;
       end if;
-      raise INVALID_ARGUMENT;
+      raise Invalid_Argument;
     end if;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-        if not DEFAULT_STACK then
-          TEXT_IO.PUT ("Extra ");
+    if Debug.Debug_Level_Array(Debug.Stack) then
+        if not Default_Stack then
+          Text_Io.Put ("Extra ");
         end if;
-      TEXT_IO.PUT ("Stack: Pushing ");
-      DEBUG.PUT (ITEM);
-      TEXT_IO.NEW_LINE;
+      Text_Io.Put ("Stack: Pushing ");
+      Debug.Put (Item);
+      Text_Io.New_Line;
     end if;
-    if DEFAULT_STACK then
-      STACK_LIST.INSERT(LIST, ITEM);
+    if Default_Stack then
+      Stack_List.Insert(List, Item);
     else
-      STACK_LIST.INSERT(EXTRA_LIST, ITEM);
+      Stack_List.Insert(Extra_List, Item);
     end if;
-  end PUSH;
+  end Push;
 
-  procedure POP (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE) is
-    LITEM : ITEM_REC;
+  procedure Pop (Item : out Item_Rec; Default_Stack : in Boolean := True) is
+    Litem : Item_Rec;
   begin
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      if not DEFAULT_STACK then
-        TEXT_IO.PUT ("Extra ");
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      if not Default_Stack then
+        Text_Io.Put ("Extra ");
       end if;
-      TEXT_IO.PUT ("Stack: Poping ");
+      Text_Io.Put ("Stack: Poping ");
     end if;
-    if DEFAULT_STACK then
-      STACK_LIST.GET(LIST, LITEM, STACK_LIST.PREV);
+    if Default_Stack then
+      Stack_List.Get(List, Litem, Stack_List.Prev);
     else
-      STACK_LIST.GET(EXTRA_LIST, LITEM, STACK_LIST.PREV);
+      Stack_List.Get(Extra_List, Litem, Stack_List.Prev);
     end if;
-    ITEM := LITEM;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      DEBUG.PUT (LITEM);
-      TEXT_IO.NEW_LINE;
+    Item := Litem;
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Debug.Put (Litem);
+      Text_Io.New_Line;
     end if;
   exception
-    when STACK_LIST.EMPTY_LIST =>
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-        TEXT_IO.PUT_LINE("raises EMPTY_STACK");
+    when Stack_List.Empty_List =>
+      if Debug.Debug_Level_Array(Debug.Stack) then
+        Text_Io.Put_Line("raises EMPTY_STACK");
       end if;
-      raise EMPTY_STACK;
-  end POP;
+      raise Empty_Stack;
+  end Pop;
 
-  procedure READ (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE) is
-    LITEM : ITEM_REC;
+  procedure Read (Item : out Item_Rec; Default_Stack : in Boolean := True) is
+    Litem : Item_Rec;
   begin
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      if not DEFAULT_STACK then
-        TEXT_IO.PUT ("Extra ");
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      if not Default_Stack then
+        Text_Io.Put ("Extra ");
       end if;
-      TEXT_IO.PUT ("Stack: Reading ");
+      Text_Io.Put ("Stack: Reading ");
     end if;
-    if DEFAULT_STACK then
-      STACK_LIST.READ(LIST, LITEM, STACK_LIST.CURRENT);
+    if Default_Stack then
+      Stack_List.Read(List, Litem, Stack_List.Current);
     else
-      STACK_LIST.READ(EXTRA_LIST, LITEM, STACK_LIST.CURRENT);
+      Stack_List.Read(Extra_List, Litem, Stack_List.Current);
     end if;
-    ITEM := LITEM;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      DEBUG.PUT (LITEM);
-      TEXT_IO.NEW_LINE;
+    Item := Litem;
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Debug.Put (Litem);
+      Text_Io.New_Line;
     end if;
   exception
-    when STACK_LIST.EMPTY_LIST =>
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-        TEXT_IO.PUT_LINE("raises EMPTY_STACK");
+    when Stack_List.Empty_List =>
+      if Debug.Debug_Level_Array(Debug.Stack) then
+        Text_Io.Put_Line("raises EMPTY_STACK");
       end if;
-      raise EMPTY_STACK;
-  end READ;
+      raise Empty_Stack;
+  end Read;
 
-  function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE) return NATURAL is
-    SIZE : NATURAL;
+  function Stack_Size (Default_Stack : Boolean := True) return Natural is
+    Size : Natural;
   begin
-    if DEFAULT_STACK then
-      SIZE := STACK_LIST.LIST_LENGTH(LIST);
+    if Default_Stack then
+      Size := Stack_List.List_Length(List);
     else
-      SIZE := STACK_LIST.LIST_LENGTH(EXTRA_LIST);
+      Size := Stack_List.List_Length(Extra_List);
     end if;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      if not DEFAULT_STACK then
-        TEXT_IO.PUT ("Extra ");
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      if not Default_Stack then
+        Text_Io.Put ("Extra ");
       end if;
-      TEXT_IO.PUT_LINE ("Stack: size " & NATURAL'IMAGE(SIZE));
+      Text_Io.Put_Line ("Stack: size " & Natural'Image(Size));
     end if;
-    return SIZE;
-  end STACK_SIZE;
+    return Size;
+  end Stack_Size;
 
-  procedure POPF (ITEM : out ITEM_REC) is
-    LITEM : ITEM_REC;
+  procedure Popf (Item : out Item_Rec) is
+    Litem : Item_Rec;
   begin
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-        TEXT_IO.PUT ("Extra ");
-      TEXT_IO.PUT ("Stack: Poping first ");
+    if Debug.Debug_Level_Array(Debug.Stack) then
+        Text_Io.Put ("Extra ");
+      Text_Io.Put ("Stack: Poping first ");
     end if;
     -- Get first pushed item
-    STACK_LIST.MOVE_TO(EXTRA_LIST, STACK_LIST.NEXT, 0, FALSE);
-    STACK_LIST.GET(EXTRA_LIST, LITEM, STACK_LIST.NEXT);
-    ITEM := LITEM;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-      DEBUG.PUT (LITEM);
-      TEXT_IO.NEW_LINE;
+    Stack_List.Move_To(Extra_List, Stack_List.Next, 0, False);
+    Stack_List.Get(Extra_List, Litem, Stack_List.Next);
+    Item := Litem;
+    if Debug.Debug_Level_Array(Debug.Stack) then
+      Debug.Put (Litem);
+      Text_Io.New_Line;
     end if;
     -- Move back to las pushed item
-    if not STACK_LIST.IS_EMPTY(EXTRA_LIST) then
-      STACK_LIST.MOVE_TO(EXTRA_LIST, STACK_LIST.PREV, 0, FALSE);
+    if not Stack_List.Is_Empty(Extra_List) then
+      Stack_List.Move_To(Extra_List, Stack_List.Prev, 0, False);
     end if;
   exception
-    when STACK_LIST.EMPTY_LIST =>
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.STACK) then
-        TEXT_IO.PUT_LINE("raises EMPTY_STACK");
+    when Stack_List.Empty_List =>
+      if Debug.Debug_Level_Array(Debug.Stack) then
+        Text_Io.Put_Line("raises EMPTY_STACK");
       end if;
-      raise EMPTY_STACK;
-  end POPF;
+      raise Empty_Stack;
+  end Popf;
 
-end STACK;
+end Stack;
 

@@ -1,612 +1,612 @@
-WIth CON_IO;
-separate (MNG)
-package body EDITION is
+With Con_Io;
+separate (Mng)
+package body Edition is
 
   -- For checking unicity of reference
-  function SAME_REF (OP1, OP2 : OPER_DEF.OPER_REC) return BOOLEAN is
+  function Same_Ref (Op1, Op2 : Oper_Def.Oper_Rec) return Boolean is
   begin
-    return OP1.REFERENCE = OP2.REFERENCE;
-  end SAME_REF;
-  procedure SEARCH_REF is new OPER_LIST_MNG.SEARCH(SAME_REF);
+    return Op1.Reference = Op2.Reference;
+  end Same_Ref;
+  procedure Search_Ref is new Oper_List_Mng.Search(Same_Ref);
 
 
   -- Affectation of kind and status buttons
-  KIND_BUTTONS : constant array (OPER_DEF.KIND_LIST) of AFPX.FIELD_RANGE :=
-    (OPER_DEF.CHEQUE => 22,
-     OPER_DEF.CREDIT => 23,
-     OPER_DEF.TRANSFER => 24,
-     OPER_DEF.WITHDRAW => 25);
+  Kind_Buttons : constant array (Oper_Def.Kind_List) of Afpx.Field_Range :=
+    (Oper_Def.Cheque => 22,
+     Oper_Def.Credit => 23,
+     Oper_Def.Transfer => 24,
+     Oper_Def.Withdraw => 25);
 
-  STATUS_BUTTONS : constant array (OPER_DEF.STATUS_LIST) of AFPX.FIELD_RANGE :=
-    (OPER_DEF.ENTERED => 27,
-     OPER_DEF.NOT_ENTERED => 28,
-     OPER_DEF.DEFERED => 29);
+  Status_Buttons : constant array (Oper_Def.Status_List) of Afpx.Field_Range :=
+    (Oper_Def.Entered => 27,
+     Oper_Def.Not_Entered => 28,
+     Oper_Def.Defered => 29);
 
   -- Protect get and button fields &  set colors.
-  procedure PROTECT_DATA is
+  procedure Protect_Data is
   begin
-    AFPX.SET_FIELD_PROTECTION(13, TRUE);
-    AFPX.SET_FIELD_COLORS(13, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(15, TRUE);
-    AFPX.SET_FIELD_COLORS(15, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(17, TRUE);
-    AFPX.SET_FIELD_COLORS(17, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(19, TRUE);
-    AFPX.SET_FIELD_COLORS(19, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(20, TRUE);
-    AFPX.SET_FIELD_COLORS(20, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(22, TRUE);
-    AFPX.SET_FIELD_COLORS(22, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(23, TRUE);
-    AFPX.SET_FIELD_COLORS(23, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(24, TRUE);
-    AFPX.SET_FIELD_COLORS(24, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(25, TRUE);
-    AFPX.SET_FIELD_COLORS(25, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(27, TRUE);
-    AFPX.SET_FIELD_COLORS(27, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(28, TRUE);
-    AFPX.SET_FIELD_COLORS(28, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(29, TRUE);
-    AFPX.SET_FIELD_COLORS(29, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(31, TRUE);
-    AFPX.SET_FIELD_COLORS(31, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(33, TRUE);
-    AFPX.SET_FIELD_COLORS(33, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-    AFPX.SET_FIELD_PROTECTION(35, TRUE);
-    AFPX.SET_FIELD_COLORS(35, CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK);
-  end PROTECT_DATA;
+    Afpx.Set_Field_Protection(13, True);
+    Afpx.Set_Field_Colors(13, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(15, True);
+    Afpx.Set_Field_Colors(15, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(17, True);
+    Afpx.Set_Field_Colors(17, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(19, True);
+    Afpx.Set_Field_Colors(19, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(20, True);
+    Afpx.Set_Field_Colors(20, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(22, True);
+    Afpx.Set_Field_Colors(22, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(23, True);
+    Afpx.Set_Field_Colors(23, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(24, True);
+    Afpx.Set_Field_Colors(24, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(25, True);
+    Afpx.Set_Field_Colors(25, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(27, True);
+    Afpx.Set_Field_Colors(27, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(28, True);
+    Afpx.Set_Field_Colors(28, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(29, True);
+    Afpx.Set_Field_Colors(29, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(31, True);
+    Afpx.Set_Field_Colors(31, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(33, True);
+    Afpx.Set_Field_Colors(33, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(35, True);
+    Afpx.Set_Field_Colors(35, Con_Io.Light_Gray, Background => Con_Io.Black);
+  end Protect_Data;
 
 
   -- Title, data protection,
-  procedure PREPARE (EDIT_TYPE : in EDIT_LIST) is
+  procedure Prepare (Edit_Type : in Edit_List) is
   begin
-    AFPX.USE_DESCRIPTOR(3);
-    SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
-    SCREEN.ENCODE_NB_OPER(OPER_LIST_MNG.LIST_LENGTH(OPER_LIST),
-                          SEL_LIST_MNG.LIST_LENGTH(SEL_LIST));
-    SCREEN.ENCODE_SAVED(ACCOUNT_SAVED);
-    case EDIT_TYPE is
-      when CREATE =>
-        AFPX.ENCODE_FIELD(9, (0, 0), "creation");
+    Afpx.Use_Descriptor(3);
+    Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+    Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
+                          Sel_List_Mng.List_Length(Sel_List));
+    Screen.Encode_Saved(Account_Saved);
+    case Edit_Type is
+      when Create =>
+        Afpx.Encode_Field(9, (0, 0), "creation");
         -- Disable No
-        AFPX.SET_FIELD_ACTIVATION(10, FALSE);
-        AFPX.SET_FIELD_ACTIVATION(11, FALSE);
+        Afpx.Set_Field_Activation(10, False);
+        Afpx.Set_Field_Activation(11, False);
         -- Enable copy if list not empty
-        AFPX.SET_FIELD_ACTIVATION(36, not OPER_LIST_MNG.IS_EMPTY(OPER_LIST));
-      when MODIFY =>
-        AFPX.ENCODE_FIELD(9, (0, 0), "modification");
-        AFPX.SET_FIELD_ACTIVATION(36, FALSE);
-      when VIEW =>
-        AFPX.ENCODE_FIELD(9, (0, 0), "visualisation");
-        AFPX.SET_FIELD_ACTIVATION(36, FALSE);
-        PROTECT_DATA;
-      when DELETE =>
-        AFPX.ENCODE_FIELD(9, (0, 0), "deletion");
-        AFPX.SET_FIELD_ACTIVATION(36, FALSE);
-        PROTECT_DATA;
+        Afpx.Set_Field_Activation(36, not Oper_List_Mng.Is_Empty(Oper_List));
+      when Modify =>
+        Afpx.Encode_Field(9, (0, 0), "modification");
+        Afpx.Set_Field_Activation(36, False);
+      when View =>
+        Afpx.Encode_Field(9, (0, 0), "visualisation");
+        Afpx.Set_Field_Activation(36, False);
+        Protect_Data;
+      when Delete =>
+        Afpx.Encode_Field(9, (0, 0), "deletion");
+        Afpx.Set_Field_Activation(36, False);
+        Protect_Data;
     end case;
-  end PREPARE;
+  end Prepare;
 
   -- Set buttons colors according to current kind/status
-  procedure SET_BUTTONS(ALLOW_EDIT : in BOOLEAN;
-                        KIND : in OPER_DEF.KIND_LIST;
-                        STATUS : in OPER_DEF.STATUS_LIST) is
+  procedure Set_Buttons(Allow_Edit : in Boolean;
+                        Kind : in Oper_Def.Kind_List;
+                        Status : in Oper_Def.Status_List) is
 
     -- Set one button color according to active or not and modifiable or not
-    procedure SET_ACTIVE (BUTTON : in AFPX.FIELD_RANGE;
-                          ACTIVE : in BOOLEAN) is
+    procedure Set_Active (Button : in Afpx.Field_Range;
+                          Active : in Boolean) is
     begin
       -- Default (except unselected and view/delete)
-      AFPX.SET_FIELD_ACTIVATION(BUTTON, TRUE);
-      if ALLOW_EDIT then
-        if ACTIVE then
+      Afpx.Set_Field_Activation(Button, True);
+      if Allow_Edit then
+        if Active then
           -- Active and modifiable
-          AFPX.SET_FIELD_COLORS(BUTTON,
-                                FOREGROUND => CON_IO.MAGENTA);
+          Afpx.Set_Field_Colors(Button,
+                                Foreground => Con_Io.Magenta);
         else
           -- Inactive and modifiable
-          AFPX.SET_FIELD_COLORS(BUTTON,
-                                FOREGROUND => CON_IO.CYAN);
+          Afpx.Set_Field_Colors(Button,
+                                Foreground => Con_Io.Cyan);
         end if;
       else
-        if ACTIVE then
+        if Active then
           -- Inactive and modifiable
-          AFPX.SET_FIELD_COLORS(BUTTON,
-                                FOREGROUND => CON_IO.LIGHT_GRAY);
+          Afpx.Set_Field_Colors(Button,
+                                Foreground => Con_Io.Light_Gray);
         else
-          AFPX.SET_FIELD_ACTIVATION(BUTTON, FALSE);
+          Afpx.Set_Field_Activation(Button, False);
         end if;
       end if;
-    end SET_ACTIVE;
+    end Set_Active;
 
-    use type OPER_DEF.KIND_LIST, OPER_DEF.STATUS_LIST;
+    use type Oper_Def.Kind_List, Oper_Def.Status_List;
   begin
-    for K in OPER_DEF.KIND_LIST loop
-      SET_ACTIVE(KIND_BUTTONS(K), K = KIND);
+    for K in Oper_Def.Kind_List loop
+      Set_Active(Kind_Buttons(K), K = Kind);
     end loop;
-    for S in OPER_DEF.STATUS_LIST loop
-      SET_ACTIVE(STATUS_BUTTONS(S), S = STATUS);
+    for S in Oper_Def.Status_List loop
+      Set_Active(Status_Buttons(S), S = Status);
     end loop;
     -- Allow defered (check done in update_buttons)
-    if STATUS = OPER_DEF.DEFERED
-    and then not OPER_DEF.KIND_CAN_BE_DEFERED(KIND) then
-      raise PROGRAM_ERROR;
+    if Status = Oper_Def.Defered
+    and then not Oper_Def.Kind_Can_Be_Defered(Kind) then
+      raise Program_Error;
     end if;
-    AFPX.SET_FIELD_ACTIVATION(STATUS_BUTTONS(OPER_DEF.DEFERED),
-                              OPER_DEF.KIND_CAN_BE_DEFERED(KIND));
-  end SET_BUTTONS;
+    Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Defered),
+                              Oper_Def.Kind_Can_Be_Defered(Kind));
+  end Set_Buttons;
 
   -- Update buttons after a click
-  procedure UPDATE_BUTTONS(FIELD  : in AFPX.FIELD_RANGE;
-                           KIND   : in out OPER_DEF.KIND_LIST;
-                           STATUS : in out OPER_DEF.STATUS_LIST) is
-    use type AFPX.FIELD_RANGE, OPER_DEF.KIND_LIST, OPER_DEF.STATUS_LIST;
+  procedure Update_Buttons(Field  : in Afpx.Field_Range;
+                           Kind   : in out Oper_Def.Kind_List;
+                           Status : in out Oper_Def.Status_List) is
+    use type Afpx.Field_Range, Oper_Def.Kind_List, Oper_Def.Status_List;
   begin
-    for K in OPER_DEF.KIND_LIST loop
-      if FIELD = KIND_BUTTONS(K) then
+    for K in Oper_Def.Kind_List loop
+      if Field = Kind_Buttons(K) then
         -- New kind
-        KIND := K;
+        Kind := K;
         -- Update Status if defered and not allowed
-        if STATUS = OPER_DEF.DEFERED
-        and then not OPER_DEF.KIND_CAN_BE_DEFERED(KIND) then
-          STATUS := OPER_DEF.NOT_ENTERED;
-        elsif STATUS = OPER_DEF.NOT_ENTERED
-        and then OPER_DEF.KIND_CAN_BE_DEFERED(KIND) then
-          STATUS := OPER_DEF.DEFERED;
+        if Status = Oper_Def.Defered
+        and then not Oper_Def.Kind_Can_Be_Defered(Kind) then
+          Status := Oper_Def.Not_Entered;
+        elsif Status = Oper_Def.Not_Entered
+        and then Oper_Def.Kind_Can_Be_Defered(Kind) then
+          Status := Oper_Def.Defered;
         end if;
-        SET_BUTTONS(TRUE, KIND, STATUS);
+        Set_Buttons(True, Kind, Status);
         return;
       end if;
     end loop;
-    for S in OPER_DEF.STATUS_LIST loop
-      if FIELD = STATUS_BUTTONS(S) then
+    for S in Oper_Def.Status_List loop
+      if Field = Status_Buttons(S) then
         -- New status
-        STATUS := S;
-        SET_BUTTONS(TRUE, KIND, STATUS);
+        Status := S;
+        Set_Buttons(True, Kind, Status);
         return;
       end if;
     end loop;
     -- Never reached
-    raise PROGRAM_ERROR;
-  end UPDATE_BUTTONS;
+    raise Program_Error;
+  end Update_Buttons;
 
-  procedure PROTECT_MOVEMENTS (EDIT_TYPE : in EDIT_LIST) is
+  procedure Protect_Movements (Edit_Type : in Edit_List) is
   begin
-    if EDIT_TYPE = CREATE then
+    if Edit_Type = Create then
       -- Always and only allow OK, Cancel, and ok_and_next
-      AFPX.SET_FIELD_ACTIVATION(38, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(39, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(43, FALSE);
+      Afpx.Set_Field_Activation(38, False);
+      Afpx.Set_Field_Activation(39, False);
+      Afpx.Set_Field_Activation(43, False);
       return;
     end if;
 
     -- Now list cannot be empty: protect out-of-list
-    AFPX.SET_FIELD_ACTIVATION(38, SEL_LIST_MNG.GET_POSITION(SEL_LIST) /= 1);
-    AFPX.SET_FIELD_ACTIVATION(39, SEL_LIST_MNG.GET_POSITION(SEL_LIST) /= 1);
-    AFPX.SET_FIELD_ACTIVATION(42, SEL_LIST_MNG.GET_POSITION(SEL_LIST)
-                               /= SEL_LIST_MNG.LIST_LENGTH(SEL_LIST));
-    AFPX.SET_FIELD_ACTIVATION(43, SEL_LIST_MNG.GET_POSITION(SEL_LIST)
-                               /= SEL_LIST_MNG.LIST_LENGTH(SEL_LIST));
+    Afpx.Set_Field_Activation(38, Sel_List_Mng.Get_Position(Sel_List) /= 1);
+    Afpx.Set_Field_Activation(39, Sel_List_Mng.Get_Position(Sel_List) /= 1);
+    Afpx.Set_Field_Activation(42, Sel_List_Mng.Get_Position(Sel_List)
+                               /= Sel_List_Mng.List_Length(Sel_List));
+    Afpx.Set_Field_Activation(43, Sel_List_Mng.Get_Position(Sel_List)
+                               /= Sel_List_Mng.List_Length(Sel_List));
 
-    if EDIT_TYPE = VIEW then
+    if Edit_Type = View then
       -- Only allow OK
-      AFPX.SET_FIELD_ACTIVATION(39, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(41, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(43, FALSE);
-    elsif EDIT_TYPE = DELETE then
+      Afpx.Set_Field_Activation(39, False);
+      Afpx.Set_Field_Activation(41, False);
+      Afpx.Set_Field_Activation(43, False);
+    elsif Edit_Type = Delete then
       -- Only allow back
-      AFPX.SET_FIELD_ACTIVATION(38, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(39, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(42, FALSE);
-      AFPX.SET_FIELD_ACTIVATION(43, FALSE);
+      Afpx.Set_Field_Activation(38, False);
+      Afpx.Set_Field_Activation(39, False);
+      Afpx.Set_Field_Activation(42, False);
+      Afpx.Set_Field_Activation(43, False);
     end if;
-  end PROTECT_MOVEMENTS;
+  end Protect_Movements;
 
   -- Set unit button according to current unit
-  procedure SET_UNIT is
-    use type UNIT_FORMAT.UNITS_LIST;
+  procedure Set_Unit is
+    use type Unit_Format.Units_List;
   begin
-    if UNIT_FORMAT.GET_CURRENT_UNIT = UNIT_FORMAT.EUROS then
-      AFPX.ENCODE_FIELD(19, (0, 1), "e");
+    if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
+      Afpx.Encode_Field(19, (0, 1), "e");
     else
-      AFPX.ENCODE_FIELD(19, (0, 1), "F");
+      Afpx.Encode_Field(19, (0, 1), "F");
     end if;
-  end SET_UNIT;
+  end Set_Unit;
 
   -- Encode operation
-  procedure ENCODE_OPER (EDIT_TYPE : in EDIT_LIST;
-                         OPER : in OPER_DEF.OPER_REC;
-                         DELETED : in BOOLEAN) is
-    DATE_STR : UNIT_FORMAT.SHORT_DATE_STR;
-    use type OPER_DEF.AMOUNT_RANGE;
+  procedure Encode_Oper (Edit_Type : in Edit_List;
+                         Oper : in Oper_Def.Oper_Rec;
+                         Deleted : in Boolean) is
+    Date_Str : Unit_Format.Short_Date_Str;
+    use type Oper_Def.Amount_Range;
   begin
-    if EDIT_TYPE /= CREATE then
+    if Edit_Type /= Create then
       -- No
-      AFPX.ENCODE_FIELD(11, (0, 0),
-          NORMAL(OPER_LIST_MNG.GET_POSITION(OPER_LIST), 4));
+      Afpx.Encode_Field(11, (0, 0),
+          Normal(Oper_List_Mng.Get_Position(Oper_List), 4));
     end if;
     -- Date
-    DATE_STR := UNIT_FORMAT.SHORT_DATE_IMAGE(OPER.DATE);
-    AFPX.ENCODE_FIELD(13, (0, 0), DATE_STR(1 .. 2));
-    AFPX.ENCODE_FIELD(15, (0, 0), DATE_STR(4 .. 5));
-    AFPX.ENCODE_FIELD(17, (0, 0), DATE_STR(7 .. 8));
+    Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
+    Afpx.Encode_Field(13, (0, 0), Date_Str(1 .. 2));
+    Afpx.Encode_Field(15, (0, 0), Date_Str(4 .. 5));
+    Afpx.Encode_Field(17, (0, 0), Date_Str(7 .. 8));
     -- Amount
-    if OPER.AMOUNT /= 0.0 then
-      AFPX.ENCODE_FIELD(20, (0, 0), UNIT_FORMAT.IMAGE(OPER.AMOUNT, TRUE));
+    if Oper.Amount /= 0.0 then
+      Afpx.Encode_Field(20, (0, 0), Unit_Format.Image(Oper.Amount, True));
     else
-      AFPX.CLEAR_FIELD(20);
+      Afpx.Clear_Field(20);
     end if;
-    SET_UNIT;
+    Set_Unit;
     -- Kind and status (modifiable or not)
-    SET_BUTTONS(EDIT_TYPE in CREATE .. MODIFY, OPER.KIND, OPER.STATUS);
+    Set_Buttons(Edit_Type in Create .. Modify, Oper.Kind, Oper.Status);
     -- 3 strings
-    AFPX.ENCODE_FIELD(31, (0, 0), OPER.DESTINATION);
-    AFPX.ENCODE_FIELD(33, (0, 0), OPER.COMMENT);
-    AFPX.ENCODE_FIELD(35, (0, 0), OPER.REFERENCE);
+    Afpx.Encode_Field(31, (0, 0), Oper.Destination);
+    Afpx.Encode_Field(33, (0, 0), Oper.Comment);
+    Afpx.Encode_Field(35, (0, 0), Oper.Reference);
     -- Deleted
-    AFPX.SET_FIELD_ACTIVATION(37, DELETED);
-  end ENCODE_OPER;
+    Afpx.Set_Field_Activation(37, Deleted);
+  end Encode_Oper;
 
-  procedure UPDATE is
+  procedure Update is
   begin
-    ACCOUNT_SAVED := FALSE;
-    SCREEN.ENCODE_NB_OPER(OPER_LIST_MNG.LIST_LENGTH(OPER_LIST)
-                             - DELETION.GET_NB_DELETED,
-                          SEL_LIST_MNG.LIST_LENGTH(SEL_LIST)
-                             - DELETION.GET_NB_DELETED);
-    SCREEN.ENCODE_SAVED(ACCOUNT_SAVED);
+    Account_Saved := False;
+    Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List)
+                             - Deletion.Get_Nb_Deleted,
+                          Sel_List_Mng.List_Length(Sel_List)
+                             - Deletion.Get_Nb_Deleted);
+    Screen.Encode_Saved(Account_Saved);
 
-    COMPUTE_AMOUNTS;
-    LIST_UTIL.MOVE_TO_CURRENT;
-  end UPDATE;
+    Compute_Amounts;
+    List_Util.Move_To_Current;
+  end Update;
 
   -- Cancel (a deletion)
-  procedure CANCEL (EDIT_TYPE : in EDIT_LIST) is
+  procedure Cancel (Edit_Type : in Edit_List) is
   begin
-    if EDIT_TYPE = DELETE then
-      DELETION.FLAG_UNDELETED;
-      UPDATE;
+    if Edit_Type = Delete then
+      Deletion.Flag_Undeleted;
+      Update;
     end if;
-  end CANCEL;
+  end Cancel;
 
   -- Check data. If OK, write/delete it and return 0,
   --   otherwise return the field of error
-  function VALIDATE (EDIT_TYPE : in EDIT_LIST;
-                     KIND : OPER_DEF.KIND_LIST;
-                     STATUS : OPER_DEF.STATUS_LIST)
-           return AFPX.ABSOLUTE_FIELD_RANGE is
+  function Validate (Edit_Type : in Edit_List;
+                     Kind : Oper_Def.Kind_List;
+                     Status : Oper_Def.Status_List)
+           return Afpx.Absolute_Field_Range is
 
-    OPER, SAVED_OPER : OPER_DEF.OPER_REC;
-    SAVED_MOVEMENT : OPER_LIST_MNG.MOVEMENT;
-    DATE_STR : UNIT_FORMAT.DATE_STR;
-    FIELD : AFPX.ABSOLUTE_FIELD_RANGE := 0;
-    POS : POSITIVE;
-    SEL : SEL_REC;
-    use type OPER_DEF.STATUS_LIST, OPER_DEF.KIND_LIST,
-             AFPX.ABSOLUTE_FIELD_RANGE;
+    Oper, Saved_Oper : Oper_Def.Oper_Rec;
+    Saved_Movement : Oper_List_Mng.Movement;
+    Date_Str : Unit_Format.Date_Str;
+    Field : Afpx.Absolute_Field_Range := 0;
+    Pos : Positive;
+    Sel : Sel_Rec;
+    use type Oper_Def.Status_List, Oper_Def.Kind_List,
+             Afpx.Absolute_Field_Range;
   begin
-    if EDIT_TYPE = VIEW then
+    if Edit_Type = View then
       return 0;
-    elsif EDIT_TYPE = DELETE then
+    elsif Edit_Type = Delete then
       -- Flag selected operation as deleted
-      DELETION.FLAG_DELETED;
-      UPDATE;
+      Deletion.Flag_Deleted;
+      Update;
       return 0;
     end if;
 
     -- Check data, return error field
     -- Date
-    FIELD := 13;
-    DATE_STR := AFPX.DECODE_FIELD(13,0) & '/'
-              & AFPX.DECODE_FIELD(15,0) & '/'
-       & "20" & AFPX.DECODE_FIELD(17,0);
-    OPER.DATE := UNIT_FORMAT.DATE_VALUE(DATE_STR);
+    Field := 13;
+    Date_Str := Afpx.Decode_Field(13,0) & '/'
+              & Afpx.Decode_Field(15,0) & '/'
+       & "20" & Afpx.Decode_Field(17,0);
+    Oper.Date := Unit_Format.Date_Value(Date_Str);
     -- Amount
-    FIELD := 20;
-    OPER.AMOUNT := UNIT_FORMAT.VALUE(AFPX.DECODE_FIELD(20, 0));
+    Field := 20;
+    Oper.Amount := Unit_Format.Value(Afpx.Decode_Field(20, 0));
     -- Kind and status
-    OPER.KIND := KIND;
-    OPER.STATUS := STATUS;
-    if OPER.STATUS = OPER_DEF.DEFERED
-    and then not OPER_DEF.KIND_CAN_BE_DEFERED(OPER.KIND) then
+    Oper.Kind := Kind;
+    Oper.Status := Status;
+    if Oper.Status = Oper_Def.Defered
+    and then not Oper_Def.Kind_Can_Be_Defered(Oper.Kind) then
       -- Should be protected at buttons level
-      raise PROGRAM_ERROR;
+      raise Program_Error;
     end if;
 
     -- Strings
-    OPER.DESTINATION := AFPX.DECODE_FIELD(31,0);
-    OPER.COMMENT     := AFPX.DECODE_FIELD(33,0);
-    OPER.REFERENCE   := AFPX.DECODE_FIELD(35,0);
+    Oper.Destination := Afpx.Decode_Field(31,0);
+    Oper.Comment     := Afpx.Decode_Field(33,0);
+    Oper.Reference   := Afpx.Decode_Field(35,0);
 
     -- Non empty reference unique for cheque
-    FIELD := 35;
-    if OPER.KIND = OPER_DEF.CHEQUE
-    and then OPER.REFERENCE /= OPER_DEF.REFERENCE_STR'(others => ' ') then
+    Field := 35;
+    if Oper.Kind = Oper_Def.Cheque
+    and then Oper.Reference /= Oper_Def.Reference_Str'(others => ' ') then
 
       -- Remove current temporaly (just for search)
-      if EDIT_TYPE = MODIFY then
+      if Edit_Type = Modify then
         -- Save current oper and position before deletion
-        POS := OPER_LIST_MNG.GET_POSITION(OPER_LIST);
-        OPER_LIST_MNG.READ(OPER_LIST, SAVED_OPER, OPER_LIST_MNG.CURRENT);
+        Pos := Oper_List_Mng.Get_Position(Oper_List);
+        Oper_List_Mng.Read(Oper_List, Saved_Oper, Oper_List_Mng.Current);
         -- Remove current oper so we won't find it
         --  move to next if possible.
-        if OPER_LIST_MNG.LIST_LENGTH(OPER_LIST) = 1
-        or else OPER_LIST_MNG.GET_POSITION(OPER_LIST)
-             /= OPER_LIST_MNG.LIST_LENGTH(OPER_LIST) then
+        if Oper_List_Mng.List_Length(Oper_List) = 1
+        or else Oper_List_Mng.Get_Position(Oper_List)
+             /= Oper_List_Mng.List_Length(Oper_List) then
           -- Last item of the list or not end of list
-          SAVED_MOVEMENT := OPER_LIST_MNG.NEXT;
+          Saved_Movement := Oper_List_Mng.Next;
         else
-          SAVED_MOVEMENT := OPER_LIST_MNG.PREV;
+          Saved_Movement := Oper_List_Mng.Prev;
         end if;
-        OPER_LIST_MNG.DELETE(OPER_LIST, SAVED_MOVEMENT);
-        if OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
+        Oper_List_Mng.Delete(Oper_List, Saved_Movement);
+        if Oper_List_Mng.Is_Empty(Oper_List) then
           -- List becomes empty
-          SAVED_MOVEMENT := OPER_LIST_MNG.CURRENT;
+          Saved_Movement := Oper_List_Mng.Current;
         end if;
       end if;
 
       -- Search
       begin
-        SEARCH_REF(OPER_LIST, OPER, FROM_CURRENT => FALSE);
+        Search_Ref(Oper_List, Oper, From_Current => False);
         -- oh, oh. Found another one
       exception
-        when OPER_LIST_MNG.NOT_IN_LIST =>
+        when Oper_List_Mng.Not_In_List =>
           -- Ok. Ref is unique
-          FIELD := 0;
+          Field := 0;
       end;
 
       -- Restore 
-      if EDIT_TYPE = MODIFY then
-        case SAVED_MOVEMENT is
-          when OPER_LIST_MNG.NEXT =>
+      if Edit_Type = Modify then
+        case Saved_Movement is
+          when Oper_List_Mng.Next =>
             -- Not last elem was removed, and we moved to next
             -- Move to this element and insert before
-            OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.NEXT, POS-1, FALSE);
-            OPER_LIST_MNG.INSERT(OPER_LIST, SAVED_OPER, OPER_LIST_MNG.PREV);
-          when OPER_LIST_MNG.PREV =>
+            Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, Pos-1, False);
+            Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Prev);
+          when Oper_List_Mng.Prev =>
             -- Last elem was removed, and we moved to previous
             -- Insert ad end
-            OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.PREV, 0, FALSE);
-            OPER_LIST_MNG.INSERT(OPER_LIST, SAVED_OPER, OPER_LIST_MNG.NEXT);
-          when OPER_LIST_MNG.CURRENT =>
+            Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Prev, 0, False);
+            Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Next);
+          when Oper_List_Mng.Current =>
             -- List is empty
-            OPER_LIST_MNG.INSERT(OPER_LIST, SAVED_OPER, OPER_LIST_MNG.NEXT);
+            Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Next);
         end case;
       end if;
-      if FIELD /= 0 then
+      if Field /= 0 then
         -- Generate error
-        raise UNIT_FORMAT.FORMAT_ERROR;
+        raise Unit_Format.Format_Error;
       end if;
     end if; -- Cheque ref is unique
 
     -- Data ok: insert or modify
-    if EDIT_TYPE = MODIFY then
-      OPER_LIST_MNG.MODIFY(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
+    if Edit_Type = Modify then
+      Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
     else
       -- Insert at the end to keep selection accurate
-      if not OPER_LIST_MNG.IS_EMPTY(OPER_LIST) then
-        OPER_LIST_MNG.MOVE_TO(OPER_LIST, OPER_LIST_MNG.PREV, 0 , FALSE);
+      if not Oper_List_Mng.Is_Empty(Oper_List) then
+        Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Prev, 0 , False);
       end if;
-      OPER_LIST_MNG.INSERT(OPER_LIST, OPER);
+      Oper_List_Mng.Insert(Oper_List, Oper);
       -- Insert at the end of selection and go back to current (for next copy)
-      if not SEL_LIST_MNG.IS_EMPTY(SEL_LIST) then
-        LIST_UTIL.SAVE_POS;
-        SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.PREV, 0 , FALSE);
-        SEL_LIST_MNG.INSERT(SEL_LIST, (NO => OPER_LIST_MNG.LIST_LENGTH(OPER_LIST),
-                                       DELETED => FALSE) );
-        LIST_UTIL.RESTORE_POS;
-        LIST_UTIL.MOVE_TO_CURRENT;
+      if not Sel_List_Mng.Is_Empty(Sel_List) then
+        List_Util.Save_Pos;
+        Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev, 0 , False);
+        Sel_List_Mng.Insert(Sel_List, (No => Oper_List_Mng.List_Length(Oper_List),
+                                       Deleted => False) );
+        List_Util.Restore_Pos;
+        List_Util.Move_To_Current;
       else
-        SEL_LIST_MNG.INSERT(SEL_LIST, (NO => OPER_LIST_MNG.LIST_LENGTH(OPER_LIST),
-                                       DELETED => FALSE) );
+        Sel_List_Mng.Insert(Sel_List, (No => Oper_List_Mng.List_Length(Oper_List),
+                                       Deleted => False) );
       end if;
     end if;
-    UPDATE;
+    Update;
     return 0;
   exception
-    when UNIT_FORMAT.FORMAT_ERROR =>
-      return FIELD;
-  end VALIDATE;
+    when Unit_Format.Format_Error =>
+      return Field;
+  end Validate;
 
   -- Do the edition  
-  procedure EDIT (EDIT_TYPE : in EDIT_LIST) is
+  procedure Edit (Edit_Type : in Edit_List) is
     -- Original unit to restore
-    ORIG_UNIT : constant UNIT_FORMAT.UNITS_LIST
-              := UNIT_FORMAT.GET_CURRENT_UNIT;
-    OPER : OPER_DEF.OPER_REC;
+    Orig_Unit : constant Unit_Format.Units_List
+              := Unit_Format.Get_Current_Unit;
+    Oper : Oper_Def.Oper_Rec;
     -- Afpx put_then_get stuff
-    CURSOR_FIELD : AFPX.ABSOLUTE_FIELD_RANGE := 0;
-    CURSOR_COL   : CON_IO.COL_RANGE := 0;
-    PTG_RESULT   : AFPX.RESULT_REC;
-    REDISPLAY    : BOOLEAN := FALSE;
+    Cursor_Field : Afpx.Absolute_Field_Range := 0;
+    Cursor_Col   : Con_Io.Col_Range := 0;
+    Ptg_Result   : Afpx.Result_Rec;
+    Redisplay    : Boolean := False;
     -- Current Kind and Status
-    KIND : OPER_DEF.KIND_LIST;
-    STATUS : OPER_DEF.STATUS_LIST;
+    Kind : Oper_Def.Kind_List;
+    Status : Oper_Def.Status_List;
     -- Deleted flag read from selection list
-    SEL : SEL_REC;
-    DELETED : BOOLEAN;
+    Sel : Sel_Rec;
+    Deleted : Boolean;
     -- Is OK_and_NEXT active when keyboard Return
-    OKNEXT_ACTIVE : BOOLEAN;
-    use type AFPX.ABSOLUTE_FIELD_RANGE, OPER_DEF.KIND_LIST;
+    Oknext_Active : Boolean;
+    use type Afpx.Absolute_Field_Range, Oper_Def.Kind_List;
   begin
 
     -- Set title, fields protections & buttons
-    PREPARE(EDIT_TYPE);
-    ALL_EDIT:
+    Prepare(Edit_Type);
+    All_Edit:
     loop
       -- Move to current for copy, edit, view, delete
-      if not SEL_LIST_MNG.IS_EMPTY(SEL_LIST) then
-        LIST_UTIL.MOVE_TO_CURRENT;
+      if not Sel_List_Mng.Is_Empty(Sel_List) then
+        List_Util.Move_To_Current;
       end if;
       -- Set data
-      if EDIT_TYPE = CREATE then
+      if Edit_Type = Create then
         -- Default operation, credit defered.
-        OPER.DATE := OPER_DEF.CURRENT_DATE;
-        OPER.AMOUNT := 0.0;
-        OPER.KIND := OPER_DEF.CREDIT;
-        OPER.STATUS := OPER_DEF.DEFERED;
-        OPER.REFERENCE := (others => ' ');
-        OPER.DESTINATION := (others => ' ');
-        OPER.COMMENT := (others => ' ');
-        DELETED := FALSE;
+        Oper.Date := Oper_Def.Current_Date;
+        Oper.Amount := 0.0;
+        Oper.Kind := Oper_Def.Credit;
+        Oper.Status := Oper_Def.Defered;
+        Oper.Reference := (others => ' ');
+        Oper.Destination := (others => ' ');
+        Oper.Comment := (others => ' ');
+        Deleted := False;
       else
-        SEL_LIST_MNG.READ(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-        DELETED := SEL.DELETED;
+        Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+        Deleted := Sel.Deleted;
         -- Current operation
-        OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
+        Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
       end if;
       -- Encode data
-      ENCODE_OPER(EDIT_TYPE, OPER, DELETED);
-      KIND := OPER.KIND;
-      STATUS := OPER.STATUS;
+      Encode_Oper(Edit_Type, Oper, Deleted);
+      Kind := Oper.Kind;
+      Status := Oper.Status;
       -- Prepare PTG
-      CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(0);
-      if CURSOR_FIELD = 0 then
+      Cursor_Field := Afpx.Next_Cursor_Field(0);
+      if Cursor_Field = 0 then
         -- No get field
-        CURSOR_FIELD := 1;
+        Cursor_Field := 1;
       else
-        CURSOR_COL := 0;
+        Cursor_Col := 0;
       end if;
       -- Protect movements
-      PROTECT_MOVEMENTS(EDIT_TYPE);
+      Protect_Movements(Edit_Type);
 
       -- PTGs
-      ONE_EDIT:
+      One_Edit:
       loop
-        AFPX.PUT_THEN_GET(CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-        REDISPLAY := FALSE;
-        case PTG_RESULT.EVENT is
+        Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+        Redisplay := False;
+        case Ptg_Result.Event is
 
-          when AFPX.KEYBOARD =>
-            case PTG_RESULT.KEYBOARD_KEY is
-              when AFPX.RETURN_KEY =>
+          when Afpx.Keyboard =>
+            case Ptg_Result.Keyboard_Key is
+              when Afpx.Return_Key =>
                 -- OK and back or next
-                CURSOR_FIELD := VALIDATE(EDIT_TYPE, KIND, STATUS);
-                CURSOR_COL := 0;
-                if CURSOR_FIELD = 0 then
+                Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Cursor_Col := 0;
+                if Cursor_Field = 0 then
                   -- Check that OK_AND_NEXT button is active
-		  AFPX.GET_FIELD_ACTIVATION(42, OKNEXT_ACTIVE);
-                  if not OKNEXT_ACTIVE then
+		  Afpx.Get_Field_Activation(42, Oknext_Active);
+                  if not Oknext_Active then
                     -- Ok and back
-                    exit ALL_EDIT;
+                    exit All_Edit;
                   else
-                    if EDIT_TYPE /= CREATE then
+                    if Edit_Type /= Create then
                       -- Next oper
-                      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
+                      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
                     end if;
-                    exit ONE_EDIT;
+                    exit One_Edit;
                   end if;
                 end if;
-                SCREEN.RING(TRUE);
+                Screen.Ring(True);
                 -- Return = OK
-                SCREEN.RING(TRUE);
-              when AFPX.ESCAPE_KEY =>
+                Screen.Ring(True);
+              when Afpx.Escape_Key =>
                 -- Escape = Cancel
-                CANCEL(EDIT_TYPE);
-                exit ALL_EDIT;
-              when AFPX.BREAK_KEY =>
+                Cancel(Edit_Type);
+                exit All_Edit;
+              when Afpx.Break_Key =>
                 -- Break = Cancel
-                exit ALL_EDIT;
+                exit All_Edit;
             end case;
 
-          when AFPX.MOUSE_BUTTON =>
-            case PTG_RESULT.FIELD_NO is
+          when Afpx.Mouse_Button =>
+            case Ptg_Result.Field_No is
               when 19 =>
                 -- Change unit
-                UNIT_FORMAT.SWITCH_UNIT;
-                SET_UNIT;
+                Unit_Format.Switch_Unit;
+                Set_Unit;
 
               when 22 .. 25 | 27 .. 29 =>
                 -- Kind and status buttons
-                UPDATE_BUTTONS(PTG_RESULT.FIELD_NO, KIND, STATUS);
-                if EDIT_TYPE = CREATE then
-                  CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(PTG_RESULT.FIELD_NO);
-                  CURSOR_COL := 0;
+                Update_Buttons(Ptg_Result.Field_No, Kind, Status);
+                if Edit_Type = Create then
+                  Cursor_Field := Afpx.Next_Cursor_Field(Ptg_Result.Field_No);
+                  Cursor_Col := 0;
                 end if;
               when 36 =>
                 -- Copy when create
-                OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-                if OPER.KIND = OPER_DEF.CREDIT then
-                  OPER.STATUS := OPER_DEF.DEFERED;
+                Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+                if Oper.Kind = Oper_Def.Credit then
+                  Oper.Status := Oper_Def.Defered;
                 else
-                  OPER.STATUS := OPER_DEF.NOT_ENTERED;
+                  Oper.Status := Oper_Def.Not_Entered;
                 end if;
-                ENCODE_OPER(EDIT_TYPE, OPER, FALSE);
-                KIND := OPER.KIND;
-                STATUS := OPER.STATUS;
-                CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(0);
-                CURSOR_COL := 0;
+                Encode_Oper(Edit_Type, Oper, False);
+                Kind := Oper.Kind;
+                Status := Oper.Status;
+                Cursor_Field := Afpx.Next_Cursor_Field(0);
+                Cursor_Col := 0;
 
               when 38 =>
                 -- OK and prev
-                CURSOR_FIELD := VALIDATE(EDIT_TYPE, KIND, STATUS);
-                CURSOR_COL := 0;
-                if CURSOR_FIELD = 0 then
+                Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Cursor_Col := 0;
+                if Cursor_Field = 0 then
                   -- Prev oper
-                  SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.PREV);
-                  exit ONE_EDIT;
+                  Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
+                  exit One_Edit;
                 end if;
-                SCREEN.RING(TRUE);
+                Screen.Ring(True);
               when 39 =>
                 -- Cancel and prev
-                CANCEL(EDIT_TYPE);
-                SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.PREV);
-                exit ONE_EDIT;
+                Cancel(Edit_Type);
+                Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
+                exit One_Edit;
               when 40 =>
                 -- OK and back
-                CURSOR_FIELD := VALIDATE(EDIT_TYPE, KIND, STATUS);
-                CURSOR_COL := 0;
-                exit ALL_EDIT when CURSOR_FIELD = 0;
-                SCREEN.RING(TRUE);
+                Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Cursor_Col := 0;
+                exit All_Edit when Cursor_Field = 0;
+                Screen.Ring(True);
               when 41 =>
                 -- Cancel and back
-                CANCEL(EDIT_TYPE);
-                exit ALL_EDIT;
+                Cancel(Edit_Type);
+                exit All_Edit;
               when 42 =>
                 -- OK and next
-                CURSOR_FIELD := VALIDATE(EDIT_TYPE, KIND, STATUS);
-                CURSOR_COL := 0;
-                if CURSOR_FIELD = 0 then
-                  if EDIT_TYPE /= CREATE then
+                Cursor_Field := Validate(Edit_Type, Kind, Status);
+                Cursor_Col := 0;
+                if Cursor_Field = 0 then
+                  if Edit_Type /= Create then
                     -- Next oper
-                    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
+                    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
                   end if;
-                  exit ONE_EDIT;
+                  exit One_Edit;
                 end if;
-                SCREEN.RING(TRUE);
+                Screen.Ring(True);
               when 43 =>
                 -- Cancel and next
-                CANCEL(EDIT_TYPE);
-                SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
-                exit ONE_EDIT;
+                Cancel(Edit_Type);
+                Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
+                exit One_Edit;
 
               when others =>
                 null;
             end case;
 
-          when AFPX.REFRESH =>
-            REDISPLAY := TRUE;
-          when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+          when Afpx.Refresh =>
+            Redisplay := True;
+          when Afpx.Fd_Event | Afpx.Timer_Event =>
             null;
         end case;
 
-      end loop ONE_EDIT;
+      end loop One_Edit;
 
-    end loop ALL_EDIT;
+    end loop All_Edit;
 
-    if EDIT_TYPE = DELETE then
-      DELETION.COMMIT_DELETIONS;
-    elsif EDIT_TYPE = CREATE
-    and then not SEL_LIST_MNG.IS_EMPTY(SEL_LIST) then
+    if Edit_Type = Delete then
+      Deletion.Commit_Deletions;
+    elsif Edit_Type = Create
+    and then not Sel_List_Mng.Is_Empty(Sel_List) then
       -- Move to bottom
-      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.PREV, 0, FALSE);
+      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev, 0, False);
     end if;
 
     -- Restore original unit
-    UNIT_FORMAT.SET_UNIT_TO(ORIG_UNIT);
+    Unit_Format.Set_Unit_To(Orig_Unit);
 
-  end EDIT;
+  end Edit;
 
-end EDITION;
+end Edition;
 

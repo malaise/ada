@@ -1,14 +1,14 @@
-with MCD_MNG;
+with Mcd_Mng;
 
-package PARSER is
+package Parser is
 
-  function NEXT_ITEM return MCD_MNG.ITEM_REC; 
+  function Next_Item return Mcd_Mng.Item_Rec; 
 
-  PARSING_ERROR : exception;
+  Parsing_Error : exception;
 
-  procedure PRINT_HELP;
+  procedure Print_Help;
 
-  procedure DUMP_STACK;
+  procedure Dump_Stack;
 
-end PARSER;
+end Parser;
 

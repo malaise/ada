@@ -1,89 +1,89 @@
-with TEXT_IO;
-with MY_MATH, MY_IO;
-procedure T_MATH is
+with Text_Io;
+with My_Math, My_Io;
+procedure T_Math is
 
-  package REAL_IO is new TEXT_IO.FLOAT_IO (MY_MATH.REAL);
+  package Real_Io is new Text_Io.Float_Io (My_Math.Real);
 
-  use MY_MATH, MY_IO, REAL_IO;
+  use My_Math, My_Io, Real_Io;
 
-  subtype REAL is MY_MATH.REAL;
-  R, RP : REAL;
+  subtype Real is My_Math.Real;
+  R, Rp : Real;
 
 begin
   loop
     loop
       begin
-        PUT ("Enter a real R1 : ? "); GET (R);
+        Put ("Enter a real R1 : ? "); Get (R);
         exit;
       exception
-        when others => SKIP_LINE;
+        when others => Skip_Line;
       end;
     end loop;
     begin
-      PUT ("int   (R1) "); PUT( INT  (R)); NEW_LINE;
-      PUT ("frac  (R1) "); PUT( FRAC (R)); NEW_LINE;
-      PUT ("round (R1) "); PUT( ROUND (R)); NEW_LINE;
-      PUT ("trunc (R1) "); PUT( TRUNC (R)); NEW_LINE;
+      Put ("int   (R1) "); Put( Int  (R)); New_Line;
+      Put ("frac  (R1) "); Put( Frac (R)); New_Line;
+      Put ("round (R1) "); Put( Round (R)); New_Line;
+      Put ("trunc (R1) "); Put( Trunc (R)); New_Line;
       begin
-        PUT ("sqrt (R1) "); PUT( SQRT (R)); NEW_LINE;
+        Put ("sqrt (R1) "); Put( Sqrt (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("exp (R1) "); PUT ( EXP(R)); NEW_LINE;
+        Put ("exp (R1) "); Put ( Exp(R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("ln  (R1) "); PUT( LN (R)); NEW_LINE;
+        Put ("ln  (R1) "); Put( Ln (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("log_10 (R1) "); PUT( LOG_10 (R)); NEW_LINE;
+        Put ("log_10 (R1) "); Put( Log_10 (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
-      PUT_LINE ("Angles en radian");
+      Put_Line ("Angles en radian");
       begin
-        PUT ("sin (R1) "); PUT( SIN (R)); NEW_LINE;
+        Put ("sin (R1) "); Put( Sin (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
-      end;
-      begin
-        PUT ("cos (R1) "); PUT( COS (R)); NEW_LINE;
-      exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("tg  (R1) "); PUT( TG (R)); NEW_LINE;
+        Put ("cos (R1) "); Put( Cos (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("arc_sin (R1) "); PUT( ARC_SIN (R)); NEW_LINE;
+        Put ("tg  (R1) "); Put( Tg (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("arc_cos (R1) "); PUT( ARC_COS (R)); NEW_LINE;
+        Put ("arc_sin (R1) "); Put( Arc_Sin (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("arc_tg  (R1) "); PUT( ARC_TG (R)); NEW_LINE;
+        Put ("arc_cos (R1) "); Put( Arc_Cos (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
       end;
       begin
-        PUT ("Enter another real R2 : ? "); GET (RP);
-        PUT (" R1 ** R2 "); PUT (R**RP); NEW_LINE;
+        Put ("arc_tg  (R1) "); Put( Arc_Tg (R)); New_Line;
       exception
-        when others=> PUT_LINE ("Exception");
+        when others=> Put_Line ("Exception");
+      end;
+      begin
+        Put ("Enter another real R2 : ? "); Get (Rp);
+        Put (" R1 ** R2 "); Put (R**Rp); New_Line;
+      exception
+        when others=> Put_Line ("Exception");
       end;
     exception
-      when others => PUT_LINE ("Exception.");
+      when others => Put_Line ("Exception.");
     end;
-    NEW_LINE;
+    New_Line;
   end loop;
-end T_MATH;
+end T_Math;

@@ -1,53 +1,53 @@
-with CALENDAR;
-package OPER_DEF is
+with Calendar;
+package Oper_Def is
 
-  subtype OPER_RANGE is NATURAL;
-  subtype OPER_INDEX is POSITIVE;
+  subtype Oper_Range is Natural;
+  subtype Oper_Index is Positive;
 
   -- Date
-  type DATE_REC is record
-    YEAR : CALENDAR.YEAR_NUMBER := 2001;
-    MONTH : CALENDAR.MONTH_NUMBER := 08;
-    DAY   : CALENDAR.DAY_NUMBER := 21;
+  type Date_Rec is record
+    Year : Calendar.Year_Number := 2001;
+    Month : Calendar.Month_Number := 08;
+    Day   : Calendar.Day_Number := 21;
   end record;
 
-  function CURRENT_DATE return DATE_REC;
+  function Current_Date return Date_Rec;
 
   -- Oper amount
-  type AMOUNT_RANGE is digits 13 range -99_999_999.99999 .. 99_999_999.99999;
+  type Amount_Range is digits 13 range -99_999_999.99999 .. 99_999_999.99999;
 
   -- Oper kind
-  type KIND_LIST is (CHEQUE, CREDIT, TRANSFER, WITHDRAW);
+  type Kind_List is (Cheque, Credit, Transfer, Withdraw);
 
   -- Oper status
-  type STATUS_LIST is (ENTERED, NOT_ENTERED, DEFERED);
+  type Status_List is (Entered, Not_Entered, Defered);
 
   -- Can an oper of kind be defered
-  KIND_CAN_BE_DEFERED : constant array (KIND_LIST) of BOOLEAN
-                      := (CHEQUE   => FALSE,
-                          CREDIT   => TRUE,
-                          TRANSFER => FALSE,
-                          WITHDRAW => FALSE);
+  Kind_Can_Be_Defered : constant array (Kind_List) of Boolean
+                      := (Cheque   => False,
+                          Credit   => True,
+                          Transfer => False,
+                          Withdraw => False);
 
 
   -- Oper strings
-  subtype REFERENCE_STR is STRING (1 .. 10);
-  subtype DESTINATION_STR is STRING (1 .. 20);
-  subtype COMMENT_STR is STRING (1 .. 20);
+  subtype Reference_Str is String (1 .. 10);
+  subtype Destination_Str is String (1 .. 20);
+  subtype Comment_Str is String (1 .. 20);
 
   -- Oper
-  type OPER_REC is record
-    DATE : DATE_REC;
-    AMOUNT : AMOUNT_RANGE := 21.21;
-    KIND : KIND_LIST := KIND_LIST'FIRST; 
-    STATUS : STATUS_LIST := STATUS_LIST'FIRST;
-    DESTINATION : DESTINATION_STR := (others => '0');
-    COMMENT : COMMENT_STR := (others => '0');
-    REFERENCE : REFERENCE_STR := (others => '1');
+  type Oper_Rec is record
+    Date : Date_Rec;
+    Amount : Amount_Range := 21.21;
+    Kind : Kind_List := Kind_List'First; 
+    Status : Status_List := Status_List'First;
+    Destination : Destination_Str := (others => '0');
+    Comment : Comment_Str := (others => '0');
+    Reference : Reference_Str := (others => '1');
   end record;
 
   -- Criteria for sorting opers: dates
-  function BEFORE (OPER_1, OPER_2 : OPER_REC) return BOOLEAN;
+  function Before (Oper_1, Oper_2 : Oper_Rec) return Boolean;
 
-end OPER_DEF;
+end Oper_Def;
 

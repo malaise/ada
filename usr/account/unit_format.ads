@@ -1,56 +1,56 @@
-with OPER_DEF;
-package UNIT_FORMAT is
+with Oper_Def;
+package Unit_Format is
 
-  type UNITS_LIST is (EUROS, FRANCS);
-  DEFAULT_UNIT : constant UNITS_LIST := EUROS;
+  type Units_List is (Euros, Francs);
+  Default_Unit : constant Units_List := Euros;
 
   -- Current unit switching
-  function GET_CURRENT_UNIT return UNITS_LIST;
-  procedure SET_UNIT_TO (UNIT : UNITS_LIST);
-  procedure SWITCH_UNIT;
+  function Get_Current_Unit return Units_List;
+  procedure Set_Unit_To (Unit : Units_List);
+  procedure Switch_Unit;
 
   --  May be raised by any IMAGE/VALUE
-  FORMAT_ERROR : EXCEPTION;
+  Format_Error : Exception;
 
   -- Date: 25/10/2001
-  subtype DATE_STR is STRING(1 .. 10);
-  function DATE_IMAGE(DATE : OPER_DEF.DATE_REC) return DATE_STR;
-  function DATE_VALUE(STR : DATE_STR) return OPER_DEF.DATE_REC;
+  subtype Date_Str is String(1 .. 10);
+  function Date_Image(Date : Oper_Def.Date_Rec) return Date_Str;
+  function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec;
 
   -- Short date: 25/10/01
-  subtype SHORT_DATE_STR is STRING(1 .. 8);
-  function SHORT_DATE_IMAGE(DATE : OPER_DEF.DATE_REC) return SHORT_DATE_STR;
+  subtype Short_Date_Str is String(1 .. 8);
+  function Short_Date_Image(Date : Oper_Def.Date_Rec) return Short_Date_Str;
 
   -- Short status: Yes No Def
-  subtype SHORT_STATUS_STR is STRING(1 .. 3);
-  function SHORT_STATUS_IMAGE (STATUS : OPER_DEF.STATUS_LIST)
-           return SHORT_STATUS_STR;
+  subtype Short_Status_Str is String(1 .. 3);
+  function Short_Status_Image (Status : Oper_Def.Status_List)
+           return Short_Status_Str;
 
   -- Short kind:  Cheq Card Tran Draw
-  subtype SHORT_KIND_STR is STRING(1 .. 4);
-  function SHORT_KIND_IMAGE (KIND : OPER_DEF.KIND_LIST)
-           return SHORT_KIND_STR;
+  subtype Short_Kind_Str is String(1 .. 4);
+  function Short_Kind_Image (Kind : Oper_Def.Kind_List)
+           return Short_Kind_Str;
 
   -- Amount: -12345678.12
-  subtype AMOUNT_STR is STRING (1 .. 12);
+  subtype Amount_Str is String (1 .. 12);
   -- From an amount (in euros) return 'image (euros/francs)
-  function IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE;
-                  ALIGN_LEFT : in BOOLEAN) return AMOUNT_STR;
+  function Image (Amount_In_Euros : Oper_Def.Amount_Range;
+                  Align_Left : in Boolean) return Amount_Str;
 
 
   -- From a string (euros/francs) return amount in euros
-  function VALUE (STR : AMOUNT_STR) return OPER_DEF.AMOUNT_RANGE;
+  function Value (Str : Amount_Str) return Oper_Def.Amount_Range;
 
 
   -- Amount of an operation in LIST: -12345.12
-  subtype SHORT_AMOUNT_STR is STRING (1 .. 9);
+  subtype Short_Amount_Str is String (1 .. 9);
   -- From an amount (in euros) return 'image (euros/francs)
   -- Truncation rule:
   --  Sign is kept, three lower digits of unit removed,
   --  cents and dot replaced by " k "
   -- Result has first digit set to '-' or ' ' and aligned on right
-  function SHORT_IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE)
-                       return SHORT_AMOUNT_STR;
+  function Short_Image (Amount_In_Euros : Oper_Def.Amount_Range)
+                       return Short_Amount_Str;
 
-end UNIT_FORMAT;
+end Unit_Format;
 

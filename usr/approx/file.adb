@@ -1,98 +1,98 @@
-with SEQUENTIAL_IO;
-with DIRECTORY, TEXT_HANDLER, MY_MATH;
-package body FILE is
+with Sequential_Io;
+with Directory, Text_Handler, My_Math;
+package body File is
 
-  MAGIC_X : constant POINTS.P_T_COORDINATE := 21.21;
+  Magic_X : constant Points.P_T_Coordinate := 21.21;
 
   -- Point sequential read/write
-  package F_POINTS_IO is new SEQUENTIAL_IO (POINTS.P_T_ONE_POINT);
-  use F_POINTS_IO;
+  package F_Points_Io is new Sequential_Io (Points.P_T_One_Point);
+  use F_Points_Io;
 
   -- read a file of points
-  function F_READ (NAME : F_T_FILE_NAME) return POINTS.P_T_THE_POINTS is
-    SIZE : NATURAL;
-    FILE : FILE_TYPE;
-    MAGIC_POINT : POINTS.P_T_ONE_POINT;
-    use MY_MATH;
+  function F_Read (Name : F_T_File_Name) return Points.P_T_The_Points is
+    Size : Natural;
+    File : File_Type;
+    Magic_Point : Points.P_T_One_Point;
+    use My_Math;
   begin
     begin
-      OPEN (FILE, IN_FILE, NAME);
+      Open (File, In_File, Name);
     exception
-      when others => raise F_ACCESS_ERROR;
+      when others => raise F_Access_Error;
     end;
-    RESET (FILE);
+    Reset (File);
     
     -- Check magic x and get size
-    READ (FILE, MAGIC_POINT);
-    if MAGIC_POINT.X /= MAGIC_X then
-      raise F_IO_ERROR;
+    Read (File, Magic_Point);
+    if Magic_Point.X /= Magic_X then
+      raise F_Io_Error;
     end if;
-    SIZE := NATURAL(MAGIC_POINT.Y);
+    Size := Natural(Magic_Point.Y);
     -- Should be int
-    if POINTS.P_T_COORDINATE(SIZE) /= MAGIC_POINT.Y then
-      raise F_IO_ERROR;
+    if Points.P_T_Coordinate(Size) /= Magic_Point.Y then
+      raise F_Io_Error;
     end if;
     
     -- read the SIZE points
     declare
-      THE_POINTS : POINTS.P_T_THE_POINTS (1 .. SIZE);
+      The_Points : Points.P_T_The_Points (1 .. Size);
     begin
-      for INDEX in 1 .. SIZE loop
-        READ (FILE, THE_POINTS (INDEX));
+      for Index in 1 .. Size loop
+        Read (File, The_Points (Index));
       end loop;
-      CLOSE (FILE);
-      POINTS.P_SAVED;
-      return (THE_POINTS);
+      Close (File);
+      Points.P_Saved;
+      return (The_Points);
     end;
   exception
     when others =>
-      CLOSE (FILE);
-      raise F_IO_ERROR;
-  end F_READ;
+      Close (File);
+      raise F_Io_Error;
+  end F_Read;
 
   -- Write the points in file
-  procedure F_WRITE (NAME : in F_T_FILE_NAME;
-    THE_POINTS : in POINTS.P_T_THE_POINTS) is
-    FILE : FILE_TYPE;
+  procedure F_Write (Name : in F_T_File_Name;
+    The_Points : in Points.P_T_The_Points) is
+    File : File_Type;
   begin
     begin
-      OPEN(FILE, OUT_FILE, NAME);
-      DELETE(FILE);
-      CREATE(FILE, OUT_FILE, NAME);
+      Open(File, Out_File, Name);
+      Delete(File);
+      Create(File, Out_File, Name);
     exception
-      when NAME_ERROR =>
+      when Name_Error =>
         -- New file
         begin
-          CREATE (FILE, OUT_FILE, NAME);
+          Create (File, Out_File, Name);
         exception
-          when others => raise F_ACCESS_ERROR;
+          when others => raise F_Access_Error;
         end;
-      when others => raise F_ACCESS_ERROR;
+      when others => raise F_Access_Error;
     end;
-    WRITE (FILE, (X => MAGIC_X, 
-                  Y => POINTS.P_T_COORDINATE(THE_POINTS'LENGTH)));
+    Write (File, (X => Magic_X, 
+                  Y => Points.P_T_Coordinate(The_Points'Length)));
     begin
-      for INDEX in THE_POINTS'RANGE loop
-        WRITE (FILE, THE_POINTS(INDEX));
+      for Index in The_Points'Range loop
+        Write (File, The_Points(Index));
       end loop;
     exception
       when others =>
-        CLOSE (FILE);
-        raise F_IO_ERROR;
+        Close (File);
+        raise F_Io_Error;
     end;
-    POINTS.P_SAVED;
-    CLOSE (FILE);
-  end F_WRITE;
+    Points.P_Saved;
+    Close (File);
+  end F_Write;
 
   -- Check if file exists
-  function F_EXISTS (NAME : F_T_FILE_NAME) return BOOLEAN is
-    FILE : FILE_TYPE;
+  function F_Exists (Name : F_T_File_Name) return Boolean is
+    File : File_Type;
   begin
-    OPEN (FILE, IN_FILE, NAME);
-    CLOSE (FILE);
-    return (TRUE);
+    Open (File, In_File, Name);
+    Close (File);
+    return (True);
   exception
-    when others => return FALSE;
-  end F_EXISTS;
+    when others => return False;
+  end F_Exists;
 
-end FILE;
+end File;

@@ -1,8 +1,8 @@
-with MY_MATH, CURVE;
-use MY_MATH;
-procedure T_CURVE is
+with My_Math, Curve;
+use My_Math;
+procedure T_Curve is
 
-  POINTS : constant CURVE.T_THE_POINTS (1 .. 9) :=
+  Points : constant Curve.T_The_Points (1 .. 9) :=
    (1 => (X => -4.0, Y =>  0.0),
     2 => (X => -3.0, Y =>  1.0),
     3 => (X => -2.0, Y =>  2.0),
@@ -13,32 +13,32 @@ procedure T_CURVE is
     8 => (X =>  3.0, Y =>  7.0),
     9 => (X =>  4.0, Y =>  8.0));
 
-  BOUNDS : CURVE.T_BOUNDARIES;
+  Bounds : Curve.T_Boundaries;
 
-  X_MIN, X_MAX : CURVE.T_COORDINATE;
+  X_Min, X_Max : Curve.T_Coordinate;
 
 
-  function F(X : MY_MATH.REAL) return MY_MATH.REAL is
+  function F(X : My_Math.Real) return My_Math.Real is
   begin
     return 4.0 * X**3 + 3.0 * X**2 + 2.0 * X + 1.0;
   end F;
 
-  procedure MY_DRAW is new CURVE.DRAW(F);
+  procedure My_Draw is new Curve.Draw(F);
 
 begin
 
-  CURVE.X_BOUNDARIES(POINTS, X_MIN, X_MAX);
-  BOUNDS := (SCALE => CURVE.CURVE_SCREEN,
-             X_MIN => X_MIN,
-             X_MAX => X_MAX);
-  MY_DRAW (BOUNDS, POINTS);
-  BOUNDS := (SCALE => CURVE.FREE_NORMED,
-             X_MIN => -250.0,
-             X_MAX => +250.0,
-             Y_MIN => -250.0,
-             Y_MAX => +250.0);
+  Curve.X_Boundaries(Points, X_Min, X_Max);
+  Bounds := (Scale => Curve.Curve_Screen,
+             X_Min => X_Min,
+             X_Max => X_Max);
+  My_Draw (Bounds, Points);
+  Bounds := (Scale => Curve.Free_Normed,
+             X_Min => -250.0,
+             X_Max => +250.0,
+             Y_Min => -250.0,
+             Y_Max => +250.0);
 
-  MY_DRAW (BOUNDS, POINTS);
+  My_Draw (Bounds, Points);
 
-end T_CURVE;
+end T_Curve;
 

@@ -1,27 +1,27 @@
-with CON_IO, AFPX, NORMAL;
-with POINT_STR, RESOL;
-package body DIALOG is
+with Con_Io, Afpx, Normal;
+with Point_Str, Resol;
+package body Dialog is
 
   -- If points are not saved, ask for confirmation
-  function CONFIRM_LOST return BOOLEAN is
+  function Confirm_Lost return Boolean is
   begin
-    if POINTS.P_SAVED then
-      return TRUE;
+    if Points.P_Saved then
+      return True;
     else
-      return SCREEN.CONFIRM(SCREEN.C_DATA_LOST, TRUE);
+      return Screen.Confirm(Screen.C_Data_Lost, True);
     end if;
-  end CONFIRM_LOST;
+  end Confirm_Lost;
     
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure PARSE_SPACES (TXT : in out TEXT_HANDLER.TEXT;
-                          OK : out BOOLEAN) is
-    STR : constant STRING := TEXT_HANDLER.VALUE(TXT);
-    L : NATURAL;
+  procedure Parse_Spaces (Txt : in out Text_Handler.Text;
+                          Ok : out Boolean) is
+    Str : constant String := Text_Handler.Value(Txt);
+    L : Natural;
   begin
     L := 0;
-    for I in reverse STR'RANGE loop
-      if STR(I) /= ' ' and then STR(I) /= ASCII.HT then
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' and then Str(I) /= Ascii.Ht then
         -- Significant char
         if L = 0 then
           L := I;
@@ -30,258 +30,258 @@ package body DIALOG is
         -- space
         if L /= 0 then
           -- Space before significant char
-          OK := FALSE;
+          Ok := False;
           return;
         end if;
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
-    TEXT_HANDLER.SET (TXT, STR(1 .. L));
-    OK := TRUE;
-  end PARSE_SPACES;
+    Text_Handler.Set (Txt, Str(1 .. L));
+    Ok := True;
+  end Parse_Spaces;
 
 
-  function PARSE_LEADING_SPACE (STR : STRING) return STRING is
+  function Parse_Leading_Space (Str : String) return String is
   begin
-    if STR(STR'FIRST) = ' ' then
-      return STR(NATURAL'SUCC(STR'FIRST) .. STR'LAST);
+    if Str(Str'First) = ' ' then
+      return Str(Natural'Succ(Str'First) .. Str'Last);
     else
-      return STR;
+      return Str;
     end if;
-  end PARSE_LEADING_SPACE;
+  end Parse_Leading_Space;
 
   -- Get a coordinate
   --  If SET is set IN, then a put_then_get is performed, else a get
   --  Validity is checked and SET is set OUT according to the final result
   -- subtype D_COORDINATE_LIST is SCREEN.S_INFO_LIST range (SCREEN.I_X .. SCREEN.I_YMAX);
-  procedure READ_COORDINATE (KIND : in D_COORDINATE_LIST;
-           SET : in out BOOLEAN; COORDINATE : in out POINTS.P_T_COORDINATE;
-           SUBTITLE : in BOOLEAN := FALSE) is
-    CURSOR_FIELD : AFPX.FIELD_RANGE;
-    CURSOR_COL : CON_IO.COL_RANGE := 0;
-    REDISPLAY : BOOLEAN := FALSE;
-    PTG_RESULT : AFPX.RESULT_REC;
+  procedure Read_Coordinate (Kind : in D_Coordinate_List;
+           Set : in out Boolean; Coordinate : in out Points.P_T_Coordinate;
+           Subtitle : in Boolean := False) is
+    Cursor_Field : Afpx.Field_Range;
+    Cursor_Col : Con_Io.Col_Range := 0;
+    Redisplay : Boolean := False;
+    Ptg_Result : Afpx.Result_Rec;
 
-    procedure ENCODE is
-      COO_STR : POINT_STR.COORDINATE_STRING;
+    procedure Encode is
+      Coo_Str : Point_Str.Coordinate_String;
     begin
-      COO_STR := POINT_STR.COORDINATE_IMAGE(COORDINATE);
-      AFPX.CLEAR_FIELD (SCREEN.GET_FLD);
-      AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0),
-                         PARSE_LEADING_SPACE(COO_STR));
-    end ENCODE;
+      Coo_Str := Point_Str.Coordinate_Image(Coordinate);
+      Afpx.Clear_Field (Screen.Get_Fld);
+      Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
+                         Parse_Leading_Space(Coo_Str));
+    end Encode;
 
-    function DECODE return BOOLEAN is
-      BUFF : AFPX.STR_TXT;
-      OK : BOOLEAN;
+    function Decode return Boolean is
+      Buff : Afpx.Str_Txt;
+      Ok : Boolean;
     begin
-      AFPX.DECODE_FIELD (SCREEN.GET_FLD, 0, BUFF);
-      PARSE_SPACES(BUFF, OK);
-      if OK then
+      Afpx.Decode_Field (Screen.Get_Fld, 0, Buff);
+      Parse_Spaces(Buff, Ok);
+      if Ok then
         begin
-          COORDINATE := POINT_STR.COORDINATE_VALUE (TEXT_HANDLER.VALUE(BUFF));
+          Coordinate := Point_Str.Coordinate_Value (Text_Handler.Value(Buff));
         exception
-          when CONSTRAINT_ERROR =>
-            OK := FALSE;
+          when Constraint_Error =>
+            Ok := False;
         end;
       end if;
-      if OK then
-        return TRUE;
+      if Ok then
+        return True;
       else
-        SCREEN.ERROR (SCREEN.E_WRONG_COORDINATE);
-        SCREEN.INIT_FOR_GET (CURSOR_FIELD);
-        return FALSE;
+        Screen.Error (Screen.E_Wrong_Coordinate);
+        Screen.Init_For_Get (Cursor_Field);
+        return False;
       end if;
-    end DECODE;
+    end Decode;
 
   begin
-    SCREEN.INIT_FOR_GET (CURSOR_FIELD, SUBTITLE);
-    if SET then
-      ENCODE;
+    Screen.Init_For_Get (Cursor_Field, Subtitle);
+    if Set then
+      Encode;
     else
-      AFPX.CLEAR_FIELD(SCREEN.GET_FLD);
+      Afpx.Clear_Field(Screen.Get_Fld);
     end if;
 
     loop
-      SCREEN.INFORM(KIND);
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
-              if DECODE then
-                SET := TRUE;
+      Screen.Inform(Kind);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
+              if Decode then
+                Set := True;
                 exit;
               end if;
-            when AFPX.ESCAPE_KEY =>
-              SET := FALSE;
+            when Afpx.Escape_Key =>
+              Set := False;
               exit;
-            when AFPX.BREAK_KEY =>
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
-            when SCREEN.LIST_SCROLL_FLD_RANGE'FIRST .. SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
-              SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
-            when SCREEN.OK_BUTTON_FLD =>
-              if DECODE then
-                SET := TRUE;
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when Screen.List_Scroll_Fld_Range'First .. Screen.List_Scroll_Fld_Range'Last =>
+              Screen.Scroll(Ptg_Result.Field_No);
+            when Screen.Ok_Button_Fld =>
+              if Decode then
+                Set := True;
                 exit;
               end if;
-            when SCREEN.CANCEL_BUTTON_FLD =>
-              SET := FALSE;
+            when Screen.Cancel_Button_Fld =>
+              Set := False;
               exit;
             when others =>
               null;
           end case;
-        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+        when Afpx.Fd_Event | Afpx.Timer_Event =>
           null;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
+        when Afpx.Refresh =>
+          Redisplay := True;
       end case;
     end loop;
-  end READ_COORDINATE;
+  end Read_Coordinate;
 
 
   -- Get a new degree
-  procedure READ_DEGREE is
+  procedure Read_Degree is
 
-    CURSOR_FIELD : AFPX.FIELD_RANGE;
-    CURSOR_COL : CON_IO.COL_RANGE := 0;
-    REDISPLAY : BOOLEAN := FALSE;
-    PTG_RESULT : AFPX.RESULT_REC;
-    DEGREE : NATURAL;
+    Cursor_Field : Afpx.Field_Range;
+    Cursor_Col : Con_Io.Col_Range := 0;
+    Redisplay : Boolean := False;
+    Ptg_Result : Afpx.Result_Rec;
+    Degree : Natural;
 
-    procedure ENCODE is
+    procedure Encode is
     begin
-      AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0), NORMAL (DEGREE, SCREEN.GET_GET_WIDTH, FALSE));
-    end ENCODE;
+      Afpx.Encode_Field (Screen.Get_Fld, (0, 0), Normal (Degree, Screen.Get_Get_Width, False));
+    end Encode;
 
-    function DECODE return BOOLEAN is
-      BUFF : AFPX.STR_TXT;
-      OK : BOOLEAN;
+    function Decode return Boolean is
+      Buff : Afpx.Str_Txt;
+      Ok : Boolean;
     begin
-      AFPX.DECODE_FIELD (SCREEN.GET_FLD, 0, BUFF);
-      PARSE_SPACES(BUFF, OK);
-      if OK then
+      Afpx.Decode_Field (Screen.Get_Fld, 0, Buff);
+      Parse_Spaces(Buff, Ok);
+      if Ok then
         begin
-          DEGREE := NATURAL'VALUE(TEXT_HANDLER.VALUE(BUFF));
-          if DEGREE < POINTS.P_NB then
-            RESOL.R_SET_DEGREE(DEGREE);
+          Degree := Natural'Value(Text_Handler.Value(Buff));
+          if Degree < Points.P_Nb then
+            Resol.R_Set_Degree(Degree);
           else
-            OK := FALSE;
+            Ok := False;
           end if;
         exception
-          when CONSTRAINT_ERROR | RESOL.R_DEGREE_OUT =>
-            OK := FALSE;
+          when Constraint_Error | Resol.R_Degree_Out =>
+            Ok := False;
         end;
       end if;
-      if OK then
-        return TRUE;
+      if Ok then
+        return True;
       else
-        SCREEN.ERROR (SCREEN.E_WRONG_DEGREE);
-        SCREEN.INIT_FOR_GET (CURSOR_FIELD);
-        return FALSE;
+        Screen.Error (Screen.E_Wrong_Degree);
+        Screen.Init_For_Get (Cursor_Field);
+        return False;
       end if;
-    end DECODE;
+    end Decode;
 
   begin
-    SCREEN.INIT_FOR_GET (CURSOR_FIELD);
-    SCREEN.PUT_TITLE (SCREEN.GET_DEGREE);
-    DEGREE := RESOL.R_DEGREE;
-    ENCODE;
+    Screen.Init_For_Get (Cursor_Field);
+    Screen.Put_Title (Screen.Get_Degree);
+    Degree := Resol.R_Degree;
+    Encode;
 
     loop
-      SCREEN.INFORM(SCREEN.I_DEGREE);
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
-              if DECODE then
+      Screen.Inform(Screen.I_Degree);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
+              if Decode then
                 exit;
               end if;
-            when AFPX.ESCAPE_KEY =>
+            when Afpx.Escape_Key =>
               exit;
-            when AFPX.BREAK_KEY =>
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
-            when SCREEN.LIST_SCROLL_FLD_RANGE'FIRST .. SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
-              SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
-            when SCREEN.OK_BUTTON_FLD =>
-              if DECODE then
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when Screen.List_Scroll_Fld_Range'First .. Screen.List_Scroll_Fld_Range'Last =>
+              Screen.Scroll(Ptg_Result.Field_No);
+            when Screen.Ok_Button_Fld =>
+              if Decode then
                 exit;
               end if;
-            when SCREEN.CANCEL_BUTTON_FLD =>
+            when Screen.Cancel_Button_Fld =>
               exit;
             when others =>
               null;
           end case;
-        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+        when Afpx.Fd_Event | Afpx.Timer_Event =>
           null;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
+        when Afpx.Refresh =>
+          Redisplay := True;
       end case;
     end loop;
-  end READ_DEGREE;
+  end Read_Degree;
 
   -- Display polynom
-  procedure PUT_POLYNOM (POLYNOM : RESOL.VECTOR) is
-    procedure INSERT(STR : in STRING) is
-      REC : AFPX.LINE_REC;
+  procedure Put_Polynom (Polynom : Resol.Vector) is
+    procedure Insert(Str : in String) is
+      Rec : Afpx.Line_Rec;
     begin
-      REC.LEN := STR'LENGTH;
-      REC.STR (1 .. REC.LEN) := STR;
-      AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, REC);
-    end INSERT;
+      Rec.Len := Str'Length;
+      Rec.Str (1 .. Rec.Len) := Str;
+      Afpx.Line_List_Mng.Insert (Afpx.Line_List, Rec);
+    end Insert;
   begin
-    SCREEN.PUT_TITLE(SCREEN.POLYNOM);
-    SCREEN.INFORM(SCREEN.I_CLEAR);
+    Screen.Put_Title(Screen.Polynom);
+    Screen.Inform(Screen.I_Clear);
     -- Encode in list
-    AFPX.LINE_LIST_MNG.DELETE_LIST(AFPX.LINE_LIST);
-    for I in POLYNOM'RANGE loop
+    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+    for I in Polynom'Range loop
       -- factor * X^ijkl
-      INSERT (POINT_STR.COORDINATE_IMAGE(POLYNOM(I))
-        & " * X^" & NORMAL (I-1, SCREEN.MAX_DEGREE_WIDTH, GAP => '0'));
+      Insert (Point_Str.Coordinate_Image(Polynom(I))
+        & " * X^" & Normal (I-1, Screen.Max_Degree_Width, Gap => '0'));
     end loop;
     -- Rewind
-    AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
-                                NUMBER => 0, FROM_CURRENT => FALSE);
+    Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+                                Number => 0, From_Current => False);
     -- Go to top
-    AFPX.UPDATE_LIST (AFPX.TOP);
+    Afpx.Update_List (Afpx.Top);
     -- Let screen/afpx do the job
-    SCREEN.ERROR (SCREEN.E_DONE, SUBTITLE => TRUE);
-  end PUT_POLYNOM;
+    Screen.Error (Screen.E_Done, Subtitle => True);
+  end Put_Polynom;
 
   -- Display y=f(x)
-  function PUT_YFX (POINT : POINTS.P_T_ONE_POINT) return BOOLEAN is
-    MY_FLD : constant AFPX.FIELD_RANGE := 32;
-    GO_ON : BOOLEAN;
+  function Put_Yfx (Point : Points.P_T_One_Point) return Boolean is
+    My_Fld : constant Afpx.Field_Range := 32;
+    Go_On : Boolean;
   begin
     -- Enable FX, enable and protect y (get field)
-    AFPX.SET_FIELD_COLORS (MY_FLD, FOREGROUND => CON_IO.CYAN);
-    AFPX.SET_FIELD_ACTIVATION(SCREEN.GET_FLD, TRUE);
-    AFPX.SET_FIELD_PROTECTION(SCREEN.GET_FLD, TRUE);
-    AFPX.CLEAR_FIELD(SCREEN.GET_FLD);
+    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Cyan);
+    Afpx.Set_Field_Activation(Screen.Get_Fld, True);
+    Afpx.Set_Field_Protection(Screen.Get_Fld, True);
+    Afpx.Clear_Field(Screen.Get_Fld);
 
     -- Encode data
-    AFPX.ENCODE_FIELD (MY_FLD, (0,0),
+    Afpx.Encode_Field (My_Fld, (0,0),
       " F(" & 
-      PARSE_LEADING_SPACE (POINT_STR.COORDINATE_IMAGE(POINT.X))
+      Parse_Leading_Space (Point_Str.Coordinate_Image(Point.X))
       & ") =");
-    AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0,0),
-      POINT_STR.COORDINATE_IMAGE(POINT.Y));
+    Afpx.Encode_Field (Screen.Get_Fld, (0,0),
+      Point_Str.Coordinate_Image(Point.Y));
     
     -- Let screen/afpx do the job
-    GO_ON := SCREEN.CONFIRM (SCREEN.C_GO_ON, FALSE, SUBTITLE => TRUE);
+    Go_On := Screen.Confirm (Screen.C_Go_On, False, Subtitle => True);
     -- Clean up
-    AFPX.SET_FIELD_COLORS (MY_FLD, FOREGROUND => CON_IO.BLACK);
-    AFPX.CLEAR_FIELD(MY_FLD);
-    return GO_ON;
-  end PUT_YFX;
-end DIALOG;
+    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Black);
+    Afpx.Clear_Field(My_Fld);
+    return Go_On;
+  end Put_Yfx;
+end Dialog;
 

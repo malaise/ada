@@ -1,43 +1,43 @@
-with AFPX;
-with PERS_DEF, MESU_DEF, MESU_NAM;
+with Afpx;
+with Pers_Def, Mesu_Def, Mesu_Nam;
 
 -- Mesure selection management
-package MESU_SEL is
+package Mesu_Sel is
 
 
   -- Criteria for adding to / removing from selection
-  type CRITERIA_REC is record
-    NAME     : PERS_DEF.PERSON_NAME_STR;
-    ACTIVITY : PERS_DEF.PERSON_ACTIVITY_STR;
-    DATE_AFT : MESU_DEF.DATE_STR;
-    DATE_BEF : MESU_DEF.DATE_STR;
+  type Criteria_Rec is record
+    Name     : Pers_Def.Person_Name_Str;
+    Activity : Pers_Def.Person_Activity_Str;
+    Date_Aft : Mesu_Def.Date_Str;
+    Date_Bef : Mesu_Def.Date_Str;
   end record;
 
   -- Add records to selection
-  procedure ADD_SELECTION (CRITERIA : in CRITERIA_REC);
+  procedure Add_Selection (Criteria : in Criteria_Rec);
 
   -- Remove records from selection
-  procedure REM_SELECTION (CRITERIA : in CRITERIA_REC);
+  procedure Rem_Selection (Criteria : in Criteria_Rec);
 
   -- Add a record to selection
-  procedure ADD_SELECTION (NAME : in MESU_NAM.FILE_NAME_STR);
+  procedure Add_Selection (Name : in Mesu_Nam.File_Name_Str);
 
   -- Remove a record from selection
-  procedure REM_SELECTION (NAME : in MESU_NAM.FILE_NAME_STR);
+  procedure Rem_Selection (Name : in Mesu_Nam.File_Name_Str);
   -- This one to be used if the record file is already deleted
-  procedure REM_SELECTION (LINE : in AFPX.LINE_REC);
+  procedure Rem_Selection (Line : in Afpx.Line_Rec);
 
 
   -- Load the selection from file
-  procedure LOAD;
+  procedure Load;
 
   -- Save the selection to file
-  procedure SAVE;
+  procedure Save;
 
   -- Undo (if possible) previous action on selection
-  procedure UNDO;
+  procedure Undo;
 
   -- Copy of afpx list
-  procedure COPY_LIST (FROM, TO : in out AFPX.LINE_LIST_MNG.LIST_TYPE);
+  procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type);
 
-end MESU_SEL;
+end Mesu_Sel;

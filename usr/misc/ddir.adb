@@ -1,63 +1,63 @@
-with MY_IO, ARGUMENT, TEXT_HANDLER, DIRECTORY;
-procedure DDIR is
+with My_Io, Argument, Text_Handler, Directory;
+procedure Ddir is
 
-  procedure USAGE is
+  procedure Usage is
   begin
-    MY_IO.PUT_LINE ("Usage: " & ARGUMENT.GET_PROGRAM_NAME & " [ { <directory> } ]");
-  end USAGE;
+    My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ { <directory> } ]");
+  end Usage;
 
-  procedure DDIR_ONE (DIR_NAME : in STRING) is
-    DIR_DSC : DIRECTORY.DIR_DESC;
-    ENTRY_NAME, FULL_DIR_NAME : TEXT_HANDLER.TEXT (DIRECTORY.MAX_DIR_NAME_LEN);
-    KIND : DIRECTORY.FILE_KIND_LIST;
-    RIGHTS : NATURAL;
-    MTIME : DIRECTORY.TIME_T;
-    use DIRECTORY;
+  procedure Ddir_One (Dir_Name : in String) is
+    Dir_Dsc : Directory.Dir_Desc;
+    Entry_Name, Full_Dir_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len);
+    Kind : Directory.File_Kind_List;
+    Rights : Natural;
+    Mtime : Directory.Time_T;
+    use Directory;
   begin
     begin
-      DIR_DSC := DIRECTORY.OPEN(DIR_NAME);
+      Dir_Dsc := Directory.Open(Dir_Name);
     exception
-      when DIRECTORY.NAME_ERROR =>
-        MY_IO.PUT_LINE ("ERROR no such directory " & DIR_NAME);
+      when Directory.Name_Error =>
+        My_Io.Put_Line ("ERROR no such directory " & Dir_Name);
         return;
-      when DIRECTORY.ACCESS_ERROR =>
-        MY_IO.PUT_LINE ("ERROR reading directory " & DIR_NAME);
+      when Directory.Access_Error =>
+        My_Io.Put_Line ("ERROR reading directory " & Dir_Name);
         return;
     end;
 
-    MY_IO.PUT_LINE ("Directories of " & DIR_NAME);
+    My_Io.Put_Line ("Directories of " & Dir_Name);
     loop
       begin
-        DIRECTORY.NEXT_ENTRY (DIR_DSC, ENTRY_NAME);
+        Directory.Next_Entry (Dir_Dsc, Entry_Name);
       exception
-        when DIRECTORY.END_ERROR =>
+        when Directory.End_Error =>
           exit;
       end;
       begin
-        DIRECTORY.FILE_STAT (DIR_NAME & "/" & TEXT_HANDLER.VALUE(ENTRY_NAME),
-                             KIND, RIGHTS, MTIME);
+        Directory.File_Stat (Dir_Name & "/" & Text_Handler.Value(Entry_Name),
+                             Kind, Rights, Mtime);
       exception
-        when DIRECTORY.NAME_ERROR | DIRECTORY.ACCESS_ERROR =>
+        when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?
-          KIND := DIRECTORY.UNKNOWN;
+          Kind := Directory.Unknown;
       end;
-      if KIND = DIRECTORY.DIR
-      and then TEXT_HANDLER.VALUE(ENTRY_NAME) /= "."
-      and then TEXT_HANDLER.VALUE(ENTRY_NAME) /= ".." then
-        MY_IO.PUT_LINE (TEXT_HANDLER.VALUE(ENTRY_NAME));
+      if Kind = Directory.Dir
+      and then Text_Handler.Value(Entry_Name) /= "."
+      and then Text_Handler.Value(Entry_Name) /= ".." then
+        My_Io.Put_Line (Text_Handler.Value(Entry_Name));
       end if;
     end loop;
-    DIRECTORY.CLOSE(DIR_DSC);
-    MY_IO.NEW_LINE;
-  end DDIR_ONE;
+    Directory.Close(Dir_Dsc);
+    My_Io.New_Line;
+  end Ddir_One;
 
 begin
-  if ARGUMENT.GET_NBRE_ARG = 0 then
-    DDIR_ONE (".");
+  if Argument.Get_Nbre_Arg = 0 then
+    Ddir_One (".");
   else
-    for I in 1 .. ARGUMENT.GET_NBRE_ARG loop
-      DDIR_ONE (ARGUMENT.GET_PARAMETER(I));
+    for I in 1 .. Argument.Get_Nbre_Arg loop
+      Ddir_One (Argument.Get_Parameter(I));
     end loop;
   end if;
-end DDIR;
+end Ddir;
 

@@ -1,294 +1,294 @@
-with CALENDAR;
-with ARGUMENT, AFPX, CON_IO, DYNAMIC_LIST, DIR_MNG, NORMAL, DOS;
-procedure T_SCREEN is
+with Calendar;
+with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Normal, Dos;
+procedure T_Screen is
 
-  AFPX_ITEM : AFPX.LINE_REC;
+  Afpx_Item : Afpx.Line_Rec;
 
-  DSCR : AFPX.DESCRIPTOR_RANGE;
+  Dscr : Afpx.Descriptor_Range;
 
-  CURSOR_FIELD : AFPX.FIELD_RANGE;
-  CURSOR_COL   : CON_IO.COL_RANGE;
-  PTG_RESULT   : AFPX.RESULT_REC;
-  REDISPLAY : BOOLEAN;
-
-
-  CURR_DATE  : AFPX.ABSOLUTE_FIELD_RANGE;
-
-  EXIT_BUTTON : AFPX.ABSOLUTE_FIELD_RANGE;
-  FIRST_GET   : AFPX.ABSOLUTE_FIELD_RANGE;
+  Cursor_Field : Afpx.Field_Range;
+  Cursor_Col   : Con_Io.Col_Range;
+  Ptg_Result   : Afpx.Result_Rec;
+  Redisplay : Boolean;
 
 
-  LIST_EMPTY : BOOLEAN;
+  Curr_Date  : Afpx.Absolute_Field_Range;
 
-  ALLOW_UNDO  : BOOLEAN;
-  ALLOW_DRAW  : BOOLEAN;
-  IN_ADD : BOOLEAN;
-
-  IN_EDIT  : BOOLEAN;
-  IN_VALID : BOOLEAN;
+  Exit_Button : Afpx.Absolute_Field_Range;
+  First_Get   : Afpx.Absolute_Field_Range;
 
 
-  ACT : BOOLEAN;
+  List_Empty : Boolean;
 
-  use AFPX;
+  Allow_Undo  : Boolean;
+  Allow_Draw  : Boolean;
+  In_Add : Boolean;
+
+  In_Edit  : Boolean;
+  In_Valid : Boolean;
+
+
+  Act : Boolean;
+
+  use Afpx;
 begin
-  if ARGUMENT.GET_NBRE_ARG < 1 then
+  if Argument.Get_Nbre_Arg < 1 then
     return;
   end if;
 
-  DSCR := AFPX.DESCRIPTOR_RANGE'VALUE (ARGUMENT.GET_PARAMETER);
+  Dscr := Afpx.Descriptor_Range'Value (Argument.Get_Parameter);
 
   declare
-    procedure DIR_SORT is new DIR_MNG.FILE_LIST_MNG.SORT (DIR_MNG.LESS_THAN);
-    DIR_LIST : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-    DIR_ITEM : DIR_MNG.FILE_ENTRY_REC;
+    procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);
+    Dir_List : Dir_Mng.File_List_Mng.List_Type;
+    Dir_Item : Dir_Mng.File_Entry_Rec;
   begin
     -- List directory and store it in AFPX list
-    if ARGUMENT.GET_NBRE_ARG = 1 then
-      DIR_MNG.LIST_DIR (DIR_LIST, "");
+    if Argument.Get_Nbre_Arg = 1 then
+      Dir_Mng.List_Dir (Dir_List, "");
     else
-      DIR_MNG.LIST_DIR (DIR_LIST,
-                        ARGUMENT.GET_PARAMETER (OCCURENCE => 2));
+      Dir_Mng.List_Dir (Dir_List,
+                        Argument.Get_Parameter (Occurence => 2));
     end if;
 
     -- Sort, move to first, copy in afpx list
-    DIR_SORT (DIR_LIST);
-    DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST, DIR_MNG.FILE_LIST_MNG.NEXT,
-                                  0 , FALSE);
+    Dir_Sort (Dir_List);
+    Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
+                                  0 , False);
     loop
-      DIR_MNG.FILE_LIST_MNG.READ (DIR_LIST, DIR_ITEM,
-                                  DIR_MNG.FILE_LIST_MNG.CURRENT);
-      AFPX_ITEM.LEN := DIR_ITEM.LEN;
-      AFPX_ITEM.STR := (others => ' ');
-      AFPX_ITEM.STR(1 .. AFPX_ITEM.LEN) := DIR_ITEM.NAME (1 .. DIR_ITEM.LEN);
-      AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, AFPX_ITEM);
-      exit when DIR_MNG.FILE_LIST_MNG.GET_POSITION (DIR_LIST)
-              = DIR_MNG.FILE_LIST_MNG.LIST_LENGTH (DIR_LIST);
-      DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST);
+      Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
+                                  Dir_Mng.File_List_Mng.Current);
+      Afpx_Item.Len := Dir_Item.Len;
+      Afpx_Item.Str := (others => ' ');
+      Afpx_Item.Str(1 .. Afpx_Item.Len) := Dir_Item.Name (1 .. Dir_Item.Len);
+      Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
+      exit when Dir_Mng.File_List_Mng.Get_Position (Dir_List)
+              = Dir_Mng.File_List_Mng.List_Length (Dir_List);
+      Dir_Mng.File_List_Mng.Move_To (Dir_List);
     end loop;
     -- End of list
-    AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.PREV,
-                                0, FALSE);
+    Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Prev,
+                                0, False);
   exception
-    when DIR_MNG.NAME_ERROR =>
+    when Dir_Mng.Name_Error =>
       null;
   end;
 
-  AFPX.USE_DESCRIPTOR(DSCR);
+  Afpx.Use_Descriptor(Dscr);
 
-  if DSCR = 1 then
-    EXIT_BUTTON  := 19;
-    FIRST_GET := 07;
-    ALLOW_UNDO := FALSE;
-    CURR_DATE := 02;
-  elsif DSCR = 2 then
-    EXIT_BUTTON  := 5;
-    FIRST_GET := 11;
-    IN_EDIT := FALSE;
-    IN_VALID := FALSE;
-    CURR_DATE := 02;
-  elsif DSCR = 3 then
-    EXIT_BUTTON := 125;
-    FIRST_GET := 04;
-    IN_EDIT := TRUE;
-    CURR_DATE := 02;
+  if Dscr = 1 then
+    Exit_Button  := 19;
+    First_Get := 07;
+    Allow_Undo := False;
+    Curr_Date := 02;
+  elsif Dscr = 2 then
+    Exit_Button  := 5;
+    First_Get := 11;
+    In_Edit := False;
+    In_Valid := False;
+    Curr_Date := 02;
+  elsif Dscr = 3 then
+    Exit_Button := 125;
+    First_Get := 04;
+    In_Edit := True;
+    Curr_Date := 02;
   end if;
 
-  CURSOR_FIELD := FIRST_GET;
-  CURSOR_COL := 0;
-  REDISPLAY := FALSE;
+  Cursor_Field := First_Get;
+  Cursor_Col := 0;
+  Redisplay := False;
 
 
   -- Encode date
   declare
-    CURRENT_TIME : constant CALENDAR.TIME := CALENDAR.CLOCK;
+    Current_Time : constant Calendar.Time := Calendar.Clock;
   begin
-    AFPX.ENCODE_FIELD (CURR_DATE, (0, 0),
-      NORMAL(CALENDAR.DAY(CURRENT_TIME)  , 2, GAP => '0') & "/"
-    & NORMAL(CALENDAR.MONTH(CURRENT_TIME), 2, GAP => '0') & "/"
-    & NORMAL(CALENDAR.YEAR(CURRENT_TIME),  4, GAP => '0') );
+    Afpx.Encode_Field (Curr_Date, (0, 0),
+      Normal(Calendar.Day(Current_Time)  , 2, Gap => '0') & "/"
+    & Normal(Calendar.Month(Current_Time), 2, Gap => '0') & "/"
+    & Normal(Calendar.Year(Current_Time),  4, Gap => '0') );
   end;
 
 
   loop
 
-    LIST_EMPTY := AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST) = 0;
-    if DSCR = 1 then
-      ALLOW_DRAW := not LIST_EMPTY and then
-                    AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST) <= 10;
-      AFPX.SET_FIELD_ACTIVATION (22, not LIST_EMPTY);
-      AFPX.SET_FIELD_ACTIVATION (23, ALLOW_DRAW);
-      AFPX.SET_FIELD_ACTIVATION (24, not LIST_EMPTY);
-      AFPX.SET_FIELD_ACTIVATION (26, not LIST_EMPTY);
-      AFPX.SET_FIELD_ACTIVATION (27, not LIST_EMPTY);
-      AFPX.SET_FIELD_ACTIVATION (17, ALLOW_UNDO);
-      AFPX.ENCODE_FIELD (20, (0, 0),
-        NORMAL(AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST), 5) );
-    elsif DSCR = 2 then
+    List_Empty := Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0;
+    if Dscr = 1 then
+      Allow_Draw := not List_Empty and then
+                    Afpx.Line_List_Mng.List_Length(Afpx.Line_List) <= 10;
+      Afpx.Set_Field_Activation (22, not List_Empty);
+      Afpx.Set_Field_Activation (23, Allow_Draw);
+      Afpx.Set_Field_Activation (24, not List_Empty);
+      Afpx.Set_Field_Activation (26, not List_Empty);
+      Afpx.Set_Field_Activation (27, not List_Empty);
+      Afpx.Set_Field_Activation (17, Allow_Undo);
+      Afpx.Encode_Field (20, (0, 0),
+        Normal(Afpx.Line_List_Mng.List_Length(Afpx.Line_List), 5) );
+    elsif Dscr = 2 then
       -- List and menu buttons, not in valid nor edit
       -- Same for create
-      ACT := not IN_VALID and then not IN_EDIT;
-      AFPX.SET_FIELD_ACTIVATION (00, ACT);
-      AFPX.SET_FIELD_ACTIVATION (03, ACT);
-      AFPX.SET_FIELD_ACTIVATION (04, ACT);
-      AFPX.SET_FIELD_ACTIVATION (05, ACT);
-      AFPX.SET_FIELD_ACTIVATION (06, ACT);
+      Act := not In_Valid and then not In_Edit;
+      Afpx.Set_Field_Activation (00, Act);
+      Afpx.Set_Field_Activation (03, Act);
+      Afpx.Set_Field_Activation (04, Act);
+      Afpx.Set_Field_Activation (05, Act);
+      Afpx.Set_Field_Activation (06, Act);
       -- Delete/edit if not empty and not in valid nor edit
-      ACT := ACT and then not LIST_EMPTY;
-      AFPX.SET_FIELD_ACTIVATION (07, ACT);
-      AFPX.SET_FIELD_ACTIVATION (08, ACT);
+      Act := Act and then not List_Empty;
+      Afpx.Set_Field_Activation (07, Act);
+      Afpx.Set_Field_Activation (08, Act);
       -- Edit if edit
-      ACT := IN_EDIT or else IN_VALID;
-      for I in AFPX.FIELD_RANGE'(10) .. 23 loop
-        AFPX.SET_FIELD_ACTIVATION (I, ACT);
+      Act := In_Edit or else In_Valid;
+      for I in Afpx.Field_Range'(10) .. 23 loop
+        Afpx.Set_Field_Activation (I, Act);
       end loop;
       -- Un protect get in edit
-      ACT := not IN_EDIT;
-      AFPX.SET_FIELD_PROTECTION (11, ACT);
-      AFPX.SET_FIELD_PROTECTION (13, ACT);
-      AFPX.SET_FIELD_PROTECTION (16, ACT);
-      AFPX.SET_FIELD_PROTECTION (17, ACT);
-      AFPX.SET_FIELD_PROTECTION (18, ACT);
-      AFPX.SET_FIELD_PROTECTION (19, ACT);
-      AFPX.SET_FIELD_PROTECTION (20, ACT);
-      AFPX.SET_FIELD_PROTECTION (21, ACT);
-      AFPX.SET_FIELD_ACTIVATION (24, not ACT);
-      if ACT then
-        AFPX.SET_FIELD_COLORS (11, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (13, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (16, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (17, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (18, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (19, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (20, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
-        AFPX.SET_FIELD_COLORS (21, FOREGROUND => CON_IO.CYAN,
-                                   BACKGROUND => CON_IO.BLACK);
+      Act := not In_Edit;
+      Afpx.Set_Field_Protection (11, Act);
+      Afpx.Set_Field_Protection (13, Act);
+      Afpx.Set_Field_Protection (16, Act);
+      Afpx.Set_Field_Protection (17, Act);
+      Afpx.Set_Field_Protection (18, Act);
+      Afpx.Set_Field_Protection (19, Act);
+      Afpx.Set_Field_Protection (20, Act);
+      Afpx.Set_Field_Protection (21, Act);
+      Afpx.Set_Field_Activation (24, not Act);
+      if Act then
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (13, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (16, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (18, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (19, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (20, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (21, Foreground => Con_Io.Cyan,
+                                   Background => Con_Io.Black);
       else
-        AFPX.SET_FIELD_COLORS (11, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (13, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (16, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (17, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (18, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (19, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (20, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
-        AFPX.SET_FIELD_COLORS (21, FOREGROUND => CON_IO.BROWN,
-                                   BACKGROUND => CON_IO.BLUE);
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (13, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (16, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (18, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (19, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (20, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (21, Foreground => Con_Io.Brown,
+                                   Background => Con_Io.Blue);
       end if;
       -- Compute if in edit
-      AFPX.SET_FIELD_ACTIVATION (24, IN_EDIT);
+      Afpx.Set_Field_Activation (24, In_Edit);
       -- Confirm if Valid
-      AFPX.SET_FIELD_ACTIVATION (09, IN_VALID);
-    elsif DSCR = 3 then
+      Afpx.Set_Field_Activation (09, In_Valid);
+    elsif Dscr = 3 then
       null;
     end if;
 
 
-    AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT);
-    REDISPLAY := FALSE;
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result);
+    Redisplay := False;
 
-    case PTG_RESULT.EVENT is
+    case Ptg_Result.Event is
 
-      when REFRESH =>
-        REDISPLAY := TRUE;
+      when Refresh =>
+        Redisplay := True;
 
-      when KEYBOARD =>
+      when Keyboard =>
 
-        case PTG_RESULT.KEYBOARD_KEY is
-          when RETURN_KEY | BREAK_KEY =>
+        case Ptg_Result.Keyboard_Key is
+          when Return_Key | Break_Key =>
             null;
-          when ESCAPE_KEY =>
+          when Escape_Key =>
             -- Clear current field
-            AFPX.CLEAR_FIELD (CURSOR_FIELD);
-            CURSOR_COL := 0;
-            ALLOW_UNDO := FALSE;
+            Afpx.Clear_Field (Cursor_Field);
+            Cursor_Col := 0;
+            Allow_Undo := False;
         end case;
 
-      when MOUSE_BUTTON =>
+      when Mouse_Button =>
 
-        exit when PTG_RESULT.FIELD_NO = EXIT_BUTTON;
-        if DSCR = 1 then
-          case PTG_RESULT.FIELD_NO is
+        exit when Ptg_Result.Field_No = Exit_Button;
+        if Dscr = 1 then
+          case Ptg_Result.Field_No is
             when 15 | 16 =>
               -- Add, rem select : confirm
-              for I in AFPX.ABSOLUTE_FIELD_RANGE range 0 .. 27 loop
-                AFPX.SET_FIELD_ACTIVATION (I, FALSE);
+              for I in Afpx.Absolute_Field_Range range 0 .. 27 loop
+                Afpx.Set_Field_Activation (I, False);
               end loop;
-              AFPX.SET_FIELD_ACTIVATION (15, TRUE);
-              AFPX.SET_FIELD_ACTIVATION (16, TRUE);
-              AFPX.SET_FIELD_ACTIVATION (20, TRUE);
-              if PTG_RESULT.FIELD_NO = 15 then
-                IN_ADD := TRUE;
-                AFPX.CLEAR_FIELD(16);
-                AFPX.ENCODE_FIELD(16, (01, 04), "Abort");
-                AFPX.ENCODE_FIELD(20, (00, 00),
+              Afpx.Set_Field_Activation (15, True);
+              Afpx.Set_Field_Activation (16, True);
+              Afpx.Set_Field_Activation (20, True);
+              if Ptg_Result.Field_No = 15 then
+                In_Add := True;
+                Afpx.Clear_Field(16);
+                Afpx.Encode_Field(16, (01, 04), "Abort");
+                Afpx.Encode_Field(20, (00, 00),
                    "Add xxxxx records to the selection");
               else
-                IN_ADD := FALSE;
-                AFPX.CLEAR_FIELD(15);
-                AFPX.ENCODE_FIELD(15, (01, 04), "Abort");
-                AFPX.ENCODE_FIELD(20, (00, 00),
+                In_Add := False;
+                Afpx.Clear_Field(15);
+                Afpx.Encode_Field(15, (01, 04), "Abort");
+                Afpx.Encode_Field(20, (00, 00),
                    "Remove xxxxx records from the selection");
               end if;
-              AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT);
+              Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result);
               -- Here we can confirm or abort
-              if      (    IN_ADD and then PTG_RESULT.FIELD_NO = 15)
-              or else (not IN_ADD and then PTG_RESULT.FIELD_NO = 16) then
-                ALLOW_UNDO := TRUE;
+              if      (    In_Add and then Ptg_Result.Field_No = 15)
+              or else (not In_Add and then Ptg_Result.Field_No = 16) then
+                Allow_Undo := True;
               else
-                ALLOW_UNDO := FALSE;
+                Allow_Undo := False;
               end if;
 
-              for I in AFPX.ABSOLUTE_FIELD_RANGE range 0 .. 27 loop
-                AFPX.SET_FIELD_ACTIVATION (I, TRUE);
+              for I in Afpx.Absolute_Field_Range range 0 .. 27 loop
+                Afpx.Set_Field_Activation (I, True);
               end loop;
-              AFPX.SET_FIELD_ACTIVATION (20, FALSE);
-              AFPX.RESET_FIELD (15);
-              AFPX.RESET_FIELD (16);
+              Afpx.Set_Field_Activation (20, False);
+              Afpx.Reset_Field (15);
+              Afpx.Reset_Field (16);
             when  22 | 27 =>
               -- Unselect, delete
-              if AFPX.LINE_LIST_MNG.GET_POSITION (AFPX.LINE_LIST) /=
-                 AFPX.LINE_LIST_MNG.LIST_LENGTH (AFPX.LINE_LIST) then
-                AFPX.LINE_LIST_MNG.DELETE (AFPX.LINE_LIST);
+              if Afpx.Line_List_Mng.Get_Position (Afpx.Line_List) /=
+                 Afpx.Line_List_Mng.List_Length (Afpx.Line_List) then
+                Afpx.Line_List_Mng.Delete (Afpx.Line_List);
               else
-                AFPX.LINE_LIST_MNG.DELETE (AFPX.LINE_LIST,
-                                           AFPX.LINE_LIST_MNG.PREV);
+                Afpx.Line_List_Mng.Delete (Afpx.Line_List,
+                                           Afpx.Line_List_Mng.Prev);
               end if;
             when others =>
-              ALLOW_UNDO := FALSE;
+              Allow_Undo := False;
           end case;
-        elsif DSCR = 2 then
-          case PTG_RESULT.FIELD_NO is
+        elsif Dscr = 2 then
+          case Ptg_Result.Field_No is
             when 06 | 08 =>
               -- Create, edit
-              IN_EDIT := TRUE;
-              IN_VALID := FALSE;
-              CURSOR_FIELD := FIRST_GET;
+              In_Edit := True;
+              In_Valid := False;
+              Cursor_Field := First_Get;
             when 07 =>
               -- Delete
-              IN_EDIT := FALSE;
-              IN_VALID := TRUE;
+              In_Edit := False;
+              In_Valid := True;
             when 22 | 23 =>
               -- Valid, cancel
-              IN_EDIT := FALSE;
-              IN_VALID := FALSE;
+              In_Edit := False;
+              In_Valid := False;
             when others =>
               null;
           end case;
-        elsif DSCR = 3 then
+        elsif Dscr = 3 then
           null;
         end if;
 
@@ -297,12 +297,12 @@ begin
 
   end loop;
 
-  CON_IO.RESET_TERM;
+  Con_Io.Reset_Term;
 
 exception
   when others =>
-    CON_IO.BELL (3);
+    Con_Io.Bell (3);
     delay 5.0;
-    CON_IO.RESET_TERM;
+    Con_Io.Reset_Term;
     raise;
-end T_SCREEN;
+end T_Screen;

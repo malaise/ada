@@ -1,134 +1,134 @@
-with CON_IO;
-separate(MNG)
+with Con_Io;
+separate(Mng)
 
-procedure SEARCH is
+procedure Search is
   -- Afpx put_then_get stuff
-  CURSOR_FIELD : AFPX.ABSOLUTE_FIELD_RANGE := 0;
-  CURSOR_COL   : CON_IO.COL_RANGE := 0;
-  PTG_RESULT   : AFPX.RESULT_REC;
-  REDISPLAY    : BOOLEAN := FALSE;
+  Cursor_Field : Afpx.Absolute_Field_Range := 0;
+  Cursor_Col   : Con_Io.Col_Range := 0;
+  Ptg_Result   : Afpx.Result_Rec;
+  Redisplay    : Boolean := False;
   -- Operation to match
-  OPER : OPER_DEF.OPER_REC;
+  Oper : Oper_Def.Oper_Rec;
 
   -- Unselect current oper
-  procedure UNSEL is
+  procedure Unsel is
   begin
-    if SEL_LIST_MNG.GET_POSITION(SEL_LIST) /= 1 then
-      SEL_LIST_MNG.DELETE(SEL_LIST, SEL_LIST_MNG.PREV);
+    if Sel_List_Mng.Get_Position(Sel_List) /= 1 then
+      Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev);
     else
-      SEL_LIST_MNG.DELETE(SEL_LIST, SEL_LIST_MNG.NEXT);
+      Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Next);
     end if;
-  end UNSEL;
+  end Unsel;
 
-  type MATCH_PROT is access
-       function(CUR, CRIT : OPER_DEF.OPER_REC) return BOOLEAN;
+  type Match_Prot is access
+       function(Cur, Crit : Oper_Def.Oper_Rec) return Boolean;
 
-  function REF_MATCH(CUR, CRIT : OPER_DEF.OPER_REC) return BOOLEAN is
-    use type OPER_DEF.KIND_LIST;
+  function Ref_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Kind_List;
   begin
-    return CUR.KIND = OPER_DEF.CHEQUE
-           and then CUR.REFERENCE = CRIT.REFERENCE;
-  end REF_MATCH;
+    return Cur.Kind = Oper_Def.Cheque
+           and then Cur.Reference = Crit.Reference;
+  end Ref_Match;
 
-  function STATUS_MATCH(CUR, CRIT : OPER_DEF.OPER_REC) return BOOLEAN is
-    use type OPER_DEF.STATUS_LIST;
+  function Status_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Status_List;
   begin
-    return CUR.STATUS = CRIT.STATUS;
-  end STATUS_MATCH;
+    return Cur.Status = Crit.Status;
+  end Status_Match;
 
   -- Unselect all non matching oper
-  procedure UNSEL_ALL(MATCH : in MATCH_PROT; CRIT : in OPER_DEF.OPER_REC) is
-     OPER : OPER_DEF.OPER_REC;
+  procedure Unsel_All(Match : in Match_Prot; Crit : in Oper_Def.Oper_Rec) is
+     Oper : Oper_Def.Oper_Rec;
   begin
-    if SEL_LIST_MNG.IS_EMPTY(SEL_LIST) then
+    if Sel_List_Mng.Is_Empty(Sel_List) then
       return;
     end if;
     -- Scan from first
-    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT, 0, FALSE);
+    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
     loop
-      LIST_UTIL.MOVE_TO_CURRENT;
-      OPER_LIST_MNG.READ(OPER_LIST, OPER, OPER_LIST_MNG.CURRENT);
-      if not MATCH(OPER, CRIT) then
+      List_Util.Move_To_Current;
+      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      if not Match(Oper, Crit) then
         -- Remove current and move to next or remove last
-        UNSEL;
-        exit when SEL_LIST_MNG.IS_EMPTY(SEL_LIST);
+        Unsel;
+        exit when Sel_List_Mng.Is_Empty(Sel_List);
       else
         -- Move to next
-        exit when SEL_LIST_MNG.GET_POSITION(SEL_LIST)
-                = SEL_LIST_MNG.LIST_LENGTH(SEL_LIST);
-        SEL_LIST_MNG.MOVE_TO(SEL_LIST);
+        exit when Sel_List_Mng.Get_Position(Sel_List)
+                = Sel_List_Mng.List_Length(Sel_List);
+        Sel_List_Mng.Move_To(Sel_List);
       end if;
     end loop;
-  end UNSEL_ALL;
+  end Unsel_All;
     
 
 begin
 
-  if IN_SUBLIST then
+  if In_Sublist then
     -- Unselect
-    UNSEL;
-    REFRESH_SCREEN(UNCHANGED);
+    Unsel;
+    Refresh_Screen(Unchanged);
     return;
   end if; 
 
   -- Not in sublist: get criteria
-  AFPX.USE_DESCRIPTOR(4);
-  SCREEN.ENCODE_FILE_NAME(TEXT_HANDLER.VALUE(ACCOUNT_NAME));
-  SCREEN.ENCODE_NB_OPER(OPER_LIST_MNG.LIST_LENGTH(OPER_LIST),
-                        SEL_LIST_MNG.LIST_LENGTH(SEL_LIST));
-  SCREEN.ENCODE_SAVED(ACCOUNT_SAVED);
-  CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(0);
+  Afpx.Use_Descriptor(4);
+  Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+  Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
+                        Sel_List_Mng.List_Length(Sel_List));
+  Screen.Encode_Saved(Account_Saved);
+  Cursor_Field := Afpx.Next_Cursor_Field(0);
 
   loop
-    AFPX.PUT_THEN_GET(CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-    REDISPLAY := FALSE;
-    case PTG_RESULT.EVENT is
+    Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Redisplay := False;
+    case Ptg_Result.Event is
 
-      when AFPX.KEYBOARD =>
-        case PTG_RESULT.KEYBOARD_KEY is
-          when AFPX.RETURN_KEY =>
+      when Afpx.Keyboard =>
+        case Ptg_Result.Keyboard_Key is
+          when Afpx.Return_Key =>
             -- Return = Search ref
-            OPER.REFERENCE := AFPX.DECODE_FIELD(12, 0);
-            UNSEL_ALL(REF_MATCH'access, OPER);
-            IN_SUBLIST := TRUE;
+            Oper.Reference := Afpx.Decode_Field(12, 0);
+            Unsel_All(Ref_Match'access, Oper);
+            In_Sublist := True;
             exit;
-          when AFPX.ESCAPE_KEY | AFPX.BREAK_KEY =>
+          when Afpx.Escape_Key | Afpx.Break_Key =>
             -- Escape/Break = Cancel
-            IN_SUBLIST := FALSE;
+            In_Sublist := False;
             exit;
         end case;
-      when AFPX.MOUSE_BUTTON =>
-        case PTG_RESULT.FIELD_NO is
+      when Afpx.Mouse_Button =>
+        case Ptg_Result.Field_No is
           when 9 =>
             -- Defered
-            OPER.STATUS := OPER_DEF.DEFERED;
-            UNSEL_ALL(STATUS_MATCH'access, OPER);
-            IN_SUBLIST := TRUE;
+            Oper.Status := Oper_Def.Defered;
+            Unsel_All(Status_Match'access, Oper);
+            In_Sublist := True;
             exit;
           when 10 =>
             -- Not entered
-            OPER.STATUS := OPER_DEF.NOT_ENTERED;
-            UNSEL_ALL(STATUS_MATCH'access, OPER);
-            IN_SUBLIST := TRUE;
+            Oper.Status := Oper_Def.Not_Entered;
+            Unsel_All(Status_Match'access, Oper);
+            In_Sublist := True;
             exit;
           when 13 =>
             -- Cancel
-            IN_SUBLIST := FALSE;
+            In_Sublist := False;
             exit;
           when others =>
             null;
         end case;
-      when AFPX.REFRESH =>
-        REDISPLAY := TRUE;
-      when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+      when Afpx.Refresh =>
+        Redisplay := True;
+      when Afpx.Fd_Event | Afpx.Timer_Event =>
         null;
     end case;
 
   end loop;
 
-  SCREEN.RESET;
-  SCREEN.SUBLIST(IN_SUBLIST);
-  REFRESH_SCREEN(BOTTOM);
+  Screen.Reset;
+  Screen.Sublist(In_Sublist);
+  Refresh_Screen(Bottom);
 
-end SEARCH;
+end Search;
 

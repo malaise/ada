@@ -1,60 +1,60 @@
-with CALENDAR;
-with SOK_TYPES;
+with Calendar;
+with Sok_Types;
 -- displaying of sokoban
-package SOK_DISPLAY is
+package Sok_Display is
 
   -- to init screen
-  procedure INIT;
+  procedure Init;
 
   -- puts all the frame
-  procedure PUT_FRAME (FRAME : in SOK_TYPES.FRAME_TAB);
+  procedure Put_Frame (Frame : in Sok_Types.Frame_Tab);
 
   -- puts a square
-  procedure PUT_SQUARE (SQUARE     : in SOK_TYPES.SQUARE_REC;
-                        COORDINATE : in SOK_TYPES.COORDINATE_REC;
-                        BLINK      : in BOOLEAN := FALSE);
+  procedure Put_Square (Square     : in Sok_Types.Square_Rec;
+                        Coordinate : in Sok_Types.Coordinate_Rec;
+                        Blink      : in Boolean := False);
 
   -- puts the down line
-  procedure PUT_LINE (MOVES : in NATURAL; PUSHES : in NATURAL;
-                      BOXES_IN : in NATURAL; NB_BOXES : in POSITIVE;
-                      FRAME : in SOK_TYPES.FRAME_RANGE);
+  procedure Put_Line (Moves : in Natural; Pushes : in Natural;
+                      Boxes_In : in Natural; Nb_Boxes : in Positive;
+                      Frame : in Sok_Types.Frame_Range);
 
   -- puts the score
-  procedure PUT_SCORE (SCORE : in SOK_TYPES.SCORE_REC);
+  procedure Put_Score (Score : in Sok_Types.Score_Rec);
 
   -- puts the elapsed time
-  procedure PUT_TIME (DAY : in NATURAL; TIME : in CALENDAR.DAY_DURATION);
+  procedure Put_Time (Day : in Natural; Time : in Calendar.Day_Duration);
 
   -- list of possible actions
-  type ACTION_LIST is (FRAME, DONE, WRITE, READ, RESET, GET_NEW, BREAK);
+  type Action_List is (Frame, Done, Write, Read, Reset, Get_New, Break);
 
   -- help window
-  procedure PUT_HELP (HELP : in ACTION_LIST);
+  procedure Put_Help (Help : in Action_List);
 
 
-  subtype MENU_ACTION_LIST is ACTION_LIST range WRITE .. BREAK;
+  subtype Menu_Action_List is Action_List range Write .. Break;
   -- put extra menu with initial selection
-  procedure PUT_MENU (
-   INIT_ACTION : in MENU_ACTION_LIST;
-   ALLOW_WRITE : in BOOLEAN);
-  procedure CLEAR_MENU;
+  procedure Put_Menu (
+   Init_Action : in Menu_Action_List;
+   Allow_Write : in Boolean);
+  procedure Clear_Menu;
 
   -- new action selected
-  procedure UPDATE_MENU (NEW_ACTION : in MENU_ACTION_LIST);
+  procedure Update_Menu (New_Action : in Menu_Action_List);
 
 
   -- Errors
-  type ERROR_LIST is (NO_DATA, READ, NO_FRAME, RESTORE, SAVE,
-                      FORMAT, SCORE_IO, INTERNAL, INIT_SCORE);
-  procedure PUT_ERROR (ERROR : in ERROR_LIST);
-  procedure CLEAR_ERROR;
+  type Error_List is (No_Data, Read, No_Frame, Restore, Save,
+                      Format, Score_Io, Internal, Init_Score);
+  procedure Put_Error (Error : in Error_List);
+  procedure Clear_Error;
 
   -- clear screen
-  procedure END_OF_PROGRAM;
+  procedure End_Of_Program;
 
   -- get frame number
-  type GET_RESULT_LIST is (SET, ESC, REFRESH);
-  procedure GET_NO_FRAME (NO : out SOK_TYPES.FRAME_RANGE; RESULT : out GET_RESULT_LIST);
-  FORMAT_ERROR : exception;
+  type Get_Result_List is (Set, Esc, Refresh);
+  procedure Get_No_Frame (No : out Sok_Types.Frame_Range; Result : out Get_Result_List);
+  Format_Error : exception;
 
-end SOK_DISPLAY;
+end Sok_Display;

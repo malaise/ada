@@ -1,110 +1,110 @@
-with SOK_DISPLAY;
+with Sok_Display;
 
 -- Movement manager of SOKOBAN
-package body SOK_MOVEMENT is
+package body Sok_Movement is
 
 
-  function NEW_COORDINATE (
-   POSITION : SOK_TYPES.COORDINATE_REC;
-   MOVEMENT : MOVEMENT_LIST) return SOK_TYPES.COORDINATE_REC is
-    NEW_POSITION : SOK_TYPES.COORDINATE_REC := POSITION;
+  function New_Coordinate (
+   Position : Sok_Types.Coordinate_Rec;
+   Movement : Movement_List) return Sok_Types.Coordinate_Rec is
+    New_Position : Sok_Types.Coordinate_Rec := Position;
   begin
-    case MOVEMENT is
-      when SOK_INPUT.UP =>
-        NEW_POSITION.ROW :=
-         SOK_TYPES.ROW_RANGE'PRED(NEW_POSITION.ROW);
-      when SOK_INPUT.DOWN =>
-        NEW_POSITION.ROW :=
-         SOK_TYPES.ROW_RANGE'SUCC(NEW_POSITION.ROW);
-      when SOK_INPUT.LEFT =>
-        NEW_POSITION.COL :=
-         SOK_TYPES.COL_RANGE'PRED(NEW_POSITION.COL);
-      when SOK_INPUT.RIGHT =>
-        NEW_POSITION.COL :=
-         SOK_TYPES.COL_RANGE'SUCC(NEW_POSITION.COL);
+    case Movement is
+      when Sok_Input.Up =>
+        New_Position.Row :=
+         Sok_Types.Row_Range'Pred(New_Position.Row);
+      when Sok_Input.Down =>
+        New_Position.Row :=
+         Sok_Types.Row_Range'Succ(New_Position.Row);
+      when Sok_Input.Left =>
+        New_Position.Col :=
+         Sok_Types.Col_Range'Pred(New_Position.Col);
+      when Sok_Input.Right =>
+        New_Position.Col :=
+         Sok_Types.Col_Range'Succ(New_Position.Col);
     end case;
-    return NEW_POSITION;
+    return New_Position;
   exception
-    when others => raise ILLEGAL_MOVEMENT;
-  end NEW_COORDINATE;
+    when others => raise Illegal_Movement;
+  end New_Coordinate;
 
 
 
   -- try to do a movement
   -- Give frame, current position and movement to try
-  procedure DO_MOVEMENT (
-   FRAME    : in out SOK_TYPES.FRAME_TAB;
-   POSITION : in out SOK_TYPES.COORDINATE_REC;
-   MOVEMENT : in MOVEMENT_LIST;
-   RESULT   : out RESULT_LIST) is
+  procedure Do_Movement (
+   Frame    : in out Sok_Types.Frame_Tab;
+   Position : in out Sok_Types.Coordinate_Rec;
+   Movement : in Movement_List;
+   Result   : out Result_List) is
 
-   CUR_MAN_SQUARE   : SOK_TYPES.SQUARE_REC;
+   Cur_Man_Square   : Sok_Types.Square_Rec;
 
-   NEW_MAN_POSITION : SOK_TYPES.COORDINATE_REC;
-   NEW_MAN_SQUARE   : SOK_TYPES.SQUARE_REC;
+   New_Man_Position : Sok_Types.Coordinate_Rec;
+   New_Man_Square   : Sok_Types.Square_Rec;
 
-   NEW_BOX_POSITION : SOK_TYPES.COORDINATE_REC;
-   NEW_BOX_SQUARE   : SOK_TYPES.SQUARE_REC;
+   New_Box_Position : Sok_Types.Coordinate_Rec;
+   New_Box_Square   : Sok_Types.Square_Rec;
 
-   LOC_RESULT : RESULT_LIST;
+   Loc_Result : Result_List;
 
-   use SOK_TYPES;
+   use Sok_Types;
   begin
     -- check content of current position
-    CUR_MAN_SQUARE := FRAME (POSITION.ROW, POSITION.COL);
-    if CUR_MAN_SQUARE.PATTERN = SOK_TYPES.WALL or else
-     CUR_MAN_SQUARE.CONTENT /= SOK_TYPES.MAN then
+    Cur_Man_Square := Frame (Position.Row, Position.Col);
+    if Cur_Man_Square.Pattern = Sok_Types.Wall or else
+     Cur_Man_Square.Content /= Sok_Types.Man then
       -- on a wall or no man !!
-      raise ILLEGAL_MOVEMENT;
+      raise Illegal_Movement;
     end if;
 
     -- set new position
-    NEW_MAN_POSITION := NEW_COORDINATE (POSITION, MOVEMENT);
-    NEW_MAN_SQUARE := FRAME (NEW_MAN_POSITION.ROW, NEW_MAN_POSITION.COL);
+    New_Man_Position := New_Coordinate (Position, Movement);
+    New_Man_Square := Frame (New_Man_Position.Row, New_Man_Position.Col);
 
     -- check content of new man position
-    case NEW_MAN_SQUARE.PATTERN is
-      when SOK_TYPES.WALL =>
-        LOC_RESULT := REFUSED;
+    case New_Man_Square.Pattern is
+      when Sok_Types.Wall =>
+        Loc_Result := Refused;
 
-      when SOK_TYPES.FREE | SOK_TYPES.TARGET =>
-        case NEW_MAN_SQUARE.CONTENT is
-          when SOK_TYPES.MAN =>
+      when Sok_Types.Free | Sok_Types.Target =>
+        case New_Man_Square.Content is
+          when Sok_Types.Man =>
             -- another man !!
-            raise ILLEGAL_MOVEMENT;
-          when SOK_TYPES.NOTHING =>
+            raise Illegal_Movement;
+          when Sok_Types.Nothing =>
             -- simple man movement
-            LOC_RESULT := DONE;
-          when SOK_TYPES.BOX =>
+            Loc_Result := Done;
+          when Sok_Types.Box =>
             -- a push
-            NEW_BOX_POSITION := NEW_COORDINATE (NEW_MAN_POSITION, MOVEMENT);
-            NEW_BOX_SQUARE :=
-             FRAME (NEW_BOX_POSITION.ROW, NEW_BOX_POSITION.COL);
+            New_Box_Position := New_Coordinate (New_Man_Position, Movement);
+            New_Box_Square :=
+             Frame (New_Box_Position.Row, New_Box_Position.Col);
 
             -- check content of new box position
-            case NEW_BOX_SQUARE.PATTERN is
-              when SOK_TYPES.WALL =>
-                LOC_RESULT := REFUSED;
+            case New_Box_Square.Pattern is
+              when Sok_Types.Wall =>
+                Loc_Result := Refused;
 
-              when SOK_TYPES.FREE | SOK_TYPES.TARGET =>
-                case NEW_BOX_SQUARE.CONTENT is
-                  when SOK_TYPES.MAN =>
+              when Sok_Types.Free | Sok_Types.Target =>
+                case New_Box_Square.Content is
+                  when Sok_Types.Man =>
                     -- another man !!
-                    raise ILLEGAL_MOVEMENT;
-                  when SOK_TYPES.BOX =>
+                    raise Illegal_Movement;
+                  when Sok_Types.Box =>
                     -- impossible to push 2 boxes
-                    LOC_RESULT := REFUSED;
-                  when SOK_TYPES.NOTHING =>
+                    Loc_Result := Refused;
+                  when Sok_Types.Nothing =>
                     -- push
-                    if NEW_MAN_SQUARE.PATTERN = NEW_BOX_SQUARE.PATTERN then
+                    if New_Man_Square.Pattern = New_Box_Square.Pattern then
                       -- a push from free to free or from target to target
-                      LOC_RESULT := BOX_MOVED;
-                    elsif NEW_MAN_SQUARE.PATTERN = SOK_TYPES.FREE then
+                      Loc_Result := Box_Moved;
+                    elsif New_Man_Square.Pattern = Sok_Types.Free then
                       -- a push from free to target
-                      LOC_RESULT := BOX_OK_MORE;
+                      Loc_Result := Box_Ok_More;
                     else
                       -- a push from target to free
-                      LOC_RESULT := BOX_OK_LESS;
+                      Loc_Result := Box_Ok_Less;
                     end if;
                 end case;
             end case;
@@ -113,128 +113,128 @@ package body SOK_MOVEMENT is
 
 
     -- update old and new man position
-    case LOC_RESULT is
-      when REFUSED =>
+    case Loc_Result is
+      when Refused =>
         null;
-      when DONE | BOX_MOVED | BOX_OK_MORE | BOX_OK_LESS =>
-        FRAME (POSITION.ROW, POSITION.COL).CONTENT := SOK_TYPES.NOTHING;
-        SOK_DISPLAY.PUT_SQUARE (
-         SQUARE     => FRAME (POSITION.ROW, POSITION.COL),
-         COORDINATE => POSITION);
-        POSITION := NEW_MAN_POSITION;
+      when Done | Box_Moved | Box_Ok_More | Box_Ok_Less =>
+        Frame (Position.Row, Position.Col).Content := Sok_Types.Nothing;
+        Sok_Display.Put_Square (
+         Square     => Frame (Position.Row, Position.Col),
+         Coordinate => Position);
+        Position := New_Man_Position;
 
-        FRAME (NEW_MAN_POSITION.ROW, NEW_MAN_POSITION.COL).CONTENT :=
-         SOK_TYPES.MAN;
-        SOK_DISPLAY.PUT_SQUARE (
-         SQUARE     => FRAME (NEW_MAN_POSITION.ROW, NEW_MAN_POSITION.COL),
-         COORDINATE => NEW_MAN_POSITION);
+        Frame (New_Man_Position.Row, New_Man_Position.Col).Content :=
+         Sok_Types.Man;
+        Sok_Display.Put_Square (
+         Square     => Frame (New_Man_Position.Row, New_Man_Position.Col),
+         Coordinate => New_Man_Position);
     end case;
 
     -- update new box position
-    case LOC_RESULT is
-      when REFUSED | DONE =>
+    case Loc_Result is
+      when Refused | Done =>
         null;
-      when BOX_MOVED | BOX_OK_MORE | BOX_OK_LESS =>
-        FRAME (NEW_BOX_POSITION.ROW, NEW_BOX_POSITION.COL).CONTENT :=
-         SOK_TYPES.BOX;
-        SOK_DISPLAY.PUT_SQUARE (
-         SQUARE     => FRAME (NEW_BOX_POSITION.ROW, NEW_BOX_POSITION.COL),
-         COORDINATE => NEW_BOX_POSITION);
+      when Box_Moved | Box_Ok_More | Box_Ok_Less =>
+        Frame (New_Box_Position.Row, New_Box_Position.Col).Content :=
+         Sok_Types.Box;
+        Sok_Display.Put_Square (
+         Square     => Frame (New_Box_Position.Row, New_Box_Position.Col),
+         Coordinate => New_Box_Position);
     end case;
 
     -- Done
-    RESULT := LOC_RESULT;
-  end DO_MOVEMENT;
+    Result := Loc_Result;
+  end Do_Movement;
 
 
 
   -- to undo a movement
   -- give frame, current position and movement which
   -- moved to current position
-  procedure UNDO_MOVEMENT (
-   FRAME      : in out SOK_TYPES.FRAME_TAB;
-   SAVED_DATA : in SAVED_DATA_REC;
-   RESULT        : out UNDO_RESULT_LIST;
-   PREV_POSITION : out SOK_TYPES.COORDINATE_REC) is
+  procedure Undo_Movement (
+   Frame      : in out Sok_Types.Frame_Tab;
+   Saved_Data : in Saved_Data_Rec;
+   Result        : out Undo_Result_List;
+   Prev_Position : out Sok_Types.Coordinate_Rec) is
 
-    CUR_MAN_SQUARE   : SOK_TYPES.SQUARE_REC;
+    Cur_Man_Square   : Sok_Types.Square_Rec;
 
-    OLD_MAN_POSITION : SOK_TYPES.COORDINATE_REC;
-    OLD_MAN_SQUARE   : SOK_TYPES.SQUARE_REC;
+    Old_Man_Position : Sok_Types.Coordinate_Rec;
+    Old_Man_Square   : Sok_Types.Square_Rec;
 
-    CUR_BOX_POSITION : SOK_TYPES.COORDINATE_REC;
-    CUR_BOX_SQUARE   : SOK_TYPES.SQUARE_REC;
+    Cur_Box_Position : Sok_Types.Coordinate_Rec;
+    Cur_Box_Square   : Sok_Types.Square_Rec;
 
-    LOC_RESULT : UNDO_RESULT_LIST;
+    Loc_Result : Undo_Result_List;
 
-    UNDO_MOVEMENT : MOVEMENT_LIST;
+    Undo_Movement : Movement_List;
 
-    use SOK_TYPES;
+    use Sok_Types;
   begin
     -- check content of current position
-    CUR_MAN_SQUARE := FRAME (SAVED_DATA.POS_ORIG.ROW,
-                             SAVED_DATA.POS_ORIG.COL);
-    if CUR_MAN_SQUARE.PATTERN = SOK_TYPES.WALL or else
-     CUR_MAN_SQUARE.CONTENT /= SOK_TYPES.MAN then
+    Cur_Man_Square := Frame (Saved_Data.Pos_Orig.Row,
+                             Saved_Data.Pos_Orig.Col);
+    if Cur_Man_Square.Pattern = Sok_Types.Wall or else
+     Cur_Man_Square.Content /= Sok_Types.Man then
       -- on a wall or no man !!
-      raise ILLEGAL_MOVEMENT;
+      raise Illegal_Movement;
     end if;
 
     -- set undo movement
-    case SAVED_DATA.MOVEMENT is
-      when SOK_INPUT.UP    => UNDO_MOVEMENT := SOK_INPUT.DOWN;
-      when SOK_INPUT.DOWN  => UNDO_MOVEMENT := SOK_INPUT.UP;
-      when SOK_INPUT.RIGHT => UNDO_MOVEMENT := SOK_INPUT.LEFT;
-      when SOK_INPUT.LEFT  => UNDO_MOVEMENT := SOK_INPUT.RIGHT;
+    case Saved_Data.Movement is
+      when Sok_Input.Up    => Undo_Movement := Sok_Input.Down;
+      when Sok_Input.Down  => Undo_Movement := Sok_Input.Up;
+      when Sok_Input.Right => Undo_Movement := Sok_Input.Left;
+      when Sok_Input.Left  => Undo_Movement := Sok_Input.Right;
     end case;
 
     -- set previous man position
-    OLD_MAN_POSITION := NEW_COORDINATE (SAVED_DATA.POS_ORIG, UNDO_MOVEMENT);
-    OLD_MAN_SQUARE := FRAME (OLD_MAN_POSITION.ROW, OLD_MAN_POSITION.COL);
+    Old_Man_Position := New_Coordinate (Saved_Data.Pos_Orig, Undo_Movement);
+    Old_Man_Square := Frame (Old_Man_Position.Row, Old_Man_Position.Col);
 
     -- check content of old man position
-    case OLD_MAN_SQUARE.PATTERN is
-      when SOK_TYPES.WALL =>
-        raise ILLEGAL_MOVEMENT;
+    case Old_Man_Square.Pattern is
+      when Sok_Types.Wall =>
+        raise Illegal_Movement;
 
-      when SOK_TYPES.FREE | SOK_TYPES.TARGET =>
-        case OLD_MAN_SQUARE.CONTENT is
-          when SOK_TYPES.MAN | SOK_TYPES.BOX =>
+      when Sok_Types.Free | Sok_Types.Target =>
+        case Old_Man_Square.Content is
+          when Sok_Types.Man | Sok_Types.Box =>
             -- another man, or a box at old man position !!
-            raise ILLEGAL_MOVEMENT;
-          when SOK_TYPES.NOTHING =>
+            raise Illegal_Movement;
+          when Sok_Types.Nothing =>
             -- OK check if also box has to be moved
-            case SAVED_DATA.RESULT is
-              when DONE =>
-                LOC_RESULT := DONE;
-              when BOX_MOVED =>
+            case Saved_Data.Result is
+              when Done =>
+                Loc_Result := Done;
+              when Box_Moved =>
                 -- set current box position
-                CUR_BOX_POSITION := NEW_COORDINATE (SAVED_DATA.POS_ORIG,
-                                                    SAVED_DATA.MOVEMENT);
-                CUR_BOX_SQUARE := FRAME (CUR_BOX_POSITION.ROW,
-                                         CUR_BOX_POSITION.COL);
+                Cur_Box_Position := New_Coordinate (Saved_Data.Pos_Orig,
+                                                    Saved_Data.Movement);
+                Cur_Box_Square := Frame (Cur_Box_Position.Row,
+                                         Cur_Box_Position.Col);
 
                 -- check content of current box position
-                case CUR_BOX_SQUARE.PATTERN is
-                  when SOK_TYPES.WALL =>
-                    raise ILLEGAL_MOVEMENT;
+                case Cur_Box_Square.Pattern is
+                  when Sok_Types.Wall =>
+                    raise Illegal_Movement;
 
-                  when SOK_TYPES.FREE | SOK_TYPES.TARGET =>
-                    case CUR_BOX_SQUARE.CONTENT is
-                      when SOK_TYPES.MAN | SOK_TYPES.NOTHING =>
+                  when Sok_Types.Free | Sok_Types.Target =>
+                    case Cur_Box_Square.Content is
+                      when Sok_Types.Man | Sok_Types.Nothing =>
                         -- another man or nothing !!
-                        raise ILLEGAL_MOVEMENT;
-                      when SOK_TYPES.BOX =>
+                        raise Illegal_Movement;
+                      when Sok_Types.Box =>
                         -- OK, pop box
-                        if CUR_MAN_SQUARE.PATTERN = CUR_BOX_SQUARE.PATTERN then
+                        if Cur_Man_Square.Pattern = Cur_Box_Square.Pattern then
                           -- a pop from free to free or from target to target
-                          LOC_RESULT := BOX_MOVED;
-                        elsif CUR_MAN_SQUARE.PATTERN = SOK_TYPES.FREE then
+                          Loc_Result := Box_Moved;
+                        elsif Cur_Man_Square.Pattern = Sok_Types.Free then
                           -- a pop from target to free
-                          LOC_RESULT := BOX_OK_LESS;
+                          Loc_Result := Box_Ok_Less;
                         else
                           -- a pop from free to target
-                          LOC_RESULT := BOX_OK_MORE;
+                          Loc_Result := Box_Ok_More;
                         end if;
                     end case;
                 end case;
@@ -243,39 +243,39 @@ package body SOK_MOVEMENT is
     end case;
 
     -- update old box position, and position content
-    case LOC_RESULT is
-      when DONE =>
+    case Loc_Result is
+      when Done =>
         -- original man becomes empty
-        FRAME (SAVED_DATA.POS_ORIG.ROW, SAVED_DATA.POS_ORIG.COL).CONTENT :=
-               SOK_TYPES.NOTHING;
-      when BOX_MOVED | BOX_OK_MORE | BOX_OK_LESS =>
+        Frame (Saved_Data.Pos_Orig.Row, Saved_Data.Pos_Orig.Col).Content :=
+               Sok_Types.Nothing;
+      when Box_Moved | Box_Ok_More | Box_Ok_Less =>
         -- original man position receives box
-        FRAME (SAVED_DATA.POS_ORIG.ROW, SAVED_DATA.POS_ORIG.COL).CONTENT :=
-               SOK_TYPES.BOX;
+        Frame (Saved_Data.Pos_Orig.Row, Saved_Data.Pos_Orig.Col).Content :=
+               Sok_Types.Box;
         -- original box posoition becomes empty. Show
-        FRAME (CUR_BOX_POSITION.ROW, CUR_BOX_POSITION.COL).CONTENT :=
-               SOK_TYPES.NOTHING;
-        SOK_DISPLAY.PUT_SQUARE (
-         SQUARE     => FRAME (CUR_BOX_POSITION.ROW, CUR_BOX_POSITION.COL),
-         COORDINATE => CUR_BOX_POSITION);
+        Frame (Cur_Box_Position.Row, Cur_Box_Position.Col).Content :=
+               Sok_Types.Nothing;
+        Sok_Display.Put_Square (
+         Square     => Frame (Cur_Box_Position.Row, Cur_Box_Position.Col),
+         Coordinate => Cur_Box_Position);
     end case;
 
 
     -- update current and old man position
     -- show original man position
-    SOK_DISPLAY.PUT_SQUARE (
-     SQUARE     => FRAME (SAVED_DATA.POS_ORIG.ROW, SAVED_DATA.POS_ORIG.COL),
-     COORDINATE => SAVED_DATA.POS_ORIG);
+    Sok_Display.Put_Square (
+     Square     => Frame (Saved_Data.Pos_Orig.Row, Saved_Data.Pos_Orig.Col),
+     Coordinate => Saved_Data.Pos_Orig);
     -- set and show current man position
-    FRAME (OLD_MAN_POSITION.ROW, OLD_MAN_POSITION.COL).CONTENT :=
-     SOK_TYPES.MAN;
-    SOK_DISPLAY.PUT_SQUARE (
-     SQUARE     => FRAME (OLD_MAN_POSITION.ROW, OLD_MAN_POSITION.COL),
-     COORDINATE => OLD_MAN_POSITION);
+    Frame (Old_Man_Position.Row, Old_Man_Position.Col).Content :=
+     Sok_Types.Man;
+    Sok_Display.Put_Square (
+     Square     => Frame (Old_Man_Position.Row, Old_Man_Position.Col),
+     Coordinate => Old_Man_Position);
 
     -- Done
-    PREV_POSITION := OLD_MAN_POSITION;
-    RESULT := LOC_RESULT;
- end UNDO_MOVEMENT;
+    Prev_Position := Old_Man_Position;
+    Result := Loc_Result;
+ end Undo_Movement;
 
-end SOK_MOVEMENT;
+end Sok_Movement;

@@ -1,13 +1,13 @@
-with COMMON;
-package COMPUTE is
+with Common;
+package Compute is
 
-  procedure INIT;
+  procedure Init;
 
-  type RESULT_LIST is (WON, LOST, PLAYED_AND_WON, PLAYED_AND_LOST, PLAYED);
-  subtype PLAYED_RESULT_LIST is RESULT_LIST range PLAYED_AND_WON .. PLAYED;
+  type Result_List is (Won, Lost, Played_And_Won, Played_And_Lost, Played);
+  subtype Played_Result_List is Result_List range Played_And_Won .. Played;
 
-  procedure PLAY (GAME : in COMMON.GAME_LIST;
-                  RESULT : out RESULT_LIST;
-                  ROW : out COMMON.ROW_RANGE;
-                  BARS : out COMMON.FULL_BAR_RANGE);
-end COMPUTE;
+  procedure Play (Game : in Common.Game_List;
+                  Result : out Result_List;
+                  Row : out Common.Row_Range;
+                  Bars : out Common.Full_Bar_Range);
+end Compute;

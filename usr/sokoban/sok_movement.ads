@@ -1,57 +1,57 @@
-with SOK_TYPES;
-with SOK_INPUT;
+with Sok_Types;
+with Sok_Input;
 
 -- Movement manager of SOKOBAN
-package SOK_MOVEMENT is
+package Sok_Movement is
 
 
   -- Man movement
-  subtype MOVEMENT_LIST is SOK_INPUT.KEY_LIST
-   range SOK_INPUT.LEFT .. SOK_INPUT.DOWN;
+  subtype Movement_List is Sok_Input.Key_List
+   range Sok_Input.Left .. Sok_Input.Down;
 
   -- result of a movement try
-  type RESULT_LIST is
-   (REFUSED, DONE, BOX_MOVED, BOX_OK_MORE, BOX_OK_LESS);
+  type Result_List is
+   (Refused, Done, Box_Moved, Box_Ok_More, Box_Ok_Less);
 
   -- result of a movement to save
-  subtype SAVED_RESULT_LIST is RESULT_LIST range DONE .. BOX_MOVED;
+  subtype Saved_Result_List is Result_List range Done .. Box_Moved;
 
   -- what to save and give back to undo
-  type SAVED_DATA_REC is record
+  type Saved_Data_Rec is record
     -- position of man before movement
-    POS_ORIG  : SOK_TYPES.COORDINATE_REC;
+    Pos_Orig  : Sok_Types.Coordinate_Rec;
     -- direction of movement
-    MOVEMENT  : MOVEMENT_LIST;
+    Movement  : Movement_List;
     -- result
-    RESULT   : SAVED_RESULT_LIST;
+    Result   : Saved_Result_List;
   end record;
 
   -- result of an undone movement
-  subtype UNDO_RESULT_LIST is RESULT_LIST range DONE .. BOX_OK_LESS;
+  subtype Undo_Result_List is Result_List range Done .. Box_Ok_Less;
 
 
   -- try to do a movement
   -- Give frame, current position and movement to try
-  procedure DO_MOVEMENT (
-   FRAME    : in out SOK_TYPES.FRAME_TAB;
-   POSITION : in out SOK_TYPES.COORDINATE_REC;
-   MOVEMENT : in MOVEMENT_LIST;
-   RESULT   : out RESULT_LIST);
+  procedure Do_Movement (
+   Frame    : in out Sok_Types.Frame_Tab;
+   Position : in out Sok_Types.Coordinate_Rec;
+   Movement : in Movement_List;
+   Result   : out Result_List);
 
 
   -- to undo a movement
   -- give frame, current position and movement which
   -- moved to current position
   -- indicate also if a box was moved
-  procedure UNDO_MOVEMENT (
-   FRAME      : in out SOK_TYPES.FRAME_TAB;
-   SAVED_DATA : in SAVED_DATA_REC;
-   RESULT        : out UNDO_RESULT_LIST;
-   PREV_POSITION : out SOK_TYPES.COORDINATE_REC);
+  procedure Undo_Movement (
+   Frame      : in out Sok_Types.Frame_Tab;
+   Saved_Data : in Saved_Data_Rec;
+   Result        : out Undo_Result_List;
+   Prev_Position : out Sok_Types.Coordinate_Rec);
 
 
   -- raised on DO_MOVEMENT if movement is not coherent
   -- or     on UNDO_MOVEMENT if it is not coherent
-  ILLEGAL_MOVEMENT : exception;
+  Illegal_Movement : exception;
 
-end SOK_MOVEMENT;
+end Sok_Movement;

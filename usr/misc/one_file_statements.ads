@@ -1,8 +1,8 @@
-package ONE_FILE_STATEMENTS is
+package One_File_Statements is
 
   -- If FILE_NAME is empty, put total so far and reset it
-  procedure PRINT_STATEMENTS_OF_FILE (
-             FILE_NAME : STRING;
-             PUT_IT : in BOOLEAN := TRUE);
+  procedure Print_Statements_Of_File (
+             File_Name : String;
+             Put_It : in Boolean := True);
 
-end ONE_FILE_STATEMENTS;
+end One_File_Statements;

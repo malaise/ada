@@ -1,37 +1,37 @@
-with MY_MATH;
-separate (NAV_DATA)
+with My_Math;
+separate (Nav_Data)
 
 -- if DRIFT is known, compute plan angle or traj angles before
 --  global computation
-procedure SET_BEFORE (DATA : in out T_DATA) is
-  use NAV_TYPES;
+procedure Set_Before (Data : in out T_Data) is
+  use Nav_Types;
 begin
-  if DATA.SET (TRAJ_A) then
+  if Data.Set (Traj_A) then
     -- TRAJ.ANGLE is set : PLAN.ANGLE := TRAJ.ANGLE - DRIFT
-    DATA.PLAN.ANGLE := DATA.TRAJ.ANGLE - DATA.DRIFT;
-    DATA.SET (PLAN_A) := TRUE;
-  elsif DATA.SET (PLAN_A) then
+    Data.Plan.Angle := Data.Traj.Angle - Data.Drift;
+    Data.Set (Plan_A) := True;
+  elsif Data.Set (Plan_A) then
     -- PLAN.ANGLE is set : TRAJ.ANGLE := PLAN.ANGLE + DRIFT
-    DATA.TRAJ.ANGLE := DATA.PLAN.ANGLE + DATA.DRIFT;
-    DATA.SET (TRAJ_A) := TRUE;
+    Data.Traj.Angle := Data.Plan.Angle + Data.Drift;
+    Data.Set (Traj_A) := True;
   else
 
     -- TRAJ_ANGLE and PLAN_ANGLE are not set. 3rd unknown is TRAJ_SPEED
     -- TRAJ_A = 90 + WIND_A - ARC_COS ( PLAN_S/WIND_S*COS(90+DRIFT) )
     declare
-      R : REAL;
+      R : Real;
     begin
-      R := 90.0 + TO_REAL (DATA.DRIFT);
-      R := REAL(DATA.PLAN.SPEED) / REAL(DATA.WIND.SPEED)
-         * MY_MATH.COS (R, MY_MATH.DEGREE);
-      R := MY_MATH.ARC_COS (R, MY_MATH.DEGREE);
-      DATA.TRAJ.ANGLE := TO_ANGLE (90.0 - R) + DATA.WIND.ANGLE;
-      DATA.PLAN.ANGLE := DATA.TRAJ.ANGLE - DATA.DRIFT;
-      DATA.SET (TRAJ_A) := TRUE;
-      DATA.SET (PLAN_A) := TRUE;
+      R := 90.0 + To_Real (Data.Drift);
+      R := Real(Data.Plan.Speed) / Real(Data.Wind.Speed)
+         * My_Math.Cos (R, My_Math.Degree);
+      R := My_Math.Arc_Cos (R, My_Math.Degree);
+      Data.Traj.Angle := To_Angle (90.0 - R) + Data.Wind.Angle;
+      Data.Plan.Angle := Data.Traj.Angle - Data.Drift;
+      Data.Set (Traj_A) := True;
+      Data.Set (Plan_A) := True;
     exception
-      when MY_MATH.MATH_ERROR => raise COMP_ERR;
+      when My_Math.Math_Error => raise Comp_Err;
     end;
 
   end if;
-end SET_BEFORE;
+end Set_Before;

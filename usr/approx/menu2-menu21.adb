@@ -1,220 +1,220 @@
-with CON_IO, AFPX, CURVE;
-with POINTS, SCREEN, DIALOG, POINT_STR;
-separate(MENU2)
-package body MENU21 is
+with Con_Io, Afpx, Curve;
+with Points, Screen, Dialog, Point_Str;
+separate(Menu2)
+package body Menu21 is
 
-  type RESTORE_LIST is (NONE, PARTIAL); 
-  CURSOR_FIELD : AFPX.FIELD_RANGE;
+  type Restore_List is (None, Partial); 
+  Cursor_Field : Afpx.Field_Range;
 
-  THE_BOUNDS_SET : BOOLEAN := FALSE;
-  THE_BOUNDS : CURVE.T_BOUNDARIES;
+  The_Bounds_Set : Boolean := False;
+  The_Bounds : Curve.T_Boundaries;
 
-  procedure RESET_BOUNDS is
+  procedure Reset_Bounds is
   begin
-    THE_BOUNDS_SET := FALSE;
-  end RESET_BOUNDS;
+    The_Bounds_Set := False;
+  end Reset_Bounds;
 
-  function BOUNDS_SET return BOOLEAN is
+  function Bounds_Set return Boolean is
   begin
-    return THE_BOUNDS_SET;
-  end BOUNDS_SET;
+    return The_Bounds_Set;
+  end Bounds_Set;
 
-  procedure GET_BOUNDS (SET : out BOOLEAN; BOUNDS : out CURVE.T_BOUNDARIES) is
+  procedure Get_Bounds (Set : out Boolean; Bounds : out Curve.T_Boundaries) is
   begin
-    SET := THE_BOUNDS_SET;
-    BOUNDS := THE_BOUNDS;
-  end GET_BOUNDS;
+    Set := The_Bounds_Set;
+    Bounds := The_Bounds;
+  end Get_Bounds;
 
 
-  procedure ERROR (MSG : in SCREEN.S_ERROR_LIST) is
+  procedure Error (Msg : in Screen.S_Error_List) is
   begin
-    SCREEN.ERROR(MSG);
+    Screen.Error(Msg);
     -- Restore screen
-    AFPX.USE_DESCRIPTOR(4, FALSE);
-    SCREEN.INIT_FOR_MAIN21 (CURSOR_FIELD);
-  end ERROR;
+    Afpx.Use_Descriptor(4, False);
+    Screen.Init_For_Main21 (Cursor_Field);
+  end Error;
 
-  procedure PUT_BOUNDS is
-    use CURVE;
+  procedure Put_Bounds is
+    use Curve;
   begin
     -- Allow clear if bounds set
-    AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, THE_BOUNDS_SET);
-    AFPX.CLEAR_FIELD (33);
-    AFPX.CLEAR_FIELD (34);
-    if not THE_BOUNDS_SET then
-      AFPX.ENCODE_FIELD (33, (0,0), "Not set");
+    Afpx.Set_Field_Activation (Screen.Exit_Button_Fld, The_Bounds_Set);
+    Afpx.Clear_Field (33);
+    Afpx.Clear_Field (34);
+    if not The_Bounds_Set then
+      Afpx.Encode_Field (33, (0,0), "Not set");
       return;
     end if;
-    case THE_BOUNDS.SCALE is
-      when CURVE.CURVE_SCREEN =>
-        AFPX.ENCODE_FIELD (33, (0, 0), "Computed & fit screen");
-      when CURVE.CURVE_NORMED =>
-        AFPX.ENCODE_FIELD (33, (0, 0), "Computed & normed");
-      when CURVE.FREE_SCREEN =>
-        AFPX.ENCODE_FIELD (33, (0, 0), "Defined & fit screen");
-      when CURVE.FREE_NORMED =>
-        AFPX.ENCODE_FIELD (33, (0, 0), "Defined & normed");
+    case The_Bounds.Scale is
+      when Curve.Curve_Screen =>
+        Afpx.Encode_Field (33, (0, 0), "Computed & fit screen");
+      when Curve.Curve_Normed =>
+        Afpx.Encode_Field (33, (0, 0), "Computed & normed");
+      when Curve.Free_Screen =>
+        Afpx.Encode_Field (33, (0, 0), "Defined & fit screen");
+      when Curve.Free_Normed =>
+        Afpx.Encode_Field (33, (0, 0), "Defined & normed");
     end case;
-    AFPX.ENCODE_FIELD (34, (0, 0), "Xmin: "
-         & POINT_STR.COORDINATE_IMAGE(THE_BOUNDS.X_MIN));
-    AFPX.ENCODE_FIELD (34, (1, 0), "Xmax: "
-         & POINT_STR.COORDINATE_IMAGE(THE_BOUNDS.X_MAX));
-    if      THE_BOUNDS.SCALE = CURVE.FREE_SCREEN
-    or else THE_BOUNDS.SCALE = CURVE.FREE_NORMED then
-      AFPX.ENCODE_FIELD (34, (2, 0), "Ymin: "
-           & POINT_STR.COORDINATE_IMAGE(THE_BOUNDS.Y_MIN));
-      AFPX.ENCODE_FIELD (34, (3, 0), "Ymax: "
-           & POINT_STR.COORDINATE_IMAGE(THE_BOUNDS.Y_MAX));
+    Afpx.Encode_Field (34, (0, 0), "Xmin: "
+         & Point_Str.Coordinate_Image(The_Bounds.X_Min));
+    Afpx.Encode_Field (34, (1, 0), "Xmax: "
+         & Point_Str.Coordinate_Image(The_Bounds.X_Max));
+    if      The_Bounds.Scale = Curve.Free_Screen
+    or else The_Bounds.Scale = Curve.Free_Normed then
+      Afpx.Encode_Field (34, (2, 0), "Ymin: "
+           & Point_Str.Coordinate_Image(The_Bounds.Y_Min));
+      Afpx.Encode_Field (34, (3, 0), "Ymax: "
+           & Point_Str.Coordinate_Image(The_Bounds.Y_Max));
     end if;
-  end PUT_BOUNDS;
+  end Put_Bounds;
 
   -- COMPUTE_X should be set only when scale is curve*
-  procedure SET_BOUNDS (SCALE : in CURVE.T_SCALE;
-                        COMPUTE_X : in BOOLEAN := FALSE) is
-    LOC_BOUNDS : CURVE.T_BOUNDARIES(SCALE);
-    SET : BOOLEAN;
-    use CURVE;
+  procedure Set_Bounds (Scale : in Curve.T_Scale;
+                        Compute_X : in Boolean := False) is
+    Loc_Bounds : Curve.T_Boundaries(Scale);
+    Set : Boolean;
+    use Curve;
   begin
-    if COMPUTE_X and then
-      (        SCALE = CURVE.FREE_SCREEN
-       or else SCALE = CURVE.FREE_NORMED) then
-      raise PROGRAM_ERROR;
+    if Compute_X and then
+      (        Scale = Curve.Free_Screen
+       or else Scale = Curve.Free_Normed) then
+      raise Program_Error;
     end if;
-    SCREEN.PUT_TITLE (SCREEN.BOUNDARIES);
-    if COMPUTE_X then
-      CURVE.X_BOUNDARIES(POINTS.P_THE_POINTS,
-                         LOC_BOUNDS.X_MIN, LOC_BOUNDS.X_MAX);
+    Screen.Put_Title (Screen.Boundaries);
+    if Compute_X then
+      Curve.X_Boundaries(Points.P_The_Points,
+                         Loc_Bounds.X_Min, Loc_Bounds.X_Max);
     else
-      SET := FALSE;
-      DIALOG.READ_COORDINATE(SCREEN.I_XMIN, SET, LOC_BOUNDS.X_MIN);
-      if not SET then
+      Set := False;
+      Dialog.Read_Coordinate(Screen.I_Xmin, Set, Loc_Bounds.X_Min);
+      if not Set then
         return;
       end if;
-      SET := FALSE;
-      DIALOG.READ_COORDINATE(SCREEN.I_XMAX, SET, LOC_BOUNDS.X_MAX);
-      if not SET then
+      Set := False;
+      Dialog.Read_Coordinate(Screen.I_Xmax, Set, Loc_Bounds.X_Max);
+      if not Set then
         return;
       end if;
-      if      SCALE = CURVE.FREE_SCREEN
-      or else SCALE = CURVE.FREE_NORMED then
-      SET := FALSE;
-        DIALOG.READ_COORDINATE(SCREEN.I_YMIN, SET, LOC_BOUNDS.Y_MIN);
-        if not SET then
+      if      Scale = Curve.Free_Screen
+      or else Scale = Curve.Free_Normed then
+      Set := False;
+        Dialog.Read_Coordinate(Screen.I_Ymin, Set, Loc_Bounds.Y_Min);
+        if not Set then
           return;
         end if;
-        SET := FALSE;
-        DIALOG.READ_COORDINATE(SCREEN.I_YMAX, SET, LOC_BOUNDS.Y_MAX);
-        if not SET then
+        Set := False;
+        Dialog.Read_Coordinate(Screen.I_Ymax, Set, Loc_Bounds.Y_Max);
+        if not Set then
           return;
         end if;
       end if;
     end if;
-    THE_BOUNDS := LOC_BOUNDS;
-    THE_BOUNDS_SET := TRUE;
-  end SET_BOUNDS;
+    The_Bounds := Loc_Bounds;
+    The_Bounds_Set := True;
+  end Set_Bounds;
     
 
-  procedure MAIN_SCREEN is
-    CURSOR_COL : CON_IO.COL_RANGE;
-    REDISPLAY : BOOLEAN;
-    PTG_RESULT : AFPX.RESULT_REC;
-    RESTORE : RESTORE_LIST;
-    ACTIVATE_NO_CURVE : BOOLEAN;
+  procedure Main_Screen is
+    Cursor_Col : Con_Io.Col_Range;
+    Redisplay : Boolean;
+    Ptg_Result : Afpx.Result_Rec;
+    Restore : Restore_List;
+    Activate_No_Curve : Boolean;
 
-    use AFPX;
+    use Afpx;
 
   begin
-    AFPX.USE_DESCRIPTOR(4);
+    Afpx.Use_Descriptor(4);
 
-    CURSOR_COL := 0;
-    REDISPLAY := FALSE;
-    RESTORE := PARTIAL;
+    Cursor_Col := 0;
+    Redisplay := False;
+    Restore := Partial;
 
     loop
       -- Activate or not according to curve activity
-      ACTIVATE_NO_CURVE := MENU2.CURVED_STOPPED;
-      case RESTORE is
-        when NONE =>
+      Activate_No_Curve := Menu2.Curved_Stopped;
+      case Restore is
+        when None =>
           null;
-        when PARTIAL =>
-          AFPX.USE_DESCRIPTOR(4, FALSE);
-          SCREEN.INIT_FOR_MAIN21 (CURSOR_FIELD);
-          SCREEN.PUT_FILE;
-          PUT_BOUNDS;
+        when Partial =>
+          Afpx.Use_Descriptor(4, False);
+          Screen.Init_For_Main21 (Cursor_Field);
+          Screen.Put_File;
+          Put_Bounds;
       end case;
       -- Clear
-      SCREEN.PUT_TITLE (SCREEN.BOUNDARIES, not ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (SCREEN.EXIT_BUTTON_FLD, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (20, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (21, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (22, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (24, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (25, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (26, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (28, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (29, ACTIVATE_NO_CURVE);
-      AFPX.SET_FIELD_ACTIVATION (30, ACTIVATE_NO_CURVE);
+      Screen.Put_Title (Screen.Boundaries, not Activate_No_Curve);
+      Afpx.Set_Field_Activation (Screen.Exit_Button_Fld, Activate_No_Curve);
+      Afpx.Set_Field_Activation (20, Activate_No_Curve);
+      Afpx.Set_Field_Activation (21, Activate_No_Curve);
+      Afpx.Set_Field_Activation (22, Activate_No_Curve);
+      Afpx.Set_Field_Activation (24, Activate_No_Curve);
+      Afpx.Set_Field_Activation (25, Activate_No_Curve);
+      Afpx.Set_Field_Activation (26, Activate_No_Curve);
+      Afpx.Set_Field_Activation (28, Activate_No_Curve);
+      Afpx.Set_Field_Activation (29, Activate_No_Curve);
+      Afpx.Set_Field_Activation (30, Activate_No_Curve);
 
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
-      RESTORE := NONE;
-      case PTG_RESULT.EVENT is
-        when AFPX.KEYBOARD =>
-          case PTG_RESULT.KEYBOARD_KEY is
-            when AFPX.RETURN_KEY =>
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
+      Restore := None;
+      case Ptg_Result.Event is
+        when Afpx.Keyboard =>
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Return_Key =>
               return;
-            when AFPX.ESCAPE_KEY =>
+            when Afpx.Escape_Key =>
               return;
-            when AFPX.BREAK_KEY =>
+            when Afpx.Break_Key =>
               null;
           end case;
-        when AFPX.MOUSE_BUTTON =>
-          case PTG_RESULT.FIELD_NO is
-            when SCREEN.LIST_SCROLL_FLD_RANGE'FIRST ..
-                 SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
-              SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
-            when SCREEN.OK_BUTTON_FLD =>
+        when Afpx.Mouse_Button =>
+          case Ptg_Result.Field_No is
+            when Screen.List_Scroll_Fld_Range'First ..
+                 Screen.List_Scroll_Fld_Range'Last =>
+              Screen.Scroll(Ptg_Result.Field_No);
+            when Screen.Ok_Button_Fld =>
               -- Back
               return;
-            when SCREEN.EXIT_BUTTON_FLD =>
+            when Screen.Exit_Button_Fld =>
               -- Clear
-              THE_BOUNDS_SET := FALSE;
-              PUT_BOUNDS;
+              The_Bounds_Set := False;
+              Put_Bounds;
             when 21 =>
               -- Computed fit screen
-              SET_BOUNDS (CURVE.CURVE_SCREEN, COMPUTE_X => TRUE);
-              RESTORE := PARTIAL;
+              Set_Bounds (Curve.Curve_Screen, Compute_X => True);
+              Restore := Partial;
             when 22 =>
               -- Computed normed
-              SET_BOUNDS (CURVE.CURVE_NORMED, COMPUTE_X => TRUE);
-              RESTORE := PARTIAL;
+              Set_Bounds (Curve.Curve_Normed, Compute_X => True);
+              Restore := Partial;
             when 25 =>
               -- X set fit screen : Get Xmin & Xmax
-              SET_BOUNDS (CURVE.CURVE_SCREEN);
-              RESTORE := PARTIAL;
+              Set_Bounds (Curve.Curve_Screen);
+              Restore := Partial;
             when 26 =>
               -- X set normed : Get Xmin & Xmax
-              SET_BOUNDS (CURVE.CURVE_NORMED);
-              RESTORE := PARTIAL;
+              Set_Bounds (Curve.Curve_Normed);
+              Restore := Partial;
             when 29 =>
               -- Defined fit screen : Get Xmin, Xmax Ymin & Ymax
-              SET_BOUNDS (CURVE.FREE_SCREEN);
-              RESTORE := PARTIAL;
+              Set_Bounds (Curve.Free_Screen);
+              Restore := Partial;
             when 30 =>
               -- Defined normed : Get Xmin, Xmax Ymin & Ymax
-              SET_BOUNDS (CURVE.FREE_NORMED);
-              RESTORE := PARTIAL;
+              Set_Bounds (Curve.Free_Normed);
+              Restore := Partial;
             when others =>
               null;
           end case; 
-        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+        when Afpx.Fd_Event | Afpx.Timer_Event =>
           null;
-        when AFPX.REFRESH =>
-          REDISPLAY := TRUE;
+        when Afpx.Refresh =>
+          Redisplay := True;
       end case;
     end loop;
 
-  end MAIN_SCREEN;
+  end Main_Screen;
 
-end MENU21;
+end Menu21;
 

@@ -36,7 +36,7 @@ package body Connection is
   end;
 
   function Receive return Players.Action_Rec is
-    ACtion : Players.Action_Rec;
+    Action : Players.Action_Rec;
   begin
     Action_List_Mng.Move_To (Action_list, Action_List_Mng.Prev, 0, False);
     Action_List_Mng.Get (Action_List, Action, Action_List_Mng.Prev);
@@ -104,7 +104,7 @@ package body Connection is
   end Con_Call_Back;
 
   procedure Connect_Server is
-    OK : Boolean;
+    Ok : Boolean;
   begin
     Close;
     Ok := Tcp_Util.Connect_To (Socket.Tcp_Header,

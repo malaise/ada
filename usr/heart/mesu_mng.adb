@@ -1,96 +1,96 @@
-with CON_IO, AFPX, NORMAL, PERPET, DIR_MNG;
-with MESU_EDI, PERS_MNG, MESU_DEF, MESU_SEL, MESU_NAM, PERS_LIS, MESU_FIL,
-     PERS_DEF, MESU_PRT, MESU_GRA;
-use AFPX;
-package body MESU_MNG is
+with Con_Io, Afpx, Normal, Perpet, Dir_Mng;
+with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
+     Pers_Def, Mesu_Prt, Mesu_Gra;
+use Afpx;
+package body Mesu_Mng is
 
-  procedure LIST_MESURES (NB_MONTH : in STR_MNG.OFFSET_RANGE) is
-    PERS_EMPTY   : BOOLEAN;
-    LIST_EMPTY   : BOOLEAN;
-    ALLOW_UNDO   : BOOLEAN;
-    ALLOW_DRAW   : BOOLEAN;
-    CURSOR_FIELD : AFPX.ABSOLUTE_FIELD_RANGE;
-    CURSOR_COL   : CON_IO.COL_RANGE;
-    PTG_RESULT   : AFPX.RESULT_REC;
-    OK           : BOOLEAN;
-    CRITERIA     : MESU_SEL.CRITERIA_REC;
-    LINE         : AFPX.LINE_REC;
-    FILE_NAME    : MESU_NAM.FILE_NAME_STR;
-    P_FILE_NAME  : MESU_NAM.FILE_NAME_STR;
-    EXIT_PROGRAM : BOOLEAN;
-    CURRENT_DATE : STR_MNG.DATE_STR_REC;
-    REDISPLAY    : BOOLEAN;
+  procedure List_Mesures (Nb_Month : in Str_Mng.Offset_Range) is
+    Pers_Empty   : Boolean;
+    List_Empty   : Boolean;
+    Allow_Undo   : Boolean;
+    Allow_Draw   : Boolean;
+    Cursor_Field : Afpx.Absolute_Field_Range;
+    Cursor_Col   : Con_Io.Col_Range;
+    Ptg_Result   : Afpx.Result_Rec;
+    Ok           : Boolean;
+    Criteria     : Mesu_Sel.Criteria_Rec;
+    Line         : Afpx.Line_Rec;
+    File_Name    : Mesu_Nam.File_Name_Str;
+    P_File_Name  : Mesu_Nam.File_Name_Str;
+    Exit_Program : Boolean;
+    Current_Date : Str_Mng.Date_Str_Rec;
+    Redisplay    : Boolean;
 
 
     -- Check a field
-    procedure CHECK_FIELD (CURRENT_FIELD : in out AFPX.ABSOLUTE_FIELD_RANGE;
-                           FOR_VALID : in BOOLEAN;
-                           OK : out BOOLEAN) is
-      LOCOK : BOOLEAN;
-      DATE_AFT_R, DATE_BEF_R : STR_MNG.DATE_STR_REC;
-      POS_PERS : INTEGER;
-      PERSON : PERS_DEF.PERSON_REC;
-      DATE_AFT, DATE_BEF : MESU_DEF.DATE_STR;
+    procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
+                           For_Valid : in Boolean;
+                           Ok : out Boolean) is
+      Locok : Boolean;
+      Date_Aft_R, Date_Bef_R : Str_Mng.Date_Str_Rec;
+      Pos_Pers : Integer;
+      Person : Pers_Def.Person_Rec;
+      Date_Aft, Date_Bef : Mesu_Def.Date_Str;
     begin
-      case CURRENT_FIELD is
+      case Current_Field is
 
         when 07 | 08 =>
           -- In name or activity
           -- Expand name & activity
-          PERSON.NAME     := AFPX.DECODE_FIELD (07, 00);
-          PERSON.ACTIVITY := AFPX.DECODE_FIELD (08, 00);
+          Person.Name     := Afpx.Decode_Field (07, 00);
+          Person.Activity := Afpx.Decode_Field (08, 00);
 
-          if STR_MNG.IS_SPACES (PERSON.NAME) then
-            if STR_MNG.IS_SPACES (PERSON.ACTIVITY) then
+          if Str_Mng.Is_Spaces (Person.Name) then
+            if Str_Mng.Is_Spaces (Person.Activity) then
               -- Name & activity empty : ok
-              CURRENT_FIELD := 09;
-              LOCOK := TRUE;
-              if FOR_VALID then
-                CRITERIA.NAME := (others => ' ');
-                CRITERIA.ACTIVITY := (others => ' ');
+              Current_Field := 09;
+              Locok := True;
+              if For_Valid then
+                Criteria.Name := (others => ' ');
+                Criteria.Activity := (others => ' ');
               end if;
             else
               -- Name emtpy but activity set : err name
-              CURRENT_FIELD := 07;
-              LOCOK := FALSE;
+              Current_Field := 07;
+              Locok := False;
             end if;
           else
-            PERS_MNG.EXPAND (PERS_DEF.THE_PERSONS,
-                             PERSON.NAME, PERSON.ACTIVITY, POS_PERS);
-            AFPX.ENCODE_FIELD (07, (00, 00), PERSON.NAME);
-            AFPX.ENCODE_FIELD (08, (00, 00), PERSON.ACTIVITY);
+            Pers_Mng.Expand (Pers_Def.The_Persons,
+                             Person.Name, Person.Activity, Pos_Pers);
+            Afpx.Encode_Field (07, (00, 00), Person.Name);
+            Afpx.Encode_Field (08, (00, 00), Person.Activity);
 
             -- Set pos in case of end
-            if FOR_VALID then
-              if POS_PERS >= 0 then
+            if For_Valid then
+              if Pos_Pers >= 0 then
                 -- Some person found : ok
-                CURRENT_FIELD := 09;
-                LOCOK := TRUE;
-                CRITERIA.NAME := PERSON.NAME;
-                CRITERIA.ACTIVITY := PERSON.ACTIVITY;
+                Current_Field := 09;
+                Locok := True;
+                Criteria.Name := Person.Name;
+                Criteria.Activity := Person.Activity;
               else
                 -- Error in name
-                CURRENT_FIELD := 07;
-                LOCOK := FALSE;
+                Current_Field := 07;
+                Locok := False;
               end if;
             else
               -- not for valid
-              if POS_PERS > 0 then
+              if Pos_Pers > 0 then
                 -- one person found
-                CURRENT_FIELD := 09;
-                LOCOK := TRUE;
-              elsif POS_PERS = 0 then
+                Current_Field := 09;
+                Locok := True;
+              elsif Pos_Pers = 0 then
                 -- Several persons found : next field
-                if CURRENT_FIELD = 07 then
-                  CURRENT_FIELD := 08;
+                if Current_Field = 07 then
+                  Current_Field := 08;
                 else
-                  CURRENT_FIELD := 09;
+                  Current_Field := 09;
                 end if;
-                LOCOK := TRUE;
+                Locok := True;
               else
                 -- Error in name
-                CURRENT_FIELD := 07;
-                LOCOK := FALSE;
+                Current_Field := 07;
+                Locok := False;
               end if;
             end if;
           end if;
@@ -98,330 +98,330 @@ package body MESU_MNG is
 
         when 09 | 10 | 11 =>
           -- In date aft
-          DATE_AFT_R.DAY   := AFPX.DECODE_FIELD (09, 00);
-          DATE_AFT_R.MONTH := AFPX.DECODE_FIELD (10, 00);
-          DATE_AFT_R.YEAR  := AFPX.DECODE_FIELD (11, 00);
+          Date_Aft_R.Day   := Afpx.Decode_Field (09, 00);
+          Date_Aft_R.Month := Afpx.Decode_Field (10, 00);
+          Date_Aft_R.Year  := Afpx.Decode_Field (11, 00);
 
-          if       STR_MNG.IS_SPACES (DATE_AFT_R.DAY)
-          and then STR_MNG.IS_SPACES (DATE_AFT_R.MONTH)
-          and then STR_MNG.IS_SPACES (DATE_AFT_R.YEAR) then
-            DATE_AFT := (others => ' ');
-            CURRENT_FIELD := 12;
-            LOCOK := TRUE;
+          if       Str_Mng.Is_Spaces (Date_Aft_R.Day)
+          and then Str_Mng.Is_Spaces (Date_Aft_R.Month)
+          and then Str_Mng.Is_Spaces (Date_Aft_R.Year) then
+            Date_Aft := (others => ' ');
+            Current_Field := 12;
+            Locok := True;
           else
-            CURRENT_FIELD := 09;
-            STR_MNG.CHECK_DATE (DATE_AFT_R, TRUE, DATE_AFT, LOCOK);
-            if LOCOK then
-              CURRENT_FIELD := 12;
-              STR_MNG.TO_REC (DATE_AFT, DATE_AFT_R);
-              AFPX.ENCODE_FIELD (09, (00, 00), DATE_AFT_R.DAY);
-              AFPX.ENCODE_FIELD (10, (00, 00), DATE_AFT_R.MONTH);
-              AFPX.ENCODE_FIELD (11, (00, 00), DATE_AFT_R.YEAR);
+            Current_Field := 09;
+            Str_Mng.Check_Date (Date_Aft_R, True, Date_Aft, Locok);
+            if Locok then
+              Current_Field := 12;
+              Str_Mng.To_Rec (Date_Aft, Date_Aft_R);
+              Afpx.Encode_Field (09, (00, 00), Date_Aft_R.Day);
+              Afpx.Encode_Field (10, (00, 00), Date_Aft_R.Month);
+              Afpx.Encode_Field (11, (00, 00), Date_Aft_R.Year);
             end if;
           end if;
-          if LOCOK and then FOR_VALID then
-            CRITERIA.DATE_AFT := DATE_AFT;
+          if Locok and then For_Valid then
+            Criteria.Date_Aft := Date_Aft;
           end if;
 
         when 12 | 13 | 14 =>
           -- In date bef
-          DATE_BEF_R.DAY   := AFPX.DECODE_FIELD (12, 00);
-          DATE_BEF_R.MONTH := AFPX.DECODE_FIELD (13, 00);
-          DATE_BEF_R.YEAR  := AFPX.DECODE_FIELD (14, 00);
+          Date_Bef_R.Day   := Afpx.Decode_Field (12, 00);
+          Date_Bef_R.Month := Afpx.Decode_Field (13, 00);
+          Date_Bef_R.Year  := Afpx.Decode_Field (14, 00);
 
-          if       STR_MNG.IS_SPACES (DATE_BEF_R.DAY)
-          and then STR_MNG.IS_SPACES (DATE_BEF_R.MONTH)
-          and then STR_MNG.IS_SPACES (DATE_BEF_R.YEAR) then
-            DATE_BEF := (others => ' ');
-            CURRENT_FIELD := 07;
-            LOCOK := TRUE;
+          if       Str_Mng.Is_Spaces (Date_Bef_R.Day)
+          and then Str_Mng.Is_Spaces (Date_Bef_R.Month)
+          and then Str_Mng.Is_Spaces (Date_Bef_R.Year) then
+            Date_Bef := (others => ' ');
+            Current_Field := 07;
+            Locok := True;
           else
-            CURRENT_FIELD := 12;
-            STR_MNG.CHECK_DATE (DATE_BEF_R, TRUE, DATE_BEF, LOCOK);
-            if LOCOK then
-              CURRENT_FIELD := 07;
-              STR_MNG.TO_REC (DATE_BEF, DATE_BEF_R);
-              AFPX.ENCODE_FIELD (12, (00, 00), DATE_BEF_R.DAY);
-              AFPX.ENCODE_FIELD (13, (00, 00), DATE_BEF_R.MONTH);
-              AFPX.ENCODE_FIELD (14, (00, 00), DATE_BEF_R.YEAR);
+            Current_Field := 12;
+            Str_Mng.Check_Date (Date_Bef_R, True, Date_Bef, Locok);
+            if Locok then
+              Current_Field := 07;
+              Str_Mng.To_Rec (Date_Bef, Date_Bef_R);
+              Afpx.Encode_Field (12, (00, 00), Date_Bef_R.Day);
+              Afpx.Encode_Field (13, (00, 00), Date_Bef_R.Month);
+              Afpx.Encode_Field (14, (00, 00), Date_Bef_R.Year);
             end if;
           end if;
-          if LOCOK and then FOR_VALID then
-            CRITERIA.DATE_BEF := DATE_BEF;
+          if Locok and then For_Valid then
+            Criteria.Date_Bef := Date_Bef;
           end if;
 
         when others =>
           null;
       end case;
 
-      CURSOR_COL := 0;
-      OK := LOCOK;
+      Cursor_Col := 0;
+      Ok := Locok;
 
-    end CHECK_FIELD;
+    end Check_Field;
 
   begin
-    AFPX.USE_DESCRIPTOR(1);
-    CURSOR_FIELD := 07;
-    CURSOR_COL := 0;
-    MESU_SEL.LOAD;
-    AFPX.UPDATE_LIST (AFPX.CENTER);
+    Afpx.Use_Descriptor(1);
+    Cursor_Field := 07;
+    Cursor_Col := 0;
+    Mesu_Sel.Load;
+    Afpx.Update_List (Afpx.Center);
 
-    if NB_MONTH /= 0 then
-      STR_MNG.CURRENT_DATE_REC (CURRENT_DATE, NB_MONTH);
-      if AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST) = 0 then
+    if Nb_Month /= 0 then
+      Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
+      if Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0 then
         -- List empty : Set Aft to current date - offset
-        AFPX.ENCODE_FIELD (09, (00, 00), CURRENT_DATE.DAY);
-        AFPX.ENCODE_FIELD (10, (00, 00), CURRENT_DATE.MONTH);
-        AFPX.ENCODE_FIELD (11, (00, 00), CURRENT_DATE.YEAR);
+        Afpx.Encode_Field (09, (00, 00), Current_Date.Day);
+        Afpx.Encode_Field (10, (00, 00), Current_Date.Month);
+        Afpx.Encode_Field (11, (00, 00), Current_Date.Year);
       else
         -- List not empty : Set Bef to current date - offset
-        AFPX.ENCODE_FIELD (12, (00, 00), CURRENT_DATE.DAY);
-        AFPX.ENCODE_FIELD (13, (00, 00), CURRENT_DATE.MONTH);
-        AFPX.ENCODE_FIELD (14, (00, 00), CURRENT_DATE.YEAR);
+        Afpx.Encode_Field (12, (00, 00), Current_Date.Day);
+        Afpx.Encode_Field (13, (00, 00), Current_Date.Month);
+        Afpx.Encode_Field (14, (00, 00), Current_Date.Year);
       end if;
     end if;
 
 
 
-    LIST:
+    List:
     loop
-      ALLOW_UNDO := FALSE;
-      REDISPLAY := TRUE;
+      Allow_Undo := False;
+      Redisplay := True;
 
-      PTG:
+      Ptg:
       loop
-        PERS_EMPTY := PERS_DEF.PERSON_LIST_MNG.IS_EMPTY (PERS_DEF.THE_PERSONS);
-        LIST_EMPTY := AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST) = 0;
-        ALLOW_DRAW := not PERS_EMPTY and then
-                      not LIST_EMPTY and then
-                      AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST)
-                            <= MESU_GRA.MAX_NB_MESURE;
-        ALLOW_UNDO := ALLOW_UNDO and then not PERS_EMPTY;
+        Pers_Empty := Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons);
+        List_Empty := Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0;
+        Allow_Draw := not Pers_Empty and then
+                      not List_Empty and then
+                      Afpx.Line_List_Mng.List_Length(Afpx.Line_List)
+                            <= Mesu_Gra.Max_Nb_Mesure;
+        Allow_Undo := Allow_Undo and then not Pers_Empty;
         -- Tittles
-        AFPX.SET_FIELD_ACTIVATION (01, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (03, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (04, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (05, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (06, not PERS_EMPTY);
+        Afpx.Set_Field_Activation (01, not Pers_Empty);
+        Afpx.Set_Field_Activation (03, not Pers_Empty);
+        Afpx.Set_Field_Activation (04, not Pers_Empty);
+        Afpx.Set_Field_Activation (05, not Pers_Empty);
+        Afpx.Set_Field_Activation (06, not Pers_Empty);
         -- Pers, date
-        AFPX.SET_FIELD_ACTIVATION (07, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (08, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (09, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (10, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (11, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (12, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (13, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (14, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (15, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (16, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (17, ALLOW_UNDO);
+        Afpx.Set_Field_Activation (07, not Pers_Empty);
+        Afpx.Set_Field_Activation (08, not Pers_Empty);
+        Afpx.Set_Field_Activation (09, not Pers_Empty);
+        Afpx.Set_Field_Activation (10, not Pers_Empty);
+        Afpx.Set_Field_Activation (11, not Pers_Empty);
+        Afpx.Set_Field_Activation (12, not Pers_Empty);
+        Afpx.Set_Field_Activation (13, not Pers_Empty);
+        Afpx.Set_Field_Activation (14, not Pers_Empty);
+        Afpx.Set_Field_Activation (15, not Pers_Empty);
+        Afpx.Set_Field_Activation (16, not Pers_Empty);
+        Afpx.Set_Field_Activation (17, Allow_Undo);
         -- Buttons
-        AFPX.SET_FIELD_ACTIVATION (22, not PERS_EMPTY and then not LIST_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (23, ALLOW_DRAW);
-        AFPX.SET_FIELD_ACTIVATION (24, not PERS_EMPTY and then not LIST_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (25, not PERS_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (26, not PERS_EMPTY and then not LIST_EMPTY);
-        AFPX.SET_FIELD_ACTIVATION (27, not PERS_EMPTY and then not LIST_EMPTY);
+        Afpx.Set_Field_Activation (22, not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (23, Allow_Draw);
+        Afpx.Set_Field_Activation (24, not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (25, not Pers_Empty);
+        Afpx.Set_Field_Activation (26, not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (27, not Pers_Empty and then not List_Empty);
 
-        AFPX.ENCODE_FIELD (20, (0, 0),
-          NORMAL(AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST), 5) );
+        Afpx.Encode_Field (20, (0, 0),
+          Normal(Afpx.Line_List_Mng.List_Length(Afpx.Line_List), 5) );
 
-        AFPX.ENCODE_FIELD (02, (00, 00), STR_MNG.CURRENT_DATE_PRINTED);
-        AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-        REDISPLAY := FALSE;
+        Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
+        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+        Redisplay := False;
 
-        case PTG_RESULT.EVENT is
-          when REFRESH =>
-            REDISPLAY := TRUE;
-          when FD_EVENT | AFPX.TIMER_EVENT =>
+        case Ptg_Result.Event is
+          when Refresh =>
+            Redisplay := True;
+          when Fd_Event | Afpx.Timer_Event =>
             null;
-          when KEYBOARD =>
+          when Keyboard =>
 
-            case PTG_RESULT.KEYBOARD_KEY is
-              when RETURN_KEY =>
+            case Ptg_Result.Keyboard_Key is
+              when Return_Key =>
                 -- Check field and go to next if OK
-                CHECK_FIELD (CURSOR_FIELD, FALSE, OK);
-              when ESCAPE_KEY =>
+                Check_Field (Cursor_Field, False, Ok);
+              when Escape_Key =>
                 -- Clear current field
-                if CURSOR_FIELD = 07  then
-                  AFPX.CLEAR_FIELD (07);
-                  AFPX.CLEAR_FIELD (08);
-                  CURSOR_FIELD := 07;
-                elsif CURSOR_FIELD = 08 then
-                  AFPX.CLEAR_FIELD (08);
-                elsif CURSOR_FIELD = 09 or else CURSOR_FIELD = 10
-                or else CURSOR_FIELD = 11 then
-                  AFPX.CLEAR_FIELD (09);
-                  AFPX.CLEAR_FIELD (10);
-                  AFPX.CLEAR_FIELD (11);
-                  CURSOR_FIELD := 09;
-                elsif CURSOR_FIELD = 12 or else CURSOR_FIELD = 13
-                or else CURSOR_FIELD = 14 then
-                  AFPX.CLEAR_FIELD (12);
-                  AFPX.CLEAR_FIELD (13);
-                  AFPX.CLEAR_FIELD (14);
-                  CURSOR_FIELD := 12;
+                if Cursor_Field = 07  then
+                  Afpx.Clear_Field (07);
+                  Afpx.Clear_Field (08);
+                  Cursor_Field := 07;
+                elsif Cursor_Field = 08 then
+                  Afpx.Clear_Field (08);
+                elsif Cursor_Field = 09 or else Cursor_Field = 10
+                or else Cursor_Field = 11 then
+                  Afpx.Clear_Field (09);
+                  Afpx.Clear_Field (10);
+                  Afpx.Clear_Field (11);
+                  Cursor_Field := 09;
+                elsif Cursor_Field = 12 or else Cursor_Field = 13
+                or else Cursor_Field = 14 then
+                  Afpx.Clear_Field (12);
+                  Afpx.Clear_Field (13);
+                  Afpx.Clear_Field (14);
+                  Cursor_Field := 12;
                 else
-                  AFPX.CLEAR_FIELD (CURSOR_FIELD);
+                  Afpx.Clear_Field (Cursor_Field);
                 end if;
-                CURSOR_COL := 0;
-              when BREAK_KEY =>
-                exit LIST;
+                Cursor_Col := 0;
+              when Break_Key =>
+                exit List;
             end case;
 
-          when MOUSE_BUTTON =>
+          when Mouse_Button =>
 
-            if PTG_RESULT.FIELD_NO = 15 or else PTG_RESULT.FIELD_NO = 16 then
+            if Ptg_Result.Field_No = 15 or else Ptg_Result.Field_No = 16 then
               -- Add/Rem selec : check all fields one by one
-              CURSOR_FIELD := 07;
+              Cursor_Field := 07;
               loop
-                CHECK_FIELD (CURSOR_FIELD, TRUE, OK);
-                exit when not OK or else CURSOR_FIELD = 07;
+                Check_Field (Cursor_Field, True, Ok);
+                exit when not Ok or else Cursor_Field = 07;
               end loop;
-              if OK then
-                if PTG_RESULT.FIELD_NO = 15 then
-                  MESU_SEL.ADD_SELECTION (CRITERIA);
+              if Ok then
+                if Ptg_Result.Field_No = 15 then
+                  Mesu_Sel.Add_Selection (Criteria);
                 else
-                  MESU_SEL.REM_SELECTION (CRITERIA);
+                  Mesu_Sel.Rem_Selection (Criteria);
                 end if;
-                ALLOW_UNDO := TRUE;
+                Allow_Undo := True;
               end if;
-            elsif PTG_RESULT.FIELD_NO = 17 then
+            elsif Ptg_Result.Field_No = 17 then
               -- Undo
-              MESU_SEL.UNDO;
-              ALLOW_UNDO := FALSE;
-            elsif PTG_RESULT.FIELD_NO = 18 then
+              Mesu_Sel.Undo;
+              Allow_Undo := False;
+            elsif Ptg_Result.Field_No = 18 then
               -- Activiy DB
-              MESU_SEL.SAVE;
-              PERS_LIS.LIST (EXIT_PROGRAM);
-              MESU_SEL.LOAD;
-              AFPX.UPDATE_LIST(AFPX.CENTER);
-              if EXIT_PROGRAM then
-                exit LIST;
+              Mesu_Sel.Save;
+              Pers_Lis.List (Exit_Program);
+              Mesu_Sel.Load;
+              Afpx.Update_List(Afpx.Center);
+              if Exit_Program then
+                exit List;
               end if;
-              exit PTG;
-            elsif PTG_RESULT.FIELD_NO = 19 then
+              exit Ptg;
+            elsif Ptg_Result.Field_No = 19 then
               -- Exit
-              exit LIST;
-            elsif PTG_RESULT.FIELD_NO = 22 then
+              exit List;
+            elsif Ptg_Result.Field_No = 22 then
               -- Unselect
-              AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, LINE,
-                                       AFPX.LINE_LIST_MNG.CURRENT);
-              STR_MNG.FORMAT_LIST_TO_MESURE (LINE, FILE_NAME);
-              MESU_SEL.REM_SELECTION (FILE_NAME);
-              ALLOW_UNDO := TRUE;
-            elsif PTG_RESULT.FIELD_NO = 23 then
+              Afpx.Line_List_Mng.Read (Afpx.Line_List, Line,
+                                       Afpx.Line_List_Mng.Current);
+              Str_Mng.Format_List_To_Mesure (Line, File_Name);
+              Mesu_Sel.Rem_Selection (File_Name);
+              Allow_Undo := True;
+            elsif Ptg_Result.Field_No = 23 then
               -- Draw
-              MESU_GRA.GRAPHIC(EXIT_PROGRAM);
-              if EXIT_PROGRAM then
-                exit LIST;
+              Mesu_Gra.Graphic(Exit_Program);
+              if Exit_Program then
+                exit List;
               end if;
-              exit PTG;
-            elsif PTG_RESULT.FIELD_NO = 24 then
+              exit Ptg;
+            elsif Ptg_Result.Field_No = 24 then
               -- Print
-              MESU_PRT.PRINT;
-              exit PTG;
-            elsif PTG_RESULT.FIELD_NO = 25 then
+              Mesu_Prt.Print;
+              exit Ptg;
+            elsif Ptg_Result.Field_No = 25 then
               -- Create
-              FILE_NAME := (others => ' ');
-              MESU_EDI.EDIT (FILE_NAME, EXIT_PROGRAM);
-              if EXIT_PROGRAM then
-                exit LIST;
+              File_Name := (others => ' ');
+              Mesu_Edi.Edit (File_Name, Exit_Program);
+              if Exit_Program then
+                exit List;
               end if;
-              if not STR_MNG.IS_SPACES (FILE_NAME) then
-                MESU_SEL.ADD_SELECTION (FILE_NAME);
+              if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Add_Selection (File_Name);
               end if;
               -- Edit screen called
-              exit PTG;
-            elsif (PTG_RESULT.FIELD_NO = 0
-                   or else PTG_RESULT.FIELD_NO = 26) then
+              exit Ptg;
+            elsif (Ptg_Result.Field_No = 0
+                   or else Ptg_Result.Field_No = 26) then
               -- Edit
-              AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, LINE,
-                                       AFPX.LINE_LIST_MNG.CURRENT);
-              STR_MNG.FORMAT_LIST_TO_MESURE (LINE, FILE_NAME);
+              Afpx.Line_List_Mng.Read (Afpx.Line_List, Line,
+                                       Afpx.Line_List_Mng.Current);
+              Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Edit
-              P_FILE_NAME := FILE_NAME;
-              MESU_EDI.EDIT (FILE_NAME, EXIT_PROGRAM);
-              if EXIT_PROGRAM then
-                exit LIST;
+              P_File_Name := File_Name;
+              Mesu_Edi.Edit (File_Name, Exit_Program);
+              if Exit_Program then
+                exit List;
               end if;
-              if not STR_MNG.IS_SPACES (FILE_NAME) then
-                MESU_SEL.REM_SELECTION (LINE);
-                MESU_SEL.ADD_SELECTION (FILE_NAME);
-              end if;
-              -- Edit screen called
-              exit PTG;
-            elsif PTG_RESULT.FIELD_NO = 27 then
-              -- Delete
-              AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, LINE,
-                                       AFPX.LINE_LIST_MNG.CURRENT);
-              STR_MNG.FORMAT_LIST_TO_MESURE (LINE, FILE_NAME);
-
-              -- Delete
-              P_FILE_NAME := FILE_NAME;
-              MESU_EDI.DELETE (FILE_NAME, EXIT_PROGRAM);
-
-              if EXIT_PROGRAM then
-                exit LIST;
-              end if;
-              if not STR_MNG.IS_SPACES (FILE_NAME) then
-                MESU_SEL.REM_SELECTION (LINE);
+              if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Rem_Selection (Line);
+                Mesu_Sel.Add_Selection (File_Name);
               end if;
               -- Edit screen called
-              exit PTG;
+              exit Ptg;
+            elsif Ptg_Result.Field_No = 27 then
+              -- Delete
+              Afpx.Line_List_Mng.Read (Afpx.Line_List, Line,
+                                       Afpx.Line_List_Mng.Current);
+              Str_Mng.Format_List_To_Mesure (Line, File_Name);
+
+              -- Delete
+              P_File_Name := File_Name;
+              Mesu_Edi.Delete (File_Name, Exit_Program);
+
+              if Exit_Program then
+                exit List;
+              end if;
+              if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Rem_Selection (Line);
+              end if;
+              -- Edit screen called
+              exit Ptg;
             end if; -- Test of buttons
         end case;
 
-      end loop PTG;
+      end loop Ptg;
       -- Another screen called
-      AFPX.USE_DESCRIPTOR(1);
-    end loop LIST;
+      Afpx.Use_Descriptor(1);
+    end loop List;
 
-    MESU_SEL.SAVE;
-  end LIST_MESURES;
+    Mesu_Sel.Save;
+  end List_Mesures;
 
-  procedure DELETE_ALL (PERSON : in PERS_DEF.PERSON_REC) is
-    FILE_NAME : MESU_NAM.FILE_NAME_STR;
-    THE_FILES : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-    FILE : DIR_MNG.FILE_ENTRY_REC;
+  procedure Delete_All (Person : in Pers_Def.Person_Rec) is
+    File_Name : Mesu_Nam.File_Name_Str;
+    The_Files : Dir_Mng.File_List_Mng.List_Type;
+    File : Dir_Mng.File_Entry_Rec;
   begin
     -- Build ????????.<pid>
-    FILE_NAME := MESU_NAM.BUILD_FILE_NAME (PID => STR_MNG.PID_STR (PERSON.PID));
+    File_Name := Mesu_Nam.Build_File_Name (Pid => Str_Mng.Pid_Str (Person.Pid));
     -- Set files lin ist
-    DIR_MNG.LIST_DIR (THE_FILES, "", FILE_NAME);
+    Dir_Mng.List_Dir (The_Files, "", File_Name);
 
-    if DIR_MNG.FILE_LIST_MNG.IS_EMPTY (THE_FILES) then
+    if Dir_Mng.File_List_Mng.Is_Empty (The_Files) then
       -- No file
       return;
     end if;
-    MESU_SEL.LOAD;
+    Mesu_Sel.Load;
 
     -- Remove entries from selection, then files
-    DIR_MNG.FILE_LIST_MNG.MOVE_TO (THE_FILES, DIR_MNG.FILE_LIST_MNG.NEXT,
-                                   0, FALSE);
+    Dir_Mng.File_List_Mng.Move_To (The_Files, Dir_Mng.File_List_Mng.Next,
+                                   0, False);
     loop
-      DIR_MNG.FILE_LIST_MNG.READ (THE_FILES, FILE,
-                                  DIR_MNG.FILE_LIST_MNG.CURRENT);
-      FILE_NAME := FILE.NAME(1 .. FILE.LEN);
+      Dir_Mng.File_List_Mng.Read (The_Files, File,
+                                  Dir_Mng.File_List_Mng.Current);
+      File_Name := File.Name(1 .. File.Len);
       begin
-        MESU_SEL.REM_SELECTION (FILE_NAME);
+        Mesu_Sel.Rem_Selection (File_Name);
       exception
-        when AFPX.LINE_LIST_MNG.NOT_IN_LIST =>
+        when Afpx.Line_List_Mng.Not_In_List =>
           -- This file was not selected
           null;
       end;
-      MESU_FIL.DELETE (FILE_NAME);
+      Mesu_Fil.Delete (File_Name);
       -- Next file
-      exit when DIR_MNG.FILE_LIST_MNG.GET_POSITION (THE_FILES)
-              = DIR_MNG.FILE_LIST_MNG.LIST_LENGTH  (THE_FILES);
+      exit when Dir_Mng.File_List_Mng.Get_Position (The_Files)
+              = Dir_Mng.File_List_Mng.List_Length  (The_Files);
 
-      DIR_MNG.FILE_LIST_MNG.MOVE_TO (THE_FILES);
+      Dir_Mng.File_List_Mng.Move_To (The_Files);
     end loop;
 
-    DIR_MNG.FILE_LIST_MNG.DELETE_LIST (THE_FILES);
-    MESU_SEL.SAVE;
-  end DELETE_ALL;
+    Dir_Mng.File_List_Mng.Delete_List (The_Files);
+    Mesu_Sel.Save;
+  end Delete_All;
 
-end MESU_MNG;
+end Mesu_Mng;
 

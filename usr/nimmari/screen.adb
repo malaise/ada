@@ -1,252 +1,252 @@
-with AFPX, CON_IO, NORMAL;
-use AFPX;
+with Afpx, Con_Io, Normal;
+use Afpx;
 
-with COMMON;
-package body SCREEN is
+with Common;
+package body Screen is
 
   -- All the bars
-  subtype INDEX_RANGE is POSITIVE range 1 .. 16;
+  subtype Index_Range is Positive range 1 .. 16;
 
   -- Status of one / all bars
-  type STATUS_LIST is (FREE, SELECTED, REMOVED);
-  type STATUS_TAB is array (INDEX_RANGE) of STATUS_LIST;
-  STATUS : STATUS_TAB;
+  type Status_List is (Free, Selected, Removed);
+  type Status_Tab is array (Index_Range) of Status_List;
+  Status : Status_Tab;
 
   -- Stick color
-  STICK_COLOR : constant CON_IO.EFFECTIVE_BASIC_COLORS := CON_IO.LIGHT_GRAY;
+  Stick_Color : constant Con_Io.Effective_Basic_Colors := Con_Io.Light_Gray;
 
-  HUMAN_SCORE : NATURAL;
-  MACHINE_SCORE : NATURAL;
+  Human_Score : Natural;
+  Machine_Score : Natural;
 
-  function FIRST_INDEX_OF_ROW (ROW : COMMON.ROW_RANGE) return INDEX_RANGE is
-    INDEX : INDEX_RANGE := INDEX_RANGE'FIRST;
+  function First_Index_Of_Row (Row : Common.Row_Range) return Index_Range is
+    Index : Index_Range := Index_Range'First;
   begin
-    for I in 2 .. ROW loop
-      INDEX := INDEX + COMMON.BAR_PER_ROW(I - 1);
+    for I in 2 .. Row loop
+      Index := Index + Common.Bar_Per_Row(I - 1);
     end loop;
-    return INDEX;
-  end FIRST_INDEX_OF_ROW;
+    return Index;
+  end First_Index_Of_Row;
 
-  function LAST_INDEX_OF_ROW (ROW : COMMON.ROW_RANGE) return INDEX_RANGE is
+  function Last_Index_Of_Row (Row : Common.Row_Range) return Index_Range is
   begin
-    return FIRST_INDEX_OF_ROW (ROW) + COMMON.BAR_PER_ROW (ROW) - 1;
-  end LAST_INDEX_OF_ROW;
+    return First_Index_Of_Row (Row) + Common.Bar_Per_Row (Row) - 1;
+  end Last_Index_Of_Row;
 
-  function INTRO return COMMON.GAME_LIST is
+  function Intro return Common.Game_List is
     -- For put then get
-    CURSOR_FIELD : FIELD_RANGE := FIELD_RANGE'FIRST;
-    CURSOR_COL : CON_IO.COL_RANGE := CON_IO.COL_RANGE'FIRST;
-    RESULT : RESULT_REC;
+    Cursor_Field : Field_Range := Field_Range'First;
+    Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Result : Result_Rec;
   begin
-    USE_DESCRIPTOR (1);
+    Use_Descriptor (1);
     loop
-      PUT_THEN_GET(CURSOR_FIELD, CURSOR_COL, RESULT, TRUE);
-      exit when RESULT.EVENT = AFPX.MOUSE_BUTTON;
+      Put_Then_Get(Cursor_Field, Cursor_Col, Result, True);
+      exit when Result.Event = Afpx.Mouse_Button;
     end loop;
-    if RESULT.FIELD_NO = 3 then
-      return COMMON.NIM;
-    elsif RESULT.FIELD_NO = 4 then
-      return COMMON.MARIENBAD;
-    elsif RESULT.FIELD_NO = 5 then
-      raise EXIT_REQUESTED;
+    if Result.Field_No = 3 then
+      return Common.Nim;
+    elsif Result.Field_No = 4 then
+      return Common.Marienbad;
+    elsif Result.Field_No = 5 then
+      raise Exit_Requested;
     end if;
     -- To avoid warning
-    return COMMON.NIM;
-  end INTRO;
+    return Common.Nim;
+  end Intro;
 
-  procedure RESET (GAME : in COMMON.GAME_LIST) is
-    use COMMON;
+  procedure Reset (Game : in Common.Game_List) is
+    use Common;
   begin
-    USE_DESCRIPTOR (2);
-    SCORE (HUMAN_SCORE, MACHINE_SCORE);
-    if GAME = COMMON.NIM then
-      ENCODE_FIELD (20, (0,0), "   Nim   ");
-      ENCODE_FIELD (22, (1,1), "Play Marienbad");
+    Use_Descriptor (2);
+    Score (Human_Score, Machine_Score);
+    if Game = Common.Nim then
+      Encode_Field (20, (0,0), "   Nim   ");
+      Encode_Field (22, (1,1), "Play Marienbad");
     else
-      ENCODE_FIELD (20, (0,0), "Marienbad");
-      ENCODE_FIELD (22, (1,1), "   Play Nim");
+      Encode_Field (20, (0,0), "Marienbad");
+      Encode_Field (22, (1,1), "   Play Nim");
     end if;
-    STATUS := (others => FREE);
-    for I in FIELD_RANGE'(1) .. 16 loop
-      SET_FIELD_ACTIVATION (I, TRUE); 
-      SET_FIELD_COLORS (I, BACKGROUND => STICK_COLOR);
+    Status := (others => Free);
+    for I in Field_Range'(1) .. 16 loop
+      Set_Field_Activation (I, True); 
+      Set_Field_Colors (I, Background => Stick_Color);
     end loop;
-    SET_FIELD_ACTIVATION (22, FALSE);
-  end RESET;
+    Set_Field_Activation (22, False);
+  end Reset;
 
-  procedure PLAY is
+  procedure Play is
     -- For put then get
-    CURSOR_FIELD : FIELD_RANGE := FIELD_RANGE'FIRST;
-    CURSOR_COL : CON_IO.COL_RANGE := CON_IO.COL_RANGE'FIRST;
-    RESULT : RESULT_REC;
-    REDISPLAY : BOOLEAN;
+    Cursor_Field : Field_Range := Field_Range'First;
+    Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Result : Result_Rec;
+    Redisplay : Boolean;
 
     -- The current selection
-    SELECTION_INDEX : INDEX_RANGE;
-    NB_SELECTED : NATURAL;
-    ROW_SELECTED : COMMON.ROW_RANGE;
+    Selection_Index : Index_Range;
+    Nb_Selected : Natural;
+    Row_Selected : Common.Row_Range;
 
     -- Get the row of an index
-    function ROW_OF_INDEX (INDEX : INDEX_RANGE) return COMMON.ROW_RANGE is
+    function Row_Of_Index (Index : Index_Range) return Common.Row_Range is
     begin
-      case INDEX is
+      case Index is
         when 01 .. 07 => return 1;
         when 08 .. 12 => return 2;
         when 13 .. 15 => return 3;
         when 16       => return 4;
       end case;
-    end ROW_OF_INDEX;
+    end Row_Of_Index;
 
   begin
-    NB_SELECTED := 0;
-    ROW_SELECTED := 1;
-    REDISPLAY := FALSE;
+    Nb_Selected := 0;
+    Row_Selected := 1;
+    Redisplay := False;
     loop
       -- Activate play
-      SET_FIELD_ACTIVATION (17, NB_SELECTED /= 0);
-      PUT_THEN_GET(CURSOR_FIELD, CURSOR_COL, RESULT, REDISPLAY);
-      if RESULT.EVENT = AFPX.MOUSE_BUTTON then
-        case RESULT.FIELD_NO is
+      Set_Field_Activation (17, Nb_Selected /= 0);
+      Put_Then_Get(Cursor_Field, Cursor_Col, Result, Redisplay);
+      if Result.Event = Afpx.Mouse_Button then
+        case Result.Field_No is
           when 1 .. 16 =>
-            SELECTION_INDEX := INDEX_RANGE(RESULT.FIELD_NO);
+            Selection_Index := Index_Range(Result.Field_No);
   
             -- First selection
-            if NB_SELECTED = 0 then
-              ROW_SELECTED := ROW_OF_INDEX(SELECTION_INDEX);
+            if Nb_Selected = 0 then
+              Row_Selected := Row_Of_Index(Selection_Index);
             end if;
 
             -- Take selection / unselect
-            if ROW_OF_INDEX(SELECTION_INDEX) = ROW_SELECTED then
-              if STATUS(SELECTION_INDEX) = SELECTED then
-                STATUS(SELECTION_INDEX)  := FREE;
-                SET_FIELD_COLORS (RESULT.FIELD_NO, BACKGROUND => STICK_COLOR);
-                NB_SELECTED := NB_SELECTED - 1;
+            if Row_Of_Index(Selection_Index) = Row_Selected then
+              if Status(Selection_Index) = Selected then
+                Status(Selection_Index)  := Free;
+                Set_Field_Colors (Result.Field_No, Background => Stick_Color);
+                Nb_Selected := Nb_Selected - 1;
               else
-                STATUS(SELECTION_INDEX)  := SELECTED;
-                SET_FIELD_COLORS (RESULT.FIELD_NO, BACKGROUND => CON_IO.RED);
-                NB_SELECTED := NB_SELECTED + 1;
+                Status(Selection_Index)  := Selected;
+                Set_Field_Colors (Result.Field_No, Background => Con_Io.Red);
+                Nb_Selected := Nb_Selected + 1;
               end if;
             end if;
           
           when 17 =>
             -- Take selection
-            for I in FIRST_INDEX_OF_ROW(ROW_SELECTED) .. LAST_INDEX_OF_ROW(ROW_SELECTED) loop
-              if STATUS(I) = SELECTED then
-                STATUS(I) := REMOVED;
-                SET_FIELD_ACTIVATION (FIELD_RANGE(I), FALSE); 
+            for I in First_Index_Of_Row(Row_Selected) .. Last_Index_Of_Row(Row_Selected) loop
+              if Status(I) = Selected then
+                Status(I) := Removed;
+                Set_Field_Activation (Field_Range(I), False); 
               end if;
             end loop;
             exit;
           when 18 =>
-            raise EXIT_REQUESTED;
+            raise Exit_Requested;
           when others =>
             null; 
         end case;
-        REDISPLAY := FALSE;
+        Redisplay := False;
       else
-        REDISPLAY := TRUE;
+        Redisplay := True;
       end if;
     end loop;
 
-  end PLAY;
+  end Play;
 
-  function CONTENT (ROW : COMMON.ROW_RANGE) return COMMON.FULL_BAR_RANGE is
-    J : NATURAL := 0;
-    RES : COMMON.FULL_BAR_RANGE := 0;
+  function Content (Row : Common.Row_Range) return Common.Full_Bar_Range is
+    J : Natural := 0;
+    Res : Common.Full_Bar_Range := 0;
   begin
-    for I in reverse FIRST_INDEX_OF_ROW(ROW) .. LAST_INDEX_OF_ROW(ROW) loop
-      if STATUS(I) = FREE then
-        RES := RES + 2 ** J;
+    for I in reverse First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
+      if Status(I) = Free then
+        Res := Res + 2 ** J;
       end if;
     end loop;
-    return RES;
-  end CONTENT;
+    return Res;
+  end Content;
 
 
-  procedure UPDATE (ROW : in COMMON.ROW_RANGE; BARS : in COMMON.FULL_BAR_RANGE;
-                    RESULT : in COMPUTE.RESULT_LIST; CHANGE_GAME : out BOOLEAN) is
-    NB_TO_REMOVE, J : NATURAL;
+  procedure Update (Row : in Common.Row_Range; Bars : in Common.Full_Bar_Range;
+                    Result : in Compute.Result_List; Change_Game : out Boolean) is
+    Nb_To_Remove, J : Natural;
     -- For put then get
-    CURSOR_FIELD : FIELD_RANGE := FIELD_RANGE'FIRST;
-    CURSOR_COL : CON_IO.COL_RANGE := CON_IO.COL_RANGE'FIRST;
-    PTG_RESULT : RESULT_REC;
-    use COMPUTE;
+    Cursor_Field : Field_Range := Field_Range'First;
+    Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Ptg_Result : Result_Rec;
+    use Compute;
   begin
-    CHANGE_GAME := FALSE;
+    Change_Game := False;
     -- Current content
-    NB_TO_REMOVE := 0;
-    for I in FIRST_INDEX_OF_ROW(ROW) .. LAST_INDEX_OF_ROW(ROW) loop
-      if STATUS(I) = FREE then
-        NB_TO_REMOVE := NB_TO_REMOVE + 1;
+    Nb_To_Remove := 0;
+    for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
+      if Status(I) = Free then
+        Nb_To_Remove := Nb_To_Remove + 1;
       end if;
     end loop;
     -- Nb to remove
-    NB_TO_REMOVE := NB_TO_REMOVE - BARS;
+    Nb_To_Remove := Nb_To_Remove - Bars;
 
     -- Select
-    j := NB_TO_REMOVE;
-    for I in FIRST_INDEX_OF_ROW(ROW) .. LAST_INDEX_OF_ROW(ROW) loop
-      if STATUS(I) = FREE then
-        STATUS(I)  := SELECTED;
-        SET_FIELD_COLORS (FIELD_RANGE(I), BACKGROUND => CON_IO.RED);
+    j := Nb_To_Remove;
+    for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
+      if Status(I) = Free then
+        Status(I)  := Selected;
+        Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
         J := J - 1;
         exit when J = 0;
       end if;
     end loop;
 
     -- Display
-    if RESULT in COMPUTE.PLAYED_RESULT_LIST then
-      SET_FIELD_ACTIVATION (17, FALSE);
-      PUT;
+    if Result in Compute.Played_Result_List then
+      Set_Field_Activation (17, False);
+      Put;
       delay 0.5;
     end if;
 
     -- Remove
-    j := NB_TO_REMOVE;
-    for I in FIRST_INDEX_OF_ROW(ROW) .. LAST_INDEX_OF_ROW(ROW) loop
-      if STATUS(I) = SELECTED then
-        STATUS(I) := REMOVED;
-        SET_FIELD_COLORS (FIELD_RANGE(I), BACKGROUND => CON_IO.RED);
-        SET_FIELD_ACTIVATION (FIELD_RANGE(I), FALSE);
+    j := Nb_To_Remove;
+    for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
+      if Status(I) = Selected then
+        Status(I) := Removed;
+        Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
+        Set_Field_Activation (Field_Range(I), False);
         J := J - 1;
         exit when J = 0;
       end if;
     end loop;
 
     -- Validate
-    if RESULT /= COMPUTE.PLAYED then
-      if RESULT = COMPUTE.PLAYED_AND_WON or else RESULT = COMPUTE.WON then
-        ENCODE_FIELD(21, (0, 34), "I win :-)");
+    if Result /= Compute.Played then
+      if Result = Compute.Played_And_Won or else Result = Compute.Won then
+        Encode_Field(21, (0, 34), "I win :-)");
       else
-        ENCODE_FIELD(21, (0, 33), "You win :-(");
+        Encode_Field(21, (0, 33), "You win :-(");
       end if;
-      SET_FIELD_ACTIVATION (17, TRUE);
-      ENCODE_FIELD (17, (1, 1), "P l a y");
-      SET_FIELD_ACTIVATION (22, TRUE);
+      Set_Field_Activation (17, True);
+      Encode_Field (17, (1, 1), "P l a y");
+      Set_Field_Activation (22, True);
       loop
-        PUT_THEN_GET(CURSOR_FIELD, CURSOR_COL, PTG_RESULT, TRUE);
-        if PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON and then PTG_RESULT.FIELD_NO = 22 then
-          CHANGE_GAME := TRUE;
+        Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, True);
+        if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 22 then
+          Change_Game := True;
         end if;
-        exit when PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON
-                  and then (PTG_RESULT.FIELD_NO = 17 or else PTG_RESULT.FIELD_NO = 22);
-        if PTG_RESULT.EVENT = AFPX.MOUSE_BUTTON and then PTG_RESULT.FIELD_NO = 18 then
-          raise EXIT_REQUESTED;
+        exit when Ptg_Result.Event = Afpx.Mouse_Button
+                  and then (Ptg_Result.Field_No = 17 or else Ptg_Result.Field_No = 22);
+        if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 18 then
+          raise Exit_Requested;
         end if;
       end loop;
-      RESET_FIELD (17);
-      RESET_FIELD (21);
-      SET_FIELD_ACTIVATION (22, FALSE);
+      Reset_Field (17);
+      Reset_Field (21);
+      Set_Field_Activation (22, False);
     end if;
-  end UPDATE;
+  end Update;
 
-  procedure SCORE (HUMAN, MACHINE : in NATURAL) is
+  procedure Score (Human, Machine : in Natural) is
   begin
-    HUMAN_SCORE := HUMAN;
-    MACHINE_SCORE := MACHINE;
-    ENCODE_FIELD (19, (0,  6), NORMAL(HUMAN_SCORE, 3));
-    ENCODE_FIELD (19, (0, 17), NORMAL(MACHINE_SCORE, 3));
-  end SCORE;
+    Human_Score := Human;
+    Machine_Score := Machine;
+    Encode_Field (19, (0,  6), Normal(Human_Score, 3));
+    Encode_Field (19, (0, 17), Normal(Machine_Score, 3));
+  end Score;
   
 
-end SCREEN;
+end Screen;

@@ -1,34 +1,34 @@
 -- Usage: account [ -e | -f ] [ <file> ]
 --  (default is euros) 
-with TEXT_IO, ADA.EXCEPTIONS;
-with ARGUMENT, CON_IO, AFPX;
-with UNIT_FORMAT, OPER_DEF, SCREEN, MNG;
-procedure ACCOUNT is
+with Text_Io, Ada.Exceptions;
+with Argument, Con_Io, Afpx;
+with Unit_Format, Oper_Def, Screen, Mng;
+procedure Account is
 
   -- Afpx put_then_get stuff
-  CURSOR_FIELD : AFPX.ABSOLUTE_FIELD_RANGE := 1;
-  CURSOR_COL   : CON_IO.COL_RANGE := 0;
-  PTG_RESULT   : AFPX.RESULT_REC;
-  REDISPLAY    : BOOLEAN := FALSE;
+  Cursor_Field : Afpx.Absolute_Field_Range := 1;
+  Cursor_Col   : Con_Io.Col_Range := 0;
+  Ptg_Result   : Afpx.Result_Rec;
+  Redisplay    : Boolean := False;
 
 
   -- Parsing
-  USAGE_ERROR : exception;
+  Usage_Error : exception;
 
-  procedure SET_UNIT (STR : in STRING) is
+  procedure Set_Unit (Str : in String) is
   begin
-    if STR = "-f" then
-      UNIT_FORMAT.SET_UNIT_TO(UNIT_FORMAT.FRANCS);
-    elsif STR = "-e" then
-      UNIT_FORMAT.SET_UNIT_TO(UNIT_FORMAT.EUROS);
+    if Str = "-f" then
+      Unit_Format.Set_Unit_To(Unit_Format.Francs);
+    elsif Str = "-e" then
+      Unit_Format.Set_Unit_To(Unit_Format.Euros);
     else
-      raise USAGE_ERROR;
+      raise Usage_Error;
     end if;
-  end SET_UNIT;
+  end Set_Unit;
 
   -- We have to quit program: raises QUIT_PROGRAM
-  QUIT_PROGRAM : exception;
-  procedure QUIT is separate;
+  Quit_Program : exception;
+  procedure Quit is separate;
     
 begin
 
@@ -36,149 +36,149 @@ begin
   -- Screen.reset must be called before mng.load(which uses the screen),
   --  but after sanity checks (which don't the screen to be loaded)
   declare
-    FILE_ARG : NATURAL := 0;
+    File_Arg : Natural := 0;
   begin
-    if ARGUMENT.GET_NBRE_ARG = 0 then
+    if Argument.Get_Nbre_Arg = 0 then
       null;
-    elsif ARGUMENT.GET_NBRE_ARG = 1 then
-      if ARGUMENT.GET_PARAMETER = "-h" then
-        raise USAGE_ERROR;
+    elsif Argument.Get_Nbre_Arg = 1 then
+      if Argument.Get_Parameter = "-h" then
+        raise Usage_Error;
       end if;
       begin
         -- Try to set unit
-        SET_UNIT(ARGUMENT.GET_PARAMETER);
+        Set_Unit(Argument.Get_Parameter);
       exception
-        when USAGE_ERROR =>
+        when Usage_Error =>
           -- Not valid unit mode -> file
-          FILE_ARG := 1;
+          File_Arg := 1;
       end;
-    elsif ARGUMENT.GET_NBRE_ARG = 2 then 
-      SET_UNIT(ARGUMENT.GET_PARAMETER(1));
-      FILE_ARG := 2;
+    elsif Argument.Get_Nbre_Arg = 2 then 
+      Set_Unit(Argument.Get_Parameter(1));
+      File_Arg := 2;
     else
-      raise USAGE_ERROR;
+      raise Usage_Error;
     end if;
 
     -- Init the screen
-    SCREEN.RESET;
+    Screen.Reset;
 
     -- No data
-    MNG.CLEAR;
+    Mng.Clear;
 
     -- Load file if any
-    if FILE_ARG /= 0 then
-      MNG.LOAD(ARGUMENT.GET_PARAMETER(FILE_ARG));
+    if File_Arg /= 0 then
+      Mng.Load(Argument.Get_Parameter(File_Arg));
     end if;
   end;
 
   -- Now the main loop
   loop
-    AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-    MNG.SET_CURRENT (PTG_RESULT.ID_SELECTED);
-    REDISPLAY := FALSE;
-    case PTG_RESULT.EVENT is
-      when AFPX.KEYBOARD =>
-        case PTG_RESULT.KEYBOARD_KEY is
-          when AFPX.RETURN_KEY =>
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Mng.Set_Current (Ptg_Result.Id_Selected);
+    Redisplay := False;
+    case Ptg_Result.Event is
+      when Afpx.Keyboard =>
+        case Ptg_Result.Keyboard_Key is
+          when Afpx.Return_Key =>
             null;
-          when AFPX.ESCAPE_KEY =>
-            QUIT;
-          when AFPX.BREAK_KEY =>
-            QUIT;
+          when Afpx.Escape_Key =>
+            Quit;
+          when Afpx.Break_Key =>
+            Quit;
         end case;
-      when AFPX.MOUSE_BUTTON =>
-        case PTG_RESULT.FIELD_NO is
+      when Afpx.Mouse_Button =>
+        case Ptg_Result.Field_No is
           -- Double click in list
-          when AFPX.LIST_FIELD_NO =>
-            MNG.UPDATE_STATE;
+          when Afpx.List_Field_No =>
+            Mng.Update_State;
 
           -- List movements
           when 17 =>
             -- Top
-            AFPX.UPDATE_LIST(AFPX.TOP);
+            Afpx.Update_List(Afpx.Top);
           when 18 =>
             -- PgUp
-            AFPX.UPDATE_LIST(AFPX.PAGE_UP);
+            Afpx.Update_List(Afpx.Page_Up);
           when 19 =>
             -- Up
-            AFPX.UPDATE_LIST(AFPX.UP);
+            Afpx.Update_List(Afpx.Up);
           when 20 =>
             -- Down
-            AFPX.UPDATE_LIST(AFPX.DOWN);
+            Afpx.Update_List(Afpx.Down);
           when 21 =>
             -- PgDown
-            AFPX.UPDATE_LIST(AFPX.PAGE_DOWN);
+            Afpx.Update_List(Afpx.Page_Down);
           when 22 =>
             -- Bottom
-            AFPX.UPDATE_LIST(AFPX.BOTTOM);
+            Afpx.Update_List(Afpx.Bottom);
 
           -- Oper actions
           when 24 =>
             -- New
-            MNG.ADD_OPER;
+            Mng.Add_Oper;
           when 25 =>
             -- Edit
-            MNG.EDIT_OPER;
+            Mng.Edit_Oper;
           when 26 =>
             -- View
-            MNG.VIEW_OPER;
+            Mng.View_Oper;
           when 27 =>
             -- Delete
-            MNG.DEL_OPER;
+            Mng.Del_Oper;
           when 28 =>
             -- Update
-            MNG.GARBAGE_COLLECT;
+            Mng.Garbage_Collect;
           when 29 =>
             -- Search
-            MNG.SEARCH;
+            Mng.Search;
           when 30 =>
             -- Show all
-            MNG.SHOW_ALL;
+            Mng.Show_All;
 
           -- Account actions
           when 32 =>
             -- Create
-            MNG.CLEAR;
+            Mng.Clear;
           when 33 =>
             -- Load
-            MNG.LOAD("");
+            Mng.Load("");
           when 34 =>
             -- Save
-            MNG.SAVE;
+            Mng.Save;
           when 35 =>
             -- Print
-            MNG.PRINT;
+            Mng.Print;
           when 36 =>
             -- Switch francs/euros
-            MNG.CHANGE_UNIT;
+            Mng.Change_Unit;
           when 37 =>
             -- Sort
-            MNG.SORT;
+            Mng.Sort;
           when 38 =>
             -- Exit
-            QUIT;
+            Quit;
           when others =>
-            SCREEN.ACK_ERROR(SCREEN.INTERNAL_ERROR);
-            MNG.SAVE(RESCUE => TRUE);
+            Screen.Ack_Error(Screen.Internal_Error);
+            Mng.Save(Rescue => True);
         end case;
-      when AFPX.REFRESH =>
-        REDISPLAY := TRUE;
-      when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+      when Afpx.Refresh =>
+        Redisplay := True;
+      when Afpx.Fd_Event | Afpx.Timer_Event =>
         null;
     end case;
   end loop;
 
 exception
-  when USAGE_ERROR =>
-    TEXT_IO.PUT_LINE ("Usage: " & ARGUMENT.GET_PROGRAM_NAME
+  when Usage_Error =>
+    Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
                     & "[ -e | -f ] [ <account_file> ]");
-    TEXT_IO.PUT_LINE ("  (default is euros)");
-  when QUIT_PROGRAM =>
-    CON_IO.DESTROY;
-  when OOOPS : others =>
-    SCREEN.RESET;
-    SCREEN.ACK_ERROR(SCREEN.INTERNAL_ERROR);
-    TEXT_IO.PUT_LINE("Exception: " & ADA.EXCEPTIONS.EXCEPTION_NAME(OOOPS));
-    MNG.SAVE(RESCUE => TRUE);
-end ACCOUNT; 
+    Text_Io.Put_Line ("  (default is euros)");
+  when Quit_Program =>
+    Con_Io.Destroy;
+  when Ooops : others =>
+    Screen.Reset;
+    Screen.Ack_Error(Screen.Internal_Error);
+    Text_Io.Put_Line("Exception: " & Ada.Exceptions.Exception_Name(Ooops));
+    Mng.Save(Rescue => True);
+end Account; 
 

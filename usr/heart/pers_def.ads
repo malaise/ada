@@ -1,33 +1,33 @@
-with DYNAMIC_LIST;
-package PERS_DEF is
+with Dynamic_List;
+package Pers_Def is
 
   -- Name and activity of a person
-  subtype PERSON_NAME_STR is STRING (1 .. 20);
-  subtype PERSON_ACTIVITY_STR is STRING (1 .. 10);
+  subtype Person_Name_Str is String (1 .. 20);
+  subtype Person_Activity_Str is String (1 .. 10);
 
   -- Unique ID of a person.
-  type PID_RANGE is new NATURAL range 000 .. 999;
+  type Pid_Range is new Natural range 000 .. 999;
 
   -- Heart rate. 0 in person time zones if not set
-  type BPM_RANGE is new NATURAL range 0 .. 250;
-  subtype SET_BPM_RANGE is BPM_RANGE range
-   BPM_RANGE'SUCC(BPM_RANGE'FIRST) .. BPM_RANGE'LAST;
+  type Bpm_Range is new Natural range 0 .. 250;
+  subtype Set_Bpm_Range is Bpm_Range range
+   Bpm_Range'Succ(Bpm_Range'First) .. Bpm_Range'Last;
 
   -- 6 time zones for a person
-  type PERSON_TZ_ARRAY is array (1 .. 6) of BPM_RANGE;
+  type Person_Tz_Array is array (1 .. 6) of Bpm_Range;
 
   -- A person
-  type PERSON_REC is record
-    NAME : PERSON_NAME_STR := (others => ' ');
-    ACTIVITY : PERSON_ACTIVITY_STR := (others => ' ');
-    PID : PID_RANGE := PID_RANGE'FIRST;
-    TZ : PERSON_TZ_ARRAY := (others => BPM_RANGE'FIRST);
+  type Person_Rec is record
+    Name : Person_Name_Str := (others => ' ');
+    Activity : Person_Activity_Str := (others => ' ');
+    Pid : Pid_Range := Pid_Range'First;
+    Tz : Person_Tz_Array := (others => Bpm_Range'First);
   end record;
 
   -- A list of person (all set)
-  package PERSON_LIST_MNG is new DYNAMIC_LIST (ELEMENT_TYPE => PERSON_REC);
-  subtype PERSON_LIST is PERSON_LIST_MNG.LIST_TYPE;
-  THE_PERSONS : PERSON_LIST;
+  package Person_List_Mng is new Dynamic_List (Element_Type => Person_Rec);
+  subtype Person_List is Person_List_Mng.List_Type;
+  The_Persons : Person_List;
 
-end PERS_DEF;
+end Pers_Def;
 

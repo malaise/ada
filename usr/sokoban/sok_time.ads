@@ -1,15 +1,15 @@
-package SOK_TIME is
+package Sok_Time is
 
   -- Just start and stop the clock
-  procedure START_TIME;
-  procedure STOP_TIME;
+  procedure Start_Time;
+  procedure Stop_Time;
 
-  procedure DISP_TIME;
+  procedure Disp_Time;
 
   -- Resets or sets the clock
-  procedure RESET_TIME;
-  procedure SET_TIME (DAY : NATURAL; DUR : DURATION);
+  procedure Reset_Time;
+  procedure Set_Time (Day : Natural; Dur : Duration);
   -- Get current clock value
-  procedure GET_TIME (DAY : out NATURAL; DUR : out DURATION);
+  procedure Get_Time (Day : out Natural; Dur : out Duration);
 
-end SOK_TIME;
+end Sok_Time;

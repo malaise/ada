@@ -1,26 +1,26 @@
-with CON_IO;
-procedure T_COLOR is
-  C : CHARACTER;
+with Con_Io;
+procedure T_Color is
+  C : Character;
 begin
-  CON_IO.INIT;
-  CON_IO.SET_BACKGROUND (CON_IO.BROWN);
+  Con_Io.Init;
+  Con_Io.Set_Background (Con_Io.Brown);
 
   loop
-    CON_IO.CLEAR;
-    for I in CON_IO.EFFECTIVE_COLORS loop
-      CON_IO.MOVE (CON_IO.COLORS'POS(I), 1);
-      CON_IO.PUT (CON_IO.EFFECTIVE_COLORS'IMAGE(I) );
-      CON_IO.MOVE (CON_IO.COLORS'POS(I), 20);
-      CON_IO.PUT ("!@#$%^&*", FOREGROUND => I, MOVE => FALSE);
-      CON_IO.NEW_LINE;
+    Con_Io.Clear;
+    for I in Con_Io.Effective_Colors loop
+      Con_Io.Move (Con_Io.Colors'Pos(I), 1);
+      Con_Io.Put (Con_Io.Effective_Colors'Image(I) );
+      Con_Io.Move (Con_Io.Colors'Pos(I), 20);
+      Con_Io.Put ("!@#$%^&*", Foreground => I, Move => False);
+      Con_Io.New_Line;
     end loop;
 
-    CON_IO.MOVE;
-    C := CON_IO.GET (ECHO => FALSE);
-    exit when C /= ASCII.NUL;
+    Con_Io.Move;
+    C := Con_Io.Get (Echo => False);
+    exit when C /= Ascii.Nul;
   end loop;
   delay 5.0;
-  CON_IO.DESTROY;
+  Con_Io.Destroy;
 
-end T_COLOR;
+end T_Color;
 

@@ -1,104 +1,104 @@
-with TEXT_IO;
-with TEXT_HANDLER;
-with RANDOM;
-with DEBUG, INPUT_DISPATCHER, PARSER;
-pragma ELABORATE(RANDOM);
-package body MCD_MNG is
+with Text_Io;
+with Text_Handler;
+with Random;
+with Debug, Input_Dispatcher, Parser;
+pragma Elaborate(Random);
+package body Mcd_Mng is
 
 
-  A, B, C : ITEM_REC;
-  CALL_ENTRY : TEXT_HANDLER.TEXT (INPUT_DISPATCHER.MAX_STRING_LG);
+  A, B, C : Item_Rec;
+  Call_Entry : Text_Handler.Text (Input_Dispatcher.Max_String_Lg);
 
-  package STACK is 
+  package Stack is 
     -- What can we store in stack
-    subtype OPERAND_KIND_LIST is ITEM_KIND_LIST range INTE .. REGI;
+    subtype Operand_Kind_List is Item_Kind_List range Inte .. Regi;
     -- On push : INVALID_ITEM;
 
-    procedure PUSH (ITEM : in ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
+    procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True);
 
-    procedure POP (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
-    procedure READ (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
+    procedure Pop (Item : out Item_Rec; Default_Stack : in Boolean := True);
+    procedure Read (Item : out Item_Rec; Default_Stack : in Boolean := True);
 
-    function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE) return NATURAL;
+    function Stack_Size (Default_Stack : Boolean := True) return Natural;
 
-    procedure POPF (ITEM : out ITEM_REC);
-  end STACK;
+    procedure Popf (Item : out Item_Rec);
+  end Stack;
 
-  package OPERATIONS is
+  package Operations is
 
-    function IS_TRUE (X : ITEM_REC) return BOOLEAN;
+    function Is_True (X : Item_Rec) return Boolean;
 
     -- INTE,INTE->INTE or REAL,REAL->REAL
-    function ADD     (L, R : ITEM_REC) return ITEM_REC;
-    function SUB     (L, R : ITEM_REC) return ITEM_REC;
-    function MULT    (L, R : ITEM_REC) return ITEM_REC;
-    function DIV     (L, R : ITEM_REC) return ITEM_REC;
-    function POW     (L, R : ITEM_REC) return ITEM_REC;
+    function Add     (L, R : Item_Rec) return Item_Rec;
+    function Sub     (L, R : Item_Rec) return Item_Rec;
+    function Mult    (L, R : Item_Rec) return Item_Rec;
+    function Div     (L, R : Item_Rec) return Item_Rec;
+    function Pow     (L, R : Item_Rec) return Item_Rec;
 
     -- INTE,INTE->INTE
-    function REMIND  (L, R : ITEM_REC) return ITEM_REC;
+    function Remind  (L, R : Item_Rec) return Item_Rec;
 
     -- INTE,INTE->INTE
-    function BITAND  (L, R : ITEM_REC) return ITEM_REC;
-    function BITOR   (L, R : ITEM_REC) return ITEM_REC;
-    function BITXOR  (L, R : ITEM_REC) return ITEM_REC;
-    function SHL     (L, R : ITEM_REC) return ITEM_REC;
-    function SHR     (L, R : ITEM_REC) return ITEM_REC;
+    function Bitand  (L, R : Item_Rec) return Item_Rec;
+    function Bitor   (L, R : Item_Rec) return Item_Rec;
+    function Bitxor  (L, R : Item_Rec) return Item_Rec;
+    function Shl     (L, R : Item_Rec) return Item_Rec;
+    function Shr     (L, R : Item_Rec) return Item_Rec;
 
     -- INTE->INTE or REAL->REAL
-    function MINUS   (X : ITEM_REC) return ITEM_REC;
-    function ABSV    (X : ITEM_REC) return ITEM_REC;
+    function Minus   (X : Item_Rec) return Item_Rec;
+    function Absv    (X : Item_Rec) return Item_Rec;
 
     -- INTE->INTE
-    function BITNEG  (X : ITEM_REC) return ITEM_REC;
+    function Bitneg  (X : Item_Rec) return Item_Rec;
 
     -- INTE,INTE->BOOL or REAL,REAL->BOOL or BOOL,BOOL->BOOL 
-    function EQUAL   (L, R : ITEM_REC) return ITEM_REC;
-    function DIFF    (L, R : ITEM_REC) return ITEM_REC;
-    function GREATER (L, R : ITEM_REC) return ITEM_REC;
-    function SMALLER (L, R : ITEM_REC) return ITEM_REC;
-    function GREATEQ (L, R : ITEM_REC) return ITEM_REC;
-    function SMALLEQ (L, R : ITEM_REC) return ITEM_REC;
+    function Equal   (L, R : Item_Rec) return Item_Rec;
+    function Diff    (L, R : Item_Rec) return Item_Rec;
+    function Greater (L, R : Item_Rec) return Item_Rec;
+    function Smaller (L, R : Item_Rec) return Item_Rec;
+    function Greateq (L, R : Item_Rec) return Item_Rec;
+    function Smalleq (L, R : Item_Rec) return Item_Rec;
 
     -- INTE->REAL
-    function TOREAL  (X : ITEM_REC) return ITEM_REC;
+    function Toreal  (X : Item_Rec) return Item_Rec;
 
     -- REAL -> INTE
-    function ROUND   (X : ITEM_REC) return ITEM_REC;
-    function TRUNC   (X : ITEM_REC) return ITEM_REC;
+    function Round   (X : Item_Rec) return Item_Rec;
+    function Trunc   (X : Item_Rec) return Item_Rec;
 
     -- REAL->REAL
-    function INT     (X : ITEM_REC) return ITEM_REC;
-    function FRAC    (X : ITEM_REC) return ITEM_REC;
+    function Int     (X : Item_Rec) return Item_Rec;
+    function Frac    (X : Item_Rec) return Item_Rec;
 
     -- *->BOOL
-    function ISREAL  (X : ITEM_REC) return ITEM_REC;
-    function ISINTE  (X : ITEM_REC) return ITEM_REC;
-    function ISSTR   (X : ITEM_REC) return ITEM_REC;
-    function ISREG  (X : ITEM_REC) return ITEM_REC;
+    function Isreal  (X : Item_Rec) return Item_Rec;
+    function Isinte  (X : Item_Rec) return Item_Rec;
+    function Isstr   (X : Item_Rec) return Item_Rec;
+    function Isreg  (X : Item_Rec) return Item_Rec;
 
     -- BOOL,BOOL->BOOL
-    function BOLAND  (L, R : ITEM_REC) return ITEM_REC;
-    function BOLOR   (L, R : ITEM_REC) return ITEM_REC;
-    function BOLXOR  (L, R : ITEM_REC) return ITEM_REC;
+    function Boland  (L, R : Item_Rec) return Item_Rec;
+    function Bolor   (L, R : Item_Rec) return Item_Rec;
+    function Bolxor  (L, R : Item_Rec) return Item_Rec;
 
     -- BOOL->BOOL
-    function BOLNEG  (X : ITEM_REC) return ITEM_REC;
+    function Bolneg  (X : Item_Rec) return Item_Rec;
 
     -- BOOL,*,*->*
-    function IFTE    (X, A, B : ITEM_REC) return ITEM_REC;
+    function Ifte    (X, A, B : Item_Rec) return Item_Rec;
 
     -- Argument does not mach operator
     -- INVALID_ARGUMENT : exception;
     -- Arguments are not compatible to each other
     -- ARGUMENT_MISMATCH : exception;
-  end OPERATIONS;
+  end Operations;
 
-  package REGISTERS is
-    subtype REGISTER_CONTENT_LIST is ITEM_KIND_LIST range INTE .. REGI;
+  package Registers is
+    subtype Register_Content_List is Item_Kind_List range Inte .. Regi;
 
-    procedure STORE (VAL : in ITEM_REC; TO_REG : in ITEM_REC); 
-    function  RETRIEVE (FROM_REG : in ITEM_REC) return ITEM_REC;
+    procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec); 
+    function  Retrieve (From_Reg : in Item_Rec) return Item_Rec;
 
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
     -- INVALID_REGISTER : exception;
@@ -108,410 +108,410 @@ package body MCD_MNG is
 
     -- Nothing to retrieve
     -- EMTPY_REGISTER : exception;
-  end REGISTERS;
+  end Registers;
 
-  package IOS is
+  package Ios is
 
-    procedure SET_OBASE (BASE : in ITEM_REC);
+    procedure Set_Obase (Base : in Item_Rec);
 
-    subtype IO_KIND_LIST is ITEM_KIND_LIST range INTE .. BOOL;
-    procedure FORMAT (ITEM : in ITEM_REC);
-    procedure PUT (ITEM : in ITEM_REC);
-    procedure PUT_LINE (ITEM : in ITEM_REC);
-    procedure NEW_LINE;
+    subtype Io_Kind_List is Item_Kind_List range Inte .. Bool;
+    procedure Format (Item : in Item_Rec);
+    procedure Put (Item : in Item_Rec);
+    procedure Put_Line (Item : in Item_Rec);
+    procedure New_Line;
 
-    function STRINTE (S : ITEM_REC) return ITEM_REC;
-    function STRREAL (S : ITEM_REC) return ITEM_REC;
-    function STRBOOL (S : ITEM_REC) return ITEM_REC;
-    function STROF (ITEM : ITEM_REC) return ITEM_REC;
+    function Strinte (S : Item_Rec) return Item_Rec;
+    function Strreal (S : Item_Rec) return Item_Rec;
+    function Strbool (S : Item_Rec) return Item_Rec;
+    function Strof (Item : Item_Rec) return Item_Rec;
     -- INVALID_ARGUMENT : exception;
-  end IOS;
+  end Ios;
 
-  package CALL_STACK is 
+  package Call_Stack is 
 
-    procedure PUSH (ITEM : in STRING);
-    function  POP return STRING;
+    procedure Push (Item : in String);
+    function  Pop return String;
 
-    function LEVEL return NATURAL;
+    function Level return Natural;
 
-  end CALL_STACK;
+  end Call_Stack;
 
-  package STRINGS is
-    function STRLEN (S : ITEM_REC) return ITEM_REC;
-    function STRCAT (S1, S2 : ITEM_REC) return ITEM_REC;
-    function STRSUB (S, I1, I2 : ITEM_REC) return ITEM_REC;
-    function STRLOC (OCC, PAT, S : ITEM_REC) return ITEM_REC;
-    function STRREP (I, PAT, S : ITEM_REC) return ITEM_REC;
-    function STRUPP (S : ITEM_REC) return ITEM_REC;
-    function STRLOW (S : ITEM_REC) return ITEM_REC;
+  package Strings is
+    function Strlen (S : Item_Rec) return Item_Rec;
+    function Strcat (S1, S2 : Item_Rec) return Item_Rec;
+    function Strsub (S, I1, I2 : Item_Rec) return Item_Rec;
+    function Strloc (Occ, Pat, S : Item_Rec) return Item_Rec;
+    function Strrep (I, Pat, S : Item_Rec) return Item_Rec;
+    function Strupp (S : Item_Rec) return Item_Rec;
+    function Strlow (S : Item_Rec) return Item_Rec;
 
-  end STRINGS;
+  end Strings;
 
-  package body STACK is separate;
-  package body OPERATIONS is separate;
-  package body REGISTERS is separate;
-  package body IOS is separate;
-  package body CALL_STACK is separate;
-  package body STRINGS is separate;
+  package body Stack is separate;
+  package body Operations is separate;
+  package body Registers is separate;
+  package body Ios is separate;
+  package body Call_Stack is separate;
+  package body Strings is separate;
 
 
-  procedure NEW_ITEM (ITEM : in ITEM_REC; THE_END : out BOOLEAN) is
-    use STACK;
+  procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
+    use Stack;
 
-    procedure DO_CALL is
+    procedure Do_Call is
     begin
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
-        TEXT_IO.PUT_LINE("Mng: Do_call");
+      if Debug.Debug_Level_Array(Debug.Oper) then
+        Text_Io.Put_Line("Mng: Do_call");
       end if;
-      POP(A);
-      if A.KIND /= CHRS then
-        raise INVALID_ARGUMENT;
+      Pop(A);
+      if A.Kind /= Chrs then
+        raise Invalid_Argument;
       end if;
-      if CALL_STACK.LEVEL /= 0 then
+      if Call_Stack.Level /= 0 then
         -- Save contect;
-        TEXT_HANDLER.SET(CALL_ENTRY, INPUT_DISPATCHER.GET_REMAINING);
+        Text_Handler.Set(Call_Entry, Input_Dispatcher.Get_Remaining);
         -- Even if end of subprog, this is not stdin
-        if TEXT_HANDLER.EMPTY(CALL_ENTRY) then
-          TEXT_HANDLER.SET(CALL_ENTRY, " ");
+        if Text_Handler.Empty(Call_Entry) then
+          Text_Handler.Set(Call_Entry, " ");
         end if;
-        CALL_STACK.PUSH (TEXT_HANDLER.VALUE(CALL_ENTRY));
+        Call_Stack.Push (Text_Handler.Value(Call_Entry));
       else
         -- Dummy context
-        CALL_STACK.PUSH ("");
+        Call_Stack.Push ("");
       end if;
       -- Call
-      if A.VAL_LEN = 0 then
+      if A.Val_Len = 0 then
         -- Empty subprogram : not stdin
-        INPUT_DISPATCHER.SET_INPUT(" ");
+        Input_Dispatcher.Set_Input(" ");
       else
-        INPUT_DISPATCHER.SET_INPUT(A.VAL_TEXT(1 .. A.VAL_LEN));
+        Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
       end if;
-    end DO_CALL;
+    end Do_Call;
 
-    procedure DO_RETN (ALL_LEVELS    : in BOOLEAN;
-                       LEVELS        : in ITEM_REC;
-                       ALLOW_LEVEL_0 : in BOOLEAN) is
-      L : INTEGER;
-      CALL_STACK_LEVEL : NATURAL;
+    procedure Do_Retn (All_Levels    : in Boolean;
+                       Levels        : in Item_Rec;
+                       Allow_Level_0 : in Boolean) is
+      L : Integer;
+      Call_Stack_Level : Natural;
     begin
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
-        TEXT_IO.PUT_LINE("Mng: Do_ret");
+      if Debug.Debug_Level_Array(Debug.Oper) then
+        Text_Io.Put_Line("Mng: Do_ret");
       end if;
-      CALL_STACK_LEVEL := CALL_STACK.LEVEL;
-      if not ALL_LEVELS then
+      Call_Stack_Level := Call_Stack.Level;
+      if not All_Levels then
         -- has to be INTE and val NATURAL
         begin
-          L := NATURAL(LEVELS.VAL_INTE);
+          L := Natural(Levels.Val_Inte);
         exception
-          when others => raise INVALID_ARGUMENT;
+          when others => raise Invalid_Argument;
         end;
         if L = 0 then
           return;
         end if;
       else
         -- Return all
-        L := CALL_STACK_LEVEL + 1;
+        L := Call_Stack_Level + 1;
       end if;
       -- Can return by one more than level
-      if L - 1 > CALL_STACK_LEVEL then
-        raise INVALID_ARGUMENT;
-      elsif L - 1 = CALL_STACK_LEVEL then
-        if ALLOW_LEVEL_0 then
-          THE_END := TRUE;
+      if L - 1 > Call_Stack_Level then
+        raise Invalid_Argument;
+      elsif L - 1 = Call_Stack_Level then
+        if Allow_Level_0 then
+          The_End := True;
           return;
         else
           -- RETACAL from level 0
-          raise INVALID_ARGUMENT;
+          raise Invalid_Argument;
         end if;
       end if;
       -- Return N times
       for I in reverse 1 .. L loop
         -- Restart form previous context
-        TEXT_HANDLER.SET(CALL_ENTRY, CALL_STACK.POP);
+        Text_Handler.Set(Call_Entry, Call_Stack.Pop);
       end loop;
-      INPUT_DISPATCHER.SET_INPUT(TEXT_HANDLER.VALUE(CALL_ENTRY));
-    end DO_RETN;
+      Input_Dispatcher.Set_Input(Text_Handler.Value(Call_Entry));
+    end Do_Retn;
 
-    procedure DO_RETALL is
+    procedure Do_Retall is
     begin
-      DO_RETN(TRUE, A, TRUE);
-    end DO_RETALL;
+      Do_Retn(True, A, True);
+    end Do_Retall;
 
-    procedure DO_RET (ALLOW_LEVEL_0 : in BOOLEAN := TRUE) is
+    procedure Do_Ret (Allow_Level_0 : in Boolean := True) is
     begin
-      POP(A);
-      DO_RETN(FALSE, A, ALLOW_LEVEL_0);
-    end DO_RET;
+      Pop(A);
+      Do_Retn(False, A, Allow_Level_0);
+    end Do_Ret;
     
 
-    procedure DO_POPN is
-      N : NATURAL;
+    procedure Do_Popn is
+      N : Natural;
     begin
-      POP(A);
+      Pop(A);
       -- has to be INTE and val NATURAL
       begin
-        N := NATURAL(A.VAL_INTE);
+        N := Natural(A.Val_Inte);
       exception
-        when others => raise INVALID_ARGUMENT;
+        when others => raise Invalid_Argument;
       end;
       for I in 1 .. N loop
-        POP(A);
+        Pop(A);
       end loop;
-    end DO_POPN;
+    end Do_Popn;
 
-    procedure DO_DELAY(THE_DELAY : in ITEM_REC) is
+    procedure Do_Delay(The_Delay : in Item_Rec) is
     begin
-      if THE_DELAY.KIND = INTE then
-        delay DURATION(THE_DELAY.VAL_INTE);
-      elsif THE_DELAY.KIND = REAL then
-        delay DURATION(THE_DELAY.VAL_REAL);
+      if The_Delay.Kind = Inte then
+        delay Duration(The_Delay.Val_Inte);
+      elsif The_Delay.Kind = Real then
+        delay Duration(The_Delay.Val_Real);
       else
-        raise INVALID_ARGUMENT;
+        raise Invalid_Argument;
       end if;
     exception
       when others =>
-        raise INVALID_ARGUMENT;
-    end DO_DELAY;
+        raise Invalid_Argument;
+    end Do_Delay;
 
   begin
     -- Default, except RET
-    THE_END := FALSE;
+    The_End := False;
     -- Dispatch
-    if ITEM.KIND /= OPER then
+    if Item.Kind /= Oper then
         -- Push operand
-        STACK.PUSH(ITEM);
+        Stack.Push(Item);
     else -- OPERATOR
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.OPER) then
-        TEXT_IO.PUT("Mng: ");
-        DEBUG.PUT(ITEM);
-        TEXT_IO.NEW_LINE;
+      if Debug.Debug_Level_Array(Debug.Oper) then
+        Text_Io.Put("Mng: ");
+        Debug.Put(Item);
+        Text_Io.New_Line;
       end if;
-      case ITEM.VAL_OPER is 
+      case Item.Val_Oper is 
         -- These 5 I do it myself
-        when NOP =>
+        when Nop =>
           null;
-        when SWAP =>
-          POP(A); POP(B); PUSH(A); PUSH(B);
-        when DUP =>
-          READ(A); PUSH(A);
-        when POP =>
-          POP(A);
-        when RND =>
-          PUSH( (KIND => REAL,
-                 VAL_REAL => MY_MATH.REAL(RANDOM.FLOAT_RANDOM)) );
-        when SLEEP =>
-          POP(A);
-          DO_DELAY(A);
+        when Swap =>
+          Pop(A); Pop(B); Push(A); Push(B);
+        when Dup =>
+          Read(A); Push(A);
+        when Pop =>
+          Pop(A);
+        when Rnd =>
+          Push( (Kind => Real,
+                 Val_Real => My_Math.Real(Random.Float_Random)) );
+        when Sleep =>
+          Pop(A);
+          Do_Delay(A);
 
-        when POPN =>
-          DO_POPN;
+        when Popn =>
+          Do_Popn;
 
         -- These are operations
-        when ADD =>
-          POP(A); POP(B); PUSH (OPERATIONS.ADD(B,A));
-        when SUB =>
-          POP(A); POP(B); PUSH (OPERATIONS.SUB(B,A));
-        when MULT =>
-          POP(A); POP(B); PUSH (OPERATIONS.MULT(B,A));
-        when DIV =>
-          POP(A); POP(B); PUSH (OPERATIONS.DIV(B,A));
-        when REMIND =>
-          POP(A); POP(B); PUSH (OPERATIONS.REMIND(B,A));
-        when POW =>
-          POP(A); POP(B); PUSH (OPERATIONS.POW(B,A));
-        when BITAND =>
-          POP(A); POP(B); PUSH (OPERATIONS.BITAND(B,A));
-        when BITOR =>
-          POP(A); POP(B); PUSH (OPERATIONS.BITOR(B,A));
-        when BITXOR =>
-          POP(A); POP(B); PUSH (OPERATIONS.BITXOR(B,A));
-        when SHL =>
-          POP(A); POP(B); PUSH (OPERATIONS.SHL(B,A));
-        when SHR =>
-          POP(A); POP(B); PUSH (OPERATIONS.SHR(B,A));
-        when MINUS =>
-          POP(A); PUSH (OPERATIONS.MINUS(A));
-        when ABSV =>
-          POP(A); PUSH (OPERATIONS.ABSV(A));
-        when BITNEG =>
-          POP(A); PUSH (OPERATIONS.BITNEG(A));
-        when EQUAL =>
-          POP(A); POP(B); PUSH (OPERATIONS.EQUAL(B,A));
-        when DIFF =>
-          POP(A); POP(B); PUSH (OPERATIONS.DIFF(B,A));
-        when GREATER =>
-          POP(A); POP(B); PUSH (OPERATIONS.GREATER(B,A));
-        when SMALLER =>
-          POP(A); POP(B); PUSH (OPERATIONS.SMALLER(B,A));
-        when GREATEQ =>
-          POP(A); POP(B); PUSH (OPERATIONS.GREATEQ(B,A));
-        when SMALLEQ =>
-          POP(A); POP(B); PUSH (OPERATIONS.SMALLEQ(B,A));
-        when TOREAL =>
-          POP(A); PUSH (OPERATIONS.TOREAL(A));
-        when ROUND =>
-          POP(A); PUSH (OPERATIONS.ROUND(A));
-        when TRUNC =>
-          POP(A); PUSH (OPERATIONS.TRUNC(A));
-        when INT =>
-          POP(A); PUSH (OPERATIONS.INT(A));
-        when FRAC =>
-          POP(A); PUSH (OPERATIONS.FRAC(A));
-        when ISREAL =>
-          POP(A); PUSH (OPERATIONS.ISREAL(A));
-        when ISINTE =>
-          POP(A); PUSH (OPERATIONS.ISINTE(A));
-        when ISSTR =>
-          POP(A); PUSH (OPERATIONS.ISSTR(A));
-        when ISREG =>
-          POP(A); PUSH (OPERATIONS.ISREG(A));
-        when BOLAND =>
-          POP(A); POP(B); PUSH (OPERATIONS.BOLAND(B,A));
-        when BOLOR =>
-          POP(A); POP(B); PUSH (OPERATIONS.BOLOR(B,A));
-        when BOLXOR =>
-          POP(A); POP(B); PUSH (OPERATIONS.BOLXOR(B,A));
-        when BOLNEG =>
-          POP(A); PUSH (OPERATIONS.BOLNEG(A));
+        when Add =>
+          Pop(A); Pop(B); Push (Operations.Add(B,A));
+        when Sub =>
+          Pop(A); Pop(B); Push (Operations.Sub(B,A));
+        when Mult =>
+          Pop(A); Pop(B); Push (Operations.Mult(B,A));
+        when Div =>
+          Pop(A); Pop(B); Push (Operations.Div(B,A));
+        when Remind =>
+          Pop(A); Pop(B); Push (Operations.Remind(B,A));
+        when Pow =>
+          Pop(A); Pop(B); Push (Operations.Pow(B,A));
+        when Bitand =>
+          Pop(A); Pop(B); Push (Operations.Bitand(B,A));
+        when Bitor =>
+          Pop(A); Pop(B); Push (Operations.Bitor(B,A));
+        when Bitxor =>
+          Pop(A); Pop(B); Push (Operations.Bitxor(B,A));
+        when Shl =>
+          Pop(A); Pop(B); Push (Operations.Shl(B,A));
+        when Shr =>
+          Pop(A); Pop(B); Push (Operations.Shr(B,A));
+        when Minus =>
+          Pop(A); Push (Operations.Minus(A));
+        when Absv =>
+          Pop(A); Push (Operations.Absv(A));
+        when Bitneg =>
+          Pop(A); Push (Operations.Bitneg(A));
+        when Equal =>
+          Pop(A); Pop(B); Push (Operations.Equal(B,A));
+        when Diff =>
+          Pop(A); Pop(B); Push (Operations.Diff(B,A));
+        when Greater =>
+          Pop(A); Pop(B); Push (Operations.Greater(B,A));
+        when Smaller =>
+          Pop(A); Pop(B); Push (Operations.Smaller(B,A));
+        when Greateq =>
+          Pop(A); Pop(B); Push (Operations.Greateq(B,A));
+        when Smalleq =>
+          Pop(A); Pop(B); Push (Operations.Smalleq(B,A));
+        when Toreal =>
+          Pop(A); Push (Operations.Toreal(A));
+        when Round =>
+          Pop(A); Push (Operations.Round(A));
+        when Trunc =>
+          Pop(A); Push (Operations.Trunc(A));
+        when Int =>
+          Pop(A); Push (Operations.Int(A));
+        when Frac =>
+          Pop(A); Push (Operations.Frac(A));
+        when Isreal =>
+          Pop(A); Push (Operations.Isreal(A));
+        when Isinte =>
+          Pop(A); Push (Operations.Isinte(A));
+        when Isstr =>
+          Pop(A); Push (Operations.Isstr(A));
+        when Isreg =>
+          Pop(A); Push (Operations.Isreg(A));
+        when Boland =>
+          Pop(A); Pop(B); Push (Operations.Boland(B,A));
+        when Bolor =>
+          Pop(A); Pop(B); Push (Operations.Bolor(B,A));
+        when Bolxor =>
+          Pop(A); Pop(B); Push (Operations.Bolxor(B,A));
+        when Bolneg =>
+          Pop(A); Push (Operations.Bolneg(A));
 
         -- Conditions
-        when IFTHEN =>
-          POP(A); POP(B);
-          if OPERATIONS.IS_TRUE(B) then
-            PUSH(A);
+        when Ifthen =>
+          Pop(A); Pop(B);
+          if Operations.Is_True(B) then
+            Push(A);
           end if;
-        when IFTE =>
-          POP(A); POP(B); POP(C); PUSH (OPERATIONS.IFTE(C,B,A));
-        when ETFI =>
-          POP(A); POP(B); POP(C); PUSH (OPERATIONS.IFTE(A,C,B));
+        when Ifte =>
+          Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(C,B,A));
+        when Etfi =>
+          Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
  
-        when OBASE =>
-          POP(A); IOS.SET_OBASE(A);
+        when Obase =>
+          Pop(A); Ios.Set_Obase(A);
 
         -- These are about registers
-        when POPR =>
+        when Popr =>
           -- store B in reg A
-          POP(A); POP(B); REGISTERS.STORE(B, A);
-        when COPYR =>
+          Pop(A); Pop(B); Registers.Store(B, A);
+        when Copyr =>
           -- store B in reg A and push B
-          POP(A); READ(B); REGISTERS.STORE(B, A);
-        when PUSHR =>
+          Pop(A); Read(B); Registers.Store(B, A);
+        when Pushr =>
           -- A -> push content of reg A
-          POP(A); PUSH(REGISTERS.RETRIEVE(A));
+          Pop(A); Push(Registers.Retrieve(A));
 
         -- Stack size
-        when SSIZE =>
-          PUSH( (KIND => INTE, VAL_INTE => MY_MATH.INTE(STACK.STACK_SIZE)));
+        when Ssize =>
+          Push( (Kind => Inte, Val_Inte => My_Math.Inte(Stack.Stack_Size)));
 
         -- Extra stack
-        when POPE =>
+        when Pope =>
           -- pushe A
-          POP(A); PUSH (A, DEFAULT_STACK => FALSE);
-        when COPYE =>
+          Pop(A); Push (A, Default_Stack => False);
+        when Copye =>
           -- pushe A push A
-          READ(A); PUSH (A, DEFAULT_STACK => FALSE); 
-        when PUSHLE =>
+          Read(A); Push (A, Default_Stack => False); 
+        when Pushle =>
           -- pushe X push X
-          POP(A, DEFAULT_STACK => FALSE); PUSH (A);
-        when PUSHFE =>
+          Pop(A, Default_Stack => False); Push (A);
+        when Pushfe =>
           -- pushe X push X
-          POPF(A); PUSH (A);
-        when ESIZE =>
-           PUSH( (KIND => INTE,
-                  VAL_INTE => MY_MATH.INTE(STACK.STACK_SIZE(
-                                DEFAULT_STACK => FALSE))));
+          Popf(A); Push (A);
+        when Esize =>
+           Push( (Kind => Inte,
+                  Val_Inte => My_Math.Inte(Stack.Stack_Size(
+                                Default_Stack => False))));
 
 
         -- These ones are subprogram
-        when CALL =>
-          DO_CALL;
-        when IFCALL =>
-          POP(A);
-          POP(B);
-          if OPERATIONS.IS_TRUE(B) then
-            PUSH(A);
-            DO_CALL;
+        when Call =>
+          Do_Call;
+        when Ifcall =>
+          Pop(A);
+          Pop(B);
+          if Operations.Is_True(B) then
+            Push(A);
+            Do_Call;
           end if;
 
-        when RET =>
-          PUSH( (KIND => INTE, VAL_INTE => 1) );
-          DO_RET;
-        when RETN =>
-          DO_RET;
-        when RETALL =>
-          DO_RETALL;
-        when IFRET =>
-          POP(A);
-          if OPERATIONS.IS_TRUE(A) then
-            PUSH( (KIND => INTE, VAL_INTE => 1) );
-            DO_RET;
+        when Ret =>
+          Push( (Kind => Inte, Val_Inte => 1) );
+          Do_Ret;
+        when Retn =>
+          Do_Ret;
+        when Retall =>
+          Do_Retall;
+        when Ifret =>
+          Pop(A);
+          if Operations.Is_True(A) then
+            Push( (Kind => Inte, Val_Inte => 1) );
+            Do_Ret;
           end if;
-        when IFRETN =>
-          POP(A);
-          POP(B);
-          if OPERATIONS.IS_TRUE(B) then
-            PUSH(A);
-            DO_RET;
+        when Ifretn =>
+          Pop(A);
+          Pop(B);
+          if Operations.Is_True(B) then
+            Push(A);
+            Do_Ret;
           end if;
-        when IFRETALL =>
-          POP(A);
-          if OPERATIONS.IS_TRUE(A) then
-            DO_RETALL;
+        when Ifretall =>
+          Pop(A);
+          if Operations.Is_True(A) then
+            Do_Retall;
           end if;
 
-        when RETACAL =>
-          PUSH( (KIND => INTE, VAL_INTE => 1) );
+        when Retacal =>
+          Push( (Kind => Inte, Val_Inte => 1) );
           -- Return but forbid level 0
-          DO_RET(FALSE);
-          DO_CALL;
+          Do_Ret(False);
+          Do_Call;
 
         -- PUTs
-        when FORMAT =>
-          POP(A); IOS.FORMAT(A);
-        when PUT =>
-          POP(A); IOS.PUT(A);
-        when PUTL =>
-          POP(A); IOS.PUT_LINE(A);
-        when NEWL =>
-          IOS.NEW_LINE;
+        when Format =>
+          Pop(A); Ios.Format(A);
+        when Put =>
+          Pop(A); Ios.Put(A);
+        when Putl =>
+          Pop(A); Ios.Put_Line(A);
+        when Newl =>
+          Ios.New_Line;
 
 
         -- Strings
-        when STRLEN =>
-          POP(A); PUSH (STRINGS.STRLEN(A));
-        when STRCAT =>
-          POP(A); POP(B); PUSH (STRINGS.STRCAT(B, A));
-        when STRSUB =>
-          POP(A); POP(B); POP(C); PUSH (STRINGS.STRSUB(C, B, A));
-        when STRLOC =>
-          POP(A); POP(B); POP(C); PUSH (STRINGS.STRLOC(C, B, A));
-        when STRREP =>
-          POP(A); POP(B); POP(C); PUSH (STRINGS.STRREP(C, B, A));
-        when STRUPP =>
-          POP(A); PUSH (STRINGS.STRUPP(A));
-        when STRLOW =>
-          POP(A); PUSH (STRINGS.STRLOW(A));
-        when STRREAL =>
-          POP(A); PUSH (IOS.STRREAL(A));
-        when STRINTE =>
-          POP(A); PUSH (IOS.STRINTE(A));
-        when STRBOOL =>
-          POP(A); PUSH (IOS.STRBOOL(A));
-        when STROF =>
-          POP(A); PUSH (IOS.STROF(A));
+        when Strlen =>
+          Pop(A); Push (Strings.Strlen(A));
+        when Strcat =>
+          Pop(A); Pop(B); Push (Strings.Strcat(B, A));
+        when Strsub =>
+          Pop(A); Pop(B); Pop(C); Push (Strings.Strsub(C, B, A));
+        when Strloc =>
+          Pop(A); Pop(B); Pop(C); Push (Strings.Strloc(C, B, A));
+        when Strrep =>
+          Pop(A); Pop(B); Pop(C); Push (Strings.Strrep(C, B, A));
+        when Strupp =>
+          Pop(A); Push (Strings.Strupp(A));
+        when Strlow =>
+          Pop(A); Push (Strings.Strlow(A));
+        when Strreal =>
+          Pop(A); Push (Ios.Strreal(A));
+        when Strinte =>
+          Pop(A); Push (Ios.Strinte(A));
+        when Strbool =>
+          Pop(A); Push (Ios.Strbool(A));
+        when Strof =>
+          Pop(A); Push (Ios.Strof(A));
 
-        when HELP =>
-          PARSER.PRINT_HELP;
+        when Help =>
+          Parser.Print_Help;
       end case;
     end if;
-  end NEW_ITEM;
+  end New_Item;
 
-  function CHECK_EMPTY_STACK return BOOLEAN is
+  function Check_Empty_Stack return Boolean is
   begin
-    return STACK.STACK_SIZE = 0;
+    return Stack.Stack_Size = 0;
   end;
 
 begin
-  RANDOM.RANDOMIZE;
-end MCD_MNG;
+  Random.Randomize;
+end Mcd_Mng;
 

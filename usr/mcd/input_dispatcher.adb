@@ -1,31 +1,31 @@
-with TEXT_IO;
-with TEXT_HANDLER;
-with DEBUG, MCD_MNG;
-package body INPUT_DISPATCHER is
+with Text_Io;
+with Text_Handler;
+with Debug, Mcd_Mng;
+package body Input_Dispatcher is
 
   -- Current input flow
-  CURR_IS_STDIN : BOOLEAN := TRUE;
+  Curr_Is_Stdin : Boolean := True;
 
   -- Data from stdin
-  STR_STDIN : STRING (1 .. MAX_STRING_LG);
-  LEN_STDIN : NATURAL := 0;
-  IND_STDIN : POSITIVE;
+  Str_Stdin : String (1 .. Max_String_Lg);
+  Len_Stdin : Natural := 0;
+  Ind_Stdin : Positive;
 
   -- Data from STDIN/SET_INPUT
-  CUR_STR : STRING (1 .. MAX_STRING_LG);
-  CUR_LEN : POSITIVE;
+  Cur_Str : String (1 .. Max_String_Lg);
+  Cur_Len : Positive;
 
-  STR_PARSED : BOOLEAN;
+  Str_Parsed : Boolean;
 
   -- Extracted from current STR
-  WORD : TEXT_HANDLER.TEXT (MAX_STRING_LG);
+  Word : Text_Handler.Text (Max_String_Lg);
 
   -- Get first/next word from a string
-  CUR_INDEX : POSITIVE;
-  STOP_INDEX : POSITIVE;
+  Cur_Index : Positive;
+  Stop_Index : Positive;
 
   -- String delimiter
-  SD : constant CHARACTER := '"';
+  Sd : constant Character := '"';
 
   function IS_SEPARATOR (C : in CHARACTER) return BOOLEAN is
   begin

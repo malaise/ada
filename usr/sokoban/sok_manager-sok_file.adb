@@ -1,317 +1,317 @@
-with DIRECT_IO;
-with SEQUENTIAL_IO;
-with NORMAL;
+with Direct_Io;
+with Sequential_Io;
+with Normal;
 
-separate (SOK_MANAGER)
+separate (Sok_Manager)
 -- Sokoban frames reading.
-package body SOK_FILE is
+package body Sok_File is
 
   -- frame as it is on disk : no mutant
-  type FILE_SQUARE_REC is record
-    PATTERN : SOK_TYPES.PATTERN_LIST;
-    CONTENT : SOK_TYPES.CONTENT_LIST;
-  end RECORD;
-  type FILE_FRAME_TAB is array (SOK_TYPES.ROW_RANGE, SOK_TYPES.COL_RANGE)
-   of FILE_SQUARE_REC;
+  type File_Square_Rec is record
+    Pattern : Sok_Types.Pattern_List;
+    Content : Sok_Types.Content_List;
+  end Record;
+  type File_Frame_Tab is array (Sok_Types.Row_Range, Sok_Types.Col_Range)
+   of File_Square_Rec;
 
   -- internal state of a frame
-  type FILE_STATE_REC is record
-    DUR          : CALENDAR.DAY_DURATION;
-    DAY          : NATURAL;
-    FRAME        : FILE_FRAME_TAB;
-    NO_FRAME     : SOK_TYPES.FRAME_RANGE;
-    POSITION     : SOK_TYPES.COORDINATE_REC;
-    NBRE_TARGETS : NATURAL;
-    BOX_OK       : NATURAL;
-    MOVES        : NATURAL;
-    PUSHES       : NATURAL;
+  type File_State_Rec is record
+    Dur          : Calendar.Day_Duration;
+    Day          : Natural;
+    Frame        : File_Frame_Tab;
+    No_Frame     : Sok_Types.Frame_Range;
+    Position     : Sok_Types.Coordinate_Rec;
+    Nbre_Targets : Natural;
+    Box_Ok       : Natural;
+    Moves        : Natural;
+    Pushes       : Natural;
   end record;
 
   -- for read frame
-  package SOK_FILE_MNG is new DIRECT_IO (FILE_FRAME_TAB);
+  package Sok_File_Mng is new Direct_Io (File_Frame_Tab);
 
 
   -- for save and restore sate
-  package SOK_STATE_MNG is new SEQUENTIAL_IO (FILE_STATE_REC);
+  package Sok_State_Mng is new Sequential_Io (File_State_Rec);
   -- for save and restore saved movements
-  package SOK_SAVED_MNG is new SEQUENTIAL_IO (SOK_MOVEMENT.SAVED_DATA_REC);
+  package Sok_Saved_Mng is new Sequential_Io (Sok_Movement.Saved_Data_Rec);
 
   -- for save and restore scores
-  package SOK_SCORE_MNG is new DIRECT_IO (SOK_TYPES.SCORE_REC);
+  package Sok_Score_Mng is new Direct_Io (Sok_Types.Score_Rec);
 
   -- for read frame
-  SOK_FILE_NAME : constant STRING := "SOKOBAN.DAT";
+  Sok_File_Name : constant String := "SOKOBAN.DAT";
 
   -- for save and restore frame and movements
-  SOK_STATE_NAME : constant STRING := "STATE.DAT";
-  SOK_SAVED_NAME : constant STRING := "SAVED.DAT";
+  Sok_State_Name : constant String := "STATE.DAT";
+  Sok_Saved_Name : constant String := "SAVED.DAT";
 
   -- for scores
-  SOK_SCORE_NAME : constant STRING := "SCORES.DAT";
+  Sok_Score_Name : constant String := "SCORES.DAT";
 
   -- to convert from a frame on file to a frame
-  procedure FROM_FILE_TO_FRAME (FILE  : in  FILE_FRAME_TAB;
-                                FRAME : out SOK_TYPES.FRAME_TAB) is
-    use SOK_TYPES;
+  procedure From_File_To_Frame (File  : in  File_Frame_Tab;
+                                Frame : out Sok_Types.Frame_Tab) is
+    use Sok_Types;
   begin
-    for I in SOK_TYPES.ROW_RANGE loop
-      for J in SOK_TYPES.COL_RANGE loop
-        case FILE(I,J).PATTERN is
-          when SOK_TYPES.WALL =>
-            FRAME(I,J) := (PATTERN => SOK_TYPES.WALL);
-          when SOK_TYPES.FREE =>
-            FRAME(I,J) := (PATTERN => SOK_TYPES.FREE,
-                           CONTENT => FILE(I, J).CONTENT);
-          when SOK_TYPES.TARGET =>
-            FRAME(I,J) := (PATTERN => SOK_TYPES.TARGET,
-                           CONTENT => FILE(I, J).CONTENT);
+    for I in Sok_Types.Row_Range loop
+      for J in Sok_Types.Col_Range loop
+        case File(I,J).Pattern is
+          when Sok_Types.Wall =>
+            Frame(I,J) := (Pattern => Sok_Types.Wall);
+          when Sok_Types.Free =>
+            Frame(I,J) := (Pattern => Sok_Types.Free,
+                           Content => File(I, J).Content);
+          when Sok_Types.Target =>
+            Frame(I,J) := (Pattern => Sok_Types.Target,
+                           Content => File(I, J).Content);
 
         end case;
       end loop;
     end loop;
-  end FROM_FILE_TO_FRAME;
+  end From_File_To_Frame;
 
   -- to convert from a frame to a frame on file
-  procedure FROM_FRAME_TO_FILE (FRAME : in  SOK_TYPES.FRAME_TAB;
-                                FILE  : out FILE_FRAME_TAB) is
-    use SOK_TYPES;
+  procedure From_Frame_To_File (Frame : in  Sok_Types.Frame_Tab;
+                                File  : out File_Frame_Tab) is
+    use Sok_Types;
   begin
-    for I in SOK_TYPES.ROW_RANGE loop
-      for J in SOK_TYPES.COL_RANGE loop
-        case FRAME(I,J).PATTERN is
-          when SOK_TYPES.WALL =>
-            FILE(I,J) := (PATTERN => SOK_TYPES.WALL,
-                          CONTENT => SOK_TYPES.NOTHING);
-          when SOK_TYPES.FREE =>
-            FILE(I,J) := (PATTERN => SOK_TYPES.FREE,
-                          CONTENT => FRAME(I,J).CONTENT);
-          when SOK_TYPES.TARGET =>
-            FILE(I,J) := (PATTERN => SOK_TYPES.TARGET,
-                          CONTENT => FRAME(I,J).CONTENT);
+    for I in Sok_Types.Row_Range loop
+      for J in Sok_Types.Col_Range loop
+        case Frame(I,J).Pattern is
+          when Sok_Types.Wall =>
+            File(I,J) := (Pattern => Sok_Types.Wall,
+                          Content => Sok_Types.Nothing);
+          when Sok_Types.Free =>
+            File(I,J) := (Pattern => Sok_Types.Free,
+                          Content => Frame(I,J).Content);
+          when Sok_Types.Target =>
+            File(I,J) := (Pattern => Sok_Types.Target,
+                          Content => Frame(I,J).Content);
 
         end case;
       end loop;
     end loop;
-  end FROM_FRAME_TO_FILE;
+  end From_Frame_To_File;
 
 
   -- to read a new frame
-  procedure READ (NO_FRAME : in  SOK_TYPES.FRAME_RANGE;
-                  FRAME    : out SOK_TYPES.FRAME_TAB) is
-    SOK_FILE : SOK_FILE_MNG.FILE_TYPE;
-    FILE_FRAME : FILE_FRAME_TAB;
+  procedure Read (No_Frame : in  Sok_Types.Frame_Range;
+                  Frame    : out Sok_Types.Frame_Tab) is
+    Sok_File : Sok_File_Mng.File_Type;
+    File_Frame : File_Frame_Tab;
   begin
     begin
-      SOK_FILE_MNG.OPEN (SOK_FILE, SOK_FILE_MNG.IN_FILE, SOK_FILE_NAME);
+      Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File, Sok_File_Name);
     exception
-      when SOK_FILE_MNG.NAME_ERROR =>
-        raise DATA_FILE_NOT_FOUND;
+      when Sok_File_Mng.Name_Error =>
+        raise Data_File_Not_Found;
     end;
 
     begin
-      SOK_FILE_MNG.READ (SOK_FILE, FILE_FRAME, SOK_FILE_MNG.COUNT(NO_FRAME));
-      FROM_FILE_TO_FRAME (FILE_FRAME, FRAME);
+      Sok_File_Mng.Read (Sok_File, File_Frame, Sok_File_Mng.Count(No_Frame));
+      From_File_To_Frame (File_Frame, Frame);
     exception
       when others =>
         begin
-          SOK_FILE_MNG.CLOSE (SOK_FILE);
+          Sok_File_Mng.Close (Sok_File);
         exception
           when others => null;
         end;
-        raise ERROR_READING_DATA;
+        raise Error_Reading_Data;
     end;
 
     begin
-      SOK_FILE_MNG.CLOSE (SOK_FILE);
+      Sok_File_Mng.Close (Sok_File);
     exception
       when others => null;
     end;
-  end READ;
+  end Read;
 
   -- closes frame and saved file
-  procedure CLOSE_FILES (
-   SOK_STATE_FILE : in out SOK_STATE_MNG.FILE_TYPE;
-   SOk_SAVED_FILE : in out SOK_SAVED_MNG.FILE_TYPE) is
+  procedure Close_Files (
+   Sok_State_File : in out Sok_State_Mng.File_Type;
+   Sok_Saved_File : in out Sok_Saved_Mng.File_Type) is
   begin
     begin
       -- close state file
-      SOK_STATE_MNG.CLOSE (SOK_STATE_FILE);
+      Sok_State_Mng.Close (Sok_State_File);
     exception
       when others => null;
     end;
 
     -- close saved file
     begin
-      SOK_SAVED_MNG.CLOSE (SOK_SAVED_FILE);
+      Sok_Saved_Mng.Close (Sok_Saved_File);
     exception
       when others => null;
     end;
-  end CLOSE_FILES;
+  end Close_Files;
 
   --save a frame with saved movements
-  procedure SAVE (STATE : in STATE_REC) is
-    SOK_STATE_FILE : SOK_STATE_MNG.FILE_TYPE;
-    SOK_SAVED_FILE : SOK_SAVED_MNG.FILE_TYPE;
-    FILE_STATE : FILE_STATE_REC;
+  procedure Save (State : in State_Rec) is
+    Sok_State_File : Sok_State_Mng.File_Type;
+    Sok_Saved_File : Sok_Saved_Mng.File_Type;
+    File_State : File_State_Rec;
   begin
     -- be sure that there is no file
     begin
-      SOK_STATE_MNG.OPEN (SOK_STATE_FILE, SOK_STATE_MNG.IN_FILE,
-       SOK_STATE_NAME);
-      SOK_STATE_MNG.DELETE (SOK_STATE_FILE);
+      Sok_State_Mng.Open (Sok_State_File, Sok_State_Mng.In_File,
+       Sok_State_Name);
+      Sok_State_Mng.Delete (Sok_State_File);
     exception
-      when SOK_STATE_MNG.NAME_ERROR => null;
+      when Sok_State_Mng.Name_Error => null;
     end;
     begin
-      SOK_SAVED_MNG.OPEN (SOK_SAVED_FILE, SOK_SAVED_MNG.IN_FILE,
-       SOK_SAVED_NAME);
-      SOK_SAVED_MNG.DELETE (SOK_SAVED_FILE);
+      Sok_Saved_Mng.Open (Sok_Saved_File, Sok_Saved_Mng.In_File,
+       Sok_Saved_Name);
+      Sok_Saved_Mng.Delete (Sok_Saved_File);
     exception
-      when SOK_SAVED_MNG.NAME_ERROR => null;
+      when Sok_Saved_Mng.Name_Error => null;
     end;
 
     -- now create new files
-    SOK_STATE_MNG.CREATE (SOK_STATE_FILE, SOK_STATE_MNG.OUT_FILE,
-     SOK_STATE_NAME);
-    SOK_SAVED_MNG.CREATE (SOK_SAVED_FILE, SOK_SAVED_MNG.OUT_FILE,
-     SOK_SAVED_NAME);
+    Sok_State_Mng.Create (Sok_State_File, Sok_State_Mng.Out_File,
+     Sok_State_Name);
+    Sok_Saved_Mng.Create (Sok_Saved_File, Sok_Saved_Mng.Out_File,
+     Sok_Saved_Name);
 
     -- fill state to be saved
-    SOK_TIME.GET_TIME (FILE_STATE.DAY, FILE_STATE.DUR);
-    FROM_FRAME_TO_FILE (STATE.FRAME, FILE_STATE.FRAME);
-    FILE_STATE.NO_FRAME     := STATE.NO_FRAME;
-    FILE_STATE.POSITION     := STATE.POSITION;
-    FILE_STATE.NBRE_TARGETS := STATE.NBRE_TARGETS;
-    FILE_STATE.BOX_OK       := STATE.BOX_OK;
-    FILE_STATE.MOVES        := STATE.MOVES;
-    FILE_STATE.PUSHES       := STATE.PUSHES;
+    Sok_Time.Get_Time (File_State.Day, File_State.Dur);
+    From_Frame_To_File (State.Frame, File_State.Frame);
+    File_State.No_Frame     := State.No_Frame;
+    File_State.Position     := State.Position;
+    File_State.Nbre_Targets := State.Nbre_Targets;
+    File_State.Box_Ok       := State.Box_Ok;
+    File_State.Moves        := State.Moves;
+    File_State.Pushes       := State.Pushes;
 
     -- save state
-    SOK_STATE_MNG.WRITE (SOK_STATE_FILE, FILE_STATE);
+    Sok_State_Mng.Write (Sok_State_File, File_State);
 
     -- save saved movements
     begin
-      SOK_SAVED_MNG.WRITE (SOK_SAVED_FILE, SOK_SAVE.LOOK (SOK_SAVE.FIRST));
+      Sok_Saved_Mng.Write (Sok_Saved_File, Sok_Save.Look (Sok_Save.First));
       loop
-        SOK_SAVED_MNG.WRITE (SOK_SAVED_FILE, SOK_SAVE.LOOK (SOK_SAVE.NEXT));
+        Sok_Saved_Mng.Write (Sok_Saved_File, Sok_Save.Look (Sok_Save.Next));
       end loop;
     exception
-      when SOK_SAVE.NO_MORE_SAVED_MOVEMENTS => null;
+      when Sok_Save.No_More_Saved_Movements => null;
     end;
 
-    CLOSE_FILES (SOK_STATE_FILE, SOK_SAVED_FILE);
+    Close_Files (Sok_State_File, Sok_Saved_File);
   exception
     when others =>
-      CLOSE_FILES (SOK_STATE_FILE, SOK_SAVED_FILE);
-      raise ERROR_WRITING_FRAME;
-  end SAVE;
+      Close_Files (Sok_State_File, Sok_Saved_File);
+      raise Error_Writing_Frame;
+  end Save;
 
   --restore a frame without saved movements
-  procedure RESTORE (STATE : out STATE_REC) is
-    SOK_STATE_FILE : SOK_STATE_MNG.FILE_TYPE;
-    SOK_SAVED_FILE : SOK_SAVED_MNG.FILE_TYPE;
-    FILE_STATE : FILE_STATE_REC;
+  procedure Restore (State : out State_Rec) is
+    Sok_State_File : Sok_State_Mng.File_Type;
+    Sok_Saved_File : Sok_Saved_Mng.File_Type;
+    File_State : File_State_Rec;
   begin
     begin
-      SOK_STATE_MNG.OPEN (SOK_STATE_FILE, SOK_STATE_MNG.IN_FILE,
-       SOK_STATE_NAME);
-      SOK_SAVED_MNG.OPEN (SOK_SAVED_FILE, SOK_SAVED_MNG.IN_FILE,
-       SOK_SAVED_NAME);
+      Sok_State_Mng.Open (Sok_State_File, Sok_State_Mng.In_File,
+       Sok_State_Name);
+      Sok_Saved_Mng.Open (Sok_Saved_File, Sok_Saved_Mng.In_File,
+       Sok_Saved_Name);
     exception
       when -- SOK_STATE_MNG.NAME_ERROR |
-           SOK_SAVED_MNG.NAME_ERROR =>
-        raise FRAME_FILE_NOT_FOUND;
+           Sok_Saved_Mng.Name_Error =>
+        raise Frame_File_Not_Found;
     end;
 
     -- read state
-    SOK_STATE_MNG.READ (SOK_STATE_FILE, FILE_STATE);
+    Sok_State_Mng.Read (Sok_State_File, File_State);
 
     -- fill returned state
-    SOK_TIME.SET_TIME (FILE_STATE.DAY, FILE_STATE.DUR);
-    FROM_FILE_TO_FRAME (FILE_STATE.FRAME, STATE.FRAME);
-    STATE.NO_FRAME     := FILE_STATE.NO_FRAME;
-    STATE.POSITION     := FILE_STATE.POSITION;
-    STATE.NBRE_TARGETS := FILE_STATE.NBRE_TARGETS;
-    STATE.BOX_OK       := FILE_STATE.BOX_OK;
-    STATE.MOVES        := FILE_STATE.MOVES;
-    STATE.PUSHES       := FILE_STATE.PUSHES;
+    Sok_Time.Set_Time (File_State.Day, File_State.Dur);
+    From_File_To_Frame (File_State.Frame, State.Frame);
+    State.No_Frame     := File_State.No_Frame;
+    State.Position     := File_State.Position;
+    State.Nbre_Targets := File_State.Nbre_Targets;
+    State.Box_Ok       := File_State.Box_Ok;
+    State.Moves        := File_State.Moves;
+    State.Pushes       := File_State.Pushes;
 
     -- read saved movements
-    SOK_SAVE.RESET;
+    Sok_Save.Reset;
     loop
       declare
-        SAVED_MOVEMENT : SOK_MOVEMENT.SAVED_DATA_REC;
+        Saved_Movement : Sok_Movement.Saved_Data_Rec;
       begin
-        SOK_SAVED_MNG.READ (SOK_SAVED_FILE, SAVED_MOVEMENT);
-        SOK_SAVE.PUSH (SAVED_MOVEMENT);
+        Sok_Saved_Mng.Read (Sok_Saved_File, Saved_Movement);
+        Sok_Save.Push (Saved_Movement);
       exception
-        when SOK_SAVED_MNG.END_ERROR => exit;
+        when Sok_Saved_Mng.End_Error => exit;
       end;
     end loop;
-    CLOSE_FILES (SOK_STATE_FILE, SOK_SAVED_FILE);
+    Close_Files (Sok_State_File, Sok_Saved_File);
   exception
-    when FRAME_FILE_NOT_FOUND =>
-      CLOSE_FILES (SOK_STATE_FILE, SOK_SAVED_FILE);
+    when Frame_File_Not_Found =>
+      Close_Files (Sok_State_File, Sok_Saved_File);
       raise;
     when others =>
-      CLOSE_FILES (SOK_STATE_FILE, SOK_SAVED_FILE);
-      raise ERROR_READING_FRAME;
-  end RESTORE;
+      Close_Files (Sok_State_File, Sok_Saved_File);
+      raise Error_Reading_Frame;
+  end Restore;
 
 
-  procedure INIT_SCORES is
-    SOK_SCORE_FILE : SOK_SCORE_MNG.FILE_TYPE;
-    SCORE : SOK_TYPES.SCORE_REC;
+  procedure Init_Scores is
+    Sok_Score_File : Sok_Score_Mng.File_Type;
+    Score : Sok_Types.Score_Rec;
   begin
-    SCORE.SET := FALSE;
+    Score.Set := False;
     begin
-      SOK_SCORE_MNG.OPEN (SOK_SCORE_FILE, SOK_SCORE_MNG.INOUT_FILE,
-       SOK_SCORE_NAME);
-      SOK_SCORE_MNG.CLOSE (SOK_SCORE_FILE);
+      Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Inout_File,
+       Sok_Score_Name);
+      Sok_Score_Mng.Close (Sok_Score_File);
     exception
-      when SOK_SCORE_MNG.NAME_ERROR =>
+      when Sok_Score_Mng.Name_Error =>
         -- Create default score file
-        SOK_SCORE_MNG.CREATE (SOK_SCORE_FILE, SOK_SCORE_MNG.INOUT_FILE,
-             SOK_SCORE_NAME);
-        for I in SOK_TYPES.FRAME_RANGE loop
-          SOK_SCORE_MNG.WRITE (SOK_SCORE_FILE, SCORE);
+        Sok_Score_Mng.Create (Sok_Score_File, Sok_Score_Mng.Inout_File,
+             Sok_Score_Name);
+        for I in Sok_Types.Frame_Range loop
+          Sok_Score_Mng.Write (Sok_Score_File, Score);
         end loop;
-        SOK_SCORE_MNG.CLOSE (SOK_SCORE_FILE);
+        Sok_Score_Mng.Close (Sok_Score_File);
     end;
   exception
     when others =>      
-      raise SCORE_IO_ERROR;
-  end INIT_SCORES;
+      raise Score_Io_Error;
+  end Init_Scores;
 
    
-  function READ_SCORE (NO : SOK_TYPES.FRAME_RANGE) return SOK_TYPES.SCORE_REC is
-    SOK_SCORE_FILE : SOK_SCORE_MNG.FILE_TYPE;
-    SCORE : SOK_TYPES.SCORE_REC;
+  function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec is
+    Sok_Score_File : Sok_Score_Mng.File_Type;
+    Score : Sok_Types.Score_Rec;
   begin
-    SOK_SCORE_MNG.OPEN (SOK_SCORE_FILE, SOK_SCORE_MNG.IN_FILE,
-     SOK_SCORE_NAME);
-    SOK_SCORE_MNG.READ (SOK_SCORE_FILE, SCORE,
-      SOK_SCORE_MNG.POSITIVE_COUNT(NO)); 
-    SOK_SCORE_MNG.CLOSE (SOK_SCORE_FILE);
-    return SCORE;
+    Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File,
+     Sok_Score_Name);
+    Sok_Score_Mng.Read (Sok_Score_File, Score,
+      Sok_Score_Mng.Positive_Count(No)); 
+    Sok_Score_Mng.Close (Sok_Score_File);
+    return Score;
   exception
     when others =>      
-      raise SCORE_IO_ERROR;
-  end READ_SCORE;
+      raise Score_Io_Error;
+  end Read_Score;
 
-  procedure WRITE_SCORE (NO : in SOK_TYPES.FRAME_RANGE;
-                         SCORE : in SOK_TYPES.SCORE_REC) is
-    SOK_SCORE_FILE : SOK_SCORE_MNG.FILE_TYPE;
+  procedure Write_Score (No : in Sok_Types.Frame_Range;
+                         Score : in Sok_Types.Score_Rec) is
+    Sok_Score_File : Sok_Score_Mng.File_Type;
   begin
-    SOK_SCORE_MNG.OPEN (SOK_SCORE_FILE, SOK_SCORE_MNG.OUT_FILE,
-     SOK_SCORE_NAME);
-    SOK_SCORE_MNG.WRITE (SOK_SCORE_FILE, SCORE,
-      SOK_SCORE_MNG.POSITIVE_COUNT(NO)); 
-    SOK_SCORE_MNG.CLOSE (SOK_SCORE_FILE);
+    Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Out_File,
+     Sok_Score_Name);
+    Sok_Score_Mng.Write (Sok_Score_File, Score,
+      Sok_Score_Mng.Positive_Count(No)); 
+    Sok_Score_Mng.Close (Sok_Score_File);
   exception
     when others =>      
-      raise SCORE_IO_ERROR;
-  end WRITE_SCORE;
+      raise Score_Io_Error;
+  end Write_Score;
 
-end SOK_FILE;
+end Sok_File;
 

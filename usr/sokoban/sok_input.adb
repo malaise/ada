@@ -1,105 +1,105 @@
-with CALENDAR; use CALENDAR;
-with CON_IO, TIMERS;
-with SOK_DISPLAY, SOK_TIME;
-package body SOK_INPUT is
+with Calendar; use Calendar;
+with Con_Io, Timers;
+with Sok_Display, Sok_Time;
+package body Sok_Input is
 
-  PLAY : BOOLEAN := TRUE;
-  DELTA_GET : constant CON_IO.DELAY_REC(TIMERS.DELAY_SEC) 
-            := (DELAY_KIND => TIMERS.DELAY_SEC,
-                PERIOD => CON_IO.NO_PERIOD,
-                DELAY_SECONDS => 1.0);
+  Play : Boolean := True;
+  Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec) 
+            := (Delay_Kind => Timers.Delay_Sec,
+                Period => Con_Io.No_Period,
+                Delay_Seconds => 1.0);
 
-  function GET_KEY return KEY_LIST is
-    STR  : STRING (1 .. 1);
-    LAST : NATURAL;
-    STAT : CON_IO.CURS_MVT;
-    POS  : POSITIVE;
-    INS  : BOOLEAN;
+  function Get_Key return Key_List is
+    Str  : String (1 .. 1);
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos  : Positive;
+    Ins  : Boolean;
     
-    use CON_IO;
+    use Con_Io;
   begin
     loop
-      if PLAY then
-        SOK_TIME.DISP_TIME;
+      if Play then
+        Sok_Time.Disp_Time;
       end if;
-      CON_IO.GET (STR, LAST, STAT, POS, INS,
-                  TIME_OUT => DELTA_GET,
-                  ECHO     => FALSE);
-      if PLAY then
-        case STAT is
-          when UP => return UP;
-          when DOWN => return DOWN;
-          when PGUP | PGDOWN | CTRL_PGUP | CTRL_PGDOWN => null;
-          when LEFT => return LEFT;
-          when RIGHT => return RIGHT;
-          when FULL =>
-            case STR(1) is
+      Con_Io.Get (Str, Last, Stat, Pos, Ins,
+                  Time_Out => Delta_Get,
+                  Echo     => False);
+      if Play then
+        case Stat is
+          when Up => return Up;
+          when Down => return Down;
+          when Pgup | Pgdown | Ctrl_Pgup | Ctrl_Pgdown => null;
+          when Left => return Left;
+          when Right => return Right;
+          when Full =>
+            case Str(1) is
               when 'u' | 'U' =>
-                return UNDO;
+                return Undo;
               when 'w' | 'W' =>
-                PLAY := not PLAY;
-                CON_IO.CLEAR;
-                SOK_TIME.STOP_TIME;
+                Play := not Play;
+                Con_Io.Clear;
+                Sok_Time.Stop_Time;
               when ' '  =>
-                return NEXT;
+                return Next;
               when others => null;
             end case; -- on char
-          when TAB | STAB  => null;
-          when RET => return NEXT;
-          when ESC => return ESC;
-          when BREAK => raise BREAK_REQUESTED;
-          when MOUSE_BUTTON => null;
-          when TIMEOUT => null;
-          when FD_EVENT | TIMER_EVENT => null;
-          when REFRESH =>
-            return REFRESH;
+          when Tab | Stab  => null;
+          when Ret => return Next;
+          when Esc => return Esc;
+          when Break => raise Break_Requested;
+          when Mouse_Button => null;
+          when Timeout => null;
+          when Fd_Event | Timer_Event => null;
+          when Refresh =>
+            return Refresh;
         end case;
       else
-        if STAT = FULL
-        and then (STR(1) = 'w' or else STR(1) = 'W') then
-          PLAY := not PLAY;
-          SOK_TIME.START_TIME;
-          return REFRESH;
+        if Stat = Full
+        and then (Str(1) = 'w' or else Str(1) = 'W') then
+          Play := not Play;
+          Sok_Time.Start_Time;
+          return Refresh;
         end if;
       end if;
     end loop;
-  end GET_KEY;
+  end Get_Key;
 
-  procedure PAUSE is
-    STR  : STRING (1 .. 1);
-    LAST : NATURAL;
-    STAT : CON_IO.CURS_MVT;
-    POS  : POSITIVE;
-    INS  : BOOLEAN;
+  procedure Pause is
+    Str  : String (1 .. 1);
+    Last : Natural;
+    Stat : Con_Io.Curs_Mvt;
+    Pos  : Positive;
+    Ins  : Boolean;
     
-    use CON_IO;
+    use Con_Io;
   begin
     loop
-      CON_IO.GET (STR, LAST, STAT, POS, INS,
-                  TIME_OUT => DELTA_GET,
-                  ECHO     => FALSE);
-      case STAT is
-        when UP => return;
-        when DOWN => return;
-        when PGUP | PGDOWN | CTRL_PGUP | CTRL_PGDOWN => null;
-        when LEFT => return;
-        when RIGHT => return;
-        when FULL => return;
-        when TAB | STAB  => null;
-        when RET => return;
-        when ESC => return;
-        when BREAK => raise BREAK_REQUESTED;
-        when MOUSE_BUTTON => null;
-        when TIMEOUT => null;
-        when FD_EVENT | TIMER_EVENT => null;
-        when REFRESH => null;
+      Con_Io.Get (Str, Last, Stat, Pos, Ins,
+                  Time_Out => Delta_Get,
+                  Echo     => False);
+      case Stat is
+        when Up => return;
+        when Down => return;
+        when Pgup | Pgdown | Ctrl_Pgup | Ctrl_Pgdown => null;
+        when Left => return;
+        when Right => return;
+        when Full => return;
+        when Tab | Stab  => null;
+        when Ret => return;
+        when Esc => return;
+        when Break => raise Break_Requested;
+        when Mouse_Button => null;
+        when Timeout => null;
+        when Fd_Event | Timer_Event => null;
+        when Refresh => null;
       end case;
     end loop;
-  end PAUSE;
+  end Pause;
 
-  procedure END_OF_PROGRAM is
+  procedure End_Of_Program is
   begin
     null;
-  end END_OF_PROGRAM;
+  end End_Of_Program;
 
-end SOK_INPUT;
+end Sok_Input;

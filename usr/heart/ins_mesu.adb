@@ -1,51 +1,51 @@
-with MY_IO, ARGUMENT, CON_IO, DOS;
-with PERS_DEF, PERS_FIL, MESU_NAM, MESU_EDI, MESU_FIL;
+with My_Io, Argument, Con_Io, Dos;
+with Pers_Def, Pers_Fil, Mesu_Nam, Mesu_Edi, Mesu_Fil;
 
-procedure INS_MESU is
-  FILE_NAME : MESU_NAM.FILE_NAME_STR;
-  DONE : BOOLEAN;
+procedure Ins_Mesu is
+  File_Name : Mesu_Nam.File_Name_Str;
+  Done : Boolean;
 
-  procedure ERROR (MSG : in STRING) is
+  procedure Error (Msg : in String) is
   begin
-    MY_IO.PUT_LINE (MSG);
-    MY_IO.PUT_LINE ("USAGE : " & ARGUMENT.GET_PROGRAM_NAME
+    My_Io.Put_Line (Msg);
+    My_Io.Put_Line ("USAGE : " & Argument.Get_Program_Name
                                & " [ <mesure_file_name> ]");
-  end ERROR;
+  end Error;
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG = 1 then
+  if Argument.Get_Nbre_Arg = 1 then
 
     begin
-      FILE_NAME := ARGUMENT.GET_PARAMETER;
+      File_Name := Argument.Get_Parameter;
     exception
       when others =>
-        ERROR ("Invalid argument.");
+        Error ("Invalid argument.");
         return;
     end;
 
-  elsif ARGUMENT.GET_NBRE_ARG = 0 then
-    FILE_NAME := (others => ' ');
+  elsif Argument.Get_Nbre_Arg = 0 then
+    File_Name := (others => ' ');
   else
-    ERROR ("Invalid argument.");
+    Error ("Invalid argument.");
     return;
   end if;
 
 
-  PERS_FIL.LOAD;
+  Pers_Fil.Load;
 
 
-  MESU_EDI.EDIT (FILE_NAME, DONE);
+  Mesu_Edi.Edit (File_Name, Done);
 
-  CON_IO.RESET_TERM;
+  Con_Io.Reset_Term;
 
 exception
-  when MESU_FIL.FILE_NOT_FOUND_ERROR =>
-    CON_IO.RESET_TERM;
+  when Mesu_Fil.File_Not_Found_Error =>
+    Con_Io.Reset_Term;
     raise;
   when others =>
-    CON_IO.BELL (3);
+    Con_Io.Bell (3);
     delay 5.0;
-    CON_IO.RESET_TERM;
+    Con_Io.Reset_Term;
     raise;
-end INS_MESU;
+end Ins_Mesu;

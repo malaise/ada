@@ -18,7 +18,7 @@ package Common is
     Start, Stop : Line_Range;
     -- Interval of cote
     Inter    : Pos_Float;
-    case KIND is
+    case Kind is
       when Manufa =>
         null;
       when Design =>

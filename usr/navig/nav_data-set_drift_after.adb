@@ -1,10 +1,10 @@
-separate (NAV_DATA)
+separate (Nav_Data)
 
 -- if DRIFT is not known, compute it with plan angle and traj angles after
 --  global computation
-procedure SET_DRIFT_AFTER (DATA : in out T_DATA) is
+procedure Set_Drift_After (Data : in out T_Data) is
 begin
-  DATA.DRIFT := NAV_TYPES."-" (DATA.TRAJ.ANGLE, DATA.PLAN.ANGLE);
-  DATA.SET(DRIFT) := TRUE;
-end SET_DRIFT_AFTER;
+  Data.Drift := Nav_Types."-" (Data.Traj.Angle, Data.Plan.Angle);
+  Data.Set(Drift) := True;
+end Set_Drift_After;
 

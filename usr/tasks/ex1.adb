@@ -1,41 +1,41 @@
-with MY_IO, TEXT_IO, SCHEDULE;
-use  MY_IO;
-procedure EX1 is
-  pragma PRIORITY (1);
+with My_Io, Text_Io, Schedule;
+use  My_Io;
+procedure Ex1 is
+  pragma Priority (1);
 
-  subtype CLIENT_RANGE is POSITIVE range 1..2;
+  subtype Client_Range is Positive range 1..2;
 
-  task SERVEUR is
-    entry INIT;
-    entry SERVICE (NO_CLIENT : in CLIENT_RANGE);
-    pragma PRIORITY (20);
-  end SERVEUR;
+  task Serveur is
+    entry Init;
+    entry Service (No_Client : in Client_Range);
+    pragma Priority (20);
+  end Serveur;
 
-  task type CLIENT is
-    entry INIT (NO : in CLIENT_RANGE);
-    pragma PRIORITY (10);
-  end CLIENT;
+  task type Client is
+    entry Init (No : in Client_Range);
+    pragma Priority (10);
+  end Client;
 
-  CLIENTS : array (CLIENT_RANGE) of CLIENT;
+  Clients : array (Client_Range) of Client;
 
-  procedure PRINT (MESSAGE : in STRING; CLIENT_NO : in CLIENT_RANGE) is
+  procedure Print (Message : in String; Client_No : in Client_Range) is
   begin
-    PUT (MESSAGE & ' ');
-    PUT (CLIENT_NO, 3);
-    NEW_LINE;
-  end PRINT;
+    Put (Message & ' ');
+    Put (Client_No, 3);
+    New_Line;
+  end Print;
 
 
-  task body SERVEUR is
+  task body Serveur is
   begin
-    accept INIT;
+    accept Init;
 
     loop
       select
-        accept SERVICE (NO_CLIENT : in CLIENT_RANGE) do
-          PRINT("                           Service de", NO_CLIENT);
+        accept Service (No_Client : in Client_Range) do
+          Print("                           Service de", No_Client);
           delay (1.0);
-        end SERVICE;
+        end Service;
       or
         terminate;
       end select;
@@ -44,36 +44,36 @@ procedure EX1 is
 
   exception
     when others =>
-      PUT_LINE ("Exception serveur");
-  end SERVEUR;
+      Put_Line ("Exception serveur");
+  end Serveur;
 
 
-  task body CLIENT is
-    NO : CLIENT_RANGE;
+  task body Client is
+    No : Client_Range;
   begin
-    accept INIT (NO : in CLIENT_RANGE) do
-      CLIENT.NO := NO;
-    end INIT;
+    accept Init (No : in Client_Range) do
+      Client.No := No;
+    end Init;
 
     loop
-      PRINT("Requete de", NO);
-      SERVEUR.SERVICE (NO);
+      Print("Requete de", No);
+      Serveur.Service (No);
 --      SCHEDULE;
     end loop;
 
   exception
     when others =>
-      PUT_LINE ("Exception client");
-  end CLIENT;
+      Put_Line ("Exception client");
+  end Client;
 
 begin
-  for I in CLIENT_RANGE loop
-    CLIENTS(I).INIT(I);
+  for I in Client_Range loop
+    Clients(I).Init(I);
   end loop;
 
-  SERVEUR.INIT;
+  Serveur.Init;
 
 exception
   when others =>
-    PUT_LINE ("Exception procedure");
-end EX1;
+    Put_Line ("Exception procedure");
+end Ex1;

@@ -1,12 +1,12 @@
-with MCD_MNG;
-package DEBUG is
+with Mcd_Mng;
+package Debug is
 
-  type DEBUG_LEVEL_LIST is (PARSER, INPUT, CALL, STACK, REGISTER, OPER, HISTORY);
-  DEBUG_LEVEL_ARRAY : array (DEBUG_LEVEL_LIST) of BOOLEAN;
+  type Debug_Level_List is (Parser, Input, Call, Stack, Register, Oper, History);
+  Debug_Level_Array : array (Debug_Level_List) of Boolean;
 
-  procedure INIT;
+  procedure Init;
 
-  procedure PUT (ITEM : in MCD_MNG.ITEM_REC);
+  procedure Put (Item : in Mcd_Mng.Item_Rec);
 
-end DEBUG;
+end Debug;
 

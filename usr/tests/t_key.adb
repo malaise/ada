@@ -1,41 +1,41 @@
-with CON_IO;
-with MY_IO;
-procedure T_KEY is
+with Con_Io;
+with My_Io;
+procedure T_Key is
 
-  KEY : NATURAL;
-  CHAR : BOOLEAN;
-  CTRL, SHIFT : BOOLEAN;
+  Key : Natural;
+  Char : Boolean;
+  Ctrl, Shift : Boolean;
 
 begin
 
-  CON_IO.INIT;
-  CON_IO.RESET_TERM;
-  KEY := 0;
-  CHAR := TRUE;
-  CTRL := FALSE;
-  SHIFT := FALSE;
+  Con_Io.Init;
+  Con_Io.Reset_Term;
+  Key := 0;
+  Char := True;
+  Ctrl := False;
+  Shift := False;
   loop
-    if KEY = 0 and then CHAR and then not CTRL and then NOT SHIFT then
+    if Key = 0 and then Char and then not Ctrl and then Not Shift then
       -- refresh
-      CON_IO.MOVE;
-      CON_IO.PUT_LINE ("Exit with CTRL_BREAK");
+      Con_Io.Move;
+      Con_Io.Put_Line ("Exit with CTRL_BREAK");
     end if;
-    CON_IO.GET_KEY (KEY, CHAR, CTRL, SHIFT);
-    MY_IO.PUT (KEY, BASE => 16, WIDTH => 6);
+    Con_Io.Get_Key (Key, Char, Ctrl, Shift);
+    My_Io.Put (Key, Base => 16, Width => 6);
 
-    if CHAR then
-      MY_IO.PUT (" CHAR ");
-      if KEY = 8 then
-        MY_IO.PUT ("Backspace");
-      elsif KEY in
-       CHARACTER'POS(CHARACTER'FIRST) .. CHARACTER'POS(CHARACTER'LAST) then
-        MY_IO.PUT ('>' & CHARACTER'VAL(KEY) & '<');
+    if Char then
+      My_Io.Put (" CHAR ");
+      if Key = 8 then
+        My_Io.Put ("Backspace");
+      elsif Key in
+       Character'Pos(Character'First) .. Character'Pos(Character'Last) then
+        My_Io.Put ('>' & Character'Val(Key) & '<');
       else
-        MY_IO.PUT (" non ADA character");
+        My_Io.Put (" non ADA character");
       end if;
     end if;
-    MY_IO.PUT (" " & BOOLEAN'IMAGE(CTRL) & " " & BOOLEAN'IMAGE(SHIFT));
-    MY_IO.NEW_LINE;
-    exit when KEY = 0 and then CTRL and then not SHIFT;
+    My_Io.Put (" " & Boolean'Image(Ctrl) & " " & Boolean'Image(Shift));
+    My_Io.New_Line;
+    exit when Key = 0 and then Ctrl and then not Shift;
   end loop;
-end T_KEY;
+end T_Key;

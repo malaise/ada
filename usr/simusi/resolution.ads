@@ -1,7 +1,7 @@
-with COMMON;
-package RESOLUTION is
+with Common;
+package Resolution is
 
-  procedure SOLVE (KIND : in COMMON.COTE_KIND);
+  procedure Solve (Kind : in Common.Cote_Kind);
 
-  ABORT_ERROR : exception;
-end RESOLUTION;
+  Abort_Error : exception;
+end Resolution;

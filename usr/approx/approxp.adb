@@ -1,19 +1,19 @@
-with TEXT_IO;
-with TEXT_HANDLER, ARGUMENT;
-with MENU1;
-procedure APPROXP is
+with Text_Io;
+with Text_Handler, Argument;
+with Menu1;
+procedure Approxp is
 
-  procedure USAGE is
+  procedure Usage is
   begin
-    TEXT_IO.PUT_LINE ("Usage " & ARGUMENT.GET_PROGRAM_NAME
+    Text_Io.Put_Line ("Usage " & Argument.Get_Program_Name
                                & " [ <file_name> ]");
   end;
 
 begin
-  if ARGUMENT.GET_NBRE_ARG > 1 then
-    USAGE;
+  if Argument.Get_Nbre_Arg > 1 then
+    Usage;
     return;
-  elsif ARGUMENT.GET_NBRE_ARG = 1 then
+  elsif Argument.Get_Nbre_Arg = 1 then
 -- Verdix bug:
 -- Global variable STR in ARGUMENT body is set when calling
 --    GET_PARAMETER, but GET_PARAMETER returns the address
@@ -28,14 +28,14 @@ begin
 --    MENU1.MAIN_SCREEN (ARGUMENT.GET_PARAMETER);
 -- New code:
     declare
-      FILE_NAME_TXT : TEXT_HANDLER.TEXT(ARGUMENT.MAX_LEN_ARG);
+      File_Name_Txt : Text_Handler.Text(Argument.Max_Len_Arg);
     begin
-      ARGUMENT.GET_PARAMETER(FILE_NAME_TXT);
-      MENU1.MAIN_SCREEN (TEXT_HANDLER.VALUE(FILE_NAME_TXT));
+      Argument.Get_Parameter(File_Name_Txt);
+      Menu1.Main_Screen (Text_Handler.Value(File_Name_Txt));
     end;
 -- End
   else
-    MENU1.MAIN_SCREEN ("");
+    Menu1.Main_Screen ("");
   end if;
-end APPROXP;
+end Approxp;
     

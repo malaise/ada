@@ -1,70 +1,70 @@
-package COMMON is
+package Common is
 
   ----------------
   -- DIMENSIONS --
   ----------------
 
   -- Maximum number of propal
-  type PROPAL_RANGE is new POSITIVE range 1 .. 10;
-  MAX_NUMBER_PROPAL : constant PROPAL_RANGE := PROPAL_RANGE'LAST;
+  type Propal_Range is new Positive range 1 .. 10;
+  Max_Number_Propal : constant Propal_Range := Propal_Range'Last;
 
 
   -- Minimum and maximum level
-  type LEVEL_RANGE is new POSITIVE range 1 .. 5;
-  subtype LAST_LEVEL_RANGE is LEVEL_RANGE range 3 .. LEVEL_RANGE'LAST;
-  MIN_LEVEL : constant LAST_LEVEL_RANGE := LAST_LEVEL_RANGE'FIRST;
-  MAX_LEVEL : constant LAST_LEVEL_RANGE := LAST_LEVEL_RANGE'LAST;
+  type Level_Range is new Positive range 1 .. 5;
+  subtype Last_Level_Range is Level_Range range 3 .. Level_Range'Last;
+  Min_Level : constant Last_Level_Range := Last_Level_Range'First;
+  Max_Level : constant Last_Level_Range := Last_Level_Range'Last;
 
 
   -- Number of availble colors
-  type COLOR_RANGE is new NATURAL range 0 .. 8;
-  MAX_NUMBER_COLOR : constant COLOR_RANGE := COLOR_RANGE'LAST;
-  subtype EFF_COLOR_RANGE is COLOR_RANGE range 1 .. MAX_NUMBER_COLOR;
+  type Color_Range is new Natural range 0 .. 8;
+  Max_Number_Color : constant Color_Range := Color_Range'Last;
+  subtype Eff_Color_Range is Color_Range range 1 .. Max_Number_Color;
 
   -- Level of the game
   --  Store the one selected (may not be the one of current propal)
-  procedure STORE_LEVEL (LEVEL : in LAST_LEVEL_RANGE);
+  procedure Store_Level (Level : in Last_Level_Range);
   --  Set propal to level stored
-  procedure SET_LEVEL_TO_STORED;
+  procedure Set_Level_To_Stored;
   --  Current level stored
-  function  GET_STORED_LEVEL return LAST_LEVEL_RANGE;
+  function  Get_Stored_Level return Last_Level_Range;
   --  Current level set
-  function  GET_LEVEL return LAST_LEVEL_RANGE;
+  function  Get_Level return Last_Level_Range;
 
   -- Try state of a propal
-  type TRY_LIST is (NOT_SET, CAN_TRY, ANSWERED);
+  type Try_List is (Not_Set, Can_Try, Answered);
 
   -- State of a propal
-  type PROPAL_COLOR_ARRAY is array (LEVEL_RANGE range <>) of COLOR_RANGE;
-  type PROPAL_STATE_REC (LEVEL : LAST_LEVEL_RANGE := MIN_LEVEL) is record
-    PROPAL_COLOR : PROPAL_COLOR_ARRAY(1 .. LEVEL) := (others => 0);
-    TRY          : TRY_LIST := NOT_SET;
+  type Propal_Color_Array is array (Level_Range range <>) of Color_Range;
+  type Propal_State_Rec (Level : Last_Level_Range := Min_Level) is record
+    Propal_Color : Propal_Color_Array(1 .. Level) := (others => 0);
+    Try          : Try_List := Not_Set;
   end record;
 
-  function GET_PROPAL_STATE (PROPAL : PROPAL_RANGE) return PROPAL_STATE_REC;
-  procedure SET_PROPAL_STATE (
-   PROPAL : in PROPAL_RANGE;
-   STATE  : in PROPAL_STATE_REC);
+  function Get_Propal_State (Propal : Propal_Range) return Propal_State_Rec;
+  procedure Set_Propal_State (
+   Propal : in Propal_Range;
+   State  : in Propal_State_Rec);
 
-  procedure SET_COLOR (
-   PROPAL : in PROPAL_RANGE;
-   LEVEL  : in LEVEL_RANGE;
-   COLOR  : in COLOR_RANGE);
+  procedure Set_Color (
+   Propal : in Propal_Range;
+   Level  : in Level_Range;
+   Color  : in Color_Range);
 
-  procedure SET_TRY_STATE (
-   PROPAL : in PROPAL_RANGE;
-   TRY    : in TRY_LIST);
+  procedure Set_Try_State (
+   Propal : in Propal_Range;
+   Try    : in Try_List);
 
-  procedure SET_ANSWER (
-   PROPAL : in PROPAL_RANGE;
-   PLACED_OK, COLORS_OK : in NATURAL);
+  procedure Set_Answer (
+   Propal : in Propal_Range;
+   Placed_Ok, Colors_Ok : in Natural);
 
-  procedure GET_ANSWER (
-   PROPAL : in PROPAL_RANGE;
-   PLACED_OK, COLORS_OK : out NATURAL);
+  procedure Get_Answer (
+   Propal : in Propal_Range;
+   Placed_Ok, Colors_Ok : out Natural);
 
-  procedure RESET_STATE;
+  procedure Reset_State;
 
 
 
-end COMMON;
+end Common;

@@ -357,7 +357,7 @@ package body Euristic is
     My_Io.New_Line;
     -- Euristic success: set mattrix to 1 (affected) or 0 (not affected) 
     -- Affected if Transfer is squared
-    for ROW in 1 .. Mattrix.Dim loop
+    for Row in 1 .. Mattrix.Dim loop
       for Col in 1 .. Mattrix.Dim loop
         if Transfer(Row, Col) = Squared then
           Mattrix.Notes(Row, Col) := 1;

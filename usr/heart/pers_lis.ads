@@ -1,5 +1,5 @@
-package PERS_LIS is
+package Pers_Lis is
 
-  procedure LIST (EXIT_PROGRAM : out BOOLEAN);
+  procedure List (Exit_Program : out Boolean);
 
-end PERS_LIS;
+end Pers_Lis;

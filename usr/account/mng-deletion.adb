@@ -1,81 +1,81 @@
-separate (MNG)
-package body DELETION is
+separate (Mng)
+package body Deletion is
 
   -- Number of deleted operations
-  NB_DELETED : NATURAL := 0;
+  Nb_Deleted : Natural := 0;
 
   -- Flag currently selected operation as deleted
-  procedure FLAG_DELETED is
-    SEL : SEL_REC;
+  procedure Flag_Deleted is
+    Sel : Sel_Rec;
   begin
     -- Flag selected operation as deleted
-    SEL_LIST_MNG.READ(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-    if not SEL.DELETED then
-      SEL.DELETED := TRUE;
-      SEL_LIST_MNG.MODIFY(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-      NB_DELETED := NB_DELETED + 1;
+    Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+    if not Sel.Deleted then
+      Sel.Deleted := True;
+      Sel_List_Mng.Modify(Sel_List, Sel, Sel_List_Mng.Current);
+      Nb_Deleted := Nb_Deleted + 1;
     end if;
-  end FLAG_DELETED;
+  end Flag_Deleted;
 
   -- Flag currently selected operation as not deleted
-  procedure FLAG_UNDELETED is
-    SEL : SEL_REC;
+  procedure Flag_Undeleted is
+    Sel : Sel_Rec;
   begin
     -- Flag selected operation as deleted
-    SEL_LIST_MNG.READ(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-    if SEL.DELETED then
-      SEL.DELETED := FALSE;
-      SEL_LIST_MNG.MODIFY(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-      NB_DELETED := NB_DELETED - 1;
+    Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+    if Sel.Deleted then
+      Sel.Deleted := False;
+      Sel_List_Mng.Modify(Sel_List, Sel, Sel_List_Mng.Current);
+      Nb_Deleted := Nb_Deleted - 1;
     end if;
-  end FLAG_UNDELETED;
+  end Flag_Undeleted;
 
   -- Get number of flagged operations
-  function GET_NB_DELETED return OPER_NB_RANGE is
+  function Get_Nb_Deleted return Oper_Nb_Range is
   begin
-    return NB_DELETED;
-  end GET_NB_DELETED;
+    return Nb_Deleted;
+  end Get_Nb_Deleted;
 
   -- Delete all flagged operation
-  procedure COMMIT_DELETIONS is
-    SEL : SEL_REC;
+  procedure Commit_Deletions is
+    Sel : Sel_Rec;
   begin
-    if NB_DELETED = 0 then
+    if Nb_Deleted = 0 then
       return;
     end if;
 
     -- Commit deletions from last to first (so REFs remain correct)
-    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.PREV, 0 , FALSE);
+    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev, 0 , False);
     loop
-      SEL_LIST_MNG.READ(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
-      if SEL.DELETED then
+      Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+      if Sel.Deleted then
         -- Remove current operation
-        LIST_UTIL.MOVE_TO_CURRENT;
-        if SEL.NO /= 1 then
-          OPER_LIST_MNG.DELETE(OPER_LIST, OPER_LIST_MNG.PREV);
+        List_Util.Move_To_Current;
+        if Sel.No /= 1 then
+          Oper_List_Mng.Delete(Oper_List, Oper_List_Mng.Prev);
         else
-          OPER_LIST_MNG.DELETE(OPER_LIST, OPER_LIST_MNG.NEXT);
+          Oper_List_Mng.Delete(Oper_List, Oper_List_Mng.Next);
         end if;
         -- Remove current selection
-        if SEL_LIST_MNG.GET_POSITION(SEL_LIST) /= 1 then
-          SEL_LIST_MNG.DELETE(SEL_LIST, SEL_LIST_MNG.PREV);
+        if Sel_List_Mng.Get_Position(Sel_List) /= 1 then
+          Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev);
         else
-          SEL_LIST_MNG.DELETE(SEL_LIST, SEL_LIST_MNG.NEXT);
+          Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Next);
         end if;
         -- Update counter
-        NB_DELETED := NB_DELETED - 1;
+        Nb_Deleted := Nb_Deleted - 1;
         -- Either first item of selection is deleted here
         --  or previous selection records are unchanged
-        exit when NB_DELETED = 0;
+        exit when Nb_Deleted = 0;
       else
         -- Update selection with accurate oper no
-        SEL.NO := SEL.NO - NB_DELETED;
-        SEL_LIST_MNG.MODIFY(SEL_LIST, SEL, SEL_LIST_MNG.CURRENT);
+        Sel.No := Sel.No - Nb_Deleted;
+        Sel_List_Mng.Modify(Sel_List, Sel, Sel_List_Mng.Current);
         -- Move to previous selection
-        SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.PREV);
+        Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
       end if;
     end loop;
-  end COMMIT_DELETIONS;
+  end Commit_Deletions;
 
-end DELETION;
+end Deletion;
 

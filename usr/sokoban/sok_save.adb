@@ -1,70 +1,70 @@
-with QUEUES;
+with Queues;
 
 -- salvage of movements for undo, save/restore ...
-package body SOK_SAVE is
+package body Sok_Save is
 
-  package MOVEMENT_LIFO is new QUEUES.LIFO (
-   SIZE => NBRE_SAVE,
-   ITEM => SOK_MOVEMENT.SAVED_DATA_REC);
+  package Movement_Lifo is new Queues.Lifo (
+   Size => Nbre_Save,
+   Item => Sok_Movement.Saved_Data_Rec);
 
-  INDEX_SAVE : POSITIVE range 1 .. NBRE_SAVE;
+  Index_Save : Positive range 1 .. Nbre_Save;
 
   -- when new frame, reset stack and photo
-  procedure RESET is
-    MOVEMENT : SOK_MOVEMENT.SAVED_DATA_REC;
+  procedure Reset is
+    Movement : Sok_Movement.Saved_Data_Rec;
   begin
     loop
       begin
-        MOVEMENT := POP;
+        Movement := Pop;
       exception
-        when NO_MORE_SAVED_MOVEMENTS =>
+        when No_More_Saved_Movements =>
           exit;
       end;
     end loop;
-  end RESET;
+  end Reset;
 
 
   -- circular buffer of saved movements for undo
-  procedure PUSH (MAN_MOVEMENT : in SOK_MOVEMENT.SAVED_DATA_REC) is
+  procedure Push (Man_Movement : in Sok_Movement.Saved_Data_Rec) is
   begin
-    MOVEMENT_LIFO.PUSH (MAN_MOVEMENT);
+    Movement_Lifo.Push (Man_Movement);
   exception
-    when MOVEMENT_LIFO.LIFO_FULL =>
+    when Movement_Lifo.Lifo_Full =>
       -- lifo is full : make a space and retry
-      MOVEMENT_LIFO.DISCARD_LAST;
-      MOVEMENT_LIFO.PUSH (MAN_MOVEMENT);
-  end PUSH;
+      Movement_Lifo.Discard_Last;
+      Movement_Lifo.Push (Man_Movement);
+  end Push;
 
 
 
-  function POP return SOK_MOVEMENT.SAVED_DATA_REC is
-    MOVEMENT : SOK_MOVEMENT.SAVED_DATA_REC;
+  function Pop return Sok_Movement.Saved_Data_Rec is
+    Movement : Sok_Movement.Saved_Data_Rec;
   begin
-    MOVEMENT_LIFO.POP (MOVEMENT);
-    return MOVEMENT;
+    Movement_Lifo.Pop (Movement);
+    return Movement;
   exception
-    when MOVEMENT_LIFO.LIFO_EMPTY =>
-      raise NO_MORE_SAVED_MOVEMENTS;
-  end POP;
+    when Movement_Lifo.Lifo_Empty =>
+      raise No_More_Saved_Movements;
+  end Pop;
 
   -- look first pushed or next pushed
   -- type LOOK_REF_LIST is (FIRST, NEXT);
-  function LOOK (REF : LOOK_REF_LIST) return SOK_MOVEMENT.SAVED_DATA_REC is
-    MOVEMENT : SOK_MOVEMENT.SAVED_DATA_REC;
+  function Look (Ref : Look_Ref_List) return Sok_Movement.Saved_Data_Rec is
+    Movement : Sok_Movement.Saved_Data_Rec;
   begin
-    if REF = FIRST then
-      INDEX_SAVE := 1;
-    elsif INDEX_SAVE = NBRE_SAVE then
-      raise NO_MORE_SAVED_MOVEMENTS;
+    if Ref = First then
+      Index_Save := 1;
+    elsif Index_Save = Nbre_Save then
+      raise No_More_Saved_Movements;
     else
-      INDEX_SAVE := INDEX_SAVE + 1;
+      Index_Save := Index_Save + 1;
     end if;
 
-    MOVEMENT_LIFO.LOOK_LAST (MOVEMENT, INDEX_SAVE);
-    return MOVEMENT;
+    Movement_Lifo.Look_Last (Movement, Index_Save);
+    return Movement;
   exception
-    when MOVEMENT_LIFO.LIFO_EMPTY | MOVEMENT_LIFO.LIFO_NOT =>
-      raise NO_MORE_SAVED_MOVEMENTS;
-  end LOOK;
+    when Movement_Lifo.Lifo_Empty | Movement_Lifo.Lifo_Not =>
+      raise No_More_Saved_Movements;
+  end Look;
 
-end SOK_SAVE;
+end Sok_Save;

@@ -1,56 +1,56 @@
-with MESU_DEF;
-package MESU_NAM is
+with Mesu_Def;
+package Mesu_Nam is
 
   -- The result. File name (or file template)
-  subtype FILE_NAME_STR is STRING (1 .. 12);
+  subtype File_Name_Str is String (1 .. 12);
 
-  WILD_CHAR : constant CHARACTER := '?';
+  Wild_Char : constant Character := '?';
 
   -- "YYyyMmDd" or "????????"
-  subtype FILE_DATE_STR is MESU_DEF.DATE_STR;
-  WILD_DATE_STR : constant FILE_DATE_STR := (others => WILD_CHAR);
+  subtype File_Date_Str is Mesu_Def.Date_Str;
+  Wild_Date_Str : constant File_Date_Str := (others => Wild_Char);
 
   -- from "00" to "99" or "??"
-  subtype FILE_NO_STR is STRING (1 .. 2);
-  WILD_NO_STR : constant FILE_NO_STR := (others => WILD_CHAR);
+  subtype File_No_Str is String (1 .. 2);
+  Wild_No_Str : constant File_No_Str := (others => Wild_Char);
 
   -- from "000" to "999" or "???"
-  subtype FILE_PID_STR is STRING (1 .. 3);
-  WILD_PID_STR : constant FILE_PID_STR := (others => WILD_CHAR);
+  subtype File_Pid_Str is String (1 .. 3);
+  Wild_Pid_Str : constant File_Pid_Str := (others => Wild_Char);
 
 
   -- Build a file name (or a template if some '?')
   -- May raise FILE_NAME_ERROR if some fields have wrong format
   --  or date is not valid
-  function BUILD_FILE_NAME (DATE : FILE_DATE_STR := WILD_DATE_STR;
-                            NO   : FILE_NO_STR   := WILD_NO_STR;
-                            PID  : FILE_PID_STR  := WILD_PID_STR)
-   return FILE_NAME_STR;
+  function Build_File_Name (Date : File_Date_Str := Wild_Date_Str;
+                            No   : File_No_Str   := Wild_No_Str;
+                            Pid  : File_Pid_Str  := Wild_Pid_Str)
+   return File_Name_Str;
 
   -- Check wether fields are valid
-  function VALID_FILE_DEF (DATE : FILE_DATE_STR := WILD_DATE_STR;
-                           NO   : FILE_NO_STR   := WILD_NO_STR;
-                           PID  : FILE_PID_STR  := WILD_PID_STR)
-   return BOOLEAN;
+  function Valid_File_Def (Date : File_Date_Str := Wild_Date_Str;
+                           No   : File_No_Str   := Wild_No_Str;
+                           Pid  : File_Pid_Str  := Wild_Pid_Str)
+   return Boolean;
 
   -- Split a file name (or a template)
   -- May raise FILE_NAME_ERROR if some fields have wrong format
   --  or date is not valid
-  procedure SPLIT_FILE_NAME (FILE_NAME : in FILE_NAME_STR;
-                             DATE      : out FILE_DATE_STR;
-                             NO        : out FILE_NO_STR;
-                             PID       : out FILE_PID_STR);
+  procedure Split_File_Name (File_Name : in File_Name_Str;
+                             Date      : out File_Date_Str;
+                             No        : out File_No_Str;
+                             Pid       : out File_Pid_Str);
 
   -- Check wether fields are valid
-  function VALID_FILE_NAME (FILE_NAME : FILE_NAME_STR) return BOOLEAN;
+  function Valid_File_Name (File_Name : File_Name_Str) return Boolean;
 
   -- Find first file_no_str available for given date and pid
   -- May return WILD_NO_STR if no more_slot available
   -- May raise FILE_NAME_ERROR if date ir pid has wild
-  function FIND_SLOT (DATE : FILE_DATE_STR;
-                      PID  : FILE_PID_STR) return FILE_NO_STR;
+  function Find_Slot (Date : File_Date_Str;
+                      Pid  : File_Pid_Str) return File_No_Str;
 
 
-  FILE_NAME_ERROR : exception;
+  File_Name_Error : exception;
 
-end MESU_NAM;
+end Mesu_Nam;

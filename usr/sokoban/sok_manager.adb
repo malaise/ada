@@ -1,454 +1,454 @@
-with CALENDAR;    -- for time
+with Calendar;    -- for time
 
-with DOS;         -- for sound
-with CON_IO;      -- for reset_term
+with Dos;         -- for sound
+with Con_Io;      -- for reset_term
 
-with SOK_DISPLAY;
-with SOK_INPUT;
-with SOK_MOVEMENT;
-with SOK_SAVE;
-with SOK_TIME;
-package body SOK_MANAGER is
+with Sok_Display;
+with Sok_Input;
+with Sok_Movement;
+with Sok_Save;
+with Sok_Time;
+package body Sok_Manager is
 
 
   -- internal state of a frame
-  type STATE_REC is record
-    FRAME        : SOK_TYPES.FRAME_TAB;
-    NO_FRAME     : SOK_TYPES.FRAME_RANGE;
-    POSITION     : SOK_TYPES.COORDINATE_REC;
-    NBRE_TARGETS : NATURAL;
-    BOX_OK       : NATURAL;
-    MOVES        : NATURAL;
-    PUSHES       : NATURAL;
-    SCORE        : SOK_TYPES.SCORE_REC;
+  type State_Rec is record
+    Frame        : Sok_Types.Frame_Tab;
+    No_Frame     : Sok_Types.Frame_Range;
+    Position     : Sok_Types.Coordinate_Rec;
+    Nbre_Targets : Natural;
+    Box_Ok       : Natural;
+    Moves        : Natural;
+    Pushes       : Natural;
+    Score        : Sok_Types.Score_Rec;
   end record;
-  STATE : STATE_REC;
+  State : State_Rec;
 
 
   -- Menu return : go on with same frame or a new frame
   --  if new frame, reset_all state (read) or update time (restored)
-  type MENU_RESULT_LIST is (GO_ON, RESTART_FRAME);
-  type UPDATE_STATE_LIST is (RESET_ALL, UPDATE_TIME);
-  type MENU_RESULT_REC (RESULT : MENU_RESULT_LIST := GO_ON) is record
-    case RESULT is
-      when GO_ON     => null;
-      when RESTART_FRAME => UPDATE_STATE : UPDATE_STATE_LIST;
+  type Menu_Result_List is (Go_On, Restart_Frame);
+  type Update_State_List is (Reset_All, Update_Time);
+  type Menu_Result_Rec (Result : Menu_Result_List := Go_On) is record
+    case Result is
+      when Go_On     => null;
+      when Restart_Frame => Update_State : Update_State_List;
     end case;
   end record;
 
   -- frames reading, saving and restoring.
-  package SOK_FILE is
+  package Sok_File is
 
     -- to read a new frame
-    procedure READ (NO_FRAME : in  SOK_TYPES.FRAME_RANGE;
-                    FRAME    : out SOK_TYPES.FRAME_TAB);
-    DATA_FILE_NOT_FOUND, ERROR_READING_DATA : exception;
+    procedure Read (No_Frame : in  Sok_Types.Frame_Range;
+                    Frame    : out Sok_Types.Frame_Tab);
+    Data_File_Not_Found, Error_Reading_Data : exception;
 
     -- save a frame and recover a frame, with saved movements
-    procedure SAVE (STATE : in STATE_REC);
-    ERROR_WRITING_FRAME : exception;
+    procedure Save (State : in State_Rec);
+    Error_Writing_Frame : exception;
 
-    procedure RESTORE (STATE : out STATE_REC);
-    FRAME_FILE_NOT_FOUND, ERROR_READING_FRAME : exception;
+    procedure Restore (State : out State_Rec);
+    Frame_File_Not_Found, Error_Reading_Frame : exception;
 
     -- Initialise scores, read/update score
-    procedure INIT_SCORES;
-    function READ_SCORE (NO : SOK_TYPES.FRAME_RANGE) return SOK_TYPES.SCORE_REC;
-    procedure WRITE_SCORE (NO : in SOK_TYPES.FRAME_RANGE;
-                           SCORE : in SOK_TYPES.SCORE_REC);
-    SCORE_IO_ERROR : exception;
+    procedure Init_Scores;
+    function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec;
+    procedure Write_Score (No : in Sok_Types.Frame_Range;
+                           Score : in Sok_Types.Score_Rec);
+    Score_Io_Error : exception;
     
 
-  end SOK_FILE;
+  end Sok_File;
 
-  procedure PLAY_FRAME (UPDATE_STATE : out UPDATE_STATE_LIST);
+  procedure Play_Frame (Update_State : out Update_State_List);
 
-  INTERNAL_ERROR : exception;
+  Internal_Error : exception;
 
-  package body SOK_FILE is separate;
+  package body Sok_File is separate;
 
 
-  procedure PLAY_GAME (FIRST_FRAME : in SOK_TYPES.FRAME_RANGE) is
-    FRAME_RESULT : UPDATE_STATE_LIST;
-    FOUND : BOOLEAN;
+  procedure Play_Game (First_Frame : in Sok_Types.Frame_Range) is
+    Frame_Result : Update_State_List;
+    Found : Boolean;
 
-    procedure END_OF_PROGRAM is
+    procedure End_Of_Program is
     begin
       -- End of game
-      SOK_INPUT.END_OF_PROGRAM;
+      Sok_Input.End_Of_Program;
 
-      SOK_DISPLAY.END_OF_PROGRAM;
-    end END_OF_PROGRAM;
+      Sok_Display.End_Of_Program;
+    end End_Of_Program;
 
-    use SOK_TYPES;
+    use Sok_Types;
 
   begin
     begin
 
       -- init for first frame
       begin
-        SOK_DISPLAY.INIT;
+        Sok_Display.Init;
       exception
         when others =>
-        raise SOK_INPUT.BREAK_REQUESTED;
+        raise Sok_Input.Break_Requested;
       end;
-      STATE.NO_FRAME := FIRST_FRAME;
-      FRAME_RESULT := RESET_ALL;
+      State.No_Frame := First_Frame;
+      Frame_Result := Reset_All;
       begin
-        SOK_FILE.INIT_SCORES;
+        Sok_File.Init_Scores;
       exception
-        when SOK_FILE.SCORE_IO_ERROR =>
-          SOK_DISPLAY.PUT_ERROR (SOK_DISPLAY.INIT_SCORE);
+        when Sok_File.Score_Io_Error =>
+          Sok_Display.Put_Error (Sok_Display.Init_Score);
           raise;
       end;
 
       loop
-        case FRAME_RESULT is
-          when RESET_ALL =>
+        case Frame_Result is
+          when Reset_All =>
             -- Read frame
             begin
-              SOK_FILE.READ (STATE.NO_FRAME, STATE.FRAME);
+              Sok_File.Read (State.No_Frame, State.Frame);
             exception
-              when SOK_FILE.DATA_FILE_NOT_FOUND =>
-                SOK_DISPLAY.PUT_ERROR (SOK_DISPLAY.NO_DATA);
+              when Sok_File.Data_File_Not_Found =>
+                Sok_Display.Put_Error (Sok_Display.No_Data);
                 raise;
-              when SOK_FILE.ERROR_READING_DATA =>
-                SOK_DISPLAY.PUT_ERROR (SOK_DISPLAY.READ);
+              when Sok_File.Error_Reading_Data =>
+                Sok_Display.Put_Error (Sok_Display.Read);
                 raise;
             end;
 
             -- Read score
             begin
-              STATE.SCORE := SOK_FILE.READ_SCORE(STATE.NO_FRAME);
+              State.Score := Sok_File.Read_Score(State.No_Frame);
             exception
-              when SOK_FILE.SCORE_IO_ERROR =>
-                SOK_DISPLAY.PUT_ERROR (SOK_DISPLAY.SCORE_IO);
+              when Sok_File.Score_Io_Error =>
+                Sok_Display.Put_Error (Sok_Display.Score_Io);
                 raise;
             end;
 
             -- Init state
-            STATE.MOVES        := 0;
-            STATE.PUSHES       := 0;
+            State.Moves        := 0;
+            State.Pushes       := 0;
 
             -- clear saved movements
-            SOK_SAVE.RESET;
+            Sok_Save.Reset;
 
             -- Init time and start;
-            SOK_TIME.RESET_TIME;
-            SOK_TIME.START_TIME;
+            Sok_Time.Reset_Time;
+            Sok_Time.Start_Time;
 
             -- find man starting position and complete state
-            FOUND := FALSE;
-            STATE.NBRE_TARGETS := 0;
-            STATE.BOX_OK       := 0;
-            for I in SOK_TYPES.ROW_RANGE loop
-              for J in SOK_TYPES.COL_RANGE loop
-                if STATE.FRAME (I, J).PATTERN /= SOK_TYPES.WALL and then
-                   STATE.FRAME (I, J).CONTENT = SOK_TYPES.MAN then
-                   if FOUND then
+            Found := False;
+            State.Nbre_Targets := 0;
+            State.Box_Ok       := 0;
+            for I in Sok_Types.Row_Range loop
+              for J in Sok_Types.Col_Range loop
+                if State.Frame (I, J).Pattern /= Sok_Types.Wall and then
+                   State.Frame (I, J).Content = Sok_Types.Man then
+                   if Found then
                    -- man already found !!
-                    raise INTERNAL_ERROR;
+                    raise Internal_Error;
                   else
-                    FOUND := TRUE;
-                    STATE.POSITION := (ROW => I, COL => J);
+                    Found := True;
+                    State.Position := (Row => I, Col => J);
                   end if;
                 end if;
 
-                if STATE.FRAME (I, J).PATTERN = SOK_TYPES.TARGET then
-                  STATE.NBRE_TARGETS := STATE.NBRE_TARGETS + 1;
-                  if STATE.FRAME(I, J).CONTENT = SOK_TYPES.BOX then
-                    STATE.BOX_OK := STATE.BOX_OK + 1;
+                if State.Frame (I, J).Pattern = Sok_Types.Target then
+                  State.Nbre_Targets := State.Nbre_Targets + 1;
+                  if State.Frame(I, J).Content = Sok_Types.Box then
+                    State.Box_Ok := State.Box_Ok + 1;
                   end if;
                 end if;
               end loop;
             end loop;
-            if not FOUND then
+            if not Found then
               -- No man !!
-              raise INTERNAL_ERROR;
+              raise Internal_Error;
             end if;
 
-          when UPDATE_TIME =>
+          when Update_Time =>
             -- Init of time already done in sok_file
-            SOK_TIME.START_TIME;
+            Sok_Time.Start_Time;
         end case;
 
         -- display
-        SOK_DISPLAY.PUT_FRAME (STATE.FRAME);
-        SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.FRAME);
-        SOK_DISPLAY.PUT_SCORE (STATE.SCORE);
+        Sok_Display.Put_Frame (State.Frame);
+        Sok_Display.Put_Help (Sok_Display.Frame);
+        Sok_Display.Put_Score (State.Score);
 
-        SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                              STATE.NBRE_TARGETS, STATE.NO_FRAME);
+        Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                              State.Nbre_Targets, State.No_Frame);
 
-        PLAY_FRAME (FRAME_RESULT);
+        Play_Frame (Frame_Result);
       end loop;
 
     exception
-      when INTERNAL_ERROR =>
-        SOK_DISPLAY.PUT_ERROR (SOK_DISPLAY.INTERNAL);
+      when Internal_Error =>
+        Sok_Display.Put_Error (Sok_Display.Internal);
         raise;
     end;
 
   exception
-    when SOK_INPUT.BREAK_REQUESTED =>
-      END_OF_PROGRAM;
+    when Sok_Input.Break_Requested =>
+      End_Of_Program;
     when others =>
-      SOK_INPUT.PAUSE;
-      SOK_DISPLAY.CLEAR_ERROR;
-      END_OF_PROGRAM;
-  end PLAY_GAME;
+      Sok_Input.Pause;
+      Sok_Display.Clear_Error;
+      End_Of_Program;
+  end Play_Game;
 
-  procedure SET_BLINK (
-   FRAME : in SOK_TYPES.FRAME_TAB;
-   BLINK : BOOLEAN) is
-   use SOK_TYPES;
+  procedure Set_Blink (
+   Frame : in Sok_Types.Frame_Tab;
+   Blink : Boolean) is
+   use Sok_Types;
   begin
-    for I in SOK_TYPES.ROW_RANGE loop
-      for J in SOK_TYPES.COL_RANGE loop
-        if FRAME (I, J).PATTERN = SOK_TYPES.TARGET and then
-           FRAME (I, J).CONTENT = SOK_TYPES.BOX then
-          SOK_DISPLAY.PUT_SQUARE (
-           SQUARE     => FRAME (I, J),
-           COORDINATE => (ROW=>I, COL=>J),
-           BLINK      => BLINK);
+    for I in Sok_Types.Row_Range loop
+      for J in Sok_Types.Col_Range loop
+        if Frame (I, J).Pattern = Sok_Types.Target and then
+           Frame (I, J).Content = Sok_Types.Box then
+          Sok_Display.Put_Square (
+           Square     => Frame (I, J),
+           Coordinate => (Row=>I, Col=>J),
+           Blink      => Blink);
         end if;
       end loop;
     end loop;
-  end SET_BLINK;
+  end Set_Blink;
 
   -- if return is GO_ON, nothing to do
   -- if return is RESTART_FRAME, part of state has been set
   --  if RESET_ALL, only NO_FRAME is set (read)
   --  if UPDATE_TIME, only time has to be updated (restore)
-  function SOK_MENU (ALLOW_WRITE : BOOLEAN) return MENU_RESULT_REC is separate;
+  function Sok_Menu (Allow_Write : Boolean) return Menu_Result_Rec is separate;
 
 
-  procedure PLAY_FRAME (UPDATE_STATE : out UPDATE_STATE_LIST) is
+  procedure Play_Frame (Update_State : out Update_State_List) is
 
-    KEY : SOK_INPUT.KEY_LIST;
+    Key : Sok_Input.Key_List;
 
-    SAVE_SCORE : BOOLEAN;
-    DISP_SCORE : SOK_TYPES.SCORE_REC;
+    Save_Score : Boolean;
+    Disp_Score : Sok_Types.Score_Rec;
 
-    RESULT : SOK_MOVEMENT.RESULT_LIST;
+    Result : Sok_Movement.Result_List;
 
-    SAVED_POS : SOK_TYPES.COORDINATE_REC;
+    Saved_Pos : Sok_Types.Coordinate_Rec;
 
-    POPED_DATA : SOK_MOVEMENT.SAVED_DATA_REC;
+    Poped_Data : Sok_Movement.Saved_Data_Rec;
 
-    MENU_RESULT : MENU_RESULT_REC;
+    Menu_Result : Menu_Result_Rec;
 
-    use SOK_TYPES, SOK_INPUT;
+    use Sok_Types, Sok_Input;
 
   begin
     -- Score to display
-    DISP_SCORE := STATE.SCORE;
+    Disp_Score := State.Score;
 
     -- movements
     loop
-      KEY := SOK_INPUT.GET_KEY;
+      Key := Sok_Input.Get_Key;
 
-      if KEY = SOK_INPUT.ESC then
+      if Key = Sok_Input.Esc then
         -- menu
-        MENU_RESULT := SOK_MENU (ALLOW_WRITE => TRUE);
-        case MENU_RESULT.RESULT is
-          when GO_ON =>
-            KEY := SOK_INPUT.ESC;
-            SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                                  STATE.NBRE_TARGETS, STATE.NO_FRAME);
-            SOK_DISPLAY.PUT_SCORE (DISP_SCORE);
-          when RESTART_FRAME =>
-            UPDATE_STATE := MENU_RESULT.UPDATE_STATE;
+        Menu_Result := Sok_Menu (Allow_Write => True);
+        case Menu_Result.Result is
+          when Go_On =>
+            Key := Sok_Input.Esc;
+            Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                                  State.Nbre_Targets, State.No_Frame);
+            Sok_Display.Put_Score (Disp_Score);
+          when Restart_Frame =>
+            Update_State := Menu_Result.Update_State;
             return;
         end case;
       end if;
 
-      if KEY = SOK_INPUT.REFRESH then
-        SOK_DISPLAY.PUT_FRAME (STATE.FRAME);
-        SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.FRAME);
-        SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                              STATE.NBRE_TARGETS, STATE.NO_FRAME);
-        SOK_DISPLAY.PUT_SCORE (DISP_SCORE);
+      if Key = Sok_Input.Refresh then
+        Sok_Display.Put_Frame (State.Frame);
+        Sok_Display.Put_Help (Sok_Display.Frame);
+        Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                              State.Nbre_Targets, State.No_Frame);
+        Sok_Display.Put_Score (Disp_Score);
       end if;
 
-      if KEY in SOK_MOVEMENT.MOVEMENT_LIST then
+      if Key in Sok_Movement.Movement_List then
         -- movement
-        SOK_MOVEMENT.DO_MOVEMENT (STATE.FRAME, STATE.POSITION, KEY, RESULT);
-        case RESULT is
-          when SOK_MOVEMENT.REFUSED =>
+        Sok_Movement.Do_Movement (State.Frame, State.Position, Key, Result);
+        case Result is
+          when Sok_Movement.Refused =>
             null;
-          when SOK_MOVEMENT.DONE =>
+          when Sok_Movement.Done =>
             -- movement without box moving
-            STATE.MOVES := STATE.MOVES + 1;
-          when SOK_MOVEMENT.BOX_MOVED =>
+            State.Moves := State.Moves + 1;
+          when Sok_Movement.Box_Moved =>
             -- Same number of box OK
-            STATE.MOVES  := STATE.MOVES  + 1;
-            STATE.PUSHES := STATE.PUSHES + 1;
-          when SOK_MOVEMENT.BOX_OK_MORE =>
+            State.Moves  := State.Moves  + 1;
+            State.Pushes := State.Pushes + 1;
+          when Sok_Movement.Box_Ok_More =>
             -- One more box OK
-            STATE.MOVES  := STATE.MOVES  + 1;
-            STATE.PUSHES := STATE.PUSHES + 1;
-            STATE.BOX_OK := STATE.BOX_OK + 1;
-            if STATE.BOX_OK = STATE.NBRE_TARGETS then
+            State.Moves  := State.Moves  + 1;
+            State.Pushes := State.Pushes + 1;
+            State.Box_Ok := State.Box_Ok + 1;
+            if State.Box_Ok = State.Nbre_Targets then
               -- frame finished
-              SOK_TIME.STOP_TIME;
-              SET_BLINK(STATE.FRAME, TRUE);
-              SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.DONE);
-              SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                                    STATE.NBRE_TARGETS, STATE.NO_FRAME);
+              Sok_Time.Stop_Time;
+              Set_Blink(State.Frame, True);
+              Sok_Display.Put_Help (Sok_Display.Done);
+              Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                                    State.Nbre_Targets, State.No_Frame);
 
               -- Update and save score if needed
-              SAVE_SCORE := FALSE;
-              if not STATE.SCORE.SET then
-                STATE.SCORE.SET := TRUE;
-                SOK_TIME.GET_TIME (STATE.SCORE.DAY, STATE.SCORE.DUR);
-                STATE.SCORE.MOVES := STATE.MOVES;
-                STATE.SCORE.PUSHES := STATE.PUSHES;
-                SAVE_SCORE := TRUE;
+              Save_Score := False;
+              if not State.Score.Set then
+                State.Score.Set := True;
+                Sok_Time.Get_Time (State.Score.Day, State.Score.Dur);
+                State.Score.Moves := State.Moves;
+                State.Score.Pushes := State.Pushes;
+                Save_Score := True;
               else
                 declare
-                  DAY : NATURAL;
-                  DUR : DURATION;
+                  Day : Natural;
+                  Dur : Duration;
                 begin
-                  SOK_TIME.GET_TIME(DAY, DUR);
-                  if (DAY < STATE.SCORE.DAY )
-                  or else (DAY = STATE.SCORE.DAY
-                     and then DUR < STATE.SCORE.DUR) then
-                    STATE.SCORE.DAY := DAY;
-                    STATE.SCORE.DUR := DUR;
-                    SAVE_SCORE := TRUE;
+                  Sok_Time.Get_Time(Day, Dur);
+                  if (Day < State.Score.Day )
+                  or else (Day = State.Score.Day
+                     and then Dur < State.Score.Dur) then
+                    State.Score.Day := Day;
+                    State.Score.Dur := Dur;
+                    Save_Score := True;
                   end if;
                 end;
-                if STATE.MOVES < STATE.SCORE.MOVES then
-                  STATE.SCORE.MOVES := STATE.MOVES;
-                  SAVE_SCORE := TRUE;
+                if State.Moves < State.Score.Moves then
+                  State.Score.Moves := State.Moves;
+                  Save_Score := True;
                 end if;
-                if STATE.PUSHES < STATE.SCORE.PUSHES then
-                  STATE.SCORE.PUSHES := STATE.PUSHES;
-                  SAVE_SCORE := TRUE;
+                if State.Pushes < State.Score.Pushes then
+                  State.Score.Pushes := State.Pushes;
+                  Save_Score := True;
                 end if;
               end if;
-              if SAVE_SCORE then
+              if Save_Score then
                 begin
-                  SOK_FILE.WRITE_SCORE (STATE.NO_FRAME, STATE.SCORE);
+                  Sok_File.Write_Score (State.No_Frame, State.Score);
                 exception
-                  when SOK_FILE.SCORE_IO_ERROR =>
-                    SOK_DISPLAY.PUT_ERROR (SOK_DISPLAY.INIT_SCORE);
+                  when Sok_File.Score_Io_Error =>
+                    Sok_Display.Put_Error (Sok_Display.Init_Score);
                     raise;
                 end;
               end if;
 
               -- wait input to go on
               loop
-                KEY := SOK_INPUT.GET_KEY;
-                if KEY = SOK_INPUT.ESC then
+                Key := Sok_Input.Get_Key;
+                if Key = Sok_Input.Esc then
                   -- menu
-                  MENU_RESULT := SOK_MENU (ALLOW_WRITE => FALSE);
-                  case MENU_RESULT.RESULT is
-                    when GO_ON =>
+                  Menu_Result := Sok_Menu (Allow_Write => False);
+                  case Menu_Result.Result is
+                    when Go_On =>
                       -- Esc in menu
-                      KEY := SOK_INPUT.ESC;
-                      SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                                            STATE.NBRE_TARGETS, STATE.NO_FRAME);
-                      SOK_DISPLAY.PUT_SCORE (DISP_SCORE);
-                    when RESTART_FRAME =>
-                      UPDATE_STATE := MENU_RESULT.UPDATE_STATE;
+                      Key := Sok_Input.Esc;
+                      Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                                            State.Nbre_Targets, State.No_Frame);
+                      Sok_Display.Put_Score (Disp_Score);
+                    when Restart_Frame =>
+                      Update_State := Menu_Result.Update_State;
                       return;
                   end case;
-                elsif KEY = SOK_INPUT.UNDO then
-                  CON_IO.BELL;
-                elsif KEY = SOK_INPUT.REFRESH then
+                elsif Key = Sok_Input.Undo then
+                  Con_Io.Bell;
+                elsif Key = Sok_Input.Refresh then
                   -- Refresh
-                  SOK_DISPLAY.PUT_FRAME (STATE.FRAME);
-                  SET_BLINK(STATE.FRAME, TRUE);
-                  SOK_DISPLAY.PUT_HELP (SOK_DISPLAY.DONE);
-                  SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                                        STATE.NBRE_TARGETS, STATE.NO_FRAME);
-                  SOK_DISPLAY.PUT_SCORE (DISP_SCORE);
+                  Sok_Display.Put_Frame (State.Frame);
+                  Set_Blink(State.Frame, True);
+                  Sok_Display.Put_Help (Sok_Display.Done);
+                  Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                                        State.Nbre_Targets, State.No_Frame);
+                  Sok_Display.Put_Score (Disp_Score);
                 end if;
-                exit when KEY = SOK_INPUT.NEXT;
+                exit when Key = Sok_Input.Next;
               end loop;
-              SET_BLINK(STATE.FRAME, FALSE);
-              if STATE.NO_FRAME /= SOK_TYPES.FRAME_RANGE'LAST then
-                STATE.NO_FRAME := SOK_TYPES.FRAME_RANGE'SUCC(STATE.NO_FRAME);
+              Set_Blink(State.Frame, False);
+              if State.No_Frame /= Sok_Types.Frame_Range'Last then
+                State.No_Frame := Sok_Types.Frame_Range'Succ(State.No_Frame);
               else
-                STATE.NO_FRAME := SOK_TYPES.FRAME_RANGE'FIRST;
+                State.No_Frame := Sok_Types.Frame_Range'First;
               end if;
               -- restart with new frame
-              UPDATE_STATE := RESET_ALL;
+              Update_State := Reset_All;
               return;
             end if;
-          when SOK_MOVEMENT.BOX_OK_LESS =>
+          when Sok_Movement.Box_Ok_Less =>
             -- One less box OK
-            STATE.MOVES  := STATE.MOVES  + 1;
-            STATE.PUSHES := STATE.PUSHES + 1;
-            STATE.BOX_OK := STATE.BOX_OK - 1;
+            State.Moves  := State.Moves  + 1;
+            State.Pushes := State.Pushes + 1;
+            State.Box_Ok := State.Box_Ok - 1;
         end case;
 
         -- save movement
-        case RESULT is
-          when SOK_MOVEMENT.REFUSED =>
+        case Result is
+          when Sok_Movement.Refused =>
             null;
-          when SOK_MOVEMENT.DONE =>
-            SOK_SAVE.PUSH (
-             (POS_ORIG => STATE.POSITION,
-              MOVEMENT => KEY,
-              RESULT   => SOK_MOVEMENT.DONE) );
-          when SOK_MOVEMENT.BOX_MOVED | SOK_MOVEMENT.BOX_OK_MORE |
-               SOK_MOVEMENT.BOX_OK_LESS =>
-            SOK_SAVE.PUSH (
-             (POS_ORIG => STATE.POSITION,
-              MOVEMENT => KEY,
-              RESULT   => SOK_MOVEMENT.BOX_MOVED) );
+          when Sok_Movement.Done =>
+            Sok_Save.Push (
+             (Pos_Orig => State.Position,
+              Movement => Key,
+              Result   => Sok_Movement.Done) );
+          when Sok_Movement.Box_Moved | Sok_Movement.Box_Ok_More |
+               Sok_Movement.Box_Ok_Less =>
+            Sok_Save.Push (
+             (Pos_Orig => State.Position,
+              Movement => Key,
+              Result   => Sok_Movement.Box_Moved) );
          end case;
 
-      elsif KEY = SOK_INPUT.UNDO then
+      elsif Key = Sok_Input.Undo then
         begin
           -- try to pop movement
-          POPED_DATA := SOK_SAVE.POP;
-          SOK_MOVEMENT.UNDO_MOVEMENT (STATE.FRAME, POPED_DATA,
-                                      RESULT, SAVED_POS);
-          case RESULT is
-            when SOK_MOVEMENT.REFUSED =>
+          Poped_Data := Sok_Save.Pop;
+          Sok_Movement.Undo_Movement (State.Frame, Poped_Data,
+                                      Result, Saved_Pos);
+          case Result is
+            when Sok_Movement.Refused =>
               -- impossible;
               null;
-            when SOK_MOVEMENT.DONE =>
+            when Sok_Movement.Done =>
               -- movement without box moving
-              STATE.MOVES := STATE.MOVES - 1;
-            when SOK_MOVEMENT.BOX_MOVED =>
+              State.Moves := State.Moves - 1;
+            when Sok_Movement.Box_Moved =>
               -- Same number of box OK
-              STATE.MOVES  := STATE.MOVES  - 1;
-              STATE.PUSHES := STATE.PUSHES - 1;
-            when SOK_MOVEMENT.BOX_OK_MORE =>
+              State.Moves  := State.Moves  - 1;
+              State.Pushes := State.Pushes - 1;
+            when Sok_Movement.Box_Ok_More =>
               -- One more box OK
-              STATE.MOVES  := STATE.MOVES  - 1;
-              STATE.PUSHES := STATE.PUSHES - 1;
-              STATE.BOX_OK := STATE.BOX_OK + 1;
-            when SOK_MOVEMENT.BOX_OK_LESS =>
+              State.Moves  := State.Moves  - 1;
+              State.Pushes := State.Pushes - 1;
+              State.Box_Ok := State.Box_Ok + 1;
+            when Sok_Movement.Box_Ok_Less =>
               -- One less box OK
-              STATE.MOVES  := STATE.MOVES  - 1;
-              STATE.PUSHES := STATE.PUSHES - 1;
-              STATE.BOX_OK := STATE.BOX_OK - 1;
+              State.Moves  := State.Moves  - 1;
+              State.Pushes := State.Pushes - 1;
+              State.Box_Ok := State.Box_Ok - 1;
           end case;
-          STATE.POSITION := SAVED_POS;
+          State.Position := Saved_Pos;
         exception
-          when SOK_SAVE.NO_MORE_SAVED_MOVEMENTS =>
-            CON_IO.BELL;
+          when Sok_Save.No_More_Saved_Movements =>
+            Con_Io.Bell;
         end;
 
       end if; -- move or undo
 
-      if SOK_MOVEMENT."/=" (RESULT, SOK_MOVEMENT.REFUSED) then
-        SOK_DISPLAY.PUT_LINE (STATE.MOVES, STATE.PUSHES, STATE.BOX_OK,
-                              STATE.NBRE_TARGETS, STATE.NO_FRAME);
+      if Sok_Movement."/=" (Result, Sok_Movement.Refused) then
+        Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
+                              State.Nbre_Targets, State.No_Frame);
       end if;
 
 
     end loop;
-  end PLAY_FRAME;
+  end Play_Frame;
 
 
 
 
 
-end SOK_MANAGER;
+end Sok_Manager;

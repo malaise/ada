@@ -1,61 +1,61 @@
-with QUEUES;
-with MY_IO;
-procedure T_LIFO is
+with Queues;
+with My_Io;
+procedure T_Lifo is
 
-  SIZE : constant := 5;
-  N : POSITIVE;
+  Size : constant := 5;
+  N : Positive;
 
-  package MY_LIFO is new QUEUES.LIFO (
-   SIZE => SIZE,
-   ITEM => POSITIVE);
+  package My_Lifo is new Queues.Lifo (
+   Size => Size,
+   Item => Positive);
 
-  procedure DUMP is
-    V : POSITIVE;
+  procedure Dump is
+    V : Positive;
   begin
-    for I in 1 .. SIZE loop
-      MY_LIFO.LOOK_LAST (V, I);
-      MY_IO.PUT_LINE ("Look "  & INTEGER'IMAGE (I) &
-                       " --> " & POSITIVE'IMAGE (V) );
+    for I in 1 .. Size loop
+      My_Lifo.Look_Last (V, I);
+      My_Io.Put_Line ("Look "  & Integer'Image (I) &
+                       " --> " & Positive'Image (V) );
     end loop;
   exception
-    when MY_LIFO.LIFO_NOT =>
-      MY_IO.PUT_LINE ("Look done");
-    when MY_LIFO.LIFO_EMPTY =>
-      MY_IO.PUT_LINE ("LIFO empty");
+    when My_Lifo.Lifo_Not =>
+      My_Io.Put_Line ("Look done");
+    when My_Lifo.Lifo_Empty =>
+      My_Io.Put_Line ("LIFO empty");
       raise;
-  end DUMP;
+  end Dump;
 
-  procedure PUSH (I : in POSITIVE) is
+  procedure Push (I : in Positive) is
   begin
-    MY_LIFO.PUSH (I);
+    My_Lifo.Push (I);
   exception
-    when MY_LIFO.LIFO_FULL =>
-      MY_IO.PUT_LINE ("LIFO full. Discard last then push again");
-      MY_LIFO.DISCARD_LAST;
-      MY_LIFO.PUSH (I);
-  end PUSH;
+    when My_Lifo.Lifo_Full =>
+      My_Io.Put_Line ("LIFO full. Discard last then push again");
+      My_Lifo.Discard_Last;
+      My_Lifo.Push (I);
+  end Push;
 
 
 begin
-  MY_IO.PUT_LINE ("Lifo size is " & POSITIVE'IMAGE (SIZE));
+  My_Io.Put_Line ("Lifo size is " & Positive'Image (Size));
 
   for I in 1 .. 10 loop
-    MY_IO.PUT_LINE ("Push " & POSITIVE'IMAGE (I));
-    PUSH (I);
-    DUMP;
+    My_Io.Put_Line ("Push " & Positive'Image (I));
+    Push (I);
+    Dump;
   end loop;
 
   loop
-    MY_IO.NEW_LINE;
-    MY_LIFO.POP (N);
-    MY_IO.PUT_LINE ("Pop ==> " & POSITIVE'IMAGE(N));
+    My_Io.New_Line;
+    My_Lifo.Pop (N);
+    My_Io.Put_Line ("Pop ==> " & Positive'Image(N));
     begin
-      DUMP;
+      Dump;
     exception
-      when MY_LIFO.LIFO_EMPTY => exit;
+      when My_Lifo.Lifo_Empty => exit;
     end;
   end loop;
 
-end T_LIFO;
+end T_Lifo;
 
 

@@ -32,7 +32,7 @@ procedure Pexec is
     for I in 1 .. Command.Nbre_Commands loop
       Text_Handler.Set (To_Call, Command.Nth_Command (I));
       if not No_Action then
-        My_Io.Put_Line("--> " & TEXT_HANDLER.VALUE (TO_CALL));
+        My_Io.Put_Line("--> " & Text_Handler.Value (To_Call));
       end if;
 
       Exec_Return := Sys_Calls.Call_System (Text_Handler.Value (To_Call));

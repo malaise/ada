@@ -1,62 +1,62 @@
-with CALENDAR;
-use CALENDAR;
-with SOK_DISPLAY;
-package body SOK_TIME is
+with Calendar;
+use Calendar;
+with Sok_Display;
+package body Sok_Time is
 
-  RUNNING : BOOLEAN := FALSE;
-  DUR : DAY_DURATION := 0.0;
-  DAY : NATURAL := 0;
-  START_CLOCK : CALENDAR.TIME;
+  Running : Boolean := False;
+  Dur : Day_Duration := 0.0;
+  Day : Natural := 0;
+  Start_Clock : Calendar.Time;
 
-  procedure START_TIME is
+  procedure Start_Time is
   begin
-    START_CLOCK := CALENDAR.CLOCK - DUR;
-    RUNNING := TRUE;
-  end START_TIME;
+    Start_Clock := Calendar.Clock - Dur;
+    Running := True;
+  end Start_Time;
 
-  procedure STOP_TIME is
+  procedure Stop_Time is
   begin
-    RUNNING := FALSE;
-  end STOP_TIME;
+    Running := False;
+  end Stop_Time;
 
-  procedure DISP_TIME is
+  procedure Disp_Time is
   begin
-    if RUNNING then
+    if Running then
       -- elapsed time
       declare 
-        CURRENT_TIME : constant CALENDAR.TIME := CALENDAR.CLOCK;
+        Current_Time : constant Calendar.Time := Calendar.Clock;
       begin
-        if CURRENT_TIME > START_CLOCK + DAY_DURATION'LAST then
-          DAY := DAY + 1;
-          DUR := CURRENT_TIME - (START_CLOCK + DAY_DURATION'LAST);
-          START_CLOCK := CALENDAR.CLOCK;
+        if Current_Time > Start_Clock + Day_Duration'Last then
+          Day := Day + 1;
+          Dur := Current_Time - (Start_Clock + Day_Duration'Last);
+          Start_Clock := Calendar.Clock;
         else
-          DUR := CURRENT_TIME - START_CLOCK;
+          Dur := Current_Time - Start_Clock;
         end if;
       end;
     end if;
-    SOK_DISPLAY.PUT_TIME (DAY, DUR);
-  end DISP_TIME;
+    Sok_Display.Put_Time (Day, Dur);
+  end Disp_Time;
 
-  procedure RESET_TIME is
+  procedure Reset_Time is
   begin
-    START_CLOCK := CALENDAR.CLOCK;
-    DUR := 0.0;
-    DAY := 0;
-  end RESET_TIME;
+    Start_Clock := Calendar.Clock;
+    Dur := 0.0;
+    Day := 0;
+  end Reset_Time;
 
-  procedure SET_TIME (DAY : NATURAL; DUR : DURATION) is
+  procedure Set_Time (Day : Natural; Dur : Duration) is
   begin
-    START_CLOCK := CALENDAR.CLOCK - DUR;
-    SOK_TIME.DUR := DUR;
-    SOK_TIME.DAY := DAY;
-  end SET_TIME;
+    Start_Clock := Calendar.Clock - Dur;
+    Sok_Time.Dur := Dur;
+    Sok_Time.Day := Day;
+  end Set_Time;
 
-  procedure GET_TIME (DAY : out NATURAL; DUR : out DURATION) is
+  procedure Get_Time (Day : out Natural; Dur : out Duration) is
   begin
-    DAY := SOK_TIME.DAY;
-    DUR := SOK_TIME.DUR;
-  end GET_TIME;
+    Day := Sok_Time.Day;
+    Dur := Sok_Time.Dur;
+  end Get_Time;
 
-end SOK_TIME;
+end Sok_Time;
 

@@ -1,49 +1,49 @@
-with MY_IO;
-with ARGUMENT;
-with RND;
-with UPPER_STR;
-with SOK_TYPES;
-with SOK_MANAGER;
+with My_Io;
+with Argument;
+with Rnd;
+with Upper_Str;
+with Sok_Types;
+with Sok_Manager;
 
-procedure SOKOBAN is
-  NO_FRAME : SOK_TYPES.FRAME_RANGE;
-  OK : BOOLEAN := FALSE;
+procedure Sokoban is
+  No_Frame : Sok_Types.Frame_Range;
+  Ok : Boolean := False;
 
-  function FRAME_RANDOM is new RND.DISCR_RANDOM(SOK_TYPES.FRAME_RANGE);
+  function Frame_Random is new Rnd.Discr_Random(Sok_Types.Frame_Range);
 
-  procedure USAGE is
+  procedure Usage is
   begin
-    MY_IO.PUT_LINE ("Usage : sokoban [ <frame_number> | rnd ]");
-    MY_IO.PUT_LINE (" Frames are from 1 to 50");
-  end USAGE;
+    My_Io.Put_Line ("Usage : sokoban [ <frame_number> | rnd ]");
+    My_Io.Put_Line (" Frames are from 1 to 50");
+  end Usage;
 
 begin
-  RND.RANDOMIZE;
+  Rnd.Randomize;
 
   begin
-    if ARGUMENT.GET_NBRE_ARG = 0 then
-      NO_FRAME := SOK_TYPES.FRAME_RANGE'FIRST;
-    elsif ARGUMENT.GET_NBRE_ARG = 1 then
-      if UPPER_STR (ARGUMENT.GET_PARAMETER) = "RND" then
-        NO_FRAME := FRAME_RANDOM;
+    if Argument.Get_Nbre_Arg = 0 then
+      No_Frame := Sok_Types.Frame_Range'First;
+    elsif Argument.Get_Nbre_Arg = 1 then
+      if Upper_Str (Argument.Get_Parameter) = "RND" then
+        No_Frame := Frame_Random;
       else
-        NO_FRAME := SOK_TYPES.FRAME_RANGE'VALUE (ARGUMENT.GET_PARAMETER);
+        No_Frame := Sok_Types.Frame_Range'Value (Argument.Get_Parameter);
       end if;
     else
-      raise CONSTRAINT_ERROR;
+      raise Constraint_Error;
     end if;
-    OK := TRUE;
+    Ok := True;
   exception
     when others =>
-      USAGE;
-      OK := FALSE;
+      Usage;
+      Ok := False;
   end;
-  if OK then
-    SOK_MANAGER.PLAY_GAME(FIRST_FRAME => NO_FRAME);
+  if Ok then
+    Sok_Manager.Play_Game(First_Frame => No_Frame);
   end if;
 exception
   when others =>
     delay 2.0;
     raise;
-end SOKOBAN;
+end Sokoban;
 

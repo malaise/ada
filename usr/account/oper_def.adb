@@ -1,32 +1,32 @@
-package body OPER_DEF is
+package body Oper_Def is
 
-  function CURRENT_DATE return DATE_REC is
-    DATE : DATE_REC;
-    SECS : CALENDAR.DAY_DURATION;
+  function Current_Date return Date_Rec is
+    Date : Date_Rec;
+    Secs : Calendar.Day_Duration;
   begin
-    CALENDAR.SPLIT(CALENDAR.CLOCK, DATE.YEAR, DATE.MONTH, DATE.DAY, SECS);
-    return DATE;
-  end CURRENT_DATE;
+    Calendar.Split(Calendar.Clock, Date.Year, Date.Month, Date.Day, Secs);
+    return Date;
+  end Current_Date;
 
   -- Sort by date, amount, kind, destination
   -- DO NOT SORT BY STATUS, or a double click on sub list will
   --  mess all up.
-  function BEFORE (OPER_1, OPER_2 : OPER_REC) return BOOLEAN is
+  function Before (Oper_1, Oper_2 : Oper_Rec) return Boolean is
   begin
-    if OPER_1.DATE.YEAR /= OPER_2.DATE.YEAR then
-      return OPER_1.DATE.YEAR < OPER_2.DATE.YEAR;
-    elsif OPER_1.DATE.MONTH /= OPER_2.DATE.MONTH then
-      return OPER_1.DATE.MONTH < OPER_2.DATE.MONTH;
-    elsif OPER_1.DATE.DAY /= OPER_2.DATE.DAY then
-      return OPER_1.DATE.DAY < OPER_2.DATE.DAY;
-    elsif OPER_1.AMOUNT /= OPER_2.AMOUNT then
-      return OPER_1.AMOUNT < OPER_2.AMOUNT;
-    elsif OPER_1.KIND /= OPER_2.KIND then
-      return OPER_1.KIND < OPER_2.KIND;
+    if Oper_1.Date.Year /= Oper_2.Date.Year then
+      return Oper_1.Date.Year < Oper_2.Date.Year;
+    elsif Oper_1.Date.Month /= Oper_2.Date.Month then
+      return Oper_1.Date.Month < Oper_2.Date.Month;
+    elsif Oper_1.Date.Day /= Oper_2.Date.Day then
+      return Oper_1.Date.Day < Oper_2.Date.Day;
+    elsif Oper_1.Amount /= Oper_2.Amount then
+      return Oper_1.Amount < Oper_2.Amount;
+    elsif Oper_1.Kind /= Oper_2.Kind then
+      return Oper_1.Kind < Oper_2.Kind;
     else
-      return OPER_1.DESTINATION < OPER_2.DESTINATION;
+      return Oper_1.Destination < Oper_2.Destination;
     end if;
-  end BEFORE;
+  end Before;
 
-end OPER_DEF;
+end Oper_Def;
 

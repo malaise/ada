@@ -1,42 +1,42 @@
-with MY_IO;
-with ARGUMENT;
+with My_Io;
+with Argument;
 
-with COMMON;
-with ACTION;
+with Common;
+with Action;
 
 
-procedure MMIND is
+procedure Mmind is
 begin
   declare
-    LEVEL : COMMON.LAST_LEVEL_RANGE;
+    Level : Common.Last_Level_Range;
   begin
-    if ARGUMENT.GET_NBRE_ARG > 1 then
-      raise CONSTRAINT_ERROR;
+    if Argument.Get_Nbre_Arg > 1 then
+      raise Constraint_Error;
     end if;
-    LEVEL := COMMON.LAST_LEVEL_RANGE'VALUE (ARGUMENT.GET_PARAMETER);
-    COMMON.STORE_LEVEL (LEVEL);
-    COMMON.SET_LEVEL_TO_STORED;
+    Level := Common.Last_Level_Range'Value (Argument.Get_Parameter);
+    Common.Store_Level (Level);
+    Common.Set_Level_To_Stored;
   exception
-    when ARGUMENT.ARGUMENT_NOT_FOUND =>
-      LEVEL := COMMON.LAST_LEVEL_RANGE'FIRST;
-      COMMON.STORE_LEVEL (LEVEL);
-      COMMON.SET_LEVEL_TO_STORED;
-    when CONSTRAINT_ERROR =>
-      MY_IO.PUT_LINE (
+    when Argument.Argument_Not_Found =>
+      Level := Common.Last_Level_Range'First;
+      Common.Store_Level (Level);
+      Common.Set_Level_To_Stored;
+    when Constraint_Error =>
+      My_Io.Put_Line (
        "Syntax ERROR. Usage is ""MMIND [ <level> ]"" (level from 3 to 5).");
       return;
   end;
 
-  ACTION.INIT;
+  Action.Init;
 
   loop
-    exit when not ACTION.PLAY;
+    exit when not Action.Play;
   end loop;
 
 exception
-  when ACTION.NO_MOUSE =>
-    MY_IO.PUT_LINE (
+  when Action.No_Mouse =>
+    My_Io.Put_Line (
      "Sorry, MOUSE not found.");
     return;
 
-end MMIND;
+end Mmind;

@@ -1,132 +1,132 @@
-with AFPX, CON_IO, NORMAL, UPPER_STR, MY_MATH;
-with PERS_DEF, STR_MNG, MESU_MNG, PERS_MNG, PERS_FIL;
-package body PERS_LIS is
+with Afpx, Con_Io, Normal, Upper_Str, My_Math;
+with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil;
+package body Pers_Lis is
 
-  procedure BUILD_LIST is
-    PERSON : PERS_DEF.PERSON_REC;
-    LINE   : AFPX.LINE_REC;
-    use PERS_DEF.PERSON_LIST_MNG;
+  procedure Build_List is
+    Person : Pers_Def.Person_Rec;
+    Line   : Afpx.Line_Rec;
+    use Pers_Def.Person_List_Mng;
   begin
     -- Encode list of persons
-    AFPX.LINE_LIST_MNG.DELETE_LIST (AFPX.LINE_LIST);
-    if not PERS_DEF.PERSON_LIST_MNG.IS_EMPTY (PERS_DEF.THE_PERSONS) then
-      MOVE_TO (PERS_DEF.THE_PERSONS, PERS_DEF.PERSON_LIST_MNG.NEXT, 0 , FALSE);
+    Afpx.Line_List_Mng.Delete_List (Afpx.Line_List);
+    if not Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons) then
+      Move_To (Pers_Def.The_Persons, Pers_Def.Person_List_Mng.Next, 0 , False);
       loop
-        READ (PERS_DEF.THE_PERSONS, PERSON, PERS_DEF.PERSON_LIST_MNG.CURRENT);
-        STR_MNG.FORMAT_PERSON_TO_LIST (PERSON, LINE);
-        AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, LINE);
-        exit when GET_POSITION (PERS_DEF.THE_PERSONS)
-                = LIST_LENGTH (PERS_DEF.THE_PERSONS);
-        MOVE_TO (PERS_DEF.THE_PERSONS);
+        Read (Pers_Def.The_Persons, Person, Pers_Def.Person_List_Mng.Current);
+        Str_Mng.Format_Person_To_List (Person, Line);
+        Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
+        exit when Get_Position (Pers_Def.The_Persons)
+                = List_Length (Pers_Def.The_Persons);
+        Move_To (Pers_Def.The_Persons);
       end loop;
       -- End of list
-      AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.PREV,
-                                  0, FALSE);
+      Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Prev,
+                                  0, False);
     end if;
-  end BUILD_LIST;
+  end Build_List;
 
 
-  procedure SET_PROTECTION (FIELD : in AFPX.FIELD_RANGE;
-                            PROTECT : in BOOLEAN) is
+  procedure Set_Protection (Field : in Afpx.Field_Range;
+                            Protect : in Boolean) is
   begin
-    AFPX.SET_FIELD_PROTECTION (FIELD, PROTECT);
-    if PROTECT then
-      AFPX.SET_FIELD_COLORS (FIELD, FOREGROUND => CON_IO.CYAN,
-                                    BACKGROUND => CON_IO.BLACK);
+    Afpx.Set_Field_Protection (Field, Protect);
+    if Protect then
+      Afpx.Set_Field_Colors (Field, Foreground => Con_Io.Cyan,
+                                    Background => Con_Io.Black);
     else
-      AFPX.RESET_FIELD(FIELD, RESET_COLORS=>TRUE, RESET_STRING=>FALSE);
+      Afpx.Reset_Field(Field, Reset_Colors=>True, Reset_String=>False);
     end if;
-  end SET_PROTECTION;
+  end Set_Protection;
 
-  procedure LIST (EXIT_PROGRAM : out BOOLEAN) is
+  procedure List (Exit_Program : out Boolean) is
 
-    FIRST_FIELD  : AFPX.FIELD_RANGE;
+    First_Field  : Afpx.Field_Range;
 
-    CURSOR_FIELD : AFPX.FIELD_RANGE;
-    CURSOR_COL   : CON_IO.COL_RANGE;
-    PTG_RESULT   : AFPX.RESULT_REC;
-    REDISPLAY    : BOOLEAN;
+    Cursor_Field : Afpx.Field_Range;
+    Cursor_Col   : Con_Io.Col_Range;
+    Ptg_Result   : Afpx.Result_Rec;
+    Redisplay    : Boolean;
 
-    LIST_EMPTY : BOOLEAN;
-    type STATE_LIST is (IN_LIST, IN_CREATE, IN_EDIT, IN_DELETE);
-    STATE : STATE_LIST;
-    ACT : BOOLEAN;
+    List_Empty : Boolean;
+    type State_List is (In_List, In_Create, In_Edit, In_Delete);
+    State : State_List;
+    Act : Boolean;
 
-    PERSON : PERS_DEF.PERSON_REC;
-    POS : NATURAL;
-    OK : BOOLEAN;
-    use AFPX;
-    use PERS_DEF.PERSON_LIST_MNG;
+    Person : Pers_Def.Person_Rec;
+    Pos : Natural;
+    Ok : Boolean;
+    use Afpx;
+    use Pers_Def.Person_List_Mng;
 
-    procedure ENCODE_PERSON is
+    procedure Encode_Person is
     begin
-      AFPX.ENCODE_FIELD (11, (00, 00), PERSON.NAME);
-      AFPX.ENCODE_FIELD (13, (00, 00), PERSON.ACTIVITY);
+      Afpx.Encode_Field (11, (00, 00), Person.Name);
+      Afpx.Encode_Field (13, (00, 00), Person.Activity);
       for I in 1 .. 6 loop
-        AFPX.ENCODE_FIELD (AFPX.FIELD_RANGE (I + 15), (00, 00),
-                           STR_MNG.TO_STR(PERSON.TZ(I)) );
+        Afpx.Encode_Field (Afpx.Field_Range (I + 15), (00, 00),
+                           Str_Mng.To_Str(Person.Tz(I)) );
       end loop;
-    end ENCODE_PERSON;
+    end Encode_Person;
 
 
 
     -- Check a field
-    procedure CHECK_FIELD (CURRENT_FIELD : in out AFPX.ABSOLUTE_FIELD_RANGE;
-                           OK : out BOOLEAN) is
-      LOCOK : BOOLEAN;
-      TZ_S  : STR_MNG.BPM_STR;
-      TZ    : PERS_DEF.BPM_RANGE;
-      use PERS_DEF;
+    procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
+                           Ok : out Boolean) is
+      Locok : Boolean;
+      Tz_S  : Str_Mng.Bpm_Str;
+      Tz    : Pers_Def.Bpm_Range;
+      use Pers_Def;
     begin
-      case CURRENT_FIELD is
+      case Current_Field is
 
         when 11 =>
           -- In name : not empty
-          PERSON.NAME := UPPER_STR (AFPX.DECODE_FIELD (11, 00));
-          STR_MNG.PARSE (PERSON.NAME);
-          LOCOK := not STR_MNG.IS_SPACES (PERSON.NAME);
-          if LOCOK then
-            AFPX.ENCODE_FIELD (11, (00, 00), PERSON.NAME);
-            CURRENT_FIELD := 13;
+          Person.Name := Upper_Str (Afpx.Decode_Field (11, 00));
+          Str_Mng.Parse (Person.Name);
+          Locok := not Str_Mng.Is_Spaces (Person.Name);
+          if Locok then
+            Afpx.Encode_Field (11, (00, 00), Person.Name);
+            Current_Field := 13;
           end if;
 
         when 13 =>
           -- In activity : not empty
-          PERSON.ACTIVITY := UPPER_STR (AFPX.DECODE_FIELD (13, 00));
-          STR_MNG.PARSE (PERSON.ACTIVITY);
-          LOCOK := not STR_MNG.IS_SPACES (PERSON.ACTIVITY);
-          if LOCOK then
-            AFPX.ENCODE_FIELD (13, (00, 00), PERSON.ACTIVITY);
-            CURRENT_FIELD := 16;
+          Person.Activity := Upper_Str (Afpx.Decode_Field (13, 00));
+          Str_Mng.Parse (Person.Activity);
+          Locok := not Str_Mng.Is_Spaces (Person.Activity);
+          if Locok then
+            Afpx.Encode_Field (13, (00, 00), Person.Activity);
+            Current_Field := 16;
           end if;
 
         when 16 | 17 | 18 | 19 | 20 | 21 =>
-          TZ_S := AFPX.DECODE_FIELD (CURRENT_FIELD, 00);
+          Tz_S := Afpx.Decode_Field (Current_Field, 00);
           begin
-            TZ := STR_MNG.TO_BPM(TZ_S);
+            Tz := Str_Mng.To_Bpm(Tz_S);
           exception
             when others =>
-              LOCOK := FALSE;
+              Locok := False;
           end;
-          if LOCOK then
-            PERSON.TZ (INTEGER(CURRENT_FIELD) - 15) := TZ;
+          if Locok then
+            Person.Tz (Integer(Current_Field) - 15) := Tz;
           end if;
-          if LOCOK then
-            LOCOK := TZ /= PERS_DEF.BPM_RANGE'FIRST;
+          if Locok then
+            Locok := Tz /= Pers_Def.Bpm_Range'First;
           end if;
-          if LOCOK then
+          if Locok then
             -- TZ must be crescent
-            if CURRENT_FIELD /= 16
-            and then TZ /= PERS_DEF.BPM_RANGE'FIRST then
-              LOCOK := TZ > PERSON.TZ (INTEGER(CURRENT_FIELD) - 16);
+            if Current_Field /= 16
+            and then Tz /= Pers_Def.Bpm_Range'First then
+              Locok := Tz > Person.Tz (Integer(Current_Field) - 16);
             end if;
           end if;
-          if LOCOK then
-            AFPX.ENCODE_FIELD (CURRENT_FIELD, (00, 00), STR_MNG.TO_STR(TZ) );
-            if CURRENT_FIELD = 21 then
-              CURRENT_FIELD := FIRST_FIELD;
+          if Locok then
+            Afpx.Encode_Field (Current_Field, (00, 00), Str_Mng.To_Str(Tz) );
+            if Current_Field = 21 then
+              Current_Field := First_Field;
             else
-              CURRENT_FIELD := CURRENT_FIELD + 1;
+              Current_Field := Current_Field + 1;
             end if;
           end if;
 
@@ -134,257 +134,257 @@ package body PERS_LIS is
           null;
       end case;
 
-      CURSOR_COL := 0;
-      OK := LOCOK;
+      Cursor_Col := 0;
+      Ok := Locok;
 
-    end CHECK_FIELD;
+    end Check_Field;
 
-    function CHECK_COMPUTE return BOOLEAN is
-      subtype TZ_RANGE is INTEGER range PERS_DEF.PERSON_TZ_ARRAY'FIRST ..
-                                        PERS_DEF.PERSON_TZ_ARRAY'LAST;
+    function Check_Compute return Boolean is
+      subtype Tz_Range is Integer range Pers_Def.Person_Tz_Array'First ..
+                                        Pers_Def.Person_Tz_Array'Last;
 
-      function GET_TZ (N : TZ_RANGE) return PERS_DEF.BPM_RANGE is
-        TZ_S  : STR_MNG.BPM_STR;
+      function Get_Tz (N : Tz_Range) return Pers_Def.Bpm_Range is
+        Tz_S  : Str_Mng.Bpm_Str;
       begin
-        TZ_S := AFPX.DECODE_FIELD (AFPX.FIELD_RANGE(N) + 15, 00);
-        return STR_MNG.TO_BPM(TZ_S);
-      end GET_TZ;
+        Tz_S := Afpx.Decode_Field (Afpx.Field_Range(N) + 15, 00);
+        return Str_Mng.To_Bpm(Tz_S);
+      end Get_Tz;
 
-      use PERS_DEF;
+      use Pers_Def;
     begin
-      CURSOR_COL := 0;
+      Cursor_Col := 0;
       -- Last field must not be empty and valid
-      CURSOR_FIELD := 21;
-      PERSON.TZ(6) := GET_TZ (6);
-      if PERSON.TZ(6) = PERS_DEF.BPM_RANGE'FIRST then
-        return FALSE;
+      Cursor_Field := 21;
+      Person.Tz(6) := Get_Tz (6);
+      if Person.Tz(6) = Pers_Def.Bpm_Range'First then
+        return False;
       end if;
 
       -- First field must be empty or valid
-      CURSOR_FIELD := 16;
-      PERSON.TZ(1) := GET_TZ (1);
+      Cursor_Field := 16;
+      Person.Tz(1) := Get_Tz (1);
 
       -- First value > last value
-      if PERSON.TZ(1) >= PERSON.TZ(6) then
-        return FALSE;
+      if Person.Tz(1) >= Person.Tz(6) then
+        return False;
       end if;
 
       -- Other fields must be empty
       for I in 2 .. 5 loop
-        CURSOR_FIELD := AFPX.FIELD_RANGE(15 + I);
-        if GET_TZ(I) /= 0 then
-          return FALSE;
+        Cursor_Field := Afpx.Field_Range(15 + I);
+        if Get_Tz(I) /= 0 then
+          return False;
         end if;
       end loop;
 
-      return TRUE;
+      return True;
 
     exception
-      when others => return FALSE;
-    end CHECK_COMPUTE;
+      when others => return False;
+    end Check_Compute;
 
 
 
    begin
-    EXIT_PROGRAM := FALSE;
+    Exit_Program := False;
 
-    AFPX.USE_DESCRIPTOR(2);
+    Afpx.Use_Descriptor(2);
 
-    STATE := IN_LIST;
+    State := In_List;
 
-    CURSOR_FIELD := 01;
-    CURSOR_COL := 0;
-    REDISPLAY := FALSE;
+    Cursor_Field := 01;
+    Cursor_Col := 0;
+    Redisplay := False;
 
-    BUILD_LIST;
+    Build_List;
 
     loop
 
-      LIST_EMPTY := AFPX.LINE_LIST_MNG.LIST_LENGTH(AFPX.LINE_LIST) = 0;
+      List_Empty := Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0;
       -- List and menu buttons, only in list
-      ACT := STATE = IN_LIST;
-      AFPX.SET_FIELD_ACTIVATION (03, ACT);
-      AFPX.SET_FIELD_ACTIVATION (04, ACT);
-      AFPX.SET_FIELD_ACTIVATION (06, ACT);
+      Act := State = In_List;
+      Afpx.Set_Field_Activation (03, Act);
+      Afpx.Set_Field_Activation (04, Act);
+      Afpx.Set_Field_Activation (06, Act);
       -- Delete/edit if not empty and in list
-      ACT := ACT and then not LIST_EMPTY;
-      AFPX.SET_FIELD_ACTIVATION (07, ACT);
-      AFPX.SET_FIELD_ACTIVATION (08, ACT);
+      Act := Act and then not List_Empty;
+      Afpx.Set_Field_Activation (07, Act);
+      Afpx.Set_Field_Activation (08, Act);
       -- Edit if edit
-      ACT := STATE /= IN_LIST;
-      for I in AFPX.FIELD_RANGE'(10) .. 23 loop
-        AFPX.SET_FIELD_ACTIVATION (I, ACT);
+      Act := State /= In_List;
+      for I in Afpx.Field_Range'(10) .. 23 loop
+        Afpx.Set_Field_Activation (I, Act);
       end loop;
       -- Un protect person name & activity if in create
-      ACT := STATE = IN_CREATE;
-      SET_PROTECTION (11, not ACT);
-      SET_PROTECTION (13, not ACT);
+      Act := State = In_Create;
+      Set_Protection (11, not Act);
+      Set_Protection (13, not Act);
       -- Un protect other fields if in create or edit
-      ACT := STATE = IN_CREATE or else STATE = IN_EDIT;
-      SET_PROTECTION (16, not ACT);
-      SET_PROTECTION (17, not ACT);
-      SET_PROTECTION (18, not ACT);
-      SET_PROTECTION (19, not ACT);
-      SET_PROTECTION (20, not ACT);
-      SET_PROTECTION (21, not ACT);
+      Act := State = In_Create or else State = In_Edit;
+      Set_Protection (16, not Act);
+      Set_Protection (17, not Act);
+      Set_Protection (18, not Act);
+      Set_Protection (19, not Act);
+      Set_Protection (20, not Act);
+      Set_Protection (21, not Act);
       -- Compute if in edit or create
-      AFPX.SET_FIELD_ACTIVATION (24, ACT);
+      Afpx.Set_Field_Activation (24, Act);
       -- Confirm if Valid
-      AFPX.SET_FIELD_ACTIVATION (09, STATE = IN_DELETE);
+      Afpx.Set_Field_Activation (09, State = In_Delete);
 
 
-      AFPX.ENCODE_FIELD (02, (00, 00), STR_MNG.CURRENT_DATE_PRINTED);
+      Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
 
-      AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-      REDISPLAY := FALSE;
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Redisplay := False;
 
       -- Move in persons list according to AFPX selection
-      PERS_DEF.PERSON_LIST_MNG.MOVE_TO(
-              PERS_DEF.THE_PERSONS, NEXT,
-              AFPX.LINE_LIST_MNG.GET_POSITION(LINE_LIST) - 1,
-              FALSE);
+      Pers_Def.Person_List_Mng.Move_To(
+              Pers_Def.The_Persons, Next,
+              Afpx.Line_List_Mng.Get_Position(Line_List) - 1,
+              False);
       
 
-      case PTG_RESULT.EVENT is
+      case Ptg_Result.Event is
 
-        when REFRESH =>
-          REDISPLAY := TRUE;
-        when FD_EVENT | AFPX.TIMER_EVENT =>
+        when Refresh =>
+          Redisplay := True;
+        when Fd_Event | Afpx.Timer_Event =>
           null;
-        when KEYBOARD =>
+        when Keyboard =>
 
-          case PTG_RESULT.KEYBOARD_KEY is
-            when RETURN_KEY =>
+          case Ptg_Result.Keyboard_Key is
+            when Return_Key =>
               -- Check field and go to next if OK
-              CHECK_FIELD (CURSOR_FIELD, OK);
-            when ESCAPE_KEY =>
+              Check_Field (Cursor_Field, Ok);
+            when Escape_Key =>
               -- Clear current field
-              if CURSOR_FIELD = 11  then
-                AFPX.CLEAR_FIELD (11);
-                AFPX.CLEAR_FIELD (13);
-                CURSOR_FIELD := 11;
+              if Cursor_Field = 11  then
+                Afpx.Clear_Field (11);
+                Afpx.Clear_Field (13);
+                Cursor_Field := 11;
               else
-                AFPX.CLEAR_FIELD (CURSOR_FIELD);
+                Afpx.Clear_Field (Cursor_Field);
               end if;
-              CURSOR_COL := 0;
-            when BREAK_KEY =>
-              EXIT_PROGRAM := TRUE;
+              Cursor_Col := 0;
+            when Break_Key =>
+              Exit_Program := True;
               exit;
           end case;
 
-        when MOUSE_BUTTON =>
+        when Mouse_Button =>
 
-          case PTG_RESULT.FIELD_NO is
+          case Ptg_Result.Field_No is
             when 04 =>
               -- Back to records
               exit;
             when 05 =>
               -- Exit
-              EXIT_PROGRAM := TRUE;
+              Exit_Program := True;
               exit;
             when 06 =>
               -- Create
-              STATE := IN_CREATE;
-              FIRST_FIELD := 11;
-              CURSOR_FIELD := FIRST_FIELD;
-              CURSOR_COL := 0;
-              PERSON.NAME := (others => ' ');
-              PERSON.ACTIVITY := (others => ' ');
-              PERSON.TZ := (others => PERS_DEF.BPM_RANGE'FIRST);
-              ENCODE_PERSON;
+              State := In_Create;
+              First_Field := 11;
+              Cursor_Field := First_Field;
+              Cursor_Col := 0;
+              Person.Name := (others => ' ');
+              Person.Activity := (others => ' ');
+              Person.Tz := (others => Pers_Def.Bpm_Range'First);
+              Encode_Person;
             when 00 | 08 =>
               -- Edit
-              STATE := IN_EDIT;
-              FIRST_FIELD := 16;
-              CURSOR_FIELD := FIRST_FIELD;
-              CURSOR_COL := 0;
-              READ (PERS_DEF.THE_PERSONS, PERSON,
-                    PERS_DEF.PERSON_LIST_MNG.CURRENT);
-              ENCODE_PERSON;
+              State := In_Edit;
+              First_Field := 16;
+              Cursor_Field := First_Field;
+              Cursor_Col := 0;
+              Read (Pers_Def.The_Persons, Person,
+                    Pers_Def.Person_List_Mng.Current);
+              Encode_Person;
             when 07 =>
               -- Delete
-              STATE := IN_DELETE;
-              READ (PERS_DEF.THE_PERSONS, PERSON,
-                    PERS_DEF.PERSON_LIST_MNG.CURRENT);
-              ENCODE_PERSON;
+              State := In_Delete;
+              Read (Pers_Def.The_Persons, Person,
+                    Pers_Def.Person_List_Mng.Current);
+              Encode_Person;
             when 22 =>
               -- Valid
-              if STATE /= IN_DELETE then
-                CURSOR_FIELD := FIRST_FIELD;
+              if State /= In_Delete then
+                Cursor_Field := First_Field;
                 loop
-                  CHECK_FIELD (CURSOR_FIELD, OK);
-                  exit when not OK or else CURSOR_FIELD = FIRST_FIELD;
+                  Check_Field (Cursor_Field, Ok);
+                  exit when not Ok or else Cursor_Field = First_Field;
                 end loop;
               else
-                OK := TRUE;
+                Ok := True;
               end if;
-              if OK then
-                if STATE = IN_CREATE then
+              if Ok then
+                if State = In_Create then
                   -- In create : insert person in list (uniq)
                   begin
-                    PERS_MNG.INSERT (PERS_DEF.THE_PERSONS, PERSON);
-                    BUILD_LIST;
+                    Pers_Mng.Insert (Pers_Def.The_Persons, Person);
+                    Build_List;
                   exception
                     when others =>
-                      CURSOR_FIELD := FIRST_FIELD;
-                      OK := FALSE;
+                      Cursor_Field := First_Field;
+                      Ok := False;
                   end;
-                elsif STATE = IN_EDIT then
+                elsif State = In_Edit then
                   -- In edit : update person in list
-                  MODIFY (PERS_DEF.THE_PERSONS, PERSON,
-                          PERS_DEF.PERSON_LIST_MNG.CURRENT);
+                  Modify (Pers_Def.The_Persons, Person,
+                          Pers_Def.Person_List_Mng.Current);
 
                 else
                   -- In delete : delete records, delete person
-                  MESU_MNG.DELETE_ALL (PERSON);
+                  Mesu_Mng.Delete_All (Person);
                   -- Delete all has changed persons list
-                  PERS_MNG.SEARCH (PERS_DEF.THE_PERSONS, PERSON.PID, POS);
-                  if GET_POSITION (PERS_DEF.THE_PERSONS)
-                   = LIST_LENGTH (PERS_DEF.THE_PERSONS) then
-                    DELETE (PERS_DEF.THE_PERSONS, PREV);
+                  Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
+                  if Get_Position (Pers_Def.The_Persons)
+                   = List_Length (Pers_Def.The_Persons) then
+                    Delete (Pers_Def.The_Persons, Prev);
                   else
-                    DELETE (PERS_DEF.THE_PERSONS);
+                    Delete (Pers_Def.The_Persons);
                   end if;
-                  BUILD_LIST;
+                  Build_List;
                 end if;
               end if;
-              if OK then
-                PERS_FIL.SAVE;
-                STATE := IN_LIST;
+              if Ok then
+                Pers_Fil.Save;
+                State := In_List;
               end if;
             when 23 =>
               -- Cancel
-              STATE := IN_LIST;
+              State := In_List;
             when 24 =>
               -- Compute
-              OK := CHECK_COMPUTE;
-              if OK then
+              Ok := Check_Compute;
+              if Ok then
                 declare
-                  REST_RATE : PERS_DEF.BPM_RANGE;
-                  DELTA_RATE : MY_MATH.REAL;
-                  PERCENT : MY_MATH.REAL;
-                  use MY_MATH;
-                  use PERS_DEF;
+                  Rest_Rate : Pers_Def.Bpm_Range;
+                  Delta_Rate : My_Math.Real;
+                  Percent : My_Math.Real;
+                  use My_Math;
+                  use Pers_Def;
                 begin
-                  REST_RATE := PERSON.TZ(1);
-                  DELTA_RATE := MY_MATH.REAL (PERSON.TZ(6) - PERSON.TZ(1));
+                  Rest_Rate := Person.Tz(1);
+                  Delta_Rate := My_Math.Real (Person.Tz(6) - Person.Tz(1));
                   -- REST_RATE + 50% .. 90% of DELTA
                   for I in 1 .. 5 loop
-                    PERCENT := MY_MATH.REAL (50 + (I - 1) * 10) / 100.0;
-                    PERSON.TZ(I) :=
-                       PERS_DEF.BPM_RANGE(MY_MATH.TRUNC(DELTA_RATE * PERCENT))
-                     + REST_RATE;
+                    Percent := My_Math.Real (50 + (I - 1) * 10) / 100.0;
+                    Person.Tz(I) :=
+                       Pers_Def.Bpm_Range(My_Math.Trunc(Delta_Rate * Percent))
+                     + Rest_Rate;
                   end loop;
                 end;
                 -- Decode name & activity, then rencode all
-                CURSOR_FIELD := 11;
-                CHECK_FIELD (CURSOR_FIELD, OK);
-                CURSOR_FIELD := 13;
-                CHECK_FIELD (CURSOR_FIELD, OK);
-                ENCODE_PERSON;
+                Cursor_Field := 11;
+                Check_Field (Cursor_Field, Ok);
+                Cursor_Field := 13;
+                Check_Field (Cursor_Field, Ok);
+                Encode_Person;
 
-                CURSOR_FIELD := 16;
-                CURSOR_COL := 0;
+                Cursor_Field := 16;
+                Cursor_Col := 0;
               end if;
             when others =>
               null;
@@ -393,8 +393,8 @@ package body PERS_LIS is
 
     end loop;
 
-    AFPX.LINE_LIST_MNG.DELETE_LIST (AFPX.LINE_LIST);
+    Afpx.Line_List_Mng.Delete_List (Afpx.Line_List);
 
-  end LIST;
+  end List;
 
-end PERS_LIS;
+end Pers_Lis;

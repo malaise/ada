@@ -1,115 +1,115 @@
-with CON_IO;
-with COMMON;
-package SCREEN is
+with Con_Io;
+with Common;
+package Screen is
 
   -------------------
   -- GLOBAL SCREEN --
   -------------------
   -- init the screen
-  procedure INIT (LEVEL  : in COMMON.LAST_LEVEL_RANGE);
+  procedure Init (Level  : in Common.Last_Level_Range);
 
   -- clear and reset
-  procedure CLEAR;
+  procedure Clear;
 
   ------------
   -- PROPAL --
   ------------
-  procedure PUT_DEFAULT_POS (
-   PROPAL : in COMMON.PROPAL_RANGE;
-   LEVEL  : in COMMON.LEVEL_RANGE;
-   SHOW   : in BOOLEAN);
+  procedure Put_Default_Pos (
+   Propal : in Common.Propal_Range;
+   Level  : in Common.Level_Range;
+   Show   : in Boolean);
 
-  type PUT_TRY_LIST is (CANNOT_TRY, CAN_TRY, SELECTED);
-  procedure PUT_TRY (
-   PROPAL    : in COMMON.PROPAL_RANGE;
-   TRY_STATE : in PUT_TRY_LIST);
+  type Put_Try_List is (Cannot_Try, Can_Try, Selected);
+  procedure Put_Try (
+   Propal    : in Common.Propal_Range;
+   Try_State : in Put_Try_List);
 
-  procedure PUT_COLOR (
-   PROPAL : in COMMON.PROPAL_RANGE;
-   LEVEL  : in COMMON.LEVEL_RANGE;
-   COLOR  : in COMMON.COLOR_RANGE);
+  procedure Put_Color (
+   Propal : in Common.Propal_Range;
+   Level  : in Common.Level_Range;
+   Color  : in Common.Color_Range);
 
-  procedure PUT_ANSWER (
-   PROPAL : in COMMON.PROPAL_RANGE;
-   PLACED_OK, COLORS_OK : in NATURAL);
+  procedure Put_Answer (
+   Propal : in Common.Propal_Range;
+   Placed_Ok, Colors_Ok : in Natural);
 
 
   ------------
   -- SECRET --
   ------------
-  procedure PUT_SECRET_COLOR (
-   LEVEL  : in COMMON.LEVEL_RANGE;
-   COLOR  : in COMMON.COLOR_RANGE);
+  procedure Put_Secret_Color (
+   Level  : in Common.Level_Range;
+   Color  : in Common.Color_Range);
 
   ----------
   -- MENU --
   ----------
-  procedure PUT_START_GIVEUP (START : in BOOLEAN; SELECTED : in BOOLEAN);
+  procedure Put_Start_Giveup (Start : in Boolean; Selected : in Boolean);
 
-  procedure PUT_EXIT (SELECTED : in BOOLEAN);
+  procedure Put_Exit (Selected : in Boolean);
 
   -----------
   -- LEVEL --
   -----------
-  procedure PUT_LEVEL (LEVEL_NO : in COMMON.LAST_LEVEL_RANGE;
-   SELECTED : in BOOLEAN);
+  procedure Put_Level (Level_No : in Common.Last_Level_Range;
+   Selected : in Boolean);
 
-  procedure PUT_CURRENT_LEVEL (LEVEL_NO : in COMMON.LAST_LEVEL_RANGE);
+  procedure Put_Current_Level (Level_No : in Common.Last_Level_Range);
 
 
   -----------
   -- COLOR --
   -----------
-  procedure PUT_SELECTED_COLOR (
-   COLOR    : in COMMON.EFF_COLOR_RANGE;
-   SELECTED : in BOOLEAN);
+  procedure Put_Selected_Color (
+   Color    : in Common.Eff_Color_Range;
+   Selected : in Boolean);
 
   ----------
   -- HELP --
   ----------
-  type HELP_STATE is (RELEASED, CLICK_COLOR, CLICK_PROPAL, CLICK_OTHER,
-                      START, DISCARDED);
-  procedure PUT_HELP (HELP : HELP_STATE);
+  type Help_State is (Released, Click_Color, Click_Propal, Click_Other,
+                      Start, Discarded);
+  procedure Put_Help (Help : Help_State);
 
 
   -----------
   -- MOUSE --
   -----------
   -- default behaviour of mouse : keep foreground
-  procedure SET_MOUSE_DEFAULT_COLOR;
+  procedure Set_Mouse_Default_Color;
   -- When color selected : set foreground
-  procedure SET_MOUSE_COLOR (COLOR : in COMMON.EFF_COLOR_RANGE);
+  procedure Set_Mouse_Color (Color : in Common.Eff_Color_Range);
 
 
   ---------------
   -- SELECTION --
   ---------------
   -- kind of selection
-  type SELECTION_LIST is (NOTHING, COLOR, PROPAL, TRY, MENU, LEVEL, EXIT_GAME);
+  type Selection_List is (Nothing, Color, Propal, Try, Menu, Level, Exit_Game);
 
 
   -- Selection data
-  type SELECTION_REC(SELECTION_KIND : SELECTION_LIST := NOTHING) is record
-    case SELECTION_KIND is
-      when NOTHING =>
-        SELECTION : SELECTION_LIST := NOTHING;
-      when COLOR =>
-        COLOR_NO : COMMON.EFF_COLOR_RANGE;
-      when PROPAL =>
-        PROPAL_NO : COMMON.PROPAL_RANGE;
-        COLUMN_NO : COMMON.LEVEL_RANGE;
-      when TRY=>
-        TRY_NO : COMMON.PROPAL_RANGE;
-      when MENU | EXIT_GAME =>
+  type Selection_Rec(Selection_Kind : Selection_List := Nothing) is record
+    case Selection_Kind is
+      when Nothing =>
+        Selection : Selection_List := Nothing;
+      when Color =>
+        Color_No : Common.Eff_Color_Range;
+      when Propal =>
+        Propal_No : Common.Propal_Range;
+        Column_No : Common.Level_Range;
+      when Try=>
+        Try_No : Common.Propal_Range;
+      when Menu | Exit_Game =>
         null;
-      WHEN LEVEL =>
-        LEVEL_NO : COMMON.LAST_LEVEL_RANGE;
+      When Level =>
+        Level_No : Common.Last_Level_Range;
     end case;
   end record;
 
 
-  procedure GET_SELECTED (
-   WHERE : in CON_IO.SQUARE;
-   WHAT  : out SELECTION_REC);
+  procedure Get_Selected (
+   Where : in Con_Io.Square;
+   What  : out Selection_Rec);
 
- end SCREEN;
+ end Screen;

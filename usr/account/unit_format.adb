@@ -1,184 +1,184 @@
-with TEXT_IO, CALENDAR;
-with MY_MATH, NORMAL, EURO_FRANC;
-package body UNIT_FORMAT is
+with Text_Io, Calendar;
+with My_Math, Normal, Euro_Franc;
+package body Unit_Format is
 
-  CURRENT_UNIT : UNITS_LIST := DEFAULT_UNIT;
+  Current_Unit : Units_List := Default_Unit;
 
-  package AMOUNT_IO is new TEXT_IO.FLOAT_IO(OPER_DEF.AMOUNT_RANGE);
-  package REAL_IO is new TEXT_IO.FLOAT_IO(MY_MATH.REAL);
-  package INTE_IO is new TEXT_IO.INTEGER_IO(MY_MATH.INTE);
+  package Amount_Io is new Text_Io.Float_Io(Oper_Def.Amount_Range);
+  package Real_Io is new Text_Io.Float_Io(My_Math.Real);
+  package Inte_Io is new Text_Io.Integer_Io(My_Math.Inte);
 
-  package MEF is new EURO_FRANC(OPER_DEF.AMOUNT_RANGE, OPER_DEF.AMOUNT_RANGE);
+  package Mef is new Euro_Franc(Oper_Def.Amount_Range, Oper_Def.Amount_Range);
 
   -- Date: 25/10/2001
-  function DATE_IMAGE(DATE : OPER_DEF.DATE_REC) return DATE_STR is
+  function Date_Image(Date : Oper_Def.Date_Rec) return Date_Str is
   begin
-    return NORMAL(DATE.DAY, 2, GAP => '0') & '/'
-         & NORMAL(DATE.MONTH, 2, GAP => '0') & '/'
-         & NORMAL(DATE.YEAR, 4, GAP => '0');
-  end DATE_IMAGE;
+    return Normal(Date.Day, 2, Gap => '0') & '/'
+         & Normal(Date.Month, 2, Gap => '0') & '/'
+         & Normal(Date.Year, 4, Gap => '0');
+  end Date_Image;
 
-  function DATE_VALUE(STR : DATE_STR) return OPER_DEF.DATE_REC is
-    DATE : OPER_DEF.DATE_REC;
-    TIME : CALENDAR.TIME;
+  function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec is
+    Date : Oper_Def.Date_Rec;
+    Time : Calendar.Time;
   begin
-    DATE.DAY   := CALENDAR.DAY_NUMBER'VALUE  (STR(1 ..  2));
-    DATE.MONTH := CALENDAR.MONTH_NUMBER'VALUE(STR(4 ..  5));
-    DATE.YEAR  := CALENDAR.YEAR_NUMBER'VALUE (STR(7 .. 10));
+    Date.Day   := Calendar.Day_Number'Value  (Str(1 ..  2));
+    Date.Month := Calendar.Month_Number'Value(Str(4 ..  5));
+    Date.Year  := Calendar.Year_Number'Value (Str(7 .. 10));
     -- Check validity
-    TIME := CALENDAR.TIME_OF(DATE.YEAR, DATE.MONTH, DATE.DAY, 0.0);
-    return DATE;
+    Time := Calendar.Time_Of(Date.Year, Date.Month, Date.Day, 0.0);
+    return Date;
   exception
     when others =>
-      raise FORMAT_ERROR;
-  end DATE_VALUE;
+      raise Format_Error;
+  end Date_Value;
 
   -- Short date: 25/10/01
-  function SHORT_DATE_IMAGE(DATE : OPER_DEF.DATE_REC) return SHORT_DATE_STR is
+  function Short_Date_Image(Date : Oper_Def.Date_Rec) return Short_Date_Str is
   begin
-    return NORMAL(DATE.DAY, 2, GAP => '0') & '/'
-         & NORMAL(DATE.MONTH, 2, GAP => '0') & '/'
-         & NORMAL(DATE.YEAR, 4, GAP => '0')(3..4);
-  end SHORT_DATE_IMAGE;
+    return Normal(Date.Day, 2, Gap => '0') & '/'
+         & Normal(Date.Month, 2, Gap => '0') & '/'
+         & Normal(Date.Year, 4, Gap => '0')(3..4);
+  end Short_Date_Image;
 
   -- Short status: Yes No Def
-  function SHORT_STATUS_IMAGE (STATUS : OPER_DEF.STATUS_LIST)
-           return SHORT_STATUS_STR is
+  function Short_Status_Image (Status : Oper_Def.Status_List)
+           return Short_Status_Str is
   begin
-    case STATUS is
-      when OPER_DEF.ENTERED =>
+    case Status is
+      when Oper_Def.Entered =>
         return "Yes";
-      when OPER_DEF.NOT_ENTERED =>
+      when Oper_Def.Not_Entered =>
         return "No ";
-      when OPER_DEF.DEFERED =>
+      when Oper_Def.Defered =>
         return "Def";
     end case;
-  end SHORT_STATUS_IMAGE;
+  end Short_Status_Image;
 
   -- Short kind:  Cheq Card Tran Draw
-  function SHORT_KIND_IMAGE (KIND : OPER_DEF.KIND_LIST)
-           return SHORT_KIND_STR is
+  function Short_Kind_Image (Kind : Oper_Def.Kind_List)
+           return Short_Kind_Str is
   begin
-    case KIND is
-      when OPER_DEF.CHEQUE =>
+    case Kind is
+      when Oper_Def.Cheque =>
         return "Cheq";
-      when OPER_DEF.CREDIT =>
+      when Oper_Def.Credit =>
         return "Cred";
-      when OPER_DEF.TRANSFER =>
+      when Oper_Def.Transfer =>
         return "Xfer";
-      when OPER_DEF.WITHDRAW =>
+      when Oper_Def.Withdraw =>
         return "Draw";
     end case;
-  end SHORT_KIND_IMAGE;
+  end Short_Kind_Image;
 
   -- Current unit switching
-  function GET_CURRENT_UNIT return UNITS_LIST is
+  function Get_Current_Unit return Units_List is
   begin
-    return CURRENT_UNIT;
-  end GET_CURRENT_UNIT;
+    return Current_Unit;
+  end Get_Current_Unit;
 
-  procedure SET_UNIT_TO (UNIT : UNITS_LIST) is
+  procedure Set_Unit_To (Unit : Units_List) is
   begin
-    CURRENT_UNIT := UNIT;
-  end SET_UNIT_TO;
+    Current_Unit := Unit;
+  end Set_Unit_To;
 
-  procedure SWITCH_UNIT is
+  procedure Switch_Unit is
   begin
-    if CURRENT_UNIT = EUROS then
-      CURRENT_UNIT := FRANCS;
+    if Current_Unit = Euros then
+      Current_Unit := Francs;
     else
-      CURRENT_UNIT := EUROS;
+      Current_Unit := Euros;
     end if;
-  end SWITCH_UNIT;
+  end Switch_Unit;
 
-  function FIRST_DIG (STR : STRING) return POSITIVE is
+  function First_Dig (Str : String) return Positive is
   begin
-    for I in STR'RANGE loop
-      if STR(I) /= ' ' then return I; end if;
+    for I in Str'Range loop
+      if Str(I) /= ' ' then return I; end if;
     end loop;
-    raise FORMAT_ERROR;
-  end FIRST_DIG;
+    raise Format_Error;
+  end First_Dig;
 
-  function LAST_DIG (STR : STRING) return POSITIVE is
+  function Last_Dig (Str : String) return Positive is
   begin
-    for I in reverse STR'RANGE loop
-      if STR(I) /= ' ' then return I; end if;
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' then return I; end if;
     end loop;
-    raise FORMAT_ERROR;
-  end LAST_DIG;
+    raise Format_Error;
+  end Last_Dig;
 
   -- Amount: -12345678.12
   -- subtype AMOUNT_STR is STRING (1 .. 12);
   -- From an amount (in euros) return 'image (euros/francs)
-  function IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE;
-                  ALIGN_LEFT : in BOOLEAN) return AMOUNT_STR is
-    STR, STR_RET : AMOUNT_STR;
-    AMOUNT_IN_UNIT : OPER_DEF.AMOUNT_RANGE;
-    FIRST : POSITIVE;
+  function Image (Amount_In_Euros : Oper_Def.Amount_Range;
+                  Align_Left : in Boolean) return Amount_Str is
+    Str, Str_Ret : Amount_Str;
+    Amount_In_Unit : Oper_Def.Amount_Range;
+    First : Positive;
   begin
-    if GET_CURRENT_UNIT = EUROS then
-      AMOUNT_IN_UNIT := AMOUNT_IN_EUROS;
+    if Get_Current_Unit = Euros then
+      Amount_In_Unit := Amount_In_Euros;
     else
-      AMOUNT_IN_UNIT := MEF.EUROS_TO_FRANCS(AMOUNT_IN_EUROS);
+      Amount_In_Unit := Mef.Euros_To_Francs(Amount_In_Euros);
     end if;
-    STR := (others => ' ');
-    AMOUNT_IO.PUT(STR, AMOUNT_IN_UNIT, 2, 0);
-    if ALIGN_LEFT then
+    Str := (others => ' ');
+    Amount_Io.Put(Str, Amount_In_Unit, 2, 0);
+    if Align_Left then
       -- Put string at the beginning
-      STR_RET := (others => ' ');
-      FIRST := FIRST_DIG(STR);
-      STR_RET(1 .. AMOUNT_STR'LAST - FIRST + 1) :=
-           STR(FIRST .. AMOUNT_STR'LAST);
+      Str_Ret := (others => ' ');
+      First := First_Dig(Str);
+      Str_Ret(1 .. Amount_Str'Last - First + 1) :=
+           Str(First .. Amount_Str'Last);
     else
-      STR_RET := STR;
+      Str_Ret := Str;
     end if;
-    return STR_RET;
+    return Str_Ret;
   exception
     when others =>
-      raise FORMAT_ERROR;
-  end IMAGE;
+      raise Format_Error;
+  end Image;
 
   -- From a string (euros/francs) return amount in euros
-  function VALUE (STR : AMOUNT_STR) return OPER_DEF.AMOUNT_RANGE is
-    AMOUNT_IN_UNIT : OPER_DEF.AMOUNT_RANGE;
+  function Value (Str : Amount_Str) return Oper_Def.Amount_Range is
+    Amount_In_Unit : Oper_Def.Amount_Range;
 
 
-    function HAS_DOT (S : STRING) return BOOLEAN is
+    function Has_Dot (S : String) return Boolean is
     begin
-      for I in S'RANGE loop
-        if S(I) = '.' then return TRUE; end if;
+      for I in S'Range loop
+        if S(I) = '.' then return True; end if;
       end loop;
-      return FALSE;
-    end HAS_DOT;
+      return False;
+    end Has_Dot;
         
   begin
     -- Get amount or int from significant characters
     declare
       -- Strip blancs
-      TMP : constant STRING := STR(FIRST_DIG(STR) .. LAST_DIG(STR));
-      I : MY_MATH.INTE;
-      LAST : POSITIVE;
+      Tmp : constant String := Str(First_Dig(Str) .. Last_Dig(Str));
+      I : My_Math.Inte;
+      Last : Positive;
     begin
-      if HAS_DOT(TMP) then
-        AMOUNT_IO.GET(TMP, AMOUNT_IN_UNIT, LAST);
+      if Has_Dot(Tmp) then
+        Amount_Io.Get(Tmp, Amount_In_Unit, Last);
       else
-        INTE_IO.GET(TMP, I, LAST);
-        AMOUNT_IN_UNIT := OPER_DEF.AMOUNT_RANGE(I);
+        Inte_Io.Get(Tmp, I, Last);
+        Amount_In_Unit := Oper_Def.Amount_Range(I);
       end if;
-      if LAST /= TMP'LAST then
-        raise FORMAT_ERROR;
+      if Last /= Tmp'Last then
+        raise Format_Error;
       end if;
     end;
     -- Convert if needed
-    if GET_CURRENT_UNIT = EUROS then
-      return AMOUNT_IN_UNIT;
+    if Get_Current_Unit = Euros then
+      return Amount_In_Unit;
     else
-      return MEF.FRANCS_TO_EUROS(AMOUNT_IN_UNIT);
+      return Mef.Francs_To_Euros(Amount_In_Unit);
     end if;
   exception
     when others =>
-      raise FORMAT_ERROR;
-  end VALUE;
+      raise Format_Error;
+  end Value;
 
   -- Amount of an operation in LIST: -12345.12
   -- subtype SHORT_AMOUNT_STR is STRING (1 .. 9);
@@ -186,44 +186,44 @@ package body UNIT_FORMAT is
   -- Truncation rule:
   --  Sign is kept, three lower digits of unit removed,
   --  cents and dot replaced by " k "
-  function SHORT_IMAGE (AMOUNT_IN_EUROS : OPER_DEF.AMOUNT_RANGE)
-                       return SHORT_AMOUNT_STR is
-    STR : AMOUNT_STR;
-    FIRST : POSITIVE;
+  function Short_Image (Amount_In_Euros : Oper_Def.Amount_Range)
+                       return Short_Amount_Str is
+    Str : Amount_Str;
+    First : Positive;
   begin
     -- Get full string in proper unit
-    STR := IMAGE(AMOUNT_IN_EUROS, FALSE);
+    Str := Image(Amount_In_Euros, False);
 
     -- Look for first digit
-    FIRST := FIRST_DIG(STR);
+    First := First_Dig(Str);
 
     -- Enough space?
-    if FIRST < 4 then
+    if First < 4 then
       -- No
       declare
-        LAST : constant := STR'LAST;
-        DOT : constant := LAST -2;
-        R : MY_MATH.REAL;
-        L : POSITIVE;
-        I : MY_MATH.INTE;
-        use MY_MATH;
+        Last : constant := Str'Last;
+        Dot : constant := Last -2;
+        R : My_Math.Real;
+        L : Positive;
+        I : My_Math.Inte;
+        use My_Math;
       begin
         -- Get INT value
-        REAL_IO.GET(STR, R, L);
+        Real_Io.Get(Str, R, L);
         R := R / 1000.0;
-        I := MY_MATH.ROUND(R);
-        STR (4 .. DOT-1) := NORMAL(INTEGER(I), DOT-4);
+        I := My_Math.Round(R);
+        Str (4 .. Dot-1) := Normal(Integer(I), Dot-4);
     
         -- Remove digits
-        STR(DOT .. LAST) := " k ";
+        Str(Dot .. Last) := " k ";
       end;
     end if; 
   
-    return STR(4 .. STR'LAST);
+    return Str(4 .. Str'Last);
   exception
     when others =>
-      raise FORMAT_ERROR;
-  end SHORT_IMAGE;
+      raise Format_Error;
+  end Short_Image;
 
-end UNIT_FORMAT;
+end Unit_Format;
 

@@ -1,130 +1,130 @@
-with MY_IO;
-with STATE_MACHINE;
-procedure T_STATE_MACHINE is
+with My_Io;
+with State_Machine;
+procedure T_State_Machine is
 
-  type STATE_LIST is (UNKNOWN, STARTING, FAILED, DETACHED, OK, ERROR);
+  type State_List is (Unknown, Starting, Failed, Detached, Ok, Error);
 
-  type EVENT_LIST is (TRUE, DEFAULT, START, FAILURE, SUCCESS, ATTACH, DETACH);
+  type Event_List is (True, Default, Start, Failure, Success, Attach, Detach);
 
-  procedure DISPLAY_TRANSITION (PREV_STATE : in STATE_LIST;
-                                EVENT : in EVENT_LIST;
-                                NEW_STATE : in STATE_LIST);
+  procedure Display_Transition (Prev_State : in State_List;
+                                Event : in Event_List;
+                                New_State : in State_List);
 
 
-  package MSM is new STATE_MACHINE (STATE_LIST, EVENT_LIST, DISPLAY_TRANSITION);
-  use MSM;
+  package Msm is new State_Machine (State_List, Event_List, Display_Transition);
+  use Msm;
 
-  CUR_STATE : STATE_LIST;
-  EVENT : EVENT_LIST;
-  VALID_EVENT : BOOLEAN;
+  Cur_State : State_List;
+  Event : Event_List;
+  Valid_Event : Boolean;
 
-  function GET_EVENT return EVENT_LIST is
-    EVENT : EVENT_LIST;
-    STR : STRING (1 .. 500);
-    LEN : NATURAL;
+  function Get_Event return Event_List is
+    Event : Event_List;
+    Str : String (1 .. 500);
+    Len : Natural;
   begin
-    for E in EVENT_LIST loop
-      MY_IO.PUT (EVENT_LIST'IMAGE(E) & " ");
+    for E in Event_List loop
+      My_Io.Put (Event_List'Image(E) & " ");
     end loop;
-    MY_IO.PUT (" ? ");
-    MY_IO.GET_LINE (STR, LEN);
-    EVENT := EVENT_LIST'VALUE (STR(1 .. LEN));
-    return EVENT;
-  end GET_EVENT;
+    My_Io.Put (" ? ");
+    My_Io.Get_Line (Str, Len);
+    Event := Event_List'Value (Str(1 .. Len));
+    return Event;
+  end Get_Event;
 
 
-  procedure PUT_TRANSITION (TRANSITION : in TRANSITION_REC) is
-    procedure PUTS (STR : in STRING) is
-      STRMAX : STRING(1 .. 8) := (others => ' ');
+  procedure Put_Transition (Transition : in Transition_Rec) is
+    procedure Puts (Str : in String) is
+      Strmax : String(1 .. 8) := (others => ' ');
     begin
-      if STR'LENGTH <= STRMAX'LENGTH then
-        STRMAX(1 .. STR'LENGTH) := STR;
-        MY_IO.PUT(STRMAX);
+      if Str'Length <= Strmax'Length then
+        Strmax(1 .. Str'Length) := Str;
+        My_Io.Put(Strmax);
       else
-        MY_IO.PUT(STR);
+        My_Io.Put(Str);
       end if;
-    end PUTS;
+    end Puts;
   begin
-    PUTS(STATE_LIST'IMAGE(TRANSITION.ORIGINAL_STATE));
-    MY_IO.PUT(" -- ");
-    PUTS(EVENT_LIST'IMAGE(TRANSITION.EVENT));
-    MY_IO.PUT(" -> ");
-    PUTS(STATE_LIST'IMAGE(TRANSITION.DESTINATION_STATE));
-    MY_IO.NEW_LINE;
-  end PUT_TRANSITION;
+    Puts(State_List'Image(Transition.Original_State));
+    My_Io.Put(" -- ");
+    Puts(Event_List'Image(Transition.Event));
+    My_Io.Put(" -> ");
+    Puts(State_List'Image(Transition.Destination_State));
+    My_Io.New_Line;
+  end Put_Transition;
 
-  procedure DISPLAY_TRANSITION (PREV_STATE : in STATE_LIST;
-                                EVENT : in EVENT_LIST;
-                                NEW_STATE : in STATE_LIST) is
+  procedure Display_Transition (Prev_State : in State_List;
+                                Event : in Event_List;
+                                New_State : in State_List) is
   begin
-    if NEW_STATE /= PREV_STATE then
-      PUT_TRANSITION( (PREV_STATE, EVENT, NEW_STATE) );
+    if New_State /= Prev_State then
+      Put_Transition( (Prev_State, Event, New_State) );
     end if;
-  end DISPLAY_TRANSITION; 
+  end Display_Transition; 
   
 
-  procedure MY_ADD_TRANSITION (TRANSITION : in TRANSITION_REC) is
+  procedure My_Add_Transition (Transition : in Transition_Rec) is
   begin
-    MSM.ADD_TRANSITION(TRANSITION);
-    PUT_TRANSITION(TRANSITION);
-  end MY_ADD_TRANSITION;
+    Msm.Add_Transition(Transition);
+    Put_Transition(Transition);
+  end My_Add_Transition;
 
 begin
 
-  MY_IO.PUT_LINE("State machine definition:");
+  My_Io.Put_Line("State machine definition:");
   -- Declare state machine
-  MY_ADD_TRANSITION ( (UNKNOWN,  DETACH,    DETACHED) );
-  MY_ADD_TRANSITION ( (UNKNOWN,  START,     STARTING) );
-  MY_ADD_TRANSITION ( (UNKNOWN,  TRUE,      STARTING) );
-  MY_ADD_TRANSITION ( (UNKNOWN,  ATTACH,    UNKNOWN) );
-  MY_ADD_TRANSITION ( (UNKNOWN,  DEFAULT,   ERROR)    );
-  MY_ADD_TRANSITION ( (STARTING, DETACH,    DETACHED) );
-  MY_ADD_TRANSITION ( (STARTING, START,     STARTING) );
-  MY_ADD_TRANSITION ( (STARTING, FAILURE,   FAILED)   );
-  MY_ADD_TRANSITION ( (STARTING, SUCCESS,   OK)       );
-  MY_ADD_TRANSITION ( (STARTING, ATTACH,    STARTING) );
-  MY_ADD_TRANSITION ( (STARTING, DEFAULT,   ERROR)    );
-  MY_ADD_TRANSITION ( (FAILED,   DETACH,    DETACHED) );
-  MY_ADD_TRANSITION ( (FAILED,   START,     STARTING) );
-  MY_ADD_TRANSITION ( (FAILED,   ATTACH,    FAILED)   );
-  MY_ADD_TRANSITION ( (FAILED,   DEFAULT,   ERROR)    );
-  MY_ADD_TRANSITION ( (OK,       DETACH,    DETACHED) );
-  MY_ADD_TRANSITION ( (OK,       FAILURE,   FAILED)   );
-  MY_ADD_TRANSITION ( (OK,       ATTACH,    OK)       );
-  MY_ADD_TRANSITION ( (OK,       DEFAULT,   ERROR)    );
-  MY_ADD_TRANSITION ( (DETACHED, ATTACH,    UNKNOWN)  );
-  MY_ADD_TRANSITION ( (ERROR,    DETACH,    DETACHED) );
+  My_Add_Transition ( (Unknown,  Detach,    Detached) );
+  My_Add_Transition ( (Unknown,  Start,     Starting) );
+  My_Add_Transition ( (Unknown,  True,      Starting) );
+  My_Add_Transition ( (Unknown,  Attach,    Unknown) );
+  My_Add_Transition ( (Unknown,  Default,   Error)    );
+  My_Add_Transition ( (Starting, Detach,    Detached) );
+  My_Add_Transition ( (Starting, Start,     Starting) );
+  My_Add_Transition ( (Starting, Failure,   Failed)   );
+  My_Add_Transition ( (Starting, Success,   Ok)       );
+  My_Add_Transition ( (Starting, Attach,    Starting) );
+  My_Add_Transition ( (Starting, Default,   Error)    );
+  My_Add_Transition ( (Failed,   Detach,    Detached) );
+  My_Add_Transition ( (Failed,   Start,     Starting) );
+  My_Add_Transition ( (Failed,   Attach,    Failed)   );
+  My_Add_Transition ( (Failed,   Default,   Error)    );
+  My_Add_Transition ( (Ok,       Detach,    Detached) );
+  My_Add_Transition ( (Ok,       Failure,   Failed)   );
+  My_Add_Transition ( (Ok,       Attach,    Ok)       );
+  My_Add_Transition ( (Ok,       Default,   Error)    );
+  My_Add_Transition ( (Detached, Attach,    Unknown)  );
+  My_Add_Transition ( (Error,    Detach,    Detached) );
 -- For true_loop detection
 --MY_ADD_TRANSITION ( (OK,       TRUE,      FAILED)   );
 --MY_ADD_TRANSITION ( (FAILED,   TRUE,      OK)       );
-  MY_IO.PUT_LINE("End of state machine definition.");
-  MY_IO.NEW_LINE;
-  END_DECLARATION;
+  My_Io.Put_Line("End of state machine definition.");
+  My_Io.New_Line;
+  End_Declaration;
 
-  MY_IO.PUT_LINE ("Initial state : " & STATE_LIST'IMAGE(CURRENT_STATE));
+  My_Io.Put_Line ("Initial state : " & State_List'Image(Current_State));
 
   -- Drive
   loop
-    CUR_STATE := CURRENT_STATE;
+    Cur_State := Current_State;
 
-    VALID_EVENT := TRUE;
-    case CUR_STATE is
-      when FAILED =>
-        MY_IO.PUT_LINE (" test program : setting state to unknown");
-        SET_STATE (UNKNOWN);
+    Valid_Event := True;
+    case Cur_State is
+      when Failed =>
+        My_Io.Put_Line (" test program : setting state to unknown");
+        Set_State (Unknown);
       when others =>
         begin 
-          EVENT := GET_EVENT;
+          Event := Get_Event;
         exception
           when others =>
-            VALID_EVENT := FALSE;
+            Valid_Event := False;
         end;
-        if VALID_EVENT then
-          NEW_EVENT (EVENT);
+        if Valid_Event then
+          New_Event (Event);
         else
-          MY_IO.PUT_LINE (" ???");
+          My_Io.Put_Line (" ???");
         end if;
     end case;
   end loop;
 
-end T_STATE_MACHINE;
+end T_State_Machine;

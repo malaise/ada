@@ -77,7 +77,7 @@ procedure Impot_00 is
         Put (Message);
         Put (" : ");
         Val := Get_Real;
-        FRAC := My_Math.Frac (Val);
+        Frac := My_Math.Frac (Val);
         if (Frac /= 0.0) and then (Frac /= 0.5) then
           raise Constraint_Error;
         end if;
@@ -149,7 +149,7 @@ begin
     -- arrondi a la dizaine de francs inferieure}
     Resultat := Somme (My_Math.Inte (My_Math.Real (Resultat/10.0) * 10.0) );
     Revenu_Net_Imposable := Resultat;
-    Ecrit ("Revenu net imposable : ", REVENU_NET_IMPOSABLE, "F");
+    Ecrit ("Revenu net imposable : ", Revenu_Net_Imposable, "F");
   end;
 
   -- 3. 4. 5. NOMBRE DE PARTS, QUOTIENT FAMILIAL et de L'IMPOT << I >>
@@ -173,7 +173,7 @@ begin
       4=> ( Somme_Max=>149_110.0, Coefficient=>3175, Fixe=>18_466.70),
       5=> ( Somme_Max=>242_620.0, Coefficient=>4175, Fixe=>33_377.70),
       6=> ( Somme_Max=>299_200.0, Coefficient=>4725, Fixe=>46_721.80),
-      7=> ( Somme_Max=>Somme'LAST,Coefficient=>5325, Fixe=>64_673.80));
+      7=> ( Somme_Max=>Somme'Last,Coefficient=>5325, Fixe=>64_673.80));
   begin
     -- saisie du nombre de parts
     Nbre_Part := Get_ParT ("Entrez le nombre de parts");

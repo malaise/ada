@@ -1,61 +1,61 @@
-with QUEUES;
-with MY_IO;
-procedure T_FIFO is
+with Queues;
+with My_Io;
+procedure T_Fifo is
 
-  SIZE : constant := 5;
-  N : POSITIVE;
+  Size : constant := 5;
+  N : Positive;
 
-  package MY_FIFO is new QUEUES.FIFO (
-   SIZE => SIZE,
-   ITEM => POSITIVE);
+  package My_Fifo is new Queues.Fifo (
+   Size => Size,
+   Item => Positive);
 
-  procedure DUMP is
-    V : POSITIVE;
+  procedure Dump is
+    V : Positive;
   begin
-    for I in 1 .. SIZE loop
-      MY_FIFO.LOOK_LAST (V, I);
-      MY_IO.PUT_LINE ("Look "  & INTEGER'IMAGE (I) &
-                       " --> " & POSITIVE'IMAGE (V) );
+    for I in 1 .. Size loop
+      My_Fifo.Look_Last (V, I);
+      My_Io.Put_Line ("Look "  & Integer'Image (I) &
+                       " --> " & Positive'Image (V) );
     end loop;
   exception
-    when MY_FIFO.FIFO_NOT =>
-      MY_IO.PUT_LINE ("Look done");
-    when MY_FIFO.FIFO_EMPTY =>
-      MY_IO.PUT_LINE ("FIFO empty");
+    when My_Fifo.Fifo_Not =>
+      My_Io.Put_Line ("Look done");
+    when My_Fifo.Fifo_Empty =>
+      My_Io.Put_Line ("FIFO empty");
       raise;
-  end DUMP;
+  end Dump;
 
-  procedure PUSH (I : in POSITIVE) is
+  procedure Push (I : in Positive) is
   begin
-    MY_FIFO.PUSH (I);
+    My_Fifo.Push (I);
   exception
-    when MY_FIFO.FIFO_FULL =>
-      MY_IO.PUT_LINE ("FIFO full. Discard last then push again");
-      MY_FIFO.DISCARD_LAST;
-      MY_FIFO.PUSH (I);
-  end PUSH;
+    when My_Fifo.Fifo_Full =>
+      My_Io.Put_Line ("FIFO full. Discard last then push again");
+      My_Fifo.Discard_Last;
+      My_Fifo.Push (I);
+  end Push;
 
 
 begin
-  MY_IO.PUT_LINE ("Fifo size is " & POSITIVE'IMAGE (SIZE));
+  My_Io.Put_Line ("Fifo size is " & Positive'Image (Size));
 
   for I in 1 .. 10 loop
-    MY_IO.PUT_LINE ("Push " & POSITIVE'IMAGE (I));
-    PUSH (I);
-    DUMP;
+    My_Io.Put_Line ("Push " & Positive'Image (I));
+    Push (I);
+    Dump;
   end loop;
 
   loop
-    MY_IO.NEW_LINE;
-    MY_FIFO.POP (N);
-    MY_IO.PUT_LINE ("Pop ==> " & POSITIVE'IMAGE(N));
+    My_Io.New_Line;
+    My_Fifo.Pop (N);
+    My_Io.Put_Line ("Pop ==> " & Positive'Image(N));
     begin
-      DUMP;
+      Dump;
     exception
-      when MY_FIFO.FIFO_EMPTY => exit;
+      when My_Fifo.Fifo_Empty => exit;
     end;
   end loop;
 
-end T_FIFO;
+end T_Fifo;
 
 

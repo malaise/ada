@@ -1,79 +1,79 @@
-with TEXT_IO;
-with MY_MATH; use MY_MATH;
-with INTE_IO, REAL_IO, BOOL_IO;
-separate (MCD_MNG)
+with Text_Io;
+with My_Math; use My_Math;
+with Inte_Io, Real_Io, Bool_Io;
+separate (Mcd_Mng)
 
-package body IOS is 
+package body Ios is 
 
-  INTE_FORMAT_SET : BOOLEAN := FALSE;
-  REAL_FORMAT_SET : BOOLEAN := FALSE;
+  Inte_Format_Set : Boolean := False;
+  Real_Format_Set : Boolean := False;
 
-  procedure SET_OBASE (BASE : in ITEM_REC) is
+  procedure Set_Obase (Base : in Item_Rec) is
   begin
-    if BASE.KIND /= INTE then
-      raise INVALID_ARGUMENT;
+    if Base.Kind /= Inte then
+      raise Invalid_Argument;
     end if;
-    INTE_IO.DEFAULT_BASE := TEXT_IO.NUMBER_BASE(BASE.VAL_INTE);
+    Inte_Io.Default_Base := Text_Io.Number_Base(Base.Val_Inte);
   exception
     when others =>
-      raise INVALID_ARGUMENT;
-  end SET_OBASE;
+      raise Invalid_Argument;
+  end Set_Obase;
 
-  procedure FORMAT (ITEM : in ITEM_REC) is
-    R : MY_MATH.REAL;
-    I : MY_MATH.INTE;
+  procedure Format (Item : in Item_Rec) is
+    R : My_Math.Real;
+    I : My_Math.Inte;
   begin
-    case ITEM.KIND is
-      when INTE =>
-        INTE_IO.DEFAULT_WIDTH := TEXT_IO.FIELD (ITEM.VAL_INTE);
-        INTE_FORMAT_SET := TRUE;
-      when REAL =>
-        R := MY_MATH.INT(ITEM.VAL_REAL);
-        I := MY_MATH.ROUND(R);
-        REAL_IO.DEFAULT_FORE := TEXT_IO.FIELD(I);
+    case Item.Kind is
+      when Inte =>
+        Inte_Io.Default_Width := Text_Io.Field (Item.Val_Inte);
+        Inte_Format_Set := True;
+      when Real =>
+        R := My_Math.Int(Item.Val_Real);
+        I := My_Math.Round(R);
+        Real_Io.Default_Fore := Text_Io.Field(I);
         -- AFT 0 .. 999
-        R := MY_MATH.FRAC(ITEM.VAL_REAL) * 1000.0;
-        I := MY_MATH.ROUND(R);
-        REAL_IO.DEFAULT_AFT := TEXT_IO.FIELD(I);
+        R := My_Math.Frac(Item.Val_Real) * 1000.0;
+        I := My_Math.Round(R);
+        Real_Io.Default_Aft := Text_Io.Field(I);
         -- EXP 3
-        REAL_IO.DEFAULT_EXP := 4;
-        REAL_FORMAT_SET := TRUE;
+        Real_Io.Default_Exp := 4;
+        Real_Format_Set := True;
       when others =>
-        raise INVALID_ARGUMENT;
+        raise Invalid_Argument;
     end case;
   exception
     when others =>
-      raise INVALID_ARGUMENT;
-  end FORMAT;
+      raise Invalid_Argument;
+  end Format;
 
-  procedure CHECK_DEFAULT_FORMATS is
+  procedure Check_Default_Formats is
   begin
-    if not INTE_FORMAT_SET then
-      FORMAT ((KIND => INTE, VAL_INTE => 5));
+    if not Inte_Format_Set then
+      Format ((Kind => Inte, Val_Inte => 5));
     end if;
-    if not REAL_FORMAT_SET then
-      FORMAT ((KIND => REAL, VAL_REAL => 5.003));
+    if not Real_Format_Set then
+      Format ((Kind => Real, Val_Real => 5.003));
     end if;
-  end CHECK_DEFAULT_FORMATS;
+  end Check_Default_Formats;
     
     
-  procedure PUT (ITEM : in ITEM_REC) is
+  procedure Put (Item : in Item_Rec) is
   begin
-    CHECK_DEFAULT_FORMATS;
+    Check_Default_Formats;
 
-    case ITEM.KIND is
-      when INTE =>
-        INTE_IO.PUT(ITEM.VAL_INTE);
-      when REAL =>
-        REAL_IO.PUT(ITEM.VAL_REAL);
-      when BOOL  =>
-        if ITEM.VAL_BOOL then
-          TEXT_IO.PUT("True");
+    case Item.Kind is
+      when Inte =>
+        Inte_Io.Put(Item.Val_Inte);
+      when Real =>
+        Real_Io.Put(Item.Val_Real);
+      when Bool  =>
+        if Item.Val_Bool then
+          Text_Io.Put("True");
         else
-          TEXT_IO.PUT("False");
+          Text_Io.Put("False");
         end if;
-      when CHRS =>
-        if ITEM.VAL_TEXT(1) = '"' then
+      when Chrs =>
+        if Item.Val_Text(1) = '"' then
           TEXT_IO.PUT (ITEM.VAL_TEXT(2 .. ITEM.VAL_LEN - 1));
         else
           TEXT_IO.PUT (ITEM.VAL_TEXT(1 .. ITEM.VAL_LEN));

@@ -1,70 +1,70 @@
-with MY_MATH;
-use MY_MATH;
-with NORMAL;
+with My_Math;
+use My_Math;
+with Normal;
 -- to convert got strings in data fields, and fields in string to be put
-package body NAV_FORMAT is
+package body Nav_Format is
 
 
 
   -- from speed to string
-  function IMAG (SPEED : NAV_TYPES.T_SPEED; SET : BOOLEAN := TRUE)
-   return STRING is
-    STR_UNSET : constant STRING := "???.?";
-    STR : STRING (1 .. STR_UNSET'LAST);
-    I : INTEGER;
+  function Imag (Speed : Nav_Types.T_Speed; Set : Boolean := True)
+   return String is
+    Str_Unset : constant String := "???.?";
+    Str : String (1 .. Str_Unset'Last);
+    I : Integer;
   begin
-    if SET then
-      STR (1 .. 3) := NORMAL (INTEGER (MY_MATH.TRUNC (MY_MATH.REAL(SPEED))), 3, TRUE, ' ');
-      STR (4) := '.';
-      I := INTEGER (MY_MATH.ROUND (MY_MATH.FRAC(MY_MATH.REAL(SPEED)) * 10.0));
-      STR (5 .. 5) := NORMAL (I, 1, FALSE, '0');
-      return STR;
+    if Set then
+      Str (1 .. 3) := Normal (Integer (My_Math.Trunc (My_Math.Real(Speed))), 3, True, ' ');
+      Str (4) := '.';
+      I := Integer (My_Math.Round (My_Math.Frac(My_Math.Real(Speed)) * 10.0));
+      Str (5 .. 5) := Normal (I, 1, False, '0');
+      return Str;
     else
-      return STR_UNSET;
+      return Str_Unset;
     end if;
-  end IMAG;
+  end Imag;
 
   -- from string to angle
-  function IMAG (ANGLE : NAV_TYPES.T_ANGLE; SET : BOOLEAN := TRUE)
-   return STRING is
-    STR_UNSET : constant STRING := "???.??";
-    STR : STRING (1 .. STR_UNSET'LAST);
+  function Imag (Angle : Nav_Types.T_Angle; Set : Boolean := True)
+   return String is
+    Str_Unset : constant String := "???.??";
+    Str : String (1 .. Str_Unset'Last);
   begin
-    if SET then
-      STR (1 .. 3) := NORMAL (INTEGER (ANGLE.DEGREES), 3, TRUE, ' ');
-      STR (4) := '.';
-      STR (5 .. 6) := NORMAL (INTEGER (ANGLE.MINUTES), 2, TRUE, '0');
-      return STR;
+    if Set then
+      Str (1 .. 3) := Normal (Integer (Angle.Degrees), 3, True, ' ');
+      Str (4) := '.';
+      Str (5 .. 6) := Normal (Integer (Angle.Minutes), 2, True, '0');
+      return Str;
     else
-      return STR_UNSET;
+      return Str_Unset;
     end if;
-  end IMAG;
+  end Imag;
 
   -- from string to drift
-  function IMAG (DRIFT : NAV_TYPES.T_DRIFT; SET : BOOLEAN := TRUE)
-   return STRING is
-    STR_UNSET : constant STRING := "????.??";
-    STR : STRING (1 .. STR_UNSET'LAST);
+  function Imag (Drift : Nav_Types.T_Drift; Set : Boolean := True)
+   return String is
+    Str_Unset : constant String := "????.??";
+    Str : String (1 .. Str_Unset'Last);
   begin
-    if SET then
-      if DRIFT.POSITIV then
-        STR(1) := '+';
+    if Set then
+      if Drift.Positiv then
+        Str(1) := '+';
       else
-        STR(1) := '-';
+        Str(1) := '-';
       end if;
-      STR (2 .. 4) := NORMAL (INTEGER (DRIFT.DEGREES), 3, TRUE, ' ');
-      STR (5) := '.';
-      STR (6 .. 7) := NORMAL (INTEGER (DRIFT.MINUTES), 2, TRUE, '0');
-      return STR;
+      Str (2 .. 4) := Normal (Integer (Drift.Degrees), 3, True, ' ');
+      Str (5) := '.';
+      Str (6 .. 7) := Normal (Integer (Drift.Minutes), 2, True, '0');
+      return Str;
     else
-      return STR_UNSET;
+      return Str_Unset;
     end if;
-  end IMAG;
+  end Imag;
 
-  function IS_DIGIT (C : CHARACTER) return BOOLEAN is
+  function Is_Digit (C : Character) return Boolean is
   begin
     return C >= '0' and then C <= '9';
-  end IS_DIGIT;
+  end Is_Digit;
 
 
   -- to check generaly the string:
@@ -73,251 +73,251 @@ package body NAV_FORMAT is
   -- returns index of first and last significant character
   -- of ok, pos is index of '.' or 0; if error, it's error position;
   --  if clear, no meaning
-  procedure CHECK (STR : in STRING;
-   FIRST, LAST : out POSITIVE; SIGN : out BOOLEAN;
-   POS : out NATURAL; RES : out FORMAT_RESULT) is
-    F, L : POSITIVE;
-    FIRST_DIGIT : POSITIVE;
-    DIGIT_FOUND : BOOLEAN;
-    C : CHARACTER;
-    DOT : BOOLEAN;
+  procedure Check (Str : in String;
+   First, Last : out Positive; Sign : out Boolean;
+   Pos : out Natural; Res : out Format_Result) is
+    F, L : Positive;
+    First_Digit : Positive;
+    Digit_Found : Boolean;
+    C : Character;
+    Dot : Boolean;
   begin
     -- parse leading and tailing spaces
-    F := STR'FIRST;
-    while F <= STR'LAST and then STR(F) = ' ' loop
+    F := Str'First;
+    while F <= Str'Last and then Str(F) = ' ' loop
       F := F + 1;
     end loop;
-    L := STR'LAST;
-    while L >= STR'FIRST and then STR(L) = ' ' loop
+    L := Str'Last;
+    while L >= Str'First and then Str(L) = ' ' loop
       L := L - 1;
     end loop;
-    if STR'LENGTH = 0 or else STR(F) = ' ' then
+    if Str'Length = 0 or else Str(F) = ' ' then
       -- only spaces : ERR
-      POS := STR'FIRST;
-      RES := ERROR;
+      Pos := Str'First;
+      Res := Error;
       return;
     end if;
 
-    FIRST := F;
-    LAST := L;
-    SIGN := FALSE;
+    First := F;
+    Last := L;
+    Sign := False;
 
 
     -- first significant char may be + -
-    if STR(F) = '+' or else STR(F) = '-' then
-      SIGN := TRUE;
+    if Str(F) = '+' or else Str(F) = '-' then
+      Sign := True;
       -- go on starting from next significant char
-      FIRST_DIGIT := F + 1;
-      while FIRST_DIGIT <= STR'LAST and then STR(FIRST_DIGIT) = ' ' loop
-        FIRST_DIGIT := FIRST_DIGIT + 1;
+      First_Digit := F + 1;
+      while First_Digit <= Str'Last and then Str(First_Digit) = ' ' loop
+        First_Digit := First_Digit + 1;
       end loop;
     else
-      FIRST_DIGIT := F;
+      First_Digit := F;
     end if;
 
    -- general syntax ?  or     {d} ['.'{d}]
-   DOT := FALSE; -- no dot
-   POS := 0;
-   for I in FIRST_DIGIT .. L loop
-     C := STR(I);
+   Dot := False; -- no dot
+   Pos := 0;
+   for I in First_Digit .. L loop
+     C := Str(I);
      if C = '?' then
-       RES := UNSET;
-       RETURN;
-     elsif IS_DIGIT(C) then
-       DIGIT_FOUND := TRUE;
+       Res := Unset;
+       Return;
+     elsif Is_Digit(C) then
+       Digit_Found := True;
      elsif C = '.' then
-       POS := I;
-       if DOT then
+       Pos := I;
+       if Dot then
          -- a second dot : ERR
-         RES := ERROR;
+         Res := Error;
          return;
        else
-         DOT := TRUE;
-         if not DIGIT_FOUND then
+         Dot := True;
+         if not Digit_Found then
            -- begin with DOT???
-           RES := ERROR;
+           Res := Error;
            return;
          end if;
        end if;
      else
        -- unknown char
-       POS := I;
-       RES := ERROR;
+       Pos := I;
+       Res := Error;
        return;
      end if;
    end loop;
 
    -- last significant char must be a digit (or ? , but already returned)
-   if not IS_DIGIT(C) then
-     POS := L;
-     RES := ERROR;
+   if not Is_Digit(C) then
+     Pos := L;
+     Res := Error;
      return;
    else
-     RES := SET;
+     Res := Set;
      return;
    end if;
 
-  end CHECK;
+  end Check;
 
 
   -- from string to speed
-  procedure VALUE (STR : in STRING; SPEED : out NAV_TYPES.T_SPEED;
-   RES : out FORMAT_RESULT; POS : out POSITIVE) is
-    F, L : POSITIVE;
-    S : BOOLEAN;
-    P : NATURAL;
-    R : FORMAT_RESULT;
-    SPE : FLOAT;
+  procedure Value (Str : in String; Speed : out Nav_Types.T_Speed;
+   Res : out Format_Result; Pos : out Positive) is
+    F, L : Positive;
+    S : Boolean;
+    P : Natural;
+    R : Format_Result;
+    Spe : Float;
   begin
-    POS := 1;
-    CHECK (STR, F, L, S, P, R);
-    if R = UNSET then
-      RES := UNSET;
+    Pos := 1;
+    Check (Str, F, L, S, P, R);
+    if R = Unset then
+      Res := Unset;
       return;
     end if;
     if S then
       -- signed speed forbidden: error at first signif char
       P := F;
-      R := ERROR;
+      R := Error;
     end if;
 
-    if R = SET and then P /= 0 and then L - P > 1 then
+    if R = Set and then P /= 0 and then L - P > 1 then
       -- only 1 digit after dot is allowed
-      POS := P + 2;
-      RES := ERROR;
+      Pos := P + 2;
+      Res := Error;
       return;
     end if;
-    if R = ERROR then
-      POS := P;
-      RES := R;
+    if R = Error then
+      Pos := P;
+      Res := R;
       return;
     end if;
 
     if P = 0 then
       -- no dot
-      SPE := FLOAT(INTEGER'VALUE( STR(F..L) ));
+      Spe := Float(Integer'Value( Str(F..L) ));
     else
       -- dot and 1 digit
-      SPE := FLOAT(INTEGER'VALUE( STR(F..P-1) ));
-      SPE := SPE + ( FLOAT(INTEGER'VALUE( STR(P+1..L) )) / 10.0);
+      Spe := Float(Integer'Value( Str(F..P-1) ));
+      Spe := Spe + ( Float(Integer'Value( Str(P+1..L) )) / 10.0);
     end if;
-    SPEED := NAV_TYPES.T_SPEED (SPE);
-    RES := SET;
-  end VALUE;
+    Speed := Nav_Types.T_Speed (Spe);
+    Res := Set;
+  end Value;
 
 
 
 
   -- from string to angle
-  procedure VALUE (STR : in STRING; ANGLE : out NAV_TYPES.T_ANGLE;
-   RES : out FORMAT_RESULT; POS : out POSITIVE) is
-    F, L : POSITIVE;
-    S : BOOLEAN;
-    P : NATURAL;
-    R : FORMAT_RESULT;
+  procedure Value (Str : in String; Angle : out Nav_Types.T_Angle;
+   Res : out Format_Result; Pos : out Positive) is
+    F, L : Positive;
+    S : Boolean;
+    P : Natural;
+    R : Format_Result;
   begin
-    POS := 1;
-    CHECK (STR, F, L, S, P, R);
-    if R = UNSET then
-      RES := UNSET;
+    Pos := 1;
+    Check (Str, F, L, S, P, R);
+    if R = Unset then
+      Res := Unset;
       return;
     end if;
     if S then
       -- signed angle forbidden: error at first signif char
       P := F;
-      R := ERROR;
+      R := Error;
     end if;
 
-    if R = SET and then P /= 0 and then L - P > 2 then
+    if R = Set and then P /= 0 and then L - P > 2 then
       -- only 1 or 2 digits after dot is allowed
-      POS := P + 3;
-      RES := ERROR;
+      Pos := P + 3;
+      Res := Error;
       return;
     end if;
-    if R = ERROR then
-      POS := P;
-      RES := R;
+    if R = Error then
+      Pos := P;
+      Res := R;
       return;
     end if;
 
     if P = 0 then
       -- no dot
-      ANGLE.DEGREES := NAV_TYPES.T_DEGREE'VALUE( STR(F..L) );
-      ANGLE.MINUTES := 0;
+      Angle.Degrees := Nav_Types.T_Degree'Value( Str(F..L) );
+      Angle.Minutes := 0;
     elsif P = L-1 then
       -- dot and 1 digit which is in 10 minutes
       declare
-        use NAV_TYPES;
+        use Nav_Types;
       begin
-        ANGLE.DEGREES := NAV_TYPES.T_DEGREE'VALUE( STR(F..P-1) );
-        ANGLE.MINUTES := NAV_TYPES.T_MINUTE'VALUE( STR(P+1..L) )
-         * NAV_TYPES.T_MINUTE'(10);
+        Angle.Degrees := Nav_Types.T_Degree'Value( Str(F..P-1) );
+        Angle.Minutes := Nav_Types.T_Minute'Value( Str(P+1..L) )
+         * Nav_Types.T_Minute'(10);
       end;
     else
       -- dot and 2 digits which are minutes
-      ANGLE.DEGREES := NAV_TYPES.T_DEGREE'VALUE( STR(F..P-1) );
-      ANGLE.MINUTES := NAV_TYPES.T_MINUTE'VALUE( STR(P+1..L) );
+      Angle.Degrees := Nav_Types.T_Degree'Value( Str(F..P-1) );
+      Angle.Minutes := Nav_Types.T_Minute'Value( Str(P+1..L) );
     end if;
-    RES := SET;
- end VALUE;
+    Res := Set;
+ end Value;
 
   -- from string to drift
-  procedure VALUE (STR : in STRING; DRIFT : out NAV_TYPES.T_DRIFT;
-   RES : out FORMAT_RESULT; POS : out POSITIVE) is
-    F, L : POSITIVE;
-    S : BOOLEAN;
-    P : NATURAL;
-    R : FORMAT_RESULT;
+  procedure Value (Str : in String; Drift : out Nav_Types.T_Drift;
+   Res : out Format_Result; Pos : out Positive) is
+    F, L : Positive;
+    S : Boolean;
+    P : Natural;
+    R : Format_Result;
   begin
-    POS := 1;
-    CHECK (STR, F, L, S, P, R);
-    if R = UNSET then
-      RES := UNSET;
+    Pos := 1;
+    Check (Str, F, L, S, P, R);
+    if R = Unset then
+      Res := Unset;
       return;
     end if;
 
-    if R = SET and then P /= 0 and then L - P > 2 then
+    if R = Set and then P /= 0 and then L - P > 2 then
       -- only 1 or 2 digits after dot is allowed
-      POS := P + 3;
-      RES := ERROR;
+      Pos := P + 3;
+      Res := Error;
       return;
     end if;
-    if R = ERROR then
-      POS := P;
-      RES := R;
+    if R = Error then
+      Pos := P;
+      Res := R;
       return;
     end if;
 
     if S then
       -- signed drift at first signif char
-      DRIFT.POSITIV := (STR (F) = '+');
+      Drift.Positiv := (Str (F) = '+');
       loop
         F := F + 1;
-        exit when STR(F) /= ' ';
+        exit when Str(F) /= ' ';
       end loop;
     else
-      DRIFT.POSITIV := TRUE;
+      Drift.Positiv := True;
     end if;
 
     if P = 0 then
       -- no dot
-      DRIFT.DEGREES := NAV_TYPES.T_DEG_DRIFT'VALUE( STR(F..L) );
-      DRIFT.MINUTES := 0;
+      Drift.Degrees := Nav_Types.T_Deg_Drift'Value( Str(F..L) );
+      Drift.Minutes := 0;
     elsif P = L-1 then
       -- dot and 1 digit which is in 10 minutes
       declare
-        use NAV_TYPES;
+        use Nav_Types;
       begin
-        DRIFT.DEGREES := NAV_TYPES.T_DEG_DRIFT'VALUE( STR(F..P-1) );
-        DRIFT.MINUTES := NAV_TYPES.T_MINUTE'VALUE( STR(P+1..L) )
-         * NAV_TYPES.T_MINUTE'(10);
+        Drift.Degrees := Nav_Types.T_Deg_Drift'Value( Str(F..P-1) );
+        Drift.Minutes := Nav_Types.T_Minute'Value( Str(P+1..L) )
+         * Nav_Types.T_Minute'(10);
        end;
     else
       -- dot and 2 digits which are minutes
-      DRIFT.DEGREES := NAV_TYPES.T_DEG_DRIFT'VALUE( STR(F..P-1) );
-      DRIFT.MINUTES := NAV_TYPES.T_MINUTE'VALUE( STR(P+1..L) );
+      Drift.Degrees := Nav_Types.T_Deg_Drift'Value( Str(F..P-1) );
+      Drift.Minutes := Nav_Types.T_Minute'Value( Str(P+1..L) );
     end if;
-    RES := SET;
- end VALUE;
+    Res := Set;
+ end Value;
 
-end NAV_FORMAT;
+end Nav_Format;

@@ -1,178 +1,178 @@
-with TEXT_IO, SEQUENTIAL_IO;
-with ADA.EXCEPTIONS;
-with DIRECTORY, TEXT_HANDLER;
+with Text_Io, Sequential_Io;
+with Ada.Exceptions;
+with Directory, Text_Handler;
 
-with OPER_DEF;
-package body FILE_MNG is
+with Oper_Def;
+package body File_Mng is
 
-  package OPER_IO is new SEQUENTIAL_IO(OPER_DEF.OPER_REC);
+  package Oper_Io is new Sequential_Io(Oper_Def.Oper_Rec);
 
 
   -- First record in file as to be this
   --  except amount which is the account amount
-  MAGIC_OPER : OPER_DEF.OPER_REC;
+  Magic_Oper : Oper_Def.Oper_Rec;
 
 
   -- Overwrites the list from file content
-  procedure LOAD (FILE_NAME : in STRING;
-                  OPER_LIST : in out OPER_LIST_MNG.LIST_TYPE;
-                  CAN_WRITE : out BOOLEAN) is
-    FILE : OPER_IO.FILE_TYPE;
+  procedure Load (File_Name : in String;
+                  Oper_List : in out Oper_List_Mng.List_Type;
+                  Can_Write : out Boolean) is
+    File : Oper_Io.File_Type;
     -- A record to read
-    LOC_OPER : OPER_DEF.OPER_REC; 
+    Loc_Oper : Oper_Def.Oper_Rec; 
     -- A list for tempo read
-    LOC_LIST : OPER_LIST_MNG.LIST_TYPE;
-    use OPER_DEF;
+    Loc_List : Oper_List_Mng.List_Type;
+    use Oper_Def;
   begin
     -- First test we can access file
     begin
-      OPER_IO.OPEN (FILE, OPER_IO.IN_FILE, FILE_NAME);
+      Oper_Io.Open (File, Oper_Io.In_File, File_Name);
     exception
-      when others => raise F_ACCESS_ERROR;
+      when others => raise F_Access_Error;
     end;
-    OPER_IO.CLOSE (FILE);
+    Oper_Io.Close (File);
 
     -- Then test we can write file
-    TEST_WRITE:
+    Test_Write:
     declare
-      WRITE_FILE : OPER_IO.FILE_TYPE;
+      Write_File : Oper_Io.File_Type;
     begin
-      OPER_IO.OPEN (WRITE_FILE, OPER_IO.APPEND_FILE, FILE_NAME);
-      CAN_WRITE := TRUE;
-      OPER_IO.CLOSE (WRITE_FILE);
+      Oper_Io.Open (Write_File, Oper_Io.Append_File, File_Name);
+      Can_Write := True;
+      Oper_Io.Close (Write_File);
     exception
       when others =>
         -- Cannot be opened for writting 
-        CAN_WRITE := FALSE;
-    end TEST_WRITE;
+        Can_Write := False;
+    end Test_Write;
 
     -- Then open file for work 
-    OPER_IO.OPEN (FILE, OPER_IO.IN_FILE, FILE_NAME);
-    OPER_IO.RESET (FILE);
+    Oper_Io.Open (File, Oper_Io.In_File, File_Name);
+    Oper_Io.Reset (File);
 
     -- Read magic record
     begin
-      OPER_IO.READ (FILE, LOC_OPER);
+      Oper_Io.Read (File, Loc_Oper);
     exception
       when others =>
         -- There should be at least the magic record
-        OPER_IO.CLOSE (FILE);
-        raise F_ACCESS_ERROR;
+        Oper_Io.Close (File);
+        raise F_Access_Error;
     end;
-    LOC_OPER.AMOUNT := MAGIC_OPER.AMOUNT;
-    if LOC_OPER /= MAGIC_OPER then
+    Loc_Oper.Amount := Magic_Oper.Amount;
+    if Loc_Oper /= Magic_Oper then
       -- Bad magic record
-      OPER_IO.CLOSE (FILE);
-      raise F_ACCESS_ERROR;
+      Oper_Io.Close (File);
+      raise F_Access_Error;
     end if;
 
     -- Read records from file to list
-    OPER_IO.RESET (FILE);
+    Oper_Io.Reset (File);
     loop
       begin
-        OPER_IO.READ (FILE, LOC_OPER);
+        Oper_Io.Read (File, Loc_Oper);
       exception
-        when OPER_IO.END_ERROR =>
+        when Oper_Io.End_Error =>
           exit;
       end;
-      OPER_LIST_MNG.INSERT (LOC_LIST, LOC_OPER);
+      Oper_List_Mng.Insert (Loc_List, Loc_Oper);
     end loop;
 
     -- Everything OK. Overwrite the existing list. Go to end.
-    OPER_LIST_MNG.DELETE_LIST (OPER_LIST);
-    OPER_LIST_MNG.ASSIGN (OPER_LIST, LOC_LIST);
-    OPER_LIST_MNG.MOVE_TO (OPER_LIST, OPER_LIST_MNG.PREV, 0, FALSE);
+    Oper_List_Mng.Delete_List (Oper_List);
+    Oper_List_Mng.Assign (Oper_List, Loc_List);
+    Oper_List_Mng.Move_To (Oper_List, Oper_List_Mng.Prev, 0, False);
 
-    OPER_IO.CLOSE (FILE);
+    Oper_Io.Close (File);
     
   exception
-    when F_ACCESS_ERROR =>
+    when F_Access_Error =>
       raise;
-    when FILE_ERROR : others =>
-      TEXT_IO.PUT_LINE ("Exception " & ADA.EXCEPTIONS.EXCEPTION_NAME(FILE_ERROR)
-                      & " raised while loading file " & FILE_NAME);
+    when File_Error : others =>
+      Text_Io.Put_Line ("Exception " & Ada.Exceptions.Exception_Name(File_Error)
+                      & " raised while loading file " & File_Name);
       begin
-        OPER_IO.CLOSE (FILE);
+        Oper_Io.Close (File);
       exception
         when others => null;
       end;
       -- Clean the garbage
-      OPER_LIST_MNG.DELETE_LIST (LOC_LIST);
-      raise F_IO_ERROR;
-  end LOAD;
+      Oper_List_Mng.Delete_List (Loc_List);
+      raise F_Io_Error;
+  end Load;
 
   -- Save the list in file
-  procedure SAVE (FILE_NAME : in STRING;
-                  OPER_LIST : in OPER_LIST_MNG.LIST_TYPE) is
+  procedure Save (File_Name : in String;
+                  Oper_List : in Oper_List_Mng.List_Type) is
     -- Position in list
-    LOC_POS : NATURAL; 
-    FILE : OPER_IO.FILE_TYPE;
+    Loc_Pos : Natural; 
+    File : Oper_Io.File_Type;
     -- A record to write
-    LOC_OPER, LOC_OPER_1 : OPER_DEF.OPER_REC; 
+    Loc_Oper, Loc_Oper_1 : Oper_Def.Oper_Rec; 
     -- A list for tempo move
-    LOC_LIST : OPER_LIST_MNG.LIST_TYPE;
+    Loc_List : Oper_List_Mng.List_Type;
   begin
-    OPER_LIST_MNG.ASSIGN (LOC_LIST, OPER_LIST);
+    Oper_List_Mng.Assign (Loc_List, Oper_List);
 
     -- Save current position
-    LOC_POS := OPER_LIST_MNG.GET_POSITION (LOC_LIST);
+    Loc_Pos := Oper_List_Mng.Get_Position (Loc_List);
 
     -- Create / erase file
     begin
-      OPER_IO.OPEN(FILE, OPER_IO.OUT_FILE, FILE_NAME);
-      OPER_IO.DELETE(FILE);
-      OPER_IO.CREATE(FILE, OPER_IO.OUT_FILE, FILE_NAME);
+      Oper_Io.Open(File, Oper_Io.Out_File, File_Name);
+      Oper_Io.Delete(File);
+      Oper_Io.Create(File, Oper_Io.Out_File, File_Name);
     exception
-      when OPER_IO.NAME_ERROR =>
+      when Oper_Io.Name_Error =>
         -- New file
         begin
-          OPER_IO.CREATE (FILE, OPER_IO.OUT_FILE, FILE_NAME);
+          Oper_Io.Create (File, Oper_Io.Out_File, File_Name);
         exception
           when others =>
             -- Cannot create
-            raise F_ACCESS_ERROR;
+            raise F_Access_Error;
         end;
       when others =>
         -- Other error on open
-        raise F_ACCESS_ERROR;
+        raise F_Access_Error;
     end;
 
     -- Rewind, write magic record with amount of first record
-    OPER_LIST_MNG.MOVE_TO (LOC_LIST, OPER_LIST_MNG.NEXT, 0, FALSE);
-    OPER_LIST_MNG.READ (LOC_LIST, LOC_OPER, OPER_LIST_MNG.CURRENT);
-    LOC_OPER_1 := MAGIC_OPER;
-    LOC_OPER_1.AMOUNT := LOC_OPER.AMOUNT;
-    OPER_IO.WRITE (FILE, LOC_OPER_1);
+    Oper_List_Mng.Move_To (Loc_List, Oper_List_Mng.Next, 0, False);
+    Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
+    Loc_Oper_1 := Magic_Oper;
+    Loc_Oper_1.Amount := Loc_Oper.Amount;
+    Oper_Io.Write (File, Loc_Oper_1);
 
     -- Write other records
     loop
       begin
-        OPER_LIST_MNG.MOVE_TO (LOC_LIST, OPER_LIST_MNG.NEXT);
+        Oper_List_Mng.Move_To (Loc_List, Oper_List_Mng.Next);
       exception
-        when OPER_LIST_MNG.NOT_IN_LIST =>
+        when Oper_List_Mng.Not_In_List =>
           exit;
       end;
-      OPER_LIST_MNG.READ (LOC_LIST, LOC_OPER, OPER_LIST_MNG.CURRENT);
-      OPER_IO.WRITE (FILE, LOC_OPER);
+      Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
+      Oper_Io.Write (File, Loc_Oper);
     end loop;
 
     -- Done. Close file, move to saved position
-    OPER_IO.CLOSE (FILE);
-    OPER_LIST_MNG.MOVE_TO (LOC_LIST, OPER_LIST_MNG.NEXT, LOC_POS-1, FALSE);
+    Oper_Io.Close (File);
+    Oper_List_Mng.Move_To (Loc_List, Oper_List_Mng.Next, Loc_Pos-1, False);
 
   exception
-    when F_ACCESS_ERROR =>
+    when F_Access_Error =>
       raise;
-    when FILE_ERROR : others =>
-      TEXT_IO.PUT_LINE ("Exception " & ADA.EXCEPTIONS.EXCEPTION_NAME(FILE_ERROR)
-                      & " raised while closing file " & FILE_NAME);
+    when File_Error : others =>
+      Text_Io.Put_Line ("Exception " & Ada.Exceptions.Exception_Name(File_Error)
+                      & " raised while closing file " & File_Name);
       begin
-        OPER_IO.CLOSE (FILE);
+        Oper_Io.Close (File);
       exception
         when others => null;
       end;
-      raise F_IO_ERROR;
-  end SAVE;
+      raise F_Io_Error;
+  end Save;
 
-end FILE_MNG;
+end File_Mng;
 

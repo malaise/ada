@@ -1,35 +1,35 @@
-with ARGUMENT, TEXT_IO, CALENDAR;
-procedure WAIT is
+with Argument, Text_Io, Calendar;
+procedure Wait is
 
-  START : constant CALENDAR.TIME := CALENDAR.CLOCK;
+  Start : constant Calendar.Time := Calendar.Clock;
 
-  package DUR_IO is new TEXT_IO.FIXED_IO(DURATION);
-  package INT_IO is new TEXT_IO.INTEGER_IO(INTEGER);
+  package Dur_Io is new Text_Io.Fixed_Io(Duration);
+  package Int_Io is new Text_Io.Integer_Io(Integer);
 
-  DUR  : DURATION;
-  INT  : INTEGER;
-  LAST : POSITIVE;
+  Dur  : Duration;
+  Int  : Integer;
+  Last : Positive;
 
-  use CALENDAR;
+  use Calendar;
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG = 1 then
+  if Argument.Get_Nbre_Arg = 1 then
     begin
-      DUR_IO.GET(ARGUMENT.GET_PARAMETER, DUR, LAST);
+      Dur_Io.Get(Argument.Get_Parameter, Dur, Last);
     exception
       when others =>
-        INT_IO.GET(ARGUMENT.GET_PARAMETER, INT, LAST);
-        DUR := DURATION(INT);
+        Int_Io.Get(Argument.Get_Parameter, Int, Last);
+        Dur := Duration(Int);
     end;
-  elsif  ARGUMENT.GET_NBRE_ARG = 0 then
-    DUR := 1.0;
+  elsif  Argument.Get_Nbre_Arg = 0 then
+    Dur := 1.0;
   else
-    raise CONSTRAINT_ERROR;
+    raise Constraint_Error;
   end if;
-  delay DUR - (CALENDAR.CLOCK - START);
+  delay Dur - (Calendar.Clock - Start);
 
 exception
   when others => 
-    TEXT_IO.PUT_LINE("Usage : ""wait [seconds]""     (1.0 by default)."); 
-end WAIT; 
+    Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default)."); 
+end Wait; 

@@ -1,167 +1,167 @@
-with ARGUMENT, AFPX, CON_IO, DYNAMIC_LIST, DIR_MNG, TIMERS;
-procedure T_AFPX is
+with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Timers;
+procedure T_Afpx is
 
-  procedure DIR_SORT is new DIR_MNG.FILE_LIST_MNG.SORT (DIR_MNG.LESS_THAN);
-  DIR_LIST : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-  DIR_ITEM : DIR_MNG.FILE_ENTRY_REC;
-  AFPX_ITEM : AFPX.LINE_REC;
+  procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);
+  Dir_List : Dir_Mng.File_List_Mng.List_Type;
+  Dir_Item : Dir_Mng.File_Entry_Rec;
+  Afpx_Item : Afpx.Line_Rec;
 
-  CURSOR_FIELD : AFPX.FIELD_RANGE;
-  CURSOR_COL   : CON_IO.COL_RANGE;
-  PTG_RESULT   : AFPX.RESULT_REC;
-  REDISPLAY    : BOOLEAN;
-  FLIP_FLOP : BOOLEAN;
+  Cursor_Field : Afpx.Field_Range;
+  Cursor_Col   : Con_Io.Col_Range;
+  Ptg_Result   : Afpx.Result_Rec;
+  Redisplay    : Boolean;
+  Flip_Flop : Boolean;
 
-  TIMER_SS, TIMER_PER, TIMER_TMP : TIMERS.TIMER_ID;
-  function TIMER_CB (ID : in TIMERS.TIMER_ID) return BOOLEAN is
+  Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
+  function Timer_Cb (Id : in Timers.Timer_Id) return Boolean is
   begin
-    FLIP_FLOP := not FLIP_FLOP;
-    return TRUE;
-  end TIMER_CB;
+    Flip_Flop := not Flip_Flop;
+    return True;
+  end Timer_Cb;
 
-  use AFPX;
+  use Afpx;
 
-  procedure NEXT_FIELD (CURSOR_FIELD : in out AFPX.FIELD_RANGE) is
-    LOC : AFPX.ABSOLUTE_FIELD_RANGE;
+  procedure Next_Field (Cursor_Field : in out Afpx.Field_Range) is
+    Loc : Afpx.Absolute_Field_Range;
   begin
-    LOC := AFPX.NEXT_CURSOR_FIELD (CURSOR_FIELD);
-    if LOC = 0 then
-      CURSOR_FIELD := 1;
+    Loc := Afpx.Next_Cursor_Field (Cursor_Field);
+    if Loc = 0 then
+      Cursor_Field := 1;
     else
-      CURSOR_FIELD := LOC;
+      Cursor_Field := Loc;
     end if;
-  end NEXT_FIELD;
+  end Next_Field;
 
 begin
-  AFPX.USE_DESCRIPTOR(1);
+  Afpx.Use_Descriptor(1);
 
   -- List directory and store it in AFPX list
-  if ARGUMENT.GET_NBRE_ARG = 0 then
-    DIR_MNG.LIST_DIR (DIR_LIST, "");
+  if Argument.Get_Nbre_Arg = 0 then
+    Dir_Mng.List_Dir (Dir_List, "");
   else
-    DIR_MNG.LIST_DIR (DIR_LIST,
-                      ARGUMENT.GET_PARAMETER (OCCURENCE => 1));
+    Dir_Mng.List_Dir (Dir_List,
+                      Argument.Get_Parameter (Occurence => 1));
   end if;
 
-  DIR_SORT (DIR_LIST);
-  DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST, DIR_MNG.FILE_LIST_MNG.NEXT,
-                                 0 , FALSE);
+  Dir_Sort (Dir_List);
+  Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
+                                 0 , False);
 
   -- Start a temporary silly timer
-  TIMER_TMP := TIMERS.CREATE ( (TIMERS.DELAY_SEC, 0.1, 0.1), null);
+  Timer_Tmp := Timers.Create ( (Timers.Delay_Sec, 0.1, 0.1), null);
   -- Start a single shot timer in 10 secs
-  TIMER_SS := TIMERS.CREATE ( (TIMERS.DELAY_SEC, TIMERS.NO_PERIOD, 10.0), null);
+  Timer_Ss := Timers.Create ( (Timers.Delay_Sec, Timers.No_Period, 10.0), null);
   -- Start a 10 sec periodical timer in 20 secs
-  TIMER_PER := TIMERS.CREATE ( (TIMERS.DELAY_SEC, 10.0, 20.0),
-                               TIMER_CB'UNRESTRICTED_ACCESS);
+  Timer_Per := Timers.Create ( (Timers.Delay_Sec, 10.0, 20.0),
+                               Timer_Cb'Unrestricted_Access);
   -- Delete the temporary silly timer
-  TIMERS.DELETE (TIMER_TMP);
+  Timers.Delete (Timer_Tmp);
   
   loop
-    DIR_MNG.FILE_LIST_MNG.READ (DIR_LIST, DIR_ITEM,
-                                DIR_MNG.FILE_LIST_MNG.CURRENT);
-    AFPX_ITEM.LEN := DIR_ITEM.LEN;
-    AFPX_ITEM.STR := (others => ' ');
-    AFPX_ITEM.STR(1 .. AFPX_ITEM.LEN) := DIR_ITEM.NAME (1 .. DIR_ITEM.LEN);
-    AFPX_ITEM.STR(AFPX_ITEM.LEN+1) := '>';
-    AFPX_ITEM.STR(AFPX_ITEM.LEN+2) :=
-       DIR_MNG.FILE_KIND_LIST'IMAGE(DIR_ITEM.KIND)(1);
-    AFPX_ITEM.LEN := AFPX_ITEM.LEN + 2;
-    AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, AFPX_ITEM);
-    exit when DIR_MNG.FILE_LIST_MNG.GET_POSITION (DIR_LIST)
-    = DIR_MNG.FILE_LIST_MNG.LIST_LENGTH (DIR_LIST);
-    DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST);
+    Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
+                                Dir_Mng.File_List_Mng.Current);
+    Afpx_Item.Len := Dir_Item.Len;
+    Afpx_Item.Str := (others => ' ');
+    Afpx_Item.Str(1 .. Afpx_Item.Len) := Dir_Item.Name (1 .. Dir_Item.Len);
+    Afpx_Item.Str(Afpx_Item.Len+1) := '>';
+    Afpx_Item.Str(Afpx_Item.Len+2) :=
+       Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1);
+    Afpx_Item.Len := Afpx_Item.Len + 2;
+    Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
+    exit when Dir_Mng.File_List_Mng.Get_Position (Dir_List)
+    = Dir_Mng.File_List_Mng.List_Length (Dir_List);
+    Dir_Mng.File_List_Mng.Move_To (Dir_List);
   end loop;
-  AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
-     0, FALSE);
+  Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+     0, False);
 
-  AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, AFPX_ITEM,
-                           AFPX.LINE_LIST_MNG.CURRENT);
+  Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
+                           Afpx.Line_List_Mng.Current);
 
-  AFPX.ENCODE_FIELD (2, (1, 0), ">" &
-                                AFPX_ITEM.STR (1 .. AFPX_ITEM.LEN) & "<");
+  Afpx.Encode_Field (2, (1, 0), ">" &
+                                Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
 
 
 
-  CURSOR_FIELD := 1;
-  CURSOR_COL := 0;
-  FLIP_FLOP := TRUE;
-  REDISPLAY := FALSE;
+  Cursor_Field := 1;
+  Cursor_Col := 0;
+  Flip_Flop := True;
+  Redisplay := False;
 
   loop
-    AFPX.SET_FIELD_ACTIVATION (5, FLIP_FLOP);
-    AFPX.SET_FIELD_PROTECTION (0, not FLIP_FLOP);
+    Afpx.Set_Field_Activation (5, Flip_Flop);
+    Afpx.Set_Field_Protection (0, not Flip_Flop);
 
-    AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-    REDISPLAY := FALSE;
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Redisplay := False;
 
-    case PTG_RESULT.EVENT is
-      when AFPX.KEYBOARD =>
-        case PTG_RESULT.KEYBOARD_KEY is
-          when AFPX.RETURN_KEY =>
-            if AFPX.DECODE_FIELD(CURSOR_FIELD, 0)(1 .. 4) = "exit" then
-              AFPX.SET_FIELD_ACTIVATION (CURSOR_FIELD, FALSE);
-              AFPX.CLEAR_FIELD (2);
-              AFPX.ENCODE_FIELD (2, (1, 0), ">" &
-                                 AFPX.DECODE_FIELD(CURSOR_FIELD, 0) & "<");
-              NEXT_FIELD (CURSOR_FIELD);
-              CURSOR_COL := 0;
+    case Ptg_Result.Event is
+      when Afpx.Keyboard =>
+        case Ptg_Result.Keyboard_Key is
+          when Afpx.Return_Key =>
+            if Afpx.Decode_Field(Cursor_Field, 0)(1 .. 4) = "exit" then
+              Afpx.Set_Field_Activation (Cursor_Field, False);
+              Afpx.Clear_Field (2);
+              Afpx.Encode_Field (2, (1, 0), ">" &
+                                 Afpx.Decode_Field(Cursor_Field, 0) & "<");
+              Next_Field (Cursor_Field);
+              Cursor_Col := 0;
             else
-              AFPX.CLEAR_FIELD (2);
-              AFPX.ENCODE_FIELD (2, (1, 0), ">" &
-                                 AFPX.DECODE_FIELD(CURSOR_FIELD, 0) & "<");
+              Afpx.Clear_Field (2);
+              Afpx.Encode_Field (2, (1, 0), ">" &
+                                 Afpx.Decode_Field(Cursor_Field, 0) & "<");
             end if;
-          when AFPX.ESCAPE_KEY =>
-            AFPX.CLEAR_FIELD (CURSOR_FIELD);
-            AFPX.CLEAR_FIELD (2);
-            AFPX.ENCODE_FIELD (2, (1, 0), ">" &
-                               AFPX.DECODE_FIELD(CURSOR_FIELD, 0) & "<");
-            CURSOR_COL := 0;
-          when AFPX.BREAK_KEY =>
+          when Afpx.Escape_Key =>
+            Afpx.Clear_Field (Cursor_Field);
+            Afpx.Clear_Field (2);
+            Afpx.Encode_Field (2, (1, 0), ">" &
+                               Afpx.Decode_Field(Cursor_Field, 0) & "<");
+            Cursor_Col := 0;
+          when Afpx.Break_Key =>
             exit;
         end case;
-        FLIP_FLOP := not FLIP_FLOP;
-      when AFPX.MOUSE_BUTTON =>
-        case PTG_RESULT.FIELD_NO is
+        Flip_Flop := not Flip_Flop;
+      when Afpx.Mouse_Button =>
+        case Ptg_Result.Field_No is
           when 4 =>
             exit;
-          when 5 | AFPX.LIST_FIELD_NO =>
-            AFPX.LINE_LIST_MNG.READ (AFPX.LINE_LIST, AFPX_ITEM,
-                                     AFPX.LINE_LIST_MNG.CURRENT);
-            AFPX.CLEAR_FIELD (2);
-            AFPX.ENCODE_FIELD (2, (1, 0),
-                               ">" & AFPX_ITEM.STR (1 .. AFPX_ITEM.LEN) & "<");
+          when 5 | Afpx.List_Field_No =>
+            Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
+                                     Afpx.Line_List_Mng.Current);
+            Afpx.Clear_Field (2);
+            Afpx.Encode_Field (2, (1, 0),
+                               ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
           when 8 =>
-            AFPX.UPDATE_LIST(AFPX.UP);
+            Afpx.Update_List(Afpx.Up);
           when 9 =>
-            AFPX.UPDATE_LIST(AFPX.DOWN);
+            Afpx.Update_List(Afpx.Down);
           when 10 =>
-            AFPX.UPDATE_LIST(AFPX.PAGE_UP);
+            Afpx.Update_List(Afpx.Page_Up);
           when 11 =>
-            AFPX.UPDATE_LIST(AFPX.PAGE_DOWN);
+            Afpx.Update_List(Afpx.Page_Down);
           when 12 =>
-            AFPX.UPDATE_LIST(AFPX.TOP);
+            Afpx.Update_List(Afpx.Top);
           when 13 =>
-            AFPX.UPDATE_LIST(AFPX.BOTTOM);
+            Afpx.Update_List(Afpx.Bottom);
           when 14 =>
-            AFPX.UPDATE_LIST(AFPX.CENTER);
+            Afpx.Update_List(Afpx.Center);
           when others =>
             null;
         end case;
-      when AFPX.FD_EVENT =>
-        AFPX.CLEAR_FIELD (2);
-         AFPX.ENCODE_FIELD (2, (1, 0), ">> Fd Event <<");
-      when AFPX.TIMER_EVENT =>
-        AFPX.CLEAR_FIELD (2);
-         AFPX.ENCODE_FIELD (2, (1, 0), ">> Timer Event <<");
-      when AFPX.REFRESH =>
-        REDISPLAY := TRUE;
+      when Afpx.Fd_Event =>
+        Afpx.Clear_Field (2);
+         Afpx.Encode_Field (2, (1, 0), ">> Fd Event <<");
+      when Afpx.Timer_Event =>
+        Afpx.Clear_Field (2);
+         Afpx.Encode_Field (2, (1, 0), ">> Timer Event <<");
+      when Afpx.Refresh =>
+        Redisplay := True;
     end case;
 
   end loop;
 
-  TIMERS.DELETE (TIMER_PER);
-  CON_IO.RESET_TERM;
+  Timers.Delete (Timer_Per);
+  Con_Io.Reset_Term;
 
-end T_AFPX;
+end T_Afpx;
 

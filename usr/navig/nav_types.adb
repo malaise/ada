@@ -1,133 +1,133 @@
 -- Operations on the general types for aeronautics navigation
-package body NAV_TYPES is
+package body Nav_Types is
 
   -- For an angle, reduce its value in a circle (0 .. 359)
-  function REDUCTION (DEG : T_COMMON_DEG; MIN : T_MINUTE) return T_ANGLE is
-    LOC_DEG : T_COMMON_DEG;
-    LOC_MIN : NATURAL;
+  function Reduction (Deg : T_Common_Deg; Min : T_Minute) return T_Angle is
+    Loc_Deg : T_Common_Deg;
+    Loc_Min : Natural;
   begin
-    LOC_DEG := DEG;
-    LOC_MIN := NATURAL(MIN);
+    Loc_Deg := Deg;
+    Loc_Min := Natural(Min);
     -- Substract if necessary
-    while LOC_DEG > T_DEGREE'LAST loop
-      LOC_DEG := LOC_DEG - (T_DEGREE'LAST + 1);
+    while Loc_Deg > T_Degree'Last loop
+      Loc_Deg := Loc_Deg - (T_Degree'Last + 1);
     end loop;
     -- Add if necessary
-    if LOC_DEG < 0 then
-      if LOC_MIN /= 0 then
-        LOC_MIN := NATURAL(T_MINUTE'LAST) + 1 - LOC_MIN;
-        LOC_DEG := LOC_DEG - 1;
+    if Loc_Deg < 0 then
+      if Loc_Min /= 0 then
+        Loc_Min := Natural(T_Minute'Last) + 1 - Loc_Min;
+        Loc_Deg := Loc_Deg - 1;
       end if;
-      while LOC_DEG < 0 loop
-        LOC_DEG := LOC_DEG + (T_DEGREE'LAST + 1);
+      while Loc_Deg < 0 loop
+        Loc_Deg := Loc_Deg + (T_Degree'Last + 1);
       end loop;
     end if;
 
-    return T_ANGLE'(DEGREES => T_DEGREE(LOC_DEG),
-     MINUTES => T_MINUTE(LOC_MIN));
-  end REDUCTION;
+    return T_Angle'(Degrees => T_Degree(Loc_Deg),
+     Minutes => T_Minute(Loc_Min));
+  end Reduction;
 
   -- Add two angles to get an angle
-  function "+" (A1, A2 : T_ANGLE) return T_ANGLE is
-    DEG : T_COMMON_DEG;
-    MIN : NATURAL;
+  function "+" (A1, A2 : T_Angle) return T_Angle is
+    Deg : T_Common_Deg;
+    Min : Natural;
   begin
-    DEG := 0;
+    Deg := 0;
     -- Add minutes
-    MIN := NATURAL (A1.MINUTES) + NATURAL (A2.MINUTES);
-    if MIN > NATURAL (T_MINUTE'LAST) then
-      MIN := MIN - NATURAL (T_MINUTE'LAST) - 1;
-      DEG := 1;
+    Min := Natural (A1.Minutes) + Natural (A2.Minutes);
+    if Min > Natural (T_Minute'Last) then
+      Min := Min - Natural (T_Minute'Last) - 1;
+      Deg := 1;
     end if;
     -- Add angles
-    DEG := DEG + A1.DEGREES + A2.DEGREES;
-    return REDUCTION (DEG, T_MINUTE(MIN));
+    Deg := Deg + A1.Degrees + A2.Degrees;
+    return Reduction (Deg, T_Minute(Min));
   end "+";
 
   -- Add two angles to get an angle
-  function "+" (A1 : T_ANGLE; A2 : T_DEGREE) return T_ANGLE is
+  function "+" (A1 : T_Angle; A2 : T_Degree) return T_Angle is
   begin
-    return "+" (A1 => A1, A2 => (DEGREES => A2, MINUTES => 0));
+    return "+" (A1 => A1, A2 => (Degrees => A2, Minutes => 0));
   end "+";
 
   -- Sub 2 angles to get an angle
-  function "-" (A1, A2 : T_ANGLE) return T_ANGLE is
-    DEG : T_COMMON_DEG;
-    MIN : INTEGER;
-    V1, V2 : T_ANGLE;
-    NEG : BOOLEAN;
-    CARRY : BOOLEAN;
+  function "-" (A1, A2 : T_Angle) return T_Angle is
+    Deg : T_Common_Deg;
+    Min : Integer;
+    V1, V2 : T_Angle;
+    Neg : Boolean;
+    Carry : Boolean;
   begin
-    NEG := A1 < A2;
-    if not NEG then
+    Neg := A1 < A2;
+    if not Neg then
       V1 := A1; V2 := A2;
     else
       V1 := A2; V2 := A1;
     end if;
     -- Sub minutes
-    MIN := INTEGER (V1.MINUTES) - NATURAL (V2.MINUTES);
-    CARRY := MIN < 0;
-    if CARRY then
-      MIN := MIN + NATURAL (T_MINUTE'LAST) + 1;
+    Min := Integer (V1.Minutes) - Natural (V2.Minutes);
+    Carry := Min < 0;
+    if Carry then
+      Min := Min + Natural (T_Minute'Last) + 1;
       -- Sub angles
-      DEG := V1.DEGREES - V2.DEGREES - 1;
+      Deg := V1.Degrees - V2.Degrees - 1;
     else
-      DEG := V1.DEGREES - V2.DEGREES;
+      Deg := V1.Degrees - V2.Degrees;
     end if;
-    if NEG then
-      DEG := - DEG;
+    if Neg then
+      Deg := - Deg;
     end if;
-    return REDUCTION (DEG, T_MINUTE(MIN));
+    return Reduction (Deg, T_Minute(Min));
   end "-";
 
-  function ">" (A1, A2 : T_ANGLE) return BOOLEAN is
+  function ">" (A1, A2 : T_Angle) return Boolean is
   begin
-    if A1.DEGREES /= A2.DEGREES then
-      return A1.DEGREES > A2.DEGREES;
+    if A1.Degrees /= A2.Degrees then
+      return A1.Degrees > A2.Degrees;
     else
-      return A1.MINUTES > A2.MINUTES;
+      return A1.Minutes > A2.Minutes;
     end if;
   end ">";
 
-  function "<" (A1, A2 : T_ANGLE) return BOOLEAN is
+  function "<" (A1, A2 : T_Angle) return Boolean is
   begin
-    if A1.DEGREES /= A2.DEGREES then
-      return A1.DEGREES < A2.DEGREES;
+    if A1.Degrees /= A2.Degrees then
+      return A1.Degrees < A2.Degrees;
     else
-      return A1.MINUTES < A2.MINUTES;
+      return A1.Minutes < A2.Minutes;
     end if;
   end "<";
 
-  function "+" (A : T_ANGLE; D : T_DRIFT) return T_ANGLE is
+  function "+" (A : T_Angle; D : T_Drift) return T_Angle is
   begin
     -- Add minutes
-    if D.POSITIV then
-      return A + T_ANGLE'(D.DEGREES, D.MINUTES);
+    if D.Positiv then
+      return A + T_Angle'(D.Degrees, D.Minutes);
     else
-      return A - T_ANGLE'(D.DEGREES, D.MINUTES);
+      return A - T_Angle'(D.Degrees, D.Minutes);
     end if;
   end "+";
 
-  function "-" (A : T_ANGLE; D : T_DRIFT) return T_ANGLE is
+  function "-" (A : T_Angle; D : T_Drift) return T_Angle is
   begin
-    if D.POSITIV then
-      return A - T_ANGLE'(D.DEGREES, D.MINUTES);
+    if D.Positiv then
+      return A - T_Angle'(D.Degrees, D.Minutes);
     else
-      return A + T_ANGLE'(D.DEGREES, D.MINUTES);
+      return A + T_Angle'(D.Degrees, D.Minutes);
     end if;
   end "-";
 
-  function "-" (A1, A2 : T_ANGLE) return T_DRIFT is
-    A3 : T_ANGLE;
+  function "-" (A1, A2 : T_Angle) return T_Drift is
+    A3 : T_Angle;
   begin
     A3 := A1 - A2;
-    if A3.DEGREES in T_DEG_DRIFT then
-      return (POSITIV => TRUE,  DEGREES => A3.DEGREES, MINUTES => A3.MINUTES);
+    if A3.Degrees in T_Deg_Drift then
+      return (Positiv => True,  Degrees => A3.Degrees, Minutes => A3.Minutes);
     else
-      A3 := T_ANGLE'(DEGREES=>0, MINUTES=>0) - A3;
-      return (POSITIV => FALSE, DEGREES => A3.DEGREES, MINUTES => A3.MINUTES);
+      A3 := T_Angle'(Degrees=>0, Minutes=>0) - A3;
+      return (Positiv => False, Degrees => A3.Degrees, Minutes => A3.Minutes);
     end if;
   end "-";
 
-end NAV_TYPES;
+end Nav_Types;
 

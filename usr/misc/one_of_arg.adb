@@ -1,15 +1,15 @@
-with MY_IO;
-with RND;
-with ARGUMENT;
+with My_Io;
+with Rnd;
+with Argument;
 
-procedure ONE_OF_ARG is
+procedure One_Of_Arg is
 begin
-  if ARGUMENT.GET_NBRE_ARG = 0 then
+  if Argument.Get_Nbre_Arg = 0 then
     return;
   end if;
-  RND.RANDOMIZE;
+  Rnd.Randomize;
 
-  MY_IO.PUT_LINE (STRING'(ARGUMENT.GET_PARAMETER(
-         RND.INT_RANDOM(1, ARGUMENT.GET_NBRE_ARG))));
-end ONE_OF_ARG;
+  My_Io.Put_Line (String'(Argument.Get_Parameter(
+         Rnd.Int_Random(1, Argument.Get_Nbre_Arg))));
+end One_Of_Arg;
   

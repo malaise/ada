@@ -1,81 +1,81 @@
-with MY_IO, SORTS, RND, NORMAL;
-use MY_IO;
-procedure T_SORTS is
+with My_Io, Sorts, Rnd, Normal;
+use My_Io;
+procedure T_Sorts is
 
-  subtype INDEX is INTEGER range 1 .. 25;
+  subtype Index is Integer range 1 .. 25;
 
-  type ARR is array (INDEX range <>) of INTEGER;
+  type Arr is array (Index range <>) of Integer;
 
-  subtype D_ARR is ARR (INDEX);
+  subtype D_Arr is Arr (Index);
 
-  LAST : NATURAL range 0 .. INDEX'LAST;
-  INIT, RES_BUL, RES_TAS, RES_RAP : D_ARR;
+  Last : Natural range 0 .. Index'Last;
+  Init, Res_Bul, Res_Tas, Res_Rap : D_Arr;
 
-  package TAB_SORTS is new SORTS (INTEGER, INDEX, "<", ARR);
-  OK : BOOLEAN;
-  CURRENT_SORT : STRING (1 .. 3);
+  package Tab_Sorts is new Sorts (Integer, Index, "<", Arr);
+  Ok : Boolean;
+  Current_Sort : String (1 .. 3);
 begin
 
   loop
 
     -- init of init and results
-    LAST := RND.INT_RANDOM (0, INDEX'LAST);
-    for I in 1 .. LAST loop
-      INIT(I) := RND.INT_RANDOM(0, 99);
+    Last := Rnd.Int_Random (0, Index'Last);
+    for I in 1 .. Last loop
+      Init(I) := Rnd.Int_Random(0, 99);
     end loop;
-    RES_BUL(1 .. LAST) := INIT(1..LAST);
-    RES_TAS(1 .. LAST) := INIT(1..LAST);
-    RES_RAP(1 .. LAST) := INIT(1..LAST);
+    Res_Bul(1 .. Last) := Init(1..Last);
+    Res_Tas(1 .. Last) := Init(1..Last);
+    Res_Rap(1 .. Last) := Init(1..Last);
 
-    CURRENT_SORT := "BUL";
-    TAB_SORTS.BUBBLE_SORT (RES_BUL(1..LAST));
-    CURRENT_SORT := "TAS";
-    TAB_SORTS.HEAP_SORT   (RES_TAS(1..LAST));
-    CURRENT_SORT := "RAP";
-    TAB_SORTS.QUICK_SORT  (RES_RAP(1..LAST));
-    CURRENT_SORT := "   ";
+    Current_Sort := "BUL";
+    Tab_Sorts.Bubble_Sort (Res_Bul(1..Last));
+    Current_Sort := "TAS";
+    Tab_Sorts.Heap_Sort   (Res_Tas(1..Last));
+    Current_Sort := "RAP";
+    Tab_Sorts.Quick_Sort  (Res_Rap(1..Last));
+    Current_Sort := "   ";
 
-    OK := TRUE;
-    for I in 1 .. LAST loop
-      if RES_BUL(I) /= RES_TAS(I) or else RES_BUL(I) /= RES_RAP(I) then
-        OK := FALSE;
+    Ok := True;
+    for I in 1 .. Last loop
+      if Res_Bul(I) /= Res_Tas(I) or else Res_Bul(I) /= Res_Rap(I) then
+        Ok := False;
         exit;
       end if;
     end loop;
 
-    if not OK then
-      MY_IO.PUT_LINE ("ERROR:");
+    if not Ok then
+      My_Io.Put_Line ("ERROR:");
 
-      MY_IO.PUT_LINE ("      INIT    BUBBLE      HEAP     QUICK");
-      for I in 1 .. LAST loop
-        MY_IO.PUT (NORMAL(INIT(I),    10));
-        MY_IO.PUT (NORMAL(RES_BUL(I), 10));
-        MY_IO.PUT (NORMAL(RES_TAS(I), 10));
-        MY_IO.PUT (NORMAL(RES_RAP(I), 10));
-        MY_IO.NEW_LINE;
+      My_Io.Put_Line ("      INIT    BUBBLE      HEAP     QUICK");
+      for I in 1 .. Last loop
+        My_Io.Put (Normal(Init(I),    10));
+        My_Io.Put (Normal(Res_Bul(I), 10));
+        My_Io.Put (Normal(Res_Tas(I), 10));
+        My_Io.Put (Normal(Res_Rap(I), 10));
+        My_Io.New_Line;
       end loop;
       exit;
     else
-      for I in 1 .. LAST loop
-        MY_IO.PUT (NORMAL(INIT(I), 3));
+      for I in 1 .. Last loop
+        My_Io.Put (Normal(Init(I), 3));
       end loop;
-      MY_IO.NEW_LINE;
-      for I in 1 .. LAST loop
-        MY_IO.PUT (NORMAL(RES_RAP(I), 3));
+      My_Io.New_Line;
+      for I in 1 .. Last loop
+        My_Io.Put (Normal(Res_Rap(I), 3));
       end loop;
-      MY_IO.PUT_LINE (" OK");
-      MY_IO.NEW_LINE;
+      My_Io.Put_Line (" OK");
+      My_Io.New_Line;
       delay 1.0;
     end if;
 
   end loop;
 exception
   when others =>
-    MY_IO.PUT_LINE ("Exception when sorting with " & CURRENT_SORT & " on:");
-    for I in 1 .. LAST loop
-      MY_IO.PUT (NORMAL(INIT(I), 3));
+    My_Io.Put_Line ("Exception when sorting with " & Current_Sort & " on:");
+    for I in 1 .. Last loop
+      My_Io.Put (Normal(Init(I), 3));
     end loop;
-    MY_IO.NEW_LINE;
+    My_Io.New_Line;
     raise;
-end T_SORTS;
+end T_Sorts;
 

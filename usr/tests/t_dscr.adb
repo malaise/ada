@@ -1,84 +1,84 @@
-with TEXT_IO;
-with ARGUMENT, CON_IO, AFPX, NORMAL;
-procedure T_DSCR is
-  DSCR_NO : AFPX.DESCRIPTOR_RANGE;
-  CURSOR_FIELD : AFPX.ABSOLUTE_FIELD_RANGE;
-  CURSOR_COL : CON_IO.COL_RANGE;
-  REDISPLAY : BOOLEAN;
-  PTG_RESULT : AFPX.RESULT_REC;
-  LINE : AFPX.LINE_REC;
+with Text_Io;
+with Argument, Con_Io, Afpx, Normal;
+procedure T_Dscr is
+  Dscr_No : Afpx.Descriptor_Range;
+  Cursor_Field : Afpx.Absolute_Field_Range;
+  Cursor_Col : Con_Io.Col_Range;
+  Redisplay : Boolean;
+  Ptg_Result : Afpx.Result_Rec;
+  Line : Afpx.Line_Rec;
 
-  procedure USAGE is
+  procedure Usage is
   begin
-    TEXT_IO.PUT_LINE("ERROR. Usage " & ARGUMENT.GET_PROGRAM_NAME
+    Text_Io.Put_Line("ERROR. Usage " & Argument.Get_Program_Name
                                      & " [ <dscr_no> ]");
-  end USAGE;
+  end Usage;
 
-  procedure SET_DSCR(NO : in AFPX.DESCRIPTOR_RANGE) is
+  procedure Set_Dscr(No : in Afpx.Descriptor_Range) is
   begin
-    AFPX.USE_DESCRIPTOR(NO);
+    Afpx.Use_Descriptor(No);
 
-    CURSOR_FIELD := AFPX.NEXT_CURSOR_FIELD(0);
-    if CURSOR_FIELD not in AFPX.FIELD_RANGE then
+    Cursor_Field := Afpx.Next_Cursor_Field(0);
+    if Cursor_Field not in Afpx.Field_Range then
       -- No get field
-      CURSOR_FIELD := AFPX.FIELD_RANGE'FIRST;
+      Cursor_Field := Afpx.Field_Range'First;
     end if;
-    CURSOR_COL := 0;
-    REDISPLAY := FALSE;
-  end SET_DSCR;
+    Cursor_Col := 0;
+    Redisplay := False;
+  end Set_Dscr;
 
 
-  use AFPX;
+  use Afpx;
 begin
 
-  if ARGUMENT.GET_NBRE_ARG > 1 then
-    USAGE;
+  if Argument.Get_Nbre_Arg > 1 then
+    Usage;
     return;
   end if;
 
-  if ARGUMENT.GET_NBRE_ARG = 1 then
+  if Argument.Get_Nbre_Arg = 1 then
     begin
-      DSCR_NO := AFPX.DESCRIPTOR_RANGE'VALUE(ARGUMENT.GET_PARAMETER);
+      Dscr_No := Afpx.Descriptor_Range'Value(Argument.Get_Parameter);
     exception
       when others =>
-        USAGE;
+        Usage;
         return;
     end;
   else
-    DSCR_NO := 1;
+    Dscr_No := 1;
   end if;
     
   for I in 1 .. 999 loop
-    LINE.STR(1 .. 3) := NORMAL(I, 3, GAP => '0');
-    LINE.LEN := 3;
-    AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, LINE);
+    Line.Str(1 .. 3) := Normal(I, 3, Gap => '0');
+    Line.Len := 3;
+    Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
   end loop;
-  AFPX.LINE_LIST_MNG.MOVE_TO(AFPX.LINE_LIST, NUMBER => 0, FROM_CURRENT=> FALSE);
+  Afpx.Line_List_Mng.Move_To(Afpx.Line_List, Number => 0, From_Current=> False);
 
-  SET_DSCR(DSCR_NO);
+  Set_Dscr(Dscr_No);
 
   loop
-    AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
-    REDISPLAY := FALSE;
-    case PTG_RESULT.EVENT is
-      when AFPX.KEYBOARD =>
-        case PTG_RESULT.KEYBOARD_KEY is
-          when AFPX.RETURN_KEY =>
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Redisplay := False;
+    case Ptg_Result.Event is
+      when Afpx.Keyboard =>
+        case Ptg_Result.Keyboard_Key is
+          when Afpx.Return_Key =>
             null;
-          when AFPX.ESCAPE_KEY =>
-            DSCR_NO := DSCR_NO + 1;
-            SET_DSCR(DSCR_NO);
-          when AFPX.BREAK_KEY =>
+          when Afpx.Escape_Key =>
+            Dscr_No := Dscr_No + 1;
+            Set_Dscr(Dscr_No);
+          when Afpx.Break_Key =>
             exit;
         end case;
-      when AFPX.MOUSE_BUTTON =>
+      when Afpx.Mouse_Button =>
         null;
-      when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
+      when Afpx.Fd_Event | Afpx.Timer_Event =>
         null;
-      when AFPX.REFRESH =>
-        REDISPLAY := TRUE;
+      when Afpx.Refresh =>
+        Redisplay := True;
     end case;
   end loop;
 
-end T_DSCR;
+end T_Dscr;
 
