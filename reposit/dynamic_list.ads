@@ -21,17 +21,33 @@ package Dynamic_List is
   -- All calls except Is_Empty, List_Length and Search may raise
   -- Empty_List if the list is empty
 
+  -- Check if one move in the given direction is possible
+  function Check_Move (List : in List_Type;
+                       Where : Direction := Next) return Boolean;
+
   -- Read the current item then moves to another item
   -- May raise Not_In_List (no read nor movement done)
   procedure Read (List : in out List_Type;
                   Item : out Element_Type;
                   Move : in Movement := Next);
+  -- Read anyway. Set Done to True if movement was possible (and done)
+  --  and False otherwise (no movement done)
+  procedure Read (List : in out List_Type;
+                  Item : out Element_Type;
+                  Move : in Movement := Next;
+                  Done : out Boolean);
 
   -- Modify the current item then moves to another item
   -- May raise Not_In_List (no movement done)
   procedure Modify (List : in out List_Type;
                     Item : in Element_Type;
                     Move : in Movement := Next);
+  -- Modify anyway. Set Done to True if movement was possible (and done)
+  --  and False otherwise (no movement done)
+  procedure Modify (List : in out List_Type;
+                    Item : in Element_Type;
+                    Move : in Movement := Next;
+                    Done : out Boolean);
 
   -- Insert a new item after or before the current item
   --  the new item becomes then the current item
@@ -41,18 +57,32 @@ package Dynamic_List is
                     Where : in Direction := Next);
 
   -- Read and delete the current item
-  --  The current item is then the next or the previous item in the list
+  -- The current item is then the next or the previous item in the list
   --  except when deleting last item (no movement done!)
   -- May raise Not_In_List (no get nor movement done)
   procedure Get (List : in out List_Type;
                  Item : out Element_Type;
                  Move : in Direction := Next);
+  -- Get anyway. Set Done to True if movement was possible (and done)
+  --  or lists becomes empty, and False otherwise (movement done in the
+  --  opposite direction)
+  procedure Get (List : in out List_Type;
+                 Item : out Element_Type;
+                 Move : in Direction := Next;
+                 Done : out Boolean);
 
   -- Suppress the current element from the list
   --  the current item is then the next or the previous item in the list
   -- May raise Not_In_List (no deletion nor movement done)
   -- Does not raise Empty_List when deleting the last item
-  procedure Delete (List : in out List_Type; Move : in Direction := Next);
+  procedure Delete (List : in out List_Type;
+                    Move : in Direction := Next);
+  -- Delete anyway. Set Done to True if movement was possible (and done)
+  --  or lists becomes empty, and False otherwise (movement done in the
+  --  opposite direction)
+  procedure Delete (List : in out List_Type;
+                    Move : in Direction := Next;
+                    Done : out Boolean);
 
   -- Delete the full list
   --  deallocate or not the free list
@@ -110,22 +140,41 @@ package Dynamic_List is
   -- Get direct access to current element in list (or null if list is empty).
   function Access_Current (List : List_Type) return Element_Access;
 
+  -- Three different strategies to search:
+  -- From_Current : current item may match)
+  -- Skip_Current : earch starts after/before current)
+  -- Absolute     : earch starts fron beginning/end of list
+  type Search_Kind_List is (From_Current, Skip_Current, Absolute);
+
   generic
+    -- The Criteria is the one provided to Search
+    -- Current will be the element of list compared to criteria
     with function Match (Current, Criteria : Element_Type)
                   return Boolean is "=";
 
   -- Search from the nth occurence of an item matching the provided criteria
-  -- Starts from : same as Move_To
+  -- Starts from current, skipping it or not if it matches,
+  --  or from begin/end of list
   -- May raise Not_In_List if the given element is not found or if empty list
   --  (position not changed)
   -- Otherwise, the current position is set to the item found
-  -- If Occurence is 1 and current/first/last matches, then it is selected
   procedure Search (List         : in out List_Type;
-                    Item         : in Element_Type;
+                    Criteria     : in Element_Type;
                     Where        : in Direction := Next;
                     Occurence    : in Positive := 1;
-                    From_Current : in Boolean := True);
+                    From         : in Search_Kind_List);
 
+  -- Search, setting Found instead of raising Not_In_List.
+  generic
+    with function Match (Current, Criteria : Element_Type)
+                  return Boolean is "=";
+  procedure Safe_Search (List         : in out List_Type;
+                         Found        : out Boolean;
+                         Criteria     : in Element_Type;
+                         Where        : in Direction := Next;
+                         Occurence    : in Positive := 1;
+                         From         : in Search_Kind_List);
+ 
   generic
     -- Comparison function for sorting
     -- WARNING : Less_Than must be strict

@@ -58,6 +58,30 @@ package body Dynamic_List is
      Current => null, First => null, Last => null);
   end Delete_List;
 
+
+  -- next <-> prev
+  function Other_Way (Where : Direction) return Direction is
+  begin
+    if Where = Next then
+      return Prev;
+    else
+      return Next;
+    end if;
+  end Other_Way;
+
+
+  -- check movement
+  function Check_Move (List : in List_Type;
+                       Where : Direction := Next) return Boolean is
+  begin
+    if Where = Next then
+      return List.Current.Next /= null;
+    else
+      return List.Current.Prev /= null;
+    end if;
+  end Check_Move;
+
+
   -- read the current item
   procedure Read (List : in out List_Type;
                   Item : out Element_Type;
@@ -68,8 +92,26 @@ package body Dynamic_List is
     if Move /= Current then
       Move_To (List, Move);
     end if;
-    -- Modification done my Move_To
   end Read;
+
+  procedure Read (List : in out List_Type;
+                  Item : out Element_Type;
+                  Move : in Movement := Next;
+                  Done : out Boolean) is
+  begin
+    Check(List);
+    Item := List.Current.Value;
+    -- Modified is set by Move_To
+    if Move = Current then
+      Done := True;
+    elsif Check_Move (List, Move) then
+      Move_To (List, Move);
+      Done := True;
+    else
+      Done := False;
+    end if;
+  end Read;
+
 
   -- modify the current item
   procedure Modify (List : in out List_Type;
@@ -83,6 +125,25 @@ package body Dynamic_List is
     end if;
     List.Modified := True;
   end Modify;
+
+  procedure Modify (List : in out List_Type;
+                    Item : in Element_Type;
+                    Move : in Movement := Next;
+                    Done : out Boolean) is
+  begin
+    Check(List);
+    List.Current.Value := Item;
+    List.Modified := True;
+    if Move = Current then
+      Done := True;
+    elsif Check_Move (List, Move) then
+      Move_To (List, Move);
+      Done := True;
+    else
+      Done := False;
+    end if;
+  end Modify;
+
 
   -- put a new element in the list
   procedure Insert (List  : in out List_Type;
@@ -134,6 +195,7 @@ package body Dynamic_List is
     when Storage_Error =>
       raise Full_List;
   end Insert;
+
 
   -- suppress the current element from the list
   procedure Delete (List : in out List_Type; Move : in Direction := Next) is
@@ -190,6 +252,19 @@ package body Dynamic_List is
     end if;
   end Delete;
 
+  procedure Delete (List : in out List_Type;
+                    Move : in Direction := Next;
+                    Done : out Boolean) is
+  begin
+    if Check_Move (List, Move) then
+      Delete (List, Move);
+      Done := True;
+    else
+      Delete (List, Other_Way (Move));
+      Done := False;
+    end if;
+  end Delete;
+
 
   -- reads and deletes the current element
   procedure Get (List : in out List_Type;
@@ -200,6 +275,21 @@ package body Dynamic_List is
     Delete(List, Move);
     -- Modified flag changed by Delete
   end Get;
+
+  procedure Get (List : in out List_Type;
+                 Item : out Element_Type;
+                 Move : in Direction := Next;
+                 Done : out Boolean) is
+  begin
+    if Check_Move (List, Move) then
+      Get (List, Item, Move);
+      Done := True;
+    else
+      Get (List, Item, Other_Way (Move));
+      Done := False;
+    end if;
+  end Get;
+
 
   -- changes current position
   procedure Move_To (List         : in out List_Type;
@@ -250,6 +340,7 @@ package body Dynamic_List is
     List.Pos_Last := New_Pos_Last;
     List.Modified := True;
   end Move_To;
+
 
   -- permute two elements knowing links to them
   -- (internal procedure for permute and sort)
@@ -360,6 +451,7 @@ package body Dynamic_List is
       raise;
   end Permute;
 
+
   -- returns the number of elements in the list (0 if empty)
   function List_Length (List : List_Type) return Natural is
   begin
@@ -369,6 +461,7 @@ package body Dynamic_List is
       return List.Pos_First + List.Pos_Last - 1;
     end if;
   end List_Length;
+
 
   -- get position from first or last item in list
   function Get_Position (List : List_Type;
@@ -383,6 +476,8 @@ package body Dynamic_List is
     end case;
   end Get_Position;
 
+
+  -- modification stuff
   function Is_Modified (List : List_Type) return Boolean is
   begin
     return List.Modified;
@@ -393,12 +488,14 @@ package body Dynamic_List is
     List.Modified := False;
   end Modification_Ack;
 
+
   -- Copy the Val list to To list
   procedure Assign (To : in out List_Type; Val : in List_Type) is
   begin
     To := Val;
     To.Modified := True;
   end Assign;
+
 
   -- Access to current element
   function Access_Current (List : List_Type) return Element_Access is
@@ -409,11 +506,13 @@ package body Dynamic_List is
     return List.Current.Value'Unrestricted_Access;
   end Access_Current;
 
+
+  -- Search
   procedure Search (List         : in out List_Type;
-                    Item         : in Element_Type;
+                    Criteria     : in Element_Type;
                     Where        : in Direction := Next;
                     Occurence    : in Positive := 1;
-                    From_Current : in Boolean := True) is
+                    From         : in Search_Kind_List) is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Natural;
 
@@ -438,7 +537,7 @@ package body Dynamic_List is
       raise Not_In_List;
     end if;
     -- start from
-    if From_Current then
+    if From /= Absolute then
       New_Pos := List.Current;
       New_Pos_First := List.Pos_First;
       New_Pos_Last := List.Pos_Last;
@@ -458,21 +557,21 @@ package body Dynamic_List is
     case Where is
       when Next =>
         for I in 1 .. Occurence loop
-          if I /= 1 then
+          if I /= 1 or else From = Skip_Current then
             Next_Pos;
           end if;
           loop
-            exit when Match(New_Pos.Value, Item);
+            exit when Match(New_Pos.Value, Criteria);
             Next_Pos;
           end loop;
         end loop;
       when Prev =>
         for I in 1 .. Occurence loop
-          if I /= 1 then
+          if I /= 1 or else From = Skip_Current then
             Prev_Pos;
           end if;
           loop
-            exit when Match(New_Pos.Value, Item);
+            exit when Match(New_Pos.Value, Criteria);
             Prev_Pos;
           end loop;
         end loop;
@@ -484,7 +583,23 @@ package body Dynamic_List is
     List.Modified := True;
   end Search;
 
+  procedure Safe_Search (List         : in out List_Type;
+                         Found        : out Boolean;
+                         Criteria     : in Element_Type;
+                         Where        : in Direction := Next;
+                         Occurence    : in Positive := 1;
+                         From         : in Search_Kind_List) is
+    procedure My_Search is new Search (Match);
+  begin
+    My_Search (List, Criteria, Where, Occurence, From);
+    Found := True;
+  exception
+    when Not_In_List =>
+      Found := False;
+  end Safe_Search;
 
+
+  -- Sort
   procedure Sort (List : in out List_Type) is
     Last : constant Natural := List_Length (List);
   begin
