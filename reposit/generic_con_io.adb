@@ -697,6 +697,7 @@ package body GENERIC_CON_IO is
     procedure NEXT_X_EVENT (TIMEOUT_MS : in out INTEGER;
                             X_EVENT : out X_MNG.EVENT_KIND) is
       EVENT : BOOLEAN;
+      LOC_X_EVENT : X_MNG.EVENT_KIND;
       use X_MNG;
     begin
       loop
@@ -708,8 +709,9 @@ package body GENERIC_CON_IO is
             return;
           end if;
         end if;
-        X_MNG.X_PROCESS_EVENT (ID, X_EVENT, X_EVENT_WAITING);
-        if X_EVENT /= X_MNG.DISCARD then
+        X_MNG.X_PROCESS_EVENT (ID, LOC_X_EVENT, X_EVENT_WAITING);
+        if LOC_X_EVENT /= X_MNG.DISCARD then
+          X_EVENT := LOC_X_EVENT;
           return;
         end if;
       end loop;
@@ -755,47 +757,63 @@ package body GENERIC_CON_IO is
                          CTRL    : out BOOLEAN;
                          SHIFT   : out BOOLEAN) is
       KBD_TAB : X_MNG.KBD_TAB_CODE;
+      LOC_KEY : NATURAL;
+      LOC_IS_CHAR : BOOLEAN;
+      LOC_CTRL : BOOLEAN;
+      LOC_SHIFT : BOOLEAN;
       use X_MNG;
     begin
       X_MNG.X_READ_KEY(ID, KBD_TAB);
 
-      KEY := NATURAL (KBD_TAB.TAB(KBD_TAB.NBRE));
-      IS_CHAR := TRUE;
-      CTRL := FALSE;
-      SHIFT := FALSE;
+      LOC_KEY := NATURAL (KBD_TAB.TAB(KBD_TAB.NBRE));
+      LOC_IS_CHAR := TRUE;
+      LOC_CTRL := FALSE;
+      LOC_SHIFT := FALSE;
 
       -- Optimisation
       if KBD_TAB.NBRE = 1 then
-        TRANSLATE_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
+        TRANSLATE_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
+        KEY := LOC_KEY;
+        IS_CHAR := LOC_IS_CHAR;
+        CTRL := LOC_CTRL;
+        SHIFT := LOC_SHIFT;
         return;
       elsif KBD_TAB.NBRE = 2 then
-        IS_CHAR := FALSE;
-        TRANSLATE_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
+        LOC_IS_CHAR := FALSE;
+        TRANSLATE_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
+        KEY := LOC_KEY;
+        IS_CHAR := LOC_IS_CHAR;
+        CTRL := LOC_CTRL;
+        SHIFT := LOC_SHIFT;
         return;
       end if;
 
       if KBD_TAB.NBRE mod 2 = 0 then
-        IS_CHAR := FALSE;
+        LOC_IS_CHAR := FALSE;
         KBD_TAB.NBRE := KBD_TAB.NBRE - 2;
       else
-        IS_CHAR := TRUE;
+        LOC_IS_CHAR := TRUE;
         KBD_TAB.NBRE := KBD_TAB.NBRE - 1;
       end if;
 
       if KBD_TAB.TAB(2) = 16#E3# then
         -- Ctrl
-        CTRL := TRUE;
+        LOC_CTRL := TRUE;
       else
         -- Shift
-        SHIFT := TRUE;
+        LOC_SHIFT := TRUE;
       end if;
       if KBD_TAB.NBRE = 4 then
         -- Ctrl Shift
-        CTRL := TRUE;
-        SHIFT := TRUE;
+        LOC_CTRL := TRUE;
+        LOC_SHIFT := TRUE;
       end if;
       
-      TRANSLATE_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
+      TRANSLATE_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
+      KEY := LOC_KEY;
+      IS_CHAR := LOC_IS_CHAR;
+      CTRL := LOC_CTRL;
+      SHIFT := LOC_SHIFT;
     end GET_X_KEY;
 
     -- Gives first key code of keyboard buffer, (waits if it is empty)
@@ -860,6 +878,10 @@ package body GENERIC_CON_IO is
       CUR_TIME : CALENDAR.TIME;
       DUR : DURATION;
       TIMEOUT_MS : INTEGER;
+      LOC_KEY : NATURAL;
+      LOC_IS_CHAR : BOOLEAN;
+      LOC_CTRL : BOOLEAN;
+      LOC_SHIFT : BOOLEAN;
       use X_MNG, CALENDAR;
     begin
       if not INIT_DONE then
@@ -892,11 +914,15 @@ package body GENERIC_CON_IO is
           MOUSE_STATUS := X_EVENT;
           return;
         when X_MNG.KEYBOARD =>
-          GET_X_KEY (KEY, IS_CHAR, CTRL, SHIFT);
+          GET_X_KEY (LOC_KEY, LOC_IS_CHAR, LOC_CTRL, LOC_SHIFT);
+          KEY := LOC_KEY;
+          IS_CHAR := LOC_IS_CHAR;
+          CTRL := LOC_CTRL;
+          SHIFT := LOC_SHIFT;
           -- Check break
           if CHECK_BREAK then
-            if (KEY = CHARACTER'POS('c') or else KEY = 0)
-            and then IS_CHAR and then CTRL and then not SHIFT then
+            if (LOC_KEY = CHARACTER'POS('c') or else LOC_KEY = 0)
+            and then LOC_IS_CHAR and then LOC_CTRL and then not LOC_SHIFT then
               -- Ctrl C or Ctrl break
               EVENT := BREAK;
               return;
