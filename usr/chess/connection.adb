@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Exceptions;
 with Socket, X_Mng, Debug, Dynamic_List;
 package body Connection is
 
@@ -143,13 +143,15 @@ package body Connection is
 
   function Rec_Call_Back (Fd : in X_Mng.File_Desc; Read : in Boolean)
   return Boolean is
-    Message : Message_Type;
+    Default_Action : Players.Valid_Action_Rec;
+    -- Largest message
+    Message : Message_Type := (Kind => Move, Action => Default_Action);
     Len : Natural;
     use type Space.Color_List;
     use type Socket.Host_Id, Socket.Port_Num;
   begin
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put ("In receive callback : ");
+      Ada.Text_Io.Put_Line ("In receive callback : ");
     end if;
     begin
       Chess_Read (Soc, Message, Len, False);
@@ -164,6 +166,12 @@ package body Connection is
           Connect_Server;
         end if;
         return False;
+      when Error: others =>
+        if Debug.Get (Debug.Connection) then
+          Ada.Text_Io.Put_Line ("Exception: "
+             & Ada.Exceptions.Exception_Name(Error));
+        end if;
+        raise;
     end;
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Message read " & Integer'Image (Len) & " bytes");
