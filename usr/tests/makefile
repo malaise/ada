@@ -10,7 +10,7 @@ AFPX.DSC: AFPX.LIS
 	afpx_bld
 
 clean:
-	rm *.o *.ali
+	rm *.o *.ali b~*
 
 clean_exe:
 	@for file in *.adb ; do rm `basename $$file .adb` ; done
