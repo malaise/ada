@@ -12,12 +12,13 @@ package body MCD_MNG is
     subtype OPERAND_KIND_LIST is ITEM_KIND_LIST range INTE .. REGI;
     -- On push : INVALID_ITEM;
 
-    procedure PUSH (ITEM : in ITEM_REC);
+    procedure PUSH (ITEM : in ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
 
-    procedure POP (ITEM : out ITEM_REC);
-    procedure READ (ITEM : out ITEM_REC);
+    procedure POP (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
+    procedure READ (ITEM : out ITEM_REC; DEFAULT_STACK : in BOOLEAN := TRUE);
 
-    function STACK_SIZE return NATURAL;
+    function STACK_SIZE (DEFAULT_STACK : BOOLEAN := TRUE;
+                         NO_DEBUG : BOOLEAN := FALSE) return NATURAL;
   end STACK;
 
   package OPERATIONS is
@@ -304,6 +305,7 @@ package body MCD_MNG is
  
         when OBASE =>
           POP(A); IOS.SET_OBASE(A);
+
         -- These are about registers
         when POPR =>
           -- store B in reg A
@@ -318,6 +320,22 @@ package body MCD_MNG is
         -- Stack size
         when SSIZE =>
           PUSH( (KIND => INTE, VAL_INTE => MY_MATH.INTE(STACK.STACK_SIZE)));
+
+        -- Extra stack
+        when POPE =>
+          -- pushe A
+          POP(A); PUSH (A, DEFAULT_STACK => FALSE);
+        when COPYE =>
+          -- pushe A push A
+          READ(A); PUSH (A, DEFAULT_STACK => FALSE); 
+        when PUSHE =>
+          -- pushe A
+          POP(A, DEFAULT_STACK => FALSE); PUSH (A);
+        when ESIZE =>
+           PUSH( (KIND => INTE,
+                  VAL_INTE => MY_MATH.INTE(STACK.STACK_SIZE(
+                                DEFAULT_STACK => FALSE))));
+
 
         -- These ones are subprogram
         when CALL =>
@@ -391,7 +409,7 @@ package body MCD_MNG is
 
   function CHECK_EMPTY_STACK return BOOLEAN is
   begin
-    return STACK.STACK_SIZE = 0;
+    return STACK.STACK_SIZE(NO_DEBUG => TRUE) = 0;
   end;
 
 end MCD_MNG;
