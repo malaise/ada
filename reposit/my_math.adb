@@ -1,6 +1,6 @@
 with CALENDAR, TEXT_IO;
 with ADA.NUMERICS.AUX;
-package body MATH is
+package body MY_MATH is
 
 
 -- CONSTANTS FOR COMPUTING
@@ -263,4 +263,4 @@ package body MATH is
 begin
   LN_MAX := LN(REAL'LARGE);
   LN_10 := LN(10.0);
-end MATH;
+end MY_MATH;

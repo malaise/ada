@@ -24,5 +24,5 @@ begin
   DATA.TRAJ.SPEED := NAV_TYPES.T_SPEED (MY_MATH.REAL(DATA.WIND.SPEED) * CW
                                       + MY_MATH.REAL(DATA.PLAN.SPEED) * CP);
 exception
-  when MY_MATH.MY_MATH_ERROR => raise COMP_ERR;
+  when MY_MATH.MATH_ERROR => raise COMP_ERR;
 end COMP_NAV;

@@ -1,5 +1,5 @@
 with ADA.NUMERICS;
-package MATH is
+package MY_MATH is
 
   subtype INTE is LONG_LONG_INTEGER;
   --  subtype REAL is LONG_FLOAT;
@@ -49,4 +49,4 @@ package MATH is
   -- exception raised in case of error
   MATH_ERROR : exception;
 
-end MATH;
+end MY_MATH;

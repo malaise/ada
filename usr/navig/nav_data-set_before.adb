@@ -30,7 +30,7 @@ begin
       DATA.SET (TRAJ_A) := TRUE;
       DATA.SET (PLAN_A) := TRUE;
     exception
-      when MY_MATH.MY_MATH_ERROR => raise COMP_ERR;
+      when MY_MATH.MATH_ERROR => raise COMP_ERR;
     end;
 
   end if;

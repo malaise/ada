@@ -1,5 +1,5 @@
-with MATH;
-use MATH;
+with MY_MATH;
+use MY_MATH;
 with NORMAL;
 -- to convert got strings in data fields, and fields in string to be put
 package body NAV_FORMAT is
@@ -14,9 +14,9 @@ package body NAV_FORMAT is
     I : INTEGER;
   begin
     if SET then
-      STR (1 .. 3) := NORMAL (INTEGER (MATH.TRUNC (MATH.REAL(SPEED))), 3, TRUE, ' ');
+      STR (1 .. 3) := NORMAL (INTEGER (MY_MATH.TRUNC (MY_MATH.REAL(SPEED))), 3, TRUE, ' ');
       STR (4) := '.';
-      I := INTEGER (MATH.ROUND (MATH.FRAC(MATH.REAL(SPEED)) * 10.0));
+      I := INTEGER (MY_MATH.ROUND (MY_MATH.FRAC(MY_MATH.REAL(SPEED)) * 10.0));
       STR (5 .. 5) := NORMAL (I, 1, FALSE, '0');
       return STR;
     else

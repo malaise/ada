@@ -1,10 +1,10 @@
 -- Check of a navigation question coherency
-with MATH;
-use MATH;
+with MY_MATH;
+use MY_MATH;
 package body NAV_DATA is
 
   -- For math computations of angles
-  subtype REAL is MATH.REAL;
+  subtype REAL is MY_MATH.REAL;
 
   -- problem in computation
   COMP_ERR : exception;
@@ -53,8 +53,8 @@ package body NAV_DATA is
     end loop;
 
     -- split of degrees and minutes
-    DEG := NAV_TYPES.T_COMMON_DEG (MATH.TRUNC(LOC_R) );
-    MIN := NATURAL (MATH.ROUND ( MATH.FRAC(LOC_R) *
+    DEG := NAV_TYPES.T_COMMON_DEG (MY_MATH.TRUNC(LOC_R) );
+    MIN := NATURAL (MY_MATH.ROUND ( MY_MATH.FRAC(LOC_R) *
      ( REAL(NAV_TYPES.T_MINUTE'LAST) + 1.0) ) );
 
     if MIN <= NATURAL(NAV_TYPES.T_MINUTE'LAST) then

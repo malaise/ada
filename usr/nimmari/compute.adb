@@ -1,4 +1,4 @@
-with RND, MATH;
+with RND, MY_MATH;
 with SCREEN;
 package body COMPUTE is
   use COMMON;
@@ -175,7 +175,7 @@ package body COMPUTE is
        -- 1.0 <= R < N + 1.0
        R := RND.FLOAT_RANDOM (1.0, FLOAT(SUMS (SELECTED_ROW)) + 1.0);
        R := R / FACTOR;
-       NB_BARS := INTEGER(MATH.TRUNC(MATH.REAL(R)));
+       NB_BARS := INTEGER(MY_MATH.TRUNC(MY_MATH.REAL(R)));
       end;
       -- Eh! Play!
       if NB_BARS = 0 then

@@ -1,12 +1,12 @@
 with TEXT_IO;
-with MATH, MY_IO;
-procedure T_MATH is
+with MY_MATH, MY_IO;
+procedure T_MY_MATH is
 
-  package REAL_IO is new TEXT_IO.FLOAT_IO (MATH.REAL);
+  package REAL_IO is new TEXT_IO.FLOAT_IO (MY_MATH.REAL);
 
-  use MATH, MY_IO, REAL_IO;
+  use MY_MATH, MY_IO, REAL_IO;
 
-  subtype REAL is MATH.REAL;
+  subtype REAL is MY_MATH.REAL;
   R, RP : REAL;
 
 begin
@@ -86,4 +86,4 @@ begin
     end;
     NEW_LINE;
   end loop;
-end T_MATH;
+end T_MY_MATH;
