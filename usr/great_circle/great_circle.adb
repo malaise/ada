@@ -135,15 +135,45 @@ package body Great_Circle is
       Ada.Text_Io.Put_Line ("Y  = " & String_Util.Dist2Str(Chord_Y));
     end if;
 
+    if Debug then
+      declare
+        Dist : Lat_Lon.Distance;
+      begin
+        Dist := Distance * Distance + Chord_Y * Chord_Y - Chord_Xb * Chord_Xb;
+        Dist := Dist / 2.0 / Distance / Chord_Y;
+        Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
+            My_Math.Arc_Cos(My_Math.Real(Dist)))));
+        Fix_Angle;
+        Ada.Text_Io.Put_Line ("Nu = " & String_Util.Angle2Str(
+            Conv.Rad2Geo(Result_Rad_Angle)));
+      end;
+    end if;
+
      -- Angle from Y axis to route
     declare
-      Dist : Lat_Lon.Distance;
+      P_Chord_Xa, P_Chord_Y : My_Math.Real;
+      use type My_Math.Real;
     begin
-      Dist := Distance * Distance + Chord_Y * Chord_Y - Chord_Xb * Chord_Xb;
-      Dist := Dist / 2.0 / Distance / Chord_Y;
-      Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
-          My_Math.Arc_Cos(My_Math.Real(Dist)))));
-      -- Fix arc_cos result if B is at south of A (arc_cos is on 0 .. Pi)
+      P_Chord_Xa := My_Math.Real(Chord_Xa) * My_Math.Cos(
+          My_Math.Real(Lat_Lon_Rad_Delta.X / 2.0));
+      P_Chord_Y  :=  My_Math.Real(Chord_Y) * My_Math.Cos(
+          My_Math.Real(Lat_Lon_Rad_Delta.Y / 2.0));
+      begin
+        Result_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(C_Nbres.Radian(
+             My_Math.Arc_Tg(P_Chord_Xa / P_Chord_Y))));
+      exception
+        when others =>
+          -- Arc tangent infinite: A and B on same parallel
+          if Lat_Lon_Rad_Delta.X >= 0.0 then
+            -- B is east of A
+            Result_Rad_Angle := Conv.Pi / 2.0;
+          else
+            -- B is west of A
+            Result_Rad_Angle := 3.0 * Conv.Pi / 2.0;
+          end if;
+      end;
+     
+      -- Fix result if B is at south of A
       -- or if A and B are on the same meridian
       Fix_Angle;
     end;
