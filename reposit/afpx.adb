@@ -185,11 +185,8 @@ package body AFPX is
     --  or colors are modified
     procedure DISPLAY (FIRST_ITEM_ID : in POSITIVE);
 
-    -- Actions on the list
-    type ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN);
-
     -- Update the list due to an action
-    procedure UPDATE (ACTION : in ACTION_LIST);
+    procedure UPDATE (ACTION : in LIST_ACTION_LIST);
 
     -- Set the current item (selected_color) of the list
     procedure SET_SELECTED (ITEM_ID : in POSITIVE);
@@ -556,6 +553,12 @@ package body AFPX is
       end if;
     end loop;
   end PREV_CURSOR_FIELD;
+
+  procedure UPDATE_LIST (ACTION : in LIST_ACTION_LIST) is
+  begin
+    AF_DSCR.CHECK(0);
+    AF_LIST.UPDATE(ACTION);
+  end UPDATE_LIST;
 
 
   -- Print the fields and the list, then gets

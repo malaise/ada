@@ -440,22 +440,32 @@ package body AF_PTG is
         when CON_IO.UP =>
           -- List scroll down
           if LIST_PRESENT then
-            AF_LIST.UPDATE (AF_LIST.UP);
+            AF_LIST.UPDATE (UP);
           end if;
         when CON_IO.DOWN =>
           -- List scroll up
           if LIST_PRESENT then
-            AF_LIST.UPDATE (AF_LIST.DOWN);
+            AF_LIST.UPDATE (DOWN);
           end if;
         when CON_IO.PGUP =>
           -- List page up
           if LIST_PRESENT then
-            AF_LIST.UPDATE (AF_LIST.PAGE_UP);
+            AF_LIST.UPDATE (PAGE_UP);
           end if;
         when CON_IO.PGDOWN =>
           -- List page down
           if LIST_PRESENT then
-            AF_LIST.UPDATE (AF_LIST.PAGE_DOWN);
+            AF_LIST.UPDATE (PAGE_DOWN);
+          end if;
+        when CON_IO.CTRL_PGUP =>
+          -- List page up
+          if LIST_PRESENT then
+            AF_LIST.UPDATE (TOP);
+          end if;
+        when CON_IO.CTRL_PGDOWN =>
+          -- List page down
+          if LIST_PRESENT then
+            AF_LIST.UPDATE (BOTTOM);
           end if;
         when CON_IO.RIGHT | CON_IO.FULL | CON_IO.TAB =>
           if GET_ACTIVE then

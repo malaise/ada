@@ -171,6 +171,7 @@ package body AF_LIST is
         PUT (I - 1, AF_PTG.NORMAL, ITEM);
       end if;
     end loop;
+    MOVE (STATUS.ID_SELECTED);
 
     -- Display empty end of list (if any)
     for I in STATUS.NB_ROWS + 1 .. AF_DSCR.FIELDS(0).HEIGHT loop
@@ -187,7 +188,8 @@ package body AF_LIST is
   -- type ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN);
 
   -- Update the list due to an action
-  procedure UPDATE (ACTION : in ACTION_LIST) is
+  procedure UPDATE (ACTION : in LIST_ACTION_LIST) is
+    FIRST_ITEM_ID : NATURAL;
   begin
     if not OPENED then
       raise NOT_OPENED;
@@ -196,7 +198,7 @@ package body AF_LIST is
       raise NOT_DISPLAYED;
     end if;
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST)
-    or else STATUS.NB_ROWS /=  AF_DSCR.FIELDS(0).HEIGHT then
+    or else STATUS.NB_ROWS /= AF_DSCR.FIELDS(0).HEIGHT then
       return;
     end if;
 
@@ -204,51 +206,60 @@ package body AF_LIST is
       when UP =>
         -- Scroll 1 row down
         if STATUS.ID_TOP /= 1 then
-          STATUS.ID_TOP := STATUS.ID_TOP - 1;
-          STATUS.ID_BOTTOM := STATUS.ID_BOTTOM - 1;
-          DISPLAY (STATUS.ID_TOP);
+          FIRST_ITEM_ID := STATUS.ID_TOP - 1;
+          DISPLAY (FIRST_ITEM_ID);
         end if;
       when DOWN =>
         -- Scroll 1 row down
         if STATUS.ID_BOTTOM /= LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
-          STATUS.ID_TOP := STATUS.ID_TOP + 1;
-          STATUS.ID_BOTTOM := STATUS.ID_BOTTOM + 1;
-          DISPLAY (STATUS.ID_TOP);
+          FIRST_ITEM_ID := STATUS.ID_TOP + 1;
+          DISPLAY (FIRST_ITEM_ID);
         end if;
       when PAGE_DOWN =>
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
         if LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) - STATUS.ID_BOTTOM >
         AF_DSCR.FIELDS(0).HEIGHT then
-          STATUS.ID_TOP := STATUS.ID_TOP + AF_DSCR.FIELDS(0).HEIGHT;
-          STATUS.ID_BOTTOM := STATUS.ID_BOTTOM
-                              + AF_DSCR.FIELDS(0).HEIGHT;
+          FIRST_ITEM_ID := STATUS.ID_TOP + AF_DSCR.FIELDS(0).HEIGHT;
         elsif STATUS.ID_BOTTOM /= LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
           -- End at last item
-          STATUS.ID_TOP := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
+          FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
                            - AF_DSCR.FIELDS(0).HEIGHT + 1;
-          STATUS.ID_BOTTOM := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST);
         else
           -- Already at bottom of list
           return;
         end if;
-        DISPLAY (STATUS.ID_TOP);
+        DISPLAY (FIRST_ITEM_ID);
       when PAGE_UP =>
         -- Display previous page
         -- top - height > 1 => top - height exists
         if STATUS.ID_TOP > AF_DSCR.FIELDS(0).HEIGHT + 1 then
-          STATUS.ID_TOP := STATUS.ID_TOP - AF_DSCR.FIELDS(0).HEIGHT;
-          STATUS.ID_BOTTOM := STATUS.ID_BOTTOM
-                              - AF_DSCR.FIELDS(0).HEIGHT;
+          FIRST_ITEM_ID := STATUS.ID_TOP - AF_DSCR.FIELDS(0).HEIGHT;
         elsif STATUS.ID_TOP /= 1 then
           -- Start at first item
-          STATUS.ID_TOP := 1;
-          STATUS.ID_BOTTOM := AF_DSCR.FIELDS(0).HEIGHT;
+          FIRST_ITEM_ID := 1;
         else
           -- Already at top of list
           return;
         end if;
-        DISPLAY (STATUS.ID_TOP);
+        DISPLAY (FIRST_ITEM_ID);
+      when TOP =>
+        -- Move to top of list
+        if STATUS.ID_TOP = 1 then
+          -- Already at top of list
+          return;
+        end if;
+        FIRST_ITEM_ID := 1;
+        DISPLAY (FIRST_ITEM_ID);
+      when BOTTOM =>
+        -- Move to bottom of list
+        if STATUS.ID_BOTTOM = LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
+          -- Already at bottom of list
+          return;
+        end if;
+        FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
+                         - AF_DSCR.FIELDS(0).HEIGHT + 1;
+        DISPLAY (FIRST_ITEM_ID);
     end case;
   exception
     when others =>

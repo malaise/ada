@@ -138,6 +138,13 @@ package AFPX is
 
   package LINE_LIST_MNG is new DYNAMIC_LIST (LINE_REC);
   LINE_LIST : LINE_LIST_MNG.LIST_TYPE;
+  -- Actions on the list
+  type LIST_ACTION_LIST is (UP, DOWN, PAGE_UP, PAGE_DOWN,
+                            TOP, BOTTOM);
+
+  -- Update the list due to an action
+  -- Exceptions : INVALID_FIELD if no list in current descriptor,
+  procedure UPDATE_LIST (ACTION : in LIST_ACTION_LIST);
 
   type EVENT_LIST is (KEYBOARD, MOUSE_BUTTON, REFRESH);
   type KEYBOARD_KEY_LIST is (RETURN_KEY, ESCAPE_KEY, BREAK_KEY);
