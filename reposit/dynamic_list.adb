@@ -341,6 +341,23 @@ package body Dynamic_List is
     List.Modified := True;
   end Move_To;
 
+  -- Move to beginning/end of list: Move_To (List, Where, 0, False);
+  procedure Rewind (List : in out List_Type; Where : in Direction := Next) is
+  begin
+    Check(List);
+    -- Care here: List_Length reads Pos_First and Pos_Last!
+    if Where = Next then
+      List.Current := List.First;
+      List.Pos_Last := List_Length(List);
+      List.Pos_First := 1;
+    else
+      List.Current := List.Last;
+      List.Pos_First := List_Length(List);
+      List.Pos_Last := 1;
+    end if;
+    List.Modified := True;
+  end Rewind;
+
 
   -- permute two elements knowing links to them
   -- (internal procedure for permute and sort)

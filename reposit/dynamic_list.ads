@@ -100,6 +100,9 @@ package Dynamic_List is
                      Number       : in Natural := 1;
                      From_Current : in Boolean := True);
 
+  -- Move to beginning/end of list: Move_To (List, Where, 0, False);
+  procedure Rewind (List : in out List_Type; Where : in Direction := Next);
+
   -- Permute 2 elements
   --  If From_Current is True,  then numbers of elements are relative from
   --   current
