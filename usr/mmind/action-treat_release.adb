@@ -55,7 +55,7 @@ begin
         EXIT_GAME := TRUE;
 
       when SCREEN.LEVEL =>
-        COMMON.SET_LEVEL (CUR_SELECTION.LEVEL_NO);
+        COMMON.STORE_LEVEL (CUR_SELECTION.LEVEL_NO);
         SCREEN.PUT_CURRENT_LEVEL (CUR_SELECTION.LEVEL_NO);
         GO_ON := TRUE;
         EXIT_GAME := FALSE;
@@ -69,6 +69,7 @@ begin
           EXIT_GAME := FALSE;
         else
           -- restart
+          COMMON.SET_LEVEL_TO_STORED;
           SCREEN.PUT_START_GIVEUP (START => FALSE, SELECTED => FALSE);
           GO_ON := FALSE;
           EXIT_GAME := FALSE;

@@ -124,7 +124,7 @@ package body ACTION is
               end;
               SCREEN.PUT_START_GIVEUP (START => TRUE, SELECTED => FALSE);
               SCREEN.PUT_HELP (SCREEN.START);
-              SCREEN.PUT_CURRENT_LEVEL (COMMON.GET_LEVEL);
+              SCREEN.PUT_CURRENT_LEVEL (COMMON.GET_STORED_LEVEL);
             end if;
           elsif EVENT = CON_IO.BREAK then
             SCREEN.CLEAR;

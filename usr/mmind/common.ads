@@ -22,7 +22,13 @@ package COMMON is
   subtype EFF_COLOR_RANGE is COLOR_RANGE range 1 .. MAX_NUMBER_COLOR;
 
   -- Level of the game
-  procedure SET_LEVEL (LEVEL : in LAST_LEVEL_RANGE);
+  --  Store the one selected (may not be the one of current propal)
+  procedure STORE_LEVEL (LEVEL : in LAST_LEVEL_RANGE);
+  --  Set propal to level stored
+  procedure SET_LEVEL_TO_STORED;
+  --  Current level stored
+  function  GET_STORED_LEVEL return LAST_LEVEL_RANGE;
+  --  Current level set
   function  GET_LEVEL return LAST_LEVEL_RANGE;
 
   -- Try state of a propal
