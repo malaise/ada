@@ -1,2 +1,3 @@
 #!/bin/bash
+cd $HOME/ada/usr/mcd
 mmcdt "\"$1\"" -e e2f.mcd
