@@ -30,13 +30,9 @@ package body Pieces is
 
   -- Delete current action
   procedure Delete_Action is
+    Done : Boolean;
   begin
-    if       Action_List_Mng.Get_Position (Action_List)
-         /=  Action_List_Mng.List_Length(Action_List) then
-      Action_List_Mng.Delete(Action_List, Move => Action_List_Mng.Next);
-    else
-      Action_List_Mng.Delete(Action_List, Move => Action_List_Mng.Prev);
-    end if;
+    Action_List_Mng.Delete(Action_List, Done => Done);
   end Delete_Action;
 
   -- Create e new piece
@@ -203,7 +199,7 @@ package body Pieces is
     begin
       -- Scan list if not empty
       if not Action_List_Mng.Is_Empty(Action_List) then
-        Action_List_Mng.Move_To (Action_List, Action_List_Mng.Next, 0, False);
+        Action_List_Mng.Rewind (Action_List);
         for I in Result'Range loop
            Action_List_Mng.Get (Action_List, Result(I));
         end loop;

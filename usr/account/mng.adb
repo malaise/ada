@@ -123,7 +123,7 @@ package body Mng is
     begin
       Loc_Pos := Sel_List_Mng.Get_Position(Sel_List);
       if Move_To_First then
-        Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
+        Sel_List_Mng.Rewind(Sel_List);
       end if;
     end Save_Pos;
 
@@ -138,7 +138,7 @@ package body Mng is
     begin
       Oper.Amount := Amount;
       if not Oper_List_Mng.Is_Empty(Oper_List) then
-        Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+        Oper_List_Mng.Rewind(Oper_List);
       end if;
       Oper_List_Mng.Insert(Oper_List, Oper, Oper_List_Mng.Prev);
     end Insert_Amount;
@@ -146,7 +146,7 @@ package body Mng is
     function Get_Amount return Oper_Def.Amount_Range is
       Oper : Oper_Def.Oper_Rec;
     begin
-      Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+      Oper_List_Mng.Rewind(Oper_List);
       Oper_List_Mng.Get(Oper_List, Oper, Oper_List_Mng.Next);
       return Oper.Amount;
     end Get_Amount;
@@ -171,8 +171,7 @@ package body Mng is
       Afpx.Line_List_Mng.Insert(Afpx.Line_List,
                   Oper_To_Line(Oper_List_Mng.Get_Position(Oper_List),
                   Oper));
-      exit when Sel_List_Mng.Get_Position(Sel_List)
-              = Sel_List_Mng.List_Length(Sel_List);
+      exit when not Sel_List_Mng.Check_Move(Sel_List);
       Sel_List_Mng.Move_To(Sel_List);
     end loop;
     List_Util.Restore_Pos;
@@ -216,7 +215,7 @@ package body Mng is
     end if;
 
     -- All operations
-    Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+    Oper_List_Mng.Rewind(Oper_List);
     loop
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
       Add_Amount (Screen.Real, Oper.Amount);
@@ -234,8 +233,7 @@ package body Mng is
             Add_Amount(Screen.Margin, Oper.Amount);
           end if;
       end case;
-      exit when Oper_List_Mng.Get_Position(Oper_List)
-              = Oper_List_Mng.List_Length(Oper_List);
+      exit when not Oper_List_Mng.Check_Move(Oper_List);
       Oper_List_Mng.Move_To(Oper_List);
     end loop;
   end Compute_Amounts;
@@ -444,7 +442,7 @@ package body Mng is
     Line := 3;
 
     if not Oper_List_Mng.Is_Empty(Oper_List) then
-      Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+      Oper_List_Mng.Rewind(Oper_List);
       Index := 1;
       loop
         Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
@@ -456,8 +454,7 @@ package body Mng is
                    & Oper.Destination & Sep
                    & Oper.Comment & Sep
                    & Oper.Reference);
-        exit when Oper_List_Mng.Get_Position(Oper_List)
-                = Oper_List_Mng.List_Length(Oper_List);
+        exit when not Oper_List_Mng.Check_Move(Oper_List);
         Oper_List_Mng.Move_To(Oper_List);
         Index := Index + 1;
         if Line = Lines_Per_Page then
@@ -645,7 +642,7 @@ package body Mng is
     end if;
     -- Get number of oper to check and start from the beginning
     Pos := Sel_List_Mng.Get_Position(Sel_List);
-    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
+    Sel_List_Mng.Rewind(Sel_List);
     -- Check up to pos included
     Tmp_Amount := Root_Amount;
     for I in 1 .. Pos loop

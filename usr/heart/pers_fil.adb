@@ -44,8 +44,7 @@ package body Pers_Fil is
     Person_Io.Close (Person_File);
     -- Move to begining of list
     if not Pers_Def.Person_List_Mng.Is_Empty(The_Persons) then
-      Pers_Def.Person_List_Mng.Move_To (The_Persons,
-       Pers_Def.Person_List_Mng.Next, 0, False);
+      Pers_Def.Person_List_Mng.Rewind (The_Persons);
     end if;
 
   exception
@@ -74,8 +73,7 @@ package body Pers_Fil is
       -- Save current position
       Init_Pos := Pers_Def.Person_List_Mng.Get_Position (The_Persons);
       -- Move to beginning of list
-      Pers_Def.Person_List_Mng.Move_To (The_Persons,
-       Pers_Def.Person_List_Mng.Next, 0, False);
+      Pers_Def.Person_List_Mng.Rewind (The_Persons);
 
       -- Read persons from list and write them to file
       for I in 1 .. List_Length loop

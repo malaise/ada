@@ -62,7 +62,7 @@ begin
       return;
   end;
 
-  Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, 0, False);
+  Oper_List_Mng.Rewind(Oper_List);
 
   No := 1;
   loop
@@ -89,12 +89,8 @@ begin
         return;
     end;
 
-    begin
-      Oper_List_Mng.Move_To(Oper_List);
-    exception
-      when Oper_List_Mng.Not_In_List =>
-        exit;
-    end;
+    exit when not Oper_List_Mng.Check_Move (Oper_List);
+    Oper_List_Mng.Move_To(Oper_List);
 
     No := No + 1;
 

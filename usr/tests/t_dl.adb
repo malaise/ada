@@ -1,16 +1,15 @@
 with Text_Io;
-with Dynamic_List, Dynamic_List.Basic, Normal, Rnd;
+with Dynamic_List, Normal, Rnd;
 procedure T_Dl is
   package My_List is new Dynamic_List(Element_Type => Integer);
   procedure My_Search is new My_List.Search;   -- ("=" of Integer)
+  procedure My_Safe_Search is new My_List.Safe_Search;   -- ("=" of Integer)
   procedure My_Sort is new My_List.Sort("<");  -- ("<" of Integer)
-
-  package My_Blist is new My_List.Basic;
-  procedure My_Find is new My_Blist.Find_First (My_Search);
 
   List : My_List.List_Type;
   Item : Integer;
   Found : Boolean;
+  Done : Boolean;
 
   procedure Put (I : in Integer; New_Line : in Boolean := False) is
   begin
@@ -20,7 +19,7 @@ procedure T_Dl is
 
   procedure Dump is
     Pos : Natural;
-    The_End : Boolean;
+    Done : Boolean;
   begin
     if My_List.Is_Empty(List) then
       Text_Io.New_Line;
@@ -28,11 +27,11 @@ procedure T_Dl is
     end if;
 
     Pos := My_List.Get_Position (List);
-    My_Blist.Rewind (List);
+    My_List.Rewind (List);
     loop
-      My_Blist.Read_Move (List, Item, The_End);
+      My_List.Read (List, Item, Done => Done);
       Put (Item);
-      exit when The_End;
+      exit when not Done;
     end loop;
     Text_Io.New_Line;
     My_List.Move_To (List, My_List.Next, Pos-1, False);
@@ -48,7 +47,7 @@ begin
 
   -- read 5 elements from list in reverse
   Text_Io.Put("Reads 5 elements from the last one: ");
-  My_List.Move_To(List, My_List.Prev, 0, False);
+  My_List.Rewind(List, My_List.Prev);
   for I in 1 .. 5 loop
     My_List.Read(List, Item, My_List.Prev);
     Put(Item);
@@ -61,7 +60,7 @@ begin
 
   -- delete 5th
   Text_Io.Put_Line("Deletes the current");
-  My_Blist.Delete_Current(List);
+  My_List.Delete(List, Done => Done);
 
   -- Pos and list length
   Text_Io.Put("Pos from first: ");
@@ -96,7 +95,7 @@ begin
   Text_Io.New_Line;
 
   -- permute 1st and 4th elements, then search 3 from last
-  Text_Io.Put_Line("Permute 1st and 4th elements, then seach 3 from last");
+  Text_Io.Put_Line("Permute 1st and 4th elements, then search 3 from last");
   My_List.Permute (List, 0, 3, My_List.Next, False);
   My_Search (List, 3, My_List.Prev, 1, My_List.Absolute);
 
@@ -115,7 +114,15 @@ begin
 
   -- search 50 from first
   Text_Io.Put_Line("Seach 50 from first");
-  My_Find(List, 50, Found);
+  My_Safe_Search (List, Found, 50, From => My_List.Absolute);
+  if not Found then
+    Text_Io.Put_Line ("NOT FOUND");
+    -- This is not normal. Abort.
+    raise My_List.Not_In_List;
+  end if;
+  -- search 50 from current, skipping it
+  Text_Io.Put_Line("Seach 50, skipping current");
+  My_Safe_Search (List, Found, 50, From => My_List.Skip_Current);
   if not Found then
     Text_Io.Put_Line ("NOT FOUND");
   end if;
@@ -175,5 +182,5 @@ begin
   Text_Io.Put ("After sorting it: ");
   Dump;
 
-
 end T_Dl;
+

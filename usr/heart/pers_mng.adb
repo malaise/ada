@@ -19,8 +19,7 @@ package body Pers_Mng is
     end if;
 
     -- Move to beginning
-    Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-     0, False);
+    Pers_Def.Person_List_Mng.Rewind (List);
     -- Read persons, look for Pid
     for I in 1 .. List_Length loop
       if I /= List_Length then
@@ -60,8 +59,7 @@ package body Pers_Mng is
     end if;
 
     -- Move to beginning
-    Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-     0, False);
+    Pers_Def.Person_List_Mng.Rewind (List);
     -- Read persons, look for (Name, Activity)
     for I in 1 .. List_Length loop
       if I /= List_Length then
@@ -154,8 +152,7 @@ package body Pers_Mng is
    Loc_Pos := -1;
    Matching_Person.Name := Empty_Name;
    Matching_Person.Activity := Empty_Activity;
-   Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-         0, False);
+   Pers_Def.Person_List_Mng.Rewind (List);
    for I in 1 .. List_Length loop
       Pers_Def.Person_List_Mng.Read (List, Person,
          Pers_Def.Person_List_Mng.Current);
@@ -342,8 +339,7 @@ package body Pers_Mng is
     if List_Length /= 0 then
       -- Search if this (Name, Activity) is already in List
       -- Mark used Pids
-      Pers_Def.Person_List_Mng.Move_To (List,
-       Pers_Def.Person_List_Mng.Next, 0, False);
+      Pers_Def.Person_List_Mng.Rewind (List);
       for I in 1 .. List_Length loop
         if I /= List_Length then
           Pers_Def.Person_List_Mng.Read (List, Curr_Person,

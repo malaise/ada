@@ -39,13 +39,14 @@ package body Deletion is
   -- Delete all flagged operation
   procedure Commit_Deletions is
     Sel : Sel_Rec;
+    Moved : Boolean;
   begin
     if Nb_Deleted = 0 then
       return;
     end if;
 
     -- Commit deletions from last to first (so REFs remain correct)
-    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev, 0 , False);
+    Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
     loop
       Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
       if Sel.Deleted then
@@ -57,11 +58,7 @@ package body Deletion is
           Oper_List_Mng.Delete(Oper_List, Oper_List_Mng.Next);
         end if;
         -- Remove current selection
-        if Sel_List_Mng.Get_Position(Sel_List) /= 1 then
-          Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev);
-        else
-          Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Next);
-        end if;
+        Sel_List_Mng.Delete(Sel_List, Done => Moved);
         -- Update counter
         Nb_Deleted := Nb_Deleted - 1;
         -- Either first item of selection is deleted here
@@ -85,7 +82,7 @@ package body Deletion is
       return;
     end if;
 
-    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0 , False);
+    Sel_List_Mng.Rewind(Sel_List);
     loop
       Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
       if Sel.Deleted then

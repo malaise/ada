@@ -10,7 +10,7 @@ package body Data_Base is
   begin
     return Elt1.Kind = Elt2.Kind and then Elt1.Name = Elt2.Name;
   end Name_Match;
-  procedure Search_Name is new Item_List_Mng.Search (Name_Match);
+  procedure Search_Name is new Item_List_Mng.Safe_Search (Name_Match);
 
 
   -- Hash on: Item.Kind & Item.Name (not Parsed)
@@ -56,12 +56,13 @@ package body Data_Base is
     procedure Append_Itm is
     begin
       if not Item_List_Mng.Is_Empty (Item_List) then
-        Item_List_Mng.Move_To (Item_List, Item_List_Mng.Prev, 0, False);
+        Item_List_Mng.Rewind (Item_List, Item_List_Mng.Prev);
       end if;
       Item_List_Mng.Insert (Item_List, Itm);
     end Append_Itm;
 
     Acc : Item_List_Mng.Element_Access;
+    Found : Boolean;
     use type Item_List_Mng.Element_Access;
   begin
     -- The one to store
@@ -77,13 +78,12 @@ package body Data_Base is
                       Item_List_Mng.Access_Current(Item_List));
       end if;
     else
-      begin
-        Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute);
+      Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
+      if Found then
         Item_List_Mng.Modify (Item_List, Itm, Item_List_Mng.Current);
-      exception
-        when Item_List_Mng.Not_In_List =>
-          Append_Itm;
-      end;
+      else
+        Append_Itm;
+      end if;
     end if;
   end Set;
 
@@ -99,6 +99,7 @@ package body Data_Base is
   procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec) is
     Itm : Item_Rec;
     Acc : Item_List_Mng.Element_Access;
+    Found : Boolean;
     use type Item_List_Mng.Element_Access;
   begin
     if H_Use then
@@ -111,13 +112,12 @@ package body Data_Base is
     else
       Itm.Name := Name;
       Itm.Kind := Kind;
-      begin
-        Search_Name (Item_List, Itm, From => Item_List_Mng.Absolute);
+      Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
+      if Found then
         Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
-      exception
-        when Item_List_Mng.Not_In_List =>
-          Item := No_Item;
-      end;
+      else
+        Item := No_Item;
+      end if;
     end if;
   end Get;
 
@@ -142,7 +142,7 @@ package body Data_Base is
       Item := No_Item;
       return;
     end if;
-    Item_List_Mng.Move_To (Item_List, Item_List_Mng.Next, 0, False);
+    Item_List_Mng.Rewind (Item_List);
     Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
   end Read_First;
 

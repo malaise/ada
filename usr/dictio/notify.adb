@@ -14,14 +14,14 @@ package body Notify is
   begin
     return Elt1 = Elt2;
   end Full_Match;
-  procedure Full_Search is new Notif_List_Mng.Search (Full_Match);
+  procedure Full_Search is new Notif_List_Mng.Safe_Search (Full_Match);
 
   function Client_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return Elt1.Client = Elt2.Client;
   end Client_Match;
-  procedure Client_Search is new Notif_List_Mng.Search (Client_Match);
+  procedure Client_Search is new Notif_List_Mng.Safe_Search (Client_Match);
 
   function Item_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
   begin
@@ -30,7 +30,7 @@ package body Notify is
     return Elt2.Kind = Elt1.Kind
     and then Names.Match (Parse (Elt2.Item), Parse (Elt1.Item));
   end Item_Match;
-  procedure Item_Search is new Notif_List_Mng.Search (Item_Match);
+  procedure Item_Search is new Notif_List_Mng.Safe_Search (Item_Match);
 
 
   procedure Add (Client : in Socket.Socket_Dscr;
@@ -47,12 +47,9 @@ package body Notify is
 
 
   procedure Delete_Current is
+    Done : Boolean;
   begin
-    if Notif_List_Mng.Get_Position (Notif_List) = 1 then
-      Notif_List_Mng.Delete (Notif_List, Notif_List_Mng.Next);
-    else
-      Notif_List_Mng.Delete (Notif_List, Notif_List_Mng.Prev);
-    end if;
+    Notif_List_Mng.Delete (Notif_List, Done => Done);
   end Delete_Current;
 
 
@@ -60,19 +57,18 @@ package body Notify is
                  Item   : in Data_Base.Item_Name;
                  Kind   : in Data_Base.Item_Kind) is
     Rec : Notif_Rec;
+    Found : Boolean;
   begin
     Rec := (Client, Item, Kind);
-    begin
-      Full_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
-    exception
-      when Notif_List_Mng.Not_In_List =>
-        if Debug.Level_Array(Debug.Client_Notify) then
-          Debug.Put ("Client-notify.del: not found " & Parse(Item)
-               & " kind " & Kind
-               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
-        end if;
-        return;
-    end;
+    Full_Search (Notif_List, Found, Rec, From => Notif_List_Mng.Absolute);
+    if not Found then
+      if Debug.Level_Array(Debug.Client_Notify) then
+        Debug.Put ("Client-notify.del: not found " & Parse(Item)
+             & " kind " & Kind
+             & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+      end if;
+      return;
+    end if;
     if Debug.Level_Array(Debug.Client_Notify) then
       Debug.Put ("Client-notify.del: " & Parse(Item)
                & " kind " & Kind
@@ -84,9 +80,14 @@ package body Notify is
 
   procedure Del_Client (Client : in Socket.Socket_Dscr) is
     Rec : Notif_Rec;
+    Found : Boolean;
   begin
     Rec.Client := Client;
-    Client_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
+    Client_Search (Notif_List, Found, Rec, From => Notif_List_Mng.Absolute);
+    if not Found then
+      -- No notification
+      return;
+    end if;
     loop
       if Debug.Level_Array(Debug.Client_Notify) then
         Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
@@ -95,11 +96,10 @@ package body Notify is
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
       end if;
       Delete_Current;
-      Client_Search (Notif_List, Rec, From => Notif_List_Mng.From_Current);
+      Client_Search (Notif_List, Found, Rec, From => Notif_List_Mng.From_Current);
+      exit when not Found;
     end loop;
-  exception
-    when Notif_List_Mng.Not_In_List =>
-      null;
+    -- No more notification
   end Del_Client;
 
 
@@ -116,13 +116,18 @@ package body Notify is
     Rec : Notif_Rec;
     Msg : Client_Com.Dictio_Client_Rec;
     Fd : Event_Mng.File_Desc;
+    Found : Boolean;
   begin
     Msg.Action := Client_Com.Notif_On;
     Msg.Item := Item;
     -- Search first notification record
     Rec.Item := Item.Name;
     Rec.Kind := Item.Kind;
-    Item_Search (Notif_List, Rec, From => Notif_List_Mng.Absolute);
+    Item_Search (Notif_List, Found, Rec, From => Notif_List_Mng.Absolute);
+    if not Found then
+      -- No notifcation
+      return;
+    end if;
     loop
       Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
       Fd := Socket.Fd_Of (Rec.Client);
@@ -148,11 +153,10 @@ package body Notify is
       -- Search next
       Notif_List_Mng.Move_To (Notif_List);
       Rec.Item := Item.Name;
-      Item_Search (Notif_List, Rec, From => Notif_List_Mng.From_Current);
+      Item_Search (Notif_List, Found, Rec, From => Notif_List_Mng.From_Current);
+      exit when not Found;
     end loop;
-  exception
-    when Notif_List_Mng.Not_In_List =>
-      null;
+    -- No more notification
   end Send;
 
 end Notify;

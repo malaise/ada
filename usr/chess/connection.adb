@@ -38,7 +38,7 @@ package body Connection is
   function Receive return Players.Action_Rec is
     Action : Players.Action_Rec;
   begin
-    Action_List_Mng.Move_To (Action_List, Action_List_Mng.Prev, 0, False);
+    Action_List_Mng.Rewind (Action_List, Action_List_Mng.Prev);
     Action_List_Mng.Get (Action_List, Action, Action_List_Mng.Prev);
     return Action;
   exception
@@ -242,7 +242,7 @@ package body Connection is
 
         -- Insert action
         if not Action_List_Mng.Is_Empty (Action_List) then
-          Action_List_Mng.Move_To (Action_List, Action_List_Mng.Next, 0, False);
+          Action_List_Mng.Rewind (Action_List);
         end if;
         Action_List_Mng.Insert (Action_List, Message.Action,
                                 Action_List_Mng.Prev);

@@ -114,7 +114,7 @@ package body Stack is
       Text_Io.Put ("Stack: Poping first ");
     end if;
     -- Get first pushed item
-    Stack_List.Move_To(Extra_List, Stack_List.Next, 0, False);
+    Stack_List.Rewind(Extra_List);
     Stack_List.Get(Extra_List, Litem, Stack_List.Next);
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
@@ -123,7 +123,7 @@ package body Stack is
     end if;
     -- Move back to last pushed item
     if not Stack_List.Is_Empty(Extra_List) then
-      Stack_List.Move_To(Extra_List, Stack_List.Prev, 0, False);
+      Stack_List.Rewind(Extra_List, Stack_List.Prev);
     end if;
   exception
     when Stack_List.Empty_List =>
@@ -145,11 +145,11 @@ package body Stack is
     end if;
 
     -- Insert before first
-    Stack_List.Move_To(Extra_List, Stack_List.Next, 0, False);
+    Stack_List.Rewind(Extra_List);
     Stack_List.Insert(Extra_List, Item, Stack_List.Prev);
 
     -- Move back to last pushed item
-    Stack_List.Move_To(Extra_List, Stack_List.Prev, 0, False);
+    Stack_List.Rewind(Extra_List, Stack_List.Prev);
   end Pushf;
 
 end Stack;

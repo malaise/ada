@@ -9,7 +9,7 @@ package body Edition is
   begin
     return Op1.Kind = Op2.Kind and then Op1.Reference = Op2.Reference;
   end Same_Kind_And_Ref;
-  procedure Search_Kind_Ref is new Oper_List_Mng.Search(Same_Kind_And_Ref);
+  procedure Search_Kind_Ref is new Oper_List_Mng.Safe_Search(Same_Kind_And_Ref);
 
 
   -- Affectation of kind and status buttons
@@ -185,12 +185,14 @@ package body Edition is
     end if;
 
     -- Now list cannot be empty: protect out-of-list
-    Afpx.Set_Field_Activation(37, Sel_List_Mng.Get_Position(Sel_List) /= 1);
-    Afpx.Set_Field_Activation(38, Sel_List_Mng.Get_Position(Sel_List) /= 1);
-    Afpx.Set_Field_Activation(41, Sel_List_Mng.Get_Position(Sel_List)
-                               /= Sel_List_Mng.List_Length(Sel_List));
-    Afpx.Set_Field_Activation(42, Sel_List_Mng.Get_Position(Sel_List)
-                               /= Sel_List_Mng.List_Length(Sel_List));
+    Afpx.Set_Field_Activation(37,
+            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
+    Afpx.Set_Field_Activation(38,
+            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
+    Afpx.Set_Field_Activation(41,
+            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(42,
+            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
 
     if Edit_Type = Delete then
       -- Only allow back
@@ -313,6 +315,7 @@ package body Edition is
     Saved_Movement : Oper_List_Mng.Movement;
     Date_Str : Unit_Format.Date_Str;
     Field : Afpx.Absolute_Field_Range := 0;
+    Found : Boolean;
     Pos : Positive;
     Sel : Sel_Rec;
     use type Oper_Def.Status_List, Oper_Def.Kind_List,
@@ -362,8 +365,7 @@ package body Edition is
         -- Remove current oper so we won't find it
         --  move to next if possible.
         if Oper_List_Mng.List_Length(Oper_List) = 1
-        or else Oper_List_Mng.Get_Position(Oper_List)
-             /= Oper_List_Mng.List_Length(Oper_List) then
+        or else Oper_List_Mng.Check_Move(Oper_List) then
           -- Last item of the list or not end of list
           Saved_Movement := Oper_List_Mng.Next;
         else
@@ -377,14 +379,12 @@ package body Edition is
       end if;
 
       -- Search same kind (cheque) and same reference
-      begin
-        Search_Kind_Ref(Oper_List, Oper, From => Oper_List_Mng.Absolute);
-        -- oh, oh. Found another one
-      exception
-        when Oper_List_Mng.Not_In_List =>
-          -- Ok. Ref is unique
-          Field := 0;
-      end;
+      Search_Kind_Ref(Oper_List, Found, Oper, From => Oper_List_Mng.Absolute);
+      -- Found another one?
+      if not Found then
+        -- Ok. Ref is unique
+        Field := 0;
+      end if;
 
       -- Restore 
       if Edit_Type = Modify then
@@ -396,8 +396,8 @@ package body Edition is
             Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Prev);
           when Oper_List_Mng.Prev =>
             -- Last elem was removed, and we moved to previous
-            -- Insert ad end
-            Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Prev, 0, False);
+            -- Insert at end
+            Oper_List_Mng.Rewind(Oper_List, Oper_List_Mng.Prev);
             Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Next);
           when Oper_List_Mng.Current =>
             -- List is empty
@@ -416,13 +416,13 @@ package body Edition is
     else
       -- Insert at the end to keep selection accurate
       if not Oper_List_Mng.Is_Empty(Oper_List) then
-        Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Prev, 0 , False);
+        Oper_List_Mng.Rewind(Oper_List, Oper_List_Mng.Prev);
       end if;
       Oper_List_Mng.Insert(Oper_List, Oper);
       -- Insert at the end of selection and go back to current (for next copy)
       if not Sel_List_Mng.Is_Empty(Sel_List) then
         List_Util.Save_Pos;
-        Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev, 0 , False);
+        Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
         Sel_List_Mng.Insert(Sel_List, (No => Oper_List_Mng.List_Length(Oper_List),
                                        Deleted => False) );
         List_Util.Restore_Pos;
@@ -646,7 +646,7 @@ package body Edition is
     elsif Edit_Type = Create
     and then not Sel_List_Mng.Is_Empty(Sel_List) then
       -- Move to bottom
-      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev, 0, False);
+      Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
     end if;
 
     -- Restore original unit

@@ -384,7 +384,7 @@ package body Mesu_Gra is
 
     Nb_Mesure := 0;
     -- for each in list : store in array
-    Move_To (Afpx.Line_List, Next, 0, False);
+    Rewind (Afpx.Line_List);
     loop
       -- Get line, file_name, split
       Read (Afpx.Line_List, Line, Current);
@@ -402,8 +402,8 @@ package body Mesu_Gra is
       Mesure_Array(Nb_Mesure).Drown  := False;
 
       -- Next line except if list empty or end of list
-      exit when Is_Empty (Afpx.Line_List) or else
-                Get_Position (Afpx.Line_List) = List_Length (Afpx.Line_List);
+      exit when Is_Empty (Afpx.Line_List)
+      or else not Check_Move (Afpx.Line_List);
 
       Move_To (Afpx.Line_List);
     end loop;

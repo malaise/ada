@@ -17,6 +17,7 @@ package body Mesu_Sel is
   procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is
     Pos : Positive;
     Line : Afpx.Line_Rec;
+    Done : Boolean;
   begin
     -- Delete dest list
     Delete_List (To);
@@ -26,19 +27,13 @@ package body Mesu_Sel is
     end if;
     -- Save pos, move to beginning
     Pos := Get_Position (From);
-    Move_To (From, Next, 0, False);
+    Rewind (From, Next);
     -- Copy items
-    begin
-      loop
-        Read (From, Line);
-        Insert (To, Line);
-      end loop;
-    exception
-      when Not_In_List =>
-        -- Last item
-        Read (From, Line, Current);
-        Insert (To, Line);
-    end;
+    loop
+      Read (From, Line, Next, Done);
+      exit when not Done;
+      Insert (To, Line);
+    end loop;
     -- Restore pos, set it in saved_list
     Move_To (From, Next, Pos - 1, False);
     Move_To (To, Next, Pos - 1, False);
@@ -95,7 +90,7 @@ package body Mesu_Sel is
   end Less_Than;
 
 
-  procedure File_Search is new Line_List_Mng.Search (Same_File);
+  procedure File_Search is new Line_List_Mng.Safe_Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
 
 
@@ -112,6 +107,7 @@ package body Mesu_Sel is
     No_S   : Mesu_Nam.File_No_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Ok     : Boolean;
+    Found  : Boolean;
     Mesure : Mesu_Def.Mesure_Rec;
     Line   : Afpx.Line_Rec;
   begin
@@ -170,8 +166,7 @@ package body Mesu_Sel is
 
 
     -- Add files in line list
-    Dir_Mng.File_List_Mng.Move_To (The_Files, Dir_Mng.File_List_Mng.Next,
-                                   0, False);
+    Dir_Mng.File_List_Mng.Rewind (The_Files);
     loop
       Dir_Mng.File_List_Mng.Read (The_Files, File,
                                   Dir_Mng.File_List_Mng.Current);
@@ -192,15 +187,8 @@ package body Mesu_Sel is
 
         if not Is_Empty(Line_List) then
           Pos := Get_Position (Line_List);
-          begin
-            File_Search (Line_List, Line, Next, 1, Absolute);
-            -- Line already exists
-            Ok := False;
-          exception
-            when Not_In_List =>
-              -- Line is not in list
-              Ok := True;
-          end;
+          File_Search (Line_List, Found, Line, Next, 1, Absolute);
+          Ok := not Found;
           Move_To (Line_List, Next, Pos - 1, False);
         end if;
       end if;
@@ -211,9 +199,7 @@ package body Mesu_Sel is
       end if;
 
       -- Next file
-      exit when Dir_Mng.File_List_Mng.Get_Position (The_Files)
-              = Dir_Mng.File_List_Mng.List_Length  (The_Files);
-
+      exit when not Dir_Mng.File_List_Mng.Check_Move (The_Files);
       Dir_Mng.File_List_Mng.Move_To (The_Files);
     end loop;
 
@@ -225,7 +211,7 @@ package body Mesu_Sel is
       Move_To (Line_List, Next, Saved_Pos - 1, False);
     elsif not Is_Empty (Line_List) then
       -- List was empty, move to first
-      Move_To (Line_List, Next, 0, False);
+      Rewind (Line_List);
     end if;
 
     -- Delete files list
@@ -254,7 +240,7 @@ package body Mesu_Sel is
     Save_List;
 
     -- for each in list
-    Move_To (Line_List, Next, 0, False);
+    Rewind (Line_List);
     loop
       -- Get line, file_name, split
       Read (Line_List, Line, Current);
@@ -299,8 +285,8 @@ package body Mesu_Sel is
         end if;
       else
         -- Next line except if list empty or end of list
-        exit when Is_Empty (Line_List) or else
-                  Get_Position (Line_List) = List_Length (Line_List);
+        exit when Is_Empty (Line_List)
+        or else not Check_Move (Line_List);
         Move_To (Line_List);
       end if;
 
@@ -322,6 +308,7 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
+    Found  : Boolean;
   begin
 
     Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
@@ -339,11 +326,11 @@ package body Mesu_Sel is
     -- Insert
     Insert (Line_List, Line);
 
-    -- sort by name activity date
+    -- Sort by name activity date
     File_Sort (Line_List);
 
     -- Current set to inserted
-    File_Search (Line_List, Line, Next, 1, Absolute);
+    File_Search (Line_List, Found, Line, Next, 1, Absolute);
   end Add_Selection;
 
   -- Remove a record from selection
@@ -356,6 +343,7 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
+    Found  : Boolean;
   begin
     -- Save current position
     if Is_Empty (Line_List) then
@@ -381,7 +369,11 @@ package body Mesu_Sel is
     Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
     -- Search record
-    File_Search (Line_List, Line, Next, 1, Absolute);
+    File_Search (Line_List, Found, Line, Next, 1, Absolute);
+    if not Found then
+      Move_To (Line_List, Next, Saved_Pos - 1, False);
+      return;
+    end if;
 
     -- Delete line. Update saved pos if deleting initial current line
     Curr_Pos := Get_Position (Line_List);
@@ -409,6 +401,7 @@ package body Mesu_Sel is
     Saved_Pos, Curr_Pos : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
+    Found  : Boolean;
   begin
     -- Save current position
     if Is_Empty (Line_List) then
@@ -421,7 +414,11 @@ package body Mesu_Sel is
     Save_List;
 
     -- Search record
-    File_Search (Line_List, Line, Next, 1, Absolute);
+    File_Search (Line_List, Found, Line, Next, 1, Absolute);
+    if not Found then
+      Move_To (Line_List, Next, Saved_Pos - 1, False);
+      return;
+    end if;
 
     -- Delete line. Update saved pos if deleting initial current line
     Curr_Pos := Get_Position (Line_List);
@@ -505,7 +502,7 @@ package body Mesu_Sel is
       Saved_Pos := Get_Position (Line_List);
     end if;
 
-    Move_To (Line_List, Next, 0, False);
+    Rewind (Line_List);
     -- Copy items
     loop
       begin

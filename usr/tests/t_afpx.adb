@@ -45,8 +45,7 @@ begin
   end if;
 
   Dir_Sort (Dir_List);
-  Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
-                                 0 , False);
+  Dir_Mng.File_List_Mng.Rewind (Dir_List);
 
   -- Start a temporary silly timer
   Timer_Tmp := Timers.Create ( (Timers.Delay_Sec, 0.1, 0.1), null);
@@ -69,12 +68,10 @@ begin
        Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1);
     Afpx_Item.Len := Afpx_Item.Len + 2;
     Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
-    exit when Dir_Mng.File_List_Mng.Get_Position (Dir_List)
-    = Dir_Mng.File_List_Mng.List_Length (Dir_List);
+    exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
     Dir_Mng.File_List_Mng.Move_To (Dir_List);
   end loop;
-  Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-     0, False);
+  Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
 
   Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
                            Afpx.Line_List_Mng.Current);

@@ -13,6 +13,7 @@ procedure Actions_Of_King (Piece : in King_Piece) is
     King_Way  : Action_List_Mng.List_Type;
     King_Pos, Rook_Pos : Space.Movement_Result;
     Tmp_Piece : Piece_Access;
+    Square_Found : Boolean;
     Castle_Error : exception;
 
     -- Opponent controls
@@ -25,7 +26,7 @@ procedure Actions_Of_King (Piece : in King_Piece) is
     begin
       return King.Dest = Ref.Dest;
     end Same_Square;
-    procedure Find_Square is new Action_List_Mng.Search (Same_Square);
+    procedure Find_Square is new Action_List_Mng.Safe_Search (Same_Square);
 
     use type Space.Color_List;
 
@@ -84,16 +85,13 @@ procedure Actions_Of_King (Piece : in King_Piece) is
       exit Opponent_Actions when not Opp_Action.Valid;
 
       if Opp_Action.To.Kind = Move then
-        begin
-          Find_Square (King_Way, Opp_Action.To,
-                       From => Action_List_Mng.Absolute);
+        Find_Square (King_Way, Square_Found, Opp_Action.To,
+                     From => Action_List_Mng.Absolute);
+        if Square_Found then
           -- We are under attack on our way (or current pos)
           Action_List_Mng.Delete_List (King_Way);
           return;
-        exception
-          when Action_List_Mng.Not_In_List =>
-             null;
-        end;
+        end if;
       end if;
     end loop Opponent_Actions;
 

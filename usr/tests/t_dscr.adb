@@ -53,7 +53,7 @@ begin
     Line.Len := 3;
     Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
   end loop;
-  Afpx.Line_List_Mng.Move_To(Afpx.Line_List, Number => 0, From_Current=> False);
+  Afpx.Line_List_Mng.Rewind(Afpx.Line_List);
 
   Set_Dscr(Dscr_No);
 

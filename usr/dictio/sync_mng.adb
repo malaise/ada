@@ -119,13 +119,14 @@ package body Sync_Mng is
 
   package Sync_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
   Sync_List : Sync_List_Mng.List_Type;
-  procedure Sync_Search is new Sync_List_Mng.Search;
+  procedure Sync_Search is new Sync_List_Mng.Safe_Search;
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
                          Data : Timers.Timer_Data) return Boolean;
   
   procedure Send (To : Tcp_Util.Host_Name) is
+    Found : Boolean;
   begin
     if Sending_Status = Send then
       -- Reject new dest if already syncing
@@ -145,12 +146,10 @@ package body Sync_Mng is
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Adding dest " & Parse (To));
     end if;
-    begin
-      Sync_Search (Sync_List, To, From => Sync_List_Mng.Absolute);
-    exception
-      when Sync_List_Mng.Not_In_List =>
-        Sync_List_Mng.Insert (Sync_List, To);
-    end;
+    Sync_Search (Sync_List, Found, To, From => Sync_List_Mng.Absolute);
+    if not Found then
+      Sync_List_Mng.Insert (Sync_List, To);
+    end if;
   end Send;
 
   procedure Do_Sync_Bus is
@@ -205,6 +204,7 @@ package body Sync_Mng is
     Ovf_Timeout, Curr_Timeout : Natural;
     Dest : Tcp_Util.Host_Name;
     Bytes_Sent : Natural;
+    Moved : Boolean;
     use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List,
              Event_Mng.Out_Event_List;
   begin
@@ -216,7 +216,7 @@ package body Sync_Mng is
     Items:
     while Item /= Data_Base.No_Item loop
 
-      Sync_List_Mng.Move_To (Sync_List, Sync_List_Mng.Next, 0, False);
+      Sync_List_Mng.Rewind (Sync_List);
       Dests:
       loop
         Sync_List_Mng.Read (Sync_List, Dest, Sync_List_Mng.Current);
@@ -258,11 +258,7 @@ package body Sync_Mng is
             Debug.Put ("Sync: Giving up " & Parse (Dest) & " due to "
                      & Reply_Result'Img);
           end if;
-          if Sync_List_Mng.Get_Position (Sync_List) = 1 then
-            Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Next);
-          else
-            Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Prev);
-          end if;
+          Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Prev, Moved);
           exit Items when Sync_List_Mng.Is_Empty (Sync_List);
         else
           -- Flow limitation
@@ -275,8 +271,7 @@ package body Sync_Mng is
           end if;
         end if;
 
-        if Sync_List_Mng.Get_Position (Sync_List)
-        /= Sync_List_Mng.List_Length (Sync_List) then
+        if Sync_List_Mng.Check_Move (Sync_List) then
           -- Next Dest
           Sync_List_Mng.Move_To (Sync_List);
         else

@@ -9,7 +9,8 @@ begin
   end if;
 
   declare
-    The_Points : constant Points.P_T_The_Points(1 .. Points.P_Nb) := Points.P_The_Points;
+    The_Points : constant Points.P_T_The_Points(1 .. Points.P_Nb)
+               := Points.P_The_Points;
   begin
     for I in The_Points'Range loop
       Afpx.Line_List_Mng.Insert (Afpx.Line_List,
@@ -17,7 +18,7 @@ begin
     end loop;
   end;
   -- Rewind
-  Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next, Number => 0, From_Current => False);
+  Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
   -- Go to top
   Afpx.Update_List (Afpx.Top);
 end Set_Points_List;

@@ -71,7 +71,7 @@ package body Players is
   procedure Rewind_Actions (Color : in Space.Color_List) is
   begin
     if not Action_List_Mng.Is_Empty (Actions(Color)) then
-      Action_List_Mng.Move_To (Actions(Color), Action_List_Mng.Next, 0, False);
+      Action_List_Mng.Rewind (Actions(Color));
     end if;
     At_End (Color) := False;
   end Rewind_Actions;
@@ -82,12 +82,11 @@ package body Players is
     if Action_List_Mng.Is_Empty (Actions(Color)) or else At_End(Color) then
       return (Valid => False);
     end if;
-    if Action_List_Mng.Get_Position (Actions(Color))
-     = Action_List_Mng.List_Length(Actions(Color)) then
+    if Action_List_Mng.Check_Move (Actions(Color)) then
+      Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Next);
+    else
       Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Current);
       At_End(Color) := True;
-    else
-      Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Next);
     end if;
     return Result;
   end Next_Action;
@@ -102,13 +101,15 @@ package body Players is
     Pos := Action_List_Mng.Get_Position (Actions(Color));
 
     begin
-      Action_List_Mng.Move_To (Actions(Color), Number => Index - 1, From_Current => False);
+      Action_List_Mng.Move_To (Actions(Color), Number => Index - 1,
+                               From_Current => False);
       Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Current);
     exception
       when Action_List_Mng.Not_In_List =>
         return (Valid => False);
     end;
-    Action_List_Mng.Move_To (Actions(Color), Number => Pos - 1, From_Current => False);
+    Action_List_Mng.Move_To (Actions(Color), Number => Pos - 1,
+                             From_Current => False);
     return Result;
   end Get_Action;
 
@@ -134,13 +135,14 @@ package body Players is
     end if;
   end Match;
 
-  procedure Search_Match_Action is new Action_List_Mng.Search (Match); 
+  procedure Search_Match_Action is new Action_List_Mng.Safe_Search (Match); 
 
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
                         Promote  : in Pieces.Piece_Kind_List) return Action_Rec is
     Ref : Valid_Action_Rec; 
     Res : Valid_Action_Rec;
+    Found : Boolean;
   begin
     if Promote in Pieces.Promotion_Piece_List then
       Ref := (Valid => True,
@@ -155,28 +157,23 @@ package body Players is
     end if;
 
     -- Search first occurence
-    begin
-      Search_Match_Action(Actions(Color), Ref,
-                          From => Action_List_Mng.Absolute);
-    exception
-       when Action_List_Mng.Not_In_List =>
-         -- Not found
-         return (Valid => False);
-    end;
+    Search_Match_Action(Actions(Color), Found, Ref,
+                        From => Action_List_Mng.Absolute);
+    if not Found then
+       -- Not found
+       return (Valid => False);
+    end if;
 
     -- Got one
     Action_List_Mng.Read(Actions(Color), Res, Action_List_Mng.Current);
 
-    begin
-      Action_List_Mng.Move_To(Actions(Color));
-      Search_Match_Action(Actions(Color), Ref,
-                          From => Action_List_Mng.From_Current);
-      -- Should be unique
+    Search_Match_Action(Actions(Color), Found, Ref,
+                        From => Action_List_Mng.From_Current);
+    if Found then
+      -- SHould be unique
       raise More_Than_One;
-    exception
-      when Action_List_Mng.Not_In_List =>
-      return Res;
-    end;
+    end if;
+    return Res;
   end Find_Action;
 
   -- Check an action exists the the list
@@ -185,17 +182,14 @@ package body Players is
     return Action = Ref;
   end Same;
 
-  procedure Search_Same_Action is new Action_List_Mng.Search (Same); 
+  procedure Search_Same_Action is new Action_List_Mng.Safe_Search (Same); 
 
   function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
+    Found : Boolean;
   begin
-    Search_Same_Action (Actions(Color), Action,
+    Search_Same_Action (Actions(Color), Found, Action,
                         From => Action_List_Mng.Absolute);
-    return True;
-  exception
-    when Action_List_Mng.Not_In_List =>
-       -- Not found
-       return False;
+    return Found;
   end Action_Exists;
 
 end Players;

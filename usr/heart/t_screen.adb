@@ -27,6 +27,7 @@ procedure T_Screen is
   In_Edit  : Boolean;
   In_Valid : Boolean;
 
+  Moved : Boolean;
 
   Act : Boolean;
 
@@ -53,8 +54,7 @@ begin
 
     -- Sort, move to first, copy in Afpx list
     Dir_Sort (Dir_List);
-    Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
-                                  0 , False);
+    Dir_Mng.File_List_Mng.Rewind (Dir_List);
     loop
       Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
                                   Dir_Mng.File_List_Mng.Current);
@@ -62,13 +62,11 @@ begin
       Afpx_Item.Str := (others => ' ');
       Afpx_Item.Str(1 .. Afpx_Item.Len) := Dir_Item.Name (1 .. Dir_Item.Len);
       Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
-      exit when Dir_Mng.File_List_Mng.Get_Position (Dir_List)
-              = Dir_Mng.File_List_Mng.List_Length (Dir_List);
+      exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
       Dir_Mng.File_List_Mng.Move_To (Dir_List);
     end loop;
     -- End of list
-    Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Prev,
-                                0, False);
+    Afpx.Line_List_Mng.Rewind (Afpx.Line_List, Afpx.Line_List_Mng.Prev);
   exception
     when Dir_Mng.Name_Error =>
       null;
@@ -260,13 +258,7 @@ begin
               Afpx.Reset_Field (16);
             when  22 | 27 =>
               -- Unselect, delete
-              if Afpx.Line_List_Mng.Get_Position (Afpx.Line_List) /=
-                 Afpx.Line_List_Mng.List_Length (Afpx.Line_List) then
-                Afpx.Line_List_Mng.Delete (Afpx.Line_List);
-              else
-                Afpx.Line_List_Mng.Delete (Afpx.Line_List,
-                                           Afpx.Line_List_Mng.Prev);
-              end if;
+              Afpx.Line_List_Mng.Delete (Afpx.Line_List, Done => Moved);
             when others =>
               Allow_Undo := False;
           end case;

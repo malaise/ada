@@ -12,12 +12,9 @@ procedure Search is
 
   -- Unselect current oper
   procedure Unsel is
+    Done : Boolean;
   begin
-    if Sel_List_Mng.Get_Position(Sel_List) /= 1 then
-      Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev);
-    else
-      Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Next);
-    end if;
+    Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev, Done => Done);
   end Unsel;
 
   type Match_Prot is access
@@ -56,7 +53,7 @@ procedure Search is
       return;
     end if;
     -- Scan from first
-    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, 0, False);
+    Sel_List_Mng.Rewind(Sel_List);
     loop
       List_Util.Move_To_Current;
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
@@ -66,8 +63,7 @@ procedure Search is
         exit when Sel_List_Mng.Is_Empty(Sel_List);
       else
         -- Move to next
-        exit when Sel_List_Mng.Get_Position(Sel_List)
-                = Sel_List_Mng.List_Length(Sel_List);
+        exit when not Sel_List_Mng.Check_Move(Sel_List);
         Sel_List_Mng.Move_To(Sel_List);
       end if;
     end loop;

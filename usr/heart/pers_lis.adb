@@ -10,18 +10,16 @@ package body Pers_Lis is
     -- Encode list of persons
     Afpx.Line_List_Mng.Delete_List (Afpx.Line_List);
     if not Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons) then
-      Move_To (Pers_Def.The_Persons, Pers_Def.Person_List_Mng.Next, 0 , False);
+      Rewind (Pers_Def.The_Persons);
       loop
         Read (Pers_Def.The_Persons, Person, Pers_Def.Person_List_Mng.Current);
         Str_Mng.Format_Person_To_List (Person, Line);
         Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
-        exit when Get_Position (Pers_Def.The_Persons)
-                = List_Length (Pers_Def.The_Persons);
+        exit when not Check_Move (Pers_Def.The_Persons);
         Move_To (Pers_Def.The_Persons);
       end loop;
       -- End of list
-      Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Prev,
-                                  0, False);
+      Afpx.Line_List_Mng.Rewind (Afpx.Line_List, Afpx.Line_List_Mng.Prev);
     end if;
   end Build_List;
 
@@ -55,6 +53,7 @@ package body Pers_Lis is
     Person : Pers_Def.Person_Rec;
     Pos : Natural;
     Ok : Boolean;
+    Moved : Boolean;
     use Afpx;
     use Pers_Def.Person_List_Mng;
 
@@ -339,12 +338,7 @@ package body Pers_Lis is
                   Mesu_Mng.Delete_All (Person);
                   -- Delete all has changed persons list
                   Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
-                  if Get_Position (Pers_Def.The_Persons)
-                   = List_Length (Pers_Def.The_Persons) then
-                    Delete (Pers_Def.The_Persons, Prev);
-                  else
-                    Delete (Pers_Def.The_Persons);
-                  end if;
+                  Delete (Pers_Def.The_Persons, Done => Moved);
                   Build_List;
                 end if;
               end if;

@@ -83,7 +83,7 @@ package body File_Mng is
     -- Everything is Ok. Overwrite the existing list. Go to end.
     Oper_List_Mng.Delete_List (Oper_List);
     Oper_List_Mng.Assign (Oper_List, Loc_List);
-    Oper_List_Mng.Move_To (Oper_List, Oper_List_Mng.Prev, 0, False);
+    Oper_List_Mng.Rewind (Oper_List, Oper_List_Mng.Prev);
     
   exception
     when F_Access_Error =>
@@ -138,7 +138,7 @@ package body File_Mng is
     end;
 
     -- Rewind, write magic record with amount of first record
-    Oper_List_Mng.Move_To (Loc_List, Oper_List_Mng.Next, 0, False);
+    Oper_List_Mng.Rewind (Loc_List);
     Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
     Loc_Oper_1 := Magic_Oper;
     Loc_Oper_1.Amount := Loc_Oper.Amount;
@@ -146,12 +146,8 @@ package body File_Mng is
 
     -- Write other records
     loop
-      begin
-        Oper_List_Mng.Move_To (Loc_List, Oper_List_Mng.Next);
-      exception
-        when Oper_List_Mng.Not_In_List =>
-          exit;
-      end;
+      exit when not Oper_List_Mng.Check_Move (Loc_List);
+      Oper_List_Mng.Move_To (Loc_List);
       Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
       Oper_Io.Write (File, Loc_Oper);
     end loop;

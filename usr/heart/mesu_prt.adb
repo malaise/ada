@@ -71,7 +71,7 @@ package body Mesu_Prt is
     Saved_Pos := Get_Position (Afpx.Line_List);
 
     -- for each in list
-    Move_To (Afpx.Line_List, Next, 0, False);
+    Rewind (Afpx.Line_List);
 
     Afpx.Use_Descriptor (4);
     Afpx.Put;
@@ -93,8 +93,8 @@ package body Mesu_Prt is
       Print_Rec (Person, Mesure);
 
       -- Next line except if list empty or end of list
-      exit when Is_Empty (Afpx.Line_List) or else
-                Get_Position (Afpx.Line_List) = List_Length (Afpx.Line_List);
+      exit when Is_Empty (Afpx.Line_List)
+      or else not Check_Move (Afpx.Line_List);
 
       Move_To (Afpx.Line_List);
       Print_Separator;

@@ -9,25 +9,20 @@ package body Prime_List is
   procedure Rewind is
   begin
     if not Prime_List_Mng.Is_Empty (The_List) then
-      Prime_List_Mng.Move_To (The_List, Prime_List_Mng.Next, 0, False);
+      Prime_List_Mng.Rewind (The_List);
       Need_Search := False;
     else
       Need_Search := True;
     end if;
   end Rewind;
 
-  -- Read next item from list
+  -- Read item from list
   function Read return Long_Long_Positive is
     Res : Long_Long_Positive;
+    Moved : Boolean;
   begin
-    if Prime_List_Mng.Get_Position (The_List) /=
-       Prime_List_Mng.List_Length (The_List) then
-      -- No. Read next
-      Prime_List_Mng.Read (The_List, Res);
-    else
-      -- Read last. Next will require search
-      Prime_List_Mng.Read (The_List, Res, Prime_List_Mng.Current);
-    end if;
+    -- Read next
+    Prime_List_Mng.Read (The_List, Res, Done => Moved);
     return Res;
   end Read;
 
@@ -35,7 +30,7 @@ package body Prime_List is
   procedure Append (N : in Long_Long_Positive) is
   begin
     if not Prime_List_Mng.Is_Empty (The_List) then
-      Prime_List_Mng.Move_To (The_List, Prime_List_Mng.Prev, 0, False);
+      Prime_List_Mng.Rewind (The_List, Prime_List_Mng.Prev);
     end if;
     Prime_List_Mng.Insert (The_List, N);
   end Append;
@@ -46,19 +41,13 @@ package body Prime_List is
     Res, Tmp : Long_Long_Positive;
     Is_Prime : Boolean;
     Square : Long_Long_Positive;
+    Moved : Boolean;
   begin
     -- Need to search?
     if not Need_Search then
-      -- Last of list?
-      if Prime_List_Mng.Get_Position (The_List) /=
-         Prime_List_Mng.List_Length (The_List) then
-        -- No. Read next
-        Prime_List_Mng.Read (The_List, Res);
-      else
-        -- Read last. Next will require search
-        Prime_List_Mng.Read (The_List, Res, Prime_List_Mng.Current);
-        Need_Search := True;
-      end if;
+      -- If read last. Next will require search
+      Prime_List_Mng.Read (The_List, Res, Prime_List_Mng.Next, Moved);
+      Need_Search := not Moved;
       return Res;
     end if;
 

@@ -18,7 +18,7 @@ package body Nodes is
     return El1.Name = El2.Name;
   end Name_Match;
   
-  procedure Search_Name is new Node_Mng.Search (Name_Match);
+  procedure Search_Name is new Node_Mng.Safe_Search (Name_Match);
 
 
   procedure Init_List is
@@ -31,13 +31,11 @@ package body Nodes is
 
   function Search_Name (Name : Tcp_Util.Host_Name) return Boolean is
     Rec : Node_Rec;
+    Found : Boolean;
   begin
     Rec.Name := Name;
-    Search_Name (Node_List, Rec, From => Node_Mng.Absolute);
-    return True;
-  exception
-    when Node_Mng.Not_In_List =>
-      return False;
+    Search_Name (Node_List, Found, Rec, From => Node_Mng.Absolute);
+    return Found;
   end Search_Name;
 
   procedure Set (Name : in Tcp_Util.Host_Name;
@@ -45,6 +43,7 @@ package body Nodes is
                  Sync : in Boolean;
                  Prio : in Args.Prio_Str) is
     Rec, Grec : Node_Rec;
+    Done : Boolean;
     use type Status.Status_List;
   begin
     Rec.Name := Name;
@@ -63,16 +62,12 @@ package body Nodes is
         end if;
       else
         -- Dead => delete
-        if Node_Mng.Get_Position (Node_List) = 1 then
-          Node_Mng.Delete (Node_List, Node_Mng.Next);
-        else
-          Node_Mng.Delete (Node_List, Node_Mng.Prev);
-        end if;
+        Node_Mng.Delete (Node_List, Node_Mng.Prev, Done);
       end if;
     elsif Stat /= Status.Dead then
       -- Unknown and alive => insert
       if not Node_Mng.Is_Empty (Node_List) then
-        Node_Mng.Move_To (Node_List, Node_Mng.Next, 0, False);
+        Node_Mng.Rewind (Node_List);
       end if;
       Node_Mng.Insert (Node_List, Rec);
     end if;
@@ -161,8 +156,7 @@ package body Nodes is
         end if;
       end if;
       -- Next
-      exit when Node_Mng.Get_Position (Node_List)
-              = Node_Mng.List_Length (Node_List);
+      exit when not Node_Mng.Check_Move (Node_List);
       Node_Mng.Move_To (Node_List);
       Node_Mng.Read (Node_List, Rec, Node_Mng.Current);
     end loop;

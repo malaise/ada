@@ -87,20 +87,16 @@ package body Fifos is
 
       -- Delete current record and move to next
       procedure Del_Current is
+        Done : Boolean;
       begin
-        if Fifo_List_Mng.Get_Position (Fifo_List) /=
-           Fifo_List_Mng.List_Length (Fifo_List) then
-          Fifo_List_Mng.Delete (Fifo_List, Fifo_List_Mng.Next);
-        else
-          Fifo_List_Mng.Delete (Fifo_List, Fifo_List_Mng.Prev);
-        end if;
+        Fifo_List_Mng.Delete (Fifo_List, Done => Done);
       end Del_Current;
 
       -- Move to first fifo in list
       procedure Rewind is
       begin
         if not Fifo_List_Mng.Is_Empty (Fifo_List) then
-          Fifo_List_Mng.Move_To (Fifo_List, Fifo_List_Mng.Next, 0, False);
+          Fifo_List_Mng.Rewind (Fifo_List);
         end if;
       end Rewind;
 
@@ -117,22 +113,18 @@ package body Fifos is
         and then El1.Len = El2.Len
         and then El1.Name (1 .. El1.Len) = El2.Name (1 .. El2.Len);
       end Same_Name;
-      procedure Search_Name is new Fifo_List_Mng.Search (Same_Name);
+      procedure Search_Name is new Fifo_List_Mng.Safe_Search (Same_Name);
 
       function Search_By_Name (Kind : Fifo_Kind_List;
                                Name : String) return Boolean is
         Rec : Fifo_Rec;
+        Res : Boolean;
       begin
         Rec.Kind := Kind;
         Rec.Len := Name'Length;
         Rec.Name (1 .. Rec.Len) := Name;
-        begin
-          Search_Name (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
-        exception
-          when Fifo_List_Mng.Not_In_List =>
-            return False;
-        end;
-        return True;
+        Search_Name (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
+        return Res;
       end Search_By_Name;
 
       -- Search by port num
@@ -142,22 +134,18 @@ package body Fifos is
         return   El1.Kind = El2.Kind
         and then El1.Port = El2.Port;
       end Same_Port;
-      procedure Search_Port is new Fifo_List_Mng.Search (Same_Port);
+      procedure Search_Port is new Fifo_List_Mng.Safe_Search (Same_Port);
 
       function Search_By_Port (Kind : Fifo_Kind_List;
                                Port : Tcp_Util.Port_Num) return Boolean is
         Rec : Fifo_Rec;
+        Res : Boolean;
       begin
         Rec.Kind := Kind;
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
 
-        begin
-          Search_Port (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
-        exception
-          when Fifo_List_Mng.Not_In_List =>
-            return False;
-        end;
-        return True;
+        Search_Port (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
+        return Res;
       end Search_By_Port;
 
       -- Search by socket dscr
@@ -166,19 +154,15 @@ package body Fifos is
       begin
         return El1.Dscr = El2.Dscr;
       end Same_Dscr;
-      procedure Search_Dscr is new Fifo_List_Mng.Search (Same_Dscr);
+      procedure Search_Dscr is new Fifo_List_Mng.Safe_Search (Same_Dscr);
 
       function Search_By_Dscr (Dscr : Socket.Socket_Dscr) return Boolean is
         Rec : Fifo_Rec;
+        Res : Boolean;
       begin
         Rec.Dscr := Dscr;
-        begin
-          Search_Dscr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
-        exception
-          when Fifo_List_Mng.Not_In_List =>
-            return False;
-        end;
-        return True;
+        Search_Dscr (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
+        return Res;
       end Search_By_Dscr;
 
       -- Search by saddr
@@ -189,24 +173,20 @@ package body Fifos is
         and then El1.Port = El2.Port
         and then El1.Host = El2.Host;
       end Same_Addr;
-      procedure Search_Addr is new Fifo_List_Mng.Search (Same_Addr);
+      procedure Search_Addr is new Fifo_List_Mng.Safe_Search (Same_Addr);
 
       function Search_By_Addr (Kind : Fifo_Kind_List;
                                Host : Tcp_Util.Host_Id;
                                Port : Tcp_Util.Port_Num) return Boolean is
         Rec : Fifo_Rec;
+        Res : Boolean;
       begin
         Rec.Kind := Kind;
         Rec.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Host);
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
 
-        begin
-          Search_Addr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
-        exception
-          when Fifo_List_Mng.Not_In_List =>
-            return False;
-        end;
-        return True;
+        Search_Addr (Fifo_List, Res, Rec, From => Fifo_List_Mng.Absolute);
+        return Res;
       end Search_By_Addr;
     end List;
 

@@ -398,8 +398,7 @@ package body Mesu_Mng is
     Mesu_Sel.Load;
 
     -- Remove entries from selection, then files
-    Dir_Mng.File_List_Mng.Move_To (The_Files, Dir_Mng.File_List_Mng.Next,
-                                   0, False);
+    Dir_Mng.File_List_Mng.Rewind (The_Files);
     loop
       Dir_Mng.File_List_Mng.Read (The_Files, File,
                                   Dir_Mng.File_List_Mng.Current);
@@ -413,9 +412,7 @@ package body Mesu_Mng is
       end;
       Mesu_Fil.Delete (File_Name);
       -- Next file
-      exit when Dir_Mng.File_List_Mng.Get_Position (The_Files)
-              = Dir_Mng.File_List_Mng.List_Length  (The_Files);
-
+      exit when not Dir_Mng.File_List_Mng.Check_Move (The_Files);
       Dir_Mng.File_List_Mng.Move_To (The_Files);
     end loop;
 

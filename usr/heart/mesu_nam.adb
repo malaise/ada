@@ -202,7 +202,7 @@ package body Mesu_Nam is
     if Is_Empty (List) then
       return Ret_No;
     end if;
-    Move_To (List, Next, 0, False);
+    Rewind (List, Next);
     -- loop in list
     loop
       -- Get file name
@@ -220,12 +220,12 @@ package body Mesu_Nam is
       else
         -- Next slot
         Ret_No := Normal(Integer'Value(Ret_No) + 1, 2, Gap => '0');
-        if Get_Position(List) = List_Length(List) then
-          -- End of list
-          exit;
-        else
+        if Check_Move (List) then
           -- Go to next entry
           Move_To (List);
+        else
+          -- End of list
+          exit;
         end if;
       end if;
 
