@@ -53,6 +53,10 @@ procedure T_Stdin is
     Message : Message_Type;
     Len : Natural := Str'Length;
   begin
+    if Len = 0 then
+      Go_On := False;
+      return True;
+    end if;
     if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
       Len := Len - 1;
       Go_On := False;
@@ -80,7 +84,7 @@ begin
   begin
     Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 21);
   exception
-    when Async_Stdin.Not_A_Tty =>
+    when Async_Stdin.Error =>
       Ada.Text_Io.Put_Line("Cannot set stdin async");
       return;
   end;

@@ -30,6 +30,10 @@ procedure T_Dictio is
     I : Natural;
     Lstr : constant String := Str(1 .. Str'Last - 1);
   begin
+    if Str'Length = 0 then
+      Sig := True;
+      return True;
+    end if;
     if Str'Length >= 1
     and then Str(Str'Length) = Ada.Characters.Latin_1.Etx then
       Ada.Text_Io.Put_Line ("CLIENT: Aborted");
@@ -198,7 +202,7 @@ begin
       Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access,
                              Async_Stdin.Max_Chars_Range'Last);
     exception
-      when Async_Stdin.Not_A_Tty =>
+      when Async_Stdin.Error =>
         Ada.Text_Io.Put_Line("CLIENT: Cannot set stdin async");
         return;
     end;
