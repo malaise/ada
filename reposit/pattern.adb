@@ -311,6 +311,22 @@ package body Pattern is
     end;
   end Image;
 
+  -- Return the Id which will be provided to the callback.
+  -- May raise Invalid_Pattern if Pattern is not valid.
+  function Get_Id4Cb (Rule : Rule_No; Id : Pattern_Id) return Pattern_Id is
+    Term : Storage.Term_Rec;
+  begin
+    Init;
+    Check_Rule (Rule);
+    if not Storage.Pattern_Exists (Rule, Id) then
+      raise Invalid_Pattern;
+    end if;
+    Term := Storage.Next_Term (False);
+    Put_Debug ("Get_Id4Cb", " of pattern rule " & Image (Rule)
+                      & ", id " & Id'Img & " -> " & Term.Id4Cb'Img);
+    return Term.Id4Cb;
+  end Get_Id4Cb;
+
 
   -- Check Str versus patterns in crescent order if Ids
   -- Separators may be spaces or tabs.

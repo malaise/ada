@@ -57,6 +57,10 @@ package Pattern is
   -- May raise Invalid_Pattern if Pattern is not valid.
   function Image (Rule : Rule_No; Id : Pattern_Id) return String;
 
+  -- Return the Id which will be provided to the callback.
+  -- May raise Invalid_Pattern if Pattern is not valid.
+  function Get_Id4Cb (Rule : Rule_No; Id : Pattern_Id) return Pattern_Id;
+
   -- Check Str versus patterns of a rule, in crescent order if Ids.
   -- Returns whether or not a match was found (and then a Cb called)
   --  and the Cb returned True.
