@@ -149,6 +149,9 @@ procedure T_Dictio is
           Name(K) := Character'Val(Rnd.Int_Random (
                 Character'Pos('a'), Character'Pos('z')));
         end loop;
+        if N > 3 and then Rnd.Int_Random = 1 then
+          Name(2) := '.';
+        end if;
         if Verbose then
           Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
         end if;

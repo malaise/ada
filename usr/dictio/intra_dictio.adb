@@ -6,8 +6,8 @@ package body Intra_Dictio is
   Byte_Size : constant := System.Storage_Unit;
 
   type Header_Rec is record
-    Stat : Status.Status_List;
-    Sync : Boolean;
+    Stat : Character;
+    Sync : Character;
     From : Tcp_Util.Host_Name;
     Kind : Character;
     Prio : Args.Prio_Str;
@@ -203,12 +203,13 @@ package body Intra_Dictio is
     end if;
     -- Call dispatcher
     if Client_Cb /= null then
-      Client_Cb (Diffused, Message.Head.Stat, 
-                           Message.Head.Sync,
-                           Message.Head.Prio,
-                           Message.Head.From,
-                           Message.Head.Kind,
-                           Message.Item);
+      Client_Cb (Diffused,
+                 Status.Status_List'Val(Character'Pos(Message.Head.Stat)), 
+                 Boolean'Val(Character'Pos(Message.Head.Sync)),
+                 Message.Head.Prio,
+                 Message.Head.From,
+                 Message.Head.Kind,
+                 Message.Item);
     end if;
   end Read_Cb;
 
@@ -221,9 +222,9 @@ package body Intra_Dictio is
     use type Data_Base.Item_Rec;
   begin
     if Get_Status then
-      Message.Head.Stat := Status.Get;
+      Message.Head.Stat := Character'Val(Status.Status_List'Pos(Status.Get));
     end if;
-    Message.Head.Sync := Status.Sync;
+    Message.Head.Sync := Character'Val(Boolean'Pos(Status.Sync));
     Message.Head.Prio := Args.Get_Prio;
     Local_Host_Name.Get (Message.Head.From);
      
@@ -318,7 +319,7 @@ package body Intra_Dictio is
     Msg : Message_Rec;
   begin
     Msg.Head.Kind := Stat_Kind;
-    Msg.Head.Stat := Stat;
+    Msg.Head.Stat := Character'Val(Status.Status_List'Pos(Status.Get));
     if Extra = "" then
       Msg.Item.Data_Len := 0;
     else

@@ -1,6 +1,7 @@
 package Debug is
 
-  type Level_List is (Status, Intra, Fight, Online, Client, Client_Data,
+  type Level_List is (Status, Intra, Fight, Online,
+                      Client, Client_Data, Client_Notify,
                       Sync, Lib);
   Level_Array : array (Level_List) of Boolean;
 

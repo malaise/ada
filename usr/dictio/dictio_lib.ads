@@ -32,15 +32,26 @@ package Dictio_Lib is
   procedure Init;
 
   -- Get Item data
-  -- May raise Name_Too_Long or No_Item 
+  -- Syntax of name for Get/Set
+  --   <ident> [ { .<ident> } ]
+  -- May raise Invalid_Name, Name_Too_Long or No_Item 
   function Get (Name : in String) return String;
 
   -- Create/Modify Item
-  -- May raise Name_Too_Long or Data_Too_Long
+  -- Syntax of name for Get/Set
+  --   <ident> [ { .<ident> } ]
+  -- May raise Invalid_Name, Name_Too_Long or Data_Too_Long
   procedure Set (Name : in String; Data : in String);
 
   -- (Un)Notify on Item name
-  -- May raise Name_Too_Long
+  -- Syntax of name for (Un)Notify is
+  --   either  <anything>
+  --   or  <ident_or_anyid> [ { . <ident_or_anyid> } ] [ . <anything> ]
+  --   anyid is "*" and matches any identifier
+  --   anything is "**" and matches any sequence of identifiers (even empty)
+  -- No pattern matching between notify and un-notify names,
+  --   they have to be the same.
+  -- May raise Invalid_Name or Name_Too_Long
   procedure Notify (Name : in String; On : in Boolean);
 
   -- Add/del a new host to destination list

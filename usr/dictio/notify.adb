@@ -1,5 +1,5 @@
 with Dynamic_List, Socket, Event_Mng;
-with Client_Com, Client_Fd, Debug, Parse;
+with Client_Com, Client_Fd, Debug, Parse, Names;
 package body Notify is
 
   type Notif_Rec is record
@@ -24,7 +24,9 @@ package body Notify is
 
   function Item_Match (Elt1, Elt2 : Notif_Rec) return Boolean is
   begin
-    return Elt1.Item = Elt2.Item;
+    -- Here we search in criteria list
+    -- Elt1 is the notification criteria, Elt2 is the item name
+    return Names.Match (Parse (Elt2.Item), Parse (Elt1.Item));
   end Item_Match;
   procedure Item_Search is new Notif_List_Mng.Search (Item_Match);
 
@@ -32,6 +34,10 @@ package body Notify is
   procedure Add (Client : in Socket.Socket_Dscr;
                  Item   : in Data_Base.Item_Name) is
   begin
+    if Debug.Level_Array(Debug.Client_Notify) then
+      Debug.Put ("Client-notify.add: " & Parse(Item)
+               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+    end if;
     Notif_List_Mng.Insert (Notif_List, (Client, Item));
   end Add;
 
@@ -55,8 +61,16 @@ package body Notify is
       Full_Search (Notif_List, Rec, From_Current => False);
     exception
       when Notif_List_Mng.Not_In_List =>
+        if Debug.Level_Array(Debug.Client_Notify) then
+          Debug.Put ("Client-notify.del: not found " & Parse(Item)
+                   & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+        end if;
         return;
     end;
+    if Debug.Level_Array(Debug.Client_Notify) then
+      Debug.Put ("Client-notify.del: " & Parse(Item)
+               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+    end if;
     Delete_Current;
   end Del;
 
@@ -67,6 +81,11 @@ package body Notify is
     Rec.Client := Client;
     Client_Search (Notif_List, Rec, From_Current => False);
     loop
+      if Debug.Level_Array(Debug.Client_Notify) then
+        Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
+        Debug.Put ("Client-notify.del_client: " & Parse(Rec.Item)
+                 & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
+      end if;
       Delete_Current;
       Client_Search (Notif_List, Rec);
     end loop;
@@ -78,6 +97,9 @@ package body Notify is
 
   procedure Del_All is
   begin
+    if Debug.Level_Array(Debug.Client_Notify) then
+      Debug.Put ("Client-notify.del_all");
+    end if;
     Notif_List_Mng.Delete_List (Notif_List);
   end Del_All;
 
@@ -89,6 +111,7 @@ package body Notify is
   begin
     Msg.Action := Client_Com.Notif_On;
     Msg.Item := Item;
+    -- Search first notification record
     Rec.Item := Item.Name;
     Item_Search (Notif_List, Rec, From_Current => False);
     loop
@@ -98,20 +121,23 @@ package body Notify is
         Dummy : Boolean;
       begin
         Dummy := Client_Com.Dictio_Send (Rec.Client, null, Msg);
-        if Debug.Level_Array(Debug.Client_Data) then
-          Debug.Put ("Client-notify: " & Fd'Img & " of " & Parse(Item.Name));
+        if Debug.Level_Array(Debug.Client_Notify) then
+          Debug.Put ("Client-notify.send: " &  Parse(Item.Name) & " on " & Fd'Img);
         end if;
       exception
         when Socket.Soc_Tail_Err =>
           null;
         when Socket.Soc_Conn_Lost =>
           if Debug.Level_Array(Debug.Client) then
-            Debug.Put ("Client-notify: lost connection with " & Fd'Img);
+            Debug.Put ("Client-notify.send: lost connection with " & Fd'Img);
           end if;
           Del_Client (Rec.Client);
           Client_Fd.Del_Client (Rec.Client);
       end;
-      Item_Search (Notif_List, Rec, Occurence => 2);
+      -- Search next
+      Notif_List_Mng.Move_To (Notif_List);
+      Rec.Item := Item.Name;
+      Item_Search (Notif_List, Rec, From_Current => True);
     end loop;
   exception
     when Notif_List_Mng.Not_In_List =>

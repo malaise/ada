@@ -3,7 +3,7 @@
 export DICTIO_DEBUG=Y
 
 if [ "$DICTIO_DEBUG" = "Y" ] ; then
-# These ones debug protocol
+# These ones generate few traces
 export DICTIO_DEBUG_STATUS=Y
 export DICTIO_DEBUG_FIGHT=Y
 export DICTIO_DEBUG_SYNC=Y
@@ -11,8 +11,9 @@ export DICTIO_DEBUG_ONLINE=Y
 export DICTIO_DEBUG_CLIENT=Y
 fi
 
-# These ones debug messages
+# These ones generate many traces
 #export DICTIO_DEBUG_CLIENT_DATA=Y
+export DICTIO_DEBUG_CLIENT_NOTIFY=Y
 #export DICTIO_DEBUG_INTRA=Y
 
 # These ones are not debug

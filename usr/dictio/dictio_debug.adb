@@ -28,6 +28,9 @@ package body Debug is
     Getenv ("DICTIO_DEBUG_CLIENT_DATA", Set, Trunc, Val, Len);
     Level_Array(Client_Data) := Set;
     
+    Getenv ("DICTIO_DEBUG_CLIENT_NOTIFY", Set, Trunc, Val, Len);
+    Level_Array(Client_Notify) := Set;
+
     Getenv ("DICTIO_DEBUG_SYNC", Set, Trunc, Val, Len);
     Level_Array(Sync) := Set;
     

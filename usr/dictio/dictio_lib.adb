@@ -1,7 +1,6 @@
 with Ada.Exceptions, Ada.Calendar;
-with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers,
-     Ada_Words;
-with Debug, Parse, Client_Com, Versions, Status;
+with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers;
+with Debug, Parse, Client_Com, Versions, Status, Names;
 package body Dictio_Lib is
 
   Dictio_Env_Host : constant String := "DICTIO_HOST";
@@ -194,7 +193,7 @@ package body Dictio_Lib is
     if Name'Length > Max_Name_Len then
       raise Name_Too_Long;
     end if;
-    if not Ada_Words.Is_Identifier (Name) then
+    if not Names.Is_Valid_Name (Name) then
       raise Invalid_Name;
     end if;
   end Check_Name;
@@ -338,7 +337,12 @@ package body Dictio_Lib is
       Debug.Put ("Dictio_Lib: notify " & On'Img & " " & Name);
     end if;
     Check_Available;
-    Check_Name (Name);
+    if Name'Length > Max_Name_Len then
+      raise Name_Too_Long;
+    end if;
+    if not Names.Is_Valid_Notify (Name) then
+      raise Invalid_Name;
+    end if;
     if On then
       Msg.Action := Client_Com.Notif_On;
     else
