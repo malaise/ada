@@ -1,43 +1,46 @@
+# Clear stack
+[ ssize 0 = [ 0 retn ] ifcall pop Z pushr retacal ] Z popr
+
 # Check 3 args
-7.007 //
-. 3 /= [ [ Error. 3 arguments a b c expected ] ; 0 __ ] ?@
+7.007 format
+ssize 3 /= [ [ Error. 3 arguments a b c expected ] putl Z pushr call ] ifcall
 
 # Save a b c, 15 digits, title
-$ c -> $ b -> $ a ->
-a <- , [ " * X2 + " ] , b <- , [ " * X + " ] , c <- ;
+toreal c popr toreal b popr toreal a popr
+a pushr put [ " * X2 + " ] put b pushr put [ " * X + " ] put c pushr putl
 
 # a = 0
 # b = 0
 # c = 0 ?
-[ c <- 0.0 = [ Infinity of solutions ] [ No solution ] ? ; ] L ->
+[ c pushr 0.0 = [ Infinity of solutions ] [ No solution ] ifte putl ] L popr
 
 # a = 0
 # b /= 0: -c / b
-[ [ 1 real: ] , c <- +- b <- / ; ] R ->
+[ [ 1 real: ] put c pushr +- b pushr / putl ] R popr
 
 # a = 0
 # b = 0 ? then quit
-[ b <- 0.0 = L R ? <- @ 2 __ ] P ->
+[ b pushr 0.0 = L R ifte pushr call 2 retn ] P popr
 
 # a = 0 ?
-a <- 0.0 = P <- ?@
+a pushr 0.0 = P pushr ifcall
 
 # d = b**2 - 4ac
-b <- >< * 4.0 a <- c <- * * - d ->
-[ "delta =    " ] , d <- ; :
-[ Solution ] ;
+b pushr dup * 4.0 a pushr c pushr * * - d popr
+[ "delta =    " ] put d pushr putl newl
+[ Solution ] putl
 # -b / 2a
-b <- +- 2.0 a <- * / i ->
+b pushr +- 2.0 a pushr * / i popr
 
 # d = 0 => -b / 2a
-d <- 0.0 = [ [ "1 real: " ] , i <- ; 2 __ ] ?@
+d pushr 0.0 = [ [ "1 real: " ] put i pushr putl 2 retn ] ifcall
 
 # d > 0 => -b/2a +- V(d)/2a
-d <- 0.0 > [ d <- 0.5 ** 2.0 a <- * / j -> 
-             [ "2 reals: " ] , i <- j <- + ;
-             [ "    and: " ] , i <- j <- - ; 2 __ ]  ?@
+d pushr 0.0 > [ d pushr 0.5 ** 2.0 a pushr * / j popr 
+             [ "2 reals: " ] put i pushr j pushr + putl
+             [ "    and: " ] put i pushr j pushr - putl 2 retn ] ifcall
 
 # d < 0 => -b/2a +- i * V(d)/2a
-d <- +- 0.5 ** 2.0 a <- * / j -> [ "2 complex: " ] , i <- ;
-                                 [ "   +/- i * " ] , j <- ;
+d pushr +- 0.5 ** 2.0 a pushr * / j popr [ "2 complex: " ] put i pushr putl
+                                         [ "   +/- i * " ] put j pushr putl
 
