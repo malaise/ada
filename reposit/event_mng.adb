@@ -160,7 +160,7 @@ package body Event_Mng is
   pragma Import(C, C_Send_Signal, "send_signal");
 
   function C_Get_Signal return Integer;
-  pragma Import(C, C_Get_Signal, "get");
+  pragma Import(C, C_Get_Signal, "get_signal");
 
   Cb_Sig : Sig_Callback := Null_Procedure'Access;
 
