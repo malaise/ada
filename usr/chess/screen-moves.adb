@@ -6,7 +6,7 @@ package body Moves is
   Move_No : Positive;
   Move_Window : Con_Io.Window;
 
-  Upper_Left  : constant Con_Io.Square := ( 4, 56);
+  Upper_Left  : constant Con_Io.Square := ( 4, 54);
   Lower_Right : constant Con_Io.Square := (23, 78);
   Height : constant Positive := Lower_Right.Row - Upper_Left.Row + 1;
   subtype Moves_Range is Positive range 1 .. Height;
@@ -68,12 +68,13 @@ package body Moves is
     procedure Put (M : in Move) is
     begin
       if not M.White_Move.Valid then return; end if;
-      Con_Io.Put (Normal (M.Num, 3) & ' ' & Image (M.White_Move, M.White_Result),
+      Con_Io.Put (Normal (M.Num, 3) & ' ' &
+                     Image.Move_Image (M.White_Move, M.White_Result),
                   Name => Move_Window,
                   Foreground => Fore(Space.White));
 
       if not M.Black_Move.Valid then return; end if;
-      Con_Io.Put (' ' & Image (M.Black_Move, M.Black_Result),
+      Con_Io.Put (' ' & Image.Move_Image (M.Black_Move, M.Black_Result),
                   Name => Move_Window,
                   Foreground => Fore(Space.Black));
     end Put;
