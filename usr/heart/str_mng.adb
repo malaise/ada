@@ -275,8 +275,7 @@ package body STR_MNG is
   end FORMAT_LIST_TO_PERSON;
 
 
-  -- From a mesure rec to person in list
-  -- From a mesure rec to person in list
+  -- From a mesure rec to mesure in list
   procedure FORMAT_MESURE_TO_LIST (PERSON    : in PERS_DEF.PERSON_REC;
                                    MESURE    : in MESU_DEF.MESURE_REC;
                                    MESU_NO   : in MESU_NAM.FILE_NO_STR;
