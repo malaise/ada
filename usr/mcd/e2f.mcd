@@ -4,7 +4,7 @@
 [ [ Error, 1 argument: <amount><unit> expected ] putl
   [ "   amount : float or integer" ] putl
   [ "   unit   :  f or e" ] putl
-0 retn ] E popr
+ssize popn retall ] E popr
 
 # Francs in an euro
 6.55957 e popr
@@ -34,7 +34,7 @@ v popr
 
 
 # Set conversion factor and result unit
-6.55957 u pushr [ f ] = [ 1.0 swap / [ e ] r popr ] [ [ f ] r popr ] ifte call
+e pushr u pushr [ f ] = [ 1.0 swap / [ e ] r popr ] [ [ f ] r popr ] ifte call
 
 # Convert
 v pushr *
@@ -44,7 +44,7 @@ a pushr put [ " = " ] put
 
 # Round cents and display "int."
 100.0 *
-tointe dup
+round dup
 1 format 100 / put [ . ] put
 # Display frac (2 digits) and unit
 100 % dup 10 < [ [ 0 ] put 1 format put ] [ 2 format put ] ifte call
