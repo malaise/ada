@@ -97,6 +97,7 @@ package body MCD_MNG is
 
   package IOS is
     subtype IO_KIND_LIST is ITEM_KIND_LIST range INTE .. BOOL;
+    procedure FORMAT (ITEM : in ITEM_REC);
     procedure PUT (ITEM : in ITEM_REC);
     procedure PUT_LINE (ITEM : in ITEM_REC);
     procedure NEW_LINE;
@@ -132,6 +133,10 @@ package body MCD_MNG is
       if CALL_STACK.LEVEL /= 0 then
         -- Save contect;
         TEXT_HANDLER.SET(CALL_ENTRY, INPUT_DISPATCHER.GET_REMAINING);
+        -- Even if end of subprog, this is not stdin
+        if TEXT_HANDLER.EMPTY(CALL_ENTRY) then
+          TEXT_HANDLER.SET(CALL_ENTRY, " ");
+        end if;
         CALL_STACK.PUSH (TEXT_HANDLER.VALUE(CALL_ENTRY));
       else
         -- Dummy context
@@ -291,6 +296,8 @@ package body MCD_MNG is
           end if;
 
         -- PUTs
+        when FORMAT =>
+          POP(A); IOS.FORMAT(A);
         when PUT =>
           POP(A); IOS.PUT(A);
         when PUTL =>

@@ -63,6 +63,7 @@ package body PARSER is
    RETN    => "__",
    IFRETN  => "?_",
 
+   FORMAT  => "//",
    PUT     => ", ",
    NEWL    => ": ",
    PUTL    => "; ");

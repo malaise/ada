@@ -60,6 +60,7 @@ package MCD_MNG is
    RETN,
    IFRETN,
 
+   FORMAT,
    PUT,
    NEWL,
    PUTL
