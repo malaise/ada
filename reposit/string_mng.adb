@@ -34,37 +34,50 @@ package body STRING_MNG is
 
   -- STR : STRING to put in the returned string
   -- LEN : Number of characters of the returned string
-  -- RIGHT : If string is shorter than LEN characters, align it at RIGHT
-  --          or at left (not RIGHT) and fill with GAP,
-  --         If string is longer than LEN characters, trunc it's head (RIGHT)
-  --          or its tail (not RIGHT)
+  -- ALIGN_LEFT : If string is shorter than LEN characters,
+  --     align it at left or at right (not LEFT) and fill with GAP,
   -- GAP : When string is shorter than len, fill empty positions with GAP
-
+  -- TRUNC_HEAD : If string is longer than LEN characters, trunc it's head
+  --     or its tail
+  -- SHOW_TRUNC : When string is longer than LEN, if SHOW_TRUNC is set,
+  --         then STR is truncated to LEN-2 and starts (TRUNC_HEAD) with " >"
+  --         or ends (not TRUNC_HEAD) with " <"
   function PROCUSTE (STR : STRING; LEN : POSITIVE;
-   RIGHT : BOOLEAN := TRUE; GAP : CHARACTER := ' ') return STRING is
-
-    L : POSITIVE := STR'LENGTH;
+           ALIGN_LEFT : BOOLEAN := TRUE; GAP : CHARACTER := ' ';
+           TRUNC_HEAD : BOOLEAN := TRUE; SHOW_TRUNC : BOOLEAN := TRUE)
+           return STRING is
+    L : NATURAL := STR'LENGTH;
     S : STRING (1 .. LEN);
   begin
     if L < LEN then
       -- STR is shorter than LEN: Pad
-      if RIGHT then
-        -- Copy L characters at right and pad
-        S(LEN-L+1 .. LEN) := STR;
-        S(LEN-L+2 .. LEN) := (others => GAP);
-      else
+      if ALIGN_LEFT then
         -- Copy L characters at left and pad
         S(1 .. L) := STR;
         S(L+1 .. LEN) := (others => GAP);
+      else
+        -- Copy L characters at right and pad
+        S(LEN-L+1 .. LEN) := STR;
+        S(1 .. LEN-L) := (others => GAP);
       end if;
     elsif L > LEN then
       -- STR is larger than LEN: Trunc
-      if RIGHT then
-        -- Copy L last characters of STR
-        S := STR(STR'LAST-L+1 .. STR'LAST);
+      if TRUNC_HEAD then
+        if SHOW_TRUNC and then LEN >= 2 then
+          -- Copy "> " then LEN-2 last characters of STR
+          S := "> " & STR(STR'LAST-LEN+1+2 .. STR'LAST);
+        else
+          -- Copy LEN last characters of STR
+          S := STR(STR'LAST-LEN+1 .. STR'LAST);
+        end if;
       else
-        -- Copy L first characters of STR
-        S := STR(STR'FIRST .. STR'FIRST+L-1);
+        if SHOW_TRUNC and then LEN >= 2 then
+          -- Copy LEN-2 first characters of STR then " <"
+          S := STR(STR'FIRST .. STR'FIRST+LEN-1-2) & " <";
+        else
+          -- Copy LEN first characters of STR
+          S := STR(STR'FIRST .. STR'FIRST+LEN-1);
+        end if;
       end if;
     else
       -- STR is as LEN characters: copy

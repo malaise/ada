@@ -1,4 +1,4 @@
-with TEXT_HANDLER, CON_IO, AFPX, DIRECTORY, DIR_MNG;
+with TEXT_HANDLER, CON_IO, AFPX, DIRECTORY, DIR_MNG, STRING_MNG;
 
 function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
                       CURRENT_FILE : STRING;
@@ -11,26 +11,27 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
 
   -- Text/get fields
   -- 1 is the fixed title
-  TITLE_FLD   : constant AFPX.FIELD_RANGE := 2;
-  FILE_FLD : constant AFPX.FIELD_RANGE := 4;
-  GET_FLD     : constant AFPX.FIELD_RANGE := 5;
-  INFO_FLD    : constant AFPX.FIELD_RANGE := 6;
+  TITLE_FLD    : constant AFPX.FIELD_RANGE := 2;
+  FILE_FLD     : constant AFPX.FIELD_RANGE := 4;
+  GET_FLD      : constant AFPX.FIELD_RANGE := 5;
+  INFO_FLD     : constant AFPX.FIELD_RANGE := 6;
   -- The scroll buttons
   subtype LIST_SCROLL_FLD_RANGE is AFPX.FIELD_RANGE range 7 .. 12;
   -- Action buttons
-  REREAD_FLD  : constant AFPX.FIELD_RANGE := 13;
-  OK_FLD      : constant AFPX.FIELD_RANGE := 14;
-  CANCEL_FLD  : constant AFPX.FIELD_RANGE := 15;
+  REREAD_FLD   : constant AFPX.FIELD_RANGE := 13;
+  OK_FLD       : constant AFPX.FIELD_RANGE := 14;
+  CANCEL_FLD   : constant AFPX.FIELD_RANGE := 15;
 
   type ERROR_LIST is (E_FILE_NOT_FOUND, E_IO_ERROR, E_FILE_NAME);
 
-  GET_WIDTH   : NATURAL := 0;
-  GET_CONTENT : AFPX.STR_TXT;
-  GET_OK      : BOOLEAN;
-  DIR_LIST    : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
-  FILE_REC    : DIR_MNG.FILE_ENTRY_REC;
-  POS_IN_LIST : NATURAL;
-  IS_A_DIR    : BOOLEAN;
+  GET_WIDTH    : NATURAL := 0;
+  GET_CONTENT  : AFPX.STR_TXT;
+  GET_OK       : BOOLEAN;
+  DIR_LIST     : DIR_MNG.FILE_LIST_MNG.LIST_TYPE;
+  FILE_REC     : DIR_MNG.FILE_ENTRY_REC;
+  VALID        : BOOLEAN;
+  POS_IN_LIST  : NATURAL;
+  IS_A_DIR     : BOOLEAN;
 
 
   -- Return width of GET field
@@ -70,28 +71,14 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
     OK := TRUE;
   end PARSE_SPACES;
 
-  -- Truncate head of string:  "> " & truncated tail
-  -- Or padded with spaces
-  function PROCUSTE (STR : STRING; LEN : POSITIVE) return STRING is
-    RES : STRING (1 .. LEN);
-  begin
-    if STR'LENGTH <= LEN then
-      RES (1 .. STR'LENGTH) := STR;
-      RES (STR'LENGTH + 1 .. LEN) := (others => ' ');
-    else
-      RES (1 .. 2) := "> ";
-      RES (3 .. LEN) := STR (STR'LAST - LEN + 3 .. STR'LAST);
-    end if;
-    return RES;
-  end PROCUSTE;
-
   -- Put file name
   procedure PUT_FILE (FILE_NAME : in STRING) is
     HEIGHT : AFPX.HEIGHT_RANGE;
     WIDTH  : AFPX.WIDTH_RANGE;
   begin
     AFPX.GET_FIELD_SIZE(FILE_FLD, HEIGHT, WIDTH);
-    AFPX.ENCODE_FIELD(FILE_FLD, (0, 0), PROCUSTE(FILE_NAME, WIDTH));
+    AFPX.ENCODE_FIELD(FILE_FLD, (0, 0), 
+      STRING_MNG.PROCUSTE(FILE_NAME, WIDTH));
   end PUT_FILE;
 
   -- Encode in info field
@@ -265,7 +252,8 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
       end case;
       AFPX_ITEM.LEN := WIDTH;
       AFPX_ITEM.STR (1 .. WIDTH) :=
-          PROCUSTE(DIR_ITEM.NAME (1 .. DIR_ITEM.LEN) & ' ' & CHAR, WIDTH);
+        STRING_MNG.PROCUSTE(DIR_ITEM.NAME (1 .. DIR_ITEM.LEN) & ' ' & CHAR,
+                            WIDTH);
       AFPX.LINE_LIST_MNG.INSERT (AFPX.LINE_LIST, AFPX_ITEM);
       exit when DIR_MNG.FILE_LIST_MNG.GET_POSITION (DIR_LIST)
            = DIR_MNG.FILE_LIST_MNG.LIST_LENGTH (DIR_LIST);
@@ -274,6 +262,7 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
     -- Move to beginning of AFPX list
     AFPX.LINE_LIST_MNG.MOVE_TO (AFPX.LINE_LIST, AFPX.LINE_LIST_MNG.NEXT,
        0, FALSE);
+    AFPX.UPDATE_LIST(AFPX.TOP);
 
   end CHANGE_DIR;
 
@@ -293,7 +282,10 @@ begin
 
   -- Encode current file name in get field
   if CURRENT_FILE'LENGTH <= GET_GET_WIDTH then
-    TEXT_HANDLER.SET (GET_CONTENT, PROCUSTE(CURRENT_FILE, GET_GET_WIDTH));
+    TEXT_HANDLER.SET (GET_CONTENT, 
+      STRING_MNG.PROCUSTE(CURRENT_FILE, GET_GET_WIDTH));
+  else
+    TEXT_HANDLER.EMPTY(GET_CONTENT);
   end if;
   AFPX.ENCODE_FIELD (GET_FLD, (0, 0), GET_CONTENT);
 
@@ -318,12 +310,19 @@ begin
             if not GET_OK then
               ERROR (E_FILE_NAME);
             else
+              -- Value to return if not dir
+              FILE_REC.LEN := TEXT_HANDLER.LENGTH(GET_CONTENT);
+              FILE_REC.NAME(1 .. FILE_REC.LEN) :=
+                        TEXT_HANDLER.VALUE(GET_CONTENT);
               begin
                 IS_A_DIR := IS_DIR (TEXT_HANDLER.VALUE(GET_CONTENT));
                 if IS_A_DIR then 
+                  -- Change dir
                   AFPX.CLEAR_FIELD (GET_FLD);
                   CHANGE_DIR(TEXT_HANDLER.VALUE(GET_CONTENT));
                 else 
+                  -- Valid file entered
+                  VALID := TRUE;
                   exit;
                 end if;
               exception
@@ -334,6 +333,7 @@ begin
                     ERROR (E_FILE_NOT_FOUND);
                   else
                     -- Save on new file
+                    VALID := TRUE;
                     exit;
                   end if;
                 when others =>
@@ -341,7 +341,7 @@ begin
               end;
             end if;
           when AFPX.ESCAPE_KEY =>
-            TEXT_HANDLER.EMPTY(GET_CONTENT);
+            VALID := FALSE;
             exit;
           when AFPX.BREAK_KEY =>
             null;
@@ -360,12 +360,13 @@ begin
                    FROM_CURRENT => FALSE);
             DIR_MNG.FILE_LIST_MNG.READ(DIR_LIST, FILE_REC, 
                    DIR_MNG.FILE_LIST_MNG.CURRENT);
-            TEXT_HANDLER.SET(GET_CONTENT, FILE_REC.NAME(1 .. FILE_REC.LEN));
             begin
-              if IS_DIR (TEXT_HANDLER.VALUE(GET_CONTENT)) then
+              if IS_DIR (FILE_REC.NAME(1 .. FILE_REC.LEN)) then
                 AFPX.CLEAR_FIELD (GET_FLD);
-                CHANGE_DIR(TEXT_HANDLER.VALUE(GET_CONTENT));
+                CHANGE_DIR(FILE_REC.NAME(1 .. FILE_REC.LEN));
               else 
+                -- File selected
+                VALID := TRUE;
                 exit;
               end if;
             exception
@@ -374,7 +375,7 @@ begin
             end;
 
           when CANCEL_FLD =>
-            TEXT_HANDLER.EMPTY(GET_CONTENT);
+            VALID := FALSE;
             exit;
           when REREAD_FLD =>
             -- Reread current directory
@@ -387,6 +388,10 @@ begin
   end loop;
  
   DIR_MNG.FILE_LIST_MNG.DELETE_LIST(DIR_LIST);
-  return TEXT_HANDLER.VALUE(GET_CONTENT);
+  if VALID then
+    return FILE_REC.NAME(1 .. FILE_REC.LEN);
+  else
+    return "";
+  end if;
 
 end SELECT_FILE;

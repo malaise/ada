@@ -30,6 +30,7 @@ do_all:
 	amake t_sorts.adb
 	amake t_select_file.adb $(LX)
 	amake t_state_machine.adb
+	amake t_string.adb
 	amake t_str_error.adb
 	amake t_syslin.adb
 	amake t_urand.adb
