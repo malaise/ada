@@ -192,8 +192,29 @@ package body Tcp_Util is
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result giving up");
       end if;
-      Port := 0;
-      Host := Socket.No_Host;
+      if Rec.Port.Kind = Port_Name_Spec then
+        begin
+          -- Services may have changed since Connect_To checks
+          Port := Socket.Port_Num_Of (Parse (Rec.Port.Name),
+                                      Rec.Protocol);
+        exception
+          when others =>
+            Port := 0;
+        end;
+      else
+        Port := Rec.Port.Num;
+      end if;
+      if Rec.Host.Kind = Host_Name_Spec then
+        begin
+          -- Hosts may have changed since Connect_To checks
+          Host := Socket.Host_Id_Of (Parse (Rec.Host.Name));
+        exception
+          when others =>
+            Host := Socket.No_Host;
+        end;
+      else
+        Host := Rec.host.Id;
+      end if;
     end if;
     -- Inform client
     if Rec.Cb /= null then
@@ -439,6 +460,27 @@ package body Tcp_Util is
     end if;
     if Delta_Retry <= 0.0 then
       raise Invalid_Delay;
+    end if;
+    -- Check port and host name
+    if Port.Kind = Port_Name_Spec then
+      declare
+        Num : Port_Num;
+      begin
+        Num := Socket.Port_Num_Of (Parse (Port.Name), Protocol);
+      exception
+        when others =>
+          raise Name_Error;
+      end;
+    end if;
+    if Host.Kind = Host_Name_Spec then
+      declare 
+        Id : Host_Id;
+      begin
+        Id := Socket.Host_Id_Of (Parse (Host.Name));
+      exception
+        when others =>
+          raise Name_Error;
+      end;
     end if;
     -- Initialise record and insert it in list
     Rec.Protocol := Protocol;

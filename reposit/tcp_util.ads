@@ -76,8 +76,8 @@ package Tcp_Util is
   --  then Dscr is the one of the new socket connected, blocking,
   --  Remote_Port_Num and Remote_Host_Id are set.
   -- Sets Connected to False if connection fails,
-  --  then Dscr is Socket.No_Socket, Remote_Port_Num is 0
-  --  and Remote_Host_Id is Socket.No_Host.
+  --  then Dscr is Socket.No_Socket, Remote_Port_Num and
+  --  Remote_Host_Id are set.
   type Connection_Callback_Access is
     access procedure (Remote_Port_Num : in Port_Num;
                       Remote_Host_Id  : in Host_Id;
@@ -109,6 +109,7 @@ package Tcp_Util is
   -- Returns True if immediate result could be achieved
   --  (then callback has already been called).
   -- May raise Invalid_Delay is Delta_Retry is <= 0.0
+  -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
@@ -194,8 +195,12 @@ package Tcp_Util is
 
   -- EXCEPTIONS --
   ----------------
+  -- Raised by Connect_To if Host.Name or Port.Name is unknown
+  Name_Error : exception;
+
   -- Raised when Connect_To.Delta_Retry is negative or nul
   Invalid_Delay : exception;
+
   -- Raised when aborting unknown connection/acception
   -- Or a send which is not in overflow
   -- Or setting reception callback on not open Dscr
