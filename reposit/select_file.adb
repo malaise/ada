@@ -70,8 +70,8 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
     OK := TRUE;
   end PARSE_SPACES;
 
-  -- Truncate head of string:  "> " & truncated head
-  -- Or or padds with spaces
+  -- Truncate head of string:  "> " & truncated tail
+  -- Or padded with spaces
   function PROCUSTE (STR : STRING; LEN : POSITIVE) return STRING is
     RES : STRING (1 .. LEN);
   begin
