@@ -1,5 +1,5 @@
 with Calendar, System;
-with Dynamic_List, My_Io, Timers, Address_Image, Null_Procedure;
+with Dynamic_List, My_Io, Timers, Address_Ops, Null_Procedure;
 package body X_Mng is
 
   -- Duration
@@ -471,7 +471,7 @@ package body X_Mng is
                         Line_For_C_Id'Address) = Ok;
     if Debug then
       My_Io.Put_Line ("Open_Line " & Line_Id.No'Img
-                    & " -> " & Address_Image(Line_For_C_Id));
+                    & " -> " & Address_Ops.Image(Line_For_C_Id));
     end if;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
@@ -1347,7 +1347,7 @@ package body X_Mng is
     begin
       if Debug then
         My_Io.Put_Line ("  Get_Client_From_Line "
-                      & Address_Image(Line_For_C_Id));
+                      & Address_Ops.Image(Line_For_C_Id));
       end if;
 
       -- Same as current?
@@ -1362,7 +1362,7 @@ package body X_Mng is
       for I in Client_Range loop
         if Debug and then Clients(I).Known then
           My_Io.Put_Line ("  GCFL loop " & I'Img & " known as "
-                        & Address_Image(Clients(I).Line_For_C_Id));
+                        & Address_Ops.Image(Clients(I).Line_For_C_Id));
         end if;
         if Clients(I).Known
         and then Clients(I).Line_For_C_Id = Line_For_C_Id then
