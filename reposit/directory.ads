@@ -52,10 +52,12 @@ package Directory is
   -- File status
   type File_Kind_List is new Sys_Calls.File_Kind_List;
   type Time_T is new Sys_Calls.Time_T;
+  type Size_T is new Sys_Calls.Size_T range 0 .. Sys_Calls.Size_T'Last;
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
                        Rights     : out Natural;
-                       Modif_Time : out Time_T);
+                       Modif_Time : out Time_T;
+                       Size       : out Size_T);
 
 
   -- Exceptions

@@ -25,6 +25,7 @@ package body Dir_Mng is
     File_Name : File_Txt;
     File_Rights : Natural;
     File_Mtime : Directory.Time_T;
+    File_Size : Directory.Size_T;
   begin
 
     if Dir = "" then
@@ -45,11 +46,11 @@ package body Dir_Mng is
           if Dir = "" then
             Directory.File_Stat (
              Text_Handler.Value (File_Name),
-             File_Rec.Kind, File_Rights, File_Mtime);
+             File_Rec.Kind, File_Rights, File_Mtime, File_Size);
           else
             Directory.File_Stat (
              Dir & Path_Separator & Text_Handler.Value (File_Name),
-             File_Rec.Kind, File_Rights, File_Mtime);
+             File_Rec.Kind, File_Rights, File_Mtime, File_Size);
           end if;
         exception
           when Directory.Name_Error | Directory.Access_Error =>

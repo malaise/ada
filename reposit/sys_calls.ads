@@ -58,10 +58,12 @@ package Sys_Calls is
   -- 12th bit US (set UID)
   -- File status
   -- May raise Name_Error or Access_Error
+  subtype Size_T is long_Integer;
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
                        Rights     : out Natural;
-                       Modif_Time : out Time_T);
+                       Modif_Time : out Time_T;
+                       Size       : out Size_T);
 
   -- Convert file time
   function Time_Of (Time : Time_T) return Ada.Calendar.Time;

@@ -202,14 +202,17 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
     Kind : Directory.File_Kind_List;
     Rights : Natural;
     Mtime : Directory.Time_T;
+    Fsize : Directory.Size_T;
     File_Txt : Text_Handler.Text(Directory.Max_Dir_Name_Len);
     use Directory;
   begin
     Text_Handler.Set (File_Txt, File);
-    Directory.File_Stat(Text_Handler.Value(File_Txt), Kind, Rights, Mtime);
+    Directory.File_Stat(Text_Handler.Value(File_Txt),
+                        Kind, Rights, Mtime, Fsize);
     if Kind = Directory.Link then
       Directory.Read_Link(Text_Handler.Value(File_Txt), File_Txt);
-      Directory.File_Stat(Text_Handler.Value(File_Txt), Kind, Rights, Mtime);
+      Directory.File_Stat(Text_Handler.Value(File_Txt),
+                          Kind, Rights, Mtime, Fsize);
     end if;
     return Kind = Directory.Dir;
   end Is_Dir;

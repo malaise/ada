@@ -201,11 +201,12 @@ package body Directory is
     Kind : Sys_Calls.File_Kind_List;
     Rights : Natural;
     Mtime  : Sys_Calls.Time_T;
+    Size   : Sys_Calls.Size_T;
     use Text_Handler;
     use type Sys_Calls.File_Kind_List;
   begin
     -- Check file_name  is a link
-    Sys_Calls.File_Stat (File_Name, Kind, Rights, Mtime);
+    Sys_Calls.File_Stat (File_Name, Kind, Rights, Mtime, Size);
     if Kind /= Sys_Calls.Link then
       raise Open_Error;
     end if;
@@ -231,7 +232,7 @@ package body Directory is
       end if;
       Extract_Path(Text_Handler.Value(Txt), Dir);
       
-      Sys_Calls.File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime);
+      Sys_Calls.File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime, Size);
       exit when Kind /= Sys_Calls.Link;
     end loop;
     return Text_Handler.Value(Txt);
@@ -263,13 +264,16 @@ package body Directory is
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
                        Rights     : out Natural;
-                       Modif_Time : out Time_T) is
+                       Modif_Time : out Time_T;
+                       Size       : out Size_T) is
     L_Kind : Sys_Calls.File_Kind_List;
     L_Time : Sys_Calls.Time_T;
+    L_Size : Sys_Calls.Size_T;
   begin
-    Sys_Calls.File_Stat (File_Name, L_Kind, Rights, L_Time);
+    Sys_Calls.File_Stat (File_Name, L_Kind, Rights, L_Time, L_Size);
     Kind := File_Kind_List(L_Kind);
     Modif_Time := Time_T(L_Time);
+    Size := Size_T(L_Size);
   end File_Stat;
 
 end Directory;

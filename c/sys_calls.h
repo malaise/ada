@@ -38,6 +38,7 @@ extern int read_dir (DIR *dir, char *name);
 typedef struct {
   unsigned int mode;
   int mtime;
+  long size;
 } simple_stat;
 
 extern int file_stat(const char *path, simple_stat *simple_stat_struct);

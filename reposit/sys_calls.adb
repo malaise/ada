@@ -34,6 +34,7 @@ package body Sys_Calls is
   type C_Stat_Rec is record
     C_Mode : Integer;
     C_Mtime : Integer;
+    C_Size : Long_Integer;
   end record;
 
   function File_Kind_Of (Mode : Integer) return File_Desc_Kind_List is
@@ -267,7 +268,8 @@ package body Sys_Calls is
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
                        Rights     : out Natural;
-                       Modif_Time : out Time_T) is
+                       Modif_Time : out Time_T;
+                       Size       : out Size_T) is
     C_File_Name : constant String := Str_For_C (File_Name);
     C_Stat : C_Stat_Rec;
     Res : Integer;
@@ -284,6 +286,7 @@ package body Sys_Calls is
     Kind := File_Kind_Of (C_Stat.C_Mode);
     Rights := C_Stat.C_Mode and 8#00007777#;
     Modif_Time := Time_T(C_Stat.C_Mtime);
+    Size := C_Stat.C_Size;
   end File_Stat;
 
 

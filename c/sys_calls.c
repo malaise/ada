@@ -154,6 +154,7 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
 
   simple_stat_struct->mode = stat_struct.st_mode;
   simple_stat_struct->mtime = stat_struct.st_mtime;
+  simple_stat_struct->size = (long)stat_struct.st_mtime;
 
   return (0);
 
@@ -169,6 +170,7 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
 
   simple_stat_struct->mode = stat_struct.st_mode;
   simple_stat_struct->mtime = stat_struct.st_mtime;
+  simple_stat_struct->size = (long)stat_struct.st_mtime;
 
   return (0);
 
