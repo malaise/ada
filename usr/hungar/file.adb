@@ -8,7 +8,7 @@ with GET_FLOAT;
 
 package body FILE is
 
-  MAX_DIM : constant := 100;
+  MAX_DIM : constant := 256;
 
   FILE_READ : BOOLEAN := FALSE;
 
