@@ -59,9 +59,9 @@ package Directory is
 
 
   -- Exceptions
-  Name_Error   : exception;
+  Name_Error   : exception renames Sys_Calls.Name_Error;
   Open_Error   : exception;
-  Access_Error : exception;
+  Access_Error : exception renames Sys_Calls.Access_Error;
   End_Error    : exception;
 
   
