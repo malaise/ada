@@ -16,8 +16,7 @@ b popr
 Trunc dup
 100 / put "." put
 # Display frac (2 digits) and %
-100 % dup 10 < [ "0" put 1 format put ] [ 2 format put ] ifte call
-"%" putl ] P popr
+100 % 2 True "0" normal put "%" putl ] P popr
 
 # x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *

@@ -12,7 +12,7 @@ ssize popn retall ] E popr
 round dup
 1 format 100 / strof "." strcat swap
 # Display frac (2 digits) and unit
-100 % dup 10 < [ "0" swap 1 format strof strcat ] [ 2 format strof ] ifte call
+100 % 2 True "0" normal
 strcat
 ] F popr
 
