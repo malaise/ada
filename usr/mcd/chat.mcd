@@ -3,7 +3,6 @@
 
 # Variable sentence ends
 26 M popr
-a
 "joue du piano" a popr
 "fait la sieste" b popr
 "joue au motard" c popr
@@ -36,9 +35,9 @@ a
 # Put random 1 .. M on top
 rnd M pushr toreal * trunc 1 +
 # Display num
-2 format dup put ": " put
+2 format dup put " " put
 # Set register
-26 + indreg
+26 + indreg dup strof "(" put put "): " put
 # Display sentence
 Z pushr put " " put pushr put "." putl
 # Wait a bit
