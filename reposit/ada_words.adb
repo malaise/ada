@@ -7,6 +7,17 @@ package body Ada_Words is
     return C = ' ' or else C = Ascii.Ht or else C = Ascii.Lf;
   end Is_Separator;
 
+  function Is_Delimiter (C : Character) return Boolean is
+  begin
+    case C is
+      when '&' | ''' | '(' | ')' | '*' | '+' | ',' | '-' | '.' |
+           '/' | ':' | ';' | '<' | '=' | '>' | '|' =>
+        return True;
+      when others =>
+        return False;
+    end case;
+  end Is_Delimiter;
+
   -------------------------------------------------------------
 
   subtype Word_Len_Range is Natural range 0 .. 9;
