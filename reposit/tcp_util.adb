@@ -140,7 +140,7 @@ package body Tcp_Util is
     else
       -- Giving up
       Port := 0;
-      host := Socket.No_Host;
+      Host := Socket.No_Host;
     end if;
     -- Inform client
     if Rec.Cb /= null then

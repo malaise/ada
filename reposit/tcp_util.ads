@@ -3,7 +3,7 @@ package Tcp_Util is
 
   -- GENERAL CONVENTIONS --
   -------------------------
-  -- Padd strings with spaces in records
+  -- Padd strings with spaces in records.
 
 
   -- PROTOCOL DEFINITION --
@@ -87,7 +87,7 @@ package Tcp_Util is
 
   -- Acception callback
   -- The Local_Dscr is the one set by Accept_From
-  --  Dscr is the one of the new socket, blocking,
+  --  New_Dscr is the one of the new socket, blocking,
   --  Remote_Port_Num and Remote_Host_Id are set.
   type Acception_Callback_Access is
     access procedure (Local_Port_Num  : in Port_Num;
@@ -105,9 +105,9 @@ package Tcp_Util is
   ---------------------------
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up 
-  -- Infinite retries if Nb_Tries = 0;
+  -- Infinite retries if Nb_Tries = 0
   -- Returns True if immediate result could be achieved
-  --  (then callback has already been called)
+  --  (then callback has already been called).
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
@@ -116,7 +116,7 @@ package Tcp_Util is
                        Connection_Cb : in Connection_Callback_Access)
            return Boolean;
 
-  -- Abort a pending connection
+  -- Abort a pending connection.
   -- May raise No_Such
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port);
@@ -125,14 +125,14 @@ package Tcp_Util is
   -------------------------
   -- Accept connections to a local port
   -- Dscr is open and set to the accepting connections
-  -- Num is its port num (usefull when dynamical)
+  -- Num is its port num (usefull when dynamical).
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
                          Dscr         : in out Socket.Socket_Dscr;
                          Num          : out Port_Num);
 
-  -- Abort further accepts on port
+  -- Abort further accepts on port.
   -- May raise No_Such
   procedure Abort_Accept (Num : in Port_Num);
 
@@ -142,6 +142,8 @@ package Tcp_Util is
   -- If send is ok returns True else
   -- Returns false and manages to re-send when possible until
   --  all message is sent, then calls End_Of_Overflow_Callback
+  -- May raise Socket.Soc_Tail_Err if called while previous Send returned
+  --  False and End_Of_Overflow_Cb has not (yet) been called.
   generic
     type Message_Type is private;
   function Send (Dscr               : in Socket.Socket_Dscr;
@@ -152,7 +154,7 @@ package Tcp_Util is
   -- If a socket in overflow (send has returned True and End_Of_Overflow_CB
   --  has not be called yet) has to be closed, then Abort_Send_and_Close
   -- has to be called instead of Socket.Close
-  -- The socket is closed
+  -- The socket is closed.
   -- May raise No_Such
   procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr);
 

@@ -26,7 +26,7 @@ package Socket is
   Soc_Bcast_Err, -- Broadcast not allowed for this protocol
   Soc_Len_Err,   -- Lenght (message or name) too short
   Soc_Reply_Err, -- Set_for_reply must not be set
-  Soc_Tail_Err,  -- Sent mesg len is not 0 while prev send raised Soc_Woul_Block
+  Soc_Tail_Err,  -- Sent msg len is not 0 while prev send raised Soc_Woul_Block
   Soc_Proto_Err, -- Call not allowed for this protocol
   Soc_Fd_In_Use: -- Close while fd is used by x_select (see X_Mng)
                  exception;
