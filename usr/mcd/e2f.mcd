@@ -6,6 +6,16 @@
   "   <unit>   :  f or e (default e)" putl
 ssize popn retall ] E popr
 
+# Format a real number, rounding at 2 digits
+[
+100.0 *
+round dup
+1 format 100 / strof "." strcat swap
+# Display frac (2 digits) and unit
+100 % dup 10 < [ "0" swap 1 format strof strcat ] [ 2 format strof ] ifte call
+strcat
+] F popr
+
 # Francs in an euro
 6.55957 e popr
 
@@ -48,13 +58,8 @@ e pushr u pushr "f" = [ 1.0 swap / "e" r popr ] [ "f" r popr ] ifte call
 v pushr *
 
 # Display arg =
-a pushr put d pushr [ u pushr put ] ifcall " = " put
+v pushr F pushr call put u pushr put " = " put
 
-# Round cents and display "int."
-100.0 *
-round dup
-1 format 100 / put "." put
-# Display frac (2 digits) and unit
-100 % dup 10 < [ "0" put 1 format put ] [ 2 format put ] ifte call
-r pushr putl
+# Display result
+F pushr call put r pushr putl
 
