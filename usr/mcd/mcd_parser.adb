@@ -14,90 +14,90 @@ package body PARSER is
   INPUT_ERROR : BOOLEAN := FALSE;
 
   subtype ONE_WORD is STRING(1 .. 2);
-  subtype ONE_COMMENT is STRING (1 .. 25);
+  subtype ONE_COMMENT is STRING (1 .. 30);
   type ONE_REC is record
     WORD : ONE_WORD;
     COMMENT : ONE_COMMENT;
   end record;
 
   WORDS : constant array (MCD_MNG.OPERATOR_LIST) of ONE_REC :=
-  (ADD     => ("+ ", "push B + A               "),
-   SUB     => ("- ", "push B - A               "),
-   MULT    => ("* ", "push B * A               "),
-   DIV     => ("/ ", "push B / A               "),
-   REMIND  => ("% ", "push B  % A              "),
-   POW     => ("**", "push B ** A              "),
-   SWAP    => ("<>", "push A, push B           "),
+  (ADD     => ("+ ", "push B + A                    "),
+   SUB     => ("- ", "push B - A                    "),
+   MULT    => ("* ", "push B * A                    "),
+   DIV     => ("/ ", "push B / A                    "),
+   REMIND  => ("% ", "push B  % A                   "),
+   POW     => ("**", "push B ** A                   "),
+   SWAP    => ("<>", "push A, push B                "),
 
-   BITAND  => ("&&", "push B & A               "),
-   BITOR   => ("||", "push B | A               "),
-   BITXOR  => ("^^", "push B ^ A               "),
+   BITAND  => ("&&", "push B & A                    "),
+   BITOR   => ("||", "push B | A                    "),
+   BITXOR  => ("^^", "push B ^ A                    "),
  
-   SHL     => ("<<", "push B << A              "),
-   SHR     => (">>", "push B >> A              "),
+   SHL     => ("<<", "push B << A                   "),
+   SHR     => (">>", "push B >> A                   "),
 
-   MINUS   => ("+-", "push -A                  "),
-   BITNEG  => ("~~", "push ~A                  "),
+   MINUS   => ("+-", "push -A                       "),
+   BITNEG  => ("~~", "push ~A                       "),
 
-   EQUAL   => ("= ", "push B = A               "),
-   DIFF    => ("/=", "push B /= A              "),
-   GREATER => ("> ", "push B > A               "),
-   SMALLER => ("< ", "push B < A               "),
-   GREATEQ => (">=", "push B >= A              "),
-   SMALLEQ => ("<=", "push B <= A              "),
+   EQUAL   => ("= ", "push B = A                    "),
+   DIFF    => ("/=", "push B /= A                   "),
+   GREATER => ("> ", "push B > A                    "),
+   SMALLER => ("< ", "push B < A                    "),
+   GREATEQ => (">=", "push B >= A                   "),
+   SMALLEQ => ("<=", "push B <= A                   "),
 
-   TOREAL  => ("$ ", "push REAL(A)             "),
-   TOINTE  => ("! ", "push INTE(A)             "),
+   TOREAL  => ("$ ", "push REAL(A)                  "),
+   TOINTE  => ("! ", "push INTE(A)                  "),
 
-   ISREAL  => ("?$", "push IS_REAL(A)          "),
-   ISINTE  => ("?!", "push IS_INTE(A)          "),
+   ISREAL  => ("?$", "push IS_REAL(A)               "),
+   ISINTE  => ("?!", "push IS_INTE(A)               "),
 
-   OBASE   => (">#", "set output base          "),
+   OBASE   => (">#", "set output base               "),
 
-   BOLAND  => ("& ", "push B and A             "),
-   BOLOR   => ("| ", "push B or A              "),
-   BOLXOR  => ("^ ", "push B xor A             "),
+   BOLAND  => ("& ", "push B and A                  "),
+   BOLOR   => ("| ", "push B or A                   "),
+   BOLXOR  => ("^ ", "push B xor A                  "),
 
-   BOLNEG  => ("~ ", "push not A               "),
+   BOLNEG  => ("~ ", "push not A                    "),
  
-   DUP     => ("><", "push A, push A           "),
-   POP     => ("--", "pop                      "),
+   DUP     => ("><", "push A, push A                "),
+   POP     => ("--", "pop                           "),
 
-   IFTHEN  => ("?-", "if A then B              "),
-   IFTE    => ("? ", "if C then B else A       "),
-   ETFI    => ("?~", "if A then C else B       "),
+   IFTHEN  => ("?-", "if A then push B              "),
+   IFTE    => ("? ", "if C then push B else push A  "),
+   ETFI    => ("?~", "if A then push C else push B  "),
 
-   SSIZE   => (". ", "push stack size          "),
+   SSIZE   => (". ", "push stack size               "),
   
-   POPR    => ("->", "B -> regA                "),
-   COPYR   => ("=>", "B -> regA, push B        "),
-   PUSHR   => ("<-", "push regA                "),
+   POPR    => ("->", "B -> regA                     "),
+   COPYR   => ("=>", "B -> regA, push B             "),
+   PUSHR   => ("<-", "push regA                     "),
 
-   CALL    => ("@ ", "call A                   "),
-   IFCALL  => ("?@", "if B then call A         "),
-   RET     => ("_ ", "return                   "),
-   RETN    => ("__", "return A levels (0=all)  "),
-   IFRETN  => ("?_", "if B return A levels     "),
-   RETACAL => ("_@", "return and call A        "),
+   CALL    => ("@ ", "call A                        "),
+   IFCALL  => ("?@", "if B then call A              "),
+   RET     => ("_ ", "return                        "),
+   RETN    => ("__", "return A levels (0=all)       "),
+   IFRETN  => ("?_", "if B return A levels          "),
+   RETACAL => ("_@", "return and call A             "),
 
-   FORMAT  => ("//", "xx or xx.yyy format      "),
-   PUT     => (", ", "put A                    "),
-   NEWL    => (": ", "new line                 "),
-   PUTL    => ("; ", "put_line A               "),
+   FORMAT  => ("//", "xx or xx.yyy format           "),
+   PUT     => (", ", "put A                         "),
+   NEWL    => (": ", "new line                      "),
+   PUTL    => ("; ", "put_line A                    "),
 
-   STRLEN  => ("{#", "push length of A         "),
-   STRCAT  => ("{&", "push B & A               "),
-   STRSUB  => ("{}", "push C(B..A)             "),
-   STRLOC  => ("{?", "push C occur of B in A   "),
-   STRREP  => ("{^", "push C replaced by B at A"),
-   STRUPP  => ("{+", "push A in uppercase      "),
-   STRLOW  => ("{-", "push A in lowercase      "),
-   STRREAL => ("{$", "push A converted to real "),
-   STRINTE => ("{!", "push A converted to inte "),
-   STRBOOL => ("{.", "push A converted to bool "),
-   STROF =>   (">{", "push formated string of A"),
+   STRLEN  => ("{#", "push length of A              "),
+   STRCAT  => ("{&", "push B & A                    "),
+   STRSUB  => ("{}", "push C(B..A)                  "),
+   STRLOC  => ("{?", "push C occurence of B in A    "),
+   STRREP  => ("{^", "push C replaced by B at pos A "),
+   STRUPP  => ("{+", "push A in uppercase           "),
+   STRLOW  => ("{-", "push A in lowercase           "),
+   STRREAL => ("{$", "push A converted to real      "),
+   STRINTE => ("{!", "push A converted to inte      "),
+   STRBOOL => ("{.", "push A converted to bool      "),
+   STROF =>   (">{", "push formated string of A     "),
 
-   HELP    => ("??", "put help                 ") );
+   HELP    => ("??", "put help                      ") );
 
 
   function NEXT_ITEM return MCD_MNG.ITEM_REC is
@@ -123,7 +123,7 @@ package body PARSER is
     -- EOF
     if TEXT_HANDLER.EMPTY(TXT) then
       if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.PARSER) then
-        TEXT_IO.PUT_LINE ("Parser: Eof >");
+        TEXT_IO.PUT_LINE ("Parser: Eof");
       end if;
       ITEM_CHRS.VAL_LEN := 3;
       ITEM_CHRS.VAL_TEXT(1 .. 3) := "EOF";
@@ -196,6 +196,7 @@ package body PARSER is
       OP : MCD_MNG.OPERATOR_LIST;
     begin
       OP := MCD_MNG.OPERATOR_LIST'VALUE(TEXT_HANDLER.VALUE(TXT));
+      INSTR_STACK.PUSH(ITEM_CHRS);
       return (KIND => MCD_MNG.OPER, VAL_OPER => OP);
     exception
       when others => null;
