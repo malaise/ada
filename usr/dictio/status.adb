@@ -22,7 +22,7 @@ package body Status is
           null;
       end case;
       if Status_Cb /= null then
-        Status_Cb.all;
+        Status_Cb.all (Prev_Status, Current_Status);
       end if;
     end if;
   end Set;

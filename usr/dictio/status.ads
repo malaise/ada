@@ -10,7 +10,8 @@ package Status is
   subtype Stable_Status_List is Status_List range Slave .. Dead;
   function Get_Stable return Stable_Status_List;
 
-  type New_Status_Callback is access procedure;
+  type New_Status_Callback is access
+           procedure (Prev_Status, New_Status : in Status_List);
   procedure Set (New_Status_Cb : in New_Status_Callback);
 
   Sync : Boolean := False;

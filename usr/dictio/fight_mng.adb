@@ -37,6 +37,9 @@ package body Fight_Mng is
     use type Status.Status_List;
   begin
     if not In_Fight then
+      if Debug.Level_Array(Debug.Fight) then
+        Debug.Put ("Fight.Event: Not in fight");
+      end if;
       return;
     end if;
     if Extra /= "" and then Extra(1) = Intra_Dictio.Extra_Ver
@@ -60,8 +63,9 @@ package body Fight_Mng is
     if Debug.Level_Array(Debug.Fight) then
       Debug.Put ("Fight: ends " & Result'Img);
     end if;
-    Status.Set (Fight_Actions(Result));
     Tid := Timers.No_Timer;
+    -- This may restart a fight
+    Status.Set (Fight_Actions(Result));
     return False;
   end Timer_Cb;
 

@@ -1,6 +1,6 @@
 with Tcp_Util, Event_Mng;
 with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
-     Sync_Mng;
+     Sync_Mng, Debug, Versions, Parse, Fight_Mng;
 package body Dispatch is
 
   procedure New_Intra (Diff : in Boolean;
@@ -17,8 +17,9 @@ package body Dispatch is
     Signal_Received := True;
   end Signal;
 
+  procedure Handle_New_Status
+        (Prev_Status, New_Status : in Status.Status_List);
   Prev_Status : Status.Status_List := Status.Starting;
-  procedure Handle_New_Status;
 
   procedure Init is
     use type Event_Mng.Out_Event_List;
@@ -27,11 +28,12 @@ package body Dispatch is
     Status.Set (Handle_New_Status'Access);
     Event_Mng.Set_Sig_Callback (Signal'Access);
     Intra_Dictio.Init;
-    Intra_Dictio.Set_Read_Cb (New_Intra'Access);
 
     while Event_Mng.Wait (100) loop
       null;
     end loop;
+
+    Intra_Dictio.Set_Read_Cb (New_Intra'Access);
     Init_Mng.Start;
   end Init;
 
@@ -55,16 +57,23 @@ package body Dispatch is
                        Kind : in Character;
                        Item : in Data_Base.Item_Rec) is
     use type Status.Status_List;
-    Current_Status : constant Status.Status_List := Status.Get;
   begin
     if Kind = Intra_Dictio.Stat_Kind then
-      case Current_Status is
+      if Diff and then Stat /= Status.Master
+              and then Stat /= Status.Slave
+              and then Stat /= Status.Dead then
+        if Debug.Level_Array(Debug.Fight) then
+          Debug.Put ("Dispatch: reply status to: " & Parse(From) & "/" & Stat'Img);
+        end if;
+        Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
+      end if;
+      case Status.Get is
         when Status.Starting | Status.Dead =>
           return;
-        when Status.Init =>
-          Init_Mng.Event (From, Stat, Sync, Diff,
+        when Status.Init | Status.Fight =>
+          Fight_Mng.Event (From, Stat, Sync, Diff,
                           Item.Data(1 .. Item.Data_Len));
-        when Status.Slave | Status.Master | Status.Fight =>
+        when Status.Slave | Status.Master =>
           Online_Mng.Event (From, Stat, Sync, Diff,
                             Item.Data(1 .. Item.Data_Len));
       end case;
@@ -75,8 +84,8 @@ package body Dispatch is
     end if;
   end New_Intra;
 
-  procedure Handle_New_Status is
-    New_Status : constant Status.Status_List := Status.Get;
+  procedure Handle_New_Status
+        (Prev_Status, New_Status : in Status.Status_List) is
     use type Status.Status_List;
   begin
     case New_Status is
@@ -100,7 +109,6 @@ package body Dispatch is
         null;
     end case;
     Client_Mng.New_Status;
-    Prev_Status := New_Status;
   end Handle_New_Status;
 
 end Dispatch;

@@ -51,7 +51,7 @@ package body Online_Mng is
     end if;
   
     if Debug.Level_Array(Debug.Online) then
-      Debug.Put ("Online: start as " & Status.Get'Img);
+      Debug.Put ("Online: start as " & Status.Get'Img & " " & First'Img);
     end if;
   end Start;
 
@@ -69,9 +69,7 @@ package body Online_Mng is
                    Extra : in String := "") is
     use type Status.Status_List;
   begin
-    if Status.Get = Status.Fight then
-      Fight_Mng.Event (From, Stat, Sync, Diff, Extra);
-    elsif Status.Get = Status.Slave then
+    if Status.Get = Status.Slave then
       if Stat = Status.Master then
         -- Receive a Master while slave, check Crc and restart timer
         if not Sync_Mng.In_Sync
@@ -111,7 +109,9 @@ package body Online_Mng is
         Timers.Delete (Tid);
         Start_Fight;
       end if;
+
     elsif Status.Get = Status.Master then
+
       if Stat = Status.Master then
         if Debug.Level_Array(Debug.Online) then
           Debug.Put ("Online: fight cause another master: "
@@ -126,8 +126,10 @@ package body Online_Mng is
         end if;
         Sync_Mng.Send (From);
       end if;
+
     end if;
-    if Status.Get /= Status.Fight and then Stat = Status.Fight then
+
+    if Stat = Status.Fight then
       if Debug.Level_Array(Debug.Online) then
         Debug.Put ("Online: fight cause fight from: "
                  & Parse(From) );
@@ -136,13 +138,6 @@ package body Online_Mng is
       Start_Fight;
     end if;
 
-
-    if Diff and then (Stat = Status.Starting or else Stat = Status.Fight) then
-      if Debug.Level_Array(Debug.Online) then
-        Debug.Put ("Online: reply status to: " & Parse(From) );
-      end if;
-      Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
-    end if;
   end Event;
 
   function Timer_Cb (Id : Timers.Timer_Id) return Boolean is
