@@ -122,8 +122,8 @@ package Afpx is
   procedure Erase;
 
   -- Put a descriptor content
-  -- Any list has to be des activated
-  -- Exceptions : No_Descriptor, List_In_Put;
+  -- Any list has to be de-activated
+  -- Exceptions : No_Descriptor, List_In_Put.
   procedure Put;
 
   -- Computes next cursor field after current one:
@@ -152,7 +152,7 @@ package Afpx is
                             Top, Bottom, Center);
 
   -- Update the list due to an action
-  -- Exceptions : Invalid_Field if no list in current descriptor,
+  -- Exceptions : Invalid_Field if no list in current descriptor.
   procedure Update_List (Action : in List_Action_List);
 
   -- Result of Put_Then_Get:
@@ -181,8 +181,6 @@ package Afpx is
   -- If the value returned is bigger then Str'Length - 1,
   --  then Str'Length - 1 is used.
   -- If no callback is provided, then 0 is used.
-  -- No call to Afpx are allowed in this callback 
-  --  (or anonymous exception In_Put_Then_Get would be raised).
   type Cursor_Set_Col_Cb is access
        function (Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : String) return Con_Io.Col_Range;
@@ -207,9 +205,12 @@ package Afpx is
   -- If no field is Get (or all protected or desactivated,
   --  then cursor field and col are not significant, otherwise
   --  they are used at initialisation and set before the end.
+  -- No call to Put_Then_Get are allowed while already in Put_Then_Get
+  --  (i.e. from an Event callback or Cursor_Col_Cb).
   -- Exceptions :  No_Descriptor,
   --               Invalid_Field, Invalid_Col (for cursor),
-  --               String_Too_Long (if an item in list is too long).
+  --               String_Too_Long (if an item in list is too long),
+  --               In_Put_Then_Get (already in Put_Then_Get).
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Col_Range;
                           Result        : out Result_Rec;
@@ -222,7 +223,7 @@ package Afpx is
 
   -- On call
   No_Descriptor, Invalid_Field, Invalid_Square, Invalid_Row, Invalid_Col,
-  String_Too_Long, Invalid_Color, List_In_Put : exception;
+  String_Too_Long, Invalid_Color, List_In_Put, In_Put_Then_Get : exception;
 
 
 end Afpx;

@@ -228,22 +228,13 @@ package body Afpx is
   package body Af_Ptg is separate;
   package body Af_List is separate;
 
-  -- No use of Afpx in Ptg callback.
+  -- No call to Ptg from a Ptg/Event callback.
   In_Ptg : Boolean := False;
-  In_Put_Then_Get : exception;
-
-  procedure Check_Ptg is
-  begin
-    if In_Ptg then
-      raise In_Put_Then_Get;
-    end if;
-  end Check_Ptg;
 
   -- Set current descriptor (read descriptor description)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
   Clear_Screen : in Boolean := True) is
   begin
-    Check_Ptg;
     Con_Io.Init;
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
     Af_List.Open;
@@ -259,7 +250,6 @@ package body Afpx is
     Field : Afpx_Typ.Field_Rec;
     Field_Size : Positive;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
     Field_Size := Field.Height * Field.Width;
@@ -276,7 +266,6 @@ package body Afpx is
   Reset_String : in Boolean := True) is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Af_Dscr.Load_Field (Fn, Reset_Colors, Reset_String);
     Af_Dscr.Current_Dscr.Modified := True;
@@ -288,7 +277,6 @@ package body Afpx is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     return Af_Dscr.Fields(Fn).Width;
   end Get_Field_Width;
@@ -300,7 +288,6 @@ package body Afpx is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Height := Af_Dscr.Fields(Fn).Height;
     Width  := Af_Dscr.Fields(Fn).Width;
@@ -314,7 +301,6 @@ package body Afpx is
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
     -- Check that square is in field
@@ -353,7 +339,6 @@ package body Afpx is
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
     -- Check that row is in field
@@ -387,7 +372,6 @@ package body Afpx is
        := Afpx_Typ.Absolute_Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
     Foreground := Field.Colors.Foreground;
@@ -408,7 +392,6 @@ package body Afpx is
     use Con_Io;
     use Afpx_Typ;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
     -- Check Foreground is Basic_Colors for list, get and button fields
@@ -453,7 +436,6 @@ package body Afpx is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Af_Dscr.Fields(Fn).Activated := Activate;
     Af_Dscr.Current_Dscr.Modified := True;
@@ -464,7 +446,6 @@ package body Afpx is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     Activate := Af_Dscr.Fields(Fn).Activated;
   end Get_Field_Activation;
@@ -479,7 +460,6 @@ package body Afpx is
        := Afpx_Typ.Absolute_Field_Range(Field_No);
     use Afpx_Typ;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
       raise Invalid_Field;
@@ -494,7 +474,6 @@ package body Afpx is
        := Afpx_Typ.Absolute_Field_Range(Field_No);
      use Afpx_Typ;
   begin
-    Check_Ptg;
     Af_Dscr.Check(Fn);
     if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
       raise Invalid_Field;
@@ -508,7 +487,6 @@ package body Afpx is
                := Con_Io.Get_Background (Con_Io.Screen);
     use Afpx_Typ;
   begin
-    Check_Ptg;
     Af_Dscr.Check;
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
       Af_Ptg.Erase_Field (Lfn);
@@ -523,7 +501,6 @@ package body Afpx is
   procedure Put is
     use Afpx_Typ;
   begin
-    Check_Ptg;
     Af_Dscr.Check;
     -- Check no list active in descriptor
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
@@ -551,7 +528,6 @@ package body Afpx is
     Ret_No : Afpx_Typ.Absolute_Field_Range;
     use Afpx_Typ;
   begin
-    Check_Ptg;
     Ret_No := Afpx_Typ.Absolute_Field_Range(From);
     loop
       if Ret_No /= Af_Dscr.Current_Dscr.Nb_Fields then
@@ -577,7 +553,6 @@ package body Afpx is
   Ret_No : Afpx_Typ.Absolute_Field_Range;
   use Afpx_Typ;
   begin
-    Check_Ptg;
     Ret_No := Afpx_Typ.Absolute_Field_Range(From);
     loop
       if Ret_No /= 1 then
@@ -599,7 +574,6 @@ package body Afpx is
 
   procedure Update_List (Action : in List_Action_List) is
   begin
-    Check_Ptg;
     Af_Dscr.Check(Lfn);
     Af_List.Update(Action);
  end Update_List;
@@ -616,7 +590,10 @@ package body Afpx is
     Cf : Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Cursor_Field);
     use Afpx_Typ;
   begin
-    Check_Ptg;
+    -- No call to Put_Then_Get in a Put_Then_Get callback
+    if In_Ptg then
+      raise In_Put_Then_Get;
+    end if;
     -- Now we are in put then get until the end
     In_Ptg := True;
     Af_Dscr.Check;
