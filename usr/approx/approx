@@ -1,4 +1,0 @@
-#!/bin/bash
-export AFPX_DATA_DIR=`pwd`
-cd data
-../approxp $*
