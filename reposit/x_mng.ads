@@ -1,10 +1,8 @@
-with SYSTEM;
-
- 
 package X_MNG is
  
   ----- TYPES -----
-  type    LINE       is private;
+  MAX_LINE_NUMBER : constant := 5;
+  type LINE is private;
  
   type BYTE is new NATURAL range 0 .. 255;
   for BYTE'SIZE use 8;
@@ -39,6 +37,7 @@ package X_MNG is
   type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH, TID_MOTION);
  
   ----- EXCEPTIONS -----
+
   X_FAILURE : exception;
  
   ----- LINE MANAGEMENT -----
@@ -68,37 +67,17 @@ package X_MNG is
   procedure X_SET_LINE_NAME (LINE_ID : in LINE;
                              LINE_NAME : in STRING);
 
+  -- Flushes all the outputs of all the lines on the host
+  procedure X_FLUSH(LINE_ID : in LINE);
+
   -- Clears a line
   -- The line_id is the token, previously given by open_line
   -- The character attributes are lost.
   -- A flush is done
   procedure X_CLEAR_LINE(LINE_ID : in LINE);
 
-  -- Flushes all the outputs of all the lines on the host
-  procedure X_FLUSH;
-
   ----- PUT and ATTRIBUTE MANAGEMENT -----
- 
-  -- Writes a char on a line with specified characteristics
-  -- The line_id is the token, previously given by open_line
-  -- The row and column are in characters, relative to the window
-  -- The character is the one to be written
-  -- The paper and ink are color numbers (from 0 to 7)
-  -- The attributes are True or False
-  procedure X_PUT_CHAR_ATTRIBUTES(LINE_ID     : in LINE;
-                                  CAR         : in CHARACTER;
-                                  ROW, COLUMN : in NATURAL;
-                                  PAPER, INK  : in COLOR;
-                                  SUPERBRIGHT : in BOOLEAN := FALSE;
-                                  UNDERLINE   : in BOOLEAN := FALSE;
-                                  BLINK       : in BOOLEAN := FALSE;
-                                  INVERSE     : in BOOLEAN := FALSE);
 
-  -- Sets the position for a further put in the same window
-  -- The row and column are in characters, relative to the window
-  procedure X_MOVE(LINE_ID     : in LINE;
-                   ROW, COLUMN : in NATURAL);
- 
   -- Sets the attributes for a further put in the same window
   -- The line_id is the token, previously given by open_line
   -- The paper and ink are color numbers (from 0 to 7)
@@ -115,72 +94,62 @@ package X_MNG is
   -- if XOR_MORE is set, all further puts and drawings will be in xor
   procedure X_SET_XOR_MODE(LINE_ID     : in LINE;
                            XOR_MODE    : in BOOLEAN);
+
  
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
-  procedure X_PUT_CHAR(LINE_ID : in LINE; CAR : in CHARACTER);
+  procedure X_PUT_CHAR(LINE_ID : in LINE;
+                       CAR : in CHARACTER;
+                       ROW, COLUMN : in NATURAL);
  
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
-  procedure X_PUT_CHAR(LINE_ID : in LINE; CAR : in BYTE);
+  procedure X_PUT_CHAR(LINE_ID : in LINE;
+                       CAR : in BYTE;
+                       ROW, COLUMN : in NATURAL);
  
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
-  procedure X_OVERWRITE_CHAR(LINE_ID : in LINE; CAR : in BYTE);
+  procedure X_OVERWRITE_CHAR(LINE_ID : in LINE;
+                             CAR : in BYTE;
+                             ROW, COLUMN : in NATURAL);
  
   -- Writes a string with the attributes previously set
+  --  at a specified position
   -- The line_id is the token, previously given by open_line
   -- The string is the one to be written
   -- The output is flushed
-  procedure X_PUT_STRING(LINE_ID : in LINE;
-                         STR     : in STRING);
+  procedure X_PUT_STRING(LINE_ID     : in LINE;
+                         STR         : in STRING;
+                         ROW, COLUMN : in NATURAL);
 
-  -- Draws a rectangle (width * height) from current position
+  -- Writes a char on a line with specified characteristics
+  -- The line_id is the token, previously given by open_line
+  -- The row and column are in characters, relative to the window
+  -- The character is the one to be written
+  -- The paper and ink are color numbers (from 0 to 7)
+  -- The attributes are True or False
+  procedure X_PUT_CHAR_ATTRIBUTES(LINE_ID     : in LINE;
+                                  CAR         : in CHARACTER;
+                                  ROW, COLUMN : in NATURAL;
+                                  PAPER, INK  : in COLOR;
+                                  SUPERBRIGHT : in BOOLEAN := FALSE;
+                                  UNDERLINE   : in BOOLEAN := FALSE;
+                                  BLINK       : in BOOLEAN := FALSE;
+                                  INVERSE     : in BOOLEAN := FALSE);
+
+  -- Draws a rectangle (width * height) at position 
   --  with current foreground color.
   -- New position is updated to lower-right square of rectangle.
   procedure X_DRAW_AREA(LINE_ID : in LINE;
-                        WIDTH, HEIGHT : in POSITIVE);
-
-  -- This procedures rings a bell at 400Hz for 100ms and repeats it the number
-  -- specified. 
-  procedure X_BELL (REPEAT : in BELL_REPEAT);
-
-  ----- EVENT MANAGEMENT -----
-  -- Wait for some ms or until a X event is availble
-  -- If timeout is < 0, infinite wait
-  -- The remaining time is set
-  procedure X_SELECT (TIMEOUT_MS : in out INTEGER; X_EVENT : out BOOLEAN);
-
-  -- Processes a X Event (TID or Keyboard or other)
-  -- line_id is the line on which the event has occured
-  -- kind is KEYBOARD or TID, or DISCARD
-  -- NEXT indicates if there is another event pendinig in X'queue
-  procedure X_PROCESS_EVENT(LINE_ID : out LINE; 
-                            KIND : out EVENT_KIND;
-                            NEXT : out BOOLEAN);
- 
-  -- Reads the position on TID in ROW/COL or X/Y
-  -- The line_id must be the one given by wait_event
-  -- Button can be left, middle or right
-  -- row and column are the position of the "finger" on the TID
-  --  in row/col or X/Y(pixels)
-  procedure X_READ_TID(LINE_ID : in LINE; ROW_COL : in BOOLEAN;
-                       BUTTON : out BUTTON_LIST;
-                       ROW, COLUMN : out INTEGER);
- 
-  -- Reads a key of a sequence
-  -- The line_id must be the one given by wait_event
-  -- key is the byte read
-  procedure X_READ_KEY(LINE_ID : in LINE; KEY : out KBD_TAB_CODE);
-
-  -- Enable disable cursor motion events
-  -- The line_id must be the one given by wait_event
-  procedure X_ENABLE_MOTION_EVENTS (LINE_ID : in LINE; MOTION_ENABLE : in BOOLEAN);
+                        WIDTH, HEIGHT : in POSITIVE;
+                        ROW, COLUMN : in NATURAL);
 
   ----- GRAPHIC MANAGEMENT -----
+
   -- Writes a char on a line with current characteristics
   --  attributes and xor mode
   -- The line_id is the token, previously given by open_line
@@ -234,19 +203,40 @@ package X_MNG is
   procedure X_SET_GRAPHIC_POINTER(LINE_ID : in LINE;
                                   GRAPHIC : in BOOLEAN);
 
+  ----- EVENT MANAGEMENT -----
+
+  -- Wait for some ms or until a X event is availble
+  -- If timeout is < 0, infinite wait
+  -- The remaining time is set
+  procedure X_SELECT (LINE_ID : in LINE;
+                      TIMEOUT_MS : in out INTEGER; X_EVENT : out BOOLEAN);
+
+  -- Processes a X Event (TID or Keyboard or other)
+  -- kind is KEYBOARD or TID, or DISCARD
+  -- NEXT indicates if there is another event pendinig in X'queue
+  procedure X_PROCESS_EVENT(LINE_ID : in LINE; 
+                            KIND : out EVENT_KIND;
+                            NEXT : out BOOLEAN);
+ 
+  -- Reads the position on TID in ROW/COL or X/Y
+  -- The line_id must be the one given by wait_event
+  -- Button can be left, middle or right
+  -- row and column are the position of the "finger" on the TID
+  --  in row/col or X/Y(pixels)
+  procedure X_READ_TID(LINE_ID : in LINE; ROW_COL : in BOOLEAN;
+                       BUTTON : out BUTTON_LIST;
+                       ROW, COLUMN : out INTEGER);
+ 
+  -- Reads a key of a sequence
+  -- The line_id must be the one given by wait_event
+  -- key is the byte read
+  procedure X_READ_KEY(LINE_ID : in LINE; KEY : out KBD_TAB_CODE);
+
+  -- Enable disable cursor motion events
+  -- The line_id must be the one given by wait_event
+  procedure X_ENABLE_MOTION_EVENTS (LINE_ID : in LINE; MOTION_ENABLE : in BOOLEAN);
+
   ----- BLINK MANAGEMENT -----
-
-  -- This procedure stops the task which, internaly to x_vdu_mng,
-  --  manages the blinking of text.
-  -- If a process calls this procedure, no blinking of text will
-  --  be impliciptly assumed any more, and the process must
-  --  call X_BLINK_ALTERNATE regulary;
-  procedure X_STOP_BLINKING_TASK;
-
-  -- This procedure restarts  the task which, internaly to x_vdu_mng,
-  --  manages the blinking of text.
-  -- The task should be stopped when this call is done
-  procedure X_START_BLINKING_TASK;
 
   -- This procedure hides the the text which has blink attribute
   --  (gives the same ink as paper) or restores it, alternatively.
@@ -255,7 +245,23 @@ package X_MNG is
   -- In this case, it has to be called twice a second to provide
   --  blinking effect.
   -- No effect on a IMAGE line.
-  procedure X_BLINK_ALTERNATE;
+  procedure X_BLINK_ALTERNATE(LINE_ID : in LINE);
+
+  -- This procedure stops the task which, internaly to x_vdu_mng,
+  --  manages the blinking of text.
+  -- If a process calls this procedure, no blinking of text will
+  --  be impliciptly assumed any more, and the process must
+  --  call X_BLINK_ALTERNATE regulary;
+  procedure X_STOP_BLINKING_TASK(LINE_ID : in LINE);
+
+  -- This procedure restarts  the task which, internaly to x_vdu_mng,
+  --  manages the blinking of text.
+  -- The task should be stopped when this call is done
+  procedure X_START_BLINKING_TASK(LINE_ID : in LINE);
+
+  -- This procedures rings a bell at 400Hz for 100ms and repeats it the number
+  -- specified. 
+  procedure X_BELL (LINE_ID : in LINE; REPEAT : in BELL_REPEAT);
 
  
 private
@@ -269,18 +275,16 @@ private
    REFRESH     => 4,
    TID_MOTION  => 5);
  
-  subtype LINE_FOR_C is SYSTEM.ADDRESS;
- 
-  type X_REFERENCE is record
-    -- NULL pointers for C at creation
-    SERVER : LINE_FOR_C := SYSTEM.NULL_ADDRESS;
-    WINDOW : LINE_FOR_C := SYSTEM.NULL_ADDRESS;
-  end record;
+ subtype LINE_RANGE is NATURAL range 0 .. MAX_LINE_NUMBER;
+  subtype CLIENT_RANGE is POSITIVE range 1 .. MAX_LINE_NUMBER;
+  NO_CLIENT_NO : constant LINE_RANGE := 0;
 
   type LINE is record
-    -- NULL pointer for C at creation
-    NO : LINE_FOR_C := SYSTEM.NULL_ADDRESS;
+    -- NO_CLIENT
+    NO : LINE_RANGE := NO_CLIENT_NO;
   end record;
+
+  NO_CLIENT : constant LINE := (NO => NO_CLIENT_NO);
 
 end X_MNG;
 
