@@ -16,8 +16,9 @@ package body Timers is
   -- List of running timers
   subtype Exp_Rec is Delay_Rec(Delay_Exp);
   type Timer_Rec is record
-    Id : Timer_Id_Range;
+    Id  : Timer_Id_Range;
     Exp : Exp_Rec;
+    Cre : Ada.Calendar.Time;
     Cb  : Timer_Callback;
   end record;
 
@@ -25,10 +26,13 @@ package body Timers is
   Timer_List : Timer_List_Mng.List_Type;
 
   -- Sort timers in crescent order of expiration times
+  --  if same expiration, use creation time
   function "<" (T1, T2 : Timer_Rec) return Boolean is
     use type Ada.Calendar.Time;
   begin
-    return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time;
+    return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time
+    or else (T1.Exp.Expiration_Time = T2.Exp.Expiration_Time
+      and then T1.Cre < T2.Cre);
   end "<";
   procedure Sort is new Timer_List_Mng.Sort ("<");
 
@@ -84,11 +88,12 @@ package body Timers is
     use Ada.Calendar;
   begin
     -- Compute expiration time ASAP
+    Timer.Cre := Ada.Calendar.Clock;
     if Delay_Spec.Delay_Kind = Delay_Sec then
       if Delay_Spec.Delay_Seconds < 0.0 then
         raise Invalid_Delay;
       end if;
-      Timer.Exp.Expiration_Time := Ada.Calendar.Clock
+      Timer.Exp.Expiration_Time := Timer.Cre
                                  + Delay_Spec.Delay_Seconds;
     else
       Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
