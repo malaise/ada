@@ -106,10 +106,6 @@ package body Sys_Calls is
 
 
   -- Errno and associated string
-  Enoent : constant :=  2;
-  Eagain : constant := 11;
-  Ewouldblock : constant := Eagain;
-
   function Errno return Integer is
     function C_Get_Errno return Integer;
     pragma Import (C, C_Get_Errno, "__get_errno");
@@ -250,6 +246,8 @@ package body Sys_Calls is
   pragma Interface(C, C_File_Stat);
   pragma Interface_Name(C_File_Stat, "file_stat");
 
+  Enoent : constant :=  2;
+
   procedure File_Stat (File_Name : in String;
                        Kind       : out File_Kind_List;
                        Rights     : out Natural;
@@ -337,6 +335,11 @@ package body Sys_Calls is
   -- Get char from stdin
   function C_Get_Immediate (Fd : Integer) return Integer;
   pragma Import (C, C_Get_Immediate, "get_immediate");
+
+  C_Error  : constant Integer := -1;
+  C_None   : constant Integer := -2;
+  C_Closed : constant Integer := -3;
+
   procedure Get_Immediate (Fd : File_Desc;
                            Status : out Get_Status_List;
                            C      : out Character) is
@@ -345,20 +348,19 @@ package body Sys_Calls is
     C := Ascii.Nul;
     Status := Error;
     Res := C_Get_Immediate (Integer(Fd));
-    if Res = -1 then
-      if Errno = Ewouldblock then
-        Status := None;
-      else
-        Status := Error;
-      end if;
-    elsif Res = 0 then
-      Status := Closed;
-    else
+    if Res >= 0 then
       Status := Got;
       C := Character'Val(Res);
+    elsif Res = C_Error then
+      Status := Error;
+    elsif Res = C_None then
+      Status := None;
+    elsif Res = C_Closed then
+      Status := Closed;
+    else
+      Status := Error;
     end if;
   end Get_Immediate;
 
 end Sys_Calls; 
 
- 

@@ -112,6 +112,10 @@ extern int set_tty_attr (int fd, int mode) {
   return set_blocking (fd, blk);
 }
 
+#define ERROR  (-1)
+#define NONE   (-2)
+#define CLOSED (-3)
+
 extern int get_immediate (int fd) {
 
   ssize_t n;
@@ -121,12 +125,13 @@ extern int get_immediate (int fd) {
   if (n < 0) {
     if (errno != EWOULDBLOCK) {
       perror ("get_immediate/read");
+      return ERROR;
     }
-    return (-1);
+    return NONE;
   } else if (n > 0) {
     return ((char)c);
   } else {
-    return (0);
+    return CLOSED;
   }
 }
 
