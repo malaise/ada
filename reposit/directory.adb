@@ -7,24 +7,10 @@ package body Directory is
 
   Separator : constant Character := '/';
 
-  -- For NAME_ERROR else ACCESS_ERROR
+  -- For Name_Error else Access_Error
   Enoent : constant := 2;
-  -- For OPEN_ERROR else ACCESS_ERROR
+  -- For Open_Error else Access_Error
   Einval : constant := 22;
-
-  type C_Stat_Rec is record
-    C_Mode : Integer;
-    C_Mtime : Integer;
-  end record;
-
-  type My_Tm_T is record
-    Tm_Sec  : Integer;
-    Tm_Min  : Integer;
-    Tm_Hour : Integer;
-    Tm_Mday : Integer;
-    Tm_Mon  : Integer;
-    Tm_Year : Integer;
-  end record;
 
   function C_Strlen (S : System.Address) return Natural;
   pragma Interface(C, C_Strlen);
@@ -166,75 +152,8 @@ package body Directory is
     Desc.Dir_Addr := System.Null_Address;
   end Close;
 
-  function C_Stat (File_Name : System.Address; Stat : System.Address)
-                  return Integer;
-  pragma Interface(C, C_Stat);
-  pragma Interface_Name(C_Stat, "file_stat");
 
-  -- type FILE_KIND_LIST is (FILE, DIR, DEVICE, FIFO_SOCKET);
-  procedure File_Stat (File_Name : in String;
-                       Kind       : out File_Kind_List;
-                       Rights     : out Natural;
-                       Modif_Time : out Time_T) is
-    C_File_Name : constant String := Str_For_C (File_Name);
-    Stat : C_Stat_Rec;
-    Res : Integer;
-    Mode : Integer;
-    use Bit_Ops;
-  begin
-    Res := C_Stat(C_File_Name(C_File_Name'First)'Address, Stat'Address);
-    if Res = -1 then
-      if Sys_Calls.Errno = Enoent then
-        raise Name_Error;
-      else
-        raise Access_Error;
-      end if;
-    end if;
-    Mode := Integer(Stat.C_Mode) And 8#00170000#;
-    Mode := Shr (Mode, 12);
-    case Mode is
-      when 8#14# =>
-        Kind := Socket;
-      when 8#12# =>
-        Kind := Link;
-      when 8#10# =>
-        Kind := File;
-      when 8#06# =>
-        Kind := Block_Device;
-      when 8#04# =>
-        Kind := Dir;
-      when 8#02# =>
-        Kind := Character_Device;
-      when 8#01# =>
-        Kind := Pipe;
-      when others =>
-        Kind := Unknown;
-    end case;
-    Rights := Integer(Stat.C_Mode) And 8#00007777#;
-    Modif_Time := Time_T(Stat.C_Mtime);
-  end File_Stat;
-
-  function C_Time_To_Tm (Time_P : System.Address;
-                         My_Tm_P : System.Address)
-           return Integer;
-  pragma Interface(C, C_Time_To_Tm);
-  pragma Interface_Name(C_Time_To_Tm, "time_to_tm");
-
-  function Time_Of (Time : Time_T) return Calendar.Time is
-    My_Tm  : My_Tm_T;
-    Result : Integer;
-  begin
-    Result := C_Time_To_Tm (Time'Address, My_Tm'Address);
-    if Result /= 0 then
-      raise Constraint_Error;
-    end if;
-    return Calendar.Time_Of(
-      My_Tm.Tm_Year, My_Tm.Tm_Mon, My_Tm.Tm_Mday,
-      Day_Mng.Pack (My_Tm.Tm_Hour, My_Tm.Tm_Min, My_Tm.Tm_Sec, 0));
-  end Time_Of;
-
-  
-
+  -- Follow a link
   function C_Readlink (Path : System.Address;
                        Buf : System.Address; Bufsiz : Integer) return Integer;
   pragma Interface(C, C_Readlink);
@@ -279,14 +198,15 @@ package body Directory is
   function Read_Link (File_Name : String;
                       Recursive : Boolean := True) return String is
     Dir, Txt : Text_Handler.Text(Max_Dir_Name_Len);
-    Kind : File_Kind_List;
+    Kind : Sys_Calls.File_Kind_List;
     Rights : Natural;
-    Mtime  : Time_T;
+    Mtime  : Sys_Calls.Time_T;
     use Text_Handler;
+    use type Sys_Calls.File_Kind_List;
   begin
     -- Check file_name  is a link
-    File_Stat (File_Name, Kind, Rights, Mtime);
-    if Kind /= Link then
+    Sys_Calls.File_Stat (File_Name, Kind, Rights, Mtime);
+    if Kind /= Sys_Calls.Link then
       raise Open_Error;
     end if;
     if not Recursive then
@@ -311,8 +231,8 @@ package body Directory is
       end if;
       Extract_Path(Text_Handler.Value(Txt), Dir);
       
-      File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime);
-      exit when Kind /= Link;
+      Sys_Calls.File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime);
+      exit when Kind /= Sys_Calls.Link;
     end loop;
     return Text_Handler.Value(Txt);
   end Read_Link;
@@ -338,6 +258,20 @@ package body Directory is
   begin
     return C_Fnmatch(C_Template'Address, C_File_Name'Address, 0) = 0;
   end File_Match;
+
+  -- Use Sys_Calls
+  procedure File_Stat (File_Name : in String;
+                       Kind       : out File_Kind_List;
+                       Rights     : out Natural;
+                       Modif_Time : out Time_T) is
+    L_Kind : Sys_Calls.File_Kind_List;
+    L_Time : Sys_Calls.Time_T;
+  begin
+    Sys_Calls.File_Stat (File_Name, L_Kind, Rights, L_Time);
+    Kind := File_Kind_List(L_Kind);
+    Modif_Time := Time_T(L_Time);
+  end File_Stat;
+
 end Directory;
 
 

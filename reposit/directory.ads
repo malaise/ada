@@ -1,6 +1,6 @@
 with System;
-with Calendar;
-with Text_Handler;
+with Ada.Calendar;
+with Text_Handler, Sys_Calls;
 package Directory is
 
   Max_Dir_Name_Len : constant := 1024;
@@ -36,30 +36,6 @@ package Directory is
   procedure Close (Desc : in out Dir_Desc);
   -- May raise OPEN_ERROR if dir desc is not open
 
-  type File_Kind_List is (File, Dir, Link,
-           Block_Device, Character_Device, Pipe, Socket, Unknown);
-  type Time_T is private;
-  -- RIGHTS are :
-  --  1st bit OX
-  --  2nd bit OW
-  --  3rd bit OR
-  --  4th bit GX
-  --  5th bit GW
-  --  6th bit GR
-  --  7th bit UX
-  --  8th bit UW
-  --  9th bit UR
-  -- 10th bit ST (sticky)
-  -- 11th bit GS (set GID)
-  -- 12th bit US (set UID))
-  procedure File_Stat (File_Name : in String;
-                       Kind       : out File_Kind_List;
-                       Rights     : out Natural;
-                       Modif_Time : out Time_T);
-  -- May raise NAME_ERROR or ACCESS_ERROR
-
-  function Time_Of (Time : Time_T) return Calendar.Time;
-  
   function Read_Link (File_Name : String; Recursive : Boolean := True)
                       return String;
   procedure Read_Link (File_Name : in String;
@@ -72,6 +48,17 @@ package Directory is
   -- Does file name match a pattern
   function File_Match (File_Name : String; Template : String) return Boolean;
 
+
+  -- File status
+  type File_Kind_List is new Sys_Calls.File_Kind_List;
+  type Time_T is new Sys_Calls.Time_T;
+  procedure File_Stat (File_Name : in String;
+                       Kind       : out File_Kind_List;
+                       Rights     : out Natural;
+                       Modif_Time : out Time_T);
+
+
+  -- Exceptions
   Name_Error   : exception;
   Open_Error   : exception;
   Access_Error : exception;
@@ -84,7 +71,6 @@ private
     Dir_Addr : System.Address := System.Null_Address;
   end record;
 
-  type Time_T is new Integer;
 end Directory;
 
 
