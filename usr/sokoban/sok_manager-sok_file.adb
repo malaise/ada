@@ -1,5 +1,5 @@
 with Ada.Direct_Io, Ada.Sequential_Io;
-with Normal;
+with Normal, Text_Handler, Sys_Calls, Directory;
 
 separate (Sok_Manager)
 -- Sokoban frames reading.
@@ -37,6 +37,10 @@ package body Sok_File is
 
   -- for save and restore scores
   package Sok_Score_Mng is new Ada.Direct_Io (Sok_Types.Score_Rec);
+
+  -- for setting frame file directory
+  Sok_File_Dir_Env_Name : constant String := "SOKOBAN_DIR";
+  Sok_File_Dir : Text_Handler.Text(Directory.Max_Dir_Name_Len + 1);
 
   -- for read frame
   Sok_File_Name : constant String := "SOKOBAN.DAT";
@@ -100,8 +104,27 @@ package body Sok_File is
     Sok_File : Sok_File_Mng.File_Type;
     File_Frame : File_Frame_Tab;
   begin
+    if Text_Handler.Empty(Sok_File_Dir) then
+      declare
+        Env_Set   : Boolean;
+        Env_Trunc : Boolean;
+        Env_Value : String(1 .. Directory.Max_Dir_Name_Len);
+        Env_Len   : Natural; 
+      begin
+        Sys_Calls.Getenv (Sok_File_Dir_Env_Name, Env_Set, Env_Trunc,
+                          Env_Value, Env_Len);
+        if Env_Set and then not Env_Trunc then
+          Text_Handler.Set (Sok_File_Dir, Env_Value(1 .. Env_Len));
+        else
+          Text_Handler.Set (Sok_File_Dir, ".");
+        end if;
+        Text_Handler.Append (Sok_File_Dir, "/");
+      end;
+    end if;
+
     begin
-      Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File, Sok_File_Name);
+      Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File, 
+        Text_Handler.Value (Sok_File_Dir) & Sok_File_Name);
     exception
       when Sok_File_Mng.Name_Error =>
         raise Data_File_Not_Found;
