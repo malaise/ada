@@ -12,30 +12,28 @@ package body DAY_MNG is
    MINUTES  : out T_MINUTES;
    SECONDS  : out T_SECONDS;
    MILLISEC : out T_MILLISEC) is
-    SEC : MATH.REAL;
-    H   : T_HOURS;
-    M   : T_MINUTES;
-    S   : T_SECONDS;
+    MSEC : MATH.INTE;
+    H    : T_HOURS;
+    M    : T_MINUTES;
+    S    : T_SECONDS;
   begin
-    -- integer seconds
-    SEC := MATH.INT (MATH.REAL(DUR));
+    -- milli seconds in dur
+    MSEC := MATH.ROUND (MATH.REAL(DUR) *  MATH.REAL(MIL_IN_SEC));
 
-    -- split seconds
-    H := T_HOURS(MATH.TRUNC(SEC / MATH.REAL(MIN_IN_HOR * SEC_IN_MIN) ));
-    SEC := SEC - MATH.REAL(H) * MATH.REAL(MIN_IN_HOR * SEC_IN_MIN);
-    M := T_MINUTES(MATH.TRUNC(SEC / MATH.REAL(SEC_IN_MIN) ));
-    SEC := SEC - MATH.REAL(M) * MATH.REAL(SEC_IN_MIN);
-    S := T_SECONDS(MATH.TRUNC(SEC) );
+    -- split milli seconds
+    H := T_HOURS(MSEC / (MIN_IN_HOR * SEC_IN_MIN * MIL_IN_SEC) );
+    MSEC := MSEC - MATH.INTE(H) * MIN_IN_HOR * SEC_IN_MIN * MIL_IN_SEC;
+    M := T_MINUTES(MSEC / (SEC_IN_MIN * MIL_IN_SEC) );
+    MSEC := MSEC - MATH.INTE(M) * SEC_IN_MIN * MIL_IN_SEC;
+    S := T_SECONDS(MSEC / MIL_IN_SEC);
+    MSEC := MSEC - MATH.INTE(S) * MIL_IN_SEC;
 
     -- out values
     HOURS := H;
     MINUTES := M;
     SECONDS := S;
+    MILLISEC := T_MILLISEC(MSEC);
 
-    -- milli:
-    SEC := MATH.FRAC(MATH.REAL(DUR));
-    MILLISEC := T_MILLISEC (
-     MATH.ROUND(SEC * MATH.REAL(MIL_IN_SEC) ) );
   end SPLIT;
 
 
