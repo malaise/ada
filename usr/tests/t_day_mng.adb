@@ -23,6 +23,7 @@ begin
         exit;
       exception
         when others =>
+          Text_Io.Skip_Line;
           Text_Io.Put_Line ("Error.");
       end;
     end loop;
