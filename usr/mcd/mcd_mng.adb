@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 with Text_Handler;
 with Random;
-with Debug, Input_Dispatcher, Parser;
+with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
 
@@ -796,7 +796,7 @@ package body Mcd_Mng is
           S := A;
 
         when Help =>
-          Parser.Print_Help;
+          Mcd_Parser.Print_Help;
       end case;
     end if;
   end New_Item;

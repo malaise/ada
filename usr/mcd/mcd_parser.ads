@@ -1,6 +1,6 @@
 with Mcd_Mng;
 
-package Parser is
+package Mcd_Parser is
 
   function Next_Item return Mcd_Mng.Item_Rec; 
 
@@ -10,5 +10,5 @@ package Parser is
 
   procedure Dump_Stack;
 
-end Parser;
+end Mcd_Parser;
 

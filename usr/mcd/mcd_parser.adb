@@ -1,7 +1,7 @@
 with Ada.Text_Io;
-with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str;
-with Debug, Input_Dispatcher, Bool_Io, Inte_Io, Real_Io;
-package body Parser is
+with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str, Argument;
+with Debug, Input_Dispatcher, Bool_Io, Inte_Io, Real_Io, Io_Flow;
+package body Mcd_Parser is
   use Mcd_Mng;
 
   subtype Item_Chrs_Rec is Mcd_Mng.Item_Rec(Mcd_Mng.Chrs);
@@ -357,6 +357,8 @@ package body Parser is
     when Input_Dispatcher.String_Error =>
       Input_Error := True;
       raise Parsing_Error;
+    when Io_Flow.Fifo_Error =>
+      raise;
     when others =>
       raise Parsing_Error;  
   end Next_Item;
@@ -366,7 +368,8 @@ package body Parser is
     use Ada.Text_Io;
     Ope_Name : String (1 .. Ope_Len);
   begin
-    Put_Line ("Commands are read from standard input. No argument accepted.");
+    Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name>> ]");
+    Put_Line ("Commands are strings read from standard input or from a fifo.");
     Put_Line ("Separators are space and horizontal tab.");
     Put_Line ("Comments start by '#', up to the end of line");
     Put_Line ("Item ::= <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
@@ -413,5 +416,5 @@ package body Parser is
     end if;
   end Dump_Stack;
 
-end Parser;
+end Mcd_Parser;
 
