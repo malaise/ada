@@ -1,0 +1,61 @@
+# Replace top of stack by its int (uses register z)
+[
+# Round v in z
+>< >< ! $  z => <> 0.0 >= 
+# v >= 0.0 : if v < R then R:=R-1
+[ < [ z <- 1.0 - z -> ] ?@ ]
+# v < 0.0  : if v > R then R:=R+1
+[ > [ z <- 1.0 + z -> ] ?@ ]
+? @
+z <-
+] I ->
+
+# Replace top of stack by its frac
+[ ><
+# Int
+I <- @ - ] F ->
+
+# Error, replace by 0.0 exit
+[ [ Invalid entry:  ] , v <- ; -- 0.0 ] E ->
+
+# Check that top of stack is valid and fix it
+# Replace it by mn, hh
+[
+# Make a real if needed
+>< [ $ ] <> ?! <> ?@
+# * 100,  Frac should be 0
+>< 100.0 * F <- @ 0.0 /=  E <- ?@
+# Frac < 60
+>< F <- @ 100.0 * 60.0 >= E <- ?@
+# Push minutes then hours
+>< F <- @ 100.0 * !
+<> I <- @ !
+] C ->
+
+# Loop
+[
+# Return if no more data in stack
+. 0 = 1 ?_ 
+# Store value for error tracing
+v => 
+# Check 
+C <- @
+# Add
+h <- + h ->
+m <- + m =>
+# Propagate the carry
+60 > [ m <- 60 - m -> h <- 1 h -> ] ?@
+# Loop
+L <- _@ ] L ->
+
+# Init sum and format
+0 h ->
+0 m ->
+3.003 //
+
+# Loop on data
+L <- @
+
+# Display result
+h <- 5 // , [ h ] , m <-  2 // ;
+
