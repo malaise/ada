@@ -3,6 +3,8 @@ package body DYNAMIC_LIST is
 
   type ELEMENT_ARRAY is array (POSITIVE range <>) of ELEMENT_TYPE;
 
+  FREE_LIST : LINK := NULL;
+
   function IS_EMPTY (LIST : LIST_TYPE) return BOOLEAN is
   begin
     return LIST.FIRST = null;
@@ -23,25 +25,37 @@ package body DYNAMIC_LIST is
   end CHECK_IN;
 
   -- delete the full list
-  procedure DELETE_LIST (LIST : in out LIST_TYPE) is
+  procedure DELETE_LIST (LIST : in out LIST_TYPE;
+                         DEALLOCATE : in BOOLEAN := TRUE) is
     LOCAL : LINK;
     procedure DEALLOCATION_OF is new
      UNCHECKED_DEALLOCATION(OBJECT=>CELL, NAME=>LINK);
   begin
-    -- dealocate the list
-    while LIST.FIRST /= null loop
-      LOCAL := LIST.FIRST;
-      LIST.FIRST := LIST.FIRST.NEXT;
-      DEALLOCATION_OF(LOCAL);
-    end loop;
-    -- dealocate the free list
-    while LIST.FREE /= null loop
-      LOCAL := LIST.FREE;
-      LIST.FREE := LIST.FREE.NEXT;
-      DEALLOCATION_OF(LOCAL);
-    end loop;
+    if DEALLOCATE then
+      -- deallocate the list
+      while LIST.FIRST /= null loop
+        LOCAL := LIST.FIRST;
+        LIST.FIRST := LIST.FIRST.NEXT;
+        DEALLOCATION_OF(LOCAL);
+      end loop;
+      -- deallocate the free list
+      while FREE_LIST /= null loop
+        LOCAL := FREE_LIST;
+        FREE_LIST := FREE_LIST.NEXT;
+        DEALLOCATION_OF(LOCAL);
+      end loop;
+    else
+      -- Insert the list in beginning of free list
+      if LIST.FIRST /= null then
+        LIST.LAST.NEXT := FREE_LIST;
+        if FREE_LIST /= null then
+          FREE_LIST.PREV := LIST.LAST;
+        end if;
+        FREE_LIST := LIST.FIRST;
+      end if;
+    end if;
     LIST := (MODIFIED => TRUE, POS_FIRST | POS_LAST => 0,
-     CURRENT => null, FIRST => null, LAST => null, FREE => null);
+     CURRENT => null, FIRST => null, LAST => null);
   end DELETE_LIST;
 
   -- read the current item
@@ -77,12 +91,12 @@ package body DYNAMIC_LIST is
     NEW_CELL : LINK;
   begin
     LIST.MODIFIED := TRUE;
-    if LIST.FREE = null then
-      --create the first element of the list
+    if FREE_LIST = null then
+      -- create the first element of the list
       NEW_CELL := new CELL;
     else
-      NEW_CELL := LIST.FREE;
-      LIST.FREE := LIST.FREE.NEXT;
+      NEW_CELL := FREE_LIST;
+      FREE_LIST := FREE_LIST.NEXT;
     end if;
     -- fill new cell
     NEW_CELL.VALUE := ITEM;
@@ -162,12 +176,12 @@ package body DYNAMIC_LIST is
         LIST.POS_FIRST := LIST.POS_FIRST - 1;
     end case;
     -- insert in free list
-    if LIST.FREE /= null then
-      LIST.FREE.PREV := DEL_CELL;
+    if FREE_LIST /= null then
+      FREE_LIST.PREV := DEL_CELL;
     end if;
     DEL_CELL.PREV := null;
-    DEL_CELL.NEXT := LIST.FREE;
-    LIST.FREE := DEL_CELL;
+    DEL_CELL.NEXT := FREE_LIST;
+    FREE_LIST := DEL_CELL;
     -- check the special case when list is empty
     --  (set pos_first AND pos_last to 0)
     if LIST.CURRENT = null then

@@ -54,7 +54,9 @@ package DYNAMIC_LIST is
   procedure DELETE (LIST : in out LIST_TYPE; MOVE : in DIRECTION := NEXT);
 
   -- delete the full list
-  procedure DELETE_LIST (LIST : in out LIST_TYPE);
+  --  deallocate or not the free list
+  procedure DELETE_LIST (LIST : in out LIST_TYPE;
+     DEALLOCATE : in BOOLEAN := TRUE);
 
   -- set the current element to number elements before or after
   --  if FROM_CURRENT is FALSE, then counting is from the first
@@ -93,7 +95,7 @@ package DYNAMIC_LIST is
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
-  --  which allow another layer to test is and reset it for further
+  --  which allow another layer to test it and reset it for further
   --  testing
   function IS_MODIFIED (LIST : LIST_TYPE) return BOOLEAN;
   procedure MODIFICATION_ACK (LIST : in out LIST_TYPE);
@@ -148,7 +150,6 @@ private
     CURRENT   : LINK    := null;
     FIRST     : LINK    := null;
     LAST      : LINK    := null;
-    FREE      : LINK    := null;
   end record;
 
 end DYNAMIC_LIST;
