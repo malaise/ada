@@ -1,15 +1,10 @@
-LXC=-largs -lx_mng -lcutil -lX11
-all: do_nimmari AFPX.DSC
+include $(HOME)/Makefiles/common.mk
 
-do_nimmari:
-	amake nimmari.adb $(LXC)
+ADAVIEW := $(REPOSIT)
+AFPX := true
+EXES := nimmari
 
-AFPX.DSC: AFPX.LIS
-	afpx_bld
+CLIBS_nimmari := x_mng cutil X11
 
-clean:
-	rm *.o *.ali
-
-clean_exe:
-	rm nimmari AFPX.DSC AFPX.FLD AFPX.INI
+include $(TEMPLATES)/ada.mk
 

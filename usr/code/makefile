@@ -1,13 +1,9 @@
-LC=-lcutil
+include $(HOME)/Makefiles/common.mk
 
-all:
-	amake code.adb -largs $(LC)
-	amake tg1.adb
-	amake tg2.adb
+ADAVIEW := $(REPOSIT)
+EXES := code tg1 tg2
 
-clean:
-	rm *.o *.ali
+CLIBS_code := cutil
 
-clean_exe:
-	rm code tg1 tg2
+include $(TEMPLATES)/ada.mk
 

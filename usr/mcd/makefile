@@ -1,20 +1,9 @@
-LIBC_DIR=$(HOME)/ada/c
-LC=-largs -L$(LIBC_DIR) -lcutil
-ADA_FLAG=-gnato
+include $(HOME)/Makefiles/common.mk
 
-EXE=mcd
+ADAVIEW := $(REPOSIT)
+EXES := mcd
 
-all: $(EXE)
+CLIBS_mcd := cutil
 
-mcd:
-	amake $(ADA_FLAG) $@ $(LC)
-
-AFPX.DSC: AFPX.LIS
-	afpx_bld
-
-clean:
-	rm -f *.o *.ali mcd_storage.dat
-
-clean_exe:
-	rm -f AFPX.DSC AFPX.FLD AFPX.INI $(EXE)
+include $(TEMPLATES)/ada.mk
 

@@ -1,22 +1,9 @@
-LC=-largs -lcutil
-LXC=-largs -lx_mng -lcutil -lX11
+include $(HOME)/Makefiles/common.mk
 
-EXE=mmind mmind_asc
+ADAVIEW := $(REPOSIT)
+EXES := mmind mmind_asc
 
-all: $(EXE)
+CLIBS_mmind := x_mng cutil X11
 
-mmind:
-	amake mmind $(LXC)
-
-mmind_asc:
-	amake mmind_asc $(LC)
-
-AFPX.DSC: AFPX.LIS
-	afpx_bld
-
-clean:
-	rm *.o *.ali
-
-clean_exe:
-	rm -f AFPX.DSC AFPX.FLD AFPX.INI $(EXE)
+include $(TEMPLATES)/ada.mk
 

@@ -1,23 +1,15 @@
-LXC=-lx_mng -lcutil -lX11
+include $(HOME)/Makefiles/common.mk
 
-all: do_approxp do_import do_export AFPX.DSC
+ADAVIEW := $(REPOSIT)
+AFPX := true
+EXES := approxp import export
 
-do_approxp: 
-	amake approxp.adb -largs $(LXC)
+CLIBS_approxp := x_mng cutil X11
 
-do_import: 
-	amake import.adb -largs $(LXC)
+CLIBS_import := x_mng cutil X11
 
-do_export: 
-	amake export.adb -largs $(LXC)
+CLIBS_export := x_mng cutil X11
 
-AFPX.DSC: AFPX.LIS
-	afpx_bld
-
-clean:
-	rm *.o *.ali
-
-clean_exe:
-	rm approxp import export AFPX.DSC AFPX.FLD AFPX.INI
+include $(TEMPLATES)/ada.mk
 
 

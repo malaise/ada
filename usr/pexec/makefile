@@ -1,20 +1,9 @@
-LC=-largs -lcutil
-DEST=$(HOME)/bin
+include $(HOME)/Makefiles/common.mk
 
+ADAVIEW := $(REPOSIT)
+EXES := pexec
 
-# pexec_exe is a dummy target to always execute amake
-#  and do it BEFORE evaluating $(DEST)/pexec versus pexec
-all : pexec_exe $(DEST)/pexec
+CLIBS_pexec := cutil
 
-pexec_exe :
-	amake pexec.adb $(LC)
-
-$(DEST)/pexec : pexec
-	cp pexec $(DEST)
-
-clean :
-	rm *.o *.ali
-
-clean_exe:
-	rm pexec
+include $(TEMPLATES)/ada.mk
 

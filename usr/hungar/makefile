@@ -1,13 +1,9 @@
-LC=-largs -lcutil
+include $(HOME)/Makefiles/common.mk
 
-all:
-	amake hungar.adb $(LC)
-	amake generate.adb
+ADAVIEW := $(REPOSIT)
+EXES := hungar generate
 
-clean:
-	rm *.o *.ali
+CLIBS_hungar := cutil
 
-clean_exe:
-	rm hungar generate
-
+include $(TEMPLATES)/ada.mk
 

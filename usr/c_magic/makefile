@@ -1,10 +1,7 @@
-all:
-	amake c_magic.adb
+include $(HOME)/Makefiles/common.mk
 
-clean:
-	rm *.o *.ali
+ADAVIEW := $(REPOSIT)
+EXES := c_magic
 
-clean_exe:
-	rm c_magic
-
+include $(TEMPLATES)/ada.mk
 

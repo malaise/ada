@@ -1,9 +1,7 @@
-all:
-	amake day_of_week.adb
+include $(HOME)/Makefiles/common.mk
 
-clean:
-	rm *.o *.ali
+ADAVIEW := $(REPOSIT)
+EXES := day_of_week
 
-clean_exe:
-	rm day_of_week
+include $(TEMPLATES)/ada.mk
 

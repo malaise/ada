@@ -1,16 +1,9 @@
-all:
-	amake $(ADA_OPT) ex1.adb
-	amake $(ADA_OPT) garde.adb
-	amake $(ADA_OPT) iole.adb
-	amake $(ADA_OPT) para.adb
-	amake $(ADA_OPT) servprio.adb
-	amake $(ADA_OPT) stamp.adb
-	amake $(ADA_OPT) termin.adb
-	amake $(ADA_OPT) wheeles.adb
+include $(HOME)/Makefiles/common.mk
 
-clean:
-	rm *.o *.ali servprio.dat
+include $(HOME)/Makefiles/units.mk
 
-clean_exe:
-	rm ex1 garde iole para servprio stamp termin wheeles
+ADAVIEW := $(REPOSIT)
+EXES := $(UNITS)
+
+include $(TEMPLATES)/ada.mk
 

@@ -1,12 +1,9 @@
-LC=-largs -lcutil
+include $(HOME)/Makefiles/common.mk
 
-all:
-	amake great_circle $(LC)
+ADAVIEW := $(REPOSIT)
+EXES := great_circle
 
-clean:
-	rm *.o *.ali
+CLIBS_great_circle := cutil
 
-clean_exe:
-	rm great_circle
-
+include $(TEMPLATES)/ada.mk
 

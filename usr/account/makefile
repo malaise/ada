@@ -1,36 +1,17 @@
-LIBC_DIR=$(HOME)/ada/c
-LIBX_MNG=x_mng
-LIBCUTIL=cutil
-LXC=-largs -l$(LIBX_MNG) -L$(LIBC_DIR) -l$(LIBCUTIL) -lX11
-LXC_STATIC=-largs $(LIBC_DIR)/lib$(LIBX_MNG).a $(LIBC_DIR)/lib$(LIBCUTIL).a \
-           -lX11
+include $(HOME)/Makefiles/common.mk
 
-EXE=account.static account import export
+ADAVIEW := $(REPOSIT)
+AFPX := true
+EXES := account import export account.stat
 
-all: $(EXE) AFPX.DSC
+CLIBS_account := x_mng cutil X11
 
-new: 
-	rm -f $(EXE)
-	amake account $(LXC)
-	
-account:
-	amake $@ $(LXC)
+CLIBS_import := cutil
 
-import:
-	amake $@ $(LXC)
+CLIBS_export := cutil
 
-export:
-	amake $@ $(LXC)
+TPATH := $(CPATH:%=%/$(LIB))
+LARGS_account.stat := $(TPATH)/libx_mng.a $(TPATH)/libcutil.a -lX11
 
-account.static:
-	amake account -o $@ $(LXC_STATIC) 
-
-AFPX.DSC: AFPX.LIS
-	afpx_bld
-
-clean:
-	rm -f *.o *.ali b~*
-
-clean_exe:
-	rm -f AFPX.DSC AFPX.FLD AFPX.INI $(EXE)
+include $(TEMPLATES)/ada.mk
 

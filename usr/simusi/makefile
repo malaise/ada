@@ -1,12 +1,9 @@
-LC=-largs -lcutil
+include $(HOME)/Makefiles/common.mk
 
-all:
-	amake t_file.adb $(LC)
-	amake simusi.adb $(LC)
+ADAVIEW := $(REPOSIT)
+EXES := simusi
 
-clean:
-	rm *.o *.ali
+CLIBS_simusi := cutil
 
-clean_exe:
-	rm simusi t_file
+include $(TEMPLATES)/ada.mk
 

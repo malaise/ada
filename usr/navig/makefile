@@ -1,12 +1,9 @@
-LXC=-largs -lx_mng -lcutil -lX11
-all: navig
+include $(HOME)/Makefiles/common.mk
 
-navig:
-	amake navig.adb -largs $(LXC)
+ADAVIEW := $(REPOSIT)
+EXES := navig
 
-clean:
-	rm *.o *.ali
+CLIBS_navig := x_mng cutil X11
 
-clean_exe:
-	rm navig
+include $(TEMPLATES)/ada.mk
 

@@ -1,12 +1,9 @@
-LXC=-largs -lx_mng -lcutil -lX11
+include $(HOME)/Makefiles/common.mk
 
-all:
-	amake t_input.adb $(LXC)
-	amake sokoban.adb $(LXC)
-	amake trans.adb
-clean:
-	rm *.o *.ali
+ADAVIEW := $(REPOSIT)
+EXES := sokoban
 
-clean_exe:
-	rm t_input sokoban trans
+CLIBS_sokoban := x_mng cutil X11
+
+include $(TEMPLATES)/ada.mk
 

@@ -1,9 +1,7 @@
-all:
-	amake fl.adb
+include $(HOME)/Makefiles/common.mk
 
-clean:
-	rm *.o *.ali
+ADAVIEW := $(REPOSIT)
+EXES := fl
 
-clean_exe:
-	rm fl
+include $(TEMPLATES)/ada.mk
 

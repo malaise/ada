@@ -1,19 +1,9 @@
-LXC=-largs -lx_mng -lcutil -lX11
+include $(HOME)/Makefiles/common.mk
 
-EXE=chess
+ADAVIEW := $(REPOSIT)
 
-all: $(EXE)
+EXES := chess
+CLIBS_chess := x_mng cutil X11
 
-new: 
-	rm -f $(EXE)
-	make
-	
-chess:
-	amake $@ $(LXC)
-
-clean:
-	rm -f *.o *.ali b~*
-
-clean_exe:
-	rm -f $(EXE)
+include $(TEMPLATES)/ada.mk
 
