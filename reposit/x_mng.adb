@@ -1,12 +1,12 @@
 with CALENDAR, SYSTEM;
-with DYNAMIC_LIST, MY_IO, TIMERS;
+with DYNAMIC_LIST, MY_IO, TIMERS, SYS_CALLS;
 package body X_MNG is
 
   -- Duration
   INFINITE_TIMEOUT : constant DURATION := TIMERS.INFINITE_SECONDS;
 
-  DEBUG : constant BOOLEAN := FALSE;
-  -- DEBUG : constant BOOLEAN := TRUE;
+  DEBUG_VAR_NAME : constant STRING := "X_MNG_DEBUG";
+  DEBUG : BOOLEAN := FALSE;
 
   -- Result of a call to C
   subtype RESULT is INTEGER;
@@ -286,6 +286,13 @@ package body X_MNG is
   pragma IMPORT(C, X_DEL_FD, "x_del_fd");
 
   ------------------------------------------------------------------
+  -- Is a fd set for select
+  -- boolean x_fd_set (int fd, boolean read);
+  ------------------------------------------------------------------
+  function X_FD_SET (FD : INTEGER; READ : BOOL_FOR_C) return BOOL_FOR_C;
+  pragma IMPORT(C, X_FD_SET, "x_fd_set");
+
+  ------------------------------------------------------------------
   -- Wait for some events
   -- int x_select (int *p_fd, int *timeout_ms);
   ------------------------------------------------------------------
@@ -404,6 +411,22 @@ package body X_MNG is
                       /= OK then
         raise X_FAILURE;
       end if;
+
+      declare
+        SET : BOOLEAN;
+        TRU : BOOLEAN;
+        VAL : STRING (1 .. 1);
+        LEN : NATURAL;
+      begin
+        SYS_CALLS.GETENV (DEBUG_VAR_NAME, SET, TRU, VAL, LEN);
+        if SET and then (VAL(1) = 'y' or else VAL(1) = 'Y') then
+          DEBUG := TRUE;
+        end if;
+      exception
+        when others =>
+          null;
+      end;
+
       DISPATCHER.START;
       INITIALISED := TRUE;
     end if;
@@ -910,6 +933,15 @@ package body X_MNG is
   end X_DEL_CALLBACK;
   
   ------------------------------------------------------------------
+  function X_CALLBACK_SET (FD : in FILE_DESC; READ : in BOOLEAN)
+  return BOOLEAN is
+    RES : BOOL_FOR_C;
+  begin
+    RES := X_FD_SET (INTEGER(FD), BOOL_FOR_C(READ));
+    return BOOLEAN(RES);
+  end X_CALLBACK_SET;
+
+  ------------------------------------------------------------------
   procedure X_SELECT (LINE_ID : in LINE; TIMEOUT_MS : in out INTEGER;
                       X_EVENT : out BOOLEAN) is
     EXP : CALENDAR.TIME;
@@ -1085,72 +1117,118 @@ package body X_MNG is
   --------------- T H E   D I S P A T C H E R   B O D Y ------------
   ------------------------------------------------------------------
 
-  type XX_SELECT_RESULT_LIST is (SELECT_X_EVENT, SELECT_FD, SELECT_TIMER, SELECT_TIMEOUT);
+  type XX_SELECT_RESULT_LIST is (SELECT_X_EVENT, SELECT_FD, SELECT_TIMER,
+                                 SELECT_TIMEOUT);
 
   function XX_SELECT (TIMEOUT_IN : DURATION) return XX_SELECT_RESULT_LIST is
     FD    : INTEGER;
     READ  : BOOL_FOR_C;
-    TIMEOUT_DUR : DURATION;
+    TIMEOUT_DUR, TIMEOUT_TIM : DURATION;
+    FINAL_EXP : CALENDAR.TIME;
     TIMEOUT_MS : INTEGER;
     DUMMY : RESULT;
     CB_SEARCHED : CB_REC;
+    use CALENDAR;
   begin
-    -- Compute smaller timeout between timers and the one requested
-    TIMEOUT_DUR := TIMERS.WAIT_FOR;
-    if TIMEOUT_DUR = INFINITE_TIMEOUT then
-      -- No timer: keep the one requested
-      TIMEOUT_DUR := TIMEOUT_IN;
-    elsif TIMEOUT_IN /= INFINITE_TIMEOUT then
-      -- Some timers and no infinite delay: take smallest
-      if TIMEOUT_IN < TIMEOUT_DUR then
-        TIMEOUT_DUR := TIMEOUT_IN;
-      end if;
+    -- Compute final expiration
+    if TIMEOUT_IN /= INFINITE_TIMEOUT then
+      FINAL_EXP := CALENDAR.CLOCK + TIMEOUT_IN;
     end if;
 
-    -- The real select
-    TIMEOUT_MS := INTEGER (TIMEOUT_DUR * 1000.0);
-    DUMMY := X_SELECT (FD'ADDRESS, READ'ADDRESS, TIMEOUT_MS'ADDRESS);
-    if DEBUG then
-      MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD)
-                                  & " " & BOOL_FOR_C'IMAGE(READ));
-    end if;
-
-    -- Results
-    if FD = C_SELECT_X_EVENT then
-      -- A X event
-      return SELECT_X_EVENT;
-    elsif FD = C_SELECT_NO_EVENT then
-      -- Nothing. Expire timers or return timeout
-      if TIMERS.EXPIRE then
-        return SELECT_TIMER;
+    loop
+      -- Final timeout from the one specified
+      if TIMEOUT_IN /= INFINITE_TIMEOUT then
+        TIMEOUT_DUR := FINAL_EXP - CALENDAR.CLOCK;
+        -- Reached?
+        if TIMEOUT_DUR < 0.0 then
+            TIMEOUT_DUR := 0.0;
+        end if;
       else
-        return SELECT_TIMEOUT;
+        TIMEOUT_DUR := 0.0;
       end if;
-    else
-      -- A FD event
-      CB_SEARCHED.FD := FILE_DESC(FD);
-      CB_SEARCHED.READ := BOOLEAN(READ);
-      CB_SEARCHED.CB := null;
-      begin
-        -- Search and read callback
-        CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
-        CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
-        -- Call it and propagate event if callback returns true
-        if CB_SEARCHED.CB /= null then
-          if CB_SEARCHED.CB (CB_SEARCHED.FD, CB_SEARCHED.READ) then
-            return SELECT_FD;
+
+      -- Netx timer timeout
+      TIMEOUT_TIM := TIMERS.WAIT_FOR;
+
+      -- Compute smaller timeout between timers and the one requested
+      if TIMEOUT_TIM = INFINITE_TIMEOUT then
+        -- No timer
+        if TIMEOUT_IN = INFINITE_TIMEOUT then
+          -- No timer and infinite timeout: infinite
+          TIMEOUT_DUR := INFINITE_TIMEOUT;
+        else
+          -- No timer and timeout set: keep timeout
+          null;
+        end if;
+      else
+        -- Some timer
+        if TIMEOUT_IN = INFINITE_TIMEOUT then
+          -- Some timer and infinite timeout: take timer
+          TIMEOUT_DUR := TIMEOUT_TIM;
+        else
+          -- Some timer and a timeout set: take smallest
+          if TIMEOUT_TIM <= TIMEOUT_DUR then
+            -- Timer is smallest
+            TIMEOUT_DUR := TIMEOUT_TIM;
+          else
+            -- Keep timeout
+            null;
           end if;
         end if;
-      exception
-        when CB_MNG.NOT_IN_LIST =>
-        if DEBUG then
-          MY_IO.PUT_LINE ("**** XX_SELECT: " & INTEGER'IMAGE(FD) 
-                        & " fd not found ****");
+      end if;
+
+      -- The real select
+      TIMEOUT_MS := INTEGER (TIMEOUT_DUR * 1000.0);
+      DUMMY := X_SELECT (FD'ADDRESS, READ'ADDRESS, TIMEOUT_MS'ADDRESS);
+      if DEBUG then
+        if DUMMY /= OK then
+          MY_IO.PUT_LINE ("  XX_SELECT -> ERROR");
+          return SELECT_TIMEOUT;
+        else
+          MY_IO.PUT_LINE ("  XX_SELECT -> " & INTEGER'IMAGE(FD)
+                                      & " " & BOOL_FOR_C'IMAGE(READ));
         end if;
-      end;
-      -- No callback or returned False
-      return SELECT_TIMEOUT;
-    end if;
+      end if;
+
+      -- Results
+      if FD = C_SELECT_X_EVENT then
+        -- A X event
+        return SELECT_X_EVENT;
+      elsif FD = C_SELECT_NO_EVENT then
+        -- Nothing. Expire timers or return timeout
+        if TIMERS.EXPIRE then
+          return SELECT_TIMER;
+        end if;
+        if TIMEOUT_IN /= INFINITE_TIMEOUT
+        and then CALENDAR.CLOCK > FINAL_EXP then
+          -- Requested timeout reached
+          return SELECT_TIMEOUT;
+        end if;
+      else
+        -- A FD event
+        CB_SEARCHED.FD := FILE_DESC(FD);
+        CB_SEARCHED.READ := BOOLEAN(READ);
+        CB_SEARCHED.CB := null;
+        begin
+          -- Search and read callback
+          CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
+          CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
+          -- Call it and propagate event if callback returns true
+          if CB_SEARCHED.CB /= null then
+            if CB_SEARCHED.CB (CB_SEARCHED.FD, CB_SEARCHED.READ) then
+              return SELECT_FD;
+            end if;
+          end if;
+        exception
+          when CB_MNG.NOT_IN_LIST =>
+          if DEBUG then
+            MY_IO.PUT_LINE ("**** XX_SELECT: " & INTEGER'IMAGE(FD) 
+                          & " fd not found ****");
+          end if;
+        end;
+        -- No callback or returned False
+      end if;
+    end loop;
   end XX_SELECT;
 
   procedure XX_PROCESS_EVENT (LINE_FOR_C_ID : out LINE_FOR_C;
@@ -1497,7 +1575,11 @@ package body X_MNG is
     if INITIALISED  then
       raise X_FAILURE;
     end if;
-    SELECT_RESULT := XX_SELECT (DURATION(TIMEOUT_MS) / 1000.0);
+    if TIMEOUT_MS < 0 then
+      SELECT_RESULT := XX_SELECT (TIMERS.INFINITE_SECONDS);
+    else
+      SELECT_RESULT := XX_SELECT (DURATION(TIMEOUT_MS) / 1000.0);
+    end if;
     case SELECT_RESULT is
       when SELECT_X_EVENT =>
         if DEBUG then
