@@ -12,6 +12,8 @@ package body SCREEN is
   type STATUS_TAB is array (INDEX_RANGE) of STATUS_LIST;
   STATUS : STATUS_TAB;
 
+  -- Stick color
+  STICK_COLOR : constant CON_IO.EFFECTIVE_BASIC_COLORS := CON_IO.LIGHT_GRAY;
 
   HUMAN_SCORE : NATURAL;
   MACHINE_SCORE : NATURAL;
@@ -67,7 +69,7 @@ package body SCREEN is
     STATUS := (others => FREE);
     for I in FIELD_RANGE'(1) .. 16 loop
       SET_FIELD_ACTIVATION (I, TRUE); 
-      SET_FIELD_COLORS (I, BACKGROUND => CON_IO.GREEN);
+      SET_FIELD_COLORS (I, BACKGROUND => STICK_COLOR);
     end loop;
     SET_FIELD_ACTIVATION (22, FALSE);
   end RESET;
@@ -117,7 +119,7 @@ package body SCREEN is
             if ROW_OF_INDEX(SELECTION_INDEX) = ROW_SELECTED then
               if STATUS(SELECTION_INDEX) = SELECTED then
                 STATUS(SELECTION_INDEX)  := FREE;
-                SET_FIELD_COLORS (RESULT.FIELD_NO, BACKGROUND => CON_IO.GREEN);
+                SET_FIELD_COLORS (RESULT.FIELD_NO, BACKGROUND => STICK_COLOR);
                 NB_SELECTED := NB_SELECTED - 1;
               else
                 STATUS(SELECTION_INDEX)  := SELECTED;

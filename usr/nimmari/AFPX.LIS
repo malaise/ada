@@ -118,7 +118,7 @@ DESCRIPTOR 1
 # Play nimm,  Play Marienbad, exit
    FIELD 3 BUTTON
      GEOMETRY 21 10 23 19
-     COLORS cyan green 
+     COLORS cyan light_gray 
      INIT
        1 1 Play Nim
      END INIT
@@ -126,7 +126,7 @@ DESCRIPTOR 1
 
    FIELD 4 BUTTON
      GEOMETRY 21 22 23 37
-     COLORS cyan green 
+     COLORS cyan light_gray 
      INIT
        1 1 Play Marienbad
      END INIT
@@ -134,7 +134,7 @@ DESCRIPTOR 1
 
    FIELD 5 BUTTON
      GEOMETRY 21 60 23 68
-     COLORS cyan green 
+     COLORS cyan light_gray 
      INIT
        1 1 E X I T
      END INIT
@@ -147,91 +147,91 @@ DESCRIPTOR 2
    # First row
    FIELD 1 BUTTON
      GEOMETRY 2 23 4 24
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 2 BUTTON
      GEOMETRY 2 28 4 29
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 3 BUTTON
      GEOMETRY 2 33 4 34
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 4 BUTTON
      GEOMETRY 2 38 4 39
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 5 BUTTON
      GEOMETRY 2 43 4 44
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 6 BUTTON
      GEOMETRY 2 48 4 49
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 7 BUTTON
      GEOMETRY 2 53 4 54
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    # Second row
    FIELD 8 BUTTON
      GEOMETRY 6 28 8 29
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 9 BUTTON
      GEOMETRY 6 33 8 34
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 10 BUTTON
      GEOMETRY 6 38 8 39
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 11 BUTTON
      GEOMETRY 6 43 8 44
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 12 BUTTON
      GEOMETRY 6 48 8 49
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    # Third row
    FIELD 13 BUTTON
      GEOMETRY 10 33 12 34
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 14 BUTTON
      GEOMETRY 10 38 12 39
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    FIELD 15 BUTTON
      GEOMETRY 10 43 12 44
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    # Third row
    FIELD 16 BUTTON
      GEOMETRY 14 38 16 39
-     COLORS cyan green 
+     COLORS cyan light_gray 
    END FIELD
 
    # Play
    FIELD 17 BUTTON
      GEOMETRY 21 34 23 42
-     COLORS blue green 
+     COLORS blue light_gray 
      INIT
        1 1 Remove
      END INIT
@@ -239,7 +239,7 @@ DESCRIPTOR 2
 
    FIELD 18 BUTTON
      GEOMETRY 21 60 23 68
-     COLORS blue green 
+     COLORS blue light_gray 
      INIT
        1 1 E X I T
      END INIT
@@ -269,7 +269,7 @@ DESCRIPTOR 2
    # Play
    FIELD 22 BUTTON
      GEOMETRY 21 03 23 18
-     COLORS blue green 
+     COLORS blue light_gray 
    END FIELD
 END DESCRIPTOR
 
