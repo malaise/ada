@@ -22,10 +22,10 @@ toreal c popr toreal b popr toreal a popr
 
 # a = 0
 # b = 0 ? then quit
-[ b pushr isnul = L R ifte pushr call 2 retn ] P popr
+[ b pushr isnul L R ifte pushr call 2 retn ] P popr
 
 # a = 0 ?
-a pushr isnul = P pushr ifcall
+a pushr isnul P pushr ifcall
 
 # d = b**2 - 4ac
 b pushr dup * 4.0 a pushr c pushr * * - d popr
@@ -35,10 +35,10 @@ b pushr dup * 4.0 a pushr c pushr * * - d popr
 b pushr +- 2.0 a pushr * / i popr
 
 # d = 0 => -b / 2a
-d pushr isnul = [ "1 real: " put i pushr putl 2 retn ] ifcall
+d pushr isnul [ "1 real: " put i pushr putl 2 retn ] ifcall
 
 # d > 0 => -b/2a +- V(d)/2a
-d pushr ispos > [ d pushr 0.5 ** 2.0 a pushr * / j popr 
+d pushr ispos [ d pushr 0.5 ** 2.0 a pushr * / j popr 
              "2 reals: " put i pushr j pushr + putl
              "    and: " put i pushr j pushr - putl 2 retn ] ifcall
 
