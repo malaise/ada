@@ -43,6 +43,7 @@ package body Dictio_Lib is
     State : Status.Stable_Status_List;
     New_Dictio_State : Dictio_State_List;
   begin
+
     Read_Msg:
     begin
       Client_Com.Dictio_Receive (Dictio_Dscr, Msg, Len);
