@@ -329,6 +329,7 @@ package body AF_PTG is
           AF_LIST.PUT (CLICK_ROW_LIST, SELECTED);
           -- Set new selected
           AF_LIST.SET_SELECTED (AF_LIST.TO_ID(CLICK_ROW_LIST));
+          AF_LIST.SET_CURRENT;
         end if;
         -- Valid click. Store for next click to check double click
         LIST_STATUS := AF_LIST.GET_STATUS;
