@@ -119,7 +119,7 @@ procedure Look_95 is
   end Reading;
 
   -- Process one file
-  procedure Do_One(File_Name : in String) is
+  function Do_One(File_Name : in String) return Boolean is
 
     -- Current and prev character
     Char, Prev_Char : Character;
@@ -135,6 +135,9 @@ procedure Look_95 is
     -- End of line/comment
     New_Line : constant Character := Ascii.Lf;
 
+    -- File has been changed
+    Modified : Boolean;
+
     -- Is Char an upper case
     function Is_Upper (Char : Character) return Boolean is
     begin
@@ -149,12 +152,12 @@ procedure Look_95 is
       when Reading.Name_Error =>
         Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
            & " skipping.");
-        return;
+        return False;
       when Error : others =>
         Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
            & " Exception " & Ada.Exceptions.Exception_Name (Error)
            & " skipping.");
-        return;
+        return False;
     end;
 
     -- Init
@@ -163,6 +166,7 @@ procedure Look_95 is
     In_Comment := False;
     In_Literal := False;
     Prev_Char := Ascii.Nul;
+    Modified := False;
 
     -- Conversion loop:
     -- If upper_case and previous also upper_case, write lower_case
@@ -173,7 +177,7 @@ procedure Look_95 is
         Char := Reading.Next_Char;
       exception
         when Reading.End_Of_File =>
-          return;
+          exit;
       end;
 
       -- Check in comment. Set Proceed.
@@ -204,7 +208,7 @@ procedure Look_95 is
       end if;
 
       -- Check in literal. Update Proceed
-      if Proceed and then Char = '#' then
+      if Proceed and then Char = '#' and then Prev_Char /= ''' then
         In_Literal := not In_Literal;
       end if;
       if In_Literal then
@@ -216,6 +220,7 @@ procedure Look_95 is
 
         -- Convert?
         if Prev_Is_Upper and then Curr_Is_Upper then
+          Modified := True;
           Reading.Update_Char(Lower_Char(Char));
         end if;
 
@@ -228,7 +233,9 @@ procedure Look_95 is
       end if;
 
     end loop;
-      
+
+    return Modified;
+
   exception
     when Error : others =>
       Ada.Text_Io.Put_Line (
@@ -236,13 +243,18 @@ procedure Look_95 is
            & " Exception " & Ada.Exceptions.Exception_Name (Error)
            & " skipping.");
       Reading.Close;
+      return Modified;
   end Do_One;
 
 begin
   -- Process all arguments (file names)
   for I in 1 .. Argument.Get_Nbre_Arg loop
-    Ada.Text_Io.Put_Line (Argument.Get_Parameter (I));
-    Do_One (Argument.Get_Parameter (I));
+    Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
+    if Do_One (Argument.Get_Parameter (I)) then
+      Ada.Text_Io.Put_Line (" *");
+    else
+      Ada.Text_Io.PUT_LINE (" =");
+    end if;
   end loop;
 end Look_95;
 
