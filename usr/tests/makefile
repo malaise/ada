@@ -1,17 +1,12 @@
-LXC=-largs -lx_mng -lcutil -lX11
+include $(HOME)/Makefiles/common.mk
 
-all: do_all AFPX.DSC
+include $(HOME)/Makefiles/units.mk
 
-do_all:
-	@for file in *.adb ; do amake $$file $(LXC) ; done
+ADAVIEW := $(REPOSIT)
+AFPX := true
+EXES := $(UNITS)
 
-AFPX.DSC: AFPX.LIS
-	afpx_bld
+CLIBS := x_mng cutil X11
 
-clean:
-	rm *.o *.ali b~*
-
-clean_exe:
-	@for file in *.adb ; do rm `basename $$file .adb` ; done
-	rm AFPX.DSC AFPX.FLD AFPX.INI
+include $(TEMPLATES)/ada.mk
 
