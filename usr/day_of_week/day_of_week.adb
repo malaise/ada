@@ -1,13 +1,14 @@
 with Ada.Calendar, Ada.Text_Io;
-with Perpet, Argument, Day_Mng, Text_Handler, Normal;
+with Perpet, Argument, Day_Mng, Text_Handler, Normal, Lower_Str;
 procedure Day_Of_Week is
 
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
 
+  Day   : Ada.Calendar.Day_Number;
   Month : Ada.Calendar.Month_Number;
+  Year  : Ada.Calendar.Year_Number;
   Txt : Text_Handler.Text (10);
   T : Ada.Calendar.Time;
-  Year : Ada.Calendar.Year_Number;
   Delta_Date_0 : Perpet.Delta_Rec;
   Delta_Date_1 : Perpet.Delta_Rec;
   Day_No : Perpet.Day_Range;
@@ -37,6 +38,13 @@ procedure Day_Of_Week is
     return True;
   end Is_Digit;
 
+  -- NAME -> Name
+  function Format (Str : String) return String is
+  begin
+    return Str(Str'First)
+         & Lower_Str(Str(Integer'Succ(Str'First) .. Str'Last));
+  end Format;
+
 begin
 
   if Argument.Get_Nbre_Arg /= 0  and then Argument.Get_Nbre_Arg /= 1 then
@@ -44,65 +52,61 @@ begin
     return;
   end if;
 
-  declare
-    Day : Ada.Calendar.Day_Number;
-  begin
-    if Argument.Get_Nbre_Arg = 0 then
-      -- Current date
-      T := Ada.Calendar.Clock;
-      declare
-        Dummy_Duration : Ada.Calendar.Day_Duration;
-      begin
-        Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
-      end;
-      Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
-                           & Normal (Month, 2, Gap => '0') & "/"
-                           & Normal (Year,  4, Gap => '0') );
-    elsif Argument.Get_Nbre_Arg = 1 then
-      -- Get date from arg 1
-      Argument.Get_parameter (Txt);
-      if Text_Handler.Length (Txt) /= 10
-      or else Text_Handler.Value (Txt)(3) /= '/'
-      or else Text_Handler.Value (Txt)(6) /= '/' then
-        Usage;
-        return;
-      end if;
-
-      if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
-      or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
-      or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
-        Usage;
-        return;
-      end if;
-
-      begin
-        Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
-        Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
-        Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
-      exception
-        when others =>
-          Usage;
-          return;
-      end;
-    else
+  if Argument.Get_Nbre_Arg = 0 then
+    -- Current date
+    T := Ada.Calendar.Clock;
+    declare
+      Dummy_Duration : Ada.Calendar.Day_Duration;
+    begin
+      Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
+    end;
+    Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
+                         & Normal (Month, 2, Gap => '0') & "/"
+                         & Normal (Year,  4, Gap => '0') );
+  elsif Argument.Get_Nbre_Arg = 1 then
+    -- Get date from arg 1
+    Argument.Get_parameter (Txt);
+    if Text_Handler.Length (Txt) /= 10
+    or else Text_Handler.Value (Txt)(3) /= '/'
+    or else Text_Handler.Value (Txt)(6) /= '/' then
       Usage;
       return;
     end if;
 
-    -- Build time of 0h00 of date
-    declare
-      Hour     : Day_Mng.T_Hours    := 0;
-      Minute   : Day_Mng.T_Minutes  := 0;
-      Second   : Day_Mng.T_Seconds  := 0;
-      Millisec : Day_Mng.T_Millisec := 0;
+    if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
+    or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
+    or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
+      Usage;
+      return;
+    end if;
+
     begin
-      T := Ada.Calendar.Time_Of (Year, Month, Day,
-                 Day_Mng.Pack (Hour, Minute, Second, Millisec));
+      Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
+      Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
+      Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
     exception
       when others =>
         Usage;
         return;
     end;
+  else
+    Usage;
+    return;
+  end if;
+
+  -- Build time of 0h00 of date
+  declare
+    Hour     : Day_Mng.T_Hours    := 0;
+    Minute   : Day_Mng.T_Minutes  := 0;
+    Second   : Day_Mng.T_Seconds  := 0;
+    Millisec : Day_Mng.T_Millisec := 0;
+  begin
+    T := Ada.Calendar.Time_Of (Year, Month, Day,
+               Day_Mng.Pack (Hour, Minute, Second, Millisec));
+  exception
+    when others =>
+      Usage;
+      return;
   end;
 
   -- Compute delta from 01/01 and to 31/12 of year
@@ -147,12 +151,15 @@ begin
   end if;
 
   -- Display result
-  Ada.Text_Io.Put_line (Text_Handler.Value (Txt) & " is a "
-       & Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T))
+  Ada.Text_Io.Put_line (Text_Handler.Value (Txt) & " is "
+       & Format (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
+       & " "
+       & Normal (Day, 2, Gap => '0')
+       & " "
+       & Format (Perpet.Month_Name_List'Image(Perpet.Get_Month_Name (Month)))
        & ", in week"
        & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
-       & ", in "
-       & Perpet.Month_Name_List'Image(Perpet.Get_Month_Name (Month)) );
+       & ",");
   Ada.Text_Io.Put_Line (" the"
        & Perpet.Day_Range'Image (Day_No) 
        & Th
