@@ -250,6 +250,10 @@ package body Dictio_Lib is
                                         Time => Expiration) );
     end loop;
 
+    -- Call state callback if still not available
+    if Dictio_State = Unavailable and then Dictio_State_Cb /= null then
+      Dictio_State_Cb (Dictio_State);
+    end if;
     Init_Done := True;
   exception
     when Error:others =>
