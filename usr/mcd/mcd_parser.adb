@@ -85,6 +85,18 @@ package body PARSER is
    NEWL    => (": ", "new line                 "),
    PUTL    => ("; ", "put_line A               "),
 
+   STRLEN  => ("{#", "push length of A         "),
+   STRCAT  => ("{&", "push B & A               "),
+   STRSUB  => ("{}", "push C(B..A)             "),
+   STRLOC  => ("{?", "push C occur of B in A   "),
+   STRREP  => ("{^", "push C replaced by B at A"),
+   STRUPP  => ("{+", "push A in uppercase      "),
+   STRLOW  => ("{-", "push A in lowercase      "),
+   STRREAL => ("{$", "push A converted to real "),
+   STRINTE => ("{!", "push A converted to inte "),
+   STRBOOL => ("{.", "push A converted to bool "),
+   STROF =>   (">{", "push formated string of A"),
+
    HELP    => ("??", "put help                 ") );
 
 

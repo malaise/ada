@@ -68,7 +68,7 @@ package body IOS is
         REAL_IO.PUT(ITEM.VAL_REAL);
       when BOOL  =>
         if ITEM.VAL_BOOL then
-          TEXT_IO.PUT(" True");
+          TEXT_IO.PUT("True");
         else
           TEXT_IO.PUT("False");
         end if;
@@ -93,6 +93,109 @@ package body IOS is
   begin
     TEXT_IO.NEW_LINE;
   end NEW_LINE;
+
+  function STRREAL (S : ITEM_REC) return ITEM_REC is
+    RES : ITEM_REC(REAL);
+    LAST : POSITIVE;
+  begin
+    if S.KIND /= CHRS then
+      raise INVALID_ARGUMENT;
+    end if;
+    REAL_IO.GET(S.VAL_TEXT(1 .. S.VAL_LEN), RES.VAL_REAL, LAST);
+    if LAST /= S.VAL_LEN then
+      raise ARGUMENT_MISMATCH;
+    end if;
+    return RES;
+  end STRREAL;
+
+  function STRINTE (S : ITEM_REC) return ITEM_REC is
+    RES : ITEM_REC(INTE);
+    LAST : POSITIVE;
+  begin
+    if S.KIND /= CHRS then
+      raise INVALID_ARGUMENT;
+    end if;
+    INTE_IO.GET(S.VAL_TEXT(1 .. S.VAL_LEN), RES.VAL_INTE, LAST);
+    if LAST /= S.VAL_LEN then
+      raise ARGUMENT_MISMATCH;
+    end if;
+    return RES;
+  end STRINTE;
+
+  function STRBOOL (S : ITEM_REC) return ITEM_REC is
+    RES : ITEM_REC(BOOL);
+    LAST : POSITIVE;
+  begin
+    if S.KIND /= CHRS then
+      raise INVALID_ARGUMENT;
+    end if;
+    BOOL_IO.GET(S.VAL_TEXT(1 .. S.VAL_LEN), RES.VAL_BOOL, LAST);
+    if LAST /= S.VAL_LEN then
+      raise ARGUMENT_MISMATCH;
+    end if;
+    return RES;
+  end STRBOOL;
+    
+  function STROF (ITEM : ITEM_REC) return ITEM_REC is
+    RES : ITEM_REC(CHRS);
+
+    procedure PARSE_SPACES is
+      FIRST, LAST : NATURAL := 0;
+    begin
+      for I in RES.VAL_TEXT'RANGE loop
+        if FIRST = 0 and then RES.VAL_TEXT(I) /= ' ' then
+          FIRST := I;
+        elsif FIRST /= 0 and then RES.VAL_TEXT(I) = ' ' then
+          LAST := I - 1;
+          exit;
+        end if;
+      end loop;
+      if FIRST = 0 then
+        RES.VAL_LEN := 0;
+      elsif LAST = 0 then
+        RES.VAL_LEN := RES.VAL_TEXT'LAST - FIRST + 1;
+        RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
+             RES.VAL_TEXT(FIRST .. RES.VAL_TEXT'LAST);
+      else
+        RES.VAL_LEN := LAST - FIRST + 1;
+        RES.VAL_TEXT(1 .. RES.VAL_LEN) := RES.VAL_TEXT(FIRST .. LAST);
+      end if;
+    end PARSE_SPACES;
+
+  begin
+    CHECK_DEFAULT_FORMATS;
+
+    case ITEM.KIND is
+      when INTE =>
+        RES.VAL_TEXT := (others => ' ');
+        INTE_IO.PUT(RES.VAL_TEXT, ITEM.VAL_INTE);
+        PARSE_SPACES;
+      when REAL =>
+        RES.VAL_TEXT := (others => ' ');
+        REAL_IO.PUT(RES.VAL_TEXT, ITEM.VAL_REAL);
+        PARSE_SPACES;
+      when BOOL  =>
+        if ITEM.VAL_BOOL then
+          RES.VAL_LEN := 4;
+          RES.VAL_TEXT(1 .. RES.VAL_LEN) := "True";
+        else
+          RES.VAL_LEN := 5;
+          RES.VAL_TEXT(1 .. RES.VAL_LEN) := "False";
+        end if;
+      when CHRS =>
+        if ITEM.VAL_TEXT(1) = '"' then
+          RES.VAL_LEN := ITEM.VAL_LEN - 2;
+          RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
+                 ITEM.VAL_TEXT(2 .. ITEM.VAL_LEN - 1);
+        else
+          RES := ITEM;
+        end if;
+        
+      when others =>
+        raise INVALID_ARGUMENT;
+    end case;
+    return RES;
+  end STROF;
 
 end IOS;
 

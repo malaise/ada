@@ -51,6 +51,9 @@ exception
   when MCD_MNG.EMPTY_STACK =>
     SYS_CALLS.PUT_LINE_ERROR ("Error: Empty stack");
     SYS_CALLS.SET_ERROR_EXIT_CODE;
+  when MCD_MNG.STRING_LEN =>
+    SYS_CALLS.PUT_LINE_ERROR ("Error: String length error");
+    SYS_CALLS.SET_ERROR_EXIT_CODE;
   when PARSER.PARSING_ERROR =>
     SYS_CALLS.PUT_LINE_ERROR ("Error: Parsing error");
     SYS_CALLS.SET_ERROR_EXIT_CODE;

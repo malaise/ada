@@ -105,6 +105,10 @@ package body MCD_MNG is
     procedure PUT_LINE (ITEM : in ITEM_REC);
     procedure NEW_LINE;
 
+    function STRINTE (S : ITEM_REC) return ITEM_REC;
+    function STRREAL (S : ITEM_REC) return ITEM_REC;
+    function STRBOOL (S : ITEM_REC) return ITEM_REC;
+    function STROF (ITEM : ITEM_REC) return ITEM_REC;
     -- INVALID_ARGUMENT : exception;
   end IOS;
 
@@ -117,11 +121,23 @@ package body MCD_MNG is
 
   end CALL_STACK;
 
+  package STRINGS is
+    function STRLEN (S : ITEM_REC) return ITEM_REC;
+    function STRCAT (S1, S2 : ITEM_REC) return ITEM_REC;
+    function STRSUB (S, I1, I2 : ITEM_REC) return ITEM_REC;
+    function STRLOC (OCC, PAT, S : ITEM_REC) return ITEM_REC;
+    function STRREP (I, PAT, S : ITEM_REC) return ITEM_REC;
+    function STRUPP (S : ITEM_REC) return ITEM_REC;
+    function STRLOW (S : ITEM_REC) return ITEM_REC;
+
+  end STRINGS;
+
   package body STACK is separate;
   package body OPERATIONS is separate;
   package body REGISTERS is separate;
   package body IOS is separate;
   package body CALL_STACK is separate;
+  package body STRINGS is separate;
 
 
   procedure NEW_ITEM (ITEM : in ITEM_REC; THE_END : out BOOLEAN) is
@@ -327,6 +343,31 @@ package body MCD_MNG is
           POP(A); IOS.PUT_LINE(A);
         when NEWL =>
           IOS.NEW_LINE;
+
+
+        -- Strings
+        when STRLEN =>
+          POP(A); PUSH (STRINGS.STRLEN(A));
+        when STRCAT =>
+          POP(A); POP(B); PUSH (STRINGS.STRCAT(B, A));
+        when STRSUB =>
+          POP(A); POP(B); POP(C); PUSH (STRINGS.STRSUB(C, B, A));
+        when STRLOC =>
+          POP(A); POP(B); POP(C); PUSH (STRINGS.STRLOC(C, B, A));
+        when STRREP =>
+          POP(A); POP(B); POP(C); PUSH (STRINGS.STRREP(C, B, A));
+        when STRUPP =>
+          POP(A); PUSH (STRINGS.STRUPP(A));
+        when STRLOW =>
+          POP(A); PUSH (STRINGS.STRLOW(A));
+        when STRREAL =>
+          POP(A); PUSH (IOS.STRREAL(A));
+        when STRINTE =>
+          POP(A); PUSH (IOS.STRINTE(A));
+        when STRBOOL =>
+          POP(A); PUSH (IOS.STRBOOL(A));
+        when STROF =>
+          POP(A); PUSH (IOS.STROF(A));
 
         when HELP =>
           PARSER.PRINT_HELP;
