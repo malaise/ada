@@ -1017,6 +1017,21 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
 
 }
 
+/* If socket is non blocking, call rec1 directly, */
+/* Else (blocking socket) call rec1 until it does not */
+/* return SOC_WOULD_BLOCK */
+static int rec2 (soc_ptr soc, char *buffer, int total_len) {
+  int res;
+
+  for (;;) {
+    res = rec1(soc, buffer, total_len);
+    if ( (! soc->blocking) || (res != SOC_WOULD_BLOCK) ) {
+      return (res);
+    }
+  }
+}
+
+
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
                         boolean set_for_reply) {
@@ -1055,7 +1070,7 @@ extern int soc_receive (soc_token token,
     /* Read header or data */
     if (soc->expect_len == 0) {
       /* Header not fully received yet */
-      result = rec1(soc, (char *)&header, sizeof(header));
+      result = rec2(soc, (char *)&header, sizeof(header));
       if (result == SOC_OK) {
         /* Disconnect if invalid magic num */
         if (ntohl(header.magic_number) != MAGIC_NUMBER) {
@@ -1078,7 +1093,7 @@ extern int soc_receive (soc_token token,
     if (length < soc->expect_len) {
       return (SOC_LEN_ERR);
     }
-    result = rec1(soc, (char *)message, soc->expect_len);
+    result = rec2(soc, (char *)message, soc->expect_len);
     if (result == SOC_OK) {
       result = soc->expect_len;
       /* Expect header next */
