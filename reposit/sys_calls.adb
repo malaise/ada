@@ -425,30 +425,30 @@ package body Sys_Calls is
   function C_Getppid return Integer;
   pragma Import (C, C_Getppid, "getppid");
 
-  function Get_Pid return positive is
+  function Get_Pid return Pid is
   begin
-    return C_Getpid;
+    return Pid(C_Getpid);
   end Get_Pid;
 
-  function Get_Parent_Pid return positive is
+  function Get_Parent_Pid return Pid is
   begin
-    return C_Getppid;
+    return Pid(C_Getppid);
   end Get_Parent_Pid;
 
   -- Process procreation (fork)
   function C_Procreate return Integer;
   pragma Import (C, C_Procreate, "procreate");
 
-  procedure Procreate (Child : out Boolean; Child_Pid : out positive) is
+  procedure Procreate (Child : out Boolean; Child_Pid : out Pid) is
     Res : Integer;
   begin
     Res := C_Procreate;
     if Res > 0 then
       Child := False;
-      Child_Pid := Res;
+      Child_Pid := Pid(Res);
     elsif Res < 0 then
       Child := True;
-      Child_Pid := - Res;
+      Child_Pid := Pid(- Res);
     else
       raise System_Error;
     end if;
@@ -473,20 +473,20 @@ package body Sys_Calls is
   pragma Import  (C, C_Next_Dead, "next_dead");
   
   function Next_Dead return Death_Rec is
-    Pid, Cause, Code : Integer;
+    Cpid, Cause, Code : Integer;
   begin
-    C_Next_Dead (Cause'Address, Pid'Address, Code'Address);
+    C_Next_Dead (Cause'Address, Cpid'Address, Code'Address);
     case Cause is
       when C_Error =>
         raise System_Error;
       when C_No_More =>
         return (Cause => No_Dead);
       when C_Exited =>
-        return (Cause => Exited, Exited_Pid => Pid, Exit_Code => Code);
+        return (Cause => Exited, Exited_Pid => Pid(Cpid), Exit_Code => Code);
       when C_Signaled =>
-        return (Cause => Signaled, Signaled_Pid => Pid, Signal => Code);
+        return (Cause => Signaled, Signaled_Pid => Pid(Cpid), Signal => Code);
       when C_Stopped =>
-        return (Cause => Stopped, Stopped_Pid => Pid);
+        return (Cause => Stopped, Stopped_Pid => Pid(Cpid));
       when others =>
         raise Constraint_Error;
     end case;

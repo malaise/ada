@@ -5,7 +5,7 @@ procedure T_Fork is
   Str : Text_Handler.Text(1024);
 
   Child : Boolean;
-  Child_Pid : Positive;
+  Child_Pid : Sys_Calls.Pid;
 
   Done : Boolean := False;
 

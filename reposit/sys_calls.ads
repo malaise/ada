@@ -98,12 +98,15 @@ package Sys_Calls is
   -- Create a pipe
   procedure Pipe (Fd1, Fd2 : out File_Desc);
 
+
+  type Pid is new Positive;
+
   -- Get current / parent pid
-  function Get_Pid return positive;
-  function Get_Parent_Pid return positive;
+  function Get_Pid return Pid;
+  function Get_Parent_Pid return Pid;
  
   -- Process procreation (fork)
-  procedure Procreate (Child : out Boolean; Child_Pid : out positive);
+  procedure Procreate (Child : out Boolean; Child_Pid : out Pid);
 
   -- Process mutation (exec)
   -- Program_name and arguments have to follow Many_Strings format
@@ -116,13 +119,13 @@ package Sys_Calls is
       when No_Dead =>
         null;
       when Exited =>
-        Exited_Pid : Positive;
+        Exited_Pid : Pid;
         Exit_Code : Integer;
       when Signaled =>
-        Signaled_Pid : Positive;
+        Signaled_Pid : Pid;
         Signal : Positive;
       when Stopped =>
-        Stopped_Pid : Positive;
+        Stopped_Pid : Pid;
     end case;
   end record;
   function Next_Dead return Death_Rec;
