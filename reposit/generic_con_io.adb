@@ -829,6 +829,10 @@ package body Generic_Con_Io is
           -- Signal event
           Event := Signal_Event;
           return;
+        when X_Mng.Wakeup_Event =>
+          -- Wake Up event
+          Event := Wakeup_Event;
+          return;
         when X_Mng.Refresh =>
           -- Refresh
           Event := Refresh;
@@ -897,6 +901,12 @@ package body Generic_Con_Io is
           return;
         elsif Event = Signal_Event then
           Key := 3;
+          Is_Char := True;
+          Ctrl := False;
+          Shift := False;
+          return;
+        elsif Event = Wakeup_Event then
+          Key := 4;
           Is_Char := True;
           Ctrl := False;
           Shift := False;
@@ -1319,6 +1329,8 @@ package body Generic_Con_Io is
             return Ascii.Syn;
           when Signal_Event =>
             return Ascii.Si;
+          when Wakeup_Event =>
+            return Ascii.So;
           when Refresh =>
             return Ascii.Nul;
           when Mouse_Button | Timeout =>
