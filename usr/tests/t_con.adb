@@ -124,7 +124,13 @@ begin
        W1, CURRENT, CURRENT, RED, 3.0);
   end loop;
 
-  RESET_TERM;
+  DESTROY;
+  delay 3.0;
+
+  INIT;
+  delay 2.0;
+  DESTROY;
+  delay 1.0;
 
 
 exception
