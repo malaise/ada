@@ -15,7 +15,7 @@ begin
   Ctrl := False;
   Shift := False;
   loop
-    if Key = 0 and then Char and then not Ctrl and then Not Shift then
+    if Key = 0 and then Char and then not Ctrl and then not Shift then
       -- refresh
       Con_Io.Move;
       Con_Io.Put_Line ("Exit with Ctrl C");

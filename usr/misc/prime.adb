@@ -60,12 +60,12 @@ procedure Prime is
   -- Put a number
   procedure Put_Line (P : in Long_Long_Positive) is
   begin
-    llp_Io.Put (P);
+    Llp_Io.Put (P);
     Ada.Text_Io.New_Line;
   end Put_Line;
 
   -- Rewind a list
-  procedure Rewind (L : in out Plm.List_type) is
+  procedure Rewind (L : in out Plm.List_Type) is
   begin
     if not Plm.Is_Empty (L) then
       Plm.Move_To (L, Plm.Next, 0, False);
@@ -101,7 +101,7 @@ procedure Prime is
   end Decompose;
 
   -- Put list from current
-  procedure Put_List (L : in out Plm.List_type) is
+  procedure Put_List (L : in out Plm.List_Type) is
     T : Long_Long_Positive;
   begin
     loop
@@ -117,7 +117,7 @@ procedure Prime is
   end Put_List;
 
   -- Delete current
-  procedure Delete (L : in out Plm.List_type; End_Of_List : out Boolean) is
+  procedure Delete (L : in out Plm.List_Type; End_Of_List : out Boolean) is
   begin
     if Plm.Get_Position (L) /= Plm.List_Length (L) then
       Plm.Delete (L, Plm.Next);
@@ -129,9 +129,9 @@ procedure Prime is
   end Delete;
 
   -- Mustiply numbers of list from current
-  function Multiply (L : in Plm.List_type) return Long_Long_Integer is
+  function Multiply (L : in Plm.List_Type) return Long_Long_Integer is
     S, T : Long_Long_Integer;
-    Lt : Plm.List_type;
+    Lt : Plm.List_Type;
   begin
     S := 1;
     Plm.Assign (Lt, L);

@@ -158,7 +158,7 @@ package Tcp_Util is
   -- has to be called instead of Socket.Close
   -- The socket is closed.
   -- May raise No_Such
-  procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr);
+  procedure Abort_Send_And_Close (Dscr : in out Socket.Socket_Dscr);
 
 
   -- RECEIVE PROCEDURE --

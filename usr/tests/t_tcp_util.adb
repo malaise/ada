@@ -26,7 +26,7 @@ procedure T_Tcp_Util is
     Dummy : String (1 .. 11_000);
   end record;
   Message, Received_Message : Message_Type;
-  Str : Constant String := "Ah que coucou!";
+  Str : constant String := "Ah que coucou!";
   procedure My_Read is new Socket.Receive (Message_Type);
   function My_Send is new Tcp_Util.Send (Message_Type);
 
@@ -187,7 +187,7 @@ procedure T_Tcp_Util is
         Ada.Text_Io.Put ("Read Cb -> disconnected: Closing");
         Event_Mng.Del_Fd_Callback (Fd, True);
         if In_Ovf then
-          Tcp_Util.Abort_Send_and_Close (The_Dscr);
+          Tcp_Util.Abort_Send_And_Close (The_Dscr);
           In_Ovf := False;
         else
           Socket.Close (The_Dscr);
@@ -233,7 +233,7 @@ procedure T_Tcp_Util is
           -- Cancel with this bad client
           Ada.Text_Io.Put_Line ("      Closing with client in overflow");
           Event_Mng.Del_Fd_Callback (Fd, True);
-          Tcp_Util.Abort_Send_and_Close (The_Dscr);
+          Tcp_Util.Abort_Send_And_Close (The_Dscr);
           In_Ovf := False;
           Server_Nb_Overflow := 0;
         end if;
@@ -307,7 +307,7 @@ begin
                               Server_Port_Num);
         exit;
       exception
-        when Socket.Soc_addr_In_Use =>
+        when Socket.Soc_Addr_In_Use =>
           Ada.Text_Io.Put_Line ("Cannot accept. Maybe Close-wait. Waiting");
           Wait (20.0);
       end;

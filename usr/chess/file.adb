@@ -248,7 +248,7 @@ package body File is
       if not Action.Valid then
         -- End of read
         My_Get_Line.Close;
-        Chess_Io.Open (The_File, Chess_Io.InOut_File,
+        Chess_Io.Open (The_File, Chess_Io.Inout_File,
                           Text_Handler.Value(File_Name_Txt));
         Prepare_To_Append;
         State := Writting;
@@ -316,7 +316,7 @@ package body File is
       raise File_Error;
     end if;
     if Written then
-      Chess_Io.Write (The_file, Ascii.Lf);
+      Chess_Io.Write (The_File, Ascii.Lf);
     end if;
     begin
       My_Get_Line.Close;

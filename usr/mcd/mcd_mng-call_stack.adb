@@ -1,4 +1,4 @@
-With Text_Io;
+with Text_Io;
 with Dynamic_List;
 separate (Mcd_Mng)
 

@@ -144,7 +144,7 @@ procedure Tcping is
 
     -- Check max tries
     if Nb_Tries /= 0 then
-      Curr_Try := Curr_try + 1;
+      Curr_Try := Curr_Try + 1;
       if Curr_Try > Nb_Tries then
         -- This should not occure cause timeout < delta
         Ada.Text_Io.Put_Line ("Overflow!!!.");
@@ -174,13 +174,13 @@ begin
   end if;
   begin
     Argument.Get_Parameter (Txt, 3, Argument.Not_Key);
-    Put_Arg_Error (Text_Handler.Value (txt));
+    Put_Arg_Error (Text_Handler.Value (Txt));
     Argument.Get_Parameter (Txt, 2, "t");
-    Put_Arg_Error (Text_Handler.Value (txt));
+    Put_Arg_Error (Text_Handler.Value (Txt));
     Argument.Get_Parameter (Txt, 2, "d");
-    Put_Arg_Error (Text_Handler.Value (txt));
+    Put_Arg_Error (Text_Handler.Value (Txt));
     Argument.Get_Parameter (Txt, 2, "n");
-    Put_Arg_Error (Text_Handler.Value (txt));
+    Put_Arg_Error (Text_Handler.Value (Txt));
   exception
     when Argument.Argument_Not_Found =>
       null;

@@ -41,7 +41,7 @@ begin
 
   -- Check that target file exists and get its modif date
   begin
-    Directory.File_stat(Argument.Get_Parameter(Argument.Get_Nbre_Arg),
+    Directory.File_Stat(Argument.Get_Parameter(Argument.Get_Nbre_Arg),
                         Kind, Rights, Target_Mtime);
   exception
     when Directory.Name_Error =>
@@ -61,7 +61,7 @@ begin
   for Arg_No in 1 .. Argument.Get_Nbre_Arg - 1 loop
 
     if String'(Argument.Get_Parameter(Arg_No)) =
-       Argument.Get_parameter(Argument.Get_Nbre_Arg) then
+       Argument.Get_Parameter(Argument.Get_Nbre_Arg) then
       Sys_Calls.Put_Line_Error(
               "SEMANTIC ERROR: Source file "
             & String'(Argument.Get_Parameter(Arg_No))

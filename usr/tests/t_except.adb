@@ -13,5 +13,5 @@ begin
 exception
   when others =>
     My_Io.Put_Line ("In handler");
-    My_Io.Put_Line ("Exception: " & Current_exception.Exception_Name);
+    My_Io.Put_Line ("Exception: " & Current_Exception.Exception_Name);
 end T_Except;

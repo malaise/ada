@@ -113,7 +113,7 @@ procedure T_Channels is
     Ada.Text_Io.Put_Line ("Send to " & Host & " -> " & Result'Img);
   end Send_Cb;
 
-  procedure Send (Msg : in Message_type) is
+  procedure Send (Msg : in Message_Type) is
   begin
     if Bus then
       Fifob.Write (Msg);
@@ -124,7 +124,7 @@ procedure T_Channels is
   end Send;
 
   -- Message sent
-  Message : Message_type;
+  Message : Message_Type;
 
 begin
 

@@ -383,7 +383,7 @@ package body Event_Mng is
       Tid := Timers.Create ( (Timers.Delay_Sec,
                               Timers.No_Period,
                               Duration(Timeout_Ms)/1000.0),
-                             Pause_Cb'access,
+                             Pause_Cb'Access,
                              Pause_Level);
       Wait_Timeout := Infinite_Ms;
     end if;

@@ -28,14 +28,14 @@ procedure Termin is
     accept Init (Nom : in T_Creation) do
       T_Tache.Nom := Init.Nom;
     end Init;
-    Put ("tache "); Creation_Io.Put (Nom, T_Creation'width);
+    Put ("tache "); Creation_Io.Put (Nom, T_Creation'Width);
     Put_Line (" lancee");
     for I in 1..Loops(Nom) loop
       delay 0.5;
-      Put ("tache ");Creation_Io.Put (Nom, T_Creation'width);
+      Put ("tache ");Creation_Io.Put (Nom, T_Creation'Width);
       Put_Line (" active");
     end loop;
-    Put ("tache "); Creation_Io.Put (Nom, T_Creation'width);
+    Put ("tache "); Creation_Io.Put (Nom, T_Creation'Width);
     Put_Line (" achevee");
   end T_Tache;
 

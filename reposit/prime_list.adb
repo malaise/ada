@@ -63,7 +63,7 @@ package body Prime_List is
     end if;
 
     -- Empty list, add 1
-    if Prime_List_Mng.is_Empty (The_List) then
+    if Prime_List_Mng.Is_Empty (The_List) then
       Append (1);
       Need_Search := True;
       return 1;

@@ -3,7 +3,7 @@ package body Dynamic_List is
 
   type Element_Array is array (Positive range <>) of Element_Type;
 
-  Free_List : Link := Null;
+  Free_List : Link := null;
 
   function Is_Empty (List : List_Type) return Boolean is
   begin

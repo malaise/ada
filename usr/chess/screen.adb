@@ -47,7 +47,7 @@ package body Screen is
   -- Used by text and graphic internally
   type Square_Result_Rec (Valid : Boolean := False) is record
     case Valid is
-      when true =>
+      when True =>
         Square : Space.Square_Coordinate;
       when False =>
         null;

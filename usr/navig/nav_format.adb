@@ -122,7 +122,7 @@ package body Nav_Format is
      C := Str(I);
      if C = '?' then
        Res := Unset;
-       Return;
+       return;
      elsif Is_Digit(C) then
        Digit_Found := True;
      elsif C = '.' then

@@ -49,12 +49,12 @@ procedure Pipe is
     Res : Fifos.Send_Result_List;
     use type Fifos.Send_Result_List, Pipe_Fifo.Fifo_Id;
   begin
-    if Fid = Pipe_Fifo.No_FIfo then
+    if Fid = Pipe_Fifo.No_Fifo then
       Sys_Calls.Put_Line_Error ("Send result: Not open");
       return;
     end if;
     Msg (1 .. Str'Length) := Str;
-    Res := Pipe_Fifo.Send (FId, Msg, Str'Length);
+    Res := Pipe_Fifo.Send (Fid, Msg, Str'Length);
     if Res /= Fifos.Ok then
       Sys_Calls.Put_Line_Error ("Send result: " & Mixed_Str(Res'Img));
     end if;

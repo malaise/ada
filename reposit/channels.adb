@@ -1,5 +1,5 @@
 with System, Ada.Calendar;
-with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list,
+with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_List,
      Event_Mng, Assertion;
 package body Channels is
 
@@ -84,7 +84,7 @@ package body Channels is
   -- Close a (overflow) connection
   procedure Close (Dscr : in out Socket.Socket_Dscr) is
   begin
-    Tcp_Util.Abort_Send_and_Close (Dscr);
+    Tcp_Util.Abort_Send_And_Close (Dscr);
   exception
     when Tcp_Util.No_Such =>
       Socket.Close (Dscr);
@@ -414,7 +414,7 @@ package body Channels is
       -- Update Dscr and Fd
       Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
       Dest.Dscr := Dscr;
-      Dest.Fd := Socket.fd_Of (Dscr);
+      Dest.Fd := Socket.Fd_Of (Dscr);
       Dest_List_Mng.Modify (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
 
       -- Hook fd to receive data (replies)
@@ -534,7 +534,7 @@ package body Channels is
           declare
             Id : Socket.Host_Id;
           begin
-            Id := Socket.Host_Id_Of (host_Name);
+            Id := Socket.Host_Id_Of (Host_Name);
             -- Host is ok
             raise Unknown_Channel;
           exception

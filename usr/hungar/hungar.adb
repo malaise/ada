@@ -13,7 +13,7 @@ with Euristic;
 procedure Hungar is
   Dim : Natural;
   Sigma : Float;
-  Loc_IdeaL_Note, Ideal_Note, Loc_Note : Float;
+  Loc_Ideal_Note, Ideal_Note, Loc_Note : Float;
   Loc_J : Types.Index_Range;
   Nb_Iterations : Positive;
   Max_Iter_Digits : constant := 3;
@@ -49,7 +49,7 @@ begin
       for J in 1 .. Dim loop
         if Types."=" (File.Get_Kind, Types.Regret) then
           -- Lowest note of this row
-          if File.Get_Note(I, J) < Loc_IdeaL_Note then
+          if File.Get_Note(I, J) < Loc_Ideal_Note then
             Loc_Ideal_Note := File.Get_Note(I, J);
           end if;
         else
@@ -76,7 +76,7 @@ begin
       Sigma := Sigma + Loc_Note;
 
       -- Ideal minimum cost
-      IdeaL_Note := Ideal_Note + Loc_Ideal_Note;
+      Ideal_Note := Ideal_Note + Loc_Ideal_Note;
       My_Io.Put ("   Ideal: ");
       My_Io.Put (Loc_Ideal_Note, 3, 2, 0);
 

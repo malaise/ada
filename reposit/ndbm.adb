@@ -66,13 +66,13 @@ package body Ndbm is
            return Integer;
   pragma Import (C, Dbm_Delete, "c_dbm_delete");
 
-  procedure Dbm_FirstKey (Db  : in System.Address;
+  procedure Dbm_Firstkey (Db  : in System.Address;
                           Key : in System.Address);
-  pragma Import (C, Dbm_FirstKey, "c_dbm_firstkey");
+  pragma Import (C, Dbm_Firstkey, "c_dbm_firstkey");
 
-  procedure Dbm_NextKey (Db  : in System.Address;
+  procedure Dbm_Nextkey (Db  : in System.Address;
                          Key : in System.Address);
-  pragma Import (C, Dbm_NextKey, "c_dbm_nextkey");
+  pragma Import (C, Dbm_Nextkey, "c_dbm_nextkey");
 
   ------------------------
   -- Internal functions --
@@ -183,7 +183,7 @@ package body Ndbm is
     use type System.Address;
   begin
     Check_Open;
-    Dbm_FirstKey (Db, The_Key'Address);
+    Dbm_Firstkey (Db, The_Key'Address);
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
@@ -200,7 +200,7 @@ package body Ndbm is
     use type System.Address;
   begin
     Check_Open;
-    Dbm_NextKey (Db, The_Key'Address);
+    Dbm_Nextkey (Db, The_Key'Address);
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;

@@ -37,7 +37,7 @@ package body Space.Board is
     The_Board(Square.Col, Square.Row) := null;
   end Delete_Piece;
 
-  procedure Restore_Piece (Piece : in Pieces.Piece_access) is
+  procedure Restore_Piece (Piece : in Pieces.Piece_Access) is
     Pos : constant Square_Coordinate := Pieces.Pos_Of (Piece.all);
   begin
     The_Board(Pos.Col, Pos.Row) :=  Piece;
@@ -74,7 +74,7 @@ package body Space.Board is
     Create_Piece (Pieces.Bishop, White, (F, 1) );
     Create_Piece (Pieces.Knight, White, (G, 1) );
     Create_Piece (Pieces.Rook,   White, (H, 1) );
-    For Col in Col_Range loop
+    for Col in Col_Range loop
       Create_Piece (Pieces.Pawn, White, (Col, 2) );
     end loop;
 
@@ -86,7 +86,7 @@ package body Space.Board is
     Create_Piece (Pieces.Bishop, Black, (F, 8) );
     Create_Piece (Pieces.Knight, Black, (G, 8) );
     Create_Piece (Pieces.Rook,   Black, (H, 8) );
-    For Col in Col_Range loop
+    for Col in Col_Range loop
       Create_Piece (Pieces.Pawn, Black, (Col, 7) );
     end loop;
 

@@ -173,7 +173,7 @@ package body Registers is
   begin
     Init;
     Reg_Io.Set_Index (Reg_File, 1);
-    for I in Register_range loop
+    for I in Register_Range loop
       Reg_Io.Write (Reg_File, Registers_Array (I));
     end loop;
   exception
@@ -185,7 +185,7 @@ package body Registers is
   begin
     Init;
     Reg_Io.Set_Index (Reg_File, 1);
-    for I in Register_range loop
+    for I in Register_Range loop
       Reg_Io.Read (Reg_File, Registers_Array (I));
     end loop;
   exception

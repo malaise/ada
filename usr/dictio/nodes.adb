@@ -4,7 +4,7 @@ package body Nodes is
 
   type Node_Rec is record
     Name : Tcp_Util.Host_Name;
-    Stat : Status.Status_list;
+    Stat : Status.Status_List;
     Sync : Boolean;
     Prio : Args.Prio_Str;
   end record;
@@ -26,7 +26,7 @@ package body Nodes is
   begin
     Node_Mng.Delete_List (Node_List, Deallocate => True);
     Local_Host_Name.Get (N);
-    Set (N, Status.Get, Status.Sync, Args.get_Prio);
+    Set (N, Status.Get, Status.Sync, Args.Get_Prio);
   end Init_List;
 
   function Search_Name (Name : Tcp_Util.Host_Name) return Boolean is
@@ -41,7 +41,7 @@ package body Nodes is
   end Search_Name;
 
   procedure Set (Name : in Tcp_Util.Host_Name;
-                 Stat : in Status.Status_list;
+                 Stat : in Status.Status_List;
                  Sync : in Boolean;
                  Prio : in Args.Prio_Str) is
     Rec, Grec : Node_Rec;
@@ -71,7 +71,7 @@ package body Nodes is
       end if;
     elsif Stat /= Status.Dead then
       -- Unknown and alive => insert
-      if not Node_Mng.is_Empty (Node_List) then
+      if not Node_Mng.Is_Empty (Node_List) then
         Node_Mng.Move_To (Node_List, Node_Mng.Next, 0, False);
       end if;
       Node_Mng.Insert (Node_List, Rec);

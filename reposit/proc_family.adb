@@ -137,7 +137,7 @@ package body Proc_Family is
 
   -- Put env Fd in and out variables
   procedure Putenv (Proc_Id : in Sys_Calls.Pid;
-                    Fd_In, Fd_out : in Sys_Calls.File_Desc) is
+                    Fd_In, Fd_Out : in Sys_Calls.File_Desc) is
   begin
     Sys_Calls.Putenv (Var_Name(Proc_Id, True),  Image (Natural(Fd_In)));
     Sys_Calls.Putenv (Var_Name(Proc_Id, False), Image (Natural(Fd_Out)));
@@ -254,7 +254,7 @@ package body Proc_Family is
   -- retreive fds
   -- No_Fd is raised if they cannot be retreived
   procedure Child_Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc) is
-    My_Pid : constant Sys_Calls.Pid := Sys_Calls.get_Pid;
+    My_Pid : constant Sys_Calls.Pid := Sys_Calls.Get_Pid;
     Env_Set   : Boolean;
     Env_Trunc : Boolean;
     Env_Value : String (1 .. Integer'Width);

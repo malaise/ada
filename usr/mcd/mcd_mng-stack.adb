@@ -146,7 +146,7 @@ package body Stack is
 
     -- Insert before first
     Stack_List.Move_To(Extra_List, Stack_List.Next, 0, False);
-    Stack_List.insert(Extra_List, item, Stack_List.Prev);
+    Stack_List.Insert(Extra_List, Item, Stack_List.Prev);
 
     -- Move back to last pushed item
     Stack_List.Move_To(Extra_List, Stack_List.Prev, 0, False);

@@ -95,7 +95,7 @@ begin
     if Lower_Str (Argument.Get_Parameter (1, "c")) = "white" then
       Color := Space.White;
     elsif Lower_Str (Argument.Get_Parameter (1, "c")) = "black" then
-      Color := Space.black;
+      Color := Space.Black;
     else
       raise Invalid_Argument;
     end if;
@@ -209,7 +209,7 @@ begin
 
 
   Human.Play (Mode, Color, Text_Handler.Value (Name), Port,
-              Text_Handler.Value (init), Wait);
+              Text_Handler.Value (Init), Wait);
  
 exception
   when Invalid_Argument | Argument.Argument_Not_Found =>

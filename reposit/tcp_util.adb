@@ -52,7 +52,7 @@ package body Tcp_Util is
     Curr_Try : Natural;
   end record;
 
-  Package Con_List_Mng is new Dynamic_List (Connecting_Rec);
+  package Con_List_Mng is new Dynamic_List (Connecting_Rec);
   Con_List : Con_List_Mng.List_Type;
 
   -- Search Connecting_Rec by Timer
@@ -213,7 +213,7 @@ package body Tcp_Util is
             Host := Socket.No_Host;
         end;
       else
-        Host := Rec.host.Id;
+        Host := Rec.Host.Id;
       end if;
     end if;
     -- Inform client
@@ -409,8 +409,8 @@ package body Tcp_Util is
       Rec.Fd := Socket.Fd_Of (Rec.Dscr);
       Rec.Fd_Set := True;
       -- Add callback on fd
-      Event_Mng.Add_Fd_Callback (Rec.Fd, True, Connection_Fd_Cb'access);
-      Event_Mng.Add_Fd_Callback (Rec.Fd, False, Connection_Fd_Cb'access);
+      Event_Mng.Add_Fd_Callback (Rec.Fd, True, Connection_Fd_Cb'Access);
+      Event_Mng.Add_Fd_Callback (Rec.Fd, False, Connection_Fd_Cb'Access);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb asynchronous pending"
                         & " on fd " & Rec.Fd'Img);
@@ -427,7 +427,7 @@ package body Tcp_Util is
           Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
                          Period        => Rec.Delta_Retry,
                          Delay_Seconds =>  Rec.Delta_Retry),
-          Callback => Connection_Timer_Cb'access);
+          Callback => Connection_Timer_Cb'Access);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb created timer "
                       & Timers.Image (Rec.Timer));
@@ -653,7 +653,7 @@ package body Tcp_Util is
     end if;
 
     -- Add callback on fd
-    Event_Mng.Add_Fd_Callback (Rec.Fd, True, Acception_Fd_Cb'access);
+    Event_Mng.Add_Fd_Callback (Rec.Fd, True, Acception_Fd_Cb'Access);
 
     -- Store Rec
     Acc_List_Mng.Insert (Acc_List, Rec);
@@ -712,7 +712,7 @@ package body Tcp_Util is
     Cb : End_Overflow_Callback_Access;
   end record;
 
-  Package Sen_List_Mng is new Dynamic_List (Sending_Rec);
+  package Sen_List_Mng is new Dynamic_List (Sending_Rec);
   Sen_List : Sen_List_Mng.List_Type;
 
   -- Search Sending_Rec by Dscr
@@ -828,7 +828,7 @@ package body Tcp_Util is
     end if;
 
     -- Hook our callback in write
-    Event_Mng.Add_Fd_Callback (Rec.Fd, False, Sending_Cb'access);
+    Event_Mng.Add_Fd_Callback (Rec.Fd, False, Sending_Cb'Access);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Send Cb hooked");
     end if;
@@ -843,7 +843,7 @@ package body Tcp_Util is
   end Send;
 
   -- Cancel overflow management and closes
-  procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr) is
+  procedure Abort_Send_And_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
   begin
     if Debug_Overflow then
@@ -872,7 +872,7 @@ package body Tcp_Util is
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close done");
     end if;
-  end Abort_Send_and_Close;
+  end Abort_Send_And_Close;
 
   --------------------------------------------------------------------------
 
@@ -923,7 +923,7 @@ package body Tcp_Util is
       -- Unhook and close
       Event_Mng.Del_Fd_Callback (Rec.Fd, True);
       begin
-        Abort_Send_and_Close (Rec.Dscr);
+        Abort_Send_And_Close (Rec.Dscr);
       exception
         when No_Such =>
           Socket.Close (Rec.Dscr);

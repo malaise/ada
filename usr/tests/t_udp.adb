@@ -27,7 +27,7 @@ procedure T_Udp is
     Str : String (1 .. 80);
   end record;
 
-  Str : Constant String := "Ah que coucou!";
+  Str : constant String := "Ah que coucou!";
   Message : Message_Type;
 
   procedure My_Send is new Socket.Send (Message_Type);
@@ -142,7 +142,7 @@ begin
   -- Main loop
   Main:
   loop
-    for i in 1 .. 10 loop
+    for I in 1 .. 10 loop
       if Event_Mng.Wait (1000) then
         My_Io.Put_Line ("Fd event");
       else

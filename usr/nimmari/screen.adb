@@ -194,7 +194,7 @@ package body Screen is
     Nb_To_Remove := Nb_To_Remove - Bars;
 
     -- Select
-    j := Nb_To_Remove;
+    J := Nb_To_Remove;
     for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
       if Status(I) = Free then
         Status(I)  := Selected;
@@ -212,7 +212,7 @@ package body Screen is
     end if;
 
     -- Remove
-    j := Nb_To_Remove;
+    J := Nb_To_Remove;
     for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
       if Status(I) = Selected then
         Status(I) := Removed;

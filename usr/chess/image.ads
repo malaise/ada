@@ -34,7 +34,7 @@ package Image is
 
   -- Decode square, may raise Value_Error
   subtype Square_Str is String (1 ..2);
-  function Square_Value (S : Square_str) return Space.Square_Coordinate;
+  function Square_Value (S : Square_Str) return Space.Square_Coordinate;
 
 end Image;
 

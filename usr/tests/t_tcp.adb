@@ -27,7 +27,7 @@ procedure T_Tcp is
     Str : String (1 .. 80);
   end record;
 
-  Str : Constant String := "Ah que coucou!";
+  Str : constant String := "Ah que coucou!";
   Message : Message_Type;
 
   procedure My_Send is new Socket.Send (Message_Type);
@@ -153,7 +153,7 @@ begin
         Socket.Link_Service (Accept_Soc, Server_Port_Name);
         exit;
       exception
-        when Socket.Soc_addr_In_Use =>
+        when Socket.Soc_Addr_In_Use =>
            My_Io.Put_Line ("Address in use, waiting");
            delay 20.0;
       end;
@@ -169,7 +169,7 @@ begin
   -- Main loop
   Main:
   loop
-    for i in 1 .. 10 loop
+    for I in 1 .. 10 loop
       if Event_Mng.Wait (1000) then
         My_Io.Put_Line ("Fd event");
       else

@@ -8,16 +8,16 @@ package body Graphic is
     Y : Natural;
   end record;
 
-  Size : Constant Natural := 45;
-  Size2 : Constant Natural := Size / 2;
-  Len  : Constant Natural := 8 * Size;
+  Size : constant Natural := 45;
+  Size2 : constant Natural := Size / 2;
+  Len  : constant Natural := 8 * Size;
 
   -- Offsets (middle of square)
   X0 : constant Con_Io.Graphics.X_Range := 60;
   -- Set at init
   Y0 :  Con_Io.Graphics.Y_Range;
 
-  Promotion_X : constant Con_Io.Graphics.X_range := 495;
+  Promotion_X : constant Con_Io.Graphics.X_Range := 495;
   Promotion_Y_Offset :  Con_Io.Graphics.Y_Range;
 
   -- For characters
@@ -238,7 +238,7 @@ package body Graphic is
 
   function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec is
     Con_Io_Rec : Con_Io.Mouse_Event_Rec;
-    Got_Square : Square_result_Rec;
+    Got_Square : Square_Result_Rec;
     Result : Mouse_Event_Rec;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin

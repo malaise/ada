@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with Normal, Text_handler, Sorts;
+with Normal, Text_Handler, Sorts;
 package body Common is
   -- The dimension of square
   Dim : Dim_Range;

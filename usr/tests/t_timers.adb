@@ -50,7 +50,7 @@ procedure T_Timers is
   Use_Afpx : Boolean := False;
 
   -- Generic callback
-  function CallBack (Id : Timers.Timer_Id;
+  function Callback (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean;
 
   -- Start a timer and store its id
@@ -61,7 +61,7 @@ procedure T_Timers is
     A : Timers.Timer_Callback;
   begin
     if Cb
-      then A := CallBack'Unrestricted_Access;
+      then A := Callback'Unrestricted_Access;
     else
       A := null;
     end if;
@@ -83,7 +83,7 @@ procedure T_Timers is
   Max_Funny : constant Natural := 10;
 
   -- Generic callback
-  function CallBack (Id : Timers.Timer_Id;
+  function Callback (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
     use type Timers.Timer_Id;
     N : Positive;
@@ -123,7 +123,7 @@ procedure T_Timers is
     end loop;
     Ada.Text_Io.Put_Line ("Expiration of unknown timer:" & Timers.Image(Id));
     return False;
-  end CallBack;
+  end Callback;
 
 begin
   Rnd.Randomize;

@@ -77,7 +77,7 @@ package body Async_Stdin is
         Cb := User_Callback;
         Max := Max_Chars;
         Text_Handler.Empty (Txt);
-        Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True, Fd_Callback'access);
+        Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True, Fd_Callback'Access);
       else
         raise Error;
       end if;

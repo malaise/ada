@@ -4,7 +4,7 @@ package Pieces is
   type Basic_Piece is tagged private;
   type Piece_Access is access all Basic_Piece'Class;
   -- List of possible actions of a piece
-  Procedure Actions_Of (Piece :  Basic_Piece);
+  procedure Actions_Of (Piece :  Basic_Piece);
 
   type Piece_Kind_List is (Pawn, Rook, Knight, Bishop, Queen, King);
 

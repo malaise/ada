@@ -33,7 +33,7 @@ procedure Impot_00 is
   Resultat : Somme;
 
   -- pour lire un float tres securise
-  function Get_ReaL return My_Math.Real is
+  function Get_Real return My_Math.Real is
     Chaine : String(1..132);
     Dernier : Natural;
     Valeur : Float;
@@ -176,7 +176,7 @@ begin
       7=> ( Somme_Max=>Somme'Last,Coefficient=>5325, Fixe=>64_673.80));
   begin
     -- saisie du nombre de parts
-    Nbre_Part := Get_ParT ("Entrez le nombre de parts");
+    Nbre_Part := Get_Part ("Entrez le nombre de parts");
 
     -- quotient familial
     Quotient_Familial := Resultat / (Somme(Nbre_Part) / 10.0 );

@@ -71,7 +71,7 @@ begin
   -- Some columns completed.
   -- Check last column (it is complete)
   declare
-    Col : constant Dim_Range := ((N-1) rem DiM) + 1;
+    Col : constant Dim_Range := ((N-1) rem Dim) + 1;
   begin
     Sum := 0;
     for Lin in 1 .. Dim loop

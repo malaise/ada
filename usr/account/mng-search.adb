@@ -101,7 +101,7 @@ begin
           when Afpx.Return_Key =>
             -- Return = Search ref
             Oper.Reference := Afpx.Decode_Field(13, 0);
-            Unsel_All(Ref_Match'access, Oper);
+            Unsel_All(Ref_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when Afpx.Escape_Key | Afpx.Break_Key =>
@@ -114,44 +114,44 @@ begin
           when 9 =>
             -- Defered
             Oper.Status := Oper_Def.Defered;
-            Unsel_All(Status_Match'access, Oper);
+            Unsel_All(Status_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 10 =>
             -- Not entered
             Oper.Status := Oper_Def.Not_Entered;
-            Unsel_All(Status_Match'access, Oper);
+            Unsel_All(Status_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 11 =>
             -- Cheque not entered
             Oper.Kind := Oper_Def.Cheque;
             Oper.Status := Oper_Def.Not_Entered;
-            Unsel_All(Kind_Status_Match'access, Oper);
+            Unsel_All(Kind_Status_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 14 =>
             -- Cheque
             Oper.Kind := Oper_Def.Cheque;
-            Unsel_All(Kind_Match'access, Oper);
+            Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 15 =>
             -- Credit
             Oper.Kind := Oper_Def.Credit;
-            Unsel_All(Kind_Match'access, Oper);
+            Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 16 =>
             -- Transfer
             Oper.Kind := Oper_Def.Transfer;
-            Unsel_All(Kind_Match'access, Oper);
+            Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 17 =>
             -- Withdraw
             Oper.Kind := Oper_Def.Withdraw;
-            Unsel_All(Kind_Match'access, Oper);
+            Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
           when 18 =>

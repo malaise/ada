@@ -3,10 +3,10 @@ separate (Screen)
 package body Text is
 
   Screen_Row_Offset : constant Con_Io.Row_Range := 3;
-  Screen_Col_Offset : constant Con_Io.Col_range := 5;
+  Screen_Col_Offset : constant Con_Io.Col_Range := 5;
 
   Promotion_Row_Offset :  constant Con_Io.Row_Range := 4;
-  Promotion_Col : constant Con_Io.Col_range := 17;
+  Promotion_Col : constant Con_Io.Col_Range := 17;
 
 
   function To_Con_Io_Square (Color : in Space.Color_List;
@@ -176,7 +176,7 @@ package body Text is
 
   function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec is
     Con_Io_Rec : Con_Io.Mouse_Event_Rec;
-    Got_Square : Square_result_Rec;
+    Got_Square : Square_Result_Rec;
     Result : Mouse_Event_Rec;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin

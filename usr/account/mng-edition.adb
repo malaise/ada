@@ -1,5 +1,5 @@
 with Calendar;
-With Con_Io;
+with Con_Io;
 separate (Mng)
 package body Edition is
 

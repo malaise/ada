@@ -7,7 +7,7 @@ package Types is
   Max_Dim : constant := 256;
   subtype Index_Range is Natural range 0 .. Max_Dim;
   type Mattrix_Tab is array (Index_Range range <>, Index_Range range <>)
-                            of Cell_RangE;
+                            of Cell_Range;
 
   type Mattrix_Rec (Dim : Index_Range := 0) is record
     Notes : Mattrix_Tab(1 .. Dim, 1 .. Dim);

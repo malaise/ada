@@ -303,7 +303,7 @@ package body Screen is
    Show   : in Boolean) is
 
     Color : Con_Io.Effective_Colors;
-    Ints  : Array (1 .. 2) of Con_Io.Int_Char;
+    Ints  : array (1 .. 2) of Con_Io.Int_Char;
     Square : Con_Io.Square;
     use Common;
   begin
@@ -591,7 +591,7 @@ package body Screen is
    Color : in Common.Eff_Color_Range;
    Selected : in Boolean) is
     Fore : Con_Io.Effective_Colors;
-    Ints  : Array (1 .. 2) of Con_Io.Int_Char;
+    Ints  : array (1 .. 2) of Con_Io.Int_Char;
     Square : Con_Io.Square;
     use Common;
   begin

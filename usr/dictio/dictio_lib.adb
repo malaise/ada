@@ -28,7 +28,7 @@ package body Dictio_Lib is
       Debug.Put ("Dictio_Lib: closing");
     end if;
     if Socket.Is_Open (Dictio_Dscr) then
-      Event_Mng.Del_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True);
+      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dictio_Dscr), True);
       Socket.Close (Dictio_Dscr);
     end if;
     if Dictio_State /= Unavailable then
@@ -158,7 +158,7 @@ package body Dictio_Lib is
       Debug.Put ("Dictio_Lib: connected");
     end if;
     Dictio_Dscr := Dscr;
-    Event_Mng.Add_Fd_Callback (Socket.fd_Of (Dictio_Dscr), True, Read_Cb'access);
+    Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dictio_Dscr), True, Read_Cb'Access);
 
     Msg.Action := Client_Com.Version;
     Msg.Item.Name := (others => ' ');
@@ -172,12 +172,12 @@ package body Dictio_Lib is
   begin
     Connected := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                       Host, Port, 1.0, 0,
-                                      Connection_Cb'access);
+                                      Connection_Cb'Access);
   exception
     when Error:others =>
       if Debug.Level_Array(Debug.Lib) then
         Debug.Put ("Dictio_Lib: connect fails on exception "
-          & Ada.Exceptions.Exception_name(Error));
+          & Ada.Exceptions.Exception_Name(Error));
       end if;
   end Connect_To_Dictio;
 
@@ -263,7 +263,7 @@ package body Dictio_Lib is
     when Error:others =>
       if Debug.Level_Array(Debug.Lib) then
         Debug.Put ("Dictio_Lib: init fails on exception "
-                 & Ada.Exceptions.Exception_name(Error));
+                 & Ada.Exceptions.Exception_Name(Error));
       end if;
       raise No_Dictio; 
   end Init;
@@ -276,7 +276,7 @@ package body Dictio_Lib is
     when Error:others =>
       if Debug.Level_Array(Debug.Lib) then
         Debug.Put ("Dictio_Lib: send fails on exception "
-                 & Ada.Exceptions.Exception_name(Error));
+                 & Ada.Exceptions.Exception_Name(Error));
       end if;
       Close;
       raise No_Dictio;
@@ -285,7 +285,7 @@ package body Dictio_Lib is
   -- Get Item data
   -- May raise Name_Too_Long or No_Item 
   function Get (Name : in String) return String is
-    use type Data_base.Item_Rec;
+    use type Data_Base.Item_Rec;
   begin
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: get " & Name);
@@ -303,7 +303,7 @@ package body Dictio_Lib is
     end loop;
     Check_Available;
     if Msg.Item = Data_Base.No_Item then
-      raise no_Item;
+      raise No_Item;
     end if;
     if Debug.Level_Array(Debug.Lib) then
       Debug.Put ("Dictio_Lib: get -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));

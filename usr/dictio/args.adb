@@ -31,7 +31,7 @@ package body Args is
       return;
     end;
   exception
-    when Argument.Argument_not_Found =>
+    when Argument.Argument_Not_Found =>
       Debug.Put_Error ("ERROR. Argument not found");
       Usage;
     when others =>
@@ -42,12 +42,12 @@ package body Args is
   function Has_Key (Key : in String) return Boolean is
   begin
     declare
-      S :  constant String := Argument.Get_Parameter(1, key);
+      S :  constant String := Argument.Get_Parameter(1, Key);
     begin
       return True;
     end;
   exception
-    when Argument.Argument_not_Found =>
+    when Argument.Argument_Not_Found =>
       return False;
   end Has_Key;
     

@@ -27,13 +27,13 @@ package Connection is
   Connection_Error : exception; 
 
   -- Server has rejected message
-  Protocol_Error : Exception;
+  Protocol_Error : exception;
 
   -- Color is same as server
   Color_Error : exception;
 
   -- Server is busy
-  Busy_Error : Exception;
+  Busy_Error : exception;
 
   -- Receive while not Action_Received
   No_Action : exception;

@@ -81,7 +81,7 @@ package body Image is
         Text_Handler.Append (Res, "+");
       when Game.Stalemate =>
         Text_Handler.Append (Res, "==");
-      when Game.CheckMate =>
+      when Game.Checkmate =>
         Text_Handler.Append (Res, "+=");
     end case;
     Str (1 .. Text_Handler.Length(Res)) := Text_Handler.Value (Res);
@@ -89,12 +89,12 @@ package body Image is
   end Move_Image;
 
   -- Decode square
-  function Square_Value (S : Square_str) return Space.Square_Coordinate is
+  function Square_Value (S : Square_Str) return Space.Square_Coordinate is
   begin
     if S(1) not in 'a' .. 'h' then
       raise Value_Error;
     end if;
-    return (Space.Col_Range'Value(S(1..1)), Space.Row_range'Value(S(2..2)));
+    return (Space.Col_Range'Value(S(1..1)), Space.Row_Range'Value(S(2..2)));
   exception
     when others =>
       raise Value_Error;
@@ -133,19 +133,19 @@ package body Image is
       if Color = Space.White then
         Action := (Valid => True,
                    Piece => Pieces.King,
-                   From  => (Space.e, 1),
+                   From  => (Space.E, 1),
                    To    => (Kind => Pieces.Castle,
-                             Dest => (Space.c, 1),
-                             Rook_From => (Space.a, 1),
-                             Rook_Dest => (Space.d, 1)));
+                             Dest => (Space.C, 1),
+                             Rook_From => (Space.A, 1),
+                             Rook_Dest => (Space.D, 1)));
       else
         Action := (Valid => True,
                    Piece => Pieces.King,
-                   From  => (Space.e, 8),
+                   From  => (Space.E, 8),
                    To    => (Kind => Pieces.Castle,
-                             Dest => (Space.c, 8),
-                             Rook_From => (Space.a, 8),
-                             Rook_Dest => (Space.d, 8)));
+                             Dest => (Space.C, 8),
+                             Rook_From => (Space.A, 8),
+                             Rook_Dest => (Space.D, 8)));
 
       end if;
       Next := 6;
@@ -154,19 +154,19 @@ package body Image is
       if Color = Space.White then
         Action := (Valid => True,
                    Piece => Pieces.King,
-                   From  => (Space.e, 1),
+                   From  => (Space.E, 1),
                    To    => (Kind => Pieces.Castle,
-                             Dest => (Space.g, 1),
-                             Rook_From => (Space.h, 1),
-                             Rook_Dest => (Space.f, 1)));
+                             Dest => (Space.G, 1),
+                             Rook_From => (Space.H, 1),
+                             Rook_Dest => (Space.F, 1)));
       else
         Action := (Valid => True,
                    Piece => Pieces.King,
-                   From  => (Space.e, 8),
+                   From  => (Space.E, 8),
                    To    => (Kind => Pieces.Castle,
-                             Dest => (Space.g, 8),
-                             Rook_From => (Space.h, 8),
-                             Rook_Dest => (Space.f, 8)));
+                             Dest => (Space.G, 8),
+                             Rook_From => (Space.H, 8),
+                             Rook_Dest => (Space.F, 8)));
       end if;
       Next := 4;
 

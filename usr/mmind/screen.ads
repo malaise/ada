@@ -102,7 +102,7 @@ package Screen is
         Try_No : Common.Propal_Range;
       when Menu | Exit_Game =>
         null;
-      When Level =>
+      when Level =>
         Level_No : Common.Last_Level_Range;
     end case;
   end record;

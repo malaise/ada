@@ -12,7 +12,7 @@ package body Space is
   function Color_Of_Square (Square : Square_Coordinate) return Color_List is
   begin
     -- A1 (bottom left) is black
-    if (Row_range'Pos(Square.Row)
+    if (Row_Range'Pos(Square.Row)
       + Col_Range'Pos(Square.Col)) mod 2 = 0 then
       return White;
     else

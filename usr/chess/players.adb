@@ -83,7 +83,7 @@ package body Players is
       return (Valid => False);
     end if;
     if Action_List_Mng.Get_Position (Actions(Color))
-     = Action_List_Mng.list_Length(Actions(Color)) then
+     = Action_List_Mng.List_Length(Actions(Color)) then
       Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Current);
       At_End(Color) := True;
     else
@@ -102,13 +102,13 @@ package body Players is
     Pos := Action_List_Mng.Get_Position (Actions(Color));
 
     begin
-      Action_List_Mng.Move_To (Actions(Color), Number => Index - 1, From_current => False);
+      Action_List_Mng.Move_To (Actions(Color), Number => Index - 1, From_Current => False);
       Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Current);
     exception
       when Action_List_Mng.Not_In_List =>
         return (Valid => False);
     end;
-    Action_List_Mng.Move_To (Actions(Color), Number => Pos - 1, From_current => False);
+    Action_List_Mng.Move_To (Actions(Color), Number => Pos - 1, From_Current => False);
     return Result;
   end Get_Action;
 

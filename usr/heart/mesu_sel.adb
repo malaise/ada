@@ -398,7 +398,7 @@ package body Mesu_Sel is
         Saved_Pos := Get_Position (Line_List);
       end if;
     end if;
-    if Not Is_Empty (Line_List) then
+    if not Is_Empty (Line_List) then
       Move_To (Line_List, Next, Saved_Pos - 1, False);
     end if;
 
@@ -438,7 +438,7 @@ package body Mesu_Sel is
         Saved_Pos := Get_Position (Line_List);
       end if;
     end if;
-    if Not Is_Empty (Line_List) then
+    if not Is_Empty (Line_List) then
       Move_To (Line_List, Next, Saved_Pos - 1, False);
     end if;
 

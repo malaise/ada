@@ -331,7 +331,7 @@ package body Mcd_Mng is
     procedure Do_Clear_Extra is
       Rec : Item_Rec;
     begin
-     For I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
+     for I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
        Stack.Pop (Rec, Default_Stack => False);
      end loop;
     end Do_Clear_Extra;
@@ -599,11 +599,11 @@ package body Mcd_Mng is
           S := A;
         when Swapr =>
           -- exchange B and content of reg A
-          Pop(A); pop(B); Push(Registers.Retrieve(A)); Registers.Store(B, A);
+          Pop(A); Pop(B); Push(Registers.Retrieve(A)); Registers.Store(B, A);
           S := A;
-        when Swap2r =>
+        when Swap2R =>
           -- exchange content of reg B and content of reg A
-          Pop(A); pop(B);
+          Pop(A); Pop(B);
           C := Registers.Retrieve(A);
           Registers.Store(Registers.Retrieve(B), A);
           Registers.Store(C, B);

@@ -11,7 +11,7 @@ package Grid_1 is
   end record;
 
 
-  procedure Initialize (Key : in string);
+  procedure Initialize (Key : in String);
 
   -- C can be any char from ' ' to '~' or Ascii.Cr
   -- Any other char is discarded

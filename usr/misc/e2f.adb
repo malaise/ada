@@ -7,14 +7,14 @@ with Get_Float;
 with My_Math;
 use type My_Math.Real;
 
-procedure E2f is
+procedure E2F is
 
   
   package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
 
   Francs_In_Euro : constant := 6.55957;
   Amount : My_Math.Real;
-  To_francs : Boolean;
+  To_Francs : Boolean;
 
   The_Argument : Text_Handler.Text(20);
 
@@ -55,13 +55,13 @@ begin
     Len := Text_Handler.Length(The_Argument);
     Unit := Upper_Char(Text_Handler.Value(The_Argument)(Len));
     if Unit = 'E' then
-      To_francs := True;
+      To_Francs := True;
       Len := Len - 1;
     elsif Unit = 'F' then
-      To_francs := False;
+      To_Francs := False;
       Len := Len - 1;
     elsif Unit in '0' .. '9' then
-       To_francs := True;
+       To_Francs := True;
     else
       raise Constraint_Error;
     end if;
@@ -89,13 +89,13 @@ begin
   end;
 
   Put(Amount);
-  if To_francs then
+  if To_Francs then
     Ada.Text_Io.Put("e");
   else
     Ada.Text_Io.Put("f");
   end if;
   Ada.Text_Io.Put(" = ");
-  if To_francs then
+  if To_Francs then
     Put(Amount * Francs_In_Euro);
     Ada.Text_Io.Put_Line("f");
   else
@@ -103,5 +103,5 @@ begin
     Ada.Text_Io.Put_Line("e");
   end if;
     
-end E2f;
+end E2F;
 

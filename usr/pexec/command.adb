@@ -97,7 +97,7 @@ package body Command is
       -- Key must be first, not empty and not more than Nbre_Max_Opt
       if First_Pos /= 1 or else
        Text_Handler.Length (Arg) = 0 or else
-       Text_Handler.Length (arg) > Nbre_Max_Opt then
+       Text_Handler.Length (Arg) > Nbre_Max_Opt then
         raise Wrong_Pexec_Opt;
       end if;
 

@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-With Normal, Lower_Str, Argument;
+with Normal, Lower_Str, Argument;
 
 with Pieces, Space.Board, Screen, Game, Debug, Connection, File, Image,
      Set_Up;
@@ -23,9 +23,9 @@ package body Human is
 
   procedure Play (Mode   : in Play_Mode;
                   Color  : in Space.Color_List;
-                  Name   : in string;
+                  Name   : in String;
                   Port   : in Tcp_Util.Remote_Port;
-                  SetUp  : in string;
+                  Setup  : in String;
                   Wait   : in Boolean) is
     use type Space.Color_List; 
   begin
@@ -51,10 +51,10 @@ package body Human is
     -- Init
     Space.Board.Init;
     Move_Color := Space.White;
-    if Mode /= Client and then SetUp /= "" then
+    if Mode /= Client and then Setup /= "" then
       Space.Board.Erase;
       begin
-        Move_Color := Set_Up.Load (SetUp);
+        Move_Color := Set_Up.Load (Setup);
       exception
         when Set_Up.Load_Error =>
           raise Load_Error;
@@ -76,7 +76,7 @@ package body Human is
       Game.Init (Color);
     exception
       when others =>
-        if Mode /= Client and then SetUp /= "" then
+        if Mode /= Client and then Setup /= "" then
           raise Load_Error;
         else
           raise;
@@ -86,7 +86,7 @@ package body Human is
     Load_Moves (Wait);
 
     -- Black move first
-    if SetUp /= "" and then Move_Color = Space.Black then
+    if Setup /= "" and then Move_Color = Space.Black then
       File.Write ((Valid => False), Game.Nok);
     end if;
 
@@ -139,7 +139,7 @@ package body Human is
 
   procedure Do_Play is
     Action : Players.Action_Rec;
-    Kind   : Pieces.Piece_Kind_list;
+    Kind   : Pieces.Piece_Kind_List;
     Result : Game.Move_Status_List;
     use type Game.Move_Status_List;
   begin

@@ -40,7 +40,7 @@ package body Fl_Time is
     if Left.Positiv = Right.Positiv then
       Result.Minutes := Minutes_Range (
        (Integer (Left.Minutes) + Integer (Right.Minutes)) mod Max_Min);
-      Result.Hours := Hours_range (
+      Result.Hours := Hours_Range (
        (Integer (Left.Minutes) + Integer (Right.Minutes)) / Max_Min);
       Result.Hours := Result.Hours + Left.Hours + Right.Hours;
       Result.Positiv := Left.Positiv;

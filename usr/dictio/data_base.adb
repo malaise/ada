@@ -3,7 +3,7 @@ with Parse;
 package body Data_Base is
 
   package Item_List_Mng is new Dynamic_List (Item_Rec);
-  Item_List : Item_List_Mng.list_type;
+  Item_List : Item_List_Mng.List_Type;
 
   function Name_Match (Elt1, Elt2 : Item_Rec) return Boolean is
   begin

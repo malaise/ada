@@ -27,7 +27,7 @@ package Timers is
   Infinite_Delay : constant Delay_Rec(Delay_Sec)
                  := (Delay_Kind => Delay_Sec,
                      Period        => No_Period,
-                     Delay_Seconds => Infinite_seconds);
+                     Delay_Seconds => Infinite_Seconds);
 
   -- Timer unique identifier
   type Timer_Id is private;
@@ -78,7 +78,7 @@ package Timers is
   type Expiration_Rec (Infinite : Boolean := True) is record
     case Infinite is
       when True => null;
-      when False => Time : Ada.calendar.Time;
+      when False => Time : Ada.Calendar.Time;
     end case;
   end record;
   function Next_Timeout (Expiration : Expiration_Rec) return Duration;

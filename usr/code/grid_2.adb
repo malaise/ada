@@ -26,7 +26,7 @@ package body Grid_2 is
          (Key_Length mod Dimension + Text_Length mod Dimension) mod Dimension
        + 1;
     -- So far , last row, col is first empty slot
-    if LasT_Col /= 1 then
+    if Last_Col /= 1 then
       Last_Col := Last_Col - 1;
     else
       Last_Row := Last_Row - 1;

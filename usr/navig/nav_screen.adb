@@ -26,7 +26,7 @@ package body Nav_Screen is
   Res_Fore : constant Effective_Colors := Light_Green;
 
   -- delay max of a get (data or action) in seconds.
-  Delta_Get : Constant Con_Io.Delay_Rec(Timers.Delay_Sec) := 
+  Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec) := 
     (Delay_Kind => Timers.Delay_Sec,
      Period => No_Period,
      Delay_Seconds => 0.5);
@@ -280,7 +280,7 @@ package body Nav_Screen is
   --  (result of check)
   procedure Err_Check (Error : in Nav_Data.T_Consistency) is
   begin
-    move ( (0, 0), W_Err);
+    Move ( (0, 0), W_Err);
     Put ("ERROR : ", W_Err);
     case Error is
       when Nav_Data.Known_Err =>

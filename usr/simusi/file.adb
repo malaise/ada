@@ -216,7 +216,7 @@ package body File is
       or else Manufas(I).Stop  > Nb_Manufa + 1 then
         Error (Arg_Parsing.Manufa_File_Name, Line_Nb, I);
       end if;
-      Line_Usage(Manufas(I).start) := True;
+      Line_Usage(Manufas(I).Start) := True;
       Line_Usage(Manufas(I).Stop)  := True;
     end loop;
     for I in 1 .. Nb_Manufa + 1 loop
@@ -229,7 +229,7 @@ package body File is
     Line_Usage := (others => False);
     for I in 1 .. Nb_Design loop
       if      Designs(I).Start > Nb_Design + 1
-      or else Designs(i).Stop  > Nb_Design + 1 then
+      or else Designs(I).Stop  > Nb_Design + 1 then
         Error (Arg_Parsing.Design_File_Name, Line_Nb, I);
       end if;
       Line_Usage(Designs(I).Start) := True;

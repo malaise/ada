@@ -43,10 +43,10 @@ package body Set_Up is
       My_Get_Line.Get_Words (Line);
 
       One_Word:
-      for I in 1 .. My_get_Line.Get_Word_Number loop
+      for I in 1 .. My_Get_Line.Get_Word_Number loop
         if Text_Handler.Length (Line(I)) /= 4 then
           Ada.Text_Io.Put_Line ("Error. Invalid definition " & Text_Handler.Value (Line(I))
-           & " at line " & Ada.Text_Io.Positive_Count'Image (My_get_Line.Get_Line_No) );
+           & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
            raise Load_Error;
         end if;
 
@@ -58,7 +58,7 @@ package body Set_Up is
           Decoded_Id.Id.Color := Space.Black;
         else
           Ada.Text_Io.Put_Line ("Error. Invalid color " & Char
-           & " at line " & Ada.Text_Io.Positive_Count'Image (My_get_Line.Get_Line_No) );
+           & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
            raise Load_Error;
         end if;
 
@@ -70,7 +70,7 @@ package body Set_Up is
           Decoded_Id.Id.Kind := Image.Piece_Value (Char);
           if Decoded_Id.Id.Kind = Pieces.Pawn then
             Ada.Text_Io.Put_Line ("Error. Invalid piece " & Char
-             & " at line " & Ada.Text_Io.Positive_Count'Image (My_get_Line.Get_Line_No) );
+             & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
           end if;
         end if;
@@ -82,7 +82,7 @@ package body Set_Up is
         exception
           when Image.Value_Error =>
             Ada.Text_Io.Put_Line ("Error. Invalid square " & Str2
-             & " at line " & Ada.Text_Io.Positive_Count'Image (My_get_Line.Get_Line_No) );
+             & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
         end;
 
@@ -94,7 +94,7 @@ package body Set_Up is
         exception
           when others =>
             Ada.Text_Io.Put_Line ("Error. Non empty square " & Text_Handler.Value (Line(I))
-             & " at line " & Ada.Text_Io.Positive_Count'Image (My_get_Line.Get_Line_No) );
+             & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
         end;
       end loop One_Word;
@@ -115,7 +115,7 @@ package body Set_Up is
       raise;
     when Error : others =>
       Ada.Text_Io.Put_Line ("Error reading file " & File_Name
-         & " at line " & Ada.Text_Io.Positive_Count'Image (My_get_Line.Get_Line_No)
+         & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No)
          & " exception " &  Ada.Exceptions.Exception_Name (Error));
       begin
         My_Get_Line.Close;

@@ -54,7 +54,7 @@ begin
   X_Mng.X_Open_Line (Line_Def, Id);
   
   -- Enable signal event
-  Event_Mng.Set_Sig_Term_Callback (Null_Procedure'access);
+  Event_Mng.Set_Sig_Term_Callback (Null_Procedure'Access);
 
   X_Event := True;
   Kind := X_Mng.Refresh;

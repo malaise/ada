@@ -126,7 +126,7 @@ package body Hash is
     begin
       My_Io.Put_Line ("Hash " & Hash_Range'Image(I));
       if Ca = null then
-        My_Io.Put_line (" No data found");
+        My_Io.Put_Line (" No data found");
       end if;
       while Ca /= null loop
         My_Io.Put (" Data found ");

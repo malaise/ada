@@ -93,7 +93,7 @@ begin
     end if;
   exception
     when others =>
-      My_Io.Put_LinE ("Wrong argument. Usage : "
+      My_Io.Put_Line ("Wrong argument. Usage : "
                      & Argument.Get_Parameter(Occurence => 0) 
                      & " -c  |  -d     <input_file> [ <output_file> ] ");
       return;
@@ -103,7 +103,7 @@ begin
   Argument.Get_Parameter (Buff(1 .. Max_File_Len), Len, Occurence => 2);
   -- Open input file
   begin
-    Ada.Text_Io.Open (In_File, Ada.Text_io.In_File, Buff(1 .. Len));
+    Ada.Text_Io.Open (In_File, Ada.Text_Io.In_File, Buff(1 .. Len));
   exception
     when others =>
       My_Io.Put_Line ("Unable to open input file >"

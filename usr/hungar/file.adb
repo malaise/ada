@@ -174,7 +174,7 @@ package body File is
 
   end Read;
 
-  function Get_Kind Return Types.Mattrix_Kind_List is
+  function Get_Kind return Types.Mattrix_Kind_List is
   begin
     if not File_Read then
       raise File_Not_Read;
@@ -182,7 +182,7 @@ package body File is
     return Loc_Kind;
   end Get_Kind;
 
-  function Get_NotE (Row, Col : Positive) return Float is
+  function Get_Note (Row, Col : Positive) return Float is
   begin
     if not File_Read then
       raise File_Not_Read;

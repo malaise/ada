@@ -142,8 +142,8 @@ package body Socket is
                      Message : System.Address;
                      Length  : Natural) return Result;
   pragma Import (C, Soc_Send, "soc_send");
-  function Soc_ReSend (S : System.Address) return Result;
-  pragma Import (C, Soc_ReSend, "soc_resend");
+  function Soc_Resend (S : System.Address) return Result;
+  pragma Import (C, Soc_Resend, "soc_resend");
                      
   --------------------
   -- IMPLEMENTATION --
@@ -360,7 +360,7 @@ package body Socket is
 
   procedure Change_Destination_Host (
                Socket   : in Socket_Dscr;
-               Host     : in host_Id) is
+               Host     : in Host_Id) is
   begin
     Res := Soc_Change_Dest_Host (Socket.Soc_Addr, Host'Address);
     Check_Ok;
@@ -509,7 +509,7 @@ package body Socket is
   --  on Send or Re_Send
   procedure Re_Send (Socket  : in Socket_Dscr) is
   begin
-    Res := Soc_ReSend (Socket.Soc_Addr);
+    Res := Soc_Resend (Socket.Soc_Addr);
     Check_Ok;
   end Re_Send;
 

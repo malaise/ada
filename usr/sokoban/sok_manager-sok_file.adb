@@ -10,7 +10,7 @@ package body Sok_File is
   type File_Square_Rec is record
     Pattern : Sok_Types.Pattern_List;
     Content : Sok_Types.Content_List;
-  end Record;
+  end record;
   type File_Frame_Tab is array (Sok_Types.Row_Range, Sok_Types.Col_Range)
    of File_Square_Rec;
 

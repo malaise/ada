@@ -43,7 +43,7 @@ begin
     end if;
     Ada.Text_Io.Put (Normal(Integer(Tt.Hours), Max_Hour_Dig + 1));
     Ada.Text_Io.Put ('.');
-    Ada.Text_Io.Put (NormaL(Integer(Tt.Minutes), 2, Gap => '0'));
+    Ada.Text_Io.Put (Normal(Integer(Tt.Minutes), 2, Gap => '0'));
     if With_Cost then
        Ada.Text_Io.Put ("     This cost: ");
        My_Io.Put(Tmp_Cost, Fore => 4, Aft => 2, Exp => 0);
@@ -67,7 +67,7 @@ begin
         Tt := (True, 0, 0);
         Tmp_Cost := 0.0;
         Cost := 0.0;
-      when Fl_Get.QuiT =>
+      when Fl_Get.Quit =>
         exit;
     end;
 
@@ -87,7 +87,7 @@ begin
           Ada.Text_Io.Put_Line (Ascii.Bel & "Error.");
       end;
       -- Cost of the flight
-      Tmp_Cost := Tmp_CosT * Float(T.Hours)
+      Tmp_Cost := Tmp_Cost * Float(T.Hours)
                 + Tmp_Cost * Float(T.Minutes) / 60.0;
       if not T.Positiv then
         Tmp_Cost := -Tmp_Cost;

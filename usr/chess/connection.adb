@@ -11,7 +11,7 @@ package body Connection is
   Local_Port : Tcp_Util.Local_Port;
   Remote_Port : Tcp_Util.Remote_Port;
 
-  Type Message_Kind_List is (Init, Move, Error);
+  type Message_Kind_List is (Init, Move, Error);
   type Error_List is (Busy, Color, Protocol);
   type Message_Type (Kind : Message_Kind_List := Init) is record
     case Kind is
@@ -32,13 +32,13 @@ package body Connection is
   -- Has an action been received and get it
   function Action_Received return Boolean is
   begin
-    return not Action_List_Mng.Is_Empty (Action_list);
+    return not Action_List_Mng.Is_Empty (Action_List);
   end;
 
   function Receive return Players.Action_Rec is
     Action : Players.Action_Rec;
   begin
-    Action_List_Mng.Move_To (Action_list, Action_List_Mng.Prev, 0, False);
+    Action_List_Mng.Move_To (Action_List, Action_List_Mng.Prev, 0, False);
     Action_List_Mng.Get (Action_List, Action, Action_List_Mng.Prev);
     return Action;
   exception
@@ -99,7 +99,7 @@ package body Connection is
     end if;
     Soc := Dscr;
     Fd := Socket.Fd_Of (Soc);
-    Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'access);
+    Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'Access);
     My_Send ((Init, Own_Color));
   end Con_Call_Back;
 
@@ -111,7 +111,7 @@ package body Connection is
                                Server_Host,
                                Remote_Port,
                                1.0, 0,
-                               Con_Call_Back'access);
+                               Con_Call_Back'Access);
   exception
     when Error: others =>
       if Debug.Get (Debug.Connection) then
@@ -133,7 +133,7 @@ package body Connection is
     Tcp_Util.Abort_Accept (Local_Port_Num);
     Soc := New_Dscr;
     Fd := Socket.Fd_Of (Soc);
-    Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'access);
+    Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'Access);
   end Acc_Call_Back;
 
   procedure Accept_Client is
@@ -143,7 +143,7 @@ package body Connection is
     Close;
     Tcp_Util.Accept_From (Socket.Tcp_Header,
                           Local_Port,
-                          Acc_Call_Back'access,
+                          Acc_Call_Back'Access,
                           Acc_Dscr,
                           Port_Num);
   end Accept_Client;
@@ -241,8 +241,8 @@ package body Connection is
         end if;
 
         -- Insert action
-        if not Action_List_Mng.Is_Empty (Action_list) then
-          Action_List_Mng.Move_To (Action_list, Action_List_Mng.Next, 0, False);
+        if not Action_List_Mng.Is_Empty (Action_List) then
+          Action_List_Mng.Move_To (Action_List, Action_List_Mng.Next, 0, False);
         end if;
         Action_List_Mng.Insert (Action_List, Message.Action,
                                 Action_List_Mng.Prev);

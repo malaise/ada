@@ -17,7 +17,7 @@ package Space.Board is
   -- Delete a piece (If not commited, reverse can be done by Restore_Piece)
   procedure Delete_Piece (Square : in Square_Coordinate;
                           Commit : Boolean);
-  procedure Restore_Piece (Piece : in Pieces.Piece_access);
+  procedure Restore_Piece (Piece : in Pieces.Piece_Access);
 
   -- Move a piece (If not commited, reverse can be done by Undo_Move_Piece)
   procedure Move_Piece (From   : in Square_Coordinate;

@@ -75,7 +75,7 @@ package Mcd_Mng is
    Copyr,
    Pushr,
    Swapr,
-   Swap2r,
+   Swap2R,
    Clearr,
    Clearall,
    Emptyr,

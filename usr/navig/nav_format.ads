@@ -26,3 +26,4 @@ package Nav_Format is
    Drift : out Nav_Types.T_Drift; Res : out Format_Result; Pos : out Positive);
 
 end Nav_Format;
+

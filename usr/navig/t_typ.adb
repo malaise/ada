@@ -4,31 +4,32 @@ procedure T_Typ is
   D : Nav_Types.T_Drift;
   I : Integer;
 begin
-  my_io.put ("A1 : deg, min ");
-  my_io.get (I);
+  My_Io.Put ("A1 : deg, min ");
+  My_Io.Get (I);
   A1.Degrees := Nav_Types.T_Degree(I);
-  my_io.get (I);
+  My_Io.Get (I);
   A1.Minutes := Nav_Types.T_Minute(I);
-  my_io.put ("A2 : deg, min ");
-  my_io.get (I);
+  My_Io.Put ("A2 : deg, min ");
+  My_Io.Get (I);
   A2.Degrees := Nav_Types.T_Degree(I);
-  my_io.get (I);
+  My_Io.Get (I);
   A2.Minutes := Nav_Types.T_Minute(I);
 
-  my_io.new_line;
+  My_Io.New_Line;
   A3 := Nav_Types."+" (A1, A2);
-  my_io.put ("A1 + A2 "); my_io.put (Integer(A3.Degrees));
-  my_io.put (Integer(A3.Minutes));
+  My_Io.Put ("A1 + A2 "); My_Io.Put (Integer(A3.Degrees));
+  My_Io.Put (Integer(A3.Minutes));
 
-  my_io.new_line;
+  My_Io.New_Line;
   A3 := Nav_Types."-" (A1, A2);
-  my_io.put ("A1 - A2 "); my_io.put (Integer(A3.Degrees));
-  my_io.put (Integer(A3.Minutes));
+  My_Io.Put ("A1 - A2 "); My_Io.Put (Integer(A3.Degrees));
+  My_Io.Put (Integer(A3.Minutes));
 
-  my_io.new_line;
+  My_Io.New_Line;
   D := Nav_Types."-" (A1, A2);
-  my_io.put ("A1 - A2 (drift)"); my_io.put (D.Positiv);
-  my_io.put (Integer(D.Degrees));
-  my_io.put (Integer(D.Minutes));
-  my_io.new_line;
-end t_typ;
+  My_Io.Put ("A1 - A2 (drift)"); My_Io.Put (D.Positiv);
+  My_Io.Put (Integer(D.Degrees));
+  My_Io.Put (Integer(D.Minutes));
+  My_Io.New_Line;
+end T_Typ;
+

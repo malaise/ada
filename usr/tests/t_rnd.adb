@@ -18,7 +18,7 @@ begin
     Tableau(Essai) := Tableau(Essai) + 1;
   end loop;
   for I in Couleur loop
-    Put (Couleur'image (I));
+    Put (Couleur'Image (I));
     Put (" -> ");
     Put (Tableau (I));
     Tot := Tot + Tableau (I);

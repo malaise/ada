@@ -51,7 +51,7 @@ begin
       loop
         begin
           Ada.Text_Io.Put(Normal(I, 2) & "? ");
-          Ada.Text_Io.get_Line(Buffer, Len);
+          Ada.Text_Io.Get_Line(Buffer, Len);
           if Len /= Str'Length then
             raise Constraint_Error;
           end if;

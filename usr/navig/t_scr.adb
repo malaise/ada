@@ -1,4 +1,4 @@
-with con_io;
+with Con_Io;
 with Nav_Data, Nav_Screen;
 use  Nav_Data, Nav_Screen;
 procedure T_Scr is

@@ -74,7 +74,7 @@ package body File is
           Section := In_Channel;
           for I in 2 .. Channel_File.Get_Word_Number loop
             if Text_Handler."=" (Channel_Name, Line(I)) then
-              Section := in_Matching_Channel;
+              Section := In_Matching_Channel;
               exit;
             end if;
           end loop;
@@ -101,7 +101,7 @@ package body File is
         end if;
       else
         Curr_Word := Curr_Word + 1;
-        if Section = in_Matching_Channel then
+        if Section = In_Matching_Channel then
           Host.Name(1 .. Text_Handler.Length (Line(Curr_Word)) ) :=
                   Text_Handler.Value (Line(Curr_Word));
           exit;

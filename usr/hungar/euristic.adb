@@ -24,7 +24,7 @@ package body Euristic is
   type Zero_State_List is (Free, Slashed, Squared);
   -- transfer of state of zeros after euristic (for reduction or result)
   -- No zero are free at this point, so this state is used to describe non-zero cell
-  type Zero_Transfer_Tab is array (Types.Index_Range Range <>, Types.Index_Range range <>) of Zero_State_List;
+  type Zero_Transfer_Tab is array (Types.Index_Range range <>, Types.Index_Range range <>) of Zero_State_List;
   -- Have at least 1 zero/row and 1 zero/col
   procedure Init_Search (Mattrix : in out Types.Mattrix_Rec) is
     Lowest : Natural;
@@ -211,7 +211,7 @@ package body Euristic is
                  & "-" & Normal(Zero_Desc(Index_Desc).Col, 2) & ",");
             end if;
             for Row in Index_Range loop
-              Index_Desc := Cross_Ref(Row, Col_tmp);
+              Index_Desc := Cross_Ref(Row, Col_Tmp);
               if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
                 Zero_Desc(Index_Desc).Sigma := Zero_Desc(Index_Desc).Sigma - 1;
               end if;

@@ -1,4 +1,4 @@
-separate (sok_manager)
+separate (Sok_Manager)
 
 function Sok_Menu (Allow_Write : Boolean) return Menu_Result_Rec is
 

@@ -1,5 +1,5 @@
 with Timers;
-with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes,
+with Debug, Parse, Intra_Dictio, Local_Host_Name, Nodes,
      Fight_Mng, Sync_Mng, Data_Base, Sync_Mng, Versions,
      Client_Mng;
 

@@ -15,7 +15,7 @@ package Human is
 
   procedure Play (Mode  : in Play_Mode;
                   Color : in Space.Color_List;
-                  Name  : in string;
+                  Name  : in String;
                   Port  : in Tcp_Util.Remote_Port;
                   Setup : in String;
                   Wait  : in Boolean);

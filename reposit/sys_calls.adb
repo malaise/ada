@@ -41,7 +41,7 @@ package body Sys_Calls is
     Kind : File_Desc_Kind_List;
     use Bit_Ops;
   begin
-    Loc_Mode := Mode And 8#00170000#;
+    Loc_Mode := Mode and 8#00170000#;
     Loc_Mode := Shr (Loc_Mode, 12);
     case Loc_Mode is
       when 8#14# =>
@@ -282,7 +282,7 @@ package body Sys_Calls is
       end if;
     end if;
     Kind := File_Kind_Of (C_Stat.C_Mode);
-    Rights := C_Stat.C_Mode And 8#00007777#;
+    Rights := C_Stat.C_Mode and 8#00007777#;
     Modif_Time := Time_T(C_Stat.C_Mtime);
   end File_Stat;
 

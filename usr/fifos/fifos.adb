@@ -11,7 +11,7 @@ package body Fifos is
   -- Remove trailing spaces
   function Parse (Str : String) return String is
   begin
-    Return Str (1 .. String_Mng.Parse_Spaces (Str, False));
+    return Str (1 .. String_Mng.Parse_Spaces (Str, False));
   end Parse;
 
   procedure Host_Name2Id (Host : in out Tcp_Util.Remote_Host) is
@@ -224,7 +224,7 @@ package body Fifos is
 
       procedure Close_Socket (Dscr : in out Socket.Socket_Dscr) is
       begin
-        Tcp_Util.Abort_Send_and_Close (Dscr);
+        Tcp_Util.Abort_Send_And_Close (Dscr);
       exception
         when Tcp_Util.No_Such =>
           Socket.Close (Dscr);
@@ -493,8 +493,8 @@ package body Fifos is
       
       procedure Split (Data : in String; Host : out Tcp_Util.Host_Name;
                                          Port : out Tcp_Util.Port_Num) is
-        Txt : Text_handler.Text (Data'length);
-        Sep_Index : Text_handler.Max_Len_Range;
+        Txt : Text_Handler.Text (Data'Length);
+        Sep_Index : Text_Handler.Max_Len_Range;
       begin
         Text_Handler.Set (Txt, Data);
         Sep_Index := Text_Handler.Locate (Txt, Separator);
@@ -592,7 +592,7 @@ package body Fifos is
           raise Name_Too_Long;
         end if;
         Dictio_Lib.Set (Name_Suffix & Fifo_Name, Host & Separator
-                        & Normal (INteger(Port), 5, Gap => '0'));
+                        & Normal (Integer(Port), 5, Gap => '0'));
       exception
         when Dictio_Lib.No_Dictio =>
           raise No_Dictio;

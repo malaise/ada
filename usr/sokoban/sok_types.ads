@@ -3,7 +3,7 @@ package Sok_Types is
 
   -- Array of a frame
   subtype Row_Range is Positive range 1 .. 16;
-  subtype Col_Range is positive range 1 .. 19;
+  subtype Col_Range is Positive range 1 .. 19;
 
   -- Fixed background of the square
   type Pattern_List is (Wall, Free, Target);

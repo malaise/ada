@@ -69,7 +69,7 @@ package body Sync_Mng is
     Timer_Id := Timers.Create ( (Timers.Delay_Sec,
                                  Sync_Timeout,
                                  Sync_Init_Timeout),
-                                Timer_Rec_Cb'access);
+                                Timer_Rec_Cb'Access);
     Sync_Has_Been_Received := False;
     if Debug.Level_Array(Debug.Sync) then
       Debug.Put ("Sync: Start");
@@ -146,7 +146,7 @@ package body Sync_Mng is
       Tid := Timers.Create ( (Timers.Delay_Sec,
                               Timers.No_Period,
                               Sync_Listen_Timeout),
-                              Timer_Sen_Cb'access);
+                              Timer_Sen_Cb'Access);
       Sending_Status := Init;
     end if;
     if Debug.Level_Array(Debug.Sync) then

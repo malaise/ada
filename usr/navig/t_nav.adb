@@ -1,8 +1,8 @@
 with Nav_Types, Nav_Data;
 with My_Io, Text_Io;
 procedure T_Nav is
-str : string (1..20);
-lst : natural;
+Str : String (1..20);
+Lst : Natural;
 
   Data_In, Data_Out : Nav_Data.T_Data;
   subtype Ti is Positive range 1..7;

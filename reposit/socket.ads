@@ -103,7 +103,7 @@ package Socket is
   -- May raise Soc_Proto_Err if socket is not tcp
   -- May raise Soc_Link_Err if socket is not linked
   procedure Accept_Connection (Socket : in Socket_Dscr;
-                               New_socket : in out Socket_Dscr);
+                               New_Socket : in out Socket_Dscr);
 
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply if not tcp

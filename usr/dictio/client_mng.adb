@@ -133,7 +133,7 @@ package body Client_Mng is
                & Event_Mng.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
     end if;
     Client_Fd.Add_Client (New_Dscr);
-    Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'access);
+    Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'Access);
 
     -- Send version and status
     declare
@@ -201,7 +201,7 @@ package body Client_Mng is
       Debug.Put ("Client: start");
     end if;
     Port.Name(1 .. Port_Name'Length) := Port_Name;
-    Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
+    Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'Access,
                           Dscr, Accept_Port);
     Set_Delay;
     Init := True;

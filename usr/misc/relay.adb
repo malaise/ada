@@ -120,7 +120,7 @@ procedure Relay is
       My_Read (Read_Dscr, Channel_Message, Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        Event_Mng.Del_Fd_CallBack (Fd, True);
+        Event_Mng.Del_Fd_Callback (Fd, True);
         Socket.Close (Read_Dscr);
         Done := True;
         return True;
@@ -129,7 +129,7 @@ procedure Relay is
       when others =>
         Sys_Calls.Put_Line_Error ("Read error");
         Sys_Calls.Set_Error_Exit_Code;
-        Event_Mng.Del_Fd_CallBack (Fd, True);
+        Event_Mng.Del_Fd_Callback (Fd, True);
         Socket.Close (Read_Dscr);
         Done := True;
         return True;
@@ -162,7 +162,7 @@ procedure Relay is
       return;
     end if;
     Read_Dscr := New_Dscr;
-    Event_Mng.Add_Fd_CallBack (Socket.Fd_Of(New_Dscr),
+    Event_Mng.Add_Fd_Callback (Socket.Fd_Of(New_Dscr),
                           True,
                           Read_Cb'Unrestricted_Access);
     Socket.Set_Blocking (Read_Dscr, False);
@@ -212,7 +212,7 @@ begin
                             Accept_Dscr,
                             Local_Port_Num);
     exception
-      when Socket.Soc_addr_In_Use =>
+      when Socket.Soc_Addr_In_Use =>
         Sys_Calls.Put_Line_Error ("Address of "
                                 & Text_Handler.Value(Channel_Name)
                                 & " already in use");

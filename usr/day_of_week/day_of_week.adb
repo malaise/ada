@@ -60,7 +60,7 @@ begin
                          & Normal (Year,  4, Gap => '0') );
   elsif Argument.Get_Nbre_Arg = 1 then
     -- Get date from arg 1
-    Argument.Get_parameter (Txt);
+    Argument.Get_Parameter (Txt);
     if Text_Handler.Length (Txt) /= 10
     or else Text_Handler.Value (Txt)(3) /= '/'
     or else Text_Handler.Value (Txt)(6) /= '/' then
@@ -147,7 +147,7 @@ begin
   end if;
 
   -- Display result
-  Ada.Text_Io.Put_line (Text_Handler.Value (Txt) & " is "
+  Ada.Text_Io.Put_Line (Text_Handler.Value (Txt) & " is "
        & Format (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
        & " "
        & Normal (Day, 2, Gap => '0')

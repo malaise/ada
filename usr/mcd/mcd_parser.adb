@@ -104,7 +104,7 @@ package body Parser is
    Copyr    => (Nosy, "B -> regA, push B             ", False),
    Pushr    => (Nosy, "push regA                     ", False),
    Swapr    => (Nosy, "B <-> regA                    ", False),
-   Swap2r   => (Nosy, "regB <-> regA                 ", False),
+   Swap2R   => (Nosy, "regB <-> regA                 ", False),
    Clearr   => (Nosy, "clear regA                    ", False),
    Clearall => (Nosy, "clear all registers           ", False),
    Emptyr   => (Nosy, "push True is regA is empty    ", False),

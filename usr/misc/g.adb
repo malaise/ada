@@ -51,7 +51,7 @@ procedure G is
 
   begin
     Ret := New_Digit (Allow_0 => False);
-    for i in 1 .. 8 loop
+    for I in 1 .. 8 loop
       Ret := Ret * 10 + New_Digit (Allow_0 => True);
     end loop;
     return Ret;
@@ -136,7 +136,7 @@ begin
       Div (Num, Num, Res);
       if Res /= Got_Res then
         Success := False;
-        Case Res is
+        case Res is
           when Zero =>
             My_Io.Put_Line (" Error, it was  0");
           when Plus_1 =>

@@ -13,7 +13,7 @@ package body Grid_1 is
   begin
     if (C >= ' ' and then C <= '~') or else C = Ascii.Cr then
       return C;
-    elsif C = ascii.Ht then
+    elsif C = Ascii.Ht then
       return ' ';
     else
       return Ascii.Nul;
@@ -21,7 +21,7 @@ package body Grid_1 is
   end Filter;
 
   -- Init DATA
-  procedure Initialize (Key : in string) is
+  procedure Initialize (Key : in String) is
     Row : Row_Coordinate;
     Col : Col_Coordinate;
     Char : Character;
@@ -45,7 +45,7 @@ package body Grid_1 is
   begin
     Text_Handler.Set (Stripped_Key, "");
     -- Store stripped key
-    for i in Key'Range loop
+    for I in Key'Range loop
       Char := Filter(Key(I));
       if Char /= Ascii.Nul then
         if Text_Handler.Locate (Stripped_Key, Char) = 0 then

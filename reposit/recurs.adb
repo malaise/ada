@@ -137,5 +137,5 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
 
 begin -- RECURS
   Explore (Directory.Get_Current);
-end recurs;
+end Recurs;
 

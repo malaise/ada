@@ -27,7 +27,7 @@ package body Game is
 
 
   -- Save and Try a move (no commit - must be undone)
-  Procedure Try_Move (Color : in Space.Color_List; Action : in Valid_Action_Rec) is
+  procedure Try_Move (Color : in Space.Color_List; Action : in Valid_Action_Rec) is
     use type Pieces.Action_Kind_List;
     Take_Own : exception;
   begin
@@ -67,7 +67,7 @@ package body Game is
   begin
     -- Undo promotion
     if History.Action.To.Kind = Pieces.Promote
-    or else History.Action.To.Kind = Pieces.take_And_Promote then
+    or else History.Action.To.Kind = Pieces.Take_And_Promote then
       Space.Board.Delete_Piece (History.Action.To.Dest, True);
       Space.Board.Restore_Piece (History.Promoted);
     end if;
@@ -157,7 +157,7 @@ package body Game is
     King_Square := Pieces.Pos_Of (King.all);
 
     -- Check King is not check
-    players.Rewind_Actions (Opp_Color);
+    Players.Rewind_Actions (Opp_Color);
     loop
       Opp_Action := Players.Next_Action (Opp_Color);
       exit when not Opp_Action.Valid;
@@ -279,5 +279,5 @@ package body Game is
   end Do_Move;
 
 
-end game;
+end Game;
 

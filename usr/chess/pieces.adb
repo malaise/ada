@@ -4,9 +4,9 @@ with Space.Board;
 package body Pieces is
 
   -- Has a pawn moved by two just before
-  Pawn_Moved_Two : array (Space.Color_list) of Piece_Access
+  Pawn_Moved_Two : array (Space.Color_List) of Piece_Access
                  := (others => null);
-  Saved_Pawn_Moved_Two : array (Space.Color_list) of Piece_Access
+  Saved_Pawn_Moved_Two : array (Space.Color_List) of Piece_Access
                        := (others => null);
 
   -- List of valid moves
@@ -100,7 +100,7 @@ package body Pieces is
   end Pos_Of;
 
   -- Move a piece
-  function "-" (From, To : Space.Row_range) return Natural is
+  function "-" (From, To : Space.Row_Range) return Natural is
   begin
     return abs Integer(Space.Row_Range'Pos(From) - Space.Row_Range'Pos(To) );
   end "-";
@@ -199,7 +199,7 @@ package body Pieces is
   begin
     -- Build returned value
     declare
-      Result : Action_Array(1 ..  Action_List_Mng.List_Length(Action_list));
+      Result : Action_Array(1 ..  Action_List_Mng.List_Length(Action_List));
     begin
       -- Scan list if not empty
       if not Action_List_Mng.Is_Empty(Action_List) then
@@ -220,7 +220,7 @@ package body Pieces is
       raise Not_Empty_List_Error;
     end if;
     -- Dispatch
-    Actions_of (Piece);
+    Actions_Of (Piece);
     return Build_Array_From_List;
   end Actions_Of;
 

@@ -17,7 +17,7 @@ procedure T_Bloc_Io is
 
   procedure Dump (Slice : in Int_Io.Element_Array) is
   begin
-    Ada.text_Io.Put("Dump: ");
+    Ada.Text_Io.Put("Dump: ");
     for I in Slice'Range loop
       Ada.Text_Io.Put(Integer'Image(Slice(I)) & " ");
     end loop;

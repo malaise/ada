@@ -85,7 +85,7 @@ package body Display is
     My_Io.Put (Char(Other_Kind(Kind)) & Normal(Cote, 3, True, '0') & ": ");
 
     Val := 0.0;
-    for I in Data.Eff_LinE_Range range 2 .. Last loop
+    for I in Data.Eff_Line_Range range 2 .. Last loop
       Search (Kind, Way(I-1), Way(I), Cote_No, Plus);
       if Arg_Parsing.Verbose then
         if Nb_Printed >= Nb_Cote_Line

@@ -17,7 +17,7 @@ procedure T_Forker is
   Req_Num : Natural;
   Req : Forker.Request_Rec;
   Rep : Forker.Report_Rec;
-  procedure My_send is new Socket.Send (Forker.Request_Rec);
+  procedure My_Send is new Socket.Send (Forker.Request_Rec);
   procedure My_Receive is new Socket.Receive (Forker.Report_Rec);
 
   Cause : Forker.Exit_Cause_List;
@@ -103,7 +103,7 @@ begin
         Cat_Str (Req.Start_Data.Command, Buff(1 .. Len));
       end loop;
 
-      For N in Positive loop
+      for N in Positive loop
         Ada.Text_Io.Put ("Environ (Empty to end) ? ");
         Ada.Text_Io.Get_Line (Buff, Len);
         exit when Len = 0;

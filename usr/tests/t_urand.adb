@@ -50,7 +50,7 @@ begin
     if not Results_Ok then
         Put_Line("!! CAUTION!! Random Number Generator inconsistent on this inplementation");
     else
-        Put_lIne("Random Number Generator Consistent");
+        Put_Line("Random Number Generator Consistent");
     end if;
 end T_Urand;
 

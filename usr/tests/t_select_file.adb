@@ -9,7 +9,7 @@ procedure T_Select_File is
 
   procedure Init is
   begin
-    Null;
+    null;
   end Init;
 
   function My_Select_File is new Select_File(Init);
