@@ -7,8 +7,9 @@ dup putl
 A pushr retacal ] A popr
 
 2 format
-# 10 loops
+# 10 loops by default
 10
+ssize 1 = ifthen
 A pushr call
 
 # Remove counter

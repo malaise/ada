@@ -63,6 +63,7 @@ package body PARSER is
    DUP     => ("><", "push A, push A           "),
    POP     => ("--", "pop                      "),
 
+   IFTHEN  => ("?-", "if A then B              "),
    IFTE    => ("? ", "if C then B else A       "),
    ETFI    => ("?~", "if A then C else B       "),
 

@@ -199,7 +199,7 @@ package body MCD_MNG is
       case ITEM.VAL_OPER is 
         -- These 3 I do it myself
         when SWAP =>
-          POP(B); POP(A); PUSH(B); PUSH(A);
+          POP(A); POP(B); PUSH(A); PUSH(B);
         when DUP =>
           READ(A); PUSH(A);
         when POP =>
@@ -207,43 +207,43 @@ package body MCD_MNG is
 
         -- These are operations
         when ADD =>
-          POP(B); POP(A); PUSH (OPERATIONS.ADD(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.ADD(B,A));
         when SUB =>
-          POP(B); POP(A); PUSH (OPERATIONS.SUB(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.SUB(B,A));
         when MULT =>
-          POP(B); POP(A); PUSH (OPERATIONS.MULT(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.MULT(B,A));
         when DIV =>
-          POP(B); POP(A); PUSH (OPERATIONS.DIV(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.DIV(B,A));
         when REMIND =>
-          POP(B); POP(A); PUSH (OPERATIONS.REMIND(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.REMIND(B,A));
         when POW =>
-          POP(B); POP(A); PUSH (OPERATIONS.POW(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.POW(B,A));
         when BITAND =>
-          POP(B); POP(A); PUSH (OPERATIONS.BITAND(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.BITAND(B,A));
         when BITOR =>
-          POP(B); POP(A); PUSH (OPERATIONS.BITOR(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.BITOR(B,A));
         when BITXOR =>
-          POP(B); POP(A); PUSH (OPERATIONS.BITXOR(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.BITXOR(B,A));
         when SHL =>
-          POP(B); POP(A); PUSH (OPERATIONS.SHL(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.SHL(B,A));
         when SHR =>
-          POP(B); POP(A); PUSH (OPERATIONS.SHR(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.SHR(B,A));
         when MINUS =>
           POP(A); PUSH (OPERATIONS.MINUS(A));
         when BITNEG =>
           POP(A); PUSH (OPERATIONS.BITNEG(A));
         when EQUAL =>
-          POP(B); POP(A); PUSH (OPERATIONS.EQUAL(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.EQUAL(B,A));
         when DIFF =>
-          POP(B); POP(A); PUSH (OPERATIONS.DIFF(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.DIFF(B,A));
         when GREATER =>
-          POP(B); POP(A); PUSH (OPERATIONS.GREATER(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.GREATER(B,A));
         when SMALLER =>
-          POP(B); POP(A); PUSH (OPERATIONS.SMALLER(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.SMALLER(B,A));
         when GREATEQ =>
-          POP(B); POP(A); PUSH (OPERATIONS.GREATEQ(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.GREATEQ(B,A));
         when SMALLEQ =>
-          POP(B); POP(A); PUSH (OPERATIONS.SMALLEQ(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.SMALLEQ(B,A));
         when TOREAL =>
           POP(A); PUSH (OPERATIONS.TOREAL(A));
         when TOINTE =>
@@ -253,30 +253,37 @@ package body MCD_MNG is
         when ISINTE =>
           POP(A); PUSH (OPERATIONS.ISINTE(A));
         when BOLAND =>
-          POP(B); POP(A); PUSH (OPERATIONS.BOLAND(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.BOLAND(B,A));
         when BOLOR =>
-          POP(B); POP(A); PUSH (OPERATIONS.BOLOR(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.BOLOR(B,A));
         when BOLXOR =>
-          POP(B); POP(A); PUSH (OPERATIONS.BOLXOR(A,B));
+          POP(A); POP(B); PUSH (OPERATIONS.BOLXOR(B,A));
         when BOLNEG =>
           POP(A); PUSH (OPERATIONS.BOLNEG(A));
+
+        -- Conditions
+        when IFTHEN =>
+          POP(A); POP(B);
+          if OPERATIONS.IS_TRUE(A) then
+            PUSH(B);
+          end if;
         when IFTE =>
-          POP(C); POP(B); POP(A); PUSH (OPERATIONS.IFTE(A,B,C));
+          POP(A); POP(B); POP(C); PUSH (OPERATIONS.IFTE(C,B,A));
         when ETFI =>
-          POP(C); POP(B); POP(A); PUSH (OPERATIONS.IFTE(C,A,B));
+          POP(A); POP(B); POP(C); PUSH (OPERATIONS.IFTE(A,C,B));
  
         when OBASE =>
           POP(A); IOS.SET_OBASE(A);
         -- These are about registers
         when POPR =>
-          -- A B -> store A in reg B
-          POP(B); POP(A); REGISTERS.STORE(A, B);
+          -- store B in reg A
+          POP(A); POP(B); REGISTERS.STORE(B, A);
         when COPYR =>
-          -- A B -> store A in reg B
-          POP(B); READ(A); REGISTERS.STORE(A, B);
+          -- store B in reg A and push B
+          POP(A); READ(B); REGISTERS.STORE(B, A);
         when PUSHR =>
-          -- A -> push content of reg B
-          POP(B); PUSH(REGISTERS.RETRIEVE(B));
+          -- A -> push content of reg A
+          POP(A); PUSH(REGISTERS.RETRIEVE(A));
 
         -- Stack size
         when SSIZE =>
