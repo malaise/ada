@@ -44,10 +44,10 @@ package body Parser is
    Minus    => ("+-", "push -A                       ", False),
    Absv     => (Nosy, "push |A|                      ", True),
 
-   Bitand   => ("&&", "push B & A (bit and)          ", False),
-   Bitor    => ("||", "push B | A (bit and)          ", False),
-   Bitxor   => ("^^", "push B ^ A (bit and)          ", False),
-   Bitneg   => ("~~", "push ~A    (bit neg)          ", False),
+   Bitand   => ("&&", "push B and A (bit and)        ", False),
+   Bitor    => ("||", "push B or A  (bit or)         ", False),
+   Bitxor   => ("^^", "push B xor A (bit xor)        ", False),
+   Bitneg   => ("~~", "push neg A   (bit neg)        ", False),
    Shl      => ("<<", "push B << A (bits shift left) ", False),
    Shr      => (">>", "push B >> A (bits shift right)", True),
 
@@ -353,7 +353,7 @@ package body Parser is
     Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
     Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
     Put_Line ("  <string>     ::= ""<text>""");
-    Put_Line ("Operators are: Name      Action (A is top of stack, then B...)");
+    Put_Line ("Operators are: Name       Action (A is top of stack, then B...)");
     for O in Mcd_Mng.Operator_List loop
       Ope_Name:= (others => ' ');
       if Words(O).Word /= Nosy then
