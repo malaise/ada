@@ -2,6 +2,7 @@
 -- <mode> ::= -c | -s
 -- -c : connects to server  for data to relay
 -- -s : accepts connections for data to relay
+-- -C or -S for remanent (else exit on fifo disconnection)
 -- Each data is send to client which sent las data received
 with Ada.Text_Io;
 
@@ -13,7 +14,7 @@ procedure Pipe is
   Max_Data_Size : constant := 1024;
   subtype Message_Type is String (1 .. Max_Data_Size);
   package Pipe_Fifo is new Fifos.Fifo (Message_Type);
-  Fid : Pipe_Fifo.Fifo_Id;
+  Fid, Acc_Id : Pipe_Fifo.Fifo_Id;
 
   -- Message
   Message : Message_Type;
@@ -21,6 +22,7 @@ procedure Pipe is
 
   -- Mode
   Server : Boolean;
+  Remanent : Boolean;
 
   -- End of processing
   Done : Boolean := False;
@@ -35,7 +37,10 @@ procedure Pipe is
   begin
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
                             & " <mode> <fifo>");
-    Sys_Calls.Put_Line_Error ("<mode> ::= -s | -c");
+    Sys_Calls.Put_Line_Error (
+     "<mode> ::= -s | -c     exiting when fifo disconnects");
+    Sys_Calls.Put_Line_Error (
+     "<mode> ::= -S | -C     remaining when fifo disconnects");
     Sys_Calls.Set_Error_Exit_Code;
   end Usage;
 
@@ -58,9 +63,35 @@ procedure Pipe is
   procedure Conn_Cb (Fifo_Name : in String;
                      Id        : in Pipe_Fifo.Fifo_Id;
                      Connected : in Boolean) is
+    use type Pipe_Fifo.Fifo_Id;
   begin
-    if not Server then
-      Fid := Id;
+    if Server then
+      if Connected then
+        -- Accept client
+        Fid := Id;
+        if not Remanent then
+          -- No more client if not remanent
+          Pipe_Fifo.Close (Acc_Id);
+        end if;
+      else
+        -- Disconnection, exit if not remanent
+        if not Remanent then
+          Done := True;
+        else
+          Fid := Pipe_Fifo.No_Fifo;
+        end if;
+      end if;
+    else
+      -- Client
+      if Connected then
+        Fid := Id;
+      else
+        if Remanent then
+          Fid := Pipe_Fifo.No_Fifo;
+        else
+          Done := True;
+        end if;
+      end if;
     end if;
   end Conn_Cb;
 
@@ -145,8 +176,16 @@ begin
   -- Store mode
   if Argument.Get_Parameter (Occurence => 1) = "-s" then
     Server := True;
+    Remanent := False;
   elsif Argument.Get_Parameter (Occurence => 1) = "-c" then
     Server := False;
+    Remanent := False;
+  elsif Argument.Get_Parameter (Occurence => 1) = "-S" then
+    Server := True;
+    Remanent := True;
+  elsif Argument.Get_Parameter (Occurence => 1) = "-C" then
+    Server := False;
+    Remanent := True;
   else
     Usage;
     return;
@@ -160,6 +199,7 @@ begin
                          Ovfl_Cb'Unrestricted_Access);
   if Server then
     -- Fid will be the one of last message received
+    Acc_Id := Fid;
     Fid := Pipe_Fifo.No_Fifo;
   else
     -- Let connection establish
