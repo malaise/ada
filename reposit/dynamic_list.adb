@@ -462,7 +462,7 @@ package body Dynamic_List is
             Next_Pos;
           end if;
           loop
-            exit when Equal(New_Pos.Value, Item);
+            exit when Match(New_Pos.Value, Item);
             Next_Pos;
           end loop;
         end loop;
@@ -472,7 +472,7 @@ package body Dynamic_List is
             Prev_Pos;
           end if;
           loop
-            exit when Equal(New_Pos.Value, Item);
+            exit when Match(New_Pos.Value, Item);
             Prev_Pos;
           end loop;
         end loop;
