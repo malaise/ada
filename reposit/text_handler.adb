@@ -195,6 +195,9 @@ package body Text_Handler is
    return Max_Len_Range is
     Found_Occurence : Natural := 0;
   begin
+    if Length(Within) = 0 or else Length(Fragment) = 0 then
+      return 0;
+    end if;
     for I in 1 .. Length(Within) - Length(Fragment) + 1 loop
       if Value(Within)(I .. I+Length(Fragment)-1) = Value(Fragment) then
         Found_Occurence := Found_Occurence + 1;
@@ -211,6 +214,9 @@ package body Text_Handler is
    return Max_Len_Range is
     Found_Occurence : Natural := 0;
   begin
+    if Length(Within) = 0 or else Fragment'Length = 0 then
+      return 0;
+    end if;
     for I in 1 .. Length(Within) - Fragment'Length + 1 loop
       if Value(Within)(I .. I+Fragment'Length-1) = Fragment then
         Found_Occurence := Found_Occurence + 1;
@@ -226,6 +232,9 @@ package body Text_Handler is
    return Max_Len_Range is
     Found_Occurence : Natural := 0;
   begin
+    if Length(Within) = 0 then
+      return 0;
+    end if;
     for I in 1 .. Length(Within) loop
       if Value(Within)(I) = Fragment then
         Found_Occurence := Found_Occurence + 1;
@@ -244,3 +253,4 @@ package body Text_Handler is
   end String_For_C;
 
 end Text_Handler;
+

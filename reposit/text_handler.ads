@@ -40,21 +40,22 @@ package Text_Handler is
   procedure Append (To : in out Text; Tail : in Character);
 
   procedure Amend (To : in out Text; By : in Text;
-   Position : in Max_Len_Range);
+                   Position : in Max_Len_Range);
   procedure Amend (To : in out Text; By : in String;
-   Position : in Max_Len_Range);
+                   Position : in Max_Len_Range);
   procedure Amend (To : in out Text; By : in Character;
-   Position : in Max_Len_Range);
+                   Position : in Max_Len_Range);
 
+  -- Return 0 if not found or if Within or Fragment is empty
   function Locate (Within : Text; Fragment : Text; Occurence : Positive := 1)
-   return Max_Len_Range;
+                   return Max_Len_Range;
   function Locate (Within : Text; Fragment : String; Occurence : Positive := 1)
-   return Max_Len_Range;
+                  return Max_Len_Range;
   function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1)
-   return Max_Len_Range;
+                  return Max_Len_Range;
 
-  -- Appends ASCII.NULL to FROM.VAL (FROM.MAX_LEN must be long enough).
-  -- STRING_ADDRESS is FROM.VAL'ADDRESS and can then be passed to a C function.
+  -- Appends Ascii.Null to From.Val (From.Max_Len must be long enough).
+  -- String_Address is From.Val'Address and can then be passed to a C function.
   procedure String_For_C (From : in out Text; String_Address : out System.Address);
 
 private
@@ -67,3 +68,4 @@ private
   Empty_Text : constant Text := (Max_Len => 0, Len => 0, Val => "");
 
 end Text_Handler;
+
