@@ -5,6 +5,7 @@
 
 
 char* ns_proto[2] = {"udp", "tcp"};
+typedef enum {not_connected, connecting, connected} connect_state;
 
 /* Structure pointed by the token */
 typedef struct {
@@ -12,7 +13,7 @@ typedef struct {
 	boolean		dest_set;
 	boolean		linked;
         boolean		blocking;
-        boolean		connected;
+        connect_state	connection;
 	int		socket_id;
 	struct sockaddr_in send_struct;
 	struct sockaddr_in rece_struct;
