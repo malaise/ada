@@ -31,6 +31,10 @@ package Dictio_Lib is
   -- May raise No_Dictio if init fails
   procedure Init;
 
+  -- Check item name validity
+  --   <ident> [ { .<ident> } ]
+  function Is_Valid_Item_Name (Name : in String) return Boolean;
+
   -- Get Item data
   -- Syntax of name for Get/Set
   --   <ident> [ { .<ident> } ]

@@ -281,6 +281,17 @@ package body Dictio_Lib is
       raise No_Dictio;
   end Send_Request;
 
+  -- Check item name validity
+  --   <ident> [ { .<ident> } ]
+  function Is_Valid_Item_Name (Name : in String) return Boolean is
+  begin
+    Check_Name (Name);
+    return True;
+  exception
+    when Name_Too_Long | Invalid_Name =>
+      return False;
+  end Is_Valid_Item_Name;
+
   -- Get Item data
   -- May raise Name_Too_Long or No_Item 
   function Get (Name : in String) return String is
