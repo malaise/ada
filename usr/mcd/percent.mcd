@@ -1,21 +1,37 @@
-# A is B + x % of B
-a popr b popr
+# Error message, check and store args
+[ "Error, 2 positive numbers expected." putl
+ssize popn retall ] E popr
+ssize 2 /= E pushr ifcall
+# A
+dup isinte ~ E pushr ifcall
+dup 0 <= E pushr ifcall
+a popr
+# B
+dup isinte ~ E pushr ifcall
+dup 0 <= E pushr ifcall
+b popr
+
+# Format a % result (2 digits)
+[ 100.0 *
+Trunc dup
+100 / put "." put
+# Display frac (2 digits) and %
+100 % dup 10 < [ "0" put 1 format put ] [ 2 format put ] ifte call
+"%" putl ] P popr
 
 # x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *
-
 0 format
 a pushr put " = " put b pushr put " " put
-
 # Format result
 dup 0.0 <  "-"  "+" ifte put " " put
-absv
-100.0 *
-Trunc dup
-100 / put "." put
-# Display frac (2 digits) and unit
-100 % dup 10 < [ "0" put 1 format put ] [ 2 format put ] ifte call
+absv P pushr call
 
-"%" putl
 
+# A is B + x % of B
+a pushr toreal b pushr toreal / 100.0 *
+0 format
+a pushr put " = " put b pushr put " * " put
+# Format result
+P pushr call
 
