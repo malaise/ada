@@ -139,28 +139,33 @@ package body IOS is
   function STROF (ITEM : ITEM_REC) return ITEM_REC is
     RES : ITEM_REC(CHRS);
 
-    procedure PARSE_SPACES is
-      FIRST, LAST : NATURAL := 0;
+    -- String is at the end of RES
+    -- Move it after some spaces at the beginning
+    --  so that the whoe takes SIZE characters
+    procedure FIX_SIZE (SIZE : in TEXT_IO.FIELD) is
+      FIRST : NATURAL := 0;
+      LEN   : POSITIVE;
     begin
-      for I in RES.VAL_TEXT'RANGE loop
-        if FIRST = 0 and then RES.VAL_TEXT(I) /= ' ' then
-          FIRST := I;
-        elsif FIRST /= 0 and then RES.VAL_TEXT(I) = ' ' then
-          LAST := I - 1;
+      for I in reverse RES.VAL_TEXT'RANGE loop
+        if RES.VAL_TEXT(I) = ' ' then
+          FIRST := I + 1;
           exit;
         end if;
       end loop;
       if FIRST = 0 then
         RES.VAL_LEN := 0;
-      elsif LAST = 0 then
-        RES.VAL_LEN := RES.VAL_TEXT'LAST - FIRST + 1;
-        RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
-             RES.VAL_TEXT(FIRST .. RES.VAL_TEXT'LAST);
-      else
-        RES.VAL_LEN := LAST - FIRST + 1;
-        RES.VAL_TEXT(1 .. RES.VAL_LEN) := RES.VAL_TEXT(FIRST .. LAST);
+        return;
       end if;
-    end PARSE_SPACES;
+      LEN := RES.VAL_TEXT'LAST - FIRST + 1;
+      if LEN >= SIZE then
+        RES.VAL_LEN := LEN;
+        RES.VAL_TEXT(1 .. LEN) := RES.VAL_TEXT(FIRST .. RES.VAL_TEXT'LAST);
+      else
+        RES.VAL_LEN := SIZE;
+        RES.VAL_TEXT(SIZE - LEN + 1 .. SIZE)
+            := RES.VAL_TEXT(FIRST .. RES.VAL_TEXT'LAST);
+      end if;
+    end FIX_SIZE;
 
   begin
     CHECK_DEFAULT_FORMATS;
@@ -169,11 +174,12 @@ package body IOS is
       when INTE =>
         RES.VAL_TEXT := (others => ' ');
         INTE_IO.PUT(RES.VAL_TEXT, ITEM.VAL_INTE);
-        PARSE_SPACES;
+        FIX_SIZE (INTE_IO.DEFAULT_WIDTH);
       when REAL =>
         RES.VAL_TEXT := (others => ' ');
         REAL_IO.PUT(RES.VAL_TEXT, ITEM.VAL_REAL);
-        PARSE_SPACES;
+         FIX_SIZE (REAL_IO.DEFAULT_FORE + 1 + REAL_IO.DEFAULT_AFT
+                   + REAL_IO.DEFAULT_EXP);
       when BOOL  =>
         if ITEM.VAL_BOOL then
           RES.VAL_LEN := 4;
@@ -183,14 +189,7 @@ package body IOS is
           RES.VAL_TEXT(1 .. RES.VAL_LEN) := "False";
         end if;
       when CHRS =>
-        if ITEM.VAL_TEXT(1) = '"' then
-          RES.VAL_LEN := ITEM.VAL_LEN - 2;
-          RES.VAL_TEXT(1 .. RES.VAL_LEN) :=
-                 ITEM.VAL_TEXT(2 .. ITEM.VAL_LEN - 1);
-        else
-          RES := ITEM;
-        end if;
-        
+        RES := ITEM;
       when others =>
         raise INVALID_ARGUMENT;
     end case;
