@@ -164,6 +164,7 @@ package body MESU_MNG is
     CURSOR_FIELD := 07;
     CURSOR_COL := 0;
     MESU_SEL.LOAD;
+    AFPX.UPDATE_LIST (AFPX.CENTER);
 
     if NB_MONTH /= 0 then
       STR_MNG.CURRENT_DATE_REC (CURRENT_DATE, NB_MONTH);
@@ -292,6 +293,7 @@ package body MESU_MNG is
               MESU_SEL.SAVE;
               PERS_LIS.LIST (EXIT_PROGRAM);
               MESU_SEL.LOAD;
+              AFPX.UPDATE_LIST(AFPX.CENTER);
               if EXIT_PROGRAM then
                 exit LIST;
               end if;

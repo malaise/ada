@@ -2,7 +2,7 @@ with TEXT_IO, NORMAL, DOS, AFPX, SYS_CALLS;
 with STR_MNG, MESU_FIL, PERS_DEF, MESU_DEF, MESU_NAM, PERS_MNG;
 package body MESU_PRT is
 
-  PRINTER_NAME : constant STRING := "PRN";
+  PRINTER_NAME : constant STRING := "";
   PRINTER_COMMAND : constant STRING := "heart_print";
   PRINTER      : TEXT_IO.FILE_TYPE;
 
