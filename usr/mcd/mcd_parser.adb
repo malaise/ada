@@ -173,6 +173,15 @@ package body Parser is
 
     C := Text_Handler.Value(Txt)(1);
 
+    -- No [ nor ] in word
+    if Text_Handler.Value(Txt) /= "["
+    and then Text_Handler.Value(Txt) /= "]"
+    and then (Text_Handler.Locate(Txt, "[") /= 0
+      or else Text_Handler.Locate(Txt, "]") /= 0) then
+      Instr_Stack.Push(Item_Chrs);
+      raise Parsing_Error;
+    end if;
+
     -- Parse [ or REGI
     if Text_Handler.Length(Txt) = 1 then
       
@@ -196,6 +205,19 @@ package body Parser is
           elsif Text_Handler.Value(Txt) = "]" then
             Level := Level - 1;
             exit when Level = 0;
+          elsif Text_Handler.Empty(Txt) then
+            -- Unexpected Eof
+            Item_Prog.Val_Len := Text_Handler.Length(Txts);
+            Item_Prog.Val_Text(1 .. Item_Prog.Val_Len) := Text_Handler.Value(Txts);
+            if Item_Chrs.Val_Len + 2 <= Input_Dispatcher.Max_String_Lg then
+              Item_Chrs.Val_Len := Text_Handler.Length(Txts) + 2;
+              Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := "[ " & Text_Handler.Value(Txts);
+            else
+              Item_Chrs.Val_Len := Text_Handler.Length(Txts);
+              Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
+            end if;
+            Instr_Stack.Push(Item_Chrs);
+            raise Parsing_Error;
           end if;
           -- No space before first word
           if First_Word then
@@ -220,6 +242,7 @@ package body Parser is
 
     end if;
 
+    -- Strings
     if Text_Handler.Value(Txt)(1) = Input_Dispatcher.Sd
     and then Text_Handler.Value(Txt)(Text_Handler.Length(Txt)) = Input_Dispatcher.Sd then
       Item_Chrs.Val_Len := Text_Handler.Length(Txt);
@@ -230,6 +253,7 @@ package body Parser is
              Item_Chrs.Val_Text(2 .. Item_Chrs.Val_Len + 1);
       return Item_Chrs;
     end if;
+
 
     -- Parse OPER : string
     declare
@@ -245,6 +269,7 @@ package body Parser is
       -- Does not match
       when others => null;
     end;
+
 
     -- Parse OPER : synbol
     if Text_Handler.Length(Txt) <= 2 then
