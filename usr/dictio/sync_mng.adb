@@ -1,5 +1,5 @@
 with Timers, Event_Mng, Dynamic_List, Sys_Calls;
-with Status, Intra_Dictio, Data_Base, Parse, Debug;
+with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors;
 package body Sync_Mng is
 
   Sending_Sync : Boolean := False;
@@ -144,11 +144,12 @@ package body Sync_Mng is
 
   procedure Do_Sync is
     Item : Data_Base.Item_Rec;
-    Result : Intra_Dictio.Reply_Result_List;
-    Timeout : Natural;
+    Reply_Result : Intra_Dictio.Reply_Result_List;
+    Ovf_Timeout, Curr_Timeout : Natural;
     Dest : Tcp_Util.Host_Name;
     Bytes_Sent : Natural;
-    use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List;
+    use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List,
+             Event_Mng.Out_Event_List;
   begin
     Set_Delay;
     if Debug.Level_Array(Debug.Sync) then
@@ -168,25 +169,34 @@ package body Sync_Mng is
       loop
         Sync_List_Mng.Read (Sync_List, Dest, Sync_List_Mng.Current);
 
-        Timeout := First_Timeout;
+        Ovf_Timeout := First_Timeout;
         Retries:
         for I in 1 .. Max_Retry loop
-          Result := Intra_Dictio.Send_Sync_Data (Dest, Item);
+          -- Try to send
+          Reply_Result := Intra_Dictio.Send_Sync_Data (Dest, Item);
+          if Reply_Result = Intra_Dictio.Overflow then
+            Curr_Timeout := Ovf_Timeout;
+            -- Increase timeout for next retry
+            Ovf_Timeout := Ovf_Timeout * Timeout_Factor;
+            if Debug.Level_Array(Debug.Sync) then
+              Debug.Put ("Sync: Overflow to " & Parse (Dest));
+            end if; 
+          else
+            -- Ok or error
+            Curr_Timeout := 0;
+          end if;
+          -- Wait a bit / check event
+          Event_Mng.Wait (Curr_Timeout);
           -- Ok or Error or too many Overflows.
-          exit Retries when Result /= Intra_Dictio.Overflow
+          exit Retries when Reply_Result /= Intra_Dictio.Overflow
                             or else I = Max_Retry;
-          if Debug.Level_Array(Debug.Sync) then
-            Debug.Put ("Sync: Overflow to " & Parse (Dest));
-          end if; 
-          Event_Mng.Wait (Timeout);
-          -- Increase timeout for next retry
-          Timeout := Timeout * Timeout_Factor;
         end loop Retries;
 
-        if Result /= Intra_Dictio.Ok then
+        if Reply_Result /= Intra_Dictio.Ok then
           -- Give up with this destination if too many overflows or other error
           if Debug.Level_Array(Debug.Sync) then
-            Debug.Put ("Sync: Giving up " & Parse (Dest) & " due to " & Result'Img);
+            Debug.Put ("Sync: Giving up " & Parse (Dest) & " due to "
+                     & Reply_Result'Img);
           end if;
           if Sync_List_Mng.Get_Position (Sync_List) = 1 then
             Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Next);

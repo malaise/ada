@@ -1,12 +1,14 @@
 with Sys_Calls, Argument;
-with Errors;
+with Errors, Debug;
 package body Args is
 
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                     & " -c<channel_name> -f<channel_file> -p<port>");
-    Sys_Calls.Set_Exit_Code (Errors.Init_Error);
+    Debug.Put_Error ("ERROR. Argument not found"
+                   & Ascii.Cr & Ascii.Lf
+                   & "Usage: "
+                   & Argument.Get_Program_Name
+                   & " -c<channel_name> -f<channel_file> -p<port>");
     raise Errors.Exit_Error;
   end Usage;
 

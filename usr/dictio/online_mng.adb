@@ -58,9 +58,7 @@ package body Online_Mng is
 
   procedure Start_Fight is
   begin
-    Status.Set (Status.Fight);
-    Intra_Dictio.Send_Status;
-    Fight_Mng.Start (1.0, Fight_Actions);
+    Fight_Mng.Start (Status.Fight, 1.0, Fight_Actions);
   end Start_Fight;
 
   procedure Event (From  : in Tcp_Util.Host_Name;

@@ -7,5 +7,7 @@ package Debug is
 
   procedure Put (Str : in String);
 
+  procedure Put_Error (Str : in String);
+
 end Debug;
 

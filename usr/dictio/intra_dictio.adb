@@ -33,10 +33,10 @@ package body Intra_Dictio is
       Dictio_Channel.Subscribe;
     exception
       when Error: others =>
-        Sys_Calls.Put_Line_Error ("Cannot use channel "
-                                & Args.Get_Channel_Name);
-        Sys_Calls.Put_Line_Error ("Exception: "
-                                & Ada.Exceptions.Exception_Name(Error));
+        Debug.Put_Error ("Cannot use channel "
+                       & Args.Get_Channel_Name);
+        Debug.Put_Error ("Exception: "
+                       & Ada.Exceptions.Exception_Name(Error));
         Args.Usage;
     end;
 
@@ -45,6 +45,10 @@ package body Intra_Dictio is
       Dictio_Channel.Del_Destination (Local_Host_Name.Get);
     exception
       when Error: others =>
+        Debug.Put_Error ("Cannot set destinations on "
+                       & Args.Get_Channel_Name);
+        Debug.Put_Error ("Exception: "
+                       & Ada.Exceptions.Exception_Name(Error));
         Args.Usage;
     end;
     if Debug.Level_Array(Debug.Intra) then

@@ -15,10 +15,15 @@ package body Fight_Mng is
     return Tid /= Timers.No_Timer;
   end In_Fight;
 
-  procedure Start (Timeout : in Duration; Actions : in Fight_Action) is
+  procedure Start (New_Status : in Status.Status_List;
+                   Timeout : in Duration;
+                   Actions : in Fight_Action) is
     T : Timers.Delay_Rec;
   begin
     Fight_Actions := Actions;
+
+    Intra_Dictio.Send_Status;
+    Status.Set (New_Status, Immediate => True);
 
     T.Delay_Seconds := Timeout;
     Tid := Timers.Create (T, Timer_Cb'Access);
@@ -45,8 +50,8 @@ package body Fight_Mng is
     end if;
     if Extra /= "" and then Extra(1) = Intra_Dictio.Extra_Ver
     and then Extra(2 .. Extra'Last) /= Versions.Intra then
-      Debug.Put ("Fight: version mismatch. Received " & Extra
-               & " while being " & Versions.Intra);
+      Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
+                     & Extra & " while being " & Versions.Intra);
       raise Errors.Exit_Error;
     end if;
     Nodes.Set (From, Stat, Sync);

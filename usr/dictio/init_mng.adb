@@ -5,9 +5,8 @@ package body Init_Mng is
   begin
     -- Status is unknown
     Intra_Dictio.Send_Status;
-    Status.Set (Status.Init);
 
-    Fight_Mng.Start (2.0, 
+    Fight_Mng.Start (Status.Init, 2.0, 
       (Nodes.Many_Master_Master => Status.Starting,
        Nodes.Many_Master_Slave  => Status.Starting,
        Nodes.One_Master_Master  => Status.Slave,

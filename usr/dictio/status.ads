@@ -3,7 +3,8 @@ package Status is
 
   type Status_List is (Starting, Init, Slave, Master, Dead, Fight);
 
-  procedure Set (Status : in Status_List);
+  procedure Set (Status : in Status_List;
+                 Immediate : in Boolean := False);
 
   function Get return Status_List;
 

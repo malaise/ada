@@ -1,6 +1,6 @@
 with Tcp_Util, Event_Mng;
 with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
-     Sync_Mng, Debug, Versions, Parse, Fight_Mng;
+     Sync_Mng, Debug, Versions, Parse, Fight_Mng, Errors;
 package body Dispatch is
 
   procedure New_Intra (Diff : in Boolean;
@@ -11,10 +11,12 @@ package body Dispatch is
                        Item : in Data_Base.Item_Rec);
 
 
-  Signal_Received : Boolean := False;
   procedure Signal is
   begin
-    Signal_Received := True;
+    if Debug.Level_Array(Debug.Fight) then
+      Debug.Put ("Dispatch: signal received");
+    end if;
+    raise Errors.Exit_Signal;
   end Signal;
 
   procedure Handle_New_Status
@@ -25,7 +27,6 @@ package body Dispatch is
     use type Event_Mng.Out_Event_List;
   begin
     Args.Init;
-    Status.Set (Handle_New_Status'Access);
     Event_Mng.Set_Sig_Callback (Signal'Access);
     Intra_Dictio.Init;
 
@@ -33,14 +34,15 @@ package body Dispatch is
       null;
     end loop;
 
+    Status.Set (Handle_New_Status'Access);
     Intra_Dictio.Set_Read_Cb (New_Intra'Access);
-    Init_Mng.Start;
+    Status.Set (Status.Init);
   end Init;
 
 
   procedure Run is
   begin
-    while not Signal_Received loop
+    loop
       Event_Mng.Wait (-1);
     end loop;
   end;
@@ -94,11 +96,9 @@ package body Dispatch is
   begin
     case New_Status is
       when Status.Starting =>
-        if not Signal_Received then
-          Init_Mng.Start;
-        end if;
+        Status.Set (Status.Init);
       when Status.Init =>
-        null;
+        Init_Mng.Start;
       when Status.Dead =>
         if Prev_Status = Status.Master then
           Intra_Dictio.Send_Status;

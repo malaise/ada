@@ -43,13 +43,19 @@ package body Status is
     return False;
   end Timer_Cb;
 
-  procedure Set (Status : in Status_List) is
+  procedure Set (Status : in Status_List;
+                 Immediate : in Boolean := False) is
+    Dummy : Boolean;
     Tid : Timers.Timer_Id;
     T : Timers.Delay_Rec;
   begin
-    -- Create immediate timer with status (so we go back to main loop)
-    T.Delay_Seconds := 0.0;
-    Tid := Timers.Create (T, Timer_Cb'Access, Status_List'Pos(Status));
+    if Immediate then
+      Dummy := Timer_Cb (Timers.No_Timer, Status_List'Pos(Status));
+    else
+      -- Create immediate timer with status (so we go back to main loop)
+      T.Delay_Seconds := 0.0;
+      Tid := Timers.Create (T, Timer_Cb'Access, Status_List'Pos(Status));
+    end if;
   end Set;
 
   function Get return Status_List is

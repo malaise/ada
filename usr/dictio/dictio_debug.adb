@@ -37,7 +37,7 @@ package body Debug is
     end if;
   end Init;
 
-  procedure Put (Str : in String) is
+  function Date_Image return String is
     Year : Ada.Calendar.Year_Number;
     Month : Ada.Calendar.Month_Number;
     Day : Ada.Calendar.Day_Number;
@@ -49,12 +49,21 @@ package body Debug is
   begin
     Ada.Calendar.Split (Ada.Calendar.Clock, Year, Month, Day, Dur);
     Day_Mng.Split (Dur, Hour, Minute, Second, Millisec);
-    Ada.Text_Io.Put (Normal (Hour, 2, Gap => '0') & ":"
-                   & Normal (Minute, 2, Gap => '0') & ":"
-                   & Normal (Second, 2, Gap => '0') & "."
-                   & Normal (Millisec, 3, Gap => '0') & " ");
-    Ada.Text_Io.Put_Line (Str);
+    return Normal (Hour, 2, Gap => '0') & ":"
+         & Normal (Minute, 2, Gap => '0') & ":"
+         & Normal (Second, 2, Gap => '0') & "."
+         & Normal (Millisec, 3, Gap => '0');
+  end Date_Image;
+
+  procedure Put (Str : in String) is
+  begin
+    Ada.Text_Io.Put_Line (Date_Image & " " & Str);
   end Put;
+
+  procedure Put_Error (Str : in String) is
+  begin
+    Sys_Calls.Put_Line_Error (Date_Image & " " & Str);
+  end Put_Error;
 
 end Debug;
 

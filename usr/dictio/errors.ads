@@ -1,12 +1,12 @@
 package Errors is
 
   -- Exit Codes
-  Ok : constant Natural := 0;
   Init_Error : constant Natural := 1;
   Runtime_Error : constant Natural := 2;
+  Signal : constant Natural := 3;
 
-  -- Abort execution
-  Exit_Error : exception;
+  -- Abort execution or error or signal
+  Exit_Error, Exit_Signal : exception;
 
 end Errors;
 

@@ -1,6 +1,7 @@
 with Dynamic_List;
 with Local_Host_Name, Parse, Debug;
 package body Nodes is
+
   type Node_Rec is record
     Name : Tcp_Util.Host_Name;
     Stat : Status.Status_list;
@@ -49,8 +50,12 @@ package body Nodes is
     Rec.Sync := Sync;
     if Search_Name (Name) then
       if Stat /= Status.Dead then
-        Node_Mng.Modify (Node_List, Rec, Node_Mng.Current);
+        if Stat /= Status.Fight then
+          -- Known and not dead and not fight => replace
+          Node_Mng.Modify (Node_List, Rec, Node_Mng.Current);
+        end if;
       else
+        -- Dead => delete
         if Node_Mng.Get_Position (Node_List) = 1 then
           Node_Mng.Delete (Node_List, Node_Mng.Next);
         else
@@ -58,6 +63,7 @@ package body Nodes is
         end if;
       end if;
     elsif Stat /= Status.Dead then
+      -- Unknown and alive => insert
       if not Node_Mng.is_Empty (Node_List) then
         Node_Mng.Move_To (Node_List, Node_Mng.Next, 0, False);
       end if;
@@ -94,6 +100,11 @@ package body Nodes is
     use type Status.Status_List;
     Result : Check_Result_List;
   begin
+
+    -- This should not occure, but well...
+    if Node_Mng.Is_Empty (Node_List) then
+      return No_Master_Slave;
+    end if;
 
     Local_Host_Name.Get (Own_Name);
 

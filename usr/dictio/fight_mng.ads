@@ -4,7 +4,9 @@ package Fight_Mng is
 
   type Fight_Action is array (Nodes.Check_Result_List) of Status.Status_List;
 
-  procedure Start (Timeout : in Duration; Actions : in Fight_Action);
+  procedure Start (New_Status : in Status.Status_List;
+                   Timeout : in Duration;
+                   Actions : in Fight_Action);
 
   function In_Fight return Boolean;
 
