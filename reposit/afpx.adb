@@ -526,6 +526,8 @@ package body AFPX is
         return ABSOLUTE_FIELD_RANGE(RET_NO);
       elsif RET_NO = AFPX_TYP.ABSOLUTE_FIELD_RANGE(FROM) then
         return 0;
+      elsif FROM = 0 and then RET_NO = AF_DSCR.CURRENT_DSCR.NB_FIELDS then
+        return 0;
       end if;
     end loop;
   end NEXT_CURSOR_FIELD;
@@ -548,6 +550,8 @@ package body AFPX is
       and then not AF_DSCR.FIELDS(RET_NO).ISPROTECTED then
         return ABSOLUTE_FIELD_RANGE(RET_NO);
       elsif RET_NO = AFPX_TYP.ABSOLUTE_FIELD_RANGE(FROM) then
+        return 0;
+      elsif FROM = 0 and then RET_NO = 1 then
         return 0;
       end if;
     end loop;
