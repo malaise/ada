@@ -4,6 +4,7 @@ all: AFPX.DSC
 	amake t_afpx.adb -largs $(LIBX_MNG) -lX11
 	amake t_arg.adb
 	amake t_con.adb -largs $(LIBX_MNG) -lX11
+	amake t_curve.adb -largs $(LIBX_MNG) -lX11
 	amake t_delta_date.adb
 	amake t_dd.adb
 	amake t_dir.adb
