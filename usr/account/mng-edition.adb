@@ -489,8 +489,10 @@ package body EDITION is
                     -- Ok and back
                     exit ALL_EDIT;
                   else
-                    -- Next oper
-                    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
+                    if EDIT_TYPE /= CREATE then
+                      -- Next oper
+                      SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
+                    end if;
                     exit ONE_EDIT;
                   end if;
                 end if;
@@ -559,8 +561,10 @@ package body EDITION is
                 CURSOR_FIELD := VALIDATE(EDIT_TYPE, KIND, STATUS);
                 CURSOR_COL := 0;
                 if CURSOR_FIELD = 0 then
-                  -- Next oper
-                  SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
+                  if EDIT_TYPE /= CREATE then
+                    -- Next oper
+                    SEL_LIST_MNG.MOVE_TO(SEL_LIST, SEL_LIST_MNG.NEXT);
+                  end if;
                   exit ONE_EDIT;
                 end if;
                 SCREEN.RING(TRUE);
