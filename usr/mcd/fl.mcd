@@ -30,7 +30,7 @@ C pushr call
 h pushr + h popr
 m pushr + m copyr
 # Propagate the carry
-60 >= [ m pushr 60 - m popr h pushr 1 h popr ] ifcall
+60 >= [ m pushr 60 - m popr h pushr 1 + h popr ] ifcall
 # Loop
 L pushr retacal ] L popr
 
