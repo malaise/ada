@@ -1,12 +1,16 @@
+ADA_HOME=/users/malaise/ada
+LIBX_MNG=$(ADA_HOME)/c/libx_mng.a
+X_LIBS=-largs $(LIBX_MNG) -lX11
+ADA_OPT=-g
 all:
-	amake ex1.adb
-	amake garde.adb
-	amake iole.adb
-	amake para.adb
-	amake servprio.adb
-	amake stamp.adb
-	amake termin.adb
-	amake wheeles.adb
+	amake $(ADA_OPT) ex1.adb
+	amake $(ADA_OPT) garde.adb
+	amake $(ADA_OPT) iole.adb
+	amake $(ADA_OPT) para.adb
+	amake $(ADA_OPT) servprio.adb
+	amake $(ADA_OPT) stamp.adb
+	amake $(ADA_OPT) termin.adb
+	amake $(ADA_OPT) wheeles.adb
 
 clean:
 	rm *.o *.ali
