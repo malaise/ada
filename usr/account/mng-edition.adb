@@ -1,3 +1,4 @@
+with Calendar;
 With Con_Io;
 separate (Mng)
 package body Edition is
@@ -214,6 +215,36 @@ package body Edition is
     end if;
   end Set_Unit;
 
+  -- Adjust operation after copy
+  procedure Adjust_Copy (Oper : in out Oper_Def.Oper_Rec) is
+    use type Oper_Def.Kind_List;
+    Cur_Date : constant Oper_Def.Date_Rec := Oper_Def.Current_Date;
+    Prev : Boolean;
+  begin
+    -- Adjust Status: Credit is defered, others are not entered
+    if Oper.Kind = Oper_Def.Credit then
+      Oper.Status := Oper_Def.Defered;
+    else
+      Oper.Status := Oper_Def.Not_Entered;
+    end if;
+
+    -- Set Date: If source of copy is at previous month
+    --  and is a Trnasfer then set to current month
+    begin
+      Prev := (Cur_Date.Month = Calendar.Month_Number'First
+               and then Oper.Date.Month = Calendar.Month_Number'Last
+               and then Cur_Date.Year = Oper.Date.Year + 1)
+              or else (Cur_Date.Month = Oper.Date.Month + 1
+                and then Cur_Date.Year = Oper.Date.Year);
+    exception
+      when others =>
+        Prev := False;
+    end;
+    if Oper.Kind = Oper_Def.Transfer and then Prev then
+      Oper.Date.Month := Cur_Date.Month;
+    end if;
+  end Adjust_Copy;
+
   -- Encode operation
   procedure Encode_Oper (Edit_Type : in Edit_List;
                          Oper : in Oper_Def.Oper_Rec;
@@ -227,7 +258,7 @@ package body Edition is
           Normal(Oper_List_Mng.Get_Position(Oper_List), 4));
     end if;
     -- Date
-    Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
+      Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
     Afpx.Encode_Field(13, (0, 0), Date_Str(1 .. 2));
     Afpx.Encode_Field(15, (0, 0), Date_Str(4 .. 5));
     Afpx.Encode_Field(17, (0, 0), Date_Str(7 .. 8));
@@ -527,11 +558,7 @@ package body Edition is
               when 36 =>
                 -- Copy when create
                 Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
-                if Oper.Kind = Oper_Def.Credit then
-                  Oper.Status := Oper_Def.Defered;
-                else
-                  Oper.Status := Oper_Def.Not_Entered;
-                end if;
+                Adjust_Copy (Oper);
                 Encode_Oper(Edit_Type, Oper, False);
                 Kind := Oper.Kind;
                 Status := Oper.Status;
