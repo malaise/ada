@@ -1,8 +1,8 @@
 with Ada.Calendar;
 
-with Big_Con_Io, Normal, Lower_Str, Lower_Char, Day_Mng;
+with Big_Con_Io, Normal, Lower_Str, Lower_Char, Upper_Char, Day_Mng;
 
-with Pieces, Space.Board;
+with Pieces, Space.Board, Image;
 
 package body Screen is
 
@@ -11,7 +11,7 @@ package body Screen is
   Screen_Row_Offset : constant Con_Io.Row_Range := 3;
   Screen_Col_Offset : constant Con_Io.Col_range := 5;
 
-  Fore_White : constant Con_Io.Effective_Colors := Con_Io.White;
+  Fore_White : constant Con_Io.Effective_Colors := Con_Io.Orange;
   Fore_Black : constant Con_Io.Effective_Colors := Con_Io.Red;
   Back_White : constant Con_Io.Effective_Basic_Colors := Con_Io.Cyan;
   Back_Black : constant Con_Io.Effective_Basic_Colors := Con_Io.Black;
@@ -61,16 +61,9 @@ package body Screen is
     Back : Con_Io.Effective_Basic_Colors;
     Fore : Con_Io.Effective_Colors;
     Id   : Pieces.Piece_Id;
-    Chars : Constant array (Pieces.Piece_Kind_List) of Character :=
-            (Pieces.Pawn =>   'i',
-             Pieces.Rook =>   'T',
-             Pieces.Knight => 'P',
-             Pieces.Bishop => '&',
-             Pieces.Queen =>  '*',
-             Pieces.King =>   'M');
 
     Char : Character;
-    use type Space.Color_List, Pieces.Piece_Access;
+    use type Space.Color_List, Pieces.Piece_Access, Pieces.Piece_Kind_List;
   begin
     -- get background
     if Space.Color_Of_Square(Square) = Space.White then
@@ -87,7 +80,11 @@ package body Screen is
     else
       -- Set Foreground
       Id := Pieces.Id_Of(Space.Board.Piece_At(Square).all);
-      Char := Chars(Id.Kind);
+      if Id.Kind = Pieces.Pawn then
+        Char := 'i';
+      else
+         Char := Image.Piece_Image(Id.Kind)(1);
+      end if;
 
       if Id.Color = Space.White then
         Fore := Fore_White;
@@ -279,7 +276,7 @@ package body Screen is
           else
             Conv_Ok := False;
             for Piece in Pieces.Promotion_Piece_List loop
-              if Lower_Char(Str(5)) = Lower_Char(Pieces.Promotion_Piece_List'Image(Piece)(1)) then
+              if Upper_Char(Str(5)) = Image.Piece_Image(Piece)(1) then
                 Promo := Piece;
                 Conv_Ok := True;
                 exit;
