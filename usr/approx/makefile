@@ -1,5 +1,4 @@
 LIBX_MNG=-lx_mng
-ADA_OPT=-g
 
 all: do_approxp do_import do_export AFPX.DSC
 
