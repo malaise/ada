@@ -149,17 +149,27 @@ package body Tcp_Util is
   end Handle_Current_Result;
 
   -- End a successfull or pending or failed async connect
-  --  according to Rec.Dscr (open or not)
+  --  according to Success
   -- Remove Fd callback
   -- If failure: Check tries
   -- Handle global failure if no more try
-  procedure End_Async_Connect (Rec : in Connecting_Rec;
+  procedure End_Async_Connect (Success : in Boolean;
+                               Rec : in out Connecting_Rec;
                                Go_On : out Boolean) is
   begin
-    -- Remove Fd callback and close
+    -- Remove Fd callback
     X_Mng.X_Del_CallBack (Rec.Fd, True);
     X_Mng.X_Del_CallBack (Rec.Fd, False);
 
+    -- Close if failure and still open
+    if not Success and then Socket.Is_Open (Rec.Dscr) then
+      Socket.Close (Rec.Dscr);
+    end if;
+
+    -- Note that if success but Dscr not open, which would be a bug,
+    --  is silently handled here as a failure
+
+    -- Success or failure
     if Socket.Is_Open (Rec.Dscr) then
       -- Connection success
       Handle_Current_Result (Rec);
@@ -190,9 +200,12 @@ package body Tcp_Util is
 
     -- This try result?
     if not Socket.Is_Connected (Rec.Dscr) then
-      Socket.Close (Rec.Dscr);
+      -- Cancel and close
+      End_Async_Connect (False, Rec, Go_On);
+    else
+      -- Success
+      End_Async_Connect (True, Rec, Go_On);
     end if;
-    End_Async_Connect (Rec, Go_On);
     if Go_On then
       -- Store closed Dscr for timer callback
       Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
@@ -224,8 +237,7 @@ package body Tcp_Util is
 
     -- Cancel pending async connect. Check end of tries
     if Socket.Is_Open (Rec.Dscr) then
-      Socket.Close (Rec.Dscr);
-      End_Async_Connect (Rec, Go_On);
+      End_Async_Connect (False, Rec, Go_On);
       if not Go_On then
         return True;
       end if;
@@ -481,9 +493,10 @@ package body Tcp_Util is
   return Boolean is
     Rec : Sending_Rec;
   begin
-    -- Find Rec from Fd
+    -- Find Rec from Fd and read
     Rec.Fd := Fd;
     Find_By_Fd (Sen_List, Rec, From_Current => False);
+    Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
 
     -- Try to re send
     begin
@@ -537,7 +550,7 @@ package body Tcp_Util is
   procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
   begin
-    -- Find Rec from Dscr
+    -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
     begin
       Find_By_Dscr (Sen_List, Rec, From_Current => False);
@@ -545,6 +558,7 @@ package body Tcp_Util is
       when Sen_List_Mng.Not_In_List =>
         raise No_Such;
     end;
+    Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
 
     -- Unhook callback and del rec
     X_Mng.X_Del_CallBack (Rec.Fd, False);
