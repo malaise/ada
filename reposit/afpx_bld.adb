@@ -228,7 +228,7 @@ procedure AFPX_BLD is
     if (FN = 0 or else FIELDS(FN).KIND /= PUT)
     and then FIELDS(FN).COLORS.FOREGROUND
              not in CON_IO.EFFECTIVE_BASIC_COLORS then
-      -- For list and BUTTON, FOREGROUND has to be basic
+      -- For list, GET and BUTTON, FOREGROUND has to be basic
       FILE_ERROR ("For all but PUT fields, FOREGROUND has to be basic color");
     end if;
     NEXT_LINE;
@@ -310,8 +310,8 @@ procedure AFPX_BLD is
       PREV_INIT_SQUARE := (0, 0);
       while not END_OF ("INIT") loop
         -- Check init syntax and length of string
-        if DSCR_WORDS < 3 then
-          FILE_ERROR ("Invalid init. <row> <col> <str> expected");
+        if DSCR_WORDS < 2 then
+          FILE_ERROR ("Invalid init. <row> <col> [ <str> ] expected");
         end if;
         begin
           FINIT_SQUARE.ROW :=
@@ -495,6 +495,8 @@ procedure AFPX_BLD is
     DSCR_GET.GET_WORDS(DSCR_LINE);
 
     -- Loop on descriptors
+    -- Descriprors are stored in the descriptor file at DSCR_NO
+    -- Fields and init tables are stored in their files at DSCR_INDEX
     DSCR_INDEX := 1;
     DSCRS:
     loop
