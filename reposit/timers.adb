@@ -264,7 +264,7 @@ package body Timers is
         Timeout_Dur := 0.0;
       end if;
     else
-      Timeout_Dur := 0.0;
+      Timeout_Dur := Infinite_Seconds;
     end if;
 
     -- Next timer timeout
