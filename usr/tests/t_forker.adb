@@ -17,8 +17,9 @@ procedure T_Forker is
   Req_Num : Natural;
   Req : Forker.Request_Rec;
   Rep : Forker.Report_Rec;
+
   procedure My_Send is new Socket.Send (Forker.Request_Rec);
-  procedure My_Receive is new Socket.Receive (Forker.Report_Rec);
+  procedure My_Receive is new Socket.Receive (Forker.Report_Rec, Forker.Report_Size);
 
   Cause : Forker.Exit_Cause_List;
   Code  : Natural;
@@ -219,19 +220,20 @@ begin
           when Forker.Start_Report =>
             Ada.Text_Io.Put_Line ("Start: command"
               & Natural'Image(Rep.Start_Result.Number)
-              & " pid "
+              & " Pid "
               & Forker.Pid_Result'Image(Rep.Start_Result.Started_Pid));
           when Forker.Kill_Report =>
             Ada.Text_Io.Put_Line ("Kill: command"
               & Natural'Image(Rep.Kill_Result.Number)
-              & " pid "
+              & " Pid "
               & Forker.Pid_Result'Image(Rep.Kill_Result.Killed_Pid));
           when Forker.Exit_Report =>
             Forker.Decode_Exit (Rep.Exit_Result.Status, Cause, Code);
             Ada.Text_Io.Put_Line ("Exit: command"
               & Natural'Image(Rep.Exit_Result.Number)
-              & " pid" & Forker.Pid_Result'Image(Rep.Exit_Result.Exit_Pid)
-              & " Cause " & Lower_Str(Forker.Exit_Cause_List'Image(Cause))
+              & " Pid" & Forker.Pid_Result'Image(Rep.Exit_Result.Exit_Pid)
+              & " Status" & Integer'Image(Rep.Exit_Result.Status)
+              & ": Cause " & Lower_Str(Forker.Exit_Cause_List'Image(Cause))
               & " Code" & Natural'Image(Code));
           when Forker.Forker_Exit_Report =>
             Ada.Text_Io.Put_Line ("Forker exited");
