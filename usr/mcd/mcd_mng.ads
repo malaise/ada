@@ -68,6 +68,8 @@ package Mcd_Mng is
    Emptyr,
    Nextr,
    Prevr,
+   Regind,
+   Indreg,
 
    Pope,
    Copye,

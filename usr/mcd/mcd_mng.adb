@@ -123,6 +123,10 @@ package body Mcd_Mng is
     -- Next / prev register
     procedure Next (Reg : in out Item_Rec);
     procedure Prev (Reg : in out Item_Rec);
+
+    -- Register <-> Index
+    function Index_Of (Reg : Item_Rec) return Item_Rec;
+    function Register_At (Index : Item_Rec) return Item_Rec;
  
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
     -- INVALID_REGISTER : exception;
@@ -464,7 +468,12 @@ package body Mcd_Mng is
         when Prevr =>
           -- Reg A -> Reg B
           Pop(A); Registers.Prev(A); Push(A);
-        
+        when Regind =>
+          -- Index of register
+          Pop(A); Push(Registers.Index_Of(A));
+        when Indreg =>
+          -- Register at index
+          Pop(A); Push(Registers.Register_At(A));
 
         -- Stack size
         when Ssize =>

@@ -96,7 +96,9 @@ package body Parser is
    Clearall => (Nosy, "clear all registers           ", False),
    Emptyr   => (Nosy, "push True is regA is empty    ", False),
    Nextr    => (Nosy, "push next reg (RegA -> RegB)  ", False),
-   Prevr    => (Nosy, "push prev reg (RegB -> RegA)  ", True),
+   Prevr    => (Nosy, "push prev reg (RegB -> RegA)  ", False),
+   Regind   => (Nosy, "push inte index of RegA       ", False),
+   Indreg   => (Nosy, "push Reg of inte index A      ", True),
 
    Pope     => (Nosy, "pop A push_extra A            ", False),
    Copye    => (Nosy, "pop A push_extra A push A     ", False),

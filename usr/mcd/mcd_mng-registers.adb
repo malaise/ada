@@ -12,7 +12,7 @@ package body Registers is
   Registers_Array : array (Register_Range) of Item_Rec
                   := (others => Empty_Rec);
 
-  function Reg2Ind (Reg : in Item_Rec) return Register_Range is
+  function Reg2Ind (Reg : Item_Rec) return Register_Range is
   begin
     if Reg.Kind /= Regi then
       raise Invalid_Register;
@@ -26,6 +26,20 @@ package body Registers is
       raise Invalid_Register;
     end if;
   end Reg2Ind;
+
+  function Ind2Reg (Ind : Item_Rec) return Character is
+  begin
+    if Ind.Kind /= Inte
+    or else Ind.Val_Inte < My_Math.Inte(Register_Range'First)
+    or else Ind.Val_Inte > My_Math.Inte(Register_Range'Last) then
+      raise Invalid_Argument;
+    end if;
+    if Ind.Val_Inte <= Nb_Of_Registers / 2 then
+      return Character'Val(Character'Pos('A') + Ind.Val_Inte - 1);
+    else
+      return Character'Val(Character'Pos('a') + Ind.Val_Inte - 27);
+    end if;
+  end Ind2Reg;
 
   function Is_Register (C : in Character) return Boolean is
   begin
@@ -83,10 +97,9 @@ package body Registers is
   end Clear_All;
 
   function Is_Empty (Reg : Item_Rec) return Item_Rec is
-    Res : Item_Rec(Bool);
   begin
-    Res.Val_Bool := Registers_Array(Reg2Ind(Reg)) = Empty_Rec;
-    return Res;
+    return (Kind => Bool,
+            Val_Bool => Registers_Array(Reg2Ind(Reg)) = Empty_Rec);
   end Is_Empty;
 
   procedure Next (Reg : in out Item_Rec) is
@@ -112,6 +125,16 @@ package body Registers is
       raise Invalid_Argument;
     end if;
   end Prev;
+
+  function Index_Of (Reg : Item_Rec) return Item_Rec is
+  begin
+    return (Kind => Inte, Val_Inte => My_Math.Inte(Reg2Ind(Reg)));
+  end Index_Of;
+
+  function Register_At (Index : Item_Rec) return Item_Rec is
+  begin
+    return (Kind => Regi, Val_Regi => Ind2Reg(Index));
+  end Register_At;
 
 end Registers;
 

@@ -31,16 +31,6 @@ a
 "miaule tristement pour qu'on s'occupe de lui" y popr
 "se demande s'il va attaquer le cheval du policier" z popr
 
-# Replace top by register (1 -> a, b -> 2)
-[ a swap
-# End?
-[ dup 1 = [ pushle 2 popn 2 retn ] ifcall
-# Next register
-swap nextr swap 1 -
-# Loop
-pushle copye retacal ]
-copye call ] R popr
-
 # Main loop
 [
 # Put random 1 .. M on top
@@ -48,7 +38,7 @@ rnd M pushr toreal * trunc 1 +
 # Display num
 2 format dup put ": " put
 # Set register
-R pushr call
+26 + indreg
 # Display sentence
 Z pushr put " " put pushr put "." putl
 # Wait a bit

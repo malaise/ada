@@ -99,12 +99,12 @@ package body Ios is
     end if;
     Real_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Real, Last);
     if Last /= S.Val_Len then
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
     end if;
     return Res;
   exception
     when others =>
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
   end Strreal;
 
   function Strinte (S : Item_Rec) return Item_Rec is
@@ -116,12 +116,12 @@ package body Ios is
     end if;
     Inte_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Inte, Last);
     if Last /= S.Val_Len then
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
     end if;
     return Res;
   exception
     when others =>
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
   end Strinte;
 
   function Strbool (S : Item_Rec) return Item_Rec is
@@ -133,12 +133,12 @@ package body Ios is
     end if;
     Bool_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Bool, Last);
     if Last /= S.Val_Len then
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
     end if;
     return Res;
   exception
     when others =>
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
   end Strbool;
 
   function Strregi (S : Item_Rec) return Item_Rec is
@@ -148,13 +148,13 @@ package body Ios is
       raise Invalid_Argument;
     end if;
     if S.Val_Len /= 1 or else not Is_Register(S.Val_Text(1)) then
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
     end if;
     Res.Val_Regi := S.Val_Text(1);
     return Res;
   exception
     when others =>
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
   end Strregi;
     
   function Strof (Item : Item_Rec) return Item_Rec is
