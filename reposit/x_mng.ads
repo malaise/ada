@@ -37,9 +37,10 @@ package X_Mng is
   -- Mouse buttons
   type Button_List is (None, Left, Middle, Right, Up, Down);
 
-  -- Returned events (see Event_Mng and Timers)
-  type Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard, Refresh,
-                      Tid_Motion, Fd_Event, Timer_Event, Signal_Event);
+  -- This is passed to C and used internally
+  type Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard,
+                      Refresh, Tid_Motion, Fd_Event, Timer_Event,
+                      Signal_Event);
 
   ----- EXCEPTIONS -----
 
@@ -286,18 +287,27 @@ package X_Mng is
  
 private
  
-  -- This is passed to C
-  for Event_Kind'Size use 32;
-  for Event_Kind use (
-    Discard      => 0, 
-    Tid_Release  => 1, 
-    Tid_Press    => 2, 
-    Keyboard     => 3,
-    Refresh      => 4,
-    Tid_Motion   => 5,
-    Fd_Event     => 9,
-    Timer_Event  => 10,
-    Signal_Event => 11);
+  -- This is passed to C and used internally
+  type Private_Event_Kind is (Discard, Tid_Release, Tid_Press, Keyboard,
+                              Refresh, Tid_Motion, Fd_Event, Timer_Event,
+                              Signal_Event, Exception_Event);
+
+  -- Returned events (see Event_Mng and Timers)
+  for Private_Event_Kind'Size use 32;
+  for Private_Event_Kind use (
+    Discard      => 0,      -- }
+    Tid_Release  => 1,      -- } These are passed to C
+    Tid_Press    => 2,      -- }  and returned to client
+    Keyboard     => 3,      -- }  (see Event_Kind)
+    Refresh      => 4,      -- } 
+    Tid_Motion   => 5,      -- }
+
+    Fd_Event     => 10,      -- } 
+    Timer_Event  => 11,     -- } These are returned to client
+    Signal_Event => 12,     -- }
+
+    Exception_Event => 20); -- } These are purely internal
+   
  
   subtype Line_Range is Natural range 0 .. Max_Line_Number;
   subtype Client_Range is Positive range 1 .. Max_Line_Number;

@@ -1,4 +1,4 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Exceptions;
 with My_Io, Address_Ops, Event_Mng, Timers, Environ;
 package body X_Mng is
 
@@ -274,7 +274,7 @@ package body X_Mng is
   -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
   ------------------------------------------------------------------
   function X_Process_Event(P_Line_Id : System.Address;
-                           P_Keyb    : System.Address;
+                           P_Kind    : System.Address;
                            P_Next    : System.Address) return Result;
   pragma Import(C, X_Process_Event, "x_process_event");
  
@@ -357,7 +357,7 @@ package body X_Mng is
     entry Wait (Client : in Client_Range; Timeout : in Duration);
     -- Relay wait
     entry Some_Event(Client_Range) (Some : out Boolean);
-    entry Get_Event (Client : in Client_Range; Kind : out Event_Kind;
+    entry Get_Event (Client : in Client_Range; Kind : out Private_Event_Kind;
                                                Some : out Boolean);
   end Dispatcher;
 
@@ -862,17 +862,24 @@ package body X_Mng is
   end X_Select;
 
   ------------------------------------------------------------------
+  Saved_Exception : Ada.Exceptions.Exception_Occurrence;
   procedure X_Process_Event(Line_Id : in Line; 
                             Kind    : out Event_Kind;
                             Next    : out Boolean) is
+    Private_Kind : Private_Event_Kind;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
     end if;
-    Dispatcher.Get_Event(Line_Id.No, Kind, Next);
+    Dispatcher.Get_Event(Line_Id.No, Private_Kind, Next);
     if Debug then
       My_Io.Put_Line ("X_Process_Event " & Line_Id.No'Img
-                   & " -> " & Kind'Img & ", Next: " & Next'Img);
+                   & " -> " & Private_Kind'Img & ", Next: " & Next'Img);
+    end if;
+    if Private_Kind = Exception_Event then
+      Ada.Exceptions.Reraise_Occurrence(Saved_Exception);
+    else
+      Kind := Event_Kind'Val(Private_Event_Kind'Pos(Private_Kind));
     end if;
   end X_Process_Event;
 
@@ -1015,7 +1022,8 @@ package body X_Mng is
   ------------------------------------------------------------------
 
   type Xx_Select_Result_List is (Select_X_Event, Select_Fd, Select_Timer,
-                                 Select_Signal, Select_Timeout);
+                                 Select_Signal, Select_Timeout,
+                                 Select_Exception);
 
   function Xx_Select (Timeout_In : Duration) return Xx_Select_Result_List is
     Fd    : Integer;
@@ -1042,13 +1050,16 @@ package body X_Mng is
 
       -- The real select
       Timeout_Ms := Integer (Timeout_Dur * 1000.0);
+      if Debug then
+        My_Io.Put_Line ("  Xx_Select timeout " & Timeout_Ms'Img);
+      end if;
       C_Res := X_Select (Fd'Address, Read'Address, Timeout_Ms'Address);
       if Debug then
         if C_Res /= Ok then
-          My_Io.Put_Line ("  XX_SELECT -> ERROR");
+          My_Io.Put_Line ("  Xx_Select -> ERROR");
           return Select_Timeout;
         else
-          My_Io.Put_Line ("  XX_SELECT -> " & Integer'Image(Fd)
+          My_Io.Put_Line ("  Xx_Select -> " & Integer'Image(Fd)
                                       & " " & Bool_For_C'Image(Read));
         end if;
       end if;
@@ -1091,10 +1102,18 @@ package body X_Mng is
       end case;
 
     end loop;
+  exception
+    when Error:others =>
+      Ada.Exceptions.Save_Occurrence(Saved_Exception, Error);
+      if Debug then
+        My_Io.Put_Line ("  Xx_Select -> EXCEPTION: "
+                      & Ada.Exceptions.Exception_Name (Error));
+      end if;
+      return Select_Exception;
   end Xx_Select;
 
   procedure Xx_Process_Event (Line_For_C_Id : out Line_For_C;
-                              Kind : out Event_Kind;
+                              Kind : out Private_Event_Kind;
                               Next : out Boolean) is
     Dummy : Result;
     Next_For_C : Bool_For_C;
@@ -1123,7 +1142,7 @@ package body X_Mng is
     Selected_Client : Client_Range;
     -- One event to give in Some_Event
     Some_Event_Present : Boolean;
-    Loc_Kind : Event_Kind;
+    Loc_Kind : Private_Event_Kind;
     Loc_Next : Boolean;
     -- Local X line
     Loc_Line_For_C_Id : Line_For_C;
@@ -1222,234 +1241,252 @@ package body X_Mng is
     Loc_Next := False;
 
     loop
-      select
-        -- Accept call to X, one at a time
-        accept Call_On (Client : in Client_Range;
-                        Line_For_C_Id : out Line_For_C) do
-          Line_For_C_Id := Clients(Client).Line_For_C_Id;
-        end Call_On;
-        accept Call_Off (Client : in Client_Range;
-                         New_Line_For_C_Id : in Line_For_C) do
-          Clients(Client).Line_For_C_Id := New_Line_For_C_Id;
-        end Call_Off;
-      or
-        accept Register (Client : out Line_Range) do
-          -- Find a slot
-          for I in Client_Range loop
-            if not Clients(I).Known then
-              Clients(I).Known := True;
-              Clients(I).Refresh := False;
-              Clients(I).Line_For_C_Id := No_Line_For_C;
-              Client := I;
-              Nb_Clients := Nb_Clients + 1;
+      begin
+        select
+          -- Accept call to X, one at a time
+          accept Call_On (Client : in Client_Range;
+                          Line_For_C_Id : out Line_For_C) do
+            Line_For_C_Id := Clients(Client).Line_For_C_Id;
+          end Call_On;
+          accept Call_Off (Client : in Client_Range;
+                           New_Line_For_C_Id : in Line_For_C) do
+            Clients(Client).Line_For_C_Id := New_Line_For_C_Id;
+          end Call_Off;
+        or
+          accept Register (Client : out Line_Range) do
+            -- Find a slot
+            for I in Client_Range loop
+              if not Clients(I).Known then
+                Clients(I).Known := True;
+                Clients(I).Refresh := False;
+                Clients(I).Line_For_C_Id := No_Line_For_C;
+                Client := I;
+                Nb_Clients := Nb_Clients + 1;
+                if Debug then
+                  My_Io.Put_Line ("Register -> " & Line_Range'Image(I));
+                end if;
+                return;
+              end if;
+            end loop;
+            -- Too many clients
+            Client := No_Client_No;
+          end Register;
+        or
+          accept Unregister (Client : in out Line_Range) do
+            if Debug then
+              My_Io.Put_Line ("Unregister " & Line_Range'Image(Client));
+            end if;
+            -- Update administration
+            if Client /= No_Client_No then
+              Clients(Client).Known := False;
+              Nb_Clients := Nb_Clients - 1;
+            end if;
+            Client := No_Client_No;
+            -- Generate a dummy refresh event for all client
+            -- Wake up all waiting clients
+            for I in Client_Range loop
+              if Clients(I).Known then
+                Clients(I).Refresh := True;
+                select
+                  accept Some_Event(I) (Some : out Boolean) do
+                    Some := True;
+                    Nb_Wait := Nb_Wait - 1;
+                  end Some_Event;
+                or
+                  delay 0.0;
+                end select; 
+              end if;
+            end loop;
+          end Unregister;
+        or
+          -- Client is ready to wait
+          accept Wait (Client : in Client_Range; Timeout : in Duration) do
+            Nb_Wait := Nb_Wait + 1;
+            if Debug then
+              My_Io.Put_Line ("Wait " & Line_Range'Image(Client)
+                            & "  timeout: " & Duration'Image(Timeout));
+              My_Io.Put_Line ("    Waiting nb " & Line_Range'Image(Nb_Wait));
+            end if;
+            -- Some pending event for this client?
+            if not Some_Event_Present or else Client /= Selected_Client then
+              -- This client will wait
+              -- Compute expiration
+              if Timeout < 0.0 then
+                Clients(Client).Wait_Inf := True;
+                if Debug then
+                  My_Io.Put_Line ("    Wait inf");
+                end if;
+              else
+                Clients(Client).Wait_Inf := False;
+                Clients(Client).Wait_Exp := Ada.Calendar.Clock + Timeout;
+                if Debug then
+                  My_Io.Put_Line ("    Wait timeout");
+                end if;
+              end if;
+            elsif Debug then
+              My_Io.Put_Line ("    Wait client is selected");
+            end if;
+          end Wait;
+          -- Can we freeze the whole stuff?
+          --  no event and all clients waiting
+          if not Some_Event_Present and then Nb_Wait = Nb_Clients then
+            -- Loop until timeout or valid client for the event is found
+            loop
+              -- This gives the client with smallest delay
+              -- If all infinite, the first known
+              Compute_Smaller_Delay(Delay_Dur, Selected_Client);
               if Debug then
-                My_Io.Put_Line ("Register -> " & Line_Range'Image(I));
+                My_Io.Put_Line ("        Wait select " & Duration'Image(Delay_Dur));
+              end if;
+              Select_Result := Xx_Select (Delay_Dur);
+              case Select_Result is
+                when Select_Timeout =>
+                  -- Timeout
+                  Some_Event_Present := False;
+                  if Debug then
+                    My_Io.Put_Line ("            Wait select timeout for -> "
+                                  & Line_Range'Image(Selected_Client));
+                  end if;
+                  exit;
+                when Select_X_Event =>
+                  -- An event: Get&store it and it's client
+                  Xx_Process_Event (Loc_Line_For_C_Id, Loc_Kind, Loc_Next);
+                  Get_Client_From_Line(Loc_Line_For_C_Id, Selected_Client,
+                                     Some_Event_Present);
+                  if Debug then
+                    My_Io.Put_Line ("            Wait select event for -> "
+                                  & Line_Range'Image(Selected_Client)
+                                  & " found " & Boolean'Image(Some_Event_Present));
+                  end if;
+                  exit when Some_Event_Present;
+                when Select_Fd =>
+                  Some_Event_Present := True;
+                  Loc_Kind := Fd_Event;
+                  Loc_Next := False;
+                  if Debug then
+                    My_Io.Put_Line ("            Wait select fd event for -> "
+                                  & Line_Range'Image(Selected_Client));
+                  end if;
+                  exit;
+                when Select_Timer =>
+                  Some_Event_Present := True;
+                  Loc_Kind := Timer_Event;
+                  Loc_Next := False;
+                  if Debug then
+                    My_Io.Put_Line ("            Wait select timer event for -> "
+                                  & Line_Range'Image(Selected_Client));
+                  end if;
+                  exit;
+                when Select_Signal =>
+                  Some_Event_Present := True;
+                  Loc_Kind := Signal_Event;
+                  Loc_Next := False;
+                  if Debug then
+                    My_Io.Put_Line ("            Wait select signal event for -> "
+                                  & Line_Range'Image(Selected_Client));
+                  end if;
+                  exit;
+                when Select_Exception =>
+                  Some_Event_Present := True;
+                  Loc_Kind := Exception_Event;
+                  Loc_Next := False;
+                  if Debug then
+                    My_Io.Put_Line ("            Wait select exception event for -> "
+                                  & Line_Range'Image(Selected_Client));
+                  end if;
+                  exit;
+              end case;
+            end loop;
+          end if;
+        or
+          when Nb_Clients /= 0 and then Nb_Wait = Nb_Clients =>
+          -- Release the client for stored event
+          accept Some_Event(Selected_Client) (Some : out Boolean) do
+            if Debug then
+              My_Io.Put_Line ("Some_event " & Line_Range'Image(Selected_Client)
+                     & " -> "
+                     & "Select result:" & Xx_Select_Result_List'Image(Select_Result)
+                     & ", Event present:" & Boolean'Image(Some_Event_Present));
+            end if;
+            Some := Select_Result /= Select_Timeout or else Some_Event_Present;
+            Nb_Wait := Nb_Wait - 1;
+          end Some_Event;
+        or
+          accept Get_Event (Client : in Client_Range; Kind : out Private_Event_Kind;
+                                                      Some : out Boolean) do
+            -- Artificial refresh for this client?
+            if Clients(Client).Refresh then
+              Clients(Client).Refresh := False;
+              Kind := Refresh;
+              Some := False;
+              if Debug then
+                My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
+                              & " -> artificial refresh");
               end if;
               return;
             end if;
-          end loop;
-          -- Too many clients
-          Client := No_Client_No;
-        end Register;
-      or
-        accept Unregister (Client : in out Line_Range) do
-          if Debug then
-            My_Io.Put_Line ("Unregister " & Line_Range'Image(Client));
-          end if;
-          -- Update administration
-          if Client /= No_Client_No then
-            Clients(Client).Known := False;
-            Nb_Clients := Nb_Clients - 1;
-          end if;
-          Client := No_Client_No;
-          -- Generate a dummy refresh event for all client
-          -- Wake up all waiting clients
-          for I in Client_Range loop
-            if Clients(I).Known then
-              Clients(I).Refresh := True;
-              select
-                accept Some_Event(I) (Some : out Boolean) do
-                  Some := True;
-                  Nb_Wait := Nb_Wait - 1;
-                end Some_Event;
-              or
-                delay 0.0;
-              end select; 
-            end if;
-          end loop;
-        end Unregister;
-      or
-        -- Client is ready to wait
-        accept Wait (Client : in Client_Range; Timeout : in Duration) do
-          Nb_Wait := Nb_Wait + 1;
-          if Debug then
-            My_Io.Put_Line ("Wait " & Line_Range'Image(Client)
-                          & "  timeout: " & Duration'Image(Timeout));
-            My_Io.Put_Line ("    Waiting nb " & Line_Range'Image(Nb_Wait));
-          end if;
-          -- Some pending event for this client?
-          if not Some_Event_Present or else Client /= Selected_Client then
-            -- This client will wait
-            -- Compute expiration
-            if Timeout < 0.0 then
-              Clients(Client).Wait_Inf := True;
-              if Debug then
-                My_Io.Put_Line ("    Wait inf");
-              end if;
-            else
-              Clients(Client).Wait_Inf := False;
-              Clients(Client).Wait_Exp := Ada.Calendar.Clock + Timeout;
-              if Debug then
-                My_Io.Put_Line ("    Wait timeout");
-              end if;
-            end if;
-          elsif Debug then
-            My_Io.Put_Line ("    Wait client is selected");
-          end if;
-        end Wait;
-        -- Can we freeze the whole stuff?
-        --  no event and all clients waiting
-        if not Some_Event_Present and then Nb_Wait = Nb_Clients then
-          -- Loop until timeout or valid client for the event is found
-          loop
-            -- This gives the client with smallest delay
-            -- If all infinite, the first known
-            Compute_Smaller_Delay(Delay_Dur, Selected_Client);
-            if Debug then
-              My_Io.Put_Line ("        Wait select " & Duration'Image(Delay_Dur));
-            end if;
-            Select_Result := Xx_Select (Delay_Dur);
-            case Select_Result is
-              when Select_Timeout =>
-                -- Timeout
-                Some_Event_Present := False;
-                if Debug then
-                  My_Io.Put_Line ("            Wait select timeout for -> "
-                                & Line_Range'Image(Selected_Client));
-                end if;
-                exit;
-              when Select_X_Event =>
-                -- An event: Get&store it and it's client
-                Xx_Process_Event (Loc_Line_For_C_Id, Loc_Kind, Loc_Next);
-                Get_Client_From_Line(Loc_Line_For_C_Id, Selected_Client,
-                                   Some_Event_Present);
-                if Debug then
-                  My_Io.Put_Line ("            Wait select event for -> "
-                                & Line_Range'Image(Selected_Client)
-                                & " found " & Boolean'Image(Some_Event_Present));
-                end if;
-                exit when Some_Event_Present;
-              when Select_Fd =>
-                Some_Event_Present := True;
-                Loc_Kind := Fd_Event;
-                Loc_Next := False;
-                if Debug then
-                  My_Io.Put_Line ("            Wait select fd event for -> "
-                                & Line_Range'Image(Selected_Client));
-                end if;
-                exit;
-              when Select_Timer =>
-                Some_Event_Present := True;
-                Loc_Kind := Timer_Event;
-                Loc_Next := False;
-                if Debug then
-                  My_Io.Put_Line ("            Wait select timer event for -> "
-                                & Line_Range'Image(Selected_Client));
-                end if;
-                exit;
-              when Select_Signal =>
-                Some_Event_Present := True;
-                Loc_Kind := Signal_Event;
-                Loc_Next := False;
-                if Debug then
-                  My_Io.Put_Line ("            Wait select signal event for -> "
-                                & Line_Range'Image(Selected_Client));
-                end if;
-                exit;
-            end case;
-          end loop;
-        end if;
-      or
-        when Nb_Clients /= 0 and then Nb_Wait = Nb_Clients =>
-        -- Release the client for stored event
-        accept Some_Event(Selected_Client) (Some : out Boolean) do
-          if Debug then
-            My_Io.Put_Line ("Some_event " & Line_Range'Image(Selected_Client)
-                   & " -> "
-                   & "Select result:" & Xx_Select_Result_List'Image(Select_Result)
-                   & ", Event present:" & Boolean'Image(Some_Event_Present));
-          end if;
-          Some := Select_Result /= Select_Timeout or else Some_Event_Present;
-          Nb_Wait := Nb_Wait - 1;
-        end Some_Event;
-      or
-        accept Get_Event (Client : in Client_Range; Kind : out Event_Kind;
-                                                    Some : out Boolean) do
-          -- Artificial refresh for this client?
-          if Clients(Client).Refresh then
-            Clients(Client).Refresh := False;
-            Kind := Refresh;
-            Some := False;
-            if Debug then
-              My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
-                            & " -> artificial refresh");
-            end if;
-            return;
-          end if;
-          if Client /= Selected_Client then
-            -- Invalid client
-            Kind := Discard;
-            Some := False;
-            if Debug then
-              My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
-                            & " -> not selected");
-            end if;
-            return;
-          end if;
-          -- Event got from previous wait or get_event?
-          if Some_Event_Present then
-            Kind := Loc_Kind;
-            Some := Loc_Next;
-            Some_Event_Present := False;
-            if Debug then
-              My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
-                            & " -> from previous wait/get_event");
-            end if;
-          else
-            -- No stored event
-            Xx_Process_Event (Loc_Line_For_C_Id, Loc_Kind, Loc_Next);
-            -- New event for the same client?
-            if Loc_Line_For_C_Id /= Clients(Client).Line_For_C_Id then
-              -- Current client has to give up
-              Some := False;
+            if Client /= Selected_Client then
+              -- Invalid client
               Kind := Discard;
-              Some_Event_Present := True;
-              -- Find client of the event
-              Get_Client_From_Line(Loc_Line_For_C_Id, Selected_Client,
-                                   Some_Event_Present);
+              Some := False;
               if Debug then
                 My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
-                              & " -> give up to "
-                              & Line_Range'Image(Selected_Client));
+                              & " -> not selected");
+              end if;
+              return;
+            end if;
+            -- Event got from previous wait or get_event?
+            if Some_Event_Present then
+              Kind := Loc_Kind;
+              Some := Loc_Next;
+              Some_Event_Present := False;
+              if Debug then
+                My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
+                              & " -> from previous wait/get_event");
               end if;
             else
-              -- This event is for this client. Deliver.
-              Some := Loc_Next;
-              Kind := Loc_Kind;
-              if Debug then
-                My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
-                              & " -> got it");
-              end if;
-            end if; -- event is for client
-          end if; -- Some_Event_Present
+              -- No stored event
+              Xx_Process_Event (Loc_Line_For_C_Id, Loc_Kind, Loc_Next);
+              -- New event for the same client?
+              if Loc_Line_For_C_Id /= Clients(Client).Line_For_C_Id then
+                -- Current client has to give up
+                Some := False;
+                Kind := Discard;
+                Some_Event_Present := True;
+                -- Find client of the event
+                Get_Client_From_Line(Loc_Line_For_C_Id, Selected_Client,
+                                     Some_Event_Present);
+                if Debug then
+                  My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
+                                & " -> give up to "
+                                & Line_Range'Image(Selected_Client));
+                end if;
+              else
+                -- This event is for this client. Deliver.
+                Some := Loc_Next;
+                Kind := Loc_Kind;
+                if Debug then
+                  My_Io.Put_Line ("Get_event " & Line_Range'Image(Client)
+                                & " -> got it");
+                end if;
+              end if; -- event is for client
+            end if; -- Some_Event_Present
+            if Debug then
+              My_Io.Put_Line ("    Get_event -> "
+                            & Private_Event_Kind'Image(Loc_Kind)
+                            & " next: " & Boolean'Image(Loc_Next));
+            end if;
+          end Get_Event;
+        or
+          terminate;
+        end select;
+      exception
+        when Error:others =>
           if Debug then
-            My_Io.Put_Line ("    Get_event -> " & Event_Kind'Image(Loc_Kind)
-                          & " next: " & Boolean'Image(Loc_Next));
-          end if;
-        end Get_Event;
-      or
-        terminate;
-      end select;
+              My_Io.Put_Line ("Exception in dispatcher: "
+                            & Ada.Exceptions.Exception_Name (Error));
+            end if;
+      end;
     end loop;
   end Dispatcher;
 
