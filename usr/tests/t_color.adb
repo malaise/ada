@@ -11,7 +11,7 @@ begin
       CON_IO.MOVE (CON_IO.COLORS'POS(I), 1);
       CON_IO.PUT (CON_IO.EFFECTIVE_COLORS'IMAGE(I) );
       CON_IO.MOVE (CON_IO.COLORS'POS(I), 20);
-      CON_IO.PUT ('!', FOREGROUND => I, MOVE => FALSE);
+      CON_IO.PUT ("!@#$%^&*", FOREGROUND => I, MOVE => FALSE);
       CON_IO.NEW_LINE;
     end loop;
 
