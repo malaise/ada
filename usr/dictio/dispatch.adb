@@ -31,9 +31,7 @@ package body Dispatch is
     Event_Mng.Set_Sig_Callback (Signal'Access);
     Intra_Dictio.Init;
 
-    while Event_Mng.Wait (100) loop
-      null;
-    end loop;
+    Event_Mng.Pause (200);
 
     Status.Set (Handle_New_Status'Access);
     Intra_Dictio.Set_Read_Cb (New_Intra'Access);
@@ -43,9 +41,7 @@ package body Dispatch is
 
   procedure Run is
   begin
-    loop
-      Event_Mng.Wait (-1);
-    end loop;
+    Event_Mng.Pause (Event_Mng.Infinite_Ms);
   end;
 
   procedure Quit is 

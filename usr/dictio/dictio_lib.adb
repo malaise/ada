@@ -1,5 +1,5 @@
-with Ada.Exceptions;
-with Socket, Tcp_Util, Event_Mng, Sys_Calls;
+with Ada.Exceptions, Ada.Calendar;
+with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers;
 with Debug, Parse, Client_Com, Versions, Status;
 package body Dictio_Lib is
 
@@ -207,7 +207,8 @@ package body Dictio_Lib is
   procedure Init is
     Env_Set, Env_Trunc : Boolean;
     Env_Len : Natural;
-    use type Event_Mng.Out_Event_List;
+    Expiration : Ada.Calendar.Time;
+    use type Event_Mng.Out_Event_List, Ada.Calendar.Time;
   begin
     if Init_Done then
       return;
@@ -238,11 +239,15 @@ package body Dictio_Lib is
     Connect_To_Dictio;
 
     -- Wait a bit for connection to establish
-    Event_Mng.Wait (100);
+    Event_Mng.Pause (100);
+
+    -- Wait until connected or delay
+    Expiration := Ada.Calendar.Clock + 0.5;
     loop
-      -- Wait until connected or nothing happens
       exit when Dictio_State /= Unavailable
-      or else Event_Mng.Wait (500) = Event_Mng.No_Event;
+           or else Event_Mng.Wait (100) = Event_Mng.Sig_Event
+           or else Timers.Is_Reached ( (Infinite => False,
+                                        Time => Expiration) );
     end loop;
 
     Init_Done := True;

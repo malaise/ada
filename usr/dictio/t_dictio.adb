@@ -159,7 +159,7 @@ procedure T_Dictio is
         Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
         exit when Sig;
       end loop;
-      Event_Mng.Wait (100);
+      Event_Mng.Pause (100);
       exit when Sig;
     end loop;
   exception
@@ -182,7 +182,7 @@ begin
   if Init then
     Delay_Ms := 100;
   else
-    Delay_Ms := -1;
+    Delay_Ms := Event_Mng.Infinite_Ms;
   end if;
 
   begin
@@ -221,10 +221,7 @@ begin
            "g <name> / s <name> <data> / n <name> / c <name> / "
          & "a <host> / d <host> / q");
   end if;
-  loop
-    Event_Mng.Wait (Delay_Ms);
-    exit when Sig;
-  end loop;
+  Event_Mng.Pause (Delay_Ms);
 
   Async_Stdin.Set_Async;
 exception
