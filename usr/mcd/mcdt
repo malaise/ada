@@ -1,5 +1,9 @@
 #!/bin/ksh
+if [ -z "$1" ] ; then
+  echo "USAGE: `basename $0` <file_name>  [ <arg> ]"
+  exit 1
+fi
 file=$1
 shift
-mmcdt $* -f $file
+mmcdt $* -e $file
 

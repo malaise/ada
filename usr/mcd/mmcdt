@@ -1,9 +1,8 @@
 #!/bin/bash
 
 if [ \( $# -eq 1 \) -a \( "$1" = "-h" \) ] ; then
-  echo "USAGE `basename $0` [ { <file> | <arg> } ]"
-  echo "   <file> ::= -f <filename>"
-  exit 1;
+  echo "USAGE: `basename $0` { [ { <arg> } ] -e <command_file> }"
+  exit 1
 fi
 
 com=/tmp/mmcdt
@@ -17,7 +16,7 @@ fi
 touch $com
 
 while [ "$1" != "" ] ; do
-  if [ "$1" = "-f" ] ; then
+  if [ "$1" = "-e" ] ; then
 
     if [ ! -f $2 ] ; then
       echo "Error. File $2 not found."
