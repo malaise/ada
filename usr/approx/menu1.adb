@@ -25,10 +25,6 @@ package body MENU1 is
 
   function EXIT_PROG return BOOLEAN is
   begin
-    if not MENU2.CURVED_STOPED then
-      SCREEN.ERROR(SCREEN.E_CURVE_ACTIVE);
-      return FALSE;
-    end if;
     SCREEN.PUT_TITLE(SCREEN.EXIT_APPROX);
     if DIALOG.CONFIRM_LOST then
       -- The end
