@@ -1,5 +1,69 @@
-with Dynamic_List, Event_Mng;
+with Ada.Text_Io;
+with Dynamic_List, Event_Mng, Environ, Date_Image;
 package body Timers is
+
+  -- Debugging
+  Debug_Var_Name : constant String := "TIMERS_DEBUG";
+  Debug : Boolean := False;
+  Debug_Set : Boolean := False;
+
+  procedure Set_Debug is
+  begin
+    if Debug_Set then
+      return;
+    end if;
+    Debug := Environ.Is_Yes (Debug_Var_Name);
+    Debug_Set := True;
+  exception
+    when others =>
+      null;
+  end Set_Debug;
+
+  function Delay_Image (Delay_Spec : Delay_Rec) return String is
+    use type Ada.Calendar.Time;
+  begin
+    if Delay_Spec.Delay_Kind = Delay_Sec then
+      return "delay:" & Delay_Spec.Delay_Seconds'Img
+           & ", period: " & Delay_Spec.Period'Img & " ";
+    else
+      return "exp in: " & Duration'Image (Delay_Spec.Expiration_Time
+                                          - Ada.Calendar.Clock)
+           & ", period: " & Delay_Spec.Period'Img & " ";
+
+    end if;
+  end Delay_Image;
+
+  function Exp_Image (Expiration : Expiration_Rec) return String is
+    use type Ada.Calendar.Time;
+  begin
+    if Expiration.Infinite then
+      return "exp infinite ";
+    else
+      return "exp in: " & Duration'Image (Expiration.Time
+                                          - Ada.Calendar.Clock)
+                        & " ";
+    end if;
+  end Exp_Image;
+
+  function Cb_Image (Callback : Timer_Callback) return String is
+  begin
+    if Callback = null then
+      return ("*** No callback *** ");
+    else
+      return "";
+    end if;
+  end Cb_Image;
+
+  procedure Put_Debug (Proc : in String; Msg : in String) is
+  begin
+    if not Debug then
+      return;
+    end if;
+    Ada.Text_Io.Put_Line (
+        Date_Image (Ada.Calendar.Clock)(12 .. 23)
+      & " Timers." & Proc
+      & ": " & Msg);
+  end Put_Debug;
 
   -- Return an image of a timer
   function Image (Id : Timer_Id) return String is
@@ -91,6 +155,7 @@ package body Timers is
   begin
     -- Compute expiration time ASAP
     Timer.Cre := Ada.Calendar.Clock;
+    Set_Debug;
     if Delay_Spec.Delay_Kind = Delay_Sec then
       if Delay_Spec.Delay_Seconds < 0.0 then
         raise Invalid_Delay;
@@ -121,6 +186,10 @@ package body Timers is
       Event_Mng.Wake_Up;
     end if;
 
+    -- Trace
+    Put_Debug ("Create", Delay_Image (Delay_Spec)
+             & Cb_Image (Callback)
+             & " -> " & This_Id'Img);
     -- Done
     return (Timer_Num => This_Id);
   end Create;
@@ -135,14 +204,13 @@ package body Timers is
     if Id = No_Timer then
       raise Invalid_Timer;
     end if;
-    -- Try current
-    if not Timer_List_Mng.Is_Empty (Timer_List) then
-      Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
-      if Timer.Id = Id.Timer_Num then
-        return ;
-      end if;
-    else
+    if Timer_List_Mng.Is_Empty (Timer_List) then
       raise Invalid_Timer;
+    end if;
+    -- Try current
+    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    if Timer.Id = Id.Timer_Num then
+      return ;
     end if;
 
     -- Search timer
@@ -165,10 +233,12 @@ package body Timers is
   -- May raise Invalid_Timer if timer has expired
   procedure Delete (Id : in Timer_Id) is
   begin
+    Set_Debug;
     -- Search timer
     Locate (Id);
     -- Delete timer
     Delete_Current;
+    Put_Debug ("Delete", " id " & Id.Timer_Num'Img);
   end Delete;
 
   -- Locate First timer to expire
@@ -192,6 +262,7 @@ package body Timers is
     One_True : Boolean;
     use type Ada.Calendar.Time;
   begin
+    Set_Debug;
     One_True := False;
     loop
       begin
@@ -218,6 +289,7 @@ package body Timers is
         Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
         Sort (Timer_List);
       end if;
+      Put_Debug ("Expire", "expiring id " & Timer.Id'Img);
       -- Call callback
       if Timer.Cb = null then
         -- A timer with no cb is for generating events
@@ -230,22 +302,39 @@ package body Timers is
       end if;
     end loop;
 
+    Put_Debug ("Expire", "-> " & One_True'Img);
     return One_True;
   end Expire;
 
+  -- We add this accuracy to the result of Wait_For and Next_Timeout
+  --  (if it not infinite nor 0)
+  --  in order to avoid too early call to Is_Reached due to rounding
+  --  in client.
+  Accuracy : constant Duration := 0.001;
+  procedure Adjust (Dur : in out Duration) is
+  begin
+    if Dur = 0.0 or else Dur = Infinite_Seconds then
+      -- No time to play with, or infinite (-1 by convention)
+      return;
+    end if;
+    Dur := Dur + Accuracy;
+  end Adjust;
+
   -- Delay until next timer expires (or Infinite_Seconds)
-  function Wait_For return Duration is
+  function Wait_For (Do_Adjust : in Boolean) return Duration is
     Timer : Timer_Rec;
     Result : Duration;
     use Ada.Calendar;
   begin
+    Set_Debug;
     begin
       -- Search first timer and read it
       First;
     exception
       when Invalid_Timer =>
         -- No  more timer
-      return Infinite_Seconds;
+        Put_Debug ("Wait_For", "-> Infinite cause no timer");
+        return Infinite_Seconds;
     end;
     Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
 
@@ -254,14 +343,28 @@ package body Timers is
     if Result < 0.0 then
       Result := 0.0;
     end if;
+
+    -- Done
+    if Do_Adjust then
+      Adjust (Result);
+    end if;
+    Put_Debug ("Wait_For", "-> " & Result'Img
+                         & " cause id " & Timer.Id'Img);
     return Result;
   end Wait_For;
+
+  function Wait_For return Duration is
+  begin
+    return Wait_For (True);
+  end Wait_For;
+
 
   -- Compute next timeout from Expiration and timers
   function Next_Timeout (Expiration : Expiration_Rec) return Duration is
     Timeout_Dur, Timeout_Tim : Duration;
     use type Ada.Calendar.Time;
   begin
+    Set_Debug;
     -- Final timeout from the one specified
     if not Expiration.Infinite then
       Timeout_Dur := Expiration.Time - Ada.Calendar.Clock;
@@ -274,7 +377,7 @@ package body Timers is
     end if;
 
     -- Next timer timeout
-    Timeout_Tim := Timers.Wait_For;
+    Timeout_Tim := Timers.Wait_For (False);
 
     -- Compute smaller timeout between timers and the one requested
     if Timeout_Tim = Infinite_Seconds then
@@ -303,15 +406,24 @@ package body Timers is
       end if;
     end if;
 
+    -- Done
+    Adjust (Timeout_Dur);
+    Put_Debug ("Next_Timeout", Exp_Image(Expiration)
+                             & " -> " & Timeout_Dur'Img);
     return Timeout_Dur;
   end Next_Timeout;
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean is
     use type Ada.Calendar.Time;
+    Result : Boolean;
   begin
-    return not Expiration.Infinite
-    and then Ada.Calendar.Clock > Expiration.Time;
+    Set_Debug;
+    Result := not Expiration.Infinite
+              and then Ada.Calendar.Clock > Expiration.Time;
+    Put_Debug ("Is_Reached", Exp_Image(Expiration)
+                           & " -> " & Result'Img);
+    return Result;
   end Is_Reached;
 
 end Timers;
