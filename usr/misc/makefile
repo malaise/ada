@@ -13,6 +13,7 @@ all:
 	amake g.adb
 	amake hanoi.adb
 	amake impot_00.adb
+	amake look_95.adb
 	amake one_of_arg.adb
 	amake pascal.adb
 	amake random.adb -largs $(LIBX_MNG) -lX11
@@ -28,5 +29,6 @@ clean:
 	rm *.o *.ali
 
 clean_exe:
-	rm adand beep ddir fact g hanoi impot_99 one_of_arg pascal random second stat statfile wait
+	rm adand beep ddir fact g hanoi impot_99 look_95 \
+	   one_of_arg pascal random second stat statfile wait
 
