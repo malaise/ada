@@ -12,6 +12,7 @@ procedure Ddir is
     Kind : Directory.File_Kind_List;
     Rights : Natural;
     Mtime : Directory.Time_T;
+    Fsize : Directory.Size_T;
     use Directory;
   begin
     begin
@@ -35,7 +36,7 @@ procedure Ddir is
       end;
       begin
         Directory.File_Stat (Dir_Name & "/" & Text_Handler.Value(Entry_Name),
-                             Kind, Rights, Mtime);
+                             Kind, Rights, Mtime, Fsize);
       exception
         when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?

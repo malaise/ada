@@ -109,6 +109,7 @@ package body Menu1 is
       Kind : Directory.File_Kind_List;
       Rights : Natural;
       Modif_Time : Directory.Time_T;
+      Fsize : Directory.Size_T;
       use Directory;
     begin
       Text_Handler.Set (Tmp_File_Name,
@@ -119,13 +120,13 @@ package body Menu1 is
        return;
       end if;
       Directory.File_Stat (Text_Handler.Value(Tmp_File_Name),
-                           Kind, Rights, Modif_Time);
+                           Kind, Rights, Modif_Time, Fsize);
       if Kind = Directory.Link then
         -- Follow link recursively
         Directory.Read_Link (Text_Handler.Value(Tmp_File_Name),
                              Tmp_File_Name);
         Directory.File_Stat (Text_Handler.Value(Tmp_File_Name),
-                             Kind, Rights, Modif_Time);
+                             Kind, Rights, Modif_Time, Fsize);
       end if;
     end;
       

@@ -6,6 +6,7 @@ procedure T_Dir is
   Kind : Directory.File_Kind_List;
   Rights : Natural;
   Mtime  : Directory.Time_T;
+  Fsize  : Directory.Size_T;
   Max_Len : constant := 50;
   Pad : constant String (1 .. Max_Len) := (others => ' ');
 
@@ -90,7 +91,7 @@ begin
         begin
           Directory.File_Stat (
              Text_Handler.Value (Dir_Name) & '/' &
-             Text_Handler.Value (File_Name), Kind, Rights, Mtime);
+             Text_Handler.Value (File_Name), Kind, Rights, Mtime, Fsize);
           Put_Rights (Rights);
           Put_Date (Mtime);
           My_Io.Put_Line (" " & Directory.File_Kind_List'Image(Kind));

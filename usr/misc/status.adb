@@ -20,6 +20,7 @@ procedure Status is
   -- Info unused but got with File_Stat
   Kind : Directory.File_Kind_List;
   Rights : Natural;
+  Fsize  : Directory.Size_T;
 
   -- Modif time of target, current source
   Target_Mtime, Source_Mtime : Directory.Time_T;
@@ -42,7 +43,7 @@ begin
   -- Check that target file exists and get its modif date
   begin
     Directory.File_Stat(Argument.Get_Parameter(Argument.Get_Nbre_Arg),
-                        Kind, Rights, Target_Mtime);
+                        Kind, Rights, Target_Mtime, Fsize);
   exception
     when Directory.Name_Error =>
       -- Not found
@@ -75,7 +76,7 @@ begin
 
     begin
       Directory.File_Stat(Argument.Get_Parameter(Arg_No),
-                        Kind, Rights, Source_Mtime);
+                        Kind, Rights, Source_Mtime, Fsize);
     exception
       when Directory.Name_Error =>
         -- Not found
