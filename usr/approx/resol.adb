@@ -1,11 +1,11 @@
 package body RESOL is
 
-  -- Degree of the polynomial
-  subtype T_DEGREE is R_T_DEGREE range 1..50;
+  subtype T_DEGREE is NATURAL range 1 .. R_T_DEGREE'LAST + 1;
+
   THE_DEGREE : T_DEGREE := 1;
   -- Previous solution still accurate
   RESOLVED : BOOLEAN := FALSE;
-  PREVIOUS_SOLUTION : VECTOR (1..T_DEGREE'lAST);
+  PREVIOUS_SOLUTION : VECTOR (1..T_DEGREE'LAST);
 
   -- Computation of the solution
   package R_COMPUTE is

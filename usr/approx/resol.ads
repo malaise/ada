@@ -1,11 +1,10 @@
 with POINTS, MY_SYSLIN;
 package RESOL is
+  -- Degree of the polynomial
+  subtype R_T_DEGREE is NATURAL range 1 .. 999;
 
   -- Vector : factors of the polynomial solution
   subtype VECTOR is MY_SYSLIN.VECTOR;
-
-  -- Degree : Degree of the polynomial
-  subtype R_T_DEGREE is NATURAL;
 
   -- Compute polynomial
   function R_RESOLUTION (THE_POINTS : POINTS.P_T_THE_POINTS) return VECTOR;
