@@ -1,0 +1,3 @@
+#!/bin/ksh
+export AFPX_DATA_DIR=..
+../heart $*
