@@ -244,8 +244,9 @@ package X_Mng is
   function X_Callback_Set (Fd : in File_Desc; Read : in Boolean)
   return Boolean;
 
-  -- Register a callback on termination signals
-  -- Call it with null to disable
+  -- Register a callback on termination signal (SigInt)
+  -- Call it with null to disable generation of Signal_Event by Select
+  -- Default is event generation with no callback
   procedure X_Set_Signal (Callback : in Signal_Callback);
   -- Is a callback set on signals
   function X_Signal_Set return Boolean;

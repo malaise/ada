@@ -1,5 +1,5 @@
 with Calendar, System;
-with Dynamic_List, My_Io, Timers, Address_Image;
+with Dynamic_List, My_Io, Timers, Address_Image, Null_Procedure;
 package body X_Mng is
 
   -- Duration
@@ -52,7 +52,7 @@ package body X_Mng is
   procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
 
   -- Signal callback
-  Cb_Sig : Signal_Callback := null;
+  Cb_Sig : Signal_Callback := Null_Procedure'Access;
 
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
