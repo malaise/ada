@@ -1,0 +1,62 @@
+# Sort elements from stack
+
+# Error
+[ "Error. Invalid argument." putl ssize popn retall ] E popr
+
+# Save number of elements
+ssize N popr
+
+# Check number of elements
+a regind z regind swap - 1 + dup N pushr <
+[ "Error. Too many arguments. Max is " put putl ssize popn retall ] ifcall
+pop
+
+# Save elements in registers
+1 I popr
+[
+I pushr N pushr > ifret
+# Check arg
+dup isinte [ toreal ] ifcall
+dup isreal ~ E pushr ifcall
+# Store in reverse order (tos last)
+N pushr I pushr - a regind + indreg popr
+# Next index
+I pushr 1 + I popr
+S pushr retacal ] S popr
+S pushr call
+
+# Bubble sort
+#############
+# Sub loop from I to N
+[
+I pushr a regind + 1 - indreg copye
+J pushr a regind + 1 - indreg copye
+# Get values, Vi on top
+pushr swap pushr
+# Swap if Vj < Vi
+< pushle pushle swap3
+ [ swap2r ]
+ [ 2 popn ] ifte call
+J pushr N pushr = ifret
+J pushr 1 + J popr
+C pushr retacal ] C popr
+
+# Main loop for 1 to N-1
+1 I popr
+[
+I pushr N pushr = ifret
+I pushr 1 + J popr
+C pushr call
+I pushr 1 + I popr
+B pushr retacal ] B popr
+B pushr call
+
+# Put elements
+1 I popr
+[
+I pushr N pushr > ifret
+I pushr a regind + 1 - indreg pushr putl
+I pushr 1 + I popr 
+P pushr retacal ] P popr
+P pushr call
+
