@@ -21,9 +21,9 @@ package body Stack is
       raise Invalid_Argument;
     end if;
     if Debug.Debug_Level_Array(Debug.Stack) then
-        if not Default_Stack then
-          Text_Io.Put ("Extra ");
-        end if;
+      if not Default_Stack then
+        Text_Io.Put ("Extra ");
+      end if;
       Text_Io.Put ("Stack: Pushing ");
       Debug.Put (Item);
       Text_Io.New_Line;
