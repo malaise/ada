@@ -171,6 +171,7 @@ package body Client_Mng is
     Port.Name(1 .. Port_Name'Length) := Port_Name;
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
                           Dscr, Accept_Port);
+    Init := True;
   end Start;
 
 
