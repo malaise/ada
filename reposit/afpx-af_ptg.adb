@@ -162,18 +162,22 @@ package body Af_Ptg is
 
   function Valid_Click (List_Present : in Boolean) return Boolean is
     Mouse_Status : Con_Io.Mouse_Event_Rec;
+    Click_Pos : Con_Io.Square;
     Valid : Boolean;
     use Con_Io;
   begin
     -- Check if mouse button is clicked
     Con_Io.Get_Mouse_Event (Mouse_Status);
+    Click_Pos := (Mouse_Status.Row, Mouse_Status.Col);
     Valid := Mouse_Status.Button = Con_Io.Left
              and then Mouse_Status.Status = Con_Io.Pressed;
     if Valid then
-      Last_Pos := (Mouse_Status.Row, Mouse_Status.Col);
+      Last_Pos := Click_Pos;
     else
-      -- Handle wheele here
-      if List_Present and then Mouse_Status.Status = Con_Io.Pressed then
+      -- Handle wheele here: Click 4/5 in list
+      if List_Present
+      and then In_Field_Absolute(Lfn, Click_Pos)
+      and then Mouse_Status.Status = Con_Io.Pressed then
         if Mouse_Status.Button = Con_Io.Up then
           Af_List.Update (Up);
         elsif Mouse_Status.Button = Con_Io.Down then
