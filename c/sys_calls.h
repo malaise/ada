@@ -56,7 +56,7 @@ extern int fd_close (int fd);
 extern int procreate (void);
 
 /* Execv */
-extern void mutate (char * const argv[]);
+extern void mutate (char * const program, int len);
 
 /* Waitpid (WNOHANG): pid is set to 0 if no more child */
 /* Cause may be ERROR, or */

@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 
@@ -234,11 +235,45 @@ extern int procreate (void) {
   }
 }
 
-extern void mutate (char * const argv[]) {
+extern void mutate (char * program, int len) {
+  int i, j, n;
+  char * * argv;
 
-  if ( (argv[0] == NULL) || (strlen (argv[0]) == 0) )  {
+
+  /* Check len of first string (prog name) */
+  if ( (program == NULL) || (strlen (program) == 0) ) {
     return;
   }
+
+  /* Count strings */
+  n = 0;
+  for (i = 0; i < len; i++) {
+    if (program[i] == '\0') {
+      n++;
+    }
+  }
+
+  /* Allocate array of args */
+  argv = malloc (n * sizeof (char*));
+  if (argv == NULL) {
+    return;
+  }
+
+  /* Store pointers */
+  i = 0;
+  for (j = 0; j < n; j++) {
+    argv[j] = &program[i];
+    if (j == n - 1) {
+      break;
+    }
+    i++;
+    while (program[i] != '\0') {
+      i++;
+    }
+    i++;
+  }
+  argv[n] = NULL;
+
   execv (argv[0], argv);
 }
 
