@@ -17,6 +17,13 @@ begin
   T_Smart_Int.Int_Ref.Dereference(R2, I);
   Ada.Text_Io.Put_Line ("Test: Dereferenced R2, Got" & I'Img & " - Dereferencing R1");
   I := T_Smart_Int.Int_Ref.Dereference(R1);
-  Ada.Text_Io.Put_Line ("Test: Dereferenced R1. Got" & I'Img);
+  Ada.Text_Io.Put_Line ("Test: Dereferenced R1, Got" & I'Img
+                      & " - Releasing R2 and Dereferencing R1");
+  T_Smart_Int.Int_Ref.Release (R2);
+  I := T_Smart_Int.Int_Ref.Dereference(R1);
+  Ada.Text_Io.Put_Line ("Test: Dereferenced R1. Got" & I'Img
+                     & " - Releasing R3");
+  T_Smart_Int.Int_Ref.Release (R3);
+  Ada.Text_Io.Put_Line ("Test: The end. Garbage collecting");
 end T_Smart_Ref;
 
