@@ -7,9 +7,13 @@ package Intra_Dictio is
   Data_Kind : constant Character := Ada.Characters.Latin_1.Can;
   Sync_Kind : constant Character := Ada.Characters.Latin_1.Ack;
 
+  Extra_Crc : constant Character := 'C';
+  Extra_Ver : constant Character := 'V';
+
   type Read_Cb_Access is access procedure (
     Diff : in Boolean;
     Stat : in Status.Status_List;
+    Sync : in Boolean;
     From : in Tcp_Util.Host_Name;
     Kind : in Character;
     Item : in Data_Base.Item_Rec);

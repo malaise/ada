@@ -22,11 +22,12 @@ package body Init_Mng is
 
   procedure Event (From : in Tcp_Util.Host_Name;
                    Stat : in Status.Status_List;
+                   Sync : in Boolean;
                    Diff : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
   begin
-    Fight_Mng.Event (From, Stat, Diff, Extra);
+    Fight_Mng.Event (From, Stat, Sync, Diff, Extra);
     if Diff and then (Stat = Status.Starting or else Stat = Status.Fight) then
       Intra_Dictio.Reply_Status;
     end if;

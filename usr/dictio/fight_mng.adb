@@ -1,5 +1,5 @@
 with Timers;
-with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions;
+with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
@@ -31,6 +31,7 @@ package body Fight_Mng is
 
   procedure Event (From : in Tcp_Util.Host_Name;
                    Stat : in Status.Status_List;
+                   Sync : in Boolean;
                    Diff : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
@@ -38,12 +39,13 @@ package body Fight_Mng is
     if not In_Fight then
       return;
     end if;
-    if not Diff and then Extra /= "" and then Extra /= Versions.Intra then
+    if Extra /= "" and then Extra(1) = Intra_Dictio.Extra_Ver
+    and then Extra(2 .. Extra'Last) /= Versions.Intra then
       Debug.Put ("Fight: version mismatch. Received " & Extra
                & " while being " & Versions.Intra);
       raise Errors.Exit_Error;
     end if;
-    Nodes.Set (From, Stat);
+    Nodes.Set (From, Stat, Sync);
     if Debug.Level_Array(Debug.Fight) then
       Debug.Put ("Fight: received Stat: " & Stat'Img
                & "  From: " & Parse (From));

@@ -9,6 +9,7 @@ package body Intra_Dictio is
     From : Tcp_Util.Host_Name;
     Kind : Character;
     Stat : Status.Status_List;
+    Sync : Boolean;
   end record;
 
   type Message_Rec is record
@@ -97,8 +98,11 @@ package body Intra_Dictio is
     end if;
     -- Call dispatcher
     if Client_Cb /= null then
-      Client_Cb (Diffused, Message.Head.Stat, Message.Head.From,
-                           Message.Head.Kind, Message.Item);
+      Client_Cb (Diffused, Message.Head.Stat, 
+                           Message.Head.Sync,
+                           Message.Head.From,
+                           Message.Head.Kind,
+                           Message.Item);
     end if;
   end Read_Cb;
 
@@ -110,11 +114,12 @@ package body Intra_Dictio is
     use type Data_Base.Item_Rec;
   begin
     Message.Head.Stat := Status.Get;
+    Message.Head.Sync := Status.Sync;
     Local_Host_Name.Get (Message.Head.From);
      
     if Message.Item = Data_Base.No_Item then
       -- Header size
-      Len := 72;
+      Len := 80;
     else
       Len := Integer(Message.Item.Data(Message.Item.Data_Len)'Address
                      - Message'Address + 4);

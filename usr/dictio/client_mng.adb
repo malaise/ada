@@ -173,7 +173,7 @@ package body Client_Mng is
   end Allow_Clients;
 
 
-  procedure Start is
+  procedure Start (Sync : in Boolean) is
   begin
     if State /= Not_Init then
       return;
@@ -181,8 +181,12 @@ package body Client_Mng is
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: start");
     end if;
-    Sync_Mng.Start (Allow_Clients'access);
     State := Waiting;
+    if Sync then
+      Sync_Mng.Start (Allow_Clients'access);
+    else
+      Allow_Clients;
+    end if;
   end Start;
 
 
@@ -196,7 +200,9 @@ package body Client_Mng is
       when Not_Init =>
         null;
       when Waiting =>
-        Sync_Mng.Cancel;
+        if Sync_Mng.In_Sync then
+          Sync_Mng.Cancel;
+        end if;
       when Allow =>
         -- Delete all notify
         Notify.Del_All;

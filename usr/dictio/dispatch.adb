@@ -1,9 +1,11 @@
 with Tcp_Util, Event_Mng;
-with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args;
+with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
+     Sync_Mng;
 package body Dispatch is
 
   procedure New_Intra (Diff : in Boolean;
                        Stat : in Status.Status_List;
+                       Sync : in Boolean;
                        From : in Tcp_Util.Host_Name;
                        Kind : in Character;
                        Item : in Data_Base.Item_Rec);
@@ -48,6 +50,7 @@ package body Dispatch is
 
   procedure New_Intra (Diff : in Boolean;
                        Stat : in Status.Status_List;
+                       Sync : in Boolean;
                        From : in Tcp_Util.Host_Name;
                        Kind : in Character;
                        Item : in Data_Base.Item_Rec) is
@@ -59,10 +62,10 @@ package body Dispatch is
         when Status.Starting | Status.Dead =>
           return;
         when Status.Init =>
-          Init_Mng.Event (From, Stat, Diff,
+          Init_Mng.Event (From, Stat, Sync, Diff,
                           Item.Data(1 .. Item.Data_Len));
         when Status.Slave | Status.Master | Status.Fight =>
-          Online_Mng.Event (From, Stat, Diff,
+          Online_Mng.Event (From, Stat, Sync, Diff,
                             Item.Data(1 .. Item.Data_Len));
       end case;
     else
@@ -90,13 +93,15 @@ package body Dispatch is
         Client_Mng.Quit;
         Intra_Dictio.Quit;
       when Status.Slave | Status.Master =>
+        Online_Mng.Start;
         if Prev_Status = Status.Init
         and then New_Status = Status.Slave then
           -- Request sync
           Intra_Dictio.Send_Status;
+          Client_Mng.Start (True);
+        else
+          Client_Mng.Start (False);
         end if;
-        Online_Mng.Start;
-        Client_Mng.Start;
       when Status.Fight =>
         null;
     end case;

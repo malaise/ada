@@ -13,5 +13,7 @@ package Status is
   type New_Status_Callback is access procedure;
   procedure Set (New_Status_Cb : in New_Status_Callback);
 
+  Sync : Boolean := False;
+
 end Status;
 

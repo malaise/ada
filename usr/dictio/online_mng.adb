@@ -39,6 +39,7 @@ package body Online_Mng is
       T.Delay_Seconds := 0.0;
       T.Period := Alive_Period;
       Tid := Timers.Create (T, Timer_Cb'Access);
+      Status.Sync := True;
     end if;
   
     if Debug.Level_Array(Debug.Online) then
@@ -55,26 +56,39 @@ package body Online_Mng is
 
   procedure Event (From  : in Tcp_Util.Host_Name;
                    Stat  : in Status.Status_List;
+                   Sync : in Boolean;
                    Diff  : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Fight then
-      Fight_Mng.Event (From, Stat, Diff, Extra);
+      Fight_Mng.Event (From, Stat, Sync, Diff, Extra);
     elsif Status.Get = Status.Slave then
       if Stat = Status.Master then
         -- Receive a Master while slave, check Crc and restart timer
         if not Sync_Mng.In_Sync
-        and then Extra /= Data_Base.Get_Crc then
-          if Debug.Level_Array(Debug.Online) then
-            Debug.Put ("Online: Crc error. Received >" & Extra
-                     & "< from: " & Parse(From)
-                     & ", got >" & Data_Base.Get_Crc & "<");
+        and then Extra /= ""
+        and then Extra(1) = Intra_Dictio.Extra_Crc then
+          if Extra(2 .. Extra'Last) /= Data_Base.Get_Crc then
+            -- Crc Error: Re sync
+            if Debug.Level_Array(Debug.Online) then
+              Debug.Put ("Online: Crc error. Received >" & Extra
+                       & "< from: " & Parse(From)
+                       & ", got >" & Data_Base.Get_Crc & "<");
+            end if;
+            -- Invalid Crc. Re-sync.
+            Data_Base.Reset;
+            Status.Sync := False;
+            Intra_Dictio.Send_Status;
+            Sync_Mng.Start;
+          else
+            -- Crc OK:
+            if Debug.Level_Array(Debug.Online)
+            and then not Status.Sync then
+              Debug.Put ("Online: Crc OK, synced.");
+            end if;
+            Status.Sync := True;
           end if;
-          -- Invalid Crc. Re-sync.
-          Data_Base.Reset;
-          Intra_Dictio.Send_Status;
-          Sync_Mng.Start;
         end if;
 
         Timers.Delete (Tid);
@@ -119,7 +133,10 @@ package body Online_Mng is
 
 
     if Diff and then (Stat = Status.Starting or else Stat = Status.Fight) then
-      Intra_Dictio.Reply_Status (Versions.Intra);
+      if Debug.Level_Array(Debug.Online) then
+        Debug.Put ("Online: reply status to: " & Parse(From) );
+      end if;
+      Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
     end if;
   end Event;
 
@@ -127,8 +144,8 @@ package body Online_Mng is
     use type Status.Status_List;
   begin
     if Status.Get = Status.Master then
-      -- Send alive message
-      Intra_Dictio.Send_Status (Data_Base.Get_Crc);
+      -- Send alive message with Crc
+      Intra_Dictio.Send_Status (Intra_Dictio.Extra_Crc & Data_Base.Get_Crc);
     else
       -- No alive message
       if Debug.Level_Array(Debug.Online) then
