@@ -2,6 +2,8 @@ package body DIR_MNG is
 
   DIR_INTERNAL_ERROR : exception;
 
+  PATH_SEPARATOR : constant CHARACTER := '/';
+
   function LESS_THAN (EL1, EL2 : in FILE_ENTRY_REC) return BOOLEAN is
   begin
     return EL1.NAME (1 .. EL1.LEN) < EL2.NAME (1 .. EL2.LEN);
@@ -15,6 +17,7 @@ package body DIR_MNG is
     DIR_DESC : DIRECTORY.DIR_DESC;
     FILE_REC : FILE_ENTRY_REC;
     FILE_NAME : FILE_TXT;
+    FILE_RIGHTS : NATURAL;
   begin
 
     if DIR = "" then
@@ -31,6 +34,15 @@ package body DIR_MNG is
                                    TEMPLATE) then
         FILE_REC.LEN := TEXT_HANDLER.LENGTH (FILE_NAME);
         FILE_REC.NAME (1 .. FILE_REC.LEN) := TEXT_HANDLER.VALUE (FILE_NAME);
+        if DIR = "" then
+          DIRECTORY.FILE_STAT (
+           TEXT_HANDLER.VALUE (FILE_NAME),
+           FILE_REC.KIND, FILE_RIGHTS);
+        else
+          DIRECTORY.FILE_STAT (
+           DIR & PATH_SEPARATOR & TEXT_HANDLER.VALUE (FILE_NAME),
+           FILE_REC.KIND, FILE_RIGHTS);
+        end if;
         FILE_LIST_MNG.INSERT (LIST => LIST,
                               ITEM => FILE_REC,
                               WHERE => FILE_LIST_MNG.NEXT);
