@@ -14,7 +14,7 @@ fi
 #export DICTIO_DEBUG_INTRA=Y
 
 # This one is not debug
-export DICTIO_DELAY_PER_KB=5
+export DICTIO_DELAY_PER_KB=2
 
 if [ -z "$1" ] ; then
   export DICTIO_PRIO=10
