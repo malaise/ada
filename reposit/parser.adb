@@ -65,7 +65,6 @@ package body Parser is
   
   -- Destroy the iterator
   -- May raise Constraint_Error if iterator has not been created
-
   procedure Del (Iter : in out Iterator) is
   begin
     Check (Iter);
