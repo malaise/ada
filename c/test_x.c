@@ -44,6 +44,7 @@ void put(void *line, char *string, int row, int column) {
 
 void title (void *line) {
 
+  (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0, 0);
   (void) put (line, T1, TITLE_LNE + 0, 2);
   (void) put (line, T2, TITLE_LNE + 2, 2);

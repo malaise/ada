@@ -254,6 +254,7 @@ package body Nav_Dialog is
     loop
       if Refresh then
         -- data part has to be put again
+        Nav_Screen.Reset;
         Nav_Screen.Title;
         Nav_Screen.Put_Mask;
         Put_Data (Data);

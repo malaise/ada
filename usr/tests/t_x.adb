@@ -53,18 +53,19 @@ begin
 
   X_Mng.X_Open_Line (Line_Def, Id);
 
-  X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False, False);
-  for I in 0 .. 15 loop
-    for J in 0 .. 15 loop
-      X_Mng.X_Put_Char (Id, X_Mng.Byte(16 * I + J), 8 + I, 60 + J);
-    end loop;
-  end loop;
 
   X_Event := True;
   Kind := X_Mng.Refresh;
   Main_Loop:
   loop
     if X_Event and then Kind = X_Mng.Refresh then
+      X_Mng.X_Clear_Line (Id);
+      X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False, False);
+      for I in 0 .. 15 loop
+        for J in 0 .. 15 loop
+          X_Mng.X_Put_Char (Id, X_Mng.Byte(16 * I + J), 8 + I, 60 + J);
+        end loop;
+      end loop;
       X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
       X_Mng.X_Put_String (Id, "Ah que coucou", 5, 10);
       X_Mng.X_Set_Attributes (Id, 1, 4);

@@ -132,6 +132,7 @@ package body Sok_Display is
   -- puts all the frame
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
+    Con_Io.Reset_Term;
     Con_Io.Move ( (00, 20), Name => Title_Win);
     Con_Io.Put ("S O K O B A N", Title_Win,
      Foreground => Con_Io.White, Move => False);

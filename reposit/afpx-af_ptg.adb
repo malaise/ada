@@ -382,6 +382,11 @@ package body Af_Ptg is
     -- Reset last selection for double click
     Last_Selected_Id := 0;
 
+    -- Erase potential garbage if redisplay
+    if Redisplay then
+      Con_Io.Clear (Con_Io.Screen);
+    end if;
+
     -- List present : defined, activated and not empty
     List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
            and then Af_Dscr.Fields(Lfn).Activated
