@@ -73,9 +73,11 @@ package Tcp_Util is
   ---------------
   -- Connection / Disconnection callback
   -- Sets Connected to True if connection succeeds,
-  --  then Dscr is the one of the new socket connected, blocking
+  --  then Dscr is the one of the new socket connected, blocking,
+  --  Remote_Port_Num and Remote_Host_Id are set.
   -- Sets Connected to False if connection fails,
-  --  then Dscr is Socket.No_Socket,
+  --  then Dscr is Socket.No_Socket, Remote_Port_Num is 0
+  --  and Remote_Host_Id is Socket.No_Host.
   type Connection_Callback_Access is
     access procedure (Remote_Port_Num : in Port_Num;
                       Remote_Host_Id  : in Host_Id;
@@ -85,10 +87,8 @@ package Tcp_Util is
 
   -- Acception callback
   -- The Local_Dscr is the one set by Accept_From
-  -- Sets Connected to True if connection succeeds,
-  --  then Dscr is the one of the new socket, blocking
-  -- Sets Connected to False if connection breaks (and then closed),
-  --  then Dscr is the one of the broken (and now closed) socket
+  --  Dscr is the one of the new socket, blocking,
+  --  Remote_Port_Num and Remote_Host_Id are set.
   type Acception_Callback_Access is
     access procedure (Local_Port_Num  : in Port_Num;
                       Local_Dscr      : in Socket.Socket_Dscr;
@@ -151,7 +151,7 @@ package Tcp_Util is
 
   -- If a socket in overflow (send has returned True and End_Of_Overflow_CB
   --  has not be called yet) has to be closed, then Abort_Send_and_Close
-  -- has to be called instead  of Socket.Close
+  -- has to be called instead of Socket.Close
   -- The socket is closed
   -- May raise No_Such
   procedure Abort_Send_and_Close (Dscr : in out Socket.Socket_Dscr);

@@ -138,7 +138,7 @@ package body Tcp_Util is
       Port := Socket.Get_Destination_Port (Rec.Dscr);
       Socket.Set_Blocking (Rec.Dscr, True);
     else
-      -- Givving up
+      -- Giving up
       Port := 0;
       host := Socket.No_Host;
     end if;
