@@ -168,6 +168,7 @@ package body SCREEN is
 
 
   procedure INFORM (MSG : in S_INFO_LIST) is
+    LIST_ACTIVE : BOOLEAN;
   begin
     case MSG is
       when I_CLEAR     => ENCODE_INFO ("");
@@ -180,7 +181,16 @@ package body SCREEN is
       when I_YMAX      => ENCODE_INFO ("Enter Y max");
       when I_DEGREE    => ENCODE_INFO ("Enter degree from 0 to Npoints - 1");
       when I_SCALES    => ENCODE_INFO ("Select a scales kind");
-      when I_WAIT      => ENCODE_INFO ("Computing, please wait");
+      when I_WAIT      =>
+        ENCODE_INFO ("Computing, please wait");
+        AFPX.GET_FIELD_ACTIVATION (AFPX.LIST_FIELD_NO, LIST_ACTIVE);
+        if LIST_ACTIVE then
+          AFPX.SET_FIELD_ACTIVATION (AFPX.LIST_FIELD_NO, FALSE);
+        end if;
+        AFPX.PUT;
+        if LIST_ACTIVE then
+          AFPX.SET_FIELD_ACTIVATION (AFPX.LIST_FIELD_NO, TRUE);
+        end if;
     end case;
   end INFORM;
 
@@ -216,7 +226,7 @@ package body SCREEN is
     -- No menu. Ok
     CLEAR_MENU;
     -- Inhibit exit field
-    AFPX.SET_FIELD_ACTIVATION (EXIT_BUTTON_FLD, FALSE);
+    AFPX.SET_FIELD_ACTIVATION(EXIT_BUTTON_FLD, FALSE);
     AFPX.SET_FIELD_ACTIVATION(OK_BUTTON_FLD, TRUE);
     AFPX.SET_FIELD_ACTIVATION(CANCEL_BUTTON_FLD, FALSE);
     -- Set colors
