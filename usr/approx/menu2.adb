@@ -289,15 +289,17 @@ package body MENU2 is
               RESTORE := LIST;
             when 27 =>
               -- Y=f(x)
-              SCREEN.PUT_TITLE(SCREEN.Y_F_X);
               declare
                 POINT : POINTS.P_T_ONE_POINT;
                 OK : BOOLEAN;
               begin
-                COMPUTE_XY (POINT, OK);
-                if OK then 
-                  DIALOG.PUT_YFX (POINT);
-                end if;
+                loop
+                  COMPUTE_XY (POINT, OK);
+                  if OK then 
+                    OK := DIALOG.PUT_YFX (POINT);
+                  end if;
+                  exit when not OK;
+                end loop;
               end;
               RESTORE := PARTIAL;
             when 29 =>

@@ -195,7 +195,7 @@ package body SCREEN is
   end INFORM;
 
 
-  function CONFIRM (MSG : S_CONFIRM_LIST) return BOOLEAN is
+  function CONFIRM (MSG : S_CONFIRM_LIST; ALERT : BOOLEAN) return BOOLEAN is
     RES : BOOLEAN;
   begin
     -- No menu. Ok or cancel
@@ -207,10 +207,13 @@ package body SCREEN is
     -- Set colors
     AFPX.SET_FIELD_COLORS(INFO_FLD, FOREGROUND => CON_IO.ORANGE,
                                     BLINK_STAT => CON_IO.BLINK);
-    CON_IO.BELL(1);
+    if ALERT then
+      CON_IO.BELL(1);
+    end if;
     case MSG is
       when C_FILE_EXISTS  =>  ENCODE_INFO ("File exists and will be overwritten");
       when C_DELETE_POINT =>  ENCODE_INFO ("Delete this point");
+      when C_GO_ON        =>  ENCODE_INFO ("Continue with an other");
       when C_DATA_LOST    =>  ENCODE_INFO ("Data is not saved and will be lost");
     end case;
     RES := S_CONFIRM;

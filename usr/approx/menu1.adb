@@ -128,7 +128,7 @@ package body MENU1 is
       end if;
     else
       if FILE.F_EXISTS(TEXT_HANDLER.VALUE(TMP_FILE_NAME))
-      and then not SCREEN.CONFIRM(SCREEN.C_FILE_EXISTS) then
+      and then not SCREEN.CONFIRM(SCREEN.C_FILE_EXISTS, TRUE) then
         return;
       end if;
       begin
@@ -305,7 +305,7 @@ package body MENU1 is
                 AFPX.ENCODE_FIELD (SCREEN.GET_FLD, (0, 0),
                     POINT_STR.ENCODE_REC(A_POINT).STR(1 .. SCREEN.GET_GET_WIDTH));
                 AFPX.SET_FIELD_ACTIVATION(SCREEN.GET_FLD, TRUE);
-                if SCREEN.CONFIRM(SCREEN.C_DELETE_POINT) then
+                if SCREEN.CONFIRM(SCREEN.C_DELETE_POINT, TRUE) then
                   POINTS.P_UPD_POINT (POINTS.REMOVE, POINT_INDEX, A_POINT);
                   SET_POINTS_LIST;
                   DATA_CHANGED := TRUE;

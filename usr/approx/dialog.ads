@@ -22,8 +22,8 @@ package DIALOG is
   -- Display polynom
   procedure PUT_POLYNOM (POLYNOM : RESOL.VECTOR);
 
-  -- Display y=f(x)
-  procedure PUT_YFX (POINT : in POINTS.P_T_ONE_POINT);
+  -- Display y=f(x). Continue with another x?
+  function PUT_YFX (POINT : POINTS.P_T_ONE_POINT) return BOOLEAN;
 
 end DIALOG;
 

@@ -8,7 +8,7 @@ package body DIALOG is
     if POINTS.P_SAVED then
       return TRUE;
     else
-      return SCREEN.CONFIRM(SCREEN.C_DATA_LOST);
+      return SCREEN.CONFIRM(SCREEN.C_DATA_LOST, TRUE);
     end if;
   end CONFIRM_LOST;
     
@@ -253,8 +253,9 @@ package body DIALOG is
   end PUT_POLYNOM;
 
   -- Display y=f(x)
-  procedure PUT_YFX (POINT : in POINTS.P_T_ONE_POINT) is
+  function PUT_YFX (POINT : POINTS.P_T_ONE_POINT) return BOOLEAN is
     MY_FLD : constant AFPX.FIELD_RANGE := 32;
+    GO_ON : BOOLEAN;
   begin
     -- Enable FX, enable and protect y (get field)
     AFPX.SET_FIELD_COLORS (MY_FLD, FOREGROUND => CON_IO.CYAN);
@@ -271,10 +272,11 @@ package body DIALOG is
       POINT_STR.COORDINATE_IMAGE(POINT.Y));
     
     -- Let screen/afpx do the job
-    SCREEN.ERROR (SCREEN.E_DONE);
+    GO_ON := SCREEN.CONFIRM (SCREEN.C_GO_ON, FALSE);
     -- Clean up
     AFPX.SET_FIELD_COLORS (MY_FLD, FOREGROUND => CON_IO.BLACK);
     AFPX.CLEAR_FIELD(MY_FLD);
+    return GO_ON;
   end PUT_YFX;
 end DIALOG;
 
