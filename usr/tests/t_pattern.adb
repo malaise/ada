@@ -11,9 +11,10 @@ procedure T_Pattern is
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
   begin
-    Ada.Text_Io.Put ("Called Cb (" & Pattern.Image (Ru) & ","
-                                   & Pa'Img & ","
-                                   & Nb'Img & ", tail: ");
+    Ada.Text_Io.Put ("Called Cb (Rule=" & Pattern.Image (Ru)
+                   & ", Id=" & Pa'Img
+                   & ", Matches=" & Nb'Img
+                   & ", tail: ");
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
       Parser.Next_Word (It);
@@ -180,7 +181,9 @@ begin
       exit when Done;
     exception
       when Pattern.Invalid_Pattern =>
-        Ada.text_Io.Put_Line ("EXCEPTION: Invalid_Pattern");
+        Ada.Text_Io.Put_Line ("EXCEPTION: Invalid_Pattern");
+      when Pattern.Pattern_Exists =>
+        Ada.Text_Io.Put_Line ("EXCEPTION: Pattern_Exists");
     end;
   end loop;
 
