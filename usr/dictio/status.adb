@@ -1,5 +1,5 @@
 with Timers;
-with Debug;
+with Dictio_Debug;
 package body Status is
 
   Current_Status : Status_List := Starting;
@@ -23,16 +23,16 @@ package body Status is
       New_Status := Status_List'Val(Data);
     exception
       when others =>
-        if Debug.Level_Array(Debug.Status) then
-          Debug.Put ("Status: Cb with invalid status " & Data'Img);
+        if Dictio_Debug.Level_Array(Dictio_Debug.Status) then
+          Dictio_Debug.Put ("Status: Cb with invalid status " & Data'Img);
         end if;
         return False;
     end;
 
     -- Handle status change
     if Current_Status /= Dead and then New_Status /= Current_Status then
-      if Debug.Level_Array(Debug.Status) then
-        Debug.Put ("Status: " & Prev_Status'Img & " -> " & New_Status'Img);
+      if Dictio_Debug.Level_Array(Dictio_Debug.Status) then
+        Dictio_Debug.Put ("Status: " & Prev_Status'Img & " -> " & New_Status'Img);
       end if;
       Current_Status := New_Status;
       case Current_Status is

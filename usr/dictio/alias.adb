@@ -1,5 +1,5 @@
 with Parser, Text_Handler;
-with Parse, Names, Debug;
+with Parse, Names, Dictio_Debug;
 package body Alias is
 
   subtype Tmp_Txt is Text_Handler.Text (Data_Base.Item_Data'Length);
@@ -89,8 +89,8 @@ package body Alias is
       return;
     end if;
 
-    if Debug.Level_Array(Debug.Client_Alias) then
-      Debug.Put ("Client-alias.resolve: " & Parse(Item.Name));
+    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
+      Dictio_Debug.Put ("Client-alias.resolve: " & Parse(Item.Name));
     end if;
 
     -- Resolve aliases one by one
@@ -104,15 +104,15 @@ package body Alias is
       exit when Text_Handler.Empty (Got_Txt);
       -- Loop detected
       if Got_Txt = Ini_Txt then
-        Debug.Put ("Client-alias.resolving loop: "
+        Dictio_Debug.Put ("Client-alias.resolving loop: "
                  & Text_Handler.Value (Ini_Txt));
         Text_Handler.Empty (Cur_Txt);
         exit;
       end if;
       -- Switch to this one
       Text_Handler.Set (Cur_Txt, Got_Txt);
-      if Debug.Level_Array(Debug.Client_Alias) then
-        Debug.Put ("Client-alias.resolving: " & Text_Handler.Value (Cur_Txt));
+      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
+        Dictio_Debug.Put ("Client-alias.resolving: " & Text_Handler.Value (Cur_Txt));
       end if;
     end loop;
 
@@ -124,15 +124,15 @@ package body Alias is
              := Text_Handler.Value (Cur_Txt);
     end if;
 
-    if Debug.Level_Array(Debug.Client_Alias) then
-      Debug.Put ("Client-alias.resolved: " & Parse(Item.Name));
+    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
+      Dictio_Debug.Put ("Client-alias.resolved: " & Parse(Item.Name));
     end if;
 
   exception
     when Len_Error =>
       -- Keep Item unchanged
-      if Debug.Level_Array(Debug.Client_Alias) then
-        Debug.Put ("Client-alias.resolve len error on: " & Parse(Item.Name));
+      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
+        Dictio_Debug.Put ("Client-alias.resolve len error on: " & Parse(Item.Name));
       end if;
   end Resolve;
 

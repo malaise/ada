@@ -1,10 +1,10 @@
 with Ada.Exceptions;
 with Sys_Calls;
-with Debug, Dispatch, Errors;
+with Dictio_Debug, Dispatch, Errors;
 procedure Dictio is
 begin
   Sys_Calls.Set_Exit_Code (Errors.Init_Error);
-  Debug.Init;
+  Dictio_Debug.Init;
   Dispatch.Init;
 
   Sys_Calls.Set_Exit_Code (Errors.Runtime_Error);
@@ -18,7 +18,7 @@ exception
   when Errors.Exit_Error =>
     Dispatch.Quit;
   when Error:others =>
-    Debug.Put ("Runtime exception "
+    Dictio_Debug.Put ("Runtime exception "
              & Ada.Exceptions.Exception_Name(Error));
 end Dictio;
 

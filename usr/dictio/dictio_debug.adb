@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
 with Sys_Calls, Normal, Day_Mng, Environ;
-package body Debug is
+package body Dictio_Debug is
 
   procedure Init is
   begin
@@ -54,5 +54,5 @@ package body Debug is
     Sys_Calls.Put_Line_Error (Date_Image & " " & Str);
   end Put_Error;
 
-end Debug;
+end Dictio_Debug;
 

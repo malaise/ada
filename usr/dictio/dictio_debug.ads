@@ -1,4 +1,4 @@
-package Debug is
+package Dictio_Debug is
 
   type Level_List is (Status, Intra, Fight, Online,
                       Client, Client_Data, Client_Notify, Client_Alias,
@@ -11,5 +11,5 @@ package Debug is
 
   procedure Put_Error (Str : in String);
 
-end Debug;
+end Dictio_Debug;
 

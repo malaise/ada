@@ -1,5 +1,5 @@
 with Dynamic_List, Normal;
-with Local_Host_Name, Parse, Debug;
+with Local_Host_Name, Parse, Dictio_Debug;
 package body Nodes is
 
   type Node_Rec is record
@@ -131,8 +131,8 @@ package body Nodes is
     Will_Be_Master := Rec.Name = Own_Name;
 
     loop
-      if Debug.Level_Array(Debug.Fight) then
-        Debug.Put ("Fight.Check: " & Parse (Rec.Name)
+      if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+        Dictio_Debug.Put ("Fight.Check: " & Parse (Rec.Name)
                  & "/" & Rec.Stat'Img & "-" & Rec.Prio
                  & " Sync: " & Rec.Sync'Img);
       end if;

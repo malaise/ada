@@ -1,5 +1,5 @@
 with Parser, Ada_Words;
-with Data_Base, Debug;
+with Data_Base, Dictio_Debug;
 package body Names is
 
   -- For parsing
@@ -172,8 +172,8 @@ package body Names is
       end;
     end loop;
 
-    if Debug.Level_Array(Debug.Client_Notify) then
-      Debug.Put ("Client-notify-names: " & Name & " match " & Criteria
+    if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
+      Dictio_Debug.Put ("Client-notify-names: " & Name & " match " & Criteria
                & " : " & Ok'Img);
     end if;
 

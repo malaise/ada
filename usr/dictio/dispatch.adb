@@ -1,6 +1,6 @@
 with Tcp_Util, Event_Mng;
 with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
-     Sync_Mng, Debug, Versions, Parse, Fight_Mng, Errors;
+     Sync_Mng, Dictio_Debug, Versions, Parse, Fight_Mng, Errors;
 package body Dispatch is
 
   procedure New_Intra (Diff : in Boolean;
@@ -14,8 +14,8 @@ package body Dispatch is
 
   procedure Signal is
   begin
-    if Debug.Level_Array(Debug.Fight) then
-      Debug.Put ("Dispatch: signal received");
+    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+      Dictio_Debug.Put ("Dispatch: signal received");
     end if;
     raise Errors.Exit_Signal;
   end Signal;
@@ -67,8 +67,8 @@ package body Dispatch is
       if Diff and then Stat /= Status.Master
               and then Stat /= Status.Slave
               and then Stat /= Status.Dead then
-        if Debug.Level_Array(Debug.Fight) then
-          Debug.Put ("Dispatch: reply status to: " & Parse(From)
+        if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+          Dictio_Debug.Put ("Dispatch: reply status to: " & Parse(From)
                    & "/" & Stat'Img & "-" & Prio);
         end if;
         Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
@@ -84,16 +84,16 @@ package body Dispatch is
                             Item.Data(1 .. Item.Data_Len));
       end case;
     elsif Kind = Intra_Dictio.Sync_Kind then
-      if Debug.Level_Array(Debug.Client_Data) then
-        Debug.Put ("Dispatch: receive sync " & Parse(Item.Name));
+      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
+        Dictio_Debug.Put ("Dispatch: receive sync " & Parse(Item.Name));
       end if;
       -- Sync: Store and notify
       Sync_Mng.Sync_Received;
       Client_Mng.Modified (Item);
     else 
       -- Data: Store and notify
-      if Debug.Level_Array(Debug.Client_Data) then
-        Debug.Put ("Dispatch: receive data " & Parse(Item.Name));
+      if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
+        Dictio_Debug.Put ("Dispatch: receive data " & Parse(Item.Name));
       end if;
       Client_Mng.Modified (Item);
     end if;

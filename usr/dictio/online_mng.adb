@@ -1,5 +1,5 @@
 with Timers;
-with Debug, Parse, Intra_Dictio, Local_Host_Name, Nodes,
+with Dictio_Debug, Parse, Intra_Dictio, Local_Host_Name, Nodes,
      Fight_Mng, Sync_Mng, Data_Base, Sync_Mng, Versions,
      Client_Mng;
 
@@ -68,8 +68,8 @@ package body Online_Mng is
       Client_Mng.Start;
     end if;
   
-    if Debug.Level_Array(Debug.Online) then
-      Debug.Put ("Online: start as " & Status.Get'Img & " " & First'Img);
+    if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+      Dictio_Debug.Put ("Online: start as " & Status.Get'Img & " " & First'Img);
     end if;
   end Start;
 
@@ -101,8 +101,8 @@ package body Online_Mng is
         if Crc /= "" and then not Sync_Mng.In_Sync then
           if not Ever_Synced then
             -- Never synced and not syncing (init). Sync.
-            if Debug.Level_Array(Debug.Online) then
-              Debug.Put ("Online: Syncing from: " & Parse(From));
+            if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+              Dictio_Debug.Put ("Online: Syncing from: " & Parse(From));
             end if;
             Data_Base.Reset;
             Status.Sync := False;
@@ -110,8 +110,8 @@ package body Online_Mng is
             Sync_Mng.Start;
           elsif Crc /= Data_Base.Get_Crc then
             -- Invalid Crc. Re-sync.
-            if Debug.Level_Array(Debug.Online) then
-              Debug.Put ("Online: Crc error. Received " & Crc
+            if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+              Dictio_Debug.Put ("Online: Crc error. Received " & Crc
                        & " from: " & Parse(From)
                        & ", got " & Data_Base.Get_Crc);
             end if;
@@ -120,8 +120,8 @@ package body Online_Mng is
             Sync_Mng.Start;
           elsif not Status.Sync then
             -- Crc Ok and not synced
-            if Debug.Level_Array(Debug.Online) then
-              Debug.Put ("Online: Crc OK, synced");
+            if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+              Dictio_Debug.Put ("Online: Crc OK, synced");
             end if;
             Status.Sync := True;
             Client_Mng.Start;
@@ -132,8 +132,8 @@ package body Online_Mng is
         Start_Slave_Timeout;
       elsif Stat = Status.Dead then
         -- Receive a Dead while slave, start Fight
-        if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: fight due to death of: "
+        if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+          Dictio_Debug.Put ("Online: fight due to death of: "
                    & Parse(From) );
         end if;
         Start_Fight;
@@ -141,8 +141,8 @@ package body Online_Mng is
       else
         -- Receive other status, check that this is not from previously known master
         if Current_Master /= No_Master and then From = Current_Master then
-          if Debug.Level_Array(Debug.Online) then
-            Debug.Put ("Online: fight due to master new status "
+          if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+            Dictio_Debug.Put ("Online: fight due to master new status "
                        & Parse(From) & "/" & Stat'Img);
           end if;
           Start_Fight;
@@ -155,16 +155,16 @@ package body Online_Mng is
       if Stat = Status.Master
       and then Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc) /= "" then
         -- An alive message (not a fight reply nor fight info)
-        if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: fight cause another master: " & Parse(From) );
+        if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+          Dictio_Debug.Put ("Online: fight cause another master: " & Parse(From) );
         end if;
         Start_Fight;
         return;
       elsif Stat = Status.Slave and then not Sync
       and then not Sync_Mng.In_Sync then
         -- Synchronise slave which is not Synchronised
-        if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: syncing " & Parse(From) );
+        if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+          Dictio_Debug.Put ("Online: syncing " & Parse(From) );
         end if;
         Sync_Mng.Send (From);
       end if;
@@ -172,8 +172,8 @@ package body Online_Mng is
     end if;
 
     if Stat = Status.Fight then
-      if Debug.Level_Array(Debug.Online) then
-        Debug.Put ("Online: fight cause fight from: "
+      if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+        Dictio_Debug.Put ("Online: fight cause fight from: "
                  & Parse(From) );
       end if;
       Start_Fight;
@@ -196,8 +196,8 @@ package body Online_Mng is
       end if;
     elsif Status.Get /= Status.Dead then
       -- No alive message
-      if Debug.Level_Array(Debug.Online) then
-        Debug.Put ("Online: fight due to alive timeout");
+      if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
+        Dictio_Debug.Put ("Online: fight due to alive timeout");
       end if;
       Tid := Timers.No_Timer;
       Start_Fight;

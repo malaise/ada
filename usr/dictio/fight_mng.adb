@@ -1,5 +1,5 @@
 with Timers, Normal;
-with Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio;
+with Dictio_Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
@@ -27,8 +27,8 @@ package body Fight_Mng is
     T : Timers.Delay_Rec;
     use type Status.Status_List;
   begin
-    if Debug.Level_Array(Debug.Fight) then
-      Debug.Put ("Fight: start");
+    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+      Dictio_Debug.Put ("Fight: start");
     end if;
 
     -- Init
@@ -63,8 +63,8 @@ package body Fight_Mng is
     use type Status.Status_List;
   begin
     if not In_Fight then
-      if Debug.Level_Array(Debug.Fight) then
-        Debug.Put ("Fight.Event: Not in fight");
+      if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+        Dictio_Debug.Put ("Fight.Event: Not in fight");
       end if;
       return;
     end if;
@@ -73,15 +73,15 @@ package body Fight_Mng is
            := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Ver);
     begin
       if Vers /= "" and Vers /= Versions.Intra then
-        Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
+        Dictio_Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
                        & Vers & " while being " & Versions.Intra);
         raise Errors.Exit_Error;
       end if;
     end;
 
     Nodes.Set (From, Stat, Sync, Prio);
-    if Debug.Level_Array(Debug.Fight) then
-      Debug.Put ("Fight: received status from: " & Parse (From)
+    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+      Dictio_Debug.Put ("Fight: received status from: " & Parse (From)
                & "/" & Stat'Img & "-" & Prio);
     end if;
   end Event;
@@ -93,8 +93,8 @@ package body Fight_Mng is
     use type Timers.Timer_Id;
   begin
     Result := Nodes.Check;
-    if Debug.Level_Array(Debug.Fight) then
-      Debug.Put ("Fight: ends " & Result'Img);
+    if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+      Dictio_Debug.Put ("Fight: ends " & Result'Img);
     end if;
     Tid := Timers.No_Timer;
     if Per /= Timers.No_Timer then
@@ -112,8 +112,8 @@ package body Fight_Mng is
     use type Status.Status_List;
   begin
     if In_Fight and then Last_Status /= Status.Fight then
-      if Debug.Level_Array(Debug.Fight) then
-        Debug.Put ("Fight: send status " & Last_Status'Img);
+      if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
+        Dictio_Debug.Put ("Fight: send status " & Last_Status'Img);
       end if;
       Intra_Dictio.Send_Status (Last_Status);
     end if;
