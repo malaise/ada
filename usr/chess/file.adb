@@ -14,8 +14,10 @@ package body File is
   package Chess_Io is new Ada.Direct_Io (Character);
 
   The_File : Chess_Io.File_Type;
+  -- Last move num read/written
   Move_Num : Natural;
-  Overwrite : Boolean;
+  -- Have we written
+  Written : Boolean; 
 
   package My_Get_Line is new Get_Line (
       Max_Word_Len => Image.Move_Str'Length,
@@ -58,7 +60,10 @@ package body File is
       when Ada.Text_Io.Name_Error =>
         Chess_Io.Create (The_File, Chess_Io.Out_File, File_Name);
         State := Empty;
-        Overwrite := False;
+      when My_Get_Line.No_More_Line =>
+        My_Get_Line.Close;
+        Chess_Io.Open (The_File, Chess_Io.Out_File, File_Name);
+        State := Empty;
       when My_Get_Line.Line_Too_Long =>
         Ada.Text_Io.Put_Line ("Format error at beginning of file");
         raise Format_Error;
@@ -180,10 +185,54 @@ package body File is
   exception
     when My_Get_Line.Too_Many_Words =>
       Log_Error (True, "Too many words");
+      raise Format_Error;
     when  My_Get_Line.Word_Too_Long =>
       Log_Error (True, "Word too long");
       raise Format_Error;
   end Read_One;
+
+
+  -- Prepare file for append
+  -- Move to first (if white) or second (if black)
+  -- of last sequence of Lf
+  procedure Prepare_To_Append is
+    Index : Chess_Io.Count;
+    Char : Character;
+    use type Chess_Io.Count;
+  begin
+    -- Last char is necessary a Lf
+    Index := Chess_Io.Size(The_File);
+    if Index = 0 then
+      Chess_Io.Write (The_File, Ascii.Lf, 1);
+      Index := 1;
+    end if;
+
+    -- Locate First Lf of the Lf sequence
+    if Index = 1 then
+      Chess_Io.Set_Index (The_File, Index);
+    else
+      Index := Index - 1;
+      while Index > 1 loop
+        Chess_Io.Read (The_File, Char, Index);
+        if Char /= Ascii.Lf then
+          exit;
+        end if;
+        Index := Index - 1;
+      end loop;
+    end if;
+
+    -- File index is now set to first Lf
+    if Move_Num /= 0 and then Move_Num rem 2 = 0 then
+      -- White move to write. Leave this Lf.
+      Chess_Io.Read (The_File, Char);
+    else
+      if Char /= ' ' then
+        -- We have white move then Lf
+        Chess_Io.Write (The_File, ' ');
+      end if;
+    end if;
+    Written := False;
+  end Prepare_To_Append;
      
 
   -- Read next move (white then black then white...)
@@ -192,8 +241,6 @@ package body File is
   -- Value_Error if decoding of an action fails
   function Read return Players.Action_Rec is
     Action : Players.Action_Rec;
-    Char : Character;
-    use type Chess_Io.Count;
   begin
     Action := (Valid => False);
     if State = Reading then
@@ -203,13 +250,7 @@ package body File is
         My_Get_Line.Close;
         Chess_Io.Open (The_File, Chess_Io.InOut_File,
                           Text_Handler.Value(File_Name_Txt));
-        -- If two Lf at the end, we need to Overwrite last Lf
-        Chess_Io.Set_Index (The_File, Chess_Io.Size(The_File) - 1);
-        Chess_Io.Read (The_File, Char);
-        if Char /= Ascii.Lf then
-          Chess_Io.Read (The_File, Char);
-        end if;
-        Overwrite := True;
+        Prepare_To_Append;
         State := Writting;
         return (Valid => False);
       else
@@ -218,6 +259,7 @@ package body File is
         return Action;
       end if;
     elsif State = Empty then
+      Prepare_To_Append;
       State := Writting;
       return (Valid => False);
     else
@@ -241,14 +283,8 @@ package body File is
     declare
       Str : constant Image.Move_Str := Image.Move_Image(Action, Result);
     begin
-      if Overwrite then
-        if Move_Num rem 2 = 1 then
-          Chess_Io.Write (The_File, ' ');
-        end if;
-        Overwrite := False;
-      end if;
       for I in Str'Range loop
-        -- First write to the file: overwrite last Lf
+        -- First write to the file
         Chess_Io.Write (The_File, Str(I));
       end loop;
     end;
@@ -258,6 +294,7 @@ package body File is
     else
       Chess_Io.Write (The_File, ' ');
     end if;
+    Written := True;
   exception
     when others =>
       raise File_Error;
@@ -269,8 +306,21 @@ package body File is
     if State = Closed then
       raise File_Error;
     end if;
-    Chess_Io.Write (The_file, Ascii.Lf);
-    Chess_Io.Close (The_File);
+    if Written then
+      Chess_Io.Write (The_file, Ascii.Lf);
+    end if;
+    begin
+      My_Get_Line.Close;
+    exception
+      when others =>
+        null;
+    end;
+    begin
+      Chess_Io.Close (The_File);
+    exception
+      when others =>
+        null;
+    end;
     State := Closed;
   exception
     when others =>
