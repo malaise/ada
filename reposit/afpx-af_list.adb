@@ -20,10 +20,10 @@ package body AF_LIST is
       CON_IO.CLOSE (LIST_WINDOW);
     end if;
     -- Check there is a window in the dscr
-    if AF_DSCR.FIELDS(0).KIND = AFPX_TYP.BUTTON then
+    if AF_DSCR.FIELDS(LFN).KIND = AFPX_TYP.BUTTON then
       CON_IO.OPEN (LIST_WINDOW,
-                   AF_DSCR.FIELDS(0).UPPER_LEFT,
-                   AF_DSCR.FIELDS(0).LOWER_RIGHT);
+                   AF_DSCR.FIELDS(LFN).UPPER_LEFT,
+                   AF_DSCR.FIELDS(LFN).LOWER_RIGHT);
       OPENED := TRUE;
       -- Start at top
       STATUS.ID_SELECTED := 0;
@@ -49,12 +49,12 @@ package body AF_LIST is
 
   procedure PUT (ROW : in CON_IO.ROW_RANGE; STATE : in AF_PTG.STATE_LIST;
                  ITEM : in LINE_REC) is
-    STR : STRING (1 .. AF_DSCR.FIELDS(0).WIDTH) := (others => ' ');
+    STR : STRING (1 .. AF_DSCR.FIELDS(LFN).WIDTH) := (others => ' ');
     FOREGROUND : CON_IO.EFFECTIVE_COLORS;
     BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
   begin
     -- Set colors
-    AF_PTG.SET_COLORS (AF_DSCR.FIELDS(0), STATE,
+    AF_PTG.SET_COLORS (AF_DSCR.FIELDS(LFN), STATE,
                        FOREGROUND, BACKGROUND);
     -- Set str
     if ITEM.LEN > STR'LAST then
@@ -74,12 +74,12 @@ package body AF_LIST is
   end PUT;
 
   procedure CLEAR (ROW : in CON_IO.ROW_RANGE) is
-    STR : constant STRING (1 .. AF_DSCR.FIELDS(0).WIDTH) := (others => ' ');
+    STR : constant STRING (1 .. AF_DSCR.FIELDS(LFN).WIDTH) := (others => ' ');
     FOREGROUND : CON_IO.EFFECTIVE_COLORS;
     BACKGROUND : CON_IO.EFFECTIVE_BASIC_COLORS;
   begin
     -- Set colors
-    AF_PTG.SET_COLORS (AF_DSCR.FIELDS(0), AF_PTG.NORMAL,
+    AF_PTG.SET_COLORS (AF_DSCR.FIELDS(LFN), AF_PTG.NORMAL,
                        FOREGROUND, BACKGROUND);
     -- Move
     CON_IO.MOVE ( (ROW, 0), LIST_WINDOW);
@@ -87,7 +87,7 @@ package body AF_LIST is
     CON_IO.PUT (S => STR,
                 NAME => LIST_WINDOW,
                 FOREGROUND => FOREGROUND,
-                BLINK_STAT => AF_DSCR.FIELDS(0).COLORS.BLINK_STAT,
+                BLINK_STAT => AF_DSCR.FIELDS(LFN).COLORS.BLINK_STAT,
                 BACKGROUND => BACKGROUND,
                 MOVE => FALSE);
   end CLEAR;
@@ -111,9 +111,9 @@ package body AF_LIST is
 
   procedure SET_COLORS is
   begin
-    CON_IO.SET_FOREGROUND (AF_DSCR.FIELDS(0).COLORS.FOREGROUND,
-                           AF_DSCR.FIELDS(0).COLORS.BLINK_STAT, LIST_WINDOW);
-    CON_IO.SET_BACKGROUND (AF_DSCR.FIELDS(0).COLORS.BACKGROUND, LIST_WINDOW);
+    CON_IO.SET_FOREGROUND (AF_DSCR.FIELDS(LFN).COLORS.FOREGROUND,
+                           AF_DSCR.FIELDS(LFN).COLORS.BLINK_STAT, LIST_WINDOW);
+    CON_IO.SET_BACKGROUND (AF_DSCR.FIELDS(LFN).COLORS.BACKGROUND, LIST_WINDOW);
   end SET_COLORS;
 
   -- Compute status
@@ -136,21 +136,21 @@ package body AF_LIST is
     STATUS.ID_TOP := FIRST_ITEM_ID;
     -- top + height - 1 <= length => can display height items
     if LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) - FIRST_ITEM_ID >=
-       AF_DSCR.FIELDS(0).HEIGHT then
+       AF_DSCR.FIELDS(LFN).HEIGHT then
       -- Can display HEIGHT items
-      STATUS.NB_ROWS := AF_DSCR.FIELDS(0).HEIGHT;
+      STATUS.NB_ROWS := AF_DSCR.FIELDS(LFN).HEIGHT;
       STATUS.ID_TOP := FIRST_ITEM_ID;
     elsif LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) <
-          AF_DSCR.FIELDS(0).HEIGHT then
+          AF_DSCR.FIELDS(LFN).HEIGHT then
       -- Cannot display LIST length items whatever first
       STATUS.NB_ROWS := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST);
       STATUS.ID_TOP := 1;
    else
       -- Can display LIST length items but not with this first.
       -- Set top to display last page
-      STATUS.NB_ROWS := AF_DSCR.FIELDS(0).HEIGHT;
+      STATUS.NB_ROWS := AF_DSCR.FIELDS(LFN).HEIGHT;
       STATUS.ID_TOP := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
-                     - AF_DSCR.FIELDS(0).HEIGHT + 1;
+                     - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
     end if;
     STATUS.ID_BOTTOM := STATUS.ID_TOP + STATUS.NB_ROWS - 1;
     -- Select by default
@@ -179,7 +179,7 @@ package body AF_LIST is
     MOVE (STATUS.ID_TOP);
     for I in 1 .. STATUS.NB_ROWS loop
       GET_CURRENT_ITEM (ITEM);
-      if not AF_DSCR.FIELDS(0).ISPROTECTED
+      if not AF_DSCR.FIELDS(LFN).ISPROTECTED
       and then STATUS.ID_TOP + I - 1 = STATUS.ID_SELECTED then
         PUT (I - 1, AF_PTG.SELECTED, ITEM);
       else
@@ -189,7 +189,7 @@ package body AF_LIST is
     MOVE (STATUS.ID_SELECTED);
 
     -- Display empty end of list (if any)
-    for I in STATUS.NB_ROWS + 1 .. AF_DSCR.FIELDS(0).HEIGHT loop
+    for I in STATUS.NB_ROWS + 1 .. AF_DSCR.FIELDS(LFN).HEIGHT loop
       CLEAR (I - 1);
     end loop;
 
@@ -210,9 +210,13 @@ package body AF_LIST is
       raise NOT_OPENED;
     end if;
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST)
-    or else STATUS.NB_ROWS /= AF_DSCR.FIELDS(0).HEIGHT then
+    or else STATUS.NB_ROWS /= AF_DSCR.FIELDS(LFN).HEIGHT then
       return;
     end if;
+
+    -- Update selectection, cause current may have changed
+    -- called by user
+    AF_LIST.SET_SELECTED (LINE_LIST_MNG.GET_POSITION(LINE_LIST));
 
     case ACTION is
       when UP =>
@@ -231,12 +235,12 @@ package body AF_LIST is
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
         if LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) - STATUS.ID_BOTTOM >
-        AF_DSCR.FIELDS(0).HEIGHT then
-          FIRST_ITEM_ID := STATUS.ID_TOP + AF_DSCR.FIELDS(0).HEIGHT;
+        AF_DSCR.FIELDS(LFN).HEIGHT then
+          FIRST_ITEM_ID := STATUS.ID_TOP + AF_DSCR.FIELDS(LFN).HEIGHT;
         elsif STATUS.ID_BOTTOM /= LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
           -- End at last item
           FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
-                           - AF_DSCR.FIELDS(0).HEIGHT + 1;
+                           - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
         else
           -- Already at bottom of list
           return;
@@ -245,8 +249,8 @@ package body AF_LIST is
       when PAGE_UP =>
         -- Display previous page
         -- top - height > 1 => top - height exists
-        if STATUS.ID_TOP > AF_DSCR.FIELDS(0).HEIGHT + 1 then
-          FIRST_ITEM_ID := STATUS.ID_TOP - AF_DSCR.FIELDS(0).HEIGHT;
+        if STATUS.ID_TOP > AF_DSCR.FIELDS(LFN).HEIGHT + 1 then
+          FIRST_ITEM_ID := STATUS.ID_TOP - AF_DSCR.FIELDS(LFN).HEIGHT;
         elsif STATUS.ID_TOP /= 1 then
           -- Start at first item
           FIRST_ITEM_ID := 1;
@@ -270,7 +274,7 @@ package body AF_LIST is
           return;
         end if;
         FIRST_ITEM_ID := LINE_LIST_MNG.LIST_LENGTH (LINE_LIST)
-                         - AF_DSCR.FIELDS(0).HEIGHT + 1;
+                         - AF_DSCR.FIELDS(LFN).HEIGHT + 1;
         DISPLAY (FIRST_ITEM_ID);
     end case;
   exception
