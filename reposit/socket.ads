@@ -9,6 +9,14 @@ package Socket is
   -- Available protocols
   type Protocol_List is (Udp, Tcp, Tcp_Header);
 
+  -- Note for Multicast IP (using Udp socket):
+  -- For sending IPM, simply Set_Destination to a LAN name
+  --  which is defined with a D class address, and a port.
+  -- For receiving IPM, first Set_Destination to the LAN name and port,
+  --  then Link to the same port as this destination.
+  --  It is possible to link dynamically to port (then destination port is
+  --  not used).
+
   -- A port
   type Port_Num is new Natural range 0 .. 65535;
 
@@ -125,7 +133,7 @@ package Socket is
   -- If Lan is true then Name is a LAN name to broadcast on
   -- Otherwise it is a host name
   -- Connects if tcp.
-  -- May raise: Soc_Conn_Refused, Soc_Would_Block, Soc_Conn_Err if tcp
+  -- May raise Soc_Conn_Refused, Soc_Would_Block, Soc_Conn_Err if tcp
   -- May raise Soc_Name_Not_Found if Name or Service is not found
   -- May raise Soc_Link_Err if socket is tcp and linked
   -- May raise Soc_Conn_Err if socket is tcp and already connected
@@ -149,6 +157,8 @@ package Socket is
                Host   : in Host_Id;
                Port   : in Port_Num);
 
+  -- Check the connection status, espcially after an asynchronous
+  --  connect (Set_Destination on a non Blocking Tcp socket)
   function Is_Connected (Socket : Socket_Dscr) return Boolean;
 
   -- Change destination Host/Lan or port
