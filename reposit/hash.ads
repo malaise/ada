@@ -12,7 +12,7 @@ package Hash is
   generic
     -- Size of primary hash table
     Hash_Size : Max_Hash_Range := Max_Hash_Value;
-    -- acess to data, managed by client
+    -- Acess to data, managed by client
     type Data_Acess is private;
     -- Procedure to dump data in DUMP
     with procedure Dump (Data : in Data_Acess);

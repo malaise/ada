@@ -1,7 +1,7 @@
 package Crc_10 is
 
   -- Maximum value of Crc : 1023, due to the implemented function
-  Max_Crc_Value : constant := 16#3Ff#;
+  Max_Crc_Value : constant := 16#3FF#;
   type Max_Crc_Range is new Integer range 0 .. Max_Crc_Value;
 
   -- Reset computing of Crc
