@@ -73,9 +73,15 @@ begin
         return;
       end if;
 
-      DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
-      MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
-      YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
+      begin
+        DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
+        MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
+        YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
+      exception
+        when others =>
+          USAGE;
+          return;
+      end;
     end if;
 
     -- Build time of 0h00 of date
@@ -87,6 +93,10 @@ begin
     begin
       T :=  CALENDAR.TIME_OF
         (YEAR, MONTH, DAY, DAY_MNG.PACK(HOUR, MINUTE, SECOND, MILLISEC));
+    exception
+      when others =>
+        USAGE;
+        return;
     end;
   end;
 
@@ -102,8 +112,8 @@ begin
     DELTA_DATE_1 := PERPET."-" (T1, T);
   exception
     when others =>
-      USAGE;
-      return;
+      TEXT_IO.PUT_LINE("Internal error");
+      raise;
   end;
 
 
