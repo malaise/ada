@@ -16,6 +16,11 @@ typedef struct {
 	int		socket_id;
 	struct sockaddr_in send_struct;
 	struct sockaddr_in rece_struct;
+        char * send_tail;
+        soc_length send_len;
+        char * rece_head;
+        soc_length rece_len;
+        soc_length expect_len;
 }soc_struct, *soc_ptr;
 
 int socklen = sizeof (struct sockaddr_in);

@@ -7,12 +7,43 @@
 /* Variables and types */
 /* ------------------- */
 
-#ifndef BS_OK
-#define BS_OK 0
-#endif
-#ifndef BS_ERROR
-#define BS_ERROR -1
-#endif
+/* OK */
+#define SOC_OK        0
+
+/* Errors */
+/* Socket not open, already open */
+#define SOC_USE_ERR     -1
+/* System error (traced and errno set) */
+#define SOC_SYS_ERR     -2
+/* Dest set or not set */
+#define SOC_DEST_ERR    -3
+/* Linked or not linked */
+#define SOC_LINK_ERR    -4
+/* Connected or not connected */
+#define SOC_CONN_ERR    -5
+/* Bcast when not allowed by proto */
+#define SOC_BCAST_ERR   -6
+/* Length to short */
+#define SOC_LEN_ERR     -7
+/* Set_for_reply set or not set */
+#define SOC_REPLY_ERR   -8
+/* Sent message length is not 0 while prev send returned SOC_WOULD_BLOCK */
+#define SOC_TAIL_ERR    -9
+/* Call not allowed for this protocol */
+#define SOC_PROTO_ERR  -10
+
+
+/* Failures */
+/* Connection refused */
+#define SOC_CONN_REFUSED   -21
+/* Get*by*: entry not found */
+#define SOC_NAME_NOT_FOUND -22
+/* Operation would block - do it again */
+#define SOC_WOULD_BLOCK    -23
+/* Connection lost */
+#define SOC_CONN_LOST      -24
+
+
 
 /* String terminator */
 #define NUL '\0'
@@ -106,7 +137,12 @@ extern int soc_host_name_of (soc_host *p_host, char *host_name,
 extern int soc_host_of (char *host_name, soc_host *p_host);
 
 /* Send to a socket, the destination of which must set */
+/* May return SOC_WOULD_BLOCK, then next sends have to be made */
+/*  with length=0, util soc_send returns ok */
 extern int soc_send (soc_token token, soc_message message, soc_length length);
+
+/* Resed tail of previous message */
+extern int soc_resend (soc_token token);
 
 /* Socket must not be connected in tcp */
 /* ------------------------------------*/
@@ -127,14 +163,18 @@ extern int soc_link_dynamic (soc_token token);
 extern int soc_get_linked_port (soc_token token, soc_port *p_port);
  
 /* To test if there is a message to receive and receive it */
-/* Err if error, p_receive=true if a message is ok and false otherwise */
-/* CARE : length is an in out parameter and must be initialized with */
-/*  the size of the buffer */
+/* Length must be initialized with the size of the buffer */
 /* The socket must be open, linked in udp and not linked in tcp */
 /*  After success, the socket may be ready for a send to reply */
 /* No set_for_reply if tcp */
-extern int soc_receive (soc_token token, boolean *p_received,
-                        soc_message message, soc_length *p_length,
+/* Returned values: */
+/*   - the length of bytes read, which the length of the message sent */
+/*     except in tcp (no header) where the length read my me anything */
+/*     from 0 to length */
+/*   - SOC_WOULD_BLOCK (in  non blocking), new read has to be done */
+/*   - any other (fatal) error */
+extern int soc_receive (soc_token token,
+                        soc_message message, soc_length length,
                         boolean set_for_reply);
 
 /* Tcp specific calls */
