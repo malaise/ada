@@ -192,7 +192,7 @@ package CON_IO is
   -- The current cursor position is updated by the call
   -- The arrows, Insert, suppr, backspace, Home, End, PageUp and PageDown
   --  Tab and Ctrl Tab, are managed. Ctrl Suppr clears the string.!
-  -- The get ends if an Up/Down arrow, Page Up/Down, Return(CR), Escape,
+  -- The get ends if an Up/Down arrow, (ctrl) Page Up/Down, Return(CR), Escape,
   --  Tab or Control Tab is pressed or if the cursor leaves the field
   --  (on character input or Right/Left arrow), on mouse click or release,
   --  on time_out expiration or on CtrlC/CtrlBreak
@@ -205,7 +205,8 @@ package CON_IO is
   -- If STR'length is 0 then last=0 and stat is significant (full if normal
   --  character), but pos_out is not significant.
   -- Note that is STR'LENGHT is 0, the cursor is hidden
-  type CURS_MVT is (UP, DOWN, PGUP, PGDOWN, LEFT, RIGHT, FULL, TAB, STAB,
+  type CURS_MVT is (UP, DOWN, PGUP, PGDOWN, CTRL_PGUP, CTRL_PGDOWN,
+                    LEFT, RIGHT, FULL, TAB, STAB,
                     RET, ESC, BREAK, MOUSE_BUTTON, TIMEOUT, REFRESH);
   procedure GET (STR        : out STRING;
                  LAST       : out NATURAL;

@@ -827,9 +827,9 @@ package body CON_IO is
       MOVE(FIRST_POS.ROW, FIRST_POS.COL + POS - 1, NAME);
       if SHOW then
         if INSERT then
-          X_MNG.X_OVERWRITE_CHAR (ID, 2);
+          X_MNG.X_OVERWRITE_CHAR (ID, 16#5E#);
         else
-          X_MNG.X_OVERWRITE_CHAR (ID, 95);
+          X_MNG.X_OVERWRITE_CHAR (ID, 16#5F#);
         end if;
       else
         X_MNG.X_PUT_CHAR (ID, LSTR(POS));
@@ -904,7 +904,11 @@ package body CON_IO is
               return;
             when 16#55# =>
               -- Page Up
-              STAT := PGUP;
+              if not CTRL then
+                STAT := PGUP;
+              else
+                STAT := CTRL_PGUP;
+              end if;
               return;
             when 16#54# =>
               -- Down
@@ -912,7 +916,11 @@ package body CON_IO is
               return;
             when 16#56# =>
               -- Page Down
-              STAT := PGDOWN;
+              if not CTRL then
+                STAT := PGDOWN;
+              else
+                STAT := CTRL_PGDOWN;
+              end if;
               return;
             when 16#63# =>
               -- Insert
@@ -1037,7 +1045,11 @@ package body CON_IO is
             -- Page Up
             STR := LSTR;
             LAST := PARSE;
-            STAT := PGUP;
+            if not CTRL then
+              STAT := PGUP;
+            else
+              STAT := CTRL_PGUP;
+            end if;
             return;
           when 16#54# =>
             -- Down
@@ -1049,7 +1061,11 @@ package body CON_IO is
             -- Page Down
             STR := LSTR;
             LAST := PARSE;
-            STAT := PGDOWN;
+            if not CTRL then
+              STAT := PGDOWN;
+            else
+              STAT := CTRL_PGDOWN;
+            end if;
             return;
           when 16#63# =>
             -- Insert
