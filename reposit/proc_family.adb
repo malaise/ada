@@ -112,6 +112,7 @@ package body Proc_Family is
       return;
     end if;
     Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Access);
+    Event_Mng.Wait (0);
     Init_Done := True;
   end Init;
 
