@@ -1,7 +1,23 @@
-with Rnd, Sorts;
-with My_Io;
+with Rnd, Sorts, My_Io, Normal;
+with Debug;
 
 package body Euristic is
+
+  -- Dump Mattrix
+  procedure Put_Mattrix (Mattrix : in Types.Mattrix_Rec) is
+    subtype Index_Range is Types.Index_Range range 1 .. Mattrix.Dim;
+  begin
+    for Row in Index_Range loop
+      for Col in Index_Range loop
+        if Mattrix.Notes(Row, Col) / 100 = 100 then
+          My_Io.Put ("** ");
+        else
+          My_Io.Put(Normal(Mattrix.Notes(Row, Col) / 100, 2) & " ");
+        end if;
+      end loop;
+      My_Io.New_Line;
+    end loop;
+  end Put_Mattrix;
 
   -- State of a zero in zero descriptors
   -- Used also in zero transfer
@@ -76,8 +92,6 @@ package body Euristic is
     subtype Zero_Desc_Tab is Zero_Desc_Tab_Gen(Zero_Desc_Range);
     Zero_Desc : Zero_Desc_Tab;
     Nb_Zero : Natural range 0 .. Zero_Desc_Range'Last;
-    -- Local copy of Done
-    Loc_Done : Boolean;
 
     -- Instantiate sorting
     -- Free zeros first, in order of crescent SIGMA, then slashed then squared zeros
@@ -126,7 +140,8 @@ package body Euristic is
       for No_Zero in 1 .. Nb_Zero loop
         -- Number of zeros in its row + col
         Zero_Desc(No_Zero).Sigma := Zero_Row(Zero_Desc(No_Zero).Row)
-                                  + Zero_Col(Zero_Desc(No_Zero).Col);
+                                  + Zero_Col(Zero_Desc(No_Zero).Col)
+                                  - 1;
       end loop;
     end Init_Zeros;
 
@@ -136,16 +151,13 @@ package body Euristic is
     Euristic_Loop:
     loop
     
-      -- Sort the list of zeros
-      Sort_Zero_Desc:
-      begin
-        Zero_Desc_Sort.Quick_Sort(Zero_Desc(1 .. Nb_Zero));
-      end Sort_Zero_Desc;
 
       Try_To_Solve:
       declare
-        -- Mattrix of zeros : each zero has either an index in zero desc or 0 if content of MATTRIX is not zero
-        Cross_Ref : array (1 .. Mattrix.Dim, 1 .. Mattrix.Dim) of Natural := (others => (others => 0));
+        -- Mattrix of zeros : each zero has either an index in zero desc
+        --  or 0 if content of MATTRIX is not zero
+        Cross_Ref : array (1 .. Mattrix.Dim, 1 .. Mattrix.Dim) of Natural
+                  := (others => (others => 0));
         -- The zero selected (one of the zeros with min sigma)
         Selected_Zero : Positive;
         -- Number of zeros with min zigma
@@ -157,6 +169,12 @@ package body Euristic is
         -- Is there any zero free remaining
         Zero_Free_Remaining : Boolean;
       begin
+        -- Sort the list of zeros
+        Sort_Zero_Desc:
+        begin
+          Zero_Desc_Sort.Quick_Sort(Zero_Desc(1 .. Nb_Zero));
+        end Sort_Zero_Desc;
+
         -- Set the cross reference mattrix
         for I in 1 .. Nb_Zero loop
           Cross_Ref(Zero_Desc(I).Row, Zero_Desc(I).Col) := I;
@@ -175,25 +193,41 @@ package body Euristic is
         -- Propagate the choice
         -- Sigma of slashed and squared zeros are not used
         -- Slash all zero of the same row and keep up to date the sigma of zeros of their columns
+        if Debug.On then
+          My_Io.Put ("Square " & Normal(Zero_Desc(Selected_Zero).Sigma, 4)
+                   & " at "
+                   & Normal(Zero_Desc(Selected_Zero).Row, 2)
+                   & "-"
+                   & Normal(Zero_Desc(Selected_Zero).Col, 2)
+                   & ",Slash ");
+        end if;
         for Col in Index_Range loop
           Index_Desc := Cross_Ref(Zero_Desc(Selected_Zero).Row, Col);
           if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
             Zero_Desc(Index_Desc).State := Slashed;
             Col_Tmp := Zero_Desc(Index_Desc).Col;
+            if Debug.On then
+              My_Io.Put (Normal(Zero_Desc(Index_Desc).Row, 2)
+                 & "-" & Normal(Zero_Desc(Index_Desc).Col, 2) & ",");
+            end if;
             for Row in Index_Range loop
               Index_Desc := Cross_Ref(Row, Col_tmp);
               if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
-                Zero_Desc(Index_Desc).Sigma := Zero_DesC(Index_Desc).Sigma - 1;
+                Zero_Desc(Index_Desc).Sigma := Zero_Desc(Index_Desc).Sigma - 1;
               end if;
             end loop;
           end if;
         end loop;
         -- Slash all zero of the same col and keep up to date the sigma of zeros of their rows
         for Row in Index_Range loop
-          Index_Desc := Cross_Ref(Row, Zero_DesC(Selected_Zero).Col);
+          Index_Desc := Cross_Ref(Row, Zero_Desc(Selected_Zero).Col);
           if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
             Zero_Desc(Index_Desc).State := Slashed;
             Row_Tmp := Zero_Desc(Index_Desc).Row;
+            if Debug.On then
+              My_Io.Put (Normal(Zero_Desc(Index_Desc).Row, 2)
+                 & "-" & Normal(Zero_Desc(Index_Desc).Col, 2) & ",");
+            end if;
             for Col in Index_Range loop
               Index_Desc := Cross_Ref(Row_Tmp, Col);
               if Index_Desc /= 0 and then Zero_Desc(Index_Desc).State = Free then
@@ -202,6 +236,9 @@ package body Euristic is
             end loop;
           end if;
         end loop;
+        if Debug.On then
+          My_Io.New_Line;
+        end if;
 
         -- Count nb of free zero remaining.
         Zero_Free_Remaining := False;
@@ -218,6 +255,7 @@ package body Euristic is
 
     end loop Euristic_Loop;
 
+    -- Check final success
     Test_Done:
     declare
       -- Number of squared zeros
@@ -229,17 +267,75 @@ package body Euristic is
           Nb_Squared_Zeros := Nb_Squared_Zeros + 1;
         end if;
       end loop;
-      Loc_Done := Nb_Squared_Zeros = Mattrix.Dim;
-      Done := Loc_Done;
+      Done := Nb_Squared_Zeros = Mattrix.Dim;
+      if Debug.On then
+        My_Io.Put_Line ("Nb zeros "
+                       & Types.Index_Range'Image(Nb_Squared_Zeros)
+                       & "/" & Types.Index_Range'Image(Nb_Zero));
+      end if;
     end Test_Done;
 
+    -- Dump Rows and Cols with no squared zero
+    Dump_No_Zero:
+    declare
+      Found : Boolean;
+    begin
+      if not Done and then Debug.On then
+        for Row in Index_Range loop
+          Found := False;
+          for I in 1 .. Nb_Zero loop
+            if Zero_Desc(I).State = Squared and then Zero_Desc(I).Row = Row then
+              Found := True;
+              exit;
+            end if;
+          end loop;
+          if not Found then
+            My_Io.Put_Line("Row " & Index_Range'Image(Row) & " has no zero");
+          end if;
+        end loop;
+        for Col in Index_Range loop
+          Found := False;
+          for I in 1 .. Nb_Zero loop
+            if Zero_Desc(I).State = Squared and then Zero_Desc(I).Col = Col then
+              Found := True;
+              exit;
+            end if;
+          end loop;
+          if not Found then
+            My_Io.Put_Line("Col " & Index_Range'Image(Col) & " has no zero");
+          end if;
+        end loop;
+      end if;
+    end Dump_No_Zero;
+          
     -- Set zero transfer tab (free means not a zero)
     Transfer := (others => (others => Free));
     for I in 1 .. Nb_Zero loop
       -- No zero free remain in ZERO_DESC
       Transfer(Zero_Desc(I).Row, Zero_Desc(I).Col) := Zero_Desc(I).State;
     end loop;
-    
+
+    -- Dump transfer tab
+    if Debug.On then
+      My_Io.Put_Line("End of search.");
+      My_Io.Put_Line("Mattrix:");
+      Put_Mattrix(Mattrix);
+      My_Io.Put_Line("Zero transfer tab:");
+      for Row in Index_Range loop
+        for Col in Index_Range loop
+          case Transfer(Row, Col) is
+            when Squared =>
+              My_Io.Put("*");
+            when Slashed =>
+              My_Io.Put("/");
+            when Free =>
+              My_Io.Put(".");
+          end case;
+        end loop;
+        My_Io.New_Line;
+      end loop;
+    end if;
+
   end Euristic_Search;
 
   procedure Reduce (Mattrix : in out Types.Mattrix_Rec; Transfer : in Zero_Transfer_Tab) is
@@ -248,10 +344,10 @@ package body Euristic is
     -- Rows and colums marqued
     Marked_Row : array (Index_Range) of Boolean := (others => False);
     Marked_Col : array (Index_Range) of Boolean := (others => False);
-    -- Does the current row/col satify the criteria
+    -- Does the current row/col satisfy the criteria
     Ok : Boolean;
-    -- At least one mark done
-    One_Mark : Boolean;
+    -- At least one mark should be done
+    Nb_Mark : Natural;
   begin
     -- Mark rows with no squared zero
     for Row in Index_Range loop
@@ -266,14 +362,20 @@ package body Euristic is
       end loop;
       if Ok then
         Marked_Row(Row) := True;
+        if Debug.On then
+          My_Io.Put(" Mark Row " & Index_Range'Image(Row));
+        end if;
       end if;
     end loop;
+    if Debug.On then
+      My_Io.New_Line;
+    end if;
 
     -- Iterative marking of rows and cols
     Marking:
     loop
 
-      One_Mark := False;
+      Nb_Mark := 0;
 
       -- For each marked row, mark each col with a slashed zero in this row
       for Row in Index_Range loop
@@ -282,7 +384,10 @@ package body Euristic is
           for Col in Index_Range loop
             if Transfer(Row, Col) = Slashed and then not Marked_Col(Col) then
               Marked_Col(Col) := True;
-              One_Mark := True;
+              Nb_Mark := Nb_Mark + 1;
+              if Debug.On then
+                My_Io.Put(" Mark Col " & Index_Range'Image(Col));
+              end if;
             end if;
           end loop;
         end if;
@@ -295,44 +400,91 @@ package body Euristic is
           for Row in Index_Range loop
             if Transfer(Row, Col) = Squared and then not Marked_Row(Row) then
               Marked_Row(Row) := True;
-              One_Mark := True;
+              Nb_Mark := Nb_Mark + 1;
+              if Debug.On then
+                My_Io.Put(" Mark Row " & Index_Range'Image(Row));
+              end if;
             end if;
           end loop;
         end if;
       end loop;
+      if Debug.On then
+        My_Io.Put_Line (" --- Nb_Mark " & Natural'Image(Nb_Mark));
+      end if;
 
-      exit Marking when not One_Mark;
+      exit Marking when Nb_Mark = 0;
     end loop Marking;
+
+    if Debug.On then
+      My_Io.Put("Not marked rows: ");
+      for Row in Index_Range loop
+        if not Marked_Row(Row) then
+          My_Io.Put(Index_Range'Image(Row));
+        end if;
+      end loop;
+      My_Io.New_Line;
+      My_Io.Put("Not marked cols: ");
+      for Col in Index_Range loop
+        if not Marked_Col(Col) then
+          My_Io.Put(Index_Range'Image(Col));
+        end if;
+      end loop;
+      My_Io.New_Line;
+    end if;
 
     Sub_Lowest:
     declare
       Lowest : Types.Cell_Range := Types.Cell_Range'Last;
+      Nb_Change : Natural := 0;
     begin
       -- Search lowest value amoung marked lines and not marked columns
       for Row in Index_Range loop
         if Marked_Row(Row) then
           for Col in Index_Range loop
-            if not Marked_Col(Col) and then Mattrix.Notes(Row, Col) < Lowest then
+            if not Marked_Col(Col)
+            and then Mattrix.Notes(Row, Col) < Lowest then
               Lowest:= Mattrix.Notes(Row, Col);
             end if;
           end loop;
         end if;
       end loop;
+      if Debug.On then
+        My_Io.Put_Line ("  Lowest " & Types.Cell_Range'Image(Lowest));
+      end if;
 
       -- Substract Lowest from cells which row     marked and col not marked
       -- Add       Lowest to   cells which row not marked and col     marked
       for Row in Index_Range loop
         for Col in Index_Range loop
           if Marked_Row(Row) and then not Marked_Col(Col) then
+            Nb_Change := Nb_Change + 1;
             Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) - Lowest;
+            if Debug.On then
+              My_Io.Put_Line ("    Sub");
+            end if;
           elsif not Marked_Row(Row) and then Marked_Col(Col) then
+            Nb_Change := Nb_Change + 1;
             -- Add only if Mattrix.Notes(Row, Col) + Lowest <= Cell_Range'Last
             if Types.Cell_Range'Last - Mattrix.Notes(Row, Col) >= Lowest then
               Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) + Lowest;
+              if Debug.On then
+                My_Io.Put_Line ("    Add");
+              end if;
+            else
+              Mattrix.Notes(Row, Col) := Types.Cell_Range'Last;
+              if Debug.On then
+                My_Io.Put_Line ("    Max");
+              end if;
             end if;
           end if;
         end loop;
       end loop;
+
+      if Debug.On and then Nb_Change = 0 then
+        My_Io.Put_Line ("No Change");
+        Put_Mattrix(Mattrix);
+      end if;
+
     end Sub_Lowest;
 
   end Reduce;
@@ -345,8 +497,10 @@ package body Euristic is
     -- Init for search : one zero/row and / col
     Init_Search (Mattrix);
     loop
-       My_Io.Put (".");
-       My_Io.Flush;
+       if not Debug.On then
+         My_Io.Put (".");
+         My_Io.Flush;
+       end if;
        -- Try to search
        Euristic_Search (Mattrix, Done, Transfer);
        exit when Done;
