@@ -28,9 +28,9 @@ procedure T_Dl is
     end if;
 
     Pos := My_List.Get_Position (List);
-    My_BList.Rewind (List);
+    My_Blist.Rewind (List);
     loop
-      My_BList.Read_Move (List, Item, The_End);
+      My_Blist.Read_Move (List, Item, The_End);
       Put (Item);
       exit when The_End;
     end loop;
@@ -61,7 +61,7 @@ begin
 
   -- delete 5th
   Text_Io.Put_Line("Deletes the current");
-  My_BList.Delete_Current(List);
+  My_Blist.Delete_Current(List);
 
   -- Pos and list length
   Text_Io.Put("Pos from first: ");

@@ -294,7 +294,7 @@ package body Sync_Mng is
       Cancel_Timer;
     end if;
     if Sending_Status = Init then
-      Timers.Delete (TId);
+      Timers.Delete (Tid);
     end if;
     Sending_Status := Stop;
   end Cancel;
