@@ -9,11 +9,11 @@ package body Screen is
     use type Unit_Format.Units_List;
   begin
     if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
-      Afpx.Reset_Field(36);
+      Afpx.Reset_Field(37);
     else
-      Afpx.Clear_Field(36);
-      Afpx.Set_Field_Colors(36, Foreground => Con_Io.Blue);
-      Afpx.Encode_Field(36, (0, 1), "TO EUROS");
+      Afpx.Clear_Field(37);
+      Afpx.Set_Field_Colors(37, Foreground => Con_Io.Blue);
+      Afpx.Encode_Field(37, (0, 1), "TO EUROS");
     end if;
   end Update_To_Unit;
 
@@ -22,21 +22,21 @@ package body Screen is
     -- List unprotected in default
     Afpx.Set_Field_Protection(Afpx.List_Field_No, Mode /= Default);
     -- Oper buttons
-    for F in Afpx.Field_Range'(23) .. 24 loop
+    for F in Afpx.Field_Range'(24) .. 25 loop
       Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
-    for F in Afpx.Field_Range'(25) .. 28 loop
+    for F in Afpx.Field_Range'(26) .. 29 loop
       Afpx.Set_Field_Activation(F, Mode = Default and then Edit_Allowed);
     end loop;
     if Sublist_Active then
-      Afpx.Encode_Field(29, (0, 1), "UN SEL");
+      Afpx.Encode_Field(30, (0, 1), "UN SEL");
     else
-      Afpx.Reset_Field(29, Reset_Colors => False);
+      Afpx.Reset_Field(30, Reset_Colors => False);
     end if;
-    Afpx.Set_Field_Activation(29, Mode = Default and then Edit_Allowed);
-    Afpx.Set_Field_Activation(30, Mode = Default and then Sublist_Active);
+    Afpx.Set_Field_Activation(30, Mode = Default and then Edit_Allowed);
+    Afpx.Set_Field_Activation(31, Mode = Default and then Sublist_Active);
     -- Account buttons
-    for F in Afpx.Field_Range'(31) .. 38 loop
+    for F in Afpx.Field_Range'(32) .. 38 loop
        Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
     -- To francs/Euros button
@@ -44,24 +44,24 @@ package body Screen is
       Update_To_Unit;
     end if;
     -- Exit
-    Afpx.Set_Field_Activation(39, Mode = Default);
+    Afpx.Set_Field_Activation(40, Mode = Default);
     -- Message
-    Afpx.Clear_Field(40);
+    Afpx.Clear_Field(41);
     -- Confirm Ack
-    Afpx.Set_Field_Activation(41, Mode /= Default);
+    Afpx.Set_Field_Activation(42, Mode /= Default);
     if Mode = Confirm then
-      Afpx.Reset_Field(41, Reset_Colors => False);
+      Afpx.Reset_Field(42, Reset_Colors => False);
     elsif Mode = Ack then
-      Afpx.Encode_Field(41, (0, 1), "ACK");
+      Afpx.Encode_Field(42, (0, 1), "ACK");
     end if;
 
-    Afpx.Set_Field_Activation(42, Mode = Confirm);
+    Afpx.Set_Field_Activation(43, Mode = Confirm);
   end Set_Mode;
 
   procedure Allow_Edit (Allow : in Boolean) is
   begin
     Edit_Allowed := Allow;
-    for F in Afpx.Field_Range'(25) .. 29 loop
+    for F in Afpx.Field_Range'(26) .. 30 loop
       Afpx.Set_Field_Activation(F, Edit_Allowed);
     end loop;
   end Allow_Edit;
@@ -70,15 +70,15 @@ package body Screen is
   begin
     Sublist_Active := Active;
     if Sublist_Active then
-      Afpx.Encode_Field(29, (0, 1), "UN SEL");
-      Afpx.Set_Field_Colors(37, Con_Io.Blue);
+      Afpx.Encode_Field(30, (0, 1), "UN SEL");
       Afpx.Set_Field_Colors(38, Con_Io.Blue);
+      Afpx.Set_Field_Colors(39, Con_Io.Blue);
     else
-      Afpx.Reset_Field(29, Reset_Colors => False);
-      Afpx.Reset_Field(37, Reset_String => False);
+      Afpx.Reset_Field(30, Reset_Colors => False);
       Afpx.Reset_Field(38, Reset_String => False);
+      Afpx.Reset_Field(39, Reset_String => False);
     end if;
-    Afpx.Set_Field_Activation(30, Sublist_Active);
+    Afpx.Set_Field_Activation(31, Sublist_Active);
   end Sublist;
 
   -- Reset to default screen
@@ -190,19 +190,22 @@ package body Screen is
               -- Up
               Afpx.Update_List(Afpx.Up);
             when 20 =>
+              -- Center
+              Afpx.Update_List(Afpx.Center);
+            when 21 =>
               -- Down
               Afpx.Update_List(Afpx.Down);
-            when 21 =>
+            when 22 =>
               -- PgDown
               Afpx.Update_List(Afpx.Page_Down);
-            when 22 =>
+            when 23 =>
               -- Bottom
               Afpx.Update_List(Afpx.Bottom);
 
-            when 41 =>
+            when 42 =>
               -- Ack
               return True;
-            when 42 =>
+            when 43 =>
               -- Nack
               return False;
             when others =>
@@ -224,14 +227,14 @@ package body Screen is
     case Action is
       when Overwrite_Account =>
         Ring(False);
-        Afpx.Encode_Field (40, (0, 0),
+        Afpx.Encode_Field (41, (0, 0),
           "Creating: Current account will be overwritten. Confirm?");
       when Overwrite_File =>
-        Afpx.Encode_Field (40, (0, 0),
+        Afpx.Encode_Field (41, (0, 0),
           "Saving: File exists and will be overwritten. Confirm?");
       when Quit_Unsaved =>
         Ring(False);
-        Afpx.Encode_Field (40, (0, 0),
+        Afpx.Encode_Field (41, (0, 0),
           "Exiting: Current account will be lost. Confirm?");
     end case;
     -- Get answer
@@ -246,22 +249,22 @@ package body Screen is
     Ring(True);
     case Error is
       when File_Access =>
-        Afpx.Encode_Field (40, (0, 0),
+        Afpx.Encode_Field (41, (0, 0),
           "File not found or not an account or access denied");
       when File_Io =>
-        Afpx.Encode_Field (40, (0, 0), "File read or write error");
+        Afpx.Encode_Field (41, (0, 0), "File read or write error");
       when File_Read_Only =>
-        Afpx.Encode_Field (40, (0, 0), "File is read-only");
+        Afpx.Encode_Field (41, (0, 0), "File is read-only");
       when File_Name_Too_Long =>
-        Afpx.Encode_Field (40, (0, 0), "File name too long");
+        Afpx.Encode_Field (41, (0, 0), "File name too long");
       when Account_Full =>
-        Afpx.Encode_Field (40, (0, 0), "Sorry, the account is full");
+        Afpx.Encode_Field (41, (0, 0), "Sorry, the account is full");
       when Not_Implemented =>
-        Afpx.Encode_Field (40, (0, 0), "Sorry, not implmeneted yet");
+        Afpx.Encode_Field (41, (0, 0), "Sorry, not implmeneted yet");
       when Internal_Error =>
-        Afpx.Encode_Field (40, (0, 0), "Internal error. Saving in Tmp");
+        Afpx.Encode_Field (41, (0, 0), "Internal error. Saving in Tmp");
       when Capacity_Error =>
-        Afpx.Encode_Field (40, (0, 0), "Overflow on amount value");
+        Afpx.Encode_Field (41, (0, 0), "Overflow on amount value");
     end case;
     -- Loop until ack
     while not My_Ptg loop

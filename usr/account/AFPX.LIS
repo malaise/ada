@@ -221,21 +221,28 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   FIELD 20 BUTTON
-    GEOMETRY 10 73 10 78
+    GEOMETRY 9 73 9 78
+    COLORS cyan brown
+    INIT
+      0 0 Center
+    END INIT
+  END FIELD
+  FIELD 21 BUTTON
+    GEOMETRY 11 73 11 78
     COLORS cyan brown
     INIT
       0 1 Down
     END INIT
   END FIELD
-  FIELD 21 BUTTON
-    GEOMETRY 12 73 14 78
+  FIELD 22 BUTTON
+    GEOMETRY 13 73 15 78
     COLORS cyan brown
     INIT
       1 0 PgDown
     END INIT
   END FIELD
-  FIELD 22 BUTTON
-    GEOMETRY 16 73 16 78
+  FIELD 23 BUTTON
+    GEOMETRY 17 73 17 78
     COLORS cyan brown
     INIT
       0 0 Bottom
@@ -243,7 +250,7 @@ DESCRIPTOR 1
   END FIELD
 
   # Cheque actions
-  FIELD 23 PUT
+  FIELD 24 PUT
     GEOMETRY 21 1 21 5
     COLORS light_gray not_blink black
     INIT
@@ -251,7 +258,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Add cheque
-  FIELD 24 BUTTON
+  FIELD 25 BUTTON
     GEOMETRY 21 10 21 14
     COLORS cyan brown
     INIT
@@ -259,7 +266,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Copy cheque
-  FIELD 25 BUTTON
+  FIELD 26 BUTTON
     GEOMETRY 21 17 21 22
     COLORS cyan brown
     INIT
@@ -267,7 +274,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Edit cheque
-  FIELD 26 BUTTON
+  FIELD 27 BUTTON
     GEOMETRY 21 25 21 30
     COLORS cyan brown
     INIT
@@ -275,7 +282,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Delete cheque
-  FIELD 27 BUTTON
+  FIELD 28 BUTTON
     GEOMETRY 21 33 21 40
     COLORS cyan brown
     INIT
@@ -283,7 +290,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Clean up to
-  FIELD 28 BUTTON
+  FIELD 29 BUTTON
     GEOMETRY 21 43 21 55
     COLORS cyan brown
     INIT
@@ -291,7 +298,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Search cheques
-  FIELD 29 BUTTON
+  FIELD 30 BUTTON
     GEOMETRY 21 58 21 65
     COLORS cyan brown
     INIT
@@ -299,7 +306,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Show all cheques
-  FIELD 30 BUTTON
+  FIELD 31 BUTTON
     GEOMETRY 21 68 21 77
     COLORS blue brown
     INIT
@@ -308,7 +315,7 @@ DESCRIPTOR 1
   END FIELD
 
   # Account actions
-  FIELD 31 PUT
+  FIELD 32 PUT
     GEOMETRY 23 1 23 8
     COLORS light_gray not_blink black
     INIT
@@ -316,7 +323,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Create account
-  FIELD 32 BUTTON
+  FIELD 33 BUTTON
     GEOMETRY 23 10 23 14
     COLORS cyan brown
     INIT
@@ -324,7 +331,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Load account
-  FIELD 33 BUTTON
+  FIELD 34 BUTTON
     GEOMETRY 23 17 23 22
     COLORS cyan brown
     INIT
@@ -332,7 +339,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Save account
-  FIELD 34 BUTTON
+  FIELD 35 BUTTON
     GEOMETRY 23 25 23 30
     COLORS cyan brown
     INIT
@@ -340,7 +347,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Print account
-  FIELD 35 BUTTON
+  FIELD 36 BUTTON
     GEOMETRY 23 33 23 39
     COLORS cyan brown
     INIT
@@ -348,7 +355,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Switch unit
-  FIELD 36 BUTTON
+  FIELD 37 BUTTON
     GEOMETRY 23 43 23 53
     COLORS cyan brown
     INIT
@@ -356,7 +363,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Sort account by date
-  FIELD 37 BUTTON
+  FIELD 38 BUTTON
     GEOMETRY 23 56 23 61
     COLORS cyan brown
     INIT
@@ -364,7 +371,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Sort account by abs(amount)
-  FIELD 38 BUTTON
+  FIELD 39 BUTTON
     GEOMETRY 23 64 23 69
     COLORS cyan brown
     INIT
@@ -372,7 +379,7 @@ DESCRIPTOR 1
     END INIT
   END FIELD
   # Exit account
-  FIELD 39 BUTTON
+  FIELD 40 BUTTON
     GEOMETRY 23 72 23 77
     COLORS cyan brown
     INIT
@@ -381,21 +388,21 @@ DESCRIPTOR 1
   END FIELD
 
   # Message
-  FIELD 40 PUT
-    GEOMETRY 24 1 24 55
+  FIELD 41 PUT
+    GEOMETRY 22 1 22 55
     COLORS orange not_blink black
   END FIELD
 
   # Yes/No
-  FIELD 41 BUTTON
-    GEOMETRY 24 57 24 61
+  FIELD 42 BUTTON
+    GEOMETRY 22 57 22 61
     COLORS cyan brown
     INIT
       0 1 YES
     END INIT
   END FIELD
-  FIELD 42 BUTTON
-    GEOMETRY 24 63 24 66
+  FIELD 43 BUTTON
+    GEOMETRY 22 63 22 66
     COLORS cyan brown
     INIT
       0 1 NO
@@ -457,7 +464,7 @@ DESCRIPTOR 2
 
   # List actions
   FIELD 7 BUTTON
-    GEOMETRY 5 69 5 77
+    GEOMETRY 3 69 3 77
     COLORS cyan brown
     INIT
       0 3 Top
@@ -465,7 +472,7 @@ DESCRIPTOR 2
   END FIELD
 
   FIELD 8 BUTTON
-    GEOMETRY 7 69 9 77
+    GEOMETRY 5 69 7 77
     COLORS cyan brown
     INIT
       1 2 Pg Up
@@ -473,7 +480,7 @@ DESCRIPTOR 2
   END FIELD
 
   FIELD 9 BUTTON
-    GEOMETRY 11 69 11 77
+    GEOMETRY 9 69 9 77
     COLORS cyan brown
     INIT
       0 3 Up
@@ -481,6 +488,14 @@ DESCRIPTOR 2
   END FIELD
 
   FIELD 10 BUTTON
+    GEOMETRY 12 69 12 77
+    COLORS cyan brown
+    INIT
+      0 1 Center
+    END INIT
+  END FIELD
+
+  FIELD 11 BUTTON
     GEOMETRY 15 69 15 77
     COLORS cyan brown
     INIT
@@ -488,7 +503,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 11 BUTTON
+  FIELD 12 BUTTON
     GEOMETRY 17 69 19 77
     COLORS cyan brown
     INIT
@@ -496,7 +511,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 12 BUTTON
+  FIELD 13 BUTTON
     GEOMETRY 21 69 21 77
     COLORS cyan brown
     INIT
@@ -505,7 +520,7 @@ DESCRIPTOR 2
   END FIELD
 
   # Reread
-  FIELD 13 BUTTON
+  FIELD 14 BUTTON
     GEOMETRY 11 2 13 9
     COLORS cyan brown
     INIT
@@ -514,7 +529,7 @@ DESCRIPTOR 2
   END FIELD
 
   # Ok Cancel
-  FIELD 14 BUTTON
+  FIELD 15 BUTTON
     GEOMETRY 15 2 17 9
     COLORS cyan brown
     INIT
@@ -522,7 +537,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 15 BUTTON
+  FIELD 16 BUTTON
     GEOMETRY 19 2 21 9
     COLORS cyan brown
     INIT

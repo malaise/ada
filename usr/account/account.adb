@@ -103,61 +103,64 @@ begin
             -- Up
             Afpx.Update_List(Afpx.Up);
           when 20 =>
+            -- Center
+            Afpx.Update_List(Afpx.Center);
+          when 21 =>
             -- Down
             Afpx.Update_List(Afpx.Down);
-          when 21 =>
+          when 22 =>
             -- PgDown
             Afpx.Update_List(Afpx.Page_Down);
-          when 22 =>
+          when 23 =>
             -- Bottom
             Afpx.Update_List(Afpx.Bottom);
 
           -- Oper actions
-          when 24 =>
+          when 25 =>
             -- Add
             Mng.Add_Oper;
-          when 25 =>
+          when 26 =>
             -- Copy
             Mng.Copy_Oper;
-          when 26 =>
+          when 27 =>
             -- Edit
             Mng.Edit_Oper;
-          when 27 =>
+          when 28 =>
             -- Delete
             Mng.Del_Oper;
-          when 28 =>
+          when 29 =>
             -- Update
             Mng.Garbage_Collect;
-          when 29 =>
+          when 30 =>
             -- Search
             Mng.Search;
-          when 30 =>
+          when 31 =>
             -- Show all
             Mng.Show_All;
 
           -- Account actions
-          when 32 =>
+          when 33 =>
             -- Create
             Mng.Clear;
-          when 33 =>
+          when 34 =>
             -- Load
             Mng.Load("");
-          when 34 =>
+          when 35 =>
             -- Save
             Mng.Save(Mng.Select_New);
-          when 35 =>
+          when 36 =>
             -- Print
             Mng.Print;
-          when 36 =>
+          when 37 =>
             -- Switch francs/euros
             Mng.Change_Unit;
-          when 37 =>
+          when 38 =>
             -- Sort by date
             Mng.Sort (By_Date => True);
-          when 38 =>
+          when 39 =>
             -- Sort by abs(amount)
             Mng.Sort (By_Date => False);
-          when 39 =>
+          when 40 =>
             -- Exit
             Quit;
           when others =>
