@@ -79,16 +79,16 @@ package Channels is
 
     -- File format is:
     -- <channel_list> ::= [ { <channel_declaration> } ]
-    -- <channel_declaration> ::= Channel <channel_name>
+    -- <channel_declaration> ::= Channel { <channel_name> }
     --                             [ { <host_declaration> } ]
-    --                           End_Channel <channel_name>
+    --                           End_Channel
     -- host_declaration ::= Host [ { <host_name> } ]
 
     -- Example:    
-    -- Channel test_tcp
+    -- Channel test_tcp other
     --   Host portillon ulysse
     --   Host penelope
-    -- End_Channel test_tcp
+    -- End_Channel
 
     -- Notes:
     -- # at the beginning of a line is comment

@@ -1,7 +1,10 @@
+with Ada.Calendar;
 with Text_Handler, Sys_Calls, Socket, Tcp_Util, Dynamic_list, X_Mng;
 package body Channels is
 
   Byte_Size : constant := 8;
+
+  package Host_List_Mng is new Dynamic_List (Tcp_Util.Remote_Host);
 
   -- Destination
   type Dest_Rec is record
@@ -52,6 +55,7 @@ package body Channels is
   type Channel_Rec is record
     Init : Boolean := False;
     Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
+    Period : Ada.Calendar.Day_Duration;
     Accept_Num : Tcp_Util.Port_Num := 0;
     In_Read : Read_Kind := None;
     Dests : Dest_List_Mng.List_Type;
@@ -78,6 +82,23 @@ package body Channels is
     end loop;
     return Str;
   end Parse;
+
+  function Get_Period (Channel : String) return Ada.Calendar.Day_Duration is
+    Set : Boolean;
+    Tru : Boolean;
+    Val : String (1 .. 6);
+    Len : Natural;
+    Default_Period : constant Ada.Calendar.Day_Duration := 1.0;
+  begin
+    Sys_Calls.Getenv ("Channel_" & Channel & "_period", Set, Tru, Val, Len);
+    if not Set or else Tru then
+      return Default_Period;
+    end if;
+    return Ada.Calendar.Day_Duration'Value (Val(1 .. Len));
+  exception
+    when others =>
+      return Default_Period;
+  end Get_Period;
 
   package File is
     -- All may raise File_Error
@@ -131,6 +152,7 @@ package body Channels is
         return;
       end if;
       Text_Handler.Set (Channel_Dscr.Name, Channel_Name);
+      Channel_Dscr.Period := Get_Period (Channel_Name);
       Channel_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -150,6 +172,7 @@ package body Channels is
       end if;
       -- Store new name
       Text_Handler.Set (Channel_Dscr.Name, New_Channel_Name);
+      Channel_Dscr.Period := Get_Period (New_Channel_Name);
       Channel_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -221,7 +244,7 @@ package body Channels is
                     := Text_Handler.Value (Channel_Dscr.Name);
               Res := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                           D_Rec.Host_Name, Port,
-                                          1.0, 0,
+                                          Channel_Dscr.Period, 0,
                                           Connect_Cb'Unrestricted_Access);
             exception
               when others =>
@@ -403,7 +426,9 @@ package body Channels is
     -- Add destinations from file
     procedure Add_Destinations (File_Name : in String) is
       Host : Tcp_Util.Remote_Host;
+      List : Host_List_Mng.List_Type;
     begin
+      -- Store hosts (fully parse file)
       File.Open (File_Name, Text_Handler.Value (Channel_Dscr.Name) );
       loop
         begin
@@ -411,22 +436,42 @@ package body Channels is
         exception
           when File.End_Error =>
             File.Close;
-            return;
+            exit;
           when File_Error =>
             File.Close;
             raise;
         end;
+        Host_List_Mng.Insert (List, Host);
+      end loop;
 
+      if Host_List_Mng.Is_Empty (List) then
+        return;
+      end if;
+
+      Host_List_Mng.Move_To (List, Host_List_Mng.Next, 0 , False);
+      loop
+        Host_List_Mng.Read (List, Host, Host_List_Mng.Current);
         begin
-          Add_Destination (Parse (Host.name));
+          Add_Destination (Parse (Host.Name));
         exception
           when Destination_Already | Unknown_Destination =>
             null;
           when others =>
             raise;
         end;
+        begin
+          Host_List_Mng.Move_To (List);
+        exception
+          when Host_List_Mng.Not_In_List =>
+            Host_List_Mng.Delete_List (List, Deallocate => True);
+            exit;
+        end;
       end loop;
-      
+
+    exception
+      when others =>
+        Host_List_Mng.Delete_List (List, Deallocate => True);
+        raise;      
     end Add_Destinations;
 
     -- Add a new recipient
@@ -464,7 +509,8 @@ package body Channels is
       -- Try to connect each sec indefinitely
       begin
         Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
-                                       1.0, 0, Connect_Cb'Unrestricted_Access);
+                                       Channel_Dscr.Period, 0,
+                                       Connect_Cb'Unrestricted_Access);
       exception
         when Socket.Soc_Name_Not_Found =>
           -- Host/port name is not fount in hosts/services

@@ -10,8 +10,10 @@ package body File is
      Max_Line_Len => 132,
      Comment      => '#');
 
+  type Section_List is (Out_Channel, In_Channel, In_Matching_Channel);
+
   Channel_Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
-  Curr_Channel : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
+  Section : Section_List;
   Curr_Word : Channel_File.Word_Count;
   Line : Channel_File.Line_Array;
 
@@ -32,7 +34,7 @@ package body File is
         raise File_Error;
     end;
     Curr_Word := 0;
-    Text_Handler.Empty (Curr_Channel);
+    Section := Out_Channel;
   end Open;
 
   procedure Close is
@@ -63,34 +65,49 @@ package body File is
         Channel_File.Get_Words (Line);
 
         if Lower_Str (Channel_File.Get_First_Word) = "channel" then
-          if not Text_Handler.Empty (Curr_Channel) 
-          or else Channel_File.Get_Word_Number /= 2 then
+          -- Channel { <channel_name> }
+          if Section /= Out_Channel
+          or else Channel_File.Get_Word_Number < 2 then
             raise File_Error;
           end if;
-          Text_Handler.Set (Curr_Channel, Line (2));
-          Curr_Word := 2;
+          -- Locate Channel_Name in list
+          Section := In_Channel;
+          for I in 2 .. Channel_File.Get_Word_Number loop
+            if Text_Handler."=" (Channel_Name, Line(I)) then
+              Section := in_Matching_Channel;
+              exit;
+            end if;
+          end loop;
+          Curr_Word := Channel_File.Get_Word_Number;
         elsif Lower_Str (Channel_File.Get_First_Word) = "end_channel" then
-          if Channel_File.Get_Word_Number /= 2
-          or else not Text_Handler."=" (Curr_Channel, Line(2)) then
+          if Section = Out_Channel
+          or else Channel_File.Get_Word_Number /= 1 then
             raise File_Error;
           end if;
-          Text_Handler.Empty (Curr_Channel);
-          Curr_Word := 2;
+          Section := Out_Channel;
+          Curr_Word := 1;
         elsif Lower_Str (Channel_File.Get_First_Word) = "host" then
-          if Text_Handler."=" (Curr_Channel, Channel_Name) then
-            Curr_Word := 1;
-          else
-            Curr_Word := Channel_File.Get_Word_Number;
-          end if;
+          case Section is
+            when Out_Channel =>
+              raise File_Error;
+            when In_Channel =>
+              -- Skip
+              Curr_Word := Channel_File.Get_Word_Number;
+            when In_Matching_Channel =>
+              Curr_Word := 1;
+          end case;
         else
           raise File_Error;
         end if;
       else
         Curr_Word := Curr_Word + 1;
-        if Text_Handler."=" (Curr_Channel, Channel_Name) then
+        if Section = in_Matching_Channel then
           Host.Name(1 .. Text_Handler.Length (Line(Curr_Word)) ) :=
                   Text_Handler.Value (Line(Curr_Word));
           exit;
+        else
+          -- Unexpected. Bug in algo.
+          raise File_Error;
         end if;
       end if;
 
@@ -102,7 +119,7 @@ package body File is
     when End_Error =>
       raise;
     when others =>
-      Text_Handler.Empty (Curr_Channel);
+      Section := Out_Channel;
       Curr_Word := Channel_File.Get_Word_Number;
       raise File_Error; 
   end Next_Host;
