@@ -58,6 +58,27 @@ package Dictio_Lib is
   -- May raise Invalid_Name or Name_Too_Long
   procedure Notify (Name : in String; On : in Boolean);
 
+  -- Declare an alias for and item
+  -- Alias must be a valid name as for Get/Set
+  -- What has to be either empty or a valid name
+  -- Set_Alias ("foo", "bar") declares that
+  -- - Set("foo", data) will modify or create the item named "bar"
+  --    and notifications to "bar" are sent
+  -- - Get("foo") will return the data of "bar" or raises No_Item
+  -- - notification requests on the item named "foo" are accepted
+  --    but this item cannot be Set or Get
+  -- Alias can be canceled with an empty What string.
+  -- May raise Invalid_Name or Name_Too_Long
+  procedure Set_Alias (Alias : in String; What : in String);
+
+  -- Get the value of an alias
+  -- Alias must be a valid name as for Get/Set
+  -- If Alias ("foo", "bar") has been called then
+  --  Get_Alias ("foo") return "bar" otherwise it returns "".
+  -- May raise Invalid_Name or Name_Too_Long
+  function Get_Alias (Alias : in String) return String;
+
+
   -- Add/del a new host to destination list
   -- Use with care:
   --  For adding a host:

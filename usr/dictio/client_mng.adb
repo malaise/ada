@@ -69,17 +69,17 @@ package body Client_Mng is
         Notify.Del_Client (Dscr);
         Client_Fd.Del_Client (Dscr);
         return False;
-      when Client_Com.Read =>
-        Data_Base.Get (Msg.Item.Name, Msg.Item);
+      when Client_Com.Get =>
+        Data_Base.Get (Msg.Item.Name, Msg.Item.Kind, Msg.Item);
         begin
           Send_Res := Client_Com.Dictio_Send (Dscr, null, Msg);
           if Debug.Level_Array(Debug.Client_Data) then
-            Debug.Put ("Client: read reply result " & Send_Res'Img);
+            Debug.Put ("Client: get reply result " & Send_Res'Img);
           end if;
         exception
           when Socket.Soc_Tail_Err =>
             if Debug.Level_Array(Debug.Client) then
-              Debug.Put ("Client: read lost cause client in overflow");
+              Debug.Put ("Client: get lost cause client in overflow");
             end if;
             Notify.Del_Client (Dscr);
             Client_Fd.Del_Client (Dscr);
@@ -92,7 +92,7 @@ package body Client_Mng is
           Client_Fd.Del_Client (Dscr);
           return False;
         end;
-      when Client_Com.Write =>
+      when Client_Com.Set =>
         Modified (Intra_Dictio.Data_Kind, Msg.Item);
         Intra_Dictio.Send_Data (Msg.Item);
       when Client_Com.Notif_On =>

@@ -2,8 +2,8 @@ with Socket, Tcp_Util;
 with Data_Base;
 package Client_Com is
 
-  type Client_Action_List is (Version, State, Read, Write, Notif_On,
-                              Notif_Off, Add_Host, Del_Host);
+  type Client_Action_List is (Version, State, Get, Set, Notif_On, Notif_Off,
+                              Add_Host, Del_Host);
 
   type Dictio_Client_Rec is record
     Action : Client_Action_List;

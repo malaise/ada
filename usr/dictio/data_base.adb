@@ -5,14 +5,15 @@ package body Data_Base is
   package Item_List_Mng is new Dynamic_List (Item_Rec);
   Item_List : Item_List_Mng.List_Type;
 
+  -- Name and kind match
   function Name_Match (Elt1, Elt2 : Item_Rec) return Boolean is
   begin
-    return Elt1.Name = Elt2.Name;
+    return Elt1.Kind = Elt2.Kind and then Elt1.Name = Elt2.Name;
   end Name_Match;
   procedure Search_Name is new Item_List_Mng.Search (Name_Match);
 
 
-  -- Hash on Item.Name (not Parsed)
+  -- Hash on: Item.Kind & Item.Name (not Parsed)
   H_Use : constant Boolean := True;
   procedure H_Dump (Data : in Item_List_Mng.Element_Access) is
   begin
@@ -20,16 +21,17 @@ package body Data_Base is
   end H_Dump;
   package H_Item is new Hash.Hash_Mng (Data_Acess => Item_List_Mng.Element_Access,
                                        Dump => H_Dump);
-  function H_Get (Name : in Item_Name) return Item_List_Mng.Element_Access is
+  function H_Get (Kind : Item_Kind; Name : Item_Name)
+                 return Item_List_Mng.Element_Access is
     R : H_Item.Found_Rec;
   begin
-    H_Item.Reset_Find (Name);
+    H_Item.Reset_Find (Kind & Name);
     loop
-      R := H_Item.Find_Next (Name);
+      R := H_Item.Find_Next (Kind & Name);
       if not R.Found then
         return null;
       end if;
-      exit when R.Data.Name = Name;
+      exit when R.Data.Kind = Kind and then R.Data.Name = Name;
     end loop;
     return R.Data;
   end H_Get;
@@ -64,16 +66,17 @@ package body Data_Base is
   begin
     Itm := Item;
     if Item.Crc = No_Item.Crc then
-      Itm.Crc := Crc_Of(Parse(Itm.Name) & Item.Data(1 .. Item.Data_Len));
+      Itm.Crc := Crc_Of(Parse(Itm.Name) & Item.Kind
+                      & Item.Data(1 .. Item.Data_Len));
     end if;
 
     if H_Use then
-      Acc := H_Get (Item.Name);
+      Acc := H_Get (Item.Kind, Item.Name);
       if Acc /= null then
         Acc.all := Itm;
       else
         Append_Itm;
-        H_Item.Store (Item.Name,
+        H_Item.Store (Item.Kind & Item.Name,
                       Item_List_Mng.Access_Current(Item_List));
       end if;
     else
@@ -87,13 +90,13 @@ package body Data_Base is
     end if;
   end Set;
 
-  procedure Get (Name : in Item_Name; Item : out Item_Rec) is
+  procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec) is
     Itm : Item_Rec;
     Acc : Item_List_Mng.Element_Access;
     use type Item_List_Mng.Element_Access;
   begin
     if H_Use then
-      Acc := H_Get (Name);
+      Acc := H_Get (Kind, Name);
       if Acc = null then
         Item := No_Item;
       else
@@ -101,6 +104,7 @@ package body Data_Base is
       end if;
     else
       Itm.Name := Name;
+      Itm.Kind := Kind;
       begin
         Search_Name (Item_List, Itm, From_Current => False);
         Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);

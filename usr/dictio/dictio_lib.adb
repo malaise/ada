@@ -114,9 +114,9 @@ package body Dictio_Lib is
           end if;
         end if;
         return False;
-      when Client_Com.Read =>
+      when Client_Com.Get =>
         if Debug.Level_Array(Debug.Lib) then
-          Debug.Put ("Dictio_Lib: received read reply:"
+          Debug.Put ("Dictio_Lib: received get reply:"
                    & Parse(Msg.Item.Data));
         end if;
         return True;
@@ -131,7 +131,7 @@ package body Dictio_Lib is
                      Msg.Item.Data(1 .. Msg.Item.Data_Len));
         end if;
         return False;
-      when Client_Com.Write | Client_Com.Notif_Off
+      when Client_Com.Set | Client_Com.Notif_Off
          | Client_Com.Add_Host | Client_Com.Del_Host =>
         if Debug.Level_Array(Debug.Lib) then
           Debug.Put ("Dictio_Lib: received invalid kind: "
@@ -292,34 +292,24 @@ package body Dictio_Lib is
       return False;
   end Is_Valid_Item_Name;
 
-  -- Get Item data
+  -- Get Item data or alias: Sets Msg!
   -- May raise Name_Too_Long or No_Item 
-  function Get (Name : in String) return String is
-    use type Data_Base.Item_Rec;
+  procedure Set_Msg_To (Name : in String; Kind : in Data_Base.Item_Kind) is
   begin
-    if Debug.Level_Array(Debug.Lib) then
-      Debug.Put ("Dictio_Lib: get " & Name);
-    end if;
     Check_Available;
     Check_Name (Name);
     -- Send request
-    Msg.Action := Client_Com.Read;
+    Msg.Action := Client_Com.Get;
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. Name'Length) := Name;
+    Msg.Item.Kind := Kind;
     Send_Request;
     -- Wait for reply
     loop
       exit when Read_Cb(0, True);
     end loop;
     Check_Available;
-    if Msg.Item = Data_Base.No_Item then
-      raise No_Item;
-    end if;
-    if Debug.Level_Array(Debug.Lib) then
-      Debug.Put ("Dictio_Lib: get -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));
-    end if;
-    return Msg.Item.Data(1 .. Msg.Item.Data_Len);
-  end Get;
+  end Set_Msg_To;
 
 
   -- Create/Modify Item
@@ -332,13 +322,32 @@ package body Dictio_Lib is
     Check_Available;
     Check_Name (Name);
     Check_Data (Data);
-    Msg.Action := Client_Com.Write;
+    Msg.Action := Client_Com.Set;
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. Name'Length) := Name;
+    Msg.Item.Kind := "d";
     Msg.Item.Data_Len := Data'Length;
     Msg.Item.Data(1 .. Msg.Item.Data_Len) := Data;
     Send_Request;
   end Set;
+
+  -- Get Item data
+  -- May raise Name_Too_Long or No_Item 
+  function Get (Name : in String) return String is
+    use type Data_Base.Item_Rec;
+  begin
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: get " & Name);
+    end if;
+    Set_Msg_To (Name, "d");
+    if Msg.Item = Data_Base.No_Item then
+      raise No_Item;
+    end if;
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: get -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));
+    end if;
+    return Msg.Item.Data(1 .. Msg.Item.Data_Len);
+  end Get;
 
   -- (Un)Notify on Item name
   -- May raise Name_Too_Long
@@ -364,6 +373,42 @@ package body Dictio_Lib is
     Send_Request;
   end Notify;
 
+  -- Create/Modify delete alias
+  -- May raise Name_Too_Long or Data_Too_Long
+  procedure Set_Alias (Alias : in String; What : in String) is
+  begin
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: set alias" & Alias & " " & What);
+    end if;
+    Check_Available;
+    Check_Name (Alias);
+    if What /= "" then
+      Check_Name (What);
+    end if;
+    Msg.Action := Client_Com.Set;
+    Msg.Item.Name := (others => ' ');
+    Msg.Item.Name(1 .. Alias'Length) := Alias;
+    Msg.Item.Kind := "a";
+    Msg.Item.Data_Len := What'Length;
+    Msg.Item.Data(1 .. Msg.Item.Data_Len) := What;
+    Send_Request;
+  end Set_Alias;
+
+  -- Get Item alias
+  -- May raise Name_Too_Long
+  function Get_Alias (Alias : in String) return String is
+  begin
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: get_alias " & Alias);
+    end if;
+    Set_Msg_To (Alias, "a");
+    if Debug.Level_Array(Debug.Lib) then
+      Debug.Put ("Dictio_Lib: get_alias -> " & Msg.Item.Data(1 .. Msg.Item.Data_Len));
+    end if;
+    return Msg.Item.Data(1 .. Msg.Item.Data_Len);
+  end Get_Alias;
+
+  -- Add/Del host
   procedure Add_Host (Host : in String) is
   begin
     if Debug.Level_Array(Debug.Lib) then

@@ -228,7 +228,7 @@ package body Intra_Dictio is
     Message.Head.Prio := Args.Get_Prio;
     Local_Host_Name.Get (Message.Head.From);
      
-    if Message.Item = Data_Base.No_Item then
+    if Message.Item.Data_Len = 0 then
       -- Header size
       Len := 80;
     else
