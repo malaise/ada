@@ -6,10 +6,10 @@ package body Intra_Dictio is
   Byte_Size : constant := System.Storage_Unit;
 
   type Header_Rec is record
-    From : Tcp_Util.Host_Name;
-    Kind : Character;
     Stat : Status.Status_List;
     Sync : Boolean;
+    From : Tcp_Util.Host_Name;
+    Kind : Character;
     Prio : Args.Prio_Str;
   end record;
 
