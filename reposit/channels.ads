@@ -22,7 +22,7 @@ package Channels is
 
   -- Subscribing twice to the same channel
   Already_Subscribed : exception;
-  -- unsubscribbing from a channel no subscribed to
+  -- Unsubscribing from a channel no subscribed to
   Not_Subscribed : exception;
 
   -- Adding twice the same destination to a channel
@@ -48,6 +48,11 @@ package Channels is
 
   package Channel is
 
+    -- The message kind sent on socket (Tcp header)
+    type Channel_Message_Type is record
+      Diff : Boolean := True;
+      Data : Message_Type;
+    end record;
 
     -- Change channel name
     -- May raise Name_Too_Long if Channel_Name is too long
