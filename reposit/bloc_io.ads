@@ -47,7 +47,7 @@ package Bloc_Io is
 
 
   -- Amount of Elements in file
-  -- May rase Status or Device_Error
+  -- May raise Status or Device_Error
   function Size(File : in File_Type) return Count;
 
   -- Current (next read/written Element) in file
