@@ -42,7 +42,7 @@ package body Timers is
   begin
     return T1.Id = T2.Id;
   end Id_Match;
-  procedure Search_Id is new Timer_List_Mng.Search (Id_Match);
+  procedure Search_Id is new Timer_List_Mng.Safe_Search (Id_Match);
 
   procedure Incr_Id is
   begin
@@ -57,19 +57,18 @@ package body Timers is
   function Get_Next_Id return Timer_Id_Range is
     Start_Id : constant Timer_Id_Range := Next_Timer_Id;
     Timer : Timer_Rec;
+    Found : Boolean;
   begin
     loop
       -- Init to next possible Id
       Timer.Id := Next_Timer_Id;
       -- Check not allocated
-      begin
-        Search_Id (Timer_List, Timer, From => Timer_List_Mng.Absolute);
-      exception
-        when Timer_List_Mng.Not_In_List =>
+      Search_Id (Timer_List, Found, Timer, From => Timer_List_Mng.Absolute);
+      if not Found then
           -- Good
           Incr_Id;
           return Timer.Id;
-      end;
+      end if;
       -- Bad luck, this Id is in use. Try next.
       Incr_Id;
       -- Check we have not tried ALL timers
@@ -110,7 +109,7 @@ package body Timers is
 
     -- Insert in beginning of list and sort it
     if not Timer_List_Mng.Is_Empty (Timer_List) then
-      Timer_List_Mng.Move_To (Timer_List, Timer_List_Mng.Next, 0, False);
+      Timer_List_Mng.Rewind (Timer_List);
     end if;
     Timer_List_Mng.Insert (Timer_List, Timer, Timer_List_Mng.Prev);
     Sort (Timer_List);
@@ -130,6 +129,7 @@ package body Timers is
   -- May raise Invalid_Timer if timer has expired
   procedure Locate (Id : in Timer_Id) is
     Timer : Timer_Rec;
+    Found : Boolean;
   begin
     -- Check validity
     if Id = No_Timer then
@@ -147,24 +147,18 @@ package body Timers is
 
     -- Search timer
     Timer.Id := Id.Timer_Num;
-    begin
-      Search_Id (Timer_List, Timer, From => Timer_List_Mng.Absolute);
-    exception
-      when Timer_List_Mng.Not_In_List =>
-        -- Not found
-        raise Invalid_Timer;
-    end;
+    Search_Id (Timer_List, Found, Timer, From => Timer_List_Mng.Absolute);
+    if not Found then
+      -- Not found
+      raise Invalid_Timer;
+    end if;
   end Locate;
 
   -- Delete current timer
   procedure Delete_Current is
+    Done : Boolean;
   begin
-    -- Delete timer
-    if Timer_List_Mng.Get_Position (Timer_List) /= 1 then
-      Timer_List_Mng.Delete (Timer_List, Timer_List_Mng.Prev);
-    else
-      Timer_List_Mng.Delete (Timer_List, Timer_List_Mng.Next);
-    end if;
+    Timer_List_Mng.Delete (Timer_List, Done => Done);
   end Delete_Current;
 
   -- Delete a timer
@@ -185,7 +179,7 @@ package body Timers is
       raise Invalid_Timer;
     end if;
     -- Move to beginning
-    Timer_List_Mng.Move_To (Timer_List, Timer_List_Mng.Next, 0, False);
+    Timer_List_Mng.Rewind (Timer_List);
   end First;
 
   -- For each timer for which if expiration time/delay is reached

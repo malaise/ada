@@ -16,7 +16,7 @@ package body Storage is
            and then Curr.Str_Acc /= null
            and then Curr.Id = Crit.Id;
   end Pattern_Match;
-  procedure Search_Pattern is new Term_List_Mng.Search (Pattern_Match);
+  procedure Search_Pattern is new Term_List_Mng.Safe_Search (Pattern_Match);
 
   -- Search first term of next pattern of same rule
   function Pattern_After (Curr, Crit : Term_Rec) return Boolean is
@@ -25,29 +25,28 @@ package body Storage is
            and then Curr.Str_Acc /= null
            and then Curr.Id > Crit.Id;
   end Pattern_After;
-  procedure Next_Pattern is new Term_List_Mng.Search (Pattern_After);
+  procedure Next_Pattern is new Term_List_Mng.Safe_Search (Pattern_After);
 
   -- Search first term of first pattern of rule
   function Rule_Match (Curr, Crit : Term_Rec) return Boolean is
   begin
     return Curr.Rule = Crit.Rule;
   end Rule_Match;
-  procedure Search_Rule is new Term_List_Mng.Search (Rule_Match);
+  procedure Search_Rule is new Term_List_Mng.Safe_Search (Rule_Match);
 
   -- Return an unused rule
   function Get_Free_Rule return Rule_No is
     Term : Term_Rec;
+    Found : Boolean;
   begin
     for I in Valid_Rule_No_Range loop
       Term.Rule := (No => I);
-      begin
-        Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute);
-      exception
-        when Term_List_Mng.Not_In_List =>
-          -- This rule does not exist: insert a dummy term
-          Term_List_Mng.Insert (Term_List, Term);
-          return (No => I);
-      end;
+      Search_Rule (Term_List, Found, Term, From => Term_List_Mng.Absolute);
+      if not Found then
+        -- This rule does not exist: insert a dummy term
+        Term_List_Mng.Insert (Term_List, Term);
+        return (No => I);
+      end if;
     end loop;
     -- All rules are used!
     raise No_Rule;
@@ -55,15 +54,10 @@ package body Storage is
 
   -- Local utility
   function Del_Term return Boolean is
+    Done : Boolean;
   begin
-    if Term_List_Mng.Get_Position (Term_List)
-    /= Term_List_Mng.List_Length (Term_List) then
-      Term_List_Mng.Delete (Term_List);
-      return False;
-    else 
-      Term_List_Mng.Delete (Term_List, Term_List_Mng.Prev);
-      return True;
-    end if;
+    Term_List_Mng.Delete (Term_List, Done => Done);
+    return not Done;
   end Del_Term;
 
   -- Delete all terms of all patterns of a rule
@@ -71,18 +65,15 @@ package body Storage is
 
     function Find_Rule (From_Current : Boolean) return Boolean is
       Term : Term_Rec;
+      Found : Boolean;
     begin
       Term.Rule := Rule;
       if From_Current then
-        Search_Rule (Term_List, Term, From => Term_List_Mng.From_Current);
+        Search_Rule (Term_List, Found, Term, From => Term_List_Mng.From_Current);
       else
-        Search_Rule (Term_List, Term, From => Term_List_Mng.Absolute);
+        Search_Rule (Term_List, Found, Term, From => Term_List_Mng.Absolute);
       end if;
-      return True;
-    exception
-      when Term_List_Mng.Not_In_List =>
-        -- This rule does not exist
-        return False;
+      return Found;
     end Find_Rule;
 
   begin
@@ -99,17 +90,13 @@ package body Storage is
   -- Check if pattern Id exists
   function Pattern_Exists (Rule : in Rule_No; Id : Pattern_Id) return Boolean is
     Term : Term_Rec;
+    Found : Boolean;
   begin
     -- Search this pattern id
-    begin
-      Term.Rule := Rule;
-      Term.Id := Id;
-      Search_Pattern (Term_List, Term, From => Term_List_Mng.Absolute);
-    exception
-      when Term_List_Mng.Not_In_List =>
-        return False;
-    end;
-    return True;
+    Term.Rule := Rule;
+    Term.Id := Id;
+    Search_Pattern (Term_List, Found, Term, From => Term_List_Mng.Absolute);
+    return Found;
   end Pattern_Exists;
 
   -- Delete all terms of current pattern
@@ -117,6 +104,7 @@ package body Storage is
     Rule : Rule_No;
     Id : Pattern_Id;
     Term : Term_Rec;
+    Found : Boolean;
   begin
     if Term_List_Mng.Is_Empty (Term_List) then
       raise Invalid_Pattern;
@@ -131,12 +119,8 @@ package body Storage is
       Free (Term.Str_Acc);
       exit when Del_Term;
       -- Search next term of pattern from current and exit if no more 
-      begin
-        Search_Pattern (Term_List, Term, From => Term_List_Mng.From_Current);
-      exception
-        when Term_List_Mng.Not_In_List =>
-          exit;
-      end;
+      Search_Pattern (Term_List, Found, Term, From => Term_List_Mng.From_Current);
+      exit when not Found;
       Term_List_Mng.Read (Term_List, Term, Term_List_Mng.Current);
     end loop;
   end Delete_Current_Pattern;
@@ -152,16 +136,17 @@ package body Storage is
                             Cb    : in Match_Cb_Access;
                             Id4Cb : in Pattern_Id) is
     Term : Term_Rec;
+    Found : Boolean;
   begin
     -- Move to end of previous pattern if posssible
     In_Prev := True;
     if not Term_List_Mng.Is_Empty (Term_List) then
-      begin
-        Term.Rule := Rule;
-        Term.Id := Id;
-        Next_Pattern (Term_List, Term, From => Term_List_Mng.Absolute);
+      Term.Rule := Rule;
+      Term.Id := Id;
+      Next_Pattern (Term_List, Found, Term, From => Term_List_Mng.Absolute);
+      if Found then
         -- Found a following pattern of this rule
-        if Term_List_Mng.Get_Position (Term_List) /= 1 then
+        if Term_List_Mng.Check_Move (Term_List, Term_List_Mng.Prev) then
           -- We can move to prev cell, so next term can appended
           Term_List_Mng.Move_To (Term_List, Term_List_Mng.Prev);
         else
@@ -169,12 +154,11 @@ package body Storage is
           --  next term will need to be prepended
           In_Prev := False;
         end if;
-      exception
-        when Term_List_Mng.Not_In_List =>
-          -- No following pattern, append to list
-          Term_List_Mng.Move_To (Term_List, Term_List_Mng.Prev, 0, False);
-          In_Prev := True;
-      end;
+      else
+        -- No following pattern, append to list
+        Term_List_Mng.Rewind (Term_List, Term_List_Mng.Prev);
+        In_Prev := True;
+      end if;
     end if;
     Term_Rule := Rule;
     Term_Id := Id;
@@ -210,7 +194,7 @@ package body Storage is
   procedure Rewind (Rule : Rule_No) is
   begin                 
     if not Term_List_Mng.Is_Empty (Term_List) then
-      Term_List_Mng.Move_To (Term_List, Term_List_Mng.Next, 0, False);
+      Term_List_Mng.Rewind (Term_List);
       The_End := False;
     else
       The_End := True;
@@ -228,8 +212,7 @@ package body Storage is
     loop
       Term_List_Mng.Read (Term_List, Term, Term_List_Mng.Current);
       -- Move to next or this is the end
-      if Term_List_Mng.Get_Position (Term_List)
-      /= Term_List_Mng.List_Length (Term_List) then
+      if Term_List_Mng.Check_Move (Term_List) then
         Term_List_Mng.Move_To (Term_List);
       else
         The_End := True;

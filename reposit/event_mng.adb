@@ -72,24 +72,23 @@ package body Event_Mng is
   begin
     return Cb1.Read = Cb2.Read and then Cb1.Fd = Cb2.Fd;
   end Same_Fd;
-  procedure Cb_Search is new Cb_Mng.Search(Same_Fd);
+  procedure Cb_Search is new Cb_Mng.Safe_Search(Same_Fd);
 
   procedure Add_Fd_Callback (Fd : in File_Desc; Read : in Boolean;
                              Callback : in Fd_Callback) is
     Res : Boolean;
     Cb_Searched : Cb_Rec;
+    Found : Boolean;
   begin
     -- Check no cb for this fd yet
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    begin
-      Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
+    Cb_Search (Cb_List, Found, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
+    if Found then
       raise Event_Failure;
-    exception
-      when Cb_Mng.Not_In_List =>
-        null;
-    end;
+    end if;
+
     -- Append
     if not Cb_Mng.Is_Empty (Cb_List) then
       Cb_Mng.Move_To (Cb_List, Cb_Mng.Prev, 0, False);
@@ -110,31 +109,29 @@ package body Event_Mng is
   end Add_Fd_Callback;
 
   procedure Del_Fd_Callback (Fd : in File_Desc; Read : in Boolean) is
-    Res : Boolean;
+    Res1, Res2 : Boolean;
     Cb_Searched : Cb_Rec;
   begin
     -- Del fd from select
-    Res := C_Del_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
-    -- del from list
+    Res1 := C_Del_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
+    -- Del from list
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
-    if Cb_Mng.Get_Position (Cb_List) /=  Cb_Mng.List_Length(Cb_List) then
-      Cb_Mng.Delete (Cb_List, Cb_Mng.Next);
-    else
-      Cb_Mng.Delete (Cb_List, Cb_Mng.Prev);
-    end if;
-    if not Res then
+    Cb_Search (Cb_List, Res2, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
+    if not Res2 then
       raise Event_Failure;
     end if;
+    Cb_Mng.Delete (Cb_List, Done => Res2);
+
+    if not Res1 then
+      raise Event_Failure;
+    end if;
+
     if Debug then
       Ada.Text_Io.Put_Line ("Event_Mng.Del_Fd_Callback "
                           & Fd'Img & " " & Read'Img);
     end if;
-  exception
-    when others =>
-      raise Event_Failure;
   end Del_Fd_Callback;
 
   function Fd_Callback_Set (Fd : in File_Desc; Read : in Boolean)
@@ -413,6 +410,7 @@ package body Event_Mng is
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;
+    Cb_Found : Boolean;
   begin
     Set_Debug;
     if Debug then
@@ -424,27 +422,26 @@ package body Event_Mng is
         Cb_Searched.Fd := Event.Fd;
         Cb_Searched.Read := Event.Read;
         Cb_Searched.Cb := null;
-        begin
-          -- Search and read callback
-          Cb_Search (Cb_List, Cb_Searched, From => Cb_Mng.Absolute);
+        -- Search and read callback
+        Cb_Search (Cb_List, Cb_Found, Cb_Searched, From => Cb_Mng.Absolute);
+        if not Cb_Found then
+          if Debug then
+            Ada.Text_Io.Put_Line ("**** Event_Mng.Handle: "
+                                & File_Desc'Image(Event.Fd)
+                                & " fd not found ****");
+          end if;
+        else
           Cb_Mng.Read (Cb_List, Cb_Searched,  Cb_Mng.Current);
+          if Debug then
+            Ada.Text_Io.Put_Line ("Event_Mng.Handle calling Cb on fd "
+                   & Event.Fd'Img & " " & Event.Read'Img);
+          end if;
           -- Call it and propagate event if callback returns true
           if Cb_Searched.Cb /= null then
             if Cb_Searched.Cb (Cb_Searched.Fd, Cb_Searched.Read) then
               return Fd_Event;
             end if;
           end if;
-        exception
-          when Cb_Mng.Not_In_List =>
-            if Debug then
-              Ada.Text_Io.Put_Line ("**** Event_Mng.Handle: "
-                                  & File_Desc'Image(Event.Fd)
-                                  & " fd not found ****");
-            end if;
-        end;
-        if Debug then
-          Ada.Text_Io.Put_Line ("Event_Mng.Handle Cb called on fd "
-                 & Event.Fd'Img & " " & Event.Read'Img);
         end if;
       when Sig_Event =>
         Signal_Kind := Get_Signal_Kind;

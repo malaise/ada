@@ -232,8 +232,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
     Dir_Mng.File_List_Mng.Delete_List (Dir_List);
     Dir_Mng.List_Dir (Dir_List, ".");
     Dir_Mng.File_Sort (Dir_List);
-    Dir_Mng.File_List_Mng.Move_To (Dir_List, Dir_Mng.File_List_Mng.Next,
-                                 0 , False);
+    Dir_Mng.File_List_Mng.Rewind (Dir_List);
     -- Clear Afpx list
     Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
     loop
@@ -261,13 +260,11 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
         String_Mng.Procuste(Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
                             Width);
       Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
-      exit when Dir_Mng.File_List_Mng.Get_Position (Dir_List)
-           = Dir_Mng.File_List_Mng.List_Length (Dir_List);
+      exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
       Dir_Mng.File_List_Mng.Move_To (Dir_List);
     end loop;
     -- Move to beginning of Afpx list
-    Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-       0, False);
+    Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
     Afpx.Update_List(Afpx.Top);
 
   end Change_Dir;

@@ -40,12 +40,14 @@ package body Af_List is
     Line_List_Mng.Move_To (Line_List, Line_List_Mng.Next, Id - 1, False);
   end Move;
 
+  -- Read and move to next if possible
   procedure Get_Current_Item (Item : out Line_Rec) is
   begin
-    Line_List_Mng.Read (Line_List, Item, Line_List_Mng.Next);
-  exception
-    when Line_List_Mng.Not_In_List =>
+    if Line_List_Mng.Check_Move (Line_List) then
+      Line_List_Mng.Read (Line_List, Item);
+    else
       Line_List_Mng.Read (Line_List, Item, Line_List_Mng.Current);
+    end if;
   end Get_Current_Item;
 
   procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List;

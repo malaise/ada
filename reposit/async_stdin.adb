@@ -60,7 +60,7 @@ package body Async_Stdin is
         return Curr.Len >= Crit.Len
         and then Curr.Str(1 .. Crit.Len) = Crit.Str(1 .. Crit.Len);
       end Match;
-      procedure Search is new List_Mng.Search (Match);
+      procedure Search is new List_Mng.Safe_Search (Match);
 
 
       -- Searched pattern
@@ -94,7 +94,7 @@ package body Async_Stdin is
           Clear;
           return;
         end if;
-        List_Mng.Move_To (List, List_Mng.Next, 0, False);
+        List_Mng.Rewind (List, List_Mng.Next);
         Copy_Current;
       end First;
 
@@ -104,7 +104,7 @@ package body Async_Stdin is
           Clear;
           return;
         end if;
-        List_Mng.Move_To (List, List_Mng.Prev, 0, False);
+        List_Mng.Rewind (List, List_Mng.Prev);
         Copy_Current;
       end Last;
 
@@ -114,7 +114,7 @@ package body Async_Stdin is
           Clear;
           return;
         end if;
-        if List_Mng.Get_Position (List) /= List_Mng.List_Length (List) then
+        if List_Mng.Check_Move (List) then
           List_Mng.Move_To (List, List_Mng.Next);
         end if;
         Copy_Current;
@@ -126,7 +126,7 @@ package body Async_Stdin is
           Clear;
           return;
         end if;
-        if List_Mng.Get_Position (List) /= 1 then
+        if List_Mng.Check_Move (List, List_Mng.Prev) then
           List_Mng.Move_To (List, List_Mng.Prev);
         end if;
         Copy_Current;
@@ -134,8 +134,7 @@ package body Async_Stdin is
 
       function Search (Init : Boolean) return Boolean is
         Pos : Positive;
-        Current_Rec : Rec;
-        Occurence : Positive;
+        Found : Boolean;
       begin
         if List_Mng.Is_Empty (List) then
           return False;
@@ -143,32 +142,25 @@ package body Async_Stdin is
         -- Save pos
         Pos := List_Mng.Get_Position (List);
 
-        Occurence := 1;
         if Init then
           -- Search present buf from last
-          List_Mng.Move_To (List, List_Mng.Prev, 0, False);
           Copy_Buf (Searched_Rec);
+          Search (List, Found, Searched_Rec, List_Mng.Prev,
+                  From => List_Mng.Absolute);
         else
           -- Search second occurence if current record matches
-          List_Mng.Read (List, Current_Rec, List_Mng.Current);
-          if Match (Current_Rec, Searched_Rec) then
-            Occurence := 2;
-          end if;
+          Search (List, Found, Searched_Rec, List_Mng.Prev,
+                  From => List_Mng.Skip_Current);
         end if;
 
-        begin
-          Search (List, Searched_Rec, List_Mng.Prev, Occurence,
-                  From => List_Mng.From_Current);
-        exception
-          when List_Mng.Not_In_List =>
-            -- Restore Pos
-            List_Mng.Move_To (List, List_Mng.Next, Pos - 1, False);
-            Clear;
-            return False;
-        end;
-        -- Found
-        Copy_Current;
-        return True;
+        if Found then
+          Copy_Current;
+        else
+          -- Restore Pos
+          List_Mng.Move_To (List, List_Mng.Next, Pos - 1, False);
+          Clear;
+        end if;
+        return Found;
       end Search;
 
 
@@ -176,13 +168,13 @@ package body Async_Stdin is
         R : Rec;
       begin
         if List_Mng.List_Length (List) = History_Size then
-          List_Mng.Move_To (List, List_Mng.Next, 0, False);
+          List_Mng.Rewind (List, List_Mng.Next);
           List_Mng.Delete (List);
         end if;
         -- Append at the end of list
         Copy_Buf (R);
         if not List_Mng.Is_Empty (List) then
-          List_Mng.Move_To (List, List_Mng.Prev, 0, False);
+          List_Mng.Rewind (List, List_Mng.Prev);
         end if;
         List_Mng.Insert (List, R);
       end Add;

@@ -21,28 +21,28 @@ package body Channels is
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
-  procedure Fd_Search is new Dest_List_Mng.Search (Fd_Match);
+  procedure Fd_Search is new Dest_List_Mng.Safe_Search (Fd_Match);
 
   function Host_Id_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Socket.Host_Id;
   begin
     return D1.Host_Id = D2.Host_Id;
   end Host_Id_Match;
-  procedure Host_Id_Search is new Dest_List_Mng.Search (Host_Id_Match);
+  procedure Host_Id_Search is new Dest_List_Mng.Safe_Search (Host_Id_Match);
 
   function Dscr_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return D1.Dscr = D2.Dscr;
   end Dscr_Match;
-  procedure Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
+  procedure Dscr_Search is new Dest_List_Mng.Safe_Search (Dscr_Match);
 
   function Host_Name_Match (D1, D2 : Dest_Rec) return Boolean is
     use type Tcp_Util.Remote_Host;
   begin
     return D1.Host_Name = D2.Host_Name;
   end Host_Name_Match;
-  procedure Host_Name_Search is new Dest_List_Mng.Search (Host_Name_Match);
+  procedure Host_Name_Search is new Dest_List_Mng.Safe_Search (Host_Name_Match);
 
   -- Sender
   type Send_Rec is record
@@ -56,14 +56,14 @@ package body Channels is
   begin
     return D1.Fd = D2.Fd;
   end Fd_Match;
-  procedure Fd_Search is new Send_List_Mng.Search (Fd_Match);
+  procedure Fd_Search is new Send_List_Mng.Safe_Search (Fd_Match);
 
   function Dscr_Match (D1, D2 : Send_Rec) return Boolean is
     use type Socket.Socket_Dscr;
   begin
     return D1.Dscr = D2.Dscr;
   end Dscr_Match;
-  procedure Dscr_Search is new Send_List_Mng.Search (Dscr_Match);
+  procedure Dscr_Search is new Send_List_Mng.Safe_Search (Dscr_Match);
 
   -- Reply
   package Reply_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
@@ -135,19 +135,15 @@ package body Channels is
     function Channel_Send is new Tcp_Util.Send (Channel_Message_Type);
 
     procedure Delete_Current_Dest is
+      Done : Boolean;
     begin
-      Dest_List_Mng.Delete (Channel_Dscr.Dests);
-    exception
-      when Dest_List_Mng.Not_In_List =>
-        Dest_List_Mng.Delete (Channel_Dscr.Dests, Dest_List_Mng.Prev);
+      Dest_List_Mng.Delete (Channel_Dscr.Dests, Done => Done);
     end Delete_Current_Dest;
 
     procedure Delete_Current_Send is
+      Done : Boolean;
     begin
-      Send_List_Mng.Delete (Channel_Dscr.Sends);
-    exception
-      when Send_List_Mng.Not_In_List =>
-        Send_List_Mng.Delete (Channel_Dscr.Sends, Send_List_Mng.Prev);
+      Send_List_Mng.Delete (Channel_Dscr.Sends, Done => Done);
     end Delete_Current_Send;
 
     procedure Init is
@@ -199,31 +195,28 @@ package body Channels is
       Dscr : Socket.Socket_Dscr;
       Msg : Channel_Message_Type;
       Len : Natural;
+      Found : Boolean;
     begin
       if Sender then
         -- Look for sender. Unhook Fd if not found (bug).
         S_Rec.Fd := Fd;
-        begin
-          Fd_Search (Channel_Dscr.Sends, S_Rec,
-                     From => Send_List_Mng.Absolute);
-        exception
-          when Send_List_Mng.Not_In_List =>
-            Event_Mng.Del_Fd_Callback (Fd, True);
-            return False;
-        end;
+        Fd_Search (Channel_Dscr.Sends, Found, S_Rec,
+                   From => Send_List_Mng.Absolute);
+        if not Found then
+          Event_Mng.Del_Fd_Callback (Fd, True);
+          return False;
+        end if;
         Send_List_Mng.Read (Channel_Dscr.Sends, S_Rec, Send_List_Mng.Current);
         Dscr := S_Rec.Dscr;
       else
         -- Look for destination. Unhook Fd if not found (bug).
         D_Rec.Fd := Fd;
-        begin
-          Fd_Search (Channel_Dscr.Dests, D_Rec,
-                     From => Dest_List_Mng.Absolute);
-        exception
-          when Dest_List_Mng.Not_In_List =>
-            Event_Mng.Del_Fd_Callback (Fd, True);
-            return False;
-        end;
+        Fd_Search (Channel_Dscr.Dests, Found, D_Rec,
+                   From => Dest_List_Mng.Absolute);
+        if not Found then
+          Event_Mng.Del_Fd_Callback (Fd, True);
+          return False;
+        end if;
         Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);
         Dscr := D_Rec.Dscr;
       end if;
@@ -276,8 +269,7 @@ package body Channels is
       end;
       -- Call callback
       if not Reply_List_Mng.Is_Empty (Channel_Dscr.Replies) then
-        Reply_List_Mng.Move_To (Channel_Dscr.Replies,
-           Reply_List_Mng.Prev, 0, False);
+        Reply_List_Mng.Rewind (Channel_Dscr.Replies, Reply_List_Mng.Prev);
       end if;
       Reply_List_Mng.Insert (Channel_Dscr.Replies, Dscr);
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
@@ -364,15 +356,13 @@ package body Channels is
       -- Close all connections
       if not Send_List_Mng.Is_Empty (Channel_Dscr.Sends) then
         -- Rewind and close all connections
-        Send_List_Mng.Move_To (Channel_Dscr.Sends,
-                               Send_List_Mng.Next, 0, False);
+        Send_List_Mng.Rewind (Channel_Dscr.Sends);
         loop
           Send_List_Mng.Read (Channel_Dscr.Sends, Rec, Send_List_Mng.Current);
           -- Unhook fd receiving data
           Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Rec.Dscr), True);
           Close (Rec.Dscr);
-          exit when Send_List_Mng.Get_Position (Channel_Dscr.Sends)
-                  = Send_List_Mng.List_Length (Channel_Dscr.Sends);
+          exit when not Send_List_Mng.Check_Move (Channel_Dscr.Sends);
           Send_List_Mng.Move_To (Channel_Dscr.Sends);
         end loop;
         -- Delete list
@@ -393,18 +383,17 @@ package body Channels is
                           Connected       : in Boolean;
                           Dscr            : in Socket.Socket_Dscr) is
       Dest : Dest_Rec;
+      Found : Boolean;
     begin
       -- Find record
       Dest.Host_Id := Remote_Host_Id;
-      begin
-        Host_Id_Search (Channel_Dscr.Dests, Dest,
-                        From => Dest_List_Mng.Absolute);
-      exception
-        when Dest_List_Mng.Not_In_List =>
-          -- Bug?
-          Socket.Close (Dest.Dscr);
-          return;
-      end;
+      Host_Id_Search (Channel_Dscr.Dests, Found, Dest,
+                      From => Dest_List_Mng.Absolute);
+      if not Found then
+        -- Bug?
+        Socket.Close (Dest.Dscr);
+        return;
+      end if;
 
       -- Update Dscr and Fd
       Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
@@ -459,7 +448,8 @@ package body Channels is
         return;
       end if;
 
-      Host_List_Mng.Move_To (List, Host_List_Mng.Next, 0 , False);
+      -- Add destinations of list
+      Host_List_Mng.Rewind (List);
       loop
         Host_List_Mng.Read (List, Host, Host_List_Mng.Current);
         begin
@@ -470,13 +460,14 @@ package body Channels is
           when others =>
             raise;
         end;
-        begin
+        -- Next host or the end
+        if Host_List_Mng.Check_Move (List) then
           Host_List_Mng.Move_To (List);
-        exception
-          when Host_List_Mng.Not_In_List =>
-            Host_List_Mng.Delete_List (List, Deallocate => True);
-            exit;
-        end;
+        else
+          -- Done
+          Host_List_Mng.Delete_List (List, Deallocate => True);
+          exit;
+        end if;
       end loop;
 
     exception
@@ -503,14 +494,12 @@ package body Channels is
         when Socket.Soc_Name_Not_Found =>
           raise Unknown_Destination;
       end;
-      begin
-        Host_Id_Search (Channel_Dscr.Dests, Dest,
-                        From => Dest_List_Mng.Absolute);
+
+      Host_Id_Search (Channel_Dscr.Dests, Result, Dest,
+                      From => Dest_List_Mng.Absolute);
+      if Result then
         raise Destination_Already;
-      exception
-        when Dest_List_Mng.Not_In_List =>
-          null;
-      end;
+      end if;
 
       -- Insert host, dscr and fd in dest list
       Dest.Host_Name := Host;
@@ -567,6 +556,7 @@ package body Channels is
       Dest : Dest_Rec;
       Host : Tcp_Util.Remote_Host;
       Port : Tcp_Util.Remote_Port;
+      Found : Boolean;
     begin
       Init;
       -- Build host and port records
@@ -579,13 +569,11 @@ package body Channels is
         when Socket.Soc_Name_Not_Found =>
           raise Unknown_Destination;
       end;
-      begin
-        Host_Id_Search (Channel_Dscr.Dests, Dest,
-                        From => Dest_List_Mng.Absolute);
-      exception
-        when Dest_List_Mng.Not_In_List =>
-          raise Unknown_Destination;
-      end;
+      Host_Id_Search (Channel_Dscr.Dests, Found, Dest,
+                      From => Dest_List_Mng.Absolute);
+      if not Found then
+        raise Unknown_Destination;
+      end if;
 
       -- Close (pending) connection
       Close_Current_Connection;
@@ -602,7 +590,7 @@ package body Channels is
       end if;
 
       -- Delete all connections
-      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False); 
+      Dest_List_Mng.Rewind (Channel_Dscr.Dests);
       loop
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         Close_Current_Connection;
@@ -638,7 +626,7 @@ package body Channels is
       end if;
 
       -- Send to all connected destinations
-      Dest_List_Mng.Move_To (Channel_Dscr.Dests, Dest_List_Mng.Next, 0, False); 
+      Dest_List_Mng.Rewind (Channel_Dscr.Dests);
       loop
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
@@ -659,8 +647,7 @@ package body Channels is
         if Send_Cb /= null then
           Send_Cb (Parse (Dest.Host_Name.Name), Res);
         end if;
-        exit when Dest_List_Mng.Get_Position (Channel_Dscr.Dests)
-                = Dest_List_Mng.List_Length (Channel_Dscr.Dests);
+        exit when not Dest_List_Mng.Check_Move (Channel_Dscr.Dests);
         Dest_List_Mng.Move_To (Channel_Dscr.Dests);
       end loop;
 
@@ -700,6 +687,7 @@ package body Channels is
       Dscr : Socket.Socket_Dscr;
       D_Rec : Dest_Rec;
       S_Rec : Send_Rec;
+      Found : Boolean;
       use type Socket.Socket_Dscr;
     begin
       -- Get current socket
@@ -710,21 +698,17 @@ package body Channels is
 
       -- Check it is still known (not closed)
       -- More probably in senders, but maybe in dests (if reply of a reply)
-      begin
-        S_Rec.Dscr := Dscr;
-        Dscr_Search (Channel_Dscr.Sends, S_Rec,
-                     From => Send_List_Mng.Absolute);
-      exception
-        when Send_List_Mng.Not_In_List =>
-          begin
-            D_Rec.Dscr := Dscr;
-            Dscr_Search (Channel_Dscr.Dests, D_Rec,
-                         From => Dest_List_Mng.Absolute);
-          exception
-            when Dest_List_Mng.Not_In_List =>
-              raise Reply_Failed;
-          end;
-      end;
+      S_Rec.Dscr := Dscr;
+      Dscr_Search (Channel_Dscr.Sends, Found, S_Rec,
+                   From => Send_List_Mng.Absolute);
+      if not Found then
+        D_Rec.Dscr := Dscr;
+        Dscr_Search (Channel_Dscr.Dests, Found, D_Rec,
+                     From => Dest_List_Mng.Absolute);
+        if not Found then
+          raise Reply_Failed;
+        end if;
+      end if;
 
       -- Reply on current
       begin
@@ -745,17 +729,16 @@ package body Channels is
                     Message   : in Message_Type;
                     Length    : in Message_Length := 0) is
       D_Rec : Dest_Rec;
+      Found : Boolean;
     begin
       -- Find destination from host name
       D_Rec.Host_Name.Name := (others => ' ');
       D_Rec.Host_Name.Name(1 .. Host_Name'Length) := Host_Name; 
-      begin
-        Host_Name_Search (Channel_Dscr.Dests, D_Rec,
-                          From => Dest_List_Mng.Absolute);
-      exception
-        when Dest_List_Mng.Not_In_List =>
-          raise Unknown_Destination;
-      end;
+      Host_Name_Search (Channel_Dscr.Dests, Found, D_Rec,
+                        From => Dest_List_Mng.Absolute);
+      if not Found then
+        raise Unknown_Destination;
+      end if;
       Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);      
       Send (D_Rec.Dscr, Message, Length);
     end Send;

@@ -67,14 +67,14 @@ package body Tcp_Util is
   begin
     return R1.Timer = R2.Timer;
   end Timer_Match;
-  procedure Find_By_Timer is new Con_List_Mng.Search (Timer_Match);
+  procedure Find_By_Timer is new Con_List_Mng.Safe_Search (Timer_Match);
 
   -- Search Connecting_Rec by Host, Port
   function Dest_Match (R1, R2 : Connecting_Rec) return Boolean is
   begin
     return R1.Host = R2.Host and then R1.Port = R2.Port;
   end Dest_Match;
-  procedure Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
+  procedure Find_By_Dest is new Con_List_Mng.Safe_Search (Dest_Match);
 
   -- Search Connecting_Rec by Fd
   function Fd_Match (R1, R2 : Connecting_Rec) return Boolean is
@@ -86,12 +86,9 @@ package body Tcp_Util is
 
   -- Delete current connection rec in list
   procedure Delete_Current_Con is
+    Done : Boolean;
   begin
-    if Con_List_Mng.Get_Position (Con_List) = 1 then
-       Con_List_Mng.Delete (Con_List, Con_List_Mng.Next);
-    else
-       Con_List_Mng.Delete (Con_List, Con_List_Mng.Prev);
-    end if;
+    Con_List_Mng.Delete (Con_List, Done => Done);
   end Delete_Current_Con;
 
   -- Try to open a socket and connect
@@ -305,6 +302,7 @@ package body Tcp_Util is
     Rec.Fd := Fd;
     Rec.Fd_Set := True;
     Find_By_Fd (Con_List, Rec, From => Con_List_Mng.Absolute);
+
     Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb found rec "
@@ -335,6 +333,12 @@ package body Tcp_Util is
     end if;
     -- Propagate event if no Go_On
     return not Go_On;
+  exception
+    when Con_List_Mng.Not_In_List =>
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb fd rec not found");
+      end if;
+      raise;
   end Connection_Fd_Cb;
 
   -- Timer callback
@@ -357,7 +361,13 @@ package body Tcp_Util is
     if Rec.Timer /= Id then
       -- No good. Locate it
       Rec.Timer := Id;
-      Find_By_Timer (Con_List, Rec, From => Con_List_Mng.Absolute);
+      Find_By_Timer (Con_List, Go_On, Rec, From => Con_List_Mng.Absolute);
+      if not Go_On then
+        if Debug_Connect then
+          My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb timer rec not found");
+        end if;
+        return False;
+      end if;
       Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     end if;
     if Debug_Connect then
@@ -512,6 +522,7 @@ package body Tcp_Util is
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port) is
     Rec : Connecting_Rec;
+    Ok : Boolean;
   begin
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect start");
@@ -519,7 +530,13 @@ package body Tcp_Util is
     -- Find rec
     Rec.Host := Host;
     Rec.Port := Port;
-    Find_By_Dest (Con_List, Rec, From => Con_List_Mng.Absolute);
+    Find_By_Dest (Con_List, Ok, Rec, From => Con_List_Mng.Absolute);
+    if not Ok then
+      if Debug_Connect then
+        My_Io.Put_Line ("  Tcp_Util.Abort_Connect rec not found");
+      end if;
+      raise No_Such;
+    end if;
     Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect found rec "
@@ -544,14 +561,7 @@ package body Tcp_Util is
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting rec");
     end if;
-    if Con_List_Mng.Get_Position (Con_List) /= 1 then
-      Con_List_Mng.Delete (Con_List, Con_List_Mng.Prev);
-    else
-      Con_List_Mng.Delete (Con_List, Con_List_Mng.Next);
-    end if;
-  exception
-    when Con_List_Mng.Not_In_List =>
-      raise No_Such;
+    Con_List_Mng.Delete (Con_List, Done => Ok);
   end Abort_Connect;
 
   --------------------------------------------------------------------------
@@ -580,7 +590,7 @@ package body Tcp_Util is
   begin
     return R1.Port = R2.Port;
   end Port_Match;
-  procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
+  procedure Find_By_Port is new Acc_List_Mng.Safe_Search (Port_Match);
 
   -- Callback on accept fd
   function Acception_Fd_Cb (Fd : in Event_Mng.File_Desc;
@@ -619,6 +629,12 @@ package body Tcp_Util is
       end if;
     end if;
     return True;
+  exception
+    when Acc_List_Mng.Not_In_List =>
+      if Debug_Accept then
+        My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb fd rec not found");
+      end if;
+      raise;
   end Acception_Fd_Cb;
 
   -- Accept connections to a local port
@@ -681,13 +697,20 @@ package body Tcp_Util is
   -- May raise No_Such
   procedure Abort_Accept (Num : in Port_Num) is
     Rec : Accepting_Rec;
+    Ok : Boolean;
   begin
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept start");
     end if;
     -- Find rec and read
     Rec.Port := Num;
-    Find_By_Port (Acc_List, Rec, From => Acc_List_Mng.Absolute);
+    Find_By_Port (Acc_List, Ok, Rec, From => Acc_List_Mng.Absolute);
+    if not Ok then
+      if Debug_Accept then
+        My_Io.Put_Line ("  Tcp_Util.Abort_Accept rec not found");
+      end if;
+      raise No_Such;
+    end if;
     Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept found rec "
@@ -696,17 +719,10 @@ package body Tcp_Util is
     -- Del callback, close and delete rec
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
-    if Acc_List_Mng.Get_Position (Acc_List) = 1 then
-       Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Next);
-    else
-       Acc_List_Mng.Delete (Acc_List, Acc_List_Mng.Prev);
-    end if;
+    Acc_List_Mng.Delete (Acc_List, Done => Ok);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
     end if;
-  exception
-    when Acc_List_Mng.Not_In_List =>
-      raise No_Such;
   end Abort_Accept;
 
   --------------------------------------------------------------------------
@@ -727,7 +743,7 @@ package body Tcp_Util is
   begin
     return R1.Dscr = R2.Dscr;
   end Dscr_Match;
-  procedure Find_By_Dscr is new Sen_List_Mng.Search (Dscr_Match);
+  procedure Find_By_Dscr is new Sen_List_Mng.Safe_Search (Dscr_Match);
 
   -- Search Sending_Rec by Fd
   function Fd_Match (R1, R2 : Sending_Rec) return Boolean is
@@ -739,12 +755,9 @@ package body Tcp_Util is
 
   -- Delete current sending rec in list
   procedure Delete_Current_Sen is
+    Done : Boolean;
   begin
-    if Sen_List_Mng.Get_Position (Sen_List) = 1 then
-       Sen_List_Mng.Delete (Sen_List, Sen_List_Mng.Next);
-    else
-       Sen_List_Mng.Delete (Sen_List, Sen_List_Mng.Prev);
-    end if;
+    Sen_List_Mng.Delete (Sen_List, Done => Done);
   end Delete_Current_Sen;
 
   -- Sending callback on fd
@@ -799,6 +812,12 @@ package body Tcp_Util is
       end if;
     end if;
     return False;
+  exception
+    when Sen_List_Mng.Not_In_List =>
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Sending_Cb fd rec not found");
+      end if;
+    raise;
   end Sending_Cb;
 
   -- Send message, handling overflow
@@ -851,18 +870,20 @@ package body Tcp_Util is
   -- Cancel overflow management and closes
   procedure Abort_Send_And_Close (Dscr : in out Socket.Socket_Dscr) is
     Rec : Sending_Rec;
+    Ok : Boolean;
   begin
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close start");
     end if;
     -- Find Rec from Dscr and read
     Rec.Dscr := Dscr;
-    begin
-      Find_By_Dscr (Sen_List, Rec, From => Sen_List_Mng.Absolute);
-    exception
-      when Sen_List_Mng.Not_In_List =>
-        raise No_Such;
-    end;
+    Find_By_Dscr (Sen_List, Ok, Rec, From => Sen_List_Mng.Absolute);
+    if not Ok then
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close rec not found");
+      end if;
+      raise No_Such;
+    end if;
     Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close found rec "
@@ -900,14 +921,14 @@ package body Tcp_Util is
     begin
       return R1.Dscr = R2.Dscr;
     end Dscr_Match;
-    procedure Find_Dscr is new Rece_List_Mng.Search (Dscr_Match);
+    procedure Find_Dscr is new Rece_List_Mng.Safe_Search (Dscr_Match);
 
     function Fd_Match (R1, R2 : Rece_Rec) return Boolean is
       use type Event_Mng.File_Desc;
     begin
       return R1.Fd = R2.Fd;
     end Fd_Match;
-    procedure Find_Fd is new Rece_List_Mng.Search (Fd_Match);
+    procedure Find_Fd is new Rece_List_Mng.Safe_Search (Fd_Match);
 
     -- The one to use with Socket
     procedure Read is new Socket.Receive (Message_Type);
@@ -915,13 +936,10 @@ package body Tcp_Util is
     -- Unhook and close a Dscr. Call appli Cb
     procedure Close_Current is
       Rec : Rece_Rec;
+      Done : Boolean;
     begin
       -- Get from list
-      if Rece_List_Mng.Get_Position (Rece_List) = 1 then
-        Rece_List_Mng.Get (Rece_List, Rec, Rece_List_Mng.Next);
-      else
-        Rece_List_Mng.Get (Rece_List, Rec, Rece_List_Mng.Prev);
-      end if;
+      Rece_List_Mng.Get (Rece_List, Rec, Done => Done);
       -- Call appli disconnection Cb
       if Rec.Discon_Cb /= null then
         Rec.Discon_Cb (Rec.Dscr);
@@ -941,6 +959,7 @@ package body Tcp_Util is
                      return Boolean is
       use type Event_Mng.File_Desc;
       The_Rec : Rece_Rec;
+      Found : Boolean;
       Msg : Message_Type;
       Len : Natural;
     begin
@@ -952,16 +971,14 @@ package body Tcp_Util is
       end if;
       -- Find dscr from Fd
       The_Rec.Fd := Fd;
-      begin
-        Find_Fd (Rece_List, The_Rec, From => Rece_List_Mng.Absolute);
-      exception
-        when Rece_List_Mng.Not_In_List =>
-          if Debug_Reception then
-            My_Io.Put_Line ("  Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
-          end if;
-          Event_Mng.Del_Fd_Callback (Fd, True);
-          return False;
-      end;
+      Find_Fd (Rece_List, Found, The_Rec, From => Rece_List_Mng.Absolute);
+      if not Found then
+        if Debug_Reception then
+          My_Io.Put_Line ("  Tcp_Util.Read_Cb no Dscr for Fd " & Fd'Img);
+        end if;
+        Event_Mng.Del_Fd_Callback (Fd, True);
+        return False;
+      end if;
       Rece_List_Mng.Read (Rece_List, The_Rec, Rece_List_Mng.Current);
 
       -- Try to read
@@ -1022,24 +1039,19 @@ package body Tcp_Util is
 
     procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr) is
       The_Rec : Rece_Rec;
+      Ok : Boolean;
     begin
       The_Rec.Dscr := Dscr;
-      begin
-        Find_Dscr (Rece_List, The_Rec, From => Rece_List_Mng.Absolute);
-      exception
-        when Rece_List_Mng.Not_In_List =>
-          if Debug_Reception then
-            My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks Dscr not found");
-          end if;
-          raise No_Such;
-      end;
+        Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
+      if not Ok then
+        if Debug_Reception then
+          My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks Dscr not found");
+        end if;
+        raise No_Such;
+      end if;
         
       -- Get from list
-      if Rece_List_Mng.Get_Position (Rece_List) = 1 then
-        Rece_List_Mng.Get (Rece_List, The_Rec, Rece_List_Mng.Next);
-      else
-        Rece_List_Mng.Get (Rece_List, The_Rec, Rece_List_Mng.Prev);
-      end if;
+      Rece_List_Mng.Get (Rece_List, The_Rec, Done => Ok);
       if Debug_Reception then
         My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
       end if;
