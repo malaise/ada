@@ -157,7 +157,7 @@ package body PARSER is
 
     end if;
 
-    -- Parse OPER
+    -- Parse OPER : word
     if TEXT_HANDLER.LENGTH(TXT) <= 2 then
       if TEXT_HANDLER.LENGTH(TXT) = 2 then
         W := TEXT_HANDLER.VALUE(TXT);
@@ -172,7 +172,17 @@ package body PARSER is
         end if;
       end loop;
     end if;
-     
+
+    -- Parse OPER : string
+    declare
+      OP : MCD_MNG.OPERATOR_LIST;
+    begin
+      OP := MCD_MNG.OPERATOR_LIST'VALUE(TEXT_HANDLER.VALUE(TXT));
+      return (KIND => MCD_MNG.OPER, VAL_OPER => OP);
+    exception
+      when others => null;
+    end;
+
     -- Parse INTE REAL BOOL
     begin
       BOOL_IO.GET(TEXT_HANDLER.VALUE(TXT), B, L);
