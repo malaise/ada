@@ -1,0 +1,41 @@
+# Function to handle error
+[ "Usage: barycenter { <distance> <weight> }" putl ssize popn retall ] E popr
+
+# Even number of arguments
+ssize 2 % 0 /= E pushr ifcall
+
+# Function to check and normalize (set it to real) top of stack
+[ dup isreal ifret dup isinte [ toreal 2 retn ] ifcall E pushr call ] N popr
+
+# Initialise results
+0.0 w popr   # Sum of weights
+0.0 m popr   # Moment: Sum of (distance * weight)
+
+# Loop on all arguments
+[
+# Exit when no more arg
+ssize 0 = ifret
+
+# Check weight
+N pushr call copye
+# Add weight
+w pushr + w popr
+
+# Check distance
+N pushr call
+# Multiply by weight and add to m
+pushle * m pushr + m popr
+
+# Loop
+L pushr retacal
+] L copyr call
+
+# Compute barycenter: Divide m by w if not nul
+w pushr 0.0 /= [ m pushr w pushr / b popr ] [ 0.0 b popr ] ifte call
+
+# Put results
+3.010 format
+"Weight: " put w pushr putl
+"Moment: " put m pushr putl
+"Barycenter: " put b pushr putl
+

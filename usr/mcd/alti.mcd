@@ -1,0 +1,23 @@
+# Compute altitude from Flight level an QNH
+
+# Error handling
+[ "Usage: alti <FL> <QNH>" put ssize popn retall ] E popr
+
+# Check 2 arguments
+ssize 2 /= [ E pushr call ] ifcall
+swap
+
+# Check FL is inte and store it in f
+dup isinte ~ [ E pushr call ] ifcall f popr
+
+# Check QNH is real or inte and store it in q
+dup isinte [ toreal ] ifcall
+dup isreal  ~ [ E pushr call ] ifcall q popr
+
+# Compute Alt = FL * 100 + (QNH - 1013.24) * 28
+q pushr 1013.24 - 28.0 *
+f pushr toreal 100.0 * +
+
+# Put result
+round "Alt " put putl
+
