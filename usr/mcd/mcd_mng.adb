@@ -223,38 +223,99 @@ package body Mcd_Mng is
     Registers.Close_All;
   end Close;
 
-  procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
+  procedure Do_Call is
+  begin
+    if Debug.Debug_Level_Array(Debug.Oper) then
+      Ada.Text_Io.Put_Line("Mng: Do_call");
+    end if;
+    Stack.Pop(A);
+    if A.Kind /= Prog then
+      raise Invalid_Argument;
+    end if;
+    if Call_Stack.Level /= 0 then
+      -- Save contect;
+      Text_Handler.Set(Call_Entry, Input_Dispatcher.Get_Remaining);
+      -- Even if end of subprog, this is not stdin
+      if Text_Handler.Empty(Call_Entry) then
+        Text_Handler.Set(Call_Entry, " ");
+      end if;
+      Call_Stack.Push (Text_Handler.Value(Call_Entry));
+    else
+      -- Dummy context
+      Call_Stack.Push ("");
+    end if;
+    -- Call
+    if A.Val_Len = 0 then
+      -- Empty subprogram : not stdin
+      Input_Dispatcher.Set_Input(" ");
+    else
+      Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
+    end if;
+    S := A;
+  end Do_Call;
 
-    procedure Do_Call is
+
+  procedure Do_Popn is
+    N : Natural;
+  begin
+    Stack.Pop(A);
+    -- Has to be Inte and val Natural
     begin
-      if Debug.Debug_Level_Array(Debug.Oper) then
-        Ada.Text_Io.Put_Line("Mng: Do_call");
-      end if;
+      N := Natural(A.Val_Inte);
+    exception
+      when others => raise Invalid_Argument;
+    end;
+    S := A;
+    for I in 1 .. N loop
       Stack.Pop(A);
-      if A.Kind /= Prog then
-        raise Invalid_Argument;
-      end if;
-      if Call_Stack.Level /= 0 then
-        -- Save contect;
-        Text_Handler.Set(Call_Entry, Input_Dispatcher.Get_Remaining);
-        -- Even if end of subprog, this is not stdin
-        if Text_Handler.Empty(Call_Entry) then
-          Text_Handler.Set(Call_Entry, " ");
-        end if;
-        Call_Stack.Push (Text_Handler.Value(Call_Entry));
+    end loop;
+  end Do_Popn;
+
+  procedure Do_Clear_Extra is
+    Rec : Item_Rec;
+  begin
+   for I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
+     Stack.Pop (Rec, Default_Stack => False);
+   end loop;
+  end Do_Clear_Extra;
+
+  procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec) is
+    Rec : Item_Rec;
+  begin
+    if Times.Kind /= Inte or else Times.Val_Inte < 0 then
+      raise Mcd_Mng.Invalid_Argument;
+    end if;
+    if Stack.Stack_Size (Default_Stack => False) = 0  then
+      return;
+    end if;
+    for I in 1 .. Times.Val_Inte loop
+      if First then
+        Stack.Popf (Rec);
+        Stack.Push (Rec, Default_Stack => False);
       else
-        -- Dummy context
-        Call_Stack.Push ("");
+        Stack.Pop (Rec, Default_Stack => False);
+        Stack.Pushf (Rec);
       end if;
-      -- Call
-      if A.Val_Len = 0 then
-        -- Empty subprogram : not stdin
-        Input_Dispatcher.Set_Input(" ");
-      else
-        Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
-      end if;
-      S := A;
-    end Do_Call;
+    end loop;
+  end Do_Rotate_Extra;
+
+  function Do_Delay (The_Delay : Duration) return Boolean is separate;
+
+  function Do_Delay (The_Delay : Item_Rec) return Boolean is
+  begin
+    if The_Delay.Kind = Inte then
+      return Do_Delay (Duration(The_Delay.Val_Inte));
+    elsif The_Delay.Kind = Real then
+      return Do_Delay (Duration(The_Delay.Val_Real));
+    else
+      raise Invalid_Argument;
+    end if;
+  end Do_Delay;
+
+  Item_Check_Period : constant Positive := 100;
+  Nb_Item : Natural := 0;
+
+  procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
 
     procedure Do_Retn (All_Levels    : in Boolean;
                        Levels        : in Item_Rec;
@@ -310,71 +371,18 @@ package body Mcd_Mng is
       Stack.Pop(A);
       Do_Retn(False, A, Allow_Level_0);
     end Do_Ret;
-    
-
-    procedure Do_Popn is
-      N : Natural;
-    begin
-      Stack.Pop(A);
-      -- Has to be Inte and val Natural
-      begin
-        N := Natural(A.Val_Inte);
-      exception
-        when others => raise Invalid_Argument;
-      end;
-      S := A;
-      for I in 1 .. N loop
-        Stack.Pop(A);
-      end loop;
-    end Do_Popn;
-
-    procedure Do_Clear_Extra is
-      Rec : Item_Rec;
-    begin
-     for I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
-       Stack.Pop (Rec, Default_Stack => False);
-     end loop;
-    end Do_Clear_Extra;
-
-    procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec) is
-      Rec : Item_Rec;
-    begin
-      if Times.Kind /= Inte or else Times.Val_Inte < 0 then
-        raise Mcd_Mng.Invalid_Argument;
-      end if;
-      if Stack.Stack_Size (Default_Stack => False) = 0  then
-        return;
-      end if;
-      for I in 1 .. Times.Val_Inte loop
-        if First then
-          Stack.Popf (Rec);
-          Stack.Push (Rec, Default_Stack => False);
-        else
-          Stack.Pop (Rec, Default_Stack => False);
-          Stack.Pushf (Rec);
-        end if;
-      end loop;
-    end Do_Rotate_Extra;
-
-
-    procedure Do_Delay(The_Delay : in Item_Rec) is
-    begin
-      if The_Delay.Kind = Inte then
-        delay Duration(The_Delay.Val_Inte);
-      elsif The_Delay.Kind = Real then
-        delay Duration(The_Delay.Val_Real);
-      else
-        raise Invalid_Argument;
-      end if;
-    exception
-      when others =>
-        raise Invalid_Argument;
-    end Do_Delay;
 
     use Stack;
   begin
-    -- Default, except Ret
-    The_End := False;
+    -- Check for Ctrl C
+    if Nb_Item = Item_Check_Period then
+      Nb_Item := 0;
+      The_End := Do_Delay (0.0);
+    else
+      Nb_Item := Nb_Item + 1;
+      -- Default, except Ret and delay
+      The_End := False;
+    end if;
     -- Dispatch
     if Item.Kind /= Oper then
       -- Push operand
@@ -403,7 +411,7 @@ package body Mcd_Mng is
         when Sleep =>
           Pop(A);
           S := A;
-          Do_Delay(A);
+          The_End := Do_Delay(A);
         when Prevtop =>
           if S.Kind = Oper then
             raise Invalid_Argument;
