@@ -7,7 +7,8 @@ package body Notify is
     Item : Data_Base.Item_Name := (others => ' ');
     Kind : Data_Base.Item_Kind := Data_Base.Data_Kind;
   end record;
-  package Notif_List_Mng is new Dynamic_List (Notif_Rec);
+  package Notif_Dyn_List_Mng is new Dynamic_List (Notif_Rec);
+  package Notif_List_Mng renames Notif_Dyn_List_Mng.Dyn_List;
   Notif_List : Notif_List_Mng.List_Type;
 
   function Full_Match (Elt1, Elt2 : Notif_Rec) return Boolean is

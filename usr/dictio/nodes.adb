@@ -9,7 +9,8 @@ package body Nodes is
     Prio : Args.Prio_Str;
   end record;
 
-  package Node_Mng is new Dynamic_List(Node_Rec);
+  package Node_Dyn_List_Mng is new Dynamic_List(Node_Rec);
+  package Node_Mng renames Node_Dyn_List_Mng.Dyn_List;
 
   Node_List : Node_Mng.List_Type;
 

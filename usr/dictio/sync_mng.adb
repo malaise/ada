@@ -117,9 +117,10 @@ package body Sync_Mng is
     end if;
   end Init;
 
-  package Sync_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
+  package Sync_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
+  package Sync_List_Mng renames Sync_Dyn_List_Mng.Dyn_List;
   Sync_List : Sync_List_Mng.List_Type;
-  procedure Sync_Search is new Sync_List_Mng.Search;
+  procedure Sync_Search is new Sync_List_Mng.Search ("=");
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;

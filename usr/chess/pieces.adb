@@ -10,7 +10,8 @@ package body Pieces is
                        := (others => null);
 
   -- List of valid moves
-  package Action_List_Mng is new Dynamic_List(Action_Rec);
+  package Action_Dyn_List_Mng is new Dynamic_List(Action_Rec);
+  package Action_List_Mng renames Action_Dyn_List_Mng.Dyn_List;
   Action_List : Action_List_Mng.List_Type;
   Not_Empty_List_Error : exception;
 

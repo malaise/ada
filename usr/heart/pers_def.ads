@@ -25,7 +25,8 @@ package Pers_Def is
   end record;
 
   -- A list of person (all set)
-  package Person_List_Mng is new Dynamic_List (Element_Type => Person_Rec);
+  package Person_Dyn_List_Mng is new Dynamic_List (Element_Type => Person_Rec);
+  package Person_List_Mng renames Person_Dyn_List_Mng.Dyn_List;
   subtype Person_List is Person_List_Mng.List_Type;
   The_Persons : Person_List;
 

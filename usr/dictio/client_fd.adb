@@ -6,7 +6,8 @@ package body Client_Fd is
     Fd  : Event_Mng.File_Desc;
   end record;
 
-  package Client_List_Mng is new Dynamic_List(Client_Rec);
+  package Client_Dyn_List_Mng is new Dynamic_List(Client_Rec);
+  package Client_List_Mng renames Client_Dyn_List_Mng.Dyn_List;
   Client_List : Client_List_Mng.List_Type;
 
   function Fd_Match (El1, El2 : Client_Rec) return Boolean is

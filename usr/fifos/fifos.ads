@@ -109,7 +109,8 @@ package Fifos is
       Rece_Cb : Reception_Callback_Access;
       Ovfl_Cb : End_Overflow_Callback_Access;
     end record;
-    package Fifo_List_Mng is new Dynamic_List (Fifo_Rec);
+    package Fifo_Dyn_List_Mng is new Dynamic_List (Fifo_Rec);
+    package Fifo_List_Mng renames Fifo_Dyn_List_Mng.Dyn_List;
     subtype Fifo_Access is Fifo_List_Mng.Element_Access;
 
     type Fifo_Id is record

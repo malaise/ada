@@ -2,7 +2,8 @@ with Dynamic_List, Normal, Crc_10, Hash;
 with Parse;
 package body Data_Base is
 
-  package Item_List_Mng is new Dynamic_List (Item_Rec);
+  package Item_Dyn_List_Mng is new Dynamic_List (Item_Rec);
+  package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   Item_List : Item_List_Mng.List_Type;
 
   -- Name and kind match

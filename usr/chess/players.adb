@@ -5,7 +5,8 @@ with Team, Space.Board, Debug;
 
 package body Players is
 
-  package Action_List_Mng is new Dynamic_List (Valid_Action_Rec);
+  package Action_Dyn_List_Mng is new Dynamic_List (Valid_Action_Rec);
+  package Action_List_Mng renames Action_Dyn_List_Mng.Dyn_List;
   Actions : array (Space.Color_List) of Action_List_Mng.List_Type;
   At_End : array (Space.Color_List) of Boolean := (others => True);
 

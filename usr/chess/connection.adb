@@ -26,7 +26,8 @@ package body Connection is
     end case;
   end record;
 
-  package Action_List_Mng is new Dynamic_List (Players.Action_Rec);
+  package Action_Dyn_List_Mng is new Dynamic_List (Players.Action_Rec);
+  package Action_List_Mng renames Action_Dyn_List_Mng.Dyn_List;
   Action_List : Action_List_Mng.List_Type;
 
   -- Has an action been received and get it
