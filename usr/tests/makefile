@@ -14,7 +14,7 @@ do_all:
 	amake t_dir.adb
 	amake t_dl.adb
 	amake t_dscr.adb $(LX)
-	amake t_except
+	amake t_except.adb
 	amake t_getenv.adb
 	amake t_get_line.adb
 	amake t_fifo.adb
@@ -39,4 +39,11 @@ AFPX.DSC: AFPX.LIS
 
 clean:
 	rm *.o *.ali
+
+clean_exe:
+	rm t_afpx t_arg t_con t_curve t_day_mng t_delta_date t_dd t_dir\
+	t_dl t_dscr t_except t_getenv t_get_line t_fifo t_hash t_key \
+	t_lifo t_math t_mut t_norm t_perpet t_rnd t_sorts t_select_file \
+	t_state_machine t_str_error t_syslin t_urand t_x \
+	AFPX.DSC AFPX.FLD AFPX.INI
 
