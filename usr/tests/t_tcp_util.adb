@@ -99,7 +99,7 @@ procedure T_Tcp_Util is
                         Remote_Host_Id  : in Tcp_Util.Host_Id;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr) is
-    dummy : Boolean;
+    Dummy : Boolean;
   begin
     if Connected then
       Ada.Text_Io.Put_Line ("Connected");
@@ -114,7 +114,7 @@ procedure T_Tcp_Util is
       return;
     end if;
     if not Server then
-      dummy := Send ("First request");
+      Dummy := Send ("First request");
     end if;
   end Connect_Cb;
 
