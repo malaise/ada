@@ -111,11 +111,11 @@ package body DIALOG is
             when AFPX.RETURN_KEY =>
               if DECODE then
                 SET := TRUE;
-                return;
+                exit;
               end if;
             when AFPX.ESCAPE_KEY =>
               SET := FALSE;
-              return;
+              exit;
             when AFPX.BREAK_KEY =>
               null;
           end case;
@@ -126,11 +126,11 @@ package body DIALOG is
             when SCREEN.OK_BUTTON_FLD =>
               if DECODE then
                 SET := TRUE;
-                return;
+                exit;
               end if;
             when SCREEN.CANCEL_BUTTON_FLD =>
               SET := FALSE;
-              return;
+              exit;
             when others =>
               null;
           end case;
@@ -164,7 +164,11 @@ package body DIALOG is
       if OK then
         begin
           DEGREE := NATURAL'VALUE(TEXT_HANDLER.VALUE(BUFF));
-          RESOL.R_SET_DEGREE(DEGREE);
+          if DEGREE < POINTS.P_NB then
+            RESOL.R_SET_DEGREE(DEGREE);
+          else
+            OK := FALSE;
+          end if;
         exception
           when CONSTRAINT_ERROR | RESOL.R_DEGREE_OUT =>
             OK := FALSE;
@@ -194,10 +198,10 @@ package body DIALOG is
           case PTG_RESULT.KEYBOARD_KEY is
             when AFPX.RETURN_KEY =>
               if DECODE then
-                return;
+                exit;
               end if;
             when AFPX.ESCAPE_KEY =>
-              return;
+              exit;
             when AFPX.BREAK_KEY =>
               null;
           end case;
@@ -207,10 +211,10 @@ package body DIALOG is
               SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
             when SCREEN.OK_BUTTON_FLD =>
               if DECODE then
-                return;
+                exit;
               end if;
             when SCREEN.CANCEL_BUTTON_FLD =>
-              return;
+              exit;
             when others =>
               null;
           end case;
