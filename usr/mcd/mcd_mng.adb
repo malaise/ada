@@ -120,6 +120,8 @@ package body Mcd_Mng is
     function Ln      (X : Item_Rec) return Item_Rec;
     function Log     (X : Item_Rec) return Item_Rec;
 
+    -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
+    function Proport   (X, Y, Z : Item_Rec) return Item_Rec;
 
     -- Argument does not mach operator
     -- Invalid_Argument : exception;
@@ -326,7 +328,7 @@ package body Mcd_Mng is
   Item_Check_Period : constant Positive := 100;
   Nb_Item : Natural := 0;
 
-  Procedure New_Item (Item : in Item_Rec; The_End : out End_Status_List) is
+  procedure New_Item (Item : in Item_Rec; The_End : out End_Status_List) is
 
     procedure Do_Retn (All_Levels    : in Boolean;
                        Levels        : in Item_Rec;
@@ -558,6 +560,9 @@ package body Mcd_Mng is
           S := A;
         when Bolneg =>
           Pop(A); Push (Operations.Bolneg(A));
+          S := A;
+        when Proport =>
+          Pop(A); Pop(B); Pop(C); Push (Operations.Proport(C,B,A));
           S := A;
 
         -- Trigo

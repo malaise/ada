@@ -83,7 +83,8 @@ package body Mcd_Parser is
    Int      => (Nosy, "push int  part of A           ", False),
    Frac     => (Nosy, "push frac part of A           ", False),
    Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
-   Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", True),
+   Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", False),
+   Proport  => (Nosy, "push A * B / C                ", True),
  
    Isreal   => (Nosy, "push True if A is a real      ", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),

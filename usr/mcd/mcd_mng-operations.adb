@@ -859,5 +859,29 @@ package body Operations is
       raise Compute_Error;
   end Log;
 
+  -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
+  -- Z * Y / X
+  function Proport   (X, Y, Z : Item_Rec) return Item_Rec is
+  begin
+    if not Is_Inte_Or_Real(X)
+     or else not Is_Inte_Or_Real(Y)
+     or else not Is_Inte_Or_Real(Z) then
+      raise Invalid_Argument;
+    end if;
+    if X.Kind /= Y.Kind or else X.Kind /= Z.Kind then
+      raise Argument_Mismatch;
+    end if;
+    if X.Kind = Inte then
+      return (Kind => Inte, Val_Inte => Z.Val_Inte * Y.Val_Inte / X.Val_Inte);
+    else
+      return (Kind => Real, Val_Real => Z.Val_Real * Y.Val_Real / X.Val_Real);
+    end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Proport;
+    
 end Operations;
 

@@ -55,6 +55,7 @@ package Mcd_Mng is
    Frac,
    Dms,
    Msd,
+   Proport,
 
    Isreal,
    Isinte,
