@@ -1,9 +1,12 @@
 with System;
 with X_Mng;
-package Udp is
+package Socket is
 
   -- The socket descriptor
   type Socket_Dscr is private;
+
+  -- Available protocols
+  type Protocol_List is (Udp, Tcp);
 
   -- Any problem? Look at the traces
   Socket_Error : exception;
@@ -20,17 +23,21 @@ package Udp is
   ---------------------------------
 
   -- Open a socket
-  procedure Open (Socket : in out Socket_Dscr);
+  procedure Open (Socket : in out Socket_Dscr;  Protocol : in Protocol_List);
 
   -- Close a socket
   procedure Close (Socket : in out Socket_Dscr);
+
+  -- Is a socket open
+  function Is_Open (Socket : in Socket_Dscr) return Boolean;
 
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
   -------------------------------------
 
-  -- Bind for reception on a port from services, on a port by num
+  -- Bind for reception or connection accepting,
+  --  On a port from services, on a port by num
   --  or a dynamical (ephemeral - attributed by the OS) port
   procedure Link_Service (Socket : in Socket_Dscr; Service  : in String);
   procedure Link_Port    (Socket : in Socket_Dscr; Port  : in Port_Num);
@@ -42,9 +49,17 @@ package Udp is
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
   function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc;
 
+  -- Accept a new Tcp connection.
+  -- The socket must be open, tcp and linked.
+  --  A new socket is created (tcp) with destination set
+  procedure Accept_Connection (Socket : in Socket_Dscr;
+                               New_socket : in out Socket_Dscr);
+
   -- Receive a message, waiting for it
+  -- The socket must linked in udp and not linked in tcp
   -- The socket destination may be set for a reply
-  -- If Received not set means no message can be read (connection refused...)
+  -- Received not set means no message can be read (connection refused...)
+  -- No set_for_reply if tcp
   generic
     type Message_Type is private;
   procedure Receive (Socket        : in Socket_Dscr;
@@ -61,6 +76,7 @@ package Udp is
   -- Set destination (Host/Lan and port) for sending
   -- If Lan is true then Name is a LAN name to broadcast on
   -- Otherwise it is a host name
+  -- No Lan to bradcast if tcp
   procedure Set_Destination_Name_And_Service (
                Socket  : in Socket_Dscr;
                Lan     : in Boolean;
@@ -81,7 +97,7 @@ package Udp is
                Port   : in Port_Num);
 
   -- Change destination Host/Lan
-  -- Must have been set by either
+  -- Must be Udp and have been set by either
   -- * Set Destination
   -- * Receive (Set_To_Reply => True)
   procedure Change_Destination_Name (
@@ -93,7 +109,7 @@ package Udp is
                Host     : in Host_Id);
 
   -- Change port
-  -- Must have been set by either
+  -- Must be Udp and have been set by either
   -- * Set Destination
   -- * Receive (Set_To_Reply => True)
   procedure Change_Destination_Service (
@@ -106,7 +122,8 @@ package Udp is
   -- Get current destination of a socket
   -- Must have been set by either
   -- * Set Destination
-  -- * Receive (Set_To_Reply => True)
+  -- * Receive (Set_To_Reply => True) in Udp
+  -- * Accept in Tcp
   function Get_Destination_Host (Socket : Socket_Dscr) return Host_Id;
   function Get_Destination_Port (Socket : Socket_Dscr) return Port_Num;
 
@@ -130,5 +147,5 @@ private
 
   type Host_Id is new Natural;
 
-end Udp;
+end Socket;
 

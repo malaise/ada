@@ -2,7 +2,7 @@ DEST=/usr/local/lib
 CC=gcc
 CCOPT=-g -c -DDEBUG
 OBJS=x_color.o x_font.o x_line.o x_export.o x_file.o x_key.o x_screen.o \
-     timeval.o udp.o sys_calls.o
+     timeval.o socket.o sys_calls.o
 
 
 .c.o:

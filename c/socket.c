@@ -7,7 +7,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include "udp_prv.h"
+#include "socket_prv.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -36,7 +36,8 @@ static void h_perror (const char *msg) {
 }
 
 /* Open a socket */
-extern int soc_open (soc_token *p_token) {
+extern int soc_open (soc_token *p_token,
+                     socket_protocol protocol) {
   soc_ptr *p_soc = (soc_ptr*) p_token;
   int allow_sockopt;
 
@@ -47,11 +48,19 @@ extern int soc_open (soc_token *p_token) {
   *p_soc = (soc_ptr) malloc (sizeof (soc_struct));
   if (*p_soc==NULL) return (BS_ERROR);
 
+  /* Save protocol */
+  (*p_soc)->proto = protocol;
+
   /* Call to socket */
-  (*p_soc)->socket_id = socket(AF_INET, SOCK_DGRAM, 0);
+  if (protocol == udp_socket) {
+    (*p_soc)->socket_id = socket(AF_INET, SOCK_DGRAM, 0);
+  } else {
+    (*p_soc)->socket_id = socket(AF_INET, SOCK_STREAM, 0);
+  }
   if ( (*p_soc)->socket_id == -1) {
     perror ("socket");
     free (*p_soc);
+    *p_soc = NULL;
     return (BS_ERROR);
   }
 
@@ -61,6 +70,7 @@ extern int soc_open (soc_token *p_token) {
     perror ("ioctl");
     close ((*p_soc)->socket_id);
     free (*p_soc);
+    *p_soc = NULL;
     return (BS_ERROR);
   }
 
@@ -69,20 +79,25 @@ extern int soc_open (soc_token *p_token) {
   (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
   (*p_soc)->rece_struct.sin_family = AF_INET;
 
-  /* Allow broadcast */
-  allow_sockopt = 1;
-  if (setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_BROADCAST,
-                 &allow_sockopt, sizeof (allow_sockopt)) < 0) {
-    perror ("setsockopt1");
-    close ((*p_soc)->socket_id);
-    free (*p_soc);
-    return (BS_ERROR);
+  /* Allow UDP broadcast */
+  if (protocol == udp_socket) {
+    allow_sockopt = 1;
+    if (setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_BROADCAST,
+                   &allow_sockopt, sizeof (allow_sockopt)) < 0) {
+      perror ("setsockopt1");
+      close ((*p_soc)->socket_id);
+      free (*p_soc);
+      *p_soc = NULL;
+      return (BS_ERROR);
+    }
   }
 
+  /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
     perror ("fcntl");
     close ((*p_soc)->socket_id);
     free (*p_soc);
+    *p_soc = NULL;
     return (BS_ERROR);
   }
 
@@ -103,6 +118,7 @@ extern int soc_close (soc_token *p_token) {
  
   close ((*p_soc)->socket_id);
   free (*p_soc);
+  *p_soc = NULL;
   return (BS_OK);
 
 }
@@ -156,6 +172,36 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   return (BS_OK);
 }
 
+/* Do the connection */
+static int soc_connect (soc_ptr soc) {
+
+  int result;
+
+  /* Check that socket is open and dest set */
+  if (soc == NULL) return (BS_ERROR);
+  if (! soc->dest_set) return (BS_ERROR);
+
+  /* Connect */
+  do {
+    result = connect (soc->socket_id,
+                      (struct sockaddr*)&(soc->send_struct),
+                      socklen);
+  } while ( (result < 0) && (errno == EINTR) );
+
+  /* Check result */
+  if (result < 0) {
+    if (errno != ECONNREFUSED) {
+      perror ("connect");
+    }
+    return (BS_ERROR);
+  }
+
+  /* Ok */
+  return BS_OK;
+
+}
+
+
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
 extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
@@ -169,7 +215,7 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
   if (soc == NULL) return (BS_ERROR);
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, NAME_SERVER_PROTO))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
     perror ("getservbyname");
     return (BS_ERROR);
   }
@@ -183,6 +229,9 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
      (void *) host_name->h_addr, (size_t) host_name->h_length);
   } else {
+    /* No tcp bcast */
+    if (soc->proto == tcp_socket) return (BS_ERROR);
+
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
       perror ("getnetbyname");
@@ -193,8 +242,13 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
 
   soc->send_struct.sin_port = serv_name->s_port;
 
-  /* Ok */
+  /* Connect tcp */
   soc->dest_set = TRUE;
+  if (soc->proto == tcp_socket) {
+    return soc_connect (soc);
+  }
+
+  /* Ok */
   return (BS_OK);
 }
 
@@ -219,6 +273,9 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
      (void *) host_name->h_addr, (size_t) host_name->h_length);
   } else {
+    /* No tcp bcast */
+    if (soc->proto == tcp_socket) return (BS_ERROR);
+
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
       perror ("getnetbyname");
@@ -229,8 +286,13 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
 
   soc->send_struct.sin_port = htons (port);
 
-  /* Ok */
+  /* Connect tcp */
   soc->dest_set = TRUE;
+  if (soc->proto == tcp_socket) {
+    return soc_connect (soc);
+  }
+
+  /* Ok */
   return (BS_OK);
 }
 
@@ -243,8 +305,13 @@ extern int soc_set_dest (soc_token token, soc_host host, soc_port port) {
   soc->send_struct.sin_addr.s_addr = host.integer;
   soc->send_struct.sin_port = htons (port);
 
-  /* Ok */
+  /* Connect tcp */
   soc->dest_set = TRUE;
+  if (soc->proto == tcp_socket) {
+    return soc_connect (soc);
+  }
+
+  /* Ok */
   return (BS_OK);
 }
 
@@ -258,6 +325,9 @@ extern int soc_change_dest_host (soc_token token, char *host_lan, boolean lan) {
 
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
+
+  /* Check udp */
+  if (soc->proto == tcp_socket) return (BS_ERROR);
 
   /* Check that a destination is already set */
   if (!soc->dest_set) return (BS_ERROR);
@@ -334,11 +404,14 @@ extern int soc_change_dest_service (soc_token token, char *service) {
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
 
+  /* Check udp */
+  if (soc->proto == tcp_socket) return (BS_ERROR);
+
   /* Check that a destination is already set */
   if (!soc->dest_set) return (BS_ERROR);
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, NAME_SERVER_PROTO))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
     perror ("getservbyname");
     return (BS_ERROR);
   }
@@ -356,6 +429,9 @@ extern int soc_change_dest_port (soc_token token, soc_port port) {
 
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
+
+  /* Check udp */
+  if (soc->proto == tcp_socket) return (BS_ERROR);
 
   /* Check that a destination is already set */
   if (!soc->dest_set) return (BS_ERROR);
@@ -450,8 +526,12 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
 
     /* Send */
     do {
-      cr = (sendto(soc->socket_id, (char *)message, length, 0,
-       (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
+      if (soc->proto == tcp_socket) {
+        cr = (send(soc->socket_id, (char *)message, length, 0) >= 0);
+      } else {
+        cr = (sendto(soc->socket_id, (char *)message, length, 0,
+         (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
+      }
     } while ( ( ! cr ) && (errno == EINTR) );
 
     /* Set it back to non blocking */
@@ -461,8 +541,12 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
 
     /* Send */
     do {
-      cr = (sendto(soc->socket_id, (char *)message, length, 0,
-       (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
+      if (soc->proto == tcp_socket) {
+        cr = (send(soc->socket_id, (char *)message, length, 0) >= 0);
+      } else {
+        cr = (sendto(soc->socket_id, (char *)message, length, 0,
+         (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
+      }
     } while ( ( ! cr ) && (errno == EINTR) );
 
   }
@@ -485,7 +569,7 @@ extern int soc_link_service (soc_token token, const char *service) {
   if (soc == NULL) return (BS_ERROR);
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, NAME_SERVER_PROTO))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
     perror ("getservbyname");
     return (BS_ERROR);
   }
@@ -495,9 +579,17 @@ extern int soc_link_service (soc_token token, const char *service) {
 
   /* Bind */
   if (bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
-   socklen ) < 0) {
+            socklen ) < 0) {
     perror ("bind");
     return (BS_ERROR);
+  }
+
+  /* Listen for tcp */
+  if (soc->proto == tcp_socket) {
+    if (listen (soc->socket_id, SOMAXCONN) < 0) {
+      perror ("listen");
+      return (BS_ERROR);
+    }
   }
 
   /* Ok */
@@ -523,6 +615,14 @@ extern int soc_link_port  (soc_token token, soc_port port) {
     return (BS_ERROR);
   }
 
+  /* Listen for tcp */
+  if (soc->proto == tcp_socket) {
+    if (listen (soc->socket_id, SOMAXCONN) < 0) {
+      perror ("listen");
+      return (BS_ERROR);
+    }
+  }
+
   /* Ok */
   soc->linked = TRUE;
   return (BS_OK);
@@ -544,6 +644,14 @@ extern int soc_link_dynamic  (soc_token token) {
    (struct sockaddr*) &(soc->rece_struct), socklen ) < 0) {
     perror ("bind");
     return (BS_ERROR);
+  }
+
+  /* Listen for tcp */
+  if (soc->proto == tcp_socket) {
+    if (listen (soc->socket_id, SOMAXCONN) < 0) {
+      perror ("listen");
+      return (BS_ERROR);
+    }
   }
 
   /* Ok */
@@ -579,8 +687,9 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 /* Err if error, recu=TRUE if a message is ok and FALSE elsewhere */
 /* CARE : length is an in out parameter and must be initialized with */
 /*  the size of the buffer */
-/* The socket must be open and linked */
+/* The socket must be open, linked in udp and not linked in tcp */
 /*  After success, the socket may be ready for a send to reply */
+/* No set_for_reply if tcp */
 extern int soc_receive (soc_token token, boolean *p_received,
                         soc_message message, soc_length *p_length,
                         boolean set_for_reply) {
@@ -594,8 +703,13 @@ extern int soc_receive (soc_token token, boolean *p_received,
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
 
-  /* Check socket is linked */
-  if (!soc->linked) return (BS_ERROR);
+  /* Check set_for_reply and linked vs proto */
+  if (soc->proto == tcp_socket) {
+    if (set_for_reply)  return (BS_ERROR);
+    if (soc->linked) return (BS_ERROR);
+  } else {
+    if (!soc->linked) return (BS_ERROR);
+  }
 
   /* Prepare for reply or not */
   if (set_for_reply) {
@@ -614,14 +728,20 @@ extern int soc_receive (soc_token token, boolean *p_received,
 
   /* Receive */
   do {
-    result = recvfrom(soc->socket_id, (char *)message, 
-     *p_length, 0, (struct sockaddr*) from_addr, &len);
+    if (soc->proto == tcp_socket) {
+      result = recv(soc->socket_id, (char *)message, *p_length, 0);
+    } else {
+      result = recvfrom(soc->socket_id, (char *)message, 
+       *p_length, 0, (struct sockaddr*) from_addr, &len);
+    }
   } while ( (result == -1) && (errno == EINTR) );
 
   *p_length = 0;
 
   if (result < 0) {
-    if ( (errno != EWOULDBLOCK) && (errno != ECONNREFUSED) ) {
+    if ( (errno != EWOULDBLOCK)
+      && (errno != ECONNRESET) 
+      && (errno != ECONNREFUSED) ) {
       /* Reception error */
         perror ("recvfrom");
         return (BS_ERROR);
@@ -639,5 +759,84 @@ extern int soc_receive (soc_token token, boolean *p_received,
     return (BS_OK);
 
   }
+}
+
+
+/* Tcp specific calls */
+
+/* Accept a connection.
+/* The socket must be open, tcp and linked */
+/* A new socket is created (tcp) with dest set */
+extern int soc_accept (soc_token token, soc_token *p_token) {
+  soc_ptr soc = (soc_ptr) token;
+  soc_ptr *p_soc = (soc_ptr*) p_token;
+
+  int result;
+  struct sockaddr from_addr;
+  int len = socklen;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (BS_ERROR);
+
+  /* Check that new socket is not already open */
+  if (*p_soc != NULL) return (BS_ERROR);
+
+  /* Check tcp and linked */
+  if (soc->proto != tcp_socket)  return (BS_ERROR);
+  if (! soc->linked) return (BS_ERROR);
+
+  /* Accept */
+  do {
+    result = accept (soc->socket_id, &from_addr, &len);
+  } while ( (result == -1) && (errno == EINTR) );
+
+  /* Check result */
+  if (result < 0) {
+    perror ("accept");
+    return (BS_ERROR);
+  }
+
+  /* Create structure */
+  *p_soc = (soc_ptr) malloc (sizeof (soc_struct));
+  if (*p_soc==NULL) return (BS_ERROR);
+
+  /* Save id and protocol */
+  (*p_soc)->socket_id = result;
+  (*p_soc)->proto = tcp_socket;
+  (*p_soc)->blocking = TRUE;
+
+  /* Blocking operations as default */
+  /* Ioctl for having blocking receive */
+  if (ioctl ((*p_soc)->socket_id, FIONBIO, (char *) &BLOCKINGIO) < 0) {
+    perror ("ioctl");
+    close ((*p_soc)->socket_id);
+    free (*p_soc);
+    *p_soc = NULL;
+    return (BS_ERROR);
+  }
+
+  /* Init structures */
+  (*p_soc)->send_struct.sin_family = AF_INET;
+  (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
+  (*p_soc)->rece_struct.sin_family = AF_INET;
+
+  /* Close on exec */
+  if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
+    perror ("fcntl");
+    close ((*p_soc)->socket_id);
+    free (*p_soc);
+    *p_soc = NULL;
+    return (BS_ERROR);
+  }
+
+  /* Set dest */
+  memcpy (&(*p_soc)->send_struct , &from_addr, len);
+  (*p_soc)->dest_set = TRUE;
+
+  /* Ok */
+  (*p_soc)->linked = FALSE;
+  (*p_soc)->blocking = TRUE;
+  return (BS_OK);
+
 }
 

@@ -1,8 +1,11 @@
-#ifndef __UDP_H__
-#define __UDP_H__
+#ifndef __SOCKET_H__
+#define __SOCKET_H__
 
 #include <stdio.h>
 #include "boolean.h"
+
+/* Variables and types */
+/* ------------------- */
 
 #ifndef BS_OK
 #define BS_OK 0
@@ -20,9 +23,8 @@
 /* Word of 16 bits. Values from 0 to 65535. */
 #define word unsigned short int
 
-
-/* Variables and types */
-/* ------------------- */
+/* Protocols */
+typedef enum {udp_socket=0, tcp_socket=1} socket_protocol;
 
 /* token socket : a pointer (abstract data type) */
 /* Has to be initialised to init_soc */
@@ -48,7 +50,7 @@ typedef void * soc_message;
 
 
 /* Open a socket (in blocking) */
-extern int soc_open (soc_token *p_token);
+extern int soc_open (soc_token *p_token, socket_protocol protocol);
 
 /* Close a socket */
 extern int soc_close (soc_token *p_token);
@@ -59,6 +61,9 @@ extern int soc_get_id (soc_token token, int *p_id);
 /* Set the socket blocking or non blocking */
 /*  (for sendind and receiving) */ 
 extern int soc_set_blocking (soc_token token, boolean blocking);
+
+/* No broadcast nor change dest in tcp */
+/* ------------------------------------*/
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
@@ -121,11 +126,20 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /* Err if error, p_receive=true if a message is ok and false otherwise */
 /* CARE : length is an in out parameter and must be initialized with */
 /*  the size of the buffer */
-/* The socket must be open and linked */
+/* The socket must be open, linked in udp and not linked in tcp */
 /*  After success, the socket may be ready for a send to reply */
+/* No set_for_reply if tcp */
 extern int soc_receive (soc_token token, boolean *p_received,
                         soc_message message, soc_length *p_length,
                         boolean set_for_reply);
 
-#endif /* __UDP_H__ */
+/* Tcp specific calls */
+
+/* Accept a connection.
+/* The socket must be open, tcp and linked */
+/* A new socket is created (tcp) with dest set */
+extern int soc_accept (soc_token token, soc_token *p_token);
+
+/* __SOCKET_H__ */
+#endif
 

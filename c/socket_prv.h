@@ -1,14 +1,14 @@
 #include <errno.h>
 
-#include "udp.h"
-#include "udp_net.h"
+#include "socket.h"
+#include "socket_net.h"
 
 
-
-#define         NAME_SERVER_PROTO              "udp"
+char* ns_proto[2] = {"udp", "tcp"};
 
 /* Structure pointed by the token */
 typedef struct {
+        socket_protocol proto;
 	boolean		dest_set;
 	boolean		linked;
         boolean		blocking;

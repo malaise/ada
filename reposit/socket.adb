@@ -1,4 +1,4 @@
-package body Udp is
+package body Socket is
 
   ----------------
   -- INTERFACES --
@@ -19,7 +19,11 @@ package body Udp is
     return Str & Ascii.Nul;
   end C_Str;
 
-  function Soc_Open (S_Addr : System.Address) return Result;
+  type C_Protocol is new Protocol_List;
+  for C_Protocol'Size use 32;
+
+  function Soc_Open (S_Addr : System.Address;
+                     Protocol : C_Protocol) return Result;
   pragma Import (C, Soc_Open, "soc_open");
   function Soc_Close (S_Addr : System.Address) return Result;
   pragma Import (C, Soc_Close, "soc_close");
@@ -38,6 +42,8 @@ package body Udp is
   function Soc_Get_Id (S : System.Address;
                        Fd : System.Address) return Result;
   pragma Import (C, Soc_Get_Id, "soc_get_id");
+  function Soc_Accept (S : System.Address; N :  System.Address) return Result;
+  pragma Import (C, Soc_Accept, "soc_accept");
   function Soc_Receive (S : System.Address;
                         P_Received    : System.Address;
                         Message       : System.Address;
@@ -104,11 +110,20 @@ package body Udp is
   end Check_Ok;
 
   -- Open a socket
-  procedure Open (Socket : in out Socket_Dscr) is
+  procedure Open (Socket : in out Socket_Dscr;
+                  Protocol : in Protocol_List) is
   begin
-    Res := Soc_Open (Socket.Soc_Addr'Address);
+    Res := Soc_Open (Socket.Soc_Addr'Address,
+                     C_Protocol(Protocol) );
     Check_Ok;
   end Open;
+
+  -- Is a socket open
+  function Is_Open (Socket : in Socket_Dscr) return Boolean is
+    use type System.Address;
+  begin
+    return Socket.Soc_Addr /= System.Null_Address;
+  end Is_Open;
 
 
   -- Close a socket
@@ -152,6 +167,14 @@ package body Udp is
     Check_Ok;
     return Port_Num(Port);
   end Get_Linked_To;
+
+  procedure Accept_Connection (Socket : in Socket_Dscr;
+                               New_Socket : in out Socket_Dscr) is
+  begin
+    Res := Soc_Accept (Socket.Soc_Addr, New_Socket.Soc_Addr'Address);
+    Check_Ok;
+  end Accept_Connection;
+
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
   function Fd_Of (Socket : in Socket_Dscr) return X_Mng.File_Desc is
@@ -333,5 +356,5 @@ package body Udp is
     Check_Ok;
   end Send;
 
-end Udp;
+end Socket;
 

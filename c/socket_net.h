@@ -1,5 +1,5 @@
-#ifndef __UDP_NET_H__
-#define __UDP_NET_H__
+#ifndef __SOCKET_NET_H__
+#define __SOCKET_NET_H__
 
 #include <stdio.h>
 #include <netdb.h>
