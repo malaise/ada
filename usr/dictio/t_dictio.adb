@@ -21,29 +21,29 @@ procedure T_Dictio is
     procedure P (Str : in String) renames Ada.Text_Io.Put_Line;
   begin
     P ("Comands are:");
-    P (" set    <name>    [ <data> ]        setalias <name>    [ <of_name> ]");
+    P (" set    <name>    [ <data> ]        alias  <name>    [ <of_name> ]");
     P (" get    [ alias ] [ <name> ]");
-    P (" notify [ alias ] [ <pattern> ]     cancel   [ alias ] [ <pattern> ]");
-    P (" add    <host>                      del      <host>");
+    P (" notify [ alias ] [ <pattern> ]     cancel [ alias ] [ <pattern> ]");
+    P (" add    <host>                      del    <host>");
     P (" help                               status");
     P (" quit | exit | q");
   end Put_Help;
 
   Rule : Pattern.Rule_No;
 
-  Id_Set      : constant Pattern.Pattern_Id := 010;
-  Id_Setalias : constant Pattern.Pattern_Id := 020;
-  Id_Get      : constant Pattern.Pattern_Id := 100;
-  Id_Notify   : constant Pattern.Pattern_Id := 110;
-  Id_Cancel   : constant Pattern.Pattern_Id := 120;
-  Id_Add      : constant Pattern.Pattern_Id := 200;
-  Id_Del      : constant Pattern.Pattern_Id := 210;
-  Id_Help     : constant Pattern.Pattern_Id := 300;
-  Id_Status   : constant Pattern.Pattern_Id := 310;
-  Id_Exit     : constant Pattern.Pattern_Id := 320;
-  Id_Quit     : constant Pattern.Pattern_Id := 321;
-  Id_Q        : constant Pattern.Pattern_Id := 322;
-  Id_Error    : constant Pattern.Pattern_Id := 999;
+  Id_Set    : constant Pattern.Pattern_Id := 010;
+  Id_Alias  : constant Pattern.Pattern_Id := 020;
+  Id_Get    : constant Pattern.Pattern_Id := 100;
+  Id_Notify : constant Pattern.Pattern_Id := 110;
+  Id_Cancel : constant Pattern.Pattern_Id := 120;
+  Id_Add    : constant Pattern.Pattern_Id := 200;
+  Id_Del    : constant Pattern.Pattern_Id := 210;
+  Id_Help   : constant Pattern.Pattern_Id := 300;
+  Id_Status : constant Pattern.Pattern_Id := 310;
+  Id_Exit   : constant Pattern.Pattern_Id := 320;
+  Id_Quit   : constant Pattern.Pattern_Id := 321;
+  Id_Q      : constant Pattern.Pattern_Id := 322;
+  Id_Error  : constant Pattern.Pattern_Id := 999;
 
   function Com_Fix_Opt (Rule : in Pattern.Rule_No;
                         Id   : in Pattern.Pattern_Id;
@@ -54,14 +54,14 @@ procedure T_Dictio is
     Arg3 : constant String := Parser.Next_Word (Iter);
     use type Pattern.Pattern_Id;
   begin
-    -- Set/Setalias <name> [ <data/of_name> ]
+    -- Set/Alias <name> [ <data/of_name> ]
     if Arg1 = "" or else Arg3 /= "" then
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
       return False;
     end if;
     if Id = Id_Set then
       Dictio_Lib.Set (Arg1, Arg2);
-    elsif Id = Id_Setalias then
+    elsif Id = Id_Alias then
       Dictio_Lib.Set_Alias (Arg1, Arg2);
     else
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
@@ -187,7 +187,7 @@ procedure T_Dictio is
     Rule := Pattern.Get_Free_Rule;
     Pattern.Set (Rule, Id_Set, "set",
                  Com_Fix_Opt'Unrestricted_Access);
-    Pattern.Set (Rule, Id_Setalias, "setalias",
+    Pattern.Set (Rule, Id_Alias, "alias",
                  Com_Fix_Opt'Unrestricted_Access);
     Pattern.Set (Rule, Id_Get, "get [ alias ]",
                  Com_Opt_Opt'Unrestricted_Access);
