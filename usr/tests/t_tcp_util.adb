@@ -24,7 +24,7 @@ procedure T_Tcp_Util is
   procedure My_Read is new Socket.Receive (Message_Type);
   procedure My_Send is new Socket.Send (Message_Type);
 
-  procedure Read_Cb (Fd : in X_Mng.File_Desc);
+  function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean) return Boolean;
 
   procedure Send (Msg : in String) is
   begin
@@ -60,14 +60,15 @@ procedure T_Tcp_Util is
   procedure Connect is
     Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
     Port : Tcp_Util.Remote_Port(Tcp_Util.Port_Name_Spec);
+    Result : Boolean;
   begin
     Host.Name (1 .. Text_Handler.Length(Server_Name))
          := Text_Handler.Value(Server_Name);
     Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
-    Tcp_Util.Connect_To (Socket.Tcp_Header,
-                         Host, Port,
-                         Delay_Try, Nb_Try,
-                         Connect_Cb'Unrestricted_Access);
+    Result := Tcp_Util.Connect_To (Socket.Tcp_Header,
+                                   Host, Port,
+                                   Delay_Try, Nb_Try,
+                                   Connect_Cb'Unrestricted_Access);
   end Connect;
 
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
@@ -91,7 +92,8 @@ procedure T_Tcp_Util is
     end if;
   end Accept_Cb;
 
-  procedure Read_Cb (Fd : in X_Mng.File_Desc) is
+  function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
+  return Boolean is
     Len : Natural;
     use type X_Mng.File_Desc;
   begin
@@ -102,7 +104,7 @@ procedure T_Tcp_Util is
     end if;
     if not Socket.Is_Open (The_Dscr) or else Fd /= Socket.Fd_Of (The_Dscr) then
       Ada.Text_Io.Put_Line ("Read Cb -> Unknown fd");
-      return;
+      return False;
     end if;
 
     begin
@@ -119,7 +121,7 @@ procedure T_Tcp_Util is
         else
           Ada.Text_Io.New_Line;
         end if;
-        return;
+        return True;
     end;
 
     Ada.Text_Io.Put_Line ("receives: >"
@@ -138,6 +140,7 @@ procedure T_Tcp_Util is
       Message.Num := Message.Num + 1;
       Send ("Reply");
     end if;
+    return False;
   end Read_Cb;
 
 begin
@@ -181,11 +184,16 @@ begin
   Give_Up := False;
 
   declare
-    Timeout : Boolean;
+    Event : Boolean;
   begin
     loop
-      Timeout := X_Mng.Select_No_X (1_000);
+      Event := X_Mng.Select_No_X (1_000);
       exit when Give_Up;
+      if Event then
+        Ada.Text_Io.Put_Line ("Timer/Event");
+      else
+        Ada.Text_Io.Put_Line ("Timeout");
+      end if;
     end loop;
   end;
 
