@@ -407,6 +407,23 @@ package body Dynamic_List is
                     From_Current : in Boolean := True) is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Natural;
+
+    procedure Next_Pos is
+    begin
+      Check_In(New_Pos.Next);
+      New_Pos := New_Pos.Next;
+      New_Pos_First := New_Pos_First + 1;
+      New_Pos_Last := New_Pos_Last - 1;
+    end Next_Pos;
+
+    procedure Prev_Pos is
+    begin
+      Check_In(New_Pos.Prev);
+      New_Pos := New_Pos.Prev;
+      New_Pos_First := New_Pos_First - 1;
+      New_Pos_Last := New_Pos_Last + 1;
+    end Prev_Pos;
+
   begin
     if Is_Empty (List) then
       raise Not_In_List;
@@ -432,22 +449,22 @@ package body Dynamic_List is
     case Where is
       when Next =>
         for I in 1 .. Occurence loop
+          if I /= 1 then
+            Next_Pos;
+          end if;
           loop
             exit when Equal(New_Pos.Value, Item);
-            Check_In(New_Pos.Next);
-            New_Pos := New_Pos.Next;
-            New_Pos_First := New_Pos_First + 1;
-            New_Pos_Last := New_Pos_Last - 1;
+            Next_Pos;
           end loop;
         end loop;
       when Prev =>
         for I in 1 .. Occurence loop
+          if I /= 1 then
+            Prev_Pos;
+          end if;
           loop
             exit when Equal(New_Pos.Value, Item);
-            Check_In(New_Pos.Prev);
-            New_Pos := New_Pos.Prev;
-            New_Pos_First := New_Pos_First - 1;
-            New_Pos_Last := New_Pos_Last + 1;
+            Prev_Pos;
           end loop;
         end loop;
     end case;
