@@ -22,8 +22,7 @@ dup isreal ~ E pushr ifcall
 N pushr I pushr - a regind + indreg popr
 # Next index
 I pushr 1 + I popr
-S pushr retacal ] S popr
-S pushr call
+S pushr retacal ] S copyr call
 
 # Bubble sort
 #############
@@ -44,12 +43,11 @@ C pushr retacal ] C popr
 # Main loop for 1 to N-1
 1 I popr
 [
-I pushr N pushr = ifret
+I pushr N pushr >= ifret
 I pushr 1 + J popr
 C pushr call
 I pushr 1 + I popr
-B pushr retacal ] B popr
-B pushr call
+B pushr retacal ] B copyr call
 
 # Put elements
 1 I popr
@@ -57,6 +55,5 @@ B pushr call
 I pushr N pushr > ifret
 I pushr a regind + 1 - indreg pushr putl
 I pushr 1 + I popr 
-P pushr retacal ] P popr
-P pushr call
+P pushr retacal ] P copyr call
 
