@@ -94,11 +94,7 @@ procedure T_Dictio is
   begin
     -- Get/Notify/Cancel [ alias ] [ <name> ]
     -- If <name> is not set then name is "alias"
-    if Arg1 = "" or else Arg2 /= "" then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      return False;
-    end if;
-    if not Alias and then Arg1 /= "" then
+    if (not Alias and then Arg1 = "") or else Arg2 /= "" then
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
       return False;
     end if;
