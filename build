@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ "$1" = "html" ] ; then
+  gnathtml reposit/*.ad* usr/*/*.ad*
+  exit 0;
+fi
+
 cur=`pwd`
 
 cd c
