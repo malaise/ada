@@ -1,0 +1,38 @@
+#!/bin/bash
+export PIPI=/tmp/pipi
+export PIPO=/tmp/pipo
+
+function Usage {
+  echo "Usage: `basename $0` <fifo> <command> [ { <argument> } ]"
+}
+
+# Check args
+if [ $# -lt 2 ] ; then
+  Usage
+  exit 1
+fi
+
+# Create fifos and check
+mkfifo $PIPI $PIPO
+
+if [ ! -p $PIPI ] ; then
+  echo "Error. Cannot create fifo $PIPI"
+  exit 2;
+fi
+if [ ! -p $PIPO ] ; then
+  echo "Error. Cannot create fifo $PIPO"
+  exit 2;
+fi
+
+# Start
+export FIFO=$1
+shift
+
+pipe -s $FIFO < $PIPO > $PIPI &
+export PID=$!
+
+$* > $PIPO < $PIPI
+
+kill -INT $PID
+/bin/rm -f $PIPI $PIPO
+
