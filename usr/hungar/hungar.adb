@@ -153,7 +153,7 @@ begin
       if SOME_TIME_PUT then
         MY_IO.PUT (" and");
       end if;
-      PUT_TIME (MILLISECS, "millisecond");
+      PUT_TIME (MILLISECS, "millisec");
       MY_IO.PUT_LINE (".");
     end DISPLAY_ELAPSE;
   end COMPUTE_ELAPSE;
