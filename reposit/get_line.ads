@@ -5,9 +5,14 @@ with TEXT_HANDLER;
 
 generic
 
+  -- These two are used while parsing the line
   MAX_WORD_LEN : in POSITIVE;
   MAX_WORD_NB  : in POSITIVE;
+  -- Only this one is used while loading a line
   MAX_LINE_LEN : in POSITIVE;
+  -- If this comment character is set, then only significant
+  -- lines (not empty nor starting with comment) are loaded
+  COMMENT : in CHARACTER := ASCII.NUL;
 
 package GET_LINE is
 
@@ -22,26 +27,43 @@ package GET_LINE is
   procedure OPEN (FILE_NAME : in STRING);
 
   -- Closes the file
+  -- Exceptions are the one of TEXT_IO.CLOSE
   procedure CLOSE;
+
+  -- The following features may raise
+  NOT_OPEN : exception;
 
   -- Loads next line of file
   procedure READ_NEXT_LINE;
   NO_MORE_LINE   : exception;
-  TOO_MANY_WORDS : exception;
   LINE_TOO_LONG  : exception;
-  WORD_TOO_LONG  : exception;
 
-  -- Current line number
+  --------------------------------------------------
+  -- As soon as a line is loaded the following
+  -- features are available without parsing the line
+  --------------------------------------------------
+
+  -- Current line number (not parsed)
   function GET_LINE_NO return TEXT_IO.POSITIVE_COUNT;
+
+  -- Get the whole line (not parsed)
+  procedure GET_WHOLE_LINE (LINE : in out LINE_TXT);
+
+  -- Get the first significant word of the line (not parsed)
+  function GET_FIRST_WORD return STRING;
+
+  --------------------------------------------------
+  -- The two following features trigger a parsing
+  --  of the loaded line and may raise
+  --------------------------------------------------
+  TOO_MANY_WORDS : exception;
+  WORD_TOO_LONG  : exception;
 
   -- Number of words in currently loaded line
   function GET_WORD_NUMBER return WORD_COUNT;
 
   -- Words of the currently loaded line
   procedure GET_WORDS (LINE : in out LINE_ARRAY);
-
-  -- Get the whole line (not parsed)
-  procedure GET_WHOLE_LINE (LINE : in out LINE_TXT);
 
 end GET_LINE;
 
