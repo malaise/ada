@@ -45,7 +45,7 @@ package body CURVE is
                   POINTS : in T_THE_POINTS) is
 
     -- Miscellaneous drawings on screen : help, axes, scales, points
-    type T_MISC_LIST is (M_HELP, M_AXES, M_SCALE, M_POINTS);
+    type T_MISC_LIST is (M_HELP, M_AXES, M_SCALE, M_POINTS, M_CURVE);
     type T_MISC is array (T_MISC_LIST) of BOOLEAN;
     MISC : T_MISC := (others => FALSE);
 
@@ -719,6 +719,7 @@ package body CURVE is
       CURR_ZOOM_MODE := INIT;
       EVENT := BIG_CON_IO.REFRESH;
       BIG_CON_IO.ENABLE_MOTION_EVENTS (MISC(M_SCALE));
+      MISC(M_CURVE) := TRUE;
 
       BIG_CON_IO.GRAPHICS.GET_CURRENT_POINTER_POS (MVALID, MX, MY);
       if MVALID then
@@ -745,7 +746,8 @@ package body CURVE is
             MOUSE_BOUNDS.Y_MAX := MY;
           end if;
           -- Draw what has to be for initial
-          DRAW_CURVE;
+          BIG_CON_IO.CLEAR;
+          if MISC(M_CURVE)  then DRAW_CURVE; end if;
           if MISC(M_AXES)   then DRAW_AXES; end if;
           if MISC(M_POINTS) then DRAW_POINTS; end if;
           if MISC(M_HELP)   then DRAW_HELP(INIT); end if;
@@ -795,6 +797,7 @@ package body CURVE is
               DRAW_HELP(TOGGLE);
             elsif UPPER_CHAR(CHAR) = 'C' then
               -- Toggle curve
+              MISC(M_CURVE) := not MISC(M_CURVE);
               DRAW_CURVE;
             elsif CHAR = ASCII.ESC then
               if CURR_ZOOM_MODE = INIT then
