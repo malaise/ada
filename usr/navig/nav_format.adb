@@ -1,4 +1,5 @@
 with MATH;
+use MATH;
 with NORMAL;
 -- to convert got strings in data fields, and fields in string to be put
 package body NAV_FORMAT is

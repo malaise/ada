@@ -1,4 +1,5 @@
 with MATH, CURVE;
+use MATH;
 procedure T_CURVE is
 
   POINTS : constant CURVE.T_THE_POINTS (1 .. 9) :=

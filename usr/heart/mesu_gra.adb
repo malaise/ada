@@ -101,6 +101,7 @@ package body MESU_GRA is
     B : MATH.REAL;
     X, X1, X2 : INTEGER;
     Y, Y1, Y2 : INTEGER;
+    use MATH;
   begin
     if XA = XB then
       -- Vertical line. Must have YA <= YB

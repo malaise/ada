@@ -39,6 +39,8 @@ package body FILE is
       MY_GET_LINE.READ_NEXT_LINE;
       MY_GET_LINE.GET_WORDS (LINE);
     end READ_NEXT_SIGNIFICANT_LINE;
+
+    use MATH;
   begin
     -- Open file
     begin
@@ -92,7 +94,7 @@ package body FILE is
       begin
         for J in 1 .. DIM loop
           F := FLOAT_CELL_RANGE (GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J))));
-          if F > 100.00 or else MATH.FRAC(LONG_FLOAT(F)) * 100.0 > 100.0 then
+          if F > 100.00 or else MATH.FRAC(MATH.REAL(F)) * 100.0 > 100.0 then
             raise READ_ERROR;
           end if;
           INPUT_MATTRIX(I).all(J) := F;
@@ -137,7 +139,7 @@ package body FILE is
       for I in 1 .. DIM loop
         for J in 1 .. DIM loop
           LOC_MATTRIX(I, J) := TYPES.CELL_RANGE(
-             MATH.ROUND (LONG_FLOAT((INPUT_MATTRIX(I).all(J))) * 100.0));
+             MATH.ROUND (MATH.REAL((INPUT_MATTRIX(I).all(J))) * 100.0));
         end loop;
       end loop;
 

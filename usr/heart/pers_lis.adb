@@ -354,6 +354,7 @@ package body PERS_LIS is
                   REST_RATE : PERS_DEF.BPM_RANGE;
                   DELTA_RATE : MATH.REAL;
                   PERCENT : MATH.REAL;
+                  use MATH;
                   use PERS_DEF;
                 begin
                   REST_RATE := PERSON.TZ(1);

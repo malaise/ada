@@ -1,38 +1,20 @@
-with MATH;
 package body GRID_2 is
+  use MATH;
 
-  subtype LONG_NATURAL is LONG_INTEGER range 0 .. LONG_INTEGER'LAST;
+  subtype LONG_NATURAL is MATH.INTE range 0 .. MATH.INTE'LAST;
 
-  DIMENSION : LONG_INTEGER;
-  FIRST_ROW : LONG_INTEGER;
-  FIRST_COL : LONG_INTEGER;
-  LAST_ROW : LONG_INTEGER;
-  LAST_COL : LONG_INTEGER;
+  DIMENSION : MATH.INTE;
+  FIRST_ROW : MATH.INTE;
+  FIRST_COL : MATH.INTE;
+  LAST_ROW : MATH.INTE;
+  LAST_COL : MATH.INTE;
 
-  procedure INITIALIZE (KEY_LENGTH, TEXT_LENGTH : in LONG_INTEGER) is
-    R : LONG_FLOAT;
+  procedure INITIALIZE (KEY_LENGTH, TEXT_LENGTH : in MATH.INTE) is
+    R : MATH.REAL;
 
-  -- Real -> integer : round or trunc
-  function TRUNC (X : in LONG_FLOAT) return LONG_INTEGER is
-    INT : LONG_INTEGER;
   begin
-    INT := LONG_INTEGER (X);
-    -- Adjust to 1
-    if X > 0.0 then
-      -- If x>0 error is 1 too much
-      if LONG_FLOAT (INT) > X then INT := INT - 1; end if;
-      return INT;
-    else
-      -- If x<0 error is 1 too less
-      if LONG_FLOAT (INT) < X then INT := INT + 1; end if;
-      return INT;
-    end if;
-  exception
-    when others => raise CONSTRAINT_ERROR;
-  end TRUNC;
-  begin
-    R := LONG_FLOAT(KEY_LENGTH) + LONG_FLOAT(TEXT_LENGTH);
-    DIMENSION := LONG_INTEGER(TRUNC(MATH.SQRT(R))) + 1;
+    R := MATH.REAL(KEY_LENGTH) + MATH.REAL(TEXT_LENGTH);
+    DIMENSION := MATH.INTE(TRUNC(MATH.SQRT(R))) + 1;
     FIRST_ROW := KEY_LENGTH / DIMENSION + 1;
     FIRST_COL := KEY_LENGTH mod DIMENSION + 1;
     LAST_ROW :=
@@ -52,7 +34,7 @@ package body GRID_2 is
     end if;
   end INITIALIZE;
 
-  function INDEX (R, C : LONG_INTEGER; ENCODE : BOOLEAN)
+  function INDEX (R, C : MATH.INTE; ENCODE : BOOLEAN)
                  return LONG_NATURAL is
     N : LONG_NATURAL;
   begin

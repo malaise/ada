@@ -1,6 +1,7 @@
 -- Purpose: solve a.x2 + b.x + c = 0
 with TEXT_IO;
 with ARGUMENT, MY_IO, MATH, GET_FLOAT;
+use MATH;
 procedure SECOND is
 
   A, B, C : MATH.REAL;

@@ -1,5 +1,6 @@
 -- Check of a navigation question coherency
 with MATH;
+use MATH;
 package body NAV_DATA is
 
   -- For math computations of angles
