@@ -1135,9 +1135,11 @@ package body X_MNG is
         -- Search and read callback
         CB_SEARCH (CB_LIST, CB_SEARCHED, FROM_CURRENT => FALSE);
         CB_MNG.READ (CB_LIST, CB_SEARCHED,  CB_MNG.CURRENT);
-        -- Call it
+        -- Call it and propagate event if callback returns true
         if CB_SEARCHED.CB /= null then
-          CB_SEARCHED.CB (CB_SEARCHED.FD);
+          if CB_SEARCHED.CB (CB_SEARCHED.FD, CB_SEARCHED.READ) then
+            return SELECT_FD;
+          end if;
         end if;
       exception
         when CB_MNG.NOT_IN_LIST =>
@@ -1146,8 +1148,9 @@ package body X_MNG is
                         & " fd not found ****");
         end if;
       end;
+      -- No callback or returned False
+      return SELECT_TIMEOUT;
     end if;
-    return SELECT_FD;
   end XX_SELECT;
 
   procedure XX_PROCESS_EVENT (LINE_FOR_C_ID : out LINE_FOR_C;
