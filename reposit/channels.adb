@@ -66,6 +66,17 @@ package body Channels is
       Socket.Close (Dscr);
   end Close;
 
+  -- Remove tailing spaces
+  function Parse (Str : String) return String is
+  begin
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' then
+        return Str (Str'First .. I);
+      end if;
+    end loop;
+    return Str;
+  end Parse;
+
   package body Channel is
 
     -- Current channel
@@ -443,7 +454,8 @@ package body Channels is
 
     -- Send a message to all recipients
     procedure Write (Message : in Message_Type;
-                     Length : in Message_Length := 0) is
+                     Length : in Message_Length := 0;
+                     Send_Cb : in Send_Callback_Access := null) is
       Dest : Dest_Rec;
       Msg : Channel_Message_Type;
       Len : Message_Length;
@@ -470,12 +482,21 @@ package body Channels is
         Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
           begin
-            Res := Channel_Send (Dest.Dscr, null, Msg, Len);       
+            Res := Channel_Send (Dest.Dscr, null, Msg, Len);
+            Res := True;
           exception
             when Socket.Soc_Tail_Err =>
               -- Already in overflow
-              null;
+              Res := False;
+            when others =>
+              -- Other error
+              Res := False;
           end;
+        else
+          Res := False;
+        end if;
+        if Send_Cb /= null then
+          Send_Cb (Parse (Dest.Host_Name.Name), Res);
         end if;
         exit when Dest_List_Mng.Get_Position (Channel_Dscr.Dests)
                 = Dest_List_Mng.List_Length (Channel_Dscr.Dests);

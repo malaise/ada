@@ -2,6 +2,10 @@ package Channels is
 
   subtype Message_Length is Natural;
 
+  type Send_Callback_Access is access
+    procedure (Host_Name : in String;
+               Send_Ok   : in Boolean);
+
   generic
     -- The name of the channel (tcp in services)
     Channel_Name : in String;
@@ -12,7 +16,7 @@ package Channels is
                             Length   : in Message_Length;
                             Diffused : in Boolean);
   package Channel is
-    -- Channel or  Destination host name too long
+    -- Channel or Destination host name too long
     Name_Too_Long : exception;
 
     -- Subscription
@@ -36,7 +40,9 @@ package Channels is
     procedure Del_All_Destinations;
 
     -- Send a message to all recipients
-    procedure Write (Message : in Message_Type; Length : in Message_Length := 0);
+    procedure Write (Message : in Message_Type;
+                     Length  : in Message_Length := 0;
+                     Send_Cb : in Send_Callback_Access := null);
 
     -- Reply to sender of last message received
     -- Should only be called in Read_Cb.

@@ -78,6 +78,16 @@ procedure T_Channels is
     end loop;
   end Wait;
 
+  procedure Send_Cb (Host : in String; Result : in Boolean) is
+  begin
+    Ada.Text_Io.Put_Line ("Send to " & Host & " -> " & Result'Img);
+  end Send_Cb;
+
+  procedure Send (Msg : in Message_type) is
+  begin
+    Fifo.Write (Msg, Send_Cb => Send_Cb'Unrestricted_Access);
+  end Send;
+
   -- Message sent
   Message : Message_type;
 
@@ -110,35 +120,47 @@ begin
   -- Publisher
   Message.Str := (others => ' ');
   Message.Str(1 .. 6) := "Coucou";
-  Ada.Text_Io.Put_Line ("Adding dests localhost and penelope");
-  Fifo.Add_Destination ("localhost");
-  Fifo.Add_Destination ("penelope");
+  Ada.Text_Io.Put ("Adding dests: ");
+  for I in 3 .. Argument.Get_Nbre_Arg loop
+    Ada.Text_Io.Put (Argument.Get_Parameter(Occurence => I) & " ");
+    Fifo.Add_Destination (Argument.Get_Parameter(I));
+  end loop;
+  Ada.Text_Io.New_Line;
   Wait (1.0);
   
-  Ada.Text_Io.Put_Line ("Sending messages");
+  Ada.Text_Io.Put_Line ("Sending " & Nb_To_Do'Img & " messages");
   loop
-    Fifo.Write (Message);
+    Send (Message);
     Nb_Done := Nb_Done + 1;
     -- Wait for replies
     Wait (0.5);
     exit when Nb_Done = Nb_To_Do;
   end loop;
 
-  Ada.Text_Io.Put_Line ("Deleting dest penelope and sending two messages");
-  Fifo.Del_Destination ("penelope");
-  Fifo.Write (Message);
-  Fifo.Write (Message);
-  Wait (0.5);
+  Ada.Text_Io.New_Line;
+  for I in 3 .. Argument.Get_Nbre_Arg-1 loop
+    Ada.Text_Io.Put_Line ("Deleting dest "
+                        & Argument.Get_Parameter(Occurence => I));
+    Fifo.Del_Destination (Argument.Get_Parameter(I));
+    Ada.Text_Io.Put_Line ("Sending one message");
+    Send (Message);
+    Wait (0.5);
+  end loop;
 
-
+  Ada.Text_Io.New_Line;
   Ada.Text_Io.Put_Line ("Deleting all dests and sending one message");
   Fifo.Del_All_Destinations;
-  Fifo.Write (Message);
+  Send (Message);
   Wait (0.5);
 
+  Ada.Text_Io.New_Line;
   Ada.Text_Io.Put_Line ("Sending one message");
-  Fifo.Write (Message);
+  Send (Message);
   Wait (0.5);
-
+exception
+  when Argument.Argument_Not_Found =>
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+        & " <publish_or_subscribe> <nb_messages> [ { <dest_of_publisher> } ]");
+    Ada.Text_Io.Put_Line ("<publish_or_subscribe> ::= p | s");
 end T_Channels;
 
