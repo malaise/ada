@@ -887,7 +887,7 @@ DESCRIPTOR 4
     GEOMETRY 2 2 2 31
     COLORS light_gray not_blink black
     INIT
-      0 0 Computed from curve an points
+      0 0 Computed from curve and points
     END INIT
   END FIELD
 
