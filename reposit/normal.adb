@@ -8,11 +8,14 @@
 --   or at left (not Right) and fill with Gap
 -- Gap : When string is shorter than len, fill empty positions with Gap
 
-function Normal (I : Integer; Len : Positive;
- Right : Boolean := True; Gap : Character := ' ') return String is
+function Normal (I     : Integer;
+                 Len   : Positive;
+                 Right : Boolean := True;
+                 Gap   : Character := ' ') return String is
   L : Positive := Integer'Image(I)'Last;
   Si : String (1 .. L) := Integer'Image(I);
   Sm : String (1 .. Len);
+  Warning_Char : constant Character := '!';
 
   -- Real -> integer : round or trunc
   function Trunc (X : in Float) return Integer is
@@ -46,7 +49,6 @@ function Normal (I : Integer; Len : Positive;
     when others => raise Constraint_Error;
   end Round;
 
-
 begin
   -- Skip first char if space
   if Si(1) = ' ' then
@@ -54,22 +56,36 @@ begin
     Si (1 .. L) := Si (2 .. L + 1);
   end if;
   if L > Len then
-    -- Round I at Len digits
+    -- I is longer than the requested Len
+    -- Round I at Len - 1 digits and cat the warning char
     declare
-      -- Round I at len digits
-      R : Float := Float(I) / (10.0 ** (L-Len) );
-      Ni : Integer := Integer(Round (R));
-      Nl : Integer := Integer'Image(Ni)'Last;
+      R : Float := Float(I) / (10.0 ** (L-Len+1) );
+      I : Integer := Integer(Round (R));
+      Imi : constant string := Integer'Image(I);
+      Fi : Natural := 1;
+      Li : Natural := Imi'Last;
     begin
-      -- Correction when i.e. 999.6 is rounded to 1000 : keep 999
-      if Integer'Image(Ni)(1) = ' ' then
-        Nl := Nl - 1;
+      -- Skip first char if space
+      if Imi(1) = ' ' then
+        Fi := Fi + 1;
       end if;
-      if Nl > Len then
-        Ni := Integer(Trunc (R) );
+      if Li - Fi + 1 = (Len - 1) + 1 then
+        -- Round has generated an extra digit (e.g. 99.8 -> 100)
+        -- Skip last digit
+        Li := Li - 1;
+      elsif Li - Fi + 1 = (Len - 1) then
+        -- Round has not generated extra digit (e.g. 99.4 -> 99)
+        null;
+      else
+        -- Bug: Round should have lead to (Len - 1) or (Len - 1) + 1
+        raise Program_Error;
       end if;
-      -- Should be Ok now
-      return Normal (Ni, Len, Right);
+      -- Cat warning char
+      if Right then
+        return Warning_Char & Imi(Fi .. Li);
+      else
+        return Imi(Fi .. Li) & Warning_Char;
+      end if;
     end;
   else -- L <= Len
     -- Gap with gap_character, in Sm
