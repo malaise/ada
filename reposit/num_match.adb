@@ -35,7 +35,7 @@ function Num_Match (Num : in Natural; Criteria : in String) return Boolean is
 
 begin
   -- Init for check
-  Parser.Create (Criteria, Is_Sep'Unrestricted_Access, Iter);
+  Parser.Set (Iter, Criteria, Is_Sep'Unrestricted_Access);
   -- First spec
   First := True;
   -- Mach is kept along all specs cause we parse (check) all
@@ -113,7 +113,7 @@ begin
   end loop All_Specs;
 
   -- Cleanup and Done
-  Parser.Delete (Iter);
+  Parser.Del (Iter);
   return Match;
 
 end Num_Match;

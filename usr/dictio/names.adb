@@ -21,7 +21,7 @@ package body Names is
   begin
 
     -- Parse words
-    Parser.Create (Name, Sep_Access, Iter);
+    Parser.Set (Iter, Name, Sep_Access);
     Ok := True;
     for I in 1 .. Max_Length loop
       declare
@@ -54,7 +54,7 @@ package body Names is
       end;
     end loop;
 
-    Parser.Delete (Iter);
+    Parser.Del (Iter);
     return Ok;
   end Is_Valid_Name;
 
@@ -80,7 +80,7 @@ package body Names is
 
 
     -- Parse words
-    Parser.Create (Criteria, Sep_Access, Iter);
+    Parser.Set (Iter, Criteria, Sep_Access);
     Ok := True;
     Must_Be_Last := False;
     for I in 1 .. Max_Length loop
@@ -123,7 +123,7 @@ package body Names is
       end;
     end loop;
 
-    Parser.Delete (Iter);
+    Parser.Del (Iter);
     return Ok;
   end Is_Valid_Notify;
 
@@ -135,8 +135,8 @@ package body Names is
   begin
 
     -- Parse words and compare
-    Parser.Create (Name, Sep_Access, Iter_Name);
-    Parser.Create (Criteria, Sep_Access, Iter_Crit);
+    Parser.Set (Iter_Name, Name,     Sep_Access);
+    Parser.Set (Iter_Crit, Criteria, Sep_Access);
     loop
       declare
         Word_Name : constant String := Parser.Next_Word (Iter_Name);
@@ -177,8 +177,8 @@ package body Names is
                & " : " & Ok'Img);
     end if;
 
-    Parser.Delete (Iter_Name);
-    Parser.Delete (Iter_Crit);
+    Parser.Del (Iter_Name);
+    Parser.Del (Iter_Crit);
     return Ok;
   end Match;
 

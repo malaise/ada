@@ -17,7 +17,7 @@ package body Alias is
   begin
 
     -- Init parsing
-    Parser.Create (Text_Handler.Value(Name), Names.Is_Sep'Access, Iter);
+    Parser.Set (Iter, Text_Handler.Value(Name), Names.Is_Sep'Access);
     Text_Handler.Empty (Name);
     Searching := True;
 
@@ -55,7 +55,7 @@ package body Alias is
     end loop;
 
     -- Finish
-    Parser.Delete (Iter);
+    Parser.Del (Iter);
 
     if Searching then
       -- Nothing found
