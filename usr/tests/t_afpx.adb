@@ -12,6 +12,8 @@ procedure T_Afpx is
   Redisplay    : Boolean;
   Flip_Flop : Boolean;
 
+  List1 : Afpx.Line_List_Mng.List_Type;
+
   Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
@@ -67,19 +69,18 @@ begin
     Afpx_Item.Str(Afpx_Item.Len+2) :=
        Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1);
     Afpx_Item.Len := Afpx_Item.Len + 2;
-    Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
+    Afpx.Line_List_Mng.Insert (List1, Afpx_Item);
     exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
     Dir_Mng.File_List_Mng.Move_To (Dir_List);
   end loop;
-  Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
+  Afpx.Line_List_Mng.Rewind (List1);
 
-  Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
+  Afpx.Line_List_Mng.Read (List1, Afpx_Item,
                            Afpx.Line_List_Mng.Current);
 
-  Afpx.Encode_Field (2, (1, 0), ">" &
-                                Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
-
-
+  Afpx.Encode_Field (2, (1, 0),
+                     ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
+  Afpx.Line_List_Mng.Assign (Afpx.Line_List, List1);
 
   Cursor_Field := 1;
   Cursor_Col := 0;
@@ -124,7 +125,8 @@ begin
           when 4 =>
             exit;
           when 5 | Afpx.List_Field_No =>
-            Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
+            Afpx.Line_List_Mng.Assign (List1, Afpx.Line_List);
+            Afpx.Line_List_Mng.Read (List1, Afpx_Item,
                                      Afpx.Line_List_Mng.Current);
             Afpx.Clear_Field (2);
             Afpx.Encode_Field (2, (1, 0),
