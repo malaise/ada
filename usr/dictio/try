@@ -34,6 +34,12 @@ while [ "$1" != "" ] ; do
   elif [ "$1" = "-b" ] ; then
     export MODE=bus
     shift
+  elif [ "$1" = "-c" ] ; then
+    export MODE=channel
+    shift
+  else
+    echo "Usage: `basename $0`   -b | -c   [-p <prio> ]"
+    exit 1
   fi
 done
 
@@ -43,5 +49,15 @@ else
   export CHANNEL="-ntest_udp -btest_ipm"
 fi
 
-exec ./dictio $CHANNEL -pfido -P$DICTIO_PRIO
+export HOST=`uname -s`
+if [ "$HOST" = "Linux" ] ; then
+  export PORT=fido
+elif [ "$HOST" = "OSF1" ] ; then
+  export PORT=rdg
+else
+  echo "Unknown host type: $HOST"
+  exit 1
+fi
+
+exec ./dictio $CHANNEL -p$PORT -P$DICTIO_PRIO
 
