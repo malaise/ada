@@ -1,6 +1,6 @@
 #!/bin/bash
 error() {
-  echo "Usage: $1 <num1> <oper> <num1>"
+  echo "Usage: $1 <num1> <oper> <num2>"
   echo " <oper> ::= + | - | * | /"
   echo " <num1> is in H.MSmls"
   echo " <num2> is in H.MSmls if + or -"
@@ -21,10 +21,5 @@ case "$2" in
     error `basename $0`
 esac
  
-# Load second format function
-# Convert H.DMS to H.frac \
-# oper and back to H.DMS and put \
-mmcdt -e format.mcd swap pop \
-"$1" toreal msd "$num2" \
-"$2" dms swap call putl
+mmcdt "$1" msd "$num2" "$2" -e op_time.mcd 
 

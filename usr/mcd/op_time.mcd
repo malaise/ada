@@ -1,0 +1,18 @@
+# Syntax error message
+[
+"Error" putl
+ssize popn retall
+] E popr
+
+# Check 1 arg
+ssize 1 /= E pushr ifcall
+
+# Make result milliseconds
+3600.0 * 1000.0 * round 
+
+# Fix negative values
+dup 0 < [ "-" put absv ] ifcall 
+
+# Convert to " days-hh:mm:ss.mmm" and remove days and put
+daysof 7 18 strsub putl
+
