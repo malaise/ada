@@ -372,6 +372,7 @@ package body Af_Ptg is
 
   -- Call the user callback to get cursor col
   function Get_Cursor_Col (
+                 Field_No : Afpx_Typ.Field_Range;
                  Field : Afpx_Typ.Field_Rec;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Cursor_Col_Cb : Cursor_Set_Col_Cb) 
@@ -393,7 +394,9 @@ package body Af_Ptg is
       Str : constant String (1 .. Field.Width) := Af_Dscr.Chars
             (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
     begin
-      Result := Cursor_Col_Cb (Enter_Field_Cause, Str);
+      Result := Cursor_Col_Cb (Afpx.Field_Range(Field_No),
+                               Enter_Field_Cause,
+                               Str);
     end;
     -- Check result vs width
     if Result >= Field.Width then
@@ -558,7 +561,8 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+            Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          Af_Dscr.Fields(Cursor_Field),
                                           Right_Full, Cursor_Col_Cb);
             New_Field := True;
           end if;
@@ -568,7 +572,8 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+            Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          Af_Dscr.Fields(Cursor_Field),
                                           Tab, Cursor_Col_Cb);
             New_Field := True;
           end if;
@@ -578,7 +583,8 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+            Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          Af_Dscr.Fields(Cursor_Field),
                                           Left, Cursor_Col_Cb);
             New_Field := True;
           end if;
@@ -588,7 +594,8 @@ package body Af_Ptg is
             -- Restore normal color of previous field
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+            Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          Af_Dscr.Fields(Cursor_Field),
                                           Stab, Cursor_Col_Cb);
             New_Field := True;
           end if;
@@ -624,7 +631,8 @@ package body Af_Ptg is
                   Put_Field (Cursor_Field, Normal);
                   -- Change field
                   Cursor_Field := Click_Result.Field_No;
-                  Cursor_Col := Get_Cursor_Col (Af_Dscr.Fields(Cursor_Field),
+                  Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                                Af_Dscr.Fields(Cursor_Field),
                                                 Mouse, Cursor_Col_Cb);
                   New_Field := True;
                 end if;

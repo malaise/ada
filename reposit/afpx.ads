@@ -175,15 +175,16 @@ package Afpx is
   end record;
 
   -- Call back called by Put_Then_Get when entering a new get field:
-  -- Given the reason for entering field (see Con_Io).
+  -- Given the field no, the reason for entering field (see Con_Io)
   type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
-  --  and given the content of the get field as by Decode_Field (Row =>0)
+  --  and given the content of the get field as by Decode_Field (Row => 0)
   --  the client specifies the column of the cursor.
   -- If the value returned is bigger then Str'Length - 1,
   --  then Str'Length - 1 is used.
   -- If no callback is provided, then 0 is used.
   type Cursor_Set_Col_Cb is access
-       function (Enter_Field_Cause : Enter_Field_Cause_List;
+       function (Cursor_Field : Field_Range;
+                 Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : String) return Con_Io.Col_Range;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str
