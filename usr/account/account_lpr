@@ -1,0 +1,2 @@
+#!/bin/bash
+a2ps -q -R -B -1 -l100 $*
