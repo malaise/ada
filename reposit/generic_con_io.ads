@@ -1,5 +1,5 @@
 with CALENDAR;
-with X_MNG;
+with X_MNG, TIMERS;
 package GENERIC_CON_IO is
   subtype FONT_NO_RANGE is NATURAL range 0 .. 3;
 
@@ -190,26 +190,22 @@ package GENERIC_CON_IO is
     procedure PAUSE;
 
     -- Gets first character (echo or not)
-    -- No echo for RET, ESC, BREAK, FD_EVENT and REFRESH where
-    --  ASCII.CR, ESC, EOT, STX and NUL are returned respectively
+    -- No echo for RET,      ESC, BREAK, FD_EVENT, TIMER_EVENT and REFRESH where
+    --             ASCII.CR, ESC, EOT,   STX,      SYN         and NUL are returned
+    --   respectively
     -- Cursor movements (UP to RIGHT, TAB and STAB) and mouse events are
     --  discarded (get does not return).
-    function GET (NAME : WINDOW := SCREEN; ECHO : in BOOLEAN := TRUE) return CHARACTER;
+    function GET (NAME : WINDOW := SCREEN; ECHO : in BOOLEAN := TRUE)
+                 return CHARACTER;
 
     -- How to specify a delay, wait some seconds or until a specific time
-    type DELAY_LIST is (DELAY_SEC, DELAY_EXP);
-    INFINITE_SECONDS : constant DURATION := -1.0;
-    type DELAY_REC (DELAY_KIND : DELAY_LIST := DELAY_SEC) is record
-      case DELAY_KIND is
-        when DELAY_SEC =>
-          DELAY_SECONDS : DURATION := INFINITE_SECONDS;
-        when DELAY_EXP =>
-          EXPIRATION_TIME : CALENDAR.TIME;
-      end case;
-    end record;
-    -- Inifinte delay
-    INFINITE_DELAY : constant DELAY_REC(DELAY_SEC)
-                   := (DELAY_KIND => DELAY_SEC, DELAY_SECONDS => INFINITE_SECONDS);
+    -- PERIOD is not significant
+    subtype DELAY_LIST is TIMERS.DELAY_LIST;
+    INFINITE_SECONDS : constant DURATION := TIMERS.INFINITE_SECONDS;
+    subtype PERIOD_RANGE is TIMERS.PERIOD_RANGE;
+    NO_PERIOD : constant PERIOD_RANGE := TIMERS.NO_PERIOD;
+    subtype DELAY_REC is TIMERS.DELAY_REC;
+    INFINITE_DELAY : constant DELAY_REC := TIMERS.INFINITE_DELAY;
    
 
     -- Gets a string of at most width characters
@@ -226,6 +222,7 @@ package GENERIC_CON_IO is
     --  on mouse click, release (or motion if enabled)
     --  on time_out expiration
     --  if a callback has been activated on a fd (see x_mng)
+    --  if a callback has been activated on a timer expiration (see timer)
     --  if a refresh is needed on the screen (see x_mng)
     -- Mouse_button event can only be generated if the mouse cursor is shown
 
@@ -239,7 +236,7 @@ package GENERIC_CON_IO is
     -- Note that is STR'LENGHT is 0, the cursor is hidden
     type CURS_MVT is (UP, DOWN, PGUP, PGDOWN, CTRL_PGUP, CTRL_PGDOWN,
                       LEFT, RIGHT, FULL, TAB, STAB, RET, ESC, BREAK,
-                      MOUSE_BUTTON, TIMEOUT, FD_EVENT, REFRESH);
+                      MOUSE_BUTTON, TIMEOUT, FD_EVENT, TIMER_EVENT, REFRESH);
     procedure GET (STR        : out STRING;
                    LAST       : out NATURAL;
                    STAT       : out CURS_MVT;

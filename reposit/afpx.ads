@@ -156,7 +156,8 @@ package AFPX is
   procedure UPDATE_LIST (ACTION : in LIST_ACTION_LIST);
 
   -- See Con_io.Curs_Mvt
-  type EVENT_LIST is (KEYBOARD, MOUSE_BUTTON, FD_EVENT, REFRESH);
+  type EVENT_LIST is (KEYBOARD, MOUSE_BUTTON,
+                      FD_EVENT, TIMER_EVENT, REFRESH);
   type KEYBOARD_KEY_LIST is (RETURN_KEY, ESCAPE_KEY, BREAK_KEY);
 
   type RESULT_REC (EVENT : EVENT_LIST := KEYBOARD) is record
@@ -166,7 +167,7 @@ package AFPX is
         KEYBOARD_KEY : KEYBOARD_KEY_LIST;
       when MOUSE_BUTTON =>
         FIELD_NO : ABSOLUTE_FIELD_RANGE;
-      when FD_EVENT | REFRESH =>
+      when FD_EVENT | TIMER_EVENT | REFRESH =>
         null;
     end case;
   end record;

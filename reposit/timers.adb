@@ -1,0 +1,233 @@
+with Dynamic_List;
+package body  Timers is
+
+  -- Allocated timer Ids
+  subtype Timer_Id_Range is Positive;
+  Next_Timer_Id : Positive := Positive'First;
+  -- Allocate a new (free) timer id
+  function Get_Next_Id return Timer_Id_Range;
+
+  -- List of running timers
+  subtype Exp_Rec is Delay_Rec(Delay_Exp);
+  type Timer_Rec is record
+    Id : Timer_Id_Range;
+    Exp : Exp_Rec;
+    CB  : Timer_Callback;
+  end record;
+
+  package Timer_List_Mng is new Dynamic_List (Timer_Rec);
+  Timer_List : Timer_List_Mng.List_Type;
+
+  -- Sort timers in crescent order of expiration times
+  function "<" (T1, T2 : Timer_Rec) return Boolean is
+    use type Ada.Calendar.Time;
+  begin
+    return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time;
+  end "<";
+  procedure Sort is new Timer_List_Mng.Sort ("<");
+
+  -- Search Timer by Id 
+  function Id_Match (T1, T2 : Timer_Rec) return Boolean is
+  begin
+    return T1.Id = T2.Id;
+  end Id_Match;
+  procedure Search_Id is new Timer_List_Mng.Search (Id_Match);
+
+  -- Allocate a new (free) timer id
+  function Get_Next_Id return Timer_Id_Range is
+    Start_Id : constant Timer_Id_Range := Next_Timer_Id;
+    Timer : Timer_Rec;
+  begin
+    loop
+      -- Init to next possible Id
+      Timer.Id := Next_Timer_Id;
+      -- Check not allocated
+      begin
+        Search_Id (Timer_List, Timer, From_Current => False);
+      exception
+        when Timer_List_Mng.Not_In_List =>
+          -- Good
+          return Timer.Id;
+      end;
+      -- Bad luck, this Id is in use. Try next. 
+      if Next_Timer_Id /= Timer_Id_Range'Last then
+        Next_Timer_Id := Next_Timer_Id + 1;
+      else
+        Next_Timer_Id := Timer_Id_Range'First;
+      end if;
+      -- Check we have not tried ALL timers
+      if Next_Timer_Id = Start_Id then
+        raise No_More_Timer;
+      end if;
+    end loop;
+  end Get_Next_Id;
+
+  -- Create a new timer
+  -- May raise Invalid_Delay if Delay_Seconds is < 0
+  -- Invalid_Delay : exception;
+  function Create (Delay_Spec : Delay_Rec;
+                   Callback   : Timer_Callback) return Timer_Id is
+    Timer : Timer_Rec;
+    use Ada.Calendar;
+  begin
+    -- Compute expiration time ASAP
+    if Delay_Spec.Delay_Kind = Delay_Sec then
+      if Delay_Spec.Delay_Seconds < 0.0 then
+        raise Invalid_Delay;
+      end if;
+      Timer.Exp.Expiration_Time := Ada.Calendar.Clock
+                                 + Delay_Spec.Delay_Seconds;
+    else
+      Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
+    end if;
+
+    -- Allocate Id and copy period and callback
+    Timer.Id := Get_Next_Id;
+    Timer.Exp.Period := Delay_Spec.Period;
+    Timer.CB := Callback;
+
+    -- Insert in beginning of list and sort it
+    if not Timer_List_Mng.Is_Empty (Timer_List) then
+      Timer_List_Mng.Move_To (Timer_List, Timer_List_Mng.Next, 0, False);
+    end if;
+    Timer_List_Mng.Insert (Timer_List, Timer, Timer_List_Mng.Prev);
+    Sort (Timer_List);
+
+    -- Done
+    return (Timer_Num => Timer.Id);
+  end Create;
+
+  -- Locate a timer in list
+  -- May raise Invalid_Timer if timer has expired
+  procedure Locate (Id : in Timer_Id) is
+    Timer : Timer_Rec;
+  begin
+    -- Check validity
+    if Id = No_Timer then
+      raise Invalid_Timer;
+    end if;
+    -- Try current
+    if not Timer_List_Mng.Is_Empty (Timer_List) then
+      Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+      if Timer.Id = Id.Timer_Num then
+        return ;
+      end if;
+    else
+      raise Invalid_Timer;
+    end if;
+
+    -- Search timer
+    Timer.Id := Id.Timer_Num;
+    begin
+      Search_Id (Timer_List, Timer, From_Current => False);
+    exception
+      when Timer_List_Mng.Not_In_List =>
+        -- Not found
+        raise Invalid_Timer;
+    end;
+  end Locate;
+
+  -- Delete current timer
+  procedure Delete_Current is
+  begin
+    -- Delete timer
+    if Timer_List_Mng.Get_Position (Timer_List) /= 1 then
+      Timer_List_Mng.Delete (Timer_List, Timer_List_Mng.Prev);
+    else
+      Timer_List_Mng.Delete (Timer_List, Timer_List_Mng.Next);
+    end if;
+  end Delete_Current;
+
+  -- Delete a timer
+  -- May raise Invalid_Timer if timer has expired
+  procedure Delete (Id : in Timer_Id) is
+  begin
+    -- Search timer
+    Locate (Id);
+    -- Delete timer
+    Delete_Current;
+  end Delete;
+
+  -- Locate First timer to expire
+  -- May raise Invalid_Timer if no more timer
+  procedure First is
+  begin
+    if Timer_List_Mng.Is_Empty (Timer_List) then
+      raise Invalid_Timer;
+    end if;
+    -- Move to beginning
+    Timer_List_Mng.Move_To (Timer_List, Timer_List_Mng.Next, 0, False);
+  end First;
+
+  -- For each timer for which if expiration time/delay is reached
+  -- its callback is called
+  -- then, if periodical it is re-armed (and may expire)
+  --       if not it is deleted
+  -- Return True if at least one timer has expired
+  function Expire return Boolean is
+    Timer : Timer_Rec;
+    One_Found : Boolean;
+    use type Ada.Calendar.Time;
+  begin
+    One_Found := False;
+    loop
+      begin
+        -- Search first timer
+        First;
+      exception
+        when Invalid_Timer =>
+          -- No  more timer
+          exit;
+      end;
+
+      -- Get it
+      Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+      -- Done when  no more to expire
+      exit when Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
+
+      -- Expired: Remove single shot
+      if Timer.Exp.Period = No_Period then
+        Delete_Current;
+      else
+        -- Re-arm periodical, store and sort
+        Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
+                                   + Timer.Exp.Period;
+        Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
+        Sort (Timer_List);
+      end if;
+      -- Call callback
+      if Timer.CB /= null then
+        Timer.CB ((Timer_Num => Timer.Id));
+      end if;
+      One_Found := True;
+    end loop;
+
+    return One_Found;
+  end Expire;
+
+  -- Delay until next timer expires (or Infinite_Seconds)
+  function Wait_For return Duration is
+    Timer : Timer_Rec;
+    Result : Duration;
+    use Ada.Calendar;
+  begin
+    begin
+      -- Search first timer and read it
+      First;
+    exception
+      when Invalid_Timer =>
+        -- No  more timer
+      return Infinite_Seconds;
+    end;
+    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+
+    -- Compute delay until expiration
+    Result := Timer.Exp.Expiration_Time - Ada.Calendar.Clock;
+    if Result < 0.0 then
+      Result := 0.0;
+    end if;
+    return Result;
+  end Wait_For;
+
+end Timers;
+

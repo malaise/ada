@@ -384,7 +384,7 @@ package body MESU_EDI is
       case PTG_RESULT.EVENT is
         when REFRESH  =>
           REDISPLAY := TRUE;
-        when FD_EVENT  =>
+        when FD_EVENT | AFPX.TIMER_EVENT =>
           null;
         when KEYBOARD =>
 
@@ -599,7 +599,7 @@ package body MESU_EDI is
       case PTG_RESULT.EVENT is
         when REFRESH =>
           REDISPLAY := TRUE;
-        when FD_EVENT  =>
+        when FD_EVENT | AFPX.TIMER_EVENT =>
           null;
         when KEYBOARD =>
 

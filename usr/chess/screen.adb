@@ -1,6 +1,6 @@
 with Ada.Calendar;
 
-with Big_Con_Io, Normal, Lower_Str, Lower_Char, Upper_Char, Day_Mng;
+with Big_Con_Io, Normal, Lower_Str, Lower_Char, Upper_Char, Day_Mng, Timers;
 
 with Pieces, Space.Board, Image, Debug;
 
@@ -314,7 +314,7 @@ package body Screen is
 
       Con_Io.Move (23, 7);
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
-             Time_Out => (Con_Io.Delay_Sec, 0.1));
+             Time_Out => (Timers.Delay_Sec, Con_Io.No_Period, 0.1));
       Put_Time (Move_Color);
       if Stat = Con_Io.Ret then
         if Str(1) = ' ' then
@@ -393,19 +393,18 @@ package body Screen is
     Pos  : Positive;
     Ins  : Boolean;
 
-    Timeout : Con_Io.Delay_Rec;
+    Timer : Timers.Timer_Id;
 
     use type Con_Io.Curs_Mvt, Space.Color_List;
   begin
     if Ack then
-      Timeout := Con_Io.Infinite_Delay;
       Erase_Time (Move_Color);
     else
-      Timeout := (Con_Io.Delay_Sec, 1.0);
       Put_Time (Move_Color);
+      -- Start a single shot timer (no callback)
+      Timer := Timers.Create ( (Timers.Delay_Sec, Con_Io.No_Period, 1.0), null);
     end if;
     Ins := False;
-    Put_Time (Move_Color);
 
     loop
       Con_Io.Set_Background (Main_Back);
@@ -414,25 +413,30 @@ package body Screen is
       Con_Io.Put (Message);
 
       Pos := 1;
-      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
-             Time_Out => Timeout);
+      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins);
       if not Ack then
         Put_Time (Move_Color);
       end if;
-      if Stat = Con_Io.Ret or else Stat = Con_Io.Timeout then
+      if Stat = Con_Io.Ret or else Stat = Con_Io.Timer_Event then
         Erase;
-        return;
+        exit;
       elsif Stat = Con_Io.Refresh then
         Display_Board (Disp_Color);
         Display_Promotion (Move_Color);
       elsif Stat = Con_Io.Break then
         Erase;
-        return;
+        exit;
       end if;
     end loop;
+    begin
+      Timers.Delete (Timer);
+    exception
+      when Timers.Invalid_Timer =>
+        null;
+    end;
   end Put;
 
-  -- Wait a bit
+  -- Wait until fd event
   procedure Wait (Disp_Color : in Space.Color_List;
                   Move_Color : in Space.Color_List) is
     Str  : String (1 .. 0);
@@ -445,7 +449,7 @@ package body Screen is
 
     use type Con_Io.Curs_Mvt, Space.Color_List;
   begin
-    Timeout := (Con_Io.Delay_Sec, 0.5);
+    Timeout := (Timers.Delay_Sec, Con_Io.No_Period, 0.5);
     Ins := False;
     Put_Time (Move_Color);
 

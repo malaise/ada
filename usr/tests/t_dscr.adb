@@ -73,7 +73,7 @@ begin
         end case;
       when AFPX.MOUSE_BUTTON =>
         null;
-      when AFPX.FD_EVENT =>
+      when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
         null;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;

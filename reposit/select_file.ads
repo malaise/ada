@@ -4,6 +4,8 @@ generic
   with procedure INIT_PROCEDURE;
   -- Any action to do when a fd_event has been received (see Afpx Fd_event)
   with procedure FD_CALLBACK is NULL_PROCEDURE;
+  -- Any action to do when a Timer_event has occured (see Afpx Fd_event)
+  with procedure TIMER_CALLBACK is NULL_PROCEDURE;
 
 function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
                       CURRENT_FILE : STRING;

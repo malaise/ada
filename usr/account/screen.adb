@@ -158,7 +158,7 @@ package body SCREEN is
           end case;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;
-        when AFPX.FD_EVENT =>
+        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
           REDISPLAY := TRUE;
       end case;
     end loop;

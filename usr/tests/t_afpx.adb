@@ -1,4 +1,4 @@
-with MY_IO, ARGUMENT, AFPX, CON_IO, DYNAMIC_LIST, DIR_MNG;
+with ARGUMENT, AFPX, CON_IO, DYNAMIC_LIST, DIR_MNG, TIMERS;
 procedure T_AFPX is
 
   procedure DIR_SORT is new DIR_MNG.FILE_LIST_MNG.SORT (DIR_MNG.LESS_THAN);
@@ -11,6 +11,12 @@ procedure T_AFPX is
   PTG_RESULT   : AFPX.RESULT_REC;
   REDISPLAY    : BOOLEAN;
   FLIP_FLOP : BOOLEAN;
+
+  TIMER_SS, TIMER_PER, TIMER_TMP : TIMERS.TIMER_ID;
+  procedure TIMER_CB (ID : in TIMERS.TIMER_ID) is
+  begin
+    FLIP_FLOP := not FLIP_FLOP;
+  end TIMER_CB;
 
   use AFPX;
 
@@ -39,6 +45,17 @@ begin
   DIR_SORT (DIR_LIST);
   DIR_MNG.FILE_LIST_MNG.MOVE_TO (DIR_LIST, DIR_MNG.FILE_LIST_MNG.NEXT,
                                  0 , FALSE);
+
+  -- Start a temporary silly timer
+  TIMER_TMP := TIMERS.CREATE ( (TIMERS.DELAY_SEC, 0.1, 0.1), null);
+  -- Start a single shot timer in 10 secs
+  TIMER_SS := TIMERS.CREATE ( (TIMERS.DELAY_SEC, TIMERS.NO_PERIOD, 10.0), null);
+  -- Start a 10 sec periodical timer in 20 secs
+  TIMER_PER := TIMERS.CREATE ( (TIMERS.DELAY_SEC, 10.0, 20.0),
+                               TIMER_CB'UNRESTRICTED_ACCESS);
+  -- Delete the temporary silly timer
+  TIMERS.DELETE (TIMER_TMP);
+  
   loop
     DIR_MNG.FILE_LIST_MNG.READ (DIR_LIST, DIR_ITEM,
                                 DIR_MNG.FILE_LIST_MNG.CURRENT);
@@ -71,6 +88,9 @@ begin
   REDISPLAY := FALSE;
 
   loop
+    AFPX.SET_FIELD_ACTIVATION (5, FLIP_FLOP);
+    AFPX.SET_FIELD_PROTECTION (0, not FLIP_FLOP);
+
     AFPX.PUT_THEN_GET (CURSOR_FIELD, CURSOR_COL, PTG_RESULT, REDISPLAY);
     REDISPLAY := FALSE;
 
@@ -100,8 +120,6 @@ begin
             exit;
         end case;
         FLIP_FLOP := not FLIP_FLOP;
-        AFPX.SET_FIELD_ACTIVATION (5, FLIP_FLOP);
-        AFPX.SET_FIELD_PROTECTION (0, not FLIP_FLOP);
       when AFPX.MOUSE_BUTTON =>
         case PTG_RESULT.FIELD_NO is
           when 4 =>
@@ -132,12 +150,17 @@ begin
       when AFPX.FD_EVENT =>
         AFPX.CLEAR_FIELD (2);
          AFPX.ENCODE_FIELD (2, (1, 0), ">> Fd Event <<");
+      when AFPX.TIMER_EVENT =>
+        AFPX.CLEAR_FIELD (2);
+         AFPX.ENCODE_FIELD (2, (1, 0), ">> Timer Event <<");
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;
 
   end loop;
 
+  TIMERS.DELETE (TIMER_PER);
   CON_IO.RESET_TERM;
 
 end T_AFPX;
+

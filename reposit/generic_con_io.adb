@@ -826,6 +826,7 @@ package body GENERIC_CON_IO is
       LOC_CTRL : BOOLEAN;
       LOC_SHIFT : BOOLEAN;
       use X_MNG, CALENDAR;
+      use type TIMERS.DELAY_REC, TIMERS.DELAY_LIST;
     begin
       if not INIT_DONE then
         raise NOT_INIT;
@@ -833,7 +834,7 @@ package body GENERIC_CON_IO is
 
       if TIME_OUT = INFINITE_DELAY then
         TIMEOUT_MS := -1;
-      elsif TIME_OUT.DELAY_KIND = DELAY_SEC then
+      elsif TIME_OUT.DELAY_KIND = TIMERS.DELAY_SEC then
         TIMEOUT_MS := INTEGER (FLOAT(TIME_OUT.DELAY_SECONDS) * 1_000.0);
       else
         CUR_TIME := CALENDAR.CLOCK;
@@ -847,6 +848,10 @@ package body GENERIC_CON_IO is
 
       NEXT_X_EVENT (TIMEOUT_MS, X_EVENT);
       case X_EVENT is
+        when X_MNG.TIMER_EVENT =>
+          -- Fd event
+          EVENT := TIMER_EVENT;
+          return;
         when X_MNG.FD_EVENT =>
           -- Fd event
           EVENT := FD_EVENT;
@@ -975,12 +980,14 @@ package body GENERIC_CON_IO is
       end CURSOR;
 
 
+      use type TIMERS.DELAY_REC, TIMERS.DELAY_LIST;
     begin
       -- Time at which the get ends
-      if TIME_OUT = INFINITE_DELAY or else TIME_OUT.DELAY_KIND = DELAY_EXP then
+      if TIME_OUT = TIMERS.INFINITE_DELAY or else TIME_OUT.DELAY_KIND = TIMERS.DELAY_EXP then
         LAST_TIME := TIME_OUT;
       else
-        LAST_TIME := (DELAY_KIND => DELAY_EXP,
+        LAST_TIME := (DELAY_KIND => TIMERS.DELAY_EXP,
+                      PERIOD     => TIMERS.NO_PERIOD,
                       EXPIRATION_TIME => CALENDAR."+"(CALENDAR.CLOCK, TIME_OUT.DELAY_SECONDS) );
       end if;
 
@@ -1320,6 +1327,8 @@ package body GENERIC_CON_IO is
             return ASCII.EOT;
           when FD_EVENT =>
             return ASCII.STX;
+          when TIMER_EVENT =>
+            return ASCII.SYN;
           when REFRESH =>
             return ASCII.NUL;
           when MOUSE_BUTTON | TIMEOUT =>

@@ -1,11 +1,13 @@
 with CALENDAR; use CALENDAR;
-with CON_IO;
+with CON_IO, TIMERS;
 with SOK_DISPLAY, SOK_TIME;
 package body SOK_INPUT is
 
   PLAY : BOOLEAN := TRUE;
-  DELTA_GET : constant CON_IO.DELAY_REC(CON_IO.DELAY_SEC) 
-            := (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 1.0);
+  DELTA_GET : constant CON_IO.DELAY_REC(TIMERS.DELAY_SEC) 
+            := (DELAY_KIND => TIMERS.DELAY_SEC,
+                PERIOD => CON_IO.NO_PERIOD,
+                DELAY_SECONDS => 1.0);
 
   function GET_KEY return KEY_LIST is
     STR  : STRING (1 .. 1);
@@ -48,7 +50,7 @@ package body SOK_INPUT is
           when BREAK => raise BREAK_REQUESTED;
           when MOUSE_BUTTON => null;
           when TIMEOUT => null;
-          when FD_EVENT => null;
+          when FD_EVENT | TIMER_EVENT => null;
           when REFRESH =>
             return REFRESH;
         end case;
@@ -89,7 +91,7 @@ package body SOK_INPUT is
         when BREAK => raise BREAK_REQUESTED;
         when MOUSE_BUTTON => null;
         when TIMEOUT => null;
-        when FD_EVENT => null;
+        when FD_EVENT | TIMER_EVENT => null;
         when REFRESH => null;
       end case;
     end loop;

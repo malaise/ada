@@ -135,7 +135,7 @@ package body DIALOG is
             when others =>
               null;
           end case;
-        when AFPX.FD_EVENT =>
+        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
           null;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;
@@ -221,7 +221,7 @@ package body DIALOG is
             when others =>
               null;
           end case;
-        when AFPX.FD_EVENT =>
+        when AFPX.FD_EVENT | AFPX.TIMER_EVENT =>
           null;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;

@@ -75,7 +75,7 @@
 #  LIST  |   X Basic            X Basic     X Basic
 
 
-
+# for T_Afpx
 DESCRIPTOR 1
 
   LIST
@@ -190,7 +190,7 @@ DESCRIPTOR 1
 
 END DESCRIPTOR
 
-
+# For T_Dscr
 DESCRIPTOR 2
 
   FIELD 1 BUTTON
@@ -203,6 +203,7 @@ DESCRIPTOR 2
 
 END DESCRIPTOR
 
+# For T_Dscr
 DESCRIPTOR 3
 
   LIST
@@ -213,6 +214,7 @@ DESCRIPTOR 3
 END DESCRIPTOR
 
 
+# For T_Dscr
 DESCRIPTOR 4
 
   FIELD 1 PUT
@@ -233,7 +235,7 @@ DESCRIPTOR 4
   END FIELD
 
   FIELD 3 PUT
-    GEOMETRY 5 30 10 50
+    GEOMETRY 5 30 11 50
     COLORS light_blue not_blink red
     INIT
       3 7 COUCOU
@@ -243,7 +245,18 @@ DESCRIPTOR 4
 END DESCRIPTOR
 
 
-# File selection
+# For T_Timers
+DESCRIPTOR 6
+
+  FIELD 1 PUT
+    GEOMETRY 0 0 24 79
+    COLORS white not_blink black
+  END FIELD
+
+
+END DESCRIPTOR
+
+# File selection for t_select_file
 DESCRIPTOR 10
 
   LIST

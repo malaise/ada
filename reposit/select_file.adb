@@ -147,6 +147,8 @@ function SELECT_FILE (DESCRIPTOR : AFPX.DESCRIPTOR_RANGE;
           end case;
         when AFPX.FD_EVENT =>
           FD_CALLBACK;
+        when AFPX.TIMER_EVENT =>
+          TIMER_CALLBACK;
         when AFPX.REFRESH =>
           REDISPLAY := TRUE;
       end case;
@@ -386,6 +388,8 @@ begin
         end case;
       when AFPX.FD_EVENT =>
         FD_CALLBACK;
+      when AFPX.TIMER_EVENT =>
+        TIMER_CALLBACK;
       when AFPX.REFRESH =>
         REDISPLAY := TRUE;
     end case;

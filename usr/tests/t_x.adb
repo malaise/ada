@@ -80,11 +80,9 @@ begin
         case KIND is
           when X_MNG.DISCARD =>
             PUT (X_MNG.EVENT_KIND'IMAGE(KIND));
-          when X_MNG.REFRESH =>
+          when X_MNG.REFRESH | X_MNG.FD_EVENT | X_MNG.TIMER_EVENT =>
             X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, TRUE, FALSE);
             PUT (X_MNG.EVENT_KIND'IMAGE(KIND));
-          when X_MNG.FD_EVENT =>
-            X_MNG.X_SET_ATTRIBUTES (ID, 0, 3, FALSE, FALSE, TRUE, FALSE);
           when X_MNG.TID_PRESS | X_MNG.TID_RELEASE =>
             X_MNG.X_READ_TID (ID, TRUE, TID_BUTTON, TID_ROW, TID_COL);
             PUT (X_MNG.EVENT_KIND'IMAGE(KIND) & " " & X_MNG.BUTTON_LIST'IMAGE(TID_BUTTON)

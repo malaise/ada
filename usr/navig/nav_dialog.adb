@@ -338,7 +338,7 @@ package body NAV_DIALOG is
                 null;
               when CON_IO.REFRESH =>
                 REFRESH := TRUE;
-              when CON_IO.FD_EVENT =>
+              when CON_IO.FD_EVENT | CON_IO.TIMER_EVENT =>
                 null;
               when CON_IO.TIMEOUT | CON_IO.ESC |
                    CON_IO.MOUSE_BUTTON | CON_IO.BREAK =>

@@ -35,9 +35,9 @@ package X_MNG is
   -- Mouse buttons
   type BUTTON_LIST is (NONE, LEFT, MIDDLE, RIGHT);
 
-  -- Returned events
+  -- Returned events (see timers)
   type EVENT_KIND is (DISCARD, TID_RELEASE, TID_PRESS, KEYBOARD, REFRESH,
-                      TID_MOTION, FD_EVENT);
+                      TID_MOTION, FD_EVENT, TIMER_EVENT);
 
   -- Fd management
   type FILE_DESC is new NATURAL;
@@ -307,7 +307,8 @@ private
    KEYBOARD    => 3,
    REFRESH     => 4,
    TID_MOTION  => 5,
-   FD_EVENT    => 9);
+   FD_EVENT    => 9,
+   TIMER_EVENT => 10);
  
  subtype LINE_RANGE is NATURAL range 0 .. MAX_LINE_NUMBER;
   subtype CLIENT_RANGE is POSITIVE range 1 .. MAX_LINE_NUMBER;

@@ -593,6 +593,13 @@ package body AF_PTG is
           RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
                      EVENT        => FD_EVENT);
           DONE := TRUE;
+        when CON_IO.TIMER_EVENT =>
+          if LIST_PRESENT then
+            AF_LIST.SET_CURRENT;
+          end if;
+          RESULT := (ID_SELECTED  => AF_LIST.GET_STATUS.ID_SELECTED,
+                     EVENT        => TIMER_EVENT);
+          DONE := TRUE;
         when CON_IO.TIMEOUT =>
           null;
       end case;

@@ -1,6 +1,7 @@
 with NORMAL;
 with DAY_MNG;
 with CON_IO;
+with TIMERS;
 with DOS;
 with SOK_INPUT;
 with SOK_TIME;
@@ -419,7 +420,9 @@ package body SOK_DISPLAY is
       CON_IO.MOVE ( (01, 34), GET_WIN);
       CON_IO.PUT_THEN_GET (STR, LAST, STAT, POS, INS, GET_WIN,
        FOREGROUND => CON_IO.LIGHT_GRAY, BACKGROUND => CON_IO.BLACK,
-       TIME_OUT => (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 1.0) );
+       TIME_OUT => (DELAY_KIND => TIMERS.DELAY_SEC,
+                    PERIOD     => CON_IO.NO_PERIOD,
+                    DELAY_SECONDS => 1.0) );
 
       case STAT is
         when CON_IO.ESC =>

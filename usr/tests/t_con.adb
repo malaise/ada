@@ -3,6 +3,7 @@ with CALENDAR;
 with MY_IO, NORMAL;
 with GENERIC_CON_IO;
 with ARGUMENT;
+with TIMERS;
 
 procedure T_CON is
 
@@ -29,8 +30,10 @@ procedure T_CON is
     STAT : CURS_MVT;
     STR_EXIT : constant STRING := "exit";
     WIDTH : NATURAL;
-    DELT : constant CON_IO.DELAY_REC(CON_IO.DELAY_SEC)
-         := (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 10.0);
+    DELT : constant CON_IO.DELAY_REC(TIMERS.DELAY_SEC)
+         := (DELAY_KIND => TIMERS.DELAY_SEC,
+             PERIOD => CON_IO.NO_PERIOD,
+             DELAY_SECONDS => 10.0);
     POS : POSITIVE;
     INS : BOOLEAN;
     T0  : constant CALENDAR.DAY_DURATION
@@ -145,7 +148,9 @@ procedure T_CON is
       PUT ("Exiting", W1, RED, BLINK, GREEN);
       GET (STR(1..0), LAST, STAT, POS, INS,
          W1, CURRENT, CURRENT, RED,
-         (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 3.0) );
+         (DELAY_KIND => TIMERS.DELAY_SEC,
+          PERIOD => CON_IO.NO_PERIOD,
+          DELAY_SECONDS => 3.0) );
     end loop;
 
     DESTROY;
@@ -169,3 +174,4 @@ begin
     T(I).START(I);
   end loop;
 end T_CON;
+

@@ -1,6 +1,6 @@
 -- all the primitives to access the screen
 with SYSTEM;
-with TASK_MNG;
+with TASK_MNG, TIMERS;
 package body NAV_SCREEN is
   use CON_IO;
 
@@ -26,8 +26,10 @@ package body NAV_SCREEN is
   RES_FORE : constant EFFECTIVE_COLORS := LIGHT_GREEN;
 
   -- delay max of a get (data or action) in seconds.
-  DELTA_GET : CONSTANT CON_IO.DELAY_REC(CON_IO.DELAY_SEC) := 
-    (DELAY_KIND => CON_IO.DELAY_SEC, DELAY_SECONDS => 0.5);
+  DELTA_GET : CONSTANT CON_IO.DELAY_REC(TIMERS.DELAY_SEC) := 
+    (DELAY_KIND => TIMERS.DELAY_SEC,
+     PERIOD => NO_PERIOD,
+     DELAY_SECONDS => 0.5);
   -- number of deltas before clearing err messages
   TIME_OUT_GET : constant := 6;
 
@@ -258,7 +260,7 @@ package body NAV_SCREEN is
           else
             CUR_ACTION := OPERATION'FIRST;
           end if;
-        when FD_EVENT => 
+        when FD_EVENT | TIMER_EVENT => 
           null;
         when REFRESH => 
           return REFRESH;
