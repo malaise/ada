@@ -39,6 +39,7 @@ begin
 
   INIT;
   RESET_TERM;
+  ENABLE_MOTION_EVENTS(TRUE);
   -- fenetre de saisie, fenetre d'affichage
   OPEN ( W1, ( 5, 15), (10, 78));
   OPEN ( W2, (15,  1), (17, 78));
@@ -84,15 +85,19 @@ begin
         end if;
         if MOUSE_EVENT.STATUS = PRESSED then
           PUT (" P", W2);
-        else
+        elsif MOUSE_EVENT.STATUS = RELEASED then
           PUT (" R", W2);
+        elsif MOUSE_EVENT.STATUS = MOTION then
+          PUT (" M", W2);
         end if;
         if MOUSE_EVENT.BUTTON = LEFT then
           PUT (" L", W2);
         elsif MOUSE_EVENT.BUTTON = MIDDLE then
           PUT (" M", W2);
-        else
+        elsif MOUSE_EVENT.BUTTON = RIGHT then
           PUT (" R", W2);
+        elsif MOUSE_EVENT.BUTTON = MOTION then
+          PUT (" x", W2);
         end if;
         PUT (NORMAL(MOUSE_EVENT.ROW, 4) & NORMAL(MOUSE_EVENT.COL, 4), W2);
         if MOUSE_EVENT.VALID

@@ -32,8 +32,8 @@ begin
   if ARGUMENT.GET_NBRE_ARG = 0 then
     DIR_MNG.LIST_DIR (DIR_LIST, "");
   else
-    DIR_MNG.LIST_DIR (DIR_LIST,
-                      ARGUMENT.GET_PARAMETER (OCCURENCE => 1));
+    DIR_MNG.LIST_DIR (DIR_LIST, "",
+                      TEMPLATE => ARGUMENT.GET_PARAMETER (OCCURENCE => 1));
   end if;
 
   DIR_SORT (DIR_LIST);

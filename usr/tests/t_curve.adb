@@ -1,4 +1,4 @@
-with CURVE;
+with MATH, CURVE;
 procedure T_CURVE is
 
   POINTS : constant CURVE.T_THE_POINTS (1 .. 9) :=
@@ -17,7 +17,7 @@ procedure T_CURVE is
   X_MIN, X_MAX : CURVE.T_COORDINATE;
 
 
-  function F(X : FLOAT) return FLOAT is
+  function F(X : MATH.REAL) return MATH.REAL is
   begin
     return 4.0 * X**3 + 3.0 * X**2 + 2.0 * X + 1.0;
   end F;
@@ -30,6 +30,12 @@ begin
   BOUNDS := (SCALE => CURVE.CURVE_SCREEN,
              X_MIN => X_MIN,
              X_MAX => X_MAX);
+  MY_DRAW (BOUNDS, POINTS);
+  BOUNDS := (SCALE => CURVE.FREE_NORMED,
+             X_MIN => -250.0,
+             X_MAX => +250.0,
+             Y_MIN => -250.0,
+             Y_MAX => +250.0);
 
   MY_DRAW (BOUNDS, POINTS);
 

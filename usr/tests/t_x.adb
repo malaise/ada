@@ -98,6 +98,8 @@ begin
             PUT (X_MNG.EVENT_KIND'IMAGE(KIND) & " " & X_MNG.BUTTON_LIST'IMAGE(TID_BUTTON)
                               & " " & INTEGER'IMAGE(TID_ROW)  & " " & INTEGER'IMAGE(TID_COL));
             exit MAIN_LOOP when TID_ROW = 1 and then TID_COL = 1;
+          when X_MNG.TID_MOTION =>
+            null;
           when X_MNG.KEYBOARD =>
             X_MNG.X_READ_KEY(ID, KBD_CODES);
             TEXT_HANDLER.SET (TXT, X_MNG.EVENT_KIND'IMAGE(KIND));
