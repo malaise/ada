@@ -1,52 +1,48 @@
 include $(HOME)/Makefiles/common.mk
 
-LIBS := cndbm cutil x_mng
+LIBS := libcndbm libcutil libx_mng
 EXES := test_x
 
-ifeq ($(HOST), Linux)
-DEST := /usr/local/lib
-INSTALLED := $(LIBS:%=$(DEST)/lib%.a) $(LIBS:%=$(DEST)/lib%.so)
-$(DEST)/% : $(LIB)/%
-	/bin/cp -f $< $@
-	/bin/chmod a+r $@
-endif
-
-D_OBJS := cndbm.o
-U_OBJS := timeval.o sys_calls.o wait_evt.o socket.o
-X_OBJS := x_color.o x_font.o x_line.o\
+OBJS_libcndbm := cndbm.o
+OBJS_libcutil := timeval.o sys_calls.o wait_evt.o socket.o
+OBJS_libx_mng := x_color.o x_font.o x_line.o\
 	x_export.o x_file.o x_key.o x_screen.o
-OBJS := $(D_OBJS) $(X_OBJS) $(U_OBJS) test_x.o
+
+LARGS_test_x := -lx_mng -lcutil -lX11 -lm
+
+DEST_LIBS := /usr/local/lib
+INST_LIBS := $(LIBS:%=$(DEST_LIBS)/%.a) $(LIBS:%=$(DEST_LIBS)/%.so)
 
 include $(TEMPLATES)/c.mk
 
-D_OBJS := $(D_OBJS:%=$(LIB)/%)
-U_OBJS := $(U_OBJS:%=$(LIB)/%)
-X_OBJS := $(X_OBJS:%=$(LIB)/%)
-
-$(LIB)/test_x.o : test_x.c x_export.h
-
 $(BIN)/test_x : $(LIB)/test_x.o $(LIB)/libx_mng.so $(LIB)/libcutil.so
-	$(CC) -o $(BIN)/test_x $(LIB)/test_x.o -L$(LIB) \
-	  -lx_mng -lcutil -lX11 -lm
 
-$(LIB)/libcndbm.so : $(D_OBJS)
-	ld -shared $(SOOPT) -o $@ $(D_OBJS) -lc
-	-$(RM) so_locations
+$(LIB)/libcndbm.a $(LIB)/libcndbm.so : $(OBJS_libcndbm:%=$(LIB)/%)
 
-$(LIB)/libcndbm.a : $(D_OBJS)
-	ar crvs $@ $?
+$(LIB)/libcutil.a $(LIB)/libcutil.so : $(OBJS_libcutil:%=$(LIB)/%)
 
-$(LIB)/libcutil.so : $(U_OBJS)
-	ld -shared $(SOOPT) -o $@ $(U_OBJS) -lm -lc
-	-$(RM) so_locations
+$(LIB)/libx_mng.a $(LIB)/libx_mng.so : $(OBJS_libx_mng:%=$(LIB)/%)
 
-$(LIB)/libcutil.a : $(U_OBJS)
-	ar crvs $@ $?
+cndbm.c : cndbm.h
 
-$(LIB)/libx_mng.so : $(X_OBJS) $(LIB)/libcutil.so
-	ld -shared $(SOOPT) -o $@ $(X_OBJS) -L$(LIB) -lcutil -lX11 -lc
-	-$(RM) so_locations
+socket.c : socket_prv.h wait_evt.h
+wait_evt.c : wait_evt.h
+sys_calls.c : sys_calls.h
+timeval.c : timeval.h
+socket_prv.h : socket.h socket_net.h
+socket.h : boolean.h
+wait_evt.h : timeval.h
 
-$(LIB)/libx_mng.a : $(X_OBJS)
-	ar crvs $@ $?
+x_export.c : x_export.h x_screen.h x_line.h timeval.h
+x_file.c : x_file.h
+x_font.c : x_font.h
+x_key.c : x_key.h
+x_line.c : x_line.h x_file.h
+x_screen.c : x_screen.h x_color.h x_font.h
+x_color.h : x_stdinc.h x_file.h
+x_export.h : boolean.h wait_evt.h
+x_file.h : x_stdinc.h
+x_font.h :  x_stdinc.h x_file.h
+x_line.h : x_stdinc.h x_font.h x_color.h x_screen.h x_key.h
+x_screen.h : x_stdinc.h
 
