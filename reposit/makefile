@@ -1,10 +1,17 @@
 LIBX_MNG=-lx_mng
 LX=-largs $(LIBX_MNG) -lX11
 
-all: do_all afpx_bld clear_screen
+all: reposit afpx_bld clear_screen
 
-do_all:
-	@for file in *.ads *.adb ; do gnatmake -c $(ADA_OPT) $$file ; done
+reposit:
+	@for file in  *.ads; do \
+	  if [ !  -f `basename $$file .ads`.adb ] ; then \
+	    gnatmake $(ADA_OPT) -c $$file; \
+	  fi \
+	done;
+	@for file in  *.adb; do \
+	  gnatmake $(ADA_OPT) -c $$file; \
+	done;
 
 afpx_bld:
 	gnatmake $(ADA_OPT) $@ $(LX)
