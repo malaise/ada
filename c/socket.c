@@ -1,11 +1,10 @@
-
-#include <unistd.h>
+#include <sys/time.h>
 #include <fcntl.h>
-
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <malloc.h>
-#include <sys/time.h>
 #include <errno.h>
 
 #include "socket_prv.h"
@@ -249,7 +248,8 @@ static int soc_connect (soc_ptr soc) {
       || (errno == ENETUNREACH) ) {
       /* Not connected */
       return (SOC_CONN_REFUSED);
-    } else if (errno == EINPROGRESS) {
+    } else if ( (errno == EINPROGRESS)
+            ||  (errno == EWOULDBLOCK) ) {
       soc->connection = connecting;
       return (SOC_WOULD_BLOCK);
     } else if (errno == EALREADY) {
@@ -1141,7 +1141,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   /* Accept */
   do {
     fd = accept (soc->socket_id, &from_addr, &len);
-  } while ( (result == -1) && (errno == EINTR) );
+  } while ( (fd == -1) && (errno == EINTR) );
 
   /* Check result */
   if (fd < 0) {
