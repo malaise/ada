@@ -24,34 +24,78 @@ package body Intra_Dictio is
 
   package Dictio_Channel is new Channels.Channel ("Dummy",
                                                   Message_Rec, Read_Cb);
+  package Dictio_Bus is new Channels.Bus ("Dummy", "Dummy",
+                                                  Message_Rec, Read_Cb);
+  type Channel_Mode_List is new Args.Channel_Mode_List;
+  Mode : Channel_Mode_List;
+
+  Local_Name : Tcp_Util.Host_Name;
 
   procedure Init is
+    use type Args.Channel_Mode_List;
   begin
     Local_Host_Name.Set(Socket.Local_Host_Name);
+    Local_Host_Name.Get(Local_Name);
 
-    begin
-      Dictio_Channel.Change_Channel_Name (Args.Get_Channel_Name);
-      Dictio_Channel.Subscribe;
-    exception
-      when Error: others =>
-        Debug.Put_Error ("Cannot use channel "
-                       & Args.Get_Channel_Name);
-        Debug.Put_Error ("Exception: "
-                       & Ada.Exceptions.Exception_Name(Error));
-        Args.Usage;
-    end;
+    Mode := Channel_Mode_List(Args.Get_Mode);
 
-    begin
-      Dictio_Channel.Add_Destinations (Args.Get_Dest_File);
-      Dictio_Channel.Del_Destination (Local_Host_Name.Get);
-    exception
-      when Error: others =>
-        Debug.Put_Error ("Cannot set destinations on "
-                       & Args.Get_Channel_Name);
-        Debug.Put_Error ("Exception: "
-                       & Ada.Exceptions.Exception_Name(Error));
-        Args.Usage;
-    end;
+    if Mode = Channel then
+
+      if Debug.Level_Array(Debug.Intra) then
+        Debug.Put ("Intra: init channel");
+      end if;
+      begin
+        Dictio_Channel.Change_Channel_Name (Args.Get_Name);
+        Dictio_Channel.Subscribe;
+      exception
+        when Error: others =>
+          Debug.Put_Error ("Cannot use channel "
+                         & Args.Get_Name);
+          Debug.Put_Error ("Exception: "
+                         & Ada.Exceptions.Exception_Name(Error));
+          Args.Usage;
+      end;
+
+      begin
+        Dictio_Channel.Add_Destinations (Args.Get_Dest);
+        Dictio_Channel.Del_Destination (Parse (Local_Name));
+      exception
+        when Error: others =>
+          Debug.Put_Error ("Cannot set destinations on "
+                         & Args.Get_Name);
+          Debug.Put_Error ("Exception: "
+                         & Ada.Exceptions.Exception_Name(Error));
+          Args.Usage;
+      end;
+
+    else
+
+      if Debug.Level_Array(Debug.Intra) then
+        Debug.Put ("Intra: init bus");
+      end if;
+      begin
+        Dictio_Bus.Change_Names (Args.Get_Name, Args.Get_Dest);
+      exception
+        when Error: others =>
+          Debug.Put_Error ("Cannot use bus "
+                         & Args.Get_Name & " with destination " & Args.Get_Dest);
+          Debug.Put_Error ("Exception: "
+                         & Ada.Exceptions.Exception_Name(Error));
+          Args.Usage;
+      end;
+
+      begin
+        Dictio_Bus.Subscribe;
+        Dictio_Bus.Join;
+      exception
+        when Error: others =>
+          Debug.Put_Error ("Cannot subscribe or join bus "
+                         & Args.Get_Name & " with destination " & Args.Get_Dest);
+          Debug.Put_Error ("Exception: "
+                         & Ada.Exceptions.Exception_Name(Error));
+          Args.Usage;
+      end;
+    end if;
     if Debug.Level_Array(Debug.Intra) then
       Debug.Put ("Intra: init succeeded");
     end if;
@@ -62,18 +106,26 @@ package body Intra_Dictio is
     if Debug.Level_Array(Debug.Intra) then
       Debug.Put ("Intra: quit");
     end if;
-    begin
-      Dictio_Channel.Unsubscribe;
-    exception
-      when Channels.Not_Subscribed =>
-        null;
-    end;
-    Dictio_Channel.Del_All_Destinations;
+    if Mode = Channel then
+      begin
+        Dictio_Channel.Unsubscribe;
+      exception
+        when Channels.Not_Subscribed =>
+          null;
+      end;
+      Dictio_Channel.Del_All_Destinations;
+    else
+      Dictio_Bus.Unsubscribe;
+      Dictio_Bus.Leave;
+    end if;
   end Quit;
 
 
   procedure Add_Host (Host : String) is
   begin
+    if Mode = Bus then
+      return;
+    end if;
     Dictio_Channel.Add_Destination (Host);
     if Debug.Level_Array(Debug.Intra) then
       Debug.Put ("Intra: Add_Host: " & Host & " done");
@@ -88,6 +140,9 @@ package body Intra_Dictio is
 
   procedure Del_Host (Host : String) is
   begin
+    if Mode = Bus then
+      return;
+    end if;
     Dictio_Channel.Del_Destination (Host);
     if Debug.Level_Array(Debug.Intra) then
       Debug.Put ("Intra: Del_Host: " & Host & " done");
@@ -124,9 +179,16 @@ package body Intra_Dictio is
                      Length   : in Channels.Message_Length;
                      Diffused : in Boolean) is
   begin
+    -- Discard own message
+    if Mode = Bus and then Local_Name = Message.Head.From then
+      return;
+    end if;
     if Debug.Level_Array(Debug.Intra) then
       Debug.Put ("Intra: receive Kind: " & Kind_Image(Message.Head.Kind)
+               & "  Diff: " & Diffused'Img
                & "  Stat: " & Message.Head.Stat'Img
+               & "  Sync: " & Message.Head.Sync'Img
+               & "  Prio: " & Message.Head.Prio
                & "  From: " & Parse (Message.Head.From));
     end if;
     -- Call dispatcher
@@ -178,24 +240,41 @@ package body Intra_Dictio is
                  & "  Len: " & Len'Img);
       end if;
     end if;
+
+    Result := Error;
     if To = "*" then
-      Dictio_Channel.Write (Message, Len);
+      if Mode = Channel then
+        Dictio_Channel.Write (Message, Len);
+      else
+        Dictio_Bus.Write (Message, Len);
+      end if;
       Result := Ok;
     elsif To = "" then
       begin
-        Dictio_Channel.Reply (Message, Len);
+        if Mode = Channel then
+          Dictio_Channel.Reply (Message, Len);
+        else
+          Dictio_Bus.Reply (Message, Len);
+        end if;
+        Result := Ok;
       exception
         when Channels.Reply_Overflow =>
+          -- Channel only
           Result := Overflow;
         when Channels.Reply_Failed =>
           Result := Error;
       end;
     else
       begin
-        Dictio_Channel.Send (To, Message, Len);
+        if Mode = Channel then
+          Dictio_Channel.Send (To, Message, Len);
+        else
+          Dictio_Bus.Send (To, Message, Len);
+        end if;
         Result := Ok;
       exception
         when Channels.Send_Overflow =>
+          -- Channel only
           Result := Overflow;
         when Channels.Send_Failed =>
           Result := Error;
@@ -269,7 +348,11 @@ package body Intra_Dictio is
   begin
     Msg.Head.Kind := Sync_Kind;
     Msg.Item := Item;
-    Send (To, Msg, Result);
+    if To /= "" then
+      Send (To, Msg, Result);
+    else
+      Send ("*", Msg, Result);
+    end if;
     if Debug.Level_Array(Debug.Intra) and then Result /= Ok then
       Debug.Put ("Intra: sync reply failed on " & Result'Img);
     end if;

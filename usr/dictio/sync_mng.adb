@@ -1,5 +1,5 @@
 with Timers, Event_Mng, Dynamic_List, Sys_Calls;
-with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors, Online_Mng;
+with Status, Intra_Dictio, Data_Base, Parse, Debug, Errors, Online_Mng, Args;
 package body Sync_Mng is
 
 
@@ -94,6 +94,8 @@ package body Sync_Mng is
   First_Timeout : constant Natural := 100;
   Timeout_Factor : constant := 2;
 
+  -- Timer between first request and real syn (Init)
+  --  or for flow limitation (Send)
   Tid : Timers.Timer_Id := Timers.No_Timer;
 
   Delay_Per_Kb : Natural := 0;
@@ -127,14 +129,9 @@ package body Sync_Mng is
   Sync_List : Sync_List_Mng.List_Type;
   procedure Sync_Search is new Sync_List_Mng.Search;
 
-  procedure Do_Sync;
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean is
-  begin
-    Do_Sync;
-    return False;
-  end Timer_Sen_Cb;
+                         Data : Timers.Timer_Data) return Boolean;
   
   procedure Send (To : Tcp_Util.Host_Name) is
   begin
@@ -164,7 +161,53 @@ package body Sync_Mng is
     end;
   end Send;
 
-  procedure Do_Sync is
+  procedure Do_Sync_Bus is
+    Item : Data_Base.Item_Rec;
+    Bytes_Sent : Natural;
+    Reply_Result : Intra_Dictio.Reply_Result_List;
+    use type Data_Base.Item_Rec, Intra_Dictio.Reply_Result_List;
+  begin
+
+
+    Data_Base.Read_First (Item);
+    Bytes_Sent := 0;
+
+    Items:
+    while Item /= Data_Base.No_Item loop
+
+      -- Send item
+      Reply_Result := Intra_Dictio.Send_Sync_Data ("", Item);
+      if Reply_Result /= Intra_Dictio.Ok then
+        if Debug.Level_Array(Debug.Sync) then
+          Debug.Put ("Sync: Bus send error " & Reply_Result'Img);
+        end if;
+      end if;
+
+      -- Flow limitation
+      Bytes_Sent := Bytes_Sent + 110 + Item.Data_Len;
+      if Bytes_Sent >= 1024 then
+        Bytes_Sent := 0;
+        Event_Mng.Pause (Delay_Per_Kb);
+      else
+        Event_Mng.Pause (0);
+      end if;
+
+      -- Check if not cancelled
+      if Sending_Status /= Send then
+        if Debug.Level_Array(Debug.Sync) then
+          Debug.Put ("Sync: Sending cancelled");
+        end if; 
+        exit Items;
+      end if;
+
+      -- Next item
+      Data_Base.Read_Next (Item);
+
+    end loop Items;
+
+  end Do_Sync_Bus;
+
+  procedure Do_Sync_Channel is
     Item : Data_Base.Item_Rec;
     Reply_Result : Intra_Dictio.Reply_Result_List;
     Ovf_Timeout, Curr_Timeout : Natural;
@@ -174,22 +217,7 @@ package body Sync_Mng is
              Event_Mng.Out_Event_List;
   begin
 
-    Set_Delay;
 
-    -- Check sync not cancelled during init
-    if Sending_Status /= Init then
-      if Debug.Level_Array(Debug.Sync) then
-        Debug.Put ("Sync: cancelling due to " & Sending_Status'Img);
-      end if;
-      return;
-    end if;
-
-    if Debug.Level_Array(Debug.Sync) then
-      Debug.Put ("Sync: Sending " & Natural'Image(Data_Base.Nb_Item)
-               & " items");
-    end if; 
-
-    Sending_Status := Send;
     Data_Base.Read_First (Item);
     Bytes_Sent := 0;
 
@@ -218,7 +246,7 @@ package body Sync_Mng is
             Curr_Timeout := 0;
           end if;
           -- Wait a bit / check event
-          Event_Mng.Wait (Curr_Timeout);
+          Event_Mng.Pause (Curr_Timeout);
 
           if Sending_Status /= Send then
             if Debug.Level_Array(Debug.Sync) then
@@ -249,9 +277,9 @@ package body Sync_Mng is
           Bytes_Sent := Bytes_Sent + 110 + Item.Data_Len;
           if Bytes_Sent >= 1024 then
             Bytes_Sent := 0;
-            Event_Mng.Wait (Delay_Per_Kb);
+            Event_Mng.Pause (Delay_Per_Kb);
           else
-            Event_Mng.Wait (0);
+            Event_Mng.Pause (0);
           end if;
         end if;
 
@@ -269,6 +297,37 @@ package body Sync_Mng is
 
     end loop Items;
 
+  end Do_Sync_Channel;
+
+  function Timer_Sen_Cb (Id : Timers.Timer_Id;
+                         Data : Timers.Timer_Data) return Boolean is
+    use type Args.Channel_Mode_List;
+  begin
+    Tid := Timers.No_Timer;
+    Set_Delay;
+
+    -- Check sync not cancelled during init
+    if Sending_Status /= Init then
+      if Debug.Level_Array(Debug.Sync) then
+        Debug.Put ("Sync: cancelling due to " & Sending_Status'Img);
+      end if;
+      return False;
+    end if;
+
+    if Debug.Level_Array(Debug.Sync) then
+      Debug.Put ("Sync: Sending " & Natural'Image(Data_Base.Nb_Item)
+               & " items");
+    end if; 
+
+    -- Send items
+    Sending_Status := Send;
+    if Args.Get_Mode = Args.Channel then
+      Do_Sync_Channel;
+    else
+      Do_Sync_Bus;
+    end if;
+
+    -- Done
     if not Sync_List_Mng.Is_Empty (Sync_List) then
       Sync_List_Mng.Delete_List (Sync_List, True);
     end if;
@@ -276,7 +335,8 @@ package body Sync_Mng is
       Debug.Put ("Sync: Done");
     end if; 
     Sending_Status := Stop;
-  end Do_Sync;
+    return False;
+  end Timer_Sen_Cb;
 
   ------------------------------------------------------------
 
@@ -286,6 +346,7 @@ package body Sync_Mng is
   end In_Sync;
 
   procedure Cancel is
+    use type Timers.Timer_Id;
   begin
     if Debug.Level_Array(Debug.Sync) then
       if Timer_Active or else Sending_Status /= Stop then
@@ -296,6 +357,7 @@ package body Sync_Mng is
       Cancel_Timer;
     end if;
     if Sending_Status = Init then
+      Tid := Timers.No_Timer;
       Timers.Delete (Tid);
     end if;
     Sending_Status := Stop;
