@@ -96,7 +96,7 @@ extern int soc_close (soc_token *p_token);
 extern int soc_get_id (soc_token token, int *p_id);
 
 /* Set the socket blocking or non blocking */
-/*  (for sendind and receiving) */ 
+/*  (for sending, receiving, connecting) */ 
 extern int soc_set_blocking (soc_token token, boolean blocking);
 
 /* No broadcast nor change dest in tcp */
@@ -122,7 +122,7 @@ extern int soc_change_dest_host (soc_token token, char *host_lan, boolean lan);
 extern int soc_set_dest (soc_token token, soc_host *host, soc_port port);
 
 /* Get current lan name (computed from local host name) */
-/* lan_name must be big enough */
+/* lan_name must be large enough */
 extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len);
 
 /* Change destination port (same host_lan) - specify service */
@@ -148,11 +148,11 @@ extern int soc_get_local_host_name (char *host_name,
 extern int soc_get_local_host_id (soc_host *p_host);
 
 /* Send to a socket, the destination of which must set */
-/* May return SOC_WOULD_BLOCK, then next sends have to be made */
-/*  with length=0, util soc_send returns ok */
+/* May return SOC_WOULD_BLOCK, then next tries have to be made */
+/*  with soc_resend util it returns ok */
 extern int soc_send (soc_token token, soc_message message, soc_length length);
 
-/* Resed tail of previous message */
+/* Resend tail of previous message */
 extern int soc_resend (soc_token token);
 
 /* Socket must not be connected in tcp */
@@ -179,10 +179,10 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /*  After success, the socket may be ready for a send to reply */
 /* No set_for_reply if tcp */
 /* Returned values: */
-/*   - the length of bytes read, which the length of the message sent */
+/*   - the length of bytes read, which is the length of the message sent */
 /*     except in tcp (no header) where the length read my me anything */
 /*     from 0 to length */
-/*   - SOC_WOULD_BLOCK (in  non blocking), new read has to be done */
+/*   - SOC_WOULD_BLOCK (in non blocking), new read has to be done */
 /*   - SOC_READ_0, disconnection? */
 /*   - any other (fatal) error */
 extern int soc_receive (soc_token token,
@@ -196,7 +196,7 @@ extern int soc_receive (soc_token token,
 /* A new socket is created (tcp or tcp_header, same as token) with dest set */
 extern int soc_accept (soc_token token, soc_token *p_token);
 
-/* Is a tcp socket connected fllowing a soc_set_... or a soc_accept */
+/* Is a tcp socket connected following a soc_set_... or a soc_accept */
 extern int soc_is_connected (soc_token token, boolean *p_connected);
 
 

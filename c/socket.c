@@ -1059,7 +1059,7 @@ extern int soc_receive (soc_token token,
 
   /* Check set_for_reply and linked vs proto */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    if (set_for_reply)  return (SOC_REPLY_ERR);
+    if (set_for_reply) return (SOC_REPLY_ERR);
     if (soc->linked) return (SOC_LINK_ERR);
     if (soc->connection != connected) return (SOC_CONN_ERR);
   } else {
