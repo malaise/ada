@@ -14,12 +14,14 @@
 /* before looking for any further expose (and filter) */
 #define DELAY_EXPOSE_MS 25
 
-void print_date (void) {
-  timeout_t cur_time;
-  get_time (&cur_time);
-  printf ("    >> %06d %06d << ", (int)cur_time.tv_sec,
-                                  (int)cur_time.tv_usec);
-}
+/* 
+ * static void print_date (void) {
+ *   timeout_t cur_time;
+ *   get_time (&cur_time);
+ *   printf ("    >> %06d %06d << ", (int)cur_time.tv_sec,
+ *                                   (int)cur_time.tv_usec);
+ * }
+ */
 
 /***** Blinking management *****/
 /* The percentage of blinking when colors are seeable */
@@ -30,10 +32,10 @@ int curr_percent = 0;
 timeout_t next_blink;
 
 /* The real blinking routine */
-void x_do_blink (void);
+static void x_do_blink (void);
 
 /* The blinking task */
-void x_do_blinking (void) {
+static void x_do_blinking (void) {
 
   /* Protection */
   if (curr_percent == 0) {
@@ -48,7 +50,7 @@ void x_do_blinking (void) {
   (void) incr_time (&next_blink, curr_percent * 10);
 }
 
-int x_stop_blinking (void) {
+extern int x_stop_blinking (void) {
   
   /* Set to the non_blink state */
   if (curr_percent == PERCENT_OFF) {
@@ -58,7 +60,7 @@ int x_stop_blinking (void) {
   return (OK);
 }
 
-int x_start_blinking (void) {
+extern int x_start_blinking (void) {
   curr_percent = PERCENT_ON;
   get_time (&next_blink);
   (void) incr_time (&next_blink, curr_percent * 10);
@@ -169,7 +171,7 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
 /* Initialise communication with the 'local' X server */
 /*  opening a little window */
 /* Hangs handler for blinking */
-int x_initialise (char *server_name) {
+extern int x_initialise (const char *server_name) {
 
     int result;
 
@@ -186,7 +188,8 @@ int x_initialise (char *server_name) {
 
 
 /* Opens a line */
-int x_open_line (int screen_id, int row, int column, int height, int width, 
+extern int x_open_line (int screen_id, int row, int column,
+  int height, int width, 
   int background, int border, int no_font, void **p_line_id) {
 
     t_window *line;
@@ -203,7 +206,7 @@ int x_open_line (int screen_id, int row, int column, int height, int width,
 
 /* Closes a line */
 /* The line_id is the token, previously given by open_line */
-int x_close_line (void *line_id) {
+extern int x_close_line (void *line_id) {
     int result;
 
     result = (lin_close( (t_window*) line_id) ? OK : ERR);
@@ -212,7 +215,7 @@ int x_close_line (void *line_id) {
 }
 
 /* Set line name */
-int x_set_line_name (void *line_id, char *line_name) {
+extern int x_set_line_name (void *line_id, const char *line_name) {
     int result;
 
     t_window *win_id = (t_window*) line_id;
@@ -231,7 +234,7 @@ int x_set_line_name (void *line_id, char *line_name) {
 
 
 /* Flushes all the lines on this host line */
-int x_flush (void) {
+extern int x_flush (void) {
 
     /* Check that display is init */
     if (local_server.x_server == NULL) {
@@ -245,7 +248,7 @@ int x_flush (void) {
 }
 
 /* Clears a line */
-int x_clear_line (void *line_id) {
+extern int x_clear_line (void *line_id) {
     int result;
 
 
@@ -257,7 +260,7 @@ int x_clear_line (void *line_id) {
 /***** Put and attributes management *****/
 
 /* Sets the attributes for a further put in the same window */
-int x_set_attributes (void *line_id, int paper, int ink,
+extern int x_set_attributes (void *line_id, int paper, int ink,
   boolean superbright, boolean underline, boolean blink, boolean reverse) {
 
     t_window *win_id = (t_window*) line_id;
@@ -286,7 +289,7 @@ int x_set_attributes (void *line_id, int paper, int ink,
 }
 
 /* Set further put on window in Xor or back to Copy mode */
-int x_set_xor_mode (void *line_id, boolean xor_mode) {
+extern int x_set_xor_mode (void *line_id, boolean xor_mode) {
     t_window *win_id = (t_window*) line_id;
 
     /* Check that window is open */
@@ -309,7 +312,7 @@ int x_set_xor_mode (void *line_id, boolean xor_mode) {
 /* The line_id is the token, previously given by open_line */
 /* The character is the one to be written */
 /* The output is not flushed */
-int x_put_char (void *line_id, int car, int row, int column) {
+extern int x_put_char (void *line_id, int car, int row, int column) {
 
     int x, y;
     t_window *win_id = (t_window*) line_id;
@@ -346,7 +349,7 @@ int x_put_char (void *line_id, int car, int row, int column) {
 /* The line_id is the token, previously given by open_line */
 /* The character is the one to be written */
 /* The output is not flushed */
-int x_overwrite_char (void *line_id, int car, int row, int column) {
+extern int x_overwrite_char (void *line_id, int car, int row, int column) {
 
     int x, y;
     t_window *win_id = (t_window*) line_id;
@@ -379,7 +382,7 @@ int x_overwrite_char (void *line_id, int car, int row, int column) {
 /* The str is the adress of the first character to write */
 /* The length is the number of characters to write */
 /* The output is not flushed */
-int x_put_string (void *line_id, char *p_char, int number,
+extern int x_put_string (void *line_id, const char *p_char, int number,
                   int row, int column) {
 
     int x, y;
@@ -414,7 +417,7 @@ int x_put_string (void *line_id, char *p_char, int number,
 
 /* Writes a char on a line with specified characteristics */
 /* The output is not flushed */
-int x_put_char_attributes (void *line_id, int car, int row, int column,
+extern int x_put_char_attributes (void *line_id, int car, int row, int column,
   int paper, int ink,
   boolean superbright, boolean underline, boolean blink, boolean reverse) {
 
@@ -426,7 +429,7 @@ int x_put_char_attributes (void *line_id, int car, int row, int column,
     return (x_put_char (line_id, car, row, column));
 }
 
-int x_draw_area (void *line_id, int width, int height, int row, int column) {
+extern int x_draw_area (void *line_id, int width, int height, int row, int column) {
 
     int x_from, y_from;
     int pix_width, pix_height;
@@ -457,7 +460,7 @@ int x_draw_area (void *line_id, int width, int height, int row, int column) {
 }
 
 /* Give graphic characteristics of the windows and its font */
-int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
+extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
                       int *p_f_width, int *p_f_height, int *p_f_offset) {
 
     t_window *win_id = (t_window*) line_id;
@@ -482,7 +485,7 @@ int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
 /* x is a number of pixels of vertical position (top down) */
 /* y                          horizontal position (left right) */
 /* The output is not flushed */
-int x_put_char_pixels (void *line_id, int car, int x, int y) {
+extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
 
     t_window *win_id = (t_window*) line_id;
 
@@ -507,7 +510,7 @@ int x_put_char_pixels (void *line_id, int car, int x, int y) {
 }
 
 /* Draw a point at x,y */
-int x_draw_point (void *line_id, int x, int y) {
+extern int x_draw_point (void *line_id, int x, int y) {
     t_window *win_id = (t_window*) line_id;
  
     /* Check that window is open */
@@ -521,7 +524,7 @@ int x_draw_point (void *line_id, int x, int y) {
 }
 
 /* Draw a line between  x1y1 and x2y2 */
-int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
+extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
     t_window *win_id = (t_window*) line_id;
  
     /* Check that window is open */
@@ -539,7 +542,7 @@ int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
 }
 
 /* Draw a rectangle at x1y1, x1y2, x2y2, x2y1 */
-int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
+extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     t_window *win_id = (t_window*) line_id;
     int x, y;
     unsigned int width, height;
@@ -576,7 +579,7 @@ int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
 }
 
 /* Fill a rectangle at x1y1, x1y2, x2y2, x2y1 */
-int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
+extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     t_window *win_id = (t_window*) line_id;
     int x, y;
     unsigned int width, height;
@@ -641,7 +644,7 @@ extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
 }
 
 
-int x_set_graphic_pointer (void *line_id, boolean graphic) {
+extern int x_set_graphic_pointer (void *line_id, boolean graphic) {
     t_window *win_id = (t_window*) line_id;
     Cursor cursor;
 
@@ -664,7 +667,7 @@ static XEvent prev_event;
 static boolean prev_event_set = False;
 
 /* To wait a bit after first expose */
-void delay_ms (unsigned int msecs) {
+static void delay_ms (unsigned int msecs) {
   struct timeval timeout;
 
   timeout.tv_sec = 0;
@@ -679,7 +682,7 @@ void delay_ms (unsigned int msecs) {
 /* p_kind is 1 if the event is a key hit, 0 if it's a TID */
 /* p_kind is -1 if the event is discarted or if error */
 /* p_next is True if another event is available */
-int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
+extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
 
     t_window *win_id;
     XEvent event;
@@ -856,7 +859,7 @@ int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
 /* p_button is set to the button 1, 2 or 3 */
 /* p_row and p_column are the position of the "finger" on the TID */
 /* If row_col is FALSE, p_row is y and p_col is x */
-int x_read_tid (void *line_id, boolean row_col, 
+extern int x_read_tid (void *line_id, boolean row_col, 
                 int *p_button, int *p_row, int *p_column) {
 
     t_window *win_id = (t_window*) line_id;
@@ -887,7 +890,7 @@ int x_read_tid (void *line_id, boolean row_col,
 /* The line_id must be the one given by wait_event */
 /* p_key is the the address of a table where to put the codes */
 /* p_nbre if for the number of codes for the key */
-int x_read_key (void *line_id, int *p_key, int *p_nbre) {
+extern int x_read_key (void *line_id, int *p_key, int *p_nbre) {
 
     t_window *win_id = (t_window*) line_id;
     int i;
@@ -972,7 +975,7 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y) {
 
 /* Special Blink primitive must be called twice a second to generate */
 /* blink if blinking is stopped */
-int x_blink(void) {
+extern int x_blink(void) {
 
     /* Check that the server is initialised */
     if (local_server.x_server == NULL) return (OK);
@@ -988,7 +991,7 @@ int x_blink(void) {
 }
 
 /* The real blinking primitive */
-void x_do_blink (void) {
+static void x_do_blink (void) {
 
     static boolean blinking;
 
@@ -1005,7 +1008,7 @@ void x_do_blink (void) {
 }
 
 /* Rings a bell on the display */
-int x_bell (int nbre_bell) {
+extern int x_bell (int nbre_bell) {
 
     XKeyboardControl keyboard_state;
     int i;

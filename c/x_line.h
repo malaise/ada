@@ -66,7 +66,7 @@ typedef struct {
 #endif
 
 /* Initialize a line (return True if OK) */
-boolean lin_initialise (char *server_name);
+boolean lin_initialise (const char *server_name);
 
 /* Open a line and gives it's Line_id, or NULL if error */
 t_window *lin_open(int screen_id, int y, int x, int height, int width,
@@ -90,3 +90,4 @@ void lin_blink_colors(boolean blink);
 
 #endif
 /* _X_LINE_H */
+

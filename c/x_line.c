@@ -36,7 +36,7 @@ static int my_error_handler (Display *display, XErrorEvent *error_p) {
 
 /* Init comunication with the local X server */
 /* opens a display and create a root window. Send that back */
-boolean lin_initialise (char *server_name) {
+boolean lin_initialise (const char *server_name) {
 
 unsigned long win_mask;
 XSetWindowAttributes win_attrib;

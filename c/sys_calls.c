@@ -9,17 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "sys_calls.h"
 
-typedef struct {
-  int tm_sec;       /* Seconds after the minute [0-60]   */
-  int tm_min;       /* Minutes after the hour [0-59]     */
-  int tm_hour;      /* Hours since midnight [0-23]       */
-  int tm_mday;      /* Day of the month [1-31]           */
-  int tm_mon;       /* Months since January [1-12] *******/
-  int tm_year;      /* Years since 1900                  */
-} my_tm_t;
-
-extern int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
+extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
 
   struct tm *tm_p;
 
@@ -38,7 +30,7 @@ extern int time_to_tm (time_t *the_time_p, my_tm_t *my_tm_p) {
   }
 }
 
-int set_blocking (int fd, int blocking) {
+extern int set_blocking (int fd, int blocking) {
   int flg;
 
   flg = fcntl (fd, F_GETFL, 0);
@@ -59,11 +51,6 @@ int set_blocking (int fd, int blocking) {
   return 0;
 
 }
-
-#define NORMAL 0
-#define NOECHO 1
-#define ASYNC  2
-#define TRANSP 3
 
 extern int set_tty_attr (int fd, int mode) {
 
@@ -112,10 +99,6 @@ extern int set_tty_attr (int fd, int mode) {
   return set_blocking (fd, blk);
 }
 
-#define ERROR  (-1)
-#define NONE   (-2)
-#define CLOSED (-3)
-
 extern int get_immediate (int fd) {
 
   ssize_t n;
@@ -136,7 +119,6 @@ extern int get_immediate (int fd) {
   }
 }
 
-
 extern int read_dir (DIR *dir, char *name) {
 
   struct dirent * dir_ent;
@@ -149,11 +131,6 @@ extern int read_dir (DIR *dir, char *name) {
   strcpy (name, dir_ent->d_name);
   return (strlen(name));
 }
-
-typedef struct {
-  unsigned int mode;
-  int mtime;
-} simple_stat;
 
 extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
 

@@ -17,7 +17,7 @@
 
 /* Basics */
 
-extern int x_initialise (char *server_name);
+extern int x_initialise (const char *server_name);
 
 extern int x_open_line (int screen_id,
                         int row, int column,
@@ -28,7 +28,7 @@ extern int x_open_line (int screen_id,
 
 extern int x_close_line (void *line_id);
 
-extern int x_set_line_name (void *line_id, char *line_name);
+extern int x_set_line_name (void *line_id, const char *line_name);
 
 extern int x_flush (void);
 
@@ -49,7 +49,7 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column);
 
 
 extern int x_put_string (void *line_id,
-                         char *p_char, int number,
+                         const char *p_char, int number,
                          int row, int column);
 
 extern int x_put_char_attributes (void *line_id,
@@ -107,5 +107,5 @@ extern int x_start_blinking (void);
 
 extern int x_bell (int nbre_bell);
 
-
 #endif /* _X_EXPORT_H */
+

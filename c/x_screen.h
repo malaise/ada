@@ -12,7 +12,7 @@ void scr_overwrite_char(Display *x_server, GC x_context, Window x_window, int x,
 
 void scr_underline_char(Display *x_server, GC x_context, Window x_window, int x, int y);
 
-void scr_put_string(Display *x_server, GC x_context, Window x_window, int x, int y, char *p_car, int number, int xor_mode);
+void scr_put_string(Display *x_server, GC x_context, Window x_window, int x, int y, const char *p_car, int number, int xor_mode);
 
 void scr_underline_string(Display *x_server, GC x_context, Window x_window, int x, int y, int number);
 

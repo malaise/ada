@@ -57,7 +57,7 @@ void scr_overwrite_char(Display *x_server, GC x_context, Window x_window, int x,
 } 
 
 void scr_put_string (Display *x_server, GC x_context, Window x_window,
-                     int x, int y, char *p_car, int number, int xor_mode) {
+                     int x, int y, const char *p_car, int number, int xor_mode) {
 
     if (!xor_mode) {
       XDrawImageString (x_server, x_window, x_context, x, y, p_car, number);

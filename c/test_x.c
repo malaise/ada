@@ -37,12 +37,12 @@ unsigned char draw[] = {0, 0, 0, 1, 0, 0, 0, \
                         1, 1, 1, 1, 1, 1, 1 };
 
 
-void put(void *line, const char *string, int row, int column) {
+static void put(void *line, const char *string, int row, int column) {
 
   (void) x_put_string (line, string, strlen(string), row, column);
 }
 
-void title (void *line) {
+static void title (void *line) {
 
   (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0, 0);
