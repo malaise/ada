@@ -39,7 +39,8 @@ package X_Mng is
 
   -- Result of waiting (see Event_Mng for Events).
   type Event_Kind is (Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh,
-                      Timer_Event, Fd_Event, Signal_Event, No_Event);
+                      Timer_Event, Fd_Event, Signal_Event, Wakeup_Event, 
+                      No_Event);
 
   ----- EXCEPTIONS -----
 

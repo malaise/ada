@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Exceptions;
-with My_Io, Address_Ops, Environ;
+with My_Io, Address_Ops, Environ, Event_Mng;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -345,35 +345,35 @@ package body X_Mng is
     -- Registration date
     Birth : Ada.Calendar.Time;
     -- Is this client between Register and first Wait
-    Starting : Boolean;
+    Starting : Boolean := False;
     -- Will be Line_For_C
-    Line_For_C_Id : Line_For_C;
+    Line_For_C_Id : Line_For_C := No_Line_For_C;
     -- The one provided to Wait
     Wait_Exp : Timers.Expiration_Rec;
   end record;
   type Client_List is array (Positive range <>) of Client_Rec;
 
-
-  -- State of refresh
-  type Refresh_State is (No_Need, Do_It, In_Progress);
-
   -- Dispatcher of X calls and X events
   package Dispatch is
+
+    -- Wake up dispatcher before Register
+    procedure Wake_Up;
+
     protected Dispatcher is
 
       -- Register / Unregister. Count clients and refreshh all on Unregister
-      procedure Register (Client : out Line_Range);
+      entry Register (Client : out Line_Range);
       procedure Unregister (Client : in out Line_Range);
 
       -- Two calls to protect a call to X
-      procedure Call_On  (Client : in Client_Range;
+      entry Call_On  (Client : in Client_Range;
                       Line_For_C_Id : out Line_For_C);
       procedure Call_Off (Client : in Client_Range;
                       New_Line_For_C_Id : in Line_For_C);
 
       -- Ready to wait, store expiration time. Select if last
       --  and no client to wake up
-      procedure Wait (Client : in Client_Range;
+      entry Wait (Client : in Client_Range;
                       Exp : in Timers.Expiration_Rec);
 
       -- All but one client wait here, eventually getting and event
@@ -395,7 +395,7 @@ package body X_Mng is
       -- Between Call_On and Call_Off
       In_X : Boolean := False;
       -- After Unregister
-      Refreshing : Refresh_State := No_Need;
+      Refreshing : Boolean := False;
       -- The clients
       Clients : Client_List(Client_Range);
     end Dispatcher;
@@ -435,14 +435,23 @@ package body X_Mng is
     if not Initialised or else Line_Id /= No_Client then
       raise X_Failure;
     end if;
-    -- Register
-    Dispatcher.Register(Line_Id.No);
+    -- Register, force wake up of waiting task
+    loop
+      Dispatch.Wake_Up;
+      select
+        Dispatcher.Register(Line_Id.No);
+        exit;
+      or
+        delay 0.1;
+      end select;
+    end loop;
     if Line_Id = No_Client then
       -- Too many clients
       raise X_Failure;
     end if;
-    -- open window
+
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    -- Open window
     Res := X_Open_Line (Line_Definition.Screen_Id,
                         Line_Definition.Row,
                         Line_Definition.Column, 
