@@ -172,8 +172,8 @@ package body AF_LIST is
     -- I clear the window in all cases
     --  otherwise I get strange colors up to the current pos
     --  when refreshing twice the list
-    CON_IO.CLEAR (LIST_WINDOW);
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
+      CON_IO.CLEAR (LIST_WINDOW);
       return;
     end if;
 
@@ -189,6 +189,12 @@ package body AF_LIST is
       end if;
     end loop;
     MOVE (STATUS.ID_SELECTED);
+
+    -- Display empty end of list (if any)
+    for I in STATUS.NB_ROWS + 1 .. AF_DSCR.FIELDS(0).HEIGHT loop
+      CLEAR (I - 1);
+    end loop;
+
 
   exception
     when others =>
