@@ -5,7 +5,10 @@ procedure T_Tcp_Util is
 
   Server : Boolean;
   Server_Name : Text_Handler.Text (80);
-  Server_Port_Name : constant String := "test_tcp";
+  Server_Port_Name : Text_Handler.Text (80);
+  Server_Port_Num : Socket.Port_Num;
+  Local_Port : Tcp_Util.Local_Port;
+  Remote_Port : Tcp_Util.Remote_Port;
 
   Give_Up : Boolean;
   In_Ovf : Boolean := False;
@@ -105,16 +108,16 @@ procedure T_Tcp_Util is
 
   procedure Connect is
     Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
-    Port : Tcp_Util.Remote_Port(Tcp_Util.Port_Name_Spec);
+    Port : Tcp_Util.Remote_Port;
     Result : Boolean;
   begin
     Host.Name (1 .. Text_Handler.Length(Server_Name))
          := Text_Handler.Value(Server_Name);
-    Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
     Result := Tcp_Util.Connect_To (Socket.Tcp_Header,
-                                   Host, Port,
+                                   Host, Remote_Port,
                                    Delay_Try, Nb_Try,
                                    Connect_Cb'Unrestricted_Access);
+
   end Connect;
 
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
@@ -225,37 +228,73 @@ procedure T_Tcp_Util is
 
 begin
   -- Server or client
-  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-s" then
-    Server := True;
-  elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-c" then
+  begin
+    Argument.Get_Parameter (Server_Name, 1, "c");
     Server := False;
-    Argument.Get_Parameter (Server_Name, 2);
-  else
+  exception
+    when Argument.Argument_Not_Found =>
+    begin
+      Argument.Get_Parameter (Server_Name, 1, "s");
+      Server := True;
+    exception
+      when others =>
+        raise Arg_Error;
+    end;
+    when others =>
+      raise Arg_Error;
+  end;
+  if Server and then not Text_Handler.Empty (Server_Name) then
+    raise Arg_Error;
+  elsif not Server and then Text_Handler.Empty (Server_Name) then
     raise Arg_Error;
   end if;
 
-  Give_Up := False;
-  if Server then
-    declare
-      Port : Tcp_Util.Local_Port;
-      Port_num : Tcp_Util.Port_num;
+  -- Port name or num
+  begin
+    Argument.Get_Parameter (Server_Port_Name, 1, "P");
+    if Text_Handler.Empty (Server_Port_Name) then
+      raise Arg_Error;
+    end if;
+  exception
+    when Argument.Argument_Not_Found =>
     begin
-      Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
-      loop
-        begin
-          Tcp_Util.Accept_From (Socket.Tcp_Header,
-                                Port,
-                                Accept_Cb'Unrestricted_Access,
-                                Accept_Dscr,
-                                Port_Num);
-          exit;
-        exception
-          when Socket.Soc_addr_In_Use =>
-            Ada.Text_Io.Put_Line ("Cannot accept. Maybe Close-wait. Waiting");
-            Wait (20.0);
-        end;
-      end loop;
+      Server_Port_Num := Socket.Port_Num'Value(Argument.Get_Parameter (1, "p"));
+    exception
+      when others =>
+        raise Arg_Error;
     end;
+    when others =>
+      raise Arg_Error;
+  end;
+
+  -- Set ports
+  if not Text_Handler.Empty (Server_Port_Name) then
+    Local_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
+    Remote_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
+    Local_Port.Name (1 .. Text_Handler.Length(Server_Port_Name)) :=
+       Text_Handler.Value(Server_Port_Name);
+     Remote_Port.Name := Local_Port.Name;
+  else
+    Local_Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Server_Port_Num);
+    Remote_Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Server_Port_Num);
+  end if;
+
+  -- Init
+  if Server then
+    loop
+      begin
+        Tcp_Util.Accept_From (Socket.Tcp_Header,
+                              Local_Port,
+                              Accept_Cb'Unrestricted_Access,
+                              Accept_Dscr,
+                              Server_Port_Num);
+        exit;
+      exception
+        when Socket.Soc_addr_In_Use =>
+          Ada.Text_Io.Put_Line ("Cannot accept. Maybe Close-wait. Waiting");
+          Wait (20.0);
+      end;
+    end loop;
   else
     Message.Num := 1;
     Message.Str (1 .. Str'Length) := Str;
@@ -263,6 +302,8 @@ begin
     Connect;
   end if;
 
+  -- Main loop
+  Give_Up := False;
   loop
     Wait (1.0);
     exit when Give_Up;
@@ -270,8 +311,9 @@ begin
 
 exception
   when Arg_Error =>
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                   & " -c <server_host> | -s");
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <mode> <port>");
+    Ada.Text_Io.Put_Line (" <mode> ::= -c<server_host> | -s");
+    Ada.Text_Io.Put_Line (" <port> ::= -P<port_name> | -p<port_num>");
   when Error : others =>
     Ada.Text_Io.Put_Line ("Exception: "
                    & Ada.Exceptions.Exception_Name (Error));
