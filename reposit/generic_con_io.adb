@@ -1056,8 +1056,7 @@ package body GENERIC_CON_IO is
                 return;
               when 16#08# =>
                 -- Backspace
-                STAT := LEFT;
-                return;
+                null;
               when 16#50# =>
                 -- Home
                 STAT := LEFT;
@@ -1173,13 +1172,6 @@ package body GENERIC_CON_IO is
                 LSTR(POS .. WIDTH - 1) := LSTR(POS + 1 .. WIDTH);
                 LSTR(WIDTH) := ' ';
                 REDRAW := TRUE;
-              else
-                LSTR(1 .. WIDTH - 1) := LSTR(2 .. WIDTH);
-                LSTR(WIDTH) := ' ';
-                STR := LSTR;
-                LAST := PARSE;
-                STAT := LEFT;
-                return;
               end if;
             when 16#50# =>
               -- Home
