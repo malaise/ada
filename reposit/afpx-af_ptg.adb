@@ -160,7 +160,7 @@ package body Af_Ptg is
     end loop;
   end Erase_Field;
 
-  function Valid_Click return Boolean is
+  function Valid_Click (List_Present : in Boolean) return Boolean is
     Mouse_Status : Con_Io.Mouse_Event_Rec;
     Valid : Boolean;
     use Con_Io;
@@ -171,6 +171,15 @@ package body Af_Ptg is
              and then Mouse_Status.Status = Con_Io.Pressed;
     if Valid then
       Last_Pos := (Mouse_Status.Row, Mouse_Status.Col);
+    else
+      -- Handle wheele here
+      if List_Present and then Mouse_Status.Status = Con_Io.Pressed then
+        if Mouse_Status.Button = Con_Io.Up then
+          Af_List.Update (Up);
+        elsif Mouse_Status.Button = Con_Io.Down then
+          Af_List.Update (Down);
+        end if;
+      end if;
     end if;
     return Valid;
   end Valid_Click;
@@ -232,7 +241,7 @@ package body Af_Ptg is
 
     -- Result event discarded
     Result := (Kind => Afpx_Typ.Put);
-    if not Valid_Click then
+    if not Valid_Click (List_Present) then
       return;
     end if;
 
@@ -623,3 +632,4 @@ package body Af_Ptg is
   end Ptg;
 
 end Af_Ptg;
+
