@@ -838,6 +838,10 @@ package body CURVE is
             if CURR_ZOOM_MODE = INIT then
               -- Initial zoom mode. Exit drawings.
               return FALSE;
+            elsif CURR_ZOOM_MODE = DONE then
+              -- End of zoom mode. Cancel zoom.
+              CANCEL_ZOOM;
+              DRAW_Z_FRAME (ZOOM_FRAME_ACTION, MOUSE_BOUNDS);
             end if;
           when BIG_CON_IO.FULL =>
             -- KEY pressed
