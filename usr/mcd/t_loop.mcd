@@ -1,0 +1,15 @@
+[ 
+# Print I
+>< ;  
+# I - 1 = 0 ? If yes return
+1 - >< 0 = 1 ?_
+# Loop
+A <- _@ ] A ->
+
+# 10 loops
+10
+A <- @
+
+# Remove counter
+--
+
