@@ -87,6 +87,7 @@ begin
     when Socket.Soc_Conn_Refused =>
       Ada.Text_Io.Put_Line("Connection refused");
       Socket.Close(Soc);
+      Async_Stdin.Set_Async;
       return;
   end;
   X_Mng.X_Add_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
