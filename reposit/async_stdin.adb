@@ -6,7 +6,8 @@ package body Async_Stdin is
   Cb : User_Callback_Access := null;
   -- Max len of result
   Max : Max_Chars_Range := 1;
-
+  -- Are stdin/out a console (or a pipe)
+  Stdio_Is_A_Tty : Boolean;
 
   package Line is
     -- Init (getenv history size)
@@ -237,6 +238,13 @@ package body Async_Stdin is
        Saved_Searching : Boolean;
        use Text_Handler;
     begin
+      -- Simplistic treatment when stdin/out is not a tty
+      if not Stdio_Is_A_Tty then
+        Append (Txt, C);
+        -- Done when extra character or buffer full
+        return C not in ' ' .. '~' or else Length(Txt) = Max;
+      end if;
+
       -- Save current searching status
       Saved_Searching := Searching;
       -- Default, we cancel search on each input except on escape
@@ -423,14 +431,16 @@ package body Async_Stdin is
       Text_Handler.Empty (Seq);
       Text_Handler.Empty (Txt);
       Ind := 1;
-      Console.Set_Col(1);
+      if Stdio_Is_A_Tty then
+        Console.Set_Col(1);
+      end if;
     end Clear;
 
     function Get return String is
     begin
       Text_Handler.Append (Txt, Seq);
       Text_Handler.Empty (Seq);
-      return Text_Handler.Value (Txt) & Text_Handler.Value (Seq);
+      return Text_Handler.Value (Txt);
     end Get;
 
   end Line;
@@ -459,7 +469,13 @@ package body Async_Stdin is
       end case;
     end loop;
 
-    Ada.Text_Io.New_Line;
+    -- Fix tty output
+    if Stdio_Is_A_Tty
+    and then (C = Ascii.Cr
+              or else C = Ascii.Lf) then
+      Ada.Text_Io.New_Line;
+    end if;
+
     Result := Cb (Line.Get);
     Line.Clear;
     return Result;
@@ -473,17 +489,20 @@ package body Async_Stdin is
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1) is
     Result : Boolean;
-    Stdin_Is_A_Tty : Boolean;
     use type  Sys_Calls.File_Desc_Kind_List;
   begin
-    Stdin_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty;
+    Stdio_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty
+             and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
+    -- For debug
+    -- Trace.Activate;
+    -- Trace.Put ("Stdio is a tty -> " & Stdio_Is_A_Tty'Img);
     -- Check if restore
     if User_Callback = null then
       if Cb = null then
         return;
       else
         Cb := null;
-        if Stdin_Is_A_Tty then
+        if Stdio_Is_A_Tty then
           Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, 
                                             Sys_Calls.Canonical);
         else
@@ -493,7 +512,7 @@ package body Async_Stdin is
       end if;
     else
       if Cb = null then
-        if Stdin_Is_A_Tty then
+        if Stdio_Is_A_Tty then
           Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
                                             Sys_Calls.Transparent);
         else
