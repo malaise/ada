@@ -13,6 +13,7 @@ package body Debug is
     Debug_Level_Array(Stack) := Environ.Is_Yes ("MCD_DEBUG_STACK");
     Debug_Level_Array(Register) := Environ.Is_Yes ("MCD_DEBUG_REGISTER");
     Debug_Level_Array(Oper) := Environ.Is_Yes ("MCD_DEBUG_OPER");
+    Debug_Level_Array(Flow) := Environ.Is_Yes ("MCD_DEBUG_FLOW");
     Debug_Level_Array(History) := Environ.Is_Yes ("MCD_DEBUG_HISTORY");
 
     if Environ.Is_Yes ("MCD_DEBUG_ALL") then
@@ -42,3 +43,4 @@ package body Debug is
   end Put;
 
 end Debug;
+

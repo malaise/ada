@@ -1,6 +1,6 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Exceptions;
 with Argument, Sys_Calls;
-with Debug, Parser, Mcd_Mng;
+with Debug, Mcd_Parser, Mcd_Mng, Io_FLow;
 
 procedure Mcd is
   Item : Mcd_Mng.Item_Rec;
@@ -13,19 +13,29 @@ begin
 
   Debug.Init;
 
-  if Argument.Get_Nbre_Arg /= 0 then
-    Parser.Print_Help;
-    return;
-  end if;
+  begin
+    declare
+      Str : constant String := Argument.Get_Parameter (1, "h");
+    begin
+      Mcd_Parser.Print_Help;
+      return;
+    end;
+  exception
+    when Argument.Argument_Not_Found =>
+      null;
+    when others =>
+      Mcd_Parser.Print_Help;
+      return;
+  end;
 
   loop 
     begin
-      Item := Parser.Next_Item;
+      Item := Mcd_Parser.Next_Item;
       Mcd_Mng.New_Item(Item, The_End);
       exit when The_End;
     exception
       when others =>
-        Parser.Dump_Stack;
+        Mcd_Parser.Dump_Stack;
         raise;
     end;
    end loop;
@@ -69,8 +79,17 @@ exception
     Sys_Calls.Put_Line_Error ("Error: File IO error");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
-  when Parser.Parsing_Error =>
+  when Mcd_Parser.Parsing_Error =>
     Sys_Calls.Put_Line_Error ("Error: Parsing error");
+    Mcd_Mng.Close;
+    Sys_Calls.Set_Error_Exit_Code;
+  when Io_Flow.Fifo_Error =>
+    Sys_Calls.Put_Line_Error ("Error: Fifo error");
+    Mcd_Mng.Close;
+    Sys_Calls.Set_Error_Exit_Code;
+  when Error:others =>
+    Sys_Calls.Put_Line_Error ("Error: exception "
+                            & Ada.Exceptions.Exception_Name (Error));
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
 end Mcd;

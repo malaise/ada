@@ -1,6 +1,6 @@
 with Ada.Text_Io;
 with Text_Handler;
-with Debug, Mcd_Mng;
+with Debug, Mcd_Mng, Io_Flow;
 package body Input_Dispatcher is
 
   -- Current input flow
@@ -210,20 +210,13 @@ package body Input_Dispatcher is
       loop
         if Len_Stdin = 0 then
           -- Need to get a new string
-          begin
-            Ada.Text_Io.Get_Line (Str_Stdin, Len_Stdin);
-          exception
-            when Ada.Text_Io.End_Error =>
+          Io_Flow.Next_Line (Str_Stdin, Len_Stdin);
+          if Len_Stdin = 0 then
               return "";
-          end;
-          if Len_Stdin /= 0 then
-            -- Str not to discard, parse it
-            Text_Handler.Set(Word, First_Str_Word(Str_Stdin(1 .. Len_Stdin)));
-            exit when not Text_Handler.Empty(Word);
-          else
-            -- Discard
-            Len_Stdin := 0;
           end if;
+          -- Got str, parse it
+          Text_Handler.Set(Word, First_Str_Word(Str_Stdin(1 .. Len_Stdin)));
+          exit when not Text_Handler.Empty(Word);
         else
           Text_Handler.Set(Word, Next_Str_Word);
           exit when not Text_Handler.Empty(Word);
