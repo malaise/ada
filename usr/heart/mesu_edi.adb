@@ -428,10 +428,10 @@ package body MESU_EDI is
             EXIT_PROGRAM := FALSE;
             exit;
           elsif PTG_RESULT.FIELD_NO = 125 then
-            -- Clear import file name
+            -- Valid: Clear import file name
             AFPX.CLEAR_FIELD (129);
 
-            -- Valid check all fields but import file one by one
+            -- Valid check all fields but import_file one by one
             CURSOR_FIELD := 04;
             loop
               CHECK_FIELD (CURSOR_FIELD, TRUE, OK);
@@ -502,6 +502,22 @@ package body MESU_EDI is
               exit;
             end if;
 
+          elsif (PTG_RESULT.FIELD_NO = 131
+                 and then CURSOR_FIELD >= 24 and then CURSOR_FIELD <= 124) then
+            -- Insert a sample
+            for I in reverse CURSOR_FIELD + 1 .. 124 loop
+              AFPX.ENCODE_FIELD (I, (0, 0), AFPX.DECODE_FIELD(I - 1, 0));
+            end loop;
+            AFPX.CLEAR_FIELD(CURSOR_FIELD);
+          
+          elsif (PTG_RESULT.FIELD_NO = 132
+                 and then CURSOR_FIELD >= 24 and then CURSOR_FIELD <= 124) then
+            -- Suppress a sample
+            for I in CURSOR_FIELD .. 123 loop
+              AFPX.ENCODE_FIELD (I, (0, 0), AFPX.DECODE_FIELD(I + 1, 0));
+            end loop;
+            AFPX.CLEAR_FIELD(124);
+
           end if; -- PTG_RESULT.FIELD_NO = valid or cancel
 
       end case; -- RESULT.EVENT
@@ -563,6 +579,10 @@ package body MESU_EDI is
     AFPX.SET_FIELD_ACTIVATION (128, FALSE);
     AFPX.SET_FIELD_ACTIVATION (129, FALSE);
     AFPX.SET_FIELD_ACTIVATION (130, FALSE);
+
+    -- Disable Ins and Suppr
+    AFPX.SET_FIELD_ACTIVATION (131, FALSE);
+    AFPX.SET_FIELD_ACTIVATION (132, FALSE);
 
     CURSOR_FIELD := 01;
     CURSOR_COL := 0;

@@ -1312,7 +1312,7 @@ DESCRIPTOR 3
 
   # Valid button
   FIELD 125 BUTTON
-    GEOMETRY 21 22 23 30
+    GEOMETRY 21 30 23 38
     COLORS brown blue
     INIT
       01 02 Valid
@@ -1359,6 +1359,24 @@ DESCRIPTOR 3
   FIELD 130 GET
     GEOMETRY 23 57 23 78
     COLORS light_gray blue green
+  END FIELD
+
+  # Insert button
+  FIELD 131 BUTTON
+    GEOMETRY 21 5 23 11
+    COLORS brown blue
+    INIT
+      01 02 Ins
+    END INIT
+  END FIELD
+
+  # Suppr button
+  FIELD 132 BUTTON
+    GEOMETRY 21 13 23 21
+    COLORS brown blue
+    INIT
+      01 02 Suppr
+    END INIT
   END FIELD
 
 END DESCRIPTOR
