@@ -486,8 +486,6 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
 /* Change destination host (same port) */
 extern int soc_change_dest_host (soc_token token, const soc_host *host) {
   soc_ptr soc = (soc_ptr) token;
-  struct hostent *host_name;
-  struct netent  *lan_name;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
