@@ -39,6 +39,11 @@ procedure T_Dictio is
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
       return False;
     end if;
+    if Str'Length = 2 and then Str(1) = 'q' then
+      Ada.Text_Io.Put_Line ("CLIENT: Quit");
+      Sig := True;
+      return True;
+    end if;
 
     N := 0;
     for I in Lstr'Range loop
@@ -126,7 +131,7 @@ procedure T_Dictio is
     Ada.Text_Io.Put_Line("CLIENT: Notified on >"
                    & Name & "< - >" & Data & "<");
   end Dictio_Notify_Cb;
-  
+
   procedure Load is
     Name : String (1 .. 10);
     N : Positive;
@@ -187,7 +192,8 @@ begin
   Dictio_Lib.Notify_Cb := Dictio_Notify_Cb'Unrestricted_Access;
 
   if not Init then
-    Ada.Text_Io.Put_Line ("g <name> / s <name> <data> / n <name> / c <name>");
+    Ada.Text_Io.Put_Line (
+        "g <name> / s <name> <data> / n <name> / c <name> / q");
   end if;
   loop
     Res := X_Mng.Select_No_X (-1);
