@@ -30,6 +30,9 @@ package body Strings is
     Res.Val_Text(1 .. Res.Val_Len) := S1.Val_Text(1 .. S1.Val_Len)
                                     & S2.Val_Text(1 .. S2.Val_Len);
     return Res;
+  exception
+    when Constraint_Error =>
+      raise String_Len;
   end Strcat;
 
   function Strsub (S, I1, I2 : Item_Rec) return Item_Rec is
