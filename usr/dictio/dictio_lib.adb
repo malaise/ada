@@ -265,7 +265,7 @@ package body Dictio_Lib is
     Expiration := Ada.Calendar.Clock + 0.5;
     loop
       exit when Dictio_State /= Unavailable
-           or else Event_Mng.Wait (100) = Event_Mng.Sig_Event
+           or else Event_Mng.Wait (100) = Event_Mng.Signal_Event
            or else Timers.Is_Reached ( (Infinite => False,
                                         Time => Expiration) );
     end loop;

@@ -253,7 +253,7 @@ begin
           Ada.Text_Io.Put_Line ("Done.");
           exit;
         end if;
-      when Event_Mng.Sig_Event =>
+      when Event_Mng.Signal_Event =>
         Ada.Text_Io.Put_Line ("Aborted.");
         exit;
       when others =>
