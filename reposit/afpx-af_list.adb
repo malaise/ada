@@ -168,11 +168,8 @@ package body AF_LIST is
     -- Set status
     COMPUTE (FIRST_ITEM_ID);
 
-    SET_COLORS;
-    -- I clear the window in all cases
-    --  otherwise I get strange colors up to the current pos
-    --  when refreshing twice the list
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
+      SET_COLORS;
       CON_IO.CLEAR (LIST_WINDOW);
       return;
     end if;
