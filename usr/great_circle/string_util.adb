@@ -1,4 +1,4 @@
-with Normal, My_Math;
+with Normal, My_Math, Upper_Char;
 package body String_Util is
 
   function Str2Geo (Str : Coord_Str) return Lat_Lon.Lat_Lon_Geo_Rec is
@@ -10,17 +10,17 @@ package body String_Util is
       raise Format_Error;
     end if;
     -- Lat N or S 
-    if Str(1) = 'N' then
+    if Upper_Char(Str(1)) = 'N' then
       Geo.Lat.North := True;
-    elsif Str(1) = 'S' then
+    elsif Upper_Char(Str(1)) = 'S' then
       Geo.Lat.North := False;
     else
       raise Format_Error;
     end if;
     -- Lon W or E 
-    if Str(11) = 'E' then
+    if Upper_Char(Str(11)) = 'E' then
       Geo.Lon.East := True;
-    elsif Str(11) = 'W' then
+    elsif Upper_Char(Str(11)) = 'W' then
       Geo.Lon.East := False;
     else
       raise Format_Error;
