@@ -13,25 +13,26 @@ package DIRECTORY is
   -- May raise NAME_ERROR
 
 
-  type DIR_DESC is PRIVATE;
+  type DIR_DESC is private;
 
   -- Opens a directory for list of entries
   function OPEN (DIR_NAME : in STRING) return DIR_DESC;
-  -- May raise NAME_ERROR
+  -- May raise OPEN_ERROR if dir desc is already open
+  -- May raise NAME_ERROR if not found
 
   -- Gets next entry of the opened directory
   function NEXT_ENTRY (DESC : DIR_DESC) return STRING;
   procedure NEXT_ENTRY (DESC : in DIR_DESC; DIR_ENTRY : in out TEXT_HANDLER.TEXT);
-  -- May raise OPEN_ERROR if dir is not open
+  -- May raise OPEN_ERROR if dir desc is not open
   -- Will raise END_ERROR if no more entry
 
   -- Reset entries for the first 
   procedure REWIND (DESC : in DIR_DESC);
-  -- May raise OPEN_ERROR if dir is not open
+  -- May raise OPEN_ERROR if dir desc is not open
 
   -- Closes a directory
   procedure CLOSE (DESC : in out DIR_DESC);
-  -- May raise OPEN_ERROR if dir is not open
+  -- May raise OPEN_ERROR if dir desc is not open
 
   type FILE_KIND_LIST is (FILE, DIR, SYNBOLIC_LINK,
            BLOCK_DEVICE, CHARACTER_DEVICE, FIFO, SOCKET, UNKNOWN);

@@ -49,10 +49,10 @@ begin
   ADD_TRANSITION ( (OK,       DETACH,    DETACHED) );
   ADD_TRANSITION ( (STARTING, FAILURE,   FAILED)   );
   ADD_TRANSITION ( (OK,       FAILURE,   FAILED)   );
+--ADD_TRANSITION ( (OK,       TRUE,   FAILED)   );
+--ADD_TRANSITION ( (FAILED,   TRUE,   OK)   );
   ADD_TRANSITION ( (STARTING, SUCCESS,   OK)       );
   ADD_TRANSITION ( (DETACHED, ATTACH,    UNKNOWN)  );
--- Uncomment this to test TRUE_LOOP detection
--- ADD_TRANSITION ( (STARTING,  TRUE,      UNKNOWN) );
   END_DECLARATION;
 
   MY_IO.PUT_LINE ("Initial state : " & STATE_LIST'IMAGE(CURRENT_STATE));
@@ -64,7 +64,7 @@ begin
     VALID_EVENT := TRUE;
     case CUR_STATE is
       when FAILED =>
-        MY_IO.PUT_LINE (" --> setting state to unknown");
+        MY_IO.PUT_LINE (" test program --> setting state to unknown");
         SET_STATE (UNKNOWN);
       when others =>
         begin 

@@ -1,3 +1,4 @@
+/* Oct 21, 1998 : Use private color map                            */
 #ifndef _X_LINE_H
 #define _X_LINE_H
 
@@ -28,6 +29,7 @@ typedef struct {
     /* X color pixels */
     boolean blinking;
     unsigned long color_id[SIZE_TAB_COLOR];
+    Colormap colormap;
 }t_screen;
 
 typedef struct {

@@ -1,4 +1,5 @@
 
+/* Oct 21, 1998 : Use private color map                            */
 #include <malloc.h>
 
 #define LINE_LOCAL 
@@ -244,8 +245,10 @@ boolean screen_created;
             free (p_window);
             return (NULL);
         }
-            
     }
+
+    XSetWindowColormap (p_window->server->x_server, p_window->x_window, 
+                        p_window->screen->colormap);
 
     list_window[nbre_window] = p_window;
     nbre_window ++;
@@ -395,7 +398,8 @@ t_screen *p_screen;
     p_screen->x_root_win = RootWindow (p_screen->server->x_server, p_screen->x_screen);
 
     /* Loads and inits colors */
-    if (! col_open (p_screen->server->x_server, p_screen->x_screen, p_screen->color_id) ) {
+    if (! col_open (p_screen->server->x_server, p_screen->x_screen,
+                    p_screen->color_id, &(p_screen->colormap)) ) {
         free (p_screen);
         return (NULL);
     }
@@ -412,7 +416,8 @@ void close_screen (t_screen *p_screen) {
 
     /* Free colors */
     if (! p_screen->server->image) {
-        col_close (p_screen->server->x_server, p_screen->x_screen, p_screen->color_id);
+        col_close (p_screen->server->x_server, p_screen->x_screen, p_screen->color_id,
+                   p_screen->colormap);
     }
 
     /* Free memory */
@@ -435,7 +440,8 @@ int i;
             /* Screen is not in the proper colors */
             col_set_blinking (list_window[i]->server->x_server,
             list_window[i]->screen->x_screen,
-            list_window[i]->screen->color_id, blink);
+            list_window[i]->screen->color_id,
+            list_window[i]->screen->colormap, blink);
         }
         /* Screen is now in the proper colors */
         list_window[i]->screen->blinking = blink;

@@ -20,15 +20,20 @@ package body STATE_MACHINE is
   -- Still declaring?
   IN_DECLARATION : BOOLEAN := TRUE;
 
-  procedure DO_TRANSITION (FROM_STATE : in STATE_LIST; TRANSITION : TRANSITION_ACCESS) is
+  procedure DO_TRANSITION (FROM_STATE : in STATE_LIST; TRANSITION : TRANSITION_ACCESS;
+                           REPORT : in BOOLEAN) is
   begin
     -- Call user procedure
-    REPORT_TRANSITION (FROM_STATE, TRANSITION.EVENT, TRANSITION.NEW_STATE);
+    if REPORT then
+       REPORT_TRANSITION (FROM_STATE, TRANSITION.EVENT, TRANSITION.NEW_STATE);
+    end if;
     THE_CURRENT_STATE := TRANSITION.NEW_STATE;
   end DO_TRANSITION;
 
-  procedure DO_TRUES;
 
+  -- Do all True transitions from the current state
+  -- detects loops
+  procedure DO_TRUES (REPORT : in BOOLEAN);
 
   -- To add a transition in the state machine
   -- May raise DECLARATION_ENDED if called after END_DECLARATION;
@@ -78,11 +83,15 @@ package body STATE_MACHINE is
       raise DECLARATION_ENDED;
     end if;
     IN_DECLARATION := FALSE;
-    THE_CURRENT_STATE := STATE_LIST'FIRST;
-    DO_TRUES;
+    -- Do all true transitions from any state,
+    --  do first state last and report it only
+    for START_STATE in reverse STATE_LIST loop
+      THE_CURRENT_STATE := START_STATE;
+      DO_TRUES (START_STATE = STATE_LIST'FIRST);
+    end loop;
   end END_DECLARATION;
 
-  procedure DO_TRUES is
+  procedure DO_TRUES (REPORT : in BOOLEAN) is
     TA : TRANSITION_ACCESS;
     NB_TRUE : NATURAL := 0;
   begin
@@ -98,7 +107,7 @@ package body STATE_MACHINE is
       end if;
       if EVENT_LIST'IMAGE(TA.EVENT) = "TRUE" then
         -- Transition is TRUE, follow it
-        DO_TRANSITION (THE_CURRENT_STATE, TA);
+        DO_TRANSITION (THE_CURRENT_STATE, TA, REPORT);
         TA := STATE_ARRAY(THE_CURRENT_STATE);
         -- Count true transitions to detect loops
         NB_TRUE := NB_TRUE + 1;
@@ -136,8 +145,8 @@ package body STATE_MACHINE is
       end if;
       if TA.EVENT = EVENT then
         -- Transition event matches
-        DO_TRANSITION (THE_CURRENT_STATE, TA);
-        DO_TRUES;
+        DO_TRANSITION (THE_CURRENT_STATE, TA, TRUE);
+        DO_TRUES (TRUE);
         return;
       else
         TA := TA.NEXT_TRANSITION;
@@ -161,9 +170,8 @@ package body STATE_MACHINE is
       raise DECLARATION_NOT_ENDED;
     end if;
     THE_CURRENT_STATE := STATE;
-    DO_TRUES;
+    DO_TRUES (TRUE);
   end SET_STATE;
-
 
 end STATE_MACHINE;
 

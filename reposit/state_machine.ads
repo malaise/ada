@@ -1,6 +1,6 @@
 generic
 
-  -- List of states. First in list is initial state.
+  -- List of states
   -- The initial state of the machine will be First of the list
   type STATE_LIST is (<>);
 
@@ -32,7 +32,7 @@ package STATE_MACHINE is
 
   -- To end declarations
   -- May raise DECLARATION_ENDED if re-called after END_DECLARATION;
-  -- May raise TRUE_LOOP is TRUE transitions loop
+  -- May raise TRUE_LOOP if TRUE transitions from initial state loop
   procedure END_DECLARATION;
 
 
@@ -43,6 +43,7 @@ package STATE_MACHINE is
   --  current state, the state reamains unchanged
   -- Any TRUE event has no effect (any potential TRUE transistion
   --  would already have been done)
+  -- May raise TRUE_LOOP if TRUE transitions from new state loop
   function NEW_EVENT (EVENT : EVENT_LIST) return STATE_LIST;
 
   procedure NEW_EVENT (EVENT : in EVENT_LIST);
@@ -51,6 +52,7 @@ package STATE_MACHINE is
   function CURRENT_STATE return STATE_LIST;
 
   -- To force a new state without event
+  -- May raise TRUE_LOOP if TRUE transitions from new state loop
   procedure SET_STATE (STATE : in STATE_LIST);
 
 

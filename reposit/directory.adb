@@ -84,6 +84,9 @@ package body DIRECTORY is
     C_DIR_NAME : constant STRING := STR_FOR_C(DIR_NAME);
     DESC : DIR_DESC;
   begin
+    if DESC.DIR_ADDR /= SYSTEM.NULL_ADDRESS then
+      raise OPEN_ERROR;
+    end if;
     DESC.DIR_ADDR := C_OPENDIR (C_DIR_NAME'ADDRESS);
     if DESC.DIR_ADDR = SYSTEM.NULL_ADDRESS then
       raise NAME_ERROR;
