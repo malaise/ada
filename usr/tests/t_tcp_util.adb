@@ -9,7 +9,10 @@ procedure T_Tcp_Util is
 
   Give_Up : Boolean;
 
-  The_Dscr : Socket.Socket_Dscr;
+  Delay_Try : constant Duration := 10.0;
+  Nb_Try : constant := 9;
+
+  Accept_Dscr, The_Dscr : Socket.Socket_Dscr;
 
   type Message_Type is record
     Len : Positive;
@@ -22,6 +25,15 @@ procedure T_Tcp_Util is
   procedure My_Send is new Socket.Send (Message_Type);
 
   procedure Read_Cb (Fd : in X_Mng.File_Desc);
+
+  procedure Send (Msg : in String) is
+  begin
+    My_Send (The_Dscr, Message);
+    Ada.Text_Io.Put_Line (Msg & " sent");
+  exception
+    when Socket.Socket_Error =>
+      Ada.Text_Io.Put_Line ("Sending " & Msg & " failed.");
+  end Send;
 
 
   procedure Connect_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
@@ -40,13 +52,7 @@ procedure T_Tcp_Util is
       return;
     end if;
     if not Server then
-      begin
-        My_Send (The_Dscr, Message);
-        Ada.Text_Io.Put_Line ("First request sent");
-      exception
-        when Socket.Socket_Error =>
-          Ada.Text_Io.Put_Line ("Sending first request failed.");
-      end;
+      Send ("First request");
     end if;
   end Connect_Cb;
 
@@ -57,7 +63,7 @@ procedure T_Tcp_Util is
     Host.Name (1 .. Text_Handler.Length(Server_Name))
          := Text_Handler.Value(Server_Name);
     Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
-    Tcp_Util.Connect_To (Host, Port, 5.0, 3, Connect_Cb'Unrestricted_Access);
+    Tcp_Util.Connect_To (Host, Port, Delay_Try, Nb_Try, Connect_Cb'Unrestricted_Access);
   end Connect;
 
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
@@ -65,11 +71,19 @@ procedure T_Tcp_Util is
                        Remote_Port_Num : in Tcp_Util.Port_Num;
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
                        New_Dscr        : in Socket.Socket_Dscr) is
+    use type Socket.Socket_Dscr;
+    Tmp_Dscr : Socket.Socket_Dscr;
   begin
-    The_Dscr := New_Dscr;
-    X_Mng.X_Add_CallBack (Socket.Fd_Of(New_Dscr),
-                          Read_Cb'Unrestricted_Access);
-    Ada.Text_Io.Put_Line ("Accepted");
+    if The_Dscr /= Socket.No_Socket then
+      Ada.Text_Io.Put_Line ("Rejected");
+      Tmp_Dscr := New_Dscr;
+      Socket.Close (Tmp_Dscr);
+    else
+      The_Dscr := New_Dscr;
+      X_Mng.X_Add_CallBack (Socket.Fd_Of(New_Dscr),
+                            Read_Cb'Unrestricted_Access);
+      Ada.Text_Io.Put_Line ("Accepted");
+    end if;
   end Accept_Cb;
 
   procedure Read_Cb (Fd : in X_Mng.File_Desc) is
@@ -91,13 +105,16 @@ procedure T_Tcp_Util is
 
     if not Rec  or else Len = 0 then
       if not Rec then
-        Ada.Text_Io.Put_Line ("Read Cb -> no message");
+        Ada.Text_Io.Put ("Read Cb -> no message");
       else
-        Ada.Text_Io.Put_Line ("Read Cb -> empty message");
+        Ada.Text_Io.Put ("Read Cb -> empty message");
       end if;
+      Ada.Text_Io.Put_Line (" - Closing");
       X_Mng.X_Del_CallBack (Fd);
       Socket.Close (The_Dscr);
       if not Server then
+        Ada.Text_Io.Put_Line (" - Waiting");
+        delay 3.0;
         Connect;
       end if;
       return;
@@ -111,25 +128,13 @@ procedure T_Tcp_Util is
     if not Server then
       Ada.Text_Io.Put_Line ("      Waiting");
       delay 3.0;
-      begin
-        My_Send (The_Dscr, Message);
-        Ada.Text_Io.Put_Line ("      Request sent");
-      exception
-        when Socket.Socket_Error =>
-          Ada.Text_Io.Put_Line ("     Sending request failed.");
-      end;
+      Send ("Request");
     else
       Ada.Text_Io.Put_Line ("      Working");
       delay 5.0;
       Ada.Text_Io.Put_Line ("      Replying");
       Message.Num := Message.Num + 1;
-      begin
-        My_Send (The_Dscr, Message);
-        Ada.Text_Io.Put_Line ("      Reply sent");
-      exception
-        when Socket.Socket_Error =>
-          Ada.Text_Io.Put_Line ("     Sending reply failed.");
-      end;
+      Send ("Reply");
     end if;
   end Read_Cb;
 
@@ -150,7 +155,7 @@ begin
       Port_num : Tcp_Util.Port_num;
     begin
       Port.Name (1 .. Server_Port_Name'Length) := Server_Port_Name;
-      Tcp_Util.Accept_From (Port, Accept_Cb'Unrestricted_Access, The_Dscr,
+      Tcp_Util.Accept_From (Port, Accept_Cb'Unrestricted_Access, Accept_Dscr,
                             Port_Num);
     end;
   else
