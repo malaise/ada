@@ -182,7 +182,7 @@ package AFPX is
   --                 Tab, shift Tab  change field
   --                 Return / Esc / Break to end put_then_get
   --                 mouse click to move at home of field
-  -- In MOUSE fields : mouse click then release ends put_then_get
+  -- In BUTTON fields : mouse click then release ends put_then_get
   -- This call affects the content of GET fields, the cursor field and col,
   -- and the current element of the list
   -- If no field is GET (or all protected or desactivated,
