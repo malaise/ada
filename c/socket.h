@@ -117,7 +117,7 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
 extern int soc_change_dest_host (soc_token token, char *host_lan, boolean lan);
 
 /* Set dest to a host, port */
-extern int soc_set_dest (soc_token token, soc_host host, soc_port port);
+extern int soc_set_dest (soc_token token, soc_host *host, soc_port port);
 
 /* Get current lan name (computed from local host name) */
 /* lan_name must be big enough */
@@ -176,6 +176,7 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /*     except in tcp (no header) where the length read my me anything */
 /*     from 0 to length */
 /*   - SOC_WOULD_BLOCK (in  non blocking), new read has to be done */
+/*   - SOC_READ_0, disconnection? */
 /*   - any other (fatal) error */
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,

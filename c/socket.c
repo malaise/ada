@@ -333,7 +333,7 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
   return (SOC_OK);
 }
 
-extern int soc_set_dest (soc_token token, soc_host host, soc_port port) {
+extern int soc_set_dest (soc_token token, soc_host *host, soc_port port) {
   soc_ptr soc = (soc_ptr) token;
 
   /* Check that socket is open */
@@ -348,7 +348,7 @@ extern int soc_set_dest (soc_token token, soc_host host, soc_port port) {
     }
   }
 
-  soc->send_struct.sin_addr.s_addr = host.integer;
+  soc->send_struct.sin_addr.s_addr = host->integer;
   soc->send_struct.sin_port = htons (port);
 
   /* Connect tcp */
@@ -884,7 +884,7 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 /*   - SOC_READ_0: disconnection? */
 /*   - Error
 /*  In others: */
-/*   - SOC_OK */
+/*   - SOC_OK: total_len has been read */
 /*   - SOC_WOULD_BLOCK: new read has to be done */
 /*   - SOC_READ_0: disconnection? */
 /*   - Error */
@@ -1020,6 +1020,7 @@ extern int soc_receive (soc_token token,
     }
     result = rec1(soc, (char *)message, soc->expect_len);
     if (result == SOC_OK) {
+      result = soc->expect_len;
       /* Expect header next */
       soc->expect_len = 0;
     }
@@ -1058,7 +1059,7 @@ extern int soc_receive (soc_token token,
     if (set_for_reply) {
       soc->dest_set = TRUE;
     }
-    return (SOC_OK);
+    return (result);
 
   }
 }
