@@ -30,8 +30,8 @@ begin
   begin
     Ada.Text_Io.Open(File, Ada.Text_Io.Out_File,
                      Argument.Get_Parameter(Occurence => 2));
-    raise Program_Error;
     Ada.Text_Io.Close(File);
+    raise Program_Error;
   exception
     when Ada.Text_Io.Name_Error =>
       null;
