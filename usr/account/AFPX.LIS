@@ -349,23 +349,31 @@ DESCRIPTOR 1
   END FIELD
   # Switch unit
   FIELD 36 BUTTON
-    GEOMETRY 23 44 23 54
+    GEOMETRY 23 43 23 53
     COLORS cyan brown
     INIT
       0 1 TO FRANCS
     END INIT
   END FIELD
-  # Sort account
+  # Sort account by date
   FIELD 37 BUTTON
-    GEOMETRY 23 59 23 64
+    GEOMETRY 23 56 23 61
     COLORS cyan brown
     INIT
-      0 1 SORT
+      0 1 SDAT
+    END INIT
+  END FIELD
+  # Sort account by abs(amount)
+  FIELD 38 BUTTON
+    GEOMETRY 23 64 23 69
+    COLORS cyan brown
+    INIT
+      0 1 SAMO
     END INIT
   END FIELD
   # Exit account
-  FIELD 38 BUTTON
-    GEOMETRY 23 70 23 75
+  FIELD 39 BUTTON
+    GEOMETRY 23 72 23 77
     COLORS cyan brown
     INIT
       0 1 EXIT
@@ -373,20 +381,20 @@ DESCRIPTOR 1
   END FIELD
 
   # Message
-  FIELD 39 PUT
+  FIELD 40 PUT
     GEOMETRY 24 1 24 55
     COLORS orange not_blink black
   END FIELD
 
   # Yes/No
-  FIELD 40 BUTTON
+  FIELD 41 BUTTON
     GEOMETRY 24 57 24 61
     COLORS cyan brown
     INIT
       0 1 YES
     END INIT
   END FIELD
-  FIELD 41 BUTTON
+  FIELD 42 BUTTON
     GEOMETRY 24 63 24 66
     COLORS cyan brown
     INIT

@@ -17,8 +17,8 @@ package Mng is
   procedure Save (Rescue : in Boolean := False);
   -- Clear current account (and file name)
   procedure Clear;
-  -- Sort operation
-  procedure Sort;
+  -- Sort operation by date or by abs(amount)
+  procedure Sort (By_Date : in Boolean);
   -- Print listing
   procedure Print;
   -- Update the displayed amounts of opers, sums

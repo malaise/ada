@@ -152,9 +152,12 @@ begin
             -- Switch francs/euros
             Mng.Change_Unit;
           when 37 =>
-            -- Sort
-            Mng.Sort;
+            -- Sort by date
+            Mng.Sort (By_Date => True);
           when 38 =>
+            -- Sort by abs(amount)
+            Mng.Sort (By_Date => False);
+          when 39 =>
             -- Exit
             Quit;
           when others =>

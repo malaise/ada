@@ -44,16 +44,16 @@ package body Screen is
       Update_To_Unit;
     end if;
     -- Message
-    Afpx.Clear_Field(39);
+    Afpx.Clear_Field(40);
     -- Confirm Ack
-    Afpx.Set_Field_Activation(40, Mode /= Default);
+    Afpx.Set_Field_Activation(41, Mode /= Default);
     if Mode = Confirm then
-      Afpx.Reset_Field(40, Reset_Colors => False);
+      Afpx.Reset_Field(41, Reset_Colors => False);
     elsif Mode = Ack then
-      Afpx.Encode_Field(40, (0, 1), "ACK");
+      Afpx.Encode_Field(41, (0, 1), "ACK");
     end if;
 
-    Afpx.Set_Field_Activation(41, Mode = Confirm);
+    Afpx.Set_Field_Activation(42, Mode = Confirm);
   end Set_Mode;
 
   procedure Allow_Edit (Allow : in Boolean) is
@@ -172,9 +172,9 @@ package body Screen is
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when 40 =>
-              return True;
             when 41 =>
+              return True;
+            when 42 =>
               return False;
             when others =>
               null;
@@ -194,14 +194,14 @@ package body Screen is
     case Action is
       when Overwrite_Account =>
         Ring(False);
-        Afpx.Encode_Field (39, (0, 0),
+        Afpx.Encode_Field (40, (0, 0),
           "Account is not saved and will be overwritten. Confirm?");
       when Overwrite_File =>
-        Afpx.Encode_Field (39, (0, 0),
+        Afpx.Encode_Field (40, (0, 0),
           "Account file exists and will be overwritten. Confirm?");
       when Quit_Unsaved =>
         Ring(False);
-        Afpx.Encode_Field (39, (0, 0),
+        Afpx.Encode_Field (40, (0, 0),
           "Account is not saved and will be lost. Confirm?");
     end case;
     -- Get answer
@@ -216,22 +216,22 @@ package body Screen is
     Ring(True);
     case Error is
       when File_Access =>
-        Afpx.Encode_Field (39, (0, 0),
+        Afpx.Encode_Field (40, (0, 0),
           "File not found or not an account or access denied");
       when File_Io =>
-        Afpx.Encode_Field (39, (0, 0), "File read or write error");
+        Afpx.Encode_Field (40, (0, 0), "File read or write error");
       when File_Read_Only =>
-        Afpx.Encode_Field (39, (0, 0), "File is read-only");
+        Afpx.Encode_Field (40, (0, 0), "File is read-only");
       when File_Name_Too_Long =>
-        Afpx.Encode_Field (39, (0, 0), "File name too long");
+        Afpx.Encode_Field (40, (0, 0), "File name too long");
       when Account_Full =>
-        Afpx.Encode_Field (39, (0, 0), "Sorry, the account is full");
+        Afpx.Encode_Field (40, (0, 0), "Sorry, the account is full");
       when Not_Implemented =>
-        Afpx.Encode_Field (39, (0, 0), "Sorry, not implmeneted yet");
+        Afpx.Encode_Field (40, (0, 0), "Sorry, not implmeneted yet");
       when Internal_Error =>
-        Afpx.Encode_Field (39, (0, 0), "Internal error. Saving in Tmp");
+        Afpx.Encode_Field (40, (0, 0), "Internal error. Saving in Tmp");
       when Capacity_Error =>
-        Afpx.Encode_Field (39, (0, 0), "Overflow on amount value");
+        Afpx.Encode_Field (40, (0, 0), "Overflow on amount value");
     end case;
     -- Loop until ack
     while not My_Ptg loop

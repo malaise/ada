@@ -9,6 +9,14 @@ package body Mng is
   Oper_List : Oper_List_Mng.List_Type;
   procedure Sort is new Oper_List_Mng.Sort (Oper_Def.Before);
 
+  -- Sort by abs(amount)
+  function Smaller (Oper_1, Oper_2 : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Amount_Range;
+  begin
+    return abs(Oper_1.Amount) < abs(Oper_2.Amount);
+  end Smaller;
+  procedure Sort_Amounts is new Oper_List_Mng.Sort (Smaller);
+
   -- Name and status of current account
   Account_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
   Account_Saved : Boolean := True;
@@ -534,9 +542,13 @@ package body Mng is
   end Change_Unit;
 
   -- Sort
-  procedure Sort is
+  procedure Sort (By_Date : in Boolean) is
   begin
-    Sort(Oper_List); 
+    if By_Date then
+      Sort(Oper_List); 
+    else
+      Sort_Amounts(Oper_List);
+    end if;
     List_Util.Reset_Selection;
     Refresh_Screen(Bottom);
   end Sort;
