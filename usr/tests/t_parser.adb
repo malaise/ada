@@ -38,16 +38,22 @@ begin
   Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "'.");
   Parser.Create (Str, Is_Sep_Acc, It);
 
+  loop
+    Ada.Text_Io.Put (">" & Parser.Next_Word (It) & "< ");
+    exit when Parser.Current_Word (It) = "";
+  end loop;
+  Ada.Text_Io.New_Line (2);
+  
+  Parser.reset (It);
 
   loop
-    declare
-      Word : constant String := Parser.Next_Word (It);
-    begin
-      Ada.Text_Io.Put_Line ("Word is >" & Word & "<");
-      Ada.Text_Io.Put_Line ("Separated by >"
-                          & Parser.Prev_Separators (It) & "<");
-      exit when Word = "";
-    end;
+    Parser.Next_Word (It);
+    Ada.Text_Io.Put_Line ("Word is >" & Parser.Current_Word (It) & "<"
+                        & " from" & Positive'Image(Parser.First_Index (It))
+                        & " to" & Natural'Image(Parser.Last_Index (It))
+                        & " separated by >"
+                        & Parser.Prev_Separators (It) & "<");
+    exit when Parser.Current_Word (It) = "";
   end loop;
 
 
