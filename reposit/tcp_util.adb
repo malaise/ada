@@ -780,7 +780,8 @@ package body Tcp_Util is
     Rec.Cb := End_Of_Overflow_Cb;
     Sen_List_Mng.Insert (Sen_List, Rec);
     if Debug_Overflow then
-      My_Io.Put_Line ("  Tcp_Util.Send rec inserted at "
+      My_Io.Put_Line ("  Tcp_Util.Send rec with fd " & Rec.Fd'Img
+                    & " inserted at "
                     & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
     end if;
 
