@@ -234,7 +234,7 @@ package body SCREEN is
       when E_WRONG_DEGREE       => ENCODE_INFO ("Error, invalid degree");
       when E_WRONG_COORDINATE   => ENCODE_INFO ("Error, invalid coordinate");
       when E_RESOLUTION_PROBLEM => ENCODE_INFO ("Internal error while solving");
-      when E_CURVE_PROBLEM      => ENCODE_INFO ("Internal error while computing");
+      when E_CURVE_PROBLEM      => ENCODE_INFO ("Internal error while drawing");
       when E_CURVE_ACTIVE       => ENCODE_INFO ("A curve is already active");
       when E_TOO_MANY_POINTS    => ENCODE_INFO ("Too many points");
     end case;

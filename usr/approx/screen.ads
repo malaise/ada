@@ -12,7 +12,7 @@ package SCREEN is
   -- The exit/back button
   EXIT_BUTTON_FLD : constant AFPX.FIELD_RANGE := 17;
 
-  -- The F(xxxxx)= fieldè
+  -- The F(xxxxx)= field
   YFX_PUT_FLD : constant AFPX.FIELD_RANGE := 30;
 
   -- All the menues dependant fields
@@ -47,7 +47,7 @@ package SCREEN is
       C_FILE_EXISTS, C_DELETE_POINT, C_DATA_LOST,
       E_DONE, E_FILE_NOT_FOUND, E_IO_ERROR, E_FILE_NAME,
       E_NO_DATA, E_WRONG_DEGREE, E_WRONG_COORDINATE,
-      E_RESOLUTION_PROBLEM, E_CURVE_PROBLEM, E_CURVE_ACTIVE, 
+      E_RESOLUTION_PROBLEM, E_CURVE_PROBLEM, E_CURVE_ACTIVE,
       E_TOO_MANY_POINTS);
 
   subtype S_INFO_LIST is S_MESSAGE_LIST range I_CLEAR .. I_WAIT;
