@@ -1,3 +1,4 @@
+with Ada.Calendar;
 package Sys_Calls is
 
   -- Call system
@@ -32,19 +33,58 @@ package Sys_Calls is
 
   -- Unix File Descriptor
   type File_Desc is new Natural;
+  type File_Desc_Kind_List is (Tty, 
+    File, Dir, Link, Block_Device, Character_Device, Pipe, Socket, Unknown);
+  function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List;
   function Stdin return File_Desc;
 
-  -- Modes for Stdin. Return True if success
-  type Stdin_Mode_List is (
+  -- File kind (not tty)
+  subtype File_Kind_List is File_Desc_Kind_List range File .. Unknown;
+  -- File modif time
+  type Time_T is private;
+  -- File Rights are :
+  --  1st bit OX  2nd bit OW  3rd bit OR
+  --  4th bit GX  5th bit GW  6th bit GR
+  --  7th bit UX  8th bit UW  9th bit UR
+  -- 10th bit ST (sticky)
+  -- 11th bit GS (set GID)
+  -- 12th bit US (set UID)
+  -- File status
+  -- May raise Name_Error or Access_Error
+  procedure File_Stat (File_Name : in String;
+                       Kind       : out File_Kind_List;
+                       Rights     : out Natural;
+                       Modif_Time : out Time_T);
+
+  -- Convert file time
+  function Time_Of (Time : Time_T) return Ada.Calendar.Time;
+
+  -- Modes for a tty. Return True if success
+  type Tty_Mode_List is (
     Canonical,   -- Wait for CR, Echo, Blocking
     No_Echo,     -- Wait for CR, No echo, Blocking
     Asynchronous,-- No wait, Echo, Not Blocking
     Transparent  -- No wait, No echo, Not Blocking
   );
-  function Set_Stdin_Attr (Stdin_Mode : in Stdin_Mode_List) return Boolean;
+  function Set_Tty_Attr (Fd : File_Desc;
+                         Tty_Mode : Tty_Mode_List) return Boolean;
 
-  -- Non blocking get of a character on stdin (in Asynchronous mode)
-  procedure Get_Immediate_Stdin (C : out Character; Available : out Boolean);
+  -- Blocking mode for a non tty. Return True if success
+  function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean;
+
+  -- Non blocking get of a character
+  -- (in Asynchronous tty or non blocking fd)
+  procedure Get_Immediate (Fd : in File_Desc;
+                           C         : out Character;
+                           Available : out Boolean);
+
+  -- Exception (of File_Stat)
+  Name_Error   : exception;
+  Access_Error : exception;
+
+private
+
+  type Time_T is new Integer;
 
 end Sys_Calls; 
 

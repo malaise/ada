@@ -2,9 +2,12 @@ with System;
 with Interfaces.C_Streams;
 with Interfaces.C.Strings;
 with Ada.Command_Line;
+with Day_Mng;
+with Bit_Ops;
 
 package body Sys_Calls is
 
+  -- Common utilities
   function C_Strlen (S : System.Address) return Natural;
   pragma Import (C, C_Strlen, "strlen");
 
@@ -28,6 +31,43 @@ package body Sys_Calls is
       return "";
   end Str_From_C;
 
+
+  -- File/Fd status
+  type C_Stat_Rec is record
+    C_Mode : Integer;
+    C_Mtime : Integer;
+  end record;
+
+  function File_Kind_Of (Mode : Integer) return File_Desc_Kind_List is
+    Loc_Mode : Integer;
+    Kind : File_Desc_Kind_List;
+    use Bit_Ops;
+  begin
+    Loc_Mode := Mode And 8#00170000#;
+    Loc_Mode := Shr (Loc_Mode, 12);
+    case Loc_Mode is
+      when 8#14# =>
+        Kind := Socket;
+      when 8#12# =>
+        Kind := Link;
+      when 8#10# =>
+        Kind := File;
+      when 8#06# =>
+        Kind := Block_Device;
+      when 8#04# =>
+        Kind := Dir;
+      when 8#02# =>
+        Kind := Character_Device;
+      when 8#01# =>
+        Kind := Pipe;
+      when others =>
+        Kind := Unknown;
+    end case;
+    return Kind;
+  end File_Kind_Of;
+
+
+  -- Call system
   function Call_System (Command : String) return Integer is
     Command4C : constant String := Str_For_C (Command);
 
@@ -38,6 +78,8 @@ package body Sys_Calls is
     return C_System (Command4C'Address);
   end Call_System;
 
+
+  -- Rename/move a file
   function Unlink (File_Name : String) return Boolean is
     File_Name4C : constant String := Str_For_C (File_Name);
     Res : Integer;
@@ -62,6 +104,8 @@ package body Sys_Calls is
     return Res = 0;
   end Rename;
 
+
+   -- Errno and associated string
   function Errno return Integer is
     function C_Get_Errno return Integer;
     pragma Import (C, C_Get_Errno, "__get_errno");
@@ -69,7 +113,6 @@ package body Sys_Calls is
     return C_Get_Errno;
   end Errno;
    
- 
   function Str_Error (Err : Integer) return String is
 
     function C_Strerror (Errnum: Integer) return Interfaces.C.Strings.Chars_Ptr;
@@ -80,6 +123,7 @@ package body Sys_Calls is
   end Str_Error;
 
 
+  -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
     C_Str : constant String := Str & Ascii.Nul;
@@ -101,6 +145,7 @@ package body Sys_Calls is
     Put_Error (Str);
     New_Line_Error;
   end Put_Line_Error;
+
 
   -- Getenv and truncates if necessary
   procedure Getenv (Env_Name : in String;
@@ -142,6 +187,8 @@ package body Sys_Calls is
     end;
   end Getenv;
 
+
+  -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) is
   begin
     Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Exit_Status(Code));
@@ -153,33 +200,138 @@ package body Sys_Calls is
     Set_Exit_Code(1);
   end Set_Error_Exit_Code;
 
-  -- Stdin
+
+
+  -- Unix File Descriptor
+  function C_Is_A_Tty (Fd : Integer) return Integer;
+  pragma Import (C, C_Is_A_Tty, "isatty");
+
+  function C_Fd_Stat (Fd : Integer; Stat : System.Address)
+                  return Integer;
+  pragma Interface(C, C_Fd_Stat);
+  pragma Interface_Name(C_Fd_Stat, "fd_stat");
+
+  function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List is
+    C_Fd : constant Integer := Integer(Fd);
+    C_Stat : C_Stat_Rec;
+  begin
+    if C_Is_A_Tty (C_Fd) = 1 then
+      return Tty;
+    end if;
+    if C_Fd_Stat (C_Fd, C_Stat'Address) = -1 then
+      return Unknown;
+    end if;
+    return File_Kind_Of (C_Stat.C_Mode);
+  end File_Desc_Kind;
+ 
   function Stdin return File_Desc is
   begin
     return 0;
   end Stdin;
 
+
+  -- File status
+  function C_File_Stat (File_Name : System.Address; Stat : System.Address)
+                  return Integer;
+  pragma Interface(C, C_File_Stat);
+  pragma Interface_Name(C_File_Stat, "file_stat");
+
+  -- Errno for raising Name_Error, else raise Access_error
+  Enoent : constant := 2;
+
+  procedure File_Stat (File_Name : in String;
+                       Kind       : out File_Kind_List;
+                       Rights     : out Natural;
+                       Modif_Time : out Time_T) is
+    C_File_Name : constant String := Str_For_C (File_Name);
+    C_Stat : C_Stat_Rec;
+    Res : Integer;
+    use Bit_Ops;
+  begin
+    Res := C_File_Stat(C_File_Name'Address, C_Stat'Address);
+    if Res = -1 then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
+      else
+        raise Access_Error;
+      end if;
+    end if;
+    Kind := File_Kind_Of (C_Stat.C_Mode);
+    Rights := C_Stat.C_Mode And 8#00007777#;
+    Modif_Time := Time_T(C_Stat.C_Mtime);
+  end File_Stat;
+
+
+  -- Convert file time
+  function C_Time_To_Tm (Time_P : System.Address;
+                         My_Tm_P : System.Address)
+           return Integer;
+  pragma Interface(C, C_Time_To_Tm);
+  pragma Interface_Name(C_Time_To_Tm, "time_to_tm");
+
+  type C_Tm_T is record
+    Tm_Sec  : Integer;
+    Tm_Min  : Integer;
+    Tm_Hour : Integer;
+    Tm_Mday : Integer;
+    Tm_Mon  : Integer;
+    Tm_Year : Integer;
+  end record;
+
+  function Time_Of (Time : Time_T) return Ada.Calendar.Time is
+    C_Tm  : C_Tm_T;
+    Result : Integer;
+  begin
+    Result := C_Time_To_Tm (Time'Address, C_Tm'Address);
+    if Result /= 0 then
+      raise Constraint_Error;
+    end if;
+    return Ada.Calendar.Time_Of(
+      C_Tm.Tm_Year, C_Tm.Tm_Mon, C_Tm.Tm_Mday,
+      Day_Mng.Pack (C_Tm.Tm_Hour, C_Tm.Tm_Min, C_Tm.Tm_Sec, 0));
+  end Time_Of;
+
+
   -- Set mode for Stdin
-  Modes_For_C : constant array (Stdin_Mode_List) of Integer := (
+  Tty_Modes_For_C : constant array (Tty_Mode_List) of Integer := (
     Canonical    => 0,
     No_Echo      => 1,
     Asynchronous => 2,
     Transparent  => 3);
-  function C_Set_Stdin_Attr (Mode : Integer) return Integer;
-  pragma Import (C, C_Set_Stdin_Attr, "set_stdin_attr");
 
-  function Set_Stdin_Attr (Stdin_Mode : in Stdin_Mode_List) return Boolean is
+  function C_Set_Tty_Attr (Fd : Integer; Mode : Integer) return Integer;
+  pragma Import (C, C_Set_Tty_Attr, "set_tty_attr");
+
+  function Set_Tty_Attr (Fd : File_Desc;
+                         Tty_Mode : Tty_Mode_List) return Boolean is
   begin
-    return C_Set_Stdin_Attr (Modes_For_C(Stdin_Mode)) = 0;
-  end Set_Stdin_Attr;
+    return C_Set_Tty_Attr (Integer(Fd), Tty_Modes_For_C(Tty_Mode)) = 0;
+  end Set_Tty_Attr;
+
+
+  -- Set blocking mode for a non tty
+  function C_Set_Blocking (Fd : Integer; Blocking : Integer) return Integer;
+  pragma Import (C, C_Set_Blocking, "set_blocking");
+
+  function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean is
+  begin
+    if Blocking then
+      return C_Set_Blocking (Integer(Fd), 1) = 0;
+    else
+      return C_Set_Blocking (Integer(Fd), 0) = 0;
+    end if;
+  end Set_Blocking;
+
 
   -- Get char from stdin
-  function C_Get_Immediate_Stdin return Integer;
-  pragma Import (C, C_Get_Immediate_Stdin, "get_immediate_stdin");
-  procedure Get_Immediate_Stdin (C : out Character; Available : out Boolean) is
+  function C_Get_Immediate (Fd : Integer) return Integer;
+  pragma Import (C, C_Get_Immediate, "get_immediate");
+  procedure Get_Immediate (Fd : File_Desc;
+                           C         : out Character;
+                           Available : out Boolean) is
     Res : Integer;
   begin
-    Res := C_Get_Immediate_Stdin;
+    Res := C_Get_Immediate (Integer(Fd));
     if Res = -1 then
       Available := False;
       C := Ascii.Nul;
@@ -187,7 +339,7 @@ package body Sys_Calls is
       Available := True;
       C := Character'Val(Res);
     end if;
-  end Get_Immediate_Stdin;
+  end Get_Immediate;
 
 end Sys_Calls; 
 
