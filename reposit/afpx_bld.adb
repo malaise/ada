@@ -624,6 +624,16 @@ procedure AFPX_BLD is
 
 
 begin
+  -- Help
+  begin
+    ARGUMENT.GET_PARAMETER (LIST_FILE_NAME, PARAM_KEY => "h");
+    TEXT_IO.PUT_LINE ("Usage: " & ARGUMENT.GET_PROGRAM_NAME
+                    & " [ -l <afpx_list_file> ] [ -d <destination_dir> ]");
+    return;
+  exception
+    when others =>
+      null;
+  end;
   -- Source file and dest path arguments
   begin
     ARGUMENT.GET_PARAMETER (LIST_FILE_NAME, PARAM_KEY => "l");
@@ -657,5 +667,6 @@ begin
 exception
   when others =>
     CLOSE (TRUE);
+    TEXT_IO.PUT_LINE ("Try -h option.");
     raise;
 end AFPX_BLD;
