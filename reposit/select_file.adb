@@ -16,11 +16,12 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
   Get_Fld      : constant Afpx.Field_Range := 5;
   Info_Fld     : constant Afpx.Field_Range := 6;
   -- The scroll buttons
-  subtype List_Scroll_Fld_Range is Afpx.Field_Range range 7 .. 12;
+  subtype List_Scroll_Fld_Range is Afpx.Field_Range range 7 .. 13;
+  Center_Fld     : constant Afpx.Field_Range := 10;
   -- Action buttons
-  Reread_Fld   : constant Afpx.Field_Range := 13;
-  Ok_Fld       : constant Afpx.Field_Range := 14;
-  Cancel_Fld   : constant Afpx.Field_Range := 15;
+  Reread_Fld   : constant Afpx.Field_Range := 14;
+  Ok_Fld       : constant Afpx.Field_Range := 15;
+  Cancel_Fld   : constant Afpx.Field_Range := 16;
 
   type Error_List is (E_File_Not_Found, E_Io_Error, E_File_Name);
 
@@ -95,9 +96,10 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
       when 07 => Afpx.Update_List(Afpx.Top);
       when 08 => Afpx.Update_List(Afpx.Page_Up);
       when 09 => Afpx.Update_List(Afpx.Up);
-      when 10 => Afpx.Update_List(Afpx.Down);
-      when 11 => Afpx.Update_List(Afpx.Page_Down);
-      when 12 => Afpx.Update_List(Afpx.Bottom);
+      when Center_Fld => Afpx.Update_List(Afpx.Center);
+      when 11 => Afpx.Update_List(Afpx.Down);
+      when 12 => Afpx.Update_List(Afpx.Page_Down);
+      when 13 => Afpx.Update_List(Afpx.Bottom);
     end case;
   end Scroll;
 
@@ -157,10 +159,11 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
           Redisplay := True;
       end case;
     end loop;
-    -- Restore Get field
+    -- Restore Get field colors
     Afpx.Get_Field_Activation (Get_Fld, Get_Act);
     Afpx.Reset_Field (Get_Fld, Reset_String => False);
     Afpx.Set_Field_Activation (Get_Fld, Get_Act);
+    -- Restore Get field protection
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, False);
     end if;
@@ -169,10 +172,10 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
 
 
   procedure Error (Msg : in Error_List) is
-    Res : Boolean;
   begin
     Con_Io.Bell(1);
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Set_Field_Activation (Center_Fld, False);
     Afpx.Set_Field_Activation (Reread_Fld, False);
     Afpx.Set_Field_Activation (Cancel_Fld, False);
     Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
@@ -183,11 +186,14 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
       when E_File_Name          => Encode_Info ("Error invalid file name");
     end case;
 
-    Res := Confirm;
+    while not Confirm loop
+      null;
+    end loop;
 
     Afpx.Reset_Field(Info_Fld);
     Afpx.Set_Field_Activation (Cancel_Fld, True);
     Afpx.Set_Field_Activation (Reread_Fld, True);
+    Afpx.Set_Field_Activation (Center_Fld, True);
     Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
     Cursor_Field := Get_Fld;
   end Error;
@@ -409,3 +415,4 @@ begin
   end if;
 
 end Select_File;
+
