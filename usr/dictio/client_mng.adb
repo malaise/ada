@@ -2,9 +2,12 @@ with Timers, Socket, Tcp_Util, Dynamic_List, X_Mng, Sys_Calls;
 with Args, Parse, Notify, Client_Fd, Client_Com, Debug, Intra_Dictio;
 package body Client_Mng is
 
-  Accept_Port : Tcp_Util.Port_Num;
 
-  Init_Done : Boolean := False;
+  type State_List is (Not_Init, Waiting, Allow);
+  State : State_List := Not_Init;
+
+  Accept_Port : Tcp_Util.Port_Num;
+  Timer_Id : Timers.Timer_Id := Timers.No_Timer;
   Sync_Received : Boolean := True;
 
   function Read_Cb (Fd : in X_Mng.File_Desc; Read : in Boolean)
@@ -127,22 +130,22 @@ package body Client_Mng is
     Port.Name(1 .. Port_Name'Length) := Port_Name;
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'access,
                           Dscr, Accept_Port);
+    State := Allow;
     return False;
   end Timer_Cb;
 
 
   procedure Start is
-    Id : Timers.Timer_Id;
   begin
-    if Init_Done then
+    if State /= Not_Init then
       return;
     end if;
-    Init_Done := True;
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: start");
     end if;
-    Id := Timers.Create ( (Timers.Delay_Sec, 1.0, 1.0),
-                           Timer_Cb'access);
+    Timer_Id := Timers.Create ( (Timers.Delay_Sec, 1.0, 1.0),
+                                Timer_Cb'access);
+    State := Waiting;
   end Start;
 
 
@@ -152,14 +155,18 @@ package body Client_Mng is
     if Debug.Level_Array(Debug.Client) then
       Debug.Put ("Client: quit");
     end if;
-    if not Init_Done then
-      return;
-    end if;
-    -- Delete all notify
-    Notify.Del_All;
-    -- Abort accept and close all client sockets
-    Tcp_Util.Abort_Accept (Accept_Port);
-    Client_Fd.Del_All;
+    case State is
+      when Not_Init =>
+        null;
+      when Waiting =>
+        Timers.Delete (Timer_Id);
+      when Allow =>
+        -- Delete all notify
+        Notify.Del_All;
+        -- Abort accept and close all client sockets
+        Tcp_Util.Abort_Accept (Accept_Port);
+        Client_Fd.Del_All;
+      end case;
   end Quit;
 
   procedure Modified (Kind : in Character; Item : Data_Base.Item_Rec) is
