@@ -406,7 +406,7 @@ package body Dynamic_List is
     if Is_Empty (List) then
       return null;
     end if;
-    return List.Current.Value'Access;
+    return List.Current.Value'Unrestricted_Access;
   end;
 
   procedure Search (List         : in out List_Type;

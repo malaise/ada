@@ -145,7 +145,7 @@ private
   type Cell;
   type Link is access Cell;
   type Cell is record
-    Value : aliased Element_Type;
+    Value : Element_Type;
     Next  : Link := null;
     Prev  : Link := null;
   end record;
