@@ -23,6 +23,20 @@ package body MENU1 is
     SCREEN.INIT_FOR_MAIN1 (CURSOR_FIELD);
   end ERROR;
 
+  function EXIT_PROG return BOOLEAN is
+  begin
+    if not MENU2.CURVED_STOPED then
+      SCREEN.ERROR(SCREEN.E_CURVE_ACTIVE);
+      return FALSE;
+    end if;
+    SCREEN.PUT_TITLE(SCREEN.EXIT_APPROX);
+    if DIALOG.CONFIRM_LOST then
+      -- The end
+      CON_IO.DESTROY;
+      return TRUE;
+    end if;
+    return FALSE;
+  end EXIT_PROG;
 
   -- Read a data file
   function READ_FILE (FILE_NAME : in FILE.F_T_FILE_NAME) return BOOLEAN is
@@ -212,8 +226,15 @@ package body MENU1 is
             when AFPX.RETURN_KEY =>
               null;
             when AFPX.ESCAPE_KEY =>
+              if EXIT_PROG then
+                -- The end
+                return;
+              else
+                RESTORE := PARTIAL;
+              end if;
               SCREEN.PUT_TITLE(SCREEN.EXIT_APPROX);
               if DIALOG.CONFIRM_LOST then
+                CON_IO.DESTROY;
                 return;
               else
                 RESTORE := PARTIAL;
@@ -227,8 +248,7 @@ package body MENU1 is
                  SCREEN.LIST_SCROLL_FLD_RANGE'LAST =>
               SCREEN.SCROLL(PTG_RESULT.FIELD_NO);
             when SCREEN.EXIT_BUTTON_FLD =>
-              SCREEN.PUT_TITLE(SCREEN.EXIT_APPROX);
-              if DIALOG.CONFIRM_LOST then
+              if EXIT_PROG then
                 -- The end
                 return;
               else
