@@ -1,3 +1,4 @@
+with Parser;
 package Pattern is
 
   -- Look successively in a rule (set of patterns) to find a pattern
@@ -14,20 +15,22 @@ package Pattern is
   function Is_Sep (C : Character) return Boolean;
 
   -- The callback associated with the first matching pattern is called with
-  --  the input rule no and str,
+  --  the input rule no,
   --  the pattern id matching,
   --  the number of words of Str that have matched a term of the pattern,
-  --  the index in Str of last matching character (0 if matching empty pattern).
-  -- A pattern id identifies uniquely a patternin a rule, so the same callback
-  --  can be associated to several patterns.
-  -- Patterns are scanned in crescent order of Ids.
+  --  a Parser iterator in the first remaining word of Str.
+  -- A pattern id identifies uniquely a pattern in a rule, so the same
+  --  callback can be associated to several patterns.
+  -- Patterns are scanned in crescent order of ids.
+  -- The returned value is transmitted to Check.
   type Rule_No is new Positive;
   type Pattern_Id is new Positive;
-  type Match_Cb_Access is access procedure (Rule : in Rule_No;
-                                            Str  : in String;
-                                            Id   : in Pattern_Id;
-                                            Nb_Match : in Natural;
-                                            Index    : in Natural);
+  type Match_Cb_Access is access function (Rule : in Rule_No;
+                                           Id   : in Pattern_Id;
+                                           Nb_Match : in Natural;
+                                           Iter : in Parser.Iterator)
+                                 return Boolean;
+
 
   -- (Re)define a pattern in a rule.
   -- May raise Invalid_Pattern if Pattern is not valid.
@@ -44,14 +47,30 @@ package Pattern is
 
 
   -- Check Str versus patterns of a rule, in crescent order if Ids.
-  -- Returns whether or not a match was found (and a Cb called).
+  -- Returns whether or not a match was found (and then a Cb called)
+  --  and the Cb returned True.
   -- Separators may be spaces or tabs.
-  function  Check (Rule : Rule_No; Str : String) return Boolean;
-  procedure Check (Rule : in Rule_No; Str : in String);
+  -- Comparisons may be case sensitive or not
+  function  Check (Rule : Rule_No;
+                   Str  : String;
+                   Case_Sensitive : Boolean := True) return Boolean;
+  procedure Check (Rule : in Rule_No;
+                   Str : in String;
+                   Case_Sensitive : in Boolean := True);
 
+
+  -- Get an unused rule
+  -- May raise No_Rule if no rule is available.
+  function Get_Free_Rule return Rule_No;
+
+  -- Delete all patterns of a rule
+  procedure Del_Rule (Rule : in Rule_No);
 
   -- On Set/Del.
   Invalid_Pattern : exception;
+
+  -- On Get_Free_Rule
+  No_Rule : exception;
 
   -- Example:
   -- Set (10, "get alias", Cb);

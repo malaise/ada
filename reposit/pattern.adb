@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Parser, Environ;
+with Parser, Environ, Lower_Str;
 package body Pattern is
 
   Inited : Boolean := False;
@@ -25,11 +25,19 @@ package body Pattern is
 
   package Storage is
 
+    -- Return an unused rule
+    function Get_Free_Rule return Rule_No;
+
+    -- Delete all terms of all patterns of a rule
+    procedure Del_Rule (Rule : in Rule_No);
+
+
     -- Check if pattern Id exists and set to current
     function Pattern_Exists (Rule : Rule_No; Id : Pattern_Id) return Boolean;
 
     -- Delete all terms of current pattern
     procedure Delete_Current_Pattern;
+
 
     -- Append a terms to new pattern
     procedure Create_Pattern (Rule : in Rule_No;
@@ -39,6 +47,7 @@ package body Pattern is
                         Optio : in Boolean;
                         Repet : in Boolean);
                       
+
     -- Get terms one by one
     procedure Rewind (Rule : in Rule_No);
 
@@ -53,7 +62,7 @@ package body Pattern is
       Cb : Match_Cb_Access;
     end record;
 
-    function Next_Term return Term_Rec;
+    function Next_Term (Lower_Case : Boolean) return Term_Rec;
 
   end Storage;
     
@@ -89,7 +98,7 @@ package body Pattern is
     -- Init
     Put_Debug ("Set", "Create patern to rule " & Rule'Img & ", id " & Id'Img);
     Storage.Create_Pattern (Rule, Id, Match_Cb);
-    Parser.Create (Pattern, Is_Sep'Access, Iter);
+    Parser.Set (Iter, Pattern, Is_Sep'Access);
     First := True;
     Optio := False;
     Repet := False;
@@ -178,7 +187,7 @@ package body Pattern is
     end loop One_Word;
 
     -- Cleanup and verdict
-    Parser.Delete (Iter);
+    Parser.Del (Iter);
     if not Ok then
       Del (Rule, Id);
       raise Invalid_Pattern;
@@ -202,16 +211,37 @@ package body Pattern is
 
   -- Check Str versus patterns in crescent order if Ids
   -- Separators may be spaces or tabs.
-  function Check (Rule : Rule_No; Str : String) return Boolean is
+  function Check (Rule : Rule_No;
+                  Str : String;
+                  Case_Sensitive : Boolean := True) return Boolean is
     Iter : Parser.Iterator;
-    First_Word : Boolean;
     Ok : Boolean;
     Nb_Match : Natural;
     Term, Prev_Term : Storage.Term_Rec;
-    Pull : Boolean;
+    Repeating : Boolean;
     Index : Natural;
 
     use type Storage.Str_Access;
+
+    -- Pull one term
+    function Pull return Boolean is
+    begin
+      Prev_Term := Term;
+      Term := Storage.Next_Term (not Case_Sensitive);
+      -- No more term?
+      if Term.Str_Acc = null then
+        Put_Debug ("Check.Pull", "No more pattern");
+        Term := Prev_Term;
+        return True;
+      end if;
+      -- New pattern and OK?
+      if Term.Id /= Prev_Term.Id and then Ok then
+        Put_Debug ("Check", "End of pattern and OK");
+        Term := Prev_Term;
+        return True;
+      end if;
+      return False;
+    end Pull;
 
     -- Remove terms until end of list, new pattern,
     --  or (if Only_Optio is set) until not an option
@@ -219,7 +249,7 @@ package body Pattern is
     begin
       loop
         Prev_Term := Term;
-        Term := Storage.Next_Term;
+        Term := Storage.Next_Term (not Case_Sensitive);
         if Term.Str_Acc = null then
           -- No more term
           Put_Debug ("Check.Flush", "No more term");
@@ -239,18 +269,42 @@ package body Pattern is
       end loop;
     end Flush;
 
+    -- Cleanup and verdict. Return True if OK and Cb returned True.
+    function Conclude return Boolean is
+    Res : Boolean := False;
+    begin
+      if Term.Cb = null then
+        Put_Debug ("Check", "Cb is null");
+      end if;
+      if Ok and then Term.Cb /= null then
+        Put_Debug ("Check", "Calling Cb");
+        Res := Term.Cb (Rule, Term.Id, Nb_Match, Iter);
+      end if;
+      Parser.Del (Iter);
+      Put_Debug ("Check", "Done");
+      return Res;
+    end Conclude;
+
   begin
     Init;
     Put_Debug ("Check", "Checking string " & Str & " in rule no " & Rule'Img);
+
     -- Init check
-    Parser.Create (Str, Is_Sep'Access, Iter);
+    if Case_Sensitive then
+      Parser.Set (Iter, Str, Is_Sep'Access);
+    else
+      Parser.Set (Iter, Lower_Str (Str), Is_Sep'Access);
+    end if;
     Storage.Rewind (Rule);
-    First_Word := True;
     Nb_Match := 0;
     Ok := False;
-    Term := Storage.Next_Term;
-    Prev_Term := Term;
     Index := 0;
+    Repeating := False;
+
+    -- Get first term and word
+    Prev_Term := Term;
+    Term := Storage.Next_Term (not Case_Sensitive);
+    Parser.Next_Word (Iter);
 
     -- No pattern
     if Term.Str_Acc = null then
@@ -258,33 +312,30 @@ package body Pattern is
       return False;
     end if;
 
+    -- Empty String: Look for empty pattern
+    if Parser.Current_Word (Iter) = "" then
+      Put_Debug ("Check", "Empty input string");
+      Ok := False;
+      loop
+        if Term.Str_Acc.all = "" then
+          Put_Debug ("Check", "  Found wildcard term");
+          Parser.Reset (Iter);
+          Ok := True;
+          exit;
+        else
+          Term := Storage.Next_Term (not Case_Sensitive);
+          exit when Term.Str_Acc = null;
+        end if;
+      end loop;
+      return Conclude;
+    end if;
+
     -- Compare words of Str to current pattern
     One_Word:
     loop
       declare
-        Strl : constant String := Parser.Next_Word (Iter);
+        Strl : constant String := Parser.Current_Word (Iter);
       begin
-        -- Check for end of input string
-        if Strl = "" then
-          if First_Word then
-            -- Empty String. Look for empty pattern
-            Put_Debug ("Check", "Empty input string");
-            Ok := False;
-            loop
-              if Term.Str_Acc.all = "" then
-                Put_Debug ("Check", "  Found wildcard term");
-                Parser.Reset (Iter);
-                Ok := True;
-                exit One_Word;
-              end if;
-              Term := Storage.Next_Term;
-              exit when Term.Str_Acc = null;
-            end loop;
-            exit One_Word;
-          end if;
-        end if;
-        First_Word := False;
-
         -- Match?
         Put_Debug ("Check", "Comparing word " & Strl
                           & " and term " & Term.Str_Acc.all
@@ -296,63 +347,53 @@ package body Pattern is
           Ok := True;
           exit One_Word;
         elsif Strl = "" then
-          Put_Debug ("Check", "  End of string, flushing options");
-          -- Flush all remaining options
-          exit One_Word when Flush (True);
-          if Term.Id /= Prev_Term.Id then
-            -- All was option
-            Put_Debug ("Check", "  All was options");
-            Term := Prev_Term;
-            exit One_Word;
-          else
-            Put_Debug ("Check", "  Resetting for pattern no " & Term.Rule'Img
-                              & ", id " & Term.Id'Img);
-            Parser.Reset (Iter);
-            Nb_Match := 0;
-            Index := 0;
-            Ok := False;
-            Pull := False;
+          if Term.Optio then
+            Put_Debug ("Check", "  End of string, flushing options");
+            -- Flush all remaining options
+            if Flush (True) or else Term.Id /= Prev_Term.Id then
+              Put_Debug ("Check", "  All was options");
+              Term := Prev_Term;
+              exit One_Word;
+            end if;
           end if;
+          -- Reset Str and move to next pattern
+          Put_Debug ("Check", "  Resetting for pattern no " & Term.Rule'Img
+                            & ", id " & Term.Id'Img);
+          Parser.Reset (Iter);
+          Parser.Next_Word (Iter);
+          Nb_Match := 0;
+          Index := 0;
+          Ok := False;
+          Repeating := False;
+          exit One_Word when Flush (False);
         elsif Strl = Term.Str_Acc.all then
           Put_Debug ("Check", "  Match");
           Nb_Match := Nb_Match + 1;
-          Index := Parser.Last_Index (Iter);
+          Index := Parser.Last_Index (Iter, False);
           Ok := True;
-          -- Pull term if not repetitive
-          Pull := not Term.Repet;
+          -- Next str may mismatch with current term and still Ok
+          Repeating := Term.Repet;
+          -- Pop one word, and one term if not repetitive
+          Parser.Next_Word (Iter);
+          if not Term.Repet then
+            exit One_Word when Pull;
+          end if;
         else
-          Put_Debug ("Check", "  Mismatch");
-          if not Term.Optio then
+          if not Term.Optio and then not Repeating then
             -- Mismatch, reset string and pull all terms of pattern
-            Put_Debug ("Check", "  Resetting from pattern no " & Term.Rule'Img
-                              & ", id " & Term.Id'Img);
+            Put_Debug ("Check", "  Mismatch. Resetting from pattern no "
+                              & Term.Rule'Img & ", id " & Term.Id'Img);
             Parser.Reset (Iter);
+            Parser.Next_Word (Iter);
             Nb_Match := 0;
             Index := 0;
             Ok := False;
-            Pull := False;
             exit One_Word when Flush (False);
           else
-            -- Pull mismatching term if optionnal
-            Pull := Term.Optio;
-          end if;
-        end if;
-
-        if Pull then
-          Prev_Term := Term;
-          Term := Storage.Next_Term;
-          -- No more term
-          if Term.Str_Acc = null then
-            Put_Debug ("Check", "No more pattern");
-            Term := Prev_Term;
-            exit One_Word;
-          end if;
-
-          -- New pattern and OK?
-          if Term.Id /= Prev_Term.Id and then Ok then
-            Put_Debug ("Check", "End of pattern and OK");
-            Term := Prev_Term;
-            exit One_Word;
+            -- Pull mismatching term if optionnal or end of repetition
+            Put_Debug ("Check", "  Mismatch with option or end of repetition");
+            exit One_Word when Pull;
+            Repeating := False;
           end if;
         end if;
 
@@ -361,20 +402,28 @@ package body Pattern is
     end loop One_Word;
 
     -- Cleanup and verdict
-    if Ok and then Term.Cb /= null then
-      Put_Debug ("Check", "Calling Cb");
-      Term.Cb (Rule, Str, Term.Id, Nb_Match, Index);
-    end if;
-    Parser.Delete (Iter);
-    Put_Debug ("Check", "Done.");
-    return OK;
+    return Conclude;
   end Check;
 
-  procedure Check (Rule : in Rule_No; Str : in String) is
+  procedure Check (Rule : in Rule_No;
+                   Str  : in String;
+                   Case_Sensitive : in Boolean := True) is
     Dummy : Boolean;
   begin
     Dummy := Check (Rule, Str);
   end Check;
+
+  -- May raise No_Rule if no rule is available.
+  function Get_Free_Rule return Rule_No is
+  begin
+    return Storage.Get_Free_Rule;
+  end Get_Free_Rule;
+
+  -- Delete all patterns of a rule
+  procedure Del_Rule (Rule : in Rule_No) is
+  begin
+    Storage.Del_Rule (Rule);
+  end Del_Rule;
 
 end Pattern;
 
