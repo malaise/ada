@@ -88,6 +88,15 @@ package body Mcd_Mng is
     -- BOOL,*,*->*
     function Ifte    (X, A, B : Item_Rec) return Item_Rec;
 
+    -- REAL -> REAL
+    function Sin     (X : Item_Rec) return Item_Rec;
+    function Cos     (X : Item_Rec) return Item_Rec;
+    function Tan     (X : Item_Rec) return Item_Rec;
+    function ASin    (X : Item_Rec) return Item_Rec;
+    function ACos    (X : Item_Rec) return Item_Rec;
+    function ATan    (X : Item_Rec) return Item_Rec;
+
+
     -- Argument does not mach operator
     -- INVALID_ARGUMENT : exception;
     -- Arguments are not compatible to each other
@@ -373,6 +382,21 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Push (Operations.Bolxor(B,A));
         when Bolneg =>
           Pop(A); Push (Operations.Bolneg(A));
+        when Pi =>
+          Push( (Kind => Real,
+                 Val_Real => My_Math.Real(My_Math.Pi)) );
+        when Sin =>
+          Pop(A); Push (Operations.Sin(A));
+        when Cos =>
+          Pop(A); Push (Operations.Cos(A));
+        when Tan =>
+          Pop(A); Push (Operations.Tan(A));
+        when Asin =>
+          Pop(A); Push (Operations.Asin(A));
+        when Acos =>
+          Pop(A); Push (Operations.Acos(A));
+        when Atan =>
+          Pop(A); Push (Operations.Atan(A));
 
         -- Conditions
         when Ifthen =>

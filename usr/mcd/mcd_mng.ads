@@ -53,6 +53,14 @@ package Mcd_Mng is
 
    Bolneg,
 
+   Pi,
+   Sin,
+   Cos,
+   Tan,
+   Asin,
+   Acos,
+   Atan,
+
    Dup,
 
    Pop,

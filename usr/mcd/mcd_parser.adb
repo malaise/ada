@@ -62,6 +62,14 @@ package body Parser is
    Bolxor   => ("^ ", "push B xor A                  "),
    Bolneg   => ("~ ", "push not A                    "),
 
+   Pi       => (Nosy, "push PI                       "),
+   Sin      => (Nosy, "push Sin(A) A in radiants     "),
+   Cos      => (Nosy, "push Cos(A) A in radiants     "),
+   Tan      => (Nosy, "push Tan(A) A in radiants     "),
+   ASin     => (Nosy, "push ASin(A) in radiants      "),
+   ACos     => (Nosy, "push ACos(A) in radiants      "),
+   ATan     => (Nosy, "push ATan(A) in radiants      "),
+
    Toreal   => (Nosy, "push REAL(A)                  "),
    Round    => (Nosy, "push INTE(A) (round)          "),
    Trunc    => (Nosy, "push INTE(A) (int part)       "),
@@ -137,7 +145,6 @@ package body Parser is
     I : My_Math.Inte;
     R : My_Math.Real;
     L : Positive;
-    N : Natural;
   begin
 
     Text_Handler.Set (Txt, Input_Dispatcher.Next_Word);
@@ -189,13 +196,6 @@ package body Parser is
           end if;
           Text_Handler.Append (Txts, Txt);
         end loop;
-        -- Remove leading and tailing "
-        N := Text_Handler.Length(Txts);
-        if N > 0
-        and then Text_Handler.Value(Txts)(1) = '"'
-        and then TEXT_HANDLER.VALUE(TXTS)(N) = '"' then
-          Text_Handler.Set(Txts, Text_Handler.Value(Txts)(2 .. N-1));
-        end if;
         Item_Chrs.Val_Len := Text_Handler.Length(Txts);
         Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
         if Item_Chrs.Val_Len + 4 <= Input_Dispatcher.Max_String_Lg then
@@ -294,7 +294,6 @@ package body Parser is
     Put_Line ("  <integer>           ::= <number> | <base>#<number># ");
     Put_Line ("  <register>          ::= 'a' .. 'z'  | 'A' .. 'Z'");
     Put_Line ("  <string/subprogram> ::= '[' <text> ']'");
-    Put_Line ("  <operator>          ::= <operator_name> | <operator_symbol>");
     Put_Line ("Operators are: Name      Action (A is top of stack, then B...)");
     for O in Mcd_Mng.Operator_List loop
       Ope_Name:= (others => ' ');

@@ -27,176 +27,195 @@ package body Input_Dispatcher is
   -- String delimiter
   Sd : constant Character := '"';
 
-  function IS_SEPARATOR (C : in CHARACTER) return BOOLEAN is
+  function Is_Separator (C : in Character) return Boolean is
   begin
-    return C = ' ' or else C = ASCII.HT;
-  end IS_SEPARATOR;
+    return C = ' ' or else C = Ascii.Ht;
+  end Is_Separator;
 
-  function NEXT_STR_WORD return STRING is
-    TMP_INDEX : POSITIVE;
-    IN_LIT : BOOLEAN := FALSE;
+  function Next_Str_Word return String is
+    Tmp_Index : Positive;
+    In_Lit : Boolean := False;
   begin
     -- Skip separators
-    while CUR_INDEX <= CUR_LEN and then IS_SEPARATOR(CUR_STR(CUR_INDEX)) loop
-      CUR_INDEX := CUR_INDEX + 1;
+    while Cur_Index <= Cur_Len and then Is_Separator(Cur_Str(Cur_Index)) loop
+      Cur_Index := Cur_Index + 1;
     end loop;
-    if CUR_INDEX > CUR_LEN then
+    if Cur_Index > Cur_Len then
       -- no more word
       return "";
     end if;
 
     -- Got a start of word
-    TMP_INDEX := CUR_INDEX;
+    Tmp_Index := Cur_Index;
 
-    IN_LIT := CUR_STR(TMP_INDEX) = SD;
-    if IN_LIT then
-      STOP_INDEX := TMP_INDEX + 1;
-      -- Parse string literal, look for SD
-      while STOP_INDEX <= CUR_LEN and then CUR_STR(STOP_INDEX) /= SD loop
-        STOP_INDEX := STOP_INDEX + 1;
-      end loop;
-      if STOP_INDEX > CUR_LEN then
-        -- No SD before end of line
-        STOP_INDEX := CUR_LEN;
-        raise STRING_ERROR;
-      end if;
-      if STOP_INDEX + 1 <= CUR_LEN and then
-         not IS_SEPARATOR(CUR_STR(STOP_INDEX + 1)) then
-        -- SD is not followed by a separator
-        raise STRING_ERROR;
-      end if;
+    In_Lit := Cur_Str(Tmp_Index) = Sd;
+    if In_Lit then
+      Stop_Index := Tmp_Index + 1;
+      -- Parse string literal, look for Sd-Sep or Sd-End
+      Parse_Lit:
+      loop
+        if Cur_Str(Stop_Index) = Sd then
+          if Stop_Index = Cur_Len
+          or else Is_Separator(Cur_Str(Stop_Index + 1)) then
+            -- End of String literal
+            exit Parse_Lit;
+          elsif Cur_Str(Stop_Index + 1) = Sd 
+          and then Stop_Index + 1 /= Cur_Len then
+            -- Two successive Sd in the middle: shift left by one
+            Cur_Str(Stop_Index + 1 .. Cur_Len - 1) :=
+                     Cur_Str(Stop_Index + 2 .. Cur_Len);
+            Cur_Len := Cur_Len - 1;
+          else
+            -- One Sd in middle of string
+            raise String_Error;
+           
+          end if;
+        elsif Stop_Index = Cur_Len then
+          -- No SD before end of line
+          Stop_Index := Cur_Len;
+          raise String_Error;
+        end if;
+        -- In the middle of a string: go on
+        Stop_Index := Stop_Index + 1;
+      end loop Parse_Lit;
+
       -- This is the next start
-      CUR_INDEX := STOP_INDEX + 1;
+      Cur_Index := Stop_Index + 1;
+
+      -- Skip first and last Sds
+      Tmp_Index := Tmp_Index + 1;
+      Stop_Index := Stop_Index - 1;
 
     else
       -- Parse string, look for separator
-      STOP_INDEX := TMP_INDEX + 1;
-      while STOP_INDEX <= CUR_LEN and then not IS_SEPARATOR(CUR_STR(STOP_INDEX)) loop
-        STOP_INDEX := STOP_INDEX + 1;
+      Stop_Index := Tmp_Index + 1;
+      while Stop_Index <= Cur_Len and then not Is_Separator(Cur_Str(Stop_Index)) loop
+        Stop_Index := Stop_Index + 1;
       end loop;
       -- This is the next start
-      CUR_INDEX := STOP_INDEX;
+      Cur_Index := Stop_Index;
       -- Stop is last char of word
-      STOP_INDEX := STOP_INDEX - 1;
+      Stop_Index := Stop_Index - 1;
     end if;
 
-    return CUR_STR(TMP_INDEX .. STOP_INDEX);
-  end NEXT_STR_WORD;
+    return Cur_Str(Tmp_Index .. Stop_Index);
 
-  function ERROR_STRING return STRING is
-  begin
-   return CUR_STR(CUR_INDEX .. STOP_INDEX);
-  end ERROR_STRING;
+  end Next_Str_Word;
 
-  function FIRST_STR_WORD (STR : STRING := "") return STRING is
+  function Error_String return String is
   begin
-    if STR /= "" then
-      CUR_LEN := STR'LENGTH;
-      CUR_STR(1 .. CUR_LEN) := STR;
+   return Cur_Str(Cur_Index .. Stop_Index);
+  end Error_String;
+
+  function First_Str_Word (Str : String := "") return String is
+  begin
+    if Str /= "" then
+      Cur_Len := Str'Length;
+      Cur_Str(1 .. Cur_Len) := Str;
     end if;
-    CUR_INDEX := 1;
-    return NEXT_STR_WORD;
-  end FIRST_STR_WORD;
+    Cur_Index := 1;
+    return Next_Str_Word;
+  end First_Str_Word;
 
   -- Set input flow to a new string
   --  or stdin if STR is empty
-  procedure SET_INPUT (STR : in STRING) is
+  procedure Set_Input (Str : in String) is
   begin
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
-      TEXT_IO.PUT_LINE ("Input_dispacher: Setting input to >"
-       & STR & "<");
+    if Debug.Debug_Level_Array(Debug.Input) then
+      Text_Io.Put_Line ("Input_dispacher: Setting input to >"
+       & Str & "<");
     end if;
-    if STR = "" then
-      CURR_IS_STDIN := TRUE;
-      if LEN_STDIN /= 0 then
-        CUR_INDEX := IND_STDIN;
-        CUR_LEN := LEN_STDIN;
-        CUR_STR(1 .. CUR_LEN) := STR_STDIN(1 .. LEN_STDIN);
+    if Str = "" then
+      Curr_Is_Stdin := True;
+      if Len_Stdin /= 0 then
+        Cur_Index := Ind_Stdin;
+        Cur_Len := Len_Stdin;
+        Cur_Str(1 .. Cur_Len) := Str_Stdin(1 .. Len_Stdin);
       end if;
     else
-      if CURR_IS_STDIN then
-        IND_STDIN := CUR_INDEX;
+      if Curr_Is_Stdin then
+        Ind_Stdin := Cur_Index;
       end if;
-      CURR_IS_STDIN := FALSE;
-      CUR_LEN := STR'LENGTH;
-      CUR_STR(1 .. CUR_LEN) := STR;
-      STR_PARSED := FALSE;
+      Curr_Is_Stdin := False;
+      Cur_Len := Str'Length;
+      Cur_Str(1 .. Cur_Len) := Str;
+      Str_Parsed := False;
     end if;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
-      TEXT_IO.PUT_LINE ("Input_dispacher: Input set to >"
-       & CUR_STR(1 .. CUR_LEN) & "< at " & INTEGER'IMAGE(CUR_INDEX)
-       & " len " & INTEGER'IMAGE(CUR_LEN));
+    if Debug.Debug_Level_Array(Debug.Input) then
+      Text_Io.Put_Line ("Input_dispacher: Input set to >"
+       & Cur_Str(1 .. Cur_Len) & "< at " & Integer'Image(Cur_Index)
+       & " len " & Integer'Image(Cur_Len));
     end if;
-  end SET_INPUT;
+  end Set_Input;
 
   -- Get the ungot words of current string
-  -- PROGRAM_ERROR if current input is stdin
+  -- Program_Error if current input is stdin
   --  or if no word already got from current string
-  function GET_REMAINING return STRING is
+  function Get_Remaining return String is
   begin
-    if CURR_IS_STDIN then
-      if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
-        TEXT_IO.PUT_LINE ("Input_dispacher: Remaining on stdin.");
+    if Curr_Is_Stdin then
+      if Debug.Debug_Level_Array(Debug.Input) then
+        Text_Io.Put_Line ("Input_dispacher: Remaining on stdin.");
       end if;
-      raise PROGRAM_ERROR;
+      raise Program_Error;
     end if;
-    if DEBUG.DEBUG_LEVEL_ARRAY(DEBUG.INPUT) then
-      TEXT_IO.PUT_LINE ("Input_dispacher: Remaining is >"
-       & CUR_STR(CUR_INDEX .. CUR_LEN) & "<");
+    if Debug.Debug_Level_Array(Debug.Input) then
+      Text_Io.Put_Line ("Input_dispacher: Remaining is >"
+       & Cur_Str(Cur_Index .. Cur_Len) & "<");
     end if;
     -- Current string may not be parsed (retacal in a function)
-    if not CURR_IS_STDIN and then not STR_PARSED then
-      CUR_INDEX := 1;
+    if not Curr_Is_Stdin and then not Str_Parsed then
+      Cur_Index := 1;
     end if;
-    return CUR_STR(CUR_INDEX .. CUR_LEN);
-  end GET_REMAINING;
+    return Cur_Str(Cur_Index .. Cur_Len);
+  end Get_Remaining;
 
   -- Get next word from current input
   -- Empty if end of input flow
-  function NEXT_WORD return STRING is
+  function Next_Word return String is
   begin
-    if CURR_IS_STDIN then
+    if Curr_Is_Stdin then
 
       loop
-        if LEN_STDIN = 0 then
+        if Len_Stdin = 0 then
           -- Need to get a new string
           begin
-            TEXT_IO.GET_LINE (STR_STDIN, LEN_STDIN);
+            Text_Io.Get_Line (Str_Stdin, Len_Stdin);
           exception
-            when TEXT_IO.END_ERROR =>
+            when Text_Io.End_Error =>
               return "";
           end;
-          if LEN_STDIN /= 0 and then STR_STDIN(1) /= '#' then
+          if Len_Stdin /= 0 and then Str_Stdin(1) /= '#' then
             -- Str not to discard, parse it
-            TEXT_HANDLER.SET(WORD, FIRST_STR_WORD(STR_STDIN(1 .. LEN_STDIN)));
-            exit when not TEXT_HANDLER.EMPTY(WORD);
+            Text_Handler.Set(Word, First_Str_Word(Str_Stdin(1 .. Len_Stdin)));
+            exit when not Text_Handler.Empty(Word);
           else
             -- Discard
-            LEN_STDIN := 0;
+            Len_Stdin := 0;
           end if;
         else
-          TEXT_HANDLER.SET(WORD, NEXT_STR_WORD);
-          exit when not TEXT_HANDLER.EMPTY(WORD);
+          Text_Handler.Set(Word, Next_Str_Word);
+          exit when not Text_Handler.Empty(Word);
           -- End of string
-          LEN_STDIN := 0;
+          Len_Stdin := 0;
         end if;
       end loop;
     
     else
 
       -- In string
-      if not STR_PARSED then
-        TEXT_HANDLER.SET(WORD, FIRST_STR_WORD);
-        STR_PARSED := TRUE;
+      if not Str_Parsed then
+        Text_Handler.Set(Word, First_Str_Word);
+        Str_Parsed := True;
       else
-        TEXT_HANDLER.SET(WORD, NEXT_STR_WORD);
+        Text_Handler.Set(Word, Next_Str_Word);
       end if;
 
     end if;
 
-    return TEXT_HANDLER.VALUE(WORD);
-  end NEXT_WORD;
+    return Text_Handler.Value(Word);
+  end Next_Word;
 
 
-end INPUT_DISPATCHER;
+end Input_Dispatcher;
 

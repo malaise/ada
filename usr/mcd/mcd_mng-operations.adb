@@ -438,5 +438,72 @@ package body Operations is
     end if;
   end Ifte;
 
+  -- REAL -> REAL
+  function Sin     (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Sin(X.Val_Real));
+  exception
+    when My_Math.Math_Error =>
+      raise Invalid_Argument;
+  end Sin;
+
+  function Cos     (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Cos(X.Val_Real));
+  exception
+    when My_Math.Math_Error =>
+      raise Invalid_Argument;
+  end Cos;
+
+  function Tan     (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Tg(X.Val_Real));
+  exception
+    when My_Math.Math_Error =>
+      raise Invalid_Argument;
+  end Tan;
+
+  function Asin     (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Arc_Sin(X.Val_Real));
+  exception
+    when My_Math.Math_Error =>
+      raise Invalid_Argument;
+  end Asin;
+
+  function Acos     (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Arc_Cos(X.Val_Real));
+  exception
+    when My_Math.Math_Error =>
+      raise Invalid_Argument;
+  end Acos;
+
+  function Atan     (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => My_Math.Arc_Tg(X.Val_Real));
+  exception
+    when My_Math.Math_Error =>
+      raise Invalid_Argument;
+  end Atan;
+
 end Operations;
 
