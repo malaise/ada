@@ -1,14 +1,15 @@
 #!/bin/bash
 cur=`pwd`
 
-cd reposit
+cd c
 make $*
 cd $cur
 
-cd c
+cd reposit
 make $*
 cd $cur
 
 cd usr
 build $*
+cd $cur
 
