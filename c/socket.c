@@ -105,6 +105,7 @@ extern int soc_open (soc_token *p_token,
   (*p_soc)->dest_set = FALSE;
   (*p_soc)->linked = FALSE;
   (*p_soc)->blocking = TRUE;
+  (*p_soc)->connected = FALSE;
   return (BS_OK);
 
 }
@@ -190,13 +191,17 @@ static int soc_connect (soc_ptr soc) {
 
   /* Check result */
   if (result < 0) {
-    if (errno != ECONNREFUSED) {
+    if (errno == ECONNREFUSED) {
+      /* Not connected */
+      return (BS_OK);
+    } else {
       perror ("connect");
+      return (BS_ERROR);
     }
-    return (BS_ERROR);
   }
 
   /* Ok */
+  soc->connected = TRUE;
   return BS_OK;
 
 }
@@ -218,6 +223,12 @@ extern int soc_set_dest_service (soc_token token, char *host_lan, boolean lan,
   if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
     perror ("getservbyname");
     return (BS_ERROR);
+  }
+
+  /* Not linked nor already connected if tcp */
+  if ( (soc->proto == tcp_socket) &&
+       (soc->linked || soc->connected) ) {
+     return (BS_ERROR);
   }
 
   if (! lan) {
@@ -264,6 +275,12 @@ extern int soc_set_dest_port (soc_token token, char *host_lan, boolean lan,
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
 
+  /* Not linked nor already connected if tcp */
+  if ( (soc->proto == tcp_socket) &&
+       (soc->linked || soc->connected) ) {
+     return (BS_ERROR);
+  }
+
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
@@ -301,6 +318,12 @@ extern int soc_set_dest (soc_token token, soc_host host, soc_port port) {
 
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
+
+  /* Not linked nor already connected if tcp */
+  if ( (soc->proto == tcp_socket) &&
+       (soc->linked || soc->connected) ) {
+     return (BS_ERROR);
+  }
 
   soc->send_struct.sin_addr.s_addr = host.integer;
   soc->send_struct.sin_port = htons (port);
@@ -512,12 +535,31 @@ extern int soc_host_of (char *host_name, soc_host *p_host) {
 extern int soc_send (soc_token token, soc_message message, soc_length length) {
   soc_ptr soc = (soc_ptr) token;
   boolean cr;
+  soc_header header;
+  struct iovec vector[VECTOR_LEN];
 
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
 
   /* Check that desination is set */
   if (!soc->dest_set) return (BS_ERROR); 
+
+  /* Connected if tcp */
+  if ( (soc->proto == tcp_socket) && (!soc->connected) ) {
+     return (BS_ERROR);
+  }
+
+  /* Fill tcp header and vector */
+  if (soc->proto == tcp_socket) {
+    header.magic_number = htonl(MAGIC_NUMBER);
+    header.size = htonl(length);
+    vector[0].iov_base = (void*)&header;
+    vector[0].iov_len = sizeof(header);
+    vector[1].iov_base = message;
+    vector[1].iov_len = length;
+  }
+
+    
 
   if (!soc->blocking) {
 
@@ -527,7 +569,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
     /* Send */
     do {
       if (soc->proto == tcp_socket) {
-        cr = (send(soc->socket_id, (char *)message, length, 0) >= 0);
+        cr = (writev(soc->socket_id, vector, VECTOR_LEN) >= 0);
       } else {
         cr = (sendto(soc->socket_id, (char *)message, length, 0,
          (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
@@ -542,7 +584,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
     /* Send */
     do {
       if (soc->proto == tcp_socket) {
-        cr = (send(soc->socket_id, (char *)message, length, 0) >= 0);
+        cr = (writev(soc->socket_id, vector, VECTOR_LEN) >= 0);
       } else {
         cr = (sendto(soc->socket_id, (char *)message, length, 0,
          (struct sockaddr*) &(soc->send_struct), socklen) >= 0);
@@ -567,6 +609,12 @@ extern int soc_link_service (soc_token token, const char *service) {
 
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
+
+  /* Not connected nor already linked if tcp */
+  if ( (soc->proto == tcp_socket) &&
+       (soc->linked || soc->connected) ) {
+     return (BS_ERROR);
+  }
 
   /* Read IP adress of port */
   if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
@@ -605,6 +653,12 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
 
+  /* Not connected nor already linked if tcp */
+  if ( (soc->proto == tcp_socket) &&
+       (soc->linked || soc->connected) ) {
+     return (BS_ERROR);
+  }
+
   /* Init structure */
   soc->rece_struct.sin_port = htons((u_short) port);
 
@@ -635,6 +689,12 @@ extern int soc_link_dynamic  (soc_token token) {
 
   /* Check that socket is open */
   if (soc == NULL) return (BS_ERROR);
+
+  /* Not connected nor already linked if tcp */
+  if ( (soc->proto == tcp_socket) &&
+       (soc->linked || soc->connected) ) {
+     return (BS_ERROR);
+  }
 
   /* Init structure Port is not set */
   soc->rece_struct.sin_port = htons(0);
@@ -698,6 +758,7 @@ extern int soc_receive (soc_token token, boolean *p_received,
   soc_length loc_len = *p_length;
   int len;
   struct sockaddr_in *from_addr;
+  soc_header header;
 
 
   /* Check that socket is open */
@@ -707,6 +768,7 @@ extern int soc_receive (soc_token token, boolean *p_received,
   if (soc->proto == tcp_socket) {
     if (set_for_reply)  return (BS_ERROR);
     if (soc->linked) return (BS_ERROR);
+    if (!soc->connected) return (BS_ERROR);
   } else {
     if (!soc->linked) return (BS_ERROR);
   }
@@ -727,14 +789,33 @@ extern int soc_receive (soc_token token, boolean *p_received,
   *p_length = loc_len;
 
   /* Receive */
-  do {
-    if (soc->proto == tcp_socket) {
+  if (soc->proto == tcp_socket) {
+    do {
+      result = recv(soc->socket_id, (char *)&header, sizeof(header), 0);
+    } while ( (result == -1) && (errno == EINTR) );
+    /* Disconnect if invalid magic num */
+    if (ntohl(header.magic_number) != MAGIC_NUMBER) {
+      *p_length = 0;
+      return (BS_OK);
+    }
+    /* Check length: drop */
+    if (*p_length < ntohl(header.size) ) {
+      do {
+        result = recv(soc->socket_id, (char *)message, ntohl(header.size), 0);
+      } while ( (result == -1) && (errno == EINTR) );
+      return (BS_ERROR);
+    }
+    /* Read */
+    *p_length = ntohl(header.size);
+    do {
       result = recv(soc->socket_id, (char *)message, *p_length, 0);
-    } else {
+    } while ( (result == -1) && (errno == EINTR) );
+  } else {
+    do {
       result = recvfrom(soc->socket_id, (char *)message, 
        *p_length, 0, (struct sockaddr*) from_addr, &len);
-    }
-  } while ( (result == -1) && (errno == EINTR) );
+    } while ( (result == -1) && (errno == EINTR) );
+  }
 
   *p_length = 0;
 
@@ -805,6 +886,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   (*p_soc)->socket_id = result;
   (*p_soc)->proto = tcp_socket;
   (*p_soc)->blocking = TRUE;
+  (*p_soc)->connected = TRUE;
 
   /* Blocking operations as default */
   /* Ioctl for having blocking receive */
@@ -837,6 +919,19 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   /* Ok */
   (*p_soc)->linked = FALSE;
   (*p_soc)->blocking = TRUE;
+  return (BS_OK);
+
+}
+
+extern int soc_is_connected (soc_token token, boolean *p_connected) {
+  soc_ptr soc = (soc_ptr) token;
+
+
+  /* Check that socket is open and tcp */
+  if (soc == NULL) return (BS_ERROR);
+  if (soc->proto != tcp_socket)  return (BS_ERROR);
+
+  *p_connected = soc->connected;
   return (BS_OK);
 
 }

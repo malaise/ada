@@ -63,6 +63,7 @@ extern int soc_get_id (soc_token token, int *p_id);
 extern int soc_set_blocking (soc_token token, boolean blocking);
 
 /* No broadcast nor change dest in tcp */
+/* Socket must not be linked in tcp    */
 /* ------------------------------------*/
 
 /* Set the destination host/lan name and port - specify service */
@@ -107,6 +108,9 @@ extern int soc_host_of (char *host_name, soc_host *p_host);
 /* Send to a socket, the destination of which must set */
 extern int soc_send (soc_token token, soc_message message, soc_length length);
 
+/* Socket must not be connected in tcp */
+/* ------------------------------------*/
+
 /* Links the socket to a port specified by the service */
 /* The socket must be open and not already linked */
 extern int soc_link_service (soc_token token, const char *service);
@@ -139,6 +143,10 @@ extern int soc_receive (soc_token token, boolean *p_received,
 /* The socket must be open, tcp and linked */
 /* A new socket is created (tcp) with dest set */
 extern int soc_accept (soc_token token, soc_token *p_token);
+
+/* Is a tcp socket connected fllowing a soc_set_... or a soc_accept */
+extern int soc_is_connected (soc_token token, boolean *p_connected);
+
 
 /* __SOCKET_H__ */
 #endif

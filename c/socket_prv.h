@@ -12,6 +12,7 @@ typedef struct {
 	boolean		dest_set;
 	boolean		linked;
         boolean		blocking;
+        boolean		connected;
 	int		socket_id;
 	struct sockaddr_in send_struct;
 	struct sockaddr_in rece_struct;
@@ -21,4 +22,13 @@ int socklen = sizeof (struct sockaddr_in);
 int    BLOCKINGIO = 0;
 int NONBLOCKINGIO = 1;
 
+/* In tcp we send a vector of 2 member: header and data */
+
+#define VECTOR_LEN 2
+
+#define MAGIC_NUMBER 21
+typedef struct {
+       unsigned int magic_number;
+       unsigned int size; /* Size of data */
+}soc_header;
 
