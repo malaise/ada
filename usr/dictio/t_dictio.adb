@@ -1,10 +1,12 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls;
+with Text_Handler, Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls, Parser,
+     Lower_Str;
 with Dictio_Lib;
 procedure T_Dictio is
 
   Init : Boolean := False;
   Verbose : Boolean := False;
+  Saved_State : Dictio_Lib.Dictio_State_List := Dictio_Lib.Unavailable;
 
   -- Signal received (while loading)
   Sig : Boolean := False;
@@ -24,11 +26,28 @@ procedure T_Dictio is
     return 0;
   end Next_Space;
 
-  function Stdin_Cb (Str : in String) return Boolean is
-    N : Natural;
-    I : Natural;
-    Lstr : constant String := Str(1 .. Str'Last - 1);
+  procedure Put_Help is
   begin
+    Ada.Text_Io.Put_Line ("Comands are:");
+    Ada.Text_Io.Put_Line ("  set    <name> <data>          get      <name>");
+    Ada.Text_Io.Put_Line ("  notify <name>                 cancel   <name>");
+    Ada.Text_Io.Put_Line ("  alias  <name> <name>          getalias <name>");
+    Ada.Text_Io.Put_Line ("  add    <host>                 del      <host>");
+    Ada.Text_Io.Put_Line ("  help                          status");
+    Ada.Text_Io.Put_Line ("  quit");
+  end Put_Help;
+
+  function Is_Sep (C : Character) return Boolean is
+  begin
+    return C = ' ';
+  end Is_Sep;
+
+  function Stdin_Cb (Str : in String) return Boolean is
+    Iter : Parser.Iterator;
+    Key, Name, Last : Text_Handler.Text (Dictio_Lib.Max_Name_Len);
+    Data : Text_Handler.Text (Dictio_Lib.Max_Data_Len);
+  begin
+    -- Sanity checks and specific codes
     if Str'Length = 0 then
       return True;
     end if;
@@ -38,68 +57,114 @@ procedure T_Dictio is
       Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
-    if Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      return False;
-    end if;
-    if Str'Length = 2 and then Str(1) = 'q' then
-      Ada.Text_Io.Put_Line ("CLIENT: Quit");
+    if Str(Str'Length) = Ada.Characters.Latin_1.Eot then
+      Ada.Text_Io.Put_Line ("CLIENT: Terminated");
       Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
-
-    N := 0;
-    for I in Lstr'Range loop
-      if Lstr(I) = ' ' then
-        N := N + 1;
-      end if;
-    end loop;
-    if N /= 1 and then N /= 2 then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      return False;
-    end if;
-    I := Next_Space (Lstr, 1);
-    if I /= 2 or else Lstr'Length < 3 then
+    if Str'Length <= 1
+    or else Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
       Ada.Text_Io.Put_Line ("CLIENT: Discarded");
       return False;
     end if;
 
-    if Lstr(1) = 'g' or else Lstr(1) = 'n' or else Lstr(1) = 'c'
-                     or else Lstr(1) = 'd' or else Lstr(1) = 'a' then
-      if N /= 1 or else I = Lstr'Last then
+    -- Parse
+    begin
+      Parser.Create (Str(1 .. Str'Last-1), Is_Sep'Unrestricted_Access, Iter);
+    exception
+      when Constraint_Error =>
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+        return False;
+    end;
+    begin
+      Text_Handler.Set (Key,  Lower_Str(Parser.Next_Word(Iter)));
+      Text_Handler.Set (Name, Parser.Next_Word(Iter));
+      Text_Handler.Set (Data, Parser.Next_Word(Iter));
+      Text_Handler.Set (Last, Parser.Next_Word(Iter));
+    exception
+      when Constraint_Error =>
+        Parser.Delete (Iter);
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+        return False;
+    end;
+    Parser.Delete (Iter);
+
+    -- Only key: Quit, help or status
+    if Text_Handler.Value (Key) = "quit"
+    or else Text_Handler.Value (Key) = "help"
+    or else Text_Handler.Value (Key) = "status" then
+      if not Text_Handler.Empty (Name) then
         Ada.Text_Io.Put_Line ("CLIENT: Discarded");
         return False;
       end if;
-      if Lstr(1) = 'g' then
+      if Text_Handler.Value (Key) = "quit" then
+        Ada.Text_Io.Put_Line ("CLIENT: Quit");
+        Event_Mng.Send_Dummy_Signal;
+        return True;
+      elsif Text_Handler.Value (Key) = "help" then
+        Put_Help;
+      elsif Text_Handler.Value (Key) = "status" then
+        Ada.Text_Io.Put_Line("CLIENT: Dictio status is " & Saved_State'Img);
+      else
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      end if;
+        return False;
+    end if;
+
+
+    -- Key & Name: Get, notify, cancel, unalias, add, del
+    if Text_Handler.Value (Key) = "get" 
+    or else Text_Handler.Value (Key) = "notify"
+    or else Text_Handler.Value (Key) = "cancel"
+    or else Text_Handler.Value (Key) = "getalias"
+    or else Text_Handler.Value (Key) = "add"
+    or else Text_Handler.Value (Key) = "del" then
+      if Text_Handler.Empty (Name)
+      or else not Text_Handler.Empty (Data) then
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+        return False;
+      end if;
+      if Text_Handler.Value (Key) = "get" then
         Ada.Text_Io.Put_Line ("CLIENT: got >"
-              & Dictio_Lib.Get (Lstr(3 .. Lstr'Last)) & "<");
-      elsif Lstr(1) = 'n' then
-        Dictio_Lib.Notify (Lstr(3 .. Lstr'Last), True);
-      elsif Lstr(1) = 'c' then
-        Dictio_Lib.Notify (Lstr(3 .. Lstr'Last), False);
-      elsif Lstr(1) = 'a' then
-        Dictio_Lib.Add_Host (Lstr(3 .. Lstr'Last));
-      elsif Lstr(1) = 'd' then
-        Dictio_Lib.Del_Host (Lstr(3 .. Lstr'Last));
+              & Dictio_Lib.Get (Text_Handler.Value (Name)) & "<");
+      elsif Text_Handler.Value (Key) = "notify" then
+        Dictio_Lib.Notify (Text_Handler.Value (Name), True);
+      elsif Text_Handler.Value (Key) = "cancel" then
+        Dictio_Lib.Notify (Text_Handler.Value (Name), False);
+      elsif Text_Handler.Value (Key) = "getalias" then
+        Ada.Text_Io.Put_Line ("CLIENT: got alias >"
+              & Dictio_Lib.Get_Alias (Text_Handler.Value (Name)) & "<");
+      elsif Text_Handler.Value (Key) = "add" then
+        Dictio_Lib.Add_Host (Text_Handler.Value (Name));
+      elsif Text_Handler.Value (Key) = "del" then
+        Dictio_Lib.Del_Host (Text_Handler.Value (Name));
+      else
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
       end if;
       return False;
     end if;
-    if N /= 2 then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+
+    -- Key & Name [ Data ]: Set or alias
+    if Text_Handler.Value (Key) = "set" 
+    or else Text_Handler.Value (Key) = "alias" then
+      if Text_Handler.Empty (Name)
+      or else not Text_Handler.Empty (Last) then
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+        return False;
+      end if;
+      if Text_Handler.Value (Key) = "set" then
+        Dictio_Lib.Set (Text_Handler.Value (Name), Text_Handler.Value (Data));
+      elsif Text_Handler.Value (Key) = "alias" then
+        Dictio_Lib.Set_Alias (Text_Handler.Value (Name), Text_Handler.Value (Data));
+      else
+        Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      end if;
       return False;
     end if;
-    I := Next_Space (Lstr, 3);
-    if I = 0 or else I = Lstr'Last then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      return False;
-    end if;
-    if Lstr(1) = 's' then
-      Dictio_Lib.Set (Lstr(3 .. I-1), Lstr(I+1 .. Lstr'Last));
-      return False;
-    else
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
-      return False;
-    end if;
+
+    Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+    return False;
+
   exception
     when Dictio_Lib.No_Dictio =>
       Ada.Text_Io.Put_Line ("CLIENT: No Dictio");
@@ -124,6 +189,7 @@ procedure T_Dictio is
   procedure Dictio_State_Cb (State : in Dictio_Lib.Dictio_State_List) is
     use type Dictio_Lib.Dictio_State_List;
   begin
+    Saved_State := State;
     if not Init then
       Ada.Text_Io.Put_Line("CLIENT: Dictio state is " & State'Img);
     end if;
@@ -215,9 +281,7 @@ begin
   Dictio_Lib.Init;
 
   if not Init then
-    Ada.Text_Io.Put_Line (
-           "g <name> / s <name> <data> / n <name> / c <name> / "
-         & "a <host> / d <host> / q");
+    Put_Help;
   end if;
   if not Sig then
     Event_Mng.Pause (Event_Mng.Infinite_Ms);
