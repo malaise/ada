@@ -1,0 +1,17 @@
+# Check 1 arg >= 0
+[ [ Error: N >= 0 expected. ] ; 0 __ ] E ->
+. 1 /= E <- ?@
+>< 0 < E <- ?@ 
+
+>< ;
+r ->
+
+[ [ in 1 ] ; r <- __ [ end 1 ] ; ] A ->
+[ [ in 2 ] ; A <- @ [ end 2 ] ; ] B -> 
+[ [ in 3 ] ; B <- @ [ end 3 ] ; ] C -> 
+[ [ in 4 ] ; C <- @ [ end 4 ] ; ] D -> 
+[ [ in 5 ] ; D <- @ [ end 5 ] ; ] E -> 
+[ [ in 6 ] ; E <- @ [ end 6 ] ; ] F -> 
+
+[ in M ] ; F <- @ [ end M ] ;
+

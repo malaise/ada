@@ -1,0 +1,43 @@
+# Check 3 args
+7.007 //
+. 3 /= [ [ Error. 3 arguments a b c expected ] ; 0 __ ] ?@
+
+# Save a b c, 15 digits, title
+$ c -> $ b -> $ a ->
+a <- , [ " * X2 + " ] , b <- , [ " * X + " ] , c <- ;
+
+# a = 0
+# b = 0
+# c = 0 ?
+[ c <- 0.0 = [ Infinity of solutions ] [ No solution ] ? ; ] L ->
+
+# a = 0
+# b /= 0: -c / b
+[ [ 1 real: ] , c <- +- b <- / ; ] R ->
+
+# a = 0
+# b = 0 ? then quit
+[ b <- 0.0 = L R ? <- @ 2 __ ] P ->
+
+# a = 0 ?
+a <- 0.0 = P <- ?@
+
+# d = b**2 - 4ac
+b <- >< * 4.0 a <- c <- * * - d ->
+[ "delta =    " ] , d <- ; :
+[ Solution ] ;
+# -b / 2a
+b <- +- 2.0 a <- * / i ->
+
+# d = 0 => -b / 2a
+d <- 0.0 = [ [ "1 real: " ] , i <- ; 2 __ ] ?@
+
+# d > 0 => -b/2a +- V(d)/2a
+d <- 0.0 > [ d <- 0.5 ** 2.0 a <- * / j -> 
+             [ "2 reals: " ] , i <- j <- + ;
+             [ "    and: " ] , i <- j <- - ; 2 __ ]  ?@
+
+# d < 0 => -b/2a +- i * V(d)/2a
+d <- +- 0.5 ** 2.0 a <- * / j -> [ "2 complex: " ] , i <- ;
+                                 [ "   +/- i * " ] , j <- ;
+
