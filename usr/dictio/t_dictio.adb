@@ -1,7 +1,9 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with X_Mng, Async_Stdin;
+with X_Mng, Async_Stdin, Rnd;
 with Dictio_Lib;
 procedure T_Dictio is
+
+  First_Connection : Boolean := True;
 
   -- Signal received
   Sig : Boolean := False;
@@ -103,9 +105,15 @@ procedure T_Dictio is
       return False;
   end Stdin_Cb;
 
+  procedure Load;
+
   procedure Dictio_Connect_Cb (Connected : in Boolean) is
   begin
     Ada.Text_Io.Put_Line("CLIENT: Connected " & Connected'Img);
+    if Connected and then First_Connection then
+      First_Connection := False;
+      Load;
+    end if;
   end Dictio_Connect_Cb;
 
   procedure Dictio_Notify_Cb (Name : in String; Data : in String) is
@@ -114,6 +122,20 @@ procedure T_Dictio is
                    & Name & "< - >" & Data & "<");
   end Dictio_Notify_Cb;
   
+  procedure Load is
+    Name : String (1 .. 10);
+    N : Positive;
+  begin
+    for I in 1 .. 100 loop
+      N := Rnd.Int_Random (1, Name'Last);
+      for J in 1 .. N loop
+        Name(J) := Character'Val(Rnd.Int_Random (
+              Character'Pos('a'), Character'Pos('z')));
+      end loop;
+      Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
+      Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
+    end loop;
+  end Load;
 
   Res : Boolean;
 
@@ -129,6 +151,8 @@ begin
   end;
 
   X_Mng.X_Set_Signal (Sig_Cb'Unrestricted_Access);
+
+  Rnd.Randomize;
 
   Dictio_Lib.Init;
   Dictio_Lib.Available_Cb := Dictio_Connect_Cb'Unrestricted_Access;
