@@ -85,6 +85,11 @@ package body Nodes is
     if El1.Sync /= El2.Sync then
       return El1.Sync;
     end if;
+
+    -- Slave is better than init
+    if El1.Stat = Status.Slave and then El2.Stat = Status.Init then
+      return True;
+    end if;
    
     -- First name
     return El1.Name < El2.Name;
