@@ -578,6 +578,7 @@ begin
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "-h" then
     Put_Usage;
+    return;
   end if;
 
   Verbose_Level := Normal;
