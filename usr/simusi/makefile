@@ -1,6 +1,8 @@
+LIBX_MNG=-lx_mng
+
 all:
-	amake t_file.adb
-	amake simusi.adb
+	amake t_file.adb -largs $(LIBX_MNG) -lX11
+	amake simusi.adb -largs $(LIBX_MNG) -lX11
 
 clean:
 	rm *.o *.ali
