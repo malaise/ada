@@ -11,6 +11,7 @@ procedure T_Fifos is
 
   Server : Boolean := False;
   Signal : Boolean := False;
+  Connected : Boolean := False;
 
   -- Same as t_tcp_util
   type Test_Rec is record
@@ -60,6 +61,7 @@ procedure T_Fifos is
     and then Connected then
       Send (Id, "Ah que coucou!");
     end if;
+    T_Fifos.Connected := Connected;
   end Conn_Cb;
 
   procedure Rece_Cb (Id      : in Test_Fifo.Fifo_Id;
@@ -68,8 +70,11 @@ procedure T_Fifos is
   begin
     Ada.Text_Io.Put_Line ("Received >"
                         & Message.Str(1 .. Message.Len)
-                        & "<  Len:" & Length'Img);
-    Send (Id, "Ah que coucou aussi!");
+                        & "<  Len:" & Length'Img & ". Waiting then replying");
+    Event_Mng.Wait(1_000);
+    if Connected then
+      Send (Id, "Ah que coucou aussi!");
+    end if;
   end Rece_Cb;
 
   procedure Ovfl_Cb (Id      : in Test_Fifo.Fifo_Id) is
