@@ -9,5 +9,8 @@ all:
 	amake $(ADA_OPT) wheeles.adb
 
 clean:
-	rm *.o *.ali
+	rm *.o *.ali servprio.dat
+
+clean_exe:
+	rm ex1 garde iole para servprio stamp termin wheeles
 
