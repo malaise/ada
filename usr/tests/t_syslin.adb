@@ -81,9 +81,9 @@ begin
         -- Parse current line in matrix and vector
         begin
           for J in 1 .. DIM loop
-            MATRIX (I, J) := GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J)));
+            MATRIX (I, J) := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J)));
           end loop;
-          VECTOR (I) := GET_FLOAT(TEXT_HANDLER.VALUE(LINE(DIM+1)));
+          VECTOR (I) := GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(DIM+1)));
         exception
           when others =>
             TEXT_IO.PUT_LINE ("ERROR, when reading data at line "

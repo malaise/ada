@@ -21,9 +21,9 @@ begin
 
   -- Parse arguments
   begin
-    A := MY_MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(1)));
-    B := MY_MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(2)));
-    C := MY_MATH.REAL (GET_FLOAT (ARGUMENT.GET_PARAMETER(3)));
+    A := MY_MATH.REAL (GET_FLOAT.GET_FLOAT (ARGUMENT.GET_PARAMETER(1)));
+    B := MY_MATH.REAL (GET_FLOAT.GET_FLOAT (ARGUMENT.GET_PARAMETER(2)));
+    C := MY_MATH.REAL (GET_FLOAT.GET_FLOAT (ARGUMENT.GET_PARAMETER(3)));
   exception
     when others =>
       MY_IO.PUT_LINE ("ERROR in an argument. 3 arguments expected, a, b and c.");

@@ -94,7 +94,7 @@ package body FILE is
       -- Parse current line in matrix and vector
       begin
         for J in 1 .. DIM loop
-          F := FLOAT_CELL_RANGE (GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J))));
+          F := FLOAT_CELL_RANGE (GET_FLOAT.GET_FLOAT(TEXT_HANDLER.VALUE(LINE(J))));
           if F > 100.00 or else MY_MATH.FRAC(MY_MATH.REAL(F)) * 100.0 > 100.0 then
             raise READ_ERROR;
           end if;
