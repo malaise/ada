@@ -50,6 +50,9 @@ package body Channels is
   end Fd_Match;
   procedure Fd_Search is new Send_List_Mng.Search (Fd_Match);
 
+  -- Reply
+  package Reply_List_Mng is new Dynamic_List (Socket.Socket_Dscr);
+
   -- The channel
   type Read_Kind is (None, Send, Dest);
   type Channel_Rec is record
@@ -57,9 +60,9 @@ package body Channels is
     Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
     Period : Ada.Calendar.Day_Duration;
     Accept_Num : Tcp_Util.Port_Num := 0;
-    In_Read : Read_Kind := None;
     Dests : Dest_List_Mng.List_Type;
     Sends : Send_List_Mng.List_Type;
+    Replies : Reply_List_Mng.List_Type;
   end record;
 
   -- Misc toolkits
@@ -262,13 +265,13 @@ package body Channels is
           return False;
       end;
       -- Call callback
-      if Sender then
-        Channel_Dscr.In_Read := Send;
-      else
-        Channel_Dscr.In_Read := Dest;
+      if not Reply_List_Mng.Is_Empty (Channel_Dscr.Replies) then
+        Reply_List_Mng.Move_To (Channel_Dscr.Replies,
+           Reply_List_Mng.Prev, 0, False);
       end if;
+      Reply_List_Mng.Insert (Channel_Dscr.Replies, Dscr);
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
-      Channel_Dscr.In_Read := None;
+      Reply_List_Mng.Delete (Channel_Dscr.Replies, Reply_List_Mng.Prev);
       return True;
     end Read_Cb;
 
@@ -304,6 +307,7 @@ package body Channels is
         -- Hook fd to receive data
         X_Mng.X_Add_Callback (Socket.Fd_Of (New_Dscr), True,
                               Rec_Read_Cb'Unrestricted_Access);
+        Socket.Set_Blocking (New_Dscr, False);
       end if;
     end Accept_Cb;
 
@@ -652,8 +656,6 @@ package body Channels is
     -- Reply to sender of last message received
     procedure Reply (Message : in Message_Type;
                      Length : in Message_Length := 0) is
-      D_Rec : Dest_Rec;
-      S_Rec : Send_Rec;
       Dscr : Socket.Socket_Dscr;
       Msg : Channel_Message_Type;
       Len : Message_Length;
@@ -661,16 +663,10 @@ package body Channels is
       use type Socket.Socket_Dscr;
     begin
       -- Get current socket
-      case Channel_Dscr.In_Read is
-        when None =>
+      if Reply_List_Mng.Is_Empty (Channel_Dscr.Replies) then
           raise Not_In_Read;
-        when Send =>
-          Send_List_Mng.Read (Channel_Dscr.Sends, S_Rec, Send_List_Mng.Current);
-          Dscr := S_Rec.Dscr;
-        when Dest =>
-          Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);
-          Dscr := D_Rec.Dscr;
-      end case;
+      end if;
+      Reply_List_Mng.Read (Channel_Dscr.Replies, Dscr, Reply_List_Mng.Current);
 
       -- Build message and len
       Msg.Diff := False;
@@ -685,6 +681,8 @@ package body Channels is
       begin
         Res := Channel_Send (Dscr, null, Msg, Len);       
       exception
+        when Socket.Soc_Tail_Err =>
+          raise Reply_Overflow;
         when others =>
           raise Reply_Failed;
       end;

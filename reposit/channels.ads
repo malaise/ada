@@ -30,7 +30,9 @@ package Channels is
 
   -- Replying while not in Read_Cb
   Not_In_Read : exception;
-  -- Reply sending has failed
+  -- Reply sending has failed due to overflow
+  Reply_Overflow : exception;
+  -- Reply sending has failed due to other error
   Reply_Failed : exception;
 
   -- File not found or syntax error in add_destinations
