@@ -171,7 +171,8 @@ package Mcd_Mng is
 
 
   -- Treat a new item
-  procedure New_Item (Item : in Item_Rec; The_End : out Boolean);
+  type End_Status_List is (Exit_Return, Continue, Exit_Break);
+  procedure New_Item (Item : in Item_Rec; The_End : out End_Status_List);
 
   -- Check stack is empty
   function Check_Empty_Stack return Boolean;

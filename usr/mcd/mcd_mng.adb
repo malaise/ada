@@ -309,9 +309,10 @@ package body Mcd_Mng is
     end loop;
   end Do_Rotate_Extra;
 
-  function Do_Delay (The_Delay : Duration) return Boolean is separate;
+  subtype Delay_Status_List is End_Status_List range Continue .. Exit_Break;
+  function Do_Delay (The_Delay : Duration) return Delay_Status_List is separate;
 
-  function Do_Delay (The_Delay : Item_Rec) return Boolean is
+  function Do_Delay (The_Delay : Item_Rec) return Delay_Status_List is
   begin
     if The_Delay.Kind = Inte then
       return Do_Delay (Duration(The_Delay.Val_Inte));
@@ -325,7 +326,7 @@ package body Mcd_Mng is
   Item_Check_Period : constant Positive := 100;
   Nb_Item : Natural := 0;
 
-  procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
+  Procedure New_Item (Item : in Item_Rec; The_End : out End_Status_List) is
 
     procedure Do_Retn (All_Levels    : in Boolean;
                        Levels        : in Item_Rec;
@@ -356,7 +357,7 @@ package body Mcd_Mng is
         raise Invalid_Argument;
       elsif L - 1 = Call_Stack_Level then
         if Allow_Level_0 then
-          The_End := True;
+          The_End := Exit_Return;
           return;
         else
           -- Retacal from level 0
@@ -391,7 +392,7 @@ package body Mcd_Mng is
     else
       Nb_Item := Nb_Item + 1;
       -- Default, except Ret and delay
-      The_End := False;
+      The_End := Continue;
     end if;
     -- Dispatch
     if Item.Kind /= Oper then

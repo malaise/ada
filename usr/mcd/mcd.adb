@@ -4,7 +4,8 @@ with Debug, Mcd_Parser, Mcd_Mng, Io_Flow;
 
 procedure Mcd is
   Item : Mcd_Mng.Item_Rec;
-  The_End : Boolean;
+  The_End : Mcd_Mng.End_Status_List;
+  use type Mcd_Mng.End_Status_List;
   Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
                     Empty_Stack : exception;
   Parsing_Error : exception;
@@ -47,7 +48,7 @@ begin
     begin
       Item := Mcd_Parser.Next_Item;
       Mcd_Mng.New_Item(Item, The_End);
-      exit when The_End;
+      exit when The_End /= Mcd_Mng.Continue;
     exception
       when others =>
         Mcd_Parser.Dump_Stack;
@@ -55,7 +56,8 @@ begin
     end;
    end loop;
    
-   if not Mcd_Mng.Check_Empty_Stack then
+   if The_End /= Mcd_Mng.Exit_Break
+   and then not Mcd_Mng.Check_Empty_Stack then
      Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
    end if;
 
