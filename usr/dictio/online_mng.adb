@@ -1,6 +1,6 @@
 with Timers;
 with Debug, Parse, Intra_Dictio, Local_host_Name, Nodes,
-     Fight_Mng, Sync_Mng, Crc, Data_Base, Sync_Mng;
+     Fight_Mng, Sync_Mng, Data_Base, Sync_Mng;
 
 package body Online_Mng is
 
@@ -65,21 +65,16 @@ package body Online_Mng is
       if Stat = Status.Master then
         -- Receive a Master while slave, check Crc and restart timer
         if not Sync_Mng.In_Sync
-        and then Extra /= Crc.Dummy_Crc 
-        and then Extra /= Crc.Get then
+        and then Extra /= Data_Base.Get_Crc then
           if Debug.Level_Array(Debug.Online) then
             Debug.Put ("Online: Crc error. Received >" & Extra
                      & "< from: " & Parse(From)
-                     & ", got >" & Crc.Get & "<");
+                     & ", got >" & Data_Base.Get_Crc & "<");
           end if;
           -- Invalid Crc. Re-sync.
           Data_Base.Reset;
           Intra_Dictio.Send_Status;
           Sync_Mng.Start;
-        elsif Extra = Crc.Dummy_Crc then
-          if Debug.Level_Array(Debug.Online) then
-            Debug.Put ("Online: received dummy crc");
-          end if;
         end if;
 
         Timers.Delete (Tid);
@@ -101,7 +96,7 @@ package body Online_Mng is
         end if;
         Timers.Delete (Tid);
         Start_Fight;
-      elsif Stat = Status.Slave then
+      elsif Stat = Status.Slave and then not Sync_Mng.In_Sync then
         -- Synchronise initialising slave
         if Debug.Level_Array(Debug.Online) then
           Debug.Put ("Online: sync " & Parse(From) );
@@ -133,16 +128,7 @@ package body Online_Mng is
   begin
     if Status.Get = Status.Master then
       -- Send alive message
-      if Sync_Mng.In_Sync then
-        if Debug.Level_Array(Debug.Online) then
-          Debug.Put ("Online: sending dummy crc");
-        end if;
-        -- No computation of Crc while Syncing
-        --   cause Data_Base Read_First/Next re-entrance
-        Intra_Dictio.Send_Status (Crc.Dummy_Crc);
-      else
-        Intra_Dictio.Send_Status (Crc.Get);
-      end if;
+      Intra_Dictio.Send_Status (Data_Base.Get_Crc);
     else
       -- No alive message
       if Debug.Level_Array(Debug.Online) then
