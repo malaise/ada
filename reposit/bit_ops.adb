@@ -1,5 +1,7 @@
 with Unchecked_Conversion;
+pragma Warnings(Off);
 with System.Bit_Ops;
+pragma Warnings(On);
 with Interfaces;
 
 package body Bit_Ops is

@@ -1,5 +1,7 @@
 with Ada.Exceptions;
+pragma Warnings (Off);
 with System.Soft_Links;
+pragma Warnings (On);
 package body Current_Exception is
 
   function Exception_Name return String is
