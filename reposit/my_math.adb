@@ -1,6 +1,12 @@
+
+  with ADA.NUMERICS.GENERIC_ELEMENTARY_FUNCTIONS;
+
 with CALENDAR, TEXT_IO;
-with ADA.NUMERICS.AUX;
 package body MY_MATH is
+
+
+  package MATH is new ADA.NUMERICS.GENERIC_ELEMENTARY_FUNCTIONS (REAL);
+
 
 
 -- CONSTANTS FOR COMPUTING
@@ -26,13 +32,13 @@ package body MY_MATH is
     DIG   : constant POSITIVE := 15;  -- digits of real
     EXP   : constant POSITIVE := 4;  -- +123
     TOTAL : constant POSITIVE := 2 + DIG + 1 + EXP + 1;
-    -- b-1.<14digits>E+123; (b = 1 de rab)
+    -- b-1.<14digits>E+123; (b = 1 extra space)
     subtype TYP_INDEX_STR is POSITIVE range 1 .. TOTAL;
     STR_AUX   : STRING(TYP_INDEX_STR);
     STR_EXP   : STRING(1 .. EXP);
     RESULT    : REAL;
-    INDEX_STR : TYP_INDEX_STR;
     EXPONENT  : INTEGER;
+    INDEX_STR : INTEGER;
   begin
     if X < 0.0 then
       NEG := TRUE;
@@ -51,8 +57,8 @@ package body MY_MATH is
     elsif EXPONENT < DIG - 1 then
 
       -- reset fraction digits to 0
-      for INDEX_STR in TOTAL - EXP - DIG + 1 + EXPONENT .. TOTAL - EXP - 1 loop
-        STR_AUX(INDEX_STR) := '0';
+      for INDEX in TOTAL - EXP - DIG + 1 + EXPONENT .. TOTAL - EXP - 1 loop
+        STR_AUX(INDEX) := '0';
       end loop;
 
       -- convert result to real
@@ -98,19 +104,21 @@ package body MY_MATH is
     -- adjust +- 1
     if X > 0.0 then
 
-      -- if x > 0 erreur by exceed
+      -- if x > 0 error by exceed
       if REAL(INT) > X then
         INT := INT - 1;
       end if;
-      return INT;
+
     else
 
       -- if x < 0 error by default
       if REAL(INT) < X then
         INT := INT + 1;
       end if;
-      return INT;
+
     end if;
+
+    return INT;
   exception
     when others =>
       raise MATH_ERROR;
@@ -119,9 +127,7 @@ package body MY_MATH is
   -- power
   function "**" (NUMBER, EXPONENT : REAL) return REAL is
   begin
-   return REAL(ADA.NUMERICS.AUX.POW (
-                 ADA.NUMERICS.AUX.DOUBLE(NUMBER),
-                 ADA.NUMERICS.AUX.DOUBLE(EXPONENT)));
+   return MATH."**" (NUMBER, EXPONENT);
   exception
     when others =>
       raise MATH_ERROR;
@@ -133,7 +139,7 @@ package body MY_MATH is
     if X < 0.0 then
       raise MATH_ERROR;
     end if;
-    return REAL(ADA.NUMERICS.AUX.SQRT (ADA.NUMERICS.AUX.DOUBLE(X)));
+    return MATH.SQRT (X);
   exception
     when others =>
       raise MATH_ERROR;
@@ -161,7 +167,7 @@ package body MY_MATH is
     if X < 0.0 then
       raise MATH_ERROR;
     end if;
-    return REAL(ADA.NUMERICS.AUX.LOG (ADA.NUMERICS.AUX.DOUBLE(X)));
+    return MATH.LOG (X);
   exception
     when others =>
       raise MATH_ERROR;
@@ -176,7 +182,7 @@ package body MY_MATH is
     else
       Y := X * PI_HUNDRED_HEIGHTY;
     end if;
-    return REAL(ADA.NUMERICS.AUX.SIN (ADA.NUMERICS.AUX.DOUBLE(Y)));
+    return MATH.SIN (Y);
   exception
     when others =>
       raise MATH_ERROR;
@@ -191,7 +197,7 @@ package body MY_MATH is
     else
       Y := X * PI_HUNDRED_HEIGHTY;
     end if;
-    return REAL(ADA.NUMERICS.AUX.COS (ADA.NUMERICS.AUX.DOUBLE(Y)));
+    return MATH.COS (Y);
   exception
     when others =>
       raise MATH_ERROR;
@@ -206,7 +212,7 @@ package body MY_MATH is
     else
       Y := X * PI_HUNDRED_HEIGHTY;
     end if;
-    return REAL(ADA.NUMERICS.AUX.TAN (ADA.NUMERICS.AUX.DOUBLE(Y)));
+    return MATH.TAN (Y);
   exception
     when others =>
       raise MATH_ERROR;
@@ -219,7 +225,7 @@ package body MY_MATH is
     if abs (X) > 1.0 then
       raise MATH_ERROR;
     end if;
-    Y := REAL(ADA.NUMERICS.AUX.ASIN (ADA.NUMERICS.AUX.DOUBLE(X)));
+    Y := MATH.ARCSIN (X);
     if MODE = DEGREE then
       Y := Y / PI_HUNDRED_HEIGHTY;
     end if;
@@ -236,7 +242,7 @@ package body MY_MATH is
     if abs (X) > 1.0 then
       raise MATH_ERROR;
     end if;
-    Y := REAL(ADA.NUMERICS.AUX.ACOS (ADA.NUMERICS.AUX.DOUBLE(X)));
+    Y := MATH.ARCCOS (X);
     if MODE = DEGREE then
       Y := Y / PI_HUNDRED_HEIGHTY;
     end if;
@@ -250,7 +256,7 @@ package body MY_MATH is
                    MODE : ANGLE_UNIT := RADIAN) return REAL is
     Y       : REAL;
   begin
-    Y := REAL(ADA.NUMERICS.AUX.ATAN (ADA.NUMERICS.AUX.DOUBLE(X)));
+    Y := MATH.ARCTAN (X);
     if MODE = DEGREE then
       Y := Y / PI_HUNDRED_HEIGHTY;
     end if;

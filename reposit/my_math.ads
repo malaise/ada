@@ -4,7 +4,7 @@ package MY_MATH is
   subtype INTE is LONG_LONG_INTEGER;
   --  subtype REAL is LONG_FLOAT;
   -- This should generate the overflow checks
-  type REAL is digits 17 range -1.5E308 .. 1.5E308;
+  type REAL is digits 15 range -1.5E308 .. 1.5E308;
 
   -- Types and constants for trigonometry
   -- pi constant
