@@ -79,11 +79,12 @@ package body Ada_Words is
   type Word_Rec is record
     Len : Word_Len_Range;
     Str : String (1 .. Word_Len_Range'Last);
+    Must : Boolean;
   end record;
 
   procedure Dump (Word : in Word_Rec) is
   begin
-    Ada.text_Io.Put (Word.Str (1 .. Word.Len));
+    Ada.Text_Io.Put (Word.Str (1 .. Word.Len) & " " & Word.Must'Img);
   end Dump;
 
   package Word_Hash is new Hash.Hash_Mng (Data_Acess => Word_Rec,
@@ -91,12 +92,13 @@ package body Ada_Words is
 
 
 
-  procedure Store (Word : in String) is
+  procedure Store (Word : in String; Must_Be_Keyword : in Boolean := True) is
     Low_Word : constant String := Lower_Str (Word);
     Rec : Word_Rec;
   begin
     Rec.Len := Low_Word'Length;
     Rec.Str (1 .. Rec.Len) := Low_Word;
+    Rec.Must := Must_Be_Keyword;
     Word_Hash.Store (Low_Word, Rec);
   end Store;
 
@@ -112,7 +114,7 @@ package body Ada_Words is
     Store ("abs");
     Store ("abstract");
     Store ("accept");
-    Store ("access");
+    Store ("access", False);
     Store ("aliased");
     Store ("all");
     Store ("and");
@@ -127,8 +129,8 @@ package body Ada_Words is
 
     Store ("declare");
     Store ("delay");
-    Store ("delta");
-    Store ("digits");
+    Store ("delta", False);
+    Store ("digits", False);
     Store ("do");
 
     Store ("else");
@@ -169,7 +171,7 @@ package body Ada_Words is
     Store ("protected");
 
     Store ("raise");
-    Store ("range");
+    Store ("range", False);
     Store ("record");
     Store ("rem");
     Store ("renames");
@@ -199,12 +201,12 @@ package body Ada_Words is
     Table_Initialised := True;
   end Init;
 
-  function Is_Keyword (Word : String) return Boolean is
+  function Check_Keyword (Word : String) return Keyword_Res_List is
     Low_Word : constant String := Lower_Str (Word);
     Result : Word_Hash.Found_Rec;
   begin
     if Word = "" then
-      return False;
+      return Is_Not_Keyword;
     end if;
     Init;
     Word_Hash.Reset_Find (Low_Word);
@@ -212,14 +214,18 @@ package body Ada_Words is
       Result := Word_Hash.Find_Next (Low_Word);
       case Result.Found is
         when False =>
-          return False;
+          return Is_Not_Keyword;
         when True =>
           if Result.Data.Str (1 .. Result.Data.Len) = Low_Word then
-            return True;
+            if Result.Data.Must then
+              return Is_Keyword;
+            else
+              return May_Be_Keyword;
+            end if;
           end if;
       end case;
     end loop;
-  end Is_Keyword;
+  end Check_Keyword;
 
 end Ada_Words;
 

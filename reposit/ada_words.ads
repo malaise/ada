@@ -12,7 +12,9 @@ package Ada_Words is
   function Is_Identifier (Word : String) return Boolean;
 
   -- Reserved words
-  function Is_Keyword (Word : String) return Boolean;
+  -- Is or not. Access, delta, digits and range may be keyword or attribute
+  type Keyword_Res_List is (Is_Keyword, May_Be_Keyword, Is_Not_Keyword);
+  function Check_Keyword (Word : String) return Keyword_Res_List;
 
 end Ada_Words;
 
