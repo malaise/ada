@@ -1,18 +1,14 @@
 with Ada.Text_Io;
 
-with Text_Handler;
-with Argument;
-with Upper_Char;
-with Get_Float;
-with My_Math;
+with Text_Handler, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc;
 use type My_Math.Real;
 
 procedure E2F is
 
   
   package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
+  package Real_Ef is new Euro_Franc (My_Math.Real, My_Math.Real);
 
-  Francs_In_Euro : constant := 6.55957;
   Amount : My_Math.Real;
   To_Francs : Boolean;
 
@@ -96,10 +92,10 @@ begin
   end if;
   Ada.Text_Io.Put(" = ");
   if To_Francs then
-    Put(Amount * Francs_In_Euro);
+    Put(Real_Ef.Euros_To_Francs(Amount));
     Ada.Text_Io.Put_Line("f");
   else
-    Put(Amount / Francs_In_Euro);
+    Put(Real_Ef.Francs_To_Euros(Amount));
     Ada.Text_Io.Put_Line("e");
   end if;
     
