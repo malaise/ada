@@ -16,7 +16,7 @@ procedure T_Stdin is
   procedure My_Send is new Socket.Send(Message_Type);
   procedure My_Receive is new Socket.Receive(Message_Type);
 
-  function Socket_CB(F : in X_Mng.File_Desc; Read : in Boolean)
+  function Socket_Cb(F : in X_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
     use type X_Mng.File_Desc;
     Message : Message_Type;
@@ -35,17 +35,17 @@ procedure T_Stdin is
     end;
     Ada.Text_Io.Put(Message(1 .. Message_Len));
     return False;
-  end Socket_CB;
+  end Socket_Cb;
 
 
-  function Stdin_CB(F : in X_Mng.File_Desc; Read : in Boolean)
+  function Stdin_Cb(F : in X_Mng.File_Desc; Read : in Boolean)
                     return Boolean is
     Message : Message_Type;
     Message_Len : Natural;
   begin
     Ada.Text_Io.Get_Line(Message, Message_Len);
     My_Send(Soc, Message, Message_Len);
-    Message(1) := Ascii.LF;
+    Message(1) := Ascii.Lf;
     My_Send(Soc, Message, 1);
 
     return False;
@@ -53,7 +53,7 @@ procedure T_Stdin is
     when Ada.Text_Io.End_Error =>
       Go_On := False;
       return True;
-  end Stdin_CB;
+  end Stdin_Cb;
 
 
 begin
@@ -85,8 +85,8 @@ begin
       Socket.Close(Soc);
       return;
   end;
-  X_Mng.X_Add_Callback(Fd, True, Socket_CB'Unrestricted_Access);
-  X_Mng.X_Add_Callback(Sys_Calls.Stdin, True, Stdin_CB'Unrestricted_Access);
+  X_Mng.X_Add_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
+  X_Mng.X_Add_Callback(Sys_Calls.Stdin, True, Stdin_Cb'Unrestricted_Access);
 
 
   -- Main loop
