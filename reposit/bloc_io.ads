@@ -57,7 +57,7 @@ package Bloc_Io is
   -- Exceptions
   Status_Error : exception renames Ada.Io_Exceptions.Status_Error;
   Name_Error   : exception renames Ada.Io_Exceptions.Name_Error;
-  Device_Error : exception renames Ada.Io_Exceptions.Name_Error;
+  Device_Error : exception renames Ada.Io_Exceptions.Device_Error;
   End_Error    : exception renames Ada.Io_Exceptions.End_Error;
 
 private

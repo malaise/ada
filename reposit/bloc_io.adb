@@ -79,6 +79,7 @@ package  body Bloc_Io is
     if Mode = In_File then
       File.Ext_File := Fopen(Name4C'Address,
                              Read_Str'Address);
+      File.Mode := In_File;
     else
       File.Ext_File := Fopen(Name4C'Address,
                              Write_Str'Address);
