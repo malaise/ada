@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Argument, Date_Image, Sys_Calls;
+with Argument, Date_Image, Sys_Calls, Upper_Str;
 package body Assertion is
 
   -- Init (getenv) done?
@@ -24,6 +24,7 @@ package body Assertion is
     if not Set or else Trunc or else Len /= Action_Str'Length then
       return;
     end if;
+    Action_Str := Upper_Str (Action_Str);
     if Action_Str = "TRACE" then
       Action := Put_Trace;
     elsif Action_Str = "RAISE" then
