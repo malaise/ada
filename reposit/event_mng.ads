@@ -54,7 +54,7 @@ package Event_Mng is
   --   or until timeout
   -- Any negative timeout means infinite
   Infinite_Ms : constant Integer := -1;
-  type Out_Event_List is (Timer_Event, Fd_Event, Sig_Event, No_Event);
+  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, No_Event);
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
   procedure Wait (Timeout_Ms : Integer);
@@ -75,7 +75,7 @@ package Event_Mng is
       when Fd_Event =>
         Fd : File_Desc;
         Read : Boolean;
-      when Sig_Event =>
+      when Signal_Event =>
         null;
       when No_Event =>
         null;

@@ -281,7 +281,7 @@ package body Event_Mng is
       -- Results
       if Fd = C_Sig_Event then
         -- Signal
-        Handle_Res := Handle ((Kind => Sig_Event));
+        Handle_Res := Handle ((Kind => Signal_Event));
       elsif Fd = C_No_Event or else Fd >= 0 then
         -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
@@ -382,7 +382,7 @@ package body Event_Mng is
     -- or signal
     loop
 
-      if Wait (Wait_Timeout) = Sig_Event then
+      if Wait (Wait_Timeout) = Signal_Event then
         -- Exit all pauses on signal
         if Debug then
           Ada.Text_Io.Put_Line ("Event_Mng.Pause Signal " & Pause_Level'Img);
@@ -443,7 +443,7 @@ package body Event_Mng is
             end if;
           end if;
         end if;
-      when Sig_Event =>
+      when Signal_Event =>
         Signal_Kind := Get_Signal_Kind;
         if Debug then
           Ada.Text_Io.Put_Line ("Event_Mng.Handle " & Signal_Kind'Img
@@ -456,17 +456,17 @@ package body Event_Mng is
             null;
           when Dummy_Sig =>
             -- Dummy signal: never call Cb but always generate event
-            return Sig_Event;
+            return Signal_Event;
           when Terminate_Sig =>
             if Cb_Term_Sig /= null then
               Cb_Term_Sig.all;
-              return Sig_Event;
+              return Signal_Event;
             end if;
             -- else No_Event
           when Child_Sig =>
             if Cb_Child_Sig /= null then
               Cb_Child_Sig.all;
-              return Sig_Event;
+              return Signal_Event;
             end if;
             -- else No_Event
         end case;
