@@ -1,16 +1,20 @@
-with CALENDAR;
-with PERPET, ARGUMENT, DAY_MNG, TEXT_HANDLER, TEXT_IO;
+with CALENDAR, TEXT_IO;
+with PERPET, ARGUMENT, DAY_MNG, TEXT_HANDLER, NORMAL;
 procedure DAY_OF_WEEK is
 
   package DUR_IO is new TEXT_IO.FIXED_IO (CALENDAR.DAY_DURATION);
 
   TXT : TEXT_HANDLER.TEXT (10);
   T : CALENDAR.TIME;
+  YEAR : CALENDAR.YEAR_NUMBER;
+  DELTA_DATE_0 : PERPET.DELTA_REC;
+  DELTA_DATE_1 : PERPET.DELTA_REC;
 
   procedure USAGE is
   begin
     TEXT_IO.PUT_LINE("Syntax error. Usage: " & ARGUMENT.GET_PROGRAM_NAME
-                 & " dd/mm/yyyy");
+                 & " [ dd/mm/yyyy ]");
+    TEXT_IO.PUT_LINE(" or invalid date.");
   end USAGE;
 
   function IS_DIGIT (C : CHARACTER) return BOOLEAN is
@@ -29,51 +33,84 @@ procedure DAY_OF_WEEK is
 
 begin
 
-  if ARGUMENT.GET_NBRE_ARG /= 1 then
-    USAGE;
-    return;
-  end if;
+  if ARGUMENT.GET_NBRE_ARG = 0  or else ARGUMENT.GET_NBRE_ARG = 1 then
+    declare
+      MONTH : CALENDAR.MONTH_NUMBER;
+      DAY : CALENDAR.DAY_NUMBER;
+    begin
+      if ARGUMENT.GET_NBRE_ARG = 0 then
+        T := CALENDAR.CLOCK;
+        declare
+          DUMMY_DURATION : CALENDAR.DAY_DURATION;
+        begin
+          CALENDAR.SPLIT (T, YEAR, MONTH, DAY, DUMMY_DURATION);
+        end;
+        TEXT_HANDLER.SET(TXT, NORMAL(DAY, 2, GAP => '0') & "/"
+                            & NORMAL(MONTH, 2, GAP => '0') & "/"
+                            & NORMAL(YEAR, 4, GAP => '0') );
+      else
+        ARGUMENT.GET_PARAMETER (TXT);
+        if TEXT_HANDLER.LENGTH(TXT) /= 10
+        or else TEXT_HANDLER.VALUE(TXT)(3) /= '/'
+        or else TEXT_HANDLER.VALUE(TXT)(6) /= '/' then
+          USAGE;
+          return;
+        end if;
 
-  ARGUMENT.GET_PARAMETER (TXT);
-  if TEXT_HANDLER.LENGTH(TXT) /= 10
-  or else TEXT_HANDLER.VALUE(TXT)(3) /= '/'
-  or else TEXT_HANDLER.VALUE(TXT)(6) /= '/' then
-    USAGE;
-    return;
-  end if;
+        if not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(1 .. 2))
+        or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(4 .. 5))
+        or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(7 .. 10)) then
+          USAGE;
+          return;
+        end if;
 
-  if not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(1 .. 2))
-  or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(4 .. 5))
-  or else not IS_DIGIT(TEXT_HANDLER.VALUE(TXT)(7 .. 10)) then
+        DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
+        MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
+        YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
+      end if;
+
+      declare
+        HOUR : DAY_MNG.T_HOURS := 0;
+        MINUTE : DAY_MNG.T_MINUTES := 0;
+        SECOND : DAY_MNG.T_SECONDS := 0;
+        MILLISEC : DAY_MNG.T_MILLISEC := 0;
+      begin
+        T :=  CALENDAR.TIME_OF
+          (YEAR, MONTH, DAY, DAY_MNG.PACK(HOUR, MINUTE, SECOND, MILLISEC));
+      end;
+    end;
+  else
     USAGE;
     return;
   end if;
 
   declare
-    YEAR : CALENDAR.YEAR_NUMBER;
-    MONTH : CALENDAR.MONTH_NUMBER;
-    DAY : CALENDAR.DAY_NUMBER;
-    HOUR : DAY_MNG.T_HOURS;
-    MINUTE : DAY_MNG.T_MINUTES;
-    SECOND : DAY_MNG.T_SECONDS;
-    MILLISEC : DAY_MNG.T_MILLISEC;
+    T0 : CALENDAR.TIME;
+    T1 : CALENDAR.TIME;
   begin
-    MILLISEC := 0;
-    SECOND := 0;
-    MINUTE := 0;
-    HOUR := 0;
-    DAY := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(1 .. 2));
-    MONTH := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(4 .. 5));
-    YEAR := CALENDAR.DAY_NUMBER'VALUE(TEXT_HANDLER.VALUE(TXT)(7 .. 10));
-    T :=  CALENDAR.TIME_OF (YEAR, MONTH, DAY, DAY_MNG.PACK(HOUR, MINUTE, SECOND, MILLISEC));
+
+    T0 := CALENDAR.TIME_OF (YEAR, 1, 1, 0.0);
+    DELTA_DATE_0 := PERPET."-" (T, T0);
+    
+    T1 := CALENDAR.TIME_OF (YEAR, 12, 31, 0.0);
+    DELTA_DATE_1 := PERPET."-" (T1, T);
   exception
     when others =>
       USAGE;
       return;
   end;
 
-  TEXT_IO.PUT_LINE ("It is a "
+
+
+  TEXT_IO.PUT_LINE (TEXT_HANDLER.VALUE(TXT) & " is a "
        & PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T))
-       & "  in week "
-       & PERPET.WEEK_OF_YEAR_RANGE'IMAGE(PERPET.GET_WEEK_OF_YEAR(T)));
+       & ", in week"
+       & PERPET.WEEK_OF_YEAR_RANGE'IMAGE(PERPET.GET_WEEK_OF_YEAR(T))
+       & ",");
+  TEXT_IO.PUT_LINE (" the"
+       & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_0.DAYS + 1)
+       & "th day of the year,"
+       & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_1.DAYS)
+       & " days remaining.");
 end DAY_OF_WEEK;
+
