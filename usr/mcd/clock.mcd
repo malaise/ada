@@ -7,7 +7,7 @@
 ssize 0 /= E pushr ifcall
 
 # Get time
-[ clock dateof 12 16 strsub ] G popr
+[ clock dateof 6 16 strsub ] G popr
 
 # Put time if new
 [ G pushr call dup t pushr = [ pop ] [ dup putl t popr ] ifte call ] P popr
