@@ -1,5 +1,5 @@
 # Check 3 args
-7.007 format
+7.014 format
 ssize 3 /= [ "Error. 3 arguments a b c expected" putl
 ssize popn retall ] ifcall
 
