@@ -127,6 +127,9 @@ begin
       Put (My_List.Get_Position (List), False);
       Text_Io.Put("Pos from last: ");
       Put (My_List.Get_Position (List, My_List.From_Last), False);
+      Text_Io.Put ("Can go to next: ");
+      Text_Io.Put (Boolean'Image (My_List.Check_Move (List, My_List.Next))
+                 & " ");
       Text_Io.Put("Current item, go to next: ");
       My_List.Read(List, Item);
       Put(Item, True);
