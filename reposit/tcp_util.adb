@@ -439,9 +439,10 @@ package body Tcp_Util is
   procedure Abort_Accept (Num : in Port_Num) is
     Rec : Accepting_Rec;
   begin
-    -- Find rec
+    -- Find rec and read
     Rec.Port := Num;
     Find_By_Port (Acc_List, Rec, From_Current => False);
+    Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
     -- Del callback and close
     X_Mng.X_Del_CallBack (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
