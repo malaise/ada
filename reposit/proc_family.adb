@@ -249,10 +249,10 @@ package body Proc_Family is
     return Result;
   end Spawn;
 
-  -- After a Spawn with Mutation and Communication, the son can
+  -- After a Spawn with Mutation and Communication, the child can
   -- retreive fds
   -- No_Fd is raised if they cannot be retreived
-  procedure Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc) is
+  procedure Child_Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc) is
     My_Pid : constant Sys_Calls.Pid := Sys_Calls.get_Pid;
     Env_Set   : Boolean;
     Env_Trunc : Boolean;
@@ -277,7 +277,7 @@ package body Proc_Family is
   exception
     when others =>
       raise No_Fd;
-  end Get_Fds;
+  end Child_Get_Fds;
 
 end Proc_Family;
 

@@ -44,10 +44,10 @@ package Proc_Family is
                   Death_Report  : Death_Callback_Access := null)
            return Spawn_Result_Rec;
 
-  -- After a Spawn with Mutation and Communication, the son can
+  -- After a Spawn with Mutation and Communication, the child can
   -- retreive fds
   -- No_Fd is raised if they cannot be retreived
-  procedure Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc);
+  procedure Child_Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc);
   No_Fd : exception;
 
 end Proc_Family;
