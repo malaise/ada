@@ -1,12 +1,18 @@
 #Dms takes top of stack x.y and transforms it to x.MMssz
 # where MM are minutes, ss are seconds and z is fraction of seconds
-[ toreal dup int pope frac dup
-60.0 * int dup pope 60.0 * +- swap 3600.0 * +
-10000.0 / pushle 100.0 / pushle + + ]
+# Extract x and 0.y
+[ toreal dup int pope frac
+# Make 0.y sec.msec
+3600.0 * 1000.0 * round toreal 1000.0 /
+# Save 0.0000msec
+dup frac 10000.0 / pope trunc
+dup 60 / toreal 100.0 / pope 60 % toreal 10000.0 /
+# Add saved values
+pushle pushle pushle + + + ]
 
 #Smd make the reverse, taking a x.MMsszz (assuming zeros if shorter)
 # and puts x.y
-[ toreal dup int swap frac 10.0e7 * round toreal 10.0e5 * dup frac swap int 60.0 / 
+[ toreal dup int swap frac 10.0e7 * round toreal 10.0e5 / dup frac swap int 60.0 / 
 swap 100.0 * 3600.0 / + + ]
 
 #Format N (int top stack) on i (second on stack) digits, padding with zeros
@@ -27,8 +33,27 @@ swap dup 1 = [ pop pushle pop 2 retn ] ifcall 1 - swap pushle dup pope retacal ]
 pushle swap strcat ]
 
 #Format replaces a dms number by the string [+-]<hours>h<mins>m<secs>.<millisecs>s
-[ 5 format dup trunc strof "h" strcat pope
-2 format frac absv 100.0 * dup trunc strof pushle swap strcat "m" strcat pope
-2 format frac 100.0 * dup trunc strof pushle swap strcat "." strcat pope
-3 format frac 1000.0 * round strof pushle swap strcat "s" strcat ]
+[ 
+# Save hours and round msecs get mm.ssmmmm
+dup trunc pope frac absv 10.0e7 * round toreal 10.0e5 /
+# Propagate overflow
+dup 60.0 > [ 60.0 - pushle dup 0 < -1 1 iften + ] [ pushle ] ifte call
+5 format trunc strof "h" strcat pope
+# Get minutes
+dup trunc 2 format strof "m" strcat pope
+# Get seconds
+frac 100.0 * dup trunc strof "." strcat pushle swap strcat pope
+frac 1000.0 * trunc 3 format strof "s" strcat pushle swap strcat
+# Now we have MMmSS.MMMs with spaces
+# Subst space by 0 at offset B in A
+[ copye swap copye dup strsub " " = [ pushle "0" pushle strrep ] [ pushle pop pushle ] ifte call
+] pope
+# Check/replace spaces in 10min, 10sec, 100 and 10 msec
+1 swap pushle copye call
+4 swap pushle copye call
+7 swap pushle copye call
+8 swap pushle call
+# Add hours
+pushle swap strcat
+]
 

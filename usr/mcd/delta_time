@@ -1,4 +1,7 @@
 #!/bin/bash
+# Store dms functions
+# Convert H.DMS to H.frac \
+# Sub and back to H.DMS and put \
 mmcdt -e dms.mcd F popr A popr S popr D popr \
 $1 S pushr call $2 S pushr call \
 - D pushr call F pushr call putl
