@@ -4,6 +4,7 @@ procedure Day_Of_Week is
 
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
 
+  Month : Ada.Calendar.Month_Number;
   Txt : Text_Handler.Text (10);
   T : Ada.Calendar.Time;
   Year : Ada.Calendar.Year_Number;
@@ -44,7 +45,6 @@ begin
   end if;
 
   declare
-    Month : Ada.Calendar.Month_Number;
     Day : Ada.Calendar.Day_Number;
   begin
     if Argument.Get_Nbre_Arg = 0 then
@@ -151,7 +151,8 @@ begin
        & Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T))
        & ", in week"
        & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
-       & ",");
+       & ", in "
+       & Perpet.Month_Name_List'Image(Perpet.Get_Month_Name (Month)) );
   Ada.Text_Io.Put_Line (" the"
        & Perpet.Day_Range'Image (Day_No) 
        & Th

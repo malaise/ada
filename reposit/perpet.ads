@@ -62,13 +62,23 @@ package Perpet is
   function "-" (Date_1, Date_2 : Calendar.Time)
     return Delta_Rec;
 
+  -- Day name of a date
   type Day_Of_Week_List is (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday);
   function Get_Day_Of_Week (Date : Calendar.Time) return Day_Of_Week_List;
 
+  -- Week number (in year) of a date
   subtype Week_Of_Year_Range is Natural range 1 .. 53;
   function Get_Week_Of_Year (Date : Calendar.Time) return Week_Of_Year_Range;
+  
+  -- Month name
+  type Month_Name_List is (January, February, March, April, May, June, July,
+                           August, September, October, November, December);
+  function Get_Month_Name (Number : Calendar.Month_Number)
+                          return Month_Name_List;
+
 
   -- On overflow of year range
   Time_Error : exception renames Calendar.Time_Error;
 
 end Perpet;
+

@@ -392,5 +392,11 @@ package body Perpet is
     
   end Get_Week_Of_Year;
 
+  function Get_Month_Name (Number : Calendar.Month_Number)
+                          return Month_Name_List is
+  begin
+    return Month_Name_List'Val(Natural(Number) - 1);
+  end Get_Month_Name;
 
 end Perpet;
+
