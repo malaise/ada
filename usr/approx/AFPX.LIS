@@ -397,6 +397,14 @@ DESCRIPTOR 2
   END FIELD
 
   FIELD 10 BUTTON
+    GEOMETRY 13 69 13 77
+    COLORS cyan brown
+    INIT
+      0 1 Center
+    END INIT
+  END FIELD
+
+  FIELD 11 BUTTON
     GEOMETRY 15 69 15 77
     COLORS cyan brown
     INIT
@@ -404,7 +412,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 11 BUTTON
+  FIELD 12 BUTTON
     GEOMETRY 17 69 19 77
     COLORS cyan brown
     INIT
@@ -412,7 +420,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 12 BUTTON
+  FIELD 13 BUTTON
     GEOMETRY 21 69 21 77
     COLORS cyan brown
     INIT
@@ -421,7 +429,7 @@ DESCRIPTOR 2
   END FIELD
 
   # Reread
-  FIELD 13 BUTTON
+  FIELD 14 BUTTON
     GEOMETRY 11 2 13 9
     COLORS cyan brown
     INIT
@@ -430,7 +438,7 @@ DESCRIPTOR 2
   END FIELD
 
   # Ok Cancel
-  FIELD 14 BUTTON
+  FIELD 15 BUTTON
     GEOMETRY 15 2 17 9
     COLORS cyan brown
     INIT
@@ -438,7 +446,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 15 BUTTON
+  FIELD 16 BUTTON
     GEOMETRY 19 2 21 9
     COLORS cyan brown
     INIT
@@ -450,12 +458,12 @@ DESCRIPTOR 2
 
 
   # Points
-  FIELD 16 PUT
+  FIELD 17 PUT
     GEOMETRY 1 68 1 71
     COLORS cyan not_blink black
   END FIELD
 
-  FIELD 17 PUT
+  FIELD 18 PUT
     GEOMETRY 1 73 1 78
     COLORS light_gray not_blink black
     INIT
@@ -463,7 +471,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 18 PUT
+  FIELD 19 PUT
     GEOMETRY 2 71 2 73
     COLORS white blink black
     INIT
@@ -471,7 +479,7 @@ DESCRIPTOR 2
     END INIT
   END FIELD
 
-  FIELD 19 PUT
+  FIELD 20 PUT
     GEOMETRY 3 70 3 74
     COLORS light_gray not_blink black
     INIT

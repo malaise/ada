@@ -11,12 +11,12 @@ package body Menu1 is
     Height : Afpx.Height_Range;
     Width  : Afpx.Width_Range;
   begin
-    Afpx.Get_Field_Size(16, Height, Width);
-    Afpx.Encode_Field(16, (0, 0), Normal(Points.P_Nb, Width));
+    Afpx.Get_Field_Size(17, Height, Width);
+    Afpx.Encode_Field(18, (0, 0), Normal(Points.P_Nb, Width));
     if Points.P_Saved then
-      Afpx.Clear_Field(18);
+      Afpx.Clear_Field(19);
     else
-      Afpx.Reset_Field(18);
+      Afpx.Reset_Field(19);
     end if;
   end Put_Point_Status;
 
