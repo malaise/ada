@@ -686,8 +686,7 @@ package body GENERIC_CON_IO is
       end loop;
     end NEW_LINE;
 
-    -- Take first character of keyboard buffer
-    -- no echo
+    -- Take first character of keyboard buffer (no echo) or refresh event
     procedure PAUSE is
       KEY     : NATURAL;
       IS_CHAR : BOOLEAN;
@@ -849,7 +848,8 @@ package body GENERIC_CON_IO is
     end GET_KEY;
         
 
-    -- Gets a character (echo)
+    -- Gets first character (echo)
+    -- On refresh event ASCII.NUL is retuned (no echo)
     function GET (NAME : WINDOW := SCREEN) return CHARACTER is
       KEY     : NATURAL;
       IS_CHAR : BOOLEAN;
@@ -862,7 +862,9 @@ package body GENERIC_CON_IO is
         exit when IS_CHAR and then not CTRL and then not SHIFT;
       end loop;
       CHAR := CHARACTER'VAL(KEY);
-      PUT(CHAR, NAME);
+      if KEY /= 0 then
+        PUT(CHAR, NAME);
+      end if;
       return CHAR;
     end GET;
 

@@ -182,7 +182,7 @@ package GENERIC_CON_IO is
     procedure NEW_LINE (NAME   : in WINDOW := SCREEN;
                         NUMBER : in POSITIVE := 1);
 
-    -- Take first character of keyboard buffer (no echo)
+    -- Take first character of keyboard buffer (no echo) or refresh event
     procedure PAUSE;
 
     -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
@@ -195,6 +195,7 @@ package GENERIC_CON_IO is
                        SHIFT   : out BOOLEAN);
 
     -- Gets first character (echo)
+    -- On refresh event ASCII.NUL is retuned (no echo)
     function GET (NAME : WINDOW := SCREEN) return CHARACTER;
 
     -- Gets a string of at most width characters
