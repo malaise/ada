@@ -12,20 +12,22 @@ ssize popn retall
 # Check and store one argument
 [ swap dup isinte ~ [ E pushr call ] ifcall swap popr ] C popr
 
-# Put weight in tons
-[ toreal 0.4536 * round 6 format put " tons" put ] T popr
+# Put weight in tons xx.y 
+[ toreal 0.4536 * 100.0 / round 2 format dup 10 / put
+"." put 1 format 10 % put " tons" put ] T popr
 
 # Begin
 # Check Nb arguments
 ssize 3 /= [ E pushr call ] ifcall
 
 # Check and store arguments
-t C pushr call
+toreal t popr
 f C pushr call
 p C pushr call
 
 # Check flight time
-0 t pushr > [ E pushr call ] ifcall
+0.0 t pushr > [ E pushr call ] ifcall
+t pushr msd t popr
 
 # Check 0 <= percent <= 200 then compute weight
 0 p pushr > [ E pushr call ] ifcall
@@ -41,9 +43,9 @@ f pushr 4 * 1000 * c popr
 # Check 0 < fuel_flow and compute remaining flight time
 c pushr w pushr 3600 * swap /
 1000 * 6 format daysof 8 12 strsub "h" 3 swap3 strrep
-"Flight    time:  " put putl
+"Flight    time: " put putl
 
 # Compute remaining fuel
-w pushr t pushr c pushr * 60 / -
+w pushr toreal t pushr c pushr toreal * - round
 "Remaining fuel: " put T pushr call newl
 
