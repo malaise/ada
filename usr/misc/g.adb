@@ -1,7 +1,5 @@
-with Calendar;
-with My_Io;
-with U_Rand;
-with Clear_Screen;
+with Ada.Text_Io, Calendar;
+with My_Io, U_Rand, Clear_Screen;
 procedure G is
   -- generated number
   subtype Number is Natural range 0 .. 999_999_999;
@@ -104,29 +102,30 @@ begin
         My_Io.Put (Num, 10); 
         exit Party when Num = 0;
         My_Io.Put (
-         "  '4' -1   '5' 0   '6' +1   'q' quitter ? ");
+         "  '4' -1   '5' 0   '6' +1   'q' quit ? ");
+
         declare
-          Str : String (1 .. 132);
-          Lst : Natural;
-          
+          Char : Character;
         begin
-          My_Io.Get_Line (Str, Lst);
-          if Lst = 1 then
-            if Str(1) = '4' then
-              Got_Res := Minus_1;
-              exit Get;
-            elsif Str(1) = '6' then
-              Got_Res := Plus_1;
-              exit Get;
-            elsif Str(1) = '5' then
-              Got_Res := Zero;
-              exit Get;
-            elsif Str(1) = 'q' or Str(1) = 'Q' then
-              Clear_Screen;
-              return;
-            end if;
+          Ada.Text_Io.Get_Immediate (Char);
+          if Char /= Ascii.Lf and then Char /= Ascii.Cr then
+            Ada.Text_Io.New_Line;
+          end if;
+          if Char = '4' then
+            Got_Res := Minus_1;
+            exit Get;
+          elsif Char = '6' then
+            Got_Res := Plus_1;
+            exit Get;
+          elsif Char = '5' then
+            Got_Res := Zero;
+            exit Get;
+          elsif Char = 'q' or Char = 'Q' then
+            Clear_Screen;
+            return;
           end if;
         end;
+
         My_Io.Put ("ERR");
       end loop Get;
 
@@ -135,11 +134,11 @@ begin
         Success := False;
         Case Res is
           when Zero =>
-            My_Io.Put_Line (" Erreur, c'etait  0");
+            My_Io.Put_Line (" Error, it was  0");
           when Plus_1 =>
-            My_Io.Put_Line (" Erreur, c'etait +1");
+            My_Io.Put_Line (" Error, it was +1");
           when Minus_1 =>
-            My_Io.Put_Line (" Erreur, c'etait -1");
+            My_Io.Put_Line (" Error, it was -1");
         end case;
       end if;
       case Res is
@@ -153,10 +152,11 @@ begin
     end loop Party;
 
     My_Io.Put ("   ");
-    if Success then My_Io.Put_Line (" Sans faute, BRAVO.");
-    else My_Io.Put_Line (" Des erreurs...");
+    if Success then My_Io.Put_Line (" Perfect!");
+    else My_Io.Put_Line (" Some errors...");
     end if;
     My_Io.New_Line; 
   end loop Game;
 
 end G;
+
