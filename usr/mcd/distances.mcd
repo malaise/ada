@@ -1,0 +1,67 @@
+# Compute various reaction/brake/stop distances for the given speed
+
+# Compute data from top of stack (poped) and put dataa
+[
+# Check arg is int
+dup isinte ~ [ pop 2 retn ] ifcall
+
+# Save tenth as float in v
+toreal 10.0 / v popr
+
+# Reaction distance in 2 sec is v / 0.36 * 2.0
+v pushr 0.36 / 2.0 * r popr
+
+# Stop distance on dry is roughly v ** 2
+v pushr dup * 
+# Break distance on dry is stop - 1 sec reaction
+r pushr 2.0 / - b popr
+
+# Stop distance on dry is break + reaction
+b pushr r pushr + s popr
+
+# Break distance on wet is 1.5 * break on dry
+b pushr 1.5 * B popr
+
+# Stop distance on wet is break on wet + reaction
+B pushr r pushr + S popr
+
+# Full speed
+v pushr 10.0 * v popr
+
+# Format result
+3 format
+
+# Values
+v pushr round "|   " put put
+r pushr round " |      " put put
+b pushr round " |   " put put
+s pushr round "  " put put
+B pushr round " |   " put put
+S pushr round "  " put put " |" putl
+] C popr
+
+# Store stack in reverse order in estack
+[ ssize 0 = ifret
+pope R pushr retacal ] R popr
+R pushr call
+
+# Title
+"+--------------------------------------------+" putl
+"| Speed |         Distances (m)              |" putl
+"|  (km) | Reaction |     Dry    |     Wet    |" putl
+"|       |          | Break Stop | Break Stop |" putl
+"|--------------------------------------------|" putl
+#|   123 |      123 |   123  123 |   123  123 |
+
+# Loop on data on estack
+[
+esize 0 = ifret
+pushle
+C pushr call
+L pushr retacal ] L popr
+
+L pushr call
+
+# Footer
+"+--------------------------------------------+" putl
+

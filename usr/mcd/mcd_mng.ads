@@ -79,6 +79,8 @@ package Mcd_Mng is
    Copye,
    Pushle,
    Pushfe,
+   Rotle,
+   Rotfe,
    Esize,
    Cleare,
 

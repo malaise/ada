@@ -299,6 +299,23 @@ package body Mcd_Mng is
      end loop;
     end Do_Clear_Extra;
 
+    procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec) is
+      Rec : Item_Rec;
+    begin
+      if Times.Kind /= Inte or else Times.Val_Inte < 0 then
+        raise Mcd_Mng.Invalid_Argument;
+      end if;
+      for I in 1 .. Times.Val_Inte loop
+        if First then
+          Popf (Rec);
+        else
+          Pop (Rec, Default_Stack => False);
+        end if;
+        Push (Rec, Default_Stack => False);
+      end loop;
+    end Do_Rotate_Extra;
+
+
     procedure Do_Delay(The_Delay : in Item_Rec) is
     begin
       if The_Delay.Kind = Inte then
@@ -505,6 +522,14 @@ package body Mcd_Mng is
         when Pushfe =>
           -- pushe X push X
           Popf(A); Push (A);
+        when Rotle =>
+          -- rotate from last
+          Pop(A);
+          Do_Rotate_Extra (False, A);
+        when Rotfe =>
+          -- rotate from first
+          Pop(A);
+          Do_Rotate_Extra (True, A);
         when Esize =>
            Push( (Kind => Inte,
                   Val_Inte => My_Math.Inte(Stack.Stack_Size(

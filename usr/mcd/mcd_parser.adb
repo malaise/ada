@@ -108,6 +108,8 @@ package body Parser is
    Copye    => (Nosy, "pop A push_extra A push A     ", False),
    Pushle   => (Nosy, "pop_extra last  X push X      ", False),
    Pushfe   => (Nosy, "pop_extra first X push X      ", False),
+   Rotle    => (Nosy, "Pushle Pope A times (>=0)     ", False),
+   Rotfe    => (Nosy, "Pushfe Pope A times (>=0)     ", False),
    Esize    => (Nosy, "push extra_stack size         ", False),
    Cleare   => (Nosy, "clear extra_stack             ", True),
 
