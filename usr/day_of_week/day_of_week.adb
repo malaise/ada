@@ -10,7 +10,8 @@ procedure DAY_OF_WEEK is
   DELTA_DATE_0 : PERPET.DELTA_REC;
   DELTA_DATE_1 : PERPET.DELTA_REC;
   DAY_NO : PERPET.DAY_RANGE;
-  TH  : STRING (1 .. 2);
+  TH : STRING (1 .. 2);
+  DAYS : TEXT_HANDLER.TEXT(4);
 
   procedure USAGE is
   begin
@@ -134,6 +135,12 @@ begin
     TH := "th";
   end if;
 
+  if DELTA_DATE_1.DAYS <= 1 then
+    TEXT_HANDLER.SET (DAYS, "day");
+  else
+    TEXT_HANDLER.SET (DAYS, "days");
+  end if;
+
   -- Display result
   TEXT_IO.PUT_LINE (TEXT_HANDLER.VALUE(TXT) & " is a "
        & PERPET.DAY_OF_WEEK_LIST'IMAGE(PERPET.GET_DAY_OF_WEEK(T))
@@ -145,7 +152,8 @@ begin
        & TH
        & " day of the year,"
        & PERPET.DAY_RANGE'IMAGE(DELTA_DATE_1.DAYS)
-       & " days remaining.");
+       & " " & TEXT_HANDLER.VALUE(DAYS)
+       & " remaining.");
 
 end DAY_OF_WEEK;
 
