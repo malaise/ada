@@ -192,7 +192,7 @@ package body OPERATIONS is
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL = R.VAL_REAL);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL = R.VAL_REAL);
+      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL = R.VAL_BOOL);
     end if;
   end EQUAL;
 
@@ -209,7 +209,7 @@ package body OPERATIONS is
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL /= R.VAL_REAL);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL /= R.VAL_REAL);
+      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL /= R.VAL_BOOL);
     end if;
   end DIFF;
 
@@ -226,7 +226,7 @@ package body OPERATIONS is
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL > R.VAL_REAL);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL > R.VAL_REAL);
+      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL > R.VAL_BOOL);
     end if;
   end GREATER;
 
@@ -243,7 +243,7 @@ package body OPERATIONS is
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL < R.VAL_REAL);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL < R.VAL_REAL);
+      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL < R.VAL_BOOL);
     end if;
   end SMALLER;
 
@@ -260,7 +260,7 @@ package body OPERATIONS is
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL >= R.VAL_REAL);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL >= R.VAL_REAL);
+      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL >= R.VAL_BOOL);
     end if;
   end GREATEQ;
 
@@ -277,7 +277,7 @@ package body OPERATIONS is
     elsif L.KIND = REAL then
       return (KIND => BOOL, VAL_BOOL => L.VAL_REAL <= R.VAL_REAL);
     else
-      return (KIND => BOOL, VAL_BOOL => L.VAL_REAL <= R.VAL_REAL);
+      return (KIND => BOOL, VAL_BOOL => L.VAL_BOOL <= R.VAL_BOOL);
     end if;
   end SMALLEQ;
 
