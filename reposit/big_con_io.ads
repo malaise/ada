@@ -1,0 +1,3 @@
+with GENERIC_CON_IO;
+package BIG_CON_IO is new GENERIC_CON_IO.ONE_CON_IO(2);
+

@@ -10,7 +10,7 @@ package X_MNG is
   for BYTE'SIZE use 8;
 
   subtype COLOR       is NATURAL range 0 .. 14;
-  subtype FONT        is NATURAL range 0 .. 1;
+  subtype FONT        is NATURAL range 0 .. 3;
   subtype BELL_REPEAT is POSITIVE range 1 .. 5;
 
   type LINE_DEFINITION_REC is record
