@@ -106,6 +106,10 @@ package Dynamic_List is
   -- CARE: Risk of side effect because List_Type only is duplicated
   procedure Assign (To : in out List_Type; Val : in List_Type);
 
+  type Element_Access is access all Element_Type;
+  -- Get direct access to current element in list (or null if list is empty).
+  function Access_Current (List : List_Type) return Element_Access;
+
   generic
     with function Equal (El1, El2 : Element_Type) return Boolean is "=";
 
@@ -141,7 +145,7 @@ private
   type Cell;
   type Link is access Cell;
   type Cell is record
-    Value : Element_Type;
+    Value : aliased Element_Type;
     Next  : Link := null;
     Prev  : Link := null;
   end record;

@@ -393,12 +393,21 @@ package body Dynamic_List is
     List.Modified := False;
   end Modification_Ack;
 
-  -- Copy the VAL list to TO list
+  -- Copy the Val list to To list
   procedure Assign (To : in out List_Type; Val : in List_Type) is
   begin
     To := Val;
     To.Modified := True;
   end Assign;
+
+  -- Access to current element
+  function Access_Current (List : List_Type) return Element_Access is
+  begin
+    if Is_Empty (List) then
+      return null;
+    end if;
+    return List.Current.Value'Access;
+  end;
 
   procedure Search (List         : in out List_Type;
                     Item         : in Element_Type;
