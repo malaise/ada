@@ -74,13 +74,17 @@ extern boolean evt_fd_set (int fd, boolean read) {
 
 
 /***** Sig Management   *****/
-#define NO_SIG 0
-#define NO_HANDLER  -1
-static int sig_received = NO_HANDLER;
+#define NO_SIG -1
+#define DUMMY_SIG 0
+static int sig_received = NO_SIG;
+static boolean sig_handled = FALSE;
 static void signal_handler (int sig) {
   sig_received = sig;
 }
 
+extern void send_signal (int sig) {
+  signal_handler (sig);
+}
 
 /***** WakeUp Management   *****/
 static int wake_up_fds[2] = {-1, -1};
@@ -112,10 +116,10 @@ extern void evt_wake_up (void) {
 /* Init signal handling and wake-up pipe */
 static void init_evt (void) {
   /* Set handler if not set */
-  if (sig_received == NO_HANDLER) {
-    sig_received = NO_SIG;
+  if (! sig_handled) {
     (void) signal(SIGINT, signal_handler);
     (void) signal(SIGPIPE, SIG_IGN);
+    sig_handled = TRUE;
   }
   if (wake_up_fds[0] == -1) {
     (void) pipe (wake_up_fds);
@@ -164,8 +168,9 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
 
     /* Check for signal */
     if (sig_received != NO_SIG) {
-      sig_received = NO_SIG;
+      *p_read = (sig_received != DUMMY_SIG);
       *p_fd = SIG_EVENT;
+      sig_received = NO_SIG;
       evt_time_remaining (timeout_ms, &exp_time);
       return (OK);
     }
