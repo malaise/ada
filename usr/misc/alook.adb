@@ -2,6 +2,11 @@
 -- Each upper case character, if preceeded by an upper case
 --  is set to lower case.
 -- Strings, comments and based literals are not modified.
+-- Verbose mode lists all processed files with a "=" (not modified)
+--  or a "*" (modified).
+-- Silent mode does not list any file.
+-- Default mode lists all the modified files (with no "=").
+
 with Ada.Text_Io, Ada.Exceptions;
 
 with Argument, Lower_Char, Bloc_Io;
@@ -246,35 +251,46 @@ procedure Look_95 is
       return Modified;
   end Do_One;
 
-  First_File : Positive;
-  Verbose    : Boolean;
+  type Verbose_Level_List is (Normal, Silent, Verbose);
+  Verbose_Level    : Verbose_Level_List;
 
 begin
 
   -- Help
   if Argument.Get_Parameter = "-h" then
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                                    & " [ -v ] [ { <file> } ]");
+                                    & " [ { -v | -s | -d | <file> } ]");
     return;
   end if;
 
-  -- Verbose optional flag
-  First_File := 1;
-  Verbose := False;
-  if Argument.Get_Parameter = "-v" then
-    Verbose := True;
-    First_File := 2;
-  end if;
-
+  Verbose_Level := Normal;
 
   -- Process all remaining arguments (file names)
-  for I in First_File .. Argument.Get_Nbre_Arg loop
-    if Do_One (Argument.Get_Parameter (I)) then
-      -- Always trace altered files
-      Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " *");
-    elsif Verbose then
-      -- Trace unaltered files if verbose
-      Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " =");
+  for I in 1 .. Argument.Get_Nbre_Arg loop
+
+    -- Change verbose level?
+    if Argument.Get_Parameter (I) = "-v" then
+      Verbose_Level := Verbose; 
+    elsif Argument.Get_Parameter (I) = "-s" then
+      Verbose_Level := Silent;
+    elsif Argument.Get_Parameter (I) = "-d" then
+      Verbose_Level := Normal;
+    else
+      -- Process file
+      if Do_One (Argument.Get_Parameter (I)) then
+        -- Trace altered files if not silent
+        if Verbose_Level /= Silent then
+          Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
+          if Verbose_Level = Normal then
+            Ada.Text_Io.New_Line;
+          else
+            Ada.Text_Io.Put_Line (" *");
+          end if;
+        end if;
+      elsif Verbose_Level = Verbose then
+        -- Trace unaltered files if verbose
+        Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " =");
+      end if;
     end if;
   end loop;
 end Look_95;
