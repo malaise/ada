@@ -3,9 +3,11 @@ package body AF_LIST is
 
   STATUS : STATUS_REC;
   OPENED : BOOLEAN := FALSE;
-  DISPLAYED : BOOLEAN := FALSE;
 
   LIST_WINDOW : CON_IO.WINDOW;
+
+  -- Compute status
+  procedure COMPUTE (FIRST_ITEM_ID : in POSITIVE);
 
   -- Open / Re-open the list window
   procedure OPEN is
@@ -23,7 +25,8 @@ package body AF_LIST is
                    AF_DSCR.FIELDS(0).UPPER_LEFT,
                    AF_DSCR.FIELDS(0).LOWER_RIGHT);
       OPENED := TRUE;
-      DISPLAYED := FALSE;
+      -- Start at top
+      COMPUTE (1);
     else
       OPENED := FALSE;
     end if;
@@ -95,9 +98,6 @@ package body AF_LIST is
     if not OPENED then
       raise NOT_OPENED;
     end if;
-    if not DISPLAYED then
-      raise NOT_DISPLAYED;
-    end if;
     ID := STATUS.ID_TOP + ROW;
     MOVE (ID);
     GET_CURRENT_ITEM (ITEM);
@@ -115,9 +115,8 @@ package body AF_LIST is
     CON_IO.SET_BACKGROUND (AF_DSCR.FIELDS(0).COLORS.BACKGROUND, LIST_WINDOW);
   end SET_COLORS;
 
-  -- Display the list, starting from FIRST_ITEM
-  procedure DISPLAY (FIRST_ITEM_ID : in POSITIVE) is
-    ITEM : LINE_REC;
+  -- Compute status
+  procedure COMPUTE (FIRST_ITEM_ID : in POSITIVE) is
   begin
     if not OPENED then
       raise NOT_OPENED;
@@ -127,11 +126,9 @@ package body AF_LIST is
       STATUS.ID_TOP := 0;
       STATUS.ID_BOTTOM := 0;
       STATUS.ID_SELECTED := 0;
-      SET_COLORS;
-      CON_IO.CLEAR (LIST_WINDOW);
-      DISPLAYED := TRUE;
       return;
     end if;
+
     if STATUS.ID_SELECTED > LINE_LIST_MNG.LIST_LENGTH (LINE_LIST) then
       raise LINE_LIST_MNG.NOT_IN_LIST;
     end if;
@@ -159,6 +156,23 @@ package body AF_LIST is
     if STATUS.ID_SELECTED = 0 then
       STATUS.ID_SELECTED := STATUS.ID_TOP;
     end if;
+  exception
+    when others =>
+      raise AFPX_INTERNAL_ERROR;
+  end COMPUTE;
+
+  -- Display the list, starting from FIRST_ITEM
+  procedure DISPLAY (FIRST_ITEM_ID : in POSITIVE) is
+    ITEM : LINE_REC;
+  begin
+    -- Set status
+    COMPUTE (FIRST_ITEM_ID);
+
+    if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
+      SET_COLORS;
+      CON_IO.CLEAR (LIST_WINDOW);
+      return;
+    end if;
 
     -- Display list
     MOVE (STATUS.ID_TOP);
@@ -178,7 +192,6 @@ package body AF_LIST is
       CLEAR (I - 1);
     end loop;
 
-    DISPLAYED := TRUE;
   exception
     when others =>
       raise AFPX_INTERNAL_ERROR;
@@ -193,9 +206,6 @@ package body AF_LIST is
   begin
     if not OPENED then
       raise NOT_OPENED;
-    end if;
-    if not DISPLAYED then
-      raise NOT_DISPLAYED;
     end if;
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST)
     or else STATUS.NB_ROWS /= AF_DSCR.FIELDS(0).HEIGHT then
@@ -289,9 +299,6 @@ package body AF_LIST is
     if not OPENED then
       raise NOT_OPENED;
     end if;
-    if not DISPLAYED then
-      raise NOT_DISPLAYED;
-    end if;
     if LINE_LIST_MNG.IS_EMPTY (LINE_LIST) then
       return;
     end if;
@@ -307,9 +314,6 @@ package body AF_LIST is
     if not OPENED then
       raise NOT_OPENED;
     end if;
-    if not DISPLAYED then
-      raise NOT_DISPLAYED;
-    end if;
     return ID >= STATUS.ID_TOP and then ID <= STATUS.ID_BOTTOM;
   end ID_DISPLAYED;
 
@@ -317,9 +321,6 @@ package body AF_LIST is
   begin
     if not OPENED then
       raise NOT_OPENED;
-    end if;
-    if not DISPLAYED then
-      raise NOT_DISPLAYED;
     end if;
     return ROW < STATUS.NB_ROWS;
   end ROW_DISPLAYED;
