@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with Event_Mng, Sys_Calls, Text_Handler, Console, Dynamic_List, Trace;
+with Event_Mng, Sys_Calls, Text_Handler, Console, Dynamic_List, Trace, Environ;
 package body Async_Stdin is
 
   -- The user callback
@@ -9,6 +9,8 @@ package body Async_Stdin is
 
 
   package Line is
+    -- Init (getenv history size)
+    procedure Init;
 
     -- Add a character. Store it until a sequence or flush
     -- return true if end of get
@@ -24,7 +26,11 @@ package body Async_Stdin is
   package body Line is
 
     package History is
+      -- Buffer for exchanges (in/out with caller)
       Buf : Text_Handler.Text (Max_Chars_Range'Last);
+
+      -- List default len.
+      History_Size : Positive := 20;
 
       -- Move to first/last/next/previous history record
       -- Set string un Buf
@@ -41,7 +47,7 @@ package body Async_Stdin is
       procedure Add;
     end History;
 
-    package Body History is
+    package body History is
       type Rec is record
          Len : Natural;
          Str : String (1 .. Max_Chars_Range'Last);
@@ -56,8 +62,6 @@ package body Async_Stdin is
       end Match;
       procedure Search is new List_Mng.Search (Match);
 
-      -- List max len
-      History_Size : constant Positive := 20;
 
       -- Searched pattern
       Searched_Rec : Rec;
@@ -171,7 +175,7 @@ package body Async_Stdin is
         R : Rec;
       begin
         if List_Mng.List_Length (List) = History_Size then
-          First;
+          List_Mng.Move_To (List, List_Mng.Next, 0, False);
           List_Mng.Delete (List);
         end if;
         -- Append at the end of list
@@ -184,12 +188,20 @@ package body Async_Stdin is
 
     end History;
 
+    procedure Init is
+    begin
+      Environ.Get_Pos ("Async_Stdin_History_Size", History.History_Size);
+    end Init;
+
     -- Current line of text and cursor position in it
     Ind : Positive := 1;
     Txt : Text_Handler.Text (Max_Chars_Range'Last);
 
     -- Are we searching (Tab, Tab, Tab...)
     Searching : Boolean := False;
+
+    -- Have we just stored a new string, so prev shall be last
+    At_Last : Boolean := True;
 
     -- Current sequence characters
     Seq : Text_Handler.Text (4);
@@ -225,6 +237,7 @@ package body Async_Stdin is
     begin
       Text_Handler.Set (History.Buf, Txt);
       History.Add;
+      At_Last := True;
     end Store;
 
     function Add (C : Character) return Boolean is
@@ -259,8 +272,8 @@ package body Async_Stdin is
         when Ascii.Ht =>
           -- Search
           if not Empty (Seq) then
-            Append (Txt, Ascii.Esc);
             Store; 
+            Append (Txt, Ascii.Esc);
             return True;
           end if;
           if Empty (Txt) then
@@ -271,6 +284,7 @@ package body Async_Stdin is
           end if;
           if History.Search (not Saved_Searching) then
             Update;
+            At_Last := False;
           else
             Ada.Text_Io.Put (Ascii.Bel);
           end if;
@@ -278,8 +292,8 @@ package body Async_Stdin is
         when Ascii.Esc =>
           -- Escape, validate previous escape
           if not Empty (Seq) then
-            Append (Txt, Ascii.Esc);
             Store;
+            Append (Txt, Ascii.Esc);
             return True;
           end if;
           Set (Seq, C);
@@ -295,7 +309,11 @@ package body Async_Stdin is
             Ada.Text_Io.Put (Value(Txt)(Ind - 1 .. Length(Txt)));
             Console.Restore;
             Console.Right;
-            return Length(Txt) = Max;
+            if Length(Txt) = Max then
+              Store;
+              return True;
+            end if;
+            return False;
           else
             -- Add C in sequence try to find one
             Append (Seq, C);
@@ -341,22 +359,33 @@ package body Async_Stdin is
                 Empty (Seq);
               elsif Str = Arrow_Up_Seq then
                 -- Up
-                History.Prev;
+                if At_Last then
+                  -- We have just stored a new string. Prev should get it
+                  History.Last;
+                else
+                  History.Prev;
+                end if;
+                At_Last := False;
                 Update;
                 Empty (Seq);
               elsif Str = Arrow_Down_Seq then
                 -- Down
-                History.Next;
-                Update;
+                if not At_Last then
+                  -- If we have just stored a new string. Down should ignore
+                  History.Next;
+                  Update;
+                end if;
                 Empty (Seq);
               elsif Str = Page_Up_Seq then
                 -- Page Up
                 History.First;
+                At_Last := False;
                 Update;
                 Empty (Seq);
               elsif Str = Page_Down_Seq then
                 -- Page Down
                 History.Last;
+                At_Last := False;
                 Update;
                 Empty (Seq);
               elsif Str = Insert_Seq then
@@ -483,6 +512,7 @@ package body Async_Stdin is
       if Result then
         Cb := User_Callback;
         Max := Max_Chars;
+        Line.Init;
         Line.Clear;
         Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True, Fd_Callback'Access);
       else
