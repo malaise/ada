@@ -1,0 +1,11 @@
+#!/bin/bash
+cur=`pwd`
+
+cd reposit
+make $*
+
+cd $cur
+
+cd usr
+build $*
+
