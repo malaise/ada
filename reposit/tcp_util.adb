@@ -418,7 +418,7 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb update rec "
                     & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
     end if;
-    return False;       
+    return False;
   end Connection_Timer_Cb;
 
   -- Connect to a remote Host/Port
@@ -436,6 +436,9 @@ package body Tcp_Util is
     Set_Debug (Debug_Connect_Name, Debug_Connect);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connect_To start");
+    end if;
+    if Delta_Retry <= 0.0 then
+      raise Invalid_Delay;
     end if;
     -- Initialise record and insert it in list
     Rec.Protocol := Protocol;

@@ -108,6 +108,7 @@ package Tcp_Util is
   -- Infinite retries if Nb_Tries = 0
   -- Returns True if immediate result could be achieved
   --  (then callback has already been called).
+  -- May raise Invalid_Delay is Delta_Retry is <= 0.0
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
@@ -193,6 +194,8 @@ package Tcp_Util is
 
   -- EXCEPTIONS --
   ----------------
+  -- Raised when Connect_To.Delta_Retry is negative or nul
+  Invalid_Delay : exception;
   -- Raised when aborting unknown connection/acception
   -- Or a send which is not in overflow
   -- Or setting reception callback on not open Dscr
