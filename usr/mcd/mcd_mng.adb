@@ -135,15 +135,20 @@ package body Mcd_Mng is
     -- Register <-> Index
     function Index_Of (Reg : Item_Rec) return Item_Rec;
     function Register_At (Index : Item_Rec) return Item_Rec;
+
+    -- Load/Store registers on disk
+    procedure Store_All;
+    procedure Load_All;
+    procedure Close_All;
  
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
-    -- INVALID_REGISTER : exception;
+    -- Invalid_Register : exception;
 
-    -- Valid contents are INTE REAL BOOL PROG CHRS
-    -- INVALID_ARGUMENT : exception;
+    -- Valid contents are Inte Real Bool Prog Chrs Regi
+    -- Invalid_Argument : exception;
 
     -- Nothing to retrieve
-    -- EMTPY_REGISTER : exception;
+    -- Emtpy_Register : exception;
   end Registers;
 
   package Ios is
@@ -199,6 +204,11 @@ package body Mcd_Mng is
 
   function Is_Register (C : in Character) return Boolean 
                        renames Registers.Is_Register;
+
+  procedure Close is
+  begin
+    Registers.Close_All;
+  end Close;
 
   procedure New_Item (Item : in Item_Rec; The_End : out Boolean) is
 
@@ -534,6 +544,12 @@ package body Mcd_Mng is
         when Indreg =>
           -- Register at index
           Pop(A); Push(Registers.Register_At(A));
+        when Storer =>
+          -- Register at index
+          Registers.Store_All;
+        when Loadr =>
+          -- Register at index
+          Registers.Load_All;
 
         -- Stack size
         when Ssize =>
@@ -666,7 +682,7 @@ package body Mcd_Mng is
   function Check_Empty_Stack return Boolean is
   begin
     return Stack.Stack_Size = 0;
-  end;
+  end Check_Empty_Stack;
 
 begin
   Random.Randomize;

@@ -34,31 +34,44 @@ begin
      Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
    end if;
 
+   Mcd_Mng.Close;
 exception
   -- Clean mapping of exceptions
   when Mcd_Mng.Invalid_Argument =>
     Sys_Calls.Put_Line_Error ("Error: Invalid argument");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Argument_Mismatch =>
     Sys_Calls.Put_Line_Error ("Error: Argument mismatch");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Compute_Error =>
     Sys_Calls.Put_Line_Error ("Error: Compute error");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Invalid_Register =>
     Sys_Calls.Put_Line_Error ("Error: Invalid register");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Emtpy_Register =>
     Sys_Calls.Put_Line_Error ("Error: Empty register");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.Empty_Stack =>
     Sys_Calls.Put_Line_Error ("Error: Empty stack");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Mcd_Mng.String_Len =>
     Sys_Calls.Put_Line_Error ("Error: String length error");
+    Mcd_Mng.Close;
+    Sys_Calls.Set_Error_Exit_Code;
+  when Mcd_Mng.File_Error =>
+    Sys_Calls.Put_Line_Error ("Error: File IO error");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
   when Parser.Parsing_Error =>
     Sys_Calls.Put_Line_Error ("Error: Parsing error");
+    Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
 end Mcd;
 
