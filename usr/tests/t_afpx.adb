@@ -13,9 +13,10 @@ procedure T_AFPX is
   FLIP_FLOP : BOOLEAN;
 
   TIMER_SS, TIMER_PER, TIMER_TMP : TIMERS.TIMER_ID;
-  procedure TIMER_CB (ID : in TIMERS.TIMER_ID) is
+  function TIMER_CB (ID : in TIMERS.TIMER_ID) return BOOLEAN is
   begin
     FLIP_FLOP := not FLIP_FLOP;
+    return TRUE;
   end TIMER_CB;
 
   use AFPX;
