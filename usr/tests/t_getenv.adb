@@ -5,19 +5,25 @@ procedure T_Getenv is
 
   Set : Boolean;
   Tru : Boolean;
-  Res : String (1..20);
+  Res : String (1..80);
   Len : Natural;
 
 begin
 
   if Argument.Get_Nbre_Arg = 0 then
+    My_Io.Put ("GETENV");
     Sys_Calls.Getenv ("GETENV", Set, Tru, Res, Len);
   else
-    Sys_Calls.Getenv (Argument.Get_Parameter(1), Set, Tru, Res, Len);
+    My_Io.Put (Argument.Get_Parameter);
+    Sys_Calls.Getenv (Argument.Get_Parameter, Set, Tru, Res, Len);
   end if;
   if not Set then
-    My_Io.Put_Line ("Not set");
+    My_Io.Put_Line (" Not set");
   else
-     My_Io.Put_Line (">" & Res (1 .. Len) & "< truncated: " & Boolean'Image(Tru));
+    My_Io.Put (" ->" & Res (1 .. Len) & "<");
+    if Tru then
+      My_Io.Put (" truncated");
+    end if;
+    My_Io.New_Line;
   end if;
 end T_Getenv;
