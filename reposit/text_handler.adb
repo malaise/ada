@@ -160,24 +160,34 @@ package body TEXT_HANDLER is
 
 
   procedure AMEND (TO : in out TEXT; BY : in TEXT; 
-   POSITION : in MAX_LEN_RANGE) is
+                   POSITION : in MAX_LEN_RANGE) is
   begin
-    TO.VAL (POSITION .. POSITION+LENGTH(BY)-1) := VALUE(BY);
-    TO.LEN := LENGTH(TO) + LENGTH(BY);
+    AMEND (TO, BY.VAL (1 .. BY.LEN), POSITION);
   end AMEND;
 
   procedure AMEND (TO : in out TEXT; BY : in STRING; 
-   POSITION : in MAX_LEN_RANGE) is
+                   POSITION : in MAX_LEN_RANGE) is
   begin
-    TO.VAL (POSITION .. POSITION+BY'LENGTH-1) := BY;
-    TO.LEN := LENGTH(TO) + BY'LENGTH;
+    if POSITION > TO.LEN then
+      raise CONSTRAINT_ERROR;
+    end if;
+    if POSITION + BY'LENGTH - 1 > TO.MAX_LEN then
+      raise CONSTRAINT_ERROR;
+    end if;
+    if POSITION + BY'LENGTH - 1 > TO.LEN then
+      TO.LEN := POSITION + BY'LENGTH - 1;
+      TO.VAL (POSITION .. TO.LEN) := BY;
+    else
+      TO.VAL (POSITION .. POSITION + BY'LENGTH - 1) := BY;
+    end if;
+
   end AMEND;
 
   procedure AMEND (TO : in out TEXT; BY : in CHARACTER; 
-   POSITION : in MAX_LEN_RANGE) is
+                   POSITION : in MAX_LEN_RANGE) is
+    S : constant STRING (1 .. 1) := BY & "";
   begin
-    TO.VAL (POSITION+1) := BY;
-    TO.LEN := LENGTH(TO) + 1;
+    AMEND (TO, S, POSITION);
   end AMEND;
 
 
