@@ -98,7 +98,7 @@ package body PARSER is
       if C in 'a' .. 'z' or else C in 'A' .. 'Z' then
         -- A register
         return (KIND => MCD_MNG.REGI, VAL_REGI => C);
-      elsif TEXT_HANDLER.LENGTH(TXT) = 1 and then C = '[' then
+      elsif C = '[' then
         -- Get rid of strings
         TEXT_HANDLER.EMPTY(TXTS);
         FIRST_WORD := TRUE;
