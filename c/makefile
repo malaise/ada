@@ -15,8 +15,6 @@ INST_LIBS := $(LIBS:%=$(DEST_LIBS)/%.a) $(LIBS:%=$(DEST_LIBS)/%.so)
 
 include $(TEMPLATES)/c.mk
 
-$(BIN)/test_x : $(LIB)/test_x.o $(LIB)/libx_mng.so $(LIB)/libcutil.so
-
 $(LIB)/libcndbm.a $(LIB)/libcndbm.so : $(OBJS_libcndbm:%=$(LIB)/%)
 
 $(LIB)/libcutil.a $(LIB)/libcutil.so : $(OBJS_libcutil:%=$(LIB)/%)
