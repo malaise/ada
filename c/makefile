@@ -11,7 +11,10 @@ OBJS_libx_mng := x_color.o x_font.o x_line.o\
 LARGS_test_x := -lx_mng -lcutil -lX11 -lm
 
 DEST_LIBS := /usr/local/lib
-INST_LIBS := $(LIBS:%=$(DEST_LIBS)/%.a) $(LIBS:%=$(DEST_LIBS)/%.so)
+INST_LIBS := $(LIBS)
+
+DEST_HEADS := /usr/local/include
+INST_HEADS := boolean.h timeval.h
 
 include $(TEMPLATES)/c.mk
 
