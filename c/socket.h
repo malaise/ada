@@ -197,7 +197,7 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /* No set_for_reply if tcp */
 /* Returned values: */
 /*   - the length of bytes read, which is the length of the message sent */
-/*     except in tcp (no header) where the length read my me anything */
+/*     except in tcp (no header) where the length read may be anything */
 /*     from 0 to length */
 /*   - SOC_WOULD_BLOCK (in non blocking), new read has to be done */
 /*   - SOC_READ_0, disconnection? */
