@@ -18,12 +18,6 @@ INST_HEADS := boolean.h timeval.h
 
 include $(TEMPLATES)/c.mk
 
-$(LIB)/libcndbm.a $(LIB)/libcndbm.so : $(OBJS_libcndbm:%=$(LIB)/%)
-
-$(LIB)/libcutil.a $(LIB)/libcutil.so : $(OBJS_libcutil:%=$(LIB)/%)
-
-$(LIB)/libx_mng.a $(LIB)/libx_mng.so : $(OBJS_libx_mng:%=$(LIB)/%)
-
 cndbm.c : cndbm.h
 
 socket.c : socket_prv.h wait_evt.h
