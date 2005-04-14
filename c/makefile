@@ -14,7 +14,7 @@ DEST_LIBS := /usr/local/lib
 INST_LIBS := $(LIBS)
 
 DEST_HEADS := /usr/local/include
-INST_HEADS := boolean.h timeval.h
+INST_HEADS := boolean.h timeval.h sys_calls.h wait_evt.h socket.h
 
 include $(TEMPLATES)/c.mk
 
