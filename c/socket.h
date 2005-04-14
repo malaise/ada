@@ -85,6 +85,11 @@ typedef union soc_host_t {
 typedef int soc_length;
 typedef void * soc_message;
 
+/*-------------------------------------------*/
+/* All functions return SOC_OK or an error,  */
+/*  except soc_receive on a non blocking tcp */
+/*  (no header) connection)                  */
+/*-------------------------------------------*/
 
 /* Open a socket (in blocking) */
 extern int soc_open (soc_token *p_token, socket_protocol protocol);
@@ -99,6 +104,7 @@ extern int soc_get_id (soc_token token, int *p_id);
 /*  (for sending, receiving, connecting) */ 
 extern int soc_set_blocking (soc_token token, boolean blocking);
 
+/* ------------------------------------*/
 /* No broadcast nor change dest in tcp */
 /* Socket must not be linked in tcp    */
 /* ------------------------------------*/
@@ -135,15 +141,15 @@ extern int soc_change_dest_service (soc_token token, const char *service);
 /* Change destination port (same host_lan) - specify port */
 extern int soc_change_dest_port (soc_token token, soc_port port);
 
-/* Get current lan name (computed from local host name) */
-/* lan_name must be large enough */
-extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len);
-
 /* Get the destination port */
 extern int soc_get_dest_port (soc_token token, soc_port *p_port);
 
 /* Get the destination host */
 extern int soc_get_dest_host (soc_token token, soc_host *p_host);
+
+/* Get current lan name (computed from local host name) */
+/* lan_name must be large enough */
+extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len);
 
 /* Find name of soc_host and vice versa */
 extern int soc_host_name_of (const soc_host *p_host, char *host_name,
@@ -164,7 +170,7 @@ extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len);
 extern int soc_get_local_host_id (soc_host *p_host);
 
-/* Send to a socket, the destination of which must set */
+/* Send to a socket, the destination of which must be set */
 /* May return SOC_WOULD_BLOCK, then next tries have to be made */
 /*  with soc_resend util it returns ok */
 extern int soc_send (soc_token token, soc_message message, soc_length length);

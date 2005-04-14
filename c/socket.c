@@ -41,6 +41,14 @@ static int soc_init (soc_ptr *p_soc,
     perror("malloc(soc_struct)");
     return (SOC_SYS_ERR);
   }
+#ifdef SOCKET_MUTEX
+  /* Create mutex */
+  (*p_soc)->mutex = mutex_create();
+  if ((*p_soc)->mutex == NULL) {
+    perror("mutex_create");
+    return (SOC_SYS_ERR);
+  }
+#endif;
 
   /* Save protocol and id */
   (*p_soc)->proto = protocol;
@@ -145,6 +153,10 @@ extern int soc_close (soc_token *p_token) {
    || evt_fd_set ((*p_soc)->socket_id, FALSE) ) {
     return (SOC_FD_IN_USE);
   }
+#ifdef SOCKET_MUTEX
+  /* Destroy mutex */
+  (void) mutex_destroy((*p_soc)->mutex);
+#endif
  
   close ((*p_soc)->socket_id);
   free (*p_soc);
@@ -152,15 +164,25 @@ extern int soc_close (soc_token *p_token) {
   return (SOC_OK);
 }
 
+#ifdef SOCKET_MUTEX
+#define LOCK (void) mutex_lock(soc->mutex, TRUE)
+#define UNLOCK (void) mutex_unlock(soc->mutex)
+#else
+#define LOCK
+#define UNLOCK
+#endif
+
 /* Gets the id of a socket (for select, ioctl ... ) */
 extern int soc_get_id (soc_token token, int *p_id) {
   soc_ptr soc = (soc_ptr) token;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Ok */
   *p_id = soc->socket_id;
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -172,9 +194,11 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Nothing to do */
   if (soc->blocking == blocking) {
+    UNLOCK;
     return (SOC_OK);
   }
 
@@ -185,6 +209,7 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   status = fcntl (soc->socket_id, F_GETFL, 0);
   if (status < 0) {
     perror("fcntl_get_block");
+    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
@@ -198,10 +223,12 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   /* Fcntl for having blocking ios */
   if (fcntl (soc->socket_id, F_SETFL, status)  == -1) {
     perror("fcntl_set_block");
+    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -212,7 +239,9 @@ static int soc_connect (soc_ptr soc) {
 
   /* Check that socket is open and dest set */
   if (soc == NULL) return (SOC_USE_ERR);
-  if (! soc->dest_set) return (SOC_DEST_ERR);
+  if (! soc->dest_set) {
+    return (SOC_DEST_ERR);
+  }
 
   /* Connect */
   do {
@@ -254,27 +283,33 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   struct hostent *host_name;
   struct netent  *lan_name;
   struct servent *serv_name;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
+      UNLOCK;
       return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
 
   /* Read port num */
   if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+    UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
+      UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
@@ -282,11 +317,13 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   } else {
     /* No tcp bcast */
     if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+      UNLOCK;
       return (SOC_BCAST_ERR);
     }
 
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
+      UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
@@ -297,10 +334,13 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    return soc_connect (soc);
+    res = soc_connect (soc);
+    UNLOCK;
+    return (res);
   }
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -312,15 +352,19 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   soc_ptr soc = (soc_ptr) token;
   struct hostent *host_name;
   struct netent  *lan_name;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
+      UNLOCK;
       return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
@@ -328,6 +372,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
+      UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
@@ -335,11 +380,13 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   } else {
     /* No tcp bcast */
     if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+      UNLOCK;
       return (SOC_BCAST_ERR);
     }
 
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
+      UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
@@ -350,10 +397,13 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    return soc_connect (soc);
+    res = soc_connect (soc);
+    UNLOCK;
+    return (res);
   }
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -361,21 +411,26 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
                                       const char *service) {
   soc_ptr soc = (soc_ptr) token;
   struct servent *serv_name;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
+      UNLOCK;
       return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
 
   /* Read port num */
   if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+    UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -385,25 +440,32 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    return soc_connect (soc);
+    res = soc_connect (soc);
+    UNLOCK;
+    return (res);
   }
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
 extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
                                    soc_port port) {
   soc_ptr soc = (soc_ptr) token;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
+      UNLOCK;
       return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
@@ -414,10 +476,13 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    return soc_connect (soc);
+    res = soc_connect (soc);
+    UNLOCK;
+    return (res);
   }
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -431,9 +496,11 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check not tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    UNLOCK;
     return (SOC_PROTO_ERR);
   }
 
@@ -443,6 +510,7 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
+      UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     memcpy((void *) &(soc->send_struct.sin_addr.s_addr),
@@ -450,12 +518,14 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
   } else {
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
+      UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
   }
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -465,18 +535,24 @@ extern int soc_change_dest_host (soc_token token, const soc_host *host) {
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check not tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    UNLOCK;
     return (SOC_PROTO_ERR);
   }
 
   /* Check that a destination is already set */
-  if (!soc->dest_set) return (SOC_DEST_ERR);
+  if (!soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
 
   soc->send_struct.sin_addr.s_addr = host->integer;
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -487,17 +563,23 @@ extern int soc_change_dest_service (soc_token token, const char *service) {
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check not tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    UNLOCK;
     return (SOC_PROTO_ERR);
   }
 
   /* Check that a destination is already set */
-  if (!soc->dest_set) return (SOC_DEST_ERR);
+  if (!soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
 
   /* Read IP adress of port */
   if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+    UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -505,6 +587,7 @@ extern int soc_change_dest_service (soc_token token, const char *service) {
   soc->send_struct.sin_port = serv_name->s_port;
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -514,19 +597,64 @@ extern int soc_change_dest_port (soc_token token, soc_port port) {
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check not tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    UNLOCK;
     return (SOC_PROTO_ERR);
   }
 
   /* Check that a destination is already set */
-  if (!soc->dest_set) return (SOC_DEST_ERR);
+  if (!soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
 
   /* Init structure */
   soc->send_struct.sin_port = htons (port);
 
   /* Ok */
+  UNLOCK;
+  return (SOC_OK);
+}
+
+/* Get the destination port */
+extern int soc_get_dest_port (soc_token token, soc_port *p_port) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  /* Check that a destination is already set */
+  if (!soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
+
+  /* Ok */
+  *p_port = ntohs(soc->send_struct.sin_port);
+  UNLOCK;
+  return (SOC_OK);
+}
+
+extern int soc_get_dest_host (soc_token token, soc_host *p_host) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  /* Check that a destination is already set */
+  if (!soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
+
+  /* Ok */
+  p_host->integer = soc->send_struct.sin_addr.s_addr;
+  UNLOCK;
   return (SOC_OK);
 }
 
@@ -568,35 +696,6 @@ extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
 
   strcpy (lan_name, netentp->n_name);
   /* Ok */
-  return (SOC_OK);
-}
-
-/* Get the destination port */
-extern int soc_get_dest_port (soc_token token, soc_port *p_port) {
-  soc_ptr soc = (soc_ptr) token;
-
-  /* Check that socket is open */
-  if (soc == NULL) return (SOC_USE_ERR);
-
-  /* Check that a destination is already set */
-  if (!soc->dest_set) return (SOC_DEST_ERR);
-
-  /* Ok */
-  *p_port = ntohs(soc->send_struct.sin_port);
-  return (SOC_OK);
-}
-
-extern int soc_get_dest_host (soc_token token, soc_host *p_host) {
-  soc_ptr soc = (soc_ptr) token;
-
-  /* Check that socket is open */
-  if (soc == NULL) return (SOC_USE_ERR);
-
-  /* Check that a destination is already set */
-  if (!soc->dest_set) return (SOC_DEST_ERR);
-
-  /* Ok */
-  p_host->integer = soc->send_struct.sin_addr.s_addr;
   return (SOC_OK);
 }
 
@@ -705,8 +804,7 @@ extern int soc_get_local_host_id (soc_host *p_host) {
 /* Send to a socket, the destination of which must set */
 /* May return SOC_WOULD_BLOCK, then next sends have to be made */
 /*  with length=0, util soc_send returns ok */
-extern int soc_send (soc_token token, soc_message message, soc_length length) {
-  soc_ptr soc = (soc_ptr) token;
+static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
   boolean cr;
   soc_header header;
   struct iovec vector[VECTOR_LEN];
@@ -714,16 +812,15 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
   char* msg2send;
   int vector_len;
 
-  /* Check that socket is open */
-  if (soc == NULL) return (SOC_USE_ERR);
-
   /* Check that desination is set */
-  if (!soc->dest_set) return (SOC_DEST_ERR); 
+  if (!soc->dest_set) {
+    return (SOC_DEST_ERR); 
+  }
 
   /* Connected if tcp */
   if ( ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) )
     && (soc->connection != connected) ) {
-     return (SOC_CONN_ERR);
+    return (SOC_CONN_ERR);
   }
 
   /* Tail / length consistency */
@@ -845,18 +942,41 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
 
 }
 
-/* Resend tail of previous message */
-extern int soc_resend (soc_token token) {
+/* Send to a socket, the destination of which must set */
+/* May return SOC_WOULD_BLOCK, then next sends have to be made */
+/*  with length=0, util soc_send returns ok */
+extern int soc_send (soc_token token, soc_message message, soc_length length) {
   soc_ptr soc = (soc_ptr) token;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  res = soc_do_send (soc, message, length);
+  UNLOCK;
+  return (res);
+}
+
+/* Resend tail of previous message */
+extern int soc_resend (soc_token token) {
+  soc_ptr soc = (soc_ptr) token;
+  int res;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check socket is in send overflow */
-  if (soc->send_tail == NULL) return (SOC_TAIL_ERR);
+  if (soc->send_tail == NULL) {
+    UNLOCK;
+    return (SOC_TAIL_ERR);
+  }
 
   /* Send */
-  return (soc_send (token, NULL, 0));
+  res = soc_do_send (soc, NULL, 0);
+  UNLOCK;
+  return (res);
 }
 
 /*******************************************************************/
@@ -945,21 +1065,26 @@ static int bind_and_co (soc_token token, boolean dynamic) {
 extern int soc_link_service (soc_token token, const char *service) {
   soc_ptr soc = (soc_ptr) token;
   struct servent *serv_name;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
+      UNLOCK;
       return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
 
   /* Read IP adress of port */
   if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+    UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -967,22 +1092,28 @@ extern int soc_link_service (soc_token token, const char *service) {
   soc->rece_struct.sin_port = serv_name->s_port;
 
   /* Bind */
-  return bind_and_co (token, FALSE);
+  res = bind_and_co (token, FALSE);
+  UNLOCK;
+  return (res);
 }
 
 /* Links the socket to a port specified by it's value */
 /* The socket must be open and not already linked */
 extern int soc_link_port  (soc_token token, soc_port port) {
   soc_ptr soc = (soc_ptr) token;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
+      UNLOCK;
       return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
@@ -991,22 +1122,28 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   soc->rece_struct.sin_port = htons((u_short) port);
 
   /* Bind */
-  return bind_and_co (token, FALSE);
+  res = bind_and_co (token, FALSE);
+  UNLOCK;
+  return (res);
 }
 
 /* Links the socket to a port dynamically choosen by the system */
 /* The socket must be open and not already linked */
 extern int soc_link_dynamic  (soc_token token) {
   soc_ptr soc = (soc_ptr) token;
+  int res;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Not linked nor already connected if tcp */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
     if (soc->linked) {
       return (SOC_LINK_ERR);
+      UNLOCK;
     } else if (soc->connection != not_connected) {
+      UNLOCK;
       return (SOC_CONN_ERR);
     }
   }
@@ -1015,7 +1152,9 @@ extern int soc_link_dynamic  (soc_token token) {
   soc->rece_struct.sin_port = htons(0);
 
   /* Bind */
-  return bind_and_co (token, TRUE);
+  res = bind_and_co (token, TRUE);
+  UNLOCK;
+  return (res);
 }
 
 /* Gets the port to which is linked a socket */
@@ -1025,19 +1164,25 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check that a port is already set */
-  if (!soc->linked) return (SOC_LINK_ERR);
+  if (!soc->linked) {
+    UNLOCK;
+    return (SOC_LINK_ERR);
+  }
 
   /* Get the structure */
   if (getsockname (soc->socket_id,
    (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
     perror("getsockname");
+    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
   /* Ok */
   *p_port = ntohs(soc->rece_struct.sin_port);
+  UNLOCK;
   return (SOC_OK);
 }
  
@@ -1047,10 +1192,8 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
 /*  After success, the socket may be ready for a send to reply */
 /* No set_for_reply if tcp */
 /* Returned values: */
-/*  In tcp no header: */
-/*   - the length of bytes read, which the length of the message sent */
-/*     except in tcp (no header) where the length read my me anything */
-/*     from 0 to length */
+/*  In tcp no header non blocking: */
+/*   - the length of bytes read, which may be anything from 0 to length */
 /*   - SOC_READ_0: disconnection? */
 /*   - Error */
 /*  In others: */
@@ -1155,14 +1298,27 @@ extern int soc_receive (soc_token token,
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check set_for_reply and linked vs proto */
   if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    if (set_for_reply) return (SOC_REPLY_ERR);
-    if (soc->linked) return (SOC_LINK_ERR);
-    if (soc->connection != connected) return (SOC_CONN_ERR);
+    if (set_for_reply) {
+      UNLOCK;
+      return (SOC_REPLY_ERR);
+    }
+    if (soc->linked) {
+      UNLOCK;
+      return (SOC_LINK_ERR);
+    }
+    if (soc->connection != connected) {
+      UNLOCK;
+      return (SOC_CONN_ERR);
+    }
   } else {
-    if (!soc->linked) return (SOC_LINK_ERR);
+    if (!soc->linked) {
+      UNLOCK;
+      return (SOC_LINK_ERR);
+    }
   }
 
   /* Prepare for reply or not */
@@ -1186,22 +1342,26 @@ extern int soc_receive (soc_token token,
         /* Disconnect if invalid magic num */
         if (ntohl(header.magic_number) != MAGIC_NUMBER) {
           fprintf (stderr, "Bad magic number\n");
+          UNLOCK;
           return (SOC_CONN_LOST);
         }
         /* Header is read and correct. Save expected length */
         soc->expect_len = ntohl(header.size);
       } else {
+        UNLOCK;
         return (result);
       }
     }
 
     /* Got a header now? */
     if (soc->expect_len == 0) {
+      UNLOCK;
       return (SOC_WOULD_BLOCK);
     }
 
     /* Check length vs size */
     if (length < soc->expect_len) {
+      UNLOCK;
       return (SOC_LEN_ERR);
     }
     result = rec2(soc, (char *)message, soc->expect_len);
@@ -1210,10 +1370,12 @@ extern int soc_receive (soc_token token,
       /* Expect header next */
       soc->expect_len = 0;
     }
+    UNLOCK;
     return (result);
   }
 
   if (soc->proto == tcp_socket) {
+    UNLOCK;
     return (rec1(soc, (char *)message, length));
   }
   
@@ -1228,23 +1390,28 @@ extern int soc_receive (soc_token token,
       soc->dest_set = FALSE;
     }
     if (errno == EWOULDBLOCK) {
+      UNLOCK;
       return (SOC_WOULD_BLOCK);
     } else if ( (errno == EPIPE) 
              || (errno == ECONNRESET) 
              || (errno == ECONNREFUSED) ) {
+      UNLOCK;
       return (SOC_CONN_LOST);
     } else {
       /* Reception error */
       perror("recvfrom");
+      UNLOCK;
       return (SOC_SYS_ERR);
     }
   } else if (result == 0) {
+    UNLOCK;
     return (SOC_READ_0);
   } else {
     /* A message read */
     if (set_for_reply) {
       soc->dest_set = TRUE;
     }
+    UNLOCK;
     return (result);
 
   }
@@ -1267,15 +1434,23 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
 
   /* Check that new socket is not already open */
-  if (*p_soc != NULL) return (SOC_USE_ERR);
+  if (*p_soc != NULL) {
+    UNLOCK;
+    return (SOC_USE_ERR);
+  }
 
   /* Check tcp and linked */
   if ( (soc->proto != tcp_socket) && (soc->proto != tcp_header_socket) ) {
+    UNLOCK;
     return (SOC_PROTO_ERR);
   }
-  if (! soc->linked) return (SOC_LINK_ERR);
+  if (! soc->linked) {
+    UNLOCK;
+    return (SOC_LINK_ERR);
+  }
 
   /* Accept */
   do {
@@ -1285,12 +1460,14 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   /* Check result */
   if (fd < 0) {
     perror("accept");
+    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
   /* Init socket */
   result = soc_init(p_soc, fd, soc->proto);
   if (result != SOC_OK) {
+    UNLOCK;
     return (result);
   }
 
@@ -1300,6 +1477,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   (*p_soc)->connection = connected;
 
   /* Ok */
+  UNLOCK;
   return (SOC_OK);
 
 }
@@ -1312,15 +1490,19 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
 
   /* Check that socket is open and tcp */
   if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
   if ( (soc->proto != tcp_socket) && (soc->proto != tcp_header_socket) ) {
+    UNLOCK;
     return (SOC_PROTO_ERR);
   }
 
   if (soc->connection == connected) {
     *p_connected = TRUE;
+    UNLOCK;
     return (SOC_OK);
   } else if (soc->connection == not_connected) {
     *p_connected = FALSE;
+    UNLOCK;
     return (SOC_OK);
   }
 
@@ -1330,6 +1512,7 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   if (res == -1) {
     perror("getsockopt");
     soc->connection = not_connected;
+    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
@@ -1341,6 +1524,7 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
     *p_connected = FALSE;
   }
 
+  UNLOCK;
   return (SOC_OK);
 }
 

@@ -1,5 +1,8 @@
 #include <errno.h>
 
+#ifdef SOCKET_MUTEX
+#include "mutex.h"
+#endif
 #include "socket.h"
 #include "socket_net.h"
 
@@ -9,6 +12,9 @@ typedef enum {not_connected, connecting, connected} connect_state;
 
 /* Structure pointed by the token */
 typedef struct {
+#ifdef SOCKET_MUTEX
+        mutex_t         mutex;
+#endif
         socket_protocol proto;
         boolean         dest_set;
         boolean         linked;
