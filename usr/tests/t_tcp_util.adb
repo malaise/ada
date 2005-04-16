@@ -3,6 +3,8 @@ with Text_Handler, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
+  Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
+  -- Protocol : constant Socket.Protocol_List := Socket.Tcp_Header_Afux;
   Server : Boolean;
   Server_Name : Text_Handler.Text (80);
   Server_Port_Name : Text_Handler.Text (80);
@@ -125,7 +127,7 @@ procedure T_Tcp_Util is
   begin
     Host.Name (1 .. Text_Handler.Length(Server_Name))
          := Text_Handler.Value(Server_Name);
-    Result := Tcp_Util.Connect_To (Socket.Tcp_Header,
+    Result := Tcp_Util.Connect_To (Protocol,
                                    Host, Remote_Port,
                                    Delay_Try, Nb_Try,
                                    Connect_Cb'Unrestricted_Access);
@@ -297,10 +299,11 @@ begin
 
   -- Init
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
+  Give_Up := False;
   if Server then
     loop
       begin
-        Tcp_Util.Accept_From (Socket.Tcp_Header,
+        Tcp_Util.Accept_From (Protocol,
                               Local_Port,
                               Accept_Cb'Unrestricted_Access,
                               Accept_Dscr,
@@ -311,6 +314,7 @@ begin
           Ada.Text_Io.Put_Line ("Cannot accept. Maybe Close-wait. Waiting");
           Wait (20.0);
       end;
+      exit when Give_Up or else Sig;
     end loop;
   else
     Message.Num := 1;
@@ -320,12 +324,28 @@ begin
   end if;
 
   -- Main loop
-  Give_Up := False;
-  loop
-    Wait (1.0);
-    exit when Give_Up or else Sig;
-  end loop;
+  if not Give_Up and then not Sig then
+    loop
+      Wait (1.0);
+      exit when Give_Up or else Sig;
+    end loop;
+  end if;
 
+  begin
+    Tcp_Util.Abort_Accept(Server_Port_Num);
+  exception
+    when Tcp_Util.No_Such => null;
+  end;
+
+  if Socket.Is_Open (The_Dscr) then
+    if Event_Mng.Fd_Callback_Set (Socket.Fd_Of(The_Dscr), True) then
+      Event_Mng.Del_Fd_Callback (Socket.Fd_Of(The_Dscr), True);
+    end if;
+    if Event_Mng.Fd_Callback_Set (Socket.Fd_Of(The_Dscr), False) then
+      Event_Mng.Del_Fd_Callback (Socket.Fd_Of(The_Dscr), False);
+    end if;
+    Socket.Close (The_Dscr);
+  end if;
 exception
   when Arg_Error =>
     Ada.Text_Io.Put_Line ("Usage: "

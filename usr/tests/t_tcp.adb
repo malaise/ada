@@ -10,6 +10,8 @@ procedure T_Tcp is
   Soc, Accept_Soc : Socket.Socket_Dscr;
   Fd, Accept_Fd : Event_Mng.File_Desc := 0;
   Server_Port_Name : constant String := "test_tcp";
+  Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
+  -- Protocol : constant Socket.Protocol_List := Socket.Tcp_Header_Afux;
 
   -- Signal received
   Sig : Boolean := False;
@@ -89,11 +91,17 @@ procedure T_Tcp is
     My_Send (Soc, Message);
     My_Io.Put_Line ("      Reply sent");
     return False;
+  exception
+    when Socket.Soc_Conn_Lost =>
+      My_Io.Put_Line ("      Connection lost: Closing.");
+      Event_Mng.Del_Fd_Callback (Fd, True);
+      Socket.Close(Soc);
+      return False;
   end Call_Back;
 
   function Client_Connect return Boolean is
   begin
-    Socket.Open (Soc, Socket.Tcp_Header);
+    Socket.Open (Soc, Protocol);
     Fd := Socket.Fd_Of (Soc);
     My_Io.Put_Line ("Client connecting");
     begin
@@ -147,7 +155,7 @@ begin
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
   if Server then
     -- Create socket, add callback
-    Socket.Open (Accept_Soc, Socket.Tcp_Header);
+    Socket.Open (Accept_Soc, Protocol);
     loop
       begin
         Socket.Link_Service (Accept_Soc, Server_Port_Name);
@@ -182,8 +190,17 @@ begin
     end if;
   end loop Main;
 
-  if Event_Mng.Fd_Callback_Set (Fd, True) then
-    Event_Mng.Del_Fd_Callback (Fd, True);
+  if Socket.Is_Open (Accept_Soc) then
+    if Event_Mng.Fd_Callback_Set (Accept_Fd, True) then
+      Event_Mng.Del_Fd_Callback (Accept_Fd, True);
+    end if;
+    Socket.Close (Accept_Soc);
+  end if;
+
+  if Socket.Is_Open (Soc) then
+    if Event_Mng.Fd_Callback_Set (Fd, True) then
+      Event_Mng.Del_Fd_Callback (Fd, True);
+    end if;
     Socket.Close (Soc);
   end if;
 
