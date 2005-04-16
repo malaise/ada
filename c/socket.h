@@ -61,7 +61,8 @@
 #define word unsigned short int
 
 /* Protocols */
-typedef enum {udp_socket=0, tcp_socket=1, tcp_header_socket=2} socket_protocol;
+typedef enum {udp_socket=0, tcp_socket=1, tcp_header_socket=2,
+              tcp_afux_socket=3, tcp_header_afux_socket=4} socket_protocol;
 
 /* token socket : a pointer (abstract data type) */
 /* Has to be initialised to init_soc */

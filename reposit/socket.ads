@@ -7,7 +7,7 @@ package Socket is
   No_Socket : constant Socket_Dscr;
 
   -- Available protocols
-  type Protocol_List is (Udp, Tcp, Tcp_Header);
+  type Protocol_List is (Udp, Tcp, Tcp_Header, Tcp_Afux, Tcp_Header_Afux);
 
   -- Note for Multicast IP (using Udp socket):
   -- For sending IPM, simply Set_Destination to a LAN name
@@ -91,6 +91,7 @@ package Socket is
   -- May raise Soc_Addr_In_Use (socket may be in Close-Wait) wait a bit
   procedure Link_Service (Socket : in Socket_Dscr; Service  : in String);
   procedure Link_Port    (Socket : in Socket_Dscr; Port  : in Port_Num);
+  -- Link_Dynamic may raise Soc_Proto_Err if socket is afux
   procedure Link_Dynamic (Socket : in Socket_Dscr);
 
   -- Get port num to which socket is linked

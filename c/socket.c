@@ -9,6 +9,7 @@
 #include <errno.h>
 
 #include "socket_prv.h"
+#include "socket_afux.h"
 
 /* This is used to check, when closing a socket, that its fd is not */
 /*  set in wait_evt */
@@ -30,6 +31,7 @@ static int soc_init (soc_ptr *p_soc,
                      int fd,
                      socket_protocol protocol) {
   int allow_sockopt;
+  int bufsize_sockopt;
   int result;
 
   /* Check that socket is not already open */
@@ -50,8 +52,25 @@ static int soc_init (soc_ptr *p_soc,
   }
 #endif;
 
-  /* Save protocol and id */
-  (*p_soc)->proto = protocol;
+  /* Save protocol, tcp_kind, domain and id */
+  (*p_soc)->socket_kind = protocol;
+  if (protocol == udp_socket) {
+    (*p_soc)->protocol = udp_protocol;
+    (*p_soc)->tcp_kind = tcp_raw;
+    (*p_soc)->domain = unix_domain;
+  } else {
+    (*p_soc)->protocol = tcp_protocol;
+    if ( (protocol == tcp_socket) || (protocol == tcp_header_socket) ) {
+      (*p_soc)->domain = inet_domain;
+    } else {
+      (*p_soc)->domain = unix_domain;
+    }
+    if ( (protocol == tcp_socket) || (protocol == tcp_afux_socket) ) {
+      (*p_soc)->tcp_kind = tcp_raw;
+    } else {
+      (*p_soc)->tcp_kind = tcp_msg;
+    }
+  }
   (*p_soc)->socket_id = fd;
 
   /* Blocking operations as default */
@@ -62,9 +81,14 @@ static int soc_init (soc_ptr *p_soc,
   }
 
   /* Init structures */
-  (*p_soc)->send_struct.sin_family = AF_INET;
+  if ((*p_soc)->domain == inet_domain) {
+    (*p_soc)->send_struct.sin_family = AF_INET;
+    (*p_soc)->rece_struct.sin_family = AF_INET;
+  } else {
+    (*p_soc)->send_struct.sin_family = AF_UNIX;
+    (*p_soc)->rece_struct.sin_family = AF_UNIX;
+  }
   (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
-  (*p_soc)->rece_struct.sin_family = AF_INET;
   (*p_soc)->send_tail = NULL;
   (*p_soc)->send_len = 0;
   (*p_soc)->rece_head = NULL;
@@ -73,7 +97,7 @@ static int soc_init (soc_ptr *p_soc,
 
   /* Allow UDP broadcast */
   allow_sockopt = 1;
-  if (protocol == udp_socket) {
+  if ((*p_soc)->protocol == udp_protocol) {
     result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_BROADCAST,
                    &allow_sockopt, sizeof (allow_sockopt));
     if (result == -1) {
@@ -84,6 +108,31 @@ static int soc_init (soc_ptr *p_soc,
       return (SOC_SYS_ERR);
     }
   }
+
+  /* Increase buffer size if AFUNIX */
+  bufsize_sockopt = 96 * 1024;
+  if ((*p_soc)->domain == unix_domain) {
+    result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_RCVBUF,
+              &bufsize_sockopt, sizeof(bufsize_sockopt));
+    if (result == -1) {
+      perror("setsockopt(so_rcvbuf)");
+      close ((*p_soc)->socket_id);
+      free (*p_soc);
+      *p_soc = NULL;
+      return (SOC_SYS_ERR);
+    }
+    result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_SNDBUF,
+              &bufsize_sockopt, sizeof(bufsize_sockopt));
+    if (result == -1) {
+      perror("setsockopt(so_sndbuf)");
+      close ((*p_soc)->socket_id);
+      free (*p_soc);
+      *p_soc = NULL;
+      return (SOC_SYS_ERR);
+    }
+  }
+
+  
 
   /* Allow UDP broadcast or TCP ReuseAddr */
   result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEADDR,
@@ -127,6 +176,9 @@ extern int soc_open (soc_token *p_token,
   /* Call to socket */
   if (protocol == udp_socket) {
     fd = socket(AF_INET, SOCK_DGRAM, 0);
+  } else if ( (protocol == tcp_afux_socket)
+           || (protocol == tcp_header_afux_socket) )  {
+    fd = socket(AF_UNIX, SOCK_STREAM, 0);
   } else {
     fd = socket(AF_INET, SOCK_STREAM, 0);
   }
@@ -159,6 +211,12 @@ extern int soc_close (soc_token *p_token) {
 #endif
  
   close ((*p_soc)->socket_id);
+  /* Remove file if linked on tcp afux */
+  if ( ((*p_soc)->protocol == tcp_protocol)
+    && ((*p_soc)->domain == unix_domain)
+    && ((*p_soc)->linked) ) {
+    sun_delete( (struct sockaddr*)&(*p_soc)->rece_struct);
+  }
   free (*p_soc);
   *p_soc = NULL;
   return (SOC_OK);
@@ -244,11 +302,17 @@ static int soc_connect (soc_ptr soc) {
   }
 
   /* Connect */
-  do {
-    result = connect (soc->socket_id,
-                      (struct sockaddr*)&(soc->send_struct),
-                      socklen);
-  } while ( (result < 0) && (errno == EINTR) );
+  if (soc->domain == inet_domain) {
+    do {
+      result = connect (soc->socket_id,
+                        (struct sockaddr*)&(soc->send_struct),
+                        socklen);
+    } while ( (result < 0) && (errno == EINTR) );
+  } else {
+    result = sun_connect (soc->socket_id,
+                          (struct sockaddr*)&(soc->send_struct),
+                          socklen);
+  }
 
   /* Check result */
   if (result < 0) {
@@ -290,7 +354,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
@@ -301,7 +365,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   }
 
   /* Read port num */
-  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -316,7 +380,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
      (void *) host_name->h_addr, (size_t) host_name->h_length);
   } else {
     /* No tcp bcast */
-    if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    if (soc->protocol == tcp_protocol) {
       UNLOCK;
       return (SOC_BCAST_ERR);
     }
@@ -333,7 +397,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
 
   /* Connect tcp */
   soc->dest_set = TRUE;
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     res = soc_connect (soc);
     UNLOCK;
     return (res);
@@ -359,7 +423,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
@@ -379,7 +443,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
      (void *) host_name->h_addr, (size_t) host_name->h_length);
   } else {
     /* No tcp bcast */
-    if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+    if (soc->protocol == tcp_protocol) {
       UNLOCK;
       return (SOC_BCAST_ERR);
     }
@@ -396,7 +460,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
 
   /* Connect tcp */
   soc->dest_set = TRUE;
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     res = soc_connect (soc);
     UNLOCK;
     return (res);
@@ -418,7 +482,7 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
@@ -429,7 +493,7 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   }
 
   /* Read port num */
-  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -439,7 +503,7 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
 
   /* Connect tcp */
   soc->dest_set = TRUE;
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     res = soc_connect (soc);
     UNLOCK;
     return (res);
@@ -460,7 +524,7 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
@@ -475,7 +539,7 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
 
   /* Connect tcp */
   soc->dest_set = TRUE;
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     res = soc_connect (soc);
     UNLOCK;
     return (res);
@@ -499,7 +563,7 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
   LOCK;
 
   /* Check not tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
@@ -538,7 +602,7 @@ extern int soc_change_dest_host (soc_token token, const soc_host *host) {
   LOCK;
 
   /* Check not tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
@@ -566,7 +630,7 @@ extern int soc_change_dest_service (soc_token token, const char *service) {
   LOCK;
 
   /* Check not tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
@@ -578,7 +642,7 @@ extern int soc_change_dest_service (soc_token token, const char *service) {
   }
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -600,7 +664,7 @@ extern int soc_change_dest_port (soc_token token, soc_port port) {
   LOCK;
 
   /* Check not tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
@@ -818,8 +882,7 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
   }
 
   /* Connected if tcp */
-  if ( ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) )
-    && (soc->connection != connected) ) {
+  if ( (soc->protocol == tcp_protocol) && (soc->connection != connected) ) {
     return (SOC_CONN_ERR);
   }
 
@@ -830,7 +893,7 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
 
   if (soc->send_tail == NULL) {
     /* No previous overflow */
-    if (soc->proto == tcp_header_socket) {
+    if ( (soc->protocol == tcp_protocol) && (soc->tcp_kind == tcp_msg) ) {
       /* Fill tcp header and vector */
       header.magic_number = htonl(MAGIC_NUMBER);
       header.size = htonl(length);
@@ -846,7 +909,7 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
     }
   } else {
     /* Previous overflow: send tail */
-    if (soc->proto == tcp_header_socket) {
+    if ( (soc->protocol == tcp_protocol) && (soc->tcp_kind == tcp_msg) ) {
       vector[0].iov_base = soc->send_tail;
       vector[0].iov_len = soc->send_len;
       vector_len = 1;
@@ -859,11 +922,16 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
 
   /* Send */
   do {
-    if (soc->proto == tcp_header_socket) {
-      cr = writev(soc->socket_id, vector, vector_len);
-    } else if (soc->proto == tcp_socket) {
-      cr = send(soc->socket_id, msg2send, len2send, 0);
+    if (soc->protocol == tcp_protocol) {
+      if (soc->tcp_kind == tcp_msg) {
+        /* Tcp header */
+        cr = writev(soc->socket_id, vector, vector_len);
+      } else {
+        /* Tcp raw */
+        cr = send(soc->socket_id, msg2send, len2send, 0);
+      }
     } else {
+      /* Udp */
       cr = sendto(soc->socket_id, msg2send, len2send, 0,
        (struct sockaddr*) &(soc->send_struct), socklen);
     }
@@ -898,7 +966,7 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
   } else if (soc->blocking) {
     /* Not blocked despite blocking */
     return (SOC_CONN_LOST);
-  } else if ((cr == 0) && (soc->proto == udp_socket) ) {
+  } else if ((cr == 0) && (soc->protocol == udp_protocol) ) {
     /* Udp */
     return (SOC_WOULD_BLOCK);
   } else {
@@ -909,7 +977,8 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
       perror("malloc(len2send)");
       return (SOC_SYS_ERR);
     }
-    if ( (soc->proto == tcp_header_socket)
+    if ( (soc->protocol == tcp_protocol)
+      && (soc->tcp_kind == tcp_msg)
       && (soc->send_tail == NULL)
       && (cr < sizeof(header)) ) {
 
@@ -921,7 +990,7 @@ static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
     } else if (soc->send_tail == NULL) {
       /* First send of vector but either header sent or no header */
       /* Save rest of message */
-      if (soc->proto == tcp_header_socket) {
+      if ( (soc->protocol == tcp_protocol) && (soc->tcp_kind == tcp_msg) ) {
         /* Cr = header + nbmessage. Start at cr - header */
         cr -= sizeof(header);
       }
@@ -1008,8 +1077,14 @@ static int bind_and_co (soc_token token, boolean dynamic) {
   boolean do_ipm;
 
   /* Bind */
-  if (bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
-            socklen ) < 0) {
+  if ( (soc->protocol == tcp_protocol) && (soc->domain == unix_domain) ) {
+    res = sun_bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
+                    socklen);
+  } else {
+    res  = bind (soc->socket_id, (struct sockaddr*) &(soc->rece_struct),
+                 socklen);
+  }
+  if (res < 0) {
     if (errno == EADDRINUSE) {
       return (SOC_ADDR_IN_USE);
     } else {
@@ -1018,7 +1093,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
     }
   }
 
-  /* Set linked port */
+  /* Set linked port (for the case of link dynamic) */
   soc->linked = TRUE;
   res = soc_get_linked_port (token, &linked_port);
   soc->linked = FALSE;
@@ -1027,7 +1102,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
   }
 
   /* Listen for tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (listen (soc->socket_id, SOMAXCONN) < 0) {
       perror("listen");
       return (SOC_SYS_ERR);
@@ -1037,7 +1112,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
 
   /* Ipm if udp, dest_set with an ipm adress */
   /*  and same port (if not dynamic) */
-  do_ipm =  ( (soc->proto == udp_socket)
+  do_ipm =  ( (soc->protocol == udp_protocol)
            && (soc->dest_set) 
            && (is_ipm(& soc->send_struct) )
            && ( dynamic || (soc->send_struct.sin_port
@@ -1072,7 +1147,7 @@ extern int soc_link_service (soc_token token, const char *service) {
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
@@ -1083,7 +1158,7 @@ extern int soc_link_service (soc_token token, const char *service) {
   }
 
   /* Read IP adress of port */
-  if ((serv_name = getservbyname(service, ns_proto[soc->proto]))== NULL) {
+  if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -1108,7 +1183,7 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
@@ -1138,10 +1213,15 @@ extern int soc_link_dynamic  (soc_token token) {
   LOCK;
 
   /* Not linked nor already connected if tcp */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
-    if (soc->linked) {
-      return (SOC_LINK_ERR);
+  if (soc->protocol == tcp_protocol) {
+    if (soc->domain == unix_domain) {
+      /* No dynamic port in tcp afux */
       UNLOCK;
+      return (SOC_PROTO_ERR);
+    }
+    if (soc->linked) {
+      UNLOCK;
+      return (SOC_LINK_ERR);
     } else if (soc->connection != not_connected) {
       UNLOCK;
       return (SOC_CONN_ERR);
@@ -1172,12 +1252,16 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
     return (SOC_LINK_ERR);
   }
 
-  /* Get the structure */
-  if (getsockname (soc->socket_id,
-   (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
-    perror("getsockname");
-    UNLOCK;
-    return (SOC_SYS_ERR);
+  /* Get the structure. Not for tcp afux because: */
+  /* - not needed because dynamic is forbidden on afux */
+  /* - this would overwrite the correct port */
+  if ( (soc->protocol != tcp_protocol) || (soc->domain != unix_domain)) {
+    if (getsockname (soc->socket_id,
+     (struct sockaddr*) (&soc->rece_struct), &len) < 0) {
+      perror("getsockname");
+      UNLOCK;
+      return (SOC_SYS_ERR);
+    }
   }
 
   /* Ok */
@@ -1251,7 +1335,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
     return (SOC_OK);
   } else {
     /* Underflow */
-    if (soc->proto == tcp_socket) {
+    if ( (soc->protocol == tcp_protocol) && (soc->tcp_kind == tcp_raw) ) {
       /* Not managed in tcp no header */
       return (res);
     }
@@ -1301,7 +1385,7 @@ extern int soc_receive (soc_token token,
   LOCK;
 
   /* Check set_for_reply and linked vs proto */
-  if ( (soc->proto == tcp_socket) || (soc->proto == tcp_header_socket) ) {
+  if (soc->protocol == tcp_protocol) {
     if (set_for_reply) {
       UNLOCK;
       return (SOC_REPLY_ERR);
@@ -1333,53 +1417,55 @@ extern int soc_receive (soc_token token,
   }
 
   /* Receive */
-  if (soc->proto == tcp_header_socket) {
-    /* Read header or data */
-    if (soc->expect_len == 0) {
-      /* Header not fully received yet */
-      result = rec2(soc, (char *)&header, sizeof(header));
-      if (result == SOC_OK) {
-        /* Disconnect if invalid magic num */
-        if (ntohl(header.magic_number) != MAGIC_NUMBER) {
-          fprintf (stderr, "Bad magic number\n");
+  if (soc->protocol == tcp_protocol) {
+    if (soc->tcp_kind == tcp_msg) {
+      /* Read header or data */
+      if (soc->expect_len == 0) {
+        /* Header not fully received yet */
+        result = rec2(soc, (char *)&header, sizeof(header));
+        if (result == SOC_OK) {
+          /* Disconnect if invalid magic num */
+          if (ntohl(header.magic_number) != MAGIC_NUMBER) {
+            fprintf (stderr, "Bad magic number\n");
+            UNLOCK;
+            return (SOC_CONN_LOST);
+          }
+          /* Header is read and correct. Save expected length */
+          soc->expect_len = ntohl(header.size);
+        } else {
           UNLOCK;
-          return (SOC_CONN_LOST);
+          return (result);
         }
-        /* Header is read and correct. Save expected length */
-        soc->expect_len = ntohl(header.size);
-      } else {
-        UNLOCK;
-        return (result);
       }
-    }
 
-    /* Got a header now? */
-    if (soc->expect_len == 0) {
-      UNLOCK;
-      return (SOC_WOULD_BLOCK);
-    }
+      /* Got a header now? */
+      if (soc->expect_len == 0) {
+        UNLOCK;
+        return (SOC_WOULD_BLOCK);
+      }
 
-    /* Check length vs size */
-    if (length < soc->expect_len) {
+      /* Check length vs size */
+      if (length < soc->expect_len) {
+        UNLOCK;
+        return (SOC_LEN_ERR);
+      }
+      result = rec2(soc, (char *)message, soc->expect_len);
+      if (result == SOC_OK) {
+        result = soc->expect_len;
+        /* Expect header next */
+        soc->expect_len = 0;
+      }
       UNLOCK;
-      return (SOC_LEN_ERR);
+      return (result);
+    } else {
+      /* Tcp raw */
+      result = rec1(soc, (char *)message, length);
+      UNLOCK;
+      return (result);
     }
-    result = rec2(soc, (char *)message, soc->expect_len);
-    if (result == SOC_OK) {
-      result = soc->expect_len;
-      /* Expect header next */
-      soc->expect_len = 0;
-    }
-    UNLOCK;
-    return (result);
   }
 
-  if (soc->proto == tcp_socket) {
-    UNLOCK;
-    return (rec1(soc, (char *)message, length));
-  }
-  
-
+  /* Udp */
   do {
     result = recvfrom(soc->socket_id, (char *)message, 
        length, 0, (struct sockaddr*) from_addr, &addr_len);
@@ -1443,7 +1529,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   }
 
   /* Check tcp and linked */
-  if ( (soc->proto != tcp_socket) && (soc->proto != tcp_header_socket) ) {
+  if (soc->protocol != tcp_protocol) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
@@ -1453,9 +1539,13 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   }
 
   /* Accept */
-  do {
-    fd = accept (soc->socket_id, &from_addr, &len);
-  } while ( (fd == -1) && (errno == EINTR) );
+  if (soc->domain == inet_domain) {
+    do {
+      fd = accept (soc->socket_id, &from_addr, &len);
+    } while ( (fd == -1) && (errno == EINTR) );
+  } else {
+    fd = sun_accept (soc->socket_id, &from_addr, &len);
+  }
 
   /* Check result */
   if (fd < 0) {
@@ -1464,8 +1554,8 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
     return (SOC_SYS_ERR);
   }
 
-  /* Init socket */
-  result = soc_init(p_soc, fd, soc->proto);
+  /* Init socket of same kind */
+  result = soc_init(p_soc, fd, soc->socket_kind);
   if (result != SOC_OK) {
     UNLOCK;
     return (result);
@@ -1491,7 +1581,7 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   /* Check that socket is open and tcp */
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
-  if ( (soc->proto != tcp_socket) && (soc->proto != tcp_header_socket) ) {
+  if (soc->protocol != tcp_protocol) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }

@@ -4,7 +4,7 @@ LIBS := libcndbm libcutil libx_mng
 EXES := test_x
 
 OBJS_libcndbm := cndbm.o
-OBJS_libcutil := timeval.o sys_calls.o wait_evt.o socket.o
+OBJS_libcutil := timeval.o sys_calls.o wait_evt.o socket.o socket_afux.o
 OBJS_libx_mng := x_color.o x_font.o x_line.o\
 	x_export.o x_file.o x_key.o x_screen.o
 
@@ -20,7 +20,11 @@ include $(TEMPLATES)/c.mk
 
 cndbm.c : cndbm.h
 
-socket.c : socket_prv.h wait_evt.h
+socket.c : socket_prv.h wait_evt.h socket_afux.h
+socket_afux.c : socket_afux.h
+socket_afux.h : socket_net.h
+socket_prv.h : socket.h socket_net.h
+
 wait_evt.c : wait_evt.h
 sys_calls.c : sys_calls.h
 timeval.c : timeval.h

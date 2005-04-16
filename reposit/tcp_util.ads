@@ -9,7 +9,7 @@ package Tcp_Util is
   -- PROTOCOL DEFINITION --
   -------------------------
   subtype Tcp_Protocol_List is Socket.Protocol_List range
-                               Socket.Tcp .. Socket.Tcp_Header;
+                               Socket.Tcp .. Socket.Tcp_Header_Afux;
 
   -- PORT DEFINITION --
   ---------------------
