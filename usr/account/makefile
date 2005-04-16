@@ -4,11 +4,8 @@ ADAVIEW := $(REPOSIT)
 AFPX := true
 EXES := account import export account.stat
 
-CLIBS_account := x_mng cutil X11
-
-CLIBS_import := cutil
-
-CLIBS_export := cutil
+CLIBS := cutil
+CLIBS_account := x_mng X11
 
 TPATH := $(CPATH:%=%/$(LIB))
 LARGS_account.stat := $(TPATH)/libx_mng.a $(TPATH)/libcutil.a -lX11
