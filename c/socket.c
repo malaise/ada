@@ -799,7 +799,10 @@ extern int soc_host_of (const char *host_name, soc_host *p_host) {
   return (SOC_OK);
 }
 
-static const char *proto_name[3] = {"udp", "tcp", "tcp"};
+static protocol_list protocol_of (socket_protocol proto) {
+  if (proto == udp_socket) return udp_protocol;
+  else return tcp_protocol;
+}
 
 /* Find name of soc_port and vice versa */
 extern int soc_port_name_of (const soc_port port,
@@ -810,7 +813,7 @@ extern int soc_port_name_of (const soc_port port,
   struct servent *port_struct;
 
   /* Read name of port */
-  port_struct = getservbyport((int)port, proto_name[proto]);
+  port_struct = getservbyport((int)port, ns_proto[protocol_of(proto)]);
   if (port_struct == (struct servent *)NULL) {
     return (SOC_NAME_NOT_FOUND);
   }
@@ -831,7 +834,7 @@ extern int soc_port_of (const char *port_name,
   struct servent *port_struct;
 
   /* Read  num of port */
-  port_struct = getservbyname(port_name, proto_name[proto]);
+  port_struct = getservbyname(port_name, ns_proto[protocol_of(proto)]);
   if (port_struct == (struct servent *)NULL) {
     return (SOC_NAME_NOT_FOUND);
   }
