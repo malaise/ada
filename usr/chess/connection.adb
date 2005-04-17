@@ -131,7 +131,7 @@ package body Connection is
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Accept callback");
     end if;
-    Tcp_Util.Abort_Accept (Local_Port_Num);
+    Tcp_Util.Abort_Accept (Socket.Tcp_Header, Local_Port_Num);
     Soc := New_Dscr;
     Fd := Socket.Fd_Of (Soc);
     Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'Access);
