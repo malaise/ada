@@ -202,6 +202,7 @@ package body Client_Mng is
     Port : Tcp_Util.Local_Port;
     Port_Name : constant String := Args.Get_Client_Port;
     Dscr : Socket.Socket_Dscr;
+    Dscr_Afux : Socket.Socket_Dscr;
   begin
     if Init then
       return;
@@ -212,6 +213,8 @@ package body Client_Mng is
     Port.Name(1 .. Port_Name'Length) := Port_Name;
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'Access,
                           Dscr, Accept_Port);
+    Tcp_Util.Accept_From (Socket.Tcp_Header_Afux, Port, Accept_Cb'Access,
+                          Dscr_Afux, Accept_Port);
     Set_Delay;
     Init := True;
   end Start;
@@ -229,7 +232,8 @@ package body Client_Mng is
     -- Delete all notify
     Notify.Del_All;
     -- Abort accept and close all client sockets
-    Tcp_Util.Abort_Accept (Accept_Port);
+    Tcp_Util.Abort_Accept (Socket.Tcp_Header, Accept_Port);
+    Tcp_Util.Abort_Accept (Socket.Tcp_Header_Afux, Accept_Port);
     Client_Fd.Del_All;
   end Quit;
 

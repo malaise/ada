@@ -5,10 +5,12 @@ package body Dictio_Lib is
 
   Dictio_Env_Host : constant String := "DICTIO_HOST";
   Dictio_Env_Port : constant String := "DICTIO_PORT";
-  Default_Host :  constant String := "localhost";
+  Local_Host_Name :  constant String := "localhost";
+  Default_Host :  constant String := Local_Host_Name;
   Default_Port :  constant String := "dictio";
   Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
   Port : Tcp_Util.Remote_Port(Tcp_Util.Port_Name_Spec);
+  Protocol : Socket.Protocol_List := Socket.Tcp_Header;
 
   Dictio_Dscr : Socket.Socket_Dscr := Socket.No_Socket;
   Dictio_State : Dictio_State_List := Unavailable;
@@ -185,7 +187,7 @@ package body Dictio_Lib is
   procedure Connect_To_Dictio is
     Connected : Boolean;
   begin
-    Connected := Tcp_Util.Connect_To (Socket.Tcp_Header,
+    Connected := Tcp_Util.Connect_To (Protocol,
                                       Host, Port, 1.0, 0,
                                       Connection_Cb'Access);
   exception
@@ -224,9 +226,10 @@ package body Dictio_Lib is
   Init_Done : Boolean := False;
 
   procedure Init is
+    Local_Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
     Env_Len : Natural;
     Expiration : Ada.Calendar.Time;
-    use type Event_Mng.Out_Event_List, Ada.Calendar.Time;
+    use type Event_Mng.Out_Event_List, Ada.Calendar.Time, Tcp_Util.Remote_Host;
   begin
     if Init_Done then
       return;
@@ -237,15 +240,22 @@ package body Dictio_Lib is
     -- Getenv host and port
     Host.Name := (others => ' ');
     Host.Name (1 .. Default_Host'Length) := Default_Host;
-    Env_Len := Default_Host'Length;
+    Env_Len := Host.Name'Length;
     Environ.Get_Str (Dictio_Env_Host, Host.Name, Env_Len);
     for I in Env_Len + 1 .. Host.Name'Last loop
       Host.Name(I) := ' ';
     end loop;
+    Local_Host.Name := (others => ' ');
+    Local_Host.Name(1 .. Local_Host_Name'Length) := Local_Host_Name;
+    if Host = Local_Host then
+      Protocol := Socket.Tcp_Header_Afux;
+    else
+      Protocol := Socket.Tcp_Header;
+    end if;
 
     Port.Name := (others => ' ');
     Port.Name (1 .. Default_Port'Length) := Default_Port;
-    Env_Len := Default_Port'Length;
+    Env_Len := Port.Name'Length;
     Environ.Get_Str (Dictio_Env_Port, Port.Name, Env_Len);
     for I in Env_Len + 1 .. Port.Name'Last loop
       Port.Name(I) := ' ';
