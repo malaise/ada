@@ -81,12 +81,13 @@ static int soc_init (soc_ptr *p_soc,
   }
 
   /* Init structures */
-  if ((*p_soc)->domain == inet_domain) {
-    (*p_soc)->send_struct.sin_family = AF_INET;
-    (*p_soc)->rece_struct.sin_family = AF_INET;
-  } else {
+  if ( ((*p_soc)->protocol == tcp_protocol)
+    && ((*p_soc)->domain == unix_domain) ) {
     (*p_soc)->send_struct.sin_family = AF_UNIX;
     (*p_soc)->rece_struct.sin_family = AF_UNIX;
+  } else {
+    (*p_soc)->send_struct.sin_family = AF_INET;
+    (*p_soc)->rece_struct.sin_family = AF_INET;
   }
   (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
   (*p_soc)->send_tail = NULL;
