@@ -404,7 +404,7 @@ package body Fifos is
                 Call_Cb;
             end case;
           when Accepting =>
-            Tcp_Util.Abort_Accept (Fifo.Port.Num);
+            Tcp_Util.Abort_Accept (Socket.Tcp_Header, Fifo.Port.Num);
           when Accepted =>
             Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
             Close_Socket (Fifo.Dscr);
