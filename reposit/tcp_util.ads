@@ -134,9 +134,9 @@ package Tcp_Util is
                          Dscr         : in out Socket.Socket_Dscr;
                          Num          : out Port_Num);
 
-  -- Abort further accepts on port.
+  -- Abort further accepts on port (Af_inet and Af_unix may be on the same port).
   -- May raise No_Such
-  procedure Abort_Accept (Num : in Port_Num);
+  procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num);
 
 
   -- SEND PROCEDURES --

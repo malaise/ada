@@ -569,10 +569,11 @@ package body Tcp_Util is
 
   -- Accepting connection
   type Accepting_Rec is record
-    Port : Port_Num;
-    Cb   : Acception_Callback_Access;
-    Dscr : Socket.Socket_Dscr;
-    Fd   : Event_Mng.File_Desc;
+    Protocol : Tcp_Protocol_List;
+    Port     : Port_Num;
+    Cb       : Acception_Callback_Access;
+    Dscr     : Socket.Socket_Dscr;
+    Fd       : Event_Mng.File_Desc;
   end record;
   package Acc_Dyn_List_Mng is new Dynamic_List (Accepting_Rec);
   package Acc_List_Mng renames Acc_Dyn_List_Mng.Dyn_List;
@@ -588,9 +589,9 @@ package body Tcp_Util is
 
   --  Search Accepting_Rec by Port_Num
   function Port_Match (R1, R2 : Accepting_Rec) return Boolean is
-    use type Socket.Port_Num;
+    use type Socket.Protocol_List, Socket.Port_Num;
   begin
-    return R1.Port = R2.Port;
+    return R1.Protocol = R2.Protocol and then R1.Port = R2.Port;
   end Port_Match;
   procedure Find_By_Port is new Acc_List_Mng.Search (Port_Match);
 
@@ -653,6 +654,7 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Accept_From start");
     end if;
     -- Initialise Rec
+    Rec.Protocol := Protocol;
     Rec.Port := 0;
     Rec.Cb := Acception_Cb;
     Rec.Dscr := Socket.No_Socket;
@@ -697,7 +699,7 @@ package body Tcp_Util is
 
   -- Abort further accepts on port
   -- May raise No_Such
-  procedure Abort_Accept (Num : in Port_Num) is
+  procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num) is
     Rec : Accepting_Rec;
     Ok : Boolean;
   begin
@@ -705,6 +707,7 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept start");
     end if;
     -- Find rec and read
+    Rec.Protocol := Protocol;
     Rec.Port := Num;
     Find_By_Port (Acc_List, Ok, Rec, From => Acc_List_Mng.Absolute);
     if not Ok then
