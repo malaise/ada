@@ -332,7 +332,7 @@ begin
   end if;
 
   begin
-    Tcp_Util.Abort_Accept(Server_Port_Num);
+    Tcp_Util.Abort_Accept(Protocol, Server_Port_Num);
   exception
     when Tcp_Util.No_Such => null;
   end;

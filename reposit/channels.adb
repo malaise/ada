@@ -354,7 +354,7 @@ package body Channels is
       end if;
 
       -- Abort accept
-      Tcp_Util.Abort_Accept (Channel_Dscr.Accept_Num);
+      Tcp_Util.Abort_Accept (Socket.Tcp_Header, Channel_Dscr.Accept_Num);
       Channel_Dscr.Accept_Num := 0;
 
       -- Close all connections
