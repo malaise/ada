@@ -1553,6 +1553,14 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 
   /* Check result */
   if (fd < 0) {
+    /* Accept may be blocking. Also Linux propagates pending netrwork errors */
+    if ( (errno == EAGAIN) || (errno == EWOULDBLOCK)  || (errno ==  ENETDOWN)
+      || (errno == EPROTO) || (errno == ENOPROTOOPT)  || (errno == EHOSTDOWN)
+      || (errno == ENONET) || (errno == EHOSTUNREACH) || (errno == EOPNOTSUPP)
+      || (errno == ENETUNREACH) ) {
+      return SOC_WOULD_BLOCK;
+    }
+
     perror("accept");
     UNLOCK;
     return (SOC_SYS_ERR);
