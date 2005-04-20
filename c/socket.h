@@ -218,6 +218,8 @@ extern int soc_receive (soc_token token,
 /* Accept a connection. */
 /* The socket must be open, tcp or tcp_header and linked */
 /* A new socket is created (tcp or tcp_header, same as token) with dest set */
+/* May return SOC_WOULD_BLOCK (either in blocking OR non blocking) if no    */
+/*  valid connection to accept. Go back to wait. */
 extern int soc_accept (soc_token token, soc_token *p_token);
 
 /* Is a tcp socket connected following a soc_set_... or a soc_accept */
