@@ -49,10 +49,18 @@ procedure T_Tcp is
         begin
           Socket.Accept_Connection (Accept_Soc, Tmp_Soc);
           Socket.Close (Tmp_Soc);
+        exception
+          when Socket.Soc_Would_Block =>
+            null;
         end;
         return False;
       end if;
-      Socket.Accept_Connection (Accept_Soc, Soc);
+      begin
+        Socket.Accept_Connection (Accept_Soc, Soc);
+      exception
+        when Socket.Soc_Would_Block =>
+          return False;
+      end;
       Fd := Socket.Fd_Of (Soc);
       Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
       My_Io.Put_Line ("accepts connection");

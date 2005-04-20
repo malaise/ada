@@ -103,6 +103,7 @@ package Socket is
   -- A new socket is open (tcp) with destination set, blocking
   -- May raise Soc_Proto_Err if socket is not tcp
   -- May raise Soc_Link_Err if socket is not linked
+  -- May raise Soc_Would_Block if no more valid connection to accept
   procedure Accept_Connection (Socket : in Socket_Dscr;
                                New_Socket : in out Socket_Dscr);
 

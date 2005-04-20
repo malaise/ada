@@ -617,7 +617,16 @@ package body Tcp_Util is
     end if;
 
     -- Accept
-    Socket.Accept_Connection (Rec.Dscr, New_Dscr);
+    begin
+      Socket.Accept_Connection (Rec.Dscr, New_Dscr);
+    exception
+      when Socket.Soc_Would_Block =>
+        -- Connection is not avlid any more: discard
+        if Debug_Accept then
+          My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb accept would block");
+        end if;
+        return False;
+    end;
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb connection accepted");
     end if;
