@@ -61,7 +61,7 @@ begin
     declare
       R : Float := Float(I) / (10.0 ** (L-Len+1) );
       I : Integer := Integer(Round (R));
-      Imi : constant string := Integer'Image(I);
+      Imi : constant String := Integer'Image(I);
       Fi : Natural := 1;
       Li : Natural := Imi'Last;
     begin
