@@ -72,6 +72,7 @@ extern int sun_connect(int  fd, const struct sockaddr *addr, socklen_t addrlen) 
       errno = ECONNREFUSED;
     }
   }
+  return res;
 }
 
 /* Remove afux socket file */
