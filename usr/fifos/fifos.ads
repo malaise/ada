@@ -102,6 +102,7 @@ package Fifos is
       Name : String (1 .. Max_Fifo_Name_Len);
       Len  : Positive;
       Dscr  : Socket.Socket_Dscr;
+      Afux_Dscr :  Socket.Socket_Dscr; -- Afux_Socket for Accepting.
       State : Fifo_State_List;
       Host : Tcp_Util.Remote_Host;
       Port : Tcp_Util.Remote_Port;

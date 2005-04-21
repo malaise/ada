@@ -6,6 +6,8 @@ package body Fifos is
   -------------------------------------------------------------------------
   -- COMMON
   -------------------------------------------------------------------------
+
+  -- These are the natural host name and id
   Local_Host_Name : constant String := Socket.Local_Host_Name;
   Local_Host_Id : constant Tcp_Util.Host_Id := Socket.Local_Host_Id;
 
@@ -203,11 +205,17 @@ package body Fifos is
 
       package Fifo_Reception is new Tcp_Util.Reception (Message_Type);
 
-      procedure Close_Socket (Dscr : in out Socket.Socket_Dscr) is
+      procedure Close_Socket (Dscr : in out Socket.Socket_Dscr;
+                              May_Be_Sending : Boolean) is
       begin
-        Tcp_Util.Abort_Send_And_Close (Dscr);
+        if May_Be_Sending then
+          Tcp_Util.Abort_Send_And_Close (Dscr);
+        else
+          Socket.Close (Dscr);
+        end if;
       exception
         when Tcp_Util.No_Such =>
+          -- May_Be_Sending but was not
           Socket.Close (Dscr);
       end Close_Socket;
 
@@ -283,7 +291,7 @@ package body Fifos is
         -- Get accepting rec
         if not List.Search_By_Port (Accepting, Local_Port_Num) then
           Tmp_Dscr := New_Dscr;
-          Close_Socket (Tmp_Dscr);
+          Close_Socket (Tmp_Dscr, False);
           Assertion.Assert (False, "acception on unknown fifo");
           return;
         end if;
@@ -365,14 +373,22 @@ package body Fifos is
 
       procedure Connect (Fifo : in Fifo_Access) is
         Result : Boolean;
+        Protocol : Socket.Protocol_List;
+        use type Socket.Host_Id, Tcp_Util.Remote_Host_List;
       begin
         if Fifo.Kind /= Connect then
           Assertion.Assert (False, "connecting a fifo of kind "
                           & Fifo.Kind'Img);
           return;
         end if;
+        if Fifo.Host.Kind = Tcp_Util.Host_Id_Spec
+        and then Fifo.Host.Id = Local_Host_Id then
+          Protocol := Socket.Tcp_Header_Afux;
+        else
+          Protocol := Socket.Tcp_Header;
+        end if;
         Result := Tcp_Util.Connect_To (
-                       Socket.Tcp_Header, 
+                       Protocol,
                        Fifo.Host, Fifo.Port,
                        Delta_Retry => 3.0,
                        Nb_Tries    => 3,
@@ -390,6 +406,7 @@ package body Fifos is
             Fifo.Conn_Cb (Fifo.Name(1 .. Fifo.Len), (Acc => Fifo), False);
           end if;
         end Call_Cb;
+        use type Socket.Socket_Dscr;
       begin
         case Fifo.Kind is
           when Connect =>
@@ -400,14 +417,15 @@ package body Fifos is
                 Tcp_Util.Abort_Connect (Fifo.Host, Fifo.Port);
               when Connected =>
                 Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
-                Close_Socket (Fifo.Dscr);
+                Close_Socket (Fifo.Dscr, True);
                 Call_Cb;
             end case;
           when Accepting =>
             Tcp_Util.Abort_Accept (Socket.Tcp_Header, Fifo.Port.Num);
+            Tcp_Util.Abort_Accept (Socket.Tcp_Header_Afux, Fifo.Port.Num);
           when Accepted =>
             Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
-            Close_Socket (Fifo.Dscr);
+            Close_Socket (Fifo.Dscr, True);
             Call_Cb;
         end case;
       end Close;
@@ -427,11 +445,19 @@ package body Fifos is
           when Socket.Soc_Name_Not_Found =>
             Port := (Kind => Tcp_Util.Port_Dynamic_Spec);
         end;
-
+        -- Accept from Tcp Inet and afux
         Tcp_Util.Accept_From (Socket.Tcp_Header,
                               Port,
                               Acception_Cb'Unrestricted_Access,
                               Fifo.Dscr,
+                              Port_Num);
+        -- Link Afux on same port
+        Port := (Kind => Tcp_Util.Port_Num_Spec,
+                   Num  => Port_Num);
+        Tcp_Util.Accept_From (Socket.Tcp_Header_Afux,
+                              Port,
+                              Acception_Cb'Unrestricted_Access,
+                              Fifo.Afux_Dscr,
                               Port_Num);
         Fifo.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Local_Host_Id); 
         Fifo.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port_Num);
@@ -566,10 +592,10 @@ package body Fifos is
           raise No_Dictio;
         end if;
 
-        -- Getenv name suffix
+        -- Getenv name prefix
         Text_Handler.Set (Name_Prefix, Default_Name_Prefix);
         Environ.Get_Txt (Name_Prefix_Name, Name_Prefix);
-        -- Check a name based on this suffix is accepted by dictio
+        -- Check a name based on this prefix is accepted by dictio
         if not Dictio_Lib.Is_Valid_Item_Name (
              Text_Handler.Value (Name_Prefix) & "a") then
           Text_Handler.Set (Name_Prefix, Default_Name_Prefix);
