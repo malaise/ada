@@ -203,9 +203,10 @@ begin
       end loop;
 
     when Is_Prime =>
+        N2 := Prime_List.Next;
       loop
         N2 := Prime_List.Next;
-        exit when N2 >= N1;
+        exit when N1 rem N2 = 0;
       end loop;
       Ada.Text_Io.Put (Long_Long_Positive'Image(N1));
       if N1 = N2 then
