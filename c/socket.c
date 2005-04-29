@@ -133,9 +133,7 @@ static int soc_init (soc_ptr *p_soc,
     }
   }
 
-  
-
-  /* Allow UDP broadcast or TCP ReuseAddr */
+  /* Allow ReuseAddr */
   result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEADDR,
                  &allow_sockopt, sizeof (allow_sockopt));
   if (result == -1) {
