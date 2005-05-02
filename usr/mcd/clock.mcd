@@ -1,26 +1,36 @@
 # Clock display Mm/Dd-Hh:Mm
 
 # Arg error
-[ "Usage: Clock" putl ssize popn retall ] E popr
+[ "Usage: Clock [ s ]" putl ssize popn retall ] E popr
 
-# 0 arg
+# 1 optionnal arg
+60_000 s popr
+ssize 1 = [ 
+  dup isreg ~ E pushr ifcall
+  s /= E pushr ifcall
+  1_000 s popr
+] ifcall
+
+# 0 arg remaining
 ssize isnotnul E pushr ifcall
 
-# Get time
-[ clock dateof 6 16 strsub ] G popr
-
-# Put time if new
-[ G pushr call dup t pushr = [ pop ] [ dup putl t popr ] ifte call ] P popr
+# Time string
+[ dateof 6 23 strsub ] S popr
 
 # Initial display
-G pushr call dup putl t popr
+clock dup S pushr call putl
+
+# Simulate prev appointment (trunc to XXmn00s.000 or XXmnmnYYs.000)
+s pushr / s pushr * a popr
 
 # Loop
 [
-# Display
-P pushr call
-# Wait one second
-1 sleep
+# Compute next appointment
+a pushr s pushr + a copyr
+# Compute delay and sleep
+clock - toreal 1000.0 / sleep
+# Display time
+clock S pushr call putl
 # Loop
 pushle copye retacal
 ] copye
