@@ -1,0 +1,217 @@
+# Syntax of the descriptor file
+# -----------------------------
+# <descriptor_file> ::= { <descriptor_def> }
+#
+# <descriptor_def> ::= Descriptor <descriptor_no>
+#                        [ <list_def>  ]
+#                        [ { <field_def> } ]
+#                      End Descriptor
+#
+# <list_def>  ::= List
+#                   <field_geo_and_color>
+#                 End List
+#
+# <field_def> ::= Field <field_no> <field_type>
+#                   <field_geo_and_color>
+#                   [ <init_def> ]
+#                 End Field
+#
+# <field_type> ::= Put  |  Button  |  Get
+#
+# <field_geo_and_color> ::= Geometry <geometry>
+#                           Colors   <colors>
+#
+# <geometry> ::= <upper_left_row> <upper_left_col>
+#                <lower_right_row> <lower_right_col>
+#
+# <colors> ::= <foreground_color> [ <blink> ]
+#                          <background_color> [ <selected_color> ]
+#
+# <init_def> ::= Init
+#                  [ { <init_line> } ]
+#                End Init
+#
+# <init_line> ::= <init_row> <init_col> [ <init_string> ]
+#
+#
+# Semantic of the descriptor file
+# -------------------------------
+# - <descriptor_no> has to be positive range 1 .. 50 and sole (no double)
+# - List has to be defined none or once per descriptor
+# - <field_no> have to be within Field_Range (1 .. 200), strictly crescent
+#                    within one descriptor, no "hole", no double
+# - <geometry> must define at least one row and one col
+# - <geometry> must not make the field overlap with another field of the
+#                    descriptor
+# - <geometry> of a Get field must define only one row
+# - <foreground_color> must be of Colors for Put fields
+#                    and of Basic_Colors for Button, Get and List
+# - <background_color> and <selected_color> must be Basic_Colors
+# - <blink> is mandatory for Put fields and must not be specified
+#                    for List, Button and Get fields
+# - <selected_color> is mandatory for List and Get fields and
+#                    must not be specified for Put and Button
+# - <init_row> have to be compatible with <geometry>
+#                    crescent, no double (holes allowed)
+# - <init_col> have to be compatible with <geometry>
+# - <init_string> have to be compatible with <geometry> and <init_col>
+#
+# Infos
+# -----
+# Separator is space or tabulation
+# Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase)
+# Comments are lines with '#' as first signficant character
+# Rows are from 0 to 24
+# Cols are from 0 to 79
+# Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray
+# Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange,
+#                              Yellow, White
+# Blink is "Blink" or "Not_Blink"
+# Upper case is mandatory for keywords, not significant for colors and blink,
+#  significant for init_string
+#
+# Summary of color combinations
+# -----------------------------
+#  Type  |   Foreground  Blink  Background  Selected
+#  -------------------------------------------------
+#  Put   |   X Colors    X      X Basic
+#  Button|   X Basic            X Basic
+#  Get   |   X Basic            X Basic     X Basic
+#  List  |   X Basic            X Basic     X Basic
+
+# File selection for Renamer
+Descriptor 1
+
+  List
+    Geometry 2 11 21 65
+    Colors cyan brown red
+  End List
+
+  # Title
+  Field 1 Put
+    Geometry 0 25 0 48
+    Colors light_gray not_blink black
+    Init
+      0 0 GENERIC TITLE
+    End Init
+  End Field
+
+  # Action title
+  Field 2 Put
+    Geometry 1 3 1 27
+    Colors cyan not_blink black
+  End Field
+
+  # File
+  Field 3 Put
+    Geometry 1 33 1 37
+    Colors light_gray not_blink black
+    Init
+      0 0 File:
+    End Init
+  End Field
+
+  Field 4 Put
+    Geometry 1 39 1 65
+    Colors cyan not_blink black
+  End Field
+
+  # Get
+  Field 5 Get
+    Geometry 23 1 23 33
+    Colors cyan brown brown
+  End Field
+
+  # Messages
+  Field 6 Put
+    Geometry 23 35 23 78
+    Colors light_gray not_blink black
+  End Field
+
+  # List actions
+  Field 7 Button
+    Geometry 3 69 3 77
+    Colors cyan brown
+    Init
+      0 3 Top
+    End Init
+  End Field
+
+  Field 8 Button
+    Geometry 5 69 7 77
+    Colors cyan brown
+    Init
+      1 2 Pg Up
+    End Init
+  End Field
+
+  Field 9 Button
+    Geometry 9 69 9 77
+    Colors cyan brown
+    Init
+      0 3 Up
+    End Init
+  End Field
+
+  Field 10 Button
+    Geometry 12 69 12 77
+    Colors cyan brown
+    Init
+      0 1 Center
+    End Init
+  End Field
+
+  Field 11 Button
+    Geometry 15 69 15 77
+    Colors cyan brown
+    Init
+      0 2 Down
+    End Init
+  End Field
+
+  Field 12 Button
+    Geometry 17 69 19 77
+    Colors cyan brown
+    Init
+      1 1 Pg Down
+    End Init
+  End Field
+
+  Field 13 Button
+    Geometry 21 69 21 77
+    Colors cyan brown
+    Init
+      0 1 Bottom
+    End Init
+  End Field
+
+  # Reread
+  Field 14 Button
+    Geometry 11 2 13 9
+    Colors cyan brown
+    Init
+      1 1 REREAD
+    End Init
+  End Field
+
+  # Ok Cancel
+  Field 15 Button
+    Geometry 15 2 17 9
+    Colors cyan brown
+    Init
+      1 3 OK
+    End Init
+  End Field
+
+  Field 16 Button
+    Geometry 19 2 21 9
+    Colors cyan brown
+    Init
+      1 1 CANCEL
+    End Init
+  End Field
+
+  # Any other field here
+
+End Descriptor
+
