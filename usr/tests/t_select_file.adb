@@ -7,12 +7,8 @@ procedure T_Select_File is
   Read : Boolean;
   File : Text_Handler.Text(500);
 
-  procedure Init is
-  begin
-    null;
-  end Init;
-
-  function My_Select_File is new Select_File(Init);
+  function My_Select_File is new Select_File (Read_Title  => "Test read",
+                                              Write_Title => "Test write");
 
 begin
   Read := True;
