@@ -1,8 +1,8 @@
 with Text_Handler, Con_Io, Afpx, Directory, Dir_Mng, String_Mng;
 
-function Select_File (Descriptor : Afpx.Descriptor_Range;
+function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
-                      For_Read : Boolean) return String is
+                      For_Read     : Boolean) return String is
 
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -28,6 +28,7 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
   Get_Width    : Natural := 0;
   Get_Content  : Afpx.Str_Txt;
   Get_Ok       : Boolean;
+  Title_Width  : Natural := 0;
   Dir_List     : Dir_Mng.File_List_Mng.List_Type;
   File_Rec     : Dir_Mng.File_Entry_Rec;
   Valid        : Boolean;
@@ -44,6 +45,16 @@ function Select_File (Descriptor : Afpx.Descriptor_Range;
     end if;
     return Get_Width;
   end Get_Get_Width;
+
+  -- Return width of Title field
+  function Get_Title_Width return Afpx.Width_Range is
+    Height : Afpx.Height_Range;
+  begin
+    if Title_Width = 0 then
+      Afpx.Get_Field_Size (Title_Fld, Height, Title_Width);
+    end if;
+    return Title_Width;
+  end Get_Title_Width;
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
   procedure Parse_Spaces (Txt : in out Text_Handler.Text;
@@ -289,21 +300,27 @@ begin
   Afpx.Encode_Field (Info_Fld, (0, 0), "Select or enter file name");
   -- Title
   if For_Read then
-    Afpx.Encode_Field (Title_Fld, (0, 0), "Load a file");
+    if Read_Title = "" or else Read_Title'Length > Get_Title_Width then
+      Afpx.Encode_Field (Title_Fld, (0, 0), "Load a file");
+    else
+      Afpx.Encode_Field (Title_Fld, (0, 0), Read_Title);
+    end if;
   else
-    Afpx.Encode_Field (Title_Fld, (0, 0), "Save in a file");
+    if Write_Title = "" or else Write_Title'Length > Get_Title_Width then
+      Afpx.Encode_Field (Title_Fld, (0, 0), "Save in a file");
+    else
+      Afpx.Encode_Field (Title_Fld, (0, 0), Write_Title);
+    end if;
   end if;
 
   -- Encode current file name in get field
-  if Current_File'Length <= Get_Get_Width then
+  if Current_File'Length > Get_Get_Width then
+    Text_Handler.Empty(Get_Content);
+  else
     Text_Handler.Set (Get_Content, 
       String_Mng.Procuste(Current_File, Get_Get_Width));
-  else
-    Text_Handler.Empty(Get_Content);
   end if;
   Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
-
-  
 
   -- File name
   Change_Dir (".");
