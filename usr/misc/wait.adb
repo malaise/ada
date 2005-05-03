@@ -24,7 +24,7 @@ begin
         Dur := Duration(Int);
     end;
   elsif  Argument.Get_Nbre_Arg = 0 then
-    Dur := 1.0;
+    Dur := 0.0;
   else
     raise Constraint_Error;
   end if;
@@ -34,3 +34,4 @@ exception
   when others => 
     Ada.Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default)."); 
 end Wait; 
+
