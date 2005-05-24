@@ -2,8 +2,8 @@ with Data_Base;
 package Dictio_Lib is
 
   -- Item is (Name, Data);
-  -- Name has to be an identifier:
-  --  <letter> [ { [ '_' ] <letter_or_digit> } ]
+  -- Name has to be of the form:  <ident> [ { .<ident> } ]
+  --  where <ident> ::= <letter> [ { [ '_' ] <letter_or_digit> } ]
   Max_Name_Len : constant := Data_Base.Item_Name'Length;
   Max_Data_Len : constant := Data_Base.Item_Data'Length;
 
