@@ -50,7 +50,7 @@ static int soc_init (soc_ptr *p_soc,
     perror("mutex_create");
     return (SOC_SYS_ERR);
   }
-#endif;
+#endif
 
   /* Save protocol, tcp_kind, domain and id */
   (*p_soc)->socket_kind = protocol;
