@@ -26,7 +26,7 @@ package body Input_Dispatcher is
 
   function Is_Separator (C : in Character) return Boolean is
   begin
-    return C = ' ' or else C = Ascii.Ht;
+    return C = ' ' or else C = Ascii.Ht or else C = Ascii.Cr;
   end Is_Separator;
 
 
