@@ -175,6 +175,7 @@ package body Mcd_Parser is
    Getenv   => (Nosy, "push getenv(A) or False       ", False),
    Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0         ", False),
    Sleep    => (Nosy, "sleep A seconds               ", False),
+   Debugall => (Nosy, "set debug to A (boolean)      ", False),
    Help     => (Nosy, "put help                      ", False) );
 
 

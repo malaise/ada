@@ -145,6 +145,7 @@ package Mcd_Mng is
    Getenv,
    Rnd,
    Sleep,
+   Debugall,
    Help
    );
 

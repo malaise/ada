@@ -325,6 +325,15 @@ package body Mcd_Mng is
     end if;
   end Do_Delay;
 
+  procedure Set_Debug (Set : in Item_Rec) is
+  begin
+    if Set.Kind /= Bool then
+      raise Invalid_Argument;
+    end if;
+    Debug.Debug_Level_Array := (others => Set.Val_Bool);
+  end Set_Debug;
+
+
   Item_Check_Period : constant Positive := 100;
   Nb_Item : Natural := 0;
 
@@ -835,10 +844,14 @@ package body Mcd_Mng is
         when Timeof =>
           Pop(A); Push (Dates.Date_To_Time(A));
           S := A;
+
+        -- Misc
         when Getenv =>
           Pop(A); Push (Ios.Getenv(A));
           S := A;
-
+        when Debugall =>
+          Pop(A); Set_Debug(A);
+          S := A;
         when Help =>
           Mcd_Parser.Print_Help;
       end case;
