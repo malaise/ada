@@ -1,16 +1,22 @@
--- Posix regular expression
+-- Binding to Posix regular expression
 with System, Ada.Finalization;
 package Regular_Expressions is
 
+  -- Result of regex compilation
   type Compiled_Pattern is limited private;
 
+  -- Matching information
+  -- Filled with indexes in string To_Check, up to (1, 0)
+  --  defining matching substrings
+  -- abcab matches (ab)c\1* at pos [1-5] [1-2]
   subtype Offset_Range is Integer;
   type Match_Cell is record
-    Start_Offset :  Offset_range;
-    End_Offset   :  Offset_range;
+    Start_Offset :  Offset_Range;
+    End_Offset   :  Offset_Range;
   end record;
   type Match_Array is array (Natural range <>) of Match_Cell;
 
+  -- Compile a regex
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
@@ -18,6 +24,7 @@ package Regular_Expressions is
                      Case_Sensitive : in Boolean := True;
                      Match_Newline : in Boolean := True);
 
+  -- Execute a regex
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
@@ -26,10 +33,12 @@ package Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
+  -- Get Compilation error
   function Error (Criteria : in Compiled_Pattern) return String;
 
+  -- Free compiled (or error) criteria
   procedure Free (Criteria : in out Compiled_Pattern);
-                   
+
 private
 
   type Compiled_Pattern is new Ada.Finalization.Controlled with record

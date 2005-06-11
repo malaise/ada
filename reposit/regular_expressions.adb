@@ -3,10 +3,10 @@ with Bit_Ops;
 package body Regular_Expressions is
 
   -- C interface --
-  function Str4c (Str : String) return String is
+  function Str4C (Str : String) return String is
   begin
     return Str & Ascii.Nul;
-  end Str4c;
+  end Str4C;
 
   function C_Malloc_Regex return System.Address;
   pragma Interface (C, C_Malloc_Regex);
@@ -38,7 +38,7 @@ package body Regular_Expressions is
   function C_Regerror (Errcode : in Integer;
                        Preg : in System.Address;
                        Errbuf : in System.Address;
-                       Errbuf_size : in Long_Integer) return Long_Integer;
+                       Errbuf_Size : in Long_Integer) return Long_Integer;
   pragma Interface (C, C_Regerror);
   pragma Interface_Name (C_Regerror, "regerror");
 
@@ -53,7 +53,7 @@ package body Regular_Expressions is
                      Extended : in Boolean := True;
                      Case_Sensitive : in Boolean := True;
                      Match_Newline : in Boolean := True) is
-    Criteria4c : constant String := Str4c (Criteria);
+    Criteria4C : constant String := Str4C (Criteria);
     Cflags : Integer := 0;
     use type System.Address;
     use Bit_Ops;
@@ -89,8 +89,9 @@ package body Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True) is
     Eflags : Integer := 0;
-    To_Check4c : constant String := Str4c (To_Check);
+    To_Check4C : constant String := Str4C (To_Check);
     Cres : Integer;
+    First : constant Integer := To_Check'First;
     use type System.Address;
     use Bit_Ops;
   begin
@@ -108,11 +109,22 @@ package body Regular_Expressions is
     end if;
     -- Exec regex
     Cres := C_Regexec (Criteria.Comp_Addr,
-                       To_Check4c'Address,
+                       To_Check4C'Address,
                        Long_Integer(Mach_Info'Length),
                        Mach_Info'Address,
                        Eflags);
     Match := Cres = 0;
+    -- Update Match_Info so it contains indexes in To_Check
+    for I in Mach_Info'Range loop
+      if Mach_Info(I).Start_Offset = -1 then
+        Mach_Info(I).Start_Offset := 1;
+        Mach_Info(I).End_Offset := 0;
+        exit;
+      else
+        Mach_Info(I).Start_Offset := Mach_Info(I).Start_Offset + First;
+        Mach_Info(I).End_Offset   := Mach_Info(I).End_Offset   + First - 1;
+      end if;
+    end loop;
   end Exec;
 
   function Error (Criteria : in Compiled_Pattern) return String is
@@ -138,6 +150,7 @@ package body Regular_Expressions is
     if Criteria.Comp_Addr /= System.Null_Address then
       C_Regfree (Criteria.Comp_Addr);
       C_Free_Regex (Criteria.Comp_Addr);
+      Criteria.Comp_Addr := System.Null_Address;
     end if;
     Criteria.Error := 0;
   end Free;
