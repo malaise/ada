@@ -370,7 +370,7 @@ package body Edition is
     end if;
     -- Sanity checks
     if Oper.Status /= Oper_Def.Not_Entered
-    and then not Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
+    and then Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
       -- Should be protected at buttons level
       raise Program_Error;
     end if;
@@ -592,8 +592,8 @@ package body Edition is
                   end if;
                 end if;
                 Screen.Ring(True);
-                -- Return = Ok
                 Screen.Ring(True);
+                -- Return = Ok
               when Afpx.Escape_Key =>
                 -- Escape = Cancel
                 Cancel(Edit_Type);
