@@ -17,7 +17,7 @@ package Pattern is
   -- For parsing patterns and string
   function Is_Sep (C : Character) return Boolean;
 
-  -- The callback associated with the first matching pattern is called with
+  -- The callback associated with the first matching pattern is called with:
   --  the input rule no,
   --  the Id4Cb of the matching pattern,
   --  the number of words of Str that have matched a term of the pattern,
@@ -61,10 +61,9 @@ package Pattern is
   -- May raise Invalid_Pattern if Pattern is not valid.
   function Get_Id4Cb (Rule : Rule_No; Id : Pattern_Id) return Pattern_Id;
 
-  -- Check Str versus patterns of a rule, in crescent order if Ids.
+  -- Check Str versus patterns of a rule, in crescent order of Ids.
   -- Returns whether or not a match was found (and then a Cb called)
   --  and the Cb returned True.
-  -- Separators may be spaces or tabs.
   -- Comparisons may be case sensitive or not
   function  Check (Rule : Rule_No;
                    Str  : String;
