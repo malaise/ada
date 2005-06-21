@@ -52,12 +52,12 @@ package body Edition is
     Afpx.Set_Field_Colors(28, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(29, True);
     Afpx.Set_Field_Colors(29, Con_Io.Light_Gray, Background => Con_Io.Black);
-    Afpx.Set_Field_Protection(31, True);
-    Afpx.Set_Field_Colors(31, Con_Io.Light_Gray, Background => Con_Io.Black);
-    Afpx.Set_Field_Protection(33, True);
-    Afpx.Set_Field_Colors(33, Con_Io.Light_Gray, Background => Con_Io.Black);
-    Afpx.Set_Field_Protection(35, True);
-    Afpx.Set_Field_Colors(35, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(30, True);
+    Afpx.Set_Field_Colors(30, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(32, True);
+    Afpx.Set_Field_Colors(32, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Protection(34, True);
+    Afpx.Set_Field_Colors(34, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(36, True);
     Afpx.Set_Field_Colors(36, Con_Io.Light_Gray, Background => Con_Io.Black);
   end Protect_Data;
