@@ -2,8 +2,10 @@ include $(HOME)/Makefiles/common.mk
 
 include $(TEMPLATES)/units.mk
 
-LIBS := $(filter-out afpx-af_dscr afpx-af_list afpx-af_ptg \
-                     channels-file pattern-storage x_mng-dispatch, $(UNITS))
+SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg channels-file \
+            pattern-storage x_mng-dispatch
+
+LIBS := $(filter-out $(SUBUNITS), $(UNITS))
 
 EXES := afpx_bld clear_screen
 
