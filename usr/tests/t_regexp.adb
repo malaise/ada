@@ -24,8 +24,8 @@ procedure T_Regexp is
     if not Ok then
       Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
       Ada.Text_Io.Put_Line (Regular_Expressions.Error (Pattern));
-    else
-      Ada.Text_Io.Put_Line ("Compiled pattern >" & Str & "<");
+--    else
+--      Ada.Text_Io.Put_Line ("Compiled pattern >" & Str & "<");
     end if;
   end Compile_Pattern;
 
