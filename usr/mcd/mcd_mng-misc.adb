@@ -1,0 +1,147 @@
+with Ada.Calendar;
+with Event_Mng, Regular_Expressions;
+
+separate (Mcd_Mng)
+package body Misc is
+  procedure Do_Call is
+  begin
+    if Debug.Debug_Level_Array(Debug.Oper) then
+      Ada.Text_Io.Put_Line("Mng: Do_call");
+    end if;
+    Stack.Pop(A);
+    if A.Kind /= Prog then
+      raise Invalid_Argument;
+    end if;
+    if Call_Stack.Level /= 0 then
+      -- Save contect;
+      Text_Handler.Set(Call_Entry, Input_Dispatcher.Get_Remaining);
+      -- Even if end of subprog, this is not stdin
+      if Text_Handler.Empty(Call_Entry) then
+        Text_Handler.Set(Call_Entry, " ");
+      end if;
+      Call_Stack.Push (Text_Handler.Value(Call_Entry));
+    else
+      -- Dummy context
+      Call_Stack.Push ("");
+    end if;
+    -- Call
+    if A.Val_Len = 0 then
+      -- Empty subprogram : not stdin
+      Input_Dispatcher.Set_Input(" ");
+    else
+      Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
+    end if;
+    S := A;
+  end Do_Call;
+
+
+  procedure Do_Popn is
+    N : Natural;
+  begin
+    Stack.Pop(A);
+    -- Has to be Inte and val Natural
+    begin
+      N := Natural(A.Val_Inte);
+    exception
+      when others => raise Invalid_Argument;
+    end;
+    S := A;
+    for I in 1 .. N loop
+      Stack.Pop(A);
+    end loop;
+  end Do_Popn;
+
+  procedure Do_Clear_Extra is
+    Rec : Item_Rec;
+  begin
+   for I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
+     Stack.Pop (Rec, Default_Stack => False);
+   end loop;
+  end Do_Clear_Extra;
+
+  procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec) is
+    Rec : Item_Rec;
+  begin
+    if Times.Kind /= Inte or else Times.Val_Inte < 0 then
+      raise Mcd_Mng.Invalid_Argument;
+    end if;
+    if Stack.Stack_Size (Default_Stack => False) = 0  then
+      return;
+    end if;
+    for I in 1 .. Times.Val_Inte loop
+      if First then
+        Stack.Popf (Rec);
+        Stack.Push (Rec, Default_Stack => False);
+      else
+        Stack.Pop (Rec, Default_Stack => False);
+        Stack.Pushf (Rec);
+      end if;
+    end loop;
+  end Do_Rotate_Extra;
+
+  function  Do_Delay (The_Delay : Duration) return Delay_Status_List is
+    Expiration : Ada.Calendar.Time;
+    Timeout_Ms : Integer;
+    use type Ada.Calendar.Time, Event_Mng.Out_Event_List;
+
+    procedure Compute_Timeout is
+    begin
+      Timeout_Ms := Integer ((Expiration - Ada.Calendar.Clock) * 1000);
+      if Timeout_Ms < 0 then
+        Timeout_Ms := 0;
+      end if;
+    end Compute_Timeout;
+
+  begin
+    Expiration := Ada.Calendar.Clock + The_Delay;
+    Compute_Timeout;
+
+    loop
+      if Event_Mng.Wait (Timeout_Ms) = Event_Mng.Signal_Event then
+        return Exit_Break;
+      end if;
+      Compute_Timeout;
+      exit when Timeout_Ms = 0;
+    end loop;
+    return Continue;
+  end Do_Delay;
+
+  function Do_Delay (The_Delay : Item_Rec) return Delay_Status_List is
+  begin
+    if The_Delay.Kind = Inte then
+      return Do_Delay (Duration(The_Delay.Val_Inte));
+    elsif The_Delay.Kind = Real then
+      return Do_Delay (Duration(The_Delay.Val_Real));
+    else
+      raise Invalid_Argument;
+    end if;
+  end Do_Delay;
+
+  procedure Set_Debug (Set : in Item_Rec) is
+  begin
+    if Set.Kind /= Bool then
+      raise Invalid_Argument;
+    end if;
+    Debug.Debug_Level_Array := (others => Set.Val_Bool);
+  end Set_Debug;
+
+  function Regex (Pattern, Str : Item_Rec) return Item_Rec is
+    Criteria : Regular_Expressions.Compiled_Pattern;
+    Ok : Boolean;
+  begin
+    if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    Regular_Expressions.Compile (Criteria, Ok,
+                                 Pattern.Val_Text(1 .. Pattern.Val_Len));
+    if not Ok then
+      raise Invalid_Argument;
+    end if;
+
+    Regular_Expressions.Exec (Criteria, Str.Val_Text(1 .. Str.Val_Len), Ok,
+                              Regular_Expressions.No_Match_Array);
+    return (Kind => Bool, Val_Bool => Ok);
+  end Regex;
+
+end Misc;
+

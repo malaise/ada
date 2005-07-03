@@ -134,6 +134,7 @@ package Mcd_Mng is
    Strof,
    Normal,
    Maxlen,
+   Regex,
 
    Clock,
    Dateof,

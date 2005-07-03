@@ -219,6 +219,30 @@ package body Mcd_Mng is
     function Date_To_Time (Date : Item_Rec) return Item_Rec;
   end Dates;
 
+  function Is_Register (C : in Character) return Boolean 
+                       renames Registers.Is_Register;
+
+  procedure Close renames Registers.Close_All;
+
+  package Misc is
+    procedure Do_Call;
+
+    procedure Do_Popn;
+
+    procedure Do_Clear_Extra;
+
+    procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec);
+
+    subtype Delay_Status_List is End_Status_List range Continue .. Exit_Break;
+    function Do_Delay (The_Delay : Duration) return Delay_Status_List;
+
+    function Do_Delay (The_Delay : Item_Rec) return Delay_Status_List;
+
+    procedure Set_Debug (Set : in Item_Rec);
+
+    function Regex (Pattern, Str : Item_Rec) return Item_Rec;
+  end Misc;
+
   package body Stack is separate;
   package body Operations is separate;
   package body Registers is separate;
@@ -226,113 +250,7 @@ package body Mcd_Mng is
   package body Call_Stack is separate;
   package body Strings is separate;
   package body Dates is separate;
-
-  function Is_Register (C : in Character) return Boolean 
-                       renames Registers.Is_Register;
-
-  procedure Close is
-  begin
-    Registers.Close_All;
-  end Close;
-
-  procedure Do_Call is
-  begin
-    if Debug.Debug_Level_Array(Debug.Oper) then
-      Ada.Text_Io.Put_Line("Mng: Do_call");
-    end if;
-    Stack.Pop(A);
-    if A.Kind /= Prog then
-      raise Invalid_Argument;
-    end if;
-    if Call_Stack.Level /= 0 then
-      -- Save contect;
-      Text_Handler.Set(Call_Entry, Input_Dispatcher.Get_Remaining);
-      -- Even if end of subprog, this is not stdin
-      if Text_Handler.Empty(Call_Entry) then
-        Text_Handler.Set(Call_Entry, " ");
-      end if;
-      Call_Stack.Push (Text_Handler.Value(Call_Entry));
-    else
-      -- Dummy context
-      Call_Stack.Push ("");
-    end if;
-    -- Call
-    if A.Val_Len = 0 then
-      -- Empty subprogram : not stdin
-      Input_Dispatcher.Set_Input(" ");
-    else
-      Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
-    end if;
-    S := A;
-  end Do_Call;
-
-
-  procedure Do_Popn is
-    N : Natural;
-  begin
-    Stack.Pop(A);
-    -- Has to be Inte and val Natural
-    begin
-      N := Natural(A.Val_Inte);
-    exception
-      when others => raise Invalid_Argument;
-    end;
-    S := A;
-    for I in 1 .. N loop
-      Stack.Pop(A);
-    end loop;
-  end Do_Popn;
-
-  procedure Do_Clear_Extra is
-    Rec : Item_Rec;
-  begin
-   for I in 1 .. Stack.Stack_Size (Default_Stack => False) loop
-     Stack.Pop (Rec, Default_Stack => False);
-   end loop;
-  end Do_Clear_Extra;
-
-  procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec) is
-    Rec : Item_Rec;
-  begin
-    if Times.Kind /= Inte or else Times.Val_Inte < 0 then
-      raise Mcd_Mng.Invalid_Argument;
-    end if;
-    if Stack.Stack_Size (Default_Stack => False) = 0  then
-      return;
-    end if;
-    for I in 1 .. Times.Val_Inte loop
-      if First then
-        Stack.Popf (Rec);
-        Stack.Push (Rec, Default_Stack => False);
-      else
-        Stack.Pop (Rec, Default_Stack => False);
-        Stack.Pushf (Rec);
-      end if;
-    end loop;
-  end Do_Rotate_Extra;
-
-  subtype Delay_Status_List is End_Status_List range Continue .. Exit_Break;
-  function Do_Delay (The_Delay : Duration) return Delay_Status_List is separate;
-
-  function Do_Delay (The_Delay : Item_Rec) return Delay_Status_List is
-  begin
-    if The_Delay.Kind = Inte then
-      return Do_Delay (Duration(The_Delay.Val_Inte));
-    elsif The_Delay.Kind = Real then
-      return Do_Delay (Duration(The_Delay.Val_Real));
-    else
-      raise Invalid_Argument;
-    end if;
-  end Do_Delay;
-
-  procedure Set_Debug (Set : in Item_Rec) is
-  begin
-    if Set.Kind /= Bool then
-      raise Invalid_Argument;
-    end if;
-    Debug.Debug_Level_Array := (others => Set.Val_Bool);
-  end Set_Debug;
-
+  package body Misc is separate;
 
   Item_Check_Period : constant Positive := 100;
   Nb_Item : Natural := 0;
@@ -399,7 +317,7 @@ package body Mcd_Mng is
     -- Check for Ctrl C
     if Nb_Item = Item_Check_Period then
       Nb_Item := 0;
-      The_End := Do_Delay (0.0);
+      The_End := Misc.Do_Delay (0.0);
     else
       Nb_Item := Nb_Item + 1;
       -- Default, except Ret and delay
@@ -433,7 +351,7 @@ package body Mcd_Mng is
         when Sleep =>
           Pop(A);
           S := A;
-          The_End := Do_Delay(A);
+          The_End := Misc.Do_Delay(A);
         when Prevtop =>
           if S.Kind = Oper then
             raise Invalid_Argument;
@@ -441,7 +359,7 @@ package body Mcd_Mng is
           Push (S);
 
         when Popn =>
-          Do_Popn;
+          Misc.Do_Popn;
 
         -- These are operations
         when Add =>
@@ -708,30 +626,30 @@ package body Mcd_Mng is
         when Rotle =>
           -- rotate from last
           Pop(A);
-          Do_Rotate_Extra (False, A);
+          Misc.Do_Rotate_Extra (False, A);
           S := A;
         when Rotfe =>
           -- rotate from first
           Pop(A);
-          Do_Rotate_Extra (True, A);
+          Misc.Do_Rotate_Extra (True, A);
           S := A;
         when Esize =>
            Push( (Kind => Inte,
                   Val_Inte => My_Math.Inte(Stack.Stack_Size(
                                 Default_Stack => False))));
         when Cleare =>
-           Do_Clear_Extra;
+           Misc.Do_Clear_Extra;
 
 
         -- These ones are subprogram
         when Call =>
-          Do_Call;
+          Misc.Do_Call;
         when Ifcall =>
           Pop(A);
           Pop(B);
           if Operations.Is_True(B) then
             Push(A);
-            Do_Call;
+            Misc.Do_Call;
           end if;
 
         when Ret =>
@@ -768,7 +686,7 @@ package body Mcd_Mng is
           Push( (Kind => Inte, Val_Inte => 1) );
           -- Return but forbid level 0
           Do_Ret(False);
-          Do_Call;
+          Misc.Do_Call;
 
         -- Puts
         when Format =>
@@ -831,6 +749,9 @@ package body Mcd_Mng is
           A := (Kind => Inte, Val_Inte => Input_Dispatcher.Max_String_Lg);
           Push (A);
           S := A;
+        when Regex =>
+          Pop(A); Pop(B); Push (Misc.Regex(A, B));
+          S := A;
 
         -- Dates
         when Clock =>
@@ -850,7 +771,7 @@ package body Mcd_Mng is
           Pop(A); Push (Ios.Getenv(A));
           S := A;
         when Debugall =>
-          Pop(A); Set_Debug(A);
+          Pop(A); Misc.Set_Debug(A);
           S := A;
         when Help =>
           Mcd_Parser.Print_Help;
