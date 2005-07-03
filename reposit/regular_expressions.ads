@@ -15,6 +15,8 @@ package Regular_Expressions is
     End_Offset   :  Offset_Range;
   end record;
   type Match_Array is array (Natural range <>) of Match_Cell;
+  No_Match_Array : Match_Array (1 .. 0);
+  subtype One_Match_Array is Match_Array (1 .. 1);
 
   -- Compile a regex
   procedure Compile (Result : in out Compiled_Pattern;
