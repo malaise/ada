@@ -65,16 +65,18 @@ begin
 
   -- Check pattern vs other arguments
   for I in 2 .. Argument.Get_Nbre_Arg loop
-    Regular_Expressions.Exec (Pattern,
-                              Argument.Get_Parameter (Occurence => I),
-                              Ok,
-                              Match_Info);
     Ada.Text_Io.Put ("String >"
                     & Argument.Get_Parameter (Occurence => I)
                     & "< ");
-    if not Ok then
+    if not Regular_Expressions.Match(
+             Criteria => Argument.Get_Parameter (Occurence => 1),
+             Str      => Argument.Get_Parameter (Occurence => I)) then
       Ada.Text_Io.Put_Line ("does not match");
     else
+      Regular_Expressions.Exec (Pattern,
+                                Argument.Get_Parameter (Occurence => I),
+                                Ok,
+                                Match_Info);
       Ada.Text_Io.Put ("matches at pos");
       for I in Match_Info'Range loop
         exit when Match_Info(I).Start_Offset >  Match_Info(I).End_Offset;
