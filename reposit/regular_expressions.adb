@@ -127,6 +127,20 @@ package body Regular_Expressions is
     end loop;
   end Exec;
 
+  -- Compare string to criteria
+  -- May raise No_Criteria is Criteria does not compile.
+  function Match (Criteria, Str : String) return Boolean is
+    Pattern : Compiled_Pattern;
+    Ok : Boolean;
+  begin
+    Compile (Pattern, Ok, Criteria);
+    if not Ok then
+      raise No_Criteria;
+    end if;
+    Exec (Pattern, Str, Ok, No_Match_Array);
+    return Ok;
+  end Match;
+
   function Error (Criteria : in Compiled_Pattern) return String is
     Len : Long_Integer; 
   begin

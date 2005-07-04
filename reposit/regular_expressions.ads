@@ -35,10 +35,14 @@ package Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
+  -- Compare string to criteria
+  -- May raise No_Criteria is Criteria does not compile.
+  function Match (Criteria, Str : String) return Boolean;
+
   -- Get Compilation error
   function Error (Criteria : in Compiled_Pattern) return String;
 
-  -- Free compiled (or error) criteria
+  -- Free compiled (or error) pattern
   procedure Free (Criteria : in out Compiled_Pattern);
 
 private
