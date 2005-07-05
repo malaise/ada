@@ -132,15 +132,12 @@ package body Misc is
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Regular_Expressions.Compile (Criteria, Ok,
-                                 Pattern.Val_Text(1 .. Pattern.Val_Len));
-    if not Ok then
-      raise Invalid_Argument;
-    end if;
-
-    Regular_Expressions.Exec (Criteria, Str.Val_Text(1 .. Str.Val_Len), Ok,
-                              Regular_Expressions.No_Match_Array);
+    Ok := Regular_Expressions.Match (Pattern.Val_Text(1 .. Pattern.Val_Len),
+                                     Str.Val_Text(1 .. Str.Val_Len));
     return (Kind => Bool, Val_Bool => Ok);
+  exception
+    when Regular_Expressions.No_Criteria =>
+      raise Invalid_Argument;
   end Regex;
 
 end Misc;
