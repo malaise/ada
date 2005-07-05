@@ -24,12 +24,12 @@ procedure T_Regexp is
     if not Ok then
       Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
       Ada.Text_Io.Put_Line (Regular_Expressions.Error (Pattern));
---    else
---      Ada.Text_Io.Put_Line ("Compiled pattern >" & Str & "<");
     end if;
   end Compile_Pattern;
 
-  Match_Info : Regular_Expressions.Match_Array(1 .. 50);
+  subtype Match_Range is Positive range 1 .. 9;
+  Match_Info : Regular_Expressions.Match_Array (Match_Range);
+  N_Match : Match_Range;
 begin
   if Argument.Get_Nbre_Arg < 1 then
     Error;
@@ -65,23 +65,30 @@ begin
 
   -- Check pattern vs other arguments
   for I in 2 .. Argument.Get_Nbre_Arg loop
+    Regular_Expressions.Exec (Pattern,
+                              Argument.Get_Parameter (Occurence => I),
+                              Ok,
+                              Match_Info);
     Ada.Text_Io.Put ("String >"
                     & Argument.Get_Parameter (Occurence => I)
                     & "< ");
-    if not Regular_Expressions.Match(
-             Criteria => Argument.Get_Parameter (Occurence => 1),
-             Str      => Argument.Get_Parameter (Occurence => I)) then
+    if not Ok then
       Ada.Text_Io.Put_Line ("does not match");
     else
-      Regular_Expressions.Exec (Pattern,
-                                Argument.Get_Parameter (Occurence => I),
-                                Ok,
-                                Match_Info);
+      -- Look from the end to a match
+      for I in reverse Match_Range loop
+        N_Match := I;
+        exit when Match_Info(I).Start_Offset <= Match_Info(I).End_Offset;
+      end loop;
       Ada.Text_Io.Put ("matches at pos");
-      for I in Match_Info'Range loop
-        exit when Match_Info(I).Start_Offset >  Match_Info(I).End_Offset;
-        Ada.Text_Io.Put (" [" & Image(Match_Info(I).Start_Offset)
-                        & "-" & Image(Match_Info(I).End_Offset) & "]");
+      -- List submatches
+      for I in Match_Range'(1) .. N_Match loop
+        if Match_Info(I).Start_Offset > Match_Info(I).End_Offset then
+          Ada.Text_Io.Put (" []");
+        else
+          Ada.Text_Io.Put (" [" & Image(Match_Info(I).Start_Offset)
+                          & "-" & Image(Match_Info(I).End_Offset) & "]");
+        end if;
       end loop;
       Ada.Text_Io.New_Line;
     end if;
