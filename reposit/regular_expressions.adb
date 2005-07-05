@@ -119,7 +119,6 @@ package body Regular_Expressions is
       if Mach_Info(I).Start_Offset = -1 then
         Mach_Info(I).Start_Offset := 1;
         Mach_Info(I).End_Offset := 0;
-        exit;
       else
         Mach_Info(I).Start_Offset := Mach_Info(I).Start_Offset + First;
         Mach_Info(I).End_Offset   := Mach_Info(I).End_Offset   + First - 1;
