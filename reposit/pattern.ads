@@ -12,7 +12,7 @@ package Pattern is
   --  present once                          term
   --  optionnal                (0 or 1)     [ term ]
   --  repetitive               (1 or more ) { term }
-  --  optionnal and repetitive (1 or more ) [ { term } ]
+  --  optionnal and repetitive (0 or more ) [ { term } ]
 
   -- For parsing patterns and string
   function Is_Sep (C : Character) return Boolean;
