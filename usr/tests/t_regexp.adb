@@ -12,9 +12,9 @@ procedure T_Regexp is
   end Error;
 
   Pattern : Regular_Expressions.Compiled_Pattern;
-  Ok : Boolean;
 
   procedure Compile_Pattern (Str : in String; Report : in Boolean := True) is
+    Ok : Boolean;
   begin
     -- Compile pattern
     Regular_Expressions.Compile (Pattern, Ok, Str);
@@ -27,9 +27,11 @@ procedure T_Regexp is
     end if;
   end Compile_Pattern;
 
-  subtype Match_Range is Positive range 1 .. 9;
+  subtype Match_Result is Natural range 0 .. 50;
+  subtype Match_Range is Positive range 1 .. Match_Result'Last;
   Match_Info : Regular_Expressions.Match_Array (Match_Range);
-  N_Match : Match_Range;
+  N_Matched : Match_Result;
+  Ok : Boolean;
 begin
   if Argument.Get_Nbre_Arg < 1 then
     Error;
@@ -67,22 +69,17 @@ begin
   for I in 2 .. Argument.Get_Nbre_Arg loop
     Regular_Expressions.Exec (Pattern,
                               Argument.Get_Parameter (Occurence => I),
-                              Ok,
+                              N_Matched,
                               Match_Info);
     Ada.Text_Io.Put ("String >"
                     & Argument.Get_Parameter (Occurence => I)
                     & "< ");
-    if not Ok then
+    if N_Matched = 0 then
       Ada.Text_Io.Put_Line ("does not match");
     else
-      -- Look from the end to a match
-      for I in reverse Match_Range loop
-        N_Match := I;
-        exit when Match_Info(I).Start_Offset <= Match_Info(I).End_Offset;
-      end loop;
       Ada.Text_Io.Put ("matches at pos");
       -- List submatches
-      for I in Match_Range'(1) .. N_Match loop
+      for I in Match_Range'(1) .. N_Matched loop
         if Match_Info(I).Start_Offset > Match_Info(I).End_Offset then
           Ada.Text_Io.Put (" []");
         else
