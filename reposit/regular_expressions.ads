@@ -27,10 +27,13 @@ package Regular_Expressions is
                      Match_Newline : in Boolean := True);
 
   -- Execute a regex
+  -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
+  --  otherwise N_Matched is set to the last non empty slot of Match_Info
+  --  (but some slots from 1 to N_Matched might be empty)
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
-                  Match : out Boolean;
+                  N_Matched : out Natural;
                   Mach_Info : in out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);

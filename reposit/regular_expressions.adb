@@ -84,7 +84,7 @@ package body Regular_Expressions is
 
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
-                  Match : out Boolean;
+                  N_Matched : out Natural;
                   Mach_Info : in out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True) is
@@ -95,6 +95,10 @@ package body Regular_Expressions is
     use type System.Address;
     use Bit_Ops;
   begin
+    -- Init results
+    Mach_Info := (others => (Start_Offset => 1, End_Offset => 0));
+    N_Matched := 0;
+    -- Check criteria has compiled
     if Criteria.Error /= 0
     or else Criteria.Comp_Addr = System.Null_Address then
       raise No_Criteria;
@@ -113,15 +117,22 @@ package body Regular_Expressions is
                        Long_Integer(Mach_Info'Length),
                        Mach_Info'Address,
                        Eflags);
-    Match := Cres = 0;
-    -- Update Match_Info so it contains indexes in To_Check
+    -- Return if no match
+    if Cres /= 0 then
+      return;
+    end if;
+    -- Set N_Matched to 1 event if empty Mach_Info
+    if Mach_Info'Length = 0 then
+      N_Matched := 1;
+      return;
+   end if;
+    -- Set N_Matched to last non-empty Match_Info
+    -- Update Match_Info so that it contains indexes in To_Check
     for I in Mach_Info'Range loop
-      if Mach_Info(I).Start_Offset = -1 then
-        Mach_Info(I).Start_Offset := 1;
-        Mach_Info(I).End_Offset := 0;
-      else
+      if Mach_Info(I).Start_Offset /= -1 then
         Mach_Info(I).Start_Offset := Mach_Info(I).Start_Offset + First;
         Mach_Info(I).End_Offset   := Mach_Info(I).End_Offset   + First - 1;
+        N_Matched := I;
       end if;
     end loop;
   end Exec;
@@ -131,13 +142,14 @@ package body Regular_Expressions is
   function Match (Criteria, Str : String) return Boolean is
     Pattern : Compiled_Pattern;
     Ok : Boolean;
+    Matched : Natural;
   begin
     Compile (Pattern, Ok, Criteria);
     if not Ok then
       raise No_Criteria;
     end if;
-    Exec (Pattern, Str, Ok, No_Match_Array);
-    return Ok;
+    Exec (Pattern, Str, Matched, No_Match_Array);
+    return Matched /= 0;
   end Match;
 
   function Error (Criteria : in Compiled_Pattern) return String is
