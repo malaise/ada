@@ -18,12 +18,11 @@ procedure T_Regexp is
   begin
     -- Compile pattern
     Regular_Expressions.Compile (Pattern, Ok, Str);
-    if not Report then
-      return;
-    end if;
     if not Ok then
       Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
       Ada.Text_Io.Put_Line (Regular_Expressions.Error (Pattern));
+    elsif Report then
+      Ada.Text_Io.Put_Line ("Pattern >" & Str & "< compiled");
     end if;
   end Compile_Pattern;
 
@@ -31,7 +30,6 @@ procedure T_Regexp is
   subtype Match_Range is Positive range 1 .. Match_Result'Last;
   Match_Info : Regular_Expressions.Match_Array (Match_Range);
   N_Matched : Match_Result;
-  Ok : Boolean;
 begin
   if Argument.Get_Nbre_Arg < 1 then
     Error;
@@ -63,7 +61,7 @@ begin
 
 
   -- Compile 1st args as pattern
-  Compile_Pattern (Argument.Get_Parameter (Occurence => 1));
+  Compile_Pattern (Argument.Get_Parameter (Occurence => 1), False);
 
   -- Check pattern vs other arguments
   for I in 2 .. Argument.Get_Nbre_Arg loop
