@@ -282,11 +282,8 @@ procedure Look_95 is
                   Do_It : in Boolean;
                   Warn_Comment : in Boolean) return Boolean is
 
-    -- Current and prev character
-    Char, Prev_Char : Character;
-
-    -- Last character when eod of file
-    Last_Char : Character;
+    -- Current, prev and prev of prev characters
+    Char, Prev_Char, Prev_Prev_Char : Character;
 
     -- Are they upper case
     Prev_Is_Upper, Curr_Is_Upper : Boolean;
@@ -313,6 +310,9 @@ procedure Look_95 is
     --  before current word was '
     Prev_Tick : Boolean;
 
+    -- End of file reached
+    End_Of_File : Boolean;
+
     -- Is Char an upper case
     function Is_Upper (Char : Character) return Boolean is
     begin
@@ -338,9 +338,6 @@ procedure Look_95 is
       end Change_Word;
 
     begin
-      if Text_Handler.Empty (Word) then
-        return;
-      end if;
       case Ada_Words.Check_Keyword (Str) is
         when Ada_Words.Is_Keyword =>
           Is_Keyword := True;
@@ -395,51 +392,38 @@ procedure Look_95 is
     In_Comment := False;
     In_Literal := False;
     Prev_Char := Ascii.Nul;
-    Last_Char := Ascii.Nul;
+    Prev_Prev_Char := Ascii.Nul;
     Modified := False;
     Warnings := False;
     Line_No := 1;
     Prev_Tick := False;
+    End_Of_File := False;
 
     -- Conversion loop:
     -- If upper_case and previous also upper_case, write lower_case
     loop
 
-      -- Read char
-      begin
-        Char := Reading.Next_Char;
-        Last_Char := Char;
-      exception
-        when Reading.End_Of_File =>
-          -- Done: Check warnings
-          Check_Line;
-          if Last_Char /= Reading.New_Line and then Do_It then
-            Reading.Append_New_Line (File_Name);
-            if Debug then
-              Ada.Text_Io.Put_Line ("In file " & File_Name
-                                  & " at line" & Line_No'Img
-                                  & ": New_Line appended");
-            end if;
-          end if;
-          exit;
-      end;
-
       -- Init Proceed
       Proceed := True;
 
+      -- Read char
+      begin
+        Char := Reading.Next_Char;
+      exception
+        when Reading.End_Of_File =>
+          End_Of_File := True;
+      end;
 
-      -- Check end of line or store char
-      if Char = Reading.New_Line then
-        -- End of line (and end of comment)
+      -- Check end of line
+      if Char = Reading.New_Line or else End_Of_File then
+        -- End of line or of file (and end of comment, string, literal)
         In_Comment := False;
+        In_String := False;
+        In_Literal := False;
         Proceed := False;
-        Text_Handler.Empty (Word);
-        -- Check warnings
-        Check_Line;
-        Line_No := Line_No + 1;
       end if;
 
-      -- Check in comment
+      -- Check in comment. Update Proceed
       if Proceed
       and then not In_Comment
       and then not In_String
@@ -487,7 +471,7 @@ procedure Look_95 is
       end if;
 
       -- Update line char for warnings if possible
-      if Char /= Reading.New_Line then
+      if Char /= Reading.New_Line and then not End_Of_File then
         begin
           Text_Handler.Append (Line, Char);
         exception
@@ -497,21 +481,31 @@ procedure Look_95 is
         end;
       end if;
 
-      -- Check word
+      -- Check word or append char to word
       if not In_Comment
       and then not In_String
       and then not In_Literal then
-        if Ada_Words.Is_Separator(Char) 
-        or else Ada_Words.Is_Delimiter(Char) then
+        if Ada_Words.Is_Separator (Char)
+        or else Ada_Words.Is_Delimiter (Char)
+        or else Char = Reading.New_Line
+        or else End_Of_File then
           -- End of word, check it
-          -- The tricky way to avoid checking character literal is
-          --  to dicard a word of one char with Prev_Tick set!
-          if Text_Handler.Length (Word) /= 1 or else not Prev_Tick then
+          -- Avoid checking character literal
+          if Text_Handler.Empty (Word)
+          or else (Text_Handler.Length (Word) = 1
+                   and then Prev_Prev_Char = ''' and then Char = ''' )then
+            null;
+          else
             Check_Word;
+            -- Prev_Tick is set until the end of a word
+            Prev_Tick := False;
           end if;
           -- Not in word
           Text_Handler.Empty (Word);
-          Prev_Tick := Char = ''';
+          -- Store tick if not in character literal
+          if not Prev_Tick then
+            Prev_Tick := Char = ''' and then Prev_Prev_Char /= ''';
+          end if;
         else
           -- In word: append if possible
           if Text_Handler.Empty (Word) then
@@ -533,16 +527,40 @@ procedure Look_95 is
         Warnings := True;
       end if;
 
-        -- Prepare for next char
+      -- Show warnings at line level if end of line
+      if Char = Reading.New_Line or else End_Of_File then
+        -- Check warnings
+        Check_Line;
+        Line_No := Line_No + 1;
+      end if;
+
+      -- Done at end of file
+      exit when End_Of_File;
+
+      -- Prepare for next char
       if Proceed or else In_Comment then
         Prev_Is_Upper := Curr_Is_Upper;
+        Prev_Prev_Char := Prev_Char;
         Prev_Char := Char;
       else
         Prev_Is_Upper := False;
+        Prev_Prev_Char := Ascii.Nul;
         Prev_Char := Ascii.Nul;
       end if;
 
+
     end loop;
+
+    -- Done: Check that last line ends with new_line
+    if Char /= Reading.New_Line and then Do_It then
+      Reading.Append_New_Line (File_Name);
+      Modified := True;
+      if Debug then
+        Ada.Text_Io.Put_Line ("In file " & File_Name
+                            & " at line" & Line_No'Img
+                            & ": New_Line appended");
+      end if;
+    end if;
 
     return Modified;
 
