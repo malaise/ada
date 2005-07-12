@@ -5,7 +5,7 @@ with Text_Handler, Argument, Select_File, Sys_Calls;
 procedure Renamer is
 
   Read : Boolean;
-  OK : Boolean;
+  Ok : Boolean;
   File, Prev_File : Text_Handler.Text(500);
 
   function My_Select_File is
@@ -13,6 +13,23 @@ procedure Renamer is
                             Write_Title => "Enter new name and Ret");
 
   function Me return String renames Argument.Get_Program_Name;
+
+  Access_Error : exception;
+  function File_Exists (File_Name : String) return Boolean is
+    Kind : Sys_Calls.File_Kind_List;
+    Rights : Natural;
+    Time : Sys_Calls.Time_T;
+    Size : Sys_Calls.Size_T;
+  begin
+    -- Check new name is accessible and does not exist
+    Sys_Calls.File_Stat (File_Name, Kind, Rights, Time, Size);
+    return True;
+  exception
+    when Sys_Calls.Name_Error =>
+      return False;
+    when Sys_Calls.Access_Error =>
+      raise Access_Error;
+  end File_Exists;
 
 begin
   -- Start reading file to rename
@@ -34,19 +51,42 @@ begin
 
     -- Save original name or check new name is new
     if Ok then
-      if Read then
-        -- Save original file name
-        Text_Handler.Set(Prev_File, File);
-        Read := False;
-        Ok := False;
-      else
-        if Text_Handler."=" (Prev_File, File) then
-          Ada.Text_Io.Put_Line (Me & ": New name " & Text_Handler.Value(File) &
-                                " is prev name. Skipping.");
-          Ok := False;
+      begin
+        if Read then
+          -- Check file exists and is accessible
+          if File_Exists (Text_Handler.Value(File)) then
+            -- Save original file name
+            Text_Handler.Set(Prev_File, File);
+            Read := False;
+            Ok := False;
+          else
+            Ada.Text_Io.Put_Line (Me & ": File not found "
+                                     & Text_Handler.Value(File)
+                                     & ". Skipping.");
+          end if;
+        else
+          -- Check file does not exist and is accessible
+          if File_Exists (Text_Handler.Value(File)) then
+            Ada.Text_Io.Put_Line (Me & ": New name "
+                                     & Text_Handler.Value(File)
+                                     & " already exists. Skipping.");
+            Ok := False;
+          elsif Text_Handler."=" (Prev_File, File) then
+            Ada.Text_Io.Put_Line (Me & ": New name "
+                                     & Text_Handler.Value(File)
+                                     & " is prev name. Skipping.");
+            Ok := False;
+          end if;
+          Read := True;
         end if;
-        Read := True;
-      end if;
+      exception
+        when Access_Error =>
+          Ada.Text_Io.Put_Line (Me & ": Cannot access file " 
+                                   & Text_Handler.Value(File)
+                                   & ". Skipping.");
+          Ok := False;
+          Read := True;
+      end;
     end if;
 
     -- Rename
