@@ -51,6 +51,9 @@ procedure Look_95 is
 
     -- End of line/comment
     New_Line : constant Character := Ascii.Lf;
+    -- Words might end by and Ada separator or delimiter
+    --  or by a New_Line or (DOS format) a Carriage_Return
+    Carriage_Return : constant Character := Ascii.Cr;
 
     -- Append a newline in file (which has to be and is left closed)
     procedure Append_New_Line (File_Name : in String);
@@ -423,6 +426,57 @@ procedure Look_95 is
         Proceed := False;
       end if;
 
+      -- Update line char for warnings if possible
+      if Char /= Reading.New_Line and then not End_Of_File then
+        begin
+          Text_Handler.Append (Line, Char);
+        exception
+          when Constraint_Error =>
+            -- Line is too to big for Line text!
+            null;
+        end;
+      end if;
+
+      -- Check word or append char to word
+      if not In_Comment
+      and then not In_String
+      and then not In_Literal then
+        if Ada_Words.Is_Separator (Char)
+        or else Ada_Words.Is_Delimiter (Char)
+        or else Char = Reading.New_Line
+        or else Char = Reading.Carriage_Return
+        or else End_Of_File then
+          -- End of word, check it
+          -- Avoid checking character literal
+          if Text_Handler.Empty (Word)
+          or else (Text_Handler.Length (Word) = 1
+                   and then Prev_Prev_Char = ''' and then Char = ''' )then
+            null;
+          else
+            Check_Word;
+            -- Prev_Tick is set until the end of a word
+            Prev_Tick := False;
+          end if;
+          -- Not in word
+          Text_Handler.Empty (Word);
+          -- Store tick if not in character literal
+          if not Prev_Tick then
+            Prev_Tick := Char = ''' and then Prev_Prev_Char /= ''';
+          end if;
+        else
+          -- In word: append if possible
+          if Text_Handler.Empty (Word) then
+            Word_Index := Reading.Curr_Index;
+          end if;
+          begin
+            Text_Handler.Append (Word, Char);
+          exception
+            when Constraint_Error =>
+              raise Word_Error;
+          end;
+        end if;
+      end if;
+
       -- Check in comment. Update Proceed
       if Proceed
       and then not In_Comment
@@ -466,58 +520,9 @@ procedure Look_95 is
         Proceed := False;
       end if;
 
+      -- Store if upper char
       if Proceed or else In_Comment then
         Curr_Is_Upper := Is_Upper(Char);
-      end if;
-
-      -- Update line char for warnings if possible
-      if Char /= Reading.New_Line and then not End_Of_File then
-        begin
-          Text_Handler.Append (Line, Char);
-        exception
-          when Constraint_Error =>
-            -- Line is too to big for Line text!
-            null;
-        end;
-      end if;
-
-      -- Check word or append char to word
-      if not In_Comment
-      and then not In_String
-      and then not In_Literal then
-        if Ada_Words.Is_Separator (Char)
-        or else Ada_Words.Is_Delimiter (Char)
-        or else Char = Reading.New_Line
-        or else End_Of_File then
-          -- End of word, check it
-          -- Avoid checking character literal
-          if Text_Handler.Empty (Word)
-          or else (Text_Handler.Length (Word) = 1
-                   and then Prev_Prev_Char = ''' and then Char = ''' )then
-            null;
-          else
-            Check_Word;
-            -- Prev_Tick is set until the end of a word
-            Prev_Tick := False;
-          end if;
-          -- Not in word
-          Text_Handler.Empty (Word);
-          -- Store tick if not in character literal
-          if not Prev_Tick then
-            Prev_Tick := Char = ''' and then Prev_Prev_Char /= ''';
-          end if;
-        else
-          -- In word: append if possible
-          if Text_Handler.Empty (Word) then
-            Word_Index := Reading.Curr_Index;
-          end if;
-          begin
-            Text_Handler.Append (Word, Char);
-          exception
-            when Constraint_Error =>
-              raise Word_Error;
-          end;
-        end if;
       end if;
 
       -- Warning in comments
@@ -547,7 +552,6 @@ procedure Look_95 is
         Prev_Prev_Char := Ascii.Nul;
         Prev_Char := Ascii.Nul;
       end if;
-
 
     end loop;
 
