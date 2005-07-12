@@ -4,7 +4,7 @@ separate (Mcd_Mng)
 
 package body Call_Stack is 
 
-  type Call_Entry_Rec is Record
+  type Call_Entry_Rec is record
     Str : Chars_Text;
     Len : Natural;
   end record;

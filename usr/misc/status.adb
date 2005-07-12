@@ -31,7 +31,7 @@ begin
   -- Check arguments, at least 2
   if Argument.Get_Nbre_Arg < 2 then
     Sys_Calls.Put_Line_Error("SYNTAX ERROR. Usage: "
-                           & Argument.Get_ProgrAm_Name
+                           & Argument.Get_Program_Name
                            & " { <source_file> } <target_file>");
     Sys_Calls.Set_Exit_Code (Exit_Internal_Error);
     return;
