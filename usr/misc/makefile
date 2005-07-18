@@ -5,7 +5,7 @@ AFPX := true
 
 EXES := adand beep ddir e2f fact g hanoi impot_04 look_95 mlbx_overflow \
         one_of_arg pascal prime random relay rndsok renamer \
-	second stat statfile tcping wait
+        second stat statfile status tcping wait
 
 CLIBS := cutil
 CLIBS_renamer := x_mng X11
