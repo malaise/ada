@@ -31,8 +31,8 @@ procedure Relay is
   Done : Boolean := False;
 
   -- Are stdin and stdout a tty or not
-  Stdin_Is_A_Tty : Boolean;
-  Stdout_Is_A_Tty : Boolean;
+  Stdin_Is_A_Tty : Boolean := False;
+  Stdout_Is_A_Tty : Boolean := False;
 
   -- Sig callback
   procedure Sig_Callback is
