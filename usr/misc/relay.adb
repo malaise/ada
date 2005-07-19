@@ -196,5 +196,11 @@ begin
     Async_Stdin.Set_Async;
   end if;
 
+exception
+  when others =>
+    if Stdin_Is_A_Tty then
+      Async_Stdin.Set_Async;
+    end if;
+    raise;
 end Relay;
 
