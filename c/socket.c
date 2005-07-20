@@ -1579,7 +1579,6 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   /* Ok */
   UNLOCK;
   return (SOC_OK);
-
 }
 
 extern int soc_is_connected (soc_token token, boolean *p_connected) {
@@ -1587,6 +1586,8 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   int res;
   int status;
   int len;
+  struct sockaddr socname;
+  socklen_t soclen;
 
   /* Check that socket is open and tcp */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -1617,11 +1618,18 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
   }
 
   if (status == 0) {
-    soc->connection = connected;
-    *p_connected = TRUE;
+    /* No error, should get the peer name */
+    soclen = sizeof(socname);
+    res = getpeername (soc->socket_id, &socname, &soclen);
+    *p_connected = (res == 0);
+    if (*p_connected) {
+      soc->connection = connected;
+    } else {
+      soc->connection = not_connected;
+    }
   } else {
-    soc->connection = not_connected;
     *p_connected = FALSE;
+    soc->connection = not_connected;
   }
 
   UNLOCK;
