@@ -1584,8 +1584,6 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
 extern int soc_is_connected (soc_token token, boolean *p_connected) {
   soc_ptr soc = (soc_ptr) token;
   int res;
-  int status;
-  int len;
   struct sockaddr socname;
   socklen_t soclen;
 
@@ -1597,40 +1595,22 @@ extern int soc_is_connected (soc_token token, boolean *p_connected) {
     return (SOC_PROTO_ERR);
   }
 
-  if (soc->connection == connected) {
-    *p_connected = TRUE;
-    UNLOCK;
-    return (SOC_OK);
-  } else if (soc->connection == not_connected) {
-    *p_connected = FALSE;
-    UNLOCK;
-    return (SOC_OK);
-  }
-
-  /* Get pending connect result */
-  len = sizeof (status);
-  res = getsockopt(soc->socket_id, SOL_SOCKET, SO_ERROR, &status, &len);
-  if (res == -1) {
-    perror("getsockopt");
-    soc->connection = not_connected;
-    UNLOCK;
-    return (SOC_SYS_ERR);
-  }
-
-  if (status == 0) {
-    /* No error, should get the peer name */
+  /* Status is known for not pending connection */
+  if (soc->connection == connecting) {
+    /* Pending connection */
+    /* If socket is connected, we sould be able to get the peer addr */
+    /* Set connection status accordingly */
     soclen = sizeof(socname);
     res = getpeername (soc->socket_id, &socname, &soclen);
-    *p_connected = (res == 0);
-    if (*p_connected) {
+    if (res == 0) {
       soc->connection = connected;
     } else {
       soc->connection = not_connected;
     }
-  } else {
-    *p_connected = FALSE;
-    soc->connection = not_connected;
   }
+
+  /* Set out parameter */
+  *p_connected = (soc->connection == connected);
 
   UNLOCK;
   return (SOC_OK);
