@@ -2,6 +2,7 @@ with Ada.Finalization;
 generic
   type Object is limited private;
   with procedure Set (Dest : in out Object; Val : in Object);
+  with procedure Finalize (Dest : in Object);
 package Smart_Reference is
 
   type Handle is limited private;
@@ -33,7 +34,6 @@ private
   end record;
   procedure Initialize (Ref : in out Handle);
   procedure Finalize (Ref : in out Handle);
-
 
 end Smart_Reference;
 

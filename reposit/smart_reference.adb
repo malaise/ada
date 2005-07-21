@@ -20,6 +20,7 @@ package body Smart_Reference is
       Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access - 1;
       if Ref.Box_Access.Nb_Access = 0 then
         Trace("Free");
+        Finalize(Ref.Box_Access.Obj);
         Free(Ref.Box_Access);
       end if;
     end if;
