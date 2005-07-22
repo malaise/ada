@@ -3,6 +3,12 @@ package body Parser is
 
   Empty : constant String := "";
 
+  -- Standard seaparing function
+  function Is_Space_Or_Htab_Function (C : Character) return Boolean is
+  begin
+    return C = ' ' or else C = Ascii.Ht;
+  end Is_Space_Or_Htab_Function;
+
   -- Is iterator created and not deleted
   function Is_Set (Iter : Iterator) return Boolean is
   begin
@@ -24,7 +30,7 @@ package body Parser is
   --   long (see Text_Handler.Max_Len_Range)
   procedure Set (Iter : in out Iterator;
                  Str  : in String;
-                 Is_Sep : in Separing_Function) is
+                 Is_Sep : in Separing_Function := Space_Htab) is
   begin
     if Str'Length > Text_Handler.Max_Len_Range'Last then
       raise Constraint_Error;

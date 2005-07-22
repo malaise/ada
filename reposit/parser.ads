@@ -6,16 +6,20 @@ package Parser is
   type Separing_Function is
        access function (C : Character) return Boolean;
 
+  function Is_Space_Or_Htab_Function (C : Character) return Boolean;
+  Space_Htab : constant Separing_Function
+             := Is_Space_Or_Htab_Function'Access; 
+
   -- Access key
   type Iterator is limited private;
 
   -- Initialise the iterator Iter with the string to parse and the criteria.
   -- Previous content of Iter is overwritten.
-  -- May raise Constraint_Error if Is_Sep is null or invalid
+  -- May raise Constraint_Error if Is_Sep is null
   --  or if Str is too long (see Text_Handler.Max_Len_Range).
   procedure Set (Iter : in out Iterator;
                  Str : in String;
-                 Is_Sep : in Separing_Function);
+                 Is_Sep : in Separing_Function := Space_Htab);
 
   -- Is the iterator Iter set?
   function Is_Set (Iter : Iterator) return Boolean;
@@ -73,13 +77,12 @@ package Parser is
   function Last_Index  (Iter : Iterator; Normalize : Boolean := True)
                        return Natural;
 
-  -- Return the string Str to which the iterator was set.
-  -- The Str provided to Set may not have been from 1 to N.
-  -- If not Normalized, the string returned has the same indexes as Str,
-  --  otherwise it is from 1 to N.
+  -- Return the string to which the iterator was set.
+  -- If not Normalized, the string returned has the same indexes as the initial,
+  --  otherwise it is from 1 to N, shorter then the initial string.
   -- May raise Constraint_Error if Iter is not set.
   function Image (Iter : Iterator; Normalize : Boolean := True)
-                 return  String;
+                 return String;
 
 private
 
