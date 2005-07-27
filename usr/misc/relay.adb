@@ -177,6 +177,11 @@ begin
 
   Event_Mng.Set_Sig_Term_Callback (Sig_Callback'Unrestricted_Access);
 
+  -- Wait a little bit for some connections to establish
+  if not Stdin_Is_A_Tty then
+    Event_Mng.Pause (100);
+  end if;
+
   -- Main loop
   loop
     if Stdin_Is_A_Tty then
@@ -203,4 +208,5 @@ exception
     end if;
     raise;
 end Relay;
+
 
