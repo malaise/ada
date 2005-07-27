@@ -35,32 +35,32 @@ begin
       if ((Indice - 1) mod 6 = 0) and then (Indice /= 1) then
         New_Line;
         Put("-> ");
-      end if; 
+      end if;
 
       -- elements de la ligne separes par '/'
-      if Indice = Typ_Indice'First then 
-        Element := 1; 
-      else 
+      if Indice = Typ_Indice'First then
+        Element := 1;
+      else
         Element := Table(Typ_No_Ligne'Pred(No_Ligne), Typ_Indice'Pred(Indice)) +
-                      Table(Typ_No_Ligne'Pred(No_Ligne), Indice); 
-      end if; 
-      Table(No_Ligne, Indice) := Element; 
-      Put(Element); 
-      if Indice /= Typ_Indice'Succ(No_Ligne) then 
-        Put('/'); 
-      end if; 
-    end loop; 
+                      Table(Typ_No_Ligne'Pred(No_Ligne), Indice);
+      end if;
+      Table(No_Ligne, Indice) := Element;
+      Put(Element);
+      if Indice /= Typ_Indice'Succ(No_Ligne) then
+        Put('/');
+      end if;
+    end loop;
 
     -- fin du traitement
-    New_Line; 
-    New_Line; 
-  end loop Principale; 
+    New_Line;
+    New_Line;
+  end loop Principale;
 
 exception
 
   -- un element est trop grand
-  when others => 
-    Put_Line("PROBLEME: Degre trop grand."); 
-    New_Line; 
-end Pascal; 
+  when others =>
+    Put_Line("PROBLEME: Degre trop grand.");
+    New_Line;
+end Pascal;
 
