@@ -51,6 +51,7 @@ package Event_Mng is
   --      until a Terminate_Sig or Child_Sig while Sig_Callback set
   --   or until timeout
   -- Any negative timeout means infinite
+  -- The three operation end on event or timeout
   Infinite_Ms : constant Integer := -1;
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event,
                           Wakeup_Event, No_Event);
