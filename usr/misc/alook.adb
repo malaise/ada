@@ -17,7 +17,7 @@
 with Ada.Text_Io, Ada.Exceptions, Ada.Direct_Io;
 
 with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
-     Lower_Str, Mixed_Str;
+     Lower_Str, Mixed_Str, Sys_Calls;
 
 procedure Look_95 is
 
@@ -280,6 +280,15 @@ procedure Look_95 is
   Word_Error : exception;
   Word : Text_Handler.Text (Text_Handler.Max_Len_Range'Last);
 
+  -- This is the exit code. Like diff:
+  -- An  exit status of 0 means no change,
+  --  1 means some files have been (or would be if test) modified,
+  --  and 2 means trouble on at least one file
+  All_Unchanged : constant Natural := 0;
+  Some_Modified : constant Natural := 1;
+  Problem : constant Natural := 2;
+  Exit_Code : Natural := All_Unchanged;
+
   -- Process one file
   function Do_One(File_Name : in String;
                   Do_It : in Boolean;
@@ -379,13 +388,16 @@ procedure Look_95 is
       Reading.Open(File_Name, not Do_It);
     exception
       when Reading.Name_Error =>
-        Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
-           & " skipping.");
+        Sys_Calls.Put_Line_Error("Error. Cannot open file " & File_Name
+           & " for writting. Skipping.");
+        Exit_Code := Problem;
         return False;
       when Error : others =>
-        Ada.Text_Io.Put_Line("Error. Cannot open file " & File_Name
-           & " Exception " & Ada.Exceptions.Exception_Name (Error)
-           & " skipping.");
+        Sys_Calls.Put_Line_Error("Error. Cannot open file " & File_Name
+           & " for writting, exception "
+           & Ada.Exceptions.Exception_Name (Error)
+           & ". Skipping.");
+        Exit_Code := Problem;
         return False;
     end;
 
@@ -570,13 +582,14 @@ procedure Look_95 is
 
   exception
     when Error : others =>
-      Ada.Text_Io.Put_Line (
+      Sys_Calls.Put_Line_Error(
            "Error. While processing file " & File_Name
-           & " Exception " & Ada.Exceptions.Exception_Name (Error)
-           & " skipping.");
+           & ", exception " & Ada.Exceptions.Exception_Name (Error)
+           & ". Skipping.");
       Reading.Close;
       Text_Handler.Empty (Line);
       Text_Handler.Empty (Word);
+      Exit_Code := Problem;
       return Modified;
   end Do_One;
 
@@ -640,6 +653,9 @@ begin
             Ada.Text_Io.New_Line;
           end if;
         end if;
+        if Exit_Code /= Problem then
+          Exit_Code := Some_Modified;
+        end if;
       elsif Verbose_Level = Verbose then
         -- Trace unaltered files if verbose
         Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " =");
@@ -650,5 +666,10 @@ begin
   if not One_Done then
     Put_Usage;
   end if; 
+  Sys_Calls.Set_Exit_Code (Exit_Code);
+exception
+  when others =>
+    Sys_Calls.Set_Exit_Code (Problem);
+    raise;
 end Look_95;
 
