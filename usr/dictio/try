@@ -19,7 +19,7 @@ fi
 
 # These ones are not debug
 # Flow control on LAN during sync
-export DICTIO_DELAY_PER_KB=0.010
+export DICTIO_DELAY_PER_KB=0.021
 # Delay after which master is stable
 export DICTIO_STABLE_DELAY=0.200
 # Default prio
@@ -40,7 +40,7 @@ while [ "$1" != "" ] ; do
     export MODE=channel
     shift
   else
-    echo "Usage: `basename $0`   -b | -c   [-p <prio> ]"
+    echo "Usage: `basename $0`   [ -b | -c ]   [ -p <prio> ]"
     exit 1
   fi
 done
