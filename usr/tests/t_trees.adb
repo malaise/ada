@@ -59,7 +59,7 @@ begin
   My_Tree.Delete_Current (T);
 
   My_Tree.Move_Root (T);
-  My_Tree.Dump (T, Image'Unrestricted_Access,
+  My_Tree.Dump (T, Image'Access,
                 Ada.Text_Io.Standard_Output);
 
   Ada.Text_Io.New_Line;
@@ -73,7 +73,7 @@ begin
   My_Tree.Swap_Saved (T);
 
   My_Tree.Move_Root (T);
-  My_Tree.Dump (T, Image'Unrestricted_Access,
+  My_Tree.Dump (T, Image'Access,
                 Ada.Text_Io.Standard_Output);
 
   -- Clear second branch (15)
