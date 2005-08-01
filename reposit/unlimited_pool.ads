@@ -7,7 +7,7 @@ package Unlimited_Pool is
 
   type Pool_Type is limited private; 
 
-  -- Check if pool is not empty, get number og elements in pool
+  -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean;
   function Length (Pool : in Pool_Type) return Natural;
 
