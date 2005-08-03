@@ -44,6 +44,7 @@ begin
       return;
   end;
 
+  -- Main loop
   loop 
     begin
       Item := Mcd_Parser.Next_Item;
@@ -54,15 +55,19 @@ begin
         Mcd_Parser.Dump_Stack;
         raise;
     end;
-   end loop;
-   
-   if The_End /= Mcd_Mng.Exit_Break
-   and then not Mcd_Mng.Check_Empty_Stack then
-     Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
-   end if;
+  end loop;
 
-   Io_Flow.Close;
-   Mcd_Mng.Close;
+  -- Normal exit: check empty stack
+  if The_End /= Mcd_Mng.Exit_Break
+  and then not Mcd_Mng.Check_Empty_Stack then
+    Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
+  end if;
+
+  -- Done
+  Io_Flow.Close;
+  Mcd_Mng.Close;
+  Sys_Calls.Set_Ok_Exit_Code;
+
 exception
   -- Clean mapping of exceptions
   when Mcd_Mng.Invalid_Argument =>
