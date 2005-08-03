@@ -56,6 +56,9 @@ procedure Relay is
   begin
     -- Discard own messages
     if Message.Id = My_Host_Id then
+      -- Normally, this should not occure because local host name
+      --  has been deleted from destinations, but does it have the
+      --  same name in the destination list file?
       return;
     end if;
     -- Get string len
@@ -142,6 +145,7 @@ begin
      return;
   end;
 
+  -- Subscribe and add destinations from file except ourself
   My_Channel.Change_Channel_Name (Text_Handler.Value(Channel_Name));
   My_Channel.Subscribe;
   begin
@@ -160,6 +164,9 @@ begin
       Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
+  My_Channel.Del_Destination(Socket.Local_Host_Name);
+
+  -- Initialize ttys
   declare
     use type Sys_Calls.File_Desc_Kind_List;
   begin
@@ -174,7 +181,7 @@ begin
     Event_Mng.Wait (500);
   end if;
 
-
+  -- Hook Cb for sig term
   Event_Mng.Set_Sig_Term_Callback (Sig_Callback'Unrestricted_Access);
 
   -- Wait a little bit for some connections to establish
@@ -195,6 +202,7 @@ begin
 
   end loop;
 
+  -- Cleanup / reset before exit
   My_Channel.Del_All_Destinations;
   My_Channel.Unsubscribe;
   if Stdin_Is_A_Tty then
@@ -208,5 +216,4 @@ exception
     end if;
     raise;
 end Relay;
-
 
