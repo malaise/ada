@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Sys_Calls, Text_Handler, My_Io, Argument, Upper_Str, Normal, My_Math;
 with Grid_1, Grid_2;
 
@@ -44,7 +44,7 @@ procedure Code is
       when Constraint_Error =>
         raise Line_Too_Long;
     end;
-    Buff(Len) := Ascii.Cr;
+    Buff(Len) := Ada.Characters.Latin_1.Cr;
     for I in 1 .. Len loop
       begin
         Rec := Grid_1.Encode(Buff(I));
@@ -73,7 +73,7 @@ procedure Code is
       C := Grid_1.Decode(Rec);
       Len := Len + 1;
       Buff(Len) := C;
-      exit when C = Ascii.Cr;
+      exit when C = Ada.Characters.Latin_1.Cr;
     end loop;
   end Decode_1;
 

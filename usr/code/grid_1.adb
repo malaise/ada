@@ -1,9 +1,10 @@
+with Ada.Characters.Latin_1;
 with Text_Handler, My_Io, Sorts;
 package body Grid_1 is
 
 
   Data : array (Row_Coordinate, Col_Coordinate) of Character
-       := (others => (others => Ascii.Nul));
+       := (others => (others => Ada.Characters.Latin_1.Nul));
   Initialized : Boolean := False;
 
   package Char_Sort is new Sorts (Character, Positive, "<", String);
@@ -11,12 +12,12 @@ package body Grid_1 is
   -- Return a valid character for text
   function Filter (C : Character) return Character is
   begin
-    if (C >= ' ' and then C <= '~') or else C = Ascii.Cr then
+    if (C >= ' ' and then C <= '~') or else C = Ada.Characters.Latin_1.Cr then
       return C;
-    elsif C = Ascii.Ht then
+    elsif C = Ada.Characters.Latin_1.Ht then
       return ' ';
     else
-      return Ascii.Nul;
+      return Ada.Characters.Latin_1.Nul;
     end if;
   end Filter;
 
@@ -47,7 +48,7 @@ package body Grid_1 is
     -- Store stripped key
     for I in Key'Range loop
       Char := Filter(Key(I));
-      if Char /= Ascii.Nul then
+      if Char /= Ada.Characters.Latin_1.Nul then
         if Text_Handler.Locate (Stripped_Key, Char) = 0 then
           Text_Handler.Append (Stripped_Key, Char);
         end if;
@@ -68,7 +69,7 @@ package body Grid_1 is
         Store (Sorted_Key(I), False);
       end loop;
     end;
-    Store (Ascii.Cr, True);
+    Store (Ada.Characters.Latin_1.Cr, True);
     for C in Character'(' ') .. '~' loop
       Store (C, True);
     end loop;
@@ -76,14 +77,14 @@ package body Grid_1 is
   end Initialize;
 
 
-  -- C can be any char from ' ' to '~' or Ascii.Cr
+  -- C can be any char from ' ' to '~' or Ada.Characters.Latin_1.Cr
   function Encode (C : Character) return Coordinate_Rec is
     Sc : constant Character := Filter(C);
   begin
     if not Initialized then
       raise Grid_Not_Init;
     end if;
-    if Sc = Ascii.Nul then
+    if Sc = Ada.Characters.Latin_1.Nul then
       raise Invalid_Character;
     end if;
     for Row in Row_Coordinate loop
@@ -111,11 +112,11 @@ package body Grid_1 is
     end if;
     for R in Row_Coordinate loop
       for C in Col_Coordinate loop
-        if Data(R, C) = Ascii.Cr then
+        if Data(R, C) = Ada.Characters.Latin_1.Cr then
           My_Io.Put ("Ret");
-        elsif Data(R, C) /= Ascii.Nul then
+        elsif Data(R, C) /= Ada.Characters.Latin_1.Nul then
           My_Io.Put('>' & Data(R, C) & '<');
-        elsif Data(R, C) = Ascii.Nul then
+        elsif Data(R, C) = Ada.Characters.Latin_1.Nul then
           My_Io.Put ("Nul");
         else
           raise Constraint_Error;

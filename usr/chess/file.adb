@@ -1,9 +1,11 @@
-with Ada.Text_Io, Ada.Direct_Io;
+with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
 with Text_Handler, Get_Line;
 
 with Space;
 
 package body File is
+
+  Lf : Character renames Ada.Characters.Latin_1.Lf;
 
   File_Name_Txt : Text_Handler.Text (Max_File_Name_Len);
 
@@ -203,7 +205,7 @@ package body File is
     -- Last char is necessary a Lf
     Index := Chess_Io.Size(The_File);
     if Index = 0 then
-      Chess_Io.Write (The_File, Ascii.Lf, 1);
+      Chess_Io.Write (The_File, Lf, 1);
       Index := 1;
     end if;
 
@@ -214,7 +216,7 @@ package body File is
       Index := Index - 1;
       while Index > 1 loop
         Chess_Io.Read (The_File, Char, Index);
-        if Char /= Ascii.Lf then
+        if Char /= Lf then
           exit;
         end if;
         Index := Index - 1;
@@ -299,7 +301,7 @@ package body File is
     end if;
     Move_Num := Move_Num + 1;
     if Move_Num rem 2 = 0 then
-      Chess_Io.Write (The_File, Ascii.Lf);
+      Chess_Io.Write (The_File, Lf);
     else
       Chess_Io.Write (The_File, ' ');
     end if;
@@ -316,7 +318,7 @@ package body File is
       raise File_Error;
     end if;
     if Written then
-      Chess_Io.Write (The_File, Ascii.Lf);
+      Chess_Io.Write (The_File, Lf);
     end if;
     begin
       My_Get_Line.Close;

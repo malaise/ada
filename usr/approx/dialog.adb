@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Con_Io, Afpx, Normal;
 with Point_Str, Resol;
 package body Dialog is
@@ -21,7 +22,7 @@ package body Dialog is
   begin
     L := 0;
     for I in reverse Str'Range loop
-      if Str(I) /= ' ' and then Str(I) /= Ascii.Ht then
+      if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
         -- Significant char
         if L = 0 then
           L := I;

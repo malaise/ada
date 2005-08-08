@@ -13,7 +13,7 @@ package Grid_1 is
 
   procedure Initialize (Key : in String);
 
-  -- C can be any char from ' ' to '~' or Ascii.Cr
+  -- C can be any char from ' ' to '~' or Ada.Characters.Latin_1.Cr
   -- Any other char is discarded
   function Encode (C : Character) return Coordinate_Rec;
 
