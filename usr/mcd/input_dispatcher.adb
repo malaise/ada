@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Text_Handler;
 with Debug, Mcd_Mng, Io_Flow;
 package body Input_Dispatcher is
@@ -26,7 +26,9 @@ package body Input_Dispatcher is
 
   function Is_Separator (C : in Character) return Boolean is
   begin
-    return C = ' ' or else C = Ascii.Ht or else C = Ascii.Cr;
+    return     C = ' '
+       or else C = Ada.Characters.Latin_1.Ht
+       or else C = Ada.Characters.Latin_1.Cr;
   end Is_Separator;
 
 

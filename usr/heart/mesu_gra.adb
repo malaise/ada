@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Afpx, Con_Io, Normal, My_Math, Text_Handler, Dos;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
@@ -440,7 +441,7 @@ package body Mesu_Gra is
       -- Get key
       Char := Con_Io.Get(Echo => False);
       -- Exit when Escape
-      if Char = Ascii.Esc then
+      if Char = Ada.Characters.Latin_1.Esc then
         Exit_Program := False;
         exit Main_Loop;
       elsif Char = 'T' or else Char = 't' then
@@ -479,7 +480,7 @@ package body Mesu_Gra is
 
           Draw_Mesure (No_Mesure);
         end if;
-      elsif Char = Ascii.Nul then
+      elsif Char = Ada.Characters.Latin_1.Nul then
         -- Refresh
         Con_Io.Reset_Term;
         Con_Io.Set_Xor_Mode(Con_Io.Xor_On);

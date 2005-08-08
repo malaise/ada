@@ -1,5 +1,5 @@
 -- Test timed queue
-with Ada.Text_Io, Ada.Calendar;
+with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
 with Argument, Queues.Timed, Sys_Calls, Get_Float;
 procedure T_Timeq is
 
@@ -76,7 +76,7 @@ begin
     Ada.Text_Io.Put ("> ");
     Ada.Text_Io.Get_Line (Str, Len);
     if Len = 0 then
-      C := Ascii.Nul;
+      C := Ada.Characters.Latin_1.Nul;
     else
       C := Str(1);
     end if;
@@ -111,7 +111,7 @@ begin
       when 'a' =>
         -- Run autotest
         Autotest;
-      when Ascii.Nul =>
+      when Ada.Characters.Latin_1.Nul =>
         null;
       when others =>
         Usage;

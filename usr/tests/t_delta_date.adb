@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Text_Io;
+with Ada.Calendar, Ada.Text_Io, Ada.Characters.Latin_1;
 with Perpet, Day_Mng, Normal, My_Io;
 procedure T_Delta_Date is
 
@@ -9,7 +9,7 @@ procedure T_Delta_Date is
 
   procedure Error is
   begin
-    My_Io.Put(Ascii.Bel);
+    My_Io.Put(Ada.Characters.Latin_1.Bel);
     Ada.Text_Io.Skip_Line;
     Ada.Text_Io.Skip_Line;
   end Error;

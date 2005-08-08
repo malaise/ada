@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Con_Io;
 procedure T_Color is
   C : Character;
@@ -17,7 +18,7 @@ begin
 
     Con_Io.Move;
     C := Con_Io.Get (Echo => False);
-    exit when C /= Ascii.Nul;
+    exit when C /= Ada.Characters.Latin_1.Nul;
   end loop;
   delay 5.0;
   Con_Io.Destroy;

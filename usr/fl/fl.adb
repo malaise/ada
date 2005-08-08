@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Argument, Normal, My_Io, Get_Float;
 with Fl_Time, Fl_Get;
 
@@ -9,6 +9,7 @@ procedure Fl is
   With_Cost : Boolean;
   Cost, Tmp_Cost : Float;
   use Fl_Time;
+  Bell : Character renames Ada.Characters.Latin_1.Bel;
 begin
   if Argument.Get_Nbre_Arg = 1 and then
      Argument.Get_Parameter = "-c" then
@@ -61,7 +62,7 @@ begin
       when Fl_Get.Error =>
         T := (True, 0, 0);
         Tmp_Cost := 0.0;
-        Ada.Text_Io.Put_Line (Ascii.Bel & "Error.");
+        Ada.Text_Io.Put_Line (Bell & "Error.");
       when Fl_Get.Clear =>
         T := (True, 0, 0);
         Tt := (True, 0, 0);
@@ -84,7 +85,7 @@ begin
         when others =>
           T := (True, 0, 0);
           Tmp_Cost := 0.0;
-          Ada.Text_Io.Put_Line (Ascii.Bel & "Error.");
+          Ada.Text_Io.Put_Line (Bell & "Error.");
       end;
       -- Cost of the flight
       Tmp_Cost := Tmp_Cost * Float(T.Hours)
@@ -105,7 +106,7 @@ begin
     exception
       when Time_Overflow =>
         Tt := St;
-        Ada.Text_Io.Put_Line (Ascii.Bel & "Overflow.");
+        Ada.Text_Io.Put_Line (Bell & "Overflow.");
     end;
     Cost := Cost + Tmp_Cost;
 

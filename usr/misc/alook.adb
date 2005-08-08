@@ -14,7 +14,7 @@
 --
 -- Debug displays the modified words.
 
-with Ada.Text_Io, Ada.Exceptions, Ada.Direct_Io;
+with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 
 with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
      Lower_Str, Mixed_Str, Sys_Calls;
@@ -50,10 +50,10 @@ procedure Look_95 is
     procedure Update_Str (Str : in String; At_Index : in Positive_Count);
 
     -- End of line/comment
-    New_Line : constant Character := Ascii.Lf;
+    New_Line : constant Character := Ada.Characters.Latin_1.Lf;
     -- Words might end by and Ada separator or delimiter
     --  or by a New_Line or (DOS format) a Carriage_Return
-    Carriage_Return : constant Character := Ascii.Cr;
+    Carriage_Return : constant Character := Ada.Characters.Latin_1.Cr;
 
     -- Append a newline in file (which has to be and is left closed)
     procedure Append_New_Line (File_Name : in String);
@@ -296,6 +296,7 @@ procedure Look_95 is
 
     -- Current, prev and prev of prev characters
     Char, Prev_Char, Prev_Prev_Char : Character;
+    Nul : Character renames Ada.Characters.Latin_1.Nul;
 
     -- Are they upper case
     Prev_Is_Upper, Curr_Is_Upper : Boolean;
@@ -406,8 +407,8 @@ procedure Look_95 is
     In_String := False;
     In_Comment := False;
     In_Literal := False;
-    Prev_Char := Ascii.Nul;
-    Prev_Prev_Char := Ascii.Nul;
+    Prev_Char := Nul;
+    Prev_Prev_Char := Nul;
     Modified := False;
     Warnings := False;
     Line_No := 1;
@@ -561,8 +562,8 @@ procedure Look_95 is
         Prev_Char := Char;
       else
         Prev_Is_Upper := False;
-        Prev_Prev_Char := Ascii.Nul;
-        Prev_Char := Ascii.Nul;
+        Prev_Prev_Char := Nul;
+        Prev_Char := Nul;
       end if;
 
     end loop;

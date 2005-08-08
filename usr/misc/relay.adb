@@ -1,8 +1,8 @@
 -- Usage: relay <channel>
 -- The channel destinations file is <channel>.chn
 
-with Ada.Text_Io, System;
-
+with System;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Text_Handler, Argument, Sys_Calls, Event_Mng,
      Socket, Tcp_Util, Channels, Async_Stdin;
 procedure Relay is
@@ -64,7 +64,7 @@ procedure Relay is
     -- Get string len
     Len := Length - Len_Offset;
     -- Replace Cr by a New_Line
-    if Len = 1 and then Message.Data(1) = Ascii.Cr then
+    if Len = 1 and then Message.Data(1) = Ada.Characters.Latin_1.Cr then
       Len := 0;
     end if;
     -- Put
@@ -86,16 +86,16 @@ procedure Relay is
       Done := True;
       return True;
     end if;
-    if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
+    if Len >= 1 and then Str(Str'Length) = Ada.Characters.Latin_1.Eot then
       Len := Len - 1;
       Done := True;
     end if;
-    if Len > 1 and then (Str(Len) = Ascii.Lf
-                 or else Str(Len) = Ascii.Cr) then
+    if Len > 1 and then (Str(Len) = Ada.Characters.Latin_1.Lf
+                 or else Str(Len) = Ada.Characters.Latin_1.Cr) then
       Len := Len - 1;
     end if;
-    if Len = 1 and then Str(Len) = Ascii.Lf then
-      Message.Data(1) := Ascii.Cr;
+    if Len = 1 and then Str(Len) = Ada.Characters.Latin_1.Lf then
+      Message.Data(1) := Ada.Characters.Latin_1.Cr;
     else
       Message.Data(1 .. Len) := Str (1 .. Len);
     end if;
@@ -119,7 +119,7 @@ procedure Relay is
     end;
 
     if Len = 0 then
-      Message.Data(1) := Ascii.Cr;
+      Message.Data(1) := Ada.Characters.Latin_1.Cr;
       Len := 1;
     end if;
     Message.Id := My_Host_Id;

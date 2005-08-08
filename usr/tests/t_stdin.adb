@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Exceptions;
+with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 with Argument, Socket, Event_Mng, Tcp_Util, Async_Stdin;
 
 procedure T_Stdin is
@@ -57,7 +57,7 @@ procedure T_Stdin is
       Go_On := False;
       return True;
     end if;
-    if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
+    if Len >= 1 and then Str(Str'Length) = Ada.Characters.Latin_1.Eot then
       Len := Len - 1;
       Go_On := False;
     end if;

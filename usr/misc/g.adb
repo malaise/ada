@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Calendar;
+with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
 with My_Io, U_Rand, Clear_Screen;
 procedure G is
   -- generated number
@@ -117,7 +117,7 @@ begin
             Clear_Screen;
             return;
           end if;
-          if Char = Ascii.Esc then
+          if Char = Ada.Characters.Latin_1.Esc then
             Ada.Text_Io.Get_Immediate (Char);
             if Char = '[' then
               Ada.Text_Io.Get_Immediate (Char);

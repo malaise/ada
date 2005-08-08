@@ -5,7 +5,7 @@
 -- -s : accepts connections for data to relay
 -- -C or -S for remanent (otherwise exit on fifo disconnection or end of input)
 -- Each data is send to client which sent las data received
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 
 with Text_Handler, Sys_Calls, Argument, Async_Stdin, Mixed_Str,
      Event_Mng, Fifos;
@@ -114,7 +114,7 @@ procedure Pipe is
     if Server then
       Fid := Id;
     end if;
-    if Length = 1 and then Message(1) = Ascii.Cr then
+    if Length = 1 and then Message(1) = Ada.Characters.Latin_1.Cr then
       Ada.Text_Io.New_Line;
     else
       Ada.Text_Io.Put (Message(1 .. Length));
@@ -137,7 +137,7 @@ procedure Pipe is
       end if;
       return True;
     end if;
-    if Len >= 1 and then Str(Str'Length) = Ascii.Eot then
+    if Len >= 1 and then Str(Str'Length) = Ada.Characters.Latin_1.Eot then
       -- End of transmission
       Len := Len - 1;
       if not Remanent then
@@ -147,13 +147,13 @@ procedure Pipe is
       end if;
     end if;
     -- Skip Lf but avoid empty message
-    if Len > 1 and then (Str(Len) = Ascii.Lf
-                 or else Str(Len) = Ascii.Cr) then
+    if Len > 1 and then (Str(Len) = Ada.Characters.Latin_1.Lf
+                 or else Str(Len) = Ada.Characters.Latin_1.Cr) then
       Len := Len - 1;
     end if;
     -- Particular case of only return
-    if Len = 1 and then Str(Len) = Ascii.Lf then
-      Message(1) := Ascii.Cr;
+    if Len = 1 and then Str(Len) = Ada.Characters.Latin_1.Lf then
+      Message(1) := Ada.Characters.Latin_1.Cr;
     else
       Message (1 .. Len) := Str (1 .. Len);
     end if;
@@ -179,7 +179,7 @@ procedure Pipe is
     end;
 
     if Len = 0 then
-      Message(1) := Ascii.Cr;
+      Message(1) := Ada.Characters.Latin_1.Cr;
       Len := 1;
     end if;
     Send (Message(1 .. Len));
