@@ -61,9 +61,10 @@ package Dictio_Lib is
   -- - Set("foo", data) will modify or create the item named "bar"
   --    and notifications to "bar" are sent
   -- - Get("foo") will return the data of "bar" or raises No_Item
-  -- - notification requests on the item named "foo" are accepted
-  --    but this item cannot be Set or Get
-  -- - same applies to operations on "foo.stuff" performed realy
+  -- - Notification requests on the item named "foo" are accepted
+  --    but will not work as long as the alias is valid
+  --    (because this item cannot be Set, nor Get)
+  -- - Same applies to operations on "foo.stuff" performed realy
   --    on "bar.stuff"
   -- Alias can be canceled with an empty What string.
   -- May raise Invalid_Name or Name_Too_Long
