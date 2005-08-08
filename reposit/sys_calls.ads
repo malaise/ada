@@ -33,7 +33,8 @@ package Sys_Calls is
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);
-  -- Set error exit code
+  -- Set ok or error exit code
+  procedure Set_Ok_Exit_Code;
   procedure Set_Error_Exit_Code;
 
   -- Unix File Descriptor
