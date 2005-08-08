@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 
 with Sys_Calls;
 with Argument;
@@ -19,7 +19,8 @@ procedure T_Forker is
   Rep : Forker.Report_Rec;
 
   procedure My_Send is new Socket.Send (Forker.Request_Rec);
-  procedure My_Receive is new Socket.Receive (Forker.Report_Rec, Forker.Report_Size);
+  procedure My_Receive is new Socket.Receive (Forker.Report_Rec,
+                                              Forker.Report_Size);
 
   Cause : Forker.Exit_Cause_List;
   Code  : Natural;
@@ -30,10 +31,11 @@ procedure T_Forker is
   begin
     C := ' ';
     for I in To'Range loop
-      if C = Ascii.Nul and then To(I) = Ascii.Nul then
+      if C = Ada.Characters.Latin_1.Nul
+      and then To(I) = Ada.Characters.Latin_1.Nul then
         To(I .. I + Str'Length - 1) := Str;
-        To(I + Str'Length + 1) := Ascii.Nul;
-        To(I + Str'Length + 2) := Ascii.Nul;
+        To(I + Str'Length + 1) := Ada.Characters.Latin_1.Nul;
+        To(I + Str'Length + 2) := Ada.Characters.Latin_1.Nul;
         return;
       end if;
       C := To(I);
@@ -49,7 +51,7 @@ begin
 
   if Argument.Get_Nbre_Arg /= 2 then
     Ada.Text_Io.Put_Line ("Error. Two args <hostname> <port_name/num> expected.");
-    Sys_Calls.Set_Exit_Code (1);
+    Sys_Calls.Set_Error_Exit_Code;
     return;
   end if;
 
