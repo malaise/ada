@@ -1,6 +1,6 @@
 with Interfaces.C_Streams;
 with Interfaces.C.Strings;
-with Ada.Command_Line;
+with Ada.Command_Line, Ada.Characters.Latin_1;
 with Day_Mng, Bit_Ops;
 
 package body Sys_Calls is
@@ -18,7 +18,7 @@ package body Sys_Calls is
 
   function Str_For_C (Str : String) return String is
   begin
-    return Str & Ascii.Nul;
+    return Str & Ada.Characters.Latin_1.Nul;
   end Str_For_C;
 
   function Str_From_C (Str_Addr : Interfaces.C.Strings.Chars_Ptr) return String is
@@ -125,7 +125,7 @@ package body Sys_Calls is
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
-    C_Str : constant String := Str & Ascii.Nul;
+    C_Str : constant String := Str & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (C_Str'Address,
                  Interfaces.C_Streams.Stderr);
@@ -133,7 +133,8 @@ package body Sys_Calls is
 
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
-    C_Str : constant String := Ascii.Lf & Ascii.Nul;
+    C_Str : constant String := Ada.Characters.Latin_1.Lf
+                             & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (C_Str'Address,
                  Interfaces.C_Streams.Stderr);
@@ -193,7 +194,8 @@ package body Sys_Calls is
   type Str_Ptr is access String;
 
   procedure Putenv (Env_Name : in String; Env_Value : in String) is
-    Str4C : constant String := Env_Name & "=" & Env_Value & Ascii.Nul;
+    Str4C : constant String := Env_Name & "=" & Env_Value
+                             & Ada.Characters.Latin_1.Nul;
     -- Voluntary memory leak here
     Ptr : constant Str_Ptr := new String'(Str4C);
     Addr : constant System.Address
@@ -211,7 +213,12 @@ package body Sys_Calls is
     Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Exit_Status(Code));
   end Set_Exit_Code;
 
-  -- Set error exit code
+  -- Set ok or error exit code
+  procedure Set_Ok_Exit_Code is
+  begin
+    Set_Exit_Code(0);
+  end Set_Ok_Exit_Code;
+
   procedure Set_Error_Exit_Code is
   begin
     Set_Exit_Code(1);
@@ -364,7 +371,7 @@ package body Sys_Calls is
                            C      : out Character) is
     Res : Integer;
   begin
-    C := Ascii.Nul;
+    C := Ada.Characters.Latin_1.Nul;
     Status := Error;
     Res := C_Get_Immediate (Integer(Fd));
     if Res >= 0 then
@@ -492,7 +499,7 @@ package body Sys_Calls is
   pragma Import  (C, C_Mutate, "mutate");
 
   procedure Mutate (Program : in String) is
-    Str4C : constant String := Program & Ascii.Nul;
+    Str4C : constant String := Program & Ada.Characters.Latin_1.Nul;
   begin
     C_Mutate (Str4C(Str4C'First)'Address, Str4C'Length);
   end Mutate;
