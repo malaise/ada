@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 package body Text_Handler is
 
   function Length (T : Text) return Max_Len_Range is
@@ -248,7 +249,7 @@ package body Text_Handler is
 
   procedure String_For_C (From : in out Text; String_Address : out System.Address) is
   begin
-    From.Val(Length(From) + 1) := Ascii.Nul;
+    From.Val(Length(From) + 1) := Ada.Characters.Latin_1.Nul;
     String_Address := From.Val'Address;
   end String_For_C;
 

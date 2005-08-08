@@ -1,9 +1,10 @@
-with Ada.Unchecked_Conversion;
+with Ada.Characters.Latin_1, Ada.Unchecked_Conversion;
 package body Socket is
 
   ----------------
   -- INTERFACES --
   ----------------
+  Nul : Character renames Ada.Characters.Latin_1.Nul;
   Byte_Size : constant := System.Storage_Unit;
 
   subtype Result is Integer;
@@ -35,7 +36,7 @@ package body Socket is
 
   function C_Str (Str : String) return String is
   begin
-    return Str & Ascii.Nul;
+    return Str & Nul;
   end C_Str;
 
   type C_Protocol is new Protocol_List;
@@ -419,7 +420,7 @@ package body Socket is
                              Name'Address, Name'Length);
     Check_Ok;
     for I in Name'Range loop
-      if Name(I) = Ascii.Nul then
+      if Name(I) = Nul then
         return Name(1 .. I-1);
       end if;
     end loop;
@@ -444,7 +445,7 @@ package body Socket is
     Res := Soc_Host_Name_Of (Id'Address, Name'Address, Name'Length);
     Check_Ok;
     for I in Name'Range loop
-      if Name(I) = Ascii.Nul then
+      if Name(I) = Nul then
         return Name(1 .. I-1);
       end if;
     end loop;
@@ -467,7 +468,7 @@ package body Socket is
     Res := Soc_Get_Local_Host_Name (Name'Address, Name'Length);
     Check_Ok;
     for I in Name'Range loop
-      if Name(I) = Ascii.Nul then
+      if Name(I) = Nul then
         return Name(1 .. I-1);
       end if;
     end loop;

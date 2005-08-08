@@ -1,5 +1,6 @@
 -- Interface to forker process
 with System;
+with Ada.Characters.Latin_1;
 package Forker is
 
   -- Command number
@@ -38,14 +39,14 @@ package Forker is
 
   Init_Start : constant Start_Request_Rec
              := (Number => 0,
-                 Command => (others => Ascii.Nul),
-                 Environ => (others => Ascii.Nul),
-                 Current_Dir => (others => Ascii.Nul),
-                 Output_Flow => (others => Ascii.Nul),
-                 Error_Flow  => (others => Ascii.Nul),
+                 Command => (others => Ada.Characters.Latin_1.Nul),
+                 Environ => (others => Ada.Characters.Latin_1.Nul),
+                 Current_Dir => (others => Ada.Characters.Latin_1.Nul),
+                 Output_Flow => (others => Ada.Characters.Latin_1.Nul),
+                 Error_Flow  => (others => Ada.Characters.Latin_1.Nul),
                  Append_Output => False,
                  Append_Error  => False,
-                 Pad => (others => Ascii.Nul) );
+                 Pad => (others => Ada.Characters.Latin_1.Nul) );
 
   -- Kill request
   type Kill_Request_Rec is record

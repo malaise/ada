@@ -1,5 +1,5 @@
+with Ada.Characters.Latin_1;
 with Text_Handler, Con_Io, Afpx, Directory, Dir_Mng, String_Mng;
-
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
                       For_Read     : Boolean) return String is
@@ -64,7 +64,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   begin
     L := 0;
     for I in reverse Str'Range loop
-      if Str(I) /= ' ' and then Str(I) /= Ascii.Ht then
+      if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
         -- Significant char
         if L = 0 then
           L := I;

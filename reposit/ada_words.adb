@@ -1,10 +1,11 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Hash, Lower_Str;
 package body Ada_Words is
 
   function Is_Separator (C : Character) return Boolean is
   begin
-    return C = ' ' or else C = Ascii.Ht or else C = Ascii.Lf;
+    return C = ' ' or else C = Ada.Characters.Latin_1.Ht
+                   or else C = Ada.Characters.Latin_1.Lf;
   end Is_Separator;
 
   function Is_Delimiter (C : Character) return Boolean is

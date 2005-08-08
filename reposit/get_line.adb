@@ -1,5 +1,5 @@
+with Ada.Characters.Latin_1;
 package body Get_Line is
-
 
   F : Ada.Text_Io.File_Type;
   Current_Line : Line_Array;
@@ -27,6 +27,11 @@ package body Get_Line is
     Ada.Text_Io.Close (F);
   end Close;
 
+  function Is_Separator (C : Character) return Boolean is
+  begin
+    return C = ' ' or else C = Ada.Characters.Latin_1.Ht;
+  end Is_Separator;
+
   -- Next word of Buff (from Cur). "" if no more word.
   function Get_Next_Word return String is
     F, L : Positive;
@@ -37,7 +42,7 @@ package body Get_Line is
     end if;
     F := Cur;
     for I in Cur .. Last loop
-      if Buff(I) = ' ' or Buff(I) = Ascii.Ht then
+      if Is_Separator (Buff(I)) then
         if In_Word then
           L := I;
           In_Word := False;
@@ -62,7 +67,7 @@ package body Get_Line is
   begin
     Nb_Words := 0;
     for I in 1 .. Last loop
-      if Buff(I) = ' ' or Buff(I) = Ascii.Ht then
+      if Is_Separator (Buff(I)) then
         null;
       else
         Cur := I;
@@ -109,8 +114,7 @@ package body Get_Line is
       Text_Handler.Set (Current_Whole_Line, Buff(1 .. Last));
 
       -- Remove trailing spaces
-      while Last > 0
-       and then (Buff(Last) = ' ' or else Buff(Last) = Ascii.Ht) loop
+      while Last > 0 and then Is_Separator (Buff(Last)) loop
         Last := Last - 1;
       end loop;
 

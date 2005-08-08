@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Sys_Calls, Bit_Ops;
 with Day_Mng;
 package body Directory is
@@ -28,7 +29,7 @@ package body Directory is
 
   function Str_For_C (Str : String) return String is
   begin
-    return Str & Ascii.Nul;
+    return Str & Ada.Characters.Latin_1.Nul;
   end Str_For_C;
 
   function C_Getcwd (Buf : System.Address; Size : Integer) return System.Address;

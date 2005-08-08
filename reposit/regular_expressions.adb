@@ -1,11 +1,12 @@
 -- Posix regular expression
+with Ada.Characters.Latin_1;
 with Bit_Ops;
 package body Regular_Expressions is
 
   -- C interface --
   function Str4C (Str : String) return String is
   begin
-    return Str & Ascii.Nul;
+    return Str & Ada.Characters.Latin_1.Nul;
   end Str4C;
 
   function C_Malloc_Regex return System.Address;

@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Parser, Environ, Lower_Str;
 package body Pattern is
 
@@ -86,7 +86,7 @@ package body Pattern is
   -- Separator for parsing patterns
   function Is_Sep (C : Character) return Boolean is
   begin
-    return C = ' ' or else C = Ascii.Ht;
+    return C = ' ' or else C = Ada.Characters.Latin_1.Ht;
   end Is_Sep;
 
   -- (Re)define a pattern

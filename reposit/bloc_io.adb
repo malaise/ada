@@ -1,14 +1,16 @@
 -- Perform read/write of several Element_Type in file
+with Ada.Characters.Latin_1;
 package  body Bloc_Io is
 
   Element_Size : constant Positive := Element_Type'Size / System.Storage_Unit;
 
+  Nul : Character renames Ada.Characters.Latin_1.Nul;
   -----------------
   -- C interface --
   -----------------
-  Create_Str :  constant String := "w+" & Ascii.Nul;
-  Read_Str  : constant String := "r" & Ascii.Nul;
-  Write_Str : constant String := "r+" & Ascii.Nul;
+  Create_Str :  constant String := "w+" & Nul;
+  Read_Str  : constant String := "r" & Nul;
+  Write_Str : constant String := "r+" & Nul;
   subtype Size_T is Long_Integer;
 
   function Fopen(Path : in System.Address;
@@ -47,7 +49,7 @@ package  body Bloc_Io is
   -- Create Open / Close stuff
   procedure Create(File : in out File_Type;
                    Name : in String) is
-    Name4C : constant String := Name & Ascii.Nul;
+    Name4C : constant String := Name & Nul;
     use type System.Address;
   begin
     if Is_Open(File) then
@@ -64,7 +66,7 @@ package  body Bloc_Io is
   procedure Open(File : in out File_Type;
                  Mode : in File_Mode;
                  Name : in String) is
-    Name4C : constant String := Name & Ascii.Nul;
+    Name4C : constant String := Name & Nul;
     use type System.Address;
   begin
     if Mode = Out_File then

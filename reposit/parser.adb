@@ -1,4 +1,4 @@
-with Ada.Unchecked_Deallocation;
+with Ada.Characters.Latin_1, Ada.Unchecked_Deallocation;
 package body Parser is
 
   Empty : constant String := "";
@@ -6,7 +6,7 @@ package body Parser is
   -- Standard seaparing function
   function Is_Space_Or_Htab_Function (C : Character) return Boolean is
   begin
-    return C = ' ' or else C = Ascii.Ht;
+    return C = ' ' or else C = Ada.Characters.Latin_1.Ht;
   end Is_Space_Or_Htab_Function;
 
   -- Is iterator created and not deleted

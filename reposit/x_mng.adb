@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Exceptions;
+with Ada.Calendar, Ada.Exceptions, Ada.Characters.Latin_1;
 with My_Io, Address_Ops, Environ, Event_Mng;
 package body X_Mng is
 
@@ -414,7 +414,7 @@ package body X_Mng is
   procedure X_Initialise (Server_Name : in String) is
 
     Serv_Name_For_C : constant String(1 .. Server_Name'Length+1)
-                    := Server_Name & Ascii.Nul;
+                    := Server_Name & Ada.Characters.Latin_1.Nul;
   begin
     if not Initialised then
       if X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address)
@@ -496,7 +496,7 @@ package body X_Mng is
   procedure X_Set_Line_Name (Line_Id : in Line;
                              Line_Name : in String) is
     Line_Name_For_C : constant String(1 .. Line_Name'Length+1)
-                    := Line_Name & Ascii.Nul;
+                    := Line_Name & Ada.Characters.Latin_1.Nul;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin

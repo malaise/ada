@@ -1,5 +1,5 @@
-with Ada.Text_Io;
 with System;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 with Bit_Ops;
 package body Ndbm is
 
@@ -88,7 +88,7 @@ package body Ndbm is
   -- Open --
   ----------
   procedure Open is
-    Name_For_C : constant String := File_Name & Ascii.Nul;
+    Name_For_C : constant String := File_Name & Ada.Characters.Latin_1.Nul;
     use Bit_Ops;
   begin
     if Is_Open then

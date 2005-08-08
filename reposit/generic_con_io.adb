@@ -1,8 +1,10 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Characters.Latin_1;
 with Argument, Dyn_Data, Environ;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
+
+  Cr : Character renames Ada.Characters.Latin_1.Cr;
 
   procedure X_Initialise is
   begin
@@ -521,7 +523,7 @@ package body Generic_Con_Io is
       if Name = null then
         raise Window_Not_Open;
       end if;
-      if Int /= Character'Pos(Ascii.Cr) then
+      if Int /= Character'Pos(Cr) then
         Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
         -- Put character
         X_Mng.X_Put_Char (Id, X_Mng.Byte(Int),
@@ -571,11 +573,11 @@ package body Generic_Con_Io is
       if Name = null then
         raise Window_Not_Open;
       end if;
-      if C /= Ascii.Cr then
+      if C /= Cr then
         Put_Not_Move(C, Name, Foreground, Blink_Stat, Background);
       end if;
       if Move then
-        if C = Ascii.Cr then
+        if C = Cr then
           -- End of current row
           Name.Current_Pos.Col := Name.Lower_Right.Col - Name.Upper_Left.Col;
         end if;
@@ -619,11 +621,11 @@ package body Generic_Con_Io is
         Slast  := S'First;
         Pcr := False;
         -- Look for CR or end of string
-        while Slast /= S'Last and then S(Slast) /= Ascii.Cr loop
+        while Slast /= S'Last and then S(Slast) /= Cr loop
           Slast := Slast + 1;
         end loop;
         -- Skip CR
-        if S(Slast) = Ascii.Cr then
+        if S(Slast) = Cr then
           Rlast := Slast - 1;
           Pcr := True;
         else
@@ -643,7 +645,7 @@ package body Generic_Con_Io is
         Move_One (Name);
         -- Issue CR
         if Pcr then
-          Put(Ascii.Cr, Name);
+          Put(Cr, Name);
         end if;
         -- Move to next chunk
         exit when Slast = S'Last;
@@ -681,7 +683,7 @@ package body Generic_Con_Io is
         raise Window_Not_Open;
       end if;
       for I in 1 .. Number loop
-        Put(Ascii.Cr, Name);
+        Put(Cr, Name);
       end loop;
     end New_Line;
 
@@ -1294,11 +1296,12 @@ package body Generic_Con_Io is
 
     -- Gets first character (echo or not)
     -- No echo for Ret, Esc, Break and Refresh where
-    --  Ascii.Cr, Esc, Eot and Nul are returned respectively
+    --  Latin_1.Cr, Esc, Eot and Nul are returned respectively
     -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
     --  discarded (get does not return).
     function Get (Name : Window := Screen; Echo : in Boolean := True)
                  return Character is
+      package Latin_1 renames Ada.Characters.Latin_1;
       Str  : String(1 .. 1);
       Last : Natural;
       Stat : Curs_Mvt;
@@ -1318,21 +1321,21 @@ package body Generic_Con_Io is
             -- Character input
             return Str(1);
           when Ret =>
-            return Ascii.Cr;
+            return Latin_1.Cr;
           when Esc =>
-            return Ascii.Esc;
+            return Latin_1.Esc;
           when Break =>
-            return Ascii.Eot;
+            return Latin_1.Eot;
           when Fd_Event =>
-            return Ascii.Stx;
+            return Latin_1.Stx;
           when Timer_Event =>
-            return Ascii.Syn;
+            return Latin_1.Syn;
           when Signal_Event =>
-            return Ascii.Si;
+            return Latin_1.Si;
           when Wakeup_Event =>
-            return Ascii.So;
+            return Latin_1.So;
           when Refresh =>
-            return Ascii.Nul;
+            return Latin_1.Nul;
           when Mouse_Button | Timeout =>
             -- Ignore mouse. Timeout impossible.
             null;

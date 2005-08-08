@@ -1,8 +1,8 @@
 with Text_Handler;
--- Store several strings in one, using Ascii.Nul as separator.
+-- Store several strings in one, using Ascii Nul as separator.
 package Many_Strings is
 
-  -- A Many_String is a list of strings separated by Ascii.Nul
+  -- A Many_String is a list of strings separated by Ascii Nul
   -- A String is a Many_String of one String.
   subtype Many_String is String;
 

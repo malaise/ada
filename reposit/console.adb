@@ -1,8 +1,8 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Characters.Latin_1;
 -- From man console_codes
 package body Console is
 
-  Csi : constant String := Ascii.Esc & '[';
+  Csi : constant String := Ada.Characters.Latin_1.Esc & '[';
 
   function Trans (N : Positive) return String is
     Str : constant String := N'Img;

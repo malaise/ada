@@ -191,9 +191,9 @@ package Generic_Con_Io is
 
     -- Gets first character (echo or not)
     -- No echo for Ret,      Esc, Break, Fd_Event, Timer_Event, Signal_Event
-    -- Wakeup_Event  and Refresh where
-    --             Ascii.Cr, Esc, Eot,   Stx,      Syn,         Si          
-    -- So            and Nul are returned respectively
+    --  Wakeup_Event and Refresh where
+    --           Latin_1.Cr, Esc, Eot,   Stx,      Syn,         Si          
+    --  So           and Nul are returned respectively
 
     -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
     --  discarded (get does not return).

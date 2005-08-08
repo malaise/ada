@@ -1,6 +1,7 @@
+with Ada.Characters.Latin_1;
 package body Many_Strings is
 
-  Sep : constant Character := Ascii.Nul;
+  Sep : constant Character := Ada.Characters.Latin_1.Nul;
 
   -- Concatenation
   function Cat (To : Many_String; What : String) return Many_String is

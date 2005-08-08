@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Calendar;
+with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
 with Event_Mng, Sys_Calls, Text_Handler, Console, Dynamic_List, Trace, Environ;
 package body Async_Stdin is
 
@@ -235,6 +235,8 @@ package body Async_Stdin is
       At_Last := True;
     end Store;
 
+    package Latin_1 renames Ada.Characters.Latin_1;
+
     function Add (C : Character) return Boolean is
        Saved_Searching : Boolean;
        use Text_Handler;
@@ -254,15 +256,15 @@ package body Async_Stdin is
       -- Trace.Activate;
       -- Trace.Put (C & "->" & Integer'Image(Character'Pos(C)));
       case C is
-        when Ascii.Bs | Ascii.Del =>
+        when Latin_1.Bs | Latin_1.Del =>
           -- Backspace
           if not Empty (Seq) then
             Store;
-            Append (Txt, Ascii.Esc);
+            Append (Txt, Latin_1.Esc);
             return True;
           end if;
           if Ind = 1 then
-            Ada.Text_Io.Put (Ascii.Bel);
+            Ada.Text_Io.Put (Latin_1.Bel);
           else
             -- Move one left, shift tail
             Ind := Ind - 1;
@@ -271,11 +273,11 @@ package body Async_Stdin is
             Console.Left;
             Console.Delete;
           end if;
-        when Ascii.Ht =>
+        when Latin_1.Ht =>
           -- Search
           if not Empty (Seq) then
             Store; 
-            Append (Txt, Ascii.Esc);
+            Append (Txt, Latin_1.Esc);
             return True;
           end if;
           if Empty (Txt) then
@@ -288,14 +290,14 @@ package body Async_Stdin is
             Update;
             At_Last := False;
           else
-            Ada.Text_Io.Put (Ascii.Bel);
+            Ada.Text_Io.Put (Latin_1.Bel);
           end if;
           Searching := True;
-        when Ascii.Esc =>
+        when Latin_1.Esc =>
           -- Escape, validate previous escape
           if not Empty (Seq) then
             Store;
-            Append (Txt, Ascii.Esc);
+            Append (Txt, Latin_1.Esc);
             return True;
           end if;
           Set (Seq, C);
@@ -325,7 +327,7 @@ package body Async_Stdin is
               if Str = Arrow_Left_Seq then
                 -- Left if not at first
                 if Ind = 1 then
-                  Ada.Text_Io.Put (Ascii.Bel);
+                  Ada.Text_Io.Put (Latin_1.Bel);
                 else
                   Ind := Ind - 1;
                   Console.Left;
@@ -334,7 +336,7 @@ package body Async_Stdin is
               elsif Str = Arrow_Right_Seq then
                 -- Right if not at Last
                 if Ind = Length (Txt) + 1 then
-                  Ada.Text_Io.Put (Ascii.Bel);
+                  Ada.Text_Io.Put (Latin_1.Bel);
                 else
                   Ind := Ind + 1;
                   Console.Right;
@@ -396,7 +398,7 @@ package body Async_Stdin is
               elsif Length(Txt) + Length(Seq) = Max then
                 -- Not enough final space to store sequence
                 Store;
-                Append (Txt, Ascii.Esc);
+                Append (Txt, Latin_1.Esc);
                 return True;
               end if;
             end;
@@ -405,7 +407,7 @@ package body Async_Stdin is
           -- Other char
           Store;
           if not Empty (Seq) then
-            Append (Txt, Ascii.Esc);
+            Append (Txt, Latin_1.Esc);
           else
             Append (Txt, C);
           end if;
@@ -420,7 +422,7 @@ package body Async_Stdin is
       if not Text_Handler.Empty (Seq) 
       and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
         -- Client wants to flush and Esc is getting old
-        Text_Handler.Append (Txt, Ascii.Esc);
+        Text_Handler.Append (Txt, Latin_1.Esc);
         Text_Handler.Empty (Seq);
         return True;
       end if;
@@ -472,8 +474,8 @@ package body Async_Stdin is
 
     -- Fix tty output
     if Stdio_Is_A_Tty
-    and then (C = Ascii.Cr
-              or else C = Ascii.Lf) then
+    and then (C = Ada.Characters.Latin_1.Cr
+      or else C = Ada.Characters.Latin_1.Lf) then
       Ada.Text_Io.New_Line;
     end if;
 

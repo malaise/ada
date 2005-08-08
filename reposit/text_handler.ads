@@ -54,7 +54,7 @@ package Text_Handler is
   function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1)
                   return Max_Len_Range;
 
-  -- Appends Ascii.Null to From.Val (From.Max_Len must be long enough).
+  -- Appends Ascii Null to From.Val (From.Max_Len must be long enough).
   -- String_Address is From.Val'Address and can then be passed to a C function.
   procedure String_For_C (From : in out Text; String_Address : out System.Address);
 

@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Direct_Io;
+with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
 with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory, Upper_Str, Mixed_Str;
 with Afpx_Typ;
 use  Afpx_Typ;
@@ -262,6 +262,8 @@ procedure Afpx_Bld is
     Next_Line;
   end Load_List;
 
+  Ht : Character renames Ada.Characters.Latin_1.Ht;
+
   procedure Loc_Load_Field (No : in Afpx_Typ.Field_Range)  is
     First_Init : Boolean;
     Prev_Init_Square : Con_Io.Square;
@@ -354,35 +356,35 @@ procedure Afpx_Bld is
         Finit_Start := 1;
         -- Skeep spaces after string
         while   Finit_Str(Finit_Len) = ' '
-        or else Finit_Str(Finit_Len) = Ascii.Ht loop
+        or else Finit_Str(Finit_Len) = Ht loop
           Finit_Len := Finit_Len - 1;
         end loop;
         -- Skeep spaces before row
         while   Finit_Str(Finit_Start) = ' '
-        or else Finit_Str(Finit_Start) = Ascii.Ht loop
+        or else Finit_Str(Finit_Start) = Ht loop
           Finit_Start := Finit_Start + 1;
         end loop;
         -- Skip row
         while    Finit_Str(Finit_Start) /= ' '
-        and then Finit_Str(Finit_Start) /= Ascii.Ht loop
+        and then Finit_Str(Finit_Start) /= Ht loop
           Finit_Start := Finit_Start + 1;
         end loop;
         -- Skeep spaces between row and col
         while   Finit_Str(Finit_Start) = ' '
-        or else Finit_Str(Finit_Start) = Ascii.Ht loop
+        or else Finit_Str(Finit_Start) = Ht loop
           Finit_Start := Finit_Start + 1;
         end loop;
         -- Skip col
         while    Finit_Start <= Finit_Len
         and then Finit_Str(Finit_Start) /= ' '
-        and then Finit_Str(Finit_Start) /= Ascii.Ht loop
+        and then Finit_Str(Finit_Start) /= Ht loop
           Finit_Start := Finit_Start + 1;
         end loop;
         if Finit_Start /= Finit_Len then
           -- There is a init string. Skeep spaces between col and str
           while   Finit_Start <= Finit_Len
           and then (        Finit_Str(Finit_Start) = ' '
-                    or else Finit_Str(Finit_Start) = Ascii.Ht) loop
+                    or else Finit_Str(Finit_Start) = Ht) loop
             Finit_Start := Finit_Start + 1;
           end loop;
           -- Set effective init string

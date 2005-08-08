@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Loc_Arg;
 use Loc_Arg;
 package body Argument is
@@ -10,12 +11,12 @@ package body Argument is
 
   function Not_Key return String is
   begin
-    return "" & Ascii.Del;
+    return "" & Ada.Characters.Latin_1.Del;
   end Not_Key;
 
   function Any_Arg return String is
   begin
-    return "" & Ascii.Nul;
+    return "" & Ada.Characters.Latin_1.Nul;
   end Any_Arg;
 
   function Any_Key return String is
