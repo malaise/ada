@@ -1,5 +1,6 @@
-SUBDIRS := account approx c_magic chess code day_of_week dictio fifos fl \
- great_circle heart hungar mcd misc mmind navig nimmari pexec pipe \
+SUBDIRS := dictio fifos mcd pipe \
+ account approx c_magic chess code day_of_week fl \
+ great_circle heart hungar misc mmind navig nimmari pexec \
  simusi sokoban tasks tests
 
 include $(HOME)/Makefiles/dir.mk
