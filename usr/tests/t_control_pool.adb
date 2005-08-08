@@ -26,7 +26,7 @@ procedure T_Control_Pool is
       -- Get a random pool resource
       Pool_No := Rnd.Int_Random(Pool_Range'First, Pool_Range'Last);
       T1 := Ada.Calendar.Clock;
-      Dur1 := Rnd.Dur_Random (1.0, 3.0);
+      Dur1 := Rnd.Dur_Random (-0.1, 3.0);
       Ada.Text_Io.Put_Line (My_No'Img & ": getting " & Pool_No'Img & " for " & Dur1'Img);
       Got := Pool.Get(Pool_No, Dur1);
       Dur2 := Ada.Calendar.Clock - T1;
