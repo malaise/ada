@@ -1,7 +1,18 @@
 #!/bin/bash
-if [ $# -lt 2 ] ; then
-  echo "Usage: `basename $0` <expression> <base>"
+
+# Check 1 or 2 args
+if [ \( $# -ne 1 \) -a \( $# -ne 2 \) ] ; then
+  echo "Usage: `basename $0` <expression> [ <base> ]"
+  echo "  default base is 10."
   exit 1
 fi
-echo " $* obase putl" | mcd
+
+# Set base
+export base=10
+if [ ! -z "$2" ] ; then
+  export base=$2
+fi
+
+# Mcd
+echo " $1 $base obase putl" | mcd
 
