@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Argument, Sys_Calls;
+with Argument, Sys_Calls, Mixed_Str;
 with Debug, Mcd_Parser, Mcd_Mng, Io_Flow;
 
 procedure Mcd is
@@ -112,7 +112,8 @@ exception
     Sys_Calls.Set_Error_Exit_Code;
   when Error:others =>
     Sys_Calls.Put_Line_Error ("Mcd error: exception "
-                            & Ada.Exceptions.Exception_Name (Error));
+              & Mixed_Str(Ada.Exceptions.Exception_Name (Error))
+              & " raised.");
     Mcd_Mng.Close;
     Sys_Calls.Set_Error_Exit_Code;
 end Mcd;
