@@ -129,7 +129,7 @@ Descriptor 1
     Init
       0 0 Type exit in a get field to desactivate it
       1 0 Type return to print content of field, escape to clear field
-      2 0 Print button is flip-flop based on keyboard event
+      2 0 Print button is flip-flop based on keyboard event and timer
 
     End Init
   End Field
