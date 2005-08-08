@@ -43,7 +43,8 @@ package body Mcd_Parser is
    Pow      => ("**", "push B ** A (pow)             ", False),
    Sqrt     => (Nosy, "push Sqrt(A)                  ", False),
    Minus    => ("+-", "push -A                       ", False),
-   Absv     => (Nosy, "push |A|                      ", True),
+   Absv     => (Nosy, "push |A|                      ", False),
+   Fact     => ("! ", "push A!                       ", True),
 
    Bitand   => ("&&", "push B and A (bit and)        ", False),
    Bitor    => ("||", "push B or A  (bit or)         ", False),

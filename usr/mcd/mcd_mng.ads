@@ -15,6 +15,7 @@ package Mcd_Mng is
    Sqrt,
    Minus,
    Absv,
+   Fact,
 
    Bitand,
    Bitor,

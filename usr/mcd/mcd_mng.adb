@@ -121,7 +121,10 @@ package body Mcd_Mng is
     function Log     (X : Item_Rec) return Item_Rec;
 
     -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
-    function Proport   (X, Y, Z : Item_Rec) return Item_Rec;
+    function Proport (X, Y, Z : Item_Rec) return Item_Rec;
+
+    -- Inte->Real
+    function Fact    (X : Item_Rec) return Item_Rec;
 
     -- Argument does not mach operator
     -- Invalid_Argument : exception;
@@ -400,6 +403,9 @@ package body Mcd_Mng is
           S := A;
         when Absv =>
           Pop(A); Push (Operations.Absv(A));
+          S := A;
+        when Fact =>
+          Pop(A); Push (Operations.Fact(A));
           S := A;
         when Bitneg =>
           Pop(A); Push (Operations.Bitneg(A));

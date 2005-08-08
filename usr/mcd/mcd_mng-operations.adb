@@ -262,6 +262,29 @@ package body Operations is
       raise Compute_Error;
   end Absv;
 
+  -- Inte->Real
+  -- X!
+  function Fact   (X : Item_Rec) return Item_Rec is
+    Res : My_Math.Real;
+  begin
+    if X.Kind /= Inte then
+      raise Invalid_Argument;
+    end if;
+    if  X.Val_Inte < 0 then
+      raise Invalid_Argument;
+    end if;
+    Res := 1.0;
+    for I in 1 .. X.Val_Inte loop
+      Res := Res * My_Math.Real(I);
+    end loop;
+    return (Kind => Real, Val_Real => Res);
+  exception
+    when Invalid_Argument =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Fact;
+
   -- Inte->Inte
   function Bitneg  (X : Item_Rec) return Item_Rec is
     use Bit_Ops;
@@ -882,6 +905,6 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Proport;
-    
+ 
 end Operations;
 
