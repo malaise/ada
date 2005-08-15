@@ -1,0 +1,60 @@
+Design Notes for the PragmAda Reusable Components
+
+The primary consideration in the development of the PragmARCs is that they be
+useful in real software. While some component libraries have been developed
+around theoretical taxonomies, the vast majority of the PragmARCs were developed
+to meet the needs of real projects developing real software. These are
+industrial-strength components that may be used with confidence.
+
+The typical PragmARC data-structure component has a generic formal part of
+
+generic
+   type Element is limited private;
+
+   with procedure Assign (To : in out Element; From : in Element) is <>;
+package ...
+
+This is sometimes perceived as being unnecessarily complex by users who only
+need to store unlimited types. "Why not make Element simply private?" they
+ask.
+
+This formal part is used to meet a number of different goals simultaneously.
+
+* Precision of Specification
+
+Generic formal parameters, like the formal parameters of a subprogram, are a
+specification. They specify what the client must supply the generic for the
+generic to do its job. A generic formal private type specifies that the
+generic must have ":=" and "=" operations for the type, in addition to any
+other generic formal operations specified. A generic formal limited private type
+specifies that the generic will only use explicitly specified generic formal
+operations for the type.
+
+Most of the data structures in the PragmARCs only use the assignment operation.
+Specifying the type as private would indicate that the generic requires "=",
+which is incorrect. The only way to specify that only assignment is required
+in Ada is a limited private type and an Assign procedure.
+
+* Generality of use
+
+The generic formal part given above allows structures to be created with any
+Element type that could be used with a generic formal private type, and with
+other types that a private type would not allow. Such types have been needed
+on real projects. One example involves building structures of structures.
+
+* Assignment of different-sized bounded structures
+
+A type with a Max_Size discriminant provides maximum client flexibility in the
+use of bounded structures. The only way to assign values of such types with
+different maximum sizes is with an Assign procedure. Such assignment is
+meaningful, since the logical value contained in such a structure may be
+smaller than the structure's maximum size. To allow structures of bounded
+structures, the generic formal part must import an Assign procedure.
+
+* Ease of use
+
+This seems to be the easiest generic signature to instantiate that meets the
+constraints given above. Other libraries have taken other approaches, but this
+is the best approach that meets these constraints in terms of ease of use.
+When using a data structure with a type that is not limited, generic procedure
+PragmARC.Assignment helps keep the instantiation simple.

@@ -1,0 +1,47 @@
+Mine Detector Installation Instructions
+
+Win32 executable (Tested on Win98 and WinNT4)
+
+Download mine_detector.zip (contains the executable and the GtkAda DLLs)
+Unzip the contents into a directory of your choice
+Run mine_detector.exe from this directory
+
+Linux/x86 executable (Thanks to Doug Rogers for providing this version and
+instructions)
+
+Download mine_detector-4.3-linux-bin.tar.gz (contains the executable and
+the GtkAda library). Gtk+ must be installed (most Linux distributions include
+Gtk+)
+
+It should be untarred as root in the root directory:
+
+  $ su
+  # cd /
+  # tar xzvf /tmp/mine_detector-4.3-linux-bin.tar.gz
+  # ldconfig
+  # exit
+  $ mine_detector
+
+Building from source
+
+Download mine_detector_src.zip
+Unzip the contents into a directory of your choice
+Mine Detector is written entirely in Ada. You must have an Ada compiler to
+build it
+Mine Detector requires GtkAda (libre.act-europe.fr) and the PragmAda Reusable
+Components (home.earthlink.net/~jrcarter010/pragmarc.htm). Currently GtkAda
+requires the GNAT Ada compiler
+The main procedure is Mine_Detector in file mine_detector.adb
+
+Using GNAT, build with the command
+
+gnatmake -O2 -gnato mine_detector
+
+Under Windows, the "-mwindows" linker argument may be added to eliminate the
+DOS box:
+
+gnatmake -O2 -gnato mine_detector -largs -mwindows
+
+Mine Detector is distributed free of charge, and is free software provided
+under the GNU Public License. See the file license.txt included with the
+source distribution

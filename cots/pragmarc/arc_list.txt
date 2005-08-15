@@ -1,0 +1,298 @@
+package PragmARC
+The root package of the components. Declares some common exceptions
+
+package PragmARC.Ansi_Tty_Control
+Control strings for ANSI-standard terminals
+These strings when sent to an ANSI-standard terminal, have the stated effect
+
+package PragmARC.Assertion_Handler
+Provides run-time checking of assertions for program correctness
+Test program: assertst.adb
+
+procedure PragmARC.Assignment
+Easy creation of procedure Assign for instantiating structures with non-limited elements
+An instantiation of this procedure simply performs
+   To := From;
+
+package PragmARC.Bag_Unbounded
+Generic unbounded-bag ADT for general use
+Test program: bag_test.adb; uses bag_test_help.ad?
+
+package PragmARC.Bag_Unbounded_Unprotected
+Generic unbounded-bag ADT for sequential use only.
+
+package PragmARC.Binary_Searcher
+Binary search of an ordered list
+Test program: bs_test.adb
+
+package PragmARC.Binary_Semaphore_Handler
+Binary semaphore for controlling concurrent access not suitable for
+a concurrent form or a monitor
+
+package PragmARC.Character_Regular_Expression_Matcher
+Instantiation of PragmARC.Regular_Expression_Matcher for strings
+Test program: mt.adb, strm_sub.adb
+
+package PragmARC.Complex
+Provides complex numbers and operations
+Ada.Numerics.Generic_Complex_Types provides all the functionality
+of this package
+It is provided should your compiler not implement Annex G
+Test program: cmplxtst.adb
+
+package PragmARC.Date_Handler
+Provides day of the week functions; leap-year functions; days-in-month
+functions; functions to split Seconds to Hours, Minutes, and Seconds; and
+various Image functions for Year, Month, Day, Hour, Minutes, and Seconds,
+including an Image function for type Ada.Calendar.Time
+Test program: datetest.adb, df_test.adb
+
+package PragmARC.Deck_Handler
+A simplified cross between a list and a queue to be used as a deck of cards in card games
+Test program: devil.adb, devil2.adb
+
+package PragmARC.Forwarder
+Concurrent forwarder for task decoupling
+
+function PragmARC.Get_Line
+A function to obtain an entire line of text from an input file, & skip the line terminator
+Modified from the algorithm in the article "Variable-Length String Input in Ada" by J. Carter in ADA LETTERS, 1989 May/Jun
+
+package PragmARC.Hash_Fast_Variable_Length
+Fast "hashing function specifically tailored to variable-length text strings."
+"Similar strings are not likely to collide."
+From P. K. Pearson, "Fast Hashing of Variable-Length Text Strings," Comm. ACM, 1990 Jun
+Test program: hashtest.adb
+
+package PragmARC.Images
+Extended image functions for integer types
+Test program: test_images.adb
+
+function PragmARC.Images.Image
+Instantion of PragmARC.Images.Signed_Image for type Integer
+
+package PragmARC.Linear_Equation_Solver
+Solves linear equations of the form A * X = B for X, where A is
+a matrix and X and B are vectors
+Works for indeterminate linear equations
+Uses QR factorization
+Test program: lin_test.adb
+
+package PragmARC.List_Bounded
+General purpose list for general use
+A list has elements in sequence; each element has a position in
+that sequence
+Positions are used to manipulate a list
+Each list has a maximum length
+
+package PragmARC.List_Bounded_Unprotected
+General purpose list for sequential use only
+A list has elements in sequence; each element has a position in
+that sequence
+Positions are used to manipulate a list
+Each list has a maximum length
+Test program: lb_test.adb; uses lb_test_help.ad?
+
+package PragmARC.List_Unbounded
+General purpose list for general use
+A list has elements in sequence; each element has a position in
+that sequence
+Positions are used to manipulate a list
+Test program: lsort.adb; uses lsorthlp.ad?
+
+package PragmARC.List_Unbounded_Unprotected
+General purpose list for sequential use
+A list has elements in sequence; each element has a position in
+that sequence
+Positions are used to manipulate a list
+
+package PragmARC.Math
+Provides useful constants not defined by Ada.Numerics
+
+package PragmARC.Math.Functions
+This package is implemented in terms of Ada.Numerics.Generic_Elementary_Functions. It provides
+argument checking via subtypes rather than using Argument_Error. It also provides GCD and LCM
+functions
+Test program: mathtest.adb
+
+package PragmARC.Matrix_Math
+Matrix manipulation routines
+User supplies Element (number) type of matrices and constants
+and operations for the type
+Must be able to supply negative one (-1) and zero (0) constants
+The generic parameters are designed to make instantiation easy for
+a floating-point element:
+     use Ada.Numerics.Elementary_Functions; -- For Sqrt
+
+     package PragmARC.Real_Matrix is new Matrix_Math (Element => Float,
+         Neg_One_Element => -1.0, Zero_Element => 0.0);
+Type Element is private to allow more abstract types
+(complex numbers, for example)
+Test program: mat_test.adb
+
+package PragmARC.Menu_Handler
+Straightforward text menus for ANSI-standard terminals
+
+package PragmARC.Min_Max
+Minimum and maximum functions for non-scalar values for which "<"
+is meaningful
+
+function PragmARC.Mixed_Case
+Convert a string to mixed case
+Test program: reflect_test.adb
+
+package PragmARC.Monitor_Handler
+Monitor for concurrent use
+
+package PragmARC.Postfix_Calculator
+Provides a postfix (reverse Polish notation) calculator with
+many features
+Test program: calc.adb
+
+package PragmARC.Protected_Option
+Provides a Boolean Enabled/Disabled option selection suitable
+for concurrent use
+
+package PragmARC.Queue_Bounded
+Bounded queue ADT for general use
+Each queue has a preset maximum size
+Test program: qb_test.adb; uses qb_test_hlp.ads
+
+package PragmARC.Queue_Bounded_Blocking
+Bounded queue ADT for concurrent use only
+Each queue has a preset maximum size
+A call to Put when the queue is full blocks the caller until
+another task calls Get
+A call to Get when the queue is empty blocks the caller until
+another task calls Put
+
+package PragmARC.Queue_Bounded_Unprotected
+Bounded queue ADT for sequential use only
+Each queue has a preset maximum size
+
+package PragmARC.Queue_Unbounded
+General purpose queue for general use
+Test program: q_test.adb; uses q_test_hlp.ads
+
+package PragmARC.Queue_Unbounded_Blocking
+Blocking queue for concurrent use
+Attempts to Get from an empty queue block until another task adds an Element to the queue
+
+package PragmARC.Queue_Unbounded_Unprotected
+General purpose queue for sequential use
+
+package PragmARC.Quick_Searcher
+Fast string search routine; faster than Boyer-Moore for
+most reasonable search patterns
+From COMMUNICATIONS OF THE ACM, 1990 Aug
+Test program: qs_test.adb
+
+package PragmARC.Reflection
+Determine a unit's full name
+Test program: reflect_test.adb
+
+package PragmARC.Regular_Expression_Matcher
+Generic regular expression pattern matching
+A pattern consists of elements
+Elements can be
+    A literal
+    The wild item
+    An escaped item
+    A negated element
+    A class
+    A closure
+Test program: mt.adb, strm_sub.adb
+
+package PragmARC.REM_NN_Wrapper
+A Recursive Error Minimization (REM) neural network
+Easy to use, fast, & robust
+Need only specify Num_Input_Nodes, Num_Hidden_Nodes, Num_Output_Nodes, & Num_Patterns
+If Num_Patterns is not easily determined, set it & R to 1
+Set New_Random_Weights to False & Num_Patterns to 1 to use
+a previously-trained network
+Set Weight_File_Name as desired
+Default values for all other parameters should be satisfactory
+Test program: xor_problem.adb
+
+package PragmARC.Safe_Pointers
+Reference-counted pointers that are automatically deallocated when the count becomes
+zero
+Test program: sp_test.adb; uses sp_test_help.ads
+
+package PragmARC.Safe_Suspension_Objects
+Invokes a suspension object "safely" using the features of controlled types
+
+package PragmARC.Safe_Semaphore_Handler
+Invokes a binary semaphore "safely" using the features of controlled types
+
+package PragmARC.Set_Discrete
+Pascal-like set type and operations
+Test program: set_test.adb
+
+package PragmARC.Skip_List_Unbounded
+Implements a skip list, a probabilistically-balanced
+structure similar to a balanced tree in use and in search time
+Described by W. Pugh in "Skip Lists:  A Probabilistic Alternative
+to Balanced Trees," CACM 1990 Jun
+Can also be used as a priority queue
+Test program: skiptest.adb; uses skip_help.ad?
+
+procedure PragmARC.Skip_List_Unbounded.Put
+Output procedure for skip lists, for debugging and visualization
+
+procedure PragmARC.Sort_Heap
+Generic heap sort
+Test program: heap_test.adb
+
+procedure PragmARC.Sort_Insertion
+Generic insertion sort
+
+procedure PragmARC.Sort_Quick_In_Place
+Generic quick sort
+Uses median-of-3 pivot selection
+Uses PragmARC.Sort_Insertion on short arrays
+
+procedure PragmARC.Sort_Radix
+Generic radix sort for arrays of modular types
+Test program: radix_test.adb
+
+package PragmARC.Stack_Unbounded
+General purpose stack for general use
+
+package PragmARC.Stack_Unbounded_Unprotected
+General purpose stack for sequential use
+
+package PragmARC.Three_Way
+Three way comparison operation
+
+package PragmARC.Transporter_Handler
+Transporter task for task decoupling
+
+package PragmARC.Universal_Random
+Universal random number generator
+Passes "stringent" tests for randomness and independence
+Modified by J. Carter from version given in Ada Letters 1988 Sep/Oct
+Ada 95 defines 2 standard random-number
+packages, Ada.Numerics.Float_Random & Ada.Numerics.Discrete_Random.
+However, the random-number algorithm used by these packages
+is implementation defined. This package provides a portable
+generator of known, good quality, should portability of the
+algorithm be a concern.
+Test program: randtest.adb
+
+package PragmARC.Us_Card
+Definition of standard cards used in USA
+
+package PragmARC.Us_Deck
+An instantiation of PragmARC.Deck_Handler for the cards defined in PragmARC.Us_Card
+
+package PragmARC.Word_Input
+Provides the capability to get a word from a text file
+A word is a sequence of non-whitespace characters separated
+by whitespace
+Whitespace is one or more spaces, horizontal tabs, or
+line terminators
+
+package PragmARC.Wrapping
+Provides equivalents to the 'Pred and 'Succ functions that wrap around from 'First to 'Last and from 'Last to 'First
+Test program: wrapping_test.adb
