@@ -1,9 +1,11 @@
 with Ada.Text_Io;
-with My_Math, Sys_Calls, Normal; use My_Math;
-with Inte_Io, Real_Io, Bool_Io, Io_Flow;
+with My_Math, Sys_Calls, Normal, Bool_Io;
+with Inte_Io, Real_Io, Io_Flow;
 separate (Mcd_Mng)
 
 package body Ios is 
+
+  use My_Math;
 
   Inte_Format_Set : Boolean := False;
   Real_Format_Set : Boolean := False;
@@ -24,6 +26,8 @@ package body Ios is
     I : My_Math.Inte;
   begin
     case Item.Kind is
+      when Arbi =>
+        null;
       when Inte =>
         Inte_Io.Default_Width := Ada.Text_Io.Field (Item.Val_Inte);
         Inte_Format_Set := True;
@@ -61,6 +65,8 @@ package body Ios is
     Str : Item_Rec;
   begin
     case Item.Kind is
+      when Arbi =>
+        Io_Flow.Put ('@' & Arbitrary.Image (Item.Val_Arbi));
       when Inte | Real | Bool | Chrs =>
         Str := Strof (Item);
         Io_Flow.Put (Str.Val_Text(1 .. Str.Val_Len));
@@ -80,22 +86,23 @@ package body Ios is
     Io_Flow.New_Line;
   end New_Line;
 
-  function Strreal (S : Item_Rec) return Item_Rec is
-    Res : Item_Rec(Real);
-    Last : Positive;
+  function Strarbi (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Arbi);
   begin
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Real_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Real, Last);
-    if Last /= S.Val_Len then
+    if S.Val_Len < 2 or else S.Val_Text(1) /= '@' then
       raise Invalid_Argument;
     end if;
+    Res.Val_Arbi := Arbitrary.Set (S.Val_Text(2 .. S.Val_Len));
     return Res;
   exception
+    when Invalid_Argument =>
+      raise;
     when others =>
       raise Invalid_Argument;
-  end Strreal;
+  end Strarbi;
 
   function Strinte (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Inte);
@@ -113,6 +120,23 @@ package body Ios is
     when others =>
       raise Invalid_Argument;
   end Strinte;
+
+  function Strreal (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Real);
+    Last : Positive;
+  begin
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    Real_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Real, Last);
+    if Last /= S.Val_Len then
+      raise Invalid_Argument;
+    end if;
+    return Res;
+  exception
+    when others =>
+      raise Invalid_Argument;
+  end Strreal;
 
   function Strbool (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Bool);
@@ -196,6 +220,14 @@ package body Ios is
     Check_Default_Formats;
 
     case Item.Kind is
+      when Arbi =>
+        Res.Val_Len := Arbitrary.Length (Item.Val_Arbi);
+        if Res.Val_Len > Chars_Text'Length  - 1 then
+          raise String_Len;
+        end if;
+        Res.Val_Len := Res.Val_Len + 1;
+        Res.Val_Text := (others => ' ');
+        Res.Val_Text(1 .. Res.Val_Len) := '@' & Arbitrary.Image (Item.Val_Arbi);
       when Inte =>
         Res.Val_Text := (others => ' ');
         Inte_Io.Put(Res.Val_Text, Item.Val_Inte);

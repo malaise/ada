@@ -1,8 +1,8 @@
-with My_Math;
+with My_Math, Arbitrary;
 with Input_Dispatcher;
 package Mcd_Mng is
 
-  type Item_Kind_List is (Inte, Real, Bool, Chrs, Prog, Regi, Oper);
+  type Item_Kind_List is (Arbi, Inte, Real, Bool, Chrs, Prog, Regi, Oper);
 
   type Operator_List is (
 
@@ -50,6 +50,8 @@ package Mcd_Mng is
    Log,
 
    Toreal,
+   Tointe,
+   Toarbi,
    Round,
    Trunc,
    Int,
@@ -58,8 +60,9 @@ package Mcd_Mng is
    Msd,
    Proport,
 
-   Isreal,
+   Isarbi,
    Isinte,
+   Isreal,
    Isbool,
    Isstr,
    Isreg,
@@ -127,8 +130,9 @@ package Mcd_Mng is
    Strrep,
    Strupp,
    Strlow,
-   Strreal,
+   Strarbi,
    Strinte,
+   Strreal,
    Strbool,
    Strregi,
    Strprog,
@@ -157,6 +161,8 @@ package Mcd_Mng is
 
   type Item_Rec (Kind : Item_Kind_List := Item_Kind_List'First) is record
     case Kind is
+      when Arbi =>
+        Val_Arbi : Arbitrary.Number;
       when Inte =>
         Val_Inte : My_Math.Inte;
       when Real =>

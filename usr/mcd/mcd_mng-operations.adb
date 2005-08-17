@@ -17,6 +17,16 @@ package body Operations is
     return X.Kind = Inte or else X.Kind = Real;
   end Is_Inte_Or_Real;
 
+  function Is_Arbi_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
+  begin
+    return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real;
+  end Is_Arbi_Or_Inte_Or_Real;
+
+  function Is_Arbi_Or_Inte (X : Item_Rec) return Boolean is
+  begin
+    return X.Kind = Arbi or else X.Kind = Inte;
+  end Is_Arbi_Or_Inte;
+
   function Is_Inte_Or_Real_Or_Bool (X : Item_Rec) return Boolean is
   begin
     return X.Kind = Inte or else X.Kind = Real or else X.Kind = Bool;
@@ -29,23 +39,26 @@ package body Operations is
    or else X.Kind = Bool or else X.Kind = Chrs;
   end Is_Inte_Or_Real_Or_Bool_Or_Chars;
 
-  function Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi (X : Item_Rec)
+  function Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi (X : Item_Rec)
            return Boolean is
   begin
-    return X.Kind = Inte or else X.Kind = Real
+    return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real
    or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
-  end Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
+  end Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
 
-  -- Inte,Inte->Inte or Real,Real->Real
+  -- Arbi,Arbi->Arbi or Inte,Inte->Inte or Real,Real->Real
   function Add     (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => L.Val_Arbi + R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte + R.Val_Inte);
     else
       return (Kind => Real, Val_Real => L.Val_Real + R.Val_Real);
@@ -58,14 +71,17 @@ package body Operations is
   end Add;
         
   function Sub     (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => L.Val_Arbi - R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte - R.Val_Inte);
     else
       return (Kind => Real, Val_Real => L.Val_Real - R.Val_Real);
@@ -78,14 +94,17 @@ package body Operations is
   end Sub;
 
   function Mult    (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => L.Val_Arbi * R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte * R.Val_Inte);
     else
       return (Kind => Real, Val_Real => L.Val_Real * R.Val_Real);
@@ -98,14 +117,17 @@ package body Operations is
   end Mult;
 
   function Div     (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => L.Val_Arbi / R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte / R.Val_Inte);
     else
       return (Kind => Real, Val_Real => L.Val_Real / R.Val_Real);
@@ -119,11 +141,20 @@ package body Operations is
 
   function Pow     (L, R : Item_Rec) return Item_Rec is
     use My_Math; -- for real ** real
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(L) or else not Is_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
-    if L.Kind = Inte and then R.Kind = Inte then
+    if L.Kind = Arbi and then R.Kind = Arbi then
+      if R.Val_Arbi < Arbitrary.Set ("0") then
+        raise Invalid_Argument;
+      end if;
+      return (Kind => Arbi, Val_Arbi => L.Val_Arbi ** R.Val_Arbi);
+    elsif L.Kind = Inte and then R.Kind = Inte then
+      if R.Val_Inte < 0 then
+        raise Invalid_Argument;
+      end if;
       return (Kind => Inte, Val_Inte => L.Val_Inte ** Natural(R.Val_Inte));
     elsif L.Kind = Real and then R.Kind = Inte then
       return (Kind => Real,
@@ -141,13 +172,18 @@ package body Operations is
       raise Compute_Error;
   end Pow;
 
-  -- Inte,Inte->Inte
+  -- Arbi,Arbi->Arbi or Inte,Inte->Inte
   function Remind  (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if L.Kind /= Inte or else R.Kind /= Inte then
+    if not Is_Arbi_Or_Inte(L) or else not Is_Arbi_Or_Inte(R) then
       raise Invalid_Argument;
     end if;
-    return (Kind => Inte, Val_Inte => L.Val_Inte rem R.Val_Inte);
+    if L.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => L.Val_Arbi rem R.Val_Arbi);
+    else
+      return (Kind => Inte, Val_Inte => L.Val_Inte rem R.Val_Inte);
+    end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
       raise;
@@ -226,13 +262,16 @@ package body Operations is
       raise Compute_Error;
   end Shr;
 
-  -- Inte->Inte or Real->Real
+  -- Arbi->Arbi or Inte->Inte or Real->Real
   function Minus   (X : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(X) then
+    if not Is_Arbi_Or_Inte_Or_Real(X) then
       raise Invalid_Argument;
     end if;
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => - X.Val_Arbi);
+    elsif X.Kind = Inte then
       return (Kind => Inte, Val_Inte => - X.Val_Inte);
     else
       return (Kind => Real, Val_Real => - X.Val_Real);
@@ -244,13 +283,16 @@ package body Operations is
       raise Compute_Error;
   end Minus;
 
-  -- Inte->Inte or Real->Real
+  -- Arbi->Arbi or Inte->Inte or Real->Real
   function Absv   (X : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(X) then
+    if not Is_Arbi_Or_Inte_Or_Real(X) then
       raise Invalid_Argument;
     end if;
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => abs X.Val_Arbi);
+    elsif X.Kind = Inte then
       return (Kind => Inte, Val_Inte => abs X.Val_Inte);
     else
       return (Kind => Real, Val_Real => abs X.Val_Real);
@@ -262,22 +304,38 @@ package body Operations is
       raise Compute_Error;
   end Absv;
 
-  -- Inte->Real
+  -- Arbi->Arbi or Inte->Real
   -- X!
   function Fact   (X : Item_Rec) return Item_Rec is
-    Res : My_Math.Real;
+    One_Arbi, I_Arbi, R_Arbi : Arbitrary.Number;
+    Res_Real : My_Math.Real;
+    use type Arbitrary.Number;
   begin
-    if X.Kind /= Inte then
+    if X.Kind /= Arbi and then X.Kind /= Inte then
       raise Invalid_Argument;
     end if;
-    if  X.Val_Inte < 0 then
-      raise Invalid_Argument;
+    if X.Kind = Arbi then
+      if X.Val_Arbi < Arbitrary.Set ("0") then
+        raise Invalid_Argument;
+      end if;
+      One_Arbi := Arbitrary.Set ("1");
+      R_Arbi := One_Arbi;
+      I_Arbi := One_Arbi;
+      while I_Arbi <= X.Val_Arbi loop
+        R_Arbi := R_Arbi * I_Arbi;
+        I_Arbi := I_Arbi + One_Arbi;
+      end loop;
+      return (Kind => Arbi, Val_Arbi => R_Arbi);
+    else
+      if X.Val_Inte < 0 then
+        raise Invalid_Argument;
+      end if;
+      Res_Real := 1.0;
+      for I in 1 .. X.Val_Inte loop
+        Res_Real := Res_Real * My_Math.Real(I);
+      end loop;
+      return (Kind => Real, Val_Real => Res_Real);
     end if;
-    Res := 1.0;
-    for I in 1 .. X.Val_Inte loop
-      Res := Res * My_Math.Real(I);
-    end loop;
-    return (Kind => Real, Val_Real => Res);
   exception
     when Invalid_Argument =>
       raise;
@@ -300,18 +358,21 @@ package body Operations is
       raise Compute_Error;
   end Bitneg;
 
-  -- Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
+  -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
   -- Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => L.Val_Arbi = R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte = R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real = R.Val_Real);
@@ -331,15 +392,18 @@ package body Operations is
   end Equal;
 
   function Diff    (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => L.Val_Arbi /= R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte /= R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real /= R.Val_Real);
@@ -359,15 +423,18 @@ package body Operations is
   end Diff;
 
   function Greater (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => L.Val_Arbi > R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte > R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real > R.Val_Real);
@@ -387,15 +454,18 @@ package body Operations is
   end Greater;
 
   function Smaller (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => L.Val_Arbi < R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte < R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real < R.Val_Real);
@@ -415,15 +485,18 @@ package body Operations is
   end Smaller;
 
   function Greateq (L, R : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => L.Val_Arbi >= R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte >= R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real >= R.Val_Real);
@@ -443,15 +516,18 @@ package body Operations is
   end Greateq;
 
   function Smalleq (L, R : Item_Rec) return Item_Rec is 
+    use type Arbitrary.Number;
   begin
-    if      not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
       raise Argument_Mismatch;
     end if;
-    if L.Kind = Inte then
+    if L.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => L.Val_Arbi <= R.Val_Arbi);
+    elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte <= R.Val_Inte);
     elsif L.Kind = Real then
       return (Kind => Bool, Val_Bool => L.Val_Real <= R.Val_Real);
@@ -470,7 +546,43 @@ package body Operations is
       raise Compute_Error;
   end Smalleq;
 
-  -- Inte->Real
+  -- Arbi,Inte->Inte
+  function Tointe (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Inte then
+      return X;
+    end if;
+    if X.Kind /= Arbi then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Inte, Val_Inte => My_Math.Inte'Value(Arbitrary.Image (X.Val_Arbi)));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Tointe;
+
+  -- Arbi,Inte->Arbi
+  function Toarbi (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Arbi then
+      return X;
+    end if;
+    if X.Kind /= Inte then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Arbi, Val_Arbi => Arbitrary.Set (X.Val_Inte));
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when Constraint_Error =>
+      raise Invalid_Argument;
+    when others =>
+      raise Compute_Error;
+  end Toarbi;
+
+  -- Inte,Real->Real
   function Toreal  (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind = Real then
@@ -487,7 +599,7 @@ package body Operations is
       raise Compute_Error;
   end Toreal;
 
-  -- Real->Inte
+  -- Inte,Real->Inte
   function Round (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind = Inte then
@@ -626,15 +738,20 @@ package body Operations is
   end Sqrt;
 
   -- *->Bool
-  function Isreal  (X : Item_Rec) return Item_Rec is
+  function Isarbi  (X : Item_Rec) return Item_Rec is
   begin
-    return (Kind => Bool, Val_Bool => X.Kind = Real);
-  end Isreal;
+    return (Kind => Bool, Val_Bool => X.Kind = Arbi);
+  end Isarbi;
 
   function Isinte  (X : Item_Rec) return Item_Rec is
   begin
     return (Kind => Bool, Val_Bool => X.Kind = Inte);
   end Isinte;
+
+  function Isreal  (X : Item_Rec) return Item_Rec is
+  begin
+    return (Kind => Bool, Val_Bool => X.Kind = Real);
+  end Isreal;
 
   function Isbool  (X : Item_Rec) return Item_Rec is
   begin
@@ -656,10 +773,13 @@ package body Operations is
     return (Kind => Bool, Val_Bool => X.Kind = Prog);
   end Isprog;
 
-  -- Inte->Bool or Real->Bool
+  -- Arbi->Bool or Inte->Bool or Real->Bool
   function Ispos  (X : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => X.Val_Arbi > Arbitrary.Set("0"));
+    elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte > 0);
     elsif  X.Kind = Real then
       return (Kind => Bool, Val_Bool => X.Val_Real > 0.0);
@@ -669,8 +789,11 @@ package body Operations is
   end Ispos;
 
   function Isnul  (X : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => X.Val_Arbi = Arbitrary.Set("0"));
+    elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte = 0);
     elsif  X.Kind = Real then
       return (Kind => Bool, Val_Bool => X.Val_Real = 0.0);
@@ -680,8 +803,11 @@ package body Operations is
   end Isnul;
 
   function Isnotnul  (X : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => X.Val_Arbi /= Arbitrary.Set("0"));
+    elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte /= 0);
     elsif  X.Kind = Real then
       return (Kind => Bool, Val_Bool => X.Val_Real /= 0.0);
@@ -691,8 +817,11 @@ package body Operations is
   end Isnotnul;
 
   function Isneg  (X : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
+      return (Kind => Bool, Val_Bool => X.Val_Arbi < Arbitrary.Set("0"));
+    elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte < 0);
     elsif  X.Kind = Real then
       return (Kind => Bool, Val_Bool => X.Val_Real < 0.0);
@@ -882,19 +1011,22 @@ package body Operations is
       raise Compute_Error;
   end Log;
 
-  -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
+  -- Arbi,Arbi,Arbi->Arbi or Inte,Inte,Inte->Inte or Real,Real,Real->Real
   -- Z * Y / X
   function Proport   (X, Y, Z : Item_Rec) return Item_Rec is
+    use type Arbitrary.Number;
   begin
-    if not Is_Inte_Or_Real(X)
-     or else not Is_Inte_Or_Real(Y)
-     or else not Is_Inte_Or_Real(Z) then
+    if not Is_Arbi_Or_Inte_Or_Real(X)
+     or else not Is_Arbi_Or_Inte_Or_Real(Y)
+     or else not Is_Arbi_Or_Inte_Or_Real(Z) then
       raise Invalid_Argument;
     end if;
     if X.Kind /= Y.Kind or else X.Kind /= Z.Kind then
       raise Argument_Mismatch;
     end if;
     if X.Kind = Inte then
+      return (Kind => Arbi, Val_Arbi => Z.Val_Arbi * Y.Val_Arbi / X.Val_Arbi);
+    elsif X.Kind = Inte then
       return (Kind => Inte, Val_Inte => Z.Val_Inte * Y.Val_Inte / X.Val_Inte);
     else
       return (Kind => Real, Val_Real => Z.Val_Real * Y.Val_Real / X.Val_Real);

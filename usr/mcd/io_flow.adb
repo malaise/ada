@@ -1,7 +1,7 @@
 with Ada.Text_Io, Ada.Characters.Latin_1, Ada.Exceptions;
 with Argument, Text_Handler, Event_Mng;
 with Fifos;
-with Input_Dispatcher, Debug;
+with Input_Dispatcher, Debug, Mcd_Mng;
 package body Io_Flow is
 
   -- Init, get fifo name or leave empty for stdin
@@ -105,6 +105,9 @@ package body Io_Flow is
     if Text_Handler.Empty (Fifo_Name) then
       Ada.Text_Io.Put (Str);
     elsif Client_Id /= Mcd_Fifos.No_Fifo then
+      if Str'Length > Fifo_Msg'Length then
+        raise Mcd_Mng.String_Len;
+      end if;
       Fifo_Msg(1 .. Str'Length) := Str;
       Res := Mcd_Fifos.Send (Client_Id, Fifo_Msg, Str'Length);
       if Res /= Fifos.Ok and then Res /= Fifos.Overflow then

@@ -1,6 +1,6 @@
 with Ada.Text_Io;
-with Environ;
-with Bool_Io, Inte_Io, Real_Io;
+with Environ, Bool_Io, Arbitrary;
+with Inte_Io, Real_Io;
 package body Debug is
 
   procedure Init is
@@ -25,6 +25,8 @@ package body Debug is
     use Mcd_Mng;
   begin
     case Item.Kind is
+      when Arbi =>
+        Ada.Text_Io.Put ("@" & Arbitrary.Image(Item.Val_Arbi));
       when Inte =>
         Inte_Io.Put(Item.Val_Inte);
       when Real =>

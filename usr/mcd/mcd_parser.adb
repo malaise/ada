@@ -1,6 +1,6 @@
 with Ada.Text_Io;
-with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str, Argument;
-with Debug, Input_Dispatcher, Bool_Io, Inte_Io, Real_Io, Io_Flow;
+with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary;
+with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
 
@@ -78,17 +78,20 @@ package body Mcd_Parser is
    Ln       => (Nosy, "push ln(A)                    ", False),
    Log      => (Nosy, "push log(A)                   ", True),
 
-   Toreal   => (Nosy, "push Real(A)                  ", False),
-   Round    => (Nosy, "push Inte(A) (round)          ", False),
-   Trunc    => (Nosy, "push Inte(A) (trunc)          ", False),
-   Int      => (Nosy, "push int  part of A           ", False),
-   Frac     => (Nosy, "push frac part of A           ", False),
+   Toreal   => (Nosy, "push Real(A) (A integer)      ", False),
+   Tointe   => (Nosy, "push Inte(A) (A arbitrary)    ", False),
+   Toarbi   => (Nosy, "push Arbi(A) (A interger)     ", False),
+   Round    => (Nosy, "push Inte(A) (round A real)   ", False),
+   Trunc    => (Nosy, "push Inte(A) (trunc A real)   ", False),
+   Int      => (Nosy, "push int  part of A real      ", False),
+   Frac     => (Nosy, "push frac part of A real      ", False),
    Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
    Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", False),
    Proport  => (Nosy, "push A * B / C                ", True),
  
-   Isreal   => (Nosy, "push True if A is a real      ", False),
+   Isarbi   => (Nosy, "push True if A in an arbitrari", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),
+   Isreal   => (Nosy, "push True if A is a real      ", False),
    Isbool   => (Nosy, "push True if A in a boolean   ", False),
    Isstr    => (Nosy, "push True if A is a string    ", False),
    Isreg    => (Nosy, "push True if A is a register  ", False),
@@ -157,8 +160,9 @@ package body Mcd_Parser is
    Strrep   => (Nosy, "push A replaced by B at pos C ", False),
    Strupp   => (Nosy, "push A in uppercase           ", False),
    Strlow   => (Nosy, "push A in lowercase           ", False),
-   Strreal  => (Nosy, "push A converted to real      ", False),
+   Strarbi  => (Nosy, "push A converted to arbitrary ", False),
    Strinte  => (Nosy, "push A converted to integer   ", False),
+   Strreal  => (Nosy, "push A converted to real      ", False),
    Strbool  => (Nosy, "push A converted to boolean   ", False),
    Strregi  => (Nosy, "push A converted to register  ", False),
    Strprog  => (Nosy, "push A converted to program   ", False),
@@ -297,6 +301,21 @@ package body Mcd_Parser is
 
     end if;
 
+    -- Parse arbitrary : @num
+    if Text_Handler.Length(Txt) >= 2 and then Text_Handler.Value(Txt)(1) = '@' then
+      declare
+        N : Arbitrary.Number;
+      begin
+        Instr_Stack.Push(Item_Chrs);
+        return (Kind => Mcd_Mng.Arbi,
+                Val_Arbi => Arbitrary.Set (Text_Handler.Value(Txt)
+                                            (2 .. Text_Handler.Length(Txt))) );
+      exception
+        when others =>
+          raise Parsing_Error;
+      end;
+    end if;
+
     -- Parse Oper : string
     declare
       Op : Mcd_Mng.Operator_List;
@@ -311,7 +330,6 @@ package body Mcd_Parser is
       -- Does not match
       when others => null;
     end;
-
 
     -- Parse Oper : symbol
     if Text_Handler.Length(Txt) <= 2 then
@@ -383,8 +401,9 @@ package body Mcd_Parser is
     Put_Line ("Commands are strings read from standard input or from a fifo.");
     Put_Line ("Separators are space and horizontal tab.");
     Put_Line ("Comments start by '#', up to the end of line");
-    Put_Line ("Item ::= <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
-    Put_Line ("  <integer>    ::= <number> | <base>#<number># ");
+    Put_Line ("Item ::= <arbitrary> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
+    Put_Line ("  <arbitrary>  ::= @<number>");
+    Put_Line ("  <integer>    ::= <number> | <base>#<number>#");
     Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
     Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
     Put_Line ("  <string>     ::= ""<text>""");

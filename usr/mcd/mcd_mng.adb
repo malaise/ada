@@ -18,7 +18,7 @@ package body Mcd_Mng is
 
   package Stack is 
     -- What can we store in stack
-    subtype Operand_Kind_List is Item_Kind_List range Inte .. Regi;
+    subtype Operand_Kind_List is Item_Kind_List range Arbi .. Regi;
     -- On push : Invalid_Item;
 
     procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True);
@@ -39,14 +39,14 @@ package body Mcd_Mng is
 
     function Is_True (X : Item_Rec) return Boolean;
 
-    -- Inte,Inte->Inte or Real,Real->Real
+    -- Arbi,Arbi->Arbi or Inte,Inte->Inte or Real,Real->Real
     function Add     (L, R : Item_Rec) return Item_Rec;
     function Sub     (L, R : Item_Rec) return Item_Rec;
     function Mult    (L, R : Item_Rec) return Item_Rec;
     function Div     (L, R : Item_Rec) return Item_Rec;
     function Pow     (L, R : Item_Rec) return Item_Rec;
 
-    -- Inte,Inte->Inte
+    -- Arbi,Arbi->Arbi or Inte,Inte->Inte
     function Remind  (L, R : Item_Rec) return Item_Rec;
 
     -- Inte,Inte->Inte
@@ -56,14 +56,14 @@ package body Mcd_Mng is
     function Shl     (L, R : Item_Rec) return Item_Rec;
     function Shr     (L, R : Item_Rec) return Item_Rec;
 
-    -- Inte->Inte or Real->Real
+    -- Arbi,Arbi->Arbi or Inte->Inte or Real->Real
     function Minus   (X : Item_Rec) return Item_Rec;
     function Absv    (X : Item_Rec) return Item_Rec;
 
     -- Inte->Inte
     function Bitneg  (X : Item_Rec) return Item_Rec;
 
-    -- Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
+    -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
     function Equal   (L, R : Item_Rec) return Item_Rec;
     function Diff    (L, R : Item_Rec) return Item_Rec;
     function Greater (L, R : Item_Rec) return Item_Rec;
@@ -71,10 +71,16 @@ package body Mcd_Mng is
     function Greateq (L, R : Item_Rec) return Item_Rec;
     function Smalleq (L, R : Item_Rec) return Item_Rec;
 
-    -- Inte->Real
+    -- Arbi,Inte->Inte
+    function Tointe  (X : Item_Rec) return Item_Rec;
+
+    -- Arbi,Inte->Arbi
+    function ToArbi  (X : Item_Rec) return Item_Rec;
+
+    -- Inte,Real->Real
     function Toreal  (X : Item_Rec) return Item_Rec;
 
-    -- Real->Inte
+    -- Inte,Real->Inte
     function Round   (X : Item_Rec) return Item_Rec;
     function Trunc   (X : Item_Rec) return Item_Rec;
 
@@ -86,14 +92,15 @@ package body Mcd_Mng is
     function Sqrt    (X : Item_Rec) return Item_Rec;
 
     -- *->Bool
-    function Isreal  (X : Item_Rec) return Item_Rec;
+    function Isarbi  (X : Item_Rec) return Item_Rec;
     function Isinte  (X : Item_Rec) return Item_Rec;
+    function Isreal  (X : Item_Rec) return Item_Rec;
     function Isbool  (X : Item_Rec) return Item_Rec;
     function Isstr   (X : Item_Rec) return Item_Rec;
     function Isreg   (X : Item_Rec) return Item_Rec;
     function Isprog  (X : Item_Rec) return Item_Rec;
 
-    -- Inte->Bool or Real->Bool
+    -- Arbi->Bool or Inte->Bool or Real->Bool
     function Ispos    (X : Item_Rec) return Item_Rec;
     function Isnul    (X : Item_Rec) return Item_Rec;
     function Isnotnul (X : Item_Rec) return Item_Rec;
@@ -120,10 +127,10 @@ package body Mcd_Mng is
     function Ln      (X : Item_Rec) return Item_Rec;
     function Log     (X : Item_Rec) return Item_Rec;
 
-    -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
+    -- Arbi,Arbi,Arbi->Arbi or Inte,Inte,Inte->Inte or Real,Real,Real->Real
     function Proport (X, Y, Z : Item_Rec) return Item_Rec;
 
-    -- Inte->Real
+    -- Arbi->Arbi or Inte->Real
     function Fact    (X : Item_Rec) return Item_Rec;
 
     -- Argument does not mach operator
@@ -181,6 +188,7 @@ package body Mcd_Mng is
     procedure Put_Line (Item : in Item_Rec);
     procedure New_Line;
 
+    function Strarbi (S : Item_Rec) return Item_Rec;
     function Strinte (S : Item_Rec) return Item_Rec;
     function Strreal (S : Item_Rec) return Item_Rec;
     function Strbool (S : Item_Rec) return Item_Rec;
@@ -320,7 +328,7 @@ package body Mcd_Mng is
     -- Check for Ctrl C
     if Nb_Item = Item_Check_Period then
       Nb_Item := 0;
-      The_End := Misc.Do_Delay (0.0);
+      The_End := Misc.Do_Delay(0.0);
     else
       Nb_Item := Nb_Item + 1;
       -- Default, except Ret and delay
@@ -428,6 +436,12 @@ package body Mcd_Mng is
         when Smalleq =>
           Pop(A); Pop(B); Push (Operations.Smalleq(B,A));
           S := A;
+        when Tointe =>
+          Pop(A); Push (Operations.Tointe(A));
+          S := A;
+        when Toarbi =>
+          Pop(A); Push (Operations.Toarbi(A));
+          S := A;
         when Toreal =>
           Pop(A); Push (Operations.Toreal(A));
           S := A;
@@ -452,11 +466,14 @@ package body Mcd_Mng is
         when Sqrt =>
           Pop(A); Push (Operations.Sqrt(A));
           S := A;
-        when Isreal =>
-          Pop(A); Push (Operations.Isreal(A));
+        when Isarbi =>
+          Pop(A); Push (Operations.Isarbi(A));
           S := A;
         when Isinte =>
           Pop(A); Push (Operations.Isinte(A));
+          S := A;
+        when Isreal =>
+          Pop(A); Push (Operations.Isreal(A));
           S := A;
         when Isbool =>
           Pop(A); Push (Operations.Isbool(A));
@@ -729,11 +746,14 @@ package body Mcd_Mng is
         when Strlow =>
           Pop(A); Push (Strings.Strlow(A));
           S := A;
-        when Strreal =>
-          Pop(A); Push (Ios.Strreal(A));
+        when Strarbi =>
+          Pop(A); Push (Ios.Strarbi(A));
           S := A;
         when Strinte =>
           Pop(A); Push (Ios.Strinte(A));
+          S := A;
+        when Strreal =>
+          Pop(A); Push (Ios.Strreal(A));
           S := A;
         when Strbool =>
           Pop(A); Push (Ios.Strbool(A));
