@@ -29,19 +29,23 @@ begin
     return;
   end if;
 
+  A := Arbitrary.Set(Integer'(21));
+  A := Arbitrary.Set(Long_Integer'(21));
+  A := Arbitrary.Set(Long_Long_Integer'(21));
+
   A := Set (1);
   B := Set (2);
 
   declare
     use type Arbitrary.Number;
   begin
-    Ada.Text_Io.Put_Line ("A is     " & Arbitrary.Image(A));
-    Ada.Text_Io.Put_Line ("abs A is " & Arbitrary.Image(abs A));
-    Ada.Text_Io.Put_Line ("-A is    " & Arbitrary.Image(-A));
+    Ada.Text_Io.Put_Line ("A is       " & Arbitrary.Image(A));
+    Ada.Text_Io.Put_Line ("abs A is   " & Arbitrary.Image(abs A));
+    Ada.Text_Io.Put_Line ("-A is      " & Arbitrary.Image(-A));
 
-    Ada.Text_Io.Put_Line ("B is     " & Arbitrary.Image(B));
-    Ada.Text_Io.Put_Line ("abs B is " & Arbitrary.Image(abs B));
-    Ada.Text_Io.Put_Line ("-B is    " & Arbitrary.Image(-B));
+    Ada.Text_Io.Put_Line ("B is       " & Arbitrary.Image(B));
+    Ada.Text_Io.Put_Line ("abs B is   " & Arbitrary.Image(abs B));
+    Ada.Text_Io.Put_Line ("-B is      " & Arbitrary.Image(-B));
 
     Ada.Text_Io.Put_Line ("A =  B is  " & Boolean'Image(A = B));
     Ada.Text_Io.Put_Line ("A <  B is  " & Boolean'Image(A < B));
@@ -51,6 +55,29 @@ begin
 
     Ada.Text_Io.Put_Line ("A + B is  " &  Arbitrary.Image(A + B));
     Ada.Text_Io.Put_Line ("A - B is  " &  Arbitrary.Image(A - B));
+    Ada.Text_Io.Put_Line ("A * B is  " &  Arbitrary.Image(A * B));
+    begin
+      Arbitrary.Div (A, B, C, D);
+      Ada.Text_Io.Put_Line ("A / B is  " &  Arbitrary.Image(C));
+      Ada.Text_Io.Put_Line ("A % B is  " &  Arbitrary.Image(D));
+    exception
+      when Constraint_Error =>
+        Ada.Text_Io.Put_Line ("Constraint_Error on division");
+    end;
+    begin
+      Ada.Text_Io.Put_Line ("A ** B is " &  Arbitrary.Image(A ** B));
+    exception
+      when Constraint_Error =>
+        Ada.Text_Io.Put_Line ("Constraint_Error on pow");
+    end;
+  end;
+
+  begin
+    A := Arbitrary.Set("");
+    Ada.Text_Io.Put_Line ("Set("""") SHOULD HAVE RAISED Constraint_Error");
+  exception
+    when Constraint_Error =>
+      Ada.Text_Io.Put_Line ("Set("""")  raises Constraint_Error");
   end;
     
 exception
