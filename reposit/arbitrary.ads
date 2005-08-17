@@ -10,6 +10,7 @@ package Arbitrary is
 
   -- Image
   function Image (V : Number) return String;
+  function Length (V : Number) return Natural;
 
   -- Basic unitary operations
   function "abs" (A : Number) return Number;
@@ -23,9 +24,13 @@ package Arbitrary is
   function ">=" (A, B : Number) return Boolean;
 
   -- Basic operations
-  Len_Error : exception;
   function "+" (A, B : Number) return Number;
   function "-" (A, B : Number) return Number;
+  function "*" (A, B : Number) return Number;
+  function "/" (A, B : Number) return Number;
+  function "rem" (A, B : Number) return Number;
+  procedure Div (A, B : in Number; Q, R : out Number);
+  function "**" (A, B : Number) return Number;
 
 private
   type Number is new Ada.Strings.Unbounded.Unbounded_String;

@@ -1,10 +1,9 @@
+with ada.text_io;
 with Ada.Strings.Maps;
 package body Arbitrary is
 
   package Unb renames Ada.Strings.Unbounded;
   subtype Unbstr is Unb.Unbounded_String;
-
-  Zero : constant Number := Number(Unb.To_Unbounded_String ("+0"));
 
   -- Syntax checking: <sign>{<digit>}
   package Syntax is
@@ -55,20 +54,33 @@ package body Arbitrary is
 
   -- Basic aritmetic
   package Basic is
-    function Is_Pos (A : Number) return Boolean;
-    procedure Add_Char (A, B : in Character;
-                        Carry : in out Boolean; C : out Character);
-    procedure Sub_Char (A, B : in Character;
-                        Carry : in out Boolean; C : out Character);
+    -- Normalize a number: no leading 0 except +0
+    procedure Normalize (A : in out Number);
+
+    -- Is a number positive?
+    function Check_Is_Pos (A : Number) return Boolean;
+
+    -- Add/remove leading sign
+    function Make (V : Unbstr) return Number;
+    function Extract (N : Number) return Unbstr;
+
+    -- Remove heading 0s
+    procedure Trim (A : in out Unbstr);
+
     -- Both must have no sign
     function Add_No_Sign (A, B : Unbstr) return Unbstr;
     -- Both must have no sign and B <= A
     function Sub_No_Sign (A, B : Unbstr) return Unbstr;
+    -- Both must have no sign
+    function Mult_No_Sign (A, B : Unbstr) return Unbstr;
+    -- Both must have no sign and B <= A
+    procedure Div_No_Sign (A, B : in Unbstr; Q, R : out Unbstr);
   end Basic;
 
   package body Basic is
     Zero_Pos : constant Natural := Character'Pos('0');
 
+    -- Int <-> char
     function To_Int (C : Character) return Natural is
     begin
       return Character'Pos(C) - Zero_Pos;
@@ -79,41 +91,109 @@ package body Arbitrary is
       return Character'Val(I + Zero_Pos);
     end To_Char;
 
-    function Is_Pos (A : Number) return Boolean is
+    -- Normalize a number: no leading 0 except +0
+    procedure Normalize (A : in out Number) is
+      D : Unbstr;
+      use type Unbstr;
     begin
-      return Unb.Element (Unbstr(A), 1) = '+';
-    end Is_Pos;
+      D := Basic.Extract (A);
+      Basic.Trim (D);
+      if Unb.Element (Unbstr(A), 1) = '+' or else D = "0" then
+        A := Number ("+" & D);
+      else
+        A := Number ("-" & D);
+      end if;
+    end Normalize;
 
+    -- Is N positive
+    function Check_Is_Pos (A : Number) return Boolean is
+      B : Number;
+    begin
+      Syntax.Check(A);
+      B := A;
+      Normalize (B);
+      return Unb.Element (Unbstr(B), 1) = '+';
+    end Check_Is_Pos;
+
+    -- Number <-> Unbstr : add / remove leading sign
+    function Make (V : Unbstr) return Number is
+      N : Number;
+      use type Unbstr;
+    begin
+      N := Number(V);
+      Normalize (N);
+      return N;
+    end Make;
+
+    function Extract (N : Number) return Unbstr is
+    begin
+      return Unb.Tail (Unbstr(N), Unb.Length (Unbstr(N)) - 1);
+    end Extract;
+
+    -- Remove heading 0s
+    procedure Trim (A : in out Unbstr) is
+      use Unb;
+    begin
+      Unb.Trim (A, Ada.Strings.Maps.To_Set('0'),
+                   Ada.Strings.Maps.Null_Set);
+      if A = Unb.Null_Unbounded_String then
+        A := Unb.To_Unbounded_String("0");
+      end if;
+    end Trim;
+
+    -- Char -> Char operations
     procedure Add_Char (A, B : in Character; 
                         Carry : in out Boolean; C : out Character) is
-      S : Natural;
+      R : Natural;
     begin
-      S := To_Int(A) + To_Int(B);
+      R := To_Int(A) + To_Int(B);
       if Carry then
-        S := S + 1;
+        R := R + 1;
       end if;
-      Carry := S >= 10;
+      Carry := R >= 10;
       if Carry then
-        S := S - 10;
+        R := R - 10;
       end if;
-      C := To_Char (S);
+      C := To_Char (R);
     end Add_Char;
 
     procedure Sub_Char (A, B : in Character; 
                         Carry : in out Boolean; C : out Character) is
-      S : Integer;
+      R : Integer;
     begin
-      S := To_Int(A) - To_Int(B);
+      R := To_Int(A) - To_Int(B);
       if Carry then
-        S := S - 1;
+        R := R - 1;
       end if;
-      Carry := S < 0;
+      Carry := R < 0;
       if Carry then
-        S := S + 10;
+        R := R + 10;
       end if;
-      C := To_Char (S);
+      C := To_Char (R);
     end Sub_Char;
 
+    procedure Mult_Char (A, B : in Character; 
+                         Carry : in out Natural; C : out Character) is
+      R : Natural;
+    begin
+      R := (To_Int(A) * To_Int(B)) + Carry;
+      Carry := R / 10;
+      R := R rem 10;
+      C := To_Char (R);
+    end Mult_Char;
+
+    subtype Str2 is String (1 .. 2);
+    procedure Div_Char (A : in Str2; B : in Character; 
+                        Q : out Character; R : out Character) is
+      Ta, Tb : Natural;
+    begin
+      Ta := To_Int( A(1)) * 10 + To_Int( A(2));
+      Tb := To_Int (B);
+      Q := To_Char (Ta / Tb);
+      R := To_Char (Ta rem Tb);
+    end Div_Char;
+
+    -- Operations on data without sign
     function Add_No_Sign (A, B : Unbstr) return Unbstr is
       La : constant Natural := Unb.Length(A);
       Lb : constant Natural := Unb.Length(B);
@@ -121,14 +201,15 @@ package body Arbitrary is
       R : Unbstr;
       Ca, Cb, Cr : Character;
       C : Boolean := False;
+      use Unb;
     begin
       -- Allocate string of largest length
       if La > Lb then
         L := La;
-        R := A;
+        R := La * ' ';
       else 
         L := Lb;
-        R := B;
+        R := Lb * ' ';
       end if;
       -- Add digits one by one
       for I in 1 .. L loop
@@ -183,52 +264,161 @@ package body Arbitrary is
         raise Constraint_Error;
       end if;
       -- Remove tailing '0's
-      Unb.Trim (R, Ada.Strings.Maps.To_Set('0'), Ada.Strings.Maps.Null_Set);
+      Trim (R); 
       return R;
     end Sub_No_Sign;
 
+    function Mult_No_Sign (A, B : Unbstr) return Unbstr is
+      La : constant Natural := Unb.Length(A);
+      Lb : constant Natural := Unb.Length(B);
+      T, R : Unbstr;
+      Ca, Cb, Ct : Character;
+      C : Natural;
+      use Unb;
+    begin
+      R := Unb.To_Unbounded_String ("0");
+      for I in reverse 1 .. Lb loop
+        -- Multiply A by this digit of B
+        T := La * ' ';
+        Cb := Unb.Element (B, I);
+        C := 0;
+        for J in reverse 1 .. La loop
+          Ca :=  Unb.Element (A, J);
+          Mult_Char (Ca, Cb, C, Ct);         
+          Unb.Replace_Element (T, J, Ct);
+        end loop;
+        if C /= 0 then
+          T := To_Char(C) & T;
+        end if;
+        -- Shift this temp result and add to final result
+        T := T & ( (Lb - I) * '0');
+        R := Add_No_Sign (R, T);
+      end loop;
+      Trim (R); 
+      return R;
+    end Mult_No_Sign;
+
+    procedure Div_One (A, B : in Unbstr; Q : out Character; R : out Unbstr) is
+      La : constant Natural := Unb.Length(A);
+      Lb : constant Natural := Unb.Length(B);
+      Ca, Cb, Cq, Cr : Character;
+      St : Str2;
+      T : Unbstr;
+      Lt : Natural;
+      use type Unbstr;
+    begin
+      Ca := Unb.Element (A, 1);
+      Cb := Unb.Element (B, 1);
+      -- Find quotient
+      if La = Lb then
+        if A < B then
+          -- A < B
+          Q := '0';
+          R := A;
+          return;
+        else
+          St(1) := '0';
+          St(2) := Ca;
+        end if;
+      else
+        St(1) := Ca;
+        St(2) :=  Unb.Element (A, 2);
+      end if;
+      Div_Char (St, Cb, Cq, Cr);
+      -- Check that Q * B < A
+      T := Unb.To_Unbounded_String ("" & Cq);
+      T := Mult_No_Sign (T, B);
+      Lt := Unb.Length(T);
+      if Lt > La or else (Lt = La and then T > A) then
+        -- Decrement Q by one
+        Cq := Character'Pred(Cq);
+      end if;
+      -- Compute Q and R;
+      Q := Cq;
+      T := Unb.To_Unbounded_String ("" & Cq);
+      T := Mult_No_Sign (T, B);
+      R := Sub_No_Sign (A, T);
+      Trim (R);
+    end Div_One;
+
+    procedure Div_No_Sign (A, B : in Unbstr; Q, R : out Unbstr) is
+      La : constant Natural := Unb.Length(A);
+      Lb : constant Natural := Unb.Length(B);
+      T : Unbstr;
+      Cb : constant Character := Unb.Element (B, 1);
+      Cq : Character;
+      N : Natural;
+      use type UnbStr;
+    begin
+      Q := Unb.Null_Unbounded_String;
+      N := Lb;
+      T := Unb.Head(A, N);
+      loop
+        Div_One (T, B, Cq, R);
+        Unb.Append (Q, Cq);
+        exit when N = La;
+        N := N + 1;
+        T := R & Unb.Element (A, N);
+      end loop;
+      Trim(Q);
+    end Div_No_Sign;
   end Basic;
 
-  -- Constructor
+
+  -- Constructors
   function Set (V : String) return Number is
-    N : Number;
+    use type Unbstr;
   begin
-    if V = "-0" then
-      N := Zero;
-    elsif Syntax.Is_Sign(V(V'First)) then
-      N := Number(Unb.To_Unbounded_String (V));
+    if Syntax.Is_Sign(V(V'First)) then
+      return Basic.Make (Unb.To_Unbounded_String (V));
     else
-      N := Number(Unb.To_Unbounded_String ("+" & V));
+      return Basic.Make ("+" & Unb.To_Unbounded_String (V));
     end if;
-    Syntax.Check(N);
-    return N;
   end Set;
+  Zero : constant Number := Set ("0");
+
+  function Strip (V : String) return String is
+  begin
+    if V(V'First) = ' ' then
+      return V(Natural'Succ(V'First) .. V'Last);
+    else
+      return V;
+    end if;
+  end Strip;
 
   function Set (V : Integer) return Number is
   begin
-    return Set (V'Img);
+    return Set (Strip (V'Img));
   end Set;
 
   function Set (V : Long_Integer) return Number is
   begin
-    return Set (V'Img);
+    return Set (Strip (V'Img));
   end Set;
 
   function Set (V : Long_Long_Integer) return Number is
   begin
-    return Set (V'Img);
+    return Set (Strip (V'Img) );
   end Set;
 
   -- Image
   function Image (V : Number) return String is
   begin
-    return Unb.To_String(Unbstr(V));
+    Syntax.Check (V);
+    return Unb.To_String (Unbstr(V));
   end Image;
+
+  function Length (V : Number) return Natural is
+  begin
+    Syntax.Check (V);
+    return Unb.Length (Unbstr(V));
+  end Length;
 
   -- Absolute and Neg
   function "abs" (A : Number) return Number is
     B : Unbstr := Unbstr(A);
   begin
+    Syntax.Check (A);
     if Unb.Element(B, 1) = '-' then
       Unb.Replace_Element (B, 1, '+');
     end if;
@@ -238,6 +428,7 @@ package body Arbitrary is
   function "-" (A : Number) return Number is
     B : Unbstr := Unbstr(A);
   begin
+    Syntax.Check (A);
     if A = Zero then
       return Zero;
     end if;
@@ -251,82 +442,81 @@ package body Arbitrary is
 
   -- Comparisons
   function "=" (A, B : Number) return Boolean is
+    Ta, Tb : Number;
     use type Unbstr;
   begin
-    return Unbstr(A) = Unbstr(B);
+    Syntax.Check (A);
+    Syntax.Check (B);
+    Ta := A;
+    Basic.Normalize (Ta);
+    Tb := B;
+    Basic.Normalize (Tb);
+    return Unbstr(Ta) = Unbstr(Tb);
   end "=";
 
   function "<" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Is_Pos (A);
-    Pb : constant Boolean := Basic.Is_Pos (B);
-    La : Natural;
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type Unbstr;
   begin
     if Pa /= Pb then
       -- If only one is positive, the other one is smaller
       return (Pb);
     end if;
-    La := Unb.Length (Unbstr(A));
-    if La < Unb.Length (Unbstr(A)) then
+    if Unb.Length (Unbstr(A)) /= Unb.Length (Unbstr(B)) then
       -- If one is shorter, it is the smaller in abs
-      return Pa;
+      return Unb.Length (Unbstr(A)) < Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
     return Unbstr(A) < Unbstr(B) xor not Pa;
   end "<";
 
   function "<=" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Is_Pos (A);
-    Pb : constant Boolean := Basic.Is_Pos (B);
-    La : Natural;
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type Unbstr;
   begin
     if Pa /= Pb then
       -- If only one is positive, the other one is smaller
       return (Pb);
     end if;
-    La := Unb.Length (Unbstr(A));
-    if La < Unb.Length (Unbstr(A)) then
+    if Unb.Length (Unbstr(A)) /= Unb.Length (Unbstr(B)) then
       -- If one is shorter, it is the smaller in abs
-      return Pa;
+      return Unb.Length (Unbstr(A)) < Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
     return Unbstr(A) <= Unbstr(B) xor not Pa;
   end "<=";
 
   function ">" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Is_Pos (A);
-    Pb : constant Boolean := Basic.Is_Pos (B);
-    La : Natural;
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type Unbstr;
   begin
     if Pa /= Pb then
       -- If only one is positive, it is the bigger
       return (Pa);
     end if;
-    La := Unb.Length (Unbstr(A));
-    if La > Unb.Length (Unbstr(A)) then
+    if Unb.Length (Unbstr(A)) /= Unb.Length (Unbstr(B)) then
       -- If one is larger, it is the larger in abs
-      return Pa;
+      return Unb.Length (Unbstr(A)) > Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
     return Unbstr(A) > Unbstr(B) xor not Pa;
   end ">";
 
   function ">=" (A, B : Number) return Boolean is
-    Pa : constant Boolean := Basic.Is_Pos (A);
-    Pb : constant Boolean := Basic.Is_Pos (B);
-    La : Natural;
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
     use type Unbstr;
   begin
     if Pa /= Pb then
       -- If only one is positive, it is the bigger
       return (Pa);
     end if;
-    La := Unb.Length (Unbstr(A));
-    if La > Unb.Length (Unbstr(A)) then
+    if Unb.Length (Unbstr(A)) /= Unb.Length (Unbstr(B)) then
       --  If one is larger, it is the larger in abs
-      return Pa;
+      return Unb.Length (Unbstr(A)) > Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
     return Unbstr(A) >= Unbstr(B) xor not Pa;
@@ -334,10 +524,10 @@ package body Arbitrary is
 
   -- Addition
   function "+" (A, B : Number) return Number is
-    Pa : constant Boolean := Basic.Is_Pos (A);
-    Pb : constant Boolean := Basic.Is_Pos (B);
-    Da : Unbstr := Unb.Tail (Unbstr(A), Unb.Length (Unbstr(A)) - 1);
-    Db : Unbstr := Unb.Tail (Unbstr(B), Unb.Length (Unbstr(B)) - 1);
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Da : constant Unbstr := Basic.Extract (A);
+    Db : constant Unbstr := Basic.Extract (B);
     Pos : Boolean;
     C : Unbstr;
     use type Unbstr;
@@ -362,9 +552,9 @@ package body Arbitrary is
     end if;
     -- Set sign of result
     if Pos then
-      return Number('+' & C);
+      return Basic.Make ('+' & C);
     else
-      return Number('-' & C);
+      return Basic.Make ('-' & C);
     end if;
   end "+";
 
@@ -372,6 +562,82 @@ package body Arbitrary is
   begin
     return A + (-B);
   end "-";
+
+  function "*" (A, B : Number) return Number is
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Da : constant Unbstr := Basic.Extract (A);
+    Db : constant Unbstr := Basic.Extract (B);
+    C : Unbstr;
+    use type Unbstr;
+  begin
+    C := Basic.Mult_No_Sign (Da, Db);
+    -- Set sign of result
+    if Pa = Pb then
+      return Basic.Make ('+' & C);
+    else
+      return Basic.Make ('-' & C);
+    end if;
+  end "*";
+
+  function "/" (A, B : Number) return Number is
+    Q, R : Number;
+  begin
+    Div (A, B, Q, R);
+    return Q;
+  end "/";
+
+  function "rem" (A, B : Number) return Number is
+    Q, R : Number;
+  begin
+    Div (A, B, Q, R);
+    return R;
+  end "rem";
+
+  procedure Div (A, B : in Number; Q, R : out Number) is
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Da : constant Unbstr := Basic.Extract (A);
+    Db : constant Unbstr := Basic.Extract (B);
+    Tb : Number;
+    Dq, Dr : Unbstr;
+    use type Unbstr;
+  begin
+    Tb := B;
+    Basic.Normalize (Tb);
+    if B = Zero then
+      raise Constraint_Error;
+    end if;
+    Basic.Div_No_Sign (Da, Db, Dq, Dr);
+    if Pa = Pb then
+      Q := Basic.Make ("+" & Dq);
+    else
+      Q := Basic.Make ("-" & Dq);
+    end if;
+    if Pa then
+      R := Basic.Make ("+" & Dr);
+    else
+      R := Basic.Make ("-" & Dr);
+    end if;
+  end Div;
+
+  function "**" (A, B : in Number) return Number is
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    One : constant Number := Set("1");
+    R : Number := One;
+    I : Number := B;
+  begin
+    if not Pb then
+      raise Constraint_Error;
+    end if;
+    loop
+      exit when I = Zero;    
+      R := R * A;
+      I := I - One;
+    end loop;
+    return R;
+  end "**";
 
 end Arbitrary;
 
