@@ -96,6 +96,10 @@ package body My_Math is
   function Trunc (X : Real) return Inte is
     Int : Inte;
   begin
+    if X > Real(Integer'Last) then
+      raise Math_Error;
+    end if;
+
     Int := Inte(X);
 
     -- adjust +- 1
