@@ -329,18 +329,20 @@ package body Arbitrary is
         St(2) := Unb.Element (A, 2);
       end if;
       Div_Char (St, Cb, Cq, Cr);
-      -- Check that Q * B < A
-      T := Unb.To_Unbounded_String ("" & Cq);
-      T := Mult_No_Sign (T, B);
-      Lt := Unb.Length(T);
-      if Lt > La or else (Lt = La and then T > A) then
-        -- Decrement Q by one
-        Cq := Character'Pred(Cq);
-      end if;
-      -- Compute Q and R;
+      -- Check that Q * B < A or decrement Q until
+      loop
+        T := Unb.To_Unbounded_String ("" & Cq);
+        T := Mult_No_Sign (T, B);
+        Lt := Unb.Length(T);
+        if Lt > La or else (Lt = La and then T > A) then
+          -- Decrement Q by one
+          Cq := Character'Pred(Cq);
+        else
+          exit;
+        end if;
+      end loop;
+      -- Compute R
       Q := Cq;
-      T := Unb.To_Unbounded_String ("" & Cq);
-      T := Mult_No_Sign (T, B);
       R := Sub_No_Sign (A, T);
       Trim (R);
     end Div_One;
