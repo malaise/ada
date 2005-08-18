@@ -75,7 +75,7 @@ package body Mcd_Mng is
     function Tointe  (X : Item_Rec) return Item_Rec;
 
     -- Arbi,Inte->Arbi
-    function ToArbi  (X : Item_Rec) return Item_Rec;
+    function Toarbi  (X : Item_Rec) return Item_Rec;
 
     -- Inte,Real->Real
     function Toreal  (X : Item_Rec) return Item_Rec;
