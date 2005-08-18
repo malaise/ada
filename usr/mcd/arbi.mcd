@@ -1,0 +1,59 @@
+# Test A+B A-B A*B A/B A%B for random A and B in -999 .. 999
+ssize isnotnul [ "No argument expected." putl ssize popn retall ] ifcall
+
+# Get a random number
+999 toreal r popr
+[ r pushr dup 2.0 * rnd * - +- trunc ] R popr 
+
+# Check that 2 registers, the name of which are in x and y,
+#  have the same arbitrary value. If not, the operation is in z.
+[
+x pushr pushr y pushr pushr = ifret
+"Error: " put a pushr put z pushr put b pushr put " -> " put x pushr popr putl
+"And " put i pushr put z pushr put j pushr put " -> " put y pushr popr putl
+retall ] C popr
+
+# The loop
+[
+# Get 2 random numbers a and b, set corresponding arbitraries i and j
+R pushr call a copyr toarbi i popr
+# b cannot be null (because it is divising)
+1 R pushr call dup isnul etfi b copyr toarbi j popr
+
+# Compute a+b a-b a*b a/b and a%b,
+#  set corresponding arbitraries in c d e f and g
+a pushr b pushr + toarbi c popr
+a pushr b pushr - toarbi d popr
+a pushr b pushr * toarbi e popr
+a pushr b pushr / toarbi f popr
+a pushr b pushr % toarbi g popr
+
+# Compute i+j i-j i*j i/j and i%j
+# set corresponding results in k l m n and o
+i pushr j pushr + k popr
+i pushr j pushr - l popr
+i pushr j pushr * m popr
+i pushr j pushr / n popr
+i pushr j pushr % o popr
+
+# Check the results
+c x popr k y popr "+" z popr C pushr call
+d x popr l y popr "-" z popr C pushr call
+e x popr m y popr "*" z popr C pushr call
+f x popr n y popr "/" z popr C pushr call
+g x popr o y popr "%" z popr C pushr call
+
+# Display result (ok)
+4 format
+a pushr put " and " put b pushr put " " put
+5 format c pushr tointe put " " put d pushr tointe put " " put
+7 format e pushr tointe put " " put
+4 format f pushr tointe put " " put g pushr tointe putl
+
+# Loop
+pushle copye retacal
+] copye
+
+"   A and    B     +     -       *    /    %" putl
+call
+
