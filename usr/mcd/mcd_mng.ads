@@ -92,8 +92,6 @@ package Mcd_Mng is
    Prevr,
    Regind,
    Indreg,
-   Storer,
-   Loadr,
 
    Pope,
    Copye,

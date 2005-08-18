@@ -140,7 +140,7 @@ package body Mcd_Mng is
   end Operations;
 
   package Registers is
-    subtype Register_Content_List is Item_Kind_List range Inte .. Regi;
+    subtype Register_Content_List is Item_Kind_List range Arbi .. Regi;
 
     -- Is a character a register (in a..z or A..Z)
     function Is_Register (C : in Character) return Boolean;
@@ -164,15 +164,10 @@ package body Mcd_Mng is
     function Index_Of (Reg : Item_Rec) return Item_Rec;
     function Register_At (Index : Item_Rec) return Item_Rec;
 
-    -- Load/Store registers on disk
-    procedure Store_All;
-    procedure Load_All;
-    procedure Close_All;
- 
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
     -- Invalid_Register : exception;
 
-    -- Valid contents are Inte Real Bool Prog Chrs Regi
+    -- Valid contents are Arbi Inte Real Bool Prog Chrs Regi
     -- Invalid_Argument : exception;
 
     -- Nothing to retrieve
@@ -233,7 +228,10 @@ package body Mcd_Mng is
   function Is_Register (C : in Character) return Boolean 
                        renames Registers.Is_Register;
 
-  procedure Close renames Registers.Close_All;
+  procedure Close is
+  begin
+    null;
+  end Close;
 
   package Misc is
     procedure Do_Call;
@@ -621,12 +619,6 @@ package body Mcd_Mng is
           -- Register at index
           Pop(A); Push(Registers.Register_At(A));
           S := A;
-        when Storer =>
-          -- Store registers
-          Registers.Store_All;
-        when Loadr =>
-          -- Load registers
-          Registers.Load_All;
 
         -- Stack size
         when Ssize =>

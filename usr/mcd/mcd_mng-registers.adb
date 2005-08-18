@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Direct_Io;
+with Ada.Text_Io;
 separate (Mcd_Mng)
 
 package body Registers is
@@ -135,63 +135,6 @@ package body Registers is
   begin
     return (Kind => Regi, Val_Regi => Ind2Reg(Index));
   end Register_At;
-
-  Reg_File_Name : constant String := "mcd_registers.dat";
-  package Reg_Io is new Ada.Direct_Io (Item_Rec);
-  Reg_File : Reg_Io.File_Type;
-
-  procedure Init is
-  begin
-    if Reg_Io.Is_Open (Reg_File) then
-      return;
-    end if;
-    begin
-      Reg_Io.Open (Reg_File, Reg_Io.Inout_File, Reg_File_Name);
-    exception
-      when Reg_Io.Name_Error =>
-        Reg_Io.Create (Reg_File, Reg_Io.Out_File, Reg_File_Name);
-        Reg_Io.Close (Reg_File);
-        Reg_Io.Open (Reg_File, Reg_Io.Inout_File, Reg_File_Name);
-    end;
-  exception
-    when others =>
-      raise File_Error;
-  end Init;
-
-
-  procedure Close_All is
-  begin
-    if Reg_Io.Is_Open (Reg_File) then
-      Reg_Io.Close (Reg_File);
-    end if;
-  exception
-    when others =>
-      raise File_Error;
-  end Close_All;
-
-  procedure Store_All is
-  begin
-    Init;
-    Reg_Io.Set_Index (Reg_File, 1);
-    for I in Register_Range loop
-      Reg_Io.Write (Reg_File, Registers_Array (I));
-    end loop;
-  exception
-    when others =>
-      raise File_Error;
-  end Store_All;
-
-  procedure Load_All is
-  begin
-    Init;
-    Reg_Io.Set_Index (Reg_File, 1);
-    for I in Register_Range loop
-      Reg_Io.Read (Reg_File, Registers_Array (I));
-    end loop;
-  exception
-    when others =>
-      raise File_Error;
-  end Load_All;
 
 end Registers;
 
