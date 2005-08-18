@@ -1,4 +1,3 @@
-with ada.text_io;
 with Ada.Strings.Maps;
 package body Arbitrary is
 
@@ -73,7 +72,7 @@ package body Arbitrary is
     function Sub_No_Sign (A, B : Unbstr) return Unbstr;
     -- Both must have no sign
     function Mult_No_Sign (A, B : Unbstr) return Unbstr;
-    -- Both must have no sign and B <= A
+    -- Both must have no sign
     procedure Div_No_Sign (A, B : in Unbstr; Q, R : out Unbstr);
   end Basic;
 
@@ -310,7 +309,12 @@ package body Arbitrary is
       Ca := Unb.Element (A, 1);
       Cb := Unb.Element (B, 1);
       -- Find quotient
-      if La = Lb then
+      if La < Lb then
+        -- A < B
+        Q := '0';
+        R := A;
+        return;
+      elsif La = Lb then
         if A < B then
           -- A < B
           Q := '0';
@@ -322,7 +326,7 @@ package body Arbitrary is
         end if;
       else
         St(1) := Ca;
-        St(2) :=  Unb.Element (A, 2);
+        St(2) := Unb.Element (A, 2);
       end if;
       Div_Char (St, Cb, Cq, Cr);
       -- Check that Q * B < A
@@ -348,8 +352,15 @@ package body Arbitrary is
       Cb : constant Character := Unb.Element (B, 1);
       Cq : Character;
       N : Natural;
-      use type UnbStr;
+      use type Unbstr;
     begin
+      -- Check that B <= A
+      if La < Lb or else (La = Lb and then A < B) then
+        -- A < B. Return 0, A
+        Q := Unb.To_Unbounded_String("0");
+        R := A;
+        return;
+      end if;
       Q := Unb.Null_Unbounded_String;
       N := Lb;
       T := Unb.Head(A, N);
