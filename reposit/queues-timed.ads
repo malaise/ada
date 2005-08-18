@@ -7,7 +7,7 @@ generic
   type Item is private;
 package Queues.Timed is
 
-  -- Remove obsolete items an add this one that will expire at Expdate
+  -- Remove obsolete items and add this one that will expire at Expdate
   procedure Push (X : in Item; Expdate : in Ada.Calendar.Time);
 
   -- Remove obsolete items an add this one that will expire after
@@ -20,8 +20,8 @@ package Queues.Timed is
   -- Remove all items if any (no exception)
   procedure Clear;
 
-  -- Retrieve (and remove) the first to expire item,
-  -- Does not remove obsolete items
+  -- Remove obsolete items and retrieve (and also remove)
+  --  the first to expire item,
   procedure Pop (X : out Item);
   function Pop return Item;
 

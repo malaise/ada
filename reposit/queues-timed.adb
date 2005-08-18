@@ -83,11 +83,13 @@ package body Queues.Timed is
     Item_List_Mng.Delete_List (Item_List);
   end Clear;
 
-  -- Retrieve (and remove) the first to expire item,
-  -- Does not remove obsolete items
+  -- Remove obsolete items and retrieve (and also remove)
+  --  the first to expire item,
   function Pop return Item is
     L : Loc_Item;
   begin
+    -- Expire any obsolete
+    Expire;
     -- Check list is not empty
     if Item_List_Mng.Is_Empty (Item_List) then
       raise Timed_Empty;
