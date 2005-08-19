@@ -3,7 +3,7 @@ package Io_Flow is
   procedure Put (Str : in String);
   procedure New_Line;
 
-  procedure Next_Line (Str : in out String;
+  procedure Next_Line (Str : out String;
                        Len : out Natural);
 
   procedure Close;

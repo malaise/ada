@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Text_Handler, Event_Mng;
+with Argument, Text_Handler, Event_Mng, Sys_Calls, Async_Stdin;
 with Fifos;
 with Input_Dispatcher, Debug, Mcd_Mng;
 package body Io_Flow is
@@ -8,18 +8,26 @@ package body Io_Flow is
   Init_Done : Boolean := False;
   Fifo_Name : Text_Handler.Text (Fifos.Max_Fifo_Name_Len);
 
-  -- Fifo
-  subtype Fifo_Msg_Type is String (1 .. Input_Dispatcher.Max_String_Lg);
-  package Mcd_Fifos is new Fifos.Fifo (Fifo_Msg_Type);
-  Fifo_Txt : Text_Handler.Text (Fifo_Msg_Type'Length);
-  Fifo_Msg : Fifo_Msg_Type;
-  Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
+  -- Data read from stdin tty or fifo
+  Max_Data_Len : constant := Input_Dispatcher.Max_String_Lg;
+  subtype Input_Type is String (1 .. Max_Data_Len);
+  Input_Data : Text_Handler.Text (Input_Type'Length);
 
+  -- Fifo
+  package Mcd_Fifos is new Fifos.Fifo (Input_Type);
+  Fifo_Msg : Input_Type;
+  Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
   procedure Open_Fifo;
 
-  
+  -- Stdin
+  Stdin_Is_A_Tty : Boolean := False;
+  function Stdin_Cb (Str : in String) return Boolean;
 
+  ----------------------------------------------------
+  -- Init fifo or stdin
+  ----------------------------------------------------
   procedure Init is
+    use type Sys_Calls.File_Desc_Kind_List;
   begin
     if Init_Done then
       return;
@@ -35,6 +43,11 @@ package body Io_Flow is
         if Debug.Debug_Level_Array(Debug.Parser) then
           Ada.Text_Io.Put_Line ("Flow: init on stdin");
         end if;
+        Stdin_Is_A_Tty :=
+          Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty;
+        if Stdin_Is_A_Tty then
+          Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, Max_Data_Len);
+        end if;
         return;
     end;
     -- Fifo
@@ -49,13 +62,16 @@ package body Io_Flow is
 
   end Init;
 
-  procedure Next_Line (Str : in out String;
+  ----------------------------------------------------
+  -- Get data from fifo or stdin
+  ----------------------------------------------------
+  procedure Next_Line (Str : out String;
                        Len : out Natural) is
     Evt : Event_Mng.Out_Event_List;
     use type Event_Mng.Out_Event_List;
   begin
     Init;
-    if Text_Handler.Empty (Fifo_Name) then
+    if Text_Handler.Empty (Fifo_Name) and then not Stdin_Is_A_Tty then
       -- Get next non empty line from Stdin
       loop
         begin
@@ -70,19 +86,19 @@ package body Io_Flow is
       end loop;
       return;
     else
-      -- Get next data on Fifo
+      -- Get next data on TTY stdy or Fifo
       loop
-        Text_Handler.Empty (Fifo_Txt);
+        Text_Handler.Empty (Input_Data);
         if Debug.Debug_Level_Array(Debug.Parser) then
-          Ada.Text_Io.Put_Line ("Flow: Waiting on fifo");
+          Ada.Text_Io.Put_Line ("Flow: Waiting on fifo/tty");
         end if;
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
 
         if Evt = Event_Mng.Fd_Event
-        and then not Text_Handler.Empty (Fifo_Txt) then
+        and then not Text_Handler.Empty (Input_Data) then
           -- New string
-          Len := Text_Handler.Length (Fifo_Txt);
-          Str(1 .. Len) := Text_Handler.Value (Fifo_Txt);
+          Len := Text_Handler.Length (Input_Data);
+          Str(1 .. Len) := Text_Handler.Value (Input_Data);
           exit;
         elsif Evt = Event_Mng.Signal_Event then
           -- Give up on signal
@@ -96,8 +112,9 @@ package body Io_Flow is
     end if;
   end Next_Line;
 
-
-
+  ----------------------------------------------------
+  -- Put data on fifo or stdout
+  ----------------------------------------------------
   procedure Put (Str : in String) is
     Res : Fifos.Send_Result_List;
     use type Mcd_Fifos.Fifo_Id, Fifos.Send_Result_List;
@@ -135,6 +152,9 @@ package body Io_Flow is
     use type Mcd_Fifos.Fifo_Id;
   begin
     if Text_Handler.Empty (Fifo_Name) then
+      if Stdin_Is_A_Tty then
+        Async_Stdin.Set_Async;
+      end if;
       return;
     end if;
     if Debug.Debug_Level_Array(Debug.Parser) then
@@ -150,7 +170,8 @@ package body Io_Flow is
   end Close;
 
   ----------------------------------------------------
-
+  -- Fifo callbacks
+  ----------------------------------------------------
   procedure Conn_Cb (Fifo_Name : in String;
                      Id        : in Mcd_Fifos.Fifo_Id;
                      Connected : in Boolean) is
@@ -175,7 +196,7 @@ package body Io_Flow is
   end Conn_Cb;
 
   procedure Rece_Cb (Id      : in Mcd_Fifos.Fifo_Id;
-                     Message : in Fifo_Msg_Type;
+                     Message : in Input_Type;
                      Length  : in Fifos.Message_Length) is
   begin
     if Length = 1
@@ -183,7 +204,7 @@ package body Io_Flow is
               or else Message(1) = Ada.Characters.Latin_1.Lf) then
       return;
     end if;
-    Text_Handler.Set (Fifo_Txt, Message(1 .. Length));
+    Text_Handler.Set (Input_Data, Message(1 .. Length));
   end Rece_Cb;
 
   procedure Open_Fifo is
@@ -214,6 +235,25 @@ package body Io_Flow is
       end if;
       Text_Handler.Empty (Fifo_Name);
   end Open_Fifo;
+
+  ----------------------------------------------------
+  -- Stdin callback
+  ----------------------------------------------------
+  function Stdin_Cb (Str : in String) return Boolean is
+  begin
+    if Str = "" then
+      -- Error or end
+      Text_Handler.Empty (Input_Data);
+      return True;
+    elsif Str(Str'Last) = Ada.Characters.Latin_1.Cr
+    or else  Str(Str'Last) = Ada.Characters.Latin_1.lf then
+      -- Skip Cr/lf
+      Text_Handler.Set (Input_Data, Str(1 .. Natural'Pred(Str'Last)));
+    else
+      Text_Handler.Set (Input_Data, Str);
+    end if;
+    return True;
+  end Stdin_Cb;
 
 end Io_Flow;
 
