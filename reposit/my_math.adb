@@ -1,18 +1,52 @@
-with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_Io;
 package body My_Math is
 
+  -- Interface to C math library
+  type  Double is new Long_Float;
 
-  package Math is new Ada.Numerics.Generic_Elementary_Functions (Real);
+  function CPow (X, Y : Double) return Double;
+  pragma Interface (C, Cpow);
+  pragma Interface_Name (Cpow, "pow");
 
+  function Csqrt (X : Double) return Double;
+  pragma Interface (C, Csqrt);
+  pragma Interface_Name (Csqrt, "sqrt");
 
+  function Clog10 (X : Double) return Double;
+  pragma Interface (C, Clog10);
+  pragma Interface_Name (Clog10, "log10");
 
+  function Clog (X : Double) return Double;
+  pragma Interface (C, Clog);
+  pragma Interface_Name (Clog, "log");
+
+  function Csin (X : Double) return Double;
+  pragma Interface (C, Csin);
+  pragma Interface_Name (Csin, "sin");
+
+  function Ccos (X : Double) return Double;
+  pragma Interface (C, Ccos);
+  pragma Interface_Name (Ccos, "cos");
+
+  function Ctan (X : Double) return Double;
+  pragma Interface (C, Ctan);
+  pragma Interface_Name (Ctan, "tan");
+
+  function Casin (X : Double) return Double;
+  pragma Interface (C, Casin);
+  pragma Interface_Name (Casin, "asin");
+
+  function Cacos (X : Double) return Double;
+  pragma Interface (C, Cacos);
+  pragma Interface_Name (Cacos, "acos");
+
+  function Catan (X : Double) return Double;
+  pragma Interface (C, Catan);
+  pragma Interface_Name (Catan, "atan");
+
+  --------------------------
   -- Constants for computing
   --------------------------
-  -- greatest number that can be exponented
-  Ln_Max               : Real;
-  -- ln (10)
-  Ln_10                : Real;
   -- Multiples et sub multiples of pi
   Two_Pi               : constant := 2.0*Pi;
   Pi_Two               : constant := Pi/2.0;
@@ -128,7 +162,7 @@ package body My_Math is
   -- power
   function "**" (Number, Exponent : Real) return Real is
   begin
-   return Math."**" (Number, Exponent);
+   return Real(Cpow (Double(Number), Double(Exponent)));
   exception
     when others =>
       raise Math_Error;
@@ -140,7 +174,7 @@ package body My_Math is
     if X < 0.0 then
       raise Math_Error;
     end if;
-    return Math.Sqrt (X);
+    return Real(Csqrt (Double(X)));
   exception
     when others =>
       raise Math_Error;
@@ -152,7 +186,7 @@ package body My_Math is
     if X < 0.0 then
       raise Math_Error;
     end if;
-    return Ln(X)/Ln_10;
+    return Real(Clog10 (Double(X)));
   exception
     when others =>
       raise Math_Error;
@@ -168,7 +202,7 @@ package body My_Math is
     if X < 0.0 then
       raise Math_Error;
     end if;
-    return Math.Log (X);
+    return Real(Clog (Double(X)));
   exception
     when others =>
       raise Math_Error;
@@ -183,7 +217,7 @@ package body My_Math is
     else
       Y := X * Pi_Hundred_Heighty;
     end if;
-    return Math.Sin (Y);
+    return Real(Csin (Double(Y)));
   exception
     when others =>
       raise Math_Error;
@@ -198,7 +232,7 @@ package body My_Math is
     else
       Y := X * Pi_Hundred_Heighty;
     end if;
-    return Math.Cos (Y);
+    return Real(Ccos (Double(Y)));
   exception
     when others =>
       raise Math_Error;
@@ -213,7 +247,7 @@ package body My_Math is
     else
       Y := X * Pi_Hundred_Heighty;
     end if;
-    return Math.Tan (Y);
+    return Real(Ctan (Double(Y)));
   exception
     when others =>
       raise Math_Error;
@@ -226,7 +260,7 @@ package body My_Math is
     if abs (X) > 1.0 then
       raise Math_Error;
     end if;
-    Y := Math.Arcsin (X);
+    Y := Real(Casin (Double(X)));
     if Mode = Degree then
       Y := Y / Pi_Hundred_Heighty;
     end if;
@@ -243,7 +277,7 @@ package body My_Math is
     if abs (X) > 1.0 then
       raise Math_Error;
     end if;
-    Y := Math.Arccos (X);
+    Y := Real(Cacos (Double(X)));
     if Mode = Degree then
       Y := Y / Pi_Hundred_Heighty;
     end if;
@@ -257,7 +291,7 @@ package body My_Math is
                    Mode : Angle_Unit := Radian) return Real is
     Y       : Real;
   begin
-    Y := Math.Arctan (X);
+    Y := Real(Catan (Double(X)));
     if Mode = Degree then
       Y := Y / Pi_Hundred_Heighty;
     end if;
@@ -267,7 +301,5 @@ package body My_Math is
       raise Math_Error;
   end Arc_Tg;
 
-begin
-  Ln_Max := Ln(Real'Large);
-  Ln_10 := Ln(10.0);
 end My_Math;
+
