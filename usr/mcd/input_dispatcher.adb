@@ -33,7 +33,9 @@ package body Input_Dispatcher is
 
 
   -- Remove string
-  procedure Parse_String (Str : in out String; Len : out Natural) is
+  function Parse_String (Str : String) return String is
+    Tmp_Str : String (1 .. Str'length);
+    Tmp_Len : Natural;
     Tmp_Index : Natural;
   begin
     -- Remove first and last delim
@@ -42,27 +44,28 @@ package body Input_Dispatcher is
     or else Str(Str'Last) /= Sd then
       raise String_Error;
     end if;
-    Str(Str'First .. Str'Last-2) := Str(Str'First+1 .. Str'Last-1);
-    Len := Str'Length - 2;
 
     -- Empty string?
-    if Len = 0 then
-      return;
+    if Str'Length = 2 then
+      return "";
     end if;
+    Tmp_Str (1 .. Str'Length-2) := Str(Str'First+1 .. Str'Last-1);
+    Tmp_Len := Str'Length - 2;
 
     -- Parse sequence of two delim
-    Tmp_Index := Str'First;
-    while Tmp_Index <= Len loop
-      if Str(Tmp_Index) = Sd then
-        if Tmp_Index = Len or else Str(Tmp_Index + 1) /= Sd then
+    Tmp_Index := Tmp_Str'First;
+    while Tmp_Index <= Tmp_Len loop
+      if Tmp_Str(Tmp_Index) = Sd then
+        if Tmp_Index = Tmp_Len or else Tmp_Str(Tmp_Index + 1) /= Sd then
           -- Sd alone within string
           raise String_Error;
         end if;
-        Str(Tmp_Index .. Len - 1) := Str(Tmp_Index + 1 .. Len);
-        Len := Len - 1;
+        Tmp_Str(Tmp_Index .. Tmp_Len - 1) := Tmp_Str(Tmp_Index + 1 .. Tmp_Len);
+        Tmp_Len := Tmp_Len - 1;
       end if;
       Tmp_Index := Tmp_Index + 1;
     end loop;
+    return Tmp_Str (1 .. Tmp_Len);
   end Parse_String;
 
   function Next_Str_Word return String is

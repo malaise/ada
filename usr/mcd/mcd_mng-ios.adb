@@ -1,11 +1,14 @@
 with Ada.Text_Io;
-with My_Math, Sys_Calls, Normal, Bool_Io;
+with My_Math, Sys_Calls, Normal, Bool_Io, Mixed_Str;
 with Inte_Io, Real_Io, Io_Flow;
 separate (Mcd_Mng)
 
 package body Ios is 
 
   use My_Math;
+
+  -- Max len for int/real image or for getenv
+  Max_String_Len : constant := 1024;
 
   Inte_Format_Set : Boolean := False;
   Real_Format_Set : Boolean := False;
@@ -69,7 +72,7 @@ package body Ios is
         Io_Flow.Put ('@' & Arbitrary.Image (Item.Val_Arbi));
       when Inte | Real | Bool | Chrs =>
         Str := Strof (Item);
-        Io_Flow.Put (Str.Val_Text(1 .. Str.Val_Len));
+        Io_Flow.Put (Unb.To_String(Str.Val_Text));
       when others =>
         raise Invalid_Argument;
     end case;
@@ -87,15 +90,18 @@ package body Ios is
   end New_Line;
 
   function Strarbi (S : Item_Rec) return Item_Rec is
+    Len : Natural;
     Res : Item_Rec(Arbi);
   begin
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    if S.Val_Len < 2 or else S.Val_Text(1) /= '@' then
+    Len :=  Unb.Length (S.Val_Text);
+    if Len < 2 or else Unb.Element (S.Val_Text, 1) /= '@' then
       raise Invalid_Argument;
     end if;
-    Res.Val_Arbi := Arbitrary.Set (S.Val_Text(2 .. S.Val_Len));
+    Res.Val_Arbi := Arbitrary.Set ( Unb.To_String (
+                                      Unb.Tail (S.Val_Text, Len - 1)));
     return Res;
   exception
     when Invalid_Argument =>
@@ -111,8 +117,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Inte_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Inte, Last);
-    if Last /= S.Val_Len then
+    Inte_Io.Get (Unb.To_String(S.Val_Text), Res.Val_Inte, Last);
+    if Last /= Unb.Length (S.Val_Text) then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -128,8 +134,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Real_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Real, Last);
-    if Last /= S.Val_Len then
+    Real_Io.Get (Unb.To_String(S.Val_Text), Res.Val_Real, Last);
+    if Last /= Unb.Length (S.Val_Text) then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -145,8 +151,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Bool_Io.Get(S.Val_Text(1 .. S.Val_Len), Res.Val_Bool, Last);
-    if Last /= S.Val_Len then
+    Bool_Io.Get (Unb.To_String(S.Val_Text), Res.Val_Bool, Last);
+    if Last /= Unb.Length (S.Val_Text) then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -161,10 +167,11 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    if S.Val_Len /= 1 or else not Is_Register(S.Val_Text(1)) then
+    if Unb.Length (S.Val_Text) /= 1 or
+    else not Is_Register (Unb.Element(S.Val_Text, 1)) then
       raise Invalid_Argument;
     end if;
-    Res.Val_Regi := S.Val_Text(1);
+    Res.Val_Regi := Unb.Element(S.Val_Text, 1);
     return Res;
   exception
     when others =>
@@ -177,8 +184,7 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Res.Val_Len := S.Val_Len;
-    Res.Val_Text(1..Res.Val_Len) := S.Val_Text(1..Res.Val_Len);
+    Res.Val_Text := S.Val_Text;
     return Res;
   exception
     when others =>
@@ -187,6 +193,8 @@ package body Ios is
 
   function Strof (Item : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
+    Image_Str : String (1 .. Max_String_Len);
+    Image_Len : Natural;
 
     -- String is at the end of Res
     -- Move it after some spaces at the beginning
@@ -195,24 +203,24 @@ package body Ios is
       First : Natural := 0;
       Len   : Positive;
     begin
-      for I in reverse Res.Val_Text'Range loop
-        if Res.Val_Text(I) = ' ' then
+      for I in reverse Image_Str'Range loop
+        if Image_Str(I) = ' ' then
           First := I + 1;
           exit;
         end if;
       end loop;
       if First = 0 then
-        Res.Val_Len := 0;
+        Image_Len := 0;
         return;
       end if;
-      Len := Res.Val_Text'Last - First + 1;
+      Len := Image_Str'Last - First + 1;
       if Len >= Size then
-        Res.Val_Len := Len;
-        Res.Val_Text(1 .. Len) := Res.Val_Text(First .. Res.Val_Text'Last);
+        Image_Len := Len;
+        Image_Str(1 .. Len) := Image_Str(First .. Image_Str'Last);
       else
-        Res.Val_Len := Size;
-        Res.Val_Text(Size - Len + 1 .. Size)
-            := Res.Val_Text(First .. Res.Val_Text'Last);
+        Image_Len := Size;
+        Image_Str(Size - Len + 1 .. Size)
+            := Image_Str(First .. Image_Str'Last);
       end if;
     end Fix_Size;
 
@@ -221,38 +229,27 @@ package body Ios is
 
     case Item.Kind is
       when Arbi =>
-        Res.Val_Len := Arbitrary.Length (Item.Val_Arbi);
-        if Res.Val_Len > Chars_Text'Length  - 1 then
-          raise String_Len;
-        end if;
-        Res.Val_Len := Res.Val_Len + 1;
-        Res.Val_Text := (others => ' ');
-        Res.Val_Text(1 .. Res.Val_Len) := '@' & Arbitrary.Image (Item.Val_Arbi);
+        Res.Val_Text := Unb.To_Unbounded_String (
+                         '@' & Arbitrary.Image (Item.Val_Arbi));
       when Inte =>
-        Res.Val_Text := (others => ' ');
-        Inte_Io.Put(Res.Val_Text, Item.Val_Inte);
+        Image_Str := (others => ' ');
+        Inte_Io.Put(Image_Str, Item.Val_Inte);
         Fix_Size (Inte_Io.Default_Width);
+        Res.Val_Text := Unb.To_Unbounded_String ( Image_Str (1 .. Image_Len));
       when Real =>
-        Res.Val_Text := (others => ' ');
-        Real_Io.Put(Res.Val_Text, Item.Val_Real);
-         Fix_Size (Real_Io.Default_Fore + 1 + Real_Io.Default_Aft
-                   + Real_Io.Default_Exp);
+        Image_Str := (others => ' ');
+        Real_Io.Put(Image_Str, Item.Val_Real);
+        Fix_Size (Real_Io.Default_Fore + 1 + Real_Io.Default_Aft
+                  + Real_Io.Default_Exp);
+        Res.Val_Text := Unb.To_Unbounded_String ( Image_Str (1 .. Image_Len));
       when Bool  =>
-        if Item.Val_Bool then
-          Res.Val_Len := 4;
-          Res.Val_Text(1 .. Res.Val_Len) := "True";
-        else
-          Res.Val_Len := 5;
-          Res.Val_Text(1 .. Res.Val_Len) := "False";
-        end if;
+        Res.Val_Text := Unb.To_Unbounded_String ( Mixed_Str(Item.Val_Bool'Img));
       when Chrs =>
         Res := Item;
       when Prog =>
-        Res.Val_Len := Item.Val_Len;
-        Res.Val_Text(1 .. Res.Val_Len) := Item.Val_Text(1 .. Res.Val_Len);
+        Res.Val_Text := Item.Val_Text;
       when Regi =>
-        Res.Val_Len := 1;
-        Res.Val_Text(1) := Item.Val_Regi;
+        Res.Val_Text := Unb.To_Unbounded_String ( Item.Val_Regi & "");
       when Oper =>
         raise Invalid_Argument;
     end case;
@@ -282,7 +279,7 @@ package body Ios is
     if Len.Kind /= Inte
     or else Len.Val_Inte <= 0
     or else Gap.Kind /= Chrs
-    or else Gap.Val_Len /= 1 then
+    or else Unb.Length(Gap.Val_Text) /= 1 then
       raise Invalid_Argument;
     end if;
     -- Check right is boolean for int, positive for real
@@ -308,13 +305,9 @@ package body Ios is
       -- Call Normal
       declare
         Str : constant String := Normal (Int, Lint, Right_Len.Val_Bool,
-                                         Gap.Val_Text(1));
+                                         Unb.To_String (Gap.Val_Text)(1));
       begin
-        if Str'Length > Res.Val_Text'Length then
-          raise String_Len;
-        end if;
-        Res.Val_Len := Str'Length;
-        Res.Val_Text(1 .. Res.Val_Len) := Str;
+        Res.Val_Text := Unb.To_Unbounded_String(Str);
       end;
     else
       -- Check range of ints
@@ -330,34 +323,34 @@ package body Ios is
           raise Invalid_Argument;
       end;
       declare
-        Str : constant String := Normal(Int, Lint, True, Gap.Val_Text(1))
+        Str : constant String := Normal(Int, Lint, True,
+                                        Unb.To_String (Gap.Val_Text)(1))
                                & "."
                                & Normal(Frac, Lfrac, True, '0') ;
       begin
-        if Str'Length > Res.Val_Text'Length then
-          raise String_Len;
-        end if;
-        Res.Val_Len := Str'Length;
-        Res.Val_Text(1 .. Res.Val_Len) := Str;
+        Res.Val_Text := Unb.To_Unbounded_String(Str);
       end;
     end if;
     return Res;
   end Normalof;
 
   function Getenv (Item : Item_Rec) return Item_Rec is
-    Result : Item_Rec (Chrs);
+    Env_Str : String (1 .. Max_String_Len);
+    Len : Natural;
     Set, Trunc : Boolean;
     
   begin
     if Item.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Sys_Calls.Getenv (Item.Val_Text(1 .. Item.Val_Len), Set, Trunc,
-                      Result.Val_Text, Result.Val_Len);
+    Len := Env_Str'Length;
+    Sys_Calls.Getenv (Unb.To_String (Item.Val_Text), Set, Trunc,
+                      Env_Str, Len);
     if not Set then
       return (Kind => Bool, Val_Bool => False);
     end if;
-    return Result;
+    return (Kind => Chrs,
+            Val_Text => Unb.To_Unbounded_String(Env_Str(1 .. Len)));
   end Getenv;
 
 end Ios;

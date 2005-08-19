@@ -5,8 +5,7 @@ separate (Mcd_Mng)
 package body Call_Stack is 
 
   type Call_Entry_Rec is record
-    Str : Chars_Text;
-    Len : Natural;
+    Str : Unb.Unbounded_String;
   end record;
   Call_Entry : Call_Entry_Rec;
 
@@ -15,28 +14,27 @@ package body Call_Stack is
   package Call_Stack_List renames Call_Stack_Dyn_List.Dyn_List;
   List : Call_Stack_List.List_Type;
 
-  procedure Push (Item : in String) is
+  procedure Push (Item : in Unb.Unbounded_String) is
   begin
-    Call_Entry.Len := Item'Length;
-    Call_Entry.Str (1 .. Call_Entry.Len) := Item;
+    Call_Entry.Str := Item;
     Call_Stack_List.Insert(List, Call_Entry);
     if Debug.Debug_Level_Array(Debug.Call) then
-      Ada.Text_Io.Put_Line ("Call_stack: Pushing >" & Item & "<"
+      Ada.Text_Io.Put_Line ("Call_stack: Pushing >" & Unb.To_String (Item) & "<"
         & "   Level is "
         & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
   end Push;
 
-  function  Pop return String is
+  function  Pop return Unb.Unbounded_String is
   begin
     Call_Stack_List.Get(List, Call_Entry, Call_Stack_List.Prev);
     if Debug.Debug_Level_Array(Debug.Call) then
       Ada.Text_Io.Put_Line ("Call_stack: Poping >"
-        & Call_Entry.Str(1 .. Call_Entry.Len) & "<"
+        & Unb.To_String (Call_Entry.Str) & "<"
         & "   Level is "
         & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
-    return Call_Entry.Str(1 .. Call_Entry.Len);
+    return Call_Entry.Str;
   end Pop;
 
   function Level return Natural is

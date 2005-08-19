@@ -3,6 +3,7 @@ with Event_Mng, Regular_Expressions;
 
 separate (Mcd_Mng)
 package body Misc is
+
   procedure Do_Call is
   begin
     if Debug.Debug_Level_Array(Debug.Oper) then
@@ -14,22 +15,22 @@ package body Misc is
     end if;
     if Call_Stack.Level /= 0 then
       -- Save contect;
-      Text_Handler.Set(Call_Entry, Input_Dispatcher.Get_Remaining);
+      Call_Entry := Unb.To_Unbounded_String (Input_Dispatcher.Get_Remaining);
       -- Even if end of subprog, this is not stdin
-      if Text_Handler.Empty(Call_Entry) then
-        Text_Handler.Set(Call_Entry, " ");
+      if Unb.Length (Call_Entry) = 0 then
+        Call_Entry := Unb.To_Unbounded_String (" ");
       end if;
-      Call_Stack.Push (Text_Handler.Value(Call_Entry));
+      Call_Stack.Push (Call_Entry);
     else
       -- Dummy context
-      Call_Stack.Push ("");
+      Call_Stack.Push (Unb.To_Unbounded_String (""));
     end if;
     -- Call
-    if A.Val_Len = 0 then
+    if Unb.Length (A.Val_Text) = 0 then
       -- Empty subprogram : not stdin
       Input_Dispatcher.Set_Input(" ");
     else
-      Input_Dispatcher.Set_Input(A.Val_Text(1 .. A.Val_Len));
+      Input_Dispatcher.Set_Input (Unb.To_String (A.Val_Text));
     end if;
     S := A;
   end Do_Call;
@@ -132,8 +133,8 @@ package body Misc is
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Ok := Regular_Expressions.Match (Pattern.Val_Text(1 .. Pattern.Val_Len),
-                                     Str.Val_Text(1 .. Str.Val_Len));
+    Ok := Regular_Expressions.Match (Unb.To_String (Pattern.Val_Text),
+                                     Unb.To_String (Str.Val_Text));
     return (Kind => Bool, Val_Bool => Ok);
   exception
     when Regular_Expressions.No_Criteria =>

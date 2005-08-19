@@ -361,7 +361,7 @@ package body Operations is
   -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
   -- Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -381,8 +381,7 @@ package body Operations is
     elsif L.Kind = Regi then
       return (Kind => Bool, Val_Bool => L.Val_Regi = R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
-                                      = R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text = R.Val_Text);
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -392,7 +391,7 @@ package body Operations is
   end Equal;
 
   function Diff    (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -412,8 +411,7 @@ package body Operations is
     elsif L.Kind = Regi then
       return (Kind => Bool, Val_Bool => L.Val_Regi /= R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
-                                     /= R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text /= R.Val_Text);
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -423,7 +421,7 @@ package body Operations is
   end Diff;
 
   function Greater (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -443,8 +441,7 @@ package body Operations is
     elsif L.Kind = Regi then
       return (Kind => Bool, Val_Bool => L.Val_Regi > R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
-                                      > R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text > R.Val_Text);
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -454,7 +451,7 @@ package body Operations is
   end Greater;
 
   function Smaller (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -474,8 +471,7 @@ package body Operations is
     elsif L.Kind = Regi then
       return (Kind => Bool, Val_Bool => L.Val_Regi < R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
-                                      < R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text < R.Val_Text);
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -485,7 +481,7 @@ package body Operations is
   end Smaller;
 
   function Greateq (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -505,8 +501,7 @@ package body Operations is
     elsif L.Kind = Regi then
       return (Kind => Bool, Val_Bool => L.Val_Regi >= R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
-                                     >= R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text >= R.Val_Text);
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>
@@ -516,7 +511,7 @@ package body Operations is
   end Greateq;
 
   function Smalleq (L, R : Item_Rec) return Item_Rec is 
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -536,8 +531,7 @@ package body Operations is
     elsif L.Kind = Regi then
       return (Kind => Bool, Val_Bool => L.Val_Regi <= R.Val_Regi);
     else
-      return (Kind => Bool, Val_Bool => L.Val_Text(1 .. L.Val_Len)
-                                     <= R.Val_Text(1 .. R.Val_Len));
+      return (Kind => Bool, Val_Bool => L.Val_Text <= R.Val_Text);
     end if;
   exception
     when Invalid_Argument | Argument_Mismatch =>

@@ -1,7 +1,8 @@
-with Text_Handler, Upper_Str, Lower_Str;
+with Text_Handler, Upper_Str, Lower_Str, Mixed_Str;
 separate(Mcd_Mng)
 
 package body Strings is
+
 
   procedure Check_Chrs (X : in Item_Rec) is
   begin
@@ -19,16 +20,12 @@ package body Strings is
 
   function Strcat (S1, S2 : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
+    use type Unb.Unbounded_String;
   begin
     Check_Chrs(S1);
     Check_Chrs(S2);
 
-    if S1.Val_Len + S2.Val_Len > Chars_Text'Length then
-      raise String_Len;
-    end if;
-    Res.Val_Len := S1.Val_Len + S2.Val_Len;
-    Res.Val_Text(1 .. Res.Val_Len) := S1.Val_Text(1 .. S1.Val_Len)
-                                    & S2.Val_Text(1 .. S2.Val_Len);
+    Res.Val_Text := S1.Val_Text & S2.Val_Text;
     return Res;
   exception
     when Constraint_Error =>
@@ -44,47 +41,54 @@ package body Strings is
 
     -- Empty string
     if I2.Val_Inte = 0 or else I2.Val_Inte < I1.Val_Inte then
-      Res.Val_Len := 0;
       return Res;
     end if;
 
-
-    if I1.Val_Inte < 1 or else I1.Val_Inte > My_Math.Inte(S.Val_Len) then
+    if I1.Val_Inte < 1
+    or else I1.Val_Inte > My_Math.Inte(Unb.Length (S.Val_Text)) then
       raise Argument_Mismatch;
     end if;
-    if I2.Val_Inte < 1 or else I2.Val_Inte > My_Math.Inte(S.Val_Len) then
+    if I2.Val_Inte < 1
+    or else I2.Val_Inte > My_Math.Inte(Unb.Length (S.Val_Text)) then
       raise Argument_Mismatch;
     end if;
-    Res.Val_Len := Natural(I2.Val_Inte) - Natural(I1.Val_Inte) + 1;
-    Res.Val_Text(1 .. Res.Val_Len) :=
-            S.Val_Text(Natural(I1.Val_Inte) .. Natural(I2.Val_Inte));
+    Res.Val_Text := Unb.To_Unbounded_String (
+          Unb.Slice (S.Val_Text, Positive(I1.Val_Inte), Natural(I2.Val_Inte)));
     return Res;
-
   end Strsub;
 
   function Strloc (Occ, Pat, S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Inte);
+    Pat_Len : Natural;
+    Found_Occurence : My_Math.Inte := 0;
   begin
     Check_Chrs(S);
     Check_Chrs(Pat);
     Check_Inte(Occ);
 
     if Occ.Val_Inte < 1 or else Occ.Val_Inte > My_Math.Inte(Positive'Last) then
-      raise Argument_Mismatch;
+      raise Invalid_Argument;
     end if;
 
-    declare
-      Txt : Text_Handler.Text(Text_Handler.Max_Len_Range(S.Val_Len));
-    begin
-      Text_Handler.Set(Txt, S.Val_Text(1 .. S.Val_Len));
-      Res.Val_Inte := My_Math.Inte(
-          Text_Handler.Locate(Within    => Txt,
-                              Fragment  => Pat.Val_Text(1 .. Pat.Val_Len),
-                              Occurence => Positive(Occ.Val_Inte)) );
-    end;
+    Res.Val_Inte := 0;
+    Pat_Len := Unb.Length(Pat.Val_Text);
+    if Unb.Length(S.Val_Text) = 0 or else Unb.Length(Pat.Val_Text) = 0 then
+      return Res;
+    end if;
+
+    for I in 1 .. Unb.Length(S.Val_Text) - Pat_Len + 1 loop
+      if Unb.Slice(S.Val_Text, I, I+Pat_Len-1) = Unb.To_String(Pat.Val_Text) then
+        Found_Occurence := Found_Occurence + 1;
+        if Found_Occurence = Occ.Val_Inte then
+          Res.Val_Inte := My_Math.Inte(I);
+          return Res;
+        end if;
+      end if;
+    end loop;
+    -- Not found -> 0
     return Res;
   end Strloc;
-
+  
   function Strrep (I, Pat, S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin
@@ -92,39 +96,26 @@ package body Strings is
     Check_Chrs(Pat);
     Check_Inte(I);
 
-    if I.Val_Inte < 1 or else I.Val_Inte > My_Math.Inte(S.Val_Len) then
+    if I.Val_Inte < 1 or else I.Val_Inte > My_Math.Inte(Unb.Length (S.Val_Text)) then
       raise Argument_Mismatch;
     end if;
 
-    declare
-      Txt : Text_Handler.Text(Chars_Text'Length);
-    begin
-      Text_Handler.Set(Txt, S.Val_Text(1 .. S.Val_Len));
-      Text_Handler.Amend(To => Txt, 
-                         By => Pat.Val_Text(1 .. Pat.Val_Len),
-                         Position => Text_Handler.Max_Len_Range(I.Val_Inte) );
-      Res.Val_Len := Text_Handler.Length(Txt);
-      Res.Val_Text(1 .. Res.Val_Len) := Text_Handler.Value(Txt);
-    end;
+    Res.Val_Text := Unb.Overwrite (S.Val_Text, Positive (I.Val_Inte),
+                                   Unb.To_String (Pat.Val_Text));
     return Res;
-  exception
-    when Constraint_Error =>
-      raise String_Len;
   end Strrep;
 
   function Strlen (S : Item_Rec) return Item_Rec is
   begin
     Check_Chrs(S);
-    return (Kind => Inte, Val_Inte => My_Math.Inte(S.Val_Len));
+    return (Kind => Inte, Val_Inte => My_Math.Inte(Unb.Length (S.Val_Text)));
   end Strlen;
 
   function Strupp (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Len := S.Val_Len;
-    Res.Val_Text(1 .. Res.Val_Len) :=
-      Upper_Str(S.Val_Text(1 .. S.Val_Len));
+    Res.Val_Text := Unb.To_Unbounded_String (Upper_Str (Unb.To_String (S.Val_Text)));
     return Res;
   end Strupp;
 
@@ -132,11 +123,17 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Len := S.Val_Len;
-    Res.Val_Text(1 .. Res.Val_Len) :=
-      Lower_Str(S.Val_Text(1 .. S.Val_Len));
+    Res.Val_Text := Unb.To_Unbounded_String (Lower_Str (Unb.To_String (S.Val_Text)));
     return Res;
   end Strlow;
+
+  function Strmix (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
+  begin
+    Check_Chrs(S);
+    Res.Val_Text := Unb.To_Unbounded_String (Mixed_Str (Unb.To_String (S.Val_Text)));
+    return Res;
+  end Strmix;
 
 end Strings;
 

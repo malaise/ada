@@ -1,3 +1,4 @@
+with Ada.Strings.Unbounded;
 with My_Math, Arbitrary;
 with Input_Dispatcher;
 package Mcd_Mng is
@@ -128,6 +129,7 @@ package Mcd_Mng is
    Strrep,
    Strupp,
    Strlow,
+   Strmix,
    Strarbi,
    Strinte,
    Strreal,
@@ -154,7 +156,6 @@ package Mcd_Mng is
    );
 
 
-  subtype Chars_Text is String (1 .. Input_Dispatcher.Max_String_Lg);
   subtype Register_List is Character;
 
   type Item_Rec (Kind : Item_Kind_List := Item_Kind_List'First) is record
@@ -168,8 +169,7 @@ package Mcd_Mng is
       when Bool =>
         Val_Bool : Boolean;
       when Chrs | Prog =>
-        Val_Len  : Natural;
-        Val_Text : Chars_Text;
+        Val_Text : Ada.Strings.Unbounded.Unbounded_String;
       when Regi => 
         Val_Regi : Register_List;
       when Oper =>
@@ -187,9 +187,6 @@ package Mcd_Mng is
 
   -- Is a character a register (in A..Z or a..z)
   function Is_Register (C : in Character) return Boolean;
-
-  -- Close storage file
-  procedure Close;
 
   Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
   Empty_Stack, String_Len, Compute_Error, File_Error: exception;

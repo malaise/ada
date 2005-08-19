@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Strings.Unbounded;
 with Environ, Bool_Io, Arbitrary;
 with Inte_Io, Real_Io;
 package body Debug is
@@ -34,9 +34,9 @@ package body Debug is
       when Bool =>
         Bool_Io.Put(Item.Val_Bool);
       when Chrs =>
-        Ada.Text_Io.Put ("""" & Item.Val_Text(1 .. Item.Val_Len) & """");
+        Ada.Text_Io.Put ("""" & Ada.Strings.Unbounded.To_String (Item.Val_Text) & """");
       when Prog =>
-        Ada.Text_Io.Put ("[ " & Item.Val_Text(1 .. Item.Val_Len) & " ]");
+        Ada.Text_Io.Put ("[ " & Ada.Strings.Unbounded.To_String (Item.Val_Text) & " ]");
       when Regi =>
         Ada.Text_Io.Put (Item.Val_Regi);
       when Oper =>

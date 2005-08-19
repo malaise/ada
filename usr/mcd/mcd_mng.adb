@@ -14,7 +14,8 @@ package body Mcd_Mng is
   S : Item_Rec := Invalid_Item;
 
   -- Subprogram called
-  Call_Entry : Text_Handler.Text (Input_Dispatcher.Max_String_Lg);
+  package Unb renames Ada.Strings.Unbounded;
+  Call_Entry : Unb.Unbounded_String;
 
   package Stack is 
     -- What can we store in stack
@@ -201,8 +202,8 @@ package body Mcd_Mng is
 
   package Call_Stack is 
 
-    procedure Push (Item : in String);
-    function  Pop return String;
+    procedure Push (Item : in Unb.Unbounded_String);
+    function  Pop return Unb.Unbounded_String;
 
     function Level return Natural;
 
@@ -216,6 +217,7 @@ package body Mcd_Mng is
     function Strrep (I, Pat, S : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
+    function Strmix (S : Item_Rec) return Item_Rec;
   end Strings;
 
   package Dates is
@@ -227,11 +229,6 @@ package body Mcd_Mng is
 
   function Is_Register (C : in Character) return Boolean 
                        renames Registers.Is_Register;
-
-  procedure Close is
-  begin
-    null;
-  end Close;
 
   package Misc is
     procedure Do_Call;
@@ -305,9 +302,9 @@ package body Mcd_Mng is
       -- Return N times
       for I in reverse 1 .. L loop
         -- Restart form previous context
-        Text_Handler.Set(Call_Entry, Call_Stack.Pop);
+        Call_Entry := Call_Stack.Pop;
       end loop;
-      Input_Dispatcher.Set_Input(Text_Handler.Value(Call_Entry));
+      Input_Dispatcher.Set_Input(Unb.To_String (Call_Entry));
     end Do_Retn;
 
     procedure Do_Retall is
@@ -737,6 +734,9 @@ package body Mcd_Mng is
           S := A;
         when Strlow =>
           Pop(A); Push (Strings.Strlow(A));
+          S := A;
+        when Strmix =>
+          Pop(A); Push (Strings.Strmix(A));
           S := A;
         when Strarbi =>
           Pop(A); Push (Ios.Strarbi(A));

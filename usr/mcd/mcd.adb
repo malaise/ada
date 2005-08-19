@@ -10,6 +10,19 @@ procedure Mcd is
                     Empty_Stack : exception;
   Parsing_Error : exception;
 
+  procedure Close is
+  begin
+    Io_Flow.Close;
+  end Close;
+
+  procedure Error (Message : in String) is
+  begin
+    Sys_Calls.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
+                            & Message & ".");
+    Close;
+    Sys_Calls.Set_Error_Exit_Code;
+  end Error;
+
 begin
 
   Debug.Init;
@@ -64,57 +77,34 @@ begin
   end if;
 
   -- Done
-  Io_Flow.Close;
-  Mcd_Mng.Close;
+  Close;
   Sys_Calls.Set_Ok_Exit_Code;
 
 exception
   -- Clean mapping of exceptions
   when Mcd_Mng.Invalid_Argument =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Invalid argument");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Invalid argument");
   when Mcd_Mng.Argument_Mismatch =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Argument mismatch");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Argument mismatch");
   when Mcd_Mng.Compute_Error =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Compute error");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Compute error");
   when Mcd_Mng.Invalid_Register =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Invalid register");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Invalid register");
   when Mcd_Mng.Emtpy_Register =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Empty register");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Empty register");
   when Mcd_Mng.Empty_Stack =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Empty stack");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Empty stack");
   when Mcd_Mng.String_Len =>
-    Sys_Calls.Put_Line_Error ("Mcd error: String length error");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("String length error");
   when Mcd_Mng.File_Error =>
-    Sys_Calls.Put_Line_Error ("Mcd error: File IO error");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("File IO error");
   when Mcd_Parser.Parsing_Error =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Parsing error");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Parsing error");
   when Io_Flow.Fifo_Error =>
-    Sys_Calls.Put_Line_Error ("Mcd error: Fifo error");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
-  when Error:others =>
-    Sys_Calls.Put_Line_Error ("Mcd error: exception "
-              & Mixed_Str(Ada.Exceptions.Exception_Name (Error))
-              & " raised.");
-    Mcd_Mng.Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Error ("Fifo error");
+  when Except:others =>
+    Error ("Exception "
+              & Mixed_Str(Ada.Exceptions.Exception_Name (Except))
+              & " raised");
 end Mcd;
 

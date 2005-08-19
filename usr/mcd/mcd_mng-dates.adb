@@ -4,6 +4,7 @@ separate (Mcd_Mng)
 
 package body Dates is
 
+
   Seconds_Per_Day : constant := Integer(Ada.Calendar.Day_Duration'Last);
   Millisecs_Per_Day : constant My_Math.Inte := 1000 * Seconds_Per_Day;
 
@@ -86,15 +87,14 @@ package body Dates is
     Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
     
     -- Format result in string
-    Date.Val_Len := Date_Length;
-    Date.Val_Text (1 .. Date_Length) :=
+    Date.Val_Text := Unb.To_Unbounded_String (
             Normal (Year,  4, Gap => '0')
       & "/" & Normal (Month, 2, Gap => '0')
       & "/" & Normal (Day,   2, Gap => '0')
       & "-" & Normal (Hours, 2, Gap => '0')
       & ":" & Normal (Mins, 2,  Gap => '0')
       & ":" & Normal (Secs, 2,  Gap => '0')
-      & "." & Normal (Millis, 3, Gap => '0');
+      & "." & Normal (Millis, 3, Gap => '0') );
     return Date;
   exception
     when Constraint_Error =>
@@ -111,6 +111,7 @@ package body Dates is
     Secs   : Day_Mng.T_Seconds;
     Millis : Day_Mng.T_Millisec;
     Date  : Item_Rec (Chrs);
+    use type Unb.Unbounded_String;
   begin
     if Time.Kind /= Inte or else Time.Val_Inte < 0 then
       raise Invalid_Argument;
@@ -129,12 +130,7 @@ package body Dates is
     Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
     
     -- Format result in string
-    Date.Val_Len := Days_Image.Val_Len + 13;
-    if Date.Val_Len > Chars_Text'Length then
-      raise String_Len;
-    end if;
-    Date.Val_Text (1 .. Days_Image.Val_Len + 13) :=
-        Days_Image.Val_Text(1 .. Days_Image.Val_Len)
+    Date.Val_Text := Days_Image.Val_Text
       & "-" & Normal (Hours, 2, Gap => '0')
       & ":" & Normal (Mins, 2,  Gap => '0')
       & ":" & Normal (Secs, 2,  Gap => '0')
@@ -158,28 +154,28 @@ package body Dates is
     Res_Time : Item_Rec(Inte);
   begin
     -- Check kind and length
-    if Date.Kind /= Chrs or else Date.Val_Len /= Date_Length then
+    if Date.Kind /= Chrs or else Unb.Length (Date.Val_Text) /= Date_Length then
       raise Invalid_Argument;
     end if;
 
     -- Check format
-    if      Date.Val_Text(05) /= '/'
-    or else Date.Val_Text(08) /= '/'
-    or else Date.Val_Text(11) /= '-'
-    or else Date.Val_Text(14) /= ':'
-    or else Date.Val_Text(17) /= ':'
-    or else Date.Val_Text(20) /= '.' then
+    if      Unb.Element (Date.Val_Text, 05) /= '/'
+    or else Unb.Element (Date.Val_Text, 08) /= '/'
+    or else Unb.Element (Date.Val_Text, 11) /= '-'
+    or else Unb.Element (Date.Val_Text, 14) /= ':'
+    or else Unb.Element (Date.Val_Text, 17) /= ':'
+    or else Unb.Element (Date.Val_Text, 20) /= '.' then
       raise Invalid_Argument;
     end if;
 
     -- Extract
-    Year  := Ada.Calendar.Year_Number'Value  (Date.Val_Text(01 .. 04));
-    Month := Ada.Calendar.Month_Number'Value (Date.Val_Text(06 .. 07));
-    Day   := Ada.Calendar.Day_Number'Value   (Date.Val_Text(09 .. 10));
-    Hours := Day_Mng.T_Hours'Value           (Date.Val_Text(12 .. 13));
-    Mins  := Day_Mng.T_Minutes'Value         (Date.Val_Text(15 .. 16));
-    Secs  := Day_Mng.T_Seconds'Value         (Date.Val_Text(18 .. 19));
-    Millis := Day_Mng.T_Millisec'Value       (Date.Val_Text(21 .. 23));
+    Year  := Ada.Calendar.Year_Number'Value  (Unb.Slice (Date.Val_Text, 01, 04));
+    Month := Ada.Calendar.Month_Number'Value (Unb.Slice (Date.Val_Text, 06, 07));
+    Day   := Ada.Calendar.Day_Number'Value   (Unb.Slice (Date.Val_Text, 09, 10));
+    Hours := Day_Mng.T_Hours'Value           (Unb.Slice (Date.Val_Text, 12, 13));
+    Mins  := Day_Mng.T_Minutes'Value         (Unb.Slice (Date.Val_Text, 15, 16));
+    Secs  := Day_Mng.T_Seconds'Value         (Unb.Slice (Date.Val_Text, 18, 19));
+    Millis := Day_Mng.T_Millisec'Value       (Unb.Slice (Date.Val_Text, 21, 23));
 
     -- Compute Time for the day
     Cal_Time := Ada.Calendar.Time_Of (Year, Month, Day);

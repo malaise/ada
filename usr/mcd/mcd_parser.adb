@@ -1,8 +1,10 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Strings.Unbounded;
 with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary;
 with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
+
+  package Unb renames Ada.Strings.Unbounded;
 
   subtype Item_Chrs_Rec is Mcd_Mng.Item_Rec(Mcd_Mng.Chrs);
   subtype Item_Prog_Rec is Mcd_Mng.Item_Rec(Mcd_Mng.Prog);
@@ -10,7 +12,7 @@ package body Mcd_Parser is
   -- Instruction stack for debug history
   package Instr_Stack is new Queues.Circ(7, Item_Chrs_Rec);
 
-  Txt, Txts : Text_Handler.Text(Input_Dispatcher.Max_String_Lg);
+  Txt, Txts : Unb.Unbounded_String;
 
   Input_Error : Boolean := False;
 
@@ -157,7 +159,8 @@ package body Mcd_Parser is
    Strloc   => (Nosy, "push C occurence of B in A    ", False),
    Strrep   => (Nosy, "push A replaced by B at pos C ", False),
    Strupp   => (Nosy, "push A in uppercase           ", False),
-   Strlow   => (Nosy, "push A in lowercase           ", False),
+   Strlow   => (Nosy, "push A in LOWERCASE           ", False),
+   Strmix   => (Nosy, "push A in Mixed_Case          ", False),
    Strarbi  => (Nosy, "push A converted to arbitrary ", False),
    Strinte  => (Nosy, "push A converted to integer   ", False),
    Strreal  => (Nosy, "push A converted to real      ", False),
@@ -194,53 +197,50 @@ package body Mcd_Parser is
     I : My_Math.Inte;
     R : My_Math.Real;
     L : Positive;
+    use type Unb.Unbounded_String;
   begin
 
-    Text_Handler.Set (Txt, Input_Dispatcher.Next_Word);
+    Txt := Unb.To_Unbounded_String (Input_Dispatcher.Next_Word);
     if Debug.Debug_Level_Array(Debug.Parser) then
       Ada.Text_Io.Put_Line ("Parser: Getting >"
-               & Text_Handler.Value(Txt)  & "<");
+               & Unb.To_String (Txt)  & "<");
     end if;
-    Item_Chrs.Val_Len := Text_Handler.Length(Txt);
-    Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
+    Item_Chrs.Val_Text := Txt;
 
     -- Eof
-    if Text_Handler.Empty(Txt) then
+    if Unb.Length (Txt) = 0 then
       if Debug.Debug_Level_Array(Debug.Parser) then
         Ada.Text_Io.Put_Line ("Parser: Eof");
       end if;
-      Item_Chrs.Val_Len := 3;
-      Item_Chrs.Val_Text(1 .. 3) := "EOF";
+      Item_Chrs.Val_Text := Unb.To_Unbounded_String ("EOF");
       Instr_Stack.Push(Item_Chrs);
       return (Kind => Oper, Val_Oper => Ret);
     end if;
 
-    C := Text_Handler.Value(Txt)(1);
+    C := Unb.Element (Txt, 1);
 
     -- Strings
-    if Text_Handler.Value(Txt)(1) = Input_Dispatcher.Sd
-    and then Text_Handler.Value(Txt)(Text_Handler.Length(Txt)) = Input_Dispatcher.Sd then
-      Item_Chrs.Val_Len := Text_Handler.Length(Txt);
-      Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txt);
+    if C = Input_Dispatcher.Sd
+    and then Unb.Element (Txt, Unb.Length (Txt)) = Input_Dispatcher.Sd then
       Instr_Stack.Push(Item_Chrs);
       -- Remove first and last string delimiters, and replace
       --  pairs of delimiters by one delimiter
-      Input_Dispatcher.Parse_String (Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len),
-                                     Item_Chrs.Val_Len);
+      Item_Chrs.Val_Text := Unb.To_Unbounded_String (
+              Input_Dispatcher.Parse_String (Unb.To_String (Item_Chrs.Val_Text)));
       return Item_Chrs;
     end if;
 
     -- No [ nor ] in word
-    if Text_Handler.Value(Txt) /= "["
-    and then Text_Handler.Value(Txt) /= "]"
-    and then (Text_Handler.Locate(Txt, "[") /= 0
-      or else Text_Handler.Locate(Txt, "]") /= 0) then
+    if Unb.To_String(Txt) /= "["
+    and then Unb.To_String(Txt) /= "]"
+    and then (Unb.Index (Txt, "[") /= 0
+      or else Unb.Index (Txt, "]") /= 0) then
       Instr_Stack.Push(Item_Chrs);
       raise Parsing_Error;
     end if;
 
     -- Parse [ or Regi
-    if Text_Handler.Length(Txt) = 1 then
+    if Unb.Length(Txt) = 1 then
       
       if Mcd_Mng.Is_Register(C) then
         -- A register
@@ -248,31 +248,24 @@ package body Mcd_Parser is
         return (Kind => Mcd_Mng.Regi, Val_Regi => C);
       elsif C = '[' then
         -- Get rid of strings
-        Text_Handler.Empty(Txts);
+        Txts := Unb.To_Unbounded_String ("");
         First_Word := True;
         Level := 1;
         while Level /= 0 loop
-          Text_Handler.Set(Txt, Input_Dispatcher.Next_Word);
+          Txt := Unb.To_Unbounded_String (Input_Dispatcher.Next_Word);
           if Debug.Debug_Level_Array(Debug.Parser) then
             Ada.Text_Io.Put_Line ("Parser: Getting >"
-                     & Text_Handler.Value(Txt)  & "<");
+                     & Unb.To_String(Txt)  & "<");
           end if;
-          if Text_Handler.Value(Txt) = "[" then
+          if Unb.To_String(Txt) = "[" then
             Level := Level + 1;
-          elsif Text_Handler.Value(Txt) = "]" then
+          elsif Unb.To_String(Txt) = "]" then
             Level := Level - 1;
             exit when Level = 0;
-          elsif Text_Handler.Empty(Txt) then
+          elsif Unb.To_String(Txt) = "" then
             -- Unexpected Eof
-            Item_Prog.Val_Len := Text_Handler.Length(Txts);
-            Item_Prog.Val_Text(1 .. Item_Prog.Val_Len) := Text_Handler.Value(Txts);
-            if Item_Chrs.Val_Len + 2 <= Input_Dispatcher.Max_String_Lg then
-              Item_Chrs.Val_Len := Text_Handler.Length(Txts) + 2;
-              Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := "[ " & Text_Handler.Value(Txts);
-            else
-              Item_Chrs.Val_Len := Text_Handler.Length(Txts);
-              Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
-            end if;
+            Item_Prog.Val_Text := Txts;
+            Item_Chrs.Val_Text := Unb.To_Unbounded_String ("[ ") & Txts;
             Instr_Stack.Push(Item_Chrs);
             raise Parsing_Error;
           end if;
@@ -280,19 +273,12 @@ package body Mcd_Parser is
           if First_Word then
             First_Word  := False;
           else
-            Text_Handler.Append (Txts, ' ');
+            Unb.Append (Txts,  ' ');
           end if;
-          Text_Handler.Append (Txts, Txt);
+          Unb.Append (Txts, Txt);
         end loop;
-        Item_Prog.Val_Len := Text_Handler.Length(Txts);
-        Item_Prog.Val_Text(1 .. Item_Prog.Val_Len) := Text_Handler.Value(Txts);
-        if Item_Chrs.Val_Len + 4 <= Input_Dispatcher.Max_String_Lg then
-          Item_Chrs.Val_Len := Text_Handler.Length(Txts) + 4;
-          Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := "[ " & Text_Handler.Value(Txts) & " ]";
-        else
-          Item_Chrs.Val_Len := Text_Handler.Length(Txts);
-          Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) := Text_Handler.Value(Txts);
-        end if;
+        Item_Prog.Val_Text := Txts;
+        Item_Chrs.Val_Text := Unb.To_Unbounded_String ("[ ") & Txts & Unb.To_Unbounded_String (" ]");
         Instr_Stack.Push(Item_Chrs);
         return Item_Prog;
       end if;
@@ -300,14 +286,13 @@ package body Mcd_Parser is
     end if;
 
     -- Parse arbitrary : @num
-    if Text_Handler.Length(Txt) >= 2 and then Text_Handler.Value(Txt)(1) = '@' then
+    if Unb.Length(Txt) >= 2 and then Unb.Element(Txt, 1) = '@' then
       declare
         N : Arbitrary.Number;
       begin
         Instr_Stack.Push(Item_Chrs);
         return (Kind => Mcd_Mng.Arbi,
-                Val_Arbi => Arbitrary.Set (Text_Handler.Value(Txt)
-                                            (2 .. Text_Handler.Length(Txt))) );
+                Val_Arbi => Arbitrary.Set (Unb.Slice(Txt, 2, Unb.Length(Txt))));
       exception
         when others =>
           raise Parsing_Error;
@@ -318,7 +303,7 @@ package body Mcd_Parser is
     declare
       Op : Mcd_Mng.Operator_List;
     begin
-      Op := Mcd_Mng.Operator_List'Value(Text_Handler.Value(Txt));
+      Op := Mcd_Mng.Operator_List'Value(Unb.To_String(Txt));
       -- Allow string only if no symbol defined
       if Words(Op).Word = Nosy then
         Instr_Stack.Push(Item_Chrs);
@@ -330,11 +315,11 @@ package body Mcd_Parser is
     end;
 
     -- Parse Oper : symbol
-    if Text_Handler.Length(Txt) <= 2 then
-      if Text_Handler.Length(Txt) = 2 then
-        W := Text_Handler.Value(Txt);
+    if Unb.Length (Txt) <= 2 then
+      if Unb.Length (Txt) = 2 then
+        W := Unb.To_String (Txt);
       else
-        W(1) := Text_Handler.Value(Txt)(1);
+        W(1) := Unb.Element (Txt, 1);
         W(2) := ' ';
       end if;
       for O in Mcd_Mng.Operator_List loop
@@ -345,31 +330,30 @@ package body Mcd_Parser is
       end loop;
     end if;
 
-
     -- Parse Inte Real Bool
     begin
-      Bool_Io.Get(Text_Handler.Value(Txt), B, L);
-      if L = Text_Handler.Length(Txt) then
-        Instr_Stack.Push(Item_Chrs);
+      Bool_Io.Get (Unb.To_String (Txt), B, L);
+      if L = Unb.Length (Txt) then
+        Instr_Stack.Push (Item_Chrs);
         return (Kind => Mcd_Mng.Bool, Val_Bool => B);
       end if;
     exception
       when others => null;
     end;
     begin
-      Inte_Io.Get(Text_Handler.Value(Txt), I, L);
-      if L = Text_Handler.Length(Txt) then
-        Instr_Stack.Push(Item_Chrs);
+      Inte_Io.Get (Unb.To_String (Txt), I, L);
+      if L = Unb.Length (Txt) then
+        Instr_Stack.Push (Item_Chrs);
         return (Kind => Mcd_Mng.Inte, Val_Inte => I);
       end if;
     exception
       when others => null;
     end;
     begin
-      Real_Io.Get(Text_Handler.Value(Txt), R, L);
-      if L = Text_Handler.Length(Txt)
-      and then Text_Handler.Value(Txt)(L) /= '.' then
-        Instr_Stack.Push(Item_Chrs);
+      Real_Io.Get (Unb.To_String (Txt), R, L);
+      if L = Unb.Length (Txt)
+      and then Unb.Element (Txt, L) /= '.' then
+        Instr_Stack.Push (Item_Chrs);
         return (Kind => Mcd_Mng.Real, Val_Real => R);
       end if;
     exception
@@ -431,7 +415,7 @@ package body Mcd_Parser is
     loop
       begin
         Instr_Stack.Pop(Item_Chrs);
-        Sys_Calls.Put_Error (Item_Chrs.Val_Text(1 .. Item_Chrs.Val_Len) & " ");
+        Sys_Calls.Put_Error (Unb.To_String(Item_Chrs.Val_Text) & " ");
       exception
         when Instr_Stack.Circ_Empty =>
          exit;
