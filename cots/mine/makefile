@@ -3,7 +3,7 @@ include $(HOME)/Makefiles/common.mk
 ADAVIEW := $(HOME)/ada/cots/pragmarc
 EXES := mine_detector
 
-GARGS_mine_detector := `gtkada1-config`
+GARGS_mine_detector := `gtkada-config`
 
 include $(TEMPLATES)/ada.mk
 

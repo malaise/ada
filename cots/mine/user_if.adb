@@ -1,8 +1,6 @@
 -- Mine Detector Game
--- Copyright (C) 2004 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2003 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
---
--- V4.4 2004 Aug 01
 --
 with Glib;
 with Gdk.Event;
@@ -72,12 +70,12 @@ package body User_If is
    About          : Gtk_Button;
    Rules_Dialog   : Gtk_Dialog;
    Game_Over      : Gtk_Label;
-   
+
    You_Won_Message  : constant String := "You Won";
    You_Lost_Message : constant String := "BOOM!";
 
    subtype Cell_String is String (1 .. 1);
-   
+
    procedure Show_Game_Over is
       -- null;
    begin -- Show_Game_Over
@@ -93,25 +91,25 @@ package body User_If is
    pragma Inline (Show_Game_Over);
 
    use type Field.Operations.Game_State_ID;
-   
+
    procedure Display (Cell : in Field.Cell_Location; Text : in Cell_String; Active : in Boolean) is
       -- null;
    begin -- Display
       Set_Text (Press (Cell.Row, Cell.Column), Text);
       Set_Active (Button (Cell.Row, Cell.Column), Active);
-      
+
       if Field.Operations.Game_State /= Field.Operations.In_Progress then
          Show_Game_Over;
       end if;
    end Display;
    pragma Inline (Display);
-   
+
    procedure Display_Blank (Cell : in Field.Cell_Location) is
       -- null;
    begin -- Display_Blank
       Display (Cell => Cell, Text => " ", Active => False);
    end Display_Blank;
-   
+
    procedure Display_Count
       (Count : in Field.Valid_Count; Stepped : in Boolean; Cell : in Field.Cell_Location)
    is
@@ -119,7 +117,7 @@ package body User_If is
    begin -- Display_Count
       Display (Cell => Cell, Text => Character'Val (Zero_Pos + Count) & "", Active => Stepped);
    end Display_Count;
-   
+
    procedure Display_Mark (Cell : in Field.Cell_Location) is
       -- null;
    begin -- Display_Mark
@@ -143,14 +141,14 @@ package body User_If is
    begin -- Reset_Screen
       Restarting := True; -- Turn off Toggle
       Set_Text (Mines_Left, "0");
-      Set_Text (Game_Over, "");
-      
+      Set_Text (Game_Over,  "");
+
       Button_Row : for Row in Field.Valid_Row loop
          Button_Column : for Column in Field.Valid_Column loop
             Display_Blank ( (Row => Row, Column => Column) );
          end loop Button_Column;
       end loop Button_Row;
-      
+
       Restarting := False;
    end Reset_Screen;
 
@@ -161,12 +159,12 @@ package body User_If is
    begin -- When_Close
       Main_Quit;
    end When_Close;
-   
+
    procedure Toggle (Button_Access : access Gtk_Toggle_Button_Record'Class;
                      Params : Gtk_Args)
    is
       Name : constant String := Get_Name (Button_Access);
-      
+
       Row    : constant Field.Valid_Row    := Field.Valid_Row'Value    (Name (Name'First    .. Name'First + 1) );
       Column : constant Field.Valid_Column := Field.Valid_Column'Value (Name (Name'Last - 1 .. Name'Last) );
    begin -- Toggle
@@ -178,7 +176,7 @@ package body User_If is
          end if;
       end if;
    end Toggle;
-   
+
    procedure Mark_Toggle (Button : access Gtk_Check_Button_Record'Class;
                           Params : Gtk_Args)
    is
@@ -198,18 +196,18 @@ package body User_If is
    function Button_Press (Button : access Gtk_Toggle_Button_Record'Class; Event : Gdk.Event.Gdk_Event)
    return Boolean is
       Name : constant String := Get_Name (Button);
-      
+
       Row    : constant Field.Valid_Row    := Field.Valid_Row'Value    (Name (Name'First    .. Name'First + 1) );
       Column : constant Field.Valid_Column := Field.Valid_Column'Value (Name (Name'Last - 1 .. Name'Last) );
-      
+
       Number : constant Glib.Guint := Gdk.Event.Get_Button (Event);
-      
+
       use type Glib.Guint;
    begin -- Button_Press
       case Number is
-      when 1 | 4 | 5 =>
-         null;
-      when 2 =>
+      when 1 =>
+         return False;
+      when 2=>
          null;
       when 3 =>
          if Field.Operations.Game_State /= Field.Operations.In_Progress then
@@ -217,10 +215,12 @@ package body User_If is
          else
             Field.Operations.Mark (Cell => (Row => Row, Column => Column) );
          end if;
+      when 4 .. 5 =>
+         null;
       when others =>
-         raise Program_Error; -- Only 1-3 are valid mouse buttons
+         raise Program_Error; -- Only 1-5 are valid mouse buttons
       end case;
-      
+
       return True;
    end Button_Press;
 
@@ -231,7 +231,7 @@ package body User_If is
    begin -- When_Restart_Button
       Field.Operations.Reset;
    end When_Restart_Button;
-   
+
    procedure Close_Rules (Object : access Gtk_Window_Record'Class;
                           Params : Gtk_Args)
    is
@@ -252,7 +252,7 @@ package body User_If is
                             Params : Gtk_Args)
    is
       type Text_Set is array (Positive range <>) of Unbounded_String;
-      
+
       Rules : constant Text_Set :=
          (To_Unbounded_String ("The object of the game is to mark all cells containing " &
                                "mines and to step on all cells that do not contain a " &
@@ -325,36 +325,36 @@ package body User_If is
       Set_Title (Rules_Dialog, "Rules for Mine Detector");
       Set_USize (Rules_Dialog, 500, 400);
       Window_Cb.Connect (Rules_Dialog, "delete_event", Close_Rules'access);
-      
+
       V_Box := Get_Vbox (Rules_Dialog);
       Action := Get_Action_Area (Rules_Dialog);
-      
+
       Gtk_New (Scroller);
       Pack_Start (V_Box, Scroller);
       Gtk_New (Text_Box);
       Set_Word_Wrap (Text_Box);
       Add (Scroller, Text_Box);
-      
+
       Insert_Text : for I in Rules'range loop
          Insert (Text => Text_Box, Chars => To_String (Rules (I) ) );
       end loop Insert_Text;
-      
+
       Set_Editable (Text => Text_Box, Editable => False);
-      
+
       Gtk_New (OK_Button, "OK");
       Button_Cb.Connect (OK_Button, "clicked", OK_Close_Rules'access);
       Pack_Start (Action, OK_Button, False);
-      
+
       Show_All (Rules_Dialog);
    end Rules_Pressed;
-   
+
    procedure About_Pressed (Object : access Gtk_Button_Record'Class;
                             Params : Gtk_Args)
    is
       Result : Message_Dialog_Buttons;
    begin -- About_Pressed
       Result := Message_Dialog (Msg         => "Mine Detector" & Latin_1.LF &
-                                               "Copyright (C) 2002" & Latin_1.LF &
+                                               "Copyright (C) 2003" & Latin_1.LF &
                                                "PragmAda Software Engineering" & Latin_1.LF &
                                                "Released as Free Software under the terms" & Latin_1.LF &
                                                "of the GNU Public License" & Latin_1.LF &
@@ -363,7 +363,7 @@ package body User_If is
                                 Buttons     => Button_OK,
                                 Title       => "About Mine Detector");
    end About_Pressed;
-   
+
    function Image (Row : Field.Valid_Row; Column : Field.Valid_Column) return String is
    -- Returns a 4-Character String of the form "RRCC", where
    --    RR is the zero-filled image of Row
@@ -375,21 +375,21 @@ package body User_If is
    begin -- Image
       Row_Image (Row_Image'First) := '0';
       Column_Image (Column_Image'First) := '0';
-      
+
       if Row >= 10 then
          Row_First := Row_First + 1;
       end if;
-      
+
       if Column >= 10 then
          Column_First := Column_First + 1;
       end if;
-      
+
       return Row_Image (Row_First .. Row_Image'Last) & Column_Image (Column_First .. Column_Image'Last);
    end Image;
-   
+
    procedure First_Game (Data : System.Address) is
-      Button_Size : constant := 20;
-      
+      Button_Size : constant := 25;
+
       use type Glib.Guint;
    begin -- First_Game
       Gtk_New (Window, Window_Toplevel);
@@ -408,6 +408,7 @@ package body User_If is
       Pack_End (Box, Right_Side);
 
       Gtk_New (Mines_Left, "0");
+      Set_Use_Markup (Mines_Left, True);
       Set_Justify (Mines_Left, Justify_Right);
       Pack_Start (Right_Side, Mines_Left, False);
 
@@ -419,6 +420,7 @@ package body User_If is
             Toggle_Cb.Connect (Button (Row, Column), "toggled", Toggle'access);
             Marker_Cb.Connect (Button (Row, Column), "button_press_event", Marker_Cb.To_Marshaller (Button_Press'access) );
             Gtk_New (Press (Row, Column), " ");
+            Set_Use_Markup (Press (Row, Column), True);
             Add (Button (Row, Column), Press (Row, Column) );
             Attach (Table,
                     Button (Row, Column),
@@ -432,28 +434,29 @@ package body User_If is
       Gtk_New (Restart_Button, "New Game");
       Button_Cb.Connect (Restart_Button, "clicked", When_Restart_Button'access);
       Pack_Start (Right_Side, Restart_Button, False);
-      
+
       Gtk_New (Mark_Check, "Auto Mark");
       Set_Active (Mark_Check, Field.Operations.Auto_Marking.Enabled);
       Check_Cb.Connect (Mark_Check, "toggled", Mark_Toggle'access);
       Pack_Start (Right_Side, Mark_Check, False);
-   
+
       Gtk_New (Step_Check, "Auto Step" & Latin_1.LF & "after Mark");
       Set_Active (Step_Check, Field.Operations.Extended_Stepping.Enabled);
       Check_Cb.Connect (Step_Check, "toggled", Step_Toggle'access);
       Pack_Start (Right_Side, Step_Check, False);
-      
+
       Gtk_New (Rules, "Rules");
       Button_Cb.Connect (Rules, "clicked", Rules_Pressed'access);
       Pack_Start (Right_Side, Rules, False);
-   
+
       Gtk_New (About, "About");
       Button_Cb.Connect (About, "clicked", About_Pressed'access);
       Pack_Start (Right_Side, About, False);
-      
+
       Gtk_New (Game_Over, You_Won_Message);
+      Set_Use_Markup (Game_Over, True);
       Pack_Start (Right_Side, Game_Over, False);
-   
+
       Show_All (Window);
 
       Field.Operations.Reset;
