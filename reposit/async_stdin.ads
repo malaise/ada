@@ -16,6 +16,16 @@ package Async_Stdin is
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1);
 
+  -- Put on stdout when in async
+  procedure Put_Out (Str : in String);
+  procedure Put_Line_Out (Str : in String);
+  procedure New_Line_Out;
+
+  -- Put on stderr when in async
+  procedure Put_Err (Str : in String);
+  procedure Put_Line_Err (Str : in String);
+  procedure New_Line_Err;
+
   -- Error in Set_Async
   Error : exception;
 

@@ -541,5 +541,79 @@ package body Async_Stdin is
     end if;
   end Set_Async;
 
+  -- Put on stdout when in async
+  procedure Put_Out (Str : in String) is
+    Result : Boolean;
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Ada.Text_Io.Put (Str);
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Ada.Text_Io.Put (Str);
+    end if;
+  end Put_Out;
+
+  procedure Put_Line_Out (Str : in String) is
+    Result : Boolean;
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Ada.Text_Io.Put_Line (Str);
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Ada.Text_Io.Put_Line (Str);
+    end if;
+  end Put_Line_Out;
+
+  procedure New_Line_Out is
+    Result : Boolean;
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Ada.Text_Io.New_Line;
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Ada.Text_Io.New_Line;
+    end if;
+  end New_Line_Out;
+
+  -- Put on stderr when in async
+  procedure Put_Err (Str : in String) is
+    Result : Boolean;
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Sys_Calls.Put_Error (Str);
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Sys_Calls.Put_Error (Str);
+    end if;
+  end Put_Err;
+
+  procedure Put_Line_Err (Str : in String) is
+    Result : Boolean;
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Sys_Calls.Put_Line_Error (Str);
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Sys_Calls.Put_Line_Error (Str);
+    end if;
+  end Put_Line_Err;
+
+  procedure New_Line_Err is
+    Result : Boolean;
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Sys_Calls.New_Line_Error;
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Sys_Calls.New_Line_Error;
+    end if;
+  end New_Line_Err;
+
 end Async_Stdin;
 
