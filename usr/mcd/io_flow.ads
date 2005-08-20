@@ -2,6 +2,7 @@ with Ada.Strings.Unbounded;
 package Io_Flow is
 
   procedure Put (Str : in String);
+  procedure Put_Line (Str : in String);
   procedure New_Line;
 
   procedure Next_Line (Str : out Ada.Strings.Unbounded.Unbounded_String);

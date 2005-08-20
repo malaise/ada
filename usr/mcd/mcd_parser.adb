@@ -375,20 +375,19 @@ package body Mcd_Parser is
 
 
   procedure Print_Help is
-    use Ada.Text_Io;
     Ope_Name : String (1 .. Ope_Len);
   begin
-    Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name> | -h ]");
-    Put_Line ("Commands are strings read from standard input or from a fifo.");
-    Put_Line ("Separators are space and horizontal tab.");
-    Put_Line ("Comments start by '#', up to the end of line");
-    Put_Line ("Item ::= <arbitrary> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
-    Put_Line ("  <arbitrary>  ::= @<number>");
-    Put_Line ("  <integer>    ::= <number> | <base>#<number>#");
-    Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
-    Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
-    Put_Line ("  <string>     ::= ""<text>""");
-    Put_Line ("Operators are: Name       Action (A is top of stack, then B...)");
+    Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name> | -h ]");
+    Io_Flow.Put_Line ("Commands are strings read from standard input or from a fifo.");
+    Io_Flow.Put_Line ("Separators are space and horizontal tab.");
+    Io_Flow.Put_Line ("Comments start by '#', up to the end of line");
+    Io_Flow.Put_Line ("Item ::= <arbitrary> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
+    Io_Flow.Put_Line ("  <arbitrary>  ::= @<number>");
+    Io_Flow.Put_Line ("  <integer>    ::= <number> | <base>#<number>#");
+    Io_Flow.Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
+    Io_Flow.Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
+    Io_Flow.Put_Line ("  <string>     ::= ""<text>""");
+    Io_Flow.Put_Line ("Operators are: Name       Action (A is top of stack, then B...)");
     for O in Mcd_Mng.Operator_List loop
       Ope_Name:= (others => ' ');
       if Words(O).Word /= Nosy then
@@ -397,9 +396,9 @@ package body Mcd_Parser is
         Ope_Name(1 .. Mcd_Mng.Operator_List'Image(O)'Length)
                 := Lower_Str(Mcd_Mng.Operator_List'Image(O));
       end if;
-      Put_Line("               " & Ope_Name & "   " & Words(O).Comment);
+      Io_Flow.Put_Line ("               " & Ope_Name & "   " & Words(O).Comment);
       if Words(O).New_Line then
-        New_Line;
+        Io_Flow.New_Line;
       end if;
     end loop;
   end Print_Help;

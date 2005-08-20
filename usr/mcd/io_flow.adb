@@ -136,7 +136,7 @@ package body Io_Flow is
     use type Mcd_Fifos.Fifo_Id, Fifos.Send_Result_List;
   begin
     if Text_Handler.Empty (Fifo_Name) then
-      Ada.Text_Io.Put (Str);
+      Async_Stdin.Put_Out (Str);
     elsif Client_Id /= Mcd_Fifos.No_Fifo then
       if Str'Length > Message_Type'Length then
         raise Mcd_Mng.String_Len;
@@ -157,11 +157,17 @@ package body Io_Flow is
   procedure New_Line is
   begin
     if Text_Handler.Empty (Fifo_Name) then
-      Ada.Text_Io.New_Line;
+      Async_Stdin.New_Line_Out;
     else
       Put ("" & Ada.Characters.Latin_1.Cr);
     end if;
   end New_Line;
+
+  procedure Put_Line (Str : in String) is
+  begin
+    Put (Str);
+    New_Line;
+  end Put_Line;
 
   Closing : Boolean := False;
   procedure Close is
