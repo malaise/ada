@@ -138,7 +138,6 @@ package Mcd_Mng is
    Strprog,
    Strof,
    Normal,
-   Maxlen,
    Regex,
 
    Clock,

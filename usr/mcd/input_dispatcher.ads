@@ -1,9 +1,5 @@
 package Input_Dispatcher is
 
-  -- Max line length on stdin
-  -- Max string length
-  Max_String_Lg : constant := 1024;
-
   -- Set input flow to a new string
   --  or stdin if Str is empty
   procedure Set_Input (Str : in String);

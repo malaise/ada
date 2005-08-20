@@ -1,10 +1,10 @@
+with Ada.Strings.Unbounded;
 package Io_Flow is
 
   procedure Put (Str : in String);
   procedure New_Line;
 
-  procedure Next_Line (Str : out String;
-                       Len : out Natural);
+  procedure Next_Line (Str : out Ada.Strings.Unbounded.Unbounded_String);
 
   procedure Close;
 

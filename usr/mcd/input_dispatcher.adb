@@ -1,24 +1,23 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with Text_Handler;
+with Ada.Text_Io, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
 with Debug, Mcd_Mng, Io_Flow;
 package body Input_Dispatcher is
+
+  package Unb renames Ada.Strings.Unbounded;
 
   -- Current input flow
   Curr_Is_Stdin : Boolean := True;
 
   -- Data from stdin
-  Str_Stdin : String (1 .. Max_String_Lg);
-  Len_Stdin : Natural := 0;
+  Str_Stdin : Unb.Unbounded_String;
   Ind_Stdin : Positive;
 
   -- Data from Stdin/Set_Input
-  Cur_Str : String (1 .. Max_String_Lg);
-  Cur_Len : Positive;
+  Cur_Str : Unb.Unbounded_String;
 
   Str_Parsed : Boolean;
 
   -- Extracted from current Str
-  Word : Text_Handler.Text (Max_String_Lg);
+  Word : Unb.Unbounded_String;
 
   -- Get first/next word from a string
   Cur_Index : Positive;
@@ -68,40 +67,41 @@ package body Input_Dispatcher is
     return Tmp_Str (1 .. Tmp_Len);
   end Parse_String;
 
-  function Next_Str_Word return String is
+  function Next_Str_Word return Unb.Unbounded_String is
     Tmp_Index : Positive;
     In_Lit : Boolean := False;
   begin
     -- Skip separators
-    while Cur_Index <= Cur_Len and then Is_Separator(Cur_Str(Cur_Index)) loop
+    while Cur_Index <= Unb.Length (Cur_Str)
+    and then Is_Separator(Unb.Element (Cur_Str, Cur_Index)) loop
       Cur_Index := Cur_Index + 1;
     end loop;
-    if Cur_Index > Cur_Len then
+    if Cur_Index > Unb.Length (Cur_Str) then
       -- No more word
-      return "";
+      return Unb.Null_Unbounded_String;
     end if;
 
-    if Cur_Str(Cur_Index) = '#' then
+    if Unb.Element (Cur_Str, Cur_Index) = '#' then
       -- Comment: skip line
-      return "";
+      return Unb.Null_Unbounded_String;
     end if;
 
     -- Got a start of word
     Tmp_Index := Cur_Index;
 
-    In_Lit := Cur_Str(Tmp_Index) = Sd;
+    In_Lit := Unb.Element (Cur_Str, Tmp_Index) = Sd;
     if In_Lit then
       Stop_Index := Tmp_Index + 1;
       -- Parse string literal, look for Sd-Sep or Sd-End
       Parse_Lit:
       loop
-        if Cur_Str(Stop_Index) = Sd then
-          if Stop_Index = Cur_Len
-          or else Is_Separator(Cur_Str(Stop_Index + 1)) then
+        if Unb.Element (Cur_Str, Stop_Index) = Sd then
+          if Stop_Index = Unb.Length (Cur_Str)
+          or else Is_Separator(Unb.Element (Cur_Str, Stop_Index + 1)) then
             -- End of String literal
             exit Parse_Lit;
-          elsif Cur_Str(Stop_Index + 1) = Sd 
-          and then Stop_Index + 1 /= Cur_Len then
+          elsif Unb.Element (Cur_Str, Stop_Index + 1) = Sd 
+          and then Stop_Index + 1 /= Unb.Length (Cur_Str) then
             -- Two successive Sd in the middle: keep
             Stop_Index := Stop_Index + 1;
           else
@@ -109,9 +109,9 @@ package body Input_Dispatcher is
             raise String_Error;
            
           end if;
-        elsif Stop_Index = Cur_Len then
+        elsif Stop_Index = Unb.Length (Cur_Str) then
           -- No Sd before end of line
-          Stop_Index := Cur_Len;
+          Stop_Index := Unb.Length (Cur_Str);
           raise String_Error;
         end if;
         -- In the middle of a string: go on
@@ -124,8 +124,8 @@ package body Input_Dispatcher is
     else
       -- Parse string, look for separator
       Stop_Index := Tmp_Index + 1;
-      while Stop_Index <= Cur_Len
-      and then not Is_Separator(Cur_Str(Stop_Index)) loop
+      while Stop_Index <= Unb.Length (Cur_Str)
+      and then not Is_Separator(Unb.Element (Cur_Str, Stop_Index)) loop
         Stop_Index := Stop_Index + 1;
       end loop;
       -- This is the next start
@@ -134,20 +134,20 @@ package body Input_Dispatcher is
       Stop_Index := Stop_Index - 1;
     end if;
 
-    return Cur_Str(Tmp_Index .. Stop_Index);
+    return Unb.To_Unbounded_String (Unb.Slice (Cur_Str, Tmp_Index, Stop_Index));
 
   end Next_Str_Word;
 
   function Error_String return String is
   begin
-   return Cur_Str(Cur_Index .. Stop_Index);
+   return Unb.Slice (Cur_Str, Cur_Index , Stop_Index);
   end Error_String;
 
-  function First_Str_Word (Str : String := "") return String is
+  function First_Str_Word (Str : Unb.Unbounded_String := Unb.Null_Unbounded_String)
+  return Unb.Unbounded_String is
   begin
-    if Str /= "" then
-      Cur_Len := Str'Length;
-      Cur_Str(1 .. Cur_Len) := Str;
+    if Unb.Length (Str) /= 0 then
+      Cur_Str := Str;
     end if;
     Cur_Index := 1;
     return Next_Str_Word;
@@ -163,24 +163,21 @@ package body Input_Dispatcher is
     end if;
     if Str = "" then
       Curr_Is_Stdin := True;
-      if Len_Stdin /= 0 then
-        Cur_Index := Ind_Stdin;
-        Cur_Len := Len_Stdin;
-        Cur_Str(1 .. Cur_Len) := Str_Stdin(1 .. Len_Stdin);
+      if Unb.Length (Str_Stdin) /= 0 then
+        Cur_Str := Str_Stdin;
       end if;
     else
       if Curr_Is_Stdin then
         Ind_Stdin := Cur_Index;
       end if;
       Curr_Is_Stdin := False;
-      Cur_Len := Str'Length;
-      Cur_Str(1 .. Cur_Len) := Str;
+      Cur_Str := Unb.To_Unbounded_String (Str);
       Str_Parsed := False;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
       Ada.Text_Io.Put_Line ("Input_dispacher: Input set to >"
-       & Cur_Str(1 .. Cur_Len) & "< at " & Integer'Image(Cur_Index)
-       & " len " & Integer'Image(Cur_Len));
+       & Unb.To_String (Cur_Str) & "< at " & Integer'Image(Cur_Index)
+       & " len " & Natural'Image(Unb.Length (Cur_Str)));
     end if;
   end Set_Input;
 
@@ -197,13 +194,13 @@ package body Input_Dispatcher is
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
       Ada.Text_Io.Put_Line ("Input_dispacher: Remaining is >"
-       & Cur_Str(Cur_Index .. Cur_Len) & "<");
+       & Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str)) & "<");
     end if;
     -- Current string may not be parsed (retacal in a function)
     if not Curr_Is_Stdin and then not Str_Parsed then
       Cur_Index := 1;
     end if;
-    return Cur_Str(Cur_Index .. Cur_Len);
+    return Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str));
   end Get_Remaining;
 
   -- Get next word from current input
@@ -213,20 +210,20 @@ package body Input_Dispatcher is
     if Curr_Is_Stdin then
 
       loop
-        if Len_Stdin = 0 then
+        if Unb.Length (Str_Stdin) = 0 then
           -- Need to get a new string
-          Io_Flow.Next_Line (Str_Stdin, Len_Stdin);
-          if Len_Stdin = 0 then
+          Io_Flow.Next_Line (Str_Stdin);
+          if Unb.Length (Str_Stdin) = 0 then
               return "";
           end if;
           -- Got str, parse it
-          Text_Handler.Set(Word, First_Str_Word(Str_Stdin(1 .. Len_Stdin)));
-          exit when not Text_Handler.Empty(Word);
+          Word := First_Str_Word (Str_Stdin);
+          exit when Unb.Length (Word) /= 0;
         else
-          Text_Handler.Set(Word, Next_Str_Word);
-          exit when not Text_Handler.Empty(Word);
+          Word := Next_Str_Word;
+          exit when Unb.Length (Word) /= 0;
           -- End of string
-          Len_Stdin := 0;
+          Str_Stdin := Unb.Null_Unbounded_String;
         end if;
       end loop;
     
@@ -234,15 +231,15 @@ package body Input_Dispatcher is
 
       -- In string
       if not Str_Parsed then
-        Text_Handler.Set(Word, First_Str_Word);
+        Word := First_Str_Word;
         Str_Parsed := True;
       else
-        Text_Handler.Set(Word, Next_Str_Word);
+        Word := Next_Str_Word;
       end if;
 
     end if;
 
-    return Text_Handler.Value(Word);
+    return Unb.To_String (Word);
   end Next_Word;
 
 

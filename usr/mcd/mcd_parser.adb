@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Strings.Unbounded;
-with Text_Handler, My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary;
+with My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary;
 with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
@@ -169,7 +169,6 @@ package body Mcd_Parser is
    Strprog  => (Nosy, "push A converted to program   ", False),
    Strof    => (Nosy, "push formated string of A     ", False),
    Normal   => (Nosy, "push normalised string of D   ", False), 
-   Maxlen   => (Nosy, "push max string length        ", False), 
    Regex    => (Nosy, "push if B matches regex A     ", True),
 
    Clock    => (Nosy, "push current time             ", False),

@@ -7,8 +7,10 @@ package body Ios is
 
   use My_Math;
 
-  -- Max len for int/real image or for getenv
-  Max_String_Len : constant := 1024;
+  -- Max len for int/real image
+  Max_Image_Len : constant := 1024;
+  -- Max len for getenv
+  Max_Env_Len : constant := 10240;
 
   Inte_Format_Set : Boolean := False;
   Real_Format_Set : Boolean := False;
@@ -193,7 +195,7 @@ package body Ios is
 
   function Strof (Item : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
-    Image_Str : String (1 .. Max_String_Len);
+    Image_Str : String (1 .. Max_Image_Len);
     Image_Len : Natural;
 
     -- String is at the end of Res
@@ -334,8 +336,8 @@ package body Ios is
     return Res;
   end Normalof;
 
+  Env_Str : String (1 .. Max_Env_Len);
   function Getenv (Item : Item_Rec) return Item_Rec is
-    Env_Str : String (1 .. Max_String_Len);
     Len : Natural;
     Set, Trunc : Boolean;
     

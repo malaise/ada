@@ -1,5 +1,4 @@
 with Ada.Text_Io;
-with Text_Handler;
 with Random;
 with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
@@ -762,10 +761,6 @@ package body Mcd_Mng is
         when Normal =>
           Pop(A); Pop(B); Pop(C); Pop(D);
           Push (Ios.Normalof(D, C, B, A));
-          S := A;
-        when Maxlen =>
-          A := (Kind => Inte, Val_Inte => Input_Dispatcher.Max_String_Lg);
-          Push (A);
           S := A;
         when Regex =>
           Pop(A); Pop(B); Push (Misc.Regex(A, B));
