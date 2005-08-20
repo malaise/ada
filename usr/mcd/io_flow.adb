@@ -44,7 +44,7 @@ package body Io_Flow is
         -- Stdin
         Text_Handler.Empty (Fifo_Name);
         if Debug.Debug_Level_Array(Debug.Parser) then
-          Ada.Text_Io.Put_Line ("Flow: init on stdio");
+          Async_Stdin.Put_Line_Err ("Flow: init on stdio");
         end if;
         Stdio_Is_A_Tty :=
             Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
@@ -53,14 +53,14 @@ package body Io_Flow is
         if Stdio_Is_A_Tty then
           Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 0);
           if Debug.Debug_Level_Array(Debug.Parser) then
-            Ada.Text_Io.Put_Line ("Flow: stdio is a tty");
+            Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
           end if;
         end if;
         return;
     end;
     -- Fifo
     if Debug.Debug_Level_Array(Debug.Parser) then
-      Ada.Text_Io.Put_Line ("Flow: init on fifo "
+      Async_Stdin.Put_Line_Err ("Flow: init on fifo "
                           & Text_Handler.Value (Fifo_Name));
     end if;
     Open_Fifo;
@@ -106,7 +106,7 @@ package body Io_Flow is
       loop
         Input_Data := Unb.To_Unbounded_String ("");
         if Debug.Debug_Level_Array(Debug.Parser) then
-          Ada.Text_Io.Put_Line ("Flow: Waiting on fifo/tty");
+          Async_Stdin.Put_Line_Err ("Flow: Waiting on fifo/tty");
         end if;
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
 
@@ -123,7 +123,7 @@ package body Io_Flow is
     end if;
     Str := Input_Data;
     if Debug.Debug_Level_Array(Debug.Parser) then
-      Ada.Text_Io.Put_Line ("Flow: Next_Line -> " & Unb.To_String (Str));
+      Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Unb.To_String (Str));
     end if;
   end Next_Line;
 
@@ -180,7 +180,7 @@ package body Io_Flow is
       return;
     end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Ada.Text_Io.Put_Line ("Flow: Closing fifo");
+      Async_Stdin.Put_Line_Err ("Flow: Closing fifo");
     end if;
     Closing := True;
     if Client_Id /= Mcd_Fifos.No_Fifo then
@@ -200,7 +200,7 @@ package body Io_Flow is
   begin
     if Connected then 
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Ada.Text_Io.Put_Line ("Flow: Client accepted");
+        Async_Stdin.Put_Line_Err ("Flow: Client accepted");
       end if;
       -- Accept client and stop accepting
       Mcd_Fifos.Close (Acc_Id);
@@ -208,7 +208,7 @@ package body Io_Flow is
     else
       -- Client disconnects, allow new client
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Ada.Text_Io.Put_Line ("Flow: Client has disconnected");
+        Async_Stdin.Put_Line_Err ("Flow: Client has disconnected");
       end if;
       Client_Id := Mcd_Fifos.No_Fifo;
       if not Closing then
@@ -233,12 +233,12 @@ package body Io_Flow is
   begin
     if Text_Handler.Empty (Fifo_Name) then
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Ada.Text_Io.Put_Line ("Flow: Opening empty fifo discarded");
+        Async_Stdin.Put_Line_Err ("Flow: Opening empty fifo discarded");
       end if;
       return;
     end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Ada.Text_Io.Put_Line ("Flow: Opening fifo "
+      Async_Stdin.Put_Line_Err ("Flow: Opening fifo "
                           & Text_Handler.Value (Fifo_Name));
     end if;
     Acc_Id := Mcd_Fifos.Open (Text_Handler.Value (Fifo_Name),
@@ -247,12 +247,12 @@ package body Io_Flow is
                               Rece_Cb'Access,
                               null);
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Ada.Text_Io.Put_Line ("Flow: Fifo open");
+      Async_Stdin.Put_Line_Err ("Flow: Fifo open");
     end if;
   exception
     when Error:others =>
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Ada.Text_Io.Put_Line ("Flow: Fifo open error "
+        Async_Stdin.Put_Line_Err ("Flow: Fifo open error "
                             & Ada.Exceptions.Exception_Name (Error));
       end if;
       Text_Handler.Empty (Fifo_Name);
@@ -275,7 +275,7 @@ package body Io_Flow is
       Input_Data := Unb.To_Unbounded_String (Str);
     end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Ada.Text_Io.Put_Line ("Flow: Stdin_Cb set >"
+      Async_Stdin.Put_Line_Err ("Flow: Stdin_Cb set >"
                            & Unb.To_String (Input_Data)
                            & "<");
     end if;

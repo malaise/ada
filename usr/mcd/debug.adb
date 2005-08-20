@@ -1,7 +1,9 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
-with Environ, Bool_Io, Arbitrary;
+with Ada.Strings.Unbounded;
+with Environ, Bool_Io, Arbitrary, Async_Stdin;
 with Inte_Io, Real_Io;
 package body Debug is
+
+  package Unb renames Ada.Strings.Unbounded;
 
   procedure Init is
   begin
@@ -26,21 +28,21 @@ package body Debug is
   begin
     case Item.Kind is
       when Arbi =>
-        Ada.Text_Io.Put ("@" & Arbitrary.Image(Item.Val_Arbi));
+        Async_Stdin.Put_Err ("@" & Arbitrary.Image(Item.Val_Arbi));
       when Inte =>
-        Inte_Io.Put(Item.Val_Inte);
+        Async_Stdin.Put_Err (Item.Val_Inte'Img);
       when Real =>
-        Real_Io.Put(Item.Val_Real);
+        Async_Stdin.Put_Err (Item.Val_Real'Img);
       when Bool =>
         Bool_Io.Put(Item.Val_Bool);
       when Chrs =>
-        Ada.Text_Io.Put ("""" & Ada.Strings.Unbounded.To_String (Item.Val_Text) & """");
+        Async_Stdin.Put_Err ("""" & Unb.To_String (Item.Val_Text) & """");
       when Prog =>
-        Ada.Text_Io.Put ("[ " & Ada.Strings.Unbounded.To_String (Item.Val_Text) & " ]");
+        Async_Stdin.Put_Err ("[ " & Unb.To_String (Item.Val_Text) & " ]");
       when Regi =>
-        Ada.Text_Io.Put (Item.Val_Regi);
+        Async_Stdin.Put_Err (Item.Val_Regi & "");
       when Oper =>
-        Ada.Text_Io.Put (Operator_List'Image(Item.Val_Oper));
+        Async_Stdin.Put_Err (Operator_List'Image(Item.Val_Oper));
     end case;
   end Put;
 

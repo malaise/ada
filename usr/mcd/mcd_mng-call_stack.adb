@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Dynamic_List;
 separate (Mcd_Mng)
 
@@ -19,7 +18,7 @@ package body Call_Stack is
     Call_Entry.Str := Item;
     Call_Stack_List.Insert(List, Call_Entry);
     if Debug.Debug_Level_Array(Debug.Call) then
-      Ada.Text_Io.Put_Line ("Call_stack: Pushing >" & Unb.To_String (Item) & "<"
+      Async_Stdin.Put_Line_Err ("Call_stack: Pushing >" & Unb.To_String (Item) & "<"
         & "   Level is "
         & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
@@ -29,7 +28,7 @@ package body Call_Stack is
   begin
     Call_Stack_List.Get(List, Call_Entry, Call_Stack_List.Prev);
     if Debug.Debug_Level_Array(Debug.Call) then
-      Ada.Text_Io.Put_Line ("Call_stack: Poping >"
+      Async_Stdin.Put_Line_Err ("Call_stack: Poping >"
         & Unb.To_String (Call_Entry.Str) & "<"
         & "   Level is "
         & Integer'Image(Call_Stack_List.List_Length(List)));
@@ -40,7 +39,7 @@ package body Call_Stack is
   function Level return Natural is
   begin
     if Debug.Debug_Level_Array(Debug.Call) then
-      Ada.Text_Io.Put_Line ("Call_stack: Level "
+      Async_Stdin.Put_Line_Err ("Call_stack: Level "
         & Integer'Image(Call_Stack_List.List_Length(List)));
     end if;
     return Call_Stack_List.List_Length(List);

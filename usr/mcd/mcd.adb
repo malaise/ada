@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Exceptions;
+with Ada.Exceptions;
 with Argument, Sys_Calls, Mixed_Str;
 with Debug, Mcd_Parser, Mcd_Mng, Io_Flow;
 

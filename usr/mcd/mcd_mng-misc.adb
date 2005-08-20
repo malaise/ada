@@ -7,7 +7,7 @@ package body Misc is
   procedure Do_Call is
   begin
     if Debug.Debug_Level_Array(Debug.Oper) then
-      Ada.Text_Io.Put_Line("Mng: Do_call");
+      Async_Stdin.Put_Line_Err("Mng: Do_call");
     end if;
     Stack.Pop(A);
     if A.Kind /= Prog then

@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Random;
+with Random, Async_Stdin;
 with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
@@ -269,7 +268,7 @@ package body Mcd_Mng is
       Call_Stack_Level : Natural;
     begin
       if Debug.Debug_Level_Array(Debug.Oper) then
-        Ada.Text_Io.Put_Line("Mng: Do_ret");
+        Async_Stdin.Put_Line_Err("Mng: Do_ret");
       end if;
       Call_Stack_Level := Call_Stack.Level;
       if not All_Levels then
@@ -334,9 +333,9 @@ package body Mcd_Mng is
       Push(Item);
     else -- Operator
       if Debug.Debug_Level_Array(Debug.Oper) then
-        Ada.Text_Io.Put("Mng: ");
+        Async_Stdin.Put_Err("Mng: ");
         Debug.Put(Item);
-        Ada.Text_Io.New_Line;
+        Async_Stdin.New_Line_Err;
       end if;
       case Item.Val_Oper is 
         -- These I do it myself

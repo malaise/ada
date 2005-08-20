@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 separate (Mcd_Mng)
 
 package body Registers is
@@ -63,9 +62,9 @@ package body Registers is
     end if;
     Registers_Array(Reg2Ind(To_Reg)) := Val;
     if Debug.Debug_Level_Array(Debug.Register) then
-      Ada.Text_Io.Put ("Register: Storing in " & To_Reg.Val_Regi & ": ");
+      Async_Stdin.Put_Err ("Register: Storing in " & To_Reg.Val_Regi & ": ");
       Debug.Put (Val);
-      Ada.Text_Io.New_Line;
+      Async_Stdin.New_Line_Err;
     end if;
   end Store;
     
@@ -77,9 +76,9 @@ package body Registers is
       raise Emtpy_Register;
     end if;
     if Debug.Debug_Level_Array(Debug.Register) then
-      Ada.Text_Io.Put ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
+      Async_Stdin.Put_Err ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
       Debug.Put (Val);
-      Ada.Text_Io.New_Line;
+      Async_Stdin.New_Line_Err;
     end if;
     return Val;
   end Retrieve;

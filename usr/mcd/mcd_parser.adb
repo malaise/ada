@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
-with My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary;
+with Ada.Strings.Unbounded;
+with My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary, Async_Stdin;
 with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
@@ -201,7 +201,7 @@ package body Mcd_Parser is
 
     Txt := Unb.To_Unbounded_String (Input_Dispatcher.Next_Word);
     if Debug.Debug_Level_Array(Debug.Parser) then
-      Ada.Text_Io.Put_Line ("Parser: Getting >"
+      Async_Stdin.Put_Line_Err ("Parser: Getting >"
                & Unb.To_String (Txt)  & "<");
     end if;
     Item_Chrs.Val_Text := Txt;
@@ -209,7 +209,7 @@ package body Mcd_Parser is
     -- Eof
     if Unb.Length (Txt) = 0 then
       if Debug.Debug_Level_Array(Debug.Parser) then
-        Ada.Text_Io.Put_Line ("Parser: Eof");
+        Async_Stdin.Put_Line_Err ("Parser: Eof");
       end if;
       Item_Chrs.Val_Text := Unb.To_Unbounded_String ("EOF");
       Instr_Stack.Push(Item_Chrs);
@@ -253,7 +253,7 @@ package body Mcd_Parser is
         while Level /= 0 loop
           Txt := Unb.To_Unbounded_String (Input_Dispatcher.Next_Word);
           if Debug.Debug_Level_Array(Debug.Parser) then
-            Ada.Text_Io.Put_Line ("Parser: Getting >"
+            Async_Stdin.Put_Line_Err ("Parser: Getting >"
                      & Unb.To_String(Txt)  & "<");
           end if;
           if Unb.To_String(Txt) = "[" then

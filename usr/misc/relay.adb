@@ -69,9 +69,9 @@ procedure Relay is
     end if;
     -- Put
     if Stdout_Is_A_Tty then
-      Ada.Text_Io.Put ("-> ");
+      Async_Stdin.Put_Out ("-> ");
     end if;
-    Ada.Text_Io.Put_Line (Message.Data(1 .. Len));
+    Async_Stdin.Put_Line_Out (Message.Data(1 .. Len));
     Ada.Text_Io.Flush;
   end Channel_Read_Cb;
 

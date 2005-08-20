@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
+with Ada.Exceptions, Ada.Characters.Latin_1;
 with Text_Handler, Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls, Parser,
      Lower_Str, Pattern;
 with Dictio_Lib;
@@ -12,13 +12,13 @@ procedure T_Dictio is
   Sig : Boolean := False;
   procedure Sig_Cb is
   begin
-    Ada.Text_Io.Put_Line ("CLIENT: Aborted");
+    Async_Stdin.Put_Line_Out ("CLIENT: Aborted");
     Sig := True;
   end Sig_Cb;
 
   -- Parsing
   procedure Put_Help is
-    procedure P (Str : in String) renames Ada.Text_Io.Put_Line;
+    procedure P (Str : in String) renames Async_Stdin.Put_Line_Out;
   begin
     P ("Comands are:");
     P (" set    <name>    [ <data> ]        alias  <name>    [ <of_name> ]");
@@ -56,7 +56,7 @@ procedure T_Dictio is
   begin
     -- Set/Alias <name> [ <data/of_name> ]
     if Arg1 = "" or else Arg3 /= "" then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
     if Id = Id_Set then
@@ -64,7 +64,7 @@ procedure T_Dictio is
     elsif Id = Id_Alias then
       Dictio_Lib.Set_Alias (Arg1, Arg2);
     else
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
     end if;
     return False;
   end Com_Fix_Opt;
@@ -95,7 +95,7 @@ procedure T_Dictio is
     -- Get/Notify/Cancel [ alias ] [ <name> ]
     -- If <name> is not set then name is "alias"
     if (not Alias and then Arg1 = "") or else Arg2 /= "" then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
 
@@ -114,10 +114,10 @@ procedure T_Dictio is
 
     if Id = Id_Get then
       if not Alias then
-        Ada.Text_Io.Put_Line ("CLIENT: got >"
+        Async_Stdin.Put_Line_Out ("CLIENT: got >"
                             & Dictio_Lib.Get (Get_Name) & "<");
       else
-        Ada.Text_Io.Put_Line ("CLIENT: got alias >"
+        Async_Stdin.Put_Line_Out ("CLIENT: got alias >"
                             & Dictio_Lib.Get_Alias (Get_Name) & "<");
       end if;
     elsif Id = Id_Notify then
@@ -125,7 +125,7 @@ procedure T_Dictio is
     elsif Id = Id_Cancel then
       Dictio_Lib.Notify (Get_Name, not Alias, False);
     else
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
     end if;
     return False;
   end Com_Opt_Opt;
@@ -140,7 +140,7 @@ procedure T_Dictio is
   begin
     -- Add/Del <host>
     if Arg1 = "" or else Arg2 /= "" then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
     if Id = Id_Add then
@@ -148,7 +148,7 @@ procedure T_Dictio is
     elsif Id = Id_Del then
       Dictio_Lib.Del_Host (Arg1);
     else
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
     end if;
     return False;
   end Com_Fix;
@@ -163,21 +163,21 @@ procedure T_Dictio is
   begin
     -- Help/Status/Exit/Quit or error
     if Arg1 /= "" then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
     if Id = Id_Help then
       Put_Help;
     elsif Id = Id_Status then
-      Ada.Text_Io.Put_Line("CLIENT: Dictio status is " & Saved_State'Img);
+      Async_Stdin.Put_Line_Out("CLIENT: Dictio status is " & Saved_State'Img);
     elsif Id = Id_Quit then
-      Ada.Text_Io.Put_Line ("CLIENT: Exiting");
+      Async_Stdin.Put_Line_Out ("CLIENT: Exiting");
       Event_Mng.Send_Dummy_Signal;
       return True;
     elsif Id = Id_Error then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
     else
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
     end if;
     return False;
   end Com;
@@ -222,13 +222,13 @@ procedure T_Dictio is
       return True;
     end if;
     if Str(Str'Length) = Ada.Characters.Latin_1.Eot then
-      Ada.Text_Io.Put_Line ("CLIENT: Terminated");
+      Async_Stdin.Put_Line_Out ("CLIENT: Terminated");
       Event_Mng.Send_Dummy_Signal;
       return True;
     end if;
     if Str'Length <= 1
     or else Str(Str'Length) /= Ada.Characters.Latin_1.Lf then
-      Ada.Text_Io.Put_Line ("CLIENT: Discarded");
+      Async_Stdin.Put_Line_Out ("CLIENT: Discarded");
       return False;
     end if;
 
@@ -236,19 +236,19 @@ procedure T_Dictio is
 
   exception
     when Dictio_Lib.No_Dictio =>
-      Ada.Text_Io.Put_Line ("CLIENT: No Dictio");
+      Async_Stdin.Put_Line_Out ("CLIENT: No Dictio");
       return False;
     when Dictio_Lib.No_Item =>
-      Ada.Text_Io.Put_Line ("CLIENT: No Item");
+      Async_Stdin.Put_Line_Out ("CLIENT: No Item");
       return False;
     when Dictio_Lib.Name_Too_Long =>
-      Ada.Text_Io.Put_Line ("CLIENT: Name Too Long");
+      Async_Stdin.Put_Line_Out ("CLIENT: Name Too Long");
       return False;
     when Dictio_Lib.Data_Too_Long =>
-      Ada.Text_Io.Put_Line ("CLIENT: Data Too Long");
+      Async_Stdin.Put_Line_Out ("CLIENT: Data Too Long");
       return False;
     when Error:others =>
-      Ada.Text_Io.Put_Line ("CLIENT: Exception: "
+      Async_Stdin.Put_Line_Out ("CLIENT: Exception: "
              & Ada.Exceptions.Exception_Name (Error));
       return False;
   end Stdin_Cb;
@@ -262,7 +262,7 @@ procedure T_Dictio is
   begin
     Saved_State := State;
     if not Init and then not Sig then
-      Ada.Text_Io.Put_Line("CLIENT: Dictio state is " & State'Img);
+      Async_Stdin.Put_Line_Out("CLIENT: Dictio state is " & State'Img);
     end if;
     if State /= Dictio_Lib.Unavailable and then Init then
       Load;
@@ -273,13 +273,13 @@ procedure T_Dictio is
                               Item : in Boolean; 
                               Data : in String) is
   begin
-    Ada.Text_Io.Put ("CLIENT: Notified on ");
+    Async_Stdin.Put_Out ("CLIENT: Notified on ");
     if Item then
-      Ada.Text_Io.Put ("item");
+      Async_Stdin.Put_Out ("item");
     else
-      Ada.Text_Io.Put ("alias");
+      Async_Stdin.Put_Out ("alias");
     end if;
-    Ada.Text_Io.Put_Line (" >" & Name & "< - >" & Data & "<");
+    Async_Stdin.Put_Line_Out (" >" & Name & "< - >" & Data & "<");
   end Dictio_Notify_Cb;
 
   -- Load dictio
@@ -299,7 +299,7 @@ procedure T_Dictio is
           Name(2) := '.';
         end if;
         if Verbose then
-          Ada.Text_Io.Put_Line ("CLIENT: Initializing " & Name(1..N));
+          Async_Stdin.Put_Line_Out ("CLIENT: Initializing " & Name(1..N));
         end if;
         Dictio_Lib.Set (Name(1..N), "Init_" & Name(1..N));
         exit when Sig;
@@ -311,7 +311,7 @@ procedure T_Dictio is
     Event_Mng.Send_Dummy_Signal;
   exception
     when Dictio_Lib.No_Dictio =>
-      Ada.Text_Io.Put_Line ("CLIENT.LOAD: No Dictio");
+      Async_Stdin.Put_Line_Out ("CLIENT.LOAD: No Dictio");
       Sig := True;
       Event_Mng.Send_Dummy_Signal;
       Sys_Calls.Set_Error_Exit_Code;
@@ -350,7 +350,7 @@ begin
                              Async_Stdin.Max_Chars_Range'Last);
     exception
       when Async_Stdin.Error =>
-        Ada.Text_Io.Put_Line("CLIENT: Cannot set stdin async");
+        Async_Stdin.Put_Line_Out("CLIENT: Cannot set stdin async");
         return;
     end;
   end if;

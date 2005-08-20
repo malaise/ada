@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Debug, Mcd_Mng, Io_Flow;
+with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
+with Debug, Mcd_Mng, Io_Flow, Async_Stdin;
 package body Input_Dispatcher is
 
   package Unb renames Ada.Strings.Unbounded;
@@ -158,7 +158,7 @@ package body Input_Dispatcher is
   procedure Set_Input (Str : in String) is
   begin
     if Debug.Debug_Level_Array(Debug.Input) then
-      Ada.Text_Io.Put_Line ("Input_dispacher: Setting input to >"
+      Async_Stdin.Put_Line_Err ("Input_dispacher: Setting input to >"
        & Str & "<");
     end if;
     if Str = "" then
@@ -175,7 +175,7 @@ package body Input_Dispatcher is
       Str_Parsed := False;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
-      Ada.Text_Io.Put_Line ("Input_dispacher: Input set to >"
+      Async_Stdin.Put_Line_Err ("Input_dispacher: Input set to >"
        & Unb.To_String (Cur_Str) & "< at " & Integer'Image(Cur_Index)
        & " len " & Natural'Image(Unb.Length (Cur_Str)));
     end if;
@@ -188,12 +188,12 @@ package body Input_Dispatcher is
   begin
     if Curr_Is_Stdin then
       if Debug.Debug_Level_Array(Debug.Input) then
-        Ada.Text_Io.Put_Line ("Input_dispacher: Remaining on stdin.");
+        Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining on stdin.");
       end if;
       raise Program_Error;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
-      Ada.Text_Io.Put_Line ("Input_dispacher: Remaining is >"
+      Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
        & Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str)) & "<");
     end if;
     -- Current string may not be parsed (retacal in a function)

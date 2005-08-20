@@ -115,11 +115,11 @@ procedure Pipe is
       Fid := Id;
     end if;
     if Length = 1 and then Message(1) = Ada.Characters.Latin_1.Cr then
-      Ada.Text_Io.New_Line;
+      Async_Stdin.New_Line_Out;
     else
-      Ada.Text_Io.Put (Message(1 .. Length));
+      Async_Stdin.Put_Out (Message(1 .. Length));
       if Put_Cr then
-        Ada.Text_Io.New_Line;
+        Async_Stdin.New_Line_Out;
       end if;
     end if;
   end Rece_Cb;

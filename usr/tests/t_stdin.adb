@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Exceptions, Ada.Characters.Latin_1;
+with Ada.Exceptions, Ada.Characters.Latin_1;
 with Argument, Socket, Event_Mng, Tcp_Util, Async_Stdin;
 
 procedure T_Stdin is
@@ -18,12 +18,12 @@ procedure T_Stdin is
   -- Signal callback
   procedure Signal_Cb is
   begin
-    Ada.Text_Io.Put_Line ("Aborted.");
+    Async_Stdin.Put_Line_Out ("Aborted.");
     Sig := True;
   end Signal_Cb;
 
 
-  subtype Message_Type is String(Async_Stdin.Max_Chars_Range);
+  subtype Message_Type is String(1 .. 1024);
   procedure My_Send is new Socket.Send(Message_Type);
   procedure My_Receive is new Socket.Receive(Message_Type);
 
@@ -40,11 +40,11 @@ procedure T_Stdin is
       My_Receive(Soc, Message, Message_Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        Ada.Text_Io.Put_Line("Disconnected");
+        Async_Stdin.Put_Line_Out("Disconnected");
         Go_On := False;
         return True;
     end;
-    Ada.Text_Io.Put(Message(1 .. Message_Len));
+    Async_Stdin.Put_Out (Message(1 .. Message_Len));
     return False;
   end Socket_Cb;
 
@@ -85,14 +85,14 @@ begin
     Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 21);
   exception
     when Async_Stdin.Error =>
-      Ada.Text_Io.Put_Line("Cannot set stdin async");
+      Async_Stdin.Put_Line_Out("Cannot set stdin async");
       return;
   end;
 
   -- Connect
   Socket.Open(Soc, Socket.Tcp_Header);
   Fd := Socket.Fd_Of(Soc);
-  Ada.Text_Io.Put_Line("Connecting to Host "
+  Async_Stdin.Put_Line_Out("Connecting to Host "
                 & Argument.Get_Parameter(Occurence => 1)
                 & " Port" & Socket.Port_Num'Image(Port));
   begin
@@ -100,7 +100,7 @@ begin
              False, Argument.Get_Parameter(1), Port);
   exception
     when Socket.Soc_Conn_Refused =>
-      Ada.Text_Io.Put_Line("Connection refused");
+      Async_Stdin.Put_Line_Out("Connection refused");
       Socket.Close(Soc);
       Async_Stdin.Set_Async;
       return;
@@ -126,11 +126,11 @@ begin
 
 exception
   when Arg_Error =>
-    Ada.Text_Io.Put_Line("Usage: " & Argument.Get_Program_Name
+    Async_Stdin.Put_Line_Err ("Usage: " & Argument.Get_Program_Name
                    & " <host_name> <port_num>");
 
   when Error : others =>
-    Ada.Text_Io.Put_Line("Exception: " & Ada.Exceptions.Exception_Name(Error));
+    Async_Stdin.Put_Line_Err ("Exception: " & Ada.Exceptions.Exception_Name(Error));
     Async_Stdin.Set_Async;
 end T_Stdin;
 
