@@ -1,7 +1,7 @@
 package Async_Stdin is
 
-  -- Maximum amount of characters stored
-  subtype Max_Chars_Range is Positive range 1 .. 1024;
+  -- Maximum amount of characters stored, 0 for infinite
+  subtype Max_Chars_Range is Natural;
 
   -- The user callback
   type User_Callback_Access is
