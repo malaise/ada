@@ -4,7 +4,7 @@ package body My_Math is
   -- Interface to C math library
   type  Double is new Long_Float;
 
-  function CPow (X, Y : Double) return Double;
+  function Cpow (X, Y : Double) return Double;
   pragma Interface (C, Cpow);
   pragma Interface_Name (Cpow, "pow");
 

@@ -33,7 +33,7 @@ package body Input_Dispatcher is
 
   -- Remove string
   function Parse_String (Str : String) return String is
-    Tmp_Str : String (1 .. Str'length);
+    Tmp_Str : String (1 .. Str'Length);
     Tmp_Len : Natural;
     Tmp_Index : Natural;
   begin

@@ -262,7 +262,7 @@ package body Io_Flow is
       Input_Data := Unb.To_Unbounded_String (Str);
       return True;
     elsif Str(Str'Last) = Ada.Characters.Latin_1.Cr
-    or else  Str(Str'Last) = Ada.Characters.Latin_1.lf then
+    or else  Str(Str'Last) = Ada.Characters.Latin_1.Lf then
       -- Skip Cr/lf
       Input_Data := Unb.To_Unbounded_String (Str(1 .. Natural'Pred(Str'Last)));
     else
