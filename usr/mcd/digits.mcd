@@ -10,14 +10,8 @@ ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
 dup isneg E pushr ifcall
 
-# Epsilon
-1.0e14 e popr
-
-# Log 10
-toreal log 
-
-# Round
-e pushr * round toreal e pushr / trunc 
+# Trunc log 10
+toreal log trunc
 
 1 + put " digits." putl
 
