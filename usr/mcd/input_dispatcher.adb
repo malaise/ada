@@ -164,6 +164,7 @@ package body Input_Dispatcher is
     if Str = "" then
       Curr_Is_Stdin := True;
       if Unb.Length (Str_Stdin) /= 0 then
+        Cur_Index := Ind_Stdin;
         Cur_Str := Str_Stdin;
       end if;
     else
