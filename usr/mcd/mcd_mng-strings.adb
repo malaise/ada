@@ -1,4 +1,4 @@
-with Upper_Str, Lower_Str, Mixed_Str;
+with Upper_Str, Lower_Str, Mixed_Str, String_Mng;
 separate(Mcd_Mng)
 
 package body Strings is
@@ -70,22 +70,10 @@ package body Strings is
       raise Invalid_Argument;
     end if;
 
-    Res.Val_Inte := 0;
-    Pat_Len := Unb.Length(Pat.Val_Text);
-    if Unb.Length(S.Val_Text) = 0 or else Unb.Length(Pat.Val_Text) = 0 then
-      return Res;
-    end if;
-
-    for I in 1 .. Unb.Length(S.Val_Text) - Pat_Len + 1 loop
-      if Unb.Slice(S.Val_Text, I, I+Pat_Len-1) = Unb.To_String(Pat.Val_Text) then
-        Found_Occurence := Found_Occurence + 1;
-        if Found_Occurence = Occ.Val_Inte then
-          Res.Val_Inte := My_Math.Inte(I);
-          return Res;
-        end if;
-      end if;
-    end loop;
-    -- Not found -> 0
+    Res.Val_Inte := My_Math.Inte(
+            String_Mng.Locate (Unb.To_String(S.Val_Text),
+                               Unb.To_String(Pat.Val_Text),
+                               Positive(Occ.Val_Inte)));
     return Res;
   end Strloc;
   
