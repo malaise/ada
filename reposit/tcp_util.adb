@@ -1,3 +1,4 @@
+with Unchecked_Deallocation;
 with Ada.Exceptions;
 with Environ, Dynamic_List, Timers, Event_Mng, My_Io;
 package body Tcp_Util is
@@ -932,6 +933,10 @@ package body Tcp_Util is
     package Rece_List_Mng renames Rece_Dyn_List_Mng.Dyn_List;
     Rece_List : Rece_List_Mng.List_Type;
 
+    type Message_Access is access Message_Type;
+    procedure Free_Message is new Unchecked_Deallocation
+      (Message_Type, Message_Access);
+
     function Dscr_Match (R1, R2 : Rece_Rec) return Boolean is
       use type Socket.Socket_Dscr;
     begin
@@ -976,7 +981,7 @@ package body Tcp_Util is
       use type Event_Mng.File_Desc;
       The_Rec : Rece_Rec;
       Found : Boolean;
-      Msg : Message_Type;
+      Msg : Message_Access;
       Len : Natural;
     begin
       if not For_Read then
@@ -997,9 +1002,14 @@ package body Tcp_Util is
       end if;
       Rece_List_Mng.Read (Rece_List, The_Rec, Rece_List_Mng.Current);
 
+      -- Allocate message
+      Msg := new Message_Type;
+      if Msg = null then
+        raise Storage_Error;
+      end if;
       -- Try to read
       begin
-        Read (The_Rec.Dscr, Msg, Len);
+        Read (The_Rec.Dscr, Msg.all, Len);
       exception
         when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
           -- Remote has diconnected
@@ -1007,6 +1017,7 @@ package body Tcp_Util is
             My_Io.Put_Line ("  Tcp_Util.Read_Cb disconnection on fd " & Fd'Img);
           end if;
           Close_Current;
+          Free_Message (Msg);
           return True;
         when Socket.Soc_Len_Err =>
           -- Invalid length
@@ -1014,6 +1025,7 @@ package body Tcp_Util is
             My_Io.Put_Line ("  Tcp_Util.Read_Cb invalid length on fd " & Fd'Img);
           end if;
           Close_Current;
+          Free_Message (Msg);
           return True;
       end;
       if Debug_Reception then
@@ -1021,8 +1033,9 @@ package body Tcp_Util is
       end if;
       -- Call appli callback
       if The_Rec.Read_Cb /= null then
-        The_Rec.Read_Cb (The_Rec.Dscr, Msg, Len);
+        The_Rec.Read_Cb (The_Rec.Dscr, Msg.all, Len);
       end if;
+      Free_Message (Msg);
       return True;
     end Read_Cb;
 
