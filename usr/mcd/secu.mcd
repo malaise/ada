@@ -1,10 +1,11 @@
 # Compute the key of a social security number
 
 # Check 1 arg int len 13
-[ "Error. 1 int argument expected (13 digits)." putl
+[ "Error. 1 positive integer argument expected (13 digits)." putl
   ssize popn retall ] E popr
 ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
+dup ispos ~ E pushr ifcall
 0 format dup strof strlen 13 /= E pushr ifcall
 
 # Key = 97 - N % 97
