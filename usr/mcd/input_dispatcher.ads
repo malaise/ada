@@ -19,13 +19,15 @@ package Input_Dispatcher is
   -- Remove first and last string delimiters
   --  and then pair of delimiters by one
   -- >"foo ""bar"" stuff"< becomes >foo "bar" stuff<
-  function Parse_String (Str : String) return String;
+  function Parse_Substring (Str : String) return String;
 
   -- Error if end of string litteral not found
+  -- Either in Parse_String or Next_Word
   String_Error : exception;
 
-  -- The string on which the error occured
-  function Error_String return String;
+  -- Next string to parse, also current string
+  --  if Next_Str_Word raised String_Error
+  function Current_String return String;
 
 end Input_Dispatcher;
 

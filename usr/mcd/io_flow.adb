@@ -36,37 +36,40 @@ package body Io_Flow is
       return;
     end if;
     Init_Done  := True;
+
     -- Get fifo name argument if set
     begin
       Argument.Get_Parameter (Fifo_Name, 1, "f");
+      -- Fifo
+      if Debug.Debug_Level_Array(Debug.Parser) then
+        Async_Stdin.Put_Line_Err ("Flow: init on fifo "
+                            & Text_Handler.Value (Fifo_Name));
+      end if;
+      Open_Fifo;
+      return;
     exception
       when Argument.Argument_Not_Found =>
-        -- Stdin
-        Text_Handler.Empty (Fifo_Name);
-        if Debug.Debug_Level_Array(Debug.Parser) then
-          Async_Stdin.Put_Line_Err ("Flow: init on stdio");
-        end if;
-        Stdio_Is_A_Tty :=
-            Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
-          and then 
-            Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
-        if Stdio_Is_A_Tty then
-          Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 0);
-          if Debug.Debug_Level_Array(Debug.Parser) then
-            Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
-          end if;
-        end if;
-        return;
+        -- No fifo arg. Continue on Stdin
+        null;
     end;
-    -- Fifo
+
+    -- Stdin
+    Text_Handler.Empty (Fifo_Name);
     if Debug.Debug_Level_Array(Debug.Parser) then
-      Async_Stdin.Put_Line_Err ("Flow: init on fifo "
-                          & Text_Handler.Value (Fifo_Name));
+      Async_Stdin.Put_Line_Err ("Flow: init on stdio");
     end if;
-    Open_Fifo;
-    if Text_Handler.Empty (Fifo_Name) then
-      raise Fifo_Error;
+    -- Set stdin/out asynchronous if it is a Tty
+    Stdio_Is_A_Tty :=
+        Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
+      and then 
+        Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
+    if Stdio_Is_A_Tty then
+      Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 0);
+      if Debug.Debug_Level_Array(Debug.Parser) then
+        Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
+      end if;
     end if;
+    return;
 
   end Init;
 
@@ -102,7 +105,7 @@ package body Io_Flow is
         end;
       end loop;
     else
-      -- Get next data on TTY stdin or Fifo
+      -- Get next data on Tty stdin or Fifo
       loop
         Input_Data := Unb.To_Unbounded_String ("");
         if Debug.Debug_Level_Array(Debug.Parser) then
@@ -136,8 +139,10 @@ package body Io_Flow is
     use type Mcd_Fifos.Fifo_Id, Fifos.Send_Result_List;
   begin
     if Text_Handler.Empty (Fifo_Name) then
+      -- Put on stdout (tty or not)
       Async_Stdin.Put_Out (Str);
     elsif Client_Id /= Mcd_Fifos.No_Fifo then
+      -- Send on fifo
       if Str'Length > Message_Type'Length then
         raise Mcd_Mng.String_Len;
       end if;
@@ -157,8 +162,10 @@ package body Io_Flow is
   procedure New_Line is
   begin
     if Text_Handler.Empty (Fifo_Name) then
+      -- Put on stdout (tty or not)
       Async_Stdin.New_Line_Out;
     else
+      -- Send on fifo
       Put ("" & Ada.Characters.Latin_1.Cr);
     end if;
   end New_Line;
@@ -175,6 +182,7 @@ package body Io_Flow is
   begin
     if Text_Handler.Empty (Fifo_Name) then
       if Stdio_Is_A_Tty then
+        -- Reset tty blocking
         Async_Stdin.Set_Async;
       end if;
       return;
@@ -202,11 +210,11 @@ package body Io_Flow is
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Client accepted");
       end if;
-      -- Accept client and stop accepting
+      -- Accept one client and stop accepting others
       Mcd_Fifos.Close (Acc_Id);
       Client_Id := Id;
     else
-      -- Client disconnects, allow new client
+      -- Client disconnected, allow new client (except if we are closing)
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Client has disconnected");
       end if;
@@ -235,7 +243,7 @@ package body Io_Flow is
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Opening empty fifo discarded");
       end if;
-      return;
+      raise Fifo_Error;
     end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Opening fifo "
@@ -255,7 +263,7 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Flow: Fifo open error "
                             & Ada.Exceptions.Exception_Name (Error));
       end if;
-      Text_Handler.Empty (Fifo_Name);
+      raise Fifo_Error;
   end Open_Fifo;
 
   ----------------------------------------------------

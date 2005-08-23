@@ -14,15 +14,20 @@ package body Input_Dispatcher is
   -- Data from Stdin/Set_Input
   Cur_Str : Unb.Unbounded_String;
 
+  -- Is surrent string parsed (first word extracted)
   Str_Parsed : Boolean;
 
-  -- Extracted from current Str
+  -- Extracted word from current Str
   Word : Unb.Unbounded_String;
 
   -- Get first/next word from a string
   Cur_Index : Positive;
+
+  -- Last index of extracted word (in global variable cause
+  --  also used by Error_String
   Stop_Index : Positive;
 
+  -- Word separator
   function Is_Separator (C : in Character) return Boolean is
   begin
     return     C = ' '
@@ -30,28 +35,38 @@ package body Input_Dispatcher is
        or else C = Ada.Characters.Latin_1.Cr;
   end Is_Separator;
 
-
-  -- Remove string
-  function Parse_String (Str : String) return String is
+  -- Remove first and last string delimiters
+  --  and replace the pairs of delimiters by one delimiter
+  -- >"foo ""bar"" stuff"< becomes >foo "bar" stuff<
+  function Parse_Substring (Str : String) return String is
     Tmp_Str : String (1 .. Str'Length);
     Tmp_Len : Natural;
     Tmp_Index : Natural;
   begin
-    -- Remove first and last delim
+    if Debug.Debug_Level_Array(Debug.Input) then
+      Async_Stdin.Put_Line_Err ("Input_dispacher: parsing substring >"
+                              & Str & "<");
+    end if;
+    -- Check first and last are delimiters
     if Str'Length < 2
     or else Str(Str'First) /= Sd
     or else Str(Str'Last) /= Sd then
+      -- This should not occure because strings literals have
+      --  already been parsed in Next_Str_Word.
       raise String_Error;
     end if;
 
     -- Empty string?
     if Str'Length = 2 then
+      if Debug.Debug_Level_Array(Debug.Input) then
+        Async_Stdin.Put_Line_Err ("Input_dispacher: empty substring");
+      end if;
       return "";
     end if;
     Tmp_Str (1 .. Str'Length-2) := Str(Str'First+1 .. Str'Last-1);
     Tmp_Len := Str'Length - 2;
 
-    -- Parse sequence of two delim
+    -- Parse sequence of two delimiters
     Tmp_Index := Tmp_Str'First;
     while Tmp_Index <= Tmp_Len loop
       if Tmp_Str(Tmp_Index) = Sd then
@@ -59,14 +74,22 @@ package body Input_Dispatcher is
           -- Sd alone within string
           raise String_Error;
         end if;
+        -- Here there are 2 Sd. Skip one.
         Tmp_Str(Tmp_Index .. Tmp_Len - 1) := Tmp_Str(Tmp_Index + 1 .. Tmp_Len);
         Tmp_Len := Tmp_Len - 1;
       end if;
       Tmp_Index := Tmp_Index + 1;
     end loop;
-    return Tmp_Str (1 .. Tmp_Len);
-  end Parse_String;
 
+    -- Done
+    if Debug.Debug_Level_Array(Debug.Input) then
+      Async_Stdin.Put_Line_Err ("Input_dispacher: parsed substring >"
+                              & Tmp_Str (1 .. Tmp_Len) & "<");
+    end if;
+    return Tmp_Str(1 .. Tmp_Len);
+  end Parse_Substring;
+
+  -- Extraxt next word (from Cur_Index) of Cur_Str
   function Next_Str_Word return Unb.Unbounded_String is
     Tmp_Index : Positive;
     In_Lit : Boolean := False;
@@ -107,7 +130,6 @@ package body Input_Dispatcher is
           else
             -- One Sd in middle of string
             raise String_Error;
-           
           end if;
         elsif Stop_Index = Unb.Length (Cur_Str) then
           -- No Sd before end of line
@@ -118,11 +140,11 @@ package body Input_Dispatcher is
         Stop_Index := Stop_Index + 1;
       end loop Parse_Lit;
 
-      -- This is the next start
+      -- This is the next start after string literal
       Cur_Index := Stop_Index + 1;
 
     else
-      -- Parse string, look for separator
+      -- Parse string, look for separator or end of string
       Stop_Index := Tmp_Index + 1;
       while Stop_Index <= Unb.Length (Cur_Str)
       and then not Is_Separator(Unb.Element (Cur_Str, Stop_Index)) loop
@@ -138,11 +160,14 @@ package body Input_Dispatcher is
 
   end Next_Str_Word;
 
-  function Error_String return String is
+  -- Next string to parse, also current string
+  --  if Next_Str_Word raised String_Error
+  function Current_String return String is
   begin
    return Unb.Slice (Cur_Str, Cur_Index , Stop_Index);
-  end Error_String;
+  end Current_String;
 
+  -- Extract first word of current or new (Str) string
   function First_Str_Word (Str : Unb.Unbounded_String := Unb.Null_Unbounded_String)
   return Unb.Unbounded_String is
   begin
@@ -150,11 +175,12 @@ package body Input_Dispatcher is
       Cur_Str := Str;
     end if;
     Cur_Index := 1;
+    Str_Parsed := True;
     return Next_Str_Word;
   end First_Str_Word;
 
-  -- Set input flow to a new string
-  --  or stdin if Str is empty
+  -- Set input flow to a new string or back to stdin if Str is empty
+  -- Handle specific jump from and back to stdin 
   procedure Set_Input (Str : in String) is
   begin
     if Debug.Debug_Level_Array(Debug.Input) then
@@ -164,11 +190,14 @@ package body Input_Dispatcher is
     if Str = "" then
       Curr_Is_Stdin := True;
       if Unb.Length (Str_Stdin) /= 0 then
+        -- Restore Cur_Index to Ind_Stdin when back from prog to stdin
         Cur_Index := Ind_Stdin;
         Cur_Str := Str_Stdin;
       end if;
     else
       if Curr_Is_Stdin then
+        -- If leaving stdin for a prog, save Cur_Index in Ind_Stdin
+        -- Str_Stdin is already set
         Ind_Stdin := Cur_Index;
       end if;
       Curr_Is_Stdin := False;
@@ -197,27 +226,30 @@ package body Input_Dispatcher is
       Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
        & Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str)) & "<");
     end if;
-    -- Current string may not be parsed (retacal in a function)
     if not Curr_Is_Stdin and then not Str_Parsed then
-      Cur_Index := 1;
+      -- Current string is not be parsed (retacal) return all
+      return Unb.To_String (Cur_Str);
+    else
+      -- Return remaining
+      return Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str));
     end if;
-    return Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str));
   end Get_Remaining;
 
   -- Get next word from current input
-  -- Empty if end of input flow
+  -- Returns empty string when if end of input flow
   function Next_Word return String is
   begin
     if Curr_Is_Stdin then
 
+      -- In stdin
       loop
         if Unb.Length (Str_Stdin) = 0 then
-          -- Need to get a new string
+          -- End if string. Need to get a new string
           Io_Flow.Next_Line (Str_Stdin);
           if Unb.Length (Str_Stdin) = 0 then
               return "";
           end if;
-          -- Got str, parse it
+          -- Got a new string, parse it, skip empty lines
           Word := First_Str_Word (Str_Stdin);
           exit when Unb.Length (Word) /= 0;
         else
@@ -230,10 +262,9 @@ package body Input_Dispatcher is
     
     else
 
-      -- In string
+      -- In string (subprogram)
       if not Str_Parsed then
         Word := First_Str_Word;
-        Str_Parsed := True;
       else
         Word := Next_Str_Word;
       end if;
