@@ -19,6 +19,7 @@ procedure Mcd is
   begin
     Sys_Calls.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
                             & Message & ".");
+    Mcd_Parser.Dump_Stack;
     Close;
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
@@ -63,10 +64,6 @@ begin
       Item := Mcd_Parser.Next_Item;
       Mcd_Mng.New_Item(Item, The_End);
       exit when The_End /= Mcd_Mng.Continue;
-    exception
-      when others =>
-        Mcd_Parser.Dump_Stack;
-        raise;
     end;
   end loop;
 
