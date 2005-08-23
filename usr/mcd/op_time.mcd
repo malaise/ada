@@ -21,8 +21,8 @@ isnul [ pop ] [ 1 format put "j" put ] ifte call
 # Convert to " days-hh:mm:ss.mmm" and remove days
 7 18 strsub
 # Replace : by h, : by m and put
-"h" 3 swap3 strrep
-"m" 6 swap3 strrep
-"s" 9 swap3 strrep
+3 "h" strrep
+6 "m" strrep
+9 "s" strrep
 putl
 

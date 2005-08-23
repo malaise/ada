@@ -43,7 +43,7 @@ d pushr [ "e" u popr ] ifcall
 # Extract amount value
 a pushr 1 l pushr strsub v copyr
 # locate '.'
-1 "." v pushr strloc isnul
+dup 1 "." strloc isnul
 # Convert to real
 [ strinte toreal ] [ strreal ] ifte call
 v copyr

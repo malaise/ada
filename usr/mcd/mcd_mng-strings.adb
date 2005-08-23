@@ -57,10 +57,8 @@ package body Strings is
     return Res;
   end Strsub;
 
-  function Strloc (Occ, Pat, S : Item_Rec) return Item_Rec is
+  function Strloc (S, Occ, Pat : Item_Rec) return Item_Rec is
     Res : Item_Rec(Inte);
-    Pat_Len : Natural;
-    Found_Occurence : My_Math.Inte := 0;
   begin
     Check_Chrs(S);
     Check_Chrs(Pat);
@@ -77,7 +75,7 @@ package body Strings is
     return Res;
   end Strloc;
   
-  function Strrep (I, Pat, S : Item_Rec) return Item_Rec is
+  function Strrep (S, I, Pat : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);

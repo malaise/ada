@@ -211,8 +211,8 @@ package body Mcd_Mng is
     function Strlen (S : Item_Rec) return Item_Rec;
     function Strcat (S1, S2 : Item_Rec) return Item_Rec;
     function Strsub (S, I1, I2 : Item_Rec) return Item_Rec;
-    function Strloc (Occ, Pat, S : Item_Rec) return Item_Rec;
-    function Strrep (I, Pat, S : Item_Rec) return Item_Rec;
+    function Strloc (S, Occ, Pat : Item_Rec) return Item_Rec;
+    function Strrep (S, I, Pat : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
     function Strmix (S : Item_Rec) return Item_Rec;
@@ -256,6 +256,8 @@ package body Mcd_Mng is
   package body Dates is separate;
   package body Misc is separate;
 
+  -- Check for Ctrl Break each Item_Check_Period items
+  --  to dectect it even if no input (e.g. within a loop)
   Item_Check_Period : constant Positive := 100;
   Nb_Item : Natural := 0;
 
