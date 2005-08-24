@@ -1,0 +1,9 @@
+http://home.earthlink.net/~jrcarter010
+
+mine_detector is version 4.3
+ + a patch in user_if.adb to handle mouse buttons 4 and 5.
+ + a makefile (that uses GtkAda 1.2.12)
+
+pragmarc is version 2005 Jul 01 with some file renaming for Gnat:
+ - a new file name for pragmarc-assertion_handler.adb.noassert
+
