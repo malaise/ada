@@ -28,7 +28,7 @@ package Fifos is
 
   -- Exceptions
   Name_Too_Long, Yet_Open, Not_Open, In_Overflow,
-                 Name_Error, No_Dictio, System_Error : exception;
+              Name_Error, No_Dictio, System_Error : exception;
 
   generic
     type Message_Type is private;
@@ -86,6 +86,20 @@ package Fifos is
     function Fifo_Kind (Id : Fifo_Id) return Fifo_Kind_List;
     function Fifo_State (Id : Fifo_Id) return Fifo_State_List;
 
+    -- Activate or not the reception of messages
+    --  from a Connect, Accepting (for all accepted) 
+    --  or accepted fifo
+    -- Note that only reception is concerned: desactivating
+    --  a Connecting fifo does not prevent it from accepting, but
+    --  makes that Accepted fifos will be desactivated
+    -- May raise Not_Open if Fifo is not open
+    procedure Activate (Id              : in Fifo_Id;
+                        Allow_Reception : in Boolean);
+
+    -- Check if reception is active on a fifo
+    -- May raise Not_Open if Fifo is not open
+    function Is_Active (Id : Fifo_Id) return Boolean;
+
     -- Send a message
     -- May raise Not_Open if Fifo is not open
     -- May raise In_Overflow if previous Send returned Overflow and
@@ -93,7 +107,6 @@ package Fifos is
     function Send (Id      : in Fifo_Id;
                    Message : in Message_Type;
                    Length  : in Message_Length := 0) return Send_Result_List;
-
 
   private
     -- Record for connecting/connected accepting or accepted fifo
@@ -104,6 +117,7 @@ package Fifos is
       Dscr  : Socket.Socket_Dscr;
       Afux_Dscr :  Socket.Socket_Dscr; -- Afux_Socket for Accepting.
       State : Fifo_State_List;
+      Active : Boolean;
       Host : Tcp_Util.Remote_Host;
       Port : Tcp_Util.Remote_Port;
       Conn_Cb : Connection_Callback_Access;

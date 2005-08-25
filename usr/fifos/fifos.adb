@@ -199,6 +199,7 @@ package body Fifos is
       procedure Accepte (Fifo : in Fifo_Access);
       procedure Connect (Fifo : in Fifo_Access);
       procedure Close (Fifo : in Fifo_Access);
+      procedure Activate (Fifo : in Fifo_Access);
     end Connection;
 
     package body Connection is
@@ -247,6 +248,7 @@ package body Fifos is
             -- Conn_Cb removed diconnected fifo
             return;
           end if;
+          -- "Close"
           List.Del_Current;
         else
           Assertion.Assert (False, "disconnection of accepting fifo");
@@ -314,6 +316,10 @@ package body Fifos is
         Fifo_Reception.Set_Callbacks (New_Dscr,
                    Reception_Cb'Unrestricted_Access,
                    Disconnection_Cb'Unrestricted_Access);
+        -- Deactivate callbacks if requested
+        if not Acc.Active then
+          Fifo_Reception.Activate_Callbacks (New_Dscr, False);
+        end if;
 
         -- Call Connection_Cb
         if Rec.Conn_Cb /= null then
@@ -354,7 +360,10 @@ package body Fifos is
           Fifo_Reception.Set_Callbacks (Dscr,
                      Reception_Cb'Unrestricted_Access,
                      Disconnection_Cb'Unrestricted_Access);
-
+          -- Deactivate callbacks if requested
+          if not Acc.Active then
+            Fifo_Reception.Activate_Callbacks (Dscr, False);
+          end if;
           -- Call Connection_Cb
           if Acc.Conn_Cb /= null then
             Acc.Conn_Cb (Acc.Name(1 .. Acc.Len), (Acc => Acc), True);
@@ -416,7 +425,9 @@ package body Fifos is
               when Connecting =>
                 Tcp_Util.Abort_Connect (Fifo.Host, Fifo.Port);
               when Connected =>
-                Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
+                if Fifo.Active then
+                  Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
+                end if;
                 Close_Socket (Fifo.Dscr, True);
                 Call_Cb;
             end case;
@@ -424,7 +435,9 @@ package body Fifos is
             Tcp_Util.Abort_Accept (Socket.Tcp_Header, Fifo.Port.Num);
             Tcp_Util.Abort_Accept (Socket.Tcp_Header_Afux, Fifo.Port.Num);
           when Accepted =>
-            Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
+            if Fifo.Active then
+              Fifo_Reception.Remove_Callbacks (Fifo.Dscr);
+            end if;
             Close_Socket (Fifo.Dscr, True);
             Call_Cb;
         end case;
@@ -466,6 +479,11 @@ package body Fifos is
         when Socket.Soc_Name_Not_Found =>
           raise Name_Error;
       end Accepte;
+
+      procedure Activate (Fifo : in Fifo_Access) is
+      begin
+        Fifo_Reception.Activate_Callbacks (Fifo.Dscr, Fifo.Active);
+      end Activate;
 
     end Connection;
 
@@ -729,6 +747,7 @@ package body Fifos is
       Rec.Conn_Cb := Connection_Cb;
       Rec.Rece_Cb := Reception_Cb;
       Rec.Ovfl_Cb := End_Overflow_Cb;
+      Rec.Active := True;
       if To_Remote then
         -- Notify then try to get
         Dictio.Notify (Fifo_Name, True);
@@ -823,6 +842,37 @@ package body Fifos is
         end;
       end loop;
     end Close_All;
+
+    -- Activate or not the reception of messages
+    -- May raise Not_Open if Fifo is not open
+    procedure Activate (Id : Fifo_Id; Allow_Reception : in Boolean) is
+      use type Fifo_Access;
+    begin
+      if Id = No_Fifo or else not List.Search_By_Dscr (Id.Acc.Dscr) then
+        raise Not_Open;
+      end if;
+      -- Check if there is a change
+      if Id.Acc.Active = Allow_Reception then
+        return;
+      end if;
+      -- Store new activation (for accepting or connecting fifo)
+      Id.Acc.Active := Allow_Reception;
+      -- If fifo can already receive messages, also update now
+      if Id.Acc.Kind = Accepted
+      or else (Id.Acc.Kind = Connect and then Id.Acc.State = Connected) then
+        Connection.Activate (Id.Acc);
+      end if;
+    end Activate;
+
+    -- Check if reception is active on a fifo
+    -- May raise Not_Open if Fifo is not open
+    function Is_Active (Id : Fifo_Id) return Boolean is
+    begin
+      if Id = No_Fifo or else not List.Search_By_Dscr (Id.Acc.Dscr) then
+        raise Not_Open;
+      end if;
+      return Id.Acc.Active;
+    end Is_Active;
 
     -- Kind and state of a fifo
     -- May raise Not_Open if Fifo is not open
