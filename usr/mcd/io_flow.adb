@@ -174,8 +174,8 @@ package body Io_Flow is
       -- Put on stdout (tty or not)
       Async_Stdin.New_Line_Out;
     else
-      -- Send on fifo
-      Put ("" & Ada.Characters.Latin_1.Cr);
+      -- Send on fifo (Lf is the Unix standard)
+      Put ("" & Ada.Characters.Latin_1.Lf);
     end if;
   end New_Line;
 
