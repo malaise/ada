@@ -1,10 +1,9 @@
--- Usage: pipe [ -n ] <mode> <fifo>
--- -n for no carriage return after message reception
+-- Usage: pipe <mode> <fifo>
 -- <mode> ::= -c | -s
 -- -c : connects to server  for data to relay
 -- -s : accepts connections for data to relay
 -- -C or -S for remanent (otherwise exit on fifo disconnection or end of input)
--- Each data is send to client which sent las data received
+-- Each data is send to client which sent last data received
 with Ada.Text_Io, Ada.Characters.Latin_1;
 
 with Text_Handler, Sys_Calls, Argument, Async_Stdin, Mixed_Str,
@@ -19,18 +18,13 @@ procedure Pipe is
 
   -- Message
   Message : Message_Type;
-  Len : Natural;
 
   -- Mode
   Server : Boolean;
   Remanent : Boolean;
-  Put_Cr : Boolean;
 
   -- End of processing
   Done : Boolean := False;
-
-  -- Next argument
-  Next_Arg : Positive;
 
   -- Sig callback
   procedure Sig_Callback is
@@ -40,10 +34,7 @@ procedure Pipe is
 
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                            & " [ -n ] <mode> <fifo>");
-    Sys_Calls.Put_Line_Error (
-     "-n                     no cariage return after message is put");
+    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name);
     Sys_Calls.Put_Line_Error (
      "<mode> ::= -s | -c     exiting when fifo disconnects");
     Sys_Calls.Put_Line_Error (
@@ -52,7 +43,6 @@ procedure Pipe is
   end Usage;
 
   procedure Send (Str : in String) is
-    Msg : Message_Type;
     Res : Fifos.Send_Result_List;
     use type Fifos.Send_Result_List, Pipe_Fifo.Fifo_Id;
   begin
@@ -60,8 +50,8 @@ procedure Pipe is
       Sys_Calls.Put_Line_Error ("Send result: Not open");
       return;
     end if;
-    Msg (1 .. Str'Length) := Str;
-    Res := Pipe_Fifo.Send (Fid, Msg, Str'Length);
+    Message (1 .. Str'Length) := Str;
+    Res := Pipe_Fifo.Send (Fid, Message, Str'Length);
     if Res /= Fifos.Ok then
       Sys_Calls.Put_Line_Error ("Send result: " & Mixed_Str(Res'Img));
     end if;
@@ -114,14 +104,7 @@ procedure Pipe is
     if Server then
       Fid := Id;
     end if;
-    if Length = 1 and then Message(1) = Ada.Characters.Latin_1.Cr then
-      Async_Stdin.New_Line_Out;
-    else
-      Async_Stdin.Put_Out (Message(1 .. Length));
-      if Put_Cr then
-        Async_Stdin.New_Line_Out;
-      end if;
-    end if;
+    Async_Stdin.Put_Out (Message(1 .. Length));
   end Rece_Cb;
 
 
@@ -130,109 +113,47 @@ procedure Pipe is
     Len : Natural := Str'Length;
   begin
     if Len = 0 then
+      -- Error
       if not Remanent then
         Done := True;
       else
         Async_Stdin.Set_Async;
       end if;
       return True;
-    end if;
-    if Len >= 1 and then Str(Str'Length) = Ada.Characters.Latin_1.Eot then
+    elsif Str(Str'Length) = Ada.Characters.Latin_1.Eot then
       -- End of transmission
-      Len := Len - 1;
+      Send (Str(1 .. Len-1));
       if not Remanent then
         Done := True;
       else
         Async_Stdin.Set_Async;
       end if;
-    end if;
-    -- Skip Lf but avoid empty message
-    if Len > 1 and then (Str(Len) = Ada.Characters.Latin_1.Lf
-                 or else Str(Len) = Ada.Characters.Latin_1.Cr) then
-      Len := Len - 1;
-    end if;
-    -- Particular case of only return
-    if Len = 1 and then Str(Len) = Ada.Characters.Latin_1.Lf then
-      Message(1) := Ada.Characters.Latin_1.Cr;
     else
-      Message (1 .. Len) := Str (1 .. Len);
-    end if;
-    if Len > 0 then
-      Send (Message(1 .. Len));
+      Send (Str(1 .. Len));
     end if;
     return True;
   end Stdin_Cb;
-
-  -- Read data from not a tty (file?)
-  procedure Get_No_Tty is
-  begin
-    begin
-      Ada.Text_Io.Get_Line (Message, Len);
-    exception
-      when Ada.Text_Io.End_Error =>
-        if not Remanent then
-          Done := True;
-        else
-          Async_Stdin.Set_Async;
-        end if;
-        return;
-    end;
-
-    if Len = 0 then
-      Message(1) := Ada.Characters.Latin_1.Cr;
-      Len := 1;
-    end if;
-    Send (Message(1 .. Len));
-  end Get_No_Tty;
 
   use type Fifos.Fifo_State_List, Event_Mng.Out_Event_List;
 
 begin
 
-  -- Get optional -n
-  begin
-    if Argument.Get_Parameter (1, "n") /= "" then
-      Usage;
-      return;
-    end if;
-    -- -n set, check and fix Next_Arg to mode
-    if Argument.Get_Nbre_Arg /= 3 then
-      Usage;
-      return;
-    end if;
-    Next_Arg := Argument.Get_Position (1, "n");
-    if Next_Arg = 1 then
-      Next_Arg := 2;
-    elsif Next_Arg = 3 then
-      Next_Arg := 1;
-    else
-      Usage;
-      return;
-    end if;
-    Put_Cr := False;
-  exception
-    when Argument.Argument_Not_Found =>
-      -- -n not set, check and fix Next_Arg to mode
-      if Argument.Get_Nbre_Arg /= 2 then
-        Usage;
-        return;
-      end if;
-      Next_Arg := 1;
-      Put_Cr := True;
-  end;
-
+  if Argument.Get_Nbre_Arg /= 2 then
+    Usage;
+    return;
+  end if;
 
   -- Store mode
-  if Argument.Get_Parameter (Occurence => Next_Arg) = "-s" then
+  if Argument.Get_Parameter (Occurence => 1) = "-s" then
     Server := True;
     Remanent := False;
-  elsif Argument.Get_Parameter (Occurence => Next_Arg) = "-c" then
+  elsif Argument.Get_Parameter (Occurence => 1) = "-c" then
     Server := False;
     Remanent := False;
-  elsif Argument.Get_Parameter (Occurence => Next_Arg) = "-S" then
+  elsif Argument.Get_Parameter (Occurence => 1) = "-S" then
     Server := True;
     Remanent := True;
-  elsif Argument.Get_Parameter (Occurence => Next_Arg) = "-C" then
+  elsif Argument.Get_Parameter (Occurence => 1) = "-C" then
     Server := False;
     Remanent := True;
   else
@@ -241,7 +162,7 @@ begin
   end if;
 
   -- Init connection
-  Fid := Pipe_Fifo.Open (Argument.Get_Parameter(Occurence => Next_Arg + 1),
+  Fid := Pipe_Fifo.Open (Argument.Get_Parameter(Occurence => 2),
                          not Server,
                          Conn_Cb'Unrestricted_Access,
                          Rece_Cb'Unrestricted_Access,
@@ -250,6 +171,8 @@ begin
     -- Fid will be the one of last message received
     Acc_Id := Fid;
     Fid := Pipe_Fifo.No_Fifo;
+    -- Let pending connection establish
+    Event_Mng.Wait (100);
   else
     -- Let connection establish
     Event_Mng.Wait (100);
@@ -259,8 +182,6 @@ begin
       or else Event_Mng.Wait (500) = Event_Mng.No_Event;
     end loop;
   end if;
-
-
 
   -- Init stdin
   Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, Max_Data_Size);
