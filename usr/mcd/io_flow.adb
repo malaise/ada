@@ -20,7 +20,7 @@ package body Io_Flow is
   -- Fifo
   package Mcd_Fifos is new Fifos.Fifo (Message_Type);
   Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
-  procedure Open_Fifo;
+  procedure Open_Fifo (Active : in Boolean);
 
   -- Stdin
   Stdio_Is_A_Tty : Boolean := False;
@@ -45,7 +45,7 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Flow: init on fifo "
                             & Text_Handler.Value (Fifo_Name));
       end if;
-      Open_Fifo;
+      Open_Fifo (True);
       return;
     exception
       when Argument.Argument_Not_Found =>
@@ -81,6 +81,7 @@ package body Io_Flow is
     S : String (1 .. 1024);
     L : Natural;
     use type Event_Mng.Out_Event_List;
+    use type Mcd_Fifos.Fifo_Id;
   begin
     Init;
     if Text_Handler.Empty (Fifo_Name) and then not Stdio_Is_A_Tty then
@@ -125,6 +126,12 @@ package body Io_Flow is
       end loop;
     end if;
     Str := Input_Data;
+    -- Allow input data to be overwritten
+    if Client_Id /= Mcd_Fifos.No_Fifo then
+      Mcd_Fifos.Activate (Client_Id, True);
+    elsif Stdio_Is_A_Tty then
+      Async_Stdin.Activate (True);
+    end if;
     if Debug.Debug_Level_Array(Debug.Parser) then
       Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Unb.To_String (Str));
     end if;
@@ -136,6 +143,7 @@ package body Io_Flow is
   Put_Message : Message_Type;
   procedure Put (Str : in String) is
     Res : Fifos.Send_Result_List;
+    Active : Boolean;
     use type Mcd_Fifos.Fifo_Id, Fifos.Send_Result_List;
   begin
     if Text_Handler.Empty (Fifo_Name) then
@@ -143,6 +151,7 @@ package body Io_Flow is
       Async_Stdin.Put_Out (Str);
     elsif Client_Id /= Mcd_Fifos.No_Fifo then
       -- Send on fifo
+      Active := Mcd_Fifos.Is_Active (Client_Id);
       if Str'Length > Message_Type'Length then
         raise Mcd_Mng.String_Len;
       end if;
@@ -150,13 +159,13 @@ package body Io_Flow is
       Res := Mcd_Fifos.Send (Client_Id, Put_Message, Str'Length);
       if Res /= Fifos.Ok and then Res /= Fifos.Overflow then
         Mcd_Fifos.Close (Client_Id);
-        Open_Fifo;
+        Open_Fifo (Active);
       end if;
     end if;
   exception
     when Fifos.In_Overflow =>
       Mcd_Fifos.Close (Client_Id);
-      Open_Fifo;
+      Open_Fifo (Active);
   end Put;
 
   procedure New_Line is
@@ -197,6 +206,9 @@ package body Io_Flow is
     if Acc_Id /= Mcd_Fifos.No_Fifo then
       Mcd_Fifos.Close (Acc_Id);
     end if;
+    if Debug.Debug_Level_Array(Debug.Flow) then
+      Async_Stdin.Put_Line_Err ("Flow: Closed fifo");
+    end if;
   end Close;
 
   ----------------------------------------------------
@@ -205,6 +217,7 @@ package body Io_Flow is
   procedure Conn_Cb (Fifo_Name : in String;
                      Id        : in Mcd_Fifos.Fifo_Id;
                      Connected : in Boolean) is
+    Active : Boolean;
   begin
     if Connected then 
       if Debug.Debug_Level_Array(Debug.Flow) then
@@ -218,9 +231,10 @@ package body Io_Flow is
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Client has disconnected");
       end if;
+      Active := Mcd_Fifos.Is_Active (Client_Id);
       Client_Id := Mcd_Fifos.No_Fifo;
       if not Closing then
-        Open_Fifo;
+        Open_Fifo (Active);
       end if;
     end if;
   end Conn_Cb;
@@ -235,9 +249,11 @@ package body Io_Flow is
       return;
     end if;
     Input_Data := Unb.To_Unbounded_String (Message(1 .. Length));
+    -- Prevent Input_Data to be overwritten by freezing fifo
+    Mcd_Fifos.Activate (Client_Id, False);
   end Rece_Cb;
 
-  procedure Open_Fifo is
+  procedure Open_Fifo (Active : in Boolean) is
   begin
     if Text_Handler.Empty (Fifo_Name) then
       if Debug.Debug_Level_Array(Debug.Flow) then
@@ -254,6 +270,9 @@ package body Io_Flow is
                               Conn_Cb'Access,
                               Rece_Cb'Access,
                               null);
+    if not Active then
+      Mcd_Fifos.Activate (Acc_Id, False);
+    end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Fifo open");
     end if;
@@ -270,6 +289,7 @@ package body Io_Flow is
   -- Stdin callback
   ----------------------------------------------------
   function Stdin_Cb (Str : in String) return Boolean is
+    use type Mcd_Fifos.Fifo_Id;
   begin
     if Str = "" then
       -- Error or end
@@ -282,6 +302,8 @@ package body Io_Flow is
     else
       Input_Data := Unb.To_Unbounded_String (Str);
     end if;
+    -- Prevent overwritting of Input_Data by freezing Stdin
+    Async_Stdin.Activate (False);
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Stdin_Cb set >"
                            & Unb.To_String (Input_Data)
