@@ -26,7 +26,7 @@ package Channels is
 
   -- Subscribing twice to the same channel or bus
   Already_Subscribed : exception;
-  -- Unsubscribing from a channel or bus no subscribed to
+  -- Unsubscribing from a channel or bus not subscribed to
   Not_Subscribed : exception;
 
   -- Reply sending has failed
@@ -114,8 +114,6 @@ package Channels is
     procedure Add_Destination (Host_Name : in String);
 
     -- Add new destinations from a Ascii file
-    procedure Add_Destinations (File_Name : in String);
-
     -- File format is:
     -- <channel_list> ::= [ { <channel_declaration> } ]
     -- <channel_declaration> ::= Channel { <channel_name> }
@@ -139,7 +137,9 @@ package Channels is
     --  in the file
     -- Unknown_Channel may be raised if Channel_Name is not known
     -- Unknown_Destination is not raised if host_name is not known
-    -- File_Error may be raised if file cannot be open, read or incorrect syntax detected
+    -- File_Error may be raised if file cannot be open, read or incorrect
+    --  syntax detected
+    procedure Add_Destinations (File_Name : in String);
 
 
     -- Delete a recipient
@@ -149,6 +149,13 @@ package Channels is
     -- Delete all recipients
     procedure Del_All_Destinations;
 
+
+    -- Activate or not the reception of messages
+    -- on the channel (activated by default)
+    procedure Activate (Allow_Reception : in Boolean);
+
+    -- Is reception active
+    function Is_Active return Boolean;
 
     -- Send a message to all recipients
     -- Callback is invoqued for each recipient with the result of sending

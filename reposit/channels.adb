@@ -82,6 +82,7 @@ package body Channels is
     Dests : Dest_List_Mng.List_Type;
     Sends : Send_List_Mng.List_Type;
     Replies : Reply_List_Mng.List_Type;
+    Active : Boolean;
   end record;
 
   -- Misc toolkits
@@ -159,6 +160,7 @@ package body Channels is
       Text_Handler.Set (Channel_Dscr.Name, Channel_Name);
       Channel_Dscr.Period := Get_Period (Channel_Name);
       Channel_Dscr.Init := True;
+      Channel_Dscr.Active := True;
     exception
       when Constraint_Error =>
         raise Name_Too_Long;
@@ -311,8 +313,10 @@ package body Channels is
                                Fd   => Socket.Fd_Of (New_Dscr)));
 
         -- Hook fd to receive data
-        Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True,
-                              Rec_Read_Cb'Unrestricted_Access);
+        if Channel_Dscr.Active then
+          Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True,
+                                Rec_Read_Cb'Unrestricted_Access);
+        end if;
         Socket.Set_Blocking (New_Dscr, False);
       end if;
     end Accept_Cb;
@@ -406,8 +410,10 @@ package body Channels is
       Dest_List_Mng.Modify (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
 
       -- Hook fd to receive data (replies)
-      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
-                            Snd_Read_Cb'Unrestricted_Access);
+      if Channel_Dscr.Active then
+        Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
+                              Snd_Read_Cb'Unrestricted_Access);
+      end if;
       Socket.Set_Blocking (Dscr, False);
     end Connect_Cb;
 
@@ -604,6 +610,60 @@ package body Channels is
     end Del_All_Destinations;
 
     ----------------------
+
+    -- Activate or not the reception of messages on the channel
+    procedure Activate (Allow_Reception : in Boolean) is
+      Send : Send_Rec;
+      Dest : Dest_Rec;
+    begin
+      -- Check if this is a change
+      if Allow_Reception = Channel_Dscr.Active then
+        return;
+      end if;
+
+      -- Subscribed connections
+      if not Send_List_Mng.Is_Empty (Channel_Dscr.Sends) then
+        -- Rewind and close all connections
+        Send_List_Mng.Rewind (Channel_Dscr.Sends);
+        loop
+          Send_List_Mng.Read (Channel_Dscr.Sends, Send, Send_List_Mng.Current);
+          -- (Un)hook fd receiving data
+          if Allow_Reception then
+            Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Send.Dscr), True,
+                                  Rec_Read_Cb'Unrestricted_Access);
+          else
+            Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Send.Dscr), True);
+          end if;
+          exit when not Send_List_Mng.Check_Move (Channel_Dscr.Sends);
+          Send_List_Mng.Move_To (Channel_Dscr.Sends);
+        end loop;
+      end if;
+
+      -- Connected connections
+      if not Dest_List_Mng.Is_Empty (Channel_Dscr.Dests) then
+        -- Rewind and close all connections
+        Dest_List_Mng.Rewind (Channel_Dscr.Dests);
+        loop
+          Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+          -- (Un)hook fd receiving data
+          if Allow_Reception then
+            Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dest.Dscr), True,
+                                  Snd_Read_Cb'Unrestricted_Access);
+          else
+            Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dest.Dscr), True);
+          end if;
+          exit when not Dest_List_Mng.Check_Move (Channel_Dscr.Dests);
+          Dest_List_Mng.Move_To (Channel_Dscr.Dests);
+        end loop;
+      end if;
+
+    end Activate;
+
+    -- Is reception active?
+    function Is_Active return Boolean is
+    begin
+      return Channel_Dscr.Active;
+    end Is_Active;
 
     -- Send a message to all recipients
     procedure Write (Message : in Message_Type;

@@ -1066,6 +1066,46 @@ package body Tcp_Util is
       end if;
     end Set_Callbacks;
 
+    procedure Activate_Callbacks (Dscr   : in Socket.Socket_Dscr;
+                                  Active : in Boolean) is
+      The_Rec : Rece_Rec;
+      Ok : Boolean;
+    begin
+      -- Check Dscr is known
+      The_Rec.Dscr := Dscr;
+      Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
+      if not Ok then
+        if Debug_Reception then
+          My_Io.Put_Line ("  Tcp_Util.Activate_Callbacks Dscr not found");
+        end if;
+        raise No_Such;
+      end if;
+        
+      if Active then
+        Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
+                   Read_Cb'Unrestricted_Access);
+      else
+        Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dscr), True);
+      end if;
+    end Activate_Callbacks;
+
+    function Callbacks_Active (Dscr : Socket.Socket_Dscr) return Boolean is
+      The_Rec : Rece_Rec;
+      Ok : Boolean;
+    begin
+      -- Check Dscr is known
+      The_Rec.Dscr := Dscr;
+      Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
+      if not Ok then
+        if Debug_Reception then
+          My_Io.Put_Line ("  Tcp_Util.Callbacks_Active Dscr not found");
+        end if;
+        raise No_Such;
+      end if;
+        
+      return Event_Mng.Fd_Callback_Set (Socket.Fd_Of (Dscr), True);
+    end Callbacks_Active;
+
     procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr) is
       The_Rec : Rece_Rec;
       Ok : Boolean;

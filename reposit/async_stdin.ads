@@ -16,6 +16,10 @@ package Async_Stdin is
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1);
 
+  -- Activate asynchronous data to trigger callback
+  procedure Activate (Allow_Input : Boolean := True);
+  function Is_Active return Boolean;
+
   -- Put on stdout when in async
   procedure Put_Out (Str : in String);
   procedure Put_Line_Out (Str : in String);

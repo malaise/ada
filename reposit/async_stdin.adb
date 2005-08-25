@@ -10,6 +10,8 @@ package body Async_Stdin is
   Max : Max_Chars_Range := 1;
   -- Are stdin/out a console (or a pipe)
   Stdio_Is_A_Tty : Boolean;
+  -- Is the input flow to be activated
+  Active : Boolean := True;
 
   package Line is
     -- Init (getenv history size)
@@ -486,6 +488,32 @@ package body Async_Stdin is
 
   end Fd_Callback;
 
+  -- Activate asynchronous data to trigger callback
+  procedure Activate (Allow_Input : Boolean := True) is
+  begin
+    -- Check if something changes
+    if Allow_Input = Active then
+      return;
+    end if;
+    -- Update status
+    Active := Allow_Input;
+    if Cb = null then
+      -- Not in async mode at the moment
+      return;
+    end if;
+    if Active then
+      Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True,
+                                 Fd_Callback'Access);
+    else
+      Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
+    end if;
+  end Activate;
+
+  function Is_Active return Boolean is
+  begin
+    return Active;
+  end Is_Active;
+
   -- Set asynchronous mode for stdin
   -- User callback is called when Max_Chars characters are entered
   --  or at each new line
@@ -512,7 +540,9 @@ package body Async_Stdin is
         else
           Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
         end if;
-        Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
+        if Active then
+          Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
+        end if;
       end if;
     else
       if Cb = null then
@@ -534,7 +564,10 @@ package body Async_Stdin is
         end if;
         Line.Init;
         Line.Clear;
-        Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True, Fd_Callback'Access);
+        if Active then
+          Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True,
+                                     Fd_Callback'Access);
+        end if;
       else
         raise Error;
       end if;

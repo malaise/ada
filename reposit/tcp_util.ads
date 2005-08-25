@@ -178,12 +178,24 @@ package Tcp_Util is
                     Length  : in Natural);
 
     -- Set reception and disconnection callbacks
-    --  (callbacks may be null)
+    --  (callbacks may be null, then data/events will be lost)
+    -- Callbacks are activated
     -- May raise No_Such if Dscr is not open
     procedure Set_Callbacks (
                     Dscr             : in Socket.Socket_Dscr;
                     Reception_Cb     : in Reception_Callback_Access;
                     Disconnection_Cb : in Disconnection_Callback_Access);
+
+    -- Activate or freeze the reception on connection
+    -- When a connection is frozen, data/events are kept
+    --  on the connection (tcp buffers and flow control)
+    -- May raise No_Such if callbacks have not been set
+    procedure Activate_Callbacks (Dscr   : in Socket.Socket_Dscr;
+                                  Active : in Boolean);
+
+    -- Are current callbacks active
+    -- May raise No_Such if callbacks have not been set
+    function Callbacks_Active (Dscr : Socket.Socket_Dscr) return Boolean;
 
     -- Remove the callbacks
     -- To be called before closing a descriptor on which callbacks
