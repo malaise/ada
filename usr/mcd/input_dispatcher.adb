@@ -30,8 +30,10 @@ package body Input_Dispatcher is
   -- Word separator
   function Is_Separator (C : in Character) return Boolean is
   begin
+    -- Space and Tab, Lf (Unix standard) and Cr (cause Dos newline is CrLf)
     return     C = ' '
        or else C = Ada.Characters.Latin_1.Ht
+       or else C = Ada.Characters.Latin_1.Lf
        or else C = Ada.Characters.Latin_1.Cr;
   end Is_Separator;
 
