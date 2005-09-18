@@ -11,7 +11,7 @@ package body Io_Flow is
   Fifo_Name : Text_Handler.Text (Fifos.Max_Fifo_Name_Len);
 
   -- Data read from fifo
-  Max_Message_Len : constant := 10240;
+  Max_Message_Len : constant := 1024;
   subtype Message_Type is String (1 .. Max_Message_Len);
 
   -- Data read from stdin tty
