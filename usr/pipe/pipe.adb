@@ -6,13 +6,16 @@
 -- Each data is send to client which sent last data received
 with Ada.Text_Io, Ada.Characters.Latin_1;
 
-with Text_Handler, Sys_Calls, Argument, Async_Stdin, Mixed_Str,
-     Event_Mng, Fifos;
+with Text_Handler, Sys_Calls, Argument, Async_Stdin, Mixed_Str, Event_Mng;
+with Fifos;
+with Io_Flow;
 procedure Pipe is
 
-  -- Message type
-  Max_Data_Size : constant := 1024;
-  subtype Message_Type is String (1 .. Max_Data_Size);
+  -- Message type, same as Mcd
+  Max_Data_Size : constant := Io_Flow.Max_Message_Len;
+  subtype Message_Type is Io_Flow.Message_Type;
+
+  -- The fifo
   package Pipe_Fifo is new Fifos.Fifo (Message_Type);
   Fid, Acc_Id : Pipe_Fifo.Fifo_Id;
 
@@ -34,7 +37,8 @@ procedure Pipe is
 
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name);
+    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+                                        & " <mode> <fifo>");
     Sys_Calls.Put_Line_Error (
      "<mode> ::= -s | -c     exiting when fifo disconnects");
     Sys_Calls.Put_Line_Error (
@@ -130,6 +134,9 @@ procedure Pipe is
       end if;
     else
       Send (Str(1 .. Len));
+      if Str(Len) /= Ada.Characters.Latin_1.Lf then
+        Async_Stdin.New_Line_Out;
+      end if;
     end if;
     return True;
   end Stdin_Cb;
