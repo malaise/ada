@@ -10,12 +10,11 @@ package body Io_Flow is
   Init_Done : Boolean := False;
   Fifo_Name : Text_Handler.Text (Fifos.Max_Fifo_Name_Len);
 
-  -- Data read from fifo
-  Max_Message_Len : constant := 1024;
-  subtype Message_Type is String (1 .. Max_Message_Len);
-
-  -- Data read from stdin tty
+  -- Data read from stdin tty or fifo
   Input_Data : Unb.Unbounded_String;
+
+  -- Concatenated fifo messages until one lasts with Cr or Lf
+  Fifo_Data : Unb.Unbounded_String;
 
   -- Fifo
   package Mcd_Fifos is new Fifos.Fifo (Message_Type);
@@ -41,7 +40,7 @@ package body Io_Flow is
     begin
       Argument.Get_Parameter (Fifo_Name, 1, "f");
       -- Fifo
-      if Debug.Debug_Level_Array(Debug.Parser) then
+      if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: init on fifo "
                             & Text_Handler.Value (Fifo_Name));
       end if;
@@ -55,7 +54,7 @@ package body Io_Flow is
 
     -- Stdin
     Text_Handler.Empty (Fifo_Name);
-    if Debug.Debug_Level_Array(Debug.Parser) then
+    if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: init on stdio");
     end if;
     -- Set stdin/out asynchronous if it is a Tty
@@ -65,7 +64,7 @@ package body Io_Flow is
         Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
     if Stdio_Is_A_Tty then
       Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 0);
-      if Debug.Debug_Level_Array(Debug.Parser) then
+      if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
       end if;
     end if;
@@ -109,7 +108,7 @@ package body Io_Flow is
       -- Get next data on Tty stdin or Fifo
       loop
         Input_Data := Unb.To_Unbounded_String ("");
-        if Debug.Debug_Level_Array(Debug.Parser) then
+        if Debug.Debug_Level_Array(Debug.Flow) then
           Async_Stdin.Put_Line_Err ("Flow: Waiting on fifo/tty");
         end if;
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
@@ -132,7 +131,7 @@ package body Io_Flow is
     elsif Stdio_Is_A_Tty then
       Async_Stdin.Activate (True);
     end if;
-    if Debug.Debug_Level_Array(Debug.Parser) then
+    if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Unb.To_String (Str));
     end if;
   end Next_Line;
@@ -140,49 +139,64 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Put data on fifo or stdout
   ----------------------------------------------------
-  Put_Message : Message_Type;
-  procedure Put (Str : in String) is
-    Res : Fifos.Send_Result_List;
+  -- Send one message
+  Message_To_Put : Message_Type;
+  procedure Send_Message (Str : in String) is
     Active : Boolean;
-    use type Mcd_Fifos.Fifo_Id, Fifos.Send_Result_List;
+    Res : Fifos.Send_Result_List;
+    use type Fifos.Send_Result_List;
   begin
-    if Text_Handler.Empty (Fifo_Name) then
-      -- Put on stdout (tty or not)
-      Async_Stdin.Put_Out (Str);
-    elsif Client_Id /= Mcd_Fifos.No_Fifo then
-      -- Send on fifo
-      Active := Mcd_Fifos.Is_Active (Client_Id);
-      if Str'Length > Message_Type'Length then
-        raise Mcd_Mng.String_Len;
-      end if;
-      Put_Message(1 .. Str'Length) := Str;
-      Res := Mcd_Fifos.Send (Client_Id, Put_Message, Str'Length);
-      if Res /= Fifos.Ok and then Res /= Fifos.Overflow then
-        Mcd_Fifos.Close (Client_Id);
-        Open_Fifo (Active);
-      end if;
+    Active := Mcd_Fifos.Is_Active (Client_Id);
+    Message_To_Put (1 .. Str'Length) := Str;
+    Res := Mcd_Fifos.Send (Client_Id, Message_To_Put, Str'Length);
+    if Res /= Fifos.Ok and then Res /= Fifos.Overflow then
+      Mcd_Fifos.Close (Client_Id);
+      Open_Fifo (Active);
     end if;
   exception
     when Fifos.In_Overflow =>
       Mcd_Fifos.Close (Client_Id);
       Open_Fifo (Active);
+  end Send_Message;
+
+  -- Put or send string
+  procedure Put (Str : in String) is
+    F, L : Natural;
+    use type Mcd_Fifos.Fifo_Id;
+  begin
+    if Text_Handler.Empty (Fifo_Name) then
+      -- Put on stdout (tty or not)
+      Async_Stdin.Put_Out (Str);
+    elsif Client_Id /= Mcd_Fifos.No_Fifo then
+      -- Send on fifo several messages
+      F := Str'First;
+      loop
+        L := F + Max_Message_Len - 1;
+        if L > Str'Last then
+          L := Str'Last;
+        end if;
+        if Debug.Debug_Level_Array(Debug.Flow) then
+          Async_Stdin.Put_Line_Err ("Flow: Sending -> " & Str(F .. L));
+        end if;
+        Send_Message (Str(F .. L));
+        if Debug.Debug_Level_Array(Debug.Flow) then
+          Async_Stdin.Put_Line_Err ("Flow: Sent -> " & Str(F .. L));
+        end if;
+        exit when L = Str'Last;
+        F := L + 1;
+      end loop;
+    end if;
   end Put;
 
   procedure New_Line is
   begin
-    if Text_Handler.Empty (Fifo_Name) then
-      -- Put on stdout (tty or not)
-      Async_Stdin.New_Line_Out;
-    else
-      -- Send on fifo (Lf is the Unix standard)
-      Put ("" & Ada.Characters.Latin_1.Lf);
-    end if;
+    Put_Line ("");
   end New_Line;
 
   procedure Put_Line (Str : in String) is
   begin
-    Put (Str);
-    New_Line;
+    -- Send/put Lf (the Unix standard)
+    Put (Str & Ada.Characters.Latin_1.Lf);
   end Put_Line;
 
   Closing : Boolean := False;
@@ -243,14 +257,19 @@ package body Io_Flow is
                      Message : in Message_Type;
                      Length  : in Fifos.Message_Length) is
   begin
-    if Length = 1
-    and then (Message(1) = Ada.Characters.Latin_1.Cr
-              or else Message(1) = Ada.Characters.Latin_1.Lf) then
+    if Length = 0 then
       return;
     end if;
-    Input_Data := Unb.To_Unbounded_String (Message(1 .. Length));
-    -- Prevent Input_Data to be overwritten by freezing fifo
-    Mcd_Fifos.Activate (Client_Id, False);
+    -- Add this chunk 
+    Unb.Append (Fifo_Data, Message(1 .. Length));
+    if      Message(Length) = Ada.Characters.Latin_1.Cr
+    or else Message(Length) = Ada.Characters.Latin_1.Lf then
+      -- Validate the overall string
+      Input_Data := Fifo_Data;
+      Fifo_Data := Unb.Null_Unbounded_String;
+      -- Freeze fifo to prevent Input_Data to be overwritten
+      Mcd_Fifos.Activate (Client_Id, False);
+    end if;
   end Rece_Cb;
 
   procedure Open_Fifo (Active : in Boolean) is
