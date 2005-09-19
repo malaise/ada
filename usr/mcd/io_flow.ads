@@ -1,12 +1,19 @@
 with Ada.Strings.Unbounded;
 package Io_Flow is
 
+  -- Data sent / read on fifo
+  Max_Message_Len : constant := 1024;
+  subtype Message_Type is String (1 .. Max_Message_Len);
+
+  -- Data to output
   procedure Put (Str : in String);
   procedure Put_Line (Str : in String);
   procedure New_Line;
 
+  -- Input data
   procedure Next_Line (Str : out Ada.Strings.Unbounded.Unbounded_String);
 
+  -- Close io flows
   procedure Close;
 
   -- May raise Fifo_Error at init (first call to Next_Line)
