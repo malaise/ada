@@ -64,26 +64,29 @@ package body Ios is
       Format ((Kind => Real, Val_Real => 2.009));
     end if;
   end Check_Default_Formats;
-    
-    
-  procedure Put (Item : in Item_Rec) is
+
+  function Image (Item : in Item_Rec) return String is
     Str : Item_Rec;
   begin
     case Item.Kind is
       when Arbi =>
-        Io_Flow.Put ('@' & Arbitrary.Image (Item.Val_Arbi));
+        return '@' & Arbitrary.Image (Item.Val_Arbi);
       when Inte | Real | Bool | Chrs =>
         Str := Strof (Item);
-        Io_Flow.Put (Unb.To_String(Str.Val_Text));
+        return Unb.To_String(Str.Val_Text);
       when others =>
         raise Invalid_Argument;
     end case;
+  end Image;
+
+  procedure Put (Item : in Item_Rec) is
+  begin
+    Io_Flow.Put (Image (Item));
   end Put;
     
   procedure Put_Line (Item : in Item_Rec) is
   begin
-    Put(Item);
-    New_Line;
+    Io_Flow.Put_Line (Image (Item));
   end Put_Line;
 
   procedure New_Line is
