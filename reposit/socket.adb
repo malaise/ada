@@ -50,6 +50,9 @@ package body Socket is
   function Soc_Set_Blocking (S_Addr : System.Address;
                              Block  : Boolean_For_C) return Result;
   pragma Import (C, Soc_Set_Blocking, "soc_set_blocking");
+  function Soc_Is_Blocking (S_Addr : System.Address;
+                            Block  : System.Address) return Result;
+  pragma Import (C, Soc_Is_Blocking, "soc_is_blocking");
 
   function Soc_Link_Service (S : System.Address;
                              Service : System.Address) return Result;
@@ -210,6 +213,15 @@ package body Socket is
     Res := Soc_Set_Blocking (Socket.Soc_Addr, Boolean_For_C(Blocking));
     Check_Ok;
   end Set_Blocking;
+
+  -- Is a socket in blocking mode
+  function Is_Blocking (Socket : in Socket_Dscr) return Boolean is
+    Bool : Boolean_For_C;
+  begin
+    Res := Soc_Is_Blocking (Socket.Soc_Addr, Bool'Address);
+    Check_Ok;
+    return Boolean(Bool);
+  end Is_Blocking;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
   function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is

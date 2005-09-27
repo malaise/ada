@@ -62,7 +62,7 @@ package Socket is
   -- Open a socket (in blocking mode)
   ---------------------------------
 
-  -- Open a socket
+  -- Open a socket (in blocking mode)
   procedure Open (Socket : in out Socket_Dscr; Protocol : in Protocol_List);
 
   -- Close a socket
@@ -72,8 +72,13 @@ package Socket is
   -- Is a socket open
   function Is_Open (Socket : in Socket_Dscr) return Boolean;
 
-  -- Set a socket blocking or not
+  -- Set the socket blocking or non blocking
+  --  (for sending, receiving, connecting)
+  -- Socket is blocking at creation (open/accept)
   procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean);
+
+  -- Is a socket in blocking mode
+  function Is_Blocking (Socket : in Socket_Dscr) return Boolean;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
   function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
