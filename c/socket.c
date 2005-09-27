@@ -27,7 +27,7 @@ static int evt_fd_set (int fd, boolean read) {
 #endif
 
 /* Init a socket (used by open and accept) */
-static int soc_init (soc_ptr *p_soc,
+static int init (soc_ptr *p_soc,
                      int fd,
                      socket_protocol protocol) {
   int allow_sockopt;
@@ -189,7 +189,7 @@ extern int soc_open (soc_token *p_token,
   }
 
   /* Init socket */
-  return (soc_init(p_soc, fd, protocol));
+  return (init(p_soc, fd, protocol));
 }
 
 /* Close a socket */
@@ -289,8 +289,22 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   return (SOC_OK);
 }
 
+/* Is the socket in blocking mode or not */
+extern int soc_is_blocking (soc_token token, boolean *blocking) {
+
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  *blocking = soc->blocking;
+  UNLOCK;
+  return (SOC_OK);
+}
+
 /* Do the connection */
-static int soc_connect (soc_ptr soc) {
+static int do_connect (soc_ptr soc) {
 
   int result;
 
@@ -397,7 +411,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
-    res = soc_connect (soc);
+    res = do_connect (soc);
     UNLOCK;
     return (res);
   }
@@ -460,7 +474,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
-    res = soc_connect (soc);
+    res = do_connect (soc);
     UNLOCK;
     return (res);
   }
@@ -503,7 +517,7 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
-    res = soc_connect (soc);
+    res = do_connect (soc);
     UNLOCK;
     return (res);
   }
@@ -539,7 +553,7 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
-    res = soc_connect (soc);
+    res = do_connect (soc);
     UNLOCK;
     return (res);
   }
@@ -721,156 +735,10 @@ extern int soc_get_dest_host (soc_token token, soc_host *p_host) {
   return (SOC_OK);
 }
 
-/* Get current lan name (computed from local host name) */
-/* lan_name must be big enough */
-extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
-
-  char host_name[MAXHOSTNAMELEN];
-  struct hostent *hostentp;
-  struct in_addr host_address;
-  unsigned int net_mask;
-  struct netent  *netentp;
-
-  if (gethostname(host_name, sizeof(host_name)) == -1) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  hostentp = gethostbyname (host_name);
-  if (hostentp ==  (struct hostent *)NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  /* First of aliases */
-  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
-  net_mask = inet_netof(host_address);
-  if (net_mask == -1) {
-    perror("inet_netof");
-    return (SOC_SYS_ERR);
-  }
-
-  netentp = getnetbyaddr(net_mask, AF_INET);
-  if (netentp == (struct netent *) NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  if (strlen(netentp->n_name) >= lan_name_len) {
-    return (SOC_LEN_ERR);
-  }
-
-  strcpy (lan_name, netentp->n_name);
-  /* Ok */
-  return (SOC_OK);
-}
-
-/* Find name of soc_host and vice versa */
-extern int soc_host_name_of (const soc_host *p_host, char *host_name,
-                             unsigned int host_name_len) {
-  struct hostent *host_struct;
-
-  /* Read name of host */
-  host_struct = gethostbyaddr( (const char*)p_host, sizeof(*p_host), AF_INET);
-  if (host_struct == (struct hostent *)NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  if (strlen(host_struct->h_name) >= host_name_len) {
-    return (SOC_LEN_ERR);
-  }
-  strcpy (host_name, host_struct->h_name);
-
-  /* Ok */
-  return (SOC_OK);
-}
-
-extern int soc_host_of (const char *host_name, soc_host *p_host) {
-  struct hostent *host_struct;
-
-  /* Read  IP adress of host */
-  host_struct = gethostbyname(host_name);
-  if (host_struct == (struct hostent *)NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-  memcpy((void *) &(p_host->integer),
-     (void *) host_struct->h_addr, sizeof(p_host->integer));
-
-  /* Ok */
-  return (SOC_OK);
-}
-
-static protocol_list protocol_of (socket_protocol proto) {
-  if (proto == udp_socket) return udp_protocol;
-  else return tcp_protocol;
-}
-
-/* Find name of soc_port and vice versa */
-extern int soc_port_name_of (const soc_port port,
-                             const socket_protocol proto,
-                             char *port_name,
-                             unsigned int port_name_len) {
-
-  struct servent *port_struct;
-
-  /* Read name of port */
-  port_struct = getservbyport((int)port, ns_proto[protocol_of(proto)]);
-  if (port_struct == (struct servent *)NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-
-  if (strlen(port_struct->s_name) >= port_name_len) {
-    return (SOC_LEN_ERR);
-  }
-  strcpy (port_name, port_struct->s_name);
-
-  /* Ok */
-  return (SOC_OK);
-}
-
-extern int soc_port_of (const char *port_name,
-                        const socket_protocol proto,
-                        soc_port *p_port) {
-
-  struct servent *port_struct;
-
-  /* Read  num of port */
-  port_struct = getservbyname(port_name, ns_proto[protocol_of(proto)]);
-  if (port_struct == (struct servent *)NULL) {
-    return (SOC_NAME_NOT_FOUND);
-  }
-  *p_port = (soc_port) port_struct->s_port;
-
-  /* Ok */
-  return (SOC_OK);
-}
-
-/* Gets local host */
-extern int soc_get_local_host_name (char *host_name,
-                                    unsigned int host_name_len) {
-  /* Get current host name */
-  if (gethostname(host_name, host_name_len) != 0) {
-    perror("gethostname");
-    return (SOC_NAME_NOT_FOUND);
-  }
-  /* Ok */
-  return (SOC_OK);
-}
-
-extern int soc_get_local_host_id (soc_host *p_host) {
-  char hostname[MAXHOSTNAMELEN];
-  int res;
-
-  /* Get current host name */
-  res = soc_get_local_host_name(hostname, sizeof(hostname));
-  if (res != SOC_OK) {
-    return (res);
-  }
-  /* Get its addr */
-  return soc_host_of(hostname, p_host);
-}
-
 /* Send to a socket, the destination of which must set */
 /* May return SOC_WOULD_BLOCK, then next sends have to be made */
 /*  with length=0, util soc_send returns ok */
-static int soc_do_send (soc_ptr soc, soc_message message, soc_length length) {
+static int do_send (soc_ptr soc, soc_message message, soc_length length) {
   boolean cr;
   soc_header header;
   struct iovec vector[VECTOR_LEN];
@@ -1024,7 +892,7 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  res = soc_do_send (soc, message, length);
+  res = do_send (soc, message, length);
   UNLOCK;
   return (res);
 }
@@ -1045,9 +913,155 @@ extern int soc_resend (soc_token token) {
   }
 
   /* Send */
-  res = soc_do_send (soc, NULL, 0);
+  res = do_send (soc, NULL, 0);
   UNLOCK;
   return (res);
+}
+
+/* Get current lan name (computed from local host name) */
+/* lan_name must be big enough */
+extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
+
+  char host_name[MAXHOSTNAMELEN];
+  struct hostent *hostentp;
+  struct in_addr host_address;
+  unsigned int net_mask;
+  struct netent  *netentp;
+
+  if (gethostname(host_name, sizeof(host_name)) == -1) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  hostentp = gethostbyname (host_name);
+  if (hostentp ==  (struct hostent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  /* First of aliases */
+  host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
+  net_mask = inet_netof(host_address);
+  if (net_mask == -1) {
+    perror("inet_netof");
+    return (SOC_SYS_ERR);
+  }
+
+  netentp = getnetbyaddr(net_mask, AF_INET);
+  if (netentp == (struct netent *) NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(netentp->n_name) >= lan_name_len) {
+    return (SOC_LEN_ERR);
+  }
+
+  strcpy (lan_name, netentp->n_name);
+  /* Ok */
+  return (SOC_OK);
+}
+
+/* Find name of soc_host and vice versa */
+extern int soc_host_name_of (const soc_host *p_host, char *host_name,
+                             unsigned int host_name_len) {
+  struct hostent *host_struct;
+
+  /* Read name of host */
+  host_struct = gethostbyaddr( (const char*)p_host, sizeof(*p_host), AF_INET);
+  if (host_struct == (struct hostent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(host_struct->h_name) >= host_name_len) {
+    return (SOC_LEN_ERR);
+  }
+  strcpy (host_name, host_struct->h_name);
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_host_of (const char *host_name, soc_host *p_host) {
+  struct hostent *host_struct;
+
+  /* Read  IP adress of host */
+  host_struct = gethostbyname(host_name);
+  if (host_struct == (struct hostent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+  memcpy((void *) &(p_host->integer),
+     (void *) host_struct->h_addr, sizeof(p_host->integer));
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+static protocol_list protocol_of (socket_protocol proto) {
+  if (proto == udp_socket) return udp_protocol;
+  else return tcp_protocol;
+}
+
+/* Find name of soc_port and vice versa */
+extern int soc_port_name_of (const soc_port port,
+                             const socket_protocol proto,
+                             char *port_name,
+                             unsigned int port_name_len) {
+
+  struct servent *port_struct;
+
+  /* Read name of port */
+  port_struct = getservbyport((int)port, ns_proto[protocol_of(proto)]);
+  if (port_struct == (struct servent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  if (strlen(port_struct->s_name) >= port_name_len) {
+    return (SOC_LEN_ERR);
+  }
+  strcpy (port_name, port_struct->s_name);
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_port_of (const char *port_name,
+                        const socket_protocol proto,
+                        soc_port *p_port) {
+
+  struct servent *port_struct;
+
+  /* Read  num of port */
+  port_struct = getservbyname(port_name, ns_proto[protocol_of(proto)]);
+  if (port_struct == (struct servent *)NULL) {
+    return (SOC_NAME_NOT_FOUND);
+  }
+  *p_port = (soc_port) port_struct->s_port;
+
+  /* Ok */
+  return (SOC_OK);
+}
+
+/* Gets local host */
+extern int soc_get_local_host_name (char *host_name,
+                                    unsigned int host_name_len) {
+  /* Get current host name */
+  if (gethostname(host_name, host_name_len) != 0) {
+    perror("gethostname");
+    return (SOC_NAME_NOT_FOUND);
+  }
+  /* Ok */
+  return (SOC_OK);
+}
+
+extern int soc_get_local_host_id (soc_host *p_host) {
+  char hostname[MAXHOSTNAMELEN];
+  int res;
+
+  /* Get current host name */
+  res = soc_get_local_host_name(hostname, sizeof(hostname));
+  if (res != SOC_OK) {
+    return (res);
+  }
+  /* Get its addr */
+  return soc_host_of(hostname, p_host);
 }
 
 /*******************************************************************/
@@ -1565,7 +1579,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   }
 
   /* Init socket of same kind */
-  result = soc_init(p_soc, fd, soc->socket_kind);
+  result = init (p_soc, fd, soc->socket_kind);
   if (result != SOC_OK) {
     UNLOCK;
     return (result);

@@ -86,13 +86,28 @@ typedef union soc_host_t {
 typedef int soc_length;
 typedef void * soc_message;
 
-/*-------------------------------------------*/
-/* All functions return SOC_OK or an error,  */
-/*  except soc_receive on a non blocking tcp */
-/*  (no header) connection)                  */
-/*-------------------------------------------*/
+/*--------------------------------------------*/
+/* All functions return SOC_OK or an error,   */
+/*  except soc_receive on a non blocking tcp  */
+/*  (no header) connection), that returns the */
+/*  read length or an error.                  */
+/*--------------------------------------------*/
 
-/* Open a socket (in blocking) */
+/*-------------------------------------------------------------------------*/
+/*  Note for Multicast IP (using Udp socket):                              */
+/*  For sending IPM, simply Set_Destination to a LAN name                  */
+/*    which is defined with a D class address, and a port.                 */
+/*  For receiving IPM, first Set_Destination to the LAN name and port,     */
+/*    then Link to the same port as this destination.                      */
+/*    It is possible to link dynamically to port (then destination port is */
+/*    not used).                                                           */
+/*-------------------------------------------------------------------------*/
+
+
+/* ------------------*/
+/* General functions */
+/* ------------------*/
+/* Open a socket (in blocking mode) */
 extern int soc_open (soc_token *p_token, socket_protocol protocol);
 
 /* Close a socket */
@@ -103,12 +118,17 @@ extern int soc_get_id (soc_token token, int *p_id);
 
 /* Set the socket blocking or non blocking */
 /*  (for sending, receiving, connecting) */ 
+/* Socket is blocking at creation (open/accept) */
 extern int soc_set_blocking (soc_token token, boolean blocking);
 
-/* ------------------------------------*/
+/* Is the socket in blocking mode or not */
+extern int soc_is_blocking (soc_token token, boolean *blocking);
+
+/*-------------------------------------*/
+/* Emission                            */
 /* No broadcast nor change dest in tcp */
 /* Socket must not be linked in tcp    */
-/* ------------------------------------*/
+/*-------------------------------------*/
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
@@ -148,6 +168,17 @@ extern int soc_get_dest_port (soc_token token, soc_port *p_port);
 /* Get the destination host */
 extern int soc_get_dest_host (soc_token token, soc_host *p_host);
 
+/* Send to a socket, the destination of which must be set */
+/* May return SOC_WOULD_BLOCK, then next tries have to be made */
+/*  with soc_resend util it returns ok */
+extern int soc_send (soc_token token, soc_message message, soc_length length);
+
+/* Resend tail of previous message */
+extern int soc_resend (soc_token token);
+
+/*---------------------------------------------*/
+/* Search in local host/port/network databases */
+/*---------------------------------------------*/
 /* Get current lan name (computed from local host name) */
 /* lan_name must be large enough */
 extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len);
@@ -171,14 +202,8 @@ extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len);
 extern int soc_get_local_host_id (soc_host *p_host);
 
-/* Send to a socket, the destination of which must be set */
-/* May return SOC_WOULD_BLOCK, then next tries have to be made */
-/*  with soc_resend util it returns ok */
-extern int soc_send (soc_token token, soc_message message, soc_length length);
-
-/* Resend tail of previous message */
-extern int soc_resend (soc_token token);
-
+/* ------------------------------------*/
+/* Receive                             */
 /* Socket must not be connected in tcp */
 /* ------------------------------------*/
 
@@ -213,7 +238,9 @@ extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
                         boolean set_for_reply);
 
+/*--------------------*/
 /* Tcp specific calls */
+/*--------------------*/
 
 /* Accept a connection. */
 /* The socket must be open, tcp or tcp_header and linked */
