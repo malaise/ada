@@ -54,7 +54,7 @@ package body Ada_Words is
       return False;
     end if;
 
-    -- Letter or digit or '_', never to '_' successively
+    -- Letter or digit or '_', never two '_' successively
     Prev := Word(First);
     for I in First+1 .. Word'Last loop
       if Word(I) = '_' and then Prev = '_' then
@@ -210,17 +210,23 @@ package body Ada_Words is
       return Is_Not_Keyword;
     end if;
     Init;
+    -- Search in hash table
     Word_Hash.Reset_Find (Low_Word);
     loop
       Result := Word_Hash.Find_Next (Low_Word);
       case Result.Found is
         when False =>
+          -- Word hash not found => not a keyword
           return Is_Not_Keyword;
         when True =>
           if Result.Data.Str (1 .. Result.Data.Len) = Low_Word then
+            -- Word hash found, and word match otherwise search next word
             if Result.Data.Must then
+              -- This word is a keyword
               return Is_Keyword;
             else
+              -- This word is a keyword except if following a '''
+              --  (like range, digits...)
               return May_Be_Keyword;
             end if;
           end if;
