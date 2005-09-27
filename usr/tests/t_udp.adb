@@ -103,6 +103,12 @@ begin
 
   -- Create socket, add callback
   Socket.Open (Soc, Socket.Udp);
+  My_Io.Put ("Socket created and ");
+  if not Socket.Is_Blocking (Soc) then
+    My_Io.Put ("non ");
+  end if;
+  My_Io.Put_Line ("blocking");
+
   Fd := Socket.Fd_Of (Soc);
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);

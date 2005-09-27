@@ -104,12 +104,16 @@ procedure T_Tcp_Util is
     Dummy : Boolean;
   begin
     if Connected then
-      Ada.Text_Io.Put_Line ("Connected");
       The_Dscr := Dscr;
       Event_Mng.Add_Fd_Callback (Socket.Fd_Of(Dscr),
                             True,
                             Read_Cb'Unrestricted_Access);
       Socket.Set_Blocking (The_Dscr, False);
+      Ada.Text_Io.Put ("Connected and ");
+      if not Socket.Is_Blocking (The_Dscr) then
+        Ada.Text_Io.Put ("non ");
+      end if;
+      Ada.Text_Io.Put_Line ("blocking");
     else
       Ada.Text_Io.Put_Line ("Not connected");
       Give_Up := True;
@@ -152,7 +156,11 @@ procedure T_Tcp_Util is
                             True,
                             Read_Cb'Unrestricted_Access);
       Socket.Set_Blocking (The_Dscr, False);
-      Ada.Text_Io.Put_Line ("Accepted");
+      Ada.Text_Io.Put ("Accepted and ");
+      if not Socket.Is_Blocking (The_Dscr) then
+        Ada.Text_Io.Put ("non ");
+      end if;
+      Ada.Text_Io.Put_Line ("blocking");
     end if;
   end Accept_Cb;
 
