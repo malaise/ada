@@ -164,7 +164,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
   timeout_t exp_time, timeout, *timeout_ptr;
   boolean timeout_is_active;
   int i, n;
-  size_t size;
+  ssize_t size;
   char c;
 
   /* Compute exp_time = cur_time + timeout_ms */

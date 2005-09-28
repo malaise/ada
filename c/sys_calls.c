@@ -177,7 +177,7 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
 }
 
 extern int fd_int_read (int fd, void *buffer, int nbytes) {
-  size_t res;
+  ssize_t res;
   for (;;) {
     res = read (fd, buffer, (size_t) nbytes);
     if (res >= 0) {
@@ -189,7 +189,7 @@ extern int fd_int_read (int fd, void *buffer, int nbytes) {
 }
 
 extern int fd_int_write (int fd, void *buffer, int nbytes) {
-  size_t res;
+  ssize_t res;
   for (;;) {
     res = write (fd, buffer, (size_t) nbytes);
     if (res >= 0) {
@@ -256,7 +256,7 @@ extern void mutate (char * const program, int len) {
   }
 
   /* Allocate array of args */
-  argv = malloc ((n + 1) * sizeof (char*));
+  argv = (char**) malloc ((n + 1) * sizeof (char*));
   if (argv == NULL) {
     return;
   }

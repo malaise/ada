@@ -398,9 +398,9 @@ extern void double_to_time (double from, timeout_t *p_to) {
   /* Convert to ints, checking overflow */
   p_to->tv_sec = (sizeof(p_to->tv_sec) == sizeof(long) ? LONG_MAX : INT_MAX);
   if (s <= (double) p_to->tv_sec) {
-    p_to->tv_sec = s;
+    p_to->tv_sec = (long int)s;
   }
-  p_to->tv_usec = u;
+  p_to->tv_usec = (long int)u;
   normalize_time (p_to);
 
 }

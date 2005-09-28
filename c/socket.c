@@ -739,7 +739,7 @@ extern int soc_get_dest_host (soc_token token, soc_host *p_host) {
 /* May return SOC_WOULD_BLOCK, then next sends have to be made */
 /*  with length=0, util soc_send returns ok */
 static int do_send (soc_ptr soc, soc_message message, soc_length length) {
-  boolean cr;
+  int cr;
   soc_header header;
   struct iovec vector[VECTOR_LEN];
   soc_length len2send;
@@ -842,7 +842,7 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
   } else {
     /* Tcp Overflow: save tail */
     len2send  -= cr;
-    msg2send = malloc (len2send);
+    msg2send = (char*)malloc (len2send);
     if (msg2send == NULL) {
       perror("malloc(len2send)");
       return (SOC_SYS_ERR);
@@ -850,7 +850,7 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
     if ( (soc->protocol == tcp_protocol)
       && (soc->tcp_kind == tcp_msg)
       && (soc->send_tail == NULL)
-      && (cr < sizeof(header)) ) {
+      && (cr < (int)sizeof(header)) ) {
 
       /* First send of vector and header not completly sent */
       /* Save rest of header and all message */
@@ -940,7 +940,7 @@ extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
   /* First of aliases */
   host_address.s_addr = * (unsigned int*) hostentp->h_addr_list[0];
   net_mask = inet_netof(host_address);
-  if (net_mask == -1) {
+  if ((int)net_mask == -1) {
     perror("inet_netof");
     return (SOC_SYS_ERR);
   }
@@ -1256,7 +1256,7 @@ extern int soc_link_dynamic  (soc_token token) {
 /* Gets the port to which is linked a socket */
 extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
   soc_ptr soc = (soc_ptr) token;
-  int len = socklen;
+  socklen_t len = (socklen_t)socklen;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -1357,7 +1357,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
     }
     if (soc->rece_head == NULL) {
       soc->rece_len = res;
-      soc->rece_head = malloc (total_len);
+      soc->rece_head = (char*)malloc (total_len);
       if (soc->rece_head == NULL) {
         perror("malloc(total_len)");
         return (SOC_SYS_ERR);
@@ -1391,7 +1391,7 @@ extern int soc_receive (soc_token token,
                         boolean set_for_reply) {
   soc_ptr soc = (soc_ptr) token;
   int result;
-  int addr_len;
+  socklen_t addr_len;
   struct sockaddr_in *from_addr;
   soc_header header;
 
@@ -1424,7 +1424,7 @@ extern int soc_receive (soc_token token,
   /* Prepare for reply or not */
   if (set_for_reply) {
     from_addr = &(soc->send_struct);
-    addr_len = socklen;
+    addr_len = (socklen_t) socklen;
     /* In case of error */
     soc->dest_set = FALSE;
   } else {
@@ -1532,7 +1532,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   int result;
   int fd;
   struct sockaddr from_addr;
-  int len = socklen;
+  socklen_t len = (socklen_t) socklen;
 
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
@@ -1567,7 +1567,7 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   if (fd < 0) {
     /* Accept may be blocking. Also Linux propagates pending netrwork errors */
     if ( (errno == EAGAIN) || (errno == EWOULDBLOCK)  || (errno ==  ENETDOWN)
-      || (errno == EPROTO) || (errno == ENOPROTOOPT)  || (errno == EHOSTDOWN)
+      || (errno == EPROTO) | (errno == ENOPROTOOPT)  || (errno == EHOSTDOWN)
       || (errno == ENONET) || (errno == EHOSTUNREACH) || (errno == EOPNOTSUPP)
       || (errno == ENETUNREACH) ) {
       return SOC_WOULD_BLOCK;

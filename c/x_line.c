@@ -412,9 +412,7 @@ void close_screen (t_screen *p_screen) {
 
 
 /* Swaps the color map for each open window */
-void lin_blink_colors(blink)
-    boolean blink;
-{
+void lin_blink_colors(boolean blink) {
 int i;
 
     for (i=0; i<nbre_window; i++) {
