@@ -17,7 +17,8 @@
 #ifndef SOCKET_NO_EVT
 #include "wait_evt.h"
 #else
-static int evt_fd_set (int fd, boolean read) {
+static int evt_fd_set (int fd __attribute__ ((unused)),
+                       boolean read __attribute__ ((unused)) ) {
   return (FALSE);
 }
 #endif
@@ -469,7 +470,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
   }
 
-  soc->send_struct.sin_port = htons (port);
+  soc->send_struct.sin_port = htons( (uint16_t)port);
 
   /* Connect tcp */
   soc->dest_set = TRUE;
@@ -798,11 +799,11 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
         cr = writev(soc->socket_id, vector, vector_len);
       } else {
         /* Tcp raw */
-        cr = send(soc->socket_id, msg2send, len2send, 0);
+        cr = send(soc->socket_id, msg2send, (size_t)len2send, 0);
       }
     } else {
       /* Udp */
-      cr = sendto(soc->socket_id, msg2send, len2send, 0,
+      cr = sendto(soc->socket_id, msg2send, (size_t) len2send, 0,
        (struct sockaddr*) &(soc->send_struct), socklen);
     }
   } while ( (cr == -1 ) && (errno == EINTR) );
@@ -842,7 +843,7 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
   } else {
     /* Tcp Overflow: save tail */
     len2send  -= cr;
-    msg2send = (char*)malloc (len2send);
+    msg2send = (char*)malloc ((size_t)len2send);
     if (msg2send == NULL) {
       perror("malloc(len2send)");
       return (SOC_SYS_ERR);
@@ -855,7 +856,7 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
       /* First send of vector and header not completly sent */
       /* Save rest of header and all message */
       memcpy (msg2send, ((char*)&header) + cr, sizeof(header) - cr);
-      memcpy (msg2send + sizeof(header) - cr, (char*)message, length);
+      memcpy (msg2send + sizeof(header) - cr, (char*)message, (size_t)length);
 
     } else if (soc->send_tail == NULL) {
       /* First send of vector but either header sent or no header */
@@ -864,10 +865,10 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
         /* Cr = header + nbmessage. Start at cr - header */
         cr -= sizeof(header);
       }
-      memcpy (msg2send , (char*)message + cr, len2send);
+      memcpy (msg2send , (char*)message + cr, (size_t)len2send);
     } else {
       /* We were in overflow: save rest of tail */
-      memcpy (msg2send, soc->send_tail + cr, len2send);
+      memcpy (msg2send, soc->send_tail + cr, (size_t)len2send);
     }
 
     /* Set new tail */
@@ -1320,7 +1321,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
 
   /* Receive data */
   do {
-    res = recv(soc->socket_id, addr2read, len2read, 0);
+    res = recv(soc->socket_id, addr2read, (size_t)len2read, 0);
   } while ( (res == -1) && (errno == EINTR) );
 
   if (res == -1) {
@@ -1343,7 +1344,7 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
     /* Done */
     if (soc->rece_head != NULL) {
       /* Return full head and clear it */
-      memcpy (buffer, soc->rece_head, total_len);
+      memcpy (buffer, soc->rece_head, (size_t)total_len);
       free (soc->rece_head);
       soc->rece_head = NULL;
       soc->rece_len = 0;
@@ -1357,12 +1358,12 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
     }
     if (soc->rece_head == NULL) {
       soc->rece_len = res;
-      soc->rece_head = (char*)malloc (total_len);
+      soc->rece_head = (char*)malloc ((size_t)total_len);
       if (soc->rece_head == NULL) {
         perror("malloc(total_len)");
         return (SOC_SYS_ERR);
       }
-      memcpy (soc->rece_head, buffer, res);
+      memcpy (soc->rece_head, buffer, (size_t)res);
     } else {
       soc->rece_len += res;
     }
@@ -1484,7 +1485,7 @@ extern int soc_receive (soc_token token,
   /* Udp */
   do {
     result = recvfrom(soc->socket_id, (char *)message, 
-       length, 0, (struct sockaddr*) from_addr, &addr_len);
+       (size_t)length, 0, (struct sockaddr*) from_addr, &addr_len);
   } while ( (result == -1) && (errno == EINTR) );
 
   if (result < 0) {

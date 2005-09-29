@@ -291,9 +291,7 @@ extern void next_dead (int *cause, int *pid, int *code) {
 
   for (;;) {
     got_pid = waitpid((pid_t)-1, &status, WNOHANG);
-    if ( (got_pid != (pid_t)-1) || (errno != EINTR) ) {
-      break;
-    }
+    if ( (got_pid != (pid_t)-1) || (errno != EINTR) ) break;
   }
   *pid = (int) got_pid;
   if ( (got_pid == (pid_t)-1) && (errno != ECHILD) ) {

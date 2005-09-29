@@ -11,7 +11,7 @@ boolean blink_bold(void);
 
 /* Loads and init colors, close and free colors (for each screen) */
 boolean col_open(Display *x_server, int x_screen, unsigned long color_id[], Colormap *colormap);
-void col_close(Display *x_server, int x_screen, unsigned long color_id[], Colormap colormap);
+void col_close(Display *x_server, unsigned long color_id[], Colormap colormap);
 
 /* Checks a color number (in attributes) */
 boolean col_check(int color_id);
@@ -23,6 +23,6 @@ unsigned long col_get_std(int background, int foreground, unsigned long color_id
 unsigned long col_get_blk(int background, int foreground, unsigned long color_id[]);
 
 /* Makes the colors blinking, or not blinking (alternatively) */
-boolean col_set_blinking (Display *x_server, int x_screen, unsigned long color_id[],
+boolean col_set_blinking (Display *x_server, unsigned long color_id[],
                           Colormap colormap, boolean blinking);
 #endif

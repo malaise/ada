@@ -47,7 +47,7 @@ static void x_do_blinking (void) {
   } else {
     curr_percent = PERCENT_OFF;
   }
-  (void) incr_time (&next_blink, curr_percent * 10);
+  (void) incr_time (&next_blink, (unsigned int)curr_percent * 10);
 }
 
 extern int x_stop_blinking (void) {
@@ -63,7 +63,7 @@ extern int x_stop_blinking (void) {
 extern int x_start_blinking (void) {
   curr_percent = PERCENT_ON;
   get_time (&next_blink);
-  (void) incr_time (&next_blink, curr_percent * 10);
+  (void) incr_time (&next_blink, (unsigned int)curr_percent * 10);
   return (OK);
 }
 
@@ -95,7 +95,7 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   /* Compute expiration time */
   if (timeout_is_active) {
     get_time (&exp_time);
-    incr_time (&exp_time, *timeout_ms);
+    incr_time (&exp_time, (unsigned int)*timeout_ms);
   }
 
   for (;; ) {
@@ -317,7 +317,6 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
     int x, y;
     t_window *win_id = (t_window*) line_id;
     int no_font = win_id->no_font;
-
 
     /* Check that window is open */
     if (! lin_check(win_id)) {

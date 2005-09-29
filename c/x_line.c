@@ -226,7 +226,8 @@ boolean screen_created;
         win_attrib.backing_store = p_window->server->backing_store;
         p_window->x_window = XCreateWindow (
           p_window->server->x_server, p_window->screen->x_root_win, 
-          x_pix, y_pix, p_window->wwidth, p_window->wheight, DEF_WIN_ATTRIB);
+          x_pix, y_pix, (unsigned int)p_window->wwidth,
+          (unsigned int)p_window->wheight, DEF_WIN_ATTRIB);
         if (p_window->x_window == None) {
 #ifdef DEBUG
             printf ("X_LINE : X can't create window.\n");
@@ -402,7 +403,7 @@ void close_screen (t_screen *p_screen) {
 
 
     /* Free colors */
-    col_close (p_screen->server->x_server, p_screen->x_screen, p_screen->color_id,
+    col_close (p_screen->server->x_server, p_screen->color_id,
                p_screen->colormap);
 
     /* Free memory */
@@ -419,7 +420,6 @@ int i;
         if (blink != list_window[i]->screen->blinking) {
             /* Screen is not in the proper colors */
             col_set_blinking (list_window[i]->server->x_server,
-                              list_window[i]->screen->x_screen,
                               list_window[i]->screen->color_id,
                               list_window[i]->screen->colormap,
                               blink);

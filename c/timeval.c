@@ -382,7 +382,7 @@ extern void double_to_time (double from, timeout_t *p_to) {
   double s, u;
 
   /* Try to round usecs */
-  if (from < HUGE_VAL / DMILLION) {
+  if (from < HUGE / DMILLION) {
     /* Cannot round usecs: trunc them */
     s = trunc (from);
     u = trunc ((from - s) * MILLION);

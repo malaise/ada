@@ -76,7 +76,7 @@ typedef void * soc_token;
 typedef union soc_host_t {
     /* 4 bytes in network order */
     unsigned int integer;
-    unsigned char bytes[4];
+    byte bytes[4];
 } soc_host;
 
 /* String length for a host or a port */

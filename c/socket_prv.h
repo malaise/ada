@@ -39,7 +39,7 @@ typedef struct {
         soc_length expect_len;
 }soc_struct, *soc_ptr;
 
-const int socklen = sizeof (struct sockaddr_in);
+const socklen_t socklen = sizeof (struct sockaddr_in);
 int    BLOCKINGIO = 0;
 int NONBLOCKINGIO = 1;
 

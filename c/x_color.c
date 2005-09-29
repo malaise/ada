@@ -86,7 +86,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
 
     /* Alloc colors */
     cr = XAllocColorCells (x_server, *colormap, False, plane_mask, N_PLANES,
-                           color_id, color_tab_size);
+                           color_id, (unsigned int) color_tab_size);
     if (cr == 0) {
 #ifdef DEBUG
       printf ("X_COLOR : X can't alloc %d cells for colors.\n",
@@ -109,7 +109,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
     }
 
     /* Store colors */
-    (void) col_set_blinking (x_server, x_screen, color_id, *colormap, False);
+    (void) col_set_blinking (x_server, color_id, *colormap, False);
     XInstallColormap (x_server, *colormap);
 
   } else {
@@ -132,7 +132,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
 }
 
 
-void col_close(Display *x_server, int x_screen, unsigned long color_id[],
+void col_close(Display *x_server, unsigned long color_id[],
                Colormap colormap) {
 
   XFreeColors (x_server, colormap, color_id, color_tab_size, 0);
@@ -145,7 +145,8 @@ boolean col_check(int color_id) {
 }
 
 /* Gives the normal value for a color */
-unsigned long col_get_std (int background, int foreground,
+unsigned long col_get_std (int background __attribute__ ((unused)),
+                           int foreground,
                            unsigned long color_id[]) {
 
   switch (blink_kind) {
@@ -163,7 +164,8 @@ unsigned long col_get_std (int background, int foreground,
 }
 
 /* Gives the blinking value for a color */
-unsigned long col_get_blk (int background, int foreground,
+unsigned long col_get_blk (int background,
+                           int foreground,
                            unsigned long color_id[]) {
 
   switch (blink_kind) {
@@ -181,8 +183,7 @@ unsigned long col_get_blk (int background, int foreground,
 }
 
 /* Sets the color map in non_blinking or in blinking state */
-boolean col_set_blinking (Display *x_server, int x_screen,
-                          unsigned long color_id[],
+boolean col_set_blinking (Display *x_server, unsigned long color_id[],
                           Colormap colormap, boolean blinking) {
 
   XColor tab_color[NBRE_COLOR * NBRE_COLOR];

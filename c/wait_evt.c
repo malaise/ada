@@ -171,7 +171,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
   timeout_is_active = *timeout_ms >= 0;
   if (timeout_is_active) {
     get_time (&exp_time);
-    incr_time (&exp_time, *timeout_ms);
+    incr_time (&exp_time, (unsigned int) *timeout_ms);
     timeout_ptr = &timeout;
   } else {
     timeout_ptr = NULL;

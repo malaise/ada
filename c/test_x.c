@@ -39,7 +39,7 @@ unsigned char draw[] = {0, 0, 0, 1, 0, 0, 0, \
 
 static void put(void *line, const char *string, int row, int column) {
 
-  (void) x_put_string (line, string, strlen(string), row, column);
+  (void) x_put_string (line, string, (int)strlen(string), row, column);
 }
 
 static void title (void *line) {
@@ -145,7 +145,7 @@ boolean read;
         strcat (stra, " on Background ");
         sprintf (digits, "%2d", bv);
         strcat (stra, digits);
-        x_set_attributes (line, bv, cv, s, u, b, r);
+        x_set_attributes (line, bv, cv, (int)s, (int)u, (int)b, (int)r);
         put (line, stra, COLOURS_LNE + (2*i), 30);
       }
       x_set_attributes (line, bv, 2, 0, 0, 0, 0);

@@ -91,7 +91,8 @@ char str[MAX_LENGTH];
 void scr_draw_array (Display *x_server, GC x_context, Window x_window,
                      int x, int y, int width, int height) {
 
-    XFillRectangle(x_server, x_window,  x_context, x, y, width, height);
+    XFillRectangle(x_server, x_window,  x_context, x, y,
+         (unsigned int) width, (unsigned int) height);
 }
 
 /* Change GC in the window */
