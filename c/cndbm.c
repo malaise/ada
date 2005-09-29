@@ -1,5 +1,12 @@
 #include "cndbm.h"
 
+/* The real prototypes of dbm functions used */
+extern int   dbm_store    (DBM *db, datum key, datum content, int store_mode);
+extern datum dbm_fetch    (DBM *db, datum key);
+extern int   dbm_delete   (DBM *db, datum key);
+extern datum dbm_firstkey (DBM *db);
+extern datum dbm_nextkey  (DBM *db);
+
 extern int c_dbm_store (DBM *db, datum *key, datum *content,
                  int store_mode) {
   return dbm_store(db, *key, *content, store_mode);
