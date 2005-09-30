@@ -22,6 +22,7 @@ package Grid_1 is
   Grid_Not_Init : exception;
   Invalid_Character : exception;
 
+  -- For debug
   procedure Dump;
 
 end Grid_1;

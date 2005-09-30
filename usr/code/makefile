@@ -1,7 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-EXES := code
+EXES := code t_vigenere
 
 CLIBS_code := cutil
 

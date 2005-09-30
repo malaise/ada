@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
 with Sys_Calls, Text_Handler, My_Io, Argument, Upper_Str, Normal, My_Math;
-with Grid_1, Grid_2;
+with Grid_1, Grid_2, Vigenere;
 
 procedure Code is
   Code : Boolean;
@@ -22,8 +22,8 @@ procedure Code is
   Key : Text_Handler.Text(80);
   In_File  : Ada.Text_Io.File_Type;
   Out_File : Ada.Text_Io.File_Type;
-  Sl : Grid_2.Long_Positive;
-  Si : Grid_2.Long_Positive;
+  Sl : Vigenere.Long_Positive;
+  Si : Vigenere.Long_Positive;
   C : Character;
   Is_A_Tty : Boolean;
 
@@ -52,6 +52,10 @@ procedure Code is
         when Grid_1.Invalid_Character =>
           Ada.Text_Io.Put_Line ("ERROR, invalid character.");
           Ada.Text_Io.Put_Line (Buff(1 .. Len));
+          for J in 1 .. I-1 loop
+            Ada.Text_Io.Put ('-');
+          end loop;
+          Ada.Text_Io.Put_Line ("^");
           raise;
       end;
       if Sl > Str'Last then
@@ -143,10 +147,12 @@ begin
       My_Io.New_Line;
     end if;
     if Len = 0 then
-      My_Io.Put_Line ("Program aborted by user.");
-      return;
+      My_Io.Put_Line ("Empty key.");
+      if not Is_A_Tty then
+        return;
+      end if;
     elsif Code and then Len < Min_Key_Len then
-      My_Io.Put_Line ("Too short ("
+      My_Io.Put_Line ("Key too short ("
                     & Normal(Min_Key_Len, 1) & " min), try again.");
       if not Is_A_Tty then
         return;
@@ -155,19 +161,17 @@ begin
       exit;
     end if;
   end loop;
-
-  if Argument.Get_Nbre_Arg = 3 then
-    Ada.Text_Io.Set_Output (Out_File);
-  end if;
-
   Text_Handler.Set (Key, Buff (1 .. Len));
 
   -- Initialize coding
   Grid_1.Initialize(Text_Handler.Value(Key));
 
   if Code then
+    -- Code through code 1
     Sl := 1;
     -- Code key
+    Len := Text_Handler.Length (Key);
+    Buff(1 .. Len) := Text_Handler.Value(Key);
     Code_1;
     -- Code input file
     loop
@@ -184,21 +188,15 @@ begin
 
     -- Code through code 2
     Str (1 .. Sl) := Grid_2.Encode(Text_Handler.Value(Key), Str(1 .. Sl));
-    -- Output result (cut each 80 cars)
-    for I in 1 .. Sl loop
-      Ada.Text_Io.Put (Str(I));
-      if I mod 78 = 0 then
-        Ada.Text_Io.New_Line;
-      end if;
-    end loop;
-    if Sl mod 78 /= 0 then
-      Ada.Text_Io.New_Line;
-    end if;
+
+    -- Code through vigenere
+    Vigenere.Encode (Text_Handler.Value(Key), Str(1 .. Sl));
+
   else
-    -- Decode input file
+
+    -- Read input file
     Sl := 1;
     loop
-      -- Read input file
       begin
         Ada.Text_Io.Get_Line (In_File, Buff, Len);
       exception
@@ -212,14 +210,40 @@ begin
     end loop;
     Sl := Sl - 1;
 
+    -- Decode through vigenere
+    begin
+      Vigenere.Decode (Text_Handler.Value(Key), Str(1 .. Sl));
+    exception
+      when Vigenere.Decode_Error =>
+        return;
+    end;
     -- Decode through code 2
-    Str (1 .. Sl) := Grid_2.Decode(Text_Handler.Value(Key), Str(1 .. Sl));
+    Str(1 .. Sl) := Grid_2.Decode(Text_Handler.Value(Key), Str(1 .. Sl));
 
-    -- Decode through code 1
+  end if;
+
+  if Argument.Get_Nbre_Arg = 3 then
+    Ada.Text_Io.Set_Output (Out_File);
+  end if;
+
+  if Code then
+    -- Output result (cut each 80 cars)
+    for I in 1 .. Sl loop
+      Ada.Text_Io.Put (Str(I));
+      if I mod 78 = 0 then
+        Ada.Text_Io.New_Line;
+      end if;
+    end loop;
+    if Sl mod 78 /= 0 then
+      Ada.Text_Io.New_Line;
+    end if;
+  else
+    -- Decode through code 1 and put
     begin
       Si := 1;
       Decode_1;
       if Buff(1 .. Len-1) = Text_Handler.Value (Key) then
+        -- Decode if key matches
         loop
           Decode_1;
           exit when Len = 0;
@@ -230,9 +254,7 @@ begin
       when others =>
         null;
     end;
-
   end if;
-
 
   Ada.Text_Io.Close (In_File);
   Ada.Text_Io.Set_Output (Ada.Text_Io.Standard_Output);

@@ -1,7 +1,9 @@
+with My_Math;
+use My_Math;
 package body Grid_2 is
-  use My_Math;
 
   subtype Long_Natural is My_Math.Inte range 0 .. My_Math.Inte'Last;
+  subtype Long_Positive is Vigenere.Long_Positive;
 
   Dimension : My_Math.Inte;
   First_Row : My_Math.Inte;
