@@ -1,0 +1,164 @@
+
+                          E N I G M A
+                          -----------
+
+1. Command line
+---------------
+Syntax: enigma [ <first_switch> ] [ <jammers>  ] <back> [ <last_switch> ]
+               [ <start_index> ]
+
+<first_switch>  ::= -fs<switch>
+<last_switch>   ::= -ls<switch>
+<switch>        ::= { <upperletter><upperletter> }
+<jammers>       ::= -j{ <scrambler> }
+<scrambler>     ::= <scrambler_num><upperletter>
+<back>          ::= -b<scrambler>
+<start_index>  ::= -s<positive>
+<scrambler_num> ::= 1 .. 9
+<upperletter>   ::= A .. Z
+<positive>      ::= 1 ..
+
+Semantic:
+- Up to 8 jammers can be defined and one back must be defined.
+They must all have different numbers. ex "2A1Z9F".
+All the jammers are defined in a conf file (name from ENV ENIGMA_CONF_FILE,
+default "enigma.cnf"). This file has the following syntax (lines starting with
+# and and empty lines are skipped): The jammers are defined in the order
+(1 then 2...) byt two lines. The first line is ABCD...XYZ and the second
+defines the correspondig letters. ex:
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+BCDEFGHIJKLMNOPQRSTUVWXYZA
+The second line must define all the letters once and only once.
+In the command line, the number indicates the jammer number and the letter its
+initial offset.
+- A switch definition follows the same logic but defines only the letters that
+change in the coding (all other letters are kept unchanged). ex:
+AZBJMGZB
+Note that the same letter can appear at max twice, but always in different
+part of a pairs (AXYA is OK but not AXAY).
+- The start_index number defines the offset of input text from which the
+decoding starts (default 1).
+
+2. Behaviour
+------------
+Data flows:
+The program reads a byte flow to code from stdin and puts the corresponding
+coded flow on stdout. Uppercase letters are coded the standard enigma way (see
+below). Lower letters are converted to uppercase, codded, then converted to
+lowercase. Other bytes are not coded (they are put unchanged on stdout).
+
+Turning rules and coding ways:
+All the jammers can turn and are used both ways. The back and the switches
+don't turn. The jammers and the back have a (initial in case of jammer) offset.
+Each jammer is used for encoding and decoding, the back is only used for
+encoding.
+First switch is used for encoding only and last switch for decoding.
+
+Coding rule:
+The input letter (uppercase) is encoded through the first switch, through all
+the jammers, then through the back. It then decoded through all the jammers
+and the last switch.
+
+InputLetter  -> FirstSwitch -> +------+ -> +------+ ->  +
+                               |Jammer|    |Jammer|   |Back|
+OutputLetter <- LastSwitch  <- +------+ <- +------+ <-  +
+
+After coding, the offset of the first jammer is incremented.
+After 26 increments of the first jammer, the second one is incremented...
+
+
+3. Coding algorithms and objects
+--------------------------------
+Letters are represented by a modulus 0 .. 25, the Id (A->0, B->1, .. Z->25).
+Coding X through a jammer or through the back means:
+- The current offset O of the jammer is the initial offset + nb of increments
+- Input I is X + O
+- Output O from I is got from the jammer definition. 
+Decoding is similar except that I = X - O.
+
+A scrambler is made of two arrays, each of 25 different Ids, one for encoding
+one for decoding. The decoding is the reverse of the encoding.
+Initialy, Encode(i) = i and Decode(i)=i.
+It supports the operations:
+* Set (Nid1, Nid2), that makes:
+-- Save previous connection
+Oid1 := Encode(Nid1);
+Oid2 := Decode(Nid2);
+-- Set new connection
+Encode(Nid1) := Nid2;
+Decode(Nid2) := Nid1;
+-- Set missing connection
+Encode(Oid2) := Oid1;
+Decode(Oid1) := Oid2;
+* Encode(x) that returns Encode(x)
+* Decode(x) that returns Decode(x)
+
+A plate is child class of scrambler. It adds the concept of initial offset.
+It supports:
+* Set_Offset(Id);
+* Encode(x) that returns Encode(x+Offset)   -- From the scrambler
+* Decode(x) that returns Decode(x-Offset)
+
+A back is child of plate.
+
+A jammer is a child of plate. It adds the concept of increment.
+It supports:
+* Increment -> Boolean; -- True after 26 increments
+* Encode(x) that returns Encode(x+Offset)   -- From the plate
+* Decode(x) that returns Decode(x-Offset)
+
+4. General Design
+-----------------
+The software is decomposed into the following components:
+- A Scrambler_Factory that loads the configuration file, creates and
+initializes the scramblers from it.
+
+- A Definition that parses the command line arguments and allows
+to retrieve:
+Get_First_Switch -> Array_Of_Pairs_Of_Ids;         -- (Id, Id)
+Get_Last_Switch -> Array_Of_Pairs_Of_Ids;          -- (Id, Id)
+Get_Jammers -> Array_Of_Pairs_Of_Scrambler_Offset; -- (Scrambler, Offset)
+Get_Back    -> Pair_Of_Scrambler_Offset;           -- (Scrambler, Offset)
+
+- The Io_Manager, that reads and writes bytes. It supports
+Skip (Nb_Bytes);  -- From input flow
+Read -> Byte;     -- Or raises End_Error
+Write (Byte);
+
+- The Coder, that encodes uppercase characters. It supports:
+Init;   -- Using the Scrambler_Factory and Definition to init the enigma
+Encode (Upper_Char) -> Upper_Char;
+
+- The scheduler that supports a Run command. It:
+  Io_Manager.Skip (Nb_Bytes);  -- From the command line
+  loop
+    Byte := Io_Manager.Read;
+    case Byte_Kind is
+      when Upper_Char =>
+        Byte := Coder.Encode (Byte);
+      when Lower_Char =>
+        Byte := Lower_Char (Coder.Encode (Upper_Char (Byte)));
+      when others =>
+        null;  -- Byte unchanged
+    end case;
+    Io_Manager.Write (Byte);
+  end loop;
+
+- The main inits tha Coder then Run the scheduler.
+
+5. Coder design
+---------------
+The initialization consists in getting the definitions of various scramblers,
+make them through the factory and store them.
+Encoding an upper character consists in:
+- Subcontracting to the scramblers: First_Filter.Encode,
+ Jammer1.Encode ... JammerN.Encode, Back.Encode,
+ JammerN.Decode .. Jammer1.Decode, LastSwitch.Decode.
+- Incrementing the Jammer1, and if it circled
+    Incrementing the Jammer2, and if it circled...
+- Returning the coded upper character.
+
+
+ToDo:
+Make random scramblers in enigma.cnf.
+
