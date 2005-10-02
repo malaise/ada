@@ -93,13 +93,13 @@ begin
             My_Io.Skip_Line;
             Char1 := Upper_Char (Char1);
             if Char1 = 'U' then
-              My_Io.Put_line (Upper_Str (Str(1 .. Str_Len)));
+              My_Io.Put_Line (Upper_Str (Str(1 .. Str_Len)));
             elsif Char1 = 'L' then
-              My_Io.Put_line (Lower_Str (Str(1 .. Str_Len)));
+              My_Io.Put_Line (Lower_Str (Str(1 .. Str_Len)));
             elsif Char1 = 'M' then
-              My_Io.Put_line (Mixed_Str (Str(1 .. Str_Len)));
+              My_Io.Put_Line (Mixed_Str (Str(1 .. Str_Len)));
             else
-              My_Io.Put_line ("Discarded.");
+              My_Io.Put_Line ("Discarded.");
             end if;
 
           when 2 =>

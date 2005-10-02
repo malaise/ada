@@ -4,14 +4,14 @@ package body Vigenere is
   -- Coding generates upper char
   subtype Car is Character range 'A' .. 'Z';
   subtype Car_Index is Positive range 1 .. 26;
-  function Car2index (C : Car) return Car_Index is
+  function Car2Index (C : Car) return Car_Index is
   begin
     return Character'Pos(C) - Character'Pos(Car'First) + 1;
-  end Car2index;
-  function Index2car (I : Car_Index) return Car is
+  end Car2Index;
+  function Index2Car (I : Car_Index) return Car is
   begin
     return Character'Val(Character'Pos(Car'First) + I - 1);
-  end Index2car;
+  end Index2Car;
   -- Allow lower or upper case -> return upper, else space
   function Char2Car (C : Character) return Character is
     R : Character;
