@@ -1,6 +1,6 @@
 -- Parses command line and returns enigma definition
 with Types;
-Package Definition is
+package Definition is
 
   -- A switch definition
   type Switch_Range is new Natural range 0 .. 26;
@@ -13,7 +13,7 @@ Package Definition is
   end record;
 
   -- A scrambler is defined by an index (1 .. 9) and an offset
-  type Scrambler_Range is new natural range 0 .. 9;
+  type Scrambler_Range is new Natural range 0 .. 9;
   subtype Scrambler_Index is Scrambler_Range range 1 .. Scrambler_Range'Last;
   type Scrambler_Definition is record
     Scrambler : Scrambler_Index; -- The selected scrambler
@@ -40,7 +40,7 @@ Package Definition is
   Invalid_Definition : exception;
 
   -- Parse args and fill Def
-  Procedure Read_Definition (Def : out Def_Rec);
+  procedure Read_Definition (Def : out Def_Rec);
  
   -- Get initial start byte offset
   function Read_Start_Byte return Positive;

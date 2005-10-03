@@ -1,5 +1,15 @@
 package body Scrambler_Factory is
 
+  -- A scrambler as it is managed internally
+  type Scrambler_Cell is record
+    Defined : Boolean;
+    Used : Boolean;
+    Scrambler : Scrambler_Type;
+  end record;
+
+  -- The scramblers to manage
+  Scramblers : array (Definition.Scrambler_Index) of Scrambler_Cell;
+
   -- Create a new scrambler
   -- Initializes En/Decoding to identity;
   function Create return Scrambler_Type is
@@ -48,45 +58,67 @@ package body Scrambler_Factory is
   ------------------------------------------------------------
   use type Types.Lid;
 
-  -- Create a new plate
-  function Create return Plate_Type is
-    Scrambler : Scrambler_Type := Create;
+  -- Get the back
+  Back_Got : Boolean := False;
+  function Get (Scambler_Id : Definition.Scrambler_Index) return Back_Type is
+    Back : Back_Type;
   begin
-    return (Scrambler with Init_Offset => 0);
-  end Create;
+    if Back_Got then
+      raise Getting_Back_Twice;
+    end if;
+    if not Scramblers(Scambler_Id).Defined then
+      raise Unknown_Scrambler;
+    end if;
+    if Scramblers(Scambler_Id).Used then
+      raise Scrambler_In_Use;
+    end if;
+    Back := (Scrambler   => Scramblers(Scambler_Id).Scrambler,
+             Init_Offset => 0);
+    Scramblers(Scambler_Id).Used := True;
+    Back_Got := True;
+    return Back;
+  end Get;
 
   -- Set the offset
-  procedure Set_Offset (Plate : in out Plate_Type;
+  procedure Set_Offset (Back : in out Back_Type;
                         Offset : in Types.Lid) is
   begin
-    Plate.Init_Offset := Offset;
+    Back.Init_Offset := Offset;
   end Set_Offset;
 
   -- Encode a letter
-  function Encode (Plate : in Plate_Type;
+  function Encode (Back : in Back_Type;
                    X : Types.Lid) return Types.Lid is
   begin
-    return Encode (Scrambler_Type(Plate), X + Plate.Init_Offset);
+    return Encode (Back.Scrambler, X + Back.Init_Offset);
   end Encode;
 
   -- Decode a letter
-  function Decode (Plate : in Plate_Type;
+  function Decode (Back : in Back_Type;
                    X : Types.Lid) return Types.Lid is
   begin
-    return Decode (Scrambler_Type(Plate), X - Plate.Init_Offset);
+    return Decode (Back.Scrambler, X - Back.Init_Offset);
   end Decode;
 
   ------------------------------------------------------------
 
-  -- Create a new jammer
-  function Create return Jammer_Type is
-    Plate : Plate_Type := Create;
+  -- Get a jammer
+  function Get (Scambler_Id : Definition.Scrambler_Index) return Jammer_Type is
+    Jammer : Jammer_Type;
   begin
-    -- Init the global offset with the plate initial offset
-    return (Plate with Global_Offset => Plate.Init_Offset,
-                       Increment     => 0);
-  end Create;
-  
+    if not Scramblers(Scambler_Id).Defined then
+      raise Unknown_Scrambler;
+    end if;
+    if Scramblers(Scambler_Id).Used then
+      raise Scrambler_In_Use;
+    end if;
+    Jammer := (Scrambler     => Scramblers(Scambler_Id).Scrambler,
+               Global_Offset => 0,
+               Increment     => 0);
+    Scramblers(Scambler_Id).Used := True;
+    return Jammer;
+  end Get;
+
   -- Increment the jammer
   -- Set Carry to True each 26 increments since creation
   procedure Increment (Jammer : in out Jammer_Type;
@@ -101,7 +133,7 @@ package body Scrambler_Factory is
   function Encode (Jammer : in Jammer_Type;
                    X : Types.Lid) return Types.Lid is
   begin
-    return Encode (Scrambler_Type(Jammer), X + Jammer.Global_Offset);
+    return Encode (Jammer.Scrambler, X + Jammer.Global_Offset);
   end Encode;
 
 
@@ -109,9 +141,14 @@ package body Scrambler_Factory is
   function Decode (Jammer : in Jammer_Type;
                    X : Types.Lid) return Types.Lid is
   begin
-    return Decode (Scrambler_Type(Jammer), X - Jammer.Global_Offset);
+    return Decode (Jammer.Scrambler, X - Jammer.Global_Offset);
   end Decode;
 
+  --------------------
+  -- Initialisation --
+  --------------------
+  -- Init the scrambler
+  procedure Init is separate;
 
 end Scrambler_Factory;
 

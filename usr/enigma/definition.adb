@@ -1,7 +1,7 @@
 -- Parses command line and returns enigma definition
 with Argument;
 with Io_Manager;
-Package body Definition is
+package body Definition is
 
   Parsed_Rec : Def_Rec;
   Start_Byte : Positive := 1;
@@ -9,7 +9,7 @@ Package body Definition is
   procedure Parse;
 
   -- Parse args and fill Def
-  Procedure Read_Definition (Def : out Def_Rec) is
+  procedure Read_Definition (Def : out Def_Rec) is
   begin
     if not Rec_Parsed then
       Parse;

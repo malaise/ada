@@ -3,7 +3,7 @@ package Types is
   -- The letters known by the Coder
   subtype Letter is Character range 'A' .. 'Z';
   -- Letter index: A->0 .. Z->25
-  type Lid is mod 25;
+  type Lid is mod 26;
 
   -- Conversions
   function Id_Of (L : Letter) return Lid;

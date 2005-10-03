@@ -1,10 +1,14 @@
-with Types;
+with Types, Definition;
 package Scrambler_Factory is
+
+  -- Init from conf
+  procedure Init;
 
   -----------------
   -- A scrambler --
   -----------------
-  type Scrambler_Type is tagged private;
+  type Scrambler_Type is private;
+  -- A switch is a scrambler
   subtype Switch_Type is Scrambler_Type;
 
   -- Create a new scrambler
@@ -15,41 +19,40 @@ package Scrambler_Factory is
                  Association : in Types.Lid_Pair_T);
 
   -- Encode a letter
-  function Encode (Scrambler : in Scrambler_Type;
+  function Encode (Scrambler : Scrambler_Type;
                    X : Types.Lid) return Types.Lid;
 
   -- Decode a letter
-  function Decode (Scrambler : in Scrambler_Type;
+  function Decode (Scrambler : Scrambler_Type;
                    X : Types.Lid) return Types.Lid;
 
   -------------
-  -- A plate -- (scrambler with offset)
+  -- A back  -- (plate)
   -------------
-  type Plate_Type is new Scrambler_Type with private;
-  subtype Back_Type is Plate_Type;
+  type Back_Type is private;
 
-  -- Create a new plate
-  function Create return Plate_Type;
+  -- Get the back
+  function Get (Scambler_Id : Definition.Scrambler_Index) return Back_Type;
 
   -- Set the offset
-  procedure Set_Offset (Plate : in out Plate_Type;
+  procedure Set_Offset (Back : in out Back_Type;
                         Offset : Types.Lid);
 
   -- Encode a letter
-  function Encode (Plate : in Plate_Type;
+  function Encode (Back : Back_Type;
                    X : Types.Lid) return Types.Lid;
 
   -- Decode a letter
-  function Decode (Plate : in Plate_Type;
+  function Decode (Back : Back_Type;
                    X : Types.Lid) return Types.Lid;
 
   --------------
-  -- A jammer -- (plate with increment)
+  -- A jammer --
   --------------
-  type Jammer_Type is new Plate_Type with private;
+  type Jammer_Type is private;
 
-  -- Create a new jammer
-  function Create return Jammer_Type;
+  -- Get a jammer
+  function Get (Scambler_Id : Definition.Scrambler_Index) return Jammer_Type;
 
   -- Increment the jammer
   -- Set Carry to True each 26 increments since creation
@@ -57,26 +60,43 @@ package Scrambler_Factory is
                        Carry : out Boolean);
 
   -- Encode a letter
-  function Encode (Jammer : in Jammer_Type;
+  function Encode (Jammer : Jammer_Type;
                    X : Types.Lid) return Types.Lid;
 
   -- Decode a letter
-  function Decode (Jammer : in Jammer_Type;
+  function Decode (Jammer : Jammer_Type;
                    X : Types.Lid) return Types.Lid;
+
+  ----------------
+  -- Exceptions --
+  ----------------
+  -- Error loading and parsing conf
+  Config_Error : exception;
+
+  -- Getting the back twice
+  Getting_Back_Twice : exception;
+
+  -- Error using a scrambler not defined in conf
+  Unknown_Scrambler : exception;
+
+  -- Error using twice the same scrambler
+  Scrambler_In_Use : exception;
 
 private
   type Translation_Array is array (Types.Lid) of Types.Lid;
 
-  type Scrambler_Type is tagged record
+  type Scrambler_Type is record
     Encoding : Translation_Array;
     Decoding : Translation_Array;
   end record;
 
-  type Plate_Type is new Scrambler_Type with record
+  type Back_Type is record
+    Scrambler : Scrambler_Type;
     Init_Offset : Types.Lid;
   end record;
 
-  type Jammer_Type is new Plate_Type with record
+  type Jammer_Type is record
+    Scrambler : Scrambler_Type;
     Global_Offset : Types.Lid;
     Increment : Types.Lid;
   end record;

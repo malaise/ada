@@ -1,4 +1,4 @@
-with Definition;
+with Definition, Scrambler_Factory;
 package body Coder is
 
   -- Init enigma from arguments and config files

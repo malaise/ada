@@ -23,12 +23,13 @@ Semantic:
 They must all have different numbers. ex "2A1Z9F".
 All the jammers are defined in a conf file (name from ENV ENIGMA_CONF_FILE,
 default "enigma.cnf"). This file has the following syntax (lines starting with
-# and and empty lines are skipped): The jammers are defined in the order
-(1 then 2...) byt two lines. The first line is ABCD...XYZ and the second
-defines the correspondig letters. ex:
+# and and empty lines are skipped): Each jammer is defined by three lines.
+The first line is the jammer number from 1 to 9, the second is ABCD...XYZ and
+the third defines the correspondig letters. ex:
+3
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 BCDEFGHIJKLMNOPQRSTUVWXYZA
-The second line must define all the letters once and only once.
+The third line must define all the letters once and only once.
 In the command line, the number indicates the jammer number and the letter its
 initial offset.
 - A switch definition follows the same logic but defines only the letters that

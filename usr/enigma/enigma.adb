@@ -1,7 +1,9 @@
-with Scheduler, Coder;
+with Io_Manager, Scrambler_Factory, Coder;
 procedure Enigma is
 begin
+  -- Init Scrambler factoy then Coder
+  Scrambler_Factory.Init;
   Coder.Init;
-  Scheduler.Run;
+  -- Main loop 
 end Enigma;
 
