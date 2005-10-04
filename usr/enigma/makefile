@@ -1,9 +1,10 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-EXES := enigma
+EXES := enigma scrambler_generator
 
 CLIBS_enigma := cutil
+CLIBS_scrambler_generator := cutil
 
 include $(TEMPLATES)/ada.mk
 

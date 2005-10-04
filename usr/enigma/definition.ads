@@ -29,7 +29,7 @@ package Definition is
   end record;
 
   -- The complete definition
-  type Def_Rec (Nb_Jammers : Jammers_Range := 0) is record
+  type Def_Rec is record
     First_Switch : Switch_Definition;
     Jammers      : Jammers_Definition;
     Back         : Scrambler_Definition;

@@ -4,9 +4,10 @@ package Coder is
 
   -- Init enigma from arguments and config files
   procedure Init;
+  Init_Failed : exception;
 
   -- Encode a letter
-  function Encode (X : Types.Letter) return Types.Letter;
+  function Encode (L : Types.Letter) return Types.Letter;
 
 end Coder;
 

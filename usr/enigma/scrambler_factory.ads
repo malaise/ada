@@ -54,6 +54,10 @@ package Scrambler_Factory is
   -- Get a jammer
   function Get (Scambler_Id : Definition.Scrambler_Index) return Jammer_Type;
 
+  -- Set the offset
+  procedure Set_Offset (Jammer : in out Jammer_Type;
+                        Offset : Types.Lid);
+
   -- Increment the jammer
   -- Set Carry to True each 26 increments since creation
   procedure Increment (Jammer : in out Jammer_Type;
@@ -76,6 +80,9 @@ package Scrambler_Factory is
   -- Getting the back twice
   Getting_Back_Twice : exception;
 
+  -- The requested scrambler for back is not symetrical
+  Asymetric_Back : exception;
+
   -- Error using a scrambler not defined in conf
   Unknown_Scrambler : exception;
 
@@ -91,14 +98,14 @@ private
   end record;
 
   type Back_Type is record
-    Scrambler : Scrambler_Type;
-    Init_Offset : Types.Lid;
+    Scrambler : Scrambler_Type := Create;
+    Init_Offset : Types.Lid := Types.Lid'First;
   end record;
 
   type Jammer_Type is record
-    Scrambler : Scrambler_Type;
-    Global_Offset : Types.Lid;
-    Increment : Types.Lid;
+    Scrambler : Scrambler_Type := Create;
+    Global_Offset : Types.Lid := Types.Lid'First;
+    Increment : Types.Lid := Types.Lid'First;
   end record;
 
 end Scrambler_Factory;

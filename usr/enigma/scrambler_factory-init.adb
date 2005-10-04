@@ -54,6 +54,8 @@ procedure Init is
       Pair.D :=  Types.Id_Of (Str(I));
       Set (Scramblers(Sid).Scrambler, Pair);
     end loop;
+    Scramblers(Sid).Defined := True;
+    Scramblers(Sid).Used := False;
   end Parse;
 
   -- Data expected fomr file: 0 => Scrambler id, 1 => ref, 2 => assoc

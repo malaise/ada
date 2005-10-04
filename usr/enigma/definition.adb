@@ -54,7 +54,6 @@ package body Definition is
     Ple ("   <upperletter>   ::= A .. Z");
     Ple ("Up to 8 jammers can be defined and one back must be defined.");
     Ple ("They must all have different numbers.");
-    Io_Manager.Set_Error_Exit_Code;
     raise Invalid_Definition;
   end Error;
 
@@ -202,14 +201,6 @@ package body Definition is
       when Argument_Not_Found =>
         null;
     end;
-    -- Parse last switch
-    begin
-      Parse_Switch ("last", Get_Parameter (1, Last_Switch_Key),
-                    Parsed_Rec.First_Switch);
-    exception
-      when Argument_Not_Found =>
-        null;
-    end;
     -- Parse back
     begin
       Parse_Scrambler ("back", Get_Parameter (1, Back_Key), Parsed_Rec.Back);
@@ -242,6 +233,14 @@ package body Definition is
           -- Check unicity
         end loop;
       end;
+    exception
+      when Argument_Not_Found =>
+        null;
+    end;
+    -- Parse last switch
+    begin
+      Parse_Switch ("last", Get_Parameter (1, Last_Switch_Key),
+                    Parsed_Rec.Last_Switch);
     exception
       when Argument_Not_Found =>
         null;

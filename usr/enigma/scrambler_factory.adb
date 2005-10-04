@@ -62,6 +62,7 @@ package body Scrambler_Factory is
   Back_Got : Boolean := False;
   function Get (Scambler_Id : Definition.Scrambler_Index) return Back_Type is
     Back : Back_Type;
+    Encoding_Lid : Types.Lid;
   begin
     if Back_Got then
       raise Getting_Back_Twice;
@@ -72,6 +73,13 @@ package body Scrambler_Factory is
     if Scramblers(Scambler_Id).Used then
       raise Scrambler_In_Use;
     end if;
+    for I in Types.Lid'Range loop
+      Encoding_Lid := Scramblers(Scambler_Id).Scrambler.Encoding(I);
+      if Scramblers(Scambler_Id).Scrambler.Encoding(Encoding_Lid) /= I then
+        -- Encoding(Encoding(I)) /= I, not symetric
+        raise Asymetric_Back;
+      end if;
+    end loop;
     Back := (Scrambler   => Scramblers(Scambler_Id).Scrambler,
              Init_Offset => 0);
     Scramblers(Scambler_Id).Used := True;
@@ -118,6 +126,13 @@ package body Scrambler_Factory is
     Scramblers(Scambler_Id).Used := True;
     return Jammer;
   end Get;
+
+  -- Set the offset
+  procedure Set_Offset (Jammer : in out Jammer_Type;
+                        Offset : Types.Lid) is
+  begin
+    Jammer.Global_Offset := Offset;
+  end Set_Offset;
 
   -- Increment the jammer
   -- Set Carry to True each 26 increments since creation

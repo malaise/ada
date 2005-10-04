@@ -30,6 +30,8 @@ the third defines the correspondig letters. ex:
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 BCDEFGHIJKLMNOPQRSTUVWXYZA
 The third line must define all the letters once and only once.
+For a back, the definition must be symetrical: If X encodes to Y, then Y must
+encode to X (X decodes to Y).
 In the command line, the number indicates the jammer number and the letter its
 initial offset.
 - A switch definition follows the same logic but defines only the letters that
@@ -130,7 +132,7 @@ Write (Byte);
 Init;   -- Using the Scrambler_Factory and Definition to init the enigma
 Encode (Upper_Char) -> Upper_Char;
 
-- The scheduler that supports a Run command. It:
+- The main inits the scrambler factory then the Coder, then run the scheduler.
   Io_Manager.Skip (Nb_Bytes);  -- From the command line
   loop
     Byte := Io_Manager.Read;
@@ -144,8 +146,6 @@ Encode (Upper_Char) -> Upper_Char;
     end case;
     Io_Manager.Write (Byte);
   end loop;
-
-- The main inits tha Coder then Run the scheduler.
 
 5. Coder design
 ---------------

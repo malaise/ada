@@ -1,14 +1,14 @@
 with Sys_Calls;
 package body Io_Manager is
 
-  -- Skip the Nb_Bytes of input flow
-  procedure Skip (Nb_Bytes : Positive) is
+  -- Skip to Bytes_Offset
+  procedure Skip_To (Bytes_Offset : Positive) is
     B : Byte;
   begin
-    for I in 1 .. Nb_Bytes loop
+    for I in 1 .. Bytes_Offset - 1 loop
       B := Read;
     end loop;
-  end Skip;
+  end Skip_To;
 
   -- Read next byte
   function Read return Byte is
@@ -16,7 +16,11 @@ package body Io_Manager is
     B : Byte;
   begin
     N := Sys_Calls.Read (Sys_Calls.Stdin, B'Address, 1);
-    return B;
+    if N = 1 then
+      return B;
+    else
+      raise End_Error;
+    end if;
   exception
     when Sys_Calls.System_Error =>
       -- End of input flow

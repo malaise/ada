@@ -2,8 +2,8 @@ package Io_Manager is
 
   type Byte is new Natural range 0 .. 255;
 
-  -- Skip the Nb_Bytes of input flow
-  procedure Skip (Nb_Bytes : Positive);
+  -- Skip to Bytes_Offset of input flow
+  procedure Skip_To (Bytes_Offset : Positive);
 
   -- Read next byte of input flow
   End_Error : exception;
