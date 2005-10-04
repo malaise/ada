@@ -4,16 +4,14 @@
 
 1. Command line
 ---------------
-Syntax: enigma [ <first_switch> ] [ <jammers>  ] <back> [ <last_switch> ]
-               [ <start_index> ]
+Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <start_index> ]
 
-<first_switch>  ::= -fs<switch>
-<last_switch>   ::= -ls<switch>
+<switch>        ::= -s<switch>
 <switch>        ::= { <upperletter><upperletter> }
 <jammers>       ::= -j{ <scrambler> }
 <scrambler>     ::= <scrambler_num><upperletter>
 <back>          ::= -b<scrambler>
-<start_index>  ::= -s<positive>
+<first_index>   ::= -f<positive>
 <scrambler_num> ::= 1 .. 9
 <upperletter>   ::= A .. Z
 <positive>      ::= 1 ..
@@ -34,12 +32,12 @@ For a back, the definition must be symetrical: If X encodes to Y, then Y must
 encode to X (X decodes to Y).
 In the command line, the number indicates the jammer number and the letter its
 initial offset.
-- A switch definition follows the same logic but defines only the letters that
+- The switch definition follows the same logic but defines only the letters that
 change in the coding (all other letters are kept unchanged). ex:
 AZBJMGZB
 Note that the same letter can appear at max twice, but always in different
 part of a pairs (AXYA is OK but not AXAY).
-- The start_index number defines the offset of input text from which the
+- The first_index number defines the offset of input text from which the
 decoding starts (default 1).
 
 2. Behaviour
@@ -51,24 +49,23 @@ below). Lower letters are converted to uppercase, codded, then converted to
 lowercase. Other bytes are not coded (they are put unchanged on stdout).
 
 Turning rules and coding ways:
-All the jammers can turn and are used both ways. The back and the switches
+All the jammers can turn and are used both ways. The back and the switch
 don't turn. The jammers and the back have a (initial in case of jammer) offset.
 Each jammer is used for encoding and decoding, the back is only used for
 encoding.
-First switch is used for encoding only and last switch for decoding.
+The switch is used for encoding and decoding.
 
 Coding rule:
-The input letter (uppercase) is encoded through the first switch, through all
+The input letter (uppercase) is encoded through the switch, through all
 the jammers, then through the back. It then decoded through all the jammers
-and the last switch.
+and the switch.
 
-InputLetter  -> FirstSwitch -> +------+ -> +------+ ->  +
-                               |Jammer|    |Jammer|   |Back|
-OutputLetter <- LastSwitch  <- +------+ <- +------+ <-  +
+InputLetter  -> +------+ -> +------+ -> +------+ ->  +
+                |Switch|    |Jammer|    |Jammer|   |Back|
+OutputLetter <- +------+ <- +------+ <- +------+ <-  +
 
 After coding, the offset of the first jammer is incremented.
 After 26 increments of the first jammer, the second one is incremented...
-
 
 3. Coding algorithms and objects
 --------------------------------
@@ -96,19 +93,18 @@ Decode(Oid1) := Oid2;
 * Encode(x) that returns Encode(x)
 * Decode(x) that returns Decode(x)
 
-A plate is child class of scrambler. It adds the concept of initial offset.
+The back adds the concept of initial offset.
 It supports:
 * Set_Offset(Id);
-* Encode(x) that returns Encode(x+Offset)   -- From the scrambler
-* Decode(x) that returns Decode(x-Offset)
+* Encode(x) that returns Encode(x+Offset)-Offset   -- From the scrambler
 
 A back is child of plate.
 
 A jammer is a child of plate. It adds the concept of increment.
 It supports:
 * Increment -> Boolean; -- True after 26 increments
-* Encode(x) that returns Encode(x+Offset)   -- From the plate
-* Decode(x) that returns Decode(x-Offset)
+* Encode(x) that returns Encode(x+Offset)   -- From the scrambler
+* Decode(x) that returns Decode(x)-Offset
 
 4. General Design
 -----------------
@@ -118,8 +114,7 @@ initializes the scramblers from it.
 
 - A Definition that parses the command line arguments and allows
 to retrieve:
-Get_First_Switch -> Array_Of_Pairs_Of_Ids;         -- (Id, Id)
-Get_Last_Switch -> Array_Of_Pairs_Of_Ids;          -- (Id, Id)
+Get_Switch -> Array_Of_Pairs_Of_Ids;               -- (Id, Id)
 Get_Jammers -> Array_Of_Pairs_Of_Scrambler_Offset; -- (Scrambler, Offset)
 Get_Back    -> Pair_Of_Scrambler_Offset;           -- (Scrambler, Offset)
 
@@ -152,14 +147,10 @@ Encode (Upper_Char) -> Upper_Char;
 The initialization consists in getting the definitions of various scramblers,
 make them through the factory and store them.
 Encoding an upper character consists in:
-- Subcontracting to the scramblers: First_Filter.Encode,
+- Subcontracting to the scramblers: Switch.Encode,
  Jammer1.Encode ... JammerN.Encode, Back.Encode,
- JammerN.Decode .. Jammer1.Decode, LastSwitch.Decode.
+ JammerN.Decode .. Jammer1.Decode, Switch.Decode.
 - Incrementing the Jammer1, and if it circled
     Incrementing the Jammer2, and if it circled...
 - Returning the coded upper character.
-
-
-ToDo:
-Make random scramblers in enigma.cnf.
 

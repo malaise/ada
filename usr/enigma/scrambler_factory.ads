@@ -42,10 +42,6 @@ package Scrambler_Factory is
   function Encode (Back : Back_Type;
                    X : Types.Lid) return Types.Lid;
 
-  -- Decode a letter
-  function Decode (Back : Back_Type;
-                   X : Types.Lid) return Types.Lid;
-
   --------------
   -- A jammer --
   --------------

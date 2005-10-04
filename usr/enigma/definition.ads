@@ -30,10 +30,9 @@ package Definition is
 
   -- The complete definition
   type Def_Rec is record
-    First_Switch : Switch_Definition;
-    Jammers      : Jammers_Definition;
-    Back         : Scrambler_Definition;
-    Last_Switch  : Switch_Definition;
+    Switch  : Switch_Definition;
+    Jammers : Jammers_Definition;
+    Back    : Scrambler_Definition;
   end record;
 
   -- Exception if definition is not correct

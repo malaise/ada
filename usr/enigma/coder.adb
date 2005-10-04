@@ -6,10 +6,9 @@ package body Coder is
                           of Scrambler_Factory.Jammer_Type;
 
   type Coder_T (Nb_Jammers : Definition.Jammers_Range := 0) is record
-    First_Switch : Scrambler_Factory.Switch_Type;
+    Switch : Scrambler_Factory.Switch_Type;
     Jammers      : Jammer_Array (1 .. Nb_Jammers);
     Back         : Scrambler_Factory.Back_Type;
-    Last_Switch  : Scrambler_Factory.Switch_Type;
   end record;
   The_Coder : Coder_T;
  
@@ -22,17 +21,16 @@ package body Coder is
     -- Init the coder to Nb of jammers, switches are identity
     Definition.Read_Definition (Def);
     The_Coder := (Nb_Jammers => Def.Jammers.Nb_Jammers,
-                  First_Switch => Scrambler_Factory.Create,
+                  Switch => Scrambler_Factory.Create,
                   Jammers => (others => Dummy_Jammer),
-                  Back => Dummy_Back,
-                  Last_Switch => Scrambler_Factory.Create);
+                  Back => Dummy_Back);
     -- Set to real values
-    -- First switch
-    for I in 1 .. Def.First_Switch.Nb_Switches loop
+    -- Switch
+    for I in 1 .. Def.Switch.Nb_Switches loop
       Scrambler_Factory.Set (
-         Scrambler   => The_Coder.First_Switch,
-         Association => (E => Types.Id_Of (Def.First_Switch.Switch(I).E),
-                         D => Types.Id_Of (Def.First_Switch.Switch(I).D)) );
+         Scrambler   => The_Coder.Switch,
+         Association => (E => Types.Id_Of (Def.Switch.Switch(I).E),
+                         D => Types.Id_Of (Def.Switch.Switch(I).D)) );
     end loop;
     -- Jammers
     for I in 1 .. Def.Jammers.Nb_Jammers loop
@@ -75,13 +73,6 @@ package body Coder is
     Scrambler_Factory.Set_Offset (
        Back   => The_Coder.Back,
        Offset => Types.Id_Of (Def.Back.Offset) );
-    -- Last switch
-    for I in 1 .. Def.Last_Switch.Nb_Switches loop
-      Scrambler_Factory.Set (
-         Scrambler   => The_Coder.Last_Switch,
-         Association => (E => Types.Id_Of (Def.Last_Switch.Switch(I).E),
-                         D => Types.Id_Of (Def.Last_Switch.Switch(I).D)) );
-    end loop;
   exception
     when Definition.Invalid_Definition =>
       raise Init_Failed;
@@ -93,8 +84,8 @@ package body Coder is
     Carry : Boolean;
   begin
     X := Types.Id_Of(L);
-    -- Encode through first switch
-    X := Scrambler_Factory.Encode (The_Coder.First_Switch, X);
+    -- Encode through switch
+    X := Scrambler_Factory.Encode (The_Coder.Switch, X);
     -- Encode through the jammers
     for I in 1 .. The_Coder.Nb_Jammers loop
       X := Scrambler_Factory.Encode (The_Coder.Jammers(I), X);
@@ -105,8 +96,8 @@ package body Coder is
     for I in reverse 1 .. The_Coder.Nb_Jammers loop
       X := Scrambler_Factory.Decode (The_Coder.Jammers(I), X);
     end loop;
-    -- Decode through last switch
-    X := Scrambler_Factory.Decode (The_Coder.Last_Switch, X);
+    -- Decode through switch
+    X := Scrambler_Factory.Decode (The_Coder.Switch, X);
 
     -- Now increment the jammers as long as they raise the carry
     for I in 1 .. The_Coder.Nb_Jammers loop

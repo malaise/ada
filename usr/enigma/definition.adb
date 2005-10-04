@@ -29,11 +29,10 @@ package body Definition is
   end Read_Start_Byte;
 
   -------------------------------------------------------------------------
-  First_Switch_Key : constant String := "fs";
+  Switch_Key : constant String := "s";
   Jammers_Key : constant String := "j";
   Back_Key : constant String := "b";
-  Last_Switch_Key : constant String := "ls";
-  Start_Key : constant String := "s";
+  Start_Key : constant String := "f";
 
   procedure Error (Msg : in String) is
     procedure Ple (S : in String) renames Io_Manager.Put_Line_Error;
@@ -41,15 +40,13 @@ package body Definition is
     Ple ("ERROR: " & Msg & ".");
     Io_Manager.New_Line_Error;
     Ple ("Usage: " & Argument.Get_Program_Name
-       & " [ <first_switch> ] [ <jammers>  ] <back>");
-    Ple ("              [ <last_switch> ] [ <start_index> ]");
-    Ple ("   <first_switch>  ::= -fs<switch>");
-    Ple ("   <last_switch>   ::= -ls<switch>");
-    Ple ("   <switch>        ::= { <upperletter><upperletter> }");
+       & " [ <switch> ] [ <jammers>  ] <back> [ <first_index> ]");
+    Ple ("   <switch>        ::= -s<switch_def>");
+    Ple ("   <switch_def>    ::= { <upperletter><upperletter> }");
     Ple ("   <jammers>       ::= -j{ <scrambler> }");
     Ple ("   <scrambler>     ::= <scrambler_num><upperletter>");
     Ple ("   <back>          ::= -b<scrambler>");
-    Ple ("   <start_index>   ::= -s<positive>       (default 1)");
+    Ple ("   <first_index>   ::= -f<positive>       (default 1)");
     Ple ("   <scrambler_num> ::= 1 .. 9");
     Ple ("   <upperletter>   ::= A .. Z");
     Ple ("Up to 8 jammers can be defined and one back must be defined.");
@@ -60,14 +57,13 @@ package body Definition is
   -- Check that Key is one of the expected keys
   procedure Is_Valid_Key (Key : in String) is
   begin
-   if Key'Length < 2 then
-     Error ("Invalid argument -" & Key);
+   if Key'Length =0 then
+     Error ("Invalid argument -");
    end if;
    if       Key (1 .. 1) /= Jammers_Key
    and then Key (1 .. 1) /= Back_Key
    and then Key (1 .. 1) /= Start_Key
-   and then Key (1 .. 2) /= First_Switch_Key
-   and then Key (1 .. 2) /= Last_Switch_Key then
+   and then Key (1 .. 1) /= Switch_Key then
      Error ("Invalid argument -" & Key);
    end if;
   end Is_Valid_Key;
@@ -103,23 +99,20 @@ package body Definition is
       Is_Valid_Key (Get_Parameter (I, Any_Key));
     end loop;
     -- Check all key is unique
-    Check_Twice (First_Switch_Key, "First switch defined twice");
-    Check_Twice (Last_Switch_Key, "Last switch defined twice");
+    Check_Twice (Switch_Key, "Switch defined twice");
     Check_Twice (Jammers_Key, "Jammers defined twice");
     Check_Twice (Back_Key, "Back defined twice");
-    Check_Twice (Start_Key, "Start offset defined twice");
+    Check_Twice (Start_Key, "First offset defined twice");
   end Check;
 
   -- Parse a switch: N letters
-  procedure Parse_Switch (Name : in String; Str : in String;
-                          Switch : out Switch_Definition) is
+  procedure Parse_Switch (Str : in String; Switch : out Switch_Definition) is
     Index : Switch_Index;
   begin
     -- Must be pairs of letter, max 26 pairs
     if Str'Length rem 2 /= 0 
     or else Str'Length > Natural(Switch_Range'Last) * 2 then
-      Error ("Invalid number of letters in " &
-             Name & " switch definition " & Str);
+      Error ("Invalid number of letters in switch definition " & Str);
     end if;
     -- Init size of switch definition
     Switch := (Str'Length / 2, (others => (Types.Letter'First,
@@ -129,16 +122,15 @@ package body Definition is
     for I in Str'Range loop
       -- Check they are letters
       if Str(I) not in Types.Letter then
-        Error ("Invalid letter " & Str(I) & " in " &
-             Name & " switch definition " & Str);
+        Error ("Invalid letter " & Str(I) & " in switch definition " & Str);
       end if;
       if I rem 2 = 1 then
         Index := Switch_Index (I / 2 + 1);
         -- Encoding part: check unicity and store
         for J in 1 .. Index - 1 loop
           if Switch.Switch(J).E = Str(I) then
-            Error ("Dual first letter " & Str(I) & " in " &
-                   Name & " switch definition " & Str);
+            Error ("Dual first letter " & Str(I) & " in switch definition "
+                   & Str);
           end if;
         end loop;
         Switch.Switch(Index).E := Str(I);
@@ -146,8 +138,8 @@ package body Definition is
         -- Decoding part: check unicity and store
         for J in 1 .. Index - 1 loop
           if Switch.Switch(J).D = Str(I) then
-            Error ("Dual second letter " & Str(I) & " in " &
-                   Name & " switch definition " & Str);
+            Error ("Dual second letter " & Str(I) & " in switch definition "
+                   & Str);
           end if;
         end loop;
         Switch.Switch(Index).D := Str(I);
@@ -191,12 +183,11 @@ package body Definition is
       when Argument_Not_Found =>
         null;
       when others =>
-        Error ("Invalid start index: " & Get_Parameter (1, Start_Key));
+        Error ("Invalid first index: " & Get_Parameter (1, Start_Key));
     end;
-    -- Parse first switch
+    -- Parse switch
     begin
-      Parse_Switch ("first", Get_Parameter (1, First_Switch_Key),
-                    Parsed_Rec.First_Switch);
+      Parse_Switch (Get_Parameter (1, Switch_Key), Parsed_Rec.Switch);
     exception
       when Argument_Not_Found =>
         null;
@@ -233,14 +224,6 @@ package body Definition is
           -- Check unicity
         end loop;
       end;
-    exception
-      when Argument_Not_Found =>
-        null;
-    end;
-    -- Parse last switch
-    begin
-      Parse_Switch ("last", Get_Parameter (1, Last_Switch_Key),
-                    Parsed_Rec.Last_Switch);
     exception
       when Argument_Not_Found =>
         null;

@@ -98,15 +98,9 @@ package body Scrambler_Factory is
   function Encode (Back : in Back_Type;
                    X : Types.Lid) return Types.Lid is
   begin
-    return Encode (Back.Scrambler, X + Back.Init_Offset);
+    return Encode (Back.Scrambler, X + Back.Init_Offset)
+         - Back.Init_Offset;
   end Encode;
-
-  -- Decode a letter
-  function Decode (Back : in Back_Type;
-                   X : Types.Lid) return Types.Lid is
-  begin
-    return Decode (Back.Scrambler, X - Back.Init_Offset);
-  end Decode;
 
   ------------------------------------------------------------
 
@@ -156,7 +150,7 @@ package body Scrambler_Factory is
   function Decode (Jammer : in Jammer_Type;
                    X : Types.Lid) return Types.Lid is
   begin
-    return Decode (Jammer.Scrambler, X - Jammer.Global_Offset);
+    return Decode (Jammer.Scrambler, X) - Jammer.Global_Offset;
   end Decode;
 
   --------------------
