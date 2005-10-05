@@ -1,0 +1,24 @@
+Strategy for automatic enigma setting considering the date.
+
+The date it is considered is DAYNAME DAYNUM MONTHNAME.
+1. Switch
+The switch definition is got from the letters of DAYNAME and MONTHNAME, with
+criteria of unicity and even number. Ex MONDAY DECEMBER -> MONDAYECBR.
+
+2. Back
+The back scambler number is fixed (8) . Its offset is computed from the daynum:
+01->A, 02->B .. 26->Z, 27->A, 28->B, 29->C, 30->D, 31->E.
+
+3. Jammers
+There are 3 jammers:
+- The first jammer number is the unit of DAYNUM, with 9->0, + 1.
+9,0->1, 1->2, 3->3 .. 9->9.  Ex, the 13th->3, 19th->9.
+If this leads to 8 (already used for the back) then use 9.
+- The second is the month num / 10, with 9->0, + 1.
+Jan .. Aug->1, Sep->1 and Oct .. Dec->2. If used by first jammer, then add 1.
+- The thrid jammers is month num rem 10 with 9->0, + 1.
+Jan->2, Feb->3 .. Aug->9, Sep->1, Oct->1, Nov->2, Dec->3. If used by back,
+first or second jammer, then add 1. Ex Sep will not be 1 because 1 is already
+used by jammer 2. Sep becomes 2 (if not used by 1st jammer).
+The jammers offsets are the first three letters of MONTHNAME respectively.
+
