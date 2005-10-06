@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
 with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str;
-procedure Day_def is
+procedure Day_Def is
   -- Constants
   Back_Scrambler : constant := 8;
 

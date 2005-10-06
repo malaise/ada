@@ -34,7 +34,7 @@ begin
         Uchar := Upper_Char (Char);
         if Uchar in Types.Letter then
           -- Encode if it is a letter
-          Char := Lower_Char (Coder.Encode (UChar));
+          Char := Lower_Char (Coder.Encode (Uchar));
           Byte := Character'Pos(Char);
         end if;
       end if;
