@@ -1,0 +1,4 @@
+#!/bin/bash
+export ENIGMA_CONF_FILE=${HOME}/ada/usr/enigma/enigma.cnf
+exec enigma `day_def $*`
+
