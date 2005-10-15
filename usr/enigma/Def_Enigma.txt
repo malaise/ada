@@ -1,4 +1,10 @@
 Strategy for automatic enigma setting considering the date.
+Usage: def_enigma [ <date> | rnd ]
+  date ::= dd/mm/YYyy
+
+If rnd, generates a random switch sequence, 3 to 8 jammers and a back from 7 to 9.
+If date, generates a switch sequence , 3 jammers and the back from the date.
+If no arg, same with current date.
 
 The date it is considered is DAYNAME DAYNUM MONTHNAME.
 1. Switch

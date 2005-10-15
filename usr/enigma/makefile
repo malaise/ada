@@ -1,7 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-EXES := enigma scrambler_generator day_def
+EXES := enigma scrambler_generator def_enigma
 
 CLIBS_enigma := cutil
 CLIBS_scrambler_generator := cutil

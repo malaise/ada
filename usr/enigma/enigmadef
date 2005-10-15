@@ -5,5 +5,5 @@ if [ "$1" = "-h" ] ; then
   exit 1
 fi
 export ENIGMA_CONF_FILE=${HOME}/ada/usr/enigma/enigma.cnf
-exec enigma `day_def $*`
+exec enigma `def_enigma $*`
 
