@@ -41,8 +41,10 @@ package Definition is
   -- Parse args and fill Def
   procedure Read_Definition (Def : out Def_Rec);
  
-  -- Get initial start byte offset
+  -- Get initial start byte offset (1 by default)
   function Read_Start_Byte return Positive;
 
+  -- Get last byte offset (0 if none)
+  function Read_Last_Byte return Natural;
 end Definition;
 

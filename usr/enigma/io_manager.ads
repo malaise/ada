@@ -5,6 +5,9 @@ package Io_Manager is
   -- Skip to Bytes_Offset of input flow
   procedure Skip_To (Bytes_Offset : Positive);
 
+  -- Set last offset to read up to
+  procedure Set_Skip_From (Bytes_Offset : Natural);
+
   -- Read next byte of input flow
   End_Error : exception;
   function Read return Byte;

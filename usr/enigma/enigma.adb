@@ -12,6 +12,9 @@ begin
 
   -- Skip initial offset
   Io_Manager.Skip_To (Definition.Read_Start_Byte);
+
+  -- Read up to last offset
+  Io_Manager.Set_Skip_From (Definition.Read_Last_Byte);
   
   -- Main loop 
   loop

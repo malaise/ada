@@ -1,6 +1,9 @@
 with Sys_Calls;
 package body Io_Manager is
 
+  Current_Offset : Natural := 0;
+  Last_Byte : Natural := 0;
+
   -- Skip to Bytes_Offset
   procedure Skip_To (Bytes_Offset : Positive) is
     B : Byte;
@@ -10,11 +13,21 @@ package body Io_Manager is
     end loop;
   end Skip_To;
 
+  -- Set last offset to read up to
+  procedure Set_Skip_From (Bytes_Offset : Natural) is
+  begin
+    Last_Byte := Bytes_Offset;
+  end Set_Skip_From;
+
   -- Read next byte
   function Read return Byte is
     N : Natural;
     B : Byte;
   begin
+    Current_Offset := Current_Offset + 1;
+    if Last_Byte /= 0 and then Current_Offset > Last_Byte then
+      raise End_Error;
+    end if;
     N := Sys_Calls.Read (Sys_Calls.Stdin, B'Address, 1);
     if N = 1 then
       return B;
