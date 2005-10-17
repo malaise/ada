@@ -1,5 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
-with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd;
+with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
+     Num_Letters;
 with Types, Scrambler_Gen;
 procedure Def_Enigma is
   -- Constants
@@ -9,7 +10,7 @@ procedure Def_Enigma is
   begin
     Ada.Text_Io.Put_Line("Syntax error or invalid date.");
     Ada.Text_Io.Put_Line(" Usage: "
-                 & Argument.Get_Program_Name & " [ <date> | rnd ]");
+                 & Argument.Get_Program_Name & " [ -text ] [ <date> | rnd ]");
     Ada.Text_Io.Put_Line("    <date> ::= dd/mm/yyyy");
   end Usage;
 
@@ -29,6 +30,9 @@ procedure Def_Enigma is
   end Is_Digit;
 
   Random : Boolean := False;
+  To_Text : Boolean := False;
+  Nb_Arg : Natural;
+  Other_Arg : Natural;
 
   -- For random generation
   -- Letter index 1 .. 26
@@ -102,7 +106,27 @@ procedure Def_Enigma is
 
 begin
 
-  if Argument.Get_Nbre_Arg = 0 then
+  Nb_Arg := Argument.Get_Nbre_Arg;
+  Other_Arg := 1;
+  -- Check -text
+  if Nb_Arg /= 0 then
+    begin
+      if Argument.Get_Parameter (1, "text") = "" then
+        To_Text := True;
+        Nb_Arg := Nb_Arg - 1;
+        if Argument.Get_Position (1, "text") = 1 then
+          Other_Arg := 2;
+        end if;
+      else
+        Usage;
+      end if;
+    exception
+      when Argument.Argument_Not_Found =>
+        null;
+    end;
+  end if;
+
+  if Nb_Arg = 0 then
     -- Current date
     T := Ada.Calendar.Clock;
     declare
@@ -114,12 +138,12 @@ begin
                          & Normal (Month, 2, Gap => '0') & "/"
                          & Normal (Year,  4, Gap => '0') );
     Random := False;
-  elsif Argument.Get_Nbre_Arg = 1
-  and then Argument.Get_Parameter = "rnd" then
+  elsif Nb_Arg = 1
+  and then Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
     Random := True;
-  elsif Argument.Get_Nbre_Arg = 1 then
+  elsif Nb_Arg = 1 then
     -- Get date from arg 1
-    Argument.Get_Parameter (Txt);
+    Argument.Get_Parameter (Txt, Occurence => Other_Arg);
     if Text_Handler.Length (Txt) /= 10
     or else Text_Handler.Value (Txt)(3) /= '/'
     or else Text_Handler.Value (Txt)(6) /= '/' then
@@ -267,6 +291,7 @@ begin
   end if;
 
   -- Result
+  -- Normal enigma args
   if not Text_Handler.Empty (Switch) then
     Ada.Text_Io.Put (" -s" & Text_Handler.Value (Switch));
   end if;
@@ -274,6 +299,25 @@ begin
     Ada.Text_Io.Put (" -j" & Text_Handler.Value (Jammers));
   end if;
   Ada.Text_Io.Put_Line (" -b" & Text_Handler.Value (Back));
+  if To_Text then
+    -- Key coded onto text
+    -- Switch and JJ
+    Ada.Text_Io.Put (Text_Handler.Value (Switch) & "JJ");
+    for I in 1 .. Text_Handler.Length (Jammers) loop
+      if I rem 2 = 1 then
+        -- Jammer letter
+        Num := Pos_9'Value (Text_Handler.Value (Jammers)(I .. I));
+        Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+      else
+        Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
+      end if;
+    end loop;
+    -- Back: Num, offset, and num again
+    Num := Pos_9'Value (Text_Handler.Value (Back)(1 .. 1));
+    Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+    Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
+    Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+  end if;
 
 end Def_Enigma;
 
