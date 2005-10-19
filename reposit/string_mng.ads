@@ -68,5 +68,14 @@ package String_Mng is
   function Extract (From : String; Nb_Char : Natural;
                     Head : Boolean := True) return String;
 
+  -- Swap the characters of string
+  -- Example: ABCD -> DCBA
+  function Swap (Str : String) return String;
+
+  -- Remove any multiple occurence of a character from string.
+  -- Check from head or tail and return string.
+  -- Example: ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
+  function Unique (From : String; From_Head : Boolean := True) return String;
+
 end String_Mng;
 

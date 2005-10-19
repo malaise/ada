@@ -216,5 +216,46 @@ package body String_Mng is
     end if;
   end Extract;
 
+  -- Swap the characters of string
+  -- Example: ABCD -> DCBA
+  function Swap (Str : String) return String is
+    Res : String (1 .. Str'Length);
+  begin
+    for I in reverse Str'Range loop
+      Res (Str'Last - I + 1) := Str(I);
+    end loop;
+    return Res;
+  end Swap;
+
+  -- Remove any multiple occurence of a character from string.
+  -- Check from head or tail and return string.
+  -- Example ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
+  function Unique (From : String; From_Head : Boolean := True) return String is
+    Used : array (Character) of Boolean := (others => False);
+    Input, Output : String (1 .. From'Length);
+    Last : Natural;
+    C : Character;
+  begin
+    if From_Head then
+      Input := From;
+    else
+      Input := Swap (From);
+    end if;
+    Last := 0;
+    for I in Input'Range loop
+      C := Input(I);
+      if not Used(C) then
+        Last := Last + 1;
+        Output(Last) := C;
+        Used(C) := True;
+      end if;
+    end loop;
+    if From_Head then
+      return Output(1 .. Last);
+    else
+      return Swap (Output(1 .. Last));
+    end if;
+  end Unique;
+
 end String_Mng;
 
