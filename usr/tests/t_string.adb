@@ -68,27 +68,29 @@ begin
                     & Integer'Image(Str_Len));
 
       My_Io.Put_Line ("Main menu");
-      My_Io.Put_Line ("0 Exit");
-      My_Io.Put_Line ("1 Case conversion");
-      My_Io.Put_Line ("2 Parse spaces");
-      My_Io.Put_Line ("3 Procuste");
-      My_Io.Put_Line ("4 Locate (fragment)");
-      My_Io.Put_Line ("5 Remove (substring)");
-      My_Io.Put_Line ("6 (Extract) Slice");
-      My_Io.Put_Line ("7 Cut (head or tail)");
-      My_Io.Put_Line ("8 Extract (head or tail)");
+      My_Io.Put_Line (" 0 Exit");
+      My_Io.Put_Line (" 1 Case conversion");
+      My_Io.Put_Line (" 2 Parse spaces");
+      My_Io.Put_Line (" 3 Procuste");
+      My_Io.Put_Line (" 4 Locate (fragment)");
+      My_Io.Put_Line (" 5 Remove (substring)");
+      My_Io.Put_Line (" 6 (Extract) Slice");
+      My_Io.Put_Line (" 7 Cut (head or tail)");
+      My_Io.Put_Line (" 8 Extract (head or tail)");
+      My_Io.Put_Line (" 9 Swap");
+      My_Io.Put_Line ("10 Unique (form head or tail)");
       
       loop 
-        My_Io.Put ("Choice (0 .. 8) ? "); Int_Get (Action, True);
-        exit when Action <= 8;
+        My_Io.Put ("Choice (0 .. 10) ? "); Int_Get (Action, True);
+        exit when Action <= 10;
       end loop;
       My_Io.New_Line;
 
       begin
         case Action is
-          when 0 =>
+          when  0 =>
             exit;
-          when 1 =>
+          when  1 =>
             My_Io.Put ("Case conversion (ULM) ? "); My_Io.Get(Char1);
             My_Io.Skip_Line;
             Char1 := Upper_Char (Char1);
@@ -102,14 +104,14 @@ begin
               My_Io.Put_Line ("Discarded.");
             end if;
 
-          when 2 =>
+          when  2 =>
             My_Io.Put_Line ("Parse spaces");
             My_Io.Put ("From_Head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Spaces parsed at: " & 
              Integer'Image (String_Mng.Parse_Spaces (
                Str(1 .. Str_Len), From_Head => Bool1)) );
 
-          when 3 =>
+          when  3 =>
             My_Io.Put_Line ("Procuste");
             My_Io.Put ("Len (Pos)? "); Int_Get(Pos1, False);
             My_Io.Put ("Align_Left (YN)? "); Bool_Get(Bool1);
@@ -127,7 +129,7 @@ begin
                        Show_Trunc => Bool3)
               & "|" );
 
-          when 4 =>
+          when  4 =>
             My_Io.Put_Line ("Locate");
             My_Io.Put ("Fragment (String)? ");
             My_Io.Get_Line (Str1, Nat1);
@@ -138,7 +140,7 @@ begin
                Fragment => Str1(1 .. Nat1),
                Occurence => Pos1)) );
 
-          when 5 =>
+          when  5 =>
             My_Io.Put_Line ("Remove (substring)");
             My_Io.Put ("At_Index (Pos)? "); Int_Get(Pos1, False);
             My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
@@ -153,7 +155,7 @@ begin
                  Shift_Left => Bool1,
                  Gap => Char1) & "|" );
 
-          when 6 =>
+          when  6 =>
             My_Io.Put_Line ("(Extract) Slice");
             My_Io.Put ("At_Index (Pos)? "); Int_Get(Pos1, False);
             My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
@@ -164,7 +166,7 @@ begin
                  Nb_Char => Nat1,
                  To_Right => Bool1) & "|" );
 
-          when 7 =>
+          when  7 =>
             My_Io.Put_Line ("Cut (head or tail)");
             My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
             My_Io.Put ("Head (Bool)? "); Bool_Get(Bool1);
@@ -173,7 +175,7 @@ begin
                  Nb_Char => Nat1,
                  Head => Bool1) & "|" );
 
-          when 8 =>
+          when  8 =>
             My_Io.Put_Line ("Extract (head or tail)");
             My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
             My_Io.Put ("Head (Bool)? "); Bool_Get(Bool1);
@@ -181,6 +183,18 @@ begin
               & String_Mng.Extract (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
                  Head => Bool1) & "|" );
+
+          when  9 =>
+            My_Io.Put_Line ("Swap");
+            My_Io.Put_Line ("Swapped: |"
+              & String_Mng.Swap (Str(1 .. Str_Len)) & "|" );
+
+          when 10 =>
+            My_Io.Put_Line ("Unique (from head or tail)");
+            My_Io.Put ("From head (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put_Line ("Uniqued: |"
+              & String_Mng.Unique (Str(1 .. Str_Len),
+                                   From_Head => Bool1) & "|" );
 
           when others => null;
         end case;
