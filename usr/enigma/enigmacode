@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# Usage
+function usage {
+  echo "Usage: `basename $0` -c | -d  [ <date> ]" 1>&2
+  echo "   <date>  ::=  jj/mm/YYyy" 1>&2
+  exit 1
+}
+
+# Parse mode
+if [ "$1" = "-c" ] ; then
+  export mode="code"
+elif [ "$1" = "-d" ] ; then
+ export mode="decode"
+else
+  usage
+fi
+shift
+
+# Parse optional date
+if [ $# -eq 1 ] ; then
+  export date="$1"
+  shift;
+else
+  export date=""
+fi
+
+# Check no arg remain
+if [ $# -ne 0 ] ; then
+  usage
+fi
+
+if [ "$mode" = "code" ] ; then
+  # Set random key (text and num)
+  key=`def_enigma rnd -text`
+  export txtkey=`echo $key | awk '{print $4; exit}'`
+  export numkey=`echo $key | awk '{print $1 " " $2 " " $3; exit}'`
+  # Code random key with date key
+  echo -n "$txtkey" | enigma `def_enigma $date`
+  # Code input file with random key
+  enigma $numkey
+else
+  # Create temp file
+  export tmpfile=/tmp/$$.enigmacode
+  touch $tmpfile > /dev/null 2>&1
+  res=$?
+  if [ $res -ne 0 ] ; then
+    echo "Cannot create temporary file $tmpfile" 1>&2
+    exit 2
+  fi
+  # Save input into file
+  cat > $tmpfile
+  # Decode start of message with date key
+  export args="`def_enigma $date` -l108"
+  export txtkey=`enigma $args < $tmpfile` 
+  # Try to find the random key in text from this
+  # Result is the index of start text offset after key
+  numkey=`def_enigma "$txtkey"`
+  export start=$?
+  export numkey
+  if [ $start -lt 6 ] ; then
+    echo "Invalid key $txtkey" 1>&2
+    rm -f $tmpfile
+    exit 2
+  fi
+  # Decode the remaining of start then the remaining text with the random key
+  cat $tmpfile - | enigma $numkey -f$start
+  rm -f $tmpfile
+fi
+
+# Done
+exit 0
+

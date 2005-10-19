@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ "$1" = "-h" ] ; then
-  echo "Usage: `basename $0` [ <date> ]"
-  echo "<date> ::= dd/mm/YYyy"
+  echo "Usage: `basename $0` [ <date> ]" 1>&2
+  echo "<date> ::= dd/mm/YYyy" 1>&2
   exit 1
 fi
 export ENIGMA_CONF_FILE=${HOME}/ada/usr/enigma/enigma.cnf

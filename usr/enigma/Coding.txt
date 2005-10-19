@@ -15,9 +15,11 @@ enigma <key_args>  < <input_file>  >> <coded_file>
 
 Complex decoding
 ----------------
-Extract temporary in the decoded file the 82 first characters from the coded file,
+Extract temporary in the decoded file the 108 first characters from the coded file,
 with the key generated from the current or a known date:
-enigma `def_enigma [ <date> ]` -l82  < <coded_file>  > <decoded_file>
+enigma `def_enigma [ <date> ]` -l108  < <coded_file>  > <decoded_file>
+(108 because 26*2 for swich, 2 for JJ, 9 * 6 (6 is longest number in letters
+e.g. SEVEN, 9 max scrambers).
 
 Look in the temporary file for the "JJ" then read the key in text, until
 <num_in_text><letter><num_in_text>. Note the offset <offset> of the first letter

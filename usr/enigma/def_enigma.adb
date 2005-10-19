@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
 with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
-     Num_Letters;
+     Num_Letters, Sys_Calls;
 with Types, Scrambler_Gen;
 procedure Def_Enigma is
   -- Constants
@@ -8,10 +8,11 @@ procedure Def_Enigma is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line("Syntax error or invalid date.");
-    Ada.Text_Io.Put_Line(" Usage: "
-                 & Argument.Get_Program_Name & " [ -text ] [ <date> | rnd ]");
-    Ada.Text_Io.Put_Line("    <date> ::= dd/mm/yyyy");
+    Sys_Calls.Put_Line_Error ("Syntax error.");
+    Sys_Calls.Put_Line_Error (" Usage: "
+      & Argument.Get_Program_Name & " [ -text ] [ <date> | rnd | <text_key> ]");
+    Sys_Calls.Put_Line_Error ("    <date> ::= dd/mm/yyyy");
+    Sys_Calls.Set_Error_Exit_Code;
   end Usage;
 
   function Is_Digit (C : Character) return Boolean is
@@ -31,6 +32,7 @@ procedure Def_Enigma is
 
   Random : Boolean := False;
   To_Text : Boolean := False;
+  Extract : Boolean := False;
   Nb_Arg : Natural;
   Other_Arg : Natural;
 
@@ -52,13 +54,13 @@ procedure Def_Enigma is
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
   T : Ada.Calendar.Time;
-  Txt : Text_Handler.Text (10);
+  Txt : Text_Handler.Text (128);
 
   Day_Month : Text_Handler.Text (18); -- WEDNESDAYSEPTEMBER
   Day_26 : Natural; -- Day rem 26
   Month_3 : String (1 .. 3);
 
-  -- For both
+  -- For all
   Switch : Text_Handler.Text (26 * 2);
   Back : Text_Handler.Text (2);
   Jammers : Text_Handler.Text (16);
@@ -104,6 +106,35 @@ procedure Def_Enigma is
     return Nat_9(V) + 1;
   end Store;
 
+  -- For extraction
+  -- Num and Stop are 0 if not found
+  procedure Get_Number (Str : in String; Start : in Positive;
+                        Last : out Natural; Num : out Nat_9) is
+  begin
+    Num := 0;
+    Last := 0;
+    -- Search if Str (Start .. Start+4) is a number in letters
+    for Stop in Start + 2 .. Start + 4 loop
+      if Stop > Str'Last then
+        -- Nothing found and end of string
+        return;
+      end if;
+      for I in Pos_9'Range loop
+        if Upper_Str (Num_Letters.Letters_Of(I)) = Str(Start .. Stop) then
+          -- Found a num
+          Num := I;
+          Last := Stop; 
+          return;
+        end if;
+      end loop;
+    end loop;
+    -- Not found
+    return;
+  end Get_Number;
+  Start, Stop : Natural;
+  Prev_Scrambler, Got_Scrambler : Nat_9;
+  Got_Letter : Types.Letter;
+  
 begin
 
   Nb_Arg := Argument.Get_Nbre_Arg;
@@ -122,6 +153,7 @@ begin
       end if;
     exception
       when Argument.Argument_Not_Found =>
+        -- No "-text"
         null;
     end;
   end if;
@@ -137,37 +169,45 @@ begin
     Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
                          & Normal (Month, 2, Gap => '0') & "/"
                          & Normal (Year,  4, Gap => '0') );
-    Random := False;
   elsif Nb_Arg = 1
   and then Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
     Random := True;
   elsif Nb_Arg = 1 then
-    -- Get date from arg 1
-    Argument.Get_Parameter (Txt, Occurence => Other_Arg);
-    if Text_Handler.Length (Txt) /= 10
-    or else Text_Handler.Value (Txt)(3) /= '/'
-    or else Text_Handler.Value (Txt)(6) /= '/' then
-      Usage;
-      return;
-    end if;
-
-    if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
-    or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
-    or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
-      Usage;
-      return;
-    end if;
-
+    -- Get date from arg 1?
     begin
-      Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
-      Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
-      Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
+      Argument.Get_Parameter (Txt, Occurence => Other_Arg);
     exception
-      when others =>
+      when Argument.Argument_Too_Long =>
         Usage;
         return;
     end;
-    Random := False;
+    if Text_Handler.Length (Txt) = 10
+    and then Text_Handler.Value (Txt)(3) = '/'
+    and then Text_Handler.Value (Txt)(6) = '/' then
+      if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
+      or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
+      or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
+        Usage;
+        return;
+      end if;
+
+      begin
+        Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
+        Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
+        Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
+      exception
+        when others =>
+          Usage;
+          return;
+      end;
+    elsif Text_Handler.Locate (Txt, "JJ") /= 0 
+    and then Argument.Get_Nbre_Arg = 1 then
+      -- Looks like a text key
+      Extract := True;
+    else
+      Usage;
+      return;
+    end if;
   else
     Usage;
     return;
@@ -219,8 +259,50 @@ begin
       end loop;
     end;
  
-  else
+  elsif Extract then
+    -- Locate separator between switch and scramblers
+    Start := Text_Handler.Locate (Txt, "JJ");
+    -- Pairs of letters before JJ
+    if Start rem 2 /= 1 then
+      Usage;
+      return;
+    end if;
+    Text_Handler.Set (Switch, Text_Handler.Value(Txt) (1 .. Start - 1));
+    -- Skip the JJ
+    Start := Start + 2;
+    -- Look for scramblers
+    Prev_Scrambler := 0;
+    Got_Letter := 'A';
+    loop
+      -- Look for srambler num in letter
+      Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
+      if Stop = 0 then
+        Usage;
+        return;
+      end if;
+      if Got_Scrambler = Prev_Scrambler then
+        -- Scrambler num repeated : this is a back and done
+        Text_Handler.Set (Back, Normal(Got_Scrambler, 1) & Got_Letter);
+        Start := Stop + 1;
+        exit;
+      elsif Prev_Scrambler /= 0 then
+        -- Prev jammer parsed ok
+        Text_Handler.Append (Jammers, Normal(Prev_Scrambler, 1) & Got_Letter);
+      end if;
+      begin
+        Got_Letter := Text_Handler.Value(Txt)(Stop + 1);
+      exception
+        when Constraint_Error =>
+          -- No more char or no a letter
+          Usage;
+          return;
+      end;
+      Prev_Scrambler := Got_Scrambler;
+      Start := Stop + 2;
+    end loop;
+    Sys_Calls.Set_Exit_Code (Start);
 
+  else
     -- Build time of 0h00 of date
     declare
       Hour     : Day_Mng.T_Hours    := 0;

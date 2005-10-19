@@ -11,7 +11,12 @@ begin
   Coder.Init;
 
   -- Skip initial offset
-  Io_Manager.Skip_To (Definition.Read_Start_Byte);
+  begin
+    Io_Manager.Skip_To (Definition.Read_Start_Byte);
+  exception
+    when Io_Manager.End_Error =>
+      return;
+  end;
 
   -- Read up to last offset
   Io_Manager.Set_Skip_From (Definition.Read_Last_Byte);
@@ -45,6 +50,7 @@ begin
     -- Write byte
     Io_Manager.Write (Byte);
   end loop;
+
 exception
   when Scrambler_Factory.Config_Error | Coder.Init_Failed =>
     Io_Manager.Set_Error_Exit_Code;
