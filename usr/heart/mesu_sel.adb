@@ -400,7 +400,6 @@ package body Mesu_Sel is
   procedure Rem_Selection (Line : in Afpx.Line_Rec) is
     Saved_Pos, Curr_Pos : Positive;
     Person : Pers_Def.Person_Rec;
-    Mesure : Mesu_Def.Mesure_Rec;
     Found  : Boolean;
   begin
     -- Save current position
