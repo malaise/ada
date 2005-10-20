@@ -7,7 +7,7 @@ package Players is
   type Action_Rec (Valid : Boolean := False) is record
     case Valid is
       when True =>
-        Piece : Pieces.Piece_Kind_List;
+        Piece : Pieces.Piece_Kind_List := Pieces.Pawn;
         From  : Space.Square_Coordinate := Space.Origin;
         To    : Pieces.Action_Rec;
       when False => null;
