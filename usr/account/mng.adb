@@ -70,6 +70,7 @@ package body Mng is
     Sep : constant Character := '|';
   begin
     Line.Len := Afpx.Get_Field_Width(8);
+    Line.Str := (others => ' ');
     Line.Str(1 .. 71) :=
                 Normal(No, 4) & Sep
               & Unit_Format.Short_Date_Image(Oper.Date) & Sep
@@ -171,8 +172,7 @@ package body Mng is
       List_Util.Move_To_Current;
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
       Afpx.Line_List_Mng.Insert(Afpx.Line_List,
-                  Oper_To_Line(Oper_List_Mng.Get_Position(Oper_List),
-                  Oper));
+                  Oper_To_Line(Oper_List_Mng.Get_Position(Oper_List), Oper));
       exit when not Sel_List_Mng.Check_Move(Sel_List);
       Sel_List_Mng.Move_To(Sel_List);
     end loop;
@@ -259,7 +259,6 @@ package body Mng is
     Screen.Update_To_Unit;
     Screen.Allow_Edit(not Sel_List_Mng.Is_Empty(Sel_List));
   end Refresh_Screen;
-
 
   -- Load from file
   procedure Load (File_Name : in String) is
