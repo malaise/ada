@@ -23,7 +23,7 @@ begin
   
   -- Main loop 
   loop
-    -- Read next byte until en of flow
+    -- Read next byte until end of flow
     begin
       Byte := Io_Manager.Read;
     exception
