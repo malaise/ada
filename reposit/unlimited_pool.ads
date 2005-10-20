@@ -20,7 +20,7 @@ package Unlimited_Pool is
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type);
 
 private
-  procedure Set (To : in out Data_Type; Val : in Data_Type);
+  procedure Set (To : out Data_Type; Val : in Data_Type);
 
   package Pool_List_Mng is new Limited_List (Data_Type, Set);
   type Pool_Type is new Pool_List_Mng.List_Type;

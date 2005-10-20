@@ -1,7 +1,7 @@
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
-  with procedure Set (To : in out Element_Type; Val : in Element_Type);
+  with procedure Set (To : out Element_Type; Val : in Element_Type);
 
 package Limited_List is
 
@@ -33,13 +33,13 @@ package Limited_List is
   -- Read the current item then moves to another item
   -- May raise Not_In_List (no read nor movement done)
   procedure Read (List : in out List_Type;
-                  Item : in out Element_Type;
+                  Item : out Element_Type;
                   Move : in Movement := Next);
 
   -- Read anyway. Set Done to True if movement was possible (and done)
   --  and False otherwise (no movement done)
   procedure Read (List : in out List_Type;
-                  Item : in out Element_Type;
+                  Item : out Element_Type;
                   Move : in Movement := Next;
                   Done : out Boolean);
 

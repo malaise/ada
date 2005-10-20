@@ -17,7 +17,7 @@ package body Control_Pool is
   end record;
  
   -- Affectation of cell
-  procedure Set_Cell (To : in out Cell_Type; Val : in Cell_Type) is
+  procedure Set_Cell (To : out Cell_Type; Val : in Cell_Type) is
   begin
     To := Val;
   end Set_Cell;

@@ -97,7 +97,7 @@ package body Limited_List is
 
   -- read the current item
   procedure Read (List : in out List_Type;
-                  Item : in out Element_Type;
+                  Item : out Element_Type;
                   Move : in Movement := Next) is
   begin
     Check_Cb(List);
@@ -109,7 +109,7 @@ package body Limited_List is
   end Read;
 
   procedure Read (List : in out List_Type;
-                  Item : in out Element_Type;
+                  Item : out Element_Type;
                   Move : in Movement := Next;
                   Done : out Boolean) is
   begin
