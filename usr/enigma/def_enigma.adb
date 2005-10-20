@@ -108,6 +108,7 @@ procedure Def_Enigma is
 
   -- For extraction
   -- Num and Stop are 0 if not found
+  Separator : constant String := "JJJ";
   procedure Get_Number (Str : in String; Start : in Positive;
                         Last : out Natural; Num : out Nat_9) is
   begin
@@ -200,7 +201,7 @@ begin
           Usage;
           return;
       end;
-    elsif Text_Handler.Locate (Txt, "JJ") /= 0 
+    elsif Text_Handler.Locate (Txt, Separator) /= 0 
     and then Argument.Get_Nbre_Arg = 1 then
       -- Looks like a text key
       Extract := True;
@@ -261,15 +262,15 @@ begin
  
   elsif Extract then
     -- Locate separator between switch and scramblers
-    Start := Text_Handler.Locate (Txt, "JJ");
-    -- Pairs of letters before JJ
+    Start := Text_Handler.Locate (Txt, Separator);
+    -- Pairs of letters before separator
     if Start rem 2 /= 1 then
       Usage;
       return;
     end if;
     Text_Handler.Set (Switch, Text_Handler.Value(Txt) (1 .. Start - 1));
-    -- Skip the JJ
-    Start := Start + 2;
+    -- Skip the separator
+    Start := Start + Separator'Length;
     -- Look for scramblers
     Prev_Scrambler := 0;
     Got_Letter := 'A';
@@ -383,8 +384,8 @@ begin
   Ada.Text_Io.Put_Line (" -b" & Text_Handler.Value (Back));
   if To_Text then
     -- Key coded onto text
-    -- Switch and JJ
-    Ada.Text_Io.Put (Text_Handler.Value (Switch) & "JJ");
+    -- Switch and separator
+    Ada.Text_Io.Put (Text_Handler.Value (Switch) & Separator);
     for I in 1 .. Text_Handler.Length (Jammers) loop
       if I rem 2 = 1 then
         -- Jammer letter
