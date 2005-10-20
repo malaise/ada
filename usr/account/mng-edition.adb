@@ -340,7 +340,6 @@ package body Edition is
     Field : Afpx.Absolute_Field_Range := 0;
     Found : Boolean;
     Pos : Positive;
-    Sel : Sel_Rec;
     use type Oper_Def.Status_List, Oper_Def.Kind_List, Oper_Def.Amount_Range,
              Afpx.Absolute_Field_Range;
   begin
