@@ -1,3 +1,4 @@
+with System;
 with Sys_Calls;
 package body Io_Manager is
 
@@ -19,10 +20,12 @@ package body Io_Manager is
     Last_Byte := Bytes_Offset;
   end Set_Skip_From;
 
+  type Real_Byte is new Byte;
+  for Real_Byte'Size use 1 * System.Storage_Unit;
   -- Read next byte
   function Read return Byte is
     N : Natural;
-    B : Byte;
+    B : Real_Byte;
   begin
     Current_Offset := Current_Offset + 1;
     if Last_Byte /= 0 and then Current_Offset > Last_Byte then
@@ -30,7 +33,7 @@ package body Io_Manager is
     end if;
     N := Sys_Calls.Read (Sys_Calls.Stdin, B'Address, 1);
     if N = 1 then
-      return B;
+      return Byte(B);
     else
       raise End_Error;
     end if;
