@@ -103,6 +103,7 @@ package body Menu2 is
     Screen.Put_Title(Screen.Y_F_X);
     -- Get X
     Set := False;
+    Lp := (0.0, 0.0);
     Dialog.Read_Coordinate (Screen.I_X, Set, Lp.X, Subtitle => True);
     Afpx.Set_Field_Activation (Screen.Get_Fld, False);
     if not Set then
@@ -146,7 +147,6 @@ package body Menu2 is
 
   task body Curve_Task is
     Draw_It : Boolean;
-    Init_Ok : Boolean;
     use Curve_Data;
   begin
     loop
