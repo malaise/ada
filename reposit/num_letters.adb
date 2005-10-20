@@ -126,9 +126,6 @@ package body Num_Letters is
       Last := 3;
     elsif Last = 4 then
       Text_Handler.Set (Txt, Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
-      if Rev(4) /= '1' then
-        Text_Handler.Append (Txt, "s");
-      end if;
       Last := 3;
     end if;
 
@@ -144,9 +141,6 @@ package body Num_Letters is
         Text_Handler.Append (Txt, " ");
       end if;
       Text_Handler.Append (Txt, Make1 (Rev(3 .. 3)) & " " & Tenth(2).all);
-      if Rev(3) /= '1' then
-        Text_Handler.Append (Txt, "s");
-      end if;
       Last := 2;
     end if;
 
