@@ -95,7 +95,6 @@ extern int set_tty_attr (int fd, int mode) {
     default:
       errno = EINVAL;
       return (-1);
-    break;
   }
 
   for (;;) {

@@ -152,13 +152,10 @@ unsigned long col_get_std (int background __attribute__ ((unused)),
   switch (blink_kind) {
     case full_blink :
       return (color_id[foreground * NBRE_COLOR + foreground]);
-    break;
     case on_0_blink :
       return (color_id[foreground]);
-    break;
     case bold_blink :
       return (color_id[foreground]);
-    break;
   }
   return (unsigned long)(-1);
 }
@@ -171,13 +168,10 @@ unsigned long col_get_blk (int background,
   switch (blink_kind) {
     case full_blink :
       return (color_id[background * NBRE_COLOR + foreground]);
-    break;
     case on_0_blink :
       return (color_id[foreground + NBRE_COLOR]);
-    break;
     case bold_blink :
       return (color_id[foreground]);
-    break;
   }
   return (unsigned long)(-1);
 }
