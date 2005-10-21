@@ -133,6 +133,7 @@ begin
       Byte := Io_Manager.Read;
     exception
       when Io_Manager.End_Error =>
+        Io_Manager.Flush;
         exit;
     end;
     if Encode_Mode then

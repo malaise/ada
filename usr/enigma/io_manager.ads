@@ -14,6 +14,7 @@ package Io_Manager is
 
   -- Write byte on output flow
   procedure Write (B : in Byte);
+  procedure Flush;
 
   -- Put error
   procedure Put_Error (Str : in String);
