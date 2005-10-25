@@ -203,11 +203,13 @@ begin
       end loop;
 
     when Is_Prime =>
-        N2 := Prime_List.Next;
-      loop
-        N2 := Prime_List.Next;
-        exit when N1 rem N2 = 0;
-      end loop;
+      N2 := Prime_List.Next;
+      if N1 /= 1 then
+        loop
+          N2 := Prime_List.Next;
+          exit when N1 rem N2 = 0;
+        end loop;
+      end if;
       Ada.Text_Io.Put (Long_Long_Positive'Image(N1));
       if N1 = N2 then
         Ada.Text_Io.Put_Line (" is prime.");
