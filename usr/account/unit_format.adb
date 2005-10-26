@@ -193,7 +193,7 @@ package body Unit_Format is
       end loop;
       return False;
     end Has_Dot;
-        
+
   begin
     -- Get amount or int from significant characters
     declare
@@ -256,12 +256,12 @@ package body Unit_Format is
         R := R / 1000.0;
         I := My_Math.Round(R);
         Str (4 .. Dot) := Normal(Integer(I), Dot-3);
-    
+
         -- Remove digits
         Str(Dot+1 .. Last) := " k";
       end;
-    end if; 
-  
+    end if;
+
     return Str(4 .. Str'Last);
   exception
     when others =>

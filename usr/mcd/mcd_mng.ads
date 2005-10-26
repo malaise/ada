@@ -169,7 +169,7 @@ package Mcd_Mng is
         Val_Bool : Boolean;
       when Chrs | Prog =>
         Val_Text : Ada.Strings.Unbounded.Unbounded_String;
-      when Regi => 
+      when Regi =>
         Val_Regi : Register_List;
       when Oper =>
         Val_Oper : Operator_List;

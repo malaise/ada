@@ -24,7 +24,7 @@ procedure T_Proc_Child is
       return False;
     end if;
     Ada.Text_Io.Put_Line ("Child: Read >" & Str (1 .. Res) & "<");
-    
+
     Event_Mng.Send_Dummy_Signal;
     return False;
   end Fd_Cb;

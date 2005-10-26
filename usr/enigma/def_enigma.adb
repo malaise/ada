@@ -124,7 +124,7 @@ procedure Def_Enigma is
         if Upper_Str (Num_Letters.Letters_Of(I)) = Str(Start .. Stop) then
           -- Found a num
           Num := I;
-          Last := Stop; 
+          Last := Stop;
           return;
         end if;
       end loop;
@@ -135,7 +135,7 @@ procedure Def_Enigma is
   Start, Stop : Natural;
   Prev_Scrambler, Got_Scrambler : Nat_9;
   Got_Letter : Types.Letter;
-  
+
 begin
 
   Nb_Arg := Argument.Get_Nbre_Arg;
@@ -201,7 +201,7 @@ begin
           Usage;
           return;
       end;
-    elsif Text_Handler.Locate (Txt, Separator) /= 0 
+    elsif Text_Handler.Locate (Txt, Separator) /= 0
     and then Argument.Get_Nbre_Arg = 1 then
       -- Looks like a text key
       Extract := True;
@@ -259,7 +259,7 @@ begin
                                     & To_Letter (Id_Random));
       end loop;
     end;
- 
+
   elsif Extract then
     -- Locate separator between switch and scramblers
     Start := Text_Handler.Locate (Txt, Separator);

@@ -79,7 +79,7 @@ begin
     when Constraint_Error =>
       Ada.Text_Io.Put_Line ("Set("""")  raises Constraint_Error");
   end;
-    
+
 exception
   when Abort_Error =>
     null;

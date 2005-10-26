@@ -97,7 +97,7 @@ package body Compute is
         exit;
       end if;
     end loop;
-    
+
     if Winning then
 
       declare
@@ -130,7 +130,7 @@ package body Compute is
         end if;
       end loop;
 
-      -- Compute new amount 
+      -- Compute new amount
       Nb_Bars := 0;
       for J in Power_Range loop
         if Mattrix (Selected_Row, Power_Range'Last - J + 1) then

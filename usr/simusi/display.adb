@@ -131,12 +131,12 @@ package body Display is
       end if;
     else
       My_Io.Put ("Value : ");
-      Put_Val (Val); 
+      Put_Val (Val);
       My_Io.Put (" +/- ");
       Put_It (Data.Manufas(Cote).Inter);
       My_Io.New_Line;
     end if;
-    
+
   end Print;
 
   procedure Put_No_Way (Kind : in Common.Cote_Kind;

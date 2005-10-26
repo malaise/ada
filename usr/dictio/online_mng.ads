@@ -11,7 +11,7 @@ package Online_Mng is
                    Stat  : in Status.Status_List;
                    Sync  : in Boolean;
                    Diff  : in Boolean;
-                   Extra : in String := ""); 
+                   Extra : in String := "");
 
 end Online_Mng;
 

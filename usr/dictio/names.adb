@@ -59,7 +59,7 @@ package body Names is
   end Is_Valid_Name;
 
 
-  -- Syntax of name for (Un) Notify is 
+  -- Syntax of name for (Un) Notify is
   -- either  <anything>
   -- or <ident_or_anyid> [ { . <ident_or_anyid> } ] [ . <anything> ]
   -- anyid is "*" and anything is "**"
@@ -150,7 +150,7 @@ package body Names is
 
         -- Check if end of words
         if Word_Name = "" and then Word_Crit = "" then
-          -- Match if end of both 
+          -- Match if end of both
           Ok := True;
           exit;
         elsif Word_Name = "" and then Word_Crit /= "" then

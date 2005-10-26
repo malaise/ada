@@ -27,7 +27,7 @@ begin
       Str : constant String := Argument.Get_Parameter (Occurence => I);
     begin
       if Str(1) >= '0' and then Str(1) <= '9' then
-        begin 
+        begin
           -- Try to make an arabic
           N := Romanic.Arabic_Range'Value(Str);
         exception
@@ -44,7 +44,7 @@ begin
             raise Skip_It;
         end;
       else
-        -- Shall be romanic 
+        -- Shall be romanic
         begin
           N := Romanic.Romanic2Arabic(Str);
         exception

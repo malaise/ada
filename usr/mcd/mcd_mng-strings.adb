@@ -74,7 +74,7 @@ package body Strings is
                                Positive(Occ.Val_Inte)));
     return Res;
   end Strloc;
-  
+
   function Strrep (S, I, Pat : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin

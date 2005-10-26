@@ -33,7 +33,7 @@ package body Io_Manager is
   Last_Input : Buffer_Range := 1;
   -- Current index in input buffer
   -- This initial value will force initial reading of buffer
-  Input_Index : Buffer_Range := Last_Input; 
+  Input_Index : Buffer_Range := Last_Input;
 
   -- Read next byte
   function Read return Byte is

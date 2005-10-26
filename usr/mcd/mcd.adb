@@ -59,7 +59,7 @@ begin
   end;
 
   -- Main loop
-  loop 
+  loop
     begin
       Item := Mcd_Parser.Next_Item;
       Mcd_Mng.New_Item(Item, The_End);

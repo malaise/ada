@@ -27,7 +27,7 @@ package body Human is
                   Port   : in Tcp_Util.Remote_Port;
                   Setup  : in String;
                   Wait   : in Boolean) is
-    use type Space.Color_List; 
+    use type Space.Color_List;
   begin
     Human.Mode := Mode;
     Human.Color := Color;
@@ -242,7 +242,7 @@ package body Human is
       Ada.Text_Io.Put_Line ("Human end of wait. The_End is "
                           & Boolean'Image (The_End));
     end if;
-        
+
   end Do_Wait;
 
   procedure Load_Moves (Wait : in Boolean) is
@@ -280,7 +280,7 @@ package body Human is
           raise Load_Error;
         end if;
       end if;
- 
+
       if Debug.Get (Debug.Human) then
         Ada.Text_Io.Put ("Loading ");
         Debug.Put (Action);
@@ -312,7 +312,7 @@ package body Human is
           & Space.Color_List'Image(Move_Color));
     end if;
   exception
-    when Load_Error => 
+    when Load_Error =>
       -- Send Exit
       if Mode /= Both then
         Connection.Send ((Valid => False));

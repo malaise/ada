@@ -73,7 +73,7 @@ package body Screen is
     end if;
     Status := (others => Free);
     for I in Field_Range'(1) .. 16 loop
-      Set_Field_Activation (I, True); 
+      Set_Field_Activation (I, True);
       Set_Field_Colors (I, Background => Stick_Color);
     end loop;
     Set_Field_Activation (22, False);
@@ -119,7 +119,7 @@ package body Screen is
         case Result.Field_No is
           when 1 .. 16 =>
             Selection_Index := Index_Range(Result.Field_No);
-  
+
             -- First selection
             if Nb_Selected = 0 then
               Row_Selected := Row_Of_Index(Selection_Index);
@@ -137,20 +137,20 @@ package body Screen is
                 Nb_Selected := Nb_Selected + 1;
               end if;
             end if;
-          
+
           when 17 =>
             -- Take selection
             for I in First_Index_Of_Row(Row_Selected) .. Last_Index_Of_Row(Row_Selected) loop
               if Status(I) = Selected then
                 Status(I) := Removed;
-                Set_Field_Activation (Field_Range(I), False); 
+                Set_Field_Activation (Field_Range(I), False);
               end if;
             end loop;
             exit;
           when 18 =>
             raise Exit_Requested;
           when others =>
-            null; 
+            null;
         end case;
         Redisplay := False;
       else
@@ -286,6 +286,6 @@ package body Screen is
     Encode_Field (19, (0,  6), Normal(Human_Score, 3));
     Encode_Field (19, (0, 17), Normal(Machine_Score, 3));
   end Score;
-  
+
 
 end Screen;

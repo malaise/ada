@@ -25,7 +25,7 @@ procedure G is
 
   function Rand return Positive is
     subtype Digit is Natural range 0 .. 9;
-    subtype R_Digit is Float range 
+    subtype R_Digit is Float range
      Float (Digit'First) .. Float (Digit'Last + 1);
     Ret : Positive;
     function Trunc (R : in R_Digit) return Digit is
@@ -57,7 +57,7 @@ procedure G is
     return Ret;
   end Rand;
 
-  procedure Div (N : in Number; 
+  procedure Div (N : in Number;
    New_N : out Number; Res : out Div_Res) is
     N0 : Natural;
     function Trunc (R : in Float) return Natural is
@@ -103,7 +103,7 @@ begin
       Get:
       loop
         My_Io.Put ("--> ");
-        My_Io.Put (Num, 10); 
+        My_Io.Put (Num, 10);
         exit Party when Num = 0;
         My_Io.Put (
          "  '<-' -1   'V' 0   '->' +1   'q' quit ? ");
@@ -179,7 +179,7 @@ begin
     else
       My_Io.Put_Line (" Some errors...");
     end if;
-    My_Io.New_Line; 
+    My_Io.New_Line;
   end loop Game;
 
 end G;

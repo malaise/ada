@@ -54,7 +54,7 @@ package body Game is
       Space.Board.Delete_Piece (Action.To.Dest, False);
       Space.Board.Create_Piece (Action.To.New_Piece, Color, Action.To.Dest);
     elsif Action.To.Kind = Pieces.Castle then
-      -- Castle: move rook  
+      -- Castle: move rook
       Space.Board.Move_Piece (Action.To.Rook_From, Action.To.Rook_Dest, False);
     end if;
 
@@ -118,7 +118,7 @@ package body Game is
       Space.Board.Create_Piece (Action.To.New_Piece, Color, Action.To.Dest);
       Screen.Update_Board (Own_Color, (1 => Action.To.Dest) );
     elsif Action.To.Kind = Pieces.Castle then
-      -- Castle: move rook  
+      -- Castle: move rook
       Space.Board.Move_Piece (Action.To.Rook_From, Action.To.Rook_Dest, True);
       Screen.Update_Board (Own_Color, (Action.To.Rook_From,
                                        Action.To.Rook_Dest) );
@@ -267,7 +267,7 @@ package body Game is
       else
         return Ok;
       end if;
-    else 
+    else
       -- Cannot move
       if Opp_In_Check then
         return Checkmate;

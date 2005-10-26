@@ -12,4 +12,4 @@ begin
   My_Io.Put_Line (String'(Argument.Get_Parameter(
          Rnd.Int_Random(1, Argument.Get_Nbre_Arg))));
 end One_Of_Arg;
-  
+

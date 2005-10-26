@@ -205,7 +205,7 @@ package body Connection is
               -- Not an Init request. Reject.
               My_Send ((Error, Protocol));
           end case;
-              
+
         else
           -- Client
           if Message.Kind = Init and then Message.Color /= Own_Color then

@@ -67,7 +67,7 @@ package body Online_Mng is
       Ever_Synced := True;
       Client_Mng.Start;
     end if;
-  
+
     if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
       Dictio_Debug.Put ("Online: start as " & Status.Get'Img & " " & First'Img);
     end if;

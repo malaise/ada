@@ -33,7 +33,7 @@ package body Sync_Mng is
 
 
   function Timer_Active return Boolean is
-    use type Timers.Timer_Id; 
+    use type Timers.Timer_Id;
   begin
     return Timer_Id /= Timers.No_Timer;
   end Timer_Active;
@@ -125,7 +125,7 @@ package body Sync_Mng is
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
                          Data : Timers.Timer_Data) return Boolean;
-  
+
   procedure Send (To : Tcp_Util.Host_Name) is
     Found : Boolean;
   begin
@@ -188,7 +188,7 @@ package body Sync_Mng is
       if Sending_Status /= Send then
         if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
           Dictio_Debug.Put ("Sync: Sending cancelled");
-        end if; 
+        end if;
         exit Items;
       end if;
 
@@ -233,7 +233,7 @@ package body Sync_Mng is
             Ovf_Timeout := Ovf_Timeout * Timeout_Factor;
             if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
               Dictio_Debug.Put ("Sync: Overflow to " & Parse (Dest));
-            end if; 
+            end if;
           else
             -- Ok or error
             Curr_Timeout := 0;
@@ -244,7 +244,7 @@ package body Sync_Mng is
           if Sending_Status /= Send then
             if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
               Dictio_Debug.Put ("Sync: Sending cancelled");
-            end if; 
+            end if;
             exit Items;
           end if;
 
@@ -304,7 +304,7 @@ package body Sync_Mng is
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
       Dictio_Debug.Put ("Sync: Sending " & Natural'Image(Data_Base.Nb_Item)
                & " items");
-    end if; 
+    end if;
 
     -- Send items
     Sending_Status := Send;
@@ -320,7 +320,7 @@ package body Sync_Mng is
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
       Dictio_Debug.Put ("Sync: Done");
-    end if; 
+    end if;
     Sending_Status := Stop;
     return False;
   end Timer_Sen_Cb;

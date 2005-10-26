@@ -54,7 +54,7 @@ package Oper_Def is
   type Oper_Rec is record
     Date : Date_Rec;
     Amount : Amount_Range := 21.21;
-    Kind : Kind_List := Kind_List'First; 
+    Kind : Kind_List := Kind_List'First;
     Status : Status_List := Status_List'First;
     Destination : Destination_Str := (others => '0');
     Comment : Comment_Str := (others => '0');

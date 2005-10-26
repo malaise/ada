@@ -1,12 +1,12 @@
 
 
-with My_Io, Ada.Text_Io; use My_Io; 
+with My_Io, Ada.Text_Io; use My_Io;
 -- calcul de la factorielle d'un entier;
 
-procedure Fact is 
+procedure Fact is
 
-  Nombre   : Natural; 
-  Resultat : Float; 
+  Nombre   : Natural;
+  Resultat : Float;
 
   function Calcul_Factoriel (N : Float) return Float is
   begin
@@ -44,11 +44,11 @@ begin
       Resultat := Calcul_Factoriel(Float(Nombre));
       Put(Resultat);
       New_Line;
-      New_Line; 
+      New_Line;
     exception
-      when Constraint_Error | Numeric_Error | Storage_Error => 
-        Put_Line("Nombre trop grand. Recommencez."); 
-        New_Line; 
-    end; 
-  end loop; 
-end Fact; 
+      when Constraint_Error | Numeric_Error | Storage_Error =>
+        Put_Line("Nombre trop grand. Recommencez.");
+        New_Line;
+    end;
+  end loop;
+end Fact;

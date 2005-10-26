@@ -13,18 +13,18 @@ package body Text is
                              Square : Space.Square_Coordinate)
                              return Con_Io.Square is
     use type Space.Color_List;
-  begin            
-    if Color = Space.White then 
+  begin
+    if Color = Space.White then
       return (Row => Space.Row_Range'Pos(Space.Row_Range'Last)
                    - Space.Row_Range'Pos(Square.Row)
                    + Screen_Row_Offset,
               Col => Space.Col_Range'Pos(Square.Col) + Screen_Col_Offset);
-    else   
+    else
       return (Row => Space.Row_Range'Pos(Square.Row) + Screen_Row_Offset - 1,
               Col => Space.Col_Range'Pos(Space.Col_Range'Last)
                    - Space.Col_Range'Pos(Square.Col)
                    + Screen_Col_Offset);
-    end if; 
+    end if;
   end To_Con_Io_Square;
 
   function To_Space_Square (Color         : Space.Color_List;
@@ -41,7 +41,7 @@ package body Text is
                               + Space.Col_Range'Pos(Space.Col_Range'Last) then
       return (Valid => False);
     end if;
-    if Color = Space.White then 
+    if Color = Space.White then
       Result.Square.Row :=
            Space.Row_Range'Val(Space.Row_Range'Pos(Space.Row_Range'Last)
                              - (Con_Io_Square.Row - Screen_Row_Offset));
@@ -206,7 +206,7 @@ package body Text is
     end if;
   end Get_Mouse_Event;
 
-   
+
   function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List is
     Con_Io_Rec : Con_Io.Mouse_Event_Rec;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;

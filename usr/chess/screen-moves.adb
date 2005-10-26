@@ -66,7 +66,7 @@ package body Moves is
     procedure Put (M : in Move) is
       Empty : constant Image.Move_Str := (others => ' ');
     begin
-      if not M.White_Move.Valid then 
+      if not M.White_Move.Valid then
         Con_Io.Put ("   " & ' ' & Empty,
                     Name => Move_Window,
                     Foreground => Main_Fore);

@@ -270,7 +270,7 @@ procedure T_Dictio is
   end Dictio_State_Cb;
 
   procedure Dictio_Notify_Cb (Name : in String;
-                              Item : in Boolean; 
+                              Item : in Boolean;
                               Data : in String) is
   begin
     Async_Stdin.Put_Out ("CLIENT: Notified on ");
@@ -283,7 +283,7 @@ procedure T_Dictio is
   end Dictio_Notify_Cb;
 
   -- Load dictio
-  
+
   procedure Load is
     Name : String (1 .. 10);
     N : Positive;

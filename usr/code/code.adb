@@ -98,7 +98,7 @@ begin
   exception
     when others =>
       My_Io.Put_Line ("Wrong argument. Usage : "
-                     & Argument.Get_Parameter(Occurence => 0) 
+                     & Argument.Get_Parameter(Occurence => 0)
                      & " -c  |  -d     <input_file> [ <output_file> ] ");
       return;
   end;

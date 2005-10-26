@@ -1,10 +1,10 @@
 with My_Io;
- 
+
 procedure Para is
- 
+
   Result : Boolean;
   Error  : exception;
- 
+
   task type Computer is
     entry Start(Ok : in Boolean);
     entry Stop(Ok : out Boolean);

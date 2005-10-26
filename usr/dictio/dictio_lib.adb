@@ -32,7 +32,7 @@ package body Dictio_Lib is
       Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dictio_Dscr), True);
       Socket.Close (Dictio_Dscr);
     else
-      begin 
+      begin
         Tcp_Util.Abort_Connect (Host, Port);
       exception
         when Tcp_Util.No_Such =>
@@ -145,7 +145,7 @@ package body Dictio_Lib is
         end if;
         if Notify_Cb /= null then
           Notify_Cb (Parse(Msg.Item.Name),
-                     Msg.Item.Kind = Data_Base.Data_Kind, 
+                     Msg.Item.Kind = Data_Base.Data_Kind,
                      Msg.Item.Data(1 .. Msg.Item.Data_Len));
         end if;
         return False;
@@ -157,7 +157,7 @@ package body Dictio_Lib is
         end if;
         Close;
         return False;
-     end case; 
+     end case;
   end Read_Cb;
 
   procedure Connection_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
@@ -265,7 +265,7 @@ package body Dictio_Lib is
       Dictio_Debug.Put ("Dictio_Lib: init to " & Parse(Host.Name)
                & " / " & Parse(Port.Name));
     end if;
-    
+
     Connect_To_Dictio;
 
     -- Wait a bit for connection to establish
@@ -291,7 +291,7 @@ package body Dictio_Lib is
         Dictio_Debug.Put ("Dictio_Lib: init fails on exception "
                  & Ada.Exceptions.Exception_Name(Error));
       end if;
-      raise No_Dictio; 
+      raise No_Dictio;
   end Init;
 
   procedure Lib_Send is new Socket.Send (Client_Com.Dictio_Client_Rec);
@@ -320,7 +320,7 @@ package body Dictio_Lib is
   end Is_Valid_Item_Name;
 
   -- Get Item data or alias: Sets Msg!
-  -- May raise Name_Too_Long or No_Item 
+  -- May raise Name_Too_Long or No_Item
   procedure Set_Msg_To (Name : in String; Kind : in Data_Base.Item_Kind) is
   begin
     Check_Available;
@@ -360,7 +360,7 @@ package body Dictio_Lib is
   end Set;
 
   -- Get Item data
-  -- May raise Name_Too_Long or No_Item 
+  -- May raise Name_Too_Long or No_Item
   function Get (Name : in String) return String is
     use type Data_Base.Item_Rec;
   begin

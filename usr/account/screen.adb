@@ -279,7 +279,7 @@ package body Screen is
     end loop;
     Set_Mode(Default);
   end Ack_Error;
- 
+
   -- Ring alarm / question bell
   procedure Ring (Alarm : in Boolean) is
   begin

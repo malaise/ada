@@ -35,7 +35,7 @@ begin
     Sys_Calls.Set_Error_Exit_Code;
     return;
   end if;
-    
+
   Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "'.");
   Parser.Set (It, Str, Is_Sep_Acc);
 
@@ -44,7 +44,7 @@ begin
     exit when Parser.Current_Word (It) = "";
   end loop;
   Ada.Text_Io.New_Line (2);
-  
+
   Parser.Reset (It);
 
   loop

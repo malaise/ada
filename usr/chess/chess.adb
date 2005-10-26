@@ -53,7 +53,7 @@ begin
     when Argument.Argument_Not_Found =>
       null;
   end;
-  
+
   Parse_Debug ("M", Debug.Moves);
   Parse_Debug ("T", Debug.Think);
   Parse_Debug ("N", Debug.No_Check);
@@ -69,7 +69,7 @@ begin
     end if;
   exception
     when Argument.Argument_Not_Found =>
-      begin 
+      begin
         if Argument.Get_Parameter (1, "C") = "" then
           Mode := Human.Client;
         else
@@ -89,7 +89,7 @@ begin
           end;
       end;
   end;
-  
+
   -- Color if not both
   if Mode /= Human.Both then
     if Lower_Str (Argument.Get_Parameter (1, "c")) = "white" then
@@ -210,7 +210,7 @@ begin
 
   Human.Play (Mode, Color, Text_Handler.Value (Name), Port,
               Text_Handler.Value (Init), Wait);
- 
+
 exception
   when Invalid_Argument | Argument.Argument_Not_Found =>
     Usage;

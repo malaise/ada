@@ -77,7 +77,7 @@ package body Scrambler_Gen is
             Remain(J - 1) := Remain(J);
           end loop;
           Nb_Remain := Nb_Remain - 1;
-        end if; 
+        end if;
       end loop;
     else
       -- Not symetric
@@ -98,6 +98,6 @@ package body Scrambler_Gen is
     end loop;
     return Str;
   end Generate;
-  
+
 end Scrambler_Gen;
 

@@ -22,7 +22,7 @@ procedure Wheeles is
 
     loop
       My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is running.");
-      select 
+      select
         accept Stop do
           My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is exiting.");
         end Stop;
@@ -47,7 +47,7 @@ begin
       Len : Natural;
     begin
       delay 1.0;
-      My_Io.Get_Line (Str, Len); 
+      My_Io.Get_Line (Str, Len);
       exit when Str(1..Len) = "exit";
     exception
       when others => null;

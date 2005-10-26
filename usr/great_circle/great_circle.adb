@@ -14,7 +14,7 @@ package body Great_Circle is
   Epsilon : constant := 1.0E-5;
 
   -- Earth radius
-  Earth_Radius : constant Lat_Lon.Distance := 6_370.0; 
+  Earth_Radius : constant Lat_Lon.Distance := 6_370.0;
 
   -- Lenght of the Chord of an angle, and reverse
   function Chord_Of_Angle (Angle : Conv.Rad_Range; Radius : Lat_Lon.Distance)
@@ -189,7 +189,7 @@ package body Great_Circle is
     if Distance < Epsilon then
       Heading := (0, 0, 0);
       return;
-    end if;      
+    end if;
 
     if Debug then
       Ada.Text_Io.Put_Line ("Delta Lat: " & Lat_Lon_Rad_Delta.Y'Img);
@@ -203,7 +203,7 @@ package body Great_Circle is
     Cos_H :=
            ( My_Math.Sin(My_Math.Real(Lat_Lon_Rad_B.Y))
              -   My_Math.Sin(My_Math.Real(Lat_Lon_Rad_A.Y))
-               * My_Math.Cos(My_Math.Real(Angle_Result))) 
+               * My_Math.Cos(My_Math.Real(Angle_Result)))
             / My_Math.Cos(My_Math.Real(Lat_Lon_Rad_A.Y))
             / My_Math.Sin(My_Math.Real(Angle_Result)) ;
 
@@ -217,7 +217,7 @@ package body Great_Circle is
     else
       Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(My_Math.Arc_Cos(Cos_H)));
     end if;
-    
+
 
     -- Fix result if B is at south of A
     -- or if A and B are on the same meridian

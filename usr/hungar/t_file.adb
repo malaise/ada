@@ -32,7 +32,7 @@ begin
     end loop;
   end;
 
-  
+
   for I in 1 .. Dim loop
     for J in 1 .. Dim loop
       My_Io.Put (File.Get_Note(I, J)); My_Io.Put(" ");

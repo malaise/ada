@@ -28,9 +28,9 @@ begin
        & " [ <level> ]"" (level from 3 to 5).");
       return;
   end;
- 
+
   Ada.Text_Io.Put_Line ("Find "
-    & Normal(Integer(Common.Get_Stored_Level), 1) 
+    & Normal(Integer(Common.Get_Stored_Level), 1)
     & " digits from 1 to 8.");
 
   Rnd.Randomize;
@@ -67,13 +67,13 @@ begin
         end;
       end loop Get;
 
-      Rep := Response.Respond(Prop); 
+      Rep := Response.Respond(Prop);
       Str := (others => ' ');
       Ada.Text_Io.Put(" -> " & Str & " ");
-      Ada.Text_Io.Put_Line(Normal(Rep.Placed_Ok,1) & Normal(Rep.Colors_Ok,1)); 
+      Ada.Text_Io.Put_Line(Normal(Rep.Placed_Ok,1) & Normal(Rep.Colors_Ok,1));
 
       exit Play when Rep.Placed_Ok = Len;
-  
+
     end loop Play;
 
     Prop := Response.Get_Code;

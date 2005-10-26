@@ -7,7 +7,7 @@ package body Screen is
   Nb_Point_Fld : constant Afpx.Field_Range := 5;
   State_Point_Fld : constant Afpx.Field_Range := 7;
   Info_Fld : constant Afpx.Field_Range := 10;
-  
+
   Degree_Fld : constant Afpx.Field_Range := 21;
 
   Stored_File_Name : Text_Handler.Text (Afpx.Width_Range'Last);
@@ -53,7 +53,7 @@ package body Screen is
         end if;
       when Y_F_X        => Encode_Title("Compute Y from X");
       when Scales       => Encode_Title("Set scales type");
-      when Boundaries   => 
+      when Boundaries   =>
         if Option then
           Encode_Title("View scales boundaries");
         else
@@ -292,7 +292,7 @@ package body Screen is
     end if;
   end Put_Point_Status;
 
- 
+
 
   procedure Init_For_Main1 (Cursor_Field : out Afpx.Field_Range) is
   begin
@@ -300,7 +300,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, False);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Disable Get
-    Afpx.Set_Field_Activation(Get_Fld, False); 
+    Afpx.Set_Field_Activation(Get_Fld, False);
     -- So whatever cursor field
     Cursor_Field := 1;
     Put_Title(Data);
@@ -345,7 +345,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, False);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Disable Get
-    Afpx.Set_Field_Activation(Get_Fld, False); 
+    Afpx.Set_Field_Activation(Get_Fld, False);
     -- So whatever cursor field
     Cursor_Field := 1;
     -- Lock points
@@ -360,7 +360,7 @@ package body Screen is
     -- Disallow Cancel
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Disable Get
-    Afpx.Set_Field_Activation(Get_Fld, False); 
+    Afpx.Set_Field_Activation(Get_Fld, False);
     -- So whatever cursor field
     Cursor_Field := 1;
     -- Lock points

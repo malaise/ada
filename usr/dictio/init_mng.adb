@@ -3,7 +3,7 @@ package body Init_Mng is
 
   procedure Start is
   begin
-    Fight_Mng.Start (Status.Init, 2.0, 
+    Fight_Mng.Start (Status.Init, 2.0,
       (Nodes.Many_Master_Master => Status.Starting,
        Nodes.Many_Master_Slave  => Status.Starting,
        Nodes.One_Master_Master  => Status.Slave,

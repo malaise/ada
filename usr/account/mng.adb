@@ -31,7 +31,7 @@ package body Mng is
 
   -- The amounts computed
   Amounts : Screen.Amounts_Array;
-  
+
   -- Callback for selection when Loading/saving file
   Loading : Boolean;
   procedure Init_Select_File is
@@ -61,7 +61,7 @@ package body Mng is
       Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, No - 1, False);
     end if;
   end Set_Current;
-      
+
 
   -- Builds the Afpx line from oper
   function Oper_To_Line (No : Oper_Range;
@@ -153,9 +153,9 @@ package body Mng is
       Oper_List_Mng.Get(Oper_List, Oper, Oper_List_Mng.Next);
       return Oper.Amount;
     end Get_Amount;
-      
+
   end List_Util;
-      
+
 
   -- Reset the Afpx list from the sel list
   procedure Reset_List is
@@ -332,7 +332,7 @@ package body Mng is
       Root_Amount := List_Util.Get_Amount;
       return;
     end if;
-      
+
     -- Confirm file overwritting
     --  or select file
     Loading := False;
@@ -497,7 +497,7 @@ package body Mng is
     Line := Line + 1;
     New_Page(Pf);
     Flush(Pf);
-    
+
     -- Print
     declare
       Val : String(1 .. 256);
@@ -508,7 +508,7 @@ package body Mng is
       Val (1 .. Len) := "lpr";
 
       Environ.Get_Str("ACCOUNT_LPR_COMMAND", Val, Len);
-      Dummy := Sys_Calls.Call_System (Val(1..Len) & " " & Pfn); 
+      Dummy := Sys_Calls.Call_System (Val(1..Len) & " " & Pfn);
     end;
 
     -- Delete & close
@@ -519,7 +519,7 @@ package body Mng is
       Screen.Ack_Error(Screen.File_Io);
       Refresh_Screen(Center);
       return;
-  end Print; 
+  end Print;
 
   -- Update the displayed amounts
   procedure Change_Unit is
@@ -534,7 +534,7 @@ package body Mng is
   procedure Sort (By_Date : in Boolean) is
   begin
     if By_Date then
-      Sort(Oper_List); 
+      Sort(Oper_List);
     else
       Sort_Amounts(Oper_List);
     end if;

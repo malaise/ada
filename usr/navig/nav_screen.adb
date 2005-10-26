@@ -26,7 +26,7 @@ package body Nav_Screen is
   Res_Fore : constant Effective_Colors := Light_Green;
 
   -- delay max of a get (data or action) in seconds.
-  Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec) := 
+  Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec) :=
     (Delay_Kind => Timers.Delay_Sec,
      Period => No_Period,
      Delay_Seconds => 0.5);
@@ -264,7 +264,7 @@ package body Nav_Screen is
         when Fd_Event | Timer_Event | Con_Io.Signal_Event
            | Con_Io.Wakeup_Event =>
           null;
-        when Refresh => 
+        when Refresh =>
           return Refresh;
       end case;
     end loop;

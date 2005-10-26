@@ -33,7 +33,7 @@ begin
     end if;
     -- Add filter
     begin
-      Regex_Filters.Add_Regex(Filter, 
+      Regex_Filters.Add_Regex(Filter,
                               Argument.Get_Parameter(Occurence => I-1),
                               Argument.Get_Parameter(Occurence => I) = "T");
     exception
@@ -55,7 +55,7 @@ begin
       Res := Regex_Filters.Check(Parser.Current_Word(Iter), Filter);
       Ada.Text_Io.Put_Line ("Check " & Parser.Current_Word(Iter)
                           & " -> " & Mixed_Str(Res'Img));
-    end loop; 
+    end loop;
   end loop;
 
 exception

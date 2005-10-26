@@ -20,8 +20,8 @@ begin
 
   -- Read up to last offset
   Io_Manager.Set_Skip_From (Definition.Read_Last_Byte);
-  
-  -- Main loop 
+
+  -- Main loop
   loop
     -- Read next byte until end of flow
     begin

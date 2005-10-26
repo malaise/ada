@@ -9,7 +9,7 @@ package Client_Com is
     Action : Client_Action_List;
     Item : Data_Base.Item_Rec;
   end record;
-    
+
   procedure Dictio_Receive is new Socket.Receive (Dictio_Client_Rec);
 
   function Dictio_Send is new Tcp_Util.Send (Dictio_Client_Rec);

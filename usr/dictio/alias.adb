@@ -75,8 +75,8 @@ package body Alias is
       Text_Handler.Empty (Name);
       raise Len_Error;
   end Best_Alias;
-    
-  
+
+
 
 
   -- Resolves an alias

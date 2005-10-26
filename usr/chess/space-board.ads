@@ -45,6 +45,6 @@ package Space.Board is
                         Col_Offset, Row_Offset : in Movement_Range;
                         New_Pos : out Movement_Result;
                         Piece   : out Pieces.Piece_Access);
-                     
+
 end Space.Board;
 

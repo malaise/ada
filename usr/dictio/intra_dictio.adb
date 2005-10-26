@@ -220,7 +220,7 @@ package body Intra_Dictio is
     -- Call dispatcher
     if Client_Cb /= null then
       Client_Cb (Diffused,
-                 Status.Status_List'Val(Character'Pos(Message.Head.Stat)), 
+                 Status.Status_List'Val(Character'Pos(Message.Head.Stat)),
                  Boolean'Val(Character'Pos(Message.Head.Sync)),
                  Message.Head.Prio,
                  Message.Head.From,
@@ -234,7 +234,7 @@ package body Intra_Dictio is
                   Result  : out Reply_Result_List;
                   Get_Status : in Boolean := True) is
     Len : Natural;
-    use Address_Ops; 
+    use Address_Ops;
     use type Data_Base.Item_Rec;
   begin
     if Get_Status then
@@ -243,7 +243,7 @@ package body Intra_Dictio is
     Message.Head.Sync := Character'Val(Boolean'Pos(Status.Sync));
     Message.Head.Prio := Args.Get_Prio;
     Local_Host_Name.Get (Message.Head.From);
-     
+
     if Message.Item.Data_Len = 0 then
       -- Item without data
       Len := Integer(Message.Item.Data(1)'Address

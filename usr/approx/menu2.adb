@@ -2,7 +2,7 @@ with Con_Io, Afpx, Curve, My_Math;
 with Points, Screen, Set_Points_List, Dialog, Resol;
 package body Menu2 is
 
-  type Restore_List is (None, Partial, List, Full); 
+  type Restore_List is (None, Partial, List, Full);
   Cursor_Field : Afpx.Field_Range;
 
   package Curve_Data is
@@ -184,7 +184,7 @@ package body Menu2 is
             -- Draw error
             null;
         end;
-      end if;  
+      end if;
     end loop;
   end Curve_Task;
 
@@ -302,7 +302,7 @@ package body Menu2 is
               begin
                 loop
                   Compute_Xy (Point, Ok);
-                  if Ok then 
+                  if Ok then
                     Ok := Dialog.Put_Yfx (Point);
                   end if;
                   exit when not Ok;
@@ -330,7 +330,7 @@ package body Menu2 is
               Restore := Full;
             when others =>
               null;
-          end case; 
+          end case;
         when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
            | Afpx.Wakeup_Event =>
           null;

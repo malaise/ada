@@ -114,7 +114,7 @@ begin
   begin
     for Col in Space.Movement_Range'(-1) .. 1 loop
       for Row in Space.Movement_Range'(-1) .. 1 loop
-        if abs Row + abs Col /= 0 then 
+        if abs Row + abs Col /= 0 then
           -- Not myself
           Dummy := Add_Action (Piece, Col, Row);
         end if;

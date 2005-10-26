@@ -27,7 +27,7 @@ begin
   end loop;
 
   Ada.Text_Io.Put_Line (
-         "CHECK that 1 has got 5 children:" 
+         "CHECK that 1 has got 5 children:"
        & Natural'Image (My_Tree.Read(T))
        & " has got"
        & Trees.Child_Range'Image (My_Tree.Children_Number(T))

@@ -135,7 +135,7 @@ package body Data_Base is
     return Item_List_Mng.List_Length (Item_List);
   end Nb_Item;
 
-  
+
   -- Item_Name is empty when no more item
   procedure Read_First (Item : out Item_Rec) is
   begin
@@ -181,6 +181,6 @@ package body Data_Base is
                            Pos-1, From_Current => False);
     return Image (Crc_10.Get);
   end Get_Crc;
-    
+
 end Data_Base;
 

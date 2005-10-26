@@ -71,13 +71,13 @@ begin
     Scramblers(I).Defined := False;
     Scramblers(I).Used := False;
   end loop;
-    
+
   -- Check if env variable overwrites default file
   Environ.Get_Txt (Env_Name, File_Name);
   if Text_Handler.Empty (File_Name) then
     Text_Handler.Set (File_Name, Default_Cnf);
   end if;
-  -- Open file 
+  -- Open file
   begin
     Get_Cnf.Open (Text_Handler.Value (File_Name));
   exception
@@ -131,7 +131,7 @@ begin
     -- Next
     Expected := Expected + 1;
     Get_Cnf.Read_Next_Line;
-  end loop;  
+  end loop;
 exception
   when Get_Cnf.No_More_Line =>
     Get_Cnf.Close;

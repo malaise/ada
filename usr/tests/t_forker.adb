@@ -42,7 +42,7 @@ procedure T_Forker is
     end loop;
     raise Program_Error;
   end Cat_Str;
-    
+
   use type Socket.Port_Num;
 begin
 
@@ -55,7 +55,7 @@ begin
     return;
   end if;
 
-  Socket.Open (Soc, Socket.Udp); 
+  Socket.Open (Soc, Socket.Udp);
   Socket.Link_Dynamic (Soc);
   begin
     Port := Socket.Port_Num'Value (Argument.Get_Parameter(2));
@@ -78,7 +78,7 @@ begin
     & Socket.Port_Num'Image(Socket.Get_Linked_To (Soc)));
 
   Req_Num := 0;
-  loop  
+  loop
     Ada.Text_Io.New_Line;
     Ada.Text_Io.Put("Start Kill Exit Ping Read (s k e p r) ? ");
     Ada.Text_Io.Get_Line (Buff, Len);

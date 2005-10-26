@@ -60,11 +60,11 @@ package Screen is
   List_Bottom_Fld   : constant Afpx.Field_Range := 23;
 
   Title_Oper_Fld    : constant Afpx.Field_Range := 24;
-  Add_Oper_Fld      : constant Afpx.Field_Range := 25; 
-  Copy_Oper_Fld     : constant Afpx.Field_Range := 26; 
-  Edit_Oper_Fld     : constant Afpx.Field_Range := 27; 
-  Delete_Oper_Fld   : constant Afpx.Field_Range := 28; 
-  Clean_Oper_Fld    : constant Afpx.Field_Range := 29; 
+  Add_Oper_Fld      : constant Afpx.Field_Range := 25;
+  Copy_Oper_Fld     : constant Afpx.Field_Range := 26;
+  Edit_Oper_Fld     : constant Afpx.Field_Range := 27;
+  Delete_Oper_Fld   : constant Afpx.Field_Range := 28;
+  Clean_Oper_Fld    : constant Afpx.Field_Range := 29;
   Search_Oper_Fld   : constant Afpx.Field_Range := 30;
   Show_Oper_Fld     : constant Afpx.Field_Range := 31;
 
@@ -79,8 +79,8 @@ package Screen is
   Exit_Account_Fld  : constant Afpx.Field_Range := 40;
 
   Message_Fld       : constant Afpx.Field_Range := 41;
-  Yes_Fld           : constant Afpx.Field_Range := 42; 
-  No_Fld            : constant Afpx.Field_Range := 43; 
+  Yes_Fld           : constant Afpx.Field_Range := 42;
+  No_Fld            : constant Afpx.Field_Range := 43;
 
 end Screen;
 

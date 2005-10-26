@@ -18,7 +18,7 @@ package body Nodes is
   begin
     return El1.Name = El2.Name;
   end Name_Match;
-  
+
   procedure Search_Name is new Node_Mng.Search (Name_Match);
 
 
@@ -93,7 +93,7 @@ package body Nodes is
     if El1.Stat = Status.Slave and then El2.Stat = Status.Init then
       return True;
     end if;
-   
+
     -- Prio
     if El1.Prio /= El2.Prio then
       return El1.Prio > El2.Prio;
@@ -105,7 +105,7 @@ package body Nodes is
 
 
   procedure Sort is new Node_Mng.Sort (Less_Than);
-    
+
   function Check return Check_Result_List is
     Rec : Node_Rec;
     Own_Name : Tcp_Util.Host_Name;

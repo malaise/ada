@@ -18,7 +18,7 @@ package body File_Mng is
                   Can_Write : out Boolean) is
     File : Oper_Io.File_Type;
     -- A record to read
-    Loc_Oper : Oper_Def.Oper_Rec; 
+    Loc_Oper : Oper_Def.Oper_Rec;
     -- A list for tempo read
     Loc_List : Oper_List_Mng.List_Type;
     use Oper_Def;
@@ -41,11 +41,11 @@ package body File_Mng is
       Oper_Io.Close (Write_File);
     exception
       when others =>
-        -- Cannot be opened for writting 
+        -- Cannot be opened for writting
         Can_Write := False;
     end Test_Write;
 
-    -- Then open file for work 
+    -- Then open file for work
     Oper_Io.Open (File, Oper_Io.In_File, File_Name);
     Oper_Io.Reset (File);
 
@@ -83,7 +83,7 @@ package body File_Mng is
     Oper_List_Mng.Delete_List (Oper_List);
     Oper_List_Mng.Assign (Oper_List, Loc_List);
     Oper_List_Mng.Rewind (Oper_List, Oper_List_Mng.Prev);
-    
+
   exception
     when F_Access_Error =>
       raise;
@@ -105,10 +105,10 @@ package body File_Mng is
   procedure Save (File_Name : in String;
                   Oper_List : in Oper_List_Mng.List_Type) is
     -- Position in list
-    Loc_Pos : Natural; 
+    Loc_Pos : Natural;
     File : Oper_Io.File_Type;
     -- A record to write
-    Loc_Oper, Loc_Oper_1 : Oper_Def.Oper_Rec; 
+    Loc_Oper, Loc_Oper_1 : Oper_Def.Oper_Rec;
     -- A list for tempo move
     Loc_List : Oper_List_Mng.List_Type;
   begin

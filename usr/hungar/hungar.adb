@@ -36,7 +36,7 @@ begin
     Dim := Mattrix.Dim;
 
     Euristic.Search (Mattrix.all, Nb_Iterations);
-  
+
     My_Io.Put_Line ("Result:");
     Sigma := 0.0;
     Ideal_Note := 0.0;
@@ -80,7 +80,7 @@ begin
       My_Io.Put ("   Ideal: ");
       My_Io.Put (Loc_Ideal_Note, 3, 2, 0);
 
-      -- Loss 
+      -- Loss
       if abs (Loc_Ideal_Note - Loc_Note) > File.Epsilon then
         My_Io.Put (" Loss: ");
         My_Io.Put (abs (Loc_Ideal_Note - Loc_Note), 3, 2, 0);
@@ -145,7 +145,7 @@ begin
           My_Io.Put ("s");
         end if;
       end Put_Time;
-    begin  
+    begin
       My_Io.Put ("    In");
       Put_Time (Days, "day");
       Put_Time (Hours, "hour");

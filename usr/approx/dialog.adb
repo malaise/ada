@@ -12,7 +12,7 @@ package body Dialog is
       return Screen.Confirm(Screen.C_Data_Lost, True);
     end if;
   end Confirm_Lost;
-    
+
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
   procedure Parse_Spaces (Txt : in out Text_Handler.Text;
@@ -277,12 +277,12 @@ package body Dialog is
 
     -- Encode data
     Afpx.Encode_Field (My_Fld, (0,0),
-      " F(" & 
+      " F(" &
       Parse_Leading_Space (Point_Str.Coordinate_Image(Point.X))
       & ") =");
     Afpx.Encode_Field (Screen.Get_Fld, (0,0),
       Point_Str.Coordinate_Image(Point.Y));
-    
+
     -- Let screen/afpx do the job
     Go_On := Screen.Confirm (Screen.C_Go_On, False, Subtitle => True);
     -- Clean up

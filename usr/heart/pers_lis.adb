@@ -244,7 +244,7 @@ package body Pers_Lis is
               Pers_Def.The_Persons, Next,
               Afpx.Line_List_Mng.Get_Position(Line_List) - 1,
               False);
-      
+
 
       case Ptg_Result.Event is
 

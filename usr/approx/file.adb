@@ -21,7 +21,7 @@ package body File is
       when others => raise F_Access_Error;
     end;
     Reset (File);
-    
+
     -- Check magic x and get size
     Read (File, Magic_Point);
     if Magic_Point.X /= Magic_X then
@@ -32,7 +32,7 @@ package body File is
     if Points.P_T_Coordinate(Size) /= Magic_Point.Y then
       raise F_Io_Error;
     end if;
-    
+
     -- Read the Size points
     declare
       The_Points : Points.P_T_The_Points (1 .. Size);
@@ -69,7 +69,7 @@ package body File is
         end;
       when others => raise F_Access_Error;
     end;
-    Write (File, (X => Magic_X, 
+    Write (File, (X => Magic_X,
                   Y => Points.P_T_Coordinate(The_Points'Length)));
     begin
       for Index in The_Points'Range loop

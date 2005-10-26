@@ -57,7 +57,7 @@ package body Sok_Manager is
     procedure Write_Score (No : in Sok_Types.Frame_Range;
                            Score : in Sok_Types.Score_Rec);
     Score_Io_Error : exception;
-    
+
 
   end Sok_File;
 

@@ -39,7 +39,7 @@ procedure T_Dispatcher is
   private
     Nb_Client : Line_Range := No_Client_No;
     Nb_Wait   : Line_Range := No_Client_No;
-    Selected  : Line_Range := No_Client_No; 
+    Selected  : Line_Range := No_Client_No;
     In_X      : Boolean := False;
   end Dispatcher;
   Tcheat : exception;
@@ -102,7 +102,7 @@ procedure T_Dispatcher is
         Nb_Wait := Nb_Wait + 1;
       end if;
     end Wait;
-    
+
     entry Get (for Id in Client_Range) (Kind : out Boolean)
               when Id = Selected is
     begin

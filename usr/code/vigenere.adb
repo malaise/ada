@@ -72,7 +72,7 @@ package body Vigenere is
       end if;
       -- Store
       Str(I) := C;
-    end loop; 
+    end loop;
   end Encode;
 
   procedure Decode (Key : in String; Str : in out Long_String) is
@@ -109,7 +109,7 @@ package body Vigenere is
       end if;
       -- Store
       Str(I) := C;
-    end loop; 
+    end loop;
   end Decode;
 
 end Vigenere;

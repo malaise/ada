@@ -81,7 +81,7 @@ begin
         end if;
       exception
         when Access_Error =>
-          Ada.Text_Io.Put_Line (Me & ": Cannot access file " 
+          Ada.Text_Io.Put_Line (Me & ": Cannot access file "
                                    & Text_Handler.Value(File)
                                    & ". Skipping.");
           Ok := False;

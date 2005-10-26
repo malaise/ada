@@ -31,7 +31,7 @@ package body Mesu_Nam is
   -- Bug in Gnat4.0
   -- Returning String & String produces corrupted string
   -- Using and intermediate variable solves the Pb.
-    File_Date : File_Date_Str; 
+    File_Date : File_Date_Str;
   begin
     if Date_For_File (1 .. 2) < Discriminant_For_Dates then
       File_Date := "20" & Date_For_File;

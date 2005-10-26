@@ -65,7 +65,7 @@ package body Points is
   begin
     Points_Sort.Quick_Sort(Storage.The_Points(1 .. Storage.Number));
   end P_Sort;
-  
+
 
   -- Take a point update into account
   procedure P_Upd_Point(Action : in P_T_Upd_Action;

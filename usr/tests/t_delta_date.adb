@@ -137,7 +137,7 @@ begin
       My_Io.Put (" Date2 - Date1:");
       My_Io.Put (D.Days); My_Io.Put (" days ");
       Dur_Io.Put (D.Secs); My_Io.Put (" sec");
-    
+
       My_Io.New_Line (2);
     exception
       when Ada.Calendar.Time_Error =>

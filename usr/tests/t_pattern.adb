@@ -7,8 +7,8 @@ procedure T_Pattern is
   Mr, Rule : Pattern.Rule_No;
   High_Id : Pattern.Pattern_Id := Pattern.Pattern_Id'First;
 
-  function Cli (Ru : in Pattern.Rule_No; 
-                Pa : in Pattern.Pattern_Id; 
+  function Cli (Ru : in Pattern.Rule_No;
+                Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
   begin
@@ -47,7 +47,7 @@ procedure T_Pattern is
   end Parse;
 
   function Set (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id; 
+                Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
@@ -83,7 +83,7 @@ procedure T_Pattern is
   end Set;
 
   function Del (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id; 
+                Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
     New_Pa : Pattern.Pattern_Id;
@@ -106,7 +106,7 @@ procedure T_Pattern is
   end Del;
 
   function Che (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id; 
+                Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
     Str : constant String := Parser.Image (It);
@@ -128,7 +128,7 @@ procedure T_Pattern is
   end Che;
 
   function Put (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id; 
+                Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
     Str : constant String := Parser.Current_Word (It);
@@ -171,7 +171,7 @@ procedure T_Pattern is
   end Put;
 
   function Hel (Ru : in Pattern.Rule_No;
-                Pa : in Pattern.Pattern_Id; 
+                Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
   begin
@@ -185,7 +185,7 @@ procedure T_Pattern is
   end Hel;
 
   function Def (Ru : in Pattern.Rule_No;
-                 Pa : in Pattern.Pattern_Id; 
+                 Pa : in Pattern.Pattern_Id;
                  Nb : in Natural;
                  It : in Parser.Iterator) return Boolean is
 

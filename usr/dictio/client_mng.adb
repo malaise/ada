@@ -124,7 +124,7 @@ package body Client_Mng is
     end if;
     return False;
   end Read_Cb;
-  
+
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                        Local_Dscr      : in Socket.Socket_Dscr;
                        Remote_Port_Num : in Tcp_Util.Port_Num;
@@ -258,7 +258,7 @@ package body Client_Mng is
     Dummy : Boolean;
     State : constant String
           := Status.Stable_Status_List'Image(Dictio_Status);
-    
+
   begin
     if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
       Dictio_Debug.Put ("Client: sending dictio status: " & State);

@@ -1,7 +1,7 @@
 with Dynamic_List;
 separate (Mcd_Mng)
 
-package body Call_Stack is 
+package body Call_Stack is
 
   type Call_Entry_Rec is record
     Str : Unb.Unbounded_String;

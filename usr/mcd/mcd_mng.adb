@@ -15,7 +15,7 @@ package body Mcd_Mng is
   package Unb renames Ada.Strings.Unbounded;
   Call_Entry : Unb.Unbounded_String;
 
-  package Stack is 
+  package Stack is
     -- What can we store in stack
     subtype Operand_Kind_List is Item_Kind_List range Arbi .. Regi;
     -- On push : Invalid_Item;
@@ -62,7 +62,7 @@ package body Mcd_Mng is
     -- Inte->Inte
     function Bitneg  (X : Item_Rec) return Item_Rec;
 
-    -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
+    -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool
     function Equal   (L, R : Item_Rec) return Item_Rec;
     function Diff    (L, R : Item_Rec) return Item_Rec;
     function Greater (L, R : Item_Rec) return Item_Rec;
@@ -145,7 +145,7 @@ package body Mcd_Mng is
     function Is_Register (C : in Character) return Boolean;
 
     -- Store to / retrieve from / Clear
-    procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec); 
+    procedure Store (Val : in Item_Rec; To_Reg : in Item_Rec);
     function  Retrieve (From_Reg : Item_Rec) return Item_Rec;
     procedure Clear (Reg : in Item_Rec);
 
@@ -198,7 +198,7 @@ package body Mcd_Mng is
     -- Invalid_Argument, Argument_Mismatch : exception;
   end Ios;
 
-  package Call_Stack is 
+  package Call_Stack is
 
     procedure Push (Item : in Unb.Unbounded_String);
     function  Pop return Unb.Unbounded_String;
@@ -225,7 +225,7 @@ package body Mcd_Mng is
     function Date_To_Time (Date : Item_Rec) return Item_Rec;
   end Dates;
 
-  function Is_Register (C : in Character) return Boolean 
+  function Is_Register (C : in Character) return Boolean
                        renames Registers.Is_Register;
 
   package Misc is
@@ -339,7 +339,7 @@ package body Mcd_Mng is
         Debug.Put(Item);
         Async_Stdin.New_Line_Err;
       end if;
-      case Item.Val_Oper is 
+      case Item.Val_Oper is
         -- These I do it myself
         when Nop =>
           null;
@@ -560,7 +560,7 @@ package body Mcd_Mng is
         when Etfi =>
           Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
           S := A;
- 
+
         when Obase =>
           Pop(A); Ios.Set_Obase(A);
           S := A;
@@ -628,7 +628,7 @@ package body Mcd_Mng is
           S := A;
         when Copye =>
           -- pushe A push A
-          Read(A); Push (A, Default_Stack => False); 
+          Read(A); Push (A, Default_Stack => False);
         when Pushle =>
           -- pushe X push X
           Pop(A, Default_Stack => False); Push (A);

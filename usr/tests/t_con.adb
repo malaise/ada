@@ -4,7 +4,7 @@ with Generic_Con_Io;
 
 procedure T_Con is
 
-  
+
   task type Task_T is
     entry Start(I : in Positive);
   end Task_T;
@@ -106,7 +106,7 @@ procedure T_Con is
             exit;
           end if;
         elsif Stat = Mouse_Button then
-          Con_Io.Get_Mouse_Event (Mouse_Event);   
+          Con_Io.Get_Mouse_Event (Mouse_Event);
           if Mouse_Event.Valid then
             Put (" T", W2);
           else

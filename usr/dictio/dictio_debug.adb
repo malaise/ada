@@ -17,7 +17,7 @@ package body Dictio_Debug is
     Level_Array(Client_Alias) := Environ.Is_Yes ("DICTIO_DEBUG_CLIENT_ALIAS");
     Level_Array(Sync) := Environ.Is_Yes ("DICTIO_DEBUG_SYNC");
     Level_Array(Lib) := Environ.Is_Yes ("DICTIO_DEBUG_LIB");
-    
+
     if Environ.Is_Yes ("DICTIO_DEBUG_ALL") then
       Level_Array := (others => True);
     end if;

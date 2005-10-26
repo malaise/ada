@@ -2,7 +2,7 @@ with Con_Io, Afpx, Directory, Text_Handler, Select_File, Normal;
 with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2;
 package body Menu1 is
 
-  type Restore_List is (None, Partial, Full); 
+  type Restore_List is (None, Partial, Full);
   Cursor_Field : Afpx.Field_Range;
   File_Name_Txt : Text_Handler.Text (Directory.Max_Dir_Name_Len);
 
@@ -29,7 +29,7 @@ package body Menu1 is
     Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
        Screen.Procuste(File_Name, Screen.Get_Get_Width));
   end Encode_File_In_Get;
-  
+
 
   procedure Error (Msg : in Screen.S_Error_List) is
   begin
@@ -102,7 +102,7 @@ package body Menu1 is
         return;
       end if;
     end if;
-              
+
     -- Select file
     Restore := Full;
     declare
@@ -129,8 +129,8 @@ package body Menu1 is
                              Kind, Rights, Modif_Time, Fsize);
       end if;
     end;
-      
-      
+
+
 
     -- Restore (for errors)
     Afpx.Use_Descriptor(1);
@@ -159,7 +159,7 @@ package body Menu1 is
         when others =>
           Error (Screen.E_Io_Error);
       end;
-    end if;  
+    end if;
   end Load_Save;
 
   procedure Read_Point (Set : in out Boolean; Point : in out Points.P_T_One_Point) is
@@ -369,7 +369,7 @@ package body Menu1 is
               Data_Changed := True;
             when others =>
               null;
-          end case; 
+          end case;
         when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
            | Afpx.Wakeup_Event =>
           null;

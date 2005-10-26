@@ -89,7 +89,7 @@ package body Mcd_Parser is
    Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
    Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", False),
    Proport  => (Nosy, "push A * B / C                ", True),
- 
+
    Isarbi   => (Nosy, "push True if A in an arbitrari", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),
    Isreal   => (Nosy, "push True if A is a real      ", False),
@@ -102,7 +102,7 @@ package body Mcd_Parser is
    Isnul    => (Nosy, "push True if A =  0 or 0.0    ", False),
    Isnotnul => (Nosy, "push True if A /= 0 or 0.0    ", False),
    Isneg    => (Nosy, "push True if A <  0 or 0.0    ", True),
- 
+
    Ssize    => (Nosy, "push stack size               ", False),
    Swap     => (Nosy, "push A, push B                ", False),
    Swap3    => (Nosy, "push A, push B, push C        ", False),
@@ -167,7 +167,7 @@ package body Mcd_Parser is
    Strregi  => (Nosy, "push A converted to register  ", False),
    Strprog  => (Nosy, "push A converted to program   ", False),
    Strof    => (Nosy, "push formated string of A     ", False),
-   Normal   => (Nosy, "push normalised string of int ", False), 
+   Normal   => (Nosy, "push normalised string of int ", False),
    Regex    => (Nosy, "push if B matches regex A     ", True),
 
    Clock    => (Nosy, "push current time             ", False),
@@ -207,7 +207,7 @@ package body Mcd_Parser is
         Item_Chrs.Val_Text := Unb.To_Unbounded_String (
                Input_Dispatcher.Current_String);
         Instr_Stack.Push(Item_Chrs);
-      raise Parsing_Error;  
+      raise Parsing_Error;
     end;
     if Debug.Debug_Level_Array(Debug.Parser) then
       Async_Stdin.Put_Line_Err ("Parser: Getting >"
@@ -256,7 +256,7 @@ package body Mcd_Parser is
 
     -- Parse [ or Regi
     if Unb.Length(Txt) = 1 then
-      
+
       if Mcd_Mng.Is_Register(C) then
         -- A register
         Instr_Stack.Push(Item_Chrs);
@@ -377,16 +377,16 @@ package body Mcd_Parser is
     exception
       when others => null;
     end;
-    
+
     -- Cannot recognise anything
     Instr_Stack.Push(Item_Chrs);
-    raise Parsing_Error;  
-    
+    raise Parsing_Error;
+
   exception
     when Io_Flow.Fifo_Error =>
       raise;
     when others =>
-      raise Parsing_Error;  
+      raise Parsing_Error;
   end Next_Item;
 
 
@@ -408,7 +408,7 @@ package body Mcd_Parser is
       Ope_Name:= (others => ' ');
       if Words(O).Word /= Nosy then
         Ope_Name(1 .. 2) := Words(O).Word;
-      else 
+      else
         Ope_Name(1 .. Mcd_Mng.Operator_List'Image(O)'Length)
                 := Lower_Str(Mcd_Mng.Operator_List'Image(O));
       end if;
@@ -418,7 +418,7 @@ package body Mcd_Parser is
       end if;
     end loop;
   end Print_Help;
-    
+
   procedure Dump_Stack is
     Item_Chrs : Item_Chrs_Rec;
   begin

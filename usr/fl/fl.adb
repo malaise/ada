@@ -53,7 +53,7 @@ begin
     else
       Ada.Text_Io.New_Line;
     end if;
-      
+
 
     -- Get
     begin

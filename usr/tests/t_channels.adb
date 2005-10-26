@@ -221,7 +221,7 @@ begin
   end if;
 
   Wait (1.0);
-  
+
   Ada.Text_Io.Put_Line ("Sending " & Nb_To_Do'Img & " messages");
   loop
     Send (Message);

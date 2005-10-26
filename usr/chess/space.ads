@@ -12,7 +12,7 @@ package Space is
     Row : Row_Range;
   end record;
   Origin : constant Square_Coordinate := (A, 1);
- 
+
   type Square_Array is array (Positive range <>) of Square_Coordinate;
 
   function Color_Of_Square (Square : Square_Coordinate) return Color_List;

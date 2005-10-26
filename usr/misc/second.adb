@@ -10,7 +10,7 @@ procedure Second is
   D : My_Math.Real;
 
   package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
-  
+
 begin
 
   -- Check number of arguments

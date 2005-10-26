@@ -26,7 +26,7 @@ package body Fifos is
     when Socket.Soc_Name_Not_Found =>
       raise Name_Error;
   end Host_Name2Id;
-    
+
 
   package body Fifo is
 
@@ -71,7 +71,7 @@ package body Fifos is
 
     package body List is
 
-      -- The list 
+      -- The list
       Fifo_List : Fifo_List_Mng.List_Type;
 
       -- Insert a record
@@ -241,7 +241,7 @@ package body Fifos is
         if Acc.Kind = Connect then
           -- Clean connection info
           Acc.Dscr := Socket.No_Socket;
-          Acc.State := Waiting; 
+          Acc.State := Waiting;
         elsif Acc.Kind = Accepted then
           -- Conn_Cb calls may have changed current: find again
           if not List.Search_By_Dscr (Dscr) then
@@ -303,7 +303,7 @@ package body Fifos is
           Assertion.Assert (False, "acception on " & Rec.Kind'Img & " fifo");
           return;
         end if;
-          
+
         -- Insert new record
         Rec.Kind := Accepted;
         Rec.Dscr := New_Dscr;
@@ -407,7 +407,7 @@ package body Fifos is
           null;
       end Connect;
 
-      procedure Close (Fifo : in Fifo_Access) is 
+      procedure Close (Fifo : in Fifo_Access) is
         procedure Call_Cb is
         begin
           -- Call Connection_Cb
@@ -472,7 +472,7 @@ package body Fifos is
                               Acception_Cb'Unrestricted_Access,
                               Fifo.Afux_Dscr,
                               Port_Num);
-        Fifo.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Local_Host_Id); 
+        Fifo.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Local_Host_Id);
         Fifo.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port_Num);
         Fifo.State := Connected;
       exception
@@ -523,7 +523,7 @@ package body Fifos is
       end Fifo_Name_Of;
 
 
-      
+
       procedure Split (Data : in String; Host : out Tcp_Util.Host_Name;
                                          Port : out Tcp_Util.Port_Num) is
         Txt : Text_Handler.Text (Data'Length);
@@ -539,7 +539,7 @@ package body Fifos is
         begin
           Host (1 .. Sep_Index - 1) :=
             Text_Handler.Value (Txt) (1 .. Sep_Index - 1);
-          Port := Tcp_Util.Port_Num'Value( 
+          Port := Tcp_Util.Port_Num'Value(
             Text_Handler.Value (Txt) (Sep_Index + 1 .. Text_Handler.Length(Txt)) );
         exception
           when others =>
@@ -625,10 +625,10 @@ package body Fifos is
           raise No_Dictio;
         when No_Dictio =>
           raise;
-        when others => 
+        when others =>
           raise System_Error;
       end Init;
-     
+
 
       procedure Set (Fifo_Name : in String; Host : in String;
                                             Port : in Tcp_Util.Port_Num) is
@@ -719,7 +719,7 @@ package body Fifos is
                    To_Remote       : in Boolean;
                    Connection_Cb   : in Connection_Callback_Access;
                    Reception_Cb    : in Reception_Callback_Access;
-                   End_Overflow_Cb : in End_Overflow_Callback_Access) 
+                   End_Overflow_Cb : in End_Overflow_Callback_Access)
              return Fifo_Id is
       Rec : Fifo_Rec;
       Got : Boolean;

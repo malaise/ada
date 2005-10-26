@@ -30,7 +30,7 @@ package Players is
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
                         Promote  : in Pieces.Piece_Kind_List) return Action_Rec;
-  
+
   -- Check that a valid action exists the the list of a player
  function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean;
 

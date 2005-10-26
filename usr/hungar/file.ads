@@ -12,6 +12,6 @@ package File is
 
   Read_Error : exception;
   File_Not_Read : exception;
-  
+
 end File;
 

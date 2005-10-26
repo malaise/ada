@@ -68,8 +68,8 @@ begin
 
   Arr(1 .. 2) := (-1, -2);
   Int_Io.Write (File, Arr(1 .. 2), N_Arr * Arr'Length - 4);
-    
+
   Int_Io.Close(File);
-    
-end T_Bloc_Io;  
+
+end T_Bloc_Io;
 

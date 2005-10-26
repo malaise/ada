@@ -19,7 +19,7 @@ procedure Trans is
   package D is new Ada.Direct_Io (File_Frame_Tab);
   D_File_Name : constant String := "SOKOBAN.DAT";
   D_File : D.File_Type;
-  
+
 
   A_File_Name : constant String := "SOKOBAN.ASC";
   A_File : Ada.Text_Io.File_Type;

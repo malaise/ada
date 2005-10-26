@@ -19,7 +19,7 @@ package body File is
   -- Last move num read/written
   Move_Num : Natural;
   -- Have we written
-  Written : Boolean; 
+  Written : Boolean;
 
   package My_Get_Line is new Get_Line (
       Max_Word_Len => Image.Move_Str'Length,
@@ -43,7 +43,7 @@ package body File is
     when Chess_Io.Name_Error =>
       null;
   end Delete;
- 
+
   -- Open / Create a file for reading then saving actions
   -- File_Error if file exists and cannot be open
   -- or file cannot be created
@@ -149,7 +149,7 @@ package body File is
     -- Parse the word
     begin
       Str := (others => ' ');
-      Str(1 .. Text_Handler.Length(Line_Array(Word_Num))) := 
+      Str(1 .. Text_Handler.Length(Line_Array(Word_Num))) :=
         Text_Handler.Value(Line_Array(Word_Num));
     exception
       when others =>
@@ -235,7 +235,7 @@ package body File is
     end if;
     Written := False;
   end Prepare_To_Append;
-     
+
 
   -- Read next move (white then black then white...)
   -- Returns a not valid action at end of file
@@ -339,4 +339,4 @@ package body File is
   end Close;
 
 end File;
- 
+

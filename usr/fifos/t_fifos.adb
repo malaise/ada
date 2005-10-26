@@ -33,7 +33,7 @@ procedure T_Fifos is
     Res := Test_Fifo.Send (Id, Msg);
     Ada.Text_Io.Put_Line ("Send result: " & Mixed_Str(Res'Img));
   end Send;
-   
+
 
   procedure Conn_Cb (Fifo_Name : in String;
                      Id        : in Test_Fifo.Fifo_Id;
@@ -57,7 +57,7 @@ procedure T_Fifos is
       return;
     end if;
 
-    if not Server 
+    if not Server
     and then Connected then
       Send (Id, "Ah que coucou!");
     end if;
@@ -81,14 +81,14 @@ procedure T_Fifos is
   begin
     Ada.Text_Io.Put_Line ("End of overflow");
   end Ovfl_Cb;
-  
+
 
   procedure Sign_Cb is
   begin
     Signal := True;
   end Sign_Cb;
-    
-  
+
+
   use type Test_Fifo.Fifo_Id;
 begin
   if Argument.Get_Nbre_Arg /= 2 then

@@ -3,7 +3,7 @@ with Text_Handler, Argument, Many_Strings;
 
 procedure T_Many_Strings is
   Str : Text_Handler.Text(1024);
-  L : Positive; 
+  L : Positive;
 begin
 
   -- Build String (may raise Constraint_Error if args too long)

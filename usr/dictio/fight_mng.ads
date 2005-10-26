@@ -15,7 +15,7 @@ package Fight_Mng is
                    Sync : in Boolean;
                    Prio : in Args.Prio_Str;
                    Diff : in Boolean;
-                   Extra : in String := ""); 
+                   Extra : in String := "");
 
 end Fight_Mng;
 

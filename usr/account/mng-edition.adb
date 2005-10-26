@@ -267,7 +267,7 @@ package body Edition is
       if Oper.Date.Day > Max_Days then
         Oper.Date.Day := Max_Days;
       end if;
-        
+
     end if;
   end Adjust_Copy;
 
@@ -418,7 +418,7 @@ package body Edition is
         Field := 0;
       end if;
 
-      -- Restore 
+      -- Restore
       if Edit_Type = Modify then
         case Saved_Movement is
           when Oper_List_Mng.Next =>
@@ -495,7 +495,7 @@ package body Edition is
     end if;
   end Set_Cursor;
 
-  -- Do the edition  
+  -- Do the edition
   procedure Edit (Edit_Type : in Edit_List) is
     -- Original unit to restore
     Orig_Unit : constant Unit_Format.Units_List

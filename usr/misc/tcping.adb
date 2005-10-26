@@ -116,7 +116,7 @@ procedure Tcping is
                             Delay_Seconds => 0.0),
                            Cancel_Cb'Unrestricted_Access);
   end Cancel;
- 
+
   procedure Connect_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
                         Remote_Host_Id  : in Tcp_Util.Host_Id;
                         Connected       : in Boolean;
@@ -189,7 +189,7 @@ procedure Tcping is
     Start_Time := Ada.Calendar.Clock;
     return False;
   end Timer_Cb;
- 
+
 begin
   -- 2 and only 2 no_key, no dup options
   if Argument.Get_Nbre_Arg < 2 then

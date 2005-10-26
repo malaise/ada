@@ -43,7 +43,7 @@ package Screen is
   -- Put/hide info. Display error. Confirm
   type S_Message_List is (
       I_Clear, I_File_Name, I_X, I_Y, I_Xmin, I_Ymin, I_Xmax, I_Ymax,
-      I_Degree, I_Scales, I_Wait, 
+      I_Degree, I_Scales, I_Wait,
       C_File_Exists, C_Delete_Point, C_Go_On, C_Data_Lost,
       E_Done, E_File_Not_Found, E_Io_Error, E_File_Name,
       E_No_Data, E_Wrong_Degree, E_Wrong_Coordinate,
@@ -57,7 +57,7 @@ package Screen is
 
   procedure Inform  (Msg : in S_Info_List);
   function  Confirm (Msg : S_Confirm_List; Alert : Boolean;
-                     Subtitle : Boolean := False) return Boolean; 
+                     Subtitle : Boolean := False) return Boolean;
   procedure Error   (Msg : in S_Error_List; Subtitle : in Boolean := False);
 
 

@@ -41,16 +41,16 @@ package body Graphic is
                              Square : Space.Square_Coordinate)
                              return Graph_Square is
     use type Space.Color_List;
-  begin            
-    if Color = Space.White then 
+  begin
+    if Color = Space.White then
       return (X => X0 + Space.Col_Range'Pos(Square.Col) * Size,
               Y => Y0 + (Space.Row_Range'Pos(Square.Row) - 1) * Size);
-    else   
+    else
       return (X => X0 + (Space.Col_Range'Pos(Space.Col_Range'Last)
                        - Space.Col_Range'Pos(Square.Col)) * Size,
               Y => Y0 + (Space.Row_Range'Pos(Space.Row_Range'Last)
                        - Space.Row_Range'Pos(Square.Row)) * Size);
-    end if; 
+    end if;
   end To_Con_Io_Square;
 
   function To_Space_Square (Color : Space.Color_List;
@@ -170,7 +170,7 @@ package body Graphic is
       Pos.Y := Pos.Y + Offset;
       Put (C, Pos);
     end loop;
-      
+
   end Init_Board;
 
   procedure Display_Promotion (Move_Color : in Space.Color_List) is
@@ -218,7 +218,7 @@ package body Graphic is
             Bitmaps.Piece_Size,
             Bits.all);
       end loop;
-    
+
     else
       Con_Io.Set_Foreground (Main_Back);
       Con_Io.Graphics.Fill_Rectangle (

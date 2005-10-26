@@ -4,7 +4,7 @@ with Sok_Display, Sok_Time;
 package body Sok_Input is
 
   Play : Boolean := True;
-  Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec) 
+  Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec)
             := (Delay_Kind => Timers.Delay_Sec,
                 Period => Con_Io.No_Period,
                 Delay_Seconds => 1.0);
@@ -15,7 +15,7 @@ package body Sok_Input is
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
     Ins  : Boolean;
-    
+
     use Con_Io;
   begin
     loop
@@ -72,7 +72,7 @@ package body Sok_Input is
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
     Ins  : Boolean;
-    
+
     use Con_Io;
   begin
     loop

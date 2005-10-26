@@ -9,7 +9,7 @@ package body File is
     Max_Line_Len => 80,
     Comment      => "#");
 
-  Line : Cote_Get_Line.Line_Array; 
+  Line : Cote_Get_Line.Line_Array;
 
   subtype Loc_Cote_Range is Natural range 0 .. Max_Cote;
   type Cote_Line_Array is array (Cote_Range) of Ada.Text_Io.Count;
@@ -31,7 +31,7 @@ package body File is
   end Read_Next_Significant_Line;
 
   procedure Error (Filename : in String; Result : in Result_List;
-                   Cote_No : in Loc_Cote_Range := 0; 
+                   Cote_No : in Loc_Cote_Range := 0;
                    No2 : in Natural := 0) is
   begin
     if Result = Ok or else Result = End_Of_File then
@@ -74,8 +74,8 @@ package body File is
     when others =>
       Error (Filename, File_Access);
   end Open;
-    
-  procedure Load_Cote (Kind : in Cote_Kind; 
+
+  procedure Load_Cote (Kind : in Cote_Kind;
                        Nb_Cote : in out Loc_Cote_Range;
                        Cote : in out Cote_Rec;
                        Result : out Result_List) is
@@ -130,9 +130,9 @@ package body File is
         Tmp := Cote.Start;
         Cote.Start := Cote.Stop;
         Cote.Stop := Tmp;
-      end; 
+      end;
     end if;
-    
+
     Result := Ok;
   exception
     when others =>
@@ -171,7 +171,7 @@ package body File is
       Manufas(Nb_Manufa) := Manufa_Cote;
     end loop;
     Cote_Get_Line.Close;
-        
+
     -- Load and check Designs
     Nb_Design := 0;
     Open (Arg_Parsing.Design_File_Name);
@@ -240,7 +240,7 @@ package body File is
         Error (Arg_Parsing.Design_File_Name, No_Cote, 0, I);
       end if;
     end loop;
-  
+
     Load_Ok := True;
   end Load_Cotes;
 

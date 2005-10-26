@@ -47,7 +47,7 @@ begin
   else
     Dscr_No := 1;
   end if;
-    
+
   for I in 1 .. 999 loop
     Line.Str(1 .. 3) := Normal(I, 3, Gap => '0');
     Line.Len := 3;

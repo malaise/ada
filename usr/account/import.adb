@@ -38,7 +38,7 @@ begin
     when Ada.Text_Io.Name_Error =>
       null;
     when others =>
-      Ada.Text_Io.Put_Line("Error. Account file " 
+      Ada.Text_Io.Put_Line("Error. Account file "
                            & Argument.Get_Parameter(Occurence => 2)
                            & " already exists");
       Usage;
@@ -61,7 +61,7 @@ begin
   No := 1;
   loop
     begin
-      Ada.Text_Io.Get_Line(File, Str, Last); 
+      Ada.Text_Io.Get_Line(File, Str, Last);
       if Last = 0 then
         No := No - 1;
         exit;
@@ -82,7 +82,7 @@ begin
       Oper := Unit_Format.Value(Str);
     exception
       when others =>
-        Ada.Text_Io.Put_Line("Error. At record no " 
+        Ada.Text_Io.Put_Line("Error. At record no "
                            & Positive'Image(No));
         Ada.Text_Io.Close(File);
         return;

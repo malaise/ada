@@ -11,7 +11,7 @@ package body Coder is
     Back         : Scrambler_Factory.Back_Type;
   end record;
   The_Coder : Coder_T;
- 
+
   -- Init enigma from arguments and config files
   procedure Init is
     Def : Definition.Def_Rec;
@@ -35,7 +35,7 @@ package body Coder is
     -- Jammers
     for I in 1 .. Def.Jammers.Nb_Jammers loop
       begin
-        The_Coder.Jammers(I) := 
+        The_Coder.Jammers(I) :=
            Scrambler_Factory.Get (Def.Jammers.Jammers(I).Scrambler);
       exception
         when Scrambler_Factory.Unknown_Scrambler =>
@@ -58,7 +58,7 @@ package body Coder is
       The_Coder.Back := Scrambler_Factory.Get (Def.Back.Scrambler);
     exception
       when Scrambler_Factory.Unknown_Scrambler =>
-        Io_Manager.Put_Line_Error ("ERROR. Unknown scrambler" 
+        Io_Manager.Put_Line_Error ("ERROR. Unknown scrambler"
            & Def.Back.Scrambler'Img & " for back.");
         raise Init_Failed;
       when Scrambler_Factory.Scrambler_In_Use =>

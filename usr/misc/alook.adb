@@ -207,8 +207,8 @@ procedure Look_95 is
           J := J + 1;
         end loop;
       end Cp2Bloc;
-         
-      
+
+
     begin
       -- Sanity checks raising anonymous Bloc_Error
       -- Something read and index before current
@@ -628,7 +628,7 @@ begin
     if Argument.Get_Parameter (I) = "-d" then
       Debug := True;
     elsif Argument.Get_Parameter (I) = "-v" then
-      Verbose_Level := Verbose; 
+      Verbose_Level := Verbose;
     elsif Argument.Get_Parameter (I) = "-s" then
       Verbose_Level := Silent;
     elsif Argument.Get_Parameter (I) = "-n" then
@@ -666,7 +666,7 @@ begin
 
   if not One_Done then
     Put_Usage;
-  end if; 
+  end if;
   Sys_Calls.Set_Exit_Code (Exit_Code);
 exception
   when others =>

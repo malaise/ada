@@ -46,7 +46,7 @@ package body Resolution is
     Cote_Search.Init;
   end Init;
 
-  
+
   package body Cote_Search is
     Gp : Bool_Mattrix;
 
@@ -85,7 +85,7 @@ package body Resolution is
       I : Cote_Nb_Range;
       C : Log_Cote_Rec;
     begin
-      
+
       -- Search from previously returned cote
       I := Last_Cote_Nb;
       loop
@@ -184,7 +184,7 @@ package body Resolution is
       end if;
     end loop;
   end Search_Way;
-  
+
 
   procedure Solve (Kind : in Common.Cote_Kind) is
     Current_Cote : Log_Cote_Rec;

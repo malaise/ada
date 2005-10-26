@@ -41,7 +41,7 @@ begin
       Error ("Opening file " & Argument.Get_Parameter(Occurence => 1));
       raise;
   end;
-      
+
   Points.P_Clear;
 
 

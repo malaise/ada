@@ -45,14 +45,14 @@ package body Dispatch is
     Event_Mng.Pause (Event_Mng.Infinite_Ms);
   end;
 
-  procedure Quit is 
+  procedure Quit is
     use type Status.Status_List;
   begin
     Status.Set (Status.Dead);
     while Status.Get /= Status.Dead loop
       Event_Mng.Wait (10);
     end loop;
-  end Quit; 
+  end Quit;
 
   procedure New_Intra (Diff : in Boolean;
                        Stat : in Status.Status_List;
@@ -90,7 +90,7 @@ package body Dispatch is
       -- Sync: Store and notify
       Sync_Mng.Sync_Received;
       Client_Mng.Modified (Item);
-    else 
+    else
       -- Data: Store and notify
       if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
         Dictio_Debug.Put ("Dispatch: receive data " & Parse(Item.Name));

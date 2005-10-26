@@ -8,7 +8,7 @@ package body Arg_Parsing is
   begin
     return Argument.Get_Parameter (Pm);
   end Manufa_File_Name;
-  
+
   function Design_File_Name return String is
   begin
     return Argument.Get_Parameter (Pd);
@@ -41,6 +41,6 @@ package body Arg_Parsing is
       -- Default: no flag
       null;
   end;
-  
+
 end Arg_Parsing;
 

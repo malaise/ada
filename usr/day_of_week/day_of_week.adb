@@ -104,7 +104,7 @@ begin
   begin
     T0 := Ada.Calendar.Time_Of (Year, 1, 1, 0.0);
     Delta_Date_0 := Perpet."-" (T, T0);
-    
+
     T1 := Ada.Calendar.Time_Of (Year, 12, 31, 0.0);
     Delta_Date_1 := Perpet."-" (T1, T);
   exception
@@ -117,7 +117,7 @@ begin
   -- Compute sentence
   Day_No := Delta_Date_0.Days + 1;
   if (Day_No rem 100) / 10 /= 1 then
-    -- 1..9 and 20..99 
+    -- 1..9 and 20..99
     case Day_No rem 10 is
       when 1 =>
         Th := "st";
@@ -150,7 +150,7 @@ begin
        & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
        & ",");
   Ada.Text_Io.Put_Line (" the"
-       & Perpet.Day_Range'Image (Day_No) 
+       & Perpet.Day_Range'Image (Day_No)
        & Th
        & " day of the year,"
        & Perpet.Day_Range'Image (Delta_Date_1.Days)

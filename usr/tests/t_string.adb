@@ -79,8 +79,8 @@ begin
       My_Io.Put_Line (" 8 Extract (head or tail)");
       My_Io.Put_Line (" 9 Swap");
       My_Io.Put_Line ("10 Unique (form head or tail)");
-      
-      loop 
+
+      loop
         My_Io.Put ("Choice (0 .. 10) ? "); Int_Get (Action, True);
         exit when Action <= 10;
       end loop;
@@ -107,7 +107,7 @@ begin
           when  2 =>
             My_Io.Put_Line ("Parse spaces");
             My_Io.Put ("From_Head (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Spaces parsed at: " & 
+            My_Io.Put_Line ("Spaces parsed at: " &
              Integer'Image (String_Mng.Parse_Spaces (
                Str(1 .. Str_Len), From_Head => Bool1)) );
 
@@ -120,7 +120,7 @@ begin
             My_Io.Put ("Show_Trunc (YN)? "); Bool_Get(Bool3);
 
             My_Io.Put_Line (
-                "Procuste: |" 
+                "Procuste: |"
               & String_Mng.Procuste(Str(1 .. Str_Len),
                        Len => Pos1,
                        Align_Left => Bool1,
@@ -134,7 +134,7 @@ begin
             My_Io.Put ("Fragment (String)? ");
             My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("Occurence (Pos)? "); Int_Get(Pos1, False);
-            My_Io.Put_Line ("Occurence of fragment located at: " & 
+            My_Io.Put_Line ("Occurence of fragment located at: " &
              Integer'Image (String_Mng.Locate (
                Str(1 .. Str_Len),
                Fragment => Str1(1 .. Nat1),

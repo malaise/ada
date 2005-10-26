@@ -71,7 +71,7 @@ procedure Search is
       end if;
     end loop;
   end Unsel_All;
-    
+
 
 begin
 
@@ -80,7 +80,7 @@ begin
     Unsel;
     Refresh_Screen(Unchanged);
     return;
-  end if; 
+  end if;
 
   -- Not in sublist: get criteria
   Afpx.Use_Descriptor(4);

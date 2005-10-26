@@ -17,7 +17,7 @@ package body Set_Up is
     Decoded_Id : Space.Board.Orig_Piece_Id (True);
     Decoded_Square : Space.Square_Coordinate;
     Orig_Id :  Space.Board.Orig_Piece_Id;
-     
+
     use type Pieces.Piece_Kind_List;
     use type Space.Color_List, Space.Board.Orig_Piece_Id;
   begin

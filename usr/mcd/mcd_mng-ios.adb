@@ -3,7 +3,7 @@ with My_Math, Sys_Calls, Normal, Bool_Io, Mixed_Str;
 with Inte_Io, Real_Io, Io_Flow;
 separate (Mcd_Mng)
 
-package body Ios is 
+package body Ios is
 
   use My_Math;
 
@@ -83,7 +83,7 @@ package body Ios is
   begin
     Io_Flow.Put (Image (Item));
   end Put;
-    
+
   procedure Put_Line (Item : in Item_Rec) is
   begin
     Io_Flow.Put_Line (Image (Item));
@@ -343,7 +343,7 @@ package body Ios is
   function Getenv (Item : Item_Rec) return Item_Rec is
     Len : Natural;
     Set, Trunc : Boolean;
-    
+
   begin
     if Item.Kind /= Chrs then
       raise Invalid_Argument;

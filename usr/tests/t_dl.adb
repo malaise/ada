@@ -183,7 +183,7 @@ begin
   Put(Item, True);
 
   Ada.Text_Io.Put_Line ("Iteration");
-  My_List.Iterate (List, null, 1, My_List.Next, My_List.Absolute, 
+  My_List.Iterate (List, null, 1, My_List.Next, My_List.Absolute,
                    Iteration'Unrestricted_Access);
 
   Ada.Text_Io.Put_Line("Delete fully the list");

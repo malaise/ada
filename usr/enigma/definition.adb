@@ -18,7 +18,7 @@ package body Definition is
     Rec_Parsed := True;
     Def := Parsed_Rec;
   end Read_Definition;
- 
+
   -- Get start byte offset
   function Read_Start_Byte return Positive is
   begin
@@ -127,7 +127,7 @@ package body Definition is
   begin
     -- Must be non empty pairs of letter, max 26 pairs
     if Str'Length = 0
-    or else Str'Length rem 2 /= 0 
+    or else Str'Length rem 2 /= 0
     or else Str'Length > Natural(Switch_Range'Last) * 2 then
       Error ("Invalid number of letters in switch definition " & Str);
     end if;

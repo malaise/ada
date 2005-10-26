@@ -67,7 +67,7 @@ package body Registers is
       Async_Stdin.New_Line_Err;
     end if;
   end Store;
-    
+
   function  Retrieve (From_Reg : Item_Rec) return Item_Rec is
     Val : Item_Rec;
   begin

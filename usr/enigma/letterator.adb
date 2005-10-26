@@ -124,7 +124,7 @@ begin
     end;
   end if;
   Io_Manager.Set_Skip_From (Last_Offset);
-  
+
   -- Main loop
   Even := True;
   loop

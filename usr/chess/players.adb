@@ -114,7 +114,7 @@ package body Players is
     return Result;
   end Get_Action;
 
-  
+
   function Match (Action, Ref : Valid_Action_Rec) return Boolean is
     use type Pieces.Action_Kind_List, Pieces.Piece_Kind_List,
              Space.Square_Coordinate;
@@ -136,12 +136,12 @@ package body Players is
     end if;
   end Match;
 
-  procedure Search_Match_Action is new Action_List_Mng.Search (Match); 
+  procedure Search_Match_Action is new Action_List_Mng.Search (Match);
 
   function Find_Action (Color : Space.Color_List;
                         From, To : Space.Square_Coordinate;
                         Promote  : in Pieces.Piece_Kind_List) return Action_Rec is
-    Ref : Valid_Action_Rec; 
+    Ref : Valid_Action_Rec;
     Res : Valid_Action_Rec;
     Found : Boolean;
   begin
@@ -183,7 +183,7 @@ package body Players is
     return Action = Ref;
   end Same;
 
-  procedure Search_Same_Action is new Action_List_Mng.Search (Same); 
+  procedure Search_Same_Action is new Action_List_Mng.Search (Same);
 
   function Action_Exists (Color : Space.Color_List; Action : Valid_Action_Rec) return Boolean is
     Found : Boolean;

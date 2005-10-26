@@ -22,7 +22,7 @@ package Names is
 
 
   -- Do item match criteria
-  function Match (Name, Criteria : String) return Boolean; 
+  function Match (Name, Criteria : String) return Boolean;
 
 end Names;
 

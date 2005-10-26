@@ -54,7 +54,7 @@ begin
   end if;
 
   X_Mng.X_Open_Line (Line_Def, Id);
-  
+
   -- Enable signal event
   Event_Mng.Set_Sig_Term_Callback (Null_Procedure'Access);
 
@@ -81,7 +81,7 @@ begin
     end if;
     X_Mng.X_Wait_Event (Id, Exp, Kind);
     case Kind is
-      when X_Mng.Refresh | X_Mng.Fd_Event 
+      when X_Mng.Refresh | X_Mng.Fd_Event
          | X_Mng.Timer_Event | X_Mng.Signal_Event | X_Mng.Wakeup_Event =>
         X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
         Put (X_Mng.Event_Kind'Image(Kind));

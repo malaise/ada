@@ -58,20 +58,20 @@ procedure T_State_Machine is
       My_Io.Put (Msg & ": ");
       Put_Change (Change);
     end if;
-  end Display_Change; 
+  end Display_Change;
 
   procedure Report_Transition (Transition : in Transition_Rec) is
   begin
     Display_Change ("Transition", Transition);
-  end Report_Transition; 
+  end Report_Transition;
   procedure Report_Event (Transition : in Transition_Rec) is
   begin
     Display_Change ("Event", Transition);
-  end Report_Event; 
+  end Report_Event;
   procedure Report_State (Change : in State_Change_Rec) is
   begin
     Display_Change ("State", Change);
-  end Report_State; 
+  end Report_State;
 
   procedure My_Add_Transition (From_State : in State_List;
                                Event : Event_List;
@@ -130,7 +130,7 @@ begin
         My_Io.Put_Line (" test program : setting state to unknown");
         Set_State (Unknown);
       when others =>
-        begin 
+        begin
           Event := Get_Event;
         exception
           when others =>

@@ -5,7 +5,7 @@ use type My_Math.Real;
 
 procedure E2F is
 
-  
+
   package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
   package Real_Ef is new Euro_Franc (My_Math.Real, My_Math.Real);
 
@@ -29,7 +29,7 @@ procedure E2F is
     I := My_Math.Round(V * 100.0);
     Real_Io.Put(My_Math.Real(I) / 100.0, 0, 2, 0);
   end Put;
-    
+
 
 begin
 
@@ -98,6 +98,6 @@ begin
     Put(Real_Ef.Francs_To_Euros(Amount));
     Ada.Text_Io.Put_Line("e");
   end if;
-    
+
 end E2F;
 

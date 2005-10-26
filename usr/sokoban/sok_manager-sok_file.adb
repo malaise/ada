@@ -109,7 +109,7 @@ package body Sok_File is
         Env_Set   : Boolean;
         Env_Trunc : Boolean;
         Env_Value : String(1 .. Directory.Max_Dir_Name_Len);
-        Env_Len   : Natural; 
+        Env_Len   : Natural;
       begin
         Sys_Calls.Getenv (Sok_File_Dir_Env_Name, Env_Set, Env_Trunc,
                           Env_Value, Env_Len);
@@ -123,7 +123,7 @@ package body Sok_File is
     end if;
 
     begin
-      Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File, 
+      Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File,
         Text_Handler.Value (Sok_File_Dir) & Sok_File_Name);
     exception
       when Sok_File_Mng.Name_Error =>
@@ -301,11 +301,11 @@ package body Sok_File is
         Sok_Score_Mng.Close (Sok_Score_File);
     end;
   exception
-    when others =>      
+    when others =>
       raise Score_Io_Error;
   end Init_Scores;
 
-   
+
   function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec is
     Sok_Score_File : Sok_Score_Mng.File_Type;
     Score : Sok_Types.Score_Rec;
@@ -313,11 +313,11 @@ package body Sok_File is
     Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.In_File,
      Sok_Score_Name);
     Sok_Score_Mng.Read (Sok_Score_File, Score,
-      Sok_Score_Mng.Positive_Count(No)); 
+      Sok_Score_Mng.Positive_Count(No));
     Sok_Score_Mng.Close (Sok_Score_File);
     return Score;
   exception
-    when others =>      
+    when others =>
       raise Score_Io_Error;
   end Read_Score;
 
@@ -328,10 +328,10 @@ package body Sok_File is
     Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Out_File,
      Sok_Score_Name);
     Sok_Score_Mng.Write (Sok_Score_File, Score,
-      Sok_Score_Mng.Positive_Count(No)); 
+      Sok_Score_Mng.Positive_Count(No));
     Sok_Score_Mng.Close (Sok_Score_File);
   exception
-    when others =>      
+    when others =>
       raise Score_Io_Error;
   end Write_Score;
 

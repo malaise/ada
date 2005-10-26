@@ -31,7 +31,7 @@ begin
   begin
     Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 2));
-    Ada.Text_Io.Put_Line("Error. Ascii file " 
+    Ada.Text_Io.Put_Line("Error. Ascii file "
                          & Argument.Get_Parameter(Occurence => 2)
                          & " already exists");
     Usage;
@@ -76,12 +76,12 @@ begin
       Str := Unit_Format.Image(Oper);
     exception
       when others =>
-        Ada.Text_Io.Put_Line("Error. At record no " 
+        Ada.Text_Io.Put_Line("Error. At record no "
                            & Positive'Image(No));
         Ada.Text_Io.Close(File);
         return;
     end;
-    
+
 
     begin
       Ada.Text_Io.Put_Line(File, Str);

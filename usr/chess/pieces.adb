@@ -51,11 +51,11 @@ package body Pieces is
         Pa := new Rook_Piece;
       when Knight =>
         Pa := new Knight_Piece;
-      when Bishop=> 
+      when Bishop=>
         Pa := new Bishop_Piece;
-      when Queen => 
+      when Queen =>
         Pa := new Queen_Piece;
-      when King => 
+      when King =>
         Pa := new King_Piece;
     end case;
     Pa.Square := Square;

@@ -512,7 +512,7 @@ package body Mesu_Edi is
               Afpx.Encode_Field (I, (0, 0), Afpx.Decode_Field(I - 1, 0));
             end loop;
             Afpx.Clear_Field(Cursor_Field);
-          
+
           elsif (Ptg_Result.Field_No = 132
                  and then Cursor_Field >= 24 and then Cursor_Field <= 124) then
             -- Suppress a sample

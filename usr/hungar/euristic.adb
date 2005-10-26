@@ -62,7 +62,7 @@ package body Euristic is
 
   -- Try to find a euristic solution
   -- If OK, Done is set to True
-  -- Else, Transfer is set for reduction 
+  -- Else, Transfer is set for reduction
   procedure Euristic_Search (Mattrix : in Types.Mattrix_Rec;
    Done : out Boolean; Transfer : out Zero_Transfer_Tab) is
 
@@ -76,7 +76,7 @@ package body Euristic is
     end record;
     -- To sort zero dscriptors
     function "<" (Left, Right : Zero_Desc_Rec) return Boolean;
-  
+
     type Zero_Desc_Tab_Gen is array (Positive range <>) of Zero_Desc_Rec;
 
     package Zero_Desc_Sort is new Sorts (
@@ -150,7 +150,7 @@ package body Euristic is
 
     Euristic_Loop:
     loop
-    
+
 
       Try_To_Solve:
       declare
@@ -307,7 +307,7 @@ package body Euristic is
         end loop;
       end if;
     end Dump_No_Zero;
-          
+
     -- Set zero transfer tab (free means not a zero)
     Transfer := (others => (others => Free));
     for I in 1 .. Nb_Zero loop
@@ -488,7 +488,7 @@ package body Euristic is
     end Sub_Lowest;
 
   end Reduce;
-    
+
   procedure Search (Mattrix : in out Types.Mattrix_Rec; Nb_Iterations : out Positive) is
     Done : Boolean;
     Transfer : Zero_Transfer_Tab (1 .. Mattrix.Dim, 1 .. Mattrix.Dim);
@@ -509,7 +509,7 @@ package body Euristic is
        Nb_Loop := Nb_Loop + 1;
     end loop;
     My_Io.New_Line;
-    -- Euristic success: set mattrix to 1 (affected) or 0 (not affected) 
+    -- Euristic success: set mattrix to 1 (affected) or 0 (not affected)
     -- Affected if Transfer is squared
     for Row in 1 .. Mattrix.Dim loop
       for Col in 1 .. Mattrix.Dim loop

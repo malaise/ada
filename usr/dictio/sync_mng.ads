@@ -13,7 +13,7 @@ package Sync_Mng is
 
   -- Add a new slave to next sync
   procedure Send (To : Tcp_Util.Host_Name);
-  
+
   -- Are we receiving or sending sync
   function In_Sync return Boolean;
   -- Abort a send/receive sequence

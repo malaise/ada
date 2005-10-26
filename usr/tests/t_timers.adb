@@ -1,7 +1,7 @@
 -- Test timers
 -- Periodical : 1 then each 3 secs
 -- Single     : 1 then [1, 5] secs re-created in the callback
--- Funny      : 0 then in [2.1, 2.9[ with callback (10 times) 
+-- Funny      : 0 then in [2.1, 2.9[ with callback (10 times)
 --                then once in 20 with no callback (then never)
 -- Never      : never
 
@@ -70,7 +70,7 @@ procedure T_Timers is
                        Delay_Seconds => D,
                        Period => P),
         Callback   => A);
-    if Use_Afpx then 
+    if Use_Afpx then
       Put_Line ("Created timer " & Timer_List'Image(T) & ": "
               & Timers.Image(The_Timers(T)));
     else

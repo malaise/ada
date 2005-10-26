@@ -23,7 +23,7 @@ package body Sok_Time is
   begin
     if Running then
       -- elapsed time
-      declare 
+      declare
         Current_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
       begin
         if Current_Time > Start_Clock + Day_Duration'Last then

@@ -10,22 +10,22 @@ procedure T_Mut is
 
   procedure Exec (Max_Task : in Positive) is
     Crit_Lock : Mutex;
-   
+
     subtype Range_Task is Positive range 1 .. Max_Task;
-   
+
     task type T is
      pragma Priority(10);
       entry Num(I : in Range_Task);
       entry Done;
     end T;
-   
+
     Ta : array (Range_Task) of T;
-   
+
     package Input is
       procedure Get(I : in Range_Task; C : out Character);
       procedure Put(S : in String; I : in  Range_Task);
     end Input;
-   
+
     package body Input is
       In_Get : Boolean := False;
       Current_I : Range_Task;
@@ -35,7 +35,7 @@ procedure T_Mut is
 
       procedure Prompt(I : in Range_Task; Set : in Boolean) is
       begin
-        if Set then 
+        if Set then
           -- call by Get
           Current_I := I;
         else
@@ -80,7 +80,7 @@ procedure T_Mut is
       B : Boolean;
     begin
       Input.Get(Num, C);
-   
+
       if (C = 't') or  (C = 'T') then
         return False;
       elsif (C = 'b') or (C = 'B') then
@@ -102,7 +102,7 @@ procedure T_Mut is
       end if;
       return True;
     end Critical;
-   
+
     task body T is
       Index : Range_Task;
     begin
@@ -118,9 +118,9 @@ procedure T_Mut is
       -- Ready to end
       accept Done;
     end T;
-   
-   
-   
+
+
+
   begin -- Exec
     My_Io.New_Line(2);
     -- give to each actor it's name

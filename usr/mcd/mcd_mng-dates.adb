@@ -74,7 +74,7 @@ package body Dates is
     Tmp_Inte := Time.Val_Inte rem Millisecs_Per_Day;
     Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
              + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
-                 
+
 
     -- Add time to ref_time
     Cal_Time := Perpet."+" (Ref_Cal_Time, Days);
@@ -85,7 +85,7 @@ package body Dates is
       raise Compute_Error;
     end if;
     Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
-    
+
     -- Format result in string
     Date.Val_Text := Unb.To_Unbounded_String (
             Normal (Year,  4, Gap => '0')
@@ -122,13 +122,13 @@ package body Dates is
     Tmp_Inte := Time.Val_Inte rem Millisecs_Per_Day;
     Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
              + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
-                 
+
 
     -- Get image (using format) of days
     Days_Image := Ios.Strof ((Kind => Inte,
                               Val_Inte => My_Math.Inte(Days)));
     Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
-    
+
     -- Format result in string
     Date.Val_Text := Days_Image.Val_Text
       & "-" & Normal (Hours, 2, Gap => '0')
@@ -189,7 +189,7 @@ package body Dates is
     Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte + My_Math.Inte (Mins);
     Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte + My_Math.Inte (Secs);
     Res_Time.Val_Inte := 1000 * Res_Time.Val_Inte + My_Math.Inte (Millis);
-        
+
 
     return Res_Time;
   end Date_To_Time;

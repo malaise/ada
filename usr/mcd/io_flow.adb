@@ -60,7 +60,7 @@ package body Io_Flow is
     -- Set stdin/out asynchronous if it is a Tty
     Stdio_Is_A_Tty :=
         Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
-      and then 
+      and then
         Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
     if Stdio_Is_A_Tty then
       Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 0);
@@ -233,7 +233,7 @@ package body Io_Flow is
                      Connected : in Boolean) is
     Active : Boolean;
   begin
-    if Connected then 
+    if Connected then
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Client accepted");
       end if;
@@ -260,7 +260,7 @@ package body Io_Flow is
     if Length = 0 then
       return;
     end if;
-    -- Add this chunk 
+    -- Add this chunk
     Unb.Append (Fifo_Data, Message(1 .. Length));
     if      Message(Length) = Ada.Characters.Latin_1.Cr
     or else Message(Length) = Ada.Characters.Latin_1.Lf then

@@ -49,7 +49,7 @@ package Fifos is
                            Connected : in Boolean);
 
     -- Invoqued when receiving a message
-    type Reception_Callback_Access is 
+    type Reception_Callback_Access is
          access procedure (Id      : in Fifo_Id;
                            Message : in Message_Type;
                            Length  : in Message_Length);
@@ -87,7 +87,7 @@ package Fifos is
     function Fifo_State (Id : Fifo_Id) return Fifo_State_List;
 
     -- Activate or not the reception of messages
-    --  from a Connect, Accepting (for all accepted) 
+    --  from a Connect, Accepting (for all accepted)
     --  or accepted fifo
     -- Note that only reception is concerned: desactivating
     --  a Connecting fifo does not prevent it from accepting, but
@@ -134,6 +134,6 @@ package Fifos is
     No_Fifo : constant Fifo_Id := (Acc => null);
 
   end Fifo;
- 
+
 end Fifos;
 

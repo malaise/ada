@@ -43,7 +43,7 @@ package Dictio_Lib is
   -- Get Item data
   -- Syntax of name for Get/Set
   --   <ident> [ { .<ident> } ]
-  -- May raise Invalid_Name, Name_Too_Long or No_Item 
+  -- May raise Invalid_Name, Name_Too_Long or No_Item
   function Get (Name : in String) return String;
 
 

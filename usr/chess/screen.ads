@@ -6,7 +6,7 @@ package Screen is
   procedure Display_Board (Color : Space.Color_List);
 
   -- Update some squares of the board
-  procedure Update_Board (Color : Space.Color_List; 
+  procedure Update_Board (Color : Space.Color_List;
                           Squares : in Space.Square_Array);
 
   -- Reset time for a new get or a new wait

@@ -1,5 +1,5 @@
 -- Usage: account [ -e | -f ] [ <file> ]
---  (default is euros) 
+--  (default is euros)
 with Ada.Text_Io, Ada.Exceptions;
 with Argument, Con_Io, Afpx;
 with Unit_Format, Oper_Def, Screen, Mng;
@@ -29,7 +29,7 @@ procedure Account is
   -- We have to quit program: raises Quit_Program
   Quit_Program : exception;
   procedure Quit is separate;
-    
+
 begin
 
   -- Check arguments
@@ -52,7 +52,7 @@ begin
           -- Not valid unit mode -> file
           File_Arg := 1;
       end;
-    elsif Argument.Get_Nbre_Arg = 2 then 
+    elsif Argument.Get_Nbre_Arg = 2 then
       Set_Unit(Argument.Get_Parameter(1));
       File_Arg := 2;
     else
@@ -195,5 +195,5 @@ exception
       when others => null;
     end;
     Mng.Save(Mng.Rescue);
-end Account; 
+end Account;
 

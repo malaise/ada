@@ -50,8 +50,8 @@ package body Args is
     when Argument.Argument_Not_Found =>
       return False;
   end Has_Key;
-    
-    
+
+
   function Get_Mode return Channel_Mode_List is
   begin
     if Mode_Set then

@@ -2,7 +2,7 @@ with Mcd_Mng;
 
 package Mcd_Parser is
 
-  function Next_Item return Mcd_Mng.Item_Rec; 
+  function Next_Item return Mcd_Mng.Item_Rec;
 
   Parsing_Error : exception;
 

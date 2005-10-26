@@ -185,7 +185,7 @@ begin
   exception
     when others =>
       Usage;
-      return; 
+      return;
   end;
 
   case Mode is
@@ -241,7 +241,7 @@ begin
       Decompose (N1, L1);
       Decompose (N2, L2);
 
-      -- Add to Lr any prime factor common to L1 and L2 
+      -- Add to Lr any prime factor common to L1 and L2
       --  and remove it from from L1 and L2
       loop
         -- Next factor of N1

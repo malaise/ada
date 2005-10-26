@@ -24,7 +24,7 @@ package Connection is
 
 
   -- Error on connection or transfer
-  Connection_Error : exception; 
+  Connection_Error : exception;
 
   -- Server has rejected message
   Protocol_Error : exception;

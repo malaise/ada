@@ -6,7 +6,7 @@ package Alias is
   -- Look for an alias for name
   --   extract word (see Names) and concat to previous words
   --   look for such alias
-  --   until alias found or no more words 
+  --   until alias found or no more words
   -- Done when no more alias can be found
   -- Set the item name to the result,
   -- Item is unchanged if a loop of alias is detected

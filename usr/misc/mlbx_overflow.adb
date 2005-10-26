@@ -5,7 +5,7 @@ procedure Mlbx_Overflow is
   Current_Delay, Previous_Delay : Natural;
   Sum_Delay : Natural;
 
-  function Next_Delay (No_Try : Retry_Range; 
+  function Next_Delay (No_Try : Retry_Range;
                        Prev_Delay : Natural) return Natural is
   begin
     return Prev_Delay + 10 * (5 ** No_Try);

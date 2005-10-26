@@ -3,7 +3,7 @@ with Points, Screen, Dialog, Point_Str;
 separate(Menu2)
 package body Menu21 is
 
-  type Restore_List is (None, Partial); 
+  type Restore_List is (None, Partial);
   Cursor_Field : Afpx.Field_Range;
 
   The_Bounds_Set : Boolean := False;
@@ -112,7 +112,7 @@ package body Menu21 is
     The_Bounds := Loc_Bounds;
     The_Bounds_Set := True;
   end Set_Bounds;
-    
+
 
   procedure Main_Screen is
     Cursor_Col : Con_Io.Col_Range;
@@ -206,7 +206,7 @@ package body Menu21 is
               Restore := Partial;
             when others =>
               null;
-          end case; 
+          end case;
         when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
            | Afpx.Wakeup_Event =>
           null;

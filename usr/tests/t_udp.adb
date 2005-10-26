@@ -113,7 +113,7 @@ begin
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
-  
+
   -- Link, set server dest in client, client sends
   if Server then
     if not Text_Handler.Empty (Server_Name) then

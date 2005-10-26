@@ -157,7 +157,7 @@ package body One_File_Statements is
       end if;
       Total := 0;
 
-    else 
+    else
 
       begin
         Count := One_File_Statements.Count_Statements_Of_File(File_Name);

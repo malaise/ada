@@ -69,7 +69,7 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Add;
-        
+
   function Sub     (L, R : Item_Rec) return Item_Rec is
     use type Arbitrary.Number;
   begin
@@ -358,7 +358,7 @@ package body Operations is
       raise Compute_Error;
   end Bitneg;
 
-  -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool 
+  -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool
   -- Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Unb.Unbounded_String;
@@ -510,7 +510,7 @@ package body Operations is
       raise Compute_Error;
   end Greateq;
 
-  function Smalleq (L, R : Item_Rec) return Item_Rec is 
+  function Smalleq (L, R : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Unb.Unbounded_String;
   begin
     if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
@@ -685,7 +685,7 @@ package body Operations is
 
     -- Set minutes, seconds, frac of seconds
     R := I + M / 100.0 + S / 10000.0 + F / 1_0000.0;
-    
+
     return (Kind => Real, Val_Real => R);
   end Dms;
 
@@ -1031,6 +1031,6 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Proport;
- 
+
 end Operations;
 

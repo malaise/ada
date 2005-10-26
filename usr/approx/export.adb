@@ -46,7 +46,7 @@ begin
     end loop;
     Ada.Text_Io.Close (Ascii_File);
     Ada.Text_Io.Put_Line ("Done.");
-    
+
   exception
     when File.F_Access_Error =>
       Error ("Cannot open file " & Argument.Get_Parameter(Occurence => 1));

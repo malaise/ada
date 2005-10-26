@@ -125,7 +125,7 @@ package body Input_Dispatcher is
           or else Is_Separator(Unb.Element (Cur_Str, Stop_Index + 1)) then
             -- End of String literal
             exit Parse_Lit;
-          elsif Unb.Element (Cur_Str, Stop_Index + 1) = Sd 
+          elsif Unb.Element (Cur_Str, Stop_Index + 1) = Sd
           and then Stop_Index + 1 /= Unb.Length (Cur_Str) then
             -- Two successive Sd in the middle: keep
             Stop_Index := Stop_Index + 1;
@@ -182,7 +182,7 @@ package body Input_Dispatcher is
   end First_Str_Word;
 
   -- Set input flow to a new string or back to stdin if Str is empty
-  -- Handle specific jump from and back to stdin 
+  -- Handle specific jump from and back to stdin
   procedure Set_Input (Str : in String) is
   begin
     if Debug.Debug_Level_Array(Debug.Input) then
@@ -261,7 +261,7 @@ package body Input_Dispatcher is
           Str_Stdin := Unb.Null_Unbounded_String;
         end if;
       end loop;
-    
+
     else
 
       -- In string (subprogram)

@@ -1,7 +1,7 @@
 with Dynamic_List;
 separate (Mcd_Mng)
 
-package body Stack is 
+package body Stack is
 
   package Stack_Dyn_List is new Dynamic_List (Item_Rec);
   package Stack_List renames Stack_Dyn_List.Dyn_List;

@@ -127,7 +127,7 @@ package body Image is
         end if;
       end loop;
     end;
-    
+
     -- Detect castle
     if Str(1 .. 5) = "o-o-o" then
       if Color = Space.White then
@@ -239,7 +239,7 @@ package body Image is
           end if;
         end;
         Next := Next + 2;
-      
+
       else
         -- Move/take
         if Take then
@@ -255,7 +255,7 @@ package body Image is
                      To    => (Kind => Pieces.Move,
                                Dest => Dest));
         end if;
-            
+
       end if;
 
     end if;
@@ -279,8 +279,8 @@ package body Image is
 
   exception
     when others =>
-      raise Value_Error;     
-  end Move_Value;    
+      raise Value_Error;
+  end Move_Value;
 
 end Image;
 

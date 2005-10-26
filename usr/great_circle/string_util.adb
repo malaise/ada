@@ -9,7 +9,7 @@ package body String_Util is
     or else Str(15) /= '.' or else Str(18) /= '.' then
       raise Format_Error;
     end if;
-    -- Lat N or S 
+    -- Lat N or S
     if Upper_Char(Str(1)) = 'N' then
       Geo.Lat.North := True;
     elsif Upper_Char(Str(1)) = 'S' then
@@ -17,7 +17,7 @@ package body String_Util is
     else
       raise Format_Error;
     end if;
-    -- Lon W or E 
+    -- Lon W or E
     if Upper_Char(Str(11)) = 'E' then
       Geo.Lon.East := True;
     elsif Upper_Char(Str(11)) = 'W' then
@@ -34,7 +34,7 @@ package body String_Util is
     Geo.Lon.Coord.Deg := Conv.Deg_Range'Value(Str(12 .. 14));
     Geo.Lon.Coord.Min := Conv.Deg_Range'Value(Str(16 .. 17));
     Geo.Lon.Coord.Sec := Conv.Deg_Range'Value(Str(19 .. 20));
- 
+
     -- Chek the whole thing
     if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
       raise Format_Error;
@@ -43,7 +43,7 @@ package body String_Util is
     -- Ok
     return Geo;
   end Str2Geo;
-    
+
 
   function Geo2Str (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Coord_Str is
     Str : Coord_Str;
@@ -76,10 +76,10 @@ package body String_Util is
     -- Done
     return Str;
   end Geo2Str;
-    
+
 
   function Dist2Str (Dist : Lat_Lon.Distance) return Dist_Str is
-    Int : My_Math.Inte; 
+    Int : My_Math.Inte;
   begin
     Int := My_Math.Round(My_Math.Real(Dist));
     return Normal(Integer(Int), Dist_Str'Length);

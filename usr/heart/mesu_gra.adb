@@ -27,7 +27,7 @@ package body Mesu_Gra is
   X_Factor : Float;
   Y_Factor : Float;
 
-  -- Font offset: how much to lower Y to get char "centered" to Y axis 
+  -- Font offset: how much to lower Y to get char "centered" to Y axis
   Font_Offset_Height : Con_Io.Graphics.Y_Range;
 
   -- What to know about a record
@@ -376,7 +376,7 @@ package body Mesu_Gra is
     Ys_First := Con_Io.Graphics.Font_Height * 2;
     Ys_Last := Con_Io.Graphics.Y_Max
              - Max_Nb_Mesure * Con_Io.Graphics.Font_Height;
-              
+
     Y_Factor := Float(Ys_First - Ys_Last) / Float(Y_First - Y_Last);
     Font_Offset_Height := Con_Io.Graphics.Font_Height / 3;
 

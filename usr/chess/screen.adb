@@ -83,7 +83,7 @@ package body Screen is
     function Get_Promotion (Click : in Boolean) return Pieces.Piece_Kind_List;
   end Graphic;
   package body Graphic is separate;
- 
+
   procedure Init_Board (Color : in Space.Color_List) is
   begin
     if Graphic_Mode then
@@ -144,7 +144,7 @@ package body Screen is
       end loop;
     end loop;
     Moves.Put_Moves;
-    Con_Io.Flush;        
+    Con_Io.Flush;
   end Display_Board;
 
 
@@ -195,7 +195,7 @@ package body Screen is
   begin
     Start_Time := Ada.Calendar.Clock;
   end Reset_Time;
-  
+
   -- Get, Ack, Wait
   procedure Erase is
     Erase_Str :  constant String (1 .. 50) := (others => ' ');
@@ -204,7 +204,7 @@ package body Screen is
     Con_Io.Put (Erase_Str, Foreground => Main_Back);
   end Erase;
 
-  -- Mouse 
+  -- Mouse
   Clicked_Pos, Released_Pos : Square_Result_Rec;
   Clicked_Promo, Released_Promo : Pieces.Piece_Kind_List;
   procedure Manage_Mouse (Disp_Color : in Space.Color_List;
@@ -508,7 +508,7 @@ package body Screen is
     Moves.Put_Moves;
     Con_Io.Flush;
   end Put_Move;
-    
+
   procedure Close is
   begin
     Con_Io.Destroy;

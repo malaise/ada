@@ -31,7 +31,7 @@ begin
   delay Dur - (Ada.Calendar.Clock - Start);
 
 exception
-  when others => 
-    Ada.Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default)."); 
-end Wait; 
+  when others =>
+    Ada.Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default).");
+end Wait;
 

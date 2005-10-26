@@ -8,7 +8,7 @@ package Lat_Lon is
     North : Boolean;
     Coord : Conv.Geo_Coord_Rec;
   end record;
-  
+
   type Lon_Geo_Rec is record
     East : Boolean;
     Coord : Conv.Geo_Coord_Rec;

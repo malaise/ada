@@ -66,7 +66,7 @@ procedure T_Tcp is
       My_Io.Put_Line ("accepts connection");
       return True;
     end if;
-      
+
     if F /= Fd then
       My_Io.Put_Line ("Not same Fd");
       raise Program_Error;

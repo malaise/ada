@@ -58,7 +58,7 @@ begin
                                Timer_Cb'Unrestricted_Access);
   -- Delete the temporary silly timer
   Timers.Delete (Timer_Tmp);
-  
+
   loop
     Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
                                 Dir_Mng.File_List_Mng.Current);
