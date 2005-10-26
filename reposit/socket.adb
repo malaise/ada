@@ -120,7 +120,7 @@ package body Socket is
                               Port : System.Address) return Result;
   pragma Import (C, Soc_Get_Dest_Port, "soc_get_dest_port");
 
-  function Soc_Port_Name_Of (Port : Word; 
+  function Soc_Port_Name_Of (Port : Word;
                              Protocol : C_Protocol;
                              Name : System.Address;
                              Len  : Natural) return Result;
@@ -148,7 +148,7 @@ package body Socket is
   pragma Import (C, Soc_Send, "soc_send");
   function Soc_Resend (S : System.Address) return Result;
   pragma Import (C, Soc_Resend, "soc_resend");
-                     
+
   --------------------
   -- IMPLEMENTATION --
   --------------------
@@ -223,7 +223,7 @@ package body Socket is
     return Boolean(Bool);
   end Is_Blocking;
 
-  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
+  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is
     Fd : Integer;
   begin

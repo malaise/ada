@@ -62,7 +62,7 @@ package  body Bloc_Io is
     end if;
     File.Mode := Out_File;
   end Create;
-  
+
   procedure Open(File : in out File_Type;
                  Mode : in File_Mode;
                  Name : in String) is

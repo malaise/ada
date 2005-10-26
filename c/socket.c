@@ -209,7 +209,7 @@ extern int soc_close (soc_token *p_token) {
   /* Destroy mutex */
   (void) mutex_destroy((*p_soc)->mutex);
 #endif
- 
+
   close ((*p_soc)->socket_id);
   /* Remove file if linked on tcp afux */
   if ( ((*p_soc)->protocol == tcp_protocol)
@@ -245,7 +245,7 @@ extern int soc_get_id (soc_token token, int *p_id) {
 }
 
 /* Set the socket blocking or non blocking */
-/*  (for sendind and receiving) */ 
+/*  (for sendind and receiving) */
 extern int soc_set_blocking (soc_token token, boolean blocking) {
   soc_ptr soc = (soc_ptr) token;
   int status;
@@ -261,7 +261,7 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   }
 
   /* Store state */
-  soc->blocking = blocking; 
+  soc->blocking = blocking;
 
   /* Get status */
   status = fcntl (soc->socket_id, F_GETFL, 0);
@@ -749,7 +749,7 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
 
   /* Check that desination is set */
   if (!soc->dest_set) {
-    return (SOC_DEST_ERR); 
+    return (SOC_DEST_ERR);
   }
 
   /* Connected if tcp */
@@ -814,11 +814,11 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
     cr = 0;
   }
 
-  
+
   /* Check result */
   if (cr == -1) {
     if ( (errno == EPIPE)
-      || (errno == ECONNRESET) 
+      || (errno == ECONNRESET)
       || (errno == ECONNREFUSED) ) {
       return (SOC_CONN_LOST);
     } else {
@@ -1130,7 +1130,7 @@ static int bind_and_co (soc_token token, boolean dynamic) {
   /* Ipm if udp, dest_set with an ipm adress */
   /*  and same port (if not dynamic) */
   do_ipm =  ( (soc->protocol == udp_protocol)
-           && (soc->dest_set) 
+           && (soc->dest_set)
            && (is_ipm(& soc->send_struct) )
            && ( dynamic || (soc->send_struct.sin_port
                          == soc->rece_struct.sin_port) ) );
@@ -1286,7 +1286,7 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
   UNLOCK;
   return (SOC_OK);
 }
- 
+
 /* To test if there is a message to receive and receive it */
 /* Length must be initialized with the size of the buffer */
 /* The socket must be open, linked in udp and not linked in tcp */
@@ -1327,8 +1327,8 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
   if (res == -1) {
     if (errno == EWOULDBLOCK) {
       res = 0;
-    } else if ( (errno == EPIPE) 
-             || (errno == ECONNRESET) 
+    } else if ( (errno == EPIPE)
+             || (errno == ECONNRESET)
              || (errno == ECONNREFUSED) ) {
       return (SOC_CONN_LOST);
     } else {
@@ -1484,7 +1484,7 @@ extern int soc_receive (soc_token token,
 
   /* Udp */
   do {
-    result = recvfrom(soc->socket_id, (char *)message, 
+    result = recvfrom(soc->socket_id, (char *)message,
        (size_t)length, 0, (struct sockaddr*) from_addr, &addr_len);
   } while ( (result == -1) && (errno == EINTR) );
 
@@ -1495,8 +1495,8 @@ extern int soc_receive (soc_token token,
     if (errno == EWOULDBLOCK) {
       UNLOCK;
       return (SOC_WOULD_BLOCK);
-    } else if ( (errno == EPIPE) 
-             || (errno == ECONNRESET) 
+    } else if ( (errno == EPIPE)
+             || (errno == ECONNRESET)
              || (errno == ECONNREFUSED) ) {
       UNLOCK;
       return (SOC_CONN_LOST);

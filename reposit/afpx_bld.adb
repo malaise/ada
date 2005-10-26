@@ -13,7 +13,7 @@ procedure Afpx_Bld is
   List_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len * 2);
 
   -- Get_Line of descriptor file
-  package Dscr_Get is new Get_Line (Max_Word_Len => 80, 
+  package Dscr_Get is new Get_Line (Max_Word_Len => 80,
                                     Max_Word_Nb  => 45,
                                     Max_Line_Len => 132,
                                     Comment      => "#");

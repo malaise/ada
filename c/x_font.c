@@ -25,7 +25,7 @@ Font font_id;
 
 #ifdef DEBUG
         printf ("X_FONT :X can't load font no %d named %s.\n",
-         err, font_name[err]); 
+         err, font_name[err]);
 #endif
         /* An error, free previous fonts */
         for (i=0; i<err; i++) {

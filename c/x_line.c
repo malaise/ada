@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#define LINE_LOCAL 
+#define LINE_LOCAL
 #include "x_line.h"
 #include "x_file.h"
 
@@ -81,13 +81,13 @@ Window x_window;
         return (False);
     }
 
-    /* Create a little window  for events */ 
+    /* Create a little window  for events */
     win_mask =  CWEventMask;
     win_attrib.event_mask = EVENT_MASK;
 
     x_window = XCreateWindow (
-      local_server.x_server, 
-      RootWindow (local_server.x_server, 0), 
+      local_server.x_server,
+      RootWindow (local_server.x_server, 0),
       0, 0, 1, 1, DEF_WIN_ATTRIB);
 
     if (x_window == None) {
@@ -153,7 +153,7 @@ boolean screen_created;
 
     /* Create line data */
     p_window = (t_window*) malloc (sizeof (t_window));
-    if (p_window == NULL) { 
+    if (p_window == NULL) {
         if (screen_created) {
             close_screen(p_screen);
         }
@@ -190,7 +190,7 @@ boolean screen_created;
         gc_values.foreground = col_get_std(1, 1, p_window->screen->color_id);
         gc_values.background = col_get_std(0, 0, p_window->screen->color_id);
 
-        p_window->x_graphic_context = XCreateGC (p_window->server->x_server, 
+        p_window->x_graphic_context = XCreateGC (p_window->server->x_server,
                           p_window->screen->x_root_win, gc_mask, &gc_values);
     }
 
@@ -215,17 +215,17 @@ boolean screen_created;
         y_pix = y * fon_get_height(p_window->server->x_font[no_font]);
         p_window->wwidth = width * fon_get_width(p_window->server->x_font[no_font]);
         p_window->wheight = height * fon_get_height(p_window->server->x_font[no_font]);
-        win_mask = DEF_WIN_MASK; 
-        win_attrib.background_pixel = 
+        win_mask = DEF_WIN_MASK;
+        win_attrib.background_pixel =
           col_get_std(background, background, p_window->screen->color_id);
-        win_attrib.border_pixel = 
+        win_attrib.border_pixel =
           col_get_std(border, border, p_window->screen->color_id);
         win_attrib.event_mask = EVENT_MASK;
         win_attrib.cursor = XCreateFontCursor (p_window->server->x_server, XC_left_ptr);
         win_attrib.override_redirect = False;
         win_attrib.backing_store = p_window->server->backing_store;
         p_window->x_window = XCreateWindow (
-          p_window->server->x_server, p_window->screen->x_root_win, 
+          p_window->server->x_server, p_window->screen->x_root_win,
           x_pix, y_pix, (unsigned int)p_window->wwidth,
           (unsigned int)p_window->wheight, DEF_WIN_ATTRIB);
         if (p_window->x_window == None) {
@@ -241,15 +241,15 @@ boolean screen_created;
         }
     }
 
-    XSetWindowColormap (p_window->server->x_server, p_window->x_window, 
+    XSetWindowColormap (p_window->server->x_server, p_window->x_window,
                         p_window->screen->colormap);
 
     list_window[nbre_window] = p_window;
     nbre_window ++;
 
     /* Map Window */
-    XMapWindow (p_window->server->x_server, p_window->x_window); 
- 
+    XMapWindow (p_window->server->x_server, p_window->x_window);
+
     /* Wait for Window exposure event and then draw */
     {
         XEvent event;
@@ -321,9 +321,9 @@ int lin_clear (t_window *p_window) {
     p_window->underline = False;
 
     /* Reset graphic context */
-    scr_set_attrib (p_window->server->x_server, p_window->x_graphic_context, 
+    scr_set_attrib (p_window->server->x_server, p_window->x_graphic_context,
       p_window->server->x_font, p_window->no_font,
-      p_window->screen->color_id, 0, 1, 
+      p_window->screen->color_id, 0, 1,
       False, False, False);
 
     return(True);
@@ -356,7 +356,7 @@ t_screen *find_screen (int screen_id) {
 
 int i;
 
-    for (i=0; i<nbre_window; i++) { 
+    for (i=0; i<nbre_window; i++) {
         if (screen_id == list_window[i]->screen->x_screen) {
             return (list_window[i]->screen);
         }
@@ -396,7 +396,7 @@ t_screen *p_screen;
     /* Success */
     p_screen->blinking = False;
     return (p_screen);
-} 
+}
 
 /* Closes a screen. */
 void close_screen (t_screen *p_screen) {

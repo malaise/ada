@@ -394,7 +394,7 @@ package body Timers is
       -- Provided expiration will occure first
       Result := Expiration;
     end if;
-      
+
     if Result.Infinite then
       Put_Debug ("Next_Expiration", "-> infinite");
     else
@@ -402,7 +402,7 @@ package body Timers is
     end if;
     return Result;
   end Next_Expiration;
-        
+
 
   function Next_Timeout (Expiration : Expiration_Rec) return Duration is
     Now : Ada.Calendar.Time;

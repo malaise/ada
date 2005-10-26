@@ -20,8 +20,8 @@ package body X_Mng is
   No_Line_For_C : constant Line_For_C := System.Null_Address;
 
   -- True if the connection to X has been initialised
-  Initialised : Boolean := False; 
- 
+  Initialised : Boolean := False;
+
   -- Boolean on 32 bits for C
   type Bool_For_C is new Boolean;
   for Bool_For_C'Size use 32;
@@ -60,7 +60,7 @@ package body X_Mng is
                         No_Font            : Integer;
                         P_Line_Id          : System.Address) return Result;
   pragma Import(C, X_Open_Line, "x_open_line");
- 
+
   ------------------------------------------------------------------
   -- Closes a line
   -- int x_close_line (void *line_id);
@@ -104,7 +104,7 @@ package body X_Mng is
                             Blink       : Bool_For_C;
                             Inverse     : Bool_For_C) return Result;
   pragma Import(C, X_Set_Attributes, "x_set_attributes");
- 
+
   ------------------------------------------------------------------
   -- Set Xor mode for further outputs
   -- int x_set_xor_mode (void *line_id, boolean xor_mode);
@@ -158,7 +158,7 @@ package body X_Mng is
                                  Superbright : Bool_For_C;
                                  Underline   : Bool_For_C;
                                  Blink       : Bool_For_C;
-                                 Inverse     : Bool_For_C) 
+                                 Inverse     : Bool_For_C)
    return Result;
   pragma Import(C, X_Put_Char_Attributes, "x_put_char_attributes");
 
@@ -172,7 +172,7 @@ package body X_Mng is
                        Width, Height : Integer;
                        Row, Column   : Integer) return Result;
   pragma Import(C, X_Draw_Area, "x_draw_area");
- 
+
   ------------------------------------------------------------------
   -- Puts a char with current characteristics
   --  at specified position in pixels
@@ -237,7 +237,7 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Draw_Points(Line_Id : Line_For_C;
                          X1, Y1 : Natural;
-                         Width, Height : in Natural; 
+                         Width, Height : in Natural;
                          Points : System.Address) return Result;
   pragma Import(C, X_Draw_Points, "x_draw_points");
 
@@ -269,14 +269,14 @@ package body X_Mng is
   pragma Import(C, X_Select, "x_select");
 
   ------------------------------------------------------------------
-  -- Process a X event (Tid or Keyboard or other) 
+  -- Process a X event (Tid or Keyboard or other)
   -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
   ------------------------------------------------------------------
   function X_Process_Event(P_Line_Id : System.Address;
                            P_Kind    : System.Address;
                            P_Next    : System.Address) return Result;
   pragma Import(C, X_Process_Event, "x_process_event");
- 
+
   ------------------------------------------------------------------
   -- Reads the position on Tid
   -- int x_read_tid (void *line_id, boolean row_col,
@@ -304,7 +304,7 @@ package body X_Mng is
   function X_Enable_Motion_Events (Line_Id : Line_For_C;
                                    Motion_Enable : Bool_For_C) return Result;
   pragma Import(C, X_Enable_Motion_Events, "x_enable_motion_events");
- 
+
   ------------------------------------------------------------------
   -- Assumes blinking of X
   -- int x_blink(void)
@@ -314,14 +314,14 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   -- Stops the blinking task
-  -- int x_stop_blinking(void) 
+  -- int x_stop_blinking(void)
   ------------------------------------------------------------------
   function X_Stop_Blinking return Result;
   pragma Import(C, X_Stop_Blinking, "x_stop_blinking");
 
   ------------------------------------------------------------------
   -- Start the blinking task
-  -- int x_start_blinking(void) 
+  -- int x_start_blinking(void)
   ------------------------------------------------------------------
   function X_Start_Blinking return Result;
   pragma Import(C, X_Start_Blinking, "x_start_blinking");
@@ -455,11 +455,11 @@ package body X_Mng is
     -- Open window
     Res := X_Open_Line (Line_Definition.Screen_Id,
                         Line_Definition.Row,
-                        Line_Definition.Column, 
+                        Line_Definition.Column,
                         Line_Definition.Height,
-                        Line_Definition.Width, 
+                        Line_Definition.Width,
                         Line_Definition.Background,
-                        Line_Definition.Border, 
+                        Line_Definition.Border,
                         Line_Definition.No_Font,
                         Line_For_C_Id'Address) = Ok;
     if Debug then
@@ -526,7 +526,7 @@ package body X_Mng is
     if not Res then
       raise X_Failure;
     end if;
-  end X_Flush;   
+  end X_Flush;
 
   ------------------------------------------------------------------
   procedure X_Clear_Line(Line_Id : in Line) is
@@ -560,8 +560,8 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Set_Attributes(Line_For_C_Id, 
-                            Integer(Paper), Integer(Ink), 
+    Res := X_Set_Attributes(Line_For_C_Id,
+                            Integer(Paper), Integer(Ink),
                             For_C(Superbright), For_C(Underline),
                             For_C(Blink), For_C(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -569,7 +569,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Set_Attributes;
- 
+
   ------------------------------------------------------------------
   procedure X_Set_Xor_Mode(Line_Id     : in Line;
                            Xor_Mode    : in Boolean) is
@@ -605,7 +605,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Put_Char;
- 
+
   ------------------------------------------------------------------
   procedure X_Put_Char(Line_Id : in Line; Car : in Byte;
                        Row, Column : in Natural) is
@@ -623,7 +623,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Put_Char;
- 
+
   ------------------------------------------------------------------
   procedure X_Overwrite_Char(Line_Id : in Line; Car : in Byte;
                              Row, Column : in Natural) is
@@ -641,7 +641,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Overwrite_Char;
- 
+
   ------------------------------------------------------------------
   procedure X_Put_String(Line_Id     : in Line;
                          Str         : in String;
@@ -679,12 +679,12 @@ package body X_Mng is
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char_Attributes (
-                              Line_For_C_Id, 
+                              Line_For_C_Id,
                               Integer(Character'Pos(Car)),
-                              Integer(Row), 
+                              Integer(Row),
                               Integer(Column),
                               Integer(Paper),
-                              Integer(Ink), 
+                              Integer(Ink),
                               For_C(Superbright),
                               For_C(Underline),
                               For_C(Blink),
@@ -694,7 +694,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Put_Char_Attributes;
- 
+
   ------------------------------------------------------------------
   procedure  X_Draw_Area(Line_Id : in Line;
                          Width, Height : in Positive;
@@ -732,7 +732,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Put_Char_Pixels;
- 
+
   ------------------------------------------------------------------
   procedure X_Get_Graphic_Characteristics(Line_Id       : in Line;
                                           Window_Width  : out Natural;
@@ -827,7 +827,7 @@ package body X_Mng is
   ------------------------------------------------------------------
   procedure X_Draw_Points(Line_Id       : in Line;
                           X, Y          : in Natural;
-                          Width, Height : in Natural; 
+                          Width, Height : in Natural;
                           Points        : in Byte_Array) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
@@ -910,11 +910,11 @@ package body X_Mng is
 
     -- Get an event
     Dispatcher.Get_Event(Line_Id.No) (Kind);
- 
+
     -- Compute remaining time
     if Timeout.Delay_Kind = Timers.Delay_Sec
     and then Timeout.Delay_Seconds /= Infinite_Timeout then
-      Timeout.Delay_Seconds := Ada.Calendar.Clock - Final_Exp.Time; 
+      Timeout.Delay_Seconds := Ada.Calendar.Clock - Final_Exp.Time;
       if Timeout.Delay_Seconds < 0.0 then
         Timeout.Delay_Seconds := 0.0;
       end if;
@@ -937,7 +937,7 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Read_Tid (Line_For_C_Id, For_C(Row_Col),
                        Loc_Button'Address,
-                       Row'Address, 
+                       Row'Address,
                        Column'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
@@ -1023,7 +1023,7 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Stop_Blinking = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
-  end X_Stop_Blinking_Task;  
+  end X_Stop_Blinking_Task;
 
   ------------------------------------------------------------------
   procedure X_Start_Blinking_Task (Line_Id : in Line) is
@@ -1036,7 +1036,7 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Start_Blinking = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
-  end X_Start_Blinking_Task;  
+  end X_Start_Blinking_Task;
 
   ------------------------------------------------------------------
   procedure X_Bell (Line_Id : in Line; Repeat : in Bell_Repeat) is

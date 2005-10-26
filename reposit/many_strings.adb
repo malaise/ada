@@ -27,7 +27,7 @@ package body Many_Strings is
     end loop;
     return N;
   end Nb;
-    
+
   function Nth (Str : Many_String; N : Positive) return String is
     Last : constant Natural := Str'Last;
 

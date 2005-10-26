@@ -70,7 +70,7 @@ typedef void * soc_token;
 #define init_soc  ((soc_token*) NULL)
 
 /* Port of socket : a word */
-#define soc_port word 
+#define soc_port word
 
 /* Host address (network format) */
 typedef union soc_host_t {
@@ -117,7 +117,7 @@ extern int soc_close (soc_token *p_token);
 extern int soc_get_id (soc_token token, int *p_id);
 
 /* Set the socket blocking or non blocking */
-/*  (for sending, receiving, connecting) */ 
+/*  (for sending, receiving, connecting) */
 /* Socket is blocking at creation (open/accept) */
 extern int soc_set_blocking (soc_token token, boolean blocking);
 

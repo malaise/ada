@@ -167,7 +167,7 @@ package body Dispatch is
         -- X event, done if valid
         exit when Event  /= No_Event;
       end if;
-      
+
     end loop;
 
     if Debug then
@@ -414,7 +414,7 @@ package body Dispatch is
         end if;
       end if;
       Clients(Client).Wait_Exp := Exp;
-      
+
       -- Do/Update refreshing
       if Refreshing then
         Nb_X_Events := 0;
@@ -455,10 +455,10 @@ package body Dispatch is
         end if;
       end if;
 
-      -- Try to loop without select on X events (set Got_Id) 
+      -- Try to loop without select on X events (set Got_Id)
       if Next_Event and then Selected /= No_Client_No then
         Got_Id := Clients(Selected).Line_For_C_Id;
-      else   
+      else
         Got_Id := No_Line_For_C;
       end if;
 
@@ -508,7 +508,7 @@ package body Dispatch is
       if Debug then
         My_Io.Put_Line ("Dispatch.Wait: selected " & Selected'Img);
       end if;
-      
+
     end Wait;
 
     -- All but one client wait here, eventually getting and event
@@ -519,7 +519,7 @@ package body Dispatch is
       Check (Client, True);
       Kind := Event;
     end Get_Event;
-                                      
+
   end Dispatcher;
 
 end Dispatch;

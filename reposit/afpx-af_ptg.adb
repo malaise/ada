@@ -375,7 +375,7 @@ package body Af_Ptg is
                  Field_No : Afpx_Typ.Field_Range;
                  Field : Afpx_Typ.Field_Rec;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Cursor_Col_Cb : Cursor_Set_Col_Cb) 
+                 Cursor_Col_Cb : Cursor_Set_Col_Cb)
            return Con_Io.Col_Range is
     Result : Con_Io.Col_Range;
   begin
@@ -427,7 +427,7 @@ package body Af_Ptg is
     Done : Boolean;
     Need_Redisplay : Boolean;
 
-    use Afpx_Typ; 
+    use Afpx_Typ;
     use type Con_Io.Curs_Mvt;
 
   begin

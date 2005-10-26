@@ -192,7 +192,7 @@ package body Event_Mng is
     end if;
     C_Send_Signal (C_Sig_Dummy);
   end Send_Dummy_Signal;
-  
+
   -- PRIVATE. Get kind of last signal
   type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,
                             Terminate_Sig, Child_Sig);
@@ -290,7 +290,7 @@ package body Event_Mng is
       elsif Fd = C_No_Event or else Fd >= 0 then
         -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
-        if Handle_Res = No_Event and then Fd >= 0 then 
+        if Handle_Res = No_Event and then Fd >= 0 then
         -- No timer and fd: fd
           Handle_Res := Handle ((Kind => Fd_Event,
                           Fd => File_Desc(Fd),

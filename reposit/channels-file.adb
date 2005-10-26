@@ -121,7 +121,7 @@ package body File is
     when others =>
       Section := Out_Channel;
       Curr_Word := Channel_File.Get_Word_Number;
-      raise File_Error; 
+      raise File_Error;
   end Next_Host;
 
 

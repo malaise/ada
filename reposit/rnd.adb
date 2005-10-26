@@ -59,7 +59,7 @@ package body Rnd is
       F := Init_Aleat;
     end if;
     I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
-    
+
     Ok := Mutex_Manager.Get_Mutex (Lock, -1.0);
     U_Rand.Start (New_I => I);
     Mutex_Manager.Release_Mutex (Lock);

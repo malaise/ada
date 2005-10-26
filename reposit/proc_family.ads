@@ -35,7 +35,7 @@ package Proc_Family is
         null;
     end case;
   end record;
- 
+
   -- Spawn a process (with mutation if mutation /= "")
   --  opening com channel if Communication
   -- If Death_Callback is set, it will be called on child's death

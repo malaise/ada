@@ -33,7 +33,7 @@ unsigned long foreground, background;
         no_font =  fon_get_bold (no_font);
     }
 
-    scr_set_gc (x_server, x_context, 
+    scr_set_gc (x_server, x_context,
       background, foreground, x_fonts[no_font]->fid);
 }
 
@@ -43,18 +43,18 @@ void scr_put_char(Display *x_server, GC x_context, Window x_window,
                    int x, int y, char car, int xor_mode) {
 
     if (!xor_mode) {
-      XDrawImageString (x_server, x_window, x_context, x, y, &car, 1); 
+      XDrawImageString (x_server, x_window, x_context, x, y, &car, 1);
     } else {
       XDrawString (x_server, x_window, x_context, x, y, &car, 1);
     }
 
-} 
+}
 
 void scr_overwrite_char(Display *x_server, GC x_context, Window x_window, int x, int y, char car) {
 
     XDrawString (x_server, x_window, x_context, x, y, &car, 1);
 
-} 
+}
 
 void scr_put_string (Display *x_server, GC x_context, Window x_window,
                      int x, int y, const char *p_car, int number, int xor_mode) {
@@ -73,7 +73,7 @@ void scr_underline_char (Display *x_server, GC x_context,  Window x_window, int 
     XDrawString (x_server, x_window, x_context, x, y, &UNDERLINE, 1);
 }
 
-#define MAX_LENGTH 0xFF 
+#define MAX_LENGTH 0xFF
 void scr_underline_string (Display *x_server, GC x_context,  Window x_window,
                            int x, int y, int number) {
 

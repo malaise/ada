@@ -176,7 +176,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
   } else {
     timeout_ptr = NULL;
   }
-  
+
   /* Init signal handling and wake-up pipe */
   init_evt ();
 
@@ -252,7 +252,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
 #endif
         return (ERR);
       }
-        
+
       evt_time_remaining (timeout_ms, &exp_time);
       return (OK);
 

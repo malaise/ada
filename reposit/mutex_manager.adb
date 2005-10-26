@@ -38,7 +38,7 @@ package body Mutex_Manager is
     end if;
     return Result;
   end Get_Mutex;
- 
+
   procedure Release_Mutex (A_Mutex : in Mutex) is
     Mut_Status : Boolean;
   begin

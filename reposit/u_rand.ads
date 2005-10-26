@@ -17,7 +17,7 @@
 -- Ada Letters and is considered public domain.  PCK                    --
 --------------------------------------------------------------------------
 
-package U_Rand is 
+package U_Rand is
 
   M1 : constant := 179;
   M2 : constant := M1 - 10;

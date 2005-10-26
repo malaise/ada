@@ -34,7 +34,7 @@ package body Get_Float is
     end loop;
     if Str_Len = 0 then
       raise Constraint_Error;
-    end if; 
+    end if;
 
     Got_A_Float := Dot_Found;
     if Dot_Found then

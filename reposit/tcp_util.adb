@@ -13,7 +13,7 @@ package body Tcp_Util is
     end loop;
     return Str;
   end Parse;
-    
+
   -- Debugging
   Debug_Init : Boolean := False;
   Debug_Connect_Name   : constant String := "TCP_UTIL_DEBUG_CONNECT";
@@ -450,7 +450,7 @@ package body Tcp_Util is
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb created timer "
                       & Timers.Image (Rec.Timer));
       end if;
-    end if;  
+    end if;
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
     Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
     if Debug_Connect then
@@ -461,7 +461,7 @@ package body Tcp_Util is
   end Connection_Timer_Cb;
 
   -- Connect to a remote Host/Port
-  -- May make several tries (one each Delta_Retry) before giving up 
+  -- May make several tries (one each Delta_Retry) before giving up
   -- Return True if synchronous result
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
@@ -491,7 +491,7 @@ package body Tcp_Util is
       end;
     end if;
     if Host.Kind = Host_Name_Spec then
-      declare 
+      declare
         Id : Host_Id;
       begin
         Id := Socket.Host_Id_Of (Parse (Host.Name));
@@ -697,9 +697,9 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Accept_From insert rec "
                     & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
     end if;
-    
+
   exception
-    when others => 
+    when others =>
       -- Not open or not bind
       if Socket.Is_Open (Dscr) then
         Socket.Close (Dscr);
@@ -742,7 +742,7 @@ package body Tcp_Util is
 
   --------------------------------------------------------------------------
 
-  -- Sending 
+  -- Sending
   type Sending_Rec is record
     Dscr : Socket.Socket_Dscr;
     Fd   : Event_Mng.File_Desc;
@@ -927,7 +927,7 @@ package body Tcp_Util is
       Dscr : Socket.Socket_Dscr;
       Fd   : Event_Mng.File_Desc;
       Read_Cb : Reception_Callback_Access := null;
-      Discon_Cb : Disconnection_Callback_Access := null; 
+      Discon_Cb : Disconnection_Callback_Access := null;
     end record;
     package Rece_Dyn_List_Mng is new Dynamic_List (Rece_Rec);
     package Rece_List_Mng renames Rece_Dyn_List_Mng.Dyn_List;
@@ -1060,7 +1060,7 @@ package body Tcp_Util is
 
       Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
                  Read_Cb'Unrestricted_Access);
-        
+
       if Debug_Reception then
         My_Io.Put_Line ("  Tcp_Util.Set_Callbacks on Fd " & The_Rec.Fd'Img);
       end if;
@@ -1080,7 +1080,7 @@ package body Tcp_Util is
         end if;
         raise No_Such;
       end if;
-        
+
       if Active then
         Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
                    Read_Cb'Unrestricted_Access);
@@ -1102,7 +1102,7 @@ package body Tcp_Util is
         end if;
         raise No_Such;
       end if;
-        
+
       return Event_Mng.Fd_Callback_Set (Socket.Fd_Of (Dscr), True);
     end Callbacks_Active;
 
@@ -1118,7 +1118,7 @@ package body Tcp_Util is
         end if;
         raise No_Such;
       end if;
-        
+
       -- Get from list
       Rece_List_Mng.Get (Rece_List, The_Rec, Done => Ok);
       if Debug_Reception then

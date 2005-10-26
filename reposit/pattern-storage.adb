@@ -124,7 +124,7 @@ package body Storage is
       -- Delete current and exit if end of list
       Free (Term.Str_Acc);
       exit when Del_Term;
-      -- Search next term of pattern from current and exit if no more 
+      -- Search next term of pattern from current and exit if no more
       Search_Pattern (Term_List, Found, Term, From => Term_List_Mng.From_Current);
       exit when not Found;
       Term_List_Mng.Read (Term_List, Term, Term_List_Mng.Current);
@@ -196,7 +196,7 @@ package body Storage is
 
   -- Get terms one by one
   procedure Rewind (Rule : Rule_No) is
-  begin                 
+  begin
     if not Term_List_Mng.Is_Empty (Term_List) then
       Term_List_Mng.Rewind (Term_List);
       The_End := False;

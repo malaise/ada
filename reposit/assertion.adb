@@ -32,7 +32,7 @@ package body Assertion is
     end if;
   end Init;
 
-    
+
   procedure Set (Action : in Action_List) is
   begin
     if not Init_Done then

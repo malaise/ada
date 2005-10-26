@@ -101,9 +101,9 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
             Kind := Directory.Unknown;
         end;
       end if;
-        
+
       if Kind = Directory.Dir
-      and then Text_Handler.Value(New_Name) /= Dot_Dir 
+      and then Text_Handler.Value(New_Name) /= Dot_Dir
       and then Text_Handler.Value(New_Name) /= Dot_Dot_Dir then
         -- Restart with next son if not First_Level_Only
         if Current_Level /= 1 or else not First_Level_Only then

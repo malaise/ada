@@ -129,7 +129,7 @@ package body Directory is
   pragma Interface(C, C_Rewinddir);
   pragma Interface_Name(C_Rewinddir, "rewinddir");
 
-  -- Reset entries for the first 
+  -- Reset entries for the first
   procedure Rewind (Desc : in Dir_Desc) is
   begin
     -- Check dir desc
@@ -232,7 +232,7 @@ package body Directory is
         Text_Handler.Set (Txt, Dir & '/' & Txt);
       end if;
       Extract_Path(Text_Handler.Value(Txt), Dir);
-      
+
       Sys_Calls.File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime, Size);
       exit when Kind /= Sys_Calls.Link;
     end loop;

@@ -104,7 +104,7 @@ package Tcp_Util is
   -- CONNECTION PROCEDURES --
   ---------------------------
   -- Connect to a remote Host/Port
-  -- May make several tries (one each Delta_Retry) before giving up 
+  -- May make several tries (one each Delta_Retry) before giving up
   -- Infinite retries if Nb_Tries = 0
   -- Returns True if immediate result could be achieved
   --  (then callback has already been called).

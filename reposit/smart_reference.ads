@@ -7,7 +7,7 @@ package Smart_Reference is
 
   type Handle is limited private;
 
-  -- Initialise a Handle to an object 
+  -- Initialise a Handle to an object
   procedure Set (Reference : in out Handle; Init : in Object);
 
   -- Copy handle

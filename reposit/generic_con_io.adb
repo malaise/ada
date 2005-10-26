@@ -632,7 +632,7 @@ package body Generic_Con_Io is
           Rlast := Slast;
         end if;
         -- Truncate to fit window
-        -- Last - first <= Win_las_col - Pos 
+        -- Last - first <= Win_las_col - Pos
         if Name.Current_Pos.Col + Rlast - Sfirst  > Win_Last_Col then
            Rlast := Sfirst + Win_Last_Col - Name.Current_Pos.Col;
         end if;
@@ -787,7 +787,7 @@ package body Generic_Con_Io is
         Loc_Ctrl := True;
         Loc_Shift := True;
       end if;
-      
+
       Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
       Key := Loc_Key;
       Is_Char := Loc_Is_Char;
@@ -862,7 +862,7 @@ package body Generic_Con_Io is
               return;
             end if;
           end if;
-          -- Escape for any other keyboard key 
+          -- Escape for any other keyboard key
           Event := Esc;
           return;
       end case;
@@ -919,7 +919,7 @@ package body Generic_Con_Io is
         end if;
       end loop;
     end Get_Key;
-        
+
 
 
     -- Idem but the get is initialised with the initial content of the string
@@ -1012,7 +1012,7 @@ package body Generic_Con_Io is
                 Stat := Esc;
                 return;
               when 16#09# =>
-                if Ctrl then 
+                if Ctrl then
                   -- Ctrl Tab
                   Stat := Stab;
                 else
@@ -1482,7 +1482,7 @@ package body Generic_Con_Io is
       end Fill_Rectangle;
 
       procedure Draw_Points(X, Y          : in Natural;
-                            Width, Height : in Natural; 
+                            Width, Height : in Natural;
                             Points        : in Byte_Array) is
       begin
         if not Init_Done then
@@ -1490,7 +1490,7 @@ package body Generic_Con_Io is
         end if;
         Set_Screen_Attributes;
         X_Mng.X_Draw_Points(Id, X, One_Con_Io.Y_Max - Y, Width, Height, Points);
-      end Draw_Points; 
+      end Draw_Points;
 
       procedure Get_Current_Pointer_Pos (Valid : out Boolean;
                                          X     : out X_Range;
@@ -1502,7 +1502,7 @@ package body Generic_Con_Io is
           raise Not_Init;
         end if;
         X_Mng.X_Get_Current_Pointer_Position(Id, Lx, Ly);
-        -- In screen? (avoiding function call for X/Y_Max) 
+        -- In screen? (avoiding function call for X/Y_Max)
         if       Lx in Graphics.X_Range and then Lx <= One_Con_Io.X_Max
         and then Ly in Graphics.Y_Range and then Ly <= One_Con_Io.Y_Max then
           X := Lx;
@@ -1647,4 +1647,4 @@ package body Generic_Con_Io is
   end One_Con_Io;
 
 end Generic_Con_Io;
-   
+

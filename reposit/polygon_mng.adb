@@ -4,7 +4,7 @@ package body Polygon_Mng is
                             Point_To_Check : in Float_Point_Rec;
                             Accuracy       : in Float;
                             Result         : out Belonging_Results) is
-    
+
 
     Isi, Isf, Isc          : Integer;
     A1, A2, A3, B1, B2, B3 : Float;
@@ -190,7 +190,7 @@ package body Polygon_Mng is
       Float_Polygon (J) := To_Float(Int_Polygon(I));
     end loop;
   end To_Float;
-  
+
   procedure Belong_To_Area (Polygon        : in Int_Points_Array;
                             Point_To_Check : in Int_Point_Rec;
                             Accuracy       : in Float;

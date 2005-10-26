@@ -53,7 +53,7 @@ package body Pattern is
     procedure Add_Term (Str : in String;
                         Optio : in Boolean;
                         Repet : in Boolean);
-                      
+
 
     -- Get terms of patterns of rule, one by one
 
@@ -78,7 +78,7 @@ package body Pattern is
     function Next_Term (Lower_Case : Boolean) return Term_Rec;
 
   end Storage;
-    
+
 
   package body Storage is separate;
 
@@ -102,7 +102,7 @@ package body Pattern is
     Repet : Boolean;
     Termi : Boolean;
     Ok    : Boolean;
-                      
+
 
   begin
     Init;

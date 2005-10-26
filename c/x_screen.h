@@ -18,6 +18,6 @@ void scr_underline_string(Display *x_server, GC x_context, Window x_window, int 
 
 void scr_draw_array (Display *x_server, GC x_context, Window x_window, int x, int y, int width, int height);
 
-#endif 
+#endif
 /* _X_SCREEN_H */
 

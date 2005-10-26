@@ -2,7 +2,7 @@ with Bit_Ops;
 
 package body Forker is
 
-  Stop_Mask : constant Integer := 16#7F#;  
+  Stop_Mask : constant Integer := 16#7F#;
 
   procedure Decode_Exit
      (Status : in Integer;

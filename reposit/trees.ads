@@ -104,7 +104,7 @@ package Trees is
     function Has_Father (The_Tree : Tree_Type) return Boolean;
 
     -- Has current cell and elder/younger brother
-    function Has_Brother (The_Tree : Tree_Type; 
+    function Has_Brother (The_Tree : Tree_Type;
                           Elder    : Boolean := True) return Boolean;
 
     -- How many children has current cell

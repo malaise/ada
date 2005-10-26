@@ -4,7 +4,7 @@ package body Queues is
     Pile : array (1 .. Size) of Item;
     Ptr : Natural range 0 .. Size := 0;
 
-    -- Ptr is the last pushed except if stack is empty 
+    -- Ptr is the last pushed except if stack is empty
     --  the it is 0.
 
     -- Push an item
@@ -42,7 +42,7 @@ package body Queues is
     end Look_First;
 
     -- Read without popping
-    -- 1 gives the last to be popped 
+    -- 1 gives the last to be popped
     procedure Look_Last (X : out Item; No : in No_Range := 1) is
     begin
       if Ptr = 0 then
@@ -151,7 +151,7 @@ package body Queues is
       end if;
     end Look_First;
 
-    -- Discard last pushed 
+    -- Discard last pushed
     procedure Discard_Last is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -210,7 +210,7 @@ package body Queues is
       Full := (Ptr_In = Ptr_Out);
     end Push;
 
-    -- Pop item with highest priority 
+    -- Pop item with highest priority
     procedure Pop (X : out Item) is
     begin
       if Ptr_Out = Ptr_In and then not Full then
@@ -364,7 +364,7 @@ package body Queues is
       end if;
     end Look_First;
 
-    -- Discard last pushed 
+    -- Discard last pushed
     procedure Discard_Last is
     begin
       if Ptr_Out = Ptr_In and then not Full then

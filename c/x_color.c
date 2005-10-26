@@ -17,7 +17,7 @@ static boolean private_color_map;
 #define FULL_BLINK   "FULL"
 #define ON_0_BLINK   "ON_0"
 #define BOLD_BLINK   "BOLD"
-typedef enum {full_blink, on_0_blink, bold_blink} blink_kind_list; 
+typedef enum {full_blink, on_0_blink, bold_blink} blink_kind_list;
 static blink_kind_list blink_kind = full_blink;
 static int color_tab_size;
 
@@ -34,7 +34,7 @@ static void get_envs (void) {
   private_color_map = (color_map_type != NULL)
                    && (strcmp(color_map_type, PRIVATE_COLOR_MAP) == 0);
 
-  
+
   /* Getenv blink kind */
   blink_kind_var = getenv (X_BLINK_KIND);
   if ( (blink_kind_var != NULL)
@@ -74,7 +74,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
   /* Create / get color map */
   if (private_color_map) {
     *colormap = XCreateColormap(x_server,
-                                RootWindow (x_server, x_screen), 
+                                RootWindow (x_server, x_screen),
                                 XDefaultVisual (x_server, x_screen),
                                 AllocNone);
   } else {
@@ -92,10 +92,10 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
       printf ("X_COLOR : X can't alloc %d cells for colors.\n",
                color_tab_size);
 #endif
-      return (False); 
+      return (False);
     }
- 
- 
+
+
     /* Parse color names */
     for (i = 0; i < NBRE_COLOR; i++) {
       /* Parse color from name to RGB value */
@@ -246,5 +246,5 @@ boolean col_set_blinking (Display *x_server, unsigned long color_id[],
   XStoreColors (x_server, colormap, tab_color, color_tab_size);
 
   return (True);
-} 
+}
 

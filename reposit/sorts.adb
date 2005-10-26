@@ -120,7 +120,7 @@ package body Sorts is
         Heap_Index := Heap_Index - 1;
       end loop Destruction;
 
-      -- Store the top 
+      -- Store the top
       Slice(First_Index) := Heap(1);
     exception
       when others =>

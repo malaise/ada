@@ -79,7 +79,7 @@ package body Hash is
 
       if Ca = Cu then
         -- Special case when current is first
-        First_Array(I).First := Ca.Next; 
+        First_Array(I).First := Ca.Next;
       else
         -- Find previous of current
         while Ca.Next /= Cu loop
@@ -135,7 +135,7 @@ package body Hash is
         else
           My_Io.Put (" -> ");
         end if;
-        
+
         Dump (Ca.Data);
         My_Io.New_Line;
         Ca := Ca.Next;

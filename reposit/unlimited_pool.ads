@@ -5,7 +5,7 @@ generic
   type Data_Type is private;
 package Unlimited_Pool is
 
-  type Pool_Type is limited private; 
+  type Pool_Type is limited private;
 
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean;

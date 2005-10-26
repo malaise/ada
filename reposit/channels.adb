@@ -153,7 +153,7 @@ package body Channels is
 
     procedure Init is
     begin
-      -- Save Channel_Name from instantiation 
+      -- Save Channel_Name from instantiation
       if Channel_Dscr.Init then
         return;
       end if;
@@ -195,7 +195,7 @@ package body Channels is
 
     -- General reception callback
     function Read_Cb (Sender : in Boolean; Fd : in Event_Mng.File_Desc)
-                     return Boolean is 
+                     return Boolean is
       S_Rec : Send_Rec;
       D_Rec : Dest_Rec;
       Dscr : Socket.Socket_Dscr;
@@ -284,7 +284,7 @@ package body Channels is
     end Read_Cb;
 
     function Rec_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is 
+                     return Boolean is
     begin
       return Read_Cb (True, Fd);
     end Rec_Read_Cb;
@@ -335,8 +335,8 @@ package body Channels is
       end if;
       -- Build port record
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name); 
-      
+          := Text_Handler.Value (Channel_Dscr.Name);
+
       -- Accept
       begin
         Tcp_Util.Accept_From (Socket.Tcp_Header, Port,
@@ -381,7 +381,7 @@ package body Channels is
     ----------------------
 
     function Snd_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is 
+                     return Boolean is
     begin
       return Read_Cb (False, Fd);
     end Snd_Read_Cb;
@@ -425,12 +425,12 @@ package body Channels is
       -- Build host and port records
       if Host_Name'Length > Tcp_Util.Max_Host_Name_Len then
         raise Name_Too_Long;
-      end if; 
+      end if;
       Host := (Kind => Tcp_Util.Host_Name_Spec, Name => (others => ' '));
-      Host.Name (1 .. Host_Name'Length) := Host_Name; 
+      Host.Name (1 .. Host_Name'Length) := Host_Name;
       Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
       Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name); 
+          := Text_Handler.Value (Channel_Dscr.Name);
     end Build_Host_Port;
 
     -- Add destinations from file
@@ -483,7 +483,7 @@ package body Channels is
     exception
       when others =>
         Host_List_Mng.Delete_List (List, Deallocate => True);
-        raise;      
+        raise;
     end Add_Destinations;
 
     -- Add a new recipient
@@ -736,7 +736,7 @@ package body Channels is
 
       -- Send on Dscr
       begin
-        Res := Channel_Send (Dscr, null, Msg, Len);       
+        Res := Channel_Send (Dscr, null, Msg, Len);
       exception
         when Socket.Soc_Tail_Err =>
           raise Send_Overflow;
@@ -797,13 +797,13 @@ package body Channels is
     begin
       -- Find destination from host name
       D_Rec.Host_Name.Name := (others => ' ');
-      D_Rec.Host_Name.Name(1 .. Host_Name'Length) := Host_Name; 
+      D_Rec.Host_Name.Name(1 .. Host_Name'Length) := Host_Name;
       Host_Name_Search (Channel_Dscr.Dests, Found, D_Rec,
                         From => Dest_List_Mng.Absolute);
       if not Found then
         raise Unknown_Destination;
       end if;
-      Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);      
+      Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);
       Send (D_Rec.Dscr, Message, Length);
     end Send;
 
@@ -849,7 +849,7 @@ package body Channels is
         raise Name_Too_Long;
     end Init;
 
-    -- Change bus and Lan names 
+    -- Change bus and Lan names
     -- May raise Name_Too_Long if a Name is too long
     -- May raise Bus_Active if subscribed or joined
     procedure Change_Names (New_Bus_Name, New_Destination_Name : in String) is
@@ -866,7 +866,7 @@ package body Channels is
     end Change_Names;
 
     function Loc_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is 
+                     return Boolean is
       Dscr : Socket.Socket_Dscr;
       Msg : Bus_Message_Type;
       Len  : Natural;
@@ -887,7 +887,7 @@ package body Channels is
       else
         Assertion.Assert (False, "Channel.Bus receiving but no bus");
       end if;
-       
+
       begin
         Bus_Read (Dscr, Msg, Len, True);
       exception
@@ -927,7 +927,7 @@ package body Channels is
         end;
         raise Unknown_Destination;
     end Set_Dest_Bus;
-          
+
     -- Subscription
     -- Allow reception from bus
     -- May raise Already_Subscribed if already subscribed to this bus
@@ -994,7 +994,7 @@ package body Channels is
       Socket.Close (Bus_Dscr.Send_Dscr);
       Bus_Dscr.Joined := False;
     end Leave;
-    
+
 
     procedure Send  (Dscr    : in Socket.Socket_Dscr;
                      Diff    : in Boolean;
@@ -1087,6 +1087,6 @@ package body Channels is
   begin -- Bus
     Init;
   end Bus;
-    
+
 end Channels;
 

@@ -86,7 +86,7 @@ package body Curve is
                return T_Coordinate;
 
       Epsilon : constant T_Coordinate := T_Coordinate'Epsilon;
-      
+
       -- Computes every conversion according to new boundaries
       procedure Maj (Bounds : in T_Boundaries);
 
@@ -931,7 +931,7 @@ package body Curve is
                 if Mouse_Event.Valid
                 and then Mouse_Event.Button = Big_Con_Io.Left
                 and then Mouse_Event.Status = Big_Con_Io.Pressed then
-                
+
                   Curr_Zoom_Mode := Drag;
                   Draw_Help (Update);
                   -- Store what has to be done with zoom frame
@@ -1049,7 +1049,7 @@ package body Curve is
             -- Ret, arrows, Pg*...
             -- Invalid key
             Big_Con_Io.Bell(3);
-            
+
         end case; -- event
 
         -- perform scales drawing

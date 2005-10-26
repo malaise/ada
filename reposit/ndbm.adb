@@ -28,7 +28,7 @@ package body Ndbm is
     Dptr : System.Address;
     Dsize : Long_Long_Integer;
   end record;
-    
+
 
   --------------------------
   -- Imported C functions --

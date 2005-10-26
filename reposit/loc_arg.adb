@@ -14,7 +14,7 @@ package body Loc_Arg is
       return Ada.Command_Line.Command_Name;
     else
       return Ada.Command_Line.Argument(Pos);
-    end if;  
+    end if;
   end Data;
 
 end Loc_Arg;

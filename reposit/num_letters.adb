@@ -17,7 +17,7 @@ package body Num_Letters is
   -- Result
   -- Should store "seventy seven thousand seven hundred seventy seven"
   --  or same with eight
-  Txt : Text_Handler.Text (60); 
+  Txt : Text_Handler.Text (60);
 
   Initialized : Boolean := False;
   procedure Init is
@@ -61,7 +61,7 @@ package body Num_Letters is
     end if;
     return Names(Character'Pos (Str(1)) - Character'Pos ('0')).all;
   end Make1;
-  
+
   function Make2 (Str : Str2) return String is
     Num : Natural;
     T, U : Natural;
@@ -113,7 +113,7 @@ package body Num_Letters is
     -- Store N image in reverse order and skip leading space" 9876" -> "6789"
     Last := 1;
     for I in reverse Img'Range loop
-      Rev(Last) := Img(I); 
+      Rev(Last) := Img(I);
       exit when I = Img'First;
       exit when Img(I - 1) = ' ';
       Last := Last + 1;
@@ -122,7 +122,7 @@ package body Num_Letters is
     -- Generate thousands, leave hundreds
     if Last = 5 then
       Text_Handler.Set (Txt, Make2 (Rev(5) & Rev(4))
-                      & " " & Tenth(3).all & "s");
+                      & " " & Tenth(3).all);
       Last := 3;
     elsif Last = 4 then
       Text_Handler.Set (Txt, Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);

@@ -50,7 +50,7 @@ typedef struct {
     GC x_graphic_context;
     /* Event characteristics */
     boolean motion_enabled;
-    int key_buf[NBRE_MAX_KEY]; 
+    int key_buf[NBRE_MAX_KEY];
     int nbre_key;
     int button;
     int tid_x;

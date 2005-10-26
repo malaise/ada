@@ -23,7 +23,7 @@ package body Crc_10 is
     N : Integer;
   begin
     for I in Str'Range loop
-      N := Integer(Char2Byte(Str(I))); 
+      N := Integer(Char2Byte(Str(I)));
       Bl := Bl xor N;
       Bh := (Bh +  N) and 16#007F#;
     end loop;

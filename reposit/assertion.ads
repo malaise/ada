@@ -7,7 +7,7 @@ package Assertion is
 
   Assert_Error : exception;
 
-  -- Action can be set by call to Set_Action, 
+  -- Action can be set by call to Set_Action,
   --  or environment variable ASSERT_ACTION:
   --    If set to IGNORE, Ignore
   --    If set to TRACE, Put_Trace

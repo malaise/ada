@@ -13,7 +13,7 @@ extern double round(double x);
 #define DMILLION  (double) 1000000
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: normalize_time
  *
  * Abstract	: Set time at normalized format:
@@ -31,7 +31,7 @@ extern double round(double x);
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 /* Normalises a time */
@@ -68,12 +68,12 @@ int normalize_time (timeout_t *p_time)
   } else {
     return (-1);
   }
-} 
+}
 
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: add_time
  *
  * Abstract	: Adds a time p_val to a time p_to
@@ -90,7 +90,7 @@ int normalize_time (timeout_t *p_time)
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 /* Adds *p_val to *p_to and returns the sign of *p_to after addition */
@@ -112,7 +112,7 @@ int add_time (timeout_t *p_to, timeout_t *p_val)
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: sub_time
  *
  * Abstract	: Substract a time p_val to a time p_to
@@ -129,7 +129,7 @@ int add_time (timeout_t *p_to, timeout_t *p_val)
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 /* Subs *p_val to *p_to and returns the sign of *p_to after addition */
@@ -147,7 +147,7 @@ int sub_time ( timeout_t *p_to,  timeout_t *p_val)
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: add_time
  *
  * Abstract	: Adds a delay in milliseconds to a time p_to
@@ -164,7 +164,7 @@ int sub_time ( timeout_t *p_to,  timeout_t *p_val)
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 /* Adds delay in ms to *p_to */
@@ -181,7 +181,7 @@ int incr_time (timeout_t *p_to, unsigned int delay_ms)
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: get_time
  *
  * Abstract	: Get the current time
@@ -197,7 +197,7 @@ int incr_time (timeout_t *p_to, unsigned int delay_ms)
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 /* init a time with current time */
@@ -210,24 +210,24 @@ void get_time (timeout_t *p_time)
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: comp_time
  *
- * Abstract	: Compares 2 times 
+ * Abstract	: Compares 2 times
  *
- * Decisions	: Signs are taken into account 
+ * Decisions	: Signs are taken into account
  *
  * Input	: p_time_1   value a
  *                p_time_2   value b
  *
- * Output       : 
+ * Output       :
  *
  * Return	: -1 if a<b,  0 if a=b,  1 if a>b
  *
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 /* Compares 2 times (-1 if t1 < t2, 0 if t1 = t2, 1 if t1 > t2) */
@@ -251,7 +251,7 @@ int comp_time (timeout_t *p_time_1, timeout_t *p_time_2)
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: time_is_reached
  *
  * Abstract	: Check if given time is reached (current_time >= given_time)
@@ -262,13 +262,13 @@ int comp_time (timeout_t *p_time_1, timeout_t *p_time_2)
  *
  * Output       : None
  *
- * Return	: True  the date is reached, 
+ * Return	: True  the date is reached,
  *                False the date is not reached yet.
  *
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 boolean time_is_reached (timeout_t *p_time)
@@ -284,7 +284,7 @@ boolean time_is_reached (timeout_t *p_time)
 
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: delay
  *
  * Abstract	: Wait for some time (during some delay)
@@ -300,7 +300,7 @@ boolean time_is_reached (timeout_t *p_time)
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 extern void delay ( timeout_t *p_timeout ) {
@@ -333,7 +333,7 @@ extern void delay ( timeout_t *p_timeout ) {
 }
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: time_to_double
  *
  * Abstract	: Convert time to double (seconds dot microseconds)
@@ -349,7 +349,7 @@ extern void delay ( timeout_t *p_timeout ) {
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 extern double time_to_double (timeout_t *p_time ) {
@@ -359,7 +359,7 @@ extern double time_to_double (timeout_t *p_time ) {
 }
 
 /*
- ****************************************************************************** 
+ ******************************************************************************
  * Function	: double_to_time
  *
  * Abstract	: Convert a double (seconds dot microseconds) to time
@@ -375,7 +375,7 @@ extern double time_to_double (timeout_t *p_time ) {
  * Errors       : None
  *
  * History :
- *			 
+ *			
  *******************************************************************************
 */
 extern void double_to_time (double from, timeout_t *p_to) {
@@ -394,7 +394,7 @@ extern void double_to_time (double from, timeout_t *p_to) {
     s = trunc (u);
     u = (u - s) * DMILLION;
   }
-  
+
   /* Convert to ints, checking overflow */
   p_to->tv_sec = (sizeof(p_to->tv_sec) == sizeof(long) ? LONG_MAX : INT_MAX);
   if (s <= (double) p_to->tv_sec) {

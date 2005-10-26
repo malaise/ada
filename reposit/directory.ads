@@ -20,7 +20,7 @@ package Directory is
   function Open (Dir_Name : in String) return Dir_Desc;
   -- May raise Open_Error if dir desc is already open
   -- May raise Name_Error if not found
-  -- May raise Access_Error 
+  -- May raise Access_Error
 
   -- Gets next entry of the opened directory
   function Next_Entry (Desc : Dir_Desc) return String;
@@ -28,7 +28,7 @@ package Directory is
   -- May raise Open_Error if dir desc is not open
   -- Will raise End_Error if no more entry
 
-  -- Reset entries for the first 
+  -- Reset entries for the first
   procedure Rewind (Desc : in Dir_Desc);
   -- May raise Open_Error if dir desc is not open
 
@@ -66,7 +66,7 @@ package Directory is
   Access_Error : exception renames Sys_Calls.Access_Error;
   End_Error    : exception;
 
-  
+
 private
 
   type Dir_Desc is record

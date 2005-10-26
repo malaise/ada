@@ -7,32 +7,32 @@ package body Afpx is
   Afpx_Internal_Error : exception;
 
   package Af_Dscr is
-   
+
     -- Current descriptor
     Current_Dscr : Afpx_Typ.Dscr_Rec;
-   
+
     -- The fields of current descriptor
     Fields : Afpx_Typ.Fields_Array;
-   
+
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
-   
+
     -- Load a descriptor, raise No_Descriptor if invalid no
     --  failure of version check
     procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range);
-   
+
     -- Check if a descriptor has been used (raise No_Descriptor)
     procedure Check;
-   
+
     -- Check if a descriptor has been used (raise No_Descriptor)
     --  and if Field_No is valid in it (raise Invalid_Field)
     procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range);
-   
+
     -- Load a field's characters and/or colors from init
     procedure Load_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
                           Load_Colors : in Boolean;
                           Load_Chars  : in Boolean);
-   
+
   end Af_Dscr;
 
 
@@ -137,37 +137,37 @@ package body Afpx is
 
   -- All the actions related to screen, keyboard and mouse
   package Af_Ptg is
-   
+
     -- States of a field (or a row in list)
     -- Normal   => Foreground, Background
     -- Clicked  => Background, Foreground
     -- Selected => Foreground, Selected
     type State_List is (Normal, Clicked, Selected);
-   
+
     -- Sets Foreground and background according to state
     procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
                           State : in State_List;
                           Foreground : out Con_Io.Effective_Colors;
                           Background : out Con_Io.Effective_Basic_Colors);
-   
+
     -- Put a whole field in attribute
     procedure Put_Field (Field_No : in Afpx_Typ.Field_Range;
                          State    : in State_List);
-   
+
     -- Put a whole row of a field in attribute
     procedure Put_Row (Field_No : in Afpx_Typ.Field_Range;
                        Row      : in Con_Io.Row_Range;
                        State    : in State_List);
-   
+
     -- Put a string somewhere in a field
     procedure Put_Str (Field_No : in Afpx_Typ.Field_Range;
                        Pos      : in Con_Io.Square;
                        Str      : in String;
                        State    : in State_List);
-   
+
     -- Erase a field (screen_background, screen_background)
     procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range);
-   
+
     -- The put_then get
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                    Cursor_Col    : in out Con_Io.Col_Range;
@@ -175,25 +175,25 @@ package body Afpx is
                    Redisplay     : in Boolean;
                    Get_Active    : in Boolean;
                    Cursor_Col_Cb : in Cursor_Set_Col_Cb);
-   
+
   end Af_Ptg;
 
   package Af_List is
-   
+
     -- Open / Re-open the list window
     procedure Open;
-   
+
     -- Display the list, starting from First_Item
     -- Has to be called each time the list changes
     --  or colors are modified
     procedure Display (First_Item_Id : in Positive);
-   
+
     -- Update the list due to an action
     procedure Update (Action : in List_Action_List);
-   
+
     -- Set the current item (selected_color) of the list
     procedure Set_Selected (Item_Id : in Positive);
-   
+
     -- The current status of the list
     type Status_Rec is record
       -- The number of items diplayed
@@ -205,23 +205,23 @@ package body Afpx is
       -- Item selected
       Id_Selected : Natural;
     end record;
-   
+
     function Get_Status return Status_Rec;
-   
+
     -- Set current item of list according to Id_Selected
     procedure Set_Current;
-   
+
     -- Put a row in a state
     procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List);
-   
+
     -- Is an Id, a row displayed
     function Id_Displayed (Id : Positive) return Boolean;
     function Row_Displayed (Row : Con_Io.Row_Range) return Boolean;
-   
+
     -- Row <-> Item Id
     function To_Row (Id : Positive) return Con_Io.Row_Range;
     function To_Id  (Row : Con_Io.Row_Range) return Positive;
-   
+
     Not_Opened, Not_Displayed : exception;
   end Af_List;
 
@@ -307,7 +307,7 @@ package body Afpx is
     if not Afpx_Typ.In_Field (Field, From_Pos) then
       raise Invalid_Square;
     end if;
-   
+
     -- Check that From_Pos.Col + Str is length compatible with field width
     if Str'Length /= 0
         and then not Afpx_Typ.In_Field (Field,
@@ -404,14 +404,14 @@ package body Afpx is
         and then (Field.Kind /= Afpx_Typ.Put) then
       raise Invalid_Color;
     end if;
-   
+
     -- Check Selected is Current for put and button fields
     if Selected /= Con_Io.Current
         and then (Field.Kind = Afpx_Typ.Put
                   or else Field.Kind = Afpx_Typ.Button) then
       raise Invalid_Color;
     end if;
-   
+
     -- Copy colors if not current
     if Foreground /= Con_Io.Current then
       Field.Colors.Foreground := Foreground;
@@ -510,7 +510,7 @@ package body Afpx is
         Af_Ptg.Erase_Field (Lfn);
       end if;
     end if;
-   
+
     -- Put all fields
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
       if Af_Dscr.Fields (I).Activated then
@@ -642,7 +642,7 @@ package body Afpx is
         raise Invalid_Col;
       end if;
     end if;
-   
+
     Af_Ptg.Ptg (Cf, Cursor_Col, Result, Redisplay, Some_Get, Cursor_Col_Cb);
     Cursor_Field := Field_Range(Cf);
     In_Ptg := False;

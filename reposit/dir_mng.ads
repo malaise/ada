@@ -32,7 +32,7 @@ package Dir_Mng is
 
   -- To sort files. Directories, then others, by name.
   function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean;
-  -- Sorts 
+  -- Sorts
   procedure File_Sort is new File_List_Mng.Sort(Less_Than);
 
   Name_Error : exception renames Directory.Name_Error;

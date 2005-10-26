@@ -50,7 +50,7 @@ void set_from_env (int font_index, char *env_name) {
     char *str;
 
     str = getenv(env_name);
-    if ( (str != NULL) && (str[0] != '\0') ) {     
+    if ( (str != NULL) && (str[0] != '\0') ) {
         strcpy (font_name[font_index], str);
     }
 }

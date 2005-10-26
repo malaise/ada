@@ -24,7 +24,7 @@ boolean key_chain (XKeyEvent *p_x_key, int key_buf[], int *p_nbre_key) {
       /* Skip any event about a modifier managed later on for generating keys */
       /* Left or right SHIFT key, Left or right CONTROL key, CAPS_LOCK or SHIFT_LOCK key */
       if ( (key_sym == XK_Shift_L)   || (key_sym == XK_Shift_R)
-        || (key_sym == XK_Control_L) || (key_sym == XK_Control_R) 
+        || (key_sym == XK_Control_L) || (key_sym == XK_Control_R)
         || (key_sym == XK_Caps_Lock) || (key_sym == XK_Shift_Lock) ) {
         *p_nbre_key = 0;
         return (False);
@@ -56,9 +56,9 @@ boolean key_chain (XKeyEvent *p_x_key, int key_buf[], int *p_nbre_key) {
       (*p_nbre_key) ++;
 /*
 printf ("READ KEY %02X %02X %02X %02X %d\n",
-(int)key_buff[0], (int)key_buff[1], (int)key_buff[2], (int)key_buff[3], 
+(int)key_buff[0], (int)key_buff[1], (int)key_buff[2], (int)key_buff[3],
 *pp_nbre_key);
 */
         return (True);
 }
- 
+

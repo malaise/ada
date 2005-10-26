@@ -80,7 +80,7 @@ package Socket is
   -- Is a socket in blocking mode
   function Is_Blocking (Socket : in Socket_Dscr) return Boolean;
 
-  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback) 
+  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
 
   -------------------------------------

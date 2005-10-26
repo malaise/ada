@@ -74,7 +74,7 @@ package body Regex_Filters is
       -- Success, next test if not last
       exit when not Remains;
     end loop;
-    return Result; 
+    return Result;
   end Check;
 
 

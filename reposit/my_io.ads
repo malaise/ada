@@ -1,10 +1,10 @@
 with Ada.Text_Io, Int_Io, Flo_Io, Long_Io, Bool_Io;
-package My_Io is 
+package My_Io is
 
-  Default_Exp : Ada.Text_Io.Field := 4; 
+  Default_Exp : Ada.Text_Io.Field := 4;
 
-  procedure Put(Item  : in Boolean; 
-                Width : in Ada.Text_Io.Field := Bool_Io.Default_Width; 
+  procedure Put(Item  : in Boolean;
+                Width : in Ada.Text_Io.Field := Bool_Io.Default_Width;
                 Set   : in Ada.Text_Io.Type_Set := Bool_Io.Default_Setting)
     renames Bool_Io.Put;
 
@@ -29,7 +29,7 @@ package My_Io is
 
   procedure Put_Line(Item  : in Boolean;
                      Width : in Ada.Text_Io.Field := Bool_Io.Default_Width;
-                     Set   : in Ada.Text_Io.Type_Set 
+                     Set   : in Ada.Text_Io.Type_Set
                            := Bool_Io.Default_Setting);
 
   procedure Put_Line(Item : in Character);

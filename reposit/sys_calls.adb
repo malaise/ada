@@ -89,7 +89,7 @@ package body Sys_Calls is
   begin
     Res := C_Unlink (File_Name4C'Address);
     return Res = 0;
-  end Unlink;  
+  end Unlink;
 
   function Rename (Src, Dest : String) return Boolean is
     Src4C : constant String := Str_For_C (Src);
@@ -111,7 +111,7 @@ package body Sys_Calls is
   begin
     return C_Get_Errno;
   end Errno;
-   
+
   function Str_Error (Err : Integer) return String is
 
     function C_Strerror (Errnum: Integer) return Interfaces.C.Strings.Chars_Ptr;
@@ -190,7 +190,7 @@ package body Sys_Calls is
   -- Putenv
   function C_Putenv (Str : System.Address) return Integer;
   pragma Import (C, C_Putenv, "putenv");
-  
+
   type Str_Ptr is access String;
 
   procedure Putenv (Env_Name : in String; Env_Value : in String) is
@@ -201,7 +201,7 @@ package body Sys_Calls is
     Addr : constant System.Address
          := Ptr.all(Ptr.all'First)'Address;
   begin
-    
+
     if C_Putenv (Addr) /= 0 then
       raise System_Error;
     end if;
@@ -247,7 +247,7 @@ package body Sys_Calls is
     end if;
     return File_Kind_Of (C_Stat.C_Mode);
   end File_Desc_Kind;
- 
+
   function Stdin return File_Desc is
   begin
     return 0;
@@ -411,7 +411,7 @@ package body Sys_Calls is
       raise System_Error;
     end if;
   end Read;
-    
+
   function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural is
     Res : Integer;
@@ -472,7 +472,7 @@ package body Sys_Calls is
       raise System_Error;
     end if;
   end Kill;
- 
+
 
 
   -- Process procreation (fork)
@@ -511,7 +511,7 @@ package body Sys_Calls is
   C_Stopped  : constant Integer := 3;
   procedure C_Next_Dead (Cause, Pid, Code : in System.Address);
   pragma Import  (C, C_Next_Dead, "next_dead");
-  
+
   function Next_Dead return Death_Rec is
     Cpid, Cause, Code : Integer;
   begin
@@ -532,5 +532,5 @@ package body Sys_Calls is
     end case;
   end Next_Dead;
 
-end Sys_Calls; 
+end Sys_Calls;
 

@@ -98,7 +98,7 @@ package body Trees is
       -- Relink previous current
       Prev_Curr.Father := Cell_Acc;
       Prev_Curr.Brothers := (others => null);
-          
+
     end Insert_Father;
 
 
@@ -225,7 +225,7 @@ package body Trees is
         return;
       end if;
 
-      -- Relink father and brothers 
+      -- Relink father and brothers
       if Cell_Acc.Brothers(Old) = null then
         -- deleting oldest
         Cell_Acc.Father.Children(Old) := Cell_Acc.Brothers(Young);
@@ -323,7 +323,7 @@ package body Trees is
 
       Element := The_Tree.Curr.Data.all;
     end Read;
-  
+
     function Read (The_Tree : Tree_Type) return Element_Type is
     begin
       -- No empty tree
@@ -395,7 +395,7 @@ package body Trees is
     end Has_Father;
 
     -- Has current cell and elder/younger brother
-    function Has_Brother (The_Tree : Tree_Type; 
+    function Has_Brother (The_Tree : Tree_Type;
                           Elder    : Boolean := True) return Boolean is
     begin
       -- No empty tree

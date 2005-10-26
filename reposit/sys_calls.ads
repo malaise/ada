@@ -39,7 +39,7 @@ package Sys_Calls is
 
   -- Unix File Descriptor
   type File_Desc is new Natural;
-  type File_Desc_Kind_List is (Tty, 
+  type File_Desc_Kind_List is (Tty,
     File, Dir, Link, Block_Device, Character_Device, Pipe, Socket, Unknown);
   function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List;
   function Stdin  return File_Desc;
@@ -113,7 +113,7 @@ package Sys_Calls is
 
   -- Kill a process
   procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural);
- 
+
   -- Process procreation (fork)
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid);
 
@@ -150,6 +150,6 @@ private
 
   type Time_T is new Integer;
 
-end Sys_Calls; 
+end Sys_Calls;
 
- 
+

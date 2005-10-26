@@ -1,11 +1,11 @@
 with System;
 with Timers, Sys_Calls;
 package X_Mng is
- 
+
   ----- TYPES -----
   Max_Line_Number : constant := 5;
   type Line is private;
- 
+
   type Byte is new Natural range 0 .. 255;
   for Byte'Size use System.Storage_Unit;
 
@@ -21,7 +21,7 @@ package X_Mng is
     No_Font                 : Font;
   end record;
 
-  -- keyboard codes for 1 key 
+  -- keyboard codes for 1 key
   Kbd_Max_Code : constant := 6;
   subtype Kbd_Index_Code is Integer range 1 .. Kbd_Max_Code;
   type Kbd_Array is array (Kbd_Index_Code) of Byte;
@@ -39,13 +39,13 @@ package X_Mng is
 
   -- Result of waiting (see Event_Mng for Events).
   type Event_Kind is (Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh,
-                      Timer_Event, Fd_Event, Signal_Event, Wakeup_Event, 
+                      Timer_Event, Fd_Event, Signal_Event, Wakeup_Event,
                       No_Event);
 
   ----- EXCEPTIONS -----
 
   X_Failure : exception;
- 
+
   ----- LINE MANAGEMENT -----
 
   -- Initialise connection to X server on a host
@@ -62,7 +62,7 @@ package X_Mng is
   -- line_id is the returned value (token for every further operation)
   procedure X_Open_Line(Line_Definition : in Line_Definition_Rec;
                         Line_Id         : in out Line);
-  
+
   -- Closes a line
   -- The line_id is the token, previously given by open_line
   procedure X_Close_Line(Line_Id : in out Line);
@@ -101,28 +101,28 @@ package X_Mng is
   procedure X_Set_Xor_Mode(Line_Id     : in Line;
                            Xor_Mode    : in Boolean);
 
- 
+
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Put_Char(Line_Id : in Line;
                        Car : in Character;
                        Row, Column : in Natural);
- 
+
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Put_Char(Line_Id : in Line;
                        Car : in Byte;
                        Row, Column : in Natural);
- 
+
   -- Writes a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Overwrite_Char(Line_Id : in Line;
                              Car : in Byte;
                              Row, Column : in Natural);
- 
+
   -- Writes a string with the attributes previously set
   --  at a specified position
   -- The line_id is the token, previously given by open_line
@@ -147,7 +147,7 @@ package X_Mng is
                                   Blink       : in Boolean := False;
                                   Inverse     : in Boolean := False);
 
-  -- Draws a rectangle (width * height) at position 
+  -- Draws a rectangle (width * height) at position
   --  with current foreground color.
   -- New position is updated to lower-right square of rectangle.
   procedure X_Draw_Area(Line_Id : in Line;
@@ -217,7 +217,7 @@ package X_Mng is
   --  or not Zero (put)
   procedure X_Draw_Points(Line_Id       : in Line;
                           X, Y          : in Natural;
-                          Width, Height : in Natural; 
+                          Width, Height : in Natural;
                           Points        : in Byte_Array);
 
 
@@ -234,7 +234,7 @@ package X_Mng is
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);
- 
+
   -- Reads the position on Tid in Row/Col or X/Y
   -- The line_id must be the one given by wait_event
   -- Button can be left, middle or right
@@ -244,7 +244,7 @@ package X_Mng is
                        Row_Col : in Boolean;
                        Button  : out Button_List;
                        Row, Column : out Integer);
- 
+
   -- Reads a key of a sequence
   -- The line_id must be the one given by wait_event
   -- key is the byte read
@@ -259,7 +259,7 @@ package X_Mng is
   -- This procedure hides the the text which has blink attribute
   --  (gives the same ink as paper) or restores it, alternatively.
   -- It has no effect UNLESS the internal task has been
-  --  stoped with X_Stop_Blinking_Task. 
+  --  stoped with X_Stop_Blinking_Task.
   -- In this case, it has to be called twice a second to provide
   --  blinking effect.
   procedure X_Blink_Alternate(Line_Id : in Line);
@@ -277,12 +277,12 @@ package X_Mng is
   procedure X_Start_Blinking_Task(Line_Id : in Line);
 
   -- This procedures rings a bell at 400Hz for 100ms and repeats it the number
-  -- specified. 
+  -- specified.
   procedure X_Bell (Line_Id : in Line; Repeat : in Bell_Repeat);
 
- 
+
 private
- 
+
   subtype Line_Range is Natural range 0 .. Max_Line_Number;
   subtype Client_Range is Positive range 1 .. Max_Line_Number;
   No_Client_No : constant Line_Range := 0;

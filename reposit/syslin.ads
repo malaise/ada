@@ -15,10 +15,10 @@ package Syslin is
   function Gauss (A : Matrix; B : Vector) return Vector;
 
   -- If the matrix is not a square, or if indexes do not have same Length
-  Dimension_Error   : exception; 
+  Dimension_Error   : exception;
 
   -- If the discriminent is nul
-  Discriminent_Error : exception; 
+  Discriminent_Error : exception;
 
-end Syslin; 
+end Syslin;
 

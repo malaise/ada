@@ -40,7 +40,7 @@ package body Ip_Addr is
          Dots(3) = Dots(2)+1 or else Dots(3) = Text_Handler.Length(Txt) then
         raise Parse_Error;
       end if;
-      
+
       -- 4 bytes
       Ip_Addr.A := Socket.Byte(To_Natural(
             Text_Handler.Value(Txt)(1 .. Dots(1)-1)));

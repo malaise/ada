@@ -31,7 +31,7 @@ static void in2sun (const struct sockaddr *addr, struct sockaddr_un *un_addr) {
 }
 
 /* Bind to a afux port */
-extern int sun_bind (int fd, const struct sockaddr *addr, 
+extern int sun_bind (int fd, const struct sockaddr *addr,
                      socklen_t addrlen __attribute__ ((unused)) ) {
   struct sockaddr_un un_addr;
 

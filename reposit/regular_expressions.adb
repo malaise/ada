@@ -154,7 +154,7 @@ package body Regular_Expressions is
   end Match;
 
   function Error (Criteria : in Compiled_Pattern) return String is
-    Len : Long_Integer; 
+    Len : Long_Integer;
   begin
     Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr,
                        System.Null_Address, 0);
@@ -164,7 +164,7 @@ package body Regular_Expressions is
     declare
       Str : String (1 .. Integer(Len));
     begin
-      Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr, 
+      Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr,
                          Str'Address, Len);
       return Str (1 .. Integer(Len) - 1);
     end;

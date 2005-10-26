@@ -29,7 +29,7 @@ package Afpx is
   --              Invalid_Field (Field_No too big)
   procedure Clear_Field (Field_No : in Field_Range);
 
-  -- Reset the field from initial definition in file 
+  -- Reset the field from initial definition in file
   --  colors and / or  content,
   -- The field becomes activated and not protected.
   -- Exceptions : No_Descriptor (no Descriptor in use),

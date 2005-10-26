@@ -210,7 +210,7 @@ package body Proc_Family is
       return Result;
     end if;
 
-    -- Child 
+    -- Child
     --------
     -- Close father fds
     if Communication then
@@ -242,7 +242,7 @@ package body Proc_Family is
       Result.Fd_In := Child.Fd_In;
       Result.Fd_Out := Child.Fd_Out;
     end if;
-    
+
     return Result;
   end Spawn;
 

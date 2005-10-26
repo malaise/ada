@@ -20,7 +20,7 @@ package body State_Machine is
             := (others => null);
   Event_Cbs : array (Event_List) of Transition_Report_Access
             := (others => null);
-  
+
 
   -- The current state
   The_Current_State : State_List;
@@ -55,19 +55,19 @@ package body State_Machine is
     -- Call user report callbacks
     if Report then
       if Event_Cbs(Transition.Event) /= null then
-        Event_Cbs(Transition.Event) ( (True, 
+        Event_Cbs(Transition.Event) ( (True,
                                        From_State,
                                        Transition.New_State,
                                        Transition.Event) );
       end if;
       if Transition.Report /= null then
-        Transition.Report ( (True, 
+        Transition.Report ( (True,
                              From_State,
                              Transition.New_State,
                              Transition.Event) );
       end if;
       if State_Cbs(Transition.New_State) /= null then
-        State_Cbs(Transition.New_State) ( (True, 
+        State_Cbs(Transition.New_State) ( (True,
                                            From_State,
                                            Transition.New_State,
                                            Transition.Event) );
@@ -231,7 +231,7 @@ package body State_Machine is
       raise Declaration_Not_Ended;
     end if;
     if State_Cbs(State) /= null then
-      State_Cbs(State) ( (False, 
+      State_Cbs(State) ( (False,
                           The_Current_State,
                           State) );
     end if;

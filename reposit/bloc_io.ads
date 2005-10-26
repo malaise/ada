@@ -65,7 +65,7 @@ private
   type File_Type is record
     Ext_File : System.Address := System.Null_Address;
     Mode : File_Mode;
-  end record;  
+  end record;
 
 end Bloc_Io;
 

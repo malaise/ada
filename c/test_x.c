@@ -21,7 +21,7 @@
 
 #define TITLE_LNE   2
 #define COLOURS_LNE TITLE_LNE + 11
-#define STATUS_LNE  COLOURS_LNE + 2 * NBRE_COLOR + 1 
+#define STATUS_LNE  COLOURS_LNE + 2 * NBRE_COLOR + 1
 #define EVENT_LNE   STATUS_LNE + 3
 
 int back;
@@ -53,7 +53,7 @@ static void title (void *line) {
   put (line, T5, TITLE_LNE + 6, 2);
 }
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
 
 void *line, *line_event;
@@ -70,18 +70,18 @@ int b_off, c_off, bv, cv;
 int motion;
 boolean read;
 
-  /* Parameters */ 
+  /* Parameters */
   name[0] = '\0';
   font = 0;
   s = 0; u = 0; b = 0; r = 0;
 
   if (argc == 2) {
-    strcpy (name, argv[1]); 
+    strcpy (name, argv[1]);
     back = 0;
     bord = 1;
     font = 0;
   } else if (argc == 5) {
-    strcpy (name, argv[1]); 
+    strcpy (name, argv[1]);
     back = atoi (argv[2]);
     bord = atoi (argv[3]);
     font = atoi (argv[4]);
@@ -151,8 +151,8 @@ boolean read;
       x_set_attributes (line, bv, 2, 0, 0, 0, 0);
       x_draw_area (line, 5, 2*NBRE_COLOR, COLOURS_LNE, 10);
       x_fill_rectangle (line, 0, 0, 9, 14);
-      x_draw_rectangle (line, 10, 0, 19, 14); 
-      x_draw_points (line, 20, 1, 7, 8, draw); 
+      x_draw_rectangle (line, 10, 0, 19, 14);
+      x_draw_points (line, 20, 1, 7, 8, draw);
 
       /* Text display  : show attributes */
       strcpy (stra, "(s)uperbright:");
@@ -170,7 +170,7 @@ boolean read;
       x_set_attributes (line, back, 13, 0, 0, 0, 0);
       put (line, CLL, EVENT_LNE, 10);
       put (line, stre, EVENT_LNE, 10);
-      
+
     }
 
 
@@ -204,9 +204,9 @@ boolean read;
 
       /* Keyboard */
       strcpy (stre, "Keys: ");
-      
+
       /* read the codes */
-      x_read_key (line_event, kk, &j); 
+      x_read_key (line_event, kk, &j);
       for (i = 0; i < j; i++) {
         /* Build string */
         strcat (stre, "<");
@@ -298,5 +298,5 @@ boolean read;
 
   exit (0);
 
-} 
+}
 

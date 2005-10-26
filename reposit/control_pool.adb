@@ -15,7 +15,7 @@ package body Control_Pool is
     Waiters : Positive;
     Key : Key_Type;
   end record;
- 
+
   -- Affectation of cell
   procedure Set_Cell (To : out Cell_Type; Val : in Cell_Type) is
   begin

@@ -11,7 +11,7 @@ package My_Math is
   Pi : constant := Ada.Numerics.Pi;
   -- e constant
   E : constant := Ada.Numerics.E;
-  -- possible units for trigonometric constants 
+  -- possible units for trigonometric constants
   type Angle_Unit is (Radian, Degree);
 
   -- Integer part and fractional part of a real

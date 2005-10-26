@@ -121,7 +121,7 @@ package Channels is
     --                           End_Channel
     -- host_declaration ::= Host [ { <host_name> } ]
 
-    -- Example:    
+    -- Example:
     -- Channel test_tcp other
     --   Host portillon ulysse
     --   Host penelope

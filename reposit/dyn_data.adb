@@ -117,7 +117,7 @@ package body Dyn_Data is
       Cell_Acc := Next_Acc;
     end loop;
   end Clear;
-      
+
   -- Clear the free lists
   procedure Clear is
   begin

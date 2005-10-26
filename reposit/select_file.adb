@@ -89,7 +89,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Width  : Afpx.Width_Range;
   begin
     Afpx.Get_Field_Size(File_Fld, Height, Width);
-    Afpx.Encode_Field(File_Fld, (0, 0), 
+    Afpx.Encode_Field(File_Fld, (0, 0),
       String_Mng.Procuste(File_Name, Width));
   end Put_File;
 
@@ -317,7 +317,7 @@ begin
   if Current_File'Length > Get_Get_Width then
     Text_Handler.Empty(Get_Content);
   else
-    Text_Handler.Set (Get_Content, 
+    Text_Handler.Set (Get_Content,
       String_Mng.Procuste(Current_File, Get_Get_Width));
   end if;
   Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
@@ -347,11 +347,11 @@ begin
                         Text_Handler.Value(Get_Content);
               begin
                 Is_A_Dir := Is_Dir (Text_Handler.Value(Get_Content));
-                if Is_A_Dir then 
+                if Is_A_Dir then
                   -- Change dir
                   Afpx.Clear_Field (Get_Fld);
                   Change_Dir(Text_Handler.Value(Get_Content));
-                else 
+                else
                   -- Valid file entered
                   Valid := True;
                   exit;
@@ -389,13 +389,13 @@ begin
             Dir_Mng.File_List_Mng.Move_To(Dir_List,
                    Number => Pos_In_List - 1,
                    From_Current => False);
-            Dir_Mng.File_List_Mng.Read(Dir_List, File_Rec, 
+            Dir_Mng.File_List_Mng.Read(Dir_List, File_Rec,
                    Dir_Mng.File_List_Mng.Current);
             begin
               if Is_Dir (File_Rec.Name(1 .. File_Rec.Len)) then
                 Afpx.Clear_Field (Get_Fld);
                 Change_Dir(File_Rec.Name(1 .. File_Rec.Len));
-              else 
+              else
                 -- File selected
                 Valid := True;
                 exit;
@@ -425,7 +425,7 @@ begin
         Redisplay := True;
     end case;
   end loop;
- 
+
   Dir_Mng.File_List_Mng.Delete_List(Dir_List);
   Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
   if Valid then

@@ -130,7 +130,7 @@ package body String_Mng is
         return Pad_Str'( (others => Gap));
       end if;
     end Do_Pad;
-        
+
   begin
     -- Error or limit situations
     if At_Index < From'First or else At_Index > From'Last then
@@ -165,7 +165,7 @@ package body String_Mng is
       end if;
     end if;
   end Remove;
-    
+
 
   -- If To_Right is True, extract Nb_Char characters of From from At_Index
   -- If To_Right is False, extract Nb_Char characters of From up to At_Index
@@ -186,7 +186,7 @@ package body String_Mng is
       return From (At_Index .. At_Index + Nb_Char - 1);
     else
       return From (At_Index - Nb_Char + 1 .. At_Index);
-    end if; 
+    end if;
   end Slice;
 
   -- Extract the Nb_Char first (if Head is set to True) or last characters

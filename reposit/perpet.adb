@@ -392,9 +392,9 @@ package body Perpet is
     else
       -- 52/53 -> 0, + offset
       Week_Of_Date := Week_Offset;
-    end if; 
+    end if;
     return Week_Of_Date;
-    
+
   end Get_Week_Of_Year;
 
   function Get_Month_Name (Number : Ada.Calendar.Month_Number)

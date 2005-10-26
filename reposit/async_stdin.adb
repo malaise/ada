@@ -276,7 +276,7 @@ package body Async_Stdin is
         when Latin_1.Ht =>
           -- Search
           if not Text_Handler.Empty (Seq) then
-            Store; 
+            Store;
             Unb.Append (Txt, Latin_1.Esc);
             return True;
           end if;
@@ -422,7 +422,7 @@ package body Async_Stdin is
     function Flush return Boolean is
       use type Ada.Calendar.Time;
     begin
-      if not Text_Handler.Empty (Seq) 
+      if not Text_Handler.Empty (Seq)
       and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
         -- Client wants to flush and Esc is getting old
         Unb.Append (Txt, Latin_1.Esc);
@@ -535,7 +535,7 @@ package body Async_Stdin is
       else
         Cb := null;
         if Stdio_Is_A_Tty then
-          Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, 
+          Result := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
                                             Sys_Calls.Canonical);
         else
           Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);

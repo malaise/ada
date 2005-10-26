@@ -14,7 +14,7 @@
 /* before looking for any further expose (and filter) */
 #define DELAY_EXPOSE_MS 25
 
-/* 
+/*
  * static void print_date (void) {
  *   timeout_t cur_time;
  *   get_time (&cur_time);
@@ -27,7 +27,7 @@
 /* The percentage of blinking when colors are seeable */
 #define PERCENT_ON  75
 #define PERCENT_OFF (100 - PERCENT_ON)
-int curr_percent = 0; 
+int curr_percent = 0;
 
 timeout_t next_blink;
 
@@ -51,7 +51,7 @@ static void x_do_blinking (void) {
 }
 
 extern int x_stop_blinking (void) {
-  
+
   /* Set to the non_blink state */
   if (curr_percent == PERCENT_OFF) {
     x_do_blink();
@@ -179,7 +179,7 @@ extern int x_initialise (const char *server_name) {
     if (result == OK) {
       result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
     }
-    
+
     if ( (result == OK) && (!blink_bold()) ) {
       (void) x_start_blinking();
     }
@@ -189,12 +189,12 @@ extern int x_initialise (const char *server_name) {
 
 /* Opens a line */
 extern int x_open_line (int screen_id, int row, int column,
-  int height, int width, 
+  int height, int width,
   int background, int border, int no_font, void **p_line_id) {
 
     t_window *line;
 
-    line = lin_open (screen_id, row-1, column-1, 
+    line = lin_open (screen_id, row-1, column-1,
       height, width, background, border, no_font);
     if (line != NULL) {
         *p_line_id = (void*) line;
@@ -224,7 +224,7 @@ extern int x_set_line_name (void *line_id, const char *line_name) {
     if (! lin_check(win_id)) {
         return (ERR);
     }
-    
+
     result = XStoreName(local_server.x_server, win_id->x_window, line_name);
     /* Strange: it works but returns error */
     /*    return ((result == Success) ? OK : ERR); */
@@ -242,7 +242,7 @@ extern int x_flush (void) {
     }
 
     /* Flush the outputs */
-    XFlush (local_server.x_server); 
+    XFlush (local_server.x_server);
 
     return (OK);
 }
@@ -279,7 +279,7 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
     win_id->underline = underline;
 
     /* Update graphic context */
-    scr_set_attrib (win_id->server->x_server, 
+    scr_set_attrib (win_id->server->x_server,
       win_id->x_graphic_context, win_id->server->x_font,
       win_id->no_font, win_id->screen->color_id,
       paper, ink, superbright, blink, reverse);
@@ -307,7 +307,7 @@ extern int x_set_xor_mode (void *line_id, boolean xor_mode) {
     win_id->xor_mode = xor_mode;
     return (OK);
 }
-    
+
 /* Writes a char whith the attributes previously set */
 /* The line_id is the token, previously given by open_line */
 /* The character is the one to be written */
@@ -324,15 +324,15 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
     }
 
     /* Compute pixels */
-    x = column * 
+    x = column *
       fon_get_width  (win_id->server->x_font[no_font]);
-    y = row * 
+    y = row *
       fon_get_height (win_id->server->x_font[no_font]) +
       fon_get_offset (win_id->server->x_font[no_font]);
 
     /* Put char */
-    scr_put_char (win_id->server->x_server, 
-      win_id->x_graphic_context, 
+    scr_put_char (win_id->server->x_server,
+      win_id->x_graphic_context,
       win_id->x_window, x, y, (char)car, win_id->xor_mode);
 
     /* Underline */
@@ -361,15 +361,15 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
     }
 
     /* Compute pixels */
-    x = column * 
+    x = column *
       fon_get_width  (win_id->server->x_font[no_font]);
-    y = row * 
+    y = row *
       fon_get_height (win_id->server->x_font[no_font]) +
       fon_get_offset (win_id->server->x_font[no_font]);
 
     /* Put char */
-    scr_overwrite_char (win_id->server->x_server, 
-      win_id->x_graphic_context, 
+    scr_overwrite_char (win_id->server->x_server,
+      win_id->x_graphic_context,
       win_id->x_window, x, y, (char)car);
 
     return (OK);
@@ -387,7 +387,7 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
     int x, y;
     t_window *win_id = (t_window*) line_id;
     int no_font = win_id->no_font;
- 
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -420,7 +420,7 @@ extern int x_put_char_attributes (void *line_id, int car, int row, int column,
   int paper, int ink,
   boolean superbright, boolean underline, boolean blink, boolean reverse) {
 
-    if (x_set_attributes (line_id, paper, ink, 
+    if (x_set_attributes (line_id, paper, ink,
       superbright, underline, blink, reverse) == ERR) {
         return (ERR);
     }
@@ -434,7 +434,7 @@ extern int x_draw_area (void *line_id, int width, int height, int row, int colum
     int pix_width, pix_height;
     t_window *win_id = (t_window*) line_id;
     int no_font = win_id->no_font;
- 
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -494,14 +494,14 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
     }
 
     /* Put char */
-    scr_put_char (win_id->server->x_server, 
-      win_id->x_graphic_context, 
+    scr_put_char (win_id->server->x_server,
+      win_id->x_graphic_context,
       win_id->x_window, x, y, (char)car, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
       scr_underline_char (win_id->server->x_server,
-      win_id->x_graphic_context, 
+      win_id->x_graphic_context,
       win_id->x_window, x, y);
     }
 
@@ -511,7 +511,7 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
 /* Draw a point at x,y */
 extern int x_draw_point (void *line_id, int x, int y) {
     t_window *win_id = (t_window*) line_id;
- 
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -525,7 +525,7 @@ extern int x_draw_point (void *line_id, int x, int y) {
 /* Draw a line between  x1y1 and x2y2 */
 extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
     t_window *win_id = (t_window*) line_id;
- 
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -546,7 +546,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     int x, y;
     unsigned int width, height;
 
- 
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -583,7 +583,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     int x, y;
     unsigned int width, height;
 
- 
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -674,8 +674,8 @@ static void delay_ms (unsigned int msecs) {
 
   (void) select (0, NULL, NULL, NULL, &timeout);
 }
-  
-  
+
+
 /* Process the next X event */
 /* p_line_id is the line on which the event has occured */
 /* p_kind is 1 if the event is a key hit, 0 if it's a TID */
@@ -737,7 +737,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           /* Window not found : Check next event */
           break;
         }
-        if (key_chain (&event.xkey, win_id->key_buf, 
+        if (key_chain (&event.xkey, win_id->key_buf,
          &win_id->nbre_key)) {
           /* Key is valid */
           *p_line_id = (void*)win_id;
@@ -851,14 +851,14 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
     *p_next = (n_events > 0);
 
   return (result);
-} 
+}
 
 /* Reads the position on TID */
 /* The line_id must be the one given by wait_event */
 /* p_button is set to the button 1, 2 or 3 */
 /* p_row and p_column are the position of the "finger" on the TID */
 /* If row_col is FALSE, p_row is y and p_col is x */
-extern int x_read_tid (void *line_id, boolean row_col, 
+extern int x_read_tid (void *line_id, boolean row_col,
                 int *p_button, int *p_row, int *p_column) {
 
     t_window *win_id = (t_window*) line_id;
@@ -873,7 +873,7 @@ extern int x_read_tid (void *line_id, boolean row_col,
     if (row_col) {
         *p_row = (win_id->tid_y /
              fon_get_height (win_id->server->x_font[win_id->no_font])) + 1;
-        *p_column = (win_id->tid_x / 
+        *p_column = (win_id->tid_x /
              fon_get_width  (win_id->server->x_font[win_id->no_font])) + 1;
     } else {
         *p_row = win_id->tid_x;

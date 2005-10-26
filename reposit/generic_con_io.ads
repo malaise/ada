@@ -66,7 +66,7 @@ package Generic_Con_Io is
     function Screen return Window;
 
     -- Clear screen, and reset keyboard
-    procedure Reset_Term; 
+    procedure Reset_Term;
 
     -- Flushes data to X
     procedure Flush;
@@ -192,7 +192,7 @@ package Generic_Con_Io is
     -- Gets first character (echo or not)
     -- No echo for Ret,      Esc, Break, Fd_Event, Timer_Event, Signal_Event
     --  Wakeup_Event and Refresh where
-    --           Latin_1.Cr, Esc, Eot,   Stx,      Syn,         Si          
+    --           Latin_1.Cr, Esc, Eot,   Stx,      Syn,         Si
     --  So           and Nul are returned respectively
 
     -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
@@ -208,7 +208,7 @@ package Generic_Con_Io is
     No_Period : constant Period_Range := Timers.No_Period;
     subtype Delay_Rec is Timers.Delay_Rec;
     Infinite_Delay : constant Delay_Rec := Timers.Infinite_Delay;
-   
+
 
     -- Gets a string of at most width characters
     -- The string must be short enought to be put in 1 line at current position
@@ -239,7 +239,7 @@ package Generic_Con_Io is
     -- Note that if Str'Lenght is 0, the cursor is hidden
     type Curs_Mvt is (Up, Down, Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
                       Left, Right, Full, Tab, Stab, Ret, Esc, Break,
-                      Mouse_Button, Timeout, Fd_Event, Timer_Event, 
+                      Mouse_Button, Timeout, Fd_Event, Timer_Event,
                       Signal_Event, Wakeup_Event, Refresh);
     procedure Get (Str        : out String;
                    Last       : out Natural;
@@ -273,7 +273,7 @@ package Generic_Con_Io is
     -- mouse action, refresh or timeout
     subtype Event_List is Curs_Mvt range Esc .. Refresh;
 
-    -- Check if a key is available, or another event, until a certain time. 
+    -- Check if a key is available, or another event, until a certain time.
     -- Esc means any key. No echo.
     procedure Get_Key_Time (Check_Break : in Boolean;
                             Event       : out Event_List;
@@ -384,7 +384,7 @@ package Generic_Con_Io is
       -- The points array has to be width * height and contains a list of
       --  Zero (no put) or not Zero (put)
       procedure Draw_Points(X, Y          : in Natural;
-                            Width, Height : in Natural; 
+                            Width, Height : in Natural;
                             Points        : in Byte_Array);
 
       -- Get dynmically the current position of pointer
@@ -400,7 +400,7 @@ package Generic_Con_Io is
     --  Arrow by default
     type Pointer_Shape_List is (Arrow, Cross);
     procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List);
-    
+
 
     -- We want mouse position in row_col or x_y
     type Coordinate_Mode_List is (Row_Col, X_Y);

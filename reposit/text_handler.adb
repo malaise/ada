@@ -59,7 +59,7 @@ package body Text_Handler is
     T : Text (Left.Max_Len + Right.Max_Len);
   begin
     T.Len := Length(Left) + Length(Right);
-    T.Val(1 .. Length(T)) := Value(Left) & Value(Right); 
+    T.Val(1 .. Length(T)) := Value(Left) & Value(Right);
     return T;
   end "&";
 
@@ -160,13 +160,13 @@ package body Text_Handler is
   end Append;
 
 
-  procedure Amend (To : in out Text; By : in Text; 
+  procedure Amend (To : in out Text; By : in Text;
                    Position : in Max_Len_Range) is
   begin
     Amend (To, By.Val (1 .. By.Len), Position);
   end Amend;
 
-  procedure Amend (To : in out Text; By : in String; 
+  procedure Amend (To : in out Text; By : in String;
                    Position : in Max_Len_Range) is
   begin
     if Position > To.Len then
@@ -184,7 +184,7 @@ package body Text_Handler is
 
   end Amend;
 
-  procedure Amend (To : in out Text; By : in Character; 
+  procedure Amend (To : in out Text; By : in Character;
                    Position : in Max_Len_Range) is
     S : constant String (1 .. 1) := By & "";
   begin
@@ -192,7 +192,7 @@ package body Text_Handler is
   end Amend;
 
 
-  function Locate (Within : Text; Fragment : Text; Occurence : Positive := 1) 
+  function Locate (Within : Text; Fragment : Text; Occurence : Positive := 1)
    return Max_Len_Range is
     Found_Occurence : Natural := 0;
   begin
@@ -211,7 +211,7 @@ package body Text_Handler is
   end Locate;
 
 
-  function Locate (Within : Text; Fragment : String; Occurence : Positive := 1) 
+  function Locate (Within : Text; Fragment : String; Occurence : Positive := 1)
    return Max_Len_Range is
     Found_Occurence : Natural := 0;
   begin
@@ -229,7 +229,7 @@ package body Text_Handler is
     return 0;
   end Locate;
 
-  function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1) 
+  function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1)
    return Max_Len_Range is
     Found_Occurence : Natural := 0;
   begin

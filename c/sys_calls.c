@@ -41,7 +41,7 @@ extern int set_blocking (int fd, int blocking) {
   }
 
   if (blocking) {
-    flg &= ~O_NONBLOCK;   
+    flg &= ~O_NONBLOCK;
   } else {
     flg |= O_NONBLOCK;
   }

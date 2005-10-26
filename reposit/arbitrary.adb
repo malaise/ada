@@ -141,7 +141,7 @@ package body Arbitrary is
     end Trim;
 
     -- Char -> Char operations
-    procedure Add_Char (A, B : in Character; 
+    procedure Add_Char (A, B : in Character;
                         Carry : in out Boolean; C : out Character) is
       R : Natural;
     begin
@@ -156,7 +156,7 @@ package body Arbitrary is
       C := To_Char (R);
     end Add_Char;
 
-    procedure Sub_Char (A, B : in Character; 
+    procedure Sub_Char (A, B : in Character;
                         Carry : in out Boolean; C : out Character) is
       R : Integer;
     begin
@@ -171,7 +171,7 @@ package body Arbitrary is
       C := To_Char (R);
     end Sub_Char;
 
-    procedure Mult_Char (A, B : in Character; 
+    procedure Mult_Char (A, B : in Character;
                          Carry : in out Natural; C : out Character) is
       R : Natural;
     begin
@@ -182,7 +182,7 @@ package body Arbitrary is
     end Mult_Char;
 
     subtype Str2 is String (1 .. 2);
-    procedure Div_Char (A : in Str2; B : in Character; 
+    procedure Div_Char (A : in Str2; B : in Character;
                         Q : out Character; R : out Character) is
       Ta, Tb : Natural;
     begin
@@ -206,7 +206,7 @@ package body Arbitrary is
       if La > Lb then
         L := La;
         R := La * ' ';
-      else 
+      else
         L := Lb;
         R := Lb * ' ';
       end if;
@@ -263,7 +263,7 @@ package body Arbitrary is
         raise Constraint_Error;
       end if;
       -- Remove tailing '0's
-      Trim (R); 
+      Trim (R);
       return R;
     end Sub_No_Sign;
 
@@ -283,7 +283,7 @@ package body Arbitrary is
         C := 0;
         for J in reverse 1 .. La loop
           Ca :=  Unb.Element (A, J);
-          Mult_Char (Ca, Cb, C, Ct);         
+          Mult_Char (Ca, Cb, C, Ct);
           Unb.Replace_Element (T, J, Ct);
         end loop;
         if C /= 0 then
@@ -293,7 +293,7 @@ package body Arbitrary is
         T := T & ( (Lb - I) * '0');
         R := Add_No_Sign (R, T);
       end loop;
-      Trim (R); 
+      Trim (R);
       return R;
     end Mult_No_Sign;
 
@@ -645,7 +645,7 @@ package body Arbitrary is
       raise Constraint_Error;
     end if;
     loop
-      exit when I = Zero;    
+      exit when I = Zero;
       R := R * A;
       I := I - One;
     end loop;

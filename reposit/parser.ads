@@ -8,7 +8,7 @@ package Parser is
 
   function Is_Space_Or_Htab_Function (C : Character) return Boolean;
   Space_Htab : constant Separing_Function
-             := Is_Space_Or_Htab_Function'Access; 
+             := Is_Space_Or_Htab_Function'Access;
 
   -- Access key
   type Iterator is limited private;

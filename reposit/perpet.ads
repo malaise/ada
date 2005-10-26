@@ -71,7 +71,7 @@ package Perpet is
   subtype Week_Of_Year_Range is Natural range 1 .. 53;
   function Get_Week_Of_Year (Date : Ada.Calendar.Time)
                              return Week_Of_Year_Range;
-  
+
   -- Month name
   type Month_Name_List is (January, February, March, April, May, June, July,
                            August, September, October, November, December);
