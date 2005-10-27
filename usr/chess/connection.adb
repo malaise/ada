@@ -83,7 +83,9 @@ package body Connection is
   -- May handle Lost_conn/Reconn via a timer
   procedure My_Send (Message : in Message_Type) is
   begin
-    Chess_Send (Soc, Message);
+    if Socket.Is_Open (Soc) then
+      Chess_Send (Soc, Message);
+    end if;
   exception
     when Socket.Soc_Conn_Lost =>
       null;
