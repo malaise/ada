@@ -1,6 +1,47 @@
-with Ada.Text_Io, Ada.Exceptions, Ada.Strings.Unbounded, Ada.Characters.Latin_1;
+with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Strings.Unbounded,
+     Ada.Characters.Latin_1;
 with Argument, Sys_Calls;
 procedure Trail_Spaces is
+
+  package Char_Io is new Ada.Direct_Io (Character);
+
+  -- Check if a new line will need to be appended
+  -- Yes if last line is empty (last but prev char is a newline)
+  --   because text_io detects end_of_file
+  --   instead of empty_line then end_of_file.
+  function Needs_New_Line (File_Name : in String) return Boolean is
+    File : Char_Io.File_Type;
+    procedure Close is
+    begin
+      Char_Io.Close (File);
+    exception
+      when others => null;
+    end Close;
+
+    Size : Char_Io.Count;
+    Char : Character;
+    use type Char_Io.Count;
+  begin
+    -- Open and get size
+    Char_Io.Open (File, Char_Io.In_File, File_Name);
+    Size := Char_Io.Size (File);
+    -- Read last but one character if possible
+    if Size <= 1 then
+      Close;
+      return False;
+    end if;
+    Char_Io.Read (File, Char, Size - 1);
+    Close;
+    -- Newline must be added if this is as a newline
+    return Char = Ada.Characters.Latin_1.Lf;
+  exception
+    when others =>
+      -- Close file if it open, that's all
+      if Char_Io.Is_Open (File) then
+        Close;
+      end if;
+      return False;
+  end Needs_New_Line;
 
   -- Process one file
   procedure Do_File (In_File_Name : in String) is
@@ -8,7 +49,7 @@ procedure Trail_Spaces is
     -- Build temp file name in /tmp from In_File_Name
     function Make_Out_File_Name return String is
     begin
-      return "Trailed_Spaces_" & In_File_Name;
+      return In_File_Name & "_Trail.tmp";
     end Make_Out_File_Name;
 
     -- Close a file with no exception
@@ -31,8 +72,6 @@ procedure Trail_Spaces is
     Put : Boolean;
     -- Is file modified
     Modified : Boolean;
-    -- Append a last newline (always but when last line is spaces)
-    Append_New_Line : Boolean;
     -- Dummy result for Sys calls
     Dummy : Boolean;
 
@@ -47,7 +86,7 @@ procedure Trail_Spaces is
         Sys_Calls.Put_Line_Error ("Error. File "
              & In_File_Name & " not found, skipping.");
         return;
-      when Error:Others =>
+      when Error:others =>
         Sys_Calls.Put_Line_Error ("Error. Cannot open file "
              & In_File_Name & " due to "
              & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
@@ -59,7 +98,7 @@ procedure Trail_Spaces is
     begin
       Ada.Text_Io.Create (Out_File, Ada.Text_Io.Out_File, Out_File_Name);
     exception
-      when Error:Others =>
+      when Error:others =>
         Sys_Calls.Put_Line_Error ("Error. Cannot create out file "
              & Out_File_Name & " due to "
              & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
@@ -69,7 +108,6 @@ procedure Trail_Spaces is
     -- Process input file
     Modified := False;
     loop
-      Append_New_Line := True;
       exit when Ada.Text_Io.End_Of_File (In_File);
       Ada.Text_Io.Get_Line (In_File, Line, Len);
       -- Replace horiz tabs by spaces
@@ -123,7 +161,6 @@ procedure Trail_Spaces is
           if Len /= 0 then
             -- Line was full of spaces
             Modified := True;
-            Append_New_Line := False;
           end if;
         end if;
       elsif Unb_Line = Ada.Strings.Unbounded.Null_Unbounded_String
@@ -137,25 +174,30 @@ procedure Trail_Spaces is
       end if;
     end loop;
 
-    -- Append last newline Close files
+    -- Append last newline and close files
     Ada.Text_Io.Close (In_File);
-    if Append_New_Line then
+    if Needs_New_Line (In_File_Name) then
       Ada.Text_Io.New_Line (Out_File);
     end if;
     Ada.Text_Io.Close (Out_File);
 
-    -- Rename out file as in file
-    if not Sys_calls.Rename (Make_Out_File_Name, In_File_Name) then
-      Sys_Calls.Put_Line_Error ("Error. Cannot rename out file "
-             & Make_Out_File_Name & " as " & In_File_Name & ", skipping.");
-      -- At least try to remove tmp file
-      Dummy := Sys_calls.Unlink (Make_Out_File_Name);
-      return;
-    end if;
-
-    -- Put modified file name
     if Modified then
+      -- Rename out file as in file
+      if not Sys_Calls.Rename (Make_Out_File_Name, In_File_Name) then
+        Sys_Calls.Put_Line_Error ("Error. Cannot rename out file "
+               & Make_Out_File_Name & " as " & In_File_Name & ", skipping.");
+        -- At least try to remove tmp file
+        Dummy := Sys_Calls.Unlink (Make_Out_File_Name);
+        return;
+      end if;
+      -- Put modified file name
       Ada.Text_Io.Put_Line (In_File_Name);
+    else
+      -- Leave unchanged source file
+      if not Sys_Calls.Unlink (Make_Out_File_Name) then
+        Sys_Calls.Put_Line_Error ("Warning. Cannot remove unused out file "
+               & Make_Out_File_Name & ".");
+      end if;
     end if;
 
   exception
@@ -179,4 +221,4 @@ begin
    end loop;
 
 end Trail_Spaces;
-  
+
