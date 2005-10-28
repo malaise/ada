@@ -14,24 +14,24 @@ extern double round(double x);
 
 /*
  ******************************************************************************
- * Function	: normalize_time
+ * Function : normalize_time
  *
- * Abstract	: Set time at normalized format:
+ * Abstract : Set time at normalized format:
  *                 0 < abs(usec) < MILLION
  *                 sec and usec have same sign
  *
- * Decisions	: None
+ * Decisions : None
  *
- * Input	: p_time  address of the time structure to normalize
+ * Input  : p_time  address of the time structure to normalize
  *
- * Output       : p_time  address of the normalized time structure
+ * Output : p_time  address of the normalized time structure
  *
- * Return	: -1 if the time is negative, 0 if it 0, 1 if it is positive
+ * Return : -1 if the time is negative, 0 if it 0, 1 if it is positive
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 /* Normalises a time */
@@ -74,23 +74,23 @@ int normalize_time (timeout_t *p_time)
 
 /*
  ******************************************************************************
- * Function	: add_time
+ * Function : add_time
  *
- * Abstract	: Adds a time p_val to a time p_to
+ * Abstract : Adds a time p_val to a time p_to
  *
- * Decisions	: Signs are taken into account and the result is normalized
+ * Decisions : Signs are taken into account and the result is normalized
  *
- * Input	: p_to   time value a
- *                p_val  time value b
+ * Input  : p_to   time value a
+ *          p_val  time value b
  *
- * Output       : p_to   time value of a+b
+ * Output : p_to   time value of a+b
  *
- * Return	: -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
+ * Return : -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 /* Adds *p_val to *p_to and returns the sign of *p_to after addition */
@@ -113,23 +113,23 @@ int add_time (timeout_t *p_to, timeout_t *p_val)
 
 /*
  ******************************************************************************
- * Function	: sub_time
+ * Function : sub_time
  *
- * Abstract	: Substract a time p_val to a time p_to
+ * Abstract : Substract a time p_val to a time p_to
  *
- * Decisions	: Signs are taken into account and the result is normalized
+ * Decisions : Signs are taken into account and the result is normalized
  *
- * Input	: p_to   time value a
- *                p_val  time value b
+ * Input  : p_to   time value a
+ *          p_val  time value b
  *
- * Output       : p_to   time value of a-b
+ * Output : p_to   time value of a-b
  *
- * Return	: -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
+ * Return : -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 /* Subs *p_val to *p_to and returns the sign of *p_to after addition */
@@ -148,23 +148,23 @@ int sub_time ( timeout_t *p_to,  timeout_t *p_val)
 
 /*
  ******************************************************************************
- * Function	: add_time
+ * Function : add_time
  *
- * Abstract	: Adds a delay in milliseconds to a time p_to
+ * Abstract : Adds a delay in milliseconds to a time p_to
  *
- * Decisions	: Signs are taken into account and the result is normalized
+ * Decisions : Signs are taken into account and the result is normalized
  *
- * Input	: p_to      time value a
- *                delay_ms  value b in milliseconds
+ * Input  : p_to      time value a
+ *          delay_ms  value b in milliseconds
  *
- * Output       : p_to   value of a+b
+ * Output : p_to   value of a+b
  *
- * Return	: -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
+ * Return : -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 /* Adds delay in ms to *p_to */
@@ -182,22 +182,22 @@ int incr_time (timeout_t *p_to, unsigned int delay_ms)
 
 /*
  ******************************************************************************
- * Function	: get_time
+ * Function : get_time
  *
- * Abstract	: Get the current time
+ * Abstract : Get the current time
  *
- * Decisions	: Calls UNIX gettimeofday function
+ * Decisions : Calls UNIX gettimeofday function
  *
- * Input	: None
+ * Input  : None
  *
- * Output       : p_time  Adress where the current time has to be put
+ * Output : p_time  Adress where the current time has to be put
  *
- * Return	: None
+ * Return : None
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 /* init a time with current time */
@@ -211,23 +211,23 @@ void get_time (timeout_t *p_time)
 
 /*
  ******************************************************************************
- * Function	: comp_time
+ * Function : comp_time
  *
- * Abstract	: Compares 2 times
+ * Abstract : Compares 2 times
  *
- * Decisions	: Signs are taken into account
+ * Decisions : Signs are taken into account
  *
- * Input	: p_time_1   value a
- *                p_time_2   value b
+ * Input  : p_time_1   value a
+ *          p_time_2   value b
  *
- * Output       :
+ * Output :
  *
- * Return	: -1 if a<b,  0 if a=b,  1 if a>b
+ * Return : -1 if a<b,  0 if a=b,  1 if a>b
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 /* Compares 2 times (-1 if t1 < t2, 0 if t1 = t2, 1 if t1 > t2) */
@@ -252,23 +252,23 @@ int comp_time (timeout_t *p_time_1, timeout_t *p_time_2)
 
 /*
  ******************************************************************************
- * Function	: time_is_reached
+ * Function : time_is_reached
  *
- * Abstract	: Check if given time is reached (current_time >= given_time)
+ * Abstract : Check if given time is reached (current_time >= given_time)
  *
- * Decisions	: None
+ * Decisions : None
  *
- * Input	: p_time  The expiry date
+ * Input  : p_time  The expiry date
  *
- * Output       : None
+ * Output : None
  *
- * Return	: True  the date is reached,
- *                False the date is not reached yet.
+ * Return : True  the date is reached,
+ *          False the date is not reached yet.
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 boolean time_is_reached (timeout_t *p_time)
@@ -285,22 +285,22 @@ boolean time_is_reached (timeout_t *p_time)
 
 /*
  ******************************************************************************
- * Function	: delay
+ * Function : delay
  *
- * Abstract	: Wait for some time (during some delay)
+ * Abstract : Wait for some time (during some delay)
  *
- * Decisions	: Loop while EINTR
+ * Decisions : Loop while EINTR
  *
- * Input	: p_timeout  The delay to wait
+ * Input  : p_timeout  The delay to wait
  *
- * Output       : None
+ * Output : None
  *
- * Return	: None
+ * Return : None
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 extern void delay ( timeout_t *p_timeout ) {
@@ -334,22 +334,22 @@ extern void delay ( timeout_t *p_timeout ) {
 
 /*
  ******************************************************************************
- * Function	: time_to_double
+ * Function : time_to_double
  *
- * Abstract	: Convert time to double (seconds dot microseconds)
+ * Abstract : Convert time to double (seconds dot microseconds)
  *
- * Decisions	: None
+ * Decisions : None
  *
- * Input	: p_time  The time to convert
+ * Input  : p_time  The time to convert
  *
- * Output       : None
+ * Output : None
  *
- * Return	: The double value of conversion
+ * Return : The double value of conversion
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 extern double time_to_double (timeout_t *p_time ) {
@@ -360,22 +360,22 @@ extern double time_to_double (timeout_t *p_time ) {
 
 /*
  ******************************************************************************
- * Function	: double_to_time
+ * Function : double_to_time
  *
- * Abstract	: Convert a double (seconds dot microseconds) to time
+ * Abstract : Convert a double (seconds dot microseconds) to time
  *
- * Decisions	: Normalize the result
+ * Decisions : Normalize the result
  *
- * Input	: from  The double value to convert
+ * Input  : from  The double value to convert
  *
- * Output       : p_to  address of the converted time structure
+ * Output : p_to  address of the converted time structure
  *
- * Return	: The double value of conversion
+ * Return : The double value of conversion
  *
- * Errors       : None
+ * Errors : None
  *
  * History :
- *			
+ *
  *******************************************************************************
 */
 extern void double_to_time (double from, timeout_t *p_to) {
