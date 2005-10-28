@@ -103,7 +103,7 @@ package body Graphic is
     Con_Io.Set_Foreground (Back);
     Con_Io.Set_Background (Back);
     Con_Io.Graphics.Fill_Rectangle (Pos.X - Size2, Pos.Y - Size2,
-                                    Pos.X + Size2, Pos.Y + Size2);
+                                    Pos.X + Size2 + 1, Pos.Y + Size2 + 1);
 
     -- Set Foreground and piece
     if Space.Board.Piece_At(Square) /= null then
