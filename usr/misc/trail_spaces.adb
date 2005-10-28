@@ -176,7 +176,7 @@ procedure Trail_Spaces is
 
     -- Append last newline and close files
     Ada.Text_Io.Close (In_File);
-    if Needs_New_Line (In_File_Name) then
+    if Modified and then Needs_New_Line (In_File_Name) then
       Ada.Text_Io.New_Line (Out_File);
     end if;
     Ada.Text_Io.Close (Out_File);
