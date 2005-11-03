@@ -7,5 +7,3 @@ CLIBS_t_fifos := cutil
 
 include $(TEMPLATES)/ada.mk
 
-dump :
-	@echo $(ADA)

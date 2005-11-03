@@ -7,5 +7,3 @@ CLIBS_pipe := cutil
 
 include $(TEMPLATES)/ada.mk
 
-dump :
-	@echo $(ADA)
