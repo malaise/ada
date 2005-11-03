@@ -5,8 +5,8 @@ EXES := test_x
 
 OBJS_libcndbm := cndbm.o
 OBJS_libcutil := timeval.o sys_calls.o wait_evt.o socket.o socket_afux.o regex.o
-OBJS_libx_mng := x_color.o x_font.o x_line.o\
-	x_export.o x_file.o x_key.o x_screen.o
+OBJS_libx_mng := x_color.o x_font.o x_line.o x_export.o x_file.o x_key.o \
+                 x_screen.o
 
 LARGS_test_x := -lx_mng -lcutil -lX11 -lm
 
