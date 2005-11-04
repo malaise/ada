@@ -18,30 +18,3 @@ INST_HEADS := boolean.h timeval.h sys_calls.h wait_evt.h socket.h
 
 include $(TEMPLATES)/c.mk
 
-cndbm.c : cndbm.h
-
-socket.c : socket_prv.h wait_evt.h socket_afux.h
-socket_afux.c : socket_afux.h
-socket_afux.h : socket_net.h
-socket_prv.h : socket.h socket_net.h
-
-wait_evt.c : wait_evt.h
-sys_calls.c : sys_calls.h
-timeval.c : timeval.h
-socket_prv.h : socket.h socket_net.h
-socket.h : boolean.h
-wait_evt.h : timeval.h
-
-x_export.c : x_export.h x_screen.h x_line.h timeval.h
-x_file.c : x_file.h
-x_font.c : x_font.h
-x_key.c : x_key.h
-x_line.c : x_line.h x_file.h
-x_screen.c : x_screen.h x_color.h x_font.h
-x_color.h : x_stdinc.h x_file.h
-x_export.h : boolean.h wait_evt.h
-x_file.h : x_stdinc.h
-x_font.h :  x_stdinc.h x_file.h
-x_line.h : x_stdinc.h x_font.h x_color.h x_screen.h x_key.h
-x_screen.h : x_stdinc.h
-
