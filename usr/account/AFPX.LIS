@@ -942,47 +942,59 @@ Descriptor 4
 
   # Reference
   Field 12 Put
-    Geometry 11 2 11 18
+    Geometry 11 2 11 11
     Colors light_gray not_blink black
     Init
-      0 0 Cheque reference:
+      0 0 Reference:
     End Init
   End Field
   Field 13 Get
-    Geometry 11 20 11 29
+    Geometry 11 13 11 22
     Colors cyan brown brown
+  End Field
+ 
+  Field 14 Put
+    Geometry 11 25 11 36
+    Colors light_gray not_blink black
+    Init
+      0 0 Cheque only:
+    End Init
+  End Field
+  Field 15 Button
+    Geometry 11 38 11 38
+    Colors cyan brown
   End Field
 
   # Kind
-  Field 14 Button
+  Field 16 Button
     Geometry 14 2 16 9
     Colors cyan brown
     Init
       1 1 Cheque
     End Init
   End Field
-  Field 15 Button
+  Field 17 Button
     Geometry 14 13 16 25
     Colors cyan brown
     Init
       1 1 Credit Card
     End Init
   End Field
-  Field 16 Button
+  Field 18 Button
     Geometry 14 29 16 38
     Colors cyan brown
     Init
       1 1 Transfer
     End Init
   End Field
-  Field 17 Button
+  Field 19 Button
     Geometry 14 42 16 51
     Colors cyan brown
     Init
       1 1 Withdraw
     End Init
   End Field
-  Field 18 Button
+  Field 20 Button
     Geometry 14 55 16 63
     Colors cyan brown
     Init
@@ -991,7 +1003,7 @@ Descriptor 4
   End Field
 
   # Cancel
-  Field 19 Button
+  Field 21 Button
     Geometry 20 2 22 14
     Colors cyan brown
     Init
@@ -1000,7 +1012,7 @@ Descriptor 4
   End Field
 
   # Search all
-  Field 20 Button
+  Field 22 Button
     Geometry 20 18 22 29
     Colors cyan brown
     Init

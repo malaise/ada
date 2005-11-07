@@ -7,6 +7,7 @@ procedure Search is
   Cursor_Col   : Con_Io.Col_Range := 0;
   Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean := False;
+  Cheque_Ref   : Boolean := False;
   -- Operation to match
   Oper : Oper_Def.Oper_Rec;
 
@@ -23,9 +24,15 @@ procedure Search is
   function Ref_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
     use type Oper_Def.Kind_List;
   begin
+    return Cur.Reference = Crit.Reference;
+  end Ref_Match;
+
+  function Cheque_Ref_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
+    use type Oper_Def.Kind_List;
+  begin
     return Cur.Kind = Oper_Def.Cheque
            and then Cur.Reference = Crit.Reference;
-  end Ref_Match;
+  end Cheque_Ref_Match;
 
   function Status_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
     use type Oper_Def.Status_List;
@@ -52,11 +59,14 @@ procedure Search is
     if Sel_List_Mng.Is_Empty(Sel_List) then
       return;
     end if;
-    -- Scan from first
-    Sel_List_Mng.Rewind(Sel_List);
     if Match = null then
+      -- Move to end
+      Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
       return;
     end if;
+
+    -- Scan from first
+    Sel_List_Mng.Rewind(Sel_List);
     loop
       List_Util.Move_To_Current;
       Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
@@ -91,6 +101,11 @@ begin
   Cursor_Field := Afpx.Next_Cursor_Field(0);
 
   loop
+    if Cheque_Ref then
+      Afpx.Encode_Field (15, (0, 0), "X");
+    else
+      Afpx.Clear_Field (15);
+    end if;
     Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
     Redisplay := False;
     case Ptg_Result.Event is
@@ -100,7 +115,11 @@ begin
           when Afpx.Return_Key =>
             -- Return = Search ref
             Oper.Reference := Afpx.Decode_Field(13, 0);
-            Unsel_All(Ref_Match'Access, Oper);
+            if Cheque_Ref then
+              Unsel_All(Cheque_Ref_Match'Access, Oper);
+            else
+              Unsel_All(Ref_Match'Access, Oper);
+            end if;
             In_Sublist := True;
             exit;
           when Afpx.Escape_Key | Afpx.Break_Key =>
@@ -129,41 +148,44 @@ begin
             Unsel_All(Kind_Status_Match'Access, Oper);
             In_Sublist := True;
             exit;
-          when 14 =>
+          when 15 =>
+            -- Toggle cheque only ref
+            Cheque_Ref := not Cheque_Ref;
+          when 16 =>
             -- Cheque
             Oper.Kind := Oper_Def.Cheque;
             Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
-          when 15 =>
+          when 17 =>
             -- Credit
             Oper.Kind := Oper_Def.Credit;
             Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
-          when 16 =>
+          when 18 =>
             -- Transfer
             Oper.Kind := Oper_Def.Transfer;
             Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
-          when 17 =>
+          when 19 =>
             -- Withdraw
             Oper.Kind := Oper_Def.Withdraw;
             Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
-          when 18 =>
+          when 20 =>
             -- Savings
             Oper.Kind := Oper_Def.Savings;
             Unsel_All(Kind_Match'Access, Oper);
             In_Sublist := True;
             exit;
-          when 19 =>
+          when 21 =>
             -- Cancel
             In_Sublist := False;
             exit;
-          when 20 =>
+          when 22 =>
             -- Select all
             Unsel_All(null, Oper);
             In_Sublist := True;
