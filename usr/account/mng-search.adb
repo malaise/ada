@@ -2,14 +2,6 @@ with Con_Io;
 separate(Mng)
 
 procedure Search is
-  -- Afpx put_then_get stuff
-  Cursor_Field : Afpx.Absolute_Field_Range := 0;
-  Cursor_Col   : Con_Io.Col_Range := 0;
-  Ptg_Result   : Afpx.Result_Rec;
-  Redisplay    : Boolean := False;
-  Cheque_Ref   : Boolean := False;
-  -- Operation to match
-  Oper : Oper_Def.Oper_Rec;
 
   -- Unselect current oper
   procedure Unsel is
@@ -18,50 +10,37 @@ procedure Search is
     Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev, Done => Done);
   end Unsel;
 
-  type Match_Prot is access
-       function(Cur, Crit : Oper_Def.Oper_Rec) return Boolean;
+  -- Search criteria
+  type Status_Array is array (Oper_Def.Status_List) of Boolean;
+  type Kind_Array   is array (Oper_Def.Kind_List) of Boolean;
+  type Criteria_Rec is record
+    Status : Status_Array;
+    Kind   : Kind_Array;
+    Reference_Set : Boolean;
+    Reference : Oper_Def.Reference_Str;
+  end record;
 
-  function Ref_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
-    use type Oper_Def.Kind_List;
+  -- Set_Criteria Match for search
+  procedure Set (To : out Criteria_Rec; Val : in Criteria_Rec) is
   begin
-    return Cur.Reference = Crit.Reference;
-  end Ref_Match;
-
-  function Cheque_Ref_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
-    use type Oper_Def.Kind_List;
-  begin
-    return Cur.Kind = Oper_Def.Cheque
-           and then Cur.Reference = Crit.Reference;
-  end Cheque_Ref_Match;
-
-  function Status_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
-    use type Oper_Def.Status_List;
-  begin
-    return Cur.Status = Crit.Status;
-  end Status_Match;
-
-  function Kind_Status_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
-    use type Oper_Def.Kind_List, Oper_Def.Status_List;
-  begin
-    return Cur.Kind = Crit.Kind and then Cur.Status = Crit.Status;
-  end Kind_Status_Match;
-
-  function Kind_Match(Cur, Crit : Oper_Def.Oper_Rec) return Boolean is
-    use type Oper_Def.Kind_List;
-  begin
-    return Cur.Kind = Crit.Kind;
-  end Kind_Match;
+    To := Val;
+  end Set;
 
   -- Unselect all non matching oper
-  procedure Unsel_All(Match : in Match_Prot; Crit : in Oper_Def.Oper_Rec) is
-     Oper : Oper_Def.Oper_Rec;
+  procedure Unsel_All (Crit : in Criteria_Rec) is
+    function Match (Current  : Oper_Def.Oper_Rec;
+                    Criteria : Criteria_Rec) return Boolean is
+    begin
+      -- Match if Cur kind is set in Crit and Cur status is set in Crit
+      -- Or reference Crit is set and Cur matches
+      return Criteria.Kind(Current.Kind)
+      and then Criteria.Status(Current.Status)
+      and then (not Criteria.Reference_Set
+                or else Criteria.Reference = Current.Reference);
+    end Match;
+    Oper : Oper_Def.Oper_Rec;
   begin
     if Sel_List_Mng.Is_Empty(Sel_List) then
-      return;
-    end if;
-    if Match = null then
-      -- Move to end
-      Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
       return;
     end if;
 
@@ -82,6 +61,85 @@ procedure Search is
     end loop;
   end Unsel_All;
 
+  -- Afpx put_then_get stuff
+  Cursor_Field : Afpx.Absolute_Field_Range := 0;
+  Cursor_Col   : Con_Io.Col_Range := 0;
+  Ptg_Result   : Afpx.Result_Rec;
+  Redisplay    : Boolean := False;
+  -- The search criteria
+  Criteria : Criteria_Rec;
+  Allow_Search : Boolean;
+
+  -- Update all Afpx fields according to criteria
+  procedure Update_Fields is
+    -- Update the color of a field
+    One_Set : Boolean;
+    Status_Set, Kind_Set : Boolean;
+    procedure Update_Color (Fld : in Afpx.Field_Range; Value : in Boolean) is
+    begin
+      if Value then
+        Afpx.Set_Field_Colors (Fld, Foreground => Con_Io.Red);
+        One_Set := True;
+      else
+        Afpx.Reset_Field (Fld, Reset_String => False);
+      end if;
+    end Update_Color;
+  begin
+    -- Set all colors
+    One_Set := False;
+    Update_Color (10, Criteria.Status(Oper_Def.Entered));
+    Update_Color (11, Criteria.Status(Oper_Def.Not_Entered));
+    Update_Color (12, Criteria.Status(Oper_Def.Defered));
+    Status_Set := One_Set;
+    One_Set := False;
+    Update_Color (14, Criteria.Kind(Oper_Def.Cheque));
+    Update_Color (15, Criteria.Kind(Oper_Def.Credit));
+    Update_Color (16, Criteria.Kind(Oper_Def.Transfer));
+    Update_Color (17, Criteria.Kind(Oper_Def.Withdraw));
+    Update_Color (18, Criteria.Kind(Oper_Def.Savings));
+    Kind_Set := One_Set;
+    Update_Color (19, Criteria.Reference_Set);
+    -- Update reference
+    if not Criteria.Reference_Set then
+     Criteria.Reference := (others => ' ');
+     Afpx.Clear_Field (20);
+    end if;
+    Afpx.Set_Field_Activation (20, Criteria.Reference_Set);
+    -- Update SEARCH button
+    Afpx.Set_Field_Activation (23, Status_Set and then Kind_Set);
+  end Update_Fields;
+
+  -- Update the Criteria and fields according to clicked field
+  procedure Switch_Field (Fld : in Afpx.Field_Range) is
+    procedure Switch (Val : in out Boolean) is
+    begin
+      Val := not Val;
+    end Switch;
+  begin
+    -- Update Criteria booleans according to field clicked
+    case Fld is
+      when 10 =>
+        Switch (Criteria.Status(Oper_Def.Entered));
+      when 11 =>
+        Switch (Criteria.Status(Oper_Def.Not_Entered));
+      when 12 =>
+        Switch (Criteria.Status(Oper_Def.Defered));
+      when 14 =>
+        Switch (Criteria.Kind(Oper_Def.Cheque));
+      when 15 =>
+        Switch (Criteria.Kind(Oper_Def.Credit));
+      when 16 =>
+        Switch (Criteria.Kind(Oper_Def.Transfer));
+      when 17 =>
+        Switch (Criteria.Kind(Oper_Def.Withdraw));
+      when 18 =>
+        Switch (Criteria.Kind(Oper_Def.Savings));
+      when 19 =>
+        Switch (Criteria.Reference_Set);
+      when others =>
+        raise Program_Error;
+    end case;
+  end Switch_Field;
 
 begin
 
@@ -93,6 +151,7 @@ begin
   end if;
 
   -- Not in sublist: get criteria
+  -- Init screen
   Afpx.Use_Descriptor(4);
   Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
   Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
@@ -100,12 +159,13 @@ begin
   Screen.Encode_Saved(Account_Saved);
   Cursor_Field := Afpx.Next_Cursor_Field(0);
 
+  -- Init criteria and fields accordingly
+  Criteria.Status := (others => False);
+  Criteria.Kind   := (others => True);
+  Criteria.Reference_Set := False;
+  Update_Fields;
+
   loop
-    if Cheque_Ref then
-      Afpx.Encode_Field (15, (0, 0), "X");
-    else
-      Afpx.Clear_Field (15);
-    end if;
     Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
     Redisplay := False;
     case Ptg_Result.Event is
@@ -113,15 +173,14 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            -- Return = Search ref
-            Oper.Reference := Afpx.Decode_Field(13, 0);
-            if Cheque_Ref then
-              Unsel_All(Cheque_Ref_Match'Access, Oper);
-            else
-              Unsel_All(Ref_Match'Access, Oper);
+            -- Return = Search if allowed
+            Afpx.Get_Field_Activation (23, Allow_Search);
+            if Allow_Search then
+              Criteria.Reference := Afpx.Decode_Field(20, 0);
+              Unsel_All(Criteria);
+              In_Sublist := True;
+              exit;
             end if;
-            In_Sublist := True;
-            exit;
           when Afpx.Escape_Key | Afpx.Break_Key =>
             -- Escape/Break = Cancel
             In_Sublist := False;
@@ -129,66 +188,30 @@ begin
         end case;
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-          when 9 =>
-            -- Defered
-            Oper.Status := Oper_Def.Defered;
-            Unsel_All(Status_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 10 =>
-            -- Not entered
-            Oper.Status := Oper_Def.Not_Entered;
-            Unsel_All(Status_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 11 =>
-            -- Cheque not entered
-            Oper.Kind := Oper_Def.Cheque;
-            Oper.Status := Oper_Def.Not_Entered;
-            Unsel_All(Kind_Status_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 15 =>
-            -- Toggle cheque only ref
-            Cheque_Ref := not Cheque_Ref;
-          when 16 =>
-            -- Cheque
-            Oper.Kind := Oper_Def.Cheque;
-            Unsel_All(Kind_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 17 =>
-            -- Credit
-            Oper.Kind := Oper_Def.Credit;
-            Unsel_All(Kind_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 18 =>
-            -- Transfer
-            Oper.Kind := Oper_Def.Transfer;
-            Unsel_All(Kind_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 19 =>
-            -- Withdraw
-            Oper.Kind := Oper_Def.Withdraw;
-            Unsel_All(Kind_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
-          when 20 =>
-            -- Savings
-            Oper.Kind := Oper_Def.Savings;
-            Unsel_All(Kind_Match'Access, Oper);
-            In_Sublist := True;
-            exit;
+          when 10 | 11 | 12 | 14 | 15 | 16 | 17 | 18 | 19 =>
+            -- Switch a button
+            Switch_Field (Ptg_Result.Field_No);
+            Update_Fields;
           when 21 =>
+            -- Select all
+            Criteria.Status := (others => True);
+            Criteria.Kind := (others => True);
+            Update_Fields;
+          when 22 =>
+            -- Select none
+            Criteria.Status := (others => False);
+            Criteria.Kind := (others => False);
+            Criteria.Reference_Set := False;
+            Update_Fields;
+          when 23 =>
+            -- Search
+            Criteria.Reference := Afpx.Decode_Field(20, 0);
+            Unsel_All(Criteria);
+            In_Sublist := True;
+            exit;
+          when 24 =>
             -- Cancel
             In_Sublist := False;
-            exit;
-          when 22 =>
-            -- Select all
-            Unsel_All(null, Oper);
-            In_Sublist := True;
             exit;
           when others =>
             null;

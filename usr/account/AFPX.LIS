@@ -918,106 +918,124 @@ Descriptor 4
   End Field
 
   # Status
-  Field 9 Button
-    Geometry 6 2 8 10
-    Colors cyan brown
+  Field 9 Put
+    Geometry 7 2 7 7
+    Colors light_gray not_blink black
     Init
-      1 1 Defered
+      0 0 Status
     End Init
   End Field
   Field 10 Button
-    Geometry 6 14 8 26
+    Geometry 6 11 8 19
+    Colors cyan brown
+    Init
+      1 1 Entered
+    End Init
+  End Field
+  Field 11 Button
+    Geometry 6 23 8 35
     Colors cyan brown
     Init
       1 1 Not entered
     End Init
   End Field
-  Field 11 Button
-    Geometry 6 30 8 49
+  Field 12 Button
+    Geometry 6 39 8 47
     Colors cyan brown
     Init
-      1 1 Cheque not entered
+      1 1 Defered
     End Init
-  End Field
-
-  # Reference
-  Field 12 Put
-    Geometry 11 2 11 11
-    Colors light_gray not_blink black
-    Init
-      0 0 Reference:
-    End Init
-  End Field
-  Field 13 Get
-    Geometry 11 13 11 22
-    Colors cyan brown brown
-  End Field
- 
-  Field 14 Put
-    Geometry 11 25 11 36
-    Colors light_gray not_blink black
-    Init
-      0 0 Cheque only:
-    End Init
-  End Field
-  Field 15 Button
-    Geometry 11 38 11 38
-    Colors cyan brown
   End Field
 
   # Kind
-  Field 16 Button
-    Geometry 14 2 16 9
+  Field 13 Put
+    Geometry 11 2 11 5
+    Colors light_gray not_blink black
+    Init
+      0 0 Kind
+    End Init
+  End Field
+  Field 14 Button
+    Geometry 10 11 12 18
     Colors cyan brown
     Init
       1 1 Cheque
     End Init
   End Field
-  Field 17 Button
-    Geometry 14 13 16 25
+  Field 15 Button
+    Geometry 10 22 12 34
     Colors cyan brown
     Init
       1 1 Credit Card
     End Init
   End Field
-  Field 18 Button
-    Geometry 14 29 16 38
+  Field 16 Button
+    Geometry 10 38 12 47
     Colors cyan brown
     Init
       1 1 Transfer
     End Init
   End Field
-  Field 19 Button
-    Geometry 14 42 16 51
+  Field 17 Button
+    Geometry 10 51 12 60
     Colors cyan brown
     Init
       1 1 Withdraw
     End Init
   End Field
-  Field 20 Button
-    Geometry 14 55 16 63
+  Field 18 Button
+    Geometry 10 64 12 72
     Colors cyan brown
     Init
       1 1 Savings
     End Init
   End Field
 
-  # Cancel
+  # Reference
+  Field 19 Button
+    Geometry 14 11 16 21
+    Colors cyan brown
+    Init
+      1 1 Reference
+    End Init
+  End Field
+  Field 20 Get
+    Geometry 15 25 15 34
+    Colors cyan brown brown
+  End Field
+
+  # Set to All/None
   Field 21 Button
-    Geometry 20 2 22 14
+    Geometry 20 3 22 7
+    Colors cyan brown
+    Init
+      1 1 All
+    End Init
+  End Field
+  Field 22 Button
+    Geometry 20 11 22 16
+    Colors cyan brown
+    Init
+      1 1 None
+    End Init
+  End Field
+
+
+  # Search/Cancel
+  Field 23 Button
+    Geometry 20 23 22 35
+    Colors cyan brown
+    Init
+      1 1 S E A R C H
+    End Init
+  End Field
+  Field 24 Button
+    Geometry 20 39 22 51
     Colors cyan brown
     Init
       1 1 C A N C E L
     End Init
   End Field
 
-  # Search all
-  Field 22 Button
-    Geometry 20 18 22 29
-    Colors cyan brown
-    Init
-      1 1 Select All
-    End Init
-  End Field
 End Descriptor
 
