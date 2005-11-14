@@ -167,16 +167,59 @@ package Limited_List is
   function Access_Current (List : List_Type) return Element_Access;
 
 
-  -- For Search_Match and Iterate
-  type Match_Access is access function (Current, Criteria : Element_Type)
-                              return Boolean;
-
   -- Three different strategies to search:
   -- From_Current : current item may match)
   -- Skip_Current : earch starts after/before current)
   -- Absolute     : earch starts fron beginning/end of list
   type Search_Kind_List is (From_Current, Skip_Current, Absolute);
 
+  -- Search with criteria not of Element_Type
+  -------------------------------------------
+  generic
+    -- The Criteria is the one provided to Search
+    -- Current will be the element of list compared to criteria
+    type Criteria_Type is limited private;
+    with procedure Set (To : out Criteria_Type; Val : in Criteria_Type);
+    with function Match (Current : Element_Type; Criteria : Criteria_Type)
+                  return Boolean;
+  -- Search from the nth occurence of an item matching the provided criteria
+  -- Starts from current, skipping it or not if it matches,
+  --  or from begin/end of list
+  -- Found is set to True if a matching item is found, then the current
+  --  position is set to the item found, otherwise it is unchanged.
+  -- Does not raise Empty_List.
+  procedure Search_Criteria (List      : in out List_Type;
+                             Found     : out Boolean;
+                             Criteria  : in Criteria_Type;
+                             Where     : in Direction := Next;
+                             Occurence : in Positive := 1;
+                             From      : in Search_Kind_List);
+
+  -- Search with criteria of Element_Type
+  ---------------------------------------
+  generic
+    -- The Criteria is the one provided to Search
+    -- Current will be the element of list compared to criteria
+    with function Match (Current, Criteria : Element_Type)
+                  return Boolean;
+  -- Search from the nth occurence of an item matching the provided criteria
+  -- Starts from current, skipping it or not if it matches,
+  --  or from begin/end of list
+  -- Found is set to True if a matching item is found, then the current
+  --  position is set to the item found, otherwise it is unchanged.
+  -- Does not raise Empty_List.
+  procedure Search (List      : in out List_Type;
+                    Found     : out Boolean;
+                    Criteria  : in Element_Type;
+                    Where     : in Direction := Next;
+                    Occurence : in Positive := 1;
+                    From      : in Search_Kind_List);
+
+  -- Search with Match access and on Element_Type
+  -----------------------------------------------
+  -- For Search_Match and Iterate
+  type Match_Access is access function (Current, Criteria : Element_Type)
+                              return Boolean;
   -- Search from the nth occurence of an item matching the provided criteria
   -- Match is provided as a callback.
   -- Starts from current, skipping it or not if it matches,
@@ -193,25 +236,10 @@ package Limited_List is
                           Occurence : in Positive := 1;
                           From      : in Search_Kind_List);
 
-  generic
-    -- The Criteria is the one provided to Search
-    -- Current will be the element of list compared to criteria
-    with function Match (Current, Criteria : Element_Type)
-                  return Boolean;
 
-  -- Search from the nth occurence of an item matching the provided criteria
-  -- Starts from current, skipping it or not if it matches,
-  --  or from begin/end of list
-  -- Found is set to True if a matching item is found, then the current
-  --  position is set to the item found, otherwise it is unchanged.
-  -- Does not raise Empty_List.
-  procedure Search (List      : in out List_Type;
-                    Found     : out Boolean;
-                    Criteria  : in Element_Type;
-                    Where     : in Direction := Next;
-                    Occurence : in Positive := 1;
-                    From      : in Search_Kind_List);
 
+  -- Search with exception
+  ------------------------
   -- Search, may raise Not_In_List if the given element is not found
   --  or if empty list (position not changed).
   generic

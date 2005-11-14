@@ -547,13 +547,14 @@ package body Limited_List is
 
 
   -- Search
-  procedure Search_Match (List      : in out List_Type;
-                          Found     : out Boolean;
-                          Match     : in Match_Access;
-                          Criteria  : in Element_Type;
-                          Where     : in Direction := Next;
-                          Occurence : in Positive := 1;
-                          From      : in Search_Kind_List) is
+
+  -- Generic search with a Criteria not of Item_Type
+  procedure Search_Criteria (List      : in out List_Type;
+                             Found     : out Boolean;
+                             Criteria  : in Criteria_Type;
+                             Where     : in Direction := Next;
+                             Occurence : in Positive := 1;
+                             From      : in Search_Kind_List) is
     New_Pos                     : Link;
     New_Pos_First, New_Pos_Last : Natural;
 
@@ -613,8 +614,6 @@ package body Limited_List is
             exit when not Next_Pos;
           end if;
           loop
-            Found := Match = null;
-            exit when Found;
             Found := Match(New_Pos.Value, Criteria);
             exit when Found;
             exit when not Next_Pos;
@@ -626,8 +625,6 @@ package body Limited_List is
             exit when not Prev_Pos;
           end if;
           loop
-            Found := Match = null;
-            exit when Found;
             Found := Match(New_Pos.Value, Criteria);
             exit when Found;
             exit when not Prev_Pos;
@@ -643,23 +640,65 @@ package body Limited_List is
       List.Modified := True;
     end if;
     List.In_Cb := False;
-  end Search_Match;
+  end Search_Criteria;
 
+  -- Generic search with Criteria of Element_Type
   procedure Search (List      : in out List_Type;
                     Found     : out Boolean;
                     Criteria  : in Element_Type;
                     Where     : in Direction := Next;
                     Occurence : in Positive := 1;
                     From      : in Search_Kind_List) is
-    function Loc_Match (Current, Criteria : Element_Type) return Boolean is
-    begin
-      return Match (Current, Criteria);
-    end Loc_Match;
+
+    procedure Item_Search is new Search_Criteria (Element_Type, Set, Match);
   begin
-    Search_Match (List, Found, Loc_Match'Unrestricted_Access,
-                  Criteria, Where, Occurence, From);
+    Item_Search (List, Found, Criteria, Where, Occurence, From);
   end Search;
 
+  -- Search with Match passed by access:
+  -- The criteria for Criteria_Search:
+  --  the criteria and the match function access
+  type Crit_Match_Rec is record
+    Criteria : Element_Type;
+    Match : Match_Access;
+  end record;
+  -- Criteria is limited private => need a set operation
+  procedure Set (To : out Crit_Match_Rec; Val : in Crit_Match_Rec) is
+  begin
+    -- Elements
+    Set (To.Criteria, Val.Criteria);
+    -- Match
+    To.Match := Val.Match;
+  end Set;
+
+  -- Search_Criteria instanciation
+  function Criteria_Match  (Current : Element_Type; Criteria : Crit_Match_Rec)
+           return Boolean is
+  begin
+    if Criteria.Match = null then
+      return True;
+    else
+      return Criteria.Match (Current, Criteria.Criteria);
+    end if;
+  end Criteria_Match;
+  procedure Search_Element is new Search_Criteria (Crit_Match_Rec, Set, Criteria_Match);
+
+  -- Search with Match passed by access
+  procedure Search_Match (List      : in out List_Type;
+                          Found     : out Boolean;
+                          Match     : in Match_Access;
+                          Criteria  : in Element_Type;
+                          Where     : in Direction := Next;
+                          Occurence : in Positive := 1;
+                          From      : in Search_Kind_List) is
+    Criteria_Match_Data : Crit_Match_Rec;
+  begin
+    Set (Criteria_Match_Data.Criteria, Criteria);
+    Criteria_Match_Data.Match := Match;
+    Search_Element (List, Found, Criteria_Match_Data, Where, Occurence, From);
+  end Search_Match;
+
+  -- Search -> exception
   procedure Unsafe_Search (List      : in out List_Type;
                            Criteria  : in Element_Type;
                            Where     : in Direction := Next;
