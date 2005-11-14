@@ -134,7 +134,7 @@ package body Screen is
     Res : Boolean;
   begin
     -- Protect get field
-    Afpx.Get_Field_Protection (Get_Fld, Get_Prot);
+    Get_Prot := Afpx.Get_Field_Protection (Get_Fld);
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
@@ -175,7 +175,7 @@ package body Screen is
       end case;
     end loop;
     -- Restore Get field
-    Afpx.Get_Field_Activation (Get_Fld, Get_Act);
+    Get_Act := Afpx.Get_Field_Activation (Get_Fld);
     Afpx.Reset_Field (Get_Fld, Reset_String => False);
     Afpx.Set_Field_Activation (Get_Fld, Get_Act);
     if not Get_Prot then
@@ -203,7 +203,7 @@ package body Screen is
       when I_Scales    => Encode_Info ("Select a scales kind");
       when I_Wait      =>
         Encode_Info ("Computing, please wait");
-        Afpx.Get_Field_Activation (Afpx.List_Field_No, List_Active);
+        List_Active := Afpx.Get_Field_Activation (Afpx.List_Field_No);
         if List_Active then
           Afpx.Set_Field_Activation (Afpx.List_Field_No, False);
         end if;

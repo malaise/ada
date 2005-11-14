@@ -68,7 +68,6 @@ procedure Search is
   Redisplay    : Boolean := False;
   -- The search criteria
   Criteria : Criteria_Rec;
-  Allow_Search : Boolean;
 
   -- Update all Afpx fields according to criteria
   procedure Update_Fields is
@@ -174,8 +173,7 @@ begin
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
             -- Return = Search if allowed
-            Afpx.Get_Field_Activation (23, Allow_Search);
-            if Allow_Search then
+            if Afpx.Get_Field_Activation (23) then
               Criteria.Reference := Afpx.Decode_Field(20, 0);
               Unsel_All(Criteria);
               In_Sublist := True;

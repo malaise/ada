@@ -512,8 +512,6 @@ package body Edition is
     -- Deleted flag read from selection list
     Sel : Sel_Rec;
     Deleted : Boolean;
-    -- Is Ok_And_Next active when keyboard Return
-    Oknext_Active : Boolean;
     use type Afpx.Absolute_Field_Range, Oper_Def.Kind_List;
   begin
 
@@ -578,8 +576,7 @@ package body Edition is
                 Cursor_Col := 0;
                 if Cursor_Field = 0 then
                   -- Check that Ok_And_Next button is active
-                  Afpx.Get_Field_Activation(42, Oknext_Active);
-                  if not Oknext_Active then
+                  if not Afpx.Get_Field_Activation(42) then
                     -- Ok and back
                     exit All_Edit;
                   else

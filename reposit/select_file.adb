@@ -125,7 +125,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Res : Boolean;
   begin
     -- Protect get field
-    Afpx.Get_Field_Protection (Get_Fld, Get_Prot);
+    Get_Prot := Afpx.Get_Field_Protection (Get_Fld);
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
@@ -171,7 +171,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       end case;
     end loop;
     -- Restore Get field colors
-    Afpx.Get_Field_Activation (Get_Fld, Get_Act);
+    Get_Act := Afpx.Get_Field_Activation (Get_Fld);
     Afpx.Reset_Field (Get_Fld, Reset_String => False);
     Afpx.Set_Field_Activation (Get_Fld, Get_Act);
     -- Restore Get field protection

@@ -273,7 +273,7 @@ package body Afpx is
 
   -- Field width
   function Get_Field_Width (Field_No : in Absolute_Field_Range)
-                           return Width_Range is
+                            return Width_Range is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
@@ -441,13 +441,13 @@ package body Afpx is
     Af_Dscr.Current_Dscr.Modified := True;
   end Set_Field_Activation;
 
-  procedure Get_Field_Activation (Field_No : in Absolute_Field_Range;
-                                  Activate : out Boolean) is
+  function Get_Field_Activation (Field_No : in Absolute_Field_Range)
+                                 return Boolean is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
     Af_Dscr.Check(Fn);
-    Activate := Af_Dscr.Fields(Fn).Activated;
+    return Af_Dscr.Fields(Fn).Activated;
   end Get_Field_Activation;
 
   -- Protect/Unprotect a Get for further put_then_gets
@@ -468,8 +468,8 @@ package body Afpx is
     Af_Dscr.Current_Dscr.Modified := True;
   end Set_Field_Protection;
 
-  procedure Get_Field_Protection (Field_No : in Absolute_Field_Range;
-                                  Protect  : out Boolean) is
+  function Get_Field_Protection (Field_No : in Absolute_Field_Range)
+                                 return Boolean is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
      use Afpx_Typ;
@@ -478,7 +478,7 @@ package body Afpx is
     if Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Put then
       raise Invalid_Field;
     end if;
-    Protect := Af_Dscr.Fields(Fn).Isprotected;
+    return Af_Dscr.Fields(Fn).Isprotected;
   end Get_Field_Protection;
 
   -- Erase all the fields of the descriptor from the screen
@@ -583,7 +583,7 @@ package body Afpx is
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : String; Significant : Boolean)
-                      return Con_Io.Col_Range is
+                       return Con_Io.Col_Range is
     N : Natural;
   begin
     if not Significant then

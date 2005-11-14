@@ -42,7 +42,7 @@ package Afpx is
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big)
   function Get_Field_Width (Field_No : Absolute_Field_Range)
-                           return Width_Range;
+                            return Width_Range;
 
   -- Width and height of a field
   -- Exceptions : No_Descriptor (no Descriptor in use),
@@ -67,7 +67,7 @@ package Afpx is
   -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Row_Range)
-                        return String;
+                         return String;
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Row_Range;
                           Str      : in out Str_Txt);
@@ -102,8 +102,8 @@ package Afpx is
   -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Activation (Field_No : in Absolute_Field_Range;
                                   Activate : in Boolean);
-  procedure Get_Field_Activation (Field_No : in Absolute_Field_Range;
-                                  Activate : out Boolean);
+  function  Get_Field_Activation (Field_No : in Absolute_Field_Range)
+                                  return Boolean;
 
   -- Protect/Unprotect a Get or Button for further put_then_gets
   -- A protected get field is displayed like a put field (but cannot blink)
@@ -113,8 +113,8 @@ package Afpx is
   -- Exceptions : No_Descriptor, Invalid_Field
   procedure Set_Field_Protection (Field_No : in Absolute_Field_Range;
                                   Protect  : in Boolean);
-  procedure Get_Field_Protection (Field_No : in Absolute_Field_Range;
-                                  Protect  : out Boolean);
+  function  Get_Field_Protection (Field_No : in Absolute_Field_Range)
+                                  return Boolean;
 
   -- Erase all the fields of the descriptor from the screen
   --  (Fill them with current screen's background color)
@@ -132,11 +132,11 @@ package Afpx is
   --  Else the next matching after From is returned
   -- 0 is returned if no matching field is found
   function Next_Cursor_Field (From : Absolute_Field_Range)
-  return Absolute_Field_Range;
+                              return Absolute_Field_Range;
 
   -- Same with previous field
   function Prev_Cursor_Field (From : Absolute_Field_Range)
-  return Absolute_Field_Range;
+                              return Absolute_Field_Range;
 
   -- List of items to put in list field in Put_Then_Get
   subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last+1;
@@ -193,7 +193,7 @@ package Afpx is
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : String; Significant : Boolean)
-                      return Con_Io.Col_Range;
+                       return Con_Io.Col_Range;
 
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)
