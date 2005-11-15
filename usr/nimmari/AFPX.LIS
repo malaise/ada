@@ -83,8 +83,8 @@ Descriptor 1
 
 # Title, presentation, rules
 
-   # Title NIM / MARIENBAD, then NIM or Marienbad
-   Field 1 Put
+  # Title NIM / MARIENBAD, then NIM or Marienbad
+  Field 1 Put
      Geometry 0 30 0 46
      Colors blue not_blink black
      Init
@@ -92,8 +92,8 @@ Descriptor 1
      End Init
    End Field
 
-# Rules
-   Field 2 Put
+  # Rules
+  Field 2 Put
      Geometry 1 1 19 78
      Colors cyan not_blink black
      Init
@@ -117,9 +117,9 @@ Descriptor 1
      End Init
    End Field
 
-# Buttons
-# Play nimm,  Play Marienbad, exit
-   Field 3 Button
+  # Buttons
+  # Play nimm,  Play Marienbad, exit
+  Field 3 Button
      Geometry 21 10 23 19
      Colors cyan light_gray 
      Init
@@ -127,7 +127,7 @@ Descriptor 1
      End Init
    End Field
 
-   Field 4 Button
+  Field 4 Button
      Geometry 21 22 23 37
      Colors cyan light_gray 
      Init
@@ -135,7 +135,7 @@ Descriptor 1
      End Init
    End Field
 
-   Field 5 Button
+  Field 5 Button
      Geometry 21 60 23 68
      Colors cyan light_gray 
      Init
@@ -147,92 +147,92 @@ End Descriptor
 
 Descriptor 2
 
-   # First row
-   Field 1 Button
+  # First row
+  Field 1 Button
      Geometry 2 23 4 24
      Colors cyan light_gray 
    End Field
 
-   Field 2 Button
+  Field 2 Button
      Geometry 2 28 4 29
      Colors cyan light_gray 
    End Field
 
-   Field 3 Button
+  Field 3 Button
      Geometry 2 33 4 34
      Colors cyan light_gray 
    End Field
 
-   Field 4 Button
+  Field 4 Button
      Geometry 2 38 4 39
      Colors cyan light_gray 
    End Field
 
-   Field 5 Button
+  Field 5 Button
      Geometry 2 43 4 44
      Colors cyan light_gray 
    End Field
 
-   Field 6 Button
+  Field 6 Button
      Geometry 2 48 4 49
      Colors cyan light_gray 
    End Field
 
-   Field 7 Button
+  Field 7 Button
      Geometry 2 53 4 54
      Colors cyan light_gray 
    End Field
 
-   # Second row
-   Field 8 Button
+  # Second row
+  Field 8 Button
      Geometry 6 28 8 29
      Colors cyan light_gray 
    End Field
 
-   Field 9 Button
+  Field 9 Button
      Geometry 6 33 8 34
      Colors cyan light_gray 
    End Field
 
-   Field 10 Button
+  Field 10 Button
      Geometry 6 38 8 39
      Colors cyan light_gray 
    End Field
 
-   Field 11 Button
+  Field 11 Button
      Geometry 6 43 8 44
      Colors cyan light_gray 
    End Field
 
-   Field 12 Button
+  Field 12 Button
      Geometry 6 48 8 49
      Colors cyan light_gray 
    End Field
 
-   # Third row
-   Field 13 Button
+  # Third row
+  Field 13 Button
      Geometry 10 33 12 34
      Colors cyan light_gray 
    End Field
 
-   Field 14 Button
+  Field 14 Button
      Geometry 10 38 12 39
      Colors cyan light_gray 
    End Field
 
-   Field 15 Button
+  Field 15 Button
      Geometry 10 43 12 44
      Colors cyan light_gray 
    End Field
 
-   # Third row
-   Field 16 Button
+  # Third row
+  Field 16 Button
      Geometry 14 38 16 39
      Colors cyan light_gray 
    End Field
 
-   # Play
-   Field 17 Button
+  # Play
+  Field 17 Button
      Geometry 21 34 23 42
      Colors blue light_gray 
      Init
@@ -240,7 +240,7 @@ Descriptor 2
      End Init
    End Field
 
-   Field 18 Button
+  Field 18 Button
      Geometry 21 60 23 68
      Colors blue light_gray 
      Init
@@ -248,8 +248,8 @@ Descriptor 2
      End Init
    End Field
 
-   # Score
-   Field 19 Put
+  # Score
+  Field 19 Put
      Geometry 0 54 0 78
      Colors blue not_blink black
      Init
@@ -257,20 +257,20 @@ Descriptor 2
      End Init
    End Field
 
-   # Title NIM or Marienbad
-   Field 20 Put
+  # Title NIM or Marienbad
+  Field 20 Put
      Geometry 0 34 0 42
      Colors blue not_blink black
    End Field
 
-   # Who wins
-   Field 21 Put
+  # Who wins
+  Field 21 Put
      Geometry 19 0 19 79
      Colors light_green blink black
    End Field
 
-   # Play
-   Field 22 Button
+  # Play
+  Field 22 Button
      Geometry 21 03 23 18
      Colors blue light_gray 
    End Field
