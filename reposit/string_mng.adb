@@ -1,3 +1,5 @@
+with Ada.Strings.Unbounded;
+with Sys_Calls;
 package body String_Mng is
 
   -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
@@ -256,6 +258,145 @@ package body String_Mng is
       return Swap (Output(1 .. Last));
     end if;
   end Unique;
+
+  -- Local function to getenv allowing or not undefined variable
+  function Get_Env (Name : String; Raise_No_Var : Boolean) return String is
+  begin
+    -- Check for empty name
+    if Name = "" then
+      if Raise_No_Var then
+        raise No_Variable;
+      else
+        return "";
+      end if;
+    end if;
+    return Sys_Calls.Getenv (Name);
+  exception
+    when Sys_Calls.Env_Not_Set =>
+      if Raise_No_Var then
+        raise No_Variable;
+      else
+        return "";
+      end if;
+  end Get_Env;
+
+  -- Replace recursively all variables by their values in environ (getenv).
+  -- A variable name is identified because it is within delimiters (strings).
+  -- Start and stop delimiters must be non empty and different (e.g. "(" and ")",
+  --  or "${" and "}"), otherwise Inv_Delimiter is raised.
+  -- Variables may be defined recursively (e.g. ${Foo${Bar}}).
+  -- Delimiter number must match (as many stop as start and in consistent
+  --  sequence e.g. {}}{ s forbidden), otherwise the exception
+  --  Delimiter_Mismatch is raised.
+  -- When a variable is not defined in environ, either it is expanded to
+  --  an empty string or the exception No_Variable is raised.
+  package Asu renames Ada.Strings.Unbounded;
+  function Eval_Variables (Str : String;
+                           Start_Delimiter, Stop_Delimiter : in String;
+                           Raise_No_Var : in Boolean := False) return String is
+
+    -- The string to work on
+    Ustr : Asu.Unbounded_String;
+    -- Last index of Ustr
+    Last_Index : Natural;
+
+    -- Check that Str_Index + Delimiter Length fits in Ustr and check if
+    --  Ustr (Str_Index...) matches Delimiter
+    function Match (Str_Index : in Positive; Delimiter : in String) return Boolean is
+      Stop_Index : Natural;
+    begin
+      -- Compute index in Ustr of character matching Delimiter'Last
+      begin
+        Stop_Index := Str_Index + Delimiter'Length - 1;
+      exception
+        when Constraint_Error =>
+          -- All these strings are definitely too long
+          return False;
+      end;
+      -- Check enough characters remain in Ustr
+      if Stop_Index > Last_Index then
+        return False;
+      end if;
+      -- Check match
+      return Asu.Slice (Ustr, Str_Index, Stop_Index) = Delimiter;
+    end Match;
+
+    -- Nested level of delimiters
+    Level : Natural;
+    -- Substitution has occured
+    Subst_Occured : Boolean;
+    -- Current index in Ustr
+    Curr_Index : Natural;
+    -- Index of start and stop of variable definition (delimiters included)
+    Start_Index, Stop_Index : Positive;
+    -- Index of stat and stop of variable name
+    Start_Var, Stop_Var : Positive;
+    
+  begin
+    -- Check Delimiters are non empty and different
+    if Start_Delimiter = ""
+    or else Stop_delimiter = ""
+    or else Start_Delimiter = Stop_delimiter then
+      raise Inv_Delimiter;
+    end if;
+
+    -- Store input string and its last index
+    Ustr := Asu.To_Unbounded_String (Str);
+    Last_Index := Str'Length;
+
+    -- Start substitutions
+    Level := 0;
+    Subst_Occured := True;
+    while Subst_Occured loop
+      -- Init for one pass
+      Subst_Occured := False;
+      Curr_Index := 1;
+      loop
+        -- Look for delimiters
+        if Match (Curr_Index, Start_delimiter) then
+          -- Found start delimiter: jump after it
+          Level := Level + 1;
+          Start_Index := Curr_Index;
+          Curr_Index := Curr_Index + Start_Delimiter'Length - 1;
+          Start_Var := Curr_Index + 1;
+        elsif Match (Curr_Index, Stop_delimiter) then
+          if Level = 0 then
+            -- More Stop than Start
+            raise Delimiter_Mismatch;
+          end if;
+          -- Found stop delimiter: jump after it
+          Level := Level - 1;
+          Stop_Var := Curr_Index - 1;
+          Curr_Index := Curr_Index + Stop_Delimiter'Length - 1;
+          Stop_Index := Curr_Index;
+          -- Substitute
+          declare
+            -- Variable value
+            Val : constant String := Get_Env (Asu.Slice (Ustr, Start_Var, Stop_Var),
+                                              Raise_No_Var);
+            -- Correction to current and last index
+            Offset : Integer := Val'Length - (Stop_Index - Start_Index + 1);
+          begin
+            Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);
+            Curr_Index := Curr_Index + Offset;
+            Last_Index := Last_Index + Offset;
+          end;
+        end if;
+        exit when Curr_Index = Last_Index;
+        Curr_Index := Curr_Index + 1;
+      end loop;
+      -- Next pass
+    end loop;
+
+    -- Final level must be 0
+    if Level /= 0 then
+      raise Delimiter_Mismatch;
+    end if;
+
+    -- Done
+    return Asu.To_String (Ustr);
+  end Eval_Variables;
+  -- No_Variable : exception;
 
 end String_Mng;
 

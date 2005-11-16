@@ -77,5 +77,20 @@ package String_Mng is
   -- Example: ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
   function Unique (From : String; From_Head : Boolean := True) return String;
 
+  -- Replace recursively all variables by their values in environ (getenv).
+  -- A variable name is identified because it is within delimiters (strings).
+  -- Start and stop delimiters must be non empty and different (e.g. "(" and ")",
+  --  or "${" and "}"), otherwise Inv_Delimiter is raised.
+  -- Variables may be defined recursively (e.g. ${Foo${Bar}}).
+  -- Delimiter number must match (as many stop as start and in consistent
+  --  sequence e.g. {}}{ s forbidden), otherwise the exception
+  --  Delimiter_Mismatch is raised.
+  -- When a variable is not defined in environ, either it is expanded to
+  --  an empty string or the exception No_Variable is raised.
+  function Eval_Variables (Str : String;
+                           Start_Delimiter, Stop_Delimiter : in String;
+                           Raise_No_Var : in Boolean := False) return String;
+  Inv_Delimiter, Delimiter_Mismatch, No_Variable : exception;
+
 end String_Mng;
 
