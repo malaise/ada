@@ -1,4 +1,4 @@
-with Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1, Ada.Exceptions;
 with My_Io, String_Mng, Upper_Str, Lower_Str, Mixed_Str, Upper_Char;
 procedure T_String is
 
@@ -8,11 +8,13 @@ procedure T_String is
 
   Pos1 : Positive;
   Nat1 : Natural;
+  Nat2 : Natural;
   Char1 : Character;
   Bool1 : Boolean;
   Bool2 : Boolean;
   Bool3 : Boolean;
   Str1 : String(1 .. 500);
+  Str2 : String(1 .. 500);
 
   procedure Int_Get (V : out Natural; Allow_Zero : in Boolean) is
     Str : String (1 .. 80);
@@ -78,11 +80,12 @@ begin
       My_Io.Put_Line (" 7 Cut (head or tail)");
       My_Io.Put_Line (" 8 Extract (head or tail)");
       My_Io.Put_Line (" 9 Swap");
-      My_Io.Put_Line ("10 Unique (form head or tail)");
+      My_Io.Put_Line ("10 Unique (from head or tail)");
+      My_Io.Put_Line ("11 Variable substitution");
 
       loop
-        My_Io.Put ("Choice (0 .. 10) ? "); Int_Get (Action, True);
-        exit when Action <= 10;
+        My_Io.Put ("Choice (0 .. 11) ? "); Int_Get (Action, True);
+        exit when Action <= 11;
       end loop;
       My_Io.New_Line;
 
@@ -131,8 +134,7 @@ begin
 
           when  4 =>
             My_Io.Put_Line ("Locate");
-            My_Io.Put ("Fragment (String)? ");
-            My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("Fragment (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("Occurence (Pos)? "); Int_Get(Pos1, False);
             My_Io.Put_Line ("Occurence of fragment located at: " &
              Integer'Image (String_Mng.Locate (
@@ -195,12 +197,29 @@ begin
             My_Io.Put_Line ("Uniqued: |"
               & String_Mng.Unique (Str(1 .. Str_Len),
                                    From_Head => Bool1) & "|" );
+          when 11 =>
+            My_Io.Put_Line ("Env variable substitution");
+            My_Io.Put ("Start delimiter (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("Stop delimiter (Str)? ");  My_Io.Get_Line (Str2, Nat2);
+            My_Io.Put ("Raise if undefined var (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put_Line ("Substitued: |"
+              & String_Mng.Eval_Variables (
+                        Str(1 .. Str_Len),
+                        Start_Delimiter => Str1(1 .. Nat1),
+                        Stop_Delimiter => Str2(1 .. Nat2),
+                        Raise_No_Var => Bool1)
+              & "|" );
 
           when others => null;
         end case;
       exception
-        when Constraint_Error =>
-          My_Io.Put_Line ("Raised Constraint_Error!");
+        when Error:Constraint_Error
+             | String_Mng.Inv_Delimiter
+             | String_Mng.Delimiter_Mismatch
+             | String_Mng.No_Variable =>
+          My_Io.Put_Line ("Raised " & Ada.Exceptions.Exception_Name(Error)
+                                    & "!");
+
       end;
 
     end loop;
