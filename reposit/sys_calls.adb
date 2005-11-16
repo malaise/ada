@@ -146,6 +146,27 @@ package body Sys_Calls is
     New_Line_Error;
   end Put_Line_Error;
 
+  -- Basic getenv, raises Env_Unset
+  function Getenv (Env_Name : String) return String is
+    function C_Getenv (Name : in System.Address) return System.Address;
+    pragma Import (C, C_Getenv, "getenv");
+    Name4C : constant String := Str_For_C (Env_Name);
+    Addr : System.Address;
+    use type System.Address;
+  begin
+    Addr := C_Getenv (Name4C'Address);
+    if Addr = System.Null_Address then
+      raise Env_Not_Set;
+    end if;
+    declare
+      Result : String (1 .. C_Strlen(Addr));
+      Dummy_Addr : System.Address;
+    begin
+      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
+      return Result;
+    end;
+  end Getenv;
+    
 
   -- Getenv and truncates if necessary
   procedure Getenv (Env_Name : in String;
@@ -153,38 +174,25 @@ package body Sys_Calls is
                     Env_Trunc : out Boolean;
                     Env_Value : out String;
                     Env_Len   : out Natural) is
-    Name4C : constant String := Str_For_C (Env_Name);
-    Addr : System.Address;
 
-    function C_Getenv (Name : in System.Address) return System.Address;
-    pragma Import (C, C_Getenv, "getenv");
 
-    use System;
+      Str : constant String := Getenv (Env_Name);
   begin
-    Addr := C_Getenv (Name4C'Address);
-    if Addr = System.Null_Address then
+    Env_Set := True;
+    if Str'Length <= Env_Value'Length then
+      Env_Trunc := False;
+      Env_Len := Str'Length;
+      Env_Value (Env_Value'First .. Env_Value'First + Str'Length - 1) := Str;
+    else
+      Env_Trunc := True;
+      Env_Len := Env_Value'Length;
+      Env_Value := Str (Str'First .. Str'First + Env_Value'Length - 1);
+    end if;
+  exception
+    when Env_Not_Set =>
       Env_Set := False;
       Env_Trunc := False;
       Env_Len := 0;
-      return;
-    end if;
-
-    Env_Set := True;
-    declare
-      Result : String (1 .. C_Strlen(Addr));
-      Dummy_Addr : System.Address;
-    begin
-      Dummy_Addr := C_Memcpy (Result'Address, Addr, Result'Length);
-      if Result'Length <= Env_Value'Length then
-        Env_Trunc := False;
-        Env_Len := Result'Length;
-        Env_Value (Env_Value'First .. Env_Value'First + Result'Length - 1) := Result;
-      else
-        Env_Trunc := True;
-        Env_Len := Env_Value'Length;
-        Env_Value := Result (Result'First .. Result'First + Env_Value'Length - 1);
-      end if;
-    end;
   end Getenv;
 
   -- Putenv
