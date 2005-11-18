@@ -35,6 +35,11 @@ extern int get_immediate (int fd);
 extern int read_dir (DIR *dir, char *name);
 
 
+extern int env_len (void);
+
+extern char * env_val(int i);
+
+
 typedef struct {
   unsigned int mode;
   int mtime;

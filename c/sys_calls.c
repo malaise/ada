@@ -143,6 +143,27 @@ extern int read_dir (DIR *dir, char *name) {
   return (strlen(name));
 }
 
+extern char **environ;
+extern int env_len (void) {
+  int i;
+
+  i = 0;
+  while (environ[i] != NULL) {
+    i++;
+  }
+  return i;
+}
+
+extern char * env_val(int i) {
+
+  if (i <= 0) {
+    return NULL;
+  } else {
+    return environ[i - 1];
+  }
+
+}
+
 extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
 
   struct stat stat_struct;
