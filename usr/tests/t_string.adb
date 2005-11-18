@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with My_Io, String_Mng, Upper_Str, Lower_Str, Mixed_Str, Upper_Char;
+with My_Io, String_Mng, Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Sys_Calls;
 procedure T_String is
 
   Action : Natural;
@@ -201,13 +201,12 @@ begin
             My_Io.Put_Line ("Env variable substitution");
             My_Io.Put ("Start delimiter (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("Stop delimiter (Str)? ");  My_Io.Get_Line (Str2, Nat2);
-            My_Io.Put ("Raise if undefined var (Bool)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Substitued: |"
               & String_Mng.Eval_Variables (
                         Str(1 .. Str_Len),
                         Start_Delimiter => Str1(1 .. Nat1),
                         Stop_Delimiter => Str2(1 .. Nat2),
-                        Raise_No_Var => Bool1)
+                        Resolv => Sys_Calls.Getenv'access)
               & "|" );
 
           when others => null;
@@ -216,7 +215,7 @@ begin
         when Error:Constraint_Error
              | String_Mng.Inv_Delimiter
              | String_Mng.Delimiter_Mismatch
-             | String_Mng.No_Variable =>
+             | Sys_Calls.Env_Not_Set =>
           My_Io.Put_Line ("Raised " & Ada.Exceptions.Exception_Name(Error)
                                     & "!");
 
