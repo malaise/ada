@@ -31,6 +31,11 @@ package Sys_Calls is
                     Env_Value : out String;
                     Env_Len   : out Natural);
 
+  -- Number of variables in env
+  function Environ_Len return Natural;
+  -- Nth env variable ("name=value" or "")
+  function Environ_Val (Index : Positive) return String;
+
   -- Putenv
   procedure Putenv (Env_Name : in String; Env_Value : in String);
 

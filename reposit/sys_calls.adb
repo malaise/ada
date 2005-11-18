@@ -166,7 +166,7 @@ package body Sys_Calls is
       return Result;
     end;
   end Getenv;
-    
+
 
   -- Getenv and truncates if necessary
   procedure Getenv (Env_Name : in String;
@@ -194,6 +194,44 @@ package body Sys_Calls is
       Env_Trunc := False;
       Env_Len := 0;
   end Getenv;
+
+  -- Cache for nb of elements of Environ_Var
+  -- -1 if not known
+  Loc_Env_Len : Integer := -1;
+
+  -- Number of variables in env
+  function Environ_Len return Natural is
+    function C_Env_Len return Integer;
+    pragma Import (C, C_Env_Len, "env_len");
+  begin
+    if Loc_Env_Len < 0 then
+      Loc_Env_Len := C_Env_Len;
+    end if;
+    return Loc_Env_Len;
+  end Environ_Len;
+
+  -- Nth env variable ("name=value" or "")
+  function Environ_Val (Index : Positive) return String is
+    function C_Env_Val (Index : Integer) return System.Address;
+    pragma Import (C, C_Env_Val, "env_val");
+    Str_Addr : System.Address;
+    use type System.Address;
+  begin
+    if Index > Environ_Len
+      then return "";
+    end if;
+    Str_Addr := C_Env_Val (Index);
+    if Str_Addr = System.Null_Address then
+      return "";
+    end if;
+    declare
+      Str : String (1 .. C_Strlen (Str_Addr));
+      Dummy_Addr :  System.Address;
+    begin
+      Dummy_Addr := C_Strcpy (Str(1)'Address, Str_Addr);
+      return Str;
+    end;
+  end Environ_Val;
 
   -- Putenv
   function C_Putenv (Str : System.Address) return Integer;
