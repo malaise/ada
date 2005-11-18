@@ -1,12 +1,12 @@
 with Ada.Strings.Unbounded;
-with Sys_Calls;
 package body String_Mng is
 
   -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
   -- Returns the position of the first/last character or 0 if
   --  all the string is spaces or tabs (or empty)
-  function Parse_Spaces (Str : String; From_Head : Boolean := True)
-                        return Natural is
+  function Parse_Spaces (Str : String;
+                         From_Head : Boolean := True)
+           return Natural is
   begin
     if From_Head then
       -- Look forward for significant character
@@ -43,9 +43,12 @@ package body String_Mng is
   -- Show_Trunc : When string is longer than Len, if Show_Trunc is set,
   --         then Str is truncated to Len-2 and starts (Trunc_Head) with " >"
   --         or ends (not Trunc_Head) with " <"
-  function Procuste (Str : String; Len : Positive;
-           Align_Left : Boolean := True; Gap : Character := ' ';
-           Trunc_Head : Boolean := True; Show_Trunc : Boolean := True)
+  function Procuste (Str : String;
+                     Len : Positive;
+                     Align_Left : Boolean := True;
+                     Gap : Character := ' ';
+                     Trunc_Head : Boolean := True;
+                     Show_Trunc : Boolean := True)
            return String is
     L : Natural := Str'Length;
     S : String (1 .. Len);
@@ -92,7 +95,8 @@ package body String_Mng is
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within : String;
                    Fragment : String;
-                   Occurence : Positive := 1) return Natural is
+                   Occurence : Positive := 1)
+           return Natural is
     Found_Occurence : Natural := 0;
   begin
     if Within'Length = 0 or else Fragment'Length = 0 then
@@ -118,9 +122,12 @@ package body String_Mng is
   --  beginning (if Shift_Left is False).
   -- Return the remaining string.
   -- Raises Constraint_Error if At_Index is not within From'First .. From'Last.
-  function Remove (From : String; At_Index : Positive; Nb_Char : Natural;
+  function Remove (From : String;
+                   At_Index : Positive;
+                   Nb_Char : Natural;
                    Shift_Left : Boolean := True;
-                   Gap : Character := No_Gap) return String is
+                   Gap : Character := No_Gap)
+          return String is
 
     -- Generate a Padding string if need
     function Do_Pad (Nb_Gap : Integer) return String is
@@ -175,8 +182,11 @@ package body String_Mng is
   -- Raises Constraint_Error
   --  if At_Index+Nb_Char-1 is more than From'Last  (when To_Right is True)
   --  or At_Index-Nb_Char+1 is less than From'First (when To_Right is False).
-  function Slice (From : String; At_Index : Positive; Nb_Char : Natural;
-                  To_Right : Boolean := True) return String is
+  function Slice (From : String;
+                  At_Index : Positive;
+                  Nb_Char : Natural;
+                  To_Right : Boolean := True)
+           return String is
   begin
     -- Check len of result
     if (To_Right and then At_Index + Nb_Char - 1 > From'Last)
@@ -194,8 +204,10 @@ package body String_Mng is
   -- Extract the Nb_Char first (if Head is set to True) or last characters
   --   (if Head is set to False) of From string.
   -- Return the remaining string.
-  function Cut (From : String; Nb_Char : Natural;
-                Head : Boolean := True) return String is
+  function Cut (From : String;
+                Nb_Char : Natural;
+                Head : Boolean := True)
+           return String is
   begin
     if Head then
       return Remove (From, From'First, Nb_Char, True);
@@ -208,8 +220,10 @@ package body String_Mng is
   --    (if Head is set to False) of From string.
   -- Return the extracted substring.
   -- Raises Constraint_Error if Nb_Char is more than From'Length.
-  function Extract (From : String; Nb_Char : Natural;
-                    Head : Boolean := True) return String is
+  function Extract (From : String;
+                    Nb_Char : Natural;
+                    Head : Boolean := True)
+           return String is
   begin
     if Head then
       return Slice (From, From'First, Nb_Char, True);
@@ -232,7 +246,9 @@ package body String_Mng is
   -- Remove any multiple occurence of a character from string.
   -- Check from head or tail and return string.
   -- Example ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
-  function Unique (From : String; From_Head : Boolean := True) return String is
+  function Unique (From : String;
+                   From_Head : Boolean := True)
+           return String is
     Used : array (Character) of Boolean := (others => False);
     Input, Output : String (1 .. From'Length);
     Last : Natural;
@@ -259,28 +275,8 @@ package body String_Mng is
     end if;
   end Unique;
 
-  -- Local function to getenv allowing or not undefined variable
-  function Get_Env (Name : String; Raise_No_Var : Boolean) return String is
-  begin
-    -- Check for empty name
-    if Name = "" then
-      if Raise_No_Var then
-        raise No_Variable;
-      else
-        return "";
-      end if;
-    end if;
-    return Sys_Calls.Getenv (Name);
-  exception
-    when Sys_Calls.Env_Not_Set =>
-      if Raise_No_Var then
-        raise No_Variable;
-      else
-        return "";
-      end if;
-  end Get_Env;
-
-  -- Replace recursively all variables by their values in environ (getenv).
+  -- Replace recursively all variables by their values provided by the
+  --  Resolv callback.
   -- A variable name is identified because it is within delimiters (strings).
   -- Start and stop delimiters must be non empty and different (e.g. "(" and ")",
   --  or "${" and "}"), otherwise Inv_Delimiter is raised.
@@ -288,12 +284,14 @@ package body String_Mng is
   -- Delimiter number must match (as many stop as start and in consistent
   --  sequence e.g. {}}{ s forbidden), otherwise the exception
   --  Delimiter_Mismatch is raised.
-  -- When a variable is not defined in environ, either it is expanded to
-  --  an empty string or the exception No_Variable is raised.
+  -- If no callback is set (Resolv = null) then variables are replaced by
+  --  empty strings.
   package Asu renames Ada.Strings.Unbounded;
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
-                           Raise_No_Var : in Boolean := False) return String is
+                           Resolv : Resolv_Access)
+           return String is
+
 
     -- The string to work on
     Ustr : Asu.Unbounded_String;
@@ -328,64 +326,86 @@ package body String_Mng is
     -- Current index in Ustr
     Curr_Index : Natural;
     -- Index of start and stop of variable definition (delimiters included)
-    Start_Index, Stop_Index : Positive;
+    -- Start = 0 when no current valid start (so second stop of { { } }
+    --  is skipped)
+    Start_Index : Natural; -- 0 if no current start
+    Stop_Index : Positive;
     -- Index of stat and stop of variable name
     Start_Var, Stop_Var : Positive;
-    
+
   begin
     -- Check Delimiters are non empty and different
     if Start_Delimiter = ""
-    or else Stop_delimiter = ""
-    or else Start_Delimiter = Stop_delimiter then
+    or else Stop_Delimiter = ""
+    or else Start_Delimiter = Stop_Delimiter then
       raise Inv_Delimiter;
     end if;
 
     -- Store input string and its last index
     Ustr := Asu.To_Unbounded_String (Str);
     Last_Index := Str'Length;
+    Level := 0;
 
     -- Start substitutions
-    Level := 0;
     Subst_Occured := True;
-    while Subst_Occured loop
+    -- Loop as long as substitution occured and didn't lead to emtpy result
+    while Subst_Occured and then Last_Index /= 0 loop
       -- Init for one pass
       Subst_Occured := False;
       Curr_Index := 1;
+      Start_Index := 0;
+      Level := 0;
       loop
         -- Look for delimiters
-        if Match (Curr_Index, Start_delimiter) then
+        if Match (Curr_Index, Start_Delimiter) then
           -- Found start delimiter: jump after it
           Level := Level + 1;
           Start_Index := Curr_Index;
           Curr_Index := Curr_Index + Start_Delimiter'Length - 1;
           Start_Var := Curr_Index + 1;
-        elsif Match (Curr_Index, Stop_delimiter) then
+        elsif Match (Curr_Index, Stop_Delimiter) then
           if Level = 0 then
             -- More Stop than Start
             raise Delimiter_Mismatch;
           end if;
-          -- Found stop delimiter: jump after it
           Level := Level - 1;
-          Stop_Var := Curr_Index - 1;
-          Curr_Index := Curr_Index + Stop_Delimiter'Length - 1;
-          Stop_Index := Curr_Index;
-          -- Substitute
-          declare
-            -- Variable value
-            Val : constant String := Get_Env (Asu.Slice (Ustr, Start_Var, Stop_Var),
-                                              Raise_No_Var);
-            -- Correction to current and last index
-            Offset : Integer := Val'Length - (Stop_Index - Start_Index + 1);
-          begin
-            Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);
-            Curr_Index := Curr_Index + Offset;
-            Last_Index := Last_Index + Offset;
-          end;
+          if Start_Index /= 0 then
+            -- Found stop delimiter: jump after it
+            Stop_Var := Curr_Index - 1;
+            Curr_Index := Curr_Index + Stop_Delimiter'Length - 1;
+            Stop_Index := Curr_Index;
+            -- Substitute
+            if Resolv /= null then
+              declare
+                -- Variable value
+                Val : constant String
+                    := Resolv (Asu.Slice (Ustr, Start_Var, Stop_Var));
+                -- Correction to current and last index
+                Offset : Integer
+                       := Val'Length - (Stop_Index - Start_Index + 1);
+              begin
+                Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);
+                Curr_Index := Curr_Index + Offset;
+                Last_Index := Last_Index + Offset;
+              end;
+            else
+              -- No resolving => empty string
+              Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, "");
+              Curr_Index := Curr_Index - (Stop_Index - Start_Index + 1);
+              Last_Index := Last_Index - (Stop_Index - Start_Index + 1);
+            end if;
+            -- Go on trying to substitute
+            Subst_Occured := True;
+            -- Following stop delimiter will not be processed if no
+            -- new start has been found
+            Start_Index := 0;
+          end if;
         end if;
+        -- End of this pass?
         exit when Curr_Index = Last_Index;
+        -- Search delimiters in next char
         Curr_Index := Curr_Index + 1;
       end loop;
-      -- Next pass
     end loop;
 
     -- Final level must be 0
