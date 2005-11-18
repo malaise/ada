@@ -8,14 +8,14 @@ package Limited_List is
   -- Descriptor of the list
   type List_Type is limited private;
 
-  -- for Read and Modify to set new position
+  -- For Read and Modify to set new position
   type Movement is (Next, Prev, Current);
 
   -- For Insert, Get and Delete, to set new position
   -- For Move_To and Search to set direction of move
   subtype Direction is Movement range Next .. Prev;
 
-  -- for Get_Position
+  -- For Get_Position
   type Reference is (From_First, From_Last);
 
 
@@ -101,7 +101,7 @@ package Limited_List is
   -- Delete the full list
   --  deallocate or not the free list
   procedure Delete_List (List : in out List_Type;
-     Deallocate : in Boolean := True);
+                         Deallocate : in Boolean := True);
 
 
   -- Set the current element to number elements before or after
@@ -137,7 +137,7 @@ package Limited_List is
   function Is_Empty (List : List_Type) return Boolean;
 
 
-  -- return the number of elements in the list (0 if empty, no exception)
+  -- Return the number of elements in the list (0 if empty, no exception)
   function List_Length (List : List_Type) return Natural;
 
 
@@ -254,7 +254,7 @@ package Limited_List is
 
   -- Called with each matching element, which can be updated.
   -- Processing of Iterate can be stopped by resetting Go_On to False
-  --  (it initialised to True).
+  --  (it is initialised to True).
   type Iteration_Access is access procedure (Current : in out Element_Type;
                                              Go_On   : in out Boolean);
 
