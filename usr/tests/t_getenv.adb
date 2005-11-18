@@ -9,6 +9,9 @@ procedure T_Getenv is
   Len : Natural;
 
 begin
+  for I in 1 .. Sys_Calls.Environ_Len loop
+    My_Io.Put_Line (Sys_Calls.Environ_Val(I));
+  end loop;
 
   if Argument.Get_Nbre_Arg = 0 then
     My_Io.Put ("GETENV");
