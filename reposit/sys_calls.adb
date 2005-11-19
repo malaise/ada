@@ -176,18 +176,21 @@ package body Sys_Calls is
                     Env_Len   : out Natural) is
 
 
-      Str : constant String := Getenv (Env_Name);
   begin
-    Env_Set := True;
-    if Str'Length <= Env_Value'Length then
-      Env_Trunc := False;
-      Env_Len := Str'Length;
-      Env_Value (Env_Value'First .. Env_Value'First + Str'Length - 1) := Str;
-    else
-      Env_Trunc := True;
-      Env_Len := Env_Value'Length;
-      Env_Value := Str (Str'First .. Str'First + Env_Value'Length - 1);
-    end if;
+    declare
+      Str : constant String := Getenv (Env_Name);
+    begin
+      Env_Set := True;
+      if Str'Length <= Env_Value'Length then
+        Env_Trunc := False;
+        Env_Len := Str'Length;
+        Env_Value (Env_Value'First .. Env_Value'First + Str'Length - 1) := Str;
+      else
+        Env_Trunc := True;
+        Env_Len := Env_Value'Length;
+        Env_Value := Str (Str'First .. Str'First + Env_Value'Length - 1);
+      end if;
+    end;
   exception
     when Env_Not_Set =>
       Env_Set := False;
