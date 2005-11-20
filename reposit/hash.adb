@@ -4,28 +4,6 @@ package body Hash is
 
   package body Hash_Mng is
 
-    -- Data organization:
-    --  An array (0 .. Hash_Size) of First_Cell_Rec
-    --  Each of them pointing possibly to a Cell_Rec which itself...
-    type Cell_Rec;
-    type Cell_Access is access Cell_Rec;
-
-    type Cell_Rec is record
-      Data : Data_Acess;
-      Next : Cell_Access := null;
-    end record;
-
-
-    type First_Cell_Rec is record
-      First     : Cell_Access := null;
-      Current   : Cell_Access := null;
-    end record;
-
-    subtype Hash_Range is Max_Hash_Range range 0 .. Hash_Size;
-
-    -- The entries of the table
-    First_Array : array (Hash_Range) of First_Cell_Rec;
-
     Not_Found_Rec : constant Found_Rec
                   := (Found => False);
 
@@ -42,17 +20,19 @@ package body Hash is
     end Hash_Func;
 
     -- To store association Key <-> Index
-    procedure Store (Key : in String; Data : in Data_Acess) is
+    procedure Store (Table : in out Hash_Table;
+                     Key   : in String;
+                     Data  : in Data_Acess) is
       I : constant Hash_Range := Hash_Func(Key);
       Ca, N : Cell_Access;
     begin
       Ca := Dyn_Hash.Allocate ((Data => Data, Next  => null));
 
       -- Append
-      if First_Array(I).First = null then
-        First_Array(I).First := Ca;
+      if Table(I).First = null then
+        Table(I).First := Ca;
       else
-        N := First_Array(I).First;
+        N := Table(I).First;
         while N.Next /= null loop
           N := N.Next;
         end loop;
@@ -62,24 +42,25 @@ package body Hash is
     end Store;
 
     -- To remove a stored association Key <-> Index
-    procedure Remove (Key : in String) is
+    procedure Remove (Table : in out Hash_Table;
+                      Key   : in String) is
       I : constant Hash_Range := Hash_Func(Key);
       Ca : Cell_Access;
       Cu : Cell_Access;
     begin
-      Cu := First_Array(I).Current;
-      Ca := First_Array(I).First;
+      Cu := Table(I).Current;
+      Ca := Table(I).First;
       -- Empty or not found
       if Ca = null or else Cu = null then
         raise Not_Found;
       end if;
 
       -- Reset current
-      First_Array(I).Current := null;
+      Table(I).Current := null;
 
       if Ca = Cu then
         -- Special case when current is first
-        First_Array(I).First := Ca.Next;
+        Table(I).First := Ca.Next;
       else
         -- Find previous of current
         while Ca.Next /= Cu loop
@@ -93,36 +74,39 @@ package body Hash is
 
     end Remove;
 
-    procedure Reset_Find (Key : String) is
+    procedure Reset_Find (Table : in out Hash_Table;
+                          Key   : in String) is
       I : constant Hash_Range := Hash_Func(Key);
     begin
-      First_Array(I).Current := null;
+      Table(I).Current := null;
     end Reset_Find;
 
     -- To get next Index matching Key
-    function Find_Next (Key : String) return Found_Rec is
+    procedure Find_Next (Table : in out Hash_Table;
+                         Key   : in String;
+                         Found : out Found_Rec) is
       I : constant Hash_Range := Hash_Func(Key);
       Cu : Cell_Access;
     begin
-      if First_Array(I).Current = null then
-        Cu := First_Array(I).First;
+      if Table(I).Current = null then
+        Cu := Table(I).First;
       else
-        Cu := First_Array(I).Current.Next;
+        Cu := Table(I).Current.Next;
       end if;
 
-      First_Array(I).Current := Cu;
+      Table(I).Current := Cu;
 
       if Cu = null then
-        return Not_Found_Rec;
+        Found := Not_Found_Rec;
       else
-        return (Found => True, Data => Cu.Data);
+        Found := (Found => True, Data => Cu.Data);
       end if;
-
     end Find_Next;
 
-    procedure Dump (Key : in String) is
+    procedure Dump (Table : in Hash_Table;
+                    Key   : in String) is
       I : constant Hash_Range := Hash_Func(Key);
-      Ca : Cell_Access := First_Array(I).First;
+      Ca : Cell_Access := Table(I).First;
     begin
       My_Io.Put_Line ("Hash " & Hash_Range'Image(I));
       if Ca = null then
@@ -130,7 +114,7 @@ package body Hash is
       end if;
       while Ca /= null loop
         My_Io.Put (" Data found ");
-        if Ca = First_Array(I).Current then
+        if Ca = Table(I).Current then
           My_Io.Put (" => ");
         else
           My_Io.Put (" -> ");
@@ -142,13 +126,13 @@ package body Hash is
       end loop;
     end Dump;
 
-    procedure Clear_All is
+    procedure Clear_All (Table : in out Hash_Table) is
       Ca, Cn : Cell_Access;
     begin
       for I in Hash_Range loop
-        Ca := First_Array(I).First;
-        First_Array(I).First := null;
-        First_Array(I).Current := null;
+        Ca := Table(I).First;
+        Table(I).First := null;
+        Table(I).Current := null;
 
         while Ca /= null loop
           Cn := Ca.Next;

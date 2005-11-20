@@ -90,6 +90,7 @@ package body Ada_Words is
 
   package Word_Hash is new Hash.Hash_Mng (Data_Acess => Word_Rec,
                                           Dump => Dump);
+  Hash_Table : Word_Hash.Hash_Table;
 
 
 
@@ -100,7 +101,7 @@ package body Ada_Words is
     Rec.Len := Low_Word'Length;
     Rec.Str (1 .. Rec.Len) := Low_Word;
     Rec.Must := Must_Be_Keyword;
-    Word_Hash.Store (Low_Word, Rec);
+    Word_Hash.Store (Hash_Table, Low_Word, Rec);
   end Store;
 
   Table_Initialised : Boolean := False;
@@ -211,9 +212,9 @@ package body Ada_Words is
     end if;
     Init;
     -- Search in hash table
-    Word_Hash.Reset_Find (Low_Word);
+    Word_Hash.Reset_Find (Hash_Table, Low_Word);
     loop
-      Result := Word_Hash.Find_Next (Low_Word);
+      Word_Hash.Find_Next (Hash_Table, Low_Word, Result);
       case Result.Found is
         when False =>
           -- Word hash not found => not a keyword

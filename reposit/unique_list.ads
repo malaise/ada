@@ -1,3 +1,4 @@
+with Limited_List, Hash;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
@@ -13,49 +14,55 @@ generic
 
 package Unique_List is
 
+  type List_Type is limited private;
+
   -- For Iterator
   type Reference is (From_First, From_Last);
-
 
   -- Insert may raise In_Callback if performed
   --  in an application callback (Iteration);
 
   -- Insert or replace an item
   -- May raise Full_List (no more memory)
-  procedure Insert (Item  : in Element_Type);
+  procedure Insert (List : in out List_Type;
+                    Item : in Element_Type);
 
   -- Read the  the element matching in the list
   -- May raise Not_In_List
-  procedure Read (Crit : in Element_Type; Item : out Element_Type);
+  procedure Read (List : in out List_Type;
+                  Crit : in Element_Type;
+                  Item : out Element_Type);
 
   -- Suppress the element matching in the list
   -- May raise Not_In_List
-  procedure Delete (Crit : in Element_Type);
+  procedure Delete (List : in out List_Type;
+                    Crit : in Element_Type);
 
   -- Delete anyway. Set Done to True if matching item was found
   --  and deletion was done
-  procedure Delete (Crit : in Element_Type;
+  procedure Delete (List : in out List_Type;
+                    Crit : in Element_Type;
                     Done : out Boolean);
 
   -- Delete the full list
   --  deallocate or not the free list
-  procedure Delete_List (Deallocate : in Boolean := True);
-
+  procedure Delete_List (List : in out List_Type;
+                         Deallocate : in Boolean := True);
 
   -- Return without exception
-  function Is_Empty return Boolean;
+  function Is_Empty (List : List_Type) return Boolean;
 
   -- Return the number of elements in the list (0 if empty, no exception)
-  function List_Length return Natural;
+  function List_Length (List : List_Type) return Natural;
 
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
   --  which allow another layer to test it and reset it for further
   --  testing
-  function Is_Modified return Boolean;
+  function Is_Modified (List : List_Type) return Boolean;
 
-  procedure Modification_Ack;
+  procedure Modification_Ack (List : in out List_Type);
 
 
   -- Called with each matching element, which can be updated.
@@ -66,7 +73,8 @@ package Unique_List is
 
   -- Execute Iteration on all items
   -- Does not raise Empty_List.
-  procedure Iterate (Iteration : in Iteration_Access;
+  procedure Iterate (List      : in out List_Type;
+                     Iteration : in Iteration_Access;
                      From      : in Reference := From_First);
 
   -- When inserting
@@ -78,5 +86,21 @@ package Unique_List is
   -- When modifying List in an application callback
   In_Callback : exception;
 
+  -- If internal inconsistency (on delete)
+  Internal_Error : exception;
+private
+  -- The limited list of items
+  package List_Mng is new Limited_List (Element_Type, Set);
+  -- Element hashing
+  procedure Dump (Data : in List_Mng.Element_Access);
+  package Hash_Mng is
+          new Hash.Hash_Mng (Hash.Max_Hash_Value,
+                             List_Mng.Element_Access,
+                             Dump);
+  -- A unique list
+  type List_Type is record
+    List : List_Mng.List_Type;
+    Table : Hash_Mng.Hash_Table;
+  end record;
 end Unique_List;
 

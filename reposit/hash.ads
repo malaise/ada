@@ -18,6 +18,9 @@ package Hash is
     with procedure Dump (Data : in Data_Acess);
   package Hash_Mng is
 
+    -- One hash table
+    type Hash_Table is limited private;
+
     -- Returned result of Find_Next
     type Found_Rec (Found : Boolean := True) is record
       case Found is
@@ -30,26 +33,55 @@ package Hash is
 
     -- To store association Key <-> Index
     -- Last found is not reset
-    procedure Store (Key : in String; Data : in Data_Acess);
+    procedure Store (Table : in out Hash_Table;
+                     Key   : in String;
+                     Data  : in Data_Acess);
 
     -- To reset finding index for matching Key
-    procedure Reset_Find (Key : String);
+    procedure Reset_Find (Table : in out Hash_Table;
+                          Key   : String);
 
     -- To get first, then next Index matching Key
     -- Last found is reset if not found
-    function Find_Next (Key : String) return Found_Rec;
+    procedure Find_Next (Table : in out Hash_Table;
+                         Key   : in String;
+                         Found  : out Found_Rec);
 
     -- To remove last found association Key <-> Index
     -- Last found is reset
     -- May raise Not_Found if last found is reset
-    procedure Remove (Key : in String);
+    procedure Remove (Table : in out Hash_Table;
+                      Key   : in String);
 
     -- Dump hash value of key and lists all data found for key
-    procedure Dump (Key : in String);
+    procedure Dump (Table : in Hash_Table;
+                    Key   : in String);
 
     -- Remove all the data stored in the hash table
-    procedure Clear_All;
+    procedure Clear_All (Table : in out Hash_Table);
 
+  private
+    -- Data organization:
+    --  An array (0 .. Hash_Size) of First_Cell_Rec
+    --  Each of them pointing possibly to a Cell_Rec which itself...
+    type Cell_Rec;
+    type Cell_Access is access Cell_Rec;
+
+    type Cell_Rec is record
+      Data : Data_Acess;
+      Next : Cell_Access := null;
+    end record;
+
+
+    type First_Cell_Rec is record
+      First     : Cell_Access := null;
+      Current   : Cell_Access := null;
+    end record;
+
+    subtype Hash_Range is Max_Hash_Range range 0 .. Hash_Size;
+
+    -- The entries of the table
+    type Hash_Table is array (Hash_Range) of First_Cell_Rec;
   end Hash_Mng;
 
   -- Raised on Remove if last found is not set

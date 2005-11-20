@@ -10,6 +10,7 @@ procedure T_Hash is
   procedure Dump (I : in Data_Access);
 
   package My_Hash is new Hash.Hash_Mng (512, Data_Access, Dump);
+  Ht : My_Hash.Hash_Table;
 
   subtype Txt_P is Text_Handler.Text(500);
   Txt : Txt_P;
@@ -49,14 +50,14 @@ begin
     if Text_Handler.Length(Txt) >= 3 and then Text_Handler.Value(Txt)(2) = ' ' then
       case Text_Handler.Value(Txt)(1) is
         when 'S' | 's' =>
-          My_Hash.Store (Str(Txt), I);
+          My_Hash.Store (Ht, Str(Txt), I);
           My_Io.Put_Line (Image(I) & " stored with key >" & Str(Txt) & "<.");
           I := I + 1;
         when 'Z' | 'z' =>
-          My_Hash.Reset_Find (Str(Txt));
+          My_Hash.Reset_Find (Ht, Str(Txt));
           My_Io.Put_Line ("Search reset for key >" & Str(Txt) & "<.");
         when 'F' | 'f' =>
-          Found := My_Hash.Find_Next (Str(Txt));
+          My_Hash.Find_Next (Ht, Str(Txt), Found);
           if Found.Found then
             My_Io.Put_Line ("Found " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
           else
@@ -64,7 +65,7 @@ begin
           end if;
         when 'R'| 'r' =>
           begin
-            My_Hash.Remove (Str(Txt));
+            My_Hash.Remove (Ht, Str(Txt));
             My_Io.Put_Line ("Current data for key >" & Str(Txt) & "< removed.");
           exception
             when Hash.Not_Found =>
@@ -73,12 +74,12 @@ begin
           end;
         when 'D' | 'd' =>
           My_Io.Put_Line ("Dumping data for key >" & Str(Txt) & "<:");
-          My_Hash.Dump(Str(Txt));
+          My_Hash.Dump(Ht, Str(Txt));
         when others =>
           Dos.Sound;
       end case;
     elsif Upper_Str (Text_Handler.Value(Txt)) = "C" then
-      My_Hash.Clear_All;
+      My_Hash.Clear_All (Ht);
       My_Io.Put_Line ("Storage cleared.");
     elsif Upper_Str (Text_Handler.Value(Txt)) = "EXIT" then
       exit;
@@ -88,6 +89,6 @@ begin
 
   end loop;
 
-  My_Hash.Clear_All;
+  My_Hash.Clear_All (Ht);
 
 end T_Hash;

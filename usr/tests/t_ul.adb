@@ -27,6 +27,7 @@ procedure t_ul is
   end "=";
 
   package My_Ul is new Unique_List (Var_Rec, Set, Image, "=");
+  Ul : My_Ul.List_Type;
 
   -- Store a env var (from string "name=val")
   function Store_Env (Str : in String) return Boolean is
@@ -39,7 +40,7 @@ procedure t_ul is
     end if;
     Text_Handler.Set (Var.Name, Str (Str'First .. L - 1));
     Text_Handler.Set (Var.Val, Str (L + 1 .. Str'Last));
-    My_Ul.Insert (Var);
+    My_Ul.Insert (Ul, Var);
     return True;
   exception
     when Constraint_Error =>
@@ -75,7 +76,7 @@ begin
     if Argument.Get_Parameter (Occurence => I) = "dump" then
       -- Dump the list
       Ada.Text_Io.Put_Line ("List dump:");
-      My_Ul.Iterate (Iteration'Unrestricted_Access);
+      My_Ul.Iterate (Ul, Iteration'Unrestricted_Access);
       Ada.Text_Io.New_Line;
     elsif Store_Env (Argument.Get_Parameter (Occurence => I)) then
       -- Try to store variable (will work if string constains "=")
@@ -94,7 +95,7 @@ begin
       end;
       if Go_On then
         begin
-          My_Ul.Read (Var, Var);
+          My_Ul.Read (Ul, Var, Var);
           Ada.Text_Io.Put ("Got ");
           Put (Var);
           Ada.Text_Io.New_Line;

@@ -22,13 +22,14 @@ package body Data_Base is
   end H_Dump;
   package H_Item is new Hash.Hash_Mng (Data_Acess => Item_List_Mng.Element_Access,
                                        Dump => H_Dump);
+  H_Table : H_Item.Hash_Table;
   function H_Get (Kind : Item_Kind; Name : Item_Name)
                  return Item_List_Mng.Element_Access is
     R : H_Item.Found_Rec;
   begin
-    H_Item.Reset_Find (Kind & Name);
+    H_Item.Reset_Find (H_Table, Kind & Name);
     loop
-      R := H_Item.Find_Next (Kind & Name);
+      H_Item.Find_Next (H_Table, Kind & Name, R);
       if not R.Found then
         return null;
       end if;
@@ -75,7 +76,8 @@ package body Data_Base is
         Acc.all := Itm;
       else
         Append_Itm;
-        H_Item.Store (Item.Kind & Item.Name,
+        H_Item.Store (H_Table,
+                      Item.Kind & Item.Name,
                       Item_List_Mng.Access_Current(Item_List));
       end if;
     else
@@ -125,7 +127,7 @@ package body Data_Base is
   procedure Reset is
   begin
     if H_Use then
-      H_Item.Clear_All;
+      H_Item.Clear_All (H_Table);
     end if;
     Item_List_Mng.Delete_List (Item_List);
   end Reset;
