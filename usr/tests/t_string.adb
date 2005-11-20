@@ -206,7 +206,7 @@ begin
                         Str(1 .. Str_Len),
                         Start_Delimiter => Str1(1 .. Nat1),
                         Stop_Delimiter => Str2(1 .. Nat2),
-                        Resolv => Sys_Calls.Getenv'access)
+                        Resolv => Sys_Calls.Getenv'Access)
               & "|" );
 
           when others => null;

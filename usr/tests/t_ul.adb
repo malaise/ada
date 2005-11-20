@@ -1,6 +1,6 @@
 with Ada.Text_Io;
 with Unique_List, Argument, Text_Handler, String_Mng, Sys_Calls;
-procedure t_ul is
+procedure T_Ul is
 
   -- A stored variable (name, value)
   -- Name is the "identifier"
