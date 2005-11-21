@@ -47,7 +47,7 @@ procedure T_Ul is
       Sys_Calls.Put_Line_Error ("String too long for storage >" & Str & "<");
       return False;
   end Store_Env;
-    
+
   procedure Put (Var : in Var_Rec) is
   begin
     Ada.Text_Io.Put (">" & Text_Handler.Value(Var.Name)
@@ -102,7 +102,7 @@ begin
         exception
           when My_Ul.Not_In_List =>
             Ada.Text_Io.Put_Line ("Var >" & Text_Handler.Value (Var.Name)
-                               &  "< is not set."); 
+                               &  "< is not set.");
         end;
       end if;
     end if;

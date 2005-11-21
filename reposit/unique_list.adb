@@ -108,7 +108,7 @@ package body Unique_List is
     if Acc /= List_Mng.Access_Current (List.List) then
       raise Internal_Error;
     end if;
-    
+
     -- Delete this item from list and hash table
     List_Mng.Delete (List.List, Done => Dummy);
     Hash_Mng.Remove (List.Table, Key);
