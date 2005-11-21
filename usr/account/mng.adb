@@ -344,7 +344,7 @@ package body Mng is
       end if;
       Text_Handler.Set(Tmp_Name, Account_Select_File(2, "", False));
       Screen.Reset;
-      Refresh_Screen(Bottom);
+      Refresh_Screen(Center);
       if Text_Handler.Empty(Tmp_Name) then
         -- User discards selecting new file name
         return;
@@ -658,7 +658,7 @@ package body Mng is
             -- Overflow on root amount. Cancel.
             Deletion.Cancel_Deletions;
             Screen.Ack_Error(Screen.Capacity_Error);
-            Refresh_Screen(Bottom);
+            Refresh_Screen(Center);
             return;
         end;
         Deletion.Flag_Deleted;
