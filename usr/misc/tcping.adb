@@ -1,3 +1,4 @@
+-- Open a TCP connection to the provided host and port
 with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
 with Text_Handler, Argument, Sys_Calls, Ip_Addr,
@@ -11,7 +12,7 @@ procedure Tcping is
   begin
     Sys_Calls.Put_Line_Error (
       "Usage: " & Argument.Get_Program_Name &
-      " <host> <port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -s ]");
+      " <host> <port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -c ] [ -s ]");
     Sys_Calls.Put_Line_Error (
           "  <host>    ::= host name or ip address");
     Sys_Calls.Put_Line_Error (
@@ -23,7 +24,11 @@ procedure Tcping is
     Sys_Calls.Put_Line_Error (
           "  -n<tries>   ::= number of try attempts, 0 = infinite (1)");
     Sys_Calls.Put_Line_Error (
+          "  -c          ::= go on tcpinging even if success (false)");
+    Sys_Calls.Put_Line_Error (
           "  -s          ::= silent, result in exit code only");
+    Sys_Calls.Put_Line_Error (
+          "Exits with 0 if at least one connect succeeds, 1 otherwise.");
   end Usage;
 
   Arg_Error : exception;
@@ -50,6 +55,7 @@ procedure Tcping is
   Delta_Tries : Timers.Period_Range := 0.0;
   Nb_Tries    : Natural := 1;
   Silent      : Boolean := False;
+  Go_Success  : Boolean := False;
 
   -- Timer for retries, count
   Tid         : Timers.Timer_Id := Timers.No_Timer;
@@ -99,7 +105,7 @@ procedure Tcping is
            Image (Addr.C) & "." & Image (Addr.D);
   end Image;
 
-  -- Immediate timer to cancel retries
+  -- Cancel immediate timer Cb
   function Cancel_Cb (Id : in Timers.Timer_Id;
                     Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
@@ -108,9 +114,11 @@ procedure Tcping is
     return True;
   end Cancel_Cb;
 
+  -- Immediate timer to stop
   procedure Cancel is
     Cid : Timers.Timer_Id;
   begin
+    -- Need a timer so that the main loop Wait returns
     Cid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
                             Period => Timers.No_Period,
                             Delay_Seconds => 0.0),
@@ -146,7 +154,10 @@ procedure Tcping is
        Put_Line ("Failed.");
     end if;
     Connecting := False;
-    if Nb_Tries /= 0 and then Curr_Try = Nb_Tries then
+    -- Stop if connect and not explicitly requested to go on on success
+    -- Or stop when nb tries set and reached
+    if (Connected and then not Go_Success)
+    or else (Nb_Tries /= 0 and then Curr_Try = Nb_Tries) then
       -- Finished
       Cancel;
     end if;
@@ -258,6 +269,18 @@ begin
       Put_Arg_Error (Argument.Get_Parameter (Param_Key => "n"));
   end;
   begin
+    Go_Success := Argument.Get_Parameter (Param_Key => "c") = "";
+    if not Go_Success then
+      -- Something was set after "-c"
+      Put_Arg_Error (Argument.Get_Parameter (Param_Key => "c"));
+    end if;
+  exception
+    when Argument.Argument_Not_Found =>
+      Go_Success := False;
+    when others =>
+      Put_Arg_Error (Argument.Get_Parameter (Param_Key => "c"));
+  end;
+  begin
     Silent := Argument.Get_Parameter (Param_Key => "s") = "";
     if not Silent then
       -- Something was set after "-s"
@@ -316,6 +339,6 @@ exception
     Sys_Calls.Put_Line_Error ("Unknown host or port");
     Sys_Calls.Set_Error_Exit_Code;
   when Arg_Error =>
-    null;
+    Sys_Calls.Set_Exit_Code(2);
 end Tcping;
 
