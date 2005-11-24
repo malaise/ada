@@ -1,5 +1,4 @@
 with My_Io, Con_Io;
-with Dos;
 separate (Action)
 procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
 

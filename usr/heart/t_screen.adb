@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Normal, Dos;
+with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Normal;
 procedure T_Screen is
 
   Afpx_Item : Afpx.Line_Rec;

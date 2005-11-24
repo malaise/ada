@@ -1,4 +1,4 @@
-with Dos;
+with Console;
 with Upper_Str;
 with Normal;
 with Hash;
@@ -76,7 +76,7 @@ begin
           My_Io.Put_Line ("Dumping data for key >" & Str(Txt) & "<:");
           My_Hash.Dump(Ht, Str(Txt));
         when others =>
-          Dos.Sound;
+          Console.Sound;
       end case;
     elsif Upper_Str (Text_Handler.Value(Txt)) = "C" then
       My_Hash.Clear_All (Ht);
@@ -84,7 +84,7 @@ begin
     elsif Upper_Str (Text_Handler.Value(Txt)) = "EXIT" then
       exit;
     else
-      Dos.Sound;
+      Console.Sound;
     end if;
 
   end loop;
@@ -92,3 +92,4 @@ begin
   My_Hash.Clear_All (Ht);
 
 end T_Hash;
+

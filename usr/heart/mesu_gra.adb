@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Afpx, Con_Io, Normal, My_Math, Text_Handler, Dos;
+with Afpx, Con_Io, Normal, My_Math, Text_Handler;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
 package body Mesu_Gra is

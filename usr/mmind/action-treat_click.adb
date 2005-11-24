@@ -1,4 +1,3 @@
-with Dos;
 separate (Action)
 procedure Treat_Click is
 begin

@@ -1,4 +1,4 @@
-with Ada.Text_Io, Normal, Dos, Afpx, Sys_Calls;
+with Ada.Text_Io, Normal, Afpx, Sys_Calls;
 with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng;
 package body Mesu_Prt is
 

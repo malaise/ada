@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with My_Io, Rnd, Dos;
+with My_Io, Rnd, Console;
 use My_Io;
 procedure Stamp is
 
@@ -24,7 +24,7 @@ procedure Stamp is
     Next_Event := Clock + Gap;
     loop
       delay Next_Event - Clock;
-      Dos.Sound;
+      Console.Sound;
       New_Line;
       Put (I);
       Put_Line ("           Stamp");

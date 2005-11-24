@@ -1,4 +1,4 @@
-with Normal, Day_Mng, Con_Io, Timers, Dos;
+with Normal, Day_Mng, Con_Io, Timers;
 with Sok_Input, Sok_Time;
 
 -- displaying of sokoban

@@ -1,14 +1,8 @@
 with Ada.Calendar;
 
-with Normal;
-with Argument;
-with My_Io;
-with Day_Mng;
-with Dos;
+with Normal, Argument, My_Io, Day_Mng, Console;
 
-with Types;
-with File;
-with Euristic;
+with Types, File, Euristic;
 
 procedure Hungar is
   Dim : Natural;
@@ -158,7 +152,7 @@ begin
       My_Io.Put_Line (".");
     end Display_Elapse;
   end Compute_Elapse;
-  Dos.Sound;
+  Console.Sound;
 
 exception
   when File.Read_Error =>

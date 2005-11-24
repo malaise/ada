@@ -1,4 +1,4 @@
-with My_Io, Argument, Con_Io, Dos;
+with My_Io, Argument, Con_Io;
 with Pers_Def, Pers_Fil, Mesu_Nam, Mesu_Edi, Mesu_Fil;
 
 procedure Ins_Mesu is

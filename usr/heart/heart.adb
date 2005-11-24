@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Con_Io, Dos, Argument, X_Mng;
+with Con_Io, Argument, X_Mng;
 with Pers_Fil, Mesu_Mng, Str_Mng;
 procedure Heart is
   Nb_Month : Str_Mng.Offset_Range;

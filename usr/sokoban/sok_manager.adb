@@ -1,6 +1,5 @@
 with Ada.Calendar; -- for time
 
-with Dos;          -- for sound
 with Con_Io;       -- for reset_term
 
 with Sok_Display;
