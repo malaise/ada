@@ -89,10 +89,10 @@ Descriptor 1
 
   # Title
   Field 1 Put
-    Geometry 0 25 0 48
+    Geometry 0 34 0 45
     Colors light_gray not_blink black
     Init
-      0 0 GENERIC TITLE
+      0 0 FILE RENAMER
     End Init
   End Field
 
