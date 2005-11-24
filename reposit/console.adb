@@ -67,5 +67,14 @@ package body Console is
     Ada.Text_Io.Put (Csi & 'u');
   end Restore;
 
+  procedure Sound (N_Times : in Positive := 1) is
+  begin
+    for I in 1 .. N_Times loop
+      Ada.Text_Io.Put (Ada.Characters.Latin_1.Bel);
+      Ada.Text_Io.Flush;
+      delay 0.2;
+    end loop;
+  end Sound;
+
 end Console;
 

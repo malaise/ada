@@ -24,5 +24,8 @@ package Console is
   -- Switch reverse
   procedure Set_Reverse (On : in Boolean);
 
+  -- Ring bell
+  procedure Sound (N_Times : in Positive := 1);
+
 end Console;
 
