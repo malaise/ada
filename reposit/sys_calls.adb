@@ -468,7 +468,7 @@ package body Sys_Calls is
     end if;
     return File_Desc(Res);
   end Open;
-  
+
   -- Read / write on File_Desc
   function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural is
