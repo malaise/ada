@@ -172,9 +172,12 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
     return (-1);
   }
 
-  simple_stat_struct->mode = stat_struct.st_mode;
+  simple_stat_struct->mode  = stat_struct.st_mode;
+  simple_stat_struct->nlink = stat_struct.st_nlink;
+  simple_stat_struct->uid   = stat_struct.st_uid;
+  simple_stat_struct->gid   = stat_struct.st_gid;
   simple_stat_struct->mtime = stat_struct.st_mtime;
-  simple_stat_struct->size = (long)stat_struct.st_mtime;
+  simple_stat_struct->size = (unsigned long)stat_struct.st_size;
 
   return (0);
 
@@ -190,10 +193,38 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
 
   simple_stat_struct->mode = stat_struct.st_mode;
   simple_stat_struct->mtime = stat_struct.st_mtime;
-  simple_stat_struct->size = (long)stat_struct.st_mtime;
+  simple_stat_struct->size = stat_struct.st_mtime;
 
   return (0);
 
+}
+
+/* Rights are -rw-r--r-- */
+#define ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+extern int fd_create (const char *path) {
+  return creat(path, ACCESS_RIGHTS);
+}
+
+#define READ_ONLY  0
+#define WRITE_ONLY 1
+#define READ_WRITE 2
+extern int fd_open (const char *path, int mode) {
+  int flags;
+  switch (mode) {
+    case READ_ONLY:
+      flags = O_RDONLY;
+    break;
+    case WRITE_ONLY:
+      flags = O_WRONLY;
+    break;
+    case READ_WRITE:
+      flags = O_RDWR;
+    break;
+    default:
+      return (-1);
+    break;
+  }
+  return open(path, flags);
 }
 
 extern int fd_int_read (int fd, void *buffer, int nbytes) {

@@ -1,6 +1,8 @@
 #ifndef _SYS_CALLS_H_
 #define _SYS_CALLS_H_
 
+/* Common to several */
+#define ERROR  (-1)
 
 typedef struct {
   int tm_sec;       /* Seconds after the minute [0-60]   */
@@ -25,10 +27,9 @@ extern int set_blocking (int fd, int blocking);
 extern int set_tty_attr (int fd, int mode);
 
 
-#define ERROR  (-1)
 #define NONE   (-2)
 #define CLOSED (-3)
-
+/* May return ERROR, NONE or CLOSED */
 extern int get_immediate (int fd);
 
 
@@ -41,7 +42,10 @@ extern char * env_val(int i);
 
 
 typedef struct {
-  unsigned int mode;
+  int mode;
+  int nlink;
+  int uid;
+  int gid;
   int mtime;
   long size;
 } simple_stat;
@@ -49,6 +53,13 @@ typedef struct {
 extern int file_stat(const char *path, simple_stat *simple_stat_struct);
 
 extern int fd_stat(int fd, simple_stat *simple_stat_struct);
+
+extern int fd_create (const char *path);
+
+#define READ_ONLY  0
+#define WRITE_ONLY 1
+#define READ_WRITE 2
+extern int fd_open (const char *path, int mode);
 
 extern int fd_int_read (int fd, void *buffer, int nbytes);
 
