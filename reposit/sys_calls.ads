@@ -12,7 +12,9 @@ package Sys_Calls is
   -- Rename/move a file (same filesystem)
   function Rename (Src, Dest : String) return Boolean;
 
-  -- Make a hard or symbolic link: New_Path points to Old_Path.
+  -- Make a hard or symbolic link: New_Path will point to Old_Path.
+  -- Raises Name_Error if New_Path already exists
+  -- Raises Access_Error if other error
   procedure Link (Old_Path, New_Path : String; Hard : Boolean);
 
   -- Errno and associated string

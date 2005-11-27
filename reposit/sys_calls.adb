@@ -104,6 +104,9 @@ package body Sys_Calls is
   end Rename;
 
   -- Make a hard or symbolic link: New_Path points to Old_Path.
+  -- Raises Name_Error if New_Path already exists
+  -- Raises Access_Error if other error
+  Eexist : constant := 17;
   procedure Link (Old_Path, New_Path : String; Hard : Boolean) is
     function C_Hard_Link (Old_Path, New_Path : System.Address) return Integer;
     pragma Import (C, C_Hard_Link, "link");
@@ -118,8 +121,12 @@ package body Sys_Calls is
     else
       Res := C_Sym_Link (Old4C'Address, New4C'Address);
     end if;
-    if Res = -1 then
+    if Res = 0 then
+      return;
+    elsif Errno = Eexist then
       raise Name_Error;
+    else
+      raise Access_Error;
     end if;
   end Link;
 
