@@ -6,6 +6,8 @@ with Day_Mng, Bit_Ops;
 package body Sys_Calls is
 
   -- Common utilities
+  C_Error  : constant Integer := -1;
+
   function C_Strlen (S : System.Address) return Natural;
   pragma Import (C, C_Strlen, "strlen");
 
@@ -32,9 +34,12 @@ package body Sys_Calls is
 
   -- File/Fd status
   type C_Stat_Rec is record
-    C_Mode : Integer;
+    C_Mode  : Integer;
+    C_Nlink : Integer;
+    C_Uid   : Integer;
+    C_Gid   : Integer;
     C_Mtime : Integer;
-    C_Size : Long_Integer;
+    C_Size  : Long_Integer;
   end record;
 
   function File_Kind_Of (Mode : Integer) return File_Desc_Kind_List is
@@ -69,10 +74,8 @@ package body Sys_Calls is
   -- Call system
   function Call_System (Command : String) return Integer is
     Command4C : constant String := Str_For_C (Command);
-
     function C_System (Command : System.Address) return Integer;
     pragma Import (C, C_System, "system");
-
   begin
     return C_System (Command4C'Address);
   end Call_System;
@@ -80,29 +83,45 @@ package body Sys_Calls is
 
   -- Rename/move a file
   function Unlink (File_Name : String) return Boolean is
-    File_Name4C : constant String := Str_For_C (File_Name);
-    Res : Integer;
-
     function C_Unlink (Pathname: System.Address) return Integer;
     pragma Import (C, C_Unlink, "unlink");
-
+    File_Name4C : constant String := Str_For_C (File_Name);
+    Res : Integer;
   begin
     Res := C_Unlink (File_Name4C'Address);
     return Res = 0;
   end Unlink;
 
   function Rename (Src, Dest : String) return Boolean is
+    function C_Rename (Oldpath, Newpath : System.Address) return Integer;
+    pragma Import (C, C_Rename, "rename");
     Src4C : constant String := Str_For_C (Src);
     Dest4C : constant String := Str_For_C (Dest);
     Res : Integer;
-
-    function C_Rename (Oldpath, Newpath : System.Address) return Integer;
-    pragma Import (C, C_Rename, "rename");
   begin
     Res := C_Rename (Src4C'Address, Dest4C'Address);
     return Res = 0;
   end Rename;
 
+  -- Make a hard or symbolic link: New_Path points to Old_Path.
+  procedure Link (Old_Path, New_Path : String; Hard : Boolean) is
+    function C_Hard_Link (Old_Path, New_Path : System.Address) return Integer;
+    pragma Import (C, C_Hard_Link, "link");
+    function C_Sym_Link (Old_Path, New_Path : System.Address) return Integer;
+    pragma Import (C, C_Sym_Link, "symlink");
+    Old4C : constant String := Old_Path & Ada.Characters.Latin_1.Nul;
+    New4C : constant String := New_Path & Ada.Characters.Latin_1.Nul;
+    Res : Integer;
+  begin
+    if Hard then
+      Res := C_Hard_Link (Old4C'Address, New4C'Address);
+    else
+      Res := C_Sym_Link (Old4C'Address, New4C'Address);
+    end if;
+    if Res = -1 then
+      raise Name_Error;
+    end if;
+  end Link;
 
   -- Errno and associated string
   function Errno return Integer is
@@ -113,10 +132,8 @@ package body Sys_Calls is
   end Errno;
 
   function Str_Error (Err : Integer) return String is
-
     function C_Strerror (Errnum: Integer) return Interfaces.C.Strings.Chars_Ptr;
     pragma Import (C, C_Strerror, "strerror");
-
   begin
     return Str_From_C (C_Strerror (Err));
   end Str_Error;
@@ -125,18 +142,18 @@ package body Sys_Calls is
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
-    C_Str : constant String := Str & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
   begin
-    I := Interfaces.C_Streams.Fputs (C_Str'Address,
+    I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
   end Put_Error;
 
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
-    C_Str : constant String := Ada.Characters.Latin_1.Lf
+    Str4C : constant String := Ada.Characters.Latin_1.Lf
                              & Ada.Characters.Latin_1.Nul;
   begin
-    I := Interfaces.C_Streams.Fputs (C_Str'Address,
+    I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
   end New_Line_Error;
 
@@ -150,9 +167,9 @@ package body Sys_Calls is
   function Getenv (Env_Name : String) return String is
     function C_Getenv (Name : in System.Address) return System.Address;
     pragma Import (C, C_Getenv, "getenv");
+    use type System.Address;
     Name4C : constant String := Str_For_C (Env_Name);
     Addr : System.Address;
-    use type System.Address;
   begin
     Addr := C_Getenv (Name4C'Address);
     if Addr = System.Null_Address then
@@ -237,20 +254,18 @@ package body Sys_Calls is
   end Environ_Val;
 
   -- Putenv
-  function C_Putenv (Str : System.Address) return Integer;
-  pragma Import (C, C_Putenv, "putenv");
-
-  type Str_Ptr is access String;
 
   procedure Putenv (Env_Name : in String; Env_Value : in String) is
     Str4C : constant String := Env_Name & "=" & Env_Value
                              & Ada.Characters.Latin_1.Nul;
-    -- Voluntary memory leak here
+    function C_Putenv (Str : System.Address) return Integer;
+    pragma Import (C, C_Putenv, "putenv");
+    -- Voluntary memory leak (in heap) here
+    type Str_Ptr is access String;
     Ptr : constant Str_Ptr := new String'(Str4C);
     Addr : constant System.Address
-         := Ptr.all(Ptr.all'First)'Address;
+         := Ptr.all'Address;
   begin
-
     if C_Putenv (Addr) /= 0 then
       raise System_Error;
     end if;
@@ -273,28 +288,24 @@ package body Sys_Calls is
     Set_Exit_Code(1);
   end Set_Error_Exit_Code;
 
-
-
   -- Unix File Descriptor
-  function C_Is_A_Tty (Fd : Integer) return Integer;
-  pragma Import (C, C_Is_A_Tty, "isatty");
-
-  function C_Fd_Stat (Fd : Integer; Stat : System.Address)
-                  return Integer;
-  pragma Interface(C, C_Fd_Stat);
-  pragma Interface_Name(C_Fd_Stat, "fd_stat");
 
   function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List is
-    C_Fd : constant Integer := Integer(Fd);
-    C_Stat : C_Stat_Rec;
+    Fd4C : constant Integer := Integer(Fd);
+    Stat4C : C_Stat_Rec;
+    function C_Is_A_Tty (Fd : Integer) return Integer;
+    pragma Import (C, C_Is_A_Tty, "isatty");
+    function C_Fd_Stat (Fd : Integer; Stat : System.Address)
+             return Integer;
+    pragma Import (C, C_Fd_Stat, "fd_stat");
   begin
-    if C_Is_A_Tty (C_Fd) = 1 then
+    if C_Is_A_Tty (Fd4C) = 1 then
       return Tty;
     end if;
-    if C_Fd_Stat (C_Fd, C_Stat'Address) = -1 then
+    if C_Fd_Stat (Fd4C, Stat4C'Address) = -1 then
       return Unknown;
     end if;
-    return File_Kind_Of (C_Stat.C_Mode);
+    return File_Kind_Of (Stat4C.C_Mode);
   end File_Desc_Kind;
 
   function Stdin return File_Desc is
@@ -314,24 +325,17 @@ package body Sys_Calls is
 
 
   -- File status
-  function C_File_Stat (File_Name : System.Address; Stat : System.Address)
-                  return Integer;
-  pragma Interface(C, C_File_Stat);
-  pragma Interface_Name(C_File_Stat, "file_stat");
-
   Enoent : constant :=  2;
-
-  procedure File_Stat (File_Name : in String;
-                       Kind       : out File_Kind_List;
-                       Rights     : out Natural;
-                       Modif_Time : out Time_T;
-                       Size       : out Size_T) is
-    C_File_Name : constant String := Str_For_C (File_Name);
-    C_Stat : C_Stat_Rec;
+  function File_Stat (File_Name : String) return File_Stat_Rec is
+    function C_File_Stat (File_Name : System.Address; Stat : System.Address)
+             return Integer;
+    pragma Import (C, C_File_Stat, "file_stat");
+    File_Name4C : constant String := Str_For_C (File_Name);
+    Stat4C : C_Stat_Rec;
     Res : Integer;
     use Bit_Ops;
   begin
-    Res := C_File_Stat(C_File_Name'Address, C_Stat'Address);
+    Res := C_File_Stat(File_Name4C'Address, Stat4C'Address);
     if Res = -1 then
       if Sys_Calls.Errno = Enoent then
         raise Name_Error;
@@ -339,20 +343,16 @@ package body Sys_Calls is
         raise Access_Error;
       end if;
     end if;
-    Kind := File_Kind_Of (C_Stat.C_Mode);
-    Rights := C_Stat.C_Mode and 8#00007777#;
-    Modif_Time := Time_T(C_Stat.C_Mtime);
-    Size := C_Stat.C_Size;
+    return (Kind       => File_Kind_Of (Stat4C.C_Mode),
+            Rights     => Stat4C.C_Mode and 8#00007777#,
+            Nb_Links   => Stat4C.C_Nlink,
+            User_Id    => Stat4C.C_Uid,
+            Group_Id   => Stat4C.C_Gid,
+            Modif_Time => Time_T(Stat4C.C_Mtime),
+            Size       => Stat4C.C_Size);
   end File_Stat;
 
-
   -- Convert file time
-  function C_Time_To_Tm (Time_P : System.Address;
-                         My_Tm_P : System.Address)
-           return Integer;
-  pragma Interface(C, C_Time_To_Tm);
-  pragma Interface_Name(C_Time_To_Tm, "time_to_tm");
-
   type C_Tm_T is record
     Tm_Sec  : Integer;
     Tm_Min  : Integer;
@@ -363,41 +363,42 @@ package body Sys_Calls is
   end record;
 
   function Time_Of (Time : Time_T) return Ada.Calendar.Time is
-    C_Tm  : C_Tm_T;
-    Result : Integer;
+    Tm4C  : C_Tm_T;
+    function C_Time_To_Tm (Time_P  : System.Address;
+                           My_Tm_P : System.Address)
+             return Integer;
+    pragma Import (C, C_Time_To_Tm, "time_to_tm");
+    Res : Integer;
   begin
-    Result := C_Time_To_Tm (Time'Address, C_Tm'Address);
-    if Result /= 0 then
+    Res := C_Time_To_Tm (Time'Address, Tm4C'Address);
+    if Res /= 0 then
       raise Constraint_Error;
     end if;
-    return Ada.Calendar.Time_Of(
-      C_Tm.Tm_Year, C_Tm.Tm_Mon, C_Tm.Tm_Mday,
-      Day_Mng.Pack (C_Tm.Tm_Hour, C_Tm.Tm_Min, C_Tm.Tm_Sec, 0));
+    return Ada.Calendar.Time_Of (
+      Tm4C.Tm_Year, Tm4C.Tm_Mon, Tm4C.Tm_Mday,
+      Day_Mng.Pack (Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, 0));
   end Time_Of;
 
-
   -- Set mode for Stdin
-  Tty_Modes_For_C : constant array (Tty_Mode_List) of Integer := (
-    Canonical    => 0,
-    No_Echo      => 1,
-    Asynchronous => 2,
-    Transparent  => 3);
-
-  function C_Set_Tty_Attr (Fd : Integer; Mode : Integer) return Integer;
-  pragma Import (C, C_Set_Tty_Attr, "set_tty_attr");
 
   function Set_Tty_Attr (Fd : File_Desc;
                          Tty_Mode : Tty_Mode_List) return Boolean is
+    Tty_Modes_For_C : constant array (Tty_Mode_List) of Integer := (
+      Canonical    => 0,
+      No_Echo      => 1,
+      Asynchronous => 2,
+      Transparent  => 3);
+    function C_Set_Tty_Attr (Fd : Integer; Mode : Integer) return Integer;
+    pragma Import (C, C_Set_Tty_Attr, "set_tty_attr");
   begin
     return C_Set_Tty_Attr (Integer(Fd), Tty_Modes_For_C(Tty_Mode)) = 0;
   end Set_Tty_Attr;
 
 
   -- Set blocking mode for a non tty
-  function C_Set_Blocking (Fd : Integer; Blocking : Integer) return Integer;
-  pragma Import (C, C_Set_Blocking, "set_blocking");
-
   function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean is
+    function C_Set_Blocking (Fd : Integer; Blocking : Integer) return Integer;
+    pragma Import (C, C_Set_Blocking, "set_blocking");
   begin
     if Blocking then
       return C_Set_Blocking (Integer(Fd), 1) = 0;
@@ -408,16 +409,13 @@ package body Sys_Calls is
 
 
   -- Get char from stdin
-  function C_Get_Immediate (Fd : Integer) return Integer;
-  pragma Import (C, C_Get_Immediate, "get_immediate");
-
-  C_Error  : constant Integer := -1;
-  C_None   : constant Integer := -2;
-  C_Closed : constant Integer := -3;
-
   procedure Get_Immediate (Fd : File_Desc;
                            Status : out Get_Status_List;
                            C      : out Character) is
+    function C_Get_Immediate (Fd : Integer) return Integer;
+    pragma Import (C, C_Get_Immediate, "get_immediate");
+    C_None   : constant Integer := -2;
+    C_Closed : constant Integer := -3;
     Res : Integer;
   begin
     C := Ada.Characters.Latin_1.Nul;
@@ -437,20 +435,48 @@ package body Sys_Calls is
     end if;
   end Get_Immediate;
 
-  -- Read / write on File_Desc
-  function C_Fd_Int_Read  (Fd     : Integer;
-                           Buffer : System.Address;
-                           Nbytes : Integer)
-                          return Integer;
-  pragma Import (C, C_Fd_Int_Read, "fd_int_read");
-  function C_Fd_Int_Write (Fd     : Integer;
-                           Buffer : System.Address;
-                           Nbytes : Integer)
-                          return Integer;
-  pragma Import (C, C_Fd_Int_Write, "fd_int_write");
+  -- Create
+  -- May raise Name_Error
+  function Create (Name : String) return File_Desc is
+    Name4C : constant String := Name & Ada.Characters.Latin_1.Nul;
+    function C_Fd_Create (Path : System.Address) return Integer;
+    pragma Import (C, C_Fd_Create, "fd_create");
+    Res : Integer;
+  begin
+    Res := C_Fd_Create (Name4C'Address);
+    if Res = -1 then
+      raise Name_Error;
+    end if;
+    return File_Desc(Res);
+  end Create;
 
+  -- Open
+  -- May raise Name_Error
+  function Open (Name : String; Mode : File_Mode) return File_Desc is
+    Name4C : constant String := Name & Ada.Characters.Latin_1.Nul;
+    Modes4C : constant array (File_Mode) of Integer := (
+      In_File    => 0,
+      Out_File   => 1,
+      Inout_File => 2);
+    function C_Fd_Open (Path : System.Address; Mode : Integer) return Integer;
+    pragma Import (C, C_Fd_Open, "fd_open");
+    Res : Integer;
+  begin
+    Res := C_Fd_Open (Name4C'Address, Modes4C(Mode));
+    if Res = -1 then
+      raise Name_Error;
+    end if;
+    return File_Desc(Res);
+  end Open;
+  
+  -- Read / write on File_Desc
   function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural is
+    function C_Fd_Int_Read  (Fd     : Integer;
+                             Buffer : System.Address;
+                             Nbytes : Integer)
+                            return Integer;
+    pragma Import (C, C_Fd_Int_Read, "fd_int_read");
     Res : Integer;
   begin
     Res := C_Fd_Int_Read (Integer(Fd), Buffer, Nbytes);
@@ -463,6 +489,11 @@ package body Sys_Calls is
 
   function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural is
+    function C_Fd_Int_Write (Fd     : Integer;
+                             Buffer : System.Address;
+                             Nbytes : Integer)
+             return Integer;
+    pragma Import (C, C_Fd_Int_Write, "fd_int_write");
     Res : Integer;
   begin
     Res := C_Fd_Int_Write (Integer(Fd), Buffer, Nbytes);
@@ -474,10 +505,10 @@ package body Sys_Calls is
   end Write;
 
   -- Close
-  function C_Fd_Close (Fd : Integer) return Integer;
-  pragma Import (C, C_Fd_Close, "fd_close");
 
   procedure Close (Fd : in File_Desc) is
+    function C_Fd_Close (Fd : Integer) return Integer;
+    pragma Import (C, C_Fd_Close, "fd_close");
   begin
     if C_Fd_Close (Integer(Fd)) /= 0 then
       raise System_Error;
@@ -485,10 +516,9 @@ package body Sys_Calls is
   end Close;
 
   -- Create a pipe
-  function C_Fd_Pipe (Fd1, Fd2 : in System.Address) return Integer;
-  pragma Import (C, C_Fd_Pipe, "fd_pipe");
-
   procedure Pipe (Fd1, Fd2 : out File_Desc) is
+    function C_Fd_Pipe (Fd1, Fd2 : in System.Address) return Integer;
+    pragma Import (C, C_Fd_Pipe, "fd_pipe");
   begin
     if C_Fd_Pipe (Fd1'Address, Fd2'Address) /= 0 then
       raise System_Error;
@@ -496,39 +526,34 @@ package body Sys_Calls is
   end Pipe;
 
   -- Get current / parent pid
-  function C_Getpid return Integer;
-  pragma Import (C, C_Getpid, "getpid");
-
-  function C_Getppid return Integer;
-  pragma Import (C, C_Getppid, "getppid");
-
-  function C_Kill (Dest_Pid : Integer; Signal : Integer) return Integer;
-  pragma Import (C, C_Kill, "getppid");
-
   function Get_Pid return Pid is
+    function C_Getpid return Integer;
+    pragma Import (C, C_Getpid, "getpid");
   begin
     return Pid(C_Getpid);
   end Get_Pid;
 
   function Get_Parent_Pid return Pid is
+    function C_Getppid return Integer;
+    pragma Import (C, C_Getppid, "getppid");
   begin
     return Pid(C_Getppid);
   end Get_Parent_Pid;
 
+  -- Kill
   procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural) is
+    function C_Kill (Dest_Pid : Integer; Signal : Integer) return Integer;
+    pragma Import (C, C_Kill, "getppid");
   begin
     if C_Kill (Integer(Dest_Pid), Signal_No) /= 0 then
       raise System_Error;
     end if;
   end Kill;
 
-
-
   -- Process procreation (fork)
-  function C_Procreate return Integer;
-  pragma Import (C, C_Procreate, "procreate");
-
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid) is
+    function C_Procreate return Integer;
+    pragma Import (C, C_Procreate, "procreate");
     Res : Integer;
   begin
     Res := C_Procreate;
@@ -544,13 +569,12 @@ package body Sys_Calls is
   end Procreate;
 
   -- Process mutation (exec)
-  procedure C_Mutate (Args : in System.Address; Len : in Integer);
-  pragma Import  (C, C_Mutate, "mutate");
-
   procedure Mutate (Program : in String) is
+    procedure C_Mutate (Args : in System.Address; Len : in Integer);
+    pragma Import  (C, C_Mutate, "mutate");
     Str4C : constant String := Program & Ada.Characters.Latin_1.Nul;
   begin
-    C_Mutate (Str4C(Str4C'First)'Address, Str4C'Length);
+    C_Mutate (Str4C'Address, Str4C'Length);
   end Mutate;
 
   -- Process termination
@@ -558,10 +582,10 @@ package body Sys_Calls is
   C_Exited   : constant Integer := 1;
   C_Signaled : constant Integer := 2;
   C_Stopped  : constant Integer := 3;
-  procedure C_Next_Dead (Cause, Pid, Code : in System.Address);
-  pragma Import  (C, C_Next_Dead, "next_dead");
 
   function Next_Dead return Death_Rec is
+    procedure C_Next_Dead (Cause, Pid, Code : in System.Address);
+    pragma Import  (C, C_Next_Dead, "next_dead");
     Cpid, Cause, Code : Integer;
   begin
     C_Next_Dead (Cause'Address, Cpid'Address, Code'Address);

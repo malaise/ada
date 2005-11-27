@@ -6,7 +6,7 @@
 -- exit 3  -->  Argument or internal error
 with Ada.Calendar;
 use Ada.Calendar;
-with Argument, Sys_Calls, Directory;
+with Argument, Sys_Calls;
 procedure Status is
   -- The exit values
   Exit_Ok             : constant := 0;
@@ -17,13 +17,10 @@ procedure Status is
   -- The final exit code
   Exit_Code : Integer;
 
-  -- Info unused but got with File_Stat
-  Kind : Directory.File_Kind_List;
-  Rights : Natural;
-  Fsize  : Directory.Size_T;
+  -- Info got with File_Stat
+  Fstat : Sys_Calls.File_Stat_Rec;
 
   -- Modif time of target, current source
-  Target_Mtime, Source_Mtime : Directory.Time_T;
   Target_Time, Source_Time : Ada.Calendar.Time;
 
 begin
@@ -42,10 +39,9 @@ begin
 
   -- Check that target file exists and get its modif date
   begin
-    Directory.File_Stat(Argument.Get_Parameter(Argument.Get_Nbre_Arg),
-                        Kind, Rights, Target_Mtime, Fsize);
+    Fstat := Sys_Calls.File_Stat(Argument.Get_Parameter(Argument.Get_Nbre_Arg));
   exception
-    when Directory.Name_Error =>
+    when Sys_Calls.Name_Error =>
       -- Not found
       Exit_Code := Exit_Nok;
     when others =>
@@ -56,7 +52,7 @@ begin
       Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
       return;
   end;
-  Target_Time := Directory.Time_Of(Target_Mtime);
+  Target_Time := Sys_Calls.Time_Of(Fstat.Modif_Time);
 
   -- Check that each source exists and is before result
   for Arg_No in 1 .. Argument.Get_Nbre_Arg - 1 loop
@@ -75,10 +71,9 @@ begin
     end if;
 
     begin
-      Directory.File_Stat(Argument.Get_Parameter(Arg_No),
-                        Kind, Rights, Source_Mtime, Fsize);
+      Fstat := Sys_Calls.File_Stat(Argument.Get_Parameter(Arg_No));
     exception
-      when Directory.Name_Error =>
+      when Sys_Calls.Name_Error =>
         -- Not found
         Sys_Calls.Put_Line_Error(
                 "NAME ERROR: Source file "
@@ -94,7 +89,7 @@ begin
         Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
         return;
     end;
-    Source_Time := Directory.Time_Of(Source_Mtime);
+    Source_Time := Sys_Calls.Time_Of(Fstat.Modif_Time);
 
     if Exit_Code = Exit_Ok and then Target_Time <= Source_Time then
       -- Source files exist so far and this one is after result

@@ -17,9 +17,6 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
     Dir_Dsc : Directory.Dir_Desc;
     Full_Curr_Name, New_Name : Dir_Txt;
     Kind : Directory.File_Kind_List;
-    Rights : Natural;
-    Mtime : Directory.Time_T;
-    Fsize : Directory.Size_T;
     Nb_Sons : Natural;
     use Directory;
 
@@ -82,8 +79,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
           exit;
       end;
       begin
-        Directory.File_Stat (Text_Handler.Value(New_Name), Kind, Rights,
-                             Mtime, Fsize);
+        Kind := Directory.File_Kind (Text_Handler.Value(New_Name));
       exception
         when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?
@@ -93,8 +89,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       if Follow_Links and then Kind = Directory.Link then
         begin
           Directory.Read_Link (Text_Handler.Value(New_Name), New_Name, True);
-          Directory.File_Stat (Text_Handler.Value(New_Name), Kind, Rights,
-                               Mtime, Fsize);
+          Kind := Directory.File_Kind (Text_Handler.Value(New_Name));
         exception
           when Directory.Name_Error | Directory.Access_Error =>
             -- A link to nowhere?

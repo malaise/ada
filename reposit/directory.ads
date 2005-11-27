@@ -49,16 +49,9 @@ package Directory is
   function File_Match (File_Name : String; Template : String) return Boolean;
 
 
-  -- File status
+  -- File kind and complete status
   type File_Kind_List is new Sys_Calls.File_Kind_List;
-  type Time_T is new Sys_Calls.Time_T;
-  type Size_T is new Sys_Calls.Size_T range 0 .. Sys_Calls.Size_T'Last;
-  procedure File_Stat (File_Name : in String;
-                       Kind       : out File_Kind_List;
-                       Rights     : out Natural;
-                       Modif_Time : out Time_T;
-                       Size       : out Size_T);
-
+  function File_Kind (File_Name : String) return File_Kind_List;
 
   -- Exceptions
   Name_Error   : exception renames Sys_Calls.Name_Error;

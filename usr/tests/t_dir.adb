@@ -1,12 +1,10 @@
 with Ada.Calendar;
-with My_Io, Int_Io, Directory, Text_Handler, Argument, Day_Mng, Normal;
+with My_Io, Int_Io, Directory, Sys_Calls,
+     Text_Handler, Argument, Day_Mng, Normal;
 procedure T_Dir is
   File_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
   Dir_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
-  Kind : Directory.File_Kind_List;
-  Rights : Natural;
-  Mtime  : Directory.Time_T;
-  Fsize  : Directory.Size_T;
+  Fstat : Sys_Calls.File_Stat_Rec;
   Max_Len : constant := 50;
   Pad : constant String (1 .. Max_Len) := (others => ' ');
 
@@ -24,6 +22,7 @@ procedure T_Dir is
     Zstr : String(1 .. 4) := (others => '0');
     F,L : Natural;
   begin
+    My_Io.Put (" ");
     Int_Io.Put (Str, Rights, Base => 8);
     for I in Str'Range loop
       if Str(I) = '#' then
@@ -42,7 +41,17 @@ procedure T_Dir is
     My_Io.Put(Zstr);
   end Put_Rights;
 
-  procedure Put_Date (Mtime : in Directory.Time_T) is
+  procedure Put_Id (Id : in Natural) is
+  begin
+    My_Io.Put(" " & Normal(Id, 3));
+  end Put_Id;
+
+  procedure Put_Size (Size : in Sys_Calls.Size_T) is
+  begin
+    My_Io.Put(" " & Normal(Integer(Size), 10));
+  end Put_Size;
+
+  procedure Put_Date (Mtime : in Sys_Calls.Time_T) is
     T : Ada.Calendar.Time;
     Year   : Ada.Calendar.Year_Number;
     Month  : Ada.Calendar.Month_Number;
@@ -53,7 +62,7 @@ procedure T_Dir is
     Seconds  : Day_Mng.T_Seconds;
     Millisec : Day_Mng.T_Millisec;
   begin
-    T := Directory.Time_Of(Mtime);
+    T := Sys_Calls.Time_Of(Mtime);
     Ada.Calendar.Split (T, Year, Month, Day, Dur);
     Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
     My_Io.Put(" " &
@@ -65,7 +74,7 @@ procedure T_Dir is
               Normal(Seconds, 2, Gap =>'0') );
   end Put_Date;
 
-  use Directory;
+  use type Sys_Calls.File_Kind_List;
 begin
 
   loop
@@ -89,16 +98,24 @@ begin
         My_Io.Put ("  ---->" & Text_Handler.Value (File_Name) & "< ");
         My_Io.Put (Pad(1 .. Max_Len - Text_Handler.Length(File_Name)));
         begin
-          Directory.File_Stat (
+          Fstat := Sys_Calls.File_Stat (
              Text_Handler.Value (Dir_Name) & '/' &
-             Text_Handler.Value (File_Name), Kind, Rights, Mtime, Fsize);
-          Put_Rights (Rights);
-          Put_Date (Mtime);
-          My_Io.Put_Line (" " & Directory.File_Kind_List'Image(Kind));
-          if Kind = Directory.Link then
+             Text_Handler.Value (File_Name));
+          Put_Id (Fstat.User_Id);
+          Put_Id (Fstat.Group_Id);
+          Put_Rights (Fstat.Rights);
+          Put_Date (Fstat.Modif_Time);
+          My_Io.Put (" " & Fstat.Kind'Img);
+          if Fstat.Kind = Sys_Calls.File then
+            Put_Size (Fstat.Size);
+            My_Io.New_Line;
+          elsif Fstat.Kind = Sys_Calls.Link then
+            My_Io.New_Line;
             My_Io.Put_Line ("    ++++>" & Directory.Read_Link (
                 Text_Handler.Value (Dir_Name) & '/' &
                 Text_Handler.Value (File_Name)) & '<');
+          else
+            My_Io.New_Line;
           end if;
         exception
           when Directory.Name_Error =>

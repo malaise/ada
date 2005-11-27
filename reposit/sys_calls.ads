@@ -9,8 +9,11 @@ package Sys_Calls is
   -- Unlink a file
   function Unlink (File_Name : String) return Boolean;
 
-  -- Rename/move a file
+  -- Rename/move a file (same filesystem)
   function Rename (Src, Dest : String) return Boolean;
+
+  -- Make a hard or symbolic link: New_Path points to Old_Path.
+  procedure Link (Old_Path, New_Path : String; Hard : Boolean);
 
   -- Errno and associated string
   function Errno return Integer;
@@ -65,14 +68,20 @@ package Sys_Calls is
   -- 10th bit ST (sticky)
   -- 11th bit GS (set GID)
   -- 12th bit US (set UID)
+  subtype Size_T is Long_Integer;
+  type File_Stat_Rec is record
+    Kind       : File_Kind_List;
+    Rights     : Natural;
+    Nb_Links   : Natural;
+    User_Id    : Natural;
+    Group_Id   : Natural;
+    Modif_Time : Time_T;
+    Size       : Size_T;
+  end record;
+
   -- File status
   -- May raise Name_Error or Access_Error
-  subtype Size_T is Long_Integer;
-  procedure File_Stat (File_Name : in String;
-                       Kind       : out File_Kind_List;
-                       Rights     : out Natural;
-                       Modif_Time : out Time_T;
-                       Size       : out Size_T);
+  function File_Stat (File_Name : String) return File_Stat_Rec;
 
   -- Convert file time
   function Time_Of (Time : Time_T) return Ada.Calendar.Time;
@@ -105,6 +114,12 @@ package Sys_Calls is
            return Natural;
   function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural;
+
+  -- Open / Create
+  -- May raise Name_Error
+  type File_Mode is (In_File, Inout_File, Out_File);
+  function Create (Name : String) return File_Desc;
+  function Open   (Name : String; Mode : File_Mode) return File_Desc;
 
   -- Close
   procedure Close (Fd : in File_Desc);
@@ -147,7 +162,7 @@ package Sys_Calls is
   end record;
   function Next_Dead return Death_Rec;
 
-  -- Exceptions (of File_Stat)
+  -- Exceptions (of File_Stat, Open, Create, Link)
   Name_Error   : exception;
   Access_Error : exception;
 

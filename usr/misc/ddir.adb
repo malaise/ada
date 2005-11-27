@@ -10,9 +10,6 @@ procedure Ddir is
     Dir_Dsc : Directory.Dir_Desc;
     Entry_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len);
     Kind : Directory.File_Kind_List;
-    Rights : Natural;
-    Mtime : Directory.Time_T;
-    Fsize : Directory.Size_T;
     use Directory;
   begin
     begin
@@ -35,8 +32,8 @@ procedure Ddir is
           exit;
       end;
       begin
-        Directory.File_Stat (Dir_Name & "/" & Text_Handler.Value(Entry_Name),
-                             Kind, Rights, Mtime, Fsize);
+        Kind := Directory.File_Kind (
+            Dir_Name & "/" & Text_Handler.Value(Entry_Name));
       exception
         when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?

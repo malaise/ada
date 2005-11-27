@@ -5,7 +5,7 @@ package body Dir_Mng is
   Path_Separator : constant Character := '/';
 
   function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean is
-    use Directory;
+    use type Directory.File_Kind_List;
   begin
     -- Only one is dir
     if El1.Kind /= El2.Kind and then
@@ -23,9 +23,6 @@ package body Dir_Mng is
     Dir_Desc : Directory.Dir_Desc;
     File_Rec : File_Entry_Rec;
     File_Name : File_Txt;
-    File_Rights : Natural;
-    File_Mtime : Directory.Time_T;
-    File_Size : Directory.Size_T;
   begin
 
     if Dir = "" then
@@ -44,13 +41,11 @@ package body Dir_Mng is
         File_Rec.Name (1 .. File_Rec.Len) := Text_Handler.Value (File_Name);
         begin
           if Dir = "" then
-            Directory.File_Stat (
-             Text_Handler.Value (File_Name),
-             File_Rec.Kind, File_Rights, File_Mtime, File_Size);
+            File_Rec.Kind := Directory.File_Kind (
+               Text_Handler.Value (File_Name));
           else
-            Directory.File_Stat (
-             Dir & Path_Separator & Text_Handler.Value (File_Name),
-             File_Rec.Kind, File_Rights, File_Mtime, File_Size);
+            File_Rec.Kind := Directory.File_Kind (
+             Dir & Path_Separator & Text_Handler.Value (File_Name));
           end if;
         exception
           when Directory.Name_Error | Directory.Access_Error =>

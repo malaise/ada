@@ -199,16 +199,11 @@ package body Directory is
   function Read_Link (File_Name : String;
                       Recursive : Boolean := True) return String is
     Dir, Txt : Text_Handler.Text(Max_Dir_Name_Len);
-    Kind : Sys_Calls.File_Kind_List;
-    Rights : Natural;
-    Mtime  : Sys_Calls.Time_T;
-    Size   : Sys_Calls.Size_T;
     use Text_Handler;
     use type Sys_Calls.File_Kind_List;
   begin
     -- Check file_name  is a link
-    Sys_Calls.File_Stat (File_Name, Kind, Rights, Mtime, Size);
-    if Kind /= Sys_Calls.Link then
+    if Sys_Calls.File_Stat (File_Name).Kind /= Sys_Calls.Link then
       raise Open_Error;
     end if;
     if not Recursive then
@@ -233,8 +228,8 @@ package body Directory is
       end if;
       Extract_Path(Text_Handler.Value(Txt), Dir);
 
-      Sys_Calls.File_Stat(Text_Handler.Value(Txt), Kind, Rights, Mtime, Size);
-      exit when Kind /= Sys_Calls.Link;
+      exit when Sys_Calls.File_Stat (Text_Handler.Value(Txt)).Kind
+                /= Sys_Calls.Link;
     end loop;
     return Text_Handler.Value(Txt);
   end Read_Link;
@@ -262,20 +257,15 @@ package body Directory is
   end File_Match;
 
   -- Use Sys_Calls
-  procedure File_Stat (File_Name : in String;
-                       Kind       : out File_Kind_List;
-                       Rights     : out Natural;
-                       Modif_Time : out Time_T;
-                       Size       : out Size_T) is
-    L_Kind : Sys_Calls.File_Kind_List;
-    L_Time : Sys_Calls.Time_T;
-    L_Size : Sys_Calls.Size_T;
+  function File_Kind (File_Name : String) return File_Kind_List is
   begin
-    Sys_Calls.File_Stat (File_Name, L_Kind, Rights, L_Time, L_Size);
-    Kind := File_Kind_List(L_Kind);
-    Modif_Time := Time_T(L_Time);
-    Size := Size_T(L_Size);
-  end File_Stat;
+    return File_Kind_List(Sys_Calls.File_Stat (File_Name).Kind);
+  exception
+    when Sys_Calls.Name_Error =>
+      raise Name_Error;
+    when Sys_Calls.Access_Error =>
+      raise Access_Error;
+  end File_Kind;
 
 end Directory;
 
