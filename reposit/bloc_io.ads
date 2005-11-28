@@ -40,10 +40,10 @@ package Bloc_Io is
   -- May increase size
   -- May rase Status or Device_Error
   procedure Write(File : in File_Type;
-                  Item : in  Element_Array;
+                  Item : in Element_Array;
                   To   : in Positive_Count);
   procedure Write(File : in File_Type;
-                  Item : in  Element_Array);
+                  Item : in Element_Array);
 
 
   -- Amount of Elements in file
