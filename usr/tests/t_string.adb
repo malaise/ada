@@ -16,7 +16,7 @@ procedure T_String is
   Str1 : String(1 .. 500);
   Str2 : String(1 .. 500);
 
-  procedure Int_Get (V : out Natural; Allow_Zero : in Boolean) is
+  procedure Nat_Get (V : out Natural; Allow_Zero : in Boolean) is
     Str : String (1 .. 80);
     Len : Integer;
   begin
@@ -37,7 +37,7 @@ procedure T_String is
         My_Io.Put ("Enter a Positive ? ");
       end if;
     end loop;
-  end Int_Get;
+  end Nat_Get;
 
   procedure Bool_Get (V : out Boolean) is
     Str : String (1 .. 80);
@@ -82,10 +82,11 @@ begin
       My_Io.Put_Line (" 9 Swap");
       My_Io.Put_Line ("10 Unique (from head or tail)");
       My_Io.Put_Line ("11 Variable substitution");
+      My_Io.Put_Line ("12 Escape location");
 
       loop
-        My_Io.Put ("Choice (0 .. 11) ? "); Int_Get (Action, True);
-        exit when Action <= 11;
+        My_Io.Put ("Choice (0 .. 12) ? "); Nat_Get (Action, True);
+        exit when Action <= 12;
       end loop;
       My_Io.New_Line;
 
@@ -116,7 +117,7 @@ begin
 
           when  3 =>
             My_Io.Put_Line ("Procuste");
-            My_Io.Put ("Len (Pos)? "); Int_Get(Pos1, False);
+            My_Io.Put ("Len (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put ("Align_Left (YN)? "); Bool_Get(Bool1);
             My_Io.Put ("Gap (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
             My_Io.Put ("Trunc_Head (YN)? "); Bool_Get(Bool2);
@@ -135,7 +136,7 @@ begin
           when  4 =>
             My_Io.Put_Line ("Locate");
             My_Io.Put ("Fragment (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("Occurence (Pos)? "); Int_Get(Pos1, False);
+            My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put_Line ("Occurence of fragment located at: " &
              Integer'Image (String_Mng.Locate (
                Str(1 .. Str_Len),
@@ -144,8 +145,8 @@ begin
 
           when  5 =>
             My_Io.Put_Line ("Remove (substring)");
-            My_Io.Put ("At_Index (Pos)? "); Int_Get(Pos1, False);
-            My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
+            My_Io.Put ("At_Index (Pos)? "); Nat_Get(Pos1, False);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
             My_Io.Put ("Shift_Left (Bool)? "); Bool_Get(Bool1);
             My_Io.Put ("Gap (Char, n for none)? ");
                        My_Io.Get(Char1); My_Io.Skip_Line;
@@ -159,8 +160,8 @@ begin
 
           when  6 =>
             My_Io.Put_Line ("(Extract) Slice");
-            My_Io.Put ("At_Index (Pos)? "); Int_Get(Pos1, False);
-            My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
+            My_Io.Put ("At_Index (Pos)? "); Nat_Get(Pos1, False);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
             My_Io.Put ("To_Right (Bool)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Extracted slice: |"
               & String_Mng.Slice (Str(1 .. Str_Len),
@@ -170,7 +171,7 @@ begin
 
           when  7 =>
             My_Io.Put_Line ("Cut (head or tail)");
-            My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
             My_Io.Put ("Head (Bool)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Cut string: |"
               & String_Mng.Cut (Str(1 .. Str_Len),
@@ -179,7 +180,7 @@ begin
 
           when  8 =>
             My_Io.Put_Line ("Extract (head or tail)");
-            My_Io.Put ("Nb_Char (Nat)? "); Int_Get(Nat1, False);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
             My_Io.Put ("Head (Bool)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Extracted: |"
               & String_Mng.Extract (Str(1 .. Str_Len),
@@ -208,6 +209,16 @@ begin
                         Stop_Delimiter => Str2(1 .. Nat2),
                         Resolv => Sys_Calls.Getenv'Access)
               & "|" );
+          when 12 =>
+            My_Io.Put_Line ("Escape sequence location");
+            My_Io.Put ("From index (Nat)? "); Nat_Get(Nat1, False);
+            My_Io.Put ("Escaped (Esc char first) (Str)? ");
+                       My_Io.Get_Line (Str2, Nat2);
+            My_Io.Put_Line ("Located at: "
+              & Natural'Image (String_Mng.Locate_Escape (
+                        Str(1 .. Str_Len),
+                        From_Index => Nat1,
+                        Escape => Str2(1 .. Nat2))));
 
           when others => null;
         end case;
