@@ -126,7 +126,7 @@ procedure Trail_Spaces is
     when others =>
       -- Close files and delete temp file
       Close (In_File);
-      if Ada.text_Io.Is_Open (Out_File) then
+      if Ada.Text_Io.Is_Open (Out_File) then
         begin
           Ada.Text_Io.Close (Out_File);
         exception

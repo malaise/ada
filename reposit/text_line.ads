@@ -6,7 +6,7 @@ package Text_Line is
   type File_Type is private;
 
   -- The End_Of_Line character
-  New_line : constant Character := Ada.Characters.Latin_1.Lf;
+  New_Line : constant Character := Ada.Characters.Latin_1.Lf;
 
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
