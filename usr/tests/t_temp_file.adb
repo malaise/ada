@@ -16,7 +16,7 @@ begin
   Ada.Text_Io.New_Line;
 
   Ada.Text_Io.Put_Line ("Checking " & Temp_Dir & " directory content:");
-  Desc := Directory.Open (Temp_Dir); 
+  Desc := Directory.Open (Temp_Dir);
   begin
     loop
       Ada.Text_Io.Put_Line (Directory.Next_Entry (Desc));
