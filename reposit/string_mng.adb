@@ -418,5 +418,53 @@ package body String_Mng is
   end Eval_Variables;
   -- No_Variable : exception;
 
+  -- Locate an escape sequence within the Within string,
+  --  starting searching from From_Index.
+  -- An escape sequence is one escape char followed by one escaped char,
+  --  (e.g. Esc='\' and Escaped="na" will detect "\n" or "\a").
+  -- The first char of the Escape string defines the escape character
+  --  and the rest of the string the possible escaped characters.
+  -- Returns the index of the escaped char matching, or 0 if not found.
+  -- Also returns 0 if Escape is empty.
+  function Locate_Escape (Within_Str : String;
+                          From_Index : Positive;
+                          Escape     : String) return Natural is
+    Esc  : Character;
+    Escs : constant String
+         := Escape(Natural'Succ(Escape'First) .. Escape'Last);
+    Start : Natural;
+  begin
+    -- Empty Escape
+    if Escape = "" then
+      return 0;
+    end if;
+    Esc := Escape(Escape'First);
+    
+    -- Locate escape sequence
+    for I in From_Index .. Natural'Pred(Within_Str'Last) loop
+      if Within_Str(I) = Esc then
+        -- Count back the Esc (at least I is Esc)
+        for J in reverse Within_Str'First .. I loop
+          exit when Within_Str(J) /= Esc;
+          Start := J;
+        end loop;
+        -- Check I = J modulo 2 => odd number of Esc
+        if (I - Start) rem 2 = 0 then
+          -- Odd number of Esc is an escape: "\\\n" -> '\''\n'
+          -- Check if the following letter is within the Escape chars
+          for K in Escape'Range loop
+            if Within_Str(I + 1) = Escape(K) then
+              -- The character following '\' is one of the expected
+              return I;
+            end if;
+          end loop;
+           -- Not one of the expected characters
+        end if;
+        -- Even number of Esc is not an escape: "\\n" -> '\''n'
+      end if;
+    end loop;
+    return 0;
+  end Locate_Escape;
+
 end String_Mng;
 

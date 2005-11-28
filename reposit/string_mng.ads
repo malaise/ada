@@ -113,5 +113,16 @@ package String_Mng is
            return String;
   Inv_Delimiter, Delimiter_Mismatch : exception;
 
+  -- Locate an escape sequence within the Within string,
+  --  starting searching from From_Index.
+  -- An escape sequence is one escape char followed by one escaped char,
+  --  (e.g. Esc='\' and Escaped="na" will detect "\n" or "\a").
+  -- The first char of the Escape string defines the escape character
+  --  and the rest of the string the possible escaped characters.
+  -- Returns the index of the escaped char matching, or 0 if not found.
+  -- Also returns 0 if Escape is empty.
+  function Locate_Escape (Within_Str : String;
+                          From_Index : Positive;
+                          Escape     : String) return Natural;
 end String_Mng;
 
