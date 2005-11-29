@@ -102,8 +102,8 @@ package body String_Mng is
     if Within'Length = 0 or else Fragment'Length = 0 then
       return 0;
     end if;
-    for I in 1 .. Within'Length - Fragment'Length + 1 loop
-      if Within(I .. I+Fragment'Length-1) = Fragment then
+    for I in Within'First .. Within'Last - Fragment'Length + 1 loop
+      if Within(I .. I + Fragment'Length - 1) = Fragment then
         Found_Occurence := Found_Occurence + 1;
         if Found_Occurence = Occurence then
           return I;
@@ -452,8 +452,8 @@ package body String_Mng is
         if (I - Start) rem 2 = 0 then
           -- Odd number of Esc is an escape: "\\\n" -> '\''\n'
           -- Check if the following letter is within the Escape chars
-          for K in Escape'Range loop
-            if Within_Str(I + 1) = Escape(K) then
+          for K in Escs'Range loop
+            if Within_Str(I + 1) = Escs(K) then
               -- The character following '\' is one of the expected
               return I;
             end if;
