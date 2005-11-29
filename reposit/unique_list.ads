@@ -27,11 +27,18 @@ package Unique_List is
   procedure Insert (List : in out List_Type;
                     Item : in Element_Type);
 
-  -- Read the  the element matching in the list
+  -- Read the element matching in the list
   -- May raise Not_In_List
   procedure Read (List : in out List_Type;
                   Crit : in Element_Type;
                   Item : out Element_Type);
+
+  type Element_Access is access all Element_Type;
+  -- Get direct access to element matching in the list
+  -- May raise Not_In_List
+  procedure Get_Access (List : in out List_Type;
+                        Crit : in Element_Type;
+                        Item_Access : out Element_Access);
 
   -- Suppress the element matching in the list
   -- May raise Not_In_List
@@ -92,10 +99,10 @@ private
   -- The limited list of items
   package List_Mng is new Limited_List (Element_Type, Set);
   -- Element hashing
-  procedure Dump (Data : in List_Mng.Element_Access);
+  procedure Dump (Data : in Element_Access);
   package Hash_Mng is
           new Hash.Hash_Mng (Hash.Max_Hash_Value,
-                             List_Mng.Element_Access,
+                             Element_Access,
                              Dump);
   -- A unique list
   type List_Type is record

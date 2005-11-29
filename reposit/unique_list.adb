@@ -1,7 +1,6 @@
 with Limited_List, Hash;
 package body Unique_List is
 
-  subtype Element_Access is List_Mng.Element_Access;
   use type List_Mng.Element_Access;
 
   -- Element hashing
@@ -50,7 +49,7 @@ package body Unique_List is
       List_Mng.Insert (List.List, Item);
       Hash_Mng.Store (List.Table,
                       Image(Item),
-                      List_Mng.Access_Current (List.List));
+                      Element_Access (List_Mng.Access_Current (List.List)));
     end if;
   exception
     when List_Mng.Full_List =>
@@ -64,15 +63,23 @@ package body Unique_List is
                   Item : out Element_Type) is
     Acc : Element_Access;
   begin
-    Locate (List, Crit, Acc);
-    if Acc /= null then
-      -- This element exists, return it
-      Set (Item, Acc.all);
-    else
-      -- not found
+    Get_Access (List, Crit, Acc);
+    -- This element exists, return it
+    Set (Item, Acc.all);
+  end Read;
+
+  -- Get direct access to element matching in the list
+  -- May raise Not_In_List
+  procedure Get_Access (List : in out List_Type;
+                        Crit : in Element_Type;
+                        Item_Access : out Element_Access) is
+  begin
+    Locate (List, Crit, Item_Access);
+    if Item_Access = null then
+      -- Not found
       raise Not_In_List;
     end if;
-  end Read;
+  end Get_Access;
 
   -- Suppress the element matching in the list
   -- May raise Not_In_List
@@ -105,7 +112,7 @@ package body Unique_List is
     -- Locate in hash the item matching the criteria
     Locate (List, Crit, Acc);
     -- Check it has been found and same item
-    if Acc /= List_Mng.Access_Current (List.List) then
+    if Acc /= Element_Access(List_Mng.Access_Current (List.List)) then
       raise Internal_Error;
     end if;
 
