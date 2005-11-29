@@ -10,18 +10,18 @@ package body Regular_Expressions is
   end Str4C;
 
   function C_Malloc_Regex return System.Address;
-  pragma Interface (C, C_Malloc_Regex);
-  pragma Interface_Name (C_Malloc_Regex, "malloc_regex");
+  pragma Import (C, C_Malloc_Regex, "malloc_regex");
 
   procedure C_Free_Regex (Ptr : in System.Address);
-  pragma Interface (C, C_Free_Regex);
-  pragma Interface_Name (C_Free_Regex, "free_regex");
+  pragma Import (C, C_Free_Regex, "free_regex");
+
+  procedure C_Regexcpy (Dest, Source : in System.Address);
+  pragma Import (C, C_Regexcpy, "regexcpy");
 
   function C_Regcomp (Preg : in System.Address;
                       Regex : in System.Address;
                       Cflags : in Integer) return Integer;
-  pragma Interface (C, C_Regcomp);
-  pragma Interface_Name (C_Regcomp, "regcomp");
+  pragma Import (C, C_Regcomp, "regcomp");
   C_Extended : constant Integer := 1;
   C_Icase    : constant Integer := 2;
   C_Newline  : constant Integer := 4;
@@ -31,8 +31,7 @@ package body Regular_Expressions is
                       Nmatch : in Long_Integer;
                       Pmatch : in System.Address;
                       Eflags : in Integer) return Integer;
-  pragma Interface (C, C_Regexec);
-  pragma Interface_Name (C_Regexec, "regexec");
+  pragma Import (C, C_Regexec, "regexec");
   C_Notbol : constant Integer := 1;
   C_Noteol : constant Integer := 2;
 
@@ -40,12 +39,10 @@ package body Regular_Expressions is
                        Preg : in System.Address;
                        Errbuf : in System.Address;
                        Errbuf_Size : in Long_Integer) return Long_Integer;
-  pragma Interface (C, C_Regerror);
-  pragma Interface_Name (C_Regerror, "regerror");
+  pragma Import (C, C_Regerror, "regerror");
 
   procedure C_Regfree (Preg : in System.Address);
-  pragma Interface (C, C_Regfree);
-  pragma Interface_Name (C_Regfree, "regfree");
+  pragma Import (C, C_Regfree, "regfree");
 
   -- Ada binding
   procedure Compile (Result : in out Compiled_Pattern;

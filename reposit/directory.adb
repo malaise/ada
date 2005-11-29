@@ -14,17 +14,14 @@ package body Directory is
   Einval : constant := 22;
 
   function C_Strlen (S : System.Address) return Natural;
-  pragma Interface(C, C_Strlen);
-  pragma Interface_Name(C_Strlen, "strlen");
+  pragma Import(C, C_Strlen, "strlen");
 
   function C_Strcpy (Dest, Src : System.Address) return System.Address;
-  pragma Interface(C, C_Strcpy);
-  pragma Interface_Name(C_Strcpy, "strcpy");
+  pragma Import(C, C_Strcpy, "strcpy");
 
   function C_Memcpy (Dest, Src : System.Address; Size : Integer)
                     return System.Address;
-  pragma Interface(C, C_Memcpy);
-  pragma Interface_Name(C_Memcpy, "memcpy");
+  pragma Import(C, C_Memcpy, "memcpy");
 
 
   function Str_For_C (Str : String) return String is
@@ -33,8 +30,7 @@ package body Directory is
   end Str_For_C;
 
   function C_Getcwd (Buf : System.Address; Size : Integer) return System.Address;
-  pragma Interface(C, C_Getcwd);
-  pragma Interface_Name(C_Getcwd, "getcwd");
+  pragma Import(C, C_Getcwd, "getcwd");
 
   -- Returns current working directory
   function Get_Current return String is
@@ -57,8 +53,7 @@ package body Directory is
   end Get_Current;
 
   function C_Chdir (Path : System.Address) return Integer;
-  pragma Interface(C, C_Chdir);
-  pragma Interface_Name(C_Chdir, "chdir");
+  pragma Import(C, C_Chdir, "chdir");
 
   -- Changes current working directory
   procedure Change_Current (New_Dir : in String) is
@@ -74,8 +69,7 @@ package body Directory is
   end Change_Current;
 
   function C_Opendir (Name : System.Address) return System.Address;
-  pragma Interface(C, C_Opendir);
-  pragma Interface_Name(C_Opendir, "opendir");
+  pragma Import(C, C_Opendir, "opendir");
 
   -- Opens a directory for list of entries
   function Open (Dir_Name : in String) return Dir_Desc is
@@ -98,8 +92,7 @@ package body Directory is
 
 
   function C_Readdir (Dir : System.Address; Name : System.Address) return Integer;
-  pragma Interface(C, C_Readdir);
-  pragma Interface_Name(C_Readdir, "read_dir");
+  pragma Import(C, C_Readdir, "read_dir");
 
   -- Gets next entry of the opened directory
   function Next_Entry (Desc : Dir_Desc) return String is
@@ -126,8 +119,7 @@ package body Directory is
   end Next_Entry;
 
   procedure C_Rewinddir (Dir : System.Address);
-  pragma Interface(C, C_Rewinddir);
-  pragma Interface_Name(C_Rewinddir, "rewinddir");
+  pragma Import(C, C_Rewinddir, "rewinddir");
 
   -- Reset entries for the first
   procedure Rewind (Desc : in Dir_Desc) is
@@ -140,8 +132,7 @@ package body Directory is
   end Rewind;
 
   procedure C_Closedir (Dir : System.Address);
-  pragma Interface(C, C_Closedir);
-  pragma Interface_Name(C_Closedir, "closedir");
+  pragma Import(C, C_Closedir, "closedir");
 
   -- Closes a directory
   procedure Close (Desc : in out Dir_Desc) is
@@ -157,8 +148,7 @@ package body Directory is
   -- Follow a link
   function C_Readlink (Path : System.Address;
                        Buf : System.Address; Bufsiz : Integer) return Integer;
-  pragma Interface(C, C_Readlink);
-  pragma Interface_Name(C_Readlink, "readlink");
+  pragma Import(C, C_Readlink, "readlink");
 
   -- May raise Name_Error if File_Name does not exist
   --           Open_Error if File_Name is not a link
@@ -245,8 +235,7 @@ package body Directory is
 
   function C_Fnmatch (Pattern : System.Address; Strings : System.Address; Flags : Integer)
            return Integer;
-  pragma Interface(C, C_Fnmatch);
-  pragma Interface_Name(C_Fnmatch, "fnmatch");
+  pragma Import(C, C_Fnmatch, "fnmatch");
 
   -- Does file name match a pattern
   function File_Match (File_Name : String; Template : String) return Boolean is

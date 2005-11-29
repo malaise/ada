@@ -5,44 +5,34 @@ package body My_Math is
   type  Double is new Long_Float;
 
   function Cpow (X, Y : Double) return Double;
-  pragma Interface (C, Cpow);
-  pragma Interface_Name (Cpow, "pow");
+  pragma Import (C, Cpow, "pow");
 
   function Csqrt (X : Double) return Double;
-  pragma Interface (C, Csqrt);
-  pragma Interface_Name (Csqrt, "sqrt");
+  pragma Import (C, Csqrt, "sqrt");
 
   function Clog10 (X : Double) return Double;
-  pragma Interface (C, Clog10);
-  pragma Interface_Name (Clog10, "log10");
+  pragma Import (C, Clog10, "log10");
 
   function Clog (X : Double) return Double;
-  pragma Interface (C, Clog);
-  pragma Interface_Name (Clog, "log");
+  pragma Import (C, Clog, "log");
 
   function Csin (X : Double) return Double;
-  pragma Interface (C, Csin);
-  pragma Interface_Name (Csin, "sin");
+  pragma Import (C, Csin, "sin");
 
   function Ccos (X : Double) return Double;
-  pragma Interface (C, Ccos);
-  pragma Interface_Name (Ccos, "cos");
+  pragma Import (C, Ccos, "cos");
 
   function Ctan (X : Double) return Double;
-  pragma Interface (C, Ctan);
-  pragma Interface_Name (Ctan, "tan");
+  pragma Import (C, Ctan, "tan");
 
   function Casin (X : Double) return Double;
-  pragma Interface (C, Casin);
-  pragma Interface_Name (Casin, "asin");
+  pragma Import (C, Casin, "asin");
 
   function Cacos (X : Double) return Double;
-  pragma Interface (C, Cacos);
-  pragma Interface_Name (Cacos, "acos");
+  pragma Import (C, Cacos, "acos");
 
   function Catan (X : Double) return Double;
-  pragma Interface (C, Catan);
-  pragma Interface_Name (Catan, "atan");
+  pragma Import (C, Catan, "atan");
 
   --------------------------
   -- Constants for computing

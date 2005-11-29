@@ -8,11 +8,7 @@ package Convert is
   function Hton (Int : Integer) return Integer;
 
 private
-  pragma Interface (C, Ntoh);
-  pragma Interface_Name (Ntoh, "ntohl");
-
-  pragma Interface (C, Hton);
-  pragma Interface_Name (Hton, "htonl");
-
+  pragma Import (C, Ntoh, "ntohl");
+  pragma Import (C, Hton, "htonl");
 end Convert;
 
