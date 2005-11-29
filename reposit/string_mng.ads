@@ -29,7 +29,7 @@ package String_Mng is
            return String;
 
   -- Locate Nth occurence of a fragment within a string
-  -- Returns index of fragment start
+  -- Returns index in Within of char matching start of Fragment
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within : String;
                    Fragment : String;
