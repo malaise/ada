@@ -70,6 +70,7 @@ package body Strings is
 
     Res.Val_Inte := My_Math.Inte(
             String_Mng.Locate (Unb.To_String(S.Val_Text),
+                               1,
                                Unb.To_String(Pat.Val_Text),
                                Positive(Occ.Val_Inte)));
     return Res;

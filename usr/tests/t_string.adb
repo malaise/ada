@@ -7,6 +7,7 @@ procedure T_String is
   Str_Len : Natural;
 
   Pos1 : Positive;
+  Pos2 : Positive;
   Nat1 : Natural;
   Nat2 : Natural;
   Char1 : Character;
@@ -135,13 +136,15 @@ begin
 
           when  4 =>
             My_Io.Put_Line ("Locate");
+            My_Io.Put ("From_Index (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put ("Fragment (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos1, False);
+            My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos2, False);
             My_Io.Put_Line ("Occurence of fragment located at: " &
              Integer'Image (String_Mng.Locate (
                Str(1 .. Str_Len),
+               From_Index => Pos1,
                Fragment => Str1(1 .. Nat1),
-               Occurence => Pos1)) );
+               Occurence => Pos2)) );
 
           when  5 =>
             My_Io.Put_Line ("Remove (substring)");
