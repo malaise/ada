@@ -44,11 +44,13 @@ procedure Trail_Spaces is
       when Sys_Calls.Name_Error =>
         Sys_Calls.Put_Line_Error ("Error. File "
              & In_File_Name & " not found, skipping.");
+        Dummy := Sys_Calls.Unlink (Out_File_Name);
         return;
       when Error:others =>
         Sys_Calls.Put_Line_Error ("Error. Cannot open file "
              & In_File_Name & " due to "
              & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
+        Dummy := Sys_Calls.Unlink (Out_File_Name);
         return;
     end;
     -- Create out_file
@@ -60,6 +62,7 @@ procedure Trail_Spaces is
              & Out_File_Name & " due to "
              & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
         Close (In_File);
+        Dummy := Sys_Calls.Unlink (Out_File_Name);
         return;
     end;
 
