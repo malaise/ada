@@ -28,12 +28,14 @@ package String_Mng is
                      Show_Trunc : Boolean := True)
            return String;
 
-  -- Locate Nth occurence of a fragment within a string
+  -- Locate Nth occurence of a fragment within a string, starting
+  --  at a given index
   -- Returns index in Within of char matching start of Fragment
   --  or 0 if not found or if Within or Fragment is empty
-  function Locate (Within : String;
-                   Fragment : String;
-                   Occurence : Positive := 1)
+  function Locate (Within     : String;
+                   From_Index : Positive;
+                   Fragment   : String;
+                   Occurence  : Positive := 1)
            return Natural;
 
   -- Remove Nb_Char characters from the string From at index At_Index.
