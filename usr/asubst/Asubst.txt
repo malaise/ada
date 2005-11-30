@@ -1,0 +1,72 @@
+1. General syntax
+Usage : substit <find_pattern> <replace_string> [ { <file_name> } ]
+Substitutes strings in files.
+If no file name is specified, substitutes from stdin to stdout.
+
+2. Find pattern
+<find_pattern> ::= [ <regex> ] [ { \n [ <regex> ] } ]
+If there is no \n, then the regex can be any regular expression.
+If there are \n, they delimit several regex that will apply to several lines.
+In this case, '^' and '$' are forbidden in the provided regex (they will
+automatically be added). Examples:
+r        ->    r
+^r$      ->    ^r$
+r1\nr2\n -> r1$ and ^r2$
+r1\nr2   -> r1$ and ^r2
+r1\nr2$  Frobidden
+
+3. Replace string
+Only three specific characters are handled: \n, \t and \&.
+\n will be replaced by a newline, \t by a (horiz) tab and \& will be replaced
+by the input string matching the <find_template>.
+
+4. Design
+4.1 Parsing and checking find pattern
+First check consists in locating the \n(s) if any.
+This is done by looking for "\n" then counting the number of '\' before the 'n'.
+If the number is odd then this is a \n (if even, it is a sequence of "\\" then
+a 'n').
+If there is no \n, then the parsing returns one pattern (the exact argument).
+If there are \n, the parsing returns several patterns:
+The argument is splitted into several strings (that where separated by \n).
+Each string preceeded by a \n is prepended with '^'.
+Each string followed by a \n is appended with '$'.
+Compile these patterns in Regular_Expressions.
+Keep the array/list of Compiled_Pattern.
+Returns the number of patterns.
+
+Another function takes an unbounded string and a pattern index, and returns
+a Match_Cell. Raises N_pattern on incorrect index.
+Match_Cell.Start_Offset is set to 0 if no match.
+
+4.2 Parsing and replacing the replacing string
+Locate the \n and replace them by Latin_1.Lf, replace \t by Latin.Nl,
+altogether locate the \& and replace them by Latin_1.Nul, keep in mind their
+location.
+
+Another function takes an unbounded string and returns the replacing string,
+replacing all "\&" by the provided string.
+
+4.3 Generating a temp file
+One function Tmp_Name (Tmp_Dir : String) return String.
+Creates a file name in Tmp_Dir. Tries Tmp_Name.001 to Tmp_Name.999.
+Leaves the file created and empty.
+Raises Invalid_Dir if Tmp_Dir does not exist or is not writable.
+Raises No_More_Tmp if all the 999 possible files already exist in Tmp_Dir.
+From man 2 open (O_EXCL):
+The solution for performing atomic file locking using a lockfile is to create
+a unique file on the same file system (e.g., incorporating hostname and pid),
+use link(2) to make a link to the lockfile. If link() returns 0, the lock is
+successful. Otherwise, use stat(2) on the unique file to check if its link
+count has increased to 2, in which case the lock is also successful.
+
+4.4 Reading input flow
+A package reading the flow of characters from a fd. Stops reading:
+- on a LineFeed, and returns the unbounded string with the LineFeed
+- on en of flow, and returns the unbounded string.
+
+4.5 Locate '\' sequences
+A function locating "\x" (x not being '\') in a string from index i.
+Search "\x", count amount of preceeding '\'. If odd, return index of "\x",
+else return 0.
+
