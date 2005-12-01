@@ -13,7 +13,7 @@ package Text_Line is
 
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
-  procedure Open (File : in out File_Type; 
+  procedure Open (File : in out File_Type;
                   Mode : in File_Mode;
                   Fd : in Sys_Calls.File_Desc);
 
