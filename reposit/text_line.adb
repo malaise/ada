@@ -5,13 +5,16 @@ package body Text_Line is
 
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
-  procedure Open (File : in out File_Type; Fd : in Sys_Calls.File_Desc) is
+  procedure Open (File : in out File_Type;
+                  Mode : in File_Mode;
+                  Fd : in Sys_Calls.File_Desc) is
   begin
     if File /= null then
       raise Status_Error;
     end if;
     File := File_Data.Allocate (
       (Fd => Fd,
+       Mode => Mode,
        Buffer_Len => 0,
        Buffer_Index => 0,
        Buffer => (others => Ada.Characters.Latin_1.Nul)) );
@@ -23,6 +26,9 @@ package body Text_Line is
   begin
     if File = null then
       raise Status_Error;
+    end if;
+    if File.Mode = Out_File then
+      Flush (File);
     end if;
     File_Data.Free (File);
   end Close;
@@ -66,7 +72,7 @@ package body Text_Line is
     File.Buffer_Index := 0;
   exception
     when Sys_Calls.System_Error =>
-      raise Read_Error;
+      raise Io_Error;
   end Read;
 
 
@@ -76,8 +82,8 @@ package body Text_Line is
     Str : Asu.Unbounded_String;
     Stop_Index : Buffer_Index_Range;
   begin
-    -- Check file is open
-    if File = null then
+    -- Check file is open and in read mode
+    if File = null or else File.Mode /= In_File then
       raise Status_Error;
     end if;
     -- Locate next newline
@@ -89,7 +95,7 @@ package body Text_Line is
       -- Locate next newline in buffer
       Stop_Index := 0;
       for I in File.Buffer_Index + 1 .. File.Buffer_Len loop
-        if File.Buffer(I) = New_Line then
+        if File.Buffer(I) = Line_Feed then
           Stop_Index := I;
           exit;
         end if;
@@ -113,6 +119,81 @@ package body Text_Line is
     -- Done
     return Str;
   end Get;
+
+  -- Put some text in file
+  -- This text will either be flushed explicitely
+  --  or on close (or each N characters)
+  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Io_Error if IO error
+  procedure Put (File : in File_Type; Text : in String) is
+    Tmp : Natural;
+  begin
+    -- Check file is open and in write mode
+    if File = null or else File.Mode /= Out_File then
+      raise Status_Error;
+    end if;
+
+    -- Check that there is enough room in buffer
+    if Buffer_Size - File.Buffer_Len >= Text'Length then
+      Tmp := File.Buffer_Len + 1;
+      File.Buffer_Len := File.Buffer_Len + Text'Length;
+      File.Buffer (Tmp .. File.Buffer_Len) := Text;
+      return;
+    end if;
+
+    -- Need to flush the buffer
+    Flush (File);
+    if Buffer_Size >= Text'Length then
+      -- The text can be stored in buffer
+      File.Buffer_Len := Text'Length;
+      File.Buffer (1 .. Text'Length) := Text;
+      return;
+    end if;
+
+    -- The text is longer than the buffer, flush it
+    Tmp := Sys_Calls.Write (File.Fd,
+                            Text'Address,
+                            Text'Length);
+    if Tmp /= Text'Length then
+      raise Io_Error;
+    end if;
+  end Put;
+
+  -- Put_Line some text
+  -- Same as Put (Ada.Characters.Latin_1.Lf)
+  procedure Put_Line (File : in File_Type; Text : in String) is
+  begin
+    Put (File, Text & Line_Feed);
+  end Put_Line;
+
+  -- Put a New_Line
+  -- Same as Put_Line ("")
+  procedure New_Line (File : in File_Type) is
+  begin
+    Put (File, "" & Line_Feed);
+  end New_Line;
+
+
+  -- Flush the remaining of text put on file
+  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Io_Error if IO error
+  procedure Flush (File : in File_Type) is
+    Result : Natural;
+  begin
+    if File = null or else File.Mode /= Out_File then
+      raise Status_Error;
+    end if;
+    if File.Buffer_Len = 0 then
+      return;
+    end if;
+    Result := Sys_Calls.Write (File.Fd,
+                               File.Buffer'Address,
+                               File.Buffer_Len);
+    if Result /= File.Buffer_Len then
+      raise Io_Error;
+    end if;
+    File.Buffer_Len := 0;
+  end Flush;
 
 end Text_Line;
 

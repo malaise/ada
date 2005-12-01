@@ -6,14 +6,20 @@ package Text_Line is
   type File_Type is private;
 
   -- The End_Of_Line character
-  New_Line : constant Character := Ada.Characters.Latin_1.Lf;
+  Line_Feed : constant Character := Ada.Characters.Latin_1.Lf;
+
+  -- The File mode
+  type File_Mode is (In_File, Out_File);
 
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
-  procedure Open (File : in out File_Type; Fd : in Sys_Calls.File_Desc);
+  procedure Open (File : in out File_Type; 
+                  Mode : in File_Mode;
+                  Fd : in Sys_Calls.File_Desc);
 
   -- Dissociate a file desc from a Txt_Line file
   -- May raise Status_Error if File is not open
+  -- May raise Io_Error if IO error (flushing Out_File)
   procedure Close (File : in out File_Type);
 
   -- Returns if a file is open
@@ -31,13 +37,33 @@ package Text_Line is
   --  Or the string does not end with New_Line (or is empty) and
   --   the end of file has been reached.
   -- Further calls after the end of file will return an empty string.
-  -- May raise Status_Error if File is not open
-  -- May raise Read_Error if IO error
+  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Io_Error if IO error
   function Get (File : File_Type) return String;
   function Get (File : File_Type) return Ada.Strings.Unbounded.Unbounded_String;
 
+  -- Put some text in file
+  -- This text will either be flushed explicitely
+  --  or on close (or each N characters)
+  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Io_Error if IO error
+  procedure Put (File : in File_Type; Text : in String);
+
+  -- Put_Line some text
+  -- Same as Put (Text & New_Line)
+  procedure Put_Line (File : in File_Type; Text : in String);
+
+  -- Put a New_Line
+  -- Same as Put_Line ("")
+  procedure New_Line (File : in File_Type);
+
+  -- Flush the remaining of text put on file
+  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Io_Error if IO error
+  procedure Flush (File : in File_Type);
+
   Status_Error : exception;
-  Read_Error : exception;
+  Io_Error : exception;
 
 private
   -- A cache of read characters
@@ -46,6 +72,7 @@ private
   subtype Buffer_Array is String (1 .. Buffer_Size);
   type File_Type_Rec is record
     Fd : Sys_Calls.File_Desc;
+    Mode : File_Mode;
     Buffer_Len : Buffer_Index_Range;
     Buffer_Index : Buffer_Index_Range;
     Buffer : Buffer_Array;
