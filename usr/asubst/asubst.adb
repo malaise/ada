@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Argument, Sys_Calls;
-with Search_Pattern, Replace_pattern, Substit;
+with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
   procedure Usage is
   begin
@@ -16,7 +16,6 @@ procedure Asubst is
     Sys_Calls.Set_Error_Exit_Code;
   end Usage;
 
-  Nb_Patterns : Positive;
   Ok : Boolean;
 begin
   -- Check nb of arguments
@@ -27,7 +26,7 @@ begin
 
   -- Parse both patterns
   begin
-    Nb_Patterns := Search_Pattern.Parse (
+    Search_Pattern.Parse (
          Argument.Get_Parameter (Occurence => 1));
   exception
     when Search_Pattern.Parse_Error =>
@@ -41,11 +40,11 @@ begin
   Ok := True;
   if Argument.Get_Nbre_Arg = 2 then
     begin
-      Substit.Do_One_File (Substit.Std_In_Out, Nb_Patterns);
+      Substit.Do_One_File (Substit.Std_In_Out);
     exception
-      when Substit.File_Error =>
+      when Substit.Substit_Error =>
         Ok := False;
-      when Error:Others =>
+      when Error:others =>
         
         Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                   & " Exception " & Ada.Exceptions.Exception_Name (Error)
@@ -55,12 +54,11 @@ begin
   else
     for I in 3 .. Argument.Get_Nbre_Arg loop
       begin
-        Substit.Do_One_File (Argument.Get_Parameter (Occurence => I),
-                             Nb_Patterns);
+        Substit.Do_One_File (Argument.Get_Parameter (Occurence => I));
       exception
-        when Substit.File_Error =>
+        when Substit.Substit_Error =>
           Ok := False;
-        when Error:Others =>
+        when Error:others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                     & " Exception " & Ada.Exceptions.Exception_Name (Error)
                     & " while processing file "
