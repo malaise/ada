@@ -36,7 +36,7 @@ package body Replace_Pattern is
         Sys_Calls.Put_Line_Error ("Found char >" & New_Char & "<");
       end if;
       case New_Char is
-        when 'n' => New_Char := Text_Line.New_Line;
+        when 'n' => New_Char := Text_Line.Line_Feed;
         when 't' => New_Char := Ada.Characters.Latin_1.Ht;
         when '&' => New_Char := Found_Char;
         when others => New_Char := '\';
@@ -51,7 +51,7 @@ package body Replace_Pattern is
       end if;
       -- Also done if end of pattern
       exit when Start = Asu.Length (The_Pattern);
-    end loop; 
+    end loop;
     if Debug then
       Sys_Calls.Put_Line_Error ("Stored replace pattern >"
                                & Asu.To_String (The_Pattern) & "<");

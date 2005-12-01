@@ -1,13 +1,20 @@
 with Regular_Expressions;
 package Search_Pattern is
 
-  -- Parses the search patern and returns the number of lines
-  --  that it covers (number of regex).
+  -- Parses the search patern
   -- Reports errors on stderr and raises Parse_Error.
-  function Parse (Pattern : String) return Positive;
-
+  procedure Parse (Pattern : in String);
   Parse_Error : exception;
 
+  -- Returns the number of lines that it covered by the
+  -- search pattern (one per regex and one per New_Line.
+  -- Raises No_Regex if the pattern was not parsed OK
+  function Number return Positive;
+
+  -- Tells if the search pattern can be applied several times
+  -- on one line of input (i.e. does not contain '\n', '^' or '$'
+  -- Raises No_Regex if the pattern was not parsed OK
+  function Multiple return Boolean;
   
   -- Checks if the input string matches one regex
   -- Returns a Match_Cell (set to (0, 0) if no match)
@@ -16,7 +23,7 @@ package Search_Pattern is
   function Check (Str : String;
                   Regex_Index : Positive)
            return Regular_Expressions.Match_Cell;
-  No_Regex : Exception;
+  No_Regex : exception;
 
 end Search_Pattern;
  

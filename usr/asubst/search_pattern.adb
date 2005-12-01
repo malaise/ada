@@ -24,11 +24,12 @@ package body Search_Pattern is
                return Boolean is
   begin
     -- Unicity of Num
-    return Current.num = Criteria.num;
+    return Current.Num = Criteria.Num;
   end "=";
   package Unique_Pattern is new Unique_List (Line_Pat_Rec, Set, Image, "=");
   Pattern_List : Unique_Pattern.List_Type;
 
+  Is_Multiple : Boolean;
 
   package Asu renames Ada.Strings.Unbounded;
 
@@ -37,14 +38,13 @@ package body Search_Pattern is
   begin
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
         & " ERROR parsing search pattern: "
-        & msg & ".");
+        & Msg & ".");
     raise Parse_Error;
   end Error;
 
-  -- Parses the search patern and returns the number of lines
-  --  that it covers (number of regex).
+  -- Parses the search patern
   -- Reports errors on stderr and raises Parse_Error.
-  function Parse (Pattern : String) return Positive is
+  procedure Parse (Pattern : in String) is
 
     -- Add a line pattern
     procedure Add (Crit : in String) is
@@ -123,6 +123,7 @@ package body Search_Pattern is
     end if;
     -- Free previous pattern
     Unique_Pattern.Delete_List (Pattern_List);
+    Is_Multiple := False;
     -- Reject empty pattern
     if Pattern = "" then
       Error ("Empty pattern");
@@ -153,13 +154,20 @@ package body Search_Pattern is
         Add (Start_String (Prev_Delim)
            & Pattern(Start_Index .. Stop_Index)
            & Stop_String (Next_Delim));
+        -- See if this is a single regex and if it can apply several times
+        --  to one line of input (no ^ not $)
+        if not Prev_Delim
+        and then not Next_Delim
+        and then Pattern(Start_Index..Start_Index) /= Start_String (True)
+        and then Pattern(Stop_Index ..Stop_Index)  /= Stop_String (True) then
+          Is_Multiple := True;
+        end if;
       end if;
       -- Done
       exit when Stop_Index = Pattern'Last;
       Start_Index := Stop_Index + 1;
     end loop;
     -- Done
-    return Unique_Pattern.List_Length (Pattern_List);
   exception
     when Parse_Error =>
       -- Free previous pattern
@@ -167,6 +175,30 @@ package body Search_Pattern is
       raise;
   end Parse;
 
+  -- Returns the number of lines that it covered by the
+  -- search pattern (one per regex and one per New_Line.
+  -- Raises No_Regex if the pattern was not parsed OK
+  function Number return Positive is
+    N : constant Natural := Unique_Pattern.List_Length (Pattern_List);
+  begin
+    if N = 0 then
+      raise No_Regex;
+    else
+      return N;
+    end if;
+  end Number;
+
+  -- Tells if the search pattern can be applied several times
+  -- on one line of input (i.e. does not contain '\n', '^' or '$'
+  -- Raises No_Regex if the pattern was not parsed OK
+  function Multiple return Boolean is
+  begin
+    -- Must be some pattern compiled
+    if Unique_Pattern.List_Length (Pattern_List) = 0 then
+      raise No_Regex;
+    end if;
+    return Is_Multiple;
+  end Multiple;
 
   -- Checks if the input string matches one regex
   -- Returns a Match_Cell (set to (0, 0) if no match)
@@ -185,12 +217,12 @@ package body Search_Pattern is
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
-      if Str = "" & Text_Line.New_Line then
+      if Str = "" & Text_Line.Line_Feed then
         return (1, 1);
       else
         return (0, 0);
       end if;
-    elsif Str = "" & Text_Line.New_Line then
+    elsif Str = "" & Text_Line.Line_Feed then
       return (0, 0);
     else
       Regular_Expressions.Exec (Upat_Access.Pat,
@@ -204,7 +236,7 @@ package body Search_Pattern is
     end if;
   exception
     when Unique_Pattern.Not_In_List =>
-      -- Invalid Regex_Index
+      -- Invalid Regex_Index or empty list
       raise No_Regex;
   end Check;
 

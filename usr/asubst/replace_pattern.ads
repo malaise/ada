@@ -3,7 +3,7 @@ package Replace_Pattern is
   -- Parses the replace patern
   -- Detects \t, \n and \&
   -- Reports errors on stderr and raises Parse_Error.
-  Procedure Parse (Pattern : in String);
+  procedure Parse (Pattern : in String);
 
   
   -- Replace the input string by the replace pattern

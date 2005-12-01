@@ -1,7 +1,7 @@
 with Ada.Text_Io, Ada.Strings.Unbounded;
 with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
      Regular_Expressions;
-with Search_Pattern;
+with Search_Pattern, Replace_Pattern;
 package body Substit is
   Debug : Boolean := True;
 
@@ -19,12 +19,16 @@ package body Substit is
 
   -- Files
   In_File : Text_Line.File_Type;
-  Out_File : Ada.Text_Io.File_Type;
+  Out_File : Text_Line.File_Type;
 
   -- We work on stdin/stdout?
   Is_Stdin : Boolean;
 
-  -- Display error and raise File_Error
+  -- Number of patterns and can it be multiple
+  Nb_Pattern : Positive;
+  Is_Multiple : Boolean;
+
+  -- Display error and raise Substit_Error
   procedure Error (Msg : in String);
 
   -- Close files
@@ -44,11 +48,16 @@ package body Substit is
           when others => null;
         end;
       end if;
-      -- Close Out file
-      Ada.Text_Io.Set_Output (Ada.Text_Io.Standard_Output);
-      if Ada.Text_Io.Is_Open (Out_File) then  
+      -- Flush and close Out file
+      if Text_Line.Is_Open (Out_File) then
+        Text_Line.Flush (Out_File);
         begin
-          Ada.Text_Io.Close (Out_File);
+          Sys_Calls.Close (Text_Line.Get_Fd(Out_File));
+        exception
+          when others => null;
+        end;
+        begin
+          Text_Line.Close (Out_File);
         exception
           when others => null;
         end;
@@ -73,8 +82,8 @@ package body Substit is
   procedure Comit is
     Result : Boolean;
   begin
-    Result := Sys_Calls.Rename (Asu.To_String (In_File_Name),
-                                Asu.To_String (Out_File_Name));
+    Result := Sys_Calls.Rename (Asu.To_String (Out_File_Name),
+                                Asu.To_String (In_File_Name));
     if not Result then
       Error ("Cannot move " & Asu.To_String (Out_File_Name)
            & " to " & Asu.To_String (In_File_Name));
@@ -84,13 +93,14 @@ package body Substit is
 
   -- Open Files
   procedure Open (File_Name : in String) is
-    In_Fd : Sys_Calls.File_Desc;
+    In_Fd, Out_Fd : Sys_Calls.File_Desc;
   begin
     In_File_Name := Asu.To_Unbounded_String (File_Name);
-    Is_Stdin := File_Name = Std_in_Out;
-    -- Open In fd and Out file if not stdin
+    Is_Stdin := File_Name = Std_In_Out;
+    -- Open In fd and Out file if not stdin/stdout
     if Is_Stdin then
       In_Fd := Sys_Calls.Stdin;
+      Out_Fd := Sys_Calls.Stdout;
       Out_File_Name := Asu.Null_Unbounded_String;
     else
       begin
@@ -101,31 +111,33 @@ package body Substit is
       end;
       Out_File_Name := Asu.To_Unbounded_String (Temp_File.Create ("."));
       begin
-        Ada.Text_Io.Create (Out_File, Ada.Text_Io.Out_File,
-                            Asu.To_String (Out_File_Name));
+        Out_Fd := Sys_Calls.Create (Asu.To_String (Out_File_Name));
       exception
-        when others =>
+        when Sys_Calls.Name_Error =>
           Error ("Cannot create temp file " & Asu.To_String (Out_File_Name));
       end;
-      Ada.Text_Io.Set_Output (Out_File);
     end if;
-    -- Associate In fd to In file
-    Text_Line.Open (In_File, In_fd);
+    -- Associate fds to files
+    Text_Line.Open (In_File,  Text_Line.In_File,  In_Fd);
+    Text_Line.Open (Out_File, Text_Line.Out_File, Out_Fd);
+    -- Get Search pattern characteristics
+    Nb_Pattern := Search_Pattern.Number;
+    Is_Multiple := Search_Pattern.Multiple;
   end Open;
 
   -- Reports an error
   procedure Error (Msg : in String) is
   begin
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-        & " ERROR: " & msg & ".");
+        & " ERROR: " & Msg & ".");
     Close;
     Clean;
-    raise File_Error;
+    raise Substit_Error;
   end Error;
 
   -- Read the number of lines and New_Lines requested
   Trail_New_Line : Boolean := False;
-  function Read (Nb_Pattern : Positive) return Boolean is
+  function Read return Boolean is
     Nb_To_Read : Natural;
     Line : Asu.Unbounded_String;
     Len : Natural;
@@ -142,7 +154,7 @@ package body Substit is
     -- Append trailing new line if any
     if Trail_New_Line then
       Line_List_Mng.Insert (Line_List,
-                Asu.To_Unbounded_String (Text_Line.New_Line & ""));
+                Asu.To_Unbounded_String (Text_Line.Line_Feed & ""));
       Trail_New_Line := False;
       Nb_To_Read := Nb_To_Read - 1;
     end if;
@@ -152,14 +164,14 @@ package body Substit is
       Line := Text_Line.Get (In_File);
       Len := Asu.Length (Line);
       if Debug then
-        Sys_Calls.Put_Line_Error ("Read > " &  Asu.To_String (Line) & "<");
+        Sys_Calls.Put_Line_Error ("Read >" &  Asu.To_String (Line) & "<");
       end if;
       if Len = 0 then
         -- We reached the end of file
         return False;
       end if;
       -- There are either one or two items to push
-      if Len > 1 and then Asu.Element(Line, Len) = Text_Line.New_Line then
+      if Len > 1 and then Asu.Element(Line, Len) = Text_Line.Line_Feed then
         -- Line + Nl
         -- Insert line (without Nl)
         Line_List_Mng.Insert (Line_List,
@@ -172,7 +184,7 @@ package body Substit is
         else
           -- Insert Nl
           Line_List_Mng.Insert (Line_List,
-                Asu.To_Unbounded_String (Text_Line.New_Line & ""));
+                Asu.To_Unbounded_String (Text_Line.Line_Feed & ""));
           Nb_To_Read := Nb_To_Read - 1;
         end if;
       else
@@ -186,8 +198,8 @@ package body Substit is
   end Read;
 
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
-  function Subst_Lines (Nb_Pattern : in Positive) return Boolean;
-  procedure Do_One_File (File_Name : in String; Nb_Pattern : in Positive) is
+  function Subst_Lines return Boolean;
+  procedure Do_One_File (File_Name : in String) is
     Modified : Boolean;
   begin
     -- Open files
@@ -201,14 +213,16 @@ package body Substit is
     -- Loop on substit
     loop
       -- Done when the amount of lines cannot be read
-      exit when not Read (Nb_Pattern);
+      exit when not Read;
       -- Process these lines
-      if Subst_Lines (Nb_Pattern) then
+      if Subst_Lines then
         -- These lines have been substituted
         Modified := True;
       end if;
     end loop;
-    
+    if Debug then
+      Sys_Calls.Put_Line_Error ("Done.");
+    end if;
     -- Close and cleanup files
     Close;
     -- After close (stdout restored to standard output)
@@ -226,26 +240,74 @@ package body Substit is
   end Do_One_File;
 
   -- Handle multiple substitutions within one line
-  function Subst_One_Line (Str : Str_Access) return Boolean is
+  function Subst_One_Line (Line : Str_Access) return Boolean is
+    Current : Positive;
+    Matches : Boolean;
+    Match_Res : Regular_Expressions.Match_Cell;
   begin
-   -- @@@
-    Ada.text_Io.Put_Line (Asu.To_String (Str.all));
-    return False;
+    -- Multiple substitutions in one line
+    Current := 1;
+    Matches := False;
+    loop
+      -- Search a Match from Current to Last
+      Match_Res := Search_Pattern.Check (
+         Asu.Slice (Line.all, Current, Asu.Length(Line.all)),
+         1);
+      exit when Match_Res.Start_Offset <= 0
+      or else Match_Res.End_Offset <= 0;
+      -- Found a match
+      Matches := True;
+      -- Get substituting string
+      declare
+        Replacing : constant String
+                  := Replace_Pattern.Replace (Asu.Slice (Line.all,
+                                            Match_Res.Start_Offset,
+                                            Match_Res.End_Offset));
+      begin
+        if Debug then
+          Sys_Calls.Put_Line_Error ("Replacing "
+           & Asu.Slice (Line.all,
+                        Match_Res.Start_Offset,
+                        Match_Res.End_Offset)
+           & " by " & Replacing & ".");
+        end if;
+        -- Substitute from start to stop
+        Asu.Replace_Slice (Line.all,
+                           Match_Res.Start_Offset,
+                           Match_Res.End_Offset,
+                           Replacing);
+        -- Next search index is the next char after the replaced string
+        Current := Match_Res.Start_Offset + Replacing'Length;
+        exit when Current > Asu.Length(Line.all);
+      end;
+    end loop;
+    -- Put the (modified) line
+    if Debug then
+      Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+    end if;
+    Text_Line.Put (Out_File, Asu.To_String (Line.all));
+    -- Delete all
+    Line_List_Mng.Delete_List (Line_List, False);
+    return Matches;
+  exception
+    when Constraint_Error =>
+      Error ("String too long substituting " & Asu.To_String (Line.all));
+      return False;
   end Subst_One_Line;
 
   -- Check current list of lines vs search patterns
-  function Subst_Lines (Nb_Pattern : in Positive) return Boolean is
+  function Subst_Lines return Boolean is
     Match_Res : Regular_Expressions.Match_Cell;
-    Line : Str_Access;
+    Line, First_Line, Last_Line : Str_Access;
     Start, Stop : Positive;
     Matches : Boolean;
+    Str_To_Replace : Asu.Unbounded_String;
   begin
     -- Rewind read lines
     Line_List_Mng.Rewind (Line_List);
-    -- Handle multiple substitutions if one pattern
-    if Nb_Pattern = 1 then
-      Matches := Subst_One_Line (Line_List_Mng.Access_Current (Line_List));
-      Line_List_Mng.Delete_List (Line_List, False);
+    if Is_Multiple then
+      -- Handle separately multiple substitutions if one pattern
+      return Subst_One_Line (Line_List_Mng.Access_Current (Line_List));
     end if;
     Matches := True;
     for I in 1 .. Nb_Pattern loop
@@ -269,16 +331,55 @@ package body Substit is
       -- If not match, put first line and delete it
       Line_List_Mng.Rewind (Line_List);
       Line := Line_List_Mng.Access_Current (Line_List);
-      Ada.Text_Io.Put (Asu.To_String (Line.all));
+      if Debug then
+        Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+      end if;
+      Text_Line.Put (Out_File, Asu.To_String (Line.all));
       Line_List_Mng.Delete (Line_List);
     else
-      -- If Match, substit, put result and delete all
-      -- @@@
-      Matches := False;
+      -- Match, build string to replace: end of first line
+      --  + all lines but last + start of last line
+      Line_List_Mng.Rewind (Line_List);
+      First_Line := Line_List_Mng.Access_Current (Line_List);
+      Asu.Append (Str_To_Replace,
+        Asu.Slice (First_Line.all, Start, Asu.Length (First_Line.all)));
+      for I in 2 .. Nb_Pattern - 1 loop
+        Line_List_Mng.Move_To (Line_List);
+        Line := Line_List_Mng.Access_Current (Line_List);
+        Asu.Append (Str_To_Replace, Line.all);
+      end loop;
+      Line_List_Mng.Move_To (Line_List);
+      Last_Line := Line_List_Mng.Access_Current (Line_List);
+      Asu.Append (Str_To_Replace, Asu.Slice (Last_Line.all, 1, Stop));
+      -- Make replacing string
+      declare
+        Replacing : constant String
+                  := Replace_Pattern.Replace (Asu.To_String (Str_To_Replace));
+      begin
+        if Debug then
+          Sys_Calls.Put_Line_Error ("Replacing "
+           & Asu.To_String (Str_To_Replace)
+           & " by " & Replacing & ".");
+        end if;
+        -- Put result: beginning of first line + replacing + end of last line
+        if Debug then
+          Sys_Calls.Put_Line_Error (
+            "Putting >"
+            & Asu.Slice (First_Line.all, 1, Start - 1)
+            & Replacing
+            & Asu.Slice (Last_Line.all, Stop + 1, Asu.Length (Last_Line.all))
+            & "<");
+        end if;
+        Text_Line.Put (Out_File,
+              Asu.Slice (First_Line.all, 1, Start - 1)
+            & Replacing
+            & Asu.Slice (Last_Line.all, Stop + 1, Asu.Length (Last_Line.all)));
+      end;
+      -- Delete all
       Line_List_Mng.Delete_List (Line_List, False);
     end if;
     return Matches;
-  end Subst_Lines;
+   end Subst_Lines;
 
 end Substit;
 
