@@ -7,9 +7,11 @@ procedure Trail_Spaces is
 
     -- Close a file with no exception
     procedure Close  (File : in out Text_Line.File_Type) is
-      use type  Sys_Calls.File_Desc;
+      use type Sys_Calls.File_Desc;
     begin
       if Text_Line.Is_Open (File) then
+        -- Flush before closing!
+        Text_Line.Flush (File);
         Sys_Calls.Close (Text_Line.Get_Fd(File));
         Text_Line.Close (File);
       end if;
@@ -23,7 +25,7 @@ procedure Trail_Spaces is
     Out_File_Name : constant String := Temp_File.Create(".");
     -- In and out file desc
     In_File : Text_Line.File_Type;
-    Out_File : Ada.Text_Io.File_Type;
+    Out_File : Text_Line.File_Type;
     -- Line of input
     Line : Ada.Strings.Unbounded.Unbounded_String;
     -- Is file modified
@@ -39,7 +41,7 @@ procedure Trail_Spaces is
       Fd : Sys_Calls.File_Desc := Sys_Calls.Stdin;
     begin
       Fd := Sys_Calls.Open (In_File_Name, Sys_Calls.In_File);
-      Text_Line.Open (In_File, Fd);
+      Text_Line.Open (In_File, Text_Line.In_File, Fd);
     exception
       when Sys_Calls.Name_Error =>
         Sys_Calls.Put_Line_Error ("Error. File "
@@ -53,14 +55,16 @@ procedure Trail_Spaces is
         Dummy := Sys_Calls.Unlink (Out_File_Name);
         return;
     end;
-    -- Create out_file
+    -- Create out_file and associate in Text_Line
+    declare
+      Fd : Sys_Calls.File_Desc := Sys_Calls.Stdin;
     begin
-      Ada.Text_Io.Create (Out_File, Ada.Text_Io.Out_File, Out_File_Name);
+      Fd := Sys_Calls.Create (Out_File_Name);
+      Text_Line.Open (Out_File, Text_Line.Out_File, Fd);
     exception
-      when Error:others =>
+      when Sys_Calls.Name_Error =>
         Sys_Calls.Put_Line_Error ("Error. Cannot create out file "
-             & Out_File_Name & " due to "
-             & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
+             & Out_File_Name & ", skipping.");
         Close (In_File);
         Dummy := Sys_Calls.Unlink (Out_File_Name);
         return;
@@ -72,9 +76,9 @@ procedure Trail_Spaces is
       -- Read a line until the end
       Line := Text_Line.Get (In_File);
       exit when Asu.Length (Line) = 0;
-      -- Append a New_Line if missing
-      if Asu.Element (Line, Asu.Length (Line)) /= Text_Line.New_Line then
-        Asu.Append (Line, Text_Line.New_Line);
+      -- Append a Line_Feed if missing
+      if Asu.Element (Line, Asu.Length (Line)) /= Text_Line.Line_Feed then
+        Asu.Append (Line, Text_Line.Line_Feed);
         Modified := True;
       end if;
       -- Replace horiz tabs by spaces
@@ -86,12 +90,12 @@ procedure Trail_Spaces is
       end loop;
       if Asu.Length (Line) = 1 then
         -- Redisplay empty lines
-        Ada.Text_Io.New_Line (Out_File);
+        Text_Line.New_Line (Out_File);
       else
         -- Trail spaces of line
         for I in reverse 1 .. Asu.Length (Line) - 1 loop
           if Asu.Element (Line, I) /= ' ' then
-            Ada.Text_Io.Put_Line (Out_File, Asu.Slice (Line, 1, I));
+            Text_Line.Put_Line (Out_File, Asu.Slice (Line, 1, I));
             if I /= Asu.Length (Line) - 1 then
               -- File has been modified
               Modified := True;
@@ -104,7 +108,7 @@ procedure Trail_Spaces is
 
     -- Close files
     Close (In_File);
-    Ada.Text_Io.Close (Out_File);
+    Close (Out_File);
 
     -- Move files if modified
     if Modified then
@@ -129,14 +133,7 @@ procedure Trail_Spaces is
     when others =>
       -- Close files and delete temp file
       Close (In_File);
-      if Ada.Text_Io.Is_Open (Out_File) then
-        begin
-          Ada.Text_Io.Close (Out_File);
-        exception
-          when others =>
-            null;
-        end;
-      end if;
+      Close (Out_File);
       Dummy := Sys_Calls.Unlink (Out_File_Name);
       raise;
   end Do_File;
