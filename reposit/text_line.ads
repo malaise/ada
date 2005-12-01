@@ -58,7 +58,7 @@ package Text_Line is
   procedure New_Line (File : in File_Type);
 
   -- Flush the remaining of text put on file
-  -- May raise Status_Error if File is not open or not In_File
+  -- Does nothing on a In_File file
   -- May raise Io_Error if IO error
   procedure Flush (File : in File_Type);
 

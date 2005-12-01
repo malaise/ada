@@ -175,17 +175,19 @@ package body Text_Line is
 
 
   -- Flush the remaining of text put on file
-  -- May raise Status_Error if File is not open or not In_File
+  -- Does nothing on a In_File file
   -- May raise Io_Error if IO error
   procedure Flush (File : in File_Type) is
     Result : Natural;
   begin
-    if File = null or else File.Mode /= Out_File then
+    -- File must be open, Out_File and buffer not empty
+    if File = null then
       raise Status_Error;
     end if;
-    if File.Buffer_Len = 0 then
+    if File.Mode /= Out_File or else File.Buffer_Len = 0 then
       return;
     end if;
+    -- Write and reset size
     Result := Sys_Calls.Write (File.Fd,
                                File.Buffer'Address,
                                File.Buffer_Len);
