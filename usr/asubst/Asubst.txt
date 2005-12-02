@@ -1,5 +1,5 @@
 1. General syntax
-Usage : substit <find_pattern> <replace_string> [ { <file_name> } ]
+Usage : asubst <find_pattern> <replace_string> [ { <file_name> } ]
 Substitutes strings in files.
 If no file name is specified, substitutes from stdin to stdout.
 

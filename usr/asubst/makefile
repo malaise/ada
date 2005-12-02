@@ -1,9 +1,12 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-EXES := asubst
+EXES := asubst asubst.stat
 
-CLIBS_asubst := cutil
+CLIBS := cutil
+
+TPATH := $(CPATH:%=%/$(LIB))
+LARGS_asubst.stat := $(TPATH)/libcutil.a
 
 include $(TEMPLATES)/ada.mk
 

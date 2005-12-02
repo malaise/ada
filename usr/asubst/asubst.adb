@@ -2,6 +2,8 @@ with Ada.Exceptions;
 with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
+
+  Version : constant String  := "V1.2";
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error (
@@ -19,7 +21,16 @@ procedure Asubst is
   Ok : Boolean;
 begin
   -- Check nb of arguments
-  if Argument.Get_Nbre_Arg < 2 then
+  if Argument.Get_Nbre_Arg = 1 then
+    if Argument.Get_Parameter = "-v"
+    or else Argument.Get_Parameter = "--version" then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
+      Sys_Calls.Set_Error_Exit_Code;
+    else
+      Usage;
+    end if;
+    return;
+  elsif Argument.Get_Nbre_Arg < 2 then
     Usage;
     return;
   end if;

@@ -1,8 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line;
+with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug;
 package body Search_Pattern is
-
-  Debug : Boolean := True;
 
   -- Unique list of patterns
   type Line_Pat_Rec is record
@@ -13,6 +11,7 @@ package body Search_Pattern is
   procedure Set (To : out Line_Pat_Rec; Val : in Line_Pat_Rec) is
   begin
     To.Num := Val.Num;
+    To.Is_Delim := Val.Is_Delim;
     -- Regexp cannot be copied, so it will be assigned
     --  to the Line_Pat_Rec access
   end Set;
@@ -54,12 +53,13 @@ package body Search_Pattern is
       Match : Regular_Expressions.One_Match_Array;
       Nmatch : Natural;
     begin
-      if Debug then
-        Sys_Calls.Put_Line_Error ("Adding regex >" & Crit & "<");
-      end if;
       -- Compute new pattern number and type
       Upat.Num := Unique_Pattern.List_Length (Pattern_List) + 1;
       Upat.Is_Delim := Crit = "";
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Search adding regex "
+               &  Upat.Num'img & " >" & Crit & "<");
+      end if;
       -- Empty pattern is a delimiter
       if Upat.Is_Delim then
         -- Insert delimiter
@@ -118,8 +118,8 @@ package body Search_Pattern is
     -- Is next item a delimiterA (true except at the end)
     Next_Delim : Boolean;
   begin
-    if Debug then
-      Sys_Calls.Put_Line_Error ("Parsing search pattern >" & Pattern & "<");
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
     end if;
     -- Free previous pattern
     Unique_Pattern.Delete_List (Pattern_List);
@@ -217,14 +217,24 @@ package body Search_Pattern is
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img &
+                                  " is delim");
+      end if;
       if Str = "" & Text_Line.Line_Feed then
         return (1, 1);
       else
         return (0, 0);
       end if;
     elsif Str = "" & Text_Line.Line_Feed then
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Search check empty vs not delim");
+      end if;
       return (0, 0);
     else
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img);
+      end if;
       Regular_Expressions.Exec (Upat_Access.Pat,
                                 Str,
                                 Nmatch, Match);

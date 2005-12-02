@@ -1,9 +1,6 @@
 with Ada.Strings.Unbounded, Ada.Characters.Latin_1;
-with Argument, Sys_Calls, String_Mng, Text_Line;
-
+with Argument, Sys_Calls, String_Mng, Text_Line, Debug;
 package body Replace_Pattern is
-
-  Debug : Boolean := True;
 
   package Asu renames Ada.Strings.Unbounded;
 
@@ -18,8 +15,8 @@ package body Replace_Pattern is
     Got : Natural;
     New_Char : Character;
   begin
-    if Debug then
-      Sys_Calls.Put_Line_Error ("Parsing replace pattern >" & Pattern & "<");
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Replace parsing pattern >" & Pattern & "<");
     end if;
     -- Store pattern
     The_Pattern := Asu.To_Unbounded_String (Pattern);
@@ -32,7 +29,7 @@ package body Replace_Pattern is
       exit when Got = 0;
       -- Set corresponding code
       New_Char := Asu.Element (The_Pattern, Got + 1);
-      if Debug then
+      if Debug.Set then
         Sys_Calls.Put_Line_Error ("Found char >" & New_Char & "<");
       end if;
       case New_Char is
@@ -52,8 +49,8 @@ package body Replace_Pattern is
       -- Also done if end of pattern
       exit when Start = Asu.Length (The_Pattern);
     end loop;
-    if Debug then
-      Sys_Calls.Put_Line_Error ("Stored replace pattern >"
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Replace stored pattern >"
                                & Asu.To_String (The_Pattern) & "<");
     end if;
   end Parse;
@@ -72,11 +69,15 @@ package body Replace_Pattern is
       Got := String_Mng.Locate (Asu.To_String (Result),
                                 Start, Found_Char & "");
       exit when Got = 0;
-      -- Replace by replace pattern
-      Asu.Replace_Slice (Result, Got, Got, Asu.To_String (The_Pattern));
+      -- Replace by Str pattern
+      Asu.Replace_Slice (Result, Got, Got, Str);
       -- Restart locate from first char after replacement
-      Start := Got + Asu.Length (The_Pattern);
+      Start := Got + Str'Length;
     end loop;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Replacing >" & Str & "< by >"
+         & Asu.To_String (Result) & "<");
+    end if;
     return Asu.To_String (Result);
   exception
     when others =>
