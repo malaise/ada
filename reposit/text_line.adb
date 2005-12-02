@@ -109,7 +109,9 @@ package body Text_Line is
         -- No newline was found: append buffer
         Asu.Append (Str, File.Buffer(File.Buffer_Index + 1 .. File.Buffer_Len));
         if File.Buffer_Len /= Buffer_Size then
-          -- No newline was found but end of file reached: done
+          -- No newline was found but end of file reached.
+          -- Next read will return ""
+          File.Buffer_Index := File.Buffer_Len;
           exit;
         end if;
         -- No newline was found: prepare for next read
