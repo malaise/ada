@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
+with Ada.Text_Io, Ada.Strings.Unbounded, Copy_File, Directory;
 with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
      Regular_Expressions, Debug;
 with Search_Pattern, Replace_Pattern;
@@ -80,9 +80,21 @@ package body Substit is
     when others => null;
   end Clean;
 
-  procedure Comit is
+  procedure Comit (Backup : in Boolean) is
     Result : Boolean;
   begin
+    if Backup then
+      -- Copy in file as .asu if Backup
+      Result := Copy_File (Asu.To_String (In_File_Name),
+                           Asu.To_String (In_File_Name) & ".asu");
+      if not Result then
+        Error ("Cannot copy " & Asu.To_String (In_File_Name)
+             & " to " & Asu.To_String (In_File_Name) & ".asu");
+        Clean;
+        return;
+      end if;
+    end if;
+    -- Rename out file as in file
     Result := Sys_Calls.Rename (Asu.To_String (Out_File_Name),
                                 Asu.To_String (In_File_Name));
     if not Result then
@@ -95,6 +107,8 @@ package body Substit is
   -- Open Files
   procedure Open (File_Name : in String) is
     In_Fd, Out_Fd : Sys_Calls.File_Desc;
+    File_Dir : Asu.Unbounded_String;
+    use type Asu.Unbounded_String;
   begin
     In_File_Name := Asu.To_Unbounded_String (File_Name);
     Is_Stdin := File_Name = Std_In_Out;
@@ -110,7 +124,17 @@ package body Substit is
         when Sys_Calls.Name_Error =>
           Error ("Cannot open input file " & File_Name);
       end;
-      Out_File_Name := Asu.To_Unbounded_String (Temp_File.Create ("."));
+      -- Build out file name
+      File_Dir := Asu.To_Unbounded_String (Directory.DirName (File_Name));
+      if File_Dir /= Asu.Null_Unbounded_String then
+        -- Remove trailing /
+        File_Dir := Asu.To_Unbounded_String (
+          Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
+      else
+        File_Dir := Asu.To_Unbounded_String (".");
+      end if;
+      Out_File_Name := Asu.To_Unbounded_String (
+                       Temp_File.Create (Asu.To_String (File_Dir)));
       begin
         Out_Fd := Sys_Calls.Create (Asu.To_String (Out_File_Name));
       exception
@@ -198,7 +222,7 @@ package body Substit is
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
   function Subst_Lines return Boolean;
-  procedure Do_One_File (File_Name : in String) is
+  procedure Do_One_File (File_Name : in String; Backup : in Boolean) is
     Modified : Boolean;
   begin
     -- Open files
@@ -229,7 +253,7 @@ package body Substit is
     -- After close (stdout restored to standard output)
     --  put name of modified file
     if not Is_Stdin and then Modified then
-      Comit;
+      Comit (Backup);
       Ada.Text_Io.Put_Line (File_Name);
     else
       Clean;

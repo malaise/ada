@@ -1,9 +1,9 @@
 with Regular_Expressions;
 package Search_Pattern is
 
-  -- Parses the search patern
+  -- Parses and compiles the search patern
   -- Reports errors on stderr and raises Parse_Error.
-  procedure Parse (Pattern : in String);
+  procedure Parse (Pattern : in String; Extended, Case_Sensitive : Boolean);
   Parse_Error : exception;
 
   -- Returns the number of lines that it covered by the

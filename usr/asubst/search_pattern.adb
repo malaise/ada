@@ -43,7 +43,8 @@ package body Search_Pattern is
 
   -- Parses the search patern
   -- Reports errors on stderr and raises Parse_Error.
-  procedure Parse (Pattern : in String) is
+  procedure Parse (Pattern : in String;
+                   Extended, Case_Sensitive : in Boolean) is
 
     -- Add a line pattern
     procedure Add (Crit : in String) is
@@ -71,7 +72,9 @@ package body Search_Pattern is
       Unique_Pattern.Insert (Pattern_List, Upat);
       -- Get access to it and compile in this access
       Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
-      Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit);
+      Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit,
+                                   Extended => Extended,
+                                   Case_Sensitive => Case_Sensitive);
       if not Ok then
         Error ("Invalid pattern """ & Crit
           & """. Error is " & Regular_Expressions.Error(Upat_Access.Pat));
