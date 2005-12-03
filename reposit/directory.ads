@@ -49,6 +49,17 @@ package Directory is
   function File_Match (File_Name : String; Template : String) return Boolean;
 
 
+  -- Get dir name (path) from a complete file name (up to the last / included)
+  function Dirname (File_Name : String) return String;
+  -- Get file name from a complete file name (from the last / excluded),
+  --  then remove the end of it if it matches Suffix (. is not necessary)
+  function Basename (File_Name : String; Suffix : String := "") return String;
+  -- Extract the file name, then its prefix (up to the first . excluded)
+  function File_Prefix (File_Name : String) return String;
+  -- Extract the file name, then its suffix (from the first . included)
+  function File_Suffix (File_Name : String) return String;
+
+
   -- File kind and complete status
   type File_Kind_List is new Sys_Calls.File_Kind_List;
   function File_Kind (File_Name : String) return File_Kind_List;
@@ -59,7 +70,6 @@ package Directory is
   Access_Error : exception renames Sys_Calls.Access_Error;
   End_Error    : exception;
 
-
 private
 
   type Dir_Desc is record
@@ -67,5 +77,4 @@ private
   end record;
 
 end Directory;
-
 

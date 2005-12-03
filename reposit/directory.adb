@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1;
-with Sys_Calls, Bit_Ops;
-with Day_Mng;
+with Sys_Calls, Bit_Ops, Day_Mng, String_Mng;
 package body Directory is
   use System;
 
@@ -245,6 +244,71 @@ package body Directory is
     return C_Fnmatch(C_Template'Address, C_File_Name'Address, 0) = 0;
   end File_Match;
 
+  -- File name manipulation
+  -- Get dir name (path) from a complete file name (up to the last / included)
+  function Dirname (File_Name : String) return String is
+    I : Natural;
+  begin
+    I := String_Mng.Locate (File_Name, File_Name'First,
+                            "/", From_Head => False);
+    if I = 0 then
+      -- No / in file name => dir name is empty
+      return "";
+    else
+      return File_Name(File_Name'First .. I);
+    end if;
+  end Dirname;
+
+  -- Get file name from a complete file name (from the last / excluded),
+  --  then remove the end of it if it matches Suffix (. is not necessary)
+  function Basename (File_Name : String; Suffix : String := "") return String is
+    I : Natural;
+    Last : constant Natural := File_Name'Last;
+  begin
+    I := String_Mng.Locate (File_Name, File_Name'First,
+                            "/", From_Head => False);
+    if I = 0 then
+      -- No / in file name => no dir name
+      return File_Name;
+    elsif Suffix = ""
+    or else Suffix'Length > Last - I
+    or else File_Name(Last - Suffix'Length + 1 .. Last) /= Suffix then
+      -- File name does not match suffix
+      return File_Name(I + 1 .. Last);
+    else
+      -- End of file name matches suffix
+      return File_Name(I + 1 .. Last - Suffix'Length);
+    end if;
+  end Basename;
+
+  -- Extract the file name, then its prefix (up to the first . excluded)
+  function File_Prefix (File_Name : String) return String is
+    I : Natural;
+    File : constant String := Basename (File_Name);
+  begin
+    I := String_Mng.Locate (File, File'First, ".");
+    if I = 0 then
+      -- No '.', return full file name
+      return File;
+    else
+      return File (File'First .. I - 1);
+    end if;
+  end File_Prefix;
+
+  -- Extract the file name, then its suffix (from the first . included)
+  function File_Suffix (File_Name : String) return String is
+    I : Natural;
+    File : constant String := Basename (File_Name);
+  begin
+    I := String_Mng.Locate (File, File'First, ".");
+    if I = 0 then
+      -- No '.', return no suffix
+      return "";
+    else
+      return File (I .. File'Last);
+    end if;
+  end File_Suffix;
+
   -- Use Sys_Calls
   function File_Kind (File_Name : String) return File_Kind_List is
   begin
@@ -257,5 +321,4 @@ package body Directory is
   end File_Kind;
 
 end Directory;
-
 
