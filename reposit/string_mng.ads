@@ -29,13 +29,14 @@ package String_Mng is
            return String;
 
   -- Locate Nth occurence of a fragment within a string, starting
-  --  at a given index
+  --  at a given index and from head or tail
   -- Returns index in Within of char matching start of Fragment
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within     : String;
                    From_Index : Positive;
                    Fragment   : String;
-                   Occurence  : Positive := 1)
+                   Occurence  : Positive := 1;
+                   From_Head  : Boolean := True)
            return Natural;
 
   -- Remove Nb_Char characters from the string From at index At_Index.

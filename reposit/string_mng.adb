@@ -91,13 +91,14 @@ package body String_Mng is
   end Procuste;
 
   -- Locate Nth occurence of a fragment within a string
-  --  starting at From index
+  --  starting at From index, and from head or tail
   -- Returns index of fragment start
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within     : String;
                    From_Index : Positive;
                    Fragment   : String;
-                   Occurence  : Positive := 1)
+                   Occurence  : Positive := 1;
+                   From_Head  : Boolean := True)
            return Natural is
     Found_Occurence : Natural := 0;
   begin
@@ -106,14 +107,25 @@ package body String_Mng is
     or else From_Index not in Within'First .. Within'Last then
       return 0;
     end if;
-    for I in From_Index .. Within'Last - Fragment'Length + 1 loop
-      if Within(I .. I + Fragment'Length - 1) = Fragment then
-        Found_Occurence := Found_Occurence + 1;
-        if Found_Occurence = Occurence then
-          return I;
+    if From_Head then
+      for I in From_Index .. Within'Last - Fragment'Length + 1 loop
+        if Within(I .. I + Fragment'Length - 1) = Fragment then
+          Found_Occurence := Found_Occurence + 1;
+          if Found_Occurence = Occurence then
+            return I;
+          end if;
         end if;
-      end if;
-    end loop;
+      end loop;
+    else
+      for I in reverse From_Index .. Within'Last - Fragment'Length + 1 loop
+        if Within(I .. I + Fragment'Length - 1) = Fragment then
+          Found_Occurence := Found_Occurence + 1;
+          if Found_Occurence = Occurence then
+            return I;
+          end if;
+        end if;
+      end loop;
+    end if;
     return 0;
   end Locate;
 
