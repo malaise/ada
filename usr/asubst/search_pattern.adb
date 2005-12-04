@@ -51,8 +51,6 @@ package body Search_Pattern is
       Upat : Line_Pat_Rec;
       Upat_Access : Unique_Pattern.Element_Access;
       Ok : Boolean;
-      Match : Regular_Expressions.One_Match_Array;
-      Nmatch : Natural;
     begin
       -- Compute new pattern number and type
       Upat.Num := Unique_Pattern.List_Length (Pattern_List) + 1;
@@ -78,14 +76,6 @@ package body Search_Pattern is
       if not Ok then
         Error ("Invalid pattern """ & Crit
           & """. Error is " & Regular_Expressions.Error(Upat_Access.Pat));
-      end if;
-      -- Check that this pattern is not ambiguous
-      -- It should not match a special cahracter
-      Regular_Expressions.Exec (Upat_Access.Pat,
-                                "" & Ada.Characters.Latin_1.Bs,
-                                Nmatch, Match);
-      if Nmatch = 1 then
-        Error ("Ambiguous pattern """ & Crit & """");
       end if;
     end Add;
 
@@ -138,17 +128,19 @@ package body Search_Pattern is
       Stop_Index := String_Mng.Locate_Escape (Pattern,
                                               Start_Index,
                                               Delimiter);
-      if Stop_Index = Start_Index then
+      if Stop_Index = Start_Index + 1 then
         -- A Delim
         Add ("");
         Prev_Delim := True;
-        Stop_Index := Stop_Index + 1;
       else
         -- A Regex: see if it followed by a delim (always except at the end)
         Next_Delim := Stop_Index /= 0;
-        -- Make Stop_Index be the last index of regex
-        if Stop_Index = 0 then Stop_Index := Pattern'Last;
-        else Stop_Index := Stop_Index - 1;
+        -- Make Stop_Index be the last index of regex,
+        -- Save new restarting index (start of delim)
+        if Stop_Index = 0 then
+          Stop_Index := Pattern'Last;
+        else
+          Stop_Index := Stop_Index - 2;
         end if;
         -- It must not contain Start_String if preeceded by a delim
         Check (Pattern(Start_Index .. Stop_Index), Start_String (Prev_Delim));
@@ -162,7 +154,7 @@ package body Search_Pattern is
         if not Prev_Delim
         and then not Next_Delim
         and then Pattern(Start_Index..Start_Index) /= Start_String (True)
-        and then Pattern(Stop_Index ..Stop_Index)  /= Stop_String (True) then
+        and then Pattern(Stop_Index..Stop_Index)   /= Stop_String (True) then
           Is_Multiple := True;
         end if;
       end if;

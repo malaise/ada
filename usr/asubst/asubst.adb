@@ -3,40 +3,48 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V1.4";
-  procedure Usage is
+  Version : constant String  := "V2.0";
+
+  procedure Usage (New_Line : Boolean := True) is
   begin
+    if New_Line then
+      Sys_Calls.New_Line_Error;
+    end if;
     Sys_Calls.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-               & " [ <option> ] <find_pattern> <replace_pattern> [ { <file> } ]");
+               & " [ { <option> } ] <find_pattern> <replace_pattern> [ { <file> } ]");
+    Sys_Calls.Put_Line_Error (
+     "  Substitutes pattern in files, or from stdin to stdout if no file.");
     Sys_Calls.Put_Line_Error (
      "  <option> ::= -b | -i | -s | --");
     Sys_Calls.Put_Line_Error (
      "  -b for basic regex, -i for case insensitive match,");
     Sys_Calls.Put_Line_Error (
-     "  -s for backup of original file, -- to stop options.");
+     "    -s for backup of original file, -- to stop options.");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
      "  <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
     Sys_Calls.Put_Line_Error (
-     "  <replace_pattern> ::= string with \n (new line), \t (tab)");
+     "  <replace_pattern> ::= string with \n (new line), \t (tab),");
     Sys_Calls.Put_Line_Error (
-     "                                 or \& (the matching string).");
+     "    \IJ (IJ hexa num, for the IJth matching string, 00 for all),");
+    Sys_Calls.Put_Line_Error (
+     "    or \xIJ (hexa byte value).");
     Sys_Calls.Put_Line_Error (
      "  A <regex> does not contain ""\n"".");
     Sys_Calls.Put_Line_Error (
      "  A single <regex> is applied several times per line and can contain '^' or '$'.");
     Sys_Calls.Put_Line_Error (
-     "  Each <regex> of <multiple_regex> applied to one line (once).");
+     "  Each <regex> of <multiple_regex> is applied to one line (once).");
     Sys_Calls.Put_Line_Error (
      "  The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
     Sys_Calls.Put_Line_Error (
      "  Regex shall not be ambiguous, so be careful with '*'.");
     Sys_Calls.Put_Line_Error (
-     "  More generally, regex are powerfull (see ""man 7 regex"") and automatic substitution");
+     "  More generally, regex are powerfull (see ""man 7 regex"") and automatic");
     Sys_Calls.Put_Line_Error (
-     "   can be dangerous, so use """ & Argument.Get_Program_Name & """ with caution.");
+     "    substitution can be dangerous, so use """ & Argument.Get_Program_Name & """ with caution (-s).");
     Sys_Calls.Set_Error_Exit_Code;
   end Usage;
 
@@ -57,6 +65,9 @@ begin
     or else Argument.Get_Parameter = "--version" then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
       Sys_Calls.Set_Error_Exit_Code;
+    elsif Argument.Get_Parameter = "-h"
+    or else Argument.Get_Parameter = "--help" then
+      Usage (False);
     else
       Usage;
     end if;
@@ -102,9 +113,15 @@ begin
       Usage;
       return;
   end;
-  Replace_Pattern.Parse (
-         Argument.Get_Parameter (Occurence => Start));
-  Start := Start + 1;
+  begin
+    Replace_Pattern.Parse (
+           Argument.Get_Parameter (Occurence => Start));
+    Start := Start + 1;
+  exception
+    when Replace_Pattern.Parse_Error =>
+      Usage;
+      return;
+  end;
 
   -- Process files
   Ok := True;
@@ -113,6 +130,7 @@ begin
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                 & " ERROR. Cannot make backup if no file name.");
       Ok := False;
+    else
       begin
         Substit.Do_One_File (Substit.Std_In_Out, False);
       exception
@@ -120,7 +138,7 @@ begin
           Ok := False;
         when Error:others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                    & " EXCEPTION " & Ada.Exceptions.Exception_Name (Error)
+                    & " EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                     & " while processing stdin to stdout.");
           Ok := False;
       end;
@@ -134,7 +152,7 @@ begin
           Ok := False;
         when Error:others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                    & " EXCEPTION " & Ada.Exceptions.Exception_Name (Error)
+                    & " EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                     & " while processing file "
                     & Argument.Get_Parameter (Occurence => I) & ".");
           Ok := False;

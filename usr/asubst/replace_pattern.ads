@@ -4,6 +4,7 @@ package Replace_Pattern is
   -- Detects \t, \n and \&
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse (Pattern : in String);
+  Parse_Error : exception;
 
   
   -- Replace the input string by the replace pattern

@@ -289,13 +289,6 @@ package body Substit is
                                             Match_Res.Start_Offset,
                                             Match_Res.End_Offset));
       begin
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Replacing "
-           & Asu.Slice (Line.all,
-                        Match_Res.Start_Offset,
-                        Match_Res.End_Offset)
-           & " by " & Replacing & ".");
-        end if;
         -- Substitute from start to stop
         Asu.Replace_Slice (Line.all,
                            Match_Res.Start_Offset,
@@ -413,11 +406,6 @@ package body Substit is
         Replacing : constant String
                   := Replace_Pattern.Replace (Asu.To_String (Str_To_Replace));
       begin
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Substituting >"
-           & Asu.To_String (Str_To_Replace)
-           & "< by >" & Replacing & "<");
-        end if;
         -- Put result: beginning of first line + replacing + end of last line
         if Debug.Set then
           Sys_Calls.Put_Line_Error (
