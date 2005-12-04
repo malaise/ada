@@ -118,11 +118,11 @@ package String_Mng is
 
   -- Locate an escape sequence within the Within string,
   --  starting searching from From_Index.
-  -- An escape sequence is one escape char followed by one escaped char,
-  --  (e.g. Esc='\' and Escaped="na" will detect "\n" or "\a").
-  -- The first char of the Escape string defines the escape character
-  --  and the rest of the string the possible escaped characters.
-  -- Returns the index of the escaped char matching, or 0 if not found.
+  -- An escape sequence is one escape character followed by the possible
+  --  escaped characters. The escape character can escape itself.
+  --  (e.g. Escape="\na" will detect "\\" "\n" or "\a").
+  -- Returns the index in Within of the escaped matching character
+  --  (e.g. the '\', 'n' or 'a' following the first '\'), or 0 if not found.
   -- Also returns 0 if Escape is empty.
   function Locate_Escape (Within_Str : String;
                           From_Index : Positive;
