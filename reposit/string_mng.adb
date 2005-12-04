@@ -446,8 +446,6 @@ package body String_Mng is
                           From_Index : Positive;
                           Escape     : String) return Natural is
     Esc  : Character;
-    Escs : constant String
-         := Escape(Natural'Succ(Escape'First) .. Escape'Last);
     Start : Natural;
   begin
     -- Empty Escape
@@ -468,10 +466,10 @@ package body String_Mng is
         if (I - Start) rem 2 = 0 then
           -- Odd number of Esc is an escape: "\\\n" -> '\''\n'
           -- Check if the following letter is within the Escape chars
-          for K in Escs'Range loop
-            if Within_Str(I + 1) = Escs(K) then
+          for K in Escape'Range loop
+            if Within_Str(I + 1) = Escape(K) then
               -- The character following '\' is one of the expected
-              return I;
+              return I + 1;
             end if;
           end loop;
            -- Not one of the expected characters
