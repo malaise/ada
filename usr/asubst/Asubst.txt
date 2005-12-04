@@ -14,7 +14,7 @@ r        ->    r
 r1\nr2\n -> r1$ and ^r2$
 r1\nr2   -> r1$ and ^r2
 r1\nr2$  -> r1$ and ^r2$
-r1$\n       forbdiden
+r1$\n     is forbdiden
 The difference between r1\n and r1$ is that r1\n is two regex. With r1\n,
 the string matching r1 AND the following New_Line will be substituted. With
 r1$, only the string matching r1 will be subtituted.
