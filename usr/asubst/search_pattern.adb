@@ -1,5 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug;
+with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
+     Char_To_Hexa;
 package body Search_Pattern is
 
   -- Unique list of patterns
@@ -28,6 +29,7 @@ package body Search_Pattern is
   package Unique_Pattern is new Unique_List (Line_Pat_Rec, Set, Image, "=");
   Pattern_List : Unique_Pattern.List_Type;
 
+  -- True if one unique pattern and with no '^' nor '$'
   Is_Multiple : Boolean;
 
   package Asu renames Ada.Strings.Unbounded;
@@ -41,65 +43,105 @@ package body Search_Pattern is
     raise Parse_Error;
   end Error;
 
+  -- Add a line pattern
+  procedure Add (Crit : in String;
+                 Extended, Case_Sensitive : in Boolean) is
+    Upat : Line_Pat_Rec;
+    Upat_Access : Unique_Pattern.Element_Access;
+    Ok : Boolean;
+  begin
+    -- Compute new pattern number and type
+    Upat.Num := Unique_Pattern.List_Length (Pattern_List) + 1;
+    Upat.Is_Delim := Crit = "";
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Search adding regex "
+             &  Upat.Num'img & " >" & Crit & "<");
+    end if;
+    -- Empty pattern is a delimiter
+    if Upat.Is_Delim then
+      -- Insert delimiter
+      Unique_Pattern.Insert (Pattern_List, Upat);
+      return;
+    end if;
+    -- Regex compiled patterns cannot be set:
+    -- Insert an empty pattern with the correct num
+    Unique_Pattern.Insert (Pattern_List, Upat);
+    -- Get access to it and compile in this access
+    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit,
+                                 Extended => Extended,
+                                 Case_Sensitive => Case_Sensitive);
+    if not Ok then
+      Error ("Invalid pattern """ & Crit
+        & """. Error is " & Regular_Expressions.Error(Upat_Access.Pat));
+    end if;
+  end Add;
+
+  -- Check that the string does not contain the fragment
+  procedure Check (Str : in String; Frag : in String) is
+  begin
+    if String_Mng.Locate (Str, Str'First, Frag) /= 0 then
+      Error ("Pattern """ & Str & """ cannot contain """ & Frag & """");
+    end if;
+ end Check;
+
+  -- Start line and stop line strings in regex
+  function Start_String (Delim : in Boolean) return String is
+  begin
+    if Delim then return "^";
+    else return "";
+    end if;
+  end Start_String;
+  function Stop_String (Delim : in Boolean) return String is
+  begin
+    if Delim then return "$";
+    else return "";
+    end if;
+  end Stop_String;
+
   -- Parses the search patern
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse (Pattern : in String;
                    Extended, Case_Sensitive : in Boolean) is
 
-    -- Add a line pattern
-    procedure Add (Crit : in String) is
-      Upat : Line_Pat_Rec;
-      Upat_Access : Unique_Pattern.Element_Access;
-      Ok : Boolean;
+    The_Pattern : Asu.Unbounded_String;
+
+    -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
+    subtype Byte is Natural range 0 .. 255;
+    function Get_Hexa (Index : Positive) return Byte is
+     Result : Byte;
     begin
-      -- Compute new pattern number and type
-      Upat.Num := Unique_Pattern.List_Length (Pattern_List) + 1;
-      Upat.Is_Delim := Crit = "";
+      -- First digit: 16 * C
+      if Index > Asu.Length (The_Pattern) then
+        Error ("No hexadecimal sequence at the end of search pattern");
+      end if;
+      begin
+        Result := 16#10# * Char_To_Hexa (Asu.Element (The_Pattern, Index));
+      exception
+        when Constraint_Error =>
+          Error ("Invalid hexadecimal sequence "
+               & Asu.Slice (The_Pattern, Index, Index + 1)
+               & " in search pattern");
+      end;
+      -- First digit: 1 * C
+      if Index + 1 > Asu.Length (The_Pattern) then
+        Error ("Uncomplete hexadecimal sequence at the end of search pattern");
+        raise Parse_Error;
+      end if;
+      begin
+        Result := Result + Char_To_Hexa (Asu.Element (The_Pattern, Index + 1));
+      exception
+        when Constraint_Error =>
+          Error ("Invalid hexadecimal sequence "
+               & Asu.Slice (The_Pattern, Index, Index + 1)
+               & " in search pattern");
+      end;
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Search adding regex "
-               &  Upat.Num'img & " >" & Crit & "<");
+        Sys_Calls.Put_Line_Error ("Search, got hexadecimal sequence "
+                                 & Asu.Slice (The_Pattern, Index, Index + 1));
       end if;
-      -- Empty pattern is a delimiter
-      if Upat.Is_Delim then
-        -- Insert delimiter
-        Unique_Pattern.Insert (Pattern_List, Upat);
-        return;
-      end if;
-      -- Regex compiled patterns cannot be set:
-      -- Insert an empty pattern with the correct num
-      Unique_Pattern.Insert (Pattern_List, Upat);
-      -- Get access to it and compile in this access
-      Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
-      Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit,
-                                   Extended => Extended,
-                                   Case_Sensitive => Case_Sensitive);
-      if not Ok then
-        Error ("Invalid pattern """ & Crit
-          & """. Error is " & Regular_Expressions.Error(Upat_Access.Pat));
-      end if;
-    end Add;
-
-    -- Check that the string does not contain the fragment
-    procedure Check (Str : in String; Frag : in String) is
-    begin
-      if String_Mng.Locate (Str, Str'First, Frag) /= 0 then
-        Error ("Pattern """ & Str & """ cannot contain """ & Frag & """");
-      end if;
-   end Check;
-
-    -- Start line and stop line strings in regex
-    function Start_String (Delim : in Boolean) return String is
-    begin
-      if Delim then return "^";
-      else return "";
-      end if;
-    end Start_String;
-    function Stop_String (Delim : in Boolean) return String is
-    begin
-      if Delim then return "$";
-      else return "";
-      end if;
-    end Stop_String;
+      return Result;
+    end Get_Hexa;
 
     -- Pattern delimiter
     Delimiter : constant String := "\n";
@@ -115,22 +157,52 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
     end if;
     -- Free previous pattern
+    The_Pattern := Asu.To_Unbounded_String (Pattern);
     Unique_Pattern.Delete_List (Pattern_List);
     Is_Multiple := False;
     -- Reject empty pattern
     if Pattern = "" then
       Error ("Empty pattern");
     end if;
+
+    -- Replace escape sequences (\t and \xIJ) in The pattern
+    Stop_Index := 1;
+    loop
+      -- Locate sequence
+      Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
+                                               Stop_Index , "\tx");
+      exit when Stop_Index = 0;
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Search, found Esc char >"
+                                & Asu.Element (The_Pattern, Stop_Index) & "<");
+      end if;
+      -- Replace sequence
+      case Asu.Element (The_Pattern, Stop_Index) is
+        when 't' =>
+          -- "\t" replaced by (horiz) tab
+          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index,
+                             Ada.Characters.Latin_1.Ht & "");
+        when 'x' =>
+          -- "\xIJ" hexa replaced by byte
+          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index + 2,
+                             Character'Val (Get_Hexa (Stop_Index + 1)) & "");
+        when others =>
+          -- Impossible. Leave sequence as it is, skip it
+          Stop_Index := Stop_Index + 1;
+      end case;
+      exit when Stop_Index >= Asu.Length (The_Pattern);
+    end loop;
+
     -- Locate all New_Line and split pattern (one per line)
-    Start_Index := Pattern'First;
+    Start_Index := 1;
     Prev_Delim := False;
     loop
-      Stop_Index := String_Mng.Locate_Escape (Pattern,
+      Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
                                               Start_Index,
                                               Delimiter);
       if Stop_Index = Start_Index + 1 then
         -- A Delim
-        Add ("");
+        Add ("", Extended, Case_Sensitive);
         Prev_Delim := True;
       else
         -- A Regex: see if it followed by a delim (always except at the end)
@@ -138,30 +210,37 @@ package body Search_Pattern is
         -- Make Stop_Index be the last index of regex,
         -- Save new restarting index (start of delim)
         if Stop_Index = 0 then
-          Stop_Index := Pattern'Last;
+          Stop_Index := Asu.Length (The_Pattern);
         else
           Stop_Index := Stop_Index - 2;
         end if;
-        -- It must not contain Start_String if preeceded by a delim
-        Check (Pattern(Start_Index .. Stop_Index), Start_String (Prev_Delim));
-        Check (Pattern(Start_Index .. Stop_Index), Stop_String (Next_Delim));
-        -- Add this regex
-        Add (Start_String (Prev_Delim)
-           & Pattern(Start_Index .. Stop_Index)
-           & Stop_String (Next_Delim));
+        declare
+          Slice : constant String
+                := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
+        begin
+          -- It must not contain Start_String if preeceded by a delim
+          Check (Slice, Start_String (Prev_Delim));
+          Check (Slice, Stop_String (Next_Delim));
+          -- Add this regex
+          Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
+             Extended, Case_Sensitive);
+        end;
         -- See if this is a single regex and if it can apply several times
         --  to one line of input (no ^ not $)
         if not Prev_Delim
         and then not Next_Delim
-        and then Pattern(Start_Index..Start_Index) /= Start_String (True)
-        and then Pattern(Stop_Index..Stop_Index)   /= Stop_String (True) then
+        and then Asu.Element (The_Pattern, Start_Index) & ""
+                 /= Start_String (True)
+        and then Asu.Element (The_Pattern, Stop_Index) & ""
+                 /= Stop_String (True) then
           Is_Multiple := True;
         end if;
       end if;
       -- Done
-      exit when Stop_Index = Pattern'Last;
+      exit when Stop_Index = Asu.Length (The_Pattern);
       Start_Index := Stop_Index + 1;
     end loop;
+
     -- Done
   exception
     when Parse_Error =>

@@ -1,5 +1,6 @@
 with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug;
+with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug,
+     Char_To_Hexa;
 with Search_Pattern;
 package body Replace_Pattern is
 
@@ -45,44 +46,33 @@ package body Replace_Pattern is
 
   -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
   function Get_Hexa (Index : Positive) return Byte is
-   C : Character;
    Result : Byte;
   begin
     -- First digit: 16 * C
     if Index > Asu.Length (The_Pattern) then
       Error ("No hexadecimal sequence at the end of replace pattern");
     end if;
-    C := Asu.Element (The_Pattern, Index);
-    case C is
-      when '0' .. '9' =>
-        Result := 16#10# * (Character'Pos(C) - Character'Pos('0'));
-      when 'a' .. 'f' =>
-        Result := 16#10# * (Character'Pos(C) - Character'Pos('a') + 16#0A#);
-      when 'A' .. 'F' =>
-        Result := 16#10# * (Character'Pos(C) - Character'Pos('A') + 16#0A#);
-      when others =>
+    begin
+      Result := 16#10# * Char_To_Hexa (Asu.Element (The_Pattern, Index));
+    exception
+      when Constraint_Error =>
         Error ("Invalid hexadecimal sequence "
              & Asu.Slice (The_Pattern, Index, Index + 1)
              & " in replace pattern");
-    end case;
+    end;
     -- First digit: 1 * C
     if Index + 1 > Asu.Length (The_Pattern) then
       Error ("Uncomplete hexadecimal sequence at the end of replace pattern");
       raise Parse_Error;
     end if;
-    C := Asu.Element (The_Pattern, Index + 1);
-    case C is
-      when '0' .. '9' =>
-        Result := Result + (Character'Pos(C) - Character'Pos('0'));
-      when 'a' .. 'f' =>
-        Result := Result + (Character'Pos(C) - Character'Pos('a') + 16#0A#);
-      when 'A' .. 'F' =>
-        Result := Result + (Character'Pos(C) - Character'Pos('A') + 16#0A#);
-      when others =>
+    begin
+      Result := Result + Char_To_Hexa (Asu.Element (The_Pattern, Index + 1));
+    exception
+      when Constraint_Error =>
         Error ("Invalid hexadecimal sequence "
              & Asu.Slice (The_Pattern, Index, Index + 1)
              & " in replace pattern");
-    end case;
+    end;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace, got hexadecimal sequence "
                                & Asu.Slice (The_Pattern, Index, Index + 1));
@@ -153,7 +143,7 @@ package body Replace_Pattern is
           Start := Got + 1;
       end case;
       -- Also done if end of pattern
-      exit when Start = Asu.Length (The_Pattern);
+      exit when Start >= Asu.Length (The_Pattern);
     end loop;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace stored pattern >"

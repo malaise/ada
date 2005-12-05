@@ -18,6 +18,12 @@ r1$\n     is forbdiden
 The difference between r1\n and r1$ is that r1\n is two regex. With r1\n,
 the string matching r1 AND the following New_Line will be substituted. With
 r1$, only the string matching r1 will be subtituted.
+The following specific \ sequences are also handled:
+- \t, replaced by a (horiz) tab,
+- \xIJ where IJ is and hexadecimal number (00 to FF or ff) for a byte code.
+Beware that \xIJ is replaced before compilind the regex, so it cannot be
+used to avoid a given character (e.g. "[a\x2Dx]" is exactly the same as
+"[a-b]".
 
 3. Replace string
 Only the following sequences are supported:

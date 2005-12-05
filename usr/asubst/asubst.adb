@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.0";
+  Version : constant String  := "V2.1";
 
   procedure Usage (New_Line : Boolean := True) is
   begin
@@ -18,13 +18,23 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "  <option> ::= -b | -i | -s | --");
     Sys_Calls.Put_Line_Error (
-     "  -b for basic regex, -i for case insensitive match,");
+     "    -b for basic regex, -i for case insensitive match,");
     Sys_Calls.Put_Line_Error (
      "    -s for backup of original file, -- to stop options.");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
-     "  <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
+     "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
+    Sys_Calls.Put_Line_Error (
+     "    A <regex> can contain ""\t"" or ""\xIJ"" but can't contain ""\n"".");
+    Sys_Calls.Put_Line_Error (
+     "    A single <regex> applies several times per line and can contain '^' or '$'.");
+    Sys_Calls.Put_Line_Error (
+     "    Each <regex> of <multiple_regex> applies to one line (once).");
+    Sys_Calls.Put_Line_Error (
+     "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
+    Sys_Calls.Put_Line_Error (
+     "    Regex shall not be ambiguous, so be careful with '*'.");
     Sys_Calls.Put_Line_Error (
      "  <replace_pattern> ::= string with \n (new line), \t (tab),");
     Sys_Calls.Put_Line_Error (
@@ -32,19 +42,9 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    or \xIJ (hexa byte value).");
     Sys_Calls.Put_Line_Error (
-     "  A <regex> does not contain ""\n"".");
+     "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (
-     "  A single <regex> is applied several times per line and can contain '^' or '$'.");
-    Sys_Calls.Put_Line_Error (
-     "  Each <regex> of <multiple_regex> is applied to one line (once).");
-    Sys_Calls.Put_Line_Error (
-     "  The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
-    Sys_Calls.Put_Line_Error (
-     "  Regex shall not be ambiguous, so be careful with '*'.");
-    Sys_Calls.Put_Line_Error (
-     "  More generally, regex are powerfull (see ""man 7 regex"") and automatic");
-    Sys_Calls.Put_Line_Error (
-     "    substitution can be dangerous, so use """ & Argument.Get_Program_Name & """ with caution (-s).");
+     "    can be dangerous, so use """ & Argument.Get_Program_Name & """ with caution (e.g. -s).");
     Sys_Calls.Set_Error_Exit_Code;
   end Usage;
 
