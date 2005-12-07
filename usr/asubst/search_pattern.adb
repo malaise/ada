@@ -32,6 +32,9 @@ package body Search_Pattern is
   -- True if one unique pattern and with no '^' nor '$'
   Is_Multiple : Boolean;
 
+  -- Line_Feed String
+  Line_Feed : constant String := Text_Line.Line_Feed & "";
+
   package Asu renames Ada.Strings.Unbounded;
 
   -- Reports a parsing error
@@ -143,8 +146,6 @@ package body Search_Pattern is
       return Result;
     end Get_Hexa;
 
-    -- Pattern delimiter
-    Delimiter : constant String := "\n";
     -- Indexes in Pattern
     Start_Index : Positive;
     Stop_Index : Natural;
@@ -165,12 +166,12 @@ package body Search_Pattern is
       Error ("Empty pattern");
     end if;
 
-    -- Replace escape sequences (\t and \xIJ) in The pattern
+    -- Replace escape sequences (\n, \t and \xIJ) in the pattern
     Stop_Index := 1;
     loop
       -- Locate sequence
       Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                               Stop_Index , "\tx");
+                                               Stop_Index , "\ntx");
       exit when Stop_Index = 0;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, found Esc char >"
@@ -178,12 +179,16 @@ package body Search_Pattern is
       end if;
       -- Replace sequence
       case Asu.Element (The_Pattern, Stop_Index) is
+        when 'n' =>
+          -- "\n" replaced by line_feed
+          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index,
+                             Line_Feed);
         when 't' =>
           -- "\t" replaced by (horiz) tab
           Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index,
                              Ada.Characters.Latin_1.Ht & "");
         when 'x' =>
-          -- "\xIJ" hexa replaced by byte
+          -- "\xIJ" hexa replaced by byte or "\n"
           Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index + 2,
                              Character'Val (Get_Hexa (Stop_Index + 1)) & "");
         when others =>
@@ -197,10 +202,10 @@ package body Search_Pattern is
     Start_Index := 1;
     Prev_Delim := False;
     loop
-      Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                              Start_Index,
-                                              Delimiter);
-      if Stop_Index = Start_Index + 1 then
+      Stop_Index := String_Mng.Locate (Asu.To_String (The_Pattern),
+                                       Start_Index,
+                                       Line_Feed);
+      if Stop_Index = Start_Index then
         -- A Delim
         Add ("", Extended, Case_Sensitive);
         Prev_Delim := True;
@@ -208,11 +213,11 @@ package body Search_Pattern is
         -- A Regex: see if it followed by a delim (always except at the end)
         Next_Delim := Stop_Index /= 0;
         -- Make Stop_Index be the last index of regex,
-        -- Save new restarting index (start of delim)
         if Stop_Index = 0 then
           Stop_Index := Asu.Length (The_Pattern);
         else
-          Stop_Index := Stop_Index - 2;
+          -- This delim will be located at next iteration of the loop
+          Stop_Index := Stop_Index - 1;
         end if;
         declare
           Slice : constant String
@@ -295,12 +300,12 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img &
                                   " is delim");
       end if;
-      if Str = "" & Text_Line.Line_Feed then
+      if Str = Line_Feed then
         return (1, 1);
       else
         return (0, 0);
       end if;
-    elsif Str = "" & Text_Line.Line_Feed then
+    elsif Str = Line_Feed then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check empty vs not delim");
       end if;
