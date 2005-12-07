@@ -1,41 +1,73 @@
+Asubst V2.2
+
+
 1. General syntax
 Usage: asubst [ { <option> } ] <find_pattern> <replace_pattern> [ { <file> } ]
 Substitutes strings in files.
 If no file name is specified, substitutes from stdin to stdout.
+See "man 7 regex" for basic and extended regex and for ignorecase pattern
+matching.
 
-2. Find pattern
+
+2. Options
+-h or --help : display help
+-v or --version : display version
+-b or --basic : use 'basic' regex instead of the default 'extended' regex.
+-i or --ignorecase : do case insensitive match checking of <find_pattern>
+-s or --save : make a copy (<file>.asu of original file(s).
+-- : to stop the list of options. If <find_pattern> is "-b", then use
+     asubst [ { <option> } ] -- -b <replace_pattern>  [ { <file> } ]
+
+
+3. Find pattern
 <find_pattern> ::= { [ <regex> ] \n } [ <regex> ]
-If there is no \n, then the regex can be any regular expression.
-If there are \n, they delimit several regex that will apply to several lines.
-In this case, '^' and '$' are forbidden around a '\n' (they will 
-automatically be added). Examples:
-r        ->    r
-^r$      ->    ^r$
-r1\nr2\n -> r1$ and ^r2$
-r1\nr2   -> r1$ and ^r2
-r1\nr2$  -> r1$ and ^r2$
-r1$\n     is forbdiden
-The difference between r1\n and r1$ is that r1\n is two regex. With r1\n,
-the string matching r1 AND the following New_Line will be substituted. With
-r1$, only the string matching r1 will be subtituted.
-The following specific \ sequences are also handled:
-- \t, replaced by a (horiz) tab,
-- \xIJ where IJ is and hexadecimal number (00 to FF or ff) for a byte code.
-Beware that \xIJ is replaced before compilind the regex, so it cannot be
-used to avoid a given character (e.g. "[a\x2Dx]" is exactly the same as
-"[a-b]".
+If there is no "\n", then the regex can be any regular expression. If it
+does not start with '^' nor ends with '$', then it is applied several time
+to each input line (each time to the text following previous substitution).
+Examples:
+echo "toto" | asubst "t" "x"                       ->  "xoxo"
+echo "toto" | asubst "t" "ti"                      ->  "tiotio"
+echo "tito" | asubst "t." "tu"                     ->  "tutu"
 
-3. Replace string
-Only the following sequences are supported:
+If there are "\n", they delimit several regex that will apply to several lines.
+In this case, '^' and '$' are forbidden around a "\n" (they will 
+automatically be added).
+Search pattern is split into several regex and \n patterns,
+each lines of input is split in two input items: text then newline,
+pattern 1 is compared to item 1, if they match, pattern 2 is compared to item 2
+
+
+Examples:
+r        -> r
+^r$      -> ^r$
+r1\nr2\n -> r1$ \n and ^r2$
+r1\nr2   -> r1$ \n and ^r2
+r1\nr2$  -> r1$ \n and ^r2$
+r1$\n     is forbdiden
+The difference between "r1\n" and "r1$" is that "r1\n" is two regex. With "r1\n",
+the string matching "r1" AND the following New_Line will be substituted. With
+"r1$", only the string matching "r1" will be subtituted.
+The following specific '\' sequences are also handled:
+- "\t, replaced by a (horiz) tab,
+- "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
+Beware that \xIJ is replaced before compilind the regex, so it cannot be
+used to avoid a given character. "[a\x2Dx]" is exactly the same as
+"[a-b]", and "\x0A" is exactly the same as "\n" (it will be used as regex
+delimiter).
+
+
+4. Replace string
+Only the following '\' sequences are supported:
 - \n will be replaced by a newline,
 - \t will be replaced by a (horiz) tab
-- \xIJ where IJ is and hexadecimal number (00 to FF or ff) will be replaced
+- \xIJ where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value
-- \IJ where IJ is and hexadecimal number will be replaced by the string
-  matching the corresponding regex number (00 for the complete string).
+- \IJ where IJ is an hexadecimal number will be replaced by the string
+  matching the corresponding regex number, 00 for the complete string.
+  (In case of a single regex (no "\n") \00 is equivalent to \01).
 Examples:
 echo "toto" | asubst "t" "\x40"                     ->  "@"
-echo "toti" | asubst "t." ">\00<"                   ->  ">to<>ti<"
+echo "tito" | asubst "t." ">\00<"                   ->  ">ti<>to<"
 echo -e "toto\ntiti\ntata\n" | asubst ".*\n" "\01"  ->  tototititata
 echo -e "\ntoto\ntiti\ntata" | asubst "\n.*" "\02"  ->  tototititata
 
