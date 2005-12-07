@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.1";
+  Version : constant String  := "V2.2";
 
   procedure Usage (New_Line : Boolean := True) is
   begin
@@ -18,15 +18,19 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "  <option> ::= -b | -i | -s | --");
     Sys_Calls.Put_Line_Error (
-     "    -b for basic regex, -i for case insensitive match,");
+     "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
-     "    -s for backup of original file, -- to stop options.");
+     "    -i or --ignorecase for case insensitive match,");
+    Sys_Calls.Put_Line_Error (
+     "    -s or --save for backup of original file, -- to stop options.");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
      "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
     Sys_Calls.Put_Line_Error (
-     "    A <regex> can contain ""\t"" or ""\xIJ"" but can't contain ""\n"".");
+     "    A <regex> can contain ""\t"" (tab) or ""\xIJ"" (hexa byte value)");
+    Sys_Calls.Put_Line_Error (
+     "    but can't contain ""\n"" (""\n"" matches the new_line character).");
     Sys_Calls.Put_Line_Error (
      "    A single <regex> applies several times per line and can contain '^' or '$'.");
     Sys_Calls.Put_Line_Error (
@@ -34,17 +38,17 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
     Sys_Calls.Put_Line_Error (
-     "    Regex shall not be ambiguous, so be careful with '*'.");
+     "  <replace_pattern> is a string with \n (new_line), \t (tab), \xIJ (hexa byte value),");
     Sys_Calls.Put_Line_Error (
-     "  <replace_pattern> ::= string with \n (new line), \t (tab),");
-    Sys_Calls.Put_Line_Error (
-     "    \IJ (IJ hexa num, for the IJth matching string, 00 for all),");
-    Sys_Calls.Put_Line_Error (
-     "    or \xIJ (hexa byte value).");
+     "    or \IJ (hexa num for the IJth matching string, 00 for all),");
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (
-     "    can be dangerous, so use """ & Argument.Get_Program_Name & """ with caution (e.g. -s).");
+     "    can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
+    Sys_Calls.Put_Line_Error (
+     "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_patern>""");
+    Sys_Calls.Put_Line_Error (
+     "    and use -s option if unsure.");
     Sys_Calls.Set_Error_Exit_Code;
   end Usage;
 
@@ -69,10 +73,12 @@ begin
     or else Argument.Get_Parameter = "--help" then
       Usage (False);
     else
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " Syntax ERROR.");
       Usage;
     end if;
     return;
   elsif Argument.Get_Nbre_Arg < 2 then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " Syntax ERROR.");
     Usage;
     return;
   end if;
@@ -84,15 +90,18 @@ begin
       -- Force end of options
       Start := I + 1;
       exit;
-    elsif Argument.Get_Parameter (Occurence => I) = "-b" then
+    elsif Argument.Get_Parameter (Occurence => I) = "-b" 
+    or else Argument.Get_Parameter (Occurence => I) = "--basic" then
       -- Basic regex
       Extended := False;
       Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-i" then
+    elsif Argument.Get_Parameter (Occurence => I) = "-i"
+    or else Argument.Get_Parameter (Occurence => I) = "--ignorecase" then
       -- Case insensitive match
       Case_Sensitive := False;
       Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-s" then
+    elsif Argument.Get_Parameter (Occurence => I) = "-s"
+    or else Argument.Get_Parameter (Occurence => I) = "--save" then
       -- Make backup
       Backup := True;
       Start := I + 1;
