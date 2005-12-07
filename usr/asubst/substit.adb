@@ -166,6 +166,8 @@ package body Substit is
     Nb_To_Read : Natural;
     Line : Asu.Unbounded_String;
     Len : Natural;
+    Line_Feed : constant Asu.Unbounded_String
+              :=  Asu.To_Unbounded_String (Text_Line.Line_Feed & "");
   begin
     -- Move to end
     if not Line_List_Mng.Is_Empty (Line_List) then
@@ -175,8 +177,7 @@ package body Substit is
     Nb_To_Read := Nb_Pattern - Line_List_Mng.List_Length (Line_List);
     -- Append trailing new line if any
     if Trail_New_Line then
-      Line_List_Mng.Insert (Line_List,
-                Asu.To_Unbounded_String (Text_Line.Line_Feed & ""));
+      Line_List_Mng.Insert (Line_List, Line_Feed);
       Trail_New_Line := False;
       Nb_To_Read := Nb_To_Read - 1;
     end if;
@@ -205,8 +206,7 @@ package body Substit is
           return True;
         else
           -- Insert Nl
-          Line_List_Mng.Insert (Line_List,
-                Asu.To_Unbounded_String (Text_Line.Line_Feed & ""));
+          Line_List_Mng.Insert (Line_List, Line_Feed);
           Nb_To_Read := Nb_To_Read - 1;
         end if;
       else
@@ -363,13 +363,16 @@ package body Substit is
         exit;
       end if;
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Match " & I'Img
-                & " with >" & Asu.To_String (Line.all) & "<");
+        Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+                                & "< matches pattern" & I'Img
+                                & " from" & Match_Res.Start_Offset'Img
+                                & " to" & Match_Res.End_Offset'Img);
       end if;
       -- Keep pos of start of first match and stop of last match
       if I = 1 then
         Start := Match_Res.Start_Offset;
-      elsif I = Nb_Pattern then
+      end if;
+      if I = Nb_Pattern then
         Stop := Match_Res.End_Offset;
       end if;
       -- Move to next input line
@@ -387,38 +390,46 @@ package body Substit is
       Text_Line.Put (Out_File, Asu.To_String (Line.all));
       Line_List_Mng.Delete (Line_List);
     else
-      -- Match, build string to replace: end of first line
-      --  + all lines but last + start of last line
+      -- Match, build string to replace:
       Line_List_Mng.Rewind (Line_List);
       First_Line := Line_List_Mng.Access_Current (Line_List);
-      Asu.Append (Str_To_Replace,
-        Asu.Slice (First_Line.all, Start, Asu.Length (First_Line.all)));
-      for I in 2 .. Nb_Pattern - 1 loop
+      if Nb_Pattern = 1 then
+        -- Only one pattern -> from start to stop
+        Last_Line := First_Line;
+        Str_To_Replace := Asu.To_Unbounded_String (
+          Asu.Slice (First_Line.all, Start, Stop));
+      else
+        -- Many patteerns -> end of first line + all lines but last + start of last line
+        Str_To_Replace := Asu.To_Unbounded_String (
+          Asu.Slice (First_Line.all, Start, Asu.Length (First_Line.all)));
+        for I in 2 .. Nb_Pattern - 1 loop
+          Line_List_Mng.Move_To (Line_List);
+          Line := Line_List_Mng.Access_Current (Line_List);
+          Asu.Append (Str_To_Replace, Line.all);
+        end loop;
         Line_List_Mng.Move_To (Line_List);
-        Line := Line_List_Mng.Access_Current (Line_List);
-        Asu.Append (Str_To_Replace, Line.all);
-      end loop;
-      Line_List_Mng.Move_To (Line_List);
-      Last_Line := Line_List_Mng.Access_Current (Line_List);
-      Asu.Append (Str_To_Replace, Asu.Slice (Last_Line.all, 1, Stop));
+        Last_Line := Line_List_Mng.Access_Current (Line_List);
+        Asu.Append (Str_To_Replace, Asu.Slice (Last_Line.all, 1, Stop));
+      end if;
       -- Make replacing string
       declare
-        Replacing : constant String
-                  := Replace_Pattern.Replace (Asu.To_String (Str_To_Replace));
+        Str_Replacing : constant String
+                      := Replace_Pattern.Replace (Asu.To_String (Str_To_Replace));
+        Str_Replaced : Asu.Unbounded_String;
+        use type Asu.Unbounded_String;
       begin
-        -- Put result: beginning of first line + replacing + end of last line
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error (
-            "Putting >"
-            & Asu.Slice (First_Line.all, 1, Start - 1)
-            & Replacing
-            & Asu.Slice (Last_Line.all, Stop + 1, Asu.Length (Last_Line.all))
-            & "<");
+        -- Set result: beginning of first line + replacing + end of last line
+        Str_Replaced := Asu.To_Unbounded_String (
+                        Asu.Slice (First_Line.all, 1, Start - 1)) &  Str_Replacing;
+        if Stop < Asu.Length (Last_Line.all) then
+          -- This would raise Constraint_Error if Stop = Length
+          Asu.Append (Str_Replaced, Asu.Slice (Last_Line.all,
+                                         Stop + 1, Asu.Length (Last_Line.all)));
         end if;
-        Text_Line.Put (Out_File,
-              Asu.Slice (First_Line.all, 1, Start - 1)
-            & Replacing
-            & Asu.Slice (Last_Line.all, Stop + 1, Asu.Length (Last_Line.all)));
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
+        end if;
+        Text_Line.Put (Out_File,  Asu.To_String (Str_Replaced));
       end;
       -- Delete all
       Line_List_Mng.Delete_List (Line_List, False);
