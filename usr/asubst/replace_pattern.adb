@@ -12,6 +12,9 @@ package body Replace_Pattern is
   -- The character in the pattern that code "\IJ (-> matching (sub)string)
   Match_Char : constant Character := Ada.Characters.Latin_1.Bs;
 
+  -- The line feed string
+  Line_Feed : constant String  :=Text_Line.Line_Feed & "";
+
   -- The indexes, in The_Pattern, of matching (sub)strings
   subtype Byte is Natural range 0 .. 255;
   subtype Substr_Index is Byte;
@@ -113,8 +116,7 @@ package body Replace_Pattern is
           Asu.Replace_Slice (The_Pattern, Got - 1, Got, "\");
         when 'n' =>
           -- "\n" replaced by Line_Feed
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got,
-                             Text_Line.Line_Feed & "");
+          Asu.Replace_Slice (The_Pattern, Got - 1, Got, Line_Feed);
         when 't' =>
           -- "\t" replaced by (horiz) tab
           Asu.Replace_Slice (The_Pattern, Got - 1, Got,
@@ -165,8 +167,7 @@ package body Replace_Pattern is
     Ith := 0;
     loop
       -- Search next delimiter
-      Got_Delim := String_Mng.Locate (Str, Prev_Delim + 1,
-                                      Text_Line.Line_Feed & "");
+      Got_Delim := String_Mng.Locate (Str, Prev_Delim + 1, Line_Feed);
       if Got_Delim = 0 then
         -- No (more) delim
         if Ith = Nth - 1 then
@@ -183,7 +184,7 @@ package body Replace_Pattern is
         Ith := Ith + 1;
         if Ith = Nth then
           -- The substring is this new delim
-          return Text_Line.Line_Feed & "";
+          return Line_Feed;
         end if;
       else
         -- A delim after a string
@@ -195,7 +196,7 @@ package body Replace_Pattern is
           Ith := Ith + 1;
           if Ith = Nth then
             -- The substring is this new delim
-            return Text_Line.Line_Feed & "";
+            return Line_Feed;
           end if;
         end if;
       end if;
