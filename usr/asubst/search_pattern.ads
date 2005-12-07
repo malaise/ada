@@ -6,13 +6,13 @@ package Search_Pattern is
   procedure Parse (Pattern : in String; Extended, Case_Sensitive : Boolean);
   Parse_Error : exception;
 
-  -- Returns the number of lines that it covered by the
-  -- search pattern (one per regex and one per New_Line.
+  -- Returns the number of regex that are implied by the
+  -- search pattern (one per regex and one per New_Line).
   -- Raises No_Regex if the pattern was not parsed OK
   function Number return Positive;
 
   -- Tells if the search pattern can be applied several times
-  -- on one line of input (i.e. does not contain '\n', '^' or '$'
+  -- on one line of input (i.e. does not contain '\n', '^' or '$')
   -- Raises No_Regex if the pattern was not parsed OK
   function Multiple return Boolean;
   
