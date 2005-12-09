@@ -1,14 +1,17 @@
 History of Asubst
 
+09/12/2005 V2_3
+Add: Support for \s (for space) in both patterns.
+
 07/12/2005 V2_2
 Bugfix: \x0A in search pattern was not parsed as line delimiter.
 Bugfix: One not multiple regex ("\n" of "^..." or "...$") was badly handled.
 
 05/12/2005 V2_1
-Add: support for \t and \xIJ in search pattern.
+Add: Support for \t and \xIJ in search pattern.
 
 04/12/2005 V2_0
-Add: support for \IJ and \xIJ in replace pattern.
+Add: Support for \IJ and \xIJ in replace pattern.
 
 02/12/2005 (V1.2)
 First version passing basic tests.
