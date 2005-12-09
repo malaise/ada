@@ -1,6 +1,4 @@
 # Test scenario for asubst
-# Don't use spaces in input/out flow or in search/replace.
-# And always \\ every \
 # Input                 Search      Replace                   Replace
 "toto"                  "t"         "x"                       "xoxo"
 "toto"                  "o$"        "x"                       "totx"
@@ -8,11 +6,13 @@
 "toto"                  "t"         "ti"                      "tiotio"
 "tito"                  "t."        "tu"                      "tutu"
 "botitobi"              "t."        "au"                      "boauaubi"
-"toto"                  "t"         "\\x40"                   "@o@o"
-"tito"                  "t."        ">\\00<"                  ">ti<>to<"
-"toto\\ntoto"           "\\x0A"     ""                        "totototo"
-"toto\\ntoto\\n"        "toto\\n"   ""                        ""
-"toto\\ntiti"           "\\n"       ""                        "tototiti"
-"toto\\ntiti\\ntata\\n" ".*\\n"     "\\01"                    "tototititata"
-"\\ntoto\\ntiti\\ntata" "\\n.*"     "\\02"                    "tototititata"
+"toto"                  "t"         "\x40"                    "@o@o"
+"tito"                  "t."        ">\00<"                   ">ti<>to<"
+"toto\ntoto"            "\x0A"      ""                        "totototo"
+"toto\ntoto\n"          "toto\n"    ""                        ""
+"toto\ntiti"            "\n"        ""                        "tototiti"
+"toto titi"             "\s"        "\t"                      "toto	titi"
+"toto\ttiti"            "\t"        "\s"                      "toto titi"
+"toto\ntiti\ntata\n"    ".*\n"      "\01"                     "tototititata"
+"\ntoto\ntiti\ntata"    "\n.*"      "\02"                     "tototititata"
 

@@ -1,32 +1,61 @@
 #!/bin/bash
 # set -vx
+if [ "$1" = "" ] ; then
+  echo "Usage: `basename $0` <scenario>"
+  exit 1
+fi
+export SCENARIO=$1
+
+# Read field $2 of line $1
+function readarg {
+res="`awk -vLINE=$1 -vFIELD=$2 -F '"' '
+  BEGIN {
+    NL=0
+    FIELD=2*FIELD
+  }
+  (NF == 0 || $1 ~ /^#/) {
+    # Skip empty lines and comment
+    next
+  }
+  {
+    # Count significant lines
+    NL=NL+1
+    if (NL == LINE) {
+      printf "%s",$(FIELD)
+      exit 0
+    }
+  } 
+' $SCENARIO`"
+echo "$res"
+}
+
+# For each line
+let L=1
 while true ; do
   # Read line until end of file
-  read input search replace expected
-  if [ $? -ne 0 ] ; then
+  export input=`readarg $L 1`
+  if [ "$input" = "" ] ; then
     break
   fi
-  # Skip empty lines and comments
-  if [ "$input" = "" ] ; then
-    continue
-  fi
-  c=`echo $input | cut -c1`
-  if [ "$c" = "#" ]; then
-    continue
-  fi
-  # remove '"'s
-  input="`echo $input | cut -d '"' -f2`"
-  search="`echo $search | cut -d '"' -f2`"
-  replace="`echo $replace | cut -d '"' -f2`"
-  expected="`echo $expected | cut -d '"' -f2`"
-  # Do test
+  export search=`readarg $L 2`
+  export replace=`readarg $L 3`
+  export expected=`readarg $L 4`
+  # Do test and save exit status
   echo "echo $input | asubst \"$search\" \"$replace\" -> $expected"
-  export result=`echo -e -n $input | asubst "$search" "$replace"`
-  # Check result is expected
+  result=`echo -e -n $input | asubst "$search" "$replace"`
+  code=$?
+  export result
+  # Check exit status
+  if [ $code -ne 0 ] ; then
+    echo "Error: asubst exited with code $code"
+    exit 1
+  fi
+  # Check that result is expected
   if [ "$result" != "$expected" ] ; then
     echo "Error: expected $expected != got $result"
     exit 1
   fi
+  let L=$L+1
 done
 echo Done.
 exit 0
