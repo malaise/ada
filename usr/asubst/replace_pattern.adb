@@ -101,7 +101,7 @@ package body Replace_Pattern is
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                       Start, "\nt0123456789ABCDEFabcdefx");
+                                       Start, "\0123456789ABCDEFabcdefnstx");
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
@@ -117,10 +117,18 @@ package body Replace_Pattern is
         when 'n' =>
           -- "\n" replaced by Line_Feed
           Asu.Replace_Slice (The_Pattern, Got - 1, Got, Line_Feed);
+        when 's' =>
+          -- "\s" replaced by Space
+          Asu.Replace_Slice (The_Pattern, Got - 1, Got, " ");
         when 't' =>
           -- "\t" replaced by (horiz) tab
           Asu.Replace_Slice (The_Pattern, Got - 1, Got,
                              Ada.Characters.Latin_1.Ht & "");
+        when 'x' =>
+          -- "\xIJ" hexa replaced by byte
+          Match := Get_Hexa (Got + 1);
+          Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
+                             Character'Val (Match) & "");
         when '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' =>
           -- "\IJ" hexa replaced by matching (sub) string
           Match := Get_Hexa (Got);
@@ -135,11 +143,6 @@ package body Replace_Pattern is
           Matches_List.Insert (Matches, (Got - 1, Match));
           Asu.Replace_Slice (The_Pattern, Got - 1, Got + 1,
                              Match_Char & "");
-        when 'x' =>
-          -- "\xIJ" hexa replaced by byte
-          Match := Get_Hexa (Got + 1);
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
-                             Character'Val (Match) & "");
         when others => 
           -- Impossible. Leave sequence as it is, skip it
           Start := Got + 1;

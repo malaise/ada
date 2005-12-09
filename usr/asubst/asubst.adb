@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.2";
+  Version : constant String  := "V2.3";
 
   procedure Usage (New_Line : Boolean := True) is
   begin
@@ -28,9 +28,11 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
     Sys_Calls.Put_Line_Error (
-     "    A <regex> can contain ""\t"" (tab) or ""\xIJ"" (hexa byte value)");
+     "    A <regex> can contain ""\t"" (tab), ""\s"" (space) or ""\xIJ"" (hexa byte value)");
     Sys_Calls.Put_Line_Error (
-     "    but can't contain ""\n"" (""\n"" matches the new_line character).");
+     "    but can't contain ""\n"" (""\n"" matches the new_line character and is the");
+    Sys_Calls.Put_Line_Error (
+     "    delimiter of regexes).");
     Sys_Calls.Put_Line_Error (
      "    A single <regex> applies several times per line and can contain '^' or '$'.");
     Sys_Calls.Put_Line_Error (
@@ -38,9 +40,11 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
     Sys_Calls.Put_Line_Error (
-     "  <replace_pattern> is a string with \n (new_line), \t (tab), \xIJ (hexa byte value),");
+     "  <replace_pattern> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
     Sys_Calls.Put_Line_Error (
-     "    or \IJ (hexa num for the IJth matching string, 00 for all),");
+     "    ""\xIJ"" (hexa byte value), or \IJ (hexa num for the IJth matching string,");
+    Sys_Calls.Put_Line_Error (
+     "    01 for first matching pattern... 00 for all),");
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (

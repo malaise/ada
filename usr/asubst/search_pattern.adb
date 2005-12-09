@@ -171,7 +171,7 @@ package body Search_Pattern is
     loop
       -- Locate sequence
       Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                               Stop_Index , "\ntx");
+                                               Stop_Index , "\nstx");
       exit when Stop_Index = 0;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, found Esc char >"
@@ -181,8 +181,10 @@ package body Search_Pattern is
       case Asu.Element (The_Pattern, Stop_Index) is
         when 'n' =>
           -- "\n" replaced by line_feed
-          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index,
-                             Line_Feed);
+          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index, Line_Feed);
+        when 's' =>
+          -- "\s" replaced by space
+          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index, " ");
         when 't' =>
           -- "\t" replaced by (horiz) tab
           Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index,
