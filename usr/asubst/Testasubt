@@ -1,0 +1,89 @@
+#!/bin/bash
+./player Scenario
+if [ $? -ne 0 ] ; then
+  echo "Scenario failed."
+  exit 1
+fi
+
+
+# Various file names, reference (in), expected result
+#  tested (in/out), saved
+export FR=tstfile.ref
+export FE=tstfile.exp
+export FT=tstfile.tst
+export FS=tstfile.tst.asu
+# Initial cleanup of files
+rm -rf $FS Temp_File.*
+# Make reference in file and result
+# Will remove both "------" and the linefeed before Test
+echo "Package body Pack is" > $FR
+echo "Package body Pack is" > $FE
+echo "" >> $FR
+echo "" >> $FE
+echo "  ----------" >> $FR
+echo "  -- Test --" >> $FR
+echo "  -- Test --" >> $FE
+echo "  ----------" >> $FR
+echo "" >> $FR
+echo "  procedure Test is" >> $FR
+echo "  procedure Test is" >> $FE
+echo "  begin" >> $FR
+echo "  begin" >> $FE
+echo "    null" >> $FR
+echo "    null" >> $FE
+echo "  end T;" >> $FR
+echo "  end T;" >> $FE
+echo "" >> $FR
+echo "" >> $FE
+echo "end Pack;" >> $FR
+echo "end Pack;" >> $FE
+
+# Substit no backup
+cp $FR $FT
+res=`asubst "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
+# Check result is expected
+cmp -s $FT $FE
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FE."
+  exit 1
+fi
+if [ "$res" != "$FT" ] ; then
+  echo "Asubst generated wrong output $res. Expected $FT."
+  exit 1
+fi
+if [ -f $FS ] ; then
+  echo "Unexpected backup $FS found."
+  exit 1
+fi
+
+# Substit backup
+rm -rf $FS
+cp $FR $FT
+res=`asubst -s "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
+# Check result is expected
+cmp -s $FT $FE
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FE."
+  exit 1
+fi
+if [ "$res" != "$FT" ] ; then
+  echo "Asubst generated wrong output $res. Expected $FT."
+  exit 1
+fi
+if [ ! -f $FS ] ; then
+  echo "Backup file $FS not found."
+  exit 1
+fi
+cmp -s $FS $FR
+if [ $? -ne 0 ] ; then
+  echo "Backup file $FS differs from reference $FR."
+  exit 1
+fi
+if [ -f "Temp_File.*" ] ; then
+  echo "Found remaining temorary files " Temp_File.* "."
+  exit 1
+fi
+
+# Cleanup test files
+rm -rf $FR $FT $FS $FE
+

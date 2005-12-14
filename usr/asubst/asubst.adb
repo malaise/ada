@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.3";
+  Version : constant String  := "V2.4";
 
   procedure Usage (New_Line : Boolean := True) is
   begin
@@ -42,9 +42,13 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "  <replace_pattern> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
     Sys_Calls.Put_Line_Error (
-     "    ""\xIJ"" (hexa byte value), or \IJ (hexa num for the IJth matching string,");
+     "    ""\xIJ"" (hexa byte value), ""\RIJ"" or ""\rIJ"" (IJ in hexa, replaced by the");
     Sys_Calls.Put_Line_Error (
-     "    01 for first matching pattern... 00 for all),");
+     "    string of the input text matching the IJth regex if \R, or matching the Jth");
+    Sys_Calls.Put_Line_Error (
+     "    substring of the Ith regex if \r).");
+    Sys_Calls.Put_Line_Error (
+     "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> the <multiple_regex>, ""\ri0"" == ""\R0i"".");
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (
@@ -62,7 +66,6 @@ procedure Asubst is
   Case_Sensitive : Boolean := True;
   Backup : Boolean := False;
   Start : Positive;
-  
   -- Overall result
   Ok : Boolean;
 
@@ -94,7 +97,7 @@ begin
       -- Force end of options
       Start := I + 1;
       exit;
-    elsif Argument.Get_Parameter (Occurence => I) = "-b" 
+    elsif Argument.Get_Parameter (Occurence => I) = "-b"
     or else Argument.Get_Parameter (Occurence => I) = "--basic" then
       -- Basic regex
       Extended := False;

@@ -3,11 +3,16 @@ with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
      Char_To_Hexa;
 package body Search_Pattern is
 
+  -- 1 to 16 substring indexes 
+  subtype Substr_Array is Regular_Expressions.Match_Array (Sub_String_Range);
+
   -- Unique list of patterns
   type Line_Pat_Rec is record
     Num : Positive;
     Is_Delim : Boolean;
     Pat : Regular_Expressions.Compiled_Pattern;
+    Nb_Substr : Nb_Sub_String_Range := 0;
+    Substrs : Substr_Array := (others => (0, 0));
   end record;
   procedure Set (To : out Line_Pat_Rec; Val : in Line_Pat_Rec) is
   begin
@@ -15,7 +20,11 @@ package body Search_Pattern is
     To.Is_Delim := Val.Is_Delim;
     -- Regexp cannot be copied, so it will be assigned
     --  to the Line_Pat_Rec access
+    -- To.Pat := Val.Pat;
+    To.Nb_Substr := Val.Nb_Substr;
+    To.Substrs := Val.Substrs;
   end Set;
+  -- Unicity of pattern num
   function Image (Line_Pat : Line_Pat_Rec) return String is
   begin
     return Line_Pat.Num'Img;
@@ -58,7 +67,7 @@ package body Search_Pattern is
     Upat.Is_Delim := Crit = "";
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
-             &  Upat.Num'img & " >" & Crit & "<");
+             &  Upat.Num'Img & " >" & Crit & "<");
     end if;
     -- Empty pattern is a delimiter
     if Upat.Is_Delim then
@@ -66,8 +75,14 @@ package body Search_Pattern is
       Unique_Pattern.Insert (Pattern_List, Upat);
       return;
     end if;
-    -- Regex compiled patterns cannot be set:
-    -- Insert an empty pattern with the correct num
+    -- Count number of substrings, i.e. number of '('
+    for I in Sub_String_Range loop
+      -- locate succcessive occurences of "("
+      exit when String_Mng.Locate (Crit, Crit'First, "(", I) = 0;
+      Upat.Nb_Substr := I;
+    end loop;
+    -- Regex compiled patterns cannot be set and Substrs are sued later
+    -- Insert a pattern without compiled pattern and substrs
     Unique_Pattern.Insert (Pattern_List, Upat);
     -- Get access to it and compile in this access
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
@@ -281,6 +296,23 @@ package body Search_Pattern is
     return Is_Multiple;
   end Multiple;
 
+  -- Returns the number of substrings of one regex
+  -- Raises No_Regex if the Regex_Index is higher than
+  -- the number of regex (returned by Number)
+  function Nb_Substrings (Regex_Index : Positive) return Nb_Sub_String_Range is
+    Upat : Line_Pat_Rec;
+    Upat_Access : Unique_Pattern.Element_Access;
+  begin
+    -- Get access to the pattern
+    Upat.Num := Regex_Index;
+    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    return Upat_Access.Nb_Substr;
+  exception
+    when Unique_Pattern.Not_In_List =>
+      -- Invalid Regex_Index or empty list
+      raise No_Regex;
+  end Nb_Substrings;
+
   -- Checks if the input string matches one regex
   -- Returns a Match_Cell (set to (0, 0) if no match)
   -- Raises No_Regex if the Regex_Index is higher than
@@ -288,26 +320,35 @@ package body Search_Pattern is
   function Check (Str : String;
                   Regex_Index : Positive)
            return Regular_Expressions.Match_Cell is
+    -- The pattern to check with
     Upat : Line_Pat_Rec;
     Upat_Access : Unique_Pattern.Element_Access;
-    Match : Regular_Expressions.One_Match_Array;
+    -- A string (1 .. N) to check
+    Loc_Str : constant String := Str;
+    -- Check result
     Nmatch : Natural;
+    Match : Regular_Expressions.Match_Array
+               (1 .. Nb_Sub_String_Range'Last + 1);
   begin
     -- Get access to the pattern
     Upat.Num := Regex_Index;
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    -- Reset substring array if not a delim
+    if not Upat_Access.Is_Delim then
+      Upat_Access.Substrs := (others => (0, 0));
+    end if;
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img &
                                   " is delim");
       end if;
-      if Str = Line_Feed then
+      if Loc_Str = Line_Feed then
         return (1, 1);
       else
         return (0, 0);
       end if;
-    elsif Str = Line_Feed then
+    elsif Loc_Str = Line_Feed then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check empty vs not delim");
       end if;
@@ -317,9 +358,13 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img);
       end if;
       Regular_Expressions.Exec (Upat_Access.Pat,
-                                Str,
+                                Loc_Str,
                                 Nmatch, Match);
-      if Nmatch = 1 and then Match(1).Start_Offset <= Match(1).End_Offset then
+      if Nmatch >= 1 and then Match(1).Start_Offset <= Match(1).End_Offset then
+        -- Copy the slice os substrings
+        Upat_Access.Nb_Substr := Nmatch - 1;
+        Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
+                   := Match(2 .. Nmatch);
         return Match(1);
       else
         return (0, 0);
@@ -330,6 +375,32 @@ package body Search_Pattern is
       -- Invalid Regex_Index or empty list
       raise No_Regex;
   end Check;
+
+  -- Returns the Match_Cell of the Nth sub-matching string
+  -- of one regex
+  -- Raises No_Regex if the Regex_Index is higher than
+  -- the number of regex (returned by Number)
+  -- or if the Sub_String_Index is higher than the number
+  -- of substring of this regex (returned by Nb_Substrings)
+  function Substr_Indexes (Regex_Index : Positive;
+                           Sub_String_Index : Sub_String_Range)
+           return Regular_Expressions.Match_Cell is
+    Upat : Line_Pat_Rec;
+    Upat_Access : Unique_Pattern.Element_Access;
+  begin
+    -- Get access to the pattern
+    Upat.Num := Regex_Index;
+    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    -- Check number of substrings and return cell
+    if Sub_String_Index > Upat_Access.Nb_Substr then
+      raise No_Regex;
+    end if;
+    return Upat_Access.Substrs(Sub_String_Index);
+  exception
+    when Unique_Pattern.Not_In_List =>
+      -- Invalid Regex_Index or empty list
+      raise No_Regex;
+  end Substr_Indexes;
 
 end Search_Pattern;
 

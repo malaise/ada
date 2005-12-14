@@ -125,7 +125,7 @@ package body Substit is
           Error ("Cannot open input file " & File_Name);
       end;
       -- Build out file name
-      File_Dir := Asu.To_Unbounded_String (Directory.DirName (File_Name));
+      File_Dir := Asu.To_Unbounded_String (Directory.Dirname (File_Name));
       if File_Dir /= Asu.Null_Unbounded_String then
         -- Remove trailing /
         File_Dir := Asu.To_Unbounded_String (

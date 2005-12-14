@@ -1,4 +1,9 @@
-History of Asubst
+History of Asubst:
+
+14/12/2005 V2_4
+CHANGE: Replace \IJ by \RIJ in replace pattern for "string matching pattern"
+        substitution.
+Add: \rIJ in replace pattern fo substring of matching string substitution.
 
 09/12/2005 V2_3
 Add: Support for \s (for space) in both patterns.

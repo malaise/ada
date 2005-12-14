@@ -1,4 +1,4 @@
-Asubst V2.2
+Asubst V2.4
 
 
 1. General syntax
@@ -62,12 +62,16 @@ Only the following '\' sequences are supported:
 - \t will be replaced by a (horiz) tab
 - \xIJ where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value
-- \IJ where IJ is an hexadecimal number will be replaced by the string
-  matching the corresponding regex number, 00 for the complete string.
-  (In case of a single regex (no "\n") \00 is equivalent to \01).
+- \RIJ where IJ is an hexadecimal number will be replaced by the string
+  matching the regex number IJ, 00 for the complete string.
+  (In case of a single regex (no "\n") \R00 is equivalent to \R01).
+- \rIJ where IJ is an hexadecimal number will be replaced by the string
+  matching the substring J of the regex number I, J=0 for the complete string.
+  (So \R0x = \rx0).
 Examples:
-echo "toto" | asubst "t" "\x40"                     ->  "@"
-echo "tito" | asubst "t." ">\00<"                   ->  ">ti<>to<"
-echo -e "toto\ntiti\ntata\n" | asubst ".*\n" "\01"  ->  tototititata
-echo -e "\ntoto\ntiti\ntata" | asubst "\n.*" "\02"  ->  tototititata
+echo -en "toto" | asubst "t" "\x40"                     ->  "@"
+echo -en "tito" | asubst "t." ">\R00<"                  ->  ">ti<>to<"
+echo -en "toto\ntiti\ntata\n" | asubst ".*\n" "\R01"    ->  "tototititata"
+echo -en "\ntoto\ntiti\ntata" | asubst "\n.*" "\R02"    ->  "tototititata"
+echo -en "tito" | asubst "(.i)(.o)"  "\r12<->\r11"      ->  "to<->ti"
 
