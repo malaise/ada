@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.4";
+  Version : constant String  := "V2.5";
 
   procedure Usage (New_Line : Boolean := True) is
   begin
@@ -46,7 +46,11 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    string of the input text matching the IJth regex if \R, or matching the Jth");
     Sys_Calls.Put_Line_Error (
-     "    substring of the Ith regex if \r).");
+     "    substring of the Ith regex if \r), ""\U"" (start UPPERCASE conversion),");
+    Sys_Calls.Put_Line_Error (
+     "    ""\l"" (lowercase), ""\m"" (Mixed_Case), ""\c"" (stop case conversion). Any new");
+    Sys_Calls.Put_Line_Error (
+     "    conv replaces previous, case conv applies after (sub)string replacement.");
     Sys_Calls.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> the <multiple_regex>, ""\ri0"" == ""\R0i"".");
     Sys_Calls.Put_Line_Error (

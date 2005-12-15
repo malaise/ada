@@ -282,6 +282,12 @@ package body Substit is
       or else Match_Res.End_Offset <= 0;
       -- Found a match
       Matches := True;
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Match in end of line >"
+           & Asu.Slice (Line.all, Current, Asu.Length(Line.all))
+           & "< from" & Match_Res.Start_Offset'Img
+           & " to" & Match_Res.End_Offset'Img);
+      end if;
       -- Get substituting string
       declare
         Replacing : constant String

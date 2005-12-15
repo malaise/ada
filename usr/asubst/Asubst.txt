@@ -68,10 +68,15 @@ Only the following '\' sequences are supported:
 - \rIJ where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I, J=0 for the complete string.
   (So \R0x = \rx0).
+- \u, \l, \m for starting an UPPER, lower or Mixed case conversion. A
+  conversion ends when a new starts, at end of line or on \c
+- \c for stopping a case conversion.
 Examples:
 echo -en "toto" | asubst "t" "\x40"                     ->  "@"
 echo -en "tito" | asubst "t." ">\R00<"                  ->  ">ti<>to<"
 echo -en "toto\ntiti\ntata\n" | asubst ".*\n" "\R01"    ->  "tototititata"
 echo -en "\ntoto\ntiti\ntata" | asubst "\n.*" "\R02"    ->  "tototititata"
 echo -en "tito" | asubst "(.i)(.o)"  "\r12<->\r11"      ->  "to<->ti"
+echo -en "tito" | asubst ".*" "\m\R01"                  ->  "Tito"
+echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 

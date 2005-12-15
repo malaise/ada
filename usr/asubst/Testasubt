@@ -1,10 +1,12 @@
 #!/bin/bash
+
+# Play scenario
 ./player Scenario
 if [ $? -ne 0 ] ; then
   echo "Scenario failed."
   exit 1
 fi
-
+echo "Test scenario, OK."
 
 # Various file names, reference (in), expected result
 #  tested (in/out), saved
@@ -12,8 +14,10 @@ export FR=tstfile.ref
 export FE=tstfile.exp
 export FT=tstfile.tst
 export FS=tstfile.tst.asu
+
 # Initial cleanup of files
 rm -rf $FS Temp_File.*
+
 # Make reference in file and result
 # Will remove both "------" and the linefeed before Test
 echo "Package body Pack is" > $FR
@@ -38,7 +42,7 @@ echo "" >> $FE
 echo "end Pack;" >> $FR
 echo "end Pack;" >> $FE
 
-# Substit no backup
+# Substit with no backup
 cp $FR $FT
 res=`asubst "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
 # Check result is expected
@@ -55,8 +59,9 @@ if [ -f $FS ] ; then
   echo "Unexpected backup $FS found."
   exit 1
 fi
+echo "File substitution with no backup, OK."
 
-# Substit backup
+# Substit with backup
 rm -rf $FS
 cp $FR $FT
 res=`asubst -s "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
@@ -83,6 +88,7 @@ if [ -f "Temp_File.*" ] ; then
   echo "Found remaining temorary files " Temp_File.* "."
   exit 1
 fi
+echo "File substitution with backup, OK."
 
 # Cleanup test files
 rm -rf $FR $FT $FS $FE

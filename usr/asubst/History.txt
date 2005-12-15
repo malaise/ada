@@ -1,5 +1,9 @@
 History of Asubst:
 
+15/12/2005 V2_5
+Add: Support \u, \l,\m and \c in replace pattern for upper/lower/mixed case
+     conversion.
+
 14/12/2005 V2_4
 CHANGE: Replace \IJ by \RIJ in replace pattern for "string matching pattern"
         substitution.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# set -vx
+#set -vx
 if [ "$1" = "" ] ; then
   echo "Usage: `basename $0` <scenario>"
   exit 1
@@ -41,8 +41,8 @@ while true ; do
   export replace=`readarg $L 3`
   export expected=`readarg $L 4`
   # Do test and save exit status
-  echo "echo $input | asubst \"$search\" \"$replace\" -> $expected"
-  result=`echo -e -n $input | asubst "$search" "$replace"`
+  echo "echo \"$input\" | asubst \"$search\" \"$replace\" -> $expected"
+  result=`echo -e -n "$input" | asubst "$search" "$replace"`
   code=$?
   export result
   # Check exit status
