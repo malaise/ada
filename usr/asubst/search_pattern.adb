@@ -3,7 +3,7 @@ with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
      Char_To_Hexa;
 package body Search_Pattern is
 
-  -- 1 to 16 substring indexes 
+  -- 1 to 16 substring indexes
   subtype Substr_Array is Regular_Expressions.Match_Array (Sub_String_Range);
 
   -- Unique list of patterns
