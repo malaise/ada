@@ -41,9 +41,10 @@ if [ "$mode" = "code" ] ; then
   letterator -c | enigma $numkey
 else
   # Create temp file
-  export tmpfile=/tmp/$$.enigmacode
-  touch $tmpfile > /dev/null 2>&1
+  export progname=`basename $0.$$`
+  tmpfile=`mktemp /tmp/$progname.XXXXXX`
   res=$?
+  export tmpfile
   if [ $res -ne 0 ] ; then
     echo "Cannot create temporary file $tmpfile" 1>&2
     exit 2
