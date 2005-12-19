@@ -1,4 +1,7 @@
 #!/bin/bash
+# Display current version
+type asubst
+asubst --version
 
 # Play scenario
 ./player Scenario

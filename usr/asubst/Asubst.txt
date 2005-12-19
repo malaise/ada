@@ -1,8 +1,9 @@
-Asubst V2.4
+Asubst V2.5
 
 
 1. General syntax
 Usage: asubst [ { <option> } ] <find_pattern> <replace_pattern> [ { <file> } ]
+or   : asubst -h | --help | -v | --version
 Substitutes strings in files.
 If no file name is specified, substitutes from stdin to stdout.
 See "man 7 regex" for basic and extended regex and for ignorecase pattern
@@ -10,8 +11,6 @@ matching.
 
 
 2. Options
--h or --help : display help
--v or --version : display version
 -b or --basic : use 'basic' regex instead of the default 'extended' regex.
 -i or --ignorecase : do case insensitive match checking of <find_pattern>
 -s or --save : make a copy (<file>.asu of original file(s).
@@ -35,7 +34,6 @@ automatically be added).
 Search pattern is split into several regex and \n patterns,
 each lines of input is split in two input items: text then newline,
 pattern 1 is compared to item 1, if they match, pattern 2 is compared to item 2
-
 
 Examples:
 r        -> r
@@ -71,6 +69,7 @@ Only the following '\' sequences are supported:
 - \u, \l, \m for starting an UPPER, lower or Mixed case conversion. A
   conversion ends when a new starts, at end of line or on \c
 - \c for stopping a case conversion.
+
 Examples:
 echo -en "toto" | asubst "t" "\x40"                     ->  "@"
 echo -en "tito" | asubst "t." ">\R00<"                  ->  ">ti<>to<"

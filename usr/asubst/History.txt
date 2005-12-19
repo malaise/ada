@@ -1,5 +1,8 @@
 History of Asubst:
 
+19/12/2005 V2_6
+Add: Clear the help and version messages.
+
 15/12/2005 V2_5
 Add: Support \u, \l,\m and \c in replace pattern for upper/lower/mixed case
      conversion.

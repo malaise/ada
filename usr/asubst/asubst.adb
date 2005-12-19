@@ -3,18 +3,22 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.5";
+  Version : constant String  := "V2.6";
 
-  procedure Usage (New_Line : Boolean := True) is
+  procedure Usage is
   begin
-    if New_Line then
-      Sys_Calls.New_Line_Error;
-    end if;
     Sys_Calls.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
                & " [ { <option> } ] <find_pattern> <replace_pattern> [ { <file> } ]");
     Sys_Calls.Put_Line_Error (
+     "or:    " & Argument.Get_Program_Name & " -h | --help | -v | --version");
+    Sys_Calls.Put_Line_Error (
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
+  end Usage;
+
+  procedure Help (New_Line : Boolean := True) is
+  begin
+    Usage;
     Sys_Calls.Put_Line_Error (
      "  <option> ::= -b | -i | -s | --");
     Sys_Calls.Put_Line_Error (
@@ -62,8 +66,13 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    and use -s option if unsure.");
     Sys_Calls.Set_Error_Exit_Code;
-  end Usage;
+  end Help;
 
+  procedure Error is
+  begin
+    Usage;
+    Sys_Calls.Set_Error_Exit_Code;
+  end Error;
 
   -- Option management, start of patterns
   Extended : Boolean := True;
@@ -82,15 +91,15 @@ begin
       Sys_Calls.Set_Error_Exit_Code;
     elsif Argument.Get_Parameter = "-h"
     or else Argument.Get_Parameter = "--help" then
-      Usage (False);
+      Help;
     else
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " Syntax ERROR.");
-      Usage;
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+      Error;
     end if;
     return;
   elsif Argument.Get_Nbre_Arg < 2 then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " Syntax ERROR.");
-    Usage;
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+    Error;
     return;
   end if;
 
@@ -130,7 +139,7 @@ begin
     Start := Start + 1;
   exception
     when Search_Pattern.Parse_Error =>
-      Usage;
+      Error;
       return;
   end;
   begin
@@ -139,7 +148,7 @@ begin
     Start := Start + 1;
   exception
     when Replace_Pattern.Parse_Error =>
-      Usage;
+      Error;
       return;
   end;
 
@@ -148,7 +157,7 @@ begin
   if Argument.Get_Nbre_Arg < Start then
     if Backup then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                & " ERROR. Cannot make backup if no file name.");
+                & ": ERROR. Cannot make backup if no file name.");
       Ok := False;
     else
       begin
@@ -158,7 +167,7 @@ begin
           Ok := False;
         when Error:others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                    & " EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
+                    & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                     & " while processing stdin to stdout.");
           Ok := False;
       end;
@@ -172,7 +181,7 @@ begin
           Ok := False;
         when Error:others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                    & " EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
+                    & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                     & " while processing file "
                     & Argument.Get_Parameter (Occurence => I) & ".");
           Ok := False;
