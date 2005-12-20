@@ -1,9 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exceptions, Ada.Text_Io;
 with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.6";
+  Version : constant String  := "V2.7";
 
   procedure Usage is
   begin
@@ -26,7 +26,15 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -i or --ignorecase for case insensitive match,");
     Sys_Calls.Put_Line_Error (
-     "    -s or --save for backup of original file, -- to stop options.");
+     "    -s or --save for backup of original file,");
+    Sys_Calls.Put_Line_Error (
+     "    -q or --quiet for no printout,");
+    Sys_Calls.Put_Line_Error (
+     "    -n or --number for print number of substitutions,");
+    Sys_Calls.Put_Line_Error (
+     "    -v or --verbose for print each substitution,");
+    Sys_Calls.Put_Line_Error (
+     "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
@@ -78,9 +86,13 @@ procedure Asubst is
   Extended : Boolean := True;
   Case_Sensitive : Boolean := True;
   Backup : Boolean := False;
+  type Verbose_List is (Quiet, File_Name, Subst_Nb, Verbose);
+  Verbosity : Verbose_List := File_Name;
+  -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
   Ok : Boolean;
+  Nb_Subst : Natural;
 
 begin
   -- Check nb of arguments
@@ -125,6 +137,21 @@ begin
       -- Make backup
       Backup := True;
       Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-q"
+    or else Argument.Get_Parameter (Occurence => I) = "--quiet" then
+      -- Make backup
+      Verbosity := Quiet;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-n"
+    or else Argument.Get_Parameter (Occurence => I) = "--number" then
+      -- Make backup
+      Verbosity := Subst_Nb;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-v"
+    or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
+      -- Make backup
+      Verbosity := Verbose;
+      Start := I + 1;
     else
       -- Not an option
       exit;
@@ -161,7 +188,7 @@ begin
       Ok := False;
     else
       begin
-        Substit.Do_One_File (Substit.Std_In_Out, False);
+        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, False, False);
       exception
         when Substit.Substit_Error =>
           Ok := False;
@@ -175,7 +202,23 @@ begin
   else
     for I in Start .. Argument.Get_Nbre_Arg loop
       begin
-        Substit.Do_One_File (Argument.Get_Parameter (Occurence => I), Backup);
+        if Verbosity = Verbose then
+          -- Put file name
+          Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I));
+        end if;
+        Nb_Subst := Substit.Do_One_File (
+                      Argument.Get_Parameter (Occurence => I),
+                      Backup, Verbosity = Verbose);
+        if Verbosity >= File_Name then
+          -- Put file name
+          Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
+          if Verbosity >= Subst_Nb then
+            -- Put nb of substitutions
+            Ada.Text_Io.Put_Line (Nb_Subst'Img);
+          else
+            Ada.Text_Io.New_Line;
+          end if;
+        end if;
       exception
         when Substit.Substit_Error =>
           Ok := False;

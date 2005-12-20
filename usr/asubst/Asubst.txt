@@ -14,6 +14,8 @@ matching.
 -b or --basic : use 'basic' regex instead of the default 'extended' regex.
 -i or --ignorecase : do case insensitive match checking of <find_pattern>
 -s or --save : make a copy (<file>.asu of original file(s).
+-n or --number : display number of substitutions per file
+-v or --verbose : display each substitution and its line number
 -- : to stop the list of options. If <find_pattern> is "-b", then use
      asubst [ { <option> } ] -- -b <replace_pattern>  [ { <file> } ]
 

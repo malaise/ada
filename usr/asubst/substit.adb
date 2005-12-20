@@ -27,6 +27,9 @@ package body Substit is
   Nb_Pattern : Positive;
   Is_Multiple : Boolean;
 
+  -- Current line number
+  Line_No : Natural;
+
   -- Display error and raise Substit_Error
   procedure Error (Msg : in String);
 
@@ -83,7 +86,7 @@ package body Substit is
   procedure Comit (Backup : in Boolean) is
     Result : Boolean;
   begin
-    if Backup then
+    if Backup and then not Is_Stdin then
       -- Copy in file as .asu if Backup
       Result := Copy_File (Asu.To_String (In_File_Name),
                            Asu.To_String (In_File_Name) & ".asu");
@@ -148,6 +151,8 @@ package body Substit is
     -- Get Search pattern characteristics
     Nb_Pattern := Search_Pattern.Number;
     Is_Multiple := Search_Pattern.Multiple;
+    -- Init number of line
+    Line_No := 0;
   end Open;
 
   -- Reports an error
@@ -200,50 +205,57 @@ package body Substit is
         Line_List_Mng.Insert (Line_List,
               Asu.To_Unbounded_String (Asu.Slice (Line, 1, Len-1)));
         Nb_To_Read := Nb_To_Read - 1;
+        Line_No := Line_No + 1;
         if Nb_To_Read = 0 then
           -- Nl remains for next read
           Trail_New_Line := True;
-          return True;
         else
           -- Insert Nl
           Line_List_Mng.Insert (Line_List, Line_Feed);
           Nb_To_Read := Nb_To_Read - 1;
         end if;
       else
-        -- Line without Nl, or a Nl
+        -- Line without Nl (last line), or a Nl (empty line)
         -- Insert it
         Line_List_Mng.Insert (Line_List, Line);
         Nb_To_Read := Nb_To_Read - 1;
+        -- Last line is without Nl
+        Line_No := Line_No + 1;
       end if;
     end loop;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Read line no " &  Line_No'Img);
+    end if;
     return True;
   end Read;
 
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
-  function Subst_Lines return Boolean;
-  procedure Do_One_File (File_Name : in String; Backup : in Boolean) is
-    Modified : Boolean;
+  function Subst_Lines (Verbose : Boolean) return Natural;
+  function Do_One_File (File_Name : String;
+                        Backup    : Boolean;
+                        Verbose   : Boolean) return Natural is
+    Nb_Subst : Natural;
+    Do_Verbose : Boolean;
   begin
     -- Open files
     Open (File_Name);
+    -- Verbose if requested and not stdin
+    Do_Verbose := Verbose and then not Is_Stdin;
 
     -- Init buffer of lines
     Line_List_Mng.Delete_List (Line_List);
     Trail_New_Line := False;
     -- Init substitution by reading Nb_Pattern lines and Newlines
-    Modified := False;
     -- Loop on substit
+    Nb_Subst := 0;
     loop
       -- Done when the amount of lines cannot be read
       exit when not Read;
       -- Process these lines
-      if Subst_Lines then
-        -- These lines have been substituted
-        Modified := True;
-      end if;
+      Nb_Subst := Nb_Subst + Subst_Lines (Do_Verbose);
     end loop;
-    -- Put remaining linesA (read but not matching)
+    -- Put remaining lines (read but not matching)
     Flush_Lines;
     -- Close and cleanup files
     if Debug.Set then
@@ -252,12 +264,12 @@ package body Substit is
     Close;
     -- After close (stdout restored to standard output)
     --  put name of modified file
-    if not Is_Stdin and then Modified then
+    if not Is_Stdin and then Nb_Subst /= 0 then
       Comit (Backup);
-      Ada.Text_Io.Put_Line (File_Name);
     else
       Clean;
     end if;
+    return Nb_Subst;
   exception
     when others =>
       Close;
@@ -265,14 +277,15 @@ package body Substit is
   end Do_One_File;
 
   -- Handle multiple substitutions within one line
-  function Subst_One_Line (Line : Str_Access) return Boolean is
+  function Subst_One_Line (Line : Str_Access;
+                           Verbose : Boolean) return Natural is
     Current : Positive;
-    Matches : Boolean;
+    Nb_Match : Natural;
     Match_Res : Regular_Expressions.Match_Cell;
   begin
     -- Multiple substitutions in one line
     Current := 1;
-    Matches := False;
+    Nb_Match := 0;
     loop
       -- Search a Match from Current to Last
       Match_Res := Search_Pattern.Check (
@@ -281,7 +294,7 @@ package body Substit is
       exit when Match_Res.Start_Offset <= 0
       or else Match_Res.End_Offset <= 0;
       -- Found a match
-      Matches := True;
+      Nb_Match := Nb_Match + 1;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Match in end of line >"
            & Asu.Slice (Line.all, Current, Asu.Length(Line.all))
@@ -295,6 +308,15 @@ package body Substit is
                                             Match_Res.Start_Offset,
                                             Match_Res.End_Offset));
       begin
+        -- Display verbose substitution
+        if Verbose then
+          Ada.Text_Io.Put_Line (
+              Line_No'Img & " : "
+            & Asu.Slice (Line.all,
+                         Match_Res.Start_Offset,
+                         Match_Res.End_Offset)
+            & " -> " & Replacing);
+        end if;
         -- Substitute from start to stop
         Asu.Replace_Slice (Line.all,
                            Match_Res.Start_Offset,
@@ -312,11 +334,11 @@ package body Substit is
     Text_Line.Put (Out_File, Asu.To_String (Line.all));
     -- Delete all
     Line_List_Mng.Delete_List (Line_List, False);
-    return Matches;
+    return Nb_Match;
   exception
     when Constraint_Error =>
       Error ("String too long substituting " & Asu.To_String (Line.all));
-      return False;
+      return 0;
   end Subst_One_Line;
 
   -- Put and flush lines that have been read but not match
@@ -340,7 +362,7 @@ package body Substit is
   end Flush_Lines;
 
   -- Check current list of lines vs search patterns
-  function Subst_Lines return Boolean is
+  function Subst_Lines (Verbose : Boolean) return Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
     Start, Stop : Positive;
@@ -351,7 +373,7 @@ package body Substit is
     Line_List_Mng.Rewind (Line_List);
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
-      return Subst_One_Line (Line_List_Mng.Access_Current (Line_List));
+      return Subst_One_Line (Line_List_Mng.Access_Current (Line_List), Verbose);
     end if;
     Matches := True;
     for I in 1 .. Nb_Pattern loop
@@ -405,7 +427,7 @@ package body Substit is
         Str_To_Replace := Asu.To_Unbounded_String (
           Asu.Slice (First_Line.all, Start, Stop));
       else
-        -- Many patteerns -> end of first line + all lines but last + start of last line
+        -- Many patterns -> end of first line + all lines but last + start of last line
         Str_To_Replace := Asu.To_Unbounded_String (
           Asu.Slice (First_Line.all, Start, Asu.Length (First_Line.all)));
         for I in 2 .. Nb_Pattern - 1 loop
@@ -420,7 +442,8 @@ package body Substit is
       -- Make replacing string
       declare
         Str_Replacing : constant String
-                      := Replace_Pattern.Replace (Asu.To_String (Str_To_Replace));
+                      := Replace_Pattern.Replace (
+                            Asu.To_String (Str_To_Replace));
         Str_Replaced : Asu.Unbounded_String;
         use type Asu.Unbounded_String;
       begin
@@ -432,6 +455,13 @@ package body Substit is
           Asu.Append (Str_Replaced, Asu.Slice (Last_Line.all,
                                          Stop + 1, Asu.Length (Last_Line.all)));
         end if;
+        -- Display verbose substitution
+        if Verbose then
+          Ada.Text_Io.Put_Line (
+              Natural'Image(Line_No - Nb_Pattern/2) & " : "
+            & Asu.To_String (Str_To_Replace)
+            & " -> " & Str_Replacing);
+        end if;
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
         end if;
@@ -440,7 +470,11 @@ package body Substit is
       -- Delete all
       Line_List_Mng.Delete_List (Line_List, False);
     end if;
-    return Matches;
+    if Matches then
+      return 1;
+    else
+      return 0;
+    end if;
    end Subst_Lines;
 
 end Substit;

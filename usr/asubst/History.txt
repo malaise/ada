@@ -1,5 +1,9 @@
 History of Asubst:
 
+19/12/2005 V2_7
+Add: -n (--number) and -v (--verbose) options for putting number of
+     substitutions and substitution details.
+
 19/12/2005 V2_6
 Add: Clear the help and version messages.
 
