@@ -386,6 +386,21 @@ package body Sys_Calls is
       Day_Mng.Pack (Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, 0));
   end Time_Of;
 
+  -- Get effective user/group Id
+  function Get_Effective_User_Id return Natural is
+    function C_Geteuid return Natural;
+    pragma Import (C, C_Geteuid, "geteuid");
+  begin
+    return C_Geteuid;
+  end Get_Effective_User_Id;
+
+  function Get_Effective_Group_Id return Natural is
+    function C_Getegid return Natural;
+    pragma Import (C, C_Getegid, "getegid");
+  begin
+    return C_Getegid;
+  end Get_Effective_Group_Id;
+
   -- Set mode for Stdin
 
   function Set_Tty_Attr (Fd : File_Desc;

@@ -88,6 +88,10 @@ package Sys_Calls is
   -- Convert file time
   function Time_Of (Time : Time_T) return Ada.Calendar.Time;
 
+  -- Get effective user/group Id
+  function Get_Effective_User_Id return Natural;
+  function Get_Effective_Group_Id return Natural;
+
   -- Modes for a tty. Return True if success
   type Tty_Mode_List is (
     Canonical,   -- Wait for Cr, Echo, Blocking
