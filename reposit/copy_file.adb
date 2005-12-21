@@ -17,7 +17,6 @@ function Copy_File (Src_Name, Dst_Name : String) return Boolean is
   Dummy : Boolean;
 
   use type Char_Io.Count;
-  
 begin
   -- Open files
   Char_Io.Open   (In_File, Char_Io.In_File, Src_Name);
@@ -42,9 +41,8 @@ begin
     else
       Char_Io.Read  (In_File,  Chars(1 .. Last_Bloc_Len));
       Char_Io.Write (Out_File, Chars(1 .. Last_Bloc_Len));
-    end if; 
+    end if;
   end loop;
-  
   -- Done, close
   Char_Io.Close (In_File);
   Char_Io.Close (Out_File);
