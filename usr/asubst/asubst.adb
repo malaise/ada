@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit;
 procedure Asubst is
 
-  Version : constant String  := "V2.7";
+  Version : constant String  := "V2.8";
 
   procedure Usage is
   begin
@@ -209,15 +209,13 @@ begin
         Nb_Subst := Substit.Do_One_File (
                       Argument.Get_Parameter (Occurence => I),
                       Backup, Verbosity = Verbose);
-        if Verbosity >= File_Name then
-          -- Put file name
-          Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
-          if Verbosity >= Subst_Nb then
-            -- Put nb of substitutions
-            Ada.Text_Io.Put_Line (Nb_Subst'Img);
-          else
-            Ada.Text_Io.New_Line;
-          end if;
+        if Verbosity = File_Name and then Nb_Subst /= 0 then
+          -- Put file name if substitution occured
+          Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I));
+        elsif Verbosity >= Subst_Nb then
+          -- Put file name and nb of substitutions
+          Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I)
+                              & Nb_Subst'Img);
         end if;
       exception
         when Substit.Substit_Error =>
