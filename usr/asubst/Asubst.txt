@@ -1,4 +1,4 @@
-Asubst V2.5
+Asubst V2_8
 
 
 1. General syntax
