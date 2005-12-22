@@ -1,6 +1,7 @@
-with Ada.Text_Io, Ada.Strings.Unbounded, Copy_File, Directory;
+with Ada.Text_Io, Ada.Strings.Unbounded;
 with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
-     Regular_Expressions, Debug;
+     Regular_Expressions, Directory, Copy_File, File_Access, Mixed_Str,
+     Debug;
 with Search_Pattern, Replace_Pattern;
 package body Substit is
 
@@ -28,10 +29,65 @@ package body Substit is
   Is_Multiple : Boolean;
 
   -- Current line number
-  Line_No : Natural;
+  Line_No : Long_Long_Natural;
 
   -- Display error and raise Substit_Error
   procedure Error (Msg : in String);
+
+  -- Check that this is a file we can read and write
+  procedure Check_File (File_Name : in String) is
+    Path_Name : constant String := Directory.Dirname (File_Name);
+    use type Sys_Calls.File_Kind_List;
+    -- Get dir name of file, following symbolic links
+    function Dir_Name return String is
+      Stat : Sys_Calls.File_Stat_Rec;
+    begin
+      if Path_Name = "" then
+        return "./";
+      else
+        Stat := Sys_Calls.File_Stat (Path_Name);
+        if Stat.Kind = Sys_Calls.Link then
+          -- Resolve sym link recursively
+          return Directory.Read_Link (Path_Name);
+        else
+          -- Kind is checked later
+          return Path_Name;
+        end if;
+      end if;
+    end Dir_Name;
+    Stat : Sys_Calls.File_Stat_Rec;
+    Can_Read, Can_Write, Can_Exec : Boolean;
+  begin
+    -- Directory must be a dir with wrx access
+    Stat := Sys_Calls.File_Stat (Dir_Name);
+    if Stat.Kind /= Sys_Calls.Dir then
+      Error ("Directory " & Dir_Name & " is of incorrect kind: "
+           & Mixed_Str (Stat.Kind'Img));
+    end if;
+    File_Access (Sys_Calls.Get_Effective_User_Id, Sys_Calls.Get_Effective_Group_Id,
+                 Stat.User_Id, Stat.Group_Id, Stat.Rights,
+                 Can_Read, Can_Write, Can_Exec);
+    if not (Can_Read and then Can_Write and then Can_Exec) then
+      Error ("Directory " & Dir_Name & " has incorrect access rights");
+    end if;
+    -- This must be a file, with rw access
+    begin
+      Stat := Sys_Calls.File_Stat (File_Name);
+    exception
+      when others =>
+        Error ("Cannot access file " & File_Name);
+    end;
+    if Stat.Kind /= Sys_Calls.File then
+      Error ("File " & File_Name & " is of incorrect kind: "
+           & Mixed_Str (Stat.Kind'Img));
+    end if;
+    File_Access (Sys_Calls.Get_Effective_User_Id, Sys_Calls.Get_Effective_Group_Id,
+                 Stat.User_Id, Stat.Group_Id, Stat.Rights,
+                 Can_Read, Can_Write, Can_Exec);
+    if not (Can_Read and then Can_Write) then
+      Error ("File " & File_Name & " has incorrect access rights");
+    end if;
+  end Check_File;
 
   -- Close files
   procedure Close is
@@ -40,7 +96,7 @@ package body Substit is
     if Text_Line.Is_Open (In_File) then
       if not Is_Stdin then
         begin
-          Sys_Calls.Close (Text_Line.Get_Fd(In_File));
+          Sys_Calls.Close (Text_Line.Get_Fd (In_File));
         exception
           when others => null;
         end;
@@ -56,7 +112,7 @@ package body Substit is
       Text_Line.Flush (Out_File);
       if not Is_Stdin then
         begin
-          Sys_Calls.Close (Text_Line.Get_Fd(Out_File));
+          Sys_Calls.Close (Text_Line.Get_Fd (Out_File));
         exception
           when others => null;
         end;
@@ -121,6 +177,8 @@ package body Substit is
       Out_Fd := Sys_Calls.Stdout;
       Out_File_Name := Asu.Null_Unbounded_String;
     else
+      -- Check access rights (rw) of this file
+      Check_File (File_Name);
       begin
         In_Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
       exception
@@ -231,11 +289,14 @@ package body Substit is
 
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
-  function Subst_Lines (Verbose : Boolean) return Natural;
+  function Subst_Lines (Max_Subst : Long_Long_Natural;
+                        Verbose : Boolean) return Long_Long_Natural;
   function Do_One_File (File_Name : String;
+                        Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
-                        Verbose   : Boolean) return Natural is
-    Nb_Subst : Natural;
+                        Verbose   : Boolean) return Long_Long_Natural is
+    Total_Subst : Long_Long_Natural;
+    Remain_Subst : Long_Long_Natural;
     Do_Verbose : Boolean;
   begin
     -- Open files
@@ -248,39 +309,47 @@ package body Substit is
     Trail_New_Line := False;
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
-    Nb_Subst := 0;
+    Total_Subst := 0;
+    Remain_Subst := Max_Subst;
     loop
       -- Done when the amount of lines cannot be read
       exit when not Read;
       -- Process these lines
-      Nb_Subst := Nb_Subst + Subst_Lines (Do_Verbose);
+      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose);
+      -- Done when amount of substitutions reached
+      if Max_Subst /= 0 then
+        exit when Max_Subst = Total_Subst;
+        Remain_Subst := Max_Subst - Total_Subst;
+      end if;
     end loop;
-    -- Put remaining lines (read but not matching)
+    -- Put remaining lines (read but not matching, or not read)
     Flush_Lines;
     -- Close and cleanup files
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Done.");
     end if;
     Close;
-    -- After close (stdout restored to standard output)
-    --  put name of modified file
-    if not Is_Stdin and then Nb_Subst /= 0 then
+    -- After close, comit or clean
+    if not Is_Stdin and then Total_Subst /= 0 then
       Comit (Backup);
     else
       Clean;
     end if;
-    return Nb_Subst;
+    return Total_Subst;
   exception
     when others =>
+      -- Rollback
       Close;
+      Clean;
       raise;
   end Do_One_File;
 
   -- Handle multiple substitutions within one line
   function Subst_One_Line (Line : Str_Access;
-                           Verbose : Boolean) return Natural is
+                           Max_Subst : Long_Long_Natural;
+                           Verbose : Boolean) return Long_Long_Natural is
     Current : Positive;
-    Nb_Match : Natural;
+    Nb_Match : Long_Long_Natural;
     Match_Res : Regular_Expressions.Match_Cell;
   begin
     -- Multiple substitutions in one line
@@ -291,6 +360,7 @@ package body Substit is
       Match_Res := Search_Pattern.Check (
          Asu.Slice (Line.all, Current, Asu.Length(Line.all)),
          1);
+      -- Exit when no (more) match
       exit when Match_Res.Start_Offset <= 0
       or else Match_Res.End_Offset <= 0;
       -- Found a match
@@ -326,6 +396,9 @@ package body Substit is
         Current := Match_Res.Start_Offset + Replacing'Length;
         exit when Current > Asu.Length(Line.all);
       end;
+      -- Exit when number of subtitution is reached
+      --  (Max_Subst may be 0 for infinite)
+      exit when Nb_Match = Max_Subst;
     end loop;
     -- Put the (modified) line
     if Debug.Set then
@@ -341,28 +414,39 @@ package body Substit is
       return 0;
   end Subst_One_Line;
 
-  -- Put and flush lines that have been read but not match
+  -- Put and flush lines that have been read but not match,
+  --  then lines that have not been read
   procedure Flush_Lines is
   begin
-    if Line_List_Mng.Is_Empty (Line_List) then
-      return;
+    -- Put and flush lines that have been read but not match,
+    if not Line_List_Mng.Is_Empty (Line_List) then
+      Line_List_Mng.Rewind (Line_List);
+      while not Line_List_Mng.Is_Empty (Line_List) loop
+        Text_Line.Put (Out_File,
+                 Asu.To_String (Line_List_Mng.Access_Current (Line_List).all));
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error (
+              "Flushing >"
+            & Asu.To_String (Line_List_Mng.Access_Current (Line_List).all)
+            & "<");
+        end if;
+        Line_List_Mng.Delete (Line_List);
+      end loop;
     end if;
-    Line_List_Mng.Rewind (Line_List);
-    while not Line_List_Mng.Is_Empty (Line_List) loop
-      Text_Line.Put (Out_File,
-               Asu.To_String (Line_List_Mng.Access_Current (Line_List).all));
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error (
-            "Flushing >"
-          & Asu.To_String (Line_List_Mng.Access_Current (Line_List).all)
-          & "<");
-      end if;
-      Line_List_Mng.Delete (Line_List);
+    --  Put lines that have not been read
+    loop
+      declare
+        Str : constant String := Text_Line.Get (In_File);
+      begin
+        exit when Str = "";
+        Text_Line.Put (Out_File, Str);
+      end;
     end loop;
   end Flush_Lines;
 
   -- Check current list of lines vs search patterns
-  function Subst_Lines (Verbose : Boolean) return Natural is
+  function Subst_Lines (Max_Subst : Long_Long_Natural;
+                        Verbose : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
     Start, Stop : Positive;
@@ -373,8 +457,10 @@ package body Substit is
     Line_List_Mng.Rewind (Line_List);
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
-      return Subst_One_Line (Line_List_Mng.Access_Current (Line_List), Verbose);
+      return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
+                             Max_Subst, Verbose);
     end if;
+    -- From here, one subtitution max
     Matches := True;
     for I in 1 .. Nb_Pattern loop
       -- Check this read line
@@ -458,7 +544,9 @@ package body Substit is
         -- Display verbose substitution
         if Verbose then
           Ada.Text_Io.Put_Line (
-              Natural'Image(Line_No - Nb_Pattern/2) & " : "
+              Long_Long_Natural'Image(Line_No
+                                    - Long_Long_Natural(Nb_Pattern) / 2)
+            & " : "
             & Asu.To_String (Str_To_Replace)
             & " -> " & Str_Replacing);
         end if;
@@ -470,6 +558,7 @@ package body Substit is
       -- Delete all
       Line_List_Mng.Delete_List (Line_List, False);
     end if;
+    -- Return number of subtitutions performed
     if Matches then
       return 1;
     else
