@@ -12,10 +12,11 @@ fi
 echo "Test scenario, OK."
 
 # Various file names, reference (in), expected result
-#  tested (in/out), saved
+#  tested (in/out), list, saved
 export FR=tstfile.ref
 export FE=tstfile.exp
 export FT=tstfile.tst
+export FL=tstfile.lst
 export FS=tstfile.tst.asu
 
 # Initial cleanup of files
@@ -45,10 +46,16 @@ echo "" >> $FE
 echo "end Pack;" >> $FR
 echo "end Pack;" >> $FE
 
-# Substit with no backup
+# Substit from file list with no backup
 cp $FR $FT
-res=`asubst "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
-# Check result is expected
+echo $FT > $FL
+res=`asubst -f "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FL`
+code=$?
+# Check exit code and that result is expected
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  exit 1
+fi
 cmp -s $FT $FE
 if [ $? -ne 0 ] ; then
   echo "Result file $FT differs from expected $FE."
@@ -62,13 +69,18 @@ if [ -f $FS ] ; then
   echo "Unexpected backup $FS found."
   exit 1
 fi
-echo "File substitution with no backup, OK."
+echo "File substitution from file list and with no backup, OK."
 
 # Substit with backup
 rm -rf $FS
 cp $FR $FT
 res=`asubst -s "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
-# Check result is expected
+code=$?
+# Check exit code and result is expected
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  exit 1
+fi
 cmp -s $FT $FE
 if [ $? -ne 0 ] ; then
   echo "Result file $FT differs from expected $FE."
@@ -94,5 +106,5 @@ fi
 echo "File substitution with backup, OK."
 
 # Cleanup test files
-rm -rf $FR $FT $FS $FE
+rm -rf $FR $FT $FS $FE $FL
 
