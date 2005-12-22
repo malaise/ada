@@ -1,9 +1,9 @@
 with Ada.Exceptions, Ada.Text_Io;
 with Argument, Sys_Calls;
-with Search_Pattern, Replace_Pattern, Substit;
+with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V2.8";
+  Version : constant String  := "V2.9";
 
   procedure Usage is
   begin
@@ -20,7 +20,7 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -b | -i | -s | --");
+     "  <option> ::= -b | -i | -s | -q | -n | -v | -f | -m <max> | --");
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
@@ -33,6 +33,10 @@ procedure Asubst is
      "    -n or --number for print number of substitutions,");
     Sys_Calls.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
+    Sys_Calls.Put_Line_Error (
+     "    -f or --file to indicate that <file> will be a list of file names,");
+    Sys_Calls.Put_Line_Error (
+     "    -m <max> or --max=<max> for stop processing file after <max> substitutions,");
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
@@ -86,13 +90,44 @@ procedure Asubst is
   Extended : Boolean := True;
   Case_Sensitive : Boolean := True;
   Backup : Boolean := False;
-  type Verbose_List is (Quiet, File_Name, Subst_Nb, Verbose);
-  Verbosity : Verbose_List := File_Name;
+  type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
+  Verbosity : Verbose_List := Put_File_Name;
+  File_Of_Files : Boolean := False;
+  Max : Substit.Long_Long_Natural := 0;
   -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
   Ok : Boolean;
-  Nb_Subst : Natural;
+  -- Nb subst per file
+  Nb_Subst : Substit.Long_Long_Natural;
+
+  -- Process one file
+  procedure Do_One_File (File_Name : in String) is
+  begin
+    if Verbosity = Verbose then
+      -- Put file name
+      Ada.Text_Io.Put_Line (File_Name);
+    end if;
+    Nb_Subst := Substit.Do_One_File (
+                  File_Name,
+                  Max, Backup, Verbosity = Verbose);
+    if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
+      -- Put file name if substitution occured
+      Ada.Text_Io.Put_Line (File_Name);
+    elsif Verbosity >= Put_Subst_Nb then
+      -- Put file name and nb of substitutions
+      Ada.Text_Io.Put_Line (File_Name & Nb_Subst'Img);
+    end if;
+  exception
+    when Substit.Substit_Error =>
+      Ok := False;
+    when Error:others =>
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+                & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
+                & " while processing file "
+                & File_Name & ".");
+      Ok := False;
+  end Do_One_File;
 
 begin
   -- Check nb of arguments
@@ -125,33 +160,87 @@ begin
     elsif Argument.Get_Parameter (Occurence => I) = "-b"
     or else Argument.Get_Parameter (Occurence => I) = "--basic" then
       -- Basic regex
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option basic regex");
+      end if;
       Extended := False;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-i"
     or else Argument.Get_Parameter (Occurence => I) = "--ignorecase" then
       -- Case insensitive match
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option ignore case");
+      end if;
       Case_Sensitive := False;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-s"
     or else Argument.Get_Parameter (Occurence => I) = "--save" then
       -- Make backup
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option make backup");
+      end if;
       Backup := True;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-q"
     or else Argument.Get_Parameter (Occurence => I) = "--quiet" then
-      -- Make backup
+      -- Quiet mode
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option quiet");
+      end if;
       Verbosity := Quiet;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-n"
     or else Argument.Get_Parameter (Occurence => I) = "--number" then
-      -- Make backup
-      Verbosity := Subst_Nb;
+      -- Put number of substitutions
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option put numbers");
+      end if;
+      Verbosity := Put_Subst_Nb;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-v"
     or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
-      -- Make backup
+      -- Verbose put each substit
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option verbose");
+      end if;
       Verbosity := Verbose;
       Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-f"
+    or else Argument.Get_Parameter (Occurence => I) = "--file" then
+      -- The file will be a list of files
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option file of files");
+      end if;
+      File_Of_Files := True;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-m"
+    or else (Argument.Get_Parameter (Occurence => I)'Length > 6
+     and then Argument.Get_Parameter (Occurence => I)(1 .. 6) = "--max=" ) then
+      -- Stop each file after <max> substitutions
+      begin
+        if Argument.Get_Parameter (Occurence => I) = "-m" then
+          -- -m <max>
+          Max := Substit.Long_Long_Natural'Value (
+            Argument.Get_Parameter (Occurence => I + 1));
+          Start := I + 2;
+        else
+          -- --max=<max>
+          declare
+            Str : constant String := Argument.Get_Parameter (Occurence => I);
+          begin
+            Max := Substit.Long_Long_Natural'Value (Str (7 .. Str'Last));
+          end;
+          Start := I + 1;
+        end if;
+      exception
+        when others =>
+          Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+             & ": Syntax ERROR. Invalid specification of max subtitutions.");
+          Error;
+      end;
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
+      end if;
     else
       -- Not an option
       exit;
@@ -159,6 +248,10 @@ begin
   end loop;
 
   -- Parse both patterns
+  if Argument.Get_Nbre_Arg < Start + 1 then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+    Error;
+  end if;
   begin
     Search_Pattern.Parse (
          Argument.Get_Parameter (Occurence => Start),
@@ -179,16 +272,28 @@ begin
       return;
   end;
 
+  -- One file argument if file of files
+  if File_Of_Files then
+    if Argument.Get_Nbre_Arg /= Start then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+                     & ": Syntax ERROR. One file (only) must be supplied"
+                     & "  with -f or --file option.");
+      Error;
+      return;
+    end if;
+  end if;
+
   -- Process files
   Ok := True;
   if Argument.Get_Nbre_Arg < Start then
+    -- No file: stdin -> stdout
     if Backup then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                 & ": ERROR. Cannot make backup if no file name.");
       Ok := False;
     else
       begin
-        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, False, False);
+        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max, False, False);
       exception
         when Substit.Substit_Error =>
           Ok := False;
@@ -199,34 +304,32 @@ begin
           Ok := False;
       end;
     end if;
+  elsif File_Of_Files then
+    -- File of files: open it
+    begin
+      File_Mng.Open (Argument.Get_Parameter (Occurence => Start));
+    exception
+      when File_Mng.Open_Error =>
+        Ok := False;
+    end;
+    -- Process files up to the end of file of files
+    if Ok then
+      loop
+        begin
+          Do_One_File (File_Mng.Get_Next_File);
+        exception
+          when File_Mng.End_Error =>
+            exit;
+          when File_Mng.Io_Error =>
+            Ok := False;
+            exit;
+        end;
+      end loop;
+    end if;
   else
+    -- Files are arguments
     for I in Start .. Argument.Get_Nbre_Arg loop
-      begin
-        if Verbosity = Verbose then
-          -- Put file name
-          Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I));
-        end if;
-        Nb_Subst := Substit.Do_One_File (
-                      Argument.Get_Parameter (Occurence => I),
-                      Backup, Verbosity = Verbose);
-        if Verbosity = File_Name and then Nb_Subst /= 0 then
-          -- Put file name if substitution occured
-          Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I));
-        elsif Verbosity >= Subst_Nb then
-          -- Put file name and nb of substitutions
-          Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I)
-                              & Nb_Subst'Img);
-        end if;
-      exception
-        when Substit.Substit_Error =>
-          Ok := False;
-        when Error:others =>
-          Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                    & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
-                    & " while processing file "
-                    & Argument.Get_Parameter (Occurence => I) & ".");
-          Ok := False;
-      end;
+      Do_One_File (Argument.Get_Parameter (Occurence => I));
     end loop;
   end if;
 
