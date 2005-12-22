@@ -1,5 +1,10 @@
 History of Asubst:
 
+22/12/2005 V2_9
+Add: Options -f (--file) for file of files, and -m <max> (--max=<max>) for
+     maximum of subtitutions per file.
+Add: Count substitutions and lines with Long_Long.
+
 21/12/2005 V2_8
 Add: checks of access right on file prior to substitution.
 Add: clean temp file in case of exception.
