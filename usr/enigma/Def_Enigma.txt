@@ -3,7 +3,7 @@ Usage: def_enigma [ -text ] [ <date> | rnd ]
   date ::= dd/mm/YYyy
 
 If rnd, generates a random switch sequence, 3 to 8 jammers and a back from 7 to 9.
-If date, generates a switch sequence , 3 jammers and the back from the date.
+If date, generates a switch sequence, 3 jammers and the back from the date.
 If no arg, same with current date.
 If -text, generate text of key (see B.)
 
@@ -29,13 +29,15 @@ Jan->2, Feb->3 .. Aug->9, Sep->1, Oct->1, Nov->2, Dec->3. If used by back,
 first or second jammer, then add 1. Ex Sep will not be 1 because 1 is already
 used by jammer 2. Sep becomes 2 (if not used by 1st jammer).
 The jammers offsets are the first three letters of MONTHNAME respectively.
+The jammers carry offsets are the first three letters of DAYNAME
+respectively.
 
 B. Letters
 If optionnal -text is provided, the key (random, from current or from provided
 date) is translated to text:
-The switch definition is displayed, followed by JJ (dual letter cannot appear
-in switch).
+The switch definition is displayed, followed by JJJ (letter cannot appear
+twice at first nor twce as second in switch).
 Then the jammers and back are displayed but with letters instead of numbers:
-1A2B -> ONEATWOB. Then the back number is repeated another time (a scrambler
+1AF2B -> ONEAFTWOB. Then the back number is repeated another time (a scrambler
 num cannot appear twice).
 

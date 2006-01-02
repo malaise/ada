@@ -5,20 +5,21 @@
 1. Command line
 ---------------
 Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <start_index> ]
+               [ <last_index>]
 
 <switch>        ::= -s<switch>
 <switch>        ::= { <upperletter><upperletter> }
-<jammers>       ::= -j{ <scrambler> }
-<scrambler>     ::= <scrambler_num><upperletter>
-<back>          ::= -b<scrambler>
+<jammers>       ::= -j{ <scrambler_num><upperletter><upperletter> }
+<back>          ::= -b<scrambler_num><upperletter>
 <first_index>   ::= -f<positive>
+<last_index>    ::= -l<positive>
 <scrambler_num> ::= 1 .. 9
 <upperletter>   ::= A .. Z
 <positive>      ::= 1 ..
 
 Semantic:
 - Up to 8 jammers can be defined and one back must be defined.
-They must all have different numbers. ex "2A1Z9F".
+They must all have different numbers. ex "2AB1ZX9F".
 All the jammers are defined in a conf file (name from ENV ENIGMA_CONF_FILE,
 default "enigma.cnf"). This file has the following syntax (lines starting with
 # and and empty lines are skipped): Each jammer is defined by three lines.
@@ -39,6 +40,8 @@ Note that the same letter can appear at max twice, but always in different
 part of a pairs (AXYA is OK but not AXAY).
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
+- The last number defines the last offset of input text after which the
+decoding stops (default none).
 
 2. Behaviour
 ------------
@@ -65,7 +68,8 @@ InputLetter  -> +------+ -> +------+ -> +------+ ->  +
 OutputLetter <- +------+ <- +------+ <- +------+ <-  +
 
 After coding, the offset of the first jammer is incremented.
-After 26 increments of the first jammer, the second one is incremented...
+After a certain number of  increments of the first jammer, the second one is
+incremented...
 
 3. Coding algorithms and objects
 --------------------------------
@@ -102,7 +106,9 @@ A back is child of plate.
 
 A jammer is a child of plate. It adds the concept of increment.
 It supports:
-* Increment -> Boolean; -- True after 26 increments
+* Set_Carry(Id);
+* Increment -> Boolean; -- True after carry increments then each 26 increments
+* Set_Offset(Id);
 * Encode(x) that returns Encode(x+Offset)   -- From the scrambler
 * Decode(x) that returns Decode(x)-Offset
 

@@ -12,27 +12,36 @@ package Definition is
     Switch : Letter_Pair_Array (1 .. Nb_Switches);
   end record;
 
-  -- A scrambler is defined by an index (1 .. 9) and an offset
+  -- A scrambler (back or jammer) identifier
   type Scrambler_Range is new Natural range 0 .. 9;
   subtype Scrambler_Index is Scrambler_Range range 1 .. Scrambler_Range'Last;
-  type Scrambler_Definition is record
+
+  -- A back is defined by an index (1 .. 9) and an offset
+  type Back_Definition is record
     Scrambler : Scrambler_Index; -- The selected scrambler
     Offset    : Types.Letter;    -- The offset of this scrambler;
+  end record;
+
+  -- A jammer is defined by an index (1 .. 9), an offset and a carry offset
+  type Jammer_Definition  is record
+    Scrambler : Scrambler_Index; -- The selected scrambler
+    Offset    : Types.Letter;    -- The offset of this scrambler
+    Carry_Offset : Types.Letter; -- The offset for the carry of this scrambler
   end record;
 
   -- Array of 0 to 8 jammers
   subtype Jammers_Range is Scrambler_Range range 0 .. Scrambler_Range'Last - 1;
   subtype Jammers_Index is Jammers_Range range 1 .. Jammers_Range'Last;
-  type Jammers_Array is array (Jammers_Index range <>) of Scrambler_Definition;
+  type Jammers_Array is array (Jammers_Index range <>) of Jammer_Definition;
   type Jammers_Definition (Nb_Jammers : Jammers_Range := 0) is record
-    Jammers      : Jammers_Array (1 .. Nb_Jammers);
+    Jammers : Jammers_Array (1 .. Nb_Jammers);
   end record;
 
   -- The complete definition
   type Def_Rec is record
     Switch  : Switch_Definition;
     Jammers : Jammers_Definition;
-    Back    : Scrambler_Definition;
+    Back    : Back_Definition;
   end record;
 
   -- Exception if definition is not correct

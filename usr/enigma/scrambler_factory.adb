@@ -116,10 +116,29 @@ package body Scrambler_Factory is
     end if;
     Jammer := (Scrambler     => Scramblers(Scambler_Id).Scrambler,
                Global_Offset => 0,
-               Increment     => 0);
+               Increment     => 0,
+               Carry_Offset  => 0);
     Scramblers(Scambler_Id).Used := True;
     return Jammer;
   end Get;
+
+  -- Set the initial value for the carry (see Increment)
+  procedure Set_Carry (Jammer : in out Jammer_Type;
+                       Carry_Offset : in Types.Lid) is
+  begin
+    Jammer.Carry_Offset := Carry_Offset;
+  end Set_Carry;
+  
+  -- Increment the jammer
+  -- Set Carry to True after Carry_Offset then after each 26 increments
+  procedure Increment (Jammer : in out Jammer_Type;
+                       Carry : out Boolean) is
+  begin
+    Jammer.Global_Offset := Jammer.Global_Offset + 1;
+    Jammer.Increment := Jammer.Increment + 1;
+    -- Carry when increment is modulo Carry_Offset
+    Carry := Jammer.Increment = Jammer.Carry_Offset;
+  end Increment;
 
   -- Set the offset
   procedure Set_Offset (Jammer : in out Jammer_Type;
@@ -127,16 +146,6 @@ package body Scrambler_Factory is
   begin
     Jammer.Global_Offset := Offset;
   end Set_Offset;
-
-  -- Increment the jammer
-  -- Set Carry to True each 26 increments since creation
-  procedure Increment (Jammer : in out Jammer_Type;
-                       Carry : out Boolean) is
-  begin
-    Jammer.Global_Offset := Jammer.Global_Offset + 1;
-    Jammer.Increment := Jammer.Increment + 1;
-    Carry := Jammer.Increment = 0;
-  end Increment;
 
   -- Encode a letter
   function Encode (Jammer : in Jammer_Type;

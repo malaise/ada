@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
 with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
-     Num_Letters, Sys_Calls;
+     Num_Letters, Sys_Calls, String_Mng;
 with Types, Scrambler_Gen;
 procedure Def_Enigma is
   -- Constants
@@ -30,9 +30,9 @@ procedure Def_Enigma is
     return True;
   end Is_Digit;
 
-  Random : Boolean := False;
+  type Action_List is (Current_Date, Parse_Date, Random, Extract);
+  Action : Action_List := Current_Date;
   To_Text : Boolean := False;
-  Extract : Boolean := False;
   Nb_Arg : Natural;
   Other_Arg : Natural;
 
@@ -54,16 +54,17 @@ procedure Def_Enigma is
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
   T : Ada.Calendar.Time;
-  Txt : Text_Handler.Text (128);
+  Txt : Text_Handler.Text (256);
 
   Day_Month : Text_Handler.Text (18); -- WEDNESDAYSEPTEMBER
   Day_26 : Natural; -- Day rem 26
   Month_3 : String (1 .. 3);
+  Day_3 : String (1 .. 3);
 
   -- For all
   Switch : Text_Handler.Text (26 * 2);
   Back : Text_Handler.Text (2);
-  Jammers : Text_Handler.Text (16);
+  Jammers : Text_Handler.Text (24);
 
   -- For unicity of scramblers
   type Digit is mod 9; -- 0 .. 8 (that will lead to 1 .. 9)
@@ -134,7 +135,7 @@ procedure Def_Enigma is
   end Get_Number;
   Start, Stop : Natural;
   Prev_Scrambler, Got_Scrambler : Nat_9;
-  Got_Letter : Types.Letter;
+  Got_Letters : array (1 .. 2) of Types.Letter;
 
 begin
 
@@ -151,6 +152,7 @@ begin
         end if;
       else
         Usage;
+        return;
       end if;
     exception
       when Argument.Argument_Not_Found =>
@@ -158,168 +160,203 @@ begin
         null;
     end;
   end if;
+  -- At most one remaining arg
+  if Nb_Arg > 1 then
+    Usage;
+    return;
+  end if;
 
   if Nb_Arg = 0 then
-    -- Current date
-    T := Ada.Calendar.Clock;
-    declare
-      Dummy_Duration : Ada.Calendar.Day_Duration;
-    begin
-      Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
-    end;
-    Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
-                         & Normal (Month, 2, Gap => '0') & "/"
-                         & Normal (Year,  4, Gap => '0') );
-  elsif Nb_Arg = 1
-  and then Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
-    Random := True;
-  elsif Nb_Arg = 1 then
-    -- Get date from arg 1?
-    begin
-      Argument.Get_Parameter (Txt, Occurence => Other_Arg);
-    exception
-      when Argument.Argument_Too_Long =>
-        Usage;
-        return;
-    end;
-    if Text_Handler.Length (Txt) = 10
-    and then Text_Handler.Value (Txt)(3) = '/'
-    and then Text_Handler.Value (Txt)(6) = '/' then
-      if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
-      or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
-      or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
-        Usage;
-        return;
-      end if;
-
-      begin
-        Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
-        Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
-        Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
-      exception
-        when others =>
-          Usage;
-          return;
-      end;
-    elsif Text_Handler.Locate (Txt, Separator) /= 0
-    and then Argument.Get_Nbre_Arg = 1 then
-      -- Looks like a text key
-      Extract := True;
-    else
-      Usage;
-      return;
-    end if;
+    Action := Current_Date;
+  elsif Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
+    Action := Random;
+  elsif String_Mng.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
+                           1, "/") /= 0 then
+    -- Looks like a date
+    Action := Parse_Date;
+  elsif String_Mng.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
+                           1, Separator) /= 0 then
+    -- Looks like a text key
+    Action := Extract;
   else
     Usage;
     return;
   end if;
 
-  if Random then
-    Rnd.Randomize;
-
-    -- Set random switch
-    declare
-      -- Generate a random full asymetric scrambler
-      Str : constant String := Scrambler_Gen.Generate (False);
-      -- Generate a random number of switch entries
-      N : constant Natural := Rnd.Int_Random (0, Id_Range'Last);
-      -- Init array of already mapped letters
-      Used : array (Id_Range) of Boolean := (others => False);
-      Index : Id_Range;
-    begin
-      for I in 1 .. N loop
-        loop
-          -- Look for a random unused char
-          Index := Id_Random;
-          exit when not Used(Index);
-        end loop;
-        Used(Index) := True;
-        Text_Handler.Append (Switch, To_Letter(Index) & Str(Index));
-      end loop;
-    end;
-
-    -- Set random back between 7 and 9
-    declare
-      Back_Num : Pos_9 := Id_Random (7, 9);
-    begin
-      Back_Num := Store (Back_Num, 1);
-      Text_Handler.Set (Back, Normal(Back_Num, 1)
-                            & To_Letter (Id_Random));
-    end;
-
-    -- Set random number (3 to 8) of random jammers
-    declare
-      Jam_Nb : constant Natural := Rnd.Int_Random (3, 8);
-      Jam_Num : Pos_9;
-    begin
-      for I in 1 .. Jam_Nb loop
-        Jam_Num := Id_Random (1, 9);
-        Jam_Num := Store (Jam_Num, I + 1);
-        Text_Handler.Append (Jammers, Normal(Jam_Num, 1)
-                                    & To_Letter (Id_Random));
-      end loop;
-    end;
-
-  elsif Extract then
-    -- Locate separator between switch and scramblers
-    Start := Text_Handler.Locate (Txt, Separator);
-    -- Pairs of letters before separator
-    if Start rem 2 /= 1 then
-      Usage;
-      return;
-    end if;
-    Text_Handler.Set (Switch, Text_Handler.Value(Txt) (1 .. Start - 1));
-    -- Skip the separator
-    Start := Start + Separator'Length;
-    -- Look for scramblers
-    Prev_Scrambler := 0;
-    Got_Letter := 'A';
-    loop
-      -- Look for srambler num in letter
-      Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
-      if Stop = 0 then
-        Usage;
-        return;
-      end if;
-      if Got_Scrambler = Prev_Scrambler then
-        -- Scrambler num repeated : this is a back and done
-        Text_Handler.Set (Back, Normal(Got_Scrambler, 1) & Got_Letter);
-        Start := Stop + 1;
-        exit;
-      elsif Prev_Scrambler /= 0 then
-        -- Prev jammer parsed ok
-        Text_Handler.Append (Jammers, Normal(Prev_Scrambler, 1) & Got_Letter);
-      end if;
+  case Action is
+    when Current_Date =>
+      -- Current date: set Year Month Day for further generation
+      T := Ada.Calendar.Clock;
+      declare
+        Dummy_Duration : Ada.Calendar.Day_Duration;
       begin
-        Got_Letter := Text_Handler.Value(Txt)(Stop + 1);
+        Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
+      end;
+      Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
+                           & Normal (Month, 2, Gap => '0') & "/"
+                           & Normal (Year,  4, Gap => '0') );
+      -- Build time of 0h00 of date
+      declare
+        Hour     : Day_Mng.T_Hours    := 0;
+        Minute   : Day_Mng.T_Minutes  := 0;
+        Second   : Day_Mng.T_Seconds  := 0;
+        Millisec : Day_Mng.T_Millisec := 0;
+      begin
+        T := Ada.Calendar.Time_Of (Year, Month, Day,
+                   Day_Mng.Pack (Hour, Minute, Second, Millisec));
       exception
-        when Constraint_Error =>
-          -- No more char or no a letter
+        when others =>
           Usage;
           return;
       end;
-      Prev_Scrambler := Got_Scrambler;
-      Start := Stop + 2;
-    end loop;
-    Sys_Calls.Set_Exit_Code (Start);
 
-  else
-    -- Build time of 0h00 of date
-    declare
-      Hour     : Day_Mng.T_Hours    := 0;
-      Minute   : Day_Mng.T_Minutes  := 0;
-      Second   : Day_Mng.T_Seconds  := 0;
-      Millisec : Day_Mng.T_Millisec := 0;
-    begin
-      T := Ada.Calendar.Time_Of (Year, Month, Day,
-                 Day_Mng.Pack (Hour, Minute, Second, Millisec));
-    exception
-      when others =>
+    when Parse_Date =>
+      -- Parse date: set Year Month Day for further generation
+      begin
+        Argument.Get_Parameter (Txt, Occurence => Other_Arg);
+      exception
+        when Argument.Argument_Too_Long =>
+          Usage;
+          return;
+      end;
+      if Text_Handler.Length (Txt) = 10
+      and then Text_Handler.Value (Txt)(3) = '/'
+      and then Text_Handler.Value (Txt)(6) = '/' then
+        if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
+        or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
+        or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
+          Usage;
+          return;
+        end if;
+
+        begin
+          Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
+          Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
+          Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
+        exception
+          when others =>
+            Usage;
+            return;
+        end;
+      else
         Usage;
         return;
-    end;
+      end if;
 
-    -- Switch definition
+    when Random =>
+      Rnd.Randomize;
+      -- Set random switches
+      declare
+        -- Generate a random full asymetric scrambler
+        Str : constant String := Scrambler_Gen.Generate (False);
+        -- Generate a random number of switch entries
+        N : constant Natural := Rnd.Int_Random (0, Id_Range'Last);
+        -- Init array of already mapped letters
+        Used : array (Id_Range) of Boolean := (others => False);
+        Index : Id_Range;
+      begin
+        for I in 1 .. N loop
+          loop
+            -- Look for a random unused char
+            Index := Id_Random;
+            exit when not Used(Index);
+          end loop;
+          Used(Index) := True;
+          Text_Handler.Append (Switch, To_Letter(Index) & Str(Index));
+        end loop;
+      end;
+
+      -- Set random back between 7 and 9
+      declare
+        Back_Num : Pos_9 := Id_Random (7, 9);
+      begin
+        Back_Num := Store (Back_Num, 1);
+        Text_Handler.Set (Back, Normal(Back_Num, 1)
+                              & To_Letter (Id_Random));
+      end;
+
+      -- Set random number (3 to 8) of random jammers
+      declare
+        Jam_Nb : constant Natural := Rnd.Int_Random (3, 8);
+        Jam_Num : Pos_9;
+      begin
+        for I in 1 .. Jam_Nb loop
+          Jam_Num := Id_Random (1, 9);
+          Jam_Num := Store (Jam_Num, I + 1);
+          Text_Handler.Append (Jammers, Normal(Jam_Num, 1)
+                                      & To_Letter (Id_Random)
+                                      & To_Letter (Id_Random));
+        end loop;
+      end;
+
+    when Extract =>
+      begin
+        Argument.Get_Parameter (Txt, Occurence => Other_Arg);
+      exception
+        when Argument.Argument_Too_Long =>
+          Usage;
+          return;
+      end;
+      -- Locate separator between switch and scramblers
+      Start := Text_Handler.Locate (Txt, Separator);
+      -- Pairs of letters before separator
+      if Start rem 2 /= 1 then
+        Usage;
+        return;
+      end if;
+      Text_Handler.Set (Switch, Text_Handler.Value(Txt) (1 .. Start - 1));
+      -- Skip the separator
+      Start := Start + Separator'Length;
+      -- Look for scramblers
+      Prev_Scrambler := 0;
+      Got_Letters := (others => 'A');
+      loop
+        -- Look for srambler num in letter
+        Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
+        if Stop = 0 then
+          Usage;
+          return;
+        end if;
+        if Got_Scrambler = Prev_Scrambler then
+          -- Scrambler num repeated : this is a back and done
+          if Got_Letters(1) /= Got_Letters(2) then
+            -- For the back: same letter
+            Usage;
+            return;
+          end if;
+          Text_Handler.Set (Back, Normal(Got_Scrambler, 1) & Got_Letters(1));
+          Start := Stop + 1;
+          exit;
+        elsif Prev_Scrambler /= 0 then
+          -- Prev jammer parsed ok
+          Text_Handler.Append (Jammers,
+                  Normal(Prev_Scrambler, 1) & Got_Letters(1) & Got_Letters(2));
+        end if;
+        -- Two letters (offset and carry, same for back)
+        begin
+          Got_Letters(1) := Text_Handler.Value(Txt)(Stop + 1);
+        exception
+          when Constraint_Error =>
+            -- No more char or no a letter
+            Usage;
+            return;
+        end;
+        begin
+          Got_Letters(2) := Text_Handler.Value(Txt)(Stop + 2);
+        exception
+          when Constraint_Error =>
+            -- No more char or no a letter
+            Usage;
+            return;
+        end;
+        Prev_Scrambler := Got_Scrambler;
+        Start := Stop + 3;
+      end loop;
+      Sys_Calls.Set_Exit_Code (Start);
+  end case;
+
+  if Action = Current_Date or else Action = Parse_Date then
+    -- Switch definition from Day, Month and Year
     -- Concatenate day and month names in uppercase
     Text_Handler.Set (Day_Month,
       Upper_Str (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T))));
@@ -365,12 +402,14 @@ begin
     -- Jammers
     Month_3 := Upper_Str (Perpet.Month_Name_List'Image
                        (Perpet.Get_Month_Name (Month))) (1 .. 3);
+    Day_3 := Upper_Str (
+        Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))(1..3);
     Num := Store (Wrap (Day), 2);
-    Text_Handler.Set (Jammers, Normal(Num, 1) & Month_3(1));
+    Text_Handler.Set (Jammers, Normal(Num, 1) & Month_3(1) & Day_3(1));
     Num := Store (Wrap (Month / 10), 3);
-    Text_Handler.Append (Jammers, Normal(Num, 1) & Month_3(2));
+    Text_Handler.Append (Jammers, Normal(Num, 1) & Month_3(2) & Day_3(2));
     Num := Store (Wrap (Month rem 10), 4);
-    Text_Handler.Append (Jammers, Normal(Num, 1) & Month_3(3));
+    Text_Handler.Append (Jammers, Normal(Num, 1) & Month_3(3) & Day_3(3));
   end if;
 
   -- Result
@@ -382,22 +421,25 @@ begin
     Ada.Text_Io.Put (" -j" & Text_Handler.Value (Jammers));
   end if;
   Ada.Text_Io.Put_Line (" -b" & Text_Handler.Value (Back));
+
   if To_Text then
     -- Key coded onto text
     -- Switch and separator
     Ada.Text_Io.Put (Text_Handler.Value (Switch) & Separator);
     for I in 1 .. Text_Handler.Length (Jammers) loop
-      if I rem 2 = 1 then
+      if I rem 3 = 1 then
         -- Jammer letter
         Num := Pos_9'Value (Text_Handler.Value (Jammers)(I .. I));
         Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
       else
+        -- Offset and Carry
         Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
       end if;
     end loop;
-    -- Back: Num, offset, and num again
+    -- Back: Num, offset, offset and num
     Num := Pos_9'Value (Text_Handler.Value (Back)(1 .. 1));
     Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+    Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
     Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
     Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
   end if;

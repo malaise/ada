@@ -56,9 +56,8 @@ package body Definition is
        & " [ <switch> ] [ <jammers>  ] <back> [ <first_index> ] [ <last_index> ]");
     Ple ("   <switch>        ::= -s<switch_def>");
     Ple ("   <switch_def>    ::= { <upperletter><upperletter> }");
-    Ple ("   <jammers>       ::= -j{ <scrambler> }");
-    Ple ("   <scrambler>     ::= <scrambler_num><upperletter>");
-    Ple ("   <back>          ::= -b<scrambler>");
+    Ple ("   <jammers>       ::= -j{ <scrambler_num><upperletter><upperletter> }");
+    Ple ("   <back>          ::= -b<scrambler_num><upperletter>");
     Ple ("   <first_index>   ::= -f<positive>       (default 1)");
     Ple ("   <last_index>    ::= -l<positive>       (default none)");
     Ple ("   <scrambler_num> ::= 1 .. 9");
@@ -164,30 +163,65 @@ package body Definition is
     end loop;
   end Parse_Switch;
 
-  -- Parse a scrambler: a number and a letter
-  procedure Parse_Scrambler (Name : in String; Str : in String;
-                             Scrambler : out Scrambler_Definition) is
+  -- Parse the back: a number and a letter
+  procedure Parse_Back (Name : in String; Str : in String;
+                        Back : out Back_Definition) is
   begin
-    -- Two letters
+    -- A number and a letter
     if Str'Length /= 2 then
-      Error ("Invalid scrambler definition " & Str & " for " & Name);
+      Error ("Invalid back definition " & Str & " for " & Name);
     end if;
     -- Scrambler number
     begin
-      Scrambler.Scrambler := Scrambler_Index'Value(
+      Back.Scrambler := Scrambler_Index'Value(
                               Str(Str'First .. Str'First));
     exception
       when Constraint_Error =>
         Error ("Invalid scrambler number " & Str(Str'First) & " for " & Name);
     end;
     -- Scrambler offset
+    declare
     begin
-      Scrambler.Offset := Str(Str'Last);
+      Back.Offset := Str(Str'Last);
     exception
       when Constraint_Error =>
         Error ("Invalid scrambler offset " & Str(Str'Last) & " for " & Name);
     end;
-  end Parse_Scrambler;
+  end Parse_Back;
+
+  -- Parse a jammer: a number and two letters
+  procedure Parse_Jammer (Name : in String; Str : in String;
+                          Jammer : out Jammer_Definition) is
+  begin
+    -- A number and two letters
+    if Str'Length /= 3 then
+      Error ("Invalid jammer definition " & Str & " for " & Name);
+    end if;
+    -- Scrambler number
+    begin
+      Jammer.Scrambler := Scrambler_Index'Value(
+                              Str(Str'First .. Str'First));
+    exception
+      when Constraint_Error =>
+        Error ("Invalid scrambler number " & Str(Str'First) & " for " & Name);
+    end;
+    -- Scrambler offset
+    declare
+      Index : constant Integer := Integer'Succ(Str'First);
+    begin
+      Jammer.Offset := Str(Index);
+    exception
+      when Constraint_Error =>
+        Error ("Invalid scrambler offset " & Str(Index) & " for " & Name);
+    end;
+    -- Scrambler carry offset
+    begin
+      Jammer.Carry_Offset := Str(Str'Last);
+    exception
+      when Constraint_Error =>
+        Error ("Invalid jammer carry " & Str(Str'Last) & " for " & Name);
+    end;
+  end Parse_Jammer;
 
   procedure Parse is
     use Argument;
@@ -224,7 +258,7 @@ package body Definition is
     end;
     -- Parse back
     begin
-      Parse_Scrambler ("back", Get_Parameter (1, Back_Key), Parsed_Rec.Back);
+      Parse_Back ("back", Get_Parameter (1, Back_Key), Parsed_Rec.Back);
     exception
       when Argument_Not_Found =>
         Error ("No back defined");
@@ -235,22 +269,24 @@ package body Definition is
         Str : constant String :=  Get_Parameter (1, Jammers_Key);
         Index : Jammers_Index;
       begin
-        -- Check positive and odd number of chars (pairs of Num, Offset)
-        if Str'Length < 2 or else Str'Length rem 2 /= 0 then
+        -- Check positive and number of chars rem 3
+        --  (triplets of Num, Offset, Carry)
+        if Str'Length < 3 or else Str'Length rem 3 /= 0 then
           Error ("Invalid jammers definition " & Str);
         end if;
         -- Check max number of jammers
-        if Str'Length / 2 > Natural(Jammers_Range'Last) then
+        if Str'Length / 3 > Natural(Jammers_Range'Last) then
           Error ("To many jammers defined in " & Str);
         end if;
-        Parsed_Rec.Jammers := (Str'Length / 2,
+        Parsed_Rec.Jammers := (Str'Length / 3,
                                (others => (Scrambler_Index'First,
+                                          Types.Letter'First,
                                           Types.Letter'First)) );
-        for I in 1 .. Str'Length / 2 loop
+        for I in 1 .. Str'Length / 3 loop
           Index := Jammers_Index(I);
-          Parse_Scrambler ("jammer" & I'Img,
-                           Str(I*2-1 .. I*2),
-                           Parsed_Rec.Jammers.Jammers(Index) );
+          Parse_Jammer ("jammer" & I'Img,
+                         Str(I * 3 - 2 .. I * 3),
+                         Parsed_Rec.Jammers.Jammers(Index) );
           -- Check unicity
         end loop;
       end;

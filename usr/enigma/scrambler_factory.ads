@@ -50,14 +50,20 @@ package Scrambler_Factory is
   -- Get a jammer
   function Get (Scambler_Id : Definition.Scrambler_Index) return Jammer_Type;
 
+  -- Set the initial value for the carry
+  -- Carry will be set after Carry_Offset calls to Increment (0 for 26)
+  --  then each 26th call to Increment
+  procedure Set_Carry (Jammer : in out Jammer_Type;
+                       Carry_Offset : in Types.Lid);
+
+  -- Increment the jammer
+  -- Set Carry to True after Carry_Offset then after each 26 increments
+  procedure Increment (Jammer : in out Jammer_Type;
+                       Carry : out Boolean);
+
   -- Set the offset
   procedure Set_Offset (Jammer : in out Jammer_Type;
                         Offset : Types.Lid);
-
-  -- Increment the jammer
-  -- Set Carry to True each 26 increments since creation
-  procedure Increment (Jammer : in out Jammer_Type;
-                       Carry : out Boolean);
 
   -- Encode a letter
   function Encode (Jammer : Jammer_Type;
@@ -101,6 +107,7 @@ private
   type Jammer_Type is record
     Scrambler : Scrambler_Type := Create;
     Global_Offset : Types.Lid := Types.Lid'First;
+    Carry_Offset : Types.Lid := Types.Lid'First;
     Increment : Types.Lid := Types.Lid'First;
   end record;
 
