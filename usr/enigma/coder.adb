@@ -1,5 +1,8 @@
+with Sys_Calls, Normal;
 with Definition, Scrambler_Factory, Io_Manager;
 package body Coder is
+
+  Debug : Boolean := False;
 
   -- The coder config
   type Jammer_Array is array (Definition.Jammers_Index range <>)
@@ -49,6 +52,9 @@ package body Coder is
            & " for jammer" & I'Img & " already in use.");
           raise Init_Failed;
       end;
+      Scrambler_Factory.Set_Carry (
+         Jammer => The_Coder.Jammers(I),
+         Carry_Offset => Types.Id_Of (Def.Jammers.Jammers(I).Carry_Offset) );
       Scrambler_Factory.Set_Offset (
          Jammer => The_Coder.Jammers(I),
          Offset => Types.Id_Of (Def.Jammers.Jammers(I).Offset) );
@@ -78,32 +84,62 @@ package body Coder is
       raise Init_Failed;
   end Init;
 
+  -- Image of a jammer number
+  function Img (N : Definition.Scrambler_Range) return String is
+  begin
+    return Normal (Natural(N), 1);
+  end Img;
+
   -- Encode a letter
   function Encode (L : Types.Letter) return Types.Letter is
     X : Types.Lid;
     Carry : Boolean;
   begin
     X := Types.Id_Of(L);
+    if Debug then
+      Sys_Calls.Put_Line_Error ("Encoding -> " & L);
+    end if;
     -- Encode through switch
     X := Scrambler_Factory.Encode (The_Coder.Switch, X);
+    if Debug then
+      Sys_Calls.Put_Line_Error (" S  -> " & Types.Letter_Of (X));
+    end if;
     -- Encode through the jammers
     for I in 1 .. The_Coder.Nb_Jammers loop
       X := Scrambler_Factory.Encode (The_Coder.Jammers(I), X);
+      if Debug then
+        Sys_Calls.Put_Line_Error (" J" & Img (I) & " -> " & Types.Letter_Of (X));
+      end if;
     end loop;
     -- Encode through the back
     X := Scrambler_Factory.Encode (The_Coder.Back, X);
+    if Debug then
+      Sys_Calls.Put_Line_Error (" B  -> " & Types.Letter_Of (X));
+    end if;
     -- Decode through the jammers
     for I in reverse 1 .. The_Coder.Nb_Jammers loop
       X := Scrambler_Factory.Decode (The_Coder.Jammers(I), X);
+      if Debug then
+        Sys_Calls.Put_Line_Error (" J" & Img (I) & " -> " & Types.Letter_Of (X));
+      end if;
     end loop;
     -- Decode through switch
     X := Scrambler_Factory.Decode (The_Coder.Switch, X);
+    if Debug then
+      Sys_Calls.Put_Line_Error (" S  -> " & Types.Letter_Of (X));
+    end if;
 
     -- Now increment the jammers as long as they raise the carry
     for I in 1 .. The_Coder.Nb_Jammers loop
       Scrambler_Factory.Increment (The_Coder.Jammers(I), Carry);
+      if Debug then
+        Sys_Calls.Put_Line_Error (" Inc " & Img(I) & " " & Carry'Img);
+      end if;
       exit when not Carry;
     end loop;
+    if Debug then
+      Sys_Calls.Put_Line_Error ("Encoded as -> " & Types.Letter_Of (X));
+    end if;
 
     -- Done
     return Types.Letter_Of (X);
