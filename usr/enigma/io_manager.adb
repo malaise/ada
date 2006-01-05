@@ -49,7 +49,7 @@ package body Io_Manager is
       Result := Sys_Calls.Read (Sys_Calls.Stdin,
                                 Input_Buffer(Input_Buffer'First)'Address,
                                 Buffer_Size);
-      if Result <= 0 then
+      if Result = 0 then
         raise End_Error;
       end if;
       Last_Input := Result;
