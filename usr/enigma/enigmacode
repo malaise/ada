@@ -25,7 +25,7 @@ else
   export date=""
 fi
 
-# Check no arg remain
+# Check that no arg remains
 if [ $# -ne 0 ] ; then
   usage
 fi
@@ -35,9 +35,9 @@ if [ "$mode" = "code" ] ; then
   key=`def_enigma rnd -text`
   export txtkey=`echo $key | awk '{print $4; exit}'`
   export numkey=`echo $key | awk '{print $1 " " $2 " " $3; exit}'`
-  # Code random key with date key
+  # Code random key with (current of provided) date key
   echo -n "$txtkey" | enigma `def_enigma $date`
-  # Code input file into letters then with random key
+  # Code input file into letters then with the random key
   letterator -c | enigma $numkey
 else
   # Create temp file
@@ -51,9 +51,9 @@ else
   fi
   # Save input into file
   cat > $tmpfile
-  # Decode start of message with date key
-  export args="`def_enigma $date` -l117"
-  export txtkey=`enigma $args < $tmpfile` 
+  # Decode start of message with (current of provided) date key
+  export datekey="`def_enigma $date`"
+  export txtkey=`enigma $datekey -l117 < $tmpfile` 
   # Try to find the random key in text from this
   # Result is the index of start text offset after key
   numkey=`def_enigma "$txtkey"`
