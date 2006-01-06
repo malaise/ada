@@ -17,7 +17,7 @@ procedure Anal_Freq is
   -- Percentage of appearance
   Percent : Natural;
 
-  package int_Io is new Ada.Text_Io.Integer_Io (Natural);
+  package Int_Io is new Ada.Text_Io.Integer_Io (Natural);
 begin
 
   if Argument.Get_Nbre_Arg = 0 then
@@ -25,7 +25,7 @@ begin
   elsif Argument.Get_Nbre_Arg = 1
   and then (Argument.Get_Parameter (1) = "-a"
     or else Argument.Get_Parameter (1) = "--all") then
-    Put_All := true;
+    Put_All := True;
   else
     Sys_Calls.Put_Line_Error ("Usage : " & Argument.Get_Program_Name
      & "[ -a | --all ]");
@@ -81,7 +81,7 @@ begin
         Ada.Text_Io.Put (' ' & Table(I)'Img);
         Ada.Text_Io.New_Line;
       exception
-        when Error:Others =>
+        when Error:others =>
           Sys_Calls.Set_Error_Exit_Code;
           Ada.Text_Io.Put_Line ("Exception "
            & Mixed_Str (Ada.Exceptions.Exception_Name (Error)));
