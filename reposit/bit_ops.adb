@@ -1,7 +1,11 @@
 with Unchecked_Conversion;
+
+-- Suppress warning than System.Bit_Ops is an internal GNAT unit
+--  thus not portable
 pragma Warnings(Off);
 with System.Bit_Ops;
 pragma Warnings(On);
+
 with Interfaces;
 
 package body Bit_Ops is
@@ -29,8 +33,8 @@ package body Bit_Ops is
     Res : Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
-                            Right'Address, Right'Size,
-                            Res'Address);
+                           Right'Address, Right'Size,
+                           Res'Address);
     return Res;
   end "Or";
 
@@ -74,8 +78,8 @@ package body Bit_Ops is
     Res : Long_Long_Integer;
   begin
     System.Bit_Ops.Bit_Or (Left'Address, Left'Size,
-                            Right'Address, Right'Size,
-                            Res'Address);
+                           Right'Address, Right'Size,
+                           Res'Address);
     return Res;
   end "Or";
 

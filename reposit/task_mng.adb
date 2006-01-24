@@ -11,10 +11,11 @@ package body Task_Mng is
   Task_State : Task_State_List := Stopped;
 
   task The_Task is
+    -- Lowest priority
     pragma Priority (System.Priority'First);
-    -- change task's state
+    -- Change task's state
     entry Set_State;
-    -- activate
+    -- Activate
     entry Schedule;
   end The_Task;
 
@@ -39,7 +40,7 @@ package body Task_Mng is
         The_Task.Set_State;
       or
         delay 1.0;
-        -- kill the task which does not answer
+        -- Kill the task which does not answer
         abort The_Task;
       end select;
     end if;
@@ -155,7 +156,7 @@ package body Task_Mng is
   end Schedule;
 
 begin
-  -- store the initial period
-  Real_Period := Check_Period(Activation_Period, True);
+  -- Store the initial period
+  Real_Period := Check_Period (Activation_Period, True);
 end Task_Mng;
 

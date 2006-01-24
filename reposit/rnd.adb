@@ -10,10 +10,10 @@ package body Rnd is
   return Integer;
   pragma Import (C, C_Gettimeofday, "gettimeofday");
 
-  -- protection of critical sections
+  -- Protection of critical sections
   Lock : Mutex_Manager.Mutex;
 
-  -- trunc a real, for randomize and random
+  -- Trunc a real, for randomize and random
   function Long_Trunc (X : Float) return Long_Long_Integer is
     Max : constant Float := Float (Long_Long_Integer'Last);
     Min : constant Float := Float (Long_Long_Integer'First);
@@ -21,13 +21,13 @@ package body Rnd is
   begin
     if (X > Max) or else (X < Min) then raise Constraint_Error; end if;
     Int := Long_Long_Integer (X);
-    -- adjust at +/- 1
+    -- Adjust at +/- 1
     if X > 0.0 then
-      -- if x > 0 error by excess
+      -- If x > 0 error by excess
       if Float (Int) > X then Int := Int - 1; end if;
       return Int;
     else
-      -- if  x < 0 error by default
+      -- If x < 0 error by default
       if Float (Int) < X then Int := Int + 1; end if;
       return Int;
     end if;
@@ -35,14 +35,14 @@ package body Rnd is
     when others => raise Constraint_Error;
   end Long_Trunc;
 
-  -- initialisation of sequence
+  -- Initialisation of sequence
   procedure Randomize (Init : in Float := 1.0) is
-    -- the result of mutex allocation is always true, because infinite waiting
+    -- The result of mutex allocation is always true, because infinite waiting
     Ok : Boolean;
     F : Float;
     I : U_Rand.Seed_Range_1;
 
-    -- gives a "random" number
+    -- Gives a "random" number
     function Init_Aleat return Float is
       Tv : C_Struct_Timeval;
       Dummy : Integer;
@@ -121,3 +121,4 @@ package body Rnd is
   end Dur_Random;
 
 end Rnd;
+
