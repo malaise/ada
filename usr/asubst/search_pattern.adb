@@ -215,7 +215,7 @@ package body Search_Pattern is
       exit when Stop_Index >= Asu.Length (The_Pattern);
     end loop;
 
-    -- Locate all New_Line and split pattern (one per line)
+    -- Locate all Line_Feed and split pattern (one per line)
     Start_Index := 1;
     Prev_Delim := False;
     loop
