@@ -113,9 +113,14 @@ hexadecimal number (00 to FF or ff) for a byte code.</span><br
 <span style="font-family: monospace;">Beware that \xIJ is replaced
 before compilind the regex, so it cannot be used to avoid a given
 character. "[a\x2Dx]" is exactly the same as "[a-x]", and "\x0A" is
-exactly the same as "\n" (it will be used as regex delimiter).</span><br
- style="font-family: monospace;">
-<h1 style="font-family: monospace;">4. Replace string</h1>
+exactly the same as "\n" (it will be used as regex delimiter).<br>
+Also notice that some regex expressions are supposed to match a "new
+line" (example </span><span style="font-family: monospace;">[:blank:</span><span
+ style="font-family: monospace;">] in a bracket expression) but will
+not match in asubst, because the input flow/file is decomposed into
+lines then each line is compared to the regex expressions.</span>
+<h1 style="font-family: monospace;">4. Replace string<br>
+</h1>
 <span style="font-family: monospace;">The following '\' sequences are
 supported:</span><br style="font-family: monospace;">
 <span style="font-family: monospace;">- \n will be replaced by a
