@@ -135,7 +135,31 @@ package body Regular_Expressions is
     end loop;
   end Exec;
 
-  -- Compare string to criteria
+  -- Compare string Str to Criteria
+  -- Returns 0 or the index of Str where match starts
+  -- May raise No_Criteria is Criteria does not compile.
+  function Match (Criteria, Str : String) return Natural is
+    Pattern : Compiled_Pattern;
+    Ok : Boolean;
+    Matches : One_Match_Array;
+    Matched : Natural;
+  begin
+    Compile (Pattern, Ok, Criteria);
+    if not Ok then
+      raise No_Criteria;
+    end if;
+    Exec (Pattern, Str, Matched, Matches);
+    if Matched = 0 then
+      -- No match
+      return 0;
+    else
+      -- Return first matching index in Str
+      return Matches(1).Start_Offset;
+    end if;
+  end Match;
+
+  -- Compare string Str to Criteria
+  -- Returns True or False
   -- May raise No_Criteria is Criteria does not compile.
   function Match (Criteria, Str : String) return Boolean is
     Pattern : Compiled_Pattern;

@@ -5,7 +5,7 @@ package Regular_Expressions is
   -- Result of regex compilation
   type Compiled_Pattern is limited private;
 
-  -- Matching information
+  -- Matching information:
   -- Filled with indexes in string To_Check, up to (1, 0)
   --  defining matching substrings
   -- abcab matches (ab)c\1* at pos [1-5] [1-2]
@@ -28,8 +28,8 @@ package Regular_Expressions is
 
   -- Execute a regex
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
-  --  otherwise N_Matched is set to the last non empty slot of Match_Info
-  --  (but some slots from 1 to N_Matched might be empty)
+  --  otherwise N_Matched is set to 0 or to the last non empty slot of
+  --  Match_Info (but some slots from 1 to N_Matched might be empty)
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
@@ -38,8 +38,14 @@ package Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
-  -- Compare string to criteria
-  -- May raise No_Criteria is Criteria does not compile.
+  -- Compare string Str to Criteria
+  -- Returns 0 or the index of Str where matching starts
+  -- May raise No_Criteria is Criteria does not compile
+  function Match (Criteria, Str : String) return Natural;
+
+  -- Compare string Str to Criteria
+  -- Returns True or False
+  -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String) return Boolean;
 
   -- Get Compilation error
