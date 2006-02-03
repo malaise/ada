@@ -8,7 +8,7 @@ ssize 2 < [ "Usage: regex <pattern> { <str> }" putl ssize popn retall ] ifcall
 p copyr "Checking with pattern: " put putl
 
 # Pop estack and apply regex to each
-[ pushle dup put p pushr regex " => " put putl
+[ pushle dup put p pushr regmatch " => " put putl
 esize 0 = ifret R pushr retacal ] R copyr call
 
 "Done." putl

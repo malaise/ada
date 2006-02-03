@@ -126,20 +126,20 @@ package body Misc is
     Debug.Debug_Level_Array := (others => Set.Val_Bool);
   end Set_Debug;
 
-  function Regex (Pattern, Str : Item_Rec) return Item_Rec is
+  function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec is
     Criteria : Regular_Expressions.Compiled_Pattern;
-    Ok : Boolean;
+    Res : Natural;
   begin
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Ok := Regular_Expressions.Match (Unb.To_String (Pattern.Val_Text),
+    Res := Regular_Expressions.Match (Unb.To_String (Pattern.Val_Text),
                                      Unb.To_String (Str.Val_Text));
-    return (Kind => Bool, Val_Bool => Ok);
+    return (Kind => Inte, Val_Inte => My_Math.Inte(Res));
   exception
     when Regular_Expressions.No_Criteria =>
       raise Invalid_Argument;
-  end Regex;
+  end Reg_Match;
 
 end Misc;
 

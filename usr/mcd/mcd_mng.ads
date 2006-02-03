@@ -138,7 +138,7 @@ package Mcd_Mng is
    Strprog,
    Strof,
    Normal,
-   Regex,
+   Regmatch,
 
    Clock,
    Dateof,

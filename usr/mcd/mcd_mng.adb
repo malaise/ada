@@ -244,7 +244,7 @@ package body Mcd_Mng is
 
     procedure Set_Debug (Set : in Item_Rec);
 
-    function Regex (Pattern, Str : Item_Rec) return Item_Rec;
+    function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec;
   end Misc;
 
   package body Stack is separate;
@@ -763,8 +763,8 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Pop(C); Pop(D);
           Push (Ios.Normalof(D, C, B, A));
           S := A;
-        when Regex =>
-          Pop(A); Pop(B); Push (Misc.Regex(A, B));
+        when Regmatch =>
+          Pop(A); Pop(B); Push (Misc.Reg_Match(A, B));
           S := A;
 
         -- Dates
