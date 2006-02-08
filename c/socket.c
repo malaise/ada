@@ -27,6 +27,48 @@ static int evt_fd_set (int fd __attribute__ ((unused)),
 #define MAXHOSTNAMELEN 64
 #endif
 
+#define MAX_ERROR 28
+const char *errors[MAX_ERROR] = {
+/* 00 */ "Ok: socket success",
+/* 01 */ "Use Error: socket not or already open",
+/* 02 */ "System Error: socket system error (see errno)",
+/* 03 */ "Destination Error: socket destination set or not set",
+/* 04 */ "Link Error: socket linked or not linked",
+/* 05 */ "Connect Error: socket connected or no connected",
+/* 06 */ "Broadcast Error: broadcast not allowed for this socket protocol",
+/* 07 */ "Length Error: socket buffer length too small",
+/* 08 */ "Reply Error: socket set_for_reply must not be set",
+/* 09 */ "Tail Error: should have called socket soc_resend",
+/* 10 */ "Protocol Error: invalid call for this socket protocol",
+/* 11 */ "Fd Error: closing a socket while fd is set for select",
+/* 12 */ "Unknown Error: unknown socket error",
+/* 13 */ "Unknown Error: unknown socket error",
+/* 14 */ "Unknown Error: unknown socket error",
+/* 15 */ "Unknown Error: unknown socket error",
+/* 16 */ "Unknown Error: unknown socket error",
+/* 17 */ "Unknown Error: unknown socket error",
+/* 18 */ "Unknown Error: unknown socket error",
+/* 19 */ "Unknown Error: unknown socket error",
+/* 20 */ "Unknown Error: unknown socket error",
+/* 21 */ "Connection Failure: socket connection refused",
+/* 22 */ "Unknown name Failure: socket name not found by get_xxx_by_yyy",
+/* 23 */ "Would block Failure: socket operation would block",
+/* 24 */ "Connection lost Failure: socket connection lost",
+/* 25 */ "Address in use Failure: socket address already in use",
+/* 26 */ "Read zero Failure: socket read returns zero, disconnection?",
+/* Last must be Unknown Error */
+/* 27 */ "Unknown Error: unknown socket error"
+};
+
+/* String corresponding to an error code */
+extern const char * soc_error (const int code) {
+  int index = -code;
+  if ( (index < 0) || (index >= MAX_ERROR) ) {
+    index = MAX_ERROR - 1;
+  }
+  return errors[index];
+}
+
 /* Init a socket (used by open and accept) */
 static int init (soc_ptr *p_soc,
                      int fd,

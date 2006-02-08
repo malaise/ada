@@ -10,7 +10,7 @@
 /* OK */
 #define SOC_OK        0
 
-/* Errors */
+/* Errors, see also soc_error() */
 /* Socket not open, already open */
 #define SOC_USE_ERR     -1
 /* System error (traced and errno set) */
@@ -27,13 +27,12 @@
 #define SOC_LEN_ERR     -7
 /* Set_for_reply set or not set */
 #define SOC_REPLY_ERR   -8
-/* Sent message length is not 0 while prev send returned SOC_WOULD_BLOCK */
+/* Called soc_send instead of soc_resend despite prev send returned SOC_WOULD_BLOCK */
 #define SOC_TAIL_ERR    -9
 /* Call not allowed for this protocol */
 #define SOC_PROTO_ERR  -10
 /* Close while fd used in select */
 #define SOC_FD_IN_USE  -11
-
 
 /* Failures */
 /* Connection refused */
@@ -50,7 +49,6 @@
 #define SOC_READ_0         -26
 
 
-
 /* String terminator */
 #define NUL '\0'
 
@@ -64,7 +62,7 @@
 typedef enum {udp_socket=0, tcp_socket=1, tcp_header_socket=2,
               tcp_afux_socket=3, tcp_header_afux_socket=4} socket_protocol;
 
-/* token socket : a pointer (abstract data type) */
+/* Token socket : a pointer (abstract data type) */
 /* Has to be initialised to init_soc */
 typedef void * soc_token;
 #define init_soc  ((soc_token*) NULL)
@@ -85,6 +83,9 @@ typedef union soc_host_t {
 /* A message */
 typedef int soc_length;
 typedef void * soc_message;
+
+/* Returns the string associated to an error code */
+extern const char * soc_error (const int code);
 
 /*--------------------------------------------*/
 /* All functions return SOC_OK or an error,   */
