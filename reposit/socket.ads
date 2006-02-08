@@ -2,11 +2,11 @@ with System;
 with Sys_Calls;
 package Socket is
 
-  -- The socket descriptor
+  -- A socket descriptor
   type Socket_Dscr is private;
   No_Socket : constant Socket_Dscr;
 
-  -- Available protocols
+  -- Available protocols on socket
   type Protocol_List is (Udp, Tcp, Tcp_Header, Tcp_Afux, Tcp_Header_Afux);
 
   -- Note for Multicast IP (using Udp socket):
@@ -25,8 +25,10 @@ package Socket is
   No_Host : constant Host_Id;
 
   -- Exceptions for errors
+  -- Errors are consequences of bad usage of the socket
+  -- All the calls may raise Soc_Use_Err or Soc_Sys_Err
   Soc_Use_Err,   -- Socket should be open or not open
-  Soc_Sys_Err,   -- System error (traced) and errno set
+  Soc_Sys_Err,   -- System error (traced) and errno set (see Sys_Calls)
   Soc_Dest_Err,  -- Destination should be set or not set
   Soc_Link_Err,  -- Socket should be linked or not linked
   Soc_Conn_Err,  -- Socket should be connected or not connected
@@ -36,30 +38,28 @@ package Socket is
   Soc_Reply_Err, -- Set_for_reply must not be set
   Soc_Tail_Err,  -- Sent msg len is not 0 while prev send raised Soc_Woul_Block
   Soc_Proto_Err, -- Call not allowed for this protocol
-  Soc_Fd_In_Use: -- Close while fd is used by x_select (see X_Mng)
+  Soc_Fd_In_Use: -- Close while fd is used by x_select (see Event_Mng)
                  exception;
 
   -- Exceptions for failures
+  -- Failures are (transient) consequences of external factors
   Soc_Conn_Refused,   -- Connection refused (no dest process)
-  Soc_Name_Not_Found, -- Host/service name not found
-  Soc_Would_Block,    -- Connection, send, receive would block
+  Soc_Name_Not_Found, -- Host/lan/service name not found
+  Soc_Would_Block,    -- Connection, send or receive would block
   Soc_Conn_Lost,      -- Connection has been lost
   Soc_Addr_In_Use,    -- Address in use, maybe in close-wait state
   Soc_Read_0:         -- Read returns 0, after a select => diconnection
                  exception;
 
-  -- All calls may raise Soc_Use_Err or Soc_Sys_Err
+  -- The following list describes which call may raise Soc_Would_Block on a
+  --  non blocking socket and what the application should do it this case:
+  -- Receive: wait for read on fd and re-call Read with same arguments,
+  -- Send: wait for write on fd and call Re_Send, until Ok,
+  -- Set_Destination (connect tcp): wait for write on fd then check result
+  --   by calling Is_Connected.
 
-
-  -- When a socket is non  blocking the calls which may raise Soc_Would_Block
-  --   and what to do are:
-  -- Receive, then wait for read on fd and re-Read with same arguments
-  -- Send, then wait for write on fd and call Re_Send until Ok
-  -- Set_Destination on tcp (connect) then wait for write on fd
-  --  then check result by calling Is_Connected
   ---------------------------------
   -- OPEN - CLOSE - SET BLOCKING --
-  -- Open a socket (in blocking mode)
   ---------------------------------
 
   -- Open a socket (in blocking mode)
@@ -133,7 +133,6 @@ package Socket is
                      Message       : out Message_Type;
                      Length        : out Natural;
                      Set_For_Reply : in Boolean := False);
-
 
   -------------------------------------
   -- DESTINATION PORT/HOST - SENDING --
