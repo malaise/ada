@@ -1,9 +1,9 @@
                                  Asubst
-                                  V2_9
+                                  V2_10
 
 
 1. General syntax
-Usage: asubst [ { <option> } ] <find_pattern> <replace_pattern> [ { <file> } ]
+Usage: asubst [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]
 or   : asubst -h | --help | -v | --version
 Substitutes strings in files.
 If no file name is specified, substitutes from stdin to stdout.
@@ -26,7 +26,8 @@ matching.
 
 
 3. Find pattern
-<find_pattern> ::= { [ <regex> ] \n } [ <regex> ]
+<find_pattern>   ::= <regex> | <multiple_regex>
+<multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]
 If there is no "\n", then the regex can be any regular expression. If it
 does not start with '^' nor ends with '$', then it is applied several times
 to each input line (each time to the text following previous substitution).

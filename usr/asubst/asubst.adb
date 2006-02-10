@@ -3,13 +3,13 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V2.9";
+  Version : constant String  := "V2.10";
 
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-               & " [ { <option> } ] <find_pattern> <replace_pattern> [ { <file> } ]");
+               & " [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]");
     Sys_Calls.Put_Line_Error (
      "or:    " & Argument.Get_Program_Name & " -h | --help | -v | --version");
     Sys_Calls.Put_Line_Error (
@@ -56,7 +56,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
     Sys_Calls.Put_Line_Error (
-     "  <replace_pattern> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
+     "  <replace_string> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
     Sys_Calls.Put_Line_Error (
      "    ""\xIJ"" (hexa byte value), ""\RIJ"" or ""\rIJ"" (IJ in hexa, replaced by the");
     Sys_Calls.Put_Line_Error (
@@ -74,7 +74,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
     Sys_Calls.Put_Line_Error (
-     "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_patern>""");
+     "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_string>""");
     Sys_Calls.Put_Line_Error (
      "    and use -s option if unsure.");
     Sys_Calls.Set_Error_Exit_Code;

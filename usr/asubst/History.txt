@@ -1,5 +1,8 @@
 History of Asubst:
 
+09/02/2006 V2_10
+Add: Improve doc and help text.
+
 22/12/2005 V2_9
 Add: Options -f (--file) for file of files, and -m <max> (--max=<max>) for
      maximum of subtitutions per file.
