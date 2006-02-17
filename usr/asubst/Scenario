@@ -13,6 +13,8 @@
 "TIto"                  "(.I)(.o)"       "\u\r12\l\r11\c"        "TOti"
 "toto"                  "(.)(.)(..)"     "\u\r12\c\r11\r13"      "Otto"
 "--  test"              "(-- *)(.*)"     "\r11\m\r12"            "--  Test"
+"loto"                  "(.)t\1"         "\r11"                  "lo"
+"l_to"                  "_t"             ""                      "lo"
 "toto\ntoto"            "\x0A"           ""                      "totototo"
 "toto\ntoto\n"          "toto\n"         ""                      ""
 "toto\ntiti"            "\n"             ""                      "tototiti"
