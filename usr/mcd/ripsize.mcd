@@ -1,0 +1,52 @@
+# Compute size to allocate to a rip knowing
+# - the Nb of frames of the vob
+# - the pairs of start stop frames to cut
+
+# Error messages and exit
+[ "Got an invalid target rip size " put t putl E pushr call ] R popr
+[ "Args: <length> { <start> <stop> }" putl ssize popn retall ] E popr
+[ "<start> must be less than <stop>" putl E pushr call ] F popr
+[ "Sum of cuts is longer than film" putl E pushr call ] N popr
+
+# Try to getenv RIPSIZE, otherwise default target size is 700 Mb
+"RIPSIZE" getenv dup isstr ~ [ pop "700" ] ifcall
+# Check that target size is positive and save it
+strinte t copyr ispos ~ R pushr ifcall
+
+# Check that top of stack is a Natural
+[ dup isinte ~ E pushr ifcall dup isneg E ifcall ] C popr
+# Odd number of args
+ssize 0 = E pushr ifcall
+ssize 2 % 0 = E pushr ifcall
+
+# Init sum with 0
+cleare 0 pope
+
+# Loop poping a pair, until only one arg in stack
+[
+ssize 1 = ifret
+# Check and store first
+C pushr call swap
+# Check second, compute second - first and check it is pos
+C pushr call - dup ispos ~ F pushr ifcall
+
+# Update sum += stop - start
+pushle + pope
+# Loop
+L pushr retacal
+] L copyr call
+
+# Save length
+dup l popr
+# Sub cuts from length, check it is pos and save keep
+pushle - dup ispos ~ N pushr ifcall k popr
+
+# Length / Keep = Rip / Target
+# Rip = Length * Target / keep
+l pushr t pushr * k pushr / r popr
+
+# Display result
+"Keeping " put k pushr put " frames among " put l pushr put
+" requires a rip of " put r pushr put "MB" putl
+"(for a result of " put t pushr put "Mb)." putl
+
