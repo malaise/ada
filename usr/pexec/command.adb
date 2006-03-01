@@ -21,13 +21,14 @@ package body Command is
 
   procedure Print_Usage is
   begin
-    My_Io.Put_Line ("Usage : pexec [options] command [{;command}]");
+    My_Io.Put_Line ("Usage : " & Argument.Get_Program_Name
+                               & " [options] command [ { ; command } ]");
     My_Io.Put_Line (" options : -[a][d][c][f][l][i][s]");
     My_Io.Put_Line ("  a for do not print actions.");
     My_Io.Put_Line ("  d for do not print name of each dir.");
-    My_Io.Put_Line ("  c for don't do in current dir.");
+    My_Io.Put_Line ("  c for don't exec in current dir.");
     My_Io.Put_Line ("  f for stop after 1st level of sub dir.");
-    My_Io.Put_Line ("  l for do in leaves only (dirs with no subdir).");
+    My_Io.Put_Line ("  l for exec in leaves only (dirs with no subdir).");
     My_Io.Put_Line ("  i for ignore command errors.");
     My_Io.Put_Line ("  s for follow symbolic links.");
   end Print_Usage;
