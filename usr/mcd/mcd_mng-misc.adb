@@ -71,11 +71,11 @@ package body Misc is
     end if;
     for I in 1 .. Times.Val_Inte loop
       if First then
-        Stack.Popf (Rec);
+        Stack.Popfe (Rec);
         Stack.Push (Rec, Default_Stack => False);
       else
         Stack.Pop (Rec, Default_Stack => False);
-        Stack.Pushf (Rec);
+        Stack.Pushfe (Rec);
       end if;
     end loop;
   end Do_Rotate_Extra;

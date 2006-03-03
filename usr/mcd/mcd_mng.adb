@@ -28,10 +28,10 @@ package body Mcd_Mng is
     function Stack_Size (Default_Stack : Boolean := True) return Natural;
 
     -- Pop first pushed in extra stack
-    procedure Popf (Item : out Item_Rec);
+    procedure Popfe (Item : out Item_Rec);
 
     -- Push before first pushed in extra stack
-    procedure Pushf (Item : in Item_Rec);
+    procedure Pushfe (Item : in Item_Rec);
   end Stack;
 
   package Operations is
@@ -634,7 +634,7 @@ package body Mcd_Mng is
           Pop(A, Default_Stack => False); Push (A);
         when Pushfe =>
           -- pushe X push X
-          Popf(A); Push (A);
+          Popfe(A); Push (A);
         when Rotle =>
           -- rotate from last
           Pop(A);

@@ -106,7 +106,7 @@ package body Stack is
     return Size;
   end Stack_Size;
 
-  procedure Popf (Item : out Item_Rec) is
+  procedure Popfe (Item : out Item_Rec) is
     Litem : Item_Rec;
   begin
     if Debug.Debug_Level_Array(Debug.Stack) then
@@ -131,9 +131,9 @@ package body Stack is
         Async_Stdin.Put_Line_Err("raises EMPTY_STACK");
       end if;
       raise Empty_Stack;
-  end Popf;
+  end Popfe;
 
-  procedure Pushf (Item : in Item_Rec) is
+  procedure Pushfe (Item : in Item_Rec) is
   begin
     if Debug.Debug_Level_Array(Debug.Stack) then
         Async_Stdin.Put_Err ("Extra ");
@@ -150,7 +150,7 @@ package body Stack is
 
     -- Move back to last pushed item
     Stack_List.Rewind(Extra_List, Stack_List.Prev);
-  end Pushf;
+  end Pushfe;
 
 end Stack;
 
