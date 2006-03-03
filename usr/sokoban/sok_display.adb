@@ -160,7 +160,7 @@ package body Sok_Display is
             Con_Io.Put ("* ", Frame_Win, Foreground => Con_Io.Red,
              Move => False);
           when Sok_Types.Man =>
-            Con_Io.Put ("!!", Frame_Win, Foreground => Con_Io.Red,
+            Con_Io.Put ("!!", Frame_Win, Foreground => Con_Io.Magenta,
              Move => False);
           when Sok_Types.Box =>
             if Blink then
