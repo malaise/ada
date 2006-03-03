@@ -1,6 +1,6 @@
 # Compute size to allocate to a rip knowing
 # - the Nb of frames of the vob
-# - the pairs of start stop frames to cut
+# - the pairs of start-stop frames to cut
 
 # Error messages and exit
 [ "Got an invalid target rip size " put t putl E pushr call ] R popr
@@ -13,40 +13,82 @@
 # Check that target size is positive and save it
 strinte t copyr ispos ~ R pushr ifcall
 
-# Check that top of stack is a Natural
-[ dup isinte ~ E pushr ifcall dup isneg E ifcall ] C popr
+# Check that top of stack is a Natural less than length
+[ dup isinte ~ E pushr ifcall dup isneg E ifcall 
+  dup l pushr > E ifcall ] C popr
+
 # Odd number of args
 ssize 0 = E pushr ifcall
 ssize 2 % 0 = E pushr ifcall
 
+# Move stack in estack
+[ ssize 0 = ifret pope L pushr retacal ] L copyr call
+# Store length
+pushle l popr
+# Move estack in stack
+[ esize 0 = ifret pushle L pushr retacal ] L copyr call
+
 # Init sum with 0
 cleare 0 pope
 
+# Init first and last cuts with 0
+0 x popr 0 y popr
+
 # Loop poping a pair, until only one arg in stack
 [
-ssize 1 = ifret
-# Check and store first
-C pushr call swap
-# Check second, compute second - first and check it is pos
-C pushr call - dup ispos ~ F pushr ifcall
+ssize 0 = ifret
+# Check and store end
+C pushr call b popr
+# Check and store start
+C pushr call a copyr 
+
+# Compute second - first and check it is pos
+b pushr swap - dup ispos ~ F pushr ifcall
+# Store delta
+d copyr
 
 # Update sum += stop - start
 pushle + pope
+
+# If start is 0 then update size of first cut
+a pushr 0 = [ d pushr x popr ] ifcall
+
+# If stop is length then update size of last cut
+b pushr l pushr = [ d pushr y popr ] ifcall
+
 # Loop
 L pushr retacal
 ] L copyr call
 
-# Save length
-dup l popr
-# Sub cuts from length, check it is pos and save keep
-pushle - dup ispos ~ N pushr ifcall k popr
+# Sub cuts from length, check it is pos and save it as keep
+l pushr pushle - dup ispos ~ N pushr ifcall k popr
+
+# Display target size
+"Target size is " put 4 format t pushr put "MB for " put 6 format k pushr put " frames." putl
 
 # Length / Keep = Rip / Target
 # Rip = Length * Target / keep
-l pushr t pushr * k pushr / r popr
+[ l pushr t pushr * toreal k pushr toreal / round r popr ]
+O popr
 
-# Display result
-"Keeping " put k pushr put " frames among " put l pushr put
-" requires a rip of " put r pushr put "MB" putl
-"(for a result of " put t pushr put "Mb)." putl
+# Put result according to top of stack
+[ "Length " put put " range is " put 6 format l pushr put
+" frames, which leads to a rip of " put 4 format r pushr put "MB." putl
+] P popr
+
+
+# Computation without using range
+O pushr call
+# Display result without using range
+"without" P pushr call
+
+# Computation with using range
+# Sum of first and last cut
+y pushr x pushr + x popr
+# Reduce length by this sum
+l pushr x pushr - l popr
+# Rip = Length * Target / keep
+O pushr call
+# Display result with using range
+"with   " P pushr call
 
