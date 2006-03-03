@@ -167,7 +167,7 @@ package body Mcd_Parser is
    Strregi  => (Nosy, "push A converted to register  ", False),
    Strprog  => (Nosy, "push A converted to program   ", False),
    Strof    => (Nosy, "push formated string of A     ", False),
-   Normal   => (Nosy, "push normalised string of int ", False),
+   Normal   => (Nosy, "push normalised string of A   ", False),
    Regmatch => (Nosy, "push if B matches regex A     ", True),
 
    Clock    => (Nosy, "push current time             ", False),
