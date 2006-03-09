@@ -6,14 +6,14 @@ with Sok_Types;
 with Sok_Manager;
 
 procedure Sokoban is
-  No_Frame : Sok_Types.Frame_Range;
+  No_Frame : Sok_Types.Desired_Frame_Range;
   Ok : Boolean := False;
 
   function Frame_Random is new Rnd.Discr_Random(Sok_Types.Frame_Range);
 
   procedure Usage is
   begin
-    My_Io.Put_Line ("Usage : sokoban [ <frame_number> | rnd ]");
+    My_Io.Put_Line ("Usage : sokoban [ <frame_number> | rnd | rst]");
     My_Io.Put_Line (" Frames are from 1 to 50");
   end Usage;
 
@@ -26,6 +26,8 @@ begin
     elsif Argument.Get_Nbre_Arg = 1 then
       if Upper_Str (Argument.Get_Parameter) = "RND" then
         No_Frame := Frame_Random;
+      elsif Upper_Str (Argument.Get_Parameter) = "RST" then
+        No_Frame := Sok_Types.Restore_Frame;
       else
         No_Frame := Sok_Types.Frame_Range'Value (Argument.Get_Parameter);
       end if;

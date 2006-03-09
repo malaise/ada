@@ -1,6 +1,6 @@
-with Ada.Calendar; -- for time
+with Ada.Calendar; -- For time
 
-with Con_Io;       -- for reset_term
+with Con_Io;       -- For reset_term
 
 with Sok_Display;
 with Sok_Input;
@@ -9,8 +9,7 @@ with Sok_Save;
 with Sok_Time;
 package body Sok_Manager is
 
-
-  -- internal state of a frame
+  -- Internal state of a frame
   type State_Rec is record
     Frame        : Sok_Types.Frame_Tab;
     No_Frame     : Sok_Types.Frame_Range;
@@ -23,7 +22,6 @@ package body Sok_Manager is
   end record;
   State : State_Rec;
 
-
   -- Menu return : go on with same frame or a new frame
   --  if new frame, reset_all state (read) or update time (restored)
   type Menu_Result_List is (Go_On, Restart_Frame);
@@ -35,15 +33,15 @@ package body Sok_Manager is
     end case;
   end record;
 
-  -- frames reading, saving and restoring.
+  -- Frames reading, saving and restoring.
   package Sok_File is
 
-    -- to read a new frame
+    -- To read a new frame
     procedure Read (No_Frame : in  Sok_Types.Frame_Range;
                     Frame    : out Sok_Types.Frame_Tab);
     Data_File_Not_Found, Error_Reading_Data : exception;
 
-    -- save a frame and recover a frame, with saved movements
+    -- Save a frame and recover a frame, with saved movements
     procedure Save (State : in State_Rec);
     Error_Writing_Frame : exception;
 
@@ -59,15 +57,14 @@ package body Sok_Manager is
 
 
   end Sok_File;
+  package body Sok_File is separate;
 
+  -- Body below
   procedure Play_Frame (Update_State : out Update_State_List);
 
   Internal_Error : exception;
 
-  package body Sok_File is separate;
-
-
-  procedure Play_Game (First_Frame : in Sok_Types.Frame_Range) is
+  procedure Play_Game (First_Frame : in Sok_Types.Desired_Frame_Range) is
     Frame_Result : Update_State_List;
     Found : Boolean;
 
@@ -84,22 +81,46 @@ package body Sok_Manager is
   begin
     begin
 
-      -- init for first frame
+      -- Init for first frame
       begin
         Sok_Display.Init;
       exception
         when others =>
         raise Sok_Input.Break_Requested;
       end;
-      State.No_Frame := First_Frame;
-      Frame_Result := Reset_All;
-      begin
-        Sok_File.Init_Scores;
-      exception
-        when Sok_File.Score_Io_Error =>
-          Sok_Display.Put_Error (Sok_Display.Init_Score);
-          raise;
-      end;
+      -- See if restore or init
+      if First_Frame = Sok_Types.Restore_Frame then
+        -- Try to restore
+        begin
+          -- Check that frame file is readable
+          Sok_File.Read (Sok_Types.Frame_Range'First, State.Frame);
+          Sok_File.Restore (State);
+          State.Score := Sok_File.Read_Score(State.No_Frame);
+          Frame_Result := Update_Time;
+          Found := True;
+        exception
+          when others =>
+            -- Restore failed => init to first
+            State.No_Frame := Sok_Types.Frame_Range'First;
+            Found := False;
+        end;
+      else
+        -- Init to requested frame
+        State.No_Frame := First_Frame;
+        Found := False;
+      end if;
+      
+      -- Init state to beginning of a frame No
+      if not Found then
+        Frame_Result := Reset_All;
+        begin
+          Sok_File.Init_Scores;
+        exception
+          when Sok_File.Score_Io_Error =>
+            Sok_Display.Put_Error (Sok_Display.Init_Score);
+            raise;
+        end;
+      end if;
 
       loop
         case Frame_Result is
@@ -129,14 +150,14 @@ package body Sok_Manager is
             State.Moves        := 0;
             State.Pushes       := 0;
 
-            -- clear saved movements
+            -- Clear saved movements
             Sok_Save.Reset;
 
             -- Init time and start;
             Sok_Time.Reset_Time;
             Sok_Time.Start_Time;
 
-            -- find man starting position and complete state
+            -- Find man starting position and complete state
             Found := False;
             State.Nbre_Targets := 0;
             State.Box_Ok       := 0;
@@ -145,7 +166,7 @@ package body Sok_Manager is
                 if State.Frame (I, J).Pattern /= Sok_Types.Wall and then
                    State.Frame (I, J).Content = Sok_Types.Man then
                    if Found then
-                   -- man already found !!
+                   -- Man already found !!
                     raise Internal_Error;
                   else
                     Found := True;
@@ -171,7 +192,7 @@ package body Sok_Manager is
             Sok_Time.Start_Time;
         end case;
 
-        -- display
+        -- Display
         Sok_Display.Put_Frame (State.Frame);
         Sok_Display.Put_Help (Sok_Display.Frame);
         Sok_Display.Put_Score (State.Score);
@@ -215,8 +236,8 @@ package body Sok_Manager is
     end loop;
   end Set_Blink;
 
-  -- if return is Go_On, nothing to do
-  -- if return is Restart_Frame, part of state has been set
+  -- If return is Go_On, nothing to do
+  -- If return is Restart_Frame, part of state has been set
   --  if Reset_All, only No_Frame is set (read)
   --  if Update_Time, only time has to be updated (restore)
   function Sok_Menu (Allow_Write : Boolean) return Menu_Result_Rec is separate;
@@ -243,12 +264,12 @@ package body Sok_Manager is
     -- Score to display
     Disp_Score := State.Score;
 
-    -- movements
+    -- Movements
     loop
       Key := Sok_Input.Get_Key;
 
       if Key = Sok_Input.Esc then
-        -- menu
+        -- Menu
         Menu_Result := Sok_Menu (Allow_Write => True);
         case Menu_Result.Result is
           when Go_On =>
@@ -271,13 +292,13 @@ package body Sok_Manager is
       end if;
 
       if Key in Sok_Movement.Movement_List then
-        -- movement
+        -- Movement
         Sok_Movement.Do_Movement (State.Frame, State.Position, Key, Result);
         case Result is
           when Sok_Movement.Refused =>
             null;
           when Sok_Movement.Done =>
-            -- movement without box moving
+            -- Movement without box moving
             State.Moves := State.Moves + 1;
           when Sok_Movement.Box_Moved =>
             -- Same number of box Ok
@@ -289,7 +310,7 @@ package body Sok_Manager is
             State.Pushes := State.Pushes + 1;
             State.Box_Ok := State.Box_Ok + 1;
             if State.Box_Ok = State.Nbre_Targets then
-              -- frame finished
+              -- Frame finished
               Sok_Time.Stop_Time;
               Set_Blink(State.Frame, True);
               Sok_Display.Put_Help (Sok_Display.Done);
@@ -337,11 +358,11 @@ package body Sok_Manager is
                 end;
               end if;
 
-              -- wait input to go on
+              -- Wait input to go on
               loop
                 Key := Sok_Input.Get_Key;
                 if Key = Sok_Input.Esc then
-                  -- menu
+                  -- Menu
                   Menu_Result := Sok_Menu (Allow_Write => False);
                   case Menu_Result.Result is
                     when Go_On =>
@@ -373,7 +394,7 @@ package body Sok_Manager is
               else
                 State.No_Frame := Sok_Types.Frame_Range'First;
               end if;
-              -- restart with new frame
+              -- Restart with new frame
               Update_State := Reset_All;
               return;
             end if;
@@ -384,7 +405,7 @@ package body Sok_Manager is
             State.Box_Ok := State.Box_Ok - 1;
         end case;
 
-        -- save movement
+        -- Save movement
         case Result is
           when Sok_Movement.Refused =>
             null;
@@ -403,16 +424,16 @@ package body Sok_Manager is
 
       elsif Key = Sok_Input.Undo then
         begin
-          -- try to pop movement
+          -- Try to pop movement
           Poped_Data := Sok_Save.Pop;
           Sok_Movement.Undo_Movement (State.Frame, Poped_Data,
                                       Result, Saved_Pos);
           case Result is
             when Sok_Movement.Refused =>
-              -- impossible;
+              -- Impossible;
               null;
             when Sok_Movement.Done =>
-              -- movement without box moving
+              -- Movement without box moving
               State.Moves := State.Moves - 1;
             when Sok_Movement.Box_Moved =>
               -- Same number of box Ok
@@ -435,7 +456,7 @@ package body Sok_Manager is
             Con_Io.Bell;
         end;
 
-      end if; -- move or undo
+      end if; -- Move or undo
 
       if Sok_Movement."/=" (Result, Sok_Movement.Refused) then
         Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
@@ -445,9 +466,5 @@ package body Sok_Manager is
 
     end loop;
   end Play_Frame;
-
-
-
-
 
 end Sok_Manager;

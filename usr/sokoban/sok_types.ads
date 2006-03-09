@@ -24,8 +24,11 @@ package Sok_Types is
   -- A frame
   type Frame_Tab is array (Row_Range, Col_Range) of Square_Rec;
 
-  -- Frame number
-  subtype Frame_Range is Positive range 1 .. 50;
+  -- Frame number (0 for restaure)
+  subtype Desired_Frame_Range is Natural range 0 .. 50;
+  Restore_Frame : constant Desired_Frame_Range := 0;
+  subtype Frame_Range is Desired_Frame_Range
+                         range 1 .. Desired_Frame_Range'Last;
 
   -- square position in frame
   type Coordinate_Rec is record
