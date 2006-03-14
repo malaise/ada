@@ -111,6 +111,9 @@ package body Euristic is
     end "<";
 
   begin
+    if Debug.On then
+      My_Io.Put_Line ("Euristic search start.");
+    end if;
 
     Init_Zeros:
     declare
@@ -199,7 +202,7 @@ package body Euristic is
                    & Normal(Zero_Desc(Selected_Zero).Row, 2)
                    & "-"
                    & Normal(Zero_Desc(Selected_Zero).Col, 2)
-                   & ",Slash ");
+                   & ", Slash: ");
         end if;
         for Col in Index_Range loop
           Index_Desc := Cross_Ref(Zero_Desc(Selected_Zero).Row, Col);
@@ -349,6 +352,9 @@ package body Euristic is
     -- At least one mark should be done
     Nb_Mark : Natural;
   begin
+    if Debug.On then
+      My_Io.Put_Line ("Reduction starts.");
+    end if;
     -- Mark rows with no squared zero
     for Row in Index_Range loop
       -- No squared zero ?
@@ -449,7 +455,7 @@ package body Euristic is
         end if;
       end loop;
       if Debug.On then
-        My_Io.Put_Line ("  Lowest " & Types.Cell_Range'Image(Lowest));
+        My_Io.Put_Line ("Lowest is " & Types.Cell_Range'Image(Lowest));
       end if;
 
       -- Substract Lowest from cells which row     marked and col not marked
@@ -460,7 +466,7 @@ package body Euristic is
             Nb_Change := Nb_Change + 1;
             Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) - Lowest;
             if Debug.On then
-              My_Io.Put_Line ("    Sub");
+              My_Io.Put ("S ");
             end if;
           elsif not Marked_Row(Row) and then Marked_Col(Col) then
             Nb_Change := Nb_Change + 1;
@@ -468,20 +474,33 @@ package body Euristic is
             if Types.Cell_Range'Last - Mattrix.Notes(Row, Col) >= Lowest then
               Mattrix.Notes(Row, Col) := Mattrix.Notes(Row, Col) + Lowest;
               if Debug.On then
-                My_Io.Put_Line ("    Add");
+                My_Io.Put ("A ");
               end if;
             else
               Mattrix.Notes(Row, Col) := Types.Cell_Range'Last;
               if Debug.On then
-                My_Io.Put_Line ("    Max");
+                My_Io.Put ("M ");
               end if;
             end if;
+          else
+            if Debug.On then
+              My_Io.Put ("U ");
+            end if;
+
           end if;
         end loop;
+        if Debug.On then
+          My_Io.New_Line;
+        end if;
       end loop;
 
-      if Debug.On and then Nb_Change = 0 then
-        My_Io.Put_Line ("No Change");
+      if Debug.On then
+        My_Io.Put_Line ("End of reduction.");
+        if Nb_Change = 0 then
+          My_Io.Put_Line ("No Change:");
+        else
+          My_Io.Put_Line ("Mattrix reduced:");
+        end if;
         Put_Mattrix(Mattrix);
       end if;
 
