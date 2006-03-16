@@ -1,6 +1,5 @@
-with Many_Strings, Sys_Calls;
+with Sys_Calls;
 package Proc_Family is
-
 
   -- Callback for death report
   subtype Death_Cause_List is Sys_Calls.Death_Cause_List
