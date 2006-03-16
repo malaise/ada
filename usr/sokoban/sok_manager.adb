@@ -371,6 +371,7 @@ package body Sok_Manager is
                       Sok_Display.Put_Line (State.Moves, State.Pushes, State.Box_Ok,
                                             State.Nbre_Targets, State.No_Frame);
                       Sok_Display.Put_Score (Disp_Score);
+                      Sok_Display.Put_Help (Sok_Display.Done);
                     when Restart_Frame =>
                       Update_State := Menu_Result.Update_State;
                       return;
