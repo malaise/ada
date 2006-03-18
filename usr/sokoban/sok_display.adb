@@ -266,7 +266,7 @@ package body Sok_Display is
       Color := Con_Io.Light_Gray;
       Blink := Con_Io.Not_Blink;
     else
-      Color := Con_Io.Green;
+      Color := Con_Io.Red;
       Blink := Con_Io.Blink;
     end if;
 
