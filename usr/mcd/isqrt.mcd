@@ -1,0 +1,39 @@
+# Integer search of largest i for which i * i <= n
+
+# Error and quit
+[ "Error: expect 1 argument, positive int or arbi" putl ssize popn retall
+] E popr
+
+# Check 1 argument, int or arbi, positive
+ssize 1 /= E pushr ifcall
+dup isinte [ toarbi ] ifcall
+dup isarbi ~ E pushr ifcall
+dup ispos ~ E pushr ifcall
+
+# Save n
+n popr
+
+# Loop, each time multiplying j by step, until j*j > n
+# Set step and loop var
+@10 s popr
+@1 dup i popr j popr
+[
+j pushr dup * n pushr > ifret
+# Save j in i and multiply j by step
+j pushr i copyr s pushr * j popr
+# Loop
+S pushr retacal ] S copyr call
+
+# Now i*i <= n < j*j
+# Dichotomy between i and j. k=(i+j)/2
+[ i pushr j pushr + @2 / k copyr dup
+# If k*k > n then j=k else i=k
+dup * n pushr > j i ifte popr
+# Exit when j=i+1
+i pushr @1 + j pushr = ifret
+# Loop
+L pushr retacal ] L copyr call
+
+# Display result, remove leading "@+"
+i pushr strof dup 3 swap strlen strsub putl
+
