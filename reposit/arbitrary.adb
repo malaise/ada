@@ -379,7 +379,7 @@ package body Arbitrary is
 
 
   -- Constructors
-  function Set (V : String) return Number is
+  function Set_Uncheck (V : String) return Number is
     use type Unbstr;
   begin
     if Syntax.Is_Sign(V(V'First)) then
@@ -387,8 +387,15 @@ package body Arbitrary is
     else
       return Basic.Make ("+" & Unb.To_Unbounded_String (V));
     end if;
-  end Set;
-  Zero : constant Number := Set ("0");
+  end Set_Uncheck;
+  Zero : constant Number := Set_Uncheck ("0");
+
+  function Set (V : String) return Number is
+    N : Number := Set_Uncheck (V);
+  begin
+    Syntax.Check (N);
+    return N;
+  end Set; 
 
   function Strip (V : String) return String is
   begin
@@ -401,17 +408,17 @@ package body Arbitrary is
 
   function Set (V : Integer) return Number is
   begin
-    return Set (Strip (V'Img));
+    return Set_Uncheck (Strip (V'Img));
   end Set;
 
   function Set (V : Long_Integer) return Number is
   begin
-    return Set (Strip (V'Img));
+    return Set_Uncheck (Strip (V'Img));
   end Set;
 
   function Set (V : Long_Long_Integer) return Number is
   begin
-    return Set (Strip (V'Img) );
+    return Set_Uncheck (Strip (V'Img) );
   end Set;
 
   -- Image
@@ -637,7 +644,7 @@ package body Arbitrary is
   function "**" (A, B : in Number) return Number is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
-    One : constant Number := Set("1");
+    One : constant Number := Set_Uncheck ("1");
     R : Number := One;
     I : Number := B;
   begin
