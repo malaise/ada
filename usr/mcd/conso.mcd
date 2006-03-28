@@ -42,7 +42,7 @@ f pushr 4 * 1000 * c popr
 
 # Compute remaining flight time
 c pushr w pushr 3600 * swap /
-1000 * 6 format daysof 8 12 strsub "h" 3 swap3 strrep
+1000 * 6 format daysof 8 12 strsub 3 "h" strrep
 "Flight    time: " put putl
 
 # Compute remaining fuel
