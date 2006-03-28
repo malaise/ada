@@ -671,9 +671,14 @@ package body Operations is
 
     -- Frac of hours -> seconds
     S := S * 3600.0;
+    -- Round to 10 micros
+    S := My_Math.Real (My_Math.Round (S * 100_000.0)) / 100_000.0;
 
-    -- Round micro
-    S := My_Math.Real (My_Math.Round (S * 1000000.0)) / 1000000.0;
+    -- Rounding may lead to next hour
+    if S >= 3600.0 then
+      S := S  - 3600.0;
+     I := I + 1.0;
+    end if;
 
     -- Get int and frac of seconds
     F := My_Math.Frac (S);
@@ -702,7 +707,7 @@ package body Operations is
 
     -- Extract Minutes and seconds
     F := F * 100.0;
-    F := My_Math.Real (My_Math.Round (F * 100000.0)) / 100000.0;
+    F := My_Math.Real (My_Math.Round (F * 100_000.0)) / 100_000.0;
     M := My_Math.Int (F);
     if M >= 60.0 then
       raise Invalid_Argument;
