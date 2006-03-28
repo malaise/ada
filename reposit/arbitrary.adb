@@ -395,7 +395,7 @@ package body Arbitrary is
   begin
     Syntax.Check (N);
     return N;
-  end Set; 
+  end Set;
 
   function Strip (V : String) return String is
   begin
@@ -424,13 +424,11 @@ package body Arbitrary is
   -- Image
   function Image (V : Number) return String is
   begin
-    Syntax.Check (V);
     return Unb.To_String (Unbstr(V));
   end Image;
 
   function Length (V : Number) return Natural is
   begin
-    Syntax.Check (V);
     return Unb.Length (Unbstr(V));
   end Length;
 
@@ -438,7 +436,6 @@ package body Arbitrary is
   function "abs" (A : Number) return Number is
     B : Unbstr := Unbstr(A);
   begin
-    Syntax.Check (A);
     if Unb.Element(B, 1) = '-' then
       Unb.Replace_Element (B, 1, '+');
     end if;
@@ -448,7 +445,6 @@ package body Arbitrary is
   function "-" (A : Number) return Number is
     B : Unbstr := Unbstr(A);
   begin
-    Syntax.Check (A);
     if A = Zero then
       return Zero;
     end if;
@@ -465,8 +461,6 @@ package body Arbitrary is
     Ta, Tb : Number;
     use type Unbstr;
   begin
-    Syntax.Check (A);
-    Syntax.Check (B);
     Ta := A;
     Basic.Normalize (Ta);
     Tb := B;
