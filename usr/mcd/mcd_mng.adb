@@ -132,6 +132,9 @@ package body Mcd_Mng is
     -- Arbi->Arbi or Inte->Real
     function Fact    (X : Item_Rec) return Item_Rec;
 
+    -- Real,Inte->Real
+    function Roundat (X : Item_Rec; N : Item_Rec) return Item_Rec;
+
     -- Argument does not mach operator
     -- Invalid_Argument : exception;
     -- Arguments are not compatible to each other
@@ -509,6 +512,9 @@ package body Mcd_Mng is
         when Proport =>
           Pop(A); Pop(B); Pop(C); Push (Operations.Proport(C,B,A));
           S := A;
+        when Roundat =>
+          Pop(A); Pop(B); Push (Operations.Roundat(B,A));
+          S := B;
 
         -- Trigo
         when Pi =>

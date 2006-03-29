@@ -88,7 +88,8 @@ package body Mcd_Parser is
    Frac     => (Nosy, "push frac part of A real      ", False),
    Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
    Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", False),
-   Proport  => (Nosy, "push A * B / C                ", True),
+   Proport  => (Nosy, "push A * B / C                ", False),
+   Roundat  => (Nosy, "push B rounded at A           ", True),
 
    Isarbi   => (Nosy, "push True if A in an arbitrari", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),
