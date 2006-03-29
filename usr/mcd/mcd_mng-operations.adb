@@ -1,4 +1,4 @@
-with Bit_Ops;
+with Bit_Ops, Round_At;
 separate (Mcd_Mng)
 
 package body Operations is
@@ -671,8 +671,8 @@ package body Operations is
 
     -- Frac of hours -> seconds
     S := S * 3600.0;
-    -- Round to 10 micros
-    S := My_Math.Real (My_Math.Round (S * 100_000.0)) / 100_000.0;
+    -- Round to micros
+    S := Round_At (S, -6);
 
     -- Rounding may lead to next hour
     if S >= 3600.0 then
@@ -705,9 +705,11 @@ package body Operations is
     I := My_Math.Int (X.Val_Real);
     F := My_Math.Frac (X.Val_Real);
 
-    -- Extract Minutes and seconds
+    -- F is 0.MmSsxxxyyy, x and y for milis and micros
+    -- Round micros
+    F := Round_At (F, -10);
+    -- Extract Minutes and seconds. Round
     F := F * 100.0;
-    F := My_Math.Real (My_Math.Round (F * 100_000.0)) / 100_000.0;
     M := My_Math.Int (F);
     if M >= 60.0 then
       raise Invalid_Argument;
@@ -1036,6 +1038,19 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Proport;
+
+  -- Real,Inte->Real
+  function Roundat (X : Item_Rec; N : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Real or else N.Kind /= Inte then
+      raise Invalid_Argument;
+    end if;
+    if       N.Val_Inte < My_Math.Inte (Integer'First)
+    or else  N.Val_Inte > My_Math.Inte (Integer'Last)  then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Real, Val_Real => Round_At (X.Val_Real, Integer(N.Val_Inte)));
+  end Roundat;
 
 end Operations;
 
