@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with Normal, Text_Handler, Sorts;
+with Normal, Text_Handler, Sorts, My_Math;
 package body Common is
   -- The dimension of square
   Dim : Dim_Range;
@@ -25,39 +25,18 @@ package body Common is
 
   -- Real -> integer : round or trunc
   function Trunc (X : in Float) return Integer is
-    Int : Integer;
   begin
-    Int := Integer (X);
-    -- Adjust to 1
-    if X > 0.0 then
-      -- If x>0 error is 1 too much
-      if Float (Int) > X then Int := Int - 1; end if;
-      return Int;
-    else
-      -- If x<0 error is 1 too less
-      if Float (Int) < X then Int := Int + 1; end if;
-      return Int;
-    end if;
-  exception
-    when others => raise Constraint_Error;
+    return Integer(My_Math.Trunc (My_Math.Real(X)));
   end Trunc;
 
   function Round (X : in Float) return Integer is
-    Result : Integer;
   begin
-    if X > 0.0 then
-      Result := Trunc  (X + 0.5);
-    else
-      Result := Trunc  (X - 0.5);
-    end if;
-    return Result;
-  exception
-    when others => raise Constraint_Error;
+    return Integer(My_Math.Round (My_Math.Real(X)));
   end Round;
 
   function Frac (X : in Float) return Float is
   begin
-    return X - Float(Trunc(X));
+    return Float(My_Math.Frac (My_Math.Real(X)));
   end Frac;
 
   -- Recursive procedure to try a a level

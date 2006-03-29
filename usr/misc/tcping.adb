@@ -2,7 +2,7 @@
 with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
 with Text_Handler, Argument, Sys_Calls, Ip_Addr,
-     Normal, My_Math, Timers, Socket, Tcp_Util, Event_Mng;
+     Normal, My_Math, Round_At, Timers, Socket, Tcp_Util, Event_Mng;
 
 procedure Tcping is
 
@@ -140,7 +140,7 @@ procedure Tcping is
       -- Done, clean
       Dur := Ada.Calendar.Clock - Start_Time;
       R := My_Math.Real(Dur);
-      R := My_Math.Real (My_Math.Round (R * 1000.0)) / 1000.0;
+      R := Round_At (R, -3);
       Int :=  My_Math.Trunc (R);
       Frac := Integer(My_Math.Trunc (My_Math.Frac (R) * 1000.0));
 
