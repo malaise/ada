@@ -21,8 +21,8 @@ matching.
 -f or --file : indicate that <file> will contain names of files to process.
 -m <max> or --max=<max> : stop processing each file after <max> substitutions,
     (0 for infinite).
--- : to stop the list of options. If <find_pattern> is "-b", then use
-     asubst [ { <option> } ] -- "-b" <replace_pattern>  [ { <file> } ].
+-- : to stop the list of options. If <find_pattern> is "-pat", then use
+     asubst [ { <option> } ] -- "-pat" <replace_pattern>  [ { <file> } ].
 
 
 3. Find pattern
