@@ -1,5 +1,8 @@
 History of Asubst:
 
+02/04/06 V2_11
+Add: Reject any arg starting by "-" and not an option (except after --).
+
 09/02/2006 V2_10
 Add: Improve doc and help text.
 
