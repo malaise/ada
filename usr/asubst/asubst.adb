@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V2.10";
+  Version : constant String  := "V2.11";
 
   procedure Usage is
   begin
@@ -241,6 +241,13 @@ begin
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
       end if;
+    elsif Argument.Get_Parameter (Occurence => I)(1) = '-' then
+      -- Not a valid option
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+                              & ": Syntax ERROR. Invalid option "
+                              & Argument.Get_Parameter (Occurence => I) & ".");
+      Error;
+      return;
     else
       -- Not an option
       exit;
