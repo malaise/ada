@@ -245,12 +245,14 @@ package body Directory is
   end File_Match;
 
   -- File name manipulation
+  Sep :  constant String := "" & Separator;
+  Dot :  constant String := ".";
   -- Get dir name (path) from a complete file name (up to the last / included)
   function Dirname (File_Name : String) return String is
     I : Natural;
   begin
     I := String_Mng.Locate (File_Name, File_Name'First,
-                            "/", From_Head => False);
+                            Sep, From_Head => False);
     if I = 0 then
       -- No / in file name => dir name is empty
       return "";
@@ -266,7 +268,7 @@ package body Directory is
     Last : constant Natural := File_Name'Last;
   begin
     I := String_Mng.Locate (File_Name, File_Name'First,
-                            "/", From_Head => False);
+                            Sep, From_Head => False);
     if I = 0 then
       -- No / in file name => no dir name
       return File_Name;
@@ -286,7 +288,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := String_Mng.Locate (File, File'First, ".");
+    I := String_Mng.Locate (File, File'First, Dot);
     if I = 0 then
       -- No '.', return full file name
       return File;
@@ -300,7 +302,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := String_Mng.Locate (File, File'First, ".");
+    I := String_Mng.Locate (File, File'First, Dot);
     if I = 0 then
       -- No '.', return no suffix
       return "";
@@ -308,6 +310,25 @@ package body Directory is
       return File (I .. File'Last);
     end if;
   end File_Suffix;
+
+  -- Build a complete file name
+  function Build_File_Name (Dirname : String; File_Prefix, File_Suffix : in String) 
+           return String is
+    function Build_Name return String is
+    begin
+      if File_Suffix = "" then
+        return File_Prefix;
+      else
+        return File_Prefix & Dot & File_Suffix;
+      end if;
+    end Build_Name;
+  begin
+    if Dirname = "" then
+      return Build_Name;
+    else
+      return Dirname & Sep & Build_Name;
+    end if;
+  end Build_File_Name;
 
   -- Use Sys_Calls
   function File_Kind (File_Name : String) return File_Kind_List is

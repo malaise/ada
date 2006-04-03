@@ -59,6 +59,9 @@ package Directory is
   -- Extract the file name, then its suffix (from the first . included)
   function File_Suffix (File_Name : String) return String;
 
+  -- Build a complete file name
+  function Build_File_Name (Dirname : String; File_Prefix, File_Suffix : in String)
+           return String;
 
   -- File kind and complete status
   type File_Kind_List is new Sys_Calls.File_Kind_List;
