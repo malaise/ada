@@ -401,6 +401,9 @@ package body Replace_Pattern is
     Case_Index : Natural;
     Case_Mode : Case_Mode_List;
   begin
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Replace, working with >" & Str & "<");
+    end if;
     -- Init result with replace pattern
     Result := The_Pattern;
     -- Replace all occurences of replace code, toggle case substitution...
@@ -488,8 +491,7 @@ package body Replace_Pattern is
       end if;
     end loop;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Replace, replaced >" & Str
-         & "< by >"
+      Sys_Calls.Put_Line_Error ("Replace, replacing by >"
          & Asu.To_String (Result) & "<");
     end if;
     return Asu.To_String (Result);
