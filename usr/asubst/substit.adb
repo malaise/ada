@@ -451,6 +451,9 @@ package body Substit is
     Line, First_Line, Last_Line : Str_Access;
     Start, Stop : Positive;
     Matches : Boolean;
+    -- The string from which to replace
+    Str_From_Replace : Asu.Unbounded_String;
+    -- The string to replace (only used for traces)
     Str_To_Replace : Asu.Unbounded_String;
   begin
     -- Rewind read lines
@@ -512,30 +515,35 @@ package body Substit is
         Last_Line := First_Line;
         Str_To_Replace := Asu.To_Unbounded_String (
           Asu.Slice (First_Line.all, Start, Stop));
+        Str_From_Replace := First_Line.all;
       else
-        -- Many patterns -> end of first line + all lines but last + start of last line
+        -- Many patterns -> end of first line + all lines but last
+        --                                    + start of last line
         Str_To_Replace := Asu.To_Unbounded_String (
           Asu.Slice (First_Line.all, Start, Asu.Length (First_Line.all)));
+        Str_From_Replace := First_Line.all;
         for I in 2 .. Nb_Pattern - 1 loop
           Line_List_Mng.Move_To (Line_List);
           Line := Line_List_Mng.Access_Current (Line_List);
           Asu.Append (Str_To_Replace, Line.all);
+          Asu.Append (Str_From_Replace, Line.all);
         end loop;
         Line_List_Mng.Move_To (Line_List);
         Last_Line := Line_List_Mng.Access_Current (Line_List);
         Asu.Append (Str_To_Replace, Asu.Slice (Last_Line.all, 1, Stop));
+        Asu.Append (Str_From_Replace, Last_Line.all);
       end if;
       -- Make replacing string
       declare
         Str_Replacing : constant String
                       := Replace_Pattern.Replace (
-                            Asu.To_String (Str_To_Replace));
+                            Asu.To_String (Str_From_Replace));
         Str_Replaced : Asu.Unbounded_String;
         use type Asu.Unbounded_String;
       begin
         -- Set result: beginning of first line + replacing + end of last line
         Str_Replaced := Asu.To_Unbounded_String (
-                        Asu.Slice (First_Line.all, 1, Start - 1)) &  Str_Replacing;
+                    Asu.Slice (First_Line.all, 1, Start - 1)) & Str_Replacing;
         if Stop < Asu.Length (Last_Line.all) then
           -- This would raise Constraint_Error if Stop = Length
           Asu.Append (Str_Replaced, Asu.Slice (Last_Line.all,
