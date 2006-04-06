@@ -1,7 +1,12 @@
 History of Asubst:
 
-02/04/06 V2_11
-Add: Reject any arg starting by "-" and not an option (except after --).
+06/04/2006 V2_12
+Bugfix: Exception in replace because string for replace must be full string
+        and not matching string.
+
+03/04/2006 V2_11
+Add: Reject argument starting with "-" if it is not a valid option
+     and if it is not after "--".
 
 09/02/2006 V2_10
 Add: Improve doc and help text.

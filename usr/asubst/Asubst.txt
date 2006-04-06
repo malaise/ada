@@ -1,5 +1,5 @@
                                  Asubst
-                                  V2_10
+                                  V2_12
 
 
 1. General syntax
