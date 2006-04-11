@@ -250,7 +250,8 @@ package body Substit is
       Line := Text_Line.Get (In_File);
       Len := Asu.Length (Line);
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Read >" &  Asu.To_String (Line) & "<");
+        Sys_Calls.Put_Line_Error ("Read >" &  Asu.To_String (Line) & "<"
+                                 & Len'img & " chars");
       end if;
       if Len = 0 then
         -- We reached the end of file
@@ -357,6 +358,7 @@ package body Substit is
     Nb_Match := 0;
     loop
       -- Search a Match from Current to Last
+      -- Match_Res is indexes in Line
       Match_Res := Search_Pattern.Check (
          Asu.Slice (Line.all, Current, Asu.Length(Line.all)),
          1);
@@ -366,7 +368,7 @@ package body Substit is
       -- Found a match
       Nb_Match := Nb_Match + 1;
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Match in end of line >"
+        Sys_Calls.Put_Line_Error ("Match in remain of line >"
            & Asu.Slice (Line.all, Current, Asu.Length(Line.all))
            & "< from" & Match_Res.Start_Offset'Img
            & " to" & Match_Res.End_Offset'Img);
@@ -374,9 +376,10 @@ package body Substit is
       -- Get substituting string
       declare
         Replacing : constant String
-                  := Replace_Pattern.Replace (Asu.Slice (Line.all,
-                                            Match_Res.Start_Offset,
-                                            Match_Res.End_Offset));
+                  := Replace_Pattern.Replace (
+            Asu.Slice (Line.all, 
+                       Match_Res.Start_Offset,
+                       Match_Res.End_Offset));
       begin
         -- Display verbose substitution
         if Verbose then
