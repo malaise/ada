@@ -323,13 +323,14 @@ package body Search_Pattern is
     -- The pattern to check with
     Upat : Line_Pat_Rec;
     Upat_Access : Unique_Pattern.Element_Access;
-    -- A string (1 .. N) to check
-    Loc_Str : constant String := Str;
     -- Check result
     Nmatch : Natural;
     Match : Regular_Expressions.Match_Array
                (1 .. Nb_Sub_String_Range'Last + 1);
   begin
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Search checking str >" & Str & "< ");
+    end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
@@ -343,12 +344,12 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img &
                                   " is delim");
       end if;
-      if Loc_Str = Line_Feed then
+      if Str = Line_Feed then
         return (1, 1);
       else
         return (0, 0);
       end if;
-    elsif Loc_Str = Line_Feed then
+    elsif Str = Line_Feed then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check empty vs not delim");
       end if;
@@ -358,10 +359,10 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img);
       end if;
       Regular_Expressions.Exec (Upat_Access.Pat,
-                                Loc_Str,
+                                Str,
                                 Nmatch, Match);
       if Nmatch >= 1 and then Match(1).Start_Offset <= Match(1).End_Offset then
-        -- Copy the slice os substrings
+        -- Copy the slice of substrings
         Upat_Access.Nb_Substr := Nmatch - 1;
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
