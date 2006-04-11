@@ -32,6 +32,8 @@ procedure T_Gc is
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
 
+  Redisplay : Boolean;
+
   use type Afpx.Field_Range, Afpx.Event_List, Afpx.Keyboard_Key_List;
 
   -- Clear result fields during input
@@ -70,6 +72,12 @@ procedure T_Gc is
       Cursor := First_Fld;
   end Decode_Point;
 
+  procedure Clear_result is
+  begin
+    Afpx.Clear_Field (Heading_Field);
+    Afpx.Clear_Field (Distance_Field);
+  end Clear_Result;
+
 begin
 
   if Argument.Get_Nbre_Arg = 0 then
@@ -99,10 +107,11 @@ begin
   else
     Afpx.Use_Descriptor (1);
     -- First Get field
+    Redisplay := True;
     Cursor_Field := Afpx.Next_Cursor_Field(0);
     Cursor_Col := 0;
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Result, False,
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Result, Redisplay,
                          Next_Field_Cb'Unrestricted_Access);
 
       -- Exit
@@ -120,21 +129,19 @@ begin
         for Field in B_Flds loop
           Afpx.Reset_Field (Field);
         end loop;
+        Clear_Result;
+        Cursor_Field := A_Flds'First;
+        Cursor_Col := 0;
       end if;
-      Afpx.Clear_Field (Heading_Field);
-      Afpx.Clear_Field (Distance_Field);
-      Cursor_Field := A_Flds'First;
-      Cursor_Col := 0;
 
       -- Compute
       if (Result.Event = Afpx.Keyboard
           and then Result.Keyboard_Key = Afpx.Return_Key)
       or else (Result.Event = Afpx.Mouse_Button
                and then Result.Field_No = Compute_Field) then
-        Afpx.Clear_Field (Heading_Field);
-        Afpx.Clear_Field (Distance_Field);
         Cursor_Field := A_Flds'First;
         Cursor_Col := 0;
+        Clear_Result;
         Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok, Cursor_Field);
         if Decode_Ok then
           Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok, Cursor_Field);
@@ -145,10 +152,14 @@ begin
                              String_Util.Angle2Str(Heading));
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
-          -- Clean the result fields ad next cursor change field
+          -- Clean the result fields at next cursor change field
           Need_Clean := True;
         end if;
       end if;
+
+      -- Refresh
+      Redisplay := Result.Event = Afpx.Wakeup_Event
+           or else Result.Event = Afpx.Refresh;
 
     end loop;
 
