@@ -57,6 +57,37 @@ package body Utf_8 is
     end if;
   end Check_Valid;
 
+  -- Checks that a Utf-8 sequence is safe (valid and not uselessly long...)
+  function Is_Safe (Seq : Sequence) return Boolean is
+    Unicode : Unicode_Number;
+  begin
+    if not Is_Valid (Seq) then
+      return False;
+    end if;
+    -- Decode and check vs forbidden values
+    Unicode := Decode (Seq);
+    if      Unicode = 16#D800#
+    or else Unicode = 16#DFFF#
+    or else Unicode = 16#FFFE#
+    or else Unicode = 16#FFFF# then
+      return False;
+    end if;
+    -- Re-encode and check this leads back to Seq
+    if Encode (Unicode) /= Seq then
+      return False;
+    end if;
+    -- All tests OK
+    return True;
+  end Is_safe;
+
+  -- Checks that a Utf-8 sequence is safe, raise Invalid_Sequence if not
+  procedure Check_Safe (Seq : in Sequence) is
+  begin
+    if not Is_Safe (Seq) then
+      raise Invalid_Sequence;
+    end if;
+  end Check_Safe;
+
   -- Decodes a Utf-8 sequence. May raise Invalid_Sequence.
   function Decode (Seq : Sequence) return Unicode_Number is
 
@@ -75,8 +106,8 @@ package body Utf_8 is
       Result := Byte_Of (1);
     elsif Seq'Length = 2 then
       -- Seq is 110j_jjjj 10ii_iiii and becomes 0000_0jjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) And 2#0001_1100#, 06);
-      Result := Result Or     (Byte_Of (2) And  2#0011_1111#);
+      Result :=           Shl (Byte_Of (1) And 2#0001_1111#, 06);
+      Result := Result Or     (Byte_Of (2) And 2#0011_1111#);
     elsif Seq'Length = 3 then
       -- Seq is 1110_kkkk 10jj_jjjj 10ii_iiii and becomes kkkk_jjjj jjii_iiii
       Result :=           Shl (Byte_Of (1) And 2#0000_1111#, 12);
@@ -86,9 +117,9 @@ package body Utf_8 is
       -- Seq is 1111_0lll 10kk_kkkk 10jj_jjjj 10ii_iiii
       --  and becomes 000l_llkk kkkk_jjjj jjii_iiii
       Result :=           Shl (Byte_Of (1) And 2#0000_0111#, 18);
-      Result := Result Or Shl (Byte_Of (2) And 2#0000_0111#, 12);
-      Result := Result Or Shl (Byte_Of (3) And 2#0000_0111#, 06);
-      Result := Result Or     (Byte_Of (3) And 2#0000_0111#);
+      Result := Result Or Shl (Byte_Of (2) And 2#0011_1111#, 12);
+      Result := Result Or Shl (Byte_Of (3) And 2#0011_1111#, 06);
+      Result := Result Or     (Byte_Of (4) And 2#0011_1111#);
     end if;
     return Result;
   end Decode;
@@ -121,7 +152,7 @@ package body Utf_8 is
     else -- Nb_Chars = 4
       -- U is 000k_kkkk jjjj_jjjj iiii_iiii
       -- and becomes 1111_0kkk 10kk_jjjj 10jj_jjii 10ii_iiii
-      Tab(1) := Shr (Unicode And 2#0001_1100_0000_0000_0000_0000#, 16) Or 2#1111_0000#;
+      Tab(1) := Shr (Unicode And 2#0001_1100_0000_0000_0000_0000#, 18) Or 2#1111_0000#;
       Tab(2) := Shr (Unicode And 2#0000_0011_1111_0000_0000_0000#, 12) Or 2#1000_0000#;
       Tab(3) := Shr (Unicode And 2#0000_0000_0000_1111_1100_0000#, 06) Or 2#1000_0000#;
       Tab(4) :=     (Unicode And 2#0000_0000_0000_0000_0011_1111#)     Or 2#1000_0000#;

@@ -18,13 +18,16 @@ package Utf_8 is
 
   -- Checks that a Utf-8 sequence is valid
   function Is_Valid (Seq : Sequence) return Boolean;
-
   -- Checks that a Utf-8 sequence is valid, raise Invalid_Sequence if not
   procedure Check_Valid (Seq : in Sequence);
   
+  -- Checks that a Utf-8 sequence is safe (valid and not uselessly long...)
+  function Is_Safe (Seq : Sequence) return Boolean;
+  -- Checks that a Utf-8 sequence is safe, raise Invalid_Sequence if not
+  procedure Check_Safe (Seq : in Sequence);
+
   -- Decodes a Utf-8 sequence. May raise Invalid_Utf_8_Sequence
   function Decode (Seq : Sequence) return Unicode_Number; 
-
   -- Encodes a Utf-8 sequence
   function Encode (Unicode : Unicode_Number) return Sequence; 
 
