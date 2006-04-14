@@ -1,7 +1,7 @@
 with Ada.Text_Io, Ada.Strings.Unbounded;
 with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
      Regular_Expressions, Directory, Copy_File, File_Access, Mixed_Str,
-     Debug;
+     Utf_8, Debug;
 with Search_Pattern, Replace_Pattern;
 package body Substit is
 
@@ -250,8 +250,7 @@ package body Substit is
       Line := Text_Line.Get (In_File);
       Len := Asu.Length (Line);
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Read >" &  Asu.To_String (Line) & "<"
-                                 & Len'img & " chars");
+        Sys_Calls.Put_Line_Error ("Read >" &  Asu.To_String (Line) & "<");
       end if;
       if Len = 0 then
         -- We reached the end of file
@@ -291,11 +290,13 @@ package body Substit is
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean) return Long_Long_Natural;
+                        Verbose : Boolean;
+                        Utf8      : Boolean) return Long_Long_Natural;
   function Do_One_File (File_Name : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
-                        Verbose   : Boolean) return Long_Long_Natural is
+                        Verbose   : Boolean;
+                        Utf8      : Boolean) return Long_Long_Natural is
     Total_Subst : Long_Long_Natural;
     Remain_Subst : Long_Long_Natural;
     Do_Verbose : Boolean;
@@ -316,7 +317,7 @@ package body Substit is
       -- Done when the amount of lines cannot be read
       exit when not Read;
       -- Process these lines
-      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose);
+      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose, Utf8);
       -- Done when amount of substitutions reached
       if Max_Subst /= 0 then
         exit when Max_Subst = Total_Subst;
@@ -345,10 +346,27 @@ package body Substit is
       raise;
   end Do_One_File;
 
+  -- Check if Char is the startup of a valid UTF-8 sequence
+  --  and increment Offset accordingly
+  procedure Apply_Utf8 (Char : in Character;
+                        Offset : in out Regular_Expressions.Offset_Range) is
+    Len : Utf_8.Len_Range;
+  begin
+    -- Get lenght of sequence
+    Len := Utf_8.Nb_Chars (Char);
+    -- Apply offset
+    Offset := Offset + Len - 1;
+  exception
+    when Utf_8.Invalid_Sequence =>
+      -- Leave Offset unchanged
+      null;
+  end Apply_Utf8;
+
   -- Handle multiple substitutions within one line
   function Subst_One_Line (Line : Str_Access;
                            Max_Subst : Long_Long_Natural;
-                           Verbose : Boolean) return Long_Long_Natural is
+                           Verbose : Boolean;
+                           Utf8 : Boolean) return Long_Long_Natural is
     Current : Positive;
     Nb_Match : Long_Long_Natural;
     Match_Res : Regular_Expressions.Match_Cell;
@@ -358,7 +376,6 @@ package body Substit is
     Nb_Match := 0;
     loop
       -- Search a Match from Current to Last
-      -- Match_Res is indexes in Line
       Match_Res := Search_Pattern.Check (
          Asu.Slice (Line.all, Current, Asu.Length(Line.all)),
          1);
@@ -367,8 +384,14 @@ package body Substit is
       or else Match_Res.End_Offset <= 0;
       -- Found a match
       Nb_Match := Nb_Match + 1;
+      -- Check if end of match is the startup of a utf8 sequence
+      --  increment End_Offset by the length of the sequence - 1
+      if Utf8 then
+        Apply_Utf8 (Asu.Element (Line.all, Match_Res.End_Offset),
+                    Match_Res.End_Offset);
+      end if;
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Match in remain of line >"
+        Sys_Calls.Put_Line_Error ("Match in end of line >"
            & Asu.Slice (Line.all, Current, Asu.Length(Line.all))
            & "< from" & Match_Res.Start_Offset'Img
            & " to" & Match_Res.End_Offset'Img);
@@ -376,10 +399,7 @@ package body Substit is
       -- Get substituting string
       declare
         Replacing : constant String
-                  := Replace_Pattern.Replace (
-            Asu.Slice (Line.all, 
-                       Match_Res.Start_Offset,
-                       Match_Res.End_Offset));
+                  := Replace_Pattern.Replace (Asu.To_String (Line.all));
       begin
         -- Display verbose substitution
         if Verbose then
@@ -449,7 +469,8 @@ package body Substit is
 
   -- Check current list of lines vs search patterns
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean) return Long_Long_Natural is
+                        Verbose : Boolean;
+                        Utf8 : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
     Start, Stop : Positive;
@@ -464,7 +485,7 @@ package body Substit is
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
       return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
-                             Max_Subst, Verbose);
+                             Max_Subst, Verbose, Utf8);
     end if;
     -- From here, one subtitution max
     Matches := True;

@@ -1,192 +1,120 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>Asubst</title>
-  <meta content="MALAISE Pascal" name="author">
-</head>
-<body>
-<div style="text-align: center; font-family: monospace;"><big><big><big><big><big
- style="font-weight: bold;">Asubst</big><br>
-<small style="font-weight: bold;">V2_12</small></big></big></big></big><br>
-</div>
-<pre style="font-family: monospace;"><br><br></pre>
-<h1 style="font-family: monospace;">1. General syntax</h1>
-<span style="font-family: monospace;">Usage: asubst [ { &lt;option&gt;
-} ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; } ]</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">or&nbsp;&nbsp; : asubst -h |
---help | -v | --version</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">Substitutes strings in files.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">If no file name is specified,
-substitutes from stdin to stdout.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">See "man 7 regex" for basic and
-extended regex and for ignorecase pattern matching.</span><br
- style="font-family: monospace;">
-<h1 style="font-family: monospace;">2. Options</h1>
-<span style="font-family: monospace;">-b or --basic : use 'basic' regex
-instead of the default 'extended' regex for &lt;find_pattern&gt;.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-i or --ignorecase : do case
-insensitive match checking of &lt;find_pattern&gt;.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-s or --save : make a copy
-(&lt;file&gt;.asu) of original file(s).</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-q or --quiet : for no printout.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-n or --number : print number of
-substitutions per file.</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-v or --verbose : print each
-substitution and its line number.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-f or --file : indicate that
-&lt;file&gt; contains the names of files to process.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-m &lt;max&gt; or
---max=&lt;max&gt; : stop processing each file after &lt;max&gt;
-substitutions, (0 for infinite).</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-- : to end the list of options.
-If &lt;find_pattern&gt; is "-pat", then use <br>
-&nbsp;&nbsp;&nbsp;&nbsp; asubst [ { &lt;option&gt; } ] -- "-pat"
-&lt;replace_pattern&gt; [ {
-&lt;file&gt; } ].</span><br>
-<h1 style="font-family: monospace;">3. Find pattern</h1>
-<span style="font-family: monospace;">&lt;find_pattern&gt;&nbsp;&nbsp;
-::= &lt;regex&gt; | &lt;multiple_regex&gt;<br>
-&lt;multiple_regex&gt; ::= { [ &lt;regex&gt; ] \n } [ &lt;regex&gt; ]<br>
-</span><span style="font-family: monospace;"></span><span
- style="font-family: monospace;">If there is no "\n", then the
-regex can be any regular expression. If it does not start with '^' nor
-ends with '$', then it is applied several times to each input line
-(each time to the text following previous substitution).</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">Examples:</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">echo "toto" | asubst "t"
-"x"&nbsp;&nbsp; -&gt; "xoxo"</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">echo "toto" | asubst "t"
-"ti"&nbsp; -&gt; "tiotio"</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">echo "tito" | asubst "t." "tu"
--&gt; "tutu"</span><br style="font-family: monospace;">
-<br style="font-family: monospace;">
-<span style="font-family: monospace;">If there are "\n", they delimit
-several regex that will apply to several successive lines.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">In this case, '^' and '$' are
-forbidden around a "\n" (they will automatically be added).</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">Search pattern is split into
-several regex and "\n" patterns, each line of input is split in two
-input items: text then newline, pattern 1 is compared to item 1, if
-they match, pattern 2 is compared to item 2...</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">Examples:</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt; r</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt; ^r$</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">r1\nr2\n -&gt; r1$ \n and ^r2$</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">r1\nr2&nbsp;&nbsp; -&gt; r1$ \n
-and ^r2</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">r1\nr2$&nbsp; -&gt; r1$ \n and
-^r2$</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">r1$\n is forbdiden.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">The difference between "r1\n" and
-"r1$" is that "r1\n" is two regex. With "r1\n", the string matching
-"r1" AND the following newline will be substituted. With "r1$", only
-the string matching "r1" will be subtituted. In short, </span><span
- style="font-family: monospace;">"r1\n" means "r1 then a newline" while
-"r1$" means "r1, followed by a newline".<br>
-<br style="font-family: monospace;">
-</span><span style="font-family: monospace;">The following specific '\'
-sequences are also handled:</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">- "\t, replaced by a (horiz) tab,</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">- "\xIJ" where IJ is an
-hexadecimal number (00 to FF or ff) for a byte code.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">Beware that these sequences are
-replaced
-before compilind the regex, so they cannot be used to avoid&nbsp; a
-given
-character. For example, "[a\x2Dx]" is exactly the same as "[a-x]", and
-"\x0A" is
-exactly the same as "\n" (it will be used as regex delimiter).<br>
-<br>
-Finally, beware that some regex expressions are supposed to match a
-"new
-line" (example </span><span style="font-family: monospace;">[:blank:</span><span
- style="font-family: monospace;">] within a bracket expression) but
-will
-not match in asubst, because the input flow/file is decomposed into
-lines and each line is compared to a regex expression.</span>
-<h1 style="font-family: monospace;">4. Replace string<br>
-</h1>
-<span style="font-family: monospace;">The following '\' sequences are
-supported:</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">- \n will be replaced by a
-newline.</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">- \t will be replaced by a
-(horiz) tab.</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">- \xIJ where IJ is an hexadecimal
-number (00 to FF or ff) will be replaced</span><span
- style="font-family: monospace;"> by a byte with the corresponding
-value.</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">- \RIJ where IJ is an hexadecimal
-number will be replaced by the string </span><span
- style="font-family: monospace;">matching the regex number IJ, 00 for
-the complete string,</span><span style="font-family: monospace;"> (in
-case of a single regex (no
-"\n") \R00 is equivalent to \R01).</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">- \rIJ where IJ is an hexadecimal
-number will be replaced by the string</span><span
- style="font-family: monospace;"> matching the substring J of the
-regex number I, J=0 for the complete string,</span><span
- style="font-family: monospace;"> (so \R0x = \rx0).</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">- \u, \l, \m for starting an
-UPPER, lower or Mixed case conversion. A</span><span
- style="font-family: monospace;"> conversion ends when a new
-starts, at end of line or on \c.</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">- \c for stopping a case
-conversion.<br>
-Case conversion applies after (sub)string replacement.<br>
-</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">Examples:</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "toto" | asubst "t"
-"\x40"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt; "@"</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "tito" | asubst "t."
-"&gt;\R00&lt;"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt; "&gt;ti&lt;&gt;to&lt;"</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "toto\ntiti\ntata\n" |
-asubst ".*\n" "\R01"&nbsp;&nbsp;&nbsp;&nbsp; -&gt; "tototititata"</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "\ntoto\ntiti\ntata" |
-asubst "\n.*" "\R02"&nbsp;&nbsp;&nbsp;&nbsp; -&gt; "tototititata"</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "tito" | asubst
-"(.i)(.o)"
-"\r12&lt;-&gt;\r11"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt;
-"to&lt;-&gt;ti"</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "tito" | asubst ".*"
-"\m\R01"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt; "Tito"</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">echo -en "toto" | asubst
-"(.)(.)(..)" "\u\r12\c\r11</span><span style="font-family: monospace;">\</span><span
- style="font-family: monospace;">r13" -&gt; "Otto"<br>
-<br style="font-family: monospace;">
-</span><br style="font-family: monospace;">
-</body>
-</html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>Asubst</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.9.129  (Linux)">
+	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
+	<META NAME="CREATED" CONTENT="20060414;18573000">
+	<META NAME="CHANGED" CONTENT="20060414;19042500">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V2_12</FONT></B></FONT></FONT></P>
+<H1><FONT FACE="monospace">1. General syntax</FONT></H1>
+<P><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt; } ]
+&lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; } ]</FONT><BR><FONT FACE="monospace">or&nbsp;&nbsp;
+: asubst -h | --help | -v | --version</FONT><BR><FONT FACE="monospace">Substitutes
+strings in files.</FONT><BR><FONT FACE="monospace">If no file name is
+specified, substitutes from stdin to stdout.</FONT><BR><FONT FACE="monospace">See
+&quot;man 7 regex&quot; for basic and extended regex and for
+ignorecase pattern matching.</FONT></P>
+<H1><FONT FACE="monospace">2. Options</FONT></H1>
+<P><FONT FACE="monospace">-b or --basic : use 'basic' regex instead
+of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-f or
+--file : indicate that &lt;file&gt; contains the names of files to
+process.</FONT><BR><FONT FACE="monospace">-i or --ignorecase : do
+case insensitive match checking of &lt;find_pattern&gt;.<BR>-m &lt;max&gt;
+or --max=&lt;max&gt; : stop processing each file after &lt;max&gt;
+substitutions, (0 for infinite).<BR>-n or --number : print number of
+substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
+or --save : make a copy (&lt;file&gt;.asu) of original file(s).</FONT><BR><FONT FACE="mon">-u
+or --utf8 : process utf-8 sequences.</FONT><BR><FONT FACE="monospace">-v
+or --verbose : print each substitution and its line number.</FONT><BR><FONT FACE="monospace">--
+: to end the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
+then use <BR>&nbsp;&nbsp;&nbsp;&nbsp; asubst [ { &lt;option&gt; } ]
+-- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
+<H1><FONT FACE="monospace">3. Find pattern</FONT></H1>
+<P><FONT FACE="monospace">&lt;find_pattern&gt;&nbsp;&nbsp; ::=
+&lt;regex&gt; | &lt;multiple_regex&gt;<BR>&lt;multiple_regex&gt; ::=
+{ [ &lt;regex&gt; ] \n } [ &lt;regex&gt; ]<BR>If there is no &quot;\n&quot;,
+then the regex can be any regular expression. If it does not start
+with '^' nor ends with '$', then it is applied several times to each
+input line (each time to the text following previous
+substitution).</FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
+&quot;toto&quot; | asubst &quot;t&quot; &quot;x&quot;&nbsp;&nbsp; -&gt;
+&quot;xoxo&quot;</FONT><BR><FONT FACE="monospace">echo &quot;toto&quot;
+| asubst &quot;t&quot; &quot;ti&quot;&nbsp; -&gt; &quot;tiotio&quot;</FONT><BR><FONT FACE="monospace">echo
+&quot;tito&quot; | asubst &quot;t.&quot; &quot;tu&quot; -&gt;
+&quot;tutu&quot;</FONT><BR><BR><FONT FACE="monospace">If there are
+&quot;\n&quot;, they delimit several regex that will apply to several
+successive lines.</FONT><BR><FONT FACE="monospace">In this case, '^'
+and '$' are forbidden around a &quot;\n&quot; (they will
+automatically be added).</FONT><BR><FONT FACE="monospace">Search
+pattern is split into several regex and &quot;\n&quot; patterns, each
+line of input is split in two input items: text then newline, pattern
+1 is compared to item 1, if they match, pattern 2 is compared to item
+2...</FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; r</FONT><BR><FONT FACE="monospace">^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; ^r$</FONT><BR><FONT FACE="monospace">r1\nr2\n -&gt; r1$ \n and
+^r2$</FONT><BR><FONT FACE="monospace">r1\nr2&nbsp;&nbsp; -&gt; r1$ \n
+and ^r2</FONT><BR><FONT FACE="monospace">r1\nr2$&nbsp; -&gt; r1$ \n
+and ^r2$</FONT><BR><FONT FACE="monospace">r1$\n is forbdiden.</FONT><BR><FONT FACE="monospace">The
+difference between &quot;r1\n&quot; and &quot;r1$&quot; is that
+&quot;r1\n&quot; is two regex. With &quot;r1\n&quot;, the string
+matching &quot;r1&quot; AND the following newline will be
+substituted. With &quot;r1$&quot;, only the string matching &quot;r1&quot;
+will be subtituted. In short, &quot;r1\n&quot; means &quot;r1 then a
+newline&quot; while &quot;r1$&quot; means &quot;r1, followed by a
+newline&quot;.<BR><BR>The following specific '\' sequences are also
+handled:</FONT><BR><FONT FACE="monospace">- &quot;\t, replaced by a
+(horiz) tab,</FONT><BR><FONT FACE="monospace">- &quot;\xIJ&quot;
+where IJ is an hexadecimal number (00 to FF or ff) for a byte
+code.</FONT><BR><FONT FACE="monospace">Beware that these sequences
+are replaced before compilind the regex, so they cannot be used to
+avoid&nbsp; a given character. For example, &quot;[a\x2Dx]&quot; is
+exactly the same as &quot;[a-x]&quot;, and &quot;\x0A&quot; is
+exactly the same as &quot;\n&quot; (it will be used as regex
+delimiter).<BR><BR>Finally, beware that some regex expressions are
+supposed to match a &quot;new line&quot; (example [:blank:] within a
+bracket expression) but will not match in asubst, because the input
+flow/file is decomposed into lines and each line is compared to a
+regex expression.</FONT> 
+</P>
+<H1><FONT FACE="monospace">4. Replace string</FONT></H1>
+<P><FONT FACE="monospace">The following '\' sequences are
+supported:</FONT><BR><FONT FACE="monospace">- \n will be replaced by
+a newline.</FONT><BR><FONT FACE="monospace">- \t will be replaced by
+a (horiz) tab.</FONT><BR><FONT FACE="monospace">- \xIJ where IJ is an
+hexadecimal number (00 to FF or ff) will be replaced</FONT> <FONT FACE="monospace">by
+a byte with the corresponding value.</FONT><BR><FONT FACE="monospace">-
+\RIJ where IJ is an hexadecimal number will be replaced by the string
+matching the regex number IJ, (0 &lt; IJ &lt;= NbOfRegexps).</FONT><BR><FONT FACE="monospace">-
+\rIJ where IJ is an hexadecimal number will be replaced by the string</FONT>
+<FONT FACE="monospace">matching the substring J of the regex number
+I, J=0 for the complete string,</FONT> <FONT FACE="monospace">(so
+\R0x = \rx0).</FONT><BR><FONT FACE="monospace">- \u, \l, \m for
+starting an UPPER, lower or Mixed case conversion. A</FONT>
+<FONT FACE="monospace">conversion ends when a new starts, at end of
+line or on \c.</FONT><BR><FONT FACE="monospace">- \c for stopping a
+case conversion.<BR>Case conversion applies after (sub)string
+replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
+-en &quot;toto&quot; | asubst &quot;t&quot;
+&quot;\x40&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; &quot;@&quot;</FONT><BR><FONT FACE="monospace">echo -en &quot;tito&quot;
+| asubst &quot;t.&quot; &quot;&gt;\R00&lt;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; &quot;&gt;ti&lt;&gt;to&lt;&quot;</FONT><BR><FONT FACE="monospace">echo
+-en &quot;toto\ntiti\ntata\n&quot; | asubst &quot;.*\n&quot;
+&quot;\R01&quot;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; &quot;tototititata&quot;</FONT><BR><FONT FACE="monospace">echo
+-en &quot;\ntoto\ntiti\ntata&quot; | asubst &quot;\n.*&quot;
+&quot;\R02&quot;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; &quot;tototititata&quot;</FONT><BR><FONT FACE="monospace">echo
+-en &quot;tito&quot; | asubst &quot;(.i)(.o)&quot;
+&quot;\r12&lt;-&gt;\r11&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; &quot;to&lt;-&gt;ti&quot;</FONT><BR><FONT FACE="monospace">echo
+-en &quot;tito&quot; | asubst &quot;.*&quot;
+&quot;\m\R01&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; &quot;Tito&quot;</FONT><BR><FONT FACE="monospace">echo -en
+&quot;toto&quot; | asubst &quot;(.)(.)(..)&quot; &quot;\u\r12\c\r11\r13&quot;
+-&gt; &quot;Otto&quot;<BR></FONT><BR><BR>
+</P>
+</BODY>
+</HTML>

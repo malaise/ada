@@ -3,7 +3,7 @@ with Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V2.12";
+  Version : constant String  := "V2.13";
 
   procedure Usage is
   begin
@@ -20,23 +20,25 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -b | -i | -s | -q | -n | -v | -f | -m <max> | --");
+     "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -u | -v | --");
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
+     "    -f or --file to indicate that <file> will be a list of file names,");
+    Sys_Calls.Put_Line_Error (
      "    -i or --ignorecase for case insensitive match,");
     Sys_Calls.Put_Line_Error (
-     "    -s or --save for backup of original file,");
-    Sys_Calls.Put_Line_Error (
-     "    -q or --quiet for no printout,");
+     "    -m <max> or --max=<max> for stop processing file after <max> substitutions,");
     Sys_Calls.Put_Line_Error (
      "    -n or --number for print number of substitutions,");
     Sys_Calls.Put_Line_Error (
+     "    -q or --quiet for no printout,");
+    Sys_Calls.Put_Line_Error (
+     "    -s or --save for backup of original file,");
+    Sys_Calls.Put_Line_Error (
+     "    -u or --utf8 for process utf-8 sequences,");
+    Sys_Calls.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
-    Sys_Calls.Put_Line_Error (
-     "    -f or --file to indicate that <file> will be a list of file names,");
-    Sys_Calls.Put_Line_Error (
-     "    -m <max> or --max=<max> for stop processing file after <max> substitutions,");
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
@@ -86,14 +88,15 @@ procedure Asubst is
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
 
-  -- Option management, start of patterns
+  -- Option management
   Extended : Boolean := True;
+  File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
-  Backup : Boolean := False;
+  Max : Substit.Long_Long_Natural := 0;
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
-  File_Of_Files : Boolean := False;
-  Max : Substit.Long_Long_Natural := 0;
+  Backup : Boolean := False;
+  Utf8 : Boolean := False;
   -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
@@ -110,7 +113,7 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Max, Backup, Verbosity = Verbose);
+                  Max, Backup, Verbosity = Verbose, Utf8);
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
       Ada.Text_Io.Put_Line (File_Name);
@@ -165,46 +168,6 @@ begin
       end if;
       Extended := False;
       Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-i"
-    or else Argument.Get_Parameter (Occurence => I) = "--ignorecase" then
-      -- Case insensitive match
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option ignore case");
-      end if;
-      Case_Sensitive := False;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-s"
-    or else Argument.Get_Parameter (Occurence => I) = "--save" then
-      -- Make backup
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option make backup");
-      end if;
-      Backup := True;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-q"
-    or else Argument.Get_Parameter (Occurence => I) = "--quiet" then
-      -- Quiet mode
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option quiet");
-      end if;
-      Verbosity := Quiet;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-n"
-    or else Argument.Get_Parameter (Occurence => I) = "--number" then
-      -- Put number of substitutions
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option put numbers");
-      end if;
-      Verbosity := Put_Subst_Nb;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-v"
-    or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
-      -- Verbose put each substit
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option verbose");
-      end if;
-      Verbosity := Verbose;
-      Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-f"
     or else Argument.Get_Parameter (Occurence => I) = "--file" then
       -- The file will be a list of files
@@ -212,6 +175,14 @@ begin
         Sys_Calls.Put_Line_Error ("Option file of files");
       end if;
       File_Of_Files := True;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-i"
+    or else Argument.Get_Parameter (Occurence => I) = "--ignorecase" then
+      -- Case insensitive match
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option ignore case");
+      end if;
+      Case_Sensitive := False;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-m"
     or else (Argument.Get_Parameter (Occurence => I)'Length > 6
@@ -241,6 +212,46 @@ begin
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
       end if;
+    elsif Argument.Get_Parameter (Occurence => I) = "-n"
+    or else Argument.Get_Parameter (Occurence => I) = "--number" then
+      -- Put number of substitutions
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option put numbers");
+      end if;
+      Verbosity := Put_Subst_Nb;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-q"
+    or else Argument.Get_Parameter (Occurence => I) = "--quiet" then
+      -- Quiet mode
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option quiet");
+      end if;
+      Verbosity := Quiet;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-s"
+    or else Argument.Get_Parameter (Occurence => I) = "--save" then
+      -- Make backup
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option make backup");
+      end if;
+      Backup := True;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-u"
+    or else Argument.Get_Parameter (Occurence => I) = "--utf8" then
+      -- Process utf-8 sequences
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option utf8");
+      end if;
+      Utf8 := True;
+      Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-v"
+    or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
+      -- Verbose put each substit
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option verbose");
+      end if;
+      Verbosity := Verbose;
+      Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I)(1) = '-' then
       -- Not a valid option
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
@@ -300,7 +311,7 @@ begin
       Ok := False;
     else
       begin
-        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max, False, False);
+        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max, False, False, Utf8);
       exception
         when Substit.Substit_Error =>
           Ok := False;

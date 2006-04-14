@@ -202,8 +202,9 @@ package body Replace_Pattern is
           Subst.Info := Hexa_Byte;
           if Esc_Char = 'R' then
             -- Replace by regex index IJ, check IJ
-            if Hexa_Byte > Search_Pattern.Number then
-              Error ( "Invalid (too high) regex index "
+            if Hexa_Byte = 0 
+            or else Hexa_Byte > Search_Pattern.Number then
+              Error ( "Invalid (null or too high) regex index "
                 & Asu.Slice (The_Pattern, Got + 1, Got + 2)
                 & " in replace pattern");
             end if;
@@ -255,23 +256,24 @@ package body Replace_Pattern is
   -- Return the Substr_Index substring (all if 0)
   -- of Str matching Match_Index regex
   function Substr (Str : String;
-                   Match_Index : Search_Pattern.Sub_String_Range;
+                   Match_Index : Search_Pattern.Nb_Sub_String_Range;
                    Substr_Index : Search_Pattern.Nb_Sub_String_Range)
                   return String is
-    -- String (1 .. N)
-    Loc_Str : constant String := Str;
     Cell : Regular_Expressions.Match_Cell;
+    -- String (1 .. N)
+    Loc_Str : constant String (1 .. Str'Length) := Str;
   begin
-    if Substr_Index = 0 then
-      -- Full string matching Match_Index th regex
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Replace, got substring >"
-                                & Loc_Str & "<");
-      end if;
-      return Loc_Str;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Replace, searching substring" & Match_Index'Img
+                              & "," & Substr_Index'Img & " of >" & Str & "<");
     end if;
-    -- Get substr indexes
-    Cell := Search_Pattern.Substr_Indexes (Match_Index, Substr_Index);
+    if Match_Index = 0 then
+       -- Get str indexes
+       Cell := Search_Pattern.Str_Indexes;
+    else
+      -- Get substr indexes
+      Cell := Search_Pattern.Substr_Indexes (Match_Index, Substr_Index);
+    end if;
     if Cell.Start_Offset <= Cell.End_Offset then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Replace, got substring >"
@@ -282,7 +284,11 @@ package body Replace_Pattern is
       raise Replace_Error;
     end if;
   exception
-    when others =>
+    when Error:others =>
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Replace.Substr: exception "
+                                & Ada.Exceptions.Exception_Name (Error));
+      end if;
       raise Replace_Error;
   end Substr;
 
@@ -297,7 +303,7 @@ package body Replace_Pattern is
   begin
     -- Regex 0 => complete matching string
     if Kind = Replace_Match_Regex and then Nth = 0 then
-      return Str;
+      return Substr (Str, 0, 0);
     end if;
     if Kind = Replace_Match_Regex then
       -- Nth is the regex index
@@ -356,16 +362,20 @@ package body Replace_Pattern is
       Prev_Delim := Got_Delim;
     end loop;
   exception
-    when others =>
+    when Error:others =>
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Replace.Matchstring: exception "
+                                & Ada.Exceptions.Exception_Name (Error));
+      end if;
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                               & " INTERNAL ERROR. Cannot find match string "
-                              & Rth'Img & "-" & Sth'Img
+                              & Rth'Img & "," & Sth'Img
                               & " of >" & Str & "<");
       raise Replace_Error;
   end Matchstring;
 
   -- Apply XXX case conversion to Str(Start .. Stop)
-  -- Return the converted Str(Start .; Stop)
+  -- Return the converted Str(Start .. Stop)
   function Casestring (Str : String;
                        Action : Case_Mode_List) return String is
   begin
@@ -456,6 +466,7 @@ package body Replace_Pattern is
                        & Mixed_Str(Case_Mode'Img));
               end if;
               -- New or stop casing: replace from Start to Subst_Char
+              -- This is compatible with utf8 without explicit checks
               declare
                 Case_Str : constant String
                          := Casestring (Asu.Slice (Result, Case_Index, Got - 1),

@@ -1,5 +1,10 @@
 History of Asubst:
 
+14/04/2006 V2_13
+Add: -u or --utf8 for UTF-8 processing.
+Bugfix: Invalid processing of \R00 if multiple regexps.
+CHANGE: \R00 and \r0i become forbidden.
+
 06/04/2006 V2_12
 Bugfix: Exception in replace because string for replace must be full string
         and not matching string.

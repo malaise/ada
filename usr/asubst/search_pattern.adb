@@ -4,7 +4,7 @@ with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
 package body Search_Pattern is
 
   -- 1 to 16 substring indexes
-  subtype Substr_Array is Regular_Expressions.Match_Array (Sub_String_Range);
+  subtype Substr_Array is Regular_Expressions.Match_Array (Nb_Sub_String_Range);
 
   -- Unique list of patterns
   type Line_Pat_Rec is record
@@ -36,6 +36,8 @@ package body Search_Pattern is
     return Current.Num = Criteria.Num;
   end "=";
   package Unique_Pattern is new Unique_List (Line_Pat_Rec, Set, Image, "=");
+  -- True only after Check(Number) called and OK.
+  Check_Complete : Boolean := False;
   Pattern_List : Unique_Pattern.List_Type;
 
   -- True if one unique pattern and with no '^' nor '$'
@@ -77,7 +79,7 @@ package body Search_Pattern is
     end if;
     -- Count number of substrings, i.e. number of '('
     for I in Sub_String_Range loop
-      -- locate succcessive occurences of "("
+      -- Locate succcessive occurences of "("
       exit when String_Mng.Locate (Crit, Crit'First, "(", I) = 0;
       Upat.Nb_Substr := I;
     end loop;
@@ -272,7 +274,7 @@ package body Search_Pattern is
   end Parse;
 
   -- Returns the number of lines that it covered by the
-  -- search pattern (one per regex and one per New_Line.
+  --  search pattern (one per regex and one per New_Line.
   -- Raises No_Regex if the pattern was not parsed OK
   function Number return Positive is
     N : constant Natural := Unique_Pattern.List_Length (Pattern_List);
@@ -285,7 +287,7 @@ package body Search_Pattern is
   end Number;
 
   -- Tells if the search pattern can be applied several times
-  -- on one line of input (i.e. does not contain '\n', '^' or '$'
+  --  on one line of input (i.e. does not contain '\n', '^' or '$'
   -- Raises No_Regex if the pattern was not parsed OK
   function Multiple return Boolean is
   begin
@@ -298,7 +300,7 @@ package body Search_Pattern is
 
   -- Returns the number of substrings of one regex
   -- Raises No_Regex if the Regex_Index is higher than
-  -- the number of regex (returned by Number)
+  --  the number of regex (returned by Number)
   function Nb_Substrings (Regex_Index : Positive) return Nb_Sub_String_Range is
     Upat : Line_Pat_Rec;
     Upat_Access : Unique_Pattern.Element_Access;
@@ -323,17 +325,18 @@ package body Search_Pattern is
     -- The pattern to check with
     Upat : Line_Pat_Rec;
     Upat_Access : Unique_Pattern.Element_Access;
+    -- A string (1 .. N) to check
+    Loc_Str : constant String := Str;
     -- Check result
     Nmatch : Natural;
     Match : Regular_Expressions.Match_Array
                (1 .. Nb_Sub_String_Range'Last + 1);
   begin
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Search checking str >" & Str & "< ");
-    end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    -- Check not completed by default
+    Check_Complete := False;
     -- Reset substring array if not a delim
     if not Upat_Access.Is_Delim then
       Upat_Access.Substrs := (others => (0, 0));
@@ -344,12 +347,16 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img &
                                   " is delim");
       end if;
-      if Str = Line_Feed then
+      if Loc_Str = Line_Feed then
+        if Regex_Index = Unique_Pattern.List_Length (Pattern_List) then
+          -- Last pattern and matches
+          Check_Complete := True;
+        end if;
         return (1, 1);
       else
         return (0, 0);
       end if;
-    elsif Str = Line_Feed then
+    elsif Loc_Str = Line_Feed then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check empty vs not delim");
       end if;
@@ -359,13 +366,18 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error ("Search check pattern " & Regex_Index'Img);
       end if;
       Regular_Expressions.Exec (Upat_Access.Pat,
-                                Str,
+                                Loc_Str,
                                 Nmatch, Match);
       if Nmatch >= 1 and then Match(1).Start_Offset <= Match(1).End_Offset then
         -- Copy the slice of substrings
         Upat_Access.Nb_Substr := Nmatch - 1;
+        Upat_Access.Substrs(0) := Match(1);
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
+        if Regex_Index = Unique_Pattern.List_Length (Pattern_List) then
+          -- Last pattern and matches
+          Check_Complete := True;
+        end if;
         return Match(1);
       else
         return (0, 0);
@@ -378,17 +390,24 @@ package body Search_Pattern is
   end Check;
 
   -- Returns the Match_Cell of the Nth sub-matching string
-  -- of one regex
+  --  of one regex
+  -- Returns the Match_Cell of the matching string of one regex
+  --  if Sub_String_Index is 0
   -- Raises No_Regex if the Regex_Index is higher than
-  -- the number of regex (returned by Number)
-  -- or if the Sub_String_Index is higher than the number
-  -- of substring of this regex (returned by Nb_Substrings)
+  --  the number of regex (returned by Number)
+  --  or if the Sub_String_Index is higher than the number
+  --  of substring of this regex (returned by Nb_Substrings)
+  --  or if last Checks did not succeed
   function Substr_Indexes (Regex_Index : Positive;
-                           Sub_String_Index : Sub_String_Range)
+                           Sub_String_Index : Nb_Sub_String_Range)
            return Regular_Expressions.Match_Cell is
     Upat : Line_Pat_Rec;
     Upat_Access : Unique_Pattern.Element_Access;
   begin
+    -- Check that previous check completed
+    if not Check_Complete then
+      raise No_Regex;
+    end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
@@ -402,6 +421,18 @@ package body Search_Pattern is
       -- Invalid Regex_Index or empty list
       raise No_Regex;
   end Substr_Indexes;
+
+  -- Returns the Match_Cell of the complete matching string
+  -- i.e. (Substr_Indexes(1, 0).Start_Offset,
+  --       Substr_Indexes(Number, 0).End_Offset)
+  -- Raises No_Regex if last Checks did not succeed
+  function Str_Indexes return Regular_Expressions.Match_Cell is
+    Result : Regular_Expressions.Match_Cell;
+  begin
+    Result.Start_Offset := Substr_Indexes (1, 0).Start_Offset;
+    Result.End_Offset := Substr_Indexes (Number, 0).End_Offset;
+    return Result;
+  end Str_Indexes;
 
 end Search_Pattern;
 

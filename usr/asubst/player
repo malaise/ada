@@ -40,6 +40,7 @@ while true ; do
   export search=`readarg $L 2`
   export replace=`readarg $L 3`
   export expected=`readarg $L 4`
+  expected=`echo -e -n "$expected"`
   # Do test and save exit status
   echo "echo \"$input\" | asubst \"$search\" \"$replace\" -> $expected"
   result=`echo -e -n "$input" | asubst "$search" "$replace"`
