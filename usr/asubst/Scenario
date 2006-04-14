@@ -7,8 +7,8 @@
 "tito"                 "t."              "tu"                    "tutu"
 "botitobi"             "t."              "au"                    "boauaubi"
 "toto"                 "t"               "\x40"                  "@o@o"
-"tétè"                 "[éèêë]"          "e"                     "tete"
-"tito"                 "t."              ">\R00<"                ">ti<>to<"
+#"tÃ©tÃ¨"                 "[Ã©Ã¨ÃªÃ«]"          "e"                     "tete"
+"tito"                 "t."              ">\R01<"                ">ti<>to<"
 "tito"                 "(.i)(.o)"        "\r12<->\r11"           "to<->ti"
 "tito"                 ".*"              "\m\R01"                "Tito"
 "TIto"                 "(.I)(.o)"        "\u\r12\l\r11\c"        "TOti"
@@ -27,5 +27,5 @@
 "toto\ttiti"           "\t"              "\s"                    "toto titi"
 "toto\ntiti\ntata\n"   ".*\n"            "\R01"                  "tototititata"
 "\ntoto\ntiti\ntata"   "\n.*"            "\R02"                  "tototititata"
-"\ntoto\ntiti\ntata"   "toto\ntiti"      "\u\R00"                "TOTO\nTITI\ntata"
+"\ntoto\ntiti\ntata"   "toto\ntiti"      "\u\R01\R02\R03"        "\nTOTO\nTITI\ntata"
 
