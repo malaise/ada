@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Text_Io;
-with Argument, Sys_Calls;
+with Environ, Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
@@ -22,6 +22,8 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -u | -v | --");
     Sys_Calls.Put_Line_Error (
+     "    -a or --ascii for pure ASCII processing,");
+    Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
      "    -f or --file to indicate that <file> will be a list of file names,");
@@ -36,11 +38,13 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -s or --save for backup of original file,");
     Sys_Calls.Put_Line_Error (
-     "    -u or --utf8 for process utf-8 sequences,");
+     "    -u or --utf8 for processing utf-8 sequences,");
     Sys_Calls.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
+    Sys_Calls.Put_Line_Error (
+     "  Also set ASUBST_UTF8 env variable for utf-8 processing by default.");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
@@ -88,6 +92,8 @@ procedure Asubst is
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
 
+  -- Env management
+  Utf8_Var_Name : constant String := "ASUBST_UTF8";
   -- Option management
   Extended : Boolean := True;
   File_Of_Files : Boolean := False;
@@ -113,7 +119,7 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Max, Backup, Verbosity = Verbose, Utf8);
+                  Max, Backup, Verbosity = Verbose);
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
       Ada.Text_Io.Put_Line (File_Name);
@@ -133,6 +139,9 @@ procedure Asubst is
   end Do_One_File;
 
 begin
+  -- Set default UTF8 processing if env variable set
+  Utf8 := Environ.Is_Yes (Utf8_Var_Name);
+
   -- Check nb of arguments
   if Argument.Get_Nbre_Arg = 1 then
     if Argument.Get_Parameter = "-v"
@@ -160,6 +169,14 @@ begin
       -- Force end of options
       Start := I + 1;
       exit;
+    elsif Argument.Get_Parameter (Occurence => I) = "-a"
+    or else Argument.Get_Parameter (Occurence => I) = "--ascii" then
+      -- Force ASCII processing even if ENV was set
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option ascii");
+      end if;
+      Utf8 := False;
+      Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-b"
     or else Argument.Get_Parameter (Occurence => I) = "--basic" then
       -- Basic regex
@@ -273,7 +290,7 @@ begin
   begin
     Search_Pattern.Parse (
          Argument.Get_Parameter (Occurence => Start),
-         Extended, Case_Sensitive);
+         Extended, Case_Sensitive, Utf8);
     Start := Start + 1;
   exception
     when Search_Pattern.Parse_Error =>
@@ -311,7 +328,7 @@ begin
       Ok := False;
     else
       begin
-        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max, False, False, Utf8);
+        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max, False, False);
       exception
         when Substit.Substit_Error =>
           Ok := False;
