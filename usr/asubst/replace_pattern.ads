@@ -6,10 +6,8 @@ package Replace_Pattern is
   procedure Parse (Pattern : in String);
   Parse_Error : exception;
 
-  
-  -- Replace the input string by the replace pattern
-  -- Input string is used to substitute \rIJ and \sIJ in pattern
-  function Replace (Str : String) return String;
+  -- Returns the replacing string
+  function Replace return String;
   -- If result string is too long?
   Replace_Error : exception;
 

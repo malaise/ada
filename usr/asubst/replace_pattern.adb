@@ -253,114 +253,23 @@ package body Replace_Pattern is
     end if;
   end Parse;
 
-  -- Return the Substr_Index substring (all if 0)
-  -- of Str matching Match_Index regex
-  function Substr (Str : String;
-                   Match_Index : Search_Pattern.Nb_Sub_String_Range;
-                   Substr_Index : Search_Pattern.Nb_Sub_String_Range)
-                  return String is
-    Cell : Regular_Expressions.Match_Cell;
-    -- String (1 .. N)
-    Loc_Str : constant String (1 .. Str'Length) := Str;
-  begin
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Replace, searching substring" & Match_Index'Img
-                              & "," & Substr_Index'Img & " of >" & Str & "<");
-    end if;
-    if Match_Index = 0 then
-       -- Get str indexes
-       Cell := Search_Pattern.Str_Indexes;
-    else
-      -- Get substr indexes
-      Cell := Search_Pattern.Substr_Indexes (Match_Index, Substr_Index);
-    end if;
-    if Cell.Start_Offset <= Cell.End_Offset then
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Replace, got substring >"
-                    & Loc_Str(Cell.Start_Offset .. Cell.End_Offset) & "<");
-      end if;
-      return Loc_Str (Cell.Start_Offset .. Cell.End_Offset);
-    else
-      raise Replace_Error;
-    end if;
-  exception
-    when Error:others =>
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Replace.Substr: exception "
-                                & Ada.Exceptions.Exception_Name (Error));
-      end if;
-      raise Replace_Error;
-  end Substr;
-
   -- Extract a substring of string matching a regex
   subtype Extraction_List is Subtit_Action_List
           range Replace_Match_Regex .. Replace_Match_Substring;
-  function Matchstring (Str : String; Kind : Extraction_List; Nth : Byte)
-                       return String is
-    Prev_Delim, Got_Delim : Natural;
-    Ith, Rth : Byte;
+  function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
+    Rth : Positive;
     Sth : Search_Pattern.Nb_Sub_String_Range;
   begin
-    -- Regex 0 => complete matching string
-    if Kind = Replace_Match_Regex and then Nth = 0 then
-      return Substr (Str, 0, 0);
-    end if;
     if Kind = Replace_Match_Regex then
       -- Nth is the regex index
       Rth := Nth;
       Sth := 0;
     else
+      -- Nth is the regex index / substr index
       Rth := Nth / 16;
       Sth := Nth rem 16;
     end if;
-    -- Locate the string matching the Rth regex
-    Prev_Delim := Str'First - 1;
-    Ith := 0;
-    loop
-      -- Search next delimiter
-      Got_Delim := String_Mng.Locate (Str, Prev_Delim + 1, Line_Feed);
-      if Got_Delim = 0 then
-        -- No (more) delim
-        if Ith = Rth - 1 then
-          -- Last matching string is the one
-          return Substr (Str(Prev_Delim + 1 .. Str'Last), Rth, Sth);
-        else
-          -- Less than Rth matching strings in Str???
-          -- Should not occure because checked during parsing
-          raise Replace_Error;
-        end if;
-      end if;
-      if Got_Delim = Prev_Delim + 1 then
-        -- A delim after a delim
-        Ith := Ith + 1;
-        if Ith = Rth then
-          if Kind = Replace_Match_Substring then
-            -- Parsing should not let substring of delim
-            raise Replace_Error;
-          end if;
-          -- The substring is this new delim
-          return Line_Feed;
-        end if;
-      else
-        -- A delim after a string
-        Ith := Ith + 1;
-        if Ith = Rth then
-          -- The substring is between delims
-          return Substr (Str(Prev_Delim + 1 .. Got_Delim - 1), Rth, Sth);
-        else
-          Ith := Ith + 1;
-          if Ith = Rth then
-            if Kind = Replace_Match_Substring then
-              -- Parsing should not let substring of delim
-              raise Replace_Error;
-            end if;
-            -- The substring is this new delim
-            return Line_Feed;
-          end if;
-        end if;
-      end if;
-      Prev_Delim := Got_Delim;
-    end loop;
+    return Search_Pattern.Substring (Rth, Sth);
   exception
     when Error:others =>
       if Debug.Set then
@@ -368,9 +277,8 @@ package body Replace_Pattern is
                                 & Ada.Exceptions.Exception_Name (Error));
       end if;
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                              & " INTERNAL ERROR. Cannot find match string "
-                              & Rth'Img & "," & Sth'Img
-                              & " of >" & Str & "<");
+                & " INTERNAL ERROR. Cannot find matching (sub)string "
+                & Rth'Img & "," & Sth'Img);
       raise Replace_Error;
   end Matchstring;
 
@@ -391,9 +299,8 @@ package body Replace_Pattern is
     end case;
   end Casestring;
       
-  -- Replace the input string by the replace pattern
-  -- Input string is used to substitute \rIJ and \RIJ in pattern
-  function Replace (Str : String) return String is
+  -- Return the replacing string
+  function Replace return String is
     Result : Asu.Unbounded_String;
     -- Current index in result
     Start : Positive;
@@ -411,11 +318,19 @@ package body Replace_Pattern is
     Case_Index : Natural;
     Case_Mode : Case_Mode_List;
   begin
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Replace, working with >" & Str & "<");
-    end if;
     -- Init result with replace pattern
     Result := The_Pattern;
+    if Debug.Set then
+      Sys_Calls.Put_Error ("Replace, working with >");
+      for I in 1 .. Asu.Length (Result) loop
+        if Asu.Element (Result, I) = Subst_Char then
+          Sys_Calls.Put_Error ("<Subst>");
+        else
+          Sys_Calls.Put_Error (Asu.Element (Result, I) & "");
+        end if;
+      end loop;
+      Sys_Calls.Put_Line_Error ("<");
+    end if;
     -- Replace all occurences of replace code, toggle case substitution...
     Start := 1;
     Offset := 0;
@@ -445,7 +360,7 @@ package body Replace_Pattern is
             declare
              -- Get full or partial substring
               Sub_Str : constant String
-                      := Matchstring (Str, Subst.Action, Subst.Info);
+                      := Matchstring (Subst.Action, Subst.Info);
             begin
               if Debug.Set then
                 Sys_Calls.Put_Line_Error ("Replace, got match string >"
@@ -513,8 +428,7 @@ package body Replace_Pattern is
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                                & " INTERNAL ERROR: "
                                & Ada.Exceptions.Exception_Name (Error)
-                               & " while replacing string >"
-                               & Str & "< by >"
+                               & " while replacing string by >"
                                & Asu.To_String (The_Pattern) & "<");
       raise Replace_Error;
   end Replace;
