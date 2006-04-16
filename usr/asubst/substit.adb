@@ -1,7 +1,7 @@
 with Ada.Text_Io, Ada.Strings.Unbounded;
 with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
      Regular_Expressions, Directory, Copy_File, File_Access, Mixed_Str,
-     Utf_8, Debug;
+     Debug;
 with Search_Pattern, Replace_Pattern;
 package body Substit is
 
@@ -290,13 +290,11 @@ package body Substit is
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean;
-                        Utf8      : Boolean) return Long_Long_Natural;
+                        Verbose : Boolean) return Long_Long_Natural;
   function Do_One_File (File_Name : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
-                        Verbose   : Boolean;
-                        Utf8      : Boolean) return Long_Long_Natural is
+                        Verbose   : Boolean) return Long_Long_Natural is
     Total_Subst : Long_Long_Natural;
     Remain_Subst : Long_Long_Natural;
     Do_Verbose : Boolean;
@@ -317,7 +315,7 @@ package body Substit is
       -- Done when the amount of lines cannot be read
       exit when not Read;
       -- Process these lines
-      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose, Utf8);
+      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose);
       -- Done when amount of substitutions reached
       if Max_Subst /= 0 then
         exit when Max_Subst = Total_Subst;
@@ -346,27 +344,10 @@ package body Substit is
       raise;
   end Do_One_File;
 
-  -- Check if Char is the startup of a valid UTF-8 sequence
-  --  and increment Offset accordingly
-  procedure Apply_Utf8 (Char : in Character;
-                        Offset : in out Regular_Expressions.Offset_Range) is
-    Len : Utf_8.Len_Range;
-  begin
-    -- Get lenght of sequence
-    Len := Utf_8.Nb_Chars (Char);
-    -- Apply offset
-    Offset := Offset + Len - 1;
-  exception
-    when Utf_8.Invalid_Sequence =>
-      -- Leave Offset unchanged
-      null;
-  end Apply_Utf8;
-
   -- Handle multiple substitutions within one line
   function Subst_One_Line (Line : Str_Access;
                            Max_Subst : Long_Long_Natural;
-                           Verbose : Boolean;
-                           Utf8 : Boolean) return Long_Long_Natural is
+                           Verbose : Boolean) return Long_Long_Natural is
     Current : Positive;
     Nb_Match : Long_Long_Natural;
     Match_Res : Regular_Expressions.Match_Cell;
@@ -376,20 +357,12 @@ package body Substit is
     Nb_Match := 0;
     loop
       -- Search a Match from Current to Last
-      Match_Res := Search_Pattern.Check (
-         Asu.Slice (Line.all, Current, Asu.Length(Line.all)),
-         1);
       -- Exit when no (more) match
-      exit when Match_Res.Start_Offset <= 0
-      or else Match_Res.End_Offset <= 0;
+      exit when not Search_Pattern.Check (Asu.To_String (Line.all),
+                                          Current, 1);
       -- Found a match
       Nb_Match := Nb_Match + 1;
-      -- Check if end of match is the startup of a utf8 sequence
-      --  increment End_Offset by the length of the sequence - 1
-      if Utf8 then
-        Apply_Utf8 (Asu.Element (Line.all, Match_Res.End_Offset),
-                    Match_Res.End_Offset);
-      end if;
+      Match_Res := Search_Pattern.Str_Indexes;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Match in end of line >"
            & Asu.Slice (Line.all, Current, Asu.Length(Line.all))
@@ -398,16 +371,20 @@ package body Substit is
       end if;
       -- Get substituting string
       declare
-        Replacing : constant String
-                  := Replace_Pattern.Replace (Asu.To_String (Line.all));
+        Replacing : constant String := Replace_Pattern.Replace;
       begin
         -- Display verbose substitution
         if Verbose then
           Ada.Text_Io.Put_Line (
               Line_No'Img & " : "
-            & Asu.Slice (Line.all,
-                         Match_Res.Start_Offset,
-                         Match_Res.End_Offset)
+            & Asu.Slice (Line.all, Match_Res.Start_Offset,
+                                   Match_Res.End_Offset)
+            & " -> " & Replacing);
+        end if;
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Replacing by "
+            & Asu.Slice (Line.all, Match_Res.Start_Offset,
+                                   Match_Res.End_Offset)
             & " -> " & Replacing);
         end if;
         -- Substitute from start to stop
@@ -469,32 +446,25 @@ package body Substit is
 
   -- Check current list of lines vs search patterns
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean;
-                        Utf8 : Boolean) return Long_Long_Natural is
+                        Verbose : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
-    Start, Stop : Positive;
     Matches : Boolean;
-    -- The string from which to replace
-    Str_From_Replace : Asu.Unbounded_String;
-    -- The string to replace (only used for traces)
-    Str_To_Replace : Asu.Unbounded_String;
   begin
     -- Rewind read lines
     Line_List_Mng.Rewind (Line_List);
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
       return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
-                             Max_Subst, Verbose, Utf8);
+                             Max_Subst, Verbose);
     end if;
-    -- From here, one subtitution max
-    Matches := True;
+
+    -- Check all patterns until one does not match
     for I in 1 .. Nb_Pattern loop
       -- Check this read line
       Line := Line_List_Mng.Access_Current (Line_List);
-      Match_Res := Search_Pattern.Check (Asu.To_String (Line.all), I);
-      if Match_Res.Start_Offset <= 0
-      or else Match_Res.End_Offset <= 0 then
+      Matches := Search_Pattern.Check (Asu.To_String (Line.all), 1, I);
+      if not Matches then
         -- This one does not match
         Matches := False;
         if Debug.Set then
@@ -505,22 +475,14 @@ package body Substit is
       end if;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
-                                & "< matches pattern" & I'Img
-                                & " from" & Match_Res.Start_Offset'Img
-                                & " to" & Match_Res.End_Offset'Img);
-      end if;
-      -- Keep pos of start of first match and stop of last match
-      if I = 1 then
-        Start := Match_Res.Start_Offset;
-      end if;
-      if I = Nb_Pattern then
-        Stop := Match_Res.End_Offset;
+                                & "< matches pattern" & I'Img);
       end if;
       -- Move to next input line
       if I /= Nb_Pattern then
         Line_List_Mng.Move_To (Line_List);
       end if;
     end loop;
+
     if not Matches then
       -- If not match, put first line and delete it
       Line_List_Mng.Rewind (Line_List);
@@ -532,54 +494,35 @@ package body Substit is
       Line_List_Mng.Delete (Line_List);
     else
       -- Match, build string to replace:
+      Match_Res := Search_Pattern.Str_Indexes;
+      -- Get access to first and last lines of input
       Line_List_Mng.Rewind (Line_List);
       First_Line := Line_List_Mng.Access_Current (Line_List);
-      if Nb_Pattern = 1 then
-        -- Only one pattern -> from start to stop
-        Last_Line := First_Line;
-        Str_To_Replace := Asu.To_Unbounded_String (
-          Asu.Slice (First_Line.all, Start, Stop));
-        Str_From_Replace := First_Line.all;
-      else
-        -- Many patterns -> end of first line + all lines but last
-        --                                    + start of last line
-        Str_To_Replace := Asu.To_Unbounded_String (
-          Asu.Slice (First_Line.all, Start, Asu.Length (First_Line.all)));
-        Str_From_Replace := First_Line.all;
-        for I in 2 .. Nb_Pattern - 1 loop
-          Line_List_Mng.Move_To (Line_List);
-          Line := Line_List_Mng.Access_Current (Line_List);
-          Asu.Append (Str_To_Replace, Line.all);
-          Asu.Append (Str_From_Replace, Line.all);
-        end loop;
-        Line_List_Mng.Move_To (Line_List);
-        Last_Line := Line_List_Mng.Access_Current (Line_List);
-        Asu.Append (Str_To_Replace, Asu.Slice (Last_Line.all, 1, Stop));
-        Asu.Append (Str_From_Replace, Last_Line.all);
-      end if;
-      -- Make replacing string
+      Line_List_Mng.Rewind (Line_List, Line_List_Mng.Prev);
+      Last_Line := Line_List_Mng.Access_Current (Line_List);
+      -- Result string is -> Start of first line + Replacing
+      --                   + End of last line
       declare
-        Str_Replacing : constant String
-                      := Replace_Pattern.Replace (
-                            Asu.To_String (Str_From_Replace));
+        Str_Replacing : constant String := Replace_Pattern.Replace;
         Str_Replaced : Asu.Unbounded_String;
         use type Asu.Unbounded_String;
       begin
         -- Set result: beginning of first line + replacing + end of last line
         Str_Replaced := Asu.To_Unbounded_String (
-                    Asu.Slice (First_Line.all, 1, Start - 1)) & Str_Replacing;
-        if Stop < Asu.Length (Last_Line.all) then
+                 Asu.Slice (First_Line.all, 1, Match_Res.Start_Offset - 1))
+               & Str_Replacing;
+        if Match_Res.End_Offset < Asu.Length (Last_Line.all) then
           -- This would raise Constraint_Error if Stop = Length
-          Asu.Append (Str_Replaced, Asu.Slice (Last_Line.all,
-                                         Stop + 1, Asu.Length (Last_Line.all)));
+          Asu.Append (Str_Replaced,
+              Asu.Slice (Last_Line.all,
+                         Match_Res.End_Offset + 1,
+                         Asu.Length (Last_Line.all)));
         end if;
         -- Display verbose substitution
         if Verbose then
           Ada.Text_Io.Put_Line (
               Long_Long_Natural'Image(Line_No
                                     - Long_Long_Natural(Nb_Pattern) / 2)
-            & " : "
-            & Asu.To_String (Str_To_Replace)
             & " -> " & Str_Replacing);
         end if;
         if Debug.Set then

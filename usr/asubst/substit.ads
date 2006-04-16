@@ -11,8 +11,7 @@ package Substit is
   function Do_One_File (File_Name : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
-                        Verbose   : Boolean;
-                        Utf8      : Boolean) return Long_Long_Natural;
+                        Verbose   : Boolean) return Long_Long_Natural;
   -- Error handled and traced by Do_One
   Substit_Error : exception;
 
