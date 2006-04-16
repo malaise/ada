@@ -1,7 +1,7 @@
 History of Asubst:
 
-14/04/2006 V2_13
-Add: -u or --utf8 for UTF-8 processing.
+16/04/2006 V2_13
+Add: -u or --utf8 for UTF-8 processing, and -a or --ascii for ASCII processing.
 Bugfix: Invalid processing of \R00 if multiple regexps.
 CHANGE: \R00 and \r0i become forbidden.
 
