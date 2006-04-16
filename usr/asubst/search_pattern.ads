@@ -3,7 +3,7 @@ package Search_Pattern is
 
   -- Parses and compiles the search patern
   -- Reports errors on stderr and raises Parse_Error.
-  procedure Parse (Pattern : in String; 
+  procedure Parse (Pattern : in String;
                    Extended, Case_Sensitive, Utf8 : Boolean);
   Parse_Error : exception;
 
@@ -16,7 +16,6 @@ package Search_Pattern is
   --  on one line of input (i.e. does not contain '\n', '^' or '$')
   -- Raises No_Regex if the pattern was not parsed OK
   function Multiple return Boolean;
-  
   -- Checks if the input string from Start to its end
   --  matches the regex no Regex_Index
   -- Raises No_Regex if the Regex_Index is higher than
@@ -56,4 +55,3 @@ package Search_Pattern is
   function Str_Indexes return Regular_Expressions.Match_Cell;
 
 end Search_Pattern;
- 

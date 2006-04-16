@@ -202,7 +202,7 @@ package body Replace_Pattern is
           Subst.Info := Hexa_Byte;
           if Esc_Char = 'R' then
             -- Replace by regex index IJ, check IJ
-            if Hexa_Byte = 0 
+            if Hexa_Byte = 0
             or else Hexa_Byte > Search_Pattern.Number then
               Error ( "Invalid (null or too high) regex index "
                 & Asu.Slice (The_Pattern, Got + 1, Got + 2)
@@ -298,7 +298,6 @@ package body Replace_Pattern is
        return Str;
     end case;
   end Casestring;
-      
   -- Return the replacing string
   function Replace return String is
     Result : Asu.Unbounded_String;
