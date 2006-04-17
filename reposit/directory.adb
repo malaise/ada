@@ -312,7 +312,7 @@ package body Directory is
   end File_Suffix;
 
   -- Build a complete file name
-  function Build_File_Name (Dirname : String; File_Prefix, File_Suffix : in String) 
+  function Build_File_Name (Dirname : String; File_Prefix, File_Suffix : in String)
            return String is
     function Build_Name return String is
     begin
