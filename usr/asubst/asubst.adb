@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V2.13";
+  Version : constant String  := "V3_0";
 
   procedure Usage is
   begin
@@ -44,7 +44,9 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
-     "  Also set ASUBST_UTF8 env variable for utf-8 processing by default.");
+     "  Set env LANG to something.UTF-8, or set ASUBST_UTF8 to Y for utf-8 processing");
+    Sys_Calls.Put_Line_Error (
+     "   by default. (Processing mode can still be modified by -u or -a.)");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
@@ -139,8 +141,27 @@ procedure Asubst is
   end Do_One_File;
 
 begin
-  -- Set default UTF8 processing if env variable set
-  Utf8 := Environ.Is_Yes (Utf8_Var_Name);
+  -- Check if env variable LANG ends with ".UTF-8"
+  begin
+    declare
+      Lang : constant String := Environ.Getenv ("LANG");
+    begin
+      if Lang'Length > 6
+      and then Lang(Lang'Last-5 .. Lang'Last) = ".UTF-8" then
+        Utf8 := True;
+      end if;
+    end;
+  exception
+    when others =>
+      null;
+  end;
+
+  -- Superseed by ASUBST_UTF8 variable if set
+  if not Utf8 and then Environ.Is_Yes (Utf8_Var_Name) then
+    Utf8 := True;
+  elsif Utf8 and then Environ.Is_No (Utf8_Var_Name) then
+    Utf8 := False;
+  end if;
 
   -- Check nb of arguments
   if Argument.Get_Nbre_Arg = 1 then
@@ -315,6 +336,15 @@ begin
                      & "  with -f or --file option.");
       Error;
       return;
+    end if;
+  end if;
+
+  -- Put processing mode
+  if Debug.Set then
+    if Utf8 then
+      Sys_Calls.Put_Line_Error ("Assuming charset is UTF-8");
+    else
+      Sys_Calls.Put_Line_Error ("Assuming charset is ASCII");
     end if;
   end if;
 

@@ -1,5 +1,5 @@
                                  Asubst
-                                  V2_12
+                                  V3_0
 
 
 1. General syntax
@@ -28,10 +28,11 @@ matching.
 
 
 3. Environment
-If ASUBST_UTF8 environment variable is set to Y or yes (with whatever casing)
-then asubst considers that input flow or file is coded in Utf-8, except if -a
-or --ascii option is set. Otherwise asubst considers that input flow or file is
-pure ASCII, except if -u or --utf8 option is set.
+If the LANG environment variable is set to "<something>.UTF-8", then asubst
+considers that input flow or file is coded in Utf-8. This setting can be
+altered in a way or the other by setting ASUBST_UTF8 environment variable
+to Y, yes, N or no (with whatever casing). Finally, this setting can be
+altered in a way or the other by the options -a (--ascii), or -u (--utf8).
 
 If ASUBST_DEBUG environment variable is set to Y or yes (with whatever casing)
 then asubst puts on stderr some debugging information.

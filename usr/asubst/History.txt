@@ -1,5 +1,9 @@
 History of Asubst:
 
+17/04/2006 V3_0
+Add: Check if env variable LANG ends by ".UTF-8" then check env variable
+     ASUBST_UTF8, then apply -u or -a option.
+
 16/04/2006 V2_13
 Add: -u or --utf8 for UTF-8 processing, and -a or --ascii for ASCII processing.
 Bugfix: Invalid processing of \R00 if multiple regexps.

@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.9.129  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20060416;17415300">
+	<META NAME="CHANGED" CONTENT="20060417;11245700">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V2_12</FONT></B></FONT></FONT></P>
+<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_0</FONT></B></FONT></FONT></P>
 <H1><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt; } ]
 &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; } ]</FONT><BR><FONT FACE="monospace">or&nbsp;&nbsp;
@@ -35,11 +35,12 @@ or --verbose : print each substitution and its line number.</FONT><BR><FONT FACE
 then use <BR>&nbsp;&nbsp;&nbsp;&nbsp; asubst [ { &lt;option&gt; } ]
 -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
 <H1><FONT FACE="monospace">3. Environment</FONT></H1>
-<P><FONT FACE="monospace">If ASUBST_UTF8 environment variable is set
-to Y or yes (with whatever casing) then asubst considers that input
-flow or file is coded in Utf-8, except if -a or –ascii option is
-set. Otherwise asubst considers that input flow or file is pure
-ASCII, except if -u or --utf8 option is set.</FONT></P>
+<P><FONT FACE="monospace">If the LANG environment variable is set to
+&quot;&lt;something&gt;.UTF-8&quot;, then asubst considers that input
+flow or file is coded in Utf-8. This setting can be altered in a way
+or the other by setting ASUBST_UTF8 environment variable to Y, yes, N
+or no (with whatever casing). Finally, this setting can be altered in
+a way or the other by the options -a (--ascii), or -u (--utf8).</FONT></P>
 <P><FONT FACE="monospace">If ASUBST_DEBUG environment variable is set
 to Y or yes (with whatever casing) then asubst puts on stderr some
 debugging information.</FONT></P>
