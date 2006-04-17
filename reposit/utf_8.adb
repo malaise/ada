@@ -9,17 +9,17 @@ package body Utf_8 is
     Val : Integer := Character'Pos (First_Char);
   begin
     -- Check bits from highest to lowest
-    if    (Val And 2#1000_0000#) = 0 then
+    if    (Val and 2#1000_0000#) = 0 then
       -- Highest bit is 0, Ascii char on 1 byte
       return 1;
-    elsif (Val And 2#0100_0000#) = 0 then
+    elsif (Val and 2#0100_0000#) = 0 then
       -- 2#10# is forbidden in first char
       raise Invalid_Sequence;
-    elsif (Val And 2#0010_0000#) = 0 then
+    elsif (Val and 2#0010_0000#) = 0 then
       return 2;
-    elsif (Val And 2#0001_0000#) = 0 then
+    elsif (Val and 2#0001_0000#) = 0 then
       return 3;
-    elsif (Val And 2#0000_1000#) = 0 then
+    elsif (Val and 2#0000_1000#) = 0 then
       return 4;
     else
       -- More that four bits set is forbidden
@@ -42,7 +42,7 @@ package body Utf_8 is
     end if;
     -- Check that all but first bytes start by 2#10#
     for I in Len_Range'Succ(Seq'First) .. Seq'Last loop
-      if Integer'(Character'Pos(Seq(I)) And 2#1100_0000#) /= 2#1000_0000# then
+      if Integer'(Character'Pos(Seq(I)) and 2#1100_0000#) /= 2#1000_0000# then
         return False;
       end if;
     end loop;
@@ -78,7 +78,7 @@ package body Utf_8 is
     end if;
     -- All tests OK
     return True;
-  end Is_safe;
+  end Is_Safe;
 
   -- Checks that a Utf-8 sequence is safe, raise Invalid_Sequence if not
   procedure Check_Safe (Seq : in Sequence) is
@@ -106,20 +106,20 @@ package body Utf_8 is
       Result := Byte_Of (1);
     elsif Seq'Length = 2 then
       -- Seq is 110j_jjjj 10ii_iiii and becomes 0000_0jjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) And 2#0001_1111#, 06);
-      Result := Result Or     (Byte_Of (2) And 2#0011_1111#);
+      Result :=           Shl (Byte_Of (1) and 2#0001_1111#, 06);
+      Result := Result or     (Byte_Of (2) and 2#0011_1111#);
     elsif Seq'Length = 3 then
       -- Seq is 1110_kkkk 10jj_jjjj 10ii_iiii and becomes kkkk_jjjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) And 2#0000_1111#, 12);
-      Result := Result Or Shl (Byte_Of (2) And 2#0011_1111#, 06);
-      Result := Result Or     (Byte_Of (3) And 2#0011_1111#);
+      Result :=           Shl (Byte_Of (1) and 2#0000_1111#, 12);
+      Result := Result or Shl (Byte_Of (2) and 2#0011_1111#, 06);
+      Result := Result or     (Byte_Of (3) and 2#0011_1111#);
     else -- Seq'Length = 4
       -- Seq is 1111_0lll 10kk_kkkk 10jj_jjjj 10ii_iiii
       --  and becomes 000l_llkk kkkk_jjjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) And 2#0000_0111#, 18);
-      Result := Result Or Shl (Byte_Of (2) And 2#0011_1111#, 12);
-      Result := Result Or Shl (Byte_Of (3) And 2#0011_1111#, 06);
-      Result := Result Or     (Byte_Of (4) And 2#0011_1111#);
+      Result :=           Shl (Byte_Of (1) and 2#0000_0111#, 18);
+      Result := Result or Shl (Byte_Of (2) and 2#0011_1111#, 12);
+      Result := Result or Shl (Byte_Of (3) and 2#0011_1111#, 06);
+      Result := Result or     (Byte_Of (4) and 2#0011_1111#);
     end if;
     return Result;
   end Decode;
@@ -142,20 +142,20 @@ package body Utf_8 is
       Tab(1) := Unicode;
     elsif Nb_Chars = 2 then
       -- U is 0000_0jjj iiii_iiii and becomes 110j_jjii 10ii_iiii
-      Tab(1) := Shr (Unicode And 2#0000_0000_0000_0111_1100_0000#, 06) Or 2#1100_0000#;
-      Tab(2) :=     (Unicode And 2#0000_0000_0000_0000_0011_1111#)     Or 2#1000_0000#;
+      Tab(1) := Shr (Unicode and 2#0000_0000_0000_0111_1100_0000#, 06) or 2#1100_0000#;
+      Tab(2) :=     (Unicode and 2#0000_0000_0000_0000_0011_1111#)     or 2#1000_0000#;
     elsif Nb_Chars = 3 then
       -- U is jjjj_jjjj iiii_iiii and becomes 1110_jjjj 10jj_jjii 10ii_iiii
-      Tab(1) := Shr (Unicode And 2#0000_0000_1111_0000_0000_0000#, 12) Or 2#1110_0000#;
-      Tab(2) := Shr (Unicode And 2#0000_0000_0000_1111_1100_0000#, 06) Or 2#1000_0000#;
-      Tab(3) :=     (Unicode And 2#0000_0000_0000_0000_0011_1111#)     Or 2#1000_0000#;
+      Tab(1) := Shr (Unicode and 2#0000_0000_1111_0000_0000_0000#, 12) or 2#1110_0000#;
+      Tab(2) := Shr (Unicode and 2#0000_0000_0000_1111_1100_0000#, 06) or 2#1000_0000#;
+      Tab(3) :=     (Unicode and 2#0000_0000_0000_0000_0011_1111#)     or 2#1000_0000#;
     else -- Nb_Chars = 4
       -- U is 000k_kkkk jjjj_jjjj iiii_iiii
       -- and becomes 1111_0kkk 10kk_jjjj 10jj_jjii 10ii_iiii
-      Tab(1) := Shr (Unicode And 2#0001_1100_0000_0000_0000_0000#, 18) Or 2#1111_0000#;
-      Tab(2) := Shr (Unicode And 2#0000_0011_1111_0000_0000_0000#, 12) Or 2#1000_0000#;
-      Tab(3) := Shr (Unicode And 2#0000_0000_0000_1111_1100_0000#, 06) Or 2#1000_0000#;
-      Tab(4) :=     (Unicode And 2#0000_0000_0000_0000_0011_1111#)     Or 2#1000_0000#;
+      Tab(1) := Shr (Unicode and 2#0001_1100_0000_0000_0000_0000#, 18) or 2#1111_0000#;
+      Tab(2) := Shr (Unicode and 2#0000_0011_1111_0000_0000_0000#, 12) or 2#1000_0000#;
+      Tab(3) := Shr (Unicode and 2#0000_0000_0000_1111_1100_0000#, 06) or 2#1000_0000#;
+      Tab(4) :=     (Unicode and 2#0000_0000_0000_0000_0011_1111#)     or 2#1000_0000#;
     end if;
     -- Convert values to chars and return
     declare
