@@ -6,6 +6,15 @@ package body Environ is
   type String_Access is access String;
   procedure Free is new Unchecked_Deallocation (String, String_Access);
 
+  -- Getenv for a String. Returns empty string if not set.
+  function Getenv (Env_Name : String) return String is
+  begin
+    return Sys_Calls.Getenv (Env_Name);
+  exception
+    when Sys_Calls.Env_Not_Set =>
+      return "";
+  end Getenv;
+
   -- Getenv for a String. Leave result unchanged if not set or trunc.
   procedure Get_Str (Name : String; Result : in out String;
                                     Length : in out Natural) is

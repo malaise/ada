@@ -1,6 +1,9 @@
 with Text_Handler;
 package Environ is
 
+  -- Getenv for a String. Returns empty string if not set.
+  function Getenv (Env_Name : String) return String;
+
   -- Getenv for a String.
   -- Leave result and length unchanged if not set or trunc or empty
   -- otherwise set them.
