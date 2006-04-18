@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Force UTF-8 mode
+export ASUBST_UTF8=Y
+
 # Display current version
 type asubst
 asubst --version
