@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V3_0";
+  Version : constant String  := "V3_1";
 
   procedure Usage is
   begin
@@ -58,7 +58,15 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    delimiter of regexes).");
     Sys_Calls.Put_Line_Error (
-     "    A single <regex> applies several times per line and can contain '^' or '$'.");
+     "    The following shortcuts are provided for use within brakets:");
+    Sys_Calls.Put_Line_Error (
+     "     \M [:alnum:]   \A [:alpha:]   \B [:blank:]   \C [:cntrl:]");
+    Sys_Calls.Put_Line_Error (
+     "     \D [:digit:]   \G [:graph:]   \L [:lower:]   \P [:print:]");
+    Sys_Calls.Put_Line_Error (
+     "     \T [:punct:]   \S [:space:]   \U [:upper:]   \X [:xdigit:]");
+    Sys_Calls.Put_Line_Error (
+     "    A <regex> can contain '^' or '$'. If not, it applies several times per line.");
     Sys_Calls.Put_Line_Error (
      "    Each <regex> of <multiple_regex> applies to one line (once).");
     Sys_Calls.Put_Line_Error (

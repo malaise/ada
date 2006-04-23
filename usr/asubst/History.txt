@@ -1,5 +1,8 @@
 History of Asubst:
 
+23/04/2006 V3_1
+Add: Support \A for [:alpha:], \B for [:blank:]... in search pattern.
+
 17/04/2006 V3_0
 Add: Check if env variable LANG ends by ".UTF-8" then check env variable
      ASUBST_UTF8, then apply -u or -a option.

@@ -1,5 +1,5 @@
                                  Asubst
-                                  V3_0
+                                  V3_1
 
 
 1. General syntax
@@ -62,17 +62,29 @@ r        -> r
 r1\nr2\n -> r1$ \n and ^r2$
 r1\nr2   -> r1$ \n and ^r2
 r1\nr2$  -> r1$ \n and ^r2$
-r1$\n     is forbdiden.
+r1$\n     is forbdidden.
 The difference between "r1\n" and "r1$" is that "r1\n" is two regex. With "r1\n",
 the string matching "r1" AND the following New_Line will be substituted. With
-"r1$", only the string matching "r1" will be subtituted.
+"r1$", only the string matching "r1" will be subtituted. In short, "r1\n" means
+"r1 then a newline" while "r1$" means "r1, followed by a newline".
 The following specific '\' sequences are also handled:
+- "\s, replaced by a space,
 - "\t, replaced by a (horiz) tab,
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
-Beware that \xIJ is replaced before compilind the regex, so it cannot be
-used to avoid a given character. "[a\x2Dx]" is exactly the same as
-"[a-x]", and "\x0A" is exactly the same as "\n" (it will be used as regex
-delimiter).
+  Beware that \xIJ is replaced before compiling the regex, so it cannot be
+  used to avoid a given character. "[a\x2Dx]" is exactly the same as
+  "[a-x]", and "\x0A" is exactly the same as "\n" (it will be used as regex
+  delimiter).
+- The following shortcuts for character classes, to be used within brackets,
+  but asubst just substitutes without any check:
+     "\M" [:alnum:], "\A" [:alpha:], "\B" [:blank:], "\C" [:cntrl:],
+     "\D" [:digit:], "\G" [:graph:], "\L" [:lower:], "\P" [:print:],
+     "\T" [:punct:], "\S" [:space:], "\U" [:upper:], "\X" [:xdigit:].
+
+Finally, beware that some regex expressions are supposed to match a "new line"
+(example [:blank:] within a bracket expression) but will not match in asubst,
+because the input flow/file is decomposed into lines and then each line is
+compared to a regex expression. 
 
 
 5. Replace string

@@ -170,6 +170,27 @@ package body Search_Pattern is
       return Result;
     end Get_Hexa;
 
+    -- Returns character class (e.g. [:alnum:] associated to a key char
+    --  or "\Key"
+    function Char_Class_Of (Key : Character) return String is
+    begin
+      case Key is
+        when 'M' => return "[:alnum:]";
+        when 'A' => return "[:alpha:]";
+        when 'B' => return "[:blank:]";
+        when 'C' => return "[:cntrl:]";
+        when 'D' => return "[:digit:]";
+        when 'G' => return "[:graph:]";
+        when 'L' => return "[:lower:]";
+        when 'P' => return "[:print:]";
+        when 'T' => return "[:punct:]";
+        when 'S' => return "[:space:]";
+        when 'U' => return "[:upper:]";
+        when 'X' => return "[:xdigit:]";
+        when others => return '\' & Key;
+      end case;
+    end Char_Class_Of;
+
     -- Indexes in Pattern
     Start_Index : Positive;
     Stop_Index : Natural;
@@ -198,7 +219,8 @@ package body Search_Pattern is
     loop
       -- Locate sequence
       Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                               Stop_Index , "\nstx");
+                               Stop_Index,
+                               "\nstxABCDEFGHIJKLMNOPQRSTUVWXYZ");
       exit when Stop_Index = 0;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, found Esc char >"
@@ -220,6 +242,15 @@ package body Search_Pattern is
           -- "\xIJ" hexa replaced by byte or "\n"
           Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index + 2,
                              Character'Val (Get_Hexa (Stop_Index + 1)) & "");
+        when 'A' .. 'Z' =>
+          -- Some \A to \Z replaced by [:<CharClass>:]
+          declare
+            Class : constant String := Char_Class_Of (
+                    Asu.Element (The_Pattern, Stop_Index));
+          begin
+            Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index, Class);
+            Stop_Index := Stop_Index + Class'Length - 1;
+          end;
         when others =>
           -- Impossible. Leave sequence as it is, skip it
           Stop_Index := Stop_Index + 1;
