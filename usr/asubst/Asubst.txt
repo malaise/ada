@@ -80,6 +80,10 @@ The following specific '\' sequences are also handled:
      "\M" [:alnum:], "\A" [:alpha:], "\B" [:blank:], "\C" [:cntrl:],
      "\D" [:digit:], "\G" [:graph:], "\L" [:lower:], "\P" [:print:],
      "\T" [:punct:], "\S" [:space:], "\U" [:upper:], "\X" [:xdigit:].
+  Note that asubst does NOT check if such shortcut is withing a bracket
+  expression or not. Beware that "\M" is always replaced by "[:alnum:]" and
+  that, out of a bracket expression, this becomes a bracket expression, meaning:
+  ':' or 'a' or 'l' or 'n' or 'u' or 'm'.
 
 Finally, beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,

@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.9.129  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20060423;9132000">
+	<META NAME="CHANGED" CONTENT="20060424;10445700">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_1</FONT></B></FONT></FONT></P>
@@ -93,11 +93,15 @@ brackets, but asubst just substitutes without any check:<BR>&quot;\M&quot;
 [:cntrl:],<BR>&quot;\D&quot; [:digit:], &quot;\G&quot; [:graph:],
 &quot;\L&quot; [:lower:], &quot;\P&quot; [:print:],<BR>&quot;\T&quot;
 [:punct:], &quot;\S&quot; [:space:], &quot;\U&quot; [:upper:], &quot;\X&quot;
-[:xdigit:].<BR><BR>Finally, beware that some regex expressions are
-supposed to match a &quot;new line&quot; (example [:blank:] within a
-bracket expression) but will not match in asubst, because the input
-flow/file is decomposed into lines and then each line is compared to
-a regex expression.</FONT> 
+[:xdigit:].<BR>Note that asubst does NOT check if such shortcut is
+withing a bracket expression or not. Beware that &quot;\M&quot; is
+always replaced by &quot;[:alnum:]&quot; and that, out of a bracket
+expression, this becomes a bracket expression, meaning: ':' or 'a' or
+'l' or 'n' or 'u' or 'm'.<BR><BR>Finally, beware that some regex
+expressions are supposed to match a &quot;new line&quot; (example
+[:blank:] within a bracket expression) but will not match in asubst,
+because the input flow/file is decomposed into lines and then each
+line is compared to a regex expression.</FONT> 
 </P>
 <H1><FONT FACE="monospace">5. Replace string</FONT></H1>
 <P><FONT FACE="monospace">The following '\' sequences are
