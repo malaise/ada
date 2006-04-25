@@ -1,7 +1,10 @@
 History of Asubst:
 
+25/04/2006 V3_2
+Add: Forbid \x00 in find pattern (it does not work with regex).
+
 23/04/2006 V3_1
-Add: Support \A for [:alpha:], \B for [:blank:]... in search pattern.
+Add: Support \A for [:alpha:], \B for [:blank:]... in find pattern.
 
 17/04/2006 V3_0
 Add: Check if env variable LANG ends by ".UTF-8" then check env variable

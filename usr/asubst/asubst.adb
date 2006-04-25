@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V3_1";
+  Version : constant String  := "V3_2";
 
   procedure Usage is
   begin
@@ -52,11 +52,13 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
     Sys_Calls.Put_Line_Error (
-     "    A <regex> can contain ""\t"" (tab), ""\s"" (space) or ""\xIJ"" (hexa byte value)");
+     "    A <regex> can contain ""\t"" (tab), ""\s"" (space) or ""\xIJ"" (any hexa byte");
     Sys_Calls.Put_Line_Error (
-     "    but can't contain ""\n"" (""\n"" matches the new_line character and is the");
+     "    value except 00).");
     Sys_Calls.Put_Line_Error (
-     "    delimiter of regexes).");
+     "    A <regex> can't contain ""\n"" (""\n"" matches the new_line character");
+    Sys_Calls.Put_Line_Error (
+     "    and is the delimiter of regexes).");
     Sys_Calls.Put_Line_Error (
      "    The following shortcuts are provided for use within brakets:");
     Sys_Calls.Put_Line_Error (

@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20060424;10445700">
+	<META NAME="CHANGED" CONTENT="20060425;14285300">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_1</FONT></B></FONT></FONT></P>
+<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_2</FONT></B></FONT></FONT></P>
 <H1><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt; } ]
 &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -81,27 +81,29 @@ means &quot;r1, followed by a newline&quot;.<BR><BR>The following
 specific '\' sequences are also handled:<BR>- &quot;\s, replaced by a
 space,</FONT><BR><FONT FACE="monospace">- &quot;\t, replaced by a
 (horiz) tab,</FONT><BR><FONT FACE="monospace">- &quot;\xIJ&quot;
-where IJ is an hexadecimal number (00 to FF or ff) for a byte
-code.</FONT><BR><FONT FACE="monospace">Beware that these sequences
-are replaced before compiling the regex, so they cannot be used to
-avoid a given character. For example, &quot;[a\x2Dx]&quot; is exactly
-the same as &quot;[a-x]&quot;, and &quot;\x0A&quot; is exactly the
-same as &quot;\n&quot; (it will be used as regex delimiter).<BR>- The
-following shortcuts for character classes, to be used within
-brackets, but asubst just substitutes without any check:<BR>&quot;\M&quot;
-[:alnum:], &quot;\A&quot; [:alpha:], &quot;\B&quot; [:blank:], &quot;\C&quot;
-[:cntrl:],<BR>&quot;\D&quot; [:digit:], &quot;\G&quot; [:graph:],
-&quot;\L&quot; [:lower:], &quot;\P&quot; [:print:],<BR>&quot;\T&quot;
-[:punct:], &quot;\S&quot; [:space:], &quot;\U&quot; [:upper:], &quot;\X&quot;
-[:xdigit:].<BR>Note that asubst does NOT check if such shortcut is
-withing a bracket expression or not. Beware that &quot;\M&quot; is
-always replaced by &quot;[:alnum:]&quot; and that, out of a bracket
-expression, this becomes a bracket expression, meaning: ':' or 'a' or
-'l' or 'n' or 'u' or 'm'.<BR><BR>Finally, beware that some regex
-expressions are supposed to match a &quot;new line&quot; (example
-[:blank:] within a bracket expression) but will not match in asubst,
-because the input flow/file is decomposed into lines and then each
-line is compared to a regex expression.</FONT> 
+where IJ is an hexadecimal number (01 to FF or ff) for a byte code.
+&quot;\x00&quot; is forbidden in find pattern (because it is the C
+string terminator and is used as such by regex library). Beware also
+that these sequences are replaced before compiling the regex, so they
+cannot be used to avoid a given character. For example, &quot;[a\x2Dx]&quot;
+is exactly the same as &quot;[a-x]&quot;, and &quot;\x0A&quot; is
+exactly the same as &quot;\n&quot; (it will be used as regex
+delimiter).<BR>- The following shortcuts for character classes, to be
+used within brackets, but asubst just substitutes without any
+check:<BR>&quot;\M&quot; [:alnum:], &quot;\A&quot; [:alpha:], &quot;\B&quot;
+[:blank:], &quot;\C&quot; [:cntrl:],<BR>&quot;\D&quot; [:digit:],
+&quot;\G&quot; [:graph:], &quot;\L&quot; [:lower:], &quot;\P&quot;
+[:print:],<BR>&quot;\T&quot; [:punct:], &quot;\S&quot; [:space:],
+&quot;\U&quot; [:upper:], &quot;\X&quot; [:xdigit:].<BR>Note that
+asubst does NOT check if such shortcut is withing a bracket
+expression or not. Beware that &quot;\M&quot; is always replaced by
+&quot;[:alnum:]&quot; and that, out of a bracket expression, this
+becomes a bracket expression, meaning: ':' or 'a' or 'l' or 'n' or
+'u' or 'm'.<BR><BR>Finally, beware that some regex expressions are
+supposed to match a &quot;new line&quot; (example [:blank:] within a
+bracket expression) but will not match in asubst, because the input
+flow/file is decomposed into lines and then each line is compared to
+a regex expression.</FONT> 
 </P>
 <H1><FONT FACE="monospace">5. Replace string</FONT></H1>
 <P><FONT FACE="monospace">The following '\' sequences are

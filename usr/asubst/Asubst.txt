@@ -1,5 +1,5 @@
                                  Asubst
-                                  V3_1
+                                  V3_2
 
 
 1. General syntax
@@ -70,8 +70,10 @@ the string matching "r1" AND the following New_Line will be substituted. With
 The following specific '\' sequences are also handled:
 - "\s, replaced by a space,
 - "\t, replaced by a (horiz) tab,
-- "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
-  Beware that \xIJ is replaced before compiling the regex, so it cannot be
+- "\xIJ" where IJ is an hexadecimal number (01 to FF or ff) for a byte code.
+  "\x00" is forbidden in find pattern (because it is the C string terminator
+  and is used as such by regex library).
+  Beware also that \xIJ is replaced before compiling the regex, so it cannot be
   used to avoid a given character. "[a\x2Dx]" is exactly the same as
   "[a-x]", and "\x0A" is exactly the same as "\n" (it will be used as regex
   delimiter).

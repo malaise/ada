@@ -163,6 +163,11 @@ package body Search_Pattern is
                & Asu.Slice (The_Pattern, Index, Index + 1)
                & " in search pattern");
       end;
+      if Result = 0 then
+        Error ("Invalid null hexadecimal sequence "
+             & Asu.Slice (The_Pattern, Index, Index + 1)
+             & " in search pattern");
+      end if;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, got hexadecimal sequence "
                                  & Asu.Slice (The_Pattern, Index, Index + 1));
