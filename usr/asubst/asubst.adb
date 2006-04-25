@@ -20,7 +20,7 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -u | -v | --");
+     "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
@@ -42,6 +42,8 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
     Sys_Calls.Put_Line_Error (
+     "    -x or --noregex for <find_pattern> not being considered as regex,");
+    Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
      "  Set env LANG to something.UTF-8, or set ASUBST_UTF8 to Y for utf-8 processing");
@@ -60,7 +62,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    and is the delimiter of regexes).");
     Sys_Calls.Put_Line_Error (
-     "    The following shortcuts are provided for use within brakets:");
+     "    The following shortcuts are provided for use in regex within brakets:");
     Sys_Calls.Put_Line_Error (
      "     \M [:alnum:]   \A [:alpha:]   \B [:blank:]   \C [:cntrl:]");
     Sys_Calls.Put_Line_Error (
@@ -115,6 +117,7 @@ procedure Asubst is
   Verbosity : Verbose_List := Put_File_Name;
   Backup : Boolean := False;
   Utf8 : Boolean := False;
+  Is_Regex : Boolean := True;
   -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
@@ -300,6 +303,14 @@ begin
       end if;
       Verbosity := Verbose;
       Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-x"
+    or else Argument.Get_Parameter (Occurence => I) = "--noregex" then
+      -- Find pattern is not a regex
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option noregex");
+      end if;
+      Is_Regex := False;
+      Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I)(1) = '-' then
       -- Not a valid option
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
@@ -321,7 +332,7 @@ begin
   begin
     Search_Pattern.Parse (
          Argument.Get_Parameter (Occurence => Start),
-         Extended, Case_Sensitive, Utf8);
+         Extended, Case_Sensitive, Utf8, Is_Regex);
     Start := Start + 1;
   exception
     when Search_Pattern.Parse_Error =>

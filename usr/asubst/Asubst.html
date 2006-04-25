@@ -1,15 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.9.129  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20060425;14285300">
+	<META NAME="CHANGED" CONTENT="20060425;19361700">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_2</FONT></B></FONT></FONT></P>
+<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_3</FONT></B></FONT></FONT></P>
 <H1><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt; } ]
 &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -31,7 +31,9 @@ substitutions, (0 for infinite).<BR>-n or --number : print number of
 substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
 or --save : make a copy (&lt;file&gt;.asu) of original file(s).</FONT><BR><FONT FACE="mon">-u
 or --utf8 : process utf-8 sequences.</FONT><BR><FONT FACE="monospace">-v
-or --verbose : print each substitution and its line number.</FONT><BR><FONT FACE="monospace">--
+or --verbose : print each substitution and its line number.<BR>-x or
+--noregex : &lt;find_pattern&gt; is only the string to find, not a
+regex. This allows \x00. There is no substring then.</FONT><BR><FONT FACE="monospace">--
 : to end the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
 then use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; }
 ] -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
@@ -81,29 +83,32 @@ means &quot;r1, followed by a newline&quot;.<BR><BR>The following
 specific '\' sequences are also handled:<BR>- &quot;\s, replaced by a
 space,</FONT><BR><FONT FACE="monospace">- &quot;\t, replaced by a
 (horiz) tab,</FONT><BR><FONT FACE="monospace">- &quot;\xIJ&quot;
-where IJ is an hexadecimal number (01 to FF or ff) for a byte code.
-&quot;\x00&quot; is forbidden in find pattern (because it is the C
-string terminator and is used as such by regex library). Beware also
-that these sequences are replaced before compiling the regex, so they
-cannot be used to avoid a given character. For example, &quot;[a\x2Dx]&quot;
-is exactly the same as &quot;[a-x]&quot;, and &quot;\x0A&quot; is
-exactly the same as &quot;\n&quot; (it will be used as regex
-delimiter).<BR>- The following shortcuts for character classes, to be
-used within brackets, but asubst just substitutes without any
-check:<BR>&quot;\M&quot; [:alnum:], &quot;\A&quot; [:alpha:], &quot;\B&quot;
+where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
+&quot;\x00&quot; is forbidden in find pattern except in mode
+&quot;noregex&quot; (because it is the C string terminator and is
+used as such by regex library). Beware also that these sequences are
+replaced before compiling the regex, so they cannot be used to avoid
+a given character. For example, &quot;[a\x2Dx]&quot; is exactly the
+same as &quot;[a-x]&quot;, and &quot;\x0A&quot; is exactly the same
+as &quot;\n&quot; (it will be used as regex delimiter).<BR>- The
+following shortcuts for character classes, to be used in regex within
+brackets:<BR>&quot;\M&quot; [:alnum:], &quot;\A&quot; [:alpha:], &quot;\B&quot;
 [:blank:], &quot;\C&quot; [:cntrl:],<BR>&quot;\D&quot; [:digit:],
 &quot;\G&quot; [:graph:], &quot;\L&quot; [:lower:], &quot;\P&quot;
 [:print:],<BR>&quot;\T&quot; [:punct:], &quot;\S&quot; [:space:],
 &quot;\U&quot; [:upper:], &quot;\X&quot; [:xdigit:].<BR>Note that
 asubst does NOT check if such shortcut is withing a bracket
-expression or not. Beware that &quot;\M&quot; is always replaced by
-&quot;[:alnum:]&quot; and that, out of a bracket expression, this
-becomes a bracket expression, meaning: ':' or 'a' or 'l' or 'n' or
-'u' or 'm'.<BR><BR>Finally, beware that some regex expressions are
-supposed to match a &quot;new line&quot; (example [:blank:] within a
-bracket expression) but will not match in asubst, because the input
-flow/file is decomposed into lines and then each line is compared to
-a regex expression.</FONT> 
+expression or not. For example, &quot;\M&quot; is always replaced by
+&quot;[:alnum:]&quot; and, out of a bracket expression, this becomes
+a bracket expression, meaning: ':' or 'a' or 'l' or 'n' or 'u' or
+'m'.</FONT></P>
+<P><FONT FACE="monospace">Note that only “\s”, “\t”, “\xIJ”
+and “\n” are interpreted in mode “noregex”.</FONT></P>
+<P><FONT FACE="monospace">Finally, beware that some regex expressions
+are supposed to match a &quot;new line&quot; (example [:blank:]
+within a bracket expression) but will not match in asubst, because
+the input flow/file is decomposed into lines and then each line is
+compared to a regex expression.</FONT> 
 </P>
 <H1><FONT FACE="monospace">5. Replace string</FONT></H1>
 <P><FONT FACE="monospace">The following '\' sequences are

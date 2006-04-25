@@ -1,4 +1,8 @@
 History of Asubst:
+------------------
+
+25/04/2006 V3_3
+Add: -x or --noregex for nor considering find pattern as a regex.
 
 25/04/2006 V3_2
 Add: Forbid \x00 in find pattern (it does not work with regex).

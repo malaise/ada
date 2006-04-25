@@ -1,5 +1,5 @@
                                  Asubst
-                                  V3_2
+                                  V3_3
 
 
 1. General syntax
@@ -23,6 +23,8 @@ matching.
 -s or --save : make a copy (<file>.asu) of original file(s).
 -u or --utf8 : process utf-8 sequences.
 -v or --verbose : print each substitution and its line number.
+-x or --noregex : <find_pattern> is only the string to find, not a regex. This
+     allows \x00. There is no substring then.
 -- : to stop the list of options. If <find_pattern> is "-pat", then use
      asubst [ { <option> } ] -- "-pat" <replace_pattern>  [ { <file> } ].
 
@@ -70,22 +72,24 @@ the string matching "r1" AND the following New_Line will be substituted. With
 The following specific '\' sequences are also handled:
 - "\s, replaced by a space,
 - "\t, replaced by a (horiz) tab,
-- "\xIJ" where IJ is an hexadecimal number (01 to FF or ff) for a byte code.
-  "\x00" is forbidden in find pattern (because it is the C string terminator
-  and is used as such by regex library).
+- "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
+  "\x00" is forbidden in find pattern except in mode "noregex" (because it is
+  the C string terminator and is used as such by regex library).
   Beware also that \xIJ is replaced before compiling the regex, so it cannot be
   used to avoid a given character. "[a\x2Dx]" is exactly the same as
   "[a-x]", and "\x0A" is exactly the same as "\n" (it will be used as regex
   delimiter).
-- The following shortcuts for character classes, to be used within brackets,
-  but asubst just substitutes without any check:
+- The following shortcuts for character classes, to be used in regex within
+  brackets:
      "\M" [:alnum:], "\A" [:alpha:], "\B" [:blank:], "\C" [:cntrl:],
      "\D" [:digit:], "\G" [:graph:], "\L" [:lower:], "\P" [:print:],
      "\T" [:punct:], "\S" [:space:], "\U" [:upper:], "\X" [:xdigit:].
-  Note that asubst does NOT check if such shortcut is withing a bracket
-  expression or not. Beware that "\M" is always replaced by "[:alnum:]" and
-  that, out of a bracket expression, this becomes a bracket expression, meaning:
+  Note that asubst does NOT check if such shortcut is within a bracket
+  expression or not. For example, "\M" is always replaced by "[:alnum:]" and,
+  out of a bracket expression, this becomes a bracket expression, meaning:
   ':' or 'a' or 'l' or 'n' or 'u' or 'm'.
+
+Note that only “\s”, “\t”, “\xIJ” and “\n” are interpreted in mode “noregex”.
 
 Finally, beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,

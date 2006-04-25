@@ -4,7 +4,7 @@ package Search_Pattern is
   -- Parses and compiles the search patern
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse (Pattern : in String;
-                   Extended, Case_Sensitive, Utf8 : Boolean);
+                   Extended, Case_Sensitive, Utf8, Is_Regex : Boolean);
   Parse_Error : exception;
 
   -- Returns the number of regex that are implied by the
