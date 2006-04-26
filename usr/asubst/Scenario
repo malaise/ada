@@ -19,6 +19,7 @@
 "iota"                 "(ot)a"           "\r11"                  "iot"
 "l_l"                  "(l*)[^l]*$"      "\r11"                  "l_l"
 "a/c"                  "([ac]*)[^ac]*$"  "\r11"                  "a/c"
+"toti"                 "(to)(tu)?"       "\u\r11\r12"            "TOti"
 "l_to"                 "_t"              ""                      "lo"
 "toto\ntoto"           "\x0A"            ""                      "totototo"
 "toto\ntoto\n"         "toto\n"          ""                      ""

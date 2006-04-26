@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V3_2";
+  Version : constant String  := "V3_4";
 
   procedure Usage is
   begin
@@ -42,7 +42,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
     Sys_Calls.Put_Line_Error (
-     "    -x or --noregex for <find_pattern> not being considered as regex,");
+     "    -x or --noregex for <find_pattern> being considered as a single string,");
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
@@ -54,9 +54,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
     Sys_Calls.Put_Line_Error (
-     "    A <regex> can contain ""\t"" (tab), ""\s"" (space) or ""\xIJ"" (any hexa byte");
-    Sys_Calls.Put_Line_Error (
-     "    value except 00).");
+     "    A <regex> can contain ""\t"" (tab), ""\s"" (space) or ""\xIJ"" (any hexa byte).");
     Sys_Calls.Put_Line_Error (
      "    A <regex> can't contain ""\n"" (""\n"" matches the new_line character");
     Sys_Calls.Put_Line_Error (
@@ -75,6 +73,10 @@ procedure Asubst is
      "    Each <regex> of <multiple_regex> applies to one line (once).");
     Sys_Calls.Put_Line_Error (
      "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
+    Sys_Calls.Put_Line_Error (
+     "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted,");
+    Sys_Calls.Put_Line_Error (
+     "    ""\n"" is forbidden, and ""\x00"" is allowed (forbidden in a regex).");
     Sys_Calls.Put_Line_Error (
      "  <replace_string> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
     Sys_Calls.Put_Line_Error (

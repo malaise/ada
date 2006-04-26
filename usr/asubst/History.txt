@@ -1,6 +1,11 @@
 History of Asubst:
 ------------------
 
+25/04/2006 V3_4
+Bugfix: Return "" i.o. exception when no matching substring.
+Bugfix: Forbid "\n" in noregex mode.
+Add: Improve doc regarding noregex mode.
+
 25/04/2006 V3_3
 Add: -x or --noregex for nor considering find pattern as a regex.
 

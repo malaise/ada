@@ -303,7 +303,7 @@ package body Search_Pattern is
         Add ("", Extended, Case_Sensitive);
         Prev_Delim := True;
       else
-        -- A Regex: see if it followed by a delim (always except at the end)
+        -- A Regex: see if it is followed by a delim (always except at the end)
         Next_Delim := Stop_Index /= 0;
         -- Make Stop_Index be the last index of regex,
         if Stop_Index = 0 then
@@ -321,19 +321,22 @@ package body Search_Pattern is
             Check (Slice, Start_String (Prev_Delim));
             -- It must not contain Stop_String if preeceded by a delim
             Check (Slice, Stop_String (Next_Delim));
+            -- Add this regex with start/stop strings
+            Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
+               Extended, Case_Sensitive);
+          else
+            -- Add this regex with no start/stop strings
+            Add (Slice, True, True);
           end if;
-          -- Add this regex
-          Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
-             Extended, Case_Sensitive);
         end;
         if Is_Regex then
           -- See if this is a single regex and if it can apply several times
           --  to one line of input (no ^ not $)
           if not Prev_Delim
-             and then not Next_Delim
-             and then Asu.Element (The_Pattern, Start_Index) & ""
+          and then not Next_Delim
+          and then Asu.Element (The_Pattern, Start_Index) & ""
                  /= Start_String (True)
-             and then Asu.Element (The_Pattern, Stop_Index) & ""
+          and then Asu.Element (The_Pattern, Stop_Index) & ""
                  /= Stop_String (True) then
             Is_Multiple := True;
           end if;
@@ -341,7 +344,7 @@ package body Search_Pattern is
           -- Same, but only check delimiters (start and stop strings are
           --  not interpreted) 
           if not Prev_Delim
-             and then not Next_Delim then
+          and then not Next_Delim then
             Is_Multiple := True;
           end if;
         end if;
@@ -350,6 +353,11 @@ package body Search_Pattern is
       exit when Stop_Index = Asu.Length (The_Pattern);
       Start_Index := Stop_Index + 1;
     end loop;
+
+    -- Noregex find pattern must be multiple (no \n)
+    if not Is_Regex and then not Is_Multiple then
+      Error ("Noregex search pattern cannot contain ""\n""");
+    end if;
 
     -- Done
   exception
@@ -552,7 +560,7 @@ package body Search_Pattern is
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
     -- Check number of substrings and get cell
     if Sub_String_Index > Upat_Access.Nb_Substr then
-      raise No_Regex;
+      return "";
     end if;
     Cell := Upat_Access.Substrs(Sub_String_Index);
     -- Check if end of cell is the start of a Utf8 sequence
