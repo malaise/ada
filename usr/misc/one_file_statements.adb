@@ -1,4 +1,5 @@
 with Ada.Text_Io;
+with Sys_Calls;
 with Normal;
 
 package body One_File_Statements is
@@ -8,7 +9,8 @@ package body One_File_Statements is
   function Count_Statements_Of_File (File_Name : String) return Natural is
 
     File  : Ada.Text_Io.File_Type;
-    C     : Character := ' ';
+    C, Prev_C, Next_C  : Character := ' ';
+    Next_Set : Boolean := False;
     Statements : Natural := 0;
     Levels : Natural := 0;
 
@@ -32,6 +34,19 @@ package body One_File_Statements is
       when others => null;
     end Close;
 
+    procedure Skip_Until (Upto : in Character) is
+    begin
+      loop
+        Get (File, C);
+        exit when C = Upto;
+      end loop;
+    end Skip_Until;
+
+    function Line_No return Ada.Text_Io.Positive_Count is
+    begin
+      return Ada.Text_Io.Line (File);
+    end Line_No;
+
   begin
 
     begin
@@ -43,8 +58,13 @@ package body One_File_Statements is
     end;
 
     loop
-
-      Get (File, C);
+      -- Has a char been read ahead with previous char
+      if Next_Set then
+        C := Next_C;
+        Next_Set := False;
+      else
+        Get (File, C);
+      end if;
 
       -- Check for comment on the line
       if C = '-' then
@@ -53,67 +73,60 @@ package body One_File_Statements is
         if C = '-' then
           -- Then just skip the rest of the line and go to the next
           Ada.Text_Io.Skip_Line (File);
+        else
+          -- Restore char
+          Next_C := C;
+          Next_Set := True;
+        end if;
+
+      elsif C = ';' then
+        -- Any ';' that can be found at this point after all exclusions
+        -- must be a valid "line of code terminator"
+        if Levels = 0 then
+          -- Skip parentheses cause every ';' within is a formal parameter list
+          Statements := Statements + 1;
+        end if;
+      elsif  C = '(' then
+        -- Count the number of levels of parentheses
+        Levels := Levels + 1;
+      elsif  C = ')' then
+        if Levels /= 0 then
+          Levels := Levels - 1;
+        else
+          Ada.Text_Io.Put_Line ("Warning: Reaching negative parenthesis level"
+                & " at line" & Line_No'Img);
+        end if;
+      elsif C = '"' or else C = '%' then
+        -- Now, check for string brackets of either kind, " or %
+        Skip_Until (C);
+      elsif C = ''' then
+        -- Character literals are just three characters long including '
+        -- Attributes are skipped the same way because longer than one char
+        Get (File, Prev_C);
+        Get (File, C);
+        -- Handle specific Qualifier'(...
+        if C /= ''' then
+          -- This is not a char literal
+          -- Should restore Prev_C and C but in fact, Prev_C can only
+          --  be '(' or an attribute or a separator.
+          -- So handle Prev_C = '(' and restore C
+          if Prev_C = '(' then
+            -- Qualifier'(...
+            Levels := Levels + 1;
+          end if;
+          Next_C := C;
+          Next_Set := true;
         end if;
       end if;
-
-      -- Check for one of the characters which introduce code constructs
-      -- like string or character litteral or formal parameter list
-      -- within which a ';' does not terminate a "line of code"
-
-      if C = '(' or C = '"' or C = '%' or C = ''' then
-
-        -- Check for opening parentheses
-        -- Every ';' within is a formal parameter list
-        if  C = '(' then
-          -- Count the number of levels of parentheses
-          Levels := Levels + 1;
-
-          -- Read ahead until the whole construct is closed, Level = 0
-          while Levels > 0 loop
-            Get (File, C);
-            if C = '(' then
-              -- Increase the level if another '(' is found
-              Levels := Levels + 1;
-            elsif C = ')' then
-              -- Decrease the leval if a ')' is found
-              Levels := Levels - 1;
-            end if;
-          end loop;
-
-        -- Now, check for string brackets of either kind, " or %
-        elsif C = '"' or C = '%' then
-          -- Treat them in parallel, one must lead off
-          if C = '"' then
-            loop
-              Get (File, C);
-              -- Loop until  the close comes
-              -- If there is a doubled character it just starts again
-              exit when C = '"';
-            end loop;
-          elsif C = '%' then
-            -- The '%' is handled exactly the same way as '"'
-            loop
-              Get (File, C);
-              exit when C = '%';
-            end loop;
-          end if;
-
-        elsif C = ''' then
-          -- Character literals are just three characters long including '
-          Get (File, C);
-          Get (File, C);
-        end if;
-
-    elsif C = ';' then
-      -- Any ';' that can be found at this point after all exclusions
-      -- must be a valid "line of code terminator"
-      Statements := Statements + 1;
-    end if;
-  end loop;
+    end loop;
 
   exception
     when Ada.Text_Io.End_Error =>
       Close (File);
+      if Levels /= 0 then
+        Ada.Text_Io.Put_Line ("Warning: Ending file with parenthesis level"
+                            & Levels'Img & ".");
+      end if;
       return Statements;
     when File_Error =>
       Close (File);
