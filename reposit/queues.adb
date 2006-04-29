@@ -2,10 +2,16 @@ package body Queues is
 
   package body Lifo is
     Pile : array (1 .. Size) of Item;
-    Ptr : Natural range 0 .. Size := 0;
 
     -- Ptr is the last pushed except if stack is empty
-    --  the it is 0.
+    --  then it is 0.
+    Ptr : Len_Range := 0;
+
+    -- Number of Items in Lifo
+    function Length return Len_Range is
+    begin
+      return Ptr;
+    end Length;
 
     -- Push an item
     procedure Push (X : in Item) is
@@ -80,6 +86,20 @@ package body Queues is
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
+
+    -- Number of Items in Fifo
+    function Length return Len_Range is
+    begin
+      if Ptr_In > Ptr_Out then
+        return Ptr_In - Ptr_Out;
+      elsif Ptr_In < Ptr_Out then
+        return Ptr_In + Size - Ptr_Out;
+      elsif Full then
+        return Size;
+      else
+        return 0;
+      end if;
+    end Length;
 
     -- Push an item
     procedure Push (X : in Item) is
@@ -177,6 +197,20 @@ package body Queues is
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
 
+    -- Number of Items in Prio
+    function Length return Len_Range is
+    begin
+      if Ptr_In > Ptr_Out then
+        return Ptr_In - Ptr_Out;
+      elsif Ptr_In < Ptr_Out then
+        return Ptr_In + Size - Ptr_Out;
+      elsif Full then
+        return Size;
+      else
+        return 0;
+      end if;
+    end Length;
+
     -- Push an item
     procedure Push (X : in Item; P : in Priority := Priority'Last) is
       I, J : Typ_Ptr;
@@ -192,7 +226,7 @@ package body Queues is
       else
         -- Create empty slot
         Ptr_In := (Ptr_In + 1) mod Size;
-        -- decrire toutes les places
+        -- For each slot
         I := Ptr_In;
         loop
           J := (I-1) mod Size;
@@ -292,6 +326,20 @@ package body Queues is
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
+
+    -- Number of Items in Circ
+    function Length return Len_Range is
+    begin
+      if Ptr_In > Ptr_Out then
+        return Ptr_In - Ptr_Out;
+      elsif Ptr_In < Ptr_Out then
+        return Ptr_In + Size - Ptr_Out;
+      elsif Full then
+        return Size;
+      else
+        return 0;
+      end if;
+    end Length;
 
     -- Push an item
     procedure Push (X : in Item) is

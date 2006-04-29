@@ -2,14 +2,18 @@ package Queues is
 
   generic
     -- Last in first out
-    -- management of a stack of objects to be defined: type Object is...;
-    -- size of the stack: Size : Positive := ...;
+    -- Management of a stack of objects to be defined: type Object is...;
+    -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Lifo is new Queues.Lifo (Size, Object);
     Size : Positive;
     type Item is private;
   package Lifo is
 
+    subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
+
+    -- Number of Items in Lifo
+    function Length return Len_Range;
 
     -- Push an item
     procedure Push (X : in Item);
@@ -40,14 +44,18 @@ package Queues is
 
   generic
     -- First in first out
-    -- management of a stack of objects to be defined: type Object is...;
-    -- size of the stack: Size : Positive := ...;
+    -- Management of a queue of objects to be defined: type Object is...;
+    -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Fifo is new Queues.Fifo (Size, Object);
     Size : Positive;
     type Item is private;
   package Fifo is
 
+    subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
+
+    -- Number of Items in Fifo
+    function Length return Len_Range;
 
     -- Push an item
     procedure Push (X : in Item);
@@ -80,10 +88,10 @@ package Queues is
 
   generic
     -- First in first out with Priority
-    -- management of a stack of objects to be defined: type Object is...;
-    -- each object associated to a priority:
+    -- Management of a queue of objects to be defined: type Object is...;
+    -- Each object associated to a priority:
     -- subtpye Priority is Integer range ...;
-    -- size of the stack: Size : Positive := ...;
+    -- Size of the stack: Size : Positive := ...;
     -- Instanciation:
     --  package My_Prio is new Queues.Prio (Size, Object, Priority);
     Size : Positive;
@@ -91,7 +99,11 @@ package Queues is
     type Priority is range <>;
   package Prio is
 
+    subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
+
+    -- Number of Items in Prio
+    function Length return Len_Range;
 
     -- Insert an item
     procedure Push (X : in Item; P : in Priority := Priority'Last);
@@ -123,14 +135,18 @@ package Queues is
 
   generic
     -- Circular buffer
-    -- management of a buffer of objects to be defined: type Object is...;
-    -- size of the stack: Size : Positive := ...;
+    -- Management of a buffer of objects to be defined: type Object is...;
+    -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Fifo is new Queues.Circ (Size, Object);
     Size : Positive;
     type Item is private;
   package Circ is
 
+    subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
+
+    -- Number of Items in Circ
+    function Length return Len_Range;
 
     -- Push an item
     procedure Push (X : in Item);
