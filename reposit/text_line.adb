@@ -9,7 +9,7 @@ package body Text_Line is
                   Mode : in File_Mode;
                   Fd : in Sys_Calls.File_Desc) is
   begin
-    if File /= null then
+    if Is_Open (File) then
       raise Status_Error;
     end if;
     File := File_Data.Allocate (
@@ -24,7 +24,7 @@ package body Text_Line is
   -- May raise Status_Error if File is not open
   procedure Close (File : in out File_Type) is
   begin
-    if File = null then
+    if not Is_Open (File) then
       raise Status_Error;
     end if;
     if File.Mode = Out_File then
@@ -125,7 +125,7 @@ package body Text_Line is
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
-  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Status_Error if File is not open or not Out_File
   -- May raise Io_Error if IO error
   procedure Put (File : in File_Type; Text : in String) is
     Tmp : Natural;

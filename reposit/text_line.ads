@@ -45,7 +45,7 @@ package Text_Line is
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
-  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Status_Error if File is not open or not Out_File
   -- May raise Io_Error if IO error
   procedure Put (File : in File_Type; Text : in String);
 
