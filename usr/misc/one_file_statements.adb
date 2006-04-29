@@ -115,7 +115,7 @@ package body One_File_Statements is
             Levels := Levels + 1;
           end if;
           Next_C := C;
-          Next_Set := true;
+          Next_Set := True;
         end if;
       end if;
     end loop;
