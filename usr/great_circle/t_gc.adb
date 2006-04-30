@@ -72,7 +72,7 @@ procedure T_Gc is
       Cursor := First_Fld;
   end Decode_Point;
 
-  procedure Clear_result is
+  procedure Clear_Result is
   begin
     Afpx.Clear_Field (Heading_Field);
     Afpx.Clear_Field (Distance_Field);

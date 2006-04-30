@@ -101,7 +101,7 @@ package body Search_Pattern is
       return;
     end if;
     -- Store string if this is not a regex
-    if not Is_regex then
+    if not Is_Regex then
       Upat.Find_Str := Asu.To_Unbounded_String (Crit);
       Upat.Nb_Substr := 0;
       Unique_Pattern.Insert (Pattern_List, Upat);
@@ -186,7 +186,7 @@ package body Search_Pattern is
                & Asu.Slice (The_Pattern, Index, Index + 1)
                & " in search pattern");
       end;
-      if Result = 0 and then Is_regex then
+      if Result = 0 and then Is_Regex then
         Error ("Invalid null hexadecimal sequence in regex"
              & Asu.Slice (The_Pattern, Index, Index + 1)
              & " in search pattern");
@@ -202,7 +202,7 @@ package body Search_Pattern is
     --  or "\Key"
     function Char_Class_Of (Key : Character) return String is
     begin
-      if not Is_regex then
+      if not Is_Regex then
         -- If not a regex, no interpretation
         return '\' & Key;
       end if;
@@ -316,7 +316,7 @@ package body Search_Pattern is
           Slice : constant String
                 := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
         begin
-          if Is_regex then
+          if Is_Regex then
             -- It must not contain Start_String if preeceded by a delim
             Check (Slice, Start_String (Prev_Delim));
             -- It must not contain Stop_String if preeceded by a delim

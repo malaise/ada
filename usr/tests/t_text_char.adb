@@ -14,7 +14,7 @@ begin
   if Argument.Get_Nbre_Arg /= 1 then
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
           & "<file_name>");
-    Sys_Calls.Set_Error_exit_Code;
+    Sys_Calls.Set_Error_Exit_Code;
     return;
   end if;
 
@@ -27,7 +27,7 @@ begin
           Argument.Get_Parameter);
       Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
           & "<file_name>");
-      Sys_Calls.Set_Error_exit_Code;
+      Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
   -- This should work ok

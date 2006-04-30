@@ -24,7 +24,7 @@ begin
     begin
       Ada.Text_Io.Put (Ustr);
       for J in Ustr'Range loop
-        Put (Character'Pos (UStr(J)));
+        Put (Character'Pos (Ustr(J)));
       end loop;
     end;
     Ada.Text_Io.New_Line;
