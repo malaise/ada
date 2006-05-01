@@ -54,10 +54,8 @@ private
     Line_Got : Ada.Strings.Unbounded.Unbounded_String;
     Get_Index : Natural := 0;
 
-    -- Ungot chars and index in Ungo_Chars of next ungot char to get
-    -- If Unget_Index is 0, this means no ungot char to get
+    -- Ungot chars appended one after the other
     Ungot_Chars : Ada.Strings.Unbounded.Unbounded_String;
-    Unget_Index : Natural := 0;
   end record;
 
   type File_Type is access File_Type_Rec;

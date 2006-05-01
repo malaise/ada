@@ -93,16 +93,11 @@ package body Text_Char is
       raise Status_Error;
     end if;
     -- Check if there are ungot chars
-    if File.Unget_Index /= 0 then
-      Char := Asu.Element (File.Ungot_Chars, File.Unget_Index);
-      -- Check if this is the last char to unget
-      if File.Unget_Index = Asu.Length (File.Ungot_Chars) then
-        -- Reset ungot chars
-        File.Ungot_Chars := Asu.Null_Unbounded_String;
-        File.Unget_Index := 0;
-      else
-        File.Unget_Index := File.Unget_Index + 1;
-      end if;
+    Len := Asu.Length (File.Ungot_Chars);
+    if Len /= 0 then
+      Char := Asu.Element (File.Ungot_Chars, Len);
+      -- Delete this last char
+      Asu.Delete (File.Ungot_Chars, Len, Len);
       return;
     end if;
     -- Check if there are read chars to get
@@ -136,10 +131,6 @@ package body Text_Char is
     end if;
     -- Just append char to the string of ungot chars
     Asu.Append (File.Ungot_Chars, Char);
-    -- Init Unget_Index if first char to unget
-    if File.Unget_Index = 0 then
-      File.Unget_Index := 1;
-    end if;
   end Unget;
 
   -- Returns if the end of file is reached
@@ -150,7 +141,7 @@ package body Text_Char is
       raise Status_Error;
     end if;
     -- Check if there are ungot chars
-    if File.Unget_Index /= 0 then
+    if Asu.Length (File.Ungot_Chars) /= 0 then
       return False;
     end if;
     -- Check if there are read chars to get
