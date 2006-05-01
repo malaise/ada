@@ -54,7 +54,7 @@ begin
         Text_Char.Unget (File, U);
       end loop;
       -- Re-read the chars and check
-      for I in 1 .. Nundo loop
+      for I in reverse 1 .. Nundo loop
         Text_Char.Get (File, C);
         Q.Look_Last (U, I);
         if C /= U then
