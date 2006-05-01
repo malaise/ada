@@ -1,9 +1,10 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Argument, Text_Char, Sys_Calls, Ada_Parser, Mixed_Str;
+with Argument, Text_Char, Text_Line, Sys_Calls, Ada_Parser, Mixed_Str;
 procedure T_Ada_Parser is
 
   Fd : Sys_Calls.File_Desc;
-  File : Text_Char.File_Type;
+  Ifile : Text_Char.File_Type;
+  Ofile : Text_Line.File_Type;
 
   Line_Feed : constant String := Ada.Characters.Latin_1.Lf & "";
 
@@ -16,12 +17,12 @@ procedure T_Ada_Parser is
     begin
       Lex_Str (1 .. Str'Length) := Str;
     end;
-    if Text /= Line_Feed then 
+    if Text /= Line_Feed then
       Sys_Calls.Put_Line_Error (Lex_Str & ">" & Text & "<");
     else
       Sys_Calls.Put_Line_Error (Lex_Str & "><Line_Feed><");
     end if;
-    Ada.Text_Io.Put (Text);
+    Text_Line.Put (Ofile, Text);
   end Callback;
 
 begin
@@ -46,13 +47,15 @@ begin
       return;
   end;
   -- This should work ok
-  Text_Char.Open (File, Fd);
+  Text_Char.Open (Ifile, Fd);
+  Text_Line.Open (Ofile, Text_Line.Out_File, Sys_Calls.Stdout);
 
   -- Parse
-  Ada_Parser.Parse (File, Callback'Unrestricted_Access);
+  Ada_Parser.Parse (Ifile, Callback'Unrestricted_Access);
 
   -- Done: close
-  Text_Char.Close (File);
+  Text_Line.Close (Ofile);
+  Text_Char.Close (Ifile);
   Sys_Calls.Close (Fd);
 
 end T_Ada_Parser;
