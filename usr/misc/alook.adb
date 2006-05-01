@@ -1,6 +1,7 @@
 -- Make a ADA 83 sources look like a Ada 95 one.
--- Reserved words are in lower_case and others in Mixed_Case.
--- Strings, comments and based literals are not modified.
+-- Reserved words are set in lower_case and other identifiers in Mixed_Case.
+-- Numeric literals (extended digits and exponent) are set in UPPERCASE.
+-- Strings and comments are not modified.
 -- A New_Line is appended to the file when last char is not a New_Line.
 --
 -- Verbose mode lists all processed files with a "=" (not modified)
@@ -17,7 +18,7 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 
 with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
-     Lower_Str, Mixed_Str, Sys_Calls;
+     Lower_Str, Mixed_Str, Upper_Str, Sys_Calls;
 
 procedure Look_95 is
 
@@ -301,8 +302,8 @@ procedure Look_95 is
     -- Are they upper case
     Prev_Is_Upper, Curr_Is_Upper : Boolean;
 
-    -- Are we in a comment, in a string, in a literal
-    In_Comment, In_String, In_Literal : Boolean;
+    -- Are we in a comment, in a string
+    In_Comment, In_String : Boolean;
 
     -- Do we proceed current character
     Proceed : Boolean;
@@ -351,6 +352,16 @@ procedure Look_95 is
       end Change_Word;
 
     begin
+      -- Uncoment this to trace words:
+      -- ada.text_io.put_line (Str);
+      if Str(1) >= '0' and then Str(1) <= '9' then
+        -- Convert numeric in upper case
+        if Str /= Upper_Str (Str) then
+          Change_Word (Upper_Str (Str));
+        end if;
+        return;
+      end if;
+      -- Identifier or reserved word
       case Ada_Words.Check_Keyword (Str) is
         when Ada_Words.Is_Keyword =>
           Is_Keyword := True;
@@ -406,7 +417,6 @@ procedure Look_95 is
     Prev_Is_Upper := False;
     In_String := False;
     In_Comment := False;
-    In_Literal := False;
     Prev_Char := Nul;
     Prev_Prev_Char := Nul;
     Modified := False;
@@ -432,10 +442,9 @@ procedure Look_95 is
 
       -- Check end of line
       if Char = Reading.New_Line or else End_Of_File then
-        -- End of line or of file (and end of comment, string, literal)
+        -- End of line or of file (and end of comment, string)
         In_Comment := False;
         In_String := False;
-        In_Literal := False;
         Proceed := False;
       end if;
 
@@ -452,20 +461,20 @@ procedure Look_95 is
 
       -- Check word or append char to word
       if not In_Comment
-      and then not In_String
-      and then not In_Literal then
+      and then not In_String then
         if Ada_Words.Is_Separator (Char)
         or else Ada_Words.Is_Delimiter (Char)
         or else Char = Reading.New_Line
         or else Char = Reading.Carriage_Return
         or else End_Of_File then
           -- End of word, check it
-          -- Avoid checking character literal
           if Text_Handler.Empty (Word)
+          -- Avoid checking character literal
           or else (Text_Handler.Length (Word) = 1
                    and then Prev_Prev_Char = ''' and then Char = ''' )then
             null;
           else
+            -- Check word
             Check_Word;
             -- Prev_Tick is set until the end of a word
             Prev_Tick := False;
@@ -501,9 +510,6 @@ procedure Look_95 is
         Proceed := False;
         Text_Handler.Empty (Word);
       end if;
-      if In_Comment then
-        Proceed := False;
-      end if;
 
       -- Check in string. Update Proceed
       if Proceed and then Char = '"' then
@@ -521,20 +527,8 @@ procedure Look_95 is
         Proceed := False;
       end if;
 
-      -- Check in literal. Update Proceed
-      if Proceed and then Char = '#' and then Prev_Char /= ''' then
-        if not In_Literal then
-          -- Entering literal
-          Text_Handler.Empty (Word);
-        end if;
-        In_Literal := not In_Literal;
-      end if;
-      if In_Literal then
-        Proceed := False;
-      end if;
-
       -- Store if upper char
-      if Proceed or else In_Comment then
+      if In_Comment then
         Curr_Is_Upper := Is_Upper(Char);
       end if;
 
@@ -557,7 +551,9 @@ procedure Look_95 is
 
       -- Prepare for next char
       if Proceed or else In_Comment then
-        Prev_Is_Upper := Curr_Is_Upper;
+        if In_Comment then
+          Prev_Is_Upper := Curr_Is_Upper;
+        end if;
         Prev_Prev_Char := Prev_Char;
         Prev_Char := Char;
       else
