@@ -34,7 +34,7 @@ package body Search_Pattern is
     --  to the Line_Pat_Rec access
     -- To.Pat := Val.Pat;
     To.Find_Str := Val.Find_Str;
-    -- The following are not required because set by Check and 
+    -- The following are not required because set by Check and
     --  later on read by Substring... always by access
     To.Match_Str := Val.Match_Str;
     To.Nb_Substr := Val.Nb_Substr;
@@ -342,7 +342,7 @@ package body Search_Pattern is
           end if;
         else
           -- Same, but only check delimiters (start and stop strings are
-          --  not interpreted) 
+          --  not interpreted)
           if not Prev_Delim
           and then not Next_Delim then
             Is_Multiple := True;
@@ -490,7 +490,7 @@ package body Search_Pattern is
              Start_Offset => Nmatch,
              End_Offset   => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1);
           Nmatch := 1;
-        end if;                           
+        end if;
       end if;
       if Nmatch >= 1 and then Match(1).Start_Offset <= Match(1).End_Offset then
         -- Copy the slice of substrings
