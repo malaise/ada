@@ -26,7 +26,7 @@ begin
       Sys_Calls.Put_Line_Error ("Error: Cannot open file " &
           Argument.Get_Parameter);
       Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-          & "<file_name>");
+          & " <file_name>");
       Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
