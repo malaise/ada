@@ -9,7 +9,7 @@ procedure T_Utf8 is
 
   Str : constant String := "aàâeéèêëiîïoôuùü";
   Ucodes : constant array (Positive range <>) of Utf_8.Unicode_Number
-         := (16#61#, 16#E0#, 16#E2#, 
+         := (16#61#, 16#E0#, 16#E2#,
              16#65#, 16#E9#, 16#E8#, 16#EA#, 16#EB#,
              16#69#, 16#EE#, 16#EF#,
              16#6F#, 16#F4#,
@@ -47,7 +47,6 @@ begin
 
       U2 := Utf_8.Decode (Str);
       Put (U2);
-      
       if U1 /= U2 then
         Ada.Text_Io.Put_Line (" Bug");
         exit;
