@@ -1,6 +1,7 @@
 -- The ada parser analyses the input flow, separates words, delimiters...
 --  identifies and returns them through a callback.
 -- It stops at the end of the input flow.
+with Ada.Strings.Unbounded;
 with Text_Char;
 package Ada_Parser is
 
@@ -17,16 +18,30 @@ package Ada_Parser is
     String_Literal,    -- " { <character> | "" } "
     Comment);      -- -- Text, up to NewLine
 
+  -- Parse flow of File until end of file
+  -- Call callback for each lexical element
+  -- May raise Syntax_Error
   type Parse_Callback is access
         procedure (Text : in String;
                    Lexic : in Lexical_Kind_List);
 
-  -- Parse
-  -- May raise Text_Char.End_Error if unexpected end of file
   procedure Parse (File : in Text_Char.File_Type;
                    Cb : in Parse_Callback);
 
+  -- Parse flow of File until next lexical element
+  -- Set Text to "" (and Lexic to Separator) when end of file
+  --  or raises End_Error
+  -- May raise Syntax_Error
+  procedure Parse_Next (File : in Text_Char.File_Type;
+                        Text : out Ada.Strings.Unbounded.Unbounded_String;
+                        Lexic : out Lexical_Kind_List;
+                        Raise_End : in Boolean := False);
+
   -- Syntax error detected
   Syntax_Error : exception;
+
+  -- Raise_End set and end of file reached
+  End_Error : exception;
+
 end Ada_Parser;
 
