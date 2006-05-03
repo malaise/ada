@@ -168,9 +168,9 @@ package Limited_List is
 
 
   -- Three different strategies to search:
-  -- From_Current : current item may match)
-  -- Skip_Current : earch starts after/before current)
-  -- Absolute     : earch starts fron beginning/end of list
+  -- From_Current : Search starts from current item (that may match)
+  -- Skip_Current : Search starts after/before current item
+  -- Absolute     : Search starts fron beginning/end of list
   type Search_Kind_List is (From_Current, Skip_Current, Absolute);
 
   -- Search with criteria not of Element_Type
