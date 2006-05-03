@@ -68,7 +68,7 @@ package String_Mng is
                   To_Right : Boolean := True)
            return String;
 
-  -- Extract the Nb_Char first (if Head is set to True) or last characters
+  -- Remove the Nb_Char first (if Head is set to True) or last characters
   --   (if Head is set to False) of From string.
   -- Return the remaining string.
   function Cut (From : String;
