@@ -47,7 +47,7 @@ procedure Parse_Package (Level : in Natural) is
 begin
 
   -- Get package name
-  Name := Ada.Strings.Unbounded.To_Unbounded_String (Parse_Name (File));
+  Parse_Name (File, Name, Text);
   Words.Reset;
 
   -- Loop until expected word

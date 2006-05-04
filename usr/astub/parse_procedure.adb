@@ -4,15 +4,18 @@ with Common, Files, Output, Words, Parse_To_End, Parse_Name;
 
 procedure Parse_Procedure (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
-  Name : Ada.Strings.Unbounded.Unbounded_String;
+  Name, Text : Ada.Strings.Unbounded.Unbounded_String;
 begin
 
   -- Parse up to name
   Words.Add ("procedure");
-  Name := Ada.Strings.Unbounded.To_Unbounded_String (Parse_Name (File));
+  Parse_Name (File, Name, Text);
 
   -- Skip until last ';'
-  Parse_To_End (";", False);
+  if Ada.Strings.Unbounded.To_String (Text) /= ";" then
+    Parse_To_End (";", False, 0,
+                  Ada.Strings.Unbounded.To_String (Text) = "(");
+  end if;
 
   -- If a renames or generic instanciation, put as comment
   if Words.Search ("renames") /= 0 then

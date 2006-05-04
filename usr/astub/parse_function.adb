@@ -11,43 +11,44 @@ procedure Parse_Function (Level : in Natural) is
   use type Ada_Parser.Lexical_Kind_List;
 begin
 
-  -- Parse up to name
+  -- Parse up to name, detect first parent
   Words.Add ("function");
-  Name := Ada.Strings.Unbounded.To_Unbounded_String (Parse_Name (File));
+  Parse_Name (File, Name, Text);
 
-  -- Like Parse_To_End (";", False); but
-  -- store argument formal names in Args, separated by ", "
-  In_Parent := False;
-  In_Id := False;
-  loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
-    if Asu.To_String (Text) = Common.Line_Feed then
-      Words.Add (Text);
-    end if;
-    if Asu.To_String (Text) = "(" then
-      In_Parent := True;
-      In_Id := True;
-    elsif Asu.To_String (Text) = ")" then
-      In_Parent := False;
-    elsif In_Id and then Lexic = Ada_Parser.Identifier then
-      -- Append this argument name
-      if Asu.Length (Args) /= 0 then
-        Asu.Append (Args, ", ");
+  if Asu.To_String (Text) /= ";" then
+    -- Like Parse_To_End (";", False); but
+    -- store argument formal names in Args, separated by ", "
+    In_Id := False;
+    loop
+      Ada_Parser.Parse_Next (File, Text, Lexic, True);
+      if Asu.To_String (Text) /= Common.Line_Feed then
+        Words.Add (Text);
       end if;
-      Asu.Append (Args, Text);
-    elsif Asu.To_String (Text) = ":" then
-      -- End of argument formal names (entering in | out | inout ...)
-      In_Id := False;
-    elsif Asu.To_String (Text) = ";" then
-      if In_Parent then
-        -- End of previous argument, expecting a new one
+      if Asu.To_String (Text) = "(" then
+        In_Parent := True;
         In_Id := True;
-      else
-        -- ; out of (): the end
-        exit;
+      elsif Asu.To_String (Text) = ")" then
+        In_Parent := False;
+      elsif In_Id and then Lexic = Ada_Parser.Identifier then
+        -- Append this argument name
+        if Asu.Length (Args) /= 0 then
+          Asu.Append (Args, ", ");
+        end if;
+        Asu.Append (Args, Text);
+      elsif Asu.To_String (Text) = ":" then
+        -- End of argument formal names (entering in | out | inout ...)
+        In_Id := False;
+      elsif Asu.To_String (Text) = ";" then
+        if In_Parent then
+          -- End of previous argument, expecting a new one
+          In_Id := True;
+        else
+          -- ; out of (): the end
+          exit;
+        end if;
       end if;
-    end if;
-  end loop;
+    end loop;
+  end if;
 
   -- If a renames or generic instanciation, put as comment
   if Words.Search ("renames") /= 0 then

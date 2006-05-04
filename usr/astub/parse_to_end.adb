@@ -9,13 +9,18 @@ with Common, Files, Output, Words;
 
 procedure Parse_To_End (End_String : in String;
                         Display : in Boolean;
-                        Indent : in Natural := 0) is
+                        Indent : in Natural := 0;
+                        Already_In_Parent : Boolean := False) is
   Level : Natural := 0;
   File : constant Text_Char.File_Type := Files.In_File;
   Text : Ada.Strings.Unbounded.Unbounded_String;
   Lexic : Ada_Parser.Lexical_Kind_List;
   use type Ada_Parser.Lexical_Kind_List;
 begin
+  -- If already in parentheses, increase level
+  if Already_In_Parent then
+    Level := 1;
+  end if;
   -- Loop until End_Char
   loop
     -- Read next lexical element
