@@ -709,7 +709,7 @@ package body Generic_Con_Io is
         when 16#8D# =>
           -- Enter
           Key := 16#0D#;
-        when  16#Aa# .. 16#B9# =>
+        when  16#AA# .. 16#B9# =>
           -- Oper or Num
           Is_Char := True;
           Key := Key - 16#80#;
@@ -724,7 +724,7 @@ package body Generic_Con_Io is
           Key := 16#63#;
         when 16#9F# =>
           -- Suppre
-          Key := 16#Ff#;
+          Key := 16#FF#;
         when others =>
           -- No translation
           null;
@@ -1205,7 +1205,7 @@ package body Generic_Con_Io is
             when 16#63# =>
               -- Insert
               Insert := not Insert;
-            when 16#Ff# =>
+            when 16#FF# =>
               if not Ctrl then
                 -- Suppr
                 Lstr(Pos .. Width - 1) := Lstr(Pos + 1 .. Width);
