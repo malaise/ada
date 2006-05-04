@@ -8,14 +8,14 @@ package body Output is
   Max_Nb_Spaces : constant := 10;
   Spaces : Text_Handler.Text (Max_Nb_Spaces);
 
-  -- Put_Line --
-  procedure Put_Line (Str : in String; 
-                      Level : in Natural;
-                      Comment : in Boolean) is
+  -- Put --
+  procedure Put (Str : in String; 
+                 Level : in Natural;
+                 Comment : in Boolean;
+                 Comment_Level : in Natural := 0) is
     Nb_Spaces : Positive := Def_Nb_Spaces;
     File : Text_Line.File_Type;
     First_Char : Natural;
-    Add_Comment : Boolean;
   begin
     -- Check if spaces is set
     if Text_Handler.Empty (Spaces) then
@@ -34,30 +34,52 @@ package body Output is
     -- Get file
     File := Files.Out_File;
 
-    -- Indent
-    for I in 1 .. Level loop
-      Text_Line.Put (File, Text_Handler.Value (Spaces));
-    end loop;
+    -- For comment, skip leading separators, "--", separators
+    if Comment then
+      -- Parse leading separators
+      First_Char := String_Mng.Parse_Spaces (Str);
 
-    -- See if Str IS a comment
-    Add_Comment := Comment;
-    First_Char := String_Mng.Parse_Spaces (Str);
-    if First_Char > 0
-    and then First_Char <= Str'Last - 1
-    and then Str(First_Char) = '''
-    and then Str(First_Char+1) = ''' then
-      -- First significant chars of Str are "--", so don't any new --
-      Add_Comment := False;
+      if First_Char > 0
+      and then First_Char <= Str'Last - 1
+      and then Str(First_Char) = '-'
+      and then Str(First_Char + 1) = '-' then
+        -- First significant chars of Str are "--", so skip them
+        First_Char := First_Char + 2;
+        -- Skip following separators
+        First_Char := String_Mng.Parse_Spaces (Str(First_Char .. Str'Last));
+      end if;
+      if First_Char /= 0 then
+        -- Indent
+        for I in 1 .. Level loop
+          Text_Line.Put (File, Text_Handler.Value (Spaces));
+        end loop;
+        -- Put comment
+        Text_Line.Put (File, "-- ");
+        -- Indent comment
+        for I in 1 .. Comment_Level loop
+          Text_Line.Put (File, Text_Handler.Value (Spaces));
+        end loop;
+        -- Put text
+        Text_Line.Put (File, Str(First_Char .. Str'Last));
+      end if;
+   else
+      -- Indent
+      for I in 1 .. Level loop
+        Text_Line.Put (File, Text_Handler.Value (Spaces));
+      end loop;
+      -- Put Str
+      Text_Line.Put (File, Str);
     end if;
-
-    -- Put comment is required
-    if Add_Comment then
-      Text_Line.Put (File, "-- ");
-    end if;
-
-    -- Put Str
-    Text_Line.Put_Line (File, Str);
       
+  end Put;
+
+  procedure Put_Line (Str : in String; 
+                      Level : in Natural;
+                      Comment : in Boolean;
+                      Comment_Level : in Natural := 0) is
+  begin
+    Put (Str, Level, Comment, Comment_Level);
+    Text_Line.New_Line (Files.Out_File);
   end Put_Line;
 
 end Output;

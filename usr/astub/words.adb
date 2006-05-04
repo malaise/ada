@@ -14,7 +14,7 @@ package body Words is
 
   -- Get --
   function Get (Index : in Natural := 0) return String is
-    Current, Result : Ada.Strings.Unbounded.Unbounded_String;
+    Previous, Current, Result : Ada.Strings.Unbounded.Unbounded_String;
     Done : Boolean;
   begin
     if Index /= 0 then
@@ -34,8 +34,13 @@ package body Words is
       Words_List_Mng.Rewind (Words_List);
       loop
         Words_List_Mng.Read (Words_List, Current, Done => Done);
-        Ada.Strings.Unbounded.Append (Result, Current);
+        -- Remove successive spaces
+        if Ada.Strings.Unbounded.To_String (Current) /= " "
+        or else Ada.Strings.Unbounded.To_String (Previous) /= " " then
+          Ada.Strings.Unbounded.Append (Result, Current);
+        end if;
         exit when not Done;
+        Previous := Current;
       end loop;
     end if;
     return  Ada.Strings.Unbounded.To_String (Result);
@@ -82,6 +87,28 @@ package body Words is
       return Words_List_Mng.Get_Position (Words_List);
     end if;
   end Search;
+
+  -- Remove a word (nothing of list is empty or index bigger than length)
+  -- If Index is 0 then remove last
+  procedure Del (Index : in Natural := 0) is
+  begin
+    if Words_List_Mng.Is_Empty (Words_List) then
+      return;
+    end if;
+    if Index = 0 or else Index =  Words_List_Mng.List_Length (Words_List) then
+      -- Delete last word
+      Words_List_Mng.Rewind (Words_List, Words_List_Mng.Prev);
+      Words_List_Mng.Delete (Words_List, Words_List_Mng.Prev);
+    elsif Index > Words_List_Mng.List_Length (Words_List) then
+      return;
+    else
+      -- Delete word at index
+      Words_List_Mng.Move_To (Words_List, Words_List_Mng.Next,
+                              Index - 1, False);
+      Words_List_Mng.Delete (Words_List);
+    end if;
+
+  end Del;
 
 end Words;
 

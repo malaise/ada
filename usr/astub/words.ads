@@ -18,7 +18,12 @@ package Words is
   procedure Add (Word : in String);
   procedure Add (Word : in Ada.Strings.Unbounded.Unbounded_String);
 
+  -- Remove a word (nothing of list is empty or index bigger than length)
+  -- If Index is 0 then remove last
+  procedure Del (Index : in Natural := 0);
+
   -- Locate a word, returns 0 if not found
   function Search (Word : String) return Natural;
+
 end Words;
 

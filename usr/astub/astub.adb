@@ -41,6 +41,9 @@ begin
   -- Done, close files
   Files.Close (True);
 
+  -- Output success
+  Ada.Text_Io.Put_Line ("Astubbed " & Argument.Get_Parameter);
+
 exception
   when Common.Syntax_Error =>
     Files.Close (False);

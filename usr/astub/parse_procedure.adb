@@ -1,38 +1,33 @@
 with Ada.Strings.Unbounded;
-with Sys_Calls, Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End;
+with Text_Char, Ada_Parser;
+with Common, Files, Output, Words, Parse_To_End, Parse_Name;
 
 procedure Parse_Procedure (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
-  Name, Text : Ada.Strings.Unbounded.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
-  use type Ada_Parser.Lexical_Kind_List;
+  Name : Ada.Strings.Unbounded.Unbounded_String;
 begin
-  Words.Add ("procedure");
-  -- Read until procedure name
-  loop
-    Ada_Parser.Parse_Next (File, Name, Lexic, True);
-    Words.Add (Name);
-    exit when Lexic /= Ada_Parser.Separator;
-  end loop;
-  if Lexic /= Ada_Parser.Identifier
-  and then Lexic /= Ada_Parser.String_Literal then
-    Sys_Calls.Put_Line_Error (" -->" 
-         & Ada.Strings.Unbounded.To_String (Name) & "<");
-    raise Common.Syntax_Error;
-  end if;
-  -- Parse spec until last ';'
-  Parse_To_End (Level, ";", False, False);
 
-  -- Check that no renames nor generic instanciation
+  -- Parse up to name
+  Words.Add ("procedure");
+  Name := Ada.Strings.Unbounded.To_Unbounded_String (Parse_Name (File));
+
+  -- Skip until last ';'
+  Parse_To_End (";", False);
+
+  -- If a renames or generic instanciation, put as comment
   if Words.Search ("renames") /= 0 then
-    Sys_Calls.Put_Line_Error (" -->renames<");
-    raise Common.Syntax_Error;
+    Output.Put_Line (Words.Get, Level, True);
+    Words.Reset;
+    return;
   end if;
   if Words.Search ("is") /= 0 then
-    Sys_Calls.Put_Line_Error (" -->is<");
-    raise Common.Syntax_Error;
+    Output.Put_Line (Words.Get, Level, True);
+    Words.Reset;
+    return;
   end if;
+
+  -- This is a "real" declaration: remove las ";"
+  Words.Del;
 
   -- Output this and " is"
   Output.Put_Line (Words.Get & " is", Level, False);

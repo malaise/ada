@@ -43,12 +43,15 @@ begin
         -- Same for comments before unit
         Level := 1;
       else
-        -- Unexpected, word. Parse to end as comment
+        -- Unexpected, word
+        -- Put this statement as comment
         Words.Add (Text);
-        Parse_To_End (Level, ";", True, True);
+        Parse_To_End (";", True, Level);
       end if;
     end;
   end loop;
+ Output.Put_Line ("", 0, False);
+
 exception
   when Ada_Parser.End_Error =>
     Sys_Calls.Put_Line_Error ("-->EOF<");
