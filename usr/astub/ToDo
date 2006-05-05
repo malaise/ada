@@ -1,0 +1,9 @@
+- Fix indentation:
+  * Of stuff put in comment (e.g. types), propagate original indent after "--"
+  * Of stuff not put in comment, propagate original indent
+- Detect empty body (make parse_package/procedure/function/context functions
+  returning boolea). Remove body with warning if empty.
+- Truncate long (non comment) line (String_Mng + Output)
+- Restore cleanup of boby on error
+- Test with rep clause (for T use record...)
+

@@ -1,6 +1,6 @@
 with Ada.Strings.Unbounded;
-with Sys_Calls, Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End;
+with Text_Char, Ada_Parser;
+with Common, Files, Output, Words;
 
 procedure Parse_Entry (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
@@ -20,9 +20,7 @@ begin
   end loop;
   if Lexic /= Ada_Parser.Identifier
   and then Lexic /= Ada_Parser.String_Literal then
-    Sys_Calls.Put_Line_Error (" -->" 
-         & Asu.To_String (Name) & "<");
-    raise Common.Syntax_Error;
+    Coomon.Error (Asu.To_String (Name));
   end if;
 
   -- Put "entry <name>"
@@ -69,7 +67,7 @@ begin
 
   -- Put Family if set
   if Asu.Length (Family) /= 0 then
-    Output.Put (" (for I in " & Asu.to_String (Family) & ")", 0, False);
+    Output.Put (" (for I in " & Asu.To_String (Family) & ")", 0, False);
   end if;
   -- Put Args if set
   if Words.Length /= 0 then

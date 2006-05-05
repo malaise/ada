@@ -37,7 +37,7 @@ package body Files is
           String_Mng.Cut (Spec_File_Name, Spec_Suffix'Length, False)
         & Body_Suffix);
     -- Check that Out file does not exist
-    begin 
+    begin
       Fd := Sys_Calls.Open (Asu.To_String (Body_File_Name), Sys_Calls.In_File);
       Sys_Calls.Close (Fd);
       Body_File_Name := Asu.Null_Unbounded_String;

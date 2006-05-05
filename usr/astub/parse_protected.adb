@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Sys_Calls, Text_Char, Ada_Parser;
+with Text_Char, Ada_Parser;
 with Common, Files, Output, Words, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Entry;
 
@@ -24,12 +24,9 @@ begin
       exit when Lexic /= Ada_Parser.Separator;
     end loop;
   end if;
- 
   if Lexic /= Ada_Parser.Identifier
   and then Lexic /= Ada_Parser.String_Literal then
-    Sys_Calls.Put_Line_Error (" -->" 
-         & Asu.To_String (Name) & "<");
-    raise Common.Syntax_Error;
+    Common.Error (Asu.To_String (Name));
   end if;
 
   -- Skip until "is"
@@ -37,8 +34,7 @@ begin
 
   -- Check that no renames
   if Words.Search ("renames") /= 0 then
-    Sys_Calls.Put_Line_Error (" -->renames<");
-    raise Common.Syntax_Error;
+    Common.Error ("renames");
   end if;
   Words.Reset;
 
@@ -72,8 +68,7 @@ begin
         Output.Put_Line ("", 0, False);
       elsif Str = "new" then
         -- This protected is in fact a generic instanciation
-        Sys_Calls.Put_Line_Error (" -->new<");
-        raise Common.Syntax_Error;
+        Common.Error ("new");
       elsif Str = "private" then
         -- Put "private" as a comment
         Output.Put_Line (Str, Level, True);

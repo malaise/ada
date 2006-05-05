@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Sys_calls, Text_Char, Ada_Parser;
+with Text_Char, Ada_Parser;
 with Common, Files, Output, Words, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Package;
 
@@ -16,14 +16,9 @@ begin
     declare
       Str : constant String := Ada.Strings.Unbounded.To_String (Text);
     begin
-      if Lexic = Ada_Parser.Comment then
-        Output.Put_Line (Str, Level, False);
-      elsif Str = "" then
+      if Str = "" then
         -- End of file
         exit;
-      elsif Lexic = Ada_Parser.Separator then
-        -- Skip separators
-        null;
       elsif Str = "package" then
         Level := 0;
         Parse_Package (0);
@@ -36,25 +31,22 @@ begin
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
         null;
-      elsif Str = "generic" then
-        -- Put generic as a comment
-        Output.Put_Line (Str, 0, True);
-        -- Generic parameters will be put as unexpected and level 1
-        -- Same for comments before unit
-        Level := 1;
+      elsif Lexic = Ada_Parser.Separator
+      or else Lexic = Ada_Parser.Separator then
+        -- Put separators and comments unchanged
+        Output.Put (Str, False, 0);
       else
-        -- Unexpected, word
+        -- Unexpected, word (including generic keyword and arguments)
         -- Put this statement as comment
-        Words.Add (Text);
-        Parse_To_End (";", True, Level);
+        Words.Add (Lexic, Text);
+        Parse_To_End (";");
+        Output.Put (Words.Concat, True, 0);
       end if;
     end;
   end loop;
- Output.Put_Line ("", 0, False);
 
 exception
   when Ada_Parser.End_Error =>
-    Sys_Calls.Put_Line_Error ("-->EOF<");
-    raise Common.Syntax_Error;
+    Common.Error ("EOF");
 end Parse_Context;
 

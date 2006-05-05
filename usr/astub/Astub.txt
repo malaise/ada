@@ -53,14 +53,14 @@ end Ta;
 
 5. Protected object and protected type
 --------------------------------------
-protect [ type ] Pr is
+protected [ type ] Pr is
   entry En [ (Atype) ] [ (Args) ] ;
   -- Procedure and function declarations
 end Pr;
 
 Is expanded (with its procedures, functions expanded as above) as:
 
-protect body Pr is
+protected body Pr is
   entry En [ (for I in Atype) ] [ (Args) ] when True is
   begin
     null;

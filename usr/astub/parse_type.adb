@@ -1,50 +1,39 @@
 with Ada.Strings.Unbounded;
-with Sys_Calls, Text_Char, Ada_Parser;
+with Text_Char, Ada_Parser;
 with Common, Files, Output, Words, Parse_To_End;
 
 procedure Parse_Type (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
   Text : Ada.Strings.Unbounded.Unbounded_String;
   Lexic : Ada_Parser.Lexical_Kind_List;
-  First_Line_Put : Boolean := False;
   Paren_Level : Natural := 0;
   use type Ada_Parser.Lexical_Kind_List;
 begin
-  Words.Add ("type");
+  Words.Add (Ada_Parser.Reserved_Word, "type");
   -- Read until "record" or ";"
   loop
     Ada_Parser.Parse_Next (File, Text, Lexic, True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (text);
+      Str : constant String := Ada.Strings.Unbounded.To_String (Text);
     begin
-      if Str = Common.Line_Feed then
-        -- Flush line, basic indent
-        Output.Put_Line (Words.Get, Level, True);
-        First_Line_Put := True;
-        Words.reset;
-      elsif Str= "(" then
-        Words.Add (Text);
+      -- In any case, save this word
+      Words.Add (Lexic, Text);
+      if Str= "(" then
         Paren_Level := Paren_Level + 1;
       elsif Str= ")" then
-        Words.Add (Text);
         Paren_Level := Paren_Level - 1;
       elsif Str= ";" and then Paren_Level = 0 then
         -- ";" outside () and without "record" -> end of type
-        Words.Add (Text);
-        Output.Put_Line (Words.Get, Level, True);
-        Words.reset;
+        Output.Put_Line (Words.Concat, True, Level);
+        Words.Reset;
         return;
       elsif Str = "access" then
         -- Access type to function or procedure, with args...
-        Parse_To_End (";", True, Level);
+        Parse_To_End (";");
         return;
       elsif Str = "record" then
         -- Record type: special parsing follows
-        Words.Add (Text);
         exit;
-      else
-        -- In any case, save this word
-        Words.Add (Text);
       end if;
     end;
   end loop;
@@ -54,29 +43,18 @@ begin
   loop
     Ada_Parser.Parse_Next (File, Text, Lexic, True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (text);
+      Str : constant String := Ada.Strings.Unbounded.To_String (Text);
     begin
-      if Str = Common.Line_Feed then
-        -- Flush line, basic indent
-        if First_Line_Put then
-          Output.Put_Line (Words.Get, Level, True, 1);
-        else
-          Output.Put_Line (Words.Get, Level, True);
-          First_Line_Put := True;
-        end if;
-        Words.reset;
-      elsif Str = "record" then
+      -- In any case, save this word
+      Words.Add (Lexic, Text);
+      if Str = "record" then
         -- This is the "record" of "end record;"
-        Words.Add (Text);
         exit;
-      else
-        -- In any case, save this word
-        Words.Add (Text);
       end if;
     end;
   end loop;
   -- Then parse up to last ";"
-  Parse_To_End (";", True, Level);
+  Parse_To_End (";");
 
 end Parse_Type;
 
