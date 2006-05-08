@@ -480,5 +480,69 @@ package body String_Mng is
     return 0;
   end Locate_Escape;
 
+  -- Locate where to cut Str so that is best matches the requested line Length
+  -- Looks for separator character
+  -- Default Separator function, True for Space and Latin.Ht.
+  function Is_Separator (Char : Character) return Boolean is
+  begin
+    return Char = ' ' or else Char = Ada.Characters.Latin_1.Ht;
+  end Is_Separator;
+  -- If Str is shorter or equal to Length, return Str'Last
+  -- Else try to find a separator before Length, up to Mini
+  -- Else try to find a separator after  Length, up to Maxi
+  -- Else try to find a separator before Mini,   up to 1
+  -- Else try to find a separator after  Maxi,   up to Str'Length
+  -- Prerequisits Mini <= Length <= Maxi. Beware that they are not
+  --  relative to Str indexes but that the returned value is.
+  -- Returns 0 only if Str is empty.
+  function Truncate (Str : in String;
+                     Length : Positive;
+                     Mini, Maxi : Positive;
+                     Separating : Separator_Access := Is_Separator'Access)
+           return Natural is
+    Strlen : constant Natural := Str'Length;
+    -- Corresponding index in Str
+    function Indof (I : Positive) return Positive is
+    begin
+      return I - 1 + Str'First;
+    end Indof;
+  begin
+    if Mini > Length or else Length > Maxi then
+      raise Constraint_Error;
+    end if;
+    -- Handle trivial cases
+    if Strlen = 0 then
+      return 0;
+    elsif Strlen <= Length then
+      return Str'Last;
+    end if;
+    -- Else try to find a separator before Length, up to Mini
+    for I in reverse Mini .. Length loop
+      if Separating (Str (Indof (I))) then
+        return Indof (I);
+      end if;
+    end loop;
+    -- Else try to find a separator after  Length, up to Maxi
+    for I in Length + 1 .. Maxi loop
+      if Separating (Str (Indof (I))) then
+        return Indof (I);
+      end if;
+    end loop;
+    -- Else try to find a separator before Mini,   up to 1
+    for I in reverse 1 .. Mini - 1 loop
+      if Separating (Str (Indof (I))) then
+        return Indof (I);
+      end if;
+    end loop;
+    -- Else try to find a separator after  Maxi,   up to Str'Length
+    for I in Maxi + 1 .. Strlen loop
+      if Separating (Str (Indof (I))) then
+        return Indof (I);
+      end if;
+    end loop;
+    -- No separator found
+    return Str'Last;
+  end Truncate;
+
 end String_Mng;
 

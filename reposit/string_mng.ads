@@ -127,5 +127,25 @@ package String_Mng is
   function Locate_Escape (Within_Str : String;
                           From_Index : Positive;
                           Escape     : String) return Natural;
+
+  -- Locate where to cut Str so that is best matches the requested line Length
+  -- Looks for separator character
+  type Separator_Access is access function (Char : Character) return Boolean;
+  -- Default Separator function, True for Space and Latin.Ht.
+  function Is_Separator (Char : Character) return Boolean;
+  -- If Str is shorter or equal to Length, return Str'Last
+  -- Else try to find a separator before Length, up to Mini
+  -- Else try to find a separator after  Length, up to Maxi
+  -- Else try to find a separator before Mini,   up to 1
+  -- Else try to find a separator after  Maxi,   up to Str'Length
+  -- Prerequisits Mini <= Length <= Maxi (else Constraint_Error).
+  -- Beware that indexes are not relative to Str, but the returned index is.
+  -- Returns 0 only if Str is empty.
+  function Truncate (Str : in String;
+                     Length : Positive;
+                     Mini, Maxi : Positive;
+                     Separating : Separator_Access := Is_Separator'Access)
+           return Natural;
+  
 end String_Mng;
 
