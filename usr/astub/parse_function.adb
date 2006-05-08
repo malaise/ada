@@ -18,7 +18,7 @@ begin
 
 
   if Asu.To_String (Text) /= ";" then
-    -- Like Parse_To_End (";", False); but
+    -- Like Parse_To_End (";"); but
     -- store argument formal names in Args, separated by ", "
     In_Id := False;
     loop

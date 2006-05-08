@@ -29,7 +29,7 @@ begin
         return;
       elsif Str = "access" then
         -- Access type to function or procedure, with args...
-        Parse_To_End (";");
+        Parse_To_End (Ada_Parser.Delimiter, ";");
         return;
       elsif Str = "record" then
         -- Record type: special parsing follows
@@ -54,7 +54,7 @@ begin
     end;
   end loop;
   -- Then parse up to last ";"
-  Parse_To_End (";");
+  Parse_To_End (Ada_Parser.Delimiter, ";");
 
 end Parse_Type;
 

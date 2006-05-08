@@ -1,26 +1,20 @@
 with Ada.Strings.Unbounded;
 with Text_Char, Ada_Parser;
-with Common, Words, Output, Parse_To_End, Put_Comments;
+with Common, Words, Output, Parse_To_Ends, Put_Comments;
 
+  -- Read until identifier, save it in Name, put intermediate comments at Level
 procedure Parse_Name (File : in Text_Char.File_Type;
                       Level : in Natural;
                       Name : out Ada.Strings.Unbounded.Unbounded_String) is
   package Asu renames Ada.Strings.Unbounded;
-  Word, Ending : Words.Word_Rec;
-  Lexic : Ada_Parser.Lexical_Kind_List;
+  Ending : Words.Word_Rec;
   use type Ada_Parser.Lexical_Kind_List;
 begin
 
-  -- Read until identifier, save it in EZnding, put intermediate comments
-  Parse_To_End ("");
+  -- Read until identifier or string literal, save it in Ending
+  Parse_To_Ends ( ( (Ada_Parser.Identifier, Common.Null_String),
+                    (Ada_Parser.String_Literal, Common.Null_String)));
   Ending := Words.Get;
-  Put_Comments (Level);
-
-  -- Check it is an identifier
-  if Ending.Lexic /= Ada_Parser.Identifier
-  and then Ending.Lexic /= Ada_Parser.String_Literal then
-    Common.Error (Asu.To_String (Ending.Text));
-  end if;
 
   -- Read while identifier or "." and concat
   Name := Ending.Text;
@@ -34,6 +28,7 @@ begin
 
   -- Store "terminating" lexic in words
   Words.Add (Ending);
+  Put_Comments (Level);
 
 end Parse_Name;
 

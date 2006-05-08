@@ -15,7 +15,7 @@ begin
 
   -- Skip until last ';' (if not already got when parsing Name)
   if Asu.To_String (Text) /= ";" then
-    Parse_To_End (";", Asu.To_String (Text) = "(");
+    Parse_To_End (Ada_Parser.Delimiter, ";", Asu.To_String (Text) = "(");
   end if;
 
   -- If a renames or generic instanciation, put as comment

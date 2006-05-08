@@ -7,6 +7,10 @@ package Common is
   function Line_Feed return String;
   function Line_Feed return Character;
 
+  -- Null string
+  Null_String : constant Ada.Strings.Unbounded.Unbounded_String
+              := Ada.Strings.Unbounded.Null_Unbounded_String;
+
   -- Syntax error detected by any parser
   Syntax_Error : exception;
 

@@ -1,20 +1,24 @@
 with Ada.Strings.Unbounded;
 with Ada_Parser;
 with Common, Words, Output;
--- Output comments that have been parsed 
+-- Output comments of what has been parsed 
 procedure Put_Comments (Level : in Natural) is
+  Index : Natural;
   Word : Words.Word_Rec;
   use type  Ada_Parser.Lexical_Kind_List;
   package Asu renames Ada.Strings.Unbounded;
 begin
-  -- Check text read. Should be only separators and comments 
   -- Put comments with line feeds
+  Index := 1;
   for I in 1 .. Words.Length loop
-    Word := Words.Get (1);
-    if Word.Lexic /= Ada_Parser.Comment then
+    Word := Words.Read (Index);
+    if Word.Lexic = Ada_Parser.Comment then
+      -- Del and put. Next word will be at same Index
+      Words.Del (Index);
       Output.Put_Line (Asu.To_String (Word.Text), False, Level);
-    elsif Word.Lexic /= Ada_Parser.Separator then
-      Common.Error (Asu.To_String (Word.Text));
+    else
+      -- Next word
+      Index := Index + 1;
     end if;
   end loop;
 end Put_Comments;

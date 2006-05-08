@@ -10,6 +10,9 @@ package Words is
     Text  : Ada.Strings.Unbounded.Unbounded_String;
   end record;
 
+  -- Not used here, but usefull
+  type Word_Array is array (positive range <>) of Word_Rec;
+
   -- Reset the stored words
   procedure Reset;
 

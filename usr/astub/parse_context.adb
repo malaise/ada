@@ -39,7 +39,7 @@ begin
         -- Unexpected, word (including generic keyword and arguments)
         -- Put this statement as comment
         Words.Add (Lexic, Text);
-        Parse_To_End (";");
+        Parse_To_End (Ada_Parser.Delimiter, ";");
         Output.Put (Words.Concat, True, 0);
       end if;
     end;

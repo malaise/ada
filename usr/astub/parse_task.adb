@@ -32,7 +32,7 @@ begin
   end loop;
 
   -- Skip until "is", this skips the disciminant
-  Parse_To_End ("is", False);
+  Parse_To_End (Ada_Parser.Reserved_Word, "is");
   Words.Reset;
   -- Output "task <name> is begin"
   Output.Put_Line ("task body " & Asu.To_String(Name) & " is", False, Level);
@@ -51,7 +51,7 @@ begin
       exit;
     elsif Asu.To_String (Text) = "entry" then
       -- entry
-      Parse_To_End (";");
+      Parse_To_End (Ada_Parser.Delimiter, ";");
       Output.Put_Line (Words.Concat, True, Level + 1);
     else
       Common.Error (Asu.To_String (Text));
@@ -59,7 +59,7 @@ begin
   end loop;
 
   -- Skip up to end of task
-  Parse_To_End (";", False);
+  Parse_To_End (Ada_Parser.Delimiter, ";");
   Words.Reset;
 
   -- begin

@@ -36,8 +36,9 @@ package body Output is
     File := Files.Out_File;
 
     -- Split into several lines
-    declare
     begin
+      -- @@@
+      null;
     end;
 
 
@@ -56,14 +57,10 @@ package body Output is
           end loop;
           -- Put comment
           Text_Line.Put (File, "-- ");
-          -- Indent comment
-          for I in 1 .. Comment_Level loop
-            Text_Line.Put (File, Text_Handler.Value (Spaces));
-          end loop;
         end if;
         -- Put text
-        Text_Line.Put (File, Str(First_Char .. Str'Last));
-      end if;
+        Text_Line.Put (File, Str);
+      end;
    else
       -- Indent
       for I in 1 .. Level loop
@@ -78,12 +75,12 @@ package body Output is
                       Comment : in Boolean;
                       Level : in Natural := 0) is
   begin
-    Put (Str & Common.Line_Feed, Level, Comment, Comment_Level);
+    Put (Str & Character'(Common.Line_Feed), Comment, Level);
   end Put_Line;
 
   procedure New_Line is
   begin
-    Put (Common.Line_Feed, 0, False);
+    Put (Common.Line_Feed, False, 0);
   end New_Line;
 end Output;
 

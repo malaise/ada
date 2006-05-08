@@ -76,29 +76,17 @@ begin
       elsif Str = "renames" then
         -- This package is in fact a renaming declaration
         -- Reset to "package <name> renames" and put as comment
-        Put_Comments (Level);
-        Words.Add (Ada_Parser.Reserved_Word, "package");
-        Words.Add (Ada_Parser.Separator, " ");
-        Words.Add (Ada_Parser.Identifier, Name);
-        Words.Add (Ada_Parser.Separator, " ");
-        Words.Add (Ada_Parser.Reserved_Word, "renames");
-        Parse_To_End (";");
-        Output.Put (Words.Concat, True, Level);
+        Parse_To_End (Ada_Parser.Delimiter, ";");
+        Output.Put ("package " & Asu.To_String (Name)
+                  & " renames" & Words.Concat, True, Level);
         Words.Reset;
         return;
       elsif Str = "new" then
         -- This package is in fact a generic instanciation
         -- Reset to "package <name> is new" and put as comment
-        Put_Comments (Level);
-        Words.Add (Ada_Parser.Reserved_Word, "package");
-        Words.Add (Ada_Parser.Separator, " ");
-        Words.Add (Ada_Parser.Identifier, Name);
-        Words.Add (Ada_Parser.Separator, " ");
-        Words.Add (Ada_Parser.Reserved_Word, "is");
-        Words.Add (Ada_Parser.Separator, " ");
-        Words.Add (Ada_Parser.Reserved_Word, "new");
-        Parse_To_End (";");
-        Output.Put (Words.Concat, True, Level);
+        Parse_To_End (Ada_Parser.Delimiter, ";");
+        Output.Put ("package " & Asu.To_String (Name)
+                  & " is new" & Words.Concat, True, Level);
         Words.Reset;
         return;
       elsif Str = "type" then
@@ -108,7 +96,7 @@ begin
         Put_Body;
         -- Unexpected, word. Parse to end as comment
         Words.Add (Lexic, Text);
-        Parse_To_End (";");
+        Parse_To_End (Ada_Parser.Delimiter, ";");
         Output.Put (Words.Concat, True, Level);
         Words.Reset;
       end if;
@@ -116,7 +104,7 @@ begin
   end loop;
 
   -- Skip up to last ";"
-  Parse_To_End (";");
+  Parse_To_End (Ada_Parser.Delimiter, ";");
   Put_Comments (Level);
   Words.Reset;
 

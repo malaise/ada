@@ -35,7 +35,7 @@ package body Words is
 
   -- Read --
   function Read (Index : in Natural := 0) return Word_Rec is
-    Index : Positive;
+    Read_Index : Positive;
     Word : Word_Rec;
   begin
     if Words_List_Mng.Is_Empty (Words_List)
@@ -43,16 +43,16 @@ package body Words is
       return (Ada_Parser.Separator,
               Ada.Strings.Unbounded.To_Unbounded_String (""));
     end if;
-    if To_Index /= 0 then
-      Index := To_Index;
+    if Index /= 0 then
+      Read_Index := Index;
     else
-      Index := Length;
+      Read_Index := Length;
     end if;
     -- Move at Index
     Words_List_Mng.Move_To (
            List => Words_List,
            Where => Words_List_Mng.Next,
-           Number => Index - 1,
+           Number => Read_Index - 1,
            From_Current => False);
     -- Read word
     Words_List_Mng.Read (Words_List, Word, Words_List_Mng.Current);
@@ -76,6 +76,7 @@ package body Words is
   begin
     Word := Read (Index);
     Del (Index);
+    return Word;
   end Get;
 
   function Get (Index : in Natural := 0)
@@ -103,8 +104,9 @@ package body Words is
     end if;
 
     for I in 1 .. Last loop
-      Ada.Strings.Unbounded.Append (Result, Read (I));
+      Ada.Strings.Unbounded.Append (Result, String'(Read (I)));
     end loop;
+    return Result;
   end Concat;
 
   function Concat (From_Index : in Positive := 1;
@@ -139,12 +141,12 @@ package body Words is
   procedure Add (Lexic : in Ada_Parser.Lexical_Kind_List;
                  Text : in String) is
   begin
-    Add (Ada.Strings.Unbounded.To_Unbounded_String (Text));
+    Add (Lexic, Ada.Strings.Unbounded.To_Unbounded_String (Text));
   end Add;
 
   -- Search --
   -- Locate a word, returns 0 if not found
-  function Match (Current, Criteria : Word) return Boolean is
+  function Match (Current, Criteria : Word_Rec) return Boolean is
   begin
     return Current = Criteria;
   end Match;
@@ -167,15 +169,16 @@ package body Words is
                    From_Index : Positive := 1) return Natural is
 
   begin
-    return Search (From_Index, (Lexic, Word) );
+    return Search ( (Lexic, Word), From_Index );
   end Search;
 
   function Search (Lexic : Ada_Parser.Lexical_Kind_List;
                    Word : String;
                    From_Index : Positive := 1) return Natural is
   begin
-    return Search (From_Index, Lexic,
-                   Ada.Strings.Unbounded.To_Unbounded_String (Word) );
+    return Search (Lexic,
+                   Ada.Strings.Unbounded.To_Unbounded_String (Word),
+                   From_Index);
   end Search;
 
 end Words;

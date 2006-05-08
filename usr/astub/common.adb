@@ -4,12 +4,12 @@ package body Common is
 
   Lfc : constant Character := Text_Line.Line_Feed;
   Lfs : constant String := Lfc & "";
-  Lfu : constant Ada.String.Unbounded.Unbounded_String
-      := Ada.String.Unbounded.To_Unbounded_String (Lfs);
+  Lfu : constant Ada.Strings.Unbounded.Unbounded_String
+      := Ada.Strings.Unbounded.To_Unbounded_String (Lfs);
 
 
   -- Line feed string
-  function Line_Feed return Ada.String.Unbounded.Unbounded_String is
+  function Line_Feed return Ada.Strings.Unbounded.Unbounded_String is
   begin
     return Lfu;
   end Line_Feed;

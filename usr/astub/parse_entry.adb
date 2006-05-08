@@ -11,20 +11,20 @@ procedure Parse_Entry (Level : in Natural) is
   use type Ada_Parser.Lexical_Kind_List;
 begin
 
-  Words.Add ("entry");
   -- Read until entry name
   loop
     Ada_Parser.Parse_Next (File, Name, Lexic, True);
-    Words.Add (Name);
+    Words.Add (Lexic, Name);
     exit when Lexic /= Ada_Parser.Separator;
   end loop;
   if Lexic /= Ada_Parser.Identifier
   and then Lexic /= Ada_Parser.String_Literal then
-    Coomon.Error (Asu.To_String (Name));
+    Common.Error (Asu.To_String (Name));
   end if;
 
   -- Put "entry <name>"
-  Output.Put (Words.Get, Level, False);
+  Words.Add (Ada_Parser.Reserved_Word, "entry");
+  Output.Put (Words.Get, False, Level);
   Words.Reset;
 
   -- Skip family and arguments, store Family
@@ -33,7 +33,7 @@ begin
   In_Id := False;
   loop
     Ada_Parser.Parse_Next (File, Text, Lexic, True);
-    Words.Add (Text);
+    Words.Add (Lexic, Text);
     if Asu.To_String (Text) = "(" then
       In_Parent := True;
       In_Id := True;
@@ -67,21 +67,20 @@ begin
 
   -- Put Family if set
   if Asu.Length (Family) /= 0 then
-    Output.Put (" (for I in " & Asu.To_String (Family) & ")", 0, False);
+    Output.Put (" (for I in " & Asu.To_String (Family) & ")", False, 0);
   end if;
   -- Put Args if set
   if Words.Length /= 0 then
     -- Delete last saved ;
-    Output.Put (" " & Words.Get, 0 , False);
+    Output.Put (" " & Words.Get, False, 0);
   end if;
-  Output.Put_Line (" when True is", 0, False);
+  Output.Put_Line (" when True is", False, 0);
 
   -- begin
   --   return <name> (<args>);
   -- end <name>;
-  Output.Put_Line ("begin", Level, False);
-  Output.Put_Line ("null;", Level + 1, False);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";",
-                   Level, False);
+  Output.Put_Line ("begin", False, Level);
+  Output.Put_Line ("null;", False, Level + 1);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
 end Parse_Entry;
 
