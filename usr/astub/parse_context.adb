@@ -31,8 +31,11 @@ begin
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
         null;
+      elsif Str = "generic" then
+        -- Not terminated by ";"
+        Output.Put (Str, True, 0);
       elsif Lexic = Ada_Parser.Separator
-      or else Lexic = Ada_Parser.Separator then
+      or else Lexic = Ada_Parser.Comment then
         -- Put separators and comments unchanged
         Output.Put (Str, False, 0);
       else
@@ -41,6 +44,7 @@ begin
         Words.Add (Lexic, Text);
         Parse_To_End (Ada_Parser.Delimiter, ";");
         Output.Put (Words.Concat, True, 0);
+        Words.Reset;
       end if;
     end;
   end loop;

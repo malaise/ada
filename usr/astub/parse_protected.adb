@@ -82,7 +82,7 @@ begin
 
   -- Skip up to last ";"
   Parse_To_End (Ada_Parser.Delimiter, ";");
-  Put_comments (Level);
+  Put_Comments (Level);
   Words.Reset;
 
   -- end <name>;

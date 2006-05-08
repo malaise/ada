@@ -92,7 +92,7 @@ package body Words is
 
   -- Concat --
   function Concat (From_Index : in Positive := 1;
-                   To_Index : Natural := 0) 
+                   To_Index : Natural := 0)
            return Ada.Strings.Unbounded.Unbounded_String is
     Result : Ada.Strings.Unbounded.Unbounded_String;
     Last : Positive;

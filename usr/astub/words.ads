@@ -11,7 +11,7 @@ package Words is
   end record;
 
   -- Not used here, but usefull
-  type Word_Array is array (positive range <>) of Word_Rec;
+  type Word_Array is array (Positive range <>) of Word_Rec;
 
   -- Reset the stored words
   procedure Reset;

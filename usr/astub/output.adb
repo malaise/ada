@@ -43,12 +43,9 @@ package body Output is
     Index : Natural;
   begin
 
-    -- Check if this is an empty string, discard
     -- Check if this is line feed, put it
     Index := String_Mng.Parse_Spaces (Str);
-    if Index = 0 then
-      return;
-    elsif Index = Str'Last
+    if Index = Str'Last
     and then Str(Str'Last) = Common.Line_Feed then
       Text_Line.New_Line (File);
       return;
@@ -66,7 +63,7 @@ package body Output is
         and then Comment_Index = String_Mng.Parse_Spaces (Str) then
           -- The significant start of Str is "--"
           -- so Str is already a comment
-          Add_Comment := false;
+          Add_Comment := False;
         end if;
       end;
     end if;

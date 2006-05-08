@@ -1,7 +1,7 @@
 with Ada.Strings.Unbounded;
 with Ada_Parser;
 with Common, Words, Output;
--- Output comments of what has been parsed 
+-- Output comments of what has been parsed
 procedure Put_Comments (Level : in Natural) is
   Index : Natural;
   Word : Words.Word_Rec;
@@ -49,6 +49,5 @@ begin
       Index := Index + 1;
     end if;
   end loop;
-  
 end Put_Comments;
 
