@@ -12,15 +12,22 @@ procedure Parse_Package (Level : in Natural) is
   use type Ada_Parser.Lexical_Kind_List;
 
   -- Put current "package body <name> is" and comments read ahead, once
+  -- Because called due to a keyword (procedure/function...)
+  -- Re-indent for next word
   Body_Put : Boolean := False;
-  procedure Put_Body is
+  procedure Put_Body (Sub_Level : in Boolean := True) is
   begin
     if not Body_Put then
-      Output.Put_Line ("package body " & Asu.To_String (Name) & " is",
-                       False, Level);
+      Output.Put_Line ("package body " & Asu.To_String (Name) & " is", False);
       Put_Comments (Level + 1);
+      -- Re-indent for next word
+      if Sub_Level then
+        Output.Put ("", False, Level + 1);
+      else
+        Output.Put ("", False, Level);
+      end if;
+      Body_Put := True;
     end if;
-    Body_Put := True;
   end Put_Body;
 
 begin
@@ -50,29 +57,30 @@ begin
         null;
       elsif Str = "end" then
         -- End of this package
-        Put_Body;
+        -- Put "package body <Name> is" if needed
+        Put_Body (False);
         exit;
       elsif Str = "package" then
-        Put_Body;
+        Put_Body (True);
         Parse_Package (Level + 1);
       elsif Str = "procedure" then
         -- Put name is this is this is the first statement
         --   after "package <name> is"
-        Put_Body;
+        Put_Body (True);
         Parse_Procedure (Level + 1);
       elsif Str = "function" then
-        Put_Body;
+        Put_Body (True);
         Parse_Function (Level + 1);
       elsif Str = "task" then
-        Put_Body;
+        Put_Body (True);
         Parse_Task (Level + 1);
       elsif Str = "protected" then
-        Put_Body;
+        Put_Body (True);
         Parse_Protected (Level + 1);
       elsif Str = "private" then
-        Put_Body;
+        Put_Body (False);
         -- Put "private" as a comment
-        Output.Put_Line (Str, True, Level);
+        Output.Put_Line (Str, True);
       elsif Str = "renames" then
         -- This package is in fact a renaming declaration
         -- Reset to "package <name> renames" and put as comment
@@ -93,10 +101,10 @@ begin
       or else Str = "for" then
         -- Type or representation clause
         Words.Add (Lexic, Text);
-        Put_Body;
+        Put_Body (True);
         Parse_Type (Level + 1);
       else
-        Put_Body;
+        Put_Body (True);
         -- Unexpected, word. Parse to end as comment
         Words.Add (Lexic, Text);
         Parse_To_End (Ada_Parser.Delimiter, ";");
@@ -112,6 +120,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put ("end " & Asu.To_String (Name) & ";", False);
 end Parse_Package;
 

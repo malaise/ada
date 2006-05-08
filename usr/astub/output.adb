@@ -43,9 +43,10 @@ package body Output is
     Index : Natural;
   begin
 
-    -- Check if this is line feed, put it
+    -- Check if this is a line feed (even with spaces before), put it
     Index := String_Mng.Parse_Spaces (Str);
-    if Index = Str'Last
+    if Index /= 0
+    and then Index = Str'Last
     and then Str(Str'Last) = Common.Line_Feed then
       Text_Line.New_Line (File);
       return;

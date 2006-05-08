@@ -65,7 +65,7 @@ begin
   Words.Del;
 
   -- Output this and " is"
-  Output.Put_Line (Words.Concat & " is", False, Level);
+  Output.Put_Line (Words.Concat & " is", False);
   Words.Reset;
 
   -- begin
