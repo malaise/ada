@@ -8,6 +8,7 @@ procedure T_String is
 
   Pos1 : Positive;
   Pos2 : Positive;
+  Pos3 : Positive;
   Nat1 : Natural;
   Nat2 : Natural;
   Char1 : Character;
@@ -84,11 +85,9 @@ begin
       My_Io.Put_Line ("10 Unique (from head or tail)");
       My_Io.Put_Line ("11 Variable substitution");
       My_Io.Put_Line ("12 Escape location");
+      My_Io.Put_Line ("13 Tuncation ot best length");
 
-      loop
-        My_Io.Put ("Choice (0 .. 12) ? "); Nat_Get (Action, True);
-        exit when Action <= 12;
-      end loop;
+      My_Io.Put ("Choice (0 .. 13) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -222,7 +221,18 @@ begin
                         Str(1 .. Str_Len),
                         From_Index => Nat1,
                         Escape => Str2(1 .. Nat2))));
-
+          when 13 =>
+            My_Io.Put_Line ("13 Tuncation ot best length");
+            My_Io.Put ("Length (Pos)? "); Nat_Get(Pos1, False);
+            My_Io.Put ("Mini (Pos)? ");   Nat_Get(Pos2, False);
+            My_Io.Put ("Maxi (Pos)? ");   Nat_Get(Pos3, False);
+            My_Io.Put_Line ("Truncated at: "
+              & Natural'Image (String_Mng.truncate (
+                        Str(1 .. Str_Len),
+                        Length => Pos1,
+                        Mini => Pos2,
+                        Maxi => Pos3,
+                        Separating => String_Mng.Is_Separator'Access)));
           when others => null;
         end case;
       exception
