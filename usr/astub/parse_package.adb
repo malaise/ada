@@ -89,7 +89,10 @@ begin
                   & " is new" & Words.Concat, True, Level);
         Words.Reset;
         return;
-      elsif Str = "type" then
+      elsif Str = "type"
+      or else Str = "for" then
+        -- Type or representation clause
+        Words.Add (Lexic, Text);
         Put_Body;
         Parse_Type (Level + 1);
       else
@@ -109,6 +112,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put ("end " & Asu.To_String (Name) & ";", False, Level);
 end Parse_Package;
 

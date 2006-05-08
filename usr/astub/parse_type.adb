@@ -2,6 +2,7 @@ with Ada.Strings.Unbounded;
 with Text_Char, Ada_Parser;
 with Common, Files, Output, Words, Parse_To_End;
 
+-- Parse type definition or representation clause
 procedure Parse_Type (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
   Text : Ada.Strings.Unbounded.Unbounded_String;
@@ -9,7 +10,6 @@ procedure Parse_Type (Level : in Natural) is
   Paren_Level : Natural := 0;
   use type Ada_Parser.Lexical_Kind_List;
 begin
-  Words.Add (Ada_Parser.Reserved_Word, "type");
   -- Read until "record" or ";"
   loop
     Ada_Parser.Parse_Next (File, Text, Lexic, True);

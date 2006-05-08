@@ -27,6 +27,7 @@ begin
   end loop;
 
   -- Store "terminating" lexic in words
+  Words.Add (Ada_Parser.Identifier, Name);
   Words.Add (Ending);
   Put_Comments (Level);
 

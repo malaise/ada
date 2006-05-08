@@ -14,8 +14,7 @@ begin
   -- Parse up to name, detect first parent
   Words.Add (Ada_Parser.Reserved_Word, "function");
   Parse_Name (File, Level, Name);
-  Text := Words.Get;
-
+  Text := Words.Read;
 
   if Asu.To_String (Text) /= ";" then
     -- Like Parse_To_End (";"); but

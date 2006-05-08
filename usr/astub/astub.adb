@@ -17,6 +17,8 @@ procedure Astub is
   end Error;
     
 begin
+  Ada.Text_Io.Put_Line ("Astubbing " & Argument.Get_Parameter);
+
   -- Must be one argument
   if Argument.Get_Nbre_Arg /= 1 then
     Error ("Argument expected");
@@ -42,7 +44,7 @@ begin
   Files.Close (True);
 
   -- Output success
-  Ada.Text_Io.Put_Line ("Astubbed " & Argument.Get_Parameter);
+  Ada.Text_Io.Put_Line ("Done.");
 
 exception
   when Common.Syntax_Error =>

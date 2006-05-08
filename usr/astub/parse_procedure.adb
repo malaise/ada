@@ -8,10 +8,10 @@ procedure Parse_Procedure (Level : in Natural) is
   Name, Text : Asu.Unbounded_String;
 begin
 
-  -- Parse up to name
+  -- Parse up to name and read lexic following it
   Words.Add (Ada_Parser.Reserved_Word, "procedure");
   Parse_Name (File, Level, Name);
-  Text := Words.Get;
+  Text := Words.Read;
 
   -- Skip until last ';' (if not already got when parsing Name)
   if Asu.To_String (Text) /= ";" then
@@ -41,7 +41,7 @@ begin
   -- end <name>;
   Output.Put_Line ("begin", False, Level);
   Output.Put_Line ("null;", False, Level + 1);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";",
+  Output.Put ("end " & Asu.To_String (Name) & ";",
                    False, Level);
 end Parse_Procedure;
 
