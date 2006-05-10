@@ -39,10 +39,10 @@ begin
         -- Put separators and comments unchanged
         Output.Put (Str, False, 0);
       else
-        -- Unexpected, word (including generic keyword and arguments)
+        -- Unexpected, word (with, use, generic arguments...)
         -- Put this statement as comment
         Words.Add (Lexic, Text);
-        Parse_To_End (Ada_Parser.Delimiter, ";");
+        Parse_To_End (Ada_Parser.Delimiter, ";", 0);
         Output.Put (Words.Concat, True, 0);
         Words.Reset;
       end if;

@@ -15,7 +15,7 @@ begin
 
   -- Skip until last ';' (if not already got when parsing Name)
   if Asu.To_String (Text) /= ";" then
-    Parse_To_End (Ada_Parser.Delimiter, ";", Asu.To_String (Text) = "(");
+    Parse_To_End (Ada_Parser.Delimiter, ";", Level, Asu.To_String (Text) = "(");
   end if;
 
   -- If a renames or generic instanciation, put as comment
@@ -34,14 +34,14 @@ begin
   Words.Del;
 
   -- Output this and " is"
-  Output.Put_Line (Words.Concat & " is", False);
+  Output.Put_Line (Words.Concat & " is", False, Level);
   Words.Reset;
   -- begin
   --   null;
   -- end <name>;
   Output.Put_Line ("begin", False, Level);
   Output.Put_Line ("null;", False, Level + 1);
-  Output.Put ("end " & Asu.To_String (Name) & ";",
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";",
                    False, Level);
 end Parse_Procedure;
 

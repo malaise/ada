@@ -22,6 +22,9 @@ begin
         Paren_Level := Paren_Level + 1;
       elsif Str= ")" then
         Paren_Level := Paren_Level - 1;
+      elsif Lexic = Ada_Parser.Comment then
+        -- Put comment
+        Output.Put_Line (Get_Separators & Str, True, Level);
       elsif Str= ";" and then Paren_Level = 0 then
         -- ";" outside () and without "record" -> end of type
         Output.Put_Line (Words.Concat, True, Level);
@@ -29,7 +32,8 @@ begin
         return;
       elsif Str = "access" then
         -- Access type to function or procedure, with args...
-        Parse_To_End (Ada_Parser.Delimiter, ";");
+        Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+        Output.Put_Line (Words.Concat, True, Level);
         return;
       elsif Str = "record" then
         -- Record type: special parsing follows
@@ -50,11 +54,15 @@ begin
       if Str = "record" then
         -- This is the "record" of "end record;"
         exit;
+      elsif Lexic = Ada_Parser.Comment then
+        -- Put comment
+        Output.Put_Line (Get_Separators & Str, True, Level);
       end if;
     end;
   end loop;
   -- Then parse up to last ";"
-  Parse_To_End (Ada_Parser.Delimiter, ";");
+  Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+  Output.Put_Line (Words.Concat, True, Level);
 
 end Parse_Type;
 

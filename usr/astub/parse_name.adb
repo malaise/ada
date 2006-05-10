@@ -13,7 +13,8 @@ begin
 
   -- Read until identifier or string literal, save it in Ending
   Parse_To_Ends ( ( (Ada_Parser.Identifier, Common.Null_String),
-                    (Ada_Parser.String_Literal, Common.Null_String)));
+                    (Ada_Parser.String_Literal, Common.Null_String)),
+                  0);
   Ending := Words.Get;
 
   -- Read while identifier or "." and concat
@@ -27,9 +28,9 @@ begin
   end loop;
 
   -- Store "terminating" lexic in words
+  Put_Comments (Level);
   Words.Add (Ada_Parser.Identifier, Name);
   Words.Add (Ending);
-  Put_Comments (Level);
 
 end Parse_Name;
 

@@ -4,11 +4,12 @@
 -- For reserved word/delimiter, text must match
 with Ada.Strings.Unbounded;
 with Text_Line, Text_Char, Ada_Parser;
-with Files, Words;
+with Files, Words, Get_Separators, Output;
 
 procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
-                        Already_In_Parent : Boolean := False) is
-  Level : Natural := 0;
+                         Level : in Natural;
+                         Already_In_Parent : Boolean := False) is
+  Parent : Natural := 0;
   File : constant Text_Char.File_Type := Files.In_File;
   Text : Ada.Strings.Unbounded.Unbounded_String;
   Lexic : Ada_Parser.Lexical_Kind_List;
@@ -17,7 +18,7 @@ procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
 begin
   -- If already in parentheses, increase level
   if Already_In_Parent then
-    Level := 1;
+    Parent := 1;
   end if;
 
   -- Loop until End_Char outside parnetheses (Level = 0)
@@ -29,10 +30,10 @@ begin
 
     if Ada.Strings.Unbounded.To_String (Text) = "(" then
       -- keep Level of parentheses
-      Level := Level + 1;
+      Parent := Parent + 1;
     elsif Ada.Strings.Unbounded.To_String (Text) = ")" then
-      Level := Level - 1;
-    elsif Level = 0 then
+      Parent := Parent - 1;
+    elsif Parent = 0 then
       -- Not in parentheses
       for I in End_Criteria'Range loop
         if Lexic = End_Criteria(I).Lexic then
@@ -45,6 +46,11 @@ begin
           end if;
         end if;
       end loop;
+    elsif Lexic = Ada_Parser.Comment then
+      -- Put this comment with preceeding separators
+      Words.Del;
+      Output.Put_Line (Get_Separators & Ada.Strings.Unbounded.To_String (Text),
+                       True, Level);
     end if;
   end loop;
 

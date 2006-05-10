@@ -65,7 +65,7 @@ begin
   Words.Del;
 
   -- Output this and " is"
-  Output.Put_Line (Words.Concat & " is", False);
+  Output.Put_Line (Words.Concat & " is", False, Level);
   Words.Reset;
 
   -- begin
@@ -77,7 +77,7 @@ begin
     Output.Put (" (" & Asu.To_String (Args) & ")", False);
   end if;
   Output.Put_Line (";", False);
-  Output.Put ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
 
 end Parse_Function;
 

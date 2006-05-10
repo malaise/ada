@@ -36,7 +36,7 @@ begin
   end loop;
 
   -- Skip until "is"
-  Parse_To_End (Ada_Parser.Reserved_Word, "is");
+  Parse_To_End (Ada_Parser.Reserved_Word, "is", Level);
   Words.Del;
   Put_Comments (Level);
 
@@ -73,7 +73,7 @@ begin
       else
         -- Unexpected, word. Parse to end as comment
         Words.Add (Lexic, Text);
-        Parse_To_End (Ada_Parser.Delimiter, ";");
+        Parse_To_End (Ada_Parser.Delimiter, ";", Level + 1);
         Output.Put (Words.Concat, True, Level);
         Words.Reset;
       end if;
@@ -81,7 +81,7 @@ begin
   end loop;
 
   -- Skip up to last ";"
-  Parse_To_End (Ada_Parser.Delimiter, ";");
+  Parse_To_End (Ada_Parser.Delimiter, ";", Level);
   Put_Comments (Level);
   Words.Reset;
 
