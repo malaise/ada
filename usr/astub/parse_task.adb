@@ -17,7 +17,7 @@ begin
       -- Skip type
       null;
     elsif Lexic = Ada_Parser.Identifier
-    or else Lexic /= Ada_Parser.String_Literal then
+    or else Lexic = Ada_Parser.String_Literal then
       -- Identifier => task name
       exit;
     elsif Lexic = Ada_Parser.Comment then
@@ -34,7 +34,7 @@ begin
   -- Skip until "is", this skips the disciminant
   Parse_To_End (Ada_Parser.Reserved_Word, "is", Level);
   Words.Reset;
-  -- Output "task <name> is begin"
+  -- Prepare Output "task <name> is begin"
   Output.Put_Line ("task body " & Asu.To_String(Name) & " is", False, Level);
   Output.Put_Line ("begin", False, Level);
 
@@ -50,7 +50,8 @@ begin
       -- End of this task
       exit;
     elsif Asu.To_String (Text) = "entry" then
-      -- entry
+      -- Entry
+      Words.Add (Ada_Parser.Reserved_Word, "entry");
       Parse_To_End (Ada_Parser.Delimiter, ";", Level + 1);
       Output.Put_Line (Words.Concat, True, Level + 1);
     else

@@ -28,12 +28,8 @@ begin
     -- In any case, save it
     Words.Add (Lexic, Text);
 
-    if Ada.Strings.Unbounded.To_String (Text) = "(" then
-      -- keep Level of parentheses
-      Parent := Parent + 1;
-    elsif Ada.Strings.Unbounded.To_String (Text) = ")" then
-      Parent := Parent - 1;
-    elsif Parent = 0 then
+    -- Check if criteria match
+    if Parent = 0 then
       -- Not in parentheses
       for I in End_Criteria'Range loop
         if Lexic = End_Criteria(I).Lexic then
@@ -46,6 +42,14 @@ begin
           end if;
         end if;
       end loop;
+    end if;
+
+    -- Handle specific words, put comments
+    if Ada.Strings.Unbounded.To_String (Text) = "(" then
+      -- keep Level of parentheses
+      Parent := Parent + 1;
+    elsif Ada.Strings.Unbounded.To_String (Text) = ")" then
+      Parent := Parent - 1;
     elsif Lexic = Ada_Parser.Comment then
       -- Put this comment with preceeding separators
       Words.Del;

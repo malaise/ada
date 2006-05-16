@@ -1,5 +1,6 @@
 -- Common definitions
 with Sys_Calls, Text_Line;
+with Words;
 package body Common is
 
   Lfc : constant Character := Text_Line.Line_Feed;
@@ -31,5 +32,17 @@ package body Common is
     raise Syntax_Error;
   end Error;
 
+  procedure Dump_Words is
+    Word : Words.Word_Rec;
+  begin
+    Sys_Calls.Put_Line_Error ("Dumping words, length "
+                            & Natural'Image (Words.Length));
+    for I in 1 .. Words.Length loop
+      Word := Words.Read (I);
+      Sys_Calls.Put_Line_Error (Word.Lexic'Img & ":"
+         & Ada.Strings.Unbounded.To_String (Word.Text));
+    end loop;
+  end Dump_Words;
+    
 end Common;
 

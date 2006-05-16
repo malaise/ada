@@ -10,6 +10,7 @@ procedure Parse_Type (Level : in Natural) is
   Paren_Level : Natural := 0;
   use type Ada_Parser.Lexical_Kind_List;
 begin
+
   -- Read until "record" or ";"
   loop
     Ada_Parser.Parse_Next (File, Text, Lexic, True);
@@ -63,6 +64,7 @@ begin
   -- Then parse up to last ";"
   Parse_To_End (Ada_Parser.Delimiter, ";", Level);
   Output.Put_Line (Words.Concat, True, Level);
+  Words.Reset;
 
 end Parse_Type;
 

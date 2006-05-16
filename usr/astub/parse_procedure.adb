@@ -2,7 +2,8 @@ with Ada.Strings.Unbounded;
 with Text_Char, Ada_Parser;
 with Common, Files, Output, Words, Parse_To_End, Parse_Name;
 
-procedure Parse_Procedure (Level : in Natural) is
+procedure Parse_Procedure (Level : in Natural;
+                           Generated : in out Boolean) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
   Name, Text : Asu.Unbounded_String;
@@ -31,6 +32,7 @@ begin
   end if;
 
   -- This is a "real" declaration: remove last ";"
+  Generated := True;
   Words.Del;
 
   -- Output this and " is"

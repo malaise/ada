@@ -2,11 +2,13 @@ with Ada.Strings.Unbounded;
 with Text_Char, Ada_Parser;
 with Common, Files, Output, Words, Parse_To_End, Parse_Name;
 
-procedure Parse_Function (Level : in Natural) is
+procedure Parse_Function (Level : in Natural;
+                          Generated : in out Boolean) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
   Name, Args, Text : Asu.Unbounded_String;
   Lexic : Ada_Parser.Lexical_Kind_List;
+  Word : Words.Word_Rec;
   In_Parent, In_Id : Boolean;
   use type Ada_Parser.Lexical_Kind_List;
 begin
@@ -14,19 +16,32 @@ begin
   -- Parse up to name, detect first parent
   Words.Add (Ada_Parser.Reserved_Word, "function");
   Parse_Name (File, Level, Name);
-  Text := Words.Read;
 
-  if Asu.To_String (Text) /= ";" then
+  -- Name ended either by Sep or '(' or separator
+  -- read separators until '(' or "return"
+  Word := Words.Read;
+  Lexic := Word.Lexic;
+  Text := Word.Text;
+  while Lexic = Ada_Parser.Separator loop
+    Ada_Parser.Parse_Next (File, Text, Lexic, True);
+    Words.Add (Lexic, Text);
+  end loop;
+
+  if Asu.To_String (Text) = "(" then
     -- Like Parse_To_End (";"); but
     -- store argument formal names in Args, separated by ", "
-    In_Id := False;
+    In_Id := True;
+    In_Parent := True;
     loop
       Ada_Parser.Parse_Next (File, Text, Lexic, True);
       Words.Add (Lexic, Text);
       if Asu.To_String (Text) = "(" then
-        In_Parent := True;
-        In_Id := True;
+        Common.Error ("(");
       elsif Asu.To_String (Text) = ")" then
+        if In_Id or else not In_Parent then
+           Common.Error (")");
+        end if;
+        -- End or arguments. Now parsing return type.
         In_Parent := False;
       elsif In_Id and then Lexic = Ada_Parser.Identifier then
         -- Append this argument name
@@ -47,6 +62,10 @@ begin
         end if;
       end if;
     end loop;
+  elsif Asu.To_String (Text) = "return" then
+    Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+  else
+    Common.Error (Asu.To_String (Text));
   end if;
 
   -- If a renames or generic instanciation, put as comment
@@ -62,6 +81,7 @@ begin
   end if;
 
   -- This is a "real" declaration: remove last ";"
+  Generated := True;
   Words.Del;
 
   -- Output this and " is"

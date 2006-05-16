@@ -66,6 +66,5 @@ package Words is
                    Word : String;
                    From_Index : Positive := 1) return Natural;
 
-
 end Words;
 

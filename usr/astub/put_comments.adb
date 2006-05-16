@@ -1,7 +1,8 @@
 with Ada.Strings.Unbounded;
 with Ada_Parser;
 with Common, Words, Output;
--- Output comments of what has been parsed
+-- Output comments and delete them and separators from words
+-- Keep last indent
 procedure Put_Comments (Level : in Natural) is
   Index : Natural;
   Word : Words.Word_Rec;
@@ -25,8 +26,10 @@ begin
     end if;
   end loop;
 
-  -- Now remove succesive line_feeds (even if separated by separators)
+  -- Now remove succesive line_feeds
+  -- If separated by separators, remove them as well
   Prev_Lf := False;
+  Prev_Index := 0;
   Index := 1;
   for I in 1 .. Words.Length loop
     Word := Words.Read (Index);
@@ -60,5 +63,6 @@ begin
       Index := Index + 1;
     end if;
   end loop;
+
 end Put_Comments;
 

@@ -17,5 +17,8 @@ package Common is
   -- Put error message on stderr and raises Syntax_Error
   procedure Error (Msg : in String);
 
+  -- Dump content of words
+  procedure Dump_Words;
+
 end Common;
 

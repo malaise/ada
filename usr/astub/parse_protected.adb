@@ -8,6 +8,7 @@ procedure Parse_Protected (Level : in Natural) is
   package Asu renames Ada.Strings.Unbounded;
   Name, Text : Asu.Unbounded_String;
   Lexic : Ada_Parser.Lexical_Kind_List;
+  Dummy : Boolean := True;
   use type Ada_Parser.Lexical_Kind_List;
 begin
 
@@ -17,10 +18,9 @@ begin
     declare
       Str : constant String := Asu.To_String (Text);
     begin
-      if Lexic = Ada_Parser.Comment
-      or else Lexic = Ada_Parser.Separator then
+      if Lexic = Ada_Parser.Comment then
         -- Put comment or separator
-        Output.Put (Str, False);
+        Output.Put_Line (Str, False);
       elsif Str = "type" then
         -- Skip type
         null;
@@ -28,6 +28,9 @@ begin
         -- Got protected name
         Name := Text;
         exit;
+      elsif Lexic = Ada_Parser.Separator then
+        -- Skip separators
+        null;
       else
         -- Unexpected word
         Common.Error (Asu.To_String (Name));
@@ -35,10 +38,9 @@ begin
     end;
   end loop;
 
-  -- Skip until "is"
+  -- Skip until "is", put comments
   Parse_To_End (Ada_Parser.Reserved_Word, "is", Level);
-  Words.Del;
-  Put_Comments (Level);
+  Words.Reset;
 
   -- Output this and " is"
   Output.Put_Line ("protected body " & Asu.To_String (Name)
@@ -51,22 +53,22 @@ begin
       Str : constant String := Ada.Strings.Unbounded.To_String (Text);
     begin
       if Lexic = Ada_Parser.Comment then
-        Output.Put_Line (Str, False, Level + 1);
+        Output.Put (Str, False, Level + 1);
       elsif Lexic = Ada_Parser.Separator then
-        -- Skip separators
-        null;
+        -- Skip separators but line_feed
+        if Str = Common.Line_Feed then
+          -- Put New line now
+          Output.New_Line;
+        end if;
       elsif Str = "end" then
         -- End of this protected
         exit;
       elsif Str = "procedure" then
-        Parse_Procedure (Level + 1);
+        Parse_Procedure (Level + 1, Dummy);
       elsif Str = "function" then
-        Parse_Function (Level + 1);
+        Parse_Function (Level + 1, Dummy);
       elsif Str = "entry" then
         Parse_Entry (Level + 1);
-      elsif Str = "new" then
-        -- This protected is in fact a generic instanciation
-        Common.Error ("new");
       elsif Str = "private" then
         -- Put "private" as a comment
         Output.Put_Line (Str, True, Level);
@@ -82,7 +84,6 @@ begin
 
   -- Skip up to last ";"
   Parse_To_End (Ada_Parser.Delimiter, ";", Level);
-  Put_Comments (Level);
   Words.Reset;
 
   -- end <name>;

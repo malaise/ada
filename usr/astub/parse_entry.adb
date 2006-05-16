@@ -23,11 +23,10 @@ begin
   end if;
 
   -- Put "entry <name>"
-  Words.Add (Ada_Parser.Reserved_Word, "entry");
-  Output.Put (Words.Get, False, Level);
+  Output.Put ("entry " & Words.Get, False, Level);
   Words.Reset;
 
-  -- Skip family and arguments, store Family
+  -- Parse family and arguments, store Family
   -- Store arguments lexical elements in words
   In_Parent := False;
   In_Id := False;
@@ -67,14 +66,14 @@ begin
 
   -- Put Family if set
   if Asu.Length (Family) /= 0 then
-    Output.Put (" (for I in " & Asu.To_String (Family) & ")", False, 0);
+    Output.Put (" (for I in " & Asu.To_String (Family) & ")", False);
   end if;
   -- Put Args if set
   if Words.Length /= 0 then
     -- Delete last saved ;
-    Output.Put (" " & Words.Get, False, 0);
+    Output.Put (Words.Concat, False);
   end if;
-  Output.Put_Line (" when True is", False, 0);
+  Output.Put_Line (" when True is", False);
 
   -- begin
   --   return <name> (<args>);
