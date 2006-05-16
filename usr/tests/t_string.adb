@@ -227,7 +227,7 @@ begin
             My_Io.Put ("Mini (Pos)? ");   Nat_Get(Pos2, False);
             My_Io.Put ("Maxi (Pos)? ");   Nat_Get(Pos3, False);
             My_Io.Put_Line ("Truncated at: "
-              & Natural'Image (String_Mng.truncate (
+              & Natural'Image (String_Mng.Truncate (
                         Str(1 .. Str_Len),
                         Length => Pos1,
                         Mini => Pos2,
