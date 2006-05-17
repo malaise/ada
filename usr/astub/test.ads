@@ -1,4 +1,6 @@
 -- This is a "complete" example
+with Ada.Text_Io, Ada.Exceptions;
+use Ada.Text_Io;
 generic
   -- Some generic formal arguments
   V : Integer := 5;
@@ -37,11 +39,20 @@ package Test is
   -- A private type
   type Typ5 is private;
 
+  -- A variable and a constant
+  Var1 : Typ2;
+  Const1 : constant Typ1 := "Test";
+  Const2 : constant Typ5;
+
+  -- A use clause within package spec
+  use Ada.Exceptions;
+
   -- A procedure
   procedure Proc1 (A : in Integer);
 
   -- A function
-  function Func1 (A, B : Integer; C : Character) return String;
+  function Func1 (A, B : Integer;
+                  C : Character) return String;
   -- Another function
   function Func2 return Integer;
 
@@ -74,13 +85,19 @@ package Test is
     entry Entr2 (Character) (I : in Integer);
   end Prot1;
 
-  protected Prot2 is
+  -- Another protected type
+  protected type Prot2 is
   end Prot2;
+
+  -- Two renaming declarations
+  procedure Proc4 (A : in Integer) renames Proc1;
+  function Func3 return Integer renames Func2;
 
 private
 
   type Typ5 is new Integer;
-  function Func5 return Typ5;
+  Const2 : constant Typ5 := 21;
+  function Func6 return Typ5;
 
 end Test;
 
