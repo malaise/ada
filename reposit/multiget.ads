@@ -38,9 +38,9 @@ package Multiget is
   -- Returns the number of Unget that can be done (0 when recording is not active)
   function Nb_Unget return Unget_Range;
 
-  -- Ungets one or several gets
+  -- Ungets one or several gets (0 for all, Nb_Unget)
   -- Raises To_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
-  procedure Unget (Number : in Positive := 1);
+  procedure Unget (Number : in Natural := 1);
   To_Many_Unget : exception;
 
 end Multiget;

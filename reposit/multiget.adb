@@ -105,10 +105,19 @@ package body Multiget is
   end Nb_Unget;
 
 
-  -- Ungets one or several gets
+  -- Ungets one or several gets (0 for all, Nb_Unget)
   -- Raises To_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
-  procedure Unget (Number : in Positive := 1) is
+  procedure Unget (Number : in Natural := 1) is
   begin
+    if Number = 0 then
+      -- Unget all
+      if not Item_List_Mng.Is_Empty (Item_List) then
+        -- Move at first pos - 1
+        Item_List_Mng.Rewind (Item_List);
+        Offset := 1;
+      end if;
+      return;
+    end if;
     if Number > Nb_Unget then
       raise To_Many_Unget;
     end if;
