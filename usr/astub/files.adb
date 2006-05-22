@@ -96,7 +96,8 @@ package body Files is
     -- Delete result if failure
     if not Success
     and then Asu.Length (Body_File_Name) /= 0 then
-      Dummy := Sys_Calls.Unlink (Asu.To_String (Body_File_Name));
+--      Dummy := Sys_Calls.Unlink (Asu.To_String (Body_File_Name));
+null;
     end if;
 
   end Close;

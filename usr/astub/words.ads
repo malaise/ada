@@ -1,14 +1,10 @@
 -- Stores the words and allows retrieval
 with Ada.Strings.Unbounded;
-with Ada_Parser;
-
+with Parser_Ada;
 package Words is
 
   -- A Word as it is stored
-  type Word_Rec is record
-    Lexic : Ada_Parser.Lexical_Kind_List;
-    Text  : Ada.Strings.Unbounded.Unbounded_String;
-  end record;
+  subtype Word_Rec is Parser_Ada.Word_Rec;
 
   -- Not used here, but usefull
   type Word_Array is array (Positive range <>) of Word_Rec;
@@ -49,9 +45,9 @@ package Words is
 
   -- Store (appends) one word
   procedure Add (Word : in Word_Rec);
-  procedure Add (Lexic : in Ada_Parser.Lexical_Kind_List;
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in Ada.Strings.Unbounded.Unbounded_String);
-  procedure Add (Lexic : in Ada_Parser.Lexical_Kind_List;
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in String);
 
 
@@ -59,10 +55,10 @@ package Words is
   --  returns 0 if not found
   function Search (Word : Word_Rec;
                    From_Index : Positive := 1) return Natural;
-  function Search (Lexic : in Ada_Parser.Lexical_Kind_List;
+  function Search (Lexic : in Parser_Ada.Lexical_Kind_List;
                    Word : in Ada.Strings.Unbounded.Unbounded_String;
                    From_Index : Positive := 1) return Natural;
-  function Search (Lexic : Ada_Parser.Lexical_Kind_List;
+  function Search (Lexic : Parser_Ada.Lexical_Kind_List;
                    Word : String;
                    From_Index : Positive := 1) return Natural;
 

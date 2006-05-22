@@ -1,6 +1,6 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End, Parse_Name;
+with Text_Char;
+with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Name;
 
 procedure Parse_Procedure (Level : in Natural;
                            Generated : in out Boolean) is
@@ -10,22 +10,23 @@ procedure Parse_Procedure (Level : in Natural;
 begin
 
   -- Parse up to name and read lexic following it
-  Words.Add (Ada_Parser.Reserved_Word, "procedure");
+  Words.Add (Parser_Ada.Reserved_Word, "procedure");
   Parse_Name (File, Level, Name);
   Text := Words.Read;
 
   -- Skip until last ';' (if not already got when parsing Name)
   if Asu.To_String (Text) /= ";" then
-    Parse_To_End (Ada_Parser.Delimiter, ";", Level, Asu.To_String (Text) = "(");
+    Parse_To_End (Parser_Ada.Delimiter, ";", Level, 
+      Already_In_Parent => Asu.To_String (Text) = "(");
   end if;
 
   -- If a renames or generic instanciation, put as comment
-  if Words.Search (Ada_Parser.Reserved_Word, "renames") /= 0 then
+  if Words.Search (Parser_Ada.Reserved_Word, "renames") /= 0 then
     Output.Put_Line (Words.Concat, True, Level);
     Words.Reset;
     return;
   end if;
-  if Words.Search (Ada_Parser.Reserved_Word, "is") /= 0 then
+  if Words.Search (Parser_Ada.Reserved_Word, "is") /= 0 then
     Output.Put_Line (Words.Concat, True, Level);
     Words.Reset;
     return;

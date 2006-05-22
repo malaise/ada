@@ -1,34 +1,34 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End,
+with Text_Char;
+with Common, Files, Output, Words, Parser_Ada, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Entry;
 
 procedure Parse_Protected (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
-  Name, Text : Asu.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
+  Name : Asu.Unbounded_String;
+  Word : Parser_Ada.Word_Rec;
   Dummy : Boolean := True;
-  use type Ada_Parser.Lexical_Kind_List;
+  use type Parser_Ada.Lexical_Kind_List;
 begin
 
   -- Read until protected name, skip "type"
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
+    Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu.To_String (Text);
+      Str : constant String := Asu.To_String (Word.Text);
     begin
-      if Lexic = Ada_Parser.Comment then
+      if Word.Lexic = Parser_Ada.Comment then
         -- Put comment or separator
         Output.Put_Line (Str, False);
       elsif Str = "type" then
         -- Skip type
         null;
-      elsif Lexic = Ada_Parser.Identifier then
+      elsif Word.Lexic = Parser_Ada.Identifier then
         -- Got protected name
-        Name := Text;
+        Name := Word.Text;
         exit;
-      elsif Lexic = Ada_Parser.Separator then
+      elsif Word.Lexic = Parser_Ada.Separator then
         -- Skip separators
         null;
       else
@@ -39,7 +39,7 @@ begin
   end loop;
 
   -- Skip until "is", put comments
-  Parse_To_End (Ada_Parser.Reserved_Word, "is", Level);
+  Parse_To_End (Parser_Ada.Reserved_Word, "is", Level);
   Words.Reset;
 
   -- Output this and " is"
@@ -48,13 +48,13 @@ begin
 
   -- Loop until expected word
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
+    Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Text);
+      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
     begin
-      if Lexic = Ada_Parser.Comment then
+      if Word.Lexic = Parser_Ada.Comment then
         Output.Put (Str, False, Level + 1);
-      elsif Lexic = Ada_Parser.Separator then
+      elsif Word.Lexic = Parser_Ada.Separator then
         -- Skip separators but line_feed
         if Str = Common.Line_Feed then
           -- Put New line now
@@ -74,8 +74,8 @@ begin
         Output.Put_Line (Str, True, Level);
       else
         -- Unexpected, word. Parse to end as comment
-        Words.Add (Lexic, Text);
-        Parse_To_End (Ada_Parser.Delimiter, ";", Level + 1);
+        Words.Add (Word);
+        Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
         Output.Put (Words.Concat, True, Level);
         Words.Reset;
       end if;
@@ -83,7 +83,7 @@ begin
   end loop;
 
   -- Skip up to last ";"
-  Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+  Parse_To_End (Parser_Ada.Delimiter, ";", Level);
   Words.Reset;
 
   -- end <name>;

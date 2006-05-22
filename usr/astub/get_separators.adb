@@ -1,11 +1,10 @@
 with Ada.Strings.Unbounded;
-with Ada_Parser;
-with Common, Words;
+with Common, Words, Parser_Ada;
 -- Get the trailing separators (space or htab) of Words
 function Get_Separators return String is
   Word : Words.Word_Rec;
   package Asu renames Ada.Strings.Unbounded;
-  use type Ada_Parser.Lexical_Kind_List, Asu.Unbounded_String;
+  use type Parser_Ada.Lexical_Kind_List, Asu.Unbounded_String;
   Len : constant Natural := Words.Length;
   Start : Natural := Len;
   Result : Asu.Unbounded_String;
@@ -13,7 +12,7 @@ begin
   -- Locate last non separator (or Line_Feed)
   for I in reverse 1 .. Len loop
     Word := Words.Read (I);
-    exit when Word.Lexic /= Ada_Parser.Separator
+    exit when Word.Lexic /= Parser_Ada.Separator
     or else Word.Text = String'(Common.Line_Feed);
     Start := I - 1;
   end loop;

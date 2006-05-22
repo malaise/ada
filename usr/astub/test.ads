@@ -39,6 +39,12 @@ package Test is
   -- A private type
   type Typ5 is private;
 
+  -- A type with comments
+  type Typ6 is (
+   Red,      -- The colors
+   Orange,   -- Of a
+   Green);   -- Traffic light
+
   -- A variable and a constant
   Var1 : Typ2;
   Const1 : constant Typ1 := "Test";

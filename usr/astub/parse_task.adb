@@ -1,66 +1,67 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End;
+with Text_Char;
+with Common, Files, Output, Words,  Parser_Ada, Parse_To_End;
 
 procedure Parse_Task (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
-  Name, Text : Asu.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
-  use type Ada_Parser.Lexical_Kind_List;
+  Word : Parser_Ada.Word_Rec;
+  Name : Asu.Unbounded_String;
+  use type Parser_Ada.Lexical_Kind_List;
 begin
   -- Read until task name, skip "type"
   loop
-    Ada_Parser.Parse_Next (File, Name, Lexic, True);
-    if Lexic = Ada_Parser.Reserved_Word
-    and then Asu.To_String (Name) = "type" then
+    Word := Parser_Ada.Multiparse.Get (True);
+    if Word.Lexic = Parser_Ada.Reserved_Word
+    and then Asu.To_String (Word.Text) = "type" then
       -- Skip type
       null;
-    elsif Lexic = Ada_Parser.Identifier
-    or else Lexic = Ada_Parser.String_Literal then
+    elsif Word.Lexic = Parser_Ada.Identifier then
       -- Identifier => task name
+      Name := Word.Text;
       exit;
-    elsif Lexic = Ada_Parser.Comment then
+    elsif Word.Lexic = Parser_Ada.Comment then
       -- Put comment
-      Output.Put_Line (Asu.To_String (Name), False, Level);
-    elsif Lexic = Ada_Parser.Separator then
+      Output.Put_Line (Asu.To_String (Word.Text), False, Level);
+    elsif Word.Lexic = Parser_Ada.Separator then
       -- Skip separator
       null;
     else
-      Common.Error (Asu.To_String (Name));
+      Common.Error (Asu.To_String (Word.Text));
     end if;
   end loop;
 
   -- Skip until "is", this skips the disciminant
-  Parse_To_End (Ada_Parser.Reserved_Word, "is", Level);
+  Parse_To_End (Parser_Ada.Reserved_Word, "is", Level);
   Words.Reset;
   -- Prepare Output "task <name> is begin"
-  Output.Put_Line ("task body " & Asu.To_String(Name) & " is", False, Level);
+  Output.Put_Line ("task body " & Asu.To_String(Name) & " is",
+                   False, Level);
   Output.Put_Line ("begin", False, Level);
 
   -- Parse until "end", display the entries as comment
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
-    if Lexic = Ada_Parser.Comment then
-      Output.Put_Line (Asu.To_String (Text), False, Level + 1);
-    elsif Lexic = Ada_Parser.Separator then
+    Word := Parser_Ada.Multiparse.Get (True);
+    if Word.Lexic = Parser_Ada.Comment then
+      Output.Put_Line (Asu.To_String (Word.Text), False, Level + 1);
+    elsif Word.Lexic = Parser_Ada.Separator then
       -- Skip separators
       null;
-    elsif Asu.To_String (Text) = "end" then
+    elsif Asu.To_String (Word.Text) = "end" then
       -- End of this task
       exit;
-    elsif Asu.To_String (Text) = "entry" then
+    elsif Asu.To_String (Word.Text) = "entry" then
       -- Entry
-      Words.Add (Ada_Parser.Reserved_Word, "entry");
-      Parse_To_End (Ada_Parser.Delimiter, ";", Level + 1);
+      Words.Add (Parser_Ada.Reserved_Word, "entry");
+      Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
       Output.Put_Line (Words.Concat, True, Level + 1);
     else
-      Common.Error (Asu.To_String (Text));
+      Common.Error (Asu.To_String (Word.Text));
     end if;
   end loop;
 
   -- Skip up to end of task
-  Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+  Parse_To_End (Parser_Ada.Delimiter, ";", Level);
   Words.Reset;
 
   -- begin

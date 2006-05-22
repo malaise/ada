@@ -1,6 +1,6 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End, Parse_Type,
+with Text_Char;
+with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
      Parse_Procedure, Parse_Function, Parse_Task, Parse_Protected,
      Put_Comments, Get_Separators;
 
@@ -8,9 +8,9 @@ procedure Parse_Package (Level : in Natural;
                          Generated : in out Boolean) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
-  Name, Text : Asu.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
-  use type Ada_Parser.Lexical_Kind_List;
+  Name : Asu.Unbounded_String;
+  Word : Parser_Ada.Word_Rec;
+  use type Parser_Ada.Lexical_Kind_List;
 
   -- Put current "package body <name> is" and comments read ahead, once
   -- Because called due to a keyword (procedure/function...)
@@ -44,11 +44,11 @@ begin
 
   -- Loop until expected word
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
+    Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu.To_String (Text);
+      Str : constant String := Asu.To_String (Word.Text);
     begin
-      if Lexic = Ada_Parser.Comment then
+      if Word.Lexic = Parser_Ada.Comment then
         if Body_Put then
           -- Within the package, Output comment
           Output.Put (Words.Concat & Str, False);
@@ -56,16 +56,16 @@ begin
         else
           -- Not knowing yet if this is a real package
           -- Save comments only
-          Words.Add (Ada_Parser.Comment, Text);
+          Words.Add (Parser_Ada.Comment, Word.Text);
         end if;
-      elsif Lexic = Ada_Parser.Separator then
+      elsif Word.Lexic = Parser_Ada.Separator then
         if Str = Common.Line_Feed and then Body_Put then
           -- Put New line now if in package
           Output.New_Line;
           Words.Reset;
         else
           -- Save separator for later Output
-          Words.Add (Ada_Parser.Separator, Text);
+          Words.Add (Parser_Ada.Separator, Word.Text);
         end if;
       elsif Str = "is" then
         -- Skip "is"
@@ -108,7 +108,7 @@ begin
       elsif Str = "renames" then
         -- This package is in fact a renaming declaration
         -- Reset to "package <name> renames" and put as comment
-        Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+        Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Output.Put ("package " & Asu.To_String (Name)
                   & " renames" & Words.Concat, True, Level);
         Words.Reset;
@@ -116,7 +116,7 @@ begin
       elsif Str = "new" then
         -- This package is in fact a generic instanciation
         -- Reset to "package <name> is new" and put as comment
-        Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+        Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Output.Put ("package " & Asu.To_String (Name)
                   & " is new" & Words.Concat, True, Level);
         Words.Reset;
@@ -125,14 +125,14 @@ begin
       or else Str = "for" then
         -- Type or representation clause
         Put_Body;
-        Words.Add (Lexic, Text);
+        Words.Add (Word);
         Parse_Type (Level + 1);
       else
         -- Unexpected word. Parse to end as comment
         Put_Body;
         Clear_Indent;
-        Words.Add (Lexic, Text);
-        Parse_To_End (Ada_Parser.Delimiter, ";", Level + 1);
+        Words.Add (Word);
+        Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
         Output.Put (Words.Concat, True, Level + 1);
         Words.Reset;
       end if;
@@ -140,7 +140,7 @@ begin
   end loop;
 
   -- Skip up to last ";"
-  Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+  Parse_To_End (Parser_Ada.Delimiter, ";", Level);
   Put_Comments (Level);
   Words.Reset;
 

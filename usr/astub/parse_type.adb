@@ -1,14 +1,13 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End;
+with Text_Char;
+with Common, Files, Output, Words, Parser_Ada, Parse_To_End;
 
 -- Parse type definition or representation clause
 procedure Parse_Type (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
-  Text : Ada.Strings.Unbounded.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
+  Word : Parser_Ada.Word_Rec;
   Paren_Level : Natural := 0;
-  use type Ada_Parser.Lexical_Kind_List,
+  use type Parser_Ada.Lexical_Kind_List,
            Ada.Strings.Unbounded.Unbounded_String,
            Words.Word_Rec;
 
@@ -23,7 +22,7 @@ procedure Parse_Type (Level : in Natural) is
       -- Locate leading "  " or Line_Feed & "  "
       if Index = 0 then
         -- Also process leading " ", as if there was a leading Line_Feed
-        Word.Lexic := Ada_Parser.Separator;
+        Word.Lexic := Parser_Ada.Separator;
         Word.Text := Common.Line_Feed;
       else
         Word := Words.Read (Index);
@@ -50,28 +49,30 @@ begin
 
   -- Read until "record" or ";"
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
+    Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Text);
+      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
     begin
       -- In any case, save this word
-      Words.Add (Lexic, Text);
+      Words.Add (Word);
       if Str= "(" then
         Paren_Level := Paren_Level + 1;
       elsif Str= ")" then
         Paren_Level := Paren_Level - 1;
-      elsif Lexic = Ada_Parser.Comment then
-        -- Put comment
-        Output.Put_Line (Get_Separators & Str, True, Level);
       elsif Str= ";" and then Paren_Level = 0 then
         -- ";" outside () and without "record" -> end of type
+        Parse_To_End (Parser_Ada.Separator, Common.Line_Feed, Level,
+                      Put_Comments => False,
+                      Then_Line_Feed => False);
         Fix_Indent;
         Output.Put_Line (Words.Concat, True, Level);
         Words.Reset;
         return;
       elsif Str = "access" then
         -- Access type to function or procedure, with args...
-        Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+        Parse_To_End (Parser_Ada.Delimiter, ";", Level,
+                      Put_Comments => False,
+                      Then_Line_Feed => True);
         Fix_Indent;
         Output.Put_Line (Words.Concat, True, Level);
         return;
@@ -85,23 +86,25 @@ begin
   -- Record type, skip ";" of fields definitions, case...
   --  up to next "(end) record;"
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
+    Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Text);
+      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
     begin
       -- In any case, save this word
-      Words.Add (Lexic, Text);
+      Words.Add (Word);
       if Str = "record" then
         -- This is the "record" of "end record;"
         exit;
-      elsif Lexic = Ada_Parser.Comment then
+      elsif Word.Lexic = Parser_Ada.Comment then
         -- Put comment
         Output.Put_Line (Get_Separators & Str, True, Level);
       end if;
     end;
   end loop;
-  -- Then parse up to last ";"
-  Parse_To_End (Ada_Parser.Delimiter, ";", Level);
+  -- Then parse up to last ";" then line_feed
+  Parse_To_End (Parser_Ada.Delimiter, ";", Level,
+                Put_Comments => False,
+                Then_Line_Feed => True);
   Fix_Indent;
   Output.Put_Line (Words.Concat, True, Level);
   Words.Reset;

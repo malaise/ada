@@ -1,24 +1,24 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words;
+with Text_Char;
+with Common, Files, Output, Words, Parser_Ada;
 
 procedure Parse_Entry (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
-  Name, Family, Last_Id, Text : Asu.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
+  Name, Family, Last_Id : Asu.Unbounded_String;
+  Word : Parser_Ada.Word_Rec;
   In_Id, In_Parent : Boolean;
-  use type Ada_Parser.Lexical_Kind_List;
+  use type Parser_Ada.Lexical_Kind_List;
 begin
 
   -- Read until entry name
   loop
-    Ada_Parser.Parse_Next (File, Name, Lexic, True);
-    Words.Add (Lexic, Name);
-    exit when Lexic /= Ada_Parser.Separator;
+    Word := Parser_Ada.Multiparse.Get (True);
+    Words.Add (Word);
+    exit when Word.Lexic /= Parser_Ada.Separator;
   end loop;
-  if Lexic /= Ada_Parser.Identifier
-  and then Lexic /= Ada_Parser.String_Literal then
+  if Word.Lexic /= Parser_Ada.Identifier
+  and then Word.Lexic /= Parser_Ada.String_Literal then
     Common.Error (Asu.To_String (Name));
   end if;
 
@@ -31,12 +31,12 @@ begin
   In_Parent := False;
   In_Id := False;
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic, True);
-    Words.Add (Lexic, Text);
-    if Asu.To_String (Text) = "(" then
+    Word := Parser_Ada.Multiparse.Get (True);
+    Words.Add (Word);
+    if Asu.To_String (Word.Text) = "(" then
       In_Parent := True;
       In_Id := True;
-    elsif Asu.To_String (Text) = ")" then
+    elsif Asu.To_String (Word.Text) = ")" then
       In_Parent := False;
       if In_Id then
         -- Identifier was not followed by ':', it was the family
@@ -44,13 +44,13 @@ begin
         Words.Reset;
       end if;
     end if;
-    if In_Id and then Lexic = Ada_Parser.Identifier then
+    if In_Id and then Word.Lexic = Parser_Ada.Identifier then
       -- Save this adentifier, it might be the entry family
-      Last_Id := Text;
-    elsif Asu.To_String (Text) = ":" then
+      Last_Id := Word.Text;
+    elsif Asu.To_String (Word.Text) = ":" then
       -- End of argument formal names (entering in | out | inout ...)
       In_Id := False;
-    elsif Asu.To_String (Text) = ";" then
+    elsif Asu.To_String (Word.Text) = ";" then
       if In_Parent then
         -- End of previous argument, expecting a new one
         In_Id := True;

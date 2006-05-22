@@ -40,7 +40,7 @@ package body Words is
   begin
     if Words_List_Mng.Is_Empty (Words_List)
     or else Index > Length then
-      return (Ada_Parser.Separator,
+      return (Parser_Ada.Separator,
               Ada.Strings.Unbounded.To_Unbounded_String (""));
     end if;
     if Index /= 0 then
@@ -132,13 +132,13 @@ package body Words is
     Words_List_Mng.Insert (Words_List, Word);
   end Add;
 
-  procedure Add (Lexic : in Ada_Parser.Lexical_Kind_List;
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in Ada.Strings.Unbounded.Unbounded_String) is
   begin
     Add ( (Lexic, Text) );
   end Add;
 
-  procedure Add (Lexic : in Ada_Parser.Lexical_Kind_List;
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in String) is
   begin
     Add (Lexic, Ada.Strings.Unbounded.To_Unbounded_String (Text));
@@ -147,6 +147,7 @@ package body Words is
   -- Search --
   -- Locate a word, returns 0 if not found
   function Match (Current, Criteria : Word_Rec) return Boolean is
+    use type Parser_Ada.Word_Rec;
   begin
     return Current = Criteria;
   end Match;
@@ -164,7 +165,7 @@ package body Words is
     end if;
   end Search;
 
-  function Search (Lexic : in Ada_Parser.Lexical_Kind_List;
+  function Search (Lexic : in Parser_Ada.Lexical_Kind_List;
                    Word : in Ada.Strings.Unbounded.Unbounded_String;
                    From_Index : Positive := 1) return Natural is
 
@@ -172,7 +173,7 @@ package body Words is
     return Search ( (Lexic, Word), From_Index );
   end Search;
 
-  function Search (Lexic : Ada_Parser.Lexical_Kind_List;
+  function Search (Lexic : Parser_Ada.Lexical_Kind_List;
                    Word : String;
                    From_Index : Positive := 1) return Natural is
   begin

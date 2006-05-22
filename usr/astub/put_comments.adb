@@ -1,6 +1,5 @@
 with Ada.Strings.Unbounded;
-with Ada_Parser;
-with Common, Words, Output;
+with Common, Words, Output, Parser_Ada;
 -- Output comments and delete them and separators from words
 -- Keep last indent
 procedure Put_Comments (Level : in Natural) is
@@ -9,14 +8,14 @@ procedure Put_Comments (Level : in Natural) is
   Prev_Lf : Boolean;
   Prev_Index : Natural;
   package Asu renames Ada.Strings.Unbounded;
-  use type Ada_Parser.Lexical_Kind_List,
+  use type Parser_Ada.Lexical_Kind_List,
            Asu.Unbounded_String;
 begin
   -- Put comments with line feeds
   Index := 1;
   for I in 1 .. Words.Length loop
     Word := Words.Read (Index);
-    if Word.Lexic = Ada_Parser.Comment then
+    if Word.Lexic = Parser_Ada.Comment then
       -- Del and put. Next word will be at same Index
       Words.Del (Index);
       Output.Put_Line (Asu.To_String (Word.Text), False, Level);
@@ -33,7 +32,7 @@ begin
   Index := 1;
   for I in 1 .. Words.Length loop
     Word := Words.Read (Index);
-    if Word.Lexic = Ada_Parser.Separator then
+    if Word.Lexic = Parser_Ada.Separator then
       if Word.Text = String'(Common.Line_Feed) then
         -- A line_feed
         if Prev_Lf then

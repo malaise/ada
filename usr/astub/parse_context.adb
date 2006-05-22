@@ -1,22 +1,21 @@
 with Ada.Strings.Unbounded;
-with Text_Char, Ada_Parser;
-with Common, Files, Output, Words, Parse_To_End,
-     Parse_Procedure, Parse_Function, Parse_Package;
+with Text_Char;
+with Common, Files, Output, Words, Parser_Ada,
+     Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package;
 
 procedure Parse_Context (Generated : out Boolean) is
   File : constant Text_Char.File_Type := Files.In_File;
-  Text : Ada.Strings.Unbounded.Unbounded_String;
-  Lexic : Ada_Parser.Lexical_Kind_List;
+  Word : Words.Word_Rec;
   Level : Natural := 0;
-  use type Ada_Parser.Lexical_Kind_List;
+  use type Parser_Ada.Lexical_Kind_List;
 begin
   -- By default, nothing is generated
   Generated := False;
   -- Loop until expected word
   loop
-    Ada_Parser.Parse_Next (File, Text, Lexic);
+    Word := Parser_Ada.MultiParse.Get (False);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Text);
+      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
     begin
       if Str = "" then
         -- End of file
@@ -36,15 +35,15 @@ begin
       elsif Str = "generic" then
         -- Not terminated by ";"
         Output.Put (Str, True, 0);
-      elsif Lexic = Ada_Parser.Separator
-      or else Lexic = Ada_Parser.Comment then
+      elsif Word.Lexic = Parser_Ada.Separator
+      or else Word.Lexic = Parser_Ada.Comment then
         -- Put separators and comments unchanged
         Output.Put (Str, False, 0);
       else
         -- Unexpected, word (with, use, generic arguments...)
         -- Parse up to end of statement
-        Words.Add (Lexic, Text);
-        Parse_To_End (Ada_Parser.Delimiter, ";", 0);
+        Words.Add (Word);
+        Parse_To_End (Parser_Ada.Delimiter, ";", 0);
         -- Put this statement as a comment
         Output.Put (Words.Concat, True, 0);
         Words.Reset;
@@ -53,7 +52,7 @@ begin
   end loop;
 
 exception
-  when Ada_Parser.End_Error =>
+  when Parser_Ada.End_Error =>
     Common.Error ("EOF");
 end Parse_Context;
 
