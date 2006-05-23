@@ -22,18 +22,22 @@ begin
         exit;
       elsif Str = "package" then
         Level := 0;
+        Output.New_Line;
         Parse_Package (0, Generated);
       elsif Str = "procedure" then
         Level := 0;
+        Output.New_Line;
         Parse_Procedure (0, Generated);
       elsif Str = "function" then
         Level := 0;
+        Output.New_Line;
         Parse_Function (0, Generated);
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
         null;
       elsif Str = "generic" then
         -- Not terminated by ";"
+        Output.New_Line;
         Output.Put (Str, True, 0);
       elsif Word.Lexic = Parser_Ada.Separator
       or else Word.Lexic = Parser_Ada.Comment then

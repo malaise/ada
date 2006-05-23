@@ -97,6 +97,8 @@ package body Output is
     Text_Line.Put (File, Asu.Slice (Line2Put, 1, Index) );
 
     if Index /= Asu.Length (Line2Put) then
+      -- Line2Put is split. First chunk is Put_Line
+      Text_Line.New_Line (File);
       -- Format the remaining: Index + 1 .. Last
       Format (Asu.Slice (Line2Put, Index + 1, Asu.Length (Line2Put)),
               False, Level);
@@ -141,7 +143,7 @@ package body Output is
       Start := Lfi + 1;
       Lfi := String_Mng.Locate (Str, Start, Common.Line_Feed);
       if Lfi = 0 or else Lfi = Str'Last then
-        -- No Line_Feed of ends by Line_Feed => Last chunk, process up to end
+        -- No Line_Feed or ends by Line_Feed => Last chunk, process up to end
         Format (Str (Start .. Str'Last), Comment, Level);
         exit;
       else

@@ -7,30 +7,45 @@ procedure Parse_Name (File : in Text_Char.File_Type;
                       Level : in Natural;
                       Name : out Ada.Strings.Unbounded.Unbounded_String) is
   package Asu renames Ada.Strings.Unbounded;
-  Ending : Words.Word_Rec;
+  Word : Words.Word_Rec;
   use type Parser_Ada.Lexical_Kind_List;
 begin
 
-  -- Read until identifier or string literal, save it in Ending
-  Parse_To_Ends ( ( (Parser_Ada.Identifier, Common.Null_String),
-                    (Parser_Ada.String_Literal, Common.Null_String)),
-                  0, True, False);
-  Ending := Words.Get;
+  -- Read until identifier or string literal
+  Parse_To_Ends (
+      End_Criteria => ( (Parser_Ada.Identifier, Common.Null_String),
+                        (Parser_Ada.String_Literal, Common.Null_String)),
+      Level => 0,
+      Put_Comments => False,
+      Up_To_Next_Significant => False,
+      Already_In_Parent => False);
+  Word := Words.Read;
 
-  -- Read while identifier or "." and concat
-  Name := Ending.Text;
+  -- Read while identifier or "." and concat to Name
+  Name := Word.Text;
+  Parser_Ada.Multiparse.Start_Recording;
   loop
-    Ending := Parser_Ada.Multiparse.Get (True);
-    exit when Ending.Lexic /= Parser_Ada.Identifier
-    and then Ending.Lexic /=  Parser_Ada.String_Literal
-    and then Asu.To_String (Ending.Text) /= ".";
-      Asu.Append (Name, Ending.Text);
+    Word := Parser_Ada.Multiparse.Get (True);
+    Words.Add (Word);
+    exit when Word.Lexic /= Parser_Ada.Identifier
+    and then  Word.Lexic /= Parser_Ada.String_Literal
+    and then Asu.To_String (Word.Text) /= ".";
+      Asu.Append (Name, Word.Text);
   end loop;
+  Words.Del;
+  Parser_Ada.Multiparse.Unget;
+  Parser_Ada.Multiparse.Stop_Recording;
 
-  -- Store "terminating" lexic in words
+  -- Read until a significant character (and unget)
+  Parse_To_Ends (
+      End_Criteria => Words.No_Word,
+      Level => 0,
+      Put_Comments => False,
+      Up_To_Next_Significant => True,
+      Already_In_Parent => False);
+
+  -- Extract and put comments
   Put_Comments (Level);
-  Words.Add (Parser_Ada.Identifier, Name);
-  Words.Add (Ending);
 
 end Parse_Name;
 

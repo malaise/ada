@@ -10,7 +10,6 @@ procedure Parse_Type (Level : in Natural) is
   use type Parser_Ada.Lexical_Kind_List,
            Ada.Strings.Unbounded.Unbounded_String,
            Words.Word_Rec;
-
   -- Because we put type text in comment (appending "--")
   -- Try to remove any "  " at beginning of lines (of Words)
   procedure Fix_Indent is
@@ -61,9 +60,12 @@ begin
         Paren_Level := Paren_Level - 1;
       elsif Str= ";" and then Paren_Level = 0 then
         -- ";" outside () and without "record" -> end of type
-        Parse_To_End (Parser_Ada.Separator, Common.Line_Feed, Level,
-                      Put_Comments => False,
-                      Then_Line_Feed => False);
+        -- Parse up to next significant word 
+        Parse_To_Ends (End_Criteria => Words.No_Word, 
+                       Level => Level,
+                       Put_Comments => False,
+                       Up_To_Next_Significant => False,
+                       Already_In_Parent => False);
         Fix_Indent;
         Output.Put_Line (Words.Concat, True, Level);
         Words.Reset;
@@ -71,8 +73,7 @@ begin
       elsif Str = "access" then
         -- Access type to function or procedure, with args...
         Parse_To_End (Parser_Ada.Delimiter, ";", Level,
-                      Put_Comments => False,
-                      Then_Line_Feed => True);
+                      Put_Comments => False);
         Fix_Indent;
         Output.Put_Line (Words.Concat, True, Level);
         return;
@@ -103,8 +104,7 @@ begin
   end loop;
   -- Then parse up to last ";" then line_feed
   Parse_To_End (Parser_Ada.Delimiter, ";", Level,
-                Put_Comments => False,
-                Then_Line_Feed => True);
+                Put_Comments => False);
   Fix_Indent;
   Output.Put_Line (Words.Concat, True, Level);
   Words.Reset;

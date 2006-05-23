@@ -1,6 +1,7 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parse_To_End, Parser_Ada, Parse_Name;
+with Common, Files, Output, Words, Parse_To_End, Parse_To_Ends,
+     Parser_Ada, Parse_Name;
 
 procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
@@ -16,16 +17,19 @@ begin
   Words.Add (Parser_Ada.Reserved_Word, "function");
   Parse_Name (File, Level, Name);
 
-  -- Name ended either by Sep or '(' or separator
-  -- read separators until '(' or "return"
+  -- Next (significant) word is either '(' or "return". Get it
+  Parse_To_Ends (
+      End_Criteria => ( 
+          (Parser_Ada.Delimiter, Asu.To_Unbounded_String("(")),
+          (Parser_Ada.Reserved_Word, Asu.To_Unbounded_String("return")) ),
+      Level => Level,
+      Put_Comments => True,
+      Up_To_Next_Significant => False,
+      Already_In_Parent => False);
   Word := Words.Read;
-  while Word.Lexic = Parser_Ada.Separator loop
-    Word := Parser_Ada.Multiparse.Get (True);
-    Words.Add (Word);
-  end loop;
 
   if Asu.To_String (Word.Text) = "(" then
-    -- Like Parse_To_End (";"); but
+    -- Like Parse_To_End ("return"); but
     -- store argument formal names in Args, separated by ", "
     In_Id := True;
     In_Parent := True;
@@ -49,18 +53,25 @@ begin
       elsif Asu.To_String (Word.Text) = ":" then
         -- End of argument formal names (entering in | out | inout ...)
         In_Id := False;
+      elsif Asu.To_String (Word.Text) = "return" then
+        exit;
       elsif Asu.To_String (Word.Text) = ";" then
         if In_Parent then
           -- End of previous argument, expecting a new one
           In_Id := True;
         else
-          -- ; out of (): the end
-          exit;
+          -- ; out of () but before "return"
+          Common.Error (Asu.To_String (Word.Text));
         end if;
       end if;
     end loop;
-  elsif Asu.To_String (Word.Text) = "return" then
-    Parse_To_End (Parser_Ada.Delimiter, ";", Level);
+    -- Flush comments
+    Put_Comments (Level);
+  end if;
+
+  -- Parse return
+  if Asu.To_String (Word.Text) = "return" then
+    Parse_To_End (Parser_Ada.Delimiter, ";", Level, Put_Comments => False);
   else
     Common.Error (Asu.To_String (Word.Text));
   end if;

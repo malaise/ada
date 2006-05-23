@@ -6,19 +6,15 @@ procedure Parse_Procedure (Level : in Natural;
                            Generated : in out Boolean) is
   File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
-  Name, Text : Asu.Unbounded_String;
+  Name : Asu.Unbounded_String;
 begin
 
-  -- Parse up to name and read lexic following it
+  -- Parse name
   Words.Add (Parser_Ada.Reserved_Word, "procedure");
   Parse_Name (File, Level, Name);
-  Text := Words.Read;
 
-  -- Skip until last ';' (if not already got when parsing Name)
-  if Asu.To_String (Text) /= ";" then
-    Parse_To_End (Parser_Ada.Delimiter, ";", Level, 
-      Already_In_Parent => Asu.To_String (Text) = "(");
-  end if;
+  -- Skip until last ';'
+  Parse_To_End (Parser_Ada.Delimiter, ";", Level);
 
   -- If a renames or generic instanciation, put as comment
   if Words.Search (Parser_Ada.Reserved_Word, "renames") /= 0 then

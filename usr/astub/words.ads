@@ -9,6 +9,12 @@ package Words is
   -- Not used here, but usefull
   type Word_Array is array (Positive range <>) of Word_Rec;
 
+  -- Empty word array
+  No_Word : constant Word_Array (1 .. 0)
+          := (others => (
+     Lexic => Parser_Ada.Comment,
+     Text => Ada.Strings.Unbounded.To_Unbounded_String ("")));
+
   -- Reset the stored words
   procedure Reset;
 
