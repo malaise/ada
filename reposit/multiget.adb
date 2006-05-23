@@ -14,7 +14,8 @@
 with Dynamic_List;
 package body Multiget is
 
-  -- The buffer, in which current position is the "next to unget" when Offset is 0.
+  -- The buffer, in which current position is the "next to unget"
+  --  when Offset is 0.
   -- When Offset is 1, there is no next to unget any more. This way:
   -- Get_Position (From_First) - Offset is the number of possible ungets
   -- Get_Position (From_Last)  - 1 is the number of possible re-gets
@@ -24,6 +25,7 @@ package body Multiget is
 
   -- The virtual offset of current position vs first
   -- Because, when at pos 1 and ungetting, virtual position becomes 0
+  -- Only significant when Item_List is not empty
   subtype Offset_Range is Natural range 0 .. 1;
   Offset : Offset_Range := 0;
 
@@ -42,14 +44,23 @@ package body Multiget is
   end Start_Recording;
 
   -- Stops recording
-  -- Clears the buffer of recorded got items
+  -- Still allows re-get to use recorded unget but new unget are impossible
   -- No effect if recording is already stopped
   procedure Stop_Recording is
+    Pos : Positive;
   begin
-    -- Clear the buffer
-    Item_List_Mng.Delete_List (Item_List);
-    -- Init offset, by default unget is possible as long as pos > 1
-    Offset := 0;
+    if not Item_List_Mng.Is_Empty (Item_List) then
+      -- Clear the buffer up to current pos
+      if Offset = 0 then
+        Pos := Item_List_Mng.Get_Position (Item_List); 
+        Item_List_Mng.Rewind (Item_List);
+        for I in 1 .. Pos loop
+          Item_List_Mng.Delete (Item_List);
+        end loop;
+        -- Set offset to 1
+        Offset := 1;
+      end if;
+    end if;
     Recording := False;
   end Stop_Recording;
 
@@ -67,30 +78,41 @@ package body Multiget is
   function Get (User_Data : User_Data_Type) return Item_Type is
     Item : Item_Type;
   begin
-    if not Recording then
+    if Item_List_Mng.Is_Empty (Item_List)
+    or else (Offset = 0
+             and then not Item_List_Mng.Check_Move (Item_List) ) then
+      -- No list or end of list of unget
       Item := Get_Item (User_Data);
+      if Recording then
+        -- Control the max length of the list
+        if Unget_Length /= 0
+        and then Item_List_Mng.List_Length (Item_List) = Unget_Length then
+          -- Remove oldest got item
+          Item_List_Mng.Rewind (Item_List);
+          Item_List_Mng.Delete (Item_List);
+          -- Be ready to append
+          Item_List_Mng.Rewind (Item_List, Item_List_Mng.Prev);
+        end if;
+        -- Append new got item
+        Item_List_Mng.Insert (Item_List, Item);
+        Offset := 0;
+      end if;
     elsif Offset = 1 then
       -- Ungets performed up to beggining of list
       -- Getting moves to first
-      Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
-      Offset := 0;
-    elsif Item_List_Mng.Check_Move (Item_List) then
-      -- Current pos, "next to unget" is followed by an Item: the one to re-get
-      Item_List_Mng.Read (Item_List, Item);
-    else
-      -- Current pos, "next to unget" is last item of list, so there is no following item
-      -- to re-get => Get a new item and append it to the list
-      Item := Get_Item (User_Data);
-      -- Control the max length of the list
-      if Unget_Length /= 0
-      and then Item_List_Mng.List_Length (Item_List) = Unget_Length then
-        -- Remove oldest got item
-        Item_List_Mng.Rewind (Item_List);
-        Item_List_Mng.Delete (Item_List);
-        -- Be ready to append
-        Item_List_Mng.Rewind (Item_List, Item_List_Mng.Prev);
+      if Recording then
+        Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
+        Offset := 0;
+      else
+        Item_List_Mng.Get (Item_List, Item);
       end if;
-      Item_List_Mng.Insert (Item_List, Item);
+    else
+      -- Current pos, "next to unget" is followed by an Item: the one to re-get
+      if Recording then
+        Item_List_Mng.Read (Item_List, Item);
+      else
+        Item_List_Mng.Get (Item_List, Item);
+      end if;
     end if;
     return Item;
   end Get;
@@ -98,7 +120,7 @@ package body Multiget is
   -- Returns the number of Unget that can be done (0 when recording is not active)
   function Nb_Unget return Unget_Range is
   begin
-    if Item_List_Mng.Is_Empty (Item_List) then
+    if not Recording or else Item_List_Mng.Is_Empty (Item_List) then
       return 0;
     end if;
     return Item_List_Mng.Get_Position (Item_List) - Offset;
@@ -109,6 +131,9 @@ package body Multiget is
   -- Raises To_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
   procedure Unget (Number : in Natural := 1) is
   begin
+    if not Recording then
+      raise To_Many_Unget;
+    end if;
     if Number = 0 then
       -- Unget all
       if not Item_List_Mng.Is_Empty (Item_List) then

@@ -14,7 +14,7 @@ generic
 package Multiget is
 
   -- The number of possible unget
-  subtype Unget_Range is Natural range 0 .. Unget_Length;
+  subtype Unget_Range is Natural;
 
   -- Starts recording (recording is inactive by default)
   -- Any Get performed while recording is active can be ungot.
@@ -22,7 +22,7 @@ package Multiget is
   procedure Start_Recording;
 
   -- Stops recording
-  -- Clears the buffer of recorded got items
+  -- Still allows re-get to use recorded unget but new unget are impossible
   -- No effect if recording is already stopped
   procedure Stop_Recording;
 
