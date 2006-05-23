@@ -17,9 +17,9 @@ package Generic_Con_Io is
 
     -- A square on the screen
     type Square is record
-        Row : Row_Range;
-        Col : Col_Range;
-      end record;
+      Row : Row_Range;
+      Col : Col_Range;
+    end record;
 
     -- Upper left square
     Home : constant Square := (Row => Row_Range'First, Col => Col_Range'First);
