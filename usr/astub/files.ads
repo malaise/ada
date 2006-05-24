@@ -10,9 +10,13 @@ package Files is
   function In_File return Text_Char.File_Type;
   function Out_File return Text_Line.File_Type;
 
+  -- What to do with result file
+  -- Keep it (success)
+  -- Remove_If_Not_Keep (error)
+  -- Remove (success empty)
+  type Result_Action_List is (Keep, Remove_If_Not_Keep, Remove);
   -- Close files
-  -- If not success, body file is erased
-  procedure Close (Success : in Boolean);
+  procedure Close (Action : in Result_Action_List);
 
 end Files;
   

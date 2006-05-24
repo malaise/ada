@@ -1,15 +1,20 @@
 with Ada.Strings.Unbounded;
-with Sys_Calls, String_Mng;
+with Sys_Calls, String_Mng, Environ;
 package body Files is
 
   package Asu renames Ada.Strings.Unbounded;
 
+  -- File names
   Spec_Suffix : constant String := ".ads";
   Body_Suffix :  constant String := ".adb";
   Body_File_Name : Asu.Unbounded_String;
 
+  -- File descriptors
   In_Desc : Text_Char.File_Type;
   Out_Desc : Text_Line.File_Type;
+
+  -- Environ STUB_KEEP_ON_ERROR
+  Keep_Name : constant String := "ASTUB_KEEP_ON_ERROR";
 
   -- Open --
   procedure Open (Spec_File_Name : in String) is
@@ -41,7 +46,7 @@ package body Files is
       Fd := Sys_Calls.Open (Asu.To_String (Body_File_Name), Sys_Calls.In_File);
       Sys_Calls.Close (Fd);
       Body_File_Name := Asu.Null_Unbounded_String;
-      Close (False);
+      Close (Remove_If_Not_Keep);
       raise Out_Error;
     exception
       when Sys_Calls.Name_Error =>
@@ -55,7 +60,7 @@ package body Files is
     exception
       when Sys_Calls.Name_Error =>
         Body_File_Name := Asu.Null_Unbounded_String;
-        Close (False);
+        Close (Remove_If_Not_Keep);
         raise Out_Error;
     end;
     -- This should work ok
@@ -76,7 +81,12 @@ package body Files is
   end Out_File;
 
   -- Close --
-  procedure Close (Success : in Boolean) is
+  -- Keep it (success)
+  -- Remove_If_Not_Keep (error)
+  -- Remove (success empty)
+  -- type Result_Action_List is (Keep, Remove_If_Not_Keep, Remove);
+  -- Close files
+  procedure Close (Action : in Result_Action_List) is
     Fd : Sys_Calls.File_Desc;
     Dummy : Boolean;
   begin
@@ -93,11 +103,13 @@ package body Files is
       Sys_Calls.Close (Fd);
     end if;
 
-    -- Delete result if failure
-    if not Success
-    and then Asu.Length (Body_File_Name) /= 0 then
---      Dummy := Sys_Calls.Unlink (Asu.To_String (Body_File_Name));
-null;
+    -- Delete result if it was created
+    -- and if needed
+    if Asu.Length (Body_File_Name) /= 0
+    and then (Action = Remove
+        or else (Action = Remove_If_Not_Keep
+            and then not Environ.Is_Yes (Keep_Name)) ) then
+      Dummy := Sys_Calls.Unlink (Asu.To_String (Body_File_Name));
     end if;
 
   end Close;

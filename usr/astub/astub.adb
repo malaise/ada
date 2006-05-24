@@ -43,7 +43,7 @@ begin
 
   if Generated then
     -- Done, close files
-    Files.Close (True);
+    Files.Close (Files.Keep);
 
     -- Output success
     Ada.Text_Io.Put_Line ("Done.");
@@ -51,15 +51,15 @@ begin
     -- Dummy body
     Ada.Text_Io.Put_Line ("Warning: " & Argument.Get_Parameter
                          & " leads to empty body. Removing it.");
-    Files.Close (False);
+    Files.Close (Files.Remove);
   end if;
 
 exception
   when Common.Syntax_Error =>
-    Files.Close (False);
+    Files.Close (Files.Remove_If_Not_Keep);
     Error ("Syntax error while parsing.");
   when Except:others =>
-    Files.Close (False);
+    Files.Close (Files.Remove_If_Not_Keep);
     Error ("Exception " & Mixed_Str (Ada.Exceptions.Exception_Name (Except))
           & " raised while parsing.");
 end Astub;
