@@ -17,8 +17,7 @@ begin
                         (Parser_Ada.String_Literal, Common.Null_String)),
       Level => 0,
       Put_Comments => False,
-      Up_To_Next_Significant => False,
-      Already_In_Parent => False);
+      Up_To_Next_Significant => False);
   Word := Words.Read;
 
   -- Read while identifier or "." and concat to Name
@@ -41,8 +40,7 @@ begin
       End_Criteria => Words.No_Word,
       Level => 0,
       Put_Comments => False,
-      Up_To_Next_Significant => True,
-      Already_In_Parent => False);
+      Up_To_Next_Significant => True);
 
   -- Extract and put comments
   Put_Comments (Level);

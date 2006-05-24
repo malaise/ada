@@ -19,13 +19,12 @@ begin
 
   -- Next (significant) word is either '(' or "return". Get it
   Parse_To_Ends (
-      End_Criteria => ( 
+      End_Criteria => (
           (Parser_Ada.Delimiter, Asu.To_Unbounded_String("(")),
           (Parser_Ada.Reserved_Word, Asu.To_Unbounded_String("return")) ),
       Level => Level,
       Put_Comments => True,
-      Up_To_Next_Significant => False,
-      Already_In_Parent => False);
+      Up_To_Next_Significant => False);
   Word := Words.Read;
 
   if Asu.To_String (Word.Text) = "(" then
