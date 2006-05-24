@@ -33,7 +33,7 @@ procedure Parse_Type (Level : in Natural) is
         S1 :=  Words.Read (Index + 1);
         S2 :=  Words.Read (Index + 2);
         if Ada.Strings.Unbounded.To_String (S1.Text) = " "
-        and then S1 = S2 then 
+        and then S1 = S2 then
           -- A line feed followed by (at least) two spaces: remove 2 spaces
           Words.Del (Index + 1);
           Words.Del (Index + 1);
@@ -60,12 +60,11 @@ begin
         Paren_Level := Paren_Level - 1;
       elsif Str= ";" and then Paren_Level = 0 then
         -- ";" outside () and without "record" -> end of type
-        -- Parse up to next significant word 
-        Parse_To_Ends (End_Criteria => Words.No_Word, 
+        -- Parse up to next significant word
+        Parse_To_Ends (End_Criteria => Words.No_Word,
                        Level => Level,
                        Put_Comments => False,
-                       Up_To_Next_Significant => False,
-                       Already_In_Parent => False);
+                       Up_To_Next_Significant => True);
         Fix_Indent;
         Output.Put_Line (Words.Concat, True, Level);
         Words.Reset;
