@@ -13,7 +13,7 @@ begin
   Generated := False;
   -- Loop until expected word
   loop
-    Word := Parser_Ada.MultiParse.Get (False);
+    Word := Parser_Ada.Multiparse.Get (False);
     declare
       Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
     begin
