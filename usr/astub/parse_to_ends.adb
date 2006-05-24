@@ -11,19 +11,13 @@ with Files, Common, Words, Get_Separators, Output, Parser_Ada;
 procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
                          Level : in Natural;
                          Put_Comments : in Boolean;
-                         Up_To_Next_Significant : in Boolean;
-                         Already_In_Parent : in Boolean) is
+                         Up_To_Next_Significant : in Boolean) is
   Parent : Natural := 0;
   File : constant Text_Char.File_Type := Files.In_File;
   Word : Parser_Ada.Word_Rec;
   use type Parser_Ada.Lexical_Kind_List,
            Ada.Strings.Unbounded.Unbounded_String;
 begin
-  -- If already in parentheses, increase level
-  if Already_In_Parent then
-    Parent := 1;
-  end if;
-
   -- Loop until End_Char outside parentheses (Level = 0)
   Parse_Word:
   loop
