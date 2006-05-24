@@ -52,7 +52,7 @@ package body Multiget is
     if not Item_List_Mng.Is_Empty (Item_List) then
       -- Clear the buffer up to current pos
       if Offset = 0 then
-        Pos := Item_List_Mng.Get_Position (Item_List); 
+        Pos := Item_List_Mng.Get_Position (Item_List);
         Item_List_Mng.Rewind (Item_List);
         for I in 1 .. Pos loop
           Item_List_Mng.Delete (Item_List);
