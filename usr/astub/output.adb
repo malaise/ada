@@ -81,6 +81,8 @@ package body Output is
     Line2Put : Asu.Unbounded_String;
     -- Index where to start / where to cut
     Index : Natural;
+    -- Index of "--" in string
+    Comment_Index : Natural;
   begin
 
     -- Check if this is a line feed (even with spaces before), put it
@@ -92,21 +94,19 @@ package body Output is
       return;
     end if;
 
+    -- See there is a comment
+    Comment_Index := String_Mng.Locate (Str, Str'First, "--");
+
     -- Check if this is a comment to be put as a comment
     -- If yes, put Str at proper level
     if Comment then
-      -- Search "--" and check that it is the significant start of Str
-      declare
-        Comment_Index : Natural
-                      := String_Mng.Locate (Str, Str'First, "--");
-      begin
-        if Comment_Index /= 0
-        and then Comment_Index = String_Mng.Parse_Spaces (Str) then
-          -- The significant start of Str is "--"
-          -- so Str is already a comment
-          Add_Comment := False;
-        end if;
-      end;
+      -- Check that comment is the significant start of Str
+      if Comment_Index /= 0
+      and then Comment_Index = String_Mng.Parse_Spaces (Str) then
+        -- The significant start of Str is "--"
+        -- so Str is already a comment
+        Add_Comment := False;
+      end if;
     end if;
 
     -- Indent
@@ -124,8 +124,8 @@ package body Output is
     -- Append text
     Asu.Append (Line2Put, Str);
 
-    -- Put comment
-    if Add_Comment or else Comment then
+    -- Put comment without truncating
+    if Comment or else Comment_Index /= 0 then
       Text_Line.Put (File, Asu.To_String (Line2Put));
       return;
     end if;
