@@ -21,6 +21,46 @@ package body Output is
   -- Mini lenght for String_Mng.Truncate
   Mini_Len : constant := 40;
 
+  package Asu renames Ada.Strings.Unbounded;
+
+  -- get envir variables if first call
+  procedure Getenv is
+  begin
+    -- Check if spaces is set
+    if Text_Handler.Empty (Spaces) then
+      -- Getenv Nb_Spaces
+      declare
+        Nb_Spaces : Positive := Def_Nb_Spaces;
+      begin
+        Nb_Spaces := Environ.Get_Pos (Spaces_Name, Def_Nb_Spaces);
+        if Nb_Spaces > Max_Nb_Spaces then
+          -- If more than max, -> default
+          Nb_Spaces := Def_Nb_Spaces;
+        end if;
+        -- Set Spaces
+        for I in 1 .. Nb_Spaces loop
+         Text_Handler.Append (Spaces, ' ');
+        end loop;
+      end;
+
+      -- Also set line length
+      Environ.Get_Pos (Length_Name, Length);
+
+      -- Get file
+      File := Files.Out_File;
+    end if;
+  end Getenv;
+
+  -- Return the indentation of a given level
+  function Get_Indent (Level : in Natural) return String is
+    Result : Asu.Unbounded_String;
+  begin
+    Getenv;
+    for I in 1 .. Level loop
+      Asu.Append (Result, Text_Handler.Value (Spaces));
+    end loop;
+    return Asu.To_String (Result);
+  end Get_Indent;
 
   -- Is character a separator of Ada statement
   function Separates (Char : Character) return Boolean is
@@ -33,11 +73,11 @@ package body Output is
   -- Put one line (after flow has been cut according to Line_Feeds)
   procedure Format (Str : in String;
                     Comment : in Boolean;
-                    Level : in Natural := 0) is
+                    Level : in Natural;
+                    Indent : in Boolean) is
     -- Must we add the "-- "?
     Add_Comment : Boolean := Comment;
     -- Line to put
-    package Asu renames Ada.Strings.Unbounded;
     Line2Put : Asu.Unbounded_String;
     -- Index where to start / where to cut
     Index : Natural;
@@ -70,9 +110,11 @@ package body Output is
     end if;
 
     -- Indent
-    for I in 1 .. Level loop
-      Asu.Append (Line2Put, Text_Handler.Value (Spaces));
-    end loop;
+    if Indent then
+      for I in 1 .. Level loop
+        Asu.Append (Line2Put, Text_Handler.Value (Spaces));
+      end loop;
+    end if;
 
     -- Append comment if needed
     if Add_Comment then
@@ -83,7 +125,7 @@ package body Output is
     Asu.Append (Line2Put, Str);
 
     -- Put comment
-    if Add_Comment then
+    if Add_Comment or else Comment then
       Text_Line.Put (File, Asu.To_String (Line2Put));
       return;
     end if;
@@ -101,7 +143,7 @@ package body Output is
       Text_Line.New_Line (File);
       -- Format the remaining: Index + 1 .. Last
       Format (Asu.Slice (Line2Put, Index + 1, Asu.Length (Line2Put)),
-              False, Level);
+              False, Level, True);
     end if;
 
   end Format;
@@ -110,32 +152,11 @@ package body Output is
   -- Put --
   procedure Put (Str : in String;
                  Comment : in Boolean;
-                 Level : in Natural := 0) is
+                 Level : in Natural := 0;
+                 Indent : in Boolean := False) is
     Start, Lfi : Natural;
   begin
-    -- Check if spaces is set
-    if Text_Handler.Empty (Spaces) then
-      -- Getenv Nb_Spaces
-      declare
-        Nb_Spaces : Positive := Def_Nb_Spaces;
-      begin
-        Nb_Spaces := Environ.Get_Pos (Spaces_Name, Def_Nb_Spaces);
-        if Nb_Spaces > Max_Nb_Spaces then
-          -- If more than max, -> default
-          Nb_Spaces := Def_Nb_Spaces;
-        end if;
-        -- Set Spaces
-        for I in 1 .. Nb_Spaces loop
-         Text_Handler.Append (Spaces, ' ');
-        end loop;
-      end;
-
-      -- Also set line length
-      Environ.Get_Pos (Length_Name, Length);
-
-      -- Get file
-      File := Files.Out_File;
-    end if;
+    Getenv;
 
     -- Split Str into several lines (look for Line_Feed)
     Lfi := 0;
@@ -144,11 +165,11 @@ package body Output is
       Lfi := String_Mng.Locate (Str, Start, Common.Line_Feed);
       if Lfi = 0 or else Lfi = Str'Last then
         -- No Line_Feed or ends by Line_Feed => Last chunk, process up to end
-        Format (Str (Start .. Str'Last), Comment, Level);
+        Format (Str (Start .. Str'Last), Comment, Level, Indent);
         exit;
       else
         -- Put this chunk
-        Format (Str (Start .. Lfi), Comment, Level);
+        Format (Str (Start .. Lfi), Comment, Level, Indent);
       end if;
     end loop;
   end Put;
@@ -156,15 +177,16 @@ package body Output is
 
   procedure Put_Line (Str : in String;
                       Comment : in Boolean;
-                      Level : in Natural := 0) is
+                      Level : in Natural := 0;
+                      Indent : in Boolean := False) is
   begin
-    Put (Str & Character'(Common.Line_Feed), Comment, Level);
+    Put (Str & Character'(Common.Line_Feed), Comment, Level, Indent);
   end Put_Line;
 
 
   procedure New_Line is
   begin
-    Put (Common.Line_Feed, False, 0);
+    Put (Common.Line_Feed, False, 0, False);
   end New_Line;
 
 end Output;

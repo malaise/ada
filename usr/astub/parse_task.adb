@@ -36,14 +36,14 @@ begin
   Words.Reset;
   -- Prepare Output "task <name> is begin"
   Output.Put_Line ("task body " & Asu.To_String(Name) & " is",
-                   False, Level);
-  Output.Put_Line ("begin", False, Level);
+                   False, Level, True);
+  Output.Put_Line ("begin", False, Level, True);
 
   -- Parse until "end", display the entries as comment
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     if Word.Lexic = Parser_Ada.Comment then
-      Output.Put_Line (Asu.To_String (Word.Text), False, Level + 1);
+      Output.Put_Line (Asu.To_String (Word.Text), False, Level + 1, True);
     elsif Word.Lexic = Parser_Ada.Separator then
       -- Skip separators
       null;
@@ -54,7 +54,7 @@ begin
       -- Entry
       Words.Add (Parser_Ada.Reserved_Word, "entry");
       Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
-      Output.Put_Line (Words.Concat, True, Level + 1);
+      Output.Put_Line (Words.Concat, True, Level + 1, True);
     else
       Common.Error (Asu.To_String (Word.Text));
     end if;
@@ -67,7 +67,7 @@ begin
   -- begin
   --   null;
   -- end <name>;
-  Output.Put_Line ("null;", False, Level + 1);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put_Line ("null;", False, Level + 1, True);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
 end Parse_Task;
 

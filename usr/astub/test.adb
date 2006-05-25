@@ -1,12 +1,14 @@
 -- This is a "complete" example
 -- with Ada.Text_Io, Ada.Exceptions;
 -- use Ada.Text_Io;
+
 -- generic
   -- Some generic formal arguments
   -- V : Integer := 5;
   -- type Typ is private;
   -- A function as generic formal argument
   -- with function ">" (A, B : Typ) return Boolean is <>;
+
 package body Test is
 
   -- A type
@@ -45,6 +47,13 @@ package body Test is
   -- type Typ5 is private;
 
 
+  -- A type with comments
+  -- type Typ6 is (
+  --  Red,      -- The colors
+  --  Orange,   -- Of a
+  --  Green);   -- Traffic light
+
+
   -- A variable and a constant
   -- Var1 : Typ2;
   -- Const1 : constant Typ1 := "Test";
@@ -62,7 +71,7 @@ package body Test is
 
   -- A function
   function Func1 (A, B : Integer;
-                    C : Character) return String is
+                  C : Character) return String is
   begin
     return Func1 (A, B, C);
   end Func1;
@@ -100,12 +109,14 @@ package body Test is
   -- A task
   task body Task1 is
   begin
+    -- Comment in a task
     null;
   end Task1;
 
   -- A task type
   task body Task2 is
   begin
+    -- Entry in a task
     -- entry Entr1 (Character) (I : in Integer);
     null;
   end Task2;

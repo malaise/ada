@@ -38,13 +38,14 @@ begin
     end;
   end loop;
 
+
+  -- Output this and " is"
+  Output.Put_Line (Words.Concat & "protected body " & Asu.To_String (Name)
+                 & " is", False, Level);
+
   -- Skip until "is", put comments
   Parse_To_End (Parser_Ada.Reserved_Word, "is", Level);
   Words.Reset;
-
-  -- Output this and " is"
-  Output.Put_Line ("protected body " & Asu.To_String (Name)
-                 & " is", False, Level);
 
   -- Loop until expected word
   loop
@@ -55,11 +56,8 @@ begin
       if Word.Lexic = Parser_Ada.Comment then
         Output.Put (Str, False, Level + 1);
       elsif Word.Lexic = Parser_Ada.Separator then
-        -- Skip separators but line_feed
-        if Str = Common.Line_Feed then
-          -- Put New line now
-          Output.New_Line;
-        end if;
+        -- Put separators
+        Output.Put (Asu.To_String (Word.Text), False);
       elsif Str = "end" then
         -- End of this protected
         exit;

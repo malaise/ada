@@ -43,7 +43,6 @@ begin
       Up_To_Next_Significant => True);
 
   -- Extract and put comments
-  Put_Comments (Level);
-
+  Put_Comments;
 end Parse_Name;
 

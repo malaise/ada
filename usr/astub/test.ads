@@ -75,9 +75,11 @@ package Test is
 
   -- A task
   task Task1 is
+    -- Comment in a task
   end Task1;
   -- A task type
   task type Task2 is
+    -- Entry in a task
     entry Entr1 (Character) (I : in Integer);
   end Task2;
 

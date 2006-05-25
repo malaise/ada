@@ -95,7 +95,7 @@ package body Words is
                    To_Index : Natural := 0)
            return Ada.Strings.Unbounded.Unbounded_String is
     Result : Ada.Strings.Unbounded.Unbounded_String;
-    Last : Positive;
+    Last : Natural;
   begin
     if To_Index /= 0 then
       Last := To_Index;

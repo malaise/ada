@@ -19,11 +19,12 @@ begin
   end loop;
   if Word.Lexic /= Parser_Ada.Identifier
   and then Word.Lexic /= Parser_Ada.String_Literal then
-    Common.Error (Asu.To_String (Name));
+    Common.Error (Asu.To_String (Word.Text));
   end if;
 
   -- Put "entry <name>"
-  Output.Put ("entry " & Words.Get, False, Level);
+  Name := Words.Get;
+  Output.Put ("entry " & Asu.To_String (Name), False, Level);
   Words.Reset;
 
   -- Parse family and arguments, store Family
@@ -78,8 +79,8 @@ begin
   -- begin
   --   return <name> (<args>);
   -- end <name>;
-  Output.Put_Line ("begin", False, Level);
-  Output.Put_Line ("null;", False, Level + 1);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put_Line ("begin", False, Level, True);
+  Output.Put_Line ("null;", False, Level + 1, True);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
 end Parse_Entry;
 

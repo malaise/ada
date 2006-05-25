@@ -1,6 +1,7 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Name;
+with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Name,
+     Fix_Comment;
 
 procedure Parse_Procedure (Level : in Natural;
                            Generated : in out Boolean) is
@@ -18,12 +19,14 @@ begin
 
   -- If a renames or generic instanciation, put as comment
   if Words.Search (Parser_Ada.Reserved_Word, "renames") /= 0 then
-    Output.Put_Line (Words.Concat, True, Level);
+    Fix_Comment (Level);
+    Output.Put_Line (Words.Concat, True, Level, True);
     Words.Reset;
     return;
   end if;
   if Words.Search (Parser_Ada.Reserved_Word, "is") /= 0 then
-    Output.Put_Line (Words.Concat, True, Level);
+    Fix_Comment (Level);
+    Output.Put_Line (Words.Concat, True, Level, True);
     Words.Reset;
     return;
   end if;
@@ -38,9 +41,9 @@ begin
   -- begin
   --   null;
   -- end <name>;
-  Output.Put_Line ("begin", False, Level);
-  Output.Put_Line ("null;", False, Level + 1);
+  Output.Put_Line ("begin", False, Level, True);
+  Output.Put_Line ("null;", False, Level + 1, True);
   Output.Put_Line ("end " & Asu.To_String (Name) & ";",
-                   False, Level);
+                   False, Level, True);
 end Parse_Procedure;
 

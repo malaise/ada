@@ -2,23 +2,40 @@ with Ada.Strings.Unbounded;
 with Common, Words, Output, Parser_Ada;
 -- Output comments and delete them and separators from words
 -- Keep last indent
-procedure Put_Comments (Level : in Natural) is
-  Index : Natural;
+procedure Put_Comments is
+  Index, Start : Natural;
   Word : Words.Word_Rec;
   Prev_Lf : Boolean;
   Prev_Index : Natural;
   package Asu renames Ada.Strings.Unbounded;
   use type Parser_Ada.Lexical_Kind_List,
            Asu.Unbounded_String;
+  Text : Asu.Unbounded_String;
 begin
   -- Put comments with line feeds
   Index := 1;
   for I in 1 .. Words.Length loop
     Word := Words.Read (Index);
     if Word.Lexic = Parser_Ada.Comment then
-      -- Del and put. Next word will be at same Index
-      Words.Del (Index);
-      Output.Put_Line (Asu.To_String (Word.Text), False, Level);
+      -- Go backwards to start of line or significant word
+      Start := Index;
+      loop
+        Start := Start - 1;
+        exit when Start = 0;
+        Word := Words.Read (Start);
+        exit when Word.Lexic /= Parser_Ada.Separator
+        or else Word.Text = String'(Common.Line_Feed);
+      end loop;
+      -- Concat indent and comment
+      Start := Start + 1;
+      Text := Asu.To_Unbounded_String ("");
+      for J in Start .. Index loop
+        -- Del and put.
+        Word := Words.Get (Start);
+        Asu.Append (Text, Word.Text);
+      end loop;
+      Output.Put_Line (Asu.To_String (Text), False, 0);
+      -- Next word will be at same Index
     else
       -- Next word
       Index := Index + 1;

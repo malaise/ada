@@ -2,7 +2,7 @@ with Ada.Strings.Unbounded;
 with Text_Char;
 with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
      Parse_Procedure, Parse_Function, Parse_Task, Parse_Protected,
-     Put_Comments, Get_Separators;
+     Put_Comments, Get_Separators, Fix_Comment;
 
 procedure Parse_Package (Level : in Natural;
                          Generated : in out Boolean) is
@@ -10,18 +10,19 @@ procedure Parse_Package (Level : in Natural;
   package Asu renames Ada.Strings.Unbounded;
   Name : Asu.Unbounded_String;
   Word : Parser_Ada.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List;
+  use type Parser_Ada.Lexical_Kind_List, Asu.Unbounded_String;
 
-  -- Put current "package body <name> is" and comments read ahead, once
+  -- Put current "package body <name> is" and comments read ahead
   -- Because called due to a keyword (procedure/function...)
   Body_Put : Boolean := False;
   procedure Put_Body is
   begin
     if not Body_Put then
       Output.Put_Line ("package body " & Asu.To_String (Name) & " is",
-                        False, Level);
+                        False, Level, True);
       Output.New_Line;
-      Put_Comments (Level + 1);
+      -- Put comments and line_feeds saved so far, keep separators in words
+      Put_Comments;
       -- Remove any leading line_feed, just keep indent
       while String'(Words.Read (1)) = String'(Common.Line_Feed) loop
          Words.Del (1);
@@ -29,12 +30,6 @@ procedure Parse_Package (Level : in Natural;
       Body_Put := True;
     end if;
   end Put_Body;
-
-  procedure Clear_Indent is
-    Dummy : constant String := Get_Separators;
-  begin
-    null;
-  end Clear_Indent;
 
 begin
 
@@ -50,60 +45,58 @@ begin
     begin
       if Word.Lexic = Parser_Ada.Comment then
         if Body_Put then
-          -- Within the package, Output comment
-          Output.Put (Words.Concat & Str, False);
+          -- Within the package, Output comments
+          Output.Put (Words.Concat & Asu.To_String (Word.Text), False);
           Words.Reset;
         else
           -- Not knowing yet if this is a real package
-          -- Save comments only
+          -- Save comments
           Words.Add (Parser_Ada.Comment, Word.Text);
         end if;
       elsif Word.Lexic = Parser_Ada.Separator then
-        if Str = Common.Line_Feed and then Body_Put then
-          -- Put New line now if in package
-          Output.New_Line;
-          Words.Reset;
+        if Body_Put then
+          -- Within the package, Output Line_Feed, save other separators
+          if Word.Text = String'(Common.Line_Feed) then
+            Output.New_Line;
+            Words.Reset;
+          else
+            Words.Add (Word);
+          end if;
         else
-          -- Save separator for later Output
-          Words.Add (Parser_Ada.Separator, Word.Text);
+          -- Not knowing yet if this is a real package
+          -- Save separators
+          Words.Add (Word);
         end if;
       elsif Str = "is" then
         -- Skip "is"
-        Words.Reset;
+        null;
       elsif Str = "end" then
         -- End of this package
         -- Put "package body <Name> is" if needed
         Put_Body;
-        Words.Reset;
         exit;
       elsif Str = "package" then
         Put_Body;
-        Clear_Indent;
         Parse_Package (Level + 1, Generated);
       elsif Str = "procedure" then
         -- Put name is this is this is the first statement
         --   after "package <name> is"
         Put_Body;
-        Clear_Indent;
         Parse_Procedure (Level + 1, Generated);
       elsif Str = "function" then
         Put_Body;
-        Clear_Indent;
         Parse_Function (Level + 1, Generated);
       elsif Str = "task" then
         Put_Body;
-        Clear_Indent;
         Parse_Task (Level + 1);
         Generated := True;
       elsif Str = "protected" then
         Put_Body;
-        Clear_Indent;
         Parse_Protected (Level + 1);
         Generated := True;
       elsif Str = "private" then
         Put_Body;
         -- Put "private" as a comment
-        Clear_Indent;
         Output.Put_Line (Str, True, Level);
       elsif Str = "renames" then
         -- This package is in fact a renaming declaration
@@ -125,15 +118,16 @@ begin
       or else Str = "for" then
         -- Type or representation clause
         Put_Body;
+        -- Reset indent
         Words.Add (Word);
         Parse_Type (Level + 1);
       else
         -- Unexpected word. Parse to end as comment
         Put_Body;
-        Clear_Indent;
         Words.Add (Word);
         Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
-        Output.Put (Words.Concat, True, Level + 1);
+        Fix_Comment (Level + 1);
+        Output.Put (Words.Concat, True, Level + 1, True);
         Words.Reset;
       end if;
     end;
@@ -141,10 +135,10 @@ begin
 
   -- Skip up to last ";"
   Parse_To_End (Parser_Ada.Delimiter, ";", Level);
-  Put_Comments (Level);
+  Put_Comments;
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
 end Parse_Package;
 

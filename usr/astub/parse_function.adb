@@ -1,7 +1,7 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
 with Common, Files, Output, Words, Parse_To_End, Parse_To_Ends,
-     Parser_Ada, Parse_Name;
+     Parser_Ada, Parse_Name, Fix_Comment;
 
 procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
@@ -65,7 +65,7 @@ begin
       end if;
     end loop;
     -- Flush comments
-    Put_Comments (Level);
+    Put_Comments;
   end if;
 
   -- Parse return
@@ -77,12 +77,14 @@ begin
 
   -- If a renames or generic instanciation, put as comment
   if Words.Search (Parser_Ada.Reserved_Word, "renames") /= 0 then
-    Output.Put_Line (Words.Concat, True, Level);
+    Fix_Comment (Level);
+    Output.Put_Line (Words.Concat, True, Level, True);
     Words.Reset;
     return;
   end if;
   if Words.Search (Parser_Ada.Reserved_Word, "is") /= 0 then
-    Output.Put_Line (Words.Concat, True, Level);
+    Fix_Comment (Level);
+    Output.Put_Line (Words.Concat, True, Level, True);
     Words.Reset;
     return;
   end if;
@@ -98,13 +100,13 @@ begin
   -- begin
   --   return <name> (<args>);
   -- end <name>;
-  Output.Put_Line ("begin", False, Level);
-  Output.Put ("return " & Asu.To_String (Name), False, Level + 1);
+  Output.Put_Line ("begin", False, Level, True);
+  Output.Put ("return " & Asu.To_String (Name), False, Level + 1, True);
   if Asu.Length (Args) /= 0 then
     Output.Put (" (" & Asu.To_String (Args) & ")", False);
   end if;
   Output.Put_Line (";", False);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
 
 end Parse_Function;
 
