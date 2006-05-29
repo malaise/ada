@@ -74,6 +74,7 @@ begin
     -- Delete last saved ;
     Output.Put (Words.Concat, False);
   end if;
+  Words.Reset;
   Output.Put_Line (" when True is", False);
 
   -- begin
