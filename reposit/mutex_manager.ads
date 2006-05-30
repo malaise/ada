@@ -1,66 +1,48 @@
 -- Mutex (single and Read_Write) management
 package Mutex_Manager is
 
-  -- When releasing a (simple or read/write) mutex that is already free
-  Mutex_Already_Free : exception;
+  -- Kind of mutex
+  type Mutex_Kind is (Simple, Read_Write);
 
-  --------------------------------------------------------------------------
+  -- Kind of requested access for a Read_Write mutex
+  type Access_Kind is (Read, Write);
 
-  -- Mutex object, free at creation
-  type Mutex is private;
+  -- Mutex object, simple by default, free at creation
+  type Mutex (Kind : Mutex_Kind := Simple) is private;
 
   -- Get un mutex.
+  -- Simple mutex provides exclusive access (Access_Kind is not significant).
+  -- With Read_Write mutex, simultaneous read are possible, but writer is alone.
   --  If delay is negative, wait until mutex is got
   --  If delay is null, try and give up if not free
   --  If delay is positive, try during the specified delay
   function Get_Mutex (A_Mutex      : Mutex;
-                      Waiting_Time : Duration) return Boolean;
+                      Waiting_Time : Duration;
+                      Kind         : Access_Kind := Read) return Boolean;
+
+  -- When releasing a (simple or read/write) mutex that is already free
+  Mutex_Already_Free : exception;
 
   -- Release a mutex.
   -- Exception Mutex_Already_Free is raised if the mutex was already free.
   procedure Release_Mutex (A_Mutex : in Mutex);
 
-  --------------------------------------------------------------------------
-
-  -- A lock object, free at creation
-  type Rw_Mutex is private;
-
-  -- Kind of requested access
-  type Access_Kind is (Read, Write);
-
-  -- Get a read/write mutex.
-  -- Simultaneous read are possible, but write is alone.
-  --  If delay is negative, wait until lock is got (and return True)
-  --  If delay is null, try and give up if not free
-  --  If delay is positive, try during the specified delay
-  function Get_Rw_Mutex (A_Rw_Mutex       : Rw_Mutex;
-                         Kind         : Access_Kind;
-                         Waiting_Time : Duration) return Boolean;
-
-  -- Release a read/write mutex.
-  -- Exception Mutex_Already_Free is raised if the mutex was already free.
-  procedure Release_Rw_Mutex (A_Rw_Mutex : in Rw_Mutex);
-
 private
 
+  -- Simple mutex
   -- The simple access lock and queue. No time.
-  protected type Mut_Protect is
-    entry Mut_Get;
-    procedure Mut_Rel (Status : out Boolean);
+  protected type Mutex_Protect is
+    entry Mutex_Get;
+    procedure Mutex_Release (Status : out Boolean);
   private
     Free : Boolean := True;
-  end Mut_Protect;
+  end Mutex_Protect;
 
-  type Mut_Access is access Mut_Protect;
-
-  -- Create a new mutex
-  type Mutex is record
-    Pointer : Mut_Access := new Mut_Protect;
-  end record;
-
+  type Mutex_Access is access Mutex_Protect;
 
   --------------------------------------------------------------------------
 
+  -- Read/write mutex
   -- There will be two queues
   type Queue_Range is mod 2;
 
@@ -68,11 +50,11 @@ private
   protected type Rw_Mutex_Protect is
 
     -- Gets the lock. Blocking.
-    entry Rw_Mutex_Get (Kind : in Access_Kind);
+    entry Mutex_Get (Kind : in Access_Kind);
 
     -- Releases the lock. No Check of kind but the lock must have been
     -- got.
-    procedure Rw_Mutex_Rel (Status : out Boolean);
+    procedure Mutex_Release (Status : out Boolean);
 
   private
     -- Number of readers
@@ -94,12 +76,18 @@ private
 
   end Rw_Mutex_Protect;
 
-
   type Rw_Mutex_Access is access Rw_Mutex_Protect;
 
+  --------------------------------------------------------------------------
+
   -- Create a new lock
-  type Rw_Mutex is record
-    Pointer : Rw_Mutex_Access := new Rw_Mutex_Protect;
+  type Mutex (Kind : Mutex_Kind := Simple) is record
+    case Kind is
+      when Simple =>
+        Mutex_Pointer : Mutex_Access := new Mutex_Protect;
+      when read_Write =>
+        Rw_Mutex_Pointer : Rw_Mutex_Access := new Rw_Mutex_Protect;
+    end case;
   end record;
 
 end Mutex_Manager;

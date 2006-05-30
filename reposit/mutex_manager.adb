@@ -1,98 +1,27 @@
 package body Mutex_Manager is
 
-  -- The entry points for simple mutex
-  function Get_Mutex (A_Mutex      : Mutex;
-                      Waiting_Time : Duration) return Boolean is
-    Result : Boolean;
-  begin
-    if Waiting_Time < 0.0 then
-      -- Negative delay : unconditional waiting
-      A_Mutex.Pointer.Mut_Get;
-      Result := True;
-    else
-      -- Delay
-      select
-        A_Mutex.Pointer.Mut_Get;
-        Result := True;
-      or
-        delay Waiting_Time;
-        Result := False;
-      end select;
-    end if;
-    return Result;
-  end Get_Mutex;
-
-  procedure Release_Mutex (A_Mutex : in Mutex) is
-    Mut_Status : Boolean;
-  begin
-    -- Request releasing
-    A_Mutex.Pointer.Mut_Rel(Mut_Status);
-    if not Mut_Status then
-      -- The mutex was already free
-      raise Mutex_Already_Free;
-    end if;
-  end Release_Mutex;
-
   -- The protected object which implements the simple mutex
-  protected body Mut_Protect is
+  protected body Mutex_Protect is
     -- Mutex is free at creation
-    entry Mut_Get when Free is
+    entry Mutex_Get when Free is
     begin
       Free := False;
-    end Mut_Get;
+    end Mutex_Get;
 
-    procedure Mut_Rel(Status : out Boolean) is
+    procedure Mutex_Release (Status : out Boolean) is
     begin
       -- Mutex is released, but status is set to false if it was already free
       Status := not Free;
       Free := True;
-    end Mut_Rel;
-  end Mut_Protect;
+    end Mutex_Release;
+  end Mutex_Protect;
 
-  -----------------------------------------------------------------------------
-  -- Get un lock.
-  --  If delay is negative, wait until lock is got (and return True)
-  --  If delay is null, try and give up if not free
-  --  If delay is positive, try during the specified delay
-  function Get_Rw_Mutex (A_Rw_Mutex       : Rw_Mutex;
-                     Kind         : Access_Kind;
-                     Waiting_Time : Duration) return Boolean is
-    Result : Boolean;
-  begin
-    if Waiting_Time < 0.0 then
-      -- Negative delay : unconditional waiting
-      A_Rw_Mutex.Pointer.Rw_Mutex_Get (Kind);
-      Result := True;
-    else
-      -- Delay
-      select
-        A_Rw_Mutex.Pointer.Rw_Mutex_Get (Kind);
-        Result := True;
-      or
-        delay Waiting_Time;
-        Result := False;
-      end select;
-    end if;
-    return Result;
-  end Get_Rw_Mutex;
 
-  -- Release a Rw_Mutex. Exception is raised if the lock was already free.
-  procedure Release_Rw_Mutex (A_Rw_Mutex : in Rw_Mutex) is
-    Rw_Mutex_Status : Boolean;
-  begin
-    -- Request releasing
-    A_Rw_Mutex.Pointer.Rw_Mutex_Rel (Rw_Mutex_Status);
-    if not Rw_Mutex_Status then
-      -- The lock was already free
-      raise Mutex_Already_Free;
-    end if;
-  end Release_Rw_Mutex;
-
-  -- The read/write access lock and queues. No time.
+  -- The protected object which implements the read/write mutex
   protected body Rw_Mutex_Protect is
 
     -- Gets the lock. Blocking.
-    entry Rw_Mutex_Get (Kind : in Access_Kind) when not Swapping is
+    entry Mutex_Get (Kind : in Access_Kind) when not Swapping is
     begin
       -- A request always re-schedules except when there is a writer writing
       -- (in this case the release will re-schedule)
@@ -101,11 +30,11 @@ package body Mutex_Manager is
       end if;
       -- Queue the request in this active queue
       requeue Queues (Current_Queue) with abort;
-    end Rw_Mutex_Get;
+    end Mutex_Get;
 
     -- Releases the lock. No Check of kind but the lock must have been
     -- got.
-    procedure Rw_Mutex_Rel (Status : out Boolean) is
+    procedure Mutex_Release (Status : out Boolean) is
     begin
       -- Default result is OK.
       Status := True;
@@ -123,7 +52,7 @@ package body Mutex_Manager is
         -- Called while no lock was got
         Status := False;
       end if;
-    end Rw_Mutex_Rel;
+    end Mutex_Release;
 
     -- Two queues, one active at a time
     -- Open when Re_Scedulling (and no current writer)
@@ -177,10 +106,62 @@ package body Mutex_Manager is
     -- Number of tasks waiting (in both Queues and Rw_Mutex_Get)
     function Nb_Waiting return Natural is
     begin
-      return Queues(0)'Count + Queues(1)'Count + Rw_Mutex_get'Count;
+      return Queues(0)'Count + Queues(1)'Count + Mutex_Get'Count;
     end Nb_Waiting;
 
   end Rw_Mutex_Protect;
+
+
+  function Get_Mutex (A_Mutex      : Mutex;
+                      Waiting_Time : Duration;
+                      Kind         : Access_Kind := Read) return Boolean is
+    Result : Boolean;
+  begin
+    if Waiting_Time < 0.0 then
+      -- Negative delay : unconditional waiting
+      if A_Mutex.Kind = Simple then
+        A_Mutex.Mutex_Pointer.Mutex_Get;
+      else
+        A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
+      end if;
+      Result := True;
+    else
+      if A_Mutex.Kind = Simple then
+        -- Delay
+        select
+          A_Mutex.Mutex_Pointer.Mutex_Get;
+          Result := True;
+        or
+          delay Waiting_Time;
+          Result := False;
+        end select;
+      else
+        select
+          A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
+          Result := True;
+        or
+          delay Waiting_Time;
+          Result := False;
+        end select;
+      end if;
+    end if;
+    return Result;
+  end Get_Mutex;
+
+  procedure Release_Mutex (A_Mutex : in Mutex) is
+    Mut_Status : Boolean;
+  begin
+    -- Request releasing
+    if A_Mutex.Kind = Simple then
+      A_Mutex.Mutex_Pointer.Mutex_Release (Mut_Status);
+    else
+      A_Mutex.Rw_Mutex_Pointer.Mutex_Release (Mut_Status);
+    end if;
+    if not Mut_Status then
+      -- The mutex was already free
+      raise Mutex_Already_Free;
+    end if;
+  end Release_Mutex;
 
 end Mutex_Manager;
 
