@@ -74,7 +74,7 @@ package body Mutex_Manager is
       else
         -- (re) Scheduling. The lock is either free or allocated to reader(s)
         if Kind = Read then
-          -- Read lock 
+          -- Read lock
           Readers := Readers + 1;
           -- End the scheduling if we are the last reader
           if Queues (Queue)'Count = 0 then

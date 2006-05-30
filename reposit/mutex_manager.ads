@@ -85,7 +85,7 @@ private
     case Kind is
       when Simple =>
         Mutex_Pointer : Mutex_Access := new Mutex_Protect;
-      when read_Write =>
+      when Read_Write =>
         Rw_Mutex_Pointer : Rw_Mutex_Access := new Rw_Mutex_Protect;
     end case;
   end record;
