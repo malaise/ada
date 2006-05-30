@@ -1,23 +1,6 @@
 package body Mutex_Manager is
 
-  -- The protected object which implements the mutex
-  protected body Mut_Protect is
-    -- Mutex is free at creation
-    entry Mut_Get when Free is
-    begin
-      Free := False;
-    end Mut_Get;
-
-    entry Mut_Rel(Status : out Boolean) when True is
-    begin
-      -- Mutex is released, but status is set to false if it was already free
-      Status := not Free;
-      Free := True;
-    end Mut_Rel;
-  end Mut_Protect;
-
-
-  -- The entry point
+  -- The entry points for simple mutex
   function Get_Mutex (A_Mutex      : Mutex;
                       Waiting_Time : Duration) return Boolean is
     Result : Boolean;
@@ -49,6 +32,155 @@ package body Mutex_Manager is
       raise Mutex_Already_Free;
     end if;
   end Release_Mutex;
+
+  -- The protected object which implements the simple mutex
+  protected body Mut_Protect is
+    -- Mutex is free at creation
+    entry Mut_Get when Free is
+    begin
+      Free := False;
+    end Mut_Get;
+
+    procedure Mut_Rel(Status : out Boolean) is
+    begin
+      -- Mutex is released, but status is set to false if it was already free
+      Status := not Free;
+      Free := True;
+    end Mut_Rel;
+  end Mut_Protect;
+
+  -----------------------------------------------------------------------------
+  -- Get un lock.
+  --  If delay is negative, wait until lock is got (and return True)
+  --  If delay is null, try and give up if not free
+  --  If delay is positive, try during the specified delay
+  function Get_Rw_Mutex (A_Rw_Mutex       : Rw_Mutex;
+                     Kind         : Access_Kind;
+                     Waiting_Time : Duration) return Boolean is
+    Result : Boolean;
+  begin
+    if Waiting_Time < 0.0 then
+      -- Negative delay : unconditional waiting
+      A_Rw_Mutex.Pointer.Rw_Mutex_Get (Kind);
+      Result := True;
+    else
+      -- Delay
+      select
+        A_Rw_Mutex.Pointer.Rw_Mutex_Get (Kind);
+        Result := True;
+      or
+        delay Waiting_Time;
+        Result := False;
+      end select;
+    end if;
+    return Result;
+  end Get_Rw_Mutex;
+
+  -- Release a Rw_Mutex. Exception is raised if the lock was already free.
+  procedure Release_Rw_Mutex (A_Rw_Mutex : in Rw_Mutex) is
+    Rw_Mutex_Status : Boolean;
+  begin
+    -- Request releasing
+    A_Rw_Mutex.Pointer.Rw_Mutex_Rel (Rw_Mutex_Status);
+    if not Rw_Mutex_Status then
+      -- The lock was already free
+      raise Mutex_Already_Free;
+    end if;
+  end Release_Rw_Mutex;
+
+  -- The read/write access lock and queues. No time.
+  protected body Rw_Mutex_Protect is
+
+    -- Gets the lock. Blocking.
+    entry Rw_Mutex_Get (Kind : in Access_Kind) when not Swapping is
+    begin
+      -- A request always re-schedules except when there is a writer writing
+      -- (in this case the release will re-schedule)
+      if not Writer then
+        Re_Schedule := True;
+      end if;
+      -- Queue the request in this active queue
+      requeue Queues (Current_Queue) with abort;
+    end Rw_Mutex_Get;
+
+    -- Releases the lock. No Check of kind but the lock must have been
+    -- got.
+    procedure Rw_Mutex_Rel (Status : out Boolean) is
+    begin
+      -- Default result is OK.
+      Status := True;
+      if Readers > 0 then
+        -- There are readers, one of them is releasing the lock
+        Readers := Readers - 1;
+        if Readers = 0 then
+          Re_Schedule := Nb_Waiting > 0;
+        end if;
+      elsif Writer then
+        -- The writer is releasing the lock
+        Writer := False;
+        Re_Schedule := Nb_Waiting > 0;
+      else
+        -- Called while no lock was got
+        Status := False;
+      end if;
+    end Rw_Mutex_Rel;
+
+    -- Two queues, one active at a time
+    -- Open when Re_Scedulling (and no current writer)
+    --      or when swapping queues
+    entry Queues (for Queue in Queue_Range) (Kind : in Access_Kind)
+    when Queue = Current_Queue
+    and then ((not Writer and then Re_Schedule) or else Swapping) is
+    begin
+      if Swapping then
+        -- Swapping queueing tasks from one queue to the other
+        if Queues (Queue)'Count = 0 then
+          -- This is the last task: end of swapping
+          Swapping := False;
+          Re_Schedule := False;
+          Current_Queue := Current_Queue + 1;
+        end if;
+        -- Requeue the task on the other queue
+        requeue Queues (Queue + 1) with abort;
+      else
+        -- (re) Scheduling. The lock is either free or allocated to reader(s)
+        if Kind = Read then
+          -- Read lock 
+          Readers := Readers + 1;
+          -- End the scheduling if we are the last reader
+          if Queues (Queue)'Count = 0 then
+            Re_Schedule := False;
+          end if;
+        else
+          -- Write lock
+          -- Either we get the lock or we queue
+          -- in both case, this is the end of the scheduling
+          Re_Schedule := False;
+          if Readers = 0 then
+            -- We get the write lock
+            Writer := True;
+          else
+            -- We have to wait until last reader releases
+            -- Need to swap queues in order to re-evaluate the order
+            --  versus priorities (except if we are alone waiting)
+            Swapping := Queues (Queue)'Count > 0;
+            if Swapping then
+              requeue Queues (Queue + 1) with abort;
+            else
+              requeue Queues (Queue) with abort;
+            end if;
+          end if;
+        end if;
+      end if;
+    end Queues;
+
+    -- Number of tasks waiting (in both Queues and Rw_Mutex_Get)
+    function Nb_Waiting return Natural is
+    begin
+      return Queues(0)'Count + Queues(1)'Count + Rw_Mutex_get'Count;
+    end Nb_Waiting;
+
+  end Rw_Mutex_Protect;
 
 end Mutex_Manager;
 
