@@ -23,12 +23,12 @@ package body Rnd is
     Int := Long_Long_Integer (X);
     -- Adjust at +/- 1
     if X > 0.0 then
-      -- If x > 0 error by excess
-      if Float (Int) > X then Int := Int - 1; end if;
+      -- If x > 0 then error is by excess (3.56 -> 4 want 3)
+      if Float (Int) /= X then Int := Int - 1; end if;
       return Int;
     else
-      -- If x < 0 error by default
-      if Float (Int) < X then Int := Int + 1; end if;
+      -- If x < 0 then error by exess (-3.44 -> -3 want -4)
+      if Float (Int) = X then Int := Int - 1; end if;
       return Int;
     end if;
   exception
