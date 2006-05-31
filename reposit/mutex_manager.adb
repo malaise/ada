@@ -16,19 +16,24 @@ package body Mutex_Manager is
     end Mutex_Release;
   end Mutex_Protect;
 
+  ----------------------------------------------------------------------------
 
   -- The protected object which implements the read/write mutex
   protected body Rw_Mutex_Protect is
 
     -- Gets the lock. Blocking.
+    -- Do not let a new request be inserted in the middle of a queue while
+    -- we are swapping queues.
     entry Mutex_Get (Kind : in Access_Kind) when not Swapping is
     begin
-      -- A request always re-schedules except when there is a writer writing
-      -- (in this case the release will re-schedule)
+      -- We are sure that, while a writer is writing, any kind of request
+      --  must wait (Open = False). In this case the release will
+      --  open the queue
+      -- In all other cases, request will pass the entry for active check
       if not Writer then
-        Re_Schedule := True;
+        Open := True;
       end if;
-      -- Queue the request in this active queue
+      -- Queue the request in the active queue
       requeue Queues (Current_Queue) with abort;
     end Mutex_Get;
 
@@ -42,12 +47,14 @@ package body Mutex_Manager is
         -- There are readers, one of them is releasing the lock
         Readers := Readers - 1;
         if Readers = 0 then
-          Re_Schedule := Nb_Waiting > 0;
+          -- The last reader leaves, so the lock becomes available
+          --  for writers
+          Open := Swapping or else Queues(Current_Queue)'Count > 0;
         end if;
       elsif Writer then
         -- The writer is releasing the lock
         Writer := False;
-        Re_Schedule := Nb_Waiting > 0;
+        Open := Swapping or else Queues(Current_Queue)'Count > 0;
       else
         -- Called while no lock was got
         Status := False;
@@ -55,43 +62,41 @@ package body Mutex_Manager is
     end Mutex_Release;
 
     -- Two queues, one active at a time
-    -- Open when Re_Scedulling (and no current writer)
-    --      or when swapping queues
+    -- Passes when swapping queues or else when open
     entry Queues (for Queue in Queue_Range) (Kind : in Access_Kind)
     when Queue = Current_Queue
-    and then ((not Writer and then Re_Schedule) or else Swapping) is
+    and then (Swapping or else Open) is
     begin
       if Swapping then
         -- Swapping queueing tasks from one queue to the other
         if Queues (Queue)'Count = 0 then
           -- This is the last task: end of swapping
+          -- Open remains unchanged
           Swapping := False;
-          Re_Schedule := False;
           Current_Queue := Current_Queue + 1;
         end if;
         -- Requeue the task on the other queue
         requeue Queues (Queue + 1) with abort;
       else
-        -- (re) Scheduling. The lock is either free or allocated to reader(s)
+        -- The queue is open: The lock is either free or allocated to reader(s)
         if Kind = Read then
           -- Read lock
           Readers := Readers + 1;
           -- End the scheduling if we are the last reader
-          if Queues (Queue)'Count = 0 then
-            Re_Schedule := False;
-          end if;
+          Open := Queues (Queue)'Count /= 0;
         else
           -- Write lock
           -- Either we get the lock or we queue
-          -- in both case, this is the end of the scheduling
-          Re_Schedule := False;
+          -- in both case, the queue closes
+          Open := False;
           if Readers = 0 then
             -- We get the write lock
             Writer := True;
           else
-            -- We have to wait until last reader releases
-            -- Need to swap queues in order to re-evaluate the order
-            --  versus priorities (except if we are alone waiting)
+            -- We have to wait until last reader releases the lock
+            -- If we are alone, requeue ourself. Otherwise
+            --  requeue in the alternate queue
+            --  this task, then all the other queueing tasks
             Swapping := Queues (Queue)'Count > 0;
             if Swapping then
               requeue Queues (Queue + 1) with abort;
@@ -103,14 +108,9 @@ package body Mutex_Manager is
       end if;
     end Queues;
 
-    -- Number of tasks waiting (in both Queues and Rw_Mutex_Get)
-    function Nb_Waiting return Natural is
-    begin
-      return Queues(0)'Count + Queues(1)'Count + Mutex_Get'Count;
-    end Nb_Waiting;
-
   end Rw_Mutex_Protect;
 
+  ----------------------------------------------------------------------------
 
   function Get_Mutex (A_Mutex      : Mutex;
                       Waiting_Time : Duration;
@@ -147,6 +147,15 @@ package body Mutex_Manager is
     end if;
     return Result;
   end Get_Mutex;
+
+  -- Get a mutex : infinite wait
+  procedure Get_Mutex (A_Mutex      : Mutex;
+                       Kind         : Access_Kind := Read) is
+    Dummy : Boolean;
+  begin
+    Dummy := Get_Mutex (A_Mutex, -1.0, Kind);
+  end Get_Mutex;
+
 
   procedure Release_Mutex (A_Mutex : in Mutex) is
     Mut_Status : Boolean;

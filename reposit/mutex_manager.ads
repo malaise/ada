@@ -19,6 +19,9 @@ package Mutex_Manager is
   function Get_Mutex (A_Mutex      : Mutex;
                       Waiting_Time : Duration;
                       Kind         : Access_Kind := Read) return Boolean;
+  -- Get a mutex : infinite wait
+  procedure Get_Mutex (A_Mutex      : Mutex;
+                       Kind         : Access_Kind := Read);
 
   -- When releasing a (simple or read/write) mutex that is already free
   Mutex_Already_Free : exception;
@@ -43,7 +46,17 @@ private
   --------------------------------------------------------------------------
 
   -- Read/write mutex
-  -- There will be two queues
+  -- We want to queue all requests (read and write) within the same queue
+  --  to ensure fairness (avoid starvation).
+  -- But the condition for read is "no writer" (not Writer)
+  --  and for write it is "no writer and no reader"
+  --  (not Writer and then Readers = 0)
+  -- So the guard of the common queue is "no writer", but a writer may pass it
+  --  while there are reader. In this case, we would like to requeue it in the
+  --  same queue and in the beginning of it; note that "requeue" requeues at
+  --  the end :-(. The artifact is to requeue the task, and all other
+  --  tasks queueing after it as well, in an alternate queue (Swapping).
+  -- So there are two queues
   type Queue_Range is mod 2;
 
   -- The read/write access lock and queues. No time.
@@ -61,18 +74,16 @@ private
     Readers : Natural := 0;
     -- Is there a writer
     Writer  : Boolean := False;
-    -- Re-schedule the queueing
-    Re_Schedule  : Boolean := False;
 
-    -- Two queues, one active at a time
+    -- Two queues, one is active at a time
     entry Queues (Queue_Range) (Kind : in Access_Kind);
     Current_Queue : Queue_Range := Queue_Range'First;
-
-    -- True while swapping the tasks from one queue to the other
+    -- The status of the queue:
+    -- Swapping or not
     Swapping : Boolean := False;
-
-    -- Number of tasks waiting (in both Queues and both Queues)
-    function Nb_Waiting return Natural;
+    -- If not zwapping, open or not
+    -- if swapping, will be open or not
+    Open : Boolean := False;
 
   end Rw_Mutex_Protect;
 
