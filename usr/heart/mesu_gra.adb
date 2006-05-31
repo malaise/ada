@@ -14,7 +14,7 @@ package body Mesu_Gra is
   -- To be computed: last sample in time
   X_Last  : Natural;
 
-  Y_First  : constant Pers_Def.Bpm_Range := 100;
+  Y_First  : constant Pers_Def.Bpm_Range := 50;
   Y_Last   : constant Pers_Def.Bpm_Range := Pers_Def.Bpm_Range'Last;
   Y_Step   : constant Pers_Def.Bpm_Range := 25;
   -- To be computed: 2 * font height
