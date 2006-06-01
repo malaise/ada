@@ -71,7 +71,7 @@ package body Mutex_Manager is
         -- Swapping queueing tasks from one queue to the other
         if Queues (Queue)'Count = 0 then
           -- This is the last task: end of swapping
-          -- Open remains unchanged
+          -- Open remains unchanged (maybe open by a release)
           Swapping := False;
           Current_Queue := Current_Queue + 1;
         end if;
@@ -85,9 +85,12 @@ package body Mutex_Manager is
           -- End the scheduling if we are the last reader
           Open := Queues (Queue)'Count /= 0;
         else
-          -- Write lock
-          -- Either we get the lock or we queue
-          -- in both case, the queue closes
+          -- Write lock:
+          -- Either we get the lock (queue is closed until we release)
+          -- or we queue (no currently queueing read can pass)
+          -- so in both case, the queue is closed
+          -- Note that a new request may re-open the queue and pass
+          --  before us if it as a better prio
           Open := False;
           if Readers = 0 then
             -- We get the write lock
@@ -95,8 +98,8 @@ package body Mutex_Manager is
           else
             -- We have to wait until last reader releases the lock
             -- If we are alone, requeue ourself. Otherwise
-            --  requeue in the alternate queue
-            --  this task, then all the other queueing tasks
+            --  requeue in the alternate queue this task, then all the other
+            --  queueing tasks, so we remain first (if same prios)
             Swapping := Queues (Queue)'Count > 0;
             if Swapping then
               requeue Queues (Queue + 1) with abort;
