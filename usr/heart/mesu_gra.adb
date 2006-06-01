@@ -14,8 +14,8 @@ package body Mesu_Gra is
   -- To be computed: last sample in time
   X_Last  : Natural;
 
-  Y_First  : constant Pers_Def.Bpm_Range := 50;
-  Y_Last   : constant Pers_Def.Bpm_Range := Pers_Def.Bpm_Range'Last;
+  Y_First  : Pers_Def.Bpm_Range;
+  Y_Last   : Pers_Def.Bpm_Range;
   Y_Step   : constant Pers_Def.Bpm_Range := 25;
   -- To be computed: 2 * font height
   Ys_First : Con_Io.Graphics.Y_Range;
@@ -370,19 +370,16 @@ package body Mesu_Gra is
     use Afpx.Line_List_Mng;
     use Pers_Def;
   begin
-    -- Compute dynamic sizing
+    -- Screen scale
     Xs_First := 4 * Con_Io.Graphics.Font_Width;
     Xs_Last  := Con_Io.Graphics.X_Max;
     Ys_First := Con_Io.Graphics.Font_Height * 2;
     Ys_Last := Con_Io.Graphics.Y_Max
              - Max_Nb_Mesure * Con_Io.Graphics.Font_Height;
 
-    Y_Factor := Float(Ys_First - Ys_Last) / Float(Y_First - Y_Last);
-    Font_Offset_Height := Con_Io.Graphics.Font_Height / 3;
-
+    -- Init array of mesures
     -- List is not empty
     Saved_Pos := Get_Position (Afpx.Line_List);
-
     Nb_Mesure := 0;
     -- for each in list : store in array
     Rewind (Afpx.Line_List);
@@ -410,6 +407,53 @@ package body Mesu_Gra is
     end loop;
     Move_To (Afpx.Line_List, Next, Saved_Pos - 1, False);
 
+    -- Find Y min and max
+    Y_First := Pers_Def.Bpm_Range'Last;
+    Y_Last := Pers_Def.Bpm_Range'First;
+    for I in 1 .. Nb_Mesure loop
+      -- Scan samples
+      for J in Mesu_Def.Sample_Nb_Range loop
+        if Mesure_Array(I).Mesure.Samples(J) = Pers_Def.Bpm_Range'First then
+          -- No more sample for this record
+          exit;
+        end if;
+        if Y_First > Mesure_Array(I).Mesure.Samples(J) then
+          -- Smallest Y so far
+          Y_First := Mesure_Array(I).Mesure.Samples(J);
+        end if;
+        if Y_Last < Mesure_Array(I).Mesure.Samples(J) then
+          -- Biggest Y so far
+          Y_Last := Mesure_Array(I).Mesure.Samples(J);
+        end if;
+      end loop;
+      -- Scan Tz
+      for J in Pers_Def.Person_Tz_Array'Range loop
+        if Mesure_Array(I).Mesure.Tz(J) /= Pers_Def.Bpm_Range'First then
+          if Y_First > Mesure_Array(I).Mesure.Tz(J) then
+            Y_First := Mesure_Array(I).Mesure.Tz(J);
+          end if;
+          if Y_Last < Mesure_Array(I).Mesure.Tz(J) then
+            Y_Last := Mesure_Array(I).Mesure.Tz(J);
+          end if;
+        end if;
+      end loop;
+    end loop;
+
+    -- Y_First + Y_Step must be < Y_Last
+    if Y_First + Y_Step < Y_Last then
+      -- Yes, round to Y_Step
+      Y_First := (Y_First / Y_Step) * Y_Step;
+      Y_Last  := (Y_Last  / Y_Step + 1) * Y_Step;
+    else
+      -- Defaults
+      Y_First := 50;
+      Y_Last := 200;
+    end if;
+
+    -- Compute Y factor
+    Y_Factor := Float(Ys_First - Ys_Last) / Float(Y_First - Y_Last);
+    Font_Offset_Height := Con_Io.Graphics.Font_Height / 3;
+
     -- Compute last X
     X_Last := 0;
     The_Records:
@@ -435,6 +479,12 @@ package body Mesu_Gra is
 
     Draw_Layout;
     Tz_Drown := False;
+
+    -- Draw all mesures
+    for I in 1 .. Nb_Mesure loop
+      Mesure_Array(I).Drown := True;
+      Draw_Mesure (I);
+    end loop;
 
     Main_Loop:
     loop
