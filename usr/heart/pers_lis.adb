@@ -169,20 +169,12 @@ package body Pers_Lis is
         return False;
       end if;
 
-      -- Other fields must be empty
-      for I in 2 .. 5 loop
-        Cursor_Field := Afpx.Field_Range(15 + I);
-        if Get_Tz(I) /= 0 then
-          return False;
-        end if;
-      end loop;
-
+      -- Other fields can be filled
       return True;
 
     exception
       when others => return False;
     end Check_Compute;
-
 
 
    begin
