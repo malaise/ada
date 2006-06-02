@@ -2,7 +2,14 @@
 package Mutex_Manager is
 
   -- Kind of mutex
-  type Mutex_Kind is (Simple, Read_Write);
+  -- Simple is standard mutex providing exclusive acccess. Efficient.
+  -- Read_Write allows several readers but one writer at a time.
+  --  this implementation is fair but somewhat CPU consuming because
+  --  the arival of a reader while writer(s) wait triggers a re-evaluation
+  --  to let it pass if it has a higher priority.
+  -- Write_Read is like Read_Write but it priviledges writer(s).
+  --   No reader passes as soon as writer(s) queue.
+  type Mutex_Kind is (Simple, Read_Write, Write_Read);
 
   -- Kind of requested access for a Read_Write mutex
   type Access_Kind is (Read, Write);
@@ -56,6 +63,11 @@ private
   --  same queue and in the beginning of it; note that "requeue" requeues at
   --  the end :-(. The artifact is to requeue the task, and all other
   --  tasks queueing after it as well, in an alternate queue (Swapping).
+  -- Benefit: a new reader may enter while writer(s) are queueing, if its
+  --  priority is better. Fairness ++.
+  -- Drawback: each new reader while writer(s) are queueing triggers an open
+  --  then a swap of the queues. Perfo --.
+
   -- So there are two queues
   type Queue_Range is mod 2;
 
@@ -91,6 +103,39 @@ private
 
   --------------------------------------------------------------------------
 
+  -- Write/Read mutex
+  -- Writers always have priority on pending readers, so we have a readers and
+  --  a writers queue
+  -- Benefit: the freshest data is amways available. Efficient implementation.
+  -- Drawback: risk of starvation of readers if to many/long writers whatever
+  --  prio they have
+
+  -- The write/read access lock and queues. No time.
+  protected type Wr_Mutex_Protect is
+
+    -- Gets the lock. Blocking.
+    entry Mutex_Get (Kind : in Access_Kind);
+
+    -- Releases the lock. No Check of kind but the lock must have been
+    -- got.
+    procedure Mutex_Release (Status : out Boolean);
+
+  private
+    -- Number of readers reading
+    Readers : Natural := 0;
+    -- Is there a writer writing
+    Writer  : Boolean := False;
+
+    -- The queues
+    entry Reading_Queue;
+    entry Writing_Queue;
+
+  end Wr_Mutex_Protect;
+
+  type Wr_Mutex_Access is access Wr_Mutex_Protect;
+
+  --------------------------------------------------------------------------
+
   -- Create a new lock
   type Mutex (Kind : Mutex_Kind := Simple) is record
     case Kind is
@@ -98,6 +143,8 @@ private
         Mutex_Pointer : Mutex_Access := new Mutex_Protect;
       when Read_Write =>
         Rw_Mutex_Pointer : Rw_Mutex_Access := new Rw_Mutex_Protect;
+      when Write_Read =>
+        Wr_Mutex_Pointer : Wr_Mutex_Access := new Wr_Mutex_Protect;
     end case;
   end record;
 

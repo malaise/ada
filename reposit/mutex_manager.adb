@@ -115,6 +115,53 @@ package body Mutex_Manager is
 
   ----------------------------------------------------------------------------
 
+  -- The write/read access lock and queues. No time.
+  protected body Wr_Mutex_Protect is
+
+    -- Gets the lock. Blocking.
+    entry Mutex_Get (Kind : in Access_Kind) when True is
+    begin
+      if Kind = Read then
+        requeue Reading_Queue;
+      else
+        requeue Writing_Queue;
+      end if;
+    end Mutex_Get;
+
+    -- Releases the lock. No Check of kind but the lock must have been
+    -- got.
+    procedure Mutex_Release (Status : out Boolean) is
+    begin
+      -- Default result is OK.
+      Status := True;
+      if Readers > 0 then
+        -- There are readers, one of them is releasing the lock
+        Readers := Readers - 1;
+      elsif Writer then
+        -- The writer is releasing the lock
+        Writer := False;
+      else
+        -- Called while no lock was got
+        Status := False;
+      end if;
+    end Mutex_Release;
+
+    -- The queue for readers. Open when no writer waiting nor writing
+    entry Reading_Queue when Writing_Queue'Count = 0 and then not Writer is
+    begin
+      Readers := Readers + 1;
+    end Reading_Queue;
+
+    -- The queue for writers. Open when no reader reading and no writer writing
+    entry Writing_Queue when Readers = 0 and then not Writer is
+    begin
+      Writer := True;
+    end Writing_Queue;
+
+  end Wr_Mutex_Protect;
+
+  ----------------------------------------------------------------------------
+
   function Get_Mutex (A_Mutex      : Mutex;
                       Waiting_Time : Duration;
                       Kind         : Access_Kind := Read) return Boolean is
@@ -122,31 +169,43 @@ package body Mutex_Manager is
   begin
     if Waiting_Time < 0.0 then
       -- Negative delay : unconditional waiting
-      if A_Mutex.Kind = Simple then
-        A_Mutex.Mutex_Pointer.Mutex_Get;
-      else
-        A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
-      end if;
+      case A_Mutex.Kind is
+        when Simple =>
+          A_Mutex.Mutex_Pointer.Mutex_Get;
+        when Read_Write =>
+          A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
+        when Write_Read =>
+          A_Mutex.Wr_Mutex_Pointer.Mutex_Get (Kind);
+      end case;
       Result := True;
     else
-      if A_Mutex.Kind = Simple then
-        -- Delay
-        select
-          A_Mutex.Mutex_Pointer.Mutex_Get;
-          Result := True;
-        or
-          delay Waiting_Time;
-          Result := False;
-        end select;
-      else
-        select
-          A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
-          Result := True;
-        or
-          delay Waiting_Time;
-          Result := False;
-        end select;
-      end if;
+      case A_Mutex.Kind is
+        when Simple =>
+          -- Delay
+          select
+            A_Mutex.Mutex_Pointer.Mutex_Get;
+            Result := True;
+          or
+            delay Waiting_Time;
+            Result := False;
+          end select;
+        when Read_Write =>
+          select
+            A_Mutex.Rw_Mutex_Pointer.Mutex_Get (Kind);
+            Result := True;
+          or
+            delay Waiting_Time;
+            Result := False;
+          end select;
+        when Write_Read =>
+          select
+            A_Mutex.Wr_Mutex_Pointer.Mutex_Get (Kind);
+            Result := True;
+          or
+            delay Waiting_Time;
+            Result := False;
+          end select;
+        end case;
     end if;
     return Result;
   end Get_Mutex;
@@ -164,11 +223,14 @@ package body Mutex_Manager is
     Mut_Status : Boolean;
   begin
     -- Request releasing
-    if A_Mutex.Kind = Simple then
-      A_Mutex.Mutex_Pointer.Mutex_Release (Mut_Status);
-    else
-      A_Mutex.Rw_Mutex_Pointer.Mutex_Release (Mut_Status);
-    end if;
+    case A_Mutex.Kind is
+      when Simple =>
+        A_Mutex.Mutex_Pointer.Mutex_Release (Mut_Status);
+      when Read_Write =>
+        A_Mutex.Rw_Mutex_Pointer.Mutex_Release (Mut_Status);
+      when Write_Read =>
+        A_Mutex.Wr_Mutex_Pointer.Mutex_Release (Mut_Status);
+    end case;
     if not Mut_Status then
       -- The mutex was already free
       raise Mutex_Already_Free;
