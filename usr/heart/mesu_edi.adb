@@ -150,6 +150,18 @@ package body Mesu_Edi is
 
     use Pers_Def;
 
+    -- Encode TZ afpx fields from Person
+    procedure Encode_Tz is
+    begin
+      -- Encode Tz
+      Afpx.Encode_Field (09, (00,00), Str_Mng.To_Str(Person.Tz(1)));
+      Afpx.Encode_Field (10, (00,00), Str_Mng.To_Str(Person.Tz(2)));
+      Afpx.Encode_Field (11, (00,00), Str_Mng.To_Str(Person.Tz(3)));
+      Afpx.Encode_Field (12, (00,00), Str_Mng.To_Str(Person.Tz(4)));
+      Afpx.Encode_Field (13, (00,00), Str_Mng.To_Str(Person.Tz(5)));
+      Afpx.Encode_Field (14, (00,00), Str_Mng.To_Str(Person.Tz(6)));
+    end Encode_Tz;
+
     -- Check a field
     procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
                            For_Valid : in Boolean;
@@ -183,12 +195,7 @@ package body Mesu_Edi is
             Mesure.Pid := Person.Pid;
             if not For_Valid then
               -- Encode Tz
-              Afpx.Encode_Field (09, (00,00), Str_Mng.To_Str(Person.Tz(1)));
-              Afpx.Encode_Field (10, (00,00), Str_Mng.To_Str(Person.Tz(2)));
-              Afpx.Encode_Field (11, (00,00), Str_Mng.To_Str(Person.Tz(3)));
-              Afpx.Encode_Field (12, (00,00), Str_Mng.To_Str(Person.Tz(4)));
-              Afpx.Encode_Field (13, (00,00), Str_Mng.To_Str(Person.Tz(5)));
-              Afpx.Encode_Field (14, (00,00), Str_Mng.To_Str(Person.Tz(6)));
+              Encode_Tz;
               -- Go to date
               Current_Field := 16;
             else
@@ -505,22 +512,29 @@ package body Mesu_Edi is
               exit;
             end if;
 
-          elsif (Ptg_Result.Field_No = 131
-                 and then Cursor_Field >= 24 and then Cursor_Field <= 124) then
+          elsif Ptg_Result.Field_No = 131
+                and then Cursor_Field >= 24
+                and then Cursor_Field <= 124 then
             -- Insert a sample
             for I in reverse Cursor_Field + 1 .. 124 loop
               Afpx.Encode_Field (I, (0, 0), Afpx.Decode_Field(I - 1, 0));
             end loop;
             Afpx.Clear_Field(Cursor_Field);
 
-          elsif (Ptg_Result.Field_No = 132
-                 and then Cursor_Field >= 24 and then Cursor_Field <= 124) then
+          elsif Ptg_Result.Field_No = 132
+                and then Cursor_Field >= 24
+                and then Cursor_Field <= 124 then
             -- Suppress a sample
             for I in Cursor_Field .. 123 loop
               Afpx.Encode_Field (I, (0, 0), Afpx.Decode_Field(I + 1, 0));
             end loop;
             Afpx.Clear_Field(124);
 
+          elsif Ptg_Result.Field_No = 133  
+                and then Cursor_Field >= 09
+                and then Cursor_Field <= 14 then
+            -- Reset of Tz from Person (if any, if not => clear)
+            Encode_Tz;
           end if; -- Ptg_Result.Field_No = valid or cancel
 
       end case; -- Result.Event
@@ -583,9 +597,10 @@ package body Mesu_Edi is
     Afpx.Set_Field_Activation (129, False);
     Afpx.Set_Field_Activation (130, False);
 
-    -- Disable Ins and Suppr
+    -- Disable Ins, Suppr and TZReset
     Afpx.Set_Field_Activation (131, False);
     Afpx.Set_Field_Activation (132, False);
+    Afpx.Set_Field_Activation (133, False);
 
     Cursor_Field := 01;
     Cursor_Col := 0;

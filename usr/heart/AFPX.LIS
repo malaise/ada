@@ -1383,6 +1383,15 @@ Descriptor 3
     End Init
   End Field
 
+  # Reset TZs button
+  Field 133 Button
+    Geometry 7 57 7 63
+    Colors brown blue
+    Init
+      00 01 Reset
+    End Init
+  End Field
+
 End Descriptor
 
 
