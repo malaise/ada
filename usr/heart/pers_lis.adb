@@ -140,42 +140,21 @@ package body Pers_Lis is
     end Check_Field;
 
     function Check_Compute return Boolean is
-      subtype Tz_Range is Integer range Pers_Def.Person_Tz_Array'First ..
-                                        Pers_Def.Person_Tz_Array'Last;
-
-      function Get_Tz (N : Tz_Range) return Pers_Def.Bpm_Range is
-        Tz_S  : Str_Mng.Bpm_Str;
-      begin
-        Tz_S := Afpx.Decode_Field (Afpx.Field_Range(N) + 15, 00);
-        return Str_Mng.To_Bpm(Tz_S);
-      end Get_Tz;
-
-      use Pers_Def;
+      Tz_S  : Str_Mng.Bpm_Str;
+      use type Pers_Def.Bpm_Range;
     begin
-      Cursor_Col := 0;
       -- Last field must not be empty and valid
-      Cursor_Field := 21;
-      Person.Tz(6) := Get_Tz (6);
-      if Person.Tz(6) = Pers_Def.Bpm_Range'First then
-        return False;
-      end if;
-
-      -- First field must be empty or valid
-      Cursor_Field := 16;
-      Person.Tz(1) := Get_Tz (1);
-
-      -- First value > last value
-      if Person.Tz(1) >= Person.Tz(6) then
-        return False;
-      end if;
-
       -- Other fields can be filled
-      return True;
-
+      Cursor_Field := 21;
+      Cursor_Col := 0;
+      Tz_S := Afpx.Decode_Field (21, 00);
+      Person.Tz(6) := Str_Mng.To_Bpm(Tz_S);
+      return Person.Tz(6) /= Pers_Def.Bpm_Range'First;
     exception
       when others => return False;
     end Check_Compute;
 
+   use type Pers_Def.Bpm_Range;
 
    begin
     Exit_Program := False;
@@ -348,23 +327,11 @@ package body Pers_Lis is
               -- Compute
               Ok := Check_Compute;
               if Ok then
-                declare
-                  Rest_Rate : Pers_Def.Bpm_Range;
-                  Delta_Rate : My_Math.Real;
-                  Percent : My_Math.Real;
-                  use My_Math;
-                  use Pers_Def;
-                begin
-                  Rest_Rate := Person.Tz(1);
-                  Delta_Rate := My_Math.Real (Person.Tz(6) - Person.Tz(1));
-                  -- Rest_Rate + 50% .. 90% of Delta
-                  for I in 1 .. 5 loop
-                    Percent := My_Math.Real (50 + (I - 1) * 10) / 100.0;
-                    Person.Tz(I) :=
-                       Pers_Def.Bpm_Range(My_Math.Trunc(Delta_Rate * Percent))
-                     + Rest_Rate;
-                  end loop;
-                end;
+                -- 50% .. 90% of Max rate (Tz(6))
+                for I in 1 .. 5 loop
+                  Person.Tz(I) := Person.Tz(6)
+                                * (Pers_Def.Bpm_Range(I) + 4) / 10;
+                end loop;
                 -- Decode name & activity, then rencode all
                 Cursor_Field := 11;
                 Check_Field (Cursor_Field, Ok);

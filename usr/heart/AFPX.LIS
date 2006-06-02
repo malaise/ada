@@ -442,15 +442,15 @@ Descriptor 2
 
   # TZ edit numbers
   Field 14 Put
-    Geometry 22 15 22 37
+    Geometry 22 15 22 38
     Colors light_gray not_blink black
     Init
-     00 01 1
-     00 05 2
-     00 09 3
-     00 13 4
-     00 17 5
-     00 21 6
+     00 01 50
+     00 05 60
+     00 09 70
+     00 13 80
+     00 17 90
+     00 20 100%
     End Init
   End Field
 
