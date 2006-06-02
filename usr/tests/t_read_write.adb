@@ -1,10 +1,10 @@
 with Ada.Text_Io;
-with Mutex_Manager, Schedule, Rnd, Normal, Mixed_Str;
+with Mutex_Manager, Schedule, Rnd, Normal, Argument, Mixed_Str, Sys_Calls;
 
 procedure T_Read_Write is
   pragma Priority(10);
 
-  Lock : Mutex_Manager.Mutex (Mutex_Manager.Read_Write);
+  Lock : Mutex_Manager.Mutex;
   Io_Lock : Mutex_Manager.Mutex;
 
   subtype Range_Task is Positive range 1 .. 10;
@@ -82,7 +82,37 @@ procedure T_Read_Write is
 
   Tasks : array (Range_Task) of T;
 
+  procedure Error (Msg : in String) is
+  begin
+    Sys_Calls.Put_Line_Error ("Error: " & Msg);
+    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+       & " rw | wr");
+    Sys_Calls.Set_Error_Exit_Code;
+  end Error;
+
 begin
+  if Argument.Get_Nbre_Arg > 1 then
+    Error ("Too many arguments");
+    return;
+  end if;
+  if Argument.Get_Nbre_Arg = 0
+  or else Argument.Get_Parameter = "rw" then
+    declare
+      T : Mutex_Manager.Mutex (Mutex_Manager.Read_Write);
+    begin
+      Lock := T;
+    end;
+  elsif Argument.Get_Parameter = "wr" then
+    declare
+      T : Mutex_Manager.Mutex (Mutex_Manager.Write_Read);
+    begin
+      Lock := T;
+    end;
+  else
+    Error ("unexpected argument " & Argument.Get_Parameter);
+    return;
+  end if;
+
   Rnd.Randomize;
   -- Give to each actor it's name
   for I in Range_Task loop

@@ -45,7 +45,7 @@ procedure T_Mut is
 
         Ada.Text_Io.Put ("Task: ");
         My_Io.Put (Current_I, 3);
-        if Mut_Kind = Mutex_Manager.Read_Write then
+        if Mut_Kind /= Mutex_Manager.Simple then
           Ada.Text_Io.Put (" : Read, Write");
         end if;
         Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s), Terminate ? ");
@@ -64,7 +64,7 @@ procedure T_Mut is
         end loop;
         In_Get := True;
         Prompt (I, True);
-        if Mut_Kind = Mutex_Manager.Read_Write then
+        if Mut_Kind /= Mutex_Manager.Simple then
           Ada.Text_Io.Get (K);
           if Upper_Char (K) = 'T' then
             A := K;
@@ -182,7 +182,7 @@ procedure T_Mut is
     Sys_Calls.Put_Line_Error (S & ".");
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
                   & " <mutex_kind> [ <nb_tasks> ]");
-    Sys_Calls.Put_Line_Error ("  <mutex_kind> ::= s | rw");
+    Sys_Calls.Put_Line_Error ("  <mutex_kind> ::= s | rw | wr");
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
 
@@ -201,6 +201,8 @@ begin -- T_Mut
     M_Kind := Mutex_Manager.Simple;
   elsif Argument.Get_Parameter (1) = "rw" then
     M_Kind := Mutex_Manager.Read_Write;
+  elsif Argument.Get_Parameter (1) = "wr" then
+    M_Kind := Mutex_Manager.Write_Read;
   else
     Error ("Invalid argument " & Argument.Get_Parameter (Occurence => 1));
     return;
