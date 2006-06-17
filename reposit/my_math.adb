@@ -120,27 +120,26 @@ package body My_Math is
   function Trunc (X : Real) return Inte is
     Int : Inte;
   begin
-    if X > Real(Integer'Last) then
+    if      X > Real(Inte'Last)
+    or else X < Real(Inte'First) then
       raise Math_Error;
     end if;
 
     Int := Inte(X);
 
-    -- adjust +- 1
+    -- adjust +/- 1
     if X > 0.0 then
-
       -- if x > 0 error by exceed
       if Real(Int) > X then
         Int := Int - 1;
       end if;
-
-    else
-
+    elsif X < 0.0 then
       -- if x < 0 error by default
       if Real(Int) < X then
         Int := Int + 1;
       end if;
-
+    else
+      Int := 0;
     end if;
 
     return Int;
