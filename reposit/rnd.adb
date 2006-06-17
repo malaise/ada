@@ -1,5 +1,5 @@
-with System, Mutex_Manager;
-with U_Rand;
+with System
+with Mutex_Manager, U_Rand;
 package body Rnd is
 
   type C_Struct_Timeval is record
@@ -13,27 +13,26 @@ package body Rnd is
   -- Protection of critical sections
   Lock : Mutex_Manager.Mutex;
 
-  -- Trunc a real, for randomize and random
-  function Long_Trunc (X : Float) return Long_Long_Integer is
-    Max : constant Float := Float (Long_Long_Integer'Last);
-    Min : constant Float := Float (Long_Long_Integer'First);
+  -- Return integer equal or below X
+  function To_Int (X : Float) return Long_Long_Integer is
+    Max : constant Float := Float(Long_Long_Integer'Last);
+    Min : constant Float := Float(Long_Long_Integer'First);
     Int : Long_Long_Integer;
   begin
-    if (X > Max) or else (X < Min) then raise Constraint_Error; end if;
-    Int := Long_Long_Integer (X);
-    -- Adjust at +/- 1
-    if X > 0.0 then
-      -- If x > 0 then error is by excess (3.56 -> 4 want 3)
-      if Float (Int) /= X then Int := Int - 1; end if;
-      return Int;
-    else
-      -- If x < 0 then error by exess (-3.44 -> -3 want -4)
-      if Float (Int) = X then Int := Int - 1; end if;
-      return Int;
+    if X > Max or else X < Min then
+      raise Constraint_Error;
     end if;
+    Int := Long_Long_Integer(X);
+    -- Adjust at +/- 1
+    -- Error is always by excess (ex: 3.56 -> 4 want 3, or -3.44 -> -3 want -4)
+    if Float(Int) > X then
+      Int := Int - 1;
+    end if;
+    return Int;
   exception
-    when others => raise Constraint_Error;
-  end Long_Trunc;
+    when others =>
+      raise Constraint_Error;
+  end To_Int;
 
   -- Initialisation of sequence
   procedure Randomize (Init : in Float := 1.0) is
@@ -90,7 +89,7 @@ package body Rnd is
     return
       Num'Val (
         Integer (
-          Long_Trunc (
+          To_Int (
             Random (Float (Num'Pos (Mini)), Float (Num'Pos (Maxi)) + 1.0)
           )
         )
@@ -102,7 +101,7 @@ package body Rnd is
   begin
     return
       Integer (
-       Long_Trunc (Random (Float (Mini), Float (Maxi) + 1.0) )
+       To_Int (Random (Float (Mini), Float (Maxi) + 1.0) )
       );
   end Int_Random;
 
