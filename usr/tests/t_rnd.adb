@@ -27,4 +27,12 @@ begin
   Put ("total :" );
   Put (Tot);
   New_Line;
+
+  loop
+    Tot := Rnd.Int_Random (1, 5);
+    Put_Line (Tot'Img);
+    exit when Tot < 1 or else Tot > 5;
+  end loop;
+
 end T_Rnd;
+
