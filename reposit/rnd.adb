@@ -1,4 +1,4 @@
-with System
+with System;
 with Mutex_Manager, U_Rand;
 package body Rnd is
 
