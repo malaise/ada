@@ -530,7 +530,7 @@ package body Mesu_Edi is
             end loop;
             Afpx.Clear_Field(124);
 
-          elsif Ptg_Result.Field_No = 133  
+          elsif Ptg_Result.Field_No = 133
                 and then Cursor_Field >= 09
                 and then Cursor_Field <= 14 then
             -- Reset of Tz from Person (if any, if not => clear)
