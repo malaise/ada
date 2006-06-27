@@ -14,7 +14,7 @@ package body Misc is
       raise Invalid_Argument;
     end if;
     if Call_Stack.Level /= 0 then
-      -- Save contect;
+      -- Save context;
       Call_Entry := Unb.To_Unbounded_String (Input_Dispatcher.Get_Remaining);
       -- Even if end of subprog, this is not stdin
       if Unb.Length (Call_Entry) = 0 then
