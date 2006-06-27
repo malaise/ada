@@ -1,10 +1,14 @@
 with Dynamic_List, My_Math;
 package body Prime_List is
 
-  package Prime_Dyn_List_Mng is new Dynamic_List(Long_Long_Positive);
+  use type Arbitrary.Number;
+
+  package Prime_Dyn_List_Mng is new Dynamic_List(Prime_Positive);
   package Prime_List_Mng renames Prime_Dyn_List_Mng.Dyn_List;
   The_List : Prime_List_Mng.List_Type;
   Need_Search : Boolean := True;
+
+  Two  : constant Prime_Positive := Arbitrary.Set (Integer'(2));
 
   -- Rewind the list of prime numbers found so far
   procedure Rewind is
@@ -18,8 +22,8 @@ package body Prime_List is
   end Rewind;
 
   -- Read item from list
-  function Read return Long_Long_Positive is
-    Res : Long_Long_Positive;
+  function Read return Prime_Positive is
+    Res : Prime_Positive;
     Moved : Boolean;
   begin
     -- Read next
@@ -28,7 +32,7 @@ package body Prime_List is
   end Read;
 
   -- Append a prime number to list
-  procedure Append (N : in Long_Long_Positive) is
+  procedure Append (N : in Prime_Positive) is
   begin
     if not Prime_List_Mng.Is_Empty (The_List) then
       Prime_List_Mng.Rewind (The_List, Prime_List_Mng.Prev);
@@ -36,12 +40,41 @@ package body Prime_List is
     Prime_List_Mng.Insert (The_List, N);
   end Append;
 
+  Sqrt_Memory : Prime_Positive := One;
+  Step : constant Prime_Positive := Arbitrary.Set (Integer'(10));
+  function Sqrt (N : Prime_Positive) return Prime_Positive is
+    I, J, K : Prime_Positive;
+  begin
+    -- Check that (Memory)2 <= N, else reset to 1
+    if Sqrt_Memory * Sqrt_Memory > N then
+      Sqrt_Memory := One;
+    end if;
+    -- J := J * 10 until (J)2 > N, I = J / 10
+    I := Sqrt_Memory;
+    J := I;
+    while J * J <= N loop
+      I := J;
+      J := J * Step;
+    end loop;
+    -- Now (I)2 <= N < (J)2
+    -- Dichotomy between I and J
+    loop
+      K := (I + J) / Two;
+      if K * K > N then
+        J := K;
+      else
+        I := K;
+      end if;
+      exit when J = I + One;
+    end loop;
+    return I;
+  end Sqrt;
 
   -- Get next prime number
-  function Next return Long_Long_Positive is
-    Res, Tmp : Long_Long_Positive;
+  function Next return Prime_Positive is
+    Res, Tmp : Prime_Positive;
     Is_Prime : Boolean;
-    Square : Long_Long_Positive;
+    Square : Prime_Positive;
     Moved : Boolean;
   begin
     -- Need to search?
@@ -54,9 +87,9 @@ package body Prime_List is
 
     -- Empty list, add 1
     if Prime_List_Mng.Is_Empty (The_List) then
-      Append (1);
+      Append (One);
       Need_Search := True;
-      return 1;
+      return One;
     end if;
 
     -- Need to search next, start from last found
@@ -64,9 +97,9 @@ package body Prime_List is
     -- Loop on Res
     Search_Loop:
     loop
-      Res := Res + 1;
+      Res := Res + One;
       Is_Prime := True;
-      Square := My_Math.Round(My_Math.Sqrt(My_Math.Real(Res)));
+      Square := Sqrt(Res);
       Rewind;
 
       -- Loop on list
@@ -76,7 +109,7 @@ package body Prime_List is
         if Tmp > Square then
           exit Divisor_Loop;
         end if;
-        if Tmp /= 1 and then Res rem Tmp = 0 then
+        if Tmp /= One and then Res rem Tmp = Zero then
           Is_Prime := False;
           exit Divisor_Loop;
         end if;

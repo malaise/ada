@@ -7,16 +7,14 @@
 --        prime -lcm <n1> <n2>     lowest common multiple
 
 with Ada.Text_Io;
-with Argument, Dynamic_List;
+with Argument, Dynamic_List, Arbitrary;
 with Prime_List;
 procedure Prime is
+  use type Arbitrary.Number;
   use Prime_List;
 
-  -- Put result
-  package Llp_Io is new Ada.Text_Io.Integer_Io (Long_Long_Positive);
-
   -- Lists of prime factors
-  package Pldm is new Dynamic_List(Long_Long_Positive);
+  package Pldm is new Dynamic_List(Prime_Positive);
   package Plm renames Pldm.Dyn_List;
   procedure Search is new Plm.Search("=");
 
@@ -25,7 +23,7 @@ procedure Prime is
   Mode : Mode_List;
 
   -- Arguments, numbers
-  N1, N2, N3 : Long_Long_Positive;
+  N1, N2, N3 : Prime_Positive;
 
   -- Lists of prime factors
   L1, L2, Lr : Plm.List_Type;
@@ -58,10 +56,17 @@ procedure Prime is
   "<lcm>     ::= -lcm <positive> <positive>  -- lowest common multiple");
   end Usage;
 
-  -- Put a number
-  procedure Put_Line (P : in Long_Long_Positive) is
+  -- Remove the leading '+'
+  function Image (P : Prime_Positive) return String is
+    Str : constant String := Arbitrary.Image (P);
   begin
-    Llp_Io.Put (P);
+    return Str (2 .. Str'Last);
+  end Image;
+
+  -- Put a number
+  procedure Put_Line (P : in Prime_Positive) is
+  begin
+    Ada.Text_Io.Put (Image (P) );
     Ada.Text_Io.New_Line;
   end Put_Line;
 
@@ -73,23 +78,37 @@ procedure Prime is
     end if;
   end Rewind;
 
+  Zero : constant Prime_Number := Prime_List.Zero;
+  One  : constant Prime_Positive := Prime_List.One;
+
+  -- Set a positive number from string (for arg parsing)
+  function  Prime_Positive_Value (Str : String) return Prime_Positive is
+    R : Prime_Number;
+  begin
+    R := Arbitrary.Set (Str);
+    if R <= Zero then
+      raise Constraint_Error;
+    end if;
+    return R;
+  end Prime_Positive_Value;
+
   -- Decompose N in prime numbers.
-  procedure Decompose (N : in Long_Long_Positive; L : in out Plm.List_Type) is
-    C, T : Long_Long_Positive;
+  procedure Decompose (N : in Prime_Positive; L : in out Plm.List_Type) is
+    C, T : Prime_Positive;
   begin
     C := N;
     -- Start after 1
-    if C = 1 then
-      Plm.Insert (L, 1);
+    if C = One then
+      Plm.Insert (L, One);
     else
       T := Prime_List.Next;
       T := Prime_List.Next;
       loop
-        if C rem T = 0 then
+        if C rem T = Zero then
           -- Insert this factor and try again with it
           Plm.Insert (L, T);
           C := C / T;
-          exit when C = 1;
+          exit when C = One;
         else
           -- Try next factor
           T := Prime_List.Next;
@@ -103,7 +122,7 @@ procedure Prime is
 
   -- Put list from current
   procedure Put_List (L : in out Plm.List_Type) is
-    T : Long_Long_Positive;
+    T : Prime_Positive;
   begin
     loop
       Plm.Read (L, T, Plm.Current);
@@ -122,11 +141,11 @@ procedure Prime is
   end Delete;
 
   -- Mustiply numbers of list from current
-  function Multiply (L : in Plm.List_Type) return Long_Long_Integer is
-    S, T : Long_Long_Integer;
+  function Multiply (L : in Plm.List_Type) return Prime_Number is
+    S, T : Prime_Number;
     Lt : Plm.List_Type;
   begin
-    S := 1;
+    S := One;
     Plm.Assign (Lt, L);
     loop
       Plm.Read (Lt, T, Plm.Current);
@@ -150,33 +169,33 @@ begin
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-list" then
       Mode := List;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-is" then
       Mode := Is_Prime;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-next" then
       Mode := Next;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-prev" then
       Mode := Prev;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-fact" then
       Mode := Factors;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 3
     and then Argument.Get_Parameter = "-hcd" then
       Mode := Hcd;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
-      N2 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 3));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N2 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 3));
     elsif Argument.Get_Nbre_Arg = 3
     and then Argument.Get_Parameter = "-lcm" then
       Mode := Lcm;
-      N1 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 2));
-      N2 := Long_Long_Positive'Value (Argument.Get_Parameter(Occurence => 3));
+      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N2 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 3));
     else
       Usage;
       return;
@@ -204,13 +223,13 @@ begin
 
     when Is_Prime =>
       N2 := Prime_List.Next;
-      if N1 /= 1 then
+      if N1 /= One then
         loop
           N2 := Prime_List.Next;
-          exit when N1 rem N2 = 0;
+          exit when N1 rem N2 = Zero;
         end loop;
       end if;
-      Ada.Text_Io.Put (Long_Long_Positive'Image(N1));
+      Ada.Text_Io.Put (Image (N1));
       if N1 = N2 then
         Ada.Text_Io.Put_Line (" is prime.");
       else
@@ -222,15 +241,15 @@ begin
         N2 := Prime_List.Next;
         exit when N2 > N1;
       end loop;
-      Ada.Text_Io.Put_Line (Long_Long_Positive'Image(N2));
+      Ada.Text_Io.Put_Line (Image (N2));
     when Prev =>
-      N3 := 1;
+      N3 := One;
       loop
         N2 := Prime_List.Next;
         exit when N2 >= N1;
         N3 := N2;
       end loop;
-      Ada.Text_Io.Put_Line (Long_Long_Positive'Image(N3));
+      Ada.Text_Io.Put_Line (Image (N3));
 
     when Factors =>
       -- Decompose N1 in prime factors
