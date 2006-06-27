@@ -6,49 +6,80 @@
 # Store max in m if set
 ssize isnul [ 0 ] ifcall
 ssize 1 /= E pushr ifcall
-dup isinte ~ E pushr ifcall
+dup isinte [ toarbi ] ifcall
+dup isarbi ~ E pushr ifcall
 m popr
 
+# Compute Sqrt of n and stores it in s
+# Supposes that s already contains a minorant of sqrt(n)
+@1 u popr
+[
+# Check that s is set and s * s <= n, otherwise set it to 1
+s emptyr [ u pushr s popr ] ifcall
+s pushr dup * n pushr > [ u pushr s popr ] ifcall
+
+# Loop, each time multiplying y by 10, until y * y > n
+s pushr dup x popr y popr
+[
+y pushr dup * n pushr > ifret
+# Save y in x and multiply y by 10
+y pushr x copyr @10 * y popr
+# Loop
+M pushr retacal ] M copyr call
+
+# Now x * x <= n < y * y
+# Dichotomy between x and y. z = (x + y) / 2
+[ x pushr y pushr + @2 / z copyr dup
+# If z * z > n then y = z else x = z
+dup * n pushr > y x ifte popr
+# Exit when y = x + 1
+x pushr @1 + y pushr = ifret
+# Loop
+D pushr retacal ] D copyr call
+
+# Now x = sqrt (n)
+x pushr s popr
+] S popr
+
+
 # Loop on all extra stack
-#  j has to be initialised to 0
-#  Top of stack has to be true and is replaced by False if i not prime
+#  j has to be initialised to @0
+#  Top of stack has to be true and is replaced by false if i not prime
 [
 # Done (j = n)?
-esize j pushr = ifret
+esize j pushr tointe = ifret
 # Check next
-j pushr 1 + j popr
+j pushr @1 + j popr
 # Check sqrt(i) < fe => prime
 pushfe copye e copyr
-s pushr > dup [ j pushr rotle ] ifcall ifret
+s pushr > dup [ j pushr tointe rotle ] ifcall ifret
 # Check i % fe. 0 => not prime
 i pushr e pushr % isnul
 # Not prime, restore estack (rotate j times from last)
-dup [ j pushr rotle swap pop false swap ] ifcall ifret
+dup [ j pushr tointe rotle swap pop false swap ] ifcall ifret
 L pushr retacal ] L popr
 
 
 # Loop on all numbers
 [
 # Check current i (store sqrt(i))
-i pushr toreal 0.5 ** round s popr
-0 j popr true L pushr call
+i pushr n popr S pushr call
+@0 j popr true L pushr call
 # I prime?  Put it and insert in estack
 [ i pushr copye putl ] ifcall
 # Next i
-i pushr 1 + i popr
+i pushr @1 + i popr
 # Stop loop f m /= 0 and then m < j
 m pushr dup isnotnul swap i pushr < & ifret
 # Infinite loop or up to m
-S pushr retacal ] S popr
+P pushr retacal ] P popr
 
 
 # 1 is prime
-4 format
-1 putl
-m pushr 1 = ifret
-
+@1 putl
+m pushr @1 = ifret
 
 # First number to check
-2 i popr
-S pushr call
+@2 i popr
+P pushr call
 
