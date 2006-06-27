@@ -372,6 +372,7 @@ package body Arbitrary is
         exit when N = La;
         N := N + 1;
         T := R & Unb.Element (A, N);
+        Trim (T);
       end loop;
       Trim(Q);
     end Div_No_Sign;
