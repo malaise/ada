@@ -224,15 +224,19 @@ package body Input_Dispatcher is
       end if;
       raise Program_Error;
     end if;
-    if Debug.Debug_Level_Array(Debug.Input) then
-      Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
-       & Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str)) & "<");
-    end if;
     if not Curr_Is_Stdin and then not Str_Parsed then
       -- Current string is not be parsed (retacal) return all
+      if Debug.Debug_Level_Array(Debug.Input) then
+        Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
+         & Unb.To_String (Cur_Str) & "<");
+      end if;
       return Unb.To_String (Cur_Str);
     else
       -- Return remaining
+      if Debug.Debug_Level_Array(Debug.Input) then
+        Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
+         & Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str)) & "<");
+      end if;
       return Unb.Slice (Cur_Str, Cur_Index, Unb.Length(Cur_Str));
     end if;
   end Get_Remaining;
