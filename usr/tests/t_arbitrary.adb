@@ -77,7 +77,7 @@ begin
     Ada.Text_Io.Put_Line ("Set("""") SHOULD HAVE RAISED Constraint_Error");
   exception
     when Constraint_Error =>
-      Ada.Text_Io.Put_Line ("Set("""")  raises Constraint_Error");
+      Ada.Text_Io.Put_Line ("Set("""")  raises Constraint_Error, OK.");
   end;
 
 exception
