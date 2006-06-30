@@ -97,7 +97,8 @@ package Test is
   protected type Prot2 is
   end Prot2;
 
-  -- Two renaming declarations
+  -- Three renaming declarations
+  package Pack3 renames Pack2;
   procedure Proc4 (A : in Integer) renames Proc1;
   function Func3 return Integer renames Func2;
 

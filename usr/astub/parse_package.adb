@@ -102,16 +102,18 @@ begin
         -- This package is in fact a renaming declaration
         -- Reset to "package <name> renames" and put as comment
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
-        Output.Put ("package " & Asu.To_String (Name)
-                  & " renames" & Words.Concat, True, Level);
+        Fix_Comment (Level);
+        Output.Put_Line ("package " & Asu.To_String (Name)
+                  & " renames" & Words.Concat, True, Level, True);
         Words.Reset;
         return;
       elsif Str = "new" then
         -- This package is in fact a generic instanciation
         -- Reset to "package <name> is new" and put as comment
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
-        Output.Put ("package " & Asu.To_String (Name)
-                  & " is new" & Words.Concat, True, Level);
+        Fix_Comment (Level);
+        Output.Put_Line ("package " & Asu.To_String (Name)
+                  & " is new" & Words.Concat, True, Level, True);
         Words.Reset;
         return;
       elsif Str = "type"
