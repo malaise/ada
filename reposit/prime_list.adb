@@ -40,6 +40,9 @@ package body Prime_List is
     Prime_List_Mng.Insert (The_List, N);
   end Append;
 
+  Zero : constant Prime_Number := Arbitrary.Zero;
+  One  : constant Prime_Number := Arbitrary.One;
+
   Sqrt_Memory : Prime_Positive := One;
   Step : constant Prime_Positive := Arbitrary.Set (Integer'(10));
   function Sqrt (N : Prime_Positive) return Prime_Positive is
