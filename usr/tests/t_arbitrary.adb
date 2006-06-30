@@ -39,36 +39,38 @@ begin
   declare
     use type Arbitrary.Number;
   begin
-    Ada.Text_Io.Put_Line ("A is       " & Arbitrary.Image(A));
-    Ada.Text_Io.Put_Line ("abs A is   " & Arbitrary.Image(abs A));
-    Ada.Text_Io.Put_Line ("-A is      " & Arbitrary.Image(-A));
+    Ada.Text_Io.Put_Line ("A is        " & Arbitrary.Image(A));
+    Ada.Text_Io.Put_Line ("abs A is    " & Arbitrary.Image(abs A));
+    Ada.Text_Io.Put_Line ("-A is       " & Arbitrary.Image(-A));
 
-    Ada.Text_Io.Put_Line ("B is       " & Arbitrary.Image(B));
-    Ada.Text_Io.Put_Line ("abs B is   " & Arbitrary.Image(abs B));
-    Ada.Text_Io.Put_Line ("-B is      " & Arbitrary.Image(-B));
+    Ada.Text_Io.Put_Line ("B is        " & Arbitrary.Image(B));
+    Ada.Text_Io.Put_Line ("abs B is    " & Arbitrary.Image(abs B));
+    Ada.Text_Io.Put_Line ("-B is       " & Arbitrary.Image(-B));
 
-    Ada.Text_Io.Put_Line ("A =  B is  " & Boolean'Image(A = B));
-    Ada.Text_Io.Put_Line ("A <  B is  " & Boolean'Image(A < B));
-    Ada.Text_Io.Put_Line ("A <= B is  " & Boolean'Image(A <= B));
-    Ada.Text_Io.Put_Line ("A >  B is  " & Boolean'Image(A > B));
-    Ada.Text_Io.Put_Line ("A >= B is  " & Boolean'Image(A >= B));
+    Ada.Text_Io.Put_Line ("A =  B is   " & Boolean'Image(A = B));
+    Ada.Text_Io.Put_Line ("A <  B is   " & Boolean'Image(A < B));
+    Ada.Text_Io.Put_Line ("A <= B is   " & Boolean'Image(A <= B));
+    Ada.Text_Io.Put_Line ("A >  B is   " & Boolean'Image(A > B));
+    Ada.Text_Io.Put_Line ("A >= B is   " & Boolean'Image(A >= B));
 
-    Ada.Text_Io.Put_Line ("A + B is  " &  Arbitrary.Image(A + B));
-    Ada.Text_Io.Put_Line ("A - B is  " &  Arbitrary.Image(A - B));
-    Ada.Text_Io.Put_Line ("A * B is  " &  Arbitrary.Image(A * B));
+    Ada.Text_Io.Put_Line ("A + B is   " &  Arbitrary.Image(A + B));
+    Ada.Text_Io.Put_Line ("A - B is   " &  Arbitrary.Image(A - B));
+    Ada.Text_Io.Put_Line ("A * B is   " &  Arbitrary.Image(A * B));
     begin
       Arbitrary.Div (A, B, C, D);
-      Ada.Text_Io.Put_Line ("A / B is  " &  Arbitrary.Image(C));
-      Ada.Text_Io.Put_Line ("A % B is  " &  Arbitrary.Image(D));
+      Ada.Text_Io.Put_Line ("A / B is   " &  Arbitrary.Image(C));
+      Ada.Text_Io.Put_Line ("A % B is   " &  Arbitrary.Image(D));
+      Ada.Text_Io.Put_Line ("A rem B is " &  Arbitrary.Image(A rem B));
+      Ada.Text_Io.Put_Line ("A mod B is " &  Arbitrary.Image(A mod B));
     exception
       when Constraint_Error =>
         Ada.Text_Io.Put_Line ("Constraint_Error on division");
     end;
     begin
-      Ada.Text_Io.Put_Line ("A ** B is " &  Arbitrary.Image(A ** B));
+      Ada.Text_Io.Put_Line ("A ** B is  " &  Arbitrary.Image(A ** B));
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Constraint_Error on pow");
+        Ada.Text_Io.Put_Line ("Constraint_Error on **");
     end;
   end;
 
