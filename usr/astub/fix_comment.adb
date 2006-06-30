@@ -31,7 +31,7 @@ begin
       -- Read Length following words (Words returns "" if no more word)
       -- Stop if not a space
       for I in 1 .. Length loop
-        Space :=  Words.Read (Index + 1);
+        Space :=  Words.Read (Index + I);
         Ok := Ada.Strings.Unbounded.To_String (Space.Text) = " ";
         exit when not Ok;
       end loop;
