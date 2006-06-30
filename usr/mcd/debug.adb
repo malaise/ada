@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Environ, Bool_Io, Arbitrary, Async_Stdin;
+with Environ, Bool_Io, Arbitrary.Fractions, Async_Stdin;
 with Inte_Io, Real_Io;
 package body Debug is
 
@@ -29,6 +29,8 @@ package body Debug is
     case Item.Kind is
       when Arbi =>
         Async_Stdin.Put_Err ("@" & Arbitrary.Image(Item.Val_Arbi));
+      when Frac =>
+        Async_Stdin.Put_Err ("@" & Arbitrary.Fractions.Image(Item.Val_Frac));
       when Inte =>
         Async_Stdin.Put_Err (Item.Val_Inte'Img);
       when Real =>

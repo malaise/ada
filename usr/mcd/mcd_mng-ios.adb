@@ -31,8 +31,6 @@ package body Ios is
     I : My_Math.Inte;
   begin
     case Item.Kind is
-      when Arbi =>
-        null;
       when Inte =>
         Inte_Io.Default_Width := Ada.Text_Io.Field (Item.Val_Inte);
         Inte_Format_Set := True;
@@ -71,6 +69,8 @@ package body Ios is
     case Item.Kind is
       when Arbi =>
         return '@' & Arbitrary.Image (Item.Val_Arbi);
+      when Frac =>
+        return '@' & Arbitrary.Fractions.Image (Item.Val_Frac);
       when Inte | Real | Bool | Chrs =>
         Str := Strof (Item);
         return Unb.To_String(Str.Val_Text);
@@ -236,6 +236,9 @@ package body Ios is
       when Arbi =>
         Res.Val_Text := Unb.To_Unbounded_String (
                          '@' & Arbitrary.Image (Item.Val_Arbi));
+      when Frac =>
+        Res.Val_Text := Unb.To_Unbounded_String (
+                         '@' & Arbitrary.Fractions.Image (Item.Val_Frac));
       when Inte =>
         Image_Str := (others => ' ');
         Inte_Io.Put(Image_Str, Item.Val_Inte);

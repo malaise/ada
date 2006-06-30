@@ -38,11 +38,15 @@ package body Mcd_Mng is
 
     function Is_True (X : Item_Rec) return Boolean;
 
-    -- Arbi,Arbi->Arbi or Inte,Inte->Inte or Real,Real->Real
+    -- Arbi,Arbi->Arbi or Frac,Frac->Frac or Inte,Inte->Inte or
+    -- Real,Real->Real
     function Add     (L, R : Item_Rec) return Item_Rec;
     function Sub     (L, R : Item_Rec) return Item_Rec;
     function Mult    (L, R : Item_Rec) return Item_Rec;
     function Div     (L, R : Item_Rec) return Item_Rec;
+
+    -- Arbi,Arbi->Arbi or Frac,Arbi->Frac or Inte,Inte->Inte or
+    -- Real,Real->Real
     function Pow     (L, R : Item_Rec) return Item_Rec;
 
     -- Arbi,Arbi->Arbi or Inte,Inte->Inte
@@ -55,14 +59,16 @@ package body Mcd_Mng is
     function Shl     (L, R : Item_Rec) return Item_Rec;
     function Shr     (L, R : Item_Rec) return Item_Rec;
 
-    -- Arbi,Arbi->Arbi or Inte->Inte or Real->Real
+    -- Arbi->Arbi or Frac->Frac or Inte->Inte or Real->Real
     function Minus   (X : Item_Rec) return Item_Rec;
     function Absv    (X : Item_Rec) return Item_Rec;
 
     -- Inte->Inte
     function Bitneg  (X : Item_Rec) return Item_Rec;
 
-    -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool
+    -- Arbi,Arbi->Bool or Frac,Frac->Bool or Inte,Inte->Bool
+    -- or Real,Real->Bool or Bool,Bool->Bool or Chars,Chars->Bool
+    -- or Regi->Regi->Bool
     function Equal   (L, R : Item_Rec) return Item_Rec;
     function Diff    (L, R : Item_Rec) return Item_Rec;
     function Greater (L, R : Item_Rec) return Item_Rec;
@@ -92,12 +98,18 @@ package body Mcd_Mng is
 
     -- *->Bool
     function Isarbi  (X : Item_Rec) return Item_Rec;
+    function Isfrac  (X : Item_Rec) return Item_Rec;
     function Isinte  (X : Item_Rec) return Item_Rec;
     function Isreal  (X : Item_Rec) return Item_Rec;
     function Isbool  (X : Item_Rec) return Item_Rec;
     function Isstr   (X : Item_Rec) return Item_Rec;
     function Isreg   (X : Item_Rec) return Item_Rec;
     function Isprog  (X : Item_Rec) return Item_Rec;
+
+    -- Frac <-> Arbi
+    function Mkfrac (N, D : Item_Rec) return Item_Rec;
+    function Numof  (X : Item_Rec) return Item_Rec;
+    function Denomof (X : Item_Rec) return Item_Rec;
 
     -- Arbi->Bool or Inte->Bool or Real->Bool
     function Ispos    (X : Item_Rec) return Item_Rec;
@@ -455,6 +467,15 @@ package body Mcd_Mng is
         when Frac =>
           Pop(A); Push (Operations.Frac(A));
           S := A;
+        when Mkfrac =>
+          Pop(A); Pop(B); Push (Operations.Mkfrac(A, B));
+          S := A;
+        when Numof =>
+          Pop(A); Push (Operations.Numof(A));
+          S := A;
+        when Denomof =>
+          Pop(A); Push (Operations.Denomof(A));
+          S := A;
         when Dms =>
           Pop(A); Push (Operations.Dms(A));
           S := A;
@@ -466,6 +487,9 @@ package body Mcd_Mng is
           S := A;
         when Isarbi =>
           Pop(A); Push (Operations.Isarbi(A));
+          S := A;
+        when Isfrac =>
+          Pop(A); Push (Operations.Isfrac(A));
           S := A;
         when Isinte =>
           Pop(A); Push (Operations.Isinte(A));

@@ -22,6 +22,12 @@ package body Operations is
     return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real;
   end Is_Arbi_Or_Inte_Or_Real;
 
+  function Is_Arbi_Or_frac_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
+  begin
+    return X.Kind = Arbi or else X.Kind = Frac
+   or else X.Kind = Inte or else X.Kind = Real;
+  end Is_Arbi_Or_frac_Or_Inte_Or_Real;
+
   function Is_Arbi_Or_Inte (X : Item_Rec) return Boolean is
   begin
     return X.Kind = Arbi or else X.Kind = Inte;
@@ -39,6 +45,14 @@ package body Operations is
    or else X.Kind = Bool or else X.Kind = Chrs;
   end Is_Inte_Or_Real_Or_Bool_Or_Chars;
 
+  function Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi
+    (X : Item_Rec) return Boolean is
+  begin
+    return X.Kind = Arbi or else X.Kind = Frac
+   or else X.Kind = Inte or else X.Kind = Real
+   or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
+  end Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
+
   function Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi (X : Item_Rec)
            return Boolean is
   begin
@@ -46,11 +60,12 @@ package body Operations is
    or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
   end Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
 
-  -- Arbi,Arbi->Arbi or Inte,Inte->Inte or Real,Real->Real
+  -- Arbi,Arbi->Arbi or Frac,Frac->Frac or Inte,Inte->Inte or Real,Real->Real
   function Add     (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
+    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -58,6 +73,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => L.Val_Arbi + R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Frac, Val_Frac => L.Val_Frac + R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte + R.Val_Inte);
     else
@@ -71,9 +88,10 @@ package body Operations is
   end Add;
 
   function Sub     (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
+    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -81,6 +99,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => L.Val_Arbi - R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Frac, Val_Frac => L.Val_Frac - R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte - R.Val_Inte);
     else
@@ -94,9 +114,10 @@ package body Operations is
   end Sub;
 
   function Mult    (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
+    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -104,6 +125,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => L.Val_Arbi * R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Frac, Val_Frac => L.Val_Frac * R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte * R.Val_Inte);
     else
@@ -117,9 +140,10 @@ package body Operations is
   end Mult;
 
   function Div     (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
+    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -127,6 +151,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => L.Val_Arbi / R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Frac, Val_Frac => L.Val_Frac / R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Inte, Val_Inte => L.Val_Inte / R.Val_Inte);
     else
@@ -139,18 +165,22 @@ package body Operations is
       raise Compute_Error;
   end Div;
 
+  -- Arbi,Arbi->Arbi or Frac,Arbi->Frac or Inte,Inte->Inte or Real,Real->Real
   function Pow     (L, R : Item_Rec) return Item_Rec is
     use My_Math; -- for real ** real
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(L) or else not Is_Arbi_Or_Inte_Or_Real(R) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
+    or else not Is_Arbi_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind = Arbi and then R.Kind = Arbi then
-      if R.Val_Arbi < Arbitrary.Set ("0") then
+      if R.Val_Arbi < Arbitrary.Zero then
         raise Invalid_Argument;
       end if;
       return (Kind => Arbi, Val_Arbi => L.Val_Arbi ** R.Val_Arbi);
+    elsif L.Kind = Frac and then R.Kind = Arbi then
+      return (Kind => Frac, Val_Frac => L.Val_Frac ** R.Val_Arbi);
     elsif L.Kind = Inte and then R.Kind = Inte then
       if R.Val_Inte < 0 then
         raise Invalid_Argument;
@@ -190,6 +220,21 @@ package body Operations is
     when others =>
       raise Compute_Error;
   end Remind;
+
+  -- Inte->Inte
+  function Bitneg  (X : Item_Rec) return Item_Rec is
+    use Bit_Ops;
+  begin
+    if X.Kind /= Inte then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Inte, Val_Inte => not X.Val_Inte);
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Bitneg;
 
   -- Inte,Inte->Inte
   function Bitand  (L, R : Item_Rec) return Item_Rec is
@@ -262,15 +307,17 @@ package body Operations is
       raise Compute_Error;
   end Shr;
 
-  -- Arbi->Arbi or Inte->Inte or Real->Real
+  -- Arbi->Arbi or Frac->Frac or Inte->Inte or Real->Real
   function Minus   (X : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(X) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(X) then
       raise Invalid_Argument;
     end if;
     if X.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => - X.Val_Arbi);
+    elsif X.Kind = Frac then
+      return (Kind => Frac, Val_Frac => - X.Val_Frac);
     elsif X.Kind = Inte then
       return (Kind => Inte, Val_Inte => - X.Val_Inte);
     else
@@ -283,15 +330,17 @@ package body Operations is
       raise Compute_Error;
   end Minus;
 
-  -- Arbi->Arbi or Inte->Inte or Real->Real
+  -- Arbi->Arbi or Frac->Frac or Inte->Inte or Real->Real
   function Absv   (X : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Inte_Or_Real(X) then
       raise Invalid_Argument;
     end if;
     if X.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => abs X.Val_Arbi);
+    elsif X.Kind = Frac then
+      return (Kind => Frac, Val_Frac => abs X.Val_Frac);
     elsif X.Kind = Inte then
       return (Kind => Inte, Val_Inte => abs X.Val_Inte);
     else
@@ -315,10 +364,10 @@ package body Operations is
       raise Invalid_Argument;
     end if;
     if X.Kind = Arbi then
-      if X.Val_Arbi < Arbitrary.Set ("0") then
+      if X.Val_Arbi < Arbitrary.Zero then
         raise Invalid_Argument;
       end if;
-      One_Arbi := Arbitrary.Set ("1");
+      One_Arbi := Arbitrary.One;
       R_Arbi := One_Arbi;
       I_Arbi := One_Arbi;
       while I_Arbi <= X.Val_Arbi loop
@@ -343,28 +392,14 @@ package body Operations is
       raise Compute_Error;
   end Fact;
 
-  -- Inte->Inte
-  function Bitneg  (X : Item_Rec) return Item_Rec is
-    use Bit_Ops;
-  begin
-    if X.Kind /= Inte then
-      raise Invalid_Argument;
-    end if;
-    return (Kind => Inte, Val_Inte => not X.Val_Inte);
-  exception
-    when Invalid_Argument | Argument_Mismatch =>
-      raise;
-    when others =>
-      raise Compute_Error;
-  end Bitneg;
-
-  -- Arbi,Arbi->Bool or Inte,Inte->Bool or Real,Real->Bool or Bool,Bool->Bool
-  -- Regi,Regi->Bool or Chars,Chars->Bool
+  -- Arbi,Arbi->Bool or Frac,Frac->Bool or Inte,Inte->Bool or Real,Real->Bool or 
+  -- Bool,Bool->Bool or Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
+             Unb.Unbounded_String;
   begin
-    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -372,6 +407,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Bool, Val_Bool => L.Val_Arbi = R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Bool, Val_Bool => L.Val_Frac = R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte = R.Val_Inte);
     elsif L.Kind = Real then
@@ -391,10 +428,11 @@ package body Operations is
   end Equal;
 
   function Diff    (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
+             Unb.Unbounded_String;
   begin
-    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -402,6 +440,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Bool, Val_Bool => L.Val_Arbi /= R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Bool, Val_Bool => L.Val_Frac /= R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte /= R.Val_Inte);
     elsif L.Kind = Real then
@@ -421,10 +461,11 @@ package body Operations is
   end Diff;
 
   function Greater (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
+             Unb.Unbounded_String;
   begin
-    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -432,6 +473,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Bool, Val_Bool => L.Val_Arbi > R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Bool, Val_Bool => L.Val_Frac > R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte > R.Val_Inte);
     elsif L.Kind = Real then
@@ -451,10 +494,11 @@ package body Operations is
   end Greater;
 
   function Smaller (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
+             Unb.Unbounded_String;
   begin
-    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -462,6 +506,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Bool, Val_Bool => L.Val_Arbi < R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Bool, Val_Bool => L.Val_Frac < R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte < R.Val_Inte);
     elsif L.Kind = Real then
@@ -481,10 +527,11 @@ package body Operations is
   end Smaller;
 
   function Greateq (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
+             Unb.Unbounded_String;
   begin
-    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -492,6 +539,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Bool, Val_Bool => L.Val_Arbi >= R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Bool, Val_Bool => L.Val_Frac >= R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte >= R.Val_Inte);
     elsif L.Kind = Real then
@@ -511,10 +560,11 @@ package body Operations is
   end Greateq;
 
   function Smalleq (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
+             Unb.Unbounded_String;
   begin
-    if      not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
-    or else not Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
+    if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -522,6 +572,8 @@ package body Operations is
     end if;
     if L.Kind = Arbi then
       return (Kind => Bool, Val_Bool => L.Val_Arbi <= R.Val_Arbi);
+    elsif L.Kind = Frac then
+      return (Kind => Bool, Val_Bool => L.Val_Frac <= R.Val_Frac);
     elsif L.Kind = Inte then
       return (Kind => Bool, Val_Bool => L.Val_Inte <= R.Val_Inte);
     elsif L.Kind = Real then
@@ -744,6 +796,11 @@ package body Operations is
     return (Kind => Bool, Val_Bool => X.Kind = Arbi);
   end Isarbi;
 
+  function Isfrac  (X : Item_Rec) return Item_Rec is
+  begin
+    return (Kind => Bool, Val_Bool => X.Kind = Frac);
+  end Isfrac;
+
   function Isinte  (X : Item_Rec) return Item_Rec is
   begin
     return (Kind => Bool, Val_Bool => X.Kind = Inte);
@@ -779,7 +836,7 @@ package body Operations is
     use type Arbitrary.Number;
   begin
     if X.Kind = Arbi then
-      return (Kind => Bool, Val_Bool => X.Val_Arbi > Arbitrary.Set("0"));
+      return (Kind => Bool, Val_Bool => X.Val_Arbi > Arbitrary.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte > 0);
     elsif  X.Kind = Real then
@@ -793,7 +850,7 @@ package body Operations is
     use type Arbitrary.Number;
   begin
     if X.Kind = Arbi then
-      return (Kind => Bool, Val_Bool => X.Val_Arbi = Arbitrary.Set("0"));
+      return (Kind => Bool, Val_Bool => X.Val_Arbi = Arbitrary.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte = 0);
     elsif  X.Kind = Real then
@@ -807,7 +864,7 @@ package body Operations is
     use type Arbitrary.Number;
   begin
     if X.Kind = Arbi then
-      return (Kind => Bool, Val_Bool => X.Val_Arbi /= Arbitrary.Set("0"));
+      return (Kind => Bool, Val_Bool => X.Val_Arbi /= Arbitrary.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte /= 0);
     elsif  X.Kind = Real then
@@ -821,7 +878,7 @@ package body Operations is
     use type Arbitrary.Number;
   begin
     if X.Kind = Arbi then
-      return (Kind => Bool, Val_Bool => X.Val_Arbi < Arbitrary.Set("0"));
+      return (Kind => Bool, Val_Bool => X.Val_Arbi < Arbitrary.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte < 0);
     elsif  X.Kind = Real then
@@ -1051,6 +1108,35 @@ package body Operations is
     end if;
     return (Kind => Real, Val_Real => Round_At (X.Val_Real, Integer(N.Val_Inte)));
   end Roundat;
+
+
+  -- Frac <-> Arbi 
+  function Mkfrac (N, D : Item_Rec) return Item_Rec is
+  begin
+    if N.Kind /= Arbi or else D.Kind /= Arbi then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Frac,
+            Val_Frac => Arbitrary.Fractions.Set (N.Val_Arbi, D.Val_Arbi));
+  end Mkfrac;
+
+  function Numof  (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Frac then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Arbi,
+            Val_Arbi => Arbitrary.Fractions.Numerator (X.Val_Frac));
+  end Numof;
+
+  function Denomof (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind /= Frac then
+      raise Invalid_Argument;
+    end if;
+    return (Kind => Arbi,
+            Val_Arbi => Arbitrary.Fractions.Denominator (X.Val_Frac));
+  end Denomof;
 
 end Operations;
 

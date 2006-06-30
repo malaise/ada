@@ -1,9 +1,9 @@
 with Ada.Strings.Unbounded;
-with My_Math, Arbitrary;
+with My_Math, Arbitrary, Arbitrary.Fractions;
 with Input_Dispatcher;
 package Mcd_Mng is
 
-  type Item_Kind_List is (Arbi, Inte, Real, Bool, Chrs, Prog, Regi, Oper);
+  type Item_Kind_List is (Arbi, Frac, Inte, Real, Bool, Chrs, Prog, Regi, Oper);
 
   type Operator_List is (
 
@@ -58,11 +58,15 @@ package Mcd_Mng is
    Int,
    Frac,
    Dms,
+   Mkfrac,
+   Numof,
+   Denomof,
    Msd,
    Proport,
    Roundat,
 
    Isarbi,
+   Isfrac,
    Isinte,
    Isreal,
    Isbool,
@@ -162,6 +166,8 @@ package Mcd_Mng is
     case Kind is
       when Arbi =>
         Val_Arbi : Arbitrary.Number;
+      when Frac =>
+        Val_Frac : Arbitrary.Fractions.Fraction;
       when Inte =>
         Val_Inte : My_Math.Inte;
       when Real =>

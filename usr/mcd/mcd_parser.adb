@@ -1,5 +1,6 @@
 with Ada.Strings.Unbounded;
-with My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary, Async_Stdin;
+with My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary,
+     Arbitrary.Fractions, Async_Stdin, String_Mng;
 with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
@@ -86,12 +87,16 @@ package body Mcd_Parser is
    Trunc    => (Nosy, "push Inte(A) (trunc A real)   ", False),
    Int      => (Nosy, "push int  part of A real      ", False),
    Frac     => (Nosy, "push frac part of A real      ", False),
-   Dms      => (Nosy, "A.Frac -> A.MinSecFrac        ", False),
-   Msd      => (Nosy, "A.MinSecFrac -> A.Frac        ", False),
+   Dms      => (Nosy, "A.Fract -> A.MinSecFract      ", False),
+   Msd      => (Nosy, "A.MinSecFract -> A.Fract      ", False),
+   Mkfrac   => (Nosy, "push Frac A:B (A, B arbi)     ", False),
+   Numof    => (Nosy, "push numerator of fraction A  ", False),
+   Denomof  => (Nosy, "push denominator of fraction A", False),
    Proport  => (Nosy, "push A * B / C                ", False),
-   Roundat  => (Nosy, "push B rounded at A           ", True),
+   Roundat  => (Nosy, "push B rounded at A digits    ", True),
 
-   Isarbi   => (Nosy, "push True if A in an arbitrari", False),
+   Isarbi   => (Nosy, "push True if A in an arbitrary", False),
+   Isfrac   => (Nosy, "push True if A in a fraction  ", False),
    Isinte   => (Nosy, "push True if A in an integer  ", False),
    Isreal   => (Nosy, "push True if A is a real      ", False),
    Isbool   => (Nosy, "push True if A in a boolean   ", False),
@@ -302,14 +307,23 @@ package body Mcd_Parser is
 
     end if;
 
-    -- Parse arbitrary : @num
+    -- Parse arbitrary or fraction: @num or @num:denom
     if Unb.Length(Txt) >= 2 and then Unb.Element(Txt, 1) = '@' then
       declare
-        N : Arbitrary.Number;
+        I : constant Natural
+          := String_Mng.Locate (Unb.To_String (Txt), 1, ":");
+        N, D : Arbitrary.Number;
       begin
         Instr_Stack.Push(Item_Chrs);
-        return (Kind => Mcd_Mng.Arbi,
-                Val_Arbi => Arbitrary.Set (Unb.Slice(Txt, 2, Unb.Length(Txt))));
+        if I = 0 then
+          N := Arbitrary.Set (Unb.Slice(Txt, 2, Unb.Length(Txt)));
+          return (Kind => Mcd_Mng.Arbi, Val_Arbi => N);
+        else
+          N := Arbitrary.Set (Unb.Slice(Txt, 2, I - 1));
+          D := Arbitrary.Set (Unb.Slice(Txt, I + 1, Unb.Length(Txt)));
+          return (Kind => Mcd_Mng.Frac,
+                  Val_Frac => Arbitrary.Fractions.Set (N, D));
+        end if;
       exception
         when others =>
           raise Parsing_Error;
@@ -398,8 +412,9 @@ package body Mcd_Parser is
     Io_Flow.Put_Line ("Commands are strings read from standard input or from a fifo.");
     Io_Flow.Put_Line ("Separators are space and horizontal tab.");
     Io_Flow.Put_Line ("Comments start by '#', up to the end of line");
-    Io_Flow.Put_Line ("Item ::= <arbitrary> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
+    Io_Flow.Put_Line ("Item ::= <arbitrary> <fraction> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");
     Io_Flow.Put_Line ("  <arbitrary>  ::= @<number>");
+    Io_Flow.Put_Line ("  <fraction>   ::= @<number>:<number>");
     Io_Flow.Put_Line ("  <integer>    ::= <number> | <base>#<number>#");
     Io_Flow.Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
     Io_Flow.Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
