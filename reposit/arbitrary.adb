@@ -389,7 +389,9 @@ package body Arbitrary is
       return Basic.Make ("+" & Unb.To_Unbounded_String (V));
     end if;
   end Set_Uncheck;
-  Zero : constant Number := Set_Uncheck ("0");
+
+  Number_Zero : constant Number := Set_Uncheck ("0");
+  Number_One  : constant Number := Set_Uncheck ("1");
 
   function Set (V : String) return Number is
     N : Number := Set_Uncheck (V);
@@ -422,6 +424,17 @@ package body Arbitrary is
     return Set_Uncheck (Strip (V'Img) );
   end Set;
 
+  -- "Constants"
+  function Zero return Number is
+  begin
+    return Number_Zero;
+  end Zero;
+
+  function One  return Number is
+  begin
+    return Number_One;
+  end One;
+
   -- Image
   function Image (V : Number) return String is
   begin
@@ -446,8 +459,8 @@ package body Arbitrary is
   function "-" (A : Number) return Number is
     B : Unbstr := Unbstr(A);
   begin
-    if A = Zero then
-      return Zero;
+    if A = Number_Zero then
+      return Number_Zero;
     end if;
     if Unb.Element(B, 1) = '-' then
       Unb.Replace_Element (B, 1, '+');
@@ -483,7 +496,11 @@ package body Arbitrary is
       return Unb.Length (Unbstr(A)) < Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
-    return Unbstr(A) < Unbstr(B) xor not Pa;
+    if Pa then
+      return Unbstr(A) < Unbstr(B);
+    else
+      return Unbstr(A) > Unbstr(B);
+    end if;
   end "<";
 
   function "<=" (A, B : Number) return Boolean is
@@ -500,7 +517,11 @@ package body Arbitrary is
       return Unb.Length (Unbstr(A)) < Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
-    return Unbstr(A) <= Unbstr(B) xor not Pa;
+    if Pa then
+      return Unbstr(A) <= Unbstr(B);
+    else
+      return Unbstr(A) >= Unbstr(B);
+    end if;
   end "<=";
 
   function ">" (A, B : Number) return Boolean is
@@ -517,7 +538,11 @@ package body Arbitrary is
       return Unb.Length (Unbstr(A)) > Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
-    return Unbstr(A) > Unbstr(B) xor not Pa;
+    if Pa then
+      return Unbstr(A) > Unbstr(B);
+    else
+      return Unbstr(A) < Unbstr(B);
+    end if;
   end ">";
 
   function ">=" (A, B : Number) return Boolean is
@@ -534,7 +559,11 @@ package body Arbitrary is
       return Unb.Length (Unbstr(A)) > Unb.Length (Unbstr(B)) xor not Pa;
     end if;
     -- Here they have same sign and same length
-    return Unbstr(A) >= Unbstr(B) xor not Pa;
+    if Pa then
+      return Unbstr(A) >= Unbstr(B);
+    else
+    return Unbstr(A) <= Unbstr(B);
+    end if;
   end ">=";
 
   -- Addition
@@ -609,6 +638,19 @@ package body Arbitrary is
     return R;
   end "rem";
 
+  function "mod" (A, B : Number) return Number is
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    R : Number;
+  begin
+    R := A rem B;
+    if Pa = Pb or else R = Zero then
+      return R;
+    else
+      return R + B;
+    end if;
+  end "mod";
+
   procedure Div (A, B : in Number; Q, R : out Number) is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
@@ -620,7 +662,7 @@ package body Arbitrary is
   begin
     Tb := B;
     Basic.Normalize (Tb);
-    if B = Zero then
+    if B = Number_Zero then
       raise Constraint_Error;
     end if;
     Basic.Div_No_Sign (Da, Db, Dq, Dr);
@@ -647,7 +689,7 @@ package body Arbitrary is
       raise Constraint_Error;
     end if;
     loop
-      exit when I = Zero;
+      exit when I = Number_Zero;
       R := R * A;
       I := I - One;
     end loop;

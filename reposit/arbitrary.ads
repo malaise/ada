@@ -1,3 +1,4 @@
+-- Arbitrary precision numbers
 with Ada.Strings.Unbounded;
 package Arbitrary is
   type Number is private;
@@ -7,6 +8,10 @@ package Arbitrary is
   function Set (V : Integer) return Number;
   function Set (V : Long_Integer) return Number;
   function Set (V : Long_Long_Integer) return Number;
+
+  -- Basic "constants"
+  function Zero return Number;
+  function One  return Number;
 
   -- Image
   function Image (V : Number) return String;
@@ -29,6 +34,7 @@ package Arbitrary is
   function "*" (A, B : Number) return Number;
   function "/" (A, B : Number) return Number;
   function "rem" (A, B : Number) return Number;
+  function "mod" (A, B : Number) return Number;
   procedure Div (A, B : in Number; Q, R : out Number);
   function "**" (A, B : Number) return Number;
 
