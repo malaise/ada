@@ -59,7 +59,7 @@ package Mcd_Mng is
    Frac,
    Dms,
    Mkfrac,
-   Numof,
+   Numerof,
    Denomof,
    Msd,
    Proport,

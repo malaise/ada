@@ -108,7 +108,7 @@ package body Mcd_Mng is
 
     -- Frac <-> Arbi
     function Mkfrac (N, D : Item_Rec) return Item_Rec;
-    function Numof  (X : Item_Rec) return Item_Rec;
+    function Numerof (X : Item_Rec) return Item_Rec;
     function Denomof (X : Item_Rec) return Item_Rec;
 
     -- Arbi->Bool or Inte->Bool or Real->Bool
@@ -468,10 +468,10 @@ package body Mcd_Mng is
           Pop(A); Push (Operations.Frac(A));
           S := A;
         when Mkfrac =>
-          Pop(A); Pop(B); Push (Operations.Mkfrac(A, B));
+          Pop(A); Pop(B); Push (Operations.Mkfrac(B, A));
           S := A;
-        when Numof =>
-          Pop(A); Push (Operations.Numof(A));
+        when Numerof =>
+          Pop(A); Push (Operations.Numerof(A));
           S := A;
         when Denomof =>
           Pop(A); Push (Operations.Denomof(A));
