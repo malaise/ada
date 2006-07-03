@@ -22,11 +22,11 @@ package body Operations is
     return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real;
   end Is_Arbi_Or_Inte_Or_Real;
 
-  function Is_Arbi_Or_frac_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
+  function Is_Arbi_Or_Frac_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
   begin
     return X.Kind = Arbi or else X.Kind = Frac
    or else X.Kind = Inte or else X.Kind = Real;
-  end Is_Arbi_Or_frac_Or_Inte_Or_Real;
+  end Is_Arbi_Or_Frac_Or_Inte_Or_Real;
 
   function Is_Arbi_Or_Inte (X : Item_Rec) return Boolean is
   begin
@@ -65,7 +65,7 @@ package body Operations is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
-    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -91,7 +91,7 @@ package body Operations is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
-    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -117,7 +117,7 @@ package body Operations is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
-    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -143,7 +143,7 @@ package body Operations is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
-    or else not Is_Arbi_Or_frac_Or_Inte_Or_Real(R) then
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(R) then
       raise Invalid_Argument;
     end if;
     if L.Kind /= R.Kind then
@@ -392,7 +392,7 @@ package body Operations is
       raise Compute_Error;
   end Fact;
 
-  -- Arbi,Arbi->Bool or Frac,Frac->Bool or Inte,Inte->Bool or Real,Real->Bool or 
+  -- Arbi,Arbi->Bool or Frac,Frac->Bool or Inte,Inte->Bool or Real,Real->Bool or
   -- Bool,Bool->Bool or Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
@@ -634,10 +634,21 @@ package body Operations is
     if X.Kind = Real then
       return X;
     end if;
-    if X.Kind /= Inte then
+    if X.Kind = Inte then
+      return (Kind => Real, Val_Real => My_Math.Real(X.Val_Inte));
+    elsif X.Kind = Arbi then
+      return (Kind => Real,
+              Val_Real => My_Math.Real'Value(Arbitrary.Image (X.Val_Arbi)));
+    elsif X.Kind = Frac then
+      return (Kind => Real,
+              Val_Real =>
+          My_Math.Real'Value(Arbitrary.Image (
+                      Arbitrary.Fractions.Numerator (X.Val_Frac)))
+        / My_Math.Real'Value(Arbitrary.Image (
+                      Arbitrary.Fractions.Denominator (X.Val_Frac))) );
+    else
       raise Invalid_Argument;
     end if;
-    return (Kind => Real, Val_Real => My_Math.Real(X.Val_Inte));
   exception
     when Invalid_Argument | Argument_Mismatch =>
       raise;
@@ -1110,7 +1121,7 @@ package body Operations is
   end Roundat;
 
 
-  -- Frac <-> Arbi 
+  -- Frac <-> Arbi
   function Mkfrac (N, D : Item_Rec) return Item_Rec is
   begin
     if N.Kind /= Arbi or else D.Kind /= Arbi then
@@ -1118,16 +1129,19 @@ package body Operations is
     end if;
     return (Kind => Frac,
             Val_Frac => Arbitrary.Fractions.Set (N.Val_Arbi, D.Val_Arbi));
+  exception
+    when others =>
+      raise Invalid_Argument;
   end Mkfrac;
 
-  function Numof  (X : Item_Rec) return Item_Rec is
+  function Numerof  (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind /= Frac then
       raise Invalid_Argument;
     end if;
     return (Kind => Arbi,
             Val_Arbi => Arbitrary.Fractions.Numerator (X.Val_Frac));
-  end Numof;
+  end Numerof;
 
   function Denomof (X : Item_Rec) return Item_Rec is
   begin
