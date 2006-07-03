@@ -1,0 +1,41 @@
+# Take a random number -100 .. +100
+100.0 r popr
+[
+rnd r pushr * 2.0 * r pushr - trunc toarbi
+] R popr
+
+# Format output and real values
+[
+put put " " put toreal v copyr x pushr y pushr
+] F popr
+
+# Compares 2 real and ret 2 if they differ
+[
+- absv 1e-15 > 2 1 retn
+] C popr
+
+# Main (infinite) loop
+[
+# Compute 4 random number a b c and d
+R pushr dup dup dup 
+call a popr call b popr
+call c popr call d popr
+# Set fractions e=a:b and f=c:d
+a pushr b pushr dup @0 = [ pop @1 ] ifcall mkfrac dup put " & " put e popr
+c pushr d pushr dup @0 = [ pop @1 ] ifcall mkfrac dup put " " put f popr
+# Compute real x=e and y=f
+e pushr toreal x popr
+f pushr toreal y popr
+# Compute e + - * f
+e pushr f pushr + dup "+ " F pushr call + w copyr C pushr call
+e pushr f pushr - dup "- " F pushr call - w copyr C pushr call
+e pushr f pushr * dup "* " F pushr call * w copyr C pushr call
+# Do not divide by 0, replace by 1
+e pushr f pushr dup @0:1 = [ pop 1.0 y popr @1:1 ] ifcall
+/ dup "/ " F pushr call / w copyr C pushr call
+newl
+L pushr retacal
+] L copyr call
+
+v pushr put " /= " put w pushr putl
+
