@@ -17,16 +17,22 @@ package body Arbitrary.Fractions is
       F := Zero;
       return;
     end if;
-      
+
+    -- Fix sign of numerator if denominator < 0
+    if F.Denominator < Zero then
+      F.Numerator := - F.Numerator;
+      F.Denominator := - F.Denominator;
+    end if;
+
     -- Extract abs values and decompose them in prime factors
     N := abs F.Numerator;
     Arbitrary.Factors.Decompose (N, Ln);
-    D := abs F.Denominator;
+    D := F.Denominator;
     Arbitrary.Factors.Decompose (D, Ld);
 
     -- Extract common factors and compute
     --  highest common denominator
-    Arbitrary.Factors.Extract_Common (Ln, Ld, Lc); 
+    Arbitrary.Factors.Extract_Common (Ln, Ld, Lc);
     Hcd := Arbitrary.Factors.Multiply (Lc);
 
     -- Divide numerator and denominator by Hcd
@@ -34,6 +40,7 @@ package body Arbitrary.Fractions is
       F.Numerator := F.Numerator / Hcd;
       F.Denominator := F.Denominator / Hcd;
     end if;
+
   end Reduce;
 
   -- Constructor
@@ -102,7 +109,7 @@ package body Arbitrary.Fractions is
     --  and compute reduced denominators
     Arbitrary.Factors.Decompose (A.Denominator, La);
     Arbitrary.Factors.Decompose (B.Denominator, Lb);
-    Arbitrary.Factors.Extract_Common (La, Lb, Lc); 
+    Arbitrary.Factors.Extract_Common (La, Lb, Lc);
     Rda := Arbitrary.Factors.Multiply (La);
     Rdb := Arbitrary.Factors.Multiply (Lb);
     return A.Numerator * Rdb < B.Numerator * Rda;
@@ -121,7 +128,7 @@ package body Arbitrary.Fractions is
     --  and compute reduced denominators
     Arbitrary.Factors.Decompose (A.Denominator, La);
     Arbitrary.Factors.Decompose (B.Denominator, Lb);
-    Arbitrary.Factors.Extract_Common (La, Lb, Lc); 
+    Arbitrary.Factors.Extract_Common (La, Lb, Lc);
     Rda := Arbitrary.Factors.Multiply (La);
     Rdb := Arbitrary.Factors.Multiply (Lb);
     return A.Numerator * Rdb > B.Numerator * Rda;
@@ -143,7 +150,7 @@ package body Arbitrary.Fractions is
     --  and compute reduced denominators
     Arbitrary.Factors.Decompose (A.Denominator, La);
     Arbitrary.Factors.Decompose (B.Denominator, Lb);
-    Arbitrary.Factors.Extract_Common (La, Lb, Lc); 
+    Arbitrary.Factors.Extract_Common (La, Lb, Lc);
     Rda := Arbitrary.Factors.Multiply (La);
     Rdb := Arbitrary.Factors.Multiply (Lb);
     -- R.Den := Lowest common multiple
