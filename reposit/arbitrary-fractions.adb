@@ -1,13 +1,25 @@
 with Prime_List, Dynamic_List;
-with Arbitrary.Factors;
 package body Arbitrary.Fractions is
 
-  package Nb_List_Mng renames Arbitrary.Factors.Nb_List_Mng;
+  -- Extract the highest common denominator of two (positive) numbers
+  function Hcd (A, B : Number) return Number is
+    N1, N2, N3 : Number;
+  begin
+    N1 := A;
+    N2 := B;
+    -- Divide N1 by N2 as long as N3 /= N2 and shift
+    loop
+      N3 := N1 rem N2;
+      exit when N3 = Zero;
+      N1 := N2;
+      N2 := N3;
+    end loop;
+    return N2;
+  end Hcd;
 
   -- Reduce the fraction
   procedure Reduce (F : in out Fraction) is
-    N, D, T, Hcd : Number;
-    Ln, Ld, Lc : Nb_List_Mng.List_Type;
+    H : Number;
   begin
     -- Sanity check and conventional Zero.
     if F.Denominator = Zero then
@@ -24,21 +36,13 @@ package body Arbitrary.Fractions is
       F.Denominator := - F.Denominator;
     end if;
 
-    -- Extract abs values and decompose them in prime factors
-    N := abs F.Numerator;
-    Arbitrary.Factors.Decompose (N, Ln);
-    D := F.Denominator;
-    Arbitrary.Factors.Decompose (D, Ld);
-
-    -- Extract common factors and compute
-    --  highest common denominator
-    Arbitrary.Factors.Extract_Common (Ln, Ld, Lc);
-    Hcd := Arbitrary.Factors.Multiply (Lc);
+    -- Compute Hcd
+    H := Hcd (abs F.Numerator, F.Denominator);
 
     -- Divide numerator and denominator by Hcd
-    if Hcd /= One then
-      F.Numerator := F.Numerator / Hcd;
-      F.Denominator := F.Denominator / Hcd;
+    if H /= One then
+      F.Numerator := F.Numerator / H;
+      F.Denominator := F.Denominator / H;
     end if;
 
   end Reduce;
@@ -102,16 +106,13 @@ package body Arbitrary.Fractions is
   end "=";
 
   function "<" (A, B : Fraction) return Boolean is
-    La, Lb, Lc : Nb_List_Mng.List_Type;
-    Rda, Rdb : Number;
+    H, Rda, Rdb : Number;
   begin
-    -- Decompose denominators in prime factors
-    --  and compute reduced denominators
-    Arbitrary.Factors.Decompose (A.Denominator, La);
-    Arbitrary.Factors.Decompose (B.Denominator, Lb);
-    Arbitrary.Factors.Extract_Common (La, Lb, Lc);
-    Rda := Arbitrary.Factors.Multiply (La);
-    Rdb := Arbitrary.Factors.Multiply (Lb);
+    -- Compute Hcd of denominators and reduce them
+    H := Hcd (A.Denominator, B.Denominator);
+    Rda := A.Denominator / H;
+    Rdb := B.Denominator / H;
+    -- Compare
     return A.Numerator * Rdb < B.Numerator * Rda;
   end "<";
 
@@ -121,16 +122,13 @@ package body Arbitrary.Fractions is
   end "<=";
 
   function ">" (A, B : Fraction) return Boolean is
-    La, Lb, Lc : Nb_List_Mng.List_Type;
-    Rda, Rdb : Number;
+    H, Rda, Rdb : Number;
   begin
-    -- Decompose denominators in prime factors
-    --  and compute reduced denominators
-    Arbitrary.Factors.Decompose (A.Denominator, La);
-    Arbitrary.Factors.Decompose (B.Denominator, Lb);
-    Arbitrary.Factors.Extract_Common (La, Lb, Lc);
-    Rda := Arbitrary.Factors.Multiply (La);
-    Rdb := Arbitrary.Factors.Multiply (Lb);
+    -- Compute Hcd of denominators and reduce them
+    H := Hcd (A.Denominator, B.Denominator);
+    Rda := A.Denominator / H;
+    Rdb := B.Denominator / H;
+    -- Compare
     return A.Numerator * Rdb > B.Numerator * Rda;
   end ">";
 
@@ -142,19 +140,15 @@ package body Arbitrary.Fractions is
 
   -- Basic operations
   function "+" (A, B : Fraction) return Fraction is
-    La, Lb, Lc : Nb_List_Mng.List_Type;
-    Rda, Rdb : Number;
+    H, Rda, Rdb : Number;
     R : Fraction;
   begin
-    -- Decompose denominators in prime factors
-    --  and compute reduced denominators
-    Arbitrary.Factors.Decompose (A.Denominator, La);
-    Arbitrary.Factors.Decompose (B.Denominator, Lb);
-    Arbitrary.Factors.Extract_Common (La, Lb, Lc);
-    Rda := Arbitrary.Factors.Multiply (La);
-    Rdb := Arbitrary.Factors.Multiply (Lb);
+    -- Compute Hcd of denominators and reduce them
+    H := Hcd (A.Denominator, B.Denominator);
+    Rda := A.Denominator / H;
+    Rdb := B.Denominator / H;
     -- R.Den := Lowest common multiple
-    R.Denominator := Rda * Rdb * Arbitrary.Factors.Multiply (Lc);
+    R.Denominator := A.Denominator / H * B.Denominator;
     -- R.Num := A.Num * B.Den + B.Num * A.Den
     R.Numerator := A.Numerator * Rdb + B.Numerator * Rda;
     -- Reduce
