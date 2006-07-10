@@ -222,7 +222,6 @@ extern int fd_open (const char *path, int mode) {
     break;
     default:
       return (-1);
-    break;
   }
   return open(path, flags);
 }
