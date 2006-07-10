@@ -15,7 +15,7 @@ procedure Arbipas is
     Ada.Text_Io.Put (Str(2 .. Str'Last));
   end Put_Number;
 
-  procedure Put_Line (N : Positive) is
+  procedure Put_Line (N : Natural) is
     C : Arbitrary.Number;
     Done : Boolean;
   begin
@@ -55,7 +55,7 @@ procedure Arbipas is
 
   -- Number and current line no
   Nb_Line : Natural;
-  No_Line : Positive;
+  No_Line : Natural;
 begin
 
   -- Parse Argument
@@ -75,7 +75,7 @@ begin
   end;
 
   -- First line
-  No_Line := 1;
+  No_Line := 0;
   Arbi_List_Mng.Insert (Arbi_List, Arbitrary.One);
   Put_Line (No_Line);
 
