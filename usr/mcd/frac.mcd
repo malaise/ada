@@ -1,5 +1,5 @@
-# Take a random number -100 .. +100
-100.0 r popr
+# Take a random number -1000 .. +1000
+1000.0 r popr
 [
 rnd r pushr * 2.0 * r pushr - trunc toarbi
 ] R popr
@@ -9,7 +9,7 @@ rnd r pushr * 2.0 * r pushr - trunc toarbi
 put put " " put toreal v copyr x pushr y pushr
 ] F popr
 
-# Compares 2 real and ret 2 if they differ
+# Compares 2 real and retn 2 if they differ
 [
 - absv 1e-15 > 2 1 retn
 ] C popr
@@ -26,16 +26,21 @@ c pushr d pushr dup @0 = [ pop @1 ] ifcall mkfrac dup put " " put f popr
 # Compute real x=e and y=f
 e pushr toreal x popr
 f pushr toreal y popr
+# Compare
+e pushr f pushr > dup "> " put put " " put v copyr x pushr y pushr > w copyr
+/= ifret
 # Compute e + - * f
 e pushr f pushr + dup "+ " F pushr call + w copyr C pushr call
 e pushr f pushr - dup "- " F pushr call - w copyr C pushr call
 e pushr f pushr * dup "* " F pushr call * w copyr C pushr call
 # Do not divide by 0, replace by 1
-e pushr f pushr dup @0:1 = [ pop 1.0 y popr @1:1 ] ifcall
+e pushr f pushr dup @0:1 = [ pop 1.0 y popr @1:1 f copyr ] ifcall
 / dup "/ " F pushr call / w copyr C pushr call
 newl
 L pushr retacal
 ] L copyr call
 
+newl
 v pushr put " /= " put w pushr putl
 
+x pushr putl y pushr putl
