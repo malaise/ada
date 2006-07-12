@@ -1,16 +1,16 @@
 # Compute factorial of arg
 
 # Check 1 arg >= 0
-5 format 7.007 format
 [ "Error: 1 argument N >= 0 expected." putl ssize popn retall ] E popr
 ssize 1 /= E pushr ifcall
-dup isinte ~ E pushr ifcall
+dup isinte [ toarbi ] ifcall
+dup isarbi ~ E pushr ifcall
 dup isneg E pushr ifcall
 
 # F(0) -> 1
 # F(i) -> F(i-1) * i
-[ dup isnul [ pop 1.0 2 retn ] [ dup 1 - ] ifte call F pushr call
-  toreal swap toreal * ] F popr
+[ dup isnul [ pop @1 2 retn ] [ dup @1 - ] ifte call F pushr call
+swap * ] F popr
 
 # Put n
 dup
