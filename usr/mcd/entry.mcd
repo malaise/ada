@@ -1,0 +1,47 @@
+# Arg error
+[
+"Error. Usage entry [ { <entry_time> <leave_time> } ] <entry_time>."
+putl "<time> ::= h.ms    and times must be crescent" putl ssize popn retall
+] E popr
+
+# Check stack size is odd
+ssize 2 % 0 = E pushr ifcall
+
+# Init sum, current oper (entrye=true, leave=false)
+0.0 s popr
+true e popr
+24.0 p popr
+[
+# Arg must be int or real, 0.0 <= Arg < 24 and frac < 0.60
+dup isinte [ toreal ] ifcall
+dup isreal ~ E pushr ifcall
+dup isneg E pushr ifcall
+dup 24.0 >= E pushr ifcall
+dup frac 0.60 >= E pushr ifcall
+
+# Current time must be < previous
+dup p pushr >= E pushr ifcall 
+dup p popr
+
+# Convert dms to real
+msd
+# Substrac to s if entry, add to s if leave, switch oper
+s pushr swap [ - ] [ + ] e pushr dup ~ e popr etfi call s popr
+
+# Exit whe no more arg
+ssize 0 = ifret
+
+# Loop
+L pushr retacal ] L copyr call
+
+# Convert 8.0 - s and check validity (0 <= s < 24)
+8.0 s pushr - s copyr 0.0 < s pushr 24.0 >= |
+[ "Invalid result " put s pushr putl retall ] ifcall
+
+# Convert in millisecs
+s pushr 3600.0 * 1000.0 * round
+# Convert to " days-hh:mm:ss.mmm" and keep hh:mm
+daysof 7 11 strsub
+# Replace : by h and put
+3 "h" strrep "Leave at " put put "." putl
+
