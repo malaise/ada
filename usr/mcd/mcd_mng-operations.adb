@@ -334,7 +334,7 @@ package body Operations is
   function Absv   (X : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(X) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(X) then
       raise Invalid_Argument;
     end if;
     if X.Kind = Arbi then
@@ -844,10 +844,12 @@ package body Operations is
 
   -- Arbi->Bool or Inte->Bool or Real->Bool
   function Ispos  (X : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if X.Kind = Arbi then
       return (Kind => Bool, Val_Bool => X.Val_Arbi > Arbitrary.Zero);
+    elsif X.Kind = Frac then
+      return (Kind => Bool, Val_Bool => X.Val_Frac > Arbitrary.Fractions.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte > 0);
     elsif  X.Kind = Real then
@@ -858,10 +860,12 @@ package body Operations is
   end Ispos;
 
   function Isnul  (X : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if X.Kind = Arbi then
       return (Kind => Bool, Val_Bool => X.Val_Arbi = Arbitrary.Zero);
+    elsif X.Kind = Frac then
+      return (Kind => Bool, Val_Bool => X.Val_Frac = Arbitrary.Fractions.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte = 0);
     elsif  X.Kind = Real then
@@ -872,10 +876,12 @@ package body Operations is
   end Isnul;
 
   function Isnotnul  (X : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if X.Kind = Arbi then
       return (Kind => Bool, Val_Bool => X.Val_Arbi /= Arbitrary.Zero);
+    elsif X.Kind = Frac then
+      return (Kind => Bool, Val_Bool => X.Val_Frac /= Arbitrary.Fractions.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte /= 0);
     elsif  X.Kind = Real then
@@ -886,10 +892,12 @@ package body Operations is
   end Isnotnul;
 
   function Isneg  (X : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if X.Kind = Arbi then
       return (Kind => Bool, Val_Bool => X.Val_Arbi < Arbitrary.Zero);
+    elsif X.Kind = Frac then
+      return (Kind => Bool, Val_Bool => X.Val_Frac < Arbitrary.Fractions.Zero);
     elsif X.Kind = Inte then
       return (Kind => Bool, Val_Bool => X.Val_Inte < 0);
     elsif  X.Kind = Real then
@@ -1080,21 +1088,24 @@ package body Operations is
       raise Compute_Error;
   end Log;
 
-  -- Arbi,Arbi,Arbi->Arbi or Inte,Inte,Inte->Inte or Real,Real,Real->Real
+  -- Arbi,Arbi,Arbi->Arbi or Frac,Frac,Frac->Frac or
+  -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
   -- Z * Y / X
   function Proport   (X, Y, Z : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
-    if not Is_Arbi_Or_Inte_Or_Real(X)
-     or else not Is_Arbi_Or_Inte_Or_Real(Y)
-     or else not Is_Arbi_Or_Inte_Or_Real(Z) then
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(X)
+     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(Y)
+     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(Z) then
       raise Invalid_Argument;
     end if;
     if X.Kind /= Y.Kind or else X.Kind /= Z.Kind then
       raise Argument_Mismatch;
     end if;
-    if X.Kind = Inte then
+    if X.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => Z.Val_Arbi * Y.Val_Arbi / X.Val_Arbi);
+    elsif X.Kind = Frac then
+      return (Kind => Frac, Val_Frac => Z.Val_Frac * Y.Val_Frac / X.Val_Frac);
     elsif X.Kind = Inte then
       return (Kind => Inte, Val_Inte => Z.Val_Inte * Y.Val_Inte / X.Val_Inte);
     else
