@@ -198,6 +198,7 @@ package body Mcd_Mng is
     procedure New_Line;
 
     function Strarbi (S : Item_Rec) return Item_Rec;
+    function Strfrac (S : Item_Rec) return Item_Rec;
     function Strinte (S : Item_Rec) return Item_Rec;
     function Strreal (S : Item_Rec) return Item_Rec;
     function Strbool (S : Item_Rec) return Item_Rec;
@@ -770,6 +771,9 @@ package body Mcd_Mng is
           S := A;
         when Strarbi =>
           Pop(A); Push (Ios.Strarbi(A));
+          S := A;
+        when Strfrac =>
+          Pop(A); Push (Ios.Strfrac(A));
           S := A;
         when Strinte =>
           Pop(A); Push (Ios.Strinte(A));

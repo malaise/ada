@@ -136,6 +136,7 @@ package Mcd_Mng is
    Strlow,
    Strmix,
    Strarbi,
+   Strfrac,
    Strinte,
    Strreal,
    Strbool,

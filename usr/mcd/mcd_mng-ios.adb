@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Math, Sys_Calls, Normal, Bool_Io, Mixed_Str;
+with My_Math, Sys_Calls, Normal, Bool_Io, Mixed_Str, String_Mng;
 with Inte_Io, Real_Io, Io_Flow;
 separate (Mcd_Mng)
 
@@ -114,6 +114,38 @@ package body Ios is
     when others =>
       raise Invalid_Argument;
   end Strarbi;
+
+  function Strfrac (S : Item_Rec) return Item_Rec is
+    Len : Natural;
+    Sep : Positive;
+    N, D : Arbitrary.Number;
+    Res : Item_Rec(Frac);
+  begin
+    if S.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    Len :=  Unb.Length (S.Val_Text);
+    -- Locate @
+    if Len < 2 or else Unb.Element (S.Val_Text, 1) /= '@' then
+      raise Invalid_Argument;
+    end if;
+    -- Locate :
+    Sep := String_Mng.Locate (Unb.To_String (S.Val_Text), 1, ":");
+    if Sep <= 2 then
+      raise Invalid_Argument;
+    end if;
+    -- Parse N and D
+    N := Arbitrary.Set (Unb.Slice(S.Val_Text, 2, Sep - 1));
+    D := Arbitrary.Set (Unb.Slice(S.Val_Text, Sep + 1, Unb.Length(S.Val_Text)));
+    -- Make fraction
+    Res.Val_Frac := Arbitrary.Fractions.Set (N, D);
+    return Res;
+  exception
+    when Invalid_Argument =>
+      raise;
+    when others =>
+      raise Invalid_Argument;
+  end Strfrac;
 
   function Strinte (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Inte);
