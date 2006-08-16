@@ -1,0 +1,30 @@
+# Highest Common Divisor (hcd) and Lowest Common Multiple (lcm)
+#  of two integers (or arbi)
+
+# Error
+[ "Error. Two positive arguments expectd."  putl ssize popn retall ] E popr
+
+# Check one arg
+[
+dup isinte [ toarbi ] ifcall
+dup isarbi ~ [ E pushr call ] ifcall
+dup isarbi ~ [ E pushr call ] ifcall
+dup ispos ~ [ E pushr call ] ifcall
+] C popr
+
+# Put result
+[ put " (" put n pushr put ", " put d pushr put ") = " put putl ] P popr
+
+# Two args, check them (make them arbi), store numerator and denominator
+ssize 2 /= [ E pushr call ] ifcall
+swap C pushr call n copyr swap C pushr call d copyr
+
+# Make a fraction (reduces). Hcd is numerator / n
+mkfrac f copyr
+numerof n pushr swap / c copyr
+"Hcd" P pushr call
+
+# Lcm is numerator * denominator * c
+f pushr dup numerof swap denomof * c pushr *
+"Lcm" P pushr call
+
