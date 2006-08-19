@@ -548,7 +548,7 @@ package body String_Mng is
   -- To (To'First .. To'First - Val'Length) := Val;
   procedure Copy (Val : in String; To : in out String) is
   begin
-    To (To'First .. To'First - Val'Length) := Val;
+    To (To'First .. To'First + Val'Length - 1) := Val;
   end Copy;
 
 end String_Mng;

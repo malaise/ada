@@ -148,7 +148,7 @@ package String_Mng is
            return Natural;
   
   -- Copy the string Val at the beginning of the string To
-  -- To (To'First .. To'First - Val'Length) := Val;
+  -- To (To'First .. To'First + Val'Length - 1) := Val;
   procedure Copy (Val : in String; To : in out String);
 
 end String_Mng;
