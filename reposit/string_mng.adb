@@ -544,5 +544,12 @@ package body String_Mng is
     return Str'Last;
   end Truncate;
 
+  -- Copy the string Val at the beginning of the string To
+  -- To (To'First .. To'First - Val'Length) := Val;
+  procedure Copy (Val : in String; To : in out String) is
+  begin
+    To (To'First .. To'First - Val'Length) := Val;
+  end Copy;
+
 end String_Mng;
 

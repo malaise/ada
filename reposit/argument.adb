@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Loc_Arg;
+with Loc_Arg, String_Mng;
 use Loc_Arg;
 package body Argument is
 
@@ -7,7 +7,7 @@ package body Argument is
 
   Path_Separator : constant Character := '/';
 
-  Str : String (1..Max_Len_Arg);
+  Str : String (1 .. Max_Len_Arg);
 
   function Not_Key return String is
   begin
@@ -82,7 +82,7 @@ package body Argument is
       end if;
       -- affect string
       Param_Length := Data(0)'Length;
-      Parameter(1 .. Data(0)'Length) := Data(0)(1..Data(0)'Length);
+      String_Mng.Copy (Data(0), Parameter);
       Position := 0;
       return;
     end if;
@@ -126,8 +126,7 @@ package body Argument is
         else
           -- Affect string (First_Char..Len)
           Param_Length := Data(I)'Length - (First_Char-1);
-          Parameter(1 .. Data(I)'Length-(First_Char-1))
-           := Data(I)(First_Char..Data(I)'Length);
+          String_Mng.Copy (Data(I)(First_Char .. Data(I)'Length), Parameter);
           Position := I;
           return;
         end if;
@@ -201,7 +200,7 @@ package body Argument is
     Len := Last_Delimiter(Str (1 .. Len));
 
     Path_Length := Len;
-    Path (1 .. Len) := Str (1 .. Len);
+    String_Mng.Copy (Str(1 .. Len), Path);
   end Get_Program_Path;
 
   procedure Get_Program_Path (Path : in out Text_Handler.Text) is
@@ -215,7 +214,7 @@ package body Argument is
   begin
     -- Program name
     Get_Program_Name (Str, Len);
-    return Str (1 .. Len);
+    return Str (Str'First .. Len);
   end Get_Program_Name;
 
   procedure Get_Program_Name (Name : out String;
@@ -228,7 +227,7 @@ package body Argument is
     Start := Last_Delimiter(Str (1 .. Len)) + 1;
 
     Name_Length := Len - Start + 1;
-    Name (1 .. Len - Start + 1) := Str (Start .. Len);
+    String_Mng.Copy (Str(Start .. Len), Name);
   end Get_Program_Name;
 
 

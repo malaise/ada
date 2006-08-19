@@ -74,10 +74,6 @@ package body Smart_Reference is
   begin
     Set (Val, Reference.Box_Access.Obj);
   end Dereference;
-  function  Dereference (Reference : Handle) return Object is
-  begin
-    return Reference.Box_Access.Obj;
-  end Dereference;
 
 end Smart_Reference;
 

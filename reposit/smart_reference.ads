@@ -17,7 +17,6 @@ package Smart_Reference is
   procedure Release (Reference : in out Handle);
 
   -- Get handled object
-  function  Dereference (Reference : Handle) return Object;
   procedure Dereference (Reference : in out Handle; Val : in out Object);
 
 private
