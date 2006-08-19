@@ -1,0 +1,27 @@
+Mine Detector Installation Instructions
+
+Building from source
+
+Download mine_detector_5.0_src.zip
+Unzip the contents into a directory of your choice
+Mine Detector is written entirely in Ada. You must have an Ada compiler to
+build it
+Mine Detector requires GtkAda (libre.act-europe.fr) and the PragmAda Reusable
+Components (home.earthlink.net/~jrcarter010/pragmarc.htm). Currently GtkAda
+requires the GNAT Ada compiler
+The main procedure is Mine_Detector in file mine_detector.adb
+Linux users may need to increase the value of Button_Size, in User_IF.First_Game
+(file user_if.adb)
+
+Using GNAT, build with the command
+
+gnatmake -O2 -gnato mine_detector
+
+Under Windows, the "-mwindows" linker argument may be added to eliminate the
+DOS box:
+
+gnatmake -O2 -gnato mine_detector -largs -mwindows
+
+Mine Detector is distributed free of charge, and is free software provided
+under the GNU Public License. See the file license.txt included with the
+source distribution

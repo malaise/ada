@@ -1,13 +1,13 @@
 -- Mine Detector Game
--- Copyright (C) 2004 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V4.4 2004 Aug 01
+-- V5.0 2006 Feb 01
 --
 with Ada.Numerics.Discrete_Random;
 with User_If;
 package body Field.Operations is
-   Num_Mines : constant := 99; -- About 20%
+   Num_Mines : Natural := 0;  -- Changed when first game is started.
 
    subtype Row_Id    is Integer range Valid_Row'First    - 1 .. Valid_Row'Last    + 1; -- Row around field makes things easier
    subtype Column_Id is Integer range Valid_Column'First - 1 .. Valid_Column'Last + 1;
@@ -29,14 +29,14 @@ package body Field.Operations is
    Dead       : Boolean := False;
    To_Mark    : Integer := Num_Mines;
    Step_Count : Natural := 0;
-   
+
    procedure Detect (Cell : in Cell_Location) is
       -- null;
    begin -- Detect
       if Dead then
          return;
       end if;
-      
+
       if Mine_Field (Cell.Row, Cell.Column).State = Marked then
          return; -- Can't count a marked cell
       end if;
@@ -60,10 +60,16 @@ package body Field.Operations is
       ;
    end Detect;
 
+   procedure Set_Mine_Count (New_Mine_Count : in Natural) is
+      -- null;
+   begin -- Set_Mine_Count
+      Num_Mines := New_Mine_Count;
+   end Set_Mine_Count;
+
    procedure Reset is
       subtype Rand_Set_Index is Integer range 1 .. Valid_Row'Last * Valid_Column'Last;
       type Rand_Set is array (Rand_Set_Index) of Cell_Location; -- For randomly placing mines
-      
+
       package Random is new Ada.Numerics.Discrete_Random (Rand_Set_Index);
 
       Rand_List : Rand_Set;
@@ -96,9 +102,9 @@ package body Field.Operations is
             Rand_List (Valid_Column'Last * (Row - 1) + Column) := Cell_Location'(Row => Row, Column => Column);
          end loop Fill_Columns;
       end loop Fill_Rows;
-      
+
       Random.Reset (Gen);
-      
+
       -- Shuffle Rand_List, a list of cell locations
       Shuffle : for I in Rand_List'range loop
          Index := Random.Random (Gen);
@@ -106,7 +112,7 @@ package body Field.Operations is
          Rand_List (I) := Rand_List (Index);
          Rand_List (Index) := Temp;
       end loop Shuffle;
-      
+
       -- Put mines in the first Num_Mines locations in Rand_List
       Set_Mines : for I in 1 .. Num_Mines loop
          Mine_Field (Rand_List (I).Row, Rand_List (I).Column).Mine := True;
@@ -177,12 +183,12 @@ package body Field.Operations is
    begin -- Mark_Count_Satisfied
       return Mine_Field (Cell.Row, Cell.Column).Count = Num_Marked_Neighbors (Cell);
    end Mark_Count_Satisfied;
-   
+
    procedure Auto_Step (Cell : in Cell_Location) is -- Doug's version
    -- Automatically step on any (unstepped-upon) neighbors of Cell if:
    --   (1) Cell has as many marked neighbors its count, or
    --   (2) the neighbor has as many marked neighbors as its count.
-   
+
       Cell_Satisfied : constant Boolean := Mark_Count_Satisfied (Cell);
    begin -- Auto_Step
       Step_Rows : for Row in Cell.Row - 1 .. Cell.Row + 1 loop
@@ -197,14 +203,14 @@ package body Field.Operations is
          end if;
       end loop Step_Rows;
    end Auto_Step;
-      
+
    procedure Mark (Cell : in Cell_Location) is
       Old_State : State_Id := Mine_Field (Cell.Row, Cell.Column).State;
    begin -- Mark
       if Dead then
          return;
       end if;
-      
+
       if Stepped_On_Neighbor (Cell) or else Marked_Neighbor (Cell) then
          Mine_Field (Cell.Row, Cell.Column).State := Marked; -- Force detect to count cell's neighbors
 
@@ -240,7 +246,7 @@ package body Field.Operations is
          end case;
 
          User_If.Display_To_Go (To_Go => To_Mark);
-         
+
          if Extended_Stepping.Enabled then
             Auto_Step (Cell => Cell);
          end if;
@@ -270,11 +276,11 @@ package body Field.Operations is
 
       if Mine_Field (Cell.Row, Cell.Column).State = Marked then
          User_If.Display_Mark (Cell => Cell);
-         
+
          return;
       end if;
-      
-      if Mine_Field (Cell.Row, Cell.Column).Stepped then
+
+      if Mine_Field (Cell.Row, Cell.Column).Stepped then -- Avoid inifinite recursion.
          return;
       end if;
 
@@ -309,11 +315,11 @@ package body Field.Operations is
          end if;
 
          Auto_Step (Cell => Cell);
-      
+
          if Dead then
             return;
          end if;
-      
+
          if Auto_Marking.Enabled then
             -- See if stepping here has created any normal cells that obviously contain mines;
             -- if so, mark them.
@@ -327,9 +333,9 @@ package body Field.Operations is
                end loop Mark_Rows;
             end if;
          end if;
-         
+
          Step_Count := Step_Count - 1;
-         
+
          if Step_Count <= 0 then
             Release_Rows : for Row in Valid_Row loop
                Release_Columns : for Column in Valid_Column loop

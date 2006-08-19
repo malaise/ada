@@ -1,21 +1,23 @@
 -- Mine Detector Game
--- Copyright (C) 2004 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Provide the user interface
 --
--- V4.4 2004 Aug 01
+-- V5.0 2006 Feb 01
 --
 with Field;
 package User_If is
-   procedure Display_Count (Count : in Field.Valid_Count; Stepped : in Boolean; Cell : in Field.Cell_Location);
+   procedure Display_Count (Count    : in Field.Valid_Count;
+                            Stepped  : in Boolean;
+                            Cell     : in Field.Cell_Location);
 
    procedure Display_Mark (Cell : in Field.Cell_Location); -- Display a marked cell
 
-   procedure Display_Mine (Cell : in Field.Cell_Location); -- Display a stepped-on mine
-   
+   procedure Display_Mine (Cell : in Field.Cell_Location); -- Display a mine.
+
    procedure Display_Blank (Cell : in Field.Cell_Location); -- Display a blank cell
-   
+
    procedure Display_To_Go (To_Go : in Integer); -- Display # of mines still to mark
 
    procedure Reset_Screen; -- Return to start of game condition

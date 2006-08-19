@@ -1,10 +1,10 @@
 -- Mine Detector Game
--- Copyright (C) 2004 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Encapsulates the operations on the mine field for Mine_Detector game
 --
--- V4.4 2004 Aug 01
+-- V5.0 2006 Feb 01
 --
 with PragmARC.Protected_Option;
 package Field.Operations is
@@ -15,13 +15,16 @@ package Field.Operations is
    procedure Step (Cell : in Cell_Location); -- Step on a cell
 
    type Game_State_ID is (In_Progress, Won, Lost);
-   
+
    function Game_State return Game_State_ID;
-   
+
+   procedure Set_Mine_Count (New_Mine_Count : in Natural);
+   -- Takes effect the next time a game is created.
+
    Auto_Marking : PragmARC.Protected_Option.Handle;
    -- Enables and disables automatic marking
    -- May be enabled or disabled at any time and takes effect immediately
-   
+
    Extended_Stepping : PragmARC.Protected_Option.Handle;
    -- Enables and disables extended automatic stepping (automatic stepping after marking)
    -- May be enabled or disabled at any time and takes effect immediately

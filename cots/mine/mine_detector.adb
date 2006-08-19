@@ -1,8 +1,8 @@
 -- Mine Detector Game
--- Copyright (C) 2004 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V4.4 2004 Aug 01
+-- V5.0 2006 Feb 01
 --
 with Gtk.Main;
 with User_If;
@@ -19,4 +19,5 @@ end Mine_Detector;
 -- OUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 -- for more details. Free Software Foundation, 59 Temple Place - Suite
--- 330, Boston, MA 02111-1307, USA.
+-- 330, Boston, MA 02111-1307, USA. 
+
