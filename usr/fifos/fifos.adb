@@ -14,7 +14,7 @@ package body Fifos is
   -- Remove trailing spaces
   function Parse (Str : String) return String is
   begin
-    return Str (1 .. String_Mng.Parse_Spaces (Str, False));
+    return Str (Str'First .. String_Mng.Parse_Spaces (Str, False));
   end Parse;
 
   procedure Host_Name2Id (Host : in out Tcp_Util.Remote_Host) is
@@ -409,10 +409,11 @@ package body Fifos is
 
       procedure Close (Fifo : in Fifo_Access) is
         procedure Call_Cb is
+          Id : constant Fifo_id := (Acc => Fifo);
         begin
           -- Call Connection_Cb
           if Fifo.Conn_Cb /= null then
-            Fifo.Conn_Cb (Fifo.Name(1 .. Fifo.Len), (Acc => Fifo), False);
+            Fifo.Conn_Cb (Fifo.Name(1 .. Fifo.Len), Id, False);
           end if;
         end Call_Cb;
         use type Socket.Socket_Dscr;
@@ -515,11 +516,11 @@ package body Fifos is
         Suff_Len : constant Integer := Text_Handler.Length (Name_Prefix);
       begin
         if Item_Name'Length <= Suff_Len
-        or else Item_Name(1 .. Suff_Len)
+        or else Item_Name(Item_Name'First .. Item_Name'First + Suff_Len - 1)
              /= Text_Handler.Value (Name_Prefix) then
           raise Data_Error;
         end if;
-        return Item_Name(Suff_Len+1 .. Item_Name'Length);
+        return Item_Name(Suff_Len+1 .. Item_Name'Last);
       end Fifo_Name_Of;
 
 
