@@ -1,8 +1,9 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2004 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2006 Mar 01     J. Carter          V1.1--Added Float_Image
 -- 2004 Apr 01     J. Carter          V1.0--Initial version
 --
 with Ada.Strings.Fixed;
@@ -87,6 +88,25 @@ package body PragmARC.Images is
 
       return Adjust (Image (Start .. Stop), Width, False, Zero_Filled);
    end Modular_Image;
+   
+   function Float_Image
+      (Value : Number; Fore : Field := 2; Aft : Field := Number'digits - 1; Exp : Field := 3; Zero_Filled : Boolean := False)
+   return String is
+      package Number_IO is new Float_IO (Number);
+      
+      Image : String (1 .. 3 * Field'Last + 3);
+      Start : Natural;
+      Width : Field := Fore + Aft + 1;
+   begin -- Float_Image
+      Number_IO.Put (To => Image, Item => abs Value, Aft => Aft, Exp => Exp);
+      Start := Index_Non_Blank (Image);
+      
+      if Exp > 0 then
+         Width := Width + Exp + 1;
+      end if;
+      
+      return Adjust (Image (Start .. Image'Last), Width, Value < 0.0, Zero_Filled);
+   end Float_Image;
 end PragmARC.Images;
 --
 -- This is free software; you can redistribute it and/or modify it under
@@ -103,4 +123,4 @@ end PragmARC.Images;
 -- this unit does not by itself cause the resulting executable to be
 -- covered by the GNU General Public License. This exception does not
 -- however invalidate any other reasons why the executable file might be
--- covered by the GNU Public License.
+-- covered by the GNU Public License. 

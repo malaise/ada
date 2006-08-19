@@ -1,9 +1,18 @@
--- Test PragmARC.Safe_Pointers
+-- Test program for GCD
 --
-with PragmARC.Safe_Pointers;
-package SP_Test_Help is
-   package Int_Ptr is new PragmARC.Safe_Pointers (Integer);
-end SP_Test_Help;
+with Ada.Text_IO;
+with PragmARC.Math.Integer_Functions;
+
+use Ada.Text_IO;
+procedure GCD_Test is
+   use PragmARC.Math.Integer_Functions;
+begin -- GCD_Test
+   Left : for I in 1 .. 10 loop
+      Right : for J in 1 .. 10 loop
+         Put_Line ("GCD (" & Integer'Image (I) & ',' & Integer'Image (J) & ") =" & Integer'Image (GCD (I, J) ) );
+      end loop Right;
+   end loop Left;
+end GCD_Test;
 --
 -- Copyright (C) 2006 by Jeffrey R. Carter
 --

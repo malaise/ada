@@ -1,8 +1,9 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2002 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- History:
+-- 2006 Mar 01     J. Carter          V1.2--Moved Integer functions to Integer_Functions
 -- 2002 Oct 01     J. Carter          V1.1--Added GCD and LCM
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
@@ -149,28 +150,6 @@ package body PragmARC.Math.Functions is
    when others =>
       raise Invalid_Coth;
    end Arccoth;
-
-   function GCD (Left : Natural; Right : Natural) return Natural is
-      Min       : Natural := Integer'Min (Left, Right);
-      Max       : Natural := Integer'Max (Left, Right);
-      Remainder : Natural;
-   begin -- GCD
-      Reduce : loop
-         if Min <= 0 then
-            return Max;
-         end if;
-
-         Remainder := Max rem Min;
-         Max := Min;
-         Min := Remainder;
-      end loop Reduce;
-   end GCD;
-
-   function LCM (Left : Natural; Right : Natural) return Natural is
-      -- null;
-   begin -- LCM
-      return (Left * Right) / GCD (Left, Right);
-   end LCM;
 end PragmARC.Math.Functions;
 --
 -- This is free software; you can redistribute it and/or modify it under
@@ -187,4 +166,4 @@ end PragmARC.Math.Functions;
 -- this unit does not by itself cause the resulting executable to be
 -- covered by the GNU General Public License. This exception does not
 -- however invalidate any other reasons why the executable file might be
--- covered by the GNU Public License.
+-- covered by the GNU Public License. 

@@ -1,11 +1,12 @@
 -- PragmAda Reusable Component (PragmARC)
--- Copyright (C) 2002 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- This package is implemented in terms of Ada.Numerics.Generic_Elementary_Functions. It provides
 -- argument checking via subtypes rather than using Argument_Error
 --
 -- History:
+-- 2006 Mar 01     J. Carter          V1.2--Moved Integer functions to Integer_Functions
 -- 2002 Oct 01     J. Carter          V1.1--Added GCD and LCM
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
@@ -71,15 +72,6 @@ package PragmARC.Math.Functions is
    function Arctanh (Tanh : Tanh_Real) return Real;
    function Arccoth (Coth : Real)      return Real; -- raise Invalid_Coth
    -- Precondition: abs Coth > 1.0      raises Invalid_Coth if violated
-
-   -- Some additional useful functions (not in Ada.Numerics.Generic_Elementary_Functions)
-   function GCD (Left : Natural; Right : Natural) return Natural;
-   -- Greatest Common Divisor, using an iterative version of Euclid's algorithm
-
-   function LCM (Left : Natural; Right : Natural) return Natural; -- raise Constraint_Error
-   -- Least Common Multiple, implemented as (Left * Right) / GCD (Left, Right)
-   --
-   -- Precondition: Left * Right in Natural     raises Constraint_Error if violated
 end PragmARC.Math.Functions;
 --
 -- This is free software; you can redistribute it and/or modify it under
@@ -96,4 +88,4 @@ end PragmARC.Math.Functions;
 -- this unit does not by itself cause the resulting executable to be
 -- covered by the GNU General Public License. This exception does not
 -- however invalidate any other reasons why the executable file might be
--- covered by the GNU Public License.
+-- covered by the GNU Public License. 

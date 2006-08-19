@@ -3,7 +3,7 @@ readme file
 PragmAda Software Engineering
 PragmAda Reusable Components (PragmARCs)
 
-2005 Jul 01 release
+2006 May 01 release
 
 Files use the GNAT default file names for systems with long-file-name support.
 
@@ -43,13 +43,9 @@ xor.adb           A Recursive Error Minimization (REM) neural network to solve t
 
 Please e-mail error reports, comments, and suggestions to
 
-   pragmada@earthlink.net
+   pragmada@mchsi.com
 
 
-Changes since 2005 Jan 01 release:
+Changes since 2006 Mar 01 release:
 
-Added PragmARC.Safe_Pointers and PragmARC.Safe_Suspension_Objects
-
-Modified PragmARC.Matrix_Math to not assume that multiplication is commutative for type Element
-
-Modified PragmARC.Get_Line to correct a problem when reading from standard input
+Added PragmARC.Genetic_Algorithm and its test program.

@@ -54,6 +54,10 @@ Test program: devil.adb, devil2.adb
 package PragmARC.Forwarder
 Concurrent forwarder for task decoupling
 
+procedure PragmARC.Genetic_Algorithm
+A generic framework for genetic programming.
+Test program: evolve_pi.adb
+
 function PragmARC.Get_Line
 A function to obtain an entire line of text from an input file, & skip the line terminator
 Modified from the algorithm in the article "Variable-Length String Input in Ada" by J. Carter in ADA LETTERS, 1989 May/Jun
@@ -65,11 +69,16 @@ From P. K. Pearson, "Fast Hashing of Variable-Length Text Strings," Comm. ACM, 1
 Test program: hashtest.adb
 
 package PragmARC.Images
-Extended image functions for integer types
+Extended image functions for integer, modular, and floating-point types
 Test program: test_images.adb
 
 function PragmARC.Images.Image
 Instantion of PragmARC.Images.Signed_Image for type Integer
+
+package PragmARC.Least_Squares_Fitting
+Least-squares line fitting to a set of data
+Test programs: line_fit_test.adb, line_fit_test_win_io.adb
+(line_fit_test_win_io.adb uses Win_IO packages to plot data and fit line)
 
 package PragmARC.Linear_Equation_Solver
 Solves linear equations of the form A * X = B for X, where A is
@@ -109,10 +118,13 @@ Positions are used to manipulate a list
 package PragmARC.Math
 Provides useful constants not defined by Ada.Numerics
 
+package PragmARC.Math.Integer_Functions
+Provides GCD and LCM functions
+Test program: gcd_test.adb
+
 package PragmARC.Math.Functions
 This package is implemented in terms of Ada.Numerics.Generic_Elementary_Functions. It provides
-argument checking via subtypes rather than using Argument_Error. It also provides GCD and LCM
-functions
+argument checking via subtypes rather than using Argument_Error.
 Test program: mathtest.adb
 
 package PragmARC.Matrix_Math
