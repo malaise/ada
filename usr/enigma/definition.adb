@@ -69,15 +69,17 @@ package body Definition is
 
   -- Check that Key is one of the expected keys
   procedure Is_Valid_Key (Key : in String) is
+    F : constant Integer := Key'First;
+    Str : constant String := Key (F .. F);
   begin
    if Key'Length =0 then
      Error ("Invalid argument -");
    end if;
-   if       Key (1 .. 1) /= Jammers_Key
-   and then Key (1 .. 1) /= Back_Key
-   and then Key (1 .. 1) /= Start_Key
-   and then Key (1 .. 1) /= Last_Key
-   and then Key (1 .. 1) /= Switch_Key then
+   if       Str /= Jammers_Key
+   and then Str /= Back_Key
+   and then Str /= Start_Key
+   and then Str /= Last_Key
+   and then Str /= Switch_Key then
      Error ("Invalid argument -" & Key);
    end if;
   end Is_Valid_Key;

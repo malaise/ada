@@ -124,17 +124,17 @@ procedure Pipe is
         Async_Stdin.Set_Async;
       end if;
       return True;
-    elsif Str(Str'Length) = Ada.Characters.Latin_1.Eot then
+    elsif Str(Str'Last) = Ada.Characters.Latin_1.Eot then
       -- End of transmission
-      Send (Str(1 .. Len-1));
+      Send (Str(Str'First .. Len-1));
       if not Remanent then
         Done := True;
       else
         Async_Stdin.Set_Async;
       end if;
     else
-      Send (Str(1 .. Len));
-      if Str(Len) /= Ada.Characters.Latin_1.Lf then
+      Send (Str(Str'First .. Len));
+      if Str(Str'Last) /= Ada.Characters.Latin_1.Lf then
         Async_Stdin.New_Line_Out;
       end if;
     end if;

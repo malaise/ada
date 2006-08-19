@@ -52,16 +52,18 @@ procedure T_Stdin is
   function Stdin_Cb(Str : in String) return Boolean is
     Message : Message_Type;
     Len : Natural := Str'Length;
+    Last : Natural := Str'Last;
   begin
     if Len = 0 then
       Go_On := False;
       return True;
     end if;
-    if Len >= 1 and then Str(Str'Length) = Ada.Characters.Latin_1.Eot then
+    if Len >= 1 and then Str(Last) = Ada.Characters.Latin_1.Eot then
       Len := Len - 1;
+      Last := Last - 1;
       Go_On := False;
     end if;
-    Message (1 .. Len) := Str (1 .. Len);
+    Message (1 .. Len) := Str (Str'First .. Last);
     My_Send(Soc, Message, Len);
     return True;
   end Stdin_Cb;

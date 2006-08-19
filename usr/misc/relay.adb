@@ -4,7 +4,7 @@
 with System;
 with Ada.Text_Io, Ada.Characters.Latin_1;
 with Text_Handler, Argument, Sys_Calls, Event_Mng,
-     Socket, Tcp_Util, Channels, Async_Stdin;
+     Socket, Tcp_Util, Channels, Async_Stdin, String_Mng;
 procedure Relay is
 
   -- Message type
@@ -81,23 +81,26 @@ procedure Relay is
   -- Sender may read stdin with this
   function Stdin_Cb (Str : in String) return Boolean is
     Len : Natural := Str'Length;
+    Last : Natural := Str'Last;
   begin
     if Len = 0 then
       Done := True;
       return True;
     end if;
-    if Len >= 1 and then Str(Str'Length) = Ada.Characters.Latin_1.Eot then
+    if Len >= 1 and then Str(Last) = Ada.Characters.Latin_1.Eot then
       Len := Len - 1;
+      Last := Last - 1;
       Done := True;
     end if;
-    if Len > 1 and then (Str(Len) = Ada.Characters.Latin_1.Lf
-                 or else Str(Len) = Ada.Characters.Latin_1.Cr) then
+    if Len > 1 and then (Str(Last) = Ada.Characters.Latin_1.Lf
+                 or else Str(Last) = Ada.Characters.Latin_1.Cr) then
       Len := Len - 1;
+      Last := Last - 1;
     end if;
-    if Len = 1 and then Str(Len) = Ada.Characters.Latin_1.Lf then
-      Message.Data(1) := Ada.Characters.Latin_1.Cr;
+    if Len = 1 and then Str(Last) = Ada.Characters.Latin_1.Lf then
+      Message.Data(Message.Data'First) := Ada.Characters.Latin_1.Cr;
     else
-      Message.Data(1 .. Len) := Str (1 .. Len);
+      String_Mng.Copy (Str (Str'First .. Last), Message.Data);
     end if;
     if Len > 0 then
       Message.Id := My_Host_Id;

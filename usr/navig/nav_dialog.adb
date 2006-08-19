@@ -130,31 +130,31 @@ package body Nav_Dialog is
     case Curr_Field is
       when Nav_Data.Wind_S =>
         Len := Len_Speed;
-        Str (1 .. Len_Speed) :=
+        Str (Str'First .. Len_Speed) :=
          Nav_Format.Imag(Data.Wind.Speed, Data.Set(Nav_Data.Wind_S));
       when Nav_Data.Wind_A =>
         Len := Len_Angle;
-        Str (1 .. Len_Angle) :=
+        Str (Str'First .. Len_Angle) :=
          Nav_Format.Imag(Data.Wind.Angle, Data.Set(Nav_Data.Wind_A));
       when Nav_Data.Plan_S =>
         Len := Len_Speed;
-        Str (1 .. Len_Speed) :=
+        Str (Str'First .. Len_Speed) :=
          Nav_Format.Imag(Data.Plan.Speed, Data.Set(Nav_Data.Plan_S));
       when Nav_Data.Plan_A =>
         Len := Len_Angle;
-        Str (1 .. Len_Angle) :=
+        Str (Str'First .. Len_Angle) :=
          Nav_Format.Imag(Data.Plan.Angle, Data.Set(Nav_Data.Plan_A));
       when Nav_Data.Traj_S =>
         Len := Len_Speed;
-        Str (1 .. Len_Speed) :=
+        Str (Str'First .. Len_Speed) :=
          Nav_Format.Imag(Data.Traj.Speed, Data.Set(Nav_Data.Traj_S));
       when Nav_Data.Traj_A =>
         Len := Len_Angle;
-        Str (1 .. Len_Angle) :=
+        Str (Str'First .. Len_Angle) :=
          Nav_Format.Imag(Data.Traj.Angle, Data.Set(Nav_Data.Traj_A));
       when Nav_Data.Drift =>
         Len := Len_Drift;
-        Str (1 .. Len_Drift) :=
+        Str (Str'First .. Len_Drift) :=
          Nav_Format.Imag(Data.Drift, Data.Set(Nav_Data.Drift));
     end case;
   end To_Str;
