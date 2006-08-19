@@ -1,6 +1,8 @@
 -- Mine Detector Game
--- Copyright (C) 2003 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
+--
+-- V5.0 2006 Feb 01
 --
 with Glib;
 with Gdk.Event;
@@ -45,6 +47,19 @@ use Gtkada.Dialogs;
 use Gtk.Dialog;
 use Gtk.Scrolled_Window;
 use Gtk.Text;
+
+with Gtk.Menu;
+with Gtk.Menu_Item;
+with Gtk.Option_Menu;
+with Gtk.Radio_Menu_Item;
+with Gtk.Widget;
+
+use Gtk.Menu;
+use Gtk.Menu_Item;
+use Gtk.Option_Menu;
+use Gtk.Radio_Menu_Item;
+use Gtk.Widget;
+
 package body User_If is
    package Window_Cb is new Gtk.Handlers.Callback (Gtk_Window_Record);
    package Button_Cb is new Gtk.Handlers.Callback (Gtk_Button_Record);
@@ -68,11 +83,27 @@ package body User_If is
    Step_Check     : Gtk_Check_Button;
    Rules          : Gtk_Button;
    About          : Gtk_Button;
+   Level          : Gtk_Option_Menu;
    Rules_Dialog   : Gtk_Dialog;
    Game_Over      : Gtk_Label;
 
    You_Won_Message  : constant String := "You Won";
    You_Lost_Message : constant String := "BOOM!";
+
+   type Level_Info is record
+      Name  : String (1 .. 3);
+      Mines : Natural;
+   end record;
+
+   type Level_List is array (Glib.Gint range <>) of Level_Info;
+
+   Levels : constant Level_List := (0 => (Name => " 50", Mines =>  50),
+                                    1 => (Name => "100", Mines => 100),
+                                    2 => (Name => "150", Mines => 150),
+                                    3 => (Name => "200", Mines => 200),
+                                    4 => (Name => "250", Mines => 250) );
+
+   Default_Level : constant Glib.Gint := 2;
 
    subtype Cell_String is String (1 .. 1);
 
@@ -92,7 +123,9 @@ package body User_If is
 
    use type Field.Operations.Game_State_ID;
 
-   procedure Display (Cell : in Field.Cell_Location; Text : in Cell_String; Active : in Boolean) is
+   procedure Display (Cell   : in Field.Cell_Location;
+                      Text   : in Cell_String;
+                      Active : in Boolean) is
       -- null;
    begin -- Display
       Set_Text (Press (Cell.Row, Cell.Column), Text);
@@ -110,12 +143,15 @@ package body User_If is
       Display (Cell => Cell, Text => " ", Active => False);
    end Display_Blank;
 
-   procedure Display_Count
-      (Count : in Field.Valid_Count; Stepped : in Boolean; Cell : in Field.Cell_Location)
+   procedure Display_Count (Count   : in Field.Valid_Count;
+                            Stepped : in Boolean;
+                            Cell    : in Field.Cell_Location)
    is
       Zero_Pos : constant := Character'Pos ('0');
    begin -- Display_Count
-      Display (Cell => Cell, Text => Character'Val (Zero_Pos + Count) & "", Active => Stepped);
+      Display (Cell   => Cell,
+               Text   => Character'Val (Zero_Pos + Count) & "",
+               Active => Stepped);
    end Display_Count;
 
    procedure Display_Mark (Cell : in Field.Cell_Location) is
@@ -229,6 +265,7 @@ package body User_If is
    is
       -- null;
    begin -- When_Restart_Button
+      Field.Operations.Set_Mine_Count (Levels (Get_History (Level) ).Mines);
       Field.Operations.Reset;
    end When_Restart_Button;
 
@@ -259,7 +296,7 @@ package body User_If is
                                "mine." & Latin_1.LF),
           Null_Unbounded_String & Latin_1.LF,
           To_Unbounded_String ("The game is played on a rectangular field of 16 x 30 " &
-                               "cells. 99 mines are hidden within the field." & Latin_1.LF),
+                               "cells. A number of mines are hidden within the field." & Latin_1.LF),
           Null_Unbounded_String & Latin_1.LF,
           To_Unbounded_String ("Some of the cells have numbers on them. The numbers represent " &
                                "the total number of mines in that cell and its " &
@@ -296,7 +333,7 @@ package body User_If is
                                "' appears there." & Latin_1.LF),
           Null_Unbounded_String & Latin_1.LF,
           To_Unbounded_String ("At the top right of the window is a number. At the " &
-                               "start of a game this is 99, the number of mines in the " &
+                               "start of a game this is the number of mines in the " &
                                "field. Each time you mark a cell, this number is " &
                                "decreased by one. Each time you unmark a marked cell, " &
                                "this number is increased by one. If you successfully " &
@@ -305,10 +342,18 @@ package body User_If is
           To_Unbounded_String ("The 'New Game' button starts a new game. Any game in " &
                                "progress is abandoned." & Latin_1.LF),
           Null_Unbounded_String & Latin_1.LF,
+          To_Unbounded_String ("The level drop-down allows you to choose how many mines " &
+                               "will be in the field at the start of the next game. You " &
+                               "can choose from" & Levels (Levels'First).Name & " to " &
+                               Levels (Levels'Last).Name & " mines. This goes into effect " &
+                               "the next time you start a new game. At higher numbers of " &
+                               "mines, it may not be able to win the game without luck." & Latin_1.LF),
+          Null_Unbounded_String & Latin_1.LF,
           To_Unbounded_String ("The 'Auto Mark' check box enables an auto-marking " &
                                "algorithm that marks any cells that obviously contain " &
-                               "a mine. In this mode, the game does not present much " &
-                               "of an intellectual challenge." & Latin_1.LF),
+                               "a mine. At lower levels, the game does not present much " &
+                               "of an intellectual challenge with this option. At higher " &
+                               "levels, it's very difficult to play without this option." & Latin_1.LF),
           Null_Unbounded_String & Latin_1.LF,
           To_Unbounded_String ("The 'Auto Step after Mark' check box enables the auto-" &
                                "stepping algorithm after a cell is marked, either " &
@@ -354,7 +399,7 @@ package body User_If is
       Result : Message_Dialog_Buttons;
    begin -- About_Pressed
       Result := Message_Dialog (Msg         => "Mine Detector" & Latin_1.LF &
-                                               "Copyright (C) 2003" & Latin_1.LF &
+                                               "Copyright (C) 2006" & Latin_1.LF &
                                                "PragmAda Software Engineering" & Latin_1.LF &
                                                "Released as Free Software under the terms" & Latin_1.LF &
                                                "of the GNU Public License" & Latin_1.LF &
@@ -387,11 +432,38 @@ package body User_If is
       return Row_Image (Row_First .. Row_Image'Last) & Column_Image (Column_First .. Column_Image'Last);
    end Image;
 
+   function Create_Level_Option_Menu return Gtk_Menu is
+      Menu      : Gtk_Menu;
+      Group     : Widget_SList.GSlist;
+      Menu_Item : Gtk_Radio_Menu_Item;
+
+      procedure Add_Line (Text : in String) is
+         -- null;
+      begin -- Add_Line
+         Gtk_New (Menu_Item, Group, Text);
+         Group := Gtk.Radio_Menu_Item.Get_Group (Menu_Item);
+         Append (Menu, Menu_Item);
+         Show (Menu_Item);
+      end Add_Line;
+   begin -- Create_Level_Option_Menu
+      Gtk_New (Menu);
+
+      for I in Levels'range loop
+         Add_Line (Levels (I).Name);
+      end loop;
+
+      return Menu;
+   end Create_Level_Option_Menu;
+
+   procedure First_Game (Data : System.Address);
+   pragma Convention (C, First_Game);
+
    procedure First_Game (Data : System.Address) is
-      Button_Size : constant := 25;
+      Button_Size : constant := 25; -- Linux systems may need a larger size.
 
       use type Glib.Guint;
    begin -- First_Game
+      Field.Operations.Set_Mine_Count (Levels (Default_Level).Mines);
       Gtk_New (Window, Window_Toplevel);
       Set_Policy (Window, True, True, False);
       Set_Position (Window, Win_Pos_Center);
@@ -434,6 +506,12 @@ package body User_If is
       Gtk_New (Restart_Button, "New Game");
       Button_Cb.Connect (Restart_Button, "clicked", When_Restart_Button'access);
       Pack_Start (Right_Side, Restart_Button, False);
+
+      Gtk_New (Level);
+      Set_Menu (Level, Create_Level_Option_Menu);
+      Set_History (Level, Default_Level);
+      Show (Level);
+      Pack_Start (Right_Side, Level, False);
 
       Gtk_New (Mark_Check, "Auto Mark");
       Set_Active (Mark_Check, Field.Operations.Auto_Marking.Enabled);
