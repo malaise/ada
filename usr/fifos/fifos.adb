@@ -409,7 +409,7 @@ package body Fifos is
 
       procedure Close (Fifo : in Fifo_Access) is
         procedure Call_Cb is
-          Id : constant Fifo_id := (Acc => Fifo);
+          Id : constant Fifo_Id := (Acc => Fifo);
         begin
           -- Call Connection_Cb
           if Fifo.Conn_Cb /= null then
