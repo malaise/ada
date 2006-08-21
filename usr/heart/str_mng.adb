@@ -81,15 +81,13 @@ package body Str_Mng is
   -- others <-> value
   function To_Str (Bpm : Pers_Def.Bpm_Range) return Bpm_Str is
     use Pers_Def;
-    S : Bpm_Str;
   begin
     if Bpm = Pers_Def.Bpm_Range'First then
-      S := (others => ' ');
+      return Bpm_Str'(others => ' ');
     else
       -- Align right
-      S := Normal(Integer(Bpm), Bpm_Str'Length);
+      return Normal(Integer(Bpm), Bpm_Str'Length);
     end if;
-    return S;
   end To_Str;
 
   function To_Bpm (Str : Bpm_Str) return Pers_Def.Bpm_Range is
@@ -105,10 +103,8 @@ package body Str_Mng is
   end To_Bpm;
 
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str is
-    S : Mesu_Nam.File_Pid_Str;
   begin
-    S := Normal (Integer(Pid), 3, Gap => '0');
-    return S;
+    return Normal (Integer(Pid), 3, Gap => '0');
   end Pid_Str;
 
 
@@ -237,17 +233,15 @@ package body Str_Mng is
     Months : Ada.Calendar.Month_Number;
     Days   : Ada.Calendar.Day_Number;
     Secs   : Ada.Calendar.Day_Duration;
-    S : Mesu_Def.Date_Str;
     use Perpet;
   begin
     if Offset /= 0 then
       Current_Time := Current_Time - (Years => 0, Months => Offset);
     end if;
     Ada.Calendar.Split (Current_Time, Years, Months, Days, Secs);
-    S := Normal (Years,  4, Gap => '0')
-       & Normal (Months, 2, Gap => '0')
-       & Normal (Days,   2, Gap => '0');
-    return S;
+    return Normal (Years,  4, Gap => '0')
+         & Normal (Months, 2, Gap => '0')
+         & Normal (Days,   2, Gap => '0');
   end Current_Date;
 
   function Current_Date_Printed (Offset : Offset_Range := 0)
