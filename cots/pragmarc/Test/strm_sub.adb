@@ -17,11 +17,11 @@ with PragmARC.Character_Regular_Expression_Matcher;
 use Ada;
 use Ada.Command_Line;
 use Ada.Strings.Unbounded;
-use Ada.Text_IO;
 use PragmARC;
 procedure Strm_Sub is
    procedure Usage is
       -- null;
+      use Ada.Text_IO;
    begin -- Usage
       Put_Line (Item => "Usage: " & Command_Name & " [-g] <pattern> <replacement>");
       Put_Line (Item => '"' & "-g" & '"' & " means replace all occurrences of <pattern> by <replacement>");
@@ -64,7 +64,7 @@ begin -- Strm_Sub
    Character_Regular_Expression_Matcher.Process (Pattern => Argument (Pattern_Index), Processed => Pattern);
    
    All_Lines : loop
-      exit All_Lines when End_Of_File;
+      exit All_Lines when Ada.Text_Io.End_Of_File;
       
       Line := To_Unbounded_String (Get_Line);
       Start := 1;
@@ -90,13 +90,13 @@ begin -- Strm_Sub
          exit All_Cases when not Global or Start > Length (Line);
       end loop All_Cases;
       
-      Put_Line (Item => To_String (Line) );
+      Ada.Text_IO.Put_Line (Item => To_String (Line) );
    end loop All_Lines;
 exception -- Strm_Sub
 when Invalid_Usage =>
    Usage;
 when Character_Regular_Expression_Matcher.Illegal_Pattern =>
-   Put_Line (Item => "Illegal pattern");
+   Ada.Text_Io.Put_Line (Item => "Illegal pattern");
    Usage;
 end Strm_Sub;
 --

@@ -102,7 +102,7 @@ package PragmARC.List_Bounded_Unprotected is
    -- Precondition:  not Is_Empty (From)     raise Empty if violated
    -- Postcondition: not Is_Full (From)
 
-   function Get (From : Handle; Pos : Position) return Element; -- raise Invalid_Position
+   procedure Get (From : Handle; Pos : Position; Item : out Element); -- raise Invalid_Position
    -- Returns the item at Pos
    -- Raises Invalid_Position if Pos is invalid or Off_List (From)
    -- Raises Empty if From is empty

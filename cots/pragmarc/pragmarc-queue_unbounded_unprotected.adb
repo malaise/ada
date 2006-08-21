@@ -34,7 +34,7 @@ package body PragmARC.Queue_Unbounded_Unprotected is
          raise Empty;
       end if;
 
-      Assign (To => Item, From => Implementation.Get (From.List, Pos) );
+      Implementation.Get (From.List, Pos, Item);
       Implementation.Delete (From => From.List, Pos => Pos);
    end Get;
 
@@ -64,14 +64,14 @@ package body PragmARC.Queue_Unbounded_Unprotected is
       return Implementation.Length (Queue.List);
    end Length;
 
-   function Peek (Queue : Handle) return Element is
+   procedure Peek (Queue : Handle; Item : out Element) is
       Pos : Implementation.Position := Implementation.First (Queue.List);
    begin -- Peek
       if Pos = Implementation.Off_List (Queue.List) then -- Precondition
          raise Empty;
       end if;
 
-      return Implementation.Get (Queue.List, Pos);
+      Implementation.Get (Queue.List, Pos, Item);
    end Peek;
 
    procedure Put (Onto : in out Handle; Item : in Element) is

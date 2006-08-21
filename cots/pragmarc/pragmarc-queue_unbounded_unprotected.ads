@@ -64,7 +64,7 @@ package PragmARC.Queue_Unbounded_Unprotected is
    --
    -- Time: O(1)
 
-   function Peek (Queue : Handle) return Element;
+   procedure Peek (Queue : Handle; Item : out Element);
    -- Return the Element at the head of Queue without altering Queue
    -- Raises Empty if Queue is empty
    --

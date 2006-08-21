@@ -22,7 +22,7 @@ package PragmARC.Monitor_Handler is
       
       procedure Put (Item : in Element); -- Change the value stored in the monitor
 
-      function Get return Element; -- Obtain the value stored in the monitor
+      procedure Get (Item : out Element); -- Obtain the value stored in the monitor
    private -- Monitor
       Value : Element;
    end Monitor;

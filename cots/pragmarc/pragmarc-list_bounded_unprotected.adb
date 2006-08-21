@@ -269,14 +269,14 @@ package body PragmARC.List_Bounded_Unprotected is
       Pos := Invalid_Pos;
    end Delete;
 
-   function Get (From : Handle; Pos : Position) return Element is
+   procedure Get (From : Handle; Pos : Position; Item : out Element) is
       -- null;
    begin -- Get
       if Pos.ID /= From.ID or (Pos.Pos not in From.Storage'range or else From.Storage (Pos.Pos).ID /= From.ID) then
          raise Invalid_Position;
       end if;
 
-      return From.Storage (Pos.Pos).Value;
+      Assign (Item, From.Storage (Pos.Pos).Value);
    end Get;
 
    procedure Put (Into : in out Handle; Pos : in Position; Item : in Element) is

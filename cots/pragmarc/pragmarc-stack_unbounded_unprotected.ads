@@ -64,7 +64,7 @@ package PragmARC.Stack_Unbounded_Unprotected is
    --
    -- Time: O(1)
 
-   function Peek (Stack : Handle) return Element;
+   procedure Peek (Stack : Handle; Item : out Element);
    -- Returns the Element on the top of Stack without altering Stack
    -- Raises Empty if Stack is empty
    --

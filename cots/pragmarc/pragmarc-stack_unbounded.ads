@@ -70,7 +70,7 @@ package PragmARC.Stack_Unbounded is
       --
       -- Time: O(N)
 
-      function Peek return Element;
+      procedure Peek (Item : out Element);
       -- Returns the Element at the top of the stack without altering the stack
       -- Raises Empty if the stack is empty
       --

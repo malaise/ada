@@ -70,7 +70,7 @@ package PragmARC.Queue_Unbounded is
       --
       -- Time: O(N)
 
-      function Peek return Element;
+      procedure Peek (Item : out Element);
       -- Returns the Element at the head of the queue without altering the queue
       -- Raises Empty if the queue is empty
       --

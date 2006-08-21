@@ -14,10 +14,10 @@ package body PragmARC.Monitor_Handler is
          Assign (To => Value, From => Item);
       end Put;
 
-      function Get return Element is
+      procedure Get (Item : out Element) is
          -- null;
       begin -- Get
-         return Value;
+         Assign (To => Item, From => Value);
       end Get;
    end Monitor;
 end PragmARC.Monitor_Handler;

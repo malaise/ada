@@ -41,10 +41,10 @@ package body PragmARC.Queue_Unbounded_Blocking is
          return Implementation.Length (Queue);
       end Length;
 
-      function Peek return Element is
+      procedure Peek (Item : out Element) is
          -- null;
       begin -- Peek
-         return Implementation.Peek (Queue);
+         Implementation.Peek (Queue, Item);
       end Peek;
 
       procedure Iterate (Action : in Action_Ptr; Context : in out Context_Data'Class) is

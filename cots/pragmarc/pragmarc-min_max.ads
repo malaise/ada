@@ -10,12 +10,13 @@
 generic -- PragmARC.Min_Max
     type Element (<>) is limited private;
 
+    with procedure Assign (To : out Element; From : in Element) is <>;
     with function "<" (Left : Element; Right : Element) return Boolean is <>;
 package PragmARC.Min_Max is
     pragma Pure;
 
-    function Min (Left : Element; Right : Element) return Element;
-    function Max (Left : Element; Right : Element) return Element;
+    procedure Min (Left, Right : Element; Item : out Element);
+    procedure Max (Left, Right : Element; Item : out Element);
 end PragmARC.Min_Max;
 --
 -- This is free software; you can redistribute it and/or modify it under

@@ -79,10 +79,10 @@ package body PragmARC.List_Bounded is
          raise Invalid_Position;
       end Delete;
 
-      function Get (Pos : Position) return Element is
+      procedure Get (Pos : Position; Item : out Element) is
          -- null;
       begin -- Get
-         return Implementation.Get (List, Implementation.Position (Pos) );
+         Implementation.Get (List, Implementation.Position (Pos), Item);
       exception -- Get
       when Implementation.Invalid_Position =>
          raise Invalid_Position;

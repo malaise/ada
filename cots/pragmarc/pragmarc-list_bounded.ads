@@ -103,7 +103,7 @@ package PragmARC.List_Bounded is
       --
       -- Time: O(1)
 
-      function Get (Pos : Position) return Element; -- raise Invalid_Position
+      procedure Get (Pos : Position; Item : out Element); -- raise Invalid_Position
       -- Returns the item at Pos
       -- Raises Invalid_Position if Pos is invalid or the Off_List position
       --

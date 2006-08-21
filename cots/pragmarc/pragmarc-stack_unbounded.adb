@@ -41,10 +41,10 @@ package body PragmARC.Stack_Unbounded is
          return Implementation.Length (Stack);
       end Length;
 
-      function Peek return Element is
+      procedure Peek (Item : out Element) is
          -- null;
       begin -- Peek
-         return Implementation.Peek (Stack);
+         Implementation.Peek (Stack, Item);
       end Peek;
 
       procedure Iterate (Action : in Action_Ptr; Context : in out Context_Data'Class) is

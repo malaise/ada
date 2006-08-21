@@ -42,6 +42,7 @@ package body PragmARC.List_Unbounded_Unprotected is
    procedure Assign (To : out Handle; From : in Handle) is
       From_Pos : Position := First (From);
       New_Pos  : Position;
+      Item : Element;
    begin -- Assign
       if To.Off_List = From.Off_List then -- These are the same list
          return;
@@ -52,7 +53,8 @@ package body PragmARC.List_Unbounded_Unprotected is
       Copy : loop
          exit Copy when From_Pos = Off_List (From);
 
-         Append (Into => To, Item => Get (From, From_Pos), After => Last (To), New_Pos => New_Pos);
+         Get (From, From_Pos, Item);
+         Append (Into => To, Item => Item, After => Last (To), New_Pos => New_Pos);
          From_Pos := Next (From_Pos, From);
       end loop Copy;
    end Assign;
@@ -196,12 +198,12 @@ package body PragmARC.List_Unbounded_Unprotected is
       Pos := Position'(List_Id => null, Ptr => null); -- Make Pos invalid
    end Delete;
 
-   function Get (From : Handle; Pos : Position) return Element is
+   procedure Get (From : Handle; Pos : Position; Item : out Element) is
       -- null;
    begin -- Get
       Check_Valid_And_Not_Off (List => From, Pos => Pos);
 
-      return Pos.Ptr.Value;
+      Assign (Item, Pos.Ptr.Value);
    end Get;
 
    procedure Put (Into : in out Handle; Pos : in Position; Item : in Element) is
@@ -247,7 +249,7 @@ package body PragmARC.List_Unbounded_Unprotected is
       All_Nodes : loop
          exit All_Nodes when Pos = Off_List (Over);
 
-         Assign (To => Item, From => Get (Over, Pos) );
+         Get (Over, Pos, Item);
          Action (Item => Item, Context => Context, Pos => Pos, Continue => Continue);
          Put (Into => Over, Pos => Pos, Item => Item);
 
@@ -268,7 +270,7 @@ package body PragmARC.List_Unbounded_Unprotected is
       Subset_Length : Positive := 1;
       Left          : Link;
       Right         : Link;
-      Rest          : Link;
+      Itemt          : Link;
 
       procedure Unlink (Ptr : in Link) is -- Unlink merged node from its subset
          -- null;
@@ -318,15 +320,15 @@ package body PragmARC.List_Unbounded_Unprotected is
                Right.Prev.Next := null;
             end if;
 
-            Rest := Right; -- Find end of right subset and beginning of rest of list
-            Find_Rest : for I in 1 .. Subset_Length loop
-               exit Find_Rest when Rest = null;
+            Itemt := Right; -- Find end of right subset and beginning of rest of list
+            Find_Itemt : for I in 1 .. Subset_Length loop
+               exit Find_Itemt when Itemt = null;
 
-               Rest := Rest.Next;
-            end loop Find_Rest;
+               Itemt := Itemt.Next;
+            end loop Find_Itemt;
 
-            if Rest /= null then -- Unlink right subset from rest of list
-               Rest.Prev.Next := null;
+            if Itemt /= null then -- Unlink right subset from rest of list
+               Itemt.Prev.Next := null;
             end if;
 
             None_Empty : loop -- Merge the two subsets, Left & Right, until one becomes empty
@@ -350,7 +352,7 @@ package body PragmARC.List_Unbounded_Unprotected is
             Empty (Ptr => Left,  Temp => Temp); -- Add any remaining nodes in left  subset
             Empty (Ptr => Right, Temp => Temp); -- Add any remaining nodes in right subset
 
-            Left := Rest; -- Repeat for rest of list
+            Left := Itemt; -- Repeat for rest of list
          end loop All_Subsets;
 
          Subset_Length := 2 * Subset_Length;

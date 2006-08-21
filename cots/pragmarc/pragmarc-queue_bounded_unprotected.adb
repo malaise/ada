@@ -30,7 +30,7 @@ package body PragmARC.Queue_Bounded_Unprotected is
    procedure Get (From : in out Handle; Item : out Element) is
       Pos : Implementation.Position := Implementation.First (From.List);
    begin -- Get
-      Assign (To => Item, From => Implementation.Get (From.List, Pos) );
+      Implementation.Get (From.List, Pos, Item);
       Implementation.Delete (From => From.List, Pos => Pos);
    end Get;
 
@@ -52,10 +52,10 @@ package body PragmARC.Queue_Bounded_Unprotected is
       return Implementation.Length (Queue.List);
    end Length;
 
-   function Peek (Queue : Handle) return Element is
+   procedure Peek (Queue : Handle; Item : out Element) is
       -- null;
    begin -- Peek
-      return Implementation.Get (Queue.List, Implementation.First (Queue.List) );
+     Implementation.Get (Queue.List, Implementation.First (Queue.List), Item );
    end Peek;
 
    procedure Iterate (Over : in out Handle; Context : in out Context_Data) is

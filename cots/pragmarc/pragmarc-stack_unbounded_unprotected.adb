@@ -53,14 +53,14 @@ package body PragmARC.Stack_Unbounded_Unprotected is
       return Implementation.Length (Stack.List);
    end Length;
 
-   function Peek (Stack : Handle) return Element is
+   procedure Peek (Stack : Handle; Item : out Element) is
       Pos : Implementation.Position := Implementation.First (Stack.List);
    begin -- Peek
       if Pos = Implementation.Off_List (Stack.List) then -- Precondition
          raise Empty;
       end if;
 
-      return Implementation.Get (Stack.List, Pos);
+      Implementation.Get (Stack.List, Pos, Item);
    end Peek;
 
    procedure Pop (From : in out Handle; Item : out Element) is
@@ -70,7 +70,7 @@ package body PragmARC.Stack_Unbounded_Unprotected is
          raise Empty;
       end if;
 
-      Assign (To => Item, From => Implementation.Get (From.List, Pos) );
+      Implementation.Get (From.List, Pos, Item);
       Implementation.Delete (From => From.List, Pos => Pos);
    end Pop;
 

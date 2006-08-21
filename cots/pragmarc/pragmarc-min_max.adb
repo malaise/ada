@@ -6,23 +6,21 @@
 -- 2000 May 01     J. Carter          V1.0--Initial release
 --
 package body PragmARC.Min_Max is
-    function Min (Left : Element; Right : Element) return Element is
-        -- null;
+    procedure Min (Left, Right : Element; Item : out Element) is
     begin -- Min
         if Left < Right then
-            return Left;
+            Assign (Item, Left);
         else
-            return Right;
+            Assign (Item, Right);
         end if;
     end Min;
 
-    function Max (Left : Element; Right : Element) return Element is
-        -- null;
+    procedure Max (Left, Right : Element; Item : out Element) is
     begin -- Max
         if Left < Right then
-            return Right;
+            Assign (Item, Right);
         else
-            return Left;
+            Assign (Item, Left);
         end if;
     end Max;
 end PragmARC.Min_Max;

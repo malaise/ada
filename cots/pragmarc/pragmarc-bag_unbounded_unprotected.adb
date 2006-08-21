@@ -41,13 +41,14 @@ package body PragmARC.Bag_Unbounded_Unprotected is
 
    function Find (Key : Element; Bag : Handle) return Search_Result is
       Pos : Implementation.Position := Implementation.First (Bag.List);
-
+      Item : Element;
       use type Implementation.Position;
    begin -- Find
       Search : loop
          exit Search when Pos = Implementation.Off_List (Bag.List);
 
-         if Key = Implementation.Get (Bag.List, Pos) then
+         Implementation.Get (Bag.List, Pos, Item);
+         if Key = Item then
             return (Found => True, Pos => Pos);
          end if;
 
@@ -73,11 +74,13 @@ package body PragmARC.Bag_Unbounded_Unprotected is
       end if;
    end Update;
 
-   function Find (Key : Element; Bag : Handle) return Find_Result is
+   function Find (Key : Element; Bag : Handle) return Find_result is
       Temp : constant Search_Result := Find (Key, Bag);
+      Item : Element;
    begin -- Find
       if Temp.Found then
-         return (Found => True, Item => Implementation.Get (Bag.List, Temp.Pos) );
+         Implementation.Get (Bag.List, Temp.Pos, Item);
+         return (Found => True, Item => Item);
       else
          return (Found => False);
       end if;
