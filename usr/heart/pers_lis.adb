@@ -211,11 +211,12 @@ package body Pers_Lis is
       Redisplay := False;
 
       -- Move in persons list according to Afpx selection
-      Pers_Def.Person_List_Mng.Move_To(
-              Pers_Def.The_Persons, Next,
-              Afpx.Line_List_Mng.Get_Position(Line_List) - 1,
-              False);
-
+      if not List_Empty then
+        Pers_Def.Person_List_Mng.Move_To(
+                Pers_Def.The_Persons, Next,
+                Afpx.Line_List_Mng.Get_Position(Line_List) - 1,
+                False);
+      end if;
 
       case Ptg_Result.Event is
 
