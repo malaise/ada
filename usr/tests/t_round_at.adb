@@ -5,7 +5,7 @@ procedure T_Round_At is
   procedure Error is
   begin
     Ada.Text_Io.Put_Line ("Usage " & Argument.Get_Program_Name
-                        & "<Real> <Int>");
+                        & " <Real> <Int>");
     raise End_Error;
   end Error;
 
