@@ -116,7 +116,7 @@ package Sys_Calls is
                            Status : out Get_Status_List;
                            C      : out Character);
   -- Read / write on File_Desc
-  -- May raise System_Error;
+  -- May raise System_Error (end of blocking flow...)
   function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural;
   function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
