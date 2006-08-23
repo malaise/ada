@@ -1,0 +1,32 @@
+# Compute 1 + 2 + 4 + 8 + 16 ... up to 64 squares
+
+# Check 1 arg > 0 or no arg (-> 64)
+[ "Error: N > 0 or no argument expected." putl ssize popn retall ] pope
+ssize isnul [ "Defaulting to " put 64 dup putl ] ifcall
+dup isarbi [ tointe ] ifcall
+dup isinte ~ pushle copye ifcall
+dup ispos ~ pushle ifcall
+
+# Init sum, amount, max and nb_square
+@0 s popr @1 a popr
+m popr 1 n popr
+
+# Loop until nb = max
+[
+# Add amount to sum
+a pushr s pushr + s popr
+"Square " put n pushr 2 True " " normal put
+" Adding " put a pushr putl
+# Done when nb = max
+n pushr m pushr = ifret
+# Double amount and incr n
+a pushr dup + a popr n pushr 1 + n popr
+# Loop
+L pushr retacal ] L copyr
+
+# Call L
+call
+
+# Put sum
+"Total " put s pushr putl
+
