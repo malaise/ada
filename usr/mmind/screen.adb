@@ -60,7 +60,7 @@ package body Screen is
   Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Black;
   Nok_Color : constant Con_Io.Effective_Colors := Con_Io.White;
 
-  Pin_Int : constant Con_Io.Int_Char := Character'Pos('!');
+  Pin_Int : constant Con_Io.Int_Char := 2;
 
 
   procedure Set_Mouse_Default_Color is
