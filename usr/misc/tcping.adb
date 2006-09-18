@@ -194,6 +194,10 @@ procedure Tcping is
                Connect_Cb'Unrestricted_Access);
     exception
       when Error:others =>
+        Connecting := False;
+        if Nb_Tries /= 0 and then Curr_Try = Nb_Tries then
+          Cancel;
+        end if;
         Put_Line ("Connect exception "
             & Ada.Exceptions.Exception_Name (Error));
     end;
