@@ -11,22 +11,26 @@ procedure Tcping is
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error (
+      Argument.Get_Program_Name & " tries to establish a tcp connection to a"
+      & " host on a port.");
+    Sys_Calls.Put_Line_Error (
       "Usage: " & Argument.Get_Program_Name &
-      " <host> <port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -c ] [ -s ]");
+      " <host> <port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -c ]"
+      & " [ -s ]");
     Sys_Calls.Put_Line_Error (
-          "  <host>    ::= host name or ip address");
+          "  <host>      ::= host name or ip address");
     Sys_Calls.Put_Line_Error (
-          "  <port>    ::= port name or num");
+          "  <port>      ::= port name or number");
     Sys_Calls.Put_Line_Error (
-          "  -t<timeout> ::= connect timeout in s (1.0s)");
+          "  -t<timeout> ::= connect timeout in s (default 1.0s)");
     Sys_Calls.Put_Line_Error (
-          "  -d<delta>   ::= delta in s between tries (t + 1.0s)");
+          "  -d<delta>   ::= delta in s between retries (default t + 1.0s)");
     Sys_Calls.Put_Line_Error (
-          "  -n<tries>   ::= number of try attempts, 0 = infinite (1)");
+          "  -n<tries>   ::= number of connect tries, 0 = infinite (default 1)");
     Sys_Calls.Put_Line_Error (
-          "  -c          ::= go on tcpinging even if success (false)");
+          "  -c          ::= go on trying even after a success (default false)");
     Sys_Calls.Put_Line_Error (
-          "  -s          ::= silent, result in exit code only");
+          "  -s          ::= silent, result in exit code only (default verbose)");
     Sys_Calls.Put_Line_Error (
           "Exits with 0 if at least one connect succeeds, 1 otherwise.");
   end Usage;
@@ -35,7 +39,7 @@ procedure Tcping is
 
   procedure Put_Arg_Error (Msg : in String := "") is
   begin
-    Sys_Calls.Put_Error ("Error, invalid argument");
+    Sys_Calls.Put_Error ("Error, invalid argument(s)");
     if Msg /= "" then
       Sys_Calls.Put_Line_Error (": " & Msg);
     else
