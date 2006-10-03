@@ -1,0 +1,127 @@
+# Gives information about today
+#true debugall
+
+# Get current date for if no arg
+clock dateof d popr
+
+# FUNCTIONS
+# Replace TOS (as clock) by date (in days since ref), and reverse
+[
+1000 / 3600 / 24 /
+] A popr
+
+[
+1000 * 3600 * 24 *
+] B popr
+
+# Replace TOS (date) by day of week, 0 for monday
+[
+# Reference date was a Friday
+4 + 7 %
+] D popr
+
+# Replace TOS (date) by its week number
+# It is recursive (as long as year does not start on week 1)
+[
+dup
+# Compute and save 01/01 of the year
+B pushr call dateof 6 "01" strrep 9 "01" strrep timeof A pushr call o copyr
+# Day offset: now - 01/01
+dup swap3 swap - swap
+# Day of week of 01/01
+D pushr call dup
+# Week of first week:
+# 1 if day of week is <= thursday, else 52 or 53, the same as the day before
+3 <= [ 1 ] [ o pushr 1 - C pushr call ] ifte call
+# Stack is week nb of 01/01, day (num) of 01/01 and current day offset
+# Number of days between monday of 1st week and now, then offset in weeks
+swap3 + 7 /
+# Stack is week offset then week of first week
+# If offset is 0, then first week
+dup 0 = [ pop 2 retn ] ifcall
+# If week of first week is 1, then offset + 1, else offset
+swap 1 = 1 0 ifte +
+] C popr
+
+# BEGIN
+# One arg => dd/mm/YYyy
+ssize 1 = [
+# dd/mm/YYyy -> YYyy/mm/dd
+dup 7 10 strsub pope 
+dup 3 5 strsub pushle swap strcat pope 
+dup 6 6 strsub pushle swap strcat pope 
+1 2 strsub pushle swap strcat
+# Add hour:min:sec and store
+"-00:00:00.000" strcat d popr
+] ifcall
+
+# No more argument accepted
+ssize 0 /= [ "Error. At most one argument (dd/mm/YYyy) expected."
+putl ssize popn retall ] ifcall
+
+# Get date corresponding to arg/now
+d pushr timeof A pushr call c popr
+
+# Store beginning and end of current year, in days
+d pushr 6 "01" strrep 9 "01" strrep timeof a popr
+d pushr 6 "12" strrep 9 "31" strrep timeof b popr
+
+1 format
+d pushr dup dup 9 10 strsub put "/" put 6 7 strsub put "/" put 1 4 strsub put
+" is " put
+# Get day name
+# Nb days since reference modulo 7
+c pushr D pushr call
+# Day name of it
+"Monday" L popr
+"Tuesday" M popr
+"Wednesday" N popr
+"Thursday" O popr
+"Friday" P popr
+"Saturday" Q popr
+"Sunday" R popr
+L regind + indreg pushr put
+
+# Put date
+# Put day num
+" " put d pushr 9 10 strsub put
+# Put month name
+" " put
+"January" L popr
+"February" M popr
+"March" N popr
+"April" O popr
+"May" P popr
+"June" Q popr
+"July" R popr
+"August" S popr
+"September" T popr
+"October" U popr
+"November" V popr
+"December" W popr
+d pushr 6 7 strsub strinte 1 - L regind + indreg pushr put
+
+# Put year
+d pushr 1 4 strsub " " put put
+
+# Current week no
+", in week " put c pushr C pushr call put "," putl
+
+# Compute delta from 01/01 of the year
+c pushr dup B pushr call dateof
+6 "01" strrep 9 "01" strrep timeof A pushr call - 1 +
+" the " put dup put
+# Put st, nd, rd, th for 1..9 and 20..99
+"th" L popr
+"st" M popr
+"nd" N popr
+"rd" O popr
+# Get rid of 100th and check all but 10..19, th for 10..19
+dup 100 % 10 /
+1 /= [ 10 % dup 3 > [ pop 0 ] ifcall ] [ pop 0 ] ifte call
+L regind + indreg pushr put " day of the year, " put
+
+# Compute delta to 31/12 of the year
+c pushr dup B pushr call dateof
+6 "12" strrep 9 "31" strrep timeof A pushr call swap - dup put
+" day" put 1 > "s " " " ifte put "remaining." putl
