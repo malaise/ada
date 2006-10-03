@@ -146,6 +146,8 @@ begin
        & Normal (Day, 2, Gap => '0')
        & " "
        & Mixed_Str (Perpet.Month_Name_List'Image(Perpet.Get_Month_Name (Month)))
+       & " "
+       & Normal (Year, 4, Gap => '0')
        & ", in week"
        & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
        & ",");
