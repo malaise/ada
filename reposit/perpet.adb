@@ -372,7 +372,7 @@ package body Perpet is
       -- 52 or 53? The same as day before day_0
       Week_Of_Week_0 := Get_Week_Of_Year(Date_0 - 1);
     end if;
-    -- Number of days of first week in the previous year
+    -- Number of days of last week in the previous year
     Date_0_Offset := Day_Of_Week_List'Pos(Day_Date_0);
 
     -- Nb of days between date and 01/01
