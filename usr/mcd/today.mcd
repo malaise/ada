@@ -47,9 +47,9 @@ swap 1 = 1 0 ifte +
 # One arg => dd/mm/YYyy
 ssize 1 = [
 # dd/mm/YYyy -> YYyy/mm/dd
-dup 7 10 strsub pope 
-dup 3 5 strsub pushle swap strcat pope 
-dup 6 6 strsub pushle swap strcat pope 
+dup 7 10 strsub pope
+dup 3 5 strsub pushle swap strcat pope
+dup 6 6 strsub pushle swap strcat pope
 1 2 strsub pushle swap strcat
 # Add hour:min:sec and store
 "-00:00:00.000" strcat d popr

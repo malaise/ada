@@ -18,7 +18,7 @@ j popr i popr n popr
 # Init total moves
 0 t popr
 
-# Check arguments  a <= i j <= c  and  i /= j  and 1 <= n 
+# Check arguments  a <= i j <= c  and  i /= j  and 1 <= n
 i pushr isreg ~ E pushr ifcall
 j pushr isreg ~ E pushr ifcall
 n pushr isinte ~ E pushr ifcall

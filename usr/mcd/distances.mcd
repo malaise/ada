@@ -12,7 +12,7 @@ toreal 10.0 / v popr
 v pushr 0.36 / 2.0 * r popr
 
 # Stop distance on dry is roughly v ** 2
-v pushr dup * 
+v pushr dup *
 # Break distance on dry is stop - 1 sec reaction
 r pushr 2.0 / - b popr
 

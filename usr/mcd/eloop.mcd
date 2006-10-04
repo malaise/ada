@@ -7,7 +7,7 @@
 [
 # Anywhere in loop, exit with a ret
 # Work
-"Things to do " put dup putl 
+"Things to do " put dup putl
 # Test exit
 dup isnul ifret
 # Update counter

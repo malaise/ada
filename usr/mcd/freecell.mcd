@@ -7,8 +7,8 @@ ssize popn retall ] E popr
 ssize 2 /= E pushr ifcall
 
 # Check the content and put in reg
-[ 
-swap 
+[
+swap
 dup isinte ~ E pushr ifcall
 dup ispos ~ E pushr ifcall
 toreal swap popr
@@ -22,7 +22,7 @@ w C pushr call
 # Format a result (2 digits)
 [ toreal 4 2 " " normal put ] P popr
 
-# X = W / (W + D) 
+# X = W / (W + D)
 w pushr dup d pushr + / 100.0 *
 P pushr call
 

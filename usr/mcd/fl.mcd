@@ -23,7 +23,7 @@ msd
 ssize isnul  ifret
 # Store value for error tracing
 v copyr
-# Check 
+# Check
 C pushr call
 # Add
 s pushr + s popr

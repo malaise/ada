@@ -54,6 +54,6 @@ B pushr retacal ] B copyr call
 [
 I pushr N pushr > ifret
 I pushr a regind + 1 - indreg pushr putl
-I pushr 1 + I popr 
+I pushr 1 + I popr
 P pushr retacal ] P copyr call
 

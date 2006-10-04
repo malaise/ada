@@ -10,10 +10,10 @@ ssize popn retall
 ssize 1 /= E pushr ifcall
 
 # Make result milliseconds
-3600.0 * 1000.0 * round 
+3600.0 * 1000.0 * round
 
 # Fix negative values
-dup isneg [ "-" put absv ] ifcall 
+dup isneg [ "-" put absv ] ifcall
 
 # Check for days
 daysof dup 1 5 strsub strinte dup

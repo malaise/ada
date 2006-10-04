@@ -1,4 +1,4 @@
-# Compute sum from 1 to N 
+# Compute sum from 1 to N
 
 # Check stack is empty
 ssize 1 /= [ "Error. One argument expected." putl ssize popn retall ]

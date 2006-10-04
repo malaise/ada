@@ -3,7 +3,7 @@ ssize isnotnul [ "No argument expected." putl ssize popn retall ] ifcall
 
 # Get a random number
 999 toreal r popr
-[ r pushr dup 2.0 * rnd * - +- trunc ] R popr 
+[ r pushr dup 2.0 * rnd * - +- trunc ] R popr
 
 # Check that 2 registers, the name of which are in x and y,
 #  have the same arbitrary value. If not, the operation is in z.

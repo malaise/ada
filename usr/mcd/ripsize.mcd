@@ -14,7 +14,7 @@
 strinte t copyr ispos ~ R pushr ifcall
 
 # Check that top of stack is a Natural less than length
-[ dup isinte ~ E pushr ifcall dup isneg E ifcall 
+[ dup isinte ~ E pushr ifcall dup isneg E ifcall
   dup l pushr > E ifcall ] C popr
 
 # Odd number of args
@@ -40,7 +40,7 @@ ssize 0 = ifret
 # Check and store end
 C pushr call b popr
 # Check and store start
-C pushr call a copyr 
+C pushr call a copyr
 
 # Compute second - first and check it is pos
 b pushr swap - dup ispos ~ F pushr ifcall

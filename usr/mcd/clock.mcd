@@ -5,7 +5,7 @@
 
 # 1 optionnal arg
 60_000 s popr
-ssize 1 = [ 
+ssize 1 = [
   dup isreg ~ E pushr ifcall
   s /= E pushr ifcall
   1_000 s popr

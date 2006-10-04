@@ -38,7 +38,7 @@ b pushr +- 2.0 a pushr * / i popr
 d pushr isnul [ "1 real: " put i pushr putl 2 retn ] ifcall
 
 # d > 0 => -b/2a +- V(d)/2a
-d pushr ispos [ d pushr 0.5 ** 2.0 a pushr * / j popr 
+d pushr ispos [ d pushr 0.5 ** 2.0 a pushr * / j popr
              "2 reals: " put i pushr j pushr + putl
              "    and: " put i pushr j pushr - putl 2 retn ] ifcall
 

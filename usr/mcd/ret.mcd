@@ -3,8 +3,8 @@
 # Check 1 arg >= 0
 [ "Error: 0 <= N <= 7 expected." putl ssize popn retall ] E popr
 ssize 1 /= E pushr ifcall
-dup isneg E pushr ifcall 
-dup 7 > E pushr ifcall 
+dup isneg E pushr ifcall
+dup 7 > E pushr ifcall
 
 putl
 prevtop r popr

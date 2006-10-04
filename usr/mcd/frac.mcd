@@ -17,7 +17,7 @@ put put " " put toreal v copyr x pushr y pushr
 # Main (infinite) loop
 [
 # Compute 4 random number a b c and d
-R pushr dup dup dup 
+R pushr dup dup dup
 call a popr call b popr
 call c popr call d popr
 # Set fractions e=a:b and f=c:d

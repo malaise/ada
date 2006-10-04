@@ -32,7 +32,7 @@ o pushr +- o popr f pushr 1.0 swap / f popr ] ifcall
 
 # Compute lat and long
 a pushr f pushr * a popr
-b pushr 
+b pushr
 m pushr isnul [ o pushr + f pushr * ] [ f pushr * o pushr + ] ifte call
 b popr
 

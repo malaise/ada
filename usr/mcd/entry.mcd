@@ -20,7 +20,7 @@ dup 24.0 >= E pushr ifcall
 dup frac 0.60 >= E pushr ifcall
 
 # Current time must be < previous
-dup p pushr >= E pushr ifcall 
+dup p pushr >= E pushr ifcall
 dup p popr
 
 # Convert dms to real

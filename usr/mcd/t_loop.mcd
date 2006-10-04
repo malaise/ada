@@ -5,15 +5,15 @@
 ssize isneg pushle copye ifcall
 ssize isnul [ "Defaulting to " put 10 dup putl ] ifcall
 dup isinte ~ pushle copye ifcall
-dup isneg pushle ifcall 
+dup isneg pushle ifcall
 
-[ 
+[
 # I = 0 ? If yes return
 dup isnul ifret
 # Print I
 dup putl
 # I - 1
-1 - 
+1 -
 # Loop
 pushle copye retacal ] copye
 
