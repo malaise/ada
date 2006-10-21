@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Io, Mutex_Manager, Schedule, Argument, Sys_Calls, Upper_Char;
+with My_Io, Mutex_Manager, Schedule, Argument, Basic_Proc, Upper_Char;
 use Mutex_Manager;
 
 procedure T_Mut is
@@ -179,11 +179,11 @@ procedure T_Mut is
 
   procedure Error (S : in String) is
   begin
-    Sys_Calls.Put_Line_Error (S & ".");
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error (S & ".");
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
                   & " <mutex_kind> [ <nb_tasks> ]");
-    Sys_Calls.Put_Line_Error ("  <mutex_kind> ::= s | rw | wr");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Put_Line_Error ("  <mutex_kind> ::= s | rw | wr");
+    Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
   -- Local to main

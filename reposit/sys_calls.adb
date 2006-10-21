@@ -1,7 +1,6 @@
-with Interfaces.C_Streams;
 with Interfaces.C.Strings;
-with Ada.Command_Line, Ada.Characters.Latin_1;
-with Day_Mng, Bit_Ops;
+with Ada.Characters.Latin_1;
+with Day_Mng, Bit_Ops, Basic_Proc;
 
 package body Sys_Calls is
 
@@ -145,30 +144,10 @@ package body Sys_Calls is
     return Str_From_C (C_Strerror (Err));
   end Str_Error;
 
-
   -- Put line on stderr
-  procedure Put_Error (Str : in String) is
-    I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
-  begin
-    I := Interfaces.C_Streams.Fputs (Str4C'Address,
-                 Interfaces.C_Streams.Stderr);
-  end Put_Error;
-
-  procedure New_Line_Error is
-    I : Interfaces.C_Streams.Int;
-    Str4C : constant String := Ada.Characters.Latin_1.Lf
-                             & Ada.Characters.Latin_1.Nul;
-  begin
-    I := Interfaces.C_Streams.Fputs (Str4C'Address,
-                 Interfaces.C_Streams.Stderr);
-  end New_Line_Error;
-
-  procedure Put_Line_Error (Str : in String) is
-  begin
-    Put_Error (Str);
-    New_Line_Error;
-  end Put_Line_Error;
+  procedure Put_Error (Str : in String) renames Basic_Proc.Put_Error;
+  procedure New_Line_Error renames Basic_Proc.New_Line_Error;
+  procedure Put_Line_Error (Str : in String) renames Basic_Proc.Put_Line_Error;
 
   -- Basic getenv, raises Env_Unset
   function Getenv (Env_Name : String) return String is
@@ -279,21 +258,9 @@ package body Sys_Calls is
   end Putenv;
 
   -- Set exit code
-  procedure Set_Exit_Code (Code : in Natural) is
-  begin
-    Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Exit_Status(Code));
-  end Set_Exit_Code;
-
-  -- Set ok or error exit code
-  procedure Set_Ok_Exit_Code is
-  begin
-    Set_Exit_Code(0);
-  end Set_Ok_Exit_Code;
-
-  procedure Set_Error_Exit_Code is
-  begin
-    Set_Exit_Code(1);
-  end Set_Error_Exit_Code;
+  procedure Set_Exit_Code (Code : in Natural) renames Basic_Proc.Set_Exit_Code;
+  procedure Set_Ok_Exit_Code renames Basic_Proc.Set_Ok_Exit_Code;
+  procedure Set_Error_Exit_Code renames Basic_Proc.Set_Ok_Exit_Code;
 
   -- Unix File Descriptor
 

@@ -1,4 +1,4 @@
-with My_Io, Normal, Sys_Calls, Arg_Parsing;
+with My_Io, Normal, Basic_Proc, Arg_Parsing;
 package body Display is
   use Common;
 
@@ -142,8 +142,8 @@ package body Display is
   procedure Put_No_Way (Kind : in Common.Cote_Kind;
                         Cote : in Data.Eff_Cote_Range) is
   begin
-    Sys_Calls.Put_Error ("No way for ");
-    Sys_Calls.Put_Line_Error (Char(Other_Kind(Kind)) & Normal(Cote, 3, True, '0'));
+    Basic_Proc.Put_Error ("No way for ");
+    Basic_Proc.Put_Line_Error (Char(Other_Kind(Kind)) & Normal(Cote, 3, True, '0'));
     Ok := False;
   end Put_No_Way;
 

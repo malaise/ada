@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument, Rnd, Sys_Calls, My_Math, Int_Io, Flo_Io, Get_Float;
+with Argument, Rnd, Basic_Proc, My_Math, Int_Io, Flo_Io, Get_Float;
 procedure Random is
 
   Nb_Arg : Natural;
@@ -47,8 +47,8 @@ begin
 
 exception
   when Error =>
-    Sys_Calls.Put_Line_Error ("ERROR. Usage: " & Argument.Get_Program_Name & " [ [ <min> ] <max> ]");
-    Sys_Calls.Put_Line_Error (" min and max either both integers or both floats.");
-    Sys_Calls.Put_Line_Error (" default min is 0, default max is 1.");
+    Basic_Proc.Put_Line_Error ("ERROR. Usage: " & Argument.Get_Program_Name & " [ [ <min> ] <max> ]");
+    Basic_Proc.Put_Line_Error (" min and max either both integers or both floats.");
+    Basic_Proc.Put_Line_Error (" default min is 0, default max is 1.");
 end Random;
 

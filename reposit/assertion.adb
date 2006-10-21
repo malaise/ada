@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Argument, Date_Image, Sys_Calls, Environ, Upper_Str;
+with Argument, Date_Image, Basic_Proc, Environ, Upper_Str;
 package body Assertion is
 
   -- Init (getenv) done?
@@ -73,13 +73,13 @@ package body Assertion is
     end if;
 
     -- Trace
-    Sys_Calls.Put_Error (Date_Image(Ada.Calendar.Clock)
+    Basic_Proc.Put_Error (Date_Image(Ada.Calendar.Clock)
                        & " - " & Argument.Get_Program_Name
                        & ", Assertion failed");
     if Trace /= "" then
-      Sys_Calls.Put_Error (": " & Trace );
+      Basic_Proc.Put_Error (": " & Trace );
     end if;
-    Sys_Calls.Put_Line_Error (".");
+    Basic_Proc.Put_Line_Error (".");
 
     if Action = Put_Trace then
       -- Action is only to log False assertion

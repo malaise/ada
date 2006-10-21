@@ -1,5 +1,4 @@
 with Ada.Text_Io;
-with Sys_Calls;
 with Normal;
 
 package body One_File_Statements is

@@ -1,6 +1,6 @@
 -- Test timed queue
 with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
-with Argument, Queues.Timed, Sys_Calls, Get_Float;
+with Argument, Queues.Timed, Basic_Proc, Get_Float;
 procedure T_Timeq is
 
   procedure Usage is
@@ -122,7 +122,7 @@ exception
   when Ada.Text_Io.End_Error =>
     null;
   when others =>
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
     raise;
 end T_Timeq;
 

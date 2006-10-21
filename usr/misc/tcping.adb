@@ -1,7 +1,7 @@
 -- Open a TCP connection to the provided host and port
 with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
-with Text_Handler, Argument, Sys_Calls, Ip_Addr,
+with Text_Handler, Argument, Basic_Proc, Ip_Addr,
      Normal, My_Math, Round_At, Timers, Socket, Tcp_Util, Event_Mng;
 
 procedure Tcping is
@@ -10,28 +10,28 @@ procedure Tcping is
   -- Usage and error message, put on stderr
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
       Argument.Get_Program_Name & " tries to establish a tcp connection to a"
       & " host on a port.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
       "Usage: " & Argument.Get_Program_Name &
       " <host> <port> [ -t<timeout> ] [ -d<delta> ] [ -n<tries> ] [ -c ]"
       & " [ -s ]");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  <host>      ::= host name or ip address");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  <port>      ::= port name or number");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  -t<timeout> ::= connect timeout in s (default 1.0s)");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  -d<delta>   ::= delta in s between retries (default t + 1.0s)");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  -n<tries>   ::= number of connect tries, 0 = infinite (default 1)");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  -c          ::= go on trying even after a success (default false)");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "  -s          ::= silent, result in exit code only (default verbose)");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
           "Exits with 0 if at least one connect succeeds, 1 otherwise.");
   end Usage;
 
@@ -39,14 +39,14 @@ procedure Tcping is
 
   procedure Put_Arg_Error (Msg : in String := "") is
   begin
-    Sys_Calls.Put_Error ("Error, invalid argument(s)");
+    Basic_Proc.Put_Error ("Error, invalid argument(s)");
     if Msg /= "" then
-      Sys_Calls.Put_Line_Error (": " & Msg);
+      Basic_Proc.Put_Line_Error (": " & Msg);
     else
-      Sys_Calls.Put_Line_Error (".");
+      Basic_Proc.Put_Line_Error (".");
     end if;
     Usage;
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
     raise Arg_Error;
   end Put_Arg_Error;
 
@@ -339,14 +339,14 @@ begin
   end if;
 
   if not Success then
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
   end if;
 
 exception
   when Socket.Soc_Name_Not_Found =>
-    Sys_Calls.Put_Line_Error ("Unknown host or port");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Put_Line_Error ("Unknown host or port");
+    Basic_Proc.Set_Error_Exit_Code;
   when Arg_Error =>
-    Sys_Calls.Set_Exit_Code(2);
+    Basic_Proc.Set_Exit_Code(2);
 end Tcping;
 

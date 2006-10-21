@@ -1,4 +1,4 @@
-with Sys_Calls, Bit_Ops;
+with Bit_Ops;
 -- Check that a user (User_Id, Group_Id) has access (read/write/exec)
 -- to a file knowing its owner (File_User, File_Group) and Rights
 procedure File_Access (User_Id, Group_Id : in Natural;

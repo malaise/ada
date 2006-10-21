@@ -6,7 +6,7 @@
 -- Each data is send to client which sent last data received
 with Ada.Text_Io, Ada.Characters.Latin_1;
 
-with Text_Handler, Sys_Calls, Argument, Async_Stdin, Mixed_Str, Event_Mng;
+with Text_Handler, Basic_Proc, Argument, Async_Stdin, Mixed_Str, Event_Mng;
 with Fifos;
 with Io_Flow;
 procedure Pipe is
@@ -37,13 +37,13 @@ procedure Pipe is
 
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
                                         & " <mode> <fifo>");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "<mode> ::= -s | -c     exiting when fifo disconnects");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "<mode> ::= -S | -C     remaining when fifo disconnects");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
   end Usage;
 
   procedure Send (Str : in String) is
@@ -51,13 +51,13 @@ procedure Pipe is
     use type Fifos.Send_Result_List, Pipe_Fifo.Fifo_Id;
   begin
     if Fid = Pipe_Fifo.No_Fifo then
-      Sys_Calls.Put_Line_Error ("Send result: Not open");
+      Basic_Proc.Put_Line_Error ("Send result: Not open");
       return;
     end if;
     Message (1 .. Str'Length) := Str;
     Res := Pipe_Fifo.Send (Fid, Message, Str'Length);
     if Res /= Fifos.Ok then
-      Sys_Calls.Put_Line_Error ("Send result: " & Mixed_Str(Res'Img));
+      Basic_Proc.Put_Line_Error ("Send result: " & Mixed_Str(Res'Img));
     end if;
   end Send;
 

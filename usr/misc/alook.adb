@@ -18,7 +18,7 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 
 with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
-     Lower_Str, Mixed_Str, Upper_Str, Sys_Calls;
+     Lower_Str, Mixed_Str, Upper_Str, Basic_Proc;
 
 procedure Look_95 is
 
@@ -400,12 +400,12 @@ procedure Look_95 is
       Reading.Open(File_Name, not Do_It);
     exception
       when Reading.Name_Error =>
-        Sys_Calls.Put_Line_Error("Error. Cannot open file " & File_Name
+        Basic_Proc.Put_Line_Error("Error. Cannot open file " & File_Name
            & " for writting. Skipping.");
         Exit_Code := Problem;
         return False;
       when Error : others =>
-        Sys_Calls.Put_Line_Error("Error. Cannot open file " & File_Name
+        Basic_Proc.Put_Line_Error("Error. Cannot open file " & File_Name
            & " for writting, exception "
            & Ada.Exceptions.Exception_Name (Error)
            & ". Skipping.");
@@ -579,7 +579,7 @@ procedure Look_95 is
 
   exception
     when Error : others =>
-      Sys_Calls.Put_Line_Error(
+      Basic_Proc.Put_Line_Error(
            "Error. While processing file " & File_Name
            & ", exception " & Ada.Exceptions.Exception_Name (Error)
            & ". Skipping.");
@@ -663,10 +663,10 @@ begin
   if not One_Done then
     Put_Usage;
   end if;
-  Sys_Calls.Set_Exit_Code (Exit_Code);
+  Basic_Proc.Set_Exit_Code (Exit_Code);
 exception
   when others =>
-    Sys_Calls.Set_Exit_Code (Problem);
+    Basic_Proc.Set_Exit_Code (Problem);
     raise;
 end Look_95;
 

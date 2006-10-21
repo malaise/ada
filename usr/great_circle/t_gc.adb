@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument, Sys_Calls, Text_Handler, Con_Io, Afpx;
+with Argument, Basic_Proc, Text_Handler, Con_Io, Afpx;
 with Conv, Lat_Lon, String_Util, Great_Circle;
 
 procedure T_Gc is
@@ -9,7 +9,7 @@ procedure T_Gc is
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
       & " add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss");
     Ada.Text_Io.Put_Line (" where a is N or S and o is E or W.");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
   end Usage;
 
   Use_Afpx : Boolean;

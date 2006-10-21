@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Mutex_Manager, Schedule, Rnd, Normal, Argument, Mixed_Str, Sys_Calls;
+with Mutex_Manager, Schedule, Rnd, Normal, Argument, Mixed_Str, Basic_Proc;
 
 procedure T_Read_Write is
   pragma Priority(10);
@@ -84,10 +84,10 @@ procedure T_Read_Write is
 
   procedure Error (Msg : in String) is
   begin
-    Sys_Calls.Put_Line_Error ("Error: " & Msg);
-    Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("Error: " & Msg);
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
        & " rw | wr");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
 begin

@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Text_Handler, Argument, Sys_Calls, Get_Line, Get_Float;
+with Text_Handler, Argument, Basic_Proc, Get_Line, Get_Float;
 with Arg_Parsing;
 package body File is
 
@@ -37,31 +37,31 @@ package body File is
     if Result = Ok or else Result = End_Of_File then
       return;
     end if;
-    Sys_Calls.Put_Error ( "Error in file " & Filename);
+    Basic_Proc.Put_Error ( "Error in file " & Filename);
     if Cote_No /= 0 then
-      Sys_Calls.Put_Line_Error (
+      Basic_Proc.Put_Line_Error (
        " at line " & Ada.Text_Io.Count'Image(Cote_Line(Cote_No)));
     else
-      Sys_Calls.New_Line_Error;
+      Basic_Proc.New_Line_Error;
     end if;
     case Result is
       when Ok | End_Of_File =>
         null;
       when File_Access =>
-        Sys_Calls.Put_Line_Error ("File not found or not readable or empty.");
+        Basic_Proc.Put_Line_Error ("File not found or not readable or empty.");
       when File_Format =>
-        Sys_Calls.Put_Line_Error ("Wrong format.");
+        Basic_Proc.Put_Line_Error ("Wrong format.");
       when File_Length =>
-        Sys_Calls.Put_Line_Error ("File too long.");
+        Basic_Proc.Put_Line_Error ("File too long.");
       when Line_Nb =>
-        Sys_Calls.Put_Line_Error ("Invalid line number.");
+        Basic_Proc.Put_Line_Error ("Invalid line number.");
       when Start_Stop =>
-        Sys_Calls.Put_Line_Error ("Start equal stop.");
+        Basic_Proc.Put_Line_Error ("Start equal stop.");
       when Duplicate =>
-        Sys_Calls.Put_Line_Error ("Cote already exists at line "
+        Basic_Proc.Put_Line_Error ("Cote already exists at line "
           & Ada.Text_Io.Count'Image(Cote_Line(No2)));
       when No_Cote =>
-        Sys_Calls.Put_Line_Error ("Line " & Natural'Image(No2) & " has no cote");
+        Basic_Proc.Put_Line_Error ("Line " & Natural'Image(No2) & " has no cote");
     end case;
     raise Load_Error;
   end Error;
@@ -156,7 +156,7 @@ package body File is
       Arg_Parsing.Check;
     exception
       when others =>
-        Sys_Calls.Put_Line_Error ("Error. Usage: "
+        Basic_Proc.Put_Line_Error ("Error. Usage: "
           & Argument.Get_Program_Name
           & " [ -v ] <manufacturing_file> <specification_file>");
         raise Load_Error;
@@ -185,7 +185,7 @@ package body File is
 
     -- Check same number of cotes
     if Nb_Manufa /= Nb_Design then
-      Sys_Calls.Put_Line_Error ( "Error: files " & Arg_Parsing.Manufa_File_Name
+      Basic_Proc.Put_Line_Error ( "Error: files " & Arg_Parsing.Manufa_File_Name
                            & " and " & Arg_Parsing.Design_File_Name
                            & " don't have the same number of cotes.");
       raise Load_Error;

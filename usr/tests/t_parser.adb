@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Sys_Calls, Parser, Argument;
+with Basic_Proc, Parser, Argument;
 procedure T_Parser is
 
   Sep : Character := '.';
@@ -32,7 +32,7 @@ begin
   else
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
       & " <separator_char> [ <string_to_parse> ]");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 

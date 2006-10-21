@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
-with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory, Upper_Str, Mixed_Str;
+with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory,
+     Upper_Str, Mixed_Str, Basic_Proc;
 with Afpx_Typ;
 use  Afpx_Typ;
 -- Read AFPX.LIS, check
@@ -57,12 +58,12 @@ procedure Afpx_Bld is
 
   procedure Dump_Line is
   begin
-    Ada.Text_Io.Put(Ada.Text_Io.Positive_Count'Image(Dscr_Get.Get_Line_No)
+    Basic_Proc.Put_Error(Ada.Text_Io.Positive_Count'Image(Dscr_Get.Get_Line_No)
                   & " : ");
     for I in 1 .. Dscr_Words loop
-      Ada.Text_Io.Put(">" & Text_Handler.Value(Dscr_Line(I)) & "< ");
+      Basic_Proc.Put_Error(">" & Text_Handler.Value(Dscr_Line(I)) & "< ");
     end loop;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Error;
   end Dump_Line;
 
   procedure Close (On_Error : in Boolean) is
@@ -138,11 +139,11 @@ procedure Afpx_Bld is
   procedure File_Error (Msg : in String := "") is
   begin
     if Msg = "" then
-      Ada.Text_Io.Put_Line ("Syntax Error.");
+      Basic_Proc.Put_Line_Error ("Syntax Error.");
     else
-      Ada.Text_Io.Put_Line ("Syntax Error : " & Msg & ".");
+      Basic_Proc.Put_Line_Error ("Syntax Error : " & Msg & ".");
     end if;
-    Ada.Text_Io.Put (" In file " & Text_Handler.Value(List_File_Name)
+    Basic_Proc.Put_Error (" In file " & Text_Handler.Value(List_File_Name)
                & " at line ");
     Dump_Line;
     raise File_Syntax_Error;
@@ -434,11 +435,11 @@ procedure Afpx_Bld is
       return;
     end if;
     if Fi1 = 0 then
-      Ada.Text_Io.Put ("Error : List");
+      Basic_Proc.Put_Error ("Error : List");
     else
-      Ada.Text_Io.Put ("Error : Field " & Afpx_Typ.Field_Range'Image(Fi1));
+      Basic_Proc.Put_Error ("Error : Field " & Afpx_Typ.Field_Range'Image(Fi1));
     end if;
-    Ada.Text_Io.Put_Line (" and Field " & Afpx_Typ.Field_Range'Image(Fi2)
+    Basic_Proc.Put_Line_Error (" and Field " & Afpx_Typ.Field_Range'Image(Fi2)
                         & " of descriptor "
                         & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
                         & " overlap.");
@@ -457,7 +458,7 @@ procedure Afpx_Bld is
       Dscr_Get.Open (Text_Handler.Value(List_File_Name));
     exception
       when Ada.Text_Io.Name_Error =>
-        Ada.Text_Io.Put_Line ("Error : File "
+        Basic_Proc.Put_Line_Error ("Error : File "
                             & Text_Handler.Value(List_File_Name)
                             & " not found.");
         raise File_Not_Found;
@@ -690,16 +691,20 @@ begin
 exception
   when Argument_Error =>
     Close (True);
-    Ada.Text_Io.Put_Line ("Argument error. Try -h option.");
+    Basic_Proc.Put_Line_Error ("Argument error. Try -h option.");
+    Basic_Proc.Set_Error_Exit_Code;
   when File_Not_Found =>
     Close (True);
-    Ada.Text_Io.Put_Line ("Directory or file not found. Try -h option.");
+    Basic_Proc.Put_Line_Error ("Directory or file not found. Try -h option.");
+    Basic_Proc.Set_Error_Exit_Code;
   when File_Syntax_Error =>
     Close (True);
-    Ada.Text_Io.Put_Line ("Syntax error.");
+    Basic_Proc.Put_Line_Error ("Syntax error.");
+    Basic_Proc.Set_Error_Exit_Code;
   when others =>
     Close (True);
-    Ada.Text_Io.Put_Line ("Unexpected exception.");
+    Basic_Proc.Put_Line_Error ("Unexpected exception.");
+    Basic_Proc.Set_Error_Exit_Code;
     raise;
 end Afpx_Bld;
 
