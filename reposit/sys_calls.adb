@@ -241,18 +241,21 @@ package body Sys_Calls is
 
   -- Putenv
 
+  -- Declare access type in package scope instead of procedure putenv scope,
+  -- so that variables that are put in env remain in heap.
+  -- This is an unavoidable memory leak, because putenv does not copy
+  --  the string itself.
+  type Str_Ptr_Leak is access String;
+
   procedure Putenv (Env_Name : in String; Env_Value : in String) is
-    Str4C : constant String := Env_Name & "=" & Env_Value
-                             & Ada.Characters.Latin_1.Nul;
     function C_Putenv (Str : System.Address) return Integer;
     pragma Import (C, C_Putenv, "putenv");
-    -- Voluntary memory leak (in heap) here
-    type Str_Ptr is access String;
-    Ptr : constant Str_Ptr := new String'(Str4C);
-    Addr : constant System.Address
-         := Ptr.all'Address;
+    -- The memory leak is here: this string must remain in the heap
+    Ptr_Leak : constant Str_Ptr_Leak
+             := new String'(Env_Name & "=" & Env_Value
+                          & Ada.Characters.Latin_1.Nul);
   begin
-    if C_Putenv (Addr) /= 0 then
+    if C_Putenv (Ptr_Leak.all'Address) /= 0 then
       raise System_Error;
     end if;
   end Putenv;
