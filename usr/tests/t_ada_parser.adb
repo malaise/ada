@@ -30,6 +30,8 @@ begin
   if Argument.Get_Nbre_Arg /= 1 then
     Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
           & " <file_name>");
+    Sys_Calls.Put_Line_Error ("Dumps parsed words on stdout"
+                            & " and lexical elements on stderr.");
     Sys_Calls.Set_Error_Exit_Code;
     return;
   end if;
