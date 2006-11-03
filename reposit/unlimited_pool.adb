@@ -8,7 +8,7 @@ package body Unlimited_Pool is
     To := Val;
   end Set;
 
-  -- Check if pool is not empty, get number og elements in pool
+  -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean is
   begin
     return Pool_List_Mng.Is_Empty(Pool_List_Mng.List_Type(Pool));
@@ -35,10 +35,25 @@ package body Unlimited_Pool is
   begin
     if Is_Empty(Pool) then
       raise Empty_Pool;
-    else
+    end if;
+    if not Lifo then
+      -- Fifo means pop last (and go to previous) then rewind to first
+      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
+      Pool_List_Mng.Get(Pool_List_Mng.List_Type(Pool), Data);
+      if not Is_Empty(Pool) then
+        Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
+      end if;
+    else 
+      -- Lifo means pop first and move to next
       Pool_List_Mng.Get(Pool_List_Mng.List_Type(Pool), Data);
     end if;
   end Pop;
+
+  -- Clear the pool
+  procedure Clear (Pool : in out Pool_Type) is
+  begin
+    Pool_List_Mng.Delete_List(Pool_List_Mng.List_Type(Pool));
+  end Clear;
 
 end Unlimited_Pool;
 
