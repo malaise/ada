@@ -1,0 +1,86 @@
+The game consists in landing the LEM on the moon.
+The axes are x (horizontal, left to right) and y (vertical bottom to top).
+  
+y ^
+  |
+  |
+  +----> x
+
+1. The LEM
+Is square 10x10 m made of a rectangle and 2 feet and has an empty mass of
+M kg.
+It has a fuel tank of volume V m3 of fuel (of density d kg/m3).
+
+ +-----+
+ | LEM |
+ +-----+
+ /     \
+
+
+It provides the following operations
+- Set_X_Thrust and Set_Y_Thrust (Y_Thrust) 
+  -Max_X_Thrust is applied one second
+  -Max_Y_Thrust < Y_Thrust <= 0 in N (1N = 1kg.m/s2)
+  as long as there is fuel in the tank
+- Get_Speed returning a speed vector (on X and Y)
+- Get_Position returning a position (in X and Y)
+
+The acceleration a is X_Thrust / m and Y_Thrust / m + g
+The mass m is m0 - (X_Thrust + Y_Thrust) * C * d * t
+Where C is the consumption rate m3/N/s
+Each second, V0, P0, m0 and a are re-computed with current
+thrust value (which leads to a rather accurate integration of mass
+evolution).
+Speed V = V0 + a.t and position P = 1/2.a.t2 + VO.t + P0
+where t is the delta from prev second
+
+The initial situation of the LEM is
+ - height  Hmax - 10
+ - an initial Y thrust Y_Thrust_Init
+ - an initial vertical speed, random and small negative (> Min_Init_Speed)
+ - a tank full, which leads to an intial mass M + V.d
+
+2. The moon
+Has a constant gravity g
+Generates a random ground, width (500m) with a point each 10m (51 points).
+Points are at random height from 0 to Hpmax, one random point from 1 to 50
+has its pred and succ forced at the same height => the landing site (20m).
+
+3. The space
+Checks the status of the LEM (flying, landed, crashed) each second.
+- flying as long as the LEM square (10x10) does not interfere with the
+ground. Check the feet, both lower corners of the square.
+- if ground between feet is flat, and Max_Land_Yspeed < Yspeed <= 0
+  and | Xspeed | <= Max_Land_Xspeed => landed
+- else crashed
+
+4. The screen
+Initialises displaying the ground and the LEM at init position.
+Displays the LEM each 1/10s
+Displays the Y thrust current value each 0.5s
+
+5. The inputs
+<- and -> set a X thrust to Max_X_Thrust 1s
+V and ^ increase/decrease Y thrust by 1/5 of Max_Y_Thrust
+
+6. Values
+Moon gravity g=1.635 m/s2 (1/6 of Earth)
+V=8 m3
+d=700 kg/m3
+Empty mass M=10 tons
+Max_Y_Thrust=44 kN
+Max_X_Thrust=4 kN
+C=2.61e-6 m3/N/s
+Width=500 m
+Hmax=200 m
+Hpmax=50 m
+
+7. Validation
+Full mass is M + V.d = 15600 kg
+Corresponding weight is 15600 * g = 25506 (25.5kN)
+25506 * C = 0.0668 m3/s
+with an initial fuel volume V=8m3, the autonomy is 8 / 0.0668 = 120s
+(with no X thrust but without decreasing the mass).
+At empty mass, the autonomy would be 187s.
+
+
