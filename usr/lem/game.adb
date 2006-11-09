@@ -1,6 +1,9 @@
-with Lem;
+with Flight, Lem;
 procedure Game is
+  Status : Flight.Status_Rec;
 begin
-  null;
+  loop
+    Status := Flight.Get_Status;
+  end loop;
 end Game;
 

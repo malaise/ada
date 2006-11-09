@@ -1,4 +1,5 @@
 with My_Math;
+with Space;
 package Lem is
 
   subtype Real is My_Math.Real;
@@ -37,14 +38,14 @@ package Lem is
 
 
   -- Position in space
+  subtype Position_Range is Space.Position_Range;
+  subtype Position_Rec is Space.Position_Rec;
   -- Does not check position
-  type Position_Range is new Real;
-  type Position_Rec is record
-    X_Pos : Position_Range;
-    Y_Pos : Position_Range;
-  end record;
   function Get_Position return Position_Rec;
 
+  -- Width and Height of the LEM
+  Width : constant Space.Position_Range := 10.0;
+  Height : constant Space.Position_Range := 10.0;
 
   -- Init Lem position
   -- Thrust is set to compensate weight to 25 kN
@@ -53,6 +54,13 @@ package Lem is
 
   -- Stop Lem life
   procedure Stop;
+
+  -- Set position when landed
+  procedure Set_Landed_Position (Position : in Space.Position_Rec);
+
+  -- Exception when setting thrust while stopped, initialising or setting
+  -- landing position while not stopped
+  Invalid_Mode : exception;
 
 end Lem;
 

@@ -43,7 +43,7 @@ The initial situation of the LEM is
 2. The moon
 Has a constant gravity g
 Generates a random ground, width (500m) with a point each 10m (51 points).
-Points are at random height from 0 to Hpmax, one random point from 1 to 50
+Points are at random height from 0 to Hpmax, one random point from 2 to 50
 has its pred and succ forced at the same height => the landing site (20m).
 
 3. The space
