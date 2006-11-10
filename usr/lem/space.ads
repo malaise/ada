@@ -8,8 +8,8 @@ package Space is
     Y_Pos : Position_Range;
   end record;
 
-  -- X from 0 to 500 meters
-  X_Max : constant Position_Range := 500.0;
+  -- X from 0 to 250 meters
+  X_Max : constant Position_Range := 250.0;
   subtype X_Range is Position_Range range 0.0 .. X_Max;
 
   -- Y from 0 to 200 meters
