@@ -14,19 +14,10 @@ package body Lem is
   -- Empty mass of the LEM
   Empty_Mass : constant Mass_Range := 10_000.0;
 
-  -- Fuel density in kg/m3
-  Fuel_Density : constant := 700.0;
-
-  -- Fuel quantity in m3
-  Max_Fuel : constant := 8_000.0;
-  type Fuel_Range is new Real range 0.0 .. Max_Fuel;
+  -- Fuel quantity in kg
+  Max_Fuel : constant := 5_600.0;
+  subtype Fuel_Range is Mass_Range range 0.0 .. Max_Fuel;
   Current_Fuel : Fuel_Range := 0.0;
-
-  -- Current mass: Empty + fuel mass
-  function Current_Mass return Mass_Range is
-  begin
-    return Empty_Mass + Mass_Range(Current_Fuel / Fuel_Density);
-  end Current_Mass;
 
 
   ----------------
@@ -46,10 +37,11 @@ package body Lem is
   subtype Pos_Duration is Duration range 0.0 .. Duration'Last;
   function Conso_Of (Thrust : in Pos_Thrust;
                      Dur : Pos_Duration) return Fuel_Range is
-    -- Fuel consumption in m3/N/s
-    Fuel_Consumption : constant := 2.61E-6;
+    -- Fuel consumption in kg/N/s
+    Fuel_Consumption : constant := 1.83E-003;
   begin
-    return Fuel_Range (My_Math.Real(Thrust) * Fuel_Consumption * My_Math.Real(Dur));
+    return Fuel_Range (My_Math.Real(Thrust) * Fuel_Consumption
+                                            * My_Math.Real(Dur));
   end Conso_Of;
 
   -- Thrust / Mass -> Acceleration
@@ -209,7 +201,7 @@ package body Lem is
       Current_Fuel := 0.0;
     end if;
     -- New mass
-    Mass := Current_Mass;
+    Mass := Empty_Mass + Current_Fuel;
     -- New acceleration
     Current_Acceleration := (X_Acc => Current_X_Thrust / Mass,
                              Y_Acc => Current_Y_Thrust / Mass + Moon.Acceleration);
@@ -233,7 +225,7 @@ package body Lem is
     Current_Fuel := Max_Fuel;
     -- Xthrust = 0. Ythrust compensates from (full) weight
     Current_X_Thrust := 0;
-    Current_Y_Thrust := -Moon.Acceleration * Current_Mass;
+    Current_Y_Thrust := -Moon.Acceleration * (Empty_Mass + Current_Fuel);
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
