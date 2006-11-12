@@ -83,7 +83,7 @@ package body Flight is
   function Check_Ground (Left, Right : Space.Position_Rec;
                          Speed : Lem.Speed_Rec) return Status_Rec is
     Ground : constant Moon.Ground_Array := Moon.Get_Ground;
-    P1, P2 : Positive;
+    P1, P2, P3 : Positive;
     Land :  Space.Position_Rec;
     use type Space.Position_Range, Lem.Speed_Range;
   begin
@@ -91,6 +91,7 @@ package body Flight is
     -- Locate last point P1 left of the LEM left (X1 <= LX)
     P1 := Locate.Get_Index (Left, Right, Ground);
     P2 := P1 + 1;
+    P3 := P2 + 1;
     if Ground(P2).X_Pos >= Right.X_Pos then
       -- LEM is completely between two successive points P1 and P2 (X2 >= RX)
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos then
@@ -105,9 +106,32 @@ package body Flight is
         end if;
       end if;
     else
-      -- P2 is between L and R: check it is below
-      if Ground(P2).Y_Pos < Right.X_Pos then
-        return (Status => Flying);
+      -- P2 is between L and R: check depends on P1, P2 and P3
+      if Ground(P1).Y_Pos <= Ground(P2).Y_Pos
+      and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
+        -- P1 P2 P3 climbing: check right > (P2, P3)
+        if Check_Above (Right, Ground(P2), Ground(P3)) then
+          return (Status => Flying);
+        end if;
+      elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
+      and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
+        -- P1 P2 P3 climbing: check left > (P1, P2)
+        if Check_Above (Left, Ground(P1), Ground(P2)) then
+          return (Status => Flying);
+        end if;
+      elsif Ground(P1).Y_Pos <= Ground(P2).Y_Pos
+      and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
+        -- P2 above P1 and P3: check P2 < Lem
+        if Ground(P2).Y_Pos < Right.X_Pos then
+          return (Status => Flying);
+        end if;
+      elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
+      and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
+        -- P2 below P1 and P3: check left > (P1, P2) and right > (P2, P3)
+        if Check_Above (Left, Ground(P1), Ground(P2)) 
+        and then check_Above (Right, Ground(P2), Ground(P3)) then
+          return (Status => Flying);
+        end if;
       end if;
     end if;
 
