@@ -1492,6 +1492,15 @@ package body Generic_Con_Io is
         X_Mng.X_Draw_Points(Id, X, One_Con_Io.Y_Max - Y, Width, Height, Points);
       end Draw_Points;
 
+      procedure Fill_Area(Xys : in Natural_Array) is
+      begin
+        if not Init_Done then
+          raise Not_Init;
+        end if;
+        Set_Screen_Attributes;
+        X_Mng.X_Fill_Area(Id, Xys);
+      end Fill_Area;
+
       procedure Get_Current_Pointer_Pos (Valid : out Boolean;
                                          X     : out X_Range;
                                          Y     : out Y_Range) is

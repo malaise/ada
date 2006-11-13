@@ -53,6 +53,7 @@ package Generic_Con_Io is
     type Window is limited private;
 
     subtype Byte_Array is X_Mng.Byte_Array;
+    subtype Natural_Array is X_Mng.Natural_Array;
 
     -- Has to be called to initialize con_io.
     -- Should be called prior to any con_io action
@@ -386,6 +387,10 @@ package Generic_Con_Io is
       procedure Draw_Points(X, Y          : in Natural;
                             Width, Height : in Natural;
                             Points        : in Byte_Array);
+
+      -- Fill an area defined by several points (X, Y)
+      -- The area MUST be convex otherwise the graphic result is undefined
+      procedure Fill_Area (Xys : in Natural_Array);
 
       -- Get dynmically the current position of pointer
       -- If valid is False, it means that the pointer
