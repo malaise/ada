@@ -1,4 +1,5 @@
 #include <string.h>
+#include <malloc.h>
 #include <unistd.h>
 #include <X11/cursorfont.h>
 
@@ -639,6 +640,43 @@ extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
         p++;
       }
     }
+    return (OK);
+}
+
+
+/* Fill a convex area defined by points */
+extern int x_fill_area (void *line_id, int xys[], int nb_points) {
+    t_window *win_id = (t_window*) line_id;
+    XPoint *p_points;
+    int i;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Check and copy points */
+    if (nb_points <= 2) {
+      return (ERR);
+    }
+
+    p_points = malloc (nb_points * sizeof(XPoint));
+    if (p_points == NULL) {
+#ifdef DEBUG
+        printf ("X_EXPORT : Can't alloc memory for points to fill.\n");
+#endif
+        return (ERR);
+    }
+
+    for (i = 0; i < nb_points; i++) {
+      p_points[i].x = xys[i * 2];
+      p_points[i].y = xys[i * 2 + 1];
+    }
+    /* Fill convex area and free */
+    XFillPolygon (win_id->server->x_server, win_id->x_window,
+                  win_id->x_graphic_context, p_points, nb_points,
+                  Convex, CoordModeOrigin);
+    free (p_points);
     return (OK);
 }
 

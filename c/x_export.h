@@ -83,6 +83,8 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2);
 extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
                           unsigned char points[]);
 
+extern int x_fill_area (void *line_id, int xys[], int nb_points);
+
 extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
 
 extern int x_set_graphic_pointer (void *line_id, boolean graphic);
