@@ -1,9 +1,22 @@
+with Rnd;
 with Moon, Lem;
 package body Flight is
 
   -- Max horizontal and vertical speed
   Max_Horiz_Speed : constant Lem.Speed_Range := 3.0;
   Max_Verti_Speed : constant Lem.Speed_Range := 10.0;
+
+  -- Get a valid init position for the LEM
+  function Get_Init_Position return Space.Position_Rec is
+    Init_Pos : Space.Position_Rec;
+    use type Space.X_Range;
+  begin
+    Init_Pos.X_Pos :=  Space.X_Range (Rnd.Float_Random (
+       Float(Space.X_Range'First + Lem.Width),
+       Float(Space.X_Range'Last - Lem.Width) ));
+    Init_Pos.Y_Pos := Space.Y_Range'Last - Lem.Height;
+    return Init_Pos;
+  end Get_Init_Position;
 
   -- Get index of point (of moon ground) before LEM
   package Locate is
@@ -19,7 +32,7 @@ package body Flight is
       Start, Stop : Positive;
     begin
       -- Optim: look if LEM is around Prev_Index
-      if Prev_Index < Ground'Last 
+      if Prev_Index < Ground'Last
       and then Ground(Prev_Index).X_Pos <= Left.X_Pos
       and then Ground(Prev_Index + 1).X_Pos > Left.X_Pos then
         -- Unchanged
@@ -128,8 +141,8 @@ package body Flight is
       elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
         -- P2 below P1 and P3: check left > (P1, P2) and right > (P2, P3)
-        if Check_Above (Left, Ground(P1), Ground(P2)) 
-        and then check_Above (Right, Ground(P2), Ground(P3)) then
+        if Check_Above (Left, Ground(P1), Ground(P2))
+        and then Check_Above (Right, Ground(P2), Ground(P3)) then
           return (Status => Flying);
         end if;
       end if;
@@ -146,7 +159,7 @@ package body Flight is
       exit when Ground(P2).X_Pos > Right.X_Pos;
     end loop;
     -- Check Speeds (|X| and Y) are below minima, else crash
-    if abs Speed.X_Speed > Max_Horiz_Speed 
+    if abs Speed.X_Speed > Max_Horiz_Speed
     or else (Speed.Y_Speed < 0.0 and then abs Speed.Y_Speed > Max_Verti_Speed) then
       return (Status => Crashed);
     end if;

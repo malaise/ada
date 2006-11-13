@@ -9,10 +9,10 @@ package Lem is
   type Thrust_Range is new Integer;
 
   -- X thrust (neg thrust moves Lem left)
-  Max_X_Thrust : constant := 4;
+  Max_X_Thrust : constant := 40_000;
   subtype X_Thrust_Range is Thrust_Range range -Max_X_Thrust .. +Max_X_Thrust;
   -- Y Thrust, down to top
-  Max_Y_Thrust : constant := 4;
+  Max_Y_Thrust : constant := 40_000;
   subtype Y_Thrust_Range is Thrust_Range range 0 .. Max_Y_Thrust;
 
   -- Set X thrust for a X_thrust slice

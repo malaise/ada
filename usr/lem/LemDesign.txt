@@ -57,7 +57,7 @@ ground. Check the feet, both lower corners of the square.
 4. The screen
 Initialises displaying the ground and the LEM at init position.
 Displays the LEM each 1/10s
-Displays the Y thrust current value each 0.5s
+Displays the Y thrust, Y speed and X speed current values each 0.5s
 
 5. The inputs
 <- and -> set a X thrust to Max_X_Thrust 1s

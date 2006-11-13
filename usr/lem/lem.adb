@@ -225,7 +225,7 @@ package body Lem is
     Current_Fuel := Max_Fuel;
     -- Xthrust = 0. Ythrust compensates from (full) weight
     Current_X_Thrust := 0;
-    Current_Y_Thrust := -Moon.Acceleration * (Empty_Mass + Current_Fuel);
+    Current_Y_Thrust := (-Moon.Acceleration) * (Empty_Mass + Current_Fuel);
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
@@ -251,8 +251,8 @@ package body Lem is
     end if;
     -- Reset all data
     Current_Fuel := 0.0;
-    Current_X_Thrust := 0; 
-    Current_Y_Thrust := 0; 
+    Current_X_Thrust := 0;
+    Current_Y_Thrust := 0;
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, 0.0);
     Current_Position := (0.0, 0.0);
