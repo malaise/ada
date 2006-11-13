@@ -31,8 +31,11 @@ package X_Mng is
     Nbre : Kbd_Index_Code;
   end record;
 
-  -- For X_DRAW_POINTS
+  -- For X_Draw_Points
   type Byte_Array is array (Positive range <>) of Byte;
+
+  -- Fir X_Fill_Area
+  type Natural_Array is array (POsitive range <>) of Natural;
 
   -- Mouse buttons
   type Button_List is (None, Left, Middle, Right, Up, Down);
@@ -220,6 +223,9 @@ package X_Mng is
                           Width, Height : in Natural;
                           Points        : in Byte_Array);
 
+  -- Fill an area defined by several points (X, Y)
+  -- The area MUST be convex otherwise the graphic result is undefined
+  procedure X_Fill_Area (Line_Id : in Line; Xys : in Natural_Array);
 
   -- Set mouse cursor to cross (graphic) or arrow
   procedure X_Set_Graphic_Pointer(Line_Id : in Line;

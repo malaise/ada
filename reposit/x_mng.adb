@@ -233,13 +233,21 @@ package body X_Mng is
   -- Draw points in a rectangle, starting at x1, y1 and of width * height pixels
   -- int x_draw_points (void *line_id, int x1, int y1, int width, int height,
   --                      unsigned char points[]);
-
   ------------------------------------------------------------------
   function X_Draw_Points(Line_Id : Line_For_C;
                          X1, Y1 : Natural;
-                         Width, Height : in Natural;
+                         Width, Height : Natural;
                          Points : System.Address) return Result;
   pragma Import(C, X_Draw_Points, "x_draw_points");
+
+  ------------------------------------------------------------------
+  -- Fill an area defined by several points (X, Y)
+  -- The area MUST be convex otherwise the graphic result is undefined
+  ------------------------------------------------------------------
+  function X_Fill_Area (Line_Id : Line_For_C;
+                        Xys : System.Address;
+                        Nb_Points : Natural) return Result;
+  pragma Import(C, X_Fill_Area, "x_fill_area");
 
   ------------------------------------------------------------------
   -- Get current position in pixels, independently from events
@@ -846,6 +854,23 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Draw_Points;
+
+  ------------------------------------------------------------------
+  procedure X_Fill_Area(Line_Id : in Line;
+                        Xys     : in Natural_Array) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
+    end if;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Fill_Area(Line_For_C_Id, Xys'Address, Xys'Length) = OK;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Fill_Area;
 
   ------------------------------------------------------------------
   procedure X_Get_Current_Pointer_Position(Line_Id : in Line;
