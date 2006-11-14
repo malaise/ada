@@ -4,6 +4,9 @@ package Screen is
   -- Reset screen. Display titles and moon ground
   procedure Init (Ground : in Moon.Ground_Array);
 
+  -- Redisplay moon ground, frame...
+  procedure Refresh (Ground : in Moon.Ground_Array);
+
   -- Lem position
   type Lem_Position (Set : Boolean := True) is record
     case Set is
@@ -15,8 +18,9 @@ package Screen is
 
   -- Update lem and its speed and Y_thrust
   procedure Update (Prev_Pos, New_Pos : in Lem_Position;
-                    Speed : in Lem.Speed_Rec;
-                    Y_Thrust : in Lem.Y_Thrust_Range);
+                    Speed    : in Lem.Speed_Rec;
+                    Y_Thrust : in Lem.Y_Thrust_Range;
+                    Fuel     : in Lem.Fuel_Range);
 
   -- Put game end
   subtype End_Reason_List is Flight.Status_List
