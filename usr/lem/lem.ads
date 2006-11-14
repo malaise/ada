@@ -5,6 +5,17 @@ package Lem is
   subtype Real is My_Math.Real;
   use type My_Math.Real;
 
+  -- Mass of the LEM in kg
+  type Mass_Range is new Real range 0.0 .. Real'Last;
+
+  -- Fuel quantity in kg
+  Max_Fuel : constant := 5_600.0;
+  subtype Fuel_Range is Mass_Range range 0.0 .. Max_Fuel;
+
+  -- Get current level (mass) of fuel
+  function Get_Fuel return Fuel_Range;
+
+
   -- Power thrust in N (1N = 1kg.m/s2)
   type Thrust_Range is new Integer;
 

@@ -8,16 +8,17 @@ package body Lem is
   ----------
   -- MASS --
   ----------
-  -- Mass of the LEM in kg
-  type Mass_Range is new Real range 0.0 .. Real'Last;
-
-  -- Empty mass of the LEM
+  -- Empty mass of the LEM in kg
   Empty_Mass : constant Mass_Range := 10_000.0;
 
   -- Fuel quantity in kg
-  Max_Fuel : constant := 5_600.0;
-  subtype Fuel_Range is Mass_Range range 0.0 .. Max_Fuel;
   Current_Fuel : Fuel_Range := 0.0;
+
+  -- Get current level (mass) of fuel
+  function Get_Fuel return Fuel_Range is
+  begin
+    return Current_Fuel;
+  end Get_Fuel;
 
 
   ----------------
@@ -226,6 +227,7 @@ package body Lem is
     -- Xthrust = 0. Ythrust compensates from (full) weight
     Current_X_Thrust := 0;
     Current_Y_Thrust := (-Moon.Acceleration) * (Empty_Mass + Current_Fuel);
+Current_Y_Thrust := Current_Y_Thrust - 10_000;
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
