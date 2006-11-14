@@ -1,3 +1,5 @@
+with Ada.Text_Io;
+with Event_Mng;
 with Screen, Flight, Moon, Lem;
 package body Game is
 
@@ -14,21 +16,36 @@ package body Game is
     Lem.Init (New_Pos.Pos);
     -- Init screen
     Screen.Init (Moon.Get_Ground);
-    Screen.Update (Prev_Pos, New_Pos, Lem.Get_Speed, Lem.Get_Y_Thrust);
+    Screen.Update (Prev_Pos, New_Pos,
+                   Lem.Get_Speed, Lem.Get_Y_Thrust, Lem.Get_Fuel);
     Prev_Pos := New_Pos;
     loop
-      -- Get Lem chracteristics and put
+      -- Get Lem characteristics and put
       New_Pos.Pos := Lem.Get_Position;
-      Screen.Update (New_Pos, Prev_Pos, Lem.Get_Speed, Lem.Get_Y_Thrust);
+      Screen.Update (Prev_Pos, New_Pos, Lem.Get_Speed,
+                     Lem.Get_Y_Thrust, Lem.Get_Fuel);
       Prev_Pos := New_Pos;
       -- Get flying status
       Flight_Status := Flight.Get_Status;
       exit when Flight_Status.Status /= Flight.Flying;
+      -- Wait a bit
+      exit when Event_Mng.Wait (100);
     end loop;
     -- Stop all
     Lem.Stop;
-    New_Pos := Screen.No_Position;
-    Screen.Update (New_Pos, Prev_Pos, Speed => (0.0, 0.0), Y_Thrust => 0);
+    if Flight_Status.Status = Flight.Lost then
+      -- Lem lost: hide it
+      New_Pos := Screen.No_Position;
+    else
+      -- Landed or crashed: show it
+      New_Pos := Prev_Pos;
+    end if;
+    Screen.Update (New_Pos, Prev_Pos,
+                   Speed => (0.0, 0.0),
+                   Y_Thrust => 0,
+                   Fuel => Lem.Get_Fuel);
+Ada.Text_Io.Put_Line (Flight_Status.Status'Img);
+delay 10.0;
     return True;
   end Play_One;
 
