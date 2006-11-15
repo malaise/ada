@@ -1,11 +1,7 @@
 with Ada.Text_Io;
 with Rnd;
-with Moon, Lem;
+with Moon, Debug;
 package body Flight is
-
-  -- Max horizontal and vertical speed
-  Max_Horiz_Speed : constant Lem.Speed_Range := 3.0;
-  Max_Verti_Speed : constant Lem.Speed_Range := 10.0;
 
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec is
@@ -94,63 +90,87 @@ package body Flight is
   end Check_Above;
 
   -- Check bottom of LEM versus ground
-  function Check_Ground (Left, Right : Space.Position_Rec;
-                         Speed : Lem.Speed_Rec) return Status_Rec is
+  procedure Check_Ground (Left, Right : in Space.Position_Rec;
+                          Result : in out Status_Rec) is
     Ground : constant Moon.Ground_Array := Moon.Get_Ground;
     P1, P2, P3 : Positive;
-    Land :  Space.Position_Rec;
     use type Space.Position_Range, Lem.Speed_Range;
   begin
     -- 1. Check if LEM is above ground (flying)
     -- Locate last point P1 left of the LEM left (X1 <= LX)
+    Result.Status := Flying;
     P1 := Locate.Get_Index (Left, Right, Ground);
     P2 := P1 + 1;
     P3 := P2 + 1;
+    if Debug.Set then
+      Ada.Text_Io.Put_Line ("Lem is " & Left.X_Pos'Img & " - " & Right.X_Pos'Img
+                          & " / " & Left.Y_Pos'Img);
+      Ada.Text_Io.Put_Line ("P" & P1'Img & " is " & Ground(P1).X_Pos'Img
+                          & " / " & Ground(P1).Y_Pos'Img);
+      Ada.Text_Io.Put_Line ("P" & P2'Img & " is " & Ground(P2).X_Pos'Img
+                          & " / " & Ground(P2).Y_Pos'Img);
+    end if;
     if Ground(P2).X_Pos >= Right.X_Pos then
       -- LEM is completely between two successive points P1 and P2 (X2 >= RX)
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos then
         -- Ground is climbing: check right corner is above (not equal)
         if Check_Above (Right, Ground(P1), Ground(P2)) then
-Ada.Text_Io.Put_Line ("Above P1 < P2");
-          return (Status => Flying);
+          if Debug.Set then
+            Ada.Text_Io.Put_Line ("Above P1 <= P2");
+          end if;
+          return;
         end if;
       else
         -- Ground is descending: check left corner is above (not equal)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
-Ada.Text_Io.Put_Line ("Above P1 < P2");
-          return (Status => Flying);
+          if Debug.Set then
+            Ada.Text_Io.Put_Line ("Above P1 > P2");
+          end if;
+          return;
         end if;
       end if;
     else
+      if Debug.Set then
+        Ada.Text_Io.Put_Line ("P" & P3'Img & " is " & Ground(P3).X_Pos'Img
+                            & " / " & Ground(P3).Y_Pos'Img);
+      end if;
       -- P2 is between L and R: check depends on P1, P2 and P3
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
         -- P1 P2 P3 climbing: check right > (P2, P3)
         if Check_Above (Right, Ground(P2), Ground(P3)) then
-Ada.Text_Io.Put_Line ("Above P1 < P2 < P3");
-          return (Status => Flying);
+          if Debug.Set then
+            Ada.Text_Io.Put_Line ("Above P1 <= P2 <= P3");
+          end if;
+          return;
         end if;
       elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
         -- P1 P2 P3 climbing: check left > (P1, P2)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
-Ada.Text_Io.Put_Line ("Above P1 > P2 > P3");
-          return (Status => Flying);
+          if Debug.Set then
+            Ada.Text_Io.Put_Line ("Above P1 >= P2 >= P3");
+          end if;
+          return;
         end if;
       elsif Ground(P1).Y_Pos <= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
         -- P2 above P1 and P3: check P2 < Lem
         if Ground(P2).Y_Pos < Right.Y_Pos then
-Ada.Text_Io.Put_Line ("Above P1 < P2 > P3");
-          return (Status => Flying);
+          if Debug.Set then
+            Ada.Text_Io.Put_Line ("Above P1 <= P2 >= P3");
+          end if;
+          return;
         end if;
       elsif Ground(P1).Y_Pos >= Ground(P2).Y_Pos
       and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
         -- P2 below P1 and P3: check left > (P1, P2) and right > (P2, P3)
         if Check_Above (Left, Ground(P1), Ground(P2))
         and then Check_Above (Right, Ground(P2), Ground(P3)) then
-Ada.Text_Io.Put_Line ("Above P1 > P2 < P3");
-          return (Status => Flying);
+          if Debug.Set then
+            Ada.Text_Io.Put_Line ("Above P1 >= P2 <= P3");
+          end if;
+          return;
         end if;
       end if;
     end if;
@@ -158,62 +178,76 @@ Ada.Text_Io.Put_Line ("Above P1 > P2 < P3");
     -- Now LEM is either landed or crashed
     -- 2. Check if LEM is landed
     -- Flat ground? For i in P1 to Pn (while Xi <= RX), Yi must be constant to Y1
+    Result.Status := Crashed;
     loop
       if Ground(P2).Y_Pos /= Ground(P1).Y_Pos then
-Ada.Text_Io.Put_Line ("Crashed not flat");
-        return (Status => Crashed);
+        if Debug.Set then
+          Ada.Text_Io.Put_Line ("Crashed ground not flat");
+        end if;
+        return;
       end if;
       P2 := P2 + 1;
       exit when Ground(P2).X_Pos > Right.X_Pos;
     end loop;
     -- Check Speeds (|X| and Y) are below minima, else crash
-    if abs Speed.X_Speed > Max_Horiz_Speed
-    or else (Speed.Y_Speed < 0.0 and then abs Speed.Y_Speed > Max_Verti_Speed) then
-Ada.Text_Io.Put_Line ("Crashed speed");
-      return (Status => Crashed);
+    if abs Result.Speed.X_Speed > Max_Horiz_Speed
+    or else (Result.Speed.Y_Speed < 0.0
+             and then abs Result.Speed.Y_Speed > Max_Verti_Speed) then
+      if Debug.Set then
+        Ada.Text_Io.Put_Line ("Crashed speed");
+      end if;
+      return;
     end if;
 
     -- 3. Landed
     -- Return the Lem landing position (LX + Lem.Width / 2.0, Y1 + Lem.Height / 2.0)
-    Land.X_Pos := Left.X_Pos + Lem.Width / 2.0;
-    Land.Y_Pos := Ground(P1).Y_Pos + Lem.Height / 2.0;
-    return (Status => Landed, Landed_Pos => Land);
+    Result.Status := Landed;
+    Result.Pos.X_Pos := Left.X_Pos + Lem.Width / 2.0;
+    Result.Pos.Y_Pos := Ground(P1).Y_Pos + Lem.Height / 2.0;
+    Result.Speed := (0.0, 0.0);
+    if Debug.Set then
+      Ada.Text_Io.Put_Line ("Landed");
+    end if;
+    return;
   end Check_Ground;
 
   -- Check current LEM status
   function Get_Status return Status_Rec is
-    Lem_Position : constant Space.Position_Rec := Lem.Get_Position;
-    Lem_Speed : constant Lem.Speed_Rec := Lem.Get_Speed;
+    Result : Status_Rec;
     use type Space.Position_Range;
     -- Lem left and right bottom corners
     Left, Right : Space.Position_Rec;
   begin
+    Result.Pos := Lem.Get_Position;
+    Result.Speed := Lem.Get_Speed;
     -- Compute LEM bottom corners
-    Left.X_Pos := Lem_Position.X_Pos - Lem.Width / 2.0;
-    Right.X_Pos := Lem_Position.X_Pos + Lem.Width / 2.0;
-    Left.Y_Pos := Lem_Position.Y_Pos - Lem.Height / 2.0;
+    Left.X_Pos := Result.Pos.X_Pos - Lem.Width / 2.0;
+    Right.X_Pos := Result.Pos.X_Pos + Lem.Width / 2.0;
+    Left.Y_Pos := Result.Pos.Y_Pos - Lem.Height / 2.0;
     Right.Y_Pos := Left.Y_Pos;
 
     -- Check if Lem is lost or crashed
     if Left.X_Pos < Space.X_Range'First
     or else Right.X_Pos > Space.X_Range'Last
-    or else Lem_Position.Y_Pos + Lem.Height / 2.0 > Space.Y_Range'Last then
-      return (Status => Lost);
+    or else Result.Pos.Y_Pos + Lem.Height / 2.0 > Space.Y_Range'Last then
+      Result.Status := Lost;
+      return Result;
     end if;
     if Left.Y_Pos < Space.Y_Range'First then
-      return (Status => Crashed);
+      Result.Status := Crashed;
+      return Result;
     end if;
 
     -- Check if Lem is flying above highest point
     if Left.Y_Pos > Moon.Y_Ground_Max then
-      return (Status => Flying);
+      Result.Status := Flying;
+      return Result;
     end if;
 
     -- Check status versus ground in details
-    return Check_Ground (Left, Right, Lem_Speed);
+    Check_Ground (Left, Right, Result);
+    return Result;
   end Get_Status;
 
-
 end Flight;
-
 

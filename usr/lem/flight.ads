@@ -1,20 +1,23 @@
-with Space;
+with Space, Lem;
 package Flight is
+
+  -- Max horizontal and vertical speed
+  Max_Horiz_Speed : constant Lem.Speed_Range := 3.0;
+  Max_Verti_Speed : constant Lem.Speed_Range := 10.0;
 
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec;
 
   -- Kind of LEM flight status
   type Status_List is (Flying, Landed, Crashed, Lost);
-  -- LEM status and pos when landed
-  type Status_Rec (Status : Status_List := Flying) is record
-    case Status is
-      when Flying | Crashed | Lost => null;
-      when Landed =>
-        Landed_Pos : Space.Position_Rec;
-    end case;
+  -- LEM status, postion and speed
+  type Status_Rec is record
+      Status : Status_List;
+      Pos    : Space.Position_Rec;
+      Speed  : Lem.Speed_Rec;
   end record;
-  -- get current LEM status
+
+  -- Get current LEM status
   function Get_Status return Status_Rec;
 
 end Flight;
