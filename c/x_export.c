@@ -675,7 +675,7 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
     /* Fill convex area and free */
     XFillPolygon (win_id->server->x_server, win_id->x_window,
                   win_id->x_graphic_context, p_points, nb_points,
-                  Convex, CoordModeOrigin);
+                  Complex, CoordModeOrigin);
     free (p_points);
     return (OK);
 }
