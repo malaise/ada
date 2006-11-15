@@ -37,7 +37,7 @@ begin
         return Left_Key;
       when Con_Io.Right =>
         return Right_Key;
-      when Con_Io.Full =>
+      when Con_Io.Full | Con_Io.Ret =>
         return Other_Key;
       when Con_Io.Esc | Con_Io.Break =>
         return Break;
