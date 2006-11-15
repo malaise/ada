@@ -87,6 +87,9 @@ package body Lem is
     if not Running then
       raise Invalid_Mode;
     end if;
+    if Current_Fuel = 0.0 then
+      return;
+    end if;
     Current_X_Thrust := X_Thrust;
     Thrust_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
                                    Delay_Seconds => 1.0,
@@ -257,13 +260,11 @@ package body Lem is
     if Thrust_Tid /= Timers.No_Timer then
       Timers.Delete (Thrust_Tid);
     end if;
-    -- Reset all data
-    Current_Fuel := 0.0;
+    -- Reset Trust, acceleration and speed
     Current_X_Thrust := 0;
     Current_Y_Thrust := 0;
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, 0.0);
-    Current_Position := (0.0, 0.0);
     Running := False;
   end Stop;
 
