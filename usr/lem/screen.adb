@@ -2,6 +2,18 @@ with My_Math;
 with Space, Moon;
 package body Screen is
 
+  -- Lem position
+  type Lem_Position (Set : Boolean := False) is record
+    case Set is
+      when True => Pos : Space.Position_Rec;
+      when False => null;
+    end case;
+  end record;
+  No_Pos : constant Lem_Position := (Set => False);
+
+  -- Previous Lem position to rease on update/delete
+  Prev_Pos : Lem_Position := No_Pos;
+
   -- First and Last X on screen for space
   First_X : Con_Io.Graphics.X_Range;
   Last_X : Con_Io.Graphics.X_Range;
@@ -49,7 +61,7 @@ package body Screen is
   Thfactor : My_Math.Real;
   -- Vertical speed
   use type Lem.Speed_Range;
-  Max_Vert_Speed : constant Lem.Speed_Range := 10.0 * Flight.Max_Verti_Speed;
+  Max_Vert_Speed : constant Lem.Speed_Range := 5.0 * Flight.Max_Verti_Speed;
   Vsx : Con_Io.Graphics.X_Range;
   Vsymin, Vsymax, Vsymid : Con_Io.Graphics.Y_Range;
   Vsfactor : My_Math.Real;
@@ -58,7 +70,7 @@ package body Screen is
   Fuy : Con_Io.Graphics.Y_Range;
   Fufactor : My_Math.Real;
   -- Horizontal speed
-  Max_Hori_Speed : constant Lem.Speed_Range := 10.0 * Flight.Max_Horiz_Speed;
+  Max_Hori_Speed : constant Lem.Speed_Range := 5.0 * Flight.Max_Horiz_Speed;
   Hsxmin, Hsxmax, Hsxmid : Con_Io.Graphics.X_Range;
   Hsy : Con_Io.Graphics.Y_Range;
   Hsfactor : My_Math.Real;
@@ -77,6 +89,8 @@ package body Screen is
     -- Reset screen
     Con_Io.Init;
     Con_Io.Reset_Term;
+    -- Clear previous LEM position
+    Prev_Pos := No_Pos;
     -- Compute space
     -- Space last X leaves "TT VV" (5) for Thrust and V speed
     First_X := 1;
@@ -115,7 +129,7 @@ package body Screen is
     Hsxmid := (Hsxmin + Hsxmax) / 2;
     Hsy := Hsn.Y + 1;
     Hsfactor := My_Math.Real(Hsxmax - Hsxmid) / My_Math.Real(Max_Hori_Speed);
-    -- Draw ground
+    -- Put constant info
     Refresh;
   end Init;
 
@@ -162,18 +176,6 @@ package body Screen is
     -- Done
     Con_Io.Flush;
   end Refresh;
-
-  -- Lem position
-  type Lem_Position (Set : Boolean := False) is record
-    case Set is
-      when True => Pos : Space.Position_Rec;
-      when False => null;
-    end case;
-  end record;
-  No_Pos : constant Lem_Position := (Set => False);
-
-  -- Previous Lem position to rease on update/delete
-  Prev_Pos : Lem_Position := No_Pos;
 
   -- Draw/hide the LEM
   procedure Draw_Lem (Pos : Space.Position_Rec) is
