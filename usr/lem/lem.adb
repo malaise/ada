@@ -79,6 +79,7 @@ package body Lem is
   begin
     -- Reset X thrust
     Current_X_Thrust := 0;
+    Thrust_Tid := Timers.No_Timer;
     return False;
   end Timer_Thrust_Cb;
   procedure Set_X_Thrust (X_Thrust : in X_Thrust_Range) is
@@ -100,7 +101,11 @@ package body Lem is
     if not Running then
       raise Invalid_Mode;
     end if;
-    Current_Y_Thrust := Y_Thrust;
+    if Current_Fuel /= 0.0 then
+      Current_Y_Thrust := Y_Thrust;
+    else
+      Current_Y_Thrust := 0;
+    end if;
   end Set_Y_Thrust;
 
   -- Get current Y thrust
@@ -200,6 +205,7 @@ package body Lem is
       Current_Fuel := Current_Fuel - Fuel_Consumed;
     else
       Current_Fuel := 0.0;
+      Current_Y_Thrust := 0;
     end if;
     -- New mass
     Mass := Empty_Mass + Current_Fuel;
@@ -220,6 +226,7 @@ package body Lem is
     if Running then
       raise Invalid_Mode;
     end if;
+    Running := True;
     Rnd.Randomize;
     -- Set initial data
     -- Full fuel
@@ -227,7 +234,6 @@ package body Lem is
     -- Xthrust = 0. Ythrust compensates from (full) weight
     Current_X_Thrust := 0;
     Current_Y_Thrust := (-Moon.Acceleration) * (Empty_Mass + Current_Fuel);
-Current_Y_Thrust := Current_Y_Thrust - 10_000;
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
@@ -258,6 +264,7 @@ Current_Y_Thrust := Current_Y_Thrust - 10_000;
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, 0.0);
     Current_Position := (0.0, 0.0);
+    Running := False;
   end Stop;
 
   -- Set position when landed
