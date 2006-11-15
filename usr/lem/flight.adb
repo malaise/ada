@@ -201,13 +201,14 @@ package body Flight is
 
     -- 3. Landed
     -- Return the Lem landing position (LX + Lem.Width / 2.0, Y1 + Lem.Height / 2.0)
+    if Debug.Set then
+      Ada.Text_Io.Put_Line ("Landed with speeds " & Result.Speed.X_Speed'Img
+                         & " / " & Result.Speed.Y_Speed'Img);
+    end if;
     Result.Status := Landed;
     Result.Pos.X_Pos := Left.X_Pos + Lem.Width / 2.0;
     Result.Pos.Y_Pos := Ground(P1).Y_Pos + Lem.Height / 2.0;
     Result.Speed := (0.0, 0.0);
-    if Debug.Set then
-      Ada.Text_Io.Put_Line ("Landed");
-    end if;
     return;
   end Check_Ground;
 
