@@ -2,8 +2,8 @@ with Space, Lem;
 package Flight is
 
   -- Max horizontal and vertical speed
-  Max_Horiz_Speed : constant Lem.Speed_Range := 1.0;
-  Max_Verti_Speed : constant Lem.Speed_Range := 5.0;
+  Max_Horiz_Speed : constant Lem.Speed_Range := 0.5;
+  Max_Verti_Speed : constant Lem.Speed_Range := 2.0;
 
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec;
