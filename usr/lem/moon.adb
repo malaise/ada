@@ -22,7 +22,8 @@ package body Moon is
     subtype Landing_Range is Point_Range
             range Point_Range'First + 1 .. Point_Range'Last - 2;
     Index_Landing : Point_Range;
-    use type Space.X_Range;
+    Y_Ground_Min : constant Space.Y_Range := 2.0;
+    use type Space.X_Range, Space.Y_Range;
   begin
     -- Raise anonymous (un-catchable) exception
     --  if LEM cannot land between 3 points
@@ -38,7 +39,7 @@ package body Moon is
     for I in Point_Range loop
       Ground(I).X_Pos := Space.X_Range (I - 1) * Delta_Point;
       Ground(I).Y_Pos := Space.Y_Range (Rnd.Float_Random (
-        Float(Space.Y_Range'First),
+        Float(Space.Y_Range'First + Y_Ground_Min),
         Float(Y_Ground_Max)));
     end loop;
     -- Ensure last point has X = last X_Range
