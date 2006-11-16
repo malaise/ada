@@ -94,6 +94,7 @@ package body Flight is
                           Result : in out Status_Rec) is
     Ground : constant Moon.Ground_Array := Moon.Get_Ground;
     P1, P2, P3 : Positive;
+    Last_Point : Boolean;
     use type Space.Position_Range, Lem.Speed_Range;
   begin
     -- 1. Check if LEM is above ground (flying)
@@ -179,6 +180,7 @@ package body Flight is
     -- 2. Check if LEM is landed
     -- Flat ground? For i in P1 to Pn (while Xi <= RX), Yi must be constant to Y1
     Result.Status := Crashed;
+    Last_Point := False;
     loop
       if Ground(P2).Y_Pos /= Ground(P1).Y_Pos then
         if Debug.Set then
@@ -186,8 +188,10 @@ package body Flight is
         end if;
         return;
       end if;
+      exit when Last_Point;
+      -- Last point to check is the first one with X > Right
       P2 := P2 + 1;
-      exit when Ground(P2).X_Pos > Right.X_Pos;
+      Last_Point := Ground(P2).X_Pos > Right.X_Pos;
     end loop;
     -- Check Speeds (|X| and Y) are below minima, else crash
     if abs Result.Speed.X_Speed > Max_Horiz_Speed
