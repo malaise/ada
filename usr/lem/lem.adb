@@ -264,9 +264,11 @@ package body Lem is
     -- Stop timers
     if Period_Tid /= Timers.No_Timer then
       Timers.Delete (Period_Tid);
+      Period_Tid := Timers.No_Timer;
     end if;
     if Thrust_Tid /= Timers.No_Timer then
       Timers.Delete (Thrust_Tid);
+      Thrust_Tid := Timers.No_Timer;
     end if;
     -- Reset Trust, acceleration and speed
     Current_X_Thrust := 0;
