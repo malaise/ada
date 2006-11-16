@@ -864,8 +864,11 @@ package body X_Mng is
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
     end if;
+    if Xys'Length rem 2 /= 0 or else Xys'Length < 6 then
+      raise X_Failure;
+    end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Fill_Area(Line_For_C_Id, Xys'Address, Xys'Length) = OK;
+    Res := X_Fill_Area(Line_For_C_Id, Xys'Address, Xys'Length/2) = OK;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
