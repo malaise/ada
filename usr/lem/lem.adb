@@ -97,7 +97,7 @@ package body Lem is
       Timers.Delete (Thrust_Tid);
     end if;
     Thrust_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                                   Delay_Seconds => 0.5,
+                                   Delay_Seconds => 1.0,
                                    Period => Timers.No_Period),
                                    Timer_Thrust_Cb'Access);
   end Set_X_Thrust;
