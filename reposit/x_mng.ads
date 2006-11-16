@@ -224,6 +224,7 @@ package X_Mng is
                           Points        : in Byte_Array);
 
   -- Fill an area defined by several points (X, Y)
+  -- The Xys is the (even) list of X, Y...
   -- The area MUST be convex otherwise the graphic result is undefined
   procedure X_Fill_Area (Line_Id : in Line; Xys : in Natural_Array);
 
