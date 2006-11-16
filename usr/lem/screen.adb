@@ -258,7 +258,7 @@ package body Screen is
     Con_Io.Graphics.Fill_Rectangle (Fuxmin, Fuy, Fuxmax, Fuy + Gauge_Size);
     Fuel_Size := Natural (My_Math.Trunc(
                    My_Math.Real(Fuel) * Fufactor));
-    if Fuel < Lem.Max_Fuel / 10.0 then
+    if Fuel < Lem.Max_Fuel / 20.0 then
       Con_Io.Set_Foreground (Con_Io.Red);
     else
       Con_Io.Set_Foreground (Con_Io.Blue);
