@@ -248,11 +248,18 @@ package body Screen is
     Con_Io.Graphics.Draw_Line (Vsx - 3, Vsymid, Vsx + Gauge_Size + 3, Vsymid);
     Vspeed_Size := Integer (My_Math.Trunc(
                    My_Math.Real(Vspeed) * Vsfactor));
-    if Vspeed < - Flight.Max_Verti_Speed then
+    if Vspeed < -Flight.Max_Verti_Speed then
       Con_Io.Set_Foreground (Con_Io.Red);
     end if;
+    -- Small adjustment
+    Vspeed_Size := Vsymid + Vspeed_Size;
+    if Vspeed_Size < Vsymin then
+      Vspeed_Size := Vsymin;
+    elsif Vspeed_Size > Vsymax then
+      Vspeed_Size := Vsymax;
+    end if;
     Con_Io.Graphics.Fill_Rectangle (Vsx, Vsymid, Vsx + Gauge_Size,
-                                    Vsymid + Vspeed_Size);
+                                    Vspeed_Size);
     -- Fuel
     Con_Io.Set_Foreground (Con_Io.Get_Background);
     Con_Io.Graphics.Fill_Rectangle (Fuxmin, Fuy, Fuxmax, Fuy + Gauge_Size);
