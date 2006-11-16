@@ -336,28 +336,28 @@ package Generic_Con_Io is
 
       -- Put a char with screen foreground and current Xor mode
       -- on screen background, no blink
-      -- No window if affected
+      -- No window is affected
       procedure Put (C : in Character;
                      X : in X_Range;
                      Y : in Y_Range);
 
       -- Put a string with screen foreground and current Xor mode
       -- on screen background, no blink
-      -- No window if affected
+      -- No window is affected
       procedure Put (S : in String;
                      X : in X_Range;
                      Y : in Y_Range);
 
       -- Draw a point with screen foreground and current Xor mode
       -- on screen background, no blink
-      -- No window if affected
+      -- No window is affected
       procedure Draw_Point (X : in X_Range;
                             Y : in Y_Range);
 
 
       -- Draw a line between 2 points, with screen foreground
       --  and current Xor mode on screen background, no blink
-      -- No window if affected
+      -- No window is affected
       procedure Draw_Line (X1 : in X_Range;
                            Y1 : in Y_Range;
                            X2 : in X_Range;
@@ -366,7 +366,7 @@ package Generic_Con_Io is
       -- Draw a rectangle (only the border) with screen foreground and current
       --  Xor mode
       -- on screen background, no blink (only the border)
-      -- No window if affected
+      -- No window is affected
       procedure Draw_Rectangle (X1 : in X_Range;
                                 Y1 : in Y_Range;
                                 X2 : in X_Range;
@@ -374,7 +374,7 @@ package Generic_Con_Io is
 
       -- Draw a filled rectangle with screen foreground and current Xor mode
       -- on screen background, no blink
-      -- No window if affected
+      -- No window is affected
       procedure Fill_Rectangle (X1 : in X_Range;
                                 Y1 : in Y_Range;
                                 X2 : in X_Range;
