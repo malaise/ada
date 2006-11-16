@@ -88,14 +88,17 @@ package body Lem is
     if not Running then
       raise Invalid_Mode;
     end if;
+    -- Delete previous timer
+    if Thrust_Tid /= Timers.No_Timer then
+      Timers.Delete (Thrust_Tid);
+      Thrust_Tid := Timers.No_Timer;
+    end if;
+    -- No fuel => no thrust
     if Current_Fuel = 0.0 then
       return;
     end if;
+    -- Set new thrust and arm timer
     Current_X_Thrust := X_Thrust;
-    -- Re-arm new timer
-    if Thrust_Tid /= Timers.No_Timer then
-      Timers.Delete (Thrust_Tid);
-    end if;
     Thrust_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
                                    Delay_Seconds => 1.0,
                                    Period => Timers.No_Period),
