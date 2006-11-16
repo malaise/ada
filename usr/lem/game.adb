@@ -8,7 +8,7 @@ package body Game is
     Get_Status : Screen.Got_List;
     use type Lem.Thrust_Range;
     X_Thrust_Increment : constant Lem.X_Thrust_Range
-                       := Lem.Max_X_Thrust / 5;
+                       := Lem.Max_X_Thrust / 7;
     Y_Thrust_Increment : constant Lem.Y_Thrust_Range
                        := Lem.Max_Y_Thrust / 10;
     Y_Thrust : Lem.Y_Thrust_Range;
