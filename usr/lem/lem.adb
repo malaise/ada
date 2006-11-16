@@ -83,6 +83,7 @@ package body Lem is
     return False;
   end Timer_Thrust_Cb;
   procedure Set_X_Thrust (X_Thrust : in X_Thrust_Range) is
+    use type Timers.Timer_Id;
   begin
     if not Running then
       raise Invalid_Mode;
@@ -91,10 +92,14 @@ package body Lem is
       return;
     end if;
     Current_X_Thrust := X_Thrust;
+    -- Re-arm new timer
+    if Thrust_Tid /= Timers.No_Timer then
+      Timers.Delete (Thrust_Tid);
+    end if;
     Thrust_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                                   Delay_Seconds => 1.0,
+                                   Delay_Seconds => 0.5,
                                    Period => Timers.No_Period),
-                                  Timer_Thrust_Cb'Access);
+                                   Timer_Thrust_Cb'Access);
   end Set_X_Thrust;
 
   -- Set Y thrust until next setting
