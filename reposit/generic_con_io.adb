@@ -1493,12 +1493,22 @@ package body Generic_Con_Io is
       end Draw_Points;
 
       procedure Fill_Area(Xys : in Natural_Array) is
+        Loc_Xys : Natural_Array (Xys'Range) := Xys;
+        Y : Boolean;
       begin
         if not Init_Done then
           raise Not_Init;
         end if;
+        -- Fix the Ys, each second index of Xys
+        Y := False;
+        for I in Loc_Xys'Range loop
+          if Y then
+            Loc_Xys(I) := One_Con_Io.Y_Max - Loc_Xys(I);
+          end if;
+          Y := not Y;
+        end loop;
         Set_Screen_Attributes;
-        X_Mng.X_Fill_Area(Id, Xys);
+        X_Mng.X_Fill_Area(Id, Loc_Xys);
       end Fill_Area;
 
       procedure Get_Current_Pointer_Pos (Valid : out Boolean;
