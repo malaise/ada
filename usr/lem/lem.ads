@@ -61,6 +61,10 @@ package Lem is
   -- Set position when landed
   procedure Set_Landed_Position (Position : in Space.Position_Rec);
 
+  -- Landed as soon as Set_Landed_Position called
+  --  and as long as not taking off
+  function Is_Landed return boolean;
+
 
   -- Init Lem position
   -- Thrust is set to compensate weight to 25 kN

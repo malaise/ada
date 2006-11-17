@@ -257,6 +257,7 @@ package body Lem is
     Running := True;
     Rnd.Randomize;
     -- Set initial data
+    Landed := False;
     -- Full fuel
     Current_Fuel := Max_Fuel;
     -- Xthrust = 0. Ythrust compensates from (full) weight
@@ -301,7 +302,7 @@ package body Lem is
     end if;
     -- Landed at position
     if Debug.Set_Lem then
-      Ada.Text_Io.Put_Line ("LEM set to landed.");
+      Ada.Text_Io.Put_Line ("LEM has just landed.");
     end if;
     Landed := True;
     Current_Position := Position;
@@ -309,5 +310,14 @@ package body Lem is
     Current_Acceleration := (0.0, 0.0);
   end Set_Landed_Position;
 
+  -- Landed as soon as Set_Landed_Position called
+  --  and as long as not taking off
+  function Is_Landed return boolean is
+  begin
+    if not Running then
+      raise Invalid_Mode;
+    end if;
+    return Landed;
+  end Is_Landed;
 end Lem;
 

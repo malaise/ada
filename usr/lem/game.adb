@@ -29,12 +29,21 @@ package body Game is
       Y_Thrust := Lem.Get_Y_Thrust;
       Flight_Status := Flight.Get_Status;
       -- Fly while flying or landed but still Y thrust
-      if Flight_Status.Status = Flight.Flying
-      or else (Flight_Status.Status = Flight.Landed
-               and then Y_Thrust > 0) then
-        null;
-      else
+      if Flight_Status.Status /= Flight.Flying
+      and then Flight_Status.Status /= Flight.Landed then
+        -- Crashed or lost
         exit;
+      end if;
+      if Flight_Status.Status = Flight.Landed then
+        if Y_Thrust = 0 then
+          -- Landed and Ythrust off
+          exit;
+        end if;
+        -- Landed but game not finished
+        if not Lem.Is_Landed then
+          -- Lem was not landed yet, tell it
+          Lem.Set_Landed_Position (Flight_Status.Pos);
+        end if;
       end if;
       -- Get Lem characteristics and put
       Screen.Update (Flight_Status.Pos, Flight_Status.Speed);
