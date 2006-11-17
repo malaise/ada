@@ -1,4 +1,5 @@
 package Debug is
-  function Set return Boolean;
+  function Set_Lem return Boolean;
+  function Set_Flight return Boolean;
 end Debug;
 

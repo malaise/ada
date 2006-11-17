@@ -1,9 +1,10 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Text_Io;
 with Timers, Rnd;
-with Moon;
+with Moon, Debug;
 package body Lem is
 
   Running : Boolean := False;
+  Landed : Boolean := false;
 
   ----------
   -- MASS --
@@ -223,6 +224,22 @@ package body Lem is
     -- New acceleration
     Current_Acceleration := (X_Acc => Current_X_Thrust / Mass,
                              Y_Acc => Current_Y_Thrust / Mass + Moon.Acceleration);
+    -- Check if lem is landed
+    if Landed then
+      if Current_Acceleration.Y_Acc < 0.0 then
+        -- Don't go down when landed
+        Current_Acceleration.Y_Acc := 0.0;
+        if Debug.Set_Lem then
+          Ada.Text_Io.Put_Line ("LEM is landed. Accel 0.");
+        end if;
+      else
+        -- Takin' off
+        Landed := False;
+        if Debug.Set_Lem then
+          Ada.Text_Io.Put_Line ("LEM is taking off.");
+        end if;
+      end if;
+    end if;
     return False;
   end Period_Timer_Cb;
 
@@ -264,11 +281,9 @@ package body Lem is
     -- Stop timers
     if Period_Tid /= Timers.No_Timer then
       Timers.Delete (Period_Tid);
-      Period_Tid := Timers.No_Timer;
     end if;
     if Thrust_Tid /= Timers.No_Timer then
       Timers.Delete (Thrust_Tid);
-      Thrust_Tid := Timers.No_Timer;
     end if;
     -- Reset Trust, acceleration and speed
     Current_X_Thrust := 0;
@@ -281,10 +296,17 @@ package body Lem is
   -- Set position when landed
   procedure Set_Landed_Position (Position : in Space.Position_Rec) is
   begin
-    if Running then
+    if not Running then
       raise Invalid_Mode;
     end if;
+    -- Landed at position
+    if Debug.Set_Lem then
+      Ada.Text_Io.Put_Line ("LEM set to landed.");
+    end if;
+    Landed := True;
     Current_Position := Position;
+    Current_Speed := (0.0, 0.0);
+    Current_Acceleration := (0.0, 0.0);
   end Set_Landed_Position;
 
 end Lem;

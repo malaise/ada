@@ -26,8 +26,16 @@ package body Game is
     -- Play
     loop
       -- Get flying status
+      Y_Thrust := Lem.Get_Y_Thrust;
       Flight_Status := Flight.Get_Status;
-      exit when Flight_Status.Status /= Flight.Flying;
+      -- Fly while flying or landed but still Y thrust
+      if Flight_Status.Status = Flight.Flying
+      or else (Flight_Status.Status = Flight.Landed
+               and then Y_Thrust > 0) then
+        null;
+      else
+        exit;
+      end if;
       -- Get Lem characteristics and put
       Screen.Update (Flight_Status.Pos, Flight_Status.Speed);
       -- Get a key or wait a bit
@@ -42,7 +50,6 @@ package body Game is
           Lem.Set_X_Thrust (X_Thrust_Increment);
         when Screen.Up_Key =>
           -- Push less, down to 0
-          Y_Thrust := Lem.Get_Y_Thrust;
           if Y_Thrust > Y_Thrust_Increment then
             Y_Thrust := Y_Thrust - Y_Thrust_Increment;
           else

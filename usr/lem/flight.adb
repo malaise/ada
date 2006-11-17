@@ -103,8 +103,8 @@ package body Flight is
     P1 := Locate.Get_Index (Left, Right, Ground);
     P2 := P1 + 1;
     P3 := P2 + 1;
-    if Debug.Set then
-      Ada.Text_Io.Put_Line ("Lem is " & Left.X_Pos'Img & " - " & Right.X_Pos'Img
+    if Debug.Set_Flight then
+      Ada.Text_Io.Put_Line ("FLIGHT Lem is " & Left.X_Pos'Img & " - " & Right.X_Pos'Img
                           & " / " & Left.Y_Pos'Img);
       Ada.Text_Io.Put_Line ("P" & P1'Img & " is " & Ground(P1).X_Pos'Img
                           & " / " & Ground(P1).Y_Pos'Img);
@@ -116,7 +116,7 @@ package body Flight is
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos then
         -- Ground is climbing: check right corner is above (not equal)
         if Check_Above (Right, Ground(P1), Ground(P2)) then
-          if Debug.Set then
+          if Debug.Set_Flight then
             Ada.Text_Io.Put_Line ("Above P1 <= P2");
           end if;
           return;
@@ -124,14 +124,14 @@ package body Flight is
       else
         -- Ground is descending: check left corner is above (not equal)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
-          if Debug.Set then
+          if Debug.Set_Flight then
             Ada.Text_Io.Put_Line ("Above P1 > P2");
           end if;
           return;
         end if;
       end if;
     else
-      if Debug.Set then
+      if Debug.Set_Flight then
         Ada.Text_Io.Put_Line ("P" & P3'Img & " is " & Ground(P3).X_Pos'Img
                             & " / " & Ground(P3).Y_Pos'Img);
       end if;
@@ -140,7 +140,7 @@ package body Flight is
       and then Ground(P2).Y_Pos <= Ground(P3).Y_Pos then
         -- P1 P2 P3 climbing: check right > (P2, P3)
         if Check_Above (Right, Ground(P2), Ground(P3)) then
-          if Debug.Set then
+          if Debug.Set_Flight then
             Ada.Text_Io.Put_Line ("Above P1 <= P2 <= P3");
           end if;
           return;
@@ -149,7 +149,7 @@ package body Flight is
       and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
         -- P1 P2 P3 climbing: check left > (P1, P2)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
-          if Debug.Set then
+          if Debug.Set_Flight then
             Ada.Text_Io.Put_Line ("Above P1 >= P2 >= P3");
           end if;
           return;
@@ -158,7 +158,7 @@ package body Flight is
       and then Ground(P2).Y_Pos >= Ground(P3).Y_Pos then
         -- P2 above P1 and P3: check P2 < Lem
         if Ground(P2).Y_Pos < Right.Y_Pos then
-          if Debug.Set then
+          if Debug.Set_Flight then
             Ada.Text_Io.Put_Line ("Above P1 <= P2 >= P3");
           end if;
           return;
@@ -168,7 +168,7 @@ package body Flight is
         -- P2 below P1 and P3: check left > (P1, P2) and right > (P2, P3)
         if Check_Above (Left, Ground(P1), Ground(P2))
         and then Check_Above (Right, Ground(P2), Ground(P3)) then
-          if Debug.Set then
+          if Debug.Set_Flight then
             Ada.Text_Io.Put_Line ("Above P1 >= P2 <= P3");
           end if;
           return;
@@ -183,7 +183,7 @@ package body Flight is
     Last_Point := False;
     loop
       if Ground(P2).Y_Pos /= Ground(P1).Y_Pos then
-        if Debug.Set then
+        if Debug.Set_Flight then
           Ada.Text_Io.Put_Line ("Crashed ground not flat");
         end if;
         return;
@@ -197,7 +197,7 @@ package body Flight is
     if abs Result.Speed.X_Speed > Max_Horiz_Speed
     or else (Result.Speed.Y_Speed < 0.0
              and then abs Result.Speed.Y_Speed > Max_Verti_Speed) then
-      if Debug.Set then
+      if Debug.Set_Flight then
         Ada.Text_Io.Put_Line ("Crashed speed");
       end if;
       return;
@@ -205,7 +205,7 @@ package body Flight is
 
     -- 3. Landed
     -- Return the Lem landing position (LX + Lem.Width / 2.0, Y1 + Lem.Height / 2.0)
-    if Debug.Set then
+    if Debug.Set_Flight then
       Ada.Text_Io.Put_Line ("Landed with speeds " & Result.Speed.X_Speed'Img
                          & " / " & Result.Speed.Y_Speed'Img);
     end if;
