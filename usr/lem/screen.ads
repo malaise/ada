@@ -1,5 +1,5 @@
 with Con_Io;
-with Flight, Lem;
+with Space, Flight, Lem;
 package Screen is
 
   -- Reset screen. Display titles and moon ground
@@ -28,6 +28,10 @@ package Screen is
   type Got_List is (Right_Key, Left_Key, Up_Key, Down_Key, Break,
                     Other_Key, Timeout, Refresh);
   function Get_Key (Wait : in Duration) return Got_List;
+
+  -- Check if two heights are the same on screen
+  --  (to be used as a "flat" ground criteria)
+  function Same_Height (A, B : Space.Position_Range) return Boolean;
 
 end Screen;
 

@@ -65,7 +65,6 @@ package Lem is
   --  and as long as not taking off
   function Is_Landed return Boolean;
 
-
   -- Init Lem position
   -- Thrust is set to compensate weight to 25 kN
   -- Init speed is set to X = 0 and -20 <= Y <= 0

@@ -5,7 +5,7 @@ package body Moon is
   -- type Ground_Array is array (Positive range <>) of Space.Position_Rec;
   use type Space.Position_Range;
   -- Number of points on the ground
-  Nb_Points : constant := 25;
+  Nb_Points : constant := 18;
   subtype Point_Range is Positive range 1 .. Nb_Points;
 
   -- Distance on X between 2 points

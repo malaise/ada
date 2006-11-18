@@ -1,5 +1,6 @@
+with Ada.Text_Io;
 with My_Math;
-with Space, Moon;
+with Moon, Debug;
 package body Screen is
 
   -- Lem position
@@ -370,6 +371,18 @@ package body Screen is
 
   -- Get a key
   function Get_Key (Wait : in Duration) return Got_List is separate;
+
+  -- Check if two heights are the same on screen
+  --  (to be used as a "flat" ground criteria)
+  function Same_Height (A, B : Space.Position_Range) return Boolean is
+  begin
+    if Debug.Set_Flight then
+      Ada.Text_Io.Put_Line ("SCREEN same height " & 
+        Con_Io.Graphics.Y_Range'Image (Y_To_Screen (A)) & " and " &
+        Con_Io.Graphics.Y_Range'Image (Y_To_Screen (B)));
+    end if;
+    return abs (Y_To_Screen (A) - Y_To_Screen (B)) <= 1;
+  end Same_Height;
 
 end Screen;
 

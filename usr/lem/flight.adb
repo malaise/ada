@@ -1,6 +1,6 @@
 with Ada.Text_Io;
 with Rnd;
-with Moon, Debug;
+with Moon, Debug, Screen;
 package body Flight is
 
   -- Get a valid init position for the LEM
@@ -94,7 +94,6 @@ package body Flight is
                           Result : in out Status_Rec) is
     Ground : constant Moon.Ground_Array := Moon.Get_Ground;
     P1, P2, P3 : Positive;
-    Last_Point : Boolean;
     use type Space.Position_Range, Lem.Speed_Range;
   begin
     -- 1. Check if LEM is above ground (flying)
@@ -178,20 +177,26 @@ package body Flight is
 
     -- Now LEM is either landed or crashed
     -- 2. Check if LEM is landed
-    -- Flat ground? For i in P1 to Pn (while Xi <= RX), Yi must be constant to Y1
+    -- Flat ground? (at least as it is displayed on screen)
+    -- For i in P1 to Pn (while Xi <= RX), Yi must be constant to Y1
+    -- P2 is used to iterate, P3 to store the lowest
     Result.Status := Crashed;
-    Last_Point := False;
+    P3 := P1;
     loop
-      if Ground(P2).Y_Pos /= Ground(P1).Y_Pos then
+      -- Check current (P2) is at same visual height as P1
+      if not Screen.Same_Height (Ground(P2).Y_Pos, Ground(P1).Y_Pos) then
         if Debug.Set_Flight then
-          Ada.Text_Io.Put_Line ("Crashed ground not flat");
+          Ada.Text_Io.Put_Line ("Crashed ground not flat for " & P2'Img);
         end if;
         return;
       end if;
-      exit when Last_Point;
-      -- Last point to check is the first one with X > Right
+      -- Keep the lowest of points as the landing one
+      if Ground(P2).Y_Pos < Ground(P3).Y_Pos then
+        P3 := P2;
+      end if;
+      -- Last point to check is the first one with X >= Right
+      exit when Ground(P2).X_Pos >= Right.X_Pos;
       P2 := P2 + 1;
-      Last_Point := Ground(P2).X_Pos > Right.X_Pos;
     end loop;
     -- Check Speeds (|X| and Y) are below minima, else crash
     if abs Result.Speed.X_Speed > Max_Horiz_Speed
@@ -204,14 +209,15 @@ package body Flight is
     end if;
 
     -- 3. Landed
-    -- Return the Lem landing position (LX + Lem.Width / 2.0, Y1 + Lem.Height / 2.0)
+    -- Return the Lem landing position (LX + Lem.Width / 2.0, Y3 + Lem.Height / 2.0)
+    -- P3 has been set to the lowest of the "flat" points
     if Debug.Set_Flight then
       Ada.Text_Io.Put_Line ("Landed with speeds " & Result.Speed.X_Speed'Img
                          & " / " & Result.Speed.Y_Speed'Img);
     end if;
     Result.Status := Landed;
     Result.Pos.X_Pos := Left.X_Pos + Lem.Width / 2.0;
-    Result.Pos.Y_Pos := Ground(P1).Y_Pos + Lem.Height / 2.0;
+    Result.Pos.Y_Pos := Ground(P3).Y_Pos + Lem.Height / 2.0;
     Result.Speed := (0.0, 0.0);
     return;
   end Check_Ground;

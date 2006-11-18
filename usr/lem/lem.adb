@@ -73,6 +73,7 @@ package body Lem is
   ------------
   -- Power thrust in N (1N = 1kg.m/s2)
   -- Set X thrust for a second
+  -- Return true if too much X thrust while landed
   Current_X_Thrust : X_Thrust_Range := 0;
   Thrust_Tid : Timers.Timer_Id := Timers.No_Timer;
   function Timer_Thrust_Cb (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
@@ -94,8 +95,8 @@ package body Lem is
       Timers.Delete (Thrust_Tid);
       Thrust_Tid := Timers.No_Timer;
     end if;
-    -- No fuel => no thrust
-    if Current_Fuel = 0.0 then
+    -- No fuel => no thrust, if landed, no effect
+    if Current_Fuel = 0.0 or else Landed then
       return;
     end if;
     -- Set new thrust and arm timer
@@ -226,6 +227,7 @@ package body Lem is
                              Y_Acc => Current_Y_Thrust / Mass + Moon.Acceleration);
     -- Check if lem is landed
     if Landed then
+      Current_X_Thrust := 0;
       if Current_Acceleration.Y_Acc < 0.0 then
         -- Don't go down when landed
         Current_Acceleration.Y_Acc := 0.0;
@@ -282,9 +284,11 @@ package body Lem is
     -- Stop timers
     if Period_Tid /= Timers.No_Timer then
       Timers.Delete (Period_Tid);
+      Period_Tid := Timers.No_Timer;
     end if;
     if Thrust_Tid /= Timers.No_Timer then
       Timers.Delete (Thrust_Tid);
+      Thrust_Tid := Timers.No_Timer;
     end if;
     -- Reset Trust, acceleration and speed
     Current_X_Thrust := 0;
@@ -316,5 +320,6 @@ package body Lem is
   begin
     return Landed;
   end Is_Landed;
+
 end Lem;
 
