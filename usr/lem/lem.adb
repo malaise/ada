@@ -4,7 +4,7 @@ with Moon, Debug;
 package body Lem is
 
   Running : Boolean := False;
-  Landed : Boolean := false;
+  Landed : Boolean := False;
 
   ----------
   -- MASS --
@@ -312,11 +312,8 @@ package body Lem is
 
   -- Landed as soon as Set_Landed_Position called
   --  and as long as not taking off
-  function Is_Landed return boolean is
+  function Is_Landed return Boolean is
   begin
-    if not Running then
-      raise Invalid_Mode;
-    end if;
     return Landed;
   end Is_Landed;
 end Lem;
