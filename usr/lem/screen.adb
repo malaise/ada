@@ -13,6 +13,8 @@ package body Screen is
 
   -- Previous Lem position to rease on update/delete
   Prev_Pos : Lem_Position := No_Pos;
+  -- Put the gauges each two displays of Lem
+  Do_Put_Gauges : Boolean;
 
   -- First and Last X on screen for space
   First_X : Con_Io.Graphics.X_Range;
@@ -131,6 +133,7 @@ package body Screen is
     Hsfactor := My_Math.Real(Hsxmax - Hsxmid) / My_Math.Real(Max_Hori_Speed);
     -- Put constant info
     Refresh;
+    Do_Put_Gauges := True;
   end Init;
 
   -- Put "constant" info
@@ -265,7 +268,7 @@ package body Screen is
     Con_Io.Graphics.Fill_Rectangle (Fuxmin, Fuy, Fuxmax, Fuy + Gauge_Size);
     Fuel_Size := Natural (My_Math.Trunc(
                    My_Math.Real(Fuel) * Fufactor));
-    if Fuel < Lem.Max_Fuel / 20.0 then
+    if Fuel < Lem.Max_Fuel / 5.0 then
       Con_Io.Set_Foreground (Con_Io.Red);
     else
       Con_Io.Set_Foreground (Con_Io.Blue);
@@ -290,11 +293,19 @@ package body Screen is
     end if;
     Con_Io.Graphics.Fill_Rectangle (Hsxmid, Hsy, Hsxmid + Hspeed_Size,
                                     Hsy + Gauge_Size);
+    -- Landed indicator
+    if Lem.Is_Landed then
+      Con_Io.Set_Foreground (Con_Io.Light_Green);
+    else
+      Con_Io.Set_Foreground (Con_Io.Get_Background);
+    end if;
+    Con_Io.Graphics.Put ("LAND", Thn.X, Fun.Y);
   end Put_Gauges;
 
   -- Update lem and show the gauges
   procedure Update (New_Pos : in Lem.Position_Rec;
-                    New_Speed : in Lem.Speed_Rec) is
+                    New_Speed : in Lem.Speed_Rec;
+                    Update_Gauges : in Boolean) is
 
   begin
     if Prev_Pos.Set then
@@ -307,8 +318,14 @@ package body Screen is
     Draw_Lem (New_Pos);
     -- Save pos
     Prev_Pos := (True, New_Pos);
-    -- Show Y thrust, speeds and fuel
-    Put_Gauges (New_Speed);
+    if Update_Gauges then
+      Do_Put_Gauges := True;
+    end if;
+    -- Show Y thrust, speeds and fuel each 2 times lem is shown
+    if Do_Put_Gauges then
+      Put_Gauges (New_Speed);
+    end if;
+    Do_Put_Gauges := not Do_Put_Gauges;
     Con_Io.Flush;
   end Update;
 
