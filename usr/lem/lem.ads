@@ -63,7 +63,7 @@ package Lem is
 
   -- Landed as soon as Set_Landed_Position called
   --  and as long as not taking off
-  function Is_Landed return boolean;
+  function Is_Landed return Boolean;
 
 
   -- Init Lem position
