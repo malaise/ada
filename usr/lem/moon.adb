@@ -1,4 +1,4 @@
-with My_Math, Rnd;
+with My_Math, Rnd, Argument;
 with Lem;
 package body Moon is
 
@@ -23,14 +23,33 @@ package body Moon is
             range Point_Range'First + 1 .. Point_Range'Last - 2;
     Index_Landing : Point_Range;
     Y_Ground_Min : constant Space.Y_Range := 2.0;
+    Hard_Level : Boolean;
     use type Space.X_Range, Space.Y_Range;
   begin
+    -- Check if Hard_Level (-h argument)
+    begin
+      if Argument.Get_Parameter (1, "h") = "" then
+        Hard_Level := True;
+      else
+        Hard_Level := True;
+      end if;
+    exception
+      when Argument.Argument_Not_Found =>
+        Hard_Level := False;
+    end;
     -- Raise anonymous (un-catchable) exception
-    --  if LEM cannot land between 3 points
+    --  if LEM cannot land between 2 (hard) or 3 (normal) points
     declare
       Delta_Point_Lem_Width_Error : exception;
+      Nb_Consec : Space.X_Range;
+      use type Space.X_Range;
     begin
-      if Delta_Point * 2.0 < Lem.Width then
+      if Hard_Level then
+        Nb_Consec := 1.0;
+      else
+        Nb_Consec := 2.0;
+      end if;
+      if Delta_Point * Nb_Consec < Lem.Width then
         raise Delta_Point_Lem_Width_Error;
       end if;
     end;
@@ -47,9 +66,11 @@ package body Moon is
 
     -- Set index of landing point
     Index_Landing := Rnd.Int_Random (Landing_Range'First, Landing_Range'Last);
-    -- Level the landing site
+    -- Level the landing site. 2 consecutive points if hard, 3 if normal.
     Ground(Index_Landing - 1).Y_Pos := Ground(Index_Landing).Y_Pos;
-    Ground(Index_Landing + 1).Y_Pos := Ground(Index_Landing).Y_Pos;
+    if not Hard_Level then
+      Ground(Index_Landing + 1).Y_Pos := Ground(Index_Landing).Y_Pos;
+    end if;
   end Init;
 
 
