@@ -21,7 +21,7 @@ package body Game is
 
     -- Init screen
     Screen.Init;
-    Screen.Update (Lem.Get_Position, Lem.Get_Speed);
+    Screen.Update (Lem.Get_Position, Lem.Get_Speed, True);
 
     -- Play
     loop
@@ -46,7 +46,7 @@ package body Game is
         end if;
       end if;
       -- Get Lem characteristics and put
-      Screen.Update (Flight_Status.Pos, Flight_Status.Speed);
+      Screen.Update (Flight_Status.Pos, Flight_Status.Speed, False);
       -- Get a key or wait a bit
       Get_Status := Screen.Get_Key (0.1);
       -- Handle key
@@ -101,7 +101,7 @@ package body Game is
         Screen.Delete (Flight_Status.Speed);
       else
         -- Landed or crashed: show it
-        Screen.Update (Flight_Status.Pos, Flight_Status.Speed);
+        Screen.Update (Flight_Status.Pos, Flight_Status.Speed, True);
       end if;
       Screen.Put_End (Flight_Status.Status);
 

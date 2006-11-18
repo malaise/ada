@@ -13,7 +13,8 @@ package Screen is
 
   -- Update lem and the gauges
   procedure Update (New_Pos : in Lem.Position_Rec;
-                    New_Speed : in Lem.Speed_Rec);
+                    New_Speed : in Lem.Speed_Rec;
+                    Update_Gauges : in Boolean);
 
   -- Delete lem and show the gauges
   procedure Delete (New_Speed : in Lem.Speed_Rec);
@@ -25,7 +26,7 @@ package Screen is
 
   -- Get a key
   type Got_List is (Right_Key, Left_Key, Up_Key, Down_Key, Break,
-                    Other_key, Timeout, Refresh);
+                    Other_Key, Timeout, Refresh);
   function Get_Key (Wait : in Duration) return Got_List;
 
 end Screen;
