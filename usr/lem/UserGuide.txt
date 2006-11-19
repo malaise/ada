@@ -42,3 +42,10 @@ the game.
 You can then hit any key (except an arrow and escape) to start a new game.
 At any time, hitting escape aborts the game and quits.
 
+5. Mechanics
+The quantity of fuel impacts the global mass so the effectiveness of thrust
+increases when fuel dicreases. On the long term, the LEM tends to climb (or fall
+slower) and each horzontal thrust affects horizontal speed more and more.
+The fuel decreases proportionnaly with the vertical thrust and at each burst of
+horizontal thrust.
+
