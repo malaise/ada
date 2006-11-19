@@ -232,6 +232,14 @@ package body Flight is
       end if;
       return;
     end if;
+    -- Speed must be negative or nul, otherwise approaching
+    if Result.Speed.Y_Speed > 0.0 then
+      if Debug.Set_Flight then
+        Ada.Text_Io.Put_Line ("On ground but climbing");
+      end if;
+      Result.Status := Approaching;
+      return;
+    end if;
 
     -- 3. Landed
     -- Return the Lem landing position
