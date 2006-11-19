@@ -1,0 +1,44 @@
+                            Land LEM  V2.1
+
+1. Presentation
+The goal of the game is to land the LEM safely on the Moon.
+The LEM must touch the ground in a flat area, with reasonable horizontal and
+vertical speeds, then stop its engines.
+Normal mode defines at least one large flat area, hard mode (argument -h)
+defines at least one narrow flat area.
+
+2. The screen
+The main area represents the space, the LEM and the ground.
+The LEM must not reach the borders (up, left or right) of the space, otherwise
+it is lost. The ground shows at least one flat landing area.
+Around the space are the gauges. On the right, the vertical thrust and the
+vertical speed. At the bottom, the remaining fuel and the horizontal speed.
+The fuel gauge becomes red when reaching 20%.
+The speeds are red when above acceptable values for landing. Note that the LEM
+speed can be far above the speed gauges maxima without problem.
+Finally, in the lower right corner, an indicator shows "APP" when close above a
+landing area and "LAND" when landed.
+
+3. Commands
+When flying and landed, the commands are the four arrows. Each arrow activates
+the corresponding engine.
+Vertical arrows increase/decrease vertical thrust by a tenth each time. Down
+arrow increases thrust and up arrow reduces it.
+Horizontal arrows apply an horizontal thrust for one second. Left arrow
+activates left engine, thus increasing speed to the right. Right arrow
+activates activates right engine, thus increasing speed to the left.
+
+4. Playing
+The game starts at a random (high) position, with a random vertical speed and
+a reasonable vertical thrust. First adjust vertical thrust to get a reasonable
+descending speed.
+Then spot a flat landing area and adjust horizontal speed to reach it.
+When approaching, reduce speeds, remain above the landing site (APP indicator)
+with acceptable speeds (not red).
+Reduce the vertical thrust when (or just before) contacting the ground.
+When landed (LAND indicator), horizontal thrust has no effect.
+You can use the horizontal thrust to take off, or shut-down the engine and end
+the game.
+You can then hit any key (except an arrow and escape) to start a new game.
+At any time, hitting escape aborts the game and quits.
+

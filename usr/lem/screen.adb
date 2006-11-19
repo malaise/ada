@@ -220,16 +220,18 @@ package body Screen is
   end Draw_Lem;
 
   -- Update (hide then draw) the gauges
-  procedure Put_Gauges (New_Speed : in Lem.Speed_Rec) is
+  procedure Put_Gauges (Flight_Status : in Flight.Status_Rec) is
+    -- Extra info to get directly from the Lem
     Y_Thrust : constant Lem.Y_Thrust_Range := Lem.Get_Y_Thrust;
     Fuel     : constant Lem.Fuel_Range := Lem.Get_Fuel;
+    -- Sizes on screen and temp variables
     Thrust_Size : Natural;
     Vspeed : Lem.Speed_Range;
     Vspeed_Size : Integer;
     Fuel_Size : Natural;
     Hspeed : Lem.Speed_Range;
     Hspeed_Size : Integer;
-    use type My_Math.Real, Lem.Speed_Range, Lem.Mass_Range;
+    use type My_Math.Real, Lem.Speed_Range, Lem.Mass_Range, Flight.Status_List;
   begin
     -- Thrust gauge
     Con_Io.Set_Foreground (Con_Io.Get_Background);
@@ -242,7 +244,7 @@ package body Screen is
     -- Vertical speed
     Con_Io.Set_Foreground (Con_Io.Get_Background);
     Con_Io.Graphics.Fill_Rectangle (Vsx, Vsymin, Vsx + Gauge_Size, Vsymax);
-    Vspeed := New_Speed.Y_Speed;
+    Vspeed := Flight_Status.Speed.Y_Speed;
     if Vspeed > Max_Vert_Speed then
       Vspeed := Max_Vert_Speed;
     elsif Vspeed < -Max_Vert_Speed then
@@ -279,7 +281,7 @@ package body Screen is
     -- Horizontal speed
     Con_Io.Set_Foreground (Con_Io.Get_Background);
     Con_Io.Graphics.Fill_Rectangle (Hsxmin, Hsy, Hsxmax, Hsy + Gauge_Size);
-    Hspeed := New_Speed.X_Speed;
+    Hspeed := Flight_Status.Speed.X_Speed;
     if Hspeed > Max_Hori_Speed then
       Hspeed := Max_Hori_Speed;
     elsif Hspeed < -Max_Hori_Speed then
@@ -294,18 +296,20 @@ package body Screen is
     end if;
     Con_Io.Graphics.Fill_Rectangle (Hsxmid, Hsy, Hsxmid + Hspeed_Size,
                                     Hsy + Gauge_Size);
-    -- Landed indicator
-    if Lem.Is_Landed then
+    -- Approach/Landed indicator
+    Con_Io.Set_Foreground (Con_Io.Get_Background);
+    Con_Io.Graphics.Put ("    ", Thn.X, Fun.Y);
+    if Flight_Status.Status = Flight.Approaching then
       Con_Io.Set_Foreground (Con_Io.Light_Green);
-    else
-      Con_Io.Set_Foreground (Con_Io.Get_Background);
+      Con_Io.Graphics.Put ("APP ", Thn.X, Fun.Y);
+    elsif Flight_Status.Status = Flight.Landed then
+      Con_Io.Set_Foreground (Con_Io.Magenta);
+      Con_Io.Graphics.Put ("LAND", Thn.X, Fun.Y);
     end if;
-    Con_Io.Graphics.Put ("LAND", Thn.X, Fun.Y);
   end Put_Gauges;
 
   -- Update lem and show the gauges
-  procedure Update (New_Pos : in Lem.Position_Rec;
-                    New_Speed : in Lem.Speed_Rec;
+  procedure Update (Flight_Status : in Flight.Status_Rec;
                     Update_Gauges : in Boolean) is
 
   begin
@@ -316,22 +320,22 @@ package body Screen is
     end if;
     -- Show new pos
     Con_Io.Set_Foreground (Con_Io.Cyan);
-    Draw_Lem (New_Pos);
+    Draw_Lem (Flight_Status.Pos);
     -- Save pos
-    Prev_Pos := (True, New_Pos);
+    Prev_Pos := (True, Flight_Status.Pos);
     if Update_Gauges then
       Do_Put_Gauges := True;
     end if;
     -- Show Y thrust, speeds and fuel each 2 times lem is shown
     if Do_Put_Gauges then
-      Put_Gauges (New_Speed);
+      Put_Gauges (Flight_Status);
     end if;
     Do_Put_Gauges := not Do_Put_Gauges;
     Con_Io.Flush;
   end Update;
 
   -- Delete lem and show the gauges
-  procedure Delete (New_Speed : in Lem.Speed_Rec) is
+  procedure Delete (Flight_Status : in Flight.Status_Rec) is
   begin
     if Prev_Pos.Set then
       -- Hide prev pos
@@ -340,7 +344,7 @@ package body Screen is
     end if;
     Prev_Pos := No_Pos;
     -- Show Y thrust, speeds and fuel
-    Put_Gauges (New_Speed);
+    Put_Gauges (Flight_Status);
     Con_Io.Flush;
   end Delete;
 

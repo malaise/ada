@@ -21,19 +21,24 @@ package body Game is
 
     -- Init screen
     Screen.Init;
-    Screen.Update (Lem.Get_Position, Lem.Get_Speed, True);
+    Flight_Status := Flight.Get_Status;
+    Screen.Update (Flight_Status, True);
 
     -- Play
     loop
       -- Get flying status
-      Y_Thrust := Lem.Get_Y_Thrust;
       Flight_Status := Flight.Get_Status;
+
       -- Fly while flying or landed but still Y thrust
       if Flight_Status.Status /= Flight.Flying
+      and then Flight_Status.Status /= Flight.Approaching
       and then Flight_Status.Status /= Flight.Landed then
         -- Crashed or lost
         exit;
       end if;
+
+      -- Check if landed and no Y thrust
+      Y_Thrust := Lem.Get_Y_Thrust;
       if Flight_Status.Status = Flight.Landed then
         if Y_Thrust = 0 then
           -- Landed and Ythrust off
@@ -45,8 +50,10 @@ package body Game is
           Lem.Set_Landed_Position (Flight_Status.Pos);
         end if;
       end if;
+
       -- Get Lem characteristics and put
-      Screen.Update (Flight_Status.Pos, Flight_Status.Speed, False);
+      Screen.Update (Flight_Status, False);
+
       -- Get a key or wait a bit
       Get_Status := Screen.Get_Key (0.1);
       -- Handle key
@@ -98,10 +105,10 @@ package body Game is
     loop
       if Flight_Status.Status = Flight.Lost then
         -- Lem lost: hide it
-        Screen.Delete (Flight_Status.Speed);
+        Screen.Delete (Flight_Status);
       else
         -- Landed or crashed: show it
-        Screen.Update (Flight_Status.Pos, Flight_Status.Speed, True);
+        Screen.Update (Flight_Status, True);
       end if;
       Screen.Put_End (Flight_Status.Status);
 

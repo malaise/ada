@@ -9,8 +9,11 @@ package Flight is
   function Get_Init_Position return Space.Position_Rec;
 
   -- Kind of LEM flight status
-  type Status_List is (Flying, Landed, Crashed, Lost);
+  type Status_List is (Flying, Approaching, Landed, Crashed, Lost);
   -- LEM status, postion and speed
+  -- Normally, Game and Screen shall get Pos and Speed from Lem itself
+  --  but having them here improves consistency between flight status
+  --  and what we see.
   type Status_Rec is record
       Status : Status_List;
       Pos    : Space.Position_Rec;

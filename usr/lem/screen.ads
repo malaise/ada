@@ -12,12 +12,11 @@ package Screen is
   procedure Refresh;
 
   -- Update lem and the gauges
-  procedure Update (New_Pos : in Lem.Position_Rec;
-                    New_Speed : in Lem.Speed_Rec;
+  procedure Update (Flight_Status : in Flight.Status_Rec;
                     Update_Gauges : in Boolean);
 
   -- Delete lem and show the gauges
-  procedure Delete (New_Speed : in Lem.Speed_Rec);
+  procedure Delete (Flight_Status : in Flight.Status_Rec);
 
   -- Put game end
   subtype End_Reason_List is Flight.Status_List

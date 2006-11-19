@@ -92,13 +92,17 @@ package body Flight is
   -- Check bottom of LEM versus ground
   procedure Check_Ground (Left, Right : in Space.Position_Rec;
                           Result : in out Status_Rec) is
+    -- The Moon ground
     Ground : constant Moon.Ground_Array := Moon.Get_Ground;
+    -- The points of ground left, belaow and right the Lem
     P1, P2, P3 : Positive;
+    -- The index of lowest point when flat ground (0 => not flat)
+    Flat_Index : Natural;
+    -- Iteration index
+    Iter : Positive;
     use type Space.Position_Range, Lem.Speed_Range;
   begin
-    -- 1. Check if LEM is above ground (flying)
     -- Locate last point P1 left of the LEM left (X1 <= LX)
-    Result.Status := Flying;
     P1 := Locate.Get_Index (Left, Right, Ground);
     P2 := P1 + 1;
     P3 := P2 + 1;
@@ -110,6 +114,40 @@ package body Flight is
       Ada.Text_Io.Put_Line ("P" & P2'Img & " is " & Ground(P2).X_Pos'Img
                           & " / " & Ground(P2).Y_Pos'Img);
     end if;
+
+    -- Check if ground is flat (at least as it is displayed on screen)
+    -- For i in P1 to Pn (while Xi <= RX), Yi must be "=" to Y1
+    Flat_Index := P1;
+    Iter := P2;
+    loop
+      -- Check current (Iter) is at same visual height as P1
+      if not Screen.Same_Height (Ground(Iter).Y_Pos, Ground(P1).Y_Pos) then
+        if Debug.Set_Flight then
+          Ada.Text_Io.Put_Line ("Ground not flat for " & Iter'Img);
+        end if;
+        Flat_Index := 0;
+        exit;
+      end if;
+      -- Keep the lowest of points as the landing one
+      if Ground(Iter).Y_Pos < Ground(Flat_Index).Y_Pos then
+        Flat_Index := Iter;
+      end if;
+      -- Last point to check is the first one with X >= Right
+      exit when Ground(Iter).X_Pos >= Right.X_Pos;
+      Iter := Iter + 1;
+    end loop;
+
+    -- Set status to flying or approaching, according to height and flat
+    if Flat_Index /= 0
+    and then Right.Y_Pos - Ground(Flat_Index).Y_Pos < Moon.Y_Ground_Max then
+      -- Ground is flat and less than Y_Ground_Max below
+      Result.Status := Approaching;
+    else
+      -- Ground is not flat or too far below
+      Result.Status := Flying;
+    end if;
+
+    -- 1. Check if LEM is above ground (flying)
     if Ground(P2).X_Pos >= Right.X_Pos then
       -- LEM is completely between two successive points P1 and P2 (X2 >= RX)
       if Ground(P1).Y_Pos <= Ground(P2).Y_Pos then
@@ -177,27 +215,14 @@ package body Flight is
 
     -- Now LEM is either landed or crashed
     -- 2. Check if LEM is landed
-    -- Flat ground? (at least as it is displayed on screen)
-    -- For i in P1 to Pn (while Xi <= RX), Yi must be constant to Y1
-    -- P2 is used to iterate, P3 to store the lowest
     Result.Status := Crashed;
-    P3 := P1;
-    loop
-      -- Check current (P2) is at same visual height as P1
-      if not Screen.Same_Height (Ground(P2).Y_Pos, Ground(P1).Y_Pos) then
-        if Debug.Set_Flight then
-          Ada.Text_Io.Put_Line ("Crashed ground not flat for " & P2'Img);
-        end if;
-        return;
+    -- Check ground is flat
+    if Flat_Index = 0 then
+      if Debug.Set_Flight then
+        Ada.Text_Io.Put_Line ("Crashed not flat");
       end if;
-      -- Keep the lowest of points as the landing one
-      if Ground(P2).Y_Pos < Ground(P3).Y_Pos then
-        P3 := P2;
-      end if;
-      -- Last point to check is the first one with X >= Right
-      exit when Ground(P2).X_Pos >= Right.X_Pos;
-      P2 := P2 + 1;
-    end loop;
+      return;
+    end if;
     -- Check Speeds (|X| and Y) are below minima, else crash
     if abs Result.Speed.X_Speed > Max_Horiz_Speed
     or else (Result.Speed.Y_Speed < 0.0
@@ -209,15 +234,16 @@ package body Flight is
     end if;
 
     -- 3. Landed
-    -- Return the Lem landing position (LX + Lem.Width / 2.0, Y3 + Lem.Height / 2.0)
-    -- P3 has been set to the lowest of the "flat" points
+    -- Return the Lem landing position
+    --  (LX + Lem.Width / 2.0, Y3 + Lem.Height / 2.0)
+    -- Flat_Index has been set to the lowest of the "flat" points
     if Debug.Set_Flight then
       Ada.Text_Io.Put_Line ("Landed with speeds " & Result.Speed.X_Speed'Img
                          & " / " & Result.Speed.Y_Speed'Img);
     end if;
     Result.Status := Landed;
     Result.Pos.X_Pos := Left.X_Pos + Lem.Width / 2.0;
-    Result.Pos.Y_Pos := Ground(P3).Y_Pos + Lem.Height / 2.0;
+    Result.Pos.Y_Pos := Ground(Flat_Index).Y_Pos + Lem.Height / 2.0;
     Result.Speed := (0.0, 0.0);
     return;
   end Check_Ground;
@@ -249,8 +275,8 @@ package body Flight is
       return Result;
     end if;
 
-    -- Check if Lem is flying above highest point
-    if Left.Y_Pos > Moon.Y_Ground_Max then
+    -- Check if Lem is flying far above highest point
+    if Left.Y_Pos > Moon.Y_Ground_Max * 1.5 then
       Result.Status := Flying;
       return Result;
     end if;
