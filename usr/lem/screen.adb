@@ -356,7 +356,6 @@ package body Screen is
     X_Text : constant Con_Io.Graphics.X_Range := 250;
     Y_Text : constant Con_Io.Graphics.Y_Range := 250;
   begin
-    
     case Reason is
       when Flight.Landed =>
         Con_Io.Set_Foreground (Con_Io.Light_Green);
@@ -381,7 +380,7 @@ package body Screen is
   function Same_Height (A, B : Space.Position_Range) return Boolean is
   begin
     if Debug.Set_Flight then
-      Ada.Text_Io.Put_Line ("SCREEN same height " & 
+      Ada.Text_Io.Put_Line ("SCREEN same height " &
         Con_Io.Graphics.Y_Range'Image (Y_To_Screen (A)) & " and " &
         Con_Io.Graphics.Y_Range'Image (Y_To_Screen (B)));
     end if;
