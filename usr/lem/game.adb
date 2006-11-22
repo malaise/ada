@@ -1,9 +1,12 @@
 with Ada.Text_Io;
 with Event_Mng;
-with Screen, Flight, Moon, Lem, Debug;
+with Space, Screen, Flight, Moon, Lem, Debug;
 package body Game is
 
-  function Play_One return Boolean is
+  -- Lem initial position (re-used when prev game lost)
+  Init_Position : Space.Position_Rec := Flight.Get_Init_Position;
+
+  function Play_One (New_Game : in Boolean) return Result_List is
     Flight_Status : Flight.Status_Rec;
     Get_Status : Screen.Got_List;
     use type Lem.Thrust_Range;
@@ -14,10 +17,14 @@ package body Game is
     Y_Thrust : Lem.Y_Thrust_Range;
     use type Flight.Status_List;
   begin
-    -- Init Moon ground
-    Moon.Init;
-    -- Init Lem at a valid position
-    Lem.Init (Flight.Get_Init_Position);
+    
+    if New_Game then
+      -- Init Moon ground
+      Moon.Init;
+      -- Get a new random Lem position
+      Init_Position := Flight.Get_Init_Position;
+    end if;
+    Lem.Init (Init_Position);
 
     -- Init screen
     Screen.Init;
@@ -87,7 +94,7 @@ package body Game is
         when Screen.Break =>
           -- Abort
           Screen.Close;
-          return False;
+          return Aborted;
         when Screen.Timeout =>
           -- Re-loop
           null;
@@ -117,7 +124,7 @@ package body Game is
         when Screen.Break =>
           -- Abort
           Screen.Close;
-          return False;
+          return Aborted;
         when Screen.Refresh =>
           -- Refresh screen
           Screen.Refresh;
@@ -125,8 +132,12 @@ package body Game is
           -- Should not occure
           null;
         when Screen.Other_Key =>
-          -- Any other key: go on
-          return True;
+          -- Any other key: go on and return game status
+          if Flight_Status.Status = Flight.Landed then
+            return Landed;
+          else
+            return Lost;
+          end if;
         when others =>
           -- Arrows (remaining events): ignore
           null;
