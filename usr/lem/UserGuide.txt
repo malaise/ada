@@ -49,3 +49,22 @@ slower) and each horzontal thrust affects horizontal speed more and more.
 The fuel decreases proportionnaly with the vertical thrust and at each burst of
 horizontal thrust.
 
+6. Hints
+Try to always descend: Quickly fix vertical rate then spot a landing area and
+move horizontaly, fast if needed (more than the gauge). Visualise the
+trajectory, anticipate the approach (what you see is speed, what you change is
+acceleration).
+Beware that the horizontal speed is nearly never nul, if needed, swap sides when
+getting close to the side of the landing area. Also anticipate the changes of
+vertical speeds, always remain on the "safe" side.
+You will bump (APP then LAND then APP) if you are slowing down at excessive
+rate (positive acceleration). The best landing is with a constant or slightly
+negative acceleration. So, at the last time, reduce power (if it is safe).
+
+7. Bugs
+Any software has bugs. Please report any bug to malaise-at-magic.fr
+If you think you landed properly but crashed, please check the speeds and "APP"
+indicator before suspecting a bug. If the speeds are both not blue or the "LAND"
+indicator is not set at the time the LEM contacts the ground, it is a crash
+(perhaps you could have prevented it).
+
