@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Math;
+with My_Math, Normal;
 with Moon, Debug;
 package body Screen is
 
@@ -220,7 +220,8 @@ package body Screen is
   end Draw_Lem;
 
   -- Update (hide then draw) the gauges
-  procedure Put_Gauges (Flight_Status : in Flight.Status_Rec) is
+  procedure Put_Gauges (Flight_Status : in Flight.Status_Rec;
+                        Elapsed_Time  : in Chronos.Time_Rec) is
     -- Extra info to get directly from the Lem
     Y_Thrust : constant Lem.Y_Thrust_Range := Lem.Get_Y_Thrust;
     Fuel     : constant Lem.Fuel_Range := Lem.Get_Fuel;
@@ -306,10 +307,19 @@ package body Screen is
       Con_Io.Set_Foreground (Con_Io.Magenta);
       Con_Io.Graphics.Put ("LAND", Thn.X, Fun.Y);
     end if;
+    -- Elapsed time "mm.ss"
+    Con_Io.Set_Foreground (Con_Io.Get_Background);
+    Con_Io.Graphics.Put ("    ", Thn.X, Hsn.Y);
+    Con_Io.Set_Foreground (Con_Io.Blue);
+    Con_Io.Graphics.Put (
+             Normal (Elapsed_Time.Minutes, 2, True, '0') & "."
+           & Normal (Elapsed_Time.Seconds, 2, True, '0'),
+             Thn.X, Hsn.Y);
   end Put_Gauges;
 
   -- Update lem and show the gauges
   procedure Update (Flight_Status : in Flight.Status_Rec;
+                    Elapsed_Time  : in Chronos.Time_Rec;
                     Update_Gauges : in Boolean) is
 
   begin
@@ -328,14 +338,15 @@ package body Screen is
     end if;
     -- Show Y thrust, speeds and fuel each 2 times lem is shown
     if Do_Put_Gauges then
-      Put_Gauges (Flight_Status);
+      Put_Gauges (Flight_Status, Elapsed_Time);
     end if;
     Do_Put_Gauges := not Do_Put_Gauges;
     Con_Io.Flush;
   end Update;
 
   -- Delete lem and show the gauges
-  procedure Delete (Flight_Status : in Flight.Status_Rec) is
+  procedure Delete (Flight_Status : in Flight.Status_Rec;
+                    Elapsed_Time  : in Chronos.Time_Rec) is
   begin
     if Prev_Pos.Set then
       -- Hide prev pos
@@ -344,7 +355,7 @@ package body Screen is
     end if;
     Prev_Pos := No_Pos;
     -- Show Y thrust, speeds and fuel
-    Put_Gauges (Flight_Status);
+    Put_Gauges (Flight_Status, Elapsed_Time);
     Con_Io.Flush;
   end Delete;
 

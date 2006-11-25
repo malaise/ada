@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Event_Mng;
+with Event_Mng, Chronos;
 with Space, Screen, Flight, Moon, Lem, Debug;
 package body Game is
 
@@ -7,29 +7,36 @@ package body Game is
   Init_Position : Space.Position_Rec := Flight.Get_Init_Position;
 
   function Play_One (New_Game : in Boolean) return Result_List is
+    -- Flight (Lem) status
     Flight_Status : Flight.Status_Rec;
+    -- Key reading result
     Get_Status : Screen.Got_List;
     use type Lem.Thrust_Range;
     X_Thrust_Increment : constant Lem.X_Thrust_Range
                        := Lem.Max_X_Thrust / 7;
     Y_Thrust_Increment : constant Lem.Y_Thrust_Range
                        := Lem.Max_Y_Thrust / 10;
+    -- Current Y thrust
     Y_Thrust : Lem.Y_Thrust_Range;
+    -- Chronometer
+    Chrono : Chronos.Chrono_Type;
     use type Flight.Status_List;
   begin
-    
+    -- Start (new) game
     if New_Game then
       -- Init Moon ground
       Moon.Init;
       -- Get a new random Lem position
       Init_Position := Flight.Get_Init_Position;
     end if;
+    -- Init Lem and start chrono
     Lem.Init (Init_Position);
+    Chronos.Start (Chrono);
 
     -- Init screen
     Screen.Init;
     Flight_Status := Flight.Get_Status;
-    Screen.Update (Flight_Status, True);
+    Screen.Update (Flight_Status, Chronos.Read (Chrono), True);
 
     -- Play
     loop
@@ -59,7 +66,7 @@ package body Game is
       end if;
 
       -- Get Lem characteristics and put
-      Screen.Update (Flight_Status, False);
+      Screen.Update (Flight_Status, Chronos.Read (Chrono), False);
 
       -- Get a key or wait a bit
       Get_Status := Screen.Get_Key (0.1);
@@ -105,17 +112,18 @@ package body Game is
     end loop;
 
     -- Game is ended
-    -- Stop the LEM
+    -- Stop the LEM and chrono
     Lem.Stop;
+    Chronos.Stop (Chrono);
 
     -- Last display and get key
     loop
       if Flight_Status.Status = Flight.Lost then
         -- Lem lost: hide it
-        Screen.Delete (Flight_Status);
+        Screen.Delete (Flight_Status, Chronos.Read (Chrono));
       else
         -- Landed or crashed: show it
-        Screen.Update (Flight_Status, True);
+        Screen.Update (Flight_Status, Chronos.Read (Chrono), True);
       end if;
       Screen.Put_End (Flight_Status.Status);
 

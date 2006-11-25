@@ -1,4 +1,4 @@
-with Con_Io;
+with Con_Io, Chronos;
 with Space, Flight, Lem;
 package Screen is
 
@@ -11,12 +11,14 @@ package Screen is
   -- Redisplay moon ground, frame...
   procedure Refresh;
 
-  -- Update lem and the gauges
+  -- Update lem and show the gauges and time
   procedure Update (Flight_Status : in Flight.Status_Rec;
+                    Elapsed_Time  : in Chronos.Time_Rec;
                     Update_Gauges : in Boolean);
 
-  -- Delete lem and show the gauges
-  procedure Delete (Flight_Status : in Flight.Status_Rec);
+  -- Delete lem and show the gauges and time
+  procedure Delete (Flight_Status : in Flight.Status_Rec;
+                    Elapsed_Time  : in Chronos.Time_Rec);
 
   -- Put game end
   subtype End_Reason_List is Flight.Status_List

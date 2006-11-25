@@ -17,7 +17,8 @@ The fuel gauge becomes red when reaching 20%.
 The speeds are red when above acceptable values for landing. Note that the LEM
 speed can be far above the speed gauges maxima without problem.
 Finally, in the lower right corner, an indicator shows "APP" when close above a
-landing area and "LAND" when landed.
+landing area and "LAND" when landed. Below this indicator a chronometer
+indicates the duration of the game.
 
 3. Commands
 When flying and landed, the commands are the four arrows. Each arrow activates
