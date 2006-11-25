@@ -359,27 +359,49 @@ package body Screen is
     Con_Io.Flush;
   end Delete;
 
+
+  -- Put text in the center text (within X range)
+  procedure Center (Str : in String;
+                    Y : Con_Io.Graphics.Y_Range) is
+    X : Con_Io.Graphics.X_Range;
+  begin
+    -- Middle
+    X := First_X + (First_X + Last_X) / 2;
+    -- Start of text
+    X := X -(Str'Length * Con_Io.Graphics.Font_Width) / 2;
+    -- Put
+    Con_Io.Graphics.Put (Str, X, Y);
+  end Center;
+
   -- Put game end
   -- subtype End_Reason_List is Flight.Status_List
   --                            range Flight.Landed .. Flight.Lost;
   procedure Put_End (Reason : in End_Reason_List) is
     use type Flight.Status_List;
-    X_Text : constant Con_Io.Graphics.X_Range := 250;
     Y_Text : constant Con_Io.Graphics.Y_Range := 250;
+    Y_Offset : constant Con_Io.Graphics.Y_Range
+             := 2 * Con_Io.Graphics.Font_Height;
   begin
     case Reason is
       when Flight.Landed =>
         Con_Io.Set_Foreground (Con_Io.Light_Green);
-        Con_Io.Graphics.Put ("You landed the LEM safely", X_Text, Y_Text);
+        Center ("You landed the LEM safely", Y_Text);
       when Flight.Lost =>
         Con_Io.Set_Foreground (Con_Io.Magenta);
-        Con_Io.Graphics.Put ("You lost the LEM", X_Text, Y_Text);
+        Center ("You lost the LEM", Y_Text);
       when Flight.Crashed =>
         Con_Io.Set_Foreground (Con_Io.Magenta);
-        Con_Io.Graphics.Put ("You crashed the LEM", X_Text, Y_Text);
+        Center ("You crashed the LEM", Y_Text);
     end case;
     Con_Io.Set_Foreground (Con_Io.Light_Gray);
-    Con_Io.Graphics.Put ("Hit any key or Escape", X_Text, Y_Text - 25);
+    case Reason is
+      when Flight.Landed =>
+        Center ("Hit any key for a new game", Y_Text - Y_Offset);
+      when Flight.Lost | Flight.Crashed =>
+        Center ("Hit any key to retry", Y_Text - Y_Offset);
+    end case;
+    Center ("or Escape to quit",
+            Y_Text - Y_Offset - Con_Io.Graphics.Font_Height);
     Con_Io.Flush;
   end Put_End;
 
