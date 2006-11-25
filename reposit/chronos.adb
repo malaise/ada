@@ -7,13 +7,20 @@ package body Chronos is
   -- No effect if it is already running
   procedure Start (A_Chrono : in out Chrono_Type) is
   begin
+    -- Reset start time
+    A_Chrono.Start_Time := Ada.Calendar.Clock;
     A_Chrono.Status := Running;
   end Start;
 
   -- Stop the chrono
   -- No effect if it is already stopped
   procedure Stop (A_Chrono : in out Chrono_Type) is
+    use type Ada.Calendar.Time;
   begin
+    -- Add current offset to chrono offset
+    A_Chrono.Offset := A_Chrono.Offset
+                     + Ada.Calendar.Clock
+                     - A_Chrono.Start_Time;
     A_Chrono.Status := Stopped;
   end Stop;
 
@@ -27,12 +34,19 @@ package body Chronos is
   -- Chrono can be running or stopped
   function Read (A_Chrono : Chrono_Type) return Time_Rec is
     Curr_Delta : Perpet.Delta_Rec;
+    Now : Ada.Calendar.Time;
     Result : Time_Rec;
-    use type Perpet.Delta_Rec;
+    use type Perpet.Delta_Rec, Ada.Calendar.Time;
   begin
-    -- Compute delta since chrono started
-    -- May raise Ada.Calendar.Time. Perfect.
-    Curr_Delta := Ada.Calendar.Clock - A_Chrono.Start_Time;
+    Now := Ada.Calendar.Clock;
+    if A_Chrono.Status = Running then
+      -- Compute delta since chrono started
+      -- May raise Ada.Calendar.Time. Perfect.
+      Curr_Delta := Now + A_Chrono.Offset - A_Chrono.Start_Time;
+    else
+      -- Just Chrono.Offset
+      Curr_Delta := Now + A_Chrono.Offset - Now;
+    end if;
     -- Keep days and split seconds
     Result.Days := Curr_Delta.Days;
     Day_Mng.split (Curr_Delta.Secs,

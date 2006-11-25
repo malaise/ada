@@ -46,8 +46,10 @@ private
   type Chrono_Type is record
     -- Chrono status
     Status : Status_List := Stopped;
-    -- Time when it was started
-    Start_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
+    -- Time when it was started, when running
+    Start_Time : Ada.Calendar.Time;
+    -- Offset, when stopped or running
+    Offset : Duration := 0.0; 
   end record;
 
 end Chronos;
