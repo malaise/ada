@@ -13,15 +13,26 @@ package body Game is
     -- Key reading result
     Get_Status : Screen.Got_List;
     use type Lem.Thrust_Range;
+    -- Tuning
     X_Thrust_Increment : constant Lem.X_Thrust_Range
-                       := Lem.Max_X_Thrust / 7;
+                       := Lem.Max_X_Thrust / 10;
     Y_Thrust_Increment : constant Lem.Y_Thrust_Range
                        := Lem.Max_Y_Thrust / 10;
     -- Current Y thrust
     Y_Thrust : Lem.Y_Thrust_Range;
     -- Chronometer
     Chrono : Chronos.Chrono_Type;
+    -- Landing status
+    Land_Status : Flight.Status_List;
     use type Flight.Status_List;
+    function Is_Landed (Status : Flight.Status_List) return Boolean is
+    begin
+      return Status = Flight.Landed or else Status = Flight.Safe_Landed;
+    end Is_Landed;
+    function Is_Failed (Status : Flight.Status_List) return Boolean is
+    begin
+      return Status = Flight.Crashed or else Status = Flight.Lost;
+    end Is_Failed;
   begin
     -- Start (new) game
     if New_Game then
@@ -47,24 +58,26 @@ package body Game is
       Flight_Status := Flight.Get_Status;
 
       -- Fly while flying or landed but still Y thrust
-      if Flight_Status.Status /= Flight.Flying
-      and then Flight_Status.Status /= Flight.Approaching
-      and then Flight_Status.Status /= Flight.Landed then
+      if Is_Failed (Flight_Status.Status) then
         -- Crashed or lost
         exit;
       end if;
 
       -- Check if landed and no Y thrust
       Y_Thrust := Lem.Get_Y_Thrust;
-      if Flight_Status.Status = Flight.Landed then
-        if Y_Thrust = 0 then
-          -- Landed and Ythrust off
-          exit;
-        end if;
-        -- Landed but game not finished
+      if Is_Landed (Flight_Status.Status) then
+        -- Landed but game maybe not finished
         if not Lem.Is_Landed then
           -- Lem was not landed yet, tell it
           Lem.Set_Landed_Position (Flight_Status.Pos);
+          -- Initial ground contact, save status
+          --  (because further status will be safe_land)
+          Land_Status := Flight_Status.Status;
+        end if;
+        if Y_Thrust = 0 then
+          -- Landed and Ythrust off => end game
+          Flight_Status.Status := Land_Status;
+          exit;
         end if;
       end if;
 
@@ -144,7 +157,7 @@ package body Game is
           null;
         when Screen.Other_Key =>
           -- Any other key: go on and return game status
-          if Flight_Status.Status = Flight.Landed then
+          if Is_Landed (Flight_Status.Status) then
             return Landed;
           else
             return Lost;

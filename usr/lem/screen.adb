@@ -303,7 +303,8 @@ package body Screen is
     if Flight_Status.Status = Flight.Approaching then
       Con_Io.Set_Foreground (Con_Io.Light_Green);
       Con_Io.Graphics.Put ("APP ", Thn.X, Fun.Y);
-    elsif Flight_Status.Status = Flight.Landed then
+    elsif Flight_Status.Status = Flight.Landed
+    or else Flight_Status.Status = Flight.Safe_Landed then
       Con_Io.Set_Foreground (Con_Io.Magenta);
       Con_Io.Graphics.Put ("LAND", Thn.X, Fun.Y);
     end if;
@@ -385,6 +386,9 @@ package body Screen is
     case Reason is
       when Flight.Landed =>
         Con_Io.Set_Foreground (Con_Io.Light_Green);
+        Center ("You landed the LEM", Y_Text);
+      when Flight.Safe_Landed =>
+        Con_Io.Set_Foreground (Con_Io.Light_Green);
         Center ("You landed the LEM safely", Y_Text);
       when Flight.Lost =>
         Con_Io.Set_Foreground (Con_Io.Magenta);
@@ -395,7 +399,7 @@ package body Screen is
     end case;
     Con_Io.Set_Foreground (Con_Io.Light_Gray);
     case Reason is
-      when Flight.Landed =>
+      when Flight.Landed | Flight.Safe_Landed =>
         Center ("Hit any key for a new game", Y_Text - Y_Offset);
       when Flight.Lost | Flight.Crashed =>
         Center ("Hit any key to retry", Y_Text - Y_Offset);

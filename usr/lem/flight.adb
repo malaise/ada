@@ -228,7 +228,8 @@ package body Flight is
     or else (Result.Speed.Y_Speed < 0.0
              and then abs Result.Speed.Y_Speed > Max_Verti_Speed) then
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("Crashed speed");
+        Ada.Text_Io.Put_Line ("Crashed speed " & Result.Speed.X_Speed'Img
+                         & " / " & Result.Speed.Y_Speed'Img);
       end if;
       return;
     end if;
@@ -243,13 +244,19 @@ package body Flight is
 
     -- 3. Landed
     -- Return the Lem landing position
-    --  (LX + Lem.Width / 2.0, Y3 + Lem.Height / 2.0)
+    --  (LX + Lem.Width / 2.0, Yfalt + Lem.Height / 2.0)
     -- Flat_Index has been set to the lowest of the "flat" points
     if Debug.Set_Flight then
       Ada.Text_Io.Put_Line ("Landed with speeds " & Result.Speed.X_Speed'Img
                          & " / " & Result.Speed.Y_Speed'Img);
     end if;
-    Result.Status := Landed;
+    -- Safe or normal landing?
+    if abs Result.Speed.Y_Speed <= Max_Verti_Speed * 0.75
+    and then abs Result.Speed.X_Speed <= Max_Horiz_Speed * 0.75 then
+      Result.Status := Safe_Landed;
+    else
+      Result.Status := Landed;
+    end if;
     Result.Pos.X_Pos := Left.X_Pos + Lem.Width / 2.0;
     Result.Pos.Y_Pos := Ground(Flat_Index).Y_Pos + Lem.Height / 2.0;
     Result.Speed := (0.0, 0.0);
