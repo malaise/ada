@@ -51,6 +51,9 @@ package Lem is
   Speed_Exceeded : exception;
   function Get_Speed return Speed_Rec;
 
+  -- Get a valid (reasonnably negative) initial vertical speed
+  -- At present, init speed is set to X = 0 and -10 <= Y <= 0
+  function Get_Init_Speed return Speed_Rec;
 
   -- Position in space
   subtype Position_Range is Space.Position_Range;
@@ -67,8 +70,8 @@ package Lem is
 
   -- Init Lem position
   -- Thrust is set to compensate weight to 25 kN
-  -- Init speed is set to X = 0 and -20 <= Y <= 0
-  procedure Init (Position : in Position_Rec);
+  procedure Init (Position : in Position_Rec;
+                  Speed    : in Speed_Rec);
 
   -- Stop Lem life
   procedure Stop;

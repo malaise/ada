@@ -164,6 +164,13 @@ package body Lem is
     return Speed_At (Delta_Time);
   end Get_Speed;
 
+  -- Get a valid (reasonnably negative) initial vertical speed
+  -- At present, init speed is set to X = 0 and -10 <= Y <= 0
+  function Get_Init_Speed return Speed_Rec is
+  begin
+    return (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
+  end Get_Init_Speed;
+
   -- Position in space
   Current_Position : Position_Rec := (0.0, 0.0);
 
@@ -250,8 +257,8 @@ package body Lem is
 
   -- Init Lem position
   -- Thrust is set to compensate weight to 25 kN
-  -- Init speed is set to X = 0 and -20 <= Y <= 0
-  procedure Init (Position : in Position_Rec) is
+  procedure Init (Position : in Position_Rec;
+                  Speed    : in Speed_Rec) is
   begin
     if Running then
       raise Invalid_Mode;
@@ -262,12 +269,13 @@ package body Lem is
     Landed := False;
     -- Full fuel
     Current_Fuel := Max_Fuel;
-    -- Xthrust = 0. Ythrust compensates from (full) weight
+    -- Xthrust = 0. Ythrust compensates from (full) weight, so initial
+    --  (random) vertical speed remains constant
     Current_X_Thrust := 0;
     Current_Y_Thrust := (-Moon.Acceleration) * (Empty_Mass + Current_Fuel);
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
-    Current_Speed := (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
+    Current_Speed := Speed;
     Current_Position := Position;
     Current_Time := Ada.Calendar.Clock;
     -- Start periodical timer

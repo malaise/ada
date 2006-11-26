@@ -5,6 +5,7 @@ package body Game is
 
   -- Lem initial position (re-used when prev game lost)
   Init_Position : Space.Position_Rec := Flight.Get_Init_Position;
+  Init_Speed : Lem.Speed_Rec;
 
   function Play_One (New_Game : in Boolean) return Result_List is
     -- Flight (Lem) status
@@ -28,9 +29,11 @@ package body Game is
       Moon.Init;
       -- Get a new random Lem position
       Init_Position := Flight.Get_Init_Position;
+      -- Get a new random Lem vertical speed
+      Init_Speed := Lem.Get_Init_Speed;
     end if;
     -- Init Lem and start chrono
-    Lem.Init (Init_Position);
+    Lem.Init (Init_Position, Init_Speed);
     Chronos.Start (Chrono);
 
     -- Init screen
