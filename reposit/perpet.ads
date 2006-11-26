@@ -12,6 +12,7 @@ package Perpet is
    Month : Ada.Calendar.Month_Number;
    Day   : Ada.Calendar.Day_Number) return Boolean;
 
+  -- Nb of days
   subtype Day_Range is Natural;
 
   -- Is a year leap
@@ -52,10 +53,15 @@ package Perpet is
   function "-" (Date : Ada.Calendar.Time; Days : Day_Range)
     return Ada.Calendar.Time;
 
+  -- Days and seconds
   type Delta_Rec is record
     Days : Day_Range;
     Secs : Ada.Calendar.Day_Duration;
   end record;
+
+  -- Duration to Delta_Rec
+  subtype Natural_Duration is Duration range 0.0 .. Duration'Last;
+  function To_Delta_Rec (Dur : Natural_Duration) return Delta_Rec;
 
   -- Nb of days and secs between two dates
   --  If Date_1 < Date_2, Time_Error will be raised

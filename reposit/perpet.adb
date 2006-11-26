@@ -1,3 +1,4 @@
+with My_Math;
 package body Perpet is
 
   type Time_Rec is record
@@ -250,9 +251,22 @@ package body Perpet is
     return Time_Of(Rec);
   end "-";
 
+  -- Duration to Delta_Rec
+  function To_Delta_Rec (Dur : Natural_Duration) return Delta_Rec is
+    Delta_Val : Delta_Rec;
+  begin
+    -- Number of days in Dur
+    Delta_Val.Days := Natural (My_Math.Trunc (My_Math.Real(
+                      Dur / Ada.Calendar.Day_Duration'Last)));
+    -- Remaining seconds
+    Delta_Val.Secs := Dur - Natural_Duration (Delta_Val.Days)
+                            * Ada.Calendar.Day_Duration'Last;
+    return Delta_Val;
+  end To_Delta_Rec;
+
   -- Nb of days and secs between two dates
   function "-" (Date_1, Date_2 : Ada.Calendar.Time)
-    return Delta_Rec is
+               return Delta_Rec is
     Delta_Val : Delta_Rec;
     Rec_1, Rec_2 : Time_Rec;
     use Ada.Calendar;
@@ -281,7 +295,8 @@ package body Perpet is
       Delta_Val.Days := 1;
       Delta_Val.Secs := Rec_1.Seconds - Rec_2.Seconds;
     else
-      Delta_Val.Secs := Rec_1.Seconds + (86_400.0 - Rec_2.Seconds);
+      Delta_Val.Secs := Rec_1.Seconds
+                      + (Ada.Calendar.Day_Duration'Last - Rec_2.Seconds);
     end if;
 
     if Rec_2.Year = Rec_1.Year
