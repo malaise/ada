@@ -43,7 +43,7 @@ package body Unlimited_Pool is
       if not Is_Empty(Pool) then
         Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
       end if;
-    else 
+    else
       -- Lifo means pop first and move to next
       Pool_List_Mng.Get(Pool_List_Mng.List_Type(Pool), Data);
     end if;

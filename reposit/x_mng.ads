@@ -35,7 +35,7 @@ package X_Mng is
   type Byte_Array is array (Positive range <>) of Byte;
 
   -- Fir X_Fill_Area
-  type Natural_Array is array (POsitive range <>) of Natural;
+  type Natural_Array is array (Positive range <>) of Natural;
 
   -- Mouse buttons
   type Button_List is (None, Left, Middle, Right, Up, Down);

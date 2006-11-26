@@ -868,7 +868,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Fill_Area(Line_For_C_Id, Xys'Address, Xys'Length/2) = OK;
+    Res := X_Fill_Area(Line_For_C_Id, Xys'Address, Xys'Length/2) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
