@@ -49,7 +49,7 @@ private
     -- Time when it was started, when running
     Start_Time : Ada.Calendar.Time;
     -- Offset, when stopped or running
-    Offset : Duration := 0.0; 
+    Offset : Duration := 0.0;
   end record;
 
 end Chronos;
