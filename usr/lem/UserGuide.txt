@@ -36,10 +36,11 @@ descending speed.
 Then spot a flat landing area and adjust horizontal speed to reach it.
 When approaching, reduce speeds, remain above the landing site (APP indicator)
 with acceptable speeds (not red).
+You will land safely if within 75% within the speed limits.
 Reduce the vertical thrust when (or just before) contacting the ground.
 When landed (LAND indicator), horizontal thrust has no effect.
-You can use the horizontal thrust to take off, or shut-down the engine and end
-the game.
+You can then use the horizontal thrust to take off, or shut-down the engine,
+which ends the game.
 You can then hit any key (except an arrow and escape) to start a new game.
 At any time, hitting escape aborts the game and quits.
 
