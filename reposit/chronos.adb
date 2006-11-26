@@ -40,16 +40,16 @@ package body Chronos is
   begin
     Now := Ada.Calendar.Clock;
     if A_Chrono.Status = Running then
-      -- Compute delta since chrono started
-      -- May raise Ada.Calendar.Time. Perfect.
-      Curr_Delta := Now + A_Chrono.Offset - A_Chrono.Start_Time;
+      -- Compute delta since chrono started + offset
+      Curr_Delta := Perpet.To_Delta_Rec (
+           A_Chrono.Offset + Now - A_Chrono.Start_Time);
     else
       -- Just Chrono.Offset
-      Curr_Delta := Now + A_Chrono.Offset - Now;
+      Curr_Delta := Perpet.To_Delta_Rec (A_Chrono.Offset);
     end if;
     -- Keep days and split seconds
     Result.Days := Curr_Delta.Days;
-    Day_Mng.split (Curr_Delta.Secs,
+    Day_Mng.Split (Curr_Delta.Secs,
       Result.Hours, Result.Minutes, Result.Seconds, Result.Millisecs);
     -- Done
     return Result;
