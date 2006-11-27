@@ -1,7 +1,7 @@
-                            Land LEM  V2.1
+                            Land LEM  V2.3
 
 1. Presentation
-The goal of the game is to land the LEM safely on the Moon.
+The goal of the game is to land the LEM on the Moon.
 The LEM must touch the ground in a flat area, with reasonable horizontal and
 vertical speeds, then stop its engines.
 Normal mode defines at least one large flat area, hard mode (argument -h)
