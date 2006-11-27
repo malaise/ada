@@ -24,6 +24,8 @@ package body Game is
     Chrono : Chronos.Chrono_Type;
     -- Landing status
     Land_Status : Flight.Status_List;
+    -- Worst landing satus
+    Worst_Landing : Flight.Status_List;
     use type Flight.Status_List;
     function Is_Landed (Status : Flight.Status_List) return Boolean is
     begin
@@ -46,6 +48,9 @@ package body Game is
     -- Init Lem and start chrono
     Lem.Init (Init_Position, Init_Speed);
     Chronos.Start (Chrono);
+
+    -- Worst of all landings
+    Worst_Landing := Flight.Safe_Landed;
 
     -- Init screen
     Screen.Init;
@@ -73,10 +78,16 @@ package body Game is
           -- Initial ground contact, save status
           --  (because further status will be safe_land)
           Land_Status := Flight_Status.Status;
+          if Land_Status = Flight.Landed
+          and then Worst_Landing = Flight.Safe_Landed then
+            -- Previous landing (if any) was safe but this one is not
+            Worst_Landing := Land_Status;
+          end if;
         end if;
         if Y_Thrust = 0 then
           -- Landed and Ythrust off => end game
-          Flight_Status.Status := Land_Status;
+          -- Overall landing result is the worst of all
+          Flight_Status.Status := Worst_Landing;
           exit;
         end if;
       end if;
