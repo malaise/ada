@@ -12,7 +12,7 @@ package body Game is
     Flight_Status : Flight.Status_Rec;
     -- Key reading result
     Get_Status : Screen.Got_List;
-    use type Lem.Thrust_Range;
+    use type Lem.Thrust_Range, Lem.Mass_Range;
     -- Tuning
     X_Thrust_Increment : constant Lem.X_Thrust_Range
                        := Lem.Max_X_Thrust / 10;
@@ -81,7 +81,11 @@ package body Game is
           if Land_Status = Flight.Landed
           and then Worst_Landing = Flight.Safe_Landed then
             -- Previous landing (if any) was safe but this one is not
-            Worst_Landing := Land_Status;
+            Worst_Landing := Flight.Landed;
+          end if;
+          -- landing is safe if at least 10% fuel remaining
+          if Lem.Get_Fuel < Lem.Max_Fuel / 10.0 then
+            Worst_Landing := Flight.Landed;
           end if;
         end if;
         if Y_Thrust = 0 then

@@ -36,18 +36,22 @@ descending speed.
 Then spot a flat landing area and adjust horizontal speed to reach it.
 When approaching, reduce speeds, remain above the landing site (APP indicator)
 with acceptable speeds (not red).
-You will land safely if within 75% within the speed limits.
+You land safely if within 75% within the speed limits and with at least 10% of
+fuel remaining. Otherwise it is just acceptable (normal landing).
 Reduce the vertical thrust when (or just before) contacting the ground.
 When landed (LAND indicator), horizontal thrust has no effect.
 You can then use the horizontal thrust to take off, or shut-down the engine,
 which ends the game.
-You can then hit any key (except an arrow and escape) to start a new game.
+When the game ends, a message indicates if you lost or crashed the LEM, if you
+landed it normally or safely.
+You can then hit any key (except an arrow) to play again.
+If you landed, then you start a new game, otherwise you restart the same game.
 At any time, hitting escape aborts the game and quits.
 
 5. Mechanics
-The quantity of fuel impacts the global mass so the effectiveness of thrust
+The quantity of fuel affects the global mass so the effectiveness of thrust
 increases when fuel dicreases. On the long term, the LEM tends to climb (or fall
-slower) and each horzontal thrust affects horizontal speed more and more.
+slower) and each horzontal thrust burst affects horizontal speed more and more.
 The fuel decreases proportionnaly with the vertical thrust and at each burst of
 horizontal thrust.
 
@@ -57,7 +61,7 @@ move horizontaly, fast if needed (more than the gauge). Visualise the
 trajectory, anticipate the approach (what you see is speed, what you change is
 acceleration).
 Beware that the horizontal speed is nearly never nul, if needed, swap sides when
-getting close to the side of the landing area. Also anticipate the changes of
+getting close to a side of the landing area. Also anticipate the changes of
 vertical speeds, always remain on the "safe" side.
 You will bump (APP then LAND then APP) if you are slowing down at excessive
 rate (positive acceleration). The best landing is with a constant or slightly
@@ -66,7 +70,7 @@ negative acceleration. So, at the last time, reduce power (if it is safe).
 7. Bugs
 Any software has bugs. Please report any bug to malaise-at-magic.fr
 If you think you landed properly but crashed, please check the speeds and "APP"
-indicator before suspecting a bug. If the speeds are both not blue or the "LAND"
-indicator is not set at the time the LEM contacts the ground, it is a crash
+indicator before suspecting a bug. If the speeds are not both blue or the "LAND"
+indicator is not set at the time the LEM contacts the ground, then it is a crash
 (perhaps you could have prevented it).
 
