@@ -15,7 +15,7 @@ package body Game is
     use type Lem.Thrust_Range, Lem.Mass_Range;
     -- Tuning
     X_Thrust_Increment : constant Lem.X_Thrust_Range
-                       := Lem.Max_X_Thrust / 10;
+                       := Lem.Max_X_Thrust / 20;
     Y_Thrust_Increment : constant Lem.Y_Thrust_Range
                        := Lem.Max_Y_Thrust / 10;
     -- Current Y thrust
@@ -109,6 +109,12 @@ package body Game is
         when Screen.Left_Key =>
           -- Push left
           Lem.Set_X_Thrust (X_Thrust_Increment);
+        when Screen.Super_Right_Key =>
+          -- Super push right
+          Lem.Set_X_Thrust (- X_Thrust_Increment * 5);
+        when Screen.Super_Left_Key =>
+          -- Super push left
+          Lem.Set_X_Thrust (X_Thrust_Increment * 5);
         when Screen.Up_Key =>
           -- Push less, down to 0
           if Y_Thrust > Y_Thrust_Increment then
@@ -125,6 +131,14 @@ package body Game is
           else
             Y_Thrust := Lem.Max_Y_Thrust;
           end if;
+          Lem.Set_Y_Thrust (Y_Thrust);
+        when Screen.Super_Up_Key =>
+          -- Y thrust to 0
+          Y_Thrust := 0;
+          Lem.Set_Y_Thrust (Y_Thrust);
+        when Screen.Super_Down_Key =>
+          -- Y thrust to Max
+          Y_Thrust := Lem.Max_Y_Thrust;
           Lem.Set_Y_Thrust (Y_Thrust);
         when Screen.Other_Key =>
           -- Ignore any other key

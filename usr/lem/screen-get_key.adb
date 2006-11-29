@@ -33,10 +33,18 @@ begin
         return Up_Key;
       when Con_Io.Down =>
         return Down_Key;
+      when Con_Io.Ctrl_Up =>
+        return Super_Up_Key;
+      when Con_Io.Ctrl_Down =>
+        return Super_Down_Key;
       when Con_Io.Left =>
         return Left_Key;
       when Con_Io.Right =>
         return Right_Key;
+      when Con_Io.Ctrl_Left =>
+        return Super_Left_Key;
+      when Con_Io.Ctrl_Right =>
+        return Super_Right_Key;
       when Con_Io.Full | Con_Io.Ret =>
         return Other_Key;
       when Con_Io.Esc | Con_Io.Break =>

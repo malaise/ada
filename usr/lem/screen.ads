@@ -26,8 +26,9 @@ package Screen is
   procedure Put_End (Reason : in End_Reason_List);
 
   -- Get a key
-  type Got_List is (Right_Key, Left_Key, Up_Key, Down_Key, Break,
-                    Other_Key, Timeout, Refresh);
+  type Got_List is (Right_Key, Left_Key, Super_Right_Key, Super_Left_Key,
+                    Up_Key, Down_Key, Super_Up_Key, Super_Down_Key,
+                    Break, Other_Key, Timeout, Refresh);
   function Get_Key (Wait : in Duration) return Got_List;
 
   -- Check if two heights are the same on screen

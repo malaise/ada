@@ -1,4 +1,4 @@
-                            Land LEM  V2.3
+                            Land LEM  V2.4
 
 1. Presentation
 The goal of the game is to land the LEM on the Moon.
@@ -25,9 +25,13 @@ When flying and landed, the commands are the four arrows. Each arrow activates
 the corresponding engine.
 Vertical arrows increase/decrease vertical thrust by a tenth each time. Down
 arrow increases thrust and up arrow reduces it.
+Control + down arrow applies full thrust and Control + up arrow shuts down the
+engine.
 Horizontal arrows apply an horizontal thrust for one second. Left arrow
 activates left engine, thus increasing speed to the right. Right arrow
 activates activates right engine, thus increasing speed to the left.
+Control + an horizontal arrow applies a thrust 5 times higher than
+normal arrow (still for one second).
 
 4. Playing
 The game starts at a random (high) position, with a random vertical speed and
