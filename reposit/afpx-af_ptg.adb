@@ -543,12 +543,12 @@ package body Af_Ptg is
           if List_Present then
             Af_List.Update (Down);
           end if;
-        when Con_Io.Pgup =>
+        when Con_Io.Pgup | Con_Io.Ctrl_Up =>
           -- List page up
           if List_Present then
             Af_List.Update (Page_Up);
           end if;
-        when Con_Io.Pgdown =>
+        when Con_Io.Pgdown | Con_Io.Ctrl_Down =>
           -- List page down
           if List_Present then
             Af_List.Update (Page_Down);
@@ -574,7 +574,7 @@ package body Af_Ptg is
                                           Right_Full, Cursor_Col_Cb);
             New_Field := True;
           end if;
-        when Con_Io.Tab =>
+        when Con_Io.Tab | Con_Io.Ctrl_Right=>
           if Get_Active then
             -- Tab in previous field
             -- Restore normal color of previous field
@@ -596,7 +596,7 @@ package body Af_Ptg is
                                           Left, Cursor_Col_Cb);
             New_Field := True;
           end if;
-        when Con_Io.Stab =>
+        when Con_Io.Stab | Con_Io.Ctrl_Left =>
           if Get_Active then
             -- Beginning of prev get field
             -- Restore normal color of previous field

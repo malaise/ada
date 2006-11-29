@@ -1033,15 +1033,35 @@ package body Generic_Con_Io is
                 return;
               when 16#51# =>
                 -- <--
-                Stat := Left;
+                if not Ctrl then
+                  Stat := Left;
+                else
+                  Stat := Ctrl_Left;
+                end if;
                 return;
               when 16#53# =>
                 -- -->
-                Stat := Right;
+                if not Ctrl then
+                  Stat := Right;
+                else
+                  Stat := Ctrl_Right;
+                end if;
                 return;
               when 16#52# =>
                 -- Up
-                Stat := Up;
+                if not Ctrl then
+                  Stat := Up;
+                else
+                  Stat := Ctrl_Up;
+                end if;
+                return;
+              when 16#54# =>
+                -- Down
+                if not Ctrl then
+                  Stat := Down;
+                else
+                  Stat := Ctrl_Down;
+                end if;
                 return;
               when 16#55# =>
                 -- Page Up
@@ -1050,10 +1070,6 @@ package body Generic_Con_Io is
                 else
                   Stat := Ctrl_Pgup;
                 end if;
-                return;
-              when 16#54# =>
-                -- Down
-                Stat := Down;
                 return;
               when 16#56# =>
                 -- Page Down
@@ -1124,16 +1140,14 @@ package body Generic_Con_Io is
               Stat := Esc;
               return;
             when 16#09# =>
+              Str := Lstr;
+              Last := Parse;
               if Ctrl then
                 -- Ctrl Tab
-                Str := Lstr;
-                Last := Parse;
                 Stat := Stab;
               else
                 -- Tab
                 Str := Lstr;
-                Last := Parse;
-                Stat := Tab;
               end if;
               return;
             when 16#08# =>
@@ -1152,29 +1166,51 @@ package body Generic_Con_Io is
               Pos := Width;
             when 16#51# =>
               -- <--
-              if Pos /= 1 then
+              if not Ctrl and then Pos /= 1 then
                 Pos := Pos - 1;
               else
                 Str := Lstr;
                 Last := Parse;
-                Stat := Left;
+                if Ctrl then
+                  Stat := Ctrl_Left;
+                else
+                  Stat := Left;
+                end if;
                 return;
               end if;
             when 16#53# =>
               -- -->
-              if Pos /= Width then
+              if not Ctrl and then Pos /= Width then
                 Pos := Pos + 1;
               else
                 Str := Lstr;
                 Last := Parse;
-                Stat := Right;
+                if Ctrl then
+                  Stat := Ctrl_Right;
+                else
+                  Stat := Right;
+                end if;
                 return;
               end if;
             when 16#52# =>
               -- Up
               Str := Lstr;
               Last := Parse;
-              Stat := Up;
+              if Ctrl then
+                Stat := Ctrl_Up;
+              else
+                Stat := Up;
+              end if;
+              return;
+            when 16#54# =>
+              -- Down
+              Str := Lstr;
+              Last := Parse;
+              if Ctrl then
+                Stat := Ctrl_Down;
+              else
+                Stat := Down;
+              end if;
               return;
             when 16#55# =>
               -- Page Up
@@ -1185,12 +1221,6 @@ package body Generic_Con_Io is
               else
                 Stat := Ctrl_Pgup;
               end if;
-              return;
-            when 16#54# =>
-              -- Down
-              Str := Lstr;
-              Last := Parse;
-              Stat := Down;
               return;
             when 16#56# =>
               -- Page Down
@@ -1314,7 +1344,7 @@ package body Generic_Con_Io is
         Ins := False;
         Put_Then_Get(Str, Last, Stat, Pos, Ins, Name, Echo => Echo);
         case Stat is
-          when Up .. Right | Tab .. Stab =>
+          when Up .. Ctrl_Right | Tab .. Stab =>
             -- Cursor movement
             null;
           when Full =>

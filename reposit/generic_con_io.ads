@@ -216,7 +216,7 @@ package Generic_Con_Io is
     --  in the window.
     -- The current cursor position is updated by the call
     -- The Left and Right arrows, Insert, Del, Backspace, Home, End,
-    --  PageUp and PageDown Tab and Ctrl Tab, are managed internaly.
+    --  are managed internaly.
     --  Ctrl Suppr clears the string.
     -- The get ends either:
     --  if an Up/Down arrow, (Ctrl) Page Up/Down is pressed,
@@ -238,8 +238,10 @@ package Generic_Con_Io is
     -- If Str'length is 0 then last=0 and stat is significant (full if normal
     --  character), but pos_out is not significant.
     -- Note that if Str'Lenght is 0, the cursor is hidden
-    type Curs_Mvt is (Up, Down, Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
-                      Left, Right, Full, Tab, Stab, Ret, Esc, Break,
+    type Curs_Mvt is (Up, Down, Ctrl_Up, Ctrl_Down,
+                      Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
+                      Left, Right, Ctrl_Left, Ctrl_Right,
+                      Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Timeout, Fd_Event, Timer_Event,
                       Signal_Event, Wakeup_Event, Refresh);
     procedure Get (Str        : out String;

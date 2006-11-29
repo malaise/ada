@@ -335,7 +335,9 @@ package body Nav_Dialog is
                 Curr_Field := Nav_Data.T_List_Data'First;
               when Con_Io.Pgdown =>
                 In_Action := True;
-              when Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown =>
+              when Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown
+                 | Con_Io.Ctrl_Up   | Con_Io.Ctrl_Down
+                 | Con_Io.Ctrl_Left | Con_Io.Ctrl_Right =>
                 null;
               when Con_Io.Refresh =>
                 Refresh := True;
