@@ -160,7 +160,7 @@ begin
 
   -- Init criteria and fields accordingly
   Criteria.Status := (others => False);
-  Criteria.Kind   := (others => True);
+  Criteria.Kind   := (others => False);
   Criteria.Reference_Set := False;
   Update_Fields;
 
