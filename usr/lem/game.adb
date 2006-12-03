@@ -17,7 +17,7 @@ package body Game is
     X_Thrust_Increment : constant Lem.X_Thrust_Range
                        := Lem.Max_X_Thrust / 20;
     Y_Thrust_Increment : constant Lem.Y_Thrust_Range
-                       := Lem.Max_Y_Thrust / 10;
+                       := Lem.Max_Y_Thrust / 15;
     -- Current Y thrust
     Y_Thrust : Lem.Y_Thrust_Range;
     -- Chronometer
