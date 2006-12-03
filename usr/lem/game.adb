@@ -88,7 +88,7 @@ package body Game is
             Worst_Landing := Flight.Landed;
           end if;
         end if;
-        if Y_Thrust = 0 then
+        if Y_Thrust < Lem.Max_Y_Thrust / 20 then
           -- Landed and Ythrust off => end game
           -- Overall landing result is the worst of all
           Flight_Status.Status := Worst_Landing;
