@@ -219,7 +219,8 @@ package body Lem is
 
     -- And for next time
     -- Fuel consumed during the Period
-    Fuel_Consumed := Conso_Of (abs Current_X_Thrust + abs Current_Y_Thrust, Period);
+    Fuel_Consumed := Conso_Of (abs Current_X_Thrust + abs Current_Y_Thrust,
+                               Period);
     -- New fuel remaining
     if Fuel_Consumed <= Current_Fuel then
       Current_Fuel := Current_Fuel - Fuel_Consumed;
@@ -264,7 +265,6 @@ package body Lem is
       raise Invalid_Mode;
     end if;
     Running := True;
-    Rnd.Randomize;
     -- Set initial data
     Landed := False;
     -- Full fuel

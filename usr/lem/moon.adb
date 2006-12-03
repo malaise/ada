@@ -54,7 +54,6 @@ package body Moon is
       end if;
     end;
     -- Set random height for all points
-    Rnd.Randomize;
     for I in Point_Range loop
       Ground(I).X_Pos := Space.X_Range (I - 1) * Delta_Point;
       Ground(I).Y_Pos := Space.Y_Range (Rnd.Float_Random (

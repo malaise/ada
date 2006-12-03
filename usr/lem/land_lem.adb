@@ -1,3 +1,4 @@
+with Rnd;
 with Game;
 procedure Land_Lem is
   -- Result of a game
@@ -5,6 +6,7 @@ procedure Land_Lem is
   Result : Game.Result_List := Game.Landed;
   use type Game.Result_List;
 begin
+  Rnd.Randomize;
   -- Do one game until end
   loop
     Result := Game.Play_One (Result = Game.Landed);
