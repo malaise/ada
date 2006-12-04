@@ -1,4 +1,4 @@
-                            Land LEM  V2.4
+                            Land LEM  V2.6
 
 1. Presentation
 The goal of the game is to land the LEM on the Moon.
