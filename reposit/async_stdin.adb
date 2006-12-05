@@ -310,10 +310,10 @@ package body Async_Stdin is
                     & C
                     & Unb.Slice (Txt, Ind, Unb.Length(Txt)));
             Ind := Ind + 1;
-            Console.Save;
             Ada.Text_Io.Put (Unb.Slice (Txt, Ind - 1, Unb.Length(Txt)));
-            Console.Restore;
-            Console.Right;
+            for I in 1 .. Unb.Length(Txt) - Ind + 1 loop
+              Console.Left;
+            end loop;
             if Unb.Length(Txt) = Max then
               Store;
               return True;
