@@ -3,7 +3,7 @@
 # Variable sentence start
 2 M popr
 "Le petit chat Fada" Y popr
-"La petite chatte Circé" Z popr
+"La petite chatte CircÃ©" Z popr
 
 # Variable sentence end
 26 N popr
@@ -15,7 +15,7 @@
 "boit dans la mare" f popr
 "fait des galipettes" g popr
 "joue avec la souris" h popr
-"s'étire près du feu" i popr
+"s'Ã©tire prÃ¨s du feu" i popr
 "dit bonjour aux pies" j popr
 "mange des croquettes" k popr
 "se cache sous le lit" l popr
@@ -23,16 +23,16 @@
 "gratte sous son collier" n popr
 "attaque les brins d'herbe" o popr
 "guette au coin du couloir" p popr
-"joue à chat avec les maîtres" q popr
-"court après l'eau du jet d'eau" r popr
+"joue Ã  chat avec les maÃ®tres" q popr
+"court aprÃ¨s l'eau du jet d'eau" r popr
 "n'aime pas le vent qui rend fou" s popr
 "joue dehors avec les autres chats" t popr
 "remue les papiers dans la corbeille" u popr
-"ronronne sur les genoux de la maîtresse" v popr
-"regarde l'eau s'écouler dans la baignoire" w popr
-"surveille la maison du haut du secrétaire" x popr
-"attend devant la chatière l'arrivée d'un portier" y popr
-"toise le monde du haut de la cheminée du barbecue" z popr
+"ronronne sur les genoux de la maÃ®tresse" v popr
+"regarde l'eau s'Ã©couler dans la baignoire" w popr
+"surveille la maison du haut du secrÃ©taire" x popr
+"attend devant la chatiÃ¨re l'arrivÃ©e d'un portier" y popr
+"toise le monde du haut de la cheminÃ©e du barbecue" z popr
 
 # Display a sentence part
 # Top of stack is base register, followed by offset number (1 .. N)
