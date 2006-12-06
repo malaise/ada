@@ -1,26 +1,29 @@
-                            Land LEM  V2.6
+                            Land LEM  V2.7
 
 1. Presentation
 The goal of the game is to land the LEM on the Moon.
 The LEM must touch the ground in a flat area, with reasonable horizontal and
 vertical speeds, then stop its engines.
-Normal mode defines at least one large flat area, hard mode (argument -h)
-defines at least one narrow flat area.
 
 2. The screen
-The main area represents the space, the LEM and the ground.
+The main area represents the space, the LEM and the Moon ground.
 The LEM must not reach the borders (up, left or right) of the space, otherwise
 it is lost. The ground shows at least one flat landing area.
-Around the space are the gauges. On the right, the vertical thrust and the
-vertical speed. At the bottom, the remaining fuel and the horizontal speed.
-The fuel gauge becomes red when reaching 20%.
+Normal mode defines at least one large flat area, while hard mode (argument -h)
+defines at least one narrow flat area.
+
+3. The gauges
+Around the space are the gauges: on the right, the vertical thrust and the
+vertical speed, and at the bottom, the remaining fuel and the horizontal speed.
+The fuel gauge becomes orange when reaching 20%, then red when reaching 10%.
 The speeds are red when above acceptable values for landing. Note that the LEM
 speed can be far above the speed gauges maxima without problem.
-Finally, in the lower right corner, an indicator shows "APP" when close above a
-landing area and "LAND" when landed. Below this indicator a chronometer
-indicates the duration of the game.
+Finally, in the lower right corner, an indicator shows "APP" when above a
+landing area and close (less than 5 times the LEM height). This indicator shows
+"LAND" when landed.
+Below the indicator, a chronometer indicates the duration of the game.
 
-3. Commands
+4. Commands
 When flying and landed, the commands are the four arrows. Each arrow activates
 the corresponding engine.
 Vertical arrows increase/decrease vertical thrust by 15% each time. Down
@@ -33,35 +36,32 @@ activates activates right engine, thus increasing speed to the left.
 Control + an horizontal arrow applies a thrust 5 times higher than
 normal arrow (still for one second).
 
-4. Playing
+5. PLaying
 The game starts at a random (high) position, with a random vertical speed and
-a reasonable vertical thrust. First adjust vertical thrust to get a reasonable
-descending speed.
-Then spot a flat landing area and adjust horizontal speed to reach it.
-When approaching, reduce speeds, remain above the landing site (APP indicator)
-with acceptable speeds (not red).
+a reasonable vertical thrust.
+Spot a flat landing area and adjust speeds to reach it. Check the area (APP
+indicator) before landing.
 You land safely if within 75% within the speed limits and with at least 10% of
 fuel remaining. Otherwise it is just acceptable (normal landing).
-Reduce the vertical thrust when (or just before) contacting the ground.
-When landed (LAND indicator), horizontal thrust has no effect.
-You can then use the horizontal thrust to take off, or shut-down the engine,
-which ends the game.
+When landed (LAND indicator), horizontal thrust has no effect. You can still use
+the horizontal thrust to take off, or you can shut-down the engine, which ends
+the game.
 When the game ends, a message indicates if you lost or crashed the LEM, if you
-landed it normally or safely.
+landed normally or safely.
 You can then hit any key (except an arrow) to play again.
 If you landed, then you start a new game, otherwise you restart the same game.
 At any time, hitting escape aborts the game and quits.
 
-5. Mechanics
+6. Mechanics
 The quantity of fuel affects the global mass so the effectiveness of thrust
 increases when fuel dicreases. On the long term, the LEM tends to climb (or fall
 slower) and each horzontal thrust burst affects horizontal speed more and more.
 The fuel decreases proportionnaly with the vertical thrust and at each burst of
 horizontal thrust.
 
-6. Hints
-Try to always descend: Quickly fix vertical rate then spot a landing area and
-move horizontaly, fast if needed (more than the gauge). Visualise the
+7. Hints
+Try to always descend: quickly fix vertical rate then spot a landing area and
+move horizontally, fast if needed (more than the gauge). Visualise the
 trajectory, anticipate the approach (what you see is speed, what you change is
 acceleration).
 Beware that the horizontal speed is nearly never nul, if needed, swap sides when
@@ -71,10 +71,10 @@ You will bump (APP then LAND then APP) if you are slowing down at excessive
 rate (positive acceleration). The best landing is with a constant or slightly
 negative acceleration. So, at the last time, reduce power (if it is safe).
 
-7. Bugs
+8. Bugs
 Any software has bugs. Please report any bug to malaise-at-magic.fr
-If you think you landed properly but crashed, please check the speeds and "APP"
-indicator before suspecting a bug. If the speeds are not both blue or the "LAND"
-indicator is not set at the time the LEM contacts the ground, then it is a crash
-(perhaps you could have prevented it).
+If you think that you landed properly but crashed, please check the speeds and
+the "APP" indicator before suspecting a bug. If the speeds are not both blue or
+the "LAND" indicator is not set at the time the LEM contacts the ground, then it
+is a crash.
 
