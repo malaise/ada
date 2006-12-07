@@ -277,7 +277,7 @@ package body Screen is
     elsif Fuel >= Lem.Max_Fuel / 10.0 then
       Con_Io.Set_Foreground (Con_Io.Orange);
     else
-      Con_Io.Set_Foreground (Con_Io.Red);
+      Con_Io.Set_Foreground (Con_Io.Yellow);
     end if;
     Con_Io.Graphics.Fill_Rectangle (Fuxmin, Fuy,
                                     Fuxmin + Fuel_Size, Fuy + Gauge_Size);

@@ -15,7 +15,7 @@ defines at least one narrow flat area.
 3. The gauges
 Around the space are the gauges: on the right, the vertical thrust and the
 vertical speed, and at the bottom, the remaining fuel and the horizontal speed.
-The fuel gauge becomes orange when reaching 20%, then red when reaching 10%.
+The fuel gauge becomes orange when reaching 20%, then yellow when reaching 10%.
 The speeds are red when above acceptable values for landing. Note that the LEM
 speed can be far above the speed gauges maxima without problem.
 Finally, in the lower right corner, an indicator shows "APP" when above a
