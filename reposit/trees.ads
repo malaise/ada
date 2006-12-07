@@ -42,7 +42,7 @@ package Trees is
                             Eldest   : in Boolean := True);
 
     -- Insert a brother of current position
-    -- Append or prepend to the list of brothers
+    --  as older or younger brother of current position
     -- Move to it
     -- May raise No_Cell if The_Tree is empty
     -- May raise Is_Root if current is root
@@ -142,10 +142,11 @@ package Trees is
     -- Image of an element at a depth (level)
     type Image_Access is access function (Element : Element_Type;
                                           Level   : Natural) return String;
-    -- Dump current then children data
+    -- Dump current then children data (oldest first by default)
     procedure Dump (The_Tree  : in Tree_Type;
                     Image_Acc : in Image_Access;
-                    File      : in Ada.Text_Io.File_Type);
+                    File      : in Ada.Text_Io.File_Type;
+                    Elder     : in Boolean := True);
 
     -- Iterate --
     -------------
@@ -154,9 +155,10 @@ package Trees is
     type Do_One_Access is access function (Element : Element_Type)
                                           return Boolean;
 
-    -- Iterate on current and children (young to old)
+    -- Iterate on current and children (old to young by default)
     procedure Iterate (The_Tree   : in Tree_Type;
-                       Do_One_Acc : in Do_One_Access);
+                       Do_One_Acc : in Do_One_Access;
+                       Elder      : in Boolean := True);
 
   private
 
@@ -167,7 +169,7 @@ package Trees is
     -- Eldest/Youngest children, or Elder/Younger brothers
     type Order is (Young, Old);
     -- Workaround of a gvd bug
-    for Order use (1, 2);
+    -- for Order use (1, 2);
     type Cell_Pair is array (Order) of Cell_Access;
 
     -- A cell of tree

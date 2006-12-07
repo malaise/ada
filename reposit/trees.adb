@@ -506,30 +506,40 @@ package body Trees is
     ----------
     -- Dump --
     ----------
-    procedure Put (Me : in out Cell_Access;
-                   Level : in Natural;
+    procedure Put (Me        : in out Cell_Access;
+                   Level     : in Natural;
                    Image_Acc : in Image_Access;
-                   File : in Ada.Text_Io.File_Type) is
+                   File      : in Ada.Text_Io.File_Type;
+                   Elder     : in Boolean) is
       Next : Cell_Access;
     begin
       -- Put me at proper level
       Ada.Text_Io.Put_Line (Image_Acc (Me.Data.all, Level));
 
-      -- Put children, youngest first
-      Next := Me.Children(Young);
+      -- Put children, oldest first if Elder
+      if Elder then
+        Next := Me.Children(Old);
+      else
+        Next := Me.Children(Young);
+      end if;
       if Level /= Natural'Last then
         while Next /= null loop
-          Put (Next, Level + 1, Image_Acc, File);
+          Put (Next, Level + 1, Image_Acc, File, Elder);
         end loop;
       end if;
 
-      -- Move to older brother
-      Me := Me.Brothers(Old);
+      -- Move to brother, younger if Elder
+      if Elder then
+        Me := Me.Brothers(Young);
+      else
+        Me := Me.Brothers(Old);
+      end if;
     end Put;
 
-    procedure Dump (The_Tree : in Tree_Type;
+    procedure Dump (The_Tree  : in Tree_Type;
                     Image_Acc : in Image_Access;
-                    File     : in Ada.Text_Io.File_Type) is
+                    File      : in Ada.Text_Io.File_Type;
+                    Elder     : in Boolean := True) is
       Cell_Acc : Cell_Access;
     begin
       -- No empty tree
@@ -537,12 +547,13 @@ package body Trees is
         return;
       end if;
       Cell_Acc := The_Tree.Curr;
-      Put (Cell_Acc, 0, Image_Acc, File);
+      Put (Cell_Acc, 0, Image_Acc, File, Elder);
     end Dump;
 
     -- Iterate on current and children
-    procedure Recurs (Me : in out Cell_Access;
-                      Do_One_Acc : in Do_One_Access) is
+    procedure Recurs (Me         : in out Cell_Access;
+                      Do_One_Acc : in Do_One_Access;
+                      Elder      : in Boolean) is
       Next : Cell_Access;
     begin
       -- Do_One on me, stop if it returns False
@@ -550,18 +561,28 @@ package body Trees is
         return;
       end if;
 
-      -- Iterate on children, youngest first
-      Next := Me.Children(Young);
+      -- Iterate on children, oldest first if Elder
+      if Elder then
+        Next := Me.Children(Old);
+      else
+        Next := Me.Children(Young);
+      end if;
       while Next /= null loop
-        Recurs (Next, Do_One_Acc);
+        Recurs (Next, Do_One_Acc, Elder);
       end loop;
 
-      -- Move to older brother
-      Me := Me.Brothers(Old);
+      -- Move to younger (if Eldest) older brother
+      if Elder then
+        Me := Me.Brothers(Young);
+      else
+        Me := Me.Brothers(Old);
+      end if;
     end Recurs;
 
     procedure Iterate (The_Tree   : in Tree_Type;
-                       Do_One_Acc : in Do_One_Access) is
+                       Do_One_Acc : in Do_One_Access;
+                       Elder      : in Boolean := True) is
+
       Cell_Acc : Cell_Access;
     begin
       -- No empty tree
@@ -569,7 +590,7 @@ package body Trees is
         return;
       end if;
       Cell_Acc := The_Tree.Curr;
-      Recurs (Cell_Acc, Do_One_Acc);
+      Recurs (Cell_Acc, Do_One_Acc, Elder);
     end Iterate;
 
   end Tree;
