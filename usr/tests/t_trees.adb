@@ -21,7 +21,7 @@ procedure T_Trees is
     My_Tree.Dump (T, Image'Access,
                   Ada.Text_Io.Standard_Output, Elder => False);
     Ada.Text_Io.New_Line;
-    My_Tree.Move_Saved (T);
+    My_Tree.Restore_Position (T);
   end Dump_Tree;
 
 begin
@@ -58,7 +58,7 @@ begin
   My_Tree.Move_Root (T);
   My_Tree.Save_Position (T);
   My_Tree.Insert_Father (T, 0);
-  My_Tree.Move_Saved (T);
+  My_Tree.restore_Position (T);
   My_Tree.Insert_Brother (T, 2);
   Dump_Tree (T);
 
