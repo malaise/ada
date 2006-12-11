@@ -4,7 +4,7 @@ procedure T_Trees is
 
   package My_Tree is new Trees.Tree (Natural);
 
-  T : My_Tree.Tree_Type;
+  T, T1 : My_Tree.Tree_Type;
 
   Spaces : constant String (1 .. 132) := (others => ' ');
   function Image (Elt : in Natural;
@@ -26,28 +26,29 @@ procedure T_Trees is
 
 begin
 
-  -- Add root: 1
+  -- Add 1 as root then add 5 children 11 .. 15
   Ada.Text_Io.Put_Line ("Inserting 1 as root");
+  Ada.Text_Io.Put_Line ("Inserting 11 to 15 as root children");
   My_Tree.Insert_Father (T, 1);
 
-  -- Add 5 children
-  Ada.Text_Io.Put_Line ("Inserting 11 to 15 as root children");
   for I in 11 .. 15 loop
     My_Tree.Insert_Child (T, I);
     My_Tree.Move_Father (T);
   end loop;
+  Dump_Tree (T);
 
+  -- Check 5 children
   Ada.Text_Io.Put_Line (
-         "CHECK that 1 has got 5 children:"
+         "Checking that 1 has got 5 children:"
        & Natural'Image (My_Tree.Read(T))
        & " has got"
        & Trees.Child_Range'Image (My_Tree.Children_Number(T))
        & " children");
 
-  My_Tree.Move_Child (T);
 
   -- Add children to children... on branch 15
-  Ada.Text_Io.Put_Line ("Adding 151, 1511 and 15111 as 15 family");
+  Ada.Text_Io.Put_Line ("Adding 151, 1511 and 15111 as 15 descendents");
+  My_Tree.Move_Child (T);
   My_Tree.Insert_Child (T, 151);
   My_Tree.Insert_Child (T, 15111);
   My_Tree.Insert_Father (T, 1511);
@@ -58,7 +59,7 @@ begin
   My_Tree.Move_Root (T);
   My_Tree.Save_Position (T);
   My_Tree.Insert_Father (T, 0);
-  My_Tree.restore_Position (T);
+  My_Tree.Restore_Position (T);
   My_Tree.Insert_Brother (T, 2);
   Dump_Tree (T);
 
@@ -77,19 +78,35 @@ begin
   My_Tree.Move_Root (T);
   My_Tree.Move_Child (T, True);
   My_Tree.Save_Position (T);
+  My_Tree.Save_Position (T);
   My_Tree.Move_Brother (T, False);
   My_Tree.Move_Child (T);
   My_Tree.Swap_Saved (T);
   Dump_Tree (T);
 
   -- Clear second branch (15)
-  Ada.Text_Io.Put_Line ("Clearing branch 15");
+  Ada.Text_Io.Put_Line ("Addind 21 and Clearing branch 15");
+  My_Tree.Restore_Position (T);
+  My_Tree.Insert_Child (T, 21);
   My_Tree.Move_Root (T);
   My_Tree.Move_Child (T, True);
   My_Tree.Delete_Tree (T, False);
+  Dump_Tree (T);
+
+  -- Init another tree
+  Ada.Text_Io.Put_Line ("Init another tree with 42 and 421, swapping 21 and 42");
+  My_Tree.Insert_Father (T1, 42);
+  My_Tree.Insert_Child (T1, 421);
+  My_Tree.Move_Father (T1);
   My_Tree.Move_Root (T);
-  My_Tree.Dump (T, Image'Unrestricted_Access,
-                Ada.Text_Io.Standard_Output, Elder => False);
+  My_Tree.Move_Child (T, True);
+  My_Tree.Move_Child (T, True);
+  My_Tree.Move_Child (T, True);
+  My_Tree.Swap_Trees (T, T1);
+  Ada.Text_Io.Put_Line ("T");
+  Dump_Tree (T);
+  Ada.Text_Io.Put_Line ("T'");
+  Dump_Tree (T1);
 
   -- Clear all
   Ada.Text_Io.Put_Line ("Clearing all");
@@ -97,10 +114,11 @@ begin
   My_Tree.Delete_Tree (T, True);
   begin
     My_Tree.Move_Root (T);
+    Ada.Text_Io.Put_Line ("ERROR: Should have raised Trees.No_Cell");
     raise Program_Error;
   exception
     when Trees.No_Cell =>
-      Ada.Text_Io.Put_Line ("Empty");
+      Ada.Text_Io.Put_Line ("Empty OK.");
   end;
 
 end T_Trees;
