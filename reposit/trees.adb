@@ -641,10 +641,16 @@ package body Trees is
           From.Root := null;
           From.Curr := null;
           return;
+        else
+          -- Move current of From to its father
+          From.Curr := Cell_Acc.Father;
+          -- Detach father and brothers of From
+          Cell_Acc.Father.Nb_Children := Cell_Acc.Father.Nb_Children - 1;
+          Detach (Cell_Acc);
         end if;
-        -- Detach father and brothers of From
-        Detach (Cell_Acc);
-        Cell_Acc.Father.Nb_Children := Cell_Acc.Father.Nb_Children - 1;
+        -- Reset links of new root
+        Cell_Acc.Father := null;
+        Cell_Acc.Brothers := (others => null);
       end Move_Tree;
 
     begin
@@ -659,7 +665,7 @@ package body Trees is
       end if;
 
       -- Nothing if same tree or both empty
-      if Tree_A = Tree_B 
+      if Tree_A = Tree_B
       or else (Tree_A.Root = null and then Tree_B.Root = null) then
         return;
       end if;
@@ -687,7 +693,6 @@ package body Trees is
       Tree_A.Curr := Tree_B.Curr;
       Tree_B.Curr := Tmp;
     end Swap_Trees;
- 
 
     ----------
     -- Dump --
