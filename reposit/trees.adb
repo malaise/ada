@@ -9,6 +9,13 @@ package body Trees is
   --  one father (except root).
   package body Tree is
 
+    -- What a new cell shall be
+    Free_Cell : constant Cell_Rec :=
+        (Father => null,
+        Brothers => (others => null),
+        Nb_Children => 0,
+        Children => (others => null),
+        Data => null);
     -------------------------
     -- Internal operations --
     -------------------------
@@ -40,7 +47,7 @@ package body Trees is
       Cell_Acc : Cell_Access;
     begin
       -- Create cell and store data
-      Cell_Acc := Cell_Dyn.Allocate;
+      Cell_Acc := Cell_Dyn.Allocate (Free_Cell);
       Cell_Acc.Data := Data_Dyn.Allocate (Element);
       return Cell_Acc;
     end Allocate;
@@ -86,7 +93,7 @@ package body Trees is
       end if;
     end Link_Father;
 
-    -- Swap two cells A and B
+    -- Swap two cells A and B and their children
     -- Does not update Root if A or B is root
     procedure Swap_Cells (A, B : in Cell_Access) is
       Tmp : Cell_Rec := B.all;
@@ -493,7 +500,7 @@ package body Trees is
       -- No empty tree
       Check_Callback (The_Tree);
 
-      -- Check a pos is saved
+      -- Check that a pos is saved
       if Saved_Pool.Is_Empty (The_Tree.Save.all) then
         raise No_Saved_Position;
       end if;
