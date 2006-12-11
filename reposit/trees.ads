@@ -204,7 +204,7 @@ package Trees is
     -- Eldest/Youngest children, or Elder/Younger brothers
     type Order is (Young, Old);
     -- Workaround of a gvd bug
-    -- for Order use (1, 2);
+    for Order use (1, 2);
     type Cell_Pair is array (Order) of Cell_Access;
 
     -- A cell of tree
