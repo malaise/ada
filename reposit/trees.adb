@@ -129,6 +129,76 @@ package body Trees is
       end if;
     end Detach;
 
+    -- Check that A_Cell is not ancestor of Of_A_Cell
+    function Is_Ancestor (A_Cell, Of_A_Cell : in Cell_Access) return Boolean is
+      Tmp: Cell_Access := Of_A_Cell;
+    begin
+      loop
+        if Tmp = A_Cell then
+          -- A_Cell is one ancestor of Of_A_Cell
+          return True;
+        elsif Tmp.Father = null then
+          -- Reached root
+          exit;
+        else
+          -- Move up
+          Tmp := Tmp.Father;
+        end if;
+      end loop;
+      return False;
+    end Is_Ancestor;
+
+    -- Copy a cell as (elder or youger) son or brother of another
+    -- Also copie recursively the children of the cell
+    -- First call MUST have First_Call to True
+    procedure Copy_Cell (From, To : in Cell_Access;
+                         Child    : in Boolean;
+                         Elder    : in Boolean;
+                         First_Call : in Boolean := True) is
+      New_Cell : Cell_Access;
+    begin
+
+      -- Create and insert cell
+      New_Cell := Allocate (From.Data.all);
+      if Child then
+        -- Insert New_Cell as child of To
+        New_Cell.Father := To;
+        To.Nb_Children := To.Nb_Children + 1;
+        -- Link to a brother
+        if Elder then
+          New_Cell.Brothers(Young) := To.Children(Old);
+        else
+          New_Cell.Brothers(Old) := To.Children(Young);
+        end if;
+      else
+        -- Insert New_Cell as a brother of To
+        New_Cell.Father := To.Father;
+        To.Father.Nb_Children := To.Father.Nb_Children + 1;
+        -- Link to brothers
+        New_Cell.Brothers := To.Brothers;
+        if Elder then
+          New_Cell.Brothers(Young) := To;
+        else
+          New_Cell.Brothers(Old) := To;
+        end if;
+      end if;
+      -- Link father and brothers to be
+      Link_Father (New_Cell);
+      Link_Brothers (New_Cell);
+
+      -- Handle recusive insertion of children then brothers
+      if From.Children(Old) /= null then
+        Copy_Cell (From => From.Children(Old), To => New_Cell,
+                   Child => True, Elder => True, First_Call => False);
+      end if;
+      -- No insertion of brothers for first call
+      if not First_Call
+      and then From.Brothers(Young) /= null then
+        Copy_Cell (From => From.Brothers(Young), To => New_Cell,
+                   Child => False, Elder => False, First_Call => False);
+      end if;
+    end Copy_Cell;
+
     ----------------
     -- Insertions --
     ----------------
@@ -468,25 +538,6 @@ package body Trees is
       Element := Tmp;
     end Swap;
 
-    -- Internal operation checking that a cell is not ancestor of an other
-    function Is_Ancestor (A_Cell, Of_A_Cell : in Cell_Access) return Boolean is
-      Tmp: Cell_Access := Of_A_Cell;
-    begin
-      loop
-        if Tmp = A_Cell then
-          -- A_Cell is one ancestor of Of_A_Cell
-          return True;
-        elsif Tmp.Father = null then
-          -- Reached root
-          exit;
-        else
-          -- Move up
-          Tmp := Tmp.Father;
-        end if;
-      end loop;
-      return False;
-    end Is_Ancestor;
-
     -- Swap saved pos and its sub tree with current position and its sub tree
     -- Saved position is poped.
     -- Current position remains the same cell (it follows the swapped cell)
@@ -661,7 +712,7 @@ package body Trees is
       end Move_Tree;
 
     begin
-      -- No saved position
+      -- No saved position, not in callback
       if Tree_A.Root /= null
       and then not Saved_Pool.Is_Empty (Tree_A.Save.all) then
         raise Saved_Position;
@@ -669,6 +720,9 @@ package body Trees is
       if Tree_B.Root /= null
       and then not Saved_Pool.Is_Empty (Tree_B.Save.all) then
         raise Saved_Position;
+      end if;
+      if Tree_A.In_Cb or else Tree_B.In_Cb then
+        raise In_Callback;
       end if;
 
       -- Nothing if same tree or both empty
