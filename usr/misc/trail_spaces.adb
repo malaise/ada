@@ -88,6 +88,14 @@ procedure Trail_Spaces is
           Modified := True;
         end if;
       end loop;
+      -- Remove Cr if Cr then Lf
+      if Asu.Element (Line, Asu.Length (Line) - 1)
+         = Ada.Characters.Latin_1.Cr then
+        Line := Asu.Slice (Line, 1, Asu.Length (Line) - 2)
+              & Asu.To_Unbounded_String (Text_Line.Line_Feed & "");
+        Modified := True;
+      end if;
+      -- Trail spaces of line
       if Asu.Length (Line) = 1 then
         -- Redisplay empty lines
         Text_Line.New_Line (Out_File);
