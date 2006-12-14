@@ -130,7 +130,8 @@ package body Trees is
     end Detach;
 
     -- Check that A_Cell is not ancestor of Of_A_Cell
-    function Is_Ancestor (A_Cell, Of_A_Cell : in Cell_Access) return Boolean is
+    function Is_Ancestor_Of (A_Cell, Of_A_Cell : in Cell_Access)
+                            return Boolean is
       Tmp: Cell_Access := Of_A_Cell;
     begin
       loop
@@ -146,7 +147,7 @@ package body Trees is
         end if;
       end loop;
       return False;
-    end Is_Ancestor;
+    end Is_Ancestor_Of;
 
     -- Copy a cell as (elder or youger) son or brother of another
     -- Also copie recursively the children of the cell
@@ -558,9 +559,9 @@ package body Trees is
 
       -- Get saved pos and check that current and saved are not ancestors
       Saved_Pool.Pop (The_Tree.Save.all, Saved);
-      if Is_Ancestor (Saved, The_Tree.Curr)
-      or else Is_Ancestor (The_Tree.Curr, Saved) then
-        raise Swap_Ancestor;
+      if Is_Ancestor_Of (Saved, The_Tree.Curr)
+      or else Is_Ancestor_Of (The_Tree.Curr, Saved) then
+        raise Is_Ancestor;
       end if;
       -- Nothing if saved is current
       if Saved = The_Tree.Curr then
@@ -571,6 +572,51 @@ package body Trees is
       --  detected as ancestor of the other
       Swap_Cells (The_Tree.Curr, Saved);
     end Swap_Saved;
+
+    -- Copy saved pos and its sub tree as (elder or youger) son or brother of
+    --  current position.
+    -- Saved position is poped.
+    -- Current position becomes the copied cell
+    -- May raise No_Cell if The_Tree is empty
+    -- May raise No_Saved_Position if no position is saved
+    -- May raise Is_Ancestor if one (current or saved) is ancestor of the other
+    procedure Copy_Saved (The_Tree : in out Tree_Type;
+                          Child    : in Boolean;
+                          Elder    : in Boolean := True) is
+      Saved : Cell_Access;
+      Old_Young : Order;
+    begin
+      -- Check not in callback
+      Check_Callback (The_Tree);
+
+      -- Check that a pos is saved
+      if Saved_Pool.Is_Empty (The_Tree.Save.all) then
+        raise No_Saved_Position;
+      end if;
+
+      -- Get saved pos and check that current and saved are not ancestors
+      Saved_Pool.Pop (The_Tree.Save.all, Saved);
+      if Is_Ancestor_Of (Saved, The_Tree.Curr)
+      or else Is_Ancestor_Of (The_Tree.Curr, Saved) then
+        raise Is_Ancestor;
+      end if;
+
+      -- Copy
+      Copy_Cell (Saved, The_Tree.Curr, Child, Elder);
+
+      -- Move to top of copied tree
+      if Elder then
+        Old_Young := Old;
+      else
+        Old_Young := Young;
+      end if;
+      if Child then
+        The_Tree.Curr := The_Tree.Curr.Children(Old_Young);
+      else
+        The_Tree.Curr := The_Tree.Curr.Brothers(Old_Young);
+      end if;
+    end Copy_Saved;
+
 
     -------------
     -- Look up --
@@ -754,6 +800,52 @@ package body Trees is
       Tree_A.Curr := Tree_B.Curr;
       Tree_B.Curr := Tmp;
     end Swap_Trees;
+
+    -- Copy cell and sub-tree (from current position) of a tree
+    --  as (elder or youger) son or brother of current position in another
+    --  tree.
+    -- Curent position of To is updated
+    procedure Copy_Tree (To_Tree   : in out Tree_Type;
+                         From_Tree : in Tree_Type;
+                         Child     : in Boolean;
+                         Elder     : in Boolean := True) is
+      Old_Young : Order;
+    begin
+      -- Check To is not in callback and From not empty
+      if To_Tree.Root /= null then
+        Check_Callback (To_Tree);
+      end if;
+      Check_Empty (From_Tree);
+
+      -- Handle specific case when To_Tree is empty
+      if To_Tree.Root = null then
+        -- Insert From.Current as root
+        Insert_Father (To_Tree, From_Tree.Curr.Data.all);
+        if From_Tree.Curr.Nb_Children /= 0 then
+          -- Insert its children recursively
+          Copy_Cell (From_Tree.Curr.Children(Old), To_Tree.Curr,
+                     Child => True, Elder => False, First_Call => False);
+        end if;
+        -- Done. Current is new Root
+        return;
+      end if;
+
+      -- Insert by copy
+      Copy_Cell (From_Tree.Curr, To_Tree.Curr, Child, Elder);
+
+      -- Move to top of copied tree
+      if Elder then
+        Old_Young := Old;
+      else
+        Old_Young := Young;
+      end if;
+      if Child then
+        To_Tree.Curr := To_Tree.Curr.Children(Old_Young);
+      else
+        To_Tree.Curr := To_Tree.Curr.Brothers(Old_Young);
+      end if;
+      null;
+    end Copy_Tree;
 
     ----------
     -- Dump --

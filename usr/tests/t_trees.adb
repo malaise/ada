@@ -10,7 +10,7 @@ procedure T_Trees is
   function Image (Elt : in Natural;
                   Level : in Natural) return String is
   begin
-    return Spaces (1 .. Level) & Elt'Img;
+    return Spaces (1 .. Level*3) & Elt'Img;
   end Image;
 
   -- Dumps the full tree. Sets Saved_Position to current
@@ -85,7 +85,7 @@ begin
   Dump_Tree (T);
 
   -- Clear second branch (15)
-  Ada.Text_Io.Put_Line ("Addind 21 and Clearing branch 15");
+  Ada.Text_Io.Put_Line ("Addind 21 and deleting branch 15");
   My_Tree.Restore_Position (T);
   My_Tree.Insert_Child (T, 21);
   My_Tree.Move_Root (T);
@@ -93,15 +93,41 @@ begin
   My_Tree.Delete_Tree (T, False);
   Dump_Tree (T);
 
-  -- Init another tree
-  Ada.Text_Io.Put_Line ("Init another tree with 42 and 421, swapping 21 and 42");
-  My_Tree.Insert_Father (T1, 42);
-  My_Tree.Insert_Child (T1, 421);
-  My_Tree.Move_Father (T1);
+  -- Copy branch 2 below 12
+  Ada.Text_Io.Put_Line ("Copying branch 2 below 12");
   My_Tree.Move_Root (T);
   My_Tree.Move_Child (T, True);
   My_Tree.Move_Child (T, True);
-  My_Tree.Move_Child (T, True);
+  My_Tree.Save_Position (T);
+  My_Tree.Move_Brother (T, False);
+  My_Tree.Move_Brother (T, False);
+  My_Tree.Copy_Saved (T, True, True);
+  Dump_Tree (T);
+
+  -- Delete branch 2
+  Ada.Text_Io.Put_Line ("Deleting branch 2");
+  My_Tree.Move_Father (T);
+  My_Tree.Move_Brother (T, True);
+  My_Tree.Move_Brother (T, True);
+  My_Tree.Delete_Tree (T, False);
+  Dump_Tree (T);
+
+  -- Copy branch 12 as new
+  Ada.Text_Io.Put_Line ("Copying branch 12");
+  My_Tree.Move_Child (T, False);
+  My_Tree.Move_Brother (T, True);
+  My_Tree.Copy_Tree (T1, T, True, True);
+  Ada.Text_Io.Put_Line ("T");
+  Dump_Tree (T);
+  Ada.Text_Io.Put_Line ("T'");
+  Dump_Tree (T1);
+
+  -- Swap trees
+  Ada.Text_Io.Put_Line ("Swapping 1 and 2 from trees");
+  My_Tree.Move_Root (T);
+  My_Tree.Move_Child (T, False);
+  My_Tree.Move_Root (T1);
+  My_Tree.Move_Child (T1, False);
   My_Tree.Swap_Trees (T, T1);
   Ada.Text_Io.Put_Line ("T");
   Dump_Tree (T);

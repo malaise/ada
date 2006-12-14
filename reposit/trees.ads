@@ -113,13 +113,24 @@ package Trees is
     procedure Swap (The_Tree : in Tree_Type;
                     Element  : in out Element_Type);
 
-
     -- Swap saved pos and its sub tree with current position and its sub tree
     -- Saved position is poped.
     -- Current position remains the same cell (it follows the swapped cell)
     -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no position is saved
+    -- May raise Is_Ancestor if one (current or saved) is ancestor of the other
     procedure Swap_Saved (The_Tree : in out Tree_Type);
+
+    -- Copy saved pos and its sub tree as (elder or youger) son or brother of
+    --  current position.
+    -- Saved position is poped.
+    -- Current position becomes the copied cell
+    -- May raise No_Cell if The_Tree is empty
+    -- May raise No_Saved_Position if no position is saved
+    -- May raise Is_Ancestor if one (current or saved) is ancestor of the other
+    procedure Copy_Saved (The_Tree : in out Tree_Type;
+                          Child    : in Boolean;
+                          Elder    : in Boolean := True);
 
 
     -- Look up --
@@ -166,6 +177,16 @@ package Trees is
     -- Both trees must have no saved position
     procedure Swap_Trees (Tree_A, Tree_B : in out Tree_Type);
 
+    -- Copy cell and sub-tree (from current position) of a tree
+    --  as (elder or youger) son or brother of current position in another
+    --  tree.
+    -- To can be empty but not From
+    -- Curent position of To is updated
+    -- May raise No_Cell if From_Tree is empty
+    procedure Copy_Tree (To_Tree   : in out Tree_Type;
+                         From_Tree : in Tree_Type;
+                         Child     : in Boolean;
+                         Elder     : in Boolean := True);
     -- Dump --
     ----------
     -- Image of an element at a depth (level)
@@ -249,8 +270,8 @@ package Trees is
   -- When deleting current or tree if there is some saved position
   Saved_Position : exception;
 
-  -- When swapping cells and one is ancestor of the other
-  Swap_Ancestor : exception;
+  -- When swapping/copying cells and one is ancestor of the other
+  Is_Ancestor : exception;
 
 end Trees;
 
