@@ -70,7 +70,8 @@ begin
 
   -- Parse return
   if Asu.To_String (Word.Text) = "return" then
-    Parse_To_End (Parser_Ada.Delimiter, ";", Level, Put_Comments => False);
+    Parse_To_End (Parser_Ada.Delimiter, ";", Level, Put_Comments => False,
+                  Up_To_Next_Significant => False);
   else
     Common.Error (Asu.To_String (Word.Text));
   end if;

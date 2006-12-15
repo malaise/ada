@@ -15,7 +15,7 @@ begin
   Parse_Name (File, Level, Name);
 
   -- Skip until last ';'
-  Parse_To_End (Parser_Ada.Delimiter, ";", Level);
+  Parse_To_End (Parser_Ada.Delimiter, ";", Level, True, False);
 
   -- If a renames or generic instanciation, put as comment
   if Words.Search (Parser_Ada.Reserved_Word, "renames") /= 0 then
