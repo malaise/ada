@@ -1,6 +1,7 @@
 with Ada.Exceptions, System;
 with Sys_Calls, Address_Ops, Socket, Tcp_Util, Channels, Mixed_Str;
 with Dictio_Debug, Parse, Local_Host_Name, Status, Errors;
+pragma Elaborate (Channels);
 package body Intra_Dictio is
 
   Byte_Size : constant := System.Storage_Unit;

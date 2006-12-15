@@ -1,5 +1,6 @@
 with Dynamic_List, Normal, Crc_10, Hash;
 with Parse;
+pragma Elaborate (Hash);
 package body Data_Base is
 
   package Item_Dyn_List_Mng is new Dynamic_List (Item_Rec);

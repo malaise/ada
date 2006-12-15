@@ -1,6 +1,7 @@
 with System, Ada.Calendar;
 with Text_Handler, Environ, Socket, Tcp_Util, Dynamic_List,
      Event_Mng, Assertion;
+pragma Elaborate (Tcp_Util);
 package body Channels is
 
   Byte_Size : constant := System.Storage_Unit;

@@ -1,5 +1,6 @@
 with My_Io;
 with Dyn_Data;
+pragma Elaborate (Dyn_Data);
 package body Hash is
 
   package body Hash_Mng is

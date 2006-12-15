@@ -1,4 +1,5 @@
 with Dyn_Data;
+pragma Elaborate (Dyn_Data);
 package body Text_Line is
 
   package File_Data is new Dyn_Data (File_Type_Rec, File_Type);

@@ -1,4 +1,5 @@
 with Limited_List, Hash;
+pragma Elaborate (Hash);
 generic
   -- Type of the element of the list
   type Element_Type is limited private;

@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
 with Hash, Lower_Str;
+pragma Elaborate (Hash);
 package body Ada_Words is
 
   function Is_Separator (C : Character) return Boolean is

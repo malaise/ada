@@ -1,5 +1,6 @@
 with Socket, Tcp_Util;
 with Data_Base;
+pragma Elaborate (Tcp_Util);
 package Client_Com is
 
   type Client_Action_List is (Version, State, Get, Set, Notif_On, Notif_Off,

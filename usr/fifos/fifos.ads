@@ -3,6 +3,7 @@
 -- Once connected, a Fifo is full duplex
 -- A Dictio must be up and running for Open to succeed
 with Socket, Tcp_Util, Dynamic_List;
+pragma Elaborate (Tcp_Util);
 package Fifos is
 
   -- Max length of a Fifo name
