@@ -1147,7 +1147,7 @@ package body Generic_Con_Io is
                 Stat := Stab;
               else
                 -- Tab
-                Str := Lstr;
+                Stat := Tab;
               end if;
               return;
             when 16#08# =>
