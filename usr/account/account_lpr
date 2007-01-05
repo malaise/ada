@@ -1,2 +1,2 @@
 #!/bin/bash
-a2ps -q -R -B -1 -l100 --borders=no $*
+a2ps -q -R -B -1 -l100 --borders=no --highlight-level=none $*
