@@ -7,8 +7,7 @@
 Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <start_index> ]
                [ <last_index>]
 
-<switch>        ::= -s<switch>
-<switch>        ::= { <upperletter><upperletter> }
+<switch>        ::= -s{ <upperletter><upperletter> }
 <jammers>       ::= -j{ <scrambler_num><upperletter><upperletter> }
 <back>          ::= -b<scrambler_num><upperletter>
 <first_index>   ::= -f<positive>
@@ -31,8 +30,9 @@ BCDEFGHIJKLMNOPQRSTUVWXYZA
 The third line must define all the letters once and only once.
 For a back, the definition must be symetrical: If X encodes to Y, then Y must
 encode to X (X decodes to Y).
-In the command line, the number indicates the jammer number and the letter its
-initial offset.
+In the command line, a jammer definition is the scrambler number, a letter of
+initial offset and a letter of carry offset (which is used to increment next
+jammer). The back definition is the scrambler number and the letter of offset.
 - The switch definition follows the same logic but defines only the letters that
 change in the coding (all other letters are kept unchanged). ex:
 AZBJMGZB
@@ -54,14 +54,12 @@ lowercase. Other bytes are not coded (they are put unchanged on stdout).
 Turning rules and coding ways:
 All the jammers can turn and are used both ways. The back and the switch
 don't turn. The jammers and the back have a (initial in case of jammer) offset.
-Each jammer is used for encoding and decoding, the back is only used for
-encoding.
-The switch is used for encoding and decoding.
 
 Coding rule:
 The input letter (uppercase) is encoded through the switch, through all
-the jammers, then through the back. It then decoded through all the jammers
-and the switch.
+the jammers, then through the back (this is called encoding).
+It is then encoded the other way through all the jammers and the switch (this
+is called decoding). The complete cycle is called coding.
 
 InputLetter  -> +------+ -> +------+ -> +------+ ->  +
                 |Switch|    |Jammer|    |Jammer|   |Back|
@@ -102,9 +100,9 @@ It supports:
 * Set_Offset(Id);
 * Encode(x) that returns Encode(x+Offset)-Offset   -- From the scrambler
 
-A back is child of plate.
+A back is child of scrambler.
 
-A jammer is a child of plate. It adds the concept of increment.
+A jammer is a child of scrambler. It adds the concept of increment.
 It supports:
 * Set_Carry(Id);
 * Increment -> Boolean; -- True after carry increments then each 26 increments

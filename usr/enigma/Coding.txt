@@ -15,15 +15,15 @@ enigma <key_args>  < <input_file>  >> <coded_file>
 
 Complex decoding
 ----------------
-Extract temporary in the decoded file the 117 first characters from the coded file,
-with the key generated from the current or a known date:
-enigma `def_enigma [ <date> ]` -l117  < <coded_file>  > <decoded_file>
-(117 because 26*2 for swich, 3 for JJJ, 8 * 7 (5 is longest number in letters
-e.g. SEVEN) for the 8 max jammers, 6 for the back.
+Extract temporary in the decoded file the 117 first characters from the coded
+file, with the key generated from the current or a known date:
+enigma `def_enigma [ <date> ]` -l123  < <coded_file>  > <decoded_file>
+(123 because 26*2 for swich, 3 for JJJ, 8 * 7 (5 is longest number in letters
+e.g. SEVEN) for the 8 max jammers, 6 * 2 for the back.
 
 Look in the temporary file for the "JJJ" then read the key in text, until
-<num_in_text><letter><letter><num_in_text>. Note the offset <offset> of the first
-letter following this sequence.
+<num_in_text><letter><letter><num_in_text>. Note the offset <offset> of the
+first letter following this sequence.
 
 Display the key in text:
 enigma `def_enigma [ <date> ]` -l<offset-1>  < <coded_file>
