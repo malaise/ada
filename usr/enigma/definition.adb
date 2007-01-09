@@ -54,8 +54,7 @@ package body Definition is
     Io_Manager.New_Line_Error;
     Ple ("Usage: " & Argument.Get_Program_Name
        & " [ <switch> ] [ <jammers>  ] <back> [ <first_index> ] [ <last_index> ]");
-    Ple ("   <switch>        ::= -s<switch_def>");
-    Ple ("   <switch_def>    ::= { <upperletter><upperletter> }");
+    Ple ("   <switch>        ::= -s{ <upperletter><upperletter> }");
     Ple ("   <jammers>       ::= -j{ <scrambler_num><upperletter><upperletter> }");
     Ple ("   <back>          ::= -b<scrambler_num><upperletter>");
     Ple ("   <first_index>   ::= -f<positive>       (default 1)");
