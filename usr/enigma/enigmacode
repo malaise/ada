@@ -53,7 +53,7 @@ else
   cat > $tmpfile
   # Decode start of message with (current of provided) date key
   export datekey="`def_enigma $date`"
-  export txtkey=`enigma $datekey -l117 < $tmpfile` 
+  export txtkey=`enigma $datekey -l123 < $tmpfile` 
   # Try to find the random key in text from this
   # Result is the index of start text offset after key
   numkey=`def_enigma "$txtkey"`
