@@ -8,13 +8,22 @@
 0 h popr
 2 format
 
+# Pad on two digits with '0'
 [
-# Compute minutes
-h pushr toreal 60.0 * 11.0 / 0 roundat trunc
+2 True "0" normal
+] P popr
+
+[
+# Compute minutes (and hundreds of minutes)
+h pushr toreal 60.0 * 11.0 / -2 roundat
+# Save minutes and compute seconds
+dup frac 60.0 * int trunc swap int trunc
 # report cary (m >= 60)
 dup 60 / h pushr + h popr 60 %
-# Put HhMm
-h pushr put "h" put 2 True "0" normal putl
+# Put HhMMm.SS
+h pushr put "h" put
+P pushr call put "m" put
+P pushr call put "s" putl
 # Increment h until to reaches 12
 h pushr 1 + h copyr
 12 >= ifret
