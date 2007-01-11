@@ -1,0 +1,23 @@
+# Given a clock at a time h.m (in hours and minutes):
+# - The hour hand position (in 1/60°) is ph = h*5 + 5*m/60
+# - The minute hand position is pm = m
+# So, for each h in 0 .. 11 there is a m so that ph = pm
+# 5*h + m/12 = m
+# 11*m/12 = 5*h
+# m = 60 * h / 11
+0 h popr
+2 format
+
+[
+# Compute minutes
+h pushr toreal 60.0 * 11.0 / 0 roundat trunc
+# report cary (m >= 60)
+dup 60 / h pushr + h popr 60 %
+# Put HhMm
+h pushr put "h" put 2 True "0" normal putl
+# Increment h until to reaches 12
+h pushr 1 + h copyr
+12 >= ifret
+L pushr retacal ] L copyr
+
+call
