@@ -4,12 +4,13 @@
 
 1. Command line
 ---------------
-Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <start_index> ]
+Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <rotors> ] [ <start_index> ]
                [ <last_index>]
 
 <switch>        ::= -s{ <upperletter><upperletter> }
-<jammers>       ::= -j{ <scrambler_num><upperletter><upperletter> }
+<jammers>       ::= -j{ <scrambler_num><upperletter> }
 <back>          ::= -b<scrambler_num><upperletter>
+<rotors>        ::= -r{ <upperletter> }
 <first_index>   ::= -f<positive>
 <last_index>    ::= -l<positive>
 <scrambler_num> ::= 1 .. 9
@@ -18,11 +19,11 @@ Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <start_index> ]
 
 Semantic:
 - Up to 8 jammers can be defined and one back must be defined.
-They must all have different numbers. ex "2AB1ZX9F".
-All the jammers are defined in a conf file (name from ENV ENIGMA_CONF_FILE,
+They must all have different numbers. ex "2A1X9F".
+All the scamblers are defined in a conf file (name from ENV ENIGMA_CONF_FILE,
 default "enigma.cnf"). This file has the following syntax (lines starting with
-# and and empty lines are skipped): Each jammer is defined by three lines.
-The first line is the jammer number from 1 to 9, the second is ABCD...XYZ and
+# and and empty lines are skipped): Each scambler is defined by three lines.
+The first line is the scambler number from 1 to 9, the second is ABCD...XYZ and
 the third defines the correspondig letters. ex:
 3
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -30,14 +31,16 @@ BCDEFGHIJKLMNOPQRSTUVWXYZA
 The third line must define all the letters once and only once.
 For a back, the definition must be symetrical: If X encodes to Y, then Y must
 encode to X (X decodes to Y).
-In the command line, a jammer definition is the scrambler number, a letter of
-initial offset and a letter of carry offset (which is used to increment next
-jammer). The back definition is the scrambler number and the letter of offset.
+In the command line, a jammer definition is the scrambler number and a letter of
+carry offset (which is used to increment next jammer).
+- The back definition is the scrambler number and the letter of offset (constant).
 - The switch definition follows the same logic but defines only the letters that
 change in the coding (all other letters are kept unchanged). ex:
 AZBJMGZB
 Note that the same letter can appear at max twice, but always in different
-part of a pairs (AXYA is OK but not AXAY).
+part of a pairs (AXYA and AA are OK but not AXAY).
+- The rotors setup definition defines (with letters), the initial position of the
+jammers.
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
 - The last number defines the last offset of input text after which the
@@ -52,6 +55,9 @@ below). Lower letters are converted to uppercase, codded, then converted to
 lowercase. Other bytes are not coded (they are put unchanged on stdout).
 
 Turning rules and coding ways:
+Before coding, the offset of the first jammer is incremented.
+After a certain number of  increments of the first jammer (carry offset), the
+second jammer is incremented...
 All the jammers can turn and are used both ways. The back and the switch
 don't turn. The jammers and the back have a (initial in case of jammer) offset.
 
@@ -65,9 +71,6 @@ InputLetter  -> +------+ -> +------+ -> +------+ ->  +
                 |Switch|    |Jammer|    |Jammer|   |Back|
 OutputLetter <- +------+ <- +------+ <- +------+ <-  +
 
-After coding, the offset of the first jammer is incremented.
-After a certain number of  increments of the first jammer, the second one is
-incremented...
 
 3. Coding algorithms and objects
 --------------------------------
@@ -151,10 +154,10 @@ Encode (Upper_Char) -> Upper_Char;
 The initialization consists in getting the definitions of various scramblers,
 make them through the factory and store them.
 Encoding an upper character consists in:
+- Incrementing the Jammer1, and if it circled
+    Incrementing the Jammer2, and if it circled...
 - Subcontracting to the scramblers: Switch.Encode,
  Jammer1.Encode ... JammerN.Encode, Back.Encode,
  JammerN.Decode .. Jammer1.Decode, Switch.Decode.
-- Incrementing the Jammer1, and if it circled
-    Incrementing the Jammer2, and if it circled...
 - Returning the coded upper character.
 

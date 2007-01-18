@@ -33,8 +33,8 @@ fi
 if [ "$mode" = "code" ] ; then
   # Set random key (text and num)
   key=`def_enigma rnd -text`
-  export txtkey=`echo $key | awk '{print $4; exit}'`
-  export numkey=`echo $key | awk '{print $1 " " $2 " " $3; exit}'`
+  export txtkey=`echo $key | awk '{print $5; exit}'`
+  export numkey=`echo $key | awk '{print $1 " " $2 " " $3 " " $4; exit}'`
   # Code random key with (current of provided) date key
   echo -n "$txtkey" | enigma `def_enigma $date`
   # Code input file into letters then with the random key

@@ -64,7 +64,8 @@ procedure Def_Enigma is
   -- For all
   Switch : Text_Handler.Text (26 * 2);
   Back : Text_Handler.Text (2);
-  Jammers : Text_Handler.Text (24);
+  Jammers : Text_Handler.Text (16);
+  Rotors : Text_Handler.Text (8);
 
   -- For unicity of scramblers
   type Digit is mod 9; -- 0 .. 8 (that will lead to 1 .. 9)
@@ -275,7 +276,7 @@ begin
                               & To_Letter (Id_Random));
       end;
 
-      -- Set random number (3 to 8) of random jammers
+      -- Set random number (3 to 8) of random jammers and rotor settings
       declare
         Jam_Nb : constant Natural := Rnd.Int_Random (3, 8);
         Jam_Num : Pos_9;
@@ -284,8 +285,8 @@ begin
           Jam_Num := Id_Random (1, 9);
           Jam_Num := Store (Jam_Num, I + 1);
           Text_Handler.Append (Jammers, Normal(Jam_Num, 1)
-                                      & To_Letter (Id_Random)
                                       & To_Letter (Id_Random));
+          Text_Handler.Append (Rotors, To_Letter (Id_Random));
         end loop;
       end;
 
@@ -311,7 +312,7 @@ begin
       Prev_Scrambler := 0;
       Got_Letters := (others => 'A');
       loop
-        -- Look for srambler num in letter
+        -- Look for scrambler num in letter
         Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
         if Stop = 0 then
           Usage;
@@ -328,9 +329,10 @@ begin
           Start := Stop + 1;
           exit;
         elsif Prev_Scrambler /= 0 then
-          -- Prev jammer parsed ok
+          -- Prev jammer parsed ok: store jammer num and carry, and rotor setting
           Text_Handler.Append (Jammers,
-                  Normal(Prev_Scrambler, 1) & Got_Letters(1) & Got_Letters(2));
+                  Normal(Prev_Scrambler, 1) & Got_Letters(2));
+          Text_Handler.Append (Rotors, Got_Letters(1));
         end if;
         -- Two letters (offset and carry, same for back)
         begin
@@ -405,11 +407,14 @@ begin
     Day_3 := Upper_Str (
         Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))(1..3);
     Num := Store (Wrap (Day), 2);
-    Text_Handler.Set (Jammers, Normal(Num, 1) & Month_3(1) & Day_3(1));
+    Text_Handler.Set (Jammers, Normal(Num, 1) & Day_3(1));
+    Text_Handler.Set (Rotors, Month_3(1));
     Num := Store (Wrap (Month / 10), 3);
-    Text_Handler.Append (Jammers, Normal(Num, 1) & Month_3(2) & Day_3(2));
+    Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(2));
+    Text_Handler.Append (Rotors, Month_3(2));
     Num := Store (Wrap (Month rem 10), 4);
-    Text_Handler.Append (Jammers, Normal(Num, 1) & Month_3(3) & Day_3(3));
+    Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(3));
+    Text_Handler.Append (Rotors, Month_3(3));
   end if;
 
   -- Result
@@ -420,19 +425,25 @@ begin
   if not Text_Handler.Empty (Jammers) then
     Ada.Text_Io.Put (" -j" & Text_Handler.Value (Jammers));
   end if;
-  Ada.Text_Io.Put_Line (" -b" & Text_Handler.Value (Back));
+  Ada.Text_Io.Put (" -b" & Text_Handler.Value (Back));
+  if not Text_Handler.Empty (Jammers) then
+    Ada.Text_Io.Put (" -r" & Text_Handler.Value (Rotors));
+  end if;
+  Ada.Text_Io.New_Line;
 
   if To_Text then
     -- Key coded onto text
     -- Switch and separator
     Ada.Text_Io.Put (Text_Handler.Value (Switch) & Separator);
     for I in 1 .. Text_Handler.Length (Jammers) loop
-      if I rem 3 = 1 then
+      if I rem 2 = 1 then
         -- Jammer letter
         Num := Pos_9'Value (Text_Handler.Value (Jammers)(I .. I));
         Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+        -- Offset
+        Ada.Text_Io.Put (Text_Handler.Value (Rotors)((I-1)/2+1));
       else
-        -- Offset and Carry
+        -- Carry
         Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
       end if;
     end loop;

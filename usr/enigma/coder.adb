@@ -96,6 +96,15 @@ package body Coder is
     Carry : Boolean;
   begin
     X := Types.Id_Of(L);
+    -- Increment the jammers as long as they raise the carry
+    for I in 1 .. The_Coder.Nb_Jammers loop
+      Scrambler_Factory.Increment (The_Coder.Jammers(I), Carry);
+      if Debug then
+        Sys_Calls.Put_Line_Error (" Inc " & Img(I) & " " & Carry'Img);
+      end if;
+      exit when not Carry;
+    end loop;
+
     if Debug then
       Sys_Calls.Put_Line_Error ("Encoding -> " & L);
     end if;
@@ -129,14 +138,6 @@ package body Coder is
       Sys_Calls.Put_Line_Error (" S  -> " & Types.Letter_Of (X));
     end if;
 
-    -- Now increment the jammers as long as they raise the carry
-    for I in 1 .. The_Coder.Nb_Jammers loop
-      Scrambler_Factory.Increment (The_Coder.Jammers(I), Carry);
-      if Debug then
-        Sys_Calls.Put_Line_Error (" Inc " & Img(I) & " " & Carry'Img);
-      end if;
-      exit when not Carry;
-    end loop;
     if Debug then
       Sys_Calls.Put_Line_Error ("Encoded as -> " & Types.Letter_Of (X));
     end if;

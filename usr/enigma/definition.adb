@@ -44,6 +44,7 @@ package body Definition is
   Switch_Key : constant String := "s";
   Jammers_Key : constant String := "j";
   Back_Key : constant String := "b";
+  Rotors_Key : constant String := "r";
   Start_Key : constant String := "f";
   Last_Key : constant String := "l";
 
@@ -53,16 +54,18 @@ package body Definition is
     Ple ("ERROR: " & Msg & ".");
     Io_Manager.New_Line_Error;
     Ple ("Usage: " & Argument.Get_Program_Name
-       & " [ <switch> ] [ <jammers>  ] <back> [ <first_index> ] [ <last_index> ]");
+       & " [ <switch> ] [ <rotor_def>  ] <back> [ <rotor_offsets> ] [ <first_index> ] [ <last_index> ]");
     Ple ("   <switch>        ::= -s{ <upperletter><upperletter> }");
-    Ple ("   <jammers>       ::= -j{ <scrambler_num><upperletter><upperletter> }");
+    Ple ("   <rotor_def>     ::= -j{ <scrambler_num><upperletter> }");
     Ple ("   <back>          ::= -b<scrambler_num><upperletter>");
+    Ple ("   <rotor_offsets> ::= -r{ <upperletter> }");
     Ple ("   <first_index>   ::= -f<positive>       (default 1)");
     Ple ("   <last_index>    ::= -l<positive>       (default none)");
     Ple ("   <scrambler_num> ::= 1 .. 9");
     Ple ("   <upperletter>   ::= A .. Z");
     Ple ("Up to 8 jammers can be defined and one back must be defined.");
     Ple ("They must all have different numbers.");
+    Ple ("There must as many rotor offsets as defined in the rotor setting.");
     raise Invalid_Definition;
   end Error;
 
@@ -76,6 +79,7 @@ package body Definition is
    end if;
    if       Str /= Jammers_Key
    and then Str /= Back_Key
+   and then Str /= Rotors_Key
    and then Str /= Start_Key
    and then Str /= Last_Key
    and then Str /= Switch_Key then
@@ -117,6 +121,7 @@ package body Definition is
     Check_Twice (Switch_Key, "Switch defined twice");
     Check_Twice (Jammers_Key, "Jammers defined twice");
     Check_Twice (Back_Key, "Back defined twice");
+    Check_Twice (Rotors_Key, "Rotors defined twice");
     Check_Twice (Start_Key, "First offset defined twice");
     Check_Twice (Last_Key, "Last offset defined twice");
   end Check;
@@ -190,13 +195,13 @@ package body Definition is
     end;
   end Parse_Back;
 
-  -- Parse a jammer: a number and two letters
+  -- Parse a jammer: a number and a letter
   procedure Parse_Jammer (Name : in String; Str : in String;
                           Jammer : out Jammer_Definition) is
   begin
-    -- A number and two letters
-    if Str'Length /= 3 then
-      Error ("Invalid jammer definition " & Str & " for " & Name);
+    -- A number and a letter
+    if Str'Length /= 2 then
+      Error ("Invalid rotor definition " & Str & " for " & Name);
     end if;
     -- Scrambler number
     begin
@@ -206,23 +211,27 @@ package body Definition is
       when Constraint_Error =>
         Error ("Invalid scrambler number " & Str(Str'First) & " for " & Name);
     end;
-    -- Scrambler offset
-    declare
-      Index : constant Integer := Integer'Succ(Str'First);
-    begin
-      Jammer.Offset := Str(Index);
-    exception
-      when Constraint_Error =>
-        Error ("Invalid scrambler offset " & Str(Index) & " for " & Name);
-    end;
     -- Scrambler carry offset
     begin
       Jammer.Carry_Offset := Str(Str'Last);
     exception
       when Constraint_Error =>
-        Error ("Invalid jammer carry " & Str(Str'Last) & " for " & Name);
+        Error ("Invalid rotor carry " & Str(Str'Last) & " for " & Name);
     end;
   end Parse_Jammer;
+
+  -- Parse a rotor: a letter
+  procedure Parse_Rotor (Name : in String; Chr : in Character;
+                         Rotor_Offset : out Types.Letter) is
+  begin
+    -- Scrambler offset
+    begin
+      Rotor_Offset := Chr;
+    exception
+      when Constraint_Error =>
+        Error ("Invalid value " & Chr & " for " & Name);
+    end;
+  end Parse_Rotor;
 
   procedure Parse is
     use Argument;
@@ -270,23 +279,23 @@ package body Definition is
         Str : constant String :=  Get_Parameter (1, Jammers_Key);
         Index : Jammers_Index;
       begin
-        -- Check positive and number of chars rem 3
-        --  (triplets of Num, Offset, Carry)
-        if Str'Length < 3 or else Str'Length rem 3 /= 0 then
-          Error ("Invalid jammers definition " & Str);
+        -- Check positive and number of chars rem 2
+        --  (pairs of Num, Carry)
+        if Str'Length < 2 or else Str'Length rem 2 /= 0 then
+          Error ("Invalid rotor setting " & Str);
         end if;
         -- Check max number of jammers
-        if Str'Length / 3 > Natural(Jammers_Range'Last) then
-          Error ("To many jammers defined in " & Str);
+        if Str'Length / 2 > Natural(Jammers_Range'Last) then
+          Error ("To many rotors defined in " & Str);
         end if;
-        Parsed_Rec.Jammers := (Str'Length / 3,
+        Parsed_Rec.Jammers := (Str'Length / 2,
                                (others => (Scrambler_Index'First,
                                           Types.Letter'First,
                                           Types.Letter'First)) );
-        for I in 1 .. Str'Length / 3 loop
+        for I in 1 .. Str'Length / 2 loop
           Index := Jammers_Index(I);
-          Parse_Jammer ("jammer" & I'Img,
-                         Str(I * 3 - 2 .. I * 3),
+          Parse_Jammer ("rotor setting" & I'Img,
+                         Str(I * 2 - 1 .. I * 2),
                          Parsed_Rec.Jammers.Jammers(Index) );
           -- Check unicity
         end loop;
@@ -295,6 +304,40 @@ package body Definition is
       when Argument_Not_Found =>
         null;
     end;
+
+    -- Parse Rotors
+    if Parsed_Rec.Jammers.Nb_Jammers = 0 then
+      declare
+        -- Should raise Argument.Argument_not_Found
+        Str : constant String :=  Get_Parameter (1, Rotors_Key);
+      begin
+        Error ("Unexpected definition of rotor offsets " & Str);
+      exception
+        when Argument.Argument_not_Found =>
+          -- Normal
+          null;
+      end;
+    else
+      declare
+        Str : constant String :=  Get_Parameter (1, Rotors_Key);
+        Index : Jammers_Index;
+      begin
+        -- Check length = Nb of jammers
+        if Str'Length /= Integer(Parsed_Rec.Jammers.Nb_Jammers) then
+          Error ("Invalid number of rotor offsets " & Str);
+        end if;
+        for I in 1 .. Str'Length loop
+          Index := Jammers_Index(I);
+          Parse_Rotor ("rotor offset" & I'Img, Str(I),
+                         Parsed_Rec.Jammers.Jammers(Index).Offset );
+          -- Check unicity
+        end loop;
+      exception
+        when Argument_Not_Found =>
+          null;
+      end;
+    end if;
+
   end Parse;
 
 end Definition;
