@@ -115,7 +115,7 @@ package body Great_Circle is
 
     -- Add Pi to Result_Rad_Angle if B in south of A
     -- or shortest route along meridian is via south pole
-    procedure Fix_Angle is
+    procedure Fix_Angle (Rad_Angle : in out Conv.Rad_Coord_Range) is
       Signed_A_Y : Conv.Rad_Range := Lat_Lon_Rad_A.Y;
       Signed_B_Y : Conv.Rad_Range := Lat_Lon_Rad_B.Y;
       Angle : C_Nbres.Radian;
@@ -129,7 +129,7 @@ package body Great_Circle is
       end if;
 
       -- If same meridian
-      Angle :=  C_Nbres.Radian(Heading_Rad_Angle);
+      Angle :=  C_Nbres.Radian(Rad_Angle);
       if Angle < Epsilon
       or else abs (Angle - Conv.Pi) < Epsilon then
         -- See if A and B are on the same meridian
@@ -152,7 +152,7 @@ package body Great_Circle is
         end if;
       end if;
 
-      Heading_Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(Angle));
+      Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(Angle));
     end Fix_Angle;
 
   use My_Math;
@@ -217,13 +217,14 @@ package body Great_Circle is
         Heading_Rad_Angle := Conv.Pi;
       end if;
     else
-      Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(My_Math.Arc_Cos(Cos_H)));
+      Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(
+                              My_Math.Arc_Cos(Cos_H)));
     end if;
 
 
-    -- Fix result if B is at south of A
-    -- or if A and B are on the same meridian
-    Fix_Angle;
+    -- Fix result if B is at south of A or if A and B are on the same meridian
+    -- Normally this is not needed, the sign of Heading_Rad_Angle is correct.
+    -- Fix_Angle (Heading_Rad_Angle);
 
     -- In degrees
     Heading := Conv.Rad2Geo(Heading_Rad_Angle);
