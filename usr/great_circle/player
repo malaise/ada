@@ -1,0 +1,63 @@
+#!/bin/bash
+#set -vx
+if [ "$1" = "" ] ; then
+  echo "Usage: `basename $0` <scenario>"
+  exit 1
+fi
+export SCENARIO=$1
+
+# Read field $2 of line $1
+function readarg {
+res="`awk -vLINE=$1 -vFIELD=$2 '
+  BEGIN {
+    NL=0
+  }
+  (NF == 0 || $1 ~ /^#/) {
+    # Skip empty lines and comment
+    next
+  }
+  {
+    # Count significant lines
+    NL=NL+1
+    if (NL == LINE) {
+      printf "%s",$FIELD
+      exit 0
+    }
+  } 
+' $SCENARIO`"
+echo "$res"
+}
+
+# For each line
+let L=1
+while true ; do
+  # Read line until end of file
+  export from=`readarg $L 1`
+  if [ "$from" = "" ] ; then
+    break
+  fi
+  export to=`readarg $L 2`
+  export heading=`readarg $L 3`
+  export distance=`readarg $L 4`
+  # Do test and save exit status
+  export result=`t_gc $from $to`
+  export code=$?
+  # Check exit status
+  if [ $code -ne 0 ] ; then
+    echo "Error: t_gc exited with code $code"
+    exit 1
+  fi
+  # Check that result is expected
+  result=`echo $result | awk '{print $2 " " $4}'`
+  expected=$heading" "$distance
+  if [ "$result" = "$expected" ] ; then
+    echo "From $from to $to -> H=$heading for ${distance}Nm"
+  else
+    echo "Error: From $from to $to expected $expected != got $result"
+    exit 1
+  fi
+  let L=$L+1
+done
+echo Done.
+exit 0
+

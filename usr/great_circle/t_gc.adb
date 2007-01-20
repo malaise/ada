@@ -9,7 +9,6 @@ procedure T_Gc is
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
       & " add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss");
     Ada.Text_Io.Put_Line (" where a is N or S and o is E or W.");
-    Basic_Proc.Set_Error_Exit_Code;
   end Usage;
 
   Use_Afpx : Boolean;
@@ -85,6 +84,7 @@ begin
   elsif Argument.Get_Nbre_Arg = 2 then
     Use_Afpx := False;
   else
+    Basic_Proc.Set_Error_Exit_Code;
     Usage;
     return;
   end if;
@@ -92,18 +92,21 @@ begin
   -- Convert args in lat_lon of A and B
   if not Use_Afpx then
     begin
+      -- Parse arguments
       A := String_Util.Str2Geo(Argument.Get_Parameter(1));
       B := String_Util.Str2Geo(Argument.Get_Parameter(2));
+      -- Compute
+      Great_Circle.Compute_Route(A, B, Heading, Distance);
+      -- Put result
+      Ada.Text_Io.Put ("Route: " & String_Util.Angle2Str(Heading));
+      Ada.Text_Io.Put_Line ("   Distance(Nm): "
+                        & String_Util.Dist2Str(Distance));
     exception
       when others =>
+        Basic_Proc.Set_Error_Exit_Code;
         Usage;
         return;
     end;
-
-    Great_Circle.Compute_Route(A, B, Heading, Distance);
-
-    Ada.Text_Io.Put_Line ("Route is " & String_Util.Angle2Str(Heading));
-    Ada.Text_Io.Put_Line ("Distance is " & String_Util.Dist2Str(Distance));
   else
     Afpx.Use_Descriptor (1);
     -- First Get field

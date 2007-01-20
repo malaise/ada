@@ -5,11 +5,13 @@ package Conv is
   subtype Deg_Range is Natural range 0 .. 359;
   subtype Min_Range is Natural range 0 .. 59;
   subtype Sec_Range is Natural range 0 .. 59;
+  subtype Hun_Range is Natural range 0 .. 99;
 
   type Geo_Coord_Rec is record
     Deg : Deg_Range;
     Min : Min_Range;
     Sec : Sec_Range;
+    Hun : Hun_Range;
   end record;
 
   subtype Rad_Range is C_Nbres.Radian;

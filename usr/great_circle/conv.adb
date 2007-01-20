@@ -3,8 +3,8 @@ package body Conv is
 
   function Rad2Geo (Coord : Rad_Coord_Range) return Geo_Coord_Rec is
     Deg : C_Nbres.Reducted_Degree;
-    Sr : My_Math.Real;
-    Si : Natural;
+    Hr, Sr : My_Math.Real;
+    Hi, Si : Natural;
     R : Geo_Coord_Rec;
   begin
     -- Convert to degrees (fraction)
@@ -12,10 +12,19 @@ package body Conv is
 
     R.Deg := Deg_Range(My_Math.Trunc(My_Math.Real(Deg)));
 
-    -- Full seconds
+    -- Full seconds and hundredths
     Sr := My_Math.Frac(My_Math.Real(Deg));
     Sr := Sr * 60.0 * 60.0;
-    Si := Natural(My_Math.Round(Sr));
+    Hr := My_Math.Frac(Sr);
+    Hi := Natural(My_Math.Round (Hr * 100.0));
+    Si := Natural(My_Math.Trunc(Sr));
+
+    -- Check if hundredths was rounded to 100
+    if Hi = 100 then
+      Hi := 0;
+      Si := Si + 1;
+    end if;
+    R.Hun := Hi;
 
     if Si = 60 * 60 then
       -- Rounded to next degree
@@ -43,6 +52,7 @@ package body Conv is
     Deg := C_Nbres.Reducted_Degree(Coord.Deg);
     Deg := Deg + C_Nbres.Reducted_Degree(Coord.Min) / 60.0;
     Deg := Deg + C_Nbres.Reducted_Degree(Coord.Sec) / 60.0 / 60.0;
+    Deg := Deg + C_Nbres.Reducted_Degree(Coord.Hun) / 60.0 / 60.0 / 100.0;
     return C_Nbres.To_Radian(Deg);
   end Geo2Rad;
 

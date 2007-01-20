@@ -1,6 +1,5 @@
 with Ada.Text_Io;
 with My_Math, C_Nbres;
-with String_Util;
 
 package body Great_Circle is
 
@@ -113,48 +112,6 @@ package body Great_Circle is
     Cos_H : My_Math.Real;
     Heading_Rad_Angle : Conv.Rad_Coord_Range;
 
-    -- Add Pi to Result_Rad_Angle if B in south of A
-    -- or shortest route along meridian is via south pole
-    procedure Fix_Angle (Rad_Angle : in out Conv.Rad_Coord_Range) is
-      Signed_A_Y : Conv.Rad_Range := Lat_Lon_Rad_A.Y;
-      Signed_B_Y : Conv.Rad_Range := Lat_Lon_Rad_B.Y;
-      Angle : C_Nbres.Radian;
-    begin
-      -- Set Signed_*_Y < 0 if > Pi
-      if Signed_A_Y > Conv.Pi then
-        Signed_A_Y := Signed_A_Y - 2.0 * Conv.Pi;
-      end if;
-      if Signed_B_Y > Conv.Pi then
-        Signed_B_Y := Signed_B_Y - 2.0 * Conv.Pi;
-      end if;
-
-      -- If same meridian
-      Angle :=  C_Nbres.Radian(Rad_Angle);
-      if Angle < Epsilon
-      or else abs (Angle - Conv.Pi) < Epsilon then
-        -- See if A and B are on the same meridian
-        if abs Lat_Lon_Rad_Delta.X <= Conv.Pi / 2.0 then
-          -- Yes, add Pi if B is below A on meridian
-          if Signed_B_Y < Signed_A_Y then
-            Angle := Angle + Conv.Pi;
-          end if;
-        else
-          -- A and B are on opposed meridians
-          -- Add Pi if B is below -A
-          if Signed_B_Y < -Signed_A_Y then
-            Angle := Angle + Conv.Pi;
-          end if;
-        end if;
-      else
-        -- Si if B is in the south of A
-        if Signed_B_Y < Signed_A_Y then
-          Angle := Angle + Conv.Pi;
-        end if;
-      end if;
-
-      Rad_Angle := Conv.Rad_Coord_Range(C_Nbres.Reduct(Angle));
-    end Fix_Angle;
-
   use My_Math;
   begin
 
@@ -186,10 +143,13 @@ package body Great_Circle is
     Angle_Result :=  Angle_Of_Chord(Chord_Result, Route_Radius);
 
     -- Compute Arc of result
-    Distance := Route_Radius * abs Angle_Result;
+    Distance := Route_Radius * Angle_Result;
 
     if Distance < Epsilon then
-      Heading := (0, 0, 0);
+      Heading := (0, 0, 0, 0);
+      if Debug then
+        Ada.Text_Io.Put_Line ("Distance is 0");
+      end if;
       return;
     end if;
 
@@ -208,6 +168,9 @@ package body Great_Circle is
                * My_Math.Cos(My_Math.Real(Angle_Result)))
             / My_Math.Cos(My_Math.Real(Lat_Lon_Rad_A.Y))
             / My_Math.Sin(My_Math.Real(Angle_Result)) ;
+    if Debug then
+      Ada.Text_Io.Put_Line ("Cos H : " & Cos_H'Img);
+    end if;
 
     -- Round to 0 or 180 if cos between 1+Epsilon and -1-Epsilon
     if abs Cos_H > 1.0 and then abs Cos_H - 1.0 < Epsilon then
@@ -219,12 +182,20 @@ package body Great_Circle is
     else
       Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(
                               My_Math.Arc_Cos(Cos_H)));
+      if Debug then
+        Ada.Text_Io.Put_Line ("Raw H : " & Heading_Rad_Angle'Img);
+      end if;
+      -- Set heading < 0 if B is at west of A
+      if Lat_Lon_Rad_Delta.X > Conv.Pi then
+        Heading_Rad_Angle := C_Nbres.Reduct(-Heading_Rad_Angle);
+        if Debug then
+          Ada.Text_Io.Put_Line ("West correction");
+        end if;
+      end if;
     end if;
-
-
-    -- Fix result if B is at south of A or if A and B are on the same meridian
-    -- Normally this is not needed, the sign of Heading_Rad_Angle is correct.
-    -- Fix_Angle (Heading_Rad_Angle);
+    if Debug then
+      Ada.Text_Io.Put_Line ("H : " & Heading_Rad_Angle'Img);
+    end if;
 
     -- In degrees
     Heading := Conv.Rad2Geo(Heading_Rad_Angle);

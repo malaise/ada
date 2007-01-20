@@ -20,7 +20,9 @@ package Lat_Lon is
   end record;
 
   type Lat_Lon_Rad_Rec is record
+    -- X is longitude
     X : Conv.Rad_Coord_Range;
+    -- Y is latitude
     Y : Conv.Rad_Coord_Range;
   end record;
 
