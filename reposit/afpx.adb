@@ -481,6 +481,37 @@ package body Afpx is
     return Af_Dscr.Fields(Fn).Isprotected;
   end Get_Field_Protection;
 
+  -- Get field kind
+  -- Exceptions : No_Descriptor, Invalid_Field
+  -- type Field_Kind_List is (Put, Button, Get);
+  function Get_Field_Kind (Field_No : in Absolute_Field_Range)
+                          return Field_Kind_List is
+    Fn : constant Afpx_Typ.Absolute_Field_Range
+       := Afpx_Typ.Absolute_Field_Range(Field_No);
+  begin
+    Af_Dscr.Check(Fn);
+    case Af_Dscr.Fields(Fn).Kind is
+      when Afpx_Typ.Put => return Put;
+      when Afpx_Typ.Button => return Button;
+      when Afpx_Typ.Get => return Get;
+    end case;
+  end Get_Field_Kind;
+
+  function Is_Put_Kind    (Field_No : in Absolute_Field_Range) return Boolean is
+  begin
+    return Get_Field_Kind (Field_No) = Put;
+  end Is_Put_Kind;
+
+  function Is_Button_Kind (Field_No : in Absolute_Field_Range) return Boolean is
+  begin
+    return Get_Field_Kind (Field_No) = Button;
+  end Is_Button_Kind;
+
+  function Is_Get_Kind    (Field_No : in Absolute_Field_Range) return Boolean is
+  begin
+    return Get_Field_Kind (Field_No) = Get;
+  end Is_Get_Kind;
+
   -- Erase all the fields of the descriptor from the screen
   procedure Erase is
     Background : constant Con_Io.Effective_Basic_Colors

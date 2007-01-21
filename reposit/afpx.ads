@@ -116,6 +116,15 @@ package Afpx is
   function  Get_Field_Protection (Field_No : in Absolute_Field_Range)
                                   return Boolean;
 
+  -- Get field kind
+  -- Exceptions : No_Descriptor, Invalid_Field
+  type Field_Kind_List is (Put, Button, Get);
+  function Get_Field_Kind (Field_No : in Absolute_Field_Range)
+                          return Field_Kind_List;
+  function Is_Put_Kind    (Field_No : in Absolute_Field_Range) return Boolean;
+  function Is_Button_Kind (Field_No : in Absolute_Field_Range) return Boolean;
+  function Is_Get_Kind    (Field_No : in Absolute_Field_Range) return Boolean;
+
   -- Erase all the fields of the descriptor from the screen
   --  (Fill them with current screen's background color)
   -- Exceptions : No_Descriptor
