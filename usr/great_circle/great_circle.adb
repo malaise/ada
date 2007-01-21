@@ -145,10 +145,18 @@ package body Great_Circle is
     -- Compute Arc of result
     Distance := Route_Radius * Angle_Result;
 
+    -- Handle specific cases
     if Distance < Epsilon then
-      Heading := (0, 0, 0, 0);
+      Heading := Conv.Zero;
       if Debug then
         Ada.Text_Io.Put_Line ("Distance is 0");
+      end if;
+      return;
+    elsif abs (Angle_Result - Conv.Pi) < Epsilon then
+      -- From and To are opposite (antipodes)
+      Heading := Conv.Zero;
+      if Debug then
+        Ada.Text_Io.Put_Line ("Antipodes");
       end if;
       return;
     end if;

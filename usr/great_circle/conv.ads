@@ -14,6 +14,8 @@ package Conv is
     Hun : Hun_Range;
   end record;
 
+  Zero : constant Geo_Coord_Rec := (0, 0, 0, 0);
+
   subtype Rad_Range is C_Nbres.Radian;
   Pi : constant Rad_Range := Rad_Range(My_Math.Pi);
 
