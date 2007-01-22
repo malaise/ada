@@ -122,7 +122,7 @@ package body String_Util is
   begin
     -- Round hundredths
     Rounded := Angle;
-    Round (Rounded);    
+    Round (Rounded);
     -- Set .
     Str(4) := '.'; Str(7) := '.';
     Str(1 ..  3) := Normal (Rounded.Deg, 3, Gap => '0');
