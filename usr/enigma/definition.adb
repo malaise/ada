@@ -313,7 +313,7 @@ package body Definition is
       begin
         Error ("Unexpected definition of rotor offsets " & Str);
       exception
-        when Argument.Argument_not_Found =>
+        when Argument.Argument_Not_Found =>
           -- Normal
           null;
       end;
