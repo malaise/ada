@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument, Con_Io, Afpx, Normal;
+with Argument, Con_Io, Afpx, Normal, Mixed_Str;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Cursor_Field : Afpx.Absolute_Field_Range;
@@ -17,8 +17,25 @@ procedure T_Dscr is
   procedure Set_Dscr(No : in Afpx.Descriptor_Range) is
   begin
     Afpx.Use_Descriptor(No);
-
     Cursor_Field := Afpx.Next_Cursor_Field(0);
+
+    -- Dump descriptor
+    Ada.Text_Io.Put ("Descriptor" & No'Img & " has");
+    if Afpx.Has_List then
+      Ada.Text_Io.Put (" a");
+    else
+      Ada.Text_Io.Put (" no");
+    end if;
+    Ada.Text_Io.Put_Line (" list and"
+      & Afpx.Absolute_Field_Range'Image (Afpx.Nb_Fields)
+      & " fields.");
+    for I in 1 .. Afpx.Nb_Fields loop
+      Ada.Text_Io.Put_Line ("Field No" & I'Img & " is of kind "
+         & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))));
+    end loop;
+    Ada.Text_Io.Put_Line ("Cursor field is" & Cursor_Field'Img);
+
+    -- Fix Cursor_Field for Put_Then_Get
     if Cursor_Field not in Afpx.Field_Range then
       -- No get field
       Cursor_Field := Afpx.Field_Range'First;
