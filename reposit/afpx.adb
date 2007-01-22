@@ -28,6 +28,10 @@ package body Afpx is
     --  and if Field_No is valid in it (raise Invalid_Field)
     procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range);
 
+    -- Check if a descriptor has been used (raise No_Descriptor)
+    -- and it has the list field active
+    function Has_List return Boolean;
+
     -- Load a field's characters and/or colors from init
     procedure Load_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
                           Load_Colors : in Boolean;
@@ -243,6 +247,21 @@ package body Afpx is
       Con_Io.Clear (Con_Io.Screen);
     end if;
   end Use_Descriptor;
+
+  -- Check if current descriptor defines a list
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  function Has_List return Boolean is
+  begin
+    return Af_Dscr.Has_List;
+  end Has_List;
+
+  -- Returns the number of fields of current descriptor
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  function Nb_Fields return Absolute_Field_Range is
+  begin
+    Af_Dscr.Check;
+    return Absolute_Field_Range(Af_Dscr.Current_Dscr.Nb_Fields);
+  end Nb_Fields;
 
   -- Clear the content of a field
   procedure Clear_Field (Field_No : in Field_Range) is
@@ -556,23 +575,34 @@ package body Afpx is
   -- Computes next cursor field after current one:
   function Next_Cursor_Field (From : Absolute_Field_Range)
                              return Absolute_Field_Range is
-    Ret_No : Afpx_Typ.Absolute_Field_Range;
+    Start_No, Ret_No : Afpx_Typ.Absolute_Field_Range;
     use Afpx_Typ;
   begin
-    Ret_No := Afpx_Typ.Absolute_Field_Range(From);
+    -- Empty descriptor (or only a list)
+    if Af_Dscr.Current_Dscr.Nb_Fields = 0 then
+      return 0;
+    end if;
+    -- Start at 1 if From is 0 or above Nb
+    Start_No := Afpx_Typ.Absolute_Field_Range(From);
+    if Start_No = 0 or else Start_No > Af_Dscr.Current_Dscr.Nb_Fields then
+      Start_No := 1;
+    end if;
+    -- Loop from From up to From, start at 1 if From is above Nb
+    Ret_No := Start_No;
     loop
-      if Ret_No /= Af_Dscr.Current_Dscr.Nb_Fields then
+      -- Next field
+      if Ret_No < Af_Dscr.Current_Dscr.Nb_Fields then
         Ret_No := Ret_No + 1;
       else
         Ret_No := 1;
       end if;
+      -- Cehck it is a cursor field
       if Af_Dscr.Fields(Ret_No).Kind = Afpx_Typ.Get
           and then Af_Dscr.Fields(Ret_No).Activated
           and then not Af_Dscr.Fields(Ret_No).Isprotected then
         return Absolute_Field_Range(Ret_No);
-      elsif Ret_No = Afpx_Typ.Absolute_Field_Range(From) then
-        return 0;
-      elsif From = 0 and then Ret_No = Af_Dscr.Current_Dscr.Nb_Fields then
+      elsif Ret_No = Start_No then
+        -- All field checked without finding a cursor field
         return 0;
       end if;
     end loop;

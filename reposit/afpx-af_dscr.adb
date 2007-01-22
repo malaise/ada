@@ -65,24 +65,33 @@ package body Af_Dscr is
 
   -- Check if a descriptor i in use and if field is valid
   procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range) is
-    use Afpx_Typ;
+    use type Afpx_Typ.Absolute_Field_Range;
   begin
-    Check;
 
     if Field_No = Lfn then
-      if Fields(Lfn).Kind = Afpx_Typ.Button then
-        -- A list in the descriptor
+      -- A list in the descriptor?
+      if Has_List then
         return;
       end if;
     else
+      Check;
+       -- This field in the descriptor?
       if Field_No <= Current_Dscr.Nb_Fields then
-        -- This field is in the descriptor
         return;
       end if;
     end if;
     -- No such field/list
     raise Invalid_Field;
   end Check;
+
+  -- Check if descriptor has the list field active
+  function Has_List return Boolean is
+    use type Afpx_Typ.Field_Kind_List;
+  begin
+    Check;
+    return Fields(Lfn).Kind = Afpx_Typ.Button;
+  end Has_List;
+
 
   -- Load a field
   procedure Load_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;

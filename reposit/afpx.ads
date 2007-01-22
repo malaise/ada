@@ -24,6 +24,14 @@ package Afpx is
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True);
 
+  -- Check if current descriptor defines a list
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  function Has_List return Boolean;
+
+  -- Returns the number of fields of current descriptor
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  function Nb_Fields return Absolute_Field_Range;
+
   -- Clear the content of a field
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big)
