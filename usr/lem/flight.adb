@@ -3,6 +3,9 @@ with Rnd;
 with Moon, Debug, Screen;
 package body Flight is
 
+  -- Part of margin for a landing to be "safe"
+  Safe_Ratio : constant := 0.5;
+
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec is
     Init_Pos : Space.Position_Rec;
@@ -251,8 +254,8 @@ package body Flight is
                          & " / " & Result.Speed.Y_Speed'Img);
     end if;
     -- Safe or normal landing?
-    if abs Result.Speed.Y_Speed <= Max_Verti_Speed * 0.75
-    and then abs Result.Speed.X_Speed <= Max_Horiz_Speed * 0.75 then
+    if abs Result.Speed.Y_Speed <= Max_Verti_Speed * Safe_Ratio
+    and then abs Result.Speed.X_Speed <= Max_Horiz_Speed * Safe_Ratio then
       Result.Status := Safe_Landed;
     else
       Result.Status := Landed;
