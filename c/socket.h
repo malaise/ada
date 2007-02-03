@@ -236,9 +236,9 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /*  After success, the socket may be ready for a send to reply */
 /* No set_for_reply if tcp */
 /* Returned values: */
-/*   - the length of bytes read, which is the length of the message sent */
-/*     except in tcp (no header) where the length read may be anything */
-/*     from 0 to length */
+/*   - the length of bytes read, which is usually the length of the message */
+/*     sent. In tcp no header it may be anything from 0 to length. */
+/*     In udp it is the sent message length (maybe > length). */
 /*   - SOC_WOULD_BLOCK (in non blocking), new read has to be done */
 /*   - SOC_READ_0, disconnection? */
 /*   - any other (fatal) error */

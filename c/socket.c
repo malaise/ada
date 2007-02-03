@@ -1640,8 +1640,9 @@ extern int soc_receive (soc_token token,
 
   /* Udp */
   do {
+    /* Recvfrom. MSG_TRUNC => real packet length returned i.o read length */
     result = recvfrom(soc->socket_id, (char *)message,
-       (size_t)length, 0, (struct sockaddr*) from_addr, &addr_len);
+       (size_t)length, MSG_TRUNC, (struct sockaddr*) from_addr, &addr_len);
   } while ( (result == -1) && (errno == EINTR) );
 
   if (result < 0) {
@@ -1672,7 +1673,6 @@ extern int soc_receive (soc_token token,
     }
     UNLOCK;
     return (result);
-
   }
 }
 
