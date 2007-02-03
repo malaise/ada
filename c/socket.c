@@ -7,6 +7,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include "socket_prv.h"
 #include "socket_afux.h"
@@ -41,7 +42,7 @@ const char *errors[MAX_ERROR] = {
 /* 09 */ "Tail Error: should have called socket soc_resend",
 /* 10 */ "Protocol Error: invalid call for this socket protocol",
 /* 11 */ "Fd Error: closing a socket while fd is set for select",
-/* 12 */ "Unknown Error: unknown socket error",
+/* 12 */ "Format Error: Host, Lan or port string invalid format",
 /* 13 */ "Unknown Error: unknown socket error",
 /* 14 */ "Unknown Error: unknown socket error",
 /* 15 */ "Unknown Error: unknown socket error",
@@ -1105,6 +1106,119 @@ extern int soc_get_local_host_id (soc_host *p_host) {
   }
   /* Get its addr */
   return soc_host_of(hostname, p_host);
+}
+
+# define SOC_FMT_ERR   -12
+/* String "x.y.z.t" to host, and string to port conversions */
+/* Parse a byte from a string, for str2host */
+static boolean parse_byte (const char *str, const int start, const int stop,
+                           byte *b) {
+
+  char buffer[4];
+  unsigned long val;
+
+  /* Check 1 <= Length <= 3 */
+  if ( (stop - start) < 0 || (stop - start) > 2) {
+    return FALSE;
+  }
+
+  /* Copy string from start to stop and NUL terminate */
+  (void) strncpy (buffer, &str[start], stop - start + 1);
+  buffer[stop - start + 1] = NUL;
+
+  /* Convert to int then to byte */
+  errno = 0;
+  val = strtoul (buffer, NULL, 0);
+  if ( (errno != 0) || (val > 255) ) {
+    return FALSE;
+  } 
+  *b = (byte) val;
+  return TRUE; 
+}
+
+/* Converts a string "x.y.z.t" to host */
+extern int soc_str2host (const char *str, soc_host *p_host) {
+  int i;
+  /* Number and indexes of dots */
+  int di, ds[3];
+  boolean ok;
+
+  /* Try to parse a LAN address byte.byte.byte.byte */
+  /*  otherwise consider it is a lan name */
+
+  /* Look for a dot, count dosts and store indexes */
+  /* Check it is a digit otherwise */
+  /* di must be set 3 if OK */
+  di = 0;
+  i = 0;
+  for (;;) {
+    if (str[i] == '.') {
+      /* Check and update dot number */
+      if (di == 3) {
+        /* Too many dots */
+        di = 0;
+        break;
+      }
+      /* Store this dot index */
+      ds[di] = i;
+      di++;
+    } else if (str[i] == NUL) {
+      /* Done */
+      break;
+    } else if (! isdigit(str[i])) {
+      /* Not a dot nor a digit */
+      di = 0;
+      break;
+    }
+    i++;
+  }
+
+  /* Check Nb of dots is 3 and that dots define 4 numbers */
+  ok = (di == 3);
+  ok = ok && (ds[0] != 0);
+  ok = ok && (ds[1] != ds[0] + 1);
+  ok = ok && (ds[2] != ds[1] + 1);
+  ok = ok && ((int)strlen(str)-1 != ds[2]);
+
+  ok = ok && parse_byte (str, 0, ds[0]-1, &p_host->bytes[0]);
+  ok = ok && parse_byte (str, ds[0]+1, ds[1]-1, &p_host->bytes[1]);
+  ok = ok && parse_byte (str, ds[1]+1, ds[2]-1, &p_host->bytes[2]);
+  ok = ok && parse_byte (str, ds[2]+1, strlen(str)-1,
+                      &p_host->bytes[3]);
+  /* Done */
+  return (ok ? SOC_OK : SOC_FMT_ERR);
+}
+
+extern int soc_str2port (const char *str, soc_port *p_port) {
+  int i;
+  unsigned long val;
+
+  /* Check length */
+  if (strlen(str) > 5) {
+    return SOC_FMT_ERR;
+  }
+
+  /* Check if it is digits */
+  i = 0;
+  for (;;) {
+    if (str[i] == NUL) {
+      /* Done */
+      break;
+    } else if (! isdigit(str[i])) {
+      /* Not a digit */
+      return SOC_FMT_ERR;
+    }
+    i++;
+  }
+
+  /* Convert to int then to short */
+  errno = 0;
+  val = strtoul (str, NULL, 0);
+  if ( (errno != 0) || (val > 65535) ) {
+    return SOC_FMT_ERR;
+  }
+  *p_port = (soc_port) val;
+  return SOC_OK;
 }
 
 /*******************************************************************/

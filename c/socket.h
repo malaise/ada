@@ -33,6 +33,8 @@
 #define SOC_PROTO_ERR  -10
 /* Close while fd used in select */
 #define SOC_FD_IN_USE  -11
+/* Lan/host address or port string format error */
+# define SOC_FMT_ERR   -12
 
 /* Failures */
 /* Connection refused */
@@ -202,6 +204,11 @@ extern int soc_port_of (const char *port_name,
 extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len);
 extern int soc_get_local_host_id (soc_host *p_host);
+
+/* String "x.y.z.t" to host, and string to port conversions */
+extern int soc_str2host (const char *str, soc_host *p_host);
+
+extern int soc_str2port (const char *str, soc_port *p_port);
 
 /* ------------------------------------*/
 /* Receive                             */
