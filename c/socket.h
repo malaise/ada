@@ -89,12 +89,11 @@ typedef void * soc_message;
 /* Returns the string associated to an error code */
 extern const char * soc_error (const int code);
 
-/*--------------------------------------------*/
-/* All functions return SOC_OK or an error,   */
-/*  except soc_receive on a non blocking tcp  */
-/*  (no header) connection), that returns the */
-/*  read length or an error.                  */
-/*--------------------------------------------*/
+/*-------------------------------------------------------------*/
+/* All functions return an error or SOC_OK except soc_receive: */
+/*  on non blocking tcp no header it returns the read length   */
+/*  on udp it returns the real length of the message sent      */
+/*-------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------*/
 /*  Note for Multicast IP (using Udp socket):                              */
