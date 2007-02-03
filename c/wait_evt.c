@@ -103,6 +103,8 @@ extern int get_signal (void) {
     return (SIG_DUMMY);
   } else if (last_sig == SIGINT) {
     return (SIG_TERMINATE);
+  } else if (last_sig == SIGTERM) {
+    return (SIG_TERMINATE);
   } else if (last_sig == SIGCHLD) {
     return (SIG_CHILD);
   } else {
@@ -142,6 +144,7 @@ static void init_evt (void) {
   /* Set handler if not set */
   if (! sig_handled) {
     (void) signal(SIGINT, signal_handler);
+    (void) signal(SIGTERM, signal_handler);
     (void) signal(SIGCHLD, signal_handler);
     (void) signal(SIGPIPE, SIG_IGN);
     sig_handled = TRUE;
