@@ -16,6 +16,9 @@ static fd_set global_write_mask;
 static int last_fd = -1;
 
 int evt_add_fd (int fd, boolean read) {
+  if (fd < 0) {
+    return (ERR);
+  }
   if (last_fd == -1) {
     FD_ZERO(&global_read_mask);
     FD_ZERO(&global_read_mask);
@@ -35,6 +38,9 @@ int evt_del_fd (int fd, boolean read) {
   int i;
   fd_set *mask;
 
+  if (fd < 0) {
+    return (ERR);
+  }
   if (last_fd == -1) {
     return (ERR);
   }
@@ -62,6 +68,9 @@ int evt_del_fd (int fd, boolean read) {
 }
 
 extern boolean evt_fd_set (int fd, boolean read) {
+  if (fd < 0) {
+    return (ERR);
+  }
   if (last_fd == -1) {
     return (FALSE);
   }
