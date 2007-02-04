@@ -20,6 +20,7 @@ package body Socket is
   C_Soc_Tail_Err  : constant Result :=  -9;
   C_Soc_Proto_Err : constant Result := -10;
   C_Soc_Fd_In_Use : constant Result := -11;
+  C_Soc_Fmt_Err   : constant Result := -12;
 
   C_Soc_Conn_Refused   : constant Result := -21;
   C_Soc_Name_Not_Found : constant Result := -22;
@@ -173,6 +174,7 @@ package body Socket is
       when C_Soc_Tail_Err  => raise Soc_Tail_Err;
       when C_Soc_Proto_Err => raise Soc_Proto_Err;
       when C_Soc_Fd_In_Use => raise Soc_Fd_In_Use;
+      when C_Soc_Fmt_Err   => raise Soc_Unknown_Error;
 
       when C_Soc_Conn_Refused   => raise Soc_Conn_Refused;
       when C_Soc_Name_Not_Found => raise Soc_Name_Not_Found;
