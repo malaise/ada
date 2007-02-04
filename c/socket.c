@@ -1131,9 +1131,9 @@ static boolean parse_byte (const char *str, const int start, const int stop,
   val = strtoul (buffer, NULL, 0);
   if ( (errno != 0) || (val > 255) ) {
     return FALSE;
-  } 
+  }
   *b = (byte) val;
-  return TRUE; 
+  return TRUE;
 }
 
 /* Converts a string "x.y.z.t" to host */
