@@ -36,3 +36,17 @@ a pushr P pushr call " = " put b pushr P pushr call " * " put
 # Format result
 P pushr call "%" putl
 
+# A% of B (A * B / 100)
+a pushr toreal b pushr toreal 100.0 / * p popr
+0 format
+b pushr P pushr call " * " put a pushr P pushr call "% = " put
+p pushr P pushr call newl
+
+# B + A%
+b pushr P pushr call " + " put a pushr P pushr call "% = " put
+b pushr p pushr + P pushr call newl
+
+# B - A%
+b pushr P pushr call " - " put a pushr P pushr call "% = " put
+b pushr p pushr - P pushr call newl
+
