@@ -1663,11 +1663,8 @@ extern int soc_receive (soc_token token,
       UNLOCK;
       return (SOC_SYS_ERR);
     }
-  } else if (result == 0) {
-    UNLOCK;
-    return (SOC_READ_0);
   } else {
-    /* A message read */
+    /* A message read, even if empty */
     if (set_for_reply) {
       soc->dest_set = TRUE;
     }

@@ -237,9 +237,9 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /* Returned values: */
 /*   - the length of bytes read, which is usually the length of the message */
 /*     sent. In tcp no header it may be anything from 0 to length. */
-/*     In udp it is the sent message length (maybe > length). */
+/*     In udp it is the sent message length (maybe > length, or 0). */
 /*   - SOC_WOULD_BLOCK (in non blocking), new read has to be done */
-/*   - SOC_READ_0, disconnection? */
+/*   - SOC_READ_0, tcp disconnection? */
 /*   - any other (fatal) error */
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
