@@ -25,9 +25,10 @@ package Unlimited_Pool is
   procedure Clear (Pool : in out Pool_Type);
 
 private
+  type Data_Type_Access is access all Data_Type;
   procedure Set (To : out Data_Type; Val : in Data_Type);
 
-  package Pool_List_Mng is new Limited_List (Data_Type, Set);
+  package Pool_List_Mng is new Limited_List (Data_Type, Data_Type_Access, Set);
   type Pool_Type is new Pool_List_Mng.List_Type;
 
 end Unlimited_Pool;

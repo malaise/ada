@@ -11,7 +11,7 @@ package body Substit is
   package Line_List_Dyn_Mng is new Dynamic_List (Asu.Unbounded_String);
   package Line_List_Mng renames Line_List_Dyn_Mng.Dyn_List;
   Line_List : Line_List_Mng.List_Type;
-  subtype Str_Access is Line_List_Mng.Element_Access;
+  subtype Str_Access is Line_List_Dyn_Mng.Element_Access;
 
   -- File names
   In_File_Name : Asu.Unbounded_String;

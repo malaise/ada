@@ -98,7 +98,7 @@ package Unique_List is
   Internal_Error : exception;
 private
   -- The limited list of items
-  package List_Mng is new Limited_List (Element_Type, Set);
+  package List_Mng is new Limited_List (Element_Type, Element_Access, Set);
   -- Element hashing
   procedure Dump (Data : in Element_Access);
   package Hash_Mng is

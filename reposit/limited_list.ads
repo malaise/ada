@@ -1,6 +1,7 @@
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
+  type Element_Access is access all Element_Type;
   with procedure Set (To : out Element_Type; Val : in Element_Type);
 
 package Limited_List is
@@ -162,7 +163,6 @@ package Limited_List is
   procedure Assign (To : in out List_Type; Val : in List_Type);
 
 
-  type Element_Access is access all Element_Type;
   -- Get direct access to current element in list (or null if list is empty).
   function Access_Current (List : List_Type) return Element_Access;
 

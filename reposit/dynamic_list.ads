@@ -5,9 +5,10 @@ generic
 
 package Dynamic_List is
 
+  type Element_Access is access all Element_Type;
   procedure Set (To : out Element_Type; Val : in Element_Type);
 
-  package Dyn_List is new Limited_List (Element_Type, Set);
+  package Dyn_List is new Limited_List (Element_Type, Element_Access, Set);
 
 end Dynamic_List;
 

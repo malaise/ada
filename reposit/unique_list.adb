@@ -1,8 +1,6 @@
 with Limited_List, Hash;
 package body Unique_List is
 
-  use type List_Mng.Element_Access;
-
   -- Element hashing
   procedure Dump (Data : in Element_Access) is
   begin
