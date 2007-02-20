@@ -10,6 +10,7 @@ procedure T_Ul is
     Name : Name_Txt;
     Val : Val_Txt;
   end record;
+  type Var_Acc is access all Var_Rec;
 
   procedure Set (To : out Var_Rec; Val : in Var_Rec) is
   begin
@@ -26,7 +27,7 @@ procedure T_Ul is
     return Current.Name = Criteria.Name;
   end "=";
 
-  package My_Ul is new Unique_List (Var_Rec, Set, Image, "=");
+  package My_Ul is new Unique_List (Var_Rec, Var_Acc, Set, Image, "=");
   Ul : My_Ul.List_Type;
 
   -- Store a env var (from string "name=val")

@@ -25,6 +25,8 @@ package body Search_Pattern is
     --  then indexes of sub-matching strings
     Substrs : Substr_Array := (others => (0, 0));
   end record;
+  type Line_Pat_Acc is access all Line_Pat_Rec;
+
   procedure Set (To : out Line_Pat_Rec; Val : in Line_Pat_Rec) is
   begin
     -- Setting a pattern (in Parse) for use in Check
@@ -51,7 +53,8 @@ package body Search_Pattern is
     -- Unicity of Num
     return Current.Num = Criteria.Num;
   end "=";
-  package Unique_Pattern is new Unique_List (Line_Pat_Rec, Set, Image, "=");
+  package Unique_Pattern is new Unique_List (Line_Pat_Rec, Line_Pat_Acc,
+                                            Set, Image, "=");
   -- True only after Check(Number) called and OK.
   Check_Completed : Boolean := False;
   Expected_Index : Positive := 1;
@@ -84,7 +87,7 @@ package body Search_Pattern is
   procedure Add (Crit : in String;
                  Extended, Case_Sensitive : in Boolean) is
     Upat : Line_Pat_Rec;
-    Upat_Access : Unique_Pattern.Element_Access;
+    Upat_Access : Line_Pat_Acc;
     Ok : Boolean;
   begin
     -- Compute new pattern number and type
@@ -397,7 +400,7 @@ package body Search_Pattern is
   --  the number of regex (returned by Number)
   function Nb_Substrings (Regex_Index : Positive) return Nb_Sub_String_Range is
     Upat : Line_Pat_Rec;
-    Upat_Access : Unique_Pattern.Element_Access;
+    Upat_Access : Line_Pat_Acc;
   begin
     -- Get access to the pattern
     Upat.Num := Regex_Index;
@@ -417,7 +420,7 @@ package body Search_Pattern is
                   Regex_Index : Positive) return Boolean is
     -- The pattern to check with
     Upat : Line_Pat_Rec;
-    Upat_Access : Unique_Pattern.Element_Access;
+    Upat_Access : Line_Pat_Acc;
     -- Check result
     Nmatch : Natural;
     Match : Regular_Expressions.Match_Array
@@ -548,7 +551,7 @@ package body Search_Pattern is
                       Sub_String_Index : Nb_Sub_String_Range)
            return String is
     Upat : Line_Pat_Rec;
-    Upat_Access : Unique_Pattern.Element_Access;
+    Upat_Access : Line_Pat_Acc;
     Cell : Regular_Expressions.Match_Cell;
   begin
     -- Check that previous check completed
@@ -589,7 +592,7 @@ package body Search_Pattern is
   --  string length
   function Str_Indexes return Regular_Expressions.Match_Cell is
     Upat : Line_Pat_Rec;
-    Upat_Access : Unique_Pattern.Element_Access;
+    Upat_Access : Line_Pat_Acc;
     Cell : Regular_Expressions.Match_Cell;
     Nbre : Natural;
   begin

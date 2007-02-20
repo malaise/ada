@@ -32,6 +32,7 @@ package body Replace_Pattern is
     Action : Subtit_Action_List;
     Info : Byte;
   end record;
+  type Substit_Action_Access is access all Substit_Action_Rec;
   procedure Set (To : out Substit_Action_Rec; Val : in Substit_Action_Rec) is
   begin
     To := Val;
@@ -46,7 +47,8 @@ package body Replace_Pattern is
   begin
     return Current.Index = Criteria.Index;
   end "=";
-  package Substites_List is new Unique_List (Substit_Action_Rec, Set, Image);
+  package Substites_List is new Unique_List (Substit_Action_Rec,
+                    Substit_Action_Access, Set, Image);
   Substites : Substites_List.List_Type;
 
   -- What is current case substitution mode
