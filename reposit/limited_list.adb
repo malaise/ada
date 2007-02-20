@@ -5,6 +5,7 @@ package body Limited_List is
 
   Free_List : Link := null;
 
+  -- Utilities
   function Is_Empty (List : List_Type) return Boolean is
   begin
     return List.First = null;
@@ -36,7 +37,7 @@ package body Limited_List is
     end if;
   end Check_Cb;
 
-  -- delete the full list
+  -- Delete the full list
   procedure Delete_List (List : in out List_Type;
                          Deallocate : in Boolean := True) is
     Local : Link;
@@ -45,13 +46,13 @@ package body Limited_List is
   begin
     Check_Cb(List);
     if Deallocate then
-      -- deallocate the list
+      -- Deallocate the list
       while List.First /= null loop
         Local := List.First;
         List.First := List.First.Next;
         Deallocation_Of(Local);
       end loop;
-      -- deallocate the free list
+      -- Deallocate the free list
       while Free_List /= null loop
         Local := Free_List;
         Free_List := Free_List.Next;
@@ -72,7 +73,7 @@ package body Limited_List is
   end Delete_List;
 
 
-  -- next <-> prev
+  -- Next <-> Prev
   function Other_Way (Where : Direction) return Direction is
   begin
     if Where = Next then
@@ -83,7 +84,7 @@ package body Limited_List is
   end Other_Way;
 
 
-  -- check movement
+  -- Check movement
   function Check_Move (List : in List_Type;
                        Where : Direction := Next) return Boolean is
   begin
@@ -95,7 +96,7 @@ package body Limited_List is
   end Check_Move;
 
 
-  -- read the current item
+  -- Read the current item
   procedure Read (List : in out List_Type;
                   Item : out Element_Type;
                   Move : in Movement := Next) is
@@ -128,7 +129,7 @@ package body Limited_List is
   end Read;
 
 
-  -- modify the current item
+  -- Modify the current item
   procedure Modify (List : in out List_Type;
                     Item : in Element_Type;
                     Move : in Movement := Next) is
@@ -162,7 +163,7 @@ package body Limited_List is
   end Modify;
 
 
-  -- put a new element in the list
+  -- Put a new element in the list
   procedure Insert (List  : in out List_Type;
                     Item  : in Element_Type;
                     Where : in Direction := Next) is
@@ -171,13 +172,13 @@ package body Limited_List is
     Check_Cb(List);
     List.Modified := True;
     if Free_List = null then
-      -- create the first element of the list
+      -- Create the first element of the list
       New_Cell := new Cell;
     else
       New_Cell := Free_List;
       Free_List := Free_List.Next;
     end if;
-    -- fill new cell
+    -- Fill new cell
     Set (New_Cell.Value, Item);
     if Is_Empty (List) then
       New_Cell.Next := null;
@@ -196,7 +197,7 @@ package body Limited_List is
           List.Pos_Last := List.Pos_Last + 1;
       end case;
     end if;
-    -- update neibours
+    -- Update neibours
     List.Current := New_Cell;
     if New_Cell.Prev /= null then
       New_Cell.Prev.Next := New_Cell;
@@ -215,7 +216,7 @@ package body Limited_List is
   end Insert;
 
 
-  -- suppress the current element from the list
+  -- Suppress the current element from the list
   procedure Delete (List : in out List_Type; Move : in Direction := Next) is
     Del_Cell : Link;
   begin
@@ -226,7 +227,7 @@ package body Limited_List is
       -- Last item of the list
       null;
     else
-      -- check movement
+      -- Check movement
       if Move = Next then
         Check_In(List.Current.Next);
       elsif Move = Prev then
@@ -235,7 +236,7 @@ package body Limited_List is
     end if;
 
     List.Modified := True;
-    -- disconnect
+    -- Disconnect
     if List.Current.Next /= null then
       List.Current.Next.Prev := List.Current.Prev;
     else
@@ -246,7 +247,7 @@ package body Limited_List is
     else
       List.First := List.Current.Next;
     end if;
-    -- move
+    -- Move
     Del_Cell := List.Current;
     case Move is
       when Next =>
@@ -256,14 +257,14 @@ package body Limited_List is
         List.Current := List.Current.Prev;
         List.Pos_First := List.Pos_First - 1;
     end case;
-    -- insert in free list
+    -- Insert in free list
     if Free_List /= null then
       Free_List.Prev := Del_Cell;
     end if;
     Del_Cell.Prev := null;
     Del_Cell.Next := Free_List;
     Free_List := Del_Cell;
-    -- check the special case when list is empty
+    -- Check the special case when list is empty
     --  (set pos_first and pos_last to 0)
     if List.Current = null then
       List.Pos_First := 0;
@@ -285,7 +286,7 @@ package body Limited_List is
   end Delete;
 
 
-  -- reads and deletes the current element
+  -- Reads and deletes the current element
   procedure Get (List : in out List_Type;
                  Item : out Element_Type;
                  Move : in Direction := Next) is
@@ -310,7 +311,7 @@ package body Limited_List is
   end Get;
 
 
-  -- changes current position
+  -- Changes current position
   procedure Move_To (List         : in out List_Type;
                      Where        : in Direction := Next;
                      Number       : in Natural := 1;
@@ -320,7 +321,7 @@ package body Limited_List is
   begin
     Check_Cb(List);
     Check(List);
-    -- start from
+    -- Start from
     if From_Current then
       New_Pos := List.Current;
       New_Pos_First := List.Pos_First;
@@ -337,7 +338,7 @@ package body Limited_List is
           New_Pos_Last := 1;
       end case;
     end if;
-    -- move
+    -- Move
     case Where is
       when Next =>
         for I in 1 .. Number loop
@@ -354,7 +355,7 @@ package body Limited_List is
           New_Pos_Last := New_Pos_Last + 1;
         end loop;
     end case;
-    -- realy move if no problem
+    -- Realy move if no problem
     List.Current := New_Pos;
     List.Pos_First := New_Pos_First;
     List.Pos_Last := New_Pos_Last;
@@ -380,8 +381,8 @@ package body Limited_List is
   end Rewind;
 
 
-  -- permute two elements knowing links to them
-  -- (internal procedure for permute and sort)
+  -- Permute two elements knowing links to them
+  --  (internal procedure for permute and sort)
   procedure Permute (List : in out List_Type; Left, Right : in Link) is
     Tmp_Next, Tmp_Prev : Link;
   begin
@@ -389,8 +390,8 @@ package body Limited_List is
     Tmp_Prev := Left.Prev;
     Tmp_Next := Left.Next;
     if Left.Next /= Right and then Left.Prev /= Right then
-      -- no adjacent cells
-      -- exchange neighbours links
+      -- No adjacent cells
+      -- Exchange neighbours links
       if Left.Prev /= null then
         Left.Prev.Next := Right;
       else
@@ -412,14 +413,14 @@ package body Limited_List is
         List.Last := Left;
       end if;
 
-      -- exchange swapped cells links to neighbours
+      -- Exchange swapped cells links to neighbours
       Left.Prev := Right.Prev;
       Left.Next := Right.Next;
       Right.Prev := Tmp_Prev;
       Right.Next := Tmp_Next;
     elsif Left.Next = Right then
-      -- left just before right
-      -- exchange neighbours links
+      -- Left just before right
+      -- Exchange neighbours links
       if Left.Prev /= null then
         Left.Prev.Next := Right;
       else
@@ -431,14 +432,14 @@ package body Limited_List is
         List.Last := Left;
       end if;
 
-      -- exchange swapped cells links to neighbours
+      -- Exchange swapped cells links to neighbours
       Left.Prev := Right;
       Left.Next := Right.Next;
       Right.Prev := Tmp_Prev;
       Right.Next := Left;
     elsif Left.Prev = Right then
-      -- left just after right
-      -- exchange neighbours links
+      -- Left just after right
+      -- Exchange neighbours links
       if Left.Next /= null then
         Left.Next.Prev := Right;
       else
@@ -450,7 +451,7 @@ package body Limited_List is
         List.First := Left;
       end if;
 
-      -- exchange swapped cells links to neighbours
+      -- Exchange swapped cells links to neighbours
       Left.Prev := Right.Prev;
       Left.Next := Right;
       Right.Prev := Left;
@@ -461,7 +462,7 @@ package body Limited_List is
     List.Modified := True;
   end Permute;
 
-  -- permutes 2 elements
+  -- Permutes 2 elements
   procedure Permute (List      : in out List_Type;
                      Number1      : in Natural;
                      Number2      : in Natural;
@@ -470,13 +471,13 @@ package body Limited_List is
     Current_Position : constant Positive := Get_Position (List);
     Link1, Link2 : Link;
   begin
-    -- move to elements and store links to them
+    -- Move to elements and store links to them
     Move_To (List, Where, Number1, From_Current);
     Link1 := List.Current;
     Move_To (List, Where, Number2, From_Current);
     Link2 := List.Current;
 
-    -- permute items
+    -- Permute items
     Permute (List, Link1, Link2);
 
     -- Restore initial position
@@ -490,7 +491,7 @@ package body Limited_List is
   end Permute;
 
 
-  -- returns the number of elements in the list (0 if empty)
+  -- Returns the number of elements in the list (0 if empty)
   function List_Length (List : List_Type) return Natural is
   begin
     if Is_Empty(List) then
@@ -501,7 +502,7 @@ package body Limited_List is
   end List_Length;
 
 
-  -- get position from first or last item in list
+  -- Get position from first or last item in list
   function Get_Position (List : List_Type;
                          From : Reference := From_First) return Positive is
   begin
@@ -515,7 +516,7 @@ package body Limited_List is
   end Get_Position;
 
 
-  -- modification stuff
+  -- Modification stuff
   function Is_Modified (List : List_Type) return Boolean is
   begin
     return List.Modified;
@@ -545,8 +546,44 @@ package body Limited_List is
     return List.Current.Value'Unrestricted_Access;
   end Access_Current;
 
-
   -- Search
+
+  -- Search the element that is at the provided access (move to it)
+  procedure Search_Access (List      : in out List_Type;
+                           Found     : out Boolean;
+                           Criteria  : in Element_Access) is
+    New_Pos : Link;
+    New_Pos_First : Natural;
+  begin
+    Check_Cb(List);
+    -- Forbid calls from application
+    List.In_Cb := True;
+    -- Search from first
+    New_Pos := List.First;
+    New_Pos_First := 1;
+    -- Search until end of list or found
+    Found := False;
+    loop
+      exit when New_Pos = null;
+      if New_Pos.Value'Unrestricted_Access = Criteria then
+        -- Found
+        Found := True;
+        exit;
+      end if;
+      -- Next cell
+      New_Pos := New_Pos.Next;
+      New_Pos_First := New_Pos_First + 1;
+    end loop;
+    if Found then
+      -- Move to item found
+      List.Current := New_Pos;
+      List.Pos_Last := List.Pos_Last + List.Pos_First - New_Pos_First;
+      List.Pos_First := New_Pos_First;
+      List.Modified := True;
+    end if;
+    List.In_Cb := False;
+  end Search_Access;
+
 
   -- Generic search with a Criteria not of Item_Type
   procedure Search_Criteria (List      : in out List_Type;
@@ -589,7 +626,7 @@ package body Limited_List is
     end if;
     -- Forbid calls from application
     List.In_Cb := True;
-    -- start from
+    -- Start from
     if From /= Absolute then
       New_Pos := List.Current;
       New_Pos_First := List.Pos_First;
@@ -606,7 +643,7 @@ package body Limited_List is
           New_Pos_Last := 1;
       end case;
     end if;
-    -- move
+    -- Move
     case Where is
       when Next =>
         for I in 1 .. Occurence loop
@@ -633,7 +670,7 @@ package body Limited_List is
     end case;
 
     if Found then
-      -- No chaange if not found
+      -- No change if not found
       List.Current := New_Pos;
       List.Pos_First := New_Pos_First;
       List.Pos_Last := New_Pos_Last;
@@ -762,24 +799,24 @@ package body Limited_List is
 
     declare
 
-      -- recursive procedure which sorts a slice of the list
+      -- Recursive procedure which sorts a slice of the list
       procedure Quick (Left, Right : in Positive) is
-        -- middle of the slice
+        -- Middle of the slice
         I_Frontier : constant Positive := (Left + Right) / 2;
         L_Frontier : Link;
-        -- indexes in both halfs of the slice
+        -- Indexes in both halfs of the slice
         I_Left, I_Right : Positive;
         L_Left, L_Right : Link;
      begin
         I_Left := Left;
         I_Right := Right;
-        -- set link to frontier
+        -- Set link to frontier
         Move_To (List, Next, I_Frontier-1, False);
         L_Frontier := List.Current;
 
         loop
 
-          -- first element at left of slice and not positioned ok
+          -- First element at left of slice and not positioned ok
           --  regarding the frontier
           Move_To (List, Next, I_Left-1, False);
           while Less_Than (List.Current.Value, L_Frontier.Value) loop
@@ -788,7 +825,7 @@ package body Limited_List is
           L_Left := List.Current;
           I_Left := Get_Position (List);
 
-          -- last  element a right of slice and not positioned ok
+          -- Last  element a right of slice and not positioned ok
           --  regarding the frontier
           Move_To (List, Next, I_Right-1, False);
           while Less_Than (L_Frontier.Value, List.Current.Value) loop
@@ -797,13 +834,13 @@ package body Limited_List is
           L_Right := List.Current;
           I_Right := Get_Position (List);
 
-          -- exchange and go to next elements if not both in frontier
+          -- Exchange and go to next elements if not both in frontier
           if I_Left < I_Right then
             Permute (List, L_Left, L_Right);
             I_Left  := I_Left  + 1;
             I_Right := I_Right - 1;
           elsif I_Left = I_Right then
-            -- go to next elements if not crossed
+            -- Go to next elements if not crossed
             if I_Left /= Right then
               I_Left  := I_Left  + 1;
             end if;
@@ -812,12 +849,12 @@ package body Limited_List is
             end if;
           end if;
 
-          -- leave if crossed now
+          -- Leave if crossed now
           exit when I_Left > I_Right or else
                    (I_Left = Right and then I_Right = Left);
         end loop;
 
-        -- sort both new slices
+        -- Sort both new slices
         if Left   < I_Right then Quick(Left,   I_Right); end if;
         if I_Left < Right   then Quick(I_Left, Right);   end if;
       end Quick;
@@ -825,7 +862,7 @@ package body Limited_List is
     begin
       Quick (1, Last);
     end;
-    -- move to first item
+    -- Move to first item
     Move_To (List, Next, 0, False);
     List.Modified := True;
   end Sort;

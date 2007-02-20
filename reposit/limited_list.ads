@@ -166,6 +166,14 @@ package Limited_List is
   -- Get direct access to current element in list (or null if list is empty).
   function Access_Current (List : List_Type) return Element_Access;
 
+  -- Search the element that is at the provided access (move to it)
+  -- Found is set to True if the matching item is found, then the current
+  --  position is set to this item, otherwise it is unchanged.
+  -- Does not raise Empty_List.
+  procedure Search_Access (List      : in out List_Type;
+                           Found     : out Boolean;
+                           Criteria  : in Element_Access);
+
 
   -- Three different strategies to search:
   -- From_Current : Search starts from current item (that may match)
