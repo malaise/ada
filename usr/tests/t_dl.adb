@@ -9,6 +9,7 @@ procedure T_Dl is
 
   List : My_List.List_Type;
   Item : Integer;
+  Acc : My_Dyn_List.Element_Access;
   Found : Boolean;
   Done : Boolean;
 
@@ -105,6 +106,10 @@ begin
   Ada.Text_Io.Put_Line("Adds the element 50 before current position");
   My_List.Insert(List, 50, My_List.Prev);
 
+  Ada.Text_Io.Put("Store current access and read: ");
+  Acc := My_List.Access_Current (List);
+  Put(Acc.all, True);
+
   -- list length
   Ada.Text_Io.Put("List length: ");
   Put(My_List.List_Length(List), True);
@@ -117,6 +122,17 @@ begin
     Put(Item);
   end loop;
   Ada.Text_Io.New_Line;
+
+  -- Move back to saved access and read
+  Ada.Text_Io.Put("Search stored access and read: ");
+  My_List.Search_Access (List, Found, Acc);
+  if not Found then
+    Ada.Text_Io.Put_Line ("NOT FOUND");
+    -- This is not normal. Abort.
+    raise My_List.Not_In_List;
+  end if;
+  My_List.Read(List, Item, My_List.Current);
+  Put(Item, True);
 
   -- permute 1st and 4th elements, then search 3 from last
   Ada.Text_Io.Put_Line("Permute 1st and 4th elements, then search 3 from last");
