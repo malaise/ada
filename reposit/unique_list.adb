@@ -54,7 +54,7 @@ package body Unique_List is
       raise Full_List;
   end Insert;
 
-  -- Read the  the element matching in the list
+  -- Read the element matching in the list
   -- May raise Not_In_List
   procedure Read (List : in out List_Type;
                   Crit : in Element_Type;

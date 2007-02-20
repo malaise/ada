@@ -3,6 +3,7 @@ pragma Elaborate (Hash);
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
+  type Element_Access is access all Element_Type;
   -- Affectation of elements
   with procedure Set (To : out Element_Type; Val : in Element_Type);
   -- A string representing the element, for hashing (different elements
@@ -34,7 +35,6 @@ package Unique_List is
                   Crit : in Element_Type;
                   Item : out Element_Type);
 
-  type Element_Access is access all Element_Type;
   -- Get direct access to element matching in the list
   -- May raise Not_In_List
   procedure Get_Access (List : in out List_Type;
