@@ -1,3 +1,6 @@
+-- Stores ENV variables in a unique list
+-- Modifies and retrieve list entries according to arguments
+--  <name> | <name>=<value> | dump
 with Ada.Text_Io;
 with Unique_List, Argument, Text_Handler, String_Mng, Sys_Calls;
 procedure T_Ul is
@@ -71,7 +74,7 @@ begin
     end if;
   end loop;
 
-  -- Process argument: varialbe (re) definition or get
+  -- Process argument: variable (re) definition or get
   Ada.Text_Io.Put_Line ("Processing arguments:");
   for I in 1 .. Argument.Get_Nbre_Arg loop
     if Argument.Get_Parameter (Occurence => I) = "dump" then
