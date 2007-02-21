@@ -23,7 +23,9 @@ package Network is
                range 1 .. Connection_Number'Last;
 
   -- Data associated to a connection
+  type Connection_Key_Type is private;
   type Connection_Info is record
+    Key : Connection_Key_Type;
     Node : Node_Access;
     Data : Conn_Data_Type;
   end record;
@@ -62,10 +64,17 @@ package Network is
                       Index : in Connection_Index;
                       Of_Conn_Data : Conn_Data_Type);
 
-  -- Delete a connection of Of_Node
+  -- Delete a connection of Of_Node, specify index
+  --  Beware that connection index may change (when some are deleted)
+  --  so deleting by key is safer
   -- Raises No_Connection if incorrect index
   procedure Delete_Connection (Of_Node : in out Node_Type;
                                Index : in Connection_Index);
+
+  -- Delete a connection of Of_Node, specify key
+  -- Raises No_Connection if no connection with this key
+  procedure Delete_Connection (Of_Node : in out Node_Type;
+                               Key : in Connection_Key_Type);
 
   -- Delete all the connections (if any) between Of_Node and With_node
   procedure Delete_Connections (Of_Node : in out Node_Type;
@@ -120,6 +129,7 @@ private
   -- A connection
   type Connection_Info_Type;
   type Connection_Access is access all Connection_Info_Type;
+  type Connection_Key_Type is new Connection_Access;
   type Connection_Info_Type is record
     -- Remote node and connection
     Node : Node_Access;
@@ -147,8 +157,7 @@ private
     -- Process node data change procedure
     Process_Node_Data_Change : Process_Node_Data_Change_Type := null;
     -- Process connection data change procedure
-    Process_Connection_Data_Change : Process_Connection_Data_Change_Type
-                                   := null;
+    Process_Connection_Data_Change : Process_Connection_Data_Change_Type := null;
   end record;
 
   -- Finalization of destruction

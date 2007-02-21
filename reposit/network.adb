@@ -1,5 +1,5 @@
 with Unchecked_Deallocation;
-package body Net is
+package body Network is
 
   procedure Set_Connection (To : out Connection_Info_Type;
                             Val : in Connection_Info_Type) is
@@ -367,6 +367,6 @@ package body Net is
       null;
   end Finalize;
 
-end Net;
+end Network;
 
 
