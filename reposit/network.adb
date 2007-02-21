@@ -1,5 +1,5 @@
 with Unchecked_Deallocation;
-package body Network is
+package body Net is
 
   procedure Set_Connection (To : out Connection_Info_Type;
                             Val : in Connection_Info_Type) is
@@ -61,7 +61,7 @@ package body Network is
     Init_Connections (Of_Node);
     Init_Connections (To_Node);
     -- Append To_Node to connections of Of_Node,
-    -- Connection access is not set yet
+    --  connection access is not set yet
     Connection_Info.Node := To_Node'Unchecked_Access;
     Connection_Info.Data := Of_Conn_Data;
     if not Connection_Mng.Is_Empty (Of_Node.Connections.all) then
@@ -117,7 +117,11 @@ package body Network is
     for I in Connections'Range loop
       Connection_Mng.Read (Of_Node.Connections.all, Connection,
                            Done => Moved);
-      Connections(I) := (Node => Connection.Node, Data => Connection.Data);
+      Connections(I) := (
+       Key => Connection_Key_Type(Connection_Mng.Access_Current
+                                       (Of_Node.Connections.all)),
+       Node => Connection.Node,
+       Data => Connection.Data);
     end loop;
     return Connections;
   end List_Connections;
@@ -137,7 +141,7 @@ package body Network is
     Connection_Mng.Move_To (Of_Node.Connections.all, Number => Index - 1,
                             From_Current => False);
     Connection_Mng.Access_Current (Of_Node.Connections.all).Data :=
-                    Of_Conn_Data;
+                          Of_Conn_Data;
     -- Inform the node of connection data change
     if Of_Node.Process_Connection_Data_Change /= null then
       Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access, Index);
@@ -202,7 +206,7 @@ package body Network is
     return False;
   end Has_Connection;
 
-  -- Delete a connection of Of_Node
+  -- Delete a connection of Of_Node, specify index
   -- Raises No_Connection if incorrect index
   procedure Delete_Connection (Of_Node : in out Node_Type;
                                Index : in Connection_Index) is
@@ -220,9 +224,29 @@ package body Network is
                            Move => Connection_Mng.Current);
     -- Delete one partner's connection to us
     Asym_Delete_Connection (Connection.Node.all,
-                    Connection_Mng.Access_Current(Of_Node.Connections.all));
+                     Connection_Mng.Access_Current(Of_Node.Connections.all));
     -- Delete this connection to partner
     Connection_Mng.Delete (Of_Node.Connections.all, Done => Moved);
+  end Delete_Connection;
+
+  -- Delete a connection of Of_Node, specify key
+  -- Raises No_Connection if no connection with this key
+  procedure Delete_Connection (Of_Node : in out Node_Type;
+                               Key : in Connection_Key_Type) is
+    Found : Boolean;
+  begin
+    -- Search connection matching key
+    Connection_Mng.Search_Access (Of_Node.Connections.all, Found,
+           Connection_Access(Key));
+    if not Found then
+      raise No_Connection;
+    end if;
+    -- Delete one partner's connection to us
+    Asym_Delete_Connection (
+      Connection_Mng.Access_Current(Of_Node.Connections.all).Node.all,
+      Connection_Mng.Access_Current(Of_Node.Connections.all));
+    -- Delete this connection to partner
+    Connection_Mng.Delete (Of_Node.Connections.all, Done => Found);
   end Delete_Connection;
 
 
@@ -318,9 +342,8 @@ package body Network is
 
   -- Set processing of change of connection data
   procedure Set_Process_Connection_Data_Change (
-      On_Node : in out Node_Type;
-      Process_Connection_Data_Change : in Process_Connection_Data_Change_Type)
-      is
+     On_Node : in out Node_Type;
+     Process_Connection_Data_Change : in Process_Connection_Data_Change_Type) is
   begin
     On_Node.Process_Connection_Data_Change := Process_Connection_Data_Change;
   end Set_Process_Connection_Data_Change;
@@ -344,6 +367,6 @@ package body Network is
       null;
   end Finalize;
 
-end Network;
+end Net;
 
 
