@@ -66,9 +66,6 @@ begin
       if Str = "record" then
         -- This is the "record" of "end record;"
         exit;
-      elsif Word.Lexic = Parser_Ada.Comment then
-        -- Put comment
-        Output.Put_Line (Get_Separators & Str, True, Level);
       end if;
     end;
   end loop;
