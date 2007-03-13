@@ -30,6 +30,9 @@ package Trees is
     -- All operations except Insert_Father, Dump and Iterate, may raise No_Cell
     --  if the tree is empty
 
+    -- Check if tree is empty
+    function Is_Empty (The_Tree : in Tree_Type) return Boolean;
+
     -- Insertions --
     ----------------
     -- All may raise Too_Many_Children if amount of children
@@ -169,6 +172,18 @@ package Trees is
     procedure Move_Brother (The_Tree : in out Tree_Type;
                             Elder    : in Boolean := True);
 
+    -- Access to Current --
+    -----------------------
+    -- WARNING:
+    -- It is up to the user to ensure the validity of the access it may store
+    -- versus changes of tree
+    -- May raise No_Cell if The_Tree is empty
+    type Position_Access is private;
+    No_Position : constant Position_Access;
+    function Get_Position (The_Tree : Tree_Type) return Position_Access;
+    procedure Set_Position (The_Tree : in out Tree_Type;
+                            Position : in Position_Access);
+
     -- Multi-tree operations
     ------------------------
     -- Swap sub-trees (from current position) of two trees
@@ -208,7 +223,7 @@ package Trees is
 
     -- Iterate on current and children (old to young by default)
     -- Nothing if tree is empty
-    procedure Iterate (The_Tree   : in Tree_Type;
+    procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : in Do_One_Access;
                        Elder      : in Boolean := True);
 
@@ -217,6 +232,8 @@ package Trees is
     -- One cell of tree and access to it
     type Cell_Rec;
     type Cell_Access is access Cell_Rec;
+    type Position_Access is new Cell_Access;
+    No_Position : constant Position_Access := null;
 
     -- The Lifo of saved position;
     package Saved_Pool is new Unlimited_Pool (Cell_Access, Lifo => True);

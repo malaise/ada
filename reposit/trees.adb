@@ -200,6 +200,12 @@ package body Trees is
       end if;
     end Copy_Cell;
 
+    -- Check if tree is empty
+    function Is_Empty (The_Tree : in Tree_Type) return Boolean is
+    begin
+      return The_Tree.Curr = null;
+    end Is_Empty;
+
     ----------------
     -- Insertions --
     ----------------
@@ -725,9 +731,29 @@ package body Trees is
       The_Tree.Curr := The_Tree.Curr.Brothers(Brother);
     end Move_Brother;
 
-    ------------------------
-    -- Multi-tree operations
-    ------------------------
+
+    -----------------------
+    -- Access to Current --
+    -----------------------
+    function Get_Position (The_Tree : Tree_Type) return Position_Access is
+    begin
+      -- No empty tree
+      Check_Callback (The_Tree);
+      return Position_Access(The_Tree.Curr);
+    end Get_Position;
+
+    procedure Set_Position (The_Tree : in out Tree_Type;
+                            Position : in Position_Access) is
+    begin
+      -- No empty tree
+      Check_Callback (The_Tree);
+      The_Tree.Curr := Cell_Access(Position);
+    end Set_Position;
+
+
+    ---------------------------
+    -- Multi-tree operations --
+    ---------------------------
     -- Swap sub-trees (from current position) of two trees
     -- Any of the trees can be empty, in this case this is a move of a sub-tree
     -- Curent positions are updated
@@ -847,6 +873,7 @@ package body Trees is
       null;
     end Copy_Tree;
 
+
     ----------
     -- Dump --
     ----------
@@ -927,7 +954,7 @@ package body Trees is
       end if;
     end Recurs;
 
-    procedure Iterate (The_Tree   : in Tree_Type;
+    procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : in Do_One_Access;
                        Elder      : in Boolean := True) is
 
@@ -941,8 +968,11 @@ package body Trees is
       if The_Tree.Root = null then
         return;
       end if;
+      -- Do it
+      The_Tree.In_Cb := True;
       Cell_Acc := The_Tree.Curr;
       Recurs (Cell_Acc, Do_One_Acc, Elder);
+      The_Tree.In_Cb := False;
     end Iterate;
 
   end Tree;
