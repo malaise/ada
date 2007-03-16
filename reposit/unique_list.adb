@@ -32,6 +32,16 @@ package body Unique_List is
     Element := null;
   end Locate;
 
+  -- Check if an element exists in the list
+  procedure Search (List : in out List_Type;
+                    Crit : in Element_Type;
+                    Found : out Boolean) is
+    Acc : Element_Access;
+  begin
+    Locate (List, Crit, Acc);
+    Found := Acc /= null;
+  end Search;
+
   -- Insert or replace an item
   -- May raise Full_List (no more memory)
   procedure Insert (List : in out List_Type;

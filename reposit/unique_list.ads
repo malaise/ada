@@ -24,6 +24,11 @@ package Unique_List is
   -- Insert may raise In_Callback if performed
   --  in an application callback (Iteration);
 
+  -- Check if an element exists in the list
+  procedure Search (List : in out List_Type;
+                    Crit : in Element_Type;
+                    Found : out Boolean);
+
   -- Insert or replace an item
   -- May raise Full_List (no more memory)
   procedure Insert (List : in out List_Type;
