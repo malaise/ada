@@ -1,27 +1,36 @@
-with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
-with Con_Io, Get_Line, Text_Handler, Normal, Argument, Directory,
-     Upper_Str, Mixed_Str, Basic_Proc;
+with Ada.Text_Io, Ada.Direct_Io, Ada.Strings.Unbounded;
+with Con_Io, Text_Handler, Normal, Argument, Directory,
+     Upper_Str, Mixed_Str, Basic_Proc, Xml_Parser;
 with Afpx_Typ;
 use  Afpx_Typ;
--- Read AFPX.LIS, check
+-- Read AFPX.LIS, check it
 -- Build AFPX.DSC list of Descr_Rec
 --       AFPX.FLD list of Fields_Array
 --       AFPX.INI list of Char_Str
 procedure Afpx_Bld is
 
+  -- Xml parser
+  package Xp renames Xml_Parser;
+  use type Xp.Node_Kind_List;
+
+  -- Unbounded strings
+  package Asu renames Ada.Strings.Unbounded;
+  subtype Asu_Us is Asu.Unbounded_String;
+  use type Asu_Us;
+  function Strof (Us : Asu_Us) return String renames Asu.To_String;
+  function "&" (Str : String; Us : Asu_Us) return String is
+  begin
+    return Str & Strof (Us);
+  end "&";
+
+  -- Maximum length of each init string
+  Max_Init_Length : constant := 132;
+
   -- Inputs name
-  Default_List_File_Name : constant String := "AFPX.LIS";
+  Default_List_File_Name : constant String := "Afpx.xml";
   List_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len * 2);
 
-  -- Get_Line of descriptor file
-  package Dscr_Get is new Get_Line (Max_Word_Len => 80,
-                                    Max_Word_Nb  => 45,
-                                    Max_Line_Len => 132,
-                                    Comment      => "#");
-  Dscr_Line : Dscr_Get.Line_Array;
-  Dscr_Words : Dscr_Get.Word_Count;
-
-  -- Direct_io of descriptors, fields, init strings
+  -- Direct_Io of descriptors, fields, init strings
   package Dscr_Io is new Ada.Direct_Io (Afpx_Typ.Descriptors_Array);
   Dscr_File : Dscr_Io.File_Type;
   package Fld_Io  is new Ada.Direct_Io (Afpx_Typ.Fields_Array);
@@ -49,31 +58,12 @@ procedure Afpx_Bld is
   -- Expected number of arguments
   Expected_Args : Natural;
 
-  procedure Next_Line is
-  begin
-    Dscr_Get.Read_Next_Line;
-    Dscr_Words := Dscr_Get.Get_Word_Number;
-    Dscr_Get.Get_Words(Dscr_Line);
-  end Next_Line;
+  -- Root of parsed elements
+  Root : Xp.Element_Type; 
 
-  procedure Dump_Line is
-  begin
-    Basic_Proc.Put_Error(Ada.Text_Io.Positive_Count'Image(Dscr_Get.Get_Line_No)
-                  & " : ");
-    for I in 1 .. Dscr_Words loop
-      Basic_Proc.Put_Error(">" & Text_Handler.Value(Dscr_Line(I)) & "< ");
-    end loop;
-    Basic_Proc.New_Line_Error;
-  end Dump_Line;
-
+  -- Close or deletes (on error) output files
   procedure Close (On_Error : in Boolean) is
   begin
-    begin
-      Dscr_Get.Close;
-    exception
-      when others =>
-        null;
-    end;
     if On_Error and then Dscr_Io.Is_Open (Dscr_File) then
       begin
         Dscr_Io.Delete (Dscr_File);
@@ -115,64 +105,66 @@ procedure Afpx_Bld is
     end if;
   end Close;
 
-  function Match (Str, Keyword : in String) return Boolean is
+  function Match (Str : Asu_Us; Keyword : String) return Boolean is
   begin
-    if Str'Length /= Keyword'Length then
-      return False;
-    end if;
-    return Str = Keyword
-    or else Str = Upper_Str(Keyword);
+    -- Maybe one day we allow uppercase and lowercase keywords?
+    return Strof (Str) = Keyword;
   end Match;
 
-  function First_Word return String is
+  procedure File_Error (Node : Xp.Node_Type; Msg : in String) is
   begin
-    return Text_Handler.Value(Dscr_Line(1));
-  end;
-
-  function End_Of (Keyword : String) return Boolean is
-  begin
-    return Dscr_Words = 2 and then
-           Match (First_Word, "End") and then
-           Match (Text_Handler.Value(Dscr_Line(2)), Keyword);
-  end End_Of;
-
-  procedure File_Error (Msg : in String := "") is
-  begin
-    if Msg = "" then
-      Basic_Proc.Put_Line_Error ("Syntax Error.");
-    else
-      Basic_Proc.Put_Line_Error ("Syntax Error : " & Msg & ".");
-    end if;
-    Basic_Proc.Put_Error (" In file " & Text_Handler.Value(List_File_Name)
-               & " at line ");
-    Dump_Line;
+    Basic_Proc.Put_Error ("Error: " & Msg);
+    Basic_Proc.Put_Line_Error (
+          " at line " & Positive'Image (Xp.Get_Line_No (Node))
+        & " of file " & Text_Handler.Value(List_File_Name));
     raise File_Syntax_Error;
   end File_Error;
 
-  -- Check and store upper_left (and lower right in size) and colors
-  procedure Load_Geo_Color (Fn : in Afpx_Typ.Absolute_Field_Range) is
+  -- Check and store upper_left and lower right
+  procedure Load_Geometry (Node : in Xp.Node_Type;
+                           Fn : in Afpx_Typ.Absolute_Field_Range) is
   begin
-    if not Match (First_Word, "Geometry") or else Dscr_Words /= 5 then
-      File_Error ("Geometry <upper_row> <left_col> <lower_row> <right_col> expected");
+    if Node.Kind /= Xp.Element
+    or else not Match (Xp.Get_Name (Node), "Geometry")
+    or else Xp.Get_Nb_Attributes (Node) /= 4
+    or else Xp.Get_Nb_Children (Node) /= 0 then
+      File_Error (Node, "Invalid geometry " & Xp.Get_Name (Node)
+                 & ", expected Up, Left, Down and Right");
     end if;
+    declare
+      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
     begin
-      -- Load upper_right and lower left
+      -- Load upper left
+      if not Match (Attrs(1).Name, "Up") then
+        File_Error (Node, "Invalid geometry " & Attrs(1).Name);
+      end if;
       Fields(Fn).Upper_Left.Row :=
-       Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(2)));
+       Con_Io.Row_Range'Value(Strof (Attrs(1).Value));
+      if not Match (Attrs(2).Name, "Left") then
+        File_Error (Node, "Invalid geometry " & Attrs(2).Name);
+      end if;
       Fields(Fn).Upper_Left.Col :=
-       Con_Io.Col_Range'Value(Text_Handler.Value(Dscr_Line(3)));
+       Con_Io.Col_Range'Value(Strof (Attrs(2).Value));
+
+      -- Load lower right
+      if not Match (Attrs(3).Name, "Low") then
+        File_Error (Node, "Invalid geometry " & Attrs(3).Name);
+      end if;
       Fields(Fn).Lower_Right.Row :=
-       Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(4)));
+       Con_Io.Row_Range'Value(Strof (Attrs(3).Value));
+      if not Match (Attrs(4).Name, "Right") then
+        File_Error (Node, "Invalid geometry " & Attrs(4).Name);
+      end if;
       Fields(Fn).Lower_Right.Col :=
-       Con_Io.Col_Range'Value(Text_Handler.Value(Dscr_Line(5)));
+       Con_Io.Col_Range'Value(Strof (Attrs(4).Value));
     exception
       when others =>
-        File_Error ("Invalid geometry");
+        File_Error (Node, "Invalid geometry");
     end;
     if      Fields(Fn).Upper_Left.Row > Fields(Fn).Lower_Right.Row
     or else Fields(Fn).Upper_Left.Col > Fields(Fn).Lower_Right.Col
     then
-      File_Error ("Invalid geometry. Upper_left < lower_right");
+      File_Error (Node, "Invalid geometry. Upper_left < lower_right");
     end if;
 
     -- Compute size
@@ -183,56 +175,76 @@ procedure Afpx_Bld is
 
     -- One Row for Get fields
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
-      File_Error ("Invalid geometry. Get fields must have ONE row");
+      File_Error (Node, "Invalid geometry. Get fields must have ONE row");
     end if;
+  end Load_Geometry;
 
-    Next_Line;
-
-    -- Parse colors
-    if not Match (First_Word, "Colors") then
-      File_Error ("Keyword Colors expected");
+  procedure Load_Colors (Node : in Xp.Node_Type;
+                         Fn : in Afpx_Typ.Absolute_Field_Range) is
+  begin
+    if Node.Kind /= Xp.Element
+    or else not Match (Xp.Get_Name (Node), "Colors")
+    or else Xp.Get_Nb_Children (Node) /= 0 then
+      File_Error (Node, "Invalid colors " & Xp.Get_Name (Node));
     end if;
+    declare
+      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
     begin
+      -- Parse colors
       if Fn = 0 or else Fields(Fn).Kind = Afpx_Typ.Get then
-        if Dscr_Words /= 4 then
-          File_Error ("Colors <foreground> <background> <selected> expected");
+        if Xp.Get_Nb_Attributes (Node) /= 3
+        or else not Match (Attrs(1).Name, "Foreground")
+        or else not Match (Attrs(2).Name, "Background")
+        or else not Match (Attrs(3).Name, "Selected") then
+          File_Error (Node, 
+                      "Expected colors for foreground, background and selected");
         end if;
         Fields(Fn).Colors.Foreground :=
-         Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
+         Con_Io.Effective_Colors'Value (Strof (Attrs(1).Value));
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
         Fields(Fn).Colors.Background :=
-         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(3)));
+         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(2).Value));
         Fields(Fn).Colors.Selected :=
-         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(4)));
+         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(3).Value));
 
       elsif Fields(Fn).Kind = Put then
-        if Dscr_Words /= 4 then
-          File_Error ("Colors <foreground> <blink> <background> expected");
+        if Xp.Get_Nb_Attributes (Node) /= 3
+        or else not Match (Attrs(1).Name, "Foreground")
+        or else not Match (Attrs(2).Name, "Blink")
+        or else not Match (Attrs(3).Name, "Background") then
+          File_Error (Node,
+                      "Expected colors for foreground, blink and background");
         end if;
         Fields(Fn).Colors.Foreground :=
-         Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
-        Fields(Fn).Colors.Blink_Stat :=
-         Con_Io.Effective_Blink_Stats'Value(Text_Handler.Value(Dscr_Line(3)));
+         Con_Io.Effective_Colors'Value (Strof (Attrs(1).Value));
+        if Boolean'Value (Strof (Attrs(2).Value)) then
+          Fields(Fn).Colors.Blink_Stat := Con_Io.Blink;
+        else
+          Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+        end if;
         Fields(Fn).Colors.Background :=
-         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(4)));
+         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(3).Value));
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
 
       elsif Fields(Fn).Kind = Button then
-        if Dscr_Words /= 3 then
-          File_Error ("Colors <foreground> <background> expected");
+        if Xp.Get_Nb_Attributes (Node) /= 2
+        or else not Match (Attrs(1).Name, "Foreground")
+        or else not Match (Attrs(2).Name, "Background") then
+          File_Error (Node,
+                      "Expected colors for foreground and background");
         end if;
         Fields(Fn).Colors.Foreground :=
-         Con_Io.Effective_Colors'Value (Text_Handler.Value(Dscr_Line(2)));
+         Con_Io.Effective_Colors'Value (Strof (Attrs(1).Value));
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
         Fields(Fn).Colors.Background :=
-         Con_Io.Effective_Basic_Colors'Value (Text_Handler.Value(Dscr_Line(3)));
+         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(2).Value));
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
       end if;
     exception
       when File_Syntax_Error =>
         raise;
       when others =>
-        File_Error ("Invalid colors specification");
+        File_Error (Node, "Invalid colors specification");
     end;
 
     -- Foreground has to be basic for all but Put fields
@@ -240,180 +252,148 @@ procedure Afpx_Bld is
     and then Fields(Fn).Colors.Foreground
              not in Con_Io.Effective_Basic_Colors then
       -- For list, Get and Button, Foreground has to be basic
-      File_Error ("For all but Put fields, Foreground has to be basic color");
+      File_Error (Node, 
+                  "For all but Put fields, Foreground has to be basic color");
     end if;
-    Next_Line;
-  end Load_Geo_Color;
+  end Load_Colors;
 
-  procedure Load_List is
+  procedure Load_List (Node : in Xp.Node_Type) is
   begin
-    if Dscr_Words /= 1 then
-      File_Error ("List expected");
+    if Node.Kind /= Xp.Element
+    or else Xp.Get_Nb_Attributes (Node) /= 0
+    or else Xp.Get_Nb_Children (Node) /= 2 then
+      File_Error (Node, "Invalid list definition");
     end if;
     -- In List
     Fields(0).Kind := Afpx_Typ.Button;
     Fields(0).Activated := True;
     Fields(0).Isprotected := False;
-    Next_Line;
-    Load_Geo_Color (0);
-    if not End_Of ("List") then
-      File_Error ("End List expected");
-    end if;
+    Load_Geometry (Xp.Get_Child (Node, 1), 0);
+    Load_Colors (Xp.Get_Child (Node, 2), 0);
     Fields(0).Char_Index := 1;
-    Next_Line;
   end Load_List;
 
-  Ht : Character renames Ada.Characters.Latin_1.Ht;
-
-  procedure Loc_Load_Field (No : in Afpx_Typ.Field_Range)  is
+  procedure Loc_Load_Field (Node : in Xp.Node_Type;
+                            No : in Afpx_Typ.Field_Range)  is
+    Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+    Child : Xp.Node_Type;
     First_Init : Boolean;
     Prev_Init_Square : Con_Io.Square;
     -- Location in field of init string
     Finit_Square : Con_Io.Square;
-    -- Whole init line got from get_line
-    Finit_Line   : Dscr_Get.Line_Txt;
     -- Init string
-    Finit_Str    : String (1 .. Finit_Line.Max_Len);
-    Finit_Len    : Natural;
-    Finit_Start  : Positive;
+    Finit_String : Asu_Us;
+    Finit_Length : Positive;
     -- Index in Char_Str of beginning of Init string
     Finit_Index : Afpx_Typ.Char_Str_Range;
   begin
-    if Dscr_Words /= 3 then
-      File_Error ("Field <field_no> <field_type> expected");
+    if Attrs'Length /= 2
+    or else not Match (Attrs(1).Name, "Num")
+    or else not Match (Attrs(2).Name, "Kind") then
+      File_Error (Node, "Invalid field definition, expected Num and Kind");
     end if;
     begin
-      if Afpx_Typ.Field_Range'Value(Text_Handler.Value(Dscr_Line(2))) /=
-      No then
+      if Afpx_Typ.Field_Range'Value(Strof (Attrs(1).Value)) /= No then
         raise Constraint_Error;
       end if;
     exception
       when others =>
-        File_Error ("Invalid field number. They must crescent positives");
+        File_Error (Node,
+                    "Invalid field number. They must crescent positives");
     end;
-    begin
-      Fields(No).Kind :=
-        Afpx_Typ.Field_Kind_List'Value(Text_Handler.Value(Dscr_Line(3)));
-    exception
-      when others =>
-        File_Error ("Invalid field type. PUT, GET or BUTTON expected");
-    end;
+
+    if not Match (Attrs(2).Value, "Put")
+    and then not Match (Attrs(2).Value, "Get")
+    and then not Match (Attrs(2).Value, "Button") then
+      File_Error (Node, "Invalid field kind. Put, Get or Button expected");
+    end if;
+    Fields(No).Kind := Afpx_Typ.Field_Kind_List'Value(Strof (Attrs(2).Value));
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
-    Next_Line;
-    Load_Geo_Color (No);
+    Load_Geometry (Xp.Get_Child (Node, 1), No);
+    Load_Colors (Xp.Get_Child (Node, 2), No);
 
+    -- Check global number of characters for the field
     Fields(No).Char_Index := Init_Index;
-    Finit_Len := Fields(No).Height * Fields(No).Width;
+    Finit_Length := Fields(No).Height * Fields(No).Width;
     begin
-      Init_Index := Init_Index + Finit_Len + 1;
+      Init_Index := Init_Index + Finit_Length + 1;
     exception
       when others =>
-        File_Error ("Too many init characters");
+        File_Error (Node, "Too many init characters for this field");
     end;
 
-    if Match(First_Word, "Init") then
-
-      if Dscr_Words /= 1 then
-        File_Error ("Init expected");
+    First_Init := True;
+    Prev_Init_Square := (0, 0);
+    for I in 3 .. Xp.Get_Nb_Children (Node) loop
+      Child := Xp.Get_Child (Node, I);
+      if not Match (Xp.Get_Name (Child), "Init")
+      or else Xp.Get_Nb_Attributes (Child) /= 2
+      or else Xp.Get_Nb_Children (Child) > 1 then
+        File_Error (Node, "Invalid Init, expected row, col and text");
       end if;
-      Next_Line;
 
-      First_Init := True;
-      Prev_Init_Square := (0, 0);
-      while not End_Of ("Init") loop
-        -- Check init syntax and length of string
-        if Dscr_Words < 2 then
-          File_Error ("Invalid init. <row> <col> [ <str> ] expected");
+      declare
+        Child_Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Child);
+      begin
+        if not Match (Child_Attrs(1).Name, "Row")
+        or else not Match (Child_Attrs(2).Name, "Col") then
+          File_Error (Child, "Invalid Init, expected row and col");
         end if;
+        Finit_Square.Row :=
+         Con_Io.Row_Range'Value(Strof (Child_Attrs(1).Value));
+        Finit_Square.Col :=
+         Con_Io.Row_Range'Value(Strof (Child_Attrs(2).Value));
+      exception
+        when others =>
+          File_Error (Child, "Invalid init row or column");
+      end;
+
+      -- Check init squares crescent
+      if not First_Init then
+        if Finit_Square.Row < Prev_Init_Square.Row then
+          File_Error (Child, "Invalid init row. Must be crescent");
+        elsif    Finit_Square.Row  = Prev_Init_Square.Row
+        and then Finit_Square.Col <= Prev_Init_Square.Col then
+          File_Error (Child,
+                      "Invalid init col. Must be crescent and not overlap");
+        end if;
+      end if;
+      First_Init := False;
+      Prev_Init_Square := Finit_Square;
+
+      -- Check init square is in field
+      if not Afpx_Typ.In_Field (Fields(No), Finit_Square) then
+        File_Error (Child, "Init row or col not in field");
+      end if;
+
+      -- Get the whole line to extract init string
+      if Xp.Get_Nb_Children (Child) = 1 then
+        declare
+          Child_Child : constant Xp.Node_Type := Xp.Get_Child (Child, 1);
         begin
-          Finit_Square.Row :=
-           Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(1)));
-          Finit_Square.Col :=
-           Con_Io.Row_Range'Value(Text_Handler.Value(Dscr_Line(2)));
-        exception
-          when others =>
-            File_Error ("Invalid init row or column");
-        end;
-        -- Check init squares crescent
-        if not First_Init then
-          if Finit_Square.Row < Prev_Init_Square.Row then
-            File_Error ("Invalid init row. Must be crescent");
-          elsif    Finit_Square.Row  = Prev_Init_Square.Row
-          and then Finit_Square.Col <= Prev_Init_Square.Col then
-            File_Error ("Invalid init col. Must be crescent and not overlap");
+          if Child_Child.Kind /= Xp.Text then
+            File_Error (Child_Child, "Invalid init string");
           end if;
-        end if;
-        First_Init := False;
-        Prev_Init_Square := Finit_Square;
-        -- Check init square in field
-        if not Afpx_Typ.In_Field (Fields(No), Finit_Square) then
-          File_Error ("Init row or col not in field");
-        end if;
-        -- Get the whole line to extract init string
-        Dscr_Get.Get_Whole_Line (Finit_Line);
-        Finit_Len := Text_Handler.Length (Finit_Line);
-        Finit_Str (1 .. Finit_Len) := Text_Handler.Value (Finit_Line);
-        Finit_Start := 1;
-        -- Skeep spaces after string
-        while   Finit_Str(Finit_Len) = ' '
-        or else Finit_Str(Finit_Len) = Ht loop
-          Finit_Len := Finit_Len - 1;
-        end loop;
-        -- Skeep spaces before row
-        while   Finit_Str(Finit_Start) = ' '
-        or else Finit_Str(Finit_Start) = Ht loop
-          Finit_Start := Finit_Start + 1;
-        end loop;
-        -- Skip row
-        while    Finit_Str(Finit_Start) /= ' '
-        and then Finit_Str(Finit_Start) /= Ht loop
-          Finit_Start := Finit_Start + 1;
-        end loop;
-        -- Skeep spaces between row and col
-        while   Finit_Str(Finit_Start) = ' '
-        or else Finit_Str(Finit_Start) = Ht loop
-          Finit_Start := Finit_Start + 1;
-        end loop;
-        -- Skip col
-        while    Finit_Start <= Finit_Len
-        and then Finit_Str(Finit_Start) /= ' '
-        and then Finit_Str(Finit_Start) /= Ht loop
-          Finit_Start := Finit_Start + 1;
-        end loop;
-        if Finit_Start /= Finit_Len then
-          -- There is a init string. Skeep spaces between col and str
-          while   Finit_Start <= Finit_Len
-          and then (        Finit_Str(Finit_Start) = ' '
-                    or else Finit_Str(Finit_Start) = Ht) loop
-            Finit_Start := Finit_Start + 1;
-          end loop;
-          -- Set effective init string
-          Finit_Str (1 .. Finit_Len - Finit_Start + 1) :=
-                 Finit_Str (Finit_Start .. Finit_Len);
-          Finit_Len := Finit_Len - Finit_Start + 1;
+          Finit_String := Xp.Get_Text (Child_Child);
+          Finit_Length := Asu.Length (Finit_String);
           -- Check Finit col + string length compatible with field width
           if not Afpx_Typ.In_Field (Fields(No),
-                  (Finit_Square.Row, Finit_Square.Col + Finit_Len - 1)) then
-            File_Error ("Init string too long for this col in this field");
+             (Finit_Square.Row, Finit_Square.Col + Finit_Length - 1)) then
+            File_Error (Child_Child,
+                        "Init string too long for this col in this field");
           end if;
-          -- Update prev_init_square col to last char of init string
-          Prev_Init_Square.Col := Finit_Square.Col + Finit_Len - 1;
-          -- Copy in init string
-          Finit_Index := Fields(No).Char_Index
-           + Finit_Square.Row * Fields(No).Width
-           + Finit_Square.Col;
-          Init_Str (Finit_Index .. Finit_Index + Finit_Len - 1) :=
-            Finit_Str (1 .. Finit_Len);
-        end if;
-        Next_Line;
-      end loop;
-      Next_Line;
-    end if;
-    if not End_Of ("Field") then
-      File_Error ("End Field expected");
-    end if;
-    Next_Line;
+        end;
+        -- Update prev_init_square col to last char of init string
+        Prev_Init_Square.Col := Finit_Square.Col + Finit_Length - 1;
+        -- Copy in init string
+        Finit_Index := Fields(No).Char_Index
+         + Finit_Square.Row * Fields(No).Width
+         + Finit_Square.Col;
+        Init_Str (Finit_Index .. Finit_Index + Finit_Length - 1) :=
+          Strof (Finit_String);
+      end if;
+    end loop;
   end Loc_Load_Field;
 
   procedure Check_Overlap (Dscr_No  : in Descriptor_Range;
@@ -446,23 +426,23 @@ procedure Afpx_Bld is
     raise File_Syntax_Error;
   end Check_Overlap;
 
-  procedure Load_Dscrs (Check_Only : in Boolean) is
+  procedure Load_Dscrs (Root : Xp.Element_Type;
+                        Check_Only : in Boolean) is
     Dscr_Index : Afpx_Typ.Descriptor_Range;
     Dscr_No    : Afpx_Typ.Descriptor_Range;
-    Error_Msg : Text_Handler.Text(60);
-    Eof_Allowed : Boolean := False;
+    Child, Child_Child : Xp.Node_Type;
 
   begin
-    -- Open list file.
-    begin
-      Dscr_Get.Open (Text_Handler.Value(List_File_Name));
-    exception
-      when Ada.Text_Io.Name_Error =>
-        Basic_Proc.Put_Line_Error ("Error : File "
-                            & Text_Handler.Value(List_File_Name)
-                            & " not found.");
-        raise File_Not_Found;
-    end;
+    if not Match (Xp.Get_Name (Root), "Afpx_Descriptors") then
+      File_Error (Root, "Invalid root, expected Afpx_Descriptors");
+    end if;
+    if Xp.Get_Nb_Attributes (Root) /= 0 then
+      File_Error (Root,
+             "Unexpected attributes of Afpx_Descriptors");
+    end if;
+    if Xp.Get_Nb_Children (Root) = 0 then
+      File_Error (Root, "Invalid definition Afpx_Descriptors, expected descriptors");
+    end if;
     -- If not check_only, delete then create binary files
     if not Check_Only then
       begin
@@ -504,38 +484,38 @@ procedure Afpx_Bld is
       Descriptors(I).Nb_Fields := 0;
     end loop;
 
-    Text_Handler.Set (Error_Msg, "Descriptor <descriptor_number> expected");
-    Dscr_Words := Dscr_Get.Get_Word_Number;
-    Dscr_Get.Get_Words(Dscr_Line);
-
     -- Loop on descriptors
     -- Descriprors are stored in the descriptor file at Dscr_No
     -- Fields and init tables are stored in their files at Dscr_Index
     Dscr_Index := 1;
     Dscrs:
-    loop
-      Eof_Allowed := False;
-      -- Descriptor line
-      Text_Handler.Set (Error_Msg, "Descriptor <descriptor_number> expected");
-      if Dscr_Words /= 2 then
-        File_Error (Text_Handler.Value (Error_Msg));
+    for I in 1 .. Xp.Get_Nb_Children (Root) loop
+      -- Descriptor
+      Child := Xp.Get_Child (Root, I);
+      if Child.Kind /= Xp.Element then
+        File_Error (Child, "Unexpected text as descriptor");
       end if;
-      if not Match (First_Word, "Descriptor") then
-        File_Error (Text_Handler.Value (Error_Msg));
+      if not Match (Xp.Get_Name (Child), "Descriptor") then
+        File_Error (Child, "Expected Descriptor");
+      end if;
+      if Xp.Get_Nb_Attributes (Child) /= 1
+      or else not Match (Xp.Get_Attribute (Child, 1).Name, "Num") then
+        File_Error (Child, "Expected descriptor Num");
       end if;
       begin
         Dscr_No := Afpx_Typ.Descriptor_Range'Value (
-                               Text_Handler.Value(Dscr_Line(2)));
+                    Strof (Xp.Get_Attribute (Child, 1).Value));
       exception
         when others =>
-        File_Error (Text_Handler.Value (Error_Msg));
+        File_Error (Child, "Invalid descriptor num");
       end;
       Ada.Text_Io.Put_Line ("   descriptor " &
                         Normal(Integer(Dscr_No), 2, Gap => '0'));
       -- Dscr no has to be unique
       if Descriptors(Dscr_No).Modified then
-        File_Error ("Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
-                                  & " already defined");
+        File_Error (Child,
+                    "Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
+                  & " already defined");
       end if;
       -- Init dscr and fields array. No list at init
       Descriptors(Dscr_No).Modified := True;
@@ -543,33 +523,25 @@ procedure Afpx_Bld is
       Descriptors(Dscr_No).Nb_Fields := 0;
       Init_Index := 1;
       Init_Str := (others => ' ');
-      Next_Line;
+      Fields(0).Kind := Put;
 
-      if Match(First_Word, "List") then
-        Load_List;
-      else
-        Fields(0).Kind := Put;
-      end if;
-      while Match(First_Word, "Field") loop
-        if Descriptors(Dscr_No).Nb_Fields /= Afpx_Typ.Field_Range 'Last then
-          Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
-        else
-          File_Error ("Too many fields. Maximum is"
+      for I in 1 .. Xp.Get_Nb_Children (Child) loop
+        Child_Child := Xp.Get_Child (Child, I);
+        if Child_Child.Kind /= Xp.Element then
+          File_Error (Child_Child, "Unexpected text as field");
+        end if;
+        if I = 1 and then Match(Xp.Get_Name (Child_Child), "List") then
+          Load_List (Child_Child);
+        elsif not Match(Xp.get_Name (Child_Child), "Field") then
+          File_Error (Child_Child, "Unexpected field");
+        elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
+          File_Error (Child_Child, "Too many fields. Maximum is"
            & Field_Range'Image(Afpx_Typ.Field_Range'Last) & " per descriptor");
-        end if;
-        Loc_Load_Field (Descriptors(Dscr_No).Nb_Fields);
-      end loop;
-
-      if not End_Of ("Descriptor") then
-        if Descriptors(Dscr_No).Nb_Fields = 0
-        and then Fields(0).Kind = Afpx_Typ.Put then
-          -- No list nor field
-          File_Error ("List, Field, or End Descriptor expected");
         else
-          -- Some list or fields
-          File_Error ("Field, or End Descriptor expected");
+          Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
+          Loc_Load_Field (Child_Child, Descriptors(Dscr_No).Nb_Fields);
         end if;
-      end if;
+      end loop;
 
       -- Check no overlapping of fields
       if Fields(0).Kind /= Put then
@@ -585,51 +557,24 @@ procedure Afpx_Bld is
         end loop;
       end loop;
 
-      -- if not check_only, write fields and init
+      -- If not check_only, write fields and init
       if not Check_Only then
         Fld_Io.Write  (Fld_File , Fields,   Fld_Io.Positive_Count(Dscr_Index));
         Init_Io.Write (Init_File, Init_Str, Init_Io.Positive_Count(Dscr_Index));
       end if;
 
       Dscr_Index := Dscr_Index + 1;
-      Eof_Allowed := True;
-      Next_Line;
     end loop Dscrs;
 
-    -- Should never go there.
-    -- Exit loop Dscrs on exception Dscr_Get.No_More_Line
-    raise Constraint_Error;
+    if not Check_Only then
+      Dscr_Io.Write (Dscr_File, Descriptors);
+    end if;
 
   exception
-    when Dscr_Get.No_More_Line =>
-      if Eof_Allowed then
-        -- if not check_only, write descriptors and close files
-        if not Check_Only then
-          Dscr_Io.Write (Dscr_File, Descriptors);
-        end if;
-        Close(False);
-      else
-        File_Error ("Unexpected end of file");
-        Close (True);
-        raise File_Syntax_Error;
-      end if;
-    when Dscr_Get.Too_Many_Words =>
-      File_Error ("Too many words");
-      Close (True);
-      raise File_Syntax_Error;
-    when Dscr_Get.Line_Too_Long =>
-      File_Error ("Line too long");
-      Close (True);
-      raise File_Syntax_Error;
-    when Dscr_Get.Word_Too_Long =>
-      File_Error ("Word too long");
-      Close (True);
-      raise File_Syntax_Error;
     when others =>
       Close (True);
       raise;
   end Load_Dscrs;
-
 
 begin
   -- Help
@@ -683,10 +628,20 @@ begin
 
   -- First check
   Ada.Text_Io.Put_Line ("Checking:");
-  Load_Dscrs(True);
+  begin
+    Xp.Parse (Text_Handler.Value(List_File_Name), Root);
+  exception
+    when Xp.File_Error =>
+      Basic_Proc.Put_Line_Error ("Error accessing file "
+                            & Text_Handler.Value(List_File_Name));
+      raise File_Not_Found;
+    when Xp.Parse_Error =>
+      Basic_Proc.Put_Line_Error (Xp.Get_Parse_Error_Message);
+  end;
+  Load_Dscrs(Root, True);
   -- Then write
   Ada.Text_Io.Put_Line ("Building:");
-  Load_Dscrs(False);
+  Load_Dscrs(Root, False);
   Ada.Text_Io.Put_Line ("Done.");
 exception
   when Argument_Error =>
