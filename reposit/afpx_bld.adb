@@ -59,7 +59,7 @@ procedure Afpx_Bld is
   Expected_Args : Natural;
 
   -- Root of parsed elements
-  Root : Xp.Element_Type; 
+  Root : Xp.Element_Type;
 
   -- Close or deletes (on error) output files
   procedure Close (On_Error : in Boolean) is
@@ -196,7 +196,7 @@ procedure Afpx_Bld is
         or else not Match (Attrs(1).Name, "Foreground")
         or else not Match (Attrs(2).Name, "Background")
         or else not Match (Attrs(3).Name, "Selected") then
-          File_Error (Node, 
+          File_Error (Node,
                       "Expected colors for foreground, background and selected");
         end if;
         Fields(Fn).Colors.Foreground :=
@@ -252,7 +252,7 @@ procedure Afpx_Bld is
     and then Fields(Fn).Colors.Foreground
              not in Con_Io.Effective_Basic_Colors then
       -- For list, Get and Button, Foreground has to be basic
-      File_Error (Node, 
+      File_Error (Node,
                   "For all but Put fields, Foreground has to be basic color");
     end if;
   end Load_Colors;
@@ -532,7 +532,7 @@ procedure Afpx_Bld is
         end if;
         if I = 1 and then Match(Xp.Get_Name (Child_Child), "List") then
           Load_List (Child_Child);
-        elsif not Match(Xp.get_Name (Child_Child), "Field") then
+        elsif not Match(Xp.Get_Name (Child_Child), "Field") then
           File_Error (Child_Child, "Unexpected field");
         elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
           File_Error (Child_Child, "Too many fields. Maximum is"

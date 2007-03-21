@@ -151,7 +151,6 @@ package body Xml_Parser is
   begin
     return Cell.Line_No;
   end Get_Line_No;
-  
 
   -------------------------
   -- NAME AND ATTRIBUTES --
@@ -307,7 +306,7 @@ package body Xml_Parser is
       raise No_Parent;
     end if;
     My_Tree.Move_Father (Tree_Mng.Tree);
-    My_tree.Read (Tree_Mng.Tree, Cell);
+    My_Tree.Read (Tree_Mng.Tree, Cell);
     if Cell.Kind = Xml_Parser.Element then
       N := (Kind =>  Xml_Parser.Element,
             Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
@@ -318,7 +317,7 @@ package body Xml_Parser is
       -- Attribute
       raise Internal_Error;
     end if;
-    return N; 
+    return N;
   end Get_Parent;
 
   function Is_Root (Element : in Element_Type) return Boolean is
