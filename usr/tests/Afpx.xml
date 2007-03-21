@@ -1,0 +1,349 @@
+<?xml version="1.0"?>
+<!-- Syntax of the descriptor file -->
+<!-- ----------------------------- -->
+<!-- <descriptor_file> ::= { <descriptor_def> } -->
+<!--  -->
+<!-- <descriptor_def> ::= Descriptor <descriptor_no> -->
+<!-- [ <list_def>  ] -->
+<!-- [ { <field_def> } ] -->
+<!-- End Descriptor -->
+<!--  -->
+<!-- <list_def>  ::= List -->
+<!-- <field_geo_and_color> -->
+<!-- End List -->
+<!--  -->
+<!-- <field_def> ::= Field <field_no> <field_type> -->
+<!-- <field_geo_and_color> -->
+<!-- [ <init_def> ] -->
+<!-- End Field -->
+<!--  -->
+<!-- <field_type> ::= Put  |  Button  |  Get -->
+<!--  -->
+<!-- <field_geo_and_color> ::= Geometry <geometry> -->
+<!-- Colors   <colors> -->
+<!--  -->
+<!-- <geometry> ::= <upper_left_row> <upper_left_col> -->
+<!-- <lower_right_row> <lower_right_col> -->
+<!--  -->
+<!-- <colors> ::= <foreground_color> [ <blink> ] -->
+<!-- <background_color> [ <selected_color> ] -->
+<!--  -->
+<!-- <init_def> ::= Init -->
+<!-- [ { <init_line> } ] -->
+<!-- End Init -->
+<!--  -->
+<!-- <init_line> ::= <init_row> <init_col> [ <init_string> ] -->
+<!--  -->
+<!--  -->
+<!-- Semantic of the descriptor file -->
+<!-- ------------------------------- -->
+<!-- - <descriptor_no> has to be positive range 1 .. 50 and sole (no double) -->
+<!-- - List has to be defined none or once per descriptor -->
+<!-- - <field_no> have to be within Field_Range (1 .. 200), strictly crescent -->
+<!-- within one descriptor, no "hole", no double -->
+<!-- - <geometry> must define at least one row and one col -->
+<!-- - <geometry> must not make the field overlap with another field of the -->
+<!-- descriptor -->
+<!-- - <geometry> of a Get field must define only one row -->
+<!-- - <foreground_color> must be of Colors for Put fields -->
+<!-- and of Basic_Colors for Button, Get and List -->
+<!-- - <background_color> and <selected_color> must be Basic_Colors -->
+<!-- - <blink> is mandatory for Put fields and must not be specified -->
+<!-- for List, Button and Get fields -->
+<!-- - <selected_color> is mandatory for List and Get fields and -->
+<!-- must not be specified for Put and Button -->
+<!-- - <init_row> have to be compatible with <geometry> -->
+<!-- crescent, no double (holes allowed) -->
+<!-- - <init_col> have to be compatible with <geometry> -->
+<!-- - <init_string> have to be compatible with <geometry> and <init_col> -->
+<!--  -->
+<!-- Infos -->
+<!-- ----- -->
+<!-- Separator is space or tabulation -->
+<!-- Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase) -->
+<!-- Comments are lines with '#' as first signficant character -->
+<!-- Rows are from 0 to 24 -->
+<!-- Cols are from 0 to 79 -->
+<!-- Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray -->
+<!-- Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange, -->
+<!-- Yellow, White -->
+<!-- Blink is "Blink" or "Not_Blink" -->
+<!-- Upper case is mandatory for keywords, not significant for colors and blink, -->
+<!-- significant for init_string -->
+<!--  -->
+<!-- Summary of color combinations -->
+<!-- ----------------------------- -->
+<!-- Type  |   Foreground  Blink  Background  Selected -->
+<!-- ------------------------------------------------- -->
+<!-- Put   |   X Colors    X      X Basic -->
+<!-- Button|   X Basic            X Basic -->
+<!-- Get   |   X Basic            X Basic     X Basic -->
+<!-- List  |   X Basic            X Basic     X Basic -->
+
+<!-- for T_Afpx -->
+<Afpx_Descriptors>
+  <Descriptor Num="1">
+
+    <List>
+      <Geometry Up="6" Left="48" Low="20" Right="78"/>
+      <Colors Foreground="red" Background="blue" Selected="green"/>
+    </List>
+
+    <Field Num="1" Kind="Get">
+      <Geometry Up="0" Left="1" Low="0" Right="35"/>
+      <Colors Foreground="red" Background="blue" Selected="green"/>
+    </Field>
+
+    <Field Num="2" Kind="Put">
+      <Geometry Up="2" Left="0" Low="4" Right="79"/>
+      <Colors Foreground="red" Blink="True" Background="brown"/>
+    </Field>
+
+    <Field Num="3" Kind="Get">
+      <Geometry Up="0" Left="37" Low="0" Right="78"/>
+      <Colors Foreground="red" Background="blue" Selected="green"/>
+    </Field>
+
+    <Field Num="4" Kind="Button">
+      <Geometry Up="10" Left="35" Low="12" Right="45"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="2">E X I T</Init>
+    </Field>
+
+    <Field Num="5" Kind="Button">
+      <Geometry Up="15" Left="34" Low="17" Right="46"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="2">P R I N T</Init>
+    </Field>
+
+    <Field Num="6" Kind="Get">
+      <Geometry Up="19" Left="34" Low="19" Right="46"/>
+      <Colors Foreground="red" Background="blue" Selected="green"/>
+    </Field>
+
+    <Field Num="7" Kind="Put">
+      <Geometry Up="22" Left="0" Low="24" Right="79"/>
+      <Colors Foreground="red" Blink="False" Background="magenta"/>
+      <Init Row="0" Col="0">Type exit in a get field to desactivate it</Init>
+      <Init Row="1" Col="0">Type return to print content of field, escape to clear field</Init>
+      <Init Row="2" Col="0">Print button is flip-flop based on keyboard event and timer</Init>
+    </Field>
+
+    <Field Num="8" Kind="Button">
+      <Geometry Up="7" Left="2" Low="9" Right="7"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="2">Up </Init>
+    </Field>
+
+    <Field Num="9" Kind="Button">
+      <Geometry Up="17" Left="2" Low="19" Right="7"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="1">Down</Init>
+    </Field>
+
+    <Field Num="10" Kind="Button">
+      <Geometry Up="7" Left="9" Low="9" Right="19"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="1">Page  Up </Init>
+    </Field>
+
+    <Field Num="11" Kind="Button">
+      <Geometry Up="17" Left="9" Low="19" Right="19"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="1">Page Down</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="7" Left="21" Low="9" Right="28"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="2">Top</Init>
+    </Field>
+
+    <Field Num="13" Kind="Button">
+      <Geometry Up="17" Left="21" Low="19" Right="28"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="1">Bottom</Init>
+    </Field>
+
+    <Field Num="14" Kind="Button">
+      <Geometry Up="12" Left="21" Low="14" Right="28"/>
+      <Colors Foreground="red" Background="blue"/>
+      <Init Row="1" Col="1">Center</Init>
+    </Field>
+
+
+
+  </Descriptor>
+
+  <!-- For T_Dscr -->
+  <Descriptor Num="2">
+
+    <Field Num="1" Kind="Button">
+      <Geometry Up="0" Left="50" Low="2" Right="60"/>
+      <Colors Foreground="red" Background="black"/>
+      <Init Row="1" Col="5">OK</Init>
+    </Field>
+
+  </Descriptor>
+
+  <!-- For T_Dscr -->
+  <Descriptor Num="3">
+
+    <List>
+      <Geometry Up="0" Left="50" Low="2" Right="60"/>
+      <Colors Foreground="red" Background="black" Selected="green"/>
+    </List>
+
+  </Descriptor>
+
+
+  <!-- For T_Dscr -->
+  <Descriptor Num="4">
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="0" Low="1" Right="79"/>
+      <Colors Foreground="white" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">0         1         2         3         4         5         6         7</Init>
+      <Init Row="1" Col="0">01234567890123456789012345678901234567890123456789012345678901234567890123456789</Init>
+    </Field>
+
+    <Field Num="2" Kind="Put">
+      <Geometry Up="2" Left="20" Low="2" Right="60"/>
+      <Colors Foreground="red" Blink="True" Background="blue"/>
+      <Init Row="0" Col="5">Ah que coucou!</Init>
+    </Field>
+
+    <Field Num="3" Kind="Put">
+      <Geometry Up="5" Left="30" Low="11" Right="50"/>
+      <Colors Foreground="light_blue" Blink="False" Background="red"/>
+      <Init Row="3" Col="7">COUCOU</Init>
+    </Field>
+
+  </Descriptor>
+
+
+  <!-- For T_Timers -->
+  <Descriptor Num="6">
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="0" Low="24" Right="79"/>
+      <Colors Foreground="white" Blink="False" Background="black"/>
+    </Field>
+
+
+  </Descriptor>
+
+  <!-- File selection for t_select_file -->
+  <Descriptor Num="10">
+
+    <List>
+      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Colors Foreground="cyan" Background="brown" Selected="red"/>
+    </List>
+
+    <!-- Title -->
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="25" Low="0" Right="48"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">GENERIC TITLE</Init>
+    </Field>
+
+    <!-- Action title -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="3" Low="1" Right="27"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- File -->
+    <Field Num="3" Kind="Put">
+      <Geometry Up="1" Left="33" Low="1" Right="37"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">File:</Init>
+    </Field>
+
+    <Field Num="4" Kind="Put">
+      <Geometry Up="1" Left="39" Low="1" Right="65"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Get -->
+    <Field Num="5" Kind="Get">
+      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Colors Foreground="cyan" Background="brown" Selected="brown"/>
+    </Field>
+
+    <!-- Messages -->
+    <Field Num="6" Kind="Put">
+      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- List actions -->
+    <Field Num="7" Kind="Button">
+      <Geometry Up="3" Left="69" Low="3" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Top</Init>
+    </Field>
+
+    <Field Num="8" Kind="Button">
+      <Geometry Up="5" Left="69" Low="7" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Pg Up</Init>
+    </Field>
+
+    <Field Num="9" Kind="Button">
+      <Geometry Up="9" Left="69" Low="9" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Up</Init>
+    </Field>
+
+    <Field Num="10" Kind="Button">
+      <Geometry Up="12" Left="69" Low="12" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Center</Init>
+    </Field>
+
+    <Field Num="11" Kind="Button">
+      <Geometry Up="15" Left="69" Low="15" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="17" Left="69" Low="19" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">Pg Down</Init>
+    </Field>
+
+    <Field Num="13" Kind="Button">
+      <Geometry Up="21" Left="69" Low="21" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <!-- Reread -->
+    <Field Num="14" Kind="Button">
+      <Geometry Up="11" Left="2" Low="13" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">REREAD</Init>
+    </Field>
+
+    <!-- Ok Cancel -->
+    <Field Num="15" Kind="Button">
+      <Geometry Up="15" Left="2" Low="17" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">OK</Init>
+    </Field>
+
+    <Field Num="16" Kind="Button">
+      <Geometry Up="19" Left="2" Low="21" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">CANCEL</Init>
+    </Field>
+
+    <!-- Any other field here -->
+
+  </Descriptor>
+
+</Afpx_Descriptors>
+

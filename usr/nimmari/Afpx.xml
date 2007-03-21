@@ -1,0 +1,266 @@
+<?xml version="1.0"?>
+<!-- Syntax of the descriptor file -->
+<!-- ----------------------------- -->
+<!-- <descriptor_file> ::= { <descriptor_def> } -->
+<!--  -->
+<!-- <descriptor_def> ::= Descriptor <descriptor_no> -->
+<!-- [ <list_def>  ] -->
+<!-- [ { <field_def> } ] -->
+<!-- End Descriptor -->
+<!--  -->
+<!-- <list_def>  ::= List -->
+<!-- <field_geo_and_color> -->
+<!-- End List -->
+<!--  -->
+<!-- <field_def> ::= Field <field_no> <field_type> -->
+<!-- <field_geo_and_color> -->
+<!-- [ <init_def> ] -->
+<!-- End Field -->
+<!--  -->
+<!-- <field_type> ::= Put  |  Button  |  Get -->
+<!--  -->
+<!-- <field_geo_and_color> ::= Geometry <geometry> -->
+<!-- Colors   <colors> -->
+<!--  -->
+<!-- <geometry> ::= <upper_left_row> <upper_left_col> -->
+<!-- <lower_right_row> <lower_right_col> -->
+<!--  -->
+<!-- <colors> ::= <foreground_color> [ <blink> ] -->
+<!-- <background_color> [ <selected_color> ] -->
+<!--  -->
+<!-- <init_def> ::= Init -->
+<!-- [ { <init_line> } ] -->
+<!-- End Init -->
+<!--  -->
+<!-- <init_line> ::= <init_row> <init_col> [ <init_string> ] -->
+<!--  -->
+<!--  -->
+<!-- Semantic of the descriptor file -->
+<!-- ------------------------------- -->
+<!-- - <descriptor_no> has to be positive range 1 .. 50 and sole (no double) -->
+<!-- - List has to be defined none or once per descriptor -->
+<!-- - <field_no> have to be within Field_Range (1 .. 200), strictly crescent -->
+<!-- within one descriptor, no "hole", no double -->
+<!-- - <geometry> must define at least one row and one col -->
+<!-- - <geometry> must not make the field overlap with another field of the -->
+<!-- descriptor -->
+<!-- - <geometry> of a Get field must define only one row -->
+<!-- - <foreground_color> must be of Colors for Put fields -->
+<!-- and of Basic_Colors for Button, Get and List -->
+<!-- - <background_color> and <selected_color> must be Basic_Colors -->
+<!-- - <blink> is mandatory for Put fields and must not be specified -->
+<!-- for List, Button and Get fields -->
+<!-- - <selected_color> is mandatory for List and Get fields and -->
+<!-- must not be specified for Put and Button -->
+<!-- - <init_row> have to be compatible with <geometry> -->
+<!-- crescent, no double (holes allowed) -->
+<!-- - <init_col> have to be compatible with <geometry> -->
+<!-- - <init_string> have to be compatible with <geometry> and <init_col> -->
+<!--  -->
+<!-- Infos -->
+<!-- ----- -->
+<!-- Separator is space or tabulation -->
+<!-- Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase) -->
+<!-- Comments are lines with '#' as first signficant character -->
+<!-- Rows are from 0 to 24 -->
+<!-- Cols are from 0 to 79 -->
+<!-- Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray -->
+<!-- Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange, -->
+<!-- Yellow, White -->
+<!-- Blink is "Blink" or "Not_Blink" -->
+<!-- Upper case is mandatory for keywords, not significant for colors and blink, -->
+<!-- significant for init_string -->
+<!--  -->
+<!-- Summary of color combinations -->
+<!-- ----------------------------- -->
+<!-- Type  |   Foreground  Blink  Background  Selected -->
+<!-- ------------------------------------------------- -->
+<!-- Put   |   X Colors    X      X Basic -->
+<!-- Button|   X Basic            X Basic -->
+<!-- Get   |   X Basic            X Basic     X Basic -->
+<!-- List  |   X Basic            X Basic     X Basic -->
+
+<Afpx_Descriptors>
+  <Descriptor Num="1">
+
+    <!-- Title, presentation, rules -->
+
+    <!-- Title NIM / MARIENBAD, then NIM or Marienbad -->
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="30" Low="0" Right="46"/>
+      <Colors Foreground="blue" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">NIM and MARIENBAD</Init>
+    </Field>
+
+    <!-- Rules -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="1" Low="19" Right="78"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+      <Init Row="1" Col="2">This game presents several sticks aligned on four rows:</Init>
+      <Init Row="2" Col="3">- seven sticks in the first row,</Init>
+      <Init Row="3" Col="3">- five in the second,</Init>
+      <Init Row="4" Col="3">- three in the third,</Init>
+      <Init Row="5" Col="3">- and one in the fourth.</Init>
+
+      <Init Row="7" Col="2">Each of us, at his turn, will remove some sticks, as many as we want,</Init>
+      <Init Row="8" Col="3">with only two constraints:</Init>
+      <Init Row="9" Col="4">- we must take at least one stick at each turn,</Init>
+      <Init Row="10" Col="4">- at each turn, all the sticks we take must be on the same row.</Init>
+
+      <Init Row="12" Col="2">I always play first at the beginning of a game, which gives you the</Init>
+      <Init Row="13" Col="3">possibility to win each game.</Init>
+
+      <Init Row="16" Col="2">Two variants are available:</Init>
+      <Init Row="17" Col="3">- at Nim, the winner is the one who takes the last stick,</Init>
+      <Init Row="18" Col="3">- at Marienbad, the player who takes the last stick loses.</Init>
+    </Field>
+
+    <!-- Buttons -->
+    <!-- Play nimm,  Play Marienbad, exit -->
+    <Field Num="3" Kind="Button">
+      <Geometry Up="21" Left="10" Low="23" Right="19"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+      <Init Row="1" Col="1">Play Nim</Init>
+    </Field>
+
+    <Field Num="4" Kind="Button">
+      <Geometry Up="21" Left="22" Low="23" Right="37"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+      <Init Row="1" Col="1">Play Marienbad</Init>
+    </Field>
+
+    <Field Num="5" Kind="Button">
+      <Geometry Up="21" Left="60" Low="23" Right="68"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+      <Init Row="1" Col="1">E X I T</Init>
+    </Field>
+
+  </Descriptor>
+
+  <Descriptor Num="2">
+
+    <!-- First row -->
+    <Field Num="1" Kind="Button">
+      <Geometry Up="2" Left="23" Low="4" Right="24"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="2" Kind="Button">
+      <Geometry Up="2" Left="28" Low="4" Right="29"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="3" Kind="Button">
+      <Geometry Up="2" Left="33" Low="4" Right="34"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="4" Kind="Button">
+      <Geometry Up="2" Left="38" Low="4" Right="39"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="5" Kind="Button">
+      <Geometry Up="2" Left="43" Low="4" Right="44"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="6" Kind="Button">
+      <Geometry Up="2" Left="48" Low="4" Right="49"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="7" Kind="Button">
+      <Geometry Up="2" Left="53" Low="4" Right="54"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <!-- Second row -->
+    <Field Num="8" Kind="Button">
+      <Geometry Up="6" Left="28" Low="8" Right="29"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="9" Kind="Button">
+      <Geometry Up="6" Left="33" Low="8" Right="34"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="10" Kind="Button">
+      <Geometry Up="6" Left="38" Low="8" Right="39"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="11" Kind="Button">
+      <Geometry Up="6" Left="43" Low="8" Right="44"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="6" Left="48" Low="8" Right="49"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <!-- Third row -->
+    <Field Num="13" Kind="Button">
+      <Geometry Up="10" Left="33" Low="12" Right="34"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="14" Kind="Button">
+      <Geometry Up="10" Left="38" Low="12" Right="39"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <Field Num="15" Kind="Button">
+      <Geometry Up="10" Left="43" Low="12" Right="44"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <!-- Third row -->
+    <Field Num="16" Kind="Button">
+      <Geometry Up="14" Left="38" Low="16" Right="39"/>
+      <Colors Foreground="cyan" Background="light_gray"/>
+    </Field>
+
+    <!-- Play -->
+    <Field Num="17" Kind="Button">
+      <Geometry Up="21" Left="34" Low="23" Right="42"/>
+      <Colors Foreground="blue" Background="light_gray"/>
+      <Init Row="1" Col="1">Remove</Init>
+    </Field>
+
+    <Field Num="18" Kind="Button">
+      <Geometry Up="21" Left="60" Low="23" Right="68"/>
+      <Colors Foreground="blue" Background="light_gray"/>
+      <Init Row="1" Col="1">E X I T</Init>
+    </Field>
+
+    <!-- Score -->
+    <Field Num="19" Kind="Put">
+      <Geometry Up="0" Left="54" Low="0" Right="78"/>
+      <Colors Foreground="blue" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Title NIM or Marienbad -->
+    <Field Num="20" Kind="Put">
+      <Geometry Up="0" Left="34" Low="0" Right="42"/>
+      <Colors Foreground="blue" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Who wins -->
+    <Field Num="21" Kind="Put">
+      <Geometry Up="19" Left="0" Low="19" Right="79"/>
+      <Colors Foreground="light_green" Blink="True" Background="black"/>
+    </Field>
+
+    <!-- Play -->
+    <Field Num="22" Kind="Button">
+      <Geometry Up="21" Left="03" Low="23" Right="18"/>
+      <Colors Foreground="blue" Background="light_gray"/>
+    </Field>
+
+  </Descriptor>
+
+</Afpx_Descriptors>
+

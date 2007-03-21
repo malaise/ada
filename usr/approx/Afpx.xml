@@ -1,0 +1,841 @@
+<?xml version="1.0"?>
+<!-- Syntax of the descriptor file -->
+<!-- ----------------------------- -->
+<!-- <descriptor_file> ::= { <descriptor_def> } -->
+<!--  -->
+<!-- <descriptor_def> ::= Descriptor <descriptor_no> -->
+<!-- [ <list_def>  ] -->
+<!-- [ { <field_def> } ] -->
+<!-- End Descriptor -->
+<!--  -->
+<!-- <list_def>  ::= List -->
+<!-- <field_geo_and_color> -->
+<!-- End List -->
+<!--  -->
+<!-- <field_def> ::= Field <field_no> <field_type> -->
+<!-- <field_geo_and_color> -->
+<!-- [ <init_def> ] -->
+<!-- End Field -->
+<!--  -->
+<!-- <field_type> ::= Put  |  Button  |  Get -->
+<!--  -->
+<!-- <field_geo_and_color> ::= Geometry <geometry> -->
+<!-- Colors   <colors> -->
+<!--  -->
+<!-- <geometry> ::= <upper_left_row> <upper_left_col> -->
+<!-- <lower_right_row> <lower_right_col> -->
+<!--  -->
+<!-- <colors> ::= <foreground_color> [ <blink> ] -->
+<!-- <background_color> [ <selected_color> ] -->
+<!--  -->
+<!-- <init_def> ::= Init -->
+<!-- [ { <init_line> } ] -->
+<!-- End Init -->
+<!--  -->
+<!-- <init_line> ::= <init_row> <init_col> [ <init_string> ] -->
+<!--  -->
+<!--  -->
+<!-- Semantic of the descriptor file -->
+<!-- ------------------------------- -->
+<!-- - <descriptor_no> has to be positive range 1 .. 50 and sole (no double) -->
+<!-- - List has to be defined none or once per descriptor -->
+<!-- - <field_no> have to be within Field_Range (1 .. 200), strictly crescent -->
+<!-- within one descriptor, no "hole", no double -->
+<!-- - <geometry> must define at least one row and one col -->
+<!-- - <geometry> must not make the field overlap with another field of the -->
+<!-- descriptor -->
+<!-- - <geometry> of a Get field must define only one row -->
+<!-- - <foreground_color> must be of Colors for Put fields -->
+<!-- and of Basic_Colors for Button, Get and List -->
+<!-- - <background_color> and <selected_color> must be Basic_Colors -->
+<!-- - <blink> is mandatory for Put fields and must not be specified -->
+<!-- for List, Button and Get fields -->
+<!-- - <selected_color> is mandatory for List and Get fields and -->
+<!-- must not be specified for Put and Button -->
+<!-- - <init_row> have to be compatible with <geometry> -->
+<!-- crescent, no double (holes allowed) -->
+<!-- - <init_col> have to be compatible with <geometry> -->
+<!-- - <init_string> have to be compatible with <geometry> and <init_col> -->
+<!--  -->
+<!-- Infos -->
+<!-- ----- -->
+<!-- Separator is space or tabulation -->
+<!-- Both full UPPERCASE or Mixed_Case keywords are accepted (not lowercase) -->
+<!-- Comments are lines with '#' as first signficant character -->
+<!-- Rows are from 0 to 24 -->
+<!-- Cols are from 0 to 79 -->
+<!-- Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray -->
+<!-- Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange, -->
+<!-- Yellow, White -->
+<!-- Blink is "Blink" or "Not_Blink" -->
+<!-- Upper case is mandatory for keywords, not significant for colors and blink, -->
+<!-- significant for init_string -->
+<!--  -->
+<!-- Summary of color combinations -->
+<!-- ----------------------------- -->
+<!-- Type  |   Foreground  Blink  Background  Selected -->
+<!-- ------------------------------------------------- -->
+<!-- Put   |   X Colors    X      X Basic -->
+<!-- Button|   X Basic            X Basic -->
+<!-- Get   |   X Basic            X Basic     X Basic -->
+<!-- List  |   X Basic            X Basic     X Basic -->
+
+<!-- Menu 1 : Data -->
+<Afpx_Descriptors>
+  <Descriptor Num="1">
+
+    <List>
+      <Geometry Up="2" Left="33" Low="21" Right="65"/>
+      <Colors Foreground="cyan" Background="brown" Selected="red"/>
+    </List>
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="25" Low="0" Right="48"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
+    </Field>
+
+    <!-- Title -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="3" Low="1" Right="27"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- File name -->
+    <Field Num="3" Kind="Put">
+      <Geometry Up="1" Left="33" Low="1" Right="37"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">File:</Init>
+    </Field>
+
+    <Field Num="4" Kind="Put">
+      <Geometry Up="1" Left="39" Low="1" Right="65"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Points -->
+    <Field Num="5" Kind="Put">
+      <Geometry Up="1" Left="68" Low="1" Right="71"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="6" Kind="Put">
+      <Geometry Up="1" Left="73" Low="1" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">points</Init>
+    </Field>
+
+    <Field Num="7" Kind="Put">
+      <Geometry Up="2" Left="71" Low="2" Right="73"/>
+      <Colors Foreground="white" Blink="True" Background="black"/>
+      <Init Row="0" Col="0">NOT</Init>
+    </Field>
+
+    <Field Num="8" Kind="Put">
+      <Geometry Up="3" Left="70" Low="3" Right="74"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">saved</Init>
+    </Field>
+
+    <!-- Get -->
+    <Field Num="9" Kind="Get">
+      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Colors Foreground="cyan" Background="brown" Selected="brown"/>
+    </Field>
+
+    <!-- Message -->
+    <Field Num="10" Kind="Put">
+      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- List Action -->
+    <Field Num="11" Kind="Button">
+      <Geometry Up="5" Left="69" Low="5" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Top</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="7" Left="69" Low="9" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Pg Up</Init>
+    </Field>
+
+    <Field Num="13" Kind="Button">
+      <Geometry Up="11" Left="69" Low="11" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Up</Init>
+    </Field>
+
+    <Field Num="14" Kind="Button">
+      <Geometry Up="15" Left="69" Low="15" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+
+    <Field Num="15" Kind="Button">
+      <Geometry Up="17" Left="69" Low="19" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">Pg Down</Init>
+    </Field>
+
+    <Field Num="16" Kind="Button">
+      <Geometry Up="21" Left="69" Low="21" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <!-- EXIT/BACK, OK, CANCEL -->
+    <Field Num="17" Kind="Button">
+      <Geometry Up="19" Left="11" Low="21" Right="20"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">EXIT</Init>
+    </Field>
+
+    <Field Num="18" Kind="Button">
+      <Geometry Up="19" Left="2" Low="21" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">OK</Init>
+    </Field>
+
+    <Field Num="19" Kind="Button">
+      <Geometry Up="19" Left="22" Low="21" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">CANCEL</Init>
+    </Field>
+
+    <!-- Menu specific 1 T+3B -->
+    <Field Num="20" Kind="Put">
+      <Geometry Up="3" Left="13" Low="3" Right="16"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Data</Init>
+    </Field>
+
+    <Field Num="21" Kind="Button">
+      <Geometry Up="4" Left="2" Low="6" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Load</Init>
+    </Field>
+
+    <Field Num="22" Kind="Button">
+      <Geometry Up="4" Left="11" Low="6" Right="20"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">Save</Init>
+    </Field>
+
+    <Field Num="23" Kind="Button">
+      <Geometry Up="4" Left="22" Low="6" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">New</Init>
+    </Field>
+
+    <!-- Menu specific 2 T+3B -->
+    <Field Num="24" Kind="Put">
+      <Geometry Up="8" Left="13" Low="8" Right="17"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Point</Init>
+    </Field>
+
+    <Field Num="25" Kind="Button">
+      <Geometry Up="9" Left="2" Low="11" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Add</Init>
+    </Field>
+
+    <Field Num="26" Kind="Button">
+      <Geometry Up="9" Left="11" Low="11" Right="20"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Delete</Init>
+    </Field>
+
+    <Field Num="27" Kind="Button">
+      <Geometry Up="9" Left="22" Low="11" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Modify</Init>
+    </Field>
+
+    <!-- Menu specific 3 T+3B -->
+    <Field Num="28" Kind="Put">
+      <Geometry Up="13" Left="0" Low="13" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="29" Kind="Button">
+      <Geometry Up="14" Left="2" Low="16" Right="20"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">Approximation</Init>
+    </Field>
+
+    <Field Num="30" Kind="Put">
+      <Geometry Up="15" Left="21" Low="15" Right="21"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="31" Kind="Button">
+      <Geometry Up="14" Left="22" Low="16" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">Sort</Init>
+    </Field>
+
+  </Descriptor>
+
+
+  <!-- File selection -->
+  <Descriptor Num="2">
+
+    <List>
+      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Colors Foreground="cyan" Background="brown" Selected="red"/>
+    </List>
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="25" Low="0" Right="48"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
+    </Field>
+
+    <!-- Title -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="3" Low="1" Right="27"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- File -->
+    <Field Num="3" Kind="Put">
+      <Geometry Up="1" Left="33" Low="1" Right="37"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">File:</Init>
+    </Field>
+
+    <Field Num="4" Kind="Put">
+      <Geometry Up="1" Left="39" Low="1" Right="65"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Get -->
+    <Field Num="5" Kind="Get">
+      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Colors Foreground="cyan" Background="brown" Selected="brown"/>
+    </Field>
+
+    <!-- Messages -->
+    <Field Num="6" Kind="Put">
+      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- List actions -->
+    <Field Num="7" Kind="Button">
+      <Geometry Up="5" Left="69" Low="5" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Top</Init>
+    </Field>
+
+    <Field Num="8" Kind="Button">
+      <Geometry Up="7" Left="69" Low="9" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Pg Up</Init>
+    </Field>
+
+    <Field Num="9" Kind="Button">
+      <Geometry Up="11" Left="69" Low="11" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Up</Init>
+    </Field>
+
+    <Field Num="10" Kind="Button">
+      <Geometry Up="13" Left="69" Low="13" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Center</Init>
+    </Field>
+
+    <Field Num="11" Kind="Button">
+      <Geometry Up="15" Left="69" Low="15" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="17" Left="69" Low="19" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">Pg Down</Init>
+    </Field>
+
+    <Field Num="13" Kind="Button">
+      <Geometry Up="21" Left="69" Low="21" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <!-- Reread -->
+    <Field Num="14" Kind="Button">
+      <Geometry Up="11" Left="2" Low="13" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">REREAD</Init>
+    </Field>
+
+    <!-- Ok Cancel -->
+    <Field Num="15" Kind="Button">
+      <Geometry Up="15" Left="2" Low="17" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">OK</Init>
+    </Field>
+
+    <Field Num="16" Kind="Button">
+      <Geometry Up="19" Left="2" Low="21" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">CANCEL</Init>
+    </Field>
+
+    <!-- Any other field here -->
+
+
+    <!-- Points -->
+    <Field Num="17" Kind="Put">
+      <Geometry Up="1" Left="68" Low="1" Right="71"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="18" Kind="Put">
+      <Geometry Up="1" Left="73" Low="1" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">points</Init>
+    </Field>
+
+    <Field Num="19" Kind="Put">
+      <Geometry Up="2" Left="71" Low="2" Right="73"/>
+      <Colors Foreground="white" Blink="True" Background="black"/>
+      <Init Row="0" Col="0">NOT</Init>
+    </Field>
+
+    <Field Num="20" Kind="Put">
+      <Geometry Up="3" Left="70" Low="3" Right="74"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">saved</Init>
+    </Field>
+
+  </Descriptor>
+
+  <!-- Menu 2 : degre/compute -->
+  <Descriptor Num="3">
+
+    <List>
+      <Geometry Up="2" Left="33" Low="21" Right="65"/>
+      <Colors Foreground="cyan" Background="brown" Selected="red"/>
+    </List>
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="25" Low="0" Right="48"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
+    </Field>
+
+    <!-- Title -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="3" Low="1" Right="27"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- File name -->
+    <Field Num="3" Kind="Put">
+      <Geometry Up="1" Left="33" Low="1" Right="37"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">File:</Init>
+    </Field>
+
+    <Field Num="4" Kind="Put">
+      <Geometry Up="1" Left="39" Low="1" Right="65"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Points -->
+    <Field Num="5" Kind="Put">
+      <Geometry Up="1" Left="68" Low="1" Right="71"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="6" Kind="Put">
+      <Geometry Up="1" Left="73" Low="1" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">points</Init>
+    </Field>
+
+    <Field Num="7" Kind="Put">
+      <Geometry Up="2" Left="71" Low="2" Right="73"/>
+      <Colors Foreground="white" Blink="True" Background="black"/>
+      <Init Row="0" Col="0">NOT</Init>
+    </Field>
+
+    <Field Num="8" Kind="Put">
+      <Geometry Up="3" Left="70" Low="3" Right="74"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">saved</Init>
+    </Field>
+
+    <!-- Get -->
+    <Field Num="9" Kind="Get">
+      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Colors Foreground="cyan" Background="brown" Selected="brown"/>
+    </Field>
+
+    <!-- Message -->
+    <Field Num="10" Kind="Put">
+      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- List Action -->
+    <Field Num="11" Kind="Button">
+      <Geometry Up="5" Left="69" Low="5" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Top</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="7" Left="69" Low="9" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Pg Up</Init>
+    </Field>
+
+    <Field Num="13" Kind="Button">
+      <Geometry Up="11" Left="69" Low="11" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Up</Init>
+    </Field>
+
+    <Field Num="14" Kind="Button">
+      <Geometry Up="15" Left="69" Low="15" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+
+    <Field Num="15" Kind="Button">
+      <Geometry Up="17" Left="69" Low="19" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">Pg Down</Init>
+    </Field>
+
+    <Field Num="16" Kind="Button">
+      <Geometry Up="21" Left="69" Low="21" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <!-- EXIT/BACK, OK, CANCEL -->
+    <Field Num="17" Kind="Button">
+      <Geometry Up="19" Left="11" Low="21" Right="20"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">BACK</Init>
+    </Field>
+
+    <Field Num="18" Kind="Button">
+      <Geometry Up="19" Left="2" Low="21" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">OK</Init>
+    </Field>
+
+    <Field Num="19" Kind="Button">
+      <Geometry Up="19" Left="22" Low="21" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">CANCEL</Init>
+    </Field>
+
+    <!-- Menu specific 1 2T+1B -->
+    <Field Num="20" Kind="Put">
+      <Geometry Up="3" Left="7" Low="3" Right="21"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Current degree:</Init>
+    </Field>
+
+    <Field Num="21" Kind="Put">
+      <Geometry Up="3" Left="23" Low="3" Right="26"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="22" Kind="Button">
+      <Geometry Up="4" Left="9" Low="6" Right="22"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Set degree</Init>
+    </Field>
+
+    <Field Num="23" Kind="Put">
+      <Geometry Up="4" Left="0" Low="4" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Menu specific 2 T+2B -->
+    <Field Num="24" Kind="Put">
+      <Geometry Up="8" Left="13" Low="8" Right="19"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Compute</Init>
+    </Field>
+
+    <Field Num="25" Kind="Button">
+      <Geometry Up="9" Left="5" Low="11" Right="15"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Polynom</Init>
+    </Field>
+
+    <Field Num="26" Kind="Put">
+      <Geometry Up="9" Left="0" Low="11" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="27" Kind="Button">
+      <Geometry Up="9" Left="17" Low="11" Right="28"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">y = F(x)</Init>
+    </Field>
+
+    <!-- Menu specific 3 T+2B -->
+    <Field Num="28" Kind="Put">
+      <Geometry Up="13" Left="14" Low="13" Right="17"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Draw</Init>
+    </Field>
+
+    <Field Num="29" Kind="Button">
+      <Geometry Up="14" Left="2" Low="16" Right="15"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Set bounds</Init>
+    </Field>
+
+    <Field Num="30" Kind="Put">
+      <Geometry Up="14" Left="0" Low="14" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="31" Kind="Button">
+      <Geometry Up="14" Left="17" Low="16" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">Draw curve</Init>
+    </Field>
+
+    <!-- Activated Only on y=f(x) -->
+    <!-- to display F(....) =  -->
+    <Field Num="32" Kind="Put">
+      <Geometry Up="22" Left="1" Low="22" Right="33"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+  </Descriptor>
+
+
+  <!-- Menu 2.1 bounds -->
+  <Descriptor Num="4">
+
+    <List>
+      <Geometry Up="2" Left="33" Low="21" Right="65"/>
+      <Colors Foreground="cyan" Background="brown" Selected="red"/>
+    </List>
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="25" Low="0" Right="48"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
+    </Field>
+
+    <!-- Title -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="3" Low="1" Right="27"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- File name -->
+    <Field Num="3" Kind="Put">
+      <Geometry Up="1" Left="33" Low="1" Right="37"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">File:</Init>
+    </Field>
+
+    <Field Num="4" Kind="Put">
+      <Geometry Up="1" Left="39" Low="1" Right="65"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Points -->
+    <Field Num="5" Kind="Put">
+      <Geometry Up="1" Left="68" Low="1" Right="71"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="6" Kind="Put">
+      <Geometry Up="1" Left="73" Low="1" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">points</Init>
+    </Field>
+
+    <Field Num="7" Kind="Put">
+      <Geometry Up="2" Left="71" Low="2" Right="73"/>
+      <Colors Foreground="white" Blink="True" Background="black"/>
+      <Init Row="0" Col="0">NOT</Init>
+    </Field>
+
+    <Field Num="8" Kind="Put">
+      <Geometry Up="3" Left="70" Low="3" Right="74"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">saved</Init>
+    </Field>
+
+    <!-- Get -->
+    <Field Num="9" Kind="Get">
+      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Colors Foreground="cyan" Background="brown" Selected="brown"/>
+    </Field>
+
+    <!-- Message -->
+    <Field Num="10" Kind="Put">
+      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- List Action -->
+    <Field Num="11" Kind="Button">
+      <Geometry Up="5" Left="69" Low="5" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Top</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="7" Left="69" Low="9" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Pg Up</Init>
+    </Field>
+
+    <Field Num="13" Kind="Button">
+      <Geometry Up="11" Left="69" Low="11" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="3">Up</Init>
+    </Field>
+
+    <Field Num="14" Kind="Button">
+      <Geometry Up="15" Left="69" Low="15" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="2">Down</Init>
+    </Field>
+
+    <Field Num="15" Kind="Button">
+      <Geometry Up="17" Left="69" Low="19" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="1">Pg Down</Init>
+    </Field>
+
+    <Field Num="16" Kind="Button">
+      <Geometry Up="21" Left="69" Low="21" Right="77"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <!-- EXIT/BACK, OK, CANCEL -->
+    <Field Num="17" Kind="Button">
+      <Geometry Up="19" Left="11" Low="21" Right="20"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">CLEAR</Init>
+    </Field>
+
+    <Field Num="18" Kind="Button">
+      <Geometry Up="19" Left="2" Low="21" Right="9"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="3">OK</Init>
+    </Field>
+
+    <Field Num="19" Kind="Button">
+      <Geometry Up="19" Left="22" Low="21" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">CANCEL</Init>
+    </Field>
+
+    <!-- Menu specific 1 T+2B -->
+    <Field Num="20" Kind="Put">
+      <Geometry Up="2" Left="2" Low="2" Right="31"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Computed from curve and points</Init>
+    </Field>
+
+    <Field Num="21" Kind="Button">
+      <Geometry Up="3" Left="2" Low="5" Right="15"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Fit screen</Init>
+    </Field>
+
+    <Field Num="22" Kind="Button">
+      <Geometry Up="3" Left="17" Low="5" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="4">Normed</Init>
+    </Field>
+
+    <Field Num="23" Kind="Put">
+      <Geometry Up="4" Left="0" Low="4" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Menu specific 2 T+2B -->
+    <Field Num="24" Kind="Put">
+      <Geometry Up="6" Left="5" Low="6" Right="28"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">X defined and Y computed</Init>
+    </Field>
+
+    <Field Num="25" Kind="Button">
+      <Geometry Up="7" Left="2" Low="9" Right="15"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Fit screen</Init>
+    </Field>
+
+    <Field Num="26" Kind="Button">
+      <Geometry Up="7" Left="17" Low="9" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="4">Normed</Init>
+    </Field>
+
+    <Field Num="27" Kind="Put">
+      <Geometry Up="8" Left="0" Low="8" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Menu specific 3 T+2B -->
+    <Field Num="28" Kind="Put">
+      <Geometry Up="10" Left="9" Low="10" Right="23"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">X and Y defined</Init>
+    </Field>
+
+    <Field Num="29" Kind="Button">
+      <Geometry Up="11" Left="2" Low="13" Right="15"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="2">Fit screen</Init>
+    </Field>
+
+    <Field Num="30" Kind="Button">
+      <Geometry Up="11" Left="17" Low="13" Right="31"/>
+      <Colors Foreground="cyan" Background="brown"/>
+      <Init Row="1" Col="4">Normed</Init>
+    </Field>
+
+    <Field Num="31" Kind="Put">
+      <Geometry Up="12" Left="0" Low="12" Right="0"/>
+      <Colors Foreground="black" Blink="False" Background="black"/>
+    </Field>
+
+    <!-- Very specific 3 T+2P -->
+    <Field Num="32" Kind="Put">
+      <Geometry Up="14" Left="2" Low="14" Right="9"/>
+      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Init Row="0" Col="0">Current:</Init>
+    </Field>
+
+    <Field Num="33" Kind="Put">
+      <Geometry Up="14" Left="11" Low="14" Right="31"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+    <Field Num="34" Kind="Put">
+      <Geometry Up="15" Left="3" Low="18" Right="24"/>
+      <Colors Foreground="cyan" Blink="False" Background="black"/>
+    </Field>
+
+  </Descriptor>
+
+</Afpx_Descriptors>
+
