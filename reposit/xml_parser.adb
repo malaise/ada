@@ -20,6 +20,7 @@ package body Xml_Parser is
 
   -- My tree manipulation
   package Tree_Mng is
+    Prologue : My_Tree.Tree_Type;
     Tree : My_Tree.Tree_Type;
     -- Add an element, move to it
     procedure Add_Element (Name : in Asu_Us; Line : in Positive);
@@ -31,6 +32,18 @@ package body Xml_Parser is
     function Attribute_Exists (Name : Asu_Us) return Boolean;
     -- Add a text to current element, remain on current element
     procedure Add_Text (Text : in Asu_Us; Line : in Positive);
+    -- Initialise an empty prologue tree
+    procedure Init_Prologue;
+    -- Set xml directive, add a xml attribute
+    procedure Set_Xml (Line : in Positive);
+    procedure Add_Xml_Attribute (Name, Value : in Asu_Us; Line : in Positive);
+    -- Check xml is set, find an attribute (Index is 0 if not found) 
+    function Xml_Existst return Boolean;
+    procedure Find_Xml_Attribute (Name : in Asu_Us;
+                                  Index : out Natural;
+                                  Value : out Asu_Us);
+    -- Add a processing instruction
+    procedure Add_Pi (Name, Text : in Asu_Us; Line : in Positive);
   end Tree_Mng;
   package body Tree_Mng is separate;
 
@@ -84,8 +97,9 @@ package body Xml_Parser is
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error, Parse_Error
   procedure Parse (File_Name : in String;
+                   Prologue     : out Element_Type;
                    Root_Element : out Element_Type) is
-    Root : Node_Type;
+    Prol, Root : Node_Type;
   begin
     -- Open file
     File_Mng.Open (File_Name);
@@ -95,7 +109,10 @@ package body Xml_Parser is
     Parse_Mng.Parse;
     -- Close file
     File_Mng.Close;
-    -- Return tree root
+    -- Set tree roots
+    My_Tree.Move_Root (Tree_Mng.Prologue);
+    Prologue := (Kind => Element,
+                 Tree_Access => My_Tree.Get_Position (Tree_Mng.Prologue));
     My_Tree.Move_Root (Tree_Mng.Tree);
     Root_Element:= (Kind => Element,
                     Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
@@ -107,16 +124,24 @@ package body Xml_Parser is
     return Asu.To_String (Parse_Mng.Get_Error_Message);
   end Get_Parse_Error_Message;
 
-  -- Clean a parsed (sub) tree
+  -- Clean a parsed tree
   -- May raise Not_Root if not root
-  procedure Clean (Root_Element : in out Element_Type) is
+  procedure Clean (Prologue     : in out Element_Type;
+                   Root_Element : in out Element_Type) is
     use type My_Tree.Position_Access;
   begin
-    -- Node must be set
-    if Root_Element.Tree_Access = My_Tree.No_Position then
+    -- Nodes must be set
+    if Prologue.Tree_Access = My_Tree.No_Position
+    or else Root_Element.Tree_Access = My_Tree.No_Position then
       raise Invalid_Node;
     end if;
-    -- Move to it
+    -- Clean prologue tree
+    My_Tree.Set_Position (Tree_Mng.Prologue, Prologue.Tree_Access);
+    if My_Tree.Has_Father (Tree_Mng.Prologue) then
+      raise Not_Root;
+    end if;
+    My_Tree.Delete_Tree (Tree_Mng.Prologue);
+    -- Clean element tree
     My_Tree.Set_Position (Tree_Mng.Tree, Root_Element.Tree_Access);
     if My_Tree.Has_Father (Tree_Mng.Tree) then
       raise Not_Root;

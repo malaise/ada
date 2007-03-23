@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Queues;
+with Queues, Lower_Str;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -83,18 +83,158 @@ package body Parse_Mng  is
    return Util.Fix_Text (Value);
   end Parse_Value;
 
+  -- Parse attributes of an element Name='Value' or Name="Value"
+  -- Either of xml prologue directive or on current element
+  procedure Parse_Attributes (Of_Xml : in Boolean) is
+    Attribute_Name, Attribute_Value : Asu_Us;
+    Attribute_Index : Natural;
+    Char : Character;
+    Line_No : Natural;
+  begin
+    -- Loop on several attributes
+    loop
+      -- Parse name
+      Line_No := Util.Get_Line_No;
+      Util.Parse_Until_Char (Util.Equal & "");
+      Attribute_Name := Util.Get_Curr_Str;
+      if not Util.Name_Ok (Attribute_Name) then
+        Util.Error ("invalid attribute name "
+                  & Asu.To_String (Attribute_Name));
+      end if;
+      Util.Reset_Curr_Str;
+      -- Attribute name must be unique
+      if Of_Xml then
+        Tree_Mng.Find_Xml_Attribute (Attribute_Name,
+                  Attribute_Index, Attribute_Value);
+        if Attribute_Index /= 0 then
+          Util.Error ("Attribute " & Asu.To_String (Attribute_Name)
+                    & " already defined for xml");
+        end if;
+      else
+        if Tree_Mng.Attribute_Exists (Attribute_Name) then
+          Util.Error ("Attribute " & Asu.To_String (Attribute_Name)
+                    & " already defined for this element");
+        end if;
+      end if;
+      -- Parse value
+      Attribute_Value := Parse_Value;
+      if Of_Xml then
+        Tree_Mng.Add_Xml_Attribute (Attribute_Name, Attribute_Value, Line_No);
+      else
+        Tree_Mng.Add_Attribute (Attribute_Name, Attribute_Value, Line_No);
+      end if;
+      Trace ("Parsed attribute " & Asu.To_String (Attribute_Name)
+           & ", " & Asu.To_String (Attribute_Value));
+      -- Skip to new attribute if not end of element start
+      Util.Skip_Separators;
+      Char := Util.Read;
+      -- Stop when ? in directive, or when /, or > in element
+      if Of_Xml then
+        if Char = Util.Instruction then
+          if Util.Get = Util.Stop then
+            -- ?> OK
+            exit;
+          else
+            Util.Error ("Unexpected character for terminating instruction");
+          end if;
+        end if;
+      else
+        exit when Char = Util.Slash or else Char = Util.Stop;
+      end if;
+      Util.Unget;
+    end loop;
+  end Parse_Attributes;
+
+  -- Check Xml version is correctly defined
+  procedure Check_Xml_Version is
+    Attribute_Value : Asu_Us;
+    Attribute_Index : Natural;
+  begin
+    -- Version must be set, and at first position
+    Tree_Mng.Find_Xml_Attribute (Asu.To_Unbounded_String ("version"),
+                                 Attribute_Index, Attribute_Value);
+    if Attribute_Index /= 1 then
+      Util.Error ("Expected version info as first xml attribute");
+    end if;
+    declare
+      Vers : constant String := Asu.To_String (Attribute_Value);
+    begin
+      if Vers /= "1.0"
+      and then Vers /= "1.1" then
+        Util.Error ("Expected xml version " & Vers);
+      end if;
+    end;
+  end Check_Xml_Version;
+
   -- Parse an instruction (<?xxx?>)
   procedure Parse_Instruction is
+    Char : Character;
+    Name : Asu_Us;
   begin
-    -- Parse until ? or separator
-    Util.Parse_Until_Str (Util.Instruction & Util.Stop);
+    -- See if this is the xml directive
+    if Util.Try ("xml") then
+      if Util.Is_Separator (Util.Get) then
+        -- Only one xml declaration allowd
+        if Tree_Mng.Xml_Existst then
+          Util.Error ("Second declaration of xml");
+        end if;
+        Trace ("Parsing xml declaration");
+        Tree_Mng.Set_Xml (Util.Get_Line_No);
+        -- Parse xml attributes
+        Util.Skip_Separators;
+        Char := Util.Read;
+        Util.Unget;
+        if Char /= Util.Instruction then
+          Parse_Attributes (Of_Xml => True);
+        end if;
+        Check_Xml_Version;
+        Trace ("Parsed xml declaration");
+        return;
+      else
+        Util.Error ("Invalid processing instruction");
+      end if;
+    elsif Lower_Str (Util.Get(3)) /= "xml" then
+      -- OK, go on
+      Util.Unget (3);
+    else
+      Util.Error ("Invalid processing instruction");
+    end if;
+
+    -- Parse instruction until ? or separator
+    if not Tree_Mng.Xml_Existst then
+      Util.Error ("Invalid processing instruction without xml declaration");
+    end if;
+    Util.Parse_Until_Char (Util.Instruction & " ");
+    Name := Util.Get_Curr_Str;
+    if not Util.Name_Ok (Name) then
+      Util.Error ("Unvalid processing instruction name"
+               & Asu.To_String (Name));
+    end if;
     Util.Reset_Curr_Str;
+    if Util.Read /= Util.Instruction then
+      -- Some text after the name
+      Util.Skip_Separators;
+      Util.Unget;
+      Util.Parse_Until_Char (Util.Instruction & "");
+    end if;
+    -- Store PI and text if any
+    Tree_Mng.Add_Pi (Name, Util.Get_Curr_Str, Util.Get_Line_No);
+    Util.Reset_Curr_Str;
+    -- Skip to the end
+    if Util.Get /= Util.Stop then
+      Util.Error ("Unvalid processing instruction termination");
+    end if;
+  exception
+    when Util.End_Error =>
+      Util.Error (
+        "Unexpected end of file while parsing processing instruction");
   end Parse_Instruction;
 
   -- Parse a directive (<!xxx>)
   procedure Parse_Directive (Only_Comment : in Boolean) is
     Char : Character;
     Entity_Name, Entity_Value : Asu_Us;
+    Index : Natural;
   begin
     -- Got <!, what's next?
     -- Process CDATA or ENTITY and return, or continue and skip
@@ -103,6 +243,11 @@ package body Parse_Mng  is
     if Char = '-' then
       if Util.Get = '-' then
         Util.Parse_Until_Str ("--" & Util.Stop);
+        -- Check that no "--" within comment
+        Index := Asu.Index (Util.Get_Curr_Str, "--");
+        if Index /= 0 and then Index < Asu.Length(Util.Get_Curr_Str) - 2 then
+          Util.Error ("Invalid ""--"" in comment");
+        end if;
         Trace ("Skipped <!--" & Asu.To_String (Util.Get_Curr_Str));
         Util.Reset_Curr_Str;
         return;
@@ -132,43 +277,50 @@ package body Parse_Mng  is
     end if;
     -- Skip directive
     Util.Parse_Until_Stop;
-    Trace ("Skipped <!" & Asu.To_String (Util.Get_Curr_Str));
+    Trace ("Skipped <!" & Asu.To_String (Util.Get_Curr_Str) & Util.Stop);
     Util.Reset_Curr_Str;
   exception
     when Util.End_Error =>
       Util.Error ("Unexpected end of file while parsing directive");
   end Parse_Directive;
 
-  -- Parse attributes of an element Name='Value' or Name="Value"
-  procedure Parse_Attributes is
-    Attribute_Name, Attribute_Value : Asu_Us;
-    Char : Character;
-    Line_No : Natural;
+  -- Parse the prologue
+  procedure Parse_Prologue is
+    C1, C2 : Character;
   begin
-    -- Loop on several attributes
+    -- Loop until end of prologue (<name>)
     loop
-      -- Parse name
-      Line_No := Util.Get_Line_No;
-      Util.Parse_Until_Char (Util.Equal & "");
-      Attribute_Name := Util.Get_Curr_Str;
-      Util.Reset_Curr_Str;
-      -- Attribute name must be unique for this element
-      if Tree_Mng.Attribute_Exists (Attribute_Name) then
-        Util.Error ("Attribute " & Asu.To_String (Attribute_Name)
-                  & " already defined for this element");
+      -- Get until a significant character, if any
+      begin
+        Util.Skip_Separators;
+      exception
+        when Util.End_Error =>
+          exit;
+      end;
+      C1 := Util.Read;
+      -- Shall be '<'
+      if C1 /= Util.Start then
+        Util.Error ("Unexpected character " & C1 & " while expecting "
+                  & Util.Start & " in prologue");
       end if;
-      -- Parse value
-      Attribute_Value := Parse_Value;
-      Tree_Mng.Add_Attribute (Attribute_Name, Attribute_Value, Line_No);
-      Trace ("Parsed attribute " & Asu.To_String (Attribute_Name)
-           & ", " & Asu.To_String (Attribute_Value));
-      -- Skip to new attribute if not end of element start
-      Util.Skip_Separators;
-      Char := Util.Read;
-      exit when Char = Util.Slash or else Char = Util.Stop;
-      Util.Unget;
+      C2 := Util.Get;
+      case C2 is
+        when Util.Instruction =>
+          Parse_Instruction; 
+        when Util.Directive =>
+          -- Directive or comment
+          Parse_Directive (Only_Comment => False);
+        when others =>
+          -- A name go back to before '<'
+          Util.Unget;
+          Util.Unget;
+          exit;
+      end case;
     end loop;
-  end Parse_Attributes;
+  exception
+    when Util.End_Error =>
+      Util.Error ("Unexpected end of file");
+  end Parse_Prologue;
 
   -- Parse an element
   procedure Parse_Element (Root : in Boolean);
@@ -190,7 +342,7 @@ package body Parse_Mng  is
           return;
         elsif Char = Util.Directive then
           -- Must be a comment
-          Parse_Directive (True);
+          Parse_Directive (Only_Comment => True);
           Util.Skip_Separators;
         else
           -- A new sub-element
@@ -239,7 +391,7 @@ package body Parse_Mng  is
     -- If not / nor >, then parse_attributes
     if Char /= Util.Slash and then Char /= Util.Stop then
       Util.Unget;
-      Parse_Attributes;
+      Parse_Attributes (Of_Xml => False);
       Char := Util.Read;
     end if;
     -- If /, then must be followed by >, return
@@ -273,18 +425,18 @@ package body Parse_Mng  is
       end if;
       return;
     else
-      Util.Error ("Unexpected character " & Util.Read);
+      Util.Error ("Unexpected character " & Util.Read
+                & " while parsing element");
     end if;
   end Parse_Element;
 
-  -- Main parser (entry point)
-  procedure Parse is
-    Element_Found : Boolean;
+  -- Parse the root element and until end of file
+  procedure Parse_Root_To_End is
+    Root_Found : Boolean;
     C1, C2 : Character;
   begin
-    Util.Init;
     -- Loop until end of file
-    Element_Found := False;
+    Root_Found := False;
     loop
       -- Get until a significant character, if any
       begin
@@ -297,29 +449,42 @@ package body Parse_Mng  is
       -- Shall be '<'
       if C1 /= Util.Start then
         Util.Error ("Unexpected character " & C1 & " while expecting "
-                  & Util.Start);
+                  & Util.Start & " for root");
       end if;
       C2 := Util.Get;
       case C2 is
         when Util.Instruction =>
-          Parse_Instruction;
+          Util.Error ("Unexpected processing instruction");
         when Util.Directive =>
+          -- Directive : only comment
           Parse_Directive (False);
         when others =>
           Util.Unget;
-          if Element_Found then
+          if Root_Found then
             Util.Error ("More that one root element found");
           end if;
           Parse_Element (True);
-          Element_Found := True;
+          Root_Found := True;
       end case;
     end loop;
-    if not Element_Found then
+    -- One (and only one) root must have been found
+    if not Root_Found then
       Util.Error ("No root element found");
     end if;
   exception
     when Util.End_Error =>
       Util.Error ("Unexpected end of file");
+  end Parse_Root_To_End;
+
+  -- Main parser (entry point)
+  procedure Parse is
+  begin
+    -- Init
+    Util.Init;
+    Tree_Mng.Init_Prologue;
+    -- Parse prologue then element
+    Parse_Prologue;
+    Parse_Root_To_End;
   end Parse;
 
   -- Get parse error message

@@ -36,18 +36,31 @@ package Xml_Parser is
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error, Parse_Error
   procedure Parse (File_Name : in String;
+                   Prologue     : out Element_Type;
                    Root_Element : out Element_Type);
   File_Error, Parse_Error : exception;
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message return String;
 
-  -- Clean a parsed (sub) tree
-  -- May raise Not_Root if not root
+  -- Clean a parsed trees
+  -- May raise Not_Root if one of elements not root
   Not_Root : exception;
-  procedure Clean (Root_Element : in out Element_Type);
+  procedure Clean (Prologue     : in out Element_Type;
+                   Root_Element : in out Element_Type);
 
-  -- gets the line number of the beginning of the declaration of a node
+  -- Get the line number of the beginning of the declaration of a node
   function Get_Line_No (Node : Node_Type) return Positive;
+
+
+  -----------------------------
+  -- NOTE ABOUT THE PROLOGUE --
+  -----------------------------
+  -- In xml V1.0, the prologue consists of an optional xml directive
+  --  (<?xml attributes?>) then optional processing instructions
+  --  (<?name text?>).
+  -- So the Prologue is an element with attributes (empty name and no
+  --  attributes if no xml directive). Its children are elements,
+  --  each with the directive name and each with a text child.
 
 
   -------------------------
