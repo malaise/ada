@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- Syntax of the descriptor file -->
-<!-- ----------------------------- -->
+<!-- ============================= -->
 <!-- Not validated DTD for Afpx xml definition -->
 <!ELEMENT Afpx_Descriptors (Descriptor*)>
 
@@ -22,7 +22,7 @@
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED>
 
 <!-- Semantic of the descriptor file -->
-<!-- ------------------------------- -->
+<!-- =============================== -->
 <!-- - Descriptor Num has to be positive range 1 .. 50 and sole (no double) -->
 <!-- - List has to be defined none or once per descriptor -->
 <!-- - Field Num have to be within Field_Range (1 .. 200), strictly crescent -->
@@ -44,7 +44,7 @@
 <!-- - Init string have to be compatible with Geometry and Init Col -->
 <!--  -->
 <!-- Infos -->
-<!-- ----- -->
+<!-- ===== -->
 <!-- Separator is space or tabulation -->
 <!-- Only Mixed_Case keywords are accepted (not lowercase nor UPPERCASE) -->
 <!-- Rows are from 0 to 24 -->
@@ -57,12 +57,12 @@
 <!-- significant for init_string -->
 <!--  -->
 <!-- Summary of color combinations -->
-<!-- ----------------------------- -->
+<!-- ============================= -->
 <!-- Type  |   Foreground  Blink  Background  Selected -->
-<!-- ------------------------------------------------- -->
+<!-- ================================================= -->
 <!-- Put   |   X Colors    X      X Basic -->
 <!-- Button|   X Basic            X Basic -->
 <!-- Get   |   X Basic            X Basic     X Basic -->
 <!-- List  |   X Basic            X Basic     X Basic -->
-<!-- ------------------------------------------------- -->
+<!-- ================================================ -->
 
