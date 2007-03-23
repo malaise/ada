@@ -58,8 +58,8 @@ procedure Afpx_Bld is
   -- Expected number of arguments
   Expected_Args : Natural;
 
-  -- Root of parsed elements
-  Root : Xp.Element_Type;
+  -- Roots of prologue and of parsed elements
+  Prologue, Root : Xp.Element_Type;
 
   -- Close or deletes (on error) output files
   procedure Close (On_Error : in Boolean) is
@@ -627,9 +627,9 @@ begin
   Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
 
   -- First check
-  Ada.Text_Io.Put_Line ("Checking:");
+  Ada.Text_Io.Put_Line ("Parsing:");
   begin
-    Xp.Parse (Text_Handler.Value(List_File_Name), Root);
+    Xp.Parse (Text_Handler.Value(List_File_Name), Prologue, Root);
   exception
     when Xp.File_Error =>
       Basic_Proc.Put_Line_Error ("Error accessing file "
@@ -637,7 +637,10 @@ begin
       raise File_Not_Found;
     when Xp.Parse_Error =>
       Basic_Proc.Put_Line_Error (Xp.Get_Parse_Error_Message);
+      raise File_Syntax_Error;
   end;
+
+  Ada.Text_Io.Put_Line ("Checking:");
   Load_Dscrs(Root, True);
   -- Then write
   Ada.Text_Io.Put_Line ("Building:");
