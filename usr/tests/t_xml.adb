@@ -1,7 +1,7 @@
 with Ada.Text_Io, Ada.Strings.Unbounded;
 with Argument, Xml_Parser, Normal;
 procedure T_Xml is
-  Root : Xml_Parser.Element_Type;
+  Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
 
@@ -24,7 +24,7 @@ procedure T_Xml is
     for I in 1 .. Level + 1 loop
       Ada.Text_Io.Put (" ");
     end loop;
-    Ada.Text_Io.Put (Asu.To_String(Xml_Parser.Get_Name (Elt)));
+    Ada.Text_Io.Put (Asu.To_String(Xml_Parser.Get_Name (Elt)) & " :" );
     Put_Attributes (Elt);
     Ada.Text_Io.New_Line;
     for I in Children'Range loop
@@ -49,9 +49,12 @@ procedure T_Xml is
   end Put_Element;
 
 begin
-  Xml_Parser.Parse (Argument.Get_Parameter, Root);
+  Xml_Parser.Parse (Argument.Get_Parameter, Prologue, Root);
+  Ada.Text_Io.Put_Line ("Prologue:");
+  Put_Element (Prologue, 0);
+  Ada.Text_Io.Put_Line ("Elements tree:");
   Put_Element (Root, 0);
-  Xml_Parser.Clean (Root);
+  Xml_Parser.Clean (Prologue, Root);
 exception
   when Xml_Parser.Parse_Error =>
     Ada.Text_Io.Put_Line (Xml_Parser.Get_Parse_Error_Message);
