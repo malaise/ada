@@ -24,7 +24,10 @@ procedure T_Xml is
     for I in 1 .. Level + 1 loop
       Ada.Text_Io.Put (" ");
     end loop;
-    Ada.Text_Io.Put (Asu.To_String(Xml_Parser.Get_Name (Elt)) & " :" );
+    Ada.Text_Io.Put (Asu.To_String(Xml_Parser.Get_Name (Elt)));
+    if Xml_Parser.Get_Nb_Attributes (Elt) /= 0 then
+      Ada.Text_Io.Put (" :" );
+    end if;
     Put_Attributes (Elt);
     Ada.Text_Io.New_Line;
     for I in Children'Range loop

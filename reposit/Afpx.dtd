@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
+<!-- DTD for Afpx xml definition -->
 <!-- Syntax of the descriptor file -->
 <!-- ============================= -->
-<!-- Not validated DTD for Afpx xml definition -->
 <!ELEMENT Afpx_Descriptors (Descriptor*)>
 
 <!ELEMENT Descriptor (List?,Field*)>
