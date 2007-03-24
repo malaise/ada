@@ -12,14 +12,15 @@ package body Xml_Parser is
 
   -- File management
   package File_Mng is
-    File : Text_Char.File_Type;
-    procedure Open (File_Name : String);
-    procedure Close;
+    -- Open file, raises File_Error if name error
+    procedure Open (File_Name : in String; File : in out Text_Char.File_Type);
+    procedure Close (File : in out Text_Char.File_Type);
   end File_Mng;
   package body File_Mng is separate;
 
   -- My tree manipulation
   package Tree_Mng is
+    -- The prologue and the tree of elements
     Prologue : My_Tree.Tree_Type;
     Tree : My_Tree.Tree_Type;
     -- Add an element, move to it
@@ -32,7 +33,7 @@ package body Xml_Parser is
     function Attribute_Exists (Name : Asu_Us) return Boolean;
     -- Add a text to current element, remain on current element
     procedure Add_Text (Text : in Asu_Us; Line : in Positive);
-    -- Initialise an empty prologue tree
+    -- Initialise an empty prologue
     procedure Init_Prologue;
     -- Set xml directive, add a xml attribute
     procedure Set_Xml (Line : in Positive);
@@ -51,20 +52,21 @@ package body Xml_Parser is
   package Entity_Mng is
     -- Initialise with default entities
     procedure Initialise;
-    -- Store an entity
-    procedure Add (Name, Value : in Asu_Us);
+    -- Store an entity or a parameter-entity
+    procedure Add (Name, Value : in Asu_Us; Parameter : in Boolean);
     -- Check if an entity exists
-    function Exists (Name : Asu_Us) return Boolean;
+    function Exists (Name : Asu_Us; Parameter : Boolean) return Boolean;
     -- Get value of an entity. Raises Entity_Not_Found if none
-    function Get (Name : Asu_Us) return Asu_Us;
+    function Get (Name : Asu_Us; Parameter : Boolean) return Asu_Us;
     Entity_Not_Found : exception;
   end Entity_Mng;
   package body Entity_Mng is separate;
 
+
   -- Parses the content of the file into the tree
   package Parse_Mng is
     -- Parse the file. Raises exceptions
-    procedure Parse;
+    procedure Parse (File : in out Text_Char.File_Type);
     -- Get parse error message
     function Get_Error_Message return Asu_Us;
   end Parse_Mng;
@@ -99,16 +101,17 @@ package body Xml_Parser is
   procedure Parse (File_Name : in String;
                    Prologue     : out Element_Type;
                    Root_Element : out Element_Type) is
+    Xml_File : Text_Char.File_Type;
     Prol, Root : Node_Type;
   begin
     -- Open file
-    File_Mng.Open (File_Name);
+    File_Mng.Open (File_Name, Xml_File);
     -- Reset and init entities
     Entity_Mng.Initialise;
     -- Parse this file
-    Parse_Mng.Parse;
+    Parse_Mng.Parse (Xml_File);
     -- Close file
-    File_Mng.Close;
+    File_Mng.Close (Xml_File);
     -- Set tree roots
     My_Tree.Move_Root (Tree_Mng.Prologue);
     Prologue := (Kind => Element,

@@ -1,6 +1,9 @@
 separate (Xml_Parser.Parse_Mng)
 
 package body Util is
+
+  -- Saved line of input (when switching to dtd file)
+  Saved_Line : Natural := 0;
   -- Current line of input
   Current_Line : Natural := 0;
   function Get_Line_No return Natural is
@@ -8,10 +11,33 @@ package body Util is
     return Current_Line;
   end Get_Line_No;
 
-  procedure Init is
+  -- Saved file of input (when switching to dtd file)
+  Saved_File : Text_Char.File_Type;
+  -- Current file
+  File : Text_Char.File_Type;
+
+  -- Switch to a new file or switch back
+  procedure Init (Back : in Boolean;
+                  To_File : in Text_Char.File_Type) is
+    New_File : Text_Char.File_Type;
   begin
-    Current_Line := 1;
+    if not Back then
+      -- Save current info
+      Saved_Line := Current_Line;
+      Saved_File := File;
+      -- Switch to new
+      File := To_File;
+      Current_Line := 1;
+    else
+      -- Switch back
+      Current_Line := Saved_Line;
+      File := Saved_File;
+      -- Reset saved info
+      Saved_Line := 0;
+      Saved_File := New_File;
+    end if;
   end Init;
+
   ------------------
   -- Syntax check --
   ------------------
@@ -24,6 +50,14 @@ package body Util is
   begin
     return Char >= '0' and then Char <= '9';
   end Is_Digit;
+  function Is_Valid_In_Name (Char : Character) return Boolean is
+  begin
+    return Is_Letter (Char)
+           or else Is_Digit (Char)
+           or else Char = '_'
+           or else Char = ':'
+           or else Char = '-';
+  end Is_Valid_In_Name;
 
   -- Check that a Name is correct
   function Name_Ok (Name : Asu_Us) return Boolean is
@@ -46,11 +80,7 @@ package body Util is
       for I in 2 .. Asu.Length (Name) loop
         -- Other chars must be letter, digit, or '_' or ':' or '-'
         Char := Asu.Element (Name, 1);
-        if not Is_Letter (Char)
-        and then not Is_Digit (Char)
-        and then Char /= '_'
-        and then Char /= ':'
-        and then Char /= '-' then
+        if not Is_Valid_In_Name (Char) then
           return False;
         end if;
       end loop;
@@ -85,7 +115,7 @@ package body Util is
   function Get return Character is
     Char : Character;
   begin
-    Char := Text_Char.Get (File_Mng.File);
+    Char := Text_Char.Get (File);
     My_Circ.Push (Char);
     if Char = Lf then
       Current_Line := Current_Line + 1;
@@ -123,7 +153,7 @@ package body Util is
     for I in 1 .. N loop
       My_Circ.Look_Last (Char);
       My_Circ.Discard_Last;
-      Text_Char.Unget (File_Mng.File, Char);
+      Text_Char.Unget (File, Char);
       if Char = Lf then
         Current_Line := Current_Line - 1;
       end if;
@@ -154,7 +184,7 @@ package body Util is
   -- Detect separator
   function Is_Separator (Char : Character) return Boolean is
   begin
-    return Char = ' '
+    return Char = Space
     or else Char = Ada.Characters.Latin_1.Lf
     or else Char = Ada.Characters.Latin_1.Cr
     or else Char = Ada.Characters.Latin_1.Ht;
@@ -168,6 +198,7 @@ package body Util is
       Char := Get;
       exit when not Is_Separator (Char);
     end loop;
+    Unget;
   end Skip_Separators;
 
   -- Current significant string, loaded by Parse_Until_xxx
@@ -181,6 +212,16 @@ package body Util is
   begin
     Curr_Str := Asu_Null;
   end Reset_Curr_Str;
+
+  -- Replace all separators by spaces
+  procedure Fix_Spaces (Str : in out String) is
+  begin
+    for I in Str'Range loop
+      if Is_Separator (Str(I)) then
+        Str(I) := Space;
+      end if;
+    end loop;
+  end Fix_Spaces;
 
   -- Parse until Criteria is found or until a separator if Criteria = ""
   procedure Parse_Until_Str (Criteria : in String) is
@@ -198,6 +239,8 @@ package body Util is
         Curr_Str := Curr_Str & Char;
       else
         Read (Str);
+        -- Space in Str matches any separator
+        Fix_Spaces (Str);
         Curr_Str := Curr_Str & Char;
         exit when Str = Criteria;
       end if;
@@ -217,7 +260,7 @@ package body Util is
       Char := Get;
       -- Compare to each char of the criteria
       for I in Criteria'Range loop
-        if Criteria(I) = ' ' then
+        if Criteria(I) = Space then
           exit This_Char when Is_Separator (Char);
         else
           exit This_Char when Char = Criteria(I);
@@ -232,10 +275,31 @@ package body Util is
     Parse_Until_Char ("" & Stop);
   end Parse_Until_Stop;
 
+  -- Parse until end of name, resets Curr_Str
+  function Parse_Name return Asu_Us is
+    Res : Asu_Us;
+    Char : Character;
+    use type Asu_Us;
+  begin
+    loop
+      Char := Get;
+      -- Loop while valid in name
+      exit when not Is_Valid_In_Name(Char);
+      Res := Res & Char;
+    end loop;
+    Unget;
+    return Res;
+  end Parse_Name;
+
   -- Try to parse a keyword, rollback if not
   function Try (Str : String) return Boolean is
+    Got_Str : String (1 .. Str'Length);
   begin
-    if Get (Str'Length) = Str then
+    Get (Got_Str);
+    -- Space in Str matches any separator
+    Fix_Spaces (Got_Str);
+    -- Check if match
+    if Got_Str = Str then
       -- Got it
       return True;
     else
@@ -296,7 +360,44 @@ package body Util is
                 Asu.Slice (Text, Index + 1, Jndex - 1));
         -- Append entity value
         begin
-          Asu.Append (S1, Entity_Mng.Get (Name));
+          Asu.Append (S1, Entity_Mng.Get (Name, False));
+        exception
+          when Entity_Mng.Entity_Not_Found =>
+            Error ("Unknown entity " & Asu.To_String (Name));
+        end;
+        -- Jump to ';'
+        Index := Jndex;
+      elsif Char = '%' then
+        -- Look for end of variable name
+        Found := False;
+        if Index /= Asu.Length (Text) then
+          Jndex := Index + 1;
+          loop
+            if Asu.Element (Text, Jndex) = ';' then
+              Found := True;
+              exit;
+            elsif Asu.Element (Text, Jndex) = '&'
+            or else Asu.Element (Text, Jndex) = '%' then
+              Found := False;
+              exit;
+            end if;
+            exit when Jndex = Asu.Length(Text);
+            Jndex := Jndex + 1;
+          end loop;
+        end if;
+        -- Check ';' has been found and name is not empty
+        if not Found then
+          Error ("Unterminated entity name "
+               & Asu.Slice (Text, Index, Asu.Length(Text)));
+        elsif Jndex = Index + 1 then
+          Error ("Empty entity name &;");
+        end if;
+        -- Check variable exists
+        Name := Asu.To_Unbounded_String (
+                Asu.Slice (Text, Index + 1, Jndex - 1));
+        -- Append entity value
+        begin
+          Asu.Append (S1, Entity_Mng.Get (Name, True));
         exception
           when Entity_Mng.Entity_Not_Found =>
             Error ("Unknown entity " & Asu.To_String (Name));
@@ -321,10 +422,10 @@ package body Util is
         if not Found then
           -- Not skipping
           if Char = Lf then
-            Asu.Append (S2, ' ');
+            Asu.Append (S2, Space);
             Found := True;
           elsif Char = Ada.Characters.Latin_1.Ht then
-            Asu.Append (S2, ' ');
+            Asu.Append (S2, Space);
           else
             Asu.Append (S2, Char);
           end if;

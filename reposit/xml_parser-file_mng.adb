@@ -2,7 +2,7 @@ with Sys_Calls;
 separate (Xml_Parser)
 package body File_Mng is
 
-  procedure Open (File_Name : String) is
+  procedure Open (File_Name : in String; File : in out Text_Char.File_Type) is
     Fd : Sys_Calls.File_Desc;
   begin
     if Text_Char.Is_Open (File) then
@@ -23,7 +23,7 @@ package body File_Mng is
     Text_Char.Open (File, Fd);
   end Open;
 
-  procedure Close is
+  procedure Close (File : in out Text_Char.File_Type) is
     Fd : Sys_Calls.File_Desc;
     use type Sys_Calls.File_Desc;
   begin

@@ -6,6 +6,7 @@ package body Entity_Mng is
 
   -- The stored entities
   type Entity_Type is record
+    Parameter : Boolean;
     Name : Asu_Us;
     Value : Asu_Us;
   end record;
@@ -16,25 +17,31 @@ package body Entity_Mng is
   end Set;
   function Image (Entity : Entity_Type) return String is
   begin
-    return Asu.To_String (Entity.Name);
+    if Entity.Parameter then
+      return "%" & Asu.To_String (Entity.Name);
+    else
+      return Asu.To_String (Entity.Name);
+    end if;
   end Image;
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
     use type Asu_Us;
   begin
-    return Current.Name = Criteria.Name;
+    return Current.Parameter = Criteria.Parameter
+    and then Current.Name = Criteria.Name;
   end "=";
   package Entity_List_Mng is new Unique_List (Entity_Type, Entity_Access,
              Set, Image, "=");
   Entity_List : Entity_List_Mng.List_Type;
 
   -- Store an entity
-  procedure Store (Name, Value : in Asu_Us; Log : in Boolean) is
+  procedure Store (Name, Value : in Asu_Us; Parameter : in Boolean;
+                   Log : in Boolean) is
     Entity : Entity_Type;
   begin
-    Entity := (Name, Value);
+    Entity := (Parameter, Name, Value);
     Entity_List_Mng.Insert (Entity_List, Entity);
     if Log then
-      Trace ("Stored entity name " & Asu.To_String (Name)
+      Trace ("Stored entity name " & Image (Entity)
            & " value " & Asu.To_String (Value));
     end if;
   end Store;
@@ -61,19 +68,20 @@ package body Entity_Mng is
       if Code < 16#10# or else Code > 16#FF# then
         raise Constraint_Error;
       end if;
-      Store (Asu_Tus (Str), Asu_Tus (Character'Val(Code) & ""), False);
+      -- Store as normal entity, no tracing
+      Store (Asu_Tus (Str), Asu_Tus (Character'Val(Code) & ""), False, False);
     end Add_Char;
   begin
     -- Reset all entities
     Entity_List_Mng.Delete_List (Entity_List);
     -- Load predefined entities
-    Store (Asu_Tus ("amp"),   Asu_Tus ("&"), False);
-    Store (Asu_Tus ("lt"),    Asu_Tus ("<"), False);
-    Store (Asu_Tus ("gt"),    Asu_Tus (">"), False);
-    Store (Asu_Tus ("quot"),  Asu_Tus (""""), False);
-    Store (Asu_Tus ("aquot"), Asu_Tus ("'"), False);
+    Store (Asu_Tus ("amp"),   Asu_Tus ("&"), False, False);
+    Store (Asu_Tus ("lt"),    Asu_Tus ("<"), False, False);
+    Store (Asu_Tus ("gt"),    Asu_Tus (">"), False, False);
+    Store (Asu_Tus ("quot"),  Asu_Tus (""""), False, False);
+    Store (Asu_Tus ("aquot"), Asu_Tus ("'"), False, False);
     -- HTab, Cr and Lf
-    Store (Asu_Tus ("#9"), Asu_Tus (Acl.Ht & ""), False);
+    Store (Asu_Tus ("#9"), Asu_Tus (Acl.Ht & ""), False, False);
     Add_Char (16#10#);
     Add_Char (16#13#);
     -- Printable ASCII cahracters
@@ -83,28 +91,29 @@ package body Entity_Mng is
   end Initialise;
 
   -- Store an entity
-  procedure Add (Name, Value : in Asu_Us) is
-    Entity : Entity_Type;
+  procedure Add (Name, Value : in Asu_Us; Parameter : in Boolean) is
   begin
-    Store (Name, Value, True);
+    Store (Name, Value, Parameter, True);
   end Add;
 
   -- Check if an entity exists
-  function Exists (Name : Asu_Us) return Boolean is
+  function Exists (Name : Asu_Us; Parameter : Boolean) return Boolean is
     Entity : Entity_Type;
     Found : Boolean;
   begin
-    -- Find entity with the given name
+    -- Find (parameter) entity with the given name
+    Entity.Parameter := Parameter;
     Entity.Name := Name;
     Entity_List_Mng.Search (Entity_List, Entity, Found);
     return Found;
   end Exists;
 
   -- Get value of an entity. Raises Parse_Error if none
-  function Get (Name : Asu_Us) return Asu_Us is
+  function Get (Name : Asu_Us; Parameter : Boolean) return Asu_Us is
     Entity : Entity_Type;
   begin
     -- Read entity with the given name
+    Entity.Parameter := Parameter;
     Entity.Name := Name;
     Entity_List_Mng.Read (Entity_List, Entity, Entity);
     Trace ("Read entity name " & Asu.To_String (Entity.Name)
