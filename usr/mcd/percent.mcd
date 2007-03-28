@@ -18,7 +18,7 @@ a popr a C pushr call
 b popr b C pushr call
 
 # Format a result (2 digits)
-[ toreal 6 2 " " normal put ] P popr
+[ toreal 7 2 " " normal put ] P popr
 
 # A is B + x % of B, so x = (A / B) - 1
 a pushr toreal b pushr toreal / 1.0 - 100.0 *
@@ -36,6 +36,10 @@ a pushr P pushr call " = " put b pushr P pushr call " * " put
 # Format result
 P pushr call "%" putl
 
+# If A < 1000
+a pushr toreal 1000.0 <
+[
+
 # A% of B (A * B / 100)
 a pushr toreal b pushr toreal 100.0 / * p popr
 0 format
@@ -44,9 +48,10 @@ p pushr P pushr call newl
 
 # B + A%
 b pushr P pushr call " + " put a pushr P pushr call "% = " put
-b pushr p pushr + P pushr call newl
+b pushr toreal p pushr + P pushr call newl
 
 # B - A%
 b pushr P pushr call " - " put a pushr P pushr call "% = " put
-b pushr p pushr - P pushr call newl
+b pushr toreal p pushr - P pushr call newl
 
+] ifcall
