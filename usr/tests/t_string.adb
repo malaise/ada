@@ -86,8 +86,10 @@ begin
       My_Io.Put_Line ("11 Variable substitution");
       My_Io.Put_Line ("12 Escape location");
       My_Io.Put_Line ("13 Tuncation ot best length");
+      My_Io.Put_Line ("14 Copy");
+      My_Io.Put_Line ("15 Replace");
 
-      My_Io.Put ("Choice (0 .. 13) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 15) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -233,6 +235,23 @@ begin
                         Mini => Pos2,
                         Maxi => Pos3,
                         Separating => String_Mng.Is_Separator'Access)));
+          when 14 =>
+            My_Io.Put_Line ("14 Copy");
+            My_Io.Put ("Val (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            declare
+              Lstr : String (1 .. Str_Len) := Str (1 .. Str_Len);
+            begin
+              String_Mng.Copy (Str1(1 .. Nat1), Lstr);
+              My_Io.Put_Line ("Copy result: " & Lstr);
+            end;
+          when 15 =>
+            My_Io.Put_Line ("15 Replace");
+            My_Io.Put ("What (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
+            My_Io.Put_Line ("Replaced string: "
+              & String_Mng.Replace (Str1(1 .. Nat1),
+                                    Str2(1 .. Nat2),
+                                    Str(1 .. Str_Len)));
           when others => null;
         end case;
       exception
