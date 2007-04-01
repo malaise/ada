@@ -18,7 +18,7 @@
 <!ATTLIST Colors Foreground CDATA #REQUIRED Blink CDATA #IMPLIED
                  Background CDATA #REQUIRED Selected CDATA #IMPLIED>
 
-<!ELEMENT Field (#PCDATA)>
+<!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED>
 
 <!-- Semantic of the descriptor file -->
