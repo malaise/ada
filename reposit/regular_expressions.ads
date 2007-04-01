@@ -34,7 +34,7 @@ package Regular_Expressions is
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
                   N_Matched : out Natural;
-                  Mach_Info : in out Match_Array;
+                  Match_Info : in out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 

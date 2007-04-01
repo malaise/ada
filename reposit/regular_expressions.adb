@@ -83,7 +83,7 @@ package body Regular_Expressions is
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
                   N_Matched : out Natural;
-                  Mach_Info : in out Match_Array;
+                  Match_Info : in out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True) is
     Eflags : Integer := 0;
@@ -94,7 +94,7 @@ package body Regular_Expressions is
     use Bit_Ops;
   begin
     -- Init results
-    Mach_Info := (others => (Start_Offset => 1, End_Offset => 0));
+    Match_Info := (others => (Start_Offset => 1, End_Offset => 0));
     N_Matched := 0;
     -- Check criteria has compiled
     if Criteria.Error /= 0
@@ -112,24 +112,24 @@ package body Regular_Expressions is
     -- Exec regex
     Cres := C_Regexec (Criteria.Comp_Addr,
                        To_Check4C'Address,
-                       Long_Integer(Mach_Info'Length),
-                       Mach_Info'Address,
+                       Long_Integer(Match_Info'Length),
+                       Match_Info'Address,
                        Eflags);
     -- Return if no match
     if Cres /= 0 then
       return;
     end if;
-    -- Set N_Matched to 1 event if empty Mach_Info
-    if Mach_Info'Length = 0 then
+    -- Set N_Matched to 1 event if empty Match_Info
+    if Match_Info'Length = 0 then
       N_Matched := 1;
       return;
    end if;
     -- Set N_Matched to last non-empty Match_Info
     -- Update Match_Info so that it contains indexes in To_Check
-    for I in Mach_Info'Range loop
-      if Mach_Info(I).Start_Offset /= -1 then
-        Mach_Info(I).Start_Offset := Mach_Info(I).Start_Offset + First;
-        Mach_Info(I).End_Offset   := Mach_Info(I).End_Offset   + First - 1;
+    for I in Match_Info'Range loop
+      if Match_Info(I).Start_Offset /= -1 then
+        Match_Info(I).Start_Offset := Match_Info(I).Start_Offset + First;
+        Match_Info(I).End_Offset   := Match_Info(I).End_Offset   + First - 1;
         N_Matched := I;
       end if;
     end loop;
