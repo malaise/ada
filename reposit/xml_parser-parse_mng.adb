@@ -14,8 +14,10 @@ package body Parse_Mng  is
     -- Syntax check --
     ------------------
     function Is_Letter (Char : Character) return Boolean;
-    -- Check Name; valid
+    -- Check that Name is valid
     function Name_Ok (Name : Asu_Us) return Boolean;
+    -- Check that Str defines valid names seprated by Sep
+    function Names_Ok (Str : Asu_Us; Seps : String) return Boolean;
     -- Report an error, raises Parsing_Error.
     procedure Error (Msg : in String);
     -- Retrieve error message
@@ -71,12 +73,18 @@ package body Parse_Mng  is
     function Try (Str : String) return Boolean;
     -- Fix text: expand variables and remove repetition of separators
     function Fix_Text (Text : Asu_Us) return Asu_Us;
+    -- Remove sepators from text
+    function Remove_Separators (Text : Asu_Us) return Asu_Us;
   end Util;
   package body Util is separate;
 
   -- Parse a directive <! >
   -- Dtd uses Parse_Directive for comment and CDATA
   procedure Parse_Directive (Only_Skip : in Boolean);
+
+  -- Parse instruction <? >
+  -- Dtd adds its own instructions (except xml)
+  procedure Parse_Instruction;
 
   -- Dtd management, uses util and the tree
   package Dtd is
@@ -124,7 +132,7 @@ package body Parse_Mng  is
       Attribute_Name := Util.Get_Curr_Str;
       if not Util.Name_Ok (Attribute_Name) then
         Util.Error ("invalid attribute name "
-                  & Asu.To_String (Attribute_Name));
+                  & Asu_Ts (Attribute_Name));
       end if;
       Util.Reset_Curr_Str;
       -- Attribute name must be unique
@@ -132,12 +140,12 @@ package body Parse_Mng  is
         Tree_Mng.Find_Xml_Attribute (Attribute_Name,
                   Attribute_Index, Attribute_Value);
         if Attribute_Index /= 0 then
-          Util.Error ("Attribute " & Asu.To_String (Attribute_Name)
+          Util.Error ("Attribute " & Asu_Ts (Attribute_Name)
                     & " already defined for xml");
         end if;
       else
         if Tree_Mng.Attribute_Exists (Attribute_Name) then
-          Util.Error ("Attribute " & Asu.To_String (Attribute_Name)
+          Util.Error ("Attribute " & Asu_Ts (Attribute_Name)
                     & " already defined for this element");
         end if;
       end if;
@@ -148,8 +156,8 @@ package body Parse_Mng  is
       else
         Tree_Mng.Add_Attribute (Attribute_Name, Attribute_Value, Line_No);
       end if;
-      Trace ("Parsed attribute " & Asu.To_String (Attribute_Name)
-           & ", " & Asu.To_String (Attribute_Value));
+      Trace ("Parsed attribute " & Asu_Ts (Attribute_Name)
+           & ", " & Asu_Ts (Attribute_Value));
       -- Skip to new attribute if not end of element start
       Util.Skip_Separators;
       Char := Util.Get;
@@ -182,7 +190,7 @@ package body Parse_Mng  is
       Util.Error ("Expected version info as first xml attribute");
     end if;
     declare
-      Vers : constant String := Asu.To_String (Attribute_Value);
+      Vers : constant String := Asu_Ts (Attribute_Value);
     begin
       if Vers /= "1.0"
       and then Vers /= "1.1" then
@@ -233,7 +241,7 @@ package body Parse_Mng  is
     Name := Util.Get_Curr_Str;
     if not Util.Name_Ok (Name) then
       Util.Error ("Unvalid processing instruction name"
-               & Asu.To_String (Name));
+               & Asu_Ts (Name));
     end if;
     Util.Reset_Curr_Str;
     if Util.Read /= Util.Instruction then
@@ -263,7 +271,7 @@ package body Parse_Mng  is
     -- Parse and check name
     DocType_Name := Util.Parse_Name;
     if not Util.Name_Ok (DocType_Name) then
-      Util.Error ("Invalid DOCTYPE name " & Asu.To_String (DocType_Name));
+      Util.Error ("Invalid DOCTYPE name " & Asu_Ts (DocType_Name));
     end if;
     -- What's next
     Util.Skip_Separators;
@@ -314,12 +322,12 @@ package body Parse_Mng  is
       if Index /= 0 and then Index < Asu.Length(Util.Get_Curr_Str) - 2 then
         Util.Error ("Invalid ""--"" in comment");
       end if;
-      Trace ("Skipped <!--" & Asu.To_String (Util.Get_Curr_Str));
+      Trace ("Skipped <!--" & Asu_Ts (Util.Get_Curr_Str));
       Util.Reset_Curr_Str;
     elsif Util.Try ("[CDATA[") then
       -- "<![CDATA[", a CDATA block, skip until "]]>"
       Util.Parse_Until_Str ("]]" & Util.Stop);
-      Trace ("Skipped <![CDATA[" & Asu.To_String (Util.Get_Curr_Str));
+      Trace ("Skipped <![CDATA[" & Asu_Ts (Util.Get_Curr_Str));
       Util.Reset_Curr_Str;
     elsif not Only_Skip and then Util.Try ("DOCTYPE ") then
       Parse_Doctype;
@@ -327,7 +335,7 @@ package body Parse_Mng  is
       -- Reject directive
       Util.Parse_Until_Stop;
       Trace ("Invalid directive <!"
-           & Asu.To_String (Util.Get_Curr_Str) & Util.Stop);
+           & Asu_Ts (Util.Get_Curr_Str) & Util.Stop);
       Util.Reset_Curr_Str;
     end if;
   exception
@@ -410,7 +418,7 @@ package body Parse_Mng  is
         -- Fix and add this text
         Text := Util.Fix_Text (Util.Get_Curr_Str);
         Tree_Mng.Add_Text (Text, Line_No);
-        Trace ("Parsed Text " & Asu.To_String (Text));
+        Trace ("Parsed Text " & Asu_Ts (Text));
         Util.Reset_Curr_Str;
       end if;
     end loop;
@@ -428,13 +436,13 @@ package body Parse_Mng  is
     Util.Parse_Until_Char ("/> ");
     -- Check and store name
     if not Util.Name_Ok (Util.Get_Curr_Str) then
-      Util.Error ("Invalid element name " & Asu.To_String (Util.Get_Curr_Str));
+      Util.Error ("Invalid element name " & Asu_Ts (Util.Get_Curr_Str));
     end if;
     Element_Name := Util.Get_Curr_Str;
     Util.Reset_Curr_Str;
     -- Add new element and move to it
     Tree_Mng.Add_Element (Element_Name, Line_No);
-    Trace ("Parsing element " & Asu.To_String (Element_Name));
+    Trace ("Parsing element " & Asu_Ts (Element_Name));
     -- See next significant character
     if Util.Is_Separator (Util.Read) then
       -- Skip separators
@@ -457,7 +465,7 @@ package body Parse_Mng  is
       end if;
       -- End of this empty element
       Dtd.Check_Element;
-      Trace ("Parsed element " & Asu.To_String (Element_Name));
+      Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up;
       end if;
@@ -471,12 +479,12 @@ package body Parse_Mng  is
       Util.Reset_Curr_Str;
       if End_Name /= Element_Name then
         Util.Error ("Element name mismatch, expected "
-                  & Asu.To_String (Element_Name)
-                  & ", got " & Asu.To_String (End_Name));
+                  & Asu_Ts (Element_Name)
+                  & ", got " & Asu_Ts (End_Name));
       end if;
       -- End of this non empty element
       Dtd.Check_Element;
-      Trace ("Parsed element " & Asu.To_String (Element_Name));
+      Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up;
       end if;
@@ -545,6 +553,8 @@ package body Parse_Mng  is
     -- Parse prologue then element
     Parse_Prologue;
     Parse_Root_To_End;
+    -- Clean Dtd memory
+    Dtd.Init;
   end Parse;
 
   -- Get parse error message

@@ -18,9 +18,9 @@ package body Entity_Mng is
   function Image (Entity : Entity_Type) return String is
   begin
     if Entity.Parameter then
-      return "%" & Asu.To_String (Entity.Name);
+      return "%" & Asu_Ts (Entity.Name);
     else
-      return Asu.To_String (Entity.Name);
+      return Asu_Ts (Entity.Name);
     end if;
   end Image;
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
@@ -42,15 +42,13 @@ package body Entity_Mng is
     Entity_List_Mng.Insert (Entity_List, Entity);
     if Log then
       Trace ("Stored entity name " & Image (Entity)
-           & " value " & Asu.To_String (Value));
+           & " value " & Asu_Ts (Value));
     end if;
   end Store;
 
   -- Initialise with default entities
   procedure Initialise is
     package Acl renames Ada.Characters.Latin_1;
-    function Asu_Tus (Str : String) return Asu_Us
-                      renames Asu.To_Unbounded_String;
     procedure Add_Char (Code : in Natural) is
       Str : String (1 .. 3);
       function Char_Of (Code : in Natural) return Character is
@@ -116,8 +114,8 @@ package body Entity_Mng is
     Entity.Parameter := Parameter;
     Entity.Name := Name;
     Entity_List_Mng.Read (Entity_List, Entity, Entity);
-    Trace ("Read entity name " & Asu.To_String (Entity.Name)
-         & " value " & Asu.To_String (Entity.Value));
+    Trace ("Read entity name " & Asu_Ts (Entity.Name)
+         & " value " & Asu_Ts (Entity.Value));
     return Entity.Value;
   exception
     when Entity_List_Mng.Not_In_List =>

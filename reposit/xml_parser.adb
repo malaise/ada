@@ -5,6 +5,10 @@ package body Xml_Parser is
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
   Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
+  function Asu_Tus (Str : String) return Asu_Us
+                   renames Asu.To_Unbounded_String;
+  function Asu_Ts (Str : Asu_Us) return String
+                   renames Asu.To_String;
 
   -- Trace debug message
   Debug_Level : Integer := -1;
@@ -124,7 +128,7 @@ package body Xml_Parser is
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message return String is
   begin
-    return Asu.To_String (Parse_Mng.Get_Error_Message);
+    return Asu_Ts (Parse_Mng.Get_Error_Message);
   end Get_Parse_Error_Message;
 
   -- Clean a parsed tree
@@ -360,7 +364,7 @@ package body Xml_Parser is
    ----------
   function Get_Text (Text : in Text_Type) return String is
   begin
-    return Asu.To_String (Get_Text (Text));
+    return Asu_Ts (Get_Text (Text));
   end Get_Text;
 
   function Get_Text (Text : in Text_Type)

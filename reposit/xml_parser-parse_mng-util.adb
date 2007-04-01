@@ -1,5 +1,5 @@
+with String_Mng;
 separate (Xml_Parser.Parse_Mng)
-
 package body Util is
 
   -- Saved line of input (when switching to dtd file)
@@ -56,7 +56,8 @@ package body Util is
            or else Is_Digit (Char)
            or else Char = '_'
            or else Char = ':'
-           or else Char = '-';
+           or else Char = '-'
+           or else Char = '.';
   end Is_Valid_In_Name;
 
   -- Check that a Name is correct
@@ -66,9 +67,6 @@ package body Util is
     -- Must not be empty
     if Asu.Length (Name) = 0 then
       return False;
-    elsif Asu.Length (Name) = 1 then
-      -- One char name must be a letter
-      return Is_Letter (Asu.Element (Name, 1));
     else
       -- First char must be letter or '_' or ':'
       Char := Asu.Element (Name, 1);
@@ -79,7 +77,7 @@ package body Util is
       end if;
       for I in 2 .. Asu.Length (Name) loop
         -- Other chars must be letter, digit, or '_' or ':' or '-'
-        Char := Asu.Element (Name, 1);
+        Char := Asu.Element (Name, I);
         if not Is_Valid_In_Name (Char) then
           return False;
         end if;
@@ -87,6 +85,53 @@ package body Util is
       return True;
     end if;
   end Name_Ok;
+
+  -- Check that Str defines valid names seprated by Sep
+  function Names_Ok (Str : Asu_Us; Seps : String) return Boolean is
+    S : String(1 .. Asu.Length (Str)) := Asu_Ts (Str);
+    I1, I2 : Natural;
+    function Is_Sep (C : Character) return Boolean is
+    begin
+      for I in Seps'Range loop
+        if C = Seps(I) then
+          return True;
+        end if;
+      end loop;
+      return False;
+    end Is_Sep;
+  begin
+    -- Must not be empty
+    if S = "" then
+      return False;
+    end if;
+    -- Identify words
+    I1 := S'First;
+    Word:loop
+      -- Look for start of word
+      loop
+        exit Word when I1 > S'Last;
+        exit when not Is_Sep (S(I1));
+        I1 := I1 + 1;
+      end loop;
+      -- Look for end of word
+      I2 := I1;
+      loop
+        I2 := I2 + 1;
+        exit when I2 > S'Last or else Is_Sep (S(I2));
+      end loop;
+      -- Check word
+      if not Name_Ok (Asu_Tus (S(I1 .. I2 - 1))) then
+        return False;
+      end if;
+      -- Done
+      exit Word when I2 > S'Last;
+      -- Ready for next word
+      I1 := I2;
+    end loop Word;  
+    -- All names were OK
+    return True;
+  end Names_Ok;
+
 
   ------------------
   -- Getting char --
@@ -363,7 +408,7 @@ package body Util is
           Asu.Append (S1, Entity_Mng.Get (Name, False));
         exception
           when Entity_Mng.Entity_Not_Found =>
-            Error ("Unknown entity " & Asu.To_String (Name));
+            Error ("Unknown entity " & Asu_Ts (Name));
         end;
         -- Jump to ';'
         Index := Jndex;
@@ -400,7 +445,7 @@ package body Util is
           Asu.Append (S1, Entity_Mng.Get (Name, True));
         exception
           when Entity_Mng.Entity_Not_Found =>
-            Error ("Unknown entity " & Asu.To_String (Name));
+            Error ("Unknown entity " & Asu_Ts (Name));
         end;
         -- Jump to ';'
         Index := Jndex;
@@ -441,6 +486,18 @@ package body Util is
     -- Done
     return S2;
   end Fix_Text;
+
+  -- Remove sepators from text
+  function Remove_Separators (Text : Asu_Us) return Asu_Us is
+    Res : String (1 .. Asu.Length (Text)) := Asu_Ts (Text);
+  begin
+    for I in Res'Range loop
+      if Util.Is_Separator (Res(I)) then
+        Res(I) := Util.Space;
+      end if;
+    end loop;
+    return Asu_Tus (String_Mng.Replace (Space & "", "", Res));
+  end Remove_Separators;
 
 end Util;
 
