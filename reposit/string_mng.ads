@@ -141,7 +141,7 @@ package String_Mng is
   -- Prerequisits Mini <= Length <= Maxi (else Constraint_Error).
   -- Beware that indexes are not relative to Str, but the returned index is.
   -- Returns 0 only if Str is empty.
-  function Truncate (Str : in String;
+  function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
                      Separating : Separator_Access := Is_Separator'Access)
@@ -150,6 +150,9 @@ package String_Mng is
   -- Copy the string Val at the beginning of the string To
   -- To (To'First .. To'First + Val'Length - 1) := Val;
   procedure Copy (Val : in String; To : in out String);
+
+  -- Replace occurences of What by By in Str. One pass.
+  function Replace (What, By, Str : String) return String;
 
 end String_Mng;
 

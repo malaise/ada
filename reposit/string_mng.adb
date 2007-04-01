@@ -495,7 +495,7 @@ package body String_Mng is
   -- Prerequisits Mini <= Length <= Maxi. Beware that they are not
   --  relative to Str indexes but that the returned value is.
   -- Returns 0 only if Str is empty.
-  function Truncate (Str : in String;
+  function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
                      Separating : Separator_Access := Is_Separator'Access)
@@ -550,6 +550,38 @@ package body String_Mng is
   begin
     To (To'First .. To'First + Val'Length - 1) := Val;
   end Copy;
+
+  -- Replace occurences of What by By in Str. One pass.
+  function Replace (What, By, Str : String) return String is
+    Len : constant Natural := What'Length;
+    Last : constant Natural := Str'Last;
+    I : Positive;
+    Result : Ada.Strings.Unbounded.Unbounded_String;
+    use type Ada.Strings.Unbounded.Unbounded_String;
+  begin
+    -- Nothing if what is empty or Str too short
+    if Len = 0 or else Str'Length < Len then
+      return Str;
+    end if;
+    I := Str'First;
+    loop
+      -- See if there are enough chars remaining. If yes, check if match
+      if I + Len - 1 > Last then
+        -- Str cannot match any more (not enough chars)
+        Ada.Strings.Unbounded.Append (Result, Str(I .. Last));
+        exit;
+      elsif Str(I .. I + Len - 1) = What then
+        -- Match, replace
+        Ada.Strings.Unbounded.Append (Result, By);
+        I := I + Len;
+      else
+        -- No match, move one char forward
+        Ada.Strings.Unbounded.Append (Result, Str(I));
+        I := I + 1;
+      end if;
+    end loop;
+    return Ada.Strings.Unbounded.To_String (Result);
+  end Replace;
 
 end String_Mng;
 
