@@ -21,7 +21,8 @@
                  Background CDATA #REQUIRED Selected CDATA #IMPLIED>
 
 <!ELEMENT Init (#PCDATA)>
-<!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED>
+<!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
+               xml:space (default|preserve) "preserve">
 
 <!-- Semantic of the descriptor file -->
 <!-- =============================== -->
