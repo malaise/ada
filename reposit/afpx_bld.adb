@@ -123,6 +123,7 @@ procedure Afpx_Bld is
   -- Check and store upper_left and lower right
   procedure Load_Geometry (Node : in Xp.Node_Type;
                            Fn : in Afpx_Typ.Absolute_Field_Range) is
+    Up, Left, Low, Right : Boolean := False;
   begin
     if Node.Kind /= Xp.Element
     or else not Match (Xp.Get_Name (Node), "Geometry")
@@ -134,33 +135,47 @@ procedure Afpx_Bld is
     declare
       Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
     begin
-      -- Load upper left
-      if not Match (Attrs(1).Name, "Up") then
-        File_Error (Node, "Invalid geometry " & Attrs(1).Name);
-      end if;
-      Fields(Fn).Upper_Left.Row :=
-       Con_Io.Row_Range'Value(Strof (Attrs(1).Value));
-      if not Match (Attrs(2).Name, "Left") then
-        File_Error (Node, "Invalid geometry " & Attrs(2).Name);
-      end if;
-      Fields(Fn).Upper_Left.Col :=
-       Con_Io.Col_Range'Value(Strof (Attrs(2).Value));
-
-      -- Load lower right
-      if not Match (Attrs(3).Name, "Low") then
-        File_Error (Node, "Invalid geometry " & Attrs(3).Name);
-      end if;
-      Fields(Fn).Lower_Right.Row :=
-       Con_Io.Row_Range'Value(Strof (Attrs(3).Value));
-      if not Match (Attrs(4).Name, "Right") then
-        File_Error (Node, "Invalid geometry " & Attrs(4).Name);
-      end if;
-      Fields(Fn).Lower_Right.Col :=
-       Con_Io.Col_Range'Value(Strof (Attrs(4).Value));
+      for I in Attrs'Range loop
+        -- Load upper left then lower right
+        if Match (Attrs(I).Name, "Up") then
+          if Up then
+            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+          end if;
+          Up := True;
+          Fields(Fn).Upper_Left.Row :=
+           Con_Io.Row_Range'Value(Strof (Attrs(I).Value));
+        elsif Match (Attrs(I).Name, "Left") then
+          if Left then
+            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+          end if;
+          Left := True;
+          Fields(Fn).Upper_Left.Col :=
+           Con_Io.Col_Range'Value(Strof (Attrs(I).Value));
+        elsif Match (Attrs(I).Name, "Low") then
+          if Low then
+            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+          end if;
+          Low := True;
+          Fields(Fn).Lower_Right.Row :=
+           Con_Io.Row_Range'Value(Strof (Attrs(I).Value));
+        elsif Match (Attrs(I).Name, "Right") then
+          if Right then
+            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+          end if;
+          Right := True;
+          Fields(Fn).Lower_Right.Col :=
+           Con_Io.Col_Range'Value(Strof (Attrs(4).Value));
+        else
+          File_Error (Node, "Invalid geometry " & Attrs(I).Name);
+        end if;
+      end loop;
     exception
       when others =>
         File_Error (Node, "Invalid geometry");
     end;
+    if not (Up and then Left and then Low and then Right) then
+      File_Error (Node, "Invalid geometry. Missing some coordinate");
+    end if;
     if      Fields(Fn).Upper_Left.Row > Fields(Fn).Lower_Right.Row
     or else Fields(Fn).Upper_Left.Col > Fields(Fn).Lower_Right.Col
     then
@@ -181,6 +196,7 @@ procedure Afpx_Bld is
 
   procedure Load_Colors (Node : in Xp.Node_Type;
                          Fn : in Afpx_Typ.Absolute_Field_Range) is
+    Foreground, Background, Blink, Selected : Boolean := False;
   begin
     if Node.Kind /= Xp.Element
     or else not Match (Xp.Get_Name (Node), "Colors")
@@ -190,54 +206,68 @@ procedure Afpx_Bld is
     declare
       Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
     begin
+      for I in Attrs'Range loop
+        if Match (Attrs(I).Name, "Foreground") then
+          if Foreground then
+            File_Error (Node, "Duplicated Color " & Attrs(I).Name);
+          end if;
+          Foreground := True;
+          Fields(Fn).Colors.Foreground :=
+           Con_Io.Effective_Colors'Value (Strof (Attrs(I).Value));
+        elsif Match (Attrs(I).Name, "Background") then
+          if Background then
+            File_Error (Node, "Duplicated Color " & Attrs(I).Name);
+          end if;
+          Background := True;
+          Fields(Fn).Colors.Background :=
+           Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(I).Value));
+        elsif Match (Attrs(I).Name, "Blink") then
+          if Blink then
+            File_Error (Node, "Duplicated Color " & Attrs(I).Name);
+          end if;
+          Blink := True;
+          if Boolean'Value (Strof (Attrs(I).Value)) then
+            Fields(Fn).Colors.Blink_Stat := Con_Io.Blink;
+          else
+            Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+          end if;
+        elsif Match (Attrs(I).Name, "Selected") then
+          if Selected then
+            File_Error (Node, "Duplicated Color " & Attrs(I).Name);
+          end if;
+          Selected := True;
+          Fields(Fn).Colors.Selected :=
+           Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(I).Value));
+        else
+          File_Error (Node, "Invalid Color " & Attrs(I).Name);
+        end if;
+      end loop;
+
       -- Parse colors
       if Fn = 0 or else Fields(Fn).Kind = Afpx_Typ.Get then
         if Xp.Get_Nb_Attributes (Node) /= 3
-        or else not Match (Attrs(1).Name, "Foreground")
-        or else not Match (Attrs(2).Name, "Background")
-        or else not Match (Attrs(3).Name, "Selected") then
+        or else not (Foreground and then Background and then Selected)
+        or else Blink then
           File_Error (Node,
                       "Expected colors for foreground, background and selected");
         end if;
-        Fields(Fn).Colors.Foreground :=
-         Con_Io.Effective_Colors'Value (Strof (Attrs(1).Value));
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-        Fields(Fn).Colors.Background :=
-         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(2).Value));
-        Fields(Fn).Colors.Selected :=
-         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(3).Value));
-
       elsif Fields(Fn).Kind = Put then
         if Xp.Get_Nb_Attributes (Node) /= 3
-        or else not Match (Attrs(1).Name, "Foreground")
-        or else not Match (Attrs(2).Name, "Blink")
-        or else not Match (Attrs(3).Name, "Background") then
+        or else not (Foreground and then Background and then Blink)
+        or else Selected then
           File_Error (Node,
                       "Expected colors for foreground, blink and background");
         end if;
-        Fields(Fn).Colors.Foreground :=
-         Con_Io.Effective_Colors'Value (Strof (Attrs(1).Value));
-        if Boolean'Value (Strof (Attrs(2).Value)) then
-          Fields(Fn).Colors.Blink_Stat := Con_Io.Blink;
-        else
-          Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-        end if;
-        Fields(Fn).Colors.Background :=
-         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(3).Value));
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
-
       elsif Fields(Fn).Kind = Button then
         if Xp.Get_Nb_Attributes (Node) /= 2
-        or else not Match (Attrs(1).Name, "Foreground")
-        or else not Match (Attrs(2).Name, "Background") then
+        or else not (Foreground and then Background)
+        or else Blink or else Selected then
           File_Error (Node,
                       "Expected colors for foreground and background");
         end if;
-        Fields(Fn).Colors.Foreground :=
-         Con_Io.Effective_Colors'Value (Strof (Attrs(1).Value));
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-        Fields(Fn).Colors.Background :=
-         Con_Io.Effective_Basic_Colors'Value (Strof (Attrs(2).Value));
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
       end if;
     exception
@@ -286,28 +316,46 @@ procedure Afpx_Bld is
     Finit_Length : Positive;
     -- Index in Char_Str of beginning of Init string
     Finit_Index : Afpx_Typ.Char_Str_Range;
+    -- Are num and kind of field, and row and col of init set
+    Kind, Num, Row, Col : Boolean := False;
   begin
-    if Attrs'Length /= 2
-    or else not Match (Attrs(1).Name, "Num")
-    or else not Match (Attrs(2).Name, "Kind") then
+    if Attrs'Length /= 2 then
       File_Error (Node, "Invalid field definition, expected Num and Kind");
     end if;
-    begin
-      if Afpx_Typ.Field_Range'Value(Strof (Attrs(1).Value)) /= No then
-        raise Constraint_Error;
+    for I in Attrs'Range loop
+      if Match (Attrs(I).Name, "Num") then
+        if Num then
+          File_Error (Node, "Duplicated num of field");
+        end if;
+        Num := True;
+        begin
+          if Afpx_Typ.Field_Range'Value(Strof (Attrs(I).Value)) /= No then
+            raise Constraint_Error;
+          end if;
+        exception
+          when others =>
+            File_Error (Node,
+                        "Invalid field number. They must crescent positives");
+        end;
+      elsif Match (Attrs(I).Name, "Kind") then
+        if Kind then
+          File_Error (Node, "Duplicated kind of field");
+        end if;
+        Kind := True;
+        if not Match (Attrs(I).Value, "Put")
+        and then not Match (Attrs(I).Value, "Get")
+        and then not Match (Attrs(I).Value, "Button") then
+          File_Error (Node, "Invalid field kind. Put, Get or Button expected");
+        end if;
+        Fields(No).Kind := Afpx_Typ.Field_Kind_List'Value(
+                                  Strof (Attrs(I).Value));
+      else
+        File_Error (Node, "Invalid field attribute " & Attrs(I).Name);
       end if;
-    exception
-      when others =>
-        File_Error (Node,
-                    "Invalid field number. They must crescent positives");
-    end;
-
-    if not Match (Attrs(2).Value, "Put")
-    and then not Match (Attrs(2).Value, "Get")
-    and then not Match (Attrs(2).Value, "Button") then
-      File_Error (Node, "Invalid field kind. Put, Get or Button expected");
+    end loop;
+    if not (Num and then Kind) then
+      File_Error (Node, "Invalid field definition, expected Num and Kind");
     end if;
-    Fields(No).Kind := Afpx_Typ.Field_Kind_List'Value(Strof (Attrs(2).Value));
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
     Load_Geometry (Xp.Get_Child (Node, 1), No);
@@ -328,25 +376,44 @@ procedure Afpx_Bld is
     for I in 3 .. Xp.Get_Nb_Children (Node) loop
       Child := Xp.Get_Child (Node, I);
       if not Match (Xp.Get_Name (Child), "Init")
-      or else Xp.Get_Nb_Attributes (Child) /= 2
+      or else Xp.Get_Nb_Attributes (Child) < 2
       or else Xp.Get_Nb_Children (Child) > 1 then
-        File_Error (Node, "Invalid Init, expected row, col and text");
+        File_Error (Child, "Invalid Init, expected row, col and text");
       end if;
 
       declare
         Child_Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Child);
       begin
-        if not Match (Child_Attrs(1).Name, "Row")
-        or else not Match (Child_Attrs(2).Name, "Col") then
+        Row := False;
+        Col := False;
+        for I in Child_Attrs'Range loop
+          if Match (Child_Attrs(I).Name, "Row") then
+            if Row then
+              File_Error (Child, "Duplicated coordinate");
+            end if;
+            Row := True;
+            Finit_Square.Row :=
+             Con_Io.Row_Range'Value(Strof (Child_Attrs(I).Value));
+          elsif Match (Child_Attrs(I).Name, "Col") then
+            if Col then
+              File_Error (Child, "Duplicated coordinate");
+            end if;
+            Col := True;
+            Finit_Square.Col :=
+             Con_Io.Row_Range'Value(Strof (Child_Attrs(I).Value));
+          elsif Match (Child_Attrs(I).Name, "xml:space") then
+            -- Discard
+            null;
+          else
+            File_Error (Child, "Invalid Init attribute " & Child_Attrs(I).Name);
+          end if;
+        end loop;
+        if not (Row and then Col) then
           File_Error (Child, "Invalid Init, expected row and col");
         end if;
-        Finit_Square.Row :=
-         Con_Io.Row_Range'Value(Strof (Child_Attrs(1).Value));
-        Finit_Square.Col :=
-         Con_Io.Row_Range'Value(Strof (Child_Attrs(2).Value));
       exception
         when others =>
-          File_Error (Child, "Invalid init row or column");
+          File_Error (Child, "Invalid init row or col");
       end;
 
       -- Check init squares crescent
