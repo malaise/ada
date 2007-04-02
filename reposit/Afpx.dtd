@@ -12,9 +12,11 @@
 <!ELEMENT Field (Geometry,Colors,Init*)>
 <!ATTLIST Field Num ID #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 
+<!ELEMENT Geometry EMPTY>
 <!ATTLIST Geometry Up CDATA #REQUIRED Left CDATA #REQUIRED
                    Low CDATA #REQUIRED Right CDATA #REQUIRED>
 
+<!ELEMENT Colors EMPTY>
 <!ATTLIST Colors Foreground CDATA #REQUIRED Blink CDATA #IMPLIED
                  Background CDATA #REQUIRED Selected CDATA #IMPLIED>
 
