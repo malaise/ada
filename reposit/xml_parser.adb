@@ -35,6 +35,8 @@ package body Xml_Parser is
     procedure Add_Attribute (Name, Value : in Asu_Us; Line : in Positive);
     -- Check if an attribute exists for current element
     function Attribute_Exists (Name : Asu_Us) return Boolean;
+    -- Get an attribute (if it exists, otherwise "")
+    function Get_Attribute (Name : Asu_Us) return Asu_Us;
     -- Add a text to current element, remain on current element
     procedure Add_Text (Text : in Asu_Us; Line : in Positive);
     -- Initialise an empty prologue

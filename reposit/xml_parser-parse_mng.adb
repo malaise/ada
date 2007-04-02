@@ -72,7 +72,8 @@ package body Parse_Mng  is
     -- Try to parse a keyword, rollback if not
     function Try (Str : String) return Boolean;
     -- Fix text: expand variables and remove repetition of separators
-    function Fix_Text (Text : Asu_Us) return Asu_Us;
+    function Fix_Text (Text : Asu_Us;
+                       Preserve_Spaces : in Boolean := False) return Asu_Us;
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
   end Util;
@@ -389,6 +390,8 @@ package body Parse_Mng  is
     Text : Asu_Us;
     Char : Character;
     Line_No : Natural;
+    Preserve : Boolean;
+    use type Asu_Us;
   begin
     -- Skip separators
     Util.Skip_Separators;
@@ -415,8 +418,12 @@ package body Parse_Mng  is
         Util.Unget;
         Util.Parse_Until_Char (Util.Start & "");
         Util.Unget;
-        -- Fix and add this text
-        Text := Util.Fix_Text (Util.Get_Curr_Str);
+        -- Fix this text. Try to preserve spaces if
+        -- current element has attribute xml:space set to preserve
+        Preserve := Tree_Mng.Get_Attribute (Asu_Tus ("xml:space"))
+                    = Asu_Tus ("preserve");
+        Text := Util.Fix_Text (Util.Get_Curr_Str, Preserve);
+        -- Add this text
         Tree_Mng.Add_Text (Text, Line_No);
         Trace ("Parsed Text " & Asu_Ts (Text));
         Util.Reset_Curr_Str;

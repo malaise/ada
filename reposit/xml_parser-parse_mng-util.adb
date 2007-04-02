@@ -367,7 +367,8 @@ package body Util is
   end Try;
 
   -- Fix text: expand variables and remove repetition of separators
-  function Fix_Text (Text : Asu_Us) return Asu_Us is
+  function Fix_Text (Text : Asu_Us;
+                     Preserve_Spaces : Boolean := False) return Asu_Us is
     Index, Jndex : Natural;
     Char : Character;
     Found : Boolean;
@@ -466,11 +467,19 @@ package body Util is
     end loop;
 
     -- Skip Cr, replace Tab by space
-    --  and replace "Lf [ { sep } ]" by a space
-    Found := False;
     for I in 1 .. Asu.Length (S1) loop
       Char := Asu.Element (S1, I);
       if Char /= Ada.Characters.Latin_1.Cr then
+        Asu.Append (S2, Char);
+      end if;
+    end loop;
+    if not Preserve_Spaces then
+      -- Replace Tab by space
+      --  and replace "Lf [ { sep } ]" by a space
+      S1 := S2;
+      Found := False;
+      for I in 1 .. Asu.Length (S1) loop
+        Char := Asu.Element (S1, I);
         if not Found then
           -- Not skipping
           if Char = Lf then
@@ -488,8 +497,8 @@ package body Util is
             Found := False;
           end if;
         end if;
-      end if;
-    end loop;
+      end loop;
+    end if;
     -- Done
     return S2;
   end Fix_Text;

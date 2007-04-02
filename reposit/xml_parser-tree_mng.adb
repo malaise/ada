@@ -89,6 +89,19 @@ package body Tree_Mng is
     return Index /= 0;
   end Attribute_Exists;
 
+  -- Get an attribute (if it exists, otherwise "")
+  function Get_Attribute (Name : Asu_Us) return Asu_Us is
+    Index : Natural;
+    Value : Asu_Us;
+  begin
+    Find_Attribute (Tree, Name, Index, Value);
+    if Index /= 0 then
+      return Value;
+    else
+      return Asu_Null;
+    end if;
+  end Get_Attribute;
+
   procedure Add_Text (Text : in Asu_Us; Line : in Positive) is
     Cell : My_Tree_Cell;
   begin
