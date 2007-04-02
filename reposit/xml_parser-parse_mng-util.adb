@@ -127,7 +127,7 @@ package body Util is
       exit Word when I2 > S'Last;
       -- Ready for next word
       I1 := I2;
-    end loop Word;  
+    end loop Word;
     -- All names were OK
     return True;
   end Names_Ok;
@@ -145,10 +145,17 @@ package body Util is
 
   -- Error message
   Err_Msg : Asu_Us;
-  procedure Error (Msg : in String) is
+  procedure Error (Msg : in String; Line_No : in Natural := 0) is
   begin
-    Err_Msg := Asu.To_Unbounded_String (
-                   "Xml_Parse error at line" & Current_Line'Img & ": " & Msg & ".");
+    if Line_No = 0 then
+      Err_Msg := Asu.To_Unbounded_String (
+                     "Xml_Parse error at line" & Current_Line'Img
+                   & ": " & Msg & ".");
+    else
+      Err_Msg := Asu.To_Unbounded_String (
+                     "Xml_Parse error at line" & Line_No'Img
+                   & ": " & Msg & ".");
+    end if;
     raise Parse_Error;
   end Error;
   function Get_Error_Message return Asu_Us is

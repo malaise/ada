@@ -19,7 +19,7 @@ package body Parse_Mng  is
     -- Check that Str defines valid names seprated by Sep
     function Names_Ok (Str : Asu_Us; Seps : String) return Boolean;
     -- Report an error, raises Parsing_Error.
-    procedure Error (Msg : in String);
+    procedure Error (Msg : in String; Line_No : in Natural := 0);
     -- Retrieve error message
     function Get_Error_Message return Asu_Us;
     -- Get current line number
@@ -269,9 +269,9 @@ package body Parse_Mng  is
     Doctype_Name, Doctype_File : Asu_Us;
   begin
     -- Parse and check name
-    DocType_Name := Util.Parse_Name;
-    if not Util.Name_Ok (DocType_Name) then
-      Util.Error ("Invalid DOCTYPE name " & Asu_Ts (DocType_Name));
+    Doctype_Name := Util.Parse_Name;
+    if not Util.Name_Ok (Doctype_Name) then
+      Util.Error ("Invalid DOCTYPE name " & Asu_Ts (Doctype_Name));
     end if;
     -- What's next
     Util.Skip_Separators;
@@ -289,7 +289,7 @@ package body Parse_Mng  is
       end if;
       Doctype_File := Util.Get_Curr_Str;
       Util.Reset_Curr_Str;
-      Dtd.Parse ( Asu.to_String (Doctype_File));
+      Dtd.Parse ( Asu.To_String (Doctype_File));
     end if;
     -- Now see if there is an internal definition section
     Util.Skip_Separators;
@@ -365,7 +365,7 @@ package body Parse_Mng  is
       C2 := Util.Get;
       case C2 is
         when Util.Instruction =>
-          Parse_Instruction; 
+          Parse_Instruction;
         when Util.Directive =>
           -- Directive or comment or CDATA
           Parse_Directive (Only_Skip => False);

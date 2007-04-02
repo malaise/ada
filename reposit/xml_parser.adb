@@ -42,7 +42,7 @@ package body Xml_Parser is
     -- Set xml directive, add a xml attribute
     procedure Set_Xml (Line : in Positive);
     procedure Add_Xml_Attribute (Name, Value : in Asu_Us; Line : in Positive);
-    -- Check xml is set, find an attribute (Index is 0 if not found) 
+    -- Check xml is set, find an attribute (Index is 0 if not found)
     function Xml_Existst return Boolean;
     procedure Find_Xml_Attribute (Name : in Asu_Us;
                                   Index : out Natural;
