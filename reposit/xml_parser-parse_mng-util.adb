@@ -466,27 +466,26 @@ package body Util is
       Index := Index + 1;
     end loop;
 
-    -- Skip Cr, replace Tab by space
+    -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
       Char := Asu.Element (S1, I);
       if Char /= Ada.Characters.Latin_1.Cr then
         Asu.Append (S2, Char);
       end if;
     end loop;
+
     if not Preserve_Spaces then
-      -- Replace Tab by space
-      --  and replace "Lf [ { sep } ]" by a space
+      -- Replace "{ Lf | Tab | Space }" by a space
       S1 := S2;
+      S2 := Asu_Null;
       Found := False;
       for I in 1 .. Asu.Length (S1) loop
         Char := Asu.Element (S1, I);
         if not Found then
-          -- Not skipping
-          if Char = Lf then
+          -- Not skipping yet, replace any separator by sapce
+          if Is_Separator (Char) then
             Asu.Append (S2, Space);
             Found := True;
-          elsif Char = Ada.Characters.Latin_1.Ht then
-            Asu.Append (S2, Space);
           else
             Asu.Append (S2, Char);
           end if;
@@ -498,6 +497,13 @@ package body Util is
           end if;
         end if;
       end loop;
+      -- Remove heading sapce and trailing space if any
+      if Asu.Element (S2, 1) = ' ' then
+        Asu.Delete (S2, 1, 1);
+      end if;
+      if Asu.Element (S2, Asu.Length (S2)) = ' ' then
+        Asu.Delete (S2, Asu.Length (S2), Asu.Length (S2));
+      end if;
     end if;
     -- Done
     return S2;
