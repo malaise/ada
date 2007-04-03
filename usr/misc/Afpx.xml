@@ -5,106 +5,106 @@
 
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
-      <Colors Foreground="cyan" Background="brown" Selected="red"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
     </List>
 
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="34" Low="0" Right="45"/>
-      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">FILE RENAMER</Init>
     </Field>
 
     <!-- Action title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="cyan" Blink="False" Background="black"/>
+      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
     </Field>
 
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="cyan" Blink="False" Background="black"/>
+      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Get -->
     <Field Num="5" Kind="Get">
       <Geometry Up="23" Left="1" Low="23" Right="33"/>
-      <Colors Foreground="cyan" Background="brown" Selected="brown"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
     </Field>
 
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="light_gray" Blink="False" Background="black"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
     <!-- List actions -->
     <Field Num="7" Kind="Button">
       <Geometry Up="3" Left="69" Low="3" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="3">Top</Init>
     </Field>
 
     <Field Num="8" Kind="Button">
       <Geometry Up="5" Left="69" Low="7" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="2">Pg Up</Init>
     </Field>
 
     <Field Num="9" Kind="Button">
       <Geometry Up="9" Left="69" Low="9" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="3">Up</Init>
     </Field>
 
     <Field Num="10" Kind="Button">
       <Geometry Up="12" Left="69" Low="12" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">Center</Init>
     </Field>
 
     <Field Num="11" Kind="Button">
       <Geometry Up="15" Left="69" Low="15" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="2">Down</Init>
     </Field>
 
     <Field Num="12" Kind="Button">
       <Geometry Up="17" Left="69" Low="19" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Pg Down</Init>
     </Field>
 
     <Field Num="13" Kind="Button">
       <Geometry Up="21" Left="69" Low="21" Right="77"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">Bottom</Init>
     </Field>
 
     <!-- Reread -->
     <Field Num="14" Kind="Button">
       <Geometry Up="11" Left="2" Low="13" Right="9"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">REREAD</Init>
     </Field>
 
     <!-- Ok Cancel -->
     <Field Num="15" Kind="Button">
       <Geometry Up="15" Left="2" Low="17" Right="9"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="3">OK</Init>
     </Field>
 
     <Field Num="16" Kind="Button">
       <Geometry Up="19" Left="2" Low="21" Right="9"/>
-      <Colors Foreground="cyan" Background="brown"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">CANCEL</Init>
     </Field>
 

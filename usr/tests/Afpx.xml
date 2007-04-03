@@ -6,12 +6,12 @@
 
     <List>
       <Geometry Up="6" Left="48" Low="20" Right="78"/>
-      <Colors Foreground="Red" Background="Blue" Selected="green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
     </List>
 
     <Field Num="1" Kind="Get">
       <Geometry Up="0" Left="1" Low="0" Right="35"/>
-      <Colors Foreground="Red" Background="Blue" Selected="green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
     </Field>
 
     <Field Num="2" Kind="Put">
@@ -21,7 +21,7 @@
 
     <Field Num="3" Kind="Get">
       <Geometry Up="0" Left="37" Low="0" Right="78"/>
-      <Colors Foreground="Red" Background="Blue" Selected="green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
     </Field>
 
     <Field Num="4" Kind="Button">
@@ -38,7 +38,7 @@
 
     <Field Num="6" Kind="Get">
       <Geometry Up="19" Left="34" Low="19" Right="46"/>
-      <Colors Foreground="Red" Background="Blue" Selected="green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
     </Field>
 
     <Field Num="7" Kind="Put">
@@ -100,7 +100,7 @@
 
     <Field Num="1" Kind="Button">
       <Geometry Up="0" Left="50" Low="2" Right="60"/>
-      <Colors Foreground="Red" Background="black"/>
+      <Colors Foreground="Red" Background="Black"/>
       <Init Row="1" Col="5">OK</Init>
     </Field>
 
@@ -111,7 +111,7 @@
 
     <List>
       <Geometry Up="0" Left="50" Low="2" Right="60"/>
-      <Colors Foreground="Red" Background="black" Selected="green"/>
+      <Colors Foreground="Red" Background="Black" Selected="Green"/>
     </List>
 
   </Descriptor>
@@ -122,7 +122,7 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="0" Low="1" Right="79"/>
-      <Colors Foreground="white" Blink="False" Background="black"/>
+      <Colors Foreground="White" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">0         1         2         3         4         5         6         7</Init>
       <Init Row="1" Col="0">01234567890123456789012345678901234567890123456789012345678901234567890123456789</Init>
     </Field>
@@ -147,7 +147,7 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="0" Low="24" Right="79"/>
-      <Colors Foreground="white" Blink="False" Background="black"/>
+      <Colors Foreground="White" Blink="False" Background="Black"/>
     </Field>
 
 
@@ -164,26 +164,26 @@
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="black"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">GENERIC TITLE</Init>
     </Field>
 
     <!-- Action title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="black"/>
+      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
     </Field>
 
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="black"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="black"/>
+      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Get -->
@@ -195,7 +195,7 @@
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="black"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
     <!-- List actions -->
