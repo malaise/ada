@@ -5,20 +5,26 @@
 <!ELEMENT Afpx_Descriptors (Descriptor*)>
 
 <!ELEMENT Descriptor (List?,Field*)>
-<!ATTLIST Descriptor Num ID #REQUIRED>
+<!ATTLIST Descriptor Num CDATA #REQUIRED>
 
 <!ELEMENT List (Geometry,Colors)>
 
 <!ELEMENT Field (Geometry,Colors,Init*)>
-<!ATTLIST Field Num ID #REQUIRED Kind (Put|Button|Get) #REQUIRED>
+<!ATTLIST Field Num CDATA #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 
 <!ELEMENT Geometry EMPTY>
 <!ATTLIST Geometry Up CDATA #REQUIRED Left CDATA #REQUIRED
                    Low CDATA #REQUIRED Right CDATA #REQUIRED>
 
+<!ENTITY Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
+<!ENTITY Colors "&Basic_Colors;|Dark_Gray|Light_Blue|Light_Green|Orange">
+<!ENTITY Blink "True|False">
+
 <!ELEMENT Colors EMPTY>
-<!ATTLIST Colors Foreground CDATA #REQUIRED Blink CDATA #IMPLIED
-                 Background CDATA #REQUIRED Selected CDATA #IMPLIED>
+<!ATTLIST Colors Foreground (&Colors;) #REQUIRED
+                 Blink (&Blink;) #IMPLIED
+                 Background (&Basic_Colors;) #REQUIRED
+                 Selected (&Basic_Colors;) #IMPLIED>
 
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
