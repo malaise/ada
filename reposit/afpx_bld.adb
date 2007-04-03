@@ -115,7 +115,7 @@ procedure Afpx_Bld is
   begin
     Basic_Proc.Put_Error ("Error: " & Msg);
     Basic_Proc.Put_Line_Error (
-          " at line " & Positive'Image (Xp.Get_Line_No (Node))
+          " at line" & Positive'Image (Xp.Get_Line_No (Node))
         & " of file " & Text_Handler.Value(List_File_Name));
     raise File_Syntax_Error;
   end File_Error;
@@ -139,37 +139,39 @@ procedure Afpx_Bld is
         -- Load upper left then lower right
         if Match (Attrs(I).Name, "Up") then
           if Up then
-            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+            File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Up := True;
           Fields(Fn).Upper_Left.Row :=
            Con_Io.Row_Range'Value(Strof (Attrs(I).Value));
         elsif Match (Attrs(I).Name, "Left") then
           if Left then
-            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+            File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Left := True;
           Fields(Fn).Upper_Left.Col :=
            Con_Io.Col_Range'Value(Strof (Attrs(I).Value));
         elsif Match (Attrs(I).Name, "Low") then
           if Low then
-            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+            File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Low := True;
           Fields(Fn).Lower_Right.Row :=
            Con_Io.Row_Range'Value(Strof (Attrs(I).Value));
         elsif Match (Attrs(I).Name, "Right") then
           if Right then
-            File_Error (Node, "Duplicated geometry " & Attrs(I).Name);
+            File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Right := True;
           Fields(Fn).Lower_Right.Col :=
-           Con_Io.Col_Range'Value(Strof (Attrs(4).Value));
+           Con_Io.Col_Range'Value(Strof (Attrs(I).Value));
         else
           File_Error (Node, "Invalid geometry " & Attrs(I).Name);
         end if;
       end loop;
     exception
+      when File_Syntax_Error =>
+        raise;
       when others =>
         File_Error (Node, "Invalid geometry");
     end;
@@ -412,6 +414,8 @@ procedure Afpx_Bld is
           File_Error (Child, "Invalid Init, expected row and col");
         end if;
       exception
+        when File_Syntax_Error =>
+          raise;
         when others =>
           File_Error (Child, "Invalid init row or col");
       end;
