@@ -149,6 +149,11 @@ package body Dtd is
       Util.Error ("Invalid name " & Asu_Ts (Info.Name));
     end if;
     Info.Name := "Elt" & Info_Sep & Info.Name;
+    -- Element must not exist
+    Info_Mng.Search (Info_List, Info, Found);
+    if Found then
+      Util.Error ("ELEMENT " & Asu_Ts (Info.Name) & " already exists");
+    end if;
     -- Parse type
     Util.Skip_Separators;
     if Util.Try ("EMPTY") then
@@ -211,11 +216,7 @@ package body Dtd is
     if Util.Get /= Util.Stop then
       Util.Error ("Unexpected character " & Util.Read & " at end of ELEMENT");
     end if;
-    -- Element must not exist
-    Info_Mng.Search (Info_List, Info, Found);
-    if Found then
-      Util.Error ("ELEMENT " & Asu_Ts (Info.Name) & " already exists");
-    end if;
+    -- Store element
     Info_Mng.Insert (Info_List, Info);
     Trace ("Dtd parsed directive ELEMENT -> " & Asu_Ts (Info.Name)
          & " " & Asu_Ts(Info.List));
@@ -227,8 +228,8 @@ package body Dtd is
     -- Atl and Att info blocs
     Info, Attinfo : Info_Rec;
     Found : Boolean;
-    -- Attribute name and type
-    Att_Name, Att_Type : Asu_Us;
+    -- Element, attribute name and type
+    Elt_Name, Att_Name, Att_Type : Asu_Us;
     -- Type and default chars
     Typ_Char, Def_Char : Character;
     -- Enum List
@@ -239,12 +240,17 @@ package body Dtd is
   begin
     -- Parse element name
     Util.Parse_Until_Char ("" & Util.Space);
-    Info.Name := Util.Get_Curr_Str;
+    Elt_Name := Util.Get_Curr_Str;
     Util.Reset_Curr_Str;
-    if not Util.Name_Ok (Info.Name) then
-      Util.Error ("Invalid name " & Asu_Ts (Info.Name));
+    if not Util.Name_Ok (Elt_Name) then
+      Util.Error ("Invalid name " & Asu_Ts (Elt_Name));
     end if;
-    Info.Name := "Atl" & Info_Sep & Info.Name;
+    Info.Name := "Atl" & Info_Sep & Elt_Name;
+    -- Attribute list of this element must not exist
+    Info_Mng.Search (Info_List, Info, Found);
+    if Found then
+      Util.Error ("ATTLIST " & Asu_Ts (Info.Name) & " already exists");
+    end if;
     -- loop on all attributes
     loop
       Util.Skip_Separators;
@@ -269,6 +275,17 @@ package body Dtd is
         Util.Parse_Until_Char (")");
         Enum := Util.Fix_Text (Util.get_Curr_Str);
         Util.Reset_Curr_Str;
+        -- Check that everything between "|" are names
+        if Asu.Element (Enum, Asu.Length (Enum)) = '|'
+        or else Asu.Element (Enum, 1) = '|' then
+          Util.Error ("Invalid Enum definition");
+        end if;
+        if not Util.Names_Ok (Enum, "|") then
+          Util.Error ("Invalid name in Enum definition");
+        end if;
+        -- Replace '|' by '#' and prepend and append a '#'
+        Enum := Asu_Tus (
+          String_Mng.Replace ("|", "#", "#" & Asu_Ts (Enum) & "#"));
       else
         -- Get type
         Util.Parse_Until_Char ("" & Util.Space);
@@ -304,31 +321,38 @@ package body Dtd is
       end if;
       
       -- Check Enum
-      if Typ_Char = 'E' then
-        -- Check that everything between "|" are names
-        if Asu.Element (Enum, Asu.Length (Enum)) = '|'
-        or else Asu.Element (Enum, 1) = '|' then
-          Util.Error ("Invalid Enum definition");
+      if Typ_Char = 'E' and then Def_Char = 'D' then
+        -- Enum and default, check default is in enum
+        --  and set the default in first pos
+        if (String_Mng.Locate (Asu_Ts (Enum), 1,
+              Info_Sep & Asu_Ts (Def_Val) & Info_Sep) = 0) then
+          Util.Error ("Default value " & Asu_Ts (Def_Val) & " not in Enum");
         end if;
-        if not Util.Names_Ok (Enum, "|") then
-          Util.Error ("Invalid name in Enum definition");
-        end if;
-        -- Replace '|' by '#' and prepend and append a '#'
-        Enum := Asu_Tus (
-          String_Mng.Replace ("|", "#", "#" & Asu_Ts (Enum) & "#"));
+        Enum := Asu_Tus (String_Mng.Replace (
+                 Info_Sep & Asu_Ts (Def_Val) & Info_Sep,
+                 "", 
+                 Asu_Ts (Enum)));
+        Enum := Info_Sep & Asu_Ts (Def_Val) & Info_Sep & Enum;
       end if;
-      -- If enum and default, check default is in enum and set the default in first pos
-      -- @@@
-      -- If enum or fixed or default store
-      -- @@@
-      -- Store this attribute in list
-      Asu.Append (Info.List, Att_Name & Info_Sep & Typ_Char & Def_Char & Info_Sep);
+      Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
+      -- If enum store Att of enum
+      --  or if fixed or default store Att of default
+      if Typ_Char = 'E' then
+        Attinfo.List := Enum;
+        Info_Mng.Insert (Info_List, AttInfo);
+        Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
+         & " " & Asu_Ts(Attinfo.List));
+      elsif Def_Char = 'F' or else Def_Char = 'D' then
+        Attinfo.List := Def_Val;
+        Info_Mng.Insert (Info_List, AttInfo);
+        Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
+         & " " & Asu_Ts(Attinfo.List));
+      end if;
+      -- Append this attribute in list
+      Asu.Append (Info.List,
+                  Att_Name & Info_Sep & Typ_Char & Def_Char & Info_Sep);
     end loop;
-    -- Attlist is ended
-    Info_Mng.Search (Info_List, Info, Found);
-    if Found then
-      Util.Error ("ATTLIST " & Asu_Ts (Info.Name) & " already exists");
-    end if;
+    -- Attlist is ended: store
     Info_Mng.Insert (Info_List, Info);
     Trace ("Dtd parsed directive ATTLIST -> " & Asu_Ts (Info.Name)
          & " " & Asu_Ts(Info.List));
@@ -548,6 +572,8 @@ package body Dtd is
   procedure Check_Attributes (Name : in Asu_Us;
                               Line_No : in Positive;
                               Attributes : in Asu_Us) is
+    -- Atl and Att info blocs
+    Info, Attinfo : Info_Rec;
   begin
     -- @@@
     null;
