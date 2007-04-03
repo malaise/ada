@@ -253,6 +253,21 @@ package body Util is
     Unget;
   end Skip_Separators;
 
+  -- Skip separators, return the skipped separators
+  function Get_Separators return Asu_Us is
+    Char : Character;
+    Separators : Asu_Us;
+    use type Asu_Us;
+  begin
+    loop
+      Char := Get;
+      exit when not Is_Separator (Char);
+      Separators := Separators & Char;
+    end loop;
+    Unget;
+    return Separators;
+  end Get_Separators;
+
   -- Current significant string, loaded by Parse_Until_xxx
   Curr_Str : Asu_Us;
   function Get_Curr_Str return Asu_Us is
@@ -366,10 +381,21 @@ package body Util is
       return False;
   end Try;
 
+  -- Variable resolver
+  function Variable_Of (Name : String) return String is
+  begin
+    return Asu_Ts (Entity_Mng.Get (Asu_Tus (Name)));
+  exception
+    when Entity_Mng.Entity_Not_Found =>
+      Error ("Unknown entity " & Name);
+      -- Useless because Error already raises it
+      --  but gnat complains :-(
+      raise Parse_Error;
+  end Variable_Of; 
+
   -- Fix text: expand variables and remove repetition of separators
   function Fix_Text (Text : Asu_Us;
                      Preserve_Spaces : Boolean := False) return Asu_Us is
-    Index, Jndex : Natural;
     Char : Character;
     Found : Boolean;
     Name, S1, S2 : Asu_Us;
@@ -379,92 +405,12 @@ package body Util is
       return Text;
     end if;
 
-    -- Expand variables
-    Index := 1;
-    loop
-      Char := Asu.Element (Text, Index);
-      if Char = '&' then
-        -- Look for end of variable name
-        Found := False;
-        if Index /= Asu.Length (Text) then
-          Jndex := Index + 1;
-          loop
-            if Asu.Element (Text, Jndex) = ';' then
-              Found := True;
-              exit;
-            elsif Asu.Element (Text, Jndex) = '&'
-            or else Asu.Element (Text, Jndex) = '%' then
-              Found := False;
-              exit;
-            end if;
-            exit when Jndex = Asu.Length(Text);
-            Jndex := Jndex + 1;
-          end loop;
-        end if;
-        -- Check ';' has been found and name is not empty
-        if not Found then
-          Error ("Unterminated entity name "
-               & Asu.Slice (Text, Index, Asu.Length(Text)));
-        elsif Jndex = Index + 1 then
-          Error ("Empty entity name &;");
-        end if;
-        -- Check variable exists
-        Name := Asu.To_Unbounded_String (
-                Asu.Slice (Text, Index + 1, Jndex - 1));
-        -- Append entity value
-        begin
-          Asu.Append (S1, Entity_Mng.Get (Name, False));
-        exception
-          when Entity_Mng.Entity_Not_Found =>
-            Error ("Unknown entity " & Asu_Ts (Name));
-        end;
-        -- Jump to ';'
-        Index := Jndex;
-      elsif Char = '%' then
-        -- Look for end of variable name
-        Found := False;
-        if Index /= Asu.Length (Text) then
-          Jndex := Index + 1;
-          loop
-            if Asu.Element (Text, Jndex) = ';' then
-              Found := True;
-              exit;
-            elsif Asu.Element (Text, Jndex) = '&'
-            or else Asu.Element (Text, Jndex) = '%' then
-              Found := False;
-              exit;
-            end if;
-            exit when Jndex = Asu.Length(Text);
-            Jndex := Jndex + 1;
-          end loop;
-        end if;
-        -- Check ';' has been found and name is not empty
-        if not Found then
-          Error ("Unterminated entity name "
-               & Asu.Slice (Text, Index, Asu.Length(Text)));
-        elsif Jndex = Index + 1 then
-          Error ("Empty entity name &;");
-        end if;
-        -- Check variable exists
-        Name := Asu.To_Unbounded_String (
-                Asu.Slice (Text, Index + 1, Jndex - 1));
-        -- Append entity value
-        begin
-          Asu.Append (S1, Entity_Mng.Get (Name, True));
-        exception
-          when Entity_Mng.Entity_Not_Found =>
-            Error ("Unknown entity " & Asu_Ts (Name));
-        end;
-        -- Jump to ';'
-        Index := Jndex;
-      else
-        -- Not a variable, append char
-        Asu.Append (S1, Char);
-      end if;
-      -- Next
-      exit when Index = Asu.Length (Text);
-      Index := Index + 1;
-    end loop;
+    -- Expand entities
+    S1 := Asu_Tus (String_Mng.Eval_Variables (
+             Str => Asu_Ts (Text),
+             Start_Delimiter => "&",
+             Stop_Delimiter  => ";",
+             Resolv => Variable_Of'Access));
 
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
@@ -497,7 +443,7 @@ package body Util is
           end if;
         end if;
       end loop;
-      -- Remove heading sapce and trailing space if any
+      -- Remove heading space and trailing space if any
       if Asu.Element (S2, 1) = ' ' then
         Asu.Delete (S2, 1, 1);
       end if;
@@ -507,6 +453,12 @@ package body Util is
     end if;
     -- Done
     return S2;
+  exception
+    when String_Mng.Delimiter_Mismatch =>
+      Error ("Invalid entity reference in text " & Asu_Ts (Text));
+      -- Useless because Error already raises it
+      --  but gnat complains :-(
+      raise Parse_Error;
   end Fix_Text;
 
   -- Remove sepators from text

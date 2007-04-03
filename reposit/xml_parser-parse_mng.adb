@@ -54,6 +54,8 @@ package body Parse_Mng  is
     function Is_Separator (Char : Character) return Boolean;
     -- Skip separators until a significant char (not separator); got
     procedure Skip_Separators;
+    -- Skip separators, return the skipped separators
+    function Get_Separators return Asu_Us;
     -- Current significant string, loaded by Parse_Until_xxx
     function Get_Curr_Str return Asu_Us;
     -- Reset current string
@@ -71,9 +73,9 @@ package body Parse_Mng  is
     function Parse_Name return Asu_Us;
     -- Try to parse a keyword, rollback if not
     function Try (Str : String) return Boolean;
-    -- Fix text: expand variables and remove repetition of separators
+    -- Fix text: expand entities and remove repetition of separators
     function Fix_Text (Text : Asu_Us;
-                       Preserve_Spaces : in Boolean := False) return Asu_Us;
+                       Preserve_Spaces : Boolean := False) return Asu_Us;
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
   end Util;
@@ -87,18 +89,7 @@ package body Parse_Mng  is
   -- Dtd adds its own instructions (except xml)
   procedure Parse_Instruction;
 
-  -- Dtd management, uses util and the tree
-  package Dtd is
-    -- Init (clear) Dtd data
-    procedure Init;
-    -- Parse a dtd (either a external file or internal if name is empty)
-    procedure Parse (File_Name : in String);
-    -- Check Current element of the tree
-    procedure Check_Element;
-  end Dtd;
-  package body Dtd is separate;
-
-  -- Parse a value "Value" or 'Value' (of an entity or
+  -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
   function Parse_Value return Asu_Us is
     Value : Asu_Us;
     use type Asu_Us;
@@ -116,6 +107,17 @@ package body Parse_Mng  is
     -- Fix separators and expand entities
     return Util.Fix_Text (Value);
   end Parse_Value;
+
+  -- Dtd management, uses util and the tree
+  package Dtd is
+    -- Init (clear) Dtd data
+    procedure Init;
+    -- Parse a dtd (either a external file or internal if name is empty)
+    procedure Parse (File_Name : in String);
+    -- Check Current element of the tree
+    procedure Check_Element;
+  end Dtd;
+  package body Dtd is separate;
 
   -- Parse attributes of an element Name='Value' or Name="Value"
   -- Either of xml prologue directive or on current element
@@ -393,10 +395,9 @@ package body Parse_Mng  is
     Preserve : Boolean;
     use type Asu_Us;
   begin
-    -- Skip separators
-    Util.Skip_Separators;
+    Line_No := Util.Get_Line_No;
+    Text := Util.Get_Separators;
     loop
-      Line_No := Util.Get_Line_No;
       if Util.Get = Util.Start then
         Char := Util.Get;
         if Char = Util.Slash then
@@ -405,12 +406,14 @@ package body Parse_Mng  is
         elsif Char = Util.Directive then
           -- Must be a comment or CDATA
           Parse_Directive (Only_Skip => True);
-          Util.Skip_Separators;
+          Line_No := Util.Get_Line_No;
+          Text := Util.Get_Separators;
         else
           -- A new sub-element
           Util.Unget;
           Parse_Element (False);
-          Util.Skip_Separators;
+          Line_No := Util.Get_Line_No;
+          Text := Util.Get_Separators;
         end if;
       else
         -- A text, will stop with a new sub-element or
@@ -422,8 +425,11 @@ package body Parse_Mng  is
         -- current element has attribute xml:space set to preserve
         Preserve := Tree_Mng.Get_Attribute (Asu_Tus ("xml:space"))
                     = Asu_Tus ("preserve");
-        Text := Util.Fix_Text (Util.Get_Curr_Str, Preserve);
-        -- Add this text
+        if Preserve then
+          Trace ("Preserving spaces of the following text");
+        end if;
+        -- Add previous separators and this text
+        Text := Util.Fix_Text (Text & Util.Get_Curr_Str, Preserve);
         Tree_Mng.Add_Text (Text, Line_No);
         Trace ("Parsed Text " & Asu_Ts (Text));
         Util.Reset_Curr_Str;

@@ -138,8 +138,8 @@ package body Dtd is
   -- Parse <!ELEMENT
   procedure Parse_Element is
     Info : Info_Rec;
-    use type Asu_Us;
     Found : Boolean;
+    use type Asu_Us;
   begin
     -- Parse element name
     Util.Parse_Until_Char ("" & Util.Space);
@@ -162,17 +162,22 @@ package body Dtd is
         Util.Error ("Unexpected character " & Util.Read
                  & " at start of ELEMENT list");
       end if;
+      -- Get children definition (until ')')
       Util.Parse_Until_Char (")");
+      Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
+      Info.List := Util.Fix_Text (Info.List, True);
+      Util.Reset_Curr_Str;
       -- Now see if it is mixed or children
-      if Asu.Index (Util.Get_Curr_Str, "#PCDATA") /= 0 then
-        -- Mixed: Append string, without separators
-        Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
+      if Asu.Index (Info.List, "#PCDATA") /= 0 then
+        -- Mixed
         if Asu_Ts (Info.List) = "#PCDATA" then
           Info.List := Asu_Null;
         elsif Asu.Slice (Info.List, 1, 8) = "#PCDATA|" then
           -- Remove heading #PCDATA
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
+          -- Expand variables if any
+          Info.List := Util.Fix_Text (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
           or else Asu.Element (Info.List, 1) = '|' then
@@ -189,8 +194,9 @@ package body Dtd is
         end if;
         Info.List := "M" & Info.List;
       else
-        -- A regexp of children: Append string, without separators
-        Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
+        -- A regexp of children: Append string
+        -- Expand variables if any
+        Info.List := Util.Fix_Text (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+") then
           Util.Error ("Invalid name in Children definition");
@@ -199,14 +205,13 @@ package body Dtd is
         Build_Regexp (Info.List);
         Info.List := "C" & Info.List;
       end if;
-      Util.Reset_Curr_Str;
     end if;
     -- Directive must end now
     Util.Skip_Separators;
     if Util.Get /= Util.Stop then
       Util.Error ("Unexpected character " & Util.Read & " at end of ELEMENT");
     end if;
-    -- Element mut not exist
+    -- Element must not exist
     Info_Mng.Search (Info_List, Info, Found);
     if Found then
       Util.Error ("ELEMENT " & Asu_Ts (Info.Name) & " already exists");
@@ -216,6 +221,157 @@ package body Dtd is
          & " " & Asu_Ts(Info.List));
   end Parse_Element;
 
+
+  -- Parse <!ATTLIST
+  procedure Parse_Attlist is
+    -- Atl and Att info blocs
+    Info, Attinfo : Info_Rec;
+    Found : Boolean;
+    -- Attribute name and type
+    Att_Name, Att_Type : Asu_Us;
+    -- Type and default chars
+    Typ_Char, Def_Char : Character;
+    -- Enum List
+    Enum : Asu_Us;
+    -- Default value
+    Def_Val : Asu_Us;
+    use type Asu_Us;
+  begin
+    -- Parse element name
+    Util.Parse_Until_Char ("" & Util.Space);
+    Info.Name := Util.Get_Curr_Str;
+    Util.Reset_Curr_Str;
+    if not Util.Name_Ok (Info.Name) then
+      Util.Error ("Invalid name " & Asu_Ts (Info.Name));
+    end if;
+    Info.Name := "Atl" & Info_Sep & Info.Name;
+    -- loop on all attributes
+    loop
+      Util.Skip_Separators;
+      -- Name of attribute or end of list
+      exit when Util.Get = Util.Stop;
+      Util.Unget;
+      -- Get attribute name
+      Util.Parse_Until_Char ("" & Util.Space);
+      Att_Name := Util.Get_Curr_Str;
+      Util.Reset_Curr_Str;
+      -- Check supported att types
+      Util.Skip_Separators;
+      if Util.Try ("CDATA ") then
+        -- String type
+        Typ_Char := 'S';
+      elsif Util.Try ("ID ") then
+        -- ID type
+        Util.Error ("ID attribute type not supported yet");
+      elsif Util.Get = '(' then
+        -- Enum type
+        Typ_Char := 'E';
+        Util.Parse_Until_Char (")");
+        Enum := Util.Fix_Text (Util.get_Curr_Str);
+        Util.Reset_Curr_Str;
+      else
+        -- Get type
+        Util.Parse_Until_Char ("" & Util.Space);
+        Att_Type := Util.Get_Curr_Str;
+        Util.Reset_Curr_Str;
+        if Asu_Ts (Att_Type) = "IDREF"
+        or else Asu_Ts (Att_Type) = "IDREFS"
+        or else Asu_Ts (Att_Type) = "ENTITY"
+        or else Asu_Ts (Att_Type) = "ENTITIES"
+        or else Asu_Ts (Att_Type) = "NMTOKEN"
+        or else Asu_Ts (Att_Type) = "NMTOKENS"
+        or else Asu_Ts (Att_Type) = "NOTATION" then
+          Util.Error ("Unsupported attribute type " & Asu_Ts (Att_Type));
+        else
+          Util.Error ("Invalid attribute type " & Asu_Ts (Att_Type));
+        end if;
+      end if;
+
+      -- Check supported att defaults
+      Util.Skip_Separators;
+      if Util.Try ("#REQUIRED") then
+        Def_Char := 'R';
+      elsif Util.Try ("#IMPLIED") then
+        Def_Char := 'I';
+      elsif Util.Try ("#FIXED ") then
+        Def_Char := 'F';
+        Util.Skip_Separators;
+        Def_Val := Parse_Value;
+      else
+        Def_Char := 'D';
+        Util.Skip_Separators;
+        Def_Val := Parse_Value;
+      end if;
+      
+      -- Check Enum
+      if Typ_Char = 'E' then
+        -- Check that everything between "|" are names
+        if Asu.Element (Enum, Asu.Length (Enum)) = '|'
+        or else Asu.Element (Enum, 1) = '|' then
+          Util.Error ("Invalid Enum definition");
+        end if;
+        if not Util.Names_Ok (Enum, "|") then
+          Util.Error ("Invalid name in Enum definition");
+        end if;
+        -- Replace '|' by '#' and prepend and append a '#'
+        Enum := Asu_Tus (
+          String_Mng.Replace ("|", "#", "#" & Asu_Ts (Enum) & "#"));
+      end if;
+      -- If enum and default, check default is in enum and set the default in first pos
+      -- @@@
+      -- If enum or fixed or default store
+      -- @@@
+      -- Store this attribute in list
+      Asu.Append (Info.List, Att_Name & Info_Sep & Typ_Char & Def_Char & Info_Sep);
+    end loop;
+    -- Attlist is ended
+    Info_Mng.Search (Info_List, Info, Found);
+    if Found then
+      Util.Error ("ATTLIST " & Asu_Ts (Info.Name) & " already exists");
+    end if;
+    Info_Mng.Insert (Info_List, Info);
+    Trace ("Dtd parsed directive ATTLIST -> " & Asu_Ts (Info.Name)
+         & " " & Asu_Ts(Info.List));
+  end Parse_Attlist;
+
+  -- Parse <!ENTITY
+  procedure Parse_Entity is
+    -- Entity name and value
+    Name, Value : Asu_Us;
+    use type Asu_Us;
+  begin
+    -- Parse entity name
+    Util.Parse_Until_Char ("" & Util.Space);
+    Name := Util.Get_Curr_Str;
+    Util.Reset_Curr_Str;
+    -- Check name is valid and not already defined
+    if not Util.Name_Ok (Name) then
+      Util.Error ("Invalid entity name " & Asu_Ts (Name));
+    end if;
+    if Entity_Mng.Exists (Name) then
+      Util.Error ("Entity " & Asu_Ts (Name) & " already defined");
+    end if;
+    -- Only accept local entities
+    if Util.Try ("% ") then
+      Util.Error ("Unsupported parameter entity");
+    elsif Util.Try ("SYSTEM ") then
+      Util.Error ("Unsupported SYSTEM external entity");
+    elsif Util.Try ("PUBLIC ") then
+      Util.Error ("Unsupported PUBLIC external entity");
+    end if;
+    -- Parse and expand value
+    Value := Parse_Value;
+    -- Must stop now
+    Util.Skip_Separators;
+    if Util.Get /= Util.Stop then
+      Util.Error ("Unexpected character at end of entity " & Util.Read);
+    end if;
+    -- Store
+    Entity_Mng.Add (Name, Value);
+    Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Name)
+         & " " & Asu_Ts(Value));
+  end Parse_Entity;
+
   -- Parse a directive
   procedure Parse_Directive is
     Info : Info_Rec;
@@ -224,12 +380,9 @@ package body Dtd is
     if Util.Try ("ELEMENT ") then
       Parse_Element;
     elsif Util.Try ("ATTLIST ") then
-      -- @@@
-      Util.Parse_Until_Str (">");
-      Trace ("Dtd parsed directive ATTLIST " & Asu_Ts (Util.Get_Curr_Str));
-      Util.Reset_Curr_Str;
+      Parse_Attlist;
     elsif Util.Try ("ENTITY ") then
-      Util.Error ("Unsupported ENTITY directive");
+      Parse_Entity;
     elsif Util.Try ("NOTATION ") then
       Util.Error ("Unsupported NOTATION directive");
     else
@@ -261,18 +414,11 @@ package body Dtd is
       elsif Util.Get = (']') and then not External then
         return;
       else
-        Util.Error ("Unexpected characters while parsing dtd");
+        Util.Error ("Unexpected character while parsing dtd" & Util.Get);
       end if;
     end loop;
   end Parse;
 
-  -- Replace "##" by "'" then suppress "#"
-  function Strip_Sep (Us : in Asu_Us) return String is
-    use String_Mng;
-  begin
-    return Replace ("#", "", Replace ("##", ",", Asu_Ts (Us)));
-  end Strip_Sep;
-  
   -- Parse a dtd (either a external file or internal if name is empty)
   procedure Parse (File_Name : in String) is
     Dtd_File, Dummy_File : Text_Char.File_Type;
@@ -297,14 +443,18 @@ package body Dtd is
       Util.Error ("Cannot open dtd file " & File_Name);
   end Parse;
 
-  -- Check Current element of the tree
-  procedure Check_Element is
-    -- Current cell in tree
-    Cell : My_Tree_Cell;
-    -- Lists of attributes and of children from xml tree
-    Attributes, Children : Asu_Us;
-    -- has current element mixed children (text)
-    Is_Mixed : Boolean;
+  -- Replace "##" by "'" then suppress "#"
+  function Strip_Sep (Us : in Asu_Us) return String is
+    use String_Mng;
+  begin
+    return Replace ("#", "", Replace ("##", ",", Asu_Ts (Us)));
+  end Strip_Sep;
+  
+  -- Check children of element
+  procedure Check_Children (Name : in Asu_Us;
+                            Line_No : in Positive;
+                            Children : in Asu_Us;
+                            Is_Mixed : in Boolean) is
     -- Element info
     Info : Info_Rec;
     -- Char of info List
@@ -318,6 +468,99 @@ package body Dtd is
     Match_Info : Regular_Expressions.One_Match_Array;
     -- General purpose Boolean
     Ok : Boolean;
+    use type Asu_Us;
+  begin
+    -- Read its element def
+    Info.Name := "Elt" & Info_Sep & Name;
+    Info_Mng.Search (Info_List, Info, Ok);
+    if not Ok then
+      Util.Error ("According to dtd, element " & Asu_Ts (Name) & " is not allowed",
+                  Line_No);
+    end if;
+    Info_Mng.Read (Info_List, Info, Info);
+    -- Check children
+    Trace ("Check Dtd check info list " & Asu_Ts (Info.List));
+    Trace ("Check Xml element list " & Asu_Ts (Children) & " Mixed: " & Is_Mixed'Img);
+    -- Separate element type
+    Char := Asu.Element (Info.List, 1);
+    Info.List := Asu.Delete (Info.List, 1, 1);
+    case Char is
+      when 'E' =>
+        -- Must be empty
+        if Asu.Length (Children) /= 0 then
+          Util.Error ("According to dtd, element " & Asu_Ts (Name) & " must be empty",
+                      Line_No);
+        end if;
+      when 'A' =>
+        -- Any
+        null;
+      when 'M' =>
+        -- Check mixed: all children of xml must appear in dtd list
+        Parser.Set (Iter_Xml, Asu_Ts (Children), Is_Sep'Access);
+        loop
+          declare
+            -- Next Child from xml
+            Child : constant String := Parser.Next_Word (Iter_Xml);
+          begin
+            exit when Child = "";
+            -- Child must appear in dtd
+            if String_Mng.Locate (Asu_Ts (Info.List), 1,
+                                  Info_Sep & Child & Info_Sep) = 0 then
+              Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                        & " does not allow child " & Child,
+                          Line_No);
+            end if;
+            Trace ("Checked mixed child " & Child & " versus " & Strip_Sep (Info.List));
+          end;
+        end loop;
+      when 'C' =>
+        if Is_Mixed then
+          Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                    & " must not have text",
+                      Line_No);
+        end if;
+        -- Build children regexp
+        Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Info.List));
+        if not Ok then
+          Trace ("Regex does not compile for check " & Asu_Ts (Info.List));
+          raise Internal_Error;
+        end if;
+        -- Check children regexp, the complete Children string must match
+        Regular_Expressions.Exec (Pat, Asu_Ts (Children), N_Match, Match_Info);
+        if N_Match = 0
+        or else Match_Info(1).Start_Offset /= 1
+        or else Match_Info(1).End_Offset /= Asu.Length (Children) then
+          Regular_Expressions.Free (Pat);
+          Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                    & " allows children " & Strip_Sep (Info.List)
+                    & " but has children " & Strip_Sep (Children));
+        end if;
+        Regular_Expressions.Free (Pat);
+        Trace ("Checked children " & Strip_Sep (Children)
+             & " versus " & Strip_Sep (Info.List));
+      when others =>
+        Trace ("Unexpected element type " & Char);
+        raise Internal_Error;
+    end case;
+  end Check_Children;
+
+  -- Check attributes of element
+  procedure Check_Attributes (Name : in Asu_Us;
+                              Line_No : in Positive;
+                              Attributes : in Asu_Us) is
+  begin
+    -- @@@
+    null;
+  end Check_Attributes;
+
+  -- Check Current element of the tree
+  procedure Check_Element is
+    -- Current cell in tree
+    Cell : My_Tree_Cell;
+    -- Lists of attributes and of children from xml tree
+    Attributes, Children : Asu_Us;
+    -- Has current element mixed children (text)
+    Is_Mixed : Boolean;
     use type Asu_Us;
   begin
     if not Dtd_Set then
@@ -346,81 +589,11 @@ package body Dtd is
       My_Tree.Move_Father (Tree_Mng.Tree);
     end if;
     My_Tree.Read (Tree_Mng.Tree, Cell);
-    -- Read its attlist and check
-    -- @@@
-    -- Read its element def
-    Info.Name := "Elt" & Info_Sep & Cell.Name;
-    Info_Mng.Search (Info_List, Info, Ok);
-    if not Ok then
-      Util.Error ("According to dtd, element " & Asu_Ts (Cell.Name) & " is not allowed",
-                  Cell.Line_No);
-    end if;
-    Info_Mng.Read (Info_List, Info, Info);
+    -- Check Attributes
+    Check_Attributes (Cell.Name, Cell.Line_No, Attributes);
     -- Check children
-    Trace ("Check Dtd check info list " & Asu_Ts (Info.List));
-    Trace ("Check Xml element list " & Asu_Ts (Children) & " Mixed: " & Is_Mixed'Img);
-    -- Separate element type
-    Char := Asu.Element (Info.List, 1);
-    Info.List := Asu.Delete (Info.List, 1, 1);
-    case Char is
-      when 'E' =>
-        -- Must be empty
-        if Asu.Length (Children) /= 0 then
-          Util.Error ("According to dtd, element " & Asu_Ts (Cell.Name)
-                    & " must be empty",
-                      Cell.Line_No);
-        end if;
-      when 'A' =>
-        -- Any
-        null;
-      when 'M' =>
-        -- Check mixed: all children of xml must appear in dtd list
-        Parser.Set (Iter_Xml, Asu_Ts (Children), Is_Sep'Access);
-        loop
-          declare
-            -- Next Child from xml
-            Child : constant String := Parser.Next_Word (Iter_Xml);
-          begin
-            exit when Child = "";
-            -- Child must appear in dtd
-            if String_Mng.Locate (Asu_Ts (Info.List), 1,
-                                  Info_Sep & Child & Info_Sep) = 0 then
-              Util.Error ("According to dtd, element " & Asu_Ts (Cell.Name)
-                        & " does not allow child " & Child,
-                          Cell.Line_No);
-            end if;
-            Trace ("Checked mixed child " & Child & " versus " & Strip_Sep (Info.List));
-          end;
-        end loop;
-      when 'C' =>
-        if Is_Mixed then
-          Util.Error ("According to dtd, element " & Asu_Ts (Cell.Name)
-                    & " must not have text",
-                      Cell.Line_No);
-        end if;
-        -- Build children regexp
-        Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Info.List));
-        if not Ok then
-          Trace ("Regex does not compile for check " & Asu_Ts (Info.List));
-          raise Internal_Error;
-        end if;
-        -- Check children regexp, the complete Children string must match
-        Regular_Expressions.Exec (Pat, Asu_Ts (Children), N_Match, Match_Info);
-        if N_Match = 0
-        or else Match_Info(1).Start_Offset /= 1
-        or else Match_Info(1).End_Offset /= Asu.Length (Children) then
-          Regular_Expressions.Free (Pat);
-          Util.Error ("According to dtd, element " & Asu_Ts (Cell.Name)
-                    & " allows children " & Strip_Sep (Info.List)
-                    & " but has children " & Strip_Sep (Children));
-        end if;
-        Regular_Expressions.Free (Pat);
-        Trace ("Checked children " & Strip_Sep (Children)
-             & " versus " & Strip_Sep (Info.List));
-      when others =>
-        Trace ("Unexpected element type " & Char);
-        raise Internal_Error;
-      end case;
+    Check_Children (Cell.Name, Cell.Line_No, Children, Is_Mixed);
+
   end Check_Element;
 
 end Dtd;

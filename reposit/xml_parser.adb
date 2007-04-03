@@ -58,12 +58,12 @@ package body Xml_Parser is
   package Entity_Mng is
     -- Initialise with default entities
     procedure Initialise;
-    -- Store an entity or a parameter-entity
-    procedure Add (Name, Value : in Asu_Us; Parameter : in Boolean);
+    -- Store an entity
+    procedure Add (Name, Value : in Asu_Us);
     -- Check if an entity exists
-    function Exists (Name : Asu_Us; Parameter : Boolean) return Boolean;
+    function Exists (Name : Asu_Us) return Boolean;
     -- Get value of an entity. Raises Entity_Not_Found if none
-    function Get (Name : Asu_Us; Parameter : Boolean) return Asu_Us;
+    function Get (Name : Asu_Us) return Asu_Us;
     Entity_Not_Found : exception;
   end Entity_Mng;
   package body Entity_Mng is separate;
