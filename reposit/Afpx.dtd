@@ -8,6 +8,7 @@
 <!ATTLIST Descriptor Num CDATA #REQUIRED>
 
 <!ELEMENT List (Geometry,Colors)>
+<!ATTLIST List>
 
 <!ELEMENT Field (Geometry,Colors,Init*)>
 <!ATTLIST Field Num CDATA #REQUIRED Kind (Put|Button|Get) #REQUIRED>
@@ -16,11 +17,11 @@
 <!ATTLIST Geometry Up CDATA #REQUIRED Left CDATA #REQUIRED
                    Low CDATA #REQUIRED Right CDATA #REQUIRED>
 
-<!ENTITY Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
-<!ENTITY Colors "&Basic_Colors;|Dark_Gray|Light_Blue|Light_Green|Orange">
-<!ENTITY Blink "True|False">
-
 <!ELEMENT Colors EMPTY>
+<!ENTITY Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
+<!ENTITY Colors "&Basic_Colors;|
+                 Dark_Gray|Light_Blue|Light_Green|Orange|Yellow|White">
+<!ENTITY Blink "True|False">
 <!ATTLIST Colors Foreground (&Colors;) #REQUIRED
                  Blink (&Blink;) #IMPLIED
                  Background (&Basic_Colors;) #REQUIRED
@@ -58,12 +59,13 @@
 <!-- Only Mixed_Case keywords are accepted (not lowercase nor UPPERCASE) -->
 <!-- Rows are from 0 to 24 -->
 <!-- Cols are from 0 to 79 -->
-<!-- Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray -->
-<!-- Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, Orange, -->
-<!-- Yellow, White -->
+<!-- Basic colors are Black, Blue, Green, Cyan, Red, Magenta, Brown, -->
+<!--  Light_Gray -->
+<!-- Colors are basic colors plus Dark_Gray, Light_Blue, Light_Green, -->
+<!--  Orange, Yellow, White -->
 <!-- Blink is "Blink" or "Not_Blink" -->
-<!-- Upper case is mandatory for keywords, not significant for colors and blink, -->
-<!-- significant for init_string -->
+<!-- Upper case is mandatory for keywords, not significant for colors -->
+<!--  and blink, significant for init_string -->
 <!--  -->
 <!-- Summary of color combinations -->
 <!-- ============================= -->
