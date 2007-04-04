@@ -8,8 +8,10 @@ package body Parse_Mng  is
 
     -- Init to a new file, or back to a previous file
     --  (To_File not significant then)
+    -- Specify (for Error) if it is a dtd file
     procedure Init (Back : in Boolean;
-                    To_File : in Text_Char.File_Type);
+                    To_File : in Text_Char.File_Type;
+                    Is_Dtd : in Boolean);
     ------------------
     -- Syntax check --
     ------------------
@@ -558,7 +560,7 @@ package body Parse_Mng  is
   procedure Parse (File : in out Text_Char.File_Type) is
   begin
     -- Init util to the xml file
-    Util.Init (False, File);
+    Util.Init (False, File, False);
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue;
     -- Reset Dtd

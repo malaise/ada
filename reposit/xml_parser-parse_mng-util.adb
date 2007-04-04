@@ -2,6 +2,9 @@ with String_Mng;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
 
+  -- Are we in dtd
+  In_Dtd : Boolean := False;
+
   -- Saved line of input (when switching to dtd file)
   Saved_Line : Natural := 0;
   -- Current line of input
@@ -18,7 +21,8 @@ package body Util is
 
   -- Switch to a new file or switch back
   procedure Init (Back : in Boolean;
-                  To_File : in Text_Char.File_Type) is
+                  To_File : in Text_Char.File_Type;
+                  Is_Dtd : in Boolean) is
     New_File : Text_Char.File_Type;
   begin
     if not Back then
@@ -36,6 +40,7 @@ package body Util is
       Saved_Line := 0;
       Saved_File := New_File;
     end if;
+    In_Dtd := Is_Dtd;
   end Init;
 
   ------------------
@@ -147,15 +152,16 @@ package body Util is
   Err_Msg : Asu_Us;
   procedure Error (Msg : in String; Line_No : in Natural := 0) is
   begin
+    Err_Msg := Asu_Tus ("Xml_Parse error at line");
     if Line_No = 0 then
-      Err_Msg := Asu.To_Unbounded_String (
-                     "Xml_Parse error at line" & Current_Line'Img
-                   & ": " & Msg & ".");
+      Asu.Append (Err_Msg, Current_Line'Img);
     else
-      Err_Msg := Asu.To_Unbounded_String (
-                     "Xml_Parse error at line" & Line_No'Img
-                   & ": " & Msg & ".");
+      Asu.Append (Err_Msg, Line_No'Img);
     end if;
+    if In_Dtd then
+      Asu.Append (Err_Msg, " of dtd");
+    end if;
+    Asu.Append (Err_Msg, ": " & Msg & ".");
     raise Parse_Error;
   end Error;
   function Get_Error_Message return Asu_Us is
@@ -391,7 +397,7 @@ package body Util is
       -- Useless because Error already raises it
       --  but gnat complains :-(
       raise Parse_Error;
-  end Variable_Of; 
+  end Variable_Of;
 
   -- Fix text: expand variables and remove repetition of separators
   function Fix_Text (Text : Asu_Us;

@@ -128,7 +128,7 @@ package body Dtd is
     Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Res));
     Regular_Expressions.Free (Pat);
     if not Ok then
-      Trace ("Regex does node compile >" & Asu_Ts (Res) & "<");
+      Trace ("Dtd regex does node compile >" & Asu_Ts (Res) & "<");
       Util.Error ("Invalid children definition");
     end if;
     -- Done
@@ -283,7 +283,7 @@ package body Dtd is
         -- Enum type
         Typ_Char := 'E';
         Util.Parse_Until_Char (")");
-        Enum := Util.Fix_Text (Util.get_Curr_Str);
+        Enum := Util.Fix_Text (Util.Get_Curr_Str);
         Enum := Util.Remove_Separators (Enum);
         Util.Reset_Curr_Str;
         -- Check that everything between "|" are names
@@ -299,6 +299,7 @@ package body Dtd is
           String_Mng.Replace ("|", "#", "#" & Asu_Ts (Enum) & "#"));
       else
         -- Get type
+        Util.Unget;
         Util.Parse_Until_Char ("" & Util.Space);
         Att_Type := Util.Get_Curr_Str;
         Util.Reset_Curr_Str;
@@ -323,14 +324,23 @@ package body Dtd is
         Def_Char := 'I';
       elsif Util.Try ("#FIXED ") then
         Def_Char := 'F';
-        Util.Skip_Separators;
-        Def_Val := Parse_Value;
       else
         Def_Char := 'D';
+      end if;
+
+      -- Check no default value or get default value
+      if Def_Char = 'R' or else Def_Char = 'I' then
+        -- There shall be no default value for required or implied attribute
+        Util.Skip_Separators;
+        if Util.Try ("""") or else Util.Try ("'") then
+          Util.Error ("Unexpected default value for attribute "
+                    &  Asu_Ts (Att_Name));
+        end if;
+      else
+        -- Get default value for fixed or default attribute
         Util.Skip_Separators;
         Def_Val := Parse_Value;
       end if;
-      
       -- Check Enum
       if Typ_Char = 'E'
       and then (Def_Char = 'D' or else Def_Char = 'F') then
@@ -338,11 +348,12 @@ package body Dtd is
         --  and set the default in first pos
         if (String_Mng.Locate (Asu_Ts (Enum), 1,
               Info_Sep & Asu_Ts (Def_Val) & Info_Sep) = 0) then
-          Util.Error ("Default or fixed value " & Asu_Ts (Def_Val) & " not in Enum");
+          Util.Error ("Default or fixed value "
+                    & Asu_Ts (Def_Val) & " not in Enum");
         end if;
         Enum := Asu_Tus (String_Mng.Replace (
                  Info_Sep & Asu_Ts (Def_Val) & Info_Sep,
-                 "", 
+                 "",
                  Asu_Ts (Enum)));
         Enum := Info_Sep & Asu_Ts (Def_Val) & Info_Sep & Enum;
       end if;
@@ -351,12 +362,12 @@ package body Dtd is
       --  or if fixed or default store Att of default
       if Typ_Char = 'E' then
         Attinfo.List := Enum;
-        Info_Mng.Insert (Info_List, AttInfo);
+        Info_Mng.Insert (Info_List, Attinfo);
         Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
          & " " & Asu_Ts(Attinfo.List));
       elsif Def_Char = 'F' or else Def_Char = 'D' then
         Attinfo.List := Def_Val;
-        Info_Mng.Insert (Info_List, AttInfo);
+        Info_Mng.Insert (Info_List, Attinfo);
         Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
          & " " & Asu_Ts(Attinfo.List));
       end if;
@@ -470,12 +481,13 @@ package body Dtd is
       -- External declarations
       Trace ("Dtd parsing file " & File_Name);
       File_Mng.Open (File_Name, Dtd_File);
-      Util.Init (False, Dtd_File);
+      Util.Init (False, Dtd_File, True);
       Parse (True);
-      Util.Init (True, Dummy_File);
+      Util.Init (True, Dummy_File, False);
       File_Mng.Close (Dtd_File);
     end if;
     -- Dtd is now valid
+    Trace ("Dtd parsed dtd");
     Dtd_Set := True;
   exception
     when File_Error =>
@@ -488,7 +500,6 @@ package body Dtd is
   begin
     return Replace ("#", "", Replace ("##", ",", Asu_Ts (Us)));
   end Strip_Sep;
-  
   -- Check children of element
   procedure Check_Children (Name : in Asu_Us;
                             Line_No : in Positive;
@@ -509,17 +520,19 @@ package body Dtd is
     Ok : Boolean;
     use type Asu_Us;
   begin
-    Trace ("Check Xml children list " & Asu_Ts (Children) & " Mixed: " & Is_Mixed'Img);
+    Trace ("Dtd check Xml children list " & Asu_Ts (Children)
+         & " Mixed: " & Is_Mixed'Img);
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
     Info_Mng.Search (Info_List, Info, Ok);
     if not Ok then
-      Util.Error ("According to dtd, element " & Asu_Ts (Name) & " is not allowed",
+      Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                & " is not allowed",
                   Line_No);
     end if;
     Info_Mng.Read (Info_List, Info, Info);
     -- Check children
-    Trace ("Check Dtd element info " & Asu_Ts (Info.List));
+    Trace ("Dtd check Dtd element info " & Asu_Ts (Info.List));
     -- Separate element type
     Char := Asu.Element (Info.List, 1);
     Info.List := Asu.Delete (Info.List, 1, 1);
@@ -527,7 +540,8 @@ package body Dtd is
       when 'E' =>
         -- Must be empty
         if Asu.Length (Children) /= 0 then
-          Util.Error ("According to dtd, element " & Asu_Ts (Name) & " must be empty",
+          Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                    & " must be empty",
                       Line_No);
         end if;
       when 'A' =>
@@ -549,7 +563,8 @@ package body Dtd is
                         & " does not allow child " & Child,
                           Line_No);
             end if;
-            Trace ("Checked mixed child " & Child & " versus " & Strip_Sep (Info.List));
+            Trace ("Dtd checked mixed child " & Child
+                 & " versus " & Strip_Sep (Info.List));
           end;
         end loop;
         Parser.Del (Iter_Xml);
@@ -562,7 +577,7 @@ package body Dtd is
         -- Build children regexp
         Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Info.List));
         if not Ok then
-          Trace ("Regex does not compile for check " & Asu_Ts (Info.List));
+          Trace ("Dtd regex does not compile for check " & Asu_Ts (Info.List));
           raise Internal_Error;
         end if;
         -- Check children regexp, the complete Children string must match
@@ -576,10 +591,10 @@ package body Dtd is
                     & " but has children " & Strip_Sep (Children));
         end if;
         Regular_Expressions.Free (Pat);
-        Trace ("Checked children " & Strip_Sep (Children)
+        Trace ("Dtd checked children " & Strip_Sep (Children)
              & " versus " & Strip_Sep (Info.List));
       when others =>
-        Trace ("Unexpected element type " & Char);
+        Trace ("Dtd check: Unexpected element type " & Char);
         raise Internal_Error;
     end case;
   end Check_Children;
@@ -601,7 +616,7 @@ package body Dtd is
     Ok : Boolean;
     use type Asu_Us;
   begin
-     Trace ("Check Xml attributes list " & Asu_Ts (Attributes) );
+     Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
     -- Read its ATTLIST def
     Info.Name := "Atl" & Info_Sep & Name;
     Info_Mng.Search (Info_List, Info, Ok);
@@ -611,7 +626,7 @@ package body Dtd is
     if not Ok or else Info.List = Asu_Null then
       -- No or empty ATTLIST for this element
       if  Attributes = Asu_Null then
-        Trace ("Checked element " & Asu_Ts (Name)
+        Trace ("Dtd checked element " & Asu_Ts (Name)
              & " with no attributes, versus no or empty attlist");
         return;
       else
@@ -621,8 +636,7 @@ package body Dtd is
       end if;
     end if;
     -- Check attributes
-    Trace ("Check Dtd attlist info " & Asu_Ts (Info.List));
-   
+    Trace ("Dtd check Dtd attlist info " & Asu_Ts (Info.List));
     -- Check attributes xml vs dtd
     -- First extract list of dtd attribute names
     Parser.Set (Iter_Dtd, Asu_Ts (Info.List), Is_Sep'Access);
@@ -679,10 +693,9 @@ package body Dtd is
         -- Does this attribute appear in xml
         Ok := String_Mng.Locate (Asu_Ts (Attributes), 1,
                    Info_Sep & Attr & Info_Sep) /= 0;
-        
         --  Any Required or Fixed in dtd must appear in xml
         if (Td(2) = 'R' or else Td(2) = 'F')
-        and then not OK then
+        and then not Ok then
           Util.Error ("According to dtd, element " & Asu_Ts (Name)
                     & " must have attribute " & Attr, Line_No);
         end if;
@@ -695,9 +708,9 @@ package body Dtd is
                     := Asu_Ts (Tree_Mng.Get_Attribute (Asu_Tus(Attr)));
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1, Info_Sep & "", 2);
+                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+                                      Info_Sep & "", 2);
             Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
-     
           begin
             if Xml_Val /= Dtd_Val then
               Util.Error ("According to dtd, attribute " & Attr
@@ -714,7 +727,7 @@ package body Dtd is
             if String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
                 Info_Sep  & Xml_Val & Info_Sep) = 0 then
               Util.Error ("According to dtd, Enum attribute " & Attr
-                        & " has incorrect value " & Xml_Val, Line_No); 
+                        & " has incorrect value " & Xml_Val, Line_No);
             end if;
           end;
         elsif Td(2) = 'D' and then not Ok then
@@ -722,16 +735,17 @@ package body Dtd is
           declare
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1, Info_Sep & "", 2);
+                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+                                      Info_Sep & "", 2);
             Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
           begin
             Tree_Mng.Add_Attribute (Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
           end;
         end if;
-        Trace ("Checked versus dtd attribute " & Attr & " type " & Td);
+        Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
       exception
         when Info_Mng.Not_In_List =>
-          Trace ("Cannot find attribute info "
+          Trace ("Dtd check: Cannot find attribute info "
                & "Att" & Info_Sep & Asu_Ts(Name) & Info_Sep & Attr);
           raise Internal_Error;
       end;
