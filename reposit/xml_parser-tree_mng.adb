@@ -40,6 +40,42 @@ package body Tree_Mng is
     return;
   end Find_Attribute;
 
+  -- Append an attribute to the list of attributes of current
+  --  element. Remain on current element
+  procedure Insert_Attribute (In_Tree : in out My_Tree.Tree_Type;
+                              Attr : in My_Tree_Cell) is
+    Nb_Attrs : Natural;
+    use type Asu_Us;
+  begin
+    -- Optim, if current cell has only attributes or only elements, append
+    Nb_Attrs := My_Tree.Read (In_Tree).Nb_Attributes;
+    if My_Tree.Children_Number (In_Tree) = Nb_Attrs then
+      -- Only attributes
+      My_Tree.Insert_Child (In_Tree, Attr, False);
+      My_Tree.Move_Father (In_Tree);
+      return;
+    elsif Nb_Attrs = 0 then
+      -- Only elements
+      My_Tree.Insert_Child (In_Tree, Attr, True);
+      My_Tree.Move_Father (In_Tree);
+      return;
+    end if;
+
+    -- No optim possible, add as brother of last attribute
+    for I in 1 .. Nb_Attrs loop
+      -- Move to first child of to brother
+      if I = 1 then
+        My_Tree.Move_Child (In_Tree);
+      else
+        My_Tree.Move_Brother (In_Tree, False);
+      end if;
+    end loop;
+    My_Tree.Insert_Brother (In_Tree, Attr, False);
+    -- Done
+    My_Tree.Move_Father (In_Tree);
+    return;
+  end Insert_Attribute;
+
   -- Insert an element
   procedure Add_Element (Name : in Asu_Us; Line : in Positive) is
     Cell : My_Tree_Cell;
@@ -73,8 +109,7 @@ package body Tree_Mng is
     Cell.Name := Name;
     Cell.Value := Value;
     -- Insert as attribute of current and remain current
-    My_Tree.Insert_Child (Tree, Cell, False);
-    My_Tree.Move_Father (Tree);
+    Insert_Attribute (Tree, Cell);
     -- Increment number of attributes
     My_Tree.Read (Tree, Cell);
     Cell.Nb_Attributes := Cell.Nb_Attributes + 1;
@@ -157,8 +192,7 @@ package body Tree_Mng is
     Cell.Name := Name;
     Cell.Value := Value;
     -- Insert as attribute of Root and remain root
-    My_Tree.Insert_Child (Prologue, Cell, False);
-    My_Tree.Move_Father (Prologue);
+    Insert_Attribute (Prologue, Cell);
     -- Increment number of attributes
     My_Tree.Read (Prologue, Cell);
     Cell.Nb_Attributes := Cell.Nb_Attributes + 1;

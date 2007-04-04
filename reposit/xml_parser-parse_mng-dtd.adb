@@ -183,6 +183,7 @@ package body Dtd is
               String_Mng.Cut (Asu_Ts (Info.List), 8));
           -- Expand variables if any
           Info.List := Util.Fix_Text (Info.List);
+          Info.List := Util.Remove_Separators (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
           or else Asu.Element (Info.List, 1) = '|' then
@@ -202,6 +203,7 @@ package body Dtd is
         -- A regexp of children: Append string
         -- Expand variables if any
         Info.List := Util.Fix_Text (Info.List);
+        Info.List := Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+") then
           Util.Error ("Invalid name in Children definition");
@@ -239,7 +241,7 @@ package body Dtd is
     use type Asu_Us;
   begin
     -- Parse element name
-    Util.Parse_Until_Char ("" & Util.Space);
+    Util.Parse_Until_Char ("" & Util.Space & Util.Stop);
     Elt_Name := Util.Get_Curr_Str;
     Util.Reset_Curr_Str;
     if not Util.Name_Ok (Elt_Name) then
@@ -251,6 +253,14 @@ package body Dtd is
     if Found then
       Util.Error ("ATTLIST " & Asu_Ts (Info.Name) & " already exists");
     end if;
+    if Util.Read = Util.Stop then
+      -- Empty Attlist: store and done
+      Info_Mng.Insert (Info_List, Info);
+      Trace ("Dtd parsed directive ATTLIST -> " & Asu_Ts (Info.Name)
+           & " " & Asu_Ts(Info.List));
+      return;
+    end if;
+
     -- loop on all attributes
     loop
       Util.Skip_Separators;
@@ -274,6 +284,7 @@ package body Dtd is
         Typ_Char := 'E';
         Util.Parse_Until_Char (")");
         Enum := Util.Fix_Text (Util.get_Curr_Str);
+        Enum := Util.Remove_Separators (Enum);
         Util.Reset_Curr_Str;
         -- Check that everything between "|" are names
         if Asu.Element (Enum, Asu.Length (Enum)) = '|'
@@ -321,12 +332,13 @@ package body Dtd is
       end if;
       
       -- Check Enum
-      if Typ_Char = 'E' and then Def_Char = 'D' then
-        -- Enum and default, check default is in enum
+      if Typ_Char = 'E'
+      and then (Def_Char = 'D' or else Def_Char = 'F') then
+        -- Enum and (default or fixed), check default is in enum
         --  and set the default in first pos
         if (String_Mng.Locate (Asu_Ts (Enum), 1,
               Info_Sep & Asu_Ts (Def_Val) & Info_Sep) = 0) then
-          Util.Error ("Default value " & Asu_Ts (Def_Val) & " not in Enum");
+          Util.Error ("Default or fixed value " & Asu_Ts (Def_Val) & " not in Enum");
         end if;
         Enum := Asu_Tus (String_Mng.Replace (
                  Info_Sep & Asu_Ts (Def_Val) & Info_Sep,
@@ -348,7 +360,10 @@ package body Dtd is
         Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
          & " " & Asu_Ts(Attinfo.List));
       end if;
-      -- Append this attribute in list
+      -- Append this attribute in list: #attribute#td#attribute#td#...
+      if Info.List = Asu_Null then
+        Info.List := Asu_Tus (Info_Sep & "");
+      end if;
       Asu.Append (Info.List,
                   Att_Name & Info_Sep & Typ_Char & Def_Char & Info_Sep);
     end loop;
@@ -483,8 +498,8 @@ package body Dtd is
     Info : Info_Rec;
     -- Char of info List
     Char : Character;
-    -- Parser iterators
-    Iter_Dtd, Iter_Xml : Parser.Iterator;
+    -- Parser iterator
+    Iter_Xml : Parser.Iterator;
     -- Pattern of regexp
     Pat : Regular_Expressions.Compiled_Pattern;
     -- Regexp pattern match result
@@ -494,6 +509,7 @@ package body Dtd is
     Ok : Boolean;
     use type Asu_Us;
   begin
+    Trace ("Check Xml children list " & Asu_Ts (Children) & " Mixed: " & Is_Mixed'Img);
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
     Info_Mng.Search (Info_List, Info, Ok);
@@ -503,8 +519,7 @@ package body Dtd is
     end if;
     Info_Mng.Read (Info_List, Info, Info);
     -- Check children
-    Trace ("Check Dtd check info list " & Asu_Ts (Info.List));
-    Trace ("Check Xml element list " & Asu_Ts (Children) & " Mixed: " & Is_Mixed'Img);
+    Trace ("Check Dtd element info " & Asu_Ts (Info.List));
     -- Separate element type
     Char := Asu.Element (Info.List, 1);
     Info.List := Asu.Delete (Info.List, 1, 1);
@@ -537,6 +552,7 @@ package body Dtd is
             Trace ("Checked mixed child " & Child & " versus " & Strip_Sep (Info.List));
           end;
         end loop;
+        Parser.Del (Iter_Xml);
       when 'C' =>
         if Is_Mixed then
           Util.Error ("According to dtd, element " & Asu_Ts (Name)
@@ -574,9 +590,153 @@ package body Dtd is
                               Attributes : in Asu_Us) is
     -- Atl and Att info blocs
     Info, Attinfo : Info_Rec;
+    -- Parser iterators
+    Iter_Dtd, Iter_Xml : Parser.Iterator;
+    -- Attribute value
+    Att_Value : Asu_Us;
+    -- Attribute value
+    -- List of dtd attribute names
+    Att_Names : Asu_Us;
+    -- General purpose boolean
+    Ok : Boolean;
+    use type Asu_Us;
   begin
-    -- @@@
-    null;
+     Trace ("Check Xml attributes list " & Asu_Ts (Attributes) );
+    -- Read its ATTLIST def
+    Info.Name := "Atl" & Info_Sep & Name;
+    Info_Mng.Search (Info_List, Info, Ok);
+    if Ok then
+      Info_Mng.Read (Info_List, Info, Info);
+    end if;
+    if not Ok or else Info.List = Asu_Null then
+      -- No or empty ATTLIST for this element
+      if  Attributes = Asu_Null then
+        Trace ("Checked element " & Asu_Ts (Name)
+             & " with no attributes, versus no or empty attlist");
+        return;
+      else
+        Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                  & " is not allowed to have attributes",
+                  Line_No);
+      end if;
+    end if;
+    -- Check attributes
+    Trace ("Check Dtd attlist info " & Asu_Ts (Info.List));
+   
+    -- Check attributes xml vs dtd
+    -- First extract list of dtd attribute names
+    Parser.Set (Iter_Dtd, Asu_Ts (Info.List), Is_Sep'Access);
+    loop
+      declare
+        -- Next attribute from dtd
+        Attr : constant String := Parser.Next_Word (Iter_Dtd);
+      begin
+        exit when Attr = "";
+        Asu.Append (Att_Names, Info_Sep & Attr & Info_Sep);
+     end;
+     -- Skip type and default spec
+     Parser.Next_Word (Iter_Dtd);
+    end loop;
+    Parser.Del (Iter_Dtd);
+    -- Now check that any attribute of xml is in the list of dtd
+    Parser.Set (Iter_Xml, Asu_Ts (Attributes), Is_Sep'Access);
+    loop
+      declare
+        -- Next attribute from xml
+        Attr : constant String := Parser.Next_Word (Iter_Xml);
+      begin
+        exit when Attr = "";
+        -- Attribute must appear in list of attributes from dtd
+        if String_Mng.Locate (Asu_Ts (Att_Names), 1,
+                              Info_Sep & Attr & Info_Sep) = 0 then
+          Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                    & " cannot have attribute " & Attr,
+                      Line_No);
+        end if;
+      end;
+    end loop;
+    Parser.Del (Iter_Xml);
+
+    -- Check attributes dtd vw xml
+    --  Any Fixed in dtd must appear in xml and have correct value
+    --  Any default, if it does not appear in Attributes, must be added
+    --   to tree with default value
+    Parser.Set (Iter_Dtd, Asu_Ts (Info.List), Is_Sep'Access);
+    loop
+      declare
+        -- Next dtd attribute and type+default from dtd
+        Attr : constant String := Parser.Next_Word (Iter_Dtd);
+        Td : String(1 .. 2);
+      begin
+        -- Read all recessary info
+        exit when Attr = "";
+        Td := Parser.Next_Word (Iter_Dtd);
+        -- Corresponding attribute info from dtd if any
+        if Td(1) = 'E' or else Td(2) = 'F' or else Td(2) = 'D' then
+          Attinfo.Name := "Att" & Info_Sep & Name & Info_Sep & Attr;
+          Info_Mng.Read (Info_List, Attinfo, Attinfo);
+        end if;
+        -- Does this attribute appear in xml
+        Ok := String_Mng.Locate (Asu_Ts (Attributes), 1,
+                   Info_Sep & Attr & Info_Sep) /= 0;
+        
+        --  Any Required or Fixed in dtd must appear in xml
+        if (Td(2) = 'R' or else Td(2) = 'F')
+        and then not OK then
+          Util.Error ("According to dtd, element " & Asu_Ts (Name)
+                    & " must have attribute " & Attr, Line_No);
+        end if;
+        -- Enum and Fixed must have correct value
+        if Td(2) = 'F' then
+          -- Fixed (Enum or string): first #<val># is the one required
+          declare
+            -- Get the Xml Attribute
+            Xml_Val : constant String
+                    := Asu_Ts (Tree_Mng.Get_Attribute (Asu_Tus(Attr)));
+            -- Get the first value from dtd list, from 2 to second sep
+            Sep : constant Positive
+                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1, Info_Sep & "", 2);
+            Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
+     
+          begin
+            if Xml_Val /= Dtd_Val then
+              Util.Error ("According to dtd, attribute " & Attr
+                        & " must have fixed value " & Dtd_Val, Line_No);
+            end if;
+          end;
+        elsif Td(1) = 'E' and then Ok then
+          -- Not fixed Enum in dtd with xml value: #<val># must be in dtd list
+          declare
+            -- Get the Xml Attribute
+            Xml_Val : constant String
+                    := Asu_Ts (Tree_Mng.Get_Attribute (Asu_Tus(Attr)));
+          begin
+            if String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+                Info_Sep  & Xml_Val & Info_Sep) = 0 then
+              Util.Error ("According to dtd, Enum attribute " & Attr
+                        & " has incorrect value " & Xml_Val, Line_No); 
+            end if;
+          end;
+        elsif Td(2) = 'D' and then not Ok then
+          -- Default in dtd with no xml value: insert default in tree
+          declare
+            -- Get the first value from dtd list, from 2 to second sep
+            Sep : constant Positive
+                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1, Info_Sep & "", 2);
+            Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
+          begin
+            Tree_Mng.Add_Attribute (Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
+          end;
+        end if;
+        Trace ("Checked versus dtd attribute " & Attr & " type " & Td);
+      exception
+        when Info_Mng.Not_In_List =>
+          Trace ("Cannot find attribute info "
+               & "Att" & Info_Sep & Asu_Ts(Name) & Info_Sep & Attr);
+          raise Internal_Error;
+      end;
+    end loop;
+    Parser.Del (Iter_Dtd);
   end Check_Attributes;
 
   -- Check Current element of the tree
