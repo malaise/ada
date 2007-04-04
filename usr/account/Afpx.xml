@@ -1,4 +1,5 @@
 <?xml version="1.1"?>
+<!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
 <!-- Main menu -->
 <Afpx_Descriptors>
   <Descriptor Num="1">
@@ -574,7 +575,7 @@
     <!-- Deleted info -->
     <Field Num="37" Kind="Put">
       <Geometry Up="20" Left="2" Low="20" Right="8"/>
-      <Colors Foreground="magenta" Blink="False" Background="Black"/>
+      <Colors Foreground="Magenta" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">DELETED</Init>
     </Field>
 
