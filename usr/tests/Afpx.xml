@@ -43,7 +43,7 @@
 
     <Field Num="7" Kind="Put">
       <Geometry Up="22" Left="0" Low="24" Right="79"/>
-      <Colors Foreground="Red" Blink="False" Background="magenta"/>
+      <Colors Foreground="Red" Blink="False" Background="Magenta"/>
       <Init Row="0" Col="0">Type exit in a get field to desactivate it</Init>
       <Init Row="1" Col="0">Type return to print content of field, escape to clear field</Init>
       <Init Row="2" Col="0">Print button is flip-flop based on keyboard event and timer</Init>
