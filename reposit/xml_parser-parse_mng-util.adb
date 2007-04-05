@@ -66,22 +66,22 @@ package body Util is
   end Is_Valid_In_Name;
 
   -- Check that a Name is correct
-  function Name_Ok (Name : Asu_Us) return Boolean is
+  function Name_Ok (Name : Asu_Us;
+                    Allow_Token : Boolean := False) return Boolean is
     Char : Character;
   begin
     -- Must not be empty
     if Asu.Length (Name) = 0 then
       return False;
     else
-      -- First char must be letter or '_' or ':'
+      -- For true name (not token) first char must be letter or '_' or ':'
       Char := Asu.Element (Name, 1);
-      if not Is_Letter (Char)
-      and then Char /= '_'
-      and then Char /= ':' then
+      if not Allow_Token
+      and then (Is_Digit (Char) or else Char = '-' or else Char = '.') then
         return False;
       end if;
-      for I in 2 .. Asu.Length (Name) loop
-        -- Other chars must be letter, digit, or '_' or ':' or '-'
+      -- Other chars must be letter, digit, or '_' or ':' or '-'
+      for I in 1 .. Asu.Length (Name) loop
         Char := Asu.Element (Name, I);
         if not Is_Valid_In_Name (Char) then
           return False;
@@ -92,7 +92,9 @@ package body Util is
   end Name_Ok;
 
   -- Check that Str defines valid names seprated by Sep
-  function Names_Ok (Str : Asu_Us; Seps : String) return Boolean is
+    function Names_Ok (Str : Asu_Us;
+                       Seps : String;
+                       Allow_Token : Boolean := False) return Boolean is
     S : String(1 .. Asu.Length (Str)) := Asu_Ts (Str);
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
@@ -125,7 +127,7 @@ package body Util is
         exit when I2 > S'Last or else Is_Sep (S(I2));
       end loop;
       -- Check word
-      if not Name_Ok (Asu_Tus (S(I1 .. I2 - 1))) then
+      if not Name_Ok (Asu_Tus (S(I1 .. I2 - 1)), Allow_Token) then
         return False;
       end if;
       -- Done
@@ -347,6 +349,28 @@ package body Util is
   begin
     Parse_Until_Char ("" & Stop);
   end Parse_Until_Stop;
+
+  -- Parse until a ')' closes the already got '('
+  -- Sets Curr_Str
+  procedure Parse_Until_Close is
+    Char : Character;
+    Nb : Natural;
+    use type Asu_Us;
+  begin
+    -- One '(' already got
+    Nb := 1;
+    loop
+      Char := Get;
+      -- Count opening and closing parenthesis
+      if Char = '(' then
+        Nb := Nb + 1;
+      elsif Char = ')' then
+        Nb := Nb - 1;
+        exit when Nb = 0;
+      end if;
+      Curr_Str := Curr_Str & Char;
+    end loop;
+  end Parse_Until_Close;
 
   -- Parse until end of name, resets Curr_Str
   function Parse_Name return Asu_Us is

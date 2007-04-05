@@ -1,13 +1,18 @@
-with Unique_List, String_Mng, Regular_Expressions, Parser;
+with Unique_List, String_Mng, Regular_Expressions, Parser, Int_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
-  -- Dtd info per element (Elt, Atl, Att)
+  -- Image of line_no without leading space
+  function Line_Image is new Int_Image (Natural);
+
+  -- Separator within Info name and list
   Info_Sep : constant Character := '#';
   function Is_Sep (C : Character) return Boolean is
   begin
     return C = Info_Sep;
   end Is_Sep;
+
+  -- Dtd info per element (Elt, Atl, Att)
   type Info_Rec is record
     -- Kind'Img#Element_name[#Attribute_Name]
     Name : Asu_Us;
@@ -16,8 +21,9 @@ package body Dtd is
     --  for Mixed the list of "#<name>#" without #PCDATA (empty if only #PCDATA)
     --  for Children the regexp of "#<name>#"
     -- Atl: Possible attributes, list of "<name>#<type><default>#"
-    --  <type> ::= S|E (string or enum) and <default> ::= R|I|F|D (required,
-    --  implied, fixed or default)
+    --  <type> ::= S|I|R|r|T|t|E (String, ID, IDREF, IDREFS, NMTOKEN, NMTOKENS
+    --   or enum)
+    --  <default> ::= R|I|F|D (required, implied, fixed or default)
     -- Att: for a fixed of any type or the a default of not enum, the value
     --   for an Enum, the list of possible "<name>#" and, if there is a default
     --   this value is the first
@@ -50,6 +56,7 @@ package body Dtd is
 
   -- Init (clear) Dtd data
   procedure Init is
+    Info : Info_Rec;
   begin
     -- No Dtd set
     Dtd_Set := False;
@@ -57,6 +64,11 @@ package body Dtd is
     Xml_Found := False;
     -- Reset list
     Info_Mng.Delete_List (Info_List);
+    -- Init with empty IDs and empty IDREFs
+    Info.Name := Asu_Tus ("Idl");
+    Info_Mng.Insert (Info_List, Info);
+    Info.Name := Asu_Tus ("Idr");
+    Info_Mng.Insert (Info_List, Info);
   end Init;
 
   -- Parse an instruction:
@@ -83,7 +95,7 @@ package body Dtd is
   -- Build the regexp: <name> -> (#<name>#) ,  . -> \.
   procedure Build_Regexp (Str : in out Asu_Us) is
     -- Separators
-    Seps : constant String := "|,?*+";
+    Seps : constant String := "|,?*+()";
     -- Result with the info sep
     Res : Asu_Us;
     -- Intermediate logic
@@ -167,8 +179,8 @@ package body Dtd is
         Util.Error ("Unexpected character " & Util.Read
                  & " at start of ELEMENT list");
       end if;
-      -- Get children definition (until ')')
-      Util.Parse_Until_Char (")");
+      -- Get children definition (until ')' matching the '(' got)
+      Util.Parse_Until_Close;
       Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
       Info.List := Util.Fix_Text (Info.List, True);
       Util.Reset_Curr_Str;
@@ -205,7 +217,7 @@ package body Dtd is
         Info.List := Util.Fix_Text (Info.List);
         Info.List := Util.Remove_Separators (Info.List);
         -- Check valid names
-        if not Util.Names_Ok (Info.List, "|,?*+") then
+        if not Util.Names_Ok (Info.List, "|,?*+()") then
           Util.Error ("Invalid name in Children definition");
         end if;
         -- Fix regex: each name becomes "(#name#)"
@@ -227,8 +239,8 @@ package body Dtd is
 
   -- Parse <!ATTLIST
   procedure Parse_Attlist is
-    -- Atl and Att info blocs
-    Info, Attinfo : Info_Rec;
+    -- Atl, Att and Id info blocs
+    Info, Attinfo, Idinfo : Info_Rec;
     Found : Boolean;
     -- Element, attribute name and type
     Elt_Name, Att_Name, Att_Type : Asu_Us;
@@ -238,6 +250,8 @@ package body Dtd is
     Enum : Asu_Us;
     -- Default value
     Def_Val : Asu_Us;
+    -- Has an ID already been parsed for this element
+    Has_Id : Boolean;
     use type Asu_Us;
   begin
     -- Parse element name
@@ -261,7 +275,8 @@ package body Dtd is
       return;
     end if;
 
-    -- loop on all attributes
+    -- Loop on all attributes
+    Has_Id := False;
     loop
       Util.Skip_Separators;
       -- Name of attribute or end of list
@@ -278,7 +293,19 @@ package body Dtd is
         Typ_Char := 'S';
       elsif Util.Try ("ID ") then
         -- ID type
-        Util.Error ("ID attribute type not supported yet");
+        Typ_Char := 'I';
+      elsif Util.Try ("IDREF ") then
+        -- IDREF type
+        Typ_Char := 'R';
+      elsif Util.Try ("IDREFS ") then
+        -- IDREFS type
+        Typ_Char := 'r';
+      elsif Util.Try ("NMTOKEN ") then
+        -- NMTOKEN type
+        Typ_Char := 'T';
+      elsif Util.Try ("NMTOKENS ") then
+        -- NMTOKENS type
+        Typ_Char := 't';
       elsif Util.Get = '(' then
         -- Enum type
         Typ_Char := 'E';
@@ -303,12 +330,8 @@ package body Dtd is
         Util.Parse_Until_Char ("" & Util.Space);
         Att_Type := Util.Get_Curr_Str;
         Util.Reset_Curr_Str;
-        if Asu_Ts (Att_Type) = "IDREF"
-        or else Asu_Ts (Att_Type) = "IDREFS"
-        or else Asu_Ts (Att_Type) = "ENTITY"
+        if Asu_Ts (Att_Type) = "ENTITY"
         or else Asu_Ts (Att_Type) = "ENTITIES"
-        or else Asu_Ts (Att_Type) = "NMTOKEN"
-        or else Asu_Ts (Att_Type) = "NMTOKENS"
         or else Asu_Ts (Att_Type) = "NOTATION" then
           Util.Error ("Unsupported attribute type " & Asu_Ts (Att_Type));
         else
@@ -341,6 +364,25 @@ package body Dtd is
         Util.Skip_Separators;
         Def_Val := Parse_Value;
       end if;
+
+      -- Check ID
+      if Typ_Char = 'I' then
+        -- Only one ID per element
+        if Has_Id then
+          Util.Error ("Element " & Asu_Ts (Elt_Name)
+                    & " has already an ID attribute");
+        end if;
+        -- Id must be implied or required
+        if Def_Char /= 'R' and then Def_Char /= 'I' then
+          Util.Error ("Id attribute must be of type required or implied");
+        end if;
+        -- Initialise an Empty Ide info
+        Has_Id := True;
+        Idinfo.Name := "Ide" & Elt_Name;
+        Idinfo.List := Asu_Null;
+        Info_Mng.Insert (Info_List, Idinfo);
+      end if;
+
       -- Check Enum
       if Typ_Char = 'E'
       and then (Def_Char = 'D' or else Def_Char = 'F') then
@@ -357,9 +399,10 @@ package body Dtd is
                  Asu_Ts (Enum)));
         Enum := Info_Sep & Asu_Ts (Def_Val) & Info_Sep & Enum;
       end if;
-      Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
+
       -- If enum store Att of enum
       --  or if fixed or default store Att of default
+      Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
       if Typ_Char = 'E' then
         Attinfo.List := Enum;
         Info_Mng.Insert (Info_List, Attinfo);
@@ -603,27 +646,32 @@ package body Dtd is
   procedure Check_Attributes (Name : in Asu_Us;
                               Line_No : in Positive;
                               Attributes : in Asu_Us) is
-    -- Atl and Att info blocs
-    Info, Attinfo : Info_Rec;
+    -- Atl, Att and Id info blocs
+    Info, Attinfo, Idinfo : Info_Rec;
+    -- Name looked in Info list (for error tracing)
+    Error_Name : Asu_Us;
+    -- Is info found in info list
+    Info_Found : Boolean;
     -- Parser iterators
     Iter_Dtd, Iter_Xml : Parser.Iterator;
+    -- Is an attribute set in xml
+    Att_Set : Boolean;
     -- Attribute value
     Att_Value : Asu_Us;
-    -- Attribute value
+    -- Attribute value in Xml
+    Xml_Val : Asu_Us;
     -- List of dtd attribute names
     Att_Names : Asu_Us;
-    -- General purpose boolean
-    Ok : Boolean;
     use type Asu_Us;
   begin
      Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
     -- Read its ATTLIST def
     Info.Name := "Atl" & Info_Sep & Name;
-    Info_Mng.Search (Info_List, Info, Ok);
-    if Ok then
+    Info_Mng.Search (Info_List, Info, Info_Found);
+    if Info_Found then
       Info_Mng.Read (Info_List, Info, Info);
     end if;
-    if not Ok or else Info.List = Asu_Null then
+    if not Info_Found or else Info.List = Asu_Null then
       -- No or empty ATTLIST for this element
       if  Attributes = Asu_Null then
         Trace ("Dtd checked element " & Asu_Ts (Name)
@@ -688,14 +736,20 @@ package body Dtd is
         -- Corresponding attribute info from dtd if any
         if Td(1) = 'E' or else Td(2) = 'F' or else Td(2) = 'D' then
           Attinfo.Name := "Att" & Info_Sep & Name & Info_Sep & Attr;
+          Error_Name := Attinfo.Name;
           Info_Mng.Read (Info_List, Attinfo, Attinfo);
         end if;
         -- Does this attribute appear in xml
-        Ok := String_Mng.Locate (Asu_Ts (Attributes), 1,
+        Att_Set := String_Mng.Locate (Asu_Ts (Attributes), 1,
                    Info_Sep & Attr & Info_Sep) /= 0;
+        if Att_Set then
+          -- Get the Xml Attribute
+          Xml_Val := Tree_Mng.Get_Attribute (Asu_Tus(Attr));
+        end if;
+
         --  Any Required or Fixed in dtd must appear in xml
         if (Td(2) = 'R' or else Td(2) = 'F')
-        and then not Ok then
+        and then not Att_Set then
           Util.Error ("According to dtd, element " & Asu_Ts (Name)
                     & " must have attribute " & Attr, Line_No);
         end if;
@@ -703,34 +757,26 @@ package body Dtd is
         if Td(2) = 'F' then
           -- Fixed (Enum or string): first #<val># is the one required
           declare
-            -- Get the Xml Attribute
-            Xml_Val : constant String
-                    := Asu_Ts (Tree_Mng.Get_Attribute (Asu_Tus(Attr)));
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
                 := String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
                                       Info_Sep & "", 2);
             Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
           begin
-            if Xml_Val /= Dtd_Val then
+            if Asu_Ts (Xml_Val) /= Dtd_Val then
               Util.Error ("According to dtd, attribute " & Attr
                         & " must have fixed value " & Dtd_Val, Line_No);
             end if;
           end;
-        elsif Td(1) = 'E' and then Ok then
+        elsif Td(1) = 'E' and then Att_Set then
           -- Not fixed Enum in dtd with xml value: #<val># must be in dtd list
-          declare
-            -- Get the Xml Attribute
-            Xml_Val : constant String
-                    := Asu_Ts (Tree_Mng.Get_Attribute (Asu_Tus(Attr)));
-          begin
-            if String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
-                Info_Sep  & Xml_Val & Info_Sep) = 0 then
-              Util.Error ("According to dtd, Enum attribute " & Attr
-                        & " has incorrect value " & Xml_Val, Line_No);
-            end if;
-          end;
-        elsif Td(2) = 'D' and then not Ok then
+          if String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+                 Info_Sep  & Asu_Ts (Xml_Val) & Info_Sep) = 0 then
+            Util.Error ("According to dtd, Enum attribute " & Attr
+                      & " has incorrect value "
+                      & Asu_Ts (Xml_Val), Line_No);
+          end if;
+        elsif Td(2) = 'D' and then not Att_Set then
           -- Default in dtd with no xml value: insert default in tree
           declare
             -- Get the first value from dtd list, from 2 to second sep
@@ -741,16 +787,93 @@ package body Dtd is
           begin
             Tree_Mng.Add_Attribute (Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
           end;
+        elsif Att_Set then
+          -- Comformance checks on ID, IDREF(s) and NMTOKEN(s)
+          -- Store ID and IDREFs and Sanity checks on I
+          if (Td(1) = 'I' or else Td(1) = 'R')
+          and then not Util.Name_Ok (Xml_Val) then
+            Util.Error ("Invalid name for ID or IDREF "
+                      & Asu_Ts (Xml_Val), Line_No);
+          elsif Td(1) = 'r'
+          and then  not Util.Names_Ok (Xml_Val, Util.Space & "") then
+            Util.Error ("Invalid name in IDREFS "
+                      & Asu_Ts (Xml_Val), Line_No);
+          elsif Td(1) = 'T'
+          and then not Util.Name_Ok (Xml_Val, Allow_Token => True) then
+            Util.Error ("Invalid token for NMTOKEN "
+                      & Asu_Ts (Xml_Val), Line_No);
+          elsif Td(1) = 't'
+          and then not Util.Names_Ok (Xml_Val,
+                                      Util.Space & "",
+                                      Allow_Token => True) then
+            Util.Error ("Invalid name in NMTOKENS "
+                      & Asu_Ts (Xml_Val), Line_No);
+          end if;
+
+          -- Store IDs and IDREFs
+          if Td(1) = 'I' then
+            -- Check this ID is not already set for this element
+            Idinfo.Name := "Ide" & Info_Sep & Name;
+            Info_Mng.Search (Info_List, Idinfo, Info_Found);
+            if Info_Found then
+              Info_Mng.Read (Info_List, Idinfo, Idinfo);
+              if String_Mng.Locate (Asu_Ts (Idinfo.List), 1,
+                              Info_Sep & Asu_Ts (Xml_Val) & Info_Sep) /= 0 then
+                Util.Error ("This ID " & Asu_Ts (Xml_Val)
+                          & " is already set to this element", Line_No);
+              end if;
+            end if;
+            -- Append ID to the list of this element
+            Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep);
+            Info_Mng.Insert (Info_List, Idinfo);
+            -- Append ID to global list
+            Idinfo.Name := Asu_Tus ("Idl");
+            Error_Name := Idinfo.Name;
+            Info_Mng.Read (Info_List, Idinfo, Idinfo);
+            Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep);
+            Info_Mng.Insert (Info_List, Idinfo);
+            Trace (" Check, added ID " & Asu_Ts (Xml_Val));
+          elsif Td(1) = 'R' then
+            -- Append this ID ref and line_no to list of IDREFs
+            Idinfo.Name := Asu_Tus ("Idr");
+            Error_Name := Idinfo.Name;
+            Info_Mng.Read (Info_List, Idinfo, Idinfo);
+            Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep
+                      & Line_Image(Line_No) & Info_Sep);
+            Info_Mng.Insert (Info_List, Idinfo);
+            Trace (" Check, added IDREF " & Asu_Ts (Xml_Val));
+          elsif Td(1) = 'r' then
+            -- Append each of the IDREFs to the global list
+            Idinfo.Name := Asu_Tus ("Idr");
+            Error_Name := Idinfo.Name;
+            Info_Mng.Read (Info_List, Idinfo, Idinfo);
+            -- Parse IDREFs separated by spaces
+            Parser.Set (Iter_Xml, Asu_Ts (Xml_Val), Util.Is_Separator'Access);
+            loop
+              declare
+                -- Next IDREF from xml
+                Idref : constant String := Parser.Next_Word (Iter_Xml);
+              begin
+                exit when Idref = "";
+                -- Append this ID ref and line_no to list of IDREFs
+                Asu.Append (Idinfo.List, Info_Sep & Asu_Tus (Idref) & Info_Sep
+                      & Line_Image(Line_No) & Info_Sep);
+                Trace (" Check, added IDREF " & Idref);
+              end;
+            end loop;
+            Parser.Del (Iter_Xml);
+            Info_Mng.Insert (Info_List, Idinfo);
+          end if;
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
-      exception
-        when Info_Mng.Not_In_List =>
-          Trace ("Dtd check: Cannot find attribute info "
-               & "Att" & Info_Sep & Asu_Ts(Name) & Info_Sep & Attr);
-          raise Internal_Error;
       end;
     end loop;
     Parser.Del (Iter_Dtd);
+  exception
+    when Info_Mng.Not_In_List =>
+      Trace ("Dtd check: Cannot find info " & Asu_Ts (Error_Name));
+      Parser.Del (Iter_Dtd);
+      raise Internal_Error;
   end Check_Attributes;
 
   -- Check Current element of the tree
@@ -796,5 +919,50 @@ package body Dtd is
 
   end Check_Element;
 
+  -- Final checks
+  -- Check that all attribute values of Xml tagged IDREF(s) in Dtd
+  --  and thus collected in "Idr" info,
+  --  exist in the list of attribute values of Xml tagged ID
+  --  and thus collected in "Idl" info,
+  procedure Final_Check is
+    -- List of IDs and list of IDrefs
+    Ids, Idrefs : Info_Rec;
+    -- Parser iterator on IDrefs
+    Iter_Idref : Parser.Iterator;
+  begin
+    -- Read Ids
+    Ids.Name := Asu_Tus ("Idl");
+    -- For error
+    Idrefs.Name := Ids.Name;
+    Info_Mng.Read (Info_List, Ids, Ids);
+    Trace ("Check final, got IDs " & Asu_Ts (Ids.List));
+    -- Read Idrefs
+    Idrefs.Name := Asu_Tus ("Idr");
+    Info_Mng.Read (Info_List, Idrefs, Idrefs);
+    Trace ("Check final, got IDREFs " & Asu_Ts (Idrefs.List));
+    -- Idl is a list of #Id#, Idr is a list of #Idref#Line_No#
+    -- Parse IDREFs separated by Sep
+    Parser.Set (Iter_Idref, Asu_Ts (Idrefs.List), Is_Sep'Access);
+    loop
+      declare
+        -- Next IDREF from xml
+        Idref : constant String := Parser.Next_Word (Iter_Idref);
+        Line : constant String := Parser.Next_Word (Iter_Idref);
+      begin
+        exit when Idref = "";
+          -- Check that this Idref is in Ids
+          if String_Mng.Locate (Asu_Ts (Ids.List), 1,
+                            Info_Sep & Idref & Info_Sep) = 0 then
+            Util.Error ("The ID of the ref " & Idref
+                        & " does not exist", Natural'Value(Line));
+          end if;
+      end;
+    end loop;
+    Parser.Del (Iter_Idref);
+    Trace ("Checked final");
+  exception
+    when Info_Mng.Not_In_List =>
+      Trace ("Dtd check: Cannot find info " & Asu_Ts (Idrefs.Name));
+  end Final_Check;
 end Dtd;
 

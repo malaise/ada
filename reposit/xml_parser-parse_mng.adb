@@ -17,9 +17,12 @@ package body Parse_Mng  is
     ------------------
     function Is_Letter (Char : Character) return Boolean;
     -- Check that Name is valid
-    function Name_Ok (Name : Asu_Us) return Boolean;
-    -- Check that Str defines valid names seprated by Sep
-    function Names_Ok (Str : Asu_Us; Seps : String) return Boolean;
+    function Name_Ok (Name : Asu_Us;
+                      Allow_Token : Boolean := False) return Boolean;
+    -- Check that Str defines valid names separated by Seps
+    function Names_Ok (Str : Asu_Us;
+                       Seps : String;
+                       Allow_Token : Boolean := False) return Boolean;
     -- Report an error, raises Parsing_Error.
     procedure Error (Msg : in String; Line_No : in Natural := 0);
     -- Retrieve error message
@@ -71,6 +74,9 @@ package body Parse_Mng  is
     -- Parse until stop character
     -- Sets Curr_Str
     procedure Parse_Until_Stop;
+    -- Parse until a ')' closes the already got '('
+    -- Sets Curr_Str
+    procedure Parse_Until_Close;
     -- Parse while name looks valid
     function Parse_Name return Asu_Us;
     -- Try to parse a keyword, rollback if not
@@ -118,6 +124,8 @@ package body Parse_Mng  is
     procedure Parse (File_Name : in String);
     -- Check Current element of the tree
     procedure Check_Element;
+    -- Perform final checks: that IDREF(s) appear as ID
+    procedure Final_Check;
   end Dtd;
   package body Dtd is separate;
 
@@ -565,9 +573,11 @@ package body Parse_Mng  is
     Tree_Mng.Init_Prologue;
     -- Reset Dtd
     Dtd.Init;
-    -- Parse prologue then element
+    -- Parse prologue then root element
     Parse_Prologue;
     Parse_Root_To_End;
+    -- Perform final checks versus dtd
+    Dtd.Final_Check;
     -- Clean Dtd memory
     Dtd.Init;
   end Parse;
