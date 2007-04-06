@@ -83,7 +83,8 @@ package body Parse_Mng  is
     function Try (Str : String) return Boolean;
     -- Fix text: expand entities and remove repetition of separators
     function Fix_Text (Text : Asu_Us;
-                       Preserve_Spaces : Boolean := False) return Asu_Us;
+                       In_Dtd : Boolean;
+                       Preserve_Spaces : Boolean) return Asu_Us;
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
   end Util;
@@ -98,7 +99,7 @@ package body Parse_Mng  is
   procedure Parse_Instruction;
 
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
-  function Parse_Value return Asu_Us is
+  function Parse_Value (In_Dtd : in Boolean) return Asu_Us is
     Value : Asu_Us;
     use type Asu_Us;
   begin
@@ -113,7 +114,7 @@ package body Parse_Mng  is
     Value := Util.Get_Curr_Str;
     Util.Reset_Curr_Str;
     -- Fix separators and expand entities
-    return Util.Fix_Text (Value);
+    return Util.Fix_Text (Value, In_Dtd, False);
   end Parse_Value;
 
   -- Dtd management, uses util and the tree
@@ -163,7 +164,7 @@ package body Parse_Mng  is
         end if;
       end if;
       -- Parse value
-      Attribute_Value := Parse_Value;
+      Attribute_Value := Parse_Value (False);
       if Of_Xml then
         Tree_Mng.Add_Xml_Attribute (Attribute_Name, Attribute_Value, Line_No);
       else
@@ -439,7 +440,7 @@ package body Parse_Mng  is
           Trace ("Preserving spaces of the following text");
         end if;
         -- Add previous separators and this text
-        Text := Util.Fix_Text (Text & Util.Get_Curr_Str, Preserve);
+        Text := Util.Fix_Text (Text & Util.Get_Curr_Str, False, Preserve);
         Tree_Mng.Add_Text (Text, Line_No);
         Trace ("Parsed Text " & Asu_Ts (Text));
         Util.Reset_Curr_Str;

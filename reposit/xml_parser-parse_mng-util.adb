@@ -411,10 +411,10 @@ package body Util is
       return False;
   end Try;
 
-  -- Variable resolver
+  -- Variable resolver, when not in dtd
   function Variable_Of (Name : String) return String is
   begin
-    return Asu_Ts (Entity_Mng.Get (Asu_Tus (Name)));
+    return Asu_Ts (Entity_Mng.Get (Asu_Tus (Name), False));
   exception
     when Entity_Mng.Entity_Not_Found =>
       Error ("Unknown entity " & Name);
@@ -423,9 +423,126 @@ package body Util is
       raise Parse_Error;
   end Variable_Of;
 
+  -- Expand %Var; and &#xx; if in dtd
+  -- or Expand &Var; if not in dtd, both recursively
+  function Expand_Vars (Text : in Asu_Us; In_Dtd : in Boolean) return Asu_Us is
+    Result : Asu_Us;
+    -- Number of ";" to skip (because within "&var;")
+    Nb2skip : Natural;
+    -- Indexes of start and stop of variable name
+    Istart, Istop : Natural;
+    -- Kind of starter
+    type Starter_Kind is (Param_Ref, Char_Ref, None);
+    Starter : Starter_Kind;
+    -- Last valid index in string
+    Last : Natural;
+    -- Current character
+    Char : Character;
+    -- Entity name and value
+    Name, Val : Asu_Us;
+    use type Asu_Us;
+  begin
+    if not In_Dtd then
+      return Asu_Tus (String_Mng.Eval_Variables (
+             Str => Asu_Ts (Text),
+             Start_Delimiter => "&",
+             Stop_Delimiter  => ";",
+             Resolv => Variable_Of'Access));
+    end if;
+ 
+    -- Expand variables when in dtd
+    -- Loop as long as an expansion occured
+    Result := Text;
+    Istart := 0;
+    Last := Asu.Length (Result);
+    loop
+      -- Scan all the string
+      Istart := Istart + 1;
+      exit when Istart = Last;
+
+      -- Locate start of var name '%' or "&#"
+      if Asu.Element (Result, Istart) = '%' then
+        Starter := Param_Ref;
+      elsif Asu.Element (Result, Istart) = '&'
+      and then Asu.Element (Result, Istart + 1) = '#' then
+        Starter := Char_Ref;
+      else
+        Starter := None;
+      end if;
+
+      if Starter /= None then
+        -- Locate stop of var name ';',
+        -- skipping intermediate &var; sequences
+        Nb2skip := 0;
+        Istop := 0;
+        for I in Istart + 1 .. Last loop
+          Char := Asu.Element (Result, I);
+          if Char = ';' then
+            if Nb2skip = 0 then
+              -- Current ';' matches '%'
+              Istop := I;
+              exit;
+            else
+              -- Current ';' matches a '&'
+              Nb2skip := Nb2skip - 1;
+            end if;
+          elsif Char = '&' then
+            if I /= Last and then Asu.Element (Result, I + 1) = '#' then
+              -- A character reference within a %var;
+              -- Restart substitution from current
+              Istart := I - 1;
+              exit;
+            else
+              -- A &var; to skip
+              Nb2skip := Nb2skip + 1;
+            end if;
+          elsif Char = '%' then
+            -- A %var; within a %var;
+            -- Restart substitution from current
+            Istart := I - 1;
+            exit;
+          end if;
+        end loop;
+
+        -- Check that a stop was found
+        if Istop = 0 then
+          Error ("Unterminated entity reference " & Asu_Ts (Text));
+        end if;
+        -- Check that a stop is big enough
+        if Istop = Istart + 1 then
+          -- "%;"
+          Error ("Emtpy entity reference " & Asu_Ts (Text));
+        end if;
+        -- Got an entity name: get value if it exists
+        Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
+        if not Entity_Mng.Exists (Name, Starter = Param_ref) then
+          Error ("Unknown parameter entity " & Asu_Ts (Name));
+        end if;
+        Val := Entity_Mng.Get (Name, True);
+
+        -- Substitute from start to stop
+        Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+        -- Istart is now the first replaced character. OK.
+        -- Update Last
+        if Starter = Param_ref then
+          -- "%Name;" has been replaced by "Val"
+          Last := Last - Asu.Length (Name) - 2 + Asu.Length (Val);
+        else
+          -- "&#Name;" has been replaced by "Val"
+          Last := Last - Asu.Length (Name) - 3 + Asu.Length (Val);
+        end if;
+      end if;
+
+    end loop;
+
+    return Result;
+  end Expand_Vars;
+
+
   -- Fix text: expand variables and remove repetition of separators
   function Fix_Text (Text : Asu_Us;
-                     Preserve_Spaces : Boolean := False) return Asu_Us is
+                     In_Dtd : Boolean;
+                     Preserve_Spaces : Boolean) return Asu_Us is
     Char : Character;
     Found : Boolean;
     Name, S1, S2 : Asu_Us;
@@ -435,12 +552,8 @@ package body Util is
       return Text;
     end if;
 
-    -- Expand entities
-    S1 := Asu_Tus (String_Mng.Eval_Variables (
-             Str => Asu_Ts (Text),
-             Start_Delimiter => "&",
-             Stop_Delimiter  => ";",
-             Resolv => Variable_Of'Access));
+    -- Expand entities values
+    S1 := Expand_Vars (Text, In_Dtd);
 
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
@@ -495,11 +608,13 @@ package body Util is
   function Remove_Separators (Text : Asu_Us) return Asu_Us is
     Res : String (1 .. Asu.Length (Text)) := Asu_Ts (Text);
   begin
+    -- Replace any separator by a space
     for I in Res'Range loop
       if Util.Is_Separator (Res(I)) then
         Res(I) := Util.Space;
       end if;
     end loop;
+    -- Replace any space by nothing
     return Asu_Tus (String_Mng.Replace (Space & "", "", Res));
   end Remove_Separators;
 

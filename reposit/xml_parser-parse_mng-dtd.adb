@@ -182,7 +182,7 @@ package body Dtd is
       -- Get children definition (until ')' matching the '(' got)
       Util.Parse_Until_Close;
       Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
-      Info.List := Util.Fix_Text (Info.List, True);
+      Info.List := Util.Fix_Text (Info.List, True, False);
       Util.Reset_Curr_Str;
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
@@ -194,7 +194,7 @@ package body Dtd is
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
           -- Expand variables if any
-          Info.List := Util.Fix_Text (Info.List);
+          Info.List := Util.Fix_Text (Info.List, True, False);
           Info.List := Util.Remove_Separators (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
@@ -214,7 +214,7 @@ package body Dtd is
       else
         -- A regexp of children: Append string
         -- Expand variables if any
-        Info.List := Util.Fix_Text (Info.List);
+        Info.List := Util.Fix_Text (Info.List, True, False);
         Info.List := Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+()") then
@@ -310,7 +310,7 @@ package body Dtd is
         -- Enum type
         Typ_Char := 'E';
         Util.Parse_Until_Char (")");
-        Enum := Util.Fix_Text (Util.Get_Curr_Str);
+        Enum := Util.Fix_Text (Util.Get_Curr_Str, True, False);
         Enum := Util.Remove_Separators (Enum);
         Util.Reset_Curr_Str;
         -- Check that everything between "|" are names
@@ -362,7 +362,7 @@ package body Dtd is
       else
         -- Get default value for fixed or default attribute
         Util.Skip_Separators;
-        Def_Val := Parse_Value;
+        Def_Val := Parse_Value (True);
       end if;
 
       -- Check ID
@@ -431,8 +431,21 @@ package body Dtd is
   procedure Parse_Entity is
     -- Entity name and value
     Name, Value : Asu_Us;
+    -- Is it a parameter entity
+    Parameter : Boolean;
+    Parstr : Asu_Us;
     use type Asu_Us;
   begin
+    -- See if this is a parameter entity
+    Util.Skip_Separators;
+    if Util.Get = '%' then
+      Parameter := True;
+      Parstr := Asu_Tus ("%");
+      Util.Skip_Separators;
+    else
+      Parameter := False;
+      Util.Unget;
+    end if;
     -- Parse entity name
     Util.Parse_Until_Char ("" & Util.Space);
     Name := Util.Get_Curr_Str;
@@ -441,27 +454,27 @@ package body Dtd is
     if not Util.Name_Ok (Name) then
       Util.Error ("Invalid entity name " & Asu_Ts (Name));
     end if;
-    if Entity_Mng.Exists (Name) then
-      Util.Error ("Entity " & Asu_Ts (Name) & " already defined");
+    Util.Skip_Separators;
+    -- Check that it does not exist
+    if Entity_Mng.Exists (Name, Parameter) then
+      Util.Error ("Entity " & Asu_Ts (Parstr & Name) & " already defined");
     end if;
     -- Only accept local entities
-    if Util.Try ("% ") then
-      Util.Error ("Unsupported parameter entity");
-    elsif Util.Try ("SYSTEM ") then
+    if Util.Try ("SYSTEM ") then
       Util.Error ("Unsupported SYSTEM external entity");
     elsif Util.Try ("PUBLIC ") then
       Util.Error ("Unsupported PUBLIC external entity");
     end if;
     -- Parse and expand value
-    Value := Parse_Value;
+    Value := Parse_Value (True);
     -- Must stop now
     Util.Skip_Separators;
     if Util.Get /= Util.Stop then
       Util.Error ("Unexpected character at end of entity " & Util.Read);
     end if;
-    -- Store
-    Entity_Mng.Add (Name, Value);
-    Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Name)
+    -- Store entity
+    Entity_Mng.Add (Name, Value, Parameter);
+    Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Parstr & Name)
          & " " & Asu_Ts(Value));
   end Parse_Entity;
 
