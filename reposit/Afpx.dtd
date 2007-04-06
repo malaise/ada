@@ -5,17 +5,17 @@
 <!ELEMENT Afpx_Descriptors (Descriptor*)>
 
 <!ELEMENT Descriptor (List?,Field*)>
-<!ATTLIST Descriptor Num CDATA #REQUIRED>
+<!ATTLIST Descriptor Num NMTOKEN #REQUIRED>
 
 <!ELEMENT List (Geometry,Colors)>
 <!ATTLIST List>
 
 <!ELEMENT Field (Geometry,Colors,Init*)>
-<!ATTLIST Field Num CDATA #REQUIRED Kind (Put|Button|Get) #REQUIRED>
+<!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 
 <!ELEMENT Geometry EMPTY>
-<!ATTLIST Geometry Up CDATA #REQUIRED Left CDATA #REQUIRED
-                   Low CDATA #REQUIRED Right CDATA #REQUIRED>
+<!ATTLIST Geometry Up NMTOKEN #REQUIRED Left NMTOKEN #REQUIRED
+                   Low NMTOKEN #REQUIRED Right NMTOKEN #REQUIRED>
 
 <!ELEMENT Colors EMPTY>
 <!ENTITY Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
@@ -28,7 +28,7 @@
                  Selected (&Basic_Colors;) #IMPLIED>
 
 <!ELEMENT Init (#PCDATA)>
-<!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
+<!ATTLIST Init Row NMTOKEN #REQUIRED Col NMTOKEN #REQUIRED
                xml:space (default|preserve) "preserve">
 
 <!-- Semantic of the descriptor file -->
