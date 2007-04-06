@@ -117,7 +117,7 @@ package body Entity_Mng is
     or else Asu.Element (Name, 2) = 'x' then
       return;
     end if;
-    N := Natural'Value (Asu.Slice (Name, 3, Asu.Length(Name)));
+    N := Natural'Value (Asu.Slice (Name, 2, Asu.Length(Name)));
     Name := Asu_Tus (Code_Of (N));
   end Fix_Name;
 
@@ -129,7 +129,7 @@ package body Entity_Mng is
     -- Find (parameter) entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
-    Fix_Name (Entity.Name, Parameter);
+    Fix_Name (Entity.Name, Entity.Parameter);
     Entity_List_Mng.Search (Entity_List, Entity, Found);
     return Found;
   end Exists;
@@ -141,13 +141,14 @@ package body Entity_Mng is
     -- Read entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
-    Fix_Name (Entity.Name, Parameter);
+    Fix_Name (Entity.Name, Entity.Parameter);
     Entity_List_Mng.Read (Entity_List, Entity, Entity);
     Trace ("Read entity name " & Asu_Ts (Entity.Name)
          & " value " & Asu_Ts (Entity.Value));
     return Entity.Value;
   exception
     when Entity_List_Mng.Not_In_List =>
+      Trace ("Unknown entity name " & Asu_Ts (Entity.Name));
       raise Entity_Not_Found;
   end Get;
 

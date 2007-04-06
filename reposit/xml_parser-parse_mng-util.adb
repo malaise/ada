@@ -515,10 +515,14 @@ package body Util is
         end if;
         -- Got an entity name: get value if it exists
         Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
-        if not Entity_Mng.Exists (Name, Starter = Param_ref) then
-          Error ("Unknown parameter entity " & Asu_Ts (Name));
+        if not Entity_Mng.Exists (Name, Starter = Param_Ref) then
+          if Starter = Param_Ref then
+            Error ("Unknown entity %" & Asu_Ts (Name));
+          else
+            Error ("Unknown entity " & Asu_Ts (Name));
+          end if;
         end if;
-        Val := Entity_Mng.Get (Name, True);
+        Val := Entity_Mng.Get (Name, Starter = Param_Ref);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -536,6 +540,10 @@ package body Util is
     end loop;
 
     return Result;
+  exception
+    when Entity_Mng.Entity_Not_Found =>
+      Error ("Unknown entity " & Asu_Ts (Name));
+      raise Parse_Error;
   end Expand_Vars;
 
 
@@ -563,7 +571,7 @@ package body Util is
       end if;
     end loop;
 
-    if not Preserve_Spaces then
+    if not In_Dtd and then not Preserve_Spaces then
       -- Replace "{ Lf | Tab | Space }" by a space
       S1 := S2;
       S2 := Asu_Null;
