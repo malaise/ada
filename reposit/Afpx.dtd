@@ -18,14 +18,14 @@
                    Low NMTOKEN #REQUIRED Right NMTOKEN #REQUIRED>
 
 <!ELEMENT Colors EMPTY>
-<!ENTITY Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
-<!ENTITY Colors "&Basic_Colors;|
-                 Dark_Gray|Light_Blue|Light_Green|Orange|Yellow|White">
-<!ENTITY Blink "True|False">
-<!ATTLIST Colors Foreground (&Colors;) #REQUIRED
-                 Blink (&Blink;) #IMPLIED
-                 Background (&Basic_Colors;) #REQUIRED
-                 Selected (&Basic_Colors;) #IMPLIED>
+<!ENTITY % Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
+<!ENTITY % Colors "%Basic_Colors;|
+                   Dark_Gray|Light_Blue|Light_Green|Orange|Yellow|White">
+<!ENTITY % Blink "True|False">
+<!ATTLIST Colors Foreground (%Colors;) #REQUIRED
+                 Blink (%Blink;) #IMPLIED
+                 Background (%Basic_Colors;) #REQUIRED
+                 Selected (%Basic_Colors;) #IMPLIED>
 
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row NMTOKEN #REQUIRED Col NMTOKEN #REQUIRED
