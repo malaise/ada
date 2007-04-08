@@ -2,7 +2,7 @@ package body Afpx_Typ is
 
   -- Check is square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;
-                     Square : in Con_Io.Square) return Boolean is
+                     Square : in Con_Io.Full_Square) return Boolean is
   begin
     return   Square.Row < Field.Height
     and then Square.Col < Field.Width;
@@ -10,7 +10,7 @@ package body Afpx_Typ is
 
   -- Check is square (absolute) is in field
   function In_Field_Absolute (Field  : in Field_Rec;
-                              Square : in Con_Io.Square) return Boolean is
+                              Square : in Con_Io.Full_Square) return Boolean is
   begin
     return   Square.Row >= Field.Upper_Left.Row
     and then Square.Row <= Field.Lower_Right.Row

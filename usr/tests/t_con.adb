@@ -180,6 +180,7 @@ procedure T_Con is
 begin
   for I in T'Range loop
     T(I).Start(I);
+    delay 1.0;
   end loop;
 end T_Con;
 

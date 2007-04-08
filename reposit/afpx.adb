@@ -1,4 +1,4 @@
-with String_Mng;
+with String_Mng, Generic_Con_Io;
 with Afpx_Typ;
 package body Afpx is
 
@@ -16,10 +16,15 @@ package body Afpx is
 
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
+    
+    -- Load the screen size
+    function Load_Size return Con_Io.Full_Square;
 
-    -- Load a descriptor, raise No_Descriptor if invalid no
-    --  failure of version check
+    -- Load a descriptor, raise No_Descriptor if invalid No
     procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range);
+
+    -- Release a descriptor. Check will raise No_Descriptor
+    procedure Release_Dscr;
 
     -- Check if a descriptor has been used (raise No_Descriptor)
     procedure Check;
@@ -41,13 +46,13 @@ package body Afpx is
 
 
   function In_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
-  Square : in Con_Io.Square) return Boolean is
+                     Square : in Con_Io.Full_Square) return Boolean is
   begin
     return Afpx_Typ.In_Field (Af_Dscr.Fields(Field_No), Square);
   end In_Field;
 
   function In_Field_Absolute (Field_No : in Afpx_Typ.Absolute_Field_Range;
-  Square : in Con_Io.Square) return Boolean is
+                              Square : in Con_Io.Full_Square) return Boolean is
   begin
     return Afpx_Typ.In_Field_Absolute (Af_Dscr.Fields(Field_No), Square);
   end In_Field_Absolute;
@@ -139,6 +144,13 @@ package body Afpx is
     return Fn;
   end Next_Mouse_Field;
 
+  -- The real con io with size from Af_Dscr
+  Size : constant Con_Io.Full_Square := Af_Dscr.Load_Size;
+  package Af_Con_Io is new Generic_Con_Io.One_Con_Io (
+                                 Font_No => 1,
+                                 Row_Last => Size.Row,
+                                 Col_Last => Size.Col);
+
   -- All the actions related to screen, keyboard and mouse
   package Af_Ptg is
 
@@ -160,12 +172,12 @@ package body Afpx is
 
     -- Put a whole row of a field in attribute
     procedure Put_Row (Field_No : in Afpx_Typ.Field_Range;
-                       Row      : in Con_Io.Row_Range;
+                       Row      : in Af_Con_Io.Row_Range;
                        State    : in State_List);
 
     -- Put a string somewhere in a field
     procedure Put_Str (Field_No : in Afpx_Typ.Field_Range;
-                       Pos      : in Con_Io.Square;
+                       Pos      : in Af_Con_Io.Square;
                        Str      : in String;
                        State    : in State_List);
 
@@ -174,7 +186,7 @@ package body Afpx is
 
     -- The put_then get
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
-                   Cursor_Col    : in out Con_Io.Col_Range;
+                   Cursor_Col    : in out Af_Con_Io.Col_Range;
                    Result        : out Result_Rec;
                    Redisplay     : in Boolean;
                    Get_Active    : in Boolean;
@@ -216,15 +228,15 @@ package body Afpx is
     procedure Set_Current;
 
     -- Put a row in a state
-    procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List);
+    procedure Put (Row : in Af_Con_Io.Row_Range; State : in Af_Ptg.State_List);
 
     -- Is an Id, a row displayed
     function Id_Displayed (Id : Positive) return Boolean;
-    function Row_Displayed (Row : Con_Io.Row_Range) return Boolean;
+    function Row_Displayed (Row : Af_Con_Io.Row_Range) return Boolean;
 
     -- Row <-> Item Id
-    function To_Row (Id : Positive) return Con_Io.Row_Range;
-    function To_Id  (Row : Con_Io.Row_Range) return Positive;
+    function To_Row (Id : Positive) return Af_Con_Io.Row_Range;
+    function To_Id  (Row : Af_Con_Io.Row_Range) return Positive;
 
     Not_Opened, Not_Displayed : exception;
   end Af_List;
@@ -237,16 +249,25 @@ package body Afpx is
 
   -- Set current descriptor (read descriptor description)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
-  Clear_Screen : in Boolean := True) is
+                            Clear_Screen : in Boolean := True) is
   begin
-    Con_Io.Init;
+    Af_Con_Io.Init;
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
     Af_List.Open;
     Af_Dscr.Current_Dscr.Modified := True;
     if Clear_Screen then
-      Con_Io.Clear (Con_Io.Screen);
+      Af_Con_Io.Clear (Af_Con_Io.Screen);
     end if;
   end Use_Descriptor;
+
+  -- Close the Con_Io window
+  procedure Release_Descriptor is
+  begin
+    Af_Dscr.Check;
+    Af_Con_Io.Destroy;
+    Af_Dscr.Release_Dscr;
+  end Release_Descriptor;
+
 
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
@@ -314,7 +335,7 @@ package body Afpx is
 
   -- Encode a string in a row of a field
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Square;
+                          From_Pos : in Con_Io.Full_Square;
                           Str      : in String) is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
@@ -342,7 +363,7 @@ package body Afpx is
   end Encode_Field;
 
   procedure Encode_Field (Field_No : in Field_Range;
-    From_Pos : in Con_Io.Square;
+    From_Pos : in Con_Io.Full_Square;
     Str      : in Str_Txt) is
   begin
     Encode_Field (Field_No, From_Pos, Text_Handler.Value (Str));
@@ -352,7 +373,7 @@ package body Afpx is
 
   -- Decode the content of a row of a field
   procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Row_Range;
+                          Row      : in Con_Io.Full_Row_Range;
                           Str      : in out Str_Txt) is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
@@ -372,8 +393,8 @@ package body Afpx is
   end Decode_Field;
 
   -- Decode the content of a row of a field
-  function Decode_Field (Field_No : Field_Range; Row : Con_Io.Row_Range)
-  return String is
+  function Decode_Field (Field_No : Field_Range;
+                         Row : Con_Io.Full_Row_Range) return String is
     Str : Str_Txt;
   begin
     Decode_Field (Field_No, Row, Str);
@@ -544,7 +565,7 @@ package body Afpx is
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
       Af_Ptg.Erase_Field (I);
     end loop;
-    Con_Io.Flush;
+    Af_Con_Io.Flush;
   end Erase;
 
   -- Put all the fields of the descriptor on the screen
@@ -569,7 +590,7 @@ package body Afpx is
         Af_Ptg.Erase_Field (I);
       end if;
     end loop;
-    Con_Io.Flush;
+    Af_Con_Io.Flush;
   end Put;
 
   -- Computes next cursor field after current one:
@@ -644,7 +665,7 @@ package body Afpx is
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : String; Significant : Boolean)
-                       return Con_Io.Col_Range is
+                       return Con_Io.Full_Col_Range is
     N : Natural;
   begin
     if not Significant then
@@ -666,7 +687,7 @@ package body Afpx is
   -- Print the fields and the list, then gets
   procedure Put_Then_Get (
               Cursor_Field  : in out Field_Range;
-              Cursor_Col    : in out Con_Io.Col_Range;
+              Cursor_Col    : in out Con_Io.Full_Col_Range;
               Result        : out Result_Rec;
               Redisplay     : in Boolean := False;
               Cursor_Col_Cb : in Cursor_Set_Col_Cb := null) is

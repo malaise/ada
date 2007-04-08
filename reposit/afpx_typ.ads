@@ -2,7 +2,7 @@ with Con_Io, Text_Handler, Directory;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 2.1;
+  Afpx_Version : constant Float := 3.0;
 
   -- Files path
   Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
@@ -22,6 +22,8 @@ package Afpx_Typ is
   type Dscr_Rec is record
     -- To be checked prior to loading
     Version    : Float;
+    -- Screen size
+    Size : Con_Io.Full_Square;
     -- To generate refresh. True in file if used
     Modified   : Boolean;
     -- In the file: index of the dscr for fields and init.
@@ -44,12 +46,12 @@ package Afpx_Typ is
   end record;
 
   -- Width and height of a field
-  subtype Height_Range is Positive range 1 .. Con_Io.Row_Range_Last + 1;
-  subtype Width_Range  is Positive range 1 .. Con_Io.Col_Range_Last + 1;
+  subtype Height_Range is Positive range 1 .. Con_Io.Full_Row_Range_Last + 1;
+  subtype Width_Range  is Positive range 1 .. Con_Io.Full_Col_Range_Last + 1;
 
   -- Characters of the fields
   Max_Init_Len : constant Integer :=
-   (Con_Io.Row_Range_Last + 1) * (Con_Io.Col_Range_Last + 1);
+   (Con_Io.Full_Row_Range_Last + 1) * (Con_Io.Full_Col_Range_Last + 1);
   subtype Char_Str_Range is Positive range 1 .. Max_Init_Len;
 
   -- A field
@@ -63,7 +65,7 @@ package Afpx_Typ is
     -- Field protection for Get / Button fields
     Isprotected : Boolean;
     -- Upper left, lower_right corners of the field
-    Upper_Left, Lower_Right : Con_Io.Square;
+    Upper_Left, Lower_Right : Con_Io.Full_Square;
     -- Width, height
     Height : Height_Range;
     Width  : Width_Range;
@@ -82,11 +84,11 @@ package Afpx_Typ is
 
   -- Check is square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;
-                     Square : in Con_Io.Square) return Boolean;
+                     Square : in Con_Io.Full_Square) return Boolean;
 
   -- Check is square (absolute) is in field
   function In_Field_Absolute (Field  : in Field_Rec;
-                              Square : in Con_Io.Square) return Boolean;
+                              Square : in Con_Io.Full_Square) return Boolean;
 
 end Afpx_Typ;
 

@@ -4,7 +4,7 @@ package body Af_List is
   Status : Status_Rec;
   Opened : Boolean := False;
 
-  List_Window : Con_Io.Window;
+  List_Window : Af_Con_Io.Window;
 
   -- Reset/Compute status
   procedure Reset;
@@ -17,14 +17,14 @@ package body Af_List is
     -- Check there is a descriptor
     Af_Dscr.Check;
     -- Close previous window
-    if Con_Io.Is_Open (List_Window) then
-      Con_Io.Close (List_Window);
+    if Af_Con_Io.Is_Open (List_Window) then
+      Af_Con_Io.Close (List_Window);
     end if;
     -- Check there is a window in the dscr
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-      Con_Io.Open (List_Window,
-                   Af_Dscr.Fields(Lfn).Upper_Left,
-                   Af_Dscr.Fields(Lfn).Lower_Right);
+      Af_Con_Io.Open (List_Window,
+                   Af_Con_Io.Full2Con(Af_Dscr.Fields(Lfn).Upper_Left),
+                   Af_Con_Io.Full2Con(Af_Dscr.Fields(Lfn).Lower_Right));
       Opened := True;
       -- Start at top
       Status.Id_Selected := 0;
@@ -66,14 +66,15 @@ package body Af_List is
       Str (1 .. Item.Len) := Item.Str (1 .. Item.Len);
     end if;
     -- Move
-    Con_Io.Move ( (Row, 0), List_Window);
+    Af_Con_Io.Move ( (Row, 0), List_Window);
     -- Put
-    Con_Io.Put (S => Str,
-                Name => List_Window,
-                Foreground => Foreground,
-                Blink_Stat => Af_Dscr.Fields(0).Colors.Blink_Stat,
-                Background => Background,
-                Move => False);
+    Af_Con_Io.Put (
+     S => Str,
+     Name => List_Window,
+     Foreground => Af_Con_Io.Colors(Foreground),
+     Blink_Stat => Af_Con_Io.Blink_Stats(Af_Dscr.Fields(0).Colors.Blink_Stat),
+     Background => Af_Con_Io.Colors(Background),
+     Move => False);
   end Put;
 
   procedure Clear (Row : in Con_Io.Row_Range) is
@@ -85,17 +86,18 @@ package body Af_List is
     Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), Af_Ptg.Normal,
                        Foreground, Background);
     -- Move
-    Con_Io.Move ( (Row, 0), List_Window);
+    Af_Con_Io.Move ( (Row, 0), List_Window);
     -- Put
-    Con_Io.Put (S => Str,
-                Name => List_Window,
-                Foreground => Foreground,
-                Blink_Stat => Af_Dscr.Fields(Lfn).Colors.Blink_Stat,
-                Background => Background,
-                Move => False);
+    Af_Con_Io.Put (
+     S => Str,
+     Name => List_Window,
+     Foreground => Af_Con_Io.Colors(Foreground),
+     Blink_Stat => Af_Con_Io.Blink_Stats(Af_Dscr.Fields(Lfn).Colors.Blink_Stat),
+     Background => Af_Con_Io.Colors(Background),
+     Move => False);
   end Clear;
 
-  procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List) is
+  procedure Put (Row : in Af_Con_Io.Row_Range; State : in Af_Ptg.State_List) is
     Id : Positive;
     Item : Line_Rec;
   begin
@@ -114,9 +116,11 @@ package body Af_List is
 
   procedure Set_Colors is
   begin
-    Con_Io.Set_Foreground (Af_Dscr.Fields(Lfn).Colors.Foreground,
-                           Af_Dscr.Fields(Lfn).Colors.Blink_Stat, List_Window);
-    Con_Io.Set_Background (Af_Dscr.Fields(Lfn).Colors.Background, List_Window);
+    Af_Con_Io.Set_Foreground (
+     Af_Con_Io.Colors(Af_Dscr.Fields(Lfn).Colors.Foreground),
+     Af_Con_Io.Blink_Stats(Af_Dscr.Fields(Lfn).Colors.Blink_Stat), List_Window);
+    Af_Con_Io.Set_Background (
+     Af_Con_Io.Colors(Af_Dscr.Fields(Lfn).Colors.Background), List_Window);
   end Set_Colors;
 
   -- Reset status
@@ -179,7 +183,7 @@ package body Af_List is
 
     if Line_List_Mng.Is_Empty (Line_List) then
       Set_Colors;
-      Con_Io.Clear (List_Window);
+      Af_Con_Io.Clear (List_Window);
       return;
     end if;
 
@@ -366,7 +370,7 @@ package body Af_List is
     return Id >= Status.Id_Top and then Id <= Status.Id_Bottom;
   end Id_Displayed;
 
-  function Row_Displayed (Row : Con_Io.Row_Range) return Boolean is
+  function Row_Displayed (Row : Af_Con_Io.Row_Range) return Boolean is
   begin
     if not Opened then
       raise Not_Opened;
@@ -375,7 +379,7 @@ package body Af_List is
   end Row_Displayed;
 
   -- Row <-> Item Id
-  function To_Row (Id : Positive) return Con_Io.Row_Range is
+  function To_Row (Id : Positive) return Af_Con_Io.Row_Range is
   begin
     if not Id_Displayed (Id) then
       raise Afpx_Internal_Error;
@@ -383,7 +387,7 @@ package body Af_List is
     return Id - Status.Id_Top;
   end To_Row;
 
-  function To_Id  (Row : Con_Io.Row_Range) return Positive is
+  function To_Id  (Row : Af_Con_Io.Row_Range) return Positive is
   begin
     if not Row_Displayed (Row) then
       raise Afpx_Internal_Error;

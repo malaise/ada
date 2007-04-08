@@ -10,19 +10,27 @@ package Afpx is
   List_Field_No : constant Absolute_Field_Range := 0;
 
   -- The content of one row of one field (encode, decode)
-  subtype Str_Txt is Text_Handler.Text (Con_Io.Col_Range_Last + 1);
+  subtype Str_Txt is Text_Handler.Text (Con_Io.Full_Col_Range_Last + 1);
 
   -- Width and height of a field
-  subtype Height_Range is Positive range 1 .. Con_Io.Row_Range_Last + 1;
-  subtype Width_Range  is Positive range 1 .. Con_Io.Col_Range_Last + 1;
+  subtype Height_Range is Positive range 1 .. Con_Io.Full_Row_Range_Last + 1;
+  subtype Width_Range  is Positive range 1 .. Con_Io.Full_Col_Range_Last + 1;
 
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost
+  -- The Con_Io screen from previous descriptor (if any) is re-used
+  --  (no new window) cleared
   -- By default, the Con_Io screen is cleared
   -- Exceptions : No_Descriptor (Descriptor not found)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True);
+
+  -- Close the Con_Io screen
+  -- Previous descriptor modifications (from encode, set_colors, put_then_get)
+  --  are lost
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  procedure Release_Descriptor;
 
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
@@ -65,19 +73,19 @@ package Afpx is
   --              Invalid_Square (not in field),
   --              String_Too_Long (due to Square.Col)
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Square;
+                          From_Pos : in Con_Io.Full_Square;
                           Str      : in String);
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Square;
+                          From_Pos : in Con_Io.Full_Square;
                           Str      : in Str_Txt);
 
   -- Decode the content of a row of a field
   -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
   function Decode_Field (Field_No : Field_Range;
-                         Row      : Con_Io.Row_Range)
+                         Row      : Con_Io.Full_Row_Range)
                          return String;
   procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Row_Range;
+                          Row      : in Con_Io.Full_Row_Range;
                           Str      : in out Str_Txt);
 
 
@@ -156,7 +164,7 @@ package Afpx is
                               return Absolute_Field_Range;
 
   -- List of items to put in list field in Put_Then_Get
-  subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last+1;
+  subtype Line_Len_Range is Natural range 0 .. Con_Io.Full_Col_Range'Last+1;
   type Line_Rec is record
     Str : String (1 .. Line_Len_Range'Last);
     Len : Line_Len_Range;
@@ -203,14 +211,14 @@ package Afpx is
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : String) return Con_Io.Col_Range;
+                 Str : String) return Con_Io.Full_Col_Range;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : String; Significant : Boolean)
-                       return Con_Io.Col_Range;
+                       return Con_Io.Full_Col_Range;
 
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)
@@ -240,7 +248,7 @@ package Afpx is
   --               String_Too_Long (if an item in list is too long),
   --               In_Put_Then_Get (already in Put_Then_Get).
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
-                          Cursor_Col    : in out Con_Io.Col_Range;
+                          Cursor_Col    : in out Con_Io.Full_Col_Range;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
                           Cursor_Col_Cb : in Cursor_Set_Col_Cb := null);

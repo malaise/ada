@@ -38,7 +38,7 @@ procedure T_Gc is
   -- Clear result fields during input
   function Next_Field_Cb (Cursor_Field : Afpx.Field_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
-                          Str : String) return Con_Io.Col_Range is
+                          Str : String) return Con_Io.Full_Col_Range is
     use type Afpx.Enter_Field_Cause_List;
   begin
     if Need_Clean then

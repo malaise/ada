@@ -23,6 +23,13 @@ package body Af_Dscr is
   -- Descriptor read
   Dscrs : Afpx_Typ.Descriptors_Array;
 
+  -- Load the screen size, raise No_Descriptor if failure of version check
+  function Load_Size return Con_Io.Full_Square is
+  begin
+    -- Even when not used, each dscr has the screen size
+    return Dscrs(1).Size;
+  end Load_Size;
+  
   -- Load a descriptor
   procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range) is
     Dscr_Index : Afpx_Typ.Descriptor_Range;
@@ -53,6 +60,12 @@ package body Af_Dscr is
     Dscr_Set := True;
 
   end Load_Dscr;
+
+  -- Release a descriptor. Check will raise No_Descriptor
+  procedure Release_Dscr is
+  begin
+    Dscr_Set := False;
+  end Release_Dscr;
 
   -- Check if a descriptor i in use
   procedure Check is

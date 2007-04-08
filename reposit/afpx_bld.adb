@@ -120,9 +120,65 @@ procedure Afpx_Bld is
     raise File_Syntax_Error;
   end File_Error;
 
+  -- Check and return size of root
+  Root_Name : constant String := "Afpx_Descriptors";
+  function Load_Size (Root : in Xp.Node_Type) return Con_Io.Full_Square is
+    Size : Con_Io.Full_Square;
+    Width, Height : Boolean := False;
+  begin
+    if Root.Kind /= Xp.Element
+    or else not Match (Xp.Get_Name (Root), Root_Name) then
+      File_Error (Root, "Invalid root, expected " & Root_Name);
+    end if;
+    if Xp.Get_Nb_Attributes (Root) = 0 then
+      -- No attribute : default size
+      return (Con_Io.Full_Def_Row_Last, Con_Io.Full_Def_Col_Last);
+    elsif Xp.Get_Nb_Attributes (Root) /= 2 then
+      File_Error (Root,
+             "Afpx_Descriptors expects no attribute or Height and Width");
+    end if;
+    declare
+      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Root);
+      P : Positive;
+    begin
+      for I in Attrs'Range loop
+        -- Load upper left then lower right
+        if Match (Attrs(I).Name, "Height") then
+          if Height then
+            File_Error (Root, "Duplicated height " & Attrs(I).Name);
+          end if;
+          Height := True;
+          P := Natural'Value(Strof (Attrs(I).Value));
+          Size.Row := Con_Io.Full_Row_Range(P - 1);
+        elsif Match (Attrs(I).Name, "Width") then
+          if Width then
+            File_Error (Root, "Duplicated width " & Attrs(I).Name);
+          end if;
+          Width := True;
+          P := Natural'Value(Strof (Attrs(I).Value));
+          Size.Col := Con_Io.Full_Col_Range(P - 1);
+        else
+          File_Error (Root, "Invalid Size " & Attrs(I).Name);
+        end if;
+      end loop;
+    exception
+      when File_Syntax_Error =>
+        raise;
+      when others =>
+        File_Error (Root, "Invalid size");
+        raise File_Syntax_Error;
+    end;
+    if not (Height and then Width) then
+      File_Error (Root, "Invalid size. Missing some coordinate");
+      raise File_Syntax_Error;
+    end if;
+    return Size;
+  end Load_Size;
+
   -- Check and store upper_left and lower right
   procedure Load_Geometry (Node : in Xp.Node_Type;
-                           Fn : in Afpx_Typ.Absolute_Field_Range) is
+                           Fn : in Afpx_Typ.Absolute_Field_Range;
+                           Screen_Size : in Con_Io.Full_Square) is
     Up, Left, Low, Right : Boolean := False;
   begin
     if Node.Kind /= Xp.Element
@@ -184,11 +240,17 @@ procedure Afpx_Bld is
       File_Error (Node, "Invalid geometry. Upper_left < lower_right");
     end if;
 
-    -- Compute size
+    -- Compute size and check vs screen max
     Fields(Fn).Height :=
      Fields(Fn).Lower_Right.Row - Fields(Fn).Upper_Left.Row + 1;
+    if Fields(Fn).Height - 1 > Screen_Size.Row then
+      File_Error (Node, "Invalid geometry. Field is higher than screen");
+    end if;
     Fields(Fn).Width :=
      Fields(Fn).Lower_Right.Col - Fields(Fn).Upper_Left.Col + 1;
+    if Fields(Fn).Width - 1 > Screen_Size.Col then
+      File_Error (Node, "Invalid geometry. Field is wider than screen");
+    end if;
 
     -- One Row for Get fields
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
@@ -289,7 +351,8 @@ procedure Afpx_Bld is
     end if;
   end Load_Colors;
 
-  procedure Load_List (Node : in Xp.Node_Type) is
+  procedure Load_List (Node : in Xp.Node_Type;
+                       Screen_Size : in Con_Io.Full_Square) is
   begin
     if Node.Kind /= Xp.Element
     or else Xp.Get_Nb_Attributes (Node) /= 0
@@ -300,19 +363,20 @@ procedure Afpx_Bld is
     Fields(0).Kind := Afpx_Typ.Button;
     Fields(0).Activated := True;
     Fields(0).Isprotected := False;
-    Load_Geometry (Xp.Get_Child (Node, 1), 0);
+    Load_Geometry (Xp.Get_Child (Node, 1), 0, Screen_Size);
     Load_Colors (Xp.Get_Child (Node, 2), 0);
     Fields(0).Char_Index := 1;
   end Load_List;
 
   procedure Loc_Load_Field (Node : in Xp.Node_Type;
-                            No : in Afpx_Typ.Field_Range)  is
+                            No : in Afpx_Typ.Field_Range;
+                            Screen_Size : in Con_Io.Full_Square)  is
     Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
     Child : Xp.Node_Type;
     First_Init : Boolean;
-    Prev_Init_Square : Con_Io.Square;
+    Prev_Init_Square : Con_Io.Full_Square;
     -- Location in field of init string
-    Finit_Square : Con_Io.Square;
+    Finit_Square : Con_Io.Full_Square;
     -- Init string
     Finit_String : Asu_Us;
     Finit_Length : Positive;
@@ -360,7 +424,7 @@ procedure Afpx_Bld is
     end if;
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
-    Load_Geometry (Xp.Get_Child (Node, 1), No);
+    Load_Geometry (Xp.Get_Child (Node, 1), No, Screen_Size);
     Load_Colors (Xp.Get_Child (Node, 2), No);
 
     -- Check global number of characters for the field
@@ -499,21 +563,15 @@ procedure Afpx_Bld is
 
   procedure Load_Dscrs (Root : Xp.Element_Type;
                         Check_Only : in Boolean) is
+    Size : Con_Io.Full_Square;
     Dscr_Index : Afpx_Typ.Descriptor_Range;
     Dscr_No    : Afpx_Typ.Descriptor_Range;
     Child, Child_Child : Xp.Node_Type;
 
   begin
-    if not Match (Xp.Get_Name (Root), "Afpx_Descriptors") then
-      File_Error (Root, "Invalid root, expected Afpx_Descriptors");
-    end if;
-    if Xp.Get_Nb_Attributes (Root) /= 0 then
-      File_Error (Root,
-             "Unexpected attributes of Afpx_Descriptors");
-    end if;
-    if Xp.Get_Nb_Children (Root) = 0 then
-      File_Error (Root, "Invalid definition Afpx_Descriptors, expected descriptors");
-    end if;
+    -- Parse size
+    Size := Load_Size (Root);
+
     -- If not check_only, delete then create binary files
     if not Check_Only then
       begin
@@ -547,9 +605,11 @@ procedure Afpx_Bld is
                       Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
     end if;
 
+
     -- Initialize the descriptors array as not used
     for I in Afpx_Typ.Descriptor_Range loop
       Descriptors(I).Version  := Afpx_Typ.Afpx_Version;
+      Descriptors(I).Size  := Size;
       Descriptors(I).Modified := False;
       Descriptors(I).Dscr_Index := Afpx_Typ.Descriptor_Range'First;
       Descriptors(I).Nb_Fields := 0;
@@ -602,7 +662,7 @@ procedure Afpx_Bld is
           File_Error (Child_Child, "Unexpected text as field");
         end if;
         if I = 1 and then Match(Xp.Get_Name (Child_Child), "List") then
-          Load_List (Child_Child);
+          Load_List (Child_Child, Size);
         elsif not Match(Xp.Get_Name (Child_Child), "Field") then
           File_Error (Child_Child, "Unexpected field");
         elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
@@ -610,7 +670,7 @@ procedure Afpx_Bld is
            & Field_Range'Image(Afpx_Typ.Field_Range'Last) & " per descriptor");
         else
           Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
-          Loc_Load_Field (Child_Child, Descriptors(Dscr_No).Nb_Fields);
+          Loc_Load_Field (Child_Child, Descriptors(Dscr_No).Nb_Fields, Size);
         end if;
       end loop;
 

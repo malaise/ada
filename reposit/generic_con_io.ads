@@ -1,15 +1,42 @@
 with X_Mng, Timers;
 package Generic_Con_Io is
+  -- The Font
   subtype Font_No_Range is Natural range 0 .. 3;
+
+  -- Possible screen size
+  Row_Range_First : constant Natural := 0;
+  Row_Range_Last : constant := 255;
+  Col_Range_First : constant Natural := 0;
+  Col_Range_Last : constant := 255;
+  subtype Row_Range is Natural range Row_Range_First .. Row_Range_Last;
+  subtype Col_Range is Natural range Col_Range_First .. Col_Range_Last;
+
+  -- Default screen size
+  Def_Row_Last : constant Row_Range := 24;
+  Def_Col_Last : constant Row_Range := 79;
+
+  -- A position in screen
+  type Full_Square is record
+    Row : Row_Range;
+    Col : Col_Range;
+  end record;
+
+  -- Possible colors and blink status
+  type Colors is (Current, Black, Blue, Green, Cyan, Red, Magenta, Brown,
+      Light_Gray, Dark_Gray, Light_Blue, Light_Green, Orange,
+      Yellow, White);
+  type Blink_Stats is (Current, Blink, Not_Blink);
 
   generic
     Font_No : Font_No_Range;
+    Row_Last : Row_Range := Def_Row_Last;
+    Col_Last : Col_Range := Def_Col_Last;
   package One_Con_Io is
 
     Row_Range_First : constant Natural := 0;
-    Row_Range_Last  : constant Natural := 24;
+    Row_Range_Last  : constant Natural := Row_Last;
     Col_Range_First : constant Natural := 0;
-    Col_Range_Last  : constant Natural := 79;
+    Col_Range_Last  : constant Natural := Col_Last;
 
     -- Text column and row
     subtype Row_Range is Natural range Row_Range_First .. Row_Range_Last;
@@ -21,13 +48,28 @@ package Generic_Con_Io is
       Col : Col_Range;
     end record;
 
+    -- Redefinition of Generic_Con_Io types
+    Full_Row_Range_First : constant := Generic_Con_Io.Row_Range_First;
+    Full_Row_Range_Last  : constant := Generic_Con_Io.Row_Range_Last;
+    Full_Col_Range_First : constant := Generic_Con_Io.Col_Range_First;
+    Full_Col_Range_Last  : constant := Generic_Con_Io.Col_Range_Last;
+    -- Default screen size
+    Full_Def_Row_Last : constant Generic_Con_Io.Row_Range
+                      := Generic_Con_Io.Def_Row_Last;
+    Full_Def_Col_Last : constant Generic_Con_Io.Col_Range
+                      := Generic_Con_Io.Def_Col_Last;
+    subtype Full_Row_Range is Generic_Con_Io.Row_Range;
+    subtype Full_Col_Range is Generic_Con_Io.Col_Range;
+
+    subtype Full_Square is Generic_Con_Io.Full_Square;
+    function Full2Con (Position : Full_Square) return Square;
+    function Con2Full (Position : Square) return Full_Square;
+
     -- Upper left square
     Home : constant Square := (Row => Row_Range'First, Col => Col_Range'First);
 
     -- List of possible colors
-    type Colors is (Current, Black, Blue, Green, Cyan, Red, Magenta, Brown,
-      Light_Gray, Dark_Gray, Light_Blue, Light_Green, Orange,
-      Yellow, White);
+    type Colors is new Generic_Con_Io.Colors;
     subtype Basic_Colors is Colors range Current .. Light_Gray;
 
     -- List of colors for outputs
@@ -36,7 +78,7 @@ package Generic_Con_Io is
       'Last;
 
     -- List of possible blink states of foreground
-    type Blink_Stats is (Current, Blink, Not_Blink);
+    type Blink_Stats is new Generic_Con_Io.Blink_Stats;
     subtype Effective_Blink_Stats is Blink_Stats range Blink .. Not_Blink;
 
     -- List of possible Xor_Mode for graphics
@@ -134,7 +176,7 @@ package Generic_Con_Io is
     -- screen cannot be closed
     procedure Close (Name : in out Window);
 
-    -- Move cursor for use with put or get. Position is relativ to window.
+    -- Move cursor for use with put or get. Position is relative to window.
     procedure Move (Position : in Square := Home;
                     Name     : in Window := Screen);
     procedure Move (Row  : in Row_Range;
@@ -147,9 +189,9 @@ package Generic_Con_Io is
 
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.
-    -- Cr is the only special Ascii character which is interpreted.
+    -- Lf is the only special Ascii character which is interpreted.
     -- If not Move, the cursor position is not updated
-    --  (Cr would be ignored then)
+    --  (Lf would be ignored then)
     procedure Put (C          : in Character;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
@@ -159,7 +201,7 @@ package Generic_Con_Io is
 
     -- Idem with a string
     -- If not Move, the cursor position is not updated
-    --  (last Cr would be ignored then)
+    --  (last Lf would be ignored then)
     procedure Put (S          : in String;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
@@ -167,7 +209,7 @@ package Generic_Con_Io is
                    Background : in Basic_Colors := Current;
                    Move       : in Boolean := True);
 
-    -- Idem but appends a Cr
+    -- Idem but appends a Lf
     procedure Put_Line (S          : in String;
                         Name       : in Window := Screen;
                         Foreground : in Colors := Current;
@@ -182,7 +224,7 @@ package Generic_Con_Io is
                        Blink_Stat : in Blink_Stats := Current;
                        Background : in Basic_Colors := Current);
 
-    -- Puts Cr
+    -- Puts Lf
     procedure New_Line (Name   : in Window := Screen;
                         Number : in Positive := 1);
 
@@ -193,7 +235,7 @@ package Generic_Con_Io is
     -- Gets first character (echo or not)
     -- No echo for Ret,      Esc, Break, Fd_Event, Timer_Event, Signal_Event
     --  Wakeup_Event and Refresh where
-    --           Latin_1.Cr, Esc, Eot,   Stx,      Syn,         Si
+    --           Latin_1.Lf, Esc, Eot,   Stx,      Syn,         Si
     --  So           and Nul are returned respectively
 
     -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
@@ -221,7 +263,7 @@ package Generic_Con_Io is
     -- The get ends either:
     --  if an Up/Down arrow, (Ctrl) Page Up/Down is pressed,
     --  if the cursor leaves the field (Left/Right arrow or character input),
-    --  if Tab, Ctrl Tab, Return(Cr), Escape is pressed
+    --  if Tab, Ctrl Tab, Return(Lf), Escape is pressed
     --  on CtrlC/CtrlBreak
     --  on mouse click, release (or motion if enabled)
     --  on time_out expiration

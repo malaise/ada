@@ -167,7 +167,7 @@ begin
   end loop;
 
   Timers.Delete (Timer_Per);
-  Con_Io.Reset_Term;
+  Afpx.Release_Descriptor;
 
 end T_Afpx;
 

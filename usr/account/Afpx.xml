@@ -1,7 +1,7 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
 <!-- Main menu -->
-<Afpx_Descriptors>
+<Afpx_Descriptors Height="45" Width="80">
   <Descriptor Num="1">
     <List>
       <Geometry Up="2" Left="1" Low="18" Right="71"/>

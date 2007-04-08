@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Con_Io, Perpet;
+with Generic_Con_Io, Con_Io, Perpet;
 separate (Mng)
 package body Edition is
 
@@ -474,7 +474,7 @@ package body Edition is
   -- Cursor is set after the last significant (non space) character
   function Set_Cursor (Field : Afpx.Field_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
-                       Str   : String) return Con_Io.Col_Range is
+                       Str   : String) return Con_Io.Full_Col_Range is
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
     if Field = 36 then

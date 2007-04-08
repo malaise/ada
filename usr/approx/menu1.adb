@@ -44,7 +44,7 @@ package body Menu1 is
     Screen.Put_Title(Screen.Exit_Approx);
     if Dialog.Confirm_Lost then
       -- The end
-      Con_Io.Destroy;
+      Afpx.Release_Descriptor;
       return True;
     end if;
     return False;

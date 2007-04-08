@@ -3,6 +3,8 @@
 <!-- Syntax of the descriptor file -->
 <!-- ============================= -->
 <!ELEMENT Afpx_Descriptors (Descriptor*)>
+<!ATTLIST Afpx_Descriptors Width NMTOKEN #IMPLIED
+                           Height NMTOKEN #IMPLIED>
 
 <!ELEMENT Descriptor (List?,Field*)>
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED>

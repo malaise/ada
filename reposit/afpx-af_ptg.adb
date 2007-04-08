@@ -17,7 +17,7 @@ package body Af_Ptg is
     end case;
   end record;
 
-  Last_Pos : Con_Io.Square;
+  Last_Pos : Af_Con_Io.Full_Square;
 
   Last_Selected_Id : Natural;
   Last_Selection_Time : Ada.Calendar.Time;
@@ -59,13 +59,13 @@ package body Af_Ptg is
     -- Put spaces in each row
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
-      Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
-      Con_Io.Put (
+      Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
+      Af_Con_Io.Put (
         S => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
-        Name       => Con_Io.Screen,
-        Foreground => Foreground,
-        Blink_Stat => Field.Colors.Blink_Stat,
-        Background => Background,
+        Name       => Af_Con_Io.Screen,
+        Foreground => Af_Con_Io.Colors(Foreground),
+        Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
+        Background => Af_Con_Io.Colors(Background),
         Move       => False);
       -- Update Char_Index to first char of next row (except after last row)
       if I /= Field.Height then
@@ -76,7 +76,7 @@ package body Af_Ptg is
 
   -- Put a whole row of a field in attribute
   procedure Put_Row (Field_No : in Afpx_Typ.Field_Range;
-                     Row      : in Con_Io.Row_Range;
+                     Row      : in Af_Con_Io.Row_Range;
                      State    : in State_List) is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
     Char_Index : Afpx_Typ.Char_Str_Range;
@@ -93,19 +93,19 @@ package body Af_Ptg is
     -- Set index to start of row's data
     Char_Index := Field.Char_Index + Row * Field.Width;
     -- Go to row, left of field
-    Con_Io.Move (Field.Upper_Left.Row + Row, Field.Upper_Left.Col);
-    Con_Io.Put (
+    Af_Con_Io.Move (Field.Upper_Left.Row + Row, Field.Upper_Left.Col);
+    Af_Con_Io.Put (
       S => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
-      Name       => Con_Io.Screen,
-      Foreground => Foreground,
-      Blink_Stat => Field.Colors.Blink_Stat,
-      Background => Background,
+      Name       => Af_Con_Io.Screen,
+      Foreground => Af_Con_Io.Colors(Foreground),
+      Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
+      Background => Af_Con_Io.Colors(Background),
       Move       => False);
   end Put_Row;
 
   -- Put a string somwhere in a field
   procedure Put_Str (Field_No : in Afpx_Typ.Field_Range;
-                     Pos      : in Con_Io.Square;
+                     Pos      : in Af_Con_Io.Square;
                      Str      : in String;
                      State    : in State_List) is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
@@ -124,8 +124,8 @@ package body Af_Ptg is
     -- Set index to start of row's data
     Char_Index := Field.Char_Index + Pos.Row * Field.Width + Pos.Col;
     -- Go to row, left of field
-    Con_Io.Move (Field.Upper_Left.Row + Pos.Row,
-                 Field.Upper_Left.Col + Pos.Col);
+    Af_Con_Io.Move (Field.Upper_Left.Row + Pos.Row,
+                    Field.Upper_Left.Col + Pos.Col);
     -- Adjust str length to truncate it if is too long
     if Afpx_Typ.In_Field (Field, (Pos.Row, Pos.Col + Str'Length - 1)) then
       Len := Str'Length;
@@ -133,12 +133,12 @@ package body Af_Ptg is
       Len := Field.Width - Pos.Col;
     end if;
 
-    Con_Io.Put (
+    Af_Con_Io.Put (
       S          => Str (Str'First .. Str'First + Len - 1),
-      Name       => Con_Io.Screen,
-      Foreground => Foreground,
-      Blink_Stat => Field.Colors.Blink_Stat,
-      Background => Background,
+      Name       => Af_Con_Io.Screen,
+      Foreground => Af_Con_Io.Colors(Foreground),
+      Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
+      Background => Af_Con_Io.Colors(Background),
       Move       => False);
   end Put_Str;
 
@@ -150,37 +150,37 @@ package body Af_Ptg is
     -- Put spaces in each row
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
-      Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
-      Con_Io.Put (S          => Spaces,
-                  Name       => Con_Io.Screen,
-                  Foreground => Con_Io.Get_Background(Con_Io.Screen),
-                  Blink_Stat => Con_Io.Not_Blink,
-                  Background => Con_Io.Get_Background(Con_Io.Screen),
-                  Move       => False);
+      Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
+      Af_Con_Io.Put (S          => Spaces,
+                     Name       => Af_Con_Io.Screen,
+                     Foreground => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
+                     Blink_Stat => Af_Con_Io.Not_Blink,
+                     Background => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
+                     Move       => False);
     end loop;
   end Erase_Field;
 
   function Valid_Click (List_Present : in Boolean) return Boolean is
-    Mouse_Status : Con_Io.Mouse_Event_Rec;
-    Click_Pos : Con_Io.Square;
+    Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
+    Click_Pos : Af_Con_Io.Full_Square;
     Valid : Boolean;
-    use Con_Io;
+    use Af_Con_Io;
   begin
     -- Check if mouse button is clicked
-    Con_Io.Get_Mouse_Event (Mouse_Status);
+    Af_Con_Io.Get_Mouse_Event (Mouse_Status);
     Click_Pos := (Mouse_Status.Row, Mouse_Status.Col);
-    Valid := Mouse_Status.Button = Con_Io.Left
-             and then Mouse_Status.Status = Con_Io.Pressed;
+    Valid := Mouse_Status.Button = Af_Con_Io.Left
+             and then Mouse_Status.Status = Af_Con_Io.Pressed;
     if Valid then
       Last_Pos := Click_Pos;
     else
       -- Handle wheele here: Click 4/5 in list
       if List_Present
       and then In_Field_Absolute(Lfn, Click_Pos)
-      and then Mouse_Status.Status = Con_Io.Pressed then
-        if Mouse_Status.Button = Con_Io.Up then
+      and then Mouse_Status.Status = Af_Con_Io.Pressed then
+        if Mouse_Status.Button = Af_Con_Io.Up then
           Af_List.Update (Up);
-        elsif Mouse_Status.Button = Con_Io.Down then
+        elsif Mouse_Status.Button = Af_Con_Io.Down then
           Af_List.Update (Down);
         end if;
       end if;
@@ -188,27 +188,27 @@ package body Af_Ptg is
     return Valid;
   end Valid_Click;
 
-  function Last_Click return Con_Io.Square is
+  function Last_Click return Af_Con_Io.Full_Square is
   begin
     return Last_Pos;
   end Last_Click;
 
-  function Wait_Release return Con_Io.Square is
+  function Wait_Release return Af_Con_Io.Full_Square is
     Str : String (1 .. 0);
     Last : Natural;
-    Stat : Con_Io.Curs_Mvt;
+    Stat : Af_Con_Io.Curs_Mvt;
     Pos : Positive;
     Ins : Boolean;
-    Mouse_Status : Con_Io.Mouse_Event_Rec;
-    use Con_Io;
+    Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
+    use Af_Con_Io;
   begin
     -- Wait until button released
     loop
-      Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
-      if Stat = Con_Io.Mouse_Button then
-        Con_Io.Get_Mouse_Event (Mouse_Status);
-        exit when Mouse_Status.Button = Con_Io.Left
-             and then Mouse_Status.Status = Con_Io.Released;
+      Af_Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
+      if Stat = Af_Con_Io.Mouse_Button then
+        Af_Con_Io.Get_Mouse_Event (Mouse_Status);
+        exit when Mouse_Status.Button = Af_Con_Io.Left
+             and then Mouse_Status.Status = Af_Con_Io.Released;
       end if;
     end loop;
     -- Get pos when last released
@@ -224,12 +224,12 @@ package body Af_Ptg is
   --  new color)
   procedure Handle_Click (List_Present : in Boolean;
                           Result : out Mouse_Action_Rec) is
-    Cursor_Pos : constant Con_Io.Square := Con_Io.Position;
+    Cursor_Pos : constant Af_Con_Io.Square := Af_Con_Io.Position;
     Valid_Field : Boolean;
-    Click_Pos : Con_Io.Square;
+    Click_Pos : Af_Con_Io.Full_Square;
     Click_Field : Afpx_Typ.Absolute_Field_Range;
-    Release_Pos : Con_Io.Square;
-    Click_Row_List : Con_Io.Row_Range;
+    Release_Pos : Af_Con_Io.Full_Square;
+    Click_Row_List : Af_Con_Io.Full_Row_Range;
     Click_On_Selected : Boolean;
     Field : Afpx_Typ.Field_Rec;
     List_Status : Af_List.Status_Rec;
@@ -302,7 +302,7 @@ package body Af_Ptg is
 
     -- Done if click not valid
     if not Valid_Field then
-      Con_Io.Move (Cursor_Pos);
+      Af_Con_Io.Move (Cursor_Pos);
       return;
     end if;
     Field := Af_Dscr.Fields(Click_Field);
@@ -367,7 +367,7 @@ package body Af_Ptg is
     end if;
 
     -- Skip any keyboard entry during handle click
-    Con_Io.Move (Cursor_Pos);
+    Af_Con_Io.Move (Cursor_Pos);
   end Handle_Click;
 
   -- Call the user callback to get cursor col
@@ -376,8 +376,8 @@ package body Af_Ptg is
                  Field : Afpx_Typ.Field_Rec;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Cursor_Col_Cb : Cursor_Set_Col_Cb)
-           return Con_Io.Col_Range is
-    Result : Con_Io.Col_Range;
+           return Af_Con_Io.Full_Col_Range is
+    Result : Af_Con_Io.Col_Range;
   begin
     -- Call Cb if set
     if Cursor_Col_Cb = null then
@@ -410,7 +410,7 @@ package body Af_Ptg is
 
   -- Print the fields and the list, then gets
   procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
-                 Cursor_Col    : in out Con_Io.Col_Range;
+                 Cursor_Col    : in out Af_Con_Io.Col_Range;
                  Result        : out Result_Rec;
                  Redisplay     : in Boolean;
                  Get_Active    : in Boolean;
@@ -419,7 +419,7 @@ package body Af_Ptg is
     New_Field : Boolean;
     Field : Afpx_Typ.Field_Rec;
     Last : Natural;
-    Stat : Con_Io.Curs_Mvt;
+    Stat : Af_Con_Io.Curs_Mvt;
     Pos : Positive;
     Insert : Boolean;
     Foreground : Con_Io.Effective_Colors;
@@ -428,7 +428,7 @@ package body Af_Ptg is
     Need_Redisplay : Boolean;
 
     use Afpx_Typ;
-    use type Con_Io.Curs_Mvt;
+    use type Af_Con_Io.Curs_Mvt;
 
   begin
     -- Reset last selection for double click
@@ -436,7 +436,7 @@ package body Af_Ptg is
 
     -- Erase potential garbage if redisplay
     if Redisplay then
-      Con_Io.Clear (Con_Io.Screen);
+      Af_Con_Io.Clear (Af_Con_Io.Screen);
     end if;
 
     -- List present : defined, activated and not empty
@@ -502,68 +502,68 @@ package body Af_Ptg is
       if Get_Active then
         Pos := Cursor_Col + 1;
         -- Move at beginning of field and put_then_get
-        Con_Io.Move (Field.Upper_Left.Row, Field.Upper_Left.Col);
-        Con_Io.Put_Then_Get (
+        Af_Con_Io.Move (Field.Upper_Left.Row, Field.Upper_Left.Col);
+        Af_Con_Io.Put_Then_Get (
          Str    => Af_Dscr.Chars
                     (Field.Char_Index .. Field.Char_Index + Field.Width - 1),
          Last   => Last,
          Stat   => Stat,
          Pos    => Pos,
          Insert => Insert,
-         Name   => Con_Io.Screen,
-         Foreground => Foreground,
-         Blink_Stat => Field.Colors.Blink_Stat,
-         Background => Background);
+         Name   => Af_Con_Io.Screen,
+         Foreground => Af_Con_Io.Colors(Foreground),
+         Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
+         Background => Af_Con_Io.Colors(Background));
         Cursor_Col := Pos - 1;
       else
         -- Blind get
-        Con_Io.Move (Con_Io.Row_Range'Last, Con_Io.Col_Range'Last);
-        Con_Io.Put_Then_Get (
+        Af_Con_Io.Move (Af_Con_Io.Row_Range'Last, Af_Con_Io.Col_Range'Last);
+        Af_Con_Io.Put_Then_Get (
          Str    => Af_Dscr.Chars (1 .. 0),
          Last   => Last,
          Stat   => Stat,
          Pos    => Pos,
          Insert => Insert,
-         Name   => Con_Io.Screen,
-         Foreground => Con_Io.Get_Background(Con_Io.Screen),
-         Blink_Stat => Con_Io.Not_Blink,
-         Background => Con_Io.Get_Background(Con_Io.Screen));
+         Name   => Af_Con_Io.Screen,
+         Foreground => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
+         Blink_Stat => Af_Con_Io.Not_Blink,
+         Background => Af_Con_Io.Get_Background(Af_Con_Io.Screen));
        end if;
 
       Done := False;
       -- Now the big case
       case Stat is
-        when Con_Io.Up =>
+        when Af_Con_Io.Up =>
           -- List scroll down
           if List_Present then
             Af_List.Update (Up);
           end if;
-        when Con_Io.Down =>
+        when Af_Con_Io.Down =>
           -- List scroll up
           if List_Present then
             Af_List.Update (Down);
           end if;
-        when Con_Io.Pgup | Con_Io.Ctrl_Up =>
+        when Af_Con_Io.Pgup | Af_Con_Io.Ctrl_Up =>
           -- List page up
           if List_Present then
             Af_List.Update (Page_Up);
           end if;
-        when Con_Io.Pgdown | Con_Io.Ctrl_Down =>
+        when Af_Con_Io.Pgdown | Af_Con_Io.Ctrl_Down =>
           -- List page down
           if List_Present then
             Af_List.Update (Page_Down);
           end if;
-        when Con_Io.Ctrl_Pgup =>
+        when Af_Con_Io.Ctrl_Pgup =>
           -- List page up
           if List_Present then
             Af_List.Update (Top);
           end if;
-        when Con_Io.Ctrl_Pgdown =>
+        when Af_Con_Io.Ctrl_Pgdown =>
           -- List page down
           if List_Present then
             Af_List.Update (Bottom);
           end if;
-        when Con_Io.Right | Con_Io.Full =>
+        when Af_Con_Io.Right | Af_Con_Io.Full =>
           if Get_Active then
             -- End (right) of previous field
             -- Restore normal color of previous field
@@ -574,7 +574,7 @@ package body Af_Ptg is
                                           Right_Full, Cursor_Col_Cb);
             New_Field := True;
           end if;
-        when Con_Io.Tab | Con_Io.Ctrl_Right=>
+        when Af_Con_Io.Tab | Af_Con_Io.Ctrl_Right=>
           if Get_Active then
             -- Tab in previous field
             -- Restore normal color of previous field
@@ -585,7 +585,7 @@ package body Af_Ptg is
                                           Tab, Cursor_Col_Cb);
             New_Field := True;
           end if;
-        when Con_Io.Left =>
+        when Af_Con_Io.Left =>
           if Get_Active then
             -- Left on previous field
             -- Restore normal color of previous field
@@ -596,7 +596,7 @@ package body Af_Ptg is
                                           Left, Cursor_Col_Cb);
             New_Field := True;
           end if;
-        when Con_Io.Stab | Con_Io.Ctrl_Left =>
+        when Af_Con_Io.Stab | Af_Con_Io.Ctrl_Left =>
           if Get_Active then
             -- Beginning of prev get field
             -- Restore normal color of previous field
@@ -607,7 +607,7 @@ package body Af_Ptg is
                                           Stab, Cursor_Col_Cb);
             New_Field := True;
           end if;
-        when Con_Io.Ret =>
+        when Af_Con_Io.Ret =>
           -- End put_then_get on keyboard ret
           if List_Present then
             Af_List.Set_Current;
@@ -616,7 +616,7 @@ package body Af_Ptg is
                      Event        => Keyboard,
                      Keyboard_Key => Return_Key);
           Done := True;
-        when Con_Io.Esc =>
+        when Af_Con_Io.Esc =>
           -- End put_then_get on keyboard esc
           if List_Present then
             Af_List.Set_Current;
@@ -625,7 +625,7 @@ package body Af_Ptg is
                      Event        => Keyboard,
                      Keyboard_Key => Escape_Key);
           Done := True;
-        when Con_Io.Mouse_Button =>
+        when Af_Con_Io.Mouse_Button =>
           declare
             Click_Result : Mouse_Action_Rec;
           begin
@@ -655,7 +655,7 @@ package body Af_Ptg is
                 Done := True;
             end case;
           end;
-        when Con_Io.Break =>
+        when Af_Con_Io.Break =>
           if List_Present then
             Af_List.Set_Current;
           end if;
@@ -663,42 +663,42 @@ package body Af_Ptg is
                      Event        => Keyboard,
                      Keyboard_Key => Break_Key);
           Done := True;
-        when Con_Io.Refresh =>
+        when Af_Con_Io.Refresh =>
           if List_Present then
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Refresh);
           Done := True;
-        when Con_Io.Fd_Event =>
+        when Af_Con_Io.Fd_Event =>
           if List_Present then
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Fd_Event);
           Done := True;
-        when Con_Io.Timer_Event =>
+        when Af_Con_Io.Timer_Event =>
           if List_Present then
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Timer_Event);
           Done := True;
-        when Con_Io.Signal_Event =>
+        when Af_Con_Io.Signal_Event =>
           if List_Present then
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Signal_Event);
           Done := True;
-        when Con_Io.Wakeup_Event =>
+        when Af_Con_Io.Wakeup_Event =>
           if List_Present then
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Wakeup_Event);
           Done := True;
-        when Con_Io.Timeout =>
+        when Af_Con_Io.Timeout =>
           null;
       end case;
 

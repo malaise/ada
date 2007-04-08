@@ -428,7 +428,7 @@ package body Util is
   function Expand_Vars (Text : in Asu_Us; In_Dtd : in Boolean) return Asu_Us is
     Result : Asu_Us;
     -- Number of ";" to skip (because within "&var;")
-    Nb2skip : Natural;
+    Nb2Skip : Natural;
     -- Indexes of start and stop of variable name
     Istart, Istop : Natural;
     -- Kind of starter
@@ -473,18 +473,18 @@ package body Util is
       if Starter /= None then
         -- Locate stop of var name ';',
         -- skipping intermediate &var; sequences
-        Nb2skip := 0;
+        Nb2Skip := 0;
         Istop := 0;
         for I in Istart + 1 .. Last loop
           Char := Asu.Element (Result, I);
           if Char = ';' then
-            if Nb2skip = 0 then
+            if Nb2Skip = 0 then
               -- Current ';' matches '%'
               Istop := I;
               exit;
             else
               -- Current ';' matches a '&'
-              Nb2skip := Nb2skip - 1;
+              Nb2Skip := Nb2Skip - 1;
             end if;
           elsif Char = '&' then
             if I /= Last and then Asu.Element (Result, I + 1) = '#' then
@@ -494,7 +494,7 @@ package body Util is
               exit;
             else
               -- A &var; to skip
-              Nb2skip := Nb2skip + 1;
+              Nb2Skip := Nb2Skip + 1;
             end if;
           elsif Char = '%' then
             -- A %var; within a %var;
@@ -528,7 +528,7 @@ package body Util is
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
         -- Istart is now the first replaced character. OK.
         -- Update Last
-        if Starter = Param_ref then
+        if Starter = Param_Ref then
           -- "%Name;" has been replaced by "Val"
           Last := Last - Asu.Length (Name) - 2 + Asu.Length (Val);
         else

@@ -181,7 +181,7 @@ exception
                     & "[ -e | -f ] [ <account_file> ]");
     Ada.Text_Io.Put_Line ("  (default is euros)");
   when Quit_Program =>
-    Con_Io.Destroy;
+    Afpx.Release_Descriptor;
   when Ooops : others =>
     begin
       Screen.Reset;
