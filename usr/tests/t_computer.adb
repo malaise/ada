@@ -18,13 +18,14 @@ begin
       if Loc = 0 or else Loc = 1 or else Loc = Str'Last then
         raise Constraint_Error;
       end if;
-      N := Integer'Value (Str (Loc + 1 .. Str'Last));
-      Computer.Set (Str (1 .. Loc - 1), N);
+      Computer.Set (Str (1 .. Loc - 1), Str (Loc + 1 .. Str'Last));
     end;
   end loop;
 
   -- Last arg is the expression
-  N := Computer.Eval (Argument.Get_Parameter(Argument.Get_Nbre_Arg));
+  Ada.Text_Io.Put_Line (Computer.Eval (
+         Argument.Get_Parameter(Argument.Get_Nbre_Arg)));
+  N := Computer.Compute (Argument.Get_Parameter(Argument.Get_Nbre_Arg));
   Ada.Text_Io.Put_Line (N'Img);
 exception
   when others =>
