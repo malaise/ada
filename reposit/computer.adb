@@ -114,11 +114,13 @@ package body Computer is
   function Get (Name : String) return String is
     Res : Var_Rec;
   begin
+    Trace ("Getting >" & Name & "<");
     if Name = "" then
       raise Invalid_Variable;
     end if;
     Res.Name := Asu_Tus (Name);
     Var_Mng.Read (Var_List, Res, Res);
+    Trace ("Got >" & Asu_Ts (Res.Value) & "<");
     return Asu_Ts (Res.Value);
   exception
     when Var_Mng.Not_In_List =>
@@ -148,13 +150,6 @@ package body Computer is
     while String_Mng.Locate (Asu_Ts (Exp), 1, "  ") /= 0 loop
       Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "  ", " "));
     end loop;
-    -- Remove heading and trailing spaces
-    if Asu.Element (Exp, 1) = ' ' then
-      Exp := Asu_Tus (String_Mng.Cut (Asu_Ts (Exp), 1, True));
-    end if;
-    if Asu.Element (Exp, Asu.Length (Exp)) = ' ' then
-      Exp := Asu_Tus (String_Mng.Cut (Asu_Ts (Exp), 1, False));
-    end if;
     -- Variables must not follow one each other (${var}${var})
     if String_Mng.Locate (Asu_Ts (Exp), 1, "}$") /= 0 then
       raise Invalid_Expression;
@@ -254,9 +249,9 @@ package body Computer is
   end Unget_Member;
 
   -- One operation
-  function Compute (I1 : Integer;
-                    Op : Oper_Kind_List;
-                    I2 : Integer) return Integer is
+  function Compute_One (I1 : Integer;
+                        Op : Oper_Kind_List;
+                        I2 : Integer) return Integer is
   begin
     case Op is
       when Add  => return I1 + I2;
@@ -264,18 +259,26 @@ package body Computer is
       when Mult => return I1 * I2;
       when Div  => return I1 / I2;
     end case;
-  end Compute;
-  -- Eval a level of expression
-  function Eval (Level : in Natural) return Integer is
+  end Compute_One;
+
+  -- Eval an expression
+  -- Level is the level of parentheses (0 at startup)
+  -- Higher_Prio is set when low prio followed by high prio
+  --  (e.g. X + Y * Z) require new evaluation.
+  --  The way to return then differs
+  function Eval (Level : Natural;
+                 Higher_Prio : in Boolean) return Integer is
     M1, M2, M3, M4 : Member_Rec;
     Tmp, Result : Integer;
   begin
     M1 := Get_Member;
     -- First member must be an int or a (
     if M1.Kind = Open then
-      Result := Eval (Level + 1);
+      Trace ("Level++");
+      Result := Eval (Level + 1, False);
     elsif M1.Kind = Val then
       Result := M1.Value;
+      Trace ("Value " & Result'Img);
     else
       Trace ("Invalid M1 " & M1.Kind'Img);
       raise Invalid_Expression;
@@ -287,6 +290,7 @@ package body Computer is
       if M2.Kind = None then
         if Level = 0 then
           -- Done
+          Trace ("The end");
           return Result;
         else
           -- Unexpected end
@@ -299,22 +303,28 @@ package body Computer is
           raise Invalid_Expression;
         else
           -- (X), return X
+          Trace ("Level--");
           return Result;
         end if;
       elsif M2.Kind not in Oper_Kind_List then
         Trace ("Invalid M2 " & M2.Kind'Img);
         raise Invalid_Expression;
+      else
+        Trace ("Oper " & M2.Kind'Img);
       end if;
+
       -- We have a value and an oper
       -- Now we must have either a value, or an opening parenthese
       M3 := Get_Member;
       if M3.Kind = Open then
-        Tmp := Eval (Level + 1);
+        Trace ("Level++");
+        Tmp := Eval (Level + 1, False);
       elsif M3.Kind /= Val then
         Trace ("Invalid M2 " & M2.Kind'Img);
         raise Invalid_Expression;
       else
         Tmp := M3.Value;
+        Trace ("Value " & Tmp'Img);
       end if;
 
       -- Now we have a value, we need to see if it is followed
@@ -324,36 +334,55 @@ package body Computer is
       if M4.Kind in Oper_Kind_List then
         if M4.Kind in High_Kind_List
         and then M2.Kind in Low_Kind_List then
-          -- X + Y *, level increases, keep Y * for next level
-          -- Unget this ope and value
+          -- X + Y *, level increases due to prio,
+          -- keep Y * for next level, unget this ope and value
           Unget_Member;
           Unget_Member;
-          Tmp := Eval (Level);
-          return Compute (Result, M2.Kind, Tmp);
+          Trace ("Higher prio");
+          Tmp := Eval (Level, True);
+          Result := Compute_One (Result, M2.Kind, Tmp);
         elsif M4.Kind in Low_Kind_List
         and then M2.Kind in High_Kind_List then
-          -- X * Y +, compute X * Y, now we are at low level
+          -- X * Y +, compute X * Y,
           Unget_Member;
-          Result := Compute (Result, M2.Kind, Tmp);
-          M2 := M4;
+          Result := Compute_One (Result, M2.Kind, Tmp);
+          -- Level decreases if current is due to higher prio
+          -- e.g. T + X * Y +
+          if Higher_Prio then
+            Trace ("End of higher prio");
+            return Result;
+          else
+            -- Current level was at high prio and becomes
+            -- at low prio
+            Trace ("Lower prio");
+            M2 := M4;
+          end if;
         else
           -- X * Y /, same level, keep /
           Unget_Member;
-          Result := Compute (Result, M2.Kind, Tmp);
+          Trace ("Same prio");
+          Result := Compute_One (Result, M2.Kind, Tmp);
         end if;
       elsif M4.Kind = Close then
         if Level = 0 then
           Trace ("Unmatched ')'");
           raise Invalid_Expression;
         else
-          -- X * Y ), level decreases, consume all
-          return Compute (Result, M2.Kind, Tmp);
+          -- X * Y ), level decreases
+          if Higher_Prio then
+            -- T + X * Y ), let calling level process the Close
+            Trace ("End of higher prio");
+            Unget_Member;
+          end if;
+          Trace ("Level--");
+          return Compute_One (Result, M2.Kind, Tmp);
         end if;
       elsif M4.Kind = None then
         -- End of expression
         if Level = 0 then
           -- Level decreases
-          return Compute (Result, M2.Kind, Tmp);
+          Trace ("The end");
+          return Compute_One (Result, M2.Kind, Tmp);
         else
           -- Unexpected end
           Trace ("Unexpected end");
@@ -362,6 +391,7 @@ package body Computer is
       end if;
     end loop;
   end Eval;
+
   -- Computation of expression
   function Eval (Expression : String) return Integer is
   begin
@@ -369,7 +399,7 @@ package body Computer is
     -- Parse expression
     Parse (Fix (Expression));
     -- Eval
-    return Eval (0);
+    return Eval (0, False);
   end Eval;
 
 end Computer;
