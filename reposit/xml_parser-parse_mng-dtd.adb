@@ -388,7 +388,7 @@ package body Dtd is
       and then (Def_Char = 'D' or else Def_Char = 'F') then
         -- Enum and (default or fixed), check default is in enum
         --  and set the default in first pos
-        if (String_Mng.Locate (Asu_Ts (Enum), 1,
+        if (String_Mng.Locate (Asu_Ts (Enum),
               Info_Sep & Asu_Ts (Def_Val) & Info_Sep) = 0) then
           Util.Error ("Default or fixed value "
                     & Asu_Ts (Def_Val) & " not in Enum");
@@ -613,7 +613,7 @@ package body Dtd is
           begin
             exit when Child = "";
             -- Child must appear in dtd
-            if String_Mng.Locate (Asu_Ts (Info.List), 1,
+            if String_Mng.Locate (Asu_Ts (Info.List),
                                   Info_Sep & Child & Info_Sep) = 0 then
               Util.Error ("According to dtd, element " & Asu_Ts (Name)
                         & " does not allow child " & Child,
@@ -722,7 +722,7 @@ package body Dtd is
       begin
         exit when Attr = "";
         -- Attribute must appear in list of attributes from dtd
-        if String_Mng.Locate (Asu_Ts (Att_Names), 1,
+        if String_Mng.Locate (Asu_Ts (Att_Names),
                               Info_Sep & Attr & Info_Sep) = 0 then
           Util.Error ("According to dtd, element " & Asu_Ts (Name)
                     & " cannot have attribute " & Attr,
@@ -753,7 +753,7 @@ package body Dtd is
           Info_Mng.Read (Info_List, Attinfo, Attinfo);
         end if;
         -- Does this attribute appear in xml
-        Att_Set := String_Mng.Locate (Asu_Ts (Attributes), 1,
+        Att_Set := String_Mng.Locate (Asu_Ts (Attributes),
                    Info_Sep & Attr & Info_Sep) /= 0;
         if Att_Set then
           -- Get the Xml Attribute
@@ -772,7 +772,7 @@ package body Dtd is
           declare
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+                := String_Mng.Locate (Asu_Ts (Attinfo.List),
                                       Info_Sep & "", 2);
             Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
           begin
@@ -783,7 +783,7 @@ package body Dtd is
           end;
         elsif Td(1) = 'E' and then Att_Set then
           -- Not fixed Enum in dtd with xml value: #<val># must be in dtd list
-          if String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+          if String_Mng.Locate (Asu_Ts (Attinfo.List),
                  Info_Sep  & Asu_Ts (Xml_Val) & Info_Sep) = 0 then
             Util.Error ("According to dtd, Enum attribute " & Attr
                       & " has incorrect value "
@@ -794,7 +794,7 @@ package body Dtd is
           declare
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := String_Mng.Locate (Asu_Ts (Attinfo.List), 1,
+                := String_Mng.Locate (Asu_Ts (Attinfo.List),
                                       Info_Sep & "", 2);
             Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
           begin
@@ -830,8 +830,8 @@ package body Dtd is
             Info_Mng.Search (Info_List, Idinfo, Info_Found);
             if Info_Found then
               Info_Mng.Read (Info_List, Idinfo, Idinfo);
-              if String_Mng.Locate (Asu_Ts (Idinfo.List), 1,
-                              Info_Sep & Asu_Ts (Xml_Val) & Info_Sep) /= 0 then
+              if String_Mng.Locate (Asu_Ts (Idinfo.List),
+                           Info_Sep & Asu_Ts (Xml_Val) & Info_Sep) /= 0 then
                 Util.Error ("This ID " & Asu_Ts (Xml_Val)
                           & " is already set to this element", Line_No);
               end if;
@@ -964,7 +964,7 @@ package body Dtd is
       begin
         exit when Idref = "";
           -- Check that this Idref is in Ids
-          if String_Mng.Locate (Asu_Ts (Ids.List), 1,
+          if String_Mng.Locate (Asu_Ts (Ids.List),
                             Info_Sep & Idref & Info_Sep) = 0 then
             Util.Error ("The ID of the ref " & Idref
                         & " does not exist", Natural'Value(Line));

@@ -340,7 +340,7 @@ package body Replace_Pattern is
     loop
       -- Locate replace code
       Got := String_Mng.Locate (Asu.To_String (Result),
-                                Start, Subst_Char & "");
+                                Subst_Char & "", Start);
       exit when Got = 0;
       -- Check that this is a match action record
       Try_Subst:

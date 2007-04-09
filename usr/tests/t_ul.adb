@@ -38,7 +38,7 @@ procedure T_Ul is
     L : Natural;
     Var : Var_Rec;
   begin
-    L := String_Mng.Locate (Str, Str'First, "=");
+    L := String_Mng.Locate (Str, "=");
     if L = 0 then
       return False;
     end if;

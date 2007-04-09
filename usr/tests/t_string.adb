@@ -137,15 +137,17 @@ begin
 
           when  4 =>
             My_Io.Put_Line ("Locate");
-            My_Io.Put ("From_Index (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put ("Fragment (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos2, False);
+            My_Io.Put ("From_Index (Nat)? "); Nat_Get(Nat2, False);
+            My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
+            My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put_Line ("Occurence of fragment located at: " &
              Integer'Image (String_Mng.Locate (
                Str(1 .. Str_Len),
-               From_Index => Pos1,
                Fragment => Str1(1 .. Nat1),
-               Occurence => Pos2)) );
+               From_Index => Nat2,
+               Forward => Bool1,
+               Occurence => Pos1)) );
 
           when  5 =>
             My_Io.Put_Line ("Remove (substring)");
@@ -241,7 +243,8 @@ begin
             declare
               Lstr : String (1 .. Str_Len) := Str (1 .. Str_Len);
             begin
-              String_Mng.Copy (Str1(1 .. Nat1), Lstr);
+              String_Mng.Copy (Val => Str1(1 .. Nat1),
+                               To => Lstr);
               My_Io.Put_Line ("Copy result: " & Lstr);
             end;
           when 15 =>
@@ -250,8 +253,8 @@ begin
             My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
             My_Io.Put_Line ("Replaced string: "
               & String_Mng.Replace (Str(1 .. Str_Len),
-                                    Str1(1 .. Nat1),
-                                    Str2(1 .. Nat2)));
+                                    What => Str1(1 .. Nat1),
+                                    By => Str2(1 .. Nat2)));
           when others => null;
         end case;
       exception

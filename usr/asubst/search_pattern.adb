@@ -113,7 +113,7 @@ package body Search_Pattern is
     -- Regex: Count max number of substrings, i.e. number of '('
     for I in Sub_String_Range loop
       -- Locate succcessive occurences of "("
-      exit when String_Mng.Locate (Crit, Crit'First, "(", I) = 0;
+      exit when String_Mng.Locate (Crit, "(", Occurence => I) = 0;
       Upat.Nb_Substr := I;
     end loop;
     -- Regex compiled patterns cannot be copied and Substrs are used later
@@ -133,7 +133,7 @@ package body Search_Pattern is
   -- Check that the string does not contain the fragment
   procedure Check (Str : in String; Frag : in String) is
   begin
-    if String_Mng.Locate (Str, Str'First, Frag) /= 0 then
+    if String_Mng.Locate (Str, Frag) /= 0 then
       Error ("Pattern """ & Str & """ cannot contain """ & Frag & """");
     end if;
  end Check;
@@ -299,8 +299,7 @@ package body Search_Pattern is
     Prev_Delim := False;
     loop
       Stop_Index := String_Mng.Locate (Asu.To_String (The_Pattern),
-                                       Start_Index,
-                                       Line_Feed);
+                                       Line_Feed, Start_Index);
       if Stop_Index = Start_Index then
         -- A Delim
         Add ("", Extended, Case_Sensitive);
@@ -485,8 +484,8 @@ package body Search_Pattern is
                                   Nmatch, Match);
       else
         -- Not a regex, locate string
-        Nmatch := String_Mng.Locate (Str, Start,
-                     Asu.To_String (Upat_Access.Find_Str));
+        Nmatch := String_Mng.Locate (Str,
+                     Asu.To_String (Upat_Access.Find_Str), Start);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match (1) := (

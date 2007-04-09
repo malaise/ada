@@ -130,7 +130,7 @@ package body Ios is
       raise Invalid_Argument;
     end if;
     -- Locate :
-    Sep := String_Mng.Locate (Unb.To_String (S.Val_Text), 1, ":");
+    Sep := String_Mng.Locate (Unb.To_String (S.Val_Text), ":");
     if Sep <= 2 then
       raise Invalid_Argument;
     end if;

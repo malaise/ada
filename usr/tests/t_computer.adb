@@ -14,7 +14,7 @@ begin
     declare
       Str : constant String := Argument.Get_Parameter(I);
     begin
-      Loc := String_Mng.Locate (Str, 1, "=");
+      Loc := String_Mng.Locate (Str, "=");
       if Loc = 0 or else Loc = 1 or else Loc = Str'Last then
         raise Constraint_Error;
       end if;

@@ -147,11 +147,11 @@ package body Computer is
     Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "(", " ( "));
     Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), ")", " ) "));
     -- Replace each "  " by " "
-    while String_Mng.Locate (Asu_Ts (Exp), 1, "  ") /= 0 loop
+    while String_Mng.Locate (Asu_Ts (Exp), "  ") /= 0 loop
       Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "  ", " "));
     end loop;
     -- Variables must not follow one each other (${var}${var})
-    if String_Mng.Locate (Asu_Ts (Exp), 1, "}$") /= 0 then
+    if String_Mng.Locate (Asu_Ts (Exp), "}$") /= 0 then
       raise Invalid_Expression;
     end if;
     -- Expand variables

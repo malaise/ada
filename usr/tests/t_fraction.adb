@@ -19,7 +19,7 @@ procedure T_Fraction is
   begin
     declare
       Str : constant String := Argument.Get_Parameter(Occurence => Occ);
-      I : constant Natural := String_Mng.Locate (Str, 1, ":");
+      I : constant Natural := String_Mng.Locate (Str, ":");
     begin
       N := Arbitrary.Set (Str(1 .. I - 1));
       D := Arbitrary.Set (Str(I+1 .. Str'Last));

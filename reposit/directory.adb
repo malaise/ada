@@ -251,8 +251,7 @@ package body Directory is
   function Dirname (File_Name : String) return String is
     I : Natural;
   begin
-    I := String_Mng.Locate (File_Name, File_Name'First,
-                            Sep, From_Head => False);
+    I := String_Mng.Locate (File_Name, Sep, Forward => False);
     if I = 0 then
       -- No / in file name => dir name is empty
       return "";
@@ -267,8 +266,7 @@ package body Directory is
     I : Natural;
     Last : constant Natural := File_Name'Last;
   begin
-    I := String_Mng.Locate (File_Name, File_Name'First,
-                            Sep, From_Head => False);
+    I := String_Mng.Locate (File_Name, Sep, Forward => False);
     if I = 0 then
       -- No / in file name => no dir name
       return File_Name;
@@ -288,7 +286,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := String_Mng.Locate (File, File'First, Dot);
+    I := String_Mng.Locate (File, Dot);
     if I = 0 then
       -- No '.', return full file name
       return File;
@@ -302,7 +300,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := String_Mng.Locate (File, File'First, Dot);
+    I := String_Mng.Locate (File, Dot);
     if I = 0 then
       -- No '.', return no suffix
       return "";

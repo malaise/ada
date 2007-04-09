@@ -90,25 +90,36 @@ package body String_Mng is
     return S;
   end Procuste;
 
-  -- Locate Nth occurence of a fragment within a string
-  --  starting at From index, and from head or tail
-  -- Returns index of fragment start
+
+  -- Locate Nth occurence of a fragment within a string,
+  --  between a given index (first if 0) and the end of string,
+  --  searching forward or backward
+  -- Returns index in Within of char matching start of Fragment
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within     : String;
-                   From_Index : Positive;
                    Fragment   : String;
-                   Occurence  : Positive := 1;
-                   From_Head  : Boolean := True)
+                   From_Index : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1)
            return Natural is
+    Index : Natural;
     Found_Occurence : Natural := 0;
   begin
+    -- Fix Index
+    if From_Index = 0 then
+      Index := Within'First;
+    else
+      Index := From_Index;
+    end if;
+
+    -- Handle limit or incorrect values
     if Within'Length = 0
     or else Fragment'Length = 0
-    or else From_Index not in Within'First .. Within'Last then
+    or else Index not in Within'First .. Within'Last then
       return 0;
     end if;
-    if From_Head then
-      for I in From_Index .. Within'Last - Fragment'Length + 1 loop
+    if Forward then
+      for I in Index .. Within'Last - Fragment'Length + 1 loop
         if Within(I .. I + Fragment'Length - 1) = Fragment then
           Found_Occurence := Found_Occurence + 1;
           if Found_Occurence = Occurence then
@@ -117,7 +128,7 @@ package body String_Mng is
         end if;
       end loop;
     else
-      for I in reverse From_Index .. Within'Last - Fragment'Length + 1 loop
+      for I in reverse Index .. Within'Last - Fragment'Length + 1 loop
         if Within(I .. I + Fragment'Length - 1) = Fragment then
           Found_Occurence := Found_Occurence + 1;
           if Found_Occurence = Occurence then

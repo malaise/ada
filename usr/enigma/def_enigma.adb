@@ -172,11 +172,11 @@ begin
   elsif Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
     Action := Random;
   elsif String_Mng.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
-                           1, "/") /= 0 then
+                           "/") /= 0 then
     -- Looks like a date
     Action := Parse_Date;
   elsif String_Mng.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
-                           1, Separator) /= 0 then
+                           Separator) /= 0 then
     -- Looks like a text key
     Action := Extract;
   else

@@ -95,7 +95,7 @@ package body Output is
     end if;
 
     -- See there is a comment
-    Comment_Index := String_Mng.Locate (Str, Str'First, "--");
+    Comment_Index := String_Mng.Locate (Str, "--");
 
     -- Check if this is a comment to be put as a comment
     -- If yes, put Str at proper level
@@ -162,7 +162,7 @@ package body Output is
     Lfi := 0;
     loop
       Start := Lfi + 1;
-      Lfi := String_Mng.Locate (Str, Start, Common.Line_Feed);
+      Lfi := String_Mng.Locate (Str, Common.Line_Feed, Start);
       if Lfi = 0 or else Lfi = Str'Last then
         -- No Line_Feed or ends by Line_Feed => Last chunk, process up to end
         Format (Str (Start .. Str'Last), Comment, Level, Indent);

@@ -312,7 +312,7 @@ package body Mcd_Parser is
     if Unb.Length(Txt) >= 2 and then Unb.Element(Txt, 1) = '@' then
       declare
         I : constant Natural
-          := String_Mng.Locate (Unb.To_String (Txt), 1, ":");
+          := String_Mng.Locate (Unb.To_String (Txt), ":");
         N, D : Arbitrary.Number;
       begin
         Instr_Stack.Push(Item_Chrs);
