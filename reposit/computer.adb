@@ -3,7 +3,7 @@
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
 with Ada.Strings.Unbounded;
-with Environ, Basic_Proc, Unique_List, Int_Image,
+with Environ, Basic_Proc, Unique_List,
      String_Mng, Dynamic_List, Parser;
 package body Computer is
 
@@ -20,8 +20,6 @@ package body Computer is
     end if;
   end Trace;
 
-  function Val_Image is new Int_Image (Integer);
-
   -- Unbounded strings
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
@@ -35,7 +33,7 @@ package body Computer is
   type Var_Rec is record
     -- Variable name
     Name : Asu_Us;
-    -- Int_Image of value
+    -- Variable value
     Value : Asu_Us;
   end record;
   type Var_Access is access all Var_Rec;
@@ -55,44 +53,24 @@ package body Computer is
   package Var_Mng is new Unique_List (Var_Rec, Var_Access, Set, Image, "=");
   Var_List : Var_Mng.List_Type;
 
-  -- List of members
-  -- None is a pseudo value returned when no more member in list
-  type Member_Kind_List is
-   (Val, Add, Sub, Mult, Div, Open, Close, None);
-  subtype Oper_Kind_List is Member_Kind_List range Add .. Div;
-  subtype High_Kind_List is Oper_Kind_List range Mult .. Div;
-  subtype Low_Kind_List is Oper_Kind_List range Add .. Sub;
-  type Member_Rec (Kind : Member_Kind_List := Val) is record
-    case Kind is
-      when Val =>
-        Value : Integer;
-      when others =>
-        null;
-    end case;
-  end record;
-  package Members_List_Mng is new Dynamic_List (Member_Rec);
-  package Members_Mng renames Members_List_Mng.Dyn_List;
-  Members_List : Members_Mng.List_Type;
-
   -- Variable management
   ----------------------
   -- Reset all variables
   procedure Reset is
   begin
     Var_Mng.Delete_List (Var_List);
-    Members_Mng.Delete_List (Members_List);
   end Reset;
 
   -- Set (store), maybe overwrite a variable
   procedure Set (Name : in String;
-                 Value : in Integer) is
+                 Value : in String) is
   begin
     if Name = "" then
       raise Invalid_Variable;
     end if;
     Var_Mng.Insert (Var_List, (Name => Asu_Tus (Name),
-                               Value => Asu_Tus(Val_Image(Value))));
-    Trace ("Inserted variable " & Name & ", " & Val_Image(Value));
+                               Value => Asu_Tus(Value)));
+    Trace ("Inserted variable " & Name & ", " & Value);
   end Set;
 
   -- Check if a variable is set
@@ -110,7 +88,6 @@ package body Computer is
 
   -- Get a variable
   -- May raise Unknown_Variable
-  -- This one is for us
   function Get (Name : String) return String is
     Res : Var_Rec;
   begin
@@ -126,12 +103,16 @@ package body Computer is
     when Var_Mng.Not_In_List =>
       raise Unknown_Variable;
   end Get;
-  -- This one is the API
-  function Get (Name : String) return Integer is
-    Res : Var_Rec;
+
+  -- Resolv variables of an expresssion
+  function Eval (Expression : String) return String is
   begin
-    return Integer'Value (Get (Name));
-  end Get;
+    return String_Mng.Eval_Variables (
+              Expression, "${", "}", Get'Access);
+  exception
+    when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
+      raise Invalid_Expression;
+  end Eval;
 
   -- Fix expression
   function Fix (Expression : String) return String is
@@ -155,11 +136,29 @@ package body Computer is
       raise Invalid_Expression;
     end if;
     -- Expand variables
-    Exp := Asu_Tus (String_Mng.Eval_Variables (Asu_Ts (Exp),
-                    "${", "}", Get'Access));
+    Exp := Asu_Tus (Eval (Asu_Ts (Exp)));
     Trace ("Fixed expression: " & Asu_Ts (Exp));
     return Asu_Ts (Exp);
   end Fix;
+
+  -- List of members of parsed expression
+  -- None is a pseudo value returned when no more member in list
+  type Member_Kind_List is
+   (Val, Add, Sub, Mult, Div, Open, Close, None);
+  subtype Oper_Kind_List is Member_Kind_List range Add .. Div;
+  subtype High_Kind_List is Oper_Kind_List range Mult .. Div;
+  subtype Low_Kind_List is Oper_Kind_List range Add .. Sub;
+  type Member_Rec (Kind : Member_Kind_List := Val) is record
+    case Kind is
+      when Val =>
+        Value : Integer;
+      when others =>
+        null;
+    end case;
+  end record;
+  package Members_List_Mng is new Dynamic_List (Member_Rec);
+  package Members_Mng renames Members_List_Mng.Dyn_List;
+  Members_List : Members_Mng.List_Type;
 
   -- Parse the expression into a list of members
   procedure Parse (Exp : in String ) is
@@ -202,7 +201,6 @@ package body Computer is
                      Value => Integer'Value (
                         Word (Positive'Succ(Word'First) .. Word'Last)));
         else
-          Trace ("Value");
           Member := (Kind => Val, Value => Integer'Value (Word));
         end if;
       end;
@@ -222,7 +220,7 @@ package body Computer is
   end Parse;
 
   -- Get member of list
-  End_Reached : Boolean := False;
+  End_Reached : Boolean;
   function Get_Member return Member_Rec is
     Member : Member_Rec;
   begin
@@ -261,21 +259,24 @@ package body Computer is
     end case;
   end Compute_One;
 
-  -- Eval an expression
+  -- Compute an expression
   -- Level is the level of parentheses (0 at startup)
   -- Higher_Prio is set when low prio followed by high prio
   --  (e.g. X + Y * Z) require new evaluation.
   --  The way to return then differs
-  function Eval (Level : Natural;
+  function Compute (Level : Natural;
                  Higher_Prio : in Boolean) return Integer is
     M1, M2, M3, M4 : Member_Rec;
     Tmp, Result : Integer;
   begin
+    if Level = 0 then
+      End_Reached := False;
+    end if;
     M1 := Get_Member;
     -- First member must be an int or a (
     if M1.Kind = Open then
       Trace ("Level++");
-      Result := Eval (Level + 1, False);
+      Result := Compute (Level + 1, False);
     elsif M1.Kind = Val then
       Result := M1.Value;
       Trace ("Value " & Result'Img);
@@ -318,7 +319,7 @@ package body Computer is
       M3 := Get_Member;
       if M3.Kind = Open then
         Trace ("Level++");
-        Tmp := Eval (Level + 1, False);
+        Tmp := Compute (Level + 1, False);
       elsif M3.Kind /= Val then
         Trace ("Invalid M2 " & M2.Kind'Img);
         raise Invalid_Expression;
@@ -339,7 +340,7 @@ package body Computer is
           Unget_Member;
           Unget_Member;
           Trace ("Higher prio");
-          Tmp := Eval (Level, True);
+          Tmp := Compute (Level, True);
           Result := Compute_One (Result, M2.Kind, Tmp);
         elsif M4.Kind in Low_Kind_List
         and then M2.Kind in High_Kind_List then
@@ -390,17 +391,21 @@ package body Computer is
         end if;
       end if;
     end loop;
-  end Eval;
+  end Compute;
 
   -- Computation of expression
-  function Eval (Expression : String) return Integer is
+  function Compute (Expression : String) return Integer is
+    Result : Integer;
   begin
-    -- Fix expression
-    -- Parse expression
+    -- Fix and Parse expression
     Parse (Fix (Expression));
-    -- Eval
-    return Eval (0, False);
-  end Eval;
+    -- Compute
+    Result := Compute (0, False);
+    -- Clean parsing
+    Members_Mng.Delete_List (Members_List);
+    -- Done
+    return Result;
+  end Compute;
 
 end Computer;
 

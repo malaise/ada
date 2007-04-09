@@ -10,18 +10,19 @@ package Computer is
   procedure Reset;
   -- Set (store), maybe overwrite a variable
   procedure Set (Name : in String;
-                 Value : in Integer);
+                 Value : in String);
   -- Check if a varaible is set
   function Is_Set (Name : String) return Boolean;
   -- Get a variable
   -- May raise Unknown_Variable
-  function Get (Name : String) return Integer;
+  function Get (Name : String) return String;
   
+  -- Resolv variables of an expresssion
+  function Eval (Expression : String) return String;
 
   -- Computation of expression
   -- May raise Invalid_Expression (parentheses, operations, values...)
-  function Eval (Expression : String) return Integer;
-
+  function Compute (Expression : String) return Integer;
 
   -- On Set, Get or Is_Set if empty name
   Invalid_Variable : exception;
