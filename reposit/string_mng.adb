@@ -552,7 +552,7 @@ package body String_Mng is
   end Copy;
 
   -- Replace occurences of What by By in Str. One pass.
-  function Replace (What, By, Str : String) return String is
+  function Replace (Str, What, By : String) return String is
     Len : constant Natural := What'Length;
     Last : constant Natural := Str'Last;
     I : Positive;

@@ -623,7 +623,7 @@ package body Util is
       end if;
     end loop;
     -- Replace any space by nothing
-    return Asu_Tus (String_Mng.Replace (Space & "", "", Res));
+    return Asu_Tus (String_Mng.Replace (Res, Space & "", ""));
   end Remove_Separators;
 
 end Util;

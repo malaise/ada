@@ -152,7 +152,7 @@ package String_Mng is
   procedure Copy (Val : in String; To : in out String);
 
   -- Replace occurences of What by By in Str. One pass.
-  function Replace (What, By, Str : String) return String;
+  function Replace (Str, What, By : String) return String;
 
 end String_Mng;
 

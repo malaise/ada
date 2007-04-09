@@ -135,7 +135,7 @@ package body Dtd is
       Asu.Append (Res, "#)");
     end if;
     -- Remove any ','
-    Res := Asu_Tus (String_Mng.Replace (",", "", Asu_Ts (Res)));
+    Res := Asu_Tus (String_Mng.Replace (Asu_Ts (Res), ",", ""));
     -- Now compile to check it
     Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Res));
     Regular_Expressions.Free (Pat);
@@ -206,7 +206,7 @@ package body Dtd is
           end if;
           -- Replace '|' by '#' and prepend and append a '#'
           Info.List := Asu_Tus (
-            String_Mng.Replace ("|", "#", "#" & Asu_Ts (Info.List) & "#"));
+            String_Mng.Replace ("#" & Asu_Ts (Info.List) & "#", "|", "#"));
         else
           Util.Error ("Invalid Mixed definition");
         end if;
@@ -323,7 +323,7 @@ package body Dtd is
         end if;
         -- Replace '|' by '#' and prepend and append a '#'
         Enum := Asu_Tus (
-          String_Mng.Replace ("|", "#", "#" & Asu_Ts (Enum) & "#"));
+          String_Mng.Replace ("#" & Asu_Ts (Enum) & "#", "|", "#"));
       else
         -- Get type
         Util.Unget;
@@ -394,9 +394,9 @@ package body Dtd is
                     & Asu_Ts (Def_Val) & " not in Enum");
         end if;
         Enum := Asu_Tus (String_Mng.Replace (
+                 Asu_Ts (Enum),
                  Info_Sep & Asu_Ts (Def_Val) & Info_Sep,
-                 "",
-                 Asu_Ts (Enum)));
+                 ""));
         Enum := Info_Sep & Asu_Ts (Def_Val) & Info_Sep & Enum;
       end if;
 
@@ -550,11 +550,11 @@ package body Dtd is
       Util.Error ("Cannot open dtd file " & File_Name);
   end Parse;
 
-  -- Replace "##" by "'" then suppress "#"
+  -- Replace "##" by "," then suppress "#"
   function Strip_Sep (Us : in Asu_Us) return String is
     use String_Mng;
   begin
-    return Replace ("#", "", Replace ("##", ",", Asu_Ts (Us)));
+    return Replace (Replace (Asu_Ts (Us), "##", ","), "#", "");
   end Strip_Sep;
   -- Check children of element
   procedure Check_Children (Name : in Asu_Us;

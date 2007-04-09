@@ -249,9 +249,9 @@ begin
             My_Io.Put ("What (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
             My_Io.Put_Line ("Replaced string: "
-              & String_Mng.Replace (Str1(1 .. Nat1),
-                                    Str2(1 .. Nat2),
-                                    Str(1 .. Str_Len)));
+              & String_Mng.Replace (Str(1 .. Str_Len),
+                                    Str1(1 .. Nat1),
+                                    Str2(1 .. Nat2)));
           when others => null;
         end case;
       exception
