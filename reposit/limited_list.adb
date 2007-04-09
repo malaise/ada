@@ -88,6 +88,7 @@ package body Limited_List is
   function Check_Move (List : in List_Type;
                        Where : Direction := Next) return Boolean is
   begin
+    Check(List);
     if Where = Next then
       return List.Current.Next /= null;
     else
