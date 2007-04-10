@@ -18,7 +18,8 @@ begin
       if Loc = 0 or else Loc = 1 or else Loc = Str'Last then
         raise Constraint_Error;
       end if;
-      Computer.Set (Str (1 .. Loc - 1), Str (Loc + 1 .. Str'Last));
+      Computer.Set (Str (1 .. Loc - 1), Str (Loc + 1 .. Str'Last),
+                    Modifiable => False, Persistent => I rem 2 = 0);
     end;
   end loop;
 

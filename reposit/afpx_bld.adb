@@ -127,7 +127,10 @@ procedure Afpx_Bld is
   -- Check a variable and add it to computer
   procedure Add_Variable (Node : in Xp.Node_Type;
                           Name : in String;
-                          Value : in String) is
+                          Value : in String;
+                          Modifiable : in Boolean;
+                          Persistent : in Boolean) is
+
     Iter : Parser.Iterator;
   begin
     -- Check name
@@ -156,7 +159,7 @@ procedure Afpx_Bld is
       File_Error (Node, "Variable " & Name & " already defined");
     end if;
     -- Checked OK, store
-    Computer.Set (Name, Value);
+    Computer.Set (Name, Value, Modifiable, Persistent);
   end Add_Variable;
 
   -- Geometry variable value
@@ -172,11 +175,18 @@ procedure Afpx_Bld is
     or else not Match (Xp.Get_Name (Root), Root_Name) then
       File_Error (Root, "Invalid root, expected " & Root_Name);
     end if;
+    -- Add constant persistent of up left
+    Add_Variable (Root, "Screen.Up", Geo_Image (0), False, True);
+    Add_Variable (Root, "Screen.Left", Geo_Image (0), False, True);
     if Xp.Get_Nb_Attributes (Root) = 0 then
       -- No attribute : default size
       Size := (Con_Io.Full_Def_Row_Last, Con_Io.Full_Def_Col_Last);
-      Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1));
-      Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1));
+      -- Add constant persistent
+      Add_Variable (Root, "Screen.Down", Geo_Image (Size.Row), False, True);
+      Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
+      Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
+      Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
+      -- Add 
       return Size;
     elsif Xp.Get_Nb_Attributes (Root) /= 2 then
       File_Error (Root,
@@ -195,7 +205,8 @@ procedure Afpx_Bld is
           Height := True;
           P := Computer.Compute (Strof (Attrs(I).Value));
           Size.Row := Con_Io.Full_Row_Range(P - 1);
-          Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1));
+          -- Add constant persistent
+          Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
         elsif Match (Attrs(I).Name, "Width") then
           if Width then
             File_Error (Root, "Duplicated width " & Attrs(I).Name);
@@ -203,7 +214,8 @@ procedure Afpx_Bld is
           Width := True;
           P := Computer.Compute (Strof (Attrs(I).Value));
           Size.Col := Con_Io.Full_Col_Range(P - 1);
-          Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1));
+          -- Add constant persistent
+          Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
         else
           File_Error (Root, "Invalid Size " & Attrs(I).Name);
         end if;
@@ -219,6 +231,8 @@ procedure Afpx_Bld is
       File_Error (Root, "Invalid size. Missing some coordinate");
       raise File_Syntax_Error;
     end if;
+    Add_Variable (Root, "Screen.Down", Geo_Image (Size.Row), False, True);
+    Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
     return Size;
   end Load_Size;
 
@@ -237,10 +251,10 @@ procedure Afpx_Bld is
   procedure Load_Geometry (Node : in Xp.Node_Type;
                            Fn : in Afpx_Typ.Absolute_Field_Range;
                            Screen_Size : in Con_Io.Full_Square) is
-    -- Add a geometry variable
+    -- Add a geometry constant, not persistent
     procedure Add_Geo (Name : in String; Value : in Natural) is
     begin
-      Add_Variable (Node, Name_Of (Fn) & "." & Name, Geo_Image (Value));
+      Add_Variable (Node, Name_Of (Fn) & "." & Name, Geo_Image (Value), False, False);
     end Add_Geo;
     Up, Left, Low, Right : Boolean := False;
   begin
@@ -424,17 +438,17 @@ procedure Afpx_Bld is
                   "For all but Put fields, Foreground has to be basic color");
     end if;
 
-    -- Add variables
+    -- Add constants, not persistent
     Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
-      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Foreground)));
+      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Foreground)), False, False);
     Add_Variable (Node, Name_Of (Fn) & "." & "Background",
-      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Background)));
+      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Background)), False, False);
     Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
-      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Selected)));
+      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Selected)), False, False);
     if Fields(Fn).Colors.Blink_Stat = Con_Io.Blink then
-      Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "True");
+      Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "True", False, False);
     else
-      Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "False");
+      Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "False", False, False);
     end if;
   end Load_Colors;
 
@@ -656,9 +670,6 @@ procedure Afpx_Bld is
     Child, Child_Child : Xp.Node_Type;
 
   begin
-    -- Parse size
-    Size := Load_Size (Root);
-
     -- If not check_only, delete then create binary files
     if not Check_Only then
       begin
@@ -692,6 +703,11 @@ procedure Afpx_Bld is
                       Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
     end if;
 
+    -- Parse size
+    Size := Load_Size (Root);
+
+    -- Parse persistent user variables
+    -- @@@
 
     -- Initialize the descriptors array as not used
     for I in Afpx_Typ.Descriptor_Range loop
@@ -701,9 +717,6 @@ procedure Afpx_Bld is
       Descriptors(I).Dscr_Index := Afpx_Typ.Descriptor_Range'First;
       Descriptors(I).Nb_Fields := 0;
     end loop;
-
-    -- loop on constants
-    -- @@@
 
     -- Loop on descriptors
     -- Descriptors are stored in the descriptor file at Dscr_No
@@ -746,6 +759,9 @@ procedure Afpx_Bld is
       Init_Str := (others => ' ');
       Fields(0).Kind := Put;
 
+      -- Parse volatile user variables
+      -- @@@
+
       for I in 1 .. Xp.Get_Nb_Children (Child) loop
         Child_Child := Xp.Get_Child (Child, I);
         if Child_Child.Kind /= Xp.Element then
@@ -784,15 +800,14 @@ procedure Afpx_Bld is
         Init_Io.Write (Init_File, Init_Str, Init_Io.Positive_Count(Dscr_Index));
       end if;
 
+      -- Reset volatile variables and constants defined for this descriptor
+      Computer.Reset (Not_Persistent => True);
       -- Ready for next descriptor
-      Computer.Reset;
-      Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row));
-      Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col));
       Dscr_Index := Dscr_Index + 1;
     end loop Dscrs;
 
     -- Reset all variables
-    Computer.Reset;
+    Computer.Reset (Not_Persistent => False);
 
     if not Check_Only then
       Dscr_Io.Write (Dscr_File, Descriptors);

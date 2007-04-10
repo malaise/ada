@@ -35,6 +35,13 @@ package body Computer is
     Name : Asu_Us;
     -- Variable value
     Value : Asu_Us;
+    -- Persistent:
+    -- If modifiable, at most one persistent and one volatile variables
+    --  of same name,
+    -- If not modifiable, either one persistent or one volatile
+    Persistent : Boolean;
+    -- Modifiable
+    Modifiable : Boolean;
   end record;
   type Var_Access is access all Var_Rec;
   procedure Set (To : out Var_Rec; Val : in Var_Rec) is
@@ -43,12 +50,17 @@ package body Computer is
   end Set;
   function Image (Element : Var_Rec) return String is
   begin
-    return Asu_Ts (Element.Name);
+    if Element.Persistent then
+      return "P " & Asu_Ts (Element.Name);
+    else
+      return "V " & Asu_Ts (Element.Name);
+    end if;
   end Image;
   function "=" (Current : Var_Rec ; Criteria : Var_Rec ) return Boolean is
     use type Asu_Us;
   begin
-    return Current.Name = Criteria.Name;
+    return Current.Persistent = Criteria.Persistent
+    and then Current.Name = Criteria.Name;
   end "=";
   package Var_Mng is new Unique_List (Var_Rec, Var_Access, Set, Image, "=");
   Var_List : Var_Mng.List_Type;
@@ -56,21 +68,89 @@ package body Computer is
   -- Variable management
   ----------------------
   -- Reset all variables
-  procedure Reset is
+  procedure Reset (Not_Persistent : in Boolean) is
+    Vol_List : Asu_Us;
+    -- Iterator to build list of names of volatile variables
+    procedure List_Iter (Current : in Var_Rec;
+                         Go_On   : in out Boolean) is
+    begin
+      if not Current.Persistent then
+        Asu.Append (Vol_List, Asu_Ts (Current.Name) & " ");
+      end if;
+    end List_Iter;
+    Iter : Parser.Iterator;
+    Var : Var_Rec;
   begin
-    Var_Mng.Delete_List (Var_List);
+    if not Not_Persistent then
+      -- Delete all
+      Trace ("Deleting all variables");
+      Var_Mng.Delete_List (Var_List);
+      return;
+    end if;
+    -- Make list of names of volatile variables
+    Var_Mng.Iterate (Var_List, List_Iter'Unrestricted_Access);
+    -- Delete each volatile variable
+    Parser.Set (Iter, Asu_Ts (Vol_List),
+                Parser.Is_Space_Or_Htab_Function'Access);
+    loop
+      declare
+        Name : constant String := Parser.Next_Word (Iter);
+      begin
+        exit when Name = "";
+        Var.Name := Asu_Tus (Name);
+        Var.Persistent := False;
+        Trace ("Deleting volatile " & Image (Var));
+        Var_Mng.Delete (Var_List, Var);
+      end;
+    end loop;
+    Parser.Del (Iter);
   end Reset;
 
   -- Set (store), maybe overwrite a variable
   procedure Set (Name : in String;
-                 Value : in String) is
+                 Value : in String;
+                 Modifiable : in Boolean;
+                 Persistent : in Boolean) is
+    Var : Var_Rec;
+    Found : Boolean;
   begin
     if Name = "" then
       raise Invalid_Variable;
     end if;
-    Var_Mng.Insert (Var_List, (Name => Asu_Tus (Name),
-                               Value => Asu_Tus(Value)));
-    Trace ("Inserted variable " & Name & ", " & Value);
+    -- Check if this variable exists (persistent or not) and is modifiable
+    Var.Name := Asu_Tus (Name);
+    Var.Persistent := False;
+    Var_Mng.Search (Var_List, Var, Found);
+    if Found then
+      Var_Mng.Read (Var_List, Var, Var);
+      if not Var.Modifiable
+      or else not Modifiable then
+        -- One of the original and of the new (or both)
+        --  is not modifiable
+        raise Constant_Exists; 
+      end if;
+    end if;
+    Var.Persistent := True;
+    Var_Mng.Search (Var_List, Var, Found);
+    if Found then
+      Var_Mng.Read (Var_List, Var, Var);
+      if not Var.Modifiable
+      or else not Modifiable then
+        -- One of the original and of the new (or both)
+        --  is not modifiable
+        raise Constant_Exists; 
+      end if;
+    end if;
+    -- Insert or overwrite modifiable variable, or insert new constant
+    Var.Persistent := Persistent;
+    Var.Value := Asu_Tus (Value);
+    Var.Modifiable := Modifiable;
+    Var_Mng.Insert (Var_List, Var);
+    if Modifiable then
+      Trace ("Inserted variable " & Image (Var) & ", " & Value);
+    else
+      Trace ("Inserted constant " & Image (Var) & ", " & Value);
+    end if;
   end Set;
 
   -- Check if a variable is set
@@ -81,28 +161,71 @@ package body Computer is
     if Name = "" then
       raise Invalid_Variable;
     end if;
+    -- First check if variable is volatile
     Crit.Name := Asu_Tus (Name);
+    Crit.Persistent := False;
+    Var_Mng.Search (Var_List, Crit, Found);
+    if Found then
+      return True;
+    end if;
+    -- Then check if it is persistent
+    Crit.Persistent := True;
     Var_Mng.Search (Var_List, Crit, Found);
     return Found;
   end Is_Set;
 
-  -- Get a variable
+  -- Read a variable rec (internal)
   -- May raise Unknown_Variable
-  function Get (Name : String) return String is
+  function Read (Name : String) return Var_Rec is
+    Found : Boolean;
     Res : Var_Rec;
   begin
-    Trace ("Getting >" & Name & "<");
+    Trace ("Reading >" & Name & "<");
     if Name = "" then
       raise Invalid_Variable;
     end if;
+    -- First check if variable is volatile
     Res.Name := Asu_Tus (Name);
+    Res.Persistent := False;
+    Var_Mng.Search (Var_List, Res, Found);
+    if Found then
+      Var_Mng.Read (Var_List, Res, Res);
+      Trace ("Read >" & Asu_Ts (Res.Value) & "<");
+      return Res;
+    end if;
+    -- Then try to read this variable as persistent
+    Res.Persistent := True;
     Var_Mng.Read (Var_List, Res, Res);
-    Trace ("Got >" & Asu_Ts (Res.Value) & "<");
-    return Asu_Ts (Res.Value);
+    Trace ("Read >" & Asu_Ts (Res.Value) & "<");
+    return Res;
   exception
     when Var_Mng.Not_In_List =>
       raise Unknown_Variable;
+  end Read;
+
+  -- Get a variable
+  function Get (Name : String) return String is
+    Var : Var_Rec;
+  begin
+    Trace ("Getting >" & Name & "<");
+    Var := Read (Name);
+    return Asu_Ts (Var.Value);
   end Get;
+
+   -- Get characteristics
+  function Is_Modifiable (Name : String) return Boolean is
+    Var : Var_Rec;
+  begin
+    Var := Read (Name);
+    return Var.Modifiable;
+  end Is_Modifiable;
+
+  function Is_Persistent (Name : String) return Boolean is
+    Var : Var_Rec;
+  begin
+    Var := Read (Name);
+    return Var.Persistent;
+  end Is_Persistent;
 
   -- Resolv variables of an expresssion
   function Eval (Expression : String) return String is

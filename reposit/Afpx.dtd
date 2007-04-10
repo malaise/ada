@@ -2,11 +2,17 @@
 <!-- DTD for Afpx xml definition -->
 <!-- Syntax of the descriptor file -->
 <!-- ============================= -->
-<!ELEMENT Afpx_Descriptors (Descriptor*)>
-<!ATTLIST Afpx_Descriptors Width NMTOKEN #IMPLIED
-                           Height NMTOKEN #IMPLIED>
 
-<!ELEMENT Descriptor (List?,Field*)>
+
+<!ELEMENT Afpx_Descriptors (Var*,Descriptor*)>
+<!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
+                           Height CDATA #IMPLIED>
+
+<!ELEMENT Var EMPTY>
+<!ATTLIST Var Name  NMTOKEN #REQUIRED
+              Value NMTOKEN #REQUIRED>
+
+<!ELEMENT Descriptor (Var*, List?,(Var|Field)*)>
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED>
 
 <!ELEMENT List (Geometry,Colors)>
@@ -16,21 +22,21 @@
 <!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 
 <!ELEMENT Geometry EMPTY>
-<!ATTLIST Geometry Up NMTOKEN #REQUIRED Left NMTOKEN #REQUIRED
-                   Low NMTOKEN #REQUIRED Right NMTOKEN #REQUIRED>
+<!ATTLIST Geometry Up  CDATA #REQUIRED Left  CDATA #REQUIRED
+                   Low CDATA #REQUIRED Right CDATA #REQUIRED>
 
 <!ELEMENT Colors EMPTY>
 <!ENTITY % Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
 <!ENTITY % Colors "%Basic_Colors;|
                    Dark_Gray|Light_Blue|Light_Green|Orange|Yellow|White">
 <!ENTITY % Blink "True|False">
-<!ATTLIST Colors Foreground (%Colors;) #REQUIRED
-                 Blink (%Blink;) #IMPLIED
-                 Background (%Basic_Colors;) #REQUIRED
-                 Selected (%Basic_Colors;) #IMPLIED>
+<!ATTLIST Colors Foreground CDATA #REQUIRED
+                 Blink CDATA #IMPLIED
+                 Background CDATA #REQUIRED
+                 Selected CDATA #IMPLIED>
 
 <!ELEMENT Init (#PCDATA)>
-<!ATTLIST Init Row NMTOKEN #REQUIRED Col NMTOKEN #REQUIRED
+<!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
 
 <!-- Semantic of the descriptor file -->
