@@ -229,7 +229,7 @@ package body Screen is
     Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
                                     Blink_Stat => Con_Io.Blink);
     if Alert then
-      Con_Io.Bell(1);
+      Afpx.Bell(1);
     end if;
     case Msg is
       when C_File_Exists  =>  Encode_Info ("File exists and will be overwritten");
@@ -257,7 +257,7 @@ package body Screen is
     Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
                                     Blink_Stat => Con_Io.Blink);
     if Msg /= E_Done then
-      Con_Io.Bell(1);
+      Afpx.Bell(1);
     end if;
     case Msg is
       when E_Done               => Encode_Info ("");

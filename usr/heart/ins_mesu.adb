@@ -31,21 +31,20 @@ begin
     return;
   end if;
 
-
   Pers_Fil.Load;
-
 
   Mesu_Edi.Edit (File_Name, Done);
 
-  Con_Io.Reset_Term;
+  Afpx.Release_Descriptor;
 
 exception
   when Mesu_Fil.File_Not_Found_Error =>
-    Con_Io.Reset_Term;
+    Afpx.Release_Descriptor;
     raise;
   when others =>
-    Con_Io.Bell (3);
+    Afpx.Bell (3);
     delay 5.0;
-    Con_Io.Reset_Term;
+    Afpx.Release_Descriptor;
     raise;
 end Ins_Mesu;
+

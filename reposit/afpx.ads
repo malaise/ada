@@ -253,6 +253,9 @@ package Afpx is
                           Redisplay     : in Boolean := False;
                           Cursor_Col_Cb : in Cursor_Set_Col_Cb := null);
 
+  -- Ring a bell on screen
+  procedure Bell (Repeat : in Positive := 1);
+ 
   -- At elaboration
   Afpx_File_Not_Found, Afpx_File_Read_Error,
   Afpx_File_Version_Error : exception;

@@ -284,9 +284,9 @@ package body Screen is
   procedure Ring (Alarm : in Boolean) is
   begin
     if Alarm then
-      Con_Io.Bell(3);
+      Afpx.Bell(3);
     else
-      Con_Io.Bell(1);
+      Afpx.Bell(1);
     end if;
   end Ring;
 

@@ -734,5 +734,12 @@ package body Afpx is
       raise;
   end Put_Then_Get;
 
+  -- Ring a bell on screen
+  procedure Bell (Repeat : in Positive := 1) is
+  begin
+    Af_Dscr.Check;
+    Af_Con_Io.Bell (Repeat);
+  end Bell;
+
 end Afpx;
 

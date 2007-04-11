@@ -2,9 +2,16 @@
 <!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
 <!-- Main menu -->
 <Afpx_Descriptors Height="45" Width="80">
+
   <Descriptor Num="1">
+
+    <!-- Top and Bottom of the list -->
+    <Var Name="Top" Value="${Screen.Up}+2"/>
+    <Var Name="Bottom" Value="${Screen.Down}-6"/>
+
+    <!-- List of operations -->
     <List>
-      <Geometry Up="2" Left="1" Low="38" Right="71"/>
+      <Geometry Up="${Top}" Left="1" Low="${Bottom}" Right="71"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
     </List>
 
@@ -57,54 +64,54 @@
       <Init Row="0" Col="2">No|  Date  |  Amount |Stat|Kind|Destinat. |Comment        |Reference</Init>
       <!-- 3021|25/10/01|-12345.12|    |    |1234567890|123456789012345|1234567890 -->
       <!-- Status: Yes No Def    Kind: Cheq CRed Xfer Draw -->
-
     </Field>
 
+    <!-- Account summary -->
     <!-- Real amount -->
     <Field Num="9" Kind="Put">
-      <Geometry Up="39" Left="1" Low="39" Right="5"/>
+      <Geometry Up="${Bottom}+1" Left="1" Low="${Bottom}+1" Right="5"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Real:</Init>
     </Field>
     <Field Num="10" Kind="Put">
-      <Geometry Up="39" Left="6" Low="39" Right="17"/>
+      <Geometry Up="${Bottom}+1" Left="6" Low="${Bottom}+1" Right="17"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Account -->
     <Field Num="11" Kind="Put">
-      <Geometry Up="39" Left="19" Low="39" Right="26"/>
+      <Geometry Up="${Bottom}+1" Left="19" Low="${Bottom}+1" Right="26"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Account:</Init>
     </Field>
     <Field Num="12" Kind="Put">
-      <Geometry Up="39" Left="27" Low="39" Right="38"/>
+      <Geometry Up="${Bottom}+1" Left="27" Low="${Bottom}+1" Right="38"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
     <!-- DefeRed -->
     <Field Num="13" Kind="Put">
-      <Geometry Up="39" Left="40" Low="39" Right="47"/>
+      <Geometry Up="${Bottom}+1" Left="40" Low="${Bottom}+1" Right="47"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">DefeRed:</Init>
     </Field>
     <Field Num="14" Kind="Put">
-      <Geometry Up="39" Left="48" Low="39" Right="59"/>
+      <Geometry Up="${Bottom}+1" Left="48" Low="${Bottom}+1" Right="59"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Savings -->
     <Field Num="15" Kind="Put">
-      <Geometry Up="39" Left="61" Low="39" Right="66"/>
+      <Geometry Up="${Bottom}+1" Left="61" Low="${Bottom}+1" Right="66"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Saved:</Init>
     </Field>
     <Field Num="16" Kind="Put">
-      <Geometry Up="39" Left="67" Low="39" Right="78"/>
+      <Geometry Up="${Bottom}+1" Left="67" Low="${Bottom}+1" Right="78"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
-    <!-- List Action -->
+    <!-- Actions on list (scrolling) -->
     <Field Num="17" Kind="Button">
       <Geometry Up="2" Left="73" Low="2" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
@@ -141,131 +148,129 @@
       <Init Row="0" Col="0">Bottom</Init>
     </Field>
 
-    <!-- Operations actions -->
+    <!-- Operations actions Menu -->
     <Field Num="24" Kind="Put">
-      <Geometry Up="41" Left="1" Low="41" Right="5"/>
+      <Geometry Up="${Bottom}+2" Left="1" Low="${Bottom}+2" Right="5"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Oper:</Init>
     </Field>
     <!-- Add operation -->
     <Field Num="25" Kind="Button">
-      <Geometry Up="41" Left="10" Low="41" Right="14"/>
+      <Geometry Up="${Bottom}+2" Left="10" Low="${Bottom}+2" Right="14"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">ADD</Init>
     </Field>
     <!-- Copy operation -->
     <Field Num="26" Kind="Button">
-      <Geometry Up="41" Left="17" Low="41" Right="22"/>
+      <Geometry Up="${Bottom}+2" Left="17" Low="${Bottom}+2" Right="22"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">COPY</Init>
     </Field>
     <!-- Edit operation -->
     <Field Num="27" Kind="Button">
-      <Geometry Up="41" Left="25" Low="41" Right="30"/>
+      <Geometry Up="${Bottom}+2" Left="25" Low="${Bottom}+2" Right="30"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">EDIT</Init>
     </Field>
     <!-- Delete operation -->
     <Field Num="28" Kind="Button">
-      <Geometry Up="41" Left="33" Low="41" Right="40"/>
+      <Geometry Up="${Bottom}+2" Left="33" Low="${Bottom}+2" Right="40"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">DELETE</Init>
     </Field>
     <!-- Clean up to -->
     <Field Num="29" Kind="Button">
-      <Geometry Up="41" Left="43" Low="41" Right="55"/>
+      <Geometry Up="${Bottom}+2" Left="43" Low="${Bottom}+2" Right="55"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">CLEAN UP TO</Init>
     </Field>
     <!-- Search operation -->
     <Field Num="30" Kind="Button">
-      <Geometry Up="41" Left="58" Low="41" Right="65"/>
+      <Geometry Up="${Bottom}+2" Left="58" Low="${Bottom}+2" Right="65"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">SEARCH</Init>
     </Field>
     <!-- Show all operations -->
     <Field Num="31" Kind="Button">
-      <Geometry Up="41" Left="68" Low="41" Right="77"/>
+      <Geometry Up="${Bottom}+2" Left="68" Low="${Bottom}+2" Right="77"/>
       <Colors Foreground="Blue" Background="Brown"/>
       <Init Row="0" Col="1">SHOW ALL</Init>
     </Field>
 
     <!-- Account actions -->
     <Field Num="32" Kind="Put">
-      <Geometry Up="43" Left="1" Low="43" Right="8"/>
+      <Geometry Up="${Bottom}+4" Left="1" Low="${Bottom}+4" Right="8"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Account:</Init>
     </Field>
     <!-- Create account -->
     <Field Num="33" Kind="Button">
-      <Geometry Up="43" Left="10" Low="43" Right="14"/>
+      <Geometry Up="${Bottom}+4" Left="10" Low="${Bottom}+4" Right="14"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">NEW</Init>
     </Field>
     <!-- Load account -->
     <Field Num="34" Kind="Button">
-      <Geometry Up="43" Left="17" Low="43" Right="22"/>
+      <Geometry Up="${Bottom}+4" Left="17" Low="${Bottom}+4" Right="22"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">LOAD</Init>
     </Field>
     <!-- Save account -->
     <Field Num="35" Kind="Button">
-      <Geometry Up="43" Left="25" Low="43" Right="30"/>
+      <Geometry Up="${Bottom}+4" Left="25" Low="${Bottom}+4" Right="30"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">SAVE</Init>
     </Field>
     <!-- Print account -->
     <Field Num="36" Kind="Button">
-      <Geometry Up="43" Left="33" Low="43" Right="39"/>
+      <Geometry Up="${Bottom}+4" Left="33" Low="${Bottom}+4" Right="39"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">PRINT</Init>
     </Field>
     <!-- Switch unit -->
     <Field Num="37" Kind="Button">
-      <Geometry Up="43" Left="43" Low="43" Right="53"/>
+      <Geometry Up="${Bottom}+4" Left="43" Low="${Bottom}+4" Right="53"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">TO FRANCS</Init>
     </Field>
     <!-- Sort account by date -->
     <Field Num="38" Kind="Button">
-      <Geometry Up="43" Left="56" Low="43" Right="61"/>
+      <Geometry Up="${Bottom}+4" Left="56" Low="${Bottom}+4" Right="61"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">SDAT</Init>
     </Field>
     <!-- Sort account by abs(amount) -->
     <Field Num="39" Kind="Button">
-      <Geometry Up="43" Left="64" Low="43" Right="69"/>
+      <Geometry Up="${Bottom}+4" Left="64" Low="${Bottom}+4" Right="69"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">SAMO</Init>
     </Field>
     <!-- Exit account -->
     <Field Num="40" Kind="Button">
-      <Geometry Up="43" Left="72" Low="43" Right="77"/>
+      <Geometry Up="${Bottom}+4" Left="72" Low="${Bottom}+4" Right="77"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">EXIT</Init>
     </Field>
 
     <!-- Message -->
     <Field Num="41" Kind="Put">
-      <Geometry Up="42" Left="1" Low="42" Right="55"/>
+      <Geometry Up="${Bottom}+3" Left="1" Low="${Bottom}+3" Right="55"/>
       <Colors Foreground="Orange" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Yes/No -->
     <Field Num="42" Kind="Button">
-      <Geometry Up="42" Left="57" Low="42" Right="61"/>
+      <Geometry Up="${Bottom}+3" Left="57" Low="${Bottom}+3" Right="61"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">YES</Init>
     </Field>
     <Field Num="43" Kind="Button">
-      <Geometry Up="42" Left="63" Low="42" Right="66"/>
+      <Geometry Up="${Bottom}+3" Left="63" Low="${Bottom}+3" Right="66"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">NO</Init>
     </Field>
 
   </Descriptor>
-
-
 
   <!-- File selection -->
   <Descriptor Num="2">

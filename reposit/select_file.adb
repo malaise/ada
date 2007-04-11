@@ -184,7 +184,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
   procedure Error (Msg : in Error_List) is
   begin
-    Con_Io.Bell(1);
+    Afpx.Bell(1);
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Afpx.Set_Field_Activation (Center_Fld, False);
     Afpx.Set_Field_Activation (Reread_Fld, False);

@@ -1,12 +1,15 @@
 with Ada.Text_Io;
-with Con_Io, Argument, X_Mng;
+with Argument, Afpx;
 with Pers_Fil, Mesu_Mng, Str_Mng;
 procedure Heart is
   Nb_Month : Str_Mng.Offset_Range;
 
   procedure End_Of_Program is
   begin
-    Con_Io.Reset_Term;
+    Afpx.Release_Descriptor;
+  exception
+    when Afpx.No_Descriptor =>
+      null;
   end End_Of_Program;
 
 begin
@@ -25,8 +28,6 @@ begin
       return;
   end;
 
-  Con_Io.Init;
-
   Pers_Fil.Load;
   Mesu_Mng.List_Mesures (Nb_Month);
 
@@ -34,7 +35,8 @@ begin
 
 exception
   when others =>
-    Con_Io.Bell (3);
+    Afpx.Bell (3);
     End_Of_Program;
     raise;
 end Heart;
+

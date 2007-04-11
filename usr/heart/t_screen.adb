@@ -290,12 +290,12 @@ begin
 
   end loop;
 
-  Con_Io.Reset_Term;
+  Afpx.Release_Descriptor;
 
 exception
   when others =>
-    Con_Io.Bell (3);
+    Afpx.Bell (3);
     delay 5.0;
-    Con_Io.Reset_Term;
+    Afpx.Release_Descriptor;
     raise;
 end T_Screen;
