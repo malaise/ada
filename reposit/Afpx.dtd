@@ -3,14 +3,13 @@
 <!-- Syntax of the descriptor file -->
 <!-- ============================= -->
 
-
 <!ELEMENT Afpx_Descriptors (Var*,Descriptor*)>
 <!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
 
 <!ELEMENT Var EMPTY>
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
-              Value NMTOKEN #REQUIRED>
+              Value CDATA   #REQUIRED>
 
 <!ELEMENT Descriptor (Var*, List?,(Var|Field)*)>
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED>

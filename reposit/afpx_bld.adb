@@ -56,9 +56,6 @@ procedure Afpx_Bld is
   -- Expected number of arguments
   Expected_Args : Natural;
 
-  -- Roots of prologue and of parsed elements
-  Prologue, Root : Xp.Element_Type;
-
   -- Close or deletes (on error) output files
   procedure Close (On_Error : in Boolean) is
   begin
@@ -154,18 +151,28 @@ procedure Afpx_Bld is
       end;
     end loop;
     Parser.Del (Iter);
-    -- Variable must not exist
-    if Computer.Is_Set (Name) then
-      File_Error (Node, "Variable " & Name & " already defined");
-    end if;
     -- Checked OK, store
     Computer.Set (Name, Value, Modifiable, Persistent);
+  exception
+    when Computer.Constant_Exists =>
+      if Modifiable then
+        File_Error (Node, "A constant with this name "
+                        & Name & " already exists");
+      else
+        File_Error (Node, "A variable or constant with this name "
+                        & Name & " already exists");
+      end if;
+    when File_Syntax_Error =>
+      raise;
+    when others =>
+      File_Error (Node, "Cannot add variable " & Name);
+      raise File_Syntax_Error;
   end Add_Variable;
 
   -- Geometry variable value
   function Geo_Image is new Int_Image (Natural);
 
-  -- Check and return size of root
+  -- Check and return size of screen
   Root_Name : constant String := "Afpx_Descriptors";
   function Load_Size (Root : in Xp.Node_Type) return Con_Io.Full_Square is
     Size : Con_Io.Full_Square;
@@ -234,7 +241,47 @@ procedure Afpx_Bld is
     Add_Variable (Root, "Screen.Down", Geo_Image (Size.Row), False, True);
     Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
     return Size;
+  exception
+    when File_Syntax_Error =>
+      raise;
+    when others =>
+      File_Error (Root, "Invalid size definition");
+      raise File_Syntax_Error;
   end Load_Size;
+
+  -- Load a user defined variable
+  procedure Load_Variable (Node : in Xp.Node_Type;
+                           Persistent : in Boolean) is
+  begin
+    if Xp.Get_Nb_Attributes (Node) /= 2 then
+      File_Error (Node,
+          "Invalid variable definition, expects Name and Value");
+    end if;
+    declare
+      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+    begin
+      if Match (Attrs(1).Name, "Name")
+      and then Match (Attrs(2).Name, "Value") then
+        Add_Variable (Node, Strof (Attrs(1).Value),
+                            Strof (Attrs(2).Value),
+                            True, Persistent);
+      elsif Match (Attrs(1).Name, "Value")
+      and then Match (Attrs(2).Name, "Name") then
+        Add_Variable (Node, Strof (Attrs(2).Value),
+                            Strof (Attrs(1).Value),
+                            True, Persistent);
+      else
+        File_Error (Node,
+            "Invalid variable definition, expects Name and Value");
+      end if;
+    end;
+  exception
+    when File_Syntax_Error =>
+      raise;
+    when others =>
+      File_Error (Node, "Invalid variable definition");
+      raise File_Syntax_Error;
+  end Load_Variable;
 
   -- Name of variable of a field
   function Fn_Image is new Int_Image (Afpx_Typ.Absolute_Field_Range);
@@ -662,12 +709,85 @@ procedure Afpx_Bld is
     raise File_Syntax_Error;
   end Check_Overlap;
 
-  procedure Load_Dscrs (Root : Xp.Element_Type;
+  -- Load a descriptor (at a given index)
+  procedure load_Dscr (Node : in Xp.Element_Type;
+                       Dscr_Index : in Afpx_Typ.Descriptor_Range;
+                       Screen_Size : in Con_Io.Full_Square)  is
+    Dscr_No : Afpx_Typ.Descriptor_Range;
+    Child : Xp.Node_Type;
+    List_Allowed : Boolean;
+  begin
+    if Xp.Get_Nb_Attributes (Node) /= 1
+    or else not Match (Xp.Get_Attribute (Node, 1).Name, "Num") then
+      File_Error (Node, "Expected descriptor Num");
+    end if;
+    begin
+      Dscr_No := Afpx_Typ.Descriptor_Range'Value (
+                  Strof (Xp.Get_Attribute (Node, 1).Value));
+    exception
+      when others =>
+        File_Error (Node, "Invalid descriptor num");
+    end;
+    Ada.Text_Io.Put_Line ("   descriptor " &
+                      Normal(Integer(Dscr_No), 2, Gap => '0'));
+    -- Dscr no has to be unique
+    if Descriptors(Dscr_No).Modified then
+      File_Error (Node,
+                  "Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
+                & " already defined");
+    end if;
+    -- Init dscr and fields array. No list at init
+    Descriptors(Dscr_No).Modified := True;
+    Descriptors(Dscr_No).Dscr_Index := Dscr_Index;
+    Descriptors(Dscr_No).Nb_Fields := 0;
+    Init_Index := 1;
+    Init_Str := (others => ' ');
+    Fields(0).Kind := Put;
+
+    List_Allowed := True;
+    for I in 1 .. Xp.Get_Nb_Children (Node) loop
+      -- Var, List or Field
+      Child := Xp.Get_Child (Node, I);
+      if Child.Kind /= Xp.Element then
+        File_Error (Child, "Expected a Var, a List or a Field");
+      end if;
+      if List_Allowed and then Match(Xp.Get_Name (Child), "List") then
+        Load_List (Child, Screen_Size);
+      elsif Match(Xp.Get_Name (Child), "Var") then
+        Load_Variable (Child, False);
+      elsif not Match(Xp.Get_Name (Child), "Field") then
+        File_Error (Child, "Expected a Var or a Field");
+      elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
+        File_Error (Child, "Too many fields. Maximum is"
+         & Field_Range'Image(Afpx_Typ.Field_Range'Last) & " per descriptor");
+      else
+        Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
+        Loc_Load_Field (Child, Descriptors(Dscr_No).Nb_Fields, Screen_Size);
+        List_Allowed := False;
+      end if;
+    end loop;
+
+    -- Check no overlapping of fields
+    if Fields(0).Kind /= Put then
+      -- Check list and each field
+      for J in 1 .. Descriptors(Dscr_No).Nb_Fields loop
+        Check_Overlap (Dscr_No, 0, J);
+      end loop;
+    end if;
+    -- Check each field with others
+    for I in 1 .. Descriptors(Dscr_No).Nb_Fields - 1 loop
+      for J in I + 1 .. Descriptors(Dscr_No).Nb_Fields loop
+        Check_Overlap (Dscr_No, I, J);
+      end loop;
+    end loop;
+
+  end Load_Dscr;
+
+  procedure Load_Dscrs (Root : in Xp.Element_Type;
                         Check_Only : in Boolean) is
-    Size : Con_Io.Full_Square;
+    Screen_Size : Con_Io.Full_Square;
     Dscr_Index : Afpx_Typ.Descriptor_Range;
-    Dscr_No    : Afpx_Typ.Descriptor_Range;
-    Child, Child_Child : Xp.Node_Type;
+    Child : Xp.Node_Type;
 
   begin
     -- If not check_only, delete then create binary files
@@ -704,106 +824,48 @@ procedure Afpx_Bld is
     end if;
 
     -- Parse size
-    Size := Load_Size (Root);
-
-    -- Parse persistent user variables
-    -- @@@
+    Screen_Size := Load_Size (Root);
 
     -- Initialize the descriptors array as not used
     for I in Afpx_Typ.Descriptor_Range loop
       Descriptors(I).Version  := Afpx_Typ.Afpx_Version;
-      Descriptors(I).Size  := Size;
+      Descriptors(I).Size  := Screen_Size;
       Descriptors(I).Modified := False;
       Descriptors(I).Dscr_Index := Afpx_Typ.Descriptor_Range'First;
       Descriptors(I).Nb_Fields := 0;
     end loop;
 
-    -- Loop on descriptors
+    -- Loop on persistent variables and descriptors
     -- Descriptors are stored in the descriptor file at Dscr_No
     -- Fields and init tables are stored in their files at Dscr_Index
     Dscr_Index := 1;
     Dscrs:
     for I in 1 .. Xp.Get_Nb_Children (Root) loop
-      -- Descriptor
+      -- Descriptor or persistent variable
       Child := Xp.Get_Child (Root, I);
       if Child.Kind /= Xp.Element then
-        File_Error (Child, "Unexpected text as descriptor");
+        File_Error (Child, "Expected Descriptor or Var");
       end if;
-      if not Match (Xp.Get_Name (Child), "Descriptor") then
-        File_Error (Child, "Expected Descriptor");
-      end if;
-      if Xp.Get_Nb_Attributes (Child) /= 1
-      or else not Match (Xp.Get_Attribute (Child, 1).Name, "Num") then
-        File_Error (Child, "Expected descriptor Num");
-      end if;
-      begin
-        Dscr_No := Afpx_Typ.Descriptor_Range'Value (
-                    Strof (Xp.Get_Attribute (Child, 1).Value));
-      exception
-        when others =>
-        File_Error (Child, "Invalid descriptor num");
-      end;
-      Ada.Text_Io.Put_Line ("   descriptor " &
-                        Normal(Integer(Dscr_No), 2, Gap => '0'));
-      -- Dscr no has to be unique
-      if Descriptors(Dscr_No).Modified then
-        File_Error (Child,
-                    "Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
-                  & " already defined");
-      end if;
-      -- Init dscr and fields array. No list at init
-      Descriptors(Dscr_No).Modified := True;
-      Descriptors(Dscr_No).Dscr_Index := Dscr_Index;
-      Descriptors(Dscr_No).Nb_Fields := 0;
-      Init_Index := 1;
-      Init_Str := (others => ' ');
-      Fields(0).Kind := Put;
-
-      -- Parse volatile user variables
-      -- @@@
-
-      for I in 1 .. Xp.Get_Nb_Children (Child) loop
-        Child_Child := Xp.Get_Child (Child, I);
-        if Child_Child.Kind /= Xp.Element then
-          File_Error (Child_Child, "Unexpected text as field");
+      if Match (Xp.Get_Name (Child), "Var") then
+        Load_Variable (Child, True);
+      elsif not  Match (Xp.Get_Name (Child), "Descriptor") then
+        File_Error (Child, "Expected Descriptor or Var");
+      else
+        -- Descriptor
+        Load_Dscr (Child, Dscr_Index, Screen_Size);
+        -- If not check_only, write fields and init
+        if not Check_Only then
+          Fld_Io.Write  (Fld_File , Fields,
+                         Fld_Io.Positive_Count(Dscr_Index));
+          Init_Io.Write (Init_File, Init_Str,
+                         Init_Io.Positive_Count(Dscr_Index));
         end if;
-        if I = 1 and then Match(Xp.Get_Name (Child_Child), "List") then
-          Load_List (Child_Child, Size);
-        elsif not Match(Xp.Get_Name (Child_Child), "Field") then
-          File_Error (Child_Child, "Unexpected field");
-        elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
-          File_Error (Child_Child, "Too many fields. Maximum is"
-           & Field_Range'Image(Afpx_Typ.Field_Range'Last) & " per descriptor");
-        else
-          Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
-          Loc_Load_Field (Child_Child, Descriptors(Dscr_No).Nb_Fields, Size);
-        end if;
-      end loop;
-
-      -- Check no overlapping of fields
-      if Fields(0).Kind /= Put then
-        -- Check list and each field
-        for J in 1 .. Descriptors(Dscr_No).Nb_Fields loop
-          Check_Overlap (Dscr_No, 0, J);
-        end loop;
-      end if;
-      -- Check each field with others
-      for I in 1 .. Descriptors(Dscr_No).Nb_Fields - 1 loop
-        for J in I + 1 .. Descriptors(Dscr_No).Nb_Fields loop
-          Check_Overlap (Dscr_No, I, J);
-        end loop;
-      end loop;
-
-      -- If not check_only, write fields and init
-      if not Check_Only then
-        Fld_Io.Write  (Fld_File , Fields,   Fld_Io.Positive_Count(Dscr_Index));
-        Init_Io.Write (Init_File, Init_Str, Init_Io.Positive_Count(Dscr_Index));
+        -- Reset volatile variables and constants defined for this descriptor
+        Computer.Reset (Not_Persistent => True);
+        -- Ready for next descriptor
+        Dscr_Index := Dscr_Index + 1;
       end if;
 
-      -- Reset volatile variables and constants defined for this descriptor
-      Computer.Reset (Not_Persistent => True);
-      -- Ready for next descriptor
-      Dscr_Index := Dscr_Index + 1;
     end loop Dscrs;
 
     -- Reset all variables
@@ -818,6 +880,9 @@ procedure Afpx_Bld is
       Close (True);
       raise;
   end Load_Dscrs;
+
+  -- Roots of prologue and of parsed elements
+  Prologue, Root : Xp.Element_Type;
 
 begin
   -- Help
