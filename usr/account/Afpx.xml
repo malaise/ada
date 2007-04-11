@@ -63,7 +63,7 @@
       <!-- 01234567890123456789012345678901234567890123456789012345678901234567890 -->
       <Init Row="0" Col="2">No|  Date  |  Amount |Stat|Kind|Destinat. |Comment        |Reference</Init>
       <!-- 3021|25/10/01|-12345.12|    |    |1234567890|123456789012345|1234567890 -->
-      <!-- Status: Yes No Def    Kind: Cheq CRed Xfer Draw -->
+      <!-- Status: Yes No Def    Kind: Cheq Cred Xfer Draw -->
     </Field>
 
     <!-- Account summary -->
@@ -89,11 +89,11 @@
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
 
-    <!-- DefeRed -->
+    <!-- Defered -->
     <Field Num="13" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="40" Low="${Bottom}+1" Right="47"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
-      <Init Row="0" Col="0">DefeRed:</Init>
+      <Init Row="0" Col="0">Defered:</Init>
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="48" Low="${Bottom}+1" Right="59"/>
@@ -113,37 +113,43 @@
 
     <!-- Actions on list (scrolling) -->
     <Field Num="17" Kind="Button">
-      <Geometry Up="2" Left="73" Low="2" Right="78"/>
+      <Geometry Up="${Top}" Left="73" Low="${Top}" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">Top</Init>
     </Field>
     <Field Num="18" Kind="Button">
-      <Geometry Up="4" Left="73" Low="6" Right="78"/>
+      <Geometry Up="${Field_17.Low}+2" Left="73"
+                Low="${Field_18.Up}+2" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">PgUp</Init>
     </Field>
     <Field Num="19" Kind="Button">
-      <Geometry Up="8" Left="73" Low="8" Right="78"/>
+      <Geometry Up="${Field_18.Low}+2" Left="73"
+                Low="${Field_19.Up}" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="2">Up</Init>
     </Field>
     <Field Num="20" Kind="Button">
-      <Geometry Up="12" Left="73" Low="14" Right="78"/>
+      <Geometry Up="${Field_19.Low}+4" Left="73"
+                Low="${Field_20.Up}+2" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="0">Center</Init>
     </Field>
     <Field Num="21" Kind="Button">
-      <Geometry Up="18" Left="73" Low="18" Right="78"/>
+      <Geometry Up="${Field_20.Low}+4" Left="73"
+                Low="${Field_21.Up}" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">Down</Init>
     </Field>
     <Field Num="22" Kind="Button">
-      <Geometry Up="20" Left="73" Low="22" Right="78"/>
+      <Geometry Up="${Field_21.Low}+2" Left="73"
+                Low="${Field_22.Up}+2" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="0">PgDown</Init>
     </Field>
     <Field Num="23" Kind="Button">
-      <Geometry Up="24" Left="73" Low="24" Right="78"/>
+      <Geometry Up="${Field_22.Low}+2" Left="73"
+                Low="${Field_23.Up}" Right="78"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="0">Bottom</Init>
     </Field>
@@ -504,7 +510,7 @@
     <Field Num="23" Kind="Button">
       <Geometry Up="10" Left="19" Low="10" Right="31"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="1">CRedit Card</Init>
+      <Init Row="0" Col="1">Credit Card</Init>
     </Field>
     <Field Num="24" Kind="Button">
       <Geometry Up="10" Left="34" Low="10" Right="43"/>
@@ -526,7 +532,7 @@
     <Field Num="27" Kind="Put">
       <Geometry Up="12" Left="2" Low="12" Right="9"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
-      <Init Row="0" Col="0">EnteRed:</Init>
+      <Init Row="0" Col="0">Entered:</Init>
     </Field>
     <Field Num="28" Kind="Button">
       <Geometry Up="12" Left="11" Low="12" Right="15"/>
@@ -541,7 +547,7 @@
     <Field Num="30" Kind="Button">
       <Geometry Up="12" Left="24" Low="12" Right="32"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="1">DefeRed</Init>
+      <Init Row="0" Col="1">Defered</Init>
     </Field>
 
     <!-- Destination -->
@@ -684,17 +690,17 @@
     <Field Num="10" Kind="Button">
       <Geometry Up="6" Left="11" Low="8" Right="19"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">EnteRed</Init>
+      <Init Row="1" Col="1">Entered</Init>
     </Field>
     <Field Num="11" Kind="Button">
       <Geometry Up="6" Left="23" Low="8" Right="35"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">Not enteRed</Init>
+      <Init Row="1" Col="1">Not entered</Init>
     </Field>
     <Field Num="12" Kind="Button">
       <Geometry Up="6" Left="39" Low="8" Right="47"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">DefeRed</Init>
+      <Init Row="1" Col="1">Defered</Init>
     </Field>
 
     <!-- Kind -->
@@ -711,7 +717,7 @@
     <Field Num="15" Kind="Button">
       <Geometry Up="10" Left="22" Low="12" Right="34"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">CRedit Card</Init>
+      <Init Row="1" Col="1">Credit Card</Init>
     </Field>
     <Field Num="16" Kind="Button">
       <Geometry Up="10" Left="38" Low="12" Right="47"/>
