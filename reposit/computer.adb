@@ -243,6 +243,16 @@ package body Computer is
   begin
     -- Replace each operator and parenthese 'op' by ' op '
     Exp := Asu_Tus (Expression);
+    -- Variables must not follow one each other (${var}${var})
+    if String_Mng.Locate (Asu_Ts (Exp), "}$") /= 0 then
+      raise Invalid_Expression;
+    end if;
+    -- Isolate variables
+    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "${", " ${"));
+    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "}", "} "));
+    -- Expand variables
+    Exp := Asu_Tus (Eval (Asu_Ts (Exp)));
+
     -- +X and -X will be analysed while parsing
     Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "+", " +"));
     Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "-", " -"));
@@ -254,12 +264,6 @@ package body Computer is
     while String_Mng.Locate (Asu_Ts (Exp), "  ") /= 0 loop
       Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "  ", " "));
     end loop;
-    -- Variables must not follow one each other (${var}${var})
-    if String_Mng.Locate (Asu_Ts (Exp), "}$") /= 0 then
-      raise Invalid_Expression;
-    end if;
-    -- Expand variables
-    Exp := Asu_Tus (Eval (Asu_Ts (Exp)));
     Trace ("Fixed expression: " & Asu_Ts (Exp));
     return Asu_Ts (Exp);
   end Fix;
