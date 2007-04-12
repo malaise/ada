@@ -1,5 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with My_Io, String_Mng, Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Sys_Calls;
+with My_Io, String_Mng, String_Mng.Regex,
+     Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
 procedure T_String is
 
   Action : Natural;
@@ -11,12 +12,17 @@ procedure T_String is
   Pos3 : Positive;
   Nat1 : Natural;
   Nat2 : Natural;
+  Nat3 : Natural;
+  Nat4 : Natural;
+  Nat5 : Natural;
   Char1 : Character;
   Bool1 : Boolean;
   Bool2 : Boolean;
   Bool3 : Boolean;
   Str1 : String(1 .. 500);
   Str2 : String(1 .. 500);
+
+  Search_Result : String_Mng.Regex.Search_Result;
 
   procedure Nat_Get (V : out Natural; Allow_Zero : in Boolean) is
     Str : String (1 .. 80);
@@ -68,11 +74,16 @@ begin
 
     loop
       My_Io.New_Line;
-      My_Io.Put_Line ("String: |" & Str(1 .. Str_Len) & "|   len: "
+      My_Io.Put_Line (
+       "String: |0        1         2         3         4         5         6");
+      My_Io.Put_Line (
+       "String: |123456789012345678901234567890123456789012345678901234567890");
+      My_Io.Put_Line (
+       "String: |" & Str(1 .. Str_Len) & "|   len: "
                     & Integer'Image(Str_Len));
 
       My_Io.Put_Line ("Main menu");
-      My_Io.Put_Line (" 0 Exit");
+      My_Io.Put_Line (" 0 Exit to change String");
       My_Io.Put_Line (" 1 Case conversion");
       My_Io.Put_Line (" 2 Parse spaces");
       My_Io.Put_Line (" 3 Procuste");
@@ -88,8 +99,10 @@ begin
       My_Io.Put_Line ("13 Tuncation ot best length");
       My_Io.Put_Line ("14 Copy");
       My_Io.Put_Line ("15 Replace");
+      My_Io.Put_Line ("16 Regex locate");
+      My_Io.Put_Line ("17 Regex replace");
 
-      My_Io.Put ("Choice (0 .. 15) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 17) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -138,7 +151,7 @@ begin
           when  4 =>
             My_Io.Put_Line ("Locate");
             My_Io.Put ("Fragment (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("From_Index (Nat)? "); Nat_Get(Nat2, False);
+            My_Io.Put ("From_Index (Nat)? "); Nat_Get(Nat2, True);
             My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
             My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put_Line ("Occurence of fragment located at: " &
@@ -152,8 +165,8 @@ begin
           when  5 =>
             My_Io.Put_Line ("Remove (substring)");
             My_Io.Put ("At_Index (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
-            My_Io.Put ("Shift_Left (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            My_Io.Put ("Shift_Left (YN)? "); Bool_Get(Bool1);
             My_Io.Put ("Gap (Char, n for none)? ");
                        My_Io.Get(Char1); My_Io.Skip_Line;
             if Char1 = 'n' then Char1 := Ada.Characters.Latin_1.Nul; end if;
@@ -167,8 +180,8 @@ begin
           when  6 =>
             My_Io.Put_Line ("(Extract) Slice");
             My_Io.Put ("At_Index (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
-            My_Io.Put ("To_Right (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            My_Io.Put ("To_Right (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Extracted slice: |"
               & String_Mng.Slice (Str(1 .. Str_Len),
                  At_Index => Pos1,
@@ -177,8 +190,8 @@ begin
 
           when  7 =>
             My_Io.Put_Line ("Cut (head or tail)");
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
-            My_Io.Put ("Head (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            My_Io.Put ("Head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Cut string: |"
               & String_Mng.Cut (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
@@ -186,8 +199,8 @@ begin
 
           when  8 =>
             My_Io.Put_Line ("Extract (head or tail)");
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, False);
-            My_Io.Put ("Head (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            My_Io.Put ("Head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Extracted: |"
               & String_Mng.Extract (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
@@ -200,7 +213,7 @@ begin
 
           when 10 =>
             My_Io.Put_Line ("Unique (from head or tail)");
-            My_Io.Put ("From head (Bool)? "); Bool_Get(Bool1);
+            My_Io.Put ("From head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Uniqued: |"
               & String_Mng.Unique (Str(1 .. Str_Len),
                                    From_Head => Bool1) & "|" );
@@ -213,18 +226,18 @@ begin
                         Str(1 .. Str_Len),
                         Start_Delimiter => Str1(1 .. Nat1),
                         Stop_Delimiter => Str2(1 .. Nat2),
-                        Resolv => Sys_Calls.Getenv'Access)
+                        Resolv => Environ.Getenv'Access)
               & "|" );
           when 12 =>
             My_Io.Put_Line ("Escape sequence location");
-            My_Io.Put ("From index (Nat)? "); Nat_Get(Nat1, False);
+            My_Io.Put ("From index (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put ("Escaped (Esc char first) (Str)? ");
-                       My_Io.Get_Line (Str2, Nat2);
+                       My_Io.Get_Line (Str1, Nat1);
             My_Io.Put_Line ("Located at: "
               & Natural'Image (String_Mng.Locate_Escape (
                         Str(1 .. Str_Len),
-                        From_Index => Nat1,
-                        Escape => Str2(1 .. Nat2))));
+                        From_Index => Pos1,
+                        Escape => Str1(1 .. Nat1))));
           when 13 =>
             My_Io.Put_Line ("13 Tuncation ot best length");
             My_Io.Put ("Length (Pos)? "); Nat_Get(Pos1, False);
@@ -255,13 +268,44 @@ begin
               & String_Mng.Replace (Str(1 .. Str_Len),
                                     What => Str1(1 .. Nat1),
                                     By => Str2(1 .. Nat2)));
+          when 16 =>
+            My_Io.Put_Line ("16 Regex locate");
+            My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("From_Index (Nat)? "); Nat_Get (Nat2, True);
+            My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat3, True);
+            My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
+            My_Io.Put ("Occurence (Pos)? "); Nat_Get (Pos1, False);
+            Search_Result := String_Mng.Regex.Locate (Str(1 .. Str_Len),
+                    Criteria => Str1(1 .. Nat1),
+                    From_Index => Nat2,
+                    To_Index => Nat3,
+                    Forward => Bool1,
+                    Occurence => Pos1);
+            My_Io.Put_Line ("Match at: " & Search_Result.Start_Offset'Img
+                          & " -" & Search_Result.End_Offset'Img);
+          when 17 =>
+            My_Io.Put_Line ("17 Regex replace");
+            My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
+            My_Io.Put ("From_Index (Nat)? "); Nat_Get (Nat3, True);
+            My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat4, True);
+            My_Io.Put ("Nb_Cycles (Nat)? "); Nat_Get (Nat5, True);
+            My_Io.Put_Line ("Replaced string: "
+              & String_Mng.Regex.Replace (Str(1 .. Str_Len),
+                    Criteria => Str1(1 .. Nat1),
+                    By => Str2(1 .. Nat2),
+                    From_Index => Nat3,
+                    To_Index => Nat4,
+                    Nb_Cycles => Nat5));
           when others => null;
+
         end case;
       exception
         when Error:Constraint_Error
              | String_Mng.Inv_Delimiter
              | String_Mng.Delimiter_Mismatch
-             | Sys_Calls.Env_Not_Set =>
+             | String_Mng.Regex.Invalid_Regular_Expression
+             | String_Mng.Regex.Invalid_Index =>
           My_Io.Put_Line ("Raised " & Ada.Exceptions.Exception_Name(Error)
                                     & "!");
 
