@@ -193,7 +193,7 @@ procedure Afpx_Bld is
       Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
       Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
       Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
-      -- Add 
+      -- Add
       return Size;
     elsif Xp.Get_Nb_Attributes (Root) /= 2 then
       File_Error (Root,
@@ -396,6 +396,16 @@ procedure Afpx_Bld is
                          Fn : in Afpx_Typ.Absolute_Field_Range) is
     Foreground, Background, Blink, Selected : Boolean := False;
     use type Con_Io.Blink_Stats;
+
+    -- Add blink constant
+    procedure Add_Blink_Stat is
+    begin
+      if Fields(Fn).Colors.Blink_Stat = Con_Io.Blink then
+        Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "True", False, False);
+      else
+        Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "False", False, False);
+      end if;
+    end Add_Blink_Stat;
   begin
     if Node.Kind /= Xp.Element
     or else not Match (Xp.Get_Name (Node), "Colors")
@@ -413,6 +423,9 @@ procedure Afpx_Bld is
           Foreground := True;
           Fields(Fn).Colors.Foreground := Con_Io.Effective_Colors'Value (
                  Computer.Eval (Strof (Attrs(I).Value)));
+          Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
+              Mixed_Str (Con_Io.Effective_Colors'Image (
+                  Fields(Fn).Colors.Foreground)), False, False);
         elsif Match (Attrs(I).Name, "Background") then
           if Background then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -420,6 +433,9 @@ procedure Afpx_Bld is
           Background := True;
           Fields(Fn).Colors.Background := Con_Io.Effective_Basic_Colors'Value (
                  Computer.Eval (Strof (Attrs(I).Value)));
+          Add_Variable (Node, Name_Of (Fn) & "." & "Background",
+              Mixed_Str (Con_Io.Effective_Colors'Image (
+                  Fields(Fn).Colors.Background)), False, False);
         elsif Match (Attrs(I).Name, "Blink") then
           if Blink then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -430,6 +446,7 @@ procedure Afpx_Bld is
           else
             Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
           end if;
+          Add_Blink_Stat;
         elsif Match (Attrs(I).Name, "Selected") then
           if Selected then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -437,6 +454,9 @@ procedure Afpx_Bld is
           Selected := True;
           Fields(Fn).Colors.Selected := Con_Io.Effective_Basic_Colors'Value (
                  Computer.Eval (Strof (Attrs(I).Value)));
+          Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
+              Mixed_Str (Con_Io.Effective_Colors'Image (
+                  Fields(Fn).Colors.Selected)), False, False);
         else
           File_Error (Node, "Invalid Color " & Attrs(I).Name);
         end if;
@@ -451,6 +471,7 @@ procedure Afpx_Bld is
                       "Expected colors for foreground, background and selected");
         end if;
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+        Add_Blink_Stat;
       elsif Fields(Fn).Kind = Put then
         if Xp.Get_Nb_Attributes (Node) /= 3
         or else not (Foreground and then Background and then Blink)
@@ -459,6 +480,9 @@ procedure Afpx_Bld is
                       "Expected colors for foreground, blink and background");
         end if;
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
+        Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
+            Mixed_Str (Con_Io.Effective_Colors'Image (
+                Fields(Fn).Colors.Selected)), False, False);
       elsif Fields(Fn).Kind = Button then
         if Xp.Get_Nb_Attributes (Node) /= 2
         or else not (Foreground and then Background)
@@ -467,7 +491,11 @@ procedure Afpx_Bld is
                       "Expected colors for foreground and background");
         end if;
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+        Add_Blink_Stat;
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
+        Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
+            Mixed_Str (Con_Io.Effective_Colors'Image (
+                Fields(Fn).Colors.Selected)), False, False);
       end if;
     exception
       when File_Syntax_Error =>
@@ -485,18 +513,6 @@ procedure Afpx_Bld is
                   "For all but Put fields, Foreground has to be basic color");
     end if;
 
-    -- Add constants, not persistent
-    Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
-      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Foreground)), False, False);
-    Add_Variable (Node, Name_Of (Fn) & "." & "Background",
-      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Background)), False, False);
-    Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
-      Mixed_Str (Con_Io.Effective_Colors'Image (Fields(Fn).Colors.Selected)), False, False);
-    if Fields(Fn).Colors.Blink_Stat = Con_Io.Blink then
-      Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "True", False, False);
-    else
-      Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "False", False, False);
-    end if;
   end Load_Colors;
 
   procedure Load_List (Node : in Xp.Node_Type;
@@ -710,7 +726,7 @@ procedure Afpx_Bld is
   end Check_Overlap;
 
   -- Load a descriptor (at a given index)
-  procedure load_Dscr (Node : in Xp.Element_Type;
+  procedure Load_Dscr (Node : in Xp.Element_Type;
                        Dscr_Index : in Afpx_Typ.Descriptor_Range;
                        Screen_Size : in Con_Io.Full_Square)  is
     Dscr_No : Afpx_Typ.Descriptor_Range;
@@ -753,6 +769,7 @@ procedure Afpx_Bld is
       end if;
       if List_Allowed and then Match(Xp.Get_Name (Child), "List") then
         Load_List (Child, Screen_Size);
+        List_Allowed := False;
       elsif Match(Xp.Get_Name (Child), "Var") then
         Load_Variable (Child, False);
       elsif not Match(Xp.Get_Name (Child), "Field") then
