@@ -9,36 +9,43 @@
 
 <!-- Syntax and semantic of the descriptor file -->
 <!-- ========================================== -->
+<!-- Afpx_Descriptors allows defining the screen size for all descriptors -->
+<!--  Default are a Height of 25 and a Width of 80. -->
+<!-- The constants Screen.Width and Screen.Height are automatically created -->
+<!--  as soon as the attribute is parsed (so it can be used for defining -->
+<!--  the other attribute. The constants Screen.Up, Low, Left and Right -->
+<!--  are also created. They are valid for all the descriptors. -->
 <!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
-
-<!-- Afpx_Descriptors allows defining the screen size for all descriptors -->
-<!--  Default are a Height of 25 and a Width of 80 -->
+<!-- The Afpx_Descriptors is made of several descriptors. -->
+<!-- Between descriptors, it is possible to define and overwrite variables. -->
+<!-- These variables are valid for all the following descriptors. -->
 <!ELEMENT Afpx_Descriptors (Var*,Descriptor*)>
 
-<!-- Between descriptors, it is possible to define and overwrite variables -->
-<!--  A variable name must be <Identifier>[{.<Idenfier>}] the Ada way. -->
-<!--  Value can be string or number, and contain some ${Variable} -->
+<!-- A variable name must be <Identifier>[{.<Identifier>}] the Ada way. -->
+<!-- Value can be string or number, and may contain some reference to -->
+<!--  variables or constants, on the form ${Variable}. --> 
 <!ELEMENT Var EMPTY>
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
 
-<!-- The Afpx_Descriptors is made of several descriptors -->
-<!-- Descriptor Num has to be positive range 1 .. 50 and sole (no double) -->
+<!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double) -->
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED>
-
-<!-- A descriptor allows defining one optional list then fields -->
+<!-- A descriptor allows defining one optional list, then fields -->
 <!-- Before and between them, it is possible to define and overwrite -->
 <!--  variables that are valid in the descriptor only -->
 <!ELEMENT Descriptor (Var*, List?,(Var|Field)*)>
 
-<!-- List has to be defined none or once per descriptor, at the beginning -->
-<!-- List (like fields) is defined by a geometry and colors -->
+<!-- The list can be defined none or once per descriptor, at the -->
+<! -- beginning. -->
 <!ATTLIST List>
+<!-- The list (like fields) is defined by a geometry and colors. -->
+<!-- Geometry has to be compitaible with screen and list and fields -->
+<!--  must not overlap. -->
 <!ELEMENT List (Geometry,Colors)>
 
 <!-- Field Num has to be within Field_Range (1 .. 200), strictly crescent -->
-<!-- within one descriptor, no "hole", no double are allowed -->
+<!--  within one descriptor, no "hole" nor double are allowed in filed nums. -->
 <!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 <!-- Field are defined by a geometry and colors -->
 <!-- Fields also allow defining an initial content (several rows and cols) -->
@@ -50,14 +57,19 @@
 <!ELEMENT Geometry EMPTY>
 <!ATTLIST Geometry Up  CDATA #REQUIRED Left  CDATA #REQUIRED
                    Low CDATA #REQUIRED Right CDATA #REQUIRED>
+<!-- As soon as an attribute is parsed, the corresponding constant -->
+<!--  is defined and valid for the rest of the descriptor (e.g. List.Up, -->
+<!--  Field_2.Low, Field_21.Right). When all geomtry is parsed for a list -->
+<!--  or field, the constants Width and Height  (e.g. List.Width, -->
+<!--  Field_21.Height are olso defined. -->
 
 <!-- Foreground color must be of Colors for Put fields -->
-<!--  and of Basic_Colors for Button, Get and List -->
-<!-- Background color and Selected color must be Basic_Colors -->
+<!--  and of Basic_Colors for Button, Get and List. -->
+<!-- Background color and Selected color must be Basic_Colors. -->
 <!-- Blink is mandatory (True or False) for Put fields and must not be -->
-<!--  specified for List, Button and Get fields -->
+<!--  specified for List, Button and Get fields. -->
 <!-- Selected color is mandatory for List and Get fields and -->
-<!--  must not be specified for Put and Button -->
+<!--  must not be specified for Put and Button. -->
 <!-- Summary of color combinations -->
 <!-- ============================= -->
 <!-- Type  |   Foreground  Blink  Background  Selected -->
@@ -76,10 +88,12 @@
                  Blink CDATA #IMPLIED
                  Background CDATA #REQUIRED
                  Selected CDATA #IMPLIED>
+<!-- As soon as such color attribute is parsed, the corresponding constant, -->
+<!--  (valid for the rest of the descriptor) is defined (e.g. -->
+<!-- List.Foreground, Field_1.Background, Field_21.Blink). -->
 
-<!-- Init Row has to be compatible with Geometry -->
-<!-- Init Col has to be compatible with Geometry -->
-<!-- Init string has to be compatible with Geometry and Init Col -->
+<!-- Init row and col have to be compatible with geometry -->
+<!-- Init string has to be compatible with geometry and init col -->
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
