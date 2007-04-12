@@ -570,9 +570,12 @@ package body Mng is
   -- Update status of operation
   procedure Update_State is
     Oper : Oper_Def.Oper_Rec;
+    Prev_Status : Oper_Def.Status_List;
+    use type Oper_Def.Status_List;
   begin
     List_Util.Move_To_Current;
     Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+    Prev_Status := Oper.Status;
     case Oper.Status is
       when Oper_Def.Entered =>
         if Oper_Def.Kind_Can_Be_Defered(Oper.Kind)
@@ -588,10 +591,12 @@ package body Mng is
           Oper.Status := Oper_Def.Entered;
         end if;
     end case;
-    Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
-    Account_Saved := False;
-    Compute_Amounts;
-    Refresh_Screen(Unchanged);
+    if Oper.Status /= Prev_Status then
+      Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
+      Account_Saved := False;
+      Compute_Amounts;
+      Refresh_Screen(Unchanged);
+    end if;
   end Update_State;
 
   -- Create a new operation
