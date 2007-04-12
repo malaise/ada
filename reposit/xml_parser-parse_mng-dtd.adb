@@ -890,7 +890,7 @@ package body Dtd is
   end Check_Attributes;
 
   -- Check Current element of the tree
-  procedure Check_Element is
+  procedure Check_Element (Check_The_Attributes : in Boolean) is
     -- Current cell in tree
     Cell : My_Tree_Cell;
     -- Lists of attributes and of children from xml tree
@@ -925,10 +925,13 @@ package body Dtd is
       My_Tree.Move_Father (Tree_Mng.Tree);
     end if;
     My_Tree.Read (Tree_Mng.Tree, Cell);
-    -- Check Attributes
-    Check_Attributes (Cell.Name, Cell.Line_No, Attributes);
-    -- Check children
-    Check_Children (Cell.Name, Cell.Line_No, Children, Is_Mixed);
+    if Check_The_Attributes then
+      -- Check Attributes
+      Check_Attributes (Cell.Name, Cell.Line_No, Attributes);
+    else
+      -- Check children
+      Check_Children (Cell.Name, Cell.Line_No, Children, Is_Mixed);
+    end if;
 
   end Check_Element;
 

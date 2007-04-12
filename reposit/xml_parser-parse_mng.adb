@@ -124,7 +124,7 @@ package body Parse_Mng  is
     -- Parse a dtd (either a external file or internal if name is empty)
     procedure Parse (File_Name : in String);
     -- Check Current element of the tree
-    procedure Check_Element;
+    procedure Check_Element (Check_The_Attributes : Boolean);
     -- Perform final checks: that IDREF(s) appear as ID
     procedure Final_Check;
   end Dtd;
@@ -487,8 +487,8 @@ package body Parse_Mng  is
       if Util.Get /= Util.Stop then
         Util.Error ("Unexpected char " & Util.Read & " after " & Util.Slash);
       end if;
-      -- End of this empty element
-      Dtd.Check_Element;
+      -- End of this empty element, check attributes only is OK
+      Dtd.Check_Element (Check_The_Attributes => True);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up;
@@ -496,6 +496,8 @@ package body Parse_Mng  is
       return;
     elsif Char = Util.Stop then
       -- >: parse text and children elements until </
+      -- Check attributes first (e.g. xml:space)
+      Dtd.Check_Element (Check_The_Attributes => True);
       Parse_Children;
       -- Check Name matches
       Util.Parse_Until_Char (Util.Stop & "");
@@ -506,8 +508,8 @@ package body Parse_Mng  is
                   & Asu_Ts (Element_Name)
                   & ", got " & Asu_Ts (End_Name));
       end if;
-      -- End of this non empty element
-      Dtd.Check_Element;
+      -- End of this non empty element, check children
+      Dtd.Check_Element (Check_The_Attributes => False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up;
