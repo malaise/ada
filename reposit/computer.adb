@@ -127,7 +127,7 @@ package body Computer is
       or else not Modifiable then
         -- One of the original and of the new (or both)
         --  is not modifiable
-        raise Constant_Exists; 
+        raise Constant_Exists;
       end if;
     end if;
     Var.Persistent := True;
@@ -138,7 +138,7 @@ package body Computer is
       or else not Modifiable then
         -- One of the original and of the new (or both)
         --  is not modifiable
-        raise Constant_Exists; 
+        raise Constant_Exists;
       end if;
     end if;
     -- Insert or overwrite modifiable variable, or insert new constant
