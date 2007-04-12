@@ -259,7 +259,9 @@ package body Edition is
       when others =>
         Prev := False;
     end;
-    if Oper.Kind = Oper_Def.Transfer and then Prev then
+    if Prev
+    and then (Oper.Kind = Oper_Def.Transfer 
+              or else Oper.Kind = Oper_Def.Savings) then
       Oper.Date.Month := Cur_Date.Month;
       Oper.Date.Year := Cur_Date.Year;
       -- Adjust days if new month does not have enough days
