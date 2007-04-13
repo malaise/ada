@@ -467,6 +467,7 @@
     <Field Num="14" Kind="Put">
       <Geometry Up="6" Left="10" Low="6" Right="10"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">/</Init>
     </Field>
     <Field Num="15" Kind="Get">
       <Geometry Up="6" Left="11" Low="6" Right="12"/>
@@ -475,6 +476,7 @@
     <Field Num="16" Kind="Put">
       <Geometry Up="6" Left="13" Low="6" Right="15"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">/20</Init>
     </Field>
     <Field Num="17" Kind="Get">
       <Geometry Up="6" Left="16" Low="6" Right="17"/>
