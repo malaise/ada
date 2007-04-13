@@ -227,7 +227,8 @@ package body Mng is
       end if;
       if Oper.Kind = Oper_Def.Savings then
         Add_Amount(Screen.Saved, Oper.Amount);
-      elsif Oper.Kind = Oper_Def.Credit then
+      end if;
+      if Oper.Status = Oper_Def.Defered then
         Add_Amount(Screen.Defered, Oper.Amount);
       end if;
       exit when not Oper_List_Mng.Check_Move(Oper_List);
