@@ -1,6 +1,7 @@
 -- More powerfull search and substitution in strings,
 --  based on regex.
 with Ada.Strings.Unbounded;
+with Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str;
 package body String_Mng.Regex is
 
 
@@ -114,12 +115,14 @@ package body String_Mng.Regex is
     Char : Character;
     Info_Index : Positive;
     Linfo : Regular_Expressions.Match_Array := Info;
+    Case_Start : Positive;
+    Case_Char : Character;
   begin
-    -- Compute Newby
+    -- Compute Newby, insert matching substrings and hexa byte
     Newby := Asu_Tus (By);
     From := 1;
     loop
-      Esc := Locate_Escape (Asu_Ts (Newby), From, "\\0123456789");
+      Esc := Locate_Escape (Asu_Ts (Newby), From, "\\0123456789x");
       exit when Esc = 0;
       Char := Asu.Element (Newby, Esc);
       if Char = '\' then
@@ -144,9 +147,81 @@ package body String_Mng.Regex is
           From := Esc + Linfo(Info_Index).Last_Offset_Stop
                       - Linfo(Info_Index).First_Offset;
         end if;
+      elsif Char = 'x' and then Esc <= Asu.Length (Newby) - 2 then
+        declare
+          Byte : Integer;
+        begin
+          Byte := 16#10# * Char_To_Hexa (Asu.Element (Newby, Esc + 1))
+                        +  Char_To_Hexa (Asu.Element (Newby, Esc + 2));
+          -- Replace "\xIJ" by the code
+          Newby := Asu.Replace_Slice (Newby, Esc - 1, Esc + 2,
+                        Character'Val (Byte) & "");
+          From := Esc;
+        exception
+          when others =>
+            -- Conversion failed
+            From := Esc;
+        end;
       else
         -- "\*" unchanged
         From := Esc;
+      end if;
+      exit when From > Asu.Length (Newby);
+    end loop;
+
+    -- Apply case switches to replacement string
+    Case_Start := 1;
+    Case_Char := 'c';
+    From := 1;
+    loop
+      Esc := Locate_Escape (Asu_Ts (Newby), From, "\umlc");
+      if Esc = 0 then
+        -- No more escape
+        if Case_Char = 'c' then
+          -- No current conversion: Done
+          exit;
+        else
+          -- Apply last conversion: simulate an appended "\c"
+          Char := 'c';
+          Esc := Asu.Length (Newby) + 2;
+        end if;
+      else
+        -- Store the new char and delete this sequence
+        Char := Asu.Element (Newby, Esc);
+        Newby := Asu.Delete (Newby, Esc - 1, Esc);
+        From := Esc - 1;
+      end if;
+      if Char = Case_Char then
+        -- No change
+        null;
+      elsif Case_Char = 'c' then
+        -- No conversion to apply
+        Case_Start := From;
+        Case_Char := Char;
+      elsif Case_Char = 'u' then
+        -- Replace from Case_Start to \u by UPPERCASE
+        --  of str from Case_Start to before \
+        Newby := Asu.Replace_Slice (Newby, Case_Start, Esc - 2,
+          Upper_Str (Asu.Slice (Newby, Case_Start, Esc - 2)));
+        Case_Start := Esc - 1;
+        Case_Char := Char;
+      elsif Case_Char = 'm' then
+        -- Replace from Case_Start to \u by Mixed
+        --  of str from Case_Start to before \
+        Newby := Asu.Replace_Slice (Newby, Case_Start, Esc - 2,
+          Mixed_Str (Asu.Slice (Newby, Case_Start, Esc - 2)));
+        Case_Start := Esc - 1;
+        Case_Char := Char;
+      elsif Case_Char = 'l' then
+        -- Replace from Case_Start to \u by lowercase
+        --  of str from Case_Start to before \
+        Newby := Asu.Replace_Slice (Newby, Case_Start, Esc - 2,
+          Lower_Str (Asu.Slice (Newby, Case_Start, Esc - 2)));
+        Case_Start := Esc - 1;
+        Case_Char := Char;
+      else
+         -- Impossible, bug in Locate_Escape
+         null;
       end if;
       exit when From > Asu.Length (Newby);
     end loop;

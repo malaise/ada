@@ -43,8 +43,10 @@ package String_Mng.Regex is
   -- Replace in Within string all occurences of Criteria by By.
   -- Search and replace is performed between the given From_Index (first if 0)
   --  and the given To_Index (last if 0) indexes of Within.
-  -- Criteria can be a regular expression and By may reference partial
-  --  matching substrings (\0, \1, \2 up to \9).
+  -- Criteria can be a regular expression and By may:
+  --   reference partial matching substrings (\0, \1, \2 up to \9)
+  --   contain hexadecimal code (\xIJ)
+  --   convert in UPPER, lower, Mixed case, stop converting (\u, \l, \m and \c).
   -- Once a substitution has occured, the search continues from the
   --  first character after replcement (thus avoiding loops), up to To_Index.
   -- This cycle ends when no substitution occuirs or after a maximum Nb_Cycles,
