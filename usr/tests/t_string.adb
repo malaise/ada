@@ -281,8 +281,9 @@ begin
                     To_Index => Nat3,
                     Forward => Bool1,
                     Occurence => Pos1);
-            My_Io.Put_Line ("Match at: " & Search_Result.Start_Offset'Img
-                          & " -" & Search_Result.End_Offset'Img);
+            My_Io.Put_Line ("Match at: " & Search_Result.First_Offset'Img
+                          & " -" & Search_Result.Last_Offset_Start'Img
+                          & " /" & Search_Result.Last_Offset_Stop'Img);
           when 17 =>
             My_Io.Put_Line ("17 Regex replace");
             My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);

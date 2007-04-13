@@ -78,8 +78,9 @@ begin
       Ada.Text_Io.Put ("matches at pos");
       -- List submatches
       for I in Match_Range'(1) .. N_Matched loop
-        Ada.Text_Io.Put (" [" & Image(Match_Info(I).Start_Offset)
-                        & "-" & Image(Match_Info(I).End_Offset) & "]");
+        Ada.Text_Io.Put (" [" & Image(Match_Info(I).First_Offset)
+                        & "-" & Image(Match_Info(I).Last_Offset_Start)
+                        & "/" & Image(Match_Info(I).Last_Offset_Stop) & "]");
       end loop;
       Ada.Text_Io.New_Line;
     end if;

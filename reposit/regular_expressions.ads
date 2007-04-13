@@ -2,6 +2,18 @@
 with System, Ada.Finalization;
 package Regular_Expressions is
 
+  -- Language:
+  -- When a character is be encoded on several bytes,
+  --  language is used to detect the end of this sequence and
+  --  set Last_Offset_Stop to the last byte of the sequence.
+  -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
+  --  ending by ".UTF-8". This is the default behaviour.
+  type Language_List is (Lang_C, Lang_Utf_8, Get_Env);
+  procedure Set_Language (Language : in Language_List);
+
+  subtype Language_Set_List is Language_List range Lang_C .. Lang_Utf_8;
+  function Get_Language return Language_Set_List;
+
   -- Result of regex compilation
   type Compiled_Pattern is limited private;
 
@@ -11,14 +23,16 @@ package Regular_Expressions is
   -- abcab matches (ab)c\1* at pos [1-5] [1-2]
   subtype Offset_Range is Integer;
   type Match_Cell is record
-    Start_Offset :  Offset_Range;
-    End_Offset   :  Offset_Range;
+    First_Offset      :  Offset_Range;
+    Last_Offset_Start :  Offset_Range;
+    Last_Offset_Stop  :  Offset_Range;
   end record;
   type Match_Array is array (Natural range <>) of Match_Cell;
   No_Match_Array : Match_Array (1 .. 0);
   subtype One_Match_Array is Match_Array (1 .. 1);
+  No_Match : constant Match_Cell := (1, 0, 0);
 
-  -- Compile a regex
+  -- Compile a regex, using Language
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
@@ -38,15 +52,19 @@ package Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
-  -- Compare string Str to Criteria
-  -- Returns 0 or the index of Str where matching starts
+ -- Compare string Str to Criteria
+  -- Returns No_Match or a Match_Cell
   -- May raise No_Criteria is Criteria does not compile
-  function Match (Criteria, Str : String) return Natural;
+  function Match (Criteria, Str : String) return Match_Cell;
 
   -- Compare string Str to Criteria
   -- Returns True or False
+  -- If Strict is set, then True is returned if and only if the
+  --  complete Str matches the criteria (i.e. First_Offset = Str'First
+  --  and Last_Offset_Stop = Str'Last)
   -- May raise No_Criteria is Criteria does not compile
-  function Match (Criteria, Str : String) return Boolean;
+  function Match (Criteria, Str : String;
+                  Strict : in Boolean) return Boolean;
 
   -- Get Compilation error
   function Error (Criteria : in Compiled_Pattern) return String;
@@ -57,6 +75,7 @@ package Regular_Expressions is
 private
 
   type Compiled_Pattern is new Ada.Finalization.Controlled with record
+    Language : Language_List := Get_Env;
     Comp_Addr : System.Address := System.Null_Address;
     Error : Integer := 0;
   end record;

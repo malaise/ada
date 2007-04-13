@@ -1,9 +1,9 @@
 with Ada.Exceptions, Ada.Text_Io;
-with Environ, Argument, Sys_Calls;
-with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
+with Environ, Argument, Sys_Calls, Regular_Expressions;
+with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V3_4";
+  Version : constant String  := "V3_5";
 
   procedure Usage is
   begin
@@ -108,7 +108,6 @@ procedure Asubst is
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
 
-  -- Env management
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
   -- Option management
   Extended : Boolean := True;
@@ -118,7 +117,6 @@ procedure Asubst is
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
   Backup : Boolean := False;
-  Utf8 : Boolean := False;
   Is_Regex : Boolean := True;
   -- Start index (in nb args) of patterns
   Start : Positive;
@@ -126,6 +124,10 @@ procedure Asubst is
   Ok : Boolean;
   -- Nb subst per file
   Nb_Subst : Substit.Long_Long_Natural;
+  -- Language
+  Lang : Regular_Expressions.Language_List
+       := Regular_Expressions.Get_Env;
+  use type Regular_Expressions.Language_List;
 
   -- Process one file
   procedure Do_One_File (File_Name : in String) is
@@ -156,26 +158,11 @@ procedure Asubst is
   end Do_One_File;
 
 begin
-  -- Check if env variable LANG ends with ".UTF-8"
-  begin
-    declare
-      Lang : constant String := Environ.Getenv ("LANG");
-    begin
-      if Lang'Length > 6
-      and then Lang(Lang'Last-5 .. Lang'Last) = ".UTF-8" then
-        Utf8 := True;
-      end if;
-    end;
-  exception
-    when others =>
-      null;
-  end;
-
   -- Superseed by ASUBST_UTF8 variable if set
-  if not Utf8 and then Environ.Is_Yes (Utf8_Var_Name) then
-    Utf8 := True;
-  elsif Utf8 and then Environ.Is_No (Utf8_Var_Name) then
-    Utf8 := False;
+  if Environ.Is_Yes (Utf8_Var_Name) then
+    Lang := Regular_Expressions.Lang_Utf_8;
+  elsif Environ.Is_No (Utf8_Var_Name) then
+    Lang := Regular_Expressions.Lang_C;
   end if;
 
   -- Check nb of arguments
@@ -211,7 +198,7 @@ begin
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option ascii");
       end if;
-      Utf8 := False;
+      Lang := Regular_Expressions.Lang_C;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-b"
     or else Argument.Get_Parameter (Occurence => I) = "--basic" then
@@ -295,7 +282,7 @@ begin
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option utf8");
       end if;
-      Utf8 := True;
+      Lang := Regular_Expressions.Lang_Utf_8;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-v"
     or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
@@ -334,7 +321,7 @@ begin
   begin
     Search_Pattern.Parse (
          Argument.Get_Parameter (Occurence => Start),
-         Extended, Case_Sensitive, Utf8, Is_Regex);
+         Extended, Case_Sensitive, Is_Regex);
     Start := Start + 1;
   exception
     when Search_Pattern.Parse_Error =>
@@ -364,11 +351,15 @@ begin
 
   -- Put processing mode
   if Debug.Set then
-    if Utf8 then
+    if Lang = Regular_Expressions.Lang_Utf_8 then
       Sys_Calls.Put_Line_Error ("Assuming charset is UTF-8");
-    else
+    elsif  Lang = Regular_Expressions.Lang_C then
       Sys_Calls.Put_Line_Error ("Assuming charset is ASCII");
     end if;
+    Regular_Expressions.Set_Language (Lang);
+    Sys_Calls.Put_Line_Error ("Regex assumes language to be "
+       & Mixed_Str (Regular_Expressions.Language_List'Image(
+                Regular_Expressions.Get_Language)));
   end if;
 
   -- Process files

@@ -1,4 +1,4 @@
-with Ada.Characters.Latin_1, Ada.Strings.Unbounded, Utf_8;
+with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
 with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
      Char_To_Hexa;
 package body Search_Pattern is
@@ -23,7 +23,7 @@ package body Search_Pattern is
     Nb_Substr : Nb_Sub_String_Range := 0;
     -- Indexes of matching string (at index 0),
     --  then indexes of sub-matching strings
-    Substrs : Substr_Array := (others => (0, 0));
+    Substrs : Substr_Array := (others => (0, 0, 0));
   end record;
   type Line_Pat_Acc is access all Line_Pat_Rec;
 
@@ -64,9 +64,6 @@ package body Search_Pattern is
 
   -- True if one unique pattern and with no '^' nor '$'
   Is_Multiple : Boolean;
-
-  -- True if utf8 encoding
-  Utf8 : Boolean;
 
   -- True if find pattern is regexes
   Is_Regex : Boolean;
@@ -155,7 +152,7 @@ package body Search_Pattern is
   -- Parses the search patern
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse (Pattern : in String;
-                   Extended, Case_Sensitive, Utf8, Is_Regex : in Boolean) is
+                   Extended, Case_Sensitive, Is_Regex : in Boolean) is
 
     The_Pattern : Asu.Unbounded_String;
 
@@ -243,7 +240,6 @@ package body Search_Pattern is
     Is_Multiple := False;
     Check_Completed := False;
     Expected_Index := 1;
-    Search_Pattern.Utf8 := Utf8;
     Search_Pattern.Is_Regex := Is_Regex;
     -- Reject empty pattern
     if Pattern = "" then
@@ -436,7 +432,7 @@ package body Search_Pattern is
     Check_Completed := False;
     -- Reset substring array if not a delim
     if not Upat_Access.Is_Delim then
-      Upat_Access.Substrs := (others => (0, 0));
+      Upat_Access.Substrs := (others => (0, 0, 0));
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search check pattern No " & Regex_Index'Img);
@@ -445,7 +441,7 @@ package body Search_Pattern is
     if Upat_Access.Is_Delim then
       if Str = Line_Feed then
         Upat_Access.Nb_Substr := 0;
-        Upat_Access.Substrs(0) := (1, 1);
+        Upat_Access.Substrs(0) := (1, 1, 1);
         Upat_Access.Match_Str := Asu.To_Unbounded_String (Line_Feed);
         if Regex_Index = Unique_Pattern.List_Length (Pattern_List) then
           -- Last pattern and matches
@@ -489,12 +485,14 @@ package body Search_Pattern is
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match (1) := (
-             Start_Offset => Nmatch,
-             End_Offset   => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1);
+           First_Offset => Nmatch,
+           Last_Offset_Start => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1,
+           Last_Offset_Stop  => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1);
           Nmatch := 1;
         end if;
       end if;
-      if Nmatch >= 1 and then Match(1).Start_Offset <= Match(1).End_Offset then
+      if Nmatch >= 1
+      and then Match(1).First_Offset <= Match(1).Last_Offset_Stop then
         -- Copy the slice of substrings
         Upat_Access.Nb_Substr := Nmatch - 1;
         Upat_Access.Substrs(0) := Match(1);
@@ -520,22 +518,6 @@ package body Search_Pattern is
       -- Invalid Regex_Index or empty list
       raise No_Regex;
   end Check;
-
-  -- Check if Char is the startup of a valid UTF-8 sequence
-  --  and increment Offset accordingly
-  procedure Apply_Utf8 (Char : in Character;
-                        Offset : in out Regular_Expressions.Offset_Range) is
-    Len : Utf_8.Len_Range;
-  begin
-    -- Get lenght of sequence
-    Len := Utf_8.Nb_Chars (Char);
-    -- Apply offset
-    Offset := Offset + Len - 1;
-  exception
-    when Utf_8.Invalid_Sequence =>
-      -- Leave Offset unchanged
-      null;
-  end Apply_Utf8;
 
   -- Returns the Nth sub-matching string of one regex
   -- Returns the complete matching string of one regex if Sub_String_Index is 0
@@ -566,16 +548,12 @@ package body Search_Pattern is
     end if;
     Cell := Upat_Access.Substrs(Sub_String_Index);
     -- Check if end of cell is the start of a Utf8 sequence
-    if Utf8 and then Is_Regex then
-      Apply_Utf8 (Asu.Element (Upat_Access.Match_Str, Cell.End_Offset),
-                  Cell.End_Offset);
-      if Cell.End_Offset > Asu.Length (Upat_Access.Match_Str) then
-        raise Substr_Len_Error;
-      end if;
+    if Cell.Last_Offset_Stop > Asu.Length (Upat_Access.Match_Str) then
+      raise Substr_Len_Error;
     end if;
     -- Return the slice
     return Asu.Slice (Upat_Access.Match_Str,
-                      Cell.Start_Offset, Cell.End_Offset);
+                      Cell.First_Offset, Cell.Last_Offset_Stop);
 
   exception
     when Unique_Pattern.Not_In_List =>
@@ -605,7 +583,7 @@ package body Search_Pattern is
     Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
 
     -- Get start of string matching first pattern
-    Cell.Start_Offset := Upat_Access.Substrs(0).Start_Offset;
+    Cell.First_Offset := Upat_Access.Substrs(0).First_Offset;
 
     -- Get access to the last pattern if needed (if more than one pattern)
     Nbre := Unique_Pattern.List_Length (Pattern_List);
@@ -616,16 +594,13 @@ package body Search_Pattern is
     end if;
 
     -- Get end of string matching last pattern
-    Cell.End_Offset := Upat_Access.Substrs(0).End_Offset;
+    Cell.Last_Offset_Start := Upat_Access.Substrs(0).Last_Offset_Start;
+    Cell.Last_Offset_Stop  := Upat_Access.Substrs(0).Last_Offset_Stop;
 
     -- Apply UTF8 correction
     -- Check if end of cell is the start of a Utf8 sequence
-    if Utf8 and then Is_Regex then
-      Apply_Utf8 (Asu.Element (Upat_Access.Match_Str, Cell.End_Offset),
-                  Cell.End_Offset);
-      if Cell.End_Offset > Asu.Length (Upat_Access.Match_Str) then
-        raise Substr_Len_Error;
-      end if;
+    if Cell.Last_Offset_Stop > Asu.Length (Upat_Access.Match_Str) then
+      raise Substr_Len_Error;
     end if;
     return Cell;
   end Str_Indexes;

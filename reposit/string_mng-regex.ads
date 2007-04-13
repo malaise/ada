@@ -7,13 +7,15 @@ package String_Mng.Regex is
   -- Result of search, from Regular_Expressions
   -- subtype Offset_Range is Integer;
   -- type Match_Cell is record
-  --   Start_Offset :  Offset_Range;
-  --   End_Offset   :  Offset_Range;
+  --   First_Offset :  Offset_Range;
+  --   Last_Offset_Start :  Offset_Range;
+  --   Last_Offset_Stop  :  Offset_Range;
   -- end record;
   type Search_Result is new Regular_Expressions.Match_Cell;
 
   -- Result of search when no match found
-  No_Match : constant Search_Result := (Start_Offset => 1, End_Offset => 0);
+  No_Match : constant Search_Result
+           := Search_Result(Regular_Expressions.No_Match);
 
   -- Raised by Locate or Replace if Within is not Empty and an Index is not
   -- in Within'Range
@@ -52,8 +54,7 @@ package String_Mng.Regex is
                     By         : String;
                     From_Index : Natural := 0;
                     To_Index   : Natural := 0;
-                    Nb_Cycles  : Natural := 1;
-                    Utf_8      : Boolean := True)
+                    Nb_Cycles  : Natural := 1)
            return String;
 
 end String_Mng.Regex;

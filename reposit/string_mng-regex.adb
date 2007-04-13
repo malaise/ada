@@ -1,7 +1,6 @@
 -- More powerfull search and substitution in strings,
 --  based on regex.
 with Ada.Strings.Unbounded;
-with Utf_8;
 package body String_Mng.Regex is
 
 
@@ -97,32 +96,15 @@ package body String_Mng.Regex is
   function Asu_Ts (Us : Asu_Us) return String renames Asu.To_String;
   function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
 
-  -- Check if Char is the startup of a valid UTF-8 sequence
-  --  and increment Offset accordingly
-  procedure Apply_Utf8 (Char : in Character;
-                        Offset : in out Regular_Expressions.Offset_Range) is
-    Len : Utf_8.Len_Range;
-  begin
-    -- Get lenght of sequence
-    Len := Utf_8.Nb_Chars (Char);
-    -- Apply offset
-    Offset := Offset + Len - 1;
-  exception
-    when Utf_8.Invalid_Sequence =>
-      -- Leave Offset unchanged
-      null;
-  end Apply_Utf8;
-
-  -- Replace Working(Info(1).Start_Offset .. Info(1).End_Offset)
+  -- Replace Working(Info(1).First_Offset .. Info(1).End_Offset)
   -- by By.
   -- In By, \i (0 <= i <= 9) is replaced by
-  --  Working (Info(i-1).Start_Offset .. Info(i-1).End_Offset)
+  --  Working (Info(i-1).First_Offset .. Info(i-1).End_Offset)
   -- Start is set to the first char after new string (maybe above Working)
   procedure Substit (Working : in out Asu_Us;
                      N_Match : in Positive;
                      Info    : in Regular_Expressions.Match_Array;
                      By      : in String;
-                     Utf_8   : in Boolean;
                      Start   : out Natural) is
     -- New By after substitution of \0, \1...
     Newby : Asu_Us;
@@ -149,43 +131,31 @@ package body String_Mng.Regex is
         -- i is Index in Info - 1: \0 -> Info(1)...
         Info_Index := Character'Pos (Char) - Character'Pos ('0') + 1;
         if Info_Index > N_Match
-        or else (Linfo(Info_Index).Start_Offset = 1
-                 and then Linfo(Info_Index).End_Offset = 0) then
+        or else (Linfo(Info_Index).First_Offset = 1
+                 and then Linfo(Info_Index).Last_Offset_Stop = 0) then
           -- "\i" -> "" if no such matching info
           Newby := Asu.Delete (Newby, Esc - 1, Esc);
         else
-          if Utf_8 then
-            -- Apply UTF-8 correction if End_Offset is the first char of a UTF8
-            -- sequence
-            Apply_Utf8 (Asu.Element (Working, Linfo(Info_Index).End_Offset),
-                        Linfo(Info_Index).End_Offset);
-          end if;
           Newby := Asu.Replace_Slice (Newby, Esc - 1, Esc,
-                     Asu.Slice (Working, Linfo(Info_Index).Start_Offset,
-                                         Linfo(Info_Index).End_Offset));
+                     Asu.Slice (Working, Linfo(Info_Index).First_Offset,
+                                         Linfo(Info_Index).Last_Offset_Stop));
           -- Move forward by the length of new string.
           -- One back to \ then length forward
-          From := Esc + Linfo(Info_Index).End_Offset
-                      - Linfo(Info_Index).Start_Offset;
+          From := Esc + Linfo(Info_Index).Last_Offset_Stop
+                      - Linfo(Info_Index).First_Offset;
         end if;
       else
-        -- "\x" unchanged
+        -- "\*" unchanged
         From := Esc;
       end if;
       exit when From > Asu.Length (Newby);
     end loop;
 
-    if Utf_8 then
-      -- Apply UTF-8 correction if End_Offset is the first char of a UTF8
-      -- sequence
-      Apply_Utf8 (Asu.Element (Working, Linfo(1).End_Offset),
-                        Linfo(1).End_Offset);
-    end if;
     -- Replace the matching slice of Working by the Newby
-    Asu.Replace_Slice (Working, Linfo(1).Start_Offset, Linfo(1).End_Offset,
+    Asu.Replace_Slice (Working, Linfo(1).First_Offset, Linfo(1).Last_Offset_Stop,
                        Asu_Ts (Newby));
     -- Update Start to the first character after the matching slice
-    Start := Linfo(1).Start_Offset + Asu.Length (Newby);
+    Start := Linfo(1).First_Offset + Asu.Length (Newby);
   end Substit;
 
   -- Replace in Within all occurences of Criteria by By.
@@ -202,8 +172,7 @@ package body String_Mng.Regex is
                     By         : String;
                     From_Index : Natural := 0;
                     To_Index   : Natural := 0;
-                    Nb_Cycles  : Natural := 1;
-                    Utf_8      : Boolean := True)
+                    Nb_Cycles  : Natural := 1)
            return String is
     -- Working string
     I1, I2 : Natural;
@@ -266,7 +235,7 @@ package body String_Mng.Regex is
         -- No (more) match?
         exit Pass when N_Match = 0;
         -- A match, substitute and recompute Last
-        Substit (Working, N_Match, Info, By, Utf_8, Start);
+        Substit (Working, N_Match, Info, By, Start);
         Match_Found := True;
         Last := Asu.Length (Working);
         -- Done with this pass

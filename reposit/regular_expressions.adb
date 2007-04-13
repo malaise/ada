@@ -1,9 +1,16 @@
 -- Posix regular expression
 with Ada.Characters.Latin_1;
-with Bit_Ops;
+with Bit_Ops, Environ, Utf_8;
 package body Regular_Expressions is
 
   -- C interface --
+  subtype C_Offset_Range is Integer;
+  type C_Match_Cell is record
+    Start_Offset : C_Offset_Range;
+    Stop_Offset  : C_Offset_Range;
+  end record;
+  type C_Match_Array is array (Natural range <>) of C_Match_Cell;
+    
   function Str4C (Str : String) return String is
   begin
     return Str & Ada.Characters.Latin_1.Nul;
@@ -44,6 +51,34 @@ package body Regular_Expressions is
   procedure C_Regfree (Preg : in System.Address);
   pragma Import (C, C_Regfree, "regfree");
 
+  -- Language management
+  Language : Language_List := Get_Env;
+  procedure Set_Language (Language : in Language_List) is
+  begin
+    Regular_Expressions.Language := Language;
+  end Set_Language;
+
+  function Get_Language return Language_Set_List is
+  begin
+    if Language = Get_Env then
+      declare
+        Lang : constant String := Environ.Getenv ("LANG");
+      begin
+        if Lang'Length > 6
+        and then Lang(Lang'Last-5 .. Lang'Last) = ".UTF-8" then
+          Language := Lang_Utf_8;
+        else
+          Language := Lang_C;
+        end if;
+      end;
+    end if;
+    return Language;
+  exception
+    when others =>
+      Language := Lang_C;
+      return Language;
+  end Get_Language;
+        
   -- Ada binding
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
@@ -76,9 +111,26 @@ package body Regular_Expressions is
       Result.Comp_Addr := C_Malloc_Regex;
     end if;
     -- Compile
+    Result.Language := Get_Language;
     Result.Error := C_Regcomp (Result.Comp_Addr, Criteria4C'Address, Cflags);
     Ok := Result.Error = 0;
   end Compile;
+
+  -- Check if Char is the startup of a valid UTF-8 sequence
+  --  and increment Offset accordingly
+  procedure Adjust_Utf8 (Char : in Character;
+                         Offset : in out Offset_Range) is
+    Len : Utf_8.Len_Range;
+  begin
+    -- Get lenght of sequence
+    Len := Utf_8.Nb_Chars (Char);
+    -- Apply offset
+    Offset := Offset + Len - 1;
+  exception
+    when Utf_8.Invalid_Sequence =>
+      -- Leave Offset unchanged
+      null;
+  end Adjust_Utf8;
 
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
@@ -86,15 +138,17 @@ package body Regular_Expressions is
                   Match_Info : in out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True) is
+    C_Match_Info : C_Match_Array (1 .. Match_Info'Length);
     Eflags : Integer := 0;
     To_Check4C : constant String := Str4C (To_Check);
     Cres : Integer;
     First : constant Integer := To_Check'First;
+    J : Positive;
     use type System.Address;
     use Bit_Ops;
   begin
     -- Init results
-    Match_Info := (others => (Start_Offset => 1, End_Offset => 0));
+    Match_Info := (others => No_Match);
     N_Matched := 0;
     -- Check criteria has compiled
     if Criteria.Error /= 0
@@ -110,10 +164,11 @@ package body Regular_Expressions is
       Eflags := Eflags or C_Noteol;
     end if;
     -- Exec regex
+    C_Match_Info := (others => (1, 0));
     Cres := C_Regexec (Criteria.Comp_Addr,
                        To_Check4C'Address,
                        Long_Integer(Match_Info'Length),
-                       Match_Info'Address,
+                       C_Match_Info'Address,
                        Eflags);
     -- Return if no match
     if Cres /= 0 then
@@ -126,52 +181,58 @@ package body Regular_Expressions is
    end if;
     -- Set N_Matched to last non-empty Match_Info
     -- Update Match_Info so that it contains indexes in To_Check
+    J := 1;
     for I in Match_Info'Range loop
-      if Match_Info(I).Start_Offset /= -1 then
-        Match_Info(I).Start_Offset := Match_Info(I).Start_Offset + First;
-        Match_Info(I).End_Offset   := Match_Info(I).End_Offset   + First - 1;
+      if C_Match_Info(J).Start_Offset /= -1 then
+        Match_Info(I).First_Offset := C_Match_Info(J).Start_Offset + First;
+        Match_Info(I).Last_Offset_Start  := C_Match_Info(J).Stop_Offset + First - 1;
+        Match_Info(I).Last_Offset_Stop   := C_Match_Info(J).Stop_Offset + First - 1;
+        -- Any adjustment due to Lang
+        if Criteria.Language = Lang_Utf_8 then
+          Adjust_Utf8 (To_Check(Match_Info(I).Last_Offset_Stop),
+                       Match_Info(I).Last_Offset_Stop);
+        end if;
         N_Matched := I;
       end if;
+      J := J + 1;
     end loop;
   end Exec;
 
   -- Compare string Str to Criteria
-  -- Returns 0 or the index of Str where match starts
+  -- Returns No_Match or a Match_Cell
   -- May raise No_Criteria is Criteria does not compile.
-  function Match (Criteria, Str : String) return Natural is
+  function Match (Criteria, Str : String) return Match_Cell is
     Pattern : Compiled_Pattern;
     Ok : Boolean;
-    Matches : One_Match_Array;
     Matched : Natural;
+    Match_Info : One_Match_Array;
   begin
     Compile (Pattern, Ok, Criteria);
     if not Ok then
       raise No_Criteria;
     end if;
-    Exec (Pattern, Str, Matched, Matches);
-    if Matched = 0 then
-      -- No match
-      return 0;
-    else
-      -- Return first matching index in Str
-      return Matches(1).Start_Offset;
-    end if;
+    Exec (Pattern, Str, Matched, Match_Info);
+    Free (Pattern);
+    return Match_Info(1);
   end Match;
 
   -- Compare string Str to Criteria
   -- Returns True or False
   -- May raise No_Criteria is Criteria does not compile.
-  function Match (Criteria, Str : String) return Boolean is
-    Pattern : Compiled_Pattern;
-    Ok : Boolean;
-    Matched : Natural;
+  function Match (Criteria, Str : String;
+                  Strict : in Boolean) return Boolean is
+    Result : Match_Cell;
   begin
-    Compile (Pattern, Ok, Criteria);
-    if not Ok then
-      raise No_Criteria;
+    Result := Match (Criteria, Str);
+    if not Strict then
+      -- Ok if match
+      return Result /= No_match;
+    else
+      -- Ok if match indexes are Str indexes
+      return Result /= No_match
+      and then Result.First_Offset = Str'First
+      and then result.Last_Offset_Stop = Str'last;
     end if;
-    Exec (Pattern, Str, Matched, No_Match_Array);
-    return Matched /= 0;
   end Match;
 
   function Error (Criteria : in Compiled_Pattern) return String is

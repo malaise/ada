@@ -366,8 +366,8 @@ package body Substit is
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Match in end of line >"
            & Asu.Slice (Line.all, Current, Asu.Length(Line.all))
-           & "< from" & Match_Res.Start_Offset'Img
-           & " to" & Match_Res.End_Offset'Img);
+           & "< from" & Match_Res.First_Offset'Img
+           & " to" & Match_Res.Last_Offset_Stop'Img);
       end if;
       -- Get substituting string
       declare
@@ -377,23 +377,23 @@ package body Substit is
         if Verbose then
           Ada.Text_Io.Put_Line (
               Line_No'Img & " : "
-            & Asu.Slice (Line.all, Match_Res.Start_Offset,
-                                   Match_Res.End_Offset)
+            & Asu.Slice (Line.all, Match_Res.First_Offset,
+                                   Match_Res.Last_Offset_Stop)
             & " -> " & Replacing);
         end if;
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Replacing by "
-            & Asu.Slice (Line.all, Match_Res.Start_Offset,
-                                   Match_Res.End_Offset)
+            & Asu.Slice (Line.all, Match_Res.First_Offset,
+                                   Match_Res.Last_Offset_Stop)
             & " -> " & Replacing);
         end if;
         -- Substitute from start to stop
         Asu.Replace_Slice (Line.all,
-                           Match_Res.Start_Offset,
-                           Match_Res.End_Offset,
+                           Match_Res.First_Offset,
+                           Match_Res.Last_Offset_Stop,
                            Replacing);
         -- Next search index is the next char after the replaced string
-        Current := Match_Res.Start_Offset + Replacing'Length;
+        Current := Match_Res.First_Offset + Replacing'Length;
         exit when Current > Asu.Length(Line.all);
       end;
       -- Exit when number of subtitution is reached
@@ -509,13 +509,13 @@ package body Substit is
       begin
         -- Set result: beginning of first line + replacing + end of last line
         Str_Replaced := Asu.To_Unbounded_String (
-                 Asu.Slice (First_Line.all, 1, Match_Res.Start_Offset - 1))
+                 Asu.Slice (First_Line.all, 1, Match_Res.First_Offset - 1))
                & Str_Replacing;
-        if Match_Res.End_Offset < Asu.Length (Last_Line.all) then
+        if Match_Res.Last_Offset_Stop < Asu.Length (Last_Line.all) then
           -- This would raise Constraint_Error if Stop = Length
           Asu.Append (Str_Replaced,
               Asu.Slice (Last_Line.all,
-                         Match_Res.End_Offset + 1,
+                         Match_Res.Last_Offset_Stop + 1,
                          Asu.Length (Last_Line.all)));
         end if;
         -- Display verbose substitution

@@ -128,14 +128,19 @@ package body Misc is
 
   function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec is
     Criteria : Regular_Expressions.Compiled_Pattern;
-    Res : Natural;
+    Res : Regular_Expressions.Match_Cell;
+    use type Regular_Expressions.Match_Cell;
   begin
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
     Res := Regular_Expressions.Match (Unb.To_String (Pattern.Val_Text),
                                      Unb.To_String (Str.Val_Text));
-    return (Kind => Inte, Val_Inte => My_Math.Inte(Res));
+    if Res = Regular_Expressions.No_match then
+      return (Kind => Inte, Val_Inte => 0);
+    else
+      return (Kind => Inte, Val_Inte => My_Math.Inte(Res.First_Offset));
+    end if;
   exception
     when Regular_Expressions.No_Criteria =>
       raise Invalid_Argument;

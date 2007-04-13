@@ -567,11 +567,6 @@ package body Dtd is
     Char : Character;
     -- Parser iterator
     Iter_Xml : Parser.Iterator;
-    -- Pattern of regexp
-    Pat : Regular_Expressions.Compiled_Pattern;
-    -- Regexp pattern match result
-    N_Match : Natural;
-    Match_Info : Regular_Expressions.One_Match_Array;
     -- General purpose Boolean
     Ok : Boolean;
     use type Asu_Us;
@@ -630,29 +625,24 @@ package body Dtd is
                     & " must not have text",
                       Line_No);
         end if;
-        -- Build children regexp
-        Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Info.List));
-        if not Ok then
-          Trace ("Dtd regex does not compile for check " & Asu_Ts (Info.List));
-          raise Internal_Error;
-        end if;
-        -- Check children regexp, the complete Children string must match
-        Regular_Expressions.Exec (Pat, Asu_Ts (Children), N_Match, Match_Info);
-        if N_Match = 0
-        or else Match_Info(1).Start_Offset /= 1
-        or else Match_Info(1).End_Offset /= Asu.Length (Children) then
-          Regular_Expressions.Free (Pat);
+        -- Strictly check that list matches criteria
+        if not Regular_Expressions.Match (Asu_Ts (Info.List),
+                Asu_Ts (Children), Strict => True) then
           Util.Error ("According to dtd, element " & Asu_Ts (Name)
                     & " allows children " & Strip_Sep (Info.List)
                     & " but has children " & Strip_Sep (Children));
         end if;
-        Regular_Expressions.Free (Pat);
         Trace ("Dtd checked children " & Strip_Sep (Children)
              & " versus " & Strip_Sep (Info.List));
       when others =>
         Trace ("Dtd check: Unexpected element type " & Char);
         raise Internal_Error;
     end case;
+  exception
+    when Regular_Expressions.No_Criteria =>
+      -- Normally it was checks at parsing
+      Trace ("Dtd regex does not compile for check " & Asu_Ts (Info.List));
+      raise Internal_Error;
   end Check_Children;
 
   -- Check attributes of element
