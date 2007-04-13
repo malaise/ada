@@ -226,12 +226,12 @@ package body Regular_Expressions is
     Result := Match (Criteria, Str);
     if not Strict then
       -- Ok if match
-      return Result /= No_match;
+      return Result /= No_Match;
     else
       -- Ok if match indexes are Str indexes
-      return Result /= No_match
+      return Result /= No_Match
       and then Result.First_Offset = Str'First
-      and then result.Last_Offset_Stop = Str'last;
+      and then Result.Last_Offset_Stop = Str'Last;
     end if;
   end Match;
 

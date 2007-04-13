@@ -136,7 +136,7 @@ package body Misc is
     end if;
     Res := Regular_Expressions.Match (Unb.To_String (Pattern.Val_Text),
                                      Unb.To_String (Str.Val_Text));
-    if Res = Regular_Expressions.No_match then
+    if Res = Regular_Expressions.No_Match then
       return (Kind => Inte, Val_Inte => 0);
     else
       return (Kind => Inte, Val_Inte => My_Math.Inte(Res.First_Offset));

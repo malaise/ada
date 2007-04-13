@@ -260,7 +260,7 @@ package body Edition is
         Prev := False;
     end;
     if Prev
-    and then (Oper.Kind = Oper_Def.Transfer 
+    and then (Oper.Kind = Oper_Def.Transfer
               or else Oper.Kind = Oper_Def.Savings) then
       Oper.Date.Month := Cur_Date.Month;
       Oper.Date.Year := Cur_Date.Year;
