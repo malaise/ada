@@ -130,21 +130,14 @@ package body Edition is
     for S in Oper_Def.Status_List loop
       Set_Active(Status_Buttons(S), S = Status);
     end loop;
-    -- Allow defered (check done in update_buttons)
-    if Status = Oper_Def.Defered
-    and then not Oper_Def.Kind_Can_Be_Defered(Kind) then
+    -- Allow some new statuses
+    if not Oper_Def.Kind_Can_Be(Kind, Status) then
       raise Program_Error;
     end if;
-    if Status /= Oper_Def.Not_Entered
-    and then Oper_Def.Kind_Must_Be_Not_Entered(Kind) then
-      raise Program_Error;
-    end if;
-    Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Defered),
-                              Oper_Def.Kind_Can_Be_Defered(Kind));
-    if Oper_Def.Kind_Must_Be_Not_Entered(Kind) then
-      Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Entered), False);
-      Afpx.Set_Field_Activation(Status_Buttons(Oper_Def.Defered), False);
-    end if;
+    for Stat in Oper_Def.Status_List loop
+      Afpx.Set_Field_Activation(Status_Buttons(Stat),
+                              Oper_Def.Kind_Can_Be(Kind, Stat));
+    end loop;
   end Set_Buttons;
 
   -- Update buttons after a click
@@ -157,17 +150,18 @@ package body Edition is
       if Field = Kind_Buttons(K) then
         -- New kind
         Kind := K;
-        -- Update Status if not entered and mut be not_entered
-        -- or if defered and not allowed
-        if Status /= Oper_Def.Not_Entered
-        and then Oper_Def.Kind_Must_Be_Not_Entered(Kind) then
-          Status := Oper_Def.Not_Entered;
-        elsif Status = Oper_Def.Defered
-        and then not Oper_Def.Kind_Can_Be_Defered(Kind) then
-          Status := Oper_Def.Not_Entered;
-        elsif Status = Oper_Def.Not_Entered
-        and then Oper_Def.Kind_Can_Be_Defered(Kind) then
-          Status := Oper_Def.Defered;
+        -- Update Status when not allowed for current (new) kind
+        if not Oper_Def.Kind_Can_Be (Kind, Status) then
+          -- Trye Not_Entered then Defered then ENtered
+          if Oper_Def.Kind_Can_Be (Kind, Oper_Def.Not_Entered) then
+            Status := Oper_Def.Not_Entered;
+          elsif Oper_Def.Kind_Can_Be (Kind, Oper_Def.Defered) then
+            Status := Oper_Def.Defered;
+          elsif Oper_Def.Kind_Can_Be (Kind, Oper_Def.Entered) then
+            Status := Oper_Def.Entered;
+          else
+            raise Program_Error;
+          end if;
         end if;
         Set_Buttons(True, Kind, Status);
         return;
@@ -369,15 +363,8 @@ package body Edition is
     if Oper.Kind = Oper_Def.Savings and then Oper.Amount > 0.0 then
       raise Unit_Format.Format_Error;
     end if;
-    -- Sanity checks
-    if Oper.Status /= Oper_Def.Not_Entered
-    and then Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
-      -- Should be protected at buttons level
-      raise Program_Error;
-    end if;
-    if Oper.Status = Oper_Def.Defered
-    and then not Oper_Def.Kind_Can_Be_Defered(Oper.Kind) then
-      -- Should be protected at buttons level
+    -- Sanity check, should be protected at buttons level
+    if not Oper_Def.Kind_Can_Be (Oper.Kind, Oper.Status) then
       raise Program_Error;
     end if;
 

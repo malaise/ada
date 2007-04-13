@@ -578,16 +578,13 @@ package body Mng is
     Prev_Status := Oper.Status;
     case Oper.Status is
       when Oper_Def.Entered =>
-        if Oper_Def.Kind_Can_Be_Defered(Oper.Kind)
-        and then not Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
+        if Oper_Def.Kind_Can_Be(Oper.Kind, Oper_Def.Defered) then
           Oper.Status := Oper_Def.Defered;
-        else
+        elsif Oper_Def.Kind_Can_Be(Oper.Kind, Oper_Def.Not_Entered) then
           Oper.Status := Oper_Def.Not_Entered;
         end if;
       when Oper_Def.Not_Entered | Oper_Def.Defered =>
-        if Oper_Def.Kind_Must_Be_Not_Entered(Oper.Kind) then
-          Oper.Status := Oper_Def.Not_Entered;
-        else
+        if Oper_Def.Kind_Can_Be(Oper.Kind, Oper_Def.Entered) then
           Oper.Status := Oper_Def.Entered;
         end if;
     end case;

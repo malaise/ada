@@ -28,22 +28,15 @@ package Oper_Def is
   -- Oper status
   type Status_List is (Entered, Not_Entered, Defered);
 
-  -- Can an oper of kind be defered (only Credit)
-  Kind_Can_Be_Defered : constant array (Kind_List) of Boolean
-                      := (Cheque   => False,
-                          Credit   => True,
-                          Transfer => False,
-                          Withdraw => False,
-                          Savings  => False);
 
-  -- Can an oper of kind be entered (not savings)
-  Kind_Must_Be_Not_Entered : constant array (Kind_List) of Boolean
-                      := (Cheque   => False,
-                          Credit   => False,
-                          Transfer => False,
-                          Withdraw => False,
-                          Savings  => True);
-
+  -- Can an oper of a given kind have a given status
+  Kind_Can_Be : constant array (Kind_List, Status_List) of Boolean
+  --                           Entered  NotEntered Defered
+              := (Cheque   => (True,    True,      False),
+                  Credit   => (True,    False,     True),
+                  Transfer => (True,    True,      False),
+                  Withdraw => (True,    True,      False),
+                  Savings  => (False,   True,      False));
 
   -- Oper strings
   subtype Reference_Str is String (1 .. 10);
