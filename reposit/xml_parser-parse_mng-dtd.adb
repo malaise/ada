@@ -18,7 +18,8 @@ package body Dtd is
     Name : Asu_Us;
     -- Elt: Possible children, first chars is <type> ::= E|A|M|C
     --  (empty, any, mixed or children), then
-    --  for Mixed the list of "#<name>#" without #PCDATA (empty if only #PCDATA)
+    --  for Mixed the list of "#<name>#<name>#" without #PCDATA
+    --   (empty if only #PCDATA)
     --  for Children the regexp of "#<name>#"
     -- Atl: Possible attributes, list of "<name>#<type><default>#"
     --  <type> ::= S|I|R|r|T|t|E (String, ID, IDREF, IDREFS, NMTOKEN, NMTOKENS
