@@ -1,0 +1,12 @@
+#!/bin/bash
+export src=~malaise/ada/usr/account
+
+cp $src/account.stat account
+cp $src/Afpx.xml $src/AFPX.* .
+cp $src/account_lpr $src/launch_account $src/save_accounts .
+
+chmod a+r *
+chmod a+x account account_lpr launch_account save_accounts
+
+cp $src/backup_accounts /etc/cron.weekly
+chmod a+x /etc/cron.weekly/backup_accounts

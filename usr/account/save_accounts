@@ -1,0 +1,3 @@
+#!/bin/bash
+tar cvf  /dev/fd0 /usr/local/account/data
+

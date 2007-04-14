@@ -1,0 +1,7 @@
+#!/bin/bash
+export Src=/usr/local/account/data
+export Dst=/save/account
+if [ \( -d $Src \) -a \( -d $Dst \) ] ; then
+  /bin/cp -r $Src/* $Dst
+fi
+
