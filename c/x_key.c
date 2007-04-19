@@ -21,15 +21,16 @@ void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
     int nb_char;
     int i;
 
-    nb_char = XLookupString(p_x_key, str, sizeof(str), &key_sym, NULL);
-    key_sym = key_sym & 0x0000FFFF;
-
     /* Init out parameters */
     *p_control = 0;
     *p_shift = 0;
     *p_code = 0;
     memset (key_buf, 0, NBRE_MAX_KEY);
     *p_nbre_key = 0;
+
+    /* Decode keybord event */
+    nb_char = XLookupString(p_x_key, str, sizeof(str), &key_sym, NULL);
+    key_sym = key_sym & 0x0000FFFF;
 
     /* Skip any event about a modifier managed later on for generating keys */
     /* Left or right SHIFT key, Left or right CONTROL key, CAPS_LOCK or SHIFT_LOCK key */

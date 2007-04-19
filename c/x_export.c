@@ -780,6 +780,13 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
 
     switch (event.type) {
       case KeyPress :
+        if (XFilterEvent(&event, None)) {
+          /* Event is filtered (e.g. ^ then i) */
+#ifdef DEBUG
+        printf ("X_EXPORT : filtered event\n");
+#endif
+          break;
+        }
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
         if (win_id == NULL) {
