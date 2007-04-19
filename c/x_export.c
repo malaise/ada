@@ -265,6 +265,7 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
   boolean superbright, boolean underline, boolean blink, boolean reverse) {
 
     t_window *win_id = (t_window*) line_id;
+    int no_font;
 
     /* Check that window is open */
         if (! lin_check(win_id)) {
@@ -276,14 +277,16 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
         return (ERR);
     }
 
-    /* Store underline attribute */
+    /* Store underline and superbright attribute */
     win_id->underline = underline;
+    win_id->bold = (superbright || (blink && blink_bold() ) );
 
     /* Update graphic context */
+    no_font = lin_get_font (win_id);
     scr_set_attrib (win_id->server->x_server,
       win_id->x_graphic_context, win_id->server->x_font,
-      win_id->no_font, win_id->screen->color_id,
-      paper, ink, superbright, blink, reverse);
+      lin_get_font(win_id), win_id->screen->color_id,
+      paper, ink, blink, reverse);
 
     return (OK);
 
@@ -334,7 +337,9 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
     /* Put char */
     scr_put_char (win_id->server->x_server,
       win_id->x_graphic_context,
-      win_id->x_window, x, y, (char)car, win_id->xor_mode);
+      win_id->x_window,
+      win_id->server->x_font_set[lin_get_font(win_id)],
+      x, y, (char)car, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
@@ -371,7 +376,9 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
     /* Put char */
     scr_overwrite_char (win_id->server->x_server,
       win_id->x_graphic_context,
-      win_id->x_window, x, y, (char)car);
+      win_id->x_window,
+      win_id->server->x_font_set[lin_get_font(win_id)],
+      x, y, (char)car);
 
     return (OK);
 }
@@ -403,8 +410,9 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
 
     /* Put string */
     scr_put_string (win_id->server->x_server,
-      win_id->x_graphic_context,
-      win_id->x_window, x, y, p_char, number, win_id->xor_mode);
+      win_id->x_graphic_context, win_id->x_window,
+      win_id->server->x_font_set[lin_get_font(win_id)],
+      x, y, p_char, number, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
@@ -422,14 +430,15 @@ extern int x_put_char_attributes (void *line_id, int car, int row, int column,
   boolean superbright, boolean underline, boolean blink, boolean reverse) {
 
     if (x_set_attributes (line_id, paper, ink,
-      superbright, underline, blink, reverse) == ERR) {
+                   superbright, underline, blink, reverse) == ERR) {
         return (ERR);
     }
 
     return (x_put_char (line_id, car, row, column));
 }
 
-extern int x_draw_area (void *line_id, int width, int height, int row, int column) {
+extern int x_draw_area (void *line_id, int width, int height,
+                        int row, int column) {
 
     int x_from, y_from;
     int pix_width, pix_height;
@@ -497,7 +506,9 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
     /* Put char */
     scr_put_char (win_id->server->x_server,
       win_id->x_graphic_context,
-      win_id->x_window, x, y, (char)car, win_id->xor_mode);
+      win_id->x_window,
+      win_id->server->x_font_set[lin_get_font(win_id)],
+      x, y, (char)car, win_id->xor_mode);
 
     /* Underline */
     if (win_id->underline) {
@@ -775,8 +786,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           /* Window not found : Check next event */
           break;
         }
-        if (key_chain (&event.xkey, win_id->key_buf,
-         &win_id->nbre_key)) {
+        key_chain (&event.xkey, &win_id->control, &win_id->shift,
+                   &win_id->code, win_id->key_buf, &win_id->nbre_key);
+        if (win_id->nbre_key != 0) {
           /* Key is valid */
           *p_line_id = (void*)win_id;
           *p_kind = KEYBOARD;
@@ -927,7 +939,8 @@ extern int x_read_tid (void *line_id, boolean row_col,
 /* The line_id must be the one given by wait_event */
 /* p_key is the the address of a table where to put the codes */
 /* p_nbre if for the number of codes for the key */
-extern int x_read_key (void *line_id, int *p_key, int *p_nbre) {
+extern int x_read_key (void *line_id, boolean *p_control, boolean *p_shift,
+                       boolean *p_code, int *p_key, int *p_nbre) {
 
     t_window *win_id = (t_window*) line_id;
     int i;
@@ -943,6 +956,9 @@ extern int x_read_key (void *line_id, int *p_key, int *p_nbre) {
     }
 
     /* Read the key */
+    *p_control = win_id->control;
+    *p_shift = win_id->shift;
+    *p_code = win_id->code;
     *p_nbre = win_id->nbre_key;
     for (i = 0; i < win_id->nbre_key; i++) {
         *p_key = win_id->key_buf[i];

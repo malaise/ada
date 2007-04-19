@@ -3,11 +3,11 @@
 #include "x_stdinc.h"
 
 #define NBRE_FONT 8
-#define FONT_NAME_MAX_SIZE   132
+#define FONT_NAME_MAX_SIZE   255
 
 /* Limitation in default color map */
 #define NBRE_COLOR 14
-#define COLOR_NAME_MAX_SIZE  20
+#define COLOR_NAME_MAX_SIZE  255
 
 /* extern for all includer except x_file.c */
 #ifdef FILE_LOCAL

@@ -15,12 +15,14 @@ static const char *default_color_name[NBRE_COLOR]={
  };
 
 static const char *default_font_name[NBRE_FONT] = {
-  "8x13", "8x13bold",
-  "9x15", "9x15bold",
-   "-b&h-lucidatypewriter-medium-r-normal-sans-18-180-75-75-m-110-iso8859-1",
-      "-b&h-lucidatypewriter-bold-r-normal-sans-18-180-75-75-m-110-iso8859-1",
-   "-b&h-lucidatypewriter-medium-r-normal-sans-25-180-100-100-m-150-iso8859-1",
-      "-b&h-lucidatypewriter-bold-r-normal-sans-25-180-100-100-m-150-iso8859-1"};
+   "-b&h-lucidatypewriter-medium-*-normal-sans-12-120-75-75-m-70-iso10646-1",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-12-120-75-75-m-70-iso10646-1",
+   "-b&h-lucidatypewriter-medium-*-normal-sans-14-140-75-75-m-90-iso10646-1",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-14-140-75-75-m-90-iso10646-1",
+   "-b&h-lucidatypewriter-medium-*-normal-sans-18-180-75-75-m-110-iso10646-1",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-18-180-75-75-m-110-iso10646-1",
+   "-b&h-lucidatypewriter-medium-*-normal-sans-25-180-100-100-m-150-iso10646-1",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-25-180-100-100-m-150-iso10646-1"};
 
 #define FONT_NAME "X_FONT_"
 

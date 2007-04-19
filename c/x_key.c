@@ -13,52 +13,92 @@
 #define KEY_SHIFT   0xE1
 #define KEY_CONTROL 0xE3
 
-boolean key_chain (XKeyEvent *p_x_key, int key_buf[], int *p_nbre_key) {
+void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
+                  int *p_code, int key_buf[], int *p_nbre_key) {
 
     KeySym key_sym;
-    char dummy_str[4];
+    char str[4];
+    int nb_char;
+    int i;
 
-      XLookupString(p_x_key, dummy_str, 4, &key_sym, NULL);
-      key_sym = key_sym & 0x0000FFFF;
+    nb_char = XLookupString(p_x_key, str, sizeof(str), &key_sym, NULL);
+    key_sym = key_sym & 0x0000FFFF;
 
-      /* Skip any event about a modifier managed later on for generating keys */
-      /* Left or right SHIFT key, Left or right CONTROL key, CAPS_LOCK or SHIFT_LOCK key */
-      if ( (key_sym == XK_Shift_L)   || (key_sym == XK_Shift_R)
-        || (key_sym == XK_Control_L) || (key_sym == XK_Control_R)
-        || (key_sym == XK_Caps_Lock) || (key_sym == XK_Shift_Lock) ) {
-        *p_nbre_key = 0;
-        return (False);
-      }
+    /* Init out parameters */
+    *p_control = 0;
+    *p_shift = 0;
+    *p_code = 0;
+    memset (key_buf, 0, NBRE_MAX_KEY);
+    *p_nbre_key = 0;
 
-      *p_nbre_key = 0;
-      if ( (p_x_key->state & ControlMask) != 0) {
-          /* Case of Ctrl active */
-          key_buf[*p_nbre_key]     = KEY_PREFIX;
-          key_buf[(*p_nbre_key)+1] = KEY_CONTROL;
-          *p_nbre_key += 2;
-      }
+    /* Skip any event about a modifier managed later on for generating keys */
+    /* Left or right SHIFT key, Left or right CONTROL key, CAPS_LOCK or SHIFT_LOCK key */
+    /* Alt Gr (XK_ISO_Level3_Shift) */
+    if ( (key_sym == XK_Shift_L)   || (key_sym == XK_Shift_R)
+      || (key_sym == XK_Control_L) || (key_sym == XK_Control_R)
+      || (key_sym == XK_Caps_Lock) || (key_sym == XK_Shift_Lock)
+      || (key_sym == XK_ISO_Level3_Shift) ) {
+      return;
+    }
+#ifdef DEBUG
+    printf ("X_KEY : ");
+#endif
 
-      /* Add preffifx (eventually preceeded by Shift preffix */
-      if ( (key_sym & HIG_BYTE) == HIG_BYTE ) {
-          /* Add Shift preffix only before KEY_PREFIX */
-          if ( (p_x_key->state & ShiftMask) != 0) {
-              /* Case of Shift active */
-              key_buf[*p_nbre_key]     = KEY_PREFIX;
-              key_buf[(*p_nbre_key)+1] = KEY_SHIFT;
-              *p_nbre_key += 2;
-          }
-          key_buf[*p_nbre_key] = KEY_PREFIX;
-          (*p_nbre_key) ++;
-      }
+    if ( (p_x_key->state & ControlMask) != 0) {
+        *p_control = 1;
+#ifdef DEBUG
+        printf ("Control ");
+#endif
+    }
 
-      /* Add code */
-      key_buf[*p_nbre_key] = (int) (key_sym & LOW_BYTE);
-      (*p_nbre_key) ++;
-/*
-printf ("READ KEY %02X %02X %02X %02X %d\n",
-(int)key_buff[0], (int)key_buff[1], (int)key_buff[2], (int)key_buff[3],
-*pp_nbre_key);
-*/
-        return (True);
+    /* Shift is set only for function keys */
+    if ( (key_sym & HIG_BYTE) == HIG_BYTE ) {
+        /* Function key : Add Shift prefix if needed */
+        if ( (p_x_key->state & ShiftMask) != 0) {
+            /* Case of Shift active */
+            *p_shift = 1;
+#ifdef DEBUG
+        printf ("Shift ");
+#endif
+        }
+        /* Function key : Add Code */
+        *p_code = 1;
+        key_buf[(*p_nbre_key)+0] = (key_sym & HIG_BYTE)>>8;
+        key_buf[(*p_nbre_key)+1] = key_sym & LOW_BYTE;
+        *p_nbre_key +=2;
+#ifdef DEBUG
+        printf ("Code %02x %02x\n",
+                (int)(key_sym & HIG_BYTE),
+                (int)(key_sym & LOW_BYTE));
+#endif
+    } else if (key_sym == XK_ISO_Left_Tab) {
+        /* Handle Shift Tab as Shift + Tab */
+        *p_shift = 1;
+        *p_code = 1;
+        key_buf[(*p_nbre_key)+0] = KEY_PREFIX;
+        key_buf[(*p_nbre_key)+1] = 0x09;
+        *p_nbre_key += 2;
+#ifdef DEBUG
+        printf ("Shift Key %02x %02x\n", KEY_PREFIX, 0x09);
+#endif
+    } else {
+
+        /* Normal character: add codes */
+#ifdef DEBUG
+        printf ("Str ");
+#endif
+        for (i = 0; i < nb_char; i++) {
+            key_buf[*p_nbre_key] = (unsigned char) str[i];
+            (*p_nbre_key) ++;
+#ifdef DEBUG
+            printf ("%02x ", (unsigned char) str[i]);
+#endif
+        }
+#ifdef DEBUG
+        printf ("\n");
+#endif
+    }
+
+    return;
 }
 

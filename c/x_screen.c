@@ -11,7 +11,7 @@ void scr_set_gc (Display *x_server, GC x_context, unsigned long paper,
 /* Sets the attribute of the window */
 void scr_set_attrib (Display *x_server, GC x_context, XFontStruct *x_fonts[],
                      int no_font, unsigned long color_ids[],
-                     int paper, int ink, int superbright, int blink, int reverse) {
+                     int paper, int ink, int blink, int reverse) {
 
 unsigned long foreground, background;
 
@@ -29,40 +29,41 @@ unsigned long foreground, background;
         background = col_get_std (paper, paper, color_ids);
     }
 
-    if ( superbright || (blink && blink_bold() ) ) {
-        no_font =  fon_get_bold (no_font);
-    }
-
     scr_set_gc (x_server, x_context,
       background, foreground, x_fonts[no_font]->fid);
+
+    return;
 }
 
 
 
 void scr_put_char(Display *x_server, GC x_context, Window x_window,
-                   int x, int y, char car, int xor_mode) {
+                  XFontSet x_font_set, int x, int y, char car, int xor_mode) {
 
     if (!xor_mode) {
-      XDrawImageString (x_server, x_window, x_context, x, y, &car, 1);
+      XmbDrawImageString (x_server, x_window, x_font_set, x_context, x, y, &car, 1);
     } else {
-      XDrawString (x_server, x_window, x_context, x, y, &car, 1);
+      XmbDrawString (x_server, x_window, x_font_set, x_context, x, y, &car, 1);
     }
 
 }
 
-void scr_overwrite_char(Display *x_server, GC x_context, Window x_window, int x, int y, char car) {
+void scr_overwrite_char(Display *x_server, GC x_context, Window x_window,
+                        XFontSet x_font_set, int x, int y, char car) {
 
-    XDrawString (x_server, x_window, x_context, x, y, &car, 1);
+    XmbDrawString (x_server, x_window, x_font_set, x_context, x, y, &car, 1);
 
 }
 
-void scr_put_string (Display *x_server, GC x_context, Window x_window,
-                     int x, int y, const char *p_car, int number, int xor_mode) {
-
+void scr_put_string(Display *x_server, GC x_context, Window x_window,
+                    XFontSet x_font_set, int x, int y,
+                    const char *p_car, int number, int xor_mode) {
     if (!xor_mode) {
-      XDrawImageString (x_server, x_window, x_context, x, y, p_car, number);
+      XmbDrawImageString (x_server, x_window, x_font_set, x_context,
+                          x, y, p_car, number);
     } else {
-      XDrawString (x_server, x_window, x_context, x, y, p_car, number);
+      XmbDrawString (x_server, x_window, x_font_set, x_context,
+                     x, y, p_car, number);
     }
 }
 

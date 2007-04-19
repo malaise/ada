@@ -51,6 +51,7 @@ static void title (void *line) {
   put (line, T3, TITLE_LNE + 3, 2);
   put (line, T4, TITLE_LNE + 4, 2);
   put (line, T5, TITLE_LNE + 6, 2);
+
 }
 
 int main(int argc, char *argv[])
@@ -58,10 +59,11 @@ int main(int argc, char *argv[])
 
 void *line, *line_event;
 char name[50];
-char stra[81], stre[81];
+char stra[81], stre[81], strs[81];
 char digits[5];
 int i, j, k, l, m;
-int kk[6];
+int kk[4];
+boolean control, shift, code;
 int bord, font;
 unsigned int b1;
 unsigned int s, u, b, r;
@@ -205,14 +207,27 @@ boolean read;
       /* Keyboard */
       strcpy (stre, "Keys: ");
 
-      /* read the codes */
-      x_read_key (line_event, kk, &j);
+      /* Read the key codes */
+      x_read_key (line_event, &control, &shift, &code, kk, &j);
+      if (control) strcat (stre, "Ctrl ");
+      if (shift)   strcat (stre, "Shift ");
+      if (code)    strcat (stre, "Code ");
       for (i = 0; i < j; i++) {
-        /* Build string */
+        /* Build the codes */
         strcat (stre, "<");
         sprintf (digits, "%02X", kk[i]);
         strcat (stre, digits);
         strcat (stre, "> ");
+     }
+     /* Read the string if any */
+     memset (strs, 0, sizeof(strs));
+     if (! code) {
+       strcat (stre, " -->");
+       for (i = 0; i < j; i++) {
+         strs[i] = (unsigned char) kk[i];
+       }
+       strcat (stre, strs);
+       strcat (stre, "<");
      }
 
      if (j == 1) {

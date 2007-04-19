@@ -15,6 +15,7 @@
 
 typedef struct {
     Display *x_server;
+    XFontSet x_font_set[NBRE_FONT];
     XFontStruct *x_font[NBRE_FONT];
     int backing_store;
 }t_server;
@@ -46,10 +47,14 @@ typedef struct {
     int wwidth, wheight;
     /* Graphic characteristics */
     boolean underline;
+    boolean bold;
     boolean xor_mode;
     GC x_graphic_context;
     /* Event characteristics */
     boolean motion_enabled;
+    boolean control;
+    boolean shift;
+    boolean code;
     int key_buf[NBRE_MAX_KEY];
     int nbre_key;
     int button;
@@ -87,6 +92,9 @@ t_window *lin_get_win (Window x_window);
 
 /* Alternatively swaps colors for blinking */
 void lin_blink_colors(boolean blink);
+
+/* Get font no for line (bold or not) */
+int lin_get_font (t_window *p_window);
 
 #endif
 /* _X_LINE_H */

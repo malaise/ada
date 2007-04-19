@@ -2,6 +2,8 @@
 /* Nov 07, 1998 : Store size at creation of win, in pixels         */
 #include <stdlib.h>
 #include <malloc.h>
+#include <locale.h>
+
 
 #define LINE_LOCAL
 #include "x_line.h"
@@ -42,6 +44,7 @@ unsigned long win_mask;
 XSetWindowAttributes win_attrib;
 Window x_window;
 
+    setlocale (LC_ALL, "");
     /* Open X display */
     local_server.x_server = XOpenDisplay (server_name);
     if (local_server.x_server == NULL) {
@@ -76,7 +79,9 @@ Window x_window;
     XAutoRepeatOn (local_server.x_server);
 
     /* Load fonts */
-    if (!fon_open (local_server.x_server, local_server.x_font)) {
+    if (!fon_open (local_server.x_server,
+                   local_server.x_font_set,
+                   local_server.x_font)) {
         XCloseDisplay (local_server.x_server);
         return (False);
     }
@@ -173,6 +178,7 @@ boolean screen_created;
     p_window->no_font = no_font;
     p_window->background_color = background;
     p_window->underline = False;
+    p_window->bold = False;
     p_window->xor_mode = False;
     p_window->motion_enabled = False;
     p_window->nbre_key = 0;
@@ -213,8 +219,10 @@ boolean screen_created;
 
         x_pix = x * fon_get_width(p_window->server->x_font[no_font]);
         y_pix = y * fon_get_height(p_window->server->x_font[no_font]);
-        p_window->wwidth = width * fon_get_width(p_window->server->x_font[no_font]);
-        p_window->wheight = height * fon_get_height(p_window->server->x_font[no_font]);
+        p_window->wwidth = width
+            * fon_get_width(p_window->server->x_font[no_font]);
+        p_window->wheight = height
+            * fon_get_height(p_window->server->x_font[no_font]);
         win_mask = DEF_WIN_MASK;
         win_attrib.background_pixel =
           col_get_std(background, background, p_window->screen->color_id);
@@ -317,14 +325,15 @@ int lin_clear (t_window *p_window) {
     /* CLear line */
     XClearWindow (p_window->server->x_server, p_window->x_window);
 
-    /* Reset underline attribute */
+    /* Reset underline and superbright attributes */
     p_window->underline = False;
+    p_window->bold = False;
 
     /* Reset graphic context */
     scr_set_attrib (p_window->server->x_server, p_window->x_graphic_context,
       p_window->server->x_font, p_window->no_font,
       p_window->screen->color_id, 0, 1,
-      False, False, False);
+      False, False);
 
     return(True);
 }
@@ -428,3 +437,14 @@ int i;
         list_window[i]->screen->blinking = blink;
     }
 }
+
+
+/* Get font no for line (bold or not) */
+int lin_get_font (t_window *p_window) {
+    if (p_window->bold) {
+        return fon_get_bold (p_window->no_font);
+    } else {
+        return p_window->no_font;
+    }
+}
+

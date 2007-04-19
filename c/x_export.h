@@ -97,7 +97,8 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
 extern int x_read_tid (void *line_id, boolean row_col,
                        int *p_button, int *p_row, int *p_column);
 
-extern int x_read_key (void *line_id, int *p_key, int *p_nbre);
+extern int x_read_key (void *line_id, boolean *p_control, boolean *p_shift,
+                       boolean *p_code, int *p_keys, int *p_nbre);
 
 extern int x_enable_motion_events (void *line_id, boolean enable_motion);
 
