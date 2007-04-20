@@ -1,6 +1,6 @@
 -- Posix regular expression
 with Ada.Characters.Latin_1;
-with Bit_Ops, Environ, Utf_8;
+with Bit_Ops, Utf_8;
 package body Regular_Expressions is
 
   -- C interface --
@@ -51,34 +51,6 @@ package body Regular_Expressions is
   procedure C_Regfree (Preg : in System.Address);
   pragma Import (C, C_Regfree, "regfree");
 
-  -- Language management
-  Language : Language_List := Get_Env;
-  procedure Set_Language (Language : in Language_List) is
-  begin
-    Regular_Expressions.Language := Language;
-  end Set_Language;
-
-  function Get_Language return Language_Set_List is
-  begin
-    if Language = Get_Env then
-      declare
-        Lang : constant String := Environ.Getenv ("LANG");
-      begin
-        if Lang'Length > 6
-        and then Lang(Lang'Last-5 .. Lang'Last) = ".UTF-8" then
-          Language := Lang_Utf_8;
-        else
-          Language := Lang_C;
-        end if;
-      end;
-    end if;
-    return Language;
-  exception
-    when others =>
-      Language := Lang_C;
-      return Language;
-  end Get_Language;
-        
   -- Ada binding
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
@@ -111,7 +83,7 @@ package body Regular_Expressions is
       Result.Comp_Addr := C_Malloc_Regex;
     end if;
     -- Compile
-    Result.Language := Get_Language;
+    Result.Lang := Language.Get_Language;
     Result.Error := C_Regcomp (Result.Comp_Addr, Criteria4C'Address, Cflags);
     Ok := Result.Error = 0;
   end Compile;
@@ -145,6 +117,7 @@ package body Regular_Expressions is
     First : constant Integer := To_Check'First;
     J : Positive;
     use type System.Address;
+    use type Language.Language_Set_List;
     use Bit_Ops;
   begin
     -- Init results
@@ -188,7 +161,7 @@ package body Regular_Expressions is
         Match_Info(I).Last_Offset_Start  := C_Match_Info(J).Stop_Offset + First - 1;
         Match_Info(I).Last_Offset_Stop   := C_Match_Info(J).Stop_Offset + First - 1;
         -- Any adjustment due to Lang
-        if Criteria.Language = Lang_Utf_8 then
+        if Criteria.Lang = Language.Lang_Utf_8 then
           Adjust_Utf8 (To_Check(Match_Info(I).Last_Offset_Stop),
                        Match_Info(I).Last_Offset_Stop);
         end if;

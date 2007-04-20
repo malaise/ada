@@ -1,18 +1,7 @@
 -- Binding to Posix regular expression
 with System, Ada.Finalization;
+with Language;
 package Regular_Expressions is
-
-  -- Language:
-  -- When a character is be encoded on several bytes,
-  --  language is used to detect the end of this sequence and
-  --  set Last_Offset_Stop to the last byte of the sequence.
-  -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
-  --  ending by ".UTF-8". This is the default behaviour.
-  type Language_List is (Lang_C, Lang_Utf_8, Get_Env);
-  procedure Set_Language (Language : in Language_List);
-
-  subtype Language_Set_List is Language_List range Lang_C .. Lang_Utf_8;
-  function Get_Language return Language_Set_List;
 
   -- Result of regex compilation
   type Compiled_Pattern is limited private;
@@ -20,6 +9,9 @@ package Regular_Expressions is
   -- Matching information:
   -- Filled with indexes in string To_Check, up to (1, 0)
   --  defining matching substrings
+  -- When a character is encoded on several bytes,
+  --  Language is used to detect the end of this sequence and
+  --  set Last_Offset_Stop to the last byte of the sequence.
   -- abcab matches (ab)c\1* at pos [1-5] [1-2]
   subtype Offset_Range is Integer;
   type Match_Cell is record
@@ -75,7 +67,7 @@ package Regular_Expressions is
 private
 
   type Compiled_Pattern is new Ada.Finalization.Controlled with record
-    Language : Language_List := Get_Env;
+    Lang : Language.Language_List := Language.Get_Env;
     Comp_Addr : System.Address := System.Null_Address;
     Error : Integer := 0;
   end record;

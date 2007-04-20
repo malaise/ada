@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Text_Io;
-with Environ, Argument, Sys_Calls, Regular_Expressions;
+with Environ, Argument, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
@@ -125,9 +125,9 @@ procedure Asubst is
   -- Nb subst per file
   Nb_Subst : Substit.Long_Long_Natural;
   -- Language
-  Lang : Regular_Expressions.Language_List
-       := Regular_Expressions.Get_Env;
-  use type Regular_Expressions.Language_List;
+  Lang : Language.Language_List
+       := Language.Get_Env;
+  use type Language.Language_List;
 
   -- Process one file
   procedure Do_One_File (File_Name : in String) is
@@ -160,9 +160,9 @@ procedure Asubst is
 begin
   -- Superseed by ASUBST_UTF8 variable if set
   if Environ.Is_Yes (Utf8_Var_Name) then
-    Lang := Regular_Expressions.Lang_Utf_8;
+    Lang := Language.Lang_Utf_8;
   elsif Environ.Is_No (Utf8_Var_Name) then
-    Lang := Regular_Expressions.Lang_C;
+    Lang := Language.Lang_C;
   end if;
 
   -- Check nb of arguments
@@ -198,7 +198,7 @@ begin
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option ascii");
       end if;
-      Lang := Regular_Expressions.Lang_C;
+      Lang := Language.Lang_C;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-b"
     or else Argument.Get_Parameter (Occurence => I) = "--basic" then
@@ -282,7 +282,7 @@ begin
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option utf8");
       end if;
-      Lang := Regular_Expressions.Lang_Utf_8;
+      Lang := Language.Lang_Utf_8;
       Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-v"
     or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
@@ -351,15 +351,15 @@ begin
 
   -- Put processing mode
   if Debug.Set then
-    if Lang = Regular_Expressions.Lang_Utf_8 then
+    if Lang = Language.Lang_Utf_8 then
       Sys_Calls.Put_Line_Error ("Assuming charset is UTF-8");
-    elsif  Lang = Regular_Expressions.Lang_C then
+    elsif  Lang = Language.Lang_C then
       Sys_Calls.Put_Line_Error ("Assuming charset is ASCII");
     end if;
-    Regular_Expressions.Set_Language (Lang);
+    Language.Set_Language (Lang);
     Sys_Calls.Put_Line_Error ("Regex assumes language to be "
-       & Mixed_Str (Regular_Expressions.Language_List'Image(
-                Regular_Expressions.Get_Language)));
+       & Mixed_Str (Language.Language_List'Image(
+                Language.Get_Language)));
   end if;
 
   -- Process files
