@@ -91,6 +91,15 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   } else {
     XFlush (local_server.x_server);
     x_fd = ConnectionNumber (local_server.x_server);
+    /* Don't wait if an event is pending */
+    res = XPending (local_server.x_server);
+    if (res > 0) {
+      *p_fd = X_EVENT;
+      *p_read = TRUE;
+      return (OK);
+    } else if (res < 0) {
+      return (ERR);
+    }
   }
 
   /* Compute expiration time */
@@ -782,9 +791,6 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
       case KeyPress :
         if (XFilterEvent(&event, None)) {
           /* Event is filtered (e.g. ^ then i) */
-#ifdef DEBUG
-        printf ("X_EXPORT : filtered event\n");
-#endif
           break;
         }
         /* Find the window of event */
@@ -902,10 +908,10 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
     } /* Switch */
   } /* while */
 
-    /* Re read number of pending messages */
-    /*  (XNextEvent may flush the buffer) */
-    n_events = XPending (local_server.x_server);
-    *p_next = (n_events > 0);
+  /* Re read number of pending messages */
+  /*  (XNextEvent may flush the buffer) */
+  n_events = XPending (local_server.x_server);
+  *p_next = (n_events > 0);
 
   return (result);
 }
