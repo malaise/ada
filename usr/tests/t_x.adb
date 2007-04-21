@@ -19,6 +19,7 @@ procedure T_X is
   Exp : Timers.Delay_Rec;
   Kind : X_Mng.Event_Kind;
 
+  Control, Shift, Code : Boolean;
   Kbd_Codes : X_Mng.Kbd_Tab_Code;
   Tid_Button : X_Mng.Button_List;
   Tid_Row, Tid_Col : Integer;
@@ -93,8 +94,9 @@ begin
       when X_Mng.Tid_Motion =>
         null;
       when X_Mng.Keyboard =>
-        X_Mng.X_Read_Key(Id, Kbd_Codes);
+        X_Mng.X_Read_Key(Id, Control, Shift, Code, Kbd_Codes);
         Text_Handler.Set (Txt, X_Mng.Event_Kind'Image(Kind));
+        Text_Handler.Append (Txt, " " & Control'Img & " " & Shift'Img & " " & Code'Img);
         for I in 1 .. Kbd_Codes.Nbre loop
            Text_Handler.Append (Txt, " " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
         end loop;
