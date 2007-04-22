@@ -22,13 +22,13 @@ package X_Mng is
   end record;
 
   -- keyboard codes for 1 key
-  Kbd_Max_Code : constant := 6;
+  Kbd_Max_Code : constant := 4;
   subtype Kbd_Index_Code is Integer range 1 .. Kbd_Max_Code;
   type Kbd_Array is array (Kbd_Index_Code) of Byte;
 
   type Kbd_Tab_Code is record
-    Tab : Kbd_Array;
     Nbre : Kbd_Index_Code;
+    Tab : Kbd_Array;
   end record;
 
   -- For X_Draw_Points
@@ -254,8 +254,15 @@ package X_Mng is
 
   -- Reads a key of a sequence
   -- The line_id must be the one given by wait_event
-  -- key is the byte read
-  procedure X_Read_Key(Line_Id : in Line; Key : out Kbd_Tab_Code);
+  -- Control if control key was on
+  -- Shift if Code and shift key was on
+  -- Code if function key or no translation, then Key is two bytes
+  --  else key is the translated sequence of bytes
+  procedure X_Read_Key(Line_Id : in Line;
+                       Control : out Boolean;
+                       Shift : out Boolean;
+                       Code : out Boolean;
+                       Key : out Kbd_Tab_Code);
 
   -- Enable disable cursor motion events
   -- The line_id must be the one given by wait_event

@@ -70,7 +70,7 @@ package body Action is
     loop
 
       declare
-        Str : String (1 .. 0);
+        Str : Wide_String (1 .. 0);
         Last : Natural;
         Stat : Con_Io.Curs_Mvt;
         Pos : Positive;

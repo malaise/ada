@@ -1,4 +1,4 @@
-with String_Mng, Generic_Con_Io;
+with String_Mng, Generic_Con_Io, Language;
 with Afpx_Typ;
 package body Afpx is
 
@@ -337,6 +337,13 @@ package body Afpx is
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
                           Str      : in String) is
+  begin
+    Encode_Wide_Field (Field_No, From_Pos, Language.String_To_Wide (Str));
+  end Encode_Field;
+
+  procedure Encode_Wide_Field (Field_No : in Field_Range;
+                               From_Pos : in Con_Io.Full_Square;
+                               Str      : in Wide_String) is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
@@ -348,7 +355,7 @@ package body Afpx is
       raise Invalid_Square;
     end if;
 
-    -- Check that From_Pos.Col + Str is length compatible with field width
+    -- Check that From_Pos.Col + Wstr length is compatible with field width
     if Str'Length /= 0
         and then not Afpx_Typ.In_Field (Field,
             (From_Pos.Row, From_Pos.Col + Str'Length - 1)) then
@@ -360,21 +367,24 @@ package body Afpx is
           + From_Pos.Col;
     Af_Dscr.Chars (Init_Index .. Init_Index + Str'Length - 1) := Str;
     Af_Dscr.Current_Dscr.Modified := True;
-  end Encode_Field;
+  end Encode_Wide_Field;
 
   procedure Encode_Field (Field_No : in Field_Range;
-    From_Pos : in Con_Io.Full_Square;
-    Str      : in Str_Txt) is
+                          From_Pos : in Con_Io.Full_Square;
+                          Str      : in Str_Txt) is
   begin
     Encode_Field (Field_No, From_Pos, Text_Handler.Value (Str));
   end Encode_Field;
 
-
-
   -- Decode the content of a row of a field
-  procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Full_Row_Range;
-                          Str      : in out Str_Txt) is
+  function Decode_Field (Field_No : Field_Range;
+                         Row : Con_Io.Full_Row_Range) return String is
+  begin
+    return Language.Wide_To_String (Decode_Wide_Field (Field_No, Row));
+  end Decode_Field;
+
+  function Decode_Wide_Field (Field_No : Field_Range;
+                              Row : Con_Io.Full_Row_Range) return Wide_String is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
@@ -387,20 +397,16 @@ package body Afpx is
     end if;
     -- Copy in init string
     Init_Index := Field.Char_Index + Row * Field.Width;
-    -- Return Field.Width characters
-    Text_Handler.Set (Str,
-         Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1));
-  end Decode_Field;
+    -- Return characters
+    return Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1);
+  end Decode_Wide_Field;
 
-  -- Decode the content of a row of a field
-  function Decode_Field (Field_No : Field_Range;
-                         Row : Con_Io.Full_Row_Range) return String is
-    Str : Str_Txt;
+  procedure Decode_Field (Field_No : in Field_Range;
+                          Row      : in Con_Io.Full_Row_Range;
+                          Str      : in out Str_Txt) is
   begin
-    Decode_Field (Field_No, Row, Str);
-    return Text_Handler.Value (Str);
+    Text_Handler.Set (Str, Decode_Field (Field_No, Row));
   end Decode_Field;
-
 
   -- Get field colors
   procedure Get_Field_Colors (Field_No : in Absolute_Field_Range;

@@ -395,9 +395,10 @@ package body Sok_Display is
   end Clear_Error;
 
   -- get frame number
-  procedure Get_No_Frame (No : out Sok_Types.Frame_Range; Result : out Get_Result_List) is
+  procedure Get_No_Frame (No : out Sok_Types.Frame_Range;
+                          Result : out Get_Result_List) is
 
-    Str : String (1..2) := (others => ' ');
+    Str : Wide_String (1..2) := (others => ' ');
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive := 1;
@@ -439,19 +440,20 @@ package body Sok_Display is
           Sok_Time.Disp_Time;
 
         when Con_Io.Ret =>
-          -- digit or space allowed
+          -- Digit or space allowed
           for I in Str'Range loop
             if Str(I) not in '0' .. '9' and then Str(I) /= ' ' then
               raise Format_Error;
             end if;
           end loop;
-          -- not empty
+          -- Not empty
           if Last = 0 then
             Result := Esc;
             exit;
           end if;
           begin
-            No := Sok_Types.Frame_Range'Value (Str (1..Last));
+            No := Sok_Types.Frame_Range'Value (
+              Con_Io.Wide_To_String (Str (1..Last)));
             Result := Set;
             exit;
           exception

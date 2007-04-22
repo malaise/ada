@@ -10,7 +10,7 @@ package body Sok_Input is
                 Delay_Seconds => 1.0);
 
   function Get_Key return Key_List is
-    Str  : String (1 .. 1);
+    Str  : Wide_String (1 .. 1);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
@@ -35,7 +35,7 @@ package body Sok_Input is
           when Left => return Left;
           when Right => return Right;
           when Full =>
-            case Str(1) is
+            case Con_Io.Wide_To_String(Str)(1) is
               when 'u' | 'U' =>
                 return Undo;
               when 'w' | 'W' =>
@@ -69,7 +69,7 @@ package body Sok_Input is
   end Get_Key;
 
   procedure Pause is
-    Str  : String (1 .. 1);
+    Str  : Wide_String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;

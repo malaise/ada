@@ -1,7 +1,8 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Strings.Unbounded;
 with Con_Io, Text_Handler, Normal, Argument, Directory,
      Upper_Str, Mixed_Str, Basic_Proc, Xml_Parser,
-     Ada_Words, Parser, String_Mng, Computer, Int_Image;
+     Ada_Words, Parser, String_Mng, Computer, Int_Image,
+     Language;
 with Afpx_Typ;
 use  Afpx_Typ;
 -- Read Afpx.xml, check it
@@ -675,7 +676,8 @@ procedure Afpx_Bld is
             File_Error (Child_Child, "Invalid init string");
           end if;
           Finit_String := Xp.Get_Text (Child_Child);
-          Finit_Length := Asu.Length (Finit_String);
+          -- Length in term of put positions (also in term of wide characters)
+          Finit_Length := Language.Put_Length (Strof (Finit_String));
           -- Check Finit col + string length compatible with field width
           if not Afpx_Typ.In_Field (Fields(No),
              (Finit_Square.Row, Finit_Square.Col + Finit_Length - 1)) then
@@ -690,7 +692,7 @@ procedure Afpx_Bld is
          + Finit_Square.Row * Fields(No).Width
          + Finit_Square.Col;
         Init_Str (Finit_Index .. Finit_Index + Finit_Length - 1) :=
-          Strof (Finit_String);
+          Language.String_To_Wide (Strof (Finit_String));
       end if;
     end loop;
   end Loc_Load_Field;

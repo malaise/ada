@@ -281,7 +281,7 @@ package body Screen is
 
   function Get (Disp_Color : Space.Color_List;
                 Move_Color : Space.Color_List) return Players.Action_Rec is
-    Str  : String (1 .. 5);
+    Str  : Wide_String (1 .. 5);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
@@ -322,15 +322,17 @@ package body Screen is
           Str(Str'Length) := ' ';
         end if;
 
-        if Lower_Str (Str) = "exit " then
+        if Lower_Str (Con_Io.Wide_To_String (Str)) = "exit " then
           Erase;
           return (Valid => False);
         end if;
+        declare
+          S : constant String := Con_Io.Wide_To_String (Str);
         begin
-          From.Col := Space.Col_Range'Value(Str(1..1));
-          From.Row := Space.Row_Range'Value(Str(2..2));
-          To.Col := Space.Col_Range'Value(Str(3..3));
-          To.Row := Space.Row_Range'Value(Str(4..4));
+          From.Col := Space.Col_Range'Value(S(1..1));
+          From.Row := Space.Row_Range'Value(S(2..2));
+          To.Col := Space.Col_Range'Value(S(3..3));
+          To.Row := Space.Row_Range'Value(S(4..4));
           Conv_Ok := True;
         exception
           when others =>
@@ -343,7 +345,8 @@ package body Screen is
           else
             Conv_Ok := False;
             for Piece in Pieces.Promotion_Piece_List loop
-              if Upper_Char(Str(5)) = Image.Piece_Image(Piece)(1) then
+              if Upper_Char(Con_Io.Wide_To_String (Str)(5))
+                          = Image.Piece_Image(Piece)(1) then
                 Promo := Piece;
                 Conv_Ok := True;
                 exit;
@@ -387,7 +390,7 @@ package body Screen is
   procedure Put (Disp_Color : in Space.Color_List;
                  Move_Color : in Space.Color_List;
                  Message : in String; Ack : in Boolean := False) is
-    Str  : String (1 .. 0);
+    Str  : Wide_String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
@@ -439,7 +442,7 @@ package body Screen is
   -- Wait until fd event
   procedure Wait_Event (Disp_Color : in Space.Color_List;
                         Move_Color : in Space.Color_List) is
-    Str  : String (1 .. 0);
+    Str  : Wide_String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
@@ -473,7 +476,7 @@ package body Screen is
 
   -- Wait for a moment
   procedure Wait (Delay_Sec : in Duration) is
-    Str  : String (1 .. 0);
+    Str  : Wide_String (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;

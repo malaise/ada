@@ -9,7 +9,7 @@ package Utf_8 is
   -- Unicode
   subtype Unicode_Number is Natural range 0 .. 16#10FFFF#;
 
-  -- Raised if incorrect UTF-8 Sequence or First_Char
+  -- Raised if incorrect UTF-8 Sequence or incorrect First_Char
   Invalid_Sequence : exception;
 
   -- Returns the number of chars of a sequence (coded in the 1st char)
@@ -25,10 +25,22 @@ package Utf_8 is
   -- Checks that a Utf-8 sequence is safe, raise Invalid_Sequence if not
   procedure Check_Safe (Seq : in Sequence);
 
-  -- Decodes a Utf-8 sequence. May raise Invalid_Utf_8_Sequence
+
+  -- Decodes a Utf-8 sequence to Unicode. May raise Invalid_Utf_8_Sequence
   function Decode (Seq : Sequence) return Unicode_Number;
-  -- Encodes a Utf-8 sequence
+  -- Encodes a Unicode as a Utf-8 sequence
   function Encode (Unicode : Unicode_Number) return Sequence;
+
+
+  -- Raised if a Utf-8 sequence leads to a Unicode above last
+  --  Wide_Character (16#FFFF#)
+  Not_Wide_Character : exception;
+
+  -- Decodes a Utf-8 sequence to Wide_Character.
+  -- May raise Invalid_Utf_8_Sequence or Not_Wide_Character
+  function Decode (Seq : Sequence) return Wide_Character;
+  -- Encodes a Unicode as a Utf-8 sequence
+  function Encode (Wide_Char : Wide_Character) return Sequence;
 
 end Utf_8;
 

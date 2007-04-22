@@ -6,7 +6,7 @@ separate (Screen)
 -- type Got_List is (Right_Key, Left_Key, Up_Key, Down_Key, Break, Refresh,
 --                     Timeout);
 function Get_Key (Wait : in Duration) return Got_List is
-  Str    : String (1 .. 0);
+  Str    : Wide_String (1 .. 0);
   Last   : Natural;
   Stat   : Con_Io.Curs_Mvt;
   Pos    : Positive;

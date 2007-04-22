@@ -2,7 +2,7 @@ with Con_Io, Text_Handler, Directory;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 3.0;
+  Afpx_Version : constant Float := 4.0;
 
   -- Files path
   Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
@@ -78,8 +78,8 @@ package Afpx_Typ is
   -- The array of fields of current descriptor
   type Fields_Array is array (Absolute_Field_Range) of Field_Rec;
 
-  -- The init/current charcters of current descriptor
-  subtype Char_Str is String (Char_Str_Range);
+  -- The init/current characters of current descriptor
+  subtype Char_Str is Wide_String (Char_Str_Range);
 
 
   -- Check is square (relative to field) is in field

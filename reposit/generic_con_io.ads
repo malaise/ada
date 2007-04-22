@@ -162,13 +162,6 @@ package Generic_Con_Io is
     function To_Absolute (Relative_Square : Square;
                           Name            : Window) return Square;
 
-    -- Draw a frame around a window (must be open)
-    -- the frame is OUTSIDE the window (so no frame for screen)
-    -- Frame_Impossible if part of the frame is not in the screen
-    procedure Frame (Blink : in Boolean := False;
-                     Name : in Window);
-    procedure Clear_Frame (Name : in Window);
-
     -- Clear window and move to home
     procedure Clear (Name : in Window := Screen);
 
@@ -186,6 +179,16 @@ package Generic_Con_Io is
 
     -- Rings a bell
     procedure Bell (Repeat : in Positive := 1);
+
+    -- Wide character tool for basic compatibility
+    -- See also Language for international support
+    -- These operations set '#' when a Wide_Character is not a Character
+    Wide_Def_Char : constant Character := '#';
+    function Wide_To_Char (W : Wide_Character) return Character;
+    function Wide_To_String (Str : Wide_String) return String;
+    function "&" (Left : String; Right : Wide_String) return String;
+    function "&" (Left : Wide_String; Right : String) return String;
+
 
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.
@@ -216,13 +219,28 @@ package Generic_Con_Io is
                         Blink_Stat : in Blink_Stats := Current;
                         Background : in Basic_Colors := Current);
 
-    -- Same than Put(Char) not Move, but allows semi graphic characters
-    subtype Int_Char is Natural range 0 .. 255;
-    procedure Put_Int (Int        : in Int_Char;
-                       Name       : in Window := Screen;
-                       Foreground : in Colors := Current;
-                       Blink_Stat : in Blink_Stats := Current;
-                       Background : in Basic_Colors := Current);
+    -- Idem with a wide character
+    procedure Putw (W          : in Wide_Character;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Blink_Stat : in Blink_Stats := Current;
+                    Background : in Basic_Colors := Current;
+                    Move       : in Boolean := True);
+
+    -- Idem with a wide string
+    procedure Putw(S          : in Wide_String;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Blink_Stat : in Blink_Stats := Current;
+                    Background : in Basic_Colors := Current;
+                    Move       : in Boolean := True);
+
+    -- Idem but appends a Lf
+    procedure Putw_Line (S          : in Wide_String;
+                         Name       : in Window := Screen;
+                         Foreground : in Colors := Current;
+                         Blink_Stat : in Blink_Stats := Current;
+                         Background : in Basic_Colors := Current);
 
     -- Puts Lf
     procedure New_Line (Name   : in Window := Screen;
@@ -231,17 +249,6 @@ package Generic_Con_Io is
 
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure Pause;
-
-    -- Gets first character (echo or not)
-    -- No echo for Ret,      Esc, Break, Fd_Event, Timer_Event, Signal_Event
-    --  Wakeup_Event and Refresh where
-    --           Latin_1.Lf, Esc, Eot,   Stx,      Syn,         Si
-    --  So           and Nul are returned respectively
-
-    -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
-    --  discarded (get does not return).
-    function Get (Name : Window := Screen; Echo : in Boolean := True)
-                 return Character;
 
     -- How to specify a delay, wait some seconds or until a specific time
     -- Period is not significant
@@ -253,7 +260,8 @@ package Generic_Con_Io is
     Infinite_Delay : constant Delay_Rec := Timers.Infinite_Delay;
 
 
-    -- Gets a string of at most width characters
+    -- Gets a string of at most width put characters. Width is deduced from
+    --  the size to put initial string.
     -- The string must be short enought to be put in 1 line at current position
     --  in the window.
     -- The current cursor position is updated by the call
@@ -286,7 +294,7 @@ package Generic_Con_Io is
                       Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Timeout, Fd_Event, Timer_Event,
                       Signal_Event, Wakeup_Event, Refresh);
-    procedure Get (Str        : out String;
+    procedure Get (Str        : out Wide_String;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;
                    Pos        : out Positive;
@@ -300,7 +308,7 @@ package Generic_Con_Io is
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
-    procedure Put_Then_Get (Str        : in out String;
+    procedure Put_Then_Get (Str        : in out Wide_String;
                             Last       : out Natural;
                             Stat       : out Curs_Mvt;
                             Pos        : in out Positive;
@@ -312,36 +320,20 @@ package Generic_Con_Io is
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True);
 
-    -- Avoid Get_Key_Time and Get_Key functions which may depend on keyboard.
-
-    -- Get_key_time can return if key pressed (Esc event),
-    -- mouse action, refresh or timeout
-    subtype Event_List is Curs_Mvt range Esc .. Refresh;
-
-    -- Check if a key is available, or another event, until a certain time.
-    -- Esc means any key. No echo.
-    procedure Get_Key_Time (Check_Break : in Boolean;
-                            Event       : out Event_List;
-                            Key         : out Natural;
-                            Is_Char     : out Boolean;
-                            Ctrl        : out Boolean;
-                            Shift       : out Boolean;
-                            Time_Out    : in Delay_Rec := Infinite_Delay);
-
-    -- Gives first key code of keyboard buffer, (waits if it is empty) no echo
-    -- if not is_char, key is the key code. If is_char, key is the ascii code.
-    -- CARE : is_char can be set and key not compatible with Ada characters.
-    -- Key = 0 and Is_Char and other flags False: refresh has to be done
-    -- Key = 1 and Is_Char and other flags False: fd event has occured
-    -- Key = 2 and Is_Char and other flags False: timer event has occured
-    -- Key = 3 and Is_Char and other flags False: signal event has occured
-    -- Key = 4 and Is_Char and other flags False: wake up event has occured
-    procedure Get_Key (Key     : out Natural;
-                       Is_Char : out Boolean;
-                       Ctrl    : out Boolean;
-                       Shift   : out Boolean);
+    -- Get an event (key or other), no echo
+    type Get_Result (Mvt : Curs_Mvt := Full) is record
+      case Mvt is
+        when Full =>
+          Char : Wide_Character;
+        when others =>
+          null;
+      end case;
+    end record;
+    function Get (Name     : in Window := Screen;
+                  Time_Out : in Delay_Rec := Infinite_Delay) return Get_Result;
 
 
+    -- Enable cursor motion events
     procedure Enable_Motion_Events (Motion_Enabled : in Boolean);
 
     -- Failure when initialising the screen

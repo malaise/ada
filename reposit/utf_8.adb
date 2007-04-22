@@ -168,5 +168,23 @@ package body Utf_8 is
     end;
   end Encode;
 
+ -- Decodes a Utf-8 sequence to Wide_Character.
+  -- May raise Invalid_Utf_8_Sequence or Not_Wide_Character
+  function Decode (Seq : Sequence) return Wide_Character is
+    U : constant Unicode_Number := Decode (Seq);
+  begin
+    return Wide_Character'Val (U);
+  exception
+    when Constraint_Error =>
+      raise Not_Wide_Character;
+  end Decode;
+
+
+  -- Encodes a Unicode as a Utf-8 sequence
+  function Encode (Wide_Char : Wide_Character) return Sequence is
+  begin
+    return Encode (Wide_Character'Pos (Wide_Char));
+  end Encode;
+
 end Utf_8;
 

@@ -48,9 +48,16 @@ void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
         *p_control = 0;
     } else if ( (key_sym == 0) && (nb_char == 0) ) {
         *p_control = 0;
+    } else if (key_sym == XK_ISO_Left_Tab) {
+        /* Handle Shift+Tab as Shift + Tab */
+        *p_shift = 1;
+        *p_code = 1;
+        key_buf[(*p_nbre_key)+0] = KEY_PREFIX;
+        key_buf[(*p_nbre_key)+1] = 0x09;
+        *p_nbre_key += 2;
     } else if ( ( (key_sym & HIG_BYTE) == HIG_BYTE) 
              || (nb_char == 0) ) {
-    /* Shift is set only for function keys or if no translation */
+        /* Shift is set only for function keys or if no translation */
         /* Add Shift prefix if needed */
         if ( (p_x_key->state & ShiftMask) != 0) {
             /* Case of Shift active */
@@ -61,13 +68,6 @@ void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
         key_buf[(*p_nbre_key)+0] = (key_sym & HIG_BYTE)>>8;
         key_buf[(*p_nbre_key)+1] = key_sym & LOW_BYTE;
         *p_nbre_key +=2;
-    } else if (key_sym == XK_ISO_Left_Tab) {
-        /* Handle Shift Tab as Shift + Tab */
-        *p_shift = 1;
-        *p_code = 1;
-        key_buf[(*p_nbre_key)+0] = KEY_PREFIX;
-        key_buf[(*p_nbre_key)+1] = 0x09;
-        *p_nbre_key += 2;
     } else {
         /* Normal character translated into a sequence of "bytes": add codes */
         for (i = 0; i < nb_char; i++) {

@@ -60,13 +60,13 @@ package body Af_Ptg is
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
       Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
-      Af_Con_Io.Put (
-        S => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
-        Name       => Af_Con_Io.Screen,
-        Foreground => Af_Con_Io.Colors(Foreground),
-        Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
-        Background => Af_Con_Io.Colors(Background),
-        Move       => False);
+      Af_Con_Io.Putw (
+       S          => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
+       Name       => Af_Con_Io.Screen,
+       Foreground => Af_Con_Io.Colors(Foreground),
+       Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
+       Background => Af_Con_Io.Colors(Background),
+       Move       => False);
       -- Update Char_Index to first char of next row (except after last row)
       if I /= Field.Height then
         Char_Index := Char_Index + Field.Width;
@@ -94,8 +94,8 @@ package body Af_Ptg is
     Char_Index := Field.Char_Index + Row * Field.Width;
     -- Go to row, left of field
     Af_Con_Io.Move (Field.Upper_Left.Row + Row, Field.Upper_Left.Col);
-    Af_Con_Io.Put (
-      S => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
+    Af_Con_Io.Putw (
+      S          => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
       Name       => Af_Con_Io.Screen,
       Foreground => Af_Con_Io.Colors(Foreground),
       Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
@@ -194,7 +194,7 @@ package body Af_Ptg is
   end Last_Click;
 
   function Wait_Release return Af_Con_Io.Full_Square is
-    Str : String (1 .. 0);
+    Str : Wide_String (1 .. 0);
     Last : Natural;
     Stat : Af_Con_Io.Curs_Mvt;
     Pos : Positive;
@@ -391,8 +391,9 @@ package body Af_Ptg is
     -- The user user Cb will appreciate a string (1 .. Len)
     --  so make a local copy
     declare
-      Str : constant String (1 .. Field.Width) := Af_Dscr.Chars
-            (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
+      Str : constant String (1 .. Field.Width)
+          := Language.Wide_To_String (Af_Dscr.Chars
+            (Field.Char_Index .. Field.Char_Index + Field.Width - 1));
     begin
       Result := Cursor_Col_Cb (Afpx.Field_Range(Field_No),
                                Enter_Field_Cause,

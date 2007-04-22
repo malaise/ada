@@ -300,9 +300,12 @@ package body X_Mng is
   -- Reads a key of a sequence
   -- int x_read_key (void *line_id, int *p_key, int *p_nbre);
   ------------------------------------------------------------------
-  function X_Read_Key(Line_Id : Line_For_C;
-                      P_Keys  : System.Address;
-                      P_Nbre  : System.Address) return Result;
+  function X_Read_Key(Line_Id   : Line_For_C;
+                      P_Control : System.Address;
+                      P_Shift   : System.Address;
+                      P_Code    : System.Address;
+                      P_Keys    : System.Address;
+                      P_Nbre    : System.Address) return Result;
   pragma Import(C, X_Read_Key, "x_read_key");
 
   ------------------------------------------------------------------
@@ -988,9 +991,14 @@ package body X_Mng is
   end X_Read_Tid;
 
   ------------------------------------------------------------------
-  procedure X_Read_Key(Line_Id : in Line; Key : out Kbd_Tab_Code) is
-      Loc_Tab : array (Natural range 1..Kbd_Max_Code) of Integer;
-      Loc_Nbre : Integer;
+  procedure X_Read_Key(Line_Id : in Line;
+                       Control : out Boolean;
+                       Shift : out Boolean;
+                       Code : out Boolean;
+                       Key : out Kbd_Tab_Code) is
+    Control4C, Shift4C, Code4C : Bool_For_C;
+    Loc_Nbre : Integer;
+    Loc_Tab : array (Natural range 1..Kbd_Max_Code) of Integer;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -998,16 +1006,20 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Read_Key (Line_For_C_Id, Loc_Tab'Address, Loc_Nbre'Address) = Ok;
+    Res := X_Read_Key (Line_For_C_Id, Control4C'Address, Shift4C'Address,
+             Code4C'Address, Loc_Tab'Address, Loc_Nbre'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
-    -- Fill table
+    -- Fill booleans and table
+    Control := Boolean (Control4C);
+    Shift := Boolean (Shift4C);
+    Code := Boolean (Code4C);
+    Key.Nbre := Natural (Loc_Nbre);
     for I in Kbd_Index_Code range Kbd_Index_Code'First..Natural(Loc_Nbre) loop
         Key.Tab(I) := Byte(Loc_Tab(I));
     end loop;
-    Key.Nbre := Natural (Loc_Nbre);
   end X_Read_Key;
 
   ------------------------------------------------------------------

@@ -1,3 +1,4 @@
+with Ada.Strings.Unbounded, Ada.Strings.Wide_Unbounded;
 with Environ, Utf_8;
 package body Language is
 
@@ -6,63 +7,236 @@ package body Language is
   -- type Language_List is (Lang_C, Lang_Utf_8, Get_Env);
 
   -- Language management
-  Lang : Language_List := Get_Env;
-  procedure Set_Language (Language : in Language_List) is
-  begin
-    Lang := Language;
-  end Set_Language;
+  Lang_Set : Boolean := False;
+  Lang : Language_Set_List;
 
-  function Get_Language return Language_Set_List is
+  -- Gess Lang from Environ
+  procedure Getenv_Lang is
+    Lang_Str : constant String := Environ.Getenv ("LANG");
   begin
-    if Lang = Get_Env then
-      declare
-        Lang_Str : constant String := Environ.Getenv ("LANG");
-      begin
-        if Lang_Str'Length > 6
-        and then Lang_Str(Lang_Str'Last-5 .. Lang_Str'Last) = ".UTF-8" then
-          Lang := Lang_Utf_8;
-        else
-          Lang := Lang_C;
-        end if;
-      end;
+    if Lang_Str'Length > 6
+    and then Lang_Str(Lang_Str'Last-5 .. Lang_Str'Last)
+           = String'(".UTF-8") then
+      Lang := Lang_Utf_8;
+    else
+      Lang := Lang_C;
     end if;
-    return Lang;
+    Lang_Set := True;
   exception
     when others =>
       Lang := Lang_C;
-      return Lang;
+      Lang_Set := True;
+  end Getenv_Lang;
+
+  procedure Set_Language (Language : in Language_List) is
+  begin
+    -- Reject changing Lang if already set or got
+    if Lang_Set then
+      raise Language_Already_Set;
+    else
+      Force_Language (Language);
+    end if;
+  end Set_Language;
+
+  procedure Force_Language (Language : in Language_List) is
+  begin
+    if Lang = Get_Env then
+      Getenv_Lang;
+    else
+      Lang := Language;
+      Lang_Set := True;
+    end if;
+  end Force_Language;
+
+  function Get_Language return Language_Set_List is
+  begin
+    if not Lang_Set then
+      Getenv_Lang;
+    end if;
+    return Lang;
   end Get_Language;
 
-  -- When a character is encoded on several bytes,
-  --  language is used to detect the end of this sequence,
-  --  thus to compute the length of the printed string.
-  function Length (Str : String) return Natural is
-    Lang : constant Language_Set_List := Get_Language;
+  -- Utf_8.Nb_Char or 1
+  function Nb_Chars (Char : Character) return Positive is
+  begin
+    if Get_Language /= Lang_Utf_8 then
+      return 1;
+    else
+      return Utf_8.Nb_Chars (Char);
+    end if;
+  end Nb_Chars;
+
+  -- Raw translation from Wide_Character to and from Character
+  function Is_Char (W : Wide_Character) return Boolean is
+  begin
+    return W <= Last_Char;
+  end Is_Char;
+  function Char_To_Wide (C : Character) return Wide_Character is
+  begin
+    return Wide_Character'Val (Character'Pos (C));
+  end Char_To_Wide;
+  function Wide_To_Char (W : Wide_Character) return Character is
+  begin
+    -- May raise Contraint_Error
+    return Character'Val (Wide_Character'Pos (W));
+  end Wide_To_Char;
+
+  -- Convertion to and from wide string
+  -- May raise Utf_8 exceptions
+  function String_To_Wide (Str : String) return Wide_String is
+    Ws : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+    Wc : Wide_Character;
+    Index : Natural;
+    Nb : Utf_8.Len_Range;
+  begin
+    if Get_Language /= Lang_Utf_8 then
+      for I in Str'Range loop
+        Ada.Strings.Wide_Unbounded.Append (Ws, Char_To_Wide(Str(I)));
+      end loop;
+    else
+      -- Encode Utf_8 sequences
+      Index := Str'First;
+      loop
+        exit when Index > Str'Last;
+        -- Encode the Nb_Chars of this sequence
+        Nb := Utf_8.Nb_Chars (Str(Index));
+        if Nb = 1 then
+          -- Optim
+          Wc := Char_To_Wide (Str(Index));
+        else
+          Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
+        end if;
+        Ada.Strings.Wide_Unbounded.Append (Ws, Wc);
+        Index := Index + Nb;
+      end loop;
+    end if;
+    return Ada.Strings.Wide_Unbounded.To_Wide_String (Ws);
+  end String_To_Wide;
+
+  function Wide_To_String (Str : Wide_String) return String is
+    S : Ada.Strings.Unbounded.Unbounded_String;
+    W : Wide_Character;
+  begin
+    if Get_Language /= Lang_Utf_8 then
+      for I in Str'Range loop
+        Ada.Strings.Unbounded.Append (S, Wide_To_Char (Str(I)));
+      end loop;
+    else
+      for I in Str'Range loop
+        W := Str(I);
+        if W <= Last_Char then
+          -- Optim
+          Ada.Strings.Unbounded.Append (S, Wide_To_Char (Str(I)));
+        else
+          Ada.Strings.Unbounded.Append (S, Utf_8.Encode (Str(I)));
+        end if;
+      end loop;
+    end if;
+    return Ada.Strings.Unbounded.To_String (S);
+  end Wide_To_String;
+
+  function "&" (Left : String; Right : Wide_String) return String is
+  begin
+    return Left & Wide_To_String (Right);
+  end "&";
+  function "&" (Left : Wide_String; Right : String) return String is
+  begin
+    return Wide_To_String (Left) & Right;
+  end "&";
+
+  function "&" (Left : String; Right : Wide_String) return Wide_String is
+  begin
+    return String_To_Wide (Left) & Right;
+  end "&";
+  function "&" (Left : Wide_String; Right : String) return Wide_String is
+  begin
+    return Left & String_To_Wide (Right);
+  end "&";
+  function "=" (Left : String; Right : Wide_String) return Boolean is
+  begin
+    return String_To_Wide (Left) = Right;
+  end "=";
+  function "=" (Left : Wide_String; Right : String) return Boolean is
+  begin
+    return Left = String_To_Wide (Right);
+  end "=";
+
+
+  -- Compute the put length of Str
+  function Put_Length (Str : String) return Natural is
     Len : Natural;
     Index : Natural;
   begin
-    if Lang = Lang_C then
-      -- Easy, one char for one printed cell
-      return Str'Length;
-    elsif Lang = Lang_Utf_8 then
-      if Str'Length = 0 then
+    -- Count effective put len
+    Index := Str'First;
+    Len := 0;
+    loop
+      exit when Index > Str'Last;
+      Len := Len + 1;
+      -- Skip the Nb_Chars of this sequence
+      Index := Index + Nb_Chars (Str(Index));
+    end loop;
+    return Len;
+  end Put_Length;
+
+  -- Compute the last index of Str to put a given
+  --  number of characters
+  function Last_Index_For (Str : String; Put_Pos : Natural) return Natural is
+    Index : Natural;
+  begin
+    -- Move forward up to Put_Pos
+    Index := Str'First;
+    Index := 0;
+    loop
+      if Index > Str'Last then
+        -- End of string reached: Put_Pos is too large
         return 0;
+      elsif Index > Put_Pos then
+        -- Index is now first char after Put_Pos
+        return Index - 1;
       end if;
-      -- Count effective printed len
-      Index := Str'First;
-      Len := 0;
-      loop
-        Len := Len + 1;
-        -- Skip the Nb_Chars of this sequence
-        Index := Index + Utf_8.Nb_Chars (Str(index));
-        exit when Index > Str'last;
-      end loop;
-      return Len;
-    else
-      -- Default
-      return Str'Length;
+      Index := Index + Nb_Chars (Str(Index));
+    end loop;
+  end Last_Index_For;
+
+  -- Compute all the indexes of Str corresponding to successive
+  --  put offset
+  function All_Indexes_Of (Str : String) return Index_Array is
+    Indexes : Index_Array (1 .. Str'Length);
+    Index : Natural;
+    Len : Natural;
+  begin
+    -- Store effective put indexes
+    Index := Str'First;
+    Len := 0;
+    for I in Indexes'Range loop
+      if Index > Str'Last then
+        -- End of string reached? Len is OK then
+        return Indexes (1 .. Len);
+      end if;
+      Indexes(I) := Index;
+      Len := I;
+      Index := Index + Nb_Chars (Str(Index));
+    end loop;
+    -- End of Indexes reached
+    return Indexes;
+  end All_Indexes_Of;
+
+  -- Return slice of Str between 2 positions
+  function Slice (Str : String;
+                  First_Pos : Positive;
+                  Last_Pos  : Natural) return String is
+    Indexes : constant Index_Array := All_Indexes_Of (Str);
+    Last_Nbre_Char : Positive;
+    Last_Char_Index : Positive;
+  begin
+    if Last_Pos < First_Pos then
+      return "";
     end if;
-  end Length;
+    Last_Nbre_Char := Nb_Chars (Str(Indexes(Last_Pos)));
+    Last_Char_Index := Indexes(Last_Pos) + Last_Nbre_Char;
+    return Str (Indexes(First_Pos) .. Last_Char_Index);
+  end Slice;
 
 end Language;
 

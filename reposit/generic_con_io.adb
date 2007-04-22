@@ -1,10 +1,11 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
-with Argument, Dyn_Data, Environ;
+with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
+with Argument, Dyn_Data, Environ, Language;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
 
   Lf : Character renames Ada.Characters.Latin_1.Lf;
+  Lfs : constant String := Lf & "";
 
   procedure X_Initialise is
   begin
@@ -349,82 +350,6 @@ package body Generic_Con_Io is
       end if;
     end Set_Attributes;
 
-    procedure Quick_Draw (Upper_Left, Lower_Right : in Square;
-                          Kind                    : in Border_List;
-                          Name                    : in Window) is
-
-      type Descript is array(1 .. 6) of X_Mng.Byte;
-      Desc : constant array(Border_List) of Descript := (
-        Erase  => (others => Character'Pos(' ')),
-        Simple => (13, 12, 11, 14, 18, 25),
-        Blink  => (13, 12, 11, 14, 18, 25));
-    begin
-    -- Check
-      if Upper_Left.Row = Row_Range'First or else
-         Upper_Left.Col = Col_Range'First or else
-         Lower_Right.Row = Row_Range'Last or else
-         Lower_Right.Col = Col_Range'Last then
-        raise Frame_Impossible;
-      end if;
-      case Kind is
-        when Blink =>
-          Set_Attributes (Name.Current_Foreground, Blink,
-                          Name.Current_Background, Name.Current_Xor_Mode);
-        when Simple =>
-          Set_Attributes (Name.Current_Foreground, Not_Blink,
-                          Name.Current_Background, Name.Current_Xor_Mode);
-        when Erase =>
-          Set_Attributes (Name.Current_Foreground, Name.Current_Blink_Stat,
-                          Name.Current_Background, Xor_Off);
-      end case;
-      -- Draw corners
-      X_Mng.X_Put_Char (Id, Desc(Kind)(1),
-            Row_Range'Pred(Upper_Left.Row), Col_Range'Pred(Upper_Left.Col));
-      X_Mng.X_Put_Char (Id, Desc(Kind)(2),
-            Row_Range'Pred(Upper_Left.Row), Col_Range'Succ(Lower_Right.Col));
-      X_Mng.X_Put_Char (Id, Desc(Kind)(3),
-            Row_Range'Succ(Lower_Right.Row), Col_Range'Succ(Lower_Right.Col));
-      X_Mng.X_Put_Char (Id, Desc(Kind)(4),
-            Row_Range'Succ(Lower_Right.Row), Col_Range'Pred(Upper_Left.Col));
-      -- Draw horiz
-      for I in Upper_Left.Col .. Lower_Right.Col loop
-        X_Mng.X_Put_Char (Id, Desc(Kind)(5),
-              Row_Range'Pred(Upper_Left.Row), I);
-        X_Mng.X_Put_Char (Id, Desc(Kind)(5),
-              Row_Range'Succ(Lower_Right.Row), I);
-      end loop;
-      -- Draw verti
-      for I in Upper_Left.Row .. Lower_Right.Row loop
-        X_Mng.X_Put_Char (Id, Desc(Kind)(6),
-              I, Col_Range'Pred(Upper_Left.Col));
-        X_Mng.X_Put_Char (Id, Desc(Kind)(6),
-              I, Col_Range'Succ(Lower_Right.Col));
-      end loop;
-    end Quick_Draw;
-
-    -- Draw a frame around a window
-    procedure Frame (Blink : in Boolean := False;
-                     Name : in Window) is
-    begin
-      if Name = null then
-        raise Window_Not_Open;
-      end if;
-      if Blink then
-        Quick_Draw(Name.Upper_Left, Name.Lower_Right, One_Con_Io.Blink, Name);
-      else
-        Quick_Draw(Name.Upper_Left, Name.Lower_Right, Simple, Name);
-      end if;
-    end Frame;
-
-    procedure Clear_Frame (Name : in Window) is
-    begin
-      if Name = null then
-        raise Window_Not_Open;
-      end if;
-      Quick_Draw(Name.Upper_Left, Name.Lower_Right, Erase, Name);
-    end Clear_Frame;
-
-
     -- Make window re-usable (have to re_open it)
     procedure Close (Name : in out Window) is
     begin
@@ -523,37 +448,39 @@ package body Generic_Con_Io is
       Set_Attributes (Fg, Bl, Bg, Name.Current_Xor_Mode);
     end Set_Attributes_From_Window;
 
-    -- Writes a character at the current cursor position and with attributes.
-    -- Position is not updated.
-    procedure Put_Int (Int        : in Int_Char;
-                       Name       : in Window := Screen;
-                       Foreground : in Colors := Current;
-                       Blink_Stat : in Blink_Stats := Current;
-                       Background : in Basic_Colors := Current) is
+    -- Raw conversion, no exception but Wide_Def_Char
+    function Wide_To_Char (W : Wide_Character) return Character is
     begin
-      if Name = null then
-        raise Window_Not_Open;
+      if Language.Is_Char (W) then
+        return Language.Wide_To_Char (W);
+      else
+        return Wide_Def_Char;
       end if;
-      if Int /= Character'Pos(Lf) then
-        Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
-        -- Put character
-        X_Mng.X_Put_Char (Id, X_Mng.Byte(Int),
-                          Name.Upper_Left.Row + Name.Current_Pos.Row,
-                          Name.Upper_Left.Col + Name.Current_Pos.Col);
-      end if;
-    end Put_Int;
+    end Wide_To_Char;
+    function Wide_To_String (Str : Wide_String) return String is
+      Res : String (1 .. Str'Length);
+      Index : Positive;
+    begin
+      Index := Res'First;
+      for I in Str'Range loop
+        Res(Index) := Wide_To_Char (Str(I));
+        Index := Index + 1;
+      end loop;
+      return Res;
+    end Wide_To_String;
 
-    procedure Put_Not_Move (C          : in Character;
-                            Name       : in Window := Screen;
-                            Foreground : in Colors;
-                            Blink_Stat : in Blink_Stats;
-                            Background : in Basic_Colors) is
+    function "&" (Left : String; Right : Wide_String) return String is
     begin
-      Put_Int(Character'Pos(C), Name, Foreground, Blink_Stat, Background);
-    end Put_Not_Move;
+      return Left & Wide_To_String (Right);
+    end "&";
+
+    function "&" (Left : Wide_String; Right : String) return String is
+    begin
+      return Wide_To_String (Left) & Right;
+    end "&";
 
     -- Increment col by one or row by one...
-    procedure Move_One (Name : in Window := Screen) is
+    procedure Move_1 (Name : in Window := Screen) is
     begin
       if Name.Current_Pos.Col /= Name.Lower_Right.Col - Name.Upper_Left.Col then
         -- Next col
@@ -570,10 +497,48 @@ package body Generic_Con_Io is
           Name.Current_Pos.Row := Row_Range'First;
         end if;
       end if;
-    end Move_One;
+    end Move_1;
 
-    -- Writes a character at the current cursor position and with attributes.
-    -- CR only is interpreted
+    -- Internal write of the string of ONE character at the current cursor
+    --  position and with attributes.
+    -- Lf only is interpreted
+    procedure Put_1_Char (C          : in String;
+                          Name       : in Window := Screen;
+                          Foreground : in Colors := Current;
+                          Blink_Stat : in Blink_Stats := Current;
+                          Background : in Basic_Colors := Current;
+                          Move       : in Boolean := True) is
+    begin
+      if Name = null then
+        raise Window_Not_Open;
+      end if;
+      if Language.Put_Length (C) /= 1 then
+        -- Internal error put a "Warning" character
+        X_Mng.X_Put_String (Id, "#",
+                            Name.Upper_Left.Row + Name.Current_Pos.Row,
+                            Name.Upper_Left.Col + Name.Current_Pos.Col);
+      elsif C /= Lfs then
+        Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
+        -- Put character
+        X_Mng.X_Put_String (Id, C,
+                            Name.Upper_Left.Row + Name.Current_Pos.Row,
+                            Name.Upper_Left.Col + Name.Current_Pos.Col);
+      end if;
+      if Move then
+        if C = Lfs then
+          -- End of current row
+          Name.Current_Pos.Col := Name.Lower_Right.Col - Name.Upper_Left.Col;
+        end if;
+        Move_1 (Name);
+      end if;
+    end Put_1_Char;
+
+
+    -- Writes a character at the current cursor position and with the
+    --  curent attributes. Position can be set by using move.
+    -- Lf is the only special Ascii character which is interpreted.
+    -- If not Move, the cursor position is not updated
+    --  (Lf would be ignored then)
     procedure Put (C          : in Character;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
@@ -581,19 +546,7 @@ package body Generic_Con_Io is
                    Background : in Basic_Colors := Current;
                    Move       : in Boolean := True) is
     begin
-      if Name = null then
-        raise Window_Not_Open;
-      end if;
-      if C /= Lf then
-        Put_Not_Move(C, Name, Foreground, Blink_Stat, Background);
-      end if;
-      if Move then
-        if C = Lf then
-          -- End of current row
-          Name.Current_Pos.Col := Name.Lower_Right.Col - Name.Upper_Left.Col;
-        end if;
-        Move_One (Name);
-      end if;
+      Put_1_Char (C & "", Name, Foreground, Blink_Stat, Background, Move);
     end Put;
 
     -- Idem with a string
@@ -603,17 +556,21 @@ package body Generic_Con_Io is
                    Blink_Stat : in Blink_Stats := Current;
                    Background : in Basic_Colors := Current;
                    Move       : in Boolean := True) is
-      Sfirst, Slast, Rlast : Natural;
+      Ifirst, Ilast : Natural;
+      Last : Natural;
       Saved_Pos : constant Square := Name.Current_Pos;
       Win_Last_Col : constant Col_Range
                    := Name.Lower_Right.Col - Name.Upper_Left.Col;
-      Pcr : Boolean;
+      Indexes : constant Language.Index_Array
+              := Language.All_Indexes_Of (S);
+      Plf : Boolean;
 
       procedure X_Put (Str : in String) is
       begin
         if Str'Length /= 0 then
-          X_Mng.X_Put_String (Id, Str, Name.Upper_Left.Row + Name.Current_Pos.Row,
-                                       Name.Upper_Left.Col + Name.Current_Pos.Col);
+          X_Mng.X_Put_String (Id, Str,
+                  Name.Upper_Left.Row + Name.Current_Pos.Row,
+                  Name.Upper_Left.Col + Name.Current_Pos.Col);
         end if;
       end X_Put;
 
@@ -626,41 +583,46 @@ package body Generic_Con_Io is
         return;
       end if;
       Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
-      -- Put chunks of string due to CRs or too long slices
-      Sfirst := S'First;
+      -- Put chunks of string due to Lfs or too long slices
+      Ifirst := Indexes'First;
       loop
-        Slast  := S'First;
-        Pcr := False;
-        -- Look for CR or end of string
-        while Slast /= S'Last and then S(Slast) /= Lf loop
-          Slast := Slast + 1;
+        Ilast := Ifirst;
+        Plf := False;
+        -- Look for Lf or end of string
+        while Ilast /= Indexes'Last and then S(Indexes(Ilast)) /= Lf loop
+          Ilast := Ilast + 1;
         end loop;
-        -- Skip CR
-        if S(Slast) = Lf then
-          Rlast := Slast - 1;
-          Pcr := True;
-        else
-          Rlast := Slast;
+        -- Skip Lf
+        if S(Indexes(Ilast)) = Lf then
+          Ilast := Ilast - 1;
+          Plf := True;
         end if;
         -- Truncate to fit window
-        -- Last - first <= Win_las_col - Pos
-        if Name.Current_Pos.Col + Rlast - Sfirst  > Win_Last_Col then
-           Rlast := Sfirst + Win_Last_Col - Name.Current_Pos.Col;
+        -- Last - first <= Win_last_col - Pos
+        if Name.Current_Pos.Col + Ilast - Ifirst  > Win_Last_Col then
+           Ilast := Ifirst + Win_Last_Col - Name.Current_Pos.Col;
+        end if;
+        -- Set Last to last char to put
+        if Ilast /= Indexes'Last then
+          Last := Indexes(Ilast + 1) - 1;
+        else
+          Last := S'Last;
         end if;
         -- Put the chunk
-        X_Put (S(Sfirst .. Rlast));
+        X_Put (S(Indexes(Ifirst) .. Last));
         -- Update position : last character + one
         One_Con_Io.Move (Name.Current_Pos.Row,
-                         Name.Current_Pos.Col + Rlast - Sfirst,
+                         Name.Current_Pos.Col + Ilast - Ifirst,
                          Name);
-        Move_One (Name);
-        -- Issue CR
-        if Pcr then
-          Put(Lf, Name);
+        Move_1 (Name);
+        -- Issue Lf
+        if Plf then
+          Put_1_Char (Lfs, Name);
+          Ilast := Ilast + 1;
         end if;
         -- Move to next chunk
-        exit when Slast = S'Last;
-        Sfirst := Slast + 1;
+        exit when Ilast = Indexes'Last;
+        Ifirst := Ilast + 1;
       end loop;
 
       -- Restore pos
@@ -686,6 +648,42 @@ package body Generic_Con_Io is
       New_Line(Name);
     end Put_Line;
 
+    -- Idem with a wide character
+    procedure Putw (W          : in Wide_Character;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Blink_Stat : in Blink_Stats := Current;
+                    Background : in Basic_Colors := Current;
+                    Move       : in Boolean := True) is
+    begin
+      Put (Language.Wide_To_String (W & ""),
+           Name, Foreground, Blink_Stat, Background, Move);
+    end Putw;
+
+    -- Idem with a wide string
+    procedure Putw (S          : in Wide_String;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Blink_Stat : in Blink_Stats := Current;
+                    Background : in Basic_Colors := Current;
+                    Move       : in Boolean := True) is
+    begin
+      Put (Language.Wide_To_String (S),
+           Name, Foreground, Blink_Stat, Background, Move);
+    end Putw;
+
+    -- Idem but appends a Lf
+    procedure Putw_Line (S          : in Wide_String;
+                         Name       : in Window := Screen;
+                         Foreground : in Colors := Current;
+                         Blink_Stat : in Blink_Stats := Current;
+                         Background : in Basic_Colors := Current) is
+    begin
+      Put_Line (Language.Wide_To_String (S),
+           Name, Foreground, Blink_Stat, Background);
+    end Putw_Line;
+
+
     -- Puts CR
     procedure New_Line (Name   : in Window := Screen;
                         Number : in Positive := 1) is
@@ -694,10 +692,12 @@ package body Generic_Con_Io is
         raise Window_Not_Open;
       end if;
       for I in 1 .. Number loop
-        Put(Lf, Name);
+        Put (Lf, Name);
       end loop;
     end New_Line;
 
+
+    -- X event management
     procedure Next_X_Event (Timeout : in Timers.Delay_Rec;
                             X_Event : out X_Mng.Event_Kind) is
     -- In out for X_Mng
@@ -707,22 +707,26 @@ package body Generic_Con_Io is
       X_Mng.X_Wait_Event (Id, X_Timeout, X_Event);
     end Next_X_Event;
 
-    procedure Translate_X_Key (Key     : in out Natural;
-                               Is_Char : in out Boolean;
-                               Ctrl    : in out Boolean;
-                               Shift   : in out Boolean) is
+    -- Maps some function keys (16#FF# 16#xx#) back into a normal key
+    --  or to another function key
+    procedure Translate_X_Key (Kbd_Tab : in out X_Mng.Kbd_Tab_Code;
+                               Is_Code : in out Boolean) is
+      Key : X_Mng.Byte := Kbd_Tab.Tab(2);
+      Translated : Boolean;
+      use type X_Mng.Byte;
     begin
-      -- No translation of chars
-      if Is_Char then
+      -- No translation of chars, only function keys
+      if not Is_Code or else Kbd_Tab.Tab(1) /= 16#FF# then
         return;
       end if;
+      Translated := True;
       case Key is
         when 16#8D# =>
           -- Enter
           Key := 16#0D#;
         when  16#AA# .. 16#B9# =>
           -- Oper or Num
-          Is_Char := True;
+          Is_Code := False;
           Key := Key - 16#80#;
         when 16#95# .. 16#9C# =>
           -- Key movement
@@ -738,88 +742,31 @@ package body Generic_Con_Io is
           Key := 16#FF#;
         when others =>
           -- No translation
-          null;
+          Translated := False;
       end case;
+      if Translated then
+        if Is_Code then
+          Kbd_Tab.Tab(2) := Key;
+        else
+          Kbd_Tab.Tab(1) := Key;
+          Kbd_Tab.Nbre := 1;
+        end if;
+      end if;
     end Translate_X_Key;
 
-    procedure Get_X_Key (Key     : out Natural;
-                         Is_Char : out Boolean;
-                         Ctrl    : out Boolean;
-                         Shift   : out Boolean) is
-      Kbd_Tab : X_Mng.Kbd_Tab_Code;
-      Loc_Key : Natural;
-      Loc_Is_Char : Boolean;
-      Loc_Ctrl : Boolean;
-      Loc_Shift : Boolean;
-      use X_Mng;
-    begin
-      X_Mng.X_Read_Key(Id, Kbd_Tab);
-
-      Loc_Key := Natural (Kbd_Tab.Tab(Kbd_Tab.Nbre));
-      Loc_Is_Char := True;
-      Loc_Ctrl := False;
-      Loc_Shift := False;
-
-      -- Optimisation
-      if Kbd_Tab.Nbre = 1 then
-        Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
-        Key := Loc_Key;
-        Is_Char := Loc_Is_Char;
-        Ctrl := Loc_Ctrl;
-        Shift := Loc_Shift;
-        return;
-      elsif Kbd_Tab.Nbre = 2 then
-        Loc_Is_Char := False;
-        Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
-        Key := Loc_Key;
-        Is_Char := Loc_Is_Char;
-        Ctrl := Loc_Ctrl;
-        Shift := Loc_Shift;
-        return;
-      end if;
-
-      if Kbd_Tab.Nbre mod 2 = 0 then
-        Loc_Is_Char := False;
-        Kbd_Tab.Nbre := Kbd_Tab.Nbre - 2;
-      else
-        Loc_Is_Char := True;
-        Kbd_Tab.Nbre := Kbd_Tab.Nbre - 1;
-      end if;
-
-      if Kbd_Tab.Tab(2) = 16#E3# then
-        -- Ctrl
-        Loc_Ctrl := True;
-      else
-        -- Shift
-        Loc_Shift := True;
-      end if;
-      if Kbd_Tab.Nbre = 4 then
-        -- Ctrl Shift
-        Loc_Ctrl := True;
-        Loc_Shift := True;
-      end if;
-
-      Translate_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
-      Key := Loc_Key;
-      Is_Char := Loc_Is_Char;
-      Ctrl := Loc_Ctrl;
-      Shift := Loc_Shift;
-    end Get_X_Key;
-
     -- Check if a key is available until a certain time.
+    -- Get_key_time can return if key pressed (Esc event),
+    -- mouse action, refresh or timeout
+    subtype Event_List is Curs_Mvt range Esc .. Refresh;
     procedure Get_Key_Time (Check_Break : in Boolean;
                             Event       : out Event_List;
-                            Key         : out Natural;
-                            Is_Char     : out Boolean;
                             Ctrl        : out Boolean;
                             Shift       : out Boolean;
+                            Code        : out Boolean;
+                            Kbd_Tab     : out X_Mng.Kbd_Tab_Code;
                             Time_Out    : in Delay_Rec := Infinite_Delay) is
 
       X_Event : X_Mng.Event_Kind;
-      Loc_Key : Natural;
-      Loc_Is_Char : Boolean;
-      Loc_Ctrl : Boolean;
-      Loc_Shift : Boolean;
       use X_Mng, Ada.Calendar;
       use type Timers.Delay_Rec, Timers.Delay_List;
     begin
@@ -859,16 +806,16 @@ package body Generic_Con_Io is
           Mouse_Status := X_Event;
           return;
         when X_Mng.Keyboard =>
-          Get_X_Key (Loc_Key, Loc_Is_Char, Loc_Ctrl, Loc_Shift);
-          Key := Loc_Key;
-          Is_Char := Loc_Is_Char;
-          Ctrl := Loc_Ctrl;
-          Shift := Loc_Shift;
+          X_Mng.X_Read_Key(Id, Ctrl, Shift, Code, Kbd_Tab);
+          Translate_X_Key (Kbd_Tab, Code);
           -- Check break
           if Check_Break then
-            if (Loc_Key = Character'Pos('c') or else Loc_Key = 0)
-            and then Loc_Is_Char and then Loc_Ctrl and then not Loc_Shift then
-              -- Ctrl C or Ctrl break
+            if not Code
+            and then Ctrl
+            and then Kbd_Tab.Nbre = 1
+            and then (Kbd_Tab.Tab(1) = 3
+              or else Kbd_Tab.Tab(1) = Character'Pos('c')) then
+              -- Ctrl c
               Event := Break;
               return;
             end if;
@@ -880,62 +827,17 @@ package body Generic_Con_Io is
 
     end Get_Key_Time;
 
-    -- Gives first key code of keyboard buffer, (waits if it is empty)
-    -- no echo
-    procedure Get_Key (Key     : out Natural;
-                       Is_Char : out Boolean;
-                       Ctrl    : out Boolean;
-                       Shift   : out Boolean) is
-      Event : Event_List;
-    begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      -- Wait for keyboard
-      loop
-        Get_Key_Time(False, Event, Key, Is_Char, Ctrl, Shift);
-        if Event = Refresh then
-          Key := 0;
-          Is_Char := True;
-          Ctrl := False;
-          Shift := False;
-          return;
-        elsif Event = Fd_Event then
-          Key := 1;
-          Is_Char := True;
-          Ctrl := False;
-          Shift := False;
-          return;
-        elsif Event = Timer_Event then
-          Key := 2;
-          Is_Char := True;
-          Ctrl := False;
-          Shift := False;
-          return;
-        elsif Event = Signal_Event then
-          Key := 3;
-          Is_Char := True;
-          Ctrl := False;
-          Shift := False;
-          return;
-        elsif Event = Wakeup_Event then
-          Key := 4;
-          Is_Char := True;
-          Ctrl := False;
-          Shift := False;
-          return;
-        elsif Event = Esc then
-          -- A key
-          return;
-        end if;
-      end loop;
-    end Get_Key;
-
+    -- Asu stuff
+    package Asu renames Ada.Strings.Unbounded;
+    subtype Asu_Us is Asu.Unbounded_String;
+    function Asu_Tus (Str : String) return Asu_Us
+                     renames Asu.To_Unbounded_String;
+    function Asu_Ts (Asu_Str : Asu_Us) return String renames Asu.To_String;
 
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
-    procedure Put_Then_Get (Str        : in out String;
+    procedure Put_Then_Get (Str        : in out Wide_String;
                             Last       : out Natural;
                             Stat       : out Curs_Mvt;
                             Pos        : in out Positive;
@@ -946,27 +848,77 @@ package body Generic_Con_Io is
                             Background : in Basic_Colors := Current;
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True) is
-      Width         : constant Natural := Str'Length;
-      Lstr          : String(1 .. Width) := Str;
-      Key           : Natural;
-      Is_Char       : Boolean;
-      Ctrl, Shift   : Boolean;
-      Redraw        : Boolean;
-      First_Pos     : constant Square := Name.Current_Pos;
-      Last_Time     : Delay_Rec;
-      Event         : Event_List;
+      -- Local string for working on
+      Lstr        : Asu_Us := Asu_Tus (Language.Wide_To_String (Str));
+      -- Indexes in Lstr of put positions
+      Indexes     : Language.Index_Array
+                  := Language.All_Indexes_Of (Asu_Ts(Lstr));
+      -- Constant put width
+      Width       : constant Natural
+                  := Indexes'Length;
+      -- Got event
+      Event       : Event_List;
+      -- Got key & info
+      Kbd_Tab     : X_Mng.Kbd_Tab_Code;
+      Code        : Boolean;
+      Ctrl, Shift : Boolean;
 
+      -- Key of function key (2nd byte)
+      Key         : Natural;
+      -- Done?
+      Done        :  Boolean;
+      Redraw      : Boolean;
+      First_Pos   : constant Square := Name.Current_Pos;
+      Last_Time   : Delay_Rec;
+
+      -- Return index in str of last char of a position
+      function End_Index_Of (Position : Natural) return Natural is
+        -- Nb of chars for last position
+        Last_Char_Nb : Positive;
+      begin
+        if Position > Indexes'Last then
+          return 0;
+        end if;
+        Last_Char_Nb := Language.Nb_Chars (
+                             Asu.Element (Lstr, Indexes(Position)));
+        return Indexes(Position) + Last_Char_Nb - 1;
+      end End_Index_Of;
+      -- Return index of last significant char of Str
       function Parse return Natural is
       begin
         for I in reverse 1 .. Width loop
-          if Lstr(I) /= ' ' then
+          if Asu.Element (Lstr, Indexes(I)) /= ' ' then
             -- This character is the last meaningfull
-            return Str'First + I - 1;
+            return End_Index_Of (I);
           end if;
         end loop;
         -- All is spaces
         return 0;
       end Parse;
+
+      -- Return slice of Str between 2 positions
+      function Slice (First_Pos : Positive;
+                      Last_Pos  : Natural) return String is
+      begin
+        return Asu.Slice (Lstr, Indexes(First_Pos), End_Index_Of (Last_Pos));
+      end Slice;
+
+      -- Overwrite a slice of Str by a string
+      procedure Overwrite (At_Pos : Positive; By : String) is
+        Ifirst, Ilast : Positive;
+        Len : constant Natural := Language.Put_Length (By);
+      begin
+        if At_Pos + Len - 1 > Width then
+          raise Constraint_Error;
+        end if;
+        if Len = 0 then
+          return;
+        end if;
+        Ifirst := Indexes (At_Pos);
+        Ilast := End_Index_Of (At_Pos + Len - 1);
+        Asu.Replace_Slice (Lstr, Ifirst, Ilast, By);
+        Indexes := Language.All_Indexes_Of (Asu_Ts(Lstr));
+      end Overwrite;
 
       procedure Cursor (Show : in Boolean) is
         Absolute_Pos : Square;
@@ -982,13 +934,14 @@ package body Generic_Con_Io is
                   Absolute_Pos.Row, Absolute_Pos.Col);
           end if;
         else
-          X_Mng.X_Put_Char (Id, Lstr(Pos),
+          X_Mng.X_Put_String (Id, Slice(Pos, Pos),
                 Absolute_Pos.Row, Absolute_Pos.Col);
         end if;
       end Cursor;
 
-
       use type Timers.Delay_Rec, Timers.Delay_List;
+      use type X_Mng.Byte;
+      use type Asu_Us;
     begin
       -- Time at which the get ends
       if Time_Out = Timers.Infinite_Delay
@@ -1003,15 +956,16 @@ package body Generic_Con_Io is
 
       -- Emtpy string
       if Width = 0 then
-        Last := Str'Last;
+        Last := 0;
 
         loop
-          Get_Key_Time (True, Event, Key, Is_Char, Ctrl, Shift, Last_Time);
+          Get_Key_Time (True, Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
           if Event /= Esc then
             -- No key ==> mouse, time out, refresh, fd...
             Stat := Event;
             return;
-          elsif not Is_Char then
+          elsif Code and then Kbd_Tab.Tab(1) = 16#FF# then
+            Key := Natural (Kbd_Tab.Tab(2));
             -- Function key
             case Key is
               when 16#0D# =>
@@ -1023,8 +977,8 @@ package body Generic_Con_Io is
                 Stat := Esc;
                 return;
               when 16#09# =>
-                if Ctrl then
-                  -- Ctrl Tab
+                if Shift then
+                  -- Shift Tab
                   Stat := Stab;
                 else
                   -- Tab
@@ -1096,77 +1050,72 @@ package body Generic_Con_Io is
               when others =>
                 null;
             end case;
-          else  -- Is_Char
-            if Key >= Character'Pos(' ')
-            and then Key <= Character'Pos(Character'Last) then
-              -- every other valid char
-              Stat := Full;
-              return;
-            end if;
+          elsif not Code then
+            -- Every other valid char
+            Stat := Full;
+            return;
           end if;  -- Function key or normal key
-        end loop;  -- Dicard any unaccepted key
-      end if;  -- String'length = 0
+        end loop;  -- Discard any unaccepted key
+      end if;  -- Width = 0
 
       -- Check width and current_pos / window's width
       if Width > Name.Lower_Right.Col - Name.Upper_Left.Col  + 1 then
         raise String_Too_Long;
       end if;
 
-      -- put the string
+      -- Put the string
       Move(First_Pos, Name);
       if Echo then
-        Put(Lstr, Name, Foreground, Blink_Stat, Background, Move => False);
+        Put(Asu_Ts(Lstr), Name,
+            Foreground, Blink_Stat, Background, Move => False);
       end if;
 
+      Done := False;
       loop
-        -- show cursor
+        -- Show cursor
         if Echo then
           Cursor (True);
         end if;
         Redraw := False;
-        -- try to get a key
-        Get_Key_Time (True, Event, Key, Is_Char, Ctrl, Shift, Last_Time);
-        -- hide cursor
+        -- Try to get a key
+        Get_Key_Time (True, Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
+        -- Hide cursor
         if Echo then
           Cursor (False);
         end if;
         if Event /= Esc then
           -- No key ==> mouse, time out, refresh, fd...
-          Str := Lstr;
           Last := Parse;
           Stat := Event;
-          return;
-        elsif not Is_Char then
+          Done := True;
+        elsif Code and then Kbd_Tab.Tab(1) = 16#FF# then
+          Key := Natural (Kbd_Tab.Tab(2));
           case Key is
             when 16#0D# =>
               -- Return
-              Str := Lstr;
               Last := Parse;
               Stat := Ret;
-              return;
+              Done := True;
             when 16#1B# =>
               -- Escape
-              Str := Lstr;
               Last := Parse;
               Stat := Esc;
-              return;
+              Done := True;
             when 16#09# =>
-              Str := Lstr;
               Last := Parse;
-              if Ctrl then
-                -- Ctrl Tab
+              if Shift then
+                -- Shift Tab
                 Stat := Stab;
               else
                 -- Tab
                 Stat := Tab;
               end if;
-              return;
+              Done := True;
             when 16#08# =>
-              -- backspace
+              -- Backspace
               if Pos /= 1 then
                 Pos := Pos - 1;
-                Lstr(Pos .. Width - 1) := Lstr(Pos + 1 .. Width);
-                Lstr(Width) := ' ';
+                Overwrite (Pos, Slice (Pos + 1, Width) & String'(" "));
                 Redraw := True;
               end if;
             when 16#50# =>
@@ -1180,122 +1129,122 @@ package body Generic_Con_Io is
               if not Ctrl and then Pos /= 1 then
                 Pos := Pos - 1;
               else
-                Str := Lstr;
                 Last := Parse;
                 if Ctrl then
                   Stat := Ctrl_Left;
                 else
                   Stat := Left;
                 end if;
-                return;
+                Done := True;
               end if;
             when 16#53# =>
               -- -->
               if not Ctrl and then Pos /= Width then
                 Pos := Pos + 1;
               else
-                Str := Lstr;
                 Last := Parse;
                 if Ctrl then
                   Stat := Ctrl_Right;
                 else
                   Stat := Right;
                 end if;
-                return;
+                Done := True;
               end if;
             when 16#52# =>
               -- Up
-              Str := Lstr;
               Last := Parse;
               if Ctrl then
                 Stat := Ctrl_Up;
               else
                 Stat := Up;
               end if;
-              return;
+              Done := True;
             when 16#54# =>
               -- Down
-              Str := Lstr;
               Last := Parse;
               if Ctrl then
                 Stat := Ctrl_Down;
               else
                 Stat := Down;
               end if;
-              return;
+              Done := True;
             when 16#55# =>
               -- Page Up
-              Str := Lstr;
               Last := Parse;
               if not Ctrl then
                 Stat := Pgup;
               else
                 Stat := Ctrl_Pgup;
               end if;
-              return;
+              Done := True;
             when 16#56# =>
               -- Page Down
-              Str := Lstr;
               Last := Parse;
               if not Ctrl then
                 Stat := Pgdown;
               else
                 Stat := Ctrl_Pgdown;
               end if;
-              return;
+              Done := True;
             when 16#63# =>
               -- Insert
               Insert := not Insert;
             when 16#FF# =>
               if not Ctrl then
                 -- Suppr
-                Lstr(Pos .. Width - 1) := Lstr(Pos + 1 .. Width);
-                Lstr(Width) := ' ';
+                Overwrite (Pos, Slice (Pos + 1, Width) & String'(" "));
                 Redraw := True;
               else
                 -- Ctrl Suppr : clear field + home
                 Pos := 1;
-                Lstr(1 .. Width) := (others => ' ');
+                Lstr := Width * ' ';
+                Indexes := Language.All_Indexes_Of (Asu_Ts(Lstr));
                 Redraw := True;
               end if;
             when others =>
               null;
           end case;
-        else  -- is_char
-          if Key >= Character'Pos(' ')
-          and then Key <= Character'Pos(Character'Last) then
-            -- all other valid chars
-            if Insert then
-              if Pos /= Width then
-                Lstr(Pos + 1 .. Width) := Lstr(Pos .. Width - 1);
-                Redraw := True;
-              end if;
+        elsif not Code then
+          -- All other valid chars
+          declare
+            Got_Str : String (1 .. Kbd_Tab.Nbre);
+          begin
+            for I in Got_Str'Range loop
+              Got_Str(I) := Character'Val(Kbd_Tab.Tab(I));
+            end loop;
+            if Language.Put_Length (Got_Str) /= 1 then
+              raise Constraint_Error;
             end if;
-            Lstr(Pos) := Character'Val(Key);
-            if Pos /= Width then
-              Pos := Pos + 1;
+            if Insert and then Pos < Width then
+              -- Insert => Shift right
+              Overwrite (Pos, Got_Str & Slice (Pos, Width - 1));
             else
-              Str := Lstr;
-              Last := Parse;
-              Stat := Full;
-              return;
+              Overwrite (Pos, Got_Str);
             end if;
-            if not Redraw and then Echo then
-              Put(Character'Val(Key), Name, Foreground, Blink_Stat, Background);
-            end if;
+          end;
+          Redraw := True;
+          if Pos /= Width then
+            Pos := Pos + 1;
+          else
+            Last := Parse;
+            Stat := Full;
+            Done := True;
           end if;
-        end if;  -- is_char
+        end if;  -- Is_char
 
-        -- redraw if necessary
+        -- Redraw if necessary
         if Redraw and then Echo then
           Move(First_Pos, Name);
-          Put(Lstr, Name, Foreground, Blink_Stat, Background, Move => False);
+          Put(Asu_Ts(Lstr), Name,
+              Foreground, Blink_Stat, Background, Move => False);
        end if;
+       exit when Done;
       end loop;
+      Str := Language.String_To_Wide (Asu_Ts (Lstr));
     end Put_Then_Get;
 
     -- Gets a string of at most width characters
-    procedure Get (Str        : out String;
+    procedure Get (Str        : out Wide_String;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;
                    Pos        : out Positive;
@@ -1306,12 +1255,13 @@ package body Generic_Con_Io is
                    Background : in Basic_Colors := Current;
                    Time_Out   : in Delay_Rec :=  Infinite_Delay;
                    Echo       : in Boolean := True) is
-      Lstr : String(Str'Range ) := (others => ' ');
+      Lstr : Wide_String(Str'Range ) := (others => ' ');
       Lpos : Positive;
       Lins : Boolean;
     begin
       Lpos := 1;
       Lins := False;
+      -- Init empty
       Put_Then_Get(Lstr, Last, Stat, Lpos, Lins, Name,
           Foreground, Blink_Stat, Background, Time_Out, Echo);
       Str := Lstr;
@@ -1319,9 +1269,75 @@ package body Generic_Con_Io is
       Insert := Lins;
     end Get;
 
+    function Get (Name     : in Window := Screen;
+                  Time_Out : in Delay_Rec := Infinite_Delay)
+             return Get_Result is
+      Str    : Wide_String (1 .. 1);
+      Last   : Natural;
+      Stat   : Curs_Mvt;
+      Pos    : Positive;
+      Insert : Boolean;
+    begin
+      Get (Str, Last, Stat, Pos, Insert, Name,
+           Time_Out => Time_Out, Echo => False);
+      case Stat is
+        when Up =>
+          return (Mvt => Up);
+        when Down =>
+          return (Mvt => Down);
+        when Ctrl_Up =>
+          return (Mvt => Ctrl_Up);
+        when Ctrl_Down =>
+          return (Mvt => Ctrl_Down);
+        when Pgup =>
+          return (Mvt => Pgup);
+        when Pgdown =>
+          return (Mvt => Pgdown);
+        when Ctrl_Pgup =>
+          return (Mvt => Ctrl_Pgup);
+        when Ctrl_Pgdown =>
+          return (Mvt => Ctrl_Pgdown);
+        when Left =>
+          return (Mvt => Left);
+        when Right =>
+          return (Mvt => Right);
+        when Ctrl_Left =>
+          return (Mvt => Ctrl_Left);
+        when Ctrl_Right =>
+          return (Mvt => Ctrl_Right);
+        when Full =>
+          -- Character input
+          return (Mvt => Full, Char => Str(1));
+        when Tab =>
+          return (Mvt => Tab);
+        when Stab =>
+          return (Mvt => Stab);
+        when Ret =>
+          return (Mvt => Ret);
+        when Esc =>
+          return (Mvt => Esc);
+        when Break =>
+          return (Mvt => Break);
+        when Fd_Event =>
+          return (Mvt => Fd_Event);
+        when Timer_Event =>
+          return (Mvt => Timer_Event);
+        when Signal_Event =>
+          return (Mvt => Signal_Event);
+        when Wakeup_Event =>
+          return (Mvt => Wakeup_Event);
+        when Refresh =>
+          return (Mvt => Refresh);
+        when Mouse_Button =>
+          return (Mvt => Mouse_Button);
+        when Timeout =>
+          return (Mvt => Timeout);
+      end case;
+    end Get;
+
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure Pause is
-      Str  : String(1 .. 0);
+      Str  : Wide_String (1 .. 0);
       Last : Natural;
       Stat : Curs_Mvt;
       Pos  : Positive;
@@ -1329,60 +1345,11 @@ package body Generic_Con_Io is
     begin
       loop
         -- Str is empty so no echo at all
-        Get(Str, Last, Stat, Pos, Ins);
+        Get (Str, Last, Stat, Pos, Ins);
         exit when Stat /= Mouse_Button;
       end loop;
     end Pause;
 
-
-    -- Gets first character (echo or not)
-    -- No echo for Ret, Esc, Break and Refresh where
-    --  Latin_1.Lf, Esc, Eot and Nul are returned respectively
-    -- Cursor movements (Up to Right, Tab and Stab) and mouse events are
-    --  discarded (get does not return).
-    function Get (Name : Window := Screen; Echo : in Boolean := True)
-                 return Character is
-      package Latin_1 renames Ada.Characters.Latin_1;
-      Str  : String(1 .. 1);
-      Last : Natural;
-      Stat : Curs_Mvt;
-      Pos  : Positive;
-      Ins  : Boolean;
-    begin
-      loop
-        Str := (others => ' ');
-        Pos := 1;
-        Ins := False;
-        Put_Then_Get(Str, Last, Stat, Pos, Ins, Name, Echo => Echo);
-        case Stat is
-          when Up .. Ctrl_Right | Tab .. Stab =>
-            -- Cursor movement
-            null;
-          when Full =>
-            -- Character input
-            return Str(1);
-          when Ret =>
-            return Latin_1.Lf;
-          when Esc =>
-            return Latin_1.Esc;
-          when Break =>
-            return Latin_1.Eot;
-          when Fd_Event =>
-            return Latin_1.Stx;
-          when Timer_Event =>
-            return Latin_1.Syn;
-          when Signal_Event =>
-            return Latin_1.Si;
-          when Wakeup_Event =>
-            return Latin_1.So;
-          when Refresh =>
-            return Latin_1.Nul;
-          when Mouse_Button | Timeout =>
-            -- Ignore mouse. Timeout impossible.
-            null;
-        end case;
-      end loop;
-    end Get;
 
     procedure Enable_Motion_Events (Motion_Enabled : in Boolean) is
     begin

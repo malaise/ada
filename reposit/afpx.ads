@@ -10,7 +10,7 @@ package Afpx is
   List_Field_No : constant Absolute_Field_Range := 0;
 
   -- The content of one row of one field (encode, decode)
-  subtype Str_Txt is Text_Handler.Text (Con_Io.Full_Col_Range_Last + 1);
+  subtype Str_Txt is Text_Handler.Text ((Con_Io.Full_Col_Range_Last + 1) * 4);
 
   -- Width and height of a field
   subtype Height_Range is Positive range 1 .. Con_Io.Full_Row_Range_Last + 1;
@@ -75,6 +75,9 @@ package Afpx is
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
                           Str      : in String);
+  procedure Encode_Wide_Field (Field_No : in Field_Range;
+                               From_Pos : in Con_Io.Full_Square;
+                               Str      : in Wide_String);
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
                           Str      : in Str_Txt);
@@ -84,6 +87,9 @@ package Afpx is
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Full_Row_Range)
                          return String;
+  function Decode_Wide_Field (Field_No : Field_Range;
+                              Row      : Con_Io.Full_Row_Range)
+                              return Wide_String;
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
                           Str      : in out Str_Txt);

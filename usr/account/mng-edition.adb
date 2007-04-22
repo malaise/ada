@@ -62,6 +62,18 @@ package body Edition is
     Afpx.Set_Field_Colors(36, Con_Io.Light_Gray, Background => Con_Io.Black);
   end Protect_Data;
 
+  -- Set unit button according to current unit
+  procedure Set_Unit is
+    use type Unit_Format.Units_List;
+  begin
+    if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
+      Afpx.Reset_Field(19);
+      Afpx.Encode_Field(19, (0, 0), "€");
+    else
+      Afpx.Set_Field_Colors(19, Con_Io.Blue);
+      Afpx.Encode_Field(19, (0, 0), "F");
+    end if;
+  end Set_Unit;
 
   -- Title, data protection,
   procedure Prepare (Edit_Type : in Edit_List) is
@@ -71,6 +83,7 @@ package body Edition is
     Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
                           Sel_List_Mng.List_Length(Sel_List));
     Screen.Encode_Saved(Account_Saved);
+    Set_Unit;
     case Edit_Type is
       when Create =>
         Afpx.Encode_Field(9, (0, 0), "creation");
@@ -211,21 +224,6 @@ package body Edition is
       Afpx.Set_Field_Activation(43, False);
     end if;
   end Protect_Movements;
-
-  -- Set unit button according to current unit
-  procedure Set_Unit is
-    use type Unit_Format.Units_List;
-  begin
-    -- Forbid switch
-    Afpx.Set_Field_Protection(19, Protect => True);
-    if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
-      Afpx.Reset_Field(19);
-      Afpx.Encode_Field(19, (0, 1), "e");
-    else
-      Afpx.Set_Field_Colors(19, Con_Io.Blue);
-      Afpx.Encode_Field(19, (0, 1), "F");
-    end if;
-  end Set_Unit;
 
   -- Adjust operation after copy
   procedure Adjust_Copy (Oper : in out Oper_Def.Oper_Rec) is
@@ -369,8 +367,11 @@ package body Edition is
     end if;
 
     -- Strings
+    Field := 32;
     Oper.Destination := Afpx.Decode_Field(32,0);
+    Field := 34;
     Oper.Comment     := Afpx.Decode_Field(34,0);
+    Field := 36;
     Oper.Reference   := Afpx.Decode_Field(36,0);
 
     -- Non empty reference unique for cheque
@@ -456,7 +457,7 @@ package body Edition is
     Update;
     return 0;
   exception
-    when Unit_Format.Format_Error =>
+    when Unit_Format.Format_Error | Constraint_Error =>
       return Field;
   end Validate;
 
