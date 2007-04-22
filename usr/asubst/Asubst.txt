@@ -1,5 +1,5 @@
                                  Asubst
-                                  V3_4
+                                  V3_6
 
 
 1. General syntax
@@ -21,6 +21,7 @@ matching.
 -n or --number : print number of substitutions per file.
 -q or --quiet : for no printout.
 -s or --save : make a copy (<file>.asu) of original file(s).
+-t or --test for test, substitutions not performed,
 -u or --utf8 : process utf-8 sequences.
 -v or --verbose : print each substitution and its line number.
 -x or --noregex : <find_pattern> is only the string to find, without "\n",

@@ -1,5 +1,10 @@
 History of Asubst:
 ------------------
+22/04/2007 V3_6
+Add: -t or --test option.
+
+13/04/2007 V3_5
+Internal change in Utf_8 handling.
 
 25/04/2006 V3_4
 Bugfix: Return "" i.o. exception when no matching substring.

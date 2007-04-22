@@ -1,59 +1,62 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20060426;15522800">
+	<META NAME="CHANGEDBY" CONTENT="MALAISE">
+	<META NAME="CHANGED" CONTENT="20070422;21110800">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_4</FONT></B></FONT></FONT></P>
-<H1><FONT FACE="monospace">1. General syntax</FONT></H1>
-<P><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt; } ]
-&lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_6</FONT></B></FONT></FONT></P>
+<H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
+<P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
+} ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
 ]</FONT><BR><FONT FACE="monospace">or&nbsp;&nbsp;&nbsp;: asubst -h |
 --help | -v | --version</FONT><BR><FONT FACE="monospace">Substitutes
 strings in files.</FONT><BR><FONT FACE="monospace">If no file name is
 specified, substitutes from stdin to stdout.</FONT><BR><FONT FACE="monospace">See
 &quot;man 7 regex&quot; for basic and extended regex and for
 ignorecase pattern matching.</FONT></P>
-<H1><FONT FACE="monospace">2. Options</FONT></H1>
-<P><FONT FACE="monospace">-a or --ascii : consider that input flow or
-file is pure ASCII.<BR>-b or --basic : use 'basic' regex instead of
-the default 'extended' regex for &lt;find_pattern&gt;.<BR>-f or
---file : indicate that &lt;file&gt; contains the names of files to
+<H1 LANG="en-GB"><FONT FACE="monospace">2. Options</FONT></H1>
+<P LANG="en-GB"><FONT FACE="monospace">-a or --ascii : consider that
+input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
+regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-f
+or --file : indicate that &lt;file&gt; contains the names of files to
 process.</FONT><BR><FONT FACE="monospace">-i or --ignorecase : do
 case insensitive match checking of &lt;find_pattern&gt;.<BR>-m &lt;max&gt;
 or --max=&lt;max&gt; : stop processing each file after &lt;max&gt;
 substitutions, (0 for infinite).<BR>-n or --number : print number of
 substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
-or --save : make a copy (&lt;file&gt;.asu) of original file(s).</FONT><BR><FONT FACE="mon">-u
-or --utf8 : process utf-8 sequences.</FONT><BR><FONT FACE="monospace">-v
-or --verbose : print each substitution and its line number.<BR>-x or
---noregex : &lt;find_pattern&gt; is only the string to find, not a
-regex. This allows \x00. There is no multiple regex nor substring.</FONT><BR><FONT FACE="monospace">--
+or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR><SPAN LANG="en-GB">-t
+or --test for test, substitutions not performed,<BR>-u or --utf8 :
+process utf-8 sequences.<BR>-v or --verbose : print each substitution
+and its line number</SPAN>.<BR>-x or --noregex : &lt;find_pattern&gt;
+is only the string to find, not a regex. This allows \x00. There is
+no multiple regex nor substring.</FONT><BR><FONT FACE="monospace">--
 : to end the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
 then use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; }
 ] -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
-<H1><FONT FACE="monospace">3. Environment</FONT></H1>
-<P><FONT FACE="monospace">If the LANG environment variable is set to
-&quot;&lt;something&gt;.UTF-8&quot;, then asubst considers that input
-flow or file is coded in Utf-8. This setting can be altered in a way
-or the other by setting ASUBST_UTF8 environment variable to Y, yes, N
-or no (with whatever casing). Finally, this setting can be altered in
-a way or the other by the options -a (--ascii), or -u (--utf8).</FONT></P>
-<P><FONT FACE="monospace">If ASUBST_DEBUG environment variable is set
-to Y or yes (with whatever casing) then asubst puts on stderr some
-debugging information.</FONT></P>
-<H1><FONT FACE="monospace">4. Find pattern</FONT></H1>
-<P><FONT FACE="monospace">&lt;find_pattern&gt; ::= &lt;regex&gt; |
-&lt;multiple_regex&gt;<BR>&lt;multiple_regex&gt; ::= { [ &lt;regex&gt;
-] \n } [ &lt;regex&gt; ]<BR>If there is no &quot;\n&quot;, then the
-regex can be any regular expression. If it does not start with '^'
-nor ends with '$', then it is applied several times to each input
-line (each time to the text following previous
+<H1 LANG="en-GB"><FONT FACE="monospace">3. Environment</FONT></H1>
+<P LANG="en-GB"><FONT FACE="monospace">If the LANG environment
+variable is set to &quot;&lt;something&gt;.UTF-8&quot;, then asubst
+considers that input flow or file is coded in Utf-8. This setting can
+be altered in a way or the other by setting ASUBST_UTF8 environment
+variable to Y, yes, N or no (with whatever casing). Finally, this
+setting can be altered in a way or the other by the options -a
+(--ascii), or -u (--utf8).</FONT></P>
+<P LANG="en-GB"><FONT FACE="monospace">If ASUBST_DEBUG environment
+variable is set to Y or yes (with whatever casing) then asubst puts
+on stderr some debugging information.</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="monospace">4. Find pattern</FONT></H1>
+<P LANG="en-GB"><FONT FACE="monospace">&lt;find_pattern&gt; ::=
+&lt;regex&gt; | &lt;multiple_regex&gt;<BR>&lt;multiple_regex&gt; ::=
+{ [ &lt;regex&gt; ] \n } [ &lt;regex&gt; ]<BR>If there is no &quot;\n&quot;,
+then the regex can be any regular expression. If it does not start
+with '^' nor ends with '$', then it is applied several times to each
+input line (each time to the text following previous
 substitution).</FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
 &quot;toto&quot; | asubst &quot;t&quot; &quot;x&quot;&nbsp;&nbsp;&nbsp;-&gt;
 &quot;xoxo&quot;</FONT><BR><FONT FACE="monospace">echo &quot;toto&quot;
@@ -100,20 +103,20 @@ withing a bracket expression or not. For example, &quot;\M&quot; is
 always replaced by &quot;[:alnum:]&quot; and, out of a bracket
 expression, this becomes a bracket expression, meaning: ':' or 'a' or
 'l' or 'n' or 'u' or 'm'.</FONT></P>
-<P><FONT FACE="monospace">Note that only &ldquo;\s&rdquo;, &ldquo;\t&rdquo;,
-&ldquo;\n&rdquo; and &ldquo;\xIJ&rdquo; are interpreted in &ldquo;noregex&rdquo;
+<P LANG="en-GB"><FONT FACE="monospace">Note that only “\s”, “\t”,
+“\n” and “\xIJ” are interpreted in “noregex”
 mode.<BR>Finally, beware that some regex expressions are supposed to
 match a &quot;new line&quot; (example [:blank:] within a bracket
 expression) but will not match in asubst, because the input flow/file
 is decomposed into lines and then each line is compared to a regex
 expression.</FONT> 
 </P>
-<H1><FONT FACE="monospace">5. Replace string</FONT></H1>
-<P><FONT FACE="monospace">The following '\' sequences are
-supported:</FONT><BR><FONT FACE="monospace">- \n will be replaced by
-a newline.</FONT><BR><FONT FACE="monospace">- \t will be replaced by
-a (horiz) tab.</FONT><BR><FONT FACE="monospace">- \xIJ where IJ is an
-hexadecimal number (00 to FF or ff) will be replaced</FONT> <FONT FACE="monospace">by
+<H1 LANG="en-GB"><FONT FACE="monospace">5. Replace string</FONT></H1>
+<P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
+are supported:</FONT><BR><FONT FACE="monospace">- \n will be replaced
+by a newline.</FONT><BR><FONT FACE="monospace">- \t will be replaced
+by a (horiz) tab.</FONT><BR><FONT FACE="monospace">- \xIJ where IJ is
+an hexadecimal number (00 to FF or ff) will be replaced</FONT> <FONT FACE="monospace">by
 a byte with the corresponding value.</FONT><BR><FONT FACE="monospace">-
 \RIJ where IJ is an hexadecimal number will be replaced by the string
 matching the regex number IJ, (0 &lt; IJ &lt;= NbOfRegexps).</FONT><BR><FONT FACE="monospace">-
@@ -145,23 +148,23 @@ replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE
 &quot;Tito&quot;</FONT><BR><FONT FACE="monospace">echo -en &quot;toto&quot;
 | asubst &quot;(.)(.)(..)&quot; &quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt;
 &quot;Otto&quot;</FONT></P>
-<H1>6<FONT FACE="Monospace">.Differences between regex and noregex
-modes</FONT></H1>
-<P><FONT FACE="Monospace">In both modes &quot;\x0A&quot; is the same
-as &quot;\n&quot; and &quot;\s&quot;, &quot;\t&quot; and &quot;\n&quot;
-are interpreted.</FONT></P>
-<P><FONT FACE="Monospace">&quot;\n&quot; is allowed in find patern in
-regex mode and used to separate sub patterns, each applying to a
-line. It is forbidden in noregex mode where the find pattern string
-is always applied several times to each input line.</FONT></P>
-<P><FONT FACE="Monospace">&quot;\x00&quot; is forbidden in find
-patern in regex mode because it is the C string terminator and is
-used as such by regex library). It is allowed in noregex mode.</FONT></P>
-<P><FONT FACE="Monospace">&quot;\A&quot; to &quot;\X&quot; are not
-interpreted in find patern noregex mode.</FONT></P>
-<P><FONT FACE="Monospace">In noregex mode, &quot;\rIJ&quot; s
-forbidden.</FONT></P>
-<P><BR><BR>
+<H1 LANG="en-GB">6<FONT FACE="Monospace">.Differences between regex
+and noregex modes</FONT></H1>
+<P LANG="en-GB"><FONT FACE="Monospace">In both modes &quot;\x0A&quot;
+is the same as &quot;\n&quot; and &quot;\s&quot;, &quot;\t&quot; and
+&quot;\n&quot; are interpreted.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">&quot;\n&quot; is allowed in
+find patern in regex mode and used to separate sub patterns, each
+applying to a line. It is forbidden in noregex mode where the find
+pattern string is always applied several times to each input line.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">&quot;\x00&quot; is forbidden
+in find patern in regex mode because it is the C string terminator
+and is used as such by regex library). It is allowed in noregex mode.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">&quot;\A&quot; to &quot;\X&quot;
+are not interpreted in find patern noregex mode.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">In noregex mode, &quot;\rIJ&quot;
+s forbidden.</FONT></P>
+<P LANG="en-GB"><BR><BR>
 </P>
 </BODY>
 </HTML>

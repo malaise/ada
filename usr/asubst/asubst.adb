@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V3_5";
+  Version : constant String  := "V3_6";
 
   procedure Usage is
   begin
@@ -20,7 +20,7 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -u | -v | -x | --");
+     "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
@@ -37,6 +37,8 @@ procedure Asubst is
      "    -q or --quiet for no printout,");
     Sys_Calls.Put_Line_Error (
      "    -s or --save for backup of original file,");
+    Sys_Calls.Put_Line_Error (
+     "    -t or --test for test, substitutions not performed,");
     Sys_Calls.Put_Line_Error (
      "    -u or --utf8 for processing utf-8 sequences,");
     Sys_Calls.Put_Line_Error (
@@ -118,6 +120,7 @@ procedure Asubst is
   Verbosity : Verbose_List := Put_File_Name;
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
+  Test : Boolean := False;
   -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
@@ -138,7 +141,7 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Max, Backup, Verbosity = Verbose);
+                  Max, Backup, Verbosity = Verbose, Test);
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
       Ada.Text_Io.Put_Line (File_Name);
@@ -276,6 +279,14 @@ begin
       end if;
       Backup := True;
       Start := I + 1;
+    elsif Argument.Get_Parameter (Occurence => I) = "-t"
+    or else Argument.Get_Parameter (Occurence => I) = "--test" then
+      -- Test mode
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option test");
+      end if;
+      Test := True;
+      Start := I + 1;
     elsif Argument.Get_Parameter (Occurence => I) = "-u"
     or else Argument.Get_Parameter (Occurence => I) = "--utf8" then
       -- Process utf-8 sequences
@@ -372,7 +383,8 @@ begin
       Ok := False;
     else
       begin
-        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max, False, False);
+        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max,
+                                         False, False, Test);
       exception
         when Substit.Substit_Error =>
           Ok := False;

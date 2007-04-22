@@ -109,6 +109,41 @@ if [ -f "Temp_File.*" ] ; then
 fi
 echo "File substitution with backup, OK."
 
+# Substit in test mode
+rm -rf $FS
+cp $FR $FT
+res=`asubst -t "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
+code=$?
+# Check exit code and result is expected
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  exit 1
+fi
+cmp -s $FT $FR
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FR."
+  exit 1
+fi
+if [ "$res" != "$FT" ] ; then
+  echo "Asubst generated wrong output $res. Expected $FT."
+  exit 1
+fi
+if [ -f "Temp_File.*" ] ; then
+  echo "Found remaining temorary files " Temp_File.* "."
+  exit 1
+fi
+res=`echo toto | asubst -t o i`
+if [ "$res" != "toto" ] ; then
+  echo "Result $res differs from expected toto."
+  exit 1
+fi
+res=`echo "\ntoto\ntiti\ntata" | asubst "toto\ntiti" "\u\R01\R02\R03"`
+if [ "$res" != "\ntoto\ntiti\ntata" ] ; then
+  echo "Result $res differs from expected."
+  exit 1
+fi
+echo "File substitution in test mode, OK."
+
 # Cleanup test files
 rm -rf $FR $FT $FS $FE $FL
-
+echo "Test OK."

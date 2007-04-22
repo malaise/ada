@@ -290,11 +290,14 @@ package body Substit is
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean) return Long_Long_Natural;
+                        Verbose : Boolean;
+                        Test    : Boolean) return Long_Long_Natural;
+
   function Do_One_File (File_Name : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
-                        Verbose   : Boolean) return Long_Long_Natural is
+                        Verbose   : Boolean;
+                        Test      : Boolean) return Long_Long_Natural is
     Total_Subst : Long_Long_Natural;
     Remain_Subst : Long_Long_Natural;
     Do_Verbose : Boolean;
@@ -315,7 +318,7 @@ package body Substit is
       -- Done when the amount of lines cannot be read
       exit when not Read;
       -- Process these lines
-      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose);
+      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose, Test);
       -- Done when amount of substitutions reached
       if Max_Subst /= 0 then
         exit when Max_Subst = Total_Subst;
@@ -330,7 +333,8 @@ package body Substit is
     end if;
     Close;
     -- After close, comit or clean
-    if not Is_Stdin and then Total_Subst /= 0 then
+    if not Is_Stdin
+    and then (Total_Subst /= 0 or else Test) then
       Comit (Backup);
     else
       Clean;
@@ -345,9 +349,10 @@ package body Substit is
   end Do_One_File;
 
   -- Handle multiple substitutions within one line
-  function Subst_One_Line (Line : Str_Access;
+  function Subst_One_Line (Line      : Str_Access;
                            Max_Subst : Long_Long_Natural;
-                           Verbose : Boolean) return Long_Long_Natural is
+                           Verbose   : Boolean;
+                           Test      : Boolean) return Long_Long_Natural is
     Current : Positive;
     Nb_Match : Long_Long_Natural;
     Match_Res : Regular_Expressions.Match_Cell;
@@ -387,13 +392,17 @@ package body Substit is
                                    Match_Res.Last_Offset_Stop)
             & " -> " & Replacing);
         end if;
-        -- Substitute from start to stop
-        Asu.Replace_Slice (Line.all,
-                           Match_Res.First_Offset,
-                           Match_Res.Last_Offset_Stop,
-                           Replacing);
-        -- Next search index is the next char after the replaced string
-        Current := Match_Res.First_Offset + Replacing'Length;
+        if not Test then
+          -- Substitute from start to stop
+          Asu.Replace_Slice (Line.all,
+                             Match_Res.First_Offset,
+                             Match_Res.Last_Offset_Stop,
+                             Replacing);
+          -- Next search index is the next char after the replaced string
+          Current := Match_Res.First_Offset + Replacing'Length;
+        else
+          Current := Match_Res.Last_Offset_Stop + 1;
+        end if;
         exit when Current > Asu.Length(Line.all);
       end;
       -- Exit when number of subtitution is reached
@@ -446,7 +455,8 @@ package body Substit is
 
   -- Check current list of lines vs search patterns
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean) return Long_Long_Natural is
+                        Verbose   : Boolean;
+                        Test      : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
     Matches : Boolean;
@@ -456,7 +466,7 @@ package body Substit is
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
       return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
-                             Max_Subst, Verbose);
+                             Max_Subst, Verbose, Test);
     end if;
 
     -- Check all patterns until one does not match
@@ -483,7 +493,7 @@ package body Substit is
       end if;
     end loop;
 
-    if not Matches then
+    if not Matches or else Test then
       -- If not match, put first line and delete it
       Line_List_Mng.Rewind (Line_List);
       Line := Line_List_Mng.Access_Current (Line_List);
@@ -528,7 +538,7 @@ package body Substit is
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
         end if;
-        Text_Line.Put (Out_File,  Asu.To_String (Str_Replaced));
+        Text_Line.Put (Out_File, Asu.To_String (Str_Replaced));
       end;
       -- Delete all
       Line_List_Mng.Delete_List (Line_List, False);
