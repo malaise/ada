@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Text_Handler, Con_Io, Afpx, Directory, Dir_Mng, String_Mng;
+with Text_Handler, Con_Io, Afpx, Directory, Dir_Mng, String_Mng, Language;
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
                       For_Read     : Boolean) return String is
@@ -274,8 +274,9 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       end case;
       Afpx_Item.Len := Width;
       Afpx_Item.Str (1 .. Width) :=
-        String_Mng.Procuste(Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
-                            Width);
+        Language.String_To_Wide (
+        String_Mng.Procuste (Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
+                             Width) );
       Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
       exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
       Dir_Mng.File_List_Mng.Move_To (Dir_List);

@@ -51,35 +51,26 @@ package body Af_List is
     end if;
   end Get_Current_Item;
 
-  procedure Put (Row : in Af_Con_Io.Row_Range;
-                 State : in Af_Ptg.State_List;
+  procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List;
                  Item : in Line_Rec) is
-    Width : Positive;
-    Item_Len : Natural;
-    Str : Ada.Strings.Unbounded.Unbounded_String;
+    Str : Wide_String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
     Foreground : Con_Io.Effective_Colors;
     Background : Con_Io.Effective_Basic_Colors;
-    use type Ada.Strings.Unbounded.Unbounded_String;
   begin
     -- Set colors
     Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), State,
                        Foreground, Background);
     -- Set str
-    Width := Af_Dscr.Fields(Lfn).Width;
-    Item_Len := Language.Put_Length (Item.Str (1 .. Item.Len));
-    if Item_Len > Width then
-      -- Trunc Item at Fields(Lfn).Width
-      Str := Ada.Strings.Unbounded.To_Unbounded_String(
-              Language.Slice (Item.Str (1 .. Item.Len), 1, Width));
+    if Item.Len > Str'Last then
+      Str := Item.Str (Str'Range);
     else
-      -- Complete Item by spaces
-      Str := Item.Str (1 .. Item.Len) & (Width - Item.Len) * ' ';
+      Str (1 .. Item.Len) := Item.Str (1 .. Item.Len);
     end if;
     -- Move
     Af_Con_Io.Move ( (Row, 0), List_Window);
     -- Put
-    Af_Con_Io.Put (
-     S => Ada.Strings.Unbounded.To_String (Str),
+    Af_Con_Io.Putw (
+     S => Str,
      Name => List_Window,
      Foreground => Af_Con_Io.Colors(Foreground),
      Blink_Stat => Af_Con_Io.Blink_Stats(Af_Dscr.Fields(0).Colors.Blink_Stat),

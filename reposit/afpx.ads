@@ -9,12 +9,12 @@ package Afpx is
           range 1 .. Absolute_Field_Range 'Last;
   List_Field_No : constant Absolute_Field_Range := 0;
 
-  -- The content of one row of one field (encode, decode)
-  subtype Str_Txt is Text_Handler.Text ((Con_Io.Full_Col_Range_Last + 1) * 4);
-
   -- Width and height of a field
   subtype Height_Range is Positive range 1 .. Con_Io.Full_Row_Range_Last + 1;
   subtype Width_Range  is Positive range 1 .. Con_Io.Full_Col_Range_Last + 1;
+
+  -- The content of one row of one field (encode, decode)
+  subtype Str_Txt is Text_Handler.Text (Width_Range'Last);
 
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
@@ -177,7 +177,7 @@ package Afpx is
   -- List of items to put in list field in Put_Then_Get
   subtype Line_Len_Range is Natural range 0 .. Con_Io.Full_Col_Range'Last+1;
   type Line_Rec is record
-    Str : String (1 .. Line_Len_Range'Last);
+    Str : Wide_String (1 .. Line_Len_Range'Last);
     Len : Line_Len_Range;
   end record;
 
