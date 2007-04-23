@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Con_Io, Afpx, Normal;
+with Con_Io, Afpx, Normal, Language;
 with Point_Str, Resol;
 package body Dialog is
 
@@ -242,7 +242,7 @@ package body Dialog is
       Rec : Afpx.Line_Rec;
     begin
       Rec.Len := Str'Length;
-      Rec.Str (1 .. Rec.Len) := Str;
+      Rec.Str (1 .. Rec.Len) := Language.String_To_Wide (Str);
       Afpx.Line_List_Mng.Insert (Afpx.Line_List, Rec);
     end Insert;
   begin

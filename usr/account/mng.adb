@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
 with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
-     Environ, Sys_Calls, Date_Image;
+     Environ, Sys_Calls, Date_Image, Language;
 with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
@@ -71,15 +71,15 @@ package body Mng is
   begin
     Line.Len := Afpx.Get_Field_Width(8);
     Line.Str := (others => ' ');
-    Line.Str(1 .. 71) :=
+    Line.Str(1 .. 71) := Language.String_To_Wide (
                 Normal(No, 4) & Sep
               & Unit_Format.Short_Date_Image(Oper.Date) & Sep
               & Unit_Format.Short_Image(Oper.Amount) & Sep
               & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep
-              & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
-              & Oper.Destination(1 .. 10) & Sep
-              & Oper.Comment(1 .. 15) & Sep
-              & Oper.Reference;
+         & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
+         & Oper.Destination(1 .. 10) & Sep
+         & Oper.Comment(1 .. 15) & Sep
+         & Oper.Reference);
     return Line;
   end Oper_To_Line;
 

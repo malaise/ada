@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument, Con_Io, Afpx, Normal, Mixed_Str;
+with Argument, Con_Io, Afpx, Normal, Mixed_Str, Language;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Cursor_Field : Afpx.Absolute_Field_Range;
@@ -66,7 +66,7 @@ begin
   end if;
 
   for I in 1 .. 999 loop
-    Line.Str(1 .. 3) := Normal(I, 3, Gap => '0');
+    Line.Str(1 .. 3) := Language.String_To_Wide (Normal(I, 3, Gap => '0'));
     Line.Len := 3;
     Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
   end loop;

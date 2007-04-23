@@ -1,4 +1,4 @@
-with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Timers;
+with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Timers, Language;
 procedure T_Afpx is
 
   procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);
@@ -64,10 +64,11 @@ begin
                                 Dir_Mng.File_List_Mng.Current);
     Afpx_Item.Len := Dir_Item.Len;
     Afpx_Item.Str := (others => ' ');
-    Afpx_Item.Str(1 .. Afpx_Item.Len) := Dir_Item.Name (1 .. Dir_Item.Len);
+    Afpx_Item.Str(1 .. Afpx_Item.Len) :=
+          Language.String_To_Wide (Dir_Item.Name (1 .. Dir_Item.Len));
     Afpx_Item.Str(Afpx_Item.Len+1) := '>';
     Afpx_Item.Str(Afpx_Item.Len+2) :=
-       Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1);
+       Language.Char_To_Wide (Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1));
     Afpx_Item.Len := Afpx_Item.Len + 2;
     Afpx.Line_List_Mng.Insert (List1, Afpx_Item);
     exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
@@ -78,7 +79,7 @@ begin
   Afpx.Line_List_Mng.Read (List1, Afpx_Item,
                            Afpx.Line_List_Mng.Current);
 
-  Afpx.Encode_Field (2, (1, 0),
+  Afpx.Encode_Wide_Field (2, (1, 0),
                      ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
   Afpx.Line_List_Mng.Assign (Afpx.Line_List, List1);
 
@@ -101,8 +102,8 @@ begin
             if Afpx.Decode_Field(Cursor_Field, 0)(1 .. 4) = "exit" then
               Afpx.Set_Field_Activation (Cursor_Field, False);
               Afpx.Clear_Field (2);
-              Afpx.Encode_Field (2, (1, 0), ">" &
-                                 Afpx.Decode_Field(Cursor_Field, 0) & "<");
+              Afpx.Encode_Wide_Field (2, (1, 0), ">" &
+                           Afpx.Decode_Wide_Field(Cursor_Field, 0) & "<");
               Next_Field (Cursor_Field);
               Cursor_Col := 0;
             else
@@ -129,8 +130,8 @@ begin
             Afpx.Line_List_Mng.Read (List1, Afpx_Item,
                                      Afpx.Line_List_Mng.Current);
             Afpx.Clear_Field (2);
-            Afpx.Encode_Field (2, (1, 0),
-                               ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
+            Afpx.Encode_Wide_Field (2, (1, 0),
+                        ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
           when 8 =>
             Afpx.Update_List(Afpx.Up);
           when 9 =>

@@ -1,4 +1,5 @@
 with Ada.Text_Io;
+with Language;
 package body Point_Str is
 
   package Coo_Io is new Ada.Text_Io.Float_Io(Points.P_T_Coordinate);
@@ -59,15 +60,17 @@ package body Point_Str is
     Rec : Afpx.Line_Rec;
   begin
     Rec.Len := 2 * Coordinate_String_Len + 1;
-    Rec.Str (1 .. Rec.Len) := Coordinate_Image(Point.X) & " " & Coordinate_Image(Point.Y);
+    Rec.Str (1 .. Rec.Len) := Language.String_To_Wide (
+        Coordinate_Image(Point.X) & " " & Coordinate_Image(Point.Y));
     return Rec;
   end Encode_Rec;
 
   function Decode_Rec (Rec : Afpx.Line_Rec) return Points.P_T_One_Point is
   begin
-    return (X => Coordinate_Value(Rec.Str(1 .. Coordinate_String_Len)),
-            Y => Coordinate_Value(Rec.Str(
-          Coordinate_String_Len + 2 ..  2 * Coordinate_String_Len + 1)) );
+    return (X => Coordinate_Value(Language.Wide_To_String (
+       Rec.Str(1 .. Coordinate_String_Len))),
+            Y => Coordinate_Value(Language.Wide_To_String (
+       Rec.Str(Coordinate_String_Len + 2 ..  2 * Coordinate_String_Len + 1))) );
   end Decode_Rec;
 
 
