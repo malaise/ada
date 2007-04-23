@@ -900,7 +900,11 @@ package body Generic_Con_Io is
       function Slice (First_Pos : Positive;
                       Last_Pos  : Natural) return String is
       begin
-        return Asu.Slice (Lstr, Indexes(First_Pos), End_Index_Of (Last_Pos));
+        if Last_Pos < First_Pos then
+          return "";
+        else
+          return Asu.Slice (Lstr, Indexes(First_Pos), End_Index_Of (Last_Pos));
+        end if;
       end Slice;
 
       -- Overwrite a slice of Str by a string
