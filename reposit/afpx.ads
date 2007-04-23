@@ -83,16 +83,21 @@ package Afpx is
                           Str      : in Str_Txt);
 
   -- Decode the content of a row of a field
+  -- If Adjust is set, then only Width string characters are
+  --  returned, which may lead to skip last (in)put characters
+  --  and possibly pad with a space
   -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
   function Decode_Field (Field_No : Field_Range;
-                         Row      : Con_Io.Full_Row_Range)
+                         Row      : Con_Io.Full_Row_Range;
+                         Adjust   : Boolean := True)
                          return String;
   function Decode_Wide_Field (Field_No : Field_Range;
                               Row      : Con_Io.Full_Row_Range)
                               return Wide_String;
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
-                          Str      : in out Str_Txt);
+                          Str      : in out Str_Txt;
+                          Adjust   : in Boolean := True);
 
 
   -- Get field colors
