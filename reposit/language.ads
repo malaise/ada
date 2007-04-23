@@ -52,6 +52,10 @@ package Language is
   --  number of characters
   function Last_Index_For (Str : String; Put_Pos : Natural) return Natural;
 
+  -- Adjust String so that it contains only Max valid characters
+  --  (result has a length of Max or is shorter)
+  function Adjust (Str : String; Len : Natural) return String;
+
   -- Compute all the indexes of Str corresponding to successive
   --  put offset
   type Index_Array is array (Positive range <>) of Natural;

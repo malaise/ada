@@ -199,6 +199,26 @@ package body Language is
     end loop;
   end Last_Index_For;
 
+  -- Adjust String so that it contains only Max valid characters
+  --  (result is MAx or shorter than Max)
+  function Adjust (Str : String; Len : Natural) return String is
+    Indexes : constant Index_Array := All_Indexes_Of (Str);
+    Last : Natural;
+  begin
+    for I in reverse Indexes'Range loop
+      if Indexes(I) <= Len then
+        -- Compute Last Str index for Indexes(I)
+        Last := Indexes(I);
+        Last := Last + Nb_Chars (Str(Last));
+        if Last - Str'First + 1 <= Len then
+          -- Last leads to a string shorter or equal to Len
+          return Str (Str'First .. Last);
+        end if;
+      end if;
+    end loop;
+    return "";
+  end Adjust;
+
   -- Compute all the indexes of Str corresponding to successive
   --  put offset
   function All_Indexes_Of (Str : String) return Index_Array is
