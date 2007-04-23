@@ -16,7 +16,6 @@ package body Afpx is
 
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
-    
     -- Load the screen size
     function Load_Size return Con_Io.Full_Square;
 
@@ -380,7 +379,7 @@ package body Afpx is
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Full_Row_Range;
                          Adjust   : Boolean := True) return String is
-    Str : constant String 
+    Str : constant String
         := Language.Wide_To_String (Decode_Wide_Field (Field_No, Row));
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
