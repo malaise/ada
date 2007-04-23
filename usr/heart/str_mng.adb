@@ -1,4 +1,4 @@
-with Normal, Perpet, Normal;
+with Normal, Perpet, Normal, Language;
 package body Str_Mng is
 
   -- Is the str only spaces
@@ -265,15 +265,15 @@ package body Str_Mng is
   begin
     List_Pers.Str := (others => ' ');
     List_Pers.Len := 32;
-    List_Pers.Str (01 .. 20) := Person.Name;
-    List_Pers.Str (22 .. 31) := Person.Activity;
+    List_Pers.Str (01 .. 20) := Language.String_To_Wide (Person.Name);
+    List_Pers.Str (22 .. 31) := Language.String_To_Wide (Person.Activity);
   end Format_Person_To_List;
 
   procedure Format_List_To_Person (List_Pers : in Afpx.Line_Rec;
                                    Person    : out Pers_Def.Person_Rec) is
   begin
-    Person.Name := List_Pers.Str (01 .. 20);
-    Person.Activity := List_Pers.Str (23 .. 32);
+    Person.Name := Language.Wide_To_String (List_Pers.Str (01 .. 20));
+    Person.Activity := Language.Wide_To_String (List_Pers.Str (23 .. 32));
   end Format_List_To_Person;
 
 
@@ -285,17 +285,20 @@ package body Str_Mng is
   begin
     Format_Person_To_List (Person, List_Mesu);
     List_Mesu.Len := 71;
-    List_Mesu.Str(35 .. 44) := To_Printed_Str (Mesure.Date);
-    List_Mesu.Str(46 .. 65) := Mesure.Comment;
-    List_Mesu.Str(67 .. 69) := Pid_Str(Person.Pid);
-    List_Mesu.Str(70 .. 71) := Mesu_No;
+    List_Mesu.Str(35 .. 44) := Language.String_To_Wide (To_Printed_Str (Mesure.Date));
+    List_Mesu.Str(46 .. 65) := Language.String_To_Wide (Mesure.Comment);
+    List_Mesu.Str(67 .. 69) := Language.String_To_Wide (Pid_Str(Person.Pid));
+    List_Mesu.Str(70 .. 71) := Language.String_To_Wide (Mesu_No);
   end Format_Mesure_To_List;
 
   procedure Format_List_To_Mesure (List_Mesu : in Afpx.Line_Rec;
                                    File_Name : out Mesu_Nam.File_Name_Str) is
-    Date : constant Printed_Date_Str      := List_Mesu.Str(35 .. 44);
-    No   : constant Mesu_Nam.File_No_Str  := List_Mesu.Str(70 .. 71);
-    Pid  : constant Mesu_Nam.File_Pid_Str := List_Mesu.Str(67 .. 69);
+    Date : constant Printed_Date_Str
+         := Language.Wide_To_String (List_Mesu.Str(35 .. 44));
+    No   : constant Mesu_Nam.File_No_Str
+         := Language.Wide_To_String (List_Mesu.Str(70 .. 71));
+    Pid  : constant Mesu_Nam.File_Pid_Str
+         := Language.Wide_To_String (List_Mesu.Str(67 .. 69));
 
   begin
     File_Name :=
