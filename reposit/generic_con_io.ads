@@ -27,6 +27,11 @@ package Generic_Con_Io is
       Yellow, White);
   type Blink_Stats is (Current, Blink, Not_Blink);
 
+  -- Can be called to initialise con_ios
+  -- If not called, this init will be called together with first con_io
+  --  initlialisation
+  procedure Initialise;
+
   generic
     Font_No : Font_No_Range;
     Row_Last : Row_Range := Def_Row_Last;
@@ -98,7 +103,7 @@ package Generic_Con_Io is
     subtype Natural_Array is X_Mng.Natural_Array;
 
     -- Has to be called to initialize con_io.
-    -- Should be called prior to any con_io action
+    -- Should be called prior any con_io action
     -- May be called several times (no effect)
     procedure Init;
 

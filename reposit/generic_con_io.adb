@@ -7,13 +7,13 @@ package body Generic_Con_Io is
   Lf : Character renames Ada.Characters.Latin_1.Lf;
   Lfs : constant String := Lf & "";
 
-  procedure X_Initialise is
+  procedure Initialise is
   begin
     if not X_Init_Done then
       X_Mng.X_Initialise ("");
       X_Init_Done := True;
     end if;
-  end X_Initialise;
+  end Initialise;
 
   package body One_Con_Io is
 
@@ -80,7 +80,7 @@ package body Generic_Con_Io is
       if Init_Done then
         return;
       end if;
-      X_Initialise;
+      Initialise;
       Env_Str := (others => '-');
       Env_Len := Env_Str'Length;
       Environ.Get_Str (Font_Env_Name, Env_Str, Env_Len);
