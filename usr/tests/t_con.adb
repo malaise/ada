@@ -8,7 +8,7 @@ procedure T_Con is
   task type Task_T is
     entry Start(I : in Positive);
   end Task_T;
-  for Task_T'Storage_Size use 64 * 1024;
+  for Task_T'Storage_Size use 1024 * 1024;
 
   Nb_Tasks : constant := 2;
   T : array (1 .. Nb_Tasks) of Task_T;
@@ -184,6 +184,9 @@ procedure T_Con is
 
 
 begin
+  -- Init Con_Io with stack of main
+  Generic_Con_Io.Initialise;
+
   for I in T'Range loop
     T(I).Start(I);
     delay 1.0;
