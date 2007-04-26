@@ -32,6 +32,18 @@ package Afpx is
   -- Exceptions : No_Descriptor (no Descriptor in use)
   procedure Release_Descriptor;
 
+  -- Suspend and resume a con_io
+  -- If a program wants to open several con_io, (by example a graphical con_io
+  --   after an afpx), there are two options:
+  -- - One task for the con_io, the main uses afpx and the task uses con_io,
+  --   each receives its own events
+  -- - The main opens an afpx and a con_io,only one is active at a time.
+  --   In this case the program must suspend and not use the afpx,
+  --   then open and use the new con_io, then close the new con_io
+  --   then resume and use the afpx.
+  procedure Suspend;
+  procedure Resume;
+
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Has_List return Boolean;

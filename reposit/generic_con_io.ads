@@ -105,6 +105,17 @@ package Generic_Con_Io is
     -- To be called to close the con_io
     procedure Destroy;
 
+    -- Suspend and resume a con_io
+    -- If a program wants to open several con_io, there are two options:
+    -- - One task per con_io, each task calls *Get and receives its
+    --   events
+    -- - One taks (or main) opens several con_io but only one is active at a
+    --   time. In this case the program must suspend and not use the previous
+    --   con_io, then open and use the new con_io, then close the new con_io
+    --   then resume and use the first con_io.
+    procedure Suspend;
+    procedure Resume;
+
     -- The window which is screen
     function Screen return Window;
 

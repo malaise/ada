@@ -491,7 +491,7 @@ package body Dispatch is
           end if;
           Nb_X_Events := 0;
         when No_Event =>
-          -- Tiemout to deliver to closest
+          -- Timeout to deliver to closest
           Selected := First_Client;
           Nb_X_Events := 0;
       end case;
@@ -500,13 +500,15 @@ package body Dispatch is
       if Selected /= No_Client_No then
         Clients(Selected).Running := True;
       elsif Event /= Wakeup_Event then
+        -- This event belongs to no registered client
+        -- Send a "dummy" refresh event to oldest
+        Event := Refresh;
+        Selected := Oldest;
+        Nb_X_Events := 0;
+        Clients(Selected).Running := True;
         if Debug then
-          My_Io.Put_Line ("Dispatch.Wait: no selected " & Selected'Img);
+          My_Io.Put_Line ("Dispatch.Wait: no selected => " & Selected'Img);
         end if;
-        raise Dispatch_Error;
-      end if;
-      if Debug then
-        My_Io.Put_Line ("Dispatch.Wait: selected " & Selected'Img);
       end if;
 
     end Wait;
@@ -518,6 +520,10 @@ package body Dispatch is
     begin
       Check (Client, True);
       Kind := Event;
+      if Debug then
+        My_Io.Put_Line ("Dispatch.Get_Event: " & Client'Img
+                      & " <- " & Kind'Img);
+      end if;
     end Get_Event;
 
   end Dispatcher;

@@ -15,10 +15,6 @@ package body X_Mng is
   subtype Result is Integer;
   Ok : constant Result := 0;
 
-  -- Line access for X
-  subtype Line_For_C is System.Address;
-  No_Line_For_C : constant Line_For_C := System.Null_Address;
-
   -- True if the connection to X has been initialised
   Initialised : Boolean := False;
 
@@ -502,6 +498,52 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Close_Line;
+
+  ------------------------------------------------------------------
+  procedure X_Suspend (Line_Id : in out Line) is
+  begin
+    -- Clear the line before suspending
+    X_Clear_Line (Line_Id);
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
+    end if;
+    -- Call_On to get Line_For_C and save it
+    Dispatcher.Call_On (Line_Id.No, Line_Id.Suspended_Line_For_C);
+    Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
+    -- Unregister: Line_No is reset (and Line_For_C would be lost)
+    Dispatcher.Unregister(Line_Id.No);
+  end X_Suspend;
+
+  ------------------------------------------------------------------
+  procedure X_Resume  (Line_Id : in out Line) is
+    Dummy_Line_For_C : Line_For_C;
+    use type System.Address;
+  begin
+    -- No must not be set but Suspended_Line must be
+    if not Initialised
+    or else Line_Id.No /= No_Client_No
+    or else Line_Id.Suspended_Line_For_C = No_Line_For_C then
+      raise X_Failure;
+    end if;
+    -- Register, force wake up of waiting task
+    loop
+      Dispatch.Wake_Up;
+      select
+        Dispatcher.Register(Line_Id.No);
+        exit;
+      or
+        delay 0.1;
+      end select;
+    end loop;
+    if Line_Id = No_Client then
+      -- Too many clients
+      raise X_Failure;
+    end if;
+    -- Call_Off to set saved Line_For_C
+    Dispatcher.Call_On (Line_Id.No, Dummy_Line_For_C);
+    Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
+    Line_Id.Suspended_Line_For_C := No_Line_For_C;
+  end X_Resume;
 
   ------------------------------------------------------------------
   procedure X_Set_Line_Name (Line_Id : in Line;

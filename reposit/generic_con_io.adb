@@ -118,6 +118,24 @@ package body Generic_Con_Io is
       Init_Done := False;
     end Destroy;
 
+    -- Suspend and resume con_io
+    procedure Suspend is
+    begin
+      if not Init_Done then
+        raise Not_Init;
+      end if;
+      X_Mng.X_Suspend (Id);
+    end Suspend;
+
+    procedure Resume is
+    begin
+      if not Init_Done then
+        raise Not_Init;
+      end if;
+      X_Mng.X_Resume (Id);
+    end Resume;
+
+
     -- Screen characteristics
     function Screen return Window is
     begin

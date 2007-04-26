@@ -268,6 +268,21 @@ package body Afpx is
   end Release_Descriptor;
 
 
+  -- Suspend and resume the descriptor
+  procedure Suspend is
+  begin
+    Af_Dscr.Check;
+    Af_Con_Io.Suspend;
+  end Suspend;
+
+  procedure Resume is
+  begin
+    Af_Dscr.Check;
+    Af_Con_Io.Resume;
+    -- Trigger a refresh
+    Af_Dscr.Current_Dscr.Modified := True;
+  end Resume;
+
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Has_List return Boolean is

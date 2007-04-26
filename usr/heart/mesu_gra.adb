@@ -1,4 +1,4 @@
-with Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1, Ada.Text_Io, Ada.Exceptions;
 with Afpx, Con_Io, Normal, My_Math, Text_Handler;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
@@ -370,6 +370,11 @@ package body Mesu_Gra is
     use Pers_Def;
     use type Con_Io.Curs_Mvt;
   begin
+    -- Here we only use Afpx.Line_List, no pb to suspend for
+    --  a Con_Io
+    Afpx.Suspend;
+    Con_Io.Init;
+
     -- Screen scale
     Xs_First := 4 * Con_Io.Graphics.Font_Width;
     Xs_Last  := Con_Io.Graphics.X_Max;
@@ -557,6 +562,15 @@ package body Mesu_Gra is
     -- Back to text mode
     Con_Io.Reset_Term;
     Con_Io.Set_Xor_Mode(Con_Io.Xor_Off);
+    -- Close Con_Io and restore Afpx
+    Con_Io.Destroy;
+    Afpx.Resume;
+  exception
+    when Error:others =>
+      Ada.Text_Io.Put_Line ("Exception "
+       & Ada.Exceptions.Exception_Name (Error) & " raised.");
+      Con_Io.Destroy;
+      Afpx.Resume;
   end Graphic;
 
 end Mesu_Gra;

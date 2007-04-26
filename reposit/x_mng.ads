@@ -70,6 +70,17 @@ package X_Mng is
   -- The line_id is the token, previously given by open_line
   procedure X_Close_Line(Line_Id : in out Line);
 
+  -- Suspend and resume a line
+  -- If a program wants to open several lines, there are two options:
+  -- - One task per line, each task calls X_Wait_Event and receives its
+  --   events
+  -- - One taks (or main) opens several lines but only one is active at a
+  --   time. In this case the program must suspend and not use the previous
+  --   line, then open and use the new line, then close the new line
+  --   then resume and use the first line.
+  procedure X_Suspend (Line_Id : in out Line);
+  procedure X_Resume  (Line_Id : in out Line);
+
   -- Set the name of a line
   -- This name will be displayed by the window manager if possible
   -- The line_id is the token, previously given by open_line
@@ -301,12 +312,21 @@ private
   subtype Client_Range is Positive range 1 .. Max_Line_Number;
   No_Client_No : constant Line_Range := 0;
 
+  -- Line access for X
+  subtype Line_For_C is System.Address;
+  No_Line_For_C : constant Line_For_C := System.Null_Address;
+
+
   type Line is record
     -- No_Client
     No : Line_Range := No_Client_No;
+    -- Line for C saved while suspended
+    Suspended_Line_For_C : Line_For_C := No_Line_For_C;
   end record;
 
-  No_Client : constant Line := (No => No_Client_No);
+  No_Client : constant Line := (
+        No => No_Client_No,
+        Suspended_Line_For_C => No_Line_For_C);
 
 end X_Mng;
 
