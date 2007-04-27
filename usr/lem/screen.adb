@@ -95,10 +95,10 @@ package body Screen is
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
     -- Compute space
-    -- Space last X leaves "TT VV" (5) for Thrust and V speed
+    -- Space last X leaves "Th Vs" (5) for Thrust and V speed
     First_X := 1;
     Last_X := X_Max - Font_Width * 5 - 2;
-    -- Space first Y leaves "H" for H speed and F for fuel
+    -- Space first Y leaves "Hs" for H speed and Fu for fuel
     First_Y := Font_Height * 2 + 2;
     Last_Y := Y_Max - 1;
     -- Compute conversion factors
@@ -108,7 +108,7 @@ package body Screen is
     Thn := (Last_X + 2, First_Y + 1);
     Vsn := (Thn.X + Con_Io.Graphics.Font_Width * 3 - 4, Thn.Y);
     Fun := (First_X + 1, First_Y - Con_Io.Graphics.Font_Height);
-    Hsn := (Fun.X, Fun.Y - Con_Io.Graphics.Font_Height + 3);
+    Hsn := (Fun.X, Fun.Y - Con_Io.Graphics.Font_Height + 1);
     -- Compute position and factor of gauges
     -- Thrust
     Thx := Thn.X + 6;
