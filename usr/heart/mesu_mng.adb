@@ -11,6 +11,7 @@ package body Mesu_Mng is
     Allow_Draw   : Boolean;
     Cursor_Field : Afpx.Absolute_Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
+    Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     Ok           : Boolean;
     Criteria     : Mesu_Sel.Criteria_Rec;
@@ -155,6 +156,7 @@ package body Mesu_Mng is
       end case;
 
       Cursor_Col := 0;
+      Insert := False;
       Ok := Locok;
 
     end Check_Field;
@@ -163,6 +165,7 @@ package body Mesu_Mng is
     Afpx.Use_Descriptor(1);
     Cursor_Field := 07;
     Cursor_Col := 0;
+    Insert := False;
     Mesu_Sel.Load;
     Afpx.Update_List (Afpx.Center);
 
@@ -227,7 +230,8 @@ package body Mesu_Mng is
           Normal(Afpx.Line_List_Mng.List_Length(Afpx.Line_List), 5) );
 
         Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
-        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                           Ptg_Result, Redisplay);
         Redisplay := False;
 
         case Ptg_Result.Event is
@@ -266,6 +270,7 @@ package body Mesu_Mng is
                   Afpx.Clear_Field (Cursor_Field);
                 end if;
                 Cursor_Col := 0;
+                Insert := False;
               when Break_Key =>
                 exit List;
             end case;

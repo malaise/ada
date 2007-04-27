@@ -14,6 +14,7 @@ procedure T_Timers is
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
+  Insert       : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean;
 
@@ -142,11 +143,12 @@ begin
   Afpx.Use_Descriptor (6);
   Cursor_Field := 1;
   Cursor_Col := 0;
+  Insert := False;
   Redisplay := False;
 
 
   loop
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
 

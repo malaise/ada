@@ -127,6 +127,7 @@ package body Screen is
   function S_Confirm return Boolean is
     Cursor_Field : Afpx.Field_Range := 1;
     Cursor_Col : Con_Io.Col_Range := 0;
+    Insert : Boolean := False;
     Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
@@ -140,7 +141,8 @@ package body Screen is
     end if;
     Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Black);
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Ptg_Result, Redisplay);
       Redisplay := False;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

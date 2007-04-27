@@ -180,6 +180,7 @@ package body Menu1 is
 
   procedure Main_Screen (Init_File_Name : in File.F_T_File_Name) is
     Cursor_Col : Con_Io.Col_Range;
+    Insert : Boolean;
     Redisplay : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
@@ -213,6 +214,7 @@ package body Menu1 is
     Screen.Put_Point_Status;
 
     Cursor_Col := 0;
+    Insert := False;
     Redisplay := False;
     Data_Changed := True;
     Saved_Index := 0;
@@ -254,7 +256,8 @@ package body Menu1 is
         Afpx.Set_Field_Activation (31, True);
       end if;
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Ptg_Result, Redisplay);
       Redisplay := False;
       Restore := None;
       Saved_Index := 0;

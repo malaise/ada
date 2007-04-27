@@ -4,6 +4,7 @@ procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Cursor_Field : Afpx.Absolute_Field_Range;
   Cursor_Col : Con_Io.Col_Range;
+  Insert : Boolean;
   Redisplay : Boolean;
   Ptg_Result : Afpx.Result_Rec;
   Line : Afpx.Line_Rec;
@@ -41,6 +42,7 @@ procedure T_Dscr is
       Cursor_Field := Afpx.Field_Range'First;
     end if;
     Cursor_Col := 0;
+    Insert := False;
     Redisplay := False;
   end Set_Dscr;
 
@@ -75,7 +77,7 @@ begin
   Set_Dscr(Dscr_No);
 
   loop
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
     case Ptg_Result.Event is
       when Afpx.Keyboard =>

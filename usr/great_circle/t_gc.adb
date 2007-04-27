@@ -19,6 +19,7 @@ procedure T_Gc is
 
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col : Con_Io.Col_Range;
+  Insert : Boolean;
   Result : Afpx.Result_Rec;
 
   subtype A_Flds is Afpx.Field_Range range 06 .. 18;
@@ -113,8 +114,10 @@ begin
     Redisplay := True;
     Cursor_Field := Afpx.Next_Cursor_Field(0);
     Cursor_Col := 0;
+    Insert := False;
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Result, Redisplay,
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Result, Redisplay,
                          Next_Field_Cb'Unrestricted_Access);
 
       -- Exit
@@ -135,6 +138,7 @@ begin
         Clear_Result;
         Cursor_Field := A_Flds'First;
         Cursor_Col := 0;
+        Insert := False;
       end if;
 
       -- Compute
@@ -144,6 +148,7 @@ begin
                and then Result.Field_No = Compute_Field) then
         Cursor_Field := A_Flds'First;
         Cursor_Col := 0;
+        Insert := False;
         Clear_Result;
         Decode_Point (A_Flds'First, A_Flds'Last, A, Decode_Ok, Cursor_Field);
         if Decode_Ok then

@@ -494,6 +494,7 @@ package body Edition is
     -- Afpx put_then_get stuff
     Cursor_Field : Afpx.Absolute_Field_Range := 0;
     Cursor_Col   : Con_Io.Col_Range := 0;
+    Insert       : Boolean := False;
     Ptg_Result   : Afpx.Result_Rec;
     Redisplay    : Boolean := False;
     -- Current Kind and Status
@@ -553,8 +554,8 @@ package body Edition is
       -- Ptgs
       One_Edit:
       loop
-        Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, Redisplay,
-                          Set_Cursor'Access);
+        Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert,
+                          Ptg_Result, Redisplay, Set_Cursor'Access);
         Redisplay := False;
         case Ptg_Result.Event is
 
@@ -564,6 +565,7 @@ package body Edition is
                 -- Ok and back or next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
+                Insert := False;
                 if Cursor_Field = 0 then
                   -- Check that Ok_And_Next button is active
                   if not Afpx.Get_Field_Activation(42) then
@@ -602,12 +604,14 @@ package body Edition is
                 if Edit_Type = Create then
                   Cursor_Field := Afpx.Next_Cursor_Field(Ptg_Result.Field_No);
                   Cursor_Col := 0;
+                  Insert := False;
                 end if;
 
               when 38 =>
                 -- Ok and prev
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
+                Insert := False;
                 if Cursor_Field = 0 then
                   -- Prev oper
                   Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
@@ -623,6 +627,7 @@ package body Edition is
                 -- Ok and back
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
+                Insert := False;
                 exit All_Edit when Cursor_Field = 0;
                 Screen.Ring(True);
               when 41 =>
@@ -633,6 +638,7 @@ package body Edition is
                 -- Ok and next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
+                Insert := False;
                 if Cursor_Field = 0 then
                   if Edit_Type /= Create and then Edit_Type /= Copy then
                     -- Next oper

@@ -116,6 +116,7 @@ package body Menu21 is
 
   procedure Main_Screen is
     Cursor_Col : Con_Io.Col_Range;
+    Insert : Boolean;
     Redisplay : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
@@ -127,6 +128,7 @@ package body Menu21 is
     Afpx.Use_Descriptor(4);
 
     Cursor_Col := 0;
+    Insert := False;
     Redisplay := False;
     Restore := Partial;
 
@@ -155,7 +157,8 @@ package body Menu21 is
       Afpx.Set_Field_Activation (29, Activate_No_Curve);
       Afpx.Set_Field_Activation (30, Activate_No_Curve);
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Ptg_Result, Redisplay);
       Redisplay := False;
       Restore := None;
       case Ptg_Result.Event is

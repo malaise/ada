@@ -8,6 +8,7 @@ procedure T_Afpx is
 
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
+  Insert       : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean;
   Flip_Flop : Boolean;
@@ -85,6 +86,7 @@ begin
 
   Cursor_Field := 1;
   Cursor_Col := 0;
+  Insert := False;
   Flip_Flop := True;
   Redisplay := False;
 
@@ -92,7 +94,7 @@ begin
     Afpx.Set_Field_Activation (5, Flip_Flop);
     Afpx.Set_Field_Protection (0, not Flip_Flop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
 
     case Ptg_Result.Event is
@@ -106,6 +108,7 @@ begin
                            Afpx.Decode_Wide_Field(Cursor_Field, 0) & "<");
               Next_Field (Cursor_Field);
               Cursor_Col := 0;
+              Insert := False;
             else
               Afpx.Clear_Field (2);
               Afpx.Encode_Field (2, (1, 0), ">" &
@@ -117,6 +120,7 @@ begin
             Afpx.Encode_Field (2, (1, 0), ">" &
                                Afpx.Decode_Field(Cursor_Field, 0) & "<");
             Cursor_Col := 0;
+            Insert := False;
           when Afpx.Break_Key =>
             exit;
         end case;

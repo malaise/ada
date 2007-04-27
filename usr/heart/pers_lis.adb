@@ -42,6 +42,7 @@ package body Pers_Lis is
 
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
+    Insert       : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
     Redisplay    : Boolean;
 
@@ -135,6 +136,7 @@ package body Pers_Lis is
       end case;
 
       Cursor_Col := 0;
+      Insert := False;
       Ok := Locok;
 
     end Check_Field;
@@ -147,6 +149,7 @@ package body Pers_Lis is
       -- Other fields can be filled
       Cursor_Field := 21;
       Cursor_Col := 0;
+      Insert := False;
       Tz_S := Afpx.Decode_Field (21, 00);
       Person.Tz(6) := Str_Mng.To_Bpm(Tz_S);
       return Person.Tz(6) /= Pers_Def.Bpm_Range'First;
@@ -165,6 +168,7 @@ package body Pers_Lis is
 
     Cursor_Field := 01;
     Cursor_Col := 0;
+    Insert := False;
     Redisplay := False;
 
     Build_List;
@@ -207,7 +211,8 @@ package body Pers_Lis is
 
       Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Ptg_Result, Redisplay);
       Redisplay := False;
 
       -- Move in persons list according to Afpx selection
@@ -241,6 +246,7 @@ package body Pers_Lis is
                 Afpx.Clear_Field (Cursor_Field);
               end if;
               Cursor_Col := 0;
+              Insert := False;
             when Break_Key =>
               Exit_Program := True;
               exit;
@@ -262,6 +268,7 @@ package body Pers_Lis is
               First_Field := 11;
               Cursor_Field := First_Field;
               Cursor_Col := 0;
+              Insert := False;
               Person.Name := (others => ' ');
               Person.Activity := (others => ' ');
               Person.Tz := (others => Pers_Def.Bpm_Range'First);
@@ -272,6 +279,7 @@ package body Pers_Lis is
               First_Field := 16;
               Cursor_Field := First_Field;
               Cursor_Col := 0;
+              Insert := False;
               Read (Pers_Def.The_Persons, Person,
                     Pers_Def.Person_List_Mng.Current);
               Encode_Person;
@@ -342,6 +350,7 @@ package body Pers_Lis is
 
                 Cursor_Field := 16;
                 Cursor_Col := 0;
+                Insert := False;
               end if;
             when others =>
               null;

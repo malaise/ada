@@ -221,6 +221,7 @@ package body Menu2 is
 
   procedure Main_Screen (Data_Changed : in Boolean) is
     Cursor_Col : Con_Io.Col_Range;
+    Insert : Boolean;
     Redisplay : Boolean;
     Ptg_Result : Afpx.Result_Rec;
     Restore : Restore_List;
@@ -247,6 +248,7 @@ package body Menu2 is
     Screen.Put_Point_Status;
 
     Cursor_Col := 0;
+    Insert := False;
     Redisplay := False;
     Restore := None;
 
@@ -254,7 +256,8 @@ package body Menu2 is
       Do_Restore (Restore);
 
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Ptg_Result, Redisplay);
       Redisplay := False;
       Restore := None;
       case Ptg_Result.Event is

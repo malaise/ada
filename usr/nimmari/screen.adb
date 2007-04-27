@@ -36,11 +36,12 @@ package body Screen is
     -- For put then get
     Cursor_Field : Field_Range := Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Insert : Boolean := False;
     Result : Result_Rec;
   begin
     Use_Descriptor (1);
     loop
-      Put_Then_Get(Cursor_Field, Cursor_Col, Result, True);
+      Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, True);
       exit when Result.Event = Afpx.Mouse_Button;
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
@@ -83,6 +84,7 @@ package body Screen is
     -- For put then get
     Cursor_Field : Field_Range := Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Insert : Boolean := False;
     Result : Result_Rec;
     Redisplay : Boolean;
 
@@ -109,7 +111,7 @@ package body Screen is
     loop
       -- Activate play
       Set_Field_Activation (17, Nb_Selected /= 0);
-      Put_Then_Get(Cursor_Field, Cursor_Col, Result, Redisplay);
+      Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
                and then Result.Keyboard_Key = Afpx.Break_Key) then
@@ -183,6 +185,7 @@ package body Screen is
     -- For put then get
     Cursor_Field : Field_Range := Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Insert : Boolean := False;
     Ptg_Result : Result_Rec;
     use Compute;
   begin
@@ -263,7 +266,7 @@ package body Screen is
       Encode_Field (17, (1, 1), "P l a y");
       Set_Field_Activation (22, True);
       loop
-        Put_Then_Get(Cursor_Field, Cursor_Col, Ptg_Result, True);
+        Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
         if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 22 then
           Change_Game := True;
         end if;

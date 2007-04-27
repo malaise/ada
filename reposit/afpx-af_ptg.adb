@@ -412,6 +412,7 @@ package body Af_Ptg is
   -- Print the fields and the list, then gets
   procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                  Cursor_Col    : in out Af_Con_Io.Col_Range;
+                 Insert        : in out Boolean;
                  Result        : out Result_Rec;
                  Redisplay     : in Boolean;
                  Get_Active    : in Boolean;
@@ -422,7 +423,6 @@ package body Af_Ptg is
     Last : Natural;
     Stat : Af_Con_Io.Curs_Mvt;
     Pos : Positive;
-    Insert : Boolean;
     Foreground : Con_Io.Effective_Colors;
     Background : Con_Io.Effective_Basic_Colors;
     Done : Boolean;
@@ -518,6 +518,7 @@ package body Af_Ptg is
         Cursor_Col := Pos - 1;
       else
         -- Blind get
+        Insert := False;
         Af_Con_Io.Move (Af_Con_Io.Row_Range'Last, Af_Con_Io.Col_Range'Last);
         Af_Con_Io.Put_Then_Get (
          Str    => Af_Dscr.Chars (1 .. 0),

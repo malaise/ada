@@ -186,6 +186,7 @@ package body Afpx is
     -- The put_then get
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
                    Cursor_Col    : in out Af_Con_Io.Col_Range;
+                   Insert        : in out Boolean;
                    Result        : out Result_Rec;
                    Redisplay     : in Boolean;
                    Get_Active    : in Boolean;
@@ -400,11 +401,11 @@ package body Afpx is
        := Afpx_Typ.Absolute_Field_Range(Field_No);
     Width : constant Width_Range := Af_Dscr.Fields(Fn).Width;
   begin
-    if not Adjust or else Language.Put_Length (Str) = Width then
+    if not Adjust or else Str'Length = Width then
       return Str;
     else
       declare
-        -- Trunc length is <= Width
+        -- Trunc length if <= Width
         Trunc : constant String := Language.Adjust (Str, Width);
         Pad : constant String (1 .. Width - Trunc'Length)
             := (others => ' ');
@@ -727,6 +728,7 @@ package body Afpx is
   procedure Put_Then_Get (
               Cursor_Field  : in out Field_Range;
               Cursor_Col    : in out Con_Io.Full_Col_Range;
+              Insert        : in out Boolean;
               Result        : out Result_Rec;
               Redisplay     : in Boolean := False;
               Cursor_Col_Cb : in Cursor_Set_Col_Cb := null) is
@@ -764,7 +766,8 @@ package body Afpx is
       end if;
     end if;
 
-    Af_Ptg.Ptg (Cf, Cursor_Col, Result, Redisplay, Some_Get, Cursor_Col_Cb);
+    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Redisplay,
+                Some_Get, Cursor_Col_Cb);
     Cursor_Field := Field_Range(Cf);
     In_Ptg := False;
   exception

@@ -272,6 +272,7 @@ package Afpx is
   --               In_Put_Then_Get (already in Put_Then_Get).
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
                           Cursor_Col    : in out Con_Io.Full_Col_Range;
+                          Insert        : in out Boolean;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
                           Cursor_Col_Cb : in Cursor_Set_Col_Cb := null);

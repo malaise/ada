@@ -6,6 +6,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
+  Insert       : Boolean;
   Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
 
@@ -118,6 +119,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   function Confirm return Boolean is
     Cursor_Field : Afpx.Field_Range := 1;
     Cursor_Col : Con_Io.Col_Range := 0;
+    Insert : Boolean := False;
     Redisplay : Boolean := False;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
@@ -131,7 +133,8 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     end if;
     Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Black);
     loop
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                         Ptg_Result, Redisplay);
       Redisplay := False;
       case Ptg_Result.Event is
         when Afpx.Keyboard =>
@@ -232,6 +235,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   begin
     -- Clear get field
     Cursor_Col := 0;
+    Insert := False;
 
     -- change dir
     Directory.Change_Current(New_Dir);
@@ -325,7 +329,7 @@ begin
   Redisplay := False;
   loop
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result, Redisplay);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
