@@ -271,7 +271,7 @@ package body Screen is
       when E_Wrong_Coordinate   => Encode_Info ("Error, invalid coordinate");
       when E_Resolution_Problem => Encode_Info ("Internal error while solving");
       when E_Curve_Problem      => Encode_Info ("Internal error while drawing");
-      when E_Curve_Active       => Encode_Info ("A curve is already active");
+      when E_Curve_Active       => Encode_Info ("A curve is currently active");
       when E_Too_Many_Points    => Encode_Info ("Too many points");
     end case;
     Res := S_Confirm;
