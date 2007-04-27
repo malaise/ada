@@ -6,7 +6,7 @@
 
 #define NBRE_MAX_KEY 4
 
-void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
+void key_chain(XIC xic, XKeyEvent *p_x_key, int *p_control, int *p_shift,
                int *p_code, int key_buf[], int *p_nbre_key);
 
 #endif

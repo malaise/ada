@@ -17,6 +17,8 @@ typedef struct {
     Display *x_server;
     XFontSet x_font_set[NBRE_FONT];
     XFontStruct *x_font[NBRE_FONT];
+    XIM xim;
+    XIMStyle xim_style;
     int backing_store;
 }t_server;
 
@@ -50,6 +52,7 @@ typedef struct {
     boolean bold;
     boolean xor_mode;
     GC x_graphic_context;
+    XIC xic;
     /* Event characteristics */
     boolean motion_enabled;
     boolean control;

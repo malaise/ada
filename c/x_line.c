@@ -44,7 +44,13 @@ unsigned long win_mask;
 XSetWindowAttributes win_attrib;
 Window x_window;
 
+    char *modifiers;
+    XIMStyles *xim_styles;
+    char *imvalret;
+    int i;
+
     setlocale (LC_ALL, "");
+
     /* Open X display */
     local_server.x_server = XOpenDisplay (server_name);
     if (local_server.x_server == NULL) {
@@ -64,16 +70,48 @@ Window x_window;
         return (False);
     }
 
-    /* Set backing store */
-      local_server.backing_store = WhenMapped;
+    local_server.backing_store = NotUseful;
 
-    if (! DoesBackingStore(DefaultScreenOfDisplay(local_server.x_server)) ) {
+    /* Set default input method */
+    modifiers = XSetLocaleModifiers ("@im=none");
+    if (modifiers == NULL) {
 #ifdef DEBUG
-        printf ("X_LINE warning : Backing store not supported on this screen.\n");
+        printf ("X_LINE : Can't set locale modifiers.\n");
 #endif
-      local_server.backing_store = NotUseful;
     }
 
+    local_server.xim_style = 0;
+    local_server.xim = XOpenIM (local_server.x_server, NULL, NULL, NULL);
+    if (local_server.xim == NULL) {
+#ifdef DEBUG
+        printf ("X_LINE : Can't open input method.\n");
+        xim_styles = NULL;
+#endif
+    } else {
+        imvalret = XGetIMValues (local_server.xim, XNQueryInputStyle,
+                                 &xim_styles, NULL);
+        if (imvalret != NULL || xim_styles == NULL) {
+            xim_styles = NULL;
+#ifdef DEBUG
+            printf ("X_LINE: Input method doesn't support any style.\n");
+#endif
+        }
+    }
+
+    if (xim_styles != NULL) {
+        for (i = 0;  i < xim_styles->count_styles;  i++) {
+            if (xim_styles->supported_styles[i] ==
+                    (XIMPreeditNothing | XIMStatusNothing)) {
+                local_server.xim_style = xim_styles->supported_styles[i];
+             break;
+             }
+        }
+
+        if (local_server.xim_style == 0) {
+            printf ("X_LINE: Input method doesn't support the expected style.\n");
+        }
+        XFree (xim_styles);
+    }
 
     /* Set auto repeat */
     XAutoRepeatOn (local_server.x_server);
@@ -254,6 +292,21 @@ boolean screen_created;
 
     list_window[nbre_window] = p_window;
     nbre_window ++;
+
+    if ( (p_window->server->xim != NULL)
+      && (p_window->server->xim_style != 0) ) {
+        p_window->xic = XCreateIC (p_window->server->xim,
+                        XNInputStyle, p_window->server->xim_style,
+                        XNClientWindow, p_window->x_window,
+                        XNFocusWindow, p_window->x_window,
+                        NULL);
+
+        if (p_window->xic == NULL) {
+#ifdef DEBUG
+            printf ("X_LINE : X Can't create input method context.\n");
+#endif
+        }
+    }
 
     /* Map Window */
     XMapWindow (p_window->server->x_server, p_window->x_window);

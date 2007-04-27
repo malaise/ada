@@ -799,7 +799,9 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           /* Window not found : Check next event */
           break;
         }
-        key_chain (&event.xkey, &win_id->control, &win_id->shift,
+        /* Decode key */
+        key_chain (win_id->xic,
+                   &event.xkey, &win_id->control, &win_id->shift,
                    &win_id->code, win_id->key_buf, &win_id->nbre_key);
         if (win_id->nbre_key != 0) {
           /* Key is valid */

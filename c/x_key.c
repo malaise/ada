@@ -13,10 +13,12 @@
 #define KEY_SHIFT   0xE1
 #define KEY_CONTROL 0xE3
 
-void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
-                  int *p_code, int key_buf[], int *p_nbre_key) {
+void key_chain(XIC xic, 
+               XKeyEvent *p_x_key, int *p_control, int *p_shift,
+               int *p_code, int key_buf[], int *p_nbre_key) {
 
     KeySym key_sym;
+    Status status;
     char str[4];
     int nb_char;
     int i;
@@ -28,10 +30,27 @@ void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
     memset (key_buf, 0, NBRE_MAX_KEY);
     *p_nbre_key = 0;
 
-    /* Decode keybord event */
-    nb_char = XLookupString(p_x_key, str, sizeof(str), &key_sym, NULL);
-    key_sym = key_sym & 0x0000FFFF;
+    /* Decode using input context */
+    if (xic != NULL) {
+        nb_char = XmbLookupString (xic, p_x_key, str, sizeof(str),
+                      &key_sym, &status);
+        if (XFilterEvent ((XEvent*)p_x_key, None) ) {
+            return;
+        } 
+    } else {
+        status = XLookupNone;
+    }
 
+    /* Decode standard keybord event if input context failed */
+    if ( (status != XLookupChars) && (status != XLookupBoth) ) {
+        nb_char = XLookupString(p_x_key, str, sizeof(str), &key_sym, NULL);
+    }
+
+#ifdef DEBUG
+    printf ("X_Key <- %lX %s\n", key_sym, str);
+#endif
+
+    key_sym = key_sym & 0x0000FFFF;
 
     /* Control modifier checked by default */
     if ( (p_x_key->state & ControlMask) != 0) {
@@ -75,6 +94,10 @@ void key_chain(XKeyEvent *p_x_key, int *p_control, int *p_shift,
             (*p_nbre_key) ++;
         }
     }
+
+#ifdef DEBUG
+    printf ("X_Key -> %lX %s\n", key_sym, str);
+#endif
 
 }
 
