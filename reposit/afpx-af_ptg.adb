@@ -497,7 +497,6 @@ package body Af_Ptg is
       if New_Field then
         Field := Af_Dscr.Fields(Cursor_Field);
         Set_Colors (Field, Selected, Foreground, Background);
-        Insert := False;
         New_Field := False;
       end if;
       if Get_Active then
@@ -575,8 +574,9 @@ package body Af_Ptg is
                                           Af_Dscr.Fields(Cursor_Field),
                                           Right_Full, Cursor_Col_Cb);
             New_Field := True;
+            Insert := False;
           end if;
-        when Af_Con_Io.Tab | Af_Con_Io.Ctrl_Right=>
+        when Af_Con_Io.Tab | Af_Con_Io.Ctrl_Right =>
           if Get_Active then
             -- Tab in previous field
             -- Restore normal color of previous field
@@ -586,6 +586,7 @@ package body Af_Ptg is
                                           Af_Dscr.Fields(Cursor_Field),
                                           Tab, Cursor_Col_Cb);
             New_Field := True;
+            Insert := False;
           end if;
         when Af_Con_Io.Left =>
           if Get_Active then
@@ -597,6 +598,7 @@ package body Af_Ptg is
                                           Af_Dscr.Fields(Cursor_Field),
                                           Left, Cursor_Col_Cb);
             New_Field := True;
+            Insert := False;
           end if;
         when Af_Con_Io.Stab | Af_Con_Io.Ctrl_Left =>
           if Get_Active then
@@ -608,6 +610,7 @@ package body Af_Ptg is
                                           Af_Dscr.Fields(Cursor_Field),
                                           Stab, Cursor_Col_Cb);
             New_Field := True;
+            Insert := False;
           end if;
         when Af_Con_Io.Ret =>
           -- End put_then_get on keyboard ret
@@ -617,6 +620,7 @@ package body Af_Ptg is
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Keyboard,
                      Keyboard_Key => Return_Key);
+          Insert := False;
           Done := True;
         when Af_Con_Io.Esc =>
           -- End put_then_get on keyboard esc
@@ -626,6 +630,7 @@ package body Af_Ptg is
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Keyboard,
                      Keyboard_Key => Escape_Key);
+          Insert := False;
           Done := True;
         when Af_Con_Io.Mouse_Button =>
           declare
@@ -645,6 +650,7 @@ package body Af_Ptg is
                                                 Af_Dscr.Fields(Cursor_Field),
                                                 Mouse, Cursor_Col_Cb);
                   New_Field := True;
+                  Insert := False;
                 end if;
               when Afpx_Typ.Button =>
                 -- End of put_then_get
@@ -654,6 +660,7 @@ package body Af_Ptg is
                 Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                            Event        => Mouse_Button,
                            Field_No     => Absolute_Field_Range(Click_Result.Field_No));
+                Insert := False;
                 Done := True;
             end case;
           end;
@@ -664,6 +671,7 @@ package body Af_Ptg is
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Keyboard,
                      Keyboard_Key => Break_Key);
+          Insert := False;
           Done := True;
         when Af_Con_Io.Refresh =>
           if List_Present then
