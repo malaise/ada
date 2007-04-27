@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Argument, Dyn_Data, Environ, Language;
+with Argument, Dyn_Data, Environ, Language, Lower_Str;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
@@ -84,10 +84,10 @@ package body Generic_Con_Io is
       Env_Str := (others => '-');
       Env_Len := Env_Str'Length;
       Environ.Get_Str (Font_Env_Name, Env_Str, Env_Len);
-      if Env_Str (1 .. Env_Len) = Font_Env_Small
+      if Lower_Str (Env_Str (1 .. Env_Len)) = Font_Env_Small
       and then Font_No /= Font_No_Range'First then
         Line.No_Font := Font_No - 1;
-      elsif Env_Str (1 .. Env_Len) = Font_Env_Large
+      elsif Lower_Str (Env_Str (1 .. Env_Len)) = Font_Env_Large
       and then Font_No /= Font_No_Range'Last then
         Line.No_Font := Font_No + 1;
       end if;
