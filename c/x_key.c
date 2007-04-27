@@ -13,7 +13,7 @@
 #define KEY_SHIFT   0xE1
 #define KEY_CONTROL 0xE3
 
-void key_chain(XIC xic, 
+void key_chain(XIC xic,
                XKeyEvent *p_x_key, int *p_control, int *p_shift,
                int *p_code, int key_buf[], int *p_nbre_key) {
 
@@ -36,7 +36,7 @@ void key_chain(XIC xic,
                       &key_sym, &status);
         if (XFilterEvent ((XEvent*)p_x_key, None) ) {
             return;
-        } 
+        }
     } else {
         status = XLookupNone;
     }
@@ -74,7 +74,7 @@ void key_chain(XIC xic,
         key_buf[(*p_nbre_key)+0] = KEY_PREFIX;
         key_buf[(*p_nbre_key)+1] = 0x09;
         *p_nbre_key += 2;
-    } else if ( ( (key_sym & HIG_BYTE) == HIG_BYTE) 
+    } else if ( ( (key_sym & HIG_BYTE) == HIG_BYTE)
              || (nb_char == 0) ) {
         /* Shift is set only for function keys or if no translation */
         /* Add Shift prefix if needed */
