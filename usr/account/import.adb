@@ -13,7 +13,7 @@ procedure Import is
   end Usage;
 
   package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
-  File : Ada.WIde_Text_Io.File_Type;
+  File : Ada.Wide_Text_Io.File_Type;
   Str  : Unit_Format.Oper_Str;
   Last : Natural;
   Oper : Oper_Def.Oper_Rec;

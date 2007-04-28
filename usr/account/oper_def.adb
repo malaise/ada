@@ -33,7 +33,7 @@ package body Oper_Def is
   procedure Convert (Read_Oper : in Read_Oper_Rec;
                      Oper      : out Oper_Rec) is
   begin
-    OPer := Oper_Rec (Read_Oper);
+    Oper := Oper_Rec (Read_Oper);
   end Convert;
 
 end Oper_Def;

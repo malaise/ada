@@ -286,19 +286,19 @@ package body Unit_Format is
   begin
     Index := 1;
 
-    Oper.Date := Date_Value (Language.Wide_to_String (
+    Oper.Date := Date_Value (Language.Wide_To_String (
            Str(Index .. Index + Date_Str'Length - 1)));
     Index := Index + Date_Str'Length;
 
-    Oper.Amount := Value(Language.Wide_to_String (
+    Oper.Amount := Value(Language.Wide_To_String (
            Str(Index .. Index + Amount_Str'Length - 1)));
     Index := Index + Amount_Str'Length;
 
-    Oper.Kind := Short_Kind_Value (Language.Wide_to_String (
+    Oper.Kind := Short_Kind_Value (Language.Wide_To_String (
            Str(Index .. Index + Short_Kind_Str'Length - 1)));
     Index := Index + Short_Kind_Str'Length;
 
-    Oper.Status := Short_Status_Value (Language.Wide_to_String (
+    Oper.Status := Short_Status_Value (Language.Wide_To_String (
            Str(Index .. Index + Short_Status_Str'Length - 1)));
     Index := Index + Short_Status_Str'Length;
 
