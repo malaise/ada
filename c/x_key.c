@@ -34,9 +34,6 @@ void key_chain(XIC xic,
     if (xic != NULL) {
         nb_char = XmbLookupString (xic, p_x_key, str, sizeof(str),
                       &key_sym, &status);
-        if (XFilterEvent ((XEvent*)p_x_key, None) ) {
-            return;
-        }
     } else {
         status = XLookupNone;
     }
