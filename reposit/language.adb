@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded, Ada.Strings.Wide_Unbounded;
-with Environ, Utf_8;
+with Environ, Utf_8, String_Mng;
 package body Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
@@ -15,8 +15,7 @@ package body Language is
     Lang_Str : constant String := Environ.Getenv ("LANG");
   begin
     if Lang_Str'Length > 6
-    and then Lang_Str(Lang_Str'Last-5 .. Lang_Str'Last)
-           = String'(".UTF-8") then
+    and then String_Mng.Locate (Lang_Str, "UTF-8") /= 0 then
       Lang := Lang_Utf_8;
     else
       Lang := Lang_C;
@@ -66,6 +65,9 @@ package body Language is
     end if;
   end Nb_Chars;
 
+  -- Character when translation Wide <-> Char fails
+  Default_Char : constant Character := '#';
+
   -- Raw translation from Wide_Character to and from Character
   function Is_Char (W : Wide_Character) return Boolean is
   begin
@@ -77,8 +79,11 @@ package body Language is
   end Char_To_Wide;
   function Wide_To_Char (W : Wide_Character) return Character is
   begin
-    -- May raise Contraint_Error
-    return Character'Val (Wide_Character'Pos (W));
+    if W <= Last_Char then
+      return Character'Val (Wide_Character'Pos (W));
+    else
+      return Default_Char;
+    end if;
   end Wide_To_Char;
 
   -- Convertion to and from wide string
@@ -108,7 +113,7 @@ package body Language is
             Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
           exception
             when Utf_8.Invalid_Sequence =>
-              Wc := '#';
+              Wc := Char_To_Wide (Default_Char);
               Nb := 1;
           end;
         end if;
