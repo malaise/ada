@@ -39,20 +39,27 @@ package Oper_Def is
                   Savings  => (False,   True,      False));
 
   -- Oper strings
-  subtype Reference_Str is String (1 .. 10);
-  subtype Destination_Str is String (1 .. 20);
-  subtype Comment_Str is String (1 .. 20);
+  subtype Destination_Str is Wide_String (1 .. 20);
+  subtype Comment_Str is Wide_String (1 .. 20);
+  subtype Reference_Str is Wide_String (1 .. 10);
 
   -- Oper
   type Oper_Rec is record
     Date : Date_Rec;
-    Amount : Amount_Range := 21.21;
+    Amount : Amount_Range := 22.22;
     Kind : Kind_List := Kind_List'First;
     Status : Status_List := Status_List'First;
     Destination : Destination_Str := (others => '0');
     Comment : Comment_Str := (others => '0');
     Reference : Reference_Str := (others => '1');
   end record;
+
+  -- May differ, adapt convert in this case
+  type Read_Oper_Rec is new Oper_Rec;
+
+  -- Convertion from read oper to new (current) one
+  procedure Convert (Read_Oper : in Oper_Def.Read_Oper_Rec;
+                     Oper      : out Oper_Def.Oper_Rec);
 
   -- Criteria for sorting opers: dates
   function Before (Oper_1, Oper_2 : Oper_Rec) return Boolean;

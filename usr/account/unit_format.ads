@@ -58,7 +58,7 @@ package Unit_Format is
 
 
   -- Full operation image/value
-  subtype Oper_Str is String (1 ..
+  subtype Oper_Str is Wide_String (1 ..
       Date_Str'Length
     + Amount_Str'Length
     + Short_Kind_Str'Length

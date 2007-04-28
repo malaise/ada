@@ -292,9 +292,9 @@ package body Edition is
     -- Kind and status (modifiable or not)
     Set_Buttons(Edit_Type in Create .. Copy, Oper.Kind, Oper.Status);
     -- 3 strings
-    Afpx.Encode_Field(32, (0, 0), Oper.Destination);
-    Afpx.Encode_Field(34, (0, 0), Oper.Comment);
-    Afpx.Encode_Field(36, (0, 0), Oper.Reference);
+    Afpx.Encode_Wide_Field(32, (0, 0), Oper.Destination);
+    Afpx.Encode_Wide_Field(34, (0, 0), Oper.Comment);
+    Afpx.Encode_Wide_Field(36, (0, 0), Oper.Reference);
     -- Deleted
     Afpx.Set_Field_Activation(37, Deleted);
   end Encode_Oper;
@@ -368,11 +368,11 @@ package body Edition is
 
     -- Strings
     Field := 32;
-    Oper.Destination := Afpx.Decode_Field(32,0);
+    Oper.Destination := Afpx.Decode_Wide_Field(32,0);
     Field := 34;
-    Oper.Comment     := Afpx.Decode_Field(34,0);
+    Oper.Comment     := Afpx.Decode_Wide_Field(34,0);
     Field := 36;
-    Oper.Reference   := Afpx.Decode_Field(36,0);
+    Oper.Reference   := Afpx.Decode_Wide_Field(36,0);
 
     -- Non empty reference unique for cheque
     Field := 36;
@@ -464,7 +464,7 @@ package body Edition is
   -- Cursor is set after the last significant (non space) character
   function Set_Cursor (Field : Afpx.Field_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
-                       Str   : String) return Con_Io.Full_Col_Range is
+                       Str   : Wide_String) return Con_Io.Full_Col_Range is
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
     if Field = 36 then

@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with My_Math, Normal, Euro_Franc;
+with My_Math, Normal, Euro_Franc, Language;
 package body Unit_Format is
 
   Current_Unit : Units_List := Default_Unit;
@@ -271,10 +271,10 @@ package body Unit_Format is
   -- Full operation image/value
   function Image (Rec : Oper_Def.Oper_Rec) return Oper_Str is
   begin
-    return Date_Image(Rec.Date)
-         & Image(Rec.Amount, True)
-         & Short_Kind_Image(Rec.Kind)
-         & Short_Status_Image(Rec.Status)
+    return Language.String_To_Wide (Date_Image(Rec.Date)
+                                  & Image(Rec.Amount, True)
+                                  & Short_Kind_Image(Rec.Kind)
+                                  & Short_Status_Image(Rec.Status))
          & Rec.Destination
          & Rec.Comment
          & Rec.Reference;
@@ -286,20 +286,20 @@ package body Unit_Format is
   begin
     Index := 1;
 
-    Oper.Date := Date_Value(Str
-                 (Index .. Index + Date_Str'Length - 1));
+    Oper.Date := Date_Value (Language.Wide_to_String (
+           Str(Index .. Index + Date_Str'Length - 1)));
     Index := Index + Date_Str'Length;
 
-    Oper.Amount := Value(Str
-                   (Index .. Index + Amount_Str'Length - 1));
+    Oper.Amount := Value(Language.Wide_to_String (
+           Str(Index .. Index + Amount_Str'Length - 1)));
     Index := Index + Amount_Str'Length;
 
-    Oper.Kind := Short_Kind_Value(Str
-                 (Index .. Index + Short_Kind_Str'Length - 1));
+    Oper.Kind := Short_Kind_Value (Language.Wide_to_String (
+           Str(Index .. Index + Short_Kind_Str'Length - 1)));
     Index := Index + Short_Kind_Str'Length;
 
-    Oper.Status := Short_Status_Value(Str
-                 (Index .. Index + Short_Status_Str'Length - 1));
+    Oper.Status := Short_Status_Value (Language.Wide_to_String (
+           Str(Index .. Index + Short_Status_Str'Length - 1)));
     Index := Index + Short_Status_Str'Length;
 
     Oper.Destination := Str

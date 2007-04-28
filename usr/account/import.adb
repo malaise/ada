@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Wide_Text_Io;
 
 with Argument;
 
@@ -13,7 +13,7 @@ procedure Import is
   end Usage;
 
   package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
-  File : Ada.Text_Io.File_Type;
+  File : Ada.WIde_Text_Io.File_Type;
   Str  : Unit_Format.Oper_Str;
   Last : Natural;
   Oper : Oper_Def.Oper_Rec;
@@ -30,12 +30,12 @@ begin
 
   -- Out (account) file shall not exist
   begin
-    Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
+    Ada.Wide_Text_Io.Open (File, Ada.Wide_Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 2));
-    Ada.Text_Io.Close(File);
+    Ada.Wide_Text_Io.Close(File);
     raise Program_Error;
   exception
-    when Ada.Text_Io.Name_Error =>
+    when Ada.Wide_Text_Io.Name_Error =>
       null;
     when others =>
       Ada.Text_Io.Put_Line("Error. Account file "
@@ -47,10 +47,10 @@ begin
 
   -- Open In (Ascii) file
   begin
-    Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
+    Ada.Wide_Text_Io.Open(File, Ada.Wide_Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 1));
   exception
-    when Ada.Text_Io.Name_Error =>
+    when Ada.Wide_Text_Io.Name_Error =>
       Ada.Text_Io.Put_Line("Error. Cannot open ascii file "
                          & Argument.Get_Parameter(Occurence => 1));
       Usage;
@@ -61,7 +61,7 @@ begin
   No := 1;
   loop
     begin
-      Ada.Text_Io.Get_Line(File, Str, Last);
+      Ada.Wide_Text_Io.Get_Line(File, Str, Last);
       if Last = 0 then
         No := No - 1;
         exit;
@@ -73,7 +73,7 @@ begin
       when others =>
         Ada.Text_Io.Put_Line("Error. In ascii file, record no "
                            & Positive'Image(No));
-        Ada.Text_Io.Close(File);
+        Ada.Wide_Text_Io.Close(File);
         return;
     end;
 
@@ -84,7 +84,7 @@ begin
       when others =>
         Ada.Text_Io.Put_Line("Error. At record no "
                            & Positive'Image(No));
-        Ada.Text_Io.Close(File);
+        Ada.Wide_Text_Io.Close(File);
         return;
     end;
 
@@ -93,7 +93,7 @@ begin
 
     -- Read CR, check there was no extra char
     begin
-      Ada.Text_Io.Get_Line(File, Str, Last);
+      Ada.Wide_Text_Io.Get_Line(File, Str, Last);
       if Last /= 0 then
         raise Constraint_Error;
       end if;
@@ -101,7 +101,7 @@ begin
       when others =>
         Ada.Text_Io.Put_Line("Error. In ascii file, record no "
                            & Positive'Image(No));
-        Ada.Text_Io.Close(File);
+        Ada.Wide_Text_Io.Close(File);
         return;
     end;
 
@@ -111,19 +111,19 @@ begin
 
   -- Read CR, check there was no extra char
   begin
-    Ada.Text_Io.Get_Line(File, Str, Last);
+    Ada.Wide_Text_Io.Get_Line(File, Str, Last);
     raise Constraint_Error;
   exception
-    when Ada.Text_Io.End_Error =>
+    when Ada.Wide_Text_Io.End_Error =>
       null;
     when others =>
       Ada.Text_Io.Put_Line("Error. In ascii file, after last record");
-      Ada.Text_Io.Close(File);
+      Ada.Wide_Text_Io.Close(File);
       return;
   end;
 
   -- Done, check there was data
-  Ada.Text_Io.Close(File);
+  Ada.Wide_Text_Io.Close(File);
   if No = 0 then
     Ada.Text_Io.Put_Line("Error. Empty file "
                          & Argument.Get_Parameter(Occurence => 1));

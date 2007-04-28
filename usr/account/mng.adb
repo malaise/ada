@@ -67,19 +67,21 @@ package body Mng is
   function Oper_To_Line (No : Oper_Range;
                          Oper : Oper_Def.Oper_Rec) return Afpx.Line_Rec is
     Line : Afpx.Line_Rec;
-    Sep : constant Character := '|';
+    Sep : constant String := "|";
+    Wsep : constant Wide_String := Language.String_To_Wide (Sep);
   begin
     Line.Len := Afpx.Get_Field_Width(8);
     Line.Str := (others => ' ');
-    Line.Str(1 .. 71) := Language.String_To_Wide (
-                Normal(No, 4) & Sep
-              & Unit_Format.Short_Date_Image(Oper.Date) & Sep
-              & Unit_Format.Short_Image(Oper.Amount) & Sep
-              & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep
-         & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
-         & Oper.Destination(1 .. 10) & Sep
-         & Oper.Comment(1 .. 15) & Sep
-         & Oper.Reference);
+    Line.Str(1 .. 34) := Language.String_To_Wide (
+                Normal(No, 4) & Sep                                     -- 5
+              & Unit_Format.Short_Date_Image(Oper.Date) & Sep           -- 9
+              & Unit_Format.Short_Image(Oper.Amount) & Sep              -- 10
+              & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep -- 5
+              & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep);         -- 5
+    Line.Str(35 .. 71) :=
+           Oper.Destination(1 .. 10) & Wsep
+         & Oper.Comment(1 .. 15) & Wsep
+         & Oper.Reference;
     return Line;
   end Oper_To_Line;
 
@@ -448,9 +450,9 @@ package body Mng is
                    & Unit_Format.Image(Oper.Amount, False) & Sep
                    & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep
                    & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
-                   & Oper.Destination & Sep
-                   & Oper.Comment & Sep
-                   & Oper.Reference);
+                   & Language.Wide_To_String (Oper.Destination) & Sep
+                   & Language.Wide_To_String (Oper.Comment) & Sep
+                   & Language.Wide_To_String (Oper.Reference)) ;
         exit when not Oper_List_Mng.Check_Move(Oper_List);
         Oper_List_Mng.Move_To(Oper_List);
         Index := Index + 1;

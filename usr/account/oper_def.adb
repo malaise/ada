@@ -1,3 +1,4 @@
+with Language;
 package body Oper_Def is
 
   function Current_Date return Date_Rec is
@@ -27,6 +28,13 @@ package body Oper_Def is
       return Oper_1.Destination < Oper_2.Destination;
     end if;
   end Before;
+
+  -- To be adapted temporaly when importing
+  procedure Convert (Read_Oper : in Read_Oper_Rec;
+                     Oper      : out Oper_Rec) is
+  begin
+    OPer := Oper_Rec (Read_Oper);
+  end Convert;
 
 end Oper_Def;
 

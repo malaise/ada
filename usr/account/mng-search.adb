@@ -176,7 +176,7 @@ begin
           when Afpx.Return_Key =>
             -- Return = Search if allowed
             if Afpx.Get_Field_Activation (23) then
-              Criteria.Reference := Afpx.Decode_Field(20, 0);
+              Criteria.Reference := Afpx.Decode_Wide_Field(20, 0);
               Unsel_All(Criteria);
               In_Sublist := True;
               exit;
@@ -205,7 +205,7 @@ begin
             Update_Fields;
           when 23 =>
             -- Search
-            Criteria.Reference := Afpx.Decode_Field(20, 0);
+            Criteria.Reference := Afpx.Decode_Wide_Field(20, 0);
             Unsel_All(Criteria);
             In_Sublist := True;
             exit;

@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Wide_Text_Io;
 
 with Argument;
 
@@ -13,7 +13,7 @@ procedure Export is
   end Usage;
 
   package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
-  File : Ada.Text_Io.File_Type;
+  File : Ada.Wide_Text_Io.File_Type;
   Str  : Unit_Format.Oper_Str;
   Oper : Oper_Def.Oper_Rec;
   Oper_List : Oper_List_Mng.List_Type;
@@ -29,16 +29,16 @@ begin
 
   -- Check that out (ascii) file does not exist
   begin
-    Ada.Text_Io.Open(File, Ada.Text_Io.In_File,
+    Ada.Wide_Text_Io.Open(File, Ada.Wide_Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 2));
     Ada.Text_Io.Put_Line("Error. Ascii file "
                          & Argument.Get_Parameter(Occurence => 2)
                          & " already exists");
     Usage;
-    Ada.Text_Io.Close(File);
+    Ada.Wide_Text_Io.Close(File);
     return;
   exception
-    when Ada.Text_Io.Name_Error =>
+    when Ada.Wide_Text_Io.Name_Error =>
       null;
   end;
 
@@ -57,7 +57,7 @@ begin
 
   -- Create out file
   begin
-    Ada.Text_Io.Create(File, Ada.Text_Io.Out_File,
+    Ada.Wide_Text_Io.Create(File, Ada.Wide_Text_Io.Out_File,
                        Argument.Get_Parameter(Occurence => 2));
   exception
     when others =>
@@ -78,18 +78,18 @@ begin
       when others =>
         Ada.Text_Io.Put_Line("Error. At record no "
                            & Positive'Image(No));
-        Ada.Text_Io.Close(File);
+        Ada.Wide_Text_Io.Close(File);
         return;
     end;
 
 
     begin
-      Ada.Text_Io.Put_Line(File, Str);
+      Ada.Wide_Text_Io.Put_Line(File, Str);
     exception
       when others =>
         Ada.Text_Io.Put_Line("Error. Writing ascii file, record no "
                            & Positive'Image(No));
-        Ada.Text_Io.Close(File);
+        Ada.Wide_Text_Io.Close(File);
         return;
     end;
 
@@ -101,8 +101,8 @@ begin
   end loop;
 
   -- Done
-  Ada.Text_Io.New_Line(File);
-  Ada.Text_Io.Close(File);
+  Ada.Wide_Text_Io.New_Line(File);
+  Ada.Wide_Text_Io.Close(File);
 
 end Export;
 
