@@ -51,7 +51,7 @@ package body Af_List is
     end if;
   end Get_Current_Item;
 
-  procedure Put (Row : in Con_Io.Row_Range; State : in Af_Ptg.State_List;
+  procedure Put (Row : in Af_Con_Io.Row_Range; State : in Af_Ptg.State_List;
                  Item : in Line_Rec) is
     Str : Wide_String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
     Foreground : Con_Io.Effective_Colors;
