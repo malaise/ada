@@ -68,7 +68,13 @@ package body Edition is
   begin
     if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
       Afpx.Reset_Field(19);
-      Afpx.Encode_Field(19, (0, 0), "€");
+      begin
+        Afpx.Encode_Field(19, (0, 0), "€");
+      exception
+        when Afpx.String_Too_Long =>
+          -- We are not in UTF-8
+          Afpx.Encode_Field(19, (0, 0), "e");
+      end;
     else
       Afpx.Set_Field_Colors(19, Con_Io.Blue);
       Afpx.Encode_Field(19, (0, 0), "F");
