@@ -170,17 +170,6 @@ package body Afpx is
     procedure Put_Field (Field_No : in Afpx_Typ.Field_Range;
                          State    : in State_List);
 
-    -- Put a whole row of a field in attribute
-    procedure Put_Row (Field_No : in Afpx_Typ.Field_Range;
-                       Row      : in Af_Con_Io.Row_Range;
-                       State    : in State_List);
-
-    -- Put a string somewhere in a field
-    procedure Put_Str (Field_No : in Afpx_Typ.Field_Range;
-                       Pos      : in Af_Con_Io.Square;
-                       Str      : in String;
-                       State    : in State_List);
-
     -- Erase a field (screen_background, screen_background)
     procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range);
 
