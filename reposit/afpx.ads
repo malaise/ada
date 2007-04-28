@@ -234,13 +234,13 @@ package Afpx is
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : String) return Con_Io.Full_Col_Range;
+                 Str : Wide_String) return Con_Io.Full_Col_Range;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
-  function Last_Index (Str : String; Significant : Boolean)
+  function Last_Index (Str : Wide_String; Significant : Boolean)
                        return Con_Io.Full_Col_Range;
 
   -- Print the fields and the list (if Redisplay), then gets.

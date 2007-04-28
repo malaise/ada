@@ -1,4 +1,5 @@
-with String_Mng, Generic_Con_Io, Language;
+with Ada.Characters.Latin_1;
+with Generic_Con_Io, Language;
 with Afpx_Typ;
 package body Afpx is
 
@@ -704,14 +705,22 @@ package body Afpx is
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
-  function Last_Index (Str : String; Significant : Boolean)
+  function Last_Index (Str : Wide_String; Significant : Boolean)
                        return Con_Io.Full_Col_Range is
     N : Natural;
   begin
     if not Significant then
       return Str'Length - 1;
     end if;
-    N := String_Mng.Parse_Spaces (Str, From_Head => False);
+    -- Locate last significant character
+    N := 0;
+    for I in reverse Str'Range loop
+      if Str (I) /= ' '
+      and then Str(I) /= Language.Char_To_Wide (Ada.Characters.Latin_1.Ht) then
+        N := I;
+        exit;
+      end if;
+    end loop;
     if N = 0 then
       -- All is space/tab
       return 0;

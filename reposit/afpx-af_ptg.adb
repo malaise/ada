@@ -391,9 +391,9 @@ package body Af_Ptg is
     -- The user user Cb will appreciate a string (1 .. Len)
     --  so make a local copy
     declare
-      Str : constant String (1 .. Field.Width)
-          := Language.Wide_To_String (Af_Dscr.Chars
-            (Field.Char_Index .. Field.Char_Index + Field.Width - 1));
+      Str : constant Wide_String (1 .. Field.Width)
+          := Af_Dscr.Chars
+              (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
     begin
       Result := Cursor_Col_Cb (Afpx.Field_Range(Field_No),
                                Enter_Field_Cause,
