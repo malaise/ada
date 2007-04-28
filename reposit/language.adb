@@ -104,7 +104,13 @@ package body Language is
           -- Optim
           Wc := Char_To_Wide (Str(Index));
         else
-          Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
+          begin
+            Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
+          exception
+            when Utf_8.Invalid_Sequence =>
+              Wc := '#';
+              Nb := 1;
+          end;
         end if;
         Ada.Strings.Wide_Unbounded.Append (Ws, Wc);
         Index := Index + Nb;
