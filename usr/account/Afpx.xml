@@ -492,7 +492,6 @@
     <Field Num="19" Kind="Put">
       <Geometry Up="8" Left="10" Low="8" Right="10"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
-      <Init Row="0" Col="0">€</Init>
     </Field>
     <Field Num="20" Kind="Get">
       <Geometry Up="8" Left="12" Low="8" Right="23"/>
