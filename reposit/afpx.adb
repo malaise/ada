@@ -245,6 +245,8 @@ package body Afpx is
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
     Af_List.Open;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Con_Io.Set_Background (Af_Con_Io.Effective_Basic_Colors(
+               Af_Dscr.Current_Dscr.Background));
     if Clear_Screen then
       Af_Con_Io.Clear (Af_Con_Io.Screen);
     end if;

@@ -2,7 +2,7 @@ with Con_Io, Text_Handler, Directory;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 4.0;
+  Afpx_Version : constant Float := 4.1;
 
   -- Files path
   Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
@@ -31,6 +31,8 @@ package Afpx_Typ is
     Dscr_Index : Descriptor_Range;
     -- Nb of fields of the dscr
     Nb_Fields  : Absolute_Field_Range;
+    -- Background colot
+    Background : Con_Io.Effective_Basic_Colors;
   end record;
   type Descriptors_Array is array (Descriptor_Range) of Dscr_Rec;
 

@@ -731,28 +731,56 @@ procedure Afpx_Bld is
   procedure Load_Dscr (Node : in Xp.Element_Type;
                        Dscr_Index : in Afpx_Typ.Descriptor_Range;
                        Screen_Size : in Con_Io.Full_Square)  is
+    Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
     Dscr_No : Afpx_Typ.Descriptor_Range;
+    Num, Background : Boolean := False;
     Child : Xp.Node_Type;
     List_Allowed : Boolean;
   begin
-    if Xp.Get_Nb_Attributes (Node) /= 1
-    or else not Match (Xp.Get_Attribute (Node, 1).Name, "Num") then
-      File_Error (Node, "Expected descriptor Num");
+    for I in Attrs'Range loop
+      if Match (Attrs(I).Name, "Num") then
+        if Num then
+          File_Error (Node, "Duplicated descriptor num " & Attrs(I).Name);
+        end if;
+        Num := True;
+        begin
+          Dscr_No := Afpx_Typ.Descriptor_Range'Value (
+                      Strof (Xp.Get_Attribute (Node, 1).Value));
+        exception
+          when others =>
+            File_Error (Node, "Invalid descriptor num");
+        end;
+        -- Dscr no has to be unique
+        if Descriptors(Dscr_No).Modified then
+          File_Error (Node,
+                      "Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
+                    & " already defined");
+        end if;
+        Ada.Text_Io.Put_Line ("   descriptor " &
+                          Normal(Integer(Dscr_No), 2, Gap => '0'));
+      elsif Match (Attrs(I).Name, "Background") then
+        if Background then
+          File_Error (Node, "Duplicated Color " & Attrs(I).Name);
+        end if;
+        Background := True;
+        begin
+          Descriptors(Dscr_No).Background :=
+              Con_Io.Effective_Basic_Colors'Value (
+                 Computer.Eval (Strof (Attrs(I).Value)));
+        exception
+          when others =>
+            File_Error (Node, "Invalid background specification");
+        end;
+      end if;
+    end loop;
+    -- Check Num is set
+    if not Num then
+      File_Error (Node, "Invalid descriptor definition, expected Num and "
+                      & "possible background");
     end if;
-    begin
-      Dscr_No := Afpx_Typ.Descriptor_Range'Value (
-                  Strof (Xp.Get_Attribute (Node, 1).Value));
-    exception
-      when others =>
-        File_Error (Node, "Invalid descriptor num");
-    end;
-    Ada.Text_Io.Put_Line ("   descriptor " &
-                      Normal(Integer(Dscr_No), 2, Gap => '0'));
-    -- Dscr no has to be unique
-    if Descriptors(Dscr_No).Modified then
-      File_Error (Node,
-                  "Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
-                & " already defined");
+    -- Set default background
+    if not Background then
+      Descriptors(Dscr_No).Background := Con_Io.Default_Background;
     end if;
     -- Init dscr and fields array. No list at init
     Descriptors(Dscr_No).Modified := True;
