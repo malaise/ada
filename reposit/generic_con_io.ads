@@ -22,9 +22,11 @@ package Generic_Con_Io is
   end record;
 
   -- Possible colors and blink status
-  type Colors is (Current, Black, Blue, Green, Cyan, Red, Magenta, Brown,
-      Light_Gray, Dark_Gray, Light_Blue, Light_Green, Orange,
-      Yellow, White);
+  type Colors is (Current,
+      -- For background and foreground
+      Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray,
+      -- For foreground only
+      Dark_Gray, Light_Blue, Light_Green, Orange, Yellow, White);
   type Blink_Stats is (Current, Blink, Not_Blink);
 
   -- Can be called to initialise con_ios
