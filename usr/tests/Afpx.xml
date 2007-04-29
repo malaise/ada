@@ -2,7 +2,7 @@
 <!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
 <!-- for T_Afpx -->
 <Afpx_Descriptors>
-  <Descriptor Num="1">
+  <Descriptor Num="1" Background="Brown">
 
     <List>
       <Geometry Up="6" Left="48" Low="20" Right="78"/>
