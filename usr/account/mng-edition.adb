@@ -34,8 +34,6 @@ package body Edition is
     Afpx.Set_Field_Colors(15, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(17, True);
     Afpx.Set_Field_Colors(17, Con_Io.Light_Gray, Background => Con_Io.Black);
-    Afpx.Set_Field_Protection(19, True);
-    Afpx.Set_Field_Colors(19, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(20, True);
     Afpx.Set_Field_Colors(20, Con_Io.Light_Gray, Background => Con_Io.Black);
     Afpx.Set_Field_Protection(22, True);
@@ -284,7 +282,7 @@ package body Edition is
           Normal(Oper_List_Mng.Get_Position(Oper_List), 4));
     end if;
     -- Date
-      Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
+    Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
     Afpx.Encode_Field(13, (0, 0), Date_Str(1 .. 2));
     Afpx.Encode_Field(15, (0, 0), Date_Str(4 .. 5));
     Afpx.Encode_Field(17, (0, 0), Date_Str(7 .. 8));
