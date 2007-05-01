@@ -1,2 +1,3 @@
 #!/bin/bash
-a2ps -q -R -B -1 -l100 --borders=no --highlight-level=none $*
+iconv -f UTF-8 -t latin1 $* | a2ps -q -R -B -1 -l100 --borders=no --highlight-level=none -o res
+
