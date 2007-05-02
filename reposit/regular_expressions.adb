@@ -158,10 +158,13 @@ package body Regular_Expressions is
     for I in Match_Info'Range loop
       if C_Match_Info(J).Start_Offset /= -1 then
         Match_Info(I).First_Offset := C_Match_Info(J).Start_Offset + First;
-        Match_Info(I).Last_Offset_Start  := C_Match_Info(J).Stop_Offset + First - 1;
-        Match_Info(I).Last_Offset_Stop   := C_Match_Info(J).Stop_Offset + First - 1;
+        Match_Info(I).Last_Offset_Start :=
+             C_Match_Info(J).Stop_Offset + First - 1;
+        Match_Info(I).Last_Offset_Stop :=
+             C_Match_Info(J).Stop_Offset + First - 1;
         -- Any adjustment due to Lang
-        if Criteria.Lang = Language.Lang_Utf_8 then
+        if Criteria.Lang = Language.Lang_Utf_8 
+        and then Match_Info(I).Last_Offset_Stop >= First then
           Adjust_Utf8 (To_Check(Match_Info(I).Last_Offset_Stop),
                        Match_Info(I).Last_Offset_Stop);
         end if;

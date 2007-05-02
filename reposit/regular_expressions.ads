@@ -22,7 +22,8 @@ package Regular_Expressions is
   type Match_Array is array (Natural range <>) of Match_Cell;
   No_Match_Array : Match_Array (1 .. 0);
   subtype One_Match_Array is Match_Array (1 .. 1);
-  No_Match : constant Match_Cell := (1, 0, 0);
+  No_Match : constant Match_Cell := (0, 0, 0);
+  Any_Match : constant Match_Cell := (1, 0, 0);
 
   -- Compile a regex, using Language
   procedure Compile (Result : in out Compiled_Pattern;
@@ -36,6 +37,9 @@ package Regular_Expressions is
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
   --  otherwise N_Matched is set to 0 or to the last non empty slot of
   --  Match_Info (but some slots from 1 to N_Matched might be empty)
+  -- Also beware that an empty To_Check can match a Criteria that is
+  --  only made of optional patterns (e.g. "" matches "t*"). In this
+  --  case Match_Info is one cell of Any_Match.
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
@@ -45,7 +49,7 @@ package Regular_Expressions is
                   End_Line_Match : in Boolean := True);
 
  -- Compare string Str to Criteria
-  -- Returns No_Match or a Match_Cell
+  -- Returns No_Match or a Match_Cell (possibly Any§Match)
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String) return Match_Cell;
 
@@ -54,6 +58,7 @@ package Regular_Expressions is
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = Str'First
   --  and Last_Offset_Stop = Str'Last)
+  -- True is also returned if Any_Match
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String;
                   Strict : in Boolean) return Boolean;
