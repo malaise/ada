@@ -1,5 +1,6 @@
 with Ada.Calendar;
-with My_Io, X_Mng, Event_Mng, Timers, Argument, Text_Handler, Null_Procedure;
+with My_Io, X_Mng, Event_Mng, Timers, Argument, Text_Handler,
+     Null_Procedure, Language;
 use X_Mng;
 procedure T_X is
 
@@ -23,6 +24,8 @@ procedure T_X is
   Kbd_Codes : X_Mng.Kbd_Tab_Code;
   Tid_Button : X_Mng.Button_List;
   Tid_Row, Tid_Col : Integer;
+  Char_Offset : X_Mng.Byte;
+  Wchar : Wide_Character;
 
   Txt : Text_Handler.Text(80);
   subtype Row_Range is Natural range 10 .. 30;
@@ -43,17 +46,17 @@ procedure T_X is
   use type Ada.Calendar.Time;
 
 begin
+  Char_Offset := 0;
   if Argument.Get_Nbre_Arg = 0 then
     X_Mng.X_Initialise ("");
-    Timeout := 1.0;
   elsif Argument.Get_Nbre_Arg = 1 then
     X_Mng.X_Initialise (Argument.Get_Parameter(1));
-    Timeout := 1.0;
   elsif Argument.Get_Nbre_Arg = 2 then
     X_Mng.X_Initialise (Argument.Get_Parameter(1));
-    Timeout := Duration'Value (Argument.Get_Parameter(2));
+    Char_Offset := X_Mng.Byte'Value(Argument.Get_Parameter(2));
   end if;
 
+  Timeout := 1.0;
   X_Mng.X_Open_Line (Line_Def, Id);
 
   -- Enable signal event
@@ -68,9 +71,11 @@ begin
     if Kind = X_Mng.Refresh then
       X_Mng.X_Clear_Line (Id);
       X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False, False);
+      X_Mng.X_Put_String (Id, "Offset " & Char_Offset'Img, 7, 60);
       for I in 0 .. 15 loop
         for J in 0 .. 15 loop
-          X_Mng.X_Put_Char (Id, X_Mng.Byte(16 * I + J), 8 + I, 60 + J);
+          Wchar := Wide_Character'Val((Integer(Char_Offset) * 256 + I * 16 + J));
+          X_Mng.X_Put_String (Id, Language.Wide_To_String(Wchar & ""), 8 + I, 60 + J);
         end loop;
       end loop;
       X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
