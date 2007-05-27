@@ -85,9 +85,6 @@ begin
             Screen.Put_Default_Pos (Cur_Selection.Propal_No,
                                     Cur_Selection.Column_No,
                                     Show => True);
-            Screen.Put_Color(Propal => Cur_Selection.Propal_No,
-                             Level  => Cur_Selection.Column_No,
-                             Color  => Common.Color_Range'First);
             Screen.Set_Mouse_Color (
              Color => Propal_State.Propal_Color(Cur_Selection.Column_No));
             Last_Click := Cur_Selection;

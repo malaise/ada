@@ -14,7 +14,7 @@ procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
   use Common, Screen;
 
 begin
-  -- cancel click
+  -- Cancel click
   case Last_Click.Selection_Kind is
     when Screen.Menu =>
       if Playing then
@@ -46,7 +46,7 @@ begin
       null;
   end case;
 
-  -- treat release
+  -- Treat release
   if Last_Click.Selection_Kind = Cur_Selection.Selection_Kind then
     case Cur_Selection.Selection_Kind is
       when Screen.Exit_Game =>
@@ -61,13 +61,13 @@ begin
 
       when Screen.Menu =>
         if Playing then
-          -- give up
+          -- Give up
           Put_Secret;
           Screen.Put_Start_Giveup (Start => True, Selected => False);
           Go_On := True;
           Exit_Game := False;
         else
-          -- restart
+          -- Restart
           Common.Set_Level_To_Stored;
           Screen.Put_Start_Giveup (Start => False, Selected => False);
           Go_On := False;
@@ -77,7 +77,7 @@ begin
 
       when Try =>
         if Last_Click.Try_No = Cur_Selection.Try_No then
-          -- valid try (already tested on click)
+          -- Valid try (already tested on click)
           declare
             Free_State : Common.Propal_State_Rec;
             Color : Response.Color_Rec (Level);
@@ -96,7 +96,7 @@ begin
                 Common.Set_Propal_State (
                  Propal => First_Free,
                  State  => Free_State);
-                -- update screen of propals and try
+                -- Update screen of propals and try
                 for I in Common.Level_Range
                  range Common.Level_Range'First .. Level loop
                   Screen.Put_Color (
@@ -108,7 +108,7 @@ begin
                    Level => I,
                    Color => Free_State.Propal_Color(I) );
                 end loop;
-                -- answered impossible because of Next_Free
+                -- Answered impossible because of Next_Free
                 if Prop_State.Try = Common.Can_Try then
                   Screen.Put_Try (Cur_Selection.Try_No, Can_Try);
                 else
@@ -119,20 +119,20 @@ begin
               Free_State := Common.Get_Propal_State (First_Free);
             end if;
 
-            -- build color rec and update screen
+            -- Build color rec and update screen
             for I in Common.Level_Range
              range Common.Level_Range'First .. Level loop
               Color.Color(I) := Free_State.Propal_Color(I);
             end loop;
 
-            -- respond
+            -- Respond
             Resp := Response.Respond (Color);
             Screen.Put_Answer (
              Propal => First_Free,
              Placed_Ok => Resp.Placed_Ok,
              Colors_Ok => Resp.Colors_Ok);
 
-            -- answered
+            -- Answered
             Common.Set_Try_State (First_Free, Common.Answered);
             Common.Set_Answer (First_Free, Resp.Placed_Ok, Resp.Colors_Ok);
 
@@ -172,6 +172,9 @@ begin
             Common.Set_Color (Last_Click.Propal_No,
                               Last_Click.Column_No,
                               Common.Color_Range'First);
+            Screen.Put_Color(Last_Click.Propal_No,
+                             Last_Click.Column_No,
+                             Common.Color_Range'First);
             Update_Try (Last_Click.Propal_No);
 
             Common.Set_Color (Cur_Selection.Propal_No,
@@ -182,10 +185,7 @@ begin
                               Moved_Color);
             Update_Try (Cur_Selection.Propal_No);
           else
-            -- Dest is used : restore color of clicked square
-            Screen.Put_Color (Last_Click.Propal_No,
-                              Last_Click.Column_No,
-                              Moved_Color);
+            -- Dest is used
             if Last_Click.Propal_No /= Cur_Selection.Propal_No
             and then Last_Click.Column_No /= Cur_Selection.Column_No then
               Con_Io.Bell;
@@ -201,7 +201,7 @@ begin
 
   elsif Last_Click.Selection_Kind = Color and then
         Cur_Selection.Selection_Kind = Propal then
-    -- check that propal is valid
+    -- Check that propal is valid
     if Cur_Selection.Propal_No >= First_Free then
       Common.Set_Color (Propal => Cur_Selection.Propal_No,
                         Level  => Cur_Selection.Column_No,
@@ -227,14 +227,14 @@ begin
       begin
         Prev_State := Common.Get_Propal_State (Last_Click.Propal_No);
         Moved_Color := Prev_State.Propal_Color(Last_Click.Column_No);
-        Screen.Put_Color (Last_Click.Propal_No,
-                          Last_Click.Column_No,
-                          Moved_Color);
         Con_Io.Bell;
       end;
     else
       -- Remove a color from propal (already cleared)
       Common.Set_Color (Last_Click.Propal_No,
+                        Last_Click.Column_No,
+                        Common.Color_Range'First);
+      Screen.Put_Color (Last_Click.Propal_No,
                         Last_Click.Column_No,
                         Common.Color_Range'First);
       Update_Try (Last_Click.Propal_No);

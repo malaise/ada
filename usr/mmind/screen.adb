@@ -24,8 +24,8 @@ package body Screen is
   Menu_Row : constant Con_Io.Row_Range := 22;
   Menu_First_Col : constant Con_Io.Col_Range := 46;
   Menu_Last_Col : constant Con_Io.Col_Range := 56;
-  Level_First_Col : constant Con_Io.Col_Range := 59;
-  Level_Last_Col : constant Con_Io.Col_Range := 65;
+  Level_First_Col : constant Con_Io.Col_Range := 58;
+  Level_Last_Col : constant Con_Io.Col_Range := 66;
   Exit_First_Col : constant Con_Io.Col_Range := 68;
   Exit_Last_Col : constant Con_Io.Col_Range := 76;
 
@@ -62,7 +62,7 @@ package body Screen is
 
   Pin : constant Character := '!';
 
-
+  -- Dummy for upward compatibility
   procedure Set_Mouse_Default_Color is
   begin
     null;
@@ -73,8 +73,7 @@ package body Screen is
     null;
   end Set_Mouse_Color;
 
-
-  -- Square, in PROPAL_WIN for a propal & level
+  -- Square, in Propal_Win for a propal & level
   function Propal_Square (Propal : Common.Propal_Range;
                           Level  : Common.Level_Range) return Con_Io.Square is
     Lower_Right : constant Con_Io.Square :=
@@ -85,16 +84,42 @@ package body Screen is
   end Propal_Square;
 
 
+  -- Draw a frame (+---+) around a window
+  procedure Frame (Name : in Con_Io.Window) is
+    Upper_Left  : constant Con_Io.Square
+                := Con_Io.Get_Absolute_Upper_Left  (Name);
+    Lower_Right : constant Con_Io.Square
+                := Con_Io.Get_Absolute_Lower_Right (Name);
+    -- A line will be "+---   ---+". Here, define the "---  ---"
+    Line : constant String (1 .. Con_Io.Get_Relative_Lower_Right (Name).Col + 1)
+         :=  (others => '-');
+  begin
+    -- Set attributes
+    Con_Io.Set_Foreground (Con_Io.Get_Foreground (Name),
+                           Con_Io.Get_Blink_Stat (Name));
+    Con_Io.Set_Background (Con_Io.Get_Background (Name));
+    -- First and last rows
+    Con_Io.Move (Upper_Left.Row - 1,  Upper_Left.Col - 1);
+    Con_Io.Put ("+" & Line & "+", Move => False);
+    Con_Io.Move (Lower_Right.Row + 1, Upper_Left.Col - 1);
+    Con_Io.Put ("+" & Line & "+", Move => False);
+    -- All cols
+    for Row in Upper_Left.Row .. Lower_Right.Row loop
+      Con_Io.Move (Row, Upper_Left.Col  - 1);
+      Con_Io.Put ('|', Move => False);
+      Con_Io.Move (Row, Lower_Right.Col + 1);
+      Con_Io.Put ('|', Move => False);
+    end loop;
+  end Frame;    
 
-
-  -- init the screen, the windows, draw borders
+  -- Init the screen, the windows, draw borders
   procedure Init (Level : in Common.Last_Level_Range) is
     Square : Con_Io.Square;
     use Common;
   begin
     if not Con_Io.Is_Open (Global_Win) then
       Con_Io.Reset_Term;
-      -- open windows
+      -- Open windows
       Con_Io.Open (Global_Win, (1, 1), (23, 78));
       Con_Io.Open (Color_Win,  (Color_First_Row,  Color_First_Col),
                                (Color_Last_Row,   Color_Last_Col) );
@@ -124,8 +149,7 @@ package body Screen is
       Con_Io.Close (Try_Win);
     end if;
 
-
-    -- compute level dependant geometry
+    -- Compute level dependant geometry
     Current_Level := Level;
     Propal_First_Col := Propal_Last_Col
      - (Con_Io.Col_Range(Current_Level)-1) * (Propal_Col_Width+1)
@@ -146,6 +170,15 @@ package body Screen is
 
     -- Redraw and frames
     Con_Io.Clear (Global_Win);
+    Frame (Name => Global_Win);
+    Frame (Name => Secret_Win);
+    Frame (Name => Propal_Win);
+    Frame (Name => Try_Win);
+    Frame (Name => Color_Win);
+    Frame (Name => Help_Win);
+    Frame (Name => Level_Win);
+    Frame (Name => Menu_Win);
+    Frame (Name => Exit_Win);
 
     -- Draw lines in propal and try frames
     for J in Common.Level_Range'First .. Level loop
@@ -214,7 +247,7 @@ package body Screen is
       Con_Io.Move (Propal_First_Row - 1,
                    Propal_First_Col + Propal_Col_Width +
                    (Con_Io.Col_Range(J)- 1) * (Propal_Col_Width+1) );
-      Con_Io.Put ('-', Foreground => Foreground_Color,
+      Con_Io.Put ('+', Foreground => Foreground_Color,
                           Background => Background_Color);
       -- L in propal
       Con_Io.Move (Propal_Last_Row + 1,
@@ -243,17 +276,17 @@ package body Screen is
                        Name => Color_Win);
       if I /= Common.Eff_Color_Range'Last then
         Con_Io.Move ((Con_Io.Row_Range(I)-1) * 2 + 1, 0, Color_Win);
-        Con_Io.Put ('|', Name => Color_Win);
+        Con_Io.Put ('-', Name => Color_Win);
         Con_Io.Move ((Con_Io.Row_Range(I)-1) * 2 + 1, 1, Color_Win);
-        Con_Io.Put ('|', Name => Color_Win);
+        Con_Io.Put ('-', Name => Color_Win);
 
         Con_Io.Move (Color_First_Row + (Con_Io.Row_Range(I)-1) * 2 + 1,
                      Color_First_Col - 1);
-        Con_Io.Put ('-', Foreground => Foreground_Color,
+        Con_Io.Put ('+', Foreground => Foreground_Color,
                             Background => Background_Color);
         Con_Io.Move (Color_First_Row + (Con_Io.Row_Range(I)-1) * 2 + 1,
                      Color_Last_Col + 1);
-        Con_Io.Put ('-', Foreground => Foreground_Color,
+        Con_Io.Put ('+', Foreground => Foreground_Color,
                             Background => Background_Color);
       end if;
     end loop;
@@ -294,7 +327,8 @@ package body Screen is
    Show   : in Boolean) is
 
     Color : Con_Io.Effective_Colors;
-    Ints  : array (1 .. 2) of Character;
+    -- Character for row, col corner
+    Chars  : array (1 .. 3) of Character;
     Square : Con_Io.Square;
     use Common;
   begin
@@ -305,27 +339,43 @@ package body Screen is
     -- Set color and square in global
     if Show then
       Color := Con_Io.White;
-      Ints (1) := '-';
-      Ints (2) := '-';
+      Chars (1) := '+';
+      Chars (2) := '+';
+      Chars (3) := '+';
     else
       Color := Foreground_Color;
-      Ints (1) := ' ';
-      Ints (2) := ' ';
+      Chars (1) := '-';
+      Chars (2) := '|';
+      Chars (3) := '+';
     end if;
+
     Square := Propal_Square (Propal, Level);
     Square := Con_Io.To_Absolute (Square, Propal_Win);
     Square := Con_Io.To_Relative (Square, Global_Win);
 
     -- Draw frame of square
-    Con_Io.Move (Square.Row, Square.Col-1 , Name => Global_Win);
-    Con_Io.Put (Ints(1), Foreground => Color, Name => Global_Win);
-    Con_Io.Move (Square.Row, Square.Col+Propal_Col_Width, Name => Global_Win);
-    Con_Io.Put (Ints(2), Foreground => Color, Name => Global_Win);
+    Con_Io.Move (Square.Row - 1, Square.Col - 1 , Name => Global_Win);
+    Con_Io.Put (Chars(3), Foreground => Color, Name => Global_Win);
+    Con_Io.Move (Square.Row - 1, Square.Col + Propal_Col_Width,
+                 Name => Global_Win);
+    Con_Io.Put (Chars(3), Foreground => Color, Name => Global_Win);
+    Con_Io.Move (Square.Row + 1, Square.Col - 1 , Name => Global_Win);
+    Con_Io.Put (Chars(3), Foreground => Color, Name => Global_Win);
+    Con_Io.Move (Square.Row + 1, Square.Col + Propal_Col_Width,
+                 Name => Global_Win);
+    Con_Io.Put (Chars(3), Foreground => Color, Name => Global_Win);
+
+    Con_Io.Move (Square.Row, Square.Col - 1 , Name => Global_Win);
+    Con_Io.Put (Chars(2), Foreground => Color, Name => Global_Win);
+    Con_Io.Move (Square.Row, Square.Col + Propal_Col_Width,
+                 Name => Global_Win);
+    Con_Io.Put (Chars(2), Foreground => Color, Name => Global_Win);
+
     for K in 1 .. Propal_Col_Width loop
       Con_Io.Move (Square.Row - 1, Square.Col + K - 1, Name => Global_Win);
-      Con_Io.Put ('|', Foreground => Color, Name => Global_Win);
+      Con_Io.Put (Chars(1), Foreground => Color, Name => Global_Win);
       Con_Io.Move (Square.Row + 1, Square.Col + K - 1, Name => Global_Win);
-      Con_Io.Put ('|', Foreground => Color, Name => Global_Win);
+      Con_Io.Put (Chars(1), Foreground => Color, Name => Global_Win);
     end loop;
 
   end Put_Default_Pos;
@@ -476,7 +526,7 @@ package body Screen is
       Fore := Foreground_Color;
       Back := Background_Color;
     end if;
-    Con_Io.Move (0, Col * 2 + 1, Name => Level_Win);
+    Con_Io.Move (0, Col * 2 + 2, Name => Level_Win);
     Con_Io.Put (Normal (Integer(Level_No), 1),
      Foreground => Fore,
      Background => Back,
@@ -489,10 +539,11 @@ package body Screen is
      Con_Io.Row_Range (Level_No) -
      Con_Io.Row_Range (Common.Last_Level_Range'First);
   begin
-    Con_Io.Move (Menu_Row - 2, Level_First_Col + 2 * Col,
+    Frame (Name => Level_Win);
+    Con_Io.Move (Menu_Row - 2, Level_First_Col + 2 * Col + 1,
      Name => Global_Win);
     Con_Io.Put ('|', Name => Global_Win);
-    Con_Io.Move (Menu_Row,     Level_First_Col + 2 * Col,
+    Con_Io.Move (Menu_Row,     Level_First_Col + 2 * Col + 1,
      Name => Global_Win);
     Con_Io.Put ('|', Name => Global_Win);
   end Put_Current_Level;
@@ -581,53 +632,53 @@ package body Screen is
    Color : in Common.Eff_Color_Range;
    Selected : in Boolean) is
     Fore : Con_Io.Effective_Colors;
-    Ints  : array (1 .. 2) of Character;
+    -- Character for row, col corner
+    Chars  : array (1 .. 3) of Character;
     Square : Con_Io.Square;
     use Common;
   begin
     -- Set color and square in global
     if Selected then
       Fore := Con_Io.White;
-      Ints (1) := '|';
-      Ints (2) := '|';
+      Chars (1) := '+';
+      Chars (2) := '+';
+      Chars (3) := '+';
     else
       Fore := Foreground_Color;
-      Ints (1) := ' ';
-      Ints (2) := ' ';
+      Chars (1) := '-';
+      Chars (2) := '|';
+      Chars (3) := '+';
     end if;
 
-    Con_Io.Move ((Con_Io.Row_Range(Color)-1) * 2, 0, Name => Color_Win);
+    Con_Io.Move ((Con_Io.Row_Range(Color) - 1) * 2, 0, Name => Color_Win);
     Square := Con_Io.Position (Color_Win);
     Square := Con_Io.To_Absolute (Square, Color_Win);
     Square := Con_Io.To_Relative (Square, Global_Win);
 
     -- Draw frame of square
-    Con_Io.Move (Square.Row, Square.Col-1, Name => Global_Win);
-    Con_Io.Put (Ints(1), Foreground => Fore, Name => Global_Win);
-    Con_Io.Move (Square.Row, Square.Col+2, Name => Global_Win);
-    Con_Io.Put (Ints(2), Foreground => Fore, Name => Global_Win);
-
-    Con_Io.Move (Square.Row+1, Square.Col, Name => Global_Win);
-    Con_Io.Put ('|', Foreground => Fore, Name => Global_Win);
-    Con_Io.Move (Square.Row+1, Square.Col+1, Name => Global_Win);
-    Con_Io.Put ('|', Foreground => Fore, Name => Global_Win);
-    Con_Io.Move (Square.Row-1, Square.Col, Name => Global_Win);
-    Con_Io.Put ('|', Foreground => Fore, Name => Global_Win);
-    Con_Io.Move (Square.Row-1, Square.Col+1, Name => Global_Win);
-    Con_Io.Put ('|', Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row - 1, Square.Col - 1, Name => Global_Win);
+    Con_Io.Put (Chars(3) & Chars (1) & Chars (1) & Chars(3),
+                Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row + 1, Square.Col - 1, Name => Global_Win);
+    Con_Io.Put (Chars(3) & Chars (1) & Chars (1) & Chars(3),
+                Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row, Square.Col - 1, Name => Global_Win);
+    Con_Io.Put (Chars(2), Foreground => Fore, Name => Global_Win);
+    Con_Io.Move (Square.Row, Square.Col + 2, Name => Global_Win);
+    Con_Io.Put (Chars(2), Foreground => Fore, Name => Global_Win);
 
   end Put_Selected_Color;
 
   -----------
   -- MOUSE --
   -----------
-  -- call before mouse selection
+  -- Call before mouse selection
   procedure Show_Mouse is
   begin
     null;
   end Show_Mouse;
 
-  -- call before any put
+  -- Call before any put
   procedure Hide_Mouse is
   begin
     null;
@@ -705,16 +756,17 @@ package body Screen is
 
     begin
       Square := Con_Io.To_Relative (Where, Level_Win);
-      if (Square.Col + 1) mod 2 /= 0 then
-        What.Selection := Level;
+      What.Selection := Level;
+      if (Square.Col) mod 2 /= 0 then
         return;
       end if;
       What := (
        Selection_Kind => Level,
        Level_No => Common.Last_Level_Range (
-        (Square.Col - 1) / 2 + Integer (Common.Last_Level_Range'First)) );
+        (Square.Col - 2) / 2 + Integer (Common.Last_Level_Range'First)) );
     exception
       when Con_Io.Invalid_Square => null;
+      when Constraint_Error => null;
     end;
 
     begin
