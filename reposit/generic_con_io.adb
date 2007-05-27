@@ -251,7 +251,7 @@ package body Generic_Con_Io is
       if Name = null then
         raise Window_Not_Open;
       end if;
-      return Name.Upper_Left;
+      return Name.Lower_Right;
     end Get_Absolute_Lower_Right;
 
     -- Get Lower_Right relative coordinates of a window (Upper_Left is (0, 0)).
@@ -401,7 +401,6 @@ package body Generic_Con_Io is
                       Name.Current_Background,
                       Name.Current_Xor_Mode);
       Move (Name => Name);
-      X_Mng.X_Flush (Id);
     end Clear;
 
     procedure Move (Row  : in Row_Range;
