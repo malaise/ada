@@ -4,7 +4,7 @@ with Moon, Debug, Screen;
 package body Flight is
 
   -- Part of margin for a landing to be "safe"
-  Safe_Ratio : constant := 0.5;
+  Safe_Ratio : constant := 0.75;
 
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec is

@@ -41,10 +41,10 @@ The game starts at a random (high) position, with a random vertical speed and
 a reasonable vertical thrust.
 Spot a flat landing area and adjust speeds to reach it. Check the area (APP
 indicator) before landing.
-You land safely if within 75% within the speed limits and with at least 10% of
+You land safely if within 75% of the speed limits and with at least 10% of
 fuel remaining. Otherwise it is just acceptable (normal landing).
 When landed (LAND indicator), horizontal thrust has no effect. You can still use
-the horizontal thrust to take off, or you can shut-down the engine, which ends
+the vertical thrust to take off, or you can shut-down the engine, which ends
 the game.
 When the game ends, a message indicates if you lost or crashed the LEM, if you
 landed normally or safely.
