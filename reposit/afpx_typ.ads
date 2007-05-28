@@ -31,7 +31,7 @@ package Afpx_Typ is
     Dscr_Index : Descriptor_Range;
     -- Nb of fields of the dscr
     Nb_Fields  : Absolute_Field_Range;
-    -- Background colot
+    -- Background color
     Background : Con_Io.Effective_Basic_Colors;
   end record;
   type Descriptors_Array is array (Descriptor_Range) of Dscr_Rec;

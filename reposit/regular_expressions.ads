@@ -49,7 +49,7 @@ package Regular_Expressions is
                   End_Line_Match : in Boolean := True);
 
  -- Compare string Str to Criteria
-  -- Returns No_Match or a Match_Cell (possibly Any§Match)
+  -- Returns No_Match or a Match_Cell (possibly Any_Match)
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String) return Match_Cell;
 
