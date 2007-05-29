@@ -131,6 +131,7 @@ package body Screen is
       Con_Io.Open (Exit_Win,   (Menu_Row,  Exit_First_Col),
                                (Menu_Row,  Exit_Last_Col) );
       -- Set default colors
+      Con_Io.Set_Background (Background_Color, Name => Con_Io.Screen);
       Con_Io.Set_Foreground (Foreground_Color, Name => Global_Win);
       Con_Io.Set_Background (Background_Color, Name => Global_Win);
       Con_Io.Set_Foreground (Foreground_Color, Name => Color_Win);
@@ -169,8 +170,9 @@ package body Screen is
     Con_Io.Set_Background (Background_Color, Name => Try_Win);
 
     -- Redraw and frames
+    Con_Io.Clear (Con_Io.Screen);
     Con_Io.Clear (Global_Win);
-    Frame (Name => Global_Win);
+    -- Frame (Name => Global_Win);
     Frame (Name => Secret_Win);
     Frame (Name => Propal_Win);
     Frame (Name => Try_Win);
@@ -210,32 +212,25 @@ package body Screen is
 
     end loop;
 
-    -- Adapt secret, propal and try frames
-    Con_Io.Move (0, Propal_First_Col-1);
-    Con_Io.Put ('-', Foreground => Foreground_Color,
-                        Background => Background_Color);
-    Con_Io.Move (0, Propal_Last_Col+1);
-    Con_Io.Put ('-', Foreground => Foreground_Color,
-                        Background => Background_Color);
-
+    -- Adapt propal and try frames
     for I in Common.Propal_Range'First ..
              Common.Propal_Range'Pred(Common.Propal_Range'Last) loop
       -- |- in propal
       Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
                    Propal_First_Col - 1);
-      Con_Io.Put ('|', Foreground => Foreground_Color,
+      Con_Io.Put ('+', Foreground => Foreground_Color,
                           Background => Background_Color);
       -- -| in propal
       Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
                    Propal_Last_Col + 1);
-      Con_Io.Put ('|', Foreground => Foreground_Color,
+      Con_Io.Put ('+', Foreground => Foreground_Color,
                           Background => Background_Color);
       -- |- in try
       Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
                    Try_First_Col - 1);
       Con_Io.Put ('|', Foreground => Foreground_Color,
                           Background => Background_Color);
-      -- -| in propal
+      -- -| in try
       Con_Io.Move (Propal_Last_Row - 1 - (Con_Io.Row_Range(I)-1) * 2,
                    Try_Last_Col + 1);
       Con_Io.Put ('|', Foreground => Foreground_Color,
@@ -612,7 +607,7 @@ package body Screen is
         Con_Io.New_Line (Name => Help_Win);
         Con_Io.Put_Line (" -> A menu option :",           Name => Help_Win);
         Con_Io.Put_Line ("     Start.",                   Name => Help_Win);
-        Con_Io.Put_Line ("     Level (3 4 5).",           Name => Help_Win);
+        Con_Io.Put_Line ("     Level (3, 4 or 5).",       Name => Help_Win);
         Con_Io.Put_Line ("     Exit.",                    Name => Help_Win);
       when Discarded =>
         Con_Io.Move (Name => Help_Win);
