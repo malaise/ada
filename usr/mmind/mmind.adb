@@ -18,12 +18,12 @@ begin
     Common.Set_Level_To_Stored;
   exception
     when Argument.Argument_Not_Found =>
-      Level := Common.Last_Level_Range'First;
+      Level := Common.Last_Level_Range'Succ (Common.Last_Level_Range'First);
       Common.Store_Level (Level);
       Common.Set_Level_To_Stored;
     when Constraint_Error =>
       My_Io.Put_Line (
-       "Syntax ERROR. Usage is ""MMIND [ <level> ]"" (level from 3 to 5).");
+       "Syntax ERROR. Usage is ""MMIND [ <level> ]"" (level from 3 to 5, default 4).");
       return;
   end;
 
