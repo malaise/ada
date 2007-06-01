@@ -722,6 +722,16 @@ package body Operations is
       raise Compute_Error;
   end Frac;
 
+  function Maxint return Item_Rec is
+  begin
+    return (Kind => Inte, Val_Inte => My_Math.Inte'Last);
+  end Maxint;
+
+  function Minint return Item_Rec is
+  begin
+    return (Kind => Inte, Val_Inte => My_Math.Inte'First);
+  end Minint;
+
   function Dms (X : Item_Rec) return Item_Rec is
     I, M, S, F, R : My_Math.Real;
   begin

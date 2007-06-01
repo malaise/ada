@@ -57,6 +57,8 @@ package Mcd_Mng is
    Trunc,
    Int,
    Frac,
+   Maxint,
+   Minint,
    Dms,
    Mkfrac,
    Numerof,

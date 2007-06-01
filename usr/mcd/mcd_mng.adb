@@ -96,6 +96,10 @@ package body Mcd_Mng is
     function Msd     (X : Item_Rec) return Item_Rec;
     function Sqrt    (X : Item_Rec) return Item_Rec;
 
+    -- -> Inte
+    function Maxint return Item_Rec;
+    function Minint return Item_Rec;
+
     -- *->Bool
     function Isarbi  (X : Item_Rec) return Item_Rec;
     function Isfrac  (X : Item_Rec) return Item_Rec;
@@ -467,6 +471,14 @@ package body Mcd_Mng is
           S := A;
         when Frac =>
           Pop(A); Push (Operations.Frac(A));
+          S := A;
+        when Maxint =>
+          A := Operations.Maxint;
+          Push (A);
+          S := A;
+        when Minint =>
+          A := Operations.Minint;
+          Push (A);
           S := A;
         when Mkfrac =>
           Pop(A); Pop(B); Push (Operations.Mkfrac(B, A));

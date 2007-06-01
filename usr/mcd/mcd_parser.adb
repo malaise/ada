@@ -87,6 +87,8 @@ package body Mcd_Parser is
    Trunc    => (Nosy, "push Inte(A) (trunc A real)   ", False),
    Int      => (Nosy, "push int  part of A real      ", False),
    Frac     => (Nosy, "push frac part of A real      ", False),
+   Maxint   => (Nosy, "push max integer value        ", False),
+   Minint   => (Nosy, "push min integer value        ", False),
    Dms      => (Nosy, "A.frac -> A.MinSecMillis      ", False),
    Msd      => (Nosy, "A.MinSecMillis -> A.frac      ", False),
    Mkfrac   => (Nosy, "push Fraction B:A (A, B arbi) ", False),
