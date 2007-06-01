@@ -1,17 +1,26 @@
 # if C <-> B, then A <-> x?
 
 # Function to handle error
-[ "Usage: portport A B C" putl ssize popn retall ] E popr
+[ "expect 3 arguments a, b and c. Int or real." putl ssize popn retall ] E popr
 
-# Function to check and store n arg
-[ dup isinte [ toreal ] ifcall dup isreal ~ E pushr ifcall pope ] C popr
+# Function to check and store an arg, pushes in estack if it is inte
+[ dup isinte copye [ toreal ] ifcall dup isreal ~ E pushr ifcall ] C popr
 
-# Check and store args
+# Check and store args, A is on top of stack, then B then C
 ssize 3 < E pushr ifcall
-C pushr call
-C pushr call
-C pushr call
+C pushr call 
+swap C pushr call swap
+swap3 C pushr call
 
-# Estack has C B A. Compute A * B / C
-1.0 pushle / pushle * pushle *
+# Stakc is now C B A. Compute A * B / C
+/ *
+
+# If the three initial values where inte, 
+# and result is within inte range, round it
+[ 
+pushle pushle pushle & & ~ ifret
+dup minint toreal <= ifret
+dup maxint toreal >= ifret
+round
+] call
 
