@@ -732,6 +732,31 @@ package body Operations is
     return (Kind => Inte, Val_Inte => My_Math.Inte'First);
   end Minint;
 
+  -- Inte,Real->Inte or Real
+  function Roundif (X : Item_Rec) return Item_Rec is
+  begin
+    if X.Kind = Inte then
+      return X;
+    end if;
+    if X.Kind /= Real then
+      raise Invalid_Argument;
+    end if;
+    if X.Val_Real > My_Math.Real (My_Math.Inte'Last)
+    or else X.Val_Real < My_Math.Real (My_Math.Inte'First) then
+      return X;
+    else
+      return (Kind => Inte, Val_Inte => My_Math.Round(X.Val_Real));
+    end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when My_Math.Math_Error =>
+      return X;
+    when others =>
+      raise Compute_Error;
+  end Roundif;
+
+
   function Dms (X : Item_Rec) return Item_Rec is
     I, M, S, F, R : My_Math.Real;
   begin

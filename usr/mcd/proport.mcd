@@ -19,8 +19,6 @@ swap3 C pushr call
 # and result is within inte range, round it
 [ 
 pushle pushle pushle & & ~ ifret
-dup minint toreal <= ifret
-dup maxint toreal >= ifret
-round
+roundif
 ] call
 

@@ -100,6 +100,9 @@ package body Mcd_Mng is
     function Maxint return Item_Rec;
     function Minint return Item_Rec;
 
+    -- Real->Inte or Real
+    function Roundif (X : Item_Rec) return Item_Rec;
+
     -- *->Bool
     function Isarbi  (X : Item_Rec) return Item_Rec;
     function Isfrac  (X : Item_Rec) return Item_Rec;
@@ -479,6 +482,10 @@ package body Mcd_Mng is
         when Minint =>
           A := Operations.Minint;
           Push (A);
+          S := A;
+        when Roundif =>
+          Pop(A); Push (Operations.Roundif(A));
+          S := A;
           S := A;
         when Mkfrac =>
           Pop(A); Pop(B); Push (Operations.Mkfrac(B, A));

@@ -59,6 +59,7 @@ package Mcd_Mng is
    Frac,
    Maxint,
    Minint,
+   Roundif,
    Dms,
    Mkfrac,
    Numerof,
