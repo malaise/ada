@@ -110,7 +110,7 @@ package body Screen is
       Con_Io.Move (Row, Lower_Right.Col + 1);
       Con_Io.Put ('|', Move => False);
     end loop;
-  end Frame;    
+  end Frame;
 
   -- Init the screen, the windows, draw borders
   procedure Init (Level : in Common.Last_Level_Range) is

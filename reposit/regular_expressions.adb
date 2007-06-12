@@ -10,7 +10,6 @@ package body Regular_Expressions is
     Stop_Offset  : C_Offset_Range;
   end record;
   type C_Match_Array is array (Natural range <>) of C_Match_Cell;
-    
   function Str4C (Str : String) return String is
   begin
     return Str & Ada.Characters.Latin_1.Nul;
@@ -163,7 +162,7 @@ package body Regular_Expressions is
         Match_Info(I).Last_Offset_Stop :=
              C_Match_Info(J).Stop_Offset + First - 1;
         -- Any adjustment due to Lang
-        if Criteria.Lang = Language.Lang_Utf_8 
+        if Criteria.Lang = Language.Lang_Utf_8
         and then Match_Info(I).Last_Offset_Stop >= First then
           Adjust_Utf8 (To_Check(Match_Info(I).Last_Offset_Stop),
                        Match_Info(I).Last_Offset_Stop);
