@@ -117,7 +117,8 @@ begin
     & " kind " & Fifos.Fifo_Kind_List'Image(Test_Fifo.Fifo_Kind (Fid))
     & " is open");
 
-  while not Signal loop
+  loop
+    exit when Signal;
     Event_Mng.Wait (-1);
   end loop;
 
