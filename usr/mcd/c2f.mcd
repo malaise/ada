@@ -1,0 +1,69 @@
+# Celcius <-> Farenheit conversion
+
+# Error and quit
+[ "Usage: c2f <temperture>[<unit>]" putl
+  "   <temperture> : integer or float" putl
+  "   <unit>   :  f or c (default f)" putl
+ssize popn retall ] E popr
+
+# Format a real number, rounding at 2 digits
+[
+dup isneg [ "-" put absv ] ifcall
+100.0 *
+round dup
+1 format 100 / strof "." strcat swap
+# Display frac (2 digits) and unit
+100 % 2 True "0" normal
+strcat
+] F popr
+
+# Conversion factor and offset: F = C * f + o
+1.8 f popr
+32.0 o popr
+
+# Check 1 arg
+ssize 1 /= E pushr ifcall
+# Store arg
+a copyr
+
+# Parse arg
+strlen l copyr
+# At least one char
+1 < E pushr ifcall
+
+# Extract unit - last char
+a pushr l pushr dup strsub strlow
+# Unit is f or c or . or digit (or default)
+u copyr "f" /= u pushr "c" /= & d copyr u pushr "." /= &
+u pushr "0" < u pushr "9" > | & E pushr ifcall
+
+# Length of amount
+d pushr ~ [ l pushr 1 - l popr ] ifcall
+# Default unit
+d pushr [ "f" u popr ] ifcall
+
+# Extract amount value
+a pushr 1 l pushr strsub v copyr
+# locate '.'
+dup 1 "." strloc isnul
+# Convert to real
+[ strinte toreal ] [ strreal ] ifte call
+v copyr
+
+# Check not more than two digits of cents
+100.0 * frac absv epsilon > E pushr ifcall
+
+# Set conversion factor and offset, and result unit
+u pushr "f" = 
+[ f pushr 1.0 swap / f copyr o pushr +- * o popr "c" r popr ]
+[ "f" r popr ] ifte call
+
+# Convert
+v pushr f pushr * o pushr +
+
+# Display arg =
+v pushr F pushr call put u pushr put " = " put
+
+# Display result
+F pushr call put r pushr putl
+
