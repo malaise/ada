@@ -1,7 +1,8 @@
-# Compute altitude from Flight level and QNH
+# Compute altitude from flight level and QNH
+#      or flight level from altitude and QNH
 
 # Error handling
-[ "Usage: alti <FL> <QNH>" put ssize popn retall ] E popr
+[ "Usage: alti <FL/Alt> <QNH>" put ssize popn retall ] E popr
 
 # Check 2 arguments
 ssize 2 /= [ E pushr call ] ifcall
@@ -14,10 +15,23 @@ dup isinte ~ [ E pushr call ] ifcall f popr
 dup isinte [ toreal ] ifcall
 dup isreal  ~ [ E pushr call ] ifcall q popr
 
+# Compute (QNH - 1013.24) * 28
+q pushr 1013.24 - 28.0 * p popr
+
+# Alt -> FL if > 1000, else FL -> Alt
+f pushr 1000 < 
+[ 
+5 format
 # Compute Alt = FL * 100 + (QNH - 1013.24) * 28
-q pushr 1013.24 - 28.0 *
-f pushr toreal 100.0 * +
+f pushr toreal 100.0 * p pushr + 
+"Alt: " s popr " ft" t popr ]
+[
+3 format
+# Compute FL = (Alt - (QNH - 1013.24) * 28) / 100
+f pushr toreal p pushr - 100.0 /
+"FL: " s popr "" t popr ]
+ifte call
 
 # Put result
-round "Alt: " put put " ft" putl
+round s pushr put put t pushr putl
 
