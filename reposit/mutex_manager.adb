@@ -211,8 +211,8 @@ package body Mutex_Manager is
   end Get_Mutex;
 
   -- Get a mutex : infinite wait
-  procedure Get_Mutex (A_Mutex      : Mutex;
-                       Kind         : Access_Kind := Read) is
+  procedure Get_Mutex (A_Mutex      : in Mutex;
+                       Kind         : in Access_Kind := Read) is
     Dummy : Boolean;
   begin
     Dummy := Get_Mutex (A_Mutex, -1.0, Kind);

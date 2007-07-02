@@ -20,15 +20,15 @@ package Mutex_Manager is
   -- Get un mutex.
   -- Simple mutex provides exclusive access (Access_Kind is not significant).
   -- With Read_Write mutex, simultaneous read are possible, but writer is alone.
-  --  If delay is negative, wait until mutex is got
-  --  If delay is null, try and give up if not free
-  --  If delay is positive, try during the specified delay
+  -- If delay is negative, wait until mutex is got
+  -- If delay is null, try and give up if not free
+  -- If delay is positive, try during the specified delay
   function Get_Mutex (A_Mutex      : Mutex;
                       Waiting_Time : Duration;
                       Kind         : Access_Kind := Read) return Boolean;
   -- Get a mutex : infinite wait
-  procedure Get_Mutex (A_Mutex      : Mutex;
-                       Kind         : Access_Kind := Read);
+  procedure Get_Mutex (A_Mutex      : in Mutex;
+                       Kind         : in Access_Kind := Read);
 
   -- When releasing a (simple or read/write) mutex that is already free
   Mutex_Already_Free : exception;
