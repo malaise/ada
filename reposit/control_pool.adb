@@ -62,7 +62,7 @@ package body Control_Pool is
     Cell : Cell_Type;
   begin
     -- Global lock
-    Got := Mutex_Manager.Get_Mutex (Global_Mutex, -1.0);
+    Got := Mutex_Manager.Get (Global_Mutex, -1.0);
     -- Look for this key in pool
     Cell.Key := Key;
     Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
@@ -72,8 +72,8 @@ package body Control_Pool is
       Cell.Waiters := Cell.Waiters + 1;
       Pool_Mng.Modify (Pool, Cell, Pool_Mng.Current);
       -- Unlock Global mutex and wait for data mutex
-      Mutex_Manager.Release_Mutex (Global_Mutex);
-      Got := Mutex_Manager.Get_Mutex (Cell.Data_Mutex.all, Waiting_Time);
+      Mutex_Manager.Release (Global_Mutex);
+      Got := Mutex_Manager.Get (Cell.Data_Mutex.all, Waiting_Time);
       -- Release cell if mutex not got
       if not Got then
         Release (Key, False);
@@ -82,13 +82,13 @@ package body Control_Pool is
     else
       -- Get and lock data mutex (not blocking cause we are first)
       Cell.Data_Mutex := Get_Mutex;
-      Got := Mutex_Manager.Get_Mutex (Cell.Data_Mutex.all, -1.0);
+      Got := Mutex_Manager.Get (Cell.Data_Mutex.all, -1.0);
       -- Store cell
       Cell.Key := Key;
       Cell.Waiters := 1;
       Pool_Mng.Insert (Pool, Cell);
       -- Unlock Global mutex and return success
-      Mutex_Manager.Release_Mutex (Global_Mutex);
+      Mutex_Manager.Release (Global_Mutex);
       return True;
     end if;
   end Get;
@@ -106,7 +106,7 @@ package body Control_Pool is
     Cell : Cell_Type;
   begin
     -- Global lock
-    Got := Mutex_Manager.Get_Mutex (Global_Mutex, -1.0);
+    Got := Mutex_Manager.Get (Global_Mutex, -1.0);
     -- Look for this key in pool
     Cell.Key := Key;
     Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
@@ -124,10 +124,10 @@ package body Control_Pool is
     end if;
     -- Release data mutex if it was granted
     if Granted then
-      Mutex_Manager.Release_Mutex (Cell.Data_Mutex.all);
+      Mutex_Manager.Release (Cell.Data_Mutex.all);
     end if;
     -- Unlock Global mutex
-    Mutex_Manager.Release_Mutex (Global_Mutex);
+    Mutex_Manager.Release (Global_Mutex);
   end Release;
 
 end Control_Pool;

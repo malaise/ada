@@ -1,19 +1,35 @@
 package body Mutex_Manager is
 
+  use type Ada.Task_Identification.Task_Id;
+
   -- The protected object which implements the simple mutex
   protected body Mutex_Protect is
     -- Mutex is free at creation
     entry Mutex_Get when Free is
+      Id : constant Ada.Task_Identification.Task_Id
+         := Mutex_Get'Caller;
     begin
+      if not Free and then Id = Owner then
+        raise Already_Got;
+      end if;
       Free := False;
+      Owner := Id;
     end Mutex_Get;
 
-    procedure Mutex_Release (Status : out Boolean) is
+    procedure Mutex_Release is
     begin
-      -- Mutex is released, but status is set to false if it was already free
-      Status := not Free;
+      if Free
+      or else Ada.Task_Identification.Current_Task /= Owner then
+        raise Not_Owner;
+      end if;
       Free := True;
     end Mutex_Release;
+
+    function Mutex_Owns return Boolean is
+    begin
+      return not Free
+             and then Ada.Task_Identification.Current_Task = Owner;
+    end Mutex_Owns;
   end Mutex_Protect;
 
   ----------------------------------------------------------------------------
@@ -26,6 +42,11 @@ package body Mutex_Manager is
     -- we are swapping queues.
     entry Mutex_Get (Kind : in Access_Kind) when not Swapping is
     begin
+      -- Are we already the writer
+      if Writer and then Mutex_Get'Caller = Owner then
+        raise Already_Got;
+      end if;
+
       -- We are sure that, while a writer is writing, any kind of request
       --  must wait (Open = False). In this case the release will
       --  open the queue
@@ -39,10 +60,8 @@ package body Mutex_Manager is
 
     -- Releases the lock. No Check of kind but the lock must have been
     -- got.
-    procedure Mutex_Release (Status : out Boolean) is
+    procedure Mutex_Release is
     begin
-      -- Default result is OK.
-      Status := True;
       if Readers > 0 then
         -- There are readers, one of them is releasing the lock
         Readers := Readers - 1;
@@ -51,21 +70,28 @@ package body Mutex_Manager is
           --  for writers
           Open := Swapping or else Queues(Current_Queue)'Count > 0;
         end if;
-      elsif Writer then
+      elsif Writer
+      and then Ada.Task_Identification.Current_Task = Owner then
         -- The writer is releasing the lock
         Writer := False;
         Open := Swapping or else Queues(Current_Queue)'Count > 0;
       else
-        -- Called while no lock was got
-        Status := False;
+        -- Called while no lock was got or not called by the writer
+        raise Not_Owner;
       end if;
     end Mutex_Release;
+
+    function Mutex_Owns return Boolean is
+    begin
+      return Writer
+      and then Ada.Task_Identification.Current_Task = Owner;
+    end Mutex_Owns;
 
     -- Two queues, one active at a time
     -- Passes when swapping queues or else when open
     entry Queues (for Queue in Queue_Range) (Kind : in Access_Kind)
-    when Queue = Current_Queue
-    and then (Swapping or else Open) is
+          when Queue = Current_Queue
+          and then (Swapping or else Open) is
     begin
       if Swapping then
         -- Swapping queueing tasks from one queue to the other
@@ -95,6 +121,7 @@ package body Mutex_Manager is
           if Readers = 0 then
             -- We get the write lock
             Writer := True;
+            Owner := Queues'Caller;
           else
             -- We have to wait until last reader releases the lock
             -- If we are alone, requeue ourself. Otherwise
@@ -121,30 +148,41 @@ package body Mutex_Manager is
     -- Gets the lock. Blocking.
     entry Mutex_Get (Kind : in Access_Kind) when True is
     begin
+      -- Are we already owner of the write lock?
+      if Writer and then Mutex_Get'Caller = Owner then
+        raise Already_Got;
+      end if;
+      -- Queue properly
       if Kind = Read then
-        requeue Reading_Queue;
+        requeue Reading_Queue with abort;
       else
-        requeue Writing_Queue;
+        requeue Writing_Queue with abort;
       end if;
     end Mutex_Get;
 
     -- Releases the lock. No Check of kind but the lock must have been
     -- got.
-    procedure Mutex_Release (Status : out Boolean) is
+    procedure Mutex_Release is
     begin
       -- Default result is OK.
-      Status := True;
       if Readers > 0 then
         -- There are readers, one of them is releasing the lock
         Readers := Readers - 1;
-      elsif Writer then
+      elsif Writer
+      and then Ada.Task_Identification.Current_Task = Owner then
         -- The writer is releasing the lock
         Writer := False;
       else
-        -- Called while no lock was got
-        Status := False;
+        -- Called while no lock was got or not called by the writer
+        raise Not_Owner;
       end if;
     end Mutex_Release;
+
+    function Mutex_Owns return Boolean is
+    begin
+      return Writer
+      and then Ada.Task_Identification.Current_Task = Owner;
+    end Mutex_Owns;
 
     -- The queue for readers. Open when no writer waiting nor writing
     entry Reading_Queue when Writing_Queue'Count = 0 and then not Writer is
@@ -156,15 +194,16 @@ package body Mutex_Manager is
     entry Writing_Queue when Readers = 0 and then not Writer is
     begin
       Writer := True;
+      Owner := Writing_Queue'Caller;
     end Writing_Queue;
 
   end Wr_Mutex_Protect;
 
   ----------------------------------------------------------------------------
 
-  function Get_Mutex (A_Mutex      : Mutex;
-                      Waiting_Time : Duration;
-                      Kind         : Access_Kind := Read) return Boolean is
+  function Get (A_Mutex      : Mutex;
+                Waiting_Time : Duration;
+                Kind         : Access_Kind := Read) return Boolean is
     Result : Boolean;
   begin
     if Waiting_Time < 0.0 then
@@ -208,34 +247,43 @@ package body Mutex_Manager is
         end case;
     end if;
     return Result;
-  end Get_Mutex;
+  end Get;
 
   -- Get a mutex : infinite wait
-  procedure Get_Mutex (A_Mutex      : in Mutex;
-                       Kind         : in Access_Kind := Read) is
+  procedure Get (A_Mutex      : in Mutex;
+                 Kind         : in Access_Kind := Read) is
     Dummy : Boolean;
   begin
-    Dummy := Get_Mutex (A_Mutex, -1.0, Kind);
-  end Get_Mutex;
+    Dummy := Get (A_Mutex, -1.0, Kind);
+  end Get;
 
-
-  procedure Release_Mutex (A_Mutex : in Mutex) is
-    Mut_Status : Boolean;
+  -- Release a mutex
+  procedure Release (A_Mutex : in Mutex) is
   begin
     -- Request releasing
     case A_Mutex.Kind is
       when Simple =>
-        A_Mutex.Mutex_Pointer.Mutex_Release (Mut_Status);
+        A_Mutex.Mutex_Pointer.Mutex_Release;
       when Read_Write =>
-        A_Mutex.Rw_Mutex_Pointer.Mutex_Release (Mut_Status);
+        A_Mutex.Rw_Mutex_Pointer.Mutex_Release;
       when Write_Read =>
-        A_Mutex.Wr_Mutex_Pointer.Mutex_Release (Mut_Status);
+        A_Mutex.Wr_Mutex_Pointer.Mutex_Release;
     end case;
-    if not Mut_Status then
-      -- The mutex was already free
-      raise Mutex_Already_Free;
-    end if;
-  end Release_Mutex;
+  end Release;
+
+  -- Does current task own the mutex (for write)
+  function Is_Owner (A_Mutex : Mutex) return Boolean is
+  begin
+    -- Request releasing
+    case A_Mutex.Kind is
+      when Simple =>
+        return A_Mutex.Mutex_Pointer.Mutex_Owns;
+      when Read_Write =>
+        return A_Mutex.Rw_Mutex_Pointer.Mutex_Owns;
+      when Write_Read =>
+        return A_Mutex.Wr_Mutex_Pointer.Mutex_Owns;
+    end case;
+  end Is_Owner;
 
 end Mutex_Manager;
 

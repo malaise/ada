@@ -59,9 +59,9 @@ package body Rnd is
     end if;
     I := U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0);
 
-    Ok := Mutex_Manager.Get_Mutex (Lock, -1.0);
+    Ok := Mutex_Manager.Get (Lock, -1.0);
     U_Rand.Start (New_I => I);
-    Mutex_Manager.Release_Mutex (Lock);
+    Mutex_Manager.Release (Lock);
   end Randomize;
 
 
@@ -72,9 +72,9 @@ package body Rnd is
     Val : Float;
     Ok : Boolean;
   begin
-    Ok := Mutex_Manager.Get_Mutex (Lock, -1.0);
+    Ok := Mutex_Manager.Get (Lock, -1.0);
     Val := U_Rand.Next;
-    Mutex_Manager.Release_Mutex (Lock);
+    Mutex_Manager.Release (Lock);
     -- Here 0 <= Val < 1
     if Mini >= Maxi then
       return Val;
