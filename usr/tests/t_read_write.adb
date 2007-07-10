@@ -17,9 +17,9 @@ procedure T_Read_Write is
 
   procedure Put_Line (Index : in Range_Task; Msg : in String) is
   begin
-    Mutex_Manager.Get_Mutex (Io_Lock);
+    Mutex_Manager.Get (Io_Lock);
     Ada.Text_Io.Put_Line (Normal (Index, 3) & " " & Msg);
-    Mutex_Manager.Release_Mutex (Io_Lock);
+    Mutex_Manager.Release (Io_Lock);
   end Put_Line;
 
   function Image (D : Duration) return String is
@@ -55,7 +55,7 @@ procedure T_Read_Write is
       end if;
       -- Get lock
       Put_Line (Index, "get " & Kind_Strs(Kind) & " " & Image(Dur));
-      Res := Mutex_Manager.Get_Mutex (Lock, Dur, Kind);
+      Res := Mutex_Manager.Get (Lock, Dur, Kind);
       -- Trace result
       if Res then
         Put_Line (Index, "OK");
@@ -69,7 +69,7 @@ procedure T_Read_Write is
 
         -- Release lock
         Put_Line (Index, "release");
-        Mutex_Manager.Release_Mutex (Lock);
+        Mutex_Manager.Release (Lock);
       end if;
 
       -- 1% chances to terminate
