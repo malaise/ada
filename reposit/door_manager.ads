@@ -4,21 +4,25 @@ package Door_Manager is
   -- Door is open by default (Nb_Waiters = 1)
   type Door is private;
 
-
   -- Get access to the door (prior getting or setting its number of waiters)
   -- If delay is negative, wait until mutex is got
   -- If delay is null, try and give up if not free
   -- If delay is positive, try during the specified delay
+  -- Raises ALready_Got if current task already owns the access
+  Already_Got : exception renames Condition_Manager.Already_Got;
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean;
   -- Get access to the condition : infinite wait
   procedure Get (A_Door : in Door);
 
-  Door_Is_Free : exception;
-
-  -- Exception Door_Is_Free is raised if the door was already
-  --  free.
+  -- Release access to the door
+  -- Raises Not_Owner if current task does not own the access
+  Not_Owner : exception renames Condition_Manager.Not_Owner;
   procedure Release (A_Door : in Door);
+
+  -- All the following operations require the caller to own the access
+  -- to the door, otherwise they raise No_Access
+  No_Access : exception;
 
   -- Get/Set the number of waiters (door access should have been granted)
   -- Set the expected number of waiters

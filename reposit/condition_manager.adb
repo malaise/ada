@@ -1,27 +1,46 @@
 package body Condition_Manager is
+  use type Ada.Task_Identification.Task_Id;
 
   -- The protected object which implements the condition
   protected body Condition_Protect is
 
     -- Get the mutex
     entry Get when Free is
+      Id : constant Ada.Task_Identification.Task_Id
+         := Condition_Protect.Get'Caller;
     begin
+      if not Free and then Id = Owner then
+        raise Already_Got;
+      end if;
       Free := False;
+      Owner := Id;
     end Get;
 
     -- Release the mutex
     procedure Release is
     begin
       -- The mutex must be acquired
-      if Free then
-        raise Condition_Is_Free;
+      if Free
+      or else Ada.Task_Identification.Current_Task /= Owner then
+        raise Not_Owner;
       end if;
       Free := True;
     end Release;
 
+    -- Current task has access?
+    function Owns return Boolean is
+    begin
+      return not Free
+      and then Ada.Task_Identification.Current_Task = Owner;
+    end Owns;
+
     -- The entry to register to wait (release mutex)
     entry Wait when True is
     begin
+      if Free
+      or else Condition_Protect.Wait'Caller /= Owner then
+        raise No_Access;
+      end if;
       -- Atomically release the mutex and wait
       Release;
       requeue Wakeup_Queue;
@@ -100,6 +119,12 @@ package body Condition_Manager is
   begin
     A_Condition.Condition_Pointer.Release;
   end Release;
+
+  -- Does current task have the access to the condition
+  function Is_Owner (A_Condition : Condition) return Boolean is
+  begin
+    return A_Condition.Condition_Pointer.Owns;
+  end Is_Owner;
 
   -- The calling task must own the condition's mutex
   -- Atomically release the mutex and block the calling task on the condition

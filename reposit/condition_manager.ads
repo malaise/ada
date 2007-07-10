@@ -1,3 +1,4 @@
+with Ada.Task_Identification;
 package Condition_Manager is
 
   type Condition is private;
@@ -6,21 +7,27 @@ package Condition_Manager is
   -- If delay is negative, wait until mutex is got
   -- If delay is null, try and give up if not free
   -- If delay is positive, try during the specified delay
+  -- Raises ALready_Got if current task already owns the access
+  Already_Got : exception;
   function Get (A_Condition : Condition;
                 Waiting_Time : Duration) return Boolean;
   -- Get access to the condition : infinite wait
   procedure Get (A_Condition : in Condition);
 
-  Condition_Is_Free : exception;
-
-  -- Exception Condition_Is_Free is raised if the condition was already
-  --  free.
+  -- Release access to the condition
+  -- Raises Not_Owner if current task does not own the access
+  Not_Owner : exception;
   procedure Release (A_Condition : in Condition);
 
-  -- The calling task must own the condition's mutex
+  -- Does current task have the access to the condition
+  function Is_Owner (A_Condition : Condition) return Boolean;
+
   -- Atomically release the mutex and block the calling task on the condition
   -- Upon successful return, the access to the condition is already granted to
   --  the calling task
+  -- The calling task must own the condition's mutex, otherwise No_Access
+  --  is raised
+  No_Access : exception;
   function Wait (A_Condition  : Condition;
                  Waiting_Time : Duration) return Boolean;
   procedure Wait (A_Condition  : in Condition);
@@ -39,6 +46,7 @@ private
     -- Get/release mutex
     entry Get;
     procedure Release;
+    function Owns return Boolean;
     -- Wait for signal or broadcast
     entry Wait;
     -- Signal  one waiter or broadcast all
@@ -49,6 +57,8 @@ private
     entry Wakeup_Queue;
     -- The mutex embeeded with the condition
     Free : Boolean := True;
+    -- Owner of the mutex
+    Owner : Ada.Task_Identification.Task_Id;
     -- The condition state
     State : Condition_State_List := Blocked;
   end Condition_Protect;

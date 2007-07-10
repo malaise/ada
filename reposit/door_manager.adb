@@ -23,21 +23,24 @@ package body Door_Manager is
     Condition_Manager.Get (A_Door.Door_Pointer.Cond);
   end Get;
 
-   -- Exception Door_Is_Free is raised if the door was already
-  --  free.
+  -- Release access to the condition
   procedure Release (A_Door : in Door) is
   begin
     Condition_Manager.Release (A_Door.Door_Pointer.Cond);
-  exception
-    when Condition_Manager.Condition_Is_Free =>
-      raise Door_Is_Free;
   end Release;
 
+  procedure Check_Access (A_Door : in Door) is
+  begin
+    if not Condition_Manager.Is_Owner (A_Door.Door_Pointer.Cond) then
+      raise Not_Owner;
+    end if;
+  end Check_Access;
 
   -- Set the expected number of waiters
   procedure Set_Nb_Waiters (A_Door : in Door;
                             To : in Positive) is
   begin
+    Check_Access (A_Door);
     A_Door.Door_Pointer.Expected := To;
     Check_Open (A_Door);
   end Set_Nb_Waiters;
@@ -45,6 +48,7 @@ package body Door_Manager is
   -- Get the expected number of waiters
   function Get_Nb_Waiters (A_Door : in Door) return Positive is
   begin
+    Check_Access (A_Door);
     return A_Door.Door_Pointer.Expected;
   end Get_Nb_Waiters;
 
@@ -53,9 +57,12 @@ package body Door_Manager is
   procedure Add_To_Nb_Waiters (A_Door : in Door;
                                Val : in Integer) is
   begin
+    Check_Access (A_Door);
     begin
-      if A_Door.Door_Pointer.Expected + Val > 0 then
+      if A_Door.Door_Pointer.Expected + Val >= 1 then
         A_Door.Door_Pointer.Expected := A_Door.Door_Pointer.Expected + Val;
+      else
+        A_Door.Door_Pointer.Expected := 1;
       end if;
     exception
       -- Overflow
@@ -70,6 +77,7 @@ package body Door_Manager is
                  Waiting_Time : Duration) return Boolean is
     Result : Boolean;
   begin
+    Check_Access (A_Door);
     -- One more waiter
     A_Door.Door_Pointer.Current := A_Door.Door_Pointer.Current + 1;
     if A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
