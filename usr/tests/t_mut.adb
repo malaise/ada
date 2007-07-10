@@ -1,6 +1,5 @@
 with Ada.Text_Io;
 with My_Io, Mutex_Manager, Schedule, Argument, Basic_Proc, Upper_Char;
-use Mutex_Manager;
 
 procedure T_Mut is
   pragma Priority(10);
@@ -9,7 +8,7 @@ procedure T_Mut is
 
   procedure Exec (Mut_Kind : Mutex_Manager.Mutex_Kind;
                   Max_Task : in Positive) is
-    Crit_Lock : Mutex (Mut_Kind);
+    Crit_Lock : Mutex_Manager.Mutex (Mut_Kind);
 
     subtype Range_Task is Positive range 1 .. Max_Task;
 
@@ -29,15 +28,14 @@ procedure T_Mut is
     package body Input is
       In_Get : Boolean := False;
       Current_I : Range_Task;
-      Put_Lock, Get_Lock, Prompt_Lock : Mutex;
+      Put_Lock, Get_Lock, Prompt_Lock : Mutex_Manager.Mutex;
 
       Tab : constant String (1..4) := (others => ' ');
 
       procedure Prompt (I : in Range_Task; Set : in Boolean) is
-        B : Boolean;
         use type Mutex_Manager.Mutex_Kind;
       begin
-        B := Get_Mutex (Prompt_Lock, -1.0);
+        Mutex_Manager.Get (Prompt_Lock);
         if Set then
           -- Call by Get: store I for further calls by Put while in get
           Current_I := I;
@@ -46,44 +44,60 @@ procedure T_Mut is
         Ada.Text_Io.Put ("Task: ");
         My_Io.Put (Current_I, 3);
         if Mut_Kind /= Mutex_Manager.Simple then
-          Ada.Text_Io.Put (" : Read, Write");
+          Ada.Text_Io.Put (" : Read, Write, Terminate");
+          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s) ? ");
+        else
+          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s), Terminate ? ");
         end if;
-        Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s), Terminate ? ");
         Ada.Text_Io.Flush;
-        Release_Mutex (Prompt_Lock);
+        Mutex_Manager.Release (Prompt_Lock);
       end Prompt;
 
       procedure Get (I : in Range_Task; K, A : out Character)  is
         B : Boolean;
         C : Character;
+        S : String (1 .. 256);
+        L : Natural;
+        use type Mutex_Manager.Mutex_Kind;
       begin
-        B := Get_Mutex (Get_Lock, -1.0);
+        Mutex_Manager.Get (Get_Lock);
+        -- Skip any pending character
         loop
           Ada.Text_Io.Get_Immediate (C, B);
           exit when not B;
         end loop;
+        -- Start get
         In_Get := True;
-        Prompt (I, True);
-        if Mut_Kind /= Mutex_Manager.Simple then
-          Ada.Text_Io.Get (K);
-          if Upper_Char (K) = 'T' then
-            A := K;
+        loop
+          Prompt (I, True);
+          Ada.Text_Io.Get_Line (S, L);
+          if Mut_Kind /= Mutex_Manager.Simple then
+            if L = 1 then
+              K := Upper_Char (S(1));
+              if K = 'T' then
+                A := K;
+                K := 'W';
+                exit;
+              end if;
+            elsif L = 2 then
+              K := Upper_Char (S(1));
+              A := Upper_Char (S(2));
+              exit;
+            end if;
+          elsif L = 1 then
+            -- Simple mutex
             K := 'W';
-          else
-            Ada.Text_Io.Get (A);
+            A := Upper_Char (S(1));
+            exit;
           end if;
-        else
-          K := 'W';
-          Ada.Text_Io.Get (A);
-        end if;
+        end loop;
         In_Get := False;
-        Release_Mutex (Get_Lock);
+        Mutex_Manager.Release (Get_Lock);
       end Get;
 
       procedure Put (S : in String; I : in  Range_Task) is
-        B : Boolean;
       begin
-        B := Get_Mutex (Put_Lock, -1.0);
+        Mutex_Manager.Get (Put_Lock);
         if In_Get then
           Ada.Text_Io.New_Line;
         end if;
@@ -93,7 +107,7 @@ procedure T_Mut is
         if In_Get then
           Prompt (1, False);
         end if;
-        Release_Mutex (Put_Lock);
+        Mutex_Manager.Release (Put_Lock);
       end Put;
     end Input;
 
@@ -130,13 +144,13 @@ procedure T_Mut is
         return True;
       end if;
 
-      B := Get_Mutex (Crit_Lock, Waiting, Action);
+      B := Mutex_Manager.Get (Crit_Lock, Waiting, Action);
 
       if B then
         Input.Put ("Start of critical section for", Num);
         delay Critical_Section_Duration;
         Input.Put ("End   of critical section for", Num);
-        Release_Mutex(Crit_Lock);
+        Mutex_Manager.Release (Crit_Lock);
       else
         Input.Put ("Mutex not free for", Num);
       end if;
@@ -146,11 +160,11 @@ procedure T_Mut is
     task body T is
       Index : Range_Task;
     begin
-      -- get name
+      -- Get name
       accept Num (I : in Range_Task) do
         Index := I;
       end Num;
-      -- work until termination requested in Critical
+      -- Work until termination requested in Critical
       loop
         Schedule;
         exit when not Critical (Index);
@@ -162,12 +176,12 @@ procedure T_Mut is
 
   begin -- Exec
     Ada.Text_Io.New_Line(2);
-    -- give to each actor it's name
+    -- Give to each actor it's name
     for I in Range_Task loop
       Ta(I).Num (I);
     end loop;
 
-    -- wait until termination of each actor
+    -- Wait until termination of each actor
     for I in Range_Task loop
       Ta(I).Done;
     end loop;
@@ -221,7 +235,7 @@ begin -- T_Mut
     N_Tasks := Positive'Value (Argument.Get_Parameter (2));
     Exec(M_Kind, N_Tasks);
   else
-    Error ("Too many arguments");
+    Error ("Too few or too many arguments");
   end if;
 
 exception
