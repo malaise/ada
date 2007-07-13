@@ -4,7 +4,7 @@ package body Mutex_Manager is
 
   -- The protected object which implements the simple mutex
   protected body Mutex_Protect is
-    -- Mutex is free at creation
+    -- Gets the lock. Blocking.
     entry Mutex_Get when Free is
       Id : constant Ada.Task_Identification.Task_Id
          := Mutex_Get'Caller;
@@ -16,6 +16,7 @@ package body Mutex_Manager is
       Owner := Id;
     end Mutex_Get;
 
+    -- Release the lock
     procedure Mutex_Release is
     begin
       if Free
@@ -25,6 +26,7 @@ package body Mutex_Manager is
       Free := True;
     end Mutex_Release;
 
+    -- Is current task owning the lock
     function Mutex_Owns return Boolean is
     begin
       return not Free
@@ -160,13 +162,13 @@ package body Mutex_Manager is
       end if;
     end Mutex_Get;
 
-    -- Releases the lock. No Check of kind but the lock must have been
-    -- got.
+    -- Releases the lock.
     procedure Mutex_Release is
     begin
       -- Default result is OK.
       if Readers > 0 then
         -- There are readers, one of them is releasing the lock
+        -- No check of ownership is possible.
         Readers := Readers - 1;
       elsif Writer
       and then Ada.Task_Identification.Current_Task = Owner then

@@ -1,10 +1,13 @@
 with Condition_Manager;
 package Door_Manager is
 
-  -- Door is open by default (Nb_Waiters = 1)
+  -- A door is a waiting point on which one or several tasks may
+  --  wait until the required number of waiters is reached.
+  -- Door is open at creation (Nb_Waiters = 1)
   type Door is private;
 
-  -- Get access to the door (prior getting or setting its number of waiters)
+  -- Get access to the door (prior getting or setting its number of waiters,
+  --  or prior waiting)
   -- If delay is negative, wait until mutex is got
   -- If delay is null, try and give up if not free
   -- If delay is positive, try during the specified delay
@@ -19,6 +22,8 @@ package Door_Manager is
   -- Raises Not_Owner if current task does not own the access
   Not_Owner : exception renames Condition_Manager.Not_Owner;
   procedure Release (A_Door : in Door);
+
+
 
   -- All the following operations require the caller to own the access
   -- to the door, otherwise they raise No_Access
@@ -53,7 +58,7 @@ private
     Expected : Positive := 1;
     -- The current number of waiters
     Current : Natural := 0;
-    -- the waiting condition
+    -- The condition on which waiters are waiting
     Cond : Condition_Manager.Condition;
   end record;
 

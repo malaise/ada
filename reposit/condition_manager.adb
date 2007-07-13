@@ -43,7 +43,7 @@ package body Condition_Manager is
       end if;
       -- Atomically release the mutex and wait
       Release;
-      requeue Wakeup_Queue;
+      requeue Wakeup_Queue with abort;
     end Wait;
 
     -- Wakeup one waiting task
@@ -76,7 +76,7 @@ package body Condition_Manager is
         end if;
       end if;
       -- Acquire the mutex refore releasing the task
-      requeue Get;
+      requeue Get with abort;
     end Wakeup_Queue;
 
   end Condition_Protect;

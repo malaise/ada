@@ -1,16 +1,7 @@
 package body Door_Manager is
 
-  -- Check if the door can be open
-  procedure Check_Open (A_Door : in Door) is
-  begin
-    if A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
-      -- Release all callers of wait
-      Condition_Manager.Broadcast (A_Door.Door_Pointer.Cond);
-      A_Door.Door_Pointer.Current := 0;
-    end if;
-  end Check_Open;
-
-  -- Get access to the door (prior getting or setting its number of waiters)
+  -- Access to condition --
+  -- Get access to the condition
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean is
   begin
@@ -29,6 +20,27 @@ package body Door_Manager is
     Condition_Manager.Release (A_Door.Door_Pointer.Cond);
   end Release;
 
+
+  -- Utilities --
+  -- Open the door if number of waiters is reached
+  function Check_Open (A_Door : in Door) return Boolean is
+  begin
+    if A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
+      -- Release all waiters of wait
+      Condition_Manager.Broadcast (A_Door.Door_Pointer.Cond);
+      A_Door.Door_Pointer.Current := 0;
+      return True;
+    else
+      return False;
+    end if;
+  end Check_Open;
+  procedure Check_Open (A_Door : in Door) is
+    Dummy : Boolean;
+  begin
+    Dummy := Check_Open (A_Door);
+  end Check_Open;
+
+  -- Check that current tasks has access
   procedure Check_Access (A_Door : in Door) is
   begin
     if not Condition_Manager.Is_Owner (A_Door.Door_Pointer.Cond) then
@@ -36,12 +48,15 @@ package body Door_Manager is
     end if;
   end Check_Access;
 
+
+  -- Set/get nb waiters --
   -- Set the expected number of waiters
   procedure Set_Nb_Waiters (A_Door : in Door;
                             To : in Positive) is
   begin
     Check_Access (A_Door);
     A_Door.Door_Pointer.Expected := To;
+    -- This may lead to open the door
     Check_Open (A_Door);
   end Set_Nb_Waiters;
 
@@ -69,9 +84,12 @@ package body Door_Manager is
       when Constraint_Error =>
         A_Door.Door_Pointer.Expected := Positive'Last;
     end;
+    -- This may lead to open the door
     Check_Open (A_Door);
   end Add_To_Nb_Waiters;
 
+
+  -- Wait --
   -- Wait until the required number of waiters is reached
   function Wait (A_Door : Door;
                  Waiting_Time : Duration) return Boolean is
@@ -80,15 +98,14 @@ package body Door_Manager is
     Check_Access (A_Door);
     -- One more waiter
     A_Door.Door_Pointer.Current := A_Door.Door_Pointer.Current + 1;
-    if A_Door.Door_Pointer.Current >= A_Door.Door_Pointer.Expected then
+    if Check_Open (A_Door) then
       -- Expected number of waiters is reached, release them
-      Check_Open (A_Door);
       return True;
     else
       -- Wait
       Result := Condition_Manager.Wait (A_Door.Door_Pointer.Cond, Waiting_Time);
       if not Result then
-        -- Gave up: one waiter less
+        -- Giving up: one waiter less
         A_Door.Door_Pointer.Current := A_Door.Door_Pointer.Current - 1;
       end if;
       return Result;

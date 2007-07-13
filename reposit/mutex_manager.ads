@@ -5,14 +5,14 @@ package Mutex_Manager is
   -- Kind of mutex
   -- Simple is standard mutex providing exclusive acccess. Efficient.
   -- Read_Write allows several readers but one writer at a time.
-  --  this implementation is fair but somewhat CPU consuming because
+  --  This implementation is fair but somewhat CPU consuming because
   --  the arival of a reader while writer(s) wait triggers a re-evaluation
   --  to let it pass if it has a higher priority.
   -- Write_Read is like Read_Write but it priviledges writer(s).
   --   No reader passes as soon as writer(s) queue.
   type Mutex_Kind is (Simple, Read_Write, Write_Read);
 
-  -- Kind of requested access for a Read_Write mutex
+  -- Kind of requested access for a Read_Write and Write_Read mutex
   type Access_Kind is (Read, Write);
 
   -- Mutex object, simple by default, free at creation
@@ -20,31 +20,33 @@ package Mutex_Manager is
 
   -- Get un mutex.
   -- Simple mutex provides exclusive access (Access_Kind is not significant).
-  -- With Read_Write mutex, simultaneous read are possible, but writer is alone.
-  -- If delay is negative, wait until mutex is got
-  -- If delay is null, try and give up if not free
-  -- If delay is positive, try during the specified delay
+  -- With RW mutex (Read_Write or Write_Read), simultaneous read are possible,
+  --  but there is only one writer at a time and no reader at that time.
+  -- If delay is negative, wait until mutex is got,
+  -- If delay is null, try and give up if not free,
+  -- If delay is positive, try during the specified delay.
   -- Raises Already_Got of current task has already got the simple mutex
-  --  or if it has already got a RW mutex for write
-  -- Note that there is no check of "Read then Write" deadlock
+  --  or if it has already got the RW mutex for write.
+  -- Note that there is no check of "Read then Write" deadlock.
   Already_Got : exception;
   function Get (A_Mutex      : Mutex;
                 Waiting_Time : Duration;
                 Kind         : Access_Kind := Read) return Boolean;
-  -- Get a mutex : infinite wait
+  -- Get a mutex : infinite wait.
   procedure Get (A_Mutex      : in Mutex;
                  Kind         : in Access_Kind := Read);
 
 
   -- Release a mutex.
   -- Raises Not_Owner if current task doesn't own the simple mutex
-  --  or does not own a RW mutex for write
+  --  or does not own the RW mutex for write (no check when releasing
+  --  a RW mutex aquired for read).
   Not_Owner : exception;
   procedure Release (A_Mutex : in Mutex);
 
 
   -- Is current task the owner of a simple mutex
-  -- Is it the writer in case of a RW/WR mutex
+  -- Is it the writer in case of a RW mutex
   function Is_Owner (A_Mutex : in Mutex) return Boolean;
 
 private
@@ -121,8 +123,8 @@ private
   -- Write/Read mutex
   -- Writers always have priority on pending readers, so we have a readers and
   --  a writers queue
-  -- Benefit: the freshest data is amways available. Efficient implementation.
-  -- Drawback: risk of starvation of readers if to many/long writers whatever
+  -- Benefit: the freshest data is always available. Efficient implementation.
+  -- Drawback: risk of starvation of readers if to many/long writers, whatever
   --  prio they have
 
   -- The write/read access lock and queues. No time.
@@ -155,7 +157,7 @@ private
 
   --------------------------------------------------------------------------
 
-  -- Create a new lock
+  -- The general purpose mutex
   type Mutex (Kind : Mutex_Kind := Simple) is record
     case Kind is
       when Simple =>

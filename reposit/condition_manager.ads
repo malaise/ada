@@ -1,6 +1,9 @@
 with Ada.Task_Identification;
 package Condition_Manager is
 
+  -- A condition is a waiting point on which one or several tasks may
+  --  wait until un-blocked, either one by one (signal) or all together
+  --  (broadcast).
   type Condition is private;
 
   -- Get access to the condition
@@ -22,6 +25,7 @@ package Condition_Manager is
   -- Does current task have the access to the condition
   function Is_Owner (A_Condition : Condition) return Boolean;
 
+
   -- Atomically release the mutex and block the calling task on the condition
   -- Upon successful return, the access to the condition is already granted to
   --  the calling task
@@ -32,10 +36,11 @@ package Condition_Manager is
                  Waiting_Time : Duration) return Boolean;
   procedure Wait (A_Condition  : in Condition);
 
-  -- Unblock at least one of the blocked tasks
+
+  -- Unblock at least one of the waiting tasks
   procedure Signal (A_Condition  : in Condition);
 
-  -- Unblock all the blocked tasks
+  -- Unblock all the waiting tasks
   procedure Broadcast (A_Condition  : in Condition);
 
 private
