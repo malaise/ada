@@ -5,8 +5,7 @@ EXES := asubst asubst.stat
 
 CLIBS := cutil
 
-TPATH := $(CPATH:%=%/$(LIB))
-LARGS_asubst.stat := $(TPATH)/libcutil.a
+LARGS_asubst.stat := $(CPATHD)/libcutil.a
 
 include $(TEMPLATES)/ada.mk
 
