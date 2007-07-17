@@ -1,5 +1,5 @@
--- Set la list of regex and success condition
--- Check a string versus le citeria one after the other
+-- Set a list of regex expressions and success conditions
+-- Check a string versus the citeria one after the other
 with Dynamic_List, Regular_Expressions;
 package Regex_Filters is
 
