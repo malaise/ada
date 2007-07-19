@@ -85,6 +85,10 @@ package Sys_Calls is
   -- May raise Name_Error or Access_Error
   function File_Stat (File_Name : String) return File_Stat_Rec;
 
+  -- Set file mode
+  -- May raise Name_Error or Access_Error
+  procedure Set_Rights (File_Name : in String; Rights : in Natural);
+
   -- Convert file time
   function Time_Of (Time : Time_T) return Ada.Calendar.Time;
 

@@ -329,6 +329,25 @@ package body Sys_Calls is
             Size       => Stat4C.C_Size);
   end File_Stat;
 
+  -- Set file mode
+  procedure Set_Rights (File_Name : in String; Rights : in Natural) is
+    function C_Chmod (File_Name : System.Address; Mode : Integer)
+             return Integer;
+    pragma Import (C, C_Chmod, "chmod");
+    File_Name4C : constant String := Str_For_C (File_Name);
+    Res : Integer;
+    use Bit_Ops;
+  begin
+    Res := C_Chmod (File_Name4C'Address, Rights and 8#00007777#);
+    if Res = -1 then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
+      else
+        raise Access_Error;
+      end if;
+    end if;
+  end Set_Rights;
+
   -- Convert file time
   type C_Tm_T is record
     Tm_Sec  : Integer;
