@@ -79,7 +79,7 @@ package Parser is
 
   -- Return the string to which the iterator was set.
   -- If not Normalized, the string returned has the same indexes as the initial,
-  --  otherwise it is from 1 to N, shorter then the initial string.
+  --  otherwise it is from 1 to N, shorter than the initial string.
   -- May raise Constraint_Error if Iter is not set.
   function Image (Iter : Iterator; Normalize : Boolean := True)
                  return String;
