@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V3_6";
+  Version : constant String  := "V3_7";
 
   procedure Usage is
   begin
@@ -11,7 +11,7 @@ procedure Asubst is
      "Usage: " & Argument.Get_Program_Name
                & " [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]");
     Sys_Calls.Put_Line_Error (
-     "or:    " & Argument.Get_Program_Name & " -h | --help | -v | --version");
+     "or:    " & Argument.Get_Program_Name & " -h | --help | -V | --version");
     Sys_Calls.Put_Line_Error (
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
   end Usage;
@@ -170,7 +170,7 @@ begin
 
   -- Check nb of arguments
   if Argument.Get_Nbre_Arg = 1 then
-    if Argument.Get_Parameter = "-v"
+    if Argument.Get_Parameter = "-V"
     or else Argument.Get_Parameter = "--version" then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
       Sys_Calls.Set_Error_Exit_Code;
@@ -324,6 +324,14 @@ begin
     end if;
   end loop;
 
+  -- Set language (for regexp)
+  Language.Set_Language (Lang);
+  if Debug.Set then
+    Sys_Calls.Put_Line_Error ("Regex assumes language to be "
+       & Mixed_Str (Language.Language_List'Image(
+                Language.Get_Language)));
+  end if;
+
   -- Parse both patterns
   if Argument.Get_Nbre_Arg < Start + 1 then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -360,18 +368,6 @@ begin
     end if;
   end if;
 
-  -- Put processing mode
-  if Debug.Set then
-    if Lang = Language.Lang_Utf_8 then
-      Sys_Calls.Put_Line_Error ("Assuming charset is UTF-8");
-    elsif  Lang = Language.Lang_C then
-      Sys_Calls.Put_Line_Error ("Assuming charset is ASCII");
-    end if;
-    Language.Set_Language (Lang);
-    Sys_Calls.Put_Line_Error ("Regex assumes language to be "
-       & Mixed_Str (Language.Language_List'Image(
-                Language.Get_Language)));
-  end if;
 
   -- Process files
   Ok := True;
