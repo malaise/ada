@@ -1,5 +1,5 @@
-with Ada.Text_Io;
-with Basic_Proc, Parser, Argument;
+with Ada.Text_Io, Ada.Strings.Unbounded;
+with Basic_Proc, Parser, Parser.All_In_One, Argument, Mixed_Str;
 procedure T_Parser is
 
   Sep : Character := '.';
@@ -36,7 +36,7 @@ begin
     return;
   end if;
 
-  Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "'.");
+  Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "':");
   Parser.Set (It, Str, Is_Sep_Acc);
 
   loop
@@ -47,6 +47,7 @@ begin
 
   Parser.Reset (It);
 
+  Ada.Text_Io.Put_Line ("Getting indexes:");
   loop
     Parser.Next_Word (It);
     Ada.Text_Io.Put_Line ("Word is >" & Parser.Current_Word (It) & "<"
@@ -71,8 +72,24 @@ begin
       end;
     end loop;
   end if;
-
   Parser.Del (It);
+  Ada.Text_Io.New_Line;
+
+  Ada.Text_Io.Put_Line ("Parsing all in one:");
+  Parser.Set (It, Str, Is_Sep_Acc);
+  declare
+    Parsed : constant Parser.All_In_One.Parsed_Array
+           := Parser.All_In_One.Parse_All (It);
+  begin
+    for I in Parsed'Range loop
+      Ada.Text_Io.Put_Line ("Got >"
+       & Ada.Strings.Unbounded.To_String (Parsed(I).Str)
+       & "< of kind " & Mixed_Str (Parsed(I).Kind'Img) );
+    end loop;
+  end;
+  Parser.Del (It);
+  Ada.Text_Io.New_Line;
+
   Ada.Text_Io.Put_Line ("Done.");
 
 end T_Parser;
