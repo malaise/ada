@@ -31,8 +31,8 @@ package body Substit is
   -- Current line number
   Line_No : Long_Long_Natural;
 
-  -- Display error and raise Substit_Error
-  procedure Error (Msg : in String);
+  -- Display error. If Give_Up then also cleanup and raise Substit_Error
+  procedure Error (Msg : in String; Give_Up : in Boolean := True);
 
   -- Check that this is a file we can read and write
   procedure Check_File (File_Name : in String) is
@@ -142,7 +142,7 @@ package body Substit is
   procedure Comit (Backup : in Boolean) is
     Result : Boolean;
   begin
-    if Backup and then not Is_Stdin then
+    if Backup then
       -- Copy in file as .asu if Backup
       Result := Copy_File (Asu.To_String (In_File_Name),
                            Asu.To_String (In_File_Name) & ".asu");
@@ -153,14 +153,25 @@ package body Substit is
         return;
       end if;
     end if;
+
+    -- Propagate access rights from In_File to Out_File
+    begin
+      Sys_Calls.Set_Rights (Asu.To_String (Out_File_Name),
+          Sys_Calls.File_Stat (Asu.To_String (In_File_Name)).Rights);
+    exception
+      when others =>
+        Error ("Cannot propagate rights of " & Asu.To_String (In_File_Name)
+             & " to " & Asu.To_String (Out_File_Name));
+    end;
+
     -- Rename out file as in file
     Result := Sys_Calls.Rename (Asu.To_String (Out_File_Name),
                                 Asu.To_String (In_File_Name));
     if not Result then
       Error ("Cannot move " & Asu.To_String (Out_File_Name)
            & " to " & Asu.To_String (In_File_Name));
-      Clean;
     end if;
+
   end Comit;
 
   -- Open Files
@@ -214,13 +225,15 @@ package body Substit is
   end Open;
 
   -- Reports an error
-  procedure Error (Msg : in String) is
+  procedure Error (Msg : in String; Give_Up : in Boolean := True) is
   begin
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
         & " ERROR: " & Msg & ".");
-    Close;
-    Clean;
-    raise Substit_Error;
+    if Give_Up then
+      Close;
+      Clean;
+      raise Substit_Error;
+    end if;
   end Error;
 
   -- Read the number of lines and New_Lines requested
@@ -334,7 +347,8 @@ package body Substit is
     Close;
     -- After close, comit or clean
     if not Is_Stdin
-    and then (Total_Subst /= 0 or else Test) then
+    and then Total_Subst /= 0
+    and then not Test then
       Comit (Backup);
     else
       Clean;
