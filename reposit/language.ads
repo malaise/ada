@@ -1,7 +1,7 @@
 package Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
-  --  ending by ".UTF-8". This is the default behaviour.
+  --  containing "UTF-8". This is the default behaviour.
   -- Once set or got, the language should not be changed because
   --  several text processing utilities depend on it.
   -- Attempts to set or get language twice will raise Language_Already_Set

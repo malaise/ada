@@ -3,7 +3,7 @@ with Environ, Utf_8, String_Mng;
 package body Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
-  --  ending by ".UTF-8". This is the default behaviour.
+  --  containing "UTF-8". This is the default behaviour.
   -- type Language_List is (Lang_C, Lang_Utf_8, Get_Env);
 
   -- Language management
@@ -39,7 +39,7 @@ package body Language is
 
   procedure Force_Language (Language : in Language_List) is
   begin
-    if Lang = Get_Env then
+    if Language = Get_Env then
       Getenv_Lang;
     else
       Lang := Language;
