@@ -1,5 +1,11 @@
 History of Asubst:
 ------------------
+18/07/2007 V3_7
+Bugfix: Change -v to -V for --version.
+Bugfix: Do not commit when -t.
+Bugfix: Propagate all access right of original file into new file.
+Bugfix: Fix language setting (env and/or arg).
+
 22/04/2007 V3_6
 Add: -t or --test option.
 
