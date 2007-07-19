@@ -47,6 +47,9 @@ begin
   Char_Io.Close (In_File);
   Char_Io.Close (Out_File);
 
+  -- Propagate access rights
+  Sys_Calls.Set_Rights (Dst_Name, Sys_Calls.File_Stat (Src_Name).Rights);
+
   return True;
 exception
   when others =>
