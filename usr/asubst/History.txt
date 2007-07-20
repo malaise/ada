@@ -1,10 +1,11 @@
 History of Asubst:
 ------------------
 18/07/2007 V3_7
+Bugfix: Fix and robustify the parsing of arguments.
+Bugfix: Fix language setting (env and/or arg).
 Bugfix: Change -v to -V for --version.
 Bugfix: Do not commit when -t.
 Bugfix: Propagate all access right of original file into new file.
-Bugfix: Fix language setting (env and/or arg).
 
 22/04/2007 V3_6
 Add: -t or --test option.
@@ -90,3 +91,4 @@ First version passing basic tests.
 
 30/11/2005 Init
 Initial version.
+
