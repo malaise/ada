@@ -121,6 +121,8 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
+  -- No of argument
+  N_Arg : positive;
   -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
@@ -190,138 +192,144 @@ begin
 
   -- Parse options
   Start := 1;
-  for I in 1 .. 4 loop
-    if Argument.Get_Parameter (Occurence => I) = "--" then
+  N_Arg := 1;
+  loop
+    if Argument.Get_Parameter (Occurence => N_Arg) = "--" then
       -- Force end of options
-      Start := I + 1;
+      Start := N_Arg + 1;
       exit;
-    elsif Argument.Get_Parameter (Occurence => I) = "-a"
-    or else Argument.Get_Parameter (Occurence => I) = "--ascii" then
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-a"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--ascii" then
       -- Force ASCII processing even if ENV was set
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option ascii");
       end if;
       Lang := Language.Lang_C;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-b"
-    or else Argument.Get_Parameter (Occurence => I) = "--basic" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-b"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--basic" then
       -- Basic regex
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option basic regex");
       end if;
       Extended := False;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-f"
-    or else Argument.Get_Parameter (Occurence => I) = "--file" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-f"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--file" then
       -- The file will be a list of files
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option file of files");
       end if;
       File_Of_Files := True;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-i"
-    or else Argument.Get_Parameter (Occurence => I) = "--ignorecase" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-i"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--ignorecase" then
       -- Case insensitive match
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option ignore case");
       end if;
       Case_Sensitive := False;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-m"
-    or else (Argument.Get_Parameter (Occurence => I)'Length > 6
-     and then Argument.Get_Parameter (Occurence => I)(1 .. 6) = "--max=" ) then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-m"
+    or else (Argument.Get_Parameter (Occurence => N_Arg)'Length > 6
+     and then Argument.Get_Parameter (Occurence => N_Arg)(1 .. 6)
+                                         = "--max=" ) then
       -- Stop each file after <max> substitutions
       begin
-        if Argument.Get_Parameter (Occurence => I) = "-m" then
+        if Argument.Get_Parameter (Occurence => N_Arg) = "-m" then
           -- -m <max>
           Max := Substit.Long_Long_Natural'Value (
-            Argument.Get_Parameter (Occurence => I + 1));
-          Start := I + 2;
+            Argument.Get_Parameter (Occurence => N_Arg + 1));
+          Start := N_Arg + 2;
         else
           -- --max=<max>
           declare
-            Str : constant String := Argument.Get_Parameter (Occurence => I);
+            Str : constant String := Argument.Get_Parameter (Occurence => N_Arg);
           begin
             Max := Substit.Long_Long_Natural'Value (Str (7 .. Str'Last));
           end;
-          Start := I + 1;
+          Start := N_Arg + 1;
         end if;
       exception
         when others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
              & ": Syntax ERROR. Invalid specification of max subtitutions.");
           Error;
+          return;
       end;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
       end if;
-    elsif Argument.Get_Parameter (Occurence => I) = "-n"
-    or else Argument.Get_Parameter (Occurence => I) = "--number" then
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-n"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--number" then
       -- Put number of substitutions
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option put numbers");
       end if;
       Verbosity := Put_Subst_Nb;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-q"
-    or else Argument.Get_Parameter (Occurence => I) = "--quiet" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-q"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--quiet" then
       -- Quiet mode
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option quiet");
       end if;
       Verbosity := Quiet;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-s"
-    or else Argument.Get_Parameter (Occurence => I) = "--save" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-s"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--save" then
       -- Make backup
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option make backup");
       end if;
       Backup := True;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-t"
-    or else Argument.Get_Parameter (Occurence => I) = "--test" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-t"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--test" then
       -- Test mode
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option test");
       end if;
       Test := True;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-u"
-    or else Argument.Get_Parameter (Occurence => I) = "--utf8" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-u"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--utf8" then
       -- Process utf-8 sequences
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option utf8");
       end if;
       Lang := Language.Lang_Utf_8;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-v"
-    or else Argument.Get_Parameter (Occurence => I) = "--verbose" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-v"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--verbose" then
       -- Verbose put each substit
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option verbose");
       end if;
       Verbosity := Verbose;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I) = "-x"
-    or else Argument.Get_Parameter (Occurence => I) = "--noregex" then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-x"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--noregex" then
       -- Find pattern is not a regex
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Option noregex");
       end if;
       Is_Regex := False;
-      Start := I + 1;
-    elsif Argument.Get_Parameter (Occurence => I)(1) = '-' then
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) /= ""
+    and then Argument.Get_Parameter (Occurence => N_Arg)(1) = '-' then
       -- Not a valid option
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                              & ": Syntax ERROR. Invalid option "
-                              & Argument.Get_Parameter (Occurence => I) & ".");
+                      & ": Syntax ERROR. Invalid option "
+                      & Argument.Get_Parameter (Occurence => N_Arg) & ".");
       Error;
       return;
     else
       -- Not an option
       exit;
     end if;
+    N_Arg := N_Arg + 1;
+    exit when N_Arg > Argument.Get_Nbre_Arg;
   end loop;
 
   -- Set language (for regexp)
@@ -336,6 +344,7 @@ begin
   if Argument.Get_Nbre_Arg < Start + 1 then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
     Error;
+    return;
   end if;
   begin
     Search_Pattern.Parse (
@@ -375,7 +384,7 @@ begin
     -- No file: stdin -> stdout
     if Backup then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                & ": ERROR. Cannot make backup if no file name.");
+                & ": ERROR. Cannot make backup when no file name.");
       Ok := False;
     else
       begin
