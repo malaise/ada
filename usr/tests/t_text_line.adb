@@ -2,12 +2,12 @@ with Sys_Calls, Argument, Text_Line;
 procedure T_Text_Line is
 
   procedure Do_One (File_Name : in String) is
-    Fd : Sys_Calls.File_Desc;
+    In_Fd : Sys_Calls.File_Desc;
     In_File, Out_File : Text_Line.File_Type;
   begin
     if File_Name /= "" then
-      Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
-      Text_Line.Open (In_File, Text_Line.In_File, Fd);
+      In_Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
+      Text_Line.Open (In_File, Text_Line.In_File, In_Fd);
     else
       Text_Line.Open (In_File, Text_Line.In_File, Sys_Calls.Stdin);
     end if;
@@ -22,7 +22,7 @@ procedure T_Text_Line is
     end loop;
     Text_Line.Close (In_File);
     if File_Name /= "" then
-      Sys_Calls.Close (Fd);
+      Sys_Calls.Close (In_Fd);
       Text_Line.Put_Line (Out_File, "<<EOF>>");
     end if;
     Text_Line.Close (Out_File);
