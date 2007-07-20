@@ -1,6 +1,8 @@
 with Ada.Text_Io;
-with Normal;
+with Normal, Sys_Calls, Int_Image;
 package body Trace is
+
+  function Pid_Image is new Int_Image (Sys_Calls.Pid);
 
   File            : Ada.Text_Io.File_Type;
   Trace_File_Name : constant String := "_trace_";
@@ -15,9 +17,10 @@ package body Trace is
 
   procedure Create is
   begin
-    Ada.Text_Io.Create (File => File,
-                        Mode => Ada.Text_Io.Out_File,
-                        Name => Trace_File_Name);
+    Ada.Text_Io.Create (
+         File => File,
+         Mode => Ada.Text_Io.Out_File,
+         Name => Trace_File_Name & Pid_Image (Sys_Calls.Get_Pid));
     Created := True;
   end Create;
 
