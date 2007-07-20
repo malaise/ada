@@ -92,6 +92,7 @@ package body Text_Line is
       -- Fill buffer if needed
       if File.Buffer_Len = 0 then
          Read (File);
+         exit when File.Buffer_Len = 0;
       end if;
       -- Locate next newline in buffer
       Stop_Index := 0;
@@ -107,15 +108,8 @@ package body Text_Line is
         File.Buffer_Index := Stop_Index;
         exit;
       else
-        -- No newline was found: append buffer
+        -- No newline was found: append buffer and go on reading
         Asu.Append (Str, File.Buffer(File.Buffer_Index + 1 .. File.Buffer_Len));
-        if File.Buffer_Len /= Buffer_Size then
-          -- No newline was found but end of file reached.
-          -- Next read will return ""
-          File.Buffer_Index := File.Buffer_Len;
-          exit;
-        end if;
-        -- No newline was found: prepare for next read
         File.Buffer_Len := 0;
       end if;
     end loop;
