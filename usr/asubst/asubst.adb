@@ -3,7 +3,7 @@ with Environ, Argument, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V3_7";
+  Version : constant String  := "V3_8";
 
   procedure Usage is
   begin
@@ -20,13 +20,15 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -b | -f |  -i | -m <max> | -n | -q | -s | -t | -u | -v | -x | --");
+     "  <option> ::= -a | -b | -f | -g | -i | -m <max> | -n | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
      "    -f or --file to indicate that <file> will be a list of file names,");
+    Sys_Calls.Put_Line_Error (
+     "    -g or --grep to print matching text as grep would do (no subst),");
     Sys_Calls.Put_Line_Error (
      "    -i or --ignorecase for case insensitive match,");
     Sys_Calls.Put_Line_Error (
@@ -118,6 +120,7 @@ procedure Asubst is
   Max : Substit.Long_Long_Natural := 0;
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
+  Grep : Boolean := False;
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
@@ -143,7 +146,7 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Max, Backup, Verbosity = Verbose, Test);
+                  Max, Backup, Verbosity = Verbose, Grep, Test);
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
       Ada.Text_Io.Put_Line (File_Name);
@@ -221,6 +224,14 @@ begin
         Sys_Calls.Put_Line_Error ("Option file of files");
       end if;
       File_Of_Files := True;
+      Start := N_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-g"
+    or else Argument.Get_Parameter (Occurence => N_Arg) = "--grep" then
+      -- Put matching text like grep would do
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Option grep display");
+      end if;
+      Grep := True;
       Start := N_Arg + 1;
     elsif Argument.Get_Parameter (Occurence => N_Arg) = "-i"
     or else Argument.Get_Parameter (Occurence => N_Arg) = "--ignorecase" then
@@ -366,6 +377,14 @@ begin
       return;
   end;
 
+  -- Dependancies
+  -- Grep => Test, not verbose, not backup
+  if Grep then
+    Test := True;
+    Verbosity := Quiet;
+    Backup := False;
+  end if;
+
   -- One file argument if file of files
   if File_Of_Files then
     if Argument.Get_Nbre_Arg /= Start then
@@ -377,7 +396,6 @@ begin
     end if;
   end if;
 
-
   -- Process files
   Ok := True;
   if Argument.Get_Nbre_Arg < Start then
@@ -388,8 +406,13 @@ begin
       Ok := False;
     else
       begin
-        Nb_Subst := Substit.Do_One_File (Substit.Std_In_Out, Max,
-                                         False, False, Test);
+        Nb_Subst := Substit.Do_One_File (
+            File_Name => Substit.Std_In_Out,
+            Max_Subst => Max,
+            Backup    => False,
+            Verbose   => False,
+            Grep      => Grep,
+            Test      => Test);
       exception
         when Substit.Substit_Error =>
           Ok := False;

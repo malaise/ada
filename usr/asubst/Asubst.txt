@@ -1,5 +1,5 @@
                                  Asubst
-                                  V3_7
+                                  V3_8
 
 
 1. General syntax
@@ -15,6 +15,7 @@ matching.
 -a or --ascii : consider that input flow or file is pure ASCII.
 -b or --basic : use 'basic' regex instead of the default 'extended' regex.
 -f or --file : indicate that <file> will contain names of files to process.
+-g or --grep : print matching text as grep would do (no substitution).
 -i or --ignorecase : do case insensitive match checking of <find_pattern>.
 -m <max> or --max=<max> : stop processing each file after <max> substitutions,
     (0 for infinite).

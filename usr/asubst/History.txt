@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+18/07/2007 V3_8
+Bugfix: Fix verbose output when multi-line search pattern.
+Add: -g or --grep option.
+
 18/07/2007 V3_7
 Bugfix: Fix and robustify the parsing of arguments.
 Bugfix: Fix language setting (env and/or arg).

@@ -304,12 +304,14 @@ package body Substit is
   procedure Flush_Lines;
   function Subst_Lines (Max_Subst : Long_Long_Natural;
                         Verbose : Boolean;
+                        Grep      : Boolean;
                         Test    : Boolean) return Long_Long_Natural;
 
   function Do_One_File (File_Name : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
                         Verbose   : Boolean;
+                        Grep      : Boolean;
                         Test      : Boolean) return Long_Long_Natural is
     Total_Subst : Long_Long_Natural;
     Remain_Subst : Long_Long_Natural;
@@ -331,7 +333,8 @@ package body Substit is
       -- Done when the amount of lines cannot be read
       exit when not Read;
       -- Process these lines
-      Total_Subst := Total_Subst + Subst_Lines (Remain_Subst, Do_Verbose, Test);
+      Total_Subst := Total_Subst
+           + Subst_Lines (Remain_Subst, Do_Verbose, Grep, Test);
       -- Done when amount of substitutions reached
       if Max_Subst /= 0 then
         exit when Max_Subst = Total_Subst;
@@ -366,6 +369,7 @@ package body Substit is
   function Subst_One_Line (Line      : Str_Access;
                            Max_Subst : Long_Long_Natural;
                            Verbose   : Boolean;
+                           Grep      : Boolean;
                            Test      : Boolean) return Long_Long_Natural is
     Current : Positive;
     Nb_Match : Long_Long_Natural;
@@ -399,6 +403,11 @@ package body Substit is
             & Asu.Slice (Line.all, Match_Res.First_Offset,
                                    Match_Res.Last_Offset_Stop)
             & " -> " & Replacing);
+        elsif Grep then
+          if not Is_Stdin then
+            Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
+          end if;
+          Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
         end if;
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Replacing by "
@@ -470,17 +479,41 @@ package body Substit is
   -- Check current list of lines vs search patterns
   function Subst_Lines (Max_Subst : Long_Long_Natural;
                         Verbose   : Boolean;
+                        Grep      : Boolean;
                         Test      : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
     Matches : Boolean;
+    -- Put matching text, complete lines text or just the matching text
+    procedure Put_Match  (Complete : in Boolean) is
+    begin
+      if Complete then
+        Ada.Text_Io.Put(Asu.To_String (First_Line.all));
+      else
+        Ada.Text_Io.Put(Asu.Slice (First_Line.all,
+                                   Match_Res.First_Offset,
+                                   Asu.Length (First_Line.all)));
+      end if;
+      Line_List_Mng.Rewind (Line_List);
+      for I in 2 .. Nb_Pattern - 1 loop
+        Line_List_Mng.Move_To (Line_List);
+        Line := Line_List_Mng.Access_Current (Line_List);
+        Ada.Text_Io.Put (Asu.To_String (Line.all));
+      end loop;
+      if Complete then
+        Ada.Text_Io.Put(Asu.To_String (Last_Line.all));
+      else
+        Ada.Text_Io.Put (Asu.Slice (Last_Line.all,
+                        1, Match_Res.Last_Offset_Stop));
+      end if;
+    end Put_Match;
   begin
     -- Rewind read lines
     Line_List_Mng.Rewind (Line_List);
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
       return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
-                             Max_Subst, Verbose, Test);
+                             Max_Subst, Verbose, Grep, Test);
     end if;
 
     -- Check all patterns until one does not match
@@ -507,16 +540,7 @@ package body Substit is
       end if;
     end loop;
 
-    if not Matches or else Test then
-      -- If not match, put first line and delete it
-      Line_List_Mng.Rewind (Line_List);
-      Line := Line_List_Mng.Access_Current (Line_List);
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
-      end if;
-      Text_Line.Put (Out_File, Asu.To_String (Line.all));
-      Line_List_Mng.Delete (Line_List);
-    else
+    if Matches then
       -- Match, build string to replace:
       Match_Res := Search_Pattern.Str_Indexes;
       -- Get access to first and last lines of input
@@ -544,18 +568,38 @@ package body Substit is
         end if;
         -- Display verbose substitution
         if Verbose then
-          Ada.Text_Io.Put_Line (
+          Ada.Text_Io.Put (
               Long_Long_Natural'Image(Line_No
                                     - Long_Long_Natural(Nb_Pattern) / 2)
-            & " -> " & Str_Replacing);
+            & " : ");
+          Put_Match (False);
+          Ada.Text_Io.Put_Line (" -> " & Str_Replacing);
+        elsif Grep then
+          if not Is_Stdin then
+            Ada.Text_Io.Put (Asu.To_String (In_File_Name & ":"));
+          end if;
+          Put_Match (True);
+          Ada.Text_Io.New_Line;
         end if;
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
+        if not Test then
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
+          end if;
+          Text_Line.Put (Out_File, Asu.To_String (Str_Replaced));
+          -- Delete all
+          Line_List_Mng.Delete_List (Line_List, False);
         end if;
-        Text_Line.Put (Out_File, Asu.To_String (Str_Replaced));
       end;
-      -- Delete all
-      Line_List_Mng.Delete_List (Line_List, False);
+    end if;
+    if not Matches or else Test then
+      -- If not match or test, put first line and delete it
+      Line_List_Mng.Rewind (Line_List);
+      Line := Line_List_Mng.Access_Current (Line_List);
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+      end if;
+      Text_Line.Put (Out_File, Asu.To_String (Line.all));
+      Line_List_Mng.Delete (Line_List);
     end if;
     -- Return number of subtitutions performed
     if Matches then

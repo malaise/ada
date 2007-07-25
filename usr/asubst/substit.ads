@@ -12,6 +12,7 @@ package Substit is
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
                         Verbose   : Boolean;
+                        Grep      : Boolean;
                         Test      : Boolean) return Long_Long_Natural;
   -- Error handled and traced by Do_One
   Substit_Error : exception;
