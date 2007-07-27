@@ -32,7 +32,7 @@ matching.
 
 
 3. Environment
-If the LANG environment variable is set to "<something>.UTF-8", then asubst
+If the LANG environment variable is set to something containing "UTF-8", then asubst
 considers that input flow or file is coded in Utf-8. This setting can be
 altered in a way or the other by setting ASUBST_UTF8 environment variable
 to Y, yes, N or no (with whatever casing). Finally, this setting can be

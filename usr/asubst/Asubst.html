@@ -3,19 +3,19 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.2  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
 	<META NAME="CHANGEDBY" CONTENT="MALAISE">
-	<META NAME="CHANGED" CONTENT="20070422;21110800">
+	<META NAME="CHANGED" CONTENT="20070727;7355800">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_6</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V3_8</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
 ]</FONT><BR><FONT FACE="monospace">or&nbsp;&nbsp;&nbsp;: asubst -h |
---help | -v | --version</FONT><BR><FONT FACE="monospace">Substitutes
+--help | -V | --version</FONT><BR><FONT FACE="monospace">Substitutes
 strings in files.</FONT><BR><FONT FACE="monospace">If no file name is
 specified, substitutes from stdin to stdout.</FONT><BR><FONT FACE="monospace">See
 &quot;man 7 regex&quot; for basic and extended regex and for
@@ -25,23 +25,25 @@ ignorecase pattern matching.</FONT></P>
 input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
 regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-f
 or --file : indicate that &lt;file&gt; contains the names of files to
-process.</FONT><BR><FONT FACE="monospace">-i or --ignorecase : do
-case insensitive match checking of &lt;find_pattern&gt;.<BR>-m &lt;max&gt;
-or --max=&lt;max&gt; : stop processing each file after &lt;max&gt;
-substitutions, (0 for infinite).<BR>-n or --number : print number of
-substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
-or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR><SPAN LANG="en-GB">-t
+process.<BR>-g or --grep : print matching text as grep would do (no
+substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
+do case insensitive match checking of &lt;find_pattern&gt;.<BR>-m
+&lt;max&gt; or --max=&lt;max&gt; : stop processing each file after
+&lt;max&gt; substitutions, (0 for infinite).<BR>-n or --number :
+print number of substitutions per file.<BR>-q or --quiet : for no
+printout.</FONT><BR><FONT FACE="monospace">-s or --save : make a copy
+(&lt;file&gt;.asu) of original file(s),<BR></FONT><FONT FACE="monospace"><SPAN LANG="en-GB">-t
 or --test for test, substitutions not performed,<BR>-u or --utf8 :
 process utf-8 sequences.<BR>-v or --verbose : print each substitution
-and its line number</SPAN>.<BR>-x or --noregex : &lt;find_pattern&gt;
-is only the string to find, not a regex. This allows \x00. There is
-no multiple regex nor substring.</FONT><BR><FONT FACE="monospace">--
+and its line number</SPAN></FONT><FONT FACE="monospace">.<BR>-x or
+--noregex : &lt;find_pattern&gt; is only the string to find, not a
+regex. This allows \x00. There is no multiple regex nor substring.</FONT><BR><FONT FACE="monospace">--
 : to end the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
 then use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; }
 ] -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">3. Environment</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">If the LANG environment
-variable is set to &quot;&lt;something&gt;.UTF-8&quot;, then asubst
+variable is set to something containing “UTF-8&quot;, then asubst
 considers that input flow or file is coded in Utf-8. This setting can
 be altered in a way or the other by setting ASUBST_UTF8 environment
 variable to Y, yes, N or no (with whatever casing). Finally, this
