@@ -125,7 +125,7 @@ procedure Asubst is
   Is_Regex : Boolean := True;
   Test : Boolean := False;
   -- No of argument
-  N_Arg : positive;
+  N_Arg : Positive;
   -- Start index (in nb args) of patterns
   Start : Positive;
   -- Overall result
