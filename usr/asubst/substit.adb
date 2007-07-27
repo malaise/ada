@@ -408,15 +408,17 @@ package body Substit is
             Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
           end if;
           Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
-        end if;
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Replacing by "
-            & Asu.Slice (Line.all, Match_Res.First_Offset,
-                                   Match_Res.Last_Offset_Stop)
-            & " -> " & Replacing);
+          -- Display one match per line
+          exit;
         end if;
         if not Test then
           -- Substitute from start to stop
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error ("Replacing by "
+              & Asu.Slice (Line.all, Match_Res.First_Offset,
+                                     Match_Res.Last_Offset_Stop)
+              & " -> " & Replacing);
+          end if;
           Asu.Replace_Slice (Line.all,
                              Match_Res.First_Offset,
                              Match_Res.Last_Offset_Stop,
@@ -432,11 +434,13 @@ package body Substit is
       --  (Max_Subst may be 0 for infinite)
       exit when Nb_Match = Max_Subst;
     end loop;
-    -- Put the (modified) line
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+    if not Grep then
+      -- Put the (modified) line
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+      end if;
+      Text_Line.Put (Out_File, Asu.To_String (Line.all));
     end if;
-    Text_Line.Put (Out_File, Asu.To_String (Line.all));
     -- Delete all
     Line_List_Mng.Delete_List (Line_List, False);
     return Nb_Match;
@@ -566,8 +570,8 @@ package body Substit is
                          Match_Res.Last_Offset_Stop + 1,
                          Asu.Length (Last_Line.all)));
         end if;
-        -- Display verbose substitution
         if Verbose then
+          -- Display verbose substitution
           Ada.Text_Io.Put (
               Long_Long_Natural'Image(Line_No
                                     - Long_Long_Natural(Nb_Pattern) / 2)
@@ -575,6 +579,7 @@ package body Substit is
           Put_Match (False);
           Ada.Text_Io.Put_Line (" -> " & Str_Replacing);
         elsif Grep then
+          -- Display grep result
           if not Is_Stdin then
             Ada.Text_Io.Put (Asu.To_String (In_File_Name & ":"));
           end if;
@@ -582,6 +587,7 @@ package body Substit is
           Ada.Text_Io.New_Line;
         end if;
         if not Test then
+          -- Write result
           if Debug.Set then
             Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
           end if;
@@ -595,10 +601,12 @@ package body Substit is
       -- If not match or test, put first line and delete it
       Line_List_Mng.Rewind (Line_List);
       Line := Line_List_Mng.Access_Current (Line_List);
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+      if not Grep then
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+        end if;
+        Text_Line.Put (Out_File, Asu.To_String (Line.all));
       end if;
-      Text_Line.Put (Out_File, Asu.To_String (Line.all));
       Line_List_Mng.Delete (Line_List);
     end if;
     -- Return number of subtitutions performed
