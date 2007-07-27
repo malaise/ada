@@ -3,14 +3,13 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.2  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGEDBY" CONTENT="MALAISE">
-	<META NAME="CHANGED" CONTENT="20070727;7355800">
+	<META NAME="CHANGED" CONTENT="20070727;15052300">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V3_8</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V3_8</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -32,15 +31,15 @@ do case insensitive match checking of &lt;find_pattern&gt;.<BR>-m
 &lt;max&gt; substitutions, (0 for infinite).<BR>-n or --number :
 print number of substitutions per file.<BR>-q or --quiet : for no
 printout.</FONT><BR><FONT FACE="monospace">-s or --save : make a copy
-(&lt;file&gt;.asu) of original file(s),<BR></FONT><FONT FACE="monospace"><SPAN LANG="en-GB">-t
-or --test for test, substitutions not performed,<BR>-u or --utf8 :
-process utf-8 sequences.<BR>-v or --verbose : print each substitution
-and its line number</SPAN></FONT><FONT FACE="monospace">.<BR>-x or
---noregex : &lt;find_pattern&gt; is only the string to find, not a
-regex. This allows \x00. There is no multiple regex nor substring.</FONT><BR><FONT FACE="monospace">--
-: to end the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
-then use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; }
-] -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
+(&lt;file&gt;.asu) of original file(s),<BR>-t or --test for test,
+substitutions not performed,<BR>-u or --utf8 : process utf-8
+sequences.<BR>-v or --verbose : print each substitution and its line
+number.<BR>-x or --noregex : &lt;find_pattern&gt; is only the string
+to find, not a regex. This allows \x00. There is no multiple regex
+nor substring.</FONT><BR><FONT FACE="monospace">-- : to end the list
+of options. If &lt;find_pattern&gt; is &quot;-pat&quot;, then
+use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; } ] --
+&quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">3. Environment</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">If the LANG environment
 variable is set to something containing “UTF-8&quot;, then asubst
@@ -166,6 +165,10 @@ and is used as such by regex library). It is allowed in noregex mode.</FONT></P>
 are not interpreted in find patern noregex mode.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">In noregex mode, &quot;\rIJ&quot;
 s forbidden.</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="Monospace">7.Exit code</FONT></H1>
+<P LANG="en-GB"><FONT FACE="Monospace">asubst exits with 0 if some
+matching was found, with 1 if no matching was found and with 2
+otherwise (e.g. in case of error).</FONT></P>
 <P LANG="en-GB"><BR><BR>
 </P>
 </BODY>

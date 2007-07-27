@@ -134,3 +134,8 @@ terminator and is used as such by regex library). It is allowed in noregex mode.
 "\A" to "\X" are not interpreted in find patern noregex mode.
 In noregex mode, "\rIJ" s forbidden. 
 
+
+7. Exit code
+asubst exits with 0 if some matching was found, with 1 if no matching
+was found and with 2 otherwise (e.g. in case of error).
+
