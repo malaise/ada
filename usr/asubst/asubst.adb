@@ -5,6 +5,11 @@ procedure Asubst is
 
   Version : constant String  := "V3_8";
 
+  -- Exit codes
+  Ok_Exit_Code : constant Natural := 0;
+  No_Subst_Exit_Code : constant Natural := 1;
+  Error_Exit_Code : constant Natural := 2;
+
   procedure Usage is
   begin
     Sys_Calls.Put_Line_Error (
@@ -103,13 +108,13 @@ procedure Asubst is
      "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_string>""");
     Sys_Calls.Put_Line_Error (
      "    and use -s option if unsure.");
-    Sys_Calls.Set_Error_Exit_Code;
+    Sys_Calls.Set_Exit_Code (Error_Exit_Code);
   end Help;
 
   procedure Error is
   begin
     Usage;
-    Sys_Calls.Set_Error_Exit_Code;
+    Sys_Calls.Set_Exit_Code (Error_Exit_Code);
   end Error;
 
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
@@ -128,8 +133,9 @@ procedure Asubst is
   N_Arg : Positive;
   -- Start index (in nb args) of patterns
   Start : Positive;
-  -- Overall result
+  -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
+  Found : Boolean;
   -- Nb subst per file
   Nb_Subst : Substit.Long_Long_Natural;
   -- Language
@@ -147,6 +153,9 @@ procedure Asubst is
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
                   Max, Backup, Verbosity = Verbose, Grep, Test);
+    if Nb_Subst /= 0 then
+      Found := True;
+    end if;
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
       Ada.Text_Io.Put_Line (File_Name);
@@ -178,7 +187,7 @@ begin
     if Argument.Get_Parameter = "-V"
     or else Argument.Get_Parameter = "--version" then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
-      Sys_Calls.Set_Error_Exit_Code;
+      Sys_Calls.Set_Exit_Code (Error_Exit_Code);
     elsif Argument.Get_Parameter = "-h"
     or else Argument.Get_Parameter = "--help" then
       Help;
@@ -398,6 +407,7 @@ begin
 
   -- Process files
   Ok := True;
+  Found := False;
   if Argument.Get_Nbre_Arg < Start then
     -- No file: stdin -> stdout
     if Backup then
@@ -413,6 +423,9 @@ begin
             Verbose   => False,
             Grep      => Grep,
             Test      => Test);
+        if Nb_Subst /= 0 then
+          Found := True;
+        end if;
       exception
         when Substit.Substit_Error =>
           Ok := False;
@@ -453,7 +466,11 @@ begin
   end if;
 
   if not Ok then
-    Sys_Calls.Set_Error_Exit_Code;
+    Sys_Calls.Set_Exit_Code (Error_Exit_Code);
+  else
+    if not Found then
+      Sys_Calls.Set_Exit_Code (No_Subst_Exit_Code);
+    end if;
   end if;
 end Asubst;
 
