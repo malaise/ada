@@ -1,4 +1,4 @@
--- Make a ADA 83 sources look like a Ada 95 one.
+-- Make a ADA 83 sources look like a Ada 95 & 05 one.
 -- Reserved words are set in lower_case and other identifiers in Mixed_Case.
 -- Numeric literals (extended digits and exponent) are set in UPPERCASE.
 -- Strings and comments are not modified.
@@ -20,7 +20,7 @@ with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
      Lower_Str, Mixed_Str, Upper_Str, Basic_Proc;
 
-procedure Look_95 is
+procedure Alook is
 
   Debug : Boolean := False;
 
@@ -668,5 +668,5 @@ exception
   when others =>
     Basic_Proc.Set_Exit_Code (Problem);
     raise;
-end Look_95;
+end Alook;
 
