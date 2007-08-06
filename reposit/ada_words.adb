@@ -151,6 +151,7 @@ package body Ada_Words is
 
     Store ("if");
     Store ("in");
+    Store ("interface");
     Store ("is");
 
     Store ("limited");
@@ -166,6 +167,7 @@ package body Ada_Words is
     Store ("or");
     Store ("others");
     Store ("out");
+    Store ("overriding");
 
     Store ("package");
     Store ("pragma");
@@ -185,6 +187,7 @@ package body Ada_Words is
     Store ("select");
     Store ("separate");
     Store ("subtype");
+    Store ("synchronized");
 
     Store ("tagged");
     Store ("task");
