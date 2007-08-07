@@ -44,7 +44,7 @@ begin
         -- Put separators and comments unchanged
         Output.Put (Str, False, 0);
       else
-        -- Unexpected, word (with, use, generic arguments...)
+        -- Unexpected word (with, use, generic arguments...)
         -- Parse up to end of statement
         Words.Add (Word);
         Parse_To_End (Parser_Ada.Delimiter, ";", 0);

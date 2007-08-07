@@ -102,6 +102,35 @@ package Test is
   procedure Proc4 (A : in Integer) renames Proc1;
   function Func3 return Integer renames Func2;
 
+  -- Some OO features
+  type Rw is limited interface;
+  subtype Item is Integer;
+  procedure Write(Obj: out Rw; X: in Item) is abstract;
+  procedure Read(Obj: out Rw; X: out Item) is abstract;
+
+  type Simple_RW is new RW with record
+    V: Item;
+  end record;
+  overriding procedure Write(Obj: out Simple_RW; X: in Item);
+  overriding procedure Read(Obj: out Simple_RW; X: out Item);
+
+  type Sync_RW is synchronized interface and RW;
+  protected type Prot_RW is new Sync_RW with
+    overriding procedure Write(X: in Item);
+    overriding procedure Read(X: out Item);
+  private
+    V: Item;
+  end;
+
+  protected type Multi_Prot_RW is new Sync_RW with
+    overriding procedure Write(X: in Item);
+    not overriding function Read return Item;
+  private
+     V: Item;
+  end;
+  overriding procedure Read(Obj: in Multi_Prot_RW; X: out Item);
+
+
 private
 
   type Typ5 is new Integer;

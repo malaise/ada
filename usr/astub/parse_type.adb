@@ -40,8 +40,10 @@ begin
         Output.Put_Line (Words.Concat, True, Level, True);
         Words.Reset;
         return;
-      elsif Str = "access" then
+      elsif Str = "access"
+      or else Str = "null" then
         -- Access type to function or procedure, with args...
+        -- or "null record", which is not parsed as a record (no "end record")
         Parse_To_End (Parser_Ada.Delimiter, ";", Level,
                       Put_Comments => False);
         Fix_Comment (Level);

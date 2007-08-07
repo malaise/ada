@@ -1,6 +1,6 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words,  Parser_Ada, Parse_To_End;
+with Common, Files, Output, Words,  Parser_Ada, Parse_To_End, Fix_Comment;
 
 procedure Parse_Task (Level : in Natural) is
   File : constant Text_Char.File_Type := Files.In_File;
@@ -55,6 +55,24 @@ begin
       Words.Add (Parser_Ada.Reserved_Word, "entry");
       Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
       Output.Put_Line (Words.Concat, True, Level + 1, True);
+    elsif Asu.To_String (Word.Text) = "not" then
+      -- Skip "not overriding" and a separator
+      Words.Add (Word);
+      Parse_To_End (Parser_Ada.Reserved_Word, "overriding", Level + 1,
+                    Up_To_Next_Significant => False);
+      Fix_Comment (Level + 1);
+      Output.Put_Line (Words.Concat, True, Level + 1, False);
+      Words.Reset;
+      Output.Put ("", False, Level + 1, True);
+      Word := Parser_Ada.Multiparse.Get (True);
+    elsif Asu.To_String (Word.Text) = "overriding" then
+      -- Skip "overriding" and a separator
+      Words.Add (Word);
+      Fix_Comment (Level + 1);
+      Output.Put_Line (Words.Concat, True, Level + 1, False);
+      Words.Reset;
+      Output.Put ("", False, Level + 1, True);
+      Word := Parser_Ada.Multiparse.Get (True);
     else
       Common.Error (Asu.To_String (Word.Text));
     end if;

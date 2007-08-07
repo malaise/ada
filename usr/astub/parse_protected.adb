@@ -67,9 +67,33 @@ begin
         Parse_Function (Level + 1, Dummy);
       elsif Str = "entry" then
         Parse_Entry (Level + 1);
+      elsif Str = "not" then
+        -- Skip "not overriding" and a separator
+        Words.Add (Word);
+        Parse_To_End (Parser_Ada.Reserved_Word, "overriding", Level + 1,
+                      Up_To_Next_Significant => False);
+        Fix_Comment (Level + 1);
+        Output.Put_Line (Words.Concat, True, Level + 1, False);
+        Words.Reset;
+        Output.Put ("", False, Level + 1, True);
+        Word := Parser_Ada.Multiparse.Get (True);
+      elsif Str = "overriding" then
+        -- Skip "overriding" and a separator
+        Words.Add (Word);
+        Fix_Comment (Level + 1);
+        Output.Put_Line (Words.Concat, True, Level + 1, False);
+        Words.Reset;
+        Output.Put ("", False, Level + 1, True);
+        Word := Parser_Ada.Multiparse.Get (True);
       elsif Str = "private" then
         -- Put "private" as a comment
         Output.Put_Line (Str, True, Level);
+      elsif Str = "new" then
+        -- Parse until "with" as comment
+        Words.Add (Word);
+        Parse_To_End (Parser_Ada.Reserved_Word, "with", Level + 1);
+        Output.Put (Words.Concat, True, Level, True);
+        Words.Reset;
       else
         -- Unexpected, word. Parse to end as comment
         Words.Add (Word);
