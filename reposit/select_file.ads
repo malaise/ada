@@ -1,4 +1,4 @@
-with Afpx, Null_Procedure;
+with Afpx;
 generic
   -- Any initialisation to do after descriptor activation
   with procedure Init_Procedure is null;

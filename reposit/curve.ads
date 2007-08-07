@@ -1,4 +1,4 @@
-with My_Math, Null_Procedure;
+with My_Math;
 package Curve is
   -- What is a point, a point data set
   subtype T_Coordinate is My_Math.Real;
