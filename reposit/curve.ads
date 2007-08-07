@@ -44,11 +44,11 @@ package Curve is
     with function F (X : My_Math.Real) return My_Math.Real;
 
     -- Any action to do when a fd_event is received (see Afpx Fd_event)
-    with procedure Fd_Callback is Null_Procedure;
+    with procedure Fd_Callback is null;
     -- Any action to do when a timer_event is received (see Afpx Fd_event)
-    with procedure Timer_Callback is Null_Procedure;
+    with procedure Timer_Callback is null;
     -- Any action to do when a signal_event is received (see Afpx Fd_event)
-    with procedure Signal_Callback is Null_Procedure;
+    with procedure Signal_Callback is null;
 
   -- Give boundaries and points array : It will draw the curves
   procedure Draw (Boundaries : in T_Boundaries; Points : in T_The_Points);
