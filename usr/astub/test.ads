@@ -108,27 +108,27 @@ package Test is
   procedure Write(Obj: out Rw; X: in Item) is abstract;
   procedure Read(Obj: out Rw; X: out Item) is abstract;
 
-  type Simple_RW is new RW with record
+  type Simple_Rw is new Rw with record
     V: Item;
   end record;
-  overriding procedure Write(Obj: out Simple_RW; X: in Item);
-  overriding procedure Read(Obj: out Simple_RW; X: out Item);
+  overriding procedure Write(Obj: out Simple_Rw; X: in Item);
+  overriding procedure Read(Obj: out Simple_Rw; X: out Item);
 
-  type Sync_RW is synchronized interface and RW;
-  protected type Prot_RW is new Sync_RW with
+  type Sync_Rw is synchronized interface and Rw;
+  protected type Prot_Rw is new Sync_Rw with
     overriding procedure Write(X: in Item);
     overriding procedure Read(X: out Item);
   private
     V: Item;
   end;
 
-  protected type Multi_Prot_RW is new Sync_RW with
+  protected type Multi_Prot_Rw is new Sync_Rw with
     overriding procedure Write(X: in Item);
     not overriding function Read return Item;
   private
      V: Item;
   end;
-  overriding procedure Read(Obj: in Multi_Prot_RW; X: out Item);
+  overriding procedure Read(Obj: in Multi_Prot_Rw; X: out Item);
 
 
 private
