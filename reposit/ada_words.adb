@@ -77,7 +77,7 @@ package body Ada_Words is
 
   -------------------------------------------------------------
 
-  subtype Word_Len_Range is Natural range 0 .. 9;
+  subtype Word_Len_Range is Natural range 0 .. 15;
   type Word_Rec is record
     Len : Word_Len_Range;
     Str : String (1 .. Word_Len_Range'Last);
