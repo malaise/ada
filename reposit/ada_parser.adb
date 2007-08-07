@@ -7,6 +7,8 @@ package body Ada_Parser is
   Nul : constant Character := Ada.Characters.Latin_1.Nul;
   -- New line
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
+  -- Carriage return (skipped)
+  Cr : constant Character := Ada.Characters.Latin_1.Cr;
 
   -- Unbounded strings
   package Asu renames Ada.Strings.Unbounded;
@@ -46,6 +48,17 @@ package body Ada_Parser is
     return Got_Text (Asu.To_Unbounded_String (Text & ""), Kind);
   end Got_Text;
 
+  -- Read next char, skipping Cr
+  function Text_Char_Get (File : in Text_Char.File_Type) return Character is
+    C : Character;
+  begin
+    loop
+      C := Text_Char.Get (File);
+      exit when C /= Cr;
+    end loop;
+    return C;
+  end Text_Char_Get;
+
   -- C is a letter, so it starts an identifier
   -- so parse and return it
   procedure Parse_Identifier (C : in Character;
@@ -59,7 +72,7 @@ package body Ada_Parser is
     
     loop
       -- Read as long as letter, digit or '_'
-      Cc := Text_Char.Get (File);
+      Cc := Text_Char_Get (File);
       if      (Cc >= 'a' and then Cc <= 'z')
       or else (Cc >= 'A' and then Cc <= 'Z')
       or else (Cc >= '0' and then Cc <= '9')
@@ -117,7 +130,7 @@ package body Ada_Parser is
     Set (Text, C);
     loop
       -- Read next char
-      Cc := Text_Char.Get (File);
+      Cc := Text_Char_Get (File);
       -- As long as Cc is a digit,
       --  a letter a to f (or A to F) which includes e/E as exponent
       --  '.', '#', '_', "E+" or "E-", it belongs to the numeric literal
@@ -164,7 +177,7 @@ package body Ada_Parser is
         return Text;
       end if;
       -- Read next char and check if it the Lf ending the comment
-      Cc := Text_Char.Get (File);
+      Cc := Text_Char_Get (File);
       if Cc = Lf then
         Text_Char.Unget (File, Cc);
         return Text;
@@ -199,7 +212,7 @@ package body Ada_Parser is
     end if;
 
     -- Read next char
-    Cc := Text_Char.Get (File);
+    Cc := Text_Char_Get (File);
 
     -- Test each kind of lexical element, the most probable (frequent) first
     -- First separators because many spaces, then delimiters, identifiers
@@ -217,8 +230,8 @@ package body Ada_Parser is
     -- Character literal or ''' as delimiter?
     if Cc = ''' then
       -- May be a char literal if "'.'": read 2 chars
-      Nc := Text_Char.Get (File);
-      Nnc := Text_Char.Get (File);
+      Nc := Text_Char_Get (File);
+      Nnc := Text_Char_Get (File);
       if Nnc = ''' then
         -- A character literal, Cc, Nc and Nnc are consumed
         Lexic := Character_Literal;
@@ -237,7 +250,7 @@ package body Ada_Parser is
     -- Delimiter?
     if Ada_Words.Is_Delimiter (Cc) then
       -- Check for single-char or double-char delimiter
-      Nc := Text_Char.Get (File);
+      Nc := Text_Char_Get (File);
       Str2 := Cc & Nc;
       -- Check most likely first
       if      Str2 = ":=" or else Str2 = "=>" or else Str2 = ".."
@@ -281,7 +294,7 @@ package body Ada_Parser is
       Set (Text, Cc);
       loop
         -- Read until same as Nc
-        Cc := Text_Char.Get (File);
+        Cc := Text_Char_Get (File);
         Asu.Append (Text, Cc);
         if Cc = Lf then
           -- Should not get Lf within string literal
