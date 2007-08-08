@@ -5,12 +5,14 @@ with Common, Files, Output, Words, Parser_Ada,
 
 procedure Parse_Context (Generated : out Boolean) is
   File : constant Text_Char.File_Type := Files.In_File;
-  Word : Words.Word_Rec;
+  Word, Trash_Word : Words.Word_Rec;
   Level : Natural := 0;
+  Prev_Private : Boolean;
   use type Parser_Ada.Lexical_Kind_List;
 begin
   -- By default, nothing is generated
   Generated := False;
+  Prev_Private := False;
   -- Loop until expected word
   loop
     Word := Parser_Ada.Multiparse.Get (False);
@@ -34,7 +36,8 @@ begin
         Parse_Function (0, Generated);
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
-        null;
+        --   keep trace for "private with"
+        Trash_Word := Parser_Ada.Multiparse.Get (False);
       elsif Str = "generic" then
         -- Not terminated by ";"
         Output.New_Line;
@@ -44,13 +47,24 @@ begin
         -- Put separators and comments unchanged
         Output.Put (Str, False, 0);
       else
-        -- Unexpected word (with, use, generic arguments...)
+        -- Unexpected word ([ limited ] [ private ] with, use,
+        --  generic arguments...)
         -- Parse up to end of statement
         Words.Add (Word);
         Parse_To_End (Parser_Ada.Delimiter, ";", 0);
-        -- Put this statement as a comment
-        Output.Put (Words.Concat, True, 0);
+        -- Restore private if "private with"
+        -- And put this statement as a comment
+        if Str = "with" and then Prev_Private then
+          Output.Put ("private " & Words.Concat, True, 0);
+        else
+          Output.Put (Words.Concat, True, 0);
+        end if;
         Words.Reset;
+      end if;
+      -- Store if prev significant word was "private"
+      if Word.Lexic /= Parser_Ada.Separator
+      and then Word.Lexic /= Parser_Ada.Comment then
+        Prev_Private := Str = "private";
       end if;
     end;
   end loop;
