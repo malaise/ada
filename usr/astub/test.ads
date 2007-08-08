@@ -1,5 +1,8 @@
 -- This is a "complete" example
-with Ada.Text_Io, Ada.Exceptions;
+with Ada.Text_Io;
+limited with Ada.Exceptions;
+private with Ada.Directories;
+limited private with Ada.Numerics;
 use Ada.Text_Io;
 generic
   -- Some generic formal arguments
@@ -51,7 +54,7 @@ package Test is
   Const2 : constant Typ5;
 
   -- A use clause within package spec
-  use Ada.Exceptions;
+  use Ada.Text_Io;
 
   -- A procedure
   procedure Proc1 (A : in Integer);
@@ -103,33 +106,35 @@ package Test is
   function Func3 return Integer renames Func2;
 
   -- Some OO features
-  type Rw is limited interface;
-  subtype Item is Integer;
-  procedure Write(Obj: out Rw; X: in Item) is abstract;
-  procedure Read(Obj: out Rw; X: out Item) is abstract;
+  type Otyp6 is limited interface;
+  subtype Otyp7 is Integer;
+  procedure Write(Obj: in out Otyp6; X: in Otyp7) is abstract;
+  procedure Read(Obj: in out Otyp6; X: out Otyp7) is abstract;
 
-  type Simple_Rw is new Rw with record
-    V: Item;
+  type Otyp8 is new Otyp6 with record
+    V: Otyp7;
   end record;
-  overriding procedure Write(Obj: out Simple_Rw; X: in Item);
-  overriding procedure Read(Obj: out Simple_Rw; X: out Item);
+  overriding procedure Write(Obj: in out Otyp8; X: in Otyp7);
+  overriding procedure Read(Obj: in out Otyp8; X: out Otyp7);
 
-  type Sync_Rw is synchronized interface and Rw;
-  protected type Prot_Rw is new Sync_Rw with
-    overriding procedure Write(X: in Item);
-    overriding procedure Read(X: out Item);
+  type Otyp9 is synchronized interface and Otyp6;
+  protected type Otyp10 is new Otyp9 with
+    overriding procedure Write(X: in Otyp7);
+    overriding procedure Read(X: out Otyp7);
   private
-    V: Item;
+    V: Otyp7;
   end;
 
-  protected type Multi_Prot_Rw is new Sync_Rw with
-    overriding procedure Write(X: in Item);
-    not overriding function Read return Item;
+  protected type Otyp11 is new Otyp9 with
+    overriding procedure Write(X: in Otyp7);
+    not overriding function Read return Otyp7;
   private
-     V: Item;
+     V: Otyp7;
   end;
-  overriding procedure Read(Obj: in Multi_Prot_Rw; X: out Item);
+  overriding procedure Read(Obj: in Otyp11; X: out Otyp7);
 
+  type Otyp12 is tagged;
+  type Otyp12 is tagged null record;
 
 private
 
