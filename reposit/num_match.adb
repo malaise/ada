@@ -35,7 +35,7 @@ function Num_Match (Num : in Natural; Criteria : in String) return Boolean is
 
 begin
   -- Init for check
-  Parser.Set (Iter, Criteria, Is_Sep'Unrestricted_Access);
+  Parser.Set (Iter, Criteria, Is_Sep'Access);
   -- First spec
   First := True;
   -- Mach is kept along all specs cause we parse (check) all

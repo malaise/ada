@@ -87,7 +87,9 @@ package Unique_List is
   -- Execute Iteration on all items
   -- Does not raise Empty_List.
   procedure Iterate (List      : in out List_Type;
-                     Iteration : in Iteration_Access;
+                     Iteration : access
+     procedure (Current : in Element_Type;
+                Go_On   : in out Boolean);
                      From      : in Reference := From_First);
 
   -- When inserting

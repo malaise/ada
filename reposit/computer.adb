@@ -88,7 +88,7 @@ package body Computer is
       return;
     end if;
     -- Make list of names of volatile variables
-    Var_Mng.Iterate (Var_List, List_Iter'Unrestricted_Access);
+    Var_Mng.Iterate (Var_List, List_Iter'Access);
     -- Delete each volatile variable
     Parser.Set (Iter, Asu_Ts (Vol_List),
                 Parser.Is_Space_Or_Htab_Function'Access);

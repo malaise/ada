@@ -18,16 +18,12 @@ package Dictio_Lib is
 
   -- Callback called when dictio status changes
   type Dictio_State_List is (Master, Slave, Unavailable);
-  type Dictio_State_Callback is
-       access procedure (State : in Dictio_State_List);
-  Dictio_State_Cb : Dictio_State_Callback := null;
+  Dictio_State_Cb : access procedure (State : in Dictio_State_List) := null;
 
   -- Callback called on notification (item or alias)
-  type Dictio_Notification_Callback is
-       access procedure (Name : in String;
+  Notify_Cb : access procedure (Name : in String;
                          Item : in Boolean;
-                         Data : in String);
-  Notify_Cb : Dictio_Notification_Callback := null;
+                         Data : in String) := null;
 
 
   -- Init connection to Dictio

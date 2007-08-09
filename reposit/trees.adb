@@ -908,7 +908,9 @@ package body Trees is
     end Put;
 
     procedure Dump (The_Tree  : in Tree_Type;
-                    Image_Acc : in Image_Access;
+                    Image_Acc :  access
+      function (Element : Element_Type;
+                Level   : Natural) return String;
                     File      : in Ada.Text_Io.File_Type;
                     Elder     : in Boolean := True) is
       Cell_Acc : Cell_Access;
@@ -955,7 +957,8 @@ package body Trees is
     end Recurs;
 
     procedure Iterate (The_Tree   : in out Tree_Type;
-                       Do_One_Acc : in Do_One_Access;
+                       Do_One_Acc : access
+      function (Element : Element_Type) return Boolean;
                        Elder      : in Boolean := True) is
 
       Cell_Acc : Cell_Access;

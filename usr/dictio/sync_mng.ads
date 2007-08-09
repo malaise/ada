@@ -1,8 +1,6 @@
 with Tcp_Util;
 package Sync_Mng is
 
-  type End_Of_Sync_Callback is access procedure;
-
   procedure Init;
 
   -- Start a sync reception sequence

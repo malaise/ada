@@ -316,8 +316,9 @@ package body String_Mng is
   package Asu renames Ada.Strings.Unbounded;
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
-                           Resolv : Resolv_Access)
-           return String is
+                           Resolv : access
+    function (Variable_Name : String) return String)
+  return String is
 
 
     -- The string to work on

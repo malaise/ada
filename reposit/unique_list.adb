@@ -167,7 +167,9 @@ package body Unique_List is
 
   -- Call Iteration on all items
   procedure Iterate (List      : in out List_Type;
-                     Iteration : in Iteration_Access;
+                     Iteration : access
+     procedure (Current : in Element_Type;
+                Go_On   : in out Boolean);
                      From      : in Reference := From_First) is
     Item : Element_Type;
     Moved : Boolean;

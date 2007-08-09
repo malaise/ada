@@ -210,7 +210,9 @@ package Trees is
     -- Dump current then children data (oldest first by default)
     -- Nothing if tree is empty
     procedure Dump (The_Tree  : in Tree_Type;
-                    Image_Acc : in Image_Access;
+                    Image_Acc :  access
+      function (Element : Element_Type;
+                Level   : Natural) return String;
                     File      : in Ada.Text_Io.File_Type;
                     Elder     : in Boolean := True);
 
@@ -224,7 +226,8 @@ package Trees is
     -- Iterate on current and children (old to young by default)
     -- Nothing if tree is empty
     procedure Iterate (The_Tree   : in out Tree_Type;
-                       Do_One_Acc : in Do_One_Access;
+                       Do_One_Acc : access
+      function (Element : Element_Type) return Boolean;
                        Elder      : in Boolean := True);
 
   private

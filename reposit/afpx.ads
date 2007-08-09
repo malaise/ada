@@ -275,7 +275,10 @@ package Afpx is
                           Insert        : in out Boolean;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
-                          Cursor_Col_Cb : in Cursor_Set_Col_Cb := null);
+                          Cursor_Col_Cb : access
+       function (Cursor_Field : Field_Range;
+                 Enter_Field_Cause : Enter_Field_Cause_List;
+                 Str : Wide_String) return Con_Io.Full_Col_Range := null);
 
   -- Ring a bell on screen
   procedure Bell (Repeat : in Positive := 1);

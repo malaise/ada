@@ -113,7 +113,8 @@ package String_Mng is
   --  empty strings.
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
-                           Resolv : Resolv_Access)
+                           Resolv : access
+    function (Variable_Name : String) return String)
            return String;
   Inv_Delimiter, Delimiter_Mismatch : exception;
 
