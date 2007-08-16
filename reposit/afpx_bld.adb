@@ -140,7 +140,7 @@ procedure Afpx_Bld is
       File_Error (Node, "Invalid variable name " & Name);
     end if;
     -- Strings between '.' must be valid identifiers
-    Parser.Set (Iter, Name, Is_Dot'Access);
+    Parser.Set (Iter, Name, Is_Dot'Unrestricted_Access);
     loop
       declare
         Word : constant String := Parser.Next_Word (Iter);

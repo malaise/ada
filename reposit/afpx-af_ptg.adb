@@ -307,8 +307,11 @@ package body Af_Ptg is
                  Field_No : Afpx_Typ.Field_Range;
                  Field : Afpx_Typ.Field_Rec;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Cursor_Col_Cb : Cursor_Set_Col_Cb)
-           return Af_Con_Io.Full_Col_Range is
+                 Cursor_Col_Cb : access
+    function (Cursor_Field : Field_Range;
+              Enter_Field_Cause : Enter_Field_Cause_List;
+              Str : Wide_String) return Con_Io.Full_Col_Range)
+  return Af_Con_Io.Full_Col_Range is
     Result : Af_Con_Io.Col_Range;
   begin
     -- Call Cb if set
@@ -348,7 +351,10 @@ package body Af_Ptg is
                  Result        : out Result_Rec;
                  Redisplay     : in Boolean;
                  Get_Active    : in Boolean;
-                 Cursor_Col_Cb : in Cursor_Set_Col_Cb) is
+                 Cursor_Col_Cb : access
+      function (Cursor_Field : Field_Range;
+                Enter_Field_Cause : Enter_Field_Cause_List;
+                Str : Wide_String) return Con_Io.Full_Col_Range := null) is
     List_Present : Boolean;
     New_Field : Boolean;
     Field : Afpx_Typ.Field_Rec;

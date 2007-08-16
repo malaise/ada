@@ -510,8 +510,9 @@ package body String_Mng is
   function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
-                     Separating : Separator_Access := Is_Separator'Access)
-           return Natural is
+                     Separating : access
+    function (Char : Character) return Boolean := Is_Separator'Access)
+  return Natural is
     Strlen : constant Natural := Str'Length;
     -- Corresponding index in Str
     function Indof (I : Positive) return Positive is

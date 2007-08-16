@@ -180,7 +180,10 @@ package body Afpx is
                    Result        : out Result_Rec;
                    Redisplay     : in Boolean;
                    Get_Active    : in Boolean;
-                   Cursor_Col_Cb : in Cursor_Set_Col_Cb);
+                   Cursor_Col_Cb : access
+      function (Cursor_Field : Field_Range;
+                Enter_Field_Cause : Enter_Field_Cause_List;
+                Str : Wide_String) return Con_Io.Full_Col_Range := null);
 
   end Af_Ptg;
 

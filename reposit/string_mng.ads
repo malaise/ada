@@ -146,8 +146,9 @@ package String_Mng is
   function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
-                     Separating : Separator_Access := Is_Separator'Access)
-           return Natural;
+                     Separating : access
+    function (Char : Character) return Boolean := Is_Separator'Access)
+  return Natural;
   
   -- Copy the string Val at the beginning of the string To
   -- To (To'First .. To'First + Val'Length - 1) := Val;
