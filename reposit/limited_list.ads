@@ -225,7 +225,7 @@ package Limited_List is
 
   -- Search with Match access and on Element_Type
   -----------------------------------------------
-  -- For Search_Match and Iterate
+  -- For Search_Match
   type Match_Access is access function (Current, Criteria : Element_Type)
                               return Boolean;
   -- Search from the nth occurence of an item matching the provided criteria
