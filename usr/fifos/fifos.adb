@@ -604,8 +604,8 @@ package body Fifos is
           return;
         end if;
         -- Init dictio
-        Dictio_Lib.Dictio_State_Cb := State_Cb'Unrestricted_Access;
-        Dictio_Lib.Notify_Cb := Notify_Cb'Unrestricted_Access;
+        Dictio_Lib.Dictio_State_Cb := State_Cb'Access;
+        Dictio_Lib.Notify_Cb := Notify_Cb'Access;
         Dictio_Lib.Init;
         if Dictio_State = Dictio_Lib.Unavailable then
           raise No_Dictio;
@@ -716,12 +716,12 @@ package body Fifos is
     -- May raise Name_Too_Long if Fifo_Name is longer than Max_Fifo_Name_Len
     -- May raise Yet_Open if Fifo_Name is already open (in any way)
     -- May raise System_Error on various error conditions
-    function Open (Fifo_Name       : in String;
-                   To_Remote       : in Boolean;
-                   Connection_Cb   : in Connection_Callback_Access;
-                   Reception_Cb    : in Reception_Callback_Access;
-                   End_Overflow_Cb : in End_Overflow_Callback_Access)
-             return Fifo_Id is
+    function Open (Fifo_Name       : String;
+                   To_Remote       : Boolean;
+                   Connection_Cb   : Connection_Callback_Access;
+                   Reception_Cb    : Reception_Callback_Access;
+                   End_Overflow_Cb : End_Overflow_Callback_Access)
+    return Fifo_Id is
       Rec : Fifo_Rec;
       Got : Boolean;
       Acc : Fifo_Access;

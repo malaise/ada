@@ -66,12 +66,12 @@ package Fifos is
     -- May raise No_Dictio if dictio is unreachable
     -- May raise System_Error on various error conditions
     -- Resulting Fifo_Id is valid if successful open
-    function Open (Fifo_Name       : in String;
-                   To_Remote       : in Boolean;
-                   Connection_Cb   : in Connection_Callback_Access;
-                   Reception_Cb    : in Reception_Callback_Access;
-                   End_Overflow_Cb : in End_Overflow_Callback_Access)
-             return Fifo_Id;
+    function Open (Fifo_Name       : String;
+                   To_Remote       : Boolean;
+                   Connection_Cb   : Connection_Callback_Access;
+                   Reception_Cb    : Reception_Callback_Access;
+                   End_Overflow_Cb : End_Overflow_Callback_Access)
+    return Fifo_Id;
 
     -- Close a connection to a remote
     --  or close a connection from a remote

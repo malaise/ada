@@ -109,9 +109,9 @@ begin
 
   Fid := Test_Fifo.Open (Argument.Get_Parameter(Occurence => 2),
                          not Server,
-                         Conn_Cb'Unrestricted_Access,
-                         Rece_Cb'Unrestricted_Access,
-                         Ovfl_Cb'Unrestricted_Access);
+                         Conn_Cb'Access,
+                         Rece_Cb'Access,
+                         Ovfl_Cb'Access);
 
   Ada.Text_Io.Put_Line ("Fifo " & Argument.Get_Parameter(Occurence => 2)
     & " kind " & Fifos.Fifo_Kind_List'Image(Test_Fifo.Fifo_Kind (Fid))

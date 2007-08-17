@@ -8,9 +8,6 @@ procedure T_Parser is
   begin
     return C = Sep;
   end Is_Sep;
-  Is_Sep_Acc : constant Parser.Separing_Function
-             := Is_Sep'Unrestricted_Access;
-
 
   function Str return String is
   begin
@@ -37,7 +34,7 @@ begin
   end if;
 
   Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "':");
-  Parser.Set (It, Str, Is_Sep_Acc);
+  Parser.Set (It, Str, Is_Sep'Unrestricted_Access);
 
   loop
     Ada.Text_Io.Put (">" & Parser.Next_Word (It) & "< ");
@@ -68,7 +65,7 @@ begin
         Itt : Parser.Iterator;
       begin
         Parser.Copy (Itt, It);
-        Parser.Set (Itt, Str, Is_Sep_Acc);
+        Parser.Set (Itt, Str, Is_Sep'Unrestricted_Access);
       end;
     end loop;
   end if;
@@ -76,7 +73,7 @@ begin
   Ada.Text_Io.New_Line;
 
   Ada.Text_Io.Put_Line ("Parsing all in one:");
-  Parser.Set (It, Str, Is_Sep_Acc);
+  Parser.Set (It, Str, Is_Sep'Unrestricted_Access);
   declare
     Parsed : constant Parser.All_In_One.Parsed_Array
            := Parser.All_In_One.Parse_All (It);
