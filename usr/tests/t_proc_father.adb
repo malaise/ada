@@ -68,7 +68,7 @@ begin
 
 
   Spawn_Result := Proc_Family.Spawn (Text_Handler.Value(Str),
-                                     True, Death_Cb'Unrestricted_Access);
+                                     True, Death_Cb'unrestricted_Access);
   if not Spawn_Result.Ok then
     Ada.Text_Io.Put_Line ("Father: Spawn result NOT OK");
     return;
@@ -79,9 +79,11 @@ begin
   begin
     I_Am_Father := Sys_Calls.Get_Pid /= Spawn_Result.Child_Pid;
     if I_Am_Father then
-      Ada.Text_Io.Put_Line ("Father: I am father of " & Spawn_Result.Child_Pid'Img);
+      Ada.Text_Io.Put_Line ("Father: I am father of "
+                          & Spawn_Result.Child_Pid'Img);
     else
-      Ada.Text_Io.Put_Line ("Father: I am child " & Spawn_Result.Child_Pid'Img);
+      Ada.Text_Io.Put_Line ("Father: I am child "
+                           & Spawn_Result.Child_Pid'Img);
     end if;
   end;
 
