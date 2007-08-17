@@ -118,7 +118,7 @@ procedure T_Channels is
     if Bus then
       Fifob.Write (Msg);
     else
-      Fifoc.Write (Msg, Send_Cb => Send_Cb'Access);
+      Fifoc.Write (Msg, Send_Cb => Send_Cb'Unrestricted_Access);
     end if;
     Wait (0.5);
   end Send;
