@@ -26,7 +26,9 @@ package Ada_Parser is
                    Lexic : in Lexical_Kind_List);
 
   procedure Parse (File : in Text_Char.File_Type;
-                   Cb : in Parse_Callback);
+                   Cb : access
+    procedure (Text : in String;
+                   Lexic : in Lexical_Kind_List));
 
   -- Parse flow of File until next lexical element
   -- Set Text to "" (and Lexic to Separator) when end of file

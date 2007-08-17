@@ -317,7 +317,9 @@ package body Ada_Parser is
 
   -- Parse --
   procedure Parse (File : in Text_Char.File_Type;
-                   Cb : in Parse_Callback) is
+                   Cb : access
+    procedure (Text : in String;
+                   Lexic : in Lexical_Kind_List)) is
     Lexic : Lexical_Kind_List;
     Text : Us;
     use type Us;
