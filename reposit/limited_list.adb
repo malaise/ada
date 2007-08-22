@@ -724,8 +724,7 @@ package body Limited_List is
   -- Search with Match passed by access
   procedure Search_Match (List      : in out List_Type;
                           Found     : out Boolean;
-                          Match     : access
-    function (Current, Criteria : Element_Type) return Boolean;
+                          Match     : in Match_Access;
                           Criteria  : in Element_Type;
                           Where     : in Direction := Next;
                           Occurence : in Positive := 1;
@@ -749,7 +748,7 @@ package body Limited_List is
       return Match (Current, Criteria);
     end Loc_Match;
   begin
-    Search_Match (List, Found, Loc_Match'Access,
+    Search_Match (List, Found, Loc_Match'Unrestricted_Access,
                   Criteria, Where, Occurence, From);
     if not Found then
       raise Not_In_List;
