@@ -879,7 +879,9 @@ package body Trees is
     ----------
     procedure Put (Me        : in out Cell_Access;
                    Level     : in Natural;
-                   Image_Acc : in Image_Access;
+                   Image_Acc :  access
+      function (Element : Element_Type;
+                Level   : Natural) return String;
                    File      : in Ada.Text_Io.File_Type;
                    Elder     : in Boolean) is
       Next : Cell_Access;
