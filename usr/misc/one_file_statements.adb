@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Normal;
+with Normal, Sys_Calls, Text_Line;
 
 package body One_File_Statements is
 
@@ -20,9 +20,9 @@ package body One_File_Statements is
       when Ada.Text_Io.End_Error =>
         raise;
       when others =>
-        Ada.Text_Io.Put_Line ("Exception raised when reading line "
-                        & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(File))
-                        & " of file " & File_Name);
+        Sys_Calls.Put_Line_Error ("Exception when reading line "
+                       & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(File))
+                       & " of file " & File_Name);
         raise File_Error;
     end Get;
 
@@ -52,7 +52,8 @@ package body One_File_Statements is
       Ada.Text_Io.Open (File, Ada.Text_Io.In_File, File_Name);
     exception
       when others =>
-        Ada.Text_Io.Put_Line ("Exception raised when opening file " & File_Name);
+        Sys_Calls.Put_Line_Error ("Exception when opening file "
+                                & File_Name);
         raise File_Error;
     end;
 
@@ -92,7 +93,8 @@ package body One_File_Statements is
         if Levels /= 0 then
           Levels := Levels - 1;
         else
-          Ada.Text_Io.Put_Line ("Warning: Reaching negative parenthesis level"
+          Sys_Calls.Put_Line_Error (
+                  "Warning: Reaching negative parenthesis level"
                 & " at line" & Line_No'Img);
         end if;
       elsif C = '"' or else C = '%' then
@@ -123,7 +125,7 @@ package body One_File_Statements is
     when Ada.Text_Io.End_Error =>
       Close (File);
       if Levels /= 0 then
-        Ada.Text_Io.Put_Line ("Warning: Ending file with parenthesis level"
+        Sys_Calls.Put_Line_Error ("Warning: Ending file with parenthesis level"
                             & Levels'Img & ".");
       end if;
       return Statements;
@@ -132,7 +134,7 @@ package body One_File_Statements is
       raise;
     when others =>
       Close (File);
-      Ada.Text_Io.Put_Line ("Exception raised when processing line "
+      Sys_Calls.Put_Line_Error ("Exception when processing line "
                       & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(File))
                       & " of file " & File_Name);
       raise;
@@ -143,6 +145,7 @@ package body One_File_Statements is
              File_Name : String;
              Put_It : in Boolean := True) is
 
+    File : Text_Line.File_Type;
     File_Name_Len : constant Natural := File_Name'Length;
     Count : Integer range -1 ..Integer'Last;
     Max_Tab : constant := 60;
@@ -150,22 +153,25 @@ package body One_File_Statements is
     Gap : constant String := "  ";
   begin
 
+    Text_Line.Open (File, Text_Line.Out_File, Sys_Calls.Stdout);
     if File_Name = "" then
       if Put_It then
         for I in Integer range 1 .. Max_Tab + Gap'Length + Max_Dig + 1 loop
-          Ada.Text_Io.Put ("-");
+          Text_Line.Put (File, "-");
         end loop;
-        Ada.Text_Io.New_Line;
+        Text_Line.New_Line (File);
 
         declare
           Total_Str : constant String := "TOTAL statements";
         begin
-          Ada.Text_Io.Put (Total_Str);
+          Text_Line.Put (File, Total_Str);
           for I in Integer range Total_Str'Length .. Max_Tab loop
-            Ada.Text_Io.Put (" ");
+            Text_Line.Put (File, " ");
           end loop;
         end;
-        Ada.Text_Io.Put_Line (Gap & Normal(Total, Max_Dig));
+        Text_Line.Put_Line (File, Gap & Normal(Total, Max_Dig));
+      else
+        Text_Line.Put (File, Normal(Total, Max_Dig));
       end if;
       Total := 0;
 
@@ -179,23 +185,23 @@ package body One_File_Statements is
       end;
 
       if Put_It then
-        Ada.Text_Io.Put (File_Name);
+        Text_Line.Put (File, File_Name);
         if File_Name_Len < Max_Tab then
-          Ada.Text_Io.Put (" ");
+          Text_Line.Put (File, " ");
           for I in File_Name_Len+2 .. Max_Tab loop
-            Ada.Text_Io.Put (".");
+            Text_Line.Put (File, ".");
           end loop;
         elsif File_Name_Len > Max_Tab then
-          Ada.Text_Io.New_Line;
+          Text_Line.New_Line (File);
           for I in Integer range 1 .. Max_Tab loop
-            Ada.Text_Io.Put (".");
+            Text_Line.Put (File, ".");
           end loop;
         end if;
 
         if Count >= 0 then
-          Ada.Text_Io.Put_Line (Gap & Normal(Count, Max_Dig));
+          Text_Line.Put_Line (File, Gap & Normal(Count, Max_Dig));
         else
-          Ada.Text_Io.Put_Line (Gap & " SKIPPED");
+          Text_Line.Put_Line (File, Gap & " SKIPPED");
         end if;
       end if;
 
@@ -205,6 +211,7 @@ package body One_File_Statements is
 
     end if;
 
+    Text_Line.Close (File);
   end Print_Statements_Of_File;
 
 end One_File_Statements;

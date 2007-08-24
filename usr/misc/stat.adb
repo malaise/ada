@@ -15,10 +15,11 @@ begin
   -- Store all files
   for Arg in First .. Argument.Get_Nbre_Arg loop
     -- One stat on each file
-    One_File_Statements.Print_Statements_Of_File(Argument.Get_Parameter(Arg), Put_It);
+    One_File_Statements.Print_Statements_Of_File(Argument.Get_Parameter(Arg),
+                                                 Put_It);
   end loop;
 
-  One_File_Statements.Print_Statements_Of_File("");
+  One_File_Statements.Print_Statements_Of_File("", Put_It);
 
 end Stat;
 
