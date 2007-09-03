@@ -1,8 +1,9 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
-<!-- Record selection screen -->
-<!-- ======================= -->
 <Afpx_Descriptors>
+
+  <!-- Record selection screen -->
+  <!-- ======================= -->
   <Descriptor Num="1">
 
     <!-- List of records selected -->
