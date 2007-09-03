@@ -35,6 +35,5 @@ while [ "$1" != "" ] ; do
   shift
   shift
 done
- 
-mmcdt "$num1" toreal msd "$num" -e op_time.mcd 
+mmcdt "$num1" toreal msd "$num" -e op_time.mcd
 
