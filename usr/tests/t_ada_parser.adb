@@ -53,7 +53,7 @@ begin
   Text_Line.Open (Ofile, Text_Line.Out_File, Sys_Calls.Stdout);
 
   -- Parse
-  Ada_Parser.Parse (Ifile, Callback'Unrestricted_Access);
+  Ada_Parser.Parse (Ifile, Callback'Access);
 
   -- Done: close
   Text_Line.Close (Ofile);
