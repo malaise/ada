@@ -63,7 +63,7 @@ package body Io_Flow is
       and then
         Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
     if Stdio_Is_A_Tty then
-      Async_Stdin.Set_Async (Stdin_Cb'Unrestricted_Access, 0);
+      Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
       end if;
