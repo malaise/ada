@@ -161,7 +161,9 @@ package Channels is
     -- Callback is invoqued for each recipient with the result of sending
     procedure Write (Message : in Message_Type;
                      Length  : in Message_Length := 0;
-                     Send_Cb : in Send_Callback_Access := null);
+                     Send_Cb : access
+      procedure (Host_Name : in String;
+                 Send_Ok   : in Boolean) := null);
 
     -- Reply to sender of last message received
     -- Should only be called in Read_Cb.

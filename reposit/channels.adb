@@ -669,7 +669,10 @@ package body Channels is
     -- Send a message to all recipients
     procedure Write (Message : in Message_Type;
                      Length : in Message_Length := 0;
-                     Send_Cb : in Send_Callback_Access := null) is
+                     Send_Cb : access
+      procedure (Host_Name : in String;
+                 Send_Ok   : in Boolean) := null)
+    is
       Dest : Dest_Rec;
       Msg : Channel_Message_Type;
       Len : Message_Length;
