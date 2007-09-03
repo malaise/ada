@@ -80,7 +80,7 @@ begin
     if Argument.Get_Parameter (Occurence => I) = "dump" then
       -- Dump the list
       Ada.Text_Io.Put_Line ("List dump:");
-      My_Ul.Iterate (Ul, Iteration'Unrestricted_Access);
+      My_Ul.Iterate (Ul, Iteration'Access);
       Ada.Text_Io.New_Line;
     elsif Store_Env (Argument.Get_Parameter (Occurence => I)) then
       -- Try to store variable (will work if string constains "=")
