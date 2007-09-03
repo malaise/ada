@@ -118,7 +118,7 @@ begin
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Result, Redisplay,
-                         Next_Field_Cb'Unrestricted_Access);
+                         Next_Field_Cb'Access);
 
       -- Exit
       exit when (Result.Event = Afpx.Keyboard
