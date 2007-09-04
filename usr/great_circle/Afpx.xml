@@ -47,6 +47,7 @@
     <Field Num="8" Kind="Put">
       <Geometry Up="6" Left="4" Low="6" Right="4"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="9" Kind="Get">
@@ -57,6 +58,7 @@
     <Field Num="10" Kind="Put">
       <Geometry Up="6" Left="7" Low="6" Right="7"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="11" Kind="Get">
@@ -67,6 +69,7 @@
     <Field Num="12" Kind="Put">
       <Geometry Up="6" Left="10" Low="6" Right="10"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">/</Init>
     </Field>
 
     <Field Num="13" Kind="Get">
@@ -83,6 +86,7 @@
     <Field Num="15" Kind="Put">
       <Geometry Up="6" Left="15" Low="6" Right="15"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="16" Kind="Get">
@@ -93,6 +97,7 @@
     <Field Num="17" Kind="Put">
       <Geometry Up="6" Left="18" Low="6" Right="18"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="18" Kind="Get">
@@ -115,6 +120,7 @@
     <Field Num="21" Kind="Put">
       <Geometry Up="6" Left="25" Low="6" Right="25"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="22" Kind="Get">
@@ -125,6 +131,7 @@
     <Field Num="23" Kind="Put">
       <Geometry Up="6" Left="28" Low="6" Right="28"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="24" Kind="Get">
@@ -135,6 +142,7 @@
     <Field Num="25" Kind="Put">
       <Geometry Up="6" Left="31" Low="6" Right="31"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">/</Init>
     </Field>
 
     <Field Num="26" Kind="Get">
@@ -151,6 +159,7 @@
     <Field Num="28" Kind="Put">
       <Geometry Up="6" Left="36" Low="6" Right="36"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="29" Kind="Get">
@@ -161,6 +170,7 @@
     <Field Num="30" Kind="Put">
       <Geometry Up="6" Left="39" Low="6" Right="39"/>
       <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">.</Init>
     </Field>
 
     <Field Num="31" Kind="Get">
@@ -192,7 +202,7 @@
       <Init Row="1" Col="1">EXIT</Init>
     </Field>
 
-    </Descriptor>
+  </Descriptor>
 
 </Afpx_Descriptors>
 
