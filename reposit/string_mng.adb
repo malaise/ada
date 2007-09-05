@@ -596,5 +596,12 @@ package body String_Mng is
     return Ada.Strings.Unbounded.To_String (Result);
   end Replace;
 
+  -- Return a String (1 .. N)
+  function Normalize (Str : String) return String is
+    Lstr : constant String (1 .. Str'Length) := Str;
+  begin
+    return Lstr;
+  end Normalize;
+
 end String_Mng;
 

@@ -157,5 +157,8 @@ package String_Mng is
   -- Replace occurences of What by By in Str. One pass.
   function Replace (Str, What, By : String) return String;
 
+  -- Return a String (1 .. N)
+  function Normalize (Str : String) return String;
+
 end String_Mng;
 
