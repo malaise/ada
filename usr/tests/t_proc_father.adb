@@ -68,7 +68,7 @@ begin
 
 
   Spawn_Result := Proc_Family.Spawn (Text_Handler.Value(Str),
-                                     True, Death_Cb'unrestricted_Access);
+                                     True, Death_Cb'Unrestricted_Access);
   if not Spawn_Result.Ok then
     Ada.Text_Io.Put_Line ("Father: Spawn result NOT OK");
     return;
