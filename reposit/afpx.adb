@@ -425,8 +425,13 @@ package body Afpx is
     end if;
     -- Copy in init string
     Init_Index := Field.Char_Index + Row * Field.Width;
-    -- Return characters
-    return Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1);
+    -- Return characters in a String (1 .. N)
+    declare
+      Wstr : constant Wide_String (1 .. Field.Width)
+           := Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1);
+    begin
+      return Wstr;
+    end;
   end Decode_Wide_Field;
 
   procedure Decode_Field (Field_No : in Field_Range;
