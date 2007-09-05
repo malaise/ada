@@ -1,5 +1,5 @@
-with Ada.Text_Io;
-with Argument, Basic_Proc, Text_Handler, Con_Io, Afpx;
+with Ada.Text_Io, Ada.Characters.Latin_1;
+with Argument, Basic_Proc, Text_Handler, Con_Io, Afpx, String_Mng, Language;
 with Conv, Lat_Lon, String_Util, Great_Circle;
 
 procedure T_Gc is
@@ -10,6 +10,8 @@ procedure T_Gc is
       & " add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss");
     Ada.Text_Io.Put_Line (" where a is N or S and o is E or W.");
   end Usage;
+
+  Debug : Boolean := False;
 
   Use_Afpx : Boolean;
 
@@ -22,12 +24,12 @@ procedure T_Gc is
   Insert : Boolean;
   Result : Afpx.Result_Rec;
 
-  subtype A_Flds is Afpx.Field_Range range 06 .. 18;
-  subtype B_Flds is Afpx.Field_Range range 19 .. 31;
-  Heading_Field  : constant Afpx.Field_Range := 32;
-  Distance_Field  : constant Afpx.Field_Range := 33;
-  Compute_Field  : constant Afpx.Field_Range := 34;
-  Exit_Field  : constant Afpx.Field_Range := 35;
+  subtype A_Flds is Afpx.Field_Range range 06 .. 19;
+  subtype B_Flds is Afpx.Field_Range range 20 .. 33;
+  Heading_Field  : constant Afpx.Field_Range := 34;
+  Distance_Field  : constant Afpx.Field_Range := 35;
+  Compute_Field  : constant Afpx.Field_Range := 37;
+  Exit_Field  : constant Afpx.Field_Range := 38;
 
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
@@ -58,16 +60,37 @@ procedure T_Gc is
                           Point : out Lat_Lon.Lat_Lon_Geo_Rec;
                           Ok : out Boolean;
                           Cursor : in out Afpx.Field_Range) is
-    Point_Txt : Text_Handler.Text(String_Util.Coord_Str'Length);
+    -- Two '"' added in Afpx screen
+    Point_Txt : Text_Handler.Text(String_Util.Coord_Str'Length+2);
   begin
     Text_Handler.Empty(Point_Txt);
     for Field in First_Fld .. Last_Fld loop
       Text_Handler.Append(Point_Txt, Afpx.Decode_Field(Field, 0));
     end loop;
+    if Debug then
+      Ada.Text_Io.Put_Line ("Decoded point: " & Text_Handler.Value (Point_Txt));
+    end if;
+    -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
+    -- "°" has already been replaced by " " in Afpx.Decode_Field
+    Text_Handler.Set (Point_Txt, String_Mng.Replace (
+            Text_Handler.Value (Point_Txt), " ", "."));
+    Text_Handler.Set (Point_Txt, String_Mng.Replace (
+            Text_Handler.Value (Point_Txt), "'", "."));
+    Text_Handler.Set (Point_Txt, String_Mng.Replace (
+            Text_Handler.Value (Point_Txt), """", ""));
+    if Debug then
+      Ada.Text_Io.Put_Line ("Parsed point: " & Text_Handler.Value (Point_Txt));
+    end if;
     Point := String_Util.Str2Geo(Text_Handler.Value(Point_Txt));
+    if Debug then
+      Ada.Text_Io.Put_Line ("Got point OK: " & Text_Handler.Value (Point_Txt));
+    end if;
     Ok := True;
   exception
     when others =>
+      if Debug then
+        Ada.Text_Io.Put_Line ("Decode point Exception");
+      end if;
       Ok := False;
       Cursor := First_Fld;
   end Decode_Point;
@@ -156,8 +179,17 @@ begin
         end if;
         if Decode_Ok then
           Great_Circle.Compute_Route(A, B, Heading, Distance);
-          Afpx.Encode_Field (Heading_Field, (0, 0),
-                             String_Util.Angle2Str(Heading));
+          declare
+            Str : constant String := String_Util.Angle2Str(Heading);
+            -- Will append " and set ° and ' instead of 2 first .
+            Wstr : Wide_String (1 .. Str'Length + 1);
+          begin
+            Wstr := Language.String_To_Wide (Str) & '"';
+            Wstr(4) := Language.Char_To_Wide (
+                         Ada.Characters.Latin_1.Degree_Sign);
+            Wstr(7) := ''';
+            Afpx.Encode_Wide_Field (Heading_Field, (0, 0), Wstr);
+          end;
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
           -- Clean the result fields at next cursor change field
