@@ -99,10 +99,11 @@ begin
       My_Io.Put_Line ("13 Tuncation ot best length");
       My_Io.Put_Line ("14 Copy");
       My_Io.Put_Line ("15 Replace");
-      My_Io.Put_Line ("16 Regex locate");
-      My_Io.Put_Line ("17 Regex replace");
+      My_Io.Put_Line ("16 Normalize");
+      My_Io.Put_Line ("17 Regex locate");
+      My_Io.Put_Line ("18 Regex replace");
 
-      My_Io.Put ("Choice (0 .. 17) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 18) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -269,7 +270,16 @@ begin
                                     What => Str1(1 .. Nat1),
                                     By => Str2(1 .. Nat2)));
           when 16 =>
-            My_Io.Put_Line ("16 Regex locate");
+            My_Io.Put_Line ("16 Normalize");
+            declare
+              -- Copy Str in a non normalized string
+              Lstr : constant String (2 .. Str_Len+1) := Str(1 .. Str_Len);
+            begin
+              My_Io.Put_Line ("Normalized string: "
+                & String_Mng.Normalize (Lstr));
+            end;
+          when 17 =>
+            My_Io.Put_Line ("17 Regex locate");
             My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("From_Index (Nat)? "); Nat_Get (Nat2, True);
             My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat3, True);
@@ -284,8 +294,8 @@ begin
             My_Io.Put_Line ("Match at: " & Search_Result.First_Offset'Img
                           & " -" & Search_Result.Last_Offset_Start'Img
                           & " /" & Search_Result.Last_Offset_Stop'Img);
-          when 17 =>
-            My_Io.Put_Line ("17 Regex replace");
+          when 18 =>
+            My_Io.Put_Line ("18 Regex replace");
             My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
             My_Io.Put ("From_Index (Nat)? "); Nat_Get (Nat3, True);
