@@ -61,9 +61,9 @@
                    Low CDATA #REQUIRED Right CDATA #REQUIRED>
 <!-- As soon as an attribute is parsed, the corresponding constant -->
 <!--  is defined and valid for the rest of the descriptor (e.g. List.Up, -->
-<!--  Field_2.Low, Field_21.Right). When all geomtry is parsed for a list -->
+<!--  Field_2.Low, Field_21.Right). When all geometry is parsed for a list -->
 <!--  or field, the constants Width and Height  (e.g. List.Width, -->
-<!--  Field_21.Height are olso defined. -->
+<!--  Field_21.Height are also defined. -->
 
 <!-- Foreground color must be of Colors for Put fields -->
 <!--  and of Basic_Colors for Button, Get and List. -->
