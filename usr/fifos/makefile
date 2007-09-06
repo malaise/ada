@@ -1,6 +1,6 @@
 include $(HOME)/Makefiles/common.mk
 
-ADAVIEW := $(REPOSIT) $(HOME)/ada/usr/dictio
+ADAVIEW := $(HOME)/ada/usr/dictio $(REPOSIT)
 EXES := t_fifos
 
 CLIBS_t_fifos := cutil

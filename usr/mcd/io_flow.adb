@@ -1,7 +1,7 @@
 with Ada.Text_Io, Ada.Characters.Latin_1, Ada.Exceptions;
 with Argument, Text_Handler, Event_Mng, Sys_Calls, Async_Stdin;
 with Fifos;
-with Input_Dispatcher, Debug, Mcd_Mng;
+with Input_Dispatcher, Debug, Mcd_Mng, Io_Data;
 package body Io_Flow is
 
   package Unb renames Ada.Strings.Unbounded;
@@ -17,7 +17,7 @@ package body Io_Flow is
   Fifo_Data : Unb.Unbounded_String;
 
   -- Fifo
-  package Mcd_Fifos is new Fifos.Fifo (Message_Type);
+  package Mcd_Fifos is new Fifos.Fifo (Io_Data.Message_Type);
   Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
   procedure Open_Fifo (Active : in Boolean);
 
@@ -140,7 +140,7 @@ package body Io_Flow is
   -- Put data on fifo or stdout
   ----------------------------------------------------
   -- Send one message
-  Message_To_Put : Message_Type;
+  Message_To_Put : Io_Data.Message_Type;
   procedure Send_Message (Str : in String) is
     Active : Boolean;
     Res : Fifos.Send_Result_List;
@@ -171,7 +171,7 @@ package body Io_Flow is
       -- Send on fifo several messages
       F := Str'First;
       loop
-        L := F + Max_Message_Len - 1;
+        L := F + Io_Data.Max_Message_Len - 1;
         if L > Str'Last then
           L := Str'Last;
         end if;
@@ -254,7 +254,7 @@ package body Io_Flow is
   end Conn_Cb;
 
   procedure Rece_Cb (Id      : in Mcd_Fifos.Fifo_Id;
-                     Message : in Message_Type;
+                     Message : in Io_Data.Message_Type;
                      Length  : in Fifos.Message_Length) is
   begin
     if Length = 0 then

@@ -1,10 +1,6 @@
 with Ada.Strings.Unbounded;
 package Io_Flow is
 
-  -- Data sent / read on fifo
-  Max_Message_Len : constant := 1024;
-  subtype Message_Type is String (1 .. Max_Message_Len);
-
   -- Data to output
   procedure Put (Str : in String);
   procedure Put_Line (Str : in String);
