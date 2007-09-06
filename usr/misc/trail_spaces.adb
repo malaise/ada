@@ -2,6 +2,15 @@ with Ada.Text_Io, Ada.Exceptions, Ada.Strings.Unbounded, Ada.Characters.Latin_1;
 with Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is
 
+  -- This is the exit code. Like diff:
+  -- An  exit status of 0 means no change,
+  --  1 means some files have been modified,
+  --  and 2 means trouble on at least one file
+  All_Unchanged : constant Natural := 0;
+  Some_Modified : constant Natural := 1;
+  Problem : constant Natural := 2;
+  Exit_Code : Natural := All_Unchanged;
+
   -- Process one file
   procedure Do_File (In_File_Name : in String) is
 
@@ -47,12 +56,14 @@ procedure Trail_Spaces is
         Sys_Calls.Put_Line_Error ("Error. File "
              & In_File_Name & " not found, skipping.");
         Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Exit_Code := Problem;
         return;
       when Error:others =>
         Sys_Calls.Put_Line_Error ("Error. Cannot open file "
              & In_File_Name & " due to "
              & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
         Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Exit_Code := Problem;
         return;
     end;
     -- Create out_file and associate in Text_Line
@@ -67,6 +78,7 @@ procedure Trail_Spaces is
              & Out_File_Name & ", skipping.");
         Close (In_File);
         Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Exit_Code := Problem;
         return;
     end;
 
@@ -124,11 +136,16 @@ procedure Trail_Spaces is
       -- Put modified file name
       Ada.Text_Io.Put_Line (In_File_Name);
       -- Rename out file as in file
-      if not Sys_Calls.Rename (Out_File_Name, In_File_Name) then
+      if Sys_Calls.Rename (Out_File_Name, In_File_Name) then
+        if Exit_Code = All_Unchanged then
+          Exit_Code := Some_Modified;
+        end if;
+      else
         Sys_Calls.Put_Line_Error ("Error. Cannot rename out file "
                & Out_File_Name & " as " & In_File_Name & ", skipping.");
         -- At least try to remove tmp file
         Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Exit_Code := Problem;
       end if;
     else
       -- Leave unchanged source file
@@ -139,11 +156,16 @@ procedure Trail_Spaces is
     end if;
 
   exception
-    when others =>
+    when Error:others =>
+      Sys_Calls.Put_Line_Error ("Error. Exception "
+             & Ada.Exceptions.Exception_Name (Error)
+             & " raised while processing file "
+             & In_File_Name & ", skipping.");
       -- Close files and delete temp file
       Close (In_File);
       Close (Out_File);
       Dummy := Sys_Calls.Unlink (Out_File_Name);
+      Exit_Code := Problem;
       raise;
   end Do_File;
 
@@ -153,6 +175,8 @@ begin
    for I in 1 .. Argument.Get_Nbre_Arg loop
      Do_File (Argument.Get_Parameter (I));
    end loop;
+
+   Sys_Calls.Set_Exit_Code (Exit_Code);
 
 end Trail_Spaces;
 
