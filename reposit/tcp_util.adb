@@ -1,6 +1,6 @@
 with Unchecked_Deallocation;
 with Ada.Exceptions;
-with Environ, Dynamic_List, Timers, Event_Mng, My_Io;
+with Environ, Dynamic_List, Timers, Event_Mng, My_Io, String_Mng;
 package body Tcp_Util is
 
   -- Remove tailing spaces
@@ -43,6 +43,12 @@ package body Tcp_Util is
     Set_Debug (Debug_Reception_Name, Debug_Reception);
     Debug_Init := True;
   end Init_Debug;
+
+  -- Name extraction --
+  function Name_Of (Name : String) return String is
+  begin
+    return Name (Name'First .. String_Mng.Parse_Spaces (Name));
+  end Name_Of;
 
   -- Connecting connection
   type Connecting_Rec is record

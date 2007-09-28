@@ -69,6 +69,11 @@ package Tcp_Util is
   end record;
 
 
+  -- NAME EXTRACTION --
+  ---------------------
+  -- Remove trailing spaces of a name
+  function Name_Of (Name : String) return String;
+
   -- CALLBACKS --
   ---------------
   -- Connection / Disconnection callback
