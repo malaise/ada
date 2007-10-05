@@ -1,7 +1,7 @@
 with Ada.Characters.Latin_1;
 package String_Mng is
 
-  -- Parces spaces and tabs (Latin_1.Ht) from the head/tail of a string
+  -- Parses spaces and tabs (Latin_1.Ht) from the head/tail of a string
   -- Returns the position of the first/last character or 0 if
   --  all the string is spaces or tabs (or empty)
   function Parse_Spaces (Str : String; From_Head : Boolean := True)
