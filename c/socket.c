@@ -592,7 +592,7 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
   }
 
   soc->send_struct.sin_addr.s_addr = host->integer;
-  soc->send_struct.sin_port = htons (port);
+  soc->send_struct.sin_port = htons( (uint16_t)port);
 
   /* Connect tcp */
   soc->dest_set = TRUE;
@@ -733,7 +733,7 @@ extern int soc_change_dest_port (soc_token token, soc_port port) {
   }
 
   /* Init structure */
-  soc->send_struct.sin_port = htons (port);
+  soc->send_struct.sin_port = htons( (uint16_t)port);
 
   /* Ok */
   UNLOCK;
@@ -755,7 +755,7 @@ extern int soc_get_dest_port (soc_token token, soc_port *p_port) {
   }
 
   /* Ok */
-  *p_port = ntohs(soc->send_struct.sin_port);
+  *p_port = (soc_port) ntohs(soc->send_struct.sin_port);
   UNLOCK;
   return (SOC_OK);
 }
@@ -1052,7 +1052,8 @@ extern int soc_port_name_of (const soc_port port,
   struct servent *port_struct;
 
   /* Read name of port */
-  port_struct = getservbyport((int)port, ns_proto[protocol_of(proto)]);
+  port_struct = getservbyport((int)htons((uint16_t)port),
+                              ns_proto[protocol_of(proto)]);
   if (port_struct == (struct servent *)NULL) {
     return (SOC_NAME_NOT_FOUND);
   }
@@ -1077,7 +1078,7 @@ extern int soc_port_of (const char *port_name,
   if (port_struct == (struct servent *)NULL) {
     return (SOC_NAME_NOT_FOUND);
   }
-  *p_port = (soc_port) port_struct->s_port;
+  *p_port = (soc_port) ntohs((uint16_t)port_struct->s_port);
 
   /* Ok */
   return (SOC_OK);
@@ -1367,7 +1368,7 @@ extern int soc_link_port  (soc_token token, soc_port port) {
   }
 
   /* Init structure */
-  soc->rece_struct.sin_port = htons((u_short) port);
+  soc->rece_struct.sin_port = htons((uint16_t) port);
 
   /* Bind */
   res = bind_and_co (token, FALSE);
@@ -1438,7 +1439,7 @@ extern int soc_get_linked_port  (soc_token token, soc_port *p_port) {
   }
 
   /* Ok */
-  *p_port = ntohs(soc->rece_struct.sin_port);
+  *p_port = (soc_port) ntohs((uint16_t)soc->rece_struct.sin_port);
   UNLOCK;
   return (SOC_OK);
 }
