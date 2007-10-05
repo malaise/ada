@@ -72,6 +72,7 @@ procedure T_Udp is
 
   procedure Send is
   begin
+    Message.Str := (others => ' ');
     Message.Str (1 .. Str'Length) := Str;
     Message.Len := Str'Length;
     My_Send (Soc, Message, 30);
