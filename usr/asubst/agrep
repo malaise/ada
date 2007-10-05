@@ -1,5 +1,5 @@
 #!/bin/bash
 export find=$1
 shift
-asubst -g $find "" $*
+asubst -g "$find" "" $*
 
