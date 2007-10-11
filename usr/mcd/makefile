@@ -1,6 +1,6 @@
 include $(HOME)/Makefiles/common.mk
 
-ADAVIEW := $(HOME)/ada/usr/fifos $(HOME)/ada/usr/dictio $(REPOSIT)
+ADAVIEW := $(USR)/fifos $(USR)/dictio $(REPOSIT)
 
 EXES := mcd
 
