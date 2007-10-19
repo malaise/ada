@@ -70,6 +70,25 @@ extern const char * soc_error (const int code) {
   return errors[index];
 }
 
+typedef enum {a_class, b_class, c_class, d_class, reserved_class} net_class;
+
+static net_class class_of (unsigned char first_byte) {
+
+  if (first_byte <= 127) return a_class;
+  if (first_byte <= 191) return b_class;
+  if (first_byte <= 223) return c_class;
+  if (first_byte <= 239) return d_class;
+  return reserved_class;
+}
+
+static boolean is_ipm (struct sockaddr_in *addr) {
+  soc_host host;
+  host.integer = addr->sin_addr.s_addr;
+
+  /* Valid ipm addr are d class */
+  return (class_of(host.bytes[0]) == d_class);
+}
+
 /* Init a socket (used by open and accept) */
 static int init (soc_ptr *p_soc,
                      int fd,
@@ -365,6 +384,7 @@ extern int soc_is_blocking (soc_token token, boolean *blocking) {
 extern int soc_set_ipm_interface (soc_token token, const soc_host *host) {
   soc_ptr soc = (soc_ptr) token;
 
+
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
@@ -372,7 +392,7 @@ extern int soc_set_ipm_interface (soc_token token, const soc_host *host) {
     UNLOCK;
     return (SOC_PROTO_ERR);
   }
-  /* Store */
+  /* Store for further use */
   soc->ipm_send_if.s_addr = host->integer;
   UNLOCK;
   return (SOC_OK);
@@ -427,6 +447,27 @@ static int do_connect (soc_ptr soc) {
   return (SOC_OK);
 }
 
+/* Set ipm sending interface */
+static boolean set_ipm_if (soc_ptr soc) {
+
+  struct ip_mreq ipm_addr;
+  int result;
+
+  if ( (soc->protocol != udp_protocol) 
+    || (! is_ipm(& soc->send_struct) ) ) {
+    return TRUE;
+  }
+  /* Set interface for sending multicast */
+  ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
+  ipm_addr.imr_interface.s_addr = soc->ipm_send_if.s_addr;
+  result = setsockopt(soc->socket_id, SOL_SOCKET, IP_MULTICAST_IF,
+                 &ipm_addr, sizeof (ipm_addr));
+  if (result == -1) {
+    perror("setsockopt(ip_multicast_if)");
+    return (FALSE);
+  }
+  return (TRUE);
+}
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
@@ -491,6 +532,11 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
     UNLOCK;
     return (res);
   }
+  /* Set ipm sending interface */
+  if (! set_ipm_if(soc)) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
 
   /* Ok */
   UNLOCK;
@@ -554,6 +600,11 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
     UNLOCK;
     return (res);
   }
+  /* Set ipm sending interface */
+  if (! set_ipm_if(soc)) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
 
   /* Ok */
   UNLOCK;
@@ -597,6 +648,11 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
     UNLOCK;
     return (res);
   }
+  /* Set ipm sending interface */
+  if (! set_ipm_if(soc)) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
 
   /* Ok */
   UNLOCK;
@@ -632,6 +688,11 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
     res = do_connect (soc);
     UNLOCK;
     return (res);
+  }
+  /* Set ipm sending interface */
+  if (! set_ipm_if(soc)) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -676,6 +737,11 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
     }
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
   }
+  /* Set ipm sending interface */
+  if (! set_ipm_if(soc)) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
 
   /* Ok */
   UNLOCK;
@@ -703,6 +769,11 @@ extern int soc_change_dest_host (soc_token token, const soc_host *host) {
   }
 
   soc->send_struct.sin_addr.s_addr = host->integer;
+  /* Set ipm sending interface */
+  if (! set_ipm_if(soc)) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
 
   /* Ok */
   UNLOCK;
@@ -1255,25 +1326,6 @@ extern int soc_str2port (const char *str, soc_port *p_port) {
 }
 
 /*******************************************************************/
-typedef enum {a_class, b_class, c_class, d_class, reserved_class} net_class;
-
-static net_class class_of (unsigned char first_byte) {
-
-  if (first_byte <= 127) return a_class;
-  if (first_byte <= 191) return b_class;
-  if (first_byte <= 223) return c_class;
-  if (first_byte <= 239) return d_class;
-  return reserved_class;
-}
-
-static boolean is_ipm (struct sockaddr_in *addr) {
-  soc_host host;
-  host.integer = addr->sin_addr.s_addr;
-
-  /* Valid ipm addr are d class */
-  return (class_of(host.bytes[0]) == d_class);
-}
-
 
 static int bind_and_co (soc_token token, boolean dynamic) {
 
@@ -1620,10 +1672,6 @@ extern int soc_receive (soc_token token,
   if (set_for_reply) {
     from_addr = &(soc->send_struct);
     addr_len = (socklen_t) socklen;
-    /* Copy reception interface (if set) for further emissions */
-    if (soc->ipm_rece_if.s_addr != INADDR_ANY) {
-      soc->ipm_send_if = soc->ipm_rece_if;
-    }
     /* In case of error */
     soc->dest_set = FALSE;
   } else {
@@ -1708,6 +1756,11 @@ extern int soc_receive (soc_token token,
   } else {
     /* A message read, even if empty */
     if (set_for_reply) {
+      /* Copy ipm reception interface (if set) for further emissions */
+      if ( (soc->ipm_rece_if.s_addr != INADDR_ANY) 
+         && (is_ipm (&soc->rece_struct) ) ) {
+        soc->ipm_send_if = soc->ipm_rece_if;
+      }
       soc->dest_set = TRUE;
     }
     UNLOCK;
