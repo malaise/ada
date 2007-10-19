@@ -101,8 +101,13 @@ extern const char * soc_error (const int code);
 /*    which is defined with a D class address, and a port.                 */
 /*  For receiving IPM, first Set_Destination to the LAN name and port,     */
 /*    then Link to the same port as this destination.                      */
-/*    It is possible to link dynamically to port (then destination port is */
-/*    not used).                                                           */
+/*    It is possible to link to a dynamic port (then port set in           */
+/*    destination port is    not used).                                    */
+/*  By default IPM emission and reception are from/to the "natural"        */
+/*    interface (local host id). A specific interface can be specified     */
+/*    before setting destination / before linking to port. If interface is */
+/*    set for reception, then the set_for_reply flag of soc_receive sets   */
+/*    the sending interface to it.                                         */
 /*-------------------------------------------------------------------------*/
 
 
@@ -125,6 +130,11 @@ extern int soc_set_blocking (soc_token token, boolean blocking);
 
 /* Is the socket in blocking mode or not */
 extern int soc_is_blocking (soc_token token, boolean *blocking);
+
+/* Set the interface on which send or from which allow reception of */
+/* Mutlicast IP (udp_socket). Before setting destination/linking.   */
+/* 0 to reset */
+extern int soc_set_ipm_interface (soc_token token, const soc_host *host);
 
 /*-------------------------------------*/
 /* Emission                            */

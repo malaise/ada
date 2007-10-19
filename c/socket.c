@@ -133,7 +133,10 @@ static int init (soc_ptr *p_soc,
     (*p_soc)->send_struct.sin_family = AF_INET;
     (*p_soc)->rece_struct.sin_family = AF_INET;
   }
+  (*p_soc)->send_struct.sin_addr.s_addr = htonl(INADDR_ANY);
+  (*p_soc)->ipm_send_if.s_addr = htonl(INADDR_ANY);
   (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
+  (*p_soc)->ipm_rece_if.s_addr = htonl(INADDR_ANY);
   (*p_soc)->send_tail = NULL;
   (*p_soc)->send_len = 0;
   (*p_soc)->rece_head = NULL;
@@ -182,6 +185,17 @@ static int init (soc_ptr *p_soc,
                  &allow_sockopt, sizeof (allow_sockopt));
   if (result == -1) {
     perror("setsockopt(so_reuseaddr)");
+    close ((*p_soc)->socket_id);
+    free (*p_soc);
+    *p_soc = NULL;
+    return (SOC_SYS_ERR);
+  }
+
+  /* Allow ReusePort */
+  result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEPORT,
+                 &allow_sockopt, sizeof (allow_sockopt));
+  if (result == -1) {
+    perror("setsockopt(so_reuseport)");
     close ((*p_soc)->socket_id);
     free (*p_soc);
     *p_soc = NULL;
@@ -346,6 +360,24 @@ extern int soc_is_blocking (soc_token token, boolean *blocking) {
   UNLOCK;
   return (SOC_OK);
 }
+
+/* Set the IP interface */
+extern int soc_set_ipm_interface (soc_token token, const soc_host *host) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+  if (soc->protocol != udp_protocol) {
+    UNLOCK;
+    return (SOC_PROTO_ERR);
+  }
+  /* Store */
+  soc->ipm_send_if.s_addr = host->integer;
+  UNLOCK;
+  return (SOC_OK);
+}
+
 
 /* Do the connection */
 static int do_connect (soc_ptr soc) {
@@ -1294,6 +1326,11 @@ static int bind_and_co (soc_token token, boolean dynamic) {
 
   if (do_ipm) {
     struct ip_mreq ipm_addr;
+
+    /* Copy specified interface (for emission) as interface for reception */
+    soc->ipm_rece_if = soc->ipm_send_if;
+    /* Add membership of interface: */
+    /*  INADDR_ANY -> appropriate chosen by the system */
     ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
     ipm_addr.imr_interface.s_addr = INADDR_ANY;
     if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
@@ -1583,6 +1620,10 @@ extern int soc_receive (soc_token token,
   if (set_for_reply) {
     from_addr = &(soc->send_struct);
     addr_len = (socklen_t) socklen;
+    /* Copy reception interface (if set) for further emissions */
+    if (soc->ipm_rece_if.s_addr != INADDR_ANY) {
+      soc->ipm_send_if = soc->ipm_rece_if;
+    }
     /* In case of error */
     soc->dest_set = FALSE;
   } else {

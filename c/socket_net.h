@@ -12,4 +12,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifndef SO_REUSEPORT
+#define SO_REUSEPORT 15
+#endif
+
 #endif
