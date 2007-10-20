@@ -14,8 +14,12 @@ package Socket is
   --  which is defined with a D class address, and a port.
   -- For receiving IPM, first Set_Destination to the LAN name and port,
   --  then Link to the same port as this destination.
-  --  It is possible to link dynamically to port (then destination port is
-  --  not used).
+  --  It is possible to link dynamically to port (then the destination port
+  --   that was set is not used).
+  -- A specific interface can be specified before setting destination
+  --  / before linking to port. When interface is set for reception,
+  --  then the set_for_reply flag of soc_receive sets the sending interface
+  --  to it.  
 
   -- A port
   type Port_Num is new Natural range 0 .. 65535;
@@ -82,6 +86,12 @@ package Socket is
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
+
+  -- Set the interface on which send or from which allow reception of
+  --  mutlicast IP (udp_socket). To be set before setting destination or
+  --  linking. Set 0 to selevt back the "appropriate" interface.
+  procedure Set_Ipm_Interface (Socket : in Socket_Dscr;
+                               Host   : in Host_Id);
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --

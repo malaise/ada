@@ -54,6 +54,9 @@ package body Socket is
   function Soc_Is_Blocking (S_Addr : System.Address;
                             Block  : System.Address) return Result;
   pragma Import (C, Soc_Is_Blocking, "soc_is_blocking");
+  function Soc_Set_Ipm_Interface (S_Addr : System.Address;
+                                  Host   : System.Address) return Result;
+  pragma Import (C, Soc_Set_Ipm_Interface, "soc_set_ipm_interface");
 
   function Soc_Link_Service (S : System.Address;
                              Service : System.Address) return Result;
@@ -233,6 +236,15 @@ package body Socket is
     Check_Ok;
     return Sys_Calls.File_Desc(Fd);
   end Fd_Of;
+
+  -- Set the sending/receiving IPM interface
+  procedure Set_Ipm_Interface (Socket : in Socket_Dscr;
+                               Host   : in Host_Id) is
+  begin
+    Res := Soc_Set_Ipm_Interface (Socket.Soc_Addr, Host'Address);
+    Check_Ok;
+  end Set_Ipm_Interface;
+
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
