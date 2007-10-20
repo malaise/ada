@@ -19,7 +19,7 @@ package Socket is
   -- A specific interface can be specified before setting destination
   --  / before linking to port. When interface is set for reception,
   --  then the set_for_reply flag of soc_receive sets the sending interface
-  --  to it.  
+  --  to it.
 
   -- A port
   type Port_Num is new Natural range 0 .. 65535;
