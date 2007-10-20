@@ -1,5 +1,7 @@
-with Socket, Text_Handler;
+with Text_Handler, Int_Image;
 package body Ip_Addr is
+
+  function Byte_Image is new Int_Image (Socket.Byte);
 
   -- Return -1 if convestion impossible or greater than Max
   function To_Natural (Str : String) return Integer is
@@ -66,6 +68,15 @@ package body Ip_Addr is
       raise Parse_Error;
 
   end Parse;
+
+  -- Image of an Ip address: "xxx.yyy.zzz.ttt"
+  function Image  (Addr : Socket.Ip_Address) return String is
+  begin
+    return Byte_Image (Addr.A) & '.'
+         & Byte_Image (Addr.B) & '.'
+         & Byte_Image (Addr.C) & '.'
+         & Byte_Image (Addr.D);
+  end Image;
 
   -- If Port is a num between 0 and 65535 then
   --   return the Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec)
