@@ -155,6 +155,23 @@ package body Argument is
     Text_Handler.Set (Parameter, Str(1 .. Len));
   end Get_Param_And_Pos;
 
+  function Is_Set (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return Boolean is
+    Len : Natural;
+    Pos : Natural;
+  begin
+    if Occurence = 0
+    and then (Param_Key = Any_Arg or else Param_Key = Not_Key) then
+      return True;
+    end if;
+    Get_Param_And_Pos (Str, Len, Pos, Occurence, Param_Key);
+    return True;
+  exception
+    when Argument_Not_Found =>
+      return False;
+  end Is_Set;
+
  function Get_Position (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Natural is

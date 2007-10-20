@@ -108,6 +108,11 @@ package Argument is
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Natural;
 
+  -- Is (a key) set
+  function Is_Set (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return Boolean;
+
   -- Number of arguments (0 if no argument)
   function Get_Nbre_Arg return Natural;
 
