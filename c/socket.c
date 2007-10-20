@@ -1392,7 +1392,8 @@ static int bind_and_co (soc_token token, boolean dynamic) {
     /* Add membership of interface: */
     /*  INADDR_ANY -> appropriate chosen by the system */
     ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
-    ipm_addr.imr_interface.s_addr = INADDR_ANY;
+    ipm_addr.imr_interface.s_addr = soc->ipm_rece_if.s_addr;
+printf ("membership on interface %0x\n", ipm_addr.imr_interface.s_addr);
     if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                     (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
       perror("setsockopt(ip_add_membership)");
