@@ -12,11 +12,13 @@ procedure Udp_Spy is
   Port_Name : Text_Handler.Text (80);
   Port : Tcp_Util.Remote_Port;
   Port_Num : Socket.Port_Num;
-  use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
   type Dump_Kind_List is (Header, Short, Full, Binary);
   Dump_Mode : Dump_Kind_List;
+  Iface : Tcp_Util.Remote_Host;
   File : Text_Line.File_Type;
   Short_Data_Len : constant Natural := 64;
+  use type Socket.Host_Id;
+  use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
 
   package Byte_Io is new Ada.Text_Io.Integer_Io (Socket.Byte);
 
@@ -25,14 +27,11 @@ procedure Udp_Spy is
   function Inte_Image is new Int_Image (Integer);
 
   function Dest_Image (S : Socket.Socket_Dscr) return String is
-    Ip_Addr : constant Socket.Ip_Address
+    Ip_Add : constant Socket.Ip_Address
             := Socket.Id2Addr (Socket.Get_Destination_Host (S));
   begin
-    return Byte_Image (Ip_Addr.A) & "."
-         & Byte_Image (Ip_Addr.B) & "."
-         & Byte_Image (Ip_Addr.C) & "."
-         & Byte_Image (Ip_Addr.D) & ":"
-         & Port_Image (Socket.Get_Destination_Port (S));
+    return Ip_Addr.Image (Ip_Add)
+         & ":" & Port_Image (Socket.Get_Destination_Port (S));
   end Dest_Image;
 
   -- Current date image
@@ -145,46 +144,70 @@ procedure Udp_Spy is
 begin
 
   -- Parse arguments
+  if Argument.Get_Nbre_Arg = 0
+  or else Argument.Get_Nbre_Arg > 3 then
+    raise Arg_Error;
+  end if;
+  if Argument.Get_Nbre_Arg = 2
+  and then not Argument.Is_Set (Param_Key => "d")
+  and then not Argument.Is_Set (Param_Key => "i") then
+    -- 2 Args, one shall be d or h
+    raise Arg_Error;
+  elsif Argument.Get_Nbre_Arg = 3
+  and then (not Argument.Is_Set (Param_Key => "d")
+    or else not Argument.Is_Set (Param_Key => "i") ) then
+    -- 3 Args, there shall be d and h
+    raise Arg_Error;
+  end if;
+
+  -- Parse address <Lan>:<Port>
+  declare
+    Address : constant String
+            := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
+    Index : Natural;
   begin
-    if Argument.Get_Nbre_Arg /= 1
-    and then Argument.Get_Nbre_Arg /= 2 then
+    Index := String_Mng.Locate (Address, ":");
+    Text_Handler.Set (Host_Name, Address(1 .. Index - 1));
+    Text_Handler.Set (Port_Name, Address(Index + 1 .. Address'Last));
+  exception
+    when others =>
       raise Arg_Error;
-    end if;
+  end;
 
-    -- Parse address <Lan>:<Port>
-    declare
-      Address : constant String
-              := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
-      Index : Natural;
-    begin
-      Index := String_Mng.Locate (Address, ":");
-      Text_Handler.Set (Host_Name, Address(1 .. Index - 1));
-      Text_Handler.Set (Port_Name, Address(Index + 1 .. Address'Last));
-    exception
-      when others =>
-        raise Arg_Error;
-    end;
-
-    -- Dump mode
-    if Argument.Get_Nbre_Arg = 1 then
-      -- Default
+  -- Dump mode
+  -- Default
+  begin
+    Dump_Mode := Short;
+    if Argument.Get_Parameter (1, "d") = "h" then
+      Dump_Mode := Header;
+    elsif Argument.Get_Parameter (1, "d") = "s" then
       Dump_Mode := Short;
+    elsif Argument.Get_Parameter (1, "d") = "f" then
+      Dump_Mode := Full;
+    elsif Argument.Get_Parameter (1, "d") = "b" then
+      Dump_Mode := Binary;
     else
-      if Argument.Get_Parameter (1, "d") = "h" then
-        Dump_Mode := Header;
-      elsif Argument.Get_Parameter (1, "d") = "s" then
-        Dump_Mode := Short;
-      elsif Argument.Get_Parameter (1, "d") = "f" then
-        Dump_Mode := Full;
-      elsif Argument.Get_Parameter (1, "d") = "b" then
-        Dump_Mode := Binary;
-      else
-        raise Arg_Error;
-      end if;
+      raise Arg_Error;
     end if;
   exception
     when Argument.Argument_Not_Found =>
-      raise Arg_Error;
+      null;
+  end;
+
+  -- Interface
+  -- Default
+  Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
+  begin
+    Iface := Ip_Addr.Parse (Argument.Get_Parameter (1, "i"));
+    if Sys_Calls.Get_Effective_User_Id /= 0 then
+      Basic_Proc.Put_Line_Error (
+          "Error: Setting interface requires to be root.");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+    end if;
+  exception
+    when Argument.Argument_Not_Found =>
+      null;
   end;
 
   -- Open output flow
@@ -203,11 +226,36 @@ begin
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
+  -- Set interface
+  if Iface.Kind = Tcp_Util.Host_Name_Spec then
+    -- Set host id
+    begin
+      Iface := (
+          Kind => Tcp_Util.Host_Id_Spec,
+          Id => Socket.Host_Id_Of (Tcp_Util.Name_Of (Iface.Name)));
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        Basic_Proc.Put_Line_Error ("Error: Unknown host name "
+                                 & Tcp_Util.Name_Of (Iface.Name));
+      raise;
+    end;
+  end if;
+  if Iface.Id /= Socket.No_Host then
+    Socket.Set_Ipm_Interface (Soc, Iface.Id);
+  end if;
+
   -- Set port num
   Port := Ip_Addr.Parse (Text_Handler.Value(Port_Name));
   if Port.Kind = Tcp_Util.Port_Name_Spec then
-    Port_Num := Socket.Port_Num_Of (Tcp_Util.Name_Of (Port.Name),
-             Socket.Udp);
+    begin
+      Port_Num := Socket.Port_Num_Of (Tcp_Util.Name_Of (Port.Name),
+               Socket.Udp);
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        Basic_Proc.Put_Line_Error ("Error: Unknown port name "
+                                 & Tcp_Util.Name_Of (Port.Name));
+        raise;
+    end;
   else
     Port_Num := Port.Num;
   end if;
@@ -216,8 +264,15 @@ begin
   Host := Ip_Addr.Parse (Text_Handler.Value (Host_Name));
   -- See if Server is Id or Name, if it is a Host or LAN name
   if Host.Kind = Tcp_Util.Host_Name_Spec then
-    Socket.Set_Destination_Name_And_Port (Soc, True,
-             Tcp_Util.Name_Of (Host.Name), Port_Num);
+    begin
+      Socket.Set_Destination_Name_And_Port (Soc, True,
+               Tcp_Util.Name_Of (Host.Name), Port_Num);
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        Basic_Proc.Put_Line_Error ("Error: Unknown LAN name "
+                                 & Tcp_Util.Name_Of (Host.Name));
+        raise;
+    end;
   else
     Socket.Set_Destination_Host_And_Port (Soc, Host.Id, Port_Num);
   end if;
@@ -226,6 +281,10 @@ begin
   -- Put Ready on...
   Basic_Proc.Put_Error (Curr_Date_Image & " listening on ");
   Basic_Proc.Put_Error (Dest_Image (Soc));
+  if Iface.Id /= Socket.No_Host then
+    Basic_Proc.Put_Error (" interface "
+                        & Ip_Addr.Image(Socket.Id2Addr(Iface.Id)));
+  end if;
   Basic_Proc.Put_Error (" for ");
   case Dump_Mode is
     when Header =>
@@ -257,10 +316,11 @@ begin
 exception
   when Arg_Error =>
     Basic_Proc.Put_Line_Error ("Usage: "
-       & Argument.Get_Program_Name & " <address> [ <dump_mode> ]");
+       & Argument.Get_Program_Name & " <address> [ <interface> ] [ <dump_mode> ]");
     Basic_Proc.Put_Line_Error ("  <address>   ::= <lan>:<port>");
     Basic_Proc.Put_Line_Error ("  <lan>       ::= <lan_name_or_num> ");
     Basic_Proc.Put_Line_Error ("  <port>      ::= <port_name_or_num>");
+    Basic_Proc.Put_Line_Error ("  <interface> ::= -i<host_name_or_num>");
     Basic_Proc.Put_Line_Error ("  <dump_mode> ::= -dh | -ds | -df | -db");
     Basic_Proc.Put_Line_Error ("Dump received headers, short ("
       & Inte_Image(Short_Data_Len) & " Bytes, default), full or binary.");
