@@ -12,8 +12,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+/* Not supported by default
 #ifndef SO_REUSEPORT
 #define SO_REUSEPORT 15
 #endif
+*/
 
 #endif

@@ -154,6 +154,7 @@ static int init (soc_ptr *p_soc,
   }
   (*p_soc)->send_struct.sin_addr.s_addr = htonl(INADDR_ANY);
   (*p_soc)->ipm_send_if.s_addr = htonl(INADDR_ANY);
+  (*p_soc)->set_send_if = FALSE;
   (*p_soc)->rece_struct.sin_addr.s_addr = htonl(INADDR_ANY);
   (*p_soc)->ipm_rece_if.s_addr = htonl(INADDR_ANY);
   (*p_soc)->send_tail = NULL;
@@ -210,16 +211,20 @@ static int init (soc_ptr *p_soc,
     return (SOC_SYS_ERR);
   }
 
-  /* Allow ReusePort */
-  result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEPORT,
-                 &allow_sockopt, sizeof (allow_sockopt));
-  if (result == -1) {
-    perror("setsockopt(so_reuseport)");
-    close ((*p_soc)->socket_id);
-    free (*p_soc);
-    *p_soc = NULL;
-    return (SOC_SYS_ERR);
+#ifdef SO_REUSEPORT
+  /* Allow ReusePort for UDP */
+  if ((*p_soc)->protocol == udp_protocol) {
+    result = setsockopt((*p_soc)->socket_id, SOL_SOCKET, SO_REUSEPORT,
+                   &allow_sockopt, sizeof (allow_sockopt));
+    if (result == -1) {
+      perror("setsockopt(so_reuseport)");
+      close ((*p_soc)->socket_id);
+      free (*p_soc);
+      *p_soc = NULL;
+      return (SOC_SYS_ERR);
+    }
   }
+#endif
 
   /* Close on exec */
   if (fcntl((*p_soc)->socket_id, F_SETFD, FD_CLOEXEC) < 0) {
@@ -394,6 +399,7 @@ extern int soc_set_ipm_interface (soc_token token, const soc_host *host) {
   }
   /* Store for further use */
   soc->ipm_send_if.s_addr = host->integer;
+  soc->set_send_if = TRUE;
   UNLOCK;
   return (SOC_OK);
 }
@@ -454,7 +460,8 @@ static boolean set_ipm_if (soc_ptr soc) {
   int result;
 
   if ( (soc->protocol != udp_protocol) 
-    || (! is_ipm(& soc->send_struct) ) ) {
+    || (! is_ipm(& soc->send_struct)
+    || (!soc->set_send_if) ) ) {
     return TRUE;
   }
   /* Set interface for sending multicast */
@@ -462,6 +469,7 @@ static boolean set_ipm_if (soc_ptr soc) {
   ipm_addr.imr_interface.s_addr = soc->ipm_send_if.s_addr;
   result = setsockopt(soc->socket_id, SOL_SOCKET, IP_MULTICAST_IF,
                  &ipm_addr, sizeof (ipm_addr));
+  soc->set_send_if = FALSE;
   if (result == -1) {
     perror("setsockopt(ip_multicast_if)");
     return (FALSE);
@@ -1758,8 +1766,13 @@ extern int soc_receive (soc_token token,
     if (set_for_reply) {
       /* Copy ipm reception interface (if set) for further emissions */
       if ( (soc->ipm_rece_if.s_addr != INADDR_ANY) 
-         && (is_ipm (&soc->rece_struct) ) ) {
+         && (is_ipm (&soc->rece_struct) ) 
+         && (soc->ipm_send_if.s_addr == soc->ipm_rece_if.s_addr) ) {
         soc->ipm_send_if = soc->ipm_rece_if;
+        if (!set_ipm_if (soc) ) {
+          UNLOCK;
+          return (SOC_SYS_ERR);
+        }
       }
       soc->dest_set = TRUE;
     }

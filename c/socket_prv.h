@@ -29,16 +29,17 @@ typedef struct {
         boolean         linked;
         boolean         blocking;
         connect_state   connection;
-        int    socket_id;
+        int             socket_id;
         struct sockaddr_in send_struct;
-        struct in_addr     ipm_send_if;
-        char * send_tail;
-        soc_length send_len;
+        boolean         set_send_if;
+        struct in_addr  ipm_send_if;
+        char *          send_tail;
+        soc_length      send_len;
         struct sockaddr_in rece_struct;
-        struct in_addr     ipm_rece_if;
-        char * rece_head;
-        soc_length rece_len;
-        soc_length expect_len;
+        struct in_addr  ipm_rece_if;
+        char *          rece_head;
+        soc_length      rece_len;
+        soc_length      expect_len;
 }soc_struct, *soc_ptr;
 
 const socklen_t socklen = sizeof (struct sockaddr_in);
