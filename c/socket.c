@@ -459,7 +459,7 @@ static boolean set_ipm_if (soc_ptr soc) {
   struct ip_mreq ipm_addr;
   int result;
 
-  if ( (soc->protocol != udp_protocol) 
+  if ( (soc->protocol != udp_protocol)
     || (! is_ipm(& soc->send_struct)
     || (!soc->set_send_if) ) ) {
     return TRUE;
@@ -1766,8 +1766,8 @@ extern int soc_receive (soc_token token,
     /* A message read, even if empty */
     if (set_for_reply) {
       /* Copy ipm reception interface (if set) for further emissions */
-      if ( (soc->ipm_rece_if.s_addr != INADDR_ANY) 
-         && (is_ipm (&soc->rece_struct) ) 
+      if ( (soc->ipm_rece_if.s_addr != INADDR_ANY)
+         && (is_ipm (&soc->rece_struct) )
          && (soc->ipm_send_if.s_addr == soc->ipm_rece_if.s_addr) ) {
         soc->ipm_send_if = soc->ipm_rece_if;
         if (!set_ipm_if (soc) ) {
