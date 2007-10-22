@@ -114,7 +114,15 @@ procedure Udp_Spy is
       Basic_Proc.Put_Line_Error ("Error: read callback on unknown fd.");
       raise Program_Error;
     end if;
-    My_Receive (Soc, Data, Data_Len, Set_For_Reply => True);
+    begin
+      My_Receive (Soc, Data, Data_Len, Set_For_Reply => True);
+    exception
+      when Socket.Soc_Reply_Iface =>
+        -- Set_For_Reply must be True, so that we can know the sender.
+        --  But in IPM, this leads to try to select sending interface,
+        --  which may not be supported or allowed.
+        null;
+    end;
     -- Put header
     if Dump_Mode /= Binary then
       Text_Line.Put (File, Curr_Date_Image);
@@ -199,12 +207,6 @@ begin
   Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
   begin
     Iface := Ip_Addr.Parse (Argument.Get_Parameter (1, "i"));
-    if Sys_Calls.Get_Effective_User_Id /= 0 then
-      Basic_Proc.Put_Line_Error (
-          "Error: Setting interface requires to be root.");
-      Basic_Proc.Set_Error_Exit_Code;
-      return;
-    end if;
   exception
     when Argument.Argument_Not_Found =>
       null;
@@ -241,7 +243,7 @@ begin
     end;
   end if;
   if Iface.Id /= Socket.No_Host then
-    Socket.Set_Ipm_Interface (Soc, Iface.Id);
+    Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
   end if;
 
   -- Set port num
