@@ -52,7 +52,8 @@ package Socket is
   Soc_Would_Block,    -- Connection, send or receive would block
   Soc_Conn_Lost,      -- Connection has been lost
   Soc_Addr_In_Use,    -- Address in use, maybe in close-wait state
-  Soc_Read_0:         -- Read returns 0, after a select => diconnection
+  Soc_Read_0,         -- Read returns 0, after a select => diconnection
+  Soc_Reply_Iface:    -- Set_For_Reply could not set the IPM sending interface
                  exception;
 
   -- The following list describes which call may raise Soc_Would_Block on a
@@ -87,16 +88,15 @@ package Socket is
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
 
-  -- Set the interface on which send or from which allow reception of
-  --  mutlicast IP (udp_socket). To be set before setting destination or
-  --  linking. Set 0 to selevt back the "appropriate" interface.
-  procedure Set_Ipm_Interface (Socket : in Socket_Dscr;
-                               Host   : in Host_Id);
-
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
   -------------------------------------
 
+  -- Set the interface on which receive mutlicast IP (udp_socket).
+  -- To be set before linking.
+  -- Set 0 to select back the "appropriate" interface.
+  procedure Set_Reception_Ipm_Interface (Socket : in Socket_Dscr;
+                                         Host   : in Host_Id);
   -- Bind for reception or connection accepting,
   --  On a port from services, on a port by num
   --  or a dynamical (ephemeral - attributed by the OS) port
@@ -147,6 +147,12 @@ package Socket is
   -------------------------------------
   -- DESTINATION PORT/HOST - SENDING --
   -------------------------------------
+
+  -- Set the interface on which send mutlicast IP (udp_socket).
+  -- To be set before setting destination.
+  -- Set 0 to select back the "appropriate" interface.
+  procedure Set_Sending_Ipm_Interface (Socket : in Socket_Dscr;
+                                       Host   : in Host_Id);
 
   -- Set destination (Host/Lan and port) for sending
   -- If Lan is true then Name is a LAN name to broadcast on

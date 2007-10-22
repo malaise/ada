@@ -28,6 +28,7 @@ package body Socket is
   C_Soc_Conn_Lost      : constant Result := -24;
   C_Soc_Addr_In_Use    : constant Result := -25;
   C_Soc_Read_0         : constant Result := -26;
+  C_Soc_Reply_Iface    : constant Result := -27;
 
   type Boolean_For_C is new Boolean;
   for Boolean_For_C'Size use 4 * Byte_Size;
@@ -54,10 +55,10 @@ package body Socket is
   function Soc_Is_Blocking (S_Addr : System.Address;
                             Block  : System.Address) return Result;
   pragma Import (C, Soc_Is_Blocking, "soc_is_blocking");
-  function Soc_Set_Ipm_Interface (S_Addr : System.Address;
-                                  Host   : System.Address) return Result;
-  pragma Import (C, Soc_Set_Ipm_Interface, "soc_set_ipm_interface");
 
+  function Soc_Set_Rece_Ipm_Interface (S_Addr : System.Address;
+                                       Host   : System.Address) return Result;
+  pragma Import (C, Soc_Set_Rece_Ipm_Interface, "soc_set_rece_ipm_interface");
   function Soc_Link_Service (S : System.Address;
                              Service : System.Address) return Result;
   pragma Import (C, Soc_Link_Service, "soc_link_service");
@@ -80,6 +81,9 @@ package body Socket is
                         Set_For_Reply : Boolean_For_C) return Result;
   pragma Import (C, Soc_Receive, "soc_receive");
 
+  function Soc_Set_Send_Ipm_Interface (S_Addr : System.Address;
+                                       Host   : System.Address) return Result;
+  pragma Import (C, Soc_Set_Send_Ipm_Interface, "soc_set_send_ipm_interface");
   function Soc_Set_Dest_Name_Service (S : System.Address;
                                       Host_Lan : System.Address;
                                       Lan      : Boolean_For_C;
@@ -185,6 +189,7 @@ package body Socket is
       when C_Soc_Conn_Lost      => raise Soc_Conn_Lost;
       when C_Soc_Addr_In_Use    => raise Soc_Addr_In_Use;
       when C_Soc_Read_0         => raise Soc_Read_0;
+      when C_Soc_Reply_Iface    => raise Soc_Reply_Iface;
       when others => raise Soc_Unknown_Error;
     end case;
   end Check_Ok;
@@ -237,18 +242,19 @@ package body Socket is
     return Sys_Calls.File_Desc(Fd);
   end Fd_Of;
 
-  -- Set the sending/receiving IPM interface
-  procedure Set_Ipm_Interface (Socket : in Socket_Dscr;
-                               Host   : in Host_Id) is
-  begin
-    Res := Soc_Set_Ipm_Interface (Socket.Soc_Addr, Host'Address);
-    Check_Ok;
-  end Set_Ipm_Interface;
 
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
   -------------------------------------
+
+  -- Set the receiving IPM interface
+  procedure Set_Reception_Ipm_Interface (Socket : in Socket_Dscr;
+                                         Host   : in Host_Id) is
+  begin
+    Res := Soc_Set_Rece_Ipm_Interface (Socket.Soc_Addr, Host'Address);
+    Check_Ok;
+  end Set_Reception_Ipm_Interface;
 
   -- Bind for reception on a port from services, on a port by num
   --  or a dynamical (ephemeral - attributed by the OS) port
@@ -322,6 +328,14 @@ package body Socket is
   -------------------------------------
   -- DESTINATION PORT/HOST - SENDING --
   -------------------------------------
+
+  -- Set the sending IPM interface
+  procedure Set_Sending_Ipm_Interface (Socket : in Socket_Dscr;
+                                         Host   : in Host_Id) is
+  begin
+    Res := Soc_Set_Send_Ipm_Interface (Socket.Soc_Addr, Host'Address);
+    Check_Ok;
+  end Set_Sending_Ipm_Interface;
 
   -- Set destination (Host/Lan and port) for sending
   -- If Lan is true then Name is a LAN name to broadcast on
