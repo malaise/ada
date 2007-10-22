@@ -49,7 +49,8 @@
 #define SOC_ADDR_IN_USE    -25
 /* Read -> 0 : disconnection if after a select */
 #define SOC_READ_0         -26
-
+/* Set_for_reply could not set the ipm sending interface */
+#define SOC_REPLY_IFACE    -27
 
 /* String terminator */
 #define NUL '\0'
@@ -131,16 +132,16 @@ extern int soc_set_blocking (soc_token token, boolean blocking);
 /* Is the socket in blocking mode or not */
 extern int soc_is_blocking (soc_token token, boolean *blocking);
 
-/* Set the interface on which send or from which allow reception of */
-/* Mutlicast IP (udp_socket). Before setting destination/linking.   */
-/* 0 to reset */
-extern int soc_set_ipm_interface (soc_token token, const soc_host *host);
-
 /*-------------------------------------*/
 /* Emission                            */
 /* No broadcast nor change dest in tcp */
 /* Socket must not be linked in tcp    */
 /*-------------------------------------*/
+
+/* Set the interface on which send mutlicast IP (udp_socket). */
+/* Set it before setting destination. */
+/* 0 to reset */
+extern int soc_set_send_ipm_interface (soc_token token, const soc_host *host);
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
@@ -223,6 +224,11 @@ extern int soc_str2port (const char *str, soc_port *p_port);
 /* Receive                             */
 /* Socket must not be connected in tcp */
 /* ------------------------------------*/
+
+/* Set the interface on which receive mutlicast IP (udp_socket). */
+/* Set it before linking. */
+/* 0 to reset */
+extern int soc_set_rece_ipm_interface (soc_token token, const soc_host *host);
 
 /* Links the socket to a port specified by the service */
 /* The socket must be open and not already linked */

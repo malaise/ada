@@ -385,25 +385,6 @@ extern int soc_is_blocking (soc_token token, boolean *blocking) {
   return (SOC_OK);
 }
 
-/* Set the IP interface */
-extern int soc_set_ipm_interface (soc_token token, const soc_host *host) {
-  soc_ptr soc = (soc_ptr) token;
-
-
-  /* Check that socket is open */
-  if (soc == NULL) return (SOC_USE_ERR);
-  LOCK;
-  if (soc->protocol != udp_protocol) {
-    UNLOCK;
-    return (SOC_PROTO_ERR);
-  }
-  /* Store for further use */
-  soc->ipm_send_if.s_addr = host->integer;
-  soc->set_send_if = TRUE;
-  UNLOCK;
-  return (SOC_OK);
-}
-
 
 /* Do the connection */
 static int do_connect (soc_ptr soc) {
@@ -453,16 +434,19 @@ static int do_connect (soc_ptr soc) {
   return (SOC_OK);
 }
 
-/* Set ipm sending interface */
-static boolean set_ipm_if (soc_ptr soc) {
+/* Set ipm sending interface (when set_dest or set_for_reply) */
+static int set_ipm_if (soc_ptr soc, boolean report_error) {
 
   struct ip_mreq ipm_addr;
   int result;
 
+  if ( !soc->set_send_if) {
+    return (SOC_OK);
+  }
+
   if ( (soc->protocol != udp_protocol)
-    || (! is_ipm(& soc->send_struct)
-    || (!soc->set_send_if) ) ) {
-    return TRUE;
+    || (! is_ipm(& soc->send_struct) ) ) {
+    return (SOC_PROTO_ERR);
   }
   /* Set interface for sending multicast */
   ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
@@ -471,10 +455,30 @@ static boolean set_ipm_if (soc_ptr soc) {
                  &ipm_addr, sizeof (ipm_addr));
   soc->set_send_if = FALSE;
   if (result == -1) {
-    perror("setsockopt(ip_multicast_if)");
-    return (FALSE);
+    if (report_error) {
+      perror("setsockopt(ip_multicast_if)");
+    }
+    return (SOC_SYS_ERR);
   }
-  return (TRUE);
+  return (SOC_OK);
+}
+
+/* Set the IP interface for sending */
+extern int soc_set_send_ipm_interface (soc_token token, const soc_host *host) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+  if (soc->protocol != udp_protocol) {
+    UNLOCK;
+    return (SOC_PROTO_ERR);
+  }
+  /* Store for further setting (in soc_set_dest) */
+  soc->ipm_send_if.s_addr = host->integer;
+  soc->set_send_if = TRUE;
+  UNLOCK;
+  return (SOC_OK);
 }
 
 /* Set the destination host/lan name and port - specify service */
@@ -533,17 +537,17 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
 
   soc->send_struct.sin_port = serv_name->s_port;
 
+  /* Set ipm sending interface */
+  if (set_ipm_if(soc, TRUE) != SOC_OK) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
     res = do_connect (soc);
     UNLOCK;
     return (res);
-  }
-  /* Set ipm sending interface */
-  if (! set_ipm_if(soc)) {
-    UNLOCK;
-    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -601,17 +605,17 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
 
   soc->send_struct.sin_port = htons( (uint16_t)port);
 
+  /* Set ipm sending interface */
+  if (set_ipm_if(soc, TRUE) != SOC_OK) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
     res = do_connect (soc);
     UNLOCK;
     return (res);
-  }
-  /* Set ipm sending interface */
-  if (! set_ipm_if(soc)) {
-    UNLOCK;
-    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -649,17 +653,17 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   soc->send_struct.sin_addr.s_addr = host->integer;
   soc->send_struct.sin_port = serv_name->s_port;
 
+  /* Set ipm sending interface */
+  if (set_ipm_if(soc, TRUE) != SOC_OK) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
     res = do_connect (soc);
     UNLOCK;
     return (res);
-  }
-  /* Set ipm sending interface */
-  if (! set_ipm_if(soc)) {
-    UNLOCK;
-    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -690,17 +694,17 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
   soc->send_struct.sin_addr.s_addr = host->integer;
   soc->send_struct.sin_port = htons( (uint16_t)port);
 
+  /* Set ipm sending interface */
+  if (set_ipm_if(soc, TRUE) != SOC_OK) {
+    UNLOCK;
+    return (SOC_SYS_ERR);
+  }
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
     res = do_connect (soc);
     UNLOCK;
     return (res);
-  }
-  /* Set ipm sending interface */
-  if (! set_ipm_if(soc)) {
-    UNLOCK;
-    return (SOC_SYS_ERR);
   }
 
   /* Ok */
@@ -746,7 +750,7 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
   }
   /* Set ipm sending interface */
-  if (! set_ipm_if(soc)) {
+  if (set_ipm_if(soc, TRUE) != SOC_OK) {
     UNLOCK;
     return (SOC_SYS_ERR);
   }
@@ -778,7 +782,7 @@ extern int soc_change_dest_host (soc_token token, const soc_host *host) {
 
   soc->send_struct.sin_addr.s_addr = host->integer;
   /* Set ipm sending interface */
-  if (! set_ipm_if(soc)) {
+  if (set_ipm_if(soc, TRUE) != SOC_OK) {
     UNLOCK;
     return (SOC_SYS_ERR);
   }
@@ -1220,7 +1224,6 @@ extern int soc_get_local_host_id (soc_host *p_host) {
   return soc_host_of(hostname, p_host);
 }
 
-# define SOC_FMT_ERR   -12
 /* String "x.y.z.t" to host, and string to port conversions */
 /* Parse a byte from a string, for str2host */
 static boolean parse_byte (const char *str, const int start, const int stop,
@@ -1335,6 +1338,23 @@ extern int soc_str2port (const char *str, soc_port *p_port) {
 
 /*******************************************************************/
 
+/* Set the IP interface for receiveing */
+extern int soc_set_rece_ipm_interface (soc_token token, const soc_host *host) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+  if (soc->protocol != udp_protocol) {
+    UNLOCK;
+    return (SOC_PROTO_ERR);
+  }
+  /* Store for further setting (in soc_link) */
+  soc->ipm_rece_if.s_addr = host->integer;
+  UNLOCK;
+  return (SOC_OK);
+}
+
 static int bind_and_co (soc_token token, boolean dynamic) {
 
   soc_ptr soc = (soc_ptr) token;
@@ -1387,18 +1407,19 @@ static int bind_and_co (soc_token token, boolean dynamic) {
   if (do_ipm) {
     struct ip_mreq ipm_addr;
 
-    /* Copy specified interface (for emission) as interface for reception */
-    soc->ipm_rece_if = soc->ipm_send_if;
     /* Add membership of interface: */
     /*  INADDR_ANY -> appropriate chosen by the system */
     ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
     ipm_addr.imr_interface.s_addr = soc->ipm_rece_if.s_addr;
-printf ("membership on interface %0x\n", ipm_addr.imr_interface.s_addr);
     if (setsockopt (soc->socket_id, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                     (char*) &ipm_addr, sizeof(ipm_addr)) != 0) {
       perror("setsockopt(ip_add_membership)");
       return (SOC_SYS_ERR);
     }
+    /* Copy for check in Set_For_Reply */
+    soc->rece_struct.sin_addr = soc->send_struct.sin_addr;
+  } else {
+    soc->rece_struct.sin_addr.s_addr = INADDR_ANY;
   }
 
   /* Ok */
@@ -1768,11 +1789,14 @@ extern int soc_receive (soc_token token,
       /* Copy ipm reception interface (if set) for further emissions */
       if ( (soc->ipm_rece_if.s_addr != INADDR_ANY)
          && (is_ipm (&soc->rece_struct) )
-         && (soc->ipm_send_if.s_addr == soc->ipm_rece_if.s_addr) ) {
+         && (soc->ipm_send_if.s_addr != soc->ipm_rece_if.s_addr) ) {
         soc->ipm_send_if = soc->ipm_rece_if;
-        if (!set_ipm_if (soc) ) {
+        soc->set_send_if = TRUE;
+        if (set_ipm_if(soc, FALSE) != SOC_OK) {
+          /* Address set but not the ipm sending interface */
           UNLOCK;
-          return (SOC_SYS_ERR);
+          soc->dest_set = TRUE;
+          return (SOC_REPLY_IFACE);
         }
       }
       soc->dest_set = TRUE;
