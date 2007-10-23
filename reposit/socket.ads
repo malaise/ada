@@ -95,6 +95,7 @@ package Socket is
   -- Set the interface on which receive mutlicast IP (udp_socket).
   -- To be set before linking.
   -- Set 0 to select back the "appropriate" interface.
+  -- May raise Soc_Proto_Err if not udp
   procedure Set_Reception_Ipm_Interface (Socket : in Socket_Dscr;
                                          Host   : in Host_Id);
   -- Bind for reception or connection accepting,
@@ -124,6 +125,8 @@ package Socket is
 
   -- Receive a message, waiting for it
   -- The socket destination may be set for a reply if not tcp
+  -- In IPM, the interface for sending may also be set but see
+  --  Set_Sending_Ipm_Interface
   -- May raise Soc_Reply_Err if Set_For_Reply and tcp
   -- May raise Soc_Link_Err if socket is linked and tcp
   --                     or if socket is not linked and udp
@@ -139,10 +142,12 @@ package Socket is
     --  Message_Type'Size, which may be wrong with indefinite type.
     type Message_Type (<>) is private;
     Message_Size : Natural := 0;
+  -- If Set_For_Reply is False then Set_Ipm_Iface is not significant.
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
                      Length        : out Natural;
-                     Set_For_Reply : in Boolean := False);
+                     Set_For_Reply : in Boolean := False;
+                     Set_Ipm_Iface : in Boolean := False);
 
   -------------------------------------
   -- DESTINATION PORT/HOST - SENDING --
@@ -151,6 +156,9 @@ package Socket is
   -- Set the interface on which send mutlicast IP (udp_socket).
   -- To be set before setting destination.
   -- Set 0 to select back the "appropriate" interface.
+  -- Beware that setting the sending interface is not always supported
+  --  and may require to be root (Set_Destination will raise Soc_Sys_Err).
+  -- May raise Soc_Proto_Err if not udp
   procedure Set_Sending_Ipm_Interface (Socket : in Socket_Dscr;
                                        Host   : in Host_Id);
 
@@ -281,4 +289,5 @@ private
   No_Host : constant Host_Id := 0;
 
 end Socket;
+
 

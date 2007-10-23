@@ -78,7 +78,8 @@ package body Socket is
   function Soc_Receive (S : System.Address;
                         Message       : System.Address;
                         Length        : Integer;
-                        Set_For_Reply : Boolean_For_C) return Result;
+                        Set_For_Reply : Boolean_For_C;
+                        Set_Ipm_Iface : Boolean_For_C) return Result;
   pragma Import (C, Soc_Receive, "soc_receive");
 
   function Soc_Set_Send_Ipm_Interface (S_Addr : System.Address;
@@ -298,9 +299,11 @@ package body Socket is
   procedure Receive (Socket        : in Socket_Dscr;
                      Message       : out Message_Type;
                      Length        : out Natural;
-                     Set_For_Reply : in Boolean := False) is
+                     Set_For_Reply : in Boolean := False;
+                     Set_Ipm_Iface : in Boolean := False) is
     Len : Natural;
     Sfr_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
+    Sif_For_C : Boolean_For_C := Boolean_For_C(Set_Ipm_Iface);
   begin
     if Message_Size = 0 then
       -- Size not provided at instantiation, guess it from
@@ -316,7 +319,7 @@ package body Socket is
       Len := Message_Size / Byte_Size;
     end if;
     Res := Soc_Receive (Socket.Soc_Addr, Message'Address, Len,
-                        Sfr_For_C);
+                        Sfr_For_C, Sif_For_C);
     if Res >= 0 then
       Length := Res;
       return;
