@@ -1665,7 +1665,8 @@ static int rec2 (soc_ptr soc, char *buffer, int total_len) {
 
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
-                        boolean set_for_reply) {
+                        boolean set_for_reply,
+                        boolean set_ipm_iface) {
   soc_ptr soc = (soc_ptr) token;
   int result;
   socklen_t addr_len;
@@ -1787,7 +1788,8 @@ extern int soc_receive (soc_token token,
     /* A message read, even if empty */
     if (set_for_reply) {
       /* Copy ipm reception interface (if set) for further emissions */
-      if ( (soc->ipm_rece_if.s_addr != INADDR_ANY)
+      if ( set_ipm_iface
+         && (soc->ipm_rece_if.s_addr != INADDR_ANY)
          && (is_ipm (&soc->rece_struct) )
          && (soc->ipm_send_if.s_addr != soc->ipm_rece_if.s_addr) ) {
         soc->ipm_send_if = soc->ipm_rece_if;

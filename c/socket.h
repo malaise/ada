@@ -141,6 +141,8 @@ extern int soc_is_blocking (soc_token token, boolean *blocking);
 /* Set the interface on which send mutlicast IP (udp_socket). */
 /* Set it before setting destination. */
 /* 0 to reset */
+/* Beware that setting the sending interface is not always supported */
+/*  and may require to be root (Set_Destination will return SOC_SYS_ERR). */
 extern int soc_set_send_ipm_interface (soc_token token, const soc_host *host);
 
 /* Set the destination host/lan name and port - specify service */
@@ -250,6 +252,9 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /* The socket must be open, linked in udp and not linked in tcp */
 /*  After success, the socket may be ready for a send to reply */
 /* No set_for_reply if tcp */
+/* In IPM, the interface for sending may also be set but see */
+/*  Set_Sending_Ipm_Interface. */
+/*  If set_for_reply is FALSE then set_ipm_iface is not significant. */
 /* Returned values: */
 /*   - the length of bytes read, which is usually the length of the message */
 /*     sent. In tcp no header it may be anything from 0 to length. */
@@ -259,7 +264,8 @@ extern int soc_get_linked_port (soc_token token, soc_port *p_port);
 /*   - any other (fatal) error */
 extern int soc_receive (soc_token token,
                         soc_message message, soc_length length,
-                        boolean set_for_reply);
+                        boolean set_for_reply,
+                        boolean set_ipm_iface);
 
 /*--------------------*/
 /* Tcp specific calls */
