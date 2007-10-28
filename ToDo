@@ -1,0 +1,21 @@
+A package that parses arguments.
+It allows keys to be set by "-f" or by "--flag",
+by "-o set" or by "--option=set".
+Single letter keys can be grouped, like "-of"
+
+The restricionts on arguments are:
+- a space as argument is forbidden (and detected).
+- when grouped, single char keys cannot have options. So, if "-o/--option"
+can have an option, then in case of "-ao" it has no option.
+
+As input it takes an array of records, each with:
+- a char key (possibly space)
+- a Ustr (Ada.Strings.Unbounded) key (possibly Nus)
+- A boolean indicating if it can have an option when on one char
+
+As output it returns a private object that supports the operations:
+-- Index is relative to the array provided as input
+-- Nb of occurence of the key, possibly 0
+function Get_Nb_Occurences (Index : Positive) return Natural;
+-- Absolute position of an occurence, possibly 0
+function Get_Position (Index : Positive; Occurence : Positive);
