@@ -43,7 +43,7 @@ procedure T_Dir is
 
   procedure Put_Id (Id : in Natural) is
   begin
-    My_Io.Put(" " & Normal(Id, 3));
+    My_Io.Put(" " & Normal(Id, 4));
   end Put_Id;
 
   procedure Put_Size (Size : in Sys_Calls.Size_T) is

@@ -4,7 +4,7 @@ ADAVIEW := $(USR)/fifos $(USR)/dictio $(REPOSIT)
 
 EXES := mcd
 
-CLIBS_mcd := cutil
+CLIBS := cutil
 
 include $(TEMPLATES)/ada.mk
 

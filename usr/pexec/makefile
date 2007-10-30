@@ -3,7 +3,7 @@ include $(HOME)/Makefiles/common.mk
 ADAVIEW := $(REPOSIT)
 EXES := pexec
 
-CLIBS_pexec := cutil
+CLIBS := cutil
 
 include $(TEMPLATES)/ada.mk
 

@@ -3,7 +3,7 @@ include $(HOME)/Makefiles/common.mk
 ADAVIEW := $(USR)/mcd $(USR)/fifos $(USR)/dictio $(REPOSIT)
 EXES := pipe
 
-CLIBS_pipe := cutil
+CLIBS := cutil
 
 include $(TEMPLATES)/ada.mk
 
