@@ -55,9 +55,9 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
-     "  Set env LANG to something.UTF-8, or set ASUBST_UTF8 to Y for utf-8 processing");
+     "  Set env LANG to something containig UTF-8, or set ASUBST_UTF8 to Y for utf-8");
     Sys_Calls.Put_Line_Error (
-     "   by default. (Processing mode can still be modified by -u or -a.)");
+     "   processing by default. (Processing mode can still be modified by -u or -a.)");
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
