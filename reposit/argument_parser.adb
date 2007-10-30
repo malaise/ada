@@ -1,0 +1,492 @@
+with Ada.Text_Io;
+with Ada.Unchecked_Deallocation;
+with String_Mng, Int_Image;
+package body Argument_Parser is
+
+  -- Image without leading space
+  function Image is new Int_Image (Natural);
+
+  function Asu_Tus (Source : in String) return Asu.Unbounded_String
+           renames Asu.To_Unbounded_String;
+
+  -- The result of parsing of an arg
+  -- If Index is not 0, then it is a single (char or string) key
+  --  and Option is set to the option if any
+  -- Elsif Option is not empty, then it is the list of chars of
+  --  a multiple chars key
+  -- Else, it is "--"
+  type Arg_Dscr is record
+    Index : Natural;
+    Char : Boolean;
+    Option : Asu_Us;
+  end record;
+
+  -- Parse an argument
+  -- P_Dscr.OK is set to false if not a valid key
+  -- P_Dscr.Error is not set if not a key at all
+  procedure Parse_Arg (The_Keys : in The_Keys_Type;
+                       Arg_No : in Positive;
+                       P_Dscr : in out Parsed_Dscr;
+                       A_Dscr : out Arg_Dscr) is
+    Str : constant String := Argument.Get_Parameter (Arg_No);
+    Len : Natural;
+    Crit : Asu_Us;
+    Found : Boolean;
+    use type Asu_Us;
+  begin
+    P_Dscr.Ok := False;
+    A_Dscr.Index := 0;
+    A_Dscr.Option := Asu_Nus;
+    -- No space allowed
+    if String_Mng.Locate (Str, " ") /= 0 then
+      P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+         & Image(Arg_No) & " contains space(s).");
+      return;
+    end if;
+    if Str'Length = 1 and then Str(1) = '-' then
+      -- Just a "-"
+      P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+         & Image(Arg_No) & " is not valid.");
+      return;
+    end if;
+
+    if Str'Length >= 1 and then Str(1) = '-' then
+      if Str'Length >= 2 and then Str(2) = '-' then
+        if Str = "--" then
+          P_Dscr.Ok := True;
+          return;
+        end if;
+        -- Full key, no minus allowed
+        if String_Mng.Locate (Str, "-", 3) /= 0 then
+          P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+             & Image(Arg_No) & " contains minus.");
+          return;
+        end if;
+        -- Full key, look for option
+        Len := String_Mng.Locate (Str, "=", 3);
+        if Len = 3 then
+          -- "--="
+          P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+             & Image(Arg_No) & " is not valid.");
+          return;
+        end if;
+        -- Set Len to last of key string
+        if Len = 0 then
+          Crit := Asu_Tus (Str(3 .. Str'Last));
+        else
+          -- An option: save it
+          A_Dscr.Option := Asu_Tus (Str(Len + 1 .. Str'Last));
+          Crit := Asu_Tus (Str(3 .. Len - 1));
+        end if;
+        -- Find matching key
+        for I in The_Keys'Range loop
+          if The_Keys(I).Key_String = Crit then
+            -- Found
+            -- If it has an option and if it can
+            if Len /= 0
+            and then not The_Keys(I).Key_Can_Option then
+              P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+                 & Image(Arg_No) & " cannot have option.");
+              return;
+            end if;
+            A_Dscr.Index := I;
+            A_Dscr.Char := False;
+            P_Dscr.Ok := True;
+            return;
+          end if;
+        end loop;
+        -- Not found
+        P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+           & Image(Arg_No) & " is not expected.");
+        return;
+      end if;
+
+      -- Char key, no minus allowed
+      if String_Mng.Locate (Str, "-", 2) /= 0 then
+        P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+           & Image(Arg_No) & " contains minus.");
+        return;
+      end if;
+      -- Char key
+      if Str'Length = 2 then
+        -- A single char key, locate it
+        for I in The_Keys'Range loop
+          if The_Keys(I).Key_Char = Str(2) then
+            -- Found
+            A_Dscr.Index := I;
+            A_Dscr.Char := True;
+          end if;
+        end loop;
+        if A_Dscr.Index = 0 then
+          -- Not found
+          P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+             & Image(Arg_No) & " is not expected.");
+          return;
+        end if;
+        -- Found, see if it can have and has an option
+        if The_Keys(A_Dscr.Index).Key_Can_Option
+        and then Arg_No /= Argument.Get_Nbre_Arg then
+          declare
+            Option : constant String
+                   := Argument.Get_Parameter (Arg_No + 1);
+          begin
+            if Option'Length >= 1 and then Option(1) /= '-' then
+              A_Dscr.Option := Asu_Tus (Option);
+            end if;
+          end;
+        end if;
+        P_Dscr.Ok := True;
+        return;
+      else
+        -- Multiple char key, check all are valid
+        for I in 2 .. Str'Last loop
+          Found := False;
+          for J in The_Keys'Range loop
+            if Str(I) = The_Keys(J).Key_Char then
+              Found := True;
+              exit;
+            end if;
+          end loop;
+          if not Found then
+            P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+               & Image(Arg_No) & " has not expected key " & Str(I) & ".");
+            return;
+          end if;
+        end loop;
+        A_Dscr.Index := 0;
+        A_Dscr.Char := True;
+        A_Dscr.Option := Asu_Tus (Str(2 .. Str'Last));
+        P_Dscr.Ok := True;
+        return;
+      end if;
+    end if;
+  end Parse_Arg;
+
+
+  -- Constructor
+  -- One key has both Char_Key and String_Key unset
+  -- No_Key : exception;
+  -- Two keys have same Char or String key
+  -- Dup_Key : exception;
+  function Parse (The_Keys : The_Keys_Type) return Parsed_Dscr is
+    -- The result
+    Dscr : Parsed_Dscr;
+    -- A parsed argument
+    Arg : Arg_Dscr;
+    use type Asu_Us;
+  begin
+    -- First check the keys
+    for I in The_Keys'Range loop
+      -- No key must have both unset
+      if The_Keys(I).Key_Char = No_Key_Char
+      and then The_Keys(I).Key_String = No_Key_String then
+        raise No_Key;
+      end if;
+      -- Key char and string must be unique
+      for J in I + 1 .. The_Keys'Last loop
+        if The_Keys(I).Key_Char = The_Keys(J).Key_Char
+        or else The_Keys(I).Key_String = The_Keys(J).Key_String then
+          raise Dup_Key;
+        end if;
+      end loop;
+    end loop;
+
+    -- Parse all the arguments
+    Dscr.Ok := False;
+    for I in 1 .. Argument.Get_Nbre_Arg loop
+      -- Detect Argument_Too_Long
+      begin
+        if Argument.Get_Parameter (I) = "" then
+          null;
+        end if;
+      exception
+        when Argument.Argument_Too_Long =>
+          Dscr.Error := Asu_Tus ("Error. Argument at pos "
+             & Image(I) & " is too long.");
+          return Dscr;
+      end;
+      -- Parse this argument
+      Parse_Arg (The_Keys, I, Dscr, Arg);
+      if not Dscr.Ok then
+        if Dscr.Error /= Asu_Nus then
+          -- Error detected
+          return Dscr;
+        end if;
+        -- Else, not key argument
+      end if;
+      -- Check this arg for Key_Can_Multiple, set terminator indexes
+      if Arg.Index /= 0 then
+        -- A valid single Char or String key
+        if Dscr.First_Occurence(Arg.Index) = 0 then
+          Dscr.First_Occurence(Arg.Index) := I;
+        elsif not The_Keys(Arg.Index).Key_Can_Multiple then
+          Dscr.Ok := False;
+          Dscr.Error := Asu_Tus ("Error. Argument "
+             & Argument.Get_Parameter (Occurence => I)
+             & " at pos "
+             & Image(I) & " appears several times.");
+          return Dscr;
+        end if;
+        Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
+        Dscr.Last_Pos_Key := I;
+        if Arg.Char and then Arg.Option /= Asu_Nus then
+          -- A Char key with option
+          Dscr.First_Pos_After_Keys := I + 2;
+        else
+          -- Nex arg is not key
+          Dscr.First_Pos_After_Keys := I + 1;
+        end if;
+      elsif Arg.Option /= Asu_Nus then
+        -- A valid group of Char keys, check each char
+        for J in 1 .. Asu.Length (Arg.Option) loop
+          -- Locate the corresponding key (existence has already been checked)
+          for K in The_Keys'Range loop
+            if Asu.Element (Arg.Option, J) = The_Keys(K).Key_Char then
+              if Dscr.First_Occurence(K) = 0 then
+                Dscr.First_Occurence(K) := I;
+              elsif not The_Keys(K).Key_Can_Multiple then
+                Dscr.Ok := False;
+                Dscr.Error := Asu_Tus ("Error. Argument "
+                   & Argument.Get_Parameter (Occurence => I)
+                   & " at pos "
+                   & Image(I) & " makes key " & The_Keys(K).Key_Char
+                   & " appear several times.");
+                return Dscr;
+              end if;
+              Dscr.Nb_Occurences(K) := Dscr.Nb_Occurences(K) + 1;
+              exit;
+            end if;
+          end loop;
+        end loop;
+        Dscr.Last_Pos_Key := I;
+        -- Nex arg is not key
+        Dscr.First_Pos_After_Keys := I + 1;
+      else
+        -- Not key or "--"
+        if Argument.Get_Parameter (I) = "--" then
+          -- Done if "--"
+          Dscr.First_Pos_After_Keys := I + 1;
+          exit;
+        end if;
+      end if;
+    end loop;
+
+    if Dscr.First_Pos_After_Keys > Argument.Get_Nbre_Arg then
+      Dscr.First_Pos_After_Keys := 0;
+    end if;
+    -- Store the keys
+    Dscr.Ok := True;
+    Dscr.The_Keys := new The_Keys_Type'(The_Keys);
+    return Dscr;
+  end Parse;
+
+  -- Free the keys
+  -- Clean memory allocated during parsing
+  procedure Reset (Dscr : in out Parsed_Dscr) is
+    procedure Deallocate is new Ada.Unchecked_Deallocation (
+      The_Keys_Type, Keys_Access);
+  begin
+    if Dscr.Ok and then Dscr.The_Keys /= null then
+      Deallocate (Dscr.The_Keys);
+      Dscr.Ok := False;
+      Dscr.The_Keys := null;
+      Dscr.Error := Asu_Nus;
+    else
+      raise Parsing_Error;
+    end if;
+  end Reset;
+
+  -- Was parsing OK
+  function Is_Ok (Dscr : Parsed_Dscr) return Boolean is
+  begin
+    return Dscr.Ok;
+  end Is_Ok;
+
+  -- Error string
+  -- Possible returned strings:
+  --  "OK."
+  --  "Error: Argument <arg> at pos <i> contains space(s)."
+  --  "Error: Argument <arg> at pos <i> is not expected."
+  --  "Error: Argument at pos <i> is too long."
+  --  "Error: Argument <arg> at pos <i> is too long."
+  --  "Error: Argument <arg> at pos <i> appears several times."
+  --  "Error: Argument <arg> at pos <i> appears shall not have option."
+  function Get_Error (Dscr : Parsed_Dscr) return String is
+  begin
+    if Dscr.Ok then
+      return "OK.";
+    else
+      return Asu.To_String (Dscr.Error);
+    end if;
+  end Get_Error;
+
+
+  -- All the following operations may raise
+  -- Parsing_Error : exception;
+  --  if called on a Dscr that is not Parsed_Is_Ok.
+
+  -- Return the position of the last argument related to keys (including
+  --  the possible option of a char key)
+  function Get_Last_Pos_Of_Keys (Dscr : Parsed_Dscr) return Natural is
+  begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
+    return Dscr.Last_Pos_Key;
+  end Get_Last_Pos_Of_Keys;
+
+  -- Return position of first argument not related to keys (taking into account
+  --  the possible option of a char key) and skipping "--" if any
+  function Get_First_Pos_After_Keys (Dscr : Parsed_Dscr) return Natural is
+  begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
+    return Dscr.First_Pos_After_Keys;
+  end Get_First_Pos_After_Keys;
+
+
+  -- The following operations alow retreiving info per key
+  -- Index is relative to the array provided as input
+
+  -- Nb of occurences of the key, possibly 0
+  function Get_Nb_Occurences (Dscr  : Parsed_Dscr;
+                              Index : The_Keys_Range) return Natural is
+  begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
+    return Dscr.Nb_Occurences (Index);
+  end Get_Nb_Occurences;
+
+  -- Does an argument match the key, returns the option or "-" if not match
+  No_Match : constant String := "-";
+  function Match (Arg_No : Positive; Key : A_Key_Type) return String is
+    Str : constant String := Argument.Get_Parameter (Arg_No);
+    Len : Natural;
+  begin
+    if Str'Length < 2 or else Str(1) /= '-' or else Str = "--" then
+      return No_Match;
+    end if;
+    if Str(2) = '-' then
+      -- Full key, look for option
+      Len := String_Mng.Locate (Str, "=", 3);
+      -- Set Len to last of key string
+      if Len = 0 then
+        Len := Str'Last;
+      else
+        Len := Len - 1;
+      end if;
+      if Str(3 .. Len) /= Asu.To_String (Key.Key_String) then
+        return No_Match;
+      else
+        -- Return the option if any
+        return Str (Len + 2 .. Str'Last);
+      end if;
+    end if;
+    -- A char key
+    if Str'Length > 2 then
+      -- Multiple char keys
+      if String_Mng.Locate (Str, "" & Key.Key_Char, 2) = 0 then
+        return No_Match;
+      else
+        -- No option possible
+        return "";
+      end if;
+    end if;
+    -- Single char key
+    if Str(2) /= Key.Key_Char then
+      return No_Match;
+    end if;
+    -- Match, check option
+    if not Key.Key_Can_Option
+    or else Arg_No = Argument.Get_Nbre_Arg then
+      -- Cannot have option
+      return "";
+    end if;
+    -- Look at next arg
+    declare
+      Option : constant String
+             := Argument.Get_Parameter (Arg_No + 1);
+    begin
+      if Option'Length >= 1 and then Option(1) /= '-' then
+        return Option;
+      else
+        return "";
+      end if;
+    end;
+  end Match;
+
+  -- Option of a key, possibly empty
+  function Get_Option (Dscr      : Parsed_Dscr;
+                       Index     : The_Keys_Range;
+                       Occurence : Positive) return String is
+    Loc : Positive;
+  begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
+    if Occurence > Dscr.Nb_Occurences(Index) then
+      raise Invalid_Occurence;
+    elsif Occurence = 1 then
+      -- Get option of first occurence
+      return Match (Dscr.First_Occurence(Index), Dscr.The_Keys(Index));
+    else
+      -- Iterate from first occurence to Last_Pos_Key
+      Loc := 1;
+      for Arg in Dscr.First_Occurence(Index) + 1 .. Dscr.Last_Pos_Key loop
+        declare
+          Opt : constant String := Match (Arg, Dscr.The_Keys(Index));
+        begin
+          if Opt /= No_Match then
+            -- This argument does match
+            Loc := Loc + 1;
+            if Loc = Occurence then
+              -- Got the expected occurence
+              return Opt;
+            end if;
+          end if;
+        end;
+      end loop;
+      -- Normally not reached
+      raise Invalid_Occurence;
+    end if;
+  end Get_Option;
+
+  -- Absolute position of an occurence, possibly 0
+  function Get_Position (Dscr      : Parsed_Dscr;
+                         Index     : The_Keys_Range;
+                         Occurence : Positive) return Positive is
+    Loc : Positive;
+  begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
+    if Occurence > Dscr.Nb_Occurences(Index) then
+      raise Invalid_Occurence;
+    elsif Occurence = 1 then
+      return Dscr.First_Occurence(Index);
+    else
+      -- Iterate from first occurence to Last_Pos_Key
+      Loc := 1;
+      for Arg in Dscr.First_Occurence(Index) + 1 .. Dscr.Last_Pos_Key loop
+        declare
+          Opt : constant String := Match (Arg, Dscr.The_Keys(Index));
+        begin
+          if Opt /= No_Match then
+            -- This argument does match
+            Loc := Loc + 1;
+            if Loc = Occurence then
+              -- Got the expected occurence
+              return Arg;
+            end if;
+          end if;
+        end;
+      end loop;
+      -- Normally not reached
+      raise Invalid_Occurence;
+    end if;
+  end Get_Position;
+
+end Argument_Parser;
+
