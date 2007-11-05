@@ -37,20 +37,20 @@ package body Argument_Parser is
     P_Dscr.Ok := False;
     A_Dscr.Index := 0;
     A_Dscr.Option := Asu_Nus;
-    -- No space allowed
-    if String_Mng.Locate (Str, " ") /= 0 then
-      P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
-         & Image(Arg_No) & " contains space(s).");
-      return;
-    end if;
-    if Str'Length = 1 and then Str(1) = '-' then
-      -- Just a "-"
-      P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
-         & Image(Arg_No) & " is not valid.");
-      return;
-    end if;
-
     if Str'Length >= 1 and then Str(1) = '-' then
+      -- No space allowed
+      if String_Mng.Locate (Str, " ") /= 0 then
+        P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
+           & Image(Arg_No) & " contains space(s).");
+        return;
+      end if;
+      if Str = "-" then
+        -- Just a "-"
+        P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
+           & Image(Arg_No) & " is not valid.");
+        return;
+      end if;
+
       if Str'Length >= 2 and then Str(2) = '-' then
         if Str = "--" then
           P_Dscr.Ok := True;
@@ -58,7 +58,7 @@ package body Argument_Parser is
         end if;
         -- Full key, no minus allowed
         if String_Mng.Locate (Str, "-", 3) /= 0 then
-          P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+          P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
              & Image(Arg_No) & " contains minus.");
           return;
         end if;
@@ -66,7 +66,7 @@ package body Argument_Parser is
         Len := String_Mng.Locate (Str, "=", 3);
         if Len = 3 then
           -- "--="
-          P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+          P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
              & Image(Arg_No) & " is not valid.");
           return;
         end if;
@@ -85,7 +85,7 @@ package body Argument_Parser is
             -- If it has an option and if it can
             if Len /= 0
             and then not The_Keys(I).Key_Can_Option then
-              P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+              P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
                  & Image(Arg_No) & " cannot have option.");
               return;
             end if;
@@ -96,14 +96,14 @@ package body Argument_Parser is
           end if;
         end loop;
         -- Not found
-        P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+        P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
            & Image(Arg_No) & " is not expected.");
         return;
       end if;
 
       -- Char key, no minus allowed
       if String_Mng.Locate (Str, "-", 2) /= 0 then
-        P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+        P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
            & Image(Arg_No) & " contains minus.");
         return;
       end if;
@@ -119,7 +119,7 @@ package body Argument_Parser is
         end loop;
         if A_Dscr.Index = 0 then
           -- Not found
-          P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+          P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
              & Image(Arg_No) & " is not expected.");
           return;
         end if;
@@ -148,7 +148,7 @@ package body Argument_Parser is
             end if;
           end loop;
           if not Found then
-            P_Dscr.Error := Asu_Tus ("Error. Argument " & Str & " at pos "
+            P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
                & Image(Arg_No) & " has not expected key " & Str(I) & ".");
             return;
           end if;
@@ -173,6 +173,8 @@ package body Argument_Parser is
     Dscr : Parsed_Dscr;
     -- A parsed argument
     Arg : Arg_Dscr;
+    -- An indicator that next/current argument is an option
+    Is_Option : Boolean;
     use type Asu_Us;
   begin
     -- First check the keys
@@ -193,6 +195,7 @@ package body Argument_Parser is
 
     -- Parse all the arguments
     Dscr.Ok := False;
+    Is_Option := False;
     for I in 1 .. Argument.Get_Nbre_Arg loop
       -- Detect Argument_Too_Long
       begin
@@ -201,7 +204,7 @@ package body Argument_Parser is
         end if;
       exception
         when Argument.Argument_Too_Long =>
-          Dscr.Error := Asu_Tus ("Error. Argument at pos "
+          Dscr.Error := Asu_Tus ("Argument at pos "
              & Image(I) & " is too long.");
           return Dscr;
       end;
@@ -221,7 +224,7 @@ package body Argument_Parser is
           Dscr.First_Occurence(Arg.Index) := I;
         elsif not The_Keys(Arg.Index).Key_Can_Multiple then
           Dscr.Ok := False;
-          Dscr.Error := Asu_Tus ("Error. Argument "
+          Dscr.Error := Asu_Tus ("Argument "
              & Argument.Get_Parameter (Occurence => I)
              & " at pos "
              & Image(I) & " appears several times.");
@@ -229,12 +232,15 @@ package body Argument_Parser is
         end if;
         Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
         Dscr.Last_Pos_Key := I;
+        Dscr.Nb_Embedded := Dscr.Nb_Occurences(No_Key_Index);
         if Arg.Char and then Arg.Option /= Asu_Nus then
           -- A Char key with option
           Dscr.First_Pos_After_Keys := I + 2;
+          Is_Option := True;
         else
           -- Nex arg is not key
           Dscr.First_Pos_After_Keys := I + 1;
+          Is_Option := False;
         end if;
       elsif Arg.Option /= Asu_Nus then
         -- A valid group of Char keys, check each char
@@ -246,7 +252,7 @@ package body Argument_Parser is
                 Dscr.First_Occurence(K) := I;
               elsif not The_Keys(K).Key_Can_Multiple then
                 Dscr.Ok := False;
-                Dscr.Error := Asu_Tus ("Error. Argument "
+                Dscr.Error := Asu_Tus ("Argument "
                    & Argument.Get_Parameter (Occurence => I)
                    & " at pos "
                    & Image(I) & " makes key " & The_Keys(K).Key_Char
@@ -259,18 +265,37 @@ package body Argument_Parser is
           end loop;
         end loop;
         Dscr.Last_Pos_Key := I;
+        Dscr.Nb_Embedded := Dscr.Nb_Occurences(No_Key_Index);
         -- Nex arg is not key
         Dscr.First_Pos_After_Keys := I + 1;
+        Is_Option := False;
       else
         -- Not key or "--"
         if Argument.Get_Parameter (I) = "--" then
-          -- Done if "--"
+          -- Done if "--", all remaining are arguments
           Dscr.First_Pos_After_Keys := I + 1;
+          Dscr.Nb_Occurences(No_Key_Index) := Dscr.Nb_Occurences(No_Key_Index)
+                                 + Argument.Get_Nbre_Arg - I;
+          if Dscr.Nb_Occurences(No_Key_Index) /= 0
+          and then Dscr.First_Occurence(No_Key_Index) = 0 then
+            Dscr.First_Occurence(No_Key_Index) := I + 1;
+          end if;
           exit;
+        else
+          -- Check that this is not the option of a previous simple char key
+          if not Is_Option then
+            if Dscr.First_Occurence(No_Key_Index) = 0 then
+              Dscr.First_Occurence(No_Key_Index) := I;
+            end if;
+            Dscr.Nb_Occurences(No_Key_Index) :=
+                 Dscr.Nb_Occurences(No_Key_Index) + 1;
+          end if;
         end if;
+        Is_Option := False;
       end if;
     end loop;
 
+    -- Adjust First not key when all are keys or embedded arguments
     if Dscr.First_Pos_After_Keys > Argument.Get_Nbre_Arg then
       Dscr.First_Pos_After_Keys := 0;
     end if;
@@ -305,12 +330,12 @@ package body Argument_Parser is
   -- Error string
   -- Possible returned strings:
   --  "OK."
-  --  "Error: Argument <arg> at pos <i> contains space(s)."
-  --  "Error: Argument <arg> at pos <i> is not expected."
-  --  "Error: Argument at pos <i> is too long."
-  --  "Error: Argument <arg> at pos <i> is too long."
-  --  "Error: Argument <arg> at pos <i> appears several times."
-  --  "Error: Argument <arg> at pos <i> appears shall not have option."
+  --  "Argument <arg> at pos <i> contains space(s)."
+  --  "Argument <arg> at pos <i> is not expected."
+  --  "Argument at pos <i> is too long."
+  --  "Argument <arg> at pos <i> is too long."
+  --  "Argument <arg> at pos <i> appears several times."
+  --  "Argument <arg> at pos <i> appears shall not have option."
   function Get_Error (Dscr : Parsed_Dscr) return String is
   begin
     if Dscr.Ok then
@@ -324,6 +349,14 @@ package body Argument_Parser is
   -- All the following operations may raise
   -- Parsing_Error : exception;
   --  if called on a Dscr that is not Parsed_Is_Ok.
+  function Get_Number_Keys (Dscr : Parsed_Dscr) return Natural is
+    Total : Natural := 0;
+  begin
+    for I in Dscr.The_Keys.all'Range loop
+      Total := Total + Dscr.Nb_Occurences(I);
+    end loop;
+    return Total;
+  end Get_Number_Keys;
 
   -- Return the position of the last argument related to keys (including
   --  the possible option of a char key)
@@ -345,19 +378,37 @@ package body Argument_Parser is
     return Dscr.First_Pos_After_Keys;
   end Get_First_Pos_After_Keys;
 
+  -- Return the number of embedded arguents, arguments that are not a key nor
+  --  an option but are followed by a key.
+  function Get_Nb_Embedded_Arguments (Dscr : Parsed_Dscr) return Natural is
+  begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
+    return Dscr.Nb_Embedded;
+  end Get_Nb_Embedded_Arguments;
 
   -- The following operations alow retreiving info per key
   -- Index is relative to the array provided as input
 
   -- Nb of occurences of the key, possibly 0
   function Get_Nb_Occurences (Dscr  : Parsed_Dscr;
-                              Index : The_Keys_Range) return Natural is
+                              Index : The_Keys_Index) return Natural is
   begin
     if not Dscr.Ok then
       raise Parsing_Error;
     end if;
-    return Dscr.Nb_Occurences (Index);
+    if Index > Dscr.The_Keys'Last then
+      raise Invalid_Index;
+    end if;
+    return Dscr.Nb_Occurences(Index);
   end Get_Nb_Occurences;
+
+  function Is_Set (Dscr  : Parsed_Dscr;
+                   Index : The_Keys_Index) return Boolean is
+  begin
+    return Get_Nb_Occurences (Dscr, Index) /= 0;
+  end Is_Set;
 
   -- Does an argument match the key, returns the option or "-" if not match
   No_Match : constant String := "-";
@@ -417,51 +468,104 @@ package body Argument_Parser is
     end;
   end Match;
 
+  -- Raised anonymous exception when a key/option... shall be found but is
+  --  not.
+  Internal_Error : exception;
+
+  -- Is a string a key or an option
+  function Is_Key (Arg_No : Positive; The_Keys : The_Keys_Type)
+                  return Boolean is
+    Str : constant String := Argument.Get_Parameter (Arg_No);
+    Char : Character;
+  begin
+    -- First solve the easiest cases
+    if Str = "" then
+      return False;
+    elsif Str(1) = '-' then
+      return True;
+    elsif Arg_No = 1 then
+      -- First arg cannot be an option
+      return False;
+    end if;
+    -- Now we have a non-key arg, see if previous arg is a single char key
+    declare
+      Prev : constant String := Argument.Get_Parameter (Arg_No - 1);
+    begin
+      if Prev'Length = 2 and then Prev(1) = '-' and then Prev(2) /= '-' then
+        -- Prev is a single char key
+        Char := Prev(2);
+      else
+        return False;
+      end if;
+    end;
+    -- Now we need to know if this key allows options
+    for I in The_Keys'Range loop
+      if The_Keys(I).Key_Char = Char then
+        return The_Keys(I).Key_Can_Option;
+      end if;
+    end loop;
+    -- Normally we should have found the key
+    raise Internal_Error;
+  end Is_Key;
+
   -- Option of a key, possibly empty
   function Get_Option (Dscr      : Parsed_Dscr;
-                       Index     : The_Keys_Range;
-                       Occurence : Positive) return String is
+                       Index     : The_Keys_Index;
+                       Occurence : Positive := 1) return String is
     Loc : Positive;
   begin
-    if not Dscr.Ok then
-      raise Parsing_Error;
-    end if;
-    if Occurence > Dscr.Nb_Occurences(Index) then
-      raise Invalid_Occurence;
-    elsif Occurence = 1 then
-      -- Get option of first occurence
-      return Match (Dscr.First_Occurence(Index), Dscr.The_Keys(Index));
+   Loc := Get_Position (Dscr, Index, Occurence);
+
+    -- Handle No_Key_Index
+    if Index = No_Key_Index then
+      return Argument.Get_Parameter (Loc);
     else
-      -- Iterate from first occurence to Last_Pos_Key
-      Loc := 1;
-      for Arg in Dscr.First_Occurence(Index) + 1 .. Dscr.Last_Pos_Key loop
-        declare
-          Opt : constant String := Match (Arg, Dscr.The_Keys(Index));
-        begin
-          if Opt /= No_Match then
-            -- This argument does match
-            Loc := Loc + 1;
-            if Loc = Occurence then
-              -- Got the expected occurence
-              return Opt;
-            end if;
-          end if;
-        end;
-      end loop;
-      -- Normally not reached
-      raise Invalid_Occurence;
+      return Match (Loc, Dscr.The_Keys(Index));
     end if;
   end Get_Option;
 
-  -- Absolute position of an occurence, possibly 0
+  -- Absolute position of an occurence
   function Get_Position (Dscr      : Parsed_Dscr;
-                         Index     : The_Keys_Range;
-                         Occurence : Positive) return Positive is
-    Loc : Positive;
+                         Index     : The_Keys_Index;
+                         Occurence : Positive := 1) return Positive is
+    Loc : Natural;
+    No_More_Keys : Boolean;
   begin
     if not Dscr.Ok then
       raise Parsing_Error;
     end if;
+    if Index > Dscr.The_Keys'Last then
+      raise Invalid_Index;
+    end if;
+
+    -- Handle No_Key_Index
+    if Index = No_Key_Index then
+      if Occurence > Dscr.Nb_Occurences(Index) then
+        raise Invalid_Occurence;
+      elsif Occurence = 1 then
+        return Dscr.First_Occurence(No_Key_Index);
+      end if;
+      -- Iterate from first occurence to last argument
+      Loc := 0;
+      No_More_Keys := False;
+      for No in 1 .. Argument.Get_Nbre_Arg loop
+        if Argument.Get_Parameter (No) = "--" then
+          No_More_Keys := True;
+        elsif No_More_Keys then
+          Loc := Loc + 1;
+        elsif not Is_Key (No, Dscr.The_Keys.all) then
+          Loc := Loc + 1;
+        end if;
+        if Loc = Occurence then
+          -- Got the expected occurence
+          return No;
+        end if;
+      end loop;
+      -- Normally not reached
+      raise Internal_Error;
+    end if;
+
+    -- Normal key
     if Occurence > Dscr.Nb_Occurences(Index) then
       raise Invalid_Occurence;
     elsif Occurence = 1 then
@@ -484,7 +588,7 @@ package body Argument_Parser is
         end;
       end loop;
       -- Normally not reached
-      raise Invalid_Occurence;
+      raise Internal_Error;
     end if;
   end Get_Position;
 

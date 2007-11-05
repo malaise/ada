@@ -5,10 +5,11 @@
 -- The parsing stops at last argument or when finding "--"
 
 -- The restrictions on arguments are:
--- - an argument containing spaces or minus is forbidden (and detected).
+-- - any argument starting by "-" is considered as a key and thus must match
+--   the input specification.
+-- - a key containing spaces is forbidden (and detected).
 -- - when grouped, single char keys cannot have options. So, if "-o/--option"
---   can have an option, then in case of "-ao toto" it has no option.
--- - any argument starting by "-" must match the input specification.
+--   can have an option, then in case of "-ao" it has no option.
 
 with Ada.Strings.Unbounded;
 with Argument;
@@ -34,7 +35,8 @@ package Argument_Parser is
   end record;
   -- Max number of keys processed
   Max_Keys_Nb : constant := 1024;
-  subtype The_Keys_Range is Positive range 1 .. Max_Keys_Nb;
+  subtype The_Keys_Index is Natural range 0 .. Max_Keys_Nb;
+  subtype The_Keys_Range is The_Keys_Index range 1 .. Max_Keys_Nb;
   -- The keys for parsing
   type The_Keys_Type is array (The_Keys_Range range <>) of A_Key_Type;
 
@@ -47,28 +49,31 @@ package Argument_Parser is
   Dup_Key : exception;  -- Two keys have same Char or String key
   function Parse (The_Keys : The_Keys_Type) return Parsed_Dscr;
 
+  -- Free the keys, clean memory allocated during parsing
+  procedure Reset (Dscr : in out Parsed_Dscr);
+
   -- Was parsing OK
   function Is_Ok (Dscr : Parsed_Dscr) return Boolean;
 
   -- Error string
   -- Possible returned strings:
   --  "OK."
-  --  "Error: Argument <arg> at pos <i> contains space(s)."
-  --  "Error: Argument <arg> at pos <i> contains minus."
-  --  "Error: Argument <arg> at pos <i> is not valid."
-  --  "Error: Argument <arg> at pos <i> is not expected."
-  --  "Error: Argument <arg> at pos <i> has not expected key <k>."
-  --  "Error: Argument at pos <i> is too long."
-  --  "Error: Argument <arg> at pos <i> appears several times."
-  --  "Error: Argument <arg> at pos <i> cannot have option."
+  --  "Argument <arg> at pos <i> contains space(s)."
+  --  "Argument <arg> at pos <i> contains minus."
+  --  "Argument <arg> at pos <i> is not valid."
+  --  "Argument <arg> at pos <i> is not expected."
+  --  "Argument <arg> at pos <i> has not expected key <k>."
+  --  "Argument at pos <i> is too long."
+  --  "Argument <arg> at pos <i> appears several times."
+  --  "Argument <arg> at pos <i> cannot have option."
   function Get_Error (Dscr : Parsed_Dscr) return String;
 
-  -- All the following operations may raise
+  -- All the following operations may raise, if called on a Dscr that is not
+  --  Parsed_Is_Ok:
   Parsing_Error : exception;
-  --  if called on a Dscr that is not Parsed_Is_Ok.
 
-  -- Clean memory allocated during parsing
-  procedure Reset (Dscr : in out Parsed_Dscr);
+  -- Return the number of keys parsed (a key plus its option counts for one)
+  function Get_Number_Keys (Dscr : Parsed_Dscr) return Natural;
 
   -- Return the position of the last argument related to keys (in case
   --  of char key with option, it is the position of the key).
@@ -78,29 +83,40 @@ package Argument_Parser is
   --  the possible option of a char key) and skipping "--" if any
   function Get_First_Pos_After_Keys (Dscr : Parsed_Dscr) return Natural;
 
+  -- Return the number of embedded (non key) arguments. Arguments that are
+  --  before last key
+  function Get_Nb_Embedded_Arguments (Dscr : Parsed_Dscr) return Natural;
+
   -- The following operations alow retreiving info per key
   -- Index is relative to the array provided as input
+  -- 0 means no key (any argument that is neither a key nor the option of a
+  --  single char key).
+  No_Key_Index : constant The_Keys_Index := 0;
+
+  -- All the following operations may raise, if called with Index too high:
+  Invalid_Index : exception;
 
   -- Nb of occurences of the key, possibly 0
   function Get_Nb_Occurences (Dscr  : Parsed_Dscr;
-                              Index : The_Keys_Range) return Natural;
+                              Index : The_Keys_Index) return Natural;
+  function Is_Set (Dscr  : Parsed_Dscr;
+                   Index : The_Keys_Index) return Boolean;
+
+  -- All the following operations may raise, if called with Occurence too high:
+  Invalid_Occurence : exception;
 
   -- Option of a key, possibly empty
-  -- May raise, if Occurence > Get_Nb_Occurences(Index)
-  Invalid_Occurence : exception;
   function Get_Option (Dscr      : Parsed_Dscr;
-                       Index     : The_Keys_Range;
-                       Occurence : Positive) return String;
+                       Index     : The_Keys_Index;
+                       Occurence : Positive := 1) return String;
 
-  -- Absolute position of an occurence, for use with Argument.Get_parameter.
-  -- This function is normally not necessary.
-  -- May raise Invalid_Occurence if Occurence > Get_Nb_Occurences(Index)
+  -- Absolute position of an occurence
   function Get_Position (Dscr      : Parsed_Dscr;
-                         Index     : The_Keys_Range;
-                         Occurence : Positive) return Positive;
+                         Index     : The_Keys_Index;
+                         Occurence : Positive := 1) return Positive;
 private
 
-  type Nat_Array is array (1 .. Max_Keys_Nb) of Natural;
+  type Keyed_Array is array (The_Keys_Index) of Natural;
   type Keys_Access is access The_Keys_Type;
 
   type Parsed_Dscr is tagged record
@@ -109,8 +125,9 @@ private
     The_Keys : Keys_Access;
     Last_Pos_Key : Natural := 0;
     First_Pos_After_Keys : Natural := 0;
-    Nb_Occurences : Nat_Array := (others => 0);
-    First_Occurence : Nat_Array := (others => 0);
+    Nb_Embedded : Natural := 0;
+    Nb_Occurences : Keyed_Array := (others => 0);
+    First_Occurence : Keyed_Array := (others => 0);
   end record;
 
 end Argument_Parser;
