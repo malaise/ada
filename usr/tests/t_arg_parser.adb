@@ -22,7 +22,7 @@ begin
 
   Dscr :=  Argument_Parser.Parse (Keys);
 
-  Ada.Text_Io.Put ("Parsing result is "
+  Ada.Text_Io.Put ("Parsing OK is "
      & Boolean'Image (Dscr.Is_Ok));
   Ada.Text_Io.Put (" and parsing error string is");
   if not Dscr.Is_Ok then
@@ -30,13 +30,21 @@ begin
   end if;
   Ada.Text_Io.Put_Line (" >" & Dscr.Get_Error & "<");
 
-  Ada.Text_Io.Put_Line ("Last key at pos" & Dscr.Get_Last_Pos_Of_Keys'Img
-     & " and First after at pos" & Dscr.Get_First_Pos_After_Keys'Img);
+  Ada.Text_Io.Put_Line (
+     "Number of keys found:" & Dscr.Get_Number_Keys'Img
+     & ", Last key at pos:" & Dscr.Get_Last_Pos_Of_Keys'Img
+     & ", First after at pos:" & Dscr.Get_First_Pos_After_Keys'Img
+     & " and Nb embedded arguments:" & Dscr.Get_Nb_Embedded_Arguments'Img);
 
-  for I in Keys'Range loop
-    Ada.Text_Io.Put_Line ("Key " & Keys(I).Key_Char & " "
-      & Asu.To_String (Keys(I).Key_String)
-      & " is set on" & Dscr.Get_Nb_Occurences (I)'Img & " Occurences.");
+  for I in 0 .. Keys'Last loop
+    if I = 0 then
+      Ada.Text_Io.Put ("Arguments not key are");
+    else
+      Ada.Text_Io.Put ("Key " & Keys(I).Key_Char & " "
+        & Asu.To_String (Keys(I).Key_String) & " is");
+    end if;
+    Ada.Text_Io.Put_Line (" found on" & Dscr.Get_Nb_Occurences (I)'Img
+         & " occurences.");
     for J in 1 .. Dscr.Get_Nb_Occurences(I) loop
       Ada.Text_Io.Put_Line ("  Option >" & Dscr.Get_Option (I, J) & "<");
     end loop;
