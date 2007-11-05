@@ -137,12 +137,23 @@ if [ "$res" != "toto" ] ; then
   echo "Result $res differs from expected toto."
   exit 1
 fi
-res=`echo "\ntoto\ntiti\ntata" | asubst "toto\ntiti" "\u\R01\R02\R03"`
-if [ "$res" != "\ntoto\ntiti\ntata" ] ; then
+echo "File substitution in test mode, OK."
+exp="\ntoto\ntiti\ntata"
+res=`echo -e "$exp" | asubst -t "toto\ntiti" "\u\R01\R02\R03"`
+exp=`echo -e "$exp"`
+if [ "$res" != "$exp" ] ; then
   echo "Result $res differs from expected."
   exit 1
 fi
-echo "File substitution in test mode, OK."
+echo "Substitution in test mode, OK."
+
+# Subst with a "--"
+res=`echo "t_o..T'I" | asubst "--"  "[\T]" "-"`
+if [ "$res" != "t-o--T-I" ] ; then
+  echo "Result $res differs from expected."
+  exit 1
+fi
+echo "Substitution with --, OK."
 
 # Grep mode
 rm -rf $FS

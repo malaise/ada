@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+03/11/2007 V4.0
+Add: Use generic parsing by Argument_Parser; single letter options can now
+     grouped (ex: -tv).
+
 18/07/2007 V3_8
 Bugfix: Fix verbose output when multi-line search pattern.
 Add: -g or --grep option.

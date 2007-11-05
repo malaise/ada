@@ -26,7 +26,6 @@
 "toto\ntiti"           "\n"              ""                      "tototiti"
 "toto titi"            "\s"              "\t"                    "toto	titi"
 "toto\ttiti"           "\t"              "\s"                    "toto titi"
-"t_o..T'I"             "[\T]"            "-"                     "t-o--T-I"
 "toto\ntiti\ntata\n"   ".*\n"            "\R01"                  "tototititata"
 "\ntoto\ntiti\ntata"   "\n.*"            "\R02"                  "tototititata"
 "\ntoto\ntiti\ntata"   "toto\ntiti"      "\u\R01\R02\R03"        "\nTOTO\nTITI\ntata"

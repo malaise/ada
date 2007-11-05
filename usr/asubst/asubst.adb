@@ -1,9 +1,9 @@
 with Ada.Exceptions, Ada.Text_Io;
-with Environ, Argument, Sys_Calls, Language;
+with Environ, Argument, Argument_Parser, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V3_8";
+  Version : constant String  := "V4_0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -117,7 +117,33 @@ procedure Asubst is
     Sys_Calls.Set_Exit_Code (Error_Exit_Code);
   end Error;
 
+  package Asu renames Argument_Parser.Asu;
+  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
+                   renames Asu.To_Unbounded_String;
+
+  -- For getenv
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => ('a', Asu_Tus ("ascii"), False, False),
+   02 => ('b', Asu_Tus ("basic"), False, False),
+   03 => ('f', Asu_Tus ("file"), False, False),
+   04 => ('g', Asu_Tus ("grep"), False, False),
+   05 => ('h', Asu_Tus ("help"), False, False),
+   06 => ('i', Asu_Tus ("ignorecase"), False, False),
+   07 => ('m', Asu_Tus ("max"), False, True),
+   08 => ('n', Asu_Tus ("number"), False, False),
+   09 => ('q', Asu_Tus ("quiet"), False, False),
+   10 => ('s', Asu_Tus ("save"), False, False),
+   11 => ('t', Asu_Tus ("test"), False, False),
+   12 => ('u', Asu_Tus ("utf8"), False, False),
+   13 => ('v', Asu_Tus ("verbose"), False, False),
+   14 => ('V', Asu_Tus ("version"), False, False),
+   15 => ('x', Asu_Tus ("noregex"), False, False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  No_Key_Index : constant Argument_Parser.The_Keys_Index
+               := Argument_Parser.No_Key_Index;
+
   -- Option management
   Extended : Boolean := True;
   File_Of_Files : Boolean := False;
@@ -129,10 +155,6 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
-  -- No of argument
-  N_Arg : Positive;
-  -- Start index (in nb args) of patterns
-  Start : Positive;
   -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
   Found : Boolean;
@@ -142,6 +164,19 @@ procedure Asubst is
   Lang : Language.Language_List
        := Language.Get_Env;
   use type Language.Language_List;
+
+  -- Check that there are not several (conflictual) verbosity levels
+  function Check_Verbose return Boolean is
+  begin
+    if Verbosity /= Put_File_Name then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+          & ": Syntax ERROR. Options 'n', 'q' and 'v' are mutually exclusive.");
+      Error;
+      return False;
+    else
+      return True;
+    end if;
+  end Check_Verbose;
 
   -- Process one file
   procedure Do_One_File (File_Name : in String) is
@@ -178,179 +213,177 @@ begin
   -- Superseed by ASUBST_UTF8 variable if set
   if Environ.Is_Yes (Utf8_Var_Name) then
     Lang := Language.Lang_Utf_8;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Environ set to UTF-8");
+    end if;
   elsif Environ.Is_No (Utf8_Var_Name) then
     Lang := Language.Lang_C;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Environ set to NO UTF-8");
+    end if;
   end if;
 
-  -- Check nb of arguments
-  if Argument.Get_Nbre_Arg = 1 then
-    if Argument.Get_Parameter = "-V"
-    or else Argument.Get_Parameter = "--version" then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
-      Sys_Calls.Set_Exit_Code (Error_Exit_Code);
-    elsif Argument.Get_Parameter = "-h"
-    or else Argument.Get_Parameter = "--help" then
-      Help;
-    else
+  -- Parse keys and options
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR. "
+      & Arg_Dscr.Get_Error);
+    Error;
+    return;
+  end if;
+
+  -- Check version and help, must be alone
+  if Arg_Dscr.Is_Set (14) then
+    -- Version
+    if Argument.Get_Nbre_Arg /= 1 then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
       Error;
+    else
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
+      Sys_Calls.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;
-  elsif Argument.Get_Nbre_Arg < 2 then
+  elsif Arg_Dscr.Is_Set (05) then
+    -- Help
+    if  Argument.Get_Nbre_Arg /= 1 then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+      Error;
+    else
+      Help;
+    end if;
+    return;
+  elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) < 2
+  or else Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    -- There must be at least Search and Replace strings
+    -- They must be after options
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
     Error;
     return;
   end if;
 
   -- Parse options
-  Start := 1;
-  N_Arg := 1;
-  loop
-    if Argument.Get_Parameter (Occurence => N_Arg) = "--" then
-      -- Force end of options
-      Start := N_Arg + 1;
-      exit;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-a"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--ascii" then
-      -- Force ASCII processing even if ENV was set
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option ascii");
-      end if;
-      Lang := Language.Lang_C;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-b"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--basic" then
-      -- Basic regex
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option basic regex");
-      end if;
-      Extended := False;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-f"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--file" then
-      -- The file will be a list of files
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option file of files");
-      end if;
-      File_Of_Files := True;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-g"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--grep" then
-      -- Put matching text like grep would do
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option grep display");
-      end if;
-      Grep := True;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-i"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--ignorecase" then
-      -- Case insensitive match
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option ignore case");
-      end if;
-      Case_Sensitive := False;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-m"
-    or else (Argument.Get_Parameter (Occurence => N_Arg)'Length > 6
-     and then Argument.Get_Parameter (Occurence => N_Arg)(1 .. 6)
-                                         = "--max=" ) then
-      -- Stop each file after <max> substitutions
-      begin
-        if Argument.Get_Parameter (Occurence => N_Arg) = "-m" then
-          -- -m <max>
-          Max := Substit.Long_Long_Natural'Value (
-            Argument.Get_Parameter (Occurence => N_Arg + 1));
-          Start := N_Arg + 2;
-        else
-          -- --max=<max>
-          declare
-            Str : constant String := Argument.Get_Parameter (Occurence => N_Arg);
-          begin
-            Max := Substit.Long_Long_Natural'Value (Str (7 .. Str'Last));
-          end;
-          Start := N_Arg + 1;
-        end if;
-      exception
-        when others =>
-          Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-             & ": Syntax ERROR. Invalid specification of max subtitutions.");
-          Error;
-          return;
-      end;
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
-      end if;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-n"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--number" then
-      -- Put number of substitutions
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option put numbers");
-      end if;
-      Verbosity := Put_Subst_Nb;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-q"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--quiet" then
-      -- Quiet mode
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option quiet");
-      end if;
-      Verbosity := Quiet;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-s"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--save" then
-      -- Make backup
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option make backup");
-      end if;
-      Backup := True;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-t"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--test" then
-      -- Test mode
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option test");
-      end if;
-      Test := True;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-u"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--utf8" then
-      -- Process utf-8 sequences
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option utf8");
-      end if;
-      Lang := Language.Lang_Utf_8;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-v"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--verbose" then
-      -- Verbose put each substit
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option verbose");
-      end if;
-      Verbosity := Verbose;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) = "-x"
-    or else Argument.Get_Parameter (Occurence => N_Arg) = "--noregex" then
-      -- Find pattern is not a regex
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Option noregex");
-      end if;
-      Is_Regex := False;
-      Start := N_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => N_Arg) /= ""
-    and then Argument.Get_Parameter (Occurence => N_Arg)(1) = '-' then
-      -- Not a valid option
+  if Arg_Dscr.Is_Set (01) then
+    -- Force ASCII processing even if ENV was set
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option ascii");
+    end if;
+    Lang := Language.Lang_C;
+  end if;
+  if Arg_Dscr.Is_Set (02) then
+    -- Basic regex
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option basic regex");
+    end if;
+    Extended := False;
+  end if;
+  if Arg_Dscr.Is_Set (03) then
+    -- The file will be a list of files
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option file of files");
+    end if;
+    File_Of_Files := True;
+  end if;
+  if Arg_Dscr.Is_Set (04) then
+    -- Put matching text like grep would do
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option grep display");
+    end if;
+    Grep := True;
+  end if;
+  if Arg_Dscr.Is_Set (06) then
+    -- Case insensitive match
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option ignore case");
+    end if;
+    Case_Sensitive := False;
+  end if;
+  if Arg_Dscr.Is_Set (07) then
+    -- Stop each file after <max> substitutions
+    begin
+      Max := Substit.Long_Long_Natural'Value (Arg_Dscr.Get_Option (07));
+    exception
+      when others =>
+        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+           & ": Syntax ERROR. Invalid specification of max subtitutions.");
+        Error;
+        return;
+    end;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
+    end if;
+  end if;
+  if Arg_Dscr.Is_Set (08) then
+    -- Put number of substitutions
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option put numbers");
+    end if;
+    if not Check_Verbose then
+      return;
+    end if;
+    Verbosity := Put_Subst_Nb;
+  end if;
+  if Arg_Dscr.Is_Set (09) then
+    -- Quiet mode
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option quiet");
+    end if;
+    if not Check_Verbose then
+      return;
+    end if;
+    Verbosity := Quiet;
+  end if;
+  if Arg_Dscr.Is_Set (10) then
+    -- Make backup
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option make backup");
+    end if;
+    Backup := True;
+  end if;
+  if Arg_Dscr.Is_Set (11) then
+    -- Test mode
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option test");
+    end if;
+    Test := True;
+  end if;
+  if Arg_Dscr.Is_Set (12) then
+    -- Process utf-8 sequences
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option utf8");
+    end if;
+    Lang := Language.Lang_Utf_8;
+  end if;
+  if Arg_Dscr.Is_Set (13) then
+    -- Verbose put each substit
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option verbose");
+    end if;
+    if not Check_Verbose then
+      return;
+    end if;
+    Verbosity := Verbose;
+  end if;
+  if Arg_Dscr.Is_Set (15) then
+    -- Find pattern is not a regex
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option noregex");
+    end if;
+    Is_Regex := False;
+  end if;
+
+  -- Dependancies
+  -- Grep => Test, not verbose, not backup
+  if Grep then
+    if Test or else Verbosity /= Put_File_Name or else Backup then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                      & ": Syntax ERROR. Invalid option "
-                      & Argument.Get_Parameter (Occurence => N_Arg) & ".");
+        & ": Syntax ERROR. Grep mode imposes quiet, test and no-backup.");
       Error;
       return;
-    else
-      -- Not an option
-      exit;
     end if;
-    N_Arg := N_Arg + 1;
-    exit when N_Arg > Argument.Get_Nbre_Arg;
-  end loop;
+    Test := True;
+    Verbosity := Quiet;
+    Backup := False;
+  end if;
 
   -- Set language (for regexp)
   Language.Set_Language (Lang);
@@ -360,17 +393,10 @@ begin
                 Language.Get_Language)));
   end if;
 
-  -- Parse both patterns
-  if Argument.Get_Nbre_Arg < Start + 1 then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
-    Error;
-    return;
-  end if;
   begin
     Search_Pattern.Parse (
-         Argument.Get_Parameter (Occurence => Start),
+         Arg_Dscr.Get_Option (No_Key_Index, 1),
          Extended, Case_Sensitive, Is_Regex);
-    Start := Start + 1;
   exception
     when Search_Pattern.Parse_Error =>
       Error;
@@ -378,37 +404,27 @@ begin
   end;
   begin
     Replace_Pattern.Parse (
-           Argument.Get_Parameter (Occurence => Start));
-    Start := Start + 1;
+           Arg_Dscr.Get_Option (No_Key_Index, 2));
   exception
     when Replace_Pattern.Parse_Error =>
       Error;
       return;
   end;
 
-  -- Dependancies
-  -- Grep => Test, not verbose, not backup
-  if Grep then
-    Test := True;
-    Verbosity := Quiet;
-    Backup := False;
-  end if;
-
   -- One file argument if file of files
-  if File_Of_Files then
-    if Argument.Get_Nbre_Arg /= Start then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                     & ": Syntax ERROR. One file (only) must be supplied"
-                     & "  with -f or --file option.");
-      Error;
-      return;
-    end if;
+  if File_Of_Files
+  and then Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 3 then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+                   & ": Syntax ERROR. One file (only) must be supplied"
+                   & "  with -f or --file option.");
+    Error;
+    return;
   end if;
 
   -- Process files
   Ok := True;
   Found := False;
-  if Argument.Get_Nbre_Arg < Start then
+  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 2 then
     -- No file: stdin -> stdout
     if Backup then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
@@ -439,7 +455,7 @@ begin
   elsif File_Of_Files then
     -- File of files: open it
     begin
-      File_Mng.Open (Argument.Get_Parameter (Occurence => Start));
+      File_Mng.Open (Arg_Dscr.Get_Option (No_Key_Index, 3));
     exception
       when File_Mng.Open_Error =>
         Ok := False;
@@ -460,10 +476,13 @@ begin
     end if;
   else
     -- Files are arguments
-    for I in Start .. Argument.Get_Nbre_Arg loop
-      Do_One_File (Argument.Get_Parameter (Occurence => I));
+    for I in 3 .. Arg_Dscr.Get_Nb_Occurences (No_Key_Index) loop
+      Do_One_File (Arg_Dscr.Get_Option (No_Key_Index, I));
     end loop;
   end if;
+
+  -- Clean argument parser memory
+  Arg_Dscr.Reset;
 
   if not Ok then
     Sys_Calls.Set_Exit_Code (Error_Exit_Code);
