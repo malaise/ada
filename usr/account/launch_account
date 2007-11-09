@@ -9,19 +9,8 @@ export ACCOUNT_LPR_LINES_PER_PAGE=85
 
 cd $ROOT_DIR/data
 
-for file in * ; do
-  if [ -f $file ] ; then
-    co -l -q $file
-  fi
-done
-
 umask 111
 $ROOT_DIR/account $*
 umask 022
 
-for file in * ; do
-  if [ -f $file ] ; then
-    ci -u -q -maccount -t-account_data $file
-  fi
-done
-
+svn commit -m ""
