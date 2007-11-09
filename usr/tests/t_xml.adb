@@ -1,9 +1,16 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
-with Argument, Xml_Parser, Normal;
+with Ada.Text_Io, Ada.Strings.Unbounded, Ada.Exceptions;
+with Argument, Xml_Parser, Normal, Basic_Proc;
 procedure T_Xml is
   Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
+
+  procedure Usage is
+  begin
+    Basic_Proc.Put_Line_Error ("Usage: "
+        & Argument.Get_Program_Name
+        & " <xml_file>");
+  end usage;
 
   procedure Put_Attributes (Elt : in Xml_Parser.Element_Type) is
     Attrs : Xml_Parser.Attributes_Array := Xml_Parser.Get_Attributes (Elt);
@@ -52,6 +59,16 @@ procedure T_Xml is
   end Put_Element;
 
 begin
+  if Argument.Get_Nbre_Arg /= 1 then
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  elsif Argument.Get_Parameter = "-h"
+  or else Argument.Get_Parameter = "--help" then
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
   Xml_Parser.Parse (Argument.Get_Parameter, Prologue, Root);
   Ada.Text_Io.Put_Line ("Prologue:");
   Put_Element (Prologue, 0);
@@ -60,7 +77,13 @@ begin
   Xml_Parser.Clean (Prologue, Root);
 exception
   when Xml_Parser.Parse_Error =>
-    Ada.Text_Io.Put_Line (Xml_Parser.Get_Parse_Error_Message);
-    raise;
+    Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message);
+    Basic_Proc.Set_Error_Exit_Code;
+  when Error:others =>
+    Basic_Proc.Put_Line_Error ("Exception "
+        & Ada.Exceptions.Exception_Name (Error)
+        & " raised.");
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
 end T_Xml;
 
