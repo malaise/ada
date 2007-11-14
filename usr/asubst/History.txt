@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+14/11/2007 V4.1
+Add: -d or --display to display patterns.
+Add: -l or --line to display line number in grep mode.
+
 03/11/2007 V4.0
 Add: Use generic parsing by Argument_Parser; single letter options can now
      grouped (ex: -tv).

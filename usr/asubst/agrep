@@ -1,5 +1,11 @@
 #!/bin/bash
+
+iexport opt=""
+if [ "$1" = "-l" ] ; then
+  opt="-l"
+  shift
+fi
 export find=$1
 shift
-asubst -g "$find" "" $*
+asubst -g $opt "$find" "" $*
 

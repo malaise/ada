@@ -1,8 +1,8 @@
 with Ada.Text_Io, Ada.Strings.Unbounded;
 with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
      Regular_Expressions, Directory, Copy_File, File_Access, Mixed_Str,
-     Debug;
-with Search_Pattern, Replace_Pattern;
+     Int_Image;
+with Search_Pattern, Replace_Pattern, Debug;
 package body Substit is
 
   package Asu renames Ada.Strings.Unbounded;
@@ -30,6 +30,7 @@ package body Substit is
 
   -- Current line number
   Line_No : Long_Long_Natural;
+  function Line_Image is new Int_Image (Long_Long_Natural);
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);
@@ -303,8 +304,9 @@ package body Substit is
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
   function Subst_Lines (Max_Subst : Long_Long_Natural;
-                        Verbose : Boolean;
+                        Verbose   : Boolean;
                         Grep      : Boolean;
+                        Line_Nb   : Boolean;
                         Test    : Boolean) return Long_Long_Natural;
 
   function Do_One_File (File_Name : String;
@@ -312,6 +314,7 @@ package body Substit is
                         Backup    : Boolean;
                         Verbose   : Boolean;
                         Grep      : Boolean;
+                        Line_Nb   : Boolean;
                         Test      : Boolean) return Long_Long_Natural is
     Total_Subst : Long_Long_Natural;
     Remain_Subst : Long_Long_Natural;
@@ -334,7 +337,7 @@ package body Substit is
       exit when not Read;
       -- Process these lines
       Total_Subst := Total_Subst
-           + Subst_Lines (Remain_Subst, Do_Verbose, Grep, Test);
+           + Subst_Lines (Remain_Subst, Do_Verbose, Grep, Line_Nb, Test);
       -- Done when amount of substitutions reached
       if Max_Subst /= 0 then
         exit when Max_Subst = Total_Subst;
@@ -370,6 +373,7 @@ package body Substit is
                            Max_Subst : Long_Long_Natural;
                            Verbose   : Boolean;
                            Grep      : Boolean;
+                           Line_Nb   : Boolean;
                            Test      : Boolean) return Long_Long_Natural is
     Current : Positive;
     Nb_Match : Long_Long_Natural;
@@ -406,6 +410,9 @@ package body Substit is
         elsif Grep then
           if not Is_Stdin then
             Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
+            if Line_Nb then
+              Ada.Text_Io.Put (Line_Image(Line_No) & ":");
+            end if;
           end if;
           Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
           -- Display one match per line
@@ -484,6 +491,7 @@ package body Substit is
   function Subst_Lines (Max_Subst : Long_Long_Natural;
                         Verbose   : Boolean;
                         Grep      : Boolean;
+                        Line_Nb   : Boolean;
                         Test      : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
@@ -517,7 +525,7 @@ package body Substit is
     if Is_Multiple then
       -- Handle separately multiple substitutions if one pattern
       return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
-                             Max_Subst, Verbose, Grep, Test);
+                             Max_Subst, Verbose, Grep, Line_Nb, Test);
     end if;
 
     -- Check all patterns until one does not match
@@ -582,6 +590,9 @@ package body Substit is
           -- Display grep result
           if not Is_Stdin then
             Ada.Text_Io.Put (Asu.To_String (In_File_Name & ":"));
+            if Line_Nb then
+              Ada.Text_Io.Put (Line_Image(Line_No) & ":");
+            end if;
           end if;
           Put_Match (True);
           Ada.Text_Io.New_Line;

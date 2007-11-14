@@ -13,6 +13,7 @@ package Substit is
                         Backup    : Boolean;
                         Verbose   : Boolean;
                         Grep      : Boolean;
+                        Line_Nb   : Boolean;
                         Test      : Boolean) return Long_Long_Natural;
   -- Error handled and traced by Do_One
   Substit_Error : exception;

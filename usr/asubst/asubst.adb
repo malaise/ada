@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V4_0";
+  Version : constant String  := "V4.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -25,17 +25,21 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -a | -b | -f | -g | -i | -m <max> | -n | -q | -s | -t | -u | -v | -x | --");
+     "  <option> ::= -a | -b | -d | -f | -g | -i | -l | -m <max> | -n | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
+    Sys_Calls.Put_Line_Error (
+     "    -d or --display for display find_pattern and replace_string,");
     Sys_Calls.Put_Line_Error (
      "    -f or --file to indicate that <file> will be a list of file names,");
     Sys_Calls.Put_Line_Error (
      "    -g or --grep to print matching text as grep would do (no subst),");
     Sys_Calls.Put_Line_Error (
      "    -i or --ignorecase for case insensitive match,");
+    Sys_Calls.Put_Line_Error (
+     "    -l or --line for display line number in grep mode,");
     Sys_Calls.Put_Line_Error (
      "    -m <max> or --max=<max> for stop processing file after <max> substitutions,");
     Sys_Calls.Put_Line_Error (
@@ -107,7 +111,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_string>""");
     Sys_Calls.Put_Line_Error (
-     "    and use -s option if unsure.");
+     "    and use -s or -tv option if unsure.");
     Sys_Calls.Set_Exit_Code (Error_Exit_Code);
   end Help;
 
@@ -127,24 +131,27 @@ procedure Asubst is
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('a', Asu_Tus ("ascii"), False, False),
    02 => ('b', Asu_Tus ("basic"), False, False),
-   03 => ('f', Asu_Tus ("file"), False, False),
-   04 => ('g', Asu_Tus ("grep"), False, False),
-   05 => ('h', Asu_Tus ("help"), False, False),
-   06 => ('i', Asu_Tus ("ignorecase"), False, False),
-   07 => ('m', Asu_Tus ("max"), False, True),
-   08 => ('n', Asu_Tus ("number"), False, False),
-   09 => ('q', Asu_Tus ("quiet"), False, False),
-   10 => ('s', Asu_Tus ("save"), False, False),
-   11 => ('t', Asu_Tus ("test"), False, False),
-   12 => ('u', Asu_Tus ("utf8"), False, False),
-   13 => ('v', Asu_Tus ("verbose"), False, False),
-   14 => ('V', Asu_Tus ("version"), False, False),
-   15 => ('x', Asu_Tus ("noregex"), False, False));
+   03 => ('d', Asu_Tus ("display"), False, False),
+   04 => ('f', Asu_Tus ("file"), False, False),
+   05 => ('g', Asu_Tus ("grep"), False, False),
+   06 => ('h', Asu_Tus ("help"), False, False),
+   07 => ('i', Asu_Tus ("ignorecase"), False, False),
+   08 => ('l', Asu_Tus ("line"), False, False),
+   09 => ('m', Asu_Tus ("max"), False, True),
+   10 => ('n', Asu_Tus ("number"), False, False),
+   11 => ('q', Asu_Tus ("quiet"), False, False),
+   12 => ('s', Asu_Tus ("save"), False, False),
+   13 => ('t', Asu_Tus ("test"), False, False),
+   14 => ('u', Asu_Tus ("utf8"), False, False),
+   15 => ('v', Asu_Tus ("verbose"), False, False),
+   16 => ('V', Asu_Tus ("version"), False, False),
+   17 => ('x', Asu_Tus ("noregex"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
 
   -- Option management
+  Display : Boolean := False;
   Extended : Boolean := True;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
@@ -152,6 +159,7 @@ procedure Asubst is
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
   Grep : Boolean := False;
+  Line_Nb : Boolean := False;
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
@@ -187,7 +195,7 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Max, Backup, Verbosity = Verbose, Grep, Test);
+                  Max, Backup, Verbosity = Verbose, Grep, Line_Nb, Test);
     if Nb_Subst /= 0 then
       Found := True;
     end if;
@@ -233,7 +241,7 @@ begin
   end if;
 
   -- Check version and help, must be alone
-  if Arg_Dscr.Is_Set (14) then
+  if Arg_Dscr.Is_Set (16) then
     -- Version
     if Argument.Get_Nbre_Arg /= 1 then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -243,7 +251,7 @@ begin
       Sys_Calls.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;
-  elsif Arg_Dscr.Is_Set (05) then
+  elsif Arg_Dscr.Is_Set (06) then
     -- Help
     if  Argument.Get_Nbre_Arg /= 1 then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -277,27 +285,41 @@ begin
     Extended := False;
   end if;
   if Arg_Dscr.Is_Set (03) then
+    -- Display patterns
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option display patterns");
+    end if;
+    Display := True;
+  end if;
+  if Arg_Dscr.Is_Set (04) then
     -- The file will be a list of files
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option file of files");
     end if;
     File_Of_Files := True;
   end if;
-  if Arg_Dscr.Is_Set (04) then
+  if Arg_Dscr.Is_Set (05) then
     -- Put matching text like grep would do
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option grep display");
     end if;
     Grep := True;
   end if;
-  if Arg_Dscr.Is_Set (06) then
+  if Arg_Dscr.Is_Set (07) then
     -- Case insensitive match
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option ignore case");
     end if;
     Case_Sensitive := False;
   end if;
-  if Arg_Dscr.Is_Set (07) then
+  if Arg_Dscr.Is_Set (08) then
+    -- Put line no
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option line no");
+    end if;
+    Line_Nb := True;
+  end if;
+  if Arg_Dscr.Is_Set (09) then
     -- Stop each file after <max> substitutions
     begin
       Max := Substit.Long_Long_Natural'Value (Arg_Dscr.Get_Option (07));
@@ -312,7 +334,7 @@ begin
       Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
     end if;
   end if;
-  if Arg_Dscr.Is_Set (08) then
+  if Arg_Dscr.Is_Set (10) then
     -- Put number of substitutions
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option put numbers");
@@ -322,7 +344,7 @@ begin
     end if;
     Verbosity := Put_Subst_Nb;
   end if;
-  if Arg_Dscr.Is_Set (09) then
+  if Arg_Dscr.Is_Set (11) then
     -- Quiet mode
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option quiet");
@@ -332,28 +354,28 @@ begin
     end if;
     Verbosity := Quiet;
   end if;
-  if Arg_Dscr.Is_Set (10) then
+  if Arg_Dscr.Is_Set (12) then
     -- Make backup
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option make backup");
     end if;
     Backup := True;
   end if;
-  if Arg_Dscr.Is_Set (11) then
+  if Arg_Dscr.Is_Set (13) then
     -- Test mode
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option test");
     end if;
     Test := True;
   end if;
-  if Arg_Dscr.Is_Set (12) then
+  if Arg_Dscr.Is_Set (14) then
     -- Process utf-8 sequences
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option utf8");
     end if;
     Lang := Language.Lang_Utf_8;
   end if;
-  if Arg_Dscr.Is_Set (13) then
+  if Arg_Dscr.Is_Set (15) then
     -- Verbose put each substit
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option verbose");
@@ -363,26 +385,12 @@ begin
     end if;
     Verbosity := Verbose;
   end if;
-  if Arg_Dscr.Is_Set (15) then
+  if Arg_Dscr.Is_Set (17) then
     -- Find pattern is not a regex
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option noregex");
     end if;
     Is_Regex := False;
-  end if;
-
-  -- Dependancies
-  -- Grep => Test, not verbose, not backup
-  if Grep then
-    if Test or else Verbosity /= Put_File_Name or else Backup then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-        & ": Syntax ERROR. Grep mode imposes quiet, test and no-backup.");
-      Error;
-      return;
-    end if;
-    Test := True;
-    Verbosity := Quiet;
-    Backup := False;
   end if;
 
   -- Set language (for regexp)
@@ -411,6 +419,33 @@ begin
       return;
   end;
 
+  -- Dependancies
+  -- Grep => Test, not verbose, not backup
+  if Grep then
+    if Test or else Verbosity /= Put_File_Name or else Backup then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+        & ": Syntax ERROR. Grep mode imposes quiet, test and no-backup.");
+      Error;
+      return;
+    end if;
+    Test := True;
+    Verbosity := Quiet;
+    Backup := False;
+  end if;
+  -- Grep => empty replace
+  if Grep and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      & ": Syntax ERROR. Grep mode imposes empty replace_string.");
+    Error;
+    return;
+  end if;
+  -- Line_Nb => Grep
+  if Line_Nb and then not Grep then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      & ": Syntax ERROR. Line_Nb mode is allowed in Grep mode only.");
+    Error;
+    return;
+  end if;
   -- One file argument if file of files
   if File_Of_Files
   and then Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 3 then
@@ -419,6 +454,16 @@ begin
                    & "  with -f or --file option.");
     Error;
     return;
+  end if;
+
+  -- Display search pattern and replace string
+  if Display then
+    Ada.Text_Io.Put_Line ("Search pattern: >"
+       & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
+    if not Grep then
+      Ada.Text_Io.Put_Line ("Replace string: >"
+         & Arg_Dscr.Get_Option (No_Key_Index, 2) & "<");
+    end if;
   end if;
 
   -- Process files
@@ -438,6 +483,7 @@ begin
             Backup    => False,
             Verbose   => False,
             Grep      => Grep,
+            Line_Nb   => Line_Nb,
             Test      => Test);
         if Nb_Subst /= 0 then
           Found := True;
