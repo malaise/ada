@@ -5,7 +5,7 @@ export X_BLINK_KIND=BOLD
 export CON_IO_FONT=large
 export AFPX_DATA_DIR=$ROOT_DIR
 export ACCOUNT_LPR_COMMAND=$ROOT_DIR/account_lpr
-export ACCOUNT_LPR_LINES_PER_PAGE=85
+export ACCOUNT_LPR_LINES_PER_PAGE=78
 
 cd $ROOT_DIR/data
 

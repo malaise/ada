@@ -3,7 +3,7 @@
 #  then convert to ps sheet then substit back then print
 iconv --from-code=UTF-8 --to-code=ISO_8859-15 $* \
 | asubst "\xA4" "\xA5" \
-| a2ps --encoding=iso15 --quiet --portrait --no-header -1 \
+| a2ps --encoding=iso15 --quiet --portrait --no-header --margin=0 -1 \
        --chars-per-line=100 --borders=no --highlight-level=none --output=- \
 | asubst "\\\245" "\\\244" \
 | lpr
