@@ -8,12 +8,14 @@ type asubst
 asubst --version
 
 # Play scenario
+export STEP="Test scenario"
 ./player Scenario
 if [ $? -ne 0 ] ; then
-  echo "Scenario failed."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "Test scenario, OK."
+echo "$STEP OK."
+echo ""
 
 # Various file names, reference (in), expected result
 #  tested (in/out), list, saved
@@ -51,6 +53,7 @@ echo "end Pack;" >> $FR
 echo "end Pack;" >> $FE
 
 # Substit from file list with no backup
+STEP="File substitution from file list"
 cp $FR $FT
 echo $FT > $FL
 res=`asubst -f "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FL`
@@ -58,24 +61,29 @@ code=$?
 # Check exit code and that result is expected
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
   exit 1
 fi
 cmp -s $FT $FE
 if [ $? -ne 0 ] ; then
   echo "Result file $FT differs from expected $FE."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ "$res" != "$FT" ] ; then
   echo "Asubst generated wrong output $res. Expected $FT."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ -f $FS ] ; then
   echo "Unexpected backup $FS found."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "File substitution from file list and with no backup, OK."
+echo "$STEP OK."
 
 # Substit with backup
+STEP="File substitution with backup"
 rm -rf $FS
 cp $FR $FT
 res=`asubst -s "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
@@ -83,33 +91,40 @@ code=$?
 # Check exit code and result is expected
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
   exit 1
 fi
 cmp -s $FT $FE
 if [ $? -ne 0 ] ; then
   echo "Result file $FT differs from expected $FE."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ "$res" != "$FT" ] ; then
   echo "Asubst generated wrong output $res. Expected $FT."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ ! -f $FS ] ; then
   echo "Backup file $FS not found."
+  echo "$STEP FAILED."
   exit 1
 fi
 cmp -s $FS $FR
 if [ $? -ne 0 ] ; then
   echo "Backup file $FS differs from reference $FR."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ -f "Temp_File.*" ] ; then
   echo "Found remaining temorary files " Temp_File.* "."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "File substitution with backup, OK."
+echo "$STEP OK."
 
-# Substit in test mode
+# File substitution in test mode
+STEP="Substitution in test mode"
 rm -rf $FS
 cp $FR $FT
 res=`asubst -t "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
@@ -117,45 +132,54 @@ code=$?
 # Check exit code and result is expected
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
   exit 1
 fi
 cmp -s $FT $FR
 if [ $? -ne 0 ] ; then
   echo "Result file $FT differs from expected $FR."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ "$res" != "$FT" ] ; then
   echo "Asubst generated wrong output $res. Expected $FT."
+  echo "$STEP FAILED."
   exit 1
 fi
 if [ -f "Temp_File.*" ] ; then
   echo "Found remaining temorary files " Temp_File.* "."
+  echo "$STEP FAILED."
   exit 1
 fi
 res=`echo toto | asubst -t o i`
 if [ "$res" != "toto" ] ; then
   echo "Result $res differs from expected toto."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "File substitution in test mode, OK."
+# Stdin substitution in test mode
 exp="\ntoto\ntiti\ntata"
 res=`echo -e "$exp" | asubst -t "toto\ntiti" "\u\R01\R02\R03"`
 exp=`echo -e "$exp"`
 if [ "$res" != "$exp" ] ; then
   echo "Result $res differs from expected."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "Substitution in test mode, OK."
+echo "$STEP OK."
 
-# Subst with a "--"
+# Substitution with a "--"
+STEP="Substitution with --"
 res=`echo "t_o..T'I" | asubst "--"  "[\T]" "-"`
 if [ "$res" != "t-o--T-I" ] ; then
   echo "Result $res differs from expected."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "Substitution with --, OK."
+echo "$STEP OK."
 
 # Grep mode
+STEP="Grep mode"
 rm -rf $FS
 cp $FR $FT
 # Check multiple regexp grep
@@ -163,57 +187,67 @@ res=`asubst -g " is\n" "" $FT`
 code=$?
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
   exit 1
 fi
 exp_res=`echo -e "tstfile.tst:Package body Pack is\n\ntstfile.tst:  procedure Test is\n\n"`
 if [ "$res" != "$exp_res" ] ; then
   echo "Result $res differs from expected."
+  echo "$STEP FAILED."
   exit 1
 fi
 # Check mono regexp grep
 res=`asubst -g " is" "" $FT`
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
   exit 1
 fi
 exp_res=`echo -e "tstfile.tst:Package body Pack is\ntstfile.tst:  procedure Test is\n"`
 if [ "$res" != "$exp_res" ] ; then
   echo "Result $res differs from expected toto."
+  echo "$STEP FAILED."
   exit 1
 fi
 cmp -s $FT $FR
 if [ $? -ne 0 ] ; then
   echo "Result file $FT differs from expected $FR."
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "Grep mode, OK."
+echo "$STEP OK."
 
 # Exit codes
+STEP="Exit codes"
 asubst -g > /dev/null 2>&1
 code=$?
 if [ $code != 2 ] ; then
   echo "Error: asubst exited with code $code instead of 2"
+  echo "$STEP FAILED."
   exit 1
 fi
 asubst "[is" "is" $FT > /dev/null 2>&1
 code=$?
 if [ $code != 2 ] ; then
   echo "Error: asubst exited with code $code instead of 2"
+  echo "$STEP FAILED."
   exit 1
 fi
 echo "That is the question" | asubst -g "[Tt]his" "" > /dev/null 2>&1
 code=$?
 if [ $code != 1 ] ; then
   echo "Error: asubst exited with code $code instead of 1"
+  echo "$STEP FAILED."
   exit 1
 fi
 echo "That is the question" | asubst -g "[Tt]h.*is" "" > /dev/null 2>&1
 code=$?
 if [ $code != 0 ] ; then
   echo "Error: asubst exited with code $code instead of 0"
+  echo "$STEP FAILED."
   exit 1
 fi
-echo "Exit codes, OK".
+echo "$STEP OK."
 
 # Cleanup test files
 rm -rf $FR $FT $FS $FE $FL

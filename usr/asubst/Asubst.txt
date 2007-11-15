@@ -1,5 +1,5 @@
                                  Asubst
-                                  V4_0
+                                  V4.2
 
 
 1. General syntax
@@ -110,8 +110,8 @@ The following '\' sequences are supported:
 - \RIJ where IJ is an hexadecimal number will be replaced by the string
   matching the regex number IJ, (0 < IJ <= NbOfRegexps).
 - \rIJ where IJ is an hexadecimal number will be replaced by the string
-  matching the substring J of the regex number I, J=0 for the complete string,
-  (so \R0x = \rx0).
+  matching the substring J of the regex number I (0 < I), J=0 for the
+  complete string, (so \R0x = \rx0).
 - \u, \l, \m for starting an UPPER, lower or Mixed case conversion. A
   conversion ends when a new starts, at end of line or on \c.
 - \c for stopping a case conversion.
@@ -119,7 +119,6 @@ Case conversion applies after (sub)string replacement.
 
 Examples:
 echo -en "toto" | asubst "t" "\x40"                     ->  "@"
-echo -en "tito" | asubst "t." ">\R00<"                  ->  ">ti<>to<"
 echo -en "toto\ntiti\ntata\n" | asubst ".*\n" "\R01"    ->  "tototititata"
 echo -en "\ntoto\ntiti\ntata" | asubst "\n.*" "\R02"    ->  "tototititata"
 echo -en "tito" | asubst "(.i)(.o)"  "\r12<->\r11"      ->  "to<->ti"

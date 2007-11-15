@@ -1,12 +1,15 @@
 History of Asubst:
 ------------------
+15/11/2007 V4.2
+Bugfix: Fix help and doc: \r0i and \R00 are forbidden.
+
 14/11/2007 V4.1
 Add: -d or --display to display patterns.
 Add: -l or --line to display line number in grep mode.
 
 03/11/2007 V4.0
 Add: Use generic parsing by Argument_Parser; single letter options can now
-     grouped (ex: -tv).
+     be grouped (ex: -tv).
 
 18/07/2007 V3_8
 Bugfix: Fix verbose output when multi-line search pattern.

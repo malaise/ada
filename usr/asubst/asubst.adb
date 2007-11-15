@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V4.1";
+  Version : constant String  := "V4.2";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -103,7 +103,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    conv replaces previous, case conv applies after (sub)string replacement.");
     Sys_Calls.Put_Line_Error (
-     "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> the <multiple_regex>, ""\ri0"" == ""\R0i"".");
+     "    ""\R01"" <-> 1st <regex>, ""\ri0"" == ""\R0i"". ""\r0i"" and ""\R00"" are forbidden.");
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (

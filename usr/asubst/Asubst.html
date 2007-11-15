@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20071114;15075100">
+	<META NAME="CHANGED" CONTENT="20071115;16342100">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V4.1</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V4.2</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -126,8 +126,8 @@ a byte with the corresponding value.</FONT><BR><FONT FACE="monospace">-
 \RIJ where IJ is an hexadecimal number will be replaced by the string
 matching the regex number IJ, (0 &lt; IJ &lt;= NbOfRegexps).</FONT><BR><FONT FACE="monospace">-
 \rIJ where IJ is an hexadecimal number will be replaced by the string</FONT>
-<FONT FACE="monospace">matching the substring J of the regex number
-I, J=0 for the complete string,</FONT> <FONT FACE="monospace">(so
+<FONT FACE="monospace">matching the substring J of the regex number I
+(I &lt; 0), J=0 for the complete string,</FONT> <FONT FACE="monospace">(so
 \R0x = \rx0).</FONT><BR><FONT FACE="monospace">- \u, \l, \m for
 starting an UPPER, lower or Mixed case conversion. A</FONT>
 <FONT FACE="monospace">conversion ends when a new starts, at end of
@@ -136,10 +136,8 @@ case conversion.<BR>Case conversion applies after (sub)string
 replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;t&quot;
 &quot;\x40&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
-&quot;@&quot;</FONT><BR><FONT FACE="monospace">echo -en &quot;tito&quot;
-| asubst &quot;t.&quot; &quot;&gt;\R00&lt;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
-&quot;&gt;ti&lt;&gt;to&lt;&quot;</FONT><BR><FONT FACE="monospace">echo
--en &quot;toto\ntiti\ntata\n&quot; | asubst &quot;.*\n&quot;
+&quot;@&quot;</FONT><BR><FONT FACE="monospace">echo -en
+&quot;toto\ntiti\ntata\n&quot; | asubst &quot;.*\n&quot;
 &quot;\R01&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 &quot;tototititata&quot;</FONT><BR><FONT FACE="monospace">echo -en
 &quot;\ntoto\ntiti\ntata&quot; | asubst &quot;\n.*&quot;
