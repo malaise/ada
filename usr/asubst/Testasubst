@@ -183,14 +183,14 @@ STEP="Grep mode"
 rm -rf $FS
 cp $FR $FT
 # Check multiple regexp grep
-res=`asubst -g " is\n" "" $FT`
+res=`asubst -gl " is\n" "" $FT`
 code=$?
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
   echo "$STEP FAILED."
   exit 1
 fi
-exp_res=`echo -e "tstfile.tst:Package body Pack is\n\ntstfile.tst:  procedure Test is\n\n"`
+exp_res=`echo -e "tstfile.tst:1:Package body Pack is\n\ntstfile.tst:7:  procedure Test is\n\n"`
 if [ "$res" != "$exp_res" ] ; then
   echo "Result $res differs from expected."
   echo "$STEP FAILED."
