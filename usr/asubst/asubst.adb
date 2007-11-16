@@ -1,9 +1,9 @@
-with Ada.Exceptions, Ada.Text_Io;
+with Ada.Exceptions, Ada.Text_Io, Ada.Strings.Unbounded;
 with Environ, Argument, Argument_Parser, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V4.2";
+  Version : constant String  := "V4.3";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -25,13 +25,17 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -a | -b | -d | -f | -g | -i | -l | -m <max> | -n | -q | -s | -t | -u | -v | -x | --");
+     "  <option> ::= -a | -b | -d | -e | -f | -g | -i | -l | -m <max> | -n | -q |");
+    Sys_Calls.Put_Line_Error (
+     "               -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
      "    -d or --display for display find_pattern and replace_string,");
+    Sys_Calls.Put_Line_Error (
+     "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
      "    -f or --file to indicate that <file> will be a list of file names,");
     Sys_Calls.Put_Line_Error (
@@ -105,6 +109,8 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\ri0"" == ""\R0i"". ""\r0i"" and ""\R00"" are forbidden.");
     Sys_Calls.Put_Line_Error (
+     "  If set, <exclude_regex> must have the same number of regex as <find_pattern>.");
+    Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (
      "    can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
@@ -132,20 +138,21 @@ procedure Asubst is
    01 => ('a', Asu_Tus ("ascii"), False, False),
    02 => ('b', Asu_Tus ("basic"), False, False),
    03 => ('d', Asu_Tus ("display"), False, False),
-   04 => ('f', Asu_Tus ("file"), False, False),
-   05 => ('g', Asu_Tus ("grep"), False, False),
-   06 => ('h', Asu_Tus ("help"), False, False),
-   07 => ('i', Asu_Tus ("ignorecase"), False, False),
-   08 => ('l', Asu_Tus ("line"), False, False),
-   09 => ('m', Asu_Tus ("max"), False, True),
-   10 => ('n', Asu_Tus ("number"), False, False),
-   11 => ('q', Asu_Tus ("quiet"), False, False),
-   12 => ('s', Asu_Tus ("save"), False, False),
-   13 => ('t', Asu_Tus ("test"), False, False),
-   14 => ('u', Asu_Tus ("utf8"), False, False),
-   15 => ('v', Asu_Tus ("verbose"), False, False),
-   16 => ('V', Asu_Tus ("version"), False, False),
-   17 => ('x', Asu_Tus ("noregex"), False, False));
+   04 => ('e', Asu_Tus ("exclude"), False, True),
+   05 => ('f', Asu_Tus ("file"), False, False),
+   06 => ('g', Asu_Tus ("grep"), False, False),
+   07 => ('h', Asu_Tus ("help"), False, False),
+   08 => ('i', Asu_Tus ("ignorecase"), False, False),
+   09 => ('l', Asu_Tus ("line"), False, False),
+   10 => ('m', Asu_Tus ("max"), False, True),
+   11 => ('n', Asu_Tus ("number"), False, False),
+   12 => ('q', Asu_Tus ("quiet"), False, False),
+   13 => ('s', Asu_Tus ("save"), False, False),
+   14 => ('t', Asu_Tus ("test"), False, False),
+   15 => ('u', Asu_Tus ("utf8"), False, False),
+   16 => ('v', Asu_Tus ("verbose"), False, False),
+   17 => ('V', Asu_Tus ("version"), False, False),
+   18 => ('x', Asu_Tus ("noregex"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -153,6 +160,7 @@ procedure Asubst is
   -- Option management
   Display : Boolean := False;
   Extended : Boolean := True;
+  Exclude : Ada.Strings.Unbounded.Unbounded_String;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
   Max : Substit.Long_Long_Natural := 0;
@@ -241,7 +249,7 @@ begin
   end if;
 
   -- Check version and help, must be alone
-  if Arg_Dscr.Is_Set (16) then
+  if Arg_Dscr.Is_Set (17) then
     -- Version
     if Argument.Get_Nbre_Arg /= 1 then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -251,7 +259,7 @@ begin
       Sys_Calls.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;
-  elsif Arg_Dscr.Is_Set (06) then
+  elsif Arg_Dscr.Is_Set (07) then
     -- Help
     if  Argument.Get_Nbre_Arg /= 1 then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -292,6 +300,26 @@ begin
     Display := True;
   end if;
   if Arg_Dscr.Is_Set (04) then
+    -- Exclude text matching exclude_regexp
+    begin
+      Exclude := Ada.Strings.Unbounded.To_Unbounded_String
+                 (Arg_Dscr.Get_Option (04));
+      if Ada.Strings.Unbounded.Length(Exclude) = 0 then
+        raise Constraint_Error;
+      end if;
+    exception
+      when others =>
+        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+           & ": Syntax ERROR. Invalid exclude_pattern.");
+        Error;
+        return;
+    end;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option exclude = "
+          & Ada.Strings.Unbounded.To_String (Exclude));
+    end if;
+  end if;
+  if Arg_Dscr.Is_Set (05) then
     -- The file will be a list of files
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option file of files");
@@ -404,6 +432,7 @@ begin
   begin
     Search_Pattern.Parse (
          Arg_Dscr.Get_Option (No_Key_Index, 1),
+         Ada.Strings.Unbounded.To_String (Exclude),
          Extended, Case_Sensitive, Is_Regex);
   exception
     when Search_Pattern.Parse_Error =>
@@ -446,6 +475,7 @@ begin
     Error;
     return;
   end if;
+
   -- One file argument if file of files
   if File_Of_Files
   and then Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 3 then

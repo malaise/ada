@@ -2,9 +2,11 @@ with Regular_Expressions;
 package Search_Pattern is
 
   -- Parses and compiles the search patern
+  -- Parses and compiles the exclude patern (if any)
   -- Reports errors on stderr and raises Parse_Error.
-  procedure Parse (Pattern : in String;
-                   Extended, Case_Sensitive, Is_Regex : Boolean);
+  procedure Parse (Search  : in String;
+                   Exclude : in String;
+                   Extended, Case_Sensitive, Is_Regex : in Boolean);
   Parse_Error : exception;
 
   -- Returns the number of regex that are implied by the
@@ -22,6 +24,7 @@ package Search_Pattern is
   --  the number of regex (returned by Number)
   --  or if successive calls do not provide crescent indexes
   function Check (Str : String; Start : Positive;
+                  Search      : Boolean;
                   Regex_Index : Positive) return Boolean;
   No_Regex : exception;
 

@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+xx/11/2007 V4.3
+Add: -e <pattern> or --exclude=<pattern> to exclude string matching <pattern>.
+
 15/11/2007 V4.2
 Bugfix: Fix help and doc: \r0i and \R00 are forbidden.
 

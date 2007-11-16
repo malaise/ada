@@ -53,14 +53,16 @@ package body Search_Pattern is
     -- Unicity of Num
     return Current.Num = Criteria.Num;
   end "=";
-  package Unique_Pattern is new Unique_List (Line_Pat_Rec, Line_Pat_Acc,
+  package Unique_Pattern  is new Unique_List (Line_Pat_Rec, Line_Pat_Acc,
                                             Set, Image, "=");
-  -- True only after Check(Number) called and OK.
+  -- True only after Check (Search, Number) called and OK.
   Check_Completed : Boolean := False;
-  Expected_Index : Positive := 1;
+  Expected_Search : Positive := 1;
+  Expected_Exclude : Positive := 1;
 
-  -- The patterns ans associated check results
-  Pattern_List : Unique_Pattern.List_Type;
+  -- The search and axclude patterns
+  Search_List  : aliased Unique_Pattern.List_Type;
+  Exclude_List : aliased Unique_Pattern.List_Type;
 
   -- True if one unique pattern and with no '^' nor '$'
   Is_Multiple : Boolean;
@@ -82,13 +84,14 @@ package body Search_Pattern is
 
   -- Add a line pattern
   procedure Add (Crit : in String;
-                 Extended, Case_Sensitive : in Boolean) is
+                 Extended, Case_Sensitive : in Boolean;
+                 List : in out Unique_Pattern.List_Type) is
     Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
     Ok : Boolean;
   begin
     -- Compute new pattern number and type
-    Upat.Num := Unique_Pattern.List_Length (Pattern_List) + 1;
+    Upat.Num := Unique_Pattern.List_Length (List) + 1;
     Upat.Is_Delim := Crit = "";
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
@@ -97,14 +100,14 @@ package body Search_Pattern is
     -- Empty pattern is a delimiter
     if Upat.Is_Delim then
       -- Insert delimiter
-      Unique_Pattern.Insert (Pattern_List, Upat);
+      Unique_Pattern.Insert (List, Upat);
       return;
     end if;
     -- Store string if this is not a regex
     if not Is_Regex then
       Upat.Find_Str := Asu.To_Unbounded_String (Crit);
       Upat.Nb_Substr := 0;
-      Unique_Pattern.Insert (Pattern_List, Upat);
+      Unique_Pattern.Insert (List, Upat);
       return;
     end if;
     -- Regex: Count max number of substrings, i.e. number of '('
@@ -115,9 +118,9 @@ package body Search_Pattern is
     end loop;
     -- Regex compiled patterns cannot be copied and Substrs are used later
     -- Insert a pattern without compiled pattern and substrs
-    Unique_Pattern.Insert (Pattern_List, Upat);
+    Unique_Pattern.Insert (List, Upat);
     -- Get access to it and compile in this access
-    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    Unique_Pattern.Get_Access (List, Upat, Upat_Access);
     Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit,
                                  Extended => Extended,
                                  Case_Sensitive => Case_Sensitive);
@@ -149,10 +152,11 @@ package body Search_Pattern is
     end if;
   end Stop_String;
 
-  -- Parses the search patern
+  -- Parses a pattern
   -- Reports errors on stderr and raises Parse_Error.
-  procedure Parse (Pattern : in String;
-                   Extended, Case_Sensitive, Is_Regex : in Boolean) is
+  procedure Parse_One (Pattern : in String;
+                       Extended, Case_Sensitive, Is_Regex : in Boolean;
+                       List : in out Unique_Pattern.List_Type) is
 
     The_Pattern : Asu.Unbounded_String;
 
@@ -236,10 +240,9 @@ package body Search_Pattern is
     end if;
     -- Reset pattern characteristics
     The_Pattern := Asu.To_Unbounded_String (Pattern);
-    Unique_Pattern.Delete_List (Pattern_List);
+    Unique_Pattern.Delete_List (List);
     Is_Multiple := False;
     Check_Completed := False;
-    Expected_Index := 1;
     Search_Pattern.Is_Regex := Is_Regex;
     -- Reject empty pattern
     if Pattern = "" then
@@ -298,7 +301,7 @@ package body Search_Pattern is
                                        Line_Feed, Start_Index);
       if Stop_Index = Start_Index then
         -- A Delim
-        Add ("", Extended, Case_Sensitive);
+        Add ("", Extended, Case_Sensitive, List);
         Prev_Delim := True;
       else
         -- A Regex: see if it is followed by a delim (always except at the end)
@@ -321,10 +324,10 @@ package body Search_Pattern is
             Check (Slice, Stop_String (Next_Delim));
             -- Add this regex with start/stop strings
             Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
-               Extended, Case_Sensitive);
+               Extended, Case_Sensitive, List);
           else
             -- Add this regex with no start/stop strings
-            Add (Slice, True, True);
+            Add (Slice, True, True, List);
           end if;
         end;
         if Is_Regex then
@@ -358,18 +361,60 @@ package body Search_Pattern is
     end if;
 
     -- Done
+  end Parse_One;
+
+  -- Parses and compiles the search patern
+  -- Parses and compiles the exclude patern (if any)
+  -- Reports errors on stderr and raises Parse_Error.
+  procedure Parse (Search  : in String;
+                   Exclude : in String;
+                   Extended, Case_Sensitive, Is_Regex : in Boolean) is
+    Upat : Line_Pat_Rec;
+    Search_Access, Exclude_Access : Line_Pat_Acc;
+  begin
+    Expected_Search := 1;
+    Expected_Exclude := 1;
+    -- Parse the search pattern
+    Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Search_List);
+    if Exclude = "" then
+      -- No exclude
+      Unique_Pattern.Delete_List (Exclude_List);
+      return;
+    end if;
+    -- Parse the exclude pattern
+    Parse_One (Exclude, Extended, Case_Sensitive, Is_Regex, Exclude_List);
+    -- Both patterns must have same length and have delims at same pos
+    if Unique_Pattern.List_Length (Search_List) /=
+       Unique_Pattern.List_Length (Exclude_List) then
+      Error ("Exclude must have the same number of regex as the find pattern");
+    end if;
+    for I in 1 .. Unique_Pattern.List_Length (Search_List) loop
+      Upat.Num := I;
+      Unique_Pattern.Get_Access (Search_List,  Upat, Search_Access);
+      Unique_Pattern.Get_Access (Exclude_List, Upat, Exclude_Access);
+      if Search_Access.Is_Delim /= Exclude_Access.Is_Delim then
+        Error ("Exclude must have the same number delimiters as the find pattern");
+      end if;
+    end loop;
   exception
-    when Parse_Error =>
-      -- Free previous pattern
-      Unique_Pattern.Delete_List (Pattern_List);
+    when others =>
+      -- Cleanup
+      Unique_Pattern.Delete_List (Search_List);
+      Unique_Pattern.Delete_List (Search_List);
+      Is_Multiple := False;
+      Check_Completed := False;
+      Expected_Search := 1;
+      Expected_Exclude := 1;
       raise;
   end Parse;
+
+
 
   -- Returns the number of lines that it covered by the
   --  search pattern (one per regex and one per New_Line.
   -- Raises No_Regex if the pattern was not parsed OK
   function Number return Positive is
-    N : constant Natural := Unique_Pattern.List_Length (Pattern_List);
+    N : constant Natural := Unique_Pattern.List_Length (Search_List);
   begin
     if N = 0 then
       raise No_Regex;
@@ -384,7 +429,7 @@ package body Search_Pattern is
   function Multiple return Boolean is
   begin
     -- Must be some pattern compiled
-    if Unique_Pattern.List_Length (Pattern_List) = 0 then
+    if Unique_Pattern.List_Length (Search_List) = 0 then
       raise No_Regex;
     end if;
     return Is_Multiple;
@@ -399,7 +444,7 @@ package body Search_Pattern is
   begin
     -- Get access to the pattern
     Upat.Num := Regex_Index;
-    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    Unique_Pattern.Get_Access (Search_List, Upat, Upat_Access);
     return Upat_Access.Nb_Substr;
   exception
     when Unique_Pattern.Not_In_List =>
@@ -412,6 +457,7 @@ package body Search_Pattern is
   -- Raises No_Regex if the Regex_Index is higher than
   --  the number of regex (retruned by Parse)
   function Check (Str : String; Start : Positive;
+                  Search : in Boolean;
                   Regex_Index : Positive) return Boolean is
     -- The pattern to check with
     Upat : Line_Pat_Rec;
@@ -420,14 +466,32 @@ package body Search_Pattern is
     Nmatch : Natural;
     Match : Regular_Expressions.Match_Array
                (1 .. Nb_Sub_String_Range'Last + 1);
+    -- Expected index
+    Expected_Index : Positive;
+    -- The list
+    type List_Access is access all Unique_Pattern.List_Type;
+    List : List_Access;
   begin
+    -- Search or exclude list?
+    if Search then
+      -- Check match in search list
+      Expected_Index := Expected_Search;
+      List := Search_List'Access;
+    elsif Unique_Pattern.List_Length (Exclude_List) = 0 then
+      -- No exclude list, so Str is OK (does not match)
+      return False;
+    else
+      -- Check match in exclude list
+      Expected_Index := Expected_Exclude;
+      List := Exclude_List'Access;
+    end if;
     -- Check that this index follows previous
     if Regex_Index /= Expected_Index then
       raise No_Regex;
     end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
-    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    Unique_Pattern.Get_Access (List.all, Upat, Upat_Access);
     -- Check not completed by default
     Check_Completed := False;
     -- Reset substring array if not a delim
@@ -443,7 +507,7 @@ package body Search_Pattern is
         Upat_Access.Nb_Substr := 0;
         Upat_Access.Substrs(0) := (1, 1, 1);
         Upat_Access.Match_Str := Asu.To_Unbounded_String (Line_Feed);
-        if Regex_Index = Unique_Pattern.List_Length (Pattern_List) then
+        if Regex_Index = Unique_Pattern.List_Length (List.all) then
           -- Last pattern and matches
           Check_Completed := True;
           Expected_Index := 1;
@@ -473,7 +537,7 @@ package body Search_Pattern is
         Sys_Calls.Put_Line_Error (
                   "Search check pattern is not delim vs not delim");
       end if;
-      -- Check. Note that indexes will relative to Str
+      -- Check. Note that indexes will be relative to Str
       if Is_Regex then
         Regular_Expressions.Exec (Upat_Access.Pat,
                                   Str(Start .. Str'Last),
@@ -499,7 +563,7 @@ package body Search_Pattern is
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
         Upat_Access.Match_Str := Asu.To_Unbounded_String (Str);
-        if Regex_Index = Unique_Pattern.List_Length (Pattern_List) then
+        if Regex_Index = Unique_Pattern.List_Length (List.all) then
           -- Last pattern and matches
           Check_Completed := True;
           Expected_Index := 1;
@@ -541,7 +605,7 @@ package body Search_Pattern is
     end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
-    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    Unique_Pattern.Get_Access (Search_List, Upat, Upat_Access);
     -- Check number of substrings and get cell
     if Sub_String_Index > Upat_Access.Nb_Substr then
       return "";
@@ -580,17 +644,17 @@ package body Search_Pattern is
 
     -- Get access to the first pattern
     Upat.Num := 1;
-    Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+    Unique_Pattern.Get_Access (Search_List, Upat, Upat_Access);
 
     -- Get start of string matching first pattern
     Cell.First_Offset := Upat_Access.Substrs(0).First_Offset;
 
     -- Get access to the last pattern if needed (if more than one pattern)
-    Nbre := Unique_Pattern.List_Length (Pattern_List);
+    Nbre := Unique_Pattern.List_Length (Search_List);
     if Nbre /= 1 then
       -- Get access to the last pattern
       Upat.Num := Nbre;
-      Unique_Pattern.Get_Access (Pattern_List, Upat, Upat_Access);
+      Unique_Pattern.Get_Access (Search_List, Upat, Upat_Access);
     end if;
 
     -- Get end of string matching last pattern

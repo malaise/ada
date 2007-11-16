@@ -1,5 +1,5 @@
                                  Asubst
-                                  V4.2
+                                  V4.3
 
 
 1. General syntax
@@ -15,6 +15,7 @@ matching.
 -a or --ascii : consider that input flow or file is pure ASCII.
 -b or --basic : use 'basic' regex instead of the default 'extended' regex.
 -d or --display : display arguments <find_pattern> and <replace_string>.
+-e <pattern> or --exclude=<pattern> for skip text matching <pattern>,
 -f or --file : indicate that <file> will contain names of files to process.
 -g or --grep : print matching text as grep would do (no substitution).
 -i or --ignorecase : do case insensitive match checking of <find_pattern>.
@@ -63,6 +64,7 @@ added).
 Search pattern is split into several regex and \n patterns, each line of input is
 split in two input items: text then newline, pattern 1 is compared to item 1, if
 they match, pattern 2 is compared to item 2.
+If set, <exclude_regex> must have the same number of regex as <find_pattern>.
 
 Examples:
 r        -> r
@@ -94,7 +96,7 @@ The following specific '\' sequences are also handled:
   out of a bracket expression, this becomes a bracket expression, meaning:
   ':' or 'a' or 'l' or 'n' or 'u' or 'm'.
 
-Note that only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregexp" mode.
+Note that only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregex" mode.
 Finally, beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
 because the input flow/file is decomposed into lines and then each line is
@@ -108,7 +110,7 @@ The following '\' sequences are supported:
 - \xIJ where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value.
 - \RIJ where IJ is an hexadecimal number will be replaced by the string
-  matching the regex number IJ, (0 < IJ <= NbOfRegexps).
+  matching the regex number IJ, (0 < IJ <= NbOfRegex).
 - \rIJ where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J=0 for the
   complete string, (so \R0x = \rx0).

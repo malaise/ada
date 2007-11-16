@@ -386,9 +386,9 @@ package body Substit is
       -- Search a Match from Current to Last
       -- Exit when no (more) match
       exit when not Search_Pattern.Check (Asu.To_String (Line.all),
-                                          Current, 1);
+                        Current, Search => True, Regex_Index => 1);
+
       -- Found a match
-      Nb_Match := Nb_Match + 1;
       Match_Res := Search_Pattern.Str_Indexes;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Match in end of line >"
@@ -396,51 +396,72 @@ package body Substit is
            & "< from" & Match_Res.First_Offset'Img
            & " to" & Match_Res.Last_Offset_Stop'Img);
       end if;
-      -- Get substituting string
-      declare
-        Replacing : constant String := Replace_Pattern.Replace;
-      begin
-        -- Display verbose substitution
-        if Verbose then
-          Ada.Text_Io.Put_Line (
-              Line_No'Img & " : "
-            & Asu.Slice (Line.all, Match_Res.First_Offset,
-                                   Match_Res.Last_Offset_Stop)
-            & " -> " & Replacing);
-        elsif Grep then
-          if not Is_Stdin then
-            Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
-            if Line_Nb then
-              Ada.Text_Io.Put (Line_Image(Line_No) & ":");
-            end if;
-          end if;
-          Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
-          -- Display one match per line
-          exit;
+
+      -- Check if this matching patterm matches the exclusion rule
+      if Search_Pattern.Check (
+          Asu.Slice (Line.all, Match_Res.First_Offset,
+                               Match_Res.Last_Offset_Stop), 1,
+          Search => False, Regex_Index => 1) then
+        -- Str matches the find criteria but also the exclude criteria: skip
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error
+              ("Match >" & Asu.Slice (Line.all, Match_Res.First_Offset,
+                                      Match_Res.Last_Offset_Stop)
+               & "< discarded because matching exclusion");
         end if;
-        if not Test then
-          -- Substitute from start to stop
-          if Debug.Set then
-            Sys_Calls.Put_Line_Error ("Replacing by "
+        Current := Match_Res.First_Offset + 1;
+        exit when Current > Asu.Length(Line.all);
+      else
+        -- Str matches the find criteria and does not match the exclude
+        --  criteria: OK
+        -- Get substituting string
+        declare
+          Replacing : constant String := Replace_Pattern.Replace;
+        begin
+          Nb_Match := Nb_Match + 1;
+          -- Display verbose substitution
+          if Verbose then
+            Ada.Text_Io.Put_Line (
+                Line_No'Img & " : "
               & Asu.Slice (Line.all, Match_Res.First_Offset,
                                      Match_Res.Last_Offset_Stop)
               & " -> " & Replacing);
+          elsif Grep then
+            if not Is_Stdin then
+              Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
+              if Line_Nb then
+                Ada.Text_Io.Put (Line_Image(Line_No) & ":");
+              end if;
+            end if;
+            Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
+            -- Display one match per line
+            exit;
           end if;
-          Asu.Replace_Slice (Line.all,
-                             Match_Res.First_Offset,
-                             Match_Res.Last_Offset_Stop,
-                             Replacing);
-          -- Next search index is the next char after the replaced string
-          Current := Match_Res.First_Offset + Replacing'Length;
-        else
-          Current := Match_Res.Last_Offset_Stop + 1;
-        end if;
-        exit when Current > Asu.Length(Line.all);
-      end;
+          if not Test then
+            -- Substitute from start to stop
+            if Debug.Set then
+              Sys_Calls.Put_Line_Error ("Replacing by "
+                & Asu.Slice (Line.all, Match_Res.First_Offset,
+                                       Match_Res.Last_Offset_Stop)
+                & " -> " & Replacing);
+            end if;
+            Asu.Replace_Slice (Line.all,
+                               Match_Res.First_Offset,
+                               Match_Res.Last_Offset_Stop,
+                               Replacing);
+            -- Next search index is the next char after the replaced string
+            Current := Match_Res.First_Offset + Replacing'Length;
+          else
+            Current := Match_Res.Last_Offset_Stop + 1;
+          end if;
+          exit when Current > Asu.Length(Line.all);
+        end;
+      end if;
       -- Exit when number of subtitution is reached
       --  (Max_Subst may be 0 for infinite)
       exit when Nb_Match = Max_Subst;
     end loop;
+
     if not Grep then
       -- Put the (modified) line
       if Debug.Set then
