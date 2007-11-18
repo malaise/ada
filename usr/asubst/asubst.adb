@@ -326,28 +326,28 @@ begin
     end if;
     File_Of_Files := True;
   end if;
-  if Arg_Dscr.Is_Set (05) then
+  if Arg_Dscr.Is_Set (06) then
     -- Put matching text like grep would do
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option grep display");
     end if;
     Grep := True;
   end if;
-  if Arg_Dscr.Is_Set (07) then
+  if Arg_Dscr.Is_Set (08) then
     -- Case insensitive match
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option ignore case");
     end if;
     Case_Sensitive := False;
   end if;
-  if Arg_Dscr.Is_Set (08) then
+  if Arg_Dscr.Is_Set (09) then
     -- Put line no
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option line no");
     end if;
     Line_Nb := True;
   end if;
-  if Arg_Dscr.Is_Set (09) then
+  if Arg_Dscr.Is_Set (10) then
     -- Stop each file after <max> substitutions
     begin
       Max := Substit.Long_Long_Natural'Value (Arg_Dscr.Get_Option (07));
@@ -362,7 +362,7 @@ begin
       Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
     end if;
   end if;
-  if Arg_Dscr.Is_Set (10) then
+  if Arg_Dscr.Is_Set (11) then
     -- Put number of substitutions
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option put numbers");
@@ -372,7 +372,7 @@ begin
     end if;
     Verbosity := Put_Subst_Nb;
   end if;
-  if Arg_Dscr.Is_Set (11) then
+  if Arg_Dscr.Is_Set (12) then
     -- Quiet mode
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option quiet");
@@ -382,28 +382,28 @@ begin
     end if;
     Verbosity := Quiet;
   end if;
-  if Arg_Dscr.Is_Set (12) then
+  if Arg_Dscr.Is_Set (13) then
     -- Make backup
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option make backup");
     end if;
     Backup := True;
   end if;
-  if Arg_Dscr.Is_Set (13) then
+  if Arg_Dscr.Is_Set (14) then
     -- Test mode
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option test");
     end if;
     Test := True;
   end if;
-  if Arg_Dscr.Is_Set (14) then
+  if Arg_Dscr.Is_Set (15) then
     -- Process utf-8 sequences
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option utf8");
     end if;
     Lang := Language.Lang_Utf_8;
   end if;
-  if Arg_Dscr.Is_Set (15) then
+  if Arg_Dscr.Is_Set (16) then
     -- Verbose put each substit
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option verbose");
@@ -413,7 +413,7 @@ begin
     end if;
     Verbosity := Verbose;
   end if;
-  if Arg_Dscr.Is_Set (17) then
+  if Arg_Dscr.Is_Set (18) then
     -- Find pattern is not a regex
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option noregex");

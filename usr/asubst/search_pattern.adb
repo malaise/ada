@@ -58,7 +58,6 @@ package body Search_Pattern is
   -- True only after Check (Search, Number) called and OK.
   Check_Completed : Boolean := False;
   Expected_Search : Positive := 1;
-  Expected_Exclude : Positive := 1;
 
   -- The search and axclude patterns
   Search_List  : aliased Unique_Pattern.List_Type;
@@ -373,8 +372,10 @@ package body Search_Pattern is
     Search_Access, Exclude_Access : Line_Pat_Acc;
   begin
     Expected_Search := 1;
-    Expected_Exclude := 1;
     -- Parse the search pattern
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Search, parsing search pattern");
+    end if;
     Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Search_List);
     if Exclude = "" then
       -- No exclude
@@ -382,6 +383,9 @@ package body Search_Pattern is
       return;
     end if;
     -- Parse the exclude pattern
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Search, parsing exclude pattern");
+    end if;
     Parse_One (Exclude, Extended, Case_Sensitive, Is_Regex, Exclude_List);
     -- Both patterns must have same length and have delims at same pos
     if Unique_Pattern.List_Length (Search_List) /=
@@ -404,7 +408,6 @@ package body Search_Pattern is
       Is_Multiple := False;
       Check_Completed := False;
       Expected_Search := 1;
-      Expected_Exclude := 1;
       raise;
   end Parse;
 
@@ -471,29 +474,39 @@ package body Search_Pattern is
     -- The list
     type List_Access is access all Unique_Pattern.List_Type;
     List : List_Access;
+    -- Store expected search index
+    procedure Store_Index (I : in Positive; Completed : in Boolean) is
+    begin
+      if Search then
+        Expected_Search := I;
+        if Completed then
+          Check_Completed := True;
+        end if;
+      end if;
+    end Store_Index;
   begin
     -- Search or exclude list?
     if Search then
       -- Check match in search list
       Expected_Index := Expected_Search;
       List := Search_List'Access;
+      -- Check that this index follows previous
+      if Regex_Index /= Expected_Index then
+        raise No_Regex;
+      end if;
+      -- Check not completed by default
+      Check_Completed := False;
     elsif Unique_Pattern.List_Length (Exclude_List) = 0 then
       -- No exclude list, so Str is OK (does not match)
       return False;
     else
       -- Check match in exclude list
-      Expected_Index := Expected_Exclude;
+      Expected_Index := 1;
       List := Exclude_List'Access;
-    end if;
-    -- Check that this index follows previous
-    if Regex_Index /= Expected_Index then
-      raise No_Regex;
     end if;
     -- Get access to the pattern
     Upat.Num := Regex_Index;
     Unique_Pattern.Get_Access (List.all, Upat, Upat_Access);
-    -- Check not completed by default
-    Check_Completed := False;
     -- Reset substring array if not a delim
     if not Upat_Access.Is_Delim then
       Upat_Access.Substrs := (others => (0, 0, 0));
@@ -509,17 +522,16 @@ package body Search_Pattern is
         Upat_Access.Match_Str := Asu.To_Unbounded_String (Line_Feed);
         if Regex_Index = Unique_Pattern.List_Length (List.all) then
           -- Last pattern and matches
-          Check_Completed := True;
-          Expected_Index := 1;
+          Store_Index (1, True);
         else
-          Expected_Index := Expected_Index + 1;
+          Store_Index (Expected_Index + 1, False);
         end if;
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Search check pattern is delim vs delim");
         end if;
         return True;
       else
-        Expected_Index := 1;
+        Store_Index (1, False);
         if Debug.Set then
           Sys_Calls.Put_Line_Error (
                     "Search check pattern is delim vs not delim");
@@ -530,7 +542,7 @@ package body Search_Pattern is
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check pattern is not delim vs delim");
       end if;
-      Expected_Index := 1;
+      Store_Index (1, False);
       return False;
     else
       if Debug.Set then
@@ -565,15 +577,14 @@ package body Search_Pattern is
         Upat_Access.Match_Str := Asu.To_Unbounded_String (Str);
         if Regex_Index = Unique_Pattern.List_Length (List.all) then
           -- Last pattern and matches
-          Check_Completed := True;
-          Expected_Index := 1;
+          Store_Index (1, True);
         else
-          Expected_Index := Expected_Index + 1;
+          Store_Index (Expected_Index + 1, False);
         end if;
         return True;
       else
         -- Not match
-        Expected_Index := 1;
+        Store_Index (1, False);
         return False;
       end if;
     end if;

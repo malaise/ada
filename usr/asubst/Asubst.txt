@@ -65,6 +65,8 @@ Search pattern is split into several regex and \n patterns, each line of input i
 split in two input items: text then newline, pattern 1 is compared to item 1, if
 they match, pattern 2 is compared to item 2.
 If set, <exclude_regex> must have the same number of regex as <find_pattern>.
+It means that text matching the <find_pattern> but also the <exclude_regex>
+will not be replaced.
 
 Examples:
 r        -> r

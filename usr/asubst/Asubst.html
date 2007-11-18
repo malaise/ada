@@ -3,13 +3,14 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20071116;11322900">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGED" CONTENT="20071118;9332800">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V4.3</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V4.3</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -22,20 +23,20 @@ ignorecase pattern matching.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">2. Options</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">-a or --ascii : consider that
 input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
-regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR><FONT FACE="monospace">-d
+regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-d
 or --display : display arguments &lt;find_pattern&gt; and
-&lt;replace_string&gt;.</FONT><BR>-e &lt;pattern&gt; or
---exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;,<BR>-f
-or --file : indicate that &lt;file&gt; contains the names of files to
-process.<BR>-g or --grep : print matching text as grep would do (no
-substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
-do case insensitive match checking of &lt;find_pattern&gt;.<BR>-m
-&lt;max&gt; or --max=&lt;max&gt; : stop processing each file after
-&lt;max&gt; substitutions, (0 for infinite).<BR>-l or --line for
-display line number in grep mode.<BR>-n or --number : print number of
-substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
-or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t
-or --test for test, substitutions not performed,<BR>-u or --utf8 :
+&lt;replace_string&gt;.<BR>-e &lt;pattern&gt; or --exclude=&lt;pattern&gt;
+for skip text matching &lt;pattern&gt;,<BR>-f or --file : indicate
+that &lt;file&gt; contains the names of files to process.<BR>-g or
+--grep : print matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
+or --ignorecase : do case insensitive match checking of
+&lt;find_pattern&gt;.<BR>-m &lt;max&gt; or --max=&lt;max&gt; : stop
+processing each file after &lt;max&gt; substitutions, (0 for
+infinite).<BR>-l or --line for display line number in grep mode.<BR>-n
+or --number : print number of substitutions per file.<BR>-q or
+--quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s or
+--save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t or
+--test for test, substitutions not performed,<BR>-u or --utf8 :
 process utf-8 sequences.<BR>-v or --verbose : print each substitution
 and its line number.<BR>-x or --noregex : &lt;find_pattern&gt; is
 only the string to find, not a regex. This allows \x00. There is no
@@ -77,8 +78,9 @@ pattern is split into several regex and &quot;\n&quot; patterns, each
 line of input is split in two input items: text then newline, pattern
 1 is compared to item 1, if they match, pattern 2 is compared to item
 2...</FONT><BR><FONT FACE="Monospace">If set, &lt;exclude_regex&gt;
-must have the same number of regex as
-&lt;find_pattern&gt;.</FONT><BR><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
+must have the same number of regex as &lt;find_pattern&gt;. It means
+that text matching the &lt;find_pattern&gt; but also the
+&lt;exclude_regex&gt; will not be replaced.</FONT><BR><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 r</FONT><BR><FONT FACE="monospace">^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 ^r$</FONT><BR><FONT FACE="monospace">r1\nr2\n&nbsp;-&gt; r1$ \n and
 ^r2$</FONT><BR><FONT FACE="monospace">r1\nr2&nbsp;&nbsp;&nbsp;-&gt;

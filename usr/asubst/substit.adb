@@ -400,7 +400,8 @@ package body Substit is
       -- Check if this matching patterm matches the exclusion rule
       if Search_Pattern.Check (
           Asu.Slice (Line.all, Match_Res.First_Offset,
-                               Match_Res.Last_Offset_Stop), 1,
+                               Match_Res.Last_Offset_Stop),
+          Start => Match_Res.First_Offset,
           Search => False, Regex_Index => 1) then
         -- Str matches the find criteria but also the exclude criteria: skip
         if Debug.Set then
@@ -516,7 +517,7 @@ package body Substit is
                         Test      : Boolean) return Long_Long_Natural is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
-    Matches : Boolean;
+    Matches, Excluded : Boolean;
     -- Put matching text, complete lines text or just the matching text
     procedure Put_Match  (Complete : in Boolean) is
     begin
@@ -553,10 +554,10 @@ package body Substit is
     for I in 1 .. Nb_Pattern loop
       -- Check this read line
       Line := Line_List_Mng.Access_Current (Line_List);
-      Matches := Search_Pattern.Check (Asu.To_String (Line.all), 1, I);
+      Matches := Search_Pattern.Check (Asu.To_String (Line.all), 1,
+                 Search => True, Regex_Index => I);
       if not Matches then
         -- This one does not match
-        Matches := False;
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Not match " & I'Img
                   & " with >" & Asu.To_String (Line.all) & "<");
@@ -565,7 +566,7 @@ package body Substit is
       end if;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
-                                & "< matches pattern" & I'Img);
+                                & "< matches pattern No" & I'Img);
       end if;
       -- Move to next input line
       if I /= Nb_Pattern then
@@ -573,6 +574,54 @@ package body Substit is
       end if;
     end loop;
 
+    if Matches then
+      -- Check if it matches all exclusion rules
+      Excluded := True;
+      Match_Res := Search_Pattern.Str_Indexes;
+      Line_List_Mng.Rewind (Line_List);
+      for I in 1 .. Nb_Pattern loop
+        -- Check this read line
+        Line := Line_List_Mng.Access_Current (Line_List);
+        if I = 1 then
+          Matches := Search_Pattern.Check (Asu.To_String (Line.all),
+                     Start =>  Match_Res.First_Offset,
+                     Search => False, Regex_Index => I);
+        elsif I /= Nb_Pattern then
+          Matches := Search_Pattern.Check (Asu.To_String (Line.all),
+                     Start => 1,
+                     Search => False, Regex_Index => I);
+        else
+          Matches := Search_Pattern.Check (
+                     Asu.Slice (Line.all, 1, Match_Res.Last_Offset_Stop),
+                     Start => 1,
+                     Search => False, Regex_Index => I);
+        end if;
+        if not Matches then
+          -- This one does not match this exclusion: OK
+          Excluded := False;
+          exit;
+        end if;
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+                                  & "< matches exclusion No" & I'Img);
+        end if;
+        -- Move to next input line
+        if I /= Nb_Pattern then
+          Line_List_Mng.Move_To (Line_List);
+        end if;
+      end loop;
+      if Excluded then
+        if Debug.Set then
+          Line_List_Mng.Rewind (Line_List);
+          Line := Line_List_Mng.Access_Current (Line_List);
+          Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+                                  & "< is excluded");
+        end if;
+      Matches := False;
+      else
+        Matches := True;
+      end if;
+    end if;
     if Matches then
       -- Match, build string to replace:
       Match_Res := Search_Pattern.Str_Indexes;

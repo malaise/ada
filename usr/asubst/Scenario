@@ -1,5 +1,6 @@
 # Test scenario for asubst
 # Input                Search            Replace                 Replaced
+"Option"
 "toto"                 "t"               "x"                     "xoxo"
 "toto"                 "o$"              "i"                     "toti"
 "toto"                 "^t"              "x"                     "xoto"
@@ -32,4 +33,10 @@
 "\ntoto\ntiti\ntata"   "\n.*"            "\R02"                  "tototititata"
 "\ntoto\ntiti\ntata"   "toto\ntiti"      "\u\R01\R02\R03"        "\nTOTO\nTITI\ntata"
 "\ntoto\ntiti\ntata"   "toto\ntiti"      "\R01\u\R02\R03"        "\ntoto\nTITI\ntata"
+"Option" "--exclude=tototiti"
+"tototiti"             "(toto)(.{4})"    "\r11titi\r12"          "tototiti"
+"tototata"             "(toto)(.{4})"    "\r11titi\r12"          "tototititata"
+"Option" "--exclude=toto\ntiti"
+"toto\ntiti"           "toto\n(.*)"      "toto\titi\n\R01"       "toto\ntiti"
+"toto\ntata"           "toto\n.*"        "\R01\R02titi\n\R03"    "toto\ntiti\ntata"
 

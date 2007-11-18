@@ -29,6 +29,8 @@ res="`awk -vLINE=$1 -vFIELD=$2 -F '"' '
 echo "$res"
 }
 
+#Initially no option
+export opt=""
 # For each line
 let L=1
 while true ; do
@@ -37,24 +39,33 @@ while true ; do
   if [ "$input" = "" ] ; then
     break
   fi
-  export search=`readarg $L 2`
-  export replace=`readarg $L 3`
-  export expected=`readarg $L 4`
-  rexpected=`echo -e -n "$expected"`
-  # Do test and save exit status
-  echo "echo \"$input\" | asubst \"$search\" \"$replace\" -> $expected"
-  result=`echo -e -n "$input" | asubst "$search" "$replace"`
-  code=$?
-  export result
-  # Check exit status
-  if [ $code -ne 0 ] ; then
-    echo "Error: asubst exited with code $code"
-    exit 1
-  fi
-  # Check that result is expected
-  if [ "$result" != "$rexpected" ] ; then
-    echo "Error: expected $rexpected != got $result"
-    exit 1
+  if [ "$input" = "Option" ] ; then
+    export opt=`readarg $L 2`
+  else
+    export search=`readarg $L 2`
+    export replace=`readarg $L 3`
+    export expected=`readarg $L 4`
+    rexpected=`echo -e -n "$expected"`
+    # Do test and save exit status
+    if [ "$opt" != "" ] ; then
+    echo "echo \"$input\" | asubst \"$opt\" \"$search\" \"$replace\" -> $expected"
+      result=`echo -e -n "$input" | asubst "$opt" "$search" "$replace"`
+    else
+      echo "echo \"$input\" | asubst $opt \"$search\" \"$replace\" -> $expected"
+      result=`echo -e -n "$input" | asubst "$search" "$replace"`
+    fi
+    code=$?
+    export result
+    # Check exit status
+    if [ $code -eq 2 ] ; then
+      echo "Error: asubst exited with code $code"
+      exit 1
+    fi
+    # Check that result is expected
+    if [ "$result" != "$rexpected" ] ; then
+      echo "Error: expected $rexpected != got $result"
+      exit 1
+    fi
   fi
   let L=$L+1
 done

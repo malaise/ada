@@ -215,6 +215,25 @@ if [ $? -ne 0 ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
+# Check grep with exclusion
+res=`asubst -g "--exclude=Pack\sis" " is" "" $FT`
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+exp_res=`echo -e "tstfile.tst:  procedure Test is\n"`
+if [ "$res" != "$exp_res" ] ; then
+  echo "Result $res differs from expected toto."
+  echo "$STEP FAILED."
+  exit 1
+fi
+cmp -s $FT $FR
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FR."
+  echo "$STEP FAILED."
+  exit 1
+fi
 echo "$STEP OK."
 
 # Exit codes
