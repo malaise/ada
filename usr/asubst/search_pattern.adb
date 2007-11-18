@@ -73,11 +73,18 @@ package body Search_Pattern is
   Line_Feed : constant String := Text_Line.Line_Feed & "";
 
   -- Reports a parsing error
+  In_Find : Boolean := True;
   procedure Error (Msg : in String) is
   begin
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-        & " ERROR parsing search pattern: "
-        & Msg & ".");
+    if In_Find then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+          & " ERROR parsing search pattern: "
+          & Msg & ".");
+    else
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+          & " ERROR parsing exclude pattern: "
+          & Msg & ".");
+    end if;
     raise Parse_Error;
   end Error;
 
@@ -166,7 +173,7 @@ package body Search_Pattern is
     begin
       -- First digit: 16 * C
       if Index > Asu.Length (The_Pattern) then
-        Error ("No hexadecimal sequence at the end of search pattern");
+        Error ("No hexadecimal sequence at the end of pattern");
       end if;
       begin
         Result := 16#10# * Char_To_Hexa (Asu.Element (The_Pattern, Index));
@@ -174,11 +181,11 @@ package body Search_Pattern is
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "
                & Asu.Slice (The_Pattern, Index, Index + 1)
-               & " in search pattern");
+               & " in pattern");
       end;
       -- First digit: 1 * C
       if Index + 1 > Asu.Length (The_Pattern) then
-        Error ("Uncomplete hexadecimal sequence at the end of search pattern");
+        Error ("Uncomplete hexadecimal sequence at the end of pattern");
         raise Parse_Error;
       end if;
       begin
@@ -187,12 +194,12 @@ package body Search_Pattern is
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "
                & Asu.Slice (The_Pattern, Index, Index + 1)
-               & " in search pattern");
+               & " in pattern");
       end;
       if Result = 0 and then Is_Regex then
         Error ("Invalid null hexadecimal sequence in regex"
              & Asu.Slice (The_Pattern, Index, Index + 1)
-             & " in search pattern");
+             & " in pattern");
       end if;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, got hexadecimal sequence "
@@ -356,7 +363,7 @@ package body Search_Pattern is
 
     -- Noregex find pattern must be multiple (no \n)
     if not Is_Regex and then not Is_Multiple then
-      Error ("Noregex search pattern cannot contain ""\n""");
+      Error ("Noregex pattern cannot contain ""\n""");
     end if;
 
     -- Done
@@ -376,6 +383,7 @@ package body Search_Pattern is
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsing search pattern");
     end if;
+    In_Find := True;
     Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Search_List);
     if Exclude = "" then
       -- No exclude
@@ -386,6 +394,7 @@ package body Search_Pattern is
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsing exclude pattern");
     end if;
+    In_Find := False;
     Parse_One (Exclude, Extended, Case_Sensitive, Is_Regex, Exclude_List);
     -- Both patterns must have same length and have delims at same pos
     if Unique_Pattern.List_Length (Search_List) /=
@@ -397,7 +406,7 @@ package body Search_Pattern is
       Unique_Pattern.Get_Access (Search_List,  Upat, Search_Access);
       Unique_Pattern.Get_Access (Exclude_List, Upat, Exclude_Access);
       if Search_Access.Is_Delim /= Exclude_Access.Is_Delim then
-        Error ("Exclude must have the same number delimiters as the find pattern");
+        Error ("Exclude must have the same delimiters as the find pattern");
       end if;
     end loop;
   exception

@@ -109,7 +109,11 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\ri0"" == ""\R0i"". ""\r0i"" and ""\R00"" are forbidden.");
     Sys_Calls.Put_Line_Error (
-     "  If set, <exclude_regex> must have the same number of regex as <find_pattern>.");
+     "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");
+    Sys_Calls.Put_Line_Error (
+     "  Text matching <find_pattern> will be discarded if it also matches");
+    Sys_Calls.Put_Line_Error (
+     "    <exclude_pattern>.");
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (

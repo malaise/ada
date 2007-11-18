@@ -7,7 +7,9 @@
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
 	<META NAME="CHANGEDBY" CONTENT="malaise">
-	<META NAME="CHANGED" CONTENT="20071118;9332800">
+	<META NAME="CHANGED" CONTENT="20071118;19112800">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V4.3</B></FONT></FONT></FONT></P>
@@ -77,10 +79,7 @@ automatically be added).</FONT><BR><FONT FACE="monospace">Search
 pattern is split into several regex and &quot;\n&quot; patterns, each
 line of input is split in two input items: text then newline, pattern
 1 is compared to item 1, if they match, pattern 2 is compared to item
-2...</FONT><BR><FONT FACE="Monospace">If set, &lt;exclude_regex&gt;
-must have the same number of regex as &lt;find_pattern&gt;. It means
-that text matching the &lt;find_pattern&gt; but also the
-&lt;exclude_regex&gt; will not be replaced.</FONT><BR><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
+2...</FONT><BR><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 r</FONT><BR><FONT FACE="monospace">^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 ^r$</FONT><BR><FONT FACE="monospace">r1\nr2\n&nbsp;-&gt; r1$ \n and
 ^r2$</FONT><BR><FONT FACE="monospace">r1\nr2&nbsp;&nbsp;&nbsp;-&gt;
@@ -119,9 +118,19 @@ mode.<BR>Finally, beware that some regex expressions are supposed to
 match a &quot;new line&quot; (example [:blank:] within a bracket
 expression) but will not match in asubst, because the input flow/file
 is decomposed into lines and then each line is compared to a regex
-expression.</FONT> 
-</P>
-<H1 LANG="en-GB"><FONT FACE="monospace">5. Replace string</FONT></H1>
+expression.</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="monospace">5. Exclusion pattern</FONT></H1>
+<P LANG="en-GB"><FONT FACE="Monospace">If set, the &lt;exclude_regex&gt;
+must have the same number of regex as the &lt;find_pattern&gt;. This
+option means that text matching the &lt;find_pattern&gt; but also the
+&lt;exclude_regex&gt; will not be replaced. Beware that it applies to
+the text matching &lt;find_pattern&gt; only.<BR>For example echo
+&quot;toto&quot; | asubst --exclude=toto to ti will replace toto by
+titi because each matching &quot;to&quot; does not match the
+exclusion &quot;toto&quot;.<BR>On the other hand, echo &quot;toto&quot;
+| asubst --exclude=to to ti and echo &quot;toto&quot; | asubst
+--exclude=toto toto titi will not substitute.</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="monospace">6. Replace string</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
 are supported:</FONT><BR><FONT FACE="monospace">- \n will be replaced
 by a newline.</FONT><BR><FONT FACE="monospace">- \t will be replaced
@@ -156,7 +165,7 @@ replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE
 &quot;Tito&quot;</FONT><BR><FONT FACE="monospace">echo -en &quot;toto&quot;
 | asubst &quot;(.)(.)(..)&quot; &quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt;
 &quot;Otto&quot;</FONT></P>
-<H1 LANG="en-GB">6<FONT FACE="Monospace">.Differences between regex
+<H1 LANG="en-GB"><FONT FACE="Monospace">7.Differences between regex
 and noregex modes</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In both modes &quot;\x0A&quot;
 is the same as &quot;\n&quot;, and &quot;\s&quot; and &quot;\t&quot;
@@ -172,7 +181,7 @@ and is used as such by regex library). It is allowed in noregex mode.</FONT></P>
 are not interpreted in find patern noregex mode.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">In noregex mode, &quot;\rIJ&quot;
 s forbidden.</FONT></P>
-<H1 LANG="en-GB"><FONT FACE="Monospace">7.Exit code</FONT></H1>
+<H1 LANG="en-GB"><FONT FACE="Monospace">8.Exit code</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">asubst exits with 0 if some
 matching was found, with 1 if no matching was found and with 2
 otherwise (e.g. in case of error).</FONT></P>

@@ -64,9 +64,6 @@ added).
 Search pattern is split into several regex and \n patterns, each line of input is
 split in two input items: text then newline, pattern 1 is compared to item 1, if
 they match, pattern 2 is compared to item 2.
-If set, <exclude_regex> must have the same number of regex as <find_pattern>.
-It means that text matching the <find_pattern> but also the <exclude_regex>
-will not be replaced.
 
 Examples:
 r        -> r
@@ -105,7 +102,18 @@ because the input flow/file is decomposed into lines and then each line is
 compared to a regex expression. 
 
 
-5. Replace string
+5. Exclusion pattern
+If set, the <exclude_regex> must have the same number of regex as the
+<find_pattern>. This option means that text matching the <find_pattern> but
+also the <exclude_regex> will not be replaced. Beware that it applies to the
+text matching <find_pattern> only.
+For example echo "toto" | asubst --exclude=toto to ti will replace toto by titi
+because each matching "to" does not match the exclusion "toto".
+On the other hand, echo "toto" | asubst --exclude=to to ti and
+echo "toto" | asubst --exclude=toto toto titi will not substitute.
+
+
+6. Replace string
 The following '\' sequences are supported:
 - \n will be replaced by a newline.
 - \t will be replaced by a (horiz) tab.
@@ -130,7 +138,7 @@ echo -en "tito" | asubst ".*" "\m\R01"                  ->  "Tito"
 echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 
-6. Differences between regex and noregex modes
+7. Differences between regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
 "\n" is allowed in find patern in regex mode and used to separate sub patterns,
 each applying to a line. It is forbidden in noregex mode where the find
@@ -141,7 +149,7 @@ terminator and is used as such by regex library). It is allowed in noregex mode.
 In noregex mode, "\rIJ" s forbidden. 
 
 
-7. Exit code
+8. Exit code
 asubst exits with 0 if some matching was found, with 1 if no matching
 was found and with 2 otherwise (e.g. in case of error).
 

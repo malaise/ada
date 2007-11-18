@@ -216,7 +216,7 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 # Check grep with exclusion
-res=`asubst -g "--exclude=Pack\sis" " is" "" $FT`
+res=`asubst -g "--exclude=Pack\sis" "[^\s]* is" "" $FT`
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
   echo "$STEP FAILED."
