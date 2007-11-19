@@ -1,6 +1,11 @@
 History of Asubst:
 ------------------
 18/11/2007 V4.3
+Bugfix: Cannot check that multi-regex pattern does not contain '^' or '$',
+  (because they are allowed if backslashed, and ^ is allowed in []).
+  Replace by a detection of "\n^" and "$\n" and error in this case.
+
+18/11/2007 V4.3
 Add: -e <pattern> or --exclude=<pattern> to exclude string matching <pattern>.
 
 15/11/2007 V4.2

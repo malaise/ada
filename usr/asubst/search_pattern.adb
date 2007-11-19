@@ -136,11 +136,21 @@ package body Search_Pattern is
     end if;
   end Add;
 
-  -- Check that the string does not contain the fragment
-  procedure Check (Str : in String; Frag : in String) is
+  -- Check that the string does start or stop by the fragment
+  procedure Check (Str : in String; Frag : in String; Start : Boolean) is
+    Index : Natural;
   begin
-    if String_Mng.Locate (Str, Frag) /= 0 then
-      Error ("Pattern """ & Str & """ cannot contain """ & Frag & """");
+    if Frag = "" then
+      return;
+    end if;
+    Index := String_Mng.Locate (Str, Frag);
+    if Index = 0 then
+       return;
+    end if;
+    if Start and then Index = Str'First then
+      Error ("Pattern """ & Str & """ cannot begin with """ & Frag & """");
+    elsif not Start and then Index = Str'Last then
+      Error ("Pattern """ & Str & """ cannot end with """ & Frag & """");
     end if;
  end Check;
 
@@ -325,9 +335,9 @@ package body Search_Pattern is
         begin
           if Is_Regex then
             -- It must not contain Start_String if preeceded by a delim
-            Check (Slice, Start_String (Prev_Delim));
+            Check (Slice, Start_String (Prev_Delim), True);
             -- It must not contain Stop_String if preeceded by a delim
-            Check (Slice, Stop_String (Next_Delim));
+            Check (Slice, Stop_String (Next_Delim), False);
             -- Add this regex with start/stop strings
             Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
                Extended, Case_Sensitive, List);

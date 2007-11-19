@@ -3,16 +3,13 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGEDBY" CONTENT="malaise">
-	<META NAME="CHANGED" CONTENT="20071118;19112800">
-	<META NAME="CHANGEDBY" CONTENT="malaise">
-	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGED" CONTENT="20071119;18562400">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V4.3</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V4.4</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -73,13 +70,15 @@ substitution).</FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="
 &quot;tito&quot; | asubst &quot;t.&quot; &quot;tu&quot;&nbsp;-&gt;
 &quot;tutu&quot;</FONT><BR><BR><FONT FACE="monospace">If there are
 &quot;\n&quot;, they delimit several regex that will apply to several
-successive lines.</FONT><BR><FONT FACE="monospace">In this case, '^'
-and '$' are forbidden around a &quot;\n&quot; (they will
-automatically be added).</FONT><BR><FONT FACE="monospace">Search
-pattern is split into several regex and &quot;\n&quot; patterns, each
-line of input is split in two input items: text then newline, pattern
-1 is compared to item 1, if they match, pattern 2 is compared to item
-2...</FONT><BR><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
+successive lines. Search pattern is split into several regex and \n
+patterns, each line of input is split in two input items: text then
+newline, pattern 1 will be compared to item 1, if they match, pattern
+2 will be compared to item 2....<BR>In this case, '^' and '$' are
+forbidden around a &quot;\n&quot; (they will automatically be added).
+Moreover, '^' should not be used in a regex preceded by a &quot;\n&quot;
+and '$'  should not be used in a regex followed by a &quot;\n&quot;
+(asubst does not check it but no matching will be
+found).</FONT><BR><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 r</FONT><BR><FONT FACE="monospace">^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 ^r$</FONT><BR><FONT FACE="monospace">r1\nr2\n&nbsp;-&gt; r1$ \n and
 ^r2$</FONT><BR><FONT FACE="monospace">r1\nr2&nbsp;&nbsp;&nbsp;-&gt;

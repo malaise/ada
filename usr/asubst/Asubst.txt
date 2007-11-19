@@ -1,5 +1,5 @@
                                  Asubst
-                                  V4.3
+                                  V4.4
 
 
 1. General syntax
@@ -59,11 +59,13 @@ echo "toto" | asubst "t" "ti"                      ->  "tiotio"
 echo "tito" | asubst "t." "tu"                     ->  "tutu"
 
 If there are "\n", they delimit several regex that will apply to several lines.
-In this case, '^' and '$' are forbidden around a "\n" (they will automatically be
-added).
 Search pattern is split into several regex and \n patterns, each line of input is
-split in two input items: text then newline, pattern 1 is compared to item 1, if
-they match, pattern 2 is compared to item 2.
+split in two input items: text then newline, pattern 1 will be compared to item
+1, if they match, pattern 2 will be compared to item 2....
+In this case, '^' and '$' are forbidden around a "\n" (they will automatically
+be added). Moreover, '^' should not be used in a regex preceded by a "\n" and
+'$'  should not be used in a regex followed by a "\n" (asubst does not check
+it but no matching will be found).
 
 Examples:
 r        -> r
