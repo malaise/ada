@@ -137,7 +137,7 @@ package body Search_Pattern is
   end Add;
 
   -- Check that the string does start or stop by the fragment
-  procedure Check (Str : in String; Frag : in String; Start : Boolean) is
+  procedure Check_Bound (Str : in String; Frag : in String; Start : Boolean) is
     Index : Natural;
   begin
     if Frag = "" then
@@ -152,7 +152,7 @@ package body Search_Pattern is
     elsif not Start and then Index = Str'Last then
       Error ("Pattern """ & Str & """ cannot end with """ & Frag & """");
     end if;
- end Check;
+  end Check_Bound;
 
   -- Start line and stop line strings in regex
   function Start_String (Delim : in Boolean) return String is
@@ -167,6 +167,10 @@ package body Search_Pattern is
     else return "";
     end if;
   end Stop_String;
+
+  -- Check that the string does not contain any significant ^ or $
+  --  except ^ in first and $ in last post
+  procedure Check_In (Str : in String; Extended : in Boolean) is separate;
 
   -- Parses a pattern
   -- Reports errors on stderr and raises Parse_Error.
@@ -335,12 +339,14 @@ package body Search_Pattern is
         begin
           if Is_Regex then
             -- It must not contain Start_String if preeceded by a delim
-            Check (Slice, Start_String (Prev_Delim), True);
+            Check_Bound (Slice, Start_String (Prev_Delim), True);
             -- It must not contain Stop_String if preeceded by a delim
-            Check (Slice, Stop_String (Next_Delim), False);
+            Check_Bound (Slice, Stop_String (Next_Delim), False);
             -- Add this regex with start/stop strings
             Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
                Extended, Case_Sensitive, List);
+            -- It must not contain any significant ^ or $ in the middle
+            Check_In (Slice, Extended);
           else
             -- Add this regex with no start/stop strings
             Add (Slice, True, True, List);
@@ -423,7 +429,7 @@ package body Search_Pattern is
     when others =>
       -- Cleanup
       Unique_Pattern.Delete_List (Search_List);
-      Unique_Pattern.Delete_List (Search_List);
+      Unique_Pattern.Delete_List (Exclude_List);
       Is_Multiple := False;
       Check_Completed := False;
       Expected_Search := 1;

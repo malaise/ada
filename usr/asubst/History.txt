@@ -1,6 +1,9 @@
 History of Asubst:
 ------------------
-18/11/2007 V4.3
+20/11/2007 V4.5
+Add: Complete check of validity of '^' or '$' in simple or multiple regex.
+
+18/11/2007 V4.4
 Bugfix: Cannot check that multi-regex pattern does not contain '^' or '$',
   (because they are allowed if backslashed, and ^ is allowed in []).
   Replace by a detection of "\n^" and "$\n" and error in this case.
