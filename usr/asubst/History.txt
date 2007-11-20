@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+20/11/2007 V4.6
+Add: -d or --display also display exclude pattern (if any).
+
 20/11/2007 V4.5
 Add: Complete check of validity of '^' or '$' in simple or multiple regex.
 

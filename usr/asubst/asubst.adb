@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V4.5";
+  Version : constant String  := "V4.6";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -33,7 +33,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
-     "    -d or --display for display find_pattern and replace_string,");
+     "    -d or --display for display find and exclude patterns and replace_string,");
     Sys_Calls.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
@@ -494,6 +494,10 @@ begin
   if Display then
     Ada.Text_Io.Put_Line ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
+    if Asu.To_String (Exclude) /= "" then
+      Ada.Text_Io.Put_Line ("Exclude pattern: >"
+         & Asu.To_String (Exclude) & "<");
+    end if;
     if not Grep then
       Ada.Text_Io.Put_Line ("Replace string: >"
          & Arg_Dscr.Get_Option (No_Key_Index, 2) & "<");

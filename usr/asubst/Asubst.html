@@ -3,13 +3,14 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20071120;18274300">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGED" CONTENT="20071120;20553000">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V4.5</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V4.6</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -23,19 +24,19 @@ ignorecase pattern matching.</FONT></P>
 <P LANG="en-GB"><FONT FACE="monospace">-a or --ascii : consider that
 input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
 regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-d
-or --display : display arguments &lt;find_pattern&gt; and
-&lt;replace_string&gt;.<BR>-e &lt;pattern&gt; or --exclude=&lt;pattern&gt;
-for skip text matching &lt;pattern&gt;,<BR>-f or --file : indicate
-that &lt;file&gt; contains the names of files to process.<BR>-g or
---grep : print matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
-or --ignorecase : do case insensitive match checking of
-&lt;find_pattern&gt;.<BR>-m &lt;max&gt; or --max=&lt;max&gt; : stop
-processing each file after &lt;max&gt; substitutions, (0 for
-infinite).<BR>-l or --line for display line number in grep mode.<BR>-n
-or --number : print number of substitutions per file.<BR>-q or
---quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s or
---save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t or
---test for test, substitutions not performed,<BR>-u or --utf8 :
+or --display : display arguments &lt;find_pattern&gt;,
+&lt;exclude_pattern&gt; and  &lt;replace_string&gt;.<BR>-e &lt;pattern&gt;
+or --exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;,<BR>-f
+or --file : indicate that &lt;file&gt; contains the names of files to
+process.<BR>-g or --grep : print matching text as grep would do (no
+substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
+do case insensitive match checking of &lt;find_pattern&gt;.<BR>-m
+&lt;max&gt; or --max=&lt;max&gt; : stop processing each file after
+&lt;max&gt; substitutions, (0 for infinite).<BR>-l or --line for
+display line number in grep mode.<BR>-n or --number : print number of
+substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
+or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t
+or --test for test, substitutions not performed,<BR>-u or --utf8 :
 process utf-8 sequences.<BR>-v or --verbose : print each substitution
 and its line number.<BR>-x or --noregex : &lt;find_pattern&gt; is
 only the string to find, not a regex. This allows \x00. There is no
