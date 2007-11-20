@@ -11,13 +11,22 @@ package String_Mng.Navigator is
   --  No_Char to default
   procedure Set (Navig : in out Navigator_Type; Str : in String);
 
+  -- Length
+  function Length (Navig : Navigator_Type) return Natural;
+
   -- Current position. Index is relative to the string
   -- (Str'First at the beginning)
   function Position (Navig : Navigator_Type) return Integer;
 
+  -- Is a position within bounds
+  function In_Bounds (Navig : Navigator_Type;
+                      Offset : Integer := 0) return Boolean;
+
   -- Move forward or backwards
   -- May move out of the string
-  procedure Move (Navig : in out Navigator_Type; By : in Integer := 1);
+  procedure Move (Navig : in out Navigator_Type;
+                  By    : in Integer := 1;
+                  Check : in Boolean := False);
 
   -- Rewind (move to first or last char)
   procedure Rewind (Navig : in out Navigator_Type;
@@ -29,9 +38,14 @@ package String_Mng.Navigator is
   function Get_No_Char (Navig : Navigator_Type) return Character;
 
   -- Lookup a character
-  -- Returns No_Char if out the string
-  function Lookup (Navig : Navigator_Type; Offset : Integer := 0)
+  -- May returns No_Char if out the string
+  function Lookup (Navig  : Navigator_Type;
+                   Offset : Integer := 0;
+                   Check  : Boolean := False)
            return Character;
+
+  -- Raised when Check is set and moving/look out of string
+  Out_Of_Bounds : exception;
 
 private
 

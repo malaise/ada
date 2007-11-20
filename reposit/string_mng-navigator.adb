@@ -13,6 +13,11 @@ package body String_Mng.Navigator is
     Navig.No_Char := Default_No_Char;
   end Set;
 
+  -- Length
+  function Length (Navig : Navigator_Type) return Natural is
+  begin
+    return Asu.Length (Navig.Str);
+  end Length;
 
   -- Current position. Index is relative to the string
   -- (Str'First at the beginning)
@@ -21,11 +26,24 @@ package body String_Mng.Navigator is
     return Navig.Current;
   end Position;
 
+   -- Is a position within bounds
+  function In_Bounds (Navig : Navigator_Type;
+                      Offset : Integer := 0) return Boolean is
+    -- Index in Str (from 1 to ...)
+    Index : constant Integer := Navig.Current - Navig.Start + 1 + Offset;
+  begin
+    return Index >= 1 and then Index <= Asu.Length (Navig.Str);
+  end In_Bounds;
 
   -- Move forward or backwards
   -- May move out of the string
-  procedure Move (Navig : in out Navigator_Type; By : in Integer := 1) is
+  procedure Move (Navig : in out Navigator_Type;
+                  By : in Integer := 1;
+                  Check : in Boolean := False) is
   begin
+    if Check and then not In_Bounds (Navig) then
+      raise Out_Of_Bounds;
+    end if;
     Navig.Current := Navig.Current + By;
   end Move;
 
@@ -59,14 +77,20 @@ package body String_Mng.Navigator is
 
   -- Lookup a character
   -- Returns No_Char if out the string
-  function Lookup (Navig : Navigator_Type; Offset : Integer := 0)
+  function Lookup (Navig : Navigator_Type;
+                   Offset : Integer := 0;
+                   Check  : Boolean := False)
            return Character is
     -- Index in Str (from 1 to ...)
     Index : constant Integer := Navig.Current - Navig.Start + 1 + Offset;
   begin
     -- Check if Index is within string
-    if Index <= 0 or else Index > Asu.Length (Navig.Str) then
-      return Navig.No_Char;
+    if Index < 1 or else Index > Asu.Length (Navig.Str) then
+      if Check then
+        raise Out_Of_Bounds;
+      else
+        return Navig.No_Char;
+      end if;
     else
       return Asu.Element (Navig.Str, Index);
     end if;
