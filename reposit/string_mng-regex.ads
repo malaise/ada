@@ -48,7 +48,7 @@ package String_Mng.Regex is
   --   contain hexadecimal code (\xIJ)
   --   convert in UPPER, lower, Mixed case, stop converting (\u, \l, \m and \c).
   -- Once a substitution has occured, the search continues from the
-  --  first character after replcement (thus avoiding loops), up to To_Index.
+  --  first character after replacement (thus avoiding loops), up to To_Index.
   -- This cycle ends when no substitution occuirs or after a maximum Nb_Cycles,
   --  (if not 0). Beware that Nb_Cycles=0 may lead to infinite.
   function Replace (Within     : String;
