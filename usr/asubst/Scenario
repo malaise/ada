@@ -41,9 +41,14 @@
 "Option" "--exclude=toto\ntiti"
 "toto\ntiti"           "toto\n(.*)"      "toto\titi\n\R01"       "toto\ntiti"
 "toto\ntata"           "toto\n.*"        "\R01\R02titi\n\R03"    "toto\ntiti\ntata"
+"abtoto\ntiticd"       "toto\ntiti"      "tutu"                 "abtoto\ntiticd"
+"abtiti\ntatacd"       "titi\ntata"      "tutu"                 "abtutucd"
 "Option" "--exclude=toto"
 "toto"                 "to"              "ti"                    "titi"
 "toto"                 "toto"            "titi"                  "toto"
+"abtotocd"             "toto"            "titi"                  "abtotocd"
+"abtiticd"             "titi"            "tutu"                  "abtutucd"
+
 "Option" "--exclude=to"
 "toto"                 "to"              "ti"                    "toto"
 
