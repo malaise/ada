@@ -7,10 +7,12 @@
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
 	<META NAME="CHANGEDBY" CONTENT="malaise">
-	<META NAME="CHANGED" CONTENT="20071120;20553000">
+	<META NAME="CHANGED" CONTENT="20071125;13413000">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V4.6</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V4.7</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -25,7 +27,7 @@ ignorecase pattern matching.</FONT></P>
 input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
 regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-d
 or --display : display arguments &lt;find_pattern&gt;,
-&lt;exclude_pattern&gt; and  &lt;replace_string&gt;.<BR>-e &lt;pattern&gt;
+&lt;exclude_pattern&gt; and &lt;replace_string&gt;.<BR>-e &lt;pattern&gt;
 or --exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;,<BR>-f
 or --file : indicate that &lt;file&gt; contains the names of files to
 process.<BR>-g or --grep : print matching text as grep would do (no
@@ -91,9 +93,10 @@ the following newline will be substituted. With &quot;r1$&quot;, only
 the string matching &quot;r1&quot; will be substituted. In short,
 &quot;r1\n&quot; means &quot;r1 then a newline&quot; while &quot;r1$&quot;
 means &quot;r1, followed by a newline&quot;.<BR><BR>The following
-specific '\' sequences are also handled:<BR>- &quot;\s, replaced by a
-space,</FONT><BR><FONT FACE="monospace">- &quot;\t, replaced by a
-(horiz) tab,</FONT><BR><FONT FACE="monospace">- &quot;\xIJ&quot;
+specific '\' sequences are also handled:<BR>- &quot;\i&quot;, i from
+1 to 9, standard back reference to a matching substring,<BR>- &quot;\s,
+replaced by a space,</FONT><BR><FONT FACE="monospace">- &quot;\t,
+replaced by a (horiz) tab,</FONT><BR><FONT FACE="monospace">- &quot;\xIJ&quot;
 where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
 &quot;\x00&quot; is forbidden in find pattern except in mode
 &quot;noregex&quot;. Beware also that these sequences are replaced
@@ -131,22 +134,24 @@ exclusion &quot;toto&quot;.<BR>On the other hand, echo &quot;toto&quot;
 --exclude=toto toto titi will not substitute.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">6. Replace string</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
-are supported:</FONT><BR><FONT FACE="monospace">- \n will be replaced
-by a newline.</FONT><BR><FONT FACE="monospace">- \t will be replaced
-by a (horiz) tab.</FONT><BR><FONT FACE="monospace">- \xIJ where IJ is
-an hexadecimal number (00 to FF or ff) will be replaced</FONT> <FONT FACE="monospace">by
-a byte with the corresponding value.</FONT><BR><FONT FACE="monospace">-
-\RIJ where IJ is an hexadecimal number will be replaced by the string
+are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
+be replaced by a newline.</FONT><BR><FONT FACE="monospace">- &quot;\t&quot;
+will be replaced by a (horiz) tab.</FONT><BR><FONT FACE="monospace">-
+&quot;\xIJ&quot; where IJ is an hexadecimal number (00 to FF or ff)
+will be replaced</FONT> <FONT FACE="monospace">by a byte with the
+corresponding value.</FONT><BR><FONT FACE="monospace">- &quot;\RIJ&quot;
+where IJ is an hexadecimal number will be replaced by the string
 matching the regex number IJ, (0 &lt; IJ &lt;= NbOfRegex).</FONT><BR><FONT FACE="monospace">-
-\rIJ where IJ is an hexadecimal number will be replaced by the string</FONT>
-<FONT FACE="monospace">matching the substring J of the regex number I
-(I &lt; 0), J=0 for the complete string,</FONT> <FONT FACE="monospace">(so
-\R0x = \rx0).</FONT><BR><FONT FACE="monospace">- \u, \l, \m for
-starting an UPPER, lower or Mixed case conversion. A</FONT>
-<FONT FACE="monospace">conversion ends when a new starts, at end of
-line or on \c.</FONT><BR><FONT FACE="monospace">- \c for stopping a
-case conversion.<BR>Case conversion applies after (sub)string
-replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
+&quot;\rIJ&quot; where IJ is an hexadecimal number will be replaced
+by the string</FONT> <FONT FACE="monospace">matching the substring J
+of the regex number I (I &lt; 0), J=0 for the complete string,</FONT>
+<FONT FACE="monospace">(so \R0x = \rx0). Note that substrings are
+numbered in the order of the opening parenthesis, left to right.</FONT><BR><FONT FACE="monospace">-
+&quot;\u&quot;, &quot;\l&quot;, &quot;\m&quot; for starting an UPPER,
+lower or Mixed case conversion. A</FONT> <FONT FACE="monospace">conversion
+ends when a new starts, at end of line or on &quot;\c&quot;.</FONT><BR><FONT FACE="monospace">-
+&quot;\c&quot; for stopping a case conversion.<BR>Case conversion
+applies after (sub)string replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;t&quot;
 &quot;\x40&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 &quot;@&quot;</FONT><BR><FONT FACE="monospace">echo -en

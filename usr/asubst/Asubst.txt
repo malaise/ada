@@ -1,5 +1,5 @@
                                  Asubst
-                                  V4.6
+                                  V4.7
 
 
 1. General syntax
@@ -80,8 +80,9 @@ the string matching "r1" AND the following New_Line will be substituted. With
 "r1$", only the string matching "r1" will be subtituted. In short, "r1\n" means
 "r1 then a newline" while "r1$" means "r1, followed by a newline".
 The following specific '\' sequences are also handled:
-- "\s, replaced by a space,
-- "\t, replaced by a (horiz) tab,
+- "\i", i from 1 to 9, standard back reference to a matching substring,
+- "\s", replaced by a space,
+- "\t", replaced by a (horiz) tab,
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
   "\x00" is forbidden in find pattern except in mode "noregex".
   Beware also that \xIJ is replaced before compiling the regex, so it cannot be
@@ -118,18 +119,19 @@ echo "toto" | asubst --exclude=toto toto titi will not substitute.
 
 6. Replace string
 The following '\' sequences are supported:
-- \n will be replaced by a newline.
-- \t will be replaced by a (horiz) tab.
-- \xIJ where IJ is an hexadecimal number (00 to FF or ff) will be replaced
+- "\n" will be replaced by a newline.
+- "\t" will be replaced by a (horiz) tab.
+- "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value.
-- \RIJ where IJ is an hexadecimal number will be replaced by the string
+- "\RIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the regex number IJ, (0 < IJ <= NbOfRegex).
-- \rIJ where IJ is an hexadecimal number will be replaced by the string
+- "\rIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J=0 for the
-  complete string, (so \R0x = \rx0).
-- \u, \l, \m for starting an UPPER, lower or Mixed case conversion. A
-  conversion ends when a new starts, at end of line or on \c.
-- \c for stopping a case conversion.
+  complete string, (so "\R0x" = "\rx0"). Note that substrings are numbered
+  in the order of the opening parenthesis, left to right.
+- "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. A
+  conversion ends when a new starts, at end of line or on "\c".
+- "\c" for stopping a case conversion.
 Case conversion applies after (sub)string replacement.
 
 Examples:

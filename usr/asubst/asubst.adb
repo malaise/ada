@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
 procedure Asubst is
 
-  Version : constant String  := "V4.6";
+  Version : constant String  := "V4.7";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -71,7 +71,9 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
     Sys_Calls.Put_Line_Error (
-     "    A <regex> can contain ""\t"" (tab), ""\s"" (space) or ""\xIJ"" (any hexa byte).");
+     "    A <regex> can contain ""\t"" (tab), ""\s"" (space), ""\xIJ"" (any hexa byte),");
+    Sys_Calls.Put_Line_Error (
+     "     or ""\I"" (I from 1 to 9, a back reference to a matching substring).");
     Sys_Calls.Put_Line_Error (
      "    A <regex> can't contain ""\n"" (""\n"" matches the new_line character");
     Sys_Calls.Put_Line_Error (
@@ -108,6 +110,10 @@ procedure Asubst is
      "    conv replaces previous, case conv applies after (sub)string replacement.");
     Sys_Calls.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\ri0"" == ""\R0i"". ""\r0i"" and ""\R00"" are forbidden.");
+    Sys_Calls.Put_Line_Error (
+     "    Like back references, substrings are numbered in the order of opening");
+    Sys_Calls.Put_Line_Error (
+     "    parentheses.");
     Sys_Calls.Put_Line_Error (
      "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");
     Sys_Calls.Put_Line_Error (

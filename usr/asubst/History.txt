@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+25/11/2007 V4.7
+Bugfix: Complete help and doc on back reference and order of substrings.
+
 20/11/2007 V4.6
 Add: -d or --display also display exclude pattern (if any).
 
