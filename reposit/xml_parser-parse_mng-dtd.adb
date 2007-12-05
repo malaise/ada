@@ -782,15 +782,21 @@ package body Dtd is
           end if;
         elsif Td(2) = 'D' and then not Att_Set then
           -- Default in dtd with no xml value: insert default in tree
-          declare
-            -- Get the first value from dtd list, from 2 to second sep
-            Sep : constant Positive
-                := String_Mng.Locate (Asu_Ts (Attinfo.List),
-                                      Info_Sep & "", 2);
-            Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
-          begin
-            Tree_Mng.Add_Attribute (Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
-          end;
+          if Td(1) = 'E' then
+            -- Default of enum is first string after Info_Sep
+            declare
+              -- Get the first value from dtd list, from 2 to second sep
+              Sep : constant Positive
+                  := String_Mng.Locate (Asu_Ts (Attinfo.List),
+                                        Info_Sep & "", 2);
+              Dtd_Val : constant String := Asu.Slice (Attinfo.List, 2, Sep - 1 );
+            begin
+              Tree_Mng.Add_Attribute (Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
+            end;
+          else
+            -- Default of not enum is the value
+            Tree_Mng.Add_Attribute (Asu_Tus (Attr), Attinfo.List, Line_No);
+          end if;
         elsif Att_Set then
           -- Comformance checks on ID, IDREF(s) and NMTOKEN(s)
           -- Store ID and IDREFs and Sanity checks on I
