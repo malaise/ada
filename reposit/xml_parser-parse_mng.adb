@@ -303,7 +303,7 @@ package body Parse_Mng  is
       end if;
       Doctype_File := Util.Get_Curr_Str;
       Util.Reset_Curr_Str;
-      Dtd.Parse ( Asu.To_String (Doctype_File));
+      Dtd.Parse (Asu.To_String (Doctype_File));
     end if;
     -- Now see if there is an internal definition section
     Util.Skip_Separators;

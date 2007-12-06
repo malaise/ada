@@ -125,6 +125,11 @@ package body Xml_Parser is
     My_Tree.Move_Root (Tree_Mng.Tree);
     Root_Element:= (Kind => Element,
                     Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+  exception
+    when File_Error | Parse_Error =>
+      raise;
+    when others =>
+      raise Internal_Error;
   end Parse;
 
   -- Return the error message if Parse_Error

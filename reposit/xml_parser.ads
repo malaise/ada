@@ -27,14 +27,15 @@ package Xml_Parser is
   -- The children of an element
   type Nodes_Array is array (Positive range <>) of Node_Type;
 
-  -- All operations except Parse may raise Invalid_Element
+  -- All operations except Parse may raise Invalid_Node
   -- If the Element has not been returned by Parse, Get_xxx...
 
   -------------
   -- PARSING --
   -------------
   -- Parse a Xml file, stdin if empty
-  -- May raise File_Error, Parse_Error
+  -- May raise File_Error if error accessing the File_Name,
+  --   Parse_Error if error while parsing the file (or its dtd)
   procedure Parse (File_Name : in String;
                    Prologue     : out Element_Type;
                    Root_Element : out Element_Type);
@@ -87,7 +88,7 @@ package Xml_Parser is
                       Index   : in Positive) return Node_Type;
 
   -- Get the father of an element
-  -- May raise No_Parent
+  -- May raise No_Parent if Element is the Root_Element or the Prologue
   No_Parent : exception;
   function Get_Parent (Element : in Element_Type) return Node_Type;
   function Is_Root (Element : in Element_Type) return Boolean;
