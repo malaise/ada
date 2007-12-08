@@ -5,14 +5,24 @@ procedure T_Xml is
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
 
+  Dump : Boolean := False;
+
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: "
         & Argument.Get_Program_Name
-        & " <xml_file>");
-  end usage;
+        & " [ -dump ] <xml_file>");
+  end Usage;
 
-  procedure Put_Attributes (Elt : in Xml_Parser.Element_Type) is
+  -------------------
+  -- Dump xml tree --
+  -------------------
+  procedure Dump_Line (Node : in Xml_Parser.Node_Type) is
+  begin
+    Ada.Text_Io.Put (Normal (Xml_Parser.Get_Line_No (Node), 5, True, '0'));
+  end Dump_Line;
+
+  procedure Dump_Attributes (Elt : in Xml_Parser.Element_Type) is
     Attrs : Xml_Parser.Attributes_Array := Xml_Parser.Get_Attributes (Elt);
     use type Asu_Us;
   begin
@@ -20,22 +30,21 @@ procedure T_Xml is
       Ada.Text_Io.Put (" " & Asu.To_String (Attrs(I).Name
                      & "=" & Attrs(I).Value));
     end loop;
-  end Put_Attributes;
+  end Dump_Attributes;
 
-  procedure Put_Element (Elt : in Xml_Parser.Element_Type;
-                         Level : in Natural) is
+  procedure Dump_Element (Elt : in Xml_Parser.Element_Type;
+                          Level : in Natural) is
     Children : Xml_Parser.Nodes_Array := Xml_Parser.Get_Children (Elt);
+    Indent : constant String (1 .. Level + 1) := (others => ' ');
     use type Xml_Parser.Node_Kind_List;
   begin
-    Ada.Text_Io.Put (Normal (Xml_Parser.Get_Line_No (Elt), 5, True, '0'));
-    for I in 1 .. Level + 1 loop
-      Ada.Text_Io.Put (" ");
-    end loop;
+    Dump_Line (Elt);
+    Ada.Text_Io.Put (Indent);
     Ada.Text_Io.Put (Asu.To_String(Xml_Parser.Get_Name (Elt)));
     if Xml_Parser.Get_Nb_Attributes (Elt) /= 0 then
       Ada.Text_Io.Put (" :" );
     end if;
-    Put_Attributes (Elt);
+    Dump_Attributes (Elt);
     Ada.Text_Io.New_Line;
     for I in Children'Range loop
       if I rem 2 = 0 then
@@ -43,23 +52,119 @@ procedure T_Xml is
         Children(I) := Xml_Parser.Get_Child (Elt, I);
       end if;
       if Children(I).Kind = Xml_Parser.Element then
-        -- Recursive put child
-        Put_Element (Children(I), Level + 1);
+        -- Recursive dump child
+        Dump_Element (Children(I), Level + 1);
       else
         -- Specific put text
-        Ada.Text_Io.Put (Normal (Xml_Parser.Get_Line_No (Children(I)),
-                                 5, True, '0'));
-        for I in 1 .. Level + 1 loop
-          Ada.Text_Io.Put (" ");
-        end loop;
-        Ada.Text_Io.Put_Line ("  =>" & Xml_Parser.Get_Text (Children(I))
+        Dump_Line (Children(I));
+        Ada.Text_Io.Put (Indent);
+        Ada.Text_Io.Put_Line (" =>" & Xml_Parser.Get_Text (Children(I))
                             & "<=");
       end if;
     end loop;
+  end Dump_Element;
+
+  ---------------------
+  -- Put the Xml way --
+  ---------------------
+  procedure Put_Attributes (Elt : in Xml_Parser.Element_Type;
+                            Level : in Natural;
+                            Offset : in Positive) is
+    Attrs : Xml_Parser.Attributes_Array := Xml_Parser.Get_Attributes (Elt);
+    Indent : constant String (1 .. Level + Offset) := (others => ' ');
+    use type Asu_Us;
+  begin
+    for I in Attrs'Range loop
+      if I /= 1 then
+        -- Indent
+        Ada.Text_Io.Put (Indent);
+      end if;
+      Ada.Text_Io.Put (" " & Asu.To_String (Attrs(I).Name
+                     & "=""" & Attrs(I).Value) & """");
+      if I /= Attrs'Last then
+        Ada.Text_Io.New_Line;
+      end if;
+    end loop;
+  end Put_Attributes;
+
+  Prologue_Level : constant := -1;
+  Prologue_Instruction_Level : constant := -2;
+  procedure Put_Element (Elt : in Xml_Parser.Element_Type;
+                         Level : in Integer) is
+    Name : constant String := Asu.To_String(Xml_Parser.Get_Name (Elt));
+    Children : Xml_Parser.Nodes_Array := Xml_Parser.Get_Children (Elt);
+    Indent : constant String (1 .. Level) := (others => ' ');
+    Prev_Is_Text : Boolean;
+    use type Xml_Parser.Node_Kind_List;
+  begin
+    if Level = Prologue_Level then
+      if Name /= "" then
+        -- A prologue
+        -- Put the xml directive with attributes
+        Ada.Text_Io.Put ("<?" & Name);
+        Put_Attributes (Elt, 0, 2 + Name'Length);
+        Ada.Text_Io.Put_Line ("?>");
+        for I in Children'Range loop
+          if Children(I).Kind = Xml_Parser.Element then
+            -- Put PIs
+            Put_Element (Children(I), Prologue_Instruction_Level);
+          end if;
+        end loop;
+      end if;
+      return;
+    elsif Level = Prologue_Instruction_Level then
+      -- A PI of the prologue: 0 child or 1 text child
+      -- Put PI directive
+      Ada.Text_Io.Put ("<?" & Name);
+      if Children'Length = 1 then
+        Ada.Text_Io.Put (" " & Xml_Parser.Get_Text (Children(1)));
+      elsif Children'Length /= 0 then
+        Basic_Proc.Put_Line_Error ("Error. Prologue processing instruction "
+            & Name & " has several text children.");
+        raise Program_Error;
+      end if;
+      Ada.Text_Io.Put_Line ("?>");
+      return;
+    else
+      -- Put element, attributes and children recursively
+      Ada.Text_Io.Put (Indent);
+      Ada.Text_Io.Put ("<" & Name);
+      Put_Attributes (Elt, Level, 1 + Name'Length);
+      if Children'Length = 0 then
+        -- No child, terminate tag now
+        Ada.Text_Io.Put_Line ("/>");
+      else
+        Ada.Text_Io.Put (">");
+        Prev_Is_Text := False;
+        for I in Children'Range loop
+          if Children(I).Kind = Xml_Parser.Element then
+            -- Recursive dump child
+            if I = 1 then
+              -- Father did not New_Line beacause of possible text
+              Ada.Text_Io.New_Line;
+            end if;
+            Put_Element (Children(I), Level + 1);
+            Prev_Is_Text := False;
+          else
+            -- Specific put text
+            Ada.Text_Io.Put (Xml_Parser.Get_Text (Children(I)));
+            Prev_Is_Text := True;
+          end if;
+        end loop;
+        -- Terminate tag after children
+        if not Prev_Is_Text then
+          Ada.Text_Io.Put (Indent);
+        end if;
+        Ada.Text_Io.Put_Line ("</" & Name & ">");
+      end if;
+    end if;
   end Put_Element;
 
 begin
-  if Argument.Get_Nbre_Arg /= 1 then
+  if Argument.Get_Nbre_Arg = 2
+  and then Argument.Get_Parameter = "-dump" then
+    Dump := True;
+  elsif Argument.Get_Nbre_Arg /= 1 then
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
@@ -69,11 +174,18 @@ begin
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
-  Xml_Parser.Parse (Argument.Get_Parameter, Prologue, Root);
-  Ada.Text_Io.Put_Line ("Prologue:");
-  Put_Element (Prologue, 0);
-  Ada.Text_Io.Put_Line ("Elements tree:");
-  Put_Element (Root, 0);
+  if Dump then
+    Xml_Parser.Parse (Argument.Get_Parameter(2), Prologue, Root);
+    Ada.Text_Io.Put_Line ("Prologue:");
+    Dump_Element (Prologue, 0);
+    Ada.Text_Io.Put_Line ("Elements tree:");
+    Dump_Element (Root, 0);
+  else
+    Xml_Parser.Parse (Argument.Get_Parameter, Prologue, Root);
+    Put_Element (Prologue, Prologue_Level);
+    Ada.Text_Io.New_Line;
+    Put_Element (Root, 0);
+  end if;
   Xml_Parser.Clean (Prologue, Root);
 exception
   when Xml_Parser.Parse_Error =>
