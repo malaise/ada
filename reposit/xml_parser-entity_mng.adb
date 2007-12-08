@@ -4,42 +4,14 @@ separate (Xml_Parser)
 -- Entity management
 package body Entity_Mng is
 
-  -- The stored entities
-  type Entity_Type is record
-    Parameter : Boolean;
-    Name : Asu_Us;
-    Value : Asu_Us;
-  end record;
-  type Entity_Access is access all Entity_Type;
-  procedure Set (To : out Entity_Type; Val : in Entity_Type) is
-  begin
-    To := Val;
-  end Set;
-  function Image (Entity : Entity_Type) return String is
-  begin
-    if Entity.Parameter then
-      return "%" & Asu_Ts (Entity.Name);
-    else
-      return Asu_Ts (Entity.Name);
-    end if;
-  end Image;
-  function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
-    use type Asu_Us;
-  begin
-    return Current.Parameter = Criteria.Parameter
-    and then Current.Name = Criteria.Name;
-  end "=";
-  package Entity_List_Mng is new Unique_List (Entity_Type, Entity_Access,
-             Set, Image, "=");
-  Entity_List : Entity_List_Mng.List_Type;
-
   -- Store an entity
-  procedure Store (Name, Value : in Asu_Us; Parameter : in Boolean;
+  procedure Store (The_Entities : in out Entity_List_Mng.List_Type;
+                   Name, Value : in Asu_Us; Parameter : in Boolean;
                    Log : in Boolean) is
     Entity : Entity_Type;
   begin
     Entity := (Parameter, Name, Value);
-    Entity_List_Mng.Insert (Entity_List, Entity);
+    Entity_List_Mng.Insert (The_Entities, Entity);
     if Log then
       Trace ("Stored entity name " & Image (Entity)
            & " value " & Asu_Ts (Value));
@@ -70,7 +42,7 @@ package body Entity_Mng is
   end Code_Of;
 
   -- Initialise with default entities
-  procedure Initialise is
+  procedure Initialise (The_Entities : in out Entity_List_Mng.List_Type) is
     package Acl renames Ada.Characters.Latin_1;
     procedure Add_Char (Code : in Natural) is
     begin
@@ -80,7 +52,7 @@ package body Entity_Mng is
     end Add_Char;
   begin
     -- Reset all entities
-    Entity_List_Mng.Delete_List (Entity_List);
+    Entity_List_Mng.Delete_List (The_Entities);
     -- Load predefined entities
     Store (Asu_Tus ("amp"),   Asu_Tus ("&"), False, False);
     Store (Asu_Tus ("lt"),    Asu_Tus ("<"), False, False);
@@ -98,13 +70,14 @@ package body Entity_Mng is
   end Initialise;
 
   -- Store an entity
-  procedure Add (Name, Value : in Asu_Us; Parameter : in Boolean) is
+  procedure Add (The_Entities : in out Entity_List_Mng.List_Type;
+                 Name, Value : in Asu_Us; Parameter : in Boolean) is
     use type Asu_Us;
   begin
     if Name = Asu_Null then
       raise Internal_Error;
     end if;
-    Store (Name, Value, Parameter, True);
+    Store (The_Entities, Name, Value, Parameter, True);
   end Add;
 
   -- Fix name if its #ijk -> #xlm
@@ -122,30 +95,32 @@ package body Entity_Mng is
   end Fix_Name;
 
   -- Check if an entity exists
-  function Exists (Name : Asu_Us; Parameter : Boolean) return Boolean is
+  procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
+                    Name : in Asu_Us; Parameter : in Boolean;
+                    Found : out Boolean) is
     Entity : Entity_Type;
-    Found : Boolean;
   begin
     -- Find (parameter) entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
     Fix_Name (Entity.Name, Entity.Parameter);
-    Entity_List_Mng.Search (Entity_List, Entity, Found);
-    return Found;
+    Entity_List_Mng.Search (The_Entities, Entity, Found);
   end Exists;
 
   -- Get value of an entity. Raises Parse_Error if none
-  function Get (Name : Asu_Us; Parameter : Boolean) return Asu_Us is
+  procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
+                 Name : in Asu_Us; in Parameter : Boolean;
+                 Got : in out Asu_Us) is
     Entity : Entity_Type;
   begin
     -- Read entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
     Fix_Name (Entity.Name, Entity.Parameter);
-    Entity_List_Mng.Read (Entity_List, Entity, Entity);
+    Entity_List_Mng.Read (The_Entities, Entity, Entity);
     Trace ("Read entity name " & Asu_Ts (Entity.Name)
          & " value " & Asu_Ts (Entity.Value));
-    return Entity.Value;
+    Got := Entity.Value;
   exception
     when Entity_List_Mng.Not_In_List =>
       Trace ("Unknown entity name " & Asu_Ts (Entity.Name));
