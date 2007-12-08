@@ -1,4 +1,4 @@
-with Unique_List, String_Mng, Regular_Expressions, Parser, Int_Image;
+with String_Mng, Regular_Expressions, Parser, Int_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
@@ -12,84 +12,45 @@ package body Dtd is
     return C = Info_Sep;
   end Is_Sep;
 
-  -- Dtd info per element (Elt, Atl, Att)
-  type Info_Rec is record
-    -- Kind'Img#Element_name[#Attribute_Name]
-    Name : Asu_Us;
-    -- Elt: Possible children, first chars is <type> ::= E|A|M|C
-    --  (empty, any, mixed or children), then
-    --  for Mixed the list of "#<name>#<name>#" without #PCDATA
-    --   (empty if only #PCDATA)
-    --  for Children the regexp of "#<name>#"
-    -- Atl: Possible attributes, list of "<name>#<type><default>#"
-    --  <type> ::= S|I|R|r|T|t|E (String, ID, IDREF, IDREFS, NMTOKEN, NMTOKENS
-    --   or enum)
-    --  <default> ::= R|I|F|D (required, implied, fixed or default)
-    -- Att: for a fixed of any type or the a default of not enum, the value
-    --   for an Enum, the list of possible "<name>#" and, if there is a default
-    --   this value is the first
-    List : Asu_Us;
-  end record;
-
-  -- Unique list of Info_Rec
-  type Info_Access is access all Info_Rec;
-  procedure Set (To : out Info_Rec; Val : in Info_Rec) is
-  begin
-    To := Val;
-  end Set;
-  function Image (Element : Info_Rec) return String is
-  begin
-    return Asu_Ts (Element.Name);
-  end Image;
-  function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean is
-    use type Asu_Us;
-  begin
-    return Current.Name = Criteria.Name;
-  end "=";
-  package Info_Mng is new Unique_List (Info_Rec, Info_Access, Set, Image, "=");
-  Info_List : Info_Mng.List_Type;
-
-  -- Is there a dtd set, otherwise check is always ok
-  Dtd_Set : Boolean;
-
-  -- Is there a xml instruction found in the dtd
-  Xml_Found : Boolean;
-
   -- Init (clear) Dtd data
-  procedure Init is
+  procedure Init (A_Dtd : in out Dtd_Type) is
     Info : Info_Rec;
   begin
     -- No Dtd set
-    Dtd_Set := False;
-    -- No xml nstruction found (yet)
-    Xml_Found := False;
-    -- Reset list
-    Info_Mng.Delete_List (Info_List);
+    A_Dtd.Set := False;
+    -- No xml instruction found (yet)
+    A_Dtd.Xml_Found := False;
+    -- Clear entities
+    Entity_Mng.Initialise (A_Dtd.Entity_List);
+    -- Reset info list
+    Info_Mng.Delete_List (A_Dtd.Info_List);
     -- Init with empty IDs and empty IDREFs
     Info.Name := Asu_Tus ("Idl");
-    Info_Mng.Insert (Info_List, Info);
+    Info_Mng.Insert (A_Dtd.Info_List, Info);
     Info.Name := Asu_Tus ("Idr");
-    Info_Mng.Insert (Info_List, Info);
+    Info_Mng.Insert (A_Dtd.Info_List, Info);
   end Init;
 
   -- Parse an instruction:
   -- Check xml version, append any other instruction to prologue
-  procedure Parse_Instruction (External : in Boolean) is
+  procedure Parse_Instruction (A_Dtd : in out Dtd_Type;
+                               External : in Boolean) is
   begin
     -- See if this is the xml directive
     if Util.Try ("xml") then
       if not External then
         Util.Error ("Invalid xml instruction in internal dtd");
       end if;
-      if Xml_Found then
+      if A_Dtd.Xml_Found then
         Util.Error ("Second declaration of xml in dtd");
       end if;
       Util.Parse_Until_Str ("?>");
+      A_Dtd.Xml_Found := True;
       Trace ("Dtd parsed instruction " & Asu_Ts(Util.Get_Curr_Str));
       Util.Reset_Curr_Str;
     else
       -- Parse instruction as if in Xml
-      Parse_Instruction;
+      Parse_Instruction (A_Dtd);
     end if;
   end Parse_Instruction;
 
@@ -149,7 +110,7 @@ package body Dtd is
   end Build_Regexp;
 
   -- Parse <!ELEMENT
-  procedure Parse_Element is
+  procedure Parse_Element (A_Dtd : in out Dtd_Type) is
     Info : Info_Rec;
     Found : Boolean;
     Char : Character;
@@ -164,7 +125,7 @@ package body Dtd is
     end if;
     Info.Name := "Elt" & Info_Sep & Info.Name;
     -- Element must not exist
-    Info_Mng.Search (Info_List, Info, Found);
+    Info_Mng.Search (A_Dtd.Info_List, Info, Found);
     if Found then
       Util.Error ("ELEMENT " & Asu_Ts (Info.Name) & " already exists");
     end if;
@@ -186,7 +147,7 @@ package body Dtd is
       Util.Parse_Until_Close;
       Util.Skip_Separators;
       Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
-      Info.List := Util.Fix_Text (Info.List, True, False);
+      Util.Fix_Text (A_Dtd, Info.List, True, False);
       Util.Reset_Curr_Str;
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
@@ -198,7 +159,7 @@ package body Dtd is
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
           -- Expand variables if any
-          Info.List := Util.Fix_Text (Info.List, True, False);
+          Util.Fix_Text (A_Dtd, Info.List, True, False);
           Info.List := Util.Remove_Separators (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
@@ -229,7 +190,7 @@ package body Dtd is
           Util.Unget;
         end if;
         -- Expand variables if any
-        Info.List := Util.Fix_Text (Info.List, True, False);
+        Util.Fix_Text (A_Dtd, Info.List, True, False);
         Info.List := Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+()") then
@@ -246,14 +207,14 @@ package body Dtd is
       Util.Error ("Unexpected character " & Util.Read & " at end of ELEMENT");
     end if;
     -- Store element
-    Info_Mng.Insert (Info_List, Info);
+    Info_Mng.Insert (A_Dtd.Info_List, Info);
     Trace ("Dtd parsed directive ELEMENT -> " & Asu_Ts (Info.Name)
          & " " & Asu_Ts(Info.List));
   end Parse_Element;
 
 
   -- Parse <!ATTLIST
-  procedure Parse_Attlist is
+  procedure Parse_Attlist (A_Dtd : in out Dtd_Type) is
     -- Atl, Att and Id info blocs
     Info, Attinfo, Idinfo : Info_Rec;
     Found : Boolean;
@@ -278,13 +239,13 @@ package body Dtd is
     end if;
     Info.Name := "Atl" & Info_Sep & Elt_Name;
     -- Attribute list of this element must not exist
-    Info_Mng.Search (Info_List, Info, Found);
+    Info_Mng.Search (A_Dtd.Info_List, Info, Found);
     if Found then
       Util.Error ("ATTLIST " & Asu_Ts (Info.Name) & " already exists");
     end if;
     if Util.Read = Util.Stop then
       -- Empty Attlist: store and done
-      Info_Mng.Insert (Info_List, Info);
+      Info_Mng.Insert (A_Dtd.Info_List, Info);
       Trace ("Dtd parsed directive ATTLIST -> " & Asu_Ts (Info.Name)
            & " " & Asu_Ts(Info.List));
       return;
@@ -325,7 +286,8 @@ package body Dtd is
         -- Enum type
         Typ_Char := 'E';
         Util.Parse_Until_Char (")");
-        Enum := Util.Fix_Text (Util.Get_Curr_Str, True, False);
+        Enum := Util.Get_Curr_Str;
+        Util.Fix_Text (A_Dtd, Enum, True, False);
         Enum := Util.Remove_Separators (Enum);
         Util.Reset_Curr_Str;
         -- Check that everything between "|" are names
@@ -377,7 +339,7 @@ package body Dtd is
       else
         -- Get default value for fixed or default attribute
         Util.Skip_Separators;
-        Def_Val := Parse_Value (True);
+        Parse_Value (A_Dtd, True, Def_Val);
       end if;
 
       -- Check ID
@@ -395,7 +357,7 @@ package body Dtd is
         Has_Id := True;
         Idinfo.Name := "Ide" & Elt_Name;
         Idinfo.List := Asu_Null;
-        Info_Mng.Insert (Info_List, Idinfo);
+        Info_Mng.Insert (A_Dtd.Info_List, Idinfo);
       end if;
 
       -- Check Enum
@@ -420,12 +382,12 @@ package body Dtd is
       Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
       if Typ_Char = 'E' then
         Attinfo.List := Enum;
-        Info_Mng.Insert (Info_List, Attinfo);
+        Info_Mng.Insert (A_Dtd.Info_List, Attinfo);
         Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
          & " " & Asu_Ts(Attinfo.List));
       elsif Def_Char = 'F' or else Def_Char = 'D' then
         Attinfo.List := Def_Val;
-        Info_Mng.Insert (Info_List, Attinfo);
+        Info_Mng.Insert (A_Dtd.Info_List, Attinfo);
         Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
          & " " & Asu_Ts(Attinfo.List));
       end if;
@@ -437,17 +399,19 @@ package body Dtd is
                   Att_Name & Info_Sep & Typ_Char & Def_Char & Info_Sep);
     end loop;
     -- Attlist is ended: store
-    Info_Mng.Insert (Info_List, Info);
+    Info_Mng.Insert (A_Dtd.Info_List, Info);
     Trace ("Dtd parsed directive ATTLIST -> " & Asu_Ts (Info.Name)
          & " " & Asu_Ts(Info.List));
   end Parse_Attlist;
 
   -- Parse <!ENTITY
-  procedure Parse_Entity is
+  procedure Parse_Entity (A_Dtd : in out Dtd_Type) is
     -- Entity name and value
     Name, Value : Asu_Us;
     -- Is it a parameter entity
     Parameter : Boolean;
+    -- Is entity found
+    Found : Boolean;
     Parstr : Asu_Us;
     use type Asu_Us;
   begin
@@ -471,7 +435,8 @@ package body Dtd is
     end if;
     Util.Skip_Separators;
     -- Check that it does not exist
-    if Entity_Mng.Exists (Name, Parameter) then
+    Entity_Mng.Exists (A_Dtd.Entity_List, Name, Parameter, Found);
+    if Found then
       Util.Error ("Entity " & Asu_Ts (Parstr & Name) & " already defined");
     end if;
     -- Only accept local entities
@@ -481,41 +446,41 @@ package body Dtd is
       Util.Error ("Unsupported PUBLIC external entity");
     end if;
     -- Parse and expand value
-    Value := Parse_Value (True);
+    Parse_Value (A_Dtd, True, Value);
     -- Must stop now
     Util.Skip_Separators;
     if Util.Get /= Util.Stop then
       Util.Error ("Unexpected character at end of entity " & Util.Read);
     end if;
     -- Store entity
-    Entity_Mng.Add (Name, Value, Parameter);
+    Entity_Mng.Add (A_Dtd.Entity_List, Name, Value, Parameter);
     Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Parstr & Name)
          & " " & Asu_Ts(Value));
   end Parse_Entity;
 
   -- Parse a directive
-  procedure Parse_Directive is
+  procedure Parse_Directive (A_Dtd : in out Dtd_Type) is
     Info : Info_Rec;
     use type Asu_Us;
   begin
     if Util.Try ("ELEMENT ") then
-      Parse_Element;
+      Parse_Element (A_Dtd);
     elsif Util.Try ("ATTLIST ") then
-      Parse_Attlist;
+      Parse_Attlist (A_Dtd);
     elsif Util.Try ("ENTITY ") then
-      Parse_Entity;
+      Parse_Entity (A_Dtd);
     elsif Util.Try ("NOTATION ") then
       Util.Error ("Unsupported NOTATION directive");
     else
       -- Skip CDATA and comments
-      Parse_Directive (Only_Skip => True);
+      Parse_Directive (A_Dtd, Only_Skip => True);
     end if;
   end Parse_Directive;
 
   -- Parse current dtd
   -- If external, will stop end end of file
   -- otherwise, will stop on ']'
-  procedure Parse (External : in Boolean) is
+  procedure Parse (A_Dtd : in out Dtd_Type; External : in Boolean) is
   begin
     loop
       begin
@@ -529,9 +494,9 @@ package body Dtd is
           end if;
       end;
       if Util.Try (Util.Start & Util.Instruction) then
-        Parse_Instruction (External);
+        Parse_Instruction (A_Dtd, External);
       elsif Util.Try (Util.Start & Util.Directive) then
-        Parse_Directive;
+        Parse_Directive (A_Dtd);
       elsif Util.Get = (']') and then not External then
         return;
       else
@@ -541,25 +506,25 @@ package body Dtd is
   end Parse;
 
   -- Parse a dtd (either a external file or internal if name is empty)
-  procedure Parse (File_Name : in String) is
+  procedure Parse (A_Dtd : in out Dtd_Type; File_Name : in String) is
     Dtd_File, Dummy_File : Text_Char.File_Type;
   begin
     if File_Name = "" then
       -- Internal declarations
       Trace ("Dtd parsing internal definition");
-      Parse (False);
+      Parse (A_Dtd, False);
     else
       -- External declarations
       Trace ("Dtd parsing file " & File_Name);
       File_Mng.Open (File_Name, Dtd_File);
       Util.Init (False, Dtd_File, True);
-      Parse (True);
+      Parse (A_Dtd, True);
       Util.Init (True, Dummy_File, False);
       File_Mng.Close (Dtd_File);
     end if;
     -- Dtd is now valid
     Trace ("Dtd parsed dtd");
-    Dtd_Set := True;
+    A_Dtd.Set := True;
   exception
     when File_Error =>
       Util.Error ("Cannot open dtd file " & File_Name);
@@ -571,8 +536,10 @@ package body Dtd is
   begin
     return Replace (Replace (Asu_Ts (Us), "##", ","), "#", "");
   end Strip_Sep;
+
   -- Check children of element
-  procedure Check_Children (Name : in Asu_Us;
+  procedure Check_Children (A_Dtd : in out Dtd_Type;
+                            Name : in Asu_Us;
                             Line_No : in Positive;
                             Children : in Asu_Us;
                             Is_Mixed : in Boolean) is
@@ -590,13 +557,13 @@ package body Dtd is
          & " Mixed: " & Is_Mixed'Img);
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
-    Info_Mng.Search (Info_List, Info, Ok);
+    Info_Mng.Search (A_Dtd.Info_List, Info, Ok);
     if not Ok then
       Util.Error ("According to dtd, element " & Asu_Ts (Name)
                 & " is not allowed",
                   Line_No);
     end if;
-    Info_Mng.Read (Info_List, Info, Info);
+    Info_Mng.Read (A_Dtd.Info_List, Info, Info);
     -- Check children
     Trace ("Dtd check Dtd element info " & Asu_Ts (Info.List));
     -- Separate element type
@@ -661,7 +628,8 @@ package body Dtd is
   end Check_Children;
 
   -- Check attributes of element
-  procedure Check_Attributes (Name : in Asu_Us;
+  procedure Check_Attributes (A_Dtd : in out Dtd_Type;
+                              Name : in Asu_Us;
                               Line_No : in Positive;
                               Attributes : in Asu_Us) is
     -- Atl, Att and Id info blocs
@@ -685,9 +653,9 @@ package body Dtd is
      Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
     -- Read its ATTLIST def
     Info.Name := "Atl" & Info_Sep & Name;
-    Info_Mng.Search (Info_List, Info, Info_Found);
+    Info_Mng.Search (A_Dtd.Info_List, Info, Info_Found);
     if Info_Found then
-      Info_Mng.Read (Info_List, Info, Info);
+      Info_Mng.Read (A_Dtd.Info_List, Info, Info);
     end if;
     if not Info_Found or else Info.List = Asu_Null then
       -- No or empty ATTLIST for this element
@@ -755,7 +723,7 @@ package body Dtd is
         if Td(1) = 'E' or else Td(2) = 'F' or else Td(2) = 'D' then
           Attinfo.Name := "Att" & Info_Sep & Name & Info_Sep & Attr;
           Error_Name := Attinfo.Name;
-          Info_Mng.Read (Info_List, Attinfo, Attinfo);
+          Info_Mng.Read (A_Dtd.Info_List, Attinfo, Attinfo);
         end if;
         -- Does this attribute appear in xml
         Att_Set := String_Mng.Locate (Asu_Ts (Attributes),
@@ -838,9 +806,9 @@ package body Dtd is
           if Td(1) = 'I' then
             -- Check this ID is not already set for this element
             Idinfo.Name := "Ide" & Info_Sep & Name;
-            Info_Mng.Search (Info_List, Idinfo, Info_Found);
+            Info_Mng.Search (A_Dtd.Info_List, Idinfo, Info_Found);
             if Info_Found then
-              Info_Mng.Read (Info_List, Idinfo, Idinfo);
+              Info_Mng.Read (A_Dtd.Info_List, Idinfo, Idinfo);
               if String_Mng.Locate (Asu_Ts (Idinfo.List),
                            Info_Sep & Asu_Ts (Xml_Val) & Info_Sep) /= 0 then
                 Util.Error ("This ID " & Asu_Ts (Xml_Val)
@@ -849,28 +817,28 @@ package body Dtd is
             end if;
             -- Append ID to the list of this element
             Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep);
-            Info_Mng.Insert (Info_List, Idinfo);
+            Info_Mng.Insert (A_Dtd.Info_List, Idinfo);
             -- Append ID to global list
             Idinfo.Name := Asu_Tus ("Idl");
             Error_Name := Idinfo.Name;
-            Info_Mng.Read (Info_List, Idinfo, Idinfo);
+            Info_Mng.Read (A_Dtd.Info_List, Idinfo, Idinfo);
             Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep);
-            Info_Mng.Insert (Info_List, Idinfo);
+            Info_Mng.Insert (A_Dtd.Info_List, Idinfo);
             Trace (" Check, added ID " & Asu_Ts (Xml_Val));
           elsif Td(1) = 'R' then
             -- Append this ID ref and line_no to list of IDREFs
             Idinfo.Name := Asu_Tus ("Idr");
             Error_Name := Idinfo.Name;
-            Info_Mng.Read (Info_List, Idinfo, Idinfo);
+            Info_Mng.Read (A_Dtd.Info_List, Idinfo, Idinfo);
             Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep
                       & Line_Image(Line_No) & Info_Sep);
-            Info_Mng.Insert (Info_List, Idinfo);
+            Info_Mng.Insert (A_Dtd.Info_List, Idinfo);
             Trace (" Check, added IDREF " & Asu_Ts (Xml_Val));
           elsif Td(1) = 'r' then
             -- Append each of the IDREFs to the global list
             Idinfo.Name := Asu_Tus ("Idr");
             Error_Name := Idinfo.Name;
-            Info_Mng.Read (Info_List, Idinfo, Idinfo);
+            Info_Mng.Read (A_Dtd.Info_List, Idinfo, Idinfo);
             -- Parse IDREFs separated by spaces
             Parser.Set (Iter_Xml, Asu_Ts (Xml_Val), Util.Is_Separator'Access);
             loop
@@ -886,7 +854,7 @@ package body Dtd is
               end;
             end loop;
             Parser.Del (Iter_Xml);
-            Info_Mng.Insert (Info_List, Idinfo);
+            Info_Mng.Insert (A_Dtd.Info_List, Idinfo);
           end if;
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
@@ -901,7 +869,8 @@ package body Dtd is
   end Check_Attributes;
 
   -- Check Current element of the tree
-  procedure Check_Element (Check_The_Attributes : in Boolean) is
+  procedure Check_Element (A_Dtd : in out Dtd_Type;
+                           Check_The_Attributes : in Boolean) is
     -- Current cell in tree
     Cell : My_Tree_Cell;
     -- Lists of attributes and of children from xml tree
@@ -910,7 +879,7 @@ package body Dtd is
     Is_Mixed : Boolean;
     use type Asu_Us;
   begin
-    if not Dtd_Set then
+    if not A_Dtd.Set then
       -- No dtd => no check
       return;
     end if;
@@ -938,10 +907,10 @@ package body Dtd is
     My_Tree.Read (Tree_Mng.Tree, Cell);
     if Check_The_Attributes then
       -- Check Attributes
-      Check_Attributes (Cell.Name, Cell.Line_No, Attributes);
+      Check_Attributes (A_Dtd, Cell.Name, Cell.Line_No, Attributes);
     else
       -- Check children
-      Check_Children (Cell.Name, Cell.Line_No, Children, Is_Mixed);
+      Check_Children (A_Dtd, Cell.Name, Cell.Line_No, Children, Is_Mixed);
     end if;
 
   end Check_Element;
@@ -951,7 +920,7 @@ package body Dtd is
   --  and thus collected in "Idr" info,
   --  exist in the list of attribute values of Xml tagged ID
   --  and thus collected in "Idl" info,
-  procedure Final_Check is
+  procedure Final_Check (A_Dtd : in out Dtd_Type) is
     -- List of IDs and list of IDrefs
     Ids, Idrefs : Info_Rec;
     -- Parser iterator on IDrefs
@@ -961,11 +930,11 @@ package body Dtd is
     Ids.Name := Asu_Tus ("Idl");
     -- For error
     Idrefs.Name := Ids.Name;
-    Info_Mng.Read (Info_List, Ids, Ids);
+    Info_Mng.Read (A_Dtd.Info_List, Ids, Ids);
     Trace ("Check final, got IDs " & Asu_Ts (Ids.List));
     -- Read Idrefs
     Idrefs.Name := Asu_Tus ("Idr");
-    Info_Mng.Read (Info_List, Idrefs, Idrefs);
+    Info_Mng.Read (A_Dtd.Info_List, Idrefs, Idrefs);
     Trace ("Check final, got IDREFs " & Asu_Ts (Idrefs.List));
     -- Idl is a list of #Id#, Idr is a list of #Idref#Line_No#
     -- Parse IDREFs separated by Sep

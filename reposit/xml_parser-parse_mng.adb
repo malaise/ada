@@ -4,6 +4,26 @@ separate (Xml_Parser)
 
 package body Parse_Mng  is
 
+  -- Entity management
+  package Entity_Mng is
+    -- Initialise with default entities
+    procedure Initialise (The_Entities : in out Entity_List_Mng.List_Type);
+    -- Store an entity
+    procedure Add (The_Entities : in out Entity_List_Mng.List_Type;
+                   Name, Value : in Asu_Us; Parameter : in Boolean);
+    -- Check if an entity exists
+    procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
+                      Name : in Asu_Us; Parameter : in Boolean;
+                      Found : out Boolean);
+    -- Get value of an entity. Raises Entity_Not_Found if none
+    procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
+                   Name : in Asu_Us; Parameter : in Boolean;
+                   Got : out Asu_Us);
+    Entity_Not_Found : exception;
+  end Entity_Mng;
+  package body Entity_Mng is separate;
+
+  -- Parsing utilities
   package Util is
 
     -- Init to a new file, or back to a previous file
@@ -82,9 +102,10 @@ package body Parse_Mng  is
     -- Try to parse a keyword, rollback if not
     function Try (Str : String) return Boolean;
     -- Fix text: expand entities and remove repetition of separators
-    function Fix_Text (Text : Asu_Us;
-                       In_Dtd : Boolean;
-                       Preserve_Spaces : Boolean) return Asu_Us;
+    procedure Fix_Text (A_Dtd : in out Dtd_Type;
+                        Text : in out Asu_Us;
+                        In_Dtd : in Boolean;
+                        Preserve_Spaces : in Boolean);
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
   end Util;
@@ -92,15 +113,17 @@ package body Parse_Mng  is
 
   -- Parse a directive <! >
   -- Dtd uses Parse_Directive for comment and CDATA
-  procedure Parse_Directive (Only_Skip : in Boolean);
+  procedure Parse_Directive (A_Dtd : in out Dtd_Type;
+                             Only_Skip : in Boolean);
 
   -- Parse instruction <? >
   -- Dtd adds its own instructions (except xml)
-  procedure Parse_Instruction;
+  procedure Parse_Instruction (A_Dtd : in out Dtd_Type);
 
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
-  function Parse_Value (In_Dtd : in Boolean) return Asu_Us is
-    Value : Asu_Us;
+  procedure Parse_Value (A_Dtd : in out Dtd_Type;
+                         In_Dtd : in Boolean;
+                         Value : out Asu_Us) is
     use type Asu_Us;
   begin
     if Util.Get = ''' then
@@ -114,25 +137,27 @@ package body Parse_Mng  is
     Value := Util.Get_Curr_Str;
     Util.Reset_Curr_Str;
     -- Fix separators and expand entities
-    return Util.Fix_Text (Value, In_Dtd, False);
+    Util.Fix_Text (A_Dtd, Value, In_Dtd, False);
   end Parse_Value;
 
   -- Dtd management, uses util and the tree
   package Dtd is
     -- Init (clear) Dtd data
-    procedure Init;
+    procedure Init (A_Dtd : in out Dtd_Type);
     -- Parse a dtd (either a external file or internal if name is empty)
-    procedure Parse (File_Name : in String);
+    procedure Parse (A_Dtd : in out Dtd_Type; File_Name : in String);
     -- Check Current element of the tree
-    procedure Check_Element (Check_The_Attributes : Boolean);
+    procedure Check_Element (A_Dtd : in out Dtd_Type;
+                             Check_The_Attributes : Boolean);
     -- Perform final checks: that IDREF(s) appear as ID
-    procedure Final_Check;
+    procedure Final_Check (A_Dtd : in out Dtd_Type);
   end Dtd;
   package body Dtd is separate;
 
   -- Parse attributes of an element Name='Value' or Name="Value"
   -- Either of xml prologue directive or on current element
-  procedure Parse_Attributes (Of_Xml : in Boolean) is
+  procedure Parse_Attributes (A_Dtd : in out Dtd_Type;
+                              Of_Xml : in Boolean) is
     Attribute_Name, Attribute_Value : Asu_Us;
     Attribute_Index : Natural;
     Char : Character;
@@ -164,7 +189,7 @@ package body Parse_Mng  is
         end if;
       end if;
       -- Parse value
-      Attribute_Value := Parse_Value (False);
+      Parse_Value (A_Dtd, False, Attribute_Value);
       if Of_Xml then
         Tree_Mng.Add_Xml_Attribute (Attribute_Name, Attribute_Value, Line_No);
       else
@@ -214,7 +239,7 @@ package body Parse_Mng  is
   end Check_Xml_Version;
 
   -- Parse an instruction (<?xxx?>)
-  procedure Parse_Instruction is
+  procedure Parse_Instruction (A_Dtd : in out Dtd_Type) is
     Char : Character;
     Name : Asu_Us;
   begin
@@ -232,7 +257,7 @@ package body Parse_Mng  is
         Char := Util.Get;
         Util.Unget;
         if Char /= Util.Instruction then
-          Parse_Attributes (Of_Xml => True);
+          Parse_Attributes (A_Dtd, Of_Xml => True);
         end if;
         Check_Xml_Version;
         Trace ("Parsed xml declaration");
@@ -279,7 +304,7 @@ package body Parse_Mng  is
   -- Parse "<!DOCTYPE" <Spc> <Name> [ <Spc> "SYSTEM" <Spc> <File> ]
   --  [ <Spc> ] [ "[" <IntSubset> "]" [ <Spc> ] ] "!>"
   -- Reject PUBLIC directive
-  procedure Parse_Doctype is
+  procedure Parse_Doctype (A_Dtd : in out Dtd_Type) is
     Doctype_Name, Doctype_File : Asu_Us;
   begin
     -- Parse and check name
@@ -303,12 +328,12 @@ package body Parse_Mng  is
       end if;
       Doctype_File := Util.Get_Curr_Str;
       Util.Reset_Curr_Str;
-      Dtd.Parse (Asu.To_String (Doctype_File));
+      Dtd.Parse (A_Dtd, Asu.To_String (Doctype_File));
     end if;
     -- Now see if there is an internal definition section
     Util.Skip_Separators;
     if Util.Get = '[' then
-      Dtd.Parse ("");
+      Dtd.Parse (A_Dtd, "");
     else
       Util.Unget;
     end if;
@@ -323,7 +348,7 @@ package body Parse_Mng  is
   -- Parse a directive (<!xxx>)
   -- If Only_Skip, allow comments and CDATA only
   -- Otherwise, also allow DOCTYPE
-  procedure Parse_Directive (Only_Skip : in Boolean) is
+  procedure Parse_Directive (A_Dtd : in out Dtd_Type; Only_Skip : in Boolean) is
     Index : Natural;
   begin
     -- Got <!, what's next?
@@ -344,7 +369,7 @@ package body Parse_Mng  is
       Trace ("Skipped <![CDATA[" & Asu_Ts (Util.Get_Curr_Str));
       Util.Reset_Curr_Str;
     elsif not Only_Skip and then Util.Try ("DOCTYPE ") then
-      Parse_Doctype;
+      Parse_Doctype (A_Dtd);
     else
       -- Reject directive
       Util.Parse_Until_Stop;
@@ -358,7 +383,7 @@ package body Parse_Mng  is
   end Parse_Directive;
 
   -- Parse the prologue
-  procedure Parse_Prologue is
+  procedure Parse_Prologue (A_Dtd : in out Dtd_Type) is
     C1, C2 : Character;
   begin
     -- Loop until end of prologue (<name>)
@@ -379,10 +404,10 @@ package body Parse_Mng  is
       C2 := Util.Get;
       case C2 is
         when Util.Instruction =>
-          Parse_Instruction;
+          Parse_Instruction (A_Dtd);
         when Util.Directive =>
           -- Directive or comment or CDATA
-          Parse_Directive (Only_Skip => False);
+          Parse_Directive (A_Dtd, Only_Skip => False);
         when others =>
           -- A name go back to before '<'
           Util.Unget;
@@ -396,10 +421,10 @@ package body Parse_Mng  is
   end Parse_Prologue;
 
   -- Parse an element
-  procedure Parse_Element (Root : in Boolean);
+  procedure Parse_Element (A_Dtd : in out Dtd_Type; Root : in Boolean);
 
   -- Parse text or sub-elements of an element (until </)
-  procedure Parse_Children is
+  procedure Parse_Children (A_Dtd : in out Dtd_Type) is
     Text : Asu_Us;
     Char : Character;
     Line_No : Natural;
@@ -416,13 +441,13 @@ package body Parse_Mng  is
           return;
         elsif Char = Util.Directive then
           -- Must be a comment or CDATA
-          Parse_Directive (Only_Skip => True);
+          Parse_Directive (A_Dtd, Only_Skip => True);
           Line_No := Util.Get_Line_No;
           Text := Util.Get_Separators;
         else
           -- A new sub-element
           Util.Unget;
-          Parse_Element (False);
+          Parse_Element (A_Dtd, False);
           Line_No := Util.Get_Line_No;
           Text := Util.Get_Separators;
         end if;
@@ -440,7 +465,8 @@ package body Parse_Mng  is
           Trace ("Preserving spaces of the following text");
         end if;
         -- Add previous separators and this text
-        Text := Util.Fix_Text (Text & Util.Get_Curr_Str, False, Preserve);
+        Text := Text & Util.Get_Curr_Str;
+        Util.Fix_Text (A_Dtd, Text, False, Preserve);
         Tree_Mng.Add_Text (Text, Line_No);
         Trace ("Parsed Text " & Asu_Ts (Text));
         Util.Reset_Curr_Str;
@@ -449,7 +475,7 @@ package body Parse_Mng  is
   end Parse_Children;
 
   -- Parse an element (<Name...>)
-  procedure Parse_Element (Root : in Boolean) is
+  procedure Parse_Element (A_Dtd : in out Dtd_Type; Root : in Boolean) is
     Element_Name, End_Name : Asu_Us;
     Char : Character;
     Line_No : Natural;
@@ -478,7 +504,7 @@ package body Parse_Mng  is
     -- If not / nor >, then parse_attributes
     if Char /= Util.Slash and then Char /= Util.Stop then
       Util.Unget;
-      Parse_Attributes (Of_Xml => False);
+      Parse_Attributes (A_Dtd, Of_Xml => False);
       Char := Util.Read;
     end if;
     -- If /, then must be followed by >, return
@@ -488,7 +514,7 @@ package body Parse_Mng  is
         Util.Error ("Unexpected char " & Util.Read & " after " & Util.Slash);
       end if;
       -- End of this empty element, check attributes only is OK
-      Dtd.Check_Element (Check_The_Attributes => True);
+      Dtd.Check_Element (A_Dtd, Check_The_Attributes => True);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up;
@@ -497,8 +523,8 @@ package body Parse_Mng  is
     elsif Char = Util.Stop then
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
-      Dtd.Check_Element (Check_The_Attributes => True);
-      Parse_Children;
+      Dtd.Check_Element (A_Dtd, Check_The_Attributes => True);
+      Parse_Children (A_Dtd);
       -- Check Name matches
       Util.Parse_Until_Char (Util.Stop & "");
       End_Name := Util.Get_Curr_Str;
@@ -509,7 +535,7 @@ package body Parse_Mng  is
                   & ", got " & Asu_Ts (End_Name));
       end if;
       -- End of this non empty element, check children
-      Dtd.Check_Element (Check_The_Attributes => False);
+      Dtd.Check_Element (A_Dtd, Check_The_Attributes => False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up;
@@ -522,7 +548,7 @@ package body Parse_Mng  is
   end Parse_Element;
 
   -- Parse the root element and until end of file
-  procedure Parse_Root_To_End is
+  procedure Parse_Root_To_End (A_Dtd : in out Dtd_Type) is
     Root_Found : Boolean;
     C1, C2 : Character;
   begin
@@ -548,13 +574,13 @@ package body Parse_Mng  is
           Util.Error ("Unexpected processing instruction");
         when Util.Directive =>
           -- Directive : only comment
-          Parse_Directive (False);
+          Parse_Directive (A_Dtd, False);
         when others =>
           Util.Unget;
           if Root_Found then
             Util.Error ("More that one root element found");
           end if;
-          Parse_Element (True);
+          Parse_Element (A_Dtd, True);
           Root_Found := True;
       end case;
     end loop;
@@ -569,20 +595,21 @@ package body Parse_Mng  is
 
   -- Main parser (entry point)
   procedure Parse (File : in out Text_Char.File_Type) is
+    The_Dtd : Dtd_Type;
   begin
     -- Init util to the xml file
     Util.Init (False, File, False);
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue;
     -- Reset Dtd
-    Dtd.Init;
+    Dtd.Init (The_Dtd);
     -- Parse prologue then root element
-    Parse_Prologue;
-    Parse_Root_To_End;
+    Parse_Prologue (The_Dtd);
+    Parse_Root_To_End (The_Dtd);
     -- Perform final checks versus dtd
-    Dtd.Final_Check;
+    Dtd.Final_Check (The_Dtd);
     -- Clean Dtd memory
-    Dtd.Init;
+    Dtd.Init (The_Dtd);
   end Parse;
 
   -- Get parse error message

@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Trees;
+with Trees, Unique_List;
 package Xml_Parser is
 
   -----------
@@ -100,6 +100,11 @@ package Xml_Parser is
   function Get_Text (Text : in Text_Type)
                     return Ada.Strings.Unbounded.Unbounded_String;
 
+  --------------------
+  -- STRING PARSING --
+  --------------------
+  type Dtd_Type is limited private;
+
   ----------------
   -- EXCEPTIONS --
   ----------------
@@ -112,6 +117,9 @@ package Xml_Parser is
 
 private
 
+  ---------------
+  -- NODE TYPE --
+  ---------------
   -- Internal internal tree
   type Internal_Kind_List is (Element, Text, Attribute);
   type My_Tree_Cell is record
@@ -131,6 +139,59 @@ private
   -- Exported node type
   type Node_Type (Kind : Node_Kind_List := Element) is record
     Tree_Access : My_Tree.Position_Access := My_Tree.No_Position;
+  end record;
+
+  --------------
+  -- DTD TYPE --
+  --------------
+  -- The stored entities
+  type Entity_Type is record
+    Parameter : Boolean;
+    Name : Ada.Strings.Unbounded.Unbounded_String;
+    Value : Ada.Strings.Unbounded.Unbounded_String;
+  end record;
+  type Entity_Access is access all Entity_Type;
+  procedure Set (To : out Entity_Type; Val : in Entity_Type);
+  function Image (Entity : Entity_Type) return String;
+  function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean;
+  package Entity_List_Mng is new Unique_List (Entity_Type, Entity_Access,
+             Set, Image, "=");
+
+  -- Dtd info rec
+  type Info_Rec is record
+    -- Kind'Img#Element_name[#Attribute_Name]
+    Name : Ada.Strings.Unbounded.Unbounded_String;
+    -- Elt: Possible children, first chars is <type> ::= E|A|M|C
+    --  (empty, any, mixed or children), then
+    --  for Mixed the list of "#<name>#<name>#" without #PCDATA
+    --   (empty if only #PCDATA)
+    --  for Children the regexp of "#<name>#"
+    -- Atl: Possible attributes, list of "<name>#<type><default>#"
+    --  <type> ::= S|I|R|r|T|t|E (String, ID, IDREF, IDREFS, NMTOKEN, NMTOKENS
+    --   or enum)
+    --  <default> ::= R|I|F|D (required, implied, fixed or default)
+    -- Att: for a fixed of any type or the a default of not enum, the value
+    --   for an Enum, the list of possible "<name>#" and, if there is a default
+    --   this value is the first
+    List : Ada.Strings.Unbounded.Unbounded_String;
+  end record;
+
+ -- Unique list of Info_Rec
+  type Info_Access is access all Info_Rec;
+  procedure Set (To : out Info_Rec; Val : in Info_Rec);
+  function Image (Element : Info_Rec) return String;
+  function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean;
+  package Info_Mng is new Unique_List (Info_Rec, Info_Access, Set, Image, "=");
+
+  type Dtd_Type is record
+    -- Is there a dtd set, otherwise check is always ok
+    Set : Boolean;
+   -- Is there already xml instruction found in the dtd
+    Xml_Found : Boolean;
+    -- Parsed info
+    Info_List : Info_Mng.List_Type;
+    -- Parsed entities
+    Entity_List : Entity_List_Mng.List_Type;
   end record;
 
 end Xml_Parser;

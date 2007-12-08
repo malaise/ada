@@ -54,20 +54,42 @@ package body Xml_Parser is
   end Tree_Mng;
   package body Tree_Mng is separate;
 
-  -- Entity management
-  package Entity_Mng is
-    -- Initialise with default entities
-    procedure Initialise;
-    -- Store an entity
-    procedure Add (Name, Value : in Asu_Us; Parameter : in Boolean);
-    -- Check if an entity exists
-    function Exists (Name : Asu_Us; Parameter : in Boolean) return Boolean;
-    -- Get value of an entity. Raises Entity_Not_Found if none
-    function Get (Name : Asu_Us; Parameter : in Boolean) return Asu_Us;
-    Entity_Not_Found : exception;
-  end Entity_Mng;
-  package body Entity_Mng is separate;
-
+  --------------------
+  -- Dtd definition --
+  --------------------
+  -- Entities
+  procedure Set (To : out Entity_Type; Val : in Entity_Type) is
+  begin
+    To := Val;
+  end Set;
+  function Image (Entity : Entity_Type) return String is
+  begin
+    if Entity.Parameter then
+      return "%" & Asu_Ts (Entity.Name);
+    else
+      return Asu_Ts (Entity.Name);
+    end if;
+  end Image;
+  function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
+    use type Asu_Us;
+  begin
+    return Current.Parameter = Criteria.Parameter
+    and then Current.Name = Criteria.Name;
+  end "=";
+  -- Infos
+  procedure Set (To : out Info_Rec; Val : in Info_Rec) is
+  begin
+    To := Val;
+  end Set;
+  function Image (Element : Info_Rec) return String is
+  begin
+    return  Ada.Strings.Unbounded.To_String (Element.Name);
+  end Image;
+  function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean is
+    use type Asu_Us;
+  begin
+    return Current.Name = Criteria.Name;
+  end "=";
 
   -- Parses the content of the file into the tree
   package Parse_Mng is
@@ -77,7 +99,6 @@ package body Xml_Parser is
     function Get_Error_Message return Asu_Us;
   end Parse_Mng;
   package body Parse_Mng is separate;
-
 
   -----------
   -- DEBUG --
@@ -112,8 +133,6 @@ package body Xml_Parser is
   begin
     -- Open file
     File_Mng.Open (File_Name, Xml_File);
-    -- Reset and init entities
-    Entity_Mng.Initialise;
     -- Parse this file
     Parse_Mng.Parse (Xml_File);
     -- Close file

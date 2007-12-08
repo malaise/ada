@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with Unique_List;
-separate (Xml_Parser)
+separate (Xml_Parser.Parse_Mng)
 -- Entity management
 package body Entity_Mng is
 
@@ -47,20 +47,21 @@ package body Entity_Mng is
     procedure Add_Char (Code : in Natural) is
     begin
       -- Store as normal entity, no tracing
-      Store (Asu_Tus (Code_Of (Code)),
+      Store (The_Entities,
+             Asu_Tus (Code_Of (Code)),
              Asu_Tus (Character'Val(Code) & ""), False, False);
     end Add_Char;
   begin
     -- Reset all entities
     Entity_List_Mng.Delete_List (The_Entities);
     -- Load predefined entities
-    Store (Asu_Tus ("amp"),   Asu_Tus ("&"), False, False);
-    Store (Asu_Tus ("lt"),    Asu_Tus ("<"), False, False);
-    Store (Asu_Tus ("gt"),    Asu_Tus (">"), False, False);
-    Store (Asu_Tus ("quot"),  Asu_Tus (""""), False, False);
-    Store (Asu_Tus ("aquot"), Asu_Tus ("'"), False, False);
+    Store (The_Entities, Asu_Tus ("amp"),   Asu_Tus ("&"), False, False);
+    Store (The_Entities, Asu_Tus ("lt"),    Asu_Tus ("<"), False, False);
+    Store (The_Entities, Asu_Tus ("gt"),    Asu_Tus (">"), False, False);
+    Store (The_Entities, Asu_Tus ("quot"),  Asu_Tus (""""), False, False);
+    Store (The_Entities, Asu_Tus ("aquot"), Asu_Tus ("'"), False, False);
     -- HTab, Cr and Lf
-    Store (Asu_Tus ("#9"), Asu_Tus (Acl.Ht & ""), False, False);
+    Store (The_Entities, Asu_Tus ("#9"), Asu_Tus (Acl.Ht & ""), False, False);
     Add_Char (16#10#);
     Add_Char (16#13#);
     -- Printable ASCII characters
@@ -109,8 +110,8 @@ package body Entity_Mng is
 
   -- Get value of an entity. Raises Parse_Error if none
   procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
-                 Name : in Asu_Us; in Parameter : Boolean;
-                 Got : in out Asu_Us) is
+                 Name : in Asu_Us; Parameter : in Boolean;
+                 Got : out Asu_Us) is
     Entity : Entity_Type;
   begin
     -- Read entity with the given name

@@ -411,21 +411,12 @@ package body Util is
       return False;
   end Try;
 
-  -- Variable resolver, when not in dtd
-  function Variable_Of (Name : String) return String is
-  begin
-    return Asu_Ts (Entity_Mng.Get (Asu_Tus (Name), False));
-  exception
-    when Entity_Mng.Entity_Not_Found =>
-      Error ("Unknown entity " & Name);
-      -- Useless because Error already raises it
-      --  but gnat complains :-(
-      raise Parse_Error;
-  end Variable_Of;
 
   -- Expand %Var; and &#xx; if in dtd
   -- or Expand &Var; if not in dtd, both recursively
-  function Expand_Vars (Text : in Asu_Us; In_Dtd : in Boolean) return Asu_Us is
+  procedure Expand_Vars (Entities : in out Entity_List_Mng.List_Type;
+                         Text : in out Asu_Us;
+                         In_Dtd : in Boolean) is
     Result : Asu_Us;
     -- Number of ";" to skip (because within "&var;")
     Nb2Skip : Natural;
@@ -441,13 +432,30 @@ package body Util is
     -- Entity name and value
     Name, Val : Asu_Us;
     use type Asu_Us;
+    -- Entity found
+    Found : Boolean;
+
+    -- Variable resolver, when not in dtd
+    function Variable_Of (Name : String) return String is
+      Got : Asu_Us;
+    begin
+      Entity_Mng.Get (Entities, Asu_Tus (Name), False, Got);
+      return Asu_Ts (Got);
+    exception
+      when Entity_Mng.Entity_Not_Found =>
+        Error ("Unknown entity " & Name);
+        -- Useless because Error already raises it
+        --  but gnat complains :-(
+        raise Parse_Error;
+    end Variable_Of;
   begin
     if not In_Dtd then
-      return Asu_Tus (String_Mng.Eval_Variables (
-             Str => Asu_Ts (Text),
-             Start_Delimiter => "&",
-             Stop_Delimiter  => ";",
-             Resolv => Variable_Of'Access));
+      Text := Asu_Tus (String_Mng.Eval_Variables (
+                         Str => Asu_Ts (Text),
+                         Start_Delimiter => "&",
+                         Stop_Delimiter  => ";",
+                         Resolv => Variable_Of'Access));
+      return;
     end if;
  
     -- Expand variables when in dtd
@@ -515,14 +523,15 @@ package body Util is
         end if;
         -- Got an entity name: get value if it exists
         Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
-        if not Entity_Mng.Exists (Name, Starter = Param_Ref) then
+        Entity_Mng.Exists (Entities, Name, Starter = Param_Ref, Found);
+        if not Found then
           if Starter = Param_Ref then
             Error ("Unknown entity %" & Asu_Ts (Name));
           else
             Error ("Unknown entity " & Asu_Ts (Name));
           end if;
         end if;
-        Val := Entity_Mng.Get (Name, Starter = Param_Ref);
+        Entity_Mng.Get (Entities, Name, Starter = Param_Ref, Val);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -539,7 +548,7 @@ package body Util is
 
     end loop;
 
-    return Result;
+    Text := Result;
   exception
     when Entity_Mng.Entity_Not_Found =>
       Error ("Unknown entity " & Asu_Ts (Name));
@@ -548,20 +557,22 @@ package body Util is
 
 
   -- Fix text: expand variables and remove repetition of separators
-  function Fix_Text (Text : Asu_Us;
-                     In_Dtd : Boolean;
-                     Preserve_Spaces : Boolean) return Asu_Us is
+  procedure Fix_Text (A_Dtd : in out Dtd_Type;
+                      Text : in out Asu_Us;
+                      In_Dtd : in Boolean;
+                      Preserve_Spaces : in Boolean) is
     Char : Character;
     Found : Boolean;
     Name, S1, S2 : Asu_Us;
     use type Asu_Us;
   begin
     if Text = Asu_Null then
-      return Text;
+      return;
     end if;
 
     -- Expand entities values
-    S1 := Expand_Vars (Text, In_Dtd);
+    S1 := Text;
+    Expand_Vars (A_Dtd.Entity_List, S1, In_Dtd);
 
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
@@ -603,7 +614,7 @@ package body Util is
       end if;
     end if;
     -- Done
-    return S2;
+    Text := S2;
   exception
     when String_Mng.Delimiter_Mismatch =>
       Error ("Invalid entity reference in text " & Asu_Ts (Text));
