@@ -152,6 +152,7 @@ package body Dtd is
   procedure Parse_Element is
     Info : Info_Rec;
     Found : Boolean;
+    Char : Character;
     use type Asu_Us;
   begin
     -- Parse element name
@@ -171,10 +172,11 @@ package body Dtd is
     Util.Skip_Separators;
     if Util.Try ("EMPTY") then
       Info.List := Asu_Tus ("E");
-    elsif Util.Try ("Any") then
+    elsif Util.Try ("ANY") then
       Info.List := Asu_Tus ("A");
     else
-      -- A list of sub-elements, possibly containing #PCDATA
+      -- A list of sub-elements, possibly containing #PCDATA,
+      --  possibly followed by '*'
       -- Must be '('
       if Util.Get /= '(' then
         Util.Error ("Unexpected character " & Util.Read
@@ -182,6 +184,7 @@ package body Dtd is
       end if;
       -- Get children definition (until ')' matching the '(' got)
       Util.Parse_Until_Close;
+      Util.Skip_Separators;
       Info.List := Util.Remove_Separators (Util.Get_Curr_Str);
       Info.List := Util.Fix_Text (Info.List, True, False);
       Util.Reset_Curr_Str;
@@ -205,6 +208,10 @@ package body Dtd is
           if not Util.Names_Ok (Info.List, "|") then
             Util.Error ("Invalid name in Mixed definition");
           end if;
+          -- Last ')' must be followed by "*", remove it
+          if Util.Get /= '*' then
+            Util.Error ("Invalid Mixed definition");
+          end if;
           -- Replace '|' by '#' and prepend and append a '#'
           Info.List := Asu_Tus (
             String_Mng.Replace ("#" & Asu_Ts (Info.List) & "#", "|", "#"));
@@ -213,7 +220,14 @@ package body Dtd is
         end if;
         Info.List := "M" & Info.List;
       else
-        -- A regexp of children: Append string
+        -- A regexp of children:
+        -- Put into "(" ")" and append "?", "*" or, "+" if needed
+        Char := Util.Get;
+        if Char = '?' or else Char = '*' or else Char = '+' then
+          Info.List := "(" & Info.List & ")" & Char;
+        else
+          Util.Unget;
+        end if;
         -- Expand variables if any
         Info.List := Util.Fix_Text (Info.List, True, False);
         Info.List := Util.Remove_Separators (Info.List);
