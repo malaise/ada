@@ -1,8 +1,7 @@
-with Dyn_Data;
-pragma Elaborate (Dyn_Data);
+with Unchecked_Deallocation;
 package body Text_Char is
 
-  package File_Data is new Dyn_Data (File_Type_Rec, File_Type);
+  procedure Free is new Unchecked_Deallocation (File_Type_Rec, File_Type);
   package Asu renames Ada.Strings.Unbounded;
 
   -- Associate a file desc to a Txt_Char file
@@ -13,8 +12,8 @@ package body Text_Char is
     if Is_Open (File) then
       raise Status_Error;
     end if;
-    -- Allocate file and open Text_Line file
-    File := File_Data.Allocate;
+    -- Open Text_Line file
+    File := new File_Type_Rec;
     Text_Line.Open (File.Line_File, Text_Line.In_File, Fd);
   end Open;
 
@@ -27,7 +26,10 @@ package body Text_Char is
     end if;
     -- Close Text_Line file and free file
     Text_Line.Close (File.Line_File);
-    File_Data.Free (File);
+    File.Line_Got := Ada.Strings.Unbounded.Null_Unbounded_String;
+    File.Ungot_Chars := Ada.Strings.Unbounded.Null_Unbounded_String;
+    Free (File);
+    File := null;
   end Close;
 
   -- Returns if a file is open

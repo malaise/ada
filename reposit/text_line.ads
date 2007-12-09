@@ -3,7 +3,7 @@ with Sys_Calls;
 package Text_Line is
 
   -- The file type
-  type File_Type is private;
+  type File_Type is limited private;
 
   -- The End_Of_Line character
   Line_Feed : constant Character := Ada.Characters.Latin_1.Lf;
