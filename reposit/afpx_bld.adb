@@ -14,6 +14,7 @@ procedure Afpx_Bld is
   -- Xml parser
   package Xp renames Xml_Parser;
   use type Xp.Node_Kind_List;
+  Ctx : Xp.Ctx_Type;
 
   -- Unbounded strings
   package Asu renames Ada.Strings.Unbounded;
@@ -984,14 +985,14 @@ begin
   -- First check
   Ada.Text_Io.Put_Line ("Parsing:");
   begin
-    Xp.Parse (Text_Handler.Value(List_File_Name), Prologue, Root);
+    Xp.Parse (Text_Handler.Value(List_File_Name), Ctx, Prologue, Root);
   exception
     when Xp.File_Error =>
       Basic_Proc.Put_Line_Error ("Error accessing file "
                             & Text_Handler.Value(List_File_Name));
       raise File_Not_Found;
     when Xp.Parse_Error =>
-      Basic_Proc.Put_Line_Error (Xp.Get_Parse_Error_Message);
+      Basic_Proc.Put_Line_Error (Xp.Get_Parse_Error_Message (Ctx));
       raise File_Syntax_Error;
   end;
 
