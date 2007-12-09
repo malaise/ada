@@ -1,6 +1,7 @@
 with Ada.Text_Io, Ada.Strings.Unbounded, Ada.Exceptions;
 with Argument, Xml_Parser, Normal, Basic_Proc;
 procedure T_Xml is
+  Ctx : Xml_Parser.Ctx_Type;
   Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
@@ -175,22 +176,23 @@ begin
     return;
   end if;
   if Dump then
-    Xml_Parser.Parse (Argument.Get_Parameter(2), Prologue, Root);
+    Xml_Parser.Parse (Argument.Get_Parameter(2), Ctx, Prologue, Root);
     Ada.Text_Io.Put_Line ("Prologue:");
     Dump_Element (Prologue, 0);
     Ada.Text_Io.Put_Line ("Elements tree:");
     Dump_Element (Root, 0);
   else
-    Xml_Parser.Parse (Argument.Get_Parameter, Prologue, Root);
+    Xml_Parser.Parse (Argument.Get_Parameter, Ctx, Prologue, Root);
     Put_Element (Prologue, Prologue_Level);
     Ada.Text_Io.New_Line;
     Put_Element (Root, 0);
   end if;
-  Xml_Parser.Clean (Prologue, Root);
+  Xml_Parser.Clean (Ctx);
 exception
   when Xml_Parser.Parse_Error =>
-    Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message);
+    Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
     Basic_Proc.Set_Error_Exit_Code;
+    Xml_Parser.Clean (Ctx);
   when Error:others =>
     Basic_Proc.Put_Line_Error ("Exception "
         & Ada.Exceptions.Exception_Name (Error)
