@@ -2,46 +2,16 @@ with String_Mng;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
 
-  -- Are we in dtd
-  In_Dtd : Boolean := False;
-
-  -- Saved line of input (when switching to dtd file)
-  Saved_Line : Natural := 0;
   -- Current line of input
-  Current_Line : Natural := 0;
-  function Get_Line_No return Natural is
+  function Get_Line_No (Flow : Flow_Type) return Natural is
   begin
-    return Current_Line;
+    case Flow.Kind is
+      when Xml_File | Xml_String =>
+        return Flow.Xml_Line;
+      when Dtd_File =>
+        return Flow.Dtd_Line;
+    end case;
   end Get_Line_No;
-
-  -- Saved file of input (when switching to dtd file)
-  Saved_File : Text_Char.File_Type;
-  -- Current file
-  File : Text_Char.File_Type;
-
-  -- Switch to a new file or switch back
-  procedure Init (Back : in Boolean;
-                  To_File : in Text_Char.File_Type;
-                  Is_Dtd : in Boolean) is
-    New_File : Text_Char.File_Type;
-  begin
-    if not Back then
-      -- Save current info
-      Saved_Line := Current_Line;
-      Saved_File := File;
-      -- Switch to new
-      File := To_File;
-      Current_Line := 1;
-    else
-      -- Switch back
-      Current_Line := Saved_Line;
-      File := Saved_File;
-      -- Reset saved info
-      Saved_Line := 0;
-      Saved_File := New_File;
-    end if;
-    In_Dtd := Is_Dtd;
-  end Init;
 
   ------------------
   -- Syntax check --
@@ -92,9 +62,9 @@ package body Util is
   end Name_Ok;
 
   -- Check that Str defines valid names seprated by Sep
-    function Names_Ok (Str : Asu_Us;
-                       Seps : String;
-                       Allow_Token : Boolean := False) return Boolean is
+  function Names_Ok (Str : Asu_Us;
+                     Seps : String;
+                     Allow_Token : Boolean := False) return Boolean is
     S : String(1 .. Asu.Length (Str)) := Asu_Ts (Str);
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
@@ -145,96 +115,108 @@ package body Util is
   ------------------
   -- Circular buffer of read characters
   Max_Len : constant := 10;
-  package My_Circ is new Queues.Circ (Max_Len, Character);
 
   -- Separator for current line of input
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
 
-  -- Error message
-  Err_Msg : Asu_Us;
-  procedure Error (Msg : in String; Line_No : in Natural := 0) is
+  procedure Error (Flow : in out Flow_Type;
+                   Msg : in String; Line_No : in Natural := 0) is
   begin
-    Err_Msg := Asu_Tus ("Xml_Parse error at line");
+    Flow.Err_Msg := Asu_Tus ("Xml_Parse error at line");
     if Line_No = 0 then
-      Asu.Append (Err_Msg, Current_Line'Img);
+      Asu.Append (Flow.Err_Msg, Natural'Image(Get_Line_No(Flow)));
     else
-      Asu.Append (Err_Msg, Line_No'Img);
+      Asu.Append (Flow.Err_Msg, Line_No'Img);
     end if;
-    if In_Dtd then
-      Asu.Append (Err_Msg, " of dtd");
+    if Flow.Kind = Dtd_File then
+      Asu.Append (Flow.Err_Msg, " of dtd");
     end if;
-    Asu.Append (Err_Msg, ": " & Msg & ".");
+    Asu.Append (Flow.Err_Msg, ": " & Msg & ".");
     raise Parse_Error;
   end Error;
-  function Get_Error_Message return Asu_Us is
+  function Get_Error_Message (Flow : Flow_Type) return Asu_Us is
   begin
-    return Err_Msg;
+    return Flow.Err_Msg;
   end Get_Error_Message;
 
   -- Get character and store in queue
-  function Get return Character is
-    Char : Character;
+  procedure Get (Flow : in out Flow_Type; Char : out Character) is
   begin
-    Char := Text_Char.Get (File);
-    My_Circ.Push (Char);
+    case Flow.Kind is
+      when Xml_File =>
+        Char := Text_Char.Get (Flow.Xml_File);
+      when Xml_String =>
+        raise Internal_Error;
+      when Dtd_File =>
+        Char := Text_Char.Get (Flow.Dtd_File);
+    end case;
+    My_Circ.Push (Flow.Circ, Char);
     if Char = Lf then
-      Current_Line := Current_Line + 1;
+      if Flow.Kind /= Dtd_File then
+        Flow.Xml_Line := Flow.Xml_Line + 1;
+      else
+        Flow.Dtd_Line := Flow.Dtd_Line + 1;
+      end if;
     end if;
-    return Char;
   exception
     when Text_Char.End_Error =>
       raise End_Error;
   end Get;
 
-  -- To know how many where got before End_Error
-  Nb_Got : Natural;
   -- Get a string
-  procedure Get (Str : out String) is
+  procedure Get (Flow : in out Flow_Type; Str : out String) is
   begin
-    Nb_Got := 0;
+    Flow.Nb_Got := 0;
     for I in Str'Range loop
-      Str(I) := Get;
-      Nb_Got := Nb_Got + 1;
+      Get (Flow, Str(I));
+      Flow.Nb_Got := Flow.Nb_Got + 1;
     end loop;
   end Get;
 
   -- Get N characters
-  function Get (N : Positive) return String is
-    Str : String (1 .. N);
+  procedure Get (Flow : in out Flow_Type; N : in Positive; Str : out String) is
   begin
-    Get (Str);
-    return Str;
+    Get (Flow, Str(Str'First .. Str'First + N - 1));
   end Get;
 
   -- Undo some gets (default 1)
-  procedure Unget (N : Positive := 1) is
+  procedure Unget (Flow : in out Flow_Type; N : Positive := 1) is
     Char : Character;
   begin
     for I in 1 .. N loop
-      My_Circ.Look_Last (Char);
-      My_Circ.Discard_Last;
-      Text_Char.Unget (File, Char);
+      My_Circ.Look_Last (Flow.Circ, Char);
+      My_Circ.Discard_Last (Flow.Circ);
+      case Flow.Kind is
+        when Xml_File =>
+          Text_Char.Unget (Flow.Xml_File, Char);
+        when Xml_String =>
+          raise Internal_Error;
+        when Dtd_File =>
+          Text_Char.Unget (Flow.Dtd_File, Char);
+      end case;
       if Char = Lf then
-        Current_Line := Current_Line - 1;
+        if Flow.Kind /= Dtd_File then
+          Flow.Xml_Line := Flow.Xml_Line - 1;
+        else
+          Flow.Dtd_Line := Flow.Dtd_Line - 1;
+        end if;
       end if;
     end loop;
   end Unget;
 
   -- Read last char got
-  function Read return Character is
-    Char : Character;
+  procedure Read (Flow : in out Flow_Type; Char : out Character) is
   begin
-    My_Circ.Look_Last (Char);
-    return Char;
+    My_Circ.Look_Last (Flow.Circ, Char);
   end Read;
 
   -- Read Str'Length chars got
-  procedure Read (Str : out String) is
+  procedure Read (Flow : in out Flow_Type; Str : out String) is
     L : constant Integer := Str'Last;
   begin
     for I in 1 .. Str'Length loop
       -- I=1 => last pushed => Str'Last
-      My_Circ.Look_Last (Str(L - I + 1), I);
+      My_Circ.Look_Last (Flow.Circ, Str(L - I + 1), I);
     end loop;
   end Read;
 
@@ -251,41 +233,39 @@ package body Util is
   end Is_Separator;
 
   -- Skip separators until a significant char (not separator) is got
-  procedure Skip_Separators is
+  procedure Skip_Separators (Flow : in out Flow_Type) is
     Char : Character;
   begin
     loop
-      Char := Get;
+      Get (Flow, Char);
       exit when not Is_Separator (Char);
     end loop;
-    Unget;
+    Unget (Flow);
   end Skip_Separators;
 
   -- Skip separators, return the skipped separators
-  function Get_Separators return Asu_Us is
+  procedure Get_Separators (Flow : in out Flow_Type;
+                              Seps : out Asu_Us) is
     Char : Character;
-    Separators : Asu_Us;
     use type Asu_Us;
   begin
+    Seps := Asu_Null;
     loop
-      Char := Get;
+      Get (Flow, Char);
       exit when not Is_Separator (Char);
-      Separators := Separators & Char;
+      Seps := Seps & Char;
     end loop;
-    Unget;
-    return Separators;
+    Unget (Flow);
   end Get_Separators;
 
-  -- Current significant string, loaded by Parse_Until_xxx
-  Curr_Str : Asu_Us;
-  function Get_Curr_Str return Asu_Us is
+  function Get_Curr_Str (Flow : Flow_Type) return Asu_Us is
   begin
-    return Curr_Str;
+    return Flow.Curr_Str;
   end Get_Curr_Str;
 
-  procedure Reset_Curr_Str is
+  procedure Reset_Curr_Str (Flow : in out Flow_Type) is
   begin
-    Curr_Str := Asu_Null;
+    Flow.Curr_Str := Asu_Null;
   end Reset_Curr_Str;
 
   -- Replace all separators by spaces
@@ -299,7 +279,7 @@ package body Util is
   end Fix_Spaces;
 
   -- Parse until Criteria is found or until a separator if Criteria = ""
-  procedure Parse_Until_Str (Criteria : in String) is
+  procedure Parse_Until_Str (Flow : in out Flow_Type; Criteria : in String) is
     Str : String (Criteria'Range);
     Char : Character;
     use type Asu_Us;
@@ -308,22 +288,22 @@ package body Util is
       raise Constraint_Error;
     end if;
     loop
-      Char := Get;
+      Get (Flow, Char);
       if Criteria = "" then
         exit when Is_Separator (Char);
-        Curr_Str := Curr_Str & Char;
+        Flow.Curr_Str := Flow.Curr_Str & Char;
       else
-        Read (Str);
+        Read (Flow, Str);
         -- Space in Str matches any separator
         Fix_Spaces (Str);
-        Curr_Str := Curr_Str & Char;
+        Flow.Curr_Str := Flow.Curr_Str & Char;
         exit when Str = Criteria;
       end if;
     end loop;
   end Parse_Until_Str;
 
   -- Parse until one of the chars is found (any separator if space)
-  procedure Parse_Until_Char (Criteria : in String) is
+  procedure Parse_Until_Char (Flow : in out Flow_Type; Criteria : in String) is
     Char : Character;
     use type Asu_Us;
   begin
@@ -332,7 +312,7 @@ package body Util is
     end if;
     This_Char:
     loop
-      Char := Get;
+      Get (Flow, Char);
       -- Compare to each char of the criteria
       for I in Criteria'Range loop
         if Criteria(I) = Space then
@@ -341,18 +321,18 @@ package body Util is
           exit This_Char when Char = Criteria(I);
         end if;
       end loop;
-      Curr_Str := Curr_Str & Char;
+      Flow.Curr_Str := Flow.Curr_Str & Char;
     end loop This_Char;
   end Parse_Until_Char;
 
-  procedure Parse_Until_Stop is
+  procedure Parse_Until_Stop (Flow : in out Flow_Type) is
   begin
-    Parse_Until_Char ("" & Stop);
+    Parse_Until_Char (Flow, "" & Stop);
   end Parse_Until_Stop;
 
   -- Parse until a ')' closes the already got '('
   -- Sets Curr_Str
-  procedure Parse_Until_Close is
+  procedure Parse_Until_Close (Flow : in out Flow_Type) is
     Char : Character;
     Nb : Natural;
     use type Asu_Us;
@@ -360,7 +340,7 @@ package body Util is
     -- One '(' already got
     Nb := 1;
     loop
-      Char := Get;
+      Get (Flow, Char);
       -- Count opening and closing parenthesis
       if Char = '(' then
         Nb := Nb + 1;
@@ -368,53 +348,51 @@ package body Util is
         Nb := Nb - 1;
         exit when Nb = 0;
       end if;
-      Curr_Str := Curr_Str & Char;
+      Flow.Curr_Str := Flow.Curr_Str & Char;
     end loop;
   end Parse_Until_Close;
 
   -- Parse until end of name, resets Curr_Str
-  function Parse_Name return Asu_Us is
-    Res : Asu_Us;
+  procedure Parse_Name (Flow : in out Flow_Type; Name : out Asu_Us) is
     Char : Character;
     use type Asu_Us;
   begin
+    Name := Asu_Null;
     loop
-      Char := Get;
+      Get (Flow, Char);
       -- Loop while valid in name
-      exit when not Is_Valid_In_Name(Char);
-      Res := Res & Char;
+      exit when not Is_Valid_In_Name (Char);
+      Name := Name & Char;
     end loop;
-    Unget;
-    return Res;
+    Unget (Flow);
   end Parse_Name;
 
   -- Try to parse a keyword, rollback if not
-  function Try (Str : String) return Boolean is
+  procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean) is
     Got_Str : String (1 .. Str'Length);
   begin
-    Get (Got_Str);
+    Get (Flow, Got_Str);
     -- Space in Str matches any separator
     Fix_Spaces (Got_Str);
     -- Check if match
     if Got_Str = Str then
       -- Got it
-      return True;
+      Ok := True;
     else
       -- Got enough chars but not those expected
-      Unget (Str'Length);
-      return False;
+      Unget (Flow, Str'Length);
+      Ok := False;
     end if;
   exception
     when End_Error =>
       -- Not enough chars
-      Unget (Nb_Got);
-      return False;
+      Unget (Flow, Flow.Nb_Got);
+      Ok := False;
   end Try;
-
 
   -- Expand %Var; and &#xx; if in dtd
   -- or Expand &Var; if not in dtd, both recursively
-  procedure Expand_Vars (Entities : in out Entity_List_Mng.List_Type;
+  procedure Expand_Vars (Ctx : in out Ctx_Type;
                          Text : in out Asu_Us;
                          In_Dtd : in Boolean) is
     Result : Asu_Us;
@@ -439,11 +417,11 @@ package body Util is
     function Variable_Of (Name : String) return String is
       Got : Asu_Us;
     begin
-      Entity_Mng.Get (Entities, Asu_Tus (Name), False, Got);
+      Entity_Mng.Get (Ctx.Dtd.Entity_List, Asu_Tus (Name), False, Got);
       return Asu_Ts (Got);
     exception
       when Entity_Mng.Entity_Not_Found =>
-        Error ("Unknown entity " & Name);
+        Error (Ctx.Flow, "Unknown entity " & Name);
         -- Useless because Error already raises it
         --  but gnat complains :-(
         raise Parse_Error;
@@ -514,24 +492,25 @@ package body Util is
 
         -- Check that a stop was found
         if Istop = 0 then
-          Error ("Unterminated entity reference " & Asu_Ts (Text));
+          Error (Ctx.Flow, "Unterminated entity reference " & Asu_Ts (Text));
         end if;
         -- Check that a stop is big enough
         if Istop = Istart + 1 then
           -- "%;"
-          Error ("Emtpy entity reference " & Asu_Ts (Text));
+          Error (Ctx.Flow, "Emtpy entity reference " & Asu_Ts (Text));
         end if;
         -- Got an entity name: get value if it exists
         Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
-        Entity_Mng.Exists (Entities, Name, Starter = Param_Ref, Found);
+        Entity_Mng.Exists (Ctx.Dtd.Entity_List,
+                           Name, Starter = Param_Ref, Found);
         if not Found then
           if Starter = Param_Ref then
-            Error ("Unknown entity %" & Asu_Ts (Name));
+            Error (Ctx.Flow, "Unknown entity %" & Asu_Ts (Name));
           else
-            Error ("Unknown entity " & Asu_Ts (Name));
+            Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
           end if;
         end if;
-        Entity_Mng.Get (Entities, Name, Starter = Param_Ref, Val);
+        Entity_Mng.Get (Ctx.Dtd.Entity_List, Name, Starter = Param_Ref, Val);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -551,13 +530,13 @@ package body Util is
     Text := Result;
   exception
     when Entity_Mng.Entity_Not_Found =>
-      Error ("Unknown entity " & Asu_Ts (Name));
+      Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
       raise Parse_Error;
   end Expand_Vars;
 
 
   -- Fix text: expand variables and remove repetition of separators
-  procedure Fix_Text (A_Dtd : in out Dtd_Type;
+  procedure Fix_Text (Ctx : in out Ctx_Type;
                       Text : in out Asu_Us;
                       In_Dtd : in Boolean;
                       Preserve_Spaces : in Boolean) is
@@ -572,7 +551,7 @@ package body Util is
 
     -- Expand entities values
     S1 := Text;
-    Expand_Vars (A_Dtd.Entity_List, S1, In_Dtd);
+    Expand_Vars (Ctx, S1, In_Dtd);
 
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
@@ -617,7 +596,7 @@ package body Util is
     Text := S2;
   exception
     when String_Mng.Delimiter_Mismatch =>
-      Error ("Invalid entity reference in text " & Asu_Ts (Text));
+      Error (Ctx.Flow, "Invalid entity reference in text " & Asu_Ts (Text));
       -- Useless because Error already raises it
       --  but gnat complains :-(
       raise Parse_Error;

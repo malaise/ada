@@ -1,4 +1,4 @@
-with Environ, Text_Char, Basic_Proc;
+with Environ, Basic_Proc;
 package body Xml_Parser is
 
   -- Ada unbounded strings
@@ -24,33 +24,40 @@ package body Xml_Parser is
 
   -- My tree manipulation
   package Tree_Mng is
-    -- The prologue and the tree of elements
-    Prologue : My_Tree.Tree_Type;
-    Tree : My_Tree.Tree_Type;
     -- Add an element, move to it
-    procedure Add_Element (Name : in Asu_Us; Line : in Positive);
+    procedure Add_Element (Elements : in out My_Tree.Tree_Type;
+                           Name : in Asu_Us; Line : in Positive);
     -- Move up
-    procedure Move_Up;
+    procedure Move_Up (Elements : in out My_Tree.Tree_Type);
     -- Add an attribute to current element, remain on current element
-    procedure Add_Attribute (Name, Value : in Asu_Us; Line : in Positive);
+    procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
+                             Name, Value : in Asu_Us; Line : in Positive);
     -- Check if an attribute exists for current element
-    function Attribute_Exists (Name : Asu_Us) return Boolean;
+    procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
+                              Name : in Asu_Us; Exists : out Boolean);
     -- Get an attribute (if it exists, otherwise "")
-    function Get_Attribute (Name : Asu_Us) return Asu_Us;
+    procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
+                           Name : in Asu_Us; Value : out Asu_Us);
     -- Add a text to current element, remain on current element
-    procedure Add_Text (Text : in Asu_Us; Line : in Positive);
+    procedure Add_Text (Elements : in out My_Tree.Tree_Type;
+                        Text : in Asu_Us; Line : in Positive);
     -- Initialise an empty prologue
-    procedure Init_Prologue;
+    procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
-    procedure Set_Xml (Line : in Positive);
-    procedure Add_Xml_Attribute (Name, Value : in Asu_Us; Line : in Positive);
+    procedure Set_Xml (Prologue : in out My_Tree.Tree_Type;
+                       Line : in Positive);
+    procedure Add_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
+                                 Name, Value : in Asu_Us; Line : in Positive);
     -- Check xml is set, find an attribute (Index is 0 if not found)
-    function Xml_Existst return Boolean;
-    procedure Find_Xml_Attribute (Name : in Asu_Us;
+    procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
+                         Exists : out Boolean);
+    procedure Find_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
+                                  Name : in Asu_Us;
                                   Index : out Natural;
                                   Value : out Asu_Us);
     -- Add a processing instruction
-    procedure Add_Pi (Name, Text : in Asu_Us; Line : in Positive);
+    procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
+                      Name, Text : in Asu_Us; Line : in Positive);
   end Tree_Mng;
   package body Tree_Mng is separate;
 
@@ -94,9 +101,9 @@ package body Xml_Parser is
   -- Parses the content of the file into the tree
   package Parse_Mng is
     -- Parse the file. Raises exceptions
-    procedure Parse (File : in out Text_Char.File_Type);
+    procedure Parse (Ctx : in out Ctx_Type);
     -- Get parse error message
-    function Get_Error_Message return Asu_Us;
+    function Get_Error_Message (Ctx : Ctx_Type) return Asu_Us;
   end Parse_Mng;
   package body Parse_Mng is separate;
 
@@ -126,24 +133,35 @@ package body Xml_Parser is
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error, Parse_Error
   procedure Parse (File_Name : in String;
+                   Ctx          : out Ctx_Type;
                    Prologue     : out Element_Type;
                    Root_Element : out Element_Type) is
-    Xml_File : Text_Char.File_Type;
     Prol, Root : Node_Type;
   begin
+    if not Ctx.Clean then
+      raise Status_Error;
+    end if;
+    -- Be sure context is clean
+    Clean (Ctx);
+    -- No it will not be clean
+    Ctx.Clean := False;
     -- Open file
-    File_Mng.Open (File_Name, Xml_File);
+    File_Mng.Open (File_Name, Ctx.Flow.Xml_File);
+    Ctx.Flow.Kind := Xml_File;
+    Ctx.Flow.Xml_Line := 1;
     -- Parse this file
-    Parse_Mng.Parse (Xml_File);
-    -- Close file
-    File_Mng.Close (Xml_File);
+    Parse_Mng.Parse (Ctx);
+    -- Close the file
+    File_Mng.Close (Ctx.Flow.Xml_File);
     -- Set tree roots
-    My_Tree.Move_Root (Tree_Mng.Prologue);
+    My_Tree.Move_Root (Ctx.Prologue);
     Prologue := (Kind => Element,
-                 Tree_Access => My_Tree.Get_Position (Tree_Mng.Prologue));
-    My_Tree.Move_Root (Tree_Mng.Tree);
+                 Tree => Ctx.Prologue'Unrestricted_Access,
+                 Tree_Access => My_Tree.Get_Position (Ctx.Prologue));
+    My_Tree.Move_Root (Ctx.Elements);
     Root_Element:= (Kind => Element,
-                    Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+                    Tree => Ctx.Elements'Unrestricted_Access,
+                    Tree_Access => My_Tree.Get_Position (Ctx.Elements));
   exception
     when File_Error | Parse_Error =>
       raise;
@@ -152,36 +170,56 @@ package body Xml_Parser is
   end Parse;
 
   -- Return the error message if Parse_Error
-  function Get_Parse_Error_Message return String is
+  function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
   begin
-    return Asu_Ts (Parse_Mng.Get_Error_Message);
+    return Asu_Ts (Parse_Mng.Get_Error_Message (Ctx));
   end Get_Parse_Error_Message;
 
-  -- Clean a parsed tree
-  -- May raise Not_Root if not root
-  procedure Clean (Prologue     : in out Element_Type;
-                   Root_Element : in out Element_Type) is
+  -- Clean a parsing context
+  procedure Clean (Ctx : in out Ctx_Type) is
     use type My_Tree.Position_Access;
   begin
-    -- Nodes must be set
-    if Prologue.Tree_Access = My_Tree.No_Position
-    or else Root_Element.Tree_Access = My_Tree.No_Position then
-      raise Invalid_Node;
+    -- Clean input flow
+    Ctx.Flow.Kind := Xml_File;
+    Ctx.Flow.Nb_Got := 0;
+    loop
+      begin
+        My_Circ.Discard_Last (Ctx.Flow.Circ);
+      exception
+        when My_Circ.Circ_Empty =>
+          exit;
+      end;
+    end loop;
+    Ctx.Flow.Xml_Line := 0;
+    Ctx.Flow.Dtd_Line := 0;
+    Ctx.Flow.Err_Msg := Asu_Null;
+    Ctx.Flow.Curr_Str := Asu_Null;
+
+    Ctx.Flow.Str := Asu_Null;
+    if Text_Char.Is_Open (Ctx.Flow.Xml_File) then
+      Text_Char.Close (Ctx.Flow.Xml_File);
+    end if;
+    if Text_Char.Is_Open (Ctx.Flow.Dtd_File) then
+      Text_Char.Close (Ctx.Flow.Dtd_File);
     end if;
     -- Clean prologue tree
-    My_Tree.Set_Position (Tree_Mng.Prologue, Prologue.Tree_Access);
-    if My_Tree.Has_Father (Tree_Mng.Prologue) then
-      raise Not_Root;
+    if not My_Tree.Is_Empty (Ctx.Prologue) then
+      My_Tree.Move_Root (Ctx.Prologue);
+      My_Tree.Delete_Tree (Ctx.Prologue);
     end if;
-    My_Tree.Delete_Tree (Tree_Mng.Prologue);
     -- Clean element tree
-    My_Tree.Set_Position (Tree_Mng.Tree, Root_Element.Tree_Access);
-    if My_Tree.Has_Father (Tree_Mng.Tree) then
-      raise Not_Root;
+    if not My_Tree.Is_Empty (Ctx.Elements) then
+      My_Tree.Move_Root (Ctx.Elements);
+      My_Tree.Delete_Tree (Ctx.Elements);
     end if;
-    My_Tree.Delete_Tree (Tree_Mng.Tree);
+    -- Clean Dtd
+    Ctx.Dtd.Set := False;
+    Ctx.Dtd.Xml_Found := False;
+    Info_Mng.Delete_List (Ctx.Dtd.Info_List);
+    Entity_List_Mng.Delete_List (Ctx.Dtd.Entity_List);
+    -- Context is clean
+    Ctx.Clean := True;
   end Clean;
-
 
   -- Read internal tree cell of a node
   function Get_Node (Node : Node_Type) return My_Tree_Cell is
@@ -193,8 +231,8 @@ package body Xml_Parser is
       raise Invalid_Node;
     end if;
     -- Read cell in tree
-    My_Tree.Set_Position (Tree_Mng.Tree, Node.Tree_Access);
-    My_Tree.Read (Tree_Mng.Tree, Cell);
+    My_Tree.Set_Position (Node.Tree.all, Node.Tree_Access);
+    My_Tree.Read (Node.Tree.all, Cell);
     -- Check kinds match
     if (Node.Kind = Element and then Cell.Kind /= Element)
     or else (Node.Kind = Text and then Cell.Kind /= Text) then
@@ -230,11 +268,11 @@ package body Xml_Parser is
   begin
     for I in A'Range loop
       if I = A'First then
-        My_Tree.Move_Child (Tree_Mng.Tree);
+        My_Tree.Move_Child (Element.Tree.all);
       else
-        My_Tree.Move_Brother (Tree_Mng.Tree, False);
+        My_Tree.Move_Brother (Element.Tree.all, False);
       end if;
-      My_Tree.Read (Tree_Mng.Tree, Cell);
+      My_Tree.Read (Element.Tree.all, Cell);
       if Cell.Kind /= Attribute then
         raise Internal_Error;
       end if;
@@ -260,12 +298,12 @@ package body Xml_Parser is
     end if;
     for I in 1 .. Index loop
       if I = 1 then
-        My_Tree.Move_Child (Tree_Mng.Tree);
+        My_Tree.Move_Child (Element.Tree.all);
       else
-        My_Tree.Move_Brother (Tree_Mng.Tree, False);
+        My_Tree.Move_Brother (Element.Tree.all, False);
       end if;
     end loop;
-    My_Tree.Read (Tree_Mng.Tree, Cell);
+    My_Tree.Read (Element.Tree.all, Cell);
     if Cell.Kind /= Attribute then
       raise Internal_Error;
     end if;
@@ -281,26 +319,29 @@ package body Xml_Parser is
     Cell : My_Tree_Cell := Get_Node (Element);
     -- Nb of nodes is Nb in tree - attributes
     Nb_Nodes : constant Natural
-             := My_Tree.Children_Number (Tree_Mng.Tree) - Cell.Nb_Attributes;
+             := My_Tree.Children_Number (Element.Tree.all)
+              - Cell.Nb_Attributes;
     N : Nodes_Array (1 .. Nb_Nodes);
     Child : My_Tree_Cell;
   begin
-    for I in 1 .. My_Tree.Children_Number (Tree_Mng.Tree) loop
+    for I in 1 .. My_Tree.Children_Number (Element.Tree.all) loop
       if I = 1 then
-        My_Tree.Move_Child (Tree_Mng.Tree);
+        My_Tree.Move_Child (Element.Tree.all);
       else
-        My_Tree.Move_Brother (Tree_Mng.Tree, False);
+        My_Tree.Move_Brother (Element.Tree.all, False);
       end if;
       if I > Cell.Nb_Attributes then
-        My_Tree.Read (Tree_Mng.Tree, Child);
+        My_Tree.Read (Element.Tree.all, Child);
         if Child.Kind = Xml_Parser.Element then
           N (I - Cell.Nb_Attributes) :=
                 (Kind =>  Xml_Parser.Element,
-                 Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+                 Tree => Element.Tree,
+                 Tree_Access => My_Tree.Get_Position (Element.Tree.all));
         elsif Child.Kind = Text then
           N (I - Cell.Nb_Attributes) :=
                 (Kind => Text,
-                 Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+                 Tree => Element.Tree,
+                 Tree_Access => My_Tree.Get_Position (Element.Tree.all));
         else
           -- Attribute
           raise Internal_Error;
@@ -314,7 +355,7 @@ package body Xml_Parser is
     Cell : My_Tree_Cell := Get_Node (Element);
   begin
     -- Nb of nodes is Nb in tree - attributes
-    return My_Tree.Children_Number (Tree_Mng.Tree) - Cell.Nb_Attributes;
+    return My_Tree.Children_Number (Element.Tree.all) - Cell.Nb_Attributes;
   end Get_Nb_Children;
 
   -- May raise Invalid_Index
@@ -323,27 +364,29 @@ package body Xml_Parser is
     Cell : My_Tree_Cell := Get_Node (Element);
     -- Nb of nodes is Nb in tree - attributes
     Nb_Nodes : constant Natural
-             := My_Tree.Children_Number (Tree_Mng.Tree) - Cell.Nb_Attributes;
+             := My_Tree.Children_Number (Element.Tree.all) - Cell.Nb_Attributes;
     N : Node_Type;
     Child : My_Tree_Cell;
   begin
     if Index > Nb_Nodes then
       raise Invalid_Index;
     end if;
-    for I in 1 .. My_Tree.Children_Number (Tree_Mng.Tree) loop
+    for I in 1 .. My_Tree.Children_Number (Element.Tree.all) loop
       if I = 1 then
-        My_Tree.Move_Child (Tree_Mng.Tree);
+        My_Tree.Move_Child (Element.Tree.all);
       else
-        My_Tree.Move_Brother (Tree_Mng.Tree, False);
+        My_Tree.Move_Brother (Element.Tree.all, False);
       end if;
       if I = Cell.Nb_Attributes + Index then
-        My_Tree.Read (Tree_Mng.Tree, Child);
+        My_Tree.Read (Element.Tree.all, Child);
         if Child.Kind = Xml_Parser.Element then
           N := (Kind =>  Xml_Parser.Element,
-                Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+                Tree => Element.Tree,
+                Tree_Access => My_Tree.Get_Position (Element.Tree.all));
         elsif Child.Kind = Text then
           N := (Kind => Text,
-                Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+                Tree => Element.Tree,
+                Tree_Access => My_Tree.Get_Position (Element.Tree.all));
         else
           -- Attribute
           raise Internal_Error;
@@ -353,24 +396,25 @@ package body Xml_Parser is
     return N;
   end Get_Child;
 
-
   -- Get the father of an element
   -- May raise No_Parent
   function Get_Parent (Element : in Element_Type) return Node_Type is
     Cell : My_Tree_Cell := Get_Node (Element);
     N : Node_Type;
   begin
-    if not My_Tree.Has_Father (Tree_Mng.Tree) then
+    if not My_Tree.Has_Father (Element.Tree.all) then
       raise No_Parent;
     end if;
-    My_Tree.Move_Father (Tree_Mng.Tree);
-    My_Tree.Read (Tree_Mng.Tree, Cell);
+    My_Tree.Move_Father (Element.Tree.all);
+    My_Tree.Read (Element.Tree.all, Cell);
     if Cell.Kind = Xml_Parser.Element then
       N := (Kind =>  Xml_Parser.Element,
-            Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+            Tree => Element.Tree,
+            Tree_Access => My_Tree.Get_Position (Element.Tree.all));
     elsif Cell.Kind = Text then
       N := (Kind => Text,
-            Tree_Access => My_Tree.Get_Position (Tree_Mng.Tree));
+            Tree => Element.Tree,
+            Tree_Access => My_Tree.Get_Position (Element.Tree.all));
     else
       -- Attribute
       raise Internal_Error;
@@ -381,9 +425,8 @@ package body Xml_Parser is
   function Is_Root (Element : in Element_Type) return Boolean is
     Cell : My_Tree_Cell := Get_Node (Element);
   begin
-    return not My_Tree.Has_Father (Tree_Mng.Tree);
+    return not My_Tree.Has_Father (Element.Tree.all);
   end Is_Root;
-
 
    ----------
    -- TEXT --
@@ -404,5 +447,4 @@ package body Xml_Parser is
   end Get_Text;
 
 end Xml_Parser;
-
 

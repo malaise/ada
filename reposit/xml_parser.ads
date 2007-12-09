@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Trees, Unique_List;
+with Queues, Trees, Unique_List, Text_Char;
 package Xml_Parser is
 
   -----------
@@ -27,30 +27,11 @@ package Xml_Parser is
   -- The children of an element
   type Nodes_Array is array (Positive range <>) of Node_Type;
 
+  -- A parsing context
+  type Ctx_Type is limited private;
+
   -- All operations except Parse may raise Invalid_Node
   -- If the Element has not been returned by Parse, Get_xxx...
-
-  -------------
-  -- PARSING --
-  -------------
-  -- Parse a Xml file, stdin if empty
-  -- May raise File_Error if error accessing the File_Name,
-  --   Parse_Error if error while parsing the file (or its dtd)
-  procedure Parse (File_Name : in String;
-                   Prologue     : out Element_Type;
-                   Root_Element : out Element_Type);
-  File_Error, Parse_Error : exception;
-  -- Return the error message if Parse_Error
-  function Get_Parse_Error_Message return String;
-
-  -- Clean a parsed trees
-  -- May raise Not_Root if one of elements not root
-  Not_Root : exception;
-  procedure Clean (Prologue     : in out Element_Type;
-                   Root_Element : in out Element_Type);
-
-  -- Get the line number of the beginning of the declaration of a node
-  function Get_Line_No (Node : Node_Type) return Positive;
 
 
   -----------------------------
@@ -62,6 +43,35 @@ package Xml_Parser is
   -- So the Prologue is an element with attributes (empty name and no
   --  attributes if no xml directive). Its children are elements,
   --  each with the directive name and each with a text child.
+
+
+  ------------------
+  -- FILE PARSING --
+  ------------------
+  -- Parse a Xml file, stdin if empty
+  -- May raise File_Error if error accessing the File_Name,
+  --   Parse_Error if error while parsing the file (or its dtd)
+  -- may raise Status_Error if Ctx is not clean
+  Status_Error : exception;
+  procedure Parse (File_Name : in String;
+                   Ctx          : out Ctx_Type;
+                   Prologue     : out Element_Type;
+                   Root_Element : out Element_Type);
+  File_Error, Parse_Error : exception;
+  -- Return the error message if Parse_Error
+  function Get_Parse_Error_Message (Ctx : Ctx_Type) return String;
+
+  -- Clean parsing context
+  procedure Clean (Ctx : in out Ctx_Type);
+
+  -- Get the line number of the beginning of the declaration of a node
+  function Get_Line_No (Node : Node_Type) return Positive;
+
+
+  --------------------
+  -- STRING PARSING --
+  --------------------
+  type Dtd_Type is limited private;
 
 
   -------------------------
@@ -100,11 +110,6 @@ package Xml_Parser is
   function Get_Text (Text : in Text_Type)
                     return Ada.Strings.Unbounded.Unbounded_String;
 
-  --------------------
-  -- STRING PARSING --
-  --------------------
-  type Dtd_Type is limited private;
-
   ----------------
   -- EXCEPTIONS --
   ----------------
@@ -136,9 +141,39 @@ private
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);
 
+  type Tree_Acc is access all My_Tree.Tree_Type;
   -- Exported node type
   type Node_Type (Kind : Node_Kind_List := Element) is record
+    Tree : Tree_Acc := null;
     Tree_Access : My_Tree.Position_Access := My_Tree.No_Position;
+  end record;
+
+  ---------------------
+  -- INPUT FLOW TYPE --
+  ---------------------
+  Max_Len : constant := 10;
+  package My_Circ is new Queues.Circ (Max_Len, Character);
+  type Flow_Kind_List is (Xml_File, Xml_String, Dtd_File);
+  type Flow_Type is record
+    -- Is the flow a file or a string
+    Kind : Flow_Kind_List := Xml_File;
+
+    -- To know how many where got before End_Error
+    Nb_Got : Natural;
+    -- Circular buffer of read characters
+    Circ : My_Circ.Circ_Type;
+    -- Current line of input and in dtd
+    Xml_Line : Natural := 0;
+    Dtd_Line : Natural := 0;
+    -- Error message
+    Err_Msg : Ada.Strings.Unbounded.Unbounded_String;
+    -- Current significant string, loaded by Parse_Until_xxx
+    Curr_Str :  Ada.Strings.Unbounded.Unbounded_String;
+    -- Saved line of input (when switching to dtd file and back)
+    -- Inputs flows
+    Str : Ada.Strings.Unbounded.Unbounded_String;
+    Xml_File : Text_Char.File_Type;
+    Dtd_File : Text_Char.File_Type;
   end record;
 
   --------------
@@ -185,13 +220,27 @@ private
 
   type Dtd_Type is record
     -- Is there a dtd set, otherwise check is always ok
-    Set : Boolean;
+    Set : Boolean := False;
    -- Is there already xml instruction found in the dtd
-    Xml_Found : Boolean;
+    Xml_Found : Boolean := False;
     -- Parsed info
     Info_List : Info_Mng.List_Type;
     -- Parsed entities
     Entity_List : Entity_List_Mng.List_Type;
+  end record;
+
+  ------------------
+  -- CONTEXT TYPE --
+  ------------------
+  type Ctx_Type is record
+    Clean : Boolean := True;
+    -- Input flow description
+    Flow : Flow_Type;
+    -- Prologue and parsed elements
+    Prologue : aliased My_Tree.Tree_Type;
+    Elements : aliased My_Tree.Tree_Type;
+    -- Dtd related information
+    Dtd : Dtd_Type;
   end record;
 
 end Xml_Parser;
