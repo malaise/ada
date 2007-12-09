@@ -6,9 +6,10 @@ package Files is
   procedure Open (Spec_File_Name : in String);
   In_Error, Out_Error : exception;
 
-  -- Get file descriptors
-  function In_File return Text_Char.File_Type;
-  function Out_File return Text_Line.File_Type;
+  -- File descriptor of inputs
+  In_File : Text_Char.File_Type;
+  -- File descriptor of outputs
+  Out_File : Text_Line.File_Type;
 
   -- What to do with result file
   -- Keep it (success)

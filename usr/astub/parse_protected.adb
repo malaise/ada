@@ -1,11 +1,10 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada, Parse_To_End,
+with Common, Output, Words, Parser_Ada, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Entry;
 
 procedure Parse_Protected (Level : in Natural) is
-  File : constant Text_Char.File_Type := Files.In_File;
-  package Asu renames Ada.Strings.Unbounded;
+    package Asu renames Ada.Strings.Unbounded;
   Name : Asu.Unbounded_String;
   Word : Parser_Ada.Word_Rec;
   Dummy : Boolean := True;

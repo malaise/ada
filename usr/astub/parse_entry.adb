@@ -1,9 +1,8 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada;
+with Common,  Output, Words, Parser_Ada;
 
 procedure Parse_Entry (Level : in Natural) is
-  File : constant Text_Char.File_Type := Files.In_File;
   package Asu renames Ada.Strings.Unbounded;
   Name, Family, Last_Id : Asu.Unbounded_String;
   Word : Parser_Ada.Word_Rec;

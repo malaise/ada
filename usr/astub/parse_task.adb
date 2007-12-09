@@ -1,10 +1,9 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words,  Parser_Ada, Parse_To_End, Fix_Comment;
+with Common, Output, Words,  Parser_Ada, Parse_To_End, Fix_Comment;
 
 procedure Parse_Task (Level : in Natural) is
-  File : constant Text_Char.File_Type := Files.In_File;
-  package Asu renames Ada.Strings.Unbounded;
+    package Asu renames Ada.Strings.Unbounded;
   Word : Parser_Ada.Word_Rec;
   Name : Asu.Unbounded_String;
   use type Parser_Ada.Lexical_Kind_List;

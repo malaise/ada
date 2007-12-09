@@ -1,18 +1,17 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Name,
+with Common, Output, Words, Parser_Ada, Parse_To_End, Parse_Name,
      Fix_Comment;
 
 procedure Parse_Procedure (Level : in Natural;
                            Generated : in out Boolean) is
-  File : constant Text_Char.File_Type := Files.In_File;
-  package Asu renames Ada.Strings.Unbounded;
+    package Asu renames Ada.Strings.Unbounded;
   Name : Asu.Unbounded_String;
 begin
 
   -- Parse name
   Words.Add (Parser_Ada.Reserved_Word, "procedure");
-  Parse_Name (File, Level, Name);
+  Parse_Name (Level, Name);
 
   -- Skip until last ';'
   Parse_To_End (Parser_Ada.Delimiter, ";", Level, True, False);

@@ -1,13 +1,12 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
+with Common, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
      Parse_Procedure, Parse_Function, Parse_Task, Parse_Protected,
      Put_Comments, Get_Separators, Fix_Comment;
 
 procedure Parse_Package (Level : in Natural;
                          Generated : in out Boolean) is
-  File : constant Text_Char.File_Type := Files.In_File;
-  package Asu renames Ada.Strings.Unbounded;
+    package Asu renames Ada.Strings.Unbounded;
   Name : Asu.Unbounded_String;
   Word : Parser_Ada.Word_Rec;
   use type Parser_Ada.Lexical_Kind_List, Asu.Unbounded_String;
@@ -34,7 +33,7 @@ procedure Parse_Package (Level : in Natural;
 begin
 
   -- Get package name
-  Parse_Name (File, Level, Name);
+  Parse_Name (Level, Name);
   Words.Reset;
 
   -- Loop until expected word

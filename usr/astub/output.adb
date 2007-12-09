@@ -3,9 +3,6 @@ with Environ, Text_Handler, Text_Line, String_Mng, Ada_Words;
 with Common, Files;
 package body Output is
 
-  -- Output flow
-  File : Text_Line.File_Type;
-
   -- Spaces per indent level
   Spaces_Name : constant String := "ASTUB_INDENT";
   Def_Nb_Spaces : constant := 2;
@@ -46,8 +43,6 @@ package body Output is
       -- Also set line length
       Environ.Get_Pos (Length_Name, Length);
 
-      -- Get file
-      File := Files.Out_File;
     end if;
   end Getenv;
 
@@ -90,7 +85,7 @@ package body Output is
     if Index /= 0
     and then Index = Str'Last
     and then Str(Str'Last) = Common.Line_Feed then
-      Text_Line.New_Line (File);
+      Text_Line.New_Line (Files.Out_File);
       return;
     end if;
 
@@ -126,7 +121,7 @@ package body Output is
 
     -- Put comment without truncating
     if Comment or else Comment_Index /= 0 then
-      Text_Line.Put (File, Asu.To_String (Line2Put));
+      Text_Line.Put (Files.Out_File, Asu.To_String (Line2Put));
       return;
     end if;
 
@@ -136,11 +131,11 @@ package body Output is
                                   Separates'Access);
 
     -- Put the first chunk 1 .. Index
-    Text_Line.Put (File, Asu.Slice (Line2Put, 1, Index) );
+    Text_Line.Put (Files.Out_File, Asu.Slice (Line2Put, 1, Index) );
 
     if Index /= Asu.Length (Line2Put) then
       -- Line2Put is split. First chunk is Put_Line
-      Text_Line.New_Line (File);
+      Text_Line.New_Line (Files.Out_File);
       -- Format the remaining: Index + 1 .. Last
       Format (Asu.Slice (Line2Put, Index + 1, Asu.Length (Line2Put)),
               False, Level, True);

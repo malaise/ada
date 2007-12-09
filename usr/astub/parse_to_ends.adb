@@ -13,8 +13,7 @@ procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
                          Put_Comments : in Boolean;
                          Up_To_Next_Significant : in Boolean) is
   Parent : Natural := 0;
-  File : constant Text_Char.File_Type := Files.In_File;
-  Word : Parser_Ada.Word_Rec;
+    Word : Parser_Ada.Word_Rec;
   use type Parser_Ada.Lexical_Kind_List,
            Ada.Strings.Unbounded.Unbounded_String;
 begin

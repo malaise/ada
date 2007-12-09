@@ -1,12 +1,11 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parse_To_End, Parse_To_Ends,
+with Common, Output, Words, Parse_To_End, Parse_To_Ends,
      Parser_Ada, Parse_Name, Fix_Comment;
 
 procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
-  File : constant Text_Char.File_Type := Files.In_File;
-  package Asu renames Ada.Strings.Unbounded;
+    package Asu renames Ada.Strings.Unbounded;
   Name, Args : Asu.Unbounded_String;
   Word : Parser_Ada.Word_Rec;
   In_Parent, In_Id : Boolean;
@@ -15,7 +14,7 @@ begin
 
   -- Parse up to name, detect first parent
   Words.Add (Parser_Ada.Reserved_Word, "function");
-  Parse_Name (File, Level, Name);
+  Parse_Name (Level, Name);
 
   -- Next (significant) word is either '(' or "return". Get it
   Parse_To_Ends (

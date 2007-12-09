@@ -9,10 +9,6 @@ package body Files is
   Body_Suffix :  constant String := ".adb";
   Body_File_Name : Asu.Unbounded_String;
 
-  -- File descriptors
-  In_Desc : Text_Char.File_Type;
-  Out_Desc : Text_Line.File_Type;
-
   -- Environ STUB_KEEP_ON_ERROR
   Keep_Name : constant String := "ASTUB_KEEP_ON_ERROR";
 
@@ -35,7 +31,7 @@ package body Files is
         raise In_Error;
     end;
     -- This should work ok
-    Text_Char.Open (In_Desc, Fd);
+    Text_Char.Open (In_File, Fd);
 
     -- Create Out file for Text_line
     Body_File_Name := Asu.To_Unbounded_String (
@@ -64,21 +60,9 @@ package body Files is
         raise Out_Error;
     end;
     -- This should work ok
-    Text_Line.Open (Out_Desc, Text_Line.Out_File, Fd);
+    Text_Line.Open (Out_File, Text_Line.Out_File, Fd);
 
   end Open;
-
-  -- In_File --
-  function In_File return Text_Char.File_Type is
-  begin
-    return In_Desc;
-  end In_File;
-
-  -- Out_File --
-  function Out_File return Text_Line.File_Type is
-  begin
-    return Out_Desc;
-  end Out_File;
 
   -- Close --
   -- Keep it (success)
@@ -91,15 +75,15 @@ package body Files is
     Dummy : Boolean;
   begin
     -- Close Out file if it is open
-    if Text_Line.Is_Open (Out_Desc) then
-      Fd := Text_Line.Get_Fd (Out_Desc);
-      Text_Line.Close (Out_Desc);
+    if Text_Line.Is_Open (Out_File) then
+      Fd := Text_Line.Get_Fd (Out_File);
+      Text_Line.Close (Out_File);
       Sys_Calls.Close (Fd);
     end if;
     -- Close In file if it is open
-    if Text_Char.Is_Open (In_Desc) then
-      Fd := Text_Char.Get_Fd (In_Desc);
-      Text_Char.Close (In_Desc);
+    if Text_Char.Is_Open (In_File) then
+      Fd := Text_Char.Get_Fd (In_File);
+      Text_Char.Close (In_File);
       Sys_Calls.Close (Fd);
     end if;
 

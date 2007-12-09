@@ -3,8 +3,7 @@ with Text_Char;
 with Common, Words, Output, Parse_To_Ends, Put_Comments, Parser_Ada;
 
   -- Read until identifier, save it in Name, put intermediate comments at Level
-procedure Parse_Name (File : in Text_Char.File_Type;
-                      Level : in Natural;
+procedure Parse_Name (Level : in Natural;
                       Name : out Ada.Strings.Unbounded.Unbounded_String) is
   package Asu renames Ada.Strings.Unbounded;
   Word : Words.Word_Rec;

@@ -1,10 +1,9 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada, Parse_To_End, Fix_Comment;
+with Common, Output, Words, Parser_Ada, Parse_To_End, Fix_Comment;
 
 -- Parse type definition or representation clause
 procedure Parse_Type (Level : in Natural) is
-  File : constant Text_Char.File_Type := Files.In_File;
   Word : Parser_Ada.Word_Rec;
   Paren_Level : Natural := 0;
   use type Parser_Ada.Lexical_Kind_List,

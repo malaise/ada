@@ -1,10 +1,9 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
-with Common, Files, Output, Words, Parser_Ada,
+with Common, Output, Words, Parser_Ada,
      Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package;
 
 procedure Parse_Context (Generated : out Boolean) is
-  File : constant Text_Char.File_Type := Files.In_File;
   Word, Trash_Word : Words.Word_Rec;
   Level : Natural := 0;
   Prev_Private : Boolean;
