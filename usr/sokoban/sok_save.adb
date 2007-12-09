@@ -6,6 +6,7 @@ package body Sok_Save is
   package Movement_Lifo is new Queues.Lifo (
    Size => Nbre_Save,
    Item => Sok_Movement.Saved_Data_Rec);
+  Movements : Movement_Lifo.Lifo_Type;
 
   Index_Save : Positive range 1 .. Nbre_Save;
 
@@ -27,12 +28,12 @@ package body Sok_Save is
   -- circular buffer of saved movements for undo
   procedure Push (Man_Movement : in Sok_Movement.Saved_Data_Rec) is
   begin
-    Movement_Lifo.Push (Man_Movement);
+    Movement_Lifo.Push (Movements, Man_Movement);
   exception
     when Movement_Lifo.Lifo_Full =>
       -- lifo is full : make a space and retry
-      Movement_Lifo.Discard_Last;
-      Movement_Lifo.Push (Man_Movement);
+      Movement_Lifo.Discard_Last (Movements);
+      Movement_Lifo.Push (Movements, Man_Movement);
   end Push;
 
 
@@ -40,7 +41,7 @@ package body Sok_Save is
   function Pop return Sok_Movement.Saved_Data_Rec is
     Movement : Sok_Movement.Saved_Data_Rec;
   begin
-    Movement_Lifo.Pop (Movement);
+    Movement_Lifo.Pop (Movements, Movement);
     return Movement;
   exception
     when Movement_Lifo.Lifo_Empty =>
@@ -60,7 +61,7 @@ package body Sok_Save is
       Index_Save := Index_Save + 1;
     end if;
 
-    Movement_Lifo.Look_Last (Movement, Index_Save);
+    Movement_Lifo.Look_Last (Movements, Movement, Index_Save);
     return Movement;
   exception
     when Movement_Lifo.Lifo_Empty | Movement_Lifo.Lifo_Not =>

@@ -13,6 +13,7 @@ package body Mcd_Parser is
   -- Instruction stack for debug history
   -- 9 should be enough for user to identify the section
   package Instr_Stack is new Queues.Circ(9, Item_Chrs_Rec);
+  Stack : Instr_Stack.Circ_Type;
 
   Txt, Txts : Unb.Unbounded_String;
 
@@ -216,7 +217,7 @@ package body Mcd_Parser is
         -- Impossible to parse a word
         Item_Chrs.Val_Text := Unb.To_Unbounded_String (
                Input_Dispatcher.Current_String);
-        Instr_Stack.Push(Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
       raise Parsing_Error;
     end;
     if Debug.Debug_Level_Array(Debug.Parser) then
@@ -231,7 +232,7 @@ package body Mcd_Parser is
         Async_Stdin.Put_Line_Err ("Parser: Eof");
       end if;
       Item_Chrs.Val_Text := Unb.To_Unbounded_String ("EOF");
-      Instr_Stack.Push(Item_Chrs);
+      Instr_Stack.Push (Stack, Item_Chrs);
       return (Kind => Oper, Val_Oper => Ret);
     end if;
 
@@ -241,7 +242,7 @@ package body Mcd_Parser is
     if C = Input_Dispatcher.Sd
     and then Unb.Element (Txt, Unb.Length (Txt)) = Input_Dispatcher.Sd then
       -- Save raw string for history
-      Instr_Stack.Push(Item_Chrs);
+      Instr_Stack.Push (Stack, Item_Chrs);
       -- Remove first and last string delimiters, and replace
       --  pairs of delimiters by one delimiter
       begin
@@ -260,7 +261,7 @@ package body Mcd_Parser is
     and then Unb.To_String(Txt) /= "]"
     and then (Unb.Index (Txt, "[") /= 0
       or else Unb.Index (Txt, "]") /= 0) then
-      Instr_Stack.Push(Item_Chrs);
+      Instr_Stack.Push (Stack, Item_Chrs);
       raise Parsing_Error;
     end if;
 
@@ -269,7 +270,7 @@ package body Mcd_Parser is
 
       if Mcd_Mng.Is_Register(C) then
         -- A register
-        Instr_Stack.Push(Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         return (Kind => Mcd_Mng.Regi, Val_Regi => C);
       elsif C = '[' then
         -- Parse subprogram(s)
@@ -291,7 +292,7 @@ package body Mcd_Parser is
             -- Unexpected Eof
             Item_Prog.Val_Text := Txts;
             Item_Chrs.Val_Text := Unb.To_Unbounded_String ("[ ") & Txts;
-            Instr_Stack.Push(Item_Chrs);
+            Instr_Stack.Push (Stack, Item_Chrs);
             raise Parsing_Error;
           end if;
           -- No space before first word
@@ -305,7 +306,7 @@ package body Mcd_Parser is
         Item_Prog.Val_Text := Txts;
         Item_Chrs.Val_Text := Unb.To_Unbounded_String ("[ ") & Txts
                             & Unb.To_Unbounded_String (" ]");
-        Instr_Stack.Push(Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         return Item_Prog;
       end if;
 
@@ -318,7 +319,7 @@ package body Mcd_Parser is
           := String_Mng.Locate (Unb.To_String (Txt), ":");
         N, D : Arbitrary.Number;
       begin
-        Instr_Stack.Push(Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         if I = 0 then
           N := Arbitrary.Set (Unb.Slice(Txt, 2, Unb.Length(Txt)));
           return (Kind => Mcd_Mng.Arbi, Val_Arbi => N);
@@ -341,7 +342,7 @@ package body Mcd_Parser is
       Op := Mcd_Mng.Operator_List'Value(Unb.To_String(Txt));
       -- Allow string only if no symbol defined
       if Words(Op).Word = Nosy then
-        Instr_Stack.Push(Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         return (Kind => Mcd_Mng.Oper, Val_Oper => Op);
       end if;
     exception
@@ -359,7 +360,7 @@ package body Mcd_Parser is
       end if;
       for O in Mcd_Mng.Operator_List loop
         if Words(O).Word = W then
-          Instr_Stack.Push(Item_Chrs);
+          Instr_Stack.Push (Stack, Item_Chrs);
           return (Kind => Mcd_Mng.Oper, Val_Oper => O);
         end if;
       end loop;
@@ -369,7 +370,7 @@ package body Mcd_Parser is
     begin
       Inte_Io.Get (Unb.To_String (Txt), I, L);
       if L = Unb.Length (Txt) then
-        Instr_Stack.Push (Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         return (Kind => Mcd_Mng.Inte, Val_Inte => I);
       end if;
     exception
@@ -380,7 +381,7 @@ package body Mcd_Parser is
       Real_Io.Get (Unb.To_String (Txt), R, L);
       if L = Unb.Length (Txt)
       and then Unb.Element (Txt, L) /= '.' then
-        Instr_Stack.Push (Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         return (Kind => Mcd_Mng.Real, Val_Real => R);
       end if;
     exception
@@ -390,7 +391,7 @@ package body Mcd_Parser is
     begin
       Bool_Io.Get (Unb.To_String (Txt), B, L);
       if L = Unb.Length (Txt) then
-        Instr_Stack.Push (Item_Chrs);
+        Instr_Stack.Push (Stack, Item_Chrs);
         return (Kind => Mcd_Mng.Bool, Val_Bool => B);
       end if;
     exception
@@ -398,7 +399,7 @@ package body Mcd_Parser is
     end;
 
     -- Cannot recognise anything
-    Instr_Stack.Push(Item_Chrs);
+    Instr_Stack.Push (Stack, Item_Chrs);
     raise Parsing_Error;
 
   exception
@@ -448,7 +449,7 @@ package body Mcd_Parser is
     Sys_Calls.Put_Line_Error ("History:");
     loop
       begin
-        Instr_Stack.Pop(Item_Chrs);
+        Instr_Stack.Pop (Stack, Item_Chrs);
         Sys_Calls.Put_Error (Unb.To_String(Item_Chrs.Val_Text) & " ");
       exception
         when Instr_Stack.Circ_Empty =>
