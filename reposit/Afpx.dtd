@@ -39,7 +39,7 @@
 <!ELEMENT Descriptor (Var*, List?,(Var|Field)*)>
 
 <!-- The list can be defined none or once per descriptor, at the -->
-<! -- beginning. -->
+<!-- beginning. -->
 <!ATTLIST List>
 <!-- The list (like fields) is defined by a geometry and colors. -->
 <!-- Geometry has to be compitaible with screen and list and fields -->
