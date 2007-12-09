@@ -8,12 +8,13 @@ procedure T_Lifo is
   package My_Lifo is new Queues.Lifo (
    Size => Size,
    Item => Positive);
+  Lifo : My_Lifo.Lifo_Type;
 
   procedure Dump is
     V : Positive;
   begin
     for I in 1 .. Size loop
-      My_Lifo.Look_Last (V, I);
+      My_Lifo.Look_Last (Lifo, V, I);
       My_Io.Put_Line ("Look "  & Integer'Image (I) &
                        " --> " & Positive'Image (V) );
     end loop;
@@ -27,12 +28,12 @@ procedure T_Lifo is
 
   procedure Push (I : in Positive) is
   begin
-    My_Lifo.Push (I);
+    My_Lifo.Push (Lifo, I);
   exception
     when My_Lifo.Lifo_Full =>
       My_Io.Put_Line ("LIFO full. Discard last then push again");
-      My_Lifo.Discard_Last;
-      My_Lifo.Push (I);
+      My_Lifo.Discard_Last (Lifo);
+      My_Lifo.Push (Lifo, I);
   end Push;
 
 
@@ -47,7 +48,7 @@ begin
 
   loop
     My_Io.New_Line;
-    My_Lifo.Pop (N);
+    My_Lifo.Pop (Lifo, N);
     My_Io.Put_Line ("Pop ==> " & Positive'Image(N));
     begin
       Dump;
@@ -57,5 +58,4 @@ begin
   end loop;
 
 end T_Lifo;
-
 

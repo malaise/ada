@@ -19,6 +19,7 @@ procedure T_Timeq is
 
   subtype Val_Range is Natural range 0 .. 9;
   package Val_Queue is new Queues.Timed (5, Val_Range);
+  Vals : Val_Queue.Timed_Type;
 
   procedure Autotest is
     V : Val_Range;
@@ -27,7 +28,7 @@ procedure T_Timeq is
     begin
       loop
         begin
-          Val_Queue.Pop (V);
+          Val_Queue.Pop (Vals, V);
         exception
           when Val_Queue.Timed_Empty => exit;
         end;
@@ -37,30 +38,31 @@ procedure T_Timeq is
   begin
     -- Step 1, test auto expire
     Ada.Text_Io.Put_Line ("Putting 11 22 33 44 55 and waiting 3 seconds");
-    Val_Queue.Push (1, (0, 1.0));
-    Val_Queue.Push (2, (0, 2.0));
-    Val_Queue.Push (3, (0, 3.0));
-    Val_Queue.Push (4, (0, 4.0));
-    Val_Queue.Push (5, (0, 5.0));
+    Val_Queue.Push (Vals, 1, (0, 1.0));
+    Val_Queue.Push (Vals, 2, (0, 2.0));
+    Val_Queue.Push (Vals, 3, (0, 3.0));
+    Val_Queue.Push (Vals, 4, (0, 4.0));
+    Val_Queue.Push (Vals, 5, (0, 5.0));
     delay 3.0;
     Ada.Text_Io.Put_Line ("Getting first without expire");
-    Ada.Text_Io.Put_Line ("Got" & Val_Range'Image(Val_Queue.Pop));
+    Val_Queue.Pop (Vals, V);
+    Ada.Text_Io.Put_Line ("Got" & Val_Range'Image(V));
     Ada.Text_Io.Put_Line ("Putting 66 then getting all");
-    Val_Queue.Push (6, (0, 6.0));
+    Val_Queue.Push (Vals, 6, (0, 6.0));
     Pop;
     -- Step 2, test explicit expire
     Ada.Text_Io.Put_Line ("Putting 11 33 and waiting 1 seconds");
-    Val_Queue.Push (1, (0, 1.0));
-    Val_Queue.Push (3, (0, 3.0));
+    Val_Queue.Push (Vals, 1, (0, 1.0));
+    Val_Queue.Push (Vals, 3, (0, 3.0));
     delay 1.0;
     Ada.Text_Io.Put_Line ("Expiring then getting all");
-    Val_Queue.Expire;
+    Val_Queue.Expire (Vals);
     Pop;
     -- Step 3, test clear
     Ada.Text_Io.Put_Line ("Putting 66, cleaning then getting all");
-    Val_Queue.Push (1, (0, 1.0));
-    Val_Queue.Push (6, (0, 6.0));
-    Val_Queue.Clear;
+    Val_Queue.Push (Vals, 1, (0, 1.0));
+    Val_Queue.Push (Vals, 6, (0, 6.0));
+    Val_Queue.Clear (Vals);
     Pop;
   end Autotest;
 
@@ -89,23 +91,23 @@ begin
         begin
           V := Val_Range'Value(Str(2 .. 2));
           D := Duration(Get_Float.Get_Float(Str(3 .. Len)));
-          Val_Queue.Push (V, (0, D));
+          Val_Queue.Push (Vals, V, (0, D));
         exception
           when Val_Queue.Timed_Full =>
             Ada.Text_Io.Put_Line ("EXCEPTION Timed_Full");
         end;
       when 'g' =>
         begin
-          Val_Queue.Pop (V);
+          Val_Queue.Pop (Vals, V);
           Ada.Text_Io.Put_Line ("Popped " & V'Img);
         exception
           when Val_Queue.Timed_Empty =>
             Ada.Text_Io.Put_Line ("EXCEPTION Timed_Empty");
         end;
       when 'e' =>
-        Val_Queue.Expire;
+        Val_Queue.Expire (Vals);
       when 'c' =>
-        Val_Queue.Clear;
+        Val_Queue.Clear (Vals);
       when 'x' =>
         exit;
       when 'a' =>

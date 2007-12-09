@@ -8,12 +8,13 @@ procedure T_Fifo is
   package My_Fifo is new Queues.Fifo (
    Size => Size,
    Item => Positive);
+  Fifo : My_Fifo.Fifo_Type;
 
   procedure Dump is
     V : Positive;
   begin
     for I in 1 .. Size loop
-      My_Fifo.Look_Last (V, I);
+      My_Fifo.Look_Last (Fifo, V, I);
       My_Io.Put_Line ("Look "  & Integer'Image (I) &
                        " --> " & Positive'Image (V) );
     end loop;
@@ -27,12 +28,12 @@ procedure T_Fifo is
 
   procedure Push (I : in Positive) is
   begin
-    My_Fifo.Push (I);
+    My_Fifo.Push (Fifo, I);
   exception
     when My_Fifo.Fifo_Full =>
       My_Io.Put_Line ("FIFO full. Discard last then push again");
-      My_Fifo.Discard_Last;
-      My_Fifo.Push (I);
+      My_Fifo.Discard_Last (Fifo);
+      My_Fifo.Push (Fifo, I);
   end Push;
 
 
@@ -47,7 +48,7 @@ begin
 
   loop
     My_Io.New_Line;
-    My_Fifo.Pop (N);
+    My_Fifo.Pop (Fifo, N);
     My_Io.Put_Line ("Pop ==> " & Positive'Image(N));
     begin
       Dump;
@@ -57,5 +58,4 @@ begin
   end loop;
 
 end T_Fifo;
-
 

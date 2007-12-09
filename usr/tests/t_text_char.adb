@@ -2,6 +2,7 @@ with Ada.Text_Io;
 with Argument, Text_Char, Sys_Calls, Rnd, Queues;
 procedure T_Text_Char is
   package Q is new Queues.Circ (4, Character);
+  Circ : Q.Circ_Type;
 
   Fd : Sys_Calls.File_Desc;
   File : Text_Char.File_Type;
@@ -38,25 +39,25 @@ begin
   loop
     C := Text_Char.Get (File);
     Ada.Text_Io.Put (C);
-    Q.Push (C);
+    Q.Push (Circ, C);
     exit when Text_Char.End_Of_File (File);
     -- Check unget average each 4 chars
     if Rnd.Int_Random (0, 3) = 0 then
       -- Undo 1 to 4 characters
       Nundo := Rnd.Int_Random (1, 4);
-      if Nundo > Q.Length then
+      if Nundo > Q.Length (Circ) then
         -- Don't undo more characters than read
-        Nundo := Q.Length;
+        Nundo := Q.Length (Circ);
       end if;
       -- Undo some chars
       for I in 1 .. Nundo loop
-        Q.Look_Last (U, I);
+        Q.Look_Last (Circ, U, I);
         Text_Char.Unget (File, U);
       end loop;
       -- Re-read the chars and check
       for I in reverse 1 .. Nundo loop
         Text_Char.Get (File, C);
-        Q.Look_Last (U, I);
+        Q.Look_Last (Circ, U, I);
         if C /= U then
           Sys_Calls.New_Line_Error;
           Sys_Calls.Put_Line_Error ("Got after unget " & C & " should be " & U);
