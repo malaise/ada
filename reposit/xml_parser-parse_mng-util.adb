@@ -146,7 +146,11 @@ package body Util is
       when Xml_File =>
         Char := Text_Char.Get (Flow.Xml_File);
       when Xml_String =>
-        raise Internal_Error;
+        if Flow.In_Stri = Asu.Length (Flow.In_Str) then
+          raise Internal_Error;
+        end if;
+        Flow.In_Stri := Flow.In_Stri + 1;
+        Char := Asu.Element (Flow.In_Str, Flow.In_Stri);
       when Dtd_File =>
         Char := Text_Char.Get (Flow.Dtd_File);
     end case;
@@ -190,7 +194,7 @@ package body Util is
         when Xml_File =>
           Text_Char.Unget (Flow.Xml_File, Char);
         when Xml_String =>
-          raise Internal_Error;
+          Flow.In_Stri := Flow.In_Stri - 1;
         when Dtd_File =>
           Text_Char.Unget (Flow.Dtd_File, Char);
       end case;
