@@ -61,10 +61,7 @@ package body Xml_Parser is
   end Tree_Mng;
   package body Tree_Mng is separate;
 
-  --------------------
-  -- Dtd definition --
-  --------------------
-  -- Entities
+  -- Dtd definition: entities
   procedure Set (To : out Entity_Type; Val : in Entity_Type) is
   begin
     To := Val;
@@ -83,7 +80,7 @@ package body Xml_Parser is
     return Current.Parameter = Criteria.Parameter
     and then Current.Name = Criteria.Name;
   end "=";
-  -- Infos
+  -- Dtd definition: infos
   procedure Set (To : out Info_Rec; Val : in Info_Rec) is
   begin
     To := Val;
@@ -163,7 +160,7 @@ package body Xml_Parser is
                     Tree => Ctx.Elements'Unrestricted_Access,
                     Tree_Access => My_Tree.Get_Position (Ctx.Elements));
   exception
-    when File_Error | Parse_Error =>
+    when File_Error | Parse_Error | Status_Error =>
       raise;
     when others =>
       raise Internal_Error;
@@ -172,6 +169,9 @@ package body Xml_Parser is
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
   begin
+    if Ctx.Clean then
+      raise Status_Error;
+    end if;
     return Asu_Ts (Parse_Mng.Get_Error_Message (Ctx));
   end Get_Parse_Error_Message;
 
@@ -195,7 +195,8 @@ package body Xml_Parser is
     Ctx.Flow.Err_Msg := Asu_Null;
     Ctx.Flow.Curr_Str := Asu_Null;
 
-    Ctx.Flow.Str := Asu_Null;
+    Ctx.Flow.In_Str := Asu_Null;
+    Ctx.Flow.In_Stri := 0;
     if Text_Char.Is_Open (Ctx.Flow.Xml_File) then
       Text_Char.Close (Ctx.Flow.Xml_File);
     end if;
@@ -219,8 +220,53 @@ package body Xml_Parser is
     Entity_List_Mng.Delete_List (Ctx.Dtd.Entity_List);
     -- Context is clean
     Ctx.Clean := True;
+    Ctx.Done := False;
   end Clean;
 
+  -- Dtd parsing
+  procedure Parse_Dtd_File (File_Name : in String;
+                            Dtd       : out Dtd_Type) is
+  begin
+    raise Internal_Error;
+  end Parse_Dtd_File;
+
+  procedure Parse_Dtd_String (Str : in String;
+                              Dtd : out Dtd_Type) is
+  begin
+    raise Internal_Error;
+  end Parse_Dtd_String;
+
+  -- Clean a dtd
+  procedure Clean_Dtd (Dtd : in out Dtd_Type) is
+  begin
+    raise Internal_Error;
+  end Clean_Dtd;
+
+   -- Parse the prologue of a string
+  -- may raise Status_Error if Ctx is not clean
+  --    Dtd_In_String if there is a Dtd (!DOCTYPE) directive
+  --    Parse_Error while parsing the string
+  procedure Parse_Prologue (Str      : in String;
+                            Ctx      : out Ctx_Type;
+                            Prologue : out Element_Type) is
+  begin
+    raise Internal_Error;
+  end Parse_Prologue;
+
+  -- Parse the elements (after the prologue) of a string with a dtd
+  -- may raise Status_Error if Ctx is clean
+  --    End_Error if Ctx has already parsed elements
+  --    Parse_Error while parsing the string
+  procedure Parse_Elements (Ctx      : in out Ctx_Type;
+                            Dtd      : in out Dtd_Type;
+                            Root_Element : out Element_Type) is
+  begin
+    raise Internal_Error;
+  end Parse_Elements;
+
+  ----------------
+  -- NAVIGATION --
+  ----------------
   -- Read internal tree cell of a node
   function Get_Node (Node : Node_Type) return My_Tree_Cell is
     Cell : My_Tree_Cell;
@@ -428,9 +474,7 @@ package body Xml_Parser is
     return not My_Tree.Has_Father (Element.Tree.all);
   end Is_Root;
 
-   ----------
-   -- TEXT --
-   ----------
+   -- TEXT
   function Get_Text (Text : in Text_Type) return String is
   begin
     return Asu_Ts (Get_Text (Text));

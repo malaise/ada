@@ -50,33 +50,62 @@ package Xml_Parser is
   ------------------
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error if error accessing the File_Name,
-  --   Parse_Error if error while parsing the file (or its dtd)
-  -- may raise Status_Error if Ctx is not clean
-  Status_Error : exception;
-  procedure Parse (File_Name : in String;
+  --    Parse_Error if error while parsing the file (or its dtd)
+  --    Status_Error if Ctx is not clean
+  procedure Parse (File_Name    : in String;
                    Ctx          : out Ctx_Type;
                    Prologue     : out Element_Type;
                    Root_Element : out Element_Type);
-  File_Error, Parse_Error : exception;
+  File_Error, Parse_Error, Status_Error : exception;
+
   -- Return the error message if Parse_Error
+  -- May raise Status_Error if Ctx is clean
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String;
 
-  -- Clean parsing context
+  -- Clean parsing context, when the Prologue and Element trees
+  --  are not used any more
   procedure Clean (Ctx : in out Ctx_Type);
-
-  -- Get the line number of the beginning of the declaration of a node
-  function Get_Line_No (Node : Node_Type) return Positive;
 
 
   --------------------
   -- STRING PARSING --
   --------------------
+  -- Parse a Dtd
+  -- may raise Status_Error if Dtd is not clean
+  --    Parse_Error if error while parsing the dtd
   type Dtd_Type is limited private;
+  procedure Parse_Dtd_File (File_Name : in String;
+                            Dtd       : out Dtd_Type);
+  procedure Parse_Dtd_String (Str : in String;
+                              Dtd : out Dtd_Type);
 
+  -- Clean a dtd
+  procedure Clean_Dtd (Dtd : in out Dtd_Type);
+
+  -- Parse the prologue of a string
+  -- may raise Status_Error if Ctx is not clean
+  --    Dtd_In_String if there is a Dtd (!DOCTYPE) directive
+  --    Parse_Error while parsing the string
+  procedure Parse_Prologue (Str      : in String;
+                            Ctx      : out Ctx_Type;
+                            Prologue : out Element_Type);
+  Dtd_In_String : exception;
+
+  -- Parse the elements (after the prologue) of a string with a dtd
+  -- may raise Status_Error if Ctx is clean
+  --    End_Error if Ctx has already parsed elements
+  --    Parse_Error while parsing the string
+  procedure Parse_Elements (Ctx      : in out Ctx_Type;
+                            Dtd      : in out Dtd_Type;
+                            Root_Element : out Element_Type);
+  End_Error : exception;
 
   -------------------------
   -- NAME AND ATTRIBUTES --
   -------------------------
+  -- Get the line number of the beginning of the declaration of a node
+  function Get_Line_No (Node : Node_Type) return Positive;
+
   -- Get the name of an element
   function Get_Name (Element : in Element_Type)
                     return Ada.Strings.Unbounded.Unbounded_String;
@@ -86,6 +115,7 @@ package Xml_Parser is
   -- May raise Invalid_Index
   function Get_Attribute (Element : in Element_Type;
                           Index   : in Positive) return Attribute_Rec;
+  Invalid_Index : exception;
 
   ----------------
   -- NAVIGATION --
@@ -110,14 +140,12 @@ package Xml_Parser is
   function Get_Text (Text : in Text_Type)
                     return Ada.Strings.Unbounded.Unbounded_String;
 
-  ----------------
-  -- EXCEPTIONS --
-  ----------------
-  -- Raised by all operations except parsing
+  ------------------------
+  -- General EXCEPTIONS --
+  ------------------------
+  -- Raised by all operations except parsing related operations
   Invalid_Node : exception;
-  -- Raised by Get_Attribute or Get_Child
-  Invalid_Index : exception;
-  -- If internal logic error
+  -- If internal logic error (in parsing)
   Internal_Error : exception;
 
 private
@@ -170,8 +198,9 @@ private
     -- Current significant string, loaded by Parse_Until_xxx
     Curr_Str :  Ada.Strings.Unbounded.Unbounded_String;
     -- Saved line of input (when switching to dtd file and back)
-    -- Inputs flows
-    Str : Ada.Strings.Unbounded.Unbounded_String;
+    -- Inputs flows: string and index, or files
+    In_Str : Ada.Strings.Unbounded.Unbounded_String;
+    In_Stri : Natural;
     Xml_File : Text_Char.File_Type;
     Dtd_File : Text_Char.File_Type;
   end record;
@@ -221,7 +250,7 @@ private
   type Dtd_Type is record
     -- Is there a dtd set, otherwise check is always ok
     Set : Boolean := False;
-   -- Is there already xml instruction found in the dtd
+    -- Is there already xml instruction found in the dtd
     Xml_Found : Boolean := False;
     -- Parsed info
     Info_List : Info_Mng.List_Type;
@@ -234,6 +263,7 @@ private
   ------------------
   type Ctx_Type is record
     Clean : Boolean := True;
+    Done  : Boolean := False;
     -- Input flow description
     Flow : Flow_Type;
     -- Prologue and parsed elements
