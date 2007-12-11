@@ -75,7 +75,7 @@ procedure T_Xml is
                             Level : in Natural;
                             Offset : in Positive) is
     Attrs : Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
-    Indent : constant String (1 .. Level + Offset) := (others => ' ');
+    Indent : constant String (1 .. 2 * Level + Offset) := (others => ' ');
     use type Asu_Us;
   begin
     for I in Attrs'Range loop
@@ -97,7 +97,7 @@ procedure T_Xml is
                          Level : in Integer) is
     Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
     Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
-    Indent : constant String (1 .. Level) := (others => ' ');
+    Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Prev_Is_Text : Boolean;
     use type Xml_Parser.Node_Kind_List;
   begin
@@ -136,18 +136,23 @@ procedure T_Xml is
       Put_Attributes (Elt, Level, 1 + Name'Length);
       if Children'Length = 0 then
         -- No child, terminate tag now
-        Ada.Text_Io.Put_Line ("/>");
+        Ada.Text_Io.Put ("/>");
       else
         Ada.Text_Io.Put (">");
         Prev_Is_Text := False;
         for I in Children'Range loop
           if Children(I).Kind = Xml_Parser.Element then
             -- Recursive dump child
-            if I = 1 then
-              -- Father did not New_Line beacause of possible text
+            if I = 1 or else not Prev_Is_Text then
+              -- Father did not New_Line because of possible text
+              --  or prev was not text and did not New_Line because
+              --  of possible text
               Ada.Text_Io.New_Line;
             end if;
             Put_Element (Children(I), Level + 1);
+            if I = Children'Last then
+              Ada.Text_Io.New_Line;
+            end if;
             Prev_Is_Text := False;
           else
             -- Specific put text
@@ -159,7 +164,7 @@ procedure T_Xml is
         if not Prev_Is_Text then
           Ada.Text_Io.Put (Indent);
         end if;
-        Ada.Text_Io.Put_Line ("</" & Name & ">");
+        Ada.Text_Io.Put ("</" & Name & ">");
       end if;
     end if;
   end Put_Element;
