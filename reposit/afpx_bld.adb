@@ -112,7 +112,7 @@ procedure Afpx_Bld is
   begin
     Basic_Proc.Put_Error ("Error: " & Msg);
     Basic_Proc.Put_Line_Error (
-          " at line" & Positive'Image (Xp.Get_Line_No (Node))
+          " at line" & Positive'Image (Ctx.Get_Line_No (Node))
         & " of file " & Text_Handler.Value(List_File_Name));
     raise File_Syntax_Error;
   end File_Error;
@@ -181,13 +181,13 @@ procedure Afpx_Bld is
     Width, Height : Boolean := False;
   begin
     if Root.Kind /= Xp.Element
-    or else not Match (Xp.Get_Name (Root), Root_Name) then
+    or else not Match (Ctx.Get_Name (Root), Root_Name) then
       File_Error (Root, "Invalid root, expected " & Root_Name);
     end if;
     -- Add constant persistent of up left
     Add_Variable (Root, "Screen.Up", Geo_Image (0), False, True);
     Add_Variable (Root, "Screen.Left", Geo_Image (0), False, True);
-    if Xp.Get_Nb_Attributes (Root) = 0 then
+    if Ctx.Get_Nb_Attributes (Root) = 0 then
       -- No attribute : default size
       Size := (Con_Io.Full_Def_Row_Last, Con_Io.Full_Def_Col_Last);
       -- Add constant persistent
@@ -197,12 +197,12 @@ procedure Afpx_Bld is
       Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
       -- Add
       return Size;
-    elsif Xp.Get_Nb_Attributes (Root) /= 2 then
+    elsif Ctx.Get_Nb_Attributes (Root) /= 2 then
       File_Error (Root,
      "Afpx_Descriptors expects either no attribute or both Height and Width");
     end if;
     declare
-      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Root);
+      Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Root);
       P : Positive;
     begin
       for I in Attrs'Range loop
@@ -255,12 +255,12 @@ procedure Afpx_Bld is
   procedure Load_Variable (Node : in Xp.Node_Type;
                            Persistent : in Boolean) is
   begin
-    if Xp.Get_Nb_Attributes (Node) /= 2 then
+    if Ctx.Get_Nb_Attributes (Node) /= 2 then
       File_Error (Node,
           "Invalid variable definition, expects Name and Value");
     end if;
     declare
-      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+      Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     begin
       if Match (Attrs(1).Name, "Name")
       and then Match (Attrs(2).Name, "Value") then
@@ -308,14 +308,14 @@ procedure Afpx_Bld is
     Up, Left, Low, Right : Boolean := False;
   begin
     if Node.Kind /= Xp.Element
-    or else not Match (Xp.Get_Name (Node), "Geometry")
-    or else Xp.Get_Nb_Attributes (Node) /= 4
-    or else Xp.Get_Nb_Children (Node) /= 0 then
-      File_Error (Node, "Invalid geometry " & Xp.Get_Name (Node)
+    or else not Match (Ctx.Get_Name (Node), "Geometry")
+    or else Ctx.Get_Nb_Attributes (Node) /= 4
+    or else Ctx.Get_Nb_Children (Node) /= 0 then
+      File_Error (Node, "Invalid geometry " & Ctx.Get_Name (Node)
                  & ", expected Up, Left, Down and Right");
     end if;
     declare
-      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+      Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     begin
       for I in Attrs'Range loop
         -- Load upper left then lower right
@@ -410,12 +410,12 @@ procedure Afpx_Bld is
     end Add_Blink_Stat;
   begin
     if Node.Kind /= Xp.Element
-    or else not Match (Xp.Get_Name (Node), "Colors")
-    or else Xp.Get_Nb_Children (Node) /= 0 then
-      File_Error (Node, "Invalid colors " & Xp.Get_Name (Node));
+    or else not Match (Ctx.Get_Name (Node), "Colors")
+    or else Ctx.Get_Nb_Children (Node) /= 0 then
+      File_Error (Node, "Invalid colors " & Ctx.Get_Name (Node));
     end if;
     declare
-      Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+      Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     begin
       for I in Attrs'Range loop
         if Match (Attrs(I).Name, "Foreground") then
@@ -466,7 +466,7 @@ procedure Afpx_Bld is
 
       -- Parse colors
       if Fn = 0 or else Fields(Fn).Kind = Afpx_Typ.Get then
-        if Xp.Get_Nb_Attributes (Node) /= 3
+        if Ctx.Get_Nb_Attributes (Node) /= 3
         or else not (Foreground and then Background and then Selected)
         or else Blink then
           File_Error (Node,
@@ -475,7 +475,7 @@ procedure Afpx_Bld is
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
         Add_Blink_Stat;
       elsif Fields(Fn).Kind = Put then
-        if Xp.Get_Nb_Attributes (Node) /= 3
+        if Ctx.Get_Nb_Attributes (Node) /= 3
         or else not (Foreground and then Background and then Blink)
         or else Selected then
           File_Error (Node,
@@ -486,7 +486,7 @@ procedure Afpx_Bld is
             Mixed_Str (Con_Io.Effective_Colors'Image (
                 Fields(Fn).Colors.Selected)), False, False);
       elsif Fields(Fn).Kind = Button then
-        if Xp.Get_Nb_Attributes (Node) /= 2
+        if Ctx.Get_Nb_Attributes (Node) /= 2
         or else not (Foreground and then Background)
         or else Blink or else Selected then
           File_Error (Node,
@@ -521,23 +521,23 @@ procedure Afpx_Bld is
                        Screen_Size : in Con_Io.Full_Square) is
   begin
     if Node.Kind /= Xp.Element
-    or else Xp.Get_Nb_Attributes (Node) /= 0
-    or else Xp.Get_Nb_Children (Node) /= 2 then
+    or else Ctx.Get_Nb_Attributes (Node) /= 0
+    or else Ctx.Get_Nb_Children (Node) /= 2 then
       File_Error (Node, "Invalid list definition");
     end if;
     -- In List
     Fields(0).Kind := Afpx_Typ.Button;
     Fields(0).Activated := True;
     Fields(0).Isprotected := False;
-    Load_Geometry (Xp.Get_Child (Node, 1), 0, Screen_Size);
-    Load_Colors (Xp.Get_Child (Node, 2), 0);
+    Load_Geometry (Ctx.Get_Child (Node, 1), 0, Screen_Size);
+    Load_Colors (Ctx.Get_Child (Node, 2), 0);
     Fields(0).Char_Index := 1;
   end Load_List;
 
   procedure Loc_Load_Field (Node : in Xp.Node_Type;
                             No : in Afpx_Typ.Field_Range;
                             Screen_Size : in Con_Io.Full_Square)  is
-    Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+    Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     Child : Xp.Node_Type;
     First_Init : Boolean;
     Prev_Init_Square : Con_Io.Full_Square;
@@ -590,8 +590,8 @@ procedure Afpx_Bld is
     end if;
     Fields(No).Activated := True;
     Fields(No).Isprotected := False;
-    Load_Geometry (Xp.Get_Child (Node, 1), No, Screen_Size);
-    Load_Colors (Xp.Get_Child (Node, 2), No);
+    Load_Geometry (Ctx.Get_Child (Node, 1), No, Screen_Size);
+    Load_Colors (Ctx.Get_Child (Node, 2), No);
 
     -- Check global number of characters for the field
     Fields(No).Char_Index := Init_Index;
@@ -605,16 +605,16 @@ procedure Afpx_Bld is
 
     First_Init := True;
     Prev_Init_Square := (0, 0);
-    for I in 3 .. Xp.Get_Nb_Children (Node) loop
-      Child := Xp.Get_Child (Node, I);
-      if not Match (Xp.Get_Name (Child), "Init")
-      or else Xp.Get_Nb_Attributes (Child) < 2
-      or else Xp.Get_Nb_Children (Child) > 1 then
+    for I in 3 .. Ctx.Get_Nb_Children (Node) loop
+      Child := Ctx.Get_Child (Node, I);
+      if not Match (Ctx.Get_Name (Child), "Init")
+      or else Ctx.Get_Nb_Attributes (Child) < 2
+      or else Ctx.Get_Nb_Children (Child) > 1 then
         File_Error (Child, "Invalid Init, expected row, col and text");
       end if;
 
       declare
-        Child_Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Child);
+        Child_Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Child);
       begin
         Row := False;
         Col := False;
@@ -669,14 +669,14 @@ procedure Afpx_Bld is
       end if;
 
       -- Get the whole line to extract init string
-      if Xp.Get_Nb_Children (Child) = 1 then
+      if Ctx.Get_Nb_Children (Child) = 1 then
         declare
-          Child_Child : constant Xp.Node_Type := Xp.Get_Child (Child, 1);
+          Child_Child : constant Xp.Node_Type := Ctx.Get_Child (Child, 1);
         begin
           if Child_Child.Kind /= Xp.Text then
             File_Error (Child_Child, "Invalid init string");
           end if;
-          Finit_String := Xp.Get_Text (Child_Child);
+          Finit_String := Ctx.Get_Text (Child_Child);
           -- Length in term of put positions (also in term of wide characters)
           Finit_Length := Language.Put_Length (Strof (Finit_String));
           -- Check Finit col + string length compatible with field width
@@ -732,7 +732,7 @@ procedure Afpx_Bld is
   procedure Load_Dscr (Node : in Xp.Element_Type;
                        Dscr_Index : in Afpx_Typ.Descriptor_Range;
                        Screen_Size : in Con_Io.Full_Square)  is
-    Attrs : constant Xp.Attributes_Array := Xp.Get_Attributes (Node);
+    Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     Dscr_No : Afpx_Typ.Descriptor_Range;
     Num, Background : Boolean := False;
     Child : Xp.Node_Type;
@@ -746,7 +746,7 @@ procedure Afpx_Bld is
         Num := True;
         begin
           Dscr_No := Afpx_Typ.Descriptor_Range'Value (
-                      Strof (Xp.Get_Attribute (Node, 1).Value));
+                      Strof (Ctx.Get_Attribute (Node, 1).Value));
         exception
           when others =>
             File_Error (Node, "Invalid descriptor num");
@@ -792,18 +792,18 @@ procedure Afpx_Bld is
     Fields(0).Kind := Put;
 
     List_Allowed := True;
-    for I in 1 .. Xp.Get_Nb_Children (Node) loop
+    for I in 1 .. Ctx.Get_Nb_Children (Node) loop
       -- Var, List or Field
-      Child := Xp.Get_Child (Node, I);
+      Child := Ctx.Get_Child (Node, I);
       if Child.Kind /= Xp.Element then
         File_Error (Child, "Expected a Var, a List or a Field");
       end if;
-      if List_Allowed and then Match(Xp.Get_Name (Child), "List") then
+      if List_Allowed and then Match(Ctx.Get_Name (Child), "List") then
         Load_List (Child, Screen_Size);
         List_Allowed := False;
-      elsif Match(Xp.Get_Name (Child), "Var") then
+      elsif Match(Ctx.Get_Name (Child), "Var") then
         Load_Variable (Child, False);
-      elsif not Match(Xp.Get_Name (Child), "Field") then
+      elsif not Match(Ctx.Get_Name (Child), "Field") then
         File_Error (Child, "Expected a Var or a Field");
       elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
         File_Error (Child, "Too many fields. Maximum is"
@@ -888,15 +888,15 @@ procedure Afpx_Bld is
     -- Fields and init tables are stored in their files at Dscr_Index
     Dscr_Index := 1;
     Dscrs:
-    for I in 1 .. Xp.Get_Nb_Children (Root) loop
+    for I in 1 .. Ctx.Get_Nb_Children (Root) loop
       -- Descriptor or persistent variable
-      Child := Xp.Get_Child (Root, I);
+      Child := Ctx.Get_Child (Root, I);
       if Child.Kind /= Xp.Element then
         File_Error (Child, "Expected Descriptor or Var");
       end if;
-      if Match (Xp.Get_Name (Child), "Var") then
+      if Match (Ctx.Get_Name (Child), "Var") then
         Load_Variable (Child, True);
-      elsif not  Match (Xp.Get_Name (Child), "Descriptor") then
+      elsif not  Match (Ctx.Get_Name (Child), "Descriptor") then
         File_Error (Child, "Expected Descriptor or Var");
       else
         -- Descriptor
@@ -929,8 +929,8 @@ procedure Afpx_Bld is
       raise;
   end Load_Dscrs;
 
-  -- Roots of prologue and of parsed elements
-  Prologue, Root : Xp.Element_Type;
+  -- Root of parsed elements
+  Root : Xp.Element_Type;
 
 begin
   -- Help
@@ -984,16 +984,20 @@ begin
 
   -- First check
   Ada.Text_Io.Put_Line ("Parsing:");
+  declare
+    Parse_Ok : Boolean;
   begin
-    Xp.Parse (Text_Handler.Value(List_File_Name), Ctx, Prologue, Root);
+    Ctx.Parse (Text_Handler.Value(List_File_Name), Parse_Ok);
+    if not Parse_Ok then
+      Basic_Proc.Put_Line_Error (Ctx.Get_Parse_Error_Message);
+      raise File_Syntax_Error;
+    end if;
+    Root := Ctx.Get_Root_Element;
   exception
     when Xp.File_Error =>
       Basic_Proc.Put_Line_Error ("Error accessing file "
                             & Text_Handler.Value(List_File_Name));
       raise File_Not_Found;
-    when Xp.Parse_Error =>
-      Basic_Proc.Put_Line_Error (Xp.Get_Parse_Error_Message (Ctx));
-      raise File_Syntax_Error;
   end;
 
   Ada.Text_Io.Put_Line ("Checking:");
