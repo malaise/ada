@@ -121,23 +121,23 @@ package body Util is
 
   procedure Error (Flow : in out Flow_Type;
                    Msg : in String; Line_No : in Natural := 0) is
+    Err_Msg : Asu_Us;
   begin
-    Flow.Err_Msg := Asu_Tus ("Xml_Parse error at line");
+    Err_Msg := Asu_Tus ("Xml_Parse error at line");
     if Line_No = 0 then
-      Asu.Append (Flow.Err_Msg, Natural'Image(Get_Line_No(Flow)));
+      Asu.Append (Err_Msg, Natural'Image(Get_Line_No(Flow)));
     else
-      Asu.Append (Flow.Err_Msg, Line_No'Img);
+      Asu.Append (Err_Msg, Line_No'Img);
     end if;
     if Flow.Kind = Dtd_File then
-      Asu.Append (Flow.Err_Msg, " of dtd");
+      Asu.Append (Err_Msg, " of dtd");
     end if;
-    Asu.Append (Flow.Err_Msg, ": " & Msg & ".");
-    raise Parse_Error;
+    Asu.Append (Err_Msg, ": " & Msg & ".");
+    -- The error message is attached to the exception
+    -- Xml_parser will copy it in the Flow.
+    Ada.Exceptions.Raise_Exception
+              (Parse_Error'Identity, Asu_Ts (Err_Msg));
   end Error;
-  function Get_Error_Message (Flow : Flow_Type) return Asu_Us is
-  begin
-    return Flow.Err_Msg;
-  end Get_Error_Message;
 
   -- Get character and store in queue
   procedure Get (Flow : in out Flow_Type; Char : out Character) is
@@ -397,6 +397,7 @@ package body Util is
   -- Expand %Var; and &#xx; if in dtd
   -- or Expand &Var; if not in dtd, both recursively
   procedure Expand_Vars (Ctx : in out Ctx_Type;
+                         Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
                          In_Dtd : in Boolean) is
     Result : Asu_Us;
@@ -421,7 +422,7 @@ package body Util is
     function Variable_Of (Name : String) return String is
       Got : Asu_Us;
     begin
-      Entity_Mng.Get (Ctx.Dtd.Entity_List, Asu_Tus (Name), False, Got);
+      Entity_Mng.Get (Dtd.Entity_List, Asu_Tus (Name), False, Got);
       return Asu_Ts (Got);
     exception
       when Entity_Mng.Entity_Not_Found =>
@@ -439,7 +440,6 @@ package body Util is
                          Resolv => Variable_Of'Access));
       return;
     end if;
- 
     -- Expand variables when in dtd
     -- Loop as long as an expansion occured
     Result := Text;
@@ -505,7 +505,7 @@ package body Util is
         end if;
         -- Got an entity name: get value if it exists
         Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
-        Entity_Mng.Exists (Ctx.Dtd.Entity_List,
+        Entity_Mng.Exists (Dtd.Entity_List,
                            Name, Starter = Param_Ref, Found);
         if not Found then
           if Starter = Param_Ref then
@@ -514,7 +514,7 @@ package body Util is
             Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
           end if;
         end if;
-        Entity_Mng.Get (Ctx.Dtd.Entity_List, Name, Starter = Param_Ref, Val);
+        Entity_Mng.Get (Dtd.Entity_List, Name, Starter = Param_Ref, Val);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -541,6 +541,7 @@ package body Util is
 
   -- Fix text: expand variables and remove repetition of separators
   procedure Fix_Text (Ctx : in out Ctx_Type;
+                      Dtd : in out Dtd_Type;
                       Text : in out Asu_Us;
                       In_Dtd : in Boolean;
                       Preserve_Spaces : in Boolean) is
@@ -555,7 +556,7 @@ package body Util is
 
     -- Expand entities values
     S1 := Text;
-    Expand_Vars (Ctx, S1, In_Dtd);
+    Expand_Vars (Ctx, Dtd, S1, In_Dtd);
 
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop

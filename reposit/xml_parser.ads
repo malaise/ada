@@ -28,10 +28,8 @@ package Xml_Parser is
   type Nodes_Array is array (Positive range <>) of Node_Type;
 
   -- A parsing context
-  type Ctx_Type is limited private;
+  type Ctx_Type is tagged limited private;
 
-  -- All operations except Parse may raise Invalid_Node
-  -- If the Element has not been returned by Parse, Get_xxx...
 
 
   -----------------------------
@@ -50,15 +48,13 @@ package Xml_Parser is
   ------------------
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error if error accessing the File_Name,
-  --    Parse_Error if error while parsing the file (or its dtd)
-  --    Status_Error if Ctx is not clean
-  procedure Parse (File_Name    : in String;
-                   Ctx          : out Ctx_Type;
-                   Prologue     : out Element_Type;
-                   Root_Element : out Element_Type);
-  File_Error, Parse_Error, Status_Error : exception;
+  --           Status_Error if Ctx is not clean
+  procedure Parse (Ctx          : out Ctx_Type;
+                   File_Name    : in String;
+                   Ok           : out Boolean);
+  File_Error, Status_Error : exception;
 
-  -- Return the error message if Parse_Error
+  -- Return the error message if Parse error
   -- May raise Status_Error if Ctx is clean
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String;
 
@@ -72,79 +68,107 @@ package Xml_Parser is
   --------------------
   -- Parse a Dtd
   -- may raise Status_Error if Dtd is not clean
-  --    Parse_Error if error while parsing the dtd
+  --           Parse_Error if error while parsing the dtd
   type Dtd_Type is limited private;
   procedure Parse_Dtd_File (File_Name : in String;
                             Dtd       : out Dtd_Type);
   procedure Parse_Dtd_String (Str : in String;
                               Dtd : out Dtd_Type);
+  Parse_Error : exception;
 
   -- Clean a dtd
   procedure Clean_Dtd (Dtd : in out Dtd_Type);
 
   -- Parse the prologue of a string
+  -- Then on can call Get_Prologue on Ctx
+  --  (Calling Get_Root_Element will raise Use_Error);
   -- may raise Status_Error if Ctx is not clean
-  --    Dtd_In_String if there is a Dtd (!DOCTYPE) directive
-  --    Parse_Error while parsing the string
-  procedure Parse_Prologue (Str      : in String;
-                            Ctx      : out Ctx_Type;
-                            Prologue : out Element_Type);
+  --           Dtd_In_String if there is a Dtd (!DOCTYPE) directive
+  --           Parse_Error while parsing the string
+  procedure Parse_Prologue (Ctx : out Ctx_Type;
+                            Str : in String;
+                            Ok  : out Boolean);
   Dtd_In_String : exception;
 
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean
-  --    End_Error if Ctx has already parsed elements
-  --    Parse_Error while parsing the string
-  procedure Parse_Elements (Ctx      : in out Ctx_Type;
-                            Dtd      : in out Dtd_Type;
-                            Root_Element : out Element_Type);
+  --           End_Error if Ctx has already parsed elements
+  --           Parse_Error while parsing the string
+  procedure Parse_Elements (Ctx : in out Ctx_Type;
+                            Dtd : in out Dtd_Type;
+                            Ok  : out Boolean);
   End_Error : exception;
 
   -------------------------
   -- NAME AND ATTRIBUTES --
   -------------------------
+  -- All the following operations may raise Invalid_Node if the Element has
+  --  not been returned by Parse, Get_xxx...
+  Invalid_Node : exception;
+  -- They may raise Status_Error if the Ctx is clean
+  -- They may raise Use_Error if the Ctx and the Element do not match
+  Use_Error : exception;
+
+  -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
+  --  may raise Parse_Error if Parse was not ok
+  function Get_Prologue (Ctx : Ctx_Type) return Element_Type;
+  -- Get elements'root after Parse or Parse_Elements
+  --  may raise Status_Error if called before Parse_Elements
+  --            Parse_Error if Parse was not ok
+  function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
+
   -- Get the line number of the beginning of the declaration of a node
-  function Get_Line_No (Node : Node_Type) return Positive;
+  function Get_Line_No (Ctx  : Ctx_Type;
+                        Node : Node_Type) return Positive;
 
   -- Get the name of an element
-  function Get_Name (Element : in Element_Type)
+  function Get_Name (Ctx     : Ctx_Type;
+                     Element : Element_Type)
                     return Ada.Strings.Unbounded.Unbounded_String;
   -- Get the attributes of an element
-  function Get_Attributes (Element : in Element_Type) return Attributes_Array;
-  function Get_Nb_Attributes (Element : in Element_Type) return Natural;
+  function Get_Attributes (Ctx     : Ctx_Type;
+                           Element : Element_Type) return Attributes_Array;
+  function Get_Nb_Attributes (Ctx     : Ctx_Type;
+                              Element : Element_Type) return Natural;
   -- May raise Invalid_Index
-  function Get_Attribute (Element : in Element_Type;
-                          Index   : in Positive) return Attribute_Rec;
+  function Get_Attribute (Ctx     : Ctx_Type;
+                          Element : Element_Type;
+                          Index   : Positive) return Attribute_Rec;
   Invalid_Index : exception;
 
   ----------------
   -- NAVIGATION --
   ----------------
   -- Get the Children of an element (elements or texts)
-  function Get_Children (Element : in Element_Type) return Nodes_Array;
-  function Get_Nb_Children (Element : in Element_Type) return Natural;
+  function Get_Children (Ctx     : Ctx_Type;
+                         Element : Element_Type) return Nodes_Array;
+  function Get_Nb_Children (Ctx     : Ctx_Type;
+                            Element : Element_Type) return Natural;
   -- May raise Invalid_Index
-  function Get_Child (Element : in Element_Type;
-                      Index   : in Positive) return Node_Type;
+  function Get_Child (Ctx     : Ctx_Type;
+                      Element : Element_Type;
+                      Index   : Positive) return Node_Type;
 
   -- Get the father of an element
   -- May raise No_Parent if Element is the Root_Element or the Prologue
   No_Parent : exception;
-  function Get_Parent (Element : in Element_Type) return Node_Type;
-  function Is_Root (Element : in Element_Type) return Boolean;
+  function Get_Parent (Ctx     : Ctx_Type;
+                       Element : Element_Type) return Node_Type;
+  function Is_Root (Ctx     : Ctx_Type;
+                    Element : Element_Type) return Boolean;
 
   ----------
   -- TEXT --
   ----------
-  function Get_Text (Text : in Text_Type) return String;
-  function Get_Text (Text : in Text_Type)
-                    return Ada.Strings.Unbounded.Unbounded_String;
+  function Get_Text (Ctx  : Ctx_Type;
+                     Text : Text_Type) return String;
+  function Get_Text (Ctx  : Ctx_Type;
+                     Text : Text_Type)
+                     return Ada.Strings.Unbounded.Unbounded_String;
 
   ------------------------
   -- General EXCEPTIONS --
   ------------------------
-  -- Raised by all operations except parsing related operations
-  Invalid_Node : exception;
   -- If internal logic error (in parsing)
   Internal_Error : exception;
 
@@ -171,8 +195,13 @@ private
 
   type Tree_Acc is access all My_Tree.Tree_Type;
   -- Exported node type
+  Clean_Magic : constant Float := -1.0;
   type Node_Type (Kind : Node_Kind_List := Element) is record
-    Tree : Tree_Acc := null;
+    -- Magic number of the context
+    Magic : Float := Clean_Magic;
+    -- In prologue or a real element
+    In_Prologue : Boolean := False;
+    -- Position in tree
     Tree_Access : My_Tree.Position_Access := My_Tree.No_Position;
   end record;
 
@@ -261,16 +290,15 @@ private
   ------------------
   -- CONTEXT TYPE --
   ------------------
-  type Ctx_Type is record
-    Clean : Boolean := True;
-    Done  : Boolean := False;
+  type Ctx_Status_List is (Clean, Prologue, Done, Error);
+  type Ctx_Type is tagged limited record
+    Status  : Ctx_Status_List := Clean;
+    Magic : Float := Clean_Magic;
     -- Input flow description
     Flow : Flow_Type;
     -- Prologue and parsed elements
-    Prologue : aliased My_Tree.Tree_Type;
-    Elements : aliased My_Tree.Tree_Type;
-    -- Dtd related information
-    Dtd : Dtd_Type;
+    Prologue : Tree_Acc := new My_Tree.Tree_Type;
+    Elements : Tree_Acc := new My_Tree.Tree_Type;
   end record;
 
 end Xml_Parser;
