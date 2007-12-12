@@ -68,8 +68,13 @@ package body Limited_List is
         Free_List := List.First;
       end if;
     end if;
-    List := (Modified => True, In_Cb => False, Pos_First | Pos_Last => 0,
-     Current => null, First => null, Last => null);
+    List.Modified := True;
+    List.In_Cb := False;
+    List.Pos_First := 0;
+    List.Pos_Last := 0;
+    List.Current := null;
+    List.First := null;
+    List.Last := null;
   end Delete_List;
 
 
@@ -533,8 +538,13 @@ package body Limited_List is
   procedure Assign (To : in out List_Type; Val : in List_Type) is
   begin
     Check_Cb(To);
-    To := Val;
     To.Modified := True;
+    To.In_Cb := False;
+    To.Pos_First := Val.Pos_First;
+    To.Pos_Last := Val.Pos_Last;
+    To.Current := Val.Current;
+    To.First := Val.First;
+    To.Last := Val.Last;
   end Assign;
 
 
@@ -869,6 +879,11 @@ package body Limited_List is
     Move_To (List, Next, 0, False);
     List.Modified := True;
   end Sort;
+
+  procedure Finalize (List : in out List_Type) is
+  begin
+    Delete_List (List, Deallocate => True);
+  end Finalize;
 
 end Limited_List;
 

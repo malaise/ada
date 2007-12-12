@@ -30,10 +30,10 @@ package body Hash is
       Ca := Dyn_Hash.Allocate ((Data => Data, Next  => null));
 
       -- Append
-      if Table(I).First = null then
-        Table(I).First := Ca;
+      if Table.Arr(I).First = null then
+        Table.Arr(I).First := Ca;
       else
-        N := Table(I).First;
+        N := Table.Arr(I).First;
         while N.Next /= null loop
           N := N.Next;
         end loop;
@@ -49,19 +49,19 @@ package body Hash is
       Ca : Cell_Access;
       Cu : Cell_Access;
     begin
-      Cu := Table(I).Current;
-      Ca := Table(I).First;
+      Cu := Table.Arr(I).Current;
+      Ca := Table.Arr(I).First;
       -- Empty or not found
       if Ca = null or else Cu = null then
         raise Not_Found;
       end if;
 
       -- Reset current
-      Table(I).Current := null;
+      Table.Arr(I).Current := null;
 
       if Ca = Cu then
         -- Special case when current is first
-        Table(I).First := Ca.Next;
+        Table.Arr(I).First := Ca.Next;
       else
         -- Find previous of current
         while Ca.Next /= Cu loop
@@ -79,7 +79,7 @@ package body Hash is
                           Key   : in String) is
       I : constant Hash_Range := Hash_Func(Key);
     begin
-      Table(I).Current := null;
+      Table.Arr(I).Current := null;
     end Reset_Find;
 
     -- To get next Index matching Key
@@ -89,13 +89,13 @@ package body Hash is
       I : constant Hash_Range := Hash_Func(Key);
       Cu : Cell_Access;
     begin
-      if Table(I).Current = null then
-        Cu := Table(I).First;
+      if Table.Arr(I).Current = null then
+        Cu := Table.Arr(I).First;
       else
-        Cu := Table(I).Current.Next;
+        Cu := Table.Arr(I).Current.Next;
       end if;
 
-      Table(I).Current := Cu;
+      Table.Arr(I).Current := Cu;
 
       if Cu = null then
         Found := Not_Found_Rec;
@@ -107,7 +107,7 @@ package body Hash is
     procedure Dump (Table : in Hash_Table;
                     Key   : in String) is
       I : constant Hash_Range := Hash_Func(Key);
-      Ca : Cell_Access := Table(I).First;
+      Ca : Cell_Access := Table.Arr(I).First;
     begin
       My_Io.Put_Line ("Hash " & Hash_Range'Image(I));
       if Ca = null then
@@ -115,7 +115,7 @@ package body Hash is
       end if;
       while Ca /= null loop
         My_Io.Put (" Data found ");
-        if Ca = Table(I).Current then
+        if Ca = Table.Arr(I).Current then
           My_Io.Put (" => ");
         else
           My_Io.Put (" -> ");
@@ -131,9 +131,9 @@ package body Hash is
       Ca, Cn : Cell_Access;
     begin
       for I in Hash_Range loop
-        Ca := Table(I).First;
-        Table(I).First := null;
-        Table(I).Current := null;
+        Ca := Table.Arr(I).First;
+        Table.Arr(I).First := null;
+        Table.Arr(I).Current := null;
 
         while Ca /= null loop
           Cn := Ca.Next;

@@ -42,7 +42,7 @@ private
   package Item_Dyn_List_Mng is new Dynamic_List (Loc_Item);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   subtype Lt is Item_List_Mng.List_Type;
-  type Timed_Type is new Lt;
+  type Timed_Type is new Item_List_Mng.List_Type;
   
 end Queues.Timed;
 

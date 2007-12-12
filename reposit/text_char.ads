@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded, Ada.Finalization;
 with Sys_Calls, Text_Line;
 package Text_Char is
 
@@ -58,7 +58,12 @@ private
     Ungot_Chars : Ada.Strings.Unbounded.Unbounded_String;
   end record;
 
-  type File_Type is access File_Type_Rec;
+  type Rec_Access is access File_Type_Rec;
+  type File_Type is limited new Ada.Finalization.Limited_Controlled with record
+    Acc : Rec_Access;
+  end record;
+
+  procedure Finalize (File : in out File_Type);
 
 end Text_Char;
 

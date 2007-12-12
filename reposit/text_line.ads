@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded, Ada.Characters.Latin_1;
+with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Finalization;
 with Sys_Calls;
 package Text_Line is
 
@@ -78,7 +78,12 @@ private
     Buffer : Buffer_Array;
   end record;
 
-  type File_Type is access File_Type_Rec;
+  type Rec_Access is access File_Type_Rec;
+  type File_Type is limited new Ada.Finalization.Limited_Controlled with record
+    Acc : Rec_Access;
+  end record;
+
+  procedure Finalize (File : in out File_Type);
 
 end Text_Line;
 

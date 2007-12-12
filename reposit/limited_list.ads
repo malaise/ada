@@ -1,3 +1,4 @@
+with Ada.Finalization;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
@@ -309,7 +310,7 @@ private
     Prev  : Link := null;
   end record;
 
-  type List_Type is record
+  type List_Type is limited new Ada.Finalization.Limited_Controlled with record
     Modified  : Boolean := True;
     In_Cb     : Boolean := False;
     Pos_First : Natural := 0;
@@ -318,6 +319,7 @@ private
     First     : Link    := null;
     Last      : Link    := null;
   end record;
+  procedure Finalize (List : in out List_Type);
 
 end Limited_List;
 

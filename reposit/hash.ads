@@ -1,6 +1,7 @@
 -- This hash package does not store the user's data but an access to it.
 -- The user needs to associate a unique acess to each data
 --  (index in an array, acess type...)
+with Ada.Finalization;
 with Crc_10;
 package Hash is
 
@@ -81,7 +82,13 @@ package Hash is
     subtype Hash_Range is Max_Hash_Range range 0 .. Hash_Size;
 
     -- The entries of the table
-    type Hash_Table is array (Hash_Range) of First_Cell_Rec;
+    type Hash_Arr is array (Hash_Range) of First_Cell_Rec;
+    type Hash_Table is limited new Ada.Finalization.Limited_Controlled
+                               with record
+      Arr : Hash_Arr;
+    end record;
+    procedure Finalize (Table : in out Hash_Table) renames Clear_All;
+
   end Hash_Mng;
 
   -- Raised on Remove if last found is not set

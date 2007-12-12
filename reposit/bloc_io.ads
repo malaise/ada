@@ -1,6 +1,6 @@
 -- Perform read/write of several Element_Type in file
 with System;
-with Ada.Io_Exceptions;
+with Ada.Io_Exceptions, Ada.Finalization;
 generic
   type Element_Type is private;
 package Bloc_Io is
@@ -62,10 +62,11 @@ package Bloc_Io is
 
 private
 
-  type File_Type is record
+  type File_Type is limited new Ada.Finalization.Limited_Controlled with record
     Ext_File : System.Address := System.Null_Address;
     Mode : File_Mode;
   end record;
+  procedure Finalize (File : in out File_Type);
 
 end Bloc_Io;
 

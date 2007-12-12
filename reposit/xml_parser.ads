@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char;
 package Xml_Parser is
 
@@ -291,7 +291,7 @@ private
   -- CONTEXT TYPE --
   ------------------
   type Ctx_Status_List is (Clean, Prologue, Done, Error);
-  type Ctx_Type is tagged limited record
+  type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
     Magic : Float := Clean_Magic;
     -- Input flow description
@@ -300,6 +300,7 @@ private
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
   end record;
+  procedure Finalize (Ctx : in out Ctx_Type) renames Clean;
 
 end Xml_Parser;
 
