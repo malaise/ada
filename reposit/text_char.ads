@@ -3,7 +3,7 @@ with Sys_Calls, Text_Line;
 package Text_Char is
 
   -- The file type
-  type File_Type is limited private;
+  type File_Type is tagged limited private;
 
   -- Associate a file desc to a Txt_Char file
   -- May raise Status_Error if File is already open

@@ -8,7 +8,7 @@ generic
 package Limited_List is
 
   -- Descriptor of the list
-  type List_Type is limited private;
+  type List_Type is tagged limited private;
 
   -- For Read and Modify to set new position
   type Movement is (Next, Prev, Current);

@@ -20,7 +20,7 @@ package Hash is
   package Hash_Mng is
 
     -- One hash table
-    type Hash_Table is limited private;
+    type Hash_Table is tagged limited private;
 
     -- Returned result of Find_Next
     type Found_Rec (Found : Boolean := True) is record

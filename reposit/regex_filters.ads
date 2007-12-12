@@ -32,7 +32,7 @@ private
   package Filter_Dyn_List_Mng is new Dynamic_List (Filter_Cell);
   package Filter_List_Mng renames Filter_Dyn_List_Mng.Dyn_List;
 
-  type Regex_Filter is new Filter_List_Mng.List_Type;
+  type Regex_Filter is new Filter_List_Mng.List_Type with null record;
 
 end Regex_Filters;
 

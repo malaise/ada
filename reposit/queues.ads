@@ -8,7 +8,7 @@ package Queues is
     Size : Positive;
     type Item is private;
   package Lifo is
-    type Lifo_Type is private;
+    type Lifo_Type is tagged private;
 
     subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
@@ -45,7 +45,7 @@ package Queues is
     Lifo_Not : exception;
     type Pile_Type is array (No_Range) of Item;
   private
-    type Lifo_Type is record
+    type Lifo_Type is tagged record
       Pile : Pile_Type;
       -- Ptr is the last pushed except if stack is empty
       --  then it is 0.
@@ -62,7 +62,7 @@ package Queues is
     type Item is private;
   package Fifo is
 
-    type Fifo_Type is private;
+    type Fifo_Type is tagged private;
 
     subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
@@ -105,7 +105,7 @@ package Queues is
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
     type File_Type is array (No_Range) of Item;
-    type Fifo_Type is record
+    type Fifo_Type is tagged record
       Full : Boolean := False;
       File : File_Type;
       Ptr_In  : Ptr_Range := 0;
@@ -125,7 +125,7 @@ package Queues is
     type Item is private;
     type Priority is range <>;
   package Prio is
-    type Prio_Type is private;
+    type Prio_Type is tagged private;
 
     subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
@@ -169,7 +169,7 @@ package Queues is
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
     type Item_Prio_Type is array (No_Range) of Item;
     type Prio_Prio_Type is array (No_Range) of Priority;
-    type Prio_Type is record
+    type Prio_Type is tagged record
       File : Item_Prio_Type;
       File_Prio : Prio_Prio_Type;
       Ptr_In  : Typ_Ptr := 0;
@@ -186,7 +186,7 @@ package Queues is
     Size : Positive;
     type Item is private;
   package Circ is
-    type Circ_Type is private;
+    type Circ_Type is tagged private;
 
     subtype Len_Range is Natural range 0 .. Size;
     subtype No_Range is Positive range 1 .. Size;
@@ -228,7 +228,7 @@ package Queues is
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
     type File_Type is array (Typ_Ptr) of Item;
-    type Circ_Type is record
+    type Circ_Type is tagged record
       File : File_Type;
       Ptr_In  : Typ_Ptr := 0;
       Ptr_Out : Typ_Ptr := 0;

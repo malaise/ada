@@ -29,7 +29,7 @@ private
   procedure Set (To : out Data_Type; Val : in Data_Type);
 
   package Pool_List_Mng is new Limited_List (Data_Type, Data_Type_Access, Set);
-  type Pool_Type is new Pool_List_Mng.List_Type;
+  type Pool_Type is new Pool_List_Mng.List_Type with null record;
 
 end Unlimited_Pool;
 

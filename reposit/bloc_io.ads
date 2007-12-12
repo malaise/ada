@@ -5,7 +5,7 @@ generic
   type Element_Type is private;
 package Bloc_Io is
 
-  type File_Type is limited private;
+  type File_Type is tagged limited private;
 
   type File_Mode is (In_File, Inout_File, Out_File);
 

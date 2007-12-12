@@ -6,7 +6,7 @@ generic
   Size : Natural;
   type Item is private;
 package Queues.Timed is
-  type Timed_Type is limited private;
+  type Timed_Type is tagged limited private;
 
   -- Remove obsolete items and add this one that will expire at Expdate
   procedure Push (Queue : in out Timed_Type;
@@ -42,7 +42,7 @@ private
   package Item_Dyn_List_Mng is new Dynamic_List (Loc_Item);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   subtype Lt is Item_List_Mng.List_Type;
-  type Timed_Type is new Item_List_Mng.List_Type;
+  type Timed_Type is new Item_List_Mng.List_Type with null record;
   
 end Queues.Timed;
 
