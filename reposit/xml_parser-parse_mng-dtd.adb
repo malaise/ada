@@ -518,8 +518,8 @@ package body Dtd is
     elsif Try ("NOTATION ") then
       Util.Error (Ctx.Flow, "Unsupported NOTATION directive");
     else
-      -- Skip CDATA and comments
-      Parse_Directive (Ctx, Adtd, Only_Skip => True);
+      -- Skip CDATA and comments, no dtd allowed
+      Parse_Directive (Ctx, Adtd, Allow_Dtd => False);
     end if;
   end Parse_Directive;
 
@@ -570,9 +570,9 @@ package body Dtd is
                    Adtd : in out Dtd_Type;
                    File_Name : in String) is
   begin
-    if File_Name = "" then
+    if File_Name = Current_Flow then
       -- Internal declarations
-      Trace ("Dtd parsing internal definition");
+      Trace ("Dtd parsing internal definition or string");
       Parse (Ctx, Adtd, False);
     else
       -- External declarations
@@ -1030,5 +1030,6 @@ package body Dtd is
     when Info_Mng.Not_In_List =>
       Trace ("Dtd check: Cannot find info " & Asu_Ts (Idrefs.Name));
   end Final_Check;
+
 end Dtd;
 

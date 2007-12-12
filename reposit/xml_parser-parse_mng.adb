@@ -110,7 +110,7 @@ package body Parse_Mng  is
   -- Dtd uses Parse_Directive for comment and CDATA
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
-                             Only_Skip : in Boolean);
+                             Allow_Dtd : in Boolean);
 
   -- Parse instruction <? >
   -- Dtd adds its own instructions (except xml)
@@ -145,6 +145,8 @@ package body Parse_Mng  is
     -- Init (clear) Dtd data
     procedure Init (Adtd : in out Dtd_Type);
     -- Parse a dtd (either a external file or internal if name is empty)
+    -- Conventions for File_Name
+    Current_Flow : constant String := "";
     procedure Parse (Ctx  : in out Ctx_Type;
                      Adtd : in out Dtd_Type;
                      File_Name : in String);
@@ -382,11 +384,11 @@ package body Parse_Mng  is
   end Parse_Doctype;
 
   -- Parse a directive (<!xxx>)
-  -- If Only_Skip, allow comments and CDATA only
-  -- Otherwise, also allow DOCTYPE
+  -- If Allow_Dtd, allow DOCTYPE
+  -- Otherwise, allow comments and CDATA only
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
-                             Only_Skip : in Boolean) is
+                             Allow_Dtd : in Boolean) is
     Index : Natural;
     Ok : Boolean;
   begin
@@ -414,7 +416,7 @@ package body Parse_Mng  is
       Util.Reset_Curr_Str (Ctx.Flow);
       return;
     end if;
-    if not Only_Skip then
+    if Allow_Dtd then
       Util.Try (Ctx.Flow, "DOCTYPE ", Ok);
       if Ok then
         Parse_Doctype (Ctx, Adtd);
@@ -432,7 +434,9 @@ package body Parse_Mng  is
   end Parse_Directive;
 
   -- Parse the prologue
-  procedure Parse_Prologue (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Prologue (Ctx : in out Ctx_Type;
+                            Adtd : in out Dtd_Type;
+                            Allow_Dtd : in Boolean) is
     C1, C2 : Character;
   begin
     -- Loop until end of prologue (<name>)
@@ -456,7 +460,7 @@ package body Parse_Mng  is
           Parse_Instruction (Ctx, Adtd);
         when Util.Directive =>
           -- Directive or comment or CDATA
-          Parse_Directive (Ctx, Adtd, Only_Skip => False);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd);
         when others =>
           -- A name go back to before '<'
           Util.Unget (Ctx.Flow);
@@ -494,7 +498,7 @@ package body Parse_Mng  is
           return;
         elsif Char = Util.Directive then
           -- Must be a comment or CDATA
-          Parse_Directive (Ctx, Adtd, Only_Skip => True);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd => False);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
         else
@@ -660,14 +664,51 @@ package body Parse_Mng  is
     Tree_Mng.Init_Prologue (Ctx.Prologue.all);
     -- Reset Dtd
     Dtd.Init (Adtd);
-    -- Parse prologue then root element
-    Parse_Prologue (Ctx, Adtd);
+    -- Parse prologue, allow Dtd
+    Parse_Prologue (Ctx, Adtd, Allow_Dtd => True);
+    -- Parse elements
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
     Dtd.Final_Check (Ctx, Adtd);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
   end Parse;
+
+  -- Propagate Dtd convention
+  function Current_Flow return String is
+  begin
+    return Dtd.Current_Flow;
+  end Current_Flow;
+
+  -- Parse a Dtd Flow
+  procedure Parse_Dtd (Ctx : in out Ctx_Type;
+                       Adtd : in out Dtd_Type;
+                       File_Name : in String) is
+  begin
+    Dtd.Parse (Ctx, Adtd, File_Name);
+  end Parse_Dtd;
+
+   -- Parse the prologue
+  procedure Parse_Prologue (Ctx : in out Ctx_Type) is
+    Adtd : Dtd_Type;
+  begin
+    -- Init Prologue with an empty root
+    Tree_Mng.Init_Prologue (Ctx.Prologue.all);
+    -- Reset Dtd, it will not be used
+    Dtd.Init (Adtd);
+    -- Parse prologue, disallow Dtd
+    Parse_Prologue (Ctx, Adtd, Allow_Dtd => False);
+  end Parse_Prologue;
+
+  -- Parse the elements
+  procedure Parse_Elements (Ctx : in out Ctx_Type;
+                            Adtd : in out Dtd_Type) is
+  begin
+    -- Parse root element
+    Parse_Root_To_End (Ctx, Adtd);
+    -- Perform final checks versus dtd
+    Dtd.Final_Check (Ctx, Adtd);
+  end Parse_Elements;
 
 end Parse_Mng;
 

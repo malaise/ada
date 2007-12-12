@@ -147,7 +147,7 @@ package body Util is
         Char := Text_Char.Get (Flow.Xml_File);
       when Xml_String =>
         if Flow.In_Stri = Asu.Length (Flow.In_Str) then
-          raise Internal_Error;
+          raise End_Error;
         end if;
         Flow.In_Stri := Flow.In_Stri + 1;
         Char := Asu.Element (Flow.In_Str, Flow.In_Stri);

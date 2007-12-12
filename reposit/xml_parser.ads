@@ -84,7 +84,6 @@ package Xml_Parser is
   --  (Calling Get_Root_Element will raise Use_Error);
   -- may raise Status_Error if Ctx is not clean
   --           Dtd_In_String if there is a Dtd (!DOCTYPE) directive
-  --           Parse_Error while parsing the string
   procedure Parse_Prologue (Ctx : out Ctx_Type;
                             Str : in String;
                             Ok  : out Boolean);
@@ -93,7 +92,7 @@ package Xml_Parser is
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean
   --           End_Error if Ctx has already parsed elements
-  --           Parse_Error while parsing the string
+  --           Parse_Error if Parse_Prologue was not ok
   procedure Parse_Elements (Ctx : in out Ctx_Type;
                             Dtd : in out Dtd_Type;
                             Ok  : out Boolean);
@@ -229,7 +228,7 @@ private
     -- Saved line of input (when switching to dtd file and back)
     -- Inputs flows: string and index, or files
     In_Str : Ada.Strings.Unbounded.Unbounded_String;
-    In_Stri : Natural;
+    In_Stri : Natural := 0;
     Xml_File : Text_Char.File_Type;
     Dtd_File : Text_Char.File_Type;
   end record;

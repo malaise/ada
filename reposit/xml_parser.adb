@@ -98,8 +98,18 @@ package body Xml_Parser is
 
   -- Parses the content of the file into the tree
   package Parse_Mng is
-    -- Parse the file. Raises exceptions
+    -- Parse the Xml file. Raises exceptions
     procedure Parse (Ctx : in out Ctx_Type);
+    -- Parse a Dtd Flow
+    function Current_Flow return String;
+    procedure Parse_Dtd (Ctx : in out Ctx_Type;
+                         Adtd : in out Dtd_Type;
+                         File_Name : in String);
+    -- Parse the prologue
+    procedure Parse_Prologue (Ctx : in out Ctx_Type);
+    -- Parse the elements
+    procedure Parse_Elements (Ctx : in out Ctx_Type;
+                              Adtd : in out Dtd_Type);
   end Parse_Mng;
   package body Parse_Mng is separate;
 
@@ -224,14 +234,20 @@ package body Xml_Parser is
   -- Dtd parsing
   procedure Parse_Dtd_File (File_Name : in String;
                             Dtd       : out Dtd_Type) is
+    Ctx : Ctx_Type;
   begin
-    raise Internal_Error;
+    Parse_Mng.Parse_Dtd (Ctx, Dtd, File_Name);
+    Clean (Ctx);
   end Parse_Dtd_File;
 
   procedure Parse_Dtd_String (Str : in String;
                               Dtd : out Dtd_Type) is
+    Ctx : Ctx_Type;
   begin
-    raise Internal_Error;
+    Ctx.Flow.Kind := Xml_String;
+    Ctx.Flow.In_Str := Asu_Tus (Str);
+    Parse_Mng.Parse_Dtd (Ctx, Dtd, Parse_Mng.Current_Flow);
+    Clean (Ctx);
   end Parse_Dtd_String;
 
   -- Clean a dtd
@@ -244,7 +260,7 @@ package body Xml_Parser is
     Entity_List_Mng.Delete_List (Dtd.Entity_List);
   end Clean_Dtd;
 
-   -- Parse the prologue of a string
+  -- Parse the prologue of a string
   -- may raise Status_Error if Ctx is not clean
   --    Dtd_In_String if there is a Dtd (!DOCTYPE) directive
   --    Parse_Error while parsing the string
@@ -252,7 +268,34 @@ package body Xml_Parser is
                             Str : in String;
                             Ok  : out Boolean) is
   begin
-    raise Internal_Error;
+    if Ctx.Status /= Clean then
+      raise Status_Error;
+    end if;
+    -- Be sure context is clean
+    Clean (Ctx);
+    -- No it will not be clean
+    Ctx.Magic := Get_Magic;
+    -- In case of exception...
+    Ctx.Status := Error;
+    Ctx.Flow.Err_Msg := Asu_Null;
+    Ok := False;
+    -- Parse the prologue string
+    Ctx.Flow.Kind := Xml_String;
+    Ctx.Flow.In_Str := Asu_Tus (Str);
+    Parse_Mng.Parse_Prologue (Ctx);
+    -- Close the file
+    Ctx.Status := Prologue;
+    Ok := True;
+  exception
+    when Status_Error =>
+      raise;
+    when Error_Occ:Parse_Error =>
+      -- Retrieve and store parsing error message
+      Ctx.Status := Error;
+      Ctx.Flow.Err_Msg := Asu_Tus (Ada.Exceptions.Exception_Message(Error_Occ));
+      Ok := False;
+    when others =>
+      raise Internal_Error;
   end Parse_Prologue;
 
   -- Parse the elements (after the prologue) of a string with a dtd
@@ -262,8 +305,37 @@ package body Xml_Parser is
   procedure Parse_Elements (Ctx : in out Ctx_Type;
                             Dtd : in out Dtd_Type;
                             Ok  : out Boolean) is
+    Loc_Parse_Error : exception;
   begin
-    raise Internal_Error;
+    if Ctx.Status = Clean then
+      raise Status_Error;
+    elsif Ctx.Status = Done then
+      raise End_Error;
+    elsif Ctx.Status = Error then
+      raise Loc_Parse_Error;
+    end if;
+    -- In case of exception...
+    Ctx.Status := Error;
+    Ctx.Flow.Err_Msg := Asu_Null;
+    Ok := False;
+    -- Parse
+    Parse_Mng.Parse_Elements (Ctx, Dtd);
+    -- Close the file
+    Ctx.Status := Done;
+    Ok := True;
+  exception
+    when Status_Error | End_Error =>
+      raise;
+    when Loc_Parse_Error =>
+      -- Raising Parse_Error because previous parsing detected error
+      raise Parse_Error;
+    when Error_Occ:Parse_Error =>
+      -- Retrieve and store parsing error message
+      Ctx.Status := Error;
+      Ctx.Flow.Err_Msg := Asu_Tus (Ada.Exceptions.Exception_Message(Error_Occ));
+      Ok := False;
+    when others =>
+      raise Internal_Error;
   end Parse_Elements;
 
   ----------------
