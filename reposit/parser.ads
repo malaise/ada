@@ -108,7 +108,7 @@ private
   Init_Rec : constant Iter_Rec := Default_Rec;
 
   type Iter_Rec_Access is access Iter_Rec;
-  type Iterator is new Ada.Finalization.Controlled with record
+  type Iterator is limited new Ada.Finalization.Limited_Controlled with record
     Acc : Iter_Rec_Access := null;
   end record;
 

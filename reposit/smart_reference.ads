@@ -28,7 +28,7 @@ private
   end record;
   type Object_Box_Access is access Object_Box;
 
-  type Handle is new Ada.Finalization.Controlled with record
+  type Handle is limited new Ada.Finalization.Limited_Controlled with record
     Box_Access : Object_Box_Access := null;
   end record;
   procedure Initialize (Ref : in out Handle);
