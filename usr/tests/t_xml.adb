@@ -148,8 +148,15 @@ procedure T_Xml is
               --  or prev was not text and did not New_Line because
               --  of possible text
               Ada.Text_Io.New_Line;
+              Put_Element (Children(I), Level + 1);
+            elsif I = 1 then
+              -- First Child
+              Put_Element (Children(I), Level + 1);
+            else
+              -- Child element following text
+              --  we bet that it has no child itself, so no New_Line nor Indent
+              Put_Element (Children(I), 0);
             end if;
-            Put_Element (Children(I), Level + 1);
             if I = Children'Last then
               Ada.Text_Io.New_Line;
             end if;
