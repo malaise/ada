@@ -1,0 +1,10 @@
+<?xml version="1.1"?>
+
+<!ELEMENT try (#PCDATA|bold|italic|underline|subscript|superscript)*>
+<!ATTLIST try xml:space (default|preserve) "preserve">
+<!ELEMENT bold EMPTY>
+<!ELEMENT italic EMPTY>
+<!ELEMENT underline EMPTY>
+<!ELEMENT subscript EMPTY>
+<!ELEMENT superscript EMPTY>
+
