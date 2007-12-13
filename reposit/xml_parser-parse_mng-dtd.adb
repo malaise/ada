@@ -570,9 +570,13 @@ package body Dtd is
                    Adtd : in out Dtd_Type;
                    File_Name : in String) is
   begin
-    if File_Name = Current_Flow then
+    if File_Name = String_Flow then
       -- Internal declarations
-      Trace ("Dtd parsing internal definition or string");
+      Trace ("Dtd parsing string");
+      Parse (Ctx, Adtd, True);
+    elsif File_Name = Internal_Flow then
+      -- Internal declarations
+      Trace ("Dtd parsing internal definition");
       Parse (Ctx, Adtd, False);
     else
       -- External declarations

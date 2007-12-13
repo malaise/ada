@@ -146,7 +146,10 @@ package body Parse_Mng  is
     procedure Init (Adtd : in out Dtd_Type);
     -- Parse a dtd (either a external file or internal if name is empty)
     -- Conventions for File_Name
-    Current_Flow : constant String := "";
+    -- String flow is when current string is a dtd
+    -- Internal flow is when a DOCTYPE contains "[...]"
+    String_Flow   : constant String := "";
+    Internal_Flow : constant String := ""  & Ada.Characters.Latin_1.Nul;
     procedure Parse (Ctx  : in out Ctx_Type;
                      Adtd : in out Dtd_Type;
                      File_Name : in String);
@@ -679,10 +682,10 @@ package body Parse_Mng  is
   end Parse;
 
   -- Propagate Dtd convention
-  function Current_Flow return String is
+  function String_Flow return String is
   begin
-    return Dtd.Current_Flow;
-  end Current_Flow;
+    return Dtd.String_Flow;
+  end String_Flow;
 
   -- Parse a Dtd Flow
   procedure Parse_Dtd (Ctx : in out Ctx_Type;
