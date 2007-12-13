@@ -211,10 +211,10 @@ package body Xml_Parser is
     Ctx.Flow.In_Str := Asu_Null;
     Ctx.Flow.In_Stri := 0;
     if Text_Char.Is_Open (Ctx.Flow.Xml_File) then
-      Text_Char.Close (Ctx.Flow.Xml_File);
+      File_Mng.Close (Ctx.Flow.Xml_File);
     end if;
     if Text_Char.Is_Open (Ctx.Flow.Dtd_File) then
-      Text_Char.Close (Ctx.Flow.Dtd_File);
+      File_Mng.Close (Ctx.Flow.Dtd_File);
     end if;
     -- Clean prologue tree
     if not My_Tree.Is_Empty (Ctx.Prologue.all) then
@@ -262,7 +262,6 @@ package body Xml_Parser is
 
   -- Parse the prologue of a string
   -- may raise Status_Error if Ctx is not clean
-  --    Dtd_In_String if there is a Dtd (!DOCTYPE) directive
   --    Parse_Error while parsing the string
   procedure Parse_Prologue (Ctx : out Ctx_Type;
                             Str : in String;
@@ -282,6 +281,7 @@ package body Xml_Parser is
     -- Parse the prologue string
     Ctx.Flow.Kind := Xml_String;
     Ctx.Flow.In_Str := Asu_Tus (Str);
+    Ctx.Flow.Xml_Line := 1;
     Parse_Mng.Parse_Prologue (Ctx);
     -- Close the file
     Ctx.Status := Prologue;

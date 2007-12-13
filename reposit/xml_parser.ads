@@ -83,11 +83,9 @@ package Xml_Parser is
   -- Then on can call Get_Prologue on Ctx
   --  (Calling Get_Root_Element will raise Use_Error);
   -- may raise Status_Error if Ctx is not clean
-  --           Dtd_In_String if there is a Dtd (!DOCTYPE) directive
   procedure Parse_Prologue (Ctx : out Ctx_Type;
                             Str : in String;
                             Ok  : out Boolean);
-  Dtd_In_String : exception;
 
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean

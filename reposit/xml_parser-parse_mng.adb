@@ -416,11 +416,15 @@ package body Parse_Mng  is
       Util.Reset_Curr_Str (Ctx.Flow);
       return;
     end if;
-    if Allow_Dtd then
-      Util.Try (Ctx.Flow, "DOCTYPE ", Ok);
-      if Ok then
+    Util.Try (Ctx.Flow, "DOCTYPE ", Ok);
+    if Ok then
+      if Allow_Dtd then
+        -- Allowed DOCTYPE, parse
         Parse_Doctype (Ctx, Adtd);
         return;
+      else
+        -- Forbiden DOCTYPE
+        Util.Error (Ctx.Flow, "Unexpected DOCTYPE directive");
       end if;
     end if;
     -- Reject directive
