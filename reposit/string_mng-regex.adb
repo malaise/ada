@@ -328,6 +328,49 @@ package body String_Mng.Regex is
   end Replace;
 
 
+  -- Split Str into several substrings that match the substrings "(...)"
+  --  of the criteria.
+  -- Returns the array of slices (empty array if Str does not match).
+  function Split (Str : String;
+                  Criteria : String;
+                  Max_Slices : Positive) return String_Slice is
+    -- Regex compilation
+    Ok : Boolean;
+    Compiled : Regular_Expressions.Compiled_Pattern;
+    -- One extra cell (the first) to store global indexes
+    Cells : Regular_Expressions.Match_Array (1 .. Max_Slices + 1);
+    N_Matched : Natural;
+  begin
+    -- Compile regex
+    Regular_Expressions.Compile (Compiled, Ok, Criteria);
+    if not Ok then
+      raise Invalid_Regular_Expression;
+    end if;
+    -- Execute regex
+    Regular_Expressions.Exec (Compiled, Str, N_Matched, Cells);
+    -- Empty slice if no strict match
+    if N_Matched <= 1
+    or else  Cells(1).First_Offset /= Str'First
+    or else  Cells(1).Last_Offset_Stop /= Str'Last then
+      declare
+        Result : constant String_Slice (1 .. 0)
+               := (others => Ada.Strings.Unbounded.Null_Unbounded_String);
+      begin
+        return Result;
+      end;
+    end if;
+    -- Build result: Copy
+    declare
+      Result : String_Slice (1 .. N_Matched - 1);
+    begin
+      for I in Result'Range loop
+        Result(I) := Ada.Strings.Unbounded.To_Unbounded_String (
+         Str(Cells(I + 1).First_Offset .. Cells(I + 1).Last_Offset_Stop));
+      end loop;
+      return Result;
+    end;
+  end Split;
+
 end String_Mng.Regex;
 
 

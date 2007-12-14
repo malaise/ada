@@ -1,6 +1,7 @@
 -- More powerfull search and substitution in strings,
 --  based on regular expressions (extended, case sensitive and matching
 --  newline).
+with Ada.Strings.Unbounded;
 with Regular_Expressions;
 package String_Mng.Regex is
 
@@ -20,8 +21,8 @@ package String_Mng.Regex is
   -- Raised by Locate or Replace if Within is not Empty and an Index is not
   -- in Within'Range
   Invalid_Index : exception;
-  -- Raised by Locate or Replace if Criteria is not a valid extented regular
-  -- expression
+  -- Raised by Locate or Replace  or Split if Criteria is not a valid
+  -- extented regularexpression
   Invalid_Regular_Expression : exception;
 
   -- Locate a fragment of Within string matching the regexp Criteria.
@@ -58,6 +59,15 @@ package String_Mng.Regex is
                     To_Index   : Natural := 0;
                     Nb_Cycles  : Natural := 1)
            return String;
+
+  -- Split Str into several substrings that match the substrings "(...)"
+  --  of the criteria.
+  -- Returns the array of slices (empty array if Str does not strictly match).
+  type String_Slice is array (Positive range <>)
+      of Ada.Strings.Unbounded.Unbounded_String;
+  function Split (Str : String;
+                  Criteria : String;
+                  Max_Slices : Positive) return String_Slice;
 
 end String_Mng.Regex;
 
