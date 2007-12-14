@@ -568,7 +568,8 @@ package body Dtd is
   -- Parse a dtd (either a external file or internal if name is empty)
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
-                   File_Name : in String) is
+                   File_Name : in String;
+                   Name_Raise_Parse : in Boolean := True) is
   begin
     if File_Name = String_Flow then
       -- Internal declarations
@@ -593,7 +594,11 @@ package body Dtd is
     Adtd.Set := True;
   exception
     when File_Error =>
-      Util.Error (Ctx.Flow, "Cannot open dtd file " & File_Name);
+      if Name_Raise_Parse then
+        Util.Error (Ctx.Flow, "Cannot open dtd file " & File_Name);
+      else
+        raise;
+      end if;
   end Parse;
 
   -- Replace "##" by "," then suppress "#"

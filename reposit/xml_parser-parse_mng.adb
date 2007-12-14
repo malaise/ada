@@ -148,11 +148,14 @@ package body Parse_Mng  is
     -- Conventions for File_Name
     -- String flow is when current string is a dtd
     -- Internal flow is when a DOCTYPE contains "[...]"
+    -- If Name_Raise_Parse, then File Name_Error raises Parse_Error
+    --  otherwise File_Error
     String_Flow   : constant String := "";
     Internal_Flow : constant String := ""  & Ada.Characters.Latin_1.Nul;
     procedure Parse (Ctx  : in out Ctx_Type;
                      Adtd : in out Dtd_Type;
-                     File_Name : in String);
+                     File_Name : in String;
+                     Name_Raise_Parse : in Boolean := True);
     -- Check Current element of the tree
     procedure Check_Element (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
@@ -692,7 +695,7 @@ package body Parse_Mng  is
                        Adtd : in out Dtd_Type;
                        File_Name : in String) is
   begin
-    Dtd.Parse (Ctx, Adtd, File_Name);
+    Dtd.Parse (Ctx, Adtd, File_Name, Name_Raise_Parse => False);
   end Parse_Dtd;
 
    -- Parse the prologue
