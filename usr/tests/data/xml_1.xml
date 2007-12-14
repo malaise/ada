@@ -2,4 +2,4 @@
 <?Interface_Name Try_Interface?>
 <?Interface_Version 1.0?>
 
-<try>This is <bold>bold</bold>text.</try>
+<try>This text is in <bold>bold</bold>.</try>

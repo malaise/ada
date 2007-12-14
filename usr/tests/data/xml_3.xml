@@ -1,6 +1,7 @@
 <?xml version="1.1" encoding="UTF-8"?>
 <?Interface_Name Try_Interface?>
-<?Interface_Version 3.1?>
+<?Interface_Version 3.2?>
 
-<try>This is <bold>bold</bold>text, and this one is in <italic>italic</italic>
-, and this one is <superscript>superscript</superscript>.</try>
+<try>This text is in <bold>bold</bold>,
+ and this one is in <italic>italic</italic>,
+ and this one is in <superscript>superscript</superscript>.</try>
