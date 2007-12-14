@@ -312,6 +312,7 @@ private
 
   type List_Type is limited new Ada.Finalization.Limited_Controlled with record
     Modified  : Boolean := True;
+    Assigned  : Boolean := False;
     In_Cb     : Boolean := False;
     Pos_First : Natural := 0;
     Pos_Last  : Natural := 0;

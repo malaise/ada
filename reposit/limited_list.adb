@@ -45,30 +45,41 @@ package body Limited_List is
      Unchecked_Deallocation(Object=>Cell, Name=>Link);
   begin
     Check_Cb(List);
-    if Deallocate then
-      -- Deallocate the list
-      while List.First /= null loop
-        Local := List.First;
-        List.First := List.First.Next;
-        Deallocation_Of(Local);
-      end loop;
-      -- Deallocate the free list
+    -- Don't delete the list if it is a copy
+    if not List.Assigned then
+      if Deallocate then
+        -- Deallocate the list
+        while List.First /= null loop
+          Local := List.First;
+          List.First := List.First.Next;
+          Deallocation_Of(Local);
+        end loop;
+        -- Deallocate the free list
+        while Free_List /= null loop
+          Local := Free_List;
+          Free_List := Free_List.Next;
+          Deallocation_Of(Local);
+        end loop;
+      else
+        -- Insert the list in beginning of free list
+        if List.First /= null then
+          List.Last.Next := Free_List;
+          if Free_List /= null then
+            Free_List.Prev := List.Last;
+          end if;
+          Free_List := List.First;
+        end if;
+      end if;
+    elsif Deallocate then
+      -- If Assigned and Deallocate, we can still deallocate the free list
       while Free_List /= null loop
         Local := Free_List;
         Free_List := Free_List.Next;
         Deallocation_Of(Local);
       end loop;
-    else
-      -- Insert the list in beginning of free list
-      if List.First /= null then
-        List.Last.Next := Free_List;
-        if Free_List /= null then
-          Free_List.Prev := List.Last;
-        end if;
-        Free_List := List.First;
-      end if;
     end if;
     List.Modified := True;
+    List.Assigned := False;
     List.In_Cb := False;
     List.Pos_First := 0;
     List.Pos_Last := 0;
@@ -537,7 +548,8 @@ package body Limited_List is
   -- Copy the Val list to To list
   procedure Assign (To : in out List_Type; Val : in List_Type) is
   begin
-    Check_Cb(To);
+    Delete_List(To);
+    To.Assigned := True;
     To.Modified := True;
     To.In_Cb := False;
     To.Pos_First := Val.Pos_First;
