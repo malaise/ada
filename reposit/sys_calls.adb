@@ -390,8 +390,68 @@ package body Sys_Calls is
     return C_Getegid;
   end Get_Effective_Group_Id;
 
-  -- Set mode for Stdin
+  -- Get user and group names and ids
+  function Get_Name_Of_User_Id (User_Id : Natural) return String is
+    Str : String (1 .. 1024);
+    Res : Integer;
+    function C_Get_User_Name_Of_Uid (Uid : Integer;
+                                     Name : System.Address) return Integer;
+    pragma Import (C, C_Get_User_Name_Of_Uid, "get_user_name_of_uid");
+  begin
+    Res := C_Get_User_Name_Of_Uid (User_Id, Str(Str'First)'Address);
+    if Res = C_Error then
+      raise System_Error;
+    end if;
+    return Str (1 .. Res);
+  end Get_Name_Of_User_Id;
 
+  function Get_Ids_Of_User_Name (User_Name : String) return Ids_Rec is
+    User_Name4C : constant String := Str_For_C (User_Name);
+    Res : Integer;
+    Ids : Ids_Rec;
+    function C_Get_Ids_Of_User_Name (Name : System.Address;
+                                     Uid : System.Address;
+                                     Gid : System.Address) return Integer;
+    pragma Import (C, C_Get_Ids_Of_User_Name, "get_ids_of_user_name");
+  begin
+    Res := C_Get_Ids_Of_User_Name (User_Name4C'Address,
+                   Ids.User_Id'Address, Ids.Group_Id'Address);
+    if Res = C_Error then
+      raise System_Error;
+    end if;
+    return Ids;
+  end Get_Ids_Of_User_Name;
+
+  function Get_Name_Of_Group_Id (Group_Id : Natural) return String is
+    Str : String (1 .. 1024);
+    Res : Integer;
+    function C_Get_Group_Name_Of_Gid (Gid : Integer;
+                                      Name : System.Address) return Integer;
+    pragma Import (C, C_Get_Group_Name_Of_Gid, "get_group_name_of_gid");
+  begin
+    Res := C_Get_Group_Name_Of_Gid (Group_Id, Str(Str'First)'Address);
+    if Res = C_Error then
+      raise System_Error;
+    end if;
+    return Str (1 .. Res);
+  end Get_Name_Of_Group_Id;
+
+  function Get_Id_Of_Group_Name (Group_Name : String) return Natural is
+    Group_Name4C : constant String := Str_For_C (Group_Name);
+    Res : Integer;
+    Id : Natural;
+    function C_Get_Gid_Of_Group_Name (Name : System.Address;
+                                     Gid : System.Address) return Integer;
+    pragma Import (C, C_Get_Gid_Of_Group_Name, "get_gid_of_group_name");
+  begin
+    Res := C_Get_Gid_Of_Group_Name (Group_Name4C'Address, Id'Address);
+    if Res = C_Error then
+      raise System_Error;
+    end if;
+    return Id;
+  end Get_Id_Of_Group_Name;
+
+  -- Set mode for Stdin
   function Set_Tty_Attr (Fd : File_Desc;
                          Tty_Mode : Tty_Mode_List) return Boolean is
     Tty_Modes_For_C : constant array (Tty_Mode_List) of Integer := (

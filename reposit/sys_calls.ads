@@ -96,6 +96,20 @@ package Sys_Calls is
   function Get_Effective_User_Id return Natural;
   function Get_Effective_Group_Id return Natural;
 
+  -- Get user name from uid and get uid and gid from user name
+  -- May raise System_Error
+  function Get_Name_Of_User_Id (User_Id : Natural) return String;
+  type Ids_Rec is record
+    User_Id  : Natural;
+    Group_Id : Natural;
+  end record;
+  function Get_Ids_Of_User_Name (User_Name : String) return Ids_Rec;
+
+  -- Get group name from gid and get gid from group name */
+  -- May raise System_Error
+  function Get_Name_Of_Group_Id (Group_Id : Natural) return String;
+  function Get_Id_Of_Group_Name (Group_Name : String) return Natural;
+
   -- Modes for a tty. Return True if success
   type Tty_Mode_List is (
     Canonical,   -- Wait for Cr, Echo, Blocking
