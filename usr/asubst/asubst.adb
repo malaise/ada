@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Text_Io, Ada.Strings.Unbounded;
-with Environ, Argument, Argument_Parser, Sys_Calls, Language;
-with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug, Mixed_Str;
+with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str;
+with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
   Version : constant String  := "V4.7";
