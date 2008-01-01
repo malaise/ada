@@ -323,6 +323,8 @@ package body Directory is
   begin
     if Dirname = "" then
       return Build_Name;
+    elsif Dirname(Dirname'Last) = Separator then
+      return Dirname & Build_Name;
     else
       return Dirname & Sep & Build_Name;
     end if;

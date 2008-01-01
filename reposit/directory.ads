@@ -60,7 +60,8 @@ package Directory is
   function File_Suffix (File_Name : String) return String;
 
   -- Build a complete file name
-  function Build_File_Name (Dirname : String; File_Prefix, File_Suffix : in String)
+  function Build_File_Name (Dirname : String;
+                            File_Prefix, File_Suffix : in String)
            return String;
 
   -- File kind and complete status
