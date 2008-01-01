@@ -295,6 +295,10 @@ package body Argument_Parser is
       end if;
     end loop;
 
+    -- Adjust First not key when none are keys
+    if Dscr.First_Pos_After_Keys = 0 then
+      Dscr.First_Pos_After_Keys := 1;
+    end if;
     -- Adjust First not key when all are keys or embedded arguments
     if Dscr.First_Pos_After_Keys > Argument.Get_Nbre_Arg then
       Dscr.First_Pos_After_Keys := 0;
