@@ -2,6 +2,7 @@
 #define _SYS_CALLS_H_
 
 /* Common to several */
+#define OK  (0)
 #define ERROR  (-1)
 
 typedef struct {
@@ -83,6 +84,18 @@ extern void mutate (char * const program, int len);
 #define STOPPED  3
 /* Pid is set if not ERROR nor NO_MORE, Code if EXITED or SIGNALED */
 extern void next_dead (int *cause, int *pid, int *code);
+
+/* Get user name from uid and get uid and gid from user name */
+/* Return name len on success and ERROR (-1) on error (not found) */
+extern int get_user_name_of_uid (int uid, char *name);
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_ids_of_user_name (char *name, int *uid, int *gid);
+
+/* Get group name from gid and get gid from group name */
+/* Return name len on success and ERROR (-1) on error (not found) */
+extern int get_group_name_of_gid (int gid, char *name);
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_gid_of_group_name (char *name, int *gid);
 
 #endif
 

@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <pwd.h>
+#include <grp.h>
+
 
 #include "sys_calls.h"
 
@@ -365,3 +368,62 @@ extern void next_dead (int *cause, int *pid, int *code) {
   }
 
 }
+
+
+/* Get user name from uid and get uid and gid from user name */
+/* Return len on success and ERROR (-1) on error (not found) */
+#define BUF_SIZE 1024
+extern int get_user_name_of_uid (int uid, char *name) {
+  int res;
+  struct passwd pwbuf, *ppasswd;
+  char buf[BUF_SIZE];
+
+  /* Find entry matching uid */
+  res = getpwuid_r((uid_t) uid, &pwbuf, buf, BUF_SIZE, &ppasswd);
+  if (res != 0) return ERROR;
+  strcpy (name, pwbuf.pw_name);
+  return strlen (pwbuf.pw_name);
+}
+
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_ids_of_user_name (char *name, int *uid, int *gid) {
+  int res;
+  struct passwd pwbuf, *ppasswd;
+  char buf[BUF_SIZE];
+
+  /* Find entry matching name */
+  res = getpwnam_r(name, &pwbuf, buf, BUF_SIZE, &ppasswd);
+  if (res != 0) return ERROR;
+  *uid = (int)pwbuf.pw_uid;
+  *gid = (int)pwbuf.pw_gid;
+  return OK;
+}
+
+
+/* Get group name from gid and get gid from group name */
+/* Return len on success and ERROR (-1) on error (not found) */
+extern int get_group_name_of_gid (int gid, char *name) {
+  int res;
+  struct group grpbuf, *pgroup;
+  char buf[BUF_SIZE];
+
+  /* Find entry matching uid */
+  res = getgrgid_r((gid_t) gid, &grpbuf, buf, BUF_SIZE, &pgroup);
+  if (res != 0) return ERROR;
+  strcpy (name, grpbuf.gr_name);
+  return strlen (grpbuf.gr_name);
+}
+
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_gid_of_group_name (char *name, int *gid) {
+  int res;
+  struct group grpbuf, *pgroup;
+  char buf[BUF_SIZE];
+
+  /* Find entry matching uid */
+  res = getgrnam_r(name, &grpbuf, buf, BUF_SIZE, &pgroup);
+  if (res != 0) return ERROR;
+  *gid = grpbuf.gr_gid;
+  return OK;
+}
+
