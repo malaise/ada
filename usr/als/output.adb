@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Strings.Unbounded, Ada.Text_Io;
-with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image;
+with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str;
 package body Output is
   package Asu renames Ada.Strings.Unbounded;
   function Nat_Image is new Int_Image (Natural);
@@ -36,6 +36,9 @@ package body Output is
       C1 := El2;
       C2 := El1;
     end if;
+    -- Alpha sort case insensitive, and letters before ponctuation
+    C1.Name := Asu.To_Unbounded_String (Upper_Str (Asu.To_String (C1.Name)));
+    C2.Name := Asu.To_Unbounded_String (Upper_Str (Asu.To_String (C2.Name)));
     case Sort_Kind is
       when Alpha =>
         -- Name then Time then Size
@@ -85,6 +88,7 @@ package body Output is
   -- Put an entity in normal mode
   Max_Col : constant := 80;
   Current_Col : Natural := 0;
+  Col_Separator : constant String := "  ";
   procedure Put_Simple (Entity : in Entities.Entity) is
     Len : constant Natural := Asu.Length (Entity.Name);
   begin
@@ -94,8 +98,8 @@ package body Output is
         Ada.Text_Io.New_Line;
         Current_Col := 0;
       else
-        Ada.Text_Io.Put (' ');
-        Current_Col := Current_Col + 1;
+        Ada.Text_Io.Put (Col_Separator);
+        Current_Col := Current_Col + Col_Separator'Length;
       end if;
     end if;
     Ada.Text_Io.Put (Asu.To_String (Entity.Name));
