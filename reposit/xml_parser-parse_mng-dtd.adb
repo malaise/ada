@@ -115,22 +115,24 @@ package body Dtd is
   -- Parse <!ELEMENT
   procedure Parse_Element (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
     Info : Info_Rec;
+    Info_Name : Asu_Us;
     Found : Boolean;
     Char : Character;
     use type Asu_Us;
   begin
     -- Parse element name
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
-    Info.Name := Util.Get_Curr_Str (Ctx.Flow);
+    Info_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
-    if not Util.Name_Ok (Info.Name) then
-      Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Info.Name));
+    if not Util.Name_Ok (Info_Name) then
+      Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Info_Name));
     end if;
-    Info.Name := "Elt" & Info_Sep & Info.Name;
+    Info.Name := "Elt" & Info_Sep & Info_Name;
     -- Element must not exist
     Info_Mng.Search (Adtd.Info_List, Info, Found);
     if Found then
-      Util.Error (Ctx.Flow, "ELEMENT " & Asu_Ts (Info.Name) & " already exists");
+      Util.Error (Ctx.Flow, "ELEMENT " & Asu_Ts (Info_Name)
+                          & " already exists");
     end if;
     -- Parse type
     Util.Skip_Separators (Ctx.Flow);
@@ -268,7 +270,7 @@ package body Dtd is
     -- Attribute list of this element must not exist
     Info_Mng.Search (Adtd.Info_List, Info, Found);
     if Found then
-      Util.Error (Ctx.Flow, "ATTLIST " & Asu_Ts (Info.Name)
+      Util.Error (Ctx.Flow, "ATTLIST " & Asu_Ts (Elt_Name)
                           & " already exists");
     end if;
     Util.Read (Ctx.Flow, Char);
