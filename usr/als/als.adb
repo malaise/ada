@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets;
 procedure Als is
-  Version : constant String  := "V1.1";
+  Version : constant String  := "V1.2";
 
   -- Usage
   procedure Usage is

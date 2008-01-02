@@ -36,6 +36,17 @@ package body Output is
       C1 := El2;
       C2 := El1;
     end if;
+    -- Sort including full path if required
+    if Put_Path then
+      C1.Name := Asu.To_Unbounded_String (
+        Directory.Build_File_Name (
+           Asu.To_String (C1.Path),
+           Asu.To_String (C1.Name), "") );
+      C2.Name := Asu.To_Unbounded_String (
+        Directory.Build_File_Name (
+           Asu.To_String (C2.Path),
+           Asu.To_String (C2.Name), "") );
+    end if;
     -- Alpha sort case insensitive, and letters before ponctuation
     C1.Name := Asu.To_Unbounded_String (Upper_Str (Asu.To_String (C1.Name)));
     C2.Name := Asu.To_Unbounded_String (Upper_Str (Asu.To_String (C2.Name)));
