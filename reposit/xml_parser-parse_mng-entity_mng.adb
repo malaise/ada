@@ -76,6 +76,7 @@ package body Entity_Mng is
     use type Asu_Us;
   begin
     if Name = Asu_Null then
+      Trace ("Storing an empty entity name");
       raise Internal_Error;
     end if;
     Store (The_Entities, Name, Value, Parameter, True);
