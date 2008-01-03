@@ -135,8 +135,8 @@ package body Util is
     Asu.Append (Err_Msg, ": " & Msg & ".");
     -- The error message is attached to the exception
     -- Xml_parser will copy it in the Flow.
-    Ada.Exceptions.Raise_Exception
-              (Parse_Error'Identity, Asu_Ts (Err_Msg));
+    Exception_Messenger.Raise_Exception (Parse_Error'Identity,
+                                         Asu_Ts (Err_Msg));
   end Error;
 
   -- Get character and store in queue

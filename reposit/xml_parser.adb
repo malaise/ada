@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Environ, Basic_Proc, Rnd;
+with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Ada unbounded strings
@@ -174,9 +174,12 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (Ada.Exceptions.Exception_Message(Error_Occ));
+      Ctx.Flow.Err_Msg := Asu_Tus (
+        Exception_Messenger.Exception_Message(
+          Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
-    when others =>
+    when Error_Occ:others =>
+      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse;
 
@@ -294,9 +297,12 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (Ada.Exceptions.Exception_Message(Error_Occ));
+      Ctx.Flow.Err_Msg := Asu_Tus (
+        Exception_Messenger.Exception_Message(
+          Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
-    when others =>
+    when Error_Occ:others =>
+      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse_Prologue;
 
@@ -334,9 +340,12 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (Ada.Exceptions.Exception_Message(Error_Occ));
+      Ctx.Flow.Err_Msg := Asu_Tus (
+        Exception_Messenger.Exception_Message(
+          Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
-    when others =>
+    when Error_Occ:others =>
+      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse_Elements;
 
@@ -453,6 +462,7 @@ package body Xml_Parser is
       end if;
       My_Tree.Read (Tree.all, Cell);
       if Cell.Kind /= Attribute then
+        Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
         raise Internal_Error;
       end if;
       A(I).Name := Cell.Name;
@@ -488,6 +498,7 @@ package body Xml_Parser is
     end loop;
     My_Tree.Read (Tree.all, Cell);
     if Cell.Kind /= Attribute then
+      Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
     return (Cell.Name, Cell.Value);
@@ -531,6 +542,7 @@ package body Xml_Parser is
                  Tree_Access => My_Tree.Get_Position (Tree.all));
         else
           -- Attribute
+          Trace ("Expecting kind text or element, found attribute");
           raise Internal_Error;
         end if;
       end if;
@@ -582,6 +594,7 @@ package body Xml_Parser is
                 Tree_Access => My_Tree.Get_Position (Tree.all));
         else
           -- Attribute
+          Trace ("Expecting kind text or element, found attribute");
           raise Internal_Error;
         end if;
       end if;
@@ -614,6 +627,7 @@ package body Xml_Parser is
             Tree_Access => My_Tree.Get_Position (Tree.all));
     else
       -- Attribute
+      Trace ("Expecting kind text or element, found attribute");
       raise Internal_Error;
     end if;
     return N;
@@ -641,6 +655,7 @@ package body Xml_Parser is
          := Get_Cell (Get_Tree (Ctx, Text), Text);
   begin
     if Cell.Kind /= Xml_Parser.Text then
+      Trace ("Expecting kind text, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
     return Cell.Name;
