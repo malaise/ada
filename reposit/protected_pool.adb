@@ -1,4 +1,16 @@
+with Int_Image;
 package body Protected_Pool is
+
+  -- Conversion from/to string
+  function Nat_Image is new Int_Image (Natural);
+  function Key_Image (Key : Key_Type) return String is
+  begin
+    return Nat_Image ( Natural(Key) );
+  end Key_Image;
+  function Key_Value (Str : String) return Key_Type is
+  begin
+    return Key_Type (Natural'Value (Str) );
+  end Key_Value;
 
   function Match (Current, Criteria : Cell_Type) return Boolean is
   begin
@@ -14,7 +26,7 @@ package body Protected_Pool is
   begin
     -- Lock mutex
     Mutex_Manager.Get (Pool.Mutex);
-    -- Find next available (not used) key 
+    -- Find next available (not used) key
     Cell.Key := Pool.Next_Key;
     Cell.Data := Element;
     loop
@@ -26,7 +38,7 @@ package body Protected_Pool is
         Mutex_Manager.Release (Pool.Mutex);
         raise Pool_Full;
       end if;
-    end loop; 
+    end loop;
     -- Store
     Pool.List.Insert (Cell);
     -- Release Mutex

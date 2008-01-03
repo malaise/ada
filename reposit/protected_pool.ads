@@ -13,6 +13,11 @@ package Protected_Pool is
   -- The key to access an element
   type Key_Type is private;
 
+  -- Conversion from/to string
+  -- Key_Value may raise Constraint_Error
+  function Key_Image (Key : Key_Type) return String;
+  function Key_Value (Str : String) return Key_Type;
+
   -- Store a new element in the pool, return the key to access it
   -- Raises Pool_Full if Positive'Last elements are already stored
   function Store (Pool : Pool_Type; Element : Element_Type) return Key_Type;
@@ -42,10 +47,9 @@ private
   package Elt_Dyn_List_Mng is new Dynamic_List (Cell_Type);
   package Elt_List_Mng renames Elt_Dyn_List_Mng.Dyn_List;
   type List_Access is access Elt_List_Mng.List_Type;
-  
   type Pool_Type is limited new Ada.Finalization.Limited_Controlled with record
     Next_Key : Key_Type := Key_Type'First;
-    Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple); 
+    Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple);
     List : List_Access := new Elt_List_Mng.List_Type;
   end record;
 
