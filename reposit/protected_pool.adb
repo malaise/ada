@@ -1,15 +1,12 @@
-with Int_Image;
+with Mod_Image;
 package body Protected_Pool is
 
   -- Conversion from/to string
-  function Nat_Image is new Int_Image (Natural);
-  function Key_Image (Key : Key_Type) return String is
-  begin
-    return Nat_Image ( Natural(Key) );
-  end Key_Image;
+  function Mod_Key_Image is new Mod_Image (Key_Type);
+  function Key_Image (Key : Key_Type) return String renames Mod_Key_Image;
   function Key_Value (Str : String) return Key_Type is
   begin
-    return Key_Type (Natural'Value (Str) );
+    return Key_Type'Value (Str);
   end Key_Value;
 
   function Match (Current, Criteria : Cell_Type) return Boolean is
