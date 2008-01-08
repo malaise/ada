@@ -8,15 +8,15 @@ procedure Xml_Checker is
 
   type Output_Kind_List is (Xml, Dump, Silent);
   Output_Kind : Output_Kind_List := Xml;
-  Arg_Index : Natural := 1;
+  Arg_Index : Natural;
   Parse_Ok : Boolean;
-  
+  Arg_Error : exception;
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: "
         & Argument.Get_Program_Name
-        & " [ -d | --dump | -s | --silent ] <xml_file>");
+        & " [ -d | --dump | -s | --silent ] [ <xml_file> ]");
   end Usage;
 
   -------------------
@@ -178,29 +178,40 @@ procedure Xml_Checker is
   end Put_Element;
 
 begin
-  if Argument.Get_Nbre_Arg = 2
-  and then (Argument.Get_Parameter = "-d" 
+  -- Parse options
+  Arg_Index := 1;
+  -- At most one option, and possible one file
+  if Argument.Get_Nbre_Arg > 2 then
+    raise Arg_Error;
+  end if;
+  if Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter = "-d"
     or else Argument.Get_Parameter = "--dump") then
     Output_Kind := Dump;
     Arg_Index := 2;
-  elsif Argument.Get_Nbre_Arg = 2
-  and then (Argument.Get_Parameter = "-s" 
+  elsif Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter = "-s"
     or else Argument.Get_Parameter = "--silent") then
     Output_Kind := Silent;
     Arg_Index := 2;
-  elsif Argument.Get_Nbre_Arg /= 1 then
-    Usage;
-    Basic_Proc.Set_Error_Exit_Code;
-    return;
-  elsif Argument.Get_Parameter = "-h"
-  or else Argument.Get_Parameter = "--help" then
+  elsif Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter = "-h"
+    or else Argument.Get_Parameter = "--help") then
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
+  if Argument.Get_Nbre_Arg > Arg_Index then
+    -- 2 args but first is not a known option
+    raise Arg_Error;
+  end if;
 
-  -- Parse
-  Ctx.Parse (Argument.Get_Parameter(Arg_Index), Parse_Ok);
+  -- Parse file provided as arg or stdin
+  if Argument.Get_Nbre_Arg = Arg_Index then
+    Ctx.Parse (Argument.Get_Parameter(Arg_Index), Parse_Ok);
+  else
+    Ctx.Parse ("", Parse_Ok);
+  end if;
   if not Parse_Ok then
     Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
     Basic_Proc.Set_Error_Exit_Code;
@@ -226,6 +237,10 @@ exception
   when Xml_Parser.File_Error =>
     Basic_Proc.Put_Line_Error ("Error reading file "
       & Argument.Get_Parameter(Occurence => Arg_Index) & ".");
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+  when Arg_Error =>
+    Basic_Proc.Put_Line_Error ("Error, invalid arguments.");
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
   when Error:others =>
