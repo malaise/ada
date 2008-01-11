@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets;
 procedure Als is
-  Version : constant String  := "V1.4";
+  Version : constant String  := "V1.5";
 
   -- Usage
   procedure Usage is
@@ -11,7 +11,7 @@ procedure Als is
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_spec> } ]");
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All) | -l (--list) | -1 (--1row)");
-    Put_Line_Error ("            | -D (--directories) | -L (--links)");
+    Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
     Put_Line_Error ("            | -r (--reverse) | -R (--recursive)");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -m (--merge)");
     Put_Line_Error ("            | <date_spec>");
@@ -51,7 +51,8 @@ procedure Als is
    11 => ('d', Asu_Tus ("date"), True, True),
    12 => ('h', Asu_Tus ("help"), False, False),
    13 => ('v', Asu_Tus ("version"), False, False),
-   14 => ('L', Asu_Tus ("links"), False, False));
+   14 => ('L', Asu_Tus ("links"), False, False),
+   15 => ('F', Asu_Tus ("files"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -62,6 +63,7 @@ procedure Als is
   One_Row : Boolean;
   List_Only_Dirs : Boolean;
   List_Only_Links : Boolean;
+  List_Only_Files : Boolean;
   Sort_Reverse : Boolean;
   Recursive : Boolean;
   Sort_By_Size : Boolean;
@@ -131,6 +133,7 @@ begin
     end if;
   end if;
   List_Only_Links := Arg_Dscr.Is_Set (14);
+  List_Only_Files := Arg_Dscr.Is_Set (15);
 
   -- Set output criteria
   declare
@@ -157,7 +160,7 @@ begin
   end;
 
   -- List
-  Targets.List (Dots, List_Only_Dirs, List_Only_Links,
+  Targets.List (Dots, List_Only_Dirs, List_Only_Links, List_Only_Files,
                 Date1, Date2,
                 Recursive, Merge_Lists, Arg_Dscr);
 

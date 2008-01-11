@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Directory, Basic_Proc, Argument, Sys_Calls;
+with Basic_Proc, Argument, Sys_Calls;
 package body Lister is
 
   -- type Dots_Kind_List is (Basic, Basic_Dots, Basic_Dots_Roots);
@@ -24,6 +24,29 @@ package body Lister is
       when Entities.Greater_Or_Equal =>
         return Date >= Crit.Date;
     end case;
+  end Match;
+
+  -- Does an entity kind match type criteria
+  function Match (Kind : Directory.File_Kind_List;
+                  Only_Dirs : Boolean;
+                  Only_Links : Boolean;
+                  Only_Files : Boolean) return Boolean is
+    use type Directory.File_Kind_List;
+  begin
+    if not (Only_Dirs or else Only_Links or else Only_Files) then
+      -- No criteria => averything matches
+      return True;
+    end if;
+    if Kind = Directory.Dir then
+      return Only_Dirs;
+    elsif Kind = Directory.Link then
+      return  Only_Links;
+    elsif Kind = Directory.File then
+      return Only_Files;
+    else
+      -- Any other kind
+      return False;
+    end if;
   end Match;
 
   -- Add a file if it matches
@@ -84,6 +107,7 @@ package body Lister is
                   Dots : in Entities.Dots_Kind_List;
                   Only_Dirs : in Boolean;
                   Only_Links : in Boolean;
+                  Only_Files : in Boolean;
                   Date1, Date2 : in Entities.Date_Spec_Rec) is
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
@@ -150,20 +174,10 @@ package body Lister is
             raise Discard;
         end;
 
-        -- Check directory versus criteria
+        -- Check kind versus criteria
         Ent.Kind := Directory.File_Kind_List (Stat.Kind);
-        if Ent.Kind = Directory.Dir  then
-          if not Only_Dirs and then Only_Links then
-            raise Discard;
-          end if;
-        elsif Ent.Kind = Directory.Link then
-          if not Only_Links and then Only_Dirs then
-            raise Discard;
-          end if;
-        else
-          if Only_Links or else Only_Dirs then
-            raise Discard;
-          end if;
+        if not Match (Ent.Kind, Only_Dirs, Only_Links, Only_Files) then
+          raise Discard;
         end if;
 
         -- Check modif time versus criteria
