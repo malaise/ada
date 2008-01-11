@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets;
 procedure Als is
-  Version : constant String  := "V1.2";
+  Version : constant String  := "V1.3";
 
   -- Usage
   procedure Usage is
@@ -11,10 +11,11 @@ procedure Als is
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_spec> } ]");
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All) | -l (--list) | -1 (--1row)");
-    Put_Line_Error ("            | -d (--directories) | -r (--reverse) | -R (--recursive)");
+    Put_Line_Error ("            | -D (--directories) | -L (--links)");
+    Put_Line_Error ("            | -r (--reverse) | -R (--recursive)");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -m (--merge)");
     Put_Line_Error ("            | <date_spec>");
-    Put_Line_Error (" <date_spec> ::= -D <date_comp><date> | --date=<date_comp><date>");
+    Put_Line_Error (" <date_spec> ::= -d <date_comp><date> | --date=<date_comp><date>");
     Put_Line_Error (" <date_comp> ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date> ::= [ yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive> Y|M|D|h|m");
   end Usage;
@@ -41,15 +42,16 @@ procedure Als is
    02 => ('A', Asu_Tus ("All"), False, False),
    03 => ('l', Asu_Tus ("list"), False, False),
    04 => ('1', Asu_Tus ("1row"), False, False),
-   05 => ('d', Asu_Tus ("directories"), False, False),
+   05 => ('D', Asu_Tus ("directories"), False, False),
    06 => ('r', Asu_Tus ("reverse"), False, False),
    07 => ('R', Asu_Tus ("recursive"), False, False),
    08 => ('s', Asu_Tus ("size"), False, False),
    09 => ('t', Asu_Tus ("time"), False, False),
    10 => ('m', Asu_Tus ("merge"), False, False),
-   11 => ('D', Asu_Tus ("date"), True, True),
+   11 => ('d', Asu_Tus ("date"), True, True),
    12 => ('h', Asu_Tus ("help"), False, False),
-   13 => ('v', Asu_Tus ("version"), False, False));
+   13 => ('v', Asu_Tus ("version"), False, False),
+   14 => ('L', Asu_Tus ("links"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -59,6 +61,7 @@ procedure Als is
   Long_List : Boolean;
   One_Row : Boolean;
   List_Only_Dirs : Boolean;
+  List_Only_Links : Boolean;
   Sort_Reverse : Boolean;
   Recursive : Boolean;
   Sort_By_Size : Boolean;
@@ -127,6 +130,7 @@ begin
       Date2.Oper := Entities.None;
     end if;
   end if;
+  List_Only_Links := Arg_Dscr.Is_Set (14);
 
   -- Set output criteria
   declare
@@ -153,7 +157,8 @@ begin
   end;
 
   -- List
-  Targets.List (Dots, List_Only_Dirs, Date1, Date2,
+  Targets.List (Dots, List_Only_Dirs, List_Only_Links,
+                Date1, Date2,
                 Recursive, Merge_Lists, Arg_Dscr);
 
 exception

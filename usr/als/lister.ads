@@ -9,6 +9,7 @@ package Lister is
                   Dir : in String;
                   Dots : in Entities.Dots_Kind_List;
                   Only_Dirs : in Boolean;
+                  Only_Links : in Boolean;
                   Date1, Date2 : in Entities.Date_Spec_Rec);
 
   -- Add a file if it matches

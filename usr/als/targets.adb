@@ -6,6 +6,7 @@ package body Targets is
 
   procedure List (Dots : in Entities.Dots_Kind_List;
                   Only_Dirs : in Boolean;
+                  Only_Links : in Boolean;
                   Date1, Date2 : in Entities.Date_Spec_Rec;
                   Recursive : in Boolean;
                   Merge : in Boolean;
@@ -24,15 +25,18 @@ package body Targets is
         -- Insert a New_Line between previous output (files or dir) and current
         Output.New_Line;
       end if;
-      Lister.List (Entries, Dir, Dots, Only_Dirs, Date1, Date2);
+      Lister.List (Entries, Dir, Dots, Only_Dirs, Only_Links,
+                   Date1, Date2);
       if not Merge then
         if Put_Name then
           Output.Put_Dir (Dir);
         end if;
-        Output.Put (Entries);
-        Output.New_Line;
-        Entries.Delete_List;
-        Need_New_Line := True;
+        if not Entries.Is_Empty then
+          Output.Put (Entries);
+          Output.New_Line;
+          Need_New_Line := True;
+          Entries.Delete_List;
+        end if;
       end if;
       -- Done except if recursive
       if not Recursive then
@@ -58,13 +62,15 @@ package body Targets is
   begin
     -- Process files (not dirs) among arguments
     Need_New_Line := False;
-    if not Only_Dirs
+    if (not Only_Dirs or else Only_Links)
     and then Args.Get_First_Pos_After_Keys /= 0 then
       for I in Args.Get_First_Pos_After_Keys .. Argument.Get_Nbre_Arg loop
         declare
           File : constant String := Argument.Get_Parameter (Occurence => I);
         begin
-          if Directory.File_Kind (File) /= Directory.Dir then
+          if Directory.File_Kind (File) /= Directory.Dir
+          and then (not Only_Links
+            or else Directory.File_Kind (File) = Directory.Link) then
             -- Add this "file"
             Lister.List (Entries, File, Date1, Date2);
           end if;
@@ -76,12 +82,12 @@ package body Targets is
       end loop;
       -- Put and clean result if not merge
       if not Merge then
-        Output.Put (Entries);
         if not Entries.Is_Empty then
+          Output.Put (Entries);
           Output.New_Line;
+          Need_New_Line := True;
+          Entries.Delete_List;
         end if;
-        Entries.Delete_List;
-        Need_New_Line := True;
       end if;
     end if;
 
@@ -90,7 +96,7 @@ package body Targets is
       Do_Dir (".", False);
     end if;
 
-    -- Process dirs, if no arg at all, then process "."
+    -- Process dirs
     if Args.Get_First_Pos_After_Keys /= 0 then
       for I in Args.Get_First_Pos_After_Keys .. Argument.Get_Nbre_Arg loop
         declare
@@ -114,7 +120,11 @@ package body Targets is
     end if;
 
     -- Put complete result if merge
-    if Merge then
+    if not Merge then
+      if Need_New_Line then
+        Output.New_Line;
+      end if;
+    else
       Output.Put (Entries);
       Entries.Delete_List;
     end if;

@@ -83,6 +83,7 @@ package body Lister is
                   Dir : in String;
                   Dots : in Entities.Dots_Kind_List;
                   Only_Dirs : in Boolean;
+                  Only_Links : in Boolean;
                   Date1, Date2 : in Entities.Date_Spec_Rec) is
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
@@ -151,8 +152,18 @@ package body Lister is
 
         -- Check directory versus criteria
         Ent.Kind := Directory.File_Kind_List (Stat.Kind);
-        if Only_Dirs and then Ent.Kind /= Directory.Dir then
-          raise Discard;
+        if Ent.Kind = Directory.Dir  then
+          if not Only_Dirs and then Only_Links then
+            raise Discard;
+          end if;
+        elsif Ent.Kind = Directory.Link then
+          if not Only_Links and then Only_Dirs then
+            raise Discard;
+          end if;
+        else
+          if Only_Links or else Only_Dirs then
+            raise Discard;
+          end if;
         end if;
 
         -- Check modif time versus criteria
