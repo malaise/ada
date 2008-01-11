@@ -128,7 +128,10 @@ package body Output is
   procedure Put_Long (Entity : in Entities.Entity) is
    Suid, Sgid, Tbit : Boolean;
    Date : String (1 .. 23);
-   Max_Name_Len : constant := 10;
+   -- Max length of fields user, group and size, for padding
+   Max_Name_Len : constant := 8;
+   Max_Group_Len : constant := 6;
+   Max_Size_Len : constant := 9;
    use Bit_Ops;
    use type Directory.File_Kind_List;
    function Id_Image (Id : Natural) return String is
@@ -251,7 +254,7 @@ package body Output is
       declare
         Group_Name : constant String
                    := Sys_Calls.Get_Name_Of_Group_Id (Entity.Group_Id);
-        Pad : constant String (1 .. Max_Name_Len - Group_Name'Length)
+        Pad : constant String (1 .. Max_Group_Len - Group_Name'Length)
             := (others => ' ');
       begin
         Ada.Text_Io.Put (Pad & Group_Name & ' ');
@@ -263,7 +266,6 @@ package body Output is
 
     -- Size on 10 digits
     declare
-      Max_Size_Len : constant := 10;
       Str : constant String := Size_Image (Entity.Size);
       Pad : constant String (1 .. Max_Size_Len - Str'Length) := (others => ' ');
     begin
