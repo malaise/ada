@@ -1,23 +1,26 @@
 with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
-with Entities, Output, Targets;
+with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V1.5";
+  Version : constant String  := "V1.6";
 
   -- Usage
   procedure Usage is
     use Basic_Proc;
   begin
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " [ { <option> } ] [ { <file_spec> } ]");
+      & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All) | -l (--list) | -1 (--1row)");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
-    Put_Line_Error ("            | -r (--reverse) | -R (--recursive)");
-    Put_Line_Error ("            | -s (--size) | -t (--time) | -m (--merge)");
-    Put_Line_Error ("            | <date_spec>");
-    Put_Line_Error (" <date_spec> ::= -d <date_comp><date> | --date=<date_comp><date>");
-    Put_Line_Error (" <date_comp> ::= eq | lt | le | gt | ge");
-    Put_Line_Error (" <date> ::= [ yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive> Y|M|D|h|m");
+    Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
+    Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
+    Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
+    Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
+    Put_Line_Error (" <match_name>   ::= -m <template> | --match <template>");
+    Put_Line_Error (" <exclude_name> ::= -e <template> | --exclude <template>");
+    Put_Line_Error (" <date_spec>    ::= -d <date_comp><date> | --date=<date_comp><date>");
+    Put_Line_Error (" <date_comp>    ::= eq | lt | le | gt | ge");
+    Put_Line_Error (" <date>         ::= [ yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive> Y|M|D|h|m");
   end Usage;
   Error_Exception : exception;
   procedure Error (Msg : in String := "") is
@@ -47,12 +50,14 @@ procedure Als is
    07 => ('R', Asu_Tus ("recursive"), False, False),
    08 => ('s', Asu_Tus ("size"), False, False),
    09 => ('t', Asu_Tus ("time"), False, False),
-   10 => ('m', Asu_Tus ("merge"), False, False),
+   10 => ('M', Asu_Tus ("merge"), False, False),
    11 => ('d', Asu_Tus ("date"), True, True),
    12 => ('h', Asu_Tus ("help"), False, False),
    13 => ('v', Asu_Tus ("version"), False, False),
    14 => ('L', Asu_Tus ("links"), False, False),
-   15 => ('F', Asu_Tus ("files"), False, False));
+   15 => ('F', Asu_Tus ("files"), False, False),
+   16 => ('m', Asu_Tus ("match"), True, True),
+   17 => ('e', Asu_Tus ("exclude"), True, True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -122,6 +127,7 @@ begin
   Sort_By_Size := Arg_Dscr.Is_Set (08);
   Sort_By_Time := Arg_Dscr.Is_Set (09);
   Merge_Lists := Arg_Dscr.Is_Set (10);
+  -- Check dates
   if Arg_Dscr.Get_Nb_Occurences (11) > 2 then
     Error ("At most two dates can be specified");
   elsif Arg_Dscr.Get_Nb_Occurences (11) /= 0 then
@@ -134,6 +140,24 @@ begin
   end if;
   List_Only_Links := Arg_Dscr.Is_Set (14);
   List_Only_Files := Arg_Dscr.Is_Set (15);
+  -- Add match template if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
+    begin
+      Lister.Add_Match (Arg_Dscr.Get_Option (16, I));
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid match template " & Arg_Dscr.Get_Option (16, I));
+    end;
+  end loop;
+  -- Add exclude template if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (17) loop
+    begin
+      Lister.Add_Exclude (Arg_Dscr.Get_Option (17, I));
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid exclude template " & Arg_Dscr.Get_Option (17, I));
+    end;
+  end loop;
 
   -- Set output criteria
   declare
@@ -159,10 +183,12 @@ begin
     Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists);
   end;
 
-  -- List
-  Targets.List (Dots, List_Only_Dirs, List_Only_Links, List_Only_Files,
-                Date1, Date2,
-                Recursive, Merge_Lists, Arg_Dscr);
+  -- Set selection criteria in Lister
+  Lister.Set_Criteria (List_Only_Dirs, List_Only_Links, List_Only_Files,
+                       Date1, Date2);
+
+  -- List each target
+  Targets.List (Dots, Recursive, Merge_Lists, Arg_Dscr);
 
 exception
   when Error_Exception =>
