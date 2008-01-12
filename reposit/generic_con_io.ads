@@ -455,9 +455,9 @@ package Generic_Con_Io is
 
     end Graphics;
 
-    -- Set mouse pointer shape
+    -- Set mouse pointer shape or hide mouse
     --  Arrow by default
-    type Pointer_Shape_List is (Arrow, Cross);
+    type Pointer_Shape_List is (Arrow, Cross, None);
     procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List);
 
 

@@ -243,6 +243,9 @@ package X_Mng is
   procedure X_Set_Graphic_Pointer(Line_Id : in Line;
                                   Graphic : in Boolean);
 
+  -- Hide mouse
+  procedure X_Hide_Graphic_Pointer(Line_Id : in Line);
+
   ----- EVENT MANAGEMENT -----
   -- Wait until an event is availble
   -- If Timeout is a real delay (neither infinite nor exp) then

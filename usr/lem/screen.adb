@@ -89,9 +89,10 @@ package body Screen is
     use Con_Io.Graphics;
     use type My_Math.Real;
   begin
-    -- Reset screen
+    -- Reset screen and hide mouse
     Con_Io.Init;
     Con_Io.Reset_Term;
+    Con_Io.Set_Pointer_Shape (Con_Io.None);
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
     -- Compute space

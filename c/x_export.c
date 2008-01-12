@@ -718,6 +718,36 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic) {
     return (OK);
 }
 
+
+extern int x_hide_graphic_pointer (void *line_id) {
+    t_window *win_id = (t_window*) line_id;
+    Pixmap blank;
+    XColor dummy;
+    char data[1] = {0};
+    Cursor cursor;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
+    /* Make a blank cursor from blank pixmap*/
+    blank = XCreateBitmapFromData (local_server.x_server, win_id->x_window,
+                                   data, 1, 1);
+    if (blank == None) {
+#ifdef DEBUG
+        printf ("X_EXPORT : Can't create blank cursor.\n");
+#endif
+      return (ERR);
+    }
+    cursor = XCreatePixmapCursor(local_server.x_server, blank, blank,
+                                 &dummy, &dummy, 0, 0);
+    /* Assign */
+    XDefineCursor(local_server.x_server, win_id->x_window, cursor);
+    XFreePixmap (local_server.x_server, blank);
+    return (OK);
+}
+
 /***** Event management *****/
 /* Previous event stored if arrived just after an expose */
 static XEvent prev_event;

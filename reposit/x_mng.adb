@@ -262,6 +262,13 @@ package body X_Mng is
                                  Graphic : Bool_For_C) return Result;
   pragma Import(C, X_Set_Graphic_Pointer, "x_set_graphic_pointer");
 
+  ------------------------------------------------------------------
+  -- Hide mouse pointer
+  -- int x_hide_graphic_pointer (void *line_id);
+  ------------------------------------------------------------------
+  function X_Hide_Graphic_Pointer(Line_Id : Line_For_C) return Result;
+  pragma Import(C, X_Hide_Graphic_Pointer, "x_hide_graphic_pointer");
+
 
   ------------------------------------------------------------------
   -- Wait for some events
@@ -955,6 +962,22 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Set_Graphic_Pointer;
+
+  ------------------------------------------------------------------
+  procedure X_Hide_Graphic_Pointer(Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
+    end if;
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Hide_Graphic_Pointer(Line_For_C_Id) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Hide_Graphic_Pointer;
 
   ------------------------------------------------------------------
   procedure X_Wait_Event(Line_Id : in Line;

@@ -89,6 +89,8 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
 
 extern int x_set_graphic_pointer (void *line_id, boolean graphic);
 
+extern int x_hide_graphic_pointer (void *line_id);
+
 /* Events */
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms);
 
