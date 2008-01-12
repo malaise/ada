@@ -5,10 +5,6 @@ package body Targets is
 
 
   procedure List (Dots : in Entities.Dots_Kind_List;
-                  Only_Dirs : in Boolean;
-                  Only_Links : in Boolean;
-                  Only_Files : in Boolean;
-                  Date1, Date2 : in Entities.Date_Spec_Rec;
                   Recursive : in Boolean;
                   Merge : in Boolean;
                   Args : in Argument_Parser.Parsed_Dscr) is
@@ -26,8 +22,7 @@ package body Targets is
         -- Insert a New_Line between previous output (files or dir) and current
         Output.New_Line;
       end if;
-      Lister.List (Entries, Dir, Dots, Only_Dirs, Only_Links, Only_Files,
-                   Date1, Date2);
+      Lister.List (Entries, Dir, Dots);
       if not Merge then
         if Put_Name then
           Output.Put_Dir (Dir);
@@ -63,16 +58,14 @@ package body Targets is
   begin
     -- Process files (not dirs) among arguments
     Need_New_Line := False;
-    if not (Only_Dirs and then not Only_Links and then not Only_Files)
-    and then Args.Get_First_Pos_After_Keys /= 0 then
+    if Args.Get_First_Pos_After_Keys /= 0 then
       for I in Args.Get_First_Pos_After_Keys .. Argument.Get_Nbre_Arg loop
         declare
           File : constant String := Argument.Get_Parameter (Occurence => I);
         begin
-          if Lister.Match (Directory.File_Kind (File),
-                           Only_Dirs, Only_Links, Only_Files) then
-            -- Add this "file"
-            Lister.List (Entries, File, Date1, Date2);
+          if Directory.File_Kind (File) /= Directory.Dir then
+            -- Add this "file" if it matches
+            Lister.List (Entries, File);
           end if;
         exception
           when Directory.Name_Error | Directory.Access_Error =>

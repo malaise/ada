@@ -5,6 +5,46 @@ package body Lister is
   -- type Dots_Kind_List is (Basic, Basic_Dots, Basic_Dots_Roots);
   package Asu renames Ada.Strings.Unbounded;
 
+  -- List of file templates
+  package Tmpl_List_Mng renames Str_List_Mng;
+  subtype Tmpl_List is Tmpl_List_Mng.List_Type;
+  Matches : Tmpl_List;
+  Excludes : Tmpl_List;
+
+  -- Slection criteria
+  Only_Dirs, Only_Links, Only_Files : Boolean := False;
+  Date1, Date2 : Entities.Date_Spec_Rec;
+  -- Set selection criteria
+  procedure Set_Criteria (Only_Dirs, Only_Links, Only_Files : in Boolean;
+                          Date1, Date2 : in Entities.Date_Spec_Rec) is
+  begin
+    Lister.Only_Dirs := Only_Dirs;
+    Lister.Only_Links := Only_Links;
+    Lister.Only_Files := Only_Files;
+    Lister.Date1 := Date1;
+    Lister.Date2 := Date2;
+  end Set_Criteria;
+
+  procedure Add_Match (Template : in String) is
+  begin
+    -- Template must not be empty and must have no path
+    if Template = ""
+    or else Directory.Dirname (Template) /= "" then
+      raise Invalid_Template;
+    end if;
+    Matches.Insert (Asu.To_Unbounded_String (Template));
+  end Add_Match;
+
+  procedure Add_Exclude (Template : in String) is
+  begin
+    -- Template must not be empty and must have no path
+    if Template = ""
+    or else Directory.Dirname (Template) /= "" then
+      raise Invalid_Template;
+    end if;
+    Excludes.Insert (Asu.To_Unbounded_String (Template));
+  end Add_Exclude;
+
   -- Does an entiy match a date criteria
   function Match (Date : Ada.Calendar.Time;
                   Crit : Entities.Date_Spec_Rec) return Boolean is
@@ -27,10 +67,7 @@ package body Lister is
   end Match;
 
   -- Does an entity kind match type criteria
-  function Match (Kind : Directory.File_Kind_List;
-                  Only_Dirs : Boolean;
-                  Only_Links : Boolean;
-                  Only_Files : Boolean) return Boolean is
+  function Match (Kind : Directory.File_Kind_List) return Boolean is
     use type Directory.File_Kind_List;
   begin
     if not (Only_Dirs or else Only_Links or else Only_Files) then
@@ -49,10 +86,52 @@ package body Lister is
     end if;
   end Match;
 
+  -- Does an entity match all criteria
+  function Match (Ent : Entities.Entity) return Boolean is
+    Template : Ada.Strings.Unbounded.Unbounded_String;
+    Done : Boolean;
+  begin
+    -- Check file type and date
+    if not Match (Ent.Kind)
+    or else not Match (Ent.Modif_Time, Date1)
+    or else not Match (Ent.Modif_Time, Date2) then
+      return False;
+    end if;
+    -- Check versus exclusion templates
+    if not Excludes.Is_Empty then
+      Excludes.Rewind;
+      loop
+        Excludes.Read (Template, Done => Done);
+        if Directory.File_Match (Asu.To_String (Ent.Name),
+                                 Asu.To_String (Template) ) then
+          -- The file matches this exclusion template
+          return False;
+        end if;
+        exit when not Done;
+      end loop;
+    end if;
+    -- File matches if no matching template
+    if Matches.Is_Empty then
+      return True;
+    end if;
+    -- Check versus matching templates
+    Matches.Rewind;
+    loop
+      Matches.Read (Template, Done => Done);
+      if Directory.File_Match (Asu.To_String (Ent.Name),
+                               Asu.To_String (Template) ) then
+        -- The file matches this matching template
+        return True;
+      end if;
+      exit when not Done;
+    end loop;
+    -- The file does not match any matching template
+    return False;
+  end Match;
+
   -- Add a file if it matches
   procedure List (Ent_List : in out Entities.Entity_List;
-                  File : in String;
-                  Date1, Date2 : in Entities.Date_Spec_Rec) is
+                  File : in String) is
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
     use type Directory.File_Kind_List;
@@ -71,17 +150,16 @@ package body Lister is
         return;
     end;
 
-    -- Check date
+    -- Check it matches
+    Ent.Name := Asu.To_Unbounded_String (Directory.Basename(File));
+    Ent.Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
-    if not Match (Ent.Modif_Time, Date1)
-    or else not Match (Ent.Modif_Time, Date2) then
+    if not Match (Ent) then
       return;
     end if;
 
     -- Fill entity
-    Ent.Name := Asu.To_Unbounded_String (Directory.Basename(File));
     Ent.Path := Asu.To_Unbounded_String (Directory.Dirname(File));
-    Ent.Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Rights := Stat.Rights;
     Ent.User_Id := Stat.User_Id;
     Ent.Group_Id := Stat.Group_Id;
@@ -104,14 +182,9 @@ package body Lister is
   -- List content of Dir, possibly dots, matching criteria
   procedure List (Ent_List : in out Entities.Entity_List;
                   Dir : in String;
-                  Dots : in Entities.Dots_Kind_List;
-                  Only_Dirs : in Boolean;
-                  Only_Links : in Boolean;
-                  Only_Files : in Boolean;
-                  Date1, Date2 : in Entities.Date_Spec_Rec) is
+                  Dots : in Entities.Dots_Kind_List) is
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
-    Modif_Time : Ada.Calendar.Time;
     Stat : Sys_Calls.File_Stat_Rec;
     use type Directory.File_Kind_List, Entities.Dots_Kind_List;
   begin
@@ -174,16 +247,10 @@ package body Lister is
             raise Discard;
         end;
 
-        -- Check kind versus criteria
+        -- Check it matches
         Ent.Kind := Directory.File_Kind_List (Stat.Kind);
-        if not Match (Ent.Kind, Only_Dirs, Only_Links, Only_Files) then
-          raise Discard;
-        end if;
-
-        -- Check modif time versus criteria
-        Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
-        if not Match (Modif_Time, Date1)
-        or else not Match (Modif_Time, Date2) then
+        Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
+        if not Match (Ent) then
           raise Discard;
         end if;
 
@@ -191,7 +258,6 @@ package body Lister is
         Ent.Rights := Stat.Rights;
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;
-        Ent.Modif_Time := Modif_Time;
         Ent.Size := Stat.Size;
         Ent.Link := Asu.Null_Unbounded_String;
         if Ent.Kind = Directory.Link then

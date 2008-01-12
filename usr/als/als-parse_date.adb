@@ -85,7 +85,7 @@ begin
   return Crit;
 exception
   when others =>
-    Error ("Invalid date");
+    Error ("Invalid date: " & Str);
     -- Error already raises it... but we get a warning here
     raise Error_Exception;
 end Parse_Date;
