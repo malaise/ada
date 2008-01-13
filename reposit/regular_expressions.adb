@@ -87,6 +87,17 @@ package body Regular_Expressions is
     Ok := Result.Error = 0;
   end Compile;
 
+  -- Check a regex, return True if OK
+  function Check (Criteria : String;
+           Extended : Boolean := True) return Boolean is
+    Pattern : Compiled_Pattern;
+    Ok : Boolean;
+  begin
+    Compile (Pattern, Ok, Criteria);
+    Free (Pattern);
+    return Ok;
+  end Check;
+
   -- Check if Char is the startup of a valid UTF-8 sequence
   --  and increment Offset accordingly
   procedure Adjust_Utf8 (Char : in Character;

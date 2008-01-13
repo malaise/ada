@@ -33,6 +33,10 @@ package Regular_Expressions is
                      Case_Sensitive : in Boolean := True;
                      Match_Newline : in Boolean := True);
 
+  -- Check a regex, return True if OK
+  function Check (Criteria : String;
+                  Extended : Boolean := True) return Boolean;
+
   -- Execute a regex
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
   --  otherwise N_Matched is set to 0 or to the last non empty slot of
@@ -48,17 +52,17 @@ package Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
- -- Compare string Str to Criteria
+ -- Compare string Str to Criteria (Compile and Exec with default values)
   -- Returns No_Match or a Match_Cell (possibly Any_Match)
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String) return Match_Cell;
 
-  -- Compare string Str to Criteria
+  -- Compare string Str to Criteria (Compile and Exec with default values)
   -- Returns True or False
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = Str'First
   --  and Last_Offset_Stop = Str'Last)
-  -- True is also returned if Any_Match
+  --  So False is returned if Any_Match, except if Str is empty
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String;
                   Strict : in Boolean) return Boolean;
