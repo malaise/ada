@@ -235,13 +235,23 @@ package body Directory is
   function C_Fnmatch (Pattern : System.Address; Strings : System.Address; Flags : Integer)
            return Integer;
   pragma Import(C, C_Fnmatch, "fnmatch");
+  File_Matches : constant := 0;
+  File_Not_Matches : constant := 1;
 
   -- Does file name match a pattern
   function File_Match (File_Name : String; Template : String) return Boolean is
     C_File_Name : constant String := Str_For_C (File_Name);
     C_Template : constant String := Str_For_C (Template);
+    Res : Integer;
   begin
-    return C_Fnmatch(C_Template'Address, C_File_Name'Address, 0) = 0;
+    Res := C_Fnmatch(C_Template'Address, C_File_Name'Address, 0);
+    if Res = File_Matches then
+      return True;
+    elsif Res = File_Not_Matches then
+      return False;
+    else
+      raise Syntax_Error;
+    end if;
   end File_Match;
 
   -- File name manipulation

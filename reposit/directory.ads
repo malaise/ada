@@ -46,6 +46,7 @@ package Directory is
   --           Open_Error if File_Name is not a link
 
   -- Does file name match a pattern
+  -- May raise Syntax_Error
   function File_Match (File_Name : String; Template : String) return Boolean;
 
 
@@ -73,6 +74,7 @@ package Directory is
   Open_Error   : exception;
   Access_Error : exception renames Sys_Calls.Access_Error;
   End_Error    : exception;
+  Syntax_Error : exception;
 
 private
 
