@@ -66,9 +66,7 @@ package body Dtd is
     -- Intermediate logic
     In_Word : Boolean := False;
     C : Character;
-    -- Regexp compilation result (for check)
-    Pat : Regular_Expressions.Compiled_Pattern;
-    Ok : Boolean;
+
     function Is_Sep (C : Character) return Boolean is
     begin
       for I in Seps'Range loop
@@ -102,9 +100,7 @@ package body Dtd is
     -- Remove any ','
     Res := Asu_Tus (String_Mng.Replace (Asu_Ts (Res), ",", ""));
     -- Now compile to check it
-    Regular_Expressions.Compile (Pat, Ok, Asu_Ts (Res));
-    Regular_Expressions.Free (Pat);
-    if not Ok then
+    if not Regular_Expressions.Check (Asu_Ts (Res)) then
       Trace ("Dtd regex does node compile >" & Asu_Ts (Res) & "<");
       Util.Error (Ctx.Flow, "Invalid children definition");
     end if;
