@@ -56,12 +56,6 @@ package body Argument_Parser is
           P_Dscr.Ok := True;
           return;
         end if;
-        -- Full key, no minus allowed
-        if String_Mng.Locate (Str, "-", 3) /= 0 then
-          P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-             & Image(Arg_No) & " contains minus.");
-          return;
-        end if;
         -- Full key, look for option
         Len := String_Mng.Locate (Str, "=", 3);
         if Len = 3 then
@@ -187,7 +181,11 @@ package body Argument_Parser is
       -- Key char and string must be unique
       for J in I + 1 .. The_Keys'Last loop
         if The_Keys(I).Key_Char = The_Keys(J).Key_Char
-        or else The_Keys(I).Key_String = The_Keys(J).Key_String then
+        and then The_Keys(I).Key_Char /= No_Key_Char then
+          raise Dup_Key;
+        end if;
+        if The_Keys(I).Key_String = The_Keys(J).Key_String
+        and then The_Keys(I).Key_String /= No_Key_String then
           raise Dup_Key;
         end if;
       end loop;
