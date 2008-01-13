@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V1.6";
+  Version : constant String  := "V1.7";
 
   -- Usage
   procedure Usage is
@@ -13,14 +13,18 @@ procedure Als is
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All) | -l (--list) | -1 (--1row)");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
+    Put_Line_Error ("            | [ { <match_regex> } ] | [ { <exclude_regex> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
-    Put_Line_Error (" <match_name>   ::= -m <template> | --match <template>");
-    Put_Line_Error (" <exclude_name> ::= -e <template> | --exclude <template>");
-    Put_Line_Error (" <date_spec>    ::= -d <date_comp><date> | --date=<date_comp><date>");
-    Put_Line_Error (" <date_comp>    ::= eq | lt | le | gt | ge");
-    Put_Line_Error (" <date>         ::= [ yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive> Y|M|D|h|m");
+    Put_Line_Error (" <match_name>    ::= -m <template> | --match <template>");
+    Put_Line_Error (" <exclude_name>  ::= -e <template> | --exclude <template>");
+    Put_Line_Error (" <match_regex>   ::= --match_regex <regex>");
+    Put_Line_Error (" <exclude_regex> ::= --exclude_regex <regex");
+    Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
+    Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
+    Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
+    Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
   end Usage;
   Error_Exception : exception;
   procedure Error (Msg : in String := "") is
@@ -57,7 +61,9 @@ procedure Als is
    14 => ('L', Asu_Tus ("links"), False, False),
    15 => ('F', Asu_Tus ("files"), False, False),
    16 => ('m', Asu_Tus ("match"), True, True),
-   17 => ('e', Asu_Tus ("exclude"), True, True));
+   17 => ('e', Asu_Tus ("exclude"), True, True),
+   18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_regex"), True, True),
+   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_regex"), True, True) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -143,7 +149,7 @@ begin
   -- Add match template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
     begin
-      Lister.Add_Match (Arg_Dscr.Get_Option (16, I));
+      Lister.Add_Match (Arg_Dscr.Get_Option (16, I), False);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid match template " & Arg_Dscr.Get_Option (16, I));
@@ -152,10 +158,28 @@ begin
   -- Add exclude template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (17) loop
     begin
-      Lister.Add_Exclude (Arg_Dscr.Get_Option (17, I));
+      Lister.Add_Exclude (Arg_Dscr.Get_Option (17, I), False);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid exclude template " & Arg_Dscr.Get_Option (17, I));
+    end;
+  end loop;
+  -- Add match regex if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (18) loop
+    begin
+      Lister.Add_Match (Arg_Dscr.Get_Option (18, I), True);
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid match regex " & Arg_Dscr.Get_Option (18, I));
+    end;
+  end loop;
+  -- Add exclude regex if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (19) loop
+    begin
+      Lister.Add_Exclude (Arg_Dscr.Get_Option (19, I), True);
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid exclude regex " & Arg_Dscr.Get_Option (19, I));
     end;
   end loop;
 

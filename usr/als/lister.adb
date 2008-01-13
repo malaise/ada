@@ -1,12 +1,17 @@
 with Ada.Calendar;
-with Basic_Proc, Argument, Sys_Calls;
+with Basic_Proc, Argument, Sys_Calls, Regular_Expressions;
 package body Lister is
 
   -- type Dots_Kind_List is (Basic, Basic_Dots, Basic_Dots_Roots);
   package Asu renames Ada.Strings.Unbounded;
 
   -- List of file templates
-  package Tmpl_List_Mng renames Str_List_Mng;
+  type Tmpl_Rec is record
+    Template : Asu.Unbounded_String;
+    Regex : Boolean;
+  end record;
+  package Tmpl_Dyn_List_Mng is new Dynamic_List (Tmpl_Rec);
+  package Tmpl_List_Mng renames Tmpl_Dyn_List_Mng.Dyn_List;
   subtype Tmpl_List is Tmpl_List_Mng.List_Type;
   Matches : Tmpl_List;
   Excludes : Tmpl_List;
@@ -25,24 +30,43 @@ package body Lister is
     Lister.Date2 := Date2;
   end Set_Criteria;
 
-  procedure Add_Match (Template : in String) is
+  -- Check that a template or regex is valid, raises Invalid_Template
+  procedure Check_Template (Template : in String; Regex : in Boolean) is
+    Dummy_File : constant String := "Toto";
+    Dummy_Result : Boolean;
   begin
     -- Template must not be empty and must have no path
     if Template = ""
     or else Directory.Dirname (Template) /= "" then
       raise Invalid_Template;
     end if;
-    Matches.Insert (Asu.To_Unbounded_String (Template));
+    if not Regex then
+      -- Check template match does not raise exception
+      begin
+        Dummy_Result := Directory.File_Match (Dummy_File, Template);
+        return;
+      exception
+        when Directory.Syntax_Error =>
+          raise Invalid_Template;
+      end;
+    else
+      -- Check that regex is Ok
+      if not Regular_Expressions.Check (Template) then
+        raise Invalid_Template;
+      end if;
+    end if;
+  end Check_Template;
+
+  procedure Add_Match (Template : in String; Regex : in Boolean) is
+  begin
+    Check_Template (Template, Regex);
+    Matches.Insert ((Asu.To_Unbounded_String (Template), Regex));
   end Add_Match;
 
-  procedure Add_Exclude (Template : in String) is
+  procedure Add_Exclude (Template : in String; Regex : in Boolean) is
   begin
-    -- Template must not be empty and must have no path
-    if Template = ""
-    or else Directory.Dirname (Template) /= "" then
-      raise Invalid_Template;
-    end if;
-    Excludes.Insert (Asu.To_Unbounded_String (Template));
+    Check_Template (Template, Regex);
+    Excludes.Insert ( (Asu.To_Unbounded_String (Template), Regex) );
   end Add_Exclude;
 
   -- Does an entiy match a date criteria
@@ -86,9 +110,19 @@ package body Lister is
     end if;
   end Match;
 
+  -- Does a file name match a template or regex
+  function Match (File, Template : String; Regex : Boolean) return Boolean is
+  begin
+    if Regex then
+      return Regular_Expressions.Match (Template, File, Strict => True);
+    else
+      return Directory.File_Match (File, Template);
+    end if;
+  end Match;
+
   -- Does an entity match all criteria
   function Match (Ent : Entities.Entity) return Boolean is
-    Template : Ada.Strings.Unbounded.Unbounded_String;
+    Tmpl : Tmpl_Rec;
     Done : Boolean;
   begin
     -- Check file type and date
@@ -101,9 +135,9 @@ package body Lister is
     if not Excludes.Is_Empty then
       Excludes.Rewind;
       loop
-        Excludes.Read (Template, Done => Done);
-        if Directory.File_Match (Asu.To_String (Ent.Name),
-                                 Asu.To_String (Template) ) then
+        Excludes.Read (Tmpl, Done => Done);
+        if Match (Asu.To_String (Ent.Name),
+                  Asu.To_String (Tmpl.Template), Tmpl.Regex) then
           -- The file matches this exclusion template
           return False;
         end if;
@@ -117,9 +151,9 @@ package body Lister is
     -- Check versus matching templates
     Matches.Rewind;
     loop
-      Matches.Read (Template, Done => Done);
-      if Directory.File_Match (Asu.To_String (Ent.Name),
-                               Asu.To_String (Template) ) then
+      Matches.Read (Tmpl, Done => Done);
+      if Match (Asu.To_String (Ent.Name),
+                Asu.To_String (Tmpl.Template), Tmpl.Regex) then
         -- The file matches this matching template
         return True;
       end if;

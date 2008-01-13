@@ -12,12 +12,12 @@ package Lister is
   procedure Set_Criteria (Only_Dirs, Only_Links, Only_Files : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec);
 
-  -- Add a file match or exclude template
+  -- Add a file match or exclude template or regex
   -- File will match if no matching template or if it matches one of the
   --  matching templates, and if it does not match any exclude template
   Invalid_Template : exception;
-  procedure Add_Match (Template : in String);
-  procedure Add_Exclude (Template : in String);
+  procedure Add_Match (Template : in String; Regex : in Boolean);
+  procedure Add_Exclude (Template : in String; Regex : in Boolean);
 
   -- List content of Dir, possibly dots, matching criteria
   procedure List (Ent_List : in out Entities.Entity_List;
