@@ -28,7 +28,16 @@ package Lister is
   procedure List (Ent_List : in out Entities.Entity_List;
                   File : in String);
 
-  -- List all subdirs of Dir (no criteria)
+  -- Add a dir match or exclude template or regex
+  -- Dir will match if no matching template or if it matches one of the
+  --  matching templates, and if it does not match any exclude template
+  procedure Add_Dir_Match   (Template : in String; Regex : in Boolean);
+  procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean);
+
+  -- Does a dir (full path) match
+  function Dir_Matches (Dir : String) return Boolean;
+
+  -- List subdirs of Dir (apply matching and exclude criteria)
   package Dir_List_Mng renames Str_List_Mng;
   subtype Dir_List is Dir_List_Mng.List_Type;
 

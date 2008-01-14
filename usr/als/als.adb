@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V1.7";
+  Version : constant String  := "V2.0";
 
   -- Usage
   procedure Usage is
@@ -16,11 +16,15 @@ procedure Als is
     Put_Line_Error ("            | [ { <match_regex> } ] | [ { <exclude_regex> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
+    Put_Line_Error ("            | --dir_regex");
+    Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
     Put_Line_Error (" <match_name>    ::= -m <template> | --match <template>");
     Put_Line_Error (" <exclude_name>  ::= -e <template> | --exclude <template>");
     Put_Line_Error (" <match_regex>   ::= --match_regex <regex>");
-    Put_Line_Error (" <exclude_regex> ::= --exclude_regex <regex");
+    Put_Line_Error (" <exclude_regex> ::= --exclude_regex <regex>");
+    Put_Line_Error (" <match_dir>     ::= --match_dir <template_or_regex>");
+    Put_Line_Error (" <exclude_dir>   ::= --exclude_dir <template_or_regex>");
     Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
@@ -63,7 +67,10 @@ procedure Als is
    16 => ('m', Asu_Tus ("match"), True, True),
    17 => ('e', Asu_Tus ("exclude"), True, True),
    18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_regex"), True, True),
-   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_regex"), True, True) );
+   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_regex"), True, True),
+   20 => (Argument_Parser.No_Key_Char, Asu_Tus ("dir_regex"), False, False),
+   21 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
+   22 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -81,6 +88,7 @@ procedure Als is
   Sort_By_Time : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
+  Dir_Regex : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -180,6 +188,25 @@ begin
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid exclude regex " & Arg_Dscr.Get_Option (19, I));
+    end;
+  end loop;
+  Dir_Regex := Arg_Dscr.Is_Set (20);
+  -- Add dir_match if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (21) loop
+    begin
+      Lister.Add_Dir_Match (Arg_Dscr.Get_Option (21, I), Dir_Regex);
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (21, I));
+    end;
+  end loop;
+  -- Add dir_exclude if any
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (22) loop
+    begin
+      Lister.Add_Dir_Exclude (Arg_Dscr.Get_Option (22, I), Dir_Regex);
+    exception
+      when Lister.Invalid_Template =>
+        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (22, I));
     end;
   end loop;
 

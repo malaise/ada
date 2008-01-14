@@ -321,6 +321,59 @@ package body Lister is
     Directory.Close (Desc);
   end List;
 
+
+  -- Add a dir match or exclude template or regex
+  -- Dir will match if no matching template or if it matches one of the
+  --  matching templates, and if it does not match any exclude template
+  Dir_Match : Tmpl_List;
+  Dir_Exclude : Tmpl_List;
+  procedure Add_Dir_Match   (Template : in String; Regex : in Boolean) is
+  begin
+    Check_Template (Template, Regex);
+    Dir_Match.Insert ((Asu.To_Unbounded_String (Template), Regex));
+  end Add_Dir_Match;
+
+  procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean) is
+  begin
+    Check_Template (Template, Regex);
+    Dir_Exclude.Insert ((Asu.To_Unbounded_String (Template), Regex));
+  end Add_Dir_Exclude;
+
+  -- Does a dir (full path) match
+  function Dir_Matches (Dir : String) return Boolean is
+    Tmpl : Tmpl_Rec;
+    Done : Boolean;
+  begin
+    -- Check versus exclusion templates
+    if not Dir_Exclude.Is_Empty then
+      Dir_Exclude.Rewind;
+      loop
+        Dir_Exclude.Read (Tmpl, Done => Done);
+        if Match (Dir, Asu.To_String (Tmpl.Template), Tmpl.Regex) then
+          -- The file matches this exclusion template
+          return False;
+        end if;
+        exit when not Done;
+      end loop;
+    end if;
+    -- File matches if no matching template
+    if Dir_Match.Is_Empty then
+      return True;
+    end if;
+    -- Check versus matching templates
+    Dir_Match.Rewind;
+    loop
+      Dir_Match.Read (Tmpl, Done => Done);
+      if Match (Dir, Asu.To_String (Tmpl.Template), Tmpl.Regex) then
+        -- The file matches this matching template
+        return True;
+      end if;
+      exit when not Done;
+    end loop;
+    -- The file does not match any matching template
+    return False;
+  end Dir_Matches;
+
   -- List subdirs of Dir
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List) is
@@ -355,15 +408,19 @@ package body Lister is
           exit;
       end;
 
-      -- Check if it is a directory
-      if Asu.To_String (Str) /= "."
-      and then Asu.To_String (Str) /= ".."
-      and then Directory.File_Kind (
-          Directory.Build_File_Name (Dir, Asu.To_String (Str), ""))
-             = Directory.Dir then
-        -- Append entity to list
-        List.Insert (Str);
-      end if;
+      -- Check if it is a directory and matches
+      declare
+        Lstr : constant String := Asu.To_String (Str);
+      begin
+        if Lstr /= "."
+        and then Lstr /= ".."
+        and then Directory.File_Kind (
+            Directory.Build_File_Name (Dir, Lstr, "")) = Directory.Dir
+        and then Dir_Matches (Lstr) then
+          -- Append entity to list
+          List.Insert (Str);
+        end if;
+      end;
     end loop;
 
     -- Done

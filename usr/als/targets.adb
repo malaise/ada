@@ -89,13 +89,14 @@ package body Targets is
       Do_Dir (".", False);
     end if;
 
-    -- Process dirs
+    -- Process dirs that match
     if Args.Get_First_Pos_After_Keys /= 0 then
       for I in Args.Get_First_Pos_After_Keys .. Argument.Get_Nbre_Arg loop
         declare
           Dir : constant String := Argument.Get_Parameter (Occurence => I);
         begin
-          if Directory.File_Kind (Dir) = Directory.Dir then
+          if Directory.File_Kind (Dir) = Directory.Dir
+          and then Lister.Dir_Matches (Dir) then
             -- Add this "Dir"
             Do_Dir (Dir, True);
           end if;
