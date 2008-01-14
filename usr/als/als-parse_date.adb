@@ -3,7 +3,7 @@ separate (Als)
 
 function Parse_Date (Str : String) return Entities.Date_Spec_Rec is
   -- Local copy of input, so it starts at 1
-  Lstr : constant String := Str;
+  Lstr : constant String (1 .. Str'Length) := Str;
   -- Date and time fields
   Year : Ada.Calendar.Year_Number;
   Month : Ada.Calendar.Month_Number;
