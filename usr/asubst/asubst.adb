@@ -253,7 +253,7 @@ begin
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR. "
-      & Arg_Dscr.Get_Error);
+      & Arg_Dscr.Get_Error & ".");
     Error;
     return;
   end if;
