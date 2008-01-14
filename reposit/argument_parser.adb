@@ -41,13 +41,13 @@ package body Argument_Parser is
       -- No space allowed
       if String_Mng.Locate (Str, " ") /= 0 then
         P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-           & Image(Arg_No) & " contains space(s).");
+           & Image(Arg_No) & " contains space(s)");
         return;
       end if;
       if Str = "-" then
         -- Just a "-"
         P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-           & Image(Arg_No) & " is not valid.");
+           & Image(Arg_No) & " is not valid");
         return;
       end if;
 
@@ -61,7 +61,7 @@ package body Argument_Parser is
         if Len = 3 then
           -- "--="
           P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-             & Image(Arg_No) & " is not valid.");
+             & Image(Arg_No) & " is not valid");
           return;
         end if;
         -- Set Len to last of key string
@@ -80,7 +80,7 @@ package body Argument_Parser is
             if Len /= 0
             and then not The_Keys(I).Key_Can_Option then
               P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-                 & Image(Arg_No) & " cannot have option.");
+                 & Image(Arg_No) & " cannot have option");
               return;
             end if;
             A_Dscr.Index := I;
@@ -91,14 +91,14 @@ package body Argument_Parser is
         end loop;
         -- Not found
         P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-           & Image(Arg_No) & " is not expected.");
+           & Image(Arg_No) & " is not expected");
         return;
       end if;
 
       -- Char key, no minus allowed
       if String_Mng.Locate (Str, "-", 2) /= 0 then
         P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-           & Image(Arg_No) & " contains minus.");
+           & Image(Arg_No) & " contains minus");
         return;
       end if;
       -- Char key
@@ -114,7 +114,7 @@ package body Argument_Parser is
         if A_Dscr.Index = 0 then
           -- Not found
           P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-             & Image(Arg_No) & " is not expected.");
+             & Image(Arg_No) & " is not expected");
           return;
         end if;
         -- Found, see if it can have and has an option
@@ -143,7 +143,7 @@ package body Argument_Parser is
           end loop;
           if not Found then
             P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-               & Image(Arg_No) & " has not expected key " & Str(I) & ".");
+               & Image(Arg_No) & " has not expected key " & Str(I));
             return;
           end if;
         end loop;
@@ -203,7 +203,7 @@ package body Argument_Parser is
       exception
         when Argument.Argument_Too_Long =>
           Dscr.Error := Asu_Tus ("Argument at pos "
-             & Image(I) & " is too long.");
+             & Image(I) & " is too long");
           return Dscr;
       end;
       -- Parse this argument
@@ -225,7 +225,7 @@ package body Argument_Parser is
           Dscr.Error := Asu_Tus ("Argument "
              & Argument.Get_Parameter (Occurence => I)
              & " at pos "
-             & Image(I) & " appears several times.");
+             & Image(I) & " appears several times");
           return Dscr;
         end if;
         Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
@@ -254,7 +254,7 @@ package body Argument_Parser is
                    & Argument.Get_Parameter (Occurence => I)
                    & " at pos "
                    & Image(I) & " makes key " & The_Keys(K).Key_Char
-                   & " appear several times.");
+                   & " appear several times");
                 return Dscr;
               end if;
               Dscr.Nb_Occurences(K) := Dscr.Nb_Occurences(K) + 1;
