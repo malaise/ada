@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.0";
+  Version : constant String  := "V2.1";
 
   -- Usage
   procedure Usage is
@@ -13,18 +13,15 @@ procedure Als is
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All) | -l (--list) | -1 (--1row)");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
-    Put_Line_Error ("            | [ { <match_regex> } ] | [ { <exclude_regex> } ]");
+    Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
-    Put_Line_Error ("            | --dir_regex");
-    Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
-    Put_Line_Error (" <match_name>    ::= -m <template> | --match <template>");
-    Put_Line_Error (" <exclude_name>  ::= -e <template> | --exclude <template>");
-    Put_Line_Error (" <match_regex>   ::= --match_regex <regex>");
-    Put_Line_Error (" <exclude_regex> ::= --exclude_regex <regex>");
-    Put_Line_Error (" <match_dir>     ::= --match_dir <template_or_regex>");
-    Put_Line_Error (" <exclude_dir>   ::= --exclude_dir <template_or_regex>");
+    Put_Line_Error (" <match_file>    ::= -m <criteria> | --match <criteria>");
+    Put_Line_Error (" <exclude_file>  ::= -e <criteria> | --exclude <criteria>");
+    Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
+    Put_Line_Error (" <exclude_dir>   ::= --exclude_dir <criteria>");
+    Put_Line_Error (" <criteria>      ::= <template> | @<regex>");
     Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
@@ -66,11 +63,8 @@ procedure Als is
    15 => ('F', Asu_Tus ("files"), False, False),
    16 => ('m', Asu_Tus ("match"), True, True),
    17 => ('e', Asu_Tus ("exclude"), True, True),
-   18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_regex"), True, True),
-   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_regex"), True, True),
-   20 => (Argument_Parser.No_Key_Char, Asu_Tus ("dir_regex"), False, False),
-   21 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
-   22 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True) );
+   18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
+   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -88,10 +82,33 @@ procedure Als is
   Sort_By_Time : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
-  Dir_Regex : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
+
+  -- Set a file or dir, match or exclusion criteria
+  type Call_Access is access procedure (Template : in String;
+                                        Regex    : in Boolean);
+  procedure Set_Criteria (Criteria : in String;
+                          Call     : in Call_Access) is
+    First : constant Natural := Criteria'First;
+    Last : constant Natural := Criteria'Last;
+    Length : constant Natural := Criteria'Length;
+    Regex_Char : constant Character := '@';
+  begin
+    if Length >= 1
+    and then Criteria(First) = Regex_Char then
+      -- @regex -> Regex
+      Call (Criteria(First + 1 .. Last), True);
+    elsif Length >= 2
+    and then Criteria(First .. First + 1) = '\' & Regex_Char then
+      -- \@template -> @template
+      Call (Criteria(First + 1 .. Last), False);
+    else
+      -- template
+      Call (Criteria, False);
+    end if;
+  end Set_Criteria;
 
 begin
 
@@ -157,7 +174,7 @@ begin
   -- Add match template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
     begin
-      Lister.Add_Match (Arg_Dscr.Get_Option (16, I), False);
+      Set_Criteria (Arg_Dscr.Get_Option (16, I), Lister.Add_Match'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid match template " & Arg_Dscr.Get_Option (16, I));
@@ -166,47 +183,28 @@ begin
   -- Add exclude template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (17) loop
     begin
-      Lister.Add_Exclude (Arg_Dscr.Get_Option (17, I), False);
+      Set_Criteria (Arg_Dscr.Get_Option (17, I), Lister.Add_Exclude'Access);
     exception
       when Lister.Invalid_Template =>
         Error ("Invalid exclude template " & Arg_Dscr.Get_Option (17, I));
     end;
   end loop;
-  -- Add match regex if any
+  -- Add dir_match if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (18) loop
     begin
-      Lister.Add_Match (Arg_Dscr.Get_Option (18, I), True);
+      Set_Criteria (Arg_Dscr.Get_Option (18, I), Lister.Add_Dir_Match'Access);
     exception
       when Lister.Invalid_Template =>
-        Error ("Invalid match regex " & Arg_Dscr.Get_Option (18, I));
-    end;
-  end loop;
-  -- Add exclude regex if any
-  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (19) loop
-    begin
-      Lister.Add_Exclude (Arg_Dscr.Get_Option (19, I), True);
-    exception
-      when Lister.Invalid_Template =>
-        Error ("Invalid exclude regex " & Arg_Dscr.Get_Option (19, I));
-    end;
-  end loop;
-  Dir_Regex := Arg_Dscr.Is_Set (20);
-  -- Add dir_match if any
-  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (21) loop
-    begin
-      Lister.Add_Dir_Match (Arg_Dscr.Get_Option (21, I), Dir_Regex);
-    exception
-      when Lister.Invalid_Template =>
-        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (21, I));
+        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (18, I));
     end;
   end loop;
   -- Add dir_exclude if any
-  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (22) loop
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (19) loop
     begin
-      Lister.Add_Dir_Exclude (Arg_Dscr.Get_Option (22, I), Dir_Regex);
+      Set_Criteria (Arg_Dscr.Get_Option (19, I), Lister.Add_Dir_Exclude'Access);
     exception
       when Lister.Invalid_Template =>
-        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (22, I));
+        Error ("Invalid dir_match " & Arg_Dscr.Get_Option (19, I));
     end;
   end loop;
 
