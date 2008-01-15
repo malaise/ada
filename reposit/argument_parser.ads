@@ -4,10 +4,15 @@
 -- Single letter keys can be grouped, like "-of".
 -- The parsing stops at last argument or when finding "--"
 
+-- The restrictions on keys (detected and raising exceptions):
+-- - a string key shall not contain spaces or unprintable characters
+-- - a char key shall be an unprintable character
+-- - there shall be at least a char or a string definition for any key
+-- - any char or a string definition shall be unique
+
 -- The restrictions on arguments are:
 -- - any argument starting by "-" is considered as a key and thus must match
 --   the input specification.
--- - a key containing spaces is forbidden (and detected).
 -- - when grouped, single char keys cannot have options. So, if "-o/--option"
 --   can have an option, then in case of "-ao" it has no option.
 
@@ -45,8 +50,9 @@ package Argument_Parser is
 
   -- Constructor
   -- May raise:
-  No_Key : exception;   -- One key has both Char_Key and String_Key unset
-  Dup_Key : exception;  -- Two keys have same Char or String key
+  No_Key : exception;       -- One key has both Char_Key and String_Key unset
+  Dup_Key : exception;      -- Two keys have same Char or String key
+  Unprintable_Key : exception; -- One key contains a unprintable char or space
   function Parse (The_Keys : The_Keys_Type) return Parsed_Dscr;
 
   -- Free the keys, clean memory allocated during parsing
@@ -58,7 +64,6 @@ package Argument_Parser is
   -- Error string
   -- Possible returned strings:
   --  "OK."
-  --  "Argument <arg> at pos <i> contains space(s)."
   --  "Argument <arg> at pos <i> contains minus."
   --  "Argument <arg> at pos <i> is not valid."
   --  "Argument <arg> at pos <i> is not expected."

@@ -38,12 +38,6 @@ package body Argument_Parser is
     A_Dscr.Index := 0;
     A_Dscr.Option := Asu_Nus;
     if Str'Length >= 1 and then Str(1) = '-' then
-      -- No space allowed
-      if String_Mng.Locate (Str, " ") /= 0 then
-        P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-           & Image(Arg_No) & " contains space(s)");
-        return;
-      end if;
       if Str = "-" then
         -- Just a "-"
         P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
@@ -189,6 +183,20 @@ package body Argument_Parser is
           raise Dup_Key;
         end if;
       end loop;
+      -- Short key must not be an unprintable character
+      if The_Keys(I).Key_Char < ' ' or else  The_Keys(I).Key_Char > '~' then
+        raise Unprintable_Key;
+      end if;
+      -- Long key must not contain space or unprintable character
+      declare
+        Str : constant String := Asu.To_String (The_Keys(I).Key_String);
+      begin
+        for J in Str'Range loop
+          if Str(J) <= ' ' or else Str(J) > '~' then
+            raise Unprintable_Key;
+          end if;
+        end loop;
+      end;
     end loop;
 
     -- Parse all the arguments
@@ -332,7 +340,6 @@ package body Argument_Parser is
   -- Error string
   -- Possible returned strings:
   --  "OK."
-  --  "Argument <arg> at pos <i> contains space(s)."
   --  "Argument <arg> at pos <i> is not expected."
   --  "Argument at pos <i> is too long."
   --  "Argument <arg> at pos <i> is too long."
