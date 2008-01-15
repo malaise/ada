@@ -12,9 +12,9 @@ procedure T_Arg_Parser is
     Key_Can_Multiple => False, Key_Can_Option => False),
    (Key_Char => 'm', Key_String => Asu_Tus ("multi"),
     Key_Can_Multiple => True, Key_Can_Option => False),
-   (Key_Char => 'o', Key_String => Asu_Tus ("opti"),
+   (Key_Char => 'o', Key_String => Asu_Tus ("opt"),
     Key_Can_Multiple => False, Key_Can_Option => True),
-   (Key_Char => 'c', Key_String => Asu_Tus ("complex"),
+   (Key_Char => 'c', Key_String => Asu_Tus ("multi-opt"),
     Key_Can_Multiple => True, Key_Can_Option => True) );
 
   Dscr : Argument_Parser.Parsed_Dscr;
