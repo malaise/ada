@@ -434,7 +434,11 @@ package body Substit is
                 Ada.Text_Io.Put (Line_Image(Line_No) & ":");
               end if;
             end if;
-            Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
+            if Replacing = "" then
+              Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
+            else
+              Ada.Text_Io.Put_Line (Replacing);
+            end if;
             -- Display one match per line
             exit;
           end if;

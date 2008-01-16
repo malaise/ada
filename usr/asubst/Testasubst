@@ -196,6 +196,34 @@ if [ "$res" != "$exp_res" ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
+# Check mono line not multiple grep
+res=`echo "toto" | asubst -g "^toto" ""`
+code=$?
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+exp_res=`echo -e "toto"`
+if [ "$res" != "$exp_res" ] ; then
+  echo "Result $res differs from expected."
+  echo "$STEP FAILED."
+  exit 1
+fi
+# Check grep with replacing
+res=`echo "tototiti" | asubst -g "(toto)titi" "\r11"`
+code=$?
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+exp_res=`echo -e "toto"`
+if [ "$res" != "$exp_res" ] ; then
+  echo "Result $res differs from expected."
+  echo "$STEP FAILED."
+  exit 1
+fi
 # Check mono regexp grep
 res=`asubst -g " is" "" $FT`
 if [ $code -ne 0 ] ; then
