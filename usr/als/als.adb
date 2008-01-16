@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.1";
+  Version : constant String  := "V2.2";
 
   -- Usage
   procedure Usage is
@@ -21,7 +21,8 @@ procedure Als is
     Put_Line_Error (" <exclude_file>  ::= -e <criteria> | --exclude <criteria>");
     Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
     Put_Line_Error (" <exclude_dir>   ::= --exclude_dir <criteria>");
-    Put_Line_Error (" <criteria>      ::= <template> | @<regex>");
+    Put_Line_Error (" <criteria>      ::= <templates> | @<regex>");
+    Put_Line_Error (" <templates>     ::= <template> [ { ,<template> } ]");
     Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
@@ -90,25 +91,7 @@ procedure Als is
   type Call_Access is access procedure (Template : in String;
                                         Regex    : in Boolean);
   procedure Set_Criteria (Criteria : in String;
-                          Call     : in Call_Access) is
-    First : constant Natural := Criteria'First;
-    Last : constant Natural := Criteria'Last;
-    Length : constant Natural := Criteria'Length;
-    Regex_Char : constant Character := '@';
-  begin
-    if Length >= 1
-    and then Criteria(First) = Regex_Char then
-      -- @regex -> Regex
-      Call (Criteria(First + 1 .. Last), True);
-    elsif Length >= 2
-    and then Criteria(First .. First + 1) = '\' & Regex_Char then
-      -- \@template -> @template
-      Call (Criteria(First + 1 .. Last), False);
-    else
-      -- template
-      Call (Criteria, False);
-    end if;
-  end Set_Criteria;
+                          Call     : in Call_Access) is separate;
 
 begin
 
