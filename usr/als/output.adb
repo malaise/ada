@@ -105,7 +105,7 @@ package body Output is
   begin
     -- Check if need to New_Line or Space
     if Current_Col /= 0 then
-      if Current_Col + Len >= Max_Col then
+      if Current_Col +  Col_Separator'Length + Len > Max_Col then
         Ada.Text_Io.New_Line;
         Current_Col := 0;
       else
