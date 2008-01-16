@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with My_Io, String_Mng, String_Mng.Regex,
+with My_Io, String_Mng, String_Mng.Regex, Many_Strings,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
 procedure T_String is
 
@@ -102,8 +102,9 @@ begin
       My_Io.Put_Line ("16 Normalize");
       My_Io.Put_Line ("17 Regex locate");
       My_Io.Put_Line ("18 Regex replace");
+      My_Io.Put_Line ("19 Split");
 
-      My_Io.Put ("Choice (0 .. 18) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 19) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -308,6 +309,19 @@ begin
                     From_Index => Nat3,
                     To_Index => Nat4,
                     Nb_Cycles => Nat5));
+          when 19 =>
+            My_Io.Put_Line ("19 Split");
+            My_Io.Put ("Separator (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
+            declare
+              Lstr : constant Many_Strings.Many_String
+                   := String_Mng.Split (Str(1 .. Str_Len), Char1);
+            begin
+              My_Io.Put_Line ("Split into: ");
+              for I in 1 .. Many_Strings.Nb (Lstr) loop
+                My_Io.Put_Line (">" & Many_Strings.Nth (Lstr, I) & "<");
+              end loop;
+            end;
+
           when others => null;
 
         end case;
