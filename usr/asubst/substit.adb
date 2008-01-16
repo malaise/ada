@@ -519,27 +519,27 @@ package body Substit is
     Line, First_Line, Last_Line : Str_Access;
     Matches, Excluded : Boolean;
     -- Put matching text, complete lines text or just the matching text
-    procedure Put_Match  (Complete : in Boolean) is
+    procedure Put_Match (Complete : in Boolean) is
       use type Str_Access;
     begin
       if Last_Line = First_Line then
         -- Handle specific case of only one line
         if Complete then
-          Ada.Text_Io.Put(Asu.To_String (Last_Line.all));
+          Ada.Text_Io.Put (Asu.To_String (Last_Line.all));
         else
           Ada.Text_Io.Put (Asu.Slice (Last_Line.all,
-                          Match_Res.First_Offset,
-                          Match_Res.Last_Offset_Stop));
+                           Match_Res.First_Offset,
+                           Match_Res.Last_Offset_Stop));
         end if;
         return;
       end if;
 
       if Complete then
-        Ada.Text_Io.Put(Asu.To_String (First_Line.all));
+        Ada.Text_Io.Put (Asu.To_String (First_Line.all));
       else
-        Ada.Text_Io.Put(Asu.Slice (First_Line.all,
-                                   Match_Res.First_Offset,
-                                   Asu.Length (First_Line.all)));
+        Ada.Text_Io.Put (Asu.Slice (First_Line.all,
+                                    Match_Res.First_Offset,
+                                    Asu.Length (First_Line.all)));
       end if;
       Line_List_Mng.Rewind (Line_List);
       for I in 2 .. Nb_Pattern - 1 loop
@@ -548,7 +548,7 @@ package body Substit is
         Ada.Text_Io.Put (Asu.To_String (Line.all));
       end loop;
       if Complete then
-        Ada.Text_Io.Put(Asu.To_String (Last_Line.all));
+        Ada.Text_Io.Put (Asu.To_String (Last_Line.all));
       else
         Ada.Text_Io.Put (Asu.Slice (Last_Line.all,
                         1, Match_Res.Last_Offset_Stop));
@@ -630,7 +630,7 @@ package body Substit is
           Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
                                   & "< is excluded");
         end if;
-      Matches := False;
+        Matches := False;
       else
         Matches := True;
       end if;
@@ -677,8 +677,12 @@ package body Substit is
               Ada.Text_Io.Put (Line_Image(Line_No) & ":");
             end if;
           end if;
-          Put_Match (True);
-          Ada.Text_Io.New_Line;
+          if Str_Replacing = "" then
+            Put_Match (True);
+            Ada.Text_Io.New_Line;
+          else
+            Ada.Text_Io.Put_Line (Asu.To_String (Str_Replaced));
+          end if;
         end if;
         if not Test then
           -- Write result

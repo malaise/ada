@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+16/01/2008 V4.9
+Add: Support non empty string in grep mode (put matching string when empty).
+
 16/01/2008 V4.8
 Bugfix: Fix display when grep "^toto" (single line, not multi match),
   matching string was put twice.

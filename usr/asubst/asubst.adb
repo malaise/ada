@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V4.8";
+  Version : constant String  := "V4.9";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -470,13 +470,6 @@ begin
     Test := True;
     Verbosity := Quiet;
     Backup := False;
-  end if;
-  -- Grep => empty replace
-  if Grep and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. Grep mode imposes empty replace_string.");
-    Error;
-    return;
   end if;
   -- Line_Nb => Grep
   if Line_Nb and then not Grep then

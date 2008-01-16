@@ -300,6 +300,7 @@ package body Replace_Pattern is
        return Str;
     end case;
   end Casestring;
+
   -- Return the replacing string
   function Replace return String is
     Result : Asu.Unbounded_String;
