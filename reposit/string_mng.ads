@@ -1,4 +1,5 @@
 with Ada.Characters.Latin_1;
+with Many_Strings;
 package String_Mng is
 
   -- Parses spaces and tabs (Latin_1.Ht) from the head/tail of a string
@@ -129,6 +130,19 @@ package String_Mng is
   function Locate_Escape (Within_Str : String;
                           From_Index : Positive;
                           Escape     : String) return Natural;
+
+  -- Check if the character at Index of Str is backslashed
+  --  (the number of '\' before it is odd)
+  -- Raises Constraint_Error if Index is out of Str
+  function Is_Backslashed (Str   : String;
+                           Index : Positive) return Boolean;
+
+  -- Split Str according to Separator
+  -- Replaces Separator by Many_String.Separator but skips
+  --  '\' & Separator (using Is_Backslashed),
+  --  then replaces '\' & Separator by Separator
+  function Split (Str       : String;
+                  Separator : Character) return Many_Strings.Many_String;
 
   -- Locate where to cut Str so that is best matches the requested line Length
   -- Looks for separator character

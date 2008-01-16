@@ -1,6 +1,8 @@
 with Ada.Strings.Unbounded;
 package body String_Mng is
 
+  package Asu renames Ada.Strings.Unbounded;
+
   -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
   -- Returns the position of the first/last character or 0 if
   --  all the string is spaces or tabs (or empty)
@@ -313,7 +315,6 @@ package body String_Mng is
   --  Delimiter_Mismatch is raised.
   -- If no callback is set (Resolv = null) then variables are replaced by
   --  empty strings.
-  package Asu renames Ada.Strings.Unbounded;
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
                            Resolv : access
@@ -444,7 +445,6 @@ package body String_Mng is
     -- Done
     return Asu.To_String (Ustr);
   end Eval_Variables;
-  -- No_Variable : exception;
 
   -- Locate an escape sequence within the Within string,
   --  starting searching from From_Index.
@@ -465,7 +465,6 @@ package body String_Mng is
       return 0;
     end if;
     Esc := Escape(Escape'First);
-    
     -- Locate escape sequence
     for I in From_Index .. Natural'Pred(Within_Str'Last) loop
       if Within_Str(I) = Esc then
@@ -491,6 +490,57 @@ package body String_Mng is
     end loop;
     return 0;
   end Locate_Escape;
+
+  -- Check if the character at Index of Str is backslashed
+  --  (the number of '\' before it is odd)
+  -- Raises Constraint_Error if Index is out of Str
+  function Is_Backslashed (Str   : String;
+                           Index : Positive) return Boolean is
+    Backslashed : Boolean := False;
+  begin
+    if Index < Str'First or else Index > Str'Last then
+      raise Constraint_Error;
+    end if;
+    for I in reverse Str'First .. Index - 1 loop
+      if Str(I) = '\' then
+        Backslashed := not Backslashed;
+      else
+        exit;
+      end if;
+    end loop;
+    return Backslashed;
+  end Is_Backslashed;
+
+  -- Split Str according to Separator
+  -- Replaces Separator by Many_String.Separator but skips
+  --  '\' & Separator (using Is_Backslashed),
+  --  then replaces '\' & Separator by Separator
+  function Split (Str       : String;
+                  Separator : Character) return Many_Strings.Many_String is
+    Result : Asu.Unbounded_String;
+    Index : Natural;
+  begin
+    Result := Asu.To_Unbounded_String (Str);
+    -- Do in reverse so the result of subst does no affect
+    --  Is_Backslashed or index
+    Index := Asu.Length (Result);
+    loop
+      exit when Index = 0;
+      if Asu.Element (Result, Index) = Separator then
+        if Is_Backslashed (Asu.To_String (Result), Index) then
+          -- Replace '\' & Separator by Separator
+          Asu.Replace_Slice (Result, Index - 1, Asu.Length (Result),
+                             Asu.Slice (Result, Index, Asu.Length (Result)) );
+          Index := Index - 1;
+        else
+          -- Replace Separator by Many_Strings.Separator
+          Asu.Replace_Element (Result, Index, Many_Strings.Separator);
+        end if;
+      end if;
+      Index := Index - 1;
+    end loop;
+    return Asu.To_String (Result);
+  end Split;
 
   -- Locate where to cut Str so that is best matches the requested line Length
   -- Looks for separator character
