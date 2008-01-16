@@ -1,6 +1,10 @@
+with Ada.Characters.Latin_1;
 with Text_Handler;
 -- Store several strings in one, using Ascii Nul as separator.
 package Many_Strings is
+
+  -- Separator of strings in a Many_String
+  Separator : constant Character := Ada.Characters.Latin_1.Nul;
 
   -- A Many_String is a list of strings separated by Ascii Nul
   -- A String is a Many_String of one String.
