@@ -520,7 +520,20 @@ package body Substit is
     Matches, Excluded : Boolean;
     -- Put matching text, complete lines text or just the matching text
     procedure Put_Match  (Complete : in Boolean) is
+      use type Str_Access;
     begin
+      if Last_Line = First_Line then
+        -- Handle specific case of only one line
+        if Complete then
+          Ada.Text_Io.Put(Asu.To_String (Last_Line.all));
+        else
+          Ada.Text_Io.Put (Asu.Slice (Last_Line.all,
+                          Match_Res.First_Offset,
+                          Match_Res.Last_Offset_Stop));
+        end if;
+        return;
+      end if;
+
       if Complete then
         Ada.Text_Io.Put(Asu.To_String (First_Line.all));
       else
