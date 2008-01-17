@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V4.9";
+  Version : constant String  := "V5.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -474,7 +474,15 @@ begin
   -- Line_Nb => Grep
   if Line_Nb and then not Grep then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. Line_Nb mode is allowed in Grep mode only.");
+      & ": Syntax ERROR. Line_nb mode is allowed in grep mode only.");
+    Error;
+    return;
+  end if;
+  -- Grep AND Line_Nb => empty Replace_Pattern
+  if Grep and then Line_Nb
+  and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      & ": Syntax ERROR. Grep with line_nb implies empty replace_string.");
     Error;
     return;
   end if;

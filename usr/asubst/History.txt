@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+17/01/2008 V5.0
+Add: Check that -gl implies empty replace_string.
+Add: Doc section on grep mode.
+
 16/01/2008 V4.9
 Add: Support non empty replacing string in grep mode (put matching string when
   replacing is empty).

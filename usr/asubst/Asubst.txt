@@ -1,5 +1,5 @@
                                  Asubst
-                                  V4.9
+                                  V5.0
 
 
 1. General syntax
@@ -34,8 +34,6 @@ matching.
 -- : to stop the list of options. If <find_pattern> is "-pat", then use
      asubst [ { <option> } ] -- "-pat" <replace_pattern>  [ { <file> } ].
 
-Grep mode imposes quiet, test and no-backup.
-Line_Nb mode is allowed in Grep mode only.
 
 3. Environment
 If the LANG environment variable is set to something containing "UTF-8", then asubst
@@ -143,7 +141,22 @@ echo -en "tito" | asubst ".*" "\m\R01"                  ->  "Tito"
 echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 
-7. Differences between regex and noregex modes
+7. Grep mode
+In grep mode, asubst only looks for find_pattern and displays result,
+(possibly with the line number in input file) but does not alter the files.
+As a consequence, grep mode imposes quiet, test and no-backup modes, and
+line_nb mode is allowed in grep mode only.
+It is possible to provide a non empty replace_string (if line_nb mode is not
+active), so that asubst displays it. Of course, this is especially useful if it
+contains some "\RIJ" or "\rIJ".
+
+Examples:
+echo -en "toto" | asubst -gl "toto" ""                  -> toto
+echo -en "toto" | asubst -g "toto" "found"              -> found
+echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
+
+
+8. Differences between regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
 "\n" is allowed in find patern in regex mode and used to separate sub patterns,
 each applying to a line. It is forbidden in noregex mode where the find
@@ -154,7 +167,7 @@ terminator and is used as such by regex library). It is allowed in noregex mode.
 In noregex mode, "\rIJ" s forbidden. 
 
 
-8. Exit code
+9. Exit code
 asubst exits with 0 if some matching was found, with 1 if no matching
 was found and with 2 otherwise (e.g. in case of error).
 

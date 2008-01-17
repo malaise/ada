@@ -685,7 +685,7 @@ package body Substit is
             Put_Match (True);
             Ada.Text_Io.New_Line;
           else
-            Ada.Text_Io.Put_Line (Asu.To_String (Str_Replaced));
+            Ada.Text_Io.Put_Line (Str_Replacing);
           end if;
         end if;
         if not Test then
