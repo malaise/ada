@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+18/01/2008 V5.1
+Add: Re-implement \R00.
+
 17/01/2008 V5.0
 Add: Check that -gl implies empty replace_string.
 Add: Doc section on grep mode.

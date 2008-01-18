@@ -49,6 +49,12 @@ package Search_Pattern is
                       Sub_String_Index : Nb_Sub_String_Range)
            return String;
 
+  -- Returns the complete matching string of all regexes
+  -- Raises No_Regex if last Checks did not succeed
+  -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
+  --  string length
+  function Allstring return String;
+
   -- Returns the Match_Cell of the complete matching string
   -- i.e. (Substr_Indexes(1, 0).Start_Offset,
   --       Substr_Indexes(Number, 0).End_Offset)

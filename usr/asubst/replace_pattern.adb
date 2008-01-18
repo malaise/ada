@@ -204,8 +204,7 @@ package body Replace_Pattern is
           Subst.Info := Hexa_Byte;
           if Esc_Char = 'R' then
             -- Replace by regex index IJ, check IJ
-            if Hexa_Byte = 0
-            or else Hexa_Byte > Search_Pattern.Number then
+            if Hexa_Byte > Search_Pattern.Number then
               Error ( "Invalid (null or too high) regex index "
                 & Asu.Slice (The_Pattern, Got + 1, Got + 2)
                 & " in replace pattern");
@@ -262,16 +261,23 @@ package body Replace_Pattern is
     Rth : Positive;
     Sth : Search_Pattern.Nb_Sub_String_Range;
   begin
-    if Kind = Replace_Match_Regex then
-      -- Nth is the regex index
-      Rth := Nth;
-      Sth := 0;
+    if Kind = Replace_Match_Regex and then Nth = 0 then
+      -- \R00
+      return Search_Pattern.Allstring;
     else
-      -- Nth is the regex index / substr index
-      Rth := Nth / 16;
-      Sth := Nth rem 16;
+      if Kind = Replace_Match_Regex then
+        -- \Rij
+        -- Nth is the regex index
+        Rth := Nth;
+        Sth := 0;
+      else
+        -- \rij
+        -- Nth is the regex index / substr index
+        Rth := Nth / 16;
+        Sth := Nth rem 16;
+      end if;
+      return Search_Pattern.Substring (Rth, Sth);
     end if;
-    return Search_Pattern.Substring (Rth, Sth);
   exception
     when Error:others =>
       if Debug.Set then

@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080117;12562500">
+	<META NAME="CHANGED" CONTENT="20080118;16024000">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V5.0</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V5.1</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -138,7 +138,8 @@ will be replaced by a (horiz) tab.</FONT><BR><FONT FACE="monospace">-
 will be replaced</FONT> <FONT FACE="monospace">by a byte with the
 corresponding value.</FONT><BR><FONT FACE="monospace">- &quot;\RIJ&quot;
 where IJ is an hexadecimal number will be replaced by the string
-matching the regex number IJ, (0 &lt; IJ &lt;= NbOfRegex).</FONT><BR><FONT FACE="monospace">-
+matching the regex number IJ, <BR>(00 &lt;= IJ &lt;= NbOfRegex, 00
+means the whole string matching all regex).</FONT><BR><FONT FACE="monospace">-
 &quot;\rIJ&quot; where IJ is an hexadecimal number will be replaced
 by the string</FONT> <FONT FACE="monospace">matching the substring J
 of the regex number I (I &lt; 0), J=0 for the complete string,</FONT>
@@ -163,26 +164,26 @@ applies after (sub)string replacement.<BR></FONT><BR><FONT FACE="monospace">Exam
 &quot;to&lt;-&gt;ti&quot;</FONT><BR><FONT FACE="monospace">echo -en
 &quot;tito&quot; | asubst &quot;.*&quot;
 &quot;\m\R01&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
-&quot;Tito&quot;</FONT><BR><FONT FACE="monospace">echo -en &quot;toto&quot;
-| asubst &quot;(.)(.)(..)&quot; &quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt;
-&quot;Otto&quot;</FONT></P>
-<H1><SPAN LANG="en-GB"><FONT FACE="Monospace">7.Grep mode</FONT></SPAN></H1>
-<P><SPAN LANG="en-GB"><FONT FACE="Monospace">In grep mode, asubst
-only looks for find_pattern and displays result, (possibly with the
-line number in input file) but does not alter the files. As a
-consequence, grep mode imposes quiet, test and no-backup modes, and
-line_nb mode is allowed in grep mode only.</FONT></SPAN></P>
+&quot;Tito&quot;<BR>echo -en &quot;toto\ntiti\n&quot; | asubst
+&quot;to\nti&quot; &quot;\u\R00&quot;      -&gt;  &quot;toTO\nTIti\n&quot;</FONT><BR><FONT FACE="monospace">echo
+-en &quot;toto&quot; | asubst &quot;(.)(.)(..)&quot;
+&quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt; &quot;Otto&quot;</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="Monospace">7.Grep mode</FONT></H1>
+<P LANG="en-GB"><FONT FACE="Monospace">In grep mode, asubst only
+looks for find_pattern and displays result, (possibly with the line
+number in input file) but does not alter the files. As a consequence,
+grep mode imposes quiet, test and no-backup modes, and line_nb mode
+is allowed in grep mode only.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">It is possible to provide a
 non empty replace_string (if line_nb mode is not active), so that
 asubst displays it. Of course, this is especially useful if it
 contains some &quot;\RIJ&quot; or &quot;\rIJ&quot;.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">Examples:<BR>echo -en &quot;toto&quot;
-| asubst -gl &quot;toto&quot; &quot;&quot;<FONT FACE="monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT>-&gt;
+| asubst -gl &quot;toto&quot; &quot;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 toto<BR>echo -en &quot;toto&quot; | asubst -g &quot;toto&quot;
-&quot;found&quot;<FONT FACE="monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT>-&gt;
+&quot;found&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 found<BR>echo -en &quot;*cs add&quot; | asubst -g &quot;^\*([^ ]+) &quot;
-&quot;Got \r11&quot;<FONT FACE="monospace">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT>-&gt;
-Got cs</FONT></P>
+&quot;Got \r11&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; Got cs</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">8.Differences between regex
 and noregex modes</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In both modes &quot;\x0A&quot;

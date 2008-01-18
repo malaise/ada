@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V5.0";
+  Version : constant String  := "V5.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -109,11 +109,11 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    conv replaces previous, case conv applies after (sub)string replacement.");
     Sys_Calls.Put_Line_Error (
-     "    ""\R01"" <-> 1st <regex>, ""\ri0"" == ""\R0i"". ""\r0i"" and ""\R00"" are forbidden.");
+     "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> all <regex>, ""\ri0"" == ""\R0i"".");
     Sys_Calls.Put_Line_Error (
      "    Like back references, substrings are numbered in the order of opening");
     Sys_Calls.Put_Line_Error (
-     "    parentheses.");
+     "    parentheses. Note that ""\r0i"" is forbidden.");
     Sys_Calls.Put_Line_Error (
      "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");
     Sys_Calls.Put_Line_Error (

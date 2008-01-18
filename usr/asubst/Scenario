@@ -12,6 +12,7 @@
 "tito"                 "t."              ">\R01<"                ">ti<>to<"
 "tito"                 "(.i)(.o)"        "\r12<->\r11"           "to<->ti"
 "tito"                 ".*"              "\m\R01"                "Tito"
+"toto\ntiti\n"         "to\nti"          "\u\R00"                "toTO\nTIti\n"
 "TIto"                 "(.I)(.o)"        "\u\r12\l\r11\c"        "TOti"
 "totI"                 "(.)(.)(..)"      "\u\r12\c\r11\r13"      "OttI"
 "--  test"             "(-- *)(.*)"      "\r11\m\r12"            "--  Test"

@@ -1,5 +1,5 @@
                                  Asubst
-                                  V5.0
+                                  V5.1
 
 
 1. General syntax
@@ -122,7 +122,8 @@ The following '\' sequences are supported:
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value.
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
-  matching the regex number IJ, (0 < IJ <= NbOfRegex).
+  matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
+string matching all regex).
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J=0 for the
   complete string, (so "\R0x" = "\rx0"). Note that substrings are numbered
@@ -138,6 +139,7 @@ echo -en "toto\ntiti\ntata\n" | asubst ".*\n" "\R01"    ->  "tototititata"
 echo -en "\ntoto\ntiti\ntata" | asubst "\n.*" "\R02"    ->  "tototititata"
 echo -en "tito" | asubst "(.i)(.o)"  "\r12<->\r11"      ->  "to<->ti"
 echo -en "tito" | asubst ".*" "\m\R01"                  ->  "Tito"
+echo -en "toto\ntiti\n" | asubst "to\nti" "\u\R00"      ->  "toTO\nTIti\n"
 echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 
