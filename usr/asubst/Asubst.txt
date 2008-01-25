@@ -1,5 +1,5 @@
                                  Asubst
-                                  V5.1
+                                  V5.2
 
 
 1. General syntax

@@ -634,6 +634,7 @@ package body Search_Pattern is
     Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
     Cell : Regular_Expressions.Match_Cell;
+    use type Regular_Expressions.Match_Cell;
   begin
     -- Check that previous check completed
     if not Check_Completed then
@@ -652,9 +653,13 @@ package body Search_Pattern is
       raise Substr_Len_Error;
     end if;
     -- Return the slice
-    return Asu.Slice (Upat_Access.Match_Str,
-                      Cell.First_Offset, Cell.Last_Offset_Stop);
-
+    if Cell = Regular_Expressions.No_Match then
+      -- Empty match
+      return "";
+    else
+      return Asu.Slice (Upat_Access.Match_Str,
+                        Cell.First_Offset, Cell.Last_Offset_Stop);
+    end if;
   exception
     when Unique_Pattern.Not_In_List =>
       -- Invalid Regex_Index or empty list
