@@ -469,7 +469,7 @@ package body String_Mng is
     for I in From_Index .. Natural'Pred(Within_Str'Last) loop
       if Within_Str(I) = Esc then
         -- Count back the Esc (at least I is Esc)
-        for J in reverse Within_Str'First .. I loop
+        for J in reverse From_Index .. I loop
           exit when Within_Str(J) /= Esc;
           Start := J;
         end loop;
