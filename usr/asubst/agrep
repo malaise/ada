@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iexport opt=""
+export opt=""
 if [ "$1" = "-l" ] ; then
   opt="-l"
   shift
