@@ -40,19 +40,19 @@
     <!-- Play nimm,  Play Marienbad, exit -->
     <Field Num="3" Kind="Button">
       <Geometry Up="21" Left="10" Low="23" Right="19"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Gray"/>
       <Init Row="1" Col="1">Play Nim</Init>
     </Field>
 
     <Field Num="4" Kind="Button">
       <Geometry Up="21" Left="22" Low="23" Right="37"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Gray"/>
       <Init Row="1" Col="1">Play Marienbad</Init>
     </Field>
 
     <Field Num="5" Kind="Button">
       <Geometry Up="21" Left="60" Low="23" Right="68"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Gray"/>
       <Init Row="1" Col="1">E X I T</Init>
     </Field>
 
