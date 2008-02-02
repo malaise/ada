@@ -3,10 +3,11 @@ with Entities;
 package Targets is
 
   -- List according to selection criteria
-  procedure List (Dots : in Entities.Dots_Kind_List;
-                  Recursive : in Boolean;
-                  Merge : in Boolean;
-                  Args : in Argument_Parser.Parsed_Dscr);
+  -- Return True is a matching file dir was found
+  function List (Dots : Entities.Dots_Kind_List;
+                 Recursive : Boolean;
+                 Merge : Boolean;
+                 Args : Argument_Parser.Parsed_Dscr) return Boolean;
 
 
 end Targets;

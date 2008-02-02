@@ -2,7 +2,12 @@ with Ada.Calendar, Ada.Text_Io;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.2";
+  Version : constant String  := "V2.3";
+
+  -- Exit codes
+  Found_Exit_code : constant Natural := 0;
+  Empty_Exit_Code : constant Natural := 1;
+  Error_Exit_code : constant Natural := 2;
 
   -- Usage
   procedure Usage is
@@ -27,6 +32,7 @@ procedure Als is
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
     Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
+    Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
   procedure Error (Msg : in String := "") is
@@ -220,10 +226,14 @@ begin
                        Date1, Date2);
 
   -- List each target
-  Targets.List (Dots, Recursive, Merge_Lists, Arg_Dscr);
+  if Targets.List (Dots, Recursive, Merge_Lists, Arg_Dscr) then
+    Basic_Proc.Set_Exit_Code (Found_Exit_Code);
+  else
+    Basic_Proc.Set_Exit_Code (Empty_Exit_Code);
+  end if;
 
 exception
   when Error_Exception =>
-    Basic_Proc.Set_Error_Exit_Code;
+    Basic_Proc.Set_Exit_Code (Error_Exit_Code);
 end Als;
 

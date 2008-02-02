@@ -4,19 +4,22 @@ with Lister, Output;
 package body Targets is
 
 
-  procedure List (Dots : in Entities.Dots_Kind_List;
-                  Recursive : in Boolean;
-                  Merge : in Boolean;
-                  Args : in Argument_Parser.Parsed_Dscr) is
+  function List (Dots : Entities.Dots_Kind_List;
+                 Recursive : Boolean;
+                 Merge : Boolean;
+                 Args : Argument_Parser.Parsed_Dscr) return Boolean is
+    Found : Boolean;
     Entries : Entities.Entity_List;
     Need_New_Line : Boolean;
     use type Directory.File_Kind_List;
 
-    procedure Do_Dir (Dir : in String; Put_Name : Boolean) is
+    function Do_Dir (Dir : String; Put_Name : Boolean) return Boolean is
+      Found : Boolean;
       Done : Boolean;
       Subdirs : Lister.Dir_List;
       Subdir : Ada.Strings.Unbounded.Unbounded_String;
     begin
+      Found := False;
       -- Do this dir
       if Need_New_Line then
         -- Insert a New_Line between previous output (files or dir) and current
@@ -28,6 +31,7 @@ package body Targets is
           Output.Put_Dir (Dir);
         end if;
         if not Entries.Is_Empty then
+          Found := True;
           Output.Put (Entries);
           Output.New_Line;
           Need_New_Line := True;
@@ -36,26 +40,27 @@ package body Targets is
       end if;
       -- Done except if recursive
       if not Recursive then
-        return;
+        return Found;
       end if;
       -- Recursive: list subdirs and recurse on each
       Lister.List_Dirs (Dir, Subdirs);
       if Subdirs.Is_Empty then
-        return;
+        return Found;
       end if;
       Subdirs.Rewind;
       loop
         Subdirs.Read (Subdir, Done => Done);
         -- Recursive invocation
-        Do_Dir (Directory.Build_File_Name (
-             Dir, Ada.Strings.Unbounded.To_String (Subdir), ""),
-                True);
+        Found := Found or Do_Dir (Directory.Build_File_Name (
+             Dir, Ada.Strings.Unbounded.To_String (Subdir), ""), True);
         exit when not Done;
       end loop;
       Subdirs.Delete_List (Deallocate => False);
+      return Found;
     end Do_Dir;
 
   begin
+    Found := False;
     -- Process files (not dirs) among arguments
     Need_New_Line := False;
     if Args.Get_First_Pos_After_Keys /= 0 then
@@ -76,6 +81,7 @@ package body Targets is
       -- Put and clean result if not merge
       if not Merge then
         if not Entries.Is_Empty then
+          Found := True;
           Output.Put (Entries);
           Output.New_Line;
           Need_New_Line := True;
@@ -86,7 +92,7 @@ package body Targets is
 
     -- If no arg at all, then process "."
     if Args.Get_First_Pos_After_Keys = 0 then
-      Do_Dir (".", False);
+      Found := Found or Do_Dir (".", False);
     end if;
 
     -- Process dirs that match
@@ -98,7 +104,7 @@ package body Targets is
           if Directory.File_Kind (Dir) = Directory.Dir
           and then Lister.Dir_Matches (Dir) then
             -- Add this "Dir"
-            Do_Dir (Dir, True);
+            Found := Found or Do_Dir (Dir, True);
           end if;
         exception
           when Directory.Name_Error =>
@@ -122,6 +128,7 @@ package body Targets is
       Output.Put (Entries);
       Entries.Delete_List;
     end if;
+    return Found;
   end List;
 
 end Targets;
