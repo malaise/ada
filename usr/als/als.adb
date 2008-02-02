@@ -17,8 +17,8 @@ procedure Als is
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
-    Put_Line_Error (" <match_file>    ::= -m <criteria> | --match <criteria>");
-    Put_Line_Error (" <exclude_file>  ::= -e <criteria> | --exclude <criteria>");
+    Put_Line_Error (" <match_name>    ::= -m <criteria> | --match <criteria>");
+    Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude <criteria>");
     Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
     Put_Line_Error (" <exclude_dir>   ::= --exclude_dir <criteria>");
     Put_Line_Error (" <criteria>      ::= <templates> | @<regex>");
