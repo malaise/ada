@@ -1,3 +1,4 @@
+with Ada.Strings.Unbounded;
 with Entities;
 package Output is
 
@@ -7,7 +8,8 @@ package Output is
   procedure Set_Style (Sort_Kind : in Sort_Kind_List;
                        Revert : in Boolean;
                        Format_Kind : in Format_Kind_List;
-                       Put_Path : in Boolean);
+                       Put_Path : in Boolean;
+                       Separator : Ada.Strings.Unbounded.Unbounded_String);
 
   -- Sort list and put according to style
   procedure Put (List : in out Entities.Entity_List);

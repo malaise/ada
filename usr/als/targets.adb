@@ -120,11 +120,7 @@ package body Targets is
     end if;
 
     -- Put complete result if merge
-    if not Merge then
-      if Need_New_Line then
-        Output.New_Line;
-      end if;
-    else
+    if Merge then
       Output.Put (Entries);
       Entries.Delete_List;
     end if;

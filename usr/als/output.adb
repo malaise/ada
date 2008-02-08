@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Strings.Unbounded, Ada.Text_Io;
+with Ada.Calendar, Ada.Text_Io;
 with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str;
 package body Output is
   package Asu renames Ada.Strings.Unbounded;
@@ -10,17 +10,21 @@ package body Output is
   Revert : Boolean;
   Format_Kind : Format_Kind_List;
   Put_Path : Boolean;
+  Separator : Asu.Unbounded_String;
+  Default_Separator : constant String := "  ";
 
   -- Set (store) sorting and format style
   procedure Set_Style (Sort_Kind : in Sort_Kind_List;
                        Revert : in Boolean;
                        Format_Kind : in Format_Kind_List;
-                       Put_Path : in Boolean) is
+                       Put_Path : in Boolean;
+                       Separator : Ada.Strings.Unbounded.Unbounded_String) is
   begin
     Output.Sort_Kind := Sort_Kind;
     Output.Revert := Revert;
     Output.Format_Kind := Format_Kind;
     Output.Put_Path := Put_Path;
+    Output.Separator := Separator;
   end Set_Style;
 
   -- Sorting function
@@ -83,6 +87,24 @@ package body Output is
 
   procedure Sort is new Entities.Entity_List_Mng.Sort (Less_Than);
 
+  -- Is separator explicitely set (or is it the default)
+  function Separator_Set return Boolean is
+    use type Asu.Unbounded_String;
+  begin
+    return Separator /= Asu.Null_Unbounded_String;
+  end Separator_Set;
+
+  -- Return current separator
+  function Get_Separator return String is
+  begin
+    if Separator_Set then
+      return Asu.To_String (Separator);
+    else
+      return Default_Separator;
+    end if;
+  end Get_Separator;
+   
+
   -- Put an entity name (possibly with full path)
   procedure Put_Name (Entity : in Entities.Entity) is
   begin
@@ -96,21 +118,27 @@ package body Output is
     end if;
   end Put_Name;
 
+  -- Put an entity in with separator
+  procedure Put_Raw (Entity : in Entities.Entity) is
+  begin
+    Put_Name (Entity);
+    Ada.Text_Io.Put (Get_Separator);
+  end Put_Raw;
+
   -- Put an entity in normal mode
   Max_Col : constant := 80;
   Current_Col : Natural := 0;
-  Col_Separator : constant String := "  ";
   procedure Put_Simple (Entity : in Entities.Entity) is
     Len : constant Natural := Asu.Length (Entity.Name);
   begin
     -- Check if need to New_Line or Space
     if Current_Col /= 0 then
-      if Current_Col +  Col_Separator'Length + Len > Max_Col then
+      if Current_Col +  Default_Separator'Length + Len > Max_Col then
         Ada.Text_Io.New_Line;
         Current_Col := 0;
       else
-        Ada.Text_Io.Put (Col_Separator);
-        Current_Col := Current_Col + Col_Separator'Length;
+        Ada.Text_Io.Put (Default_Separator);
+        Current_Col := Current_Col + Default_Separator'Length;
       end if;
     end if;
     Ada.Text_Io.Put (Asu.To_String (Entity.Name));
@@ -305,14 +333,20 @@ package body Output is
     -- Put list
     loop
       List.Read (Ent, Done => Moved);
-      case Format_Kind is
-        when Simple =>
-          Put_Simple (Ent);
-        when One_Row =>
-          Put_One_Row (Ent);
-        when Long =>
-          Put_Long (Ent);
-      end case;
+      if Separator_Set then
+        -- Use separator whatever format requested
+        Put_Raw (Ent);
+      else
+        -- Use format requested
+        case Format_Kind is
+          when Simple =>
+            Put_Simple (Ent);
+          when One_Row =>
+            Put_One_Row (Ent);
+          when Long =>
+            Put_Long (Ent);
+        end case;
+      end if;
       exit when not Moved;
    end loop;
   end Put;

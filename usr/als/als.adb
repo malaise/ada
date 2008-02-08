@@ -1,8 +1,8 @@
-with Ada.Calendar, Ada.Text_Io;
+with Ada.Calendar, Ada.Text_Io, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.3";
+  Version : constant String  := "V2.4";
 
   -- Exit codes
   Found_Exit_code : constant Natural := 0;
@@ -20,6 +20,7 @@ procedure Als is
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
+    Put_Line_Error ("            | <separator>");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
     Put_Line_Error (" <match_name>    ::= -m <criteria> | --match <criteria>");
@@ -32,6 +33,7 @@ procedure Als is
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
     Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
+    Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
@@ -71,7 +73,8 @@ procedure Als is
    16 => ('m', Asu_Tus ("match"), True, True),
    17 => ('e', Asu_Tus ("exclude"), True, True),
    18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
-   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True) );
+   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True),
+   20 => ('S', Asu_Tus ("separator"), False, True) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -89,6 +92,7 @@ procedure Als is
   Sort_By_Time : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
+  Separator : Ada.Strings.Unbounded.Unbounded_String;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -196,7 +200,15 @@ begin
         Error ("Invalid dir_match " & Arg_Dscr.Get_Option (19, I));
     end;
   end loop;
-
+  -- Separator
+  if Arg_Dscr.Is_Set (20) then
+    if Arg_Dscr.Get_Option (20) = "" then
+      Error ("Empty separator");
+    end if;
+    Separator := Ada.Strings.Unbounded.To_Unbounded_String
+     (Arg_Dscr.Get_Option (20));
+  end if;
+  
   -- Set output criteria
   declare
     Sort_Kind : Output.Sort_Kind_List;
@@ -218,7 +230,7 @@ begin
     else
       Format_Kind := Output.Simple;
     end if;
-    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists);
+    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists, Separator);
   end;
 
   -- Set selection criteria in Lister
