@@ -104,6 +104,9 @@ package body Output is
     end if;
   end Get_Separator;
    
+  -- First entry, and first entry after we put a name; don't need
+  --  separator
+  First_Entry : Boolean := True;
 
   -- Put an entity name (possibly with full path)
   procedure Put_Name (Entity : in Entities.Entity) is
@@ -116,13 +119,17 @@ package body Output is
     else
       Ada.Text_Io.Put (Asu.To_String (Entity.Name));
     end if;
+    First_Entry := True;
   end Put_Name;
 
   -- Put an entity in with separator
   procedure Put_Raw (Entity : in Entities.Entity) is
   begin
+    if not First_Entry then
+      Ada.Text_Io.Put (Get_Separator);
+    end if;
     Put_Name (Entity);
-    Ada.Text_Io.Put (Get_Separator);
+    First_Entry := False;
   end Put_Raw;
 
   -- Put an entity in normal mode
@@ -133,7 +140,7 @@ package body Output is
   begin
     -- Check if need to New_Line or Space
     if Current_Col /= 0 then
-      if Current_Col +  Default_Separator'Length + Len > Max_Col then
+      if Current_Col + Default_Separator'Length + Len > Max_Col then
         Ada.Text_Io.New_Line;
         Current_Col := 0;
       else

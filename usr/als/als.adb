@@ -5,9 +5,9 @@ procedure Als is
   Version : constant String  := "V2.4";
 
   -- Exit codes
-  Found_Exit_code : constant Natural := 0;
+  Found_Exit_Code : constant Natural := 0;
   Empty_Exit_Code : constant Natural := 1;
-  Error_Exit_code : constant Natural := 2;
+  Error_Exit_Code : constant Natural := 2;
 
   -- Usage
   procedure Usage is

@@ -1,5 +1,5 @@
 with String_Mng, Many_Strings;
-separate (als)
+separate (Als)
 procedure Set_Criteria (Criteria : in String;
                         Call     : in Call_Access) is
   First : constant Natural := Criteria'First;
