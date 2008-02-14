@@ -593,7 +593,8 @@ package body Util is
       if Asu.Element (S2, 1) = ' ' then
         Asu.Delete (S2, 1, 1);
       end if;
-      if Asu.Element (S2, Asu.Length (S2)) = ' ' then
+      if Asu.Length (S2) /= 0
+      and then Asu.Element (S2, Asu.Length (S2)) = ' ' then
         Asu.Delete (S2, Asu.Length (S2), Asu.Length (S2));
       end if;
     end if;
