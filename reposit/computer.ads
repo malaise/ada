@@ -16,7 +16,7 @@ package Computer is
                  Value : in String;
                  Modifiable : in Boolean;
                  Persistent : in Boolean);
-  -- Check if a varaible is set
+  -- Check if a variable is set
   function Is_Set (Name : String) return Boolean;
   -- Get a variable
   -- May raise Unknown_Variable
@@ -25,6 +25,13 @@ package Computer is
   function Is_Modifiable (Name : String) return Boolean;
   function Is_Persistent (Name : String) return Boolean;
 
+
+  -- External resolver of variables:
+  -- If a variable is not Set, then Eval or Compute will call this resolver.
+  -- If this resolver raises any exeption, then Unknown_Variable will be
+  --  raised
+  type Resolver_Access is access function (Name : String) return String;
+  External_Resolver : Resolver_Access := null;
   
   -- Resolv variables of an expresssion
   function Eval (Expression : String) return String;

@@ -227,11 +227,34 @@ package body Computer is
     return Var.Persistent;
   end Is_Persistent;
 
+
+  -- Get a variable, invokes external resolver if needed
+  function Ext_Get (Name : String) return String is
+  begin
+    begin
+      -- Get internal variable if set
+      return Get (Name);
+    exception
+      when Unknown_Variable =>
+        if External_Resolver = null then
+          -- Variable is not set and no external resolver
+          raise;
+        end if;
+        -- Will go on trying external resolver
+    end;
+    begin
+      return External_Resolver.all (Name);
+    exception
+      when others =>
+        raise Unknown_Variable;
+    end;
+  end Ext_Get;
+
   -- Resolv variables of an expresssion
   function Eval (Expression : String) return String is
   begin
     return String_Mng.Eval_Variables (
-              Expression, "${", "}", Get'Access);
+              Expression, "${", "}", Ext_Get'Access);
   exception
     when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
       raise Invalid_Expression;
@@ -288,7 +311,7 @@ package body Computer is
   Members_List : Members_Mng.List_Type;
 
   -- Parse the expression into a list of members
-  procedure Parse (Exp : in String ) is
+  procedure Parse (Exp : in String) is
     Iter : Parser.Iterator;
     -- Can +X or -X  be unary
     Unary : Boolean;
@@ -336,7 +359,9 @@ package body Computer is
       Unary := Member.Kind /= Val;
     end loop;
     Parser.Del (Iter);
-    Members_Mng.Rewind (Members_List);
+    if not Members_Mng.Is_Empty (Members_List) then
+      Members_Mng.Rewind (Members_List);
+    end if;
   exception
     when Constraint_Error =>
       if Parser.Is_Set (Iter) then
@@ -351,12 +376,17 @@ package body Computer is
   function Get_Member return Member_Rec is
     Member : Member_Rec;
   begin
-    if End_Reached then
+    if Members_Mng.Is_Empty (Members_List) then
+      -- Members_List is empty
+      raise Invalid_Expression;
+    elsif End_Reached then
+      -- End of expression is reached
       return (Kind => None);
-    end if;
-    if Members_Mng.Check_Move (Members_List) then
+    elsif Members_Mng.Check_Move (Members_List) then
+      -- Next (not last) member
       Members_Mng.Read (Members_List, Member);
     else
+      -- Last member
       End_Reached := True;
       Members_Mng.Read (Members_List, Member, Members_Mng.Current);
     end if;
