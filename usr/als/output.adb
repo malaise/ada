@@ -270,7 +270,7 @@ package body Output is
     end if;
     Ada.Text_Io.Put (' ');
 
-    -- Owner and its group on 10 chars or more
+    -- Owner and its group on N chars or more
     -- If resolution fails (Sys_Calls.System_Error) put Id in 10 chars
     begin
       declare
@@ -299,7 +299,7 @@ package body Output is
         Ada.Text_Io.Put (Id_Image (Entity.Group_Id) & ' ');
     end;
 
-    -- Size on 10 digits
+    -- Size on N digits or more
     declare
       Str : constant String := Size_Image (Entity.Size);
       Pad : constant String (1 .. Max_Size_Len - Str'Length) := (others => ' ');
