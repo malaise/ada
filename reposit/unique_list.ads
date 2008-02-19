@@ -85,7 +85,6 @@ package Unique_List is
                                              Go_On   : in out Boolean);
 
   -- Execute Iteration on all items
-  -- Does not raise Empty_List.
   procedure Iterate (List      : in out List_Type;
                      Iteration : access
      procedure (Current : in Element_Type;
