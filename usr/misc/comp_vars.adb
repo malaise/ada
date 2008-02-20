@@ -1,0 +1,262 @@
+with Ada.Text_Io, Ada.Strings.Unbounded;
+with Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ, Int_Image;
+procedure Comp_Vars is
+
+  -- Image of a computed value
+  function Comp_Image is new Int_Image (Integer);
+
+  -- Getenv raising exception if not set
+  function My_Getenv (Name : String) return String is
+  begin
+    -- Try to resolve through environ
+    if Environ.Is_Set (Name) then
+      return Environ.Getenv (Name);
+    else
+      -- Raise Any exception
+      raise Constraint_Error;
+    end if;
+  end My_Getenv;
+
+  -- Usage
+  Shell_Opt_C : constant String := "-s";
+  Shell_Opt_S : constant String := "--shell";
+  procedure Usage is
+  begin
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+     & "[ " & Shell_Opt_C & " | " & Shell_Opt_S & " ] { <file> }");
+  end Usage;
+
+  -- Output flow (stdout)
+  Out_File : Text_Line.File_Type;
+  Xml_Format : Boolean := True;
+
+  -- Parses one file (or input flow)
+  -- Return True if parsing OK
+  function Do_One (File_Name : String) return Boolean is
+    package Asu renames Ada.Strings.Unbounded;
+    Ctx : Xml_Parser.Ctx_Type;
+    -- Log an error
+    procedure Error (Msg : in String;
+                     Node : in out Xml_Parser.Node_Type) is
+    begin
+      Sys_Calls.Put_Error ("Error parsing file " & File_Name);
+      if Xml_Parser.Is_Valid (Node) then
+        Sys_Calls.Put_Error (" at line"
+           & Positive'Image (Ctx.Get_Line_No (Node)));
+      end if;
+      Sys_Calls.Put_Line_Error (".");
+      Sys_Calls.Put_Line_Error (Msg);
+      Ctx.Clean;
+    end Error;
+
+    -- Parsed objects, root, variables, attributes and value
+    Vars : Xml_Parser.Element_Type;
+    Var, Val : Xml_Parser.Node_Type;
+    Attr1, Attr2 : Xml_Parser.Attribute_Rec;
+    -- Is variable an int or a string
+    Var_Is_Int : Boolean;
+    -- Result of evaluation
+    Result : Asu.Unbounded_String;
+    use type Xml_Parser.Node_Kind_List;
+  begin
+    -- Parse
+    declare
+      Ok : Boolean;
+    begin
+      Ctx.Parse (File_Name, Ok);
+      if not Ok then
+        Error (Ctx.Get_Parse_Error_Message, Vars);
+        return False;
+      end if;
+    exception
+      when Xml_Parser.File_Error =>
+        Error ("Cannot open file.", Vars);
+        return False;
+    end;
+    -- Get the root
+    Vars := Ctx.Get_Root_Element;
+    -- Must have no attributes
+    if Ctx.Get_Nb_Attributes (Vars) /= 0 then
+      Error ("Unexpected attribute(s) to ""Variables"".", Vars);
+      return False;
+    end if;
+
+    -- Each variable
+    for I in 1 .. Ctx.Get_Nb_Children (Vars) loop
+      -- A variable
+      Var := Ctx.Get_Child (Vars, I);
+      if Var.Kind /= Xml_Parser.Element then
+        Error ("Invalid text as Variable.", Var);
+        return False;
+      end if;
+      -- Check and get attributes Name and Type
+      if Ctx.Get_Nb_Attributes (Var) = 1 then
+        -- One attribute: a string
+        Attr1 := Ctx.Get_Attribute (Var, 1);
+        Var_Is_Int := False;
+      elsif Ctx.Get_Nb_Attributes (Var) = 2 then
+        -- Two attributes
+        Attr1 := Ctx.Get_Attribute (Var, 1);
+        Attr2 := Ctx.Get_Attribute (Var, 2);
+        if Asu.To_String (Attr1.Name) = "Type" then
+          -- Swap so that Attr1 is Name and Attr2 is Type
+          declare
+            Attrt : constant Xml_Parser.Attribute_Rec := Attr1;
+          begin
+            Attr1 := Attr2;
+            Attr2 := Attrt;
+          end;
+        end if;
+        -- Second attribute must be type
+        if Asu.To_String (Attr2.Name) /= "Type" then
+          Error ("Invalid attribute " & Asu.To_String (Attr2.Name)
+               & " to Variable.", Var);
+          return False;
+        end if;
+        -- Check Type is Int or Str
+        if Asu.To_String (Attr2.Value) = "Int" then
+          Var_Is_Int := True;
+        elsif Asu.To_String (Attr2.Value) = "Str" then
+          Var_Is_Int := False;
+        else
+          Error ("Invalid type " & Asu.To_String (Attr2.Value)
+               & " to Variable.", Var);
+          return False;
+        end if;
+      else
+        -- 0 or more than 2 attributes
+        Error ("Invalid attribute(s) to Variable.", Var);
+        return False;
+      end if;
+      -- First attribute must be Name
+      if Asu.To_String (Attr1.Name) /= "Name" then
+        Error ("Invalid attribute " & Asu.To_String (Attr1.Name)
+             & " to Variable.", Var);
+        return False;
+      end if;
+
+      -- Get Value
+      if Ctx.Get_Nb_Children (Var) /= 1 then
+        Error ("Invalid content of Variable.", Var);
+        return False;
+      end if;
+      Val := Ctx.Get_Child (Var, 1);
+      if Var.Kind /= Xml_Parser.Element then
+        Error ("Invalid element as Variable content.", Var);
+        return False;
+      end if;
+
+      -- Eval or compute
+      declare
+        Expr : constant String := Ctx.Get_Text (Val);
+      begin
+        if Var_Is_Int then
+          Result := Asu.To_Unbounded_String (
+                    Comp_Image (Computer.Compute (Expr)));
+        else
+          Result := Asu.To_Unbounded_String (Computer.Eval (Expr));
+        end if;
+      exception
+        when Computer.Unknown_Variable =>
+          Error ("Unknown variable when evaluating variable.", Var);
+          return False;
+        when Computer.Invalid_Expression =>
+          Error ("Invalid expression when evaluating variable.", Var);
+          return False;
+      end;
+
+      -- Store Result
+      Computer.Set (Name  => Asu.To_String (Attr1.Value),
+                    Value => Asu.To_String (Result),
+                    Modifiable => True, Persistent => False);
+      -- Display result
+      if Xml_Format then
+        Out_File.Put ("  <Var "
+          & "Name=""" & Asu.To_String (Attr1.Value) & """ "
+          & "Type=""");
+        if Var_Is_Int then
+          Out_File.Put ("Int");
+        else
+          Out_File.Put ("Str");
+        end if;
+        Out_File.Put_Line (""">" & Asu.To_String (Result) & "</Var>");
+      else
+        Out_File.Put ("export " & Asu.To_String (Attr1.Value)
+           & "=");
+        if Var_Is_Int then
+          Out_File.Put_Line (Asu.To_String (Result));
+        else
+          Out_File.Put_Line ("""" & Asu.To_String (Result) & """");
+        end if;
+      end if;
+
+    end loop;
+    -- Done
+    return True;
+  end Do_One;
+
+  -- First file argument
+  First_File : Positive := 1;
+  -- Ok so far
+  Ok : Boolean;
+begin
+
+  -- Init
+  Computer.External_Resolver := My_Getenv'Unrestricted_Access;
+
+  -- Parse Help
+  if Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter (Occurence => 1) = "-h"
+    or else Argument.Get_Parameter (Occurence => 1) = "--help") then
+    Usage;
+    Sys_Calls.Set_Error_Exit_Code;
+    return;
+  end if;
+
+  -- Parse Option
+  if Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter (Occurence => 1) = Shell_Opt_C
+    or else Argument.Get_Parameter (Occurence => 1) = Shell_Opt_S) then
+    Xml_Format := False;
+    First_File := 2;
+  end if;
+
+  -- Prepare output
+  Out_File.Open (Text_Line.Out_File, Sys_Calls.Stdout);
+  if Xml_Format then
+    Out_File.Put_Line ("<?xml version=""1.1""?>");
+    Out_File.Put_Line ("<Variables>");
+  else
+    Out_File.Put_Line ("#!/bin/bash");
+  end if;
+
+  -- Process arguments
+  Ok := True;
+  if First_File > Argument.Get_Nbre_Arg then
+    -- No file => Stdin
+    Ok := Do_One ("");
+  else
+    for I in First_File .. Argument.Get_Nbre_Arg loop
+      -- Each argument
+      Ok := Ok and then Do_One (Argument.Get_Parameter (Occurence => I));
+    end loop;
+  end if;
+
+  -- Finalize output
+  if Ok then
+    if Xml_Format then
+      Out_File.Put_Line ("</Variables>");
+    end if;
+  else
+    Sys_Calls.Set_Error_Exit_Code;
+  end if;
+  Out_File.Close;
+
+exception
+  when others =>
+    if Out_File.Is_Open then
+      Out_File.Close;
+    end if;
+    raise;
+end Comp_Vars;
+

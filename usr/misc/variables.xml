@@ -1,0 +1,10 @@
+<?xml version="1.1"?>
+<!DOCTYPE Variables SYSTEM "variables.dtd">
+<Variables>
+  <Var Name="V1" Type="Int">5</Var>
+  <Var Name="PATH">${PATH}:/usr/local/bin</Var>
+  <Var Name="V2" Type="Int">5*${V1}*${V1}</Var>
+  <Var Name="V3" Type="Str">${V1}*${V2}</Var>
+  <Var Name="V2" Type="Int">${V3}*2</Var>
+</Variables>
+
