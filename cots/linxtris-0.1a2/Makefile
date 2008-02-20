@@ -6,6 +6,7 @@ clean:
 clean_exe:
 	- rm linxtris
 clean_all: clean clean_exe
+scratch: clean_all all
 static:
 	gnatmake -O2 -gnatp src/linxtris.adb `gtkada-config --static` -bargs -static -largs -s
 debug:
