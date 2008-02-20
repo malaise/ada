@@ -508,6 +508,12 @@ package body Xml_Parser is
   ----------------
   -- NAVIGATION --
   ----------------
+  function Is_Valid (Node : Node_Type) return Boolean is
+    use type My_Tree.Position_Access;
+  begin
+    return Node.Tree_Access /= My_Tree.No_Position;
+  end Is_Valid;
+
   -- Get the Children of an element (elements or texts)
   function Get_Children (Ctx     : Ctx_Type;
                          Element : Element_Type) return Nodes_Array is

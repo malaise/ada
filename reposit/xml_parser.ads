@@ -102,6 +102,7 @@ package Xml_Parser is
   -- All the following operations may raise Invalid_Node if the Element has
   --  not been returned by Parse, Get_xxx...
   Invalid_Node : exception;
+  function Is_Valid (Node : Node_Type) return Boolean;
   -- They may raise Status_Error if the Ctx is clean
   -- They may raise Use_Error if the Ctx and the Element do not match
   Use_Error : exception;
