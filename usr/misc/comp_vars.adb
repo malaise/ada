@@ -9,12 +9,13 @@ procedure Comp_Vars is
   function My_Getenv (Name : String) return String is
   begin
     -- Try to resolve through environ
-    if Environ.Is_Set (Name) then
-      return Environ.Getenv (Name);
-    else
+    return Environ.Getenv_If_Set (Name);
+  exception
+    when Environ.Name_Error =>
       -- Raise Any exception
-      raise Constraint_Error;
-    end if;
+      Sys_Calls.Put_Line_Error ("Error: Environ variable "
+                               & Name & " not found.");
+      raise;
   end My_Getenv;
 
   -- Usage
@@ -158,10 +159,10 @@ procedure Comp_Vars is
         end if;
       exception
         when Computer.Unknown_Variable =>
-          Error ("Unknown variable when evaluating variable.", Var);
+          Error ("Unknown variable while evaluating variable.", Var);
           return False;
         when Computer.Invalid_Expression =>
-          Error ("Invalid expression when evaluating variable.", Var);
+          Error ("Invalid expression while evaluating variable.", Var);
           return False;
       end;
 
