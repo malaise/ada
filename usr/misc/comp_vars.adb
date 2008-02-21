@@ -37,16 +37,24 @@ procedure Comp_Vars is
     package Asu renames Ada.Strings.Unbounded;
     Ctx : Xml_Parser.Ctx_Type;
     -- Log an error
-    procedure Error (Msg : in String;
-                     Node : in out Xml_Parser.Node_Type) is
+    procedure Error (Msg  : in String;
+                     Node : in Xml_Parser.Node_Type) is
+      use type Xml_Parser.Node_Kind_List;
     begin
       Sys_Calls.Put_Error ("Error parsing file " & File_Name);
       if Xml_Parser.Is_Valid (Node) then
         Sys_Calls.Put_Error (" at line"
            & Positive'Image (Ctx.Get_Line_No (Node)));
+        if Node.Kind = Xml_Parser.Element then
+          Sys_Calls.Put_Error (" on node " & Ctx.Get_Name (Node));
+        end if;
       end if;
-      Sys_Calls.Put_Line_Error (".");
-      Sys_Calls.Put_Line_Error (Msg);
+      if Msg = "" then
+        Sys_Calls.Put_Line_Error (".");
+      else
+        Sys_Calls.Put_Line_Error (":");
+        Sys_Calls.Put_Line_Error (Msg);
+      end if;
       Ctx.Clean;
     end Error;
 
@@ -76,6 +84,11 @@ procedure Comp_Vars is
     end;
     -- Get the root
     Vars := Ctx.Get_Root_Element;
+    -- Must be "Variables"
+    if Ctx.Get_Name (Vars) /= "Variables" then
+      Error ("Unexpected node name.", Vars);
+      return False;
+    end if;
     -- Must have no attributes
     if Ctx.Get_Nb_Attributes (Vars) /= 0 then
       Error ("Unexpected attribute(s) to ""Variables"".", Vars);
@@ -86,6 +99,10 @@ procedure Comp_Vars is
     for I in 1 .. Ctx.Get_Nb_Children (Vars) loop
       -- A variable
       Var := Ctx.Get_Child (Vars, I);
+      if Ctx.Get_Name (Var) /= "Var" then
+        Error ("Unexpected node name.", Var);
+        return False;
+      end if;
       if Var.Kind /= Xml_Parser.Element then
         Error ("Invalid text as Variable.", Var);
         return False;
