@@ -4,6 +4,10 @@ package Environ is
   -- Getenv for a String. Returns empty string if not set.
   function Getenv (Env_Name : String) return String;
 
+  -- Getenv for a String. Raises Name_Error if not set.
+  function Getenv_If_Set (Env_Name : String) return String;
+  Name_Error : exception;
+
   -- Getenv for a String.
   -- Leave result and length unchanged if not set or trunc or empty
   -- otherwise set them.

@@ -15,6 +15,15 @@ package body Environ is
       return "";
   end Getenv;
 
+  -- Getenv for a String. Raises Name_Error if not set.
+  function Getenv_If_Set (Env_Name : String) return String is
+  begin
+    return Sys_Calls.Getenv (Env_Name);
+  exception
+    when Sys_Calls.Env_Not_Set =>
+      raise Name_Error;
+  end Getenv_If_Set;
+
   -- Getenv for a String. Leave result unchanged if not set or trunc.
   procedure Get_Str (Name : String; Result : in out String;
                                     Length : in out Natural) is
