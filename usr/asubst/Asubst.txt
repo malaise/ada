@@ -1,5 +1,5 @@
                                  Asubst
-                                  V5.2
+                                  V5.3
 
 
 1. General syntax
@@ -24,6 +24,7 @@ matching.
 -m <max> or --max=<max> : stop processing each file after <max> substitutions,
     (0 for infinite).
 -n or --number : print number of substitutions per file.
+-p <dir> or --tmp=<dir> for directory of temporary files.
 -q or --quiet : for no printout.
 -s or --save : make a copy (<file>.asu) of original file(s).
 -t or --test for test, substitutions not performed,

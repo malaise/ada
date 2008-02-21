@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V5.2";
+  Version : constant String  := "V5.3";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -25,9 +25,9 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -a | -b | -d | -e | -f | -g | -i | -l | -m <max> | -n | -q |");
+     "  <option> ::= -a | -b | -d | -e | -f | -g | -i | -l | -m <max> | -n | -p");
     Sys_Calls.Put_Line_Error (
-     "               -q | -s | -t | -u | -v | -x | --");
+     "             | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
@@ -48,6 +48,8 @@ procedure Asubst is
      "    -m <max> or --max=<max> for stop processing file after <max> substitutions,");
     Sys_Calls.Put_Line_Error (
      "    -n or --number for print number of substitutions,");
+    Sys_Calls.Put_Line_Error (
+     "    -p <dir> or --tmp=<dir> for directory of temporary files,");
     Sys_Calls.Put_Line_Error (
      "    -q or --quiet for no printout,");
     Sys_Calls.Put_Line_Error (
@@ -162,7 +164,9 @@ procedure Asubst is
    15 => ('u', Asu_Tus ("utf8"), False, False),
    16 => ('v', Asu_Tus ("verbose"), False, False),
    17 => ('V', Asu_Tus ("version"), False, False),
-   18 => ('x', Asu_Tus ("noregex"), False, False));
+   18 => ('x', Asu_Tus ("noregex"), False, False),
+   19 => ('p', Asu_Tus ("tmp"), False, True)
+   );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -174,6 +178,7 @@ procedure Asubst is
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
   Max : Substit.Long_Long_Natural := 0;
+  Tmp_Dir : Ada.Strings.Unbounded.Unbounded_String;
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
   Grep : Boolean := False;
@@ -213,6 +218,7 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
+                  Asu.To_String (Tmp_Dir),
                   Max, Backup, Verbosity = Verbose, Grep, Line_Nb, Test);
     if Nb_Subst /= 0 then
       Found := True;
@@ -430,6 +436,26 @@ begin
     end if;
     Is_Regex := False;
   end if;
+  if Arg_Dscr.Is_Set (19) then
+    -- Tmp_Dir for temporary files
+    begin
+      Tmp_Dir := Ada.Strings.Unbounded.To_Unbounded_String
+                 (Arg_Dscr.Get_Option (19));
+      if Ada.Strings.Unbounded.Length(Tmp_Dir) = 0 then
+        raise Constraint_Error;
+      end if;
+    exception
+      when others =>
+        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+           & ": Syntax ERROR. Invalid tmp dir.");
+        Error;
+        return;
+    end;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option tmp_dir = "
+          & Ada.Strings.Unbounded.To_String (Tmp_Dir));
+    end if;
+  end if;
 
   -- Set language (for regexp)
   Language.Set_Language (Lang);
@@ -524,6 +550,7 @@ begin
       begin
         Nb_Subst := Substit.Do_One_File (
             File_Name => Substit.Std_In_Out,
+            Tmp_Dir   => Asu.To_String (Tmp_Dir),
             Max_Subst => Max,
             Backup    => False,
             Verbose   => False,

@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080118;16024000">
+	<META NAME="CHANGED" CONTENT="20080221;18342200">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V5.2</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V5.3</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -29,13 +29,15 @@ or --exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;,<BR>-f
 or --file : indicate that &lt;file&gt; contains the names of files to
 process.<BR>-g or --grep : print matching text as grep would do (no
 substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
-do case insensitive match checking of &lt;find_pattern&gt;.<BR>-m
-&lt;max&gt; or --max=&lt;max&gt; : stop processing each file after
-&lt;max&gt; substitutions, (0 for infinite).<BR>-l or --line for
-display line number in grep mode.<BR>-n or --number : print number of
-substitutions per file.<BR>-q or --quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s
-or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t
-or --test for test, substitutions not performed,<BR>-u or --utf8 :
+do case insensitive match checking of &lt;find_pattern&gt;.<BR><FONT FACE="monospace">-l
+or --line for display line number in grep mode.<BR></FONT>-m &lt;max&gt;
+or --max=&lt;max&gt; : stop processing each file after &lt;max&gt;
+substitutions, (0 for infinite).<BR>-<FONT FACE="monospace">n or
+--number : print number of substitutions per file.<BR></FONT>-p &lt;dir&gt;
+or --tmp=&lt;dir&gt; for directory of temporary files.<BR>-q or
+--quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s or
+--save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t or
+--test for test, substitutions not performed,<BR>-u or --utf8 :
 process utf-8 sequences.<BR>-v or --verbose : print each substitution
 and its line number.<BR>-x or --noregex : &lt;find_pattern&gt; is
 only the string to find, not a regex. This allows \x00. There is no
@@ -165,7 +167,7 @@ applies after (sub)string replacement.<BR></FONT><BR><FONT FACE="monospace">Exam
 &quot;tito&quot; | asubst &quot;.*&quot;
 &quot;\m\R01&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 &quot;Tito&quot;<BR>echo -en &quot;toto\ntiti\n&quot; | asubst
-&quot;to\nti&quot; &quot;\u\R00&quot;      -&gt;  &quot;toTO\nTIti\n&quot;</FONT><BR><FONT FACE="monospace">echo
+&quot;to\nti&quot; &quot;\u\R00&quot; -&gt; &quot;toTO\nTIti\n&quot;</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;(.)(.)(..)&quot;
 &quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt; &quot;Otto&quot;</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">7.Grep mode</FONT></H1>

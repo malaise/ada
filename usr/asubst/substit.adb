@@ -169,14 +169,28 @@ package body Substit is
     Result := Sys_Calls.Rename (Asu.To_String (Out_File_Name),
                                 Asu.To_String (In_File_Name));
     if not Result then
-      Error ("Cannot move " & Asu.To_String (Out_File_Name)
-           & " to " & Asu.To_String (In_File_Name));
+      -- Rename failed, perhaps not the same file system
+      -- Try a Copy then Delete
+      Result := Copy_File (Asu.To_String (Out_File_Name),
+                                Asu.To_String (In_File_Name));
+      if not Result then
+        Error ("Cannot move " & Asu.To_String (Out_File_Name)
+             & " to " & Asu.To_String (In_File_Name));
+      end if;
+      -- This should work, anyway not a real problem if it fails
+      Result := Sys_Calls.Unlink (Asu.To_String (Out_File_Name));
+      if not Result then
+        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+          & " WARNING: Cannot remove temporary file "
+          & Asu.To_String (Out_File_Name) & ".");
+      end if;
     end if;
 
   end Comit;
 
   -- Open Files
-  procedure Open (File_Name : in String) is
+  procedure Open (File_Name : in String;
+                  Tmp_Dir   : in String) is
     In_Fd, Out_Fd : Sys_Calls.File_Desc;
     File_Dir : Asu.Unbounded_String;
     use type Asu.Unbounded_String;
@@ -197,22 +211,36 @@ package body Substit is
         when Sys_Calls.Name_Error =>
           Error ("Cannot open input file " & File_Name);
       end;
-      -- Build out file name
-      File_Dir := Asu.To_Unbounded_String (Directory.Dirname (File_Name));
-      if File_Dir /= Asu.Null_Unbounded_String then
-        -- Remove trailing /
-        File_Dir := Asu.To_Unbounded_String (
-          Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
+      -- Build out file dir
+      if Tmp_Dir = "" then
+        -- Current dir
+        File_Dir := Asu.To_Unbounded_String (Directory.Dirname (File_Name));
+        if File_Dir /= Asu.Null_Unbounded_String then
+          -- Remove trailing /
+          File_Dir := Asu.To_Unbounded_String (
+            Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
+        else
+          File_Dir := Asu.To_Unbounded_String (".");
+        end if;
       else
-        File_Dir := Asu.To_Unbounded_String (".");
+        -- Tmp dir specified as argument
+        File_Dir := Asu.To_Unbounded_String (Tmp_Dir);
       end if;
-      Out_File_Name := Asu.To_Unbounded_String (
-                       Temp_File.Create (Asu.To_String (File_Dir)));
+      -- Create out file
       begin
-        Out_Fd := Sys_Calls.Create (Asu.To_String (Out_File_Name));
+        Out_File_Name := Asu.To_Unbounded_String (
+                         Temp_File.Create (Asu.To_String (File_Dir)));
+      exception
+        when others =>
+          Error ("Cannot create temp file in """ & Asu.To_String (File_Dir)
+               & """");
+      end;
+      begin
+        Out_Fd := Sys_Calls.Open (Asu.To_String (Out_File_Name),
+                                  Sys_Calls.Out_File);
       exception
         when Sys_Calls.Name_Error =>
-          Error ("Cannot create temp file " & Asu.To_String (Out_File_Name));
+          Error ("Cannot open temp file " & Asu.To_String (Out_File_Name));
       end;
     end if;
     -- Associate fds to files
@@ -310,6 +338,7 @@ package body Substit is
                         Test    : Boolean) return Long_Long_Natural;
 
   function Do_One_File (File_Name : String;
+                        Tmp_Dir   : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
                         Verbose   : Boolean;
@@ -321,7 +350,7 @@ package body Substit is
     Do_Verbose : Boolean;
   begin
     -- Open files
-    Open (File_Name);
+    Open (File_Name, Tmp_Dir);
     -- Verbose if requested and not stdin
     Do_Verbose := Verbose and then not Is_Stdin;
 

@@ -9,6 +9,7 @@ package Substit is
   -- Make a backup file, display substitutions, and test mode on option
   -- Return the number of substitutions
   function Do_One_File (File_Name : String;
+                        Tmp_Dir   : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
                         Verbose   : Boolean;

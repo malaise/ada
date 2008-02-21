@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+25/01/2008 V5.3
+Add: -p (--tmp) for alternative dir of tmp files.
+
 25/01/2008 V5.2
 BugFix: Fix internal error when matching substring has index=(0, 0).
 BugFix: Fix String_Mng bug on \\\R01 in replace pattern.
