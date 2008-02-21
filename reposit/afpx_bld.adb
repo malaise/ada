@@ -311,7 +311,7 @@ procedure Afpx_Bld is
     or else not Match (Ctx.Get_Name (Node), "Geometry")
     or else Ctx.Get_Nb_Attributes (Node) /= 4
     or else Ctx.Get_Nb_Children (Node) /= 0 then
-      File_Error (Node, "Invalid geometry " & Ctx.Get_Name (Node)
+      File_Error (Node, "Invalid geometry " & String'(Ctx.Get_Name (Node))
                  & ", expected Up, Left, Down and Right");
     end if;
     declare
@@ -412,7 +412,7 @@ procedure Afpx_Bld is
     if Node.Kind /= Xp.Element
     or else not Match (Ctx.Get_Name (Node), "Colors")
     or else Ctx.Get_Nb_Children (Node) /= 0 then
-      File_Error (Node, "Invalid colors " & Ctx.Get_Name (Node));
+      File_Error (Node, "Invalid colors " & String'(Ctx.Get_Name (Node)));
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);

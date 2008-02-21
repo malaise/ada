@@ -121,6 +121,8 @@ package Xml_Parser is
 
   -- Get the name of an element
   function Get_Name (Ctx     : Ctx_Type;
+                     Element : Element_Type) return String;
+  function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type)
                     return Ada.Strings.Unbounded.Unbounded_String;
   -- Get the attributes of an element

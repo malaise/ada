@@ -439,6 +439,12 @@ package body Xml_Parser is
   -------------------------
   -- Get the name of an element
   function Get_Name (Ctx     : Ctx_Type;
+                     Element : Element_Type) return String is
+  begin
+    return Asu.To_String (Get_Name (Ctx, Element));
+  end Get_Name;
+
+  function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type)
                      return Ada.Strings.Unbounded.Unbounded_String is
     Cell : constant My_Tree_Cell
