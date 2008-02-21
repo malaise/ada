@@ -7,16 +7,6 @@ procedure T_Computer is
      & " [ { <name>=<value> } ] <expression>");
   end Usage;
 
-  function My_Getenv (Name : String) return String is
-  begin
-    -- Try to resolve through environ
-    if Environ.Is_Set (Name) then
-      return Environ.Getenv (Name);
-    else
-      -- Raise Any exception
-      raise Constraint_Error;
-    end if;
-  end My_Getenv;
   Loc : Natural;
   N : Integer;
 begin
@@ -24,7 +14,7 @@ begin
     Usage;
     return;
   end if;
-  Computer.External_Resolver := My_Getenv'Unrestricted_Access;
+  Computer.External_Resolver := Environ.Getenv_If_Set'Access;
   -- All args but last are variables
   for I in 1 .. Argument.Get_Nbre_Arg - 1 loop
     declare
