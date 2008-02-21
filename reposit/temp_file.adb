@@ -28,6 +28,14 @@ package body Temp_File  is
                                  & Normal (Suffix, 3, Gap => '0');
     Fstat : Sys_Calls.File_Stat_Rec;
     Fd : Sys_Calls.File_Desc;
+    Nb_Links : Natural;
+    procedure Remove_Temp is
+    begin
+      if not Sys_Calls.Unlink (Tfn) then
+        -- This should work
+        raise Invalid_Dir;
+      end if;
+    end Remove_Temp;
   begin
     -- Check if that file exists
     begin
@@ -54,25 +62,36 @@ package body Temp_File  is
     end;
     -- Try to make a hard link to it
     begin
+      Nb_Links := 0;
       Sys_Calls.Link (Tfn, Fn, Hard => True);
       -- Link succeeded, Fn is unique
+      Remove_Temp;
+      return Fn;
     exception
       when Sys_Calls.Name_Error =>
         -- Fn already exists now, try next
+        Remove_Temp;
         return "";
       when Sys_Calls.Access_Error =>
-        -- Link failed, but maybe the link could be done? Check
-        if Sys_Calls.File_Stat (Fn).Nb_Links /= 2 then
+        -- Link raised Access_Error, but maybe succeeded
+        begin
+          Nb_Links := Sys_Calls.File_Stat (Fn).Nb_Links;
+        exception
+          when others =>
+            -- Link was not done
+            Remove_Temp;
+            raise Invalid_Dir;
+        end;
+        -- Remove temp file
+        Remove_Temp;
+        if Nb_Links /= 2 then
           -- Link really failed
-          return "";
+          raise Invalid_Dir;
+        else
+          -- It worked.
+          return Fn;
         end if;
     end;
-    -- It worked. Remove temp file
-    if not Sys_Calls.Unlink (Tfn) then
-      -- This should work
-      raise Invalid_Dir;
-    end if;
-    return Fn;
   exception
     when Invalid_Dir =>
       raise;
