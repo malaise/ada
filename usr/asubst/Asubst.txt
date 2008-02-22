@@ -174,3 +174,18 @@ In noregex mode, "\rIJ" s forbidden.
 asubst exits with 0 if some matching was found, with 1 if no matching
 was found and with 2 otherwise (e.g. in case of error).
 
+
+10. Troubleshooting
+- Asubst is stuck. Maybe an argument is missing or an option is not complete,
+and asubst is waiting in stdin.
+E.g. "asubst -m 5 6 file". Asubst considers "5" as the value for m, "6" as the
+find_pattern and "file" as the replace_string, so no file name is provided.
+- I want to substitute "\f", why do I need to provide "\\\\f"?
+Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f")
+and the shell imposes a "\\" for each "\" transmitted to asubst.
+Note that, you can pass to the shell '\\f' instead of "\\\\f".
+Same considerations apply to "\$" or '$' in order to pass '$' to asubst.
+- ERROR: Cannot create temp file in ".". Asubst cannot make the temporary file,
+probably because the file system does not support hard links (e.g. samba file
+system). Try the -p (--tmp) option with a UNIX directory.
+
