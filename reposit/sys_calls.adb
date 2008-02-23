@@ -301,12 +301,49 @@ package body Sys_Calls is
   end Stderr;
 
 
-  -- File status
+  -- For file exists and stat
   Enoent : constant :=  2;
+  function C_File_Stat (File_Name : System.Address; Stat : System.Address)
+           return Integer;
+  pragma Import (C, C_File_Stat, "file_stat");
+
+  -- Check if file exists, no exception
+  function File_Status (File_Name : String) return File_Status_List is
+    File_Name4C : constant String := Str_For_C (File_Name);
+    Stat4C : C_Stat_Rec;
+    Res : Integer;
+  begin
+    Res := C_File_Stat(File_Name4C'Address, Stat4C'Address);
+    if Res = -1 then
+      if Sys_Calls.Errno = Enoent then
+        return Not_Found;
+      else
+        return Error;
+      end if;
+    else
+      return Found;
+    end if;
+  end File_Status;
+
+  -- Check if file exists, Access_Error if Error
+  function File_Check (File_Name : String) return Boolean is
+  begin
+    case File_Status (File_Name) is
+      when Found => return True;
+      when Not_Found => return False;
+      when Error => raise Access_Error;
+    end case;
+  end File_Check;
+
+  -- Check if file exists, no exception, True if Found
+  function File_Found (File_Name : String) return Boolean is
+  begin
+    return File_Status (File_Name) = Found;
+  end File_Found;
+
+
+  -- File stat
   function File_Stat (File_Name : String) return File_Stat_Rec is
-    function C_File_Stat (File_Name : System.Address; Stat : System.Address)
-             return Integer;
-    pragma Import (C, C_File_Stat, "file_stat");
     File_Name4C : constant String := Str_For_C (File_Name);
     Stat4C : C_Stat_Rec;
     Res : Integer;

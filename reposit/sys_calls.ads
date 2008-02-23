@@ -59,6 +59,16 @@ package Sys_Calls is
   function Stdout return File_Desc;
   function Stderr return File_Desc;
 
+  -- Result of file check
+  type File_Status_List is (Found, Not_Found, Error);
+  -- Check if file exists, no exception
+  function File_Status (File_Name : String) return File_Status_List;
+  -- Check if file exists, Access_Error if Error
+  function File_Check (File_Name : String) return Boolean;
+  -- Check if file exists, no exception, True if Found
+  function File_Found (File_Name : String) return Boolean;
+
+
   -- File kind (not tty)
   subtype File_Kind_List is File_Desc_Kind_List range File .. Unknown;
   -- File modif time
@@ -81,7 +91,7 @@ package Sys_Calls is
     Size       : Size_T;
   end record;
 
-  -- File status
+  -- File stat infos
   -- May raise Name_Error or Access_Error
   function File_Stat (File_Name : String) return File_Stat_Rec;
 
