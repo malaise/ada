@@ -1,8 +1,6 @@
 with Normal, Sys_Calls;
 package body Temp_File  is
 
-
-
   -- From man 2 open (O_EXCL):
   -- The solution for performing atomic file locking using a lockfile is to
   -- create a unique file on the same file system (e.g., incorporating
@@ -11,13 +9,27 @@ package body Temp_File  is
   -- on the unique file to check if its link count has increased to 2,
   -- in which case the lock is also successful.
 
-  -- We check if Temp_File.000 exists, if yes we skip to next (Temp_File.001).
-  -- If not, we create Temp_File_Tmp.000 and a hard link to Temp_File.000
-  -- If the link succeeds, or else if if the number of links of
-  -- Temp_File_Tmp.000 is 2, then it is OK, we can remove Temp_File_Tmp.000
-  -- and close Temp_File.000
+  -- From man 2 link:
+  -- BUGS: On NFS file systems, the return code may be wrong in case the NFS
+  -- server performs the link creation and dies before it can say so. Use
+  -- stat(2) to find out if the link got created.
 
-  --
+
+  -- We check if Temp_File.000 exists, if yes we skip to next (Temp_File.001)
+  -- If not, we create Temp_File_Tmp.000 and a hard link to Temp_File.000
+  -- If the link succeeds, then it is OK, we can remove Temp_File_Tmp.000
+  -- If the link fails with Name_Error, we skip to next file
+  -- If the link fails another way, it's a problem of file system, directory...
+
+  -- Remove a file is possible, no error
+  procedure Remove (File_Name : in String) is
+    Dummy : Boolean;
+  begin
+    Dummy := Sys_Calls.Unlink (File_Name);
+  end Remove;
+
+
+  -- Possible suffixes, tried one after another
   subtype Suffix_Range is Natural range 000 .. 999;
 
   -- Try with this suffix. Return the successful file name or ""
@@ -26,77 +38,59 @@ package body Temp_File  is
                                         & Normal (Suffix, 3, Gap => '0');
     Fn : constant String := Path & '/' & "Temp_File."
                                  & Normal (Suffix, 3, Gap => '0');
-    Fstat : Sys_Calls.File_Stat_Rec;
     Fd : Sys_Calls.File_Desc;
-    Nb_Links : Natural;
-    procedure Remove_Temp is
-    begin
-      if not Sys_Calls.Unlink (Tfn) then
-        -- This should work
-        raise Invalid_Dir;
-      end if;
-    end Remove_Temp;
   begin
-    -- Check if that file exists
-    begin
-      Fstat := Sys_Calls.File_Stat (Fn);
-      -- This file already exists, try next
-      return "";
-    exception
-      when Sys_Calls.Name_Error =>
-        -- The file does not exist, good
+    -- Check if that Tmp file exists
+    case Sys_Calls.File_Status (Fn) is
+      when Sys_Calls.Found =>
+        -- File already exists, try next
+        return "";
+      when Sys_Calls.Not_Found =>
+        -- File does not exist, good
         null;
-      when Sys_Calls.Access_Error =>
-        -- Other problem accessing the fail, bad
+      when Sys_Calls.Error =>
+        -- Other problem accessing the file, bad
         raise Invalid_Dir;
-    end ;
-    -- Try to create a temporary temporary file
+    end case;
+
+    -- Try to create a Tmp_tmp file
     begin
       Fd := Sys_Calls.Create (Tfn);
-      -- File created. Close it.
+      -- File created, good
       Sys_Calls.Close (Fd);
     exception
       when others =>
         -- Creation failed, bad
         raise Invalid_Dir;
     end;
-    -- Try to make a hard link to it
+    -- From now we will need to remove Tfn in any case
+    -- Maybe several competitors will try to remove the same Tmp_tmp
+    --  but what is important is that at least one (the first) succeeds
+
+    -- Try to make a hard link from Tmp_tmp to Tmp
+    -- This is atomic
     begin
-      Nb_Links := 0;
       Sys_Calls.Link (Tfn, Fn, Hard => True);
       -- Link succeeded, Fn is unique
-      Remove_Temp;
+      Remove (Tfn);
       return Fn;
     exception
       when Sys_Calls.Name_Error =>
-        -- Fn already exists now, try next
-        Remove_Temp;
+        -- Fn now already exists, try next
+        Remove (Tfn);
         return "";
       when Sys_Calls.Access_Error =>
         -- Link raised Access_Error, but maybe succeeded
-        begin
-          Nb_Links := Sys_Calls.File_Stat (Fn).Nb_Links;
-        exception
-          when others =>
-            -- Link was not done
-            Remove_Temp;
-            raise Invalid_Dir;
-        end;
-        -- Remove temp file
-        Remove_Temp;
-        if Nb_Links /= 2 then
-          -- Link really failed
-          raise Invalid_Dir;
+        --  (possible if nfs server crashes, see man link)
+        Remove (Tfn);
+        if Sys_Calls.File_Found (Fn) then
+          -- Link probably worked but exclusive acces is not guaranteed
+          -- Take the risk of a dandling orphan Tmp_tmp file.
+          return "";
         else
-          -- It worked.
-          return Fn;
+          raise Invalid_Dir;
         end if;
     end;
-  exception
-    when Invalid_Dir =>
-      raise;
-    when others =>
-      return "";
   end Try;
 
   function Create (Temp_Dir : String) return String is
