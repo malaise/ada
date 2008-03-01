@@ -43,5 +43,11 @@ package Lister is
 
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List);
+
+  -- Activate, then later get grand total
+  subtype Size_Type is Long_Long_Integer range 0 .. Long_Long_Integer'Last;
+  procedure Activate_Total;
+  function Get_Total return Size_Type;
+  
 end Lister;
 

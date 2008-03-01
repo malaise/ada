@@ -1,9 +1,16 @@
 with Ada.Calendar, Ada.Text_Io;
-with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str;
+with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str,
+     My_Math, Environ;
 package body Output is
+
+  -- Max amount of entries to sort
+  Env_Max_To_Sort : constant String := "ALS_MAX_TO_SORT";
+  Max_To_Sort : Natural := 5_000;
+  
   package Asu renames Ada.Strings.Unbounded;
   function Nat_Image is new Int_Image (Natural);
   function Size_Image is new Int_Image (Sys_Calls.Size_T);
+  function Total_Image is new Int_Image (Lister.Size_Type);
 
   -- Stored style
   Sort_Kind : Sort_Kind_List;
@@ -25,6 +32,7 @@ package body Output is
     Output.Format_Kind := Format_Kind;
     Output.Put_Path := Put_Path;
     Output.Separator := Separator;
+    Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);
   end Set_Style;
 
   -- Sorting function
@@ -333,8 +341,12 @@ package body Output is
     if List.Is_Empty then
       return;
     end if;
-    -- Sort (rewinds)
-    Sort (List);
+    -- Sort (rewinds) if less than a max
+    if List.List_Length > Max_To_Sort then
+      List.Rewind;
+    else
+      Sort (List);
+    end if;
     -- Init output
     Current_Col := 0;
     -- Put list
@@ -368,5 +380,87 @@ package body Output is
     Ada.Text_Io.New_Line;
   end New_Line;
 
+  -- Split a size in X.y thousands of it
+  Kilo : constant Lister.Size_Type := 1024;
+  procedure Split (Size : in Lister.Size_Type;
+                   Int  : out Lister.Size_Type;
+                   Frac : out Lister.Size_Type) is
+    Real : My_Math.Real;
+    use type My_Math.Real;
+  begin
+    -- Integer part
+    Int := Size / Kilo;
+    -- Thousands in base 10 -> xyz
+    Frac := ((Size rem Kilo) * 1000) / Kilo;
+    -- Round at hundredths: x.yz
+    Real := My_Math.Real (Frac) / 100.0;
+    Frac := Lister.Size_Type(My_Math.Round (Real));
+    if Frac > 10 then
+      Frac := 10;
+    end if;
+    -- Propagate carry
+    if Frac = 10 then
+      Int := Int + 1;
+      Frac := 0;
+    end if;
+  end Split;
+
+  -- Put Total size, no new_line
+  procedure Put_Size (Size : in Lister.Size_Type) is
+    Limit : constant Lister.Size_Type := Kilo / 2;
+    Kilos : Lister.Size_Type;
+    Kilosi, Kilosf : Lister.Size_Type;
+
+  begin
+    -- Bytes
+    Ada.Text_Io.Put ("Total size: " & Total_Image (Size) & "B");
+    -- kBytes rounded
+    Split (Size, Kilosi, Kilosf);
+    if Kilosf < 5 then
+      Kilos := Kilosi;
+    else
+      Kilos := Kilosi + 1;
+    end if;
+    Ada.Text_Io.Put (" " & Total_Image (Kilos) & "k");
+
+    -- MBytes and tenth
+    Split (Kilos, Kilosi, Kilosf);
+    if Kilosi = 0 and then Kilosf = 0 then
+      return;
+    end if;
+    Ada.Text_Io.Put (" " & Total_Image (Kilosi)
+                   & "." & Total_Image (Kilosf) & "M");
+    if Kilosf < 5 then
+      Kilos := Kilosi;
+    else
+      Kilos := Kilosi + 1;
+    end if;
+
+    -- GBytes and tenth
+    Split (Kilos, Kilosi, Kilosf);
+    if Kilosi = 0 and then Kilosf = 0 then
+      return;
+    end if;
+    Ada.Text_Io.Put (" " & Total_Image (Kilosi)
+                   & "." & Total_Image (Kilosf) & "G");
+    if Kilosf < 5 then
+      Kilos := Kilosi;
+    else
+      Kilos := Kilosi + 1;
+    end if;
+
+    -- TBytes and tenth
+    Split (Kilos, Kilosi, Kilosf);
+    if Kilosi = 0 and then Kilosf = 0 then
+      return;
+    end if;
+    Ada.Text_Io.Put (" " & Total_Image (Kilosi)
+                   & "." & Total_Image (Kilosf) & "T");
+    if Kilosf < 5 then
+      Kilos := Kilosi;
+    else
+      Kilos := Kilosi + 1;
+    end if;
+  end Put_Size;
 end Output;
 

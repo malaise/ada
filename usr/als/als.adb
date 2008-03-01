@@ -1,8 +1,8 @@
-with Ada.Calendar, Ada.Text_Io, Ada.Strings.Unbounded;
+with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.4";
+  Version : constant String  := "V2.5";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -22,7 +22,7 @@ procedure Als is
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
     Put_Line_Error ("            | <separator>");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
-    Put_Line_Error ("            | -R (--recursive) | -M (--merge)");
+    Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
     Put_Line_Error (" <match_name>    ::= -m <criteria> | --match <criteria>");
     Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude <criteria>");
     Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
@@ -74,7 +74,8 @@ procedure Als is
    17 => ('e', Asu_Tus ("exclude"), True, True),
    18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
    19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True),
-   20 => ('S', Asu_Tus ("separator"), False, True) );
+   20 => ('S', Asu_Tus ("separator"), False, True),
+   21 => ('T', Asu_Tus ("total"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -93,6 +94,7 @@ procedure Als is
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
   Separator : Ada.Strings.Unbounded.Unbounded_String;
+  Put_Total : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -208,6 +210,8 @@ begin
     Separator := Ada.Strings.Unbounded.To_Unbounded_String
      (Arg_Dscr.Get_Option (20));
   end if;
+  -- Put total size
+  Put_Total := Arg_Dscr.Is_Set (21);
   
   -- Set output criteria
   declare
@@ -233,15 +237,23 @@ begin
     Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists, Separator);
   end;
 
-  -- Set selection criteria in Lister
+  -- Set selection criteria in Lister, activate Total computation
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Links, List_Only_Files,
                        Date1, Date2);
+  if Put_Total then
+    Lister.Activate_Total;
+  end if;
 
   -- List each target
   if Targets.List (Dots, Recursive, Merge_Lists, Arg_Dscr) then
     Basic_Proc.Set_Exit_Code (Found_Exit_Code);
   else
     Basic_Proc.Set_Exit_Code (Empty_Exit_Code);
+  end if;
+
+  if Put_Total then
+    Output.Put_Size (Lister.Get_Total);
+    Output.New_Line;
   end if;
 
 exception

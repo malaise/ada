@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Entities;
+with Entities, Lister;
 package Output is
 
   -- Set (store) sorting and format style
@@ -19,6 +19,9 @@ package Output is
 
   -- Put a New_line
   procedure New_Line;
+
+  -- Put Total size, no new lin
+  procedure Put_Size (Size : in Lister.Size_Type);
 
 end Output;
 

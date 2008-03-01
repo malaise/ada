@@ -16,6 +16,11 @@ package body Lister is
   Matches : Tmpl_List;
   Excludes : Tmpl_List;
 
+  -- Total size
+  Total_Active : Boolean := False;
+  Total_Size : Size_Type := 0;
+  procedure Add_Size (Size : in Sys_Calls.Size_T);
+
   -- Slection criteria
   Only_Dirs, Only_Links, Only_Files : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
@@ -211,6 +216,8 @@ package body Lister is
     end if;
     -- Insert entity
     Ent_List.Insert (Ent);
+    -- Update size
+    Add_Size (Ent.Size);
   end List;
 
   -- List content of Dir, possibly dots, matching criteria
@@ -241,6 +248,11 @@ package body Lister is
                                  & Dir & ": Permission denied.");
         return;
     end;
+    -- Add current dir size
+    if Total_Active then
+      Stat := Sys_Calls.File_Stat (Dir);
+      Add_Size (Stat.Size);
+    end if;
 
     -- For each entry
     loop
@@ -309,6 +321,8 @@ package body Lister is
 
         -- Append entity to list
         Ent_List.Insert (Ent);
+        -- Update size
+        Add_Size (Ent.Size);
       exception
         when Discard =>
           -- Discard this file
@@ -427,6 +441,27 @@ package body Lister is
     Directory.Close (Desc);
   end List_Dirs;
 
+  -- Activate, then later get grand total
+  procedure Activate_Total is
+  begin
+    Total_Active := True;
+  end Activate_Total;
+
+  function Get_Total return Size_Type is
+  begin
+    return Total_Size;
+  end Get_Total;
+
+  procedure Add_Size (Size : in Sys_Calls.Size_T) is
+  begin
+    if Total_Active then
+      Total_Size := Total_Size + Size_Type(Size);
+    end if;
+  exception
+    when Constraint_Error =>
+      Total_Size := Size_Type'Last;
+  end Add_Size;
+  
 end Lister;
 
 
