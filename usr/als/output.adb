@@ -421,7 +421,7 @@ package body Output is
     else
       Kilos := Kilosi + 1;
     end if;
-    Ada.Text_Io.Put (" " & Total_Image (Kilos) & "k");
+    Ada.Text_Io.Put (" " & Total_Image (Kilos) & "kB");
 
     -- MBytes and tenth
     Split (Kilos, Kilosi, Kilosf);
@@ -429,7 +429,7 @@ package body Output is
       return;
     end if;
     Ada.Text_Io.Put (" " & Total_Image (Kilosi)
-                   & "." & Total_Image (Kilosf) & "M");
+                   & "." & Total_Image (Kilosf) & "MB");
     if Kilosf < 5 then
       Kilos := Kilosi;
     else
@@ -442,7 +442,7 @@ package body Output is
       return;
     end if;
     Ada.Text_Io.Put (" " & Total_Image (Kilosi)
-                   & "." & Total_Image (Kilosf) & "G");
+                   & "." & Total_Image (Kilosf) & "GB");
     if Kilosf < 5 then
       Kilos := Kilosi;
     else
@@ -455,7 +455,7 @@ package body Output is
       return;
     end if;
     Ada.Text_Io.Put (" " & Total_Image (Kilosi)
-                   & "." & Total_Image (Kilosf) & "T");
+                   & "." & Total_Image (Kilosf) & "TB");
     if Kilosf < 5 then
       Kilos := Kilosi;
     else
