@@ -74,19 +74,20 @@ procedure Xml_Checker is
   ---------------------
   procedure Put_Attributes (Elt : in Xml_Parser.Element_Type;
                             Level : in Natural;
-                            Offset : in Positive) is
+                            Offset : in Positive;
+                            One_Per_Line : in Boolean := True) is
     Attrs : Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
     Indent : constant String (1 .. 2 * Level + Offset) := (others => ' ');
     use type Asu_Us;
   begin
     for I in Attrs'Range loop
-      if I /= 1 then
+      if I /= 1 and then One_Per_Line then
         -- Indent
         Ada.Text_Io.Put (Indent);
       end if;
       Ada.Text_Io.Put (" " & Asu.To_String (Attrs(I).Name
                      & "=""" & Attrs(I).Value) & """");
-      if I /= Attrs'Last then
+      if I /= Attrs'Last and then One_Per_Line then
         Ada.Text_Io.New_Line;
       end if;
     end loop;
@@ -107,7 +108,7 @@ procedure Xml_Checker is
         -- A prologue
         -- Put the xml directive with attributes
         Ada.Text_Io.Put ("<?" & Name);
-        Put_Attributes (Elt, 0, 2 + Name'Length);
+        Put_Attributes (Elt, 0, 2 + Name'Length, False);
         Ada.Text_Io.Put_Line ("?>");
         for I in Children'Range loop
           if Children(I).Kind = Xml_Parser.Element then
