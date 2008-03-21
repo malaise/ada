@@ -177,6 +177,15 @@ procedure Xml_Checker is
     end if;
   end Put_Element;
 
+  function Get_File_Name return String is
+  begin
+    if Argument.Get_Nbre_Arg = Arg_Index then
+      return Argument.Get_Parameter(Arg_Index);
+    else
+      return "";
+    end if;
+  end Get_File_Name;
+
 begin
   -- Parse options
   Arg_Index := 1;
@@ -207,13 +216,10 @@ begin
   end if;
 
   -- Parse file provided as arg or stdin
-  if Argument.Get_Nbre_Arg = Arg_Index then
-    Ctx.Parse (Argument.Get_Parameter(Arg_Index), Parse_Ok);
-  else
-    Ctx.Parse ("", Parse_Ok);
-  end if;
+  Ctx.Parse (Get_File_Name, Parse_Ok);
   if not Parse_Ok then
-    Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
+    Basic_Proc.Put_Line_Error ("Error in file " & Get_File_Name & ": "
+                             & Xml_Parser.Get_Parse_Error_Message (Ctx));
     Basic_Proc.Set_Error_Exit_Code;
     Xml_Parser.Clean (Ctx);
     return;
@@ -236,7 +242,7 @@ begin
 exception
   when Xml_Parser.File_Error =>
     Basic_Proc.Put_Line_Error ("Error reading file "
-      & Argument.Get_Parameter(Occurence => Arg_Index) & ".");
+      & Get_File_Name & ".");
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
   when Arg_Error =>
