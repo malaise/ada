@@ -267,7 +267,7 @@ package body Parse_Mng  is
     Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
     if not Ok then
       Util.Error (Ctx.Flow,
-                  "Invalid instruction or element without xml declaration");
+                  "Xml declaration expected");
     end if;
   end Check_Xml_Set;
 
@@ -487,10 +487,11 @@ package body Parse_Mng  is
           -- A name go back to before '<'
           Util.Unget (Ctx.Flow);
           Util.Unget (Ctx.Flow);
-          Check_Xml_Set (Ctx);
           exit;
       end case;
     end loop;
+    -- Xml directive is mandatory in prologue, which is mandatory in doc
+    Check_Xml_Set (Ctx);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");
