@@ -5,12 +5,16 @@ procedure Xml_Checker is
   Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
+  Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
   type Output_Kind_List is (Xml, Dump, Silent);
   Output_Kind : Output_Kind_List := Xml;
   Arg_Index : Natural;
   Parse_Ok : Boolean;
   Arg_Error : exception;
+
+  Doctype_Name, Doctype_File : Asu_Us;
+  Doctype_Internal : Boolean;
 
   procedure Usage is
   begin
@@ -187,6 +191,7 @@ procedure Xml_Checker is
     end if;
   end Get_File_Name;
 
+  use type Asu_Us;
 begin
   -- Parse options
   Arg_Index := 1;
@@ -227,12 +232,22 @@ begin
   end if;
   Prologue := Ctx.Get_Prologue;
   Root := Ctx.Get_Root_Element;
+  Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
 
   -- Dump / put
   if Output_Kind = Xml then
     Put_Element (Prologue, Prologue_Level);
     Ada.Text_Io.New_Line;
+    if Doctype_Name /= Asu_Null then
+      Ada.Text_Io.Put ("<!DOCTYPE " & Asu.To_String (Doctype_Name));
+      if Doctype_File /= Asu_Null then
+        Ada.Text_Io.Put (" SYSTEM """ & Asu.To_String (Doctype_File) & """");
+      end if;
+      Ada.Text_Io.Put_Line (">");
+      Ada.Text_Io.New_Line;
+    end if;
     Put_Element (Root, 0);
+    Ada.Text_Io.New_Line;
   elsif Output_Kind = Dump then
     Ada.Text_Io.Put_Line ("Prologue:");
     Dump_Element (Prologue, 0);
@@ -240,6 +255,12 @@ begin
     Dump_Element (Root, 0);
   end if;
   Ctx.Clean;
+
+  if Output_Kind = Xml and then Doctype_Internal then
+    Ada.Text_Io.Flush;
+    Basic_Proc.Put_Line_Error (
+     "Warning, Doctype internal subset is parsed but not displayed.");
+  end if;
 exception
   when Xml_Parser.File_Error =>
     Basic_Proc.Put_Line_Error ("Error reading file "
