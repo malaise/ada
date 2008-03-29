@@ -238,17 +238,19 @@ package body Parse_Mng  is
     end loop;
   end Parse_Attributes;
 
-  -- Check Xml version is correctly defined
-  procedure Check_Xml_Version (Ctx : in out Ctx_Type) is
+  -- Check Xml version, encoding and standalone are correctly defined
+  procedure Check_Xml_Attributes (Ctx : in out Ctx_Type) is
     Attribute_Value : Asu_Us;
     Attribute_Index : Natural;
+    Nb_Attrs_Set : Natural;
+    Nb_Attrs_Allowed : Positive := 1;
   begin
     -- Version must be set, and at first position
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
            Asu.To_Unbounded_String ("version"),
            Attribute_Index, Attribute_Value);
     if Attribute_Index /= 1 then
-      Util.Error (Ctx.Flow, "Expected version info as first xml attribute");
+      Util.Error (Ctx.Flow, "Expected xml version as first attribute");
     end if;
     declare
       Vers : constant String := Asu_Ts (Attribute_Value);
@@ -258,7 +260,48 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected xml version " & Vers);
       end if;
     end;
-  end Check_Xml_Version;
+
+    -- If set, encoding must be second
+    Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
+           Asu.To_Unbounded_String ("encoding"),
+           Attribute_Index, Attribute_Value);
+    if Attribute_Index /= 0 then
+      if Attribute_Index /= 2 then
+        Util.Error (Ctx.Flow, "Expected xml encoding as second attribute");
+      end if;
+      -- Check encoding value, must be valid name
+      -- and also starting with letter and without ":"
+      if not Util.Name_Ok (Attribute_Value)
+      or else not Util.Is_Letter (Asu.Element (Attribute_Value, 1))
+      or else Asu.Index (Attribute_Value, ":") /= 0 then
+        Util.Error (Ctx.Flow, "Invalid encoding name");
+      end if;
+      Nb_Attrs_Allowed := Nb_Attrs_Allowed + 1;
+    end if;
+
+    -- If set, standalone must be second or third
+    Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
+           Asu.To_Unbounded_String ("standalone"),
+           Attribute_Index, Attribute_Value);
+    if Attribute_Index /= 0 then
+      if Attribute_Index /= 2 and then  Attribute_Index /= 3 then
+        Util.Error (Ctx.Flow,
+          "Expected xml standalone as second or third attribute");
+      end if;
+      -- Check standalone value, must be "yes" or "no"
+      if Asu_Ts (Attribute_Value) /= "yes"
+      and then Asu_Ts (Attribute_Value) /= "no" then
+        Util.Error (Ctx.Flow, "Invalid standalone value");
+      end if;
+      Nb_Attrs_Allowed := Nb_Attrs_Allowed + 1;
+    end if;
+
+    -- No more attribute allowed
+    Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all, Nb_Attrs_Set);
+    if Nb_Attrs_Set /= Nb_Attrs_Allowed then
+      Util.Error (Ctx.Flow, "Unexpecteed xml attribute");
+    end if;
+  end Check_Xml_Attributes;
 
   procedure Check_Xml_Set (Ctx : in out Ctx_Type) is
     Ok : Boolean;
@@ -298,7 +341,7 @@ package body Parse_Mng  is
         if Char /= Util.Instruction then
           Parse_Attributes (Ctx, Adtd, Of_Xml => True);
         end if;
-        Check_Xml_Version (Ctx);
+        Check_Xml_Attributes (Ctx);
         Trace ("Parsed xml declaration");
         return;
       else

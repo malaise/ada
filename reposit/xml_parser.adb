@@ -56,6 +56,8 @@ package body Xml_Parser is
                                   Name : in Asu_Us;
                                   Index : out Natural;
                                   Value : out Asu_Us);
+    procedure Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type;
+                                     Number : out Natural);
     -- Add a processing instruction
     procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
                       Name, Text : in Asu_Us; Line : in Positive);

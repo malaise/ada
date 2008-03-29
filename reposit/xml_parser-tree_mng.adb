@@ -77,6 +77,14 @@ package body Tree_Mng is
     return;
   end Insert_Attribute;
 
+  procedure Nb_Attributes (In_Tree : in out My_Tree.Tree_Type;
+                           Number : out Trees.Child_Range) is
+    Cell : My_Tree_Cell;
+  begin
+    My_Tree.Read (In_Tree, Cell);
+    Number := Cell.Nb_Attributes;
+  end Nb_Attributes;
+
   -- Insert an element
   procedure Add_Element (Elements : in out My_Tree.Tree_Type;
                          Name : in Asu_Us; Line : in Positive) is
@@ -219,6 +227,12 @@ package body Tree_Mng is
   begin
     Find_Attribute (Prologue, Name, Index, Value);
   end Find_Xml_Attribute;
+
+  procedure Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type;
+                                   Number : out Natural) is
+  begin
+    Nb_Attributes (Prologue, Number);
+  end Get_Nb_Xml_Attributes;
 
   -- Add a processing instruction
   procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
