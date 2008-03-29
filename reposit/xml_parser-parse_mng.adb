@@ -260,6 +260,17 @@ package body Parse_Mng  is
     end;
   end Check_Xml_Version;
 
+  procedure Check_Xml_Set (Ctx : in out Ctx_Type) is
+    Ok : Boolean;
+  begin
+    -- Check that XML instruction is set
+    Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
+    if not Ok then
+      Util.Error (Ctx.Flow,
+                  "Invalid instruction or element without xml declaration");
+    end if;
+  end Check_Xml_Set;
+
   -- Parse an instruction (<?xxx?>)
   procedure Parse_Instruction (Ctx : in out Ctx_Type;
                                Adtd : in out Dtd_Type) is
@@ -304,11 +315,7 @@ package body Parse_Mng  is
     end if;
 
     -- Parse instruction until ? or separator
-    Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
-    if not Ok then
-      Util.Error (Ctx.Flow,
-                  "Invalid processing instruction without xml declaration");
-    end if;
+    Check_Xml_Set (Ctx);
     Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Name) then
@@ -474,11 +481,13 @@ package body Parse_Mng  is
           Parse_Instruction (Ctx, Adtd);
         when Util.Directive =>
           -- Directive or comment or CDATA
+          Check_Xml_Set (Ctx);
           Parse_Directive (Ctx, Adtd, Allow_Dtd);
         when others =>
           -- A name go back to before '<'
           Util.Unget (Ctx.Flow);
           Util.Unget (Ctx.Flow);
+          Check_Xml_Set (Ctx);
           exit;
       end case;
     end loop;
