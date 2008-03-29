@@ -42,6 +42,14 @@ package Xml_Parser is
   --  attributes if no xml directive). Its children are elements,
   --  each with the directive name and each with a text child.
 
+  ----------------------------
+  -- NOTE ABOUT THE DOCTYPE --
+  ----------------------------
+  -- The DOCTYPE is parsed during the prologue parsing
+  -- PUBLIC directive is not processed
+  -- Internal subset definitions are processed but cannot be retrieved
+  --  by the application (only a flag indicates that there are
+  --  subset definitions)
 
   ------------------
   -- FILE PARSING --
@@ -115,6 +123,12 @@ package Xml_Parser is
   --            Parse_Error if Parse was not ok
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
 
+  -- Get Doctype characteristics (prologue must have been parsed)
+  procedure Get_Doctype (Ctx : Ctx_Type;
+       Doctype_Name : out Ada.Strings.Unbounded.Unbounded_String;
+       Doctype_File : out Ada.Strings.Unbounded.Unbounded_String;
+       Has_Internal : out Boolean);
+
   -- Get the line number of the beginning of the declaration of a node
   function Get_Line_No (Ctx  : Ctx_Type;
                         Node : Node_Type) return Positive;
@@ -177,7 +191,7 @@ private
   ---------------
   -- NODE TYPE --
   ---------------
-  -- Internal internal tree
+  -- Internal tree
   type Internal_Kind_List is (Element, Text, Attribute);
   type My_Tree_Cell is record
     -- Line in source file
@@ -299,6 +313,8 @@ private
     -- Prologue and parsed elements
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
+    -- Doctype name, file and a tag of internal definitions
+    Doctype : My_Tree_Cell;
   end record;
   procedure Finalize (Ctx : in out Ctx_Type) renames Clean;
 

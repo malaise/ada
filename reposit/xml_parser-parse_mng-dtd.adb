@@ -557,7 +557,7 @@ package body Dtd is
           return;
         else
           Util.Error (Ctx.Flow,
-                      "Unexpected character while parsing dtd" & Char);
+                      "Unexpected character while parsing dtd " & Char);
         end if;
       end if;
     end loop;

@@ -230,6 +230,11 @@ package body Xml_Parser is
       My_Tree.Move_Root (Ctx.Elements.all);
       My_Tree.Delete_Tree (Ctx.Elements.all);
     end if;
+    -- Clean Doctype info
+    Ctx.Doctype.Line_No := 1;
+    Ctx.Doctype.Kind := Element;
+    Ctx.Doctype.Name := Asu_Null;
+    Ctx.Doctype.Value := Asu_Null;
     -- Context is clean
     Ctx.Magic := Clean_Magic;
     Ctx.Status := Clean;
@@ -277,7 +282,7 @@ package body Xml_Parser is
     end if;
     -- Be sure context is clean
     Clean (Ctx);
-    -- No it will not be clean
+    -- Now it will not be clean
     Ctx.Magic := Get_Magic;
     -- In case of exception...
     Ctx.Status := Error;
@@ -392,6 +397,22 @@ package body Xml_Parser is
     end if;
     return Cell;
   end Get_Cell;
+
+ -- Get Doctype characteristics (prologue must have been parsed)
+  procedure Get_Doctype (Ctx : Ctx_Type;
+       Doctype_Name : out Ada.Strings.Unbounded.Unbounded_String;
+       Doctype_File : out Ada.Strings.Unbounded.Unbounded_String;
+       Has_Internal : out Boolean) is
+  begin
+    if Ctx.Status = Error then
+      raise Parse_Error;
+    elsif Ctx.Status = Clean then
+      raise Status_Error;
+    end if;
+    Doctype_Name := Ctx.Doctype.Name;
+    Doctype_File := Ctx.Doctype.Value;
+    Has_Internal := Ctx.Doctype.Kind = Text;
+  end Get_Doctype;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   function Get_Prologue (Ctx : Ctx_Type) return Element_Type is

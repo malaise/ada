@@ -350,6 +350,8 @@ package body Parse_Mng  is
     if not Util.Name_Ok (Doctype_Name) then
       Util.Error (Ctx.Flow, "Invalid DOCTYPE name " & Asu_Ts (Doctype_Name));
     end if;
+    Ctx.Doctype.Line_No := Util.Get_Line_No (Ctx.Flow);
+    Ctx.Doctype.Name := Doctype_Name;
     -- What's next
     Util.Skip_Separators (Ctx.Flow);
     Util.Try (Ctx.Flow, "PUBLIC ", Ok);
@@ -371,12 +373,14 @@ package body Parse_Mng  is
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Reset_Curr_Str (Ctx.Flow);
       Dtd.Parse (Ctx, Adtd, Asu.To_String (Doctype_File));
+      Ctx.Doctype.Value := Doctype_File;
     end if;
     -- Now see if there is an internal definition section
     Util.Skip_Separators (Ctx.Flow);
     Util.Get (Ctx.Flow, Char);
     if Char = '[' then
-      Dtd.Parse (Ctx, Adtd, "");
+      Dtd.Parse (Ctx, Adtd, Dtd.Internal_Flow);
+      Ctx.Doctype.Kind := Text;
     else
       Util.Unget (Ctx.Flow);
     end if;
