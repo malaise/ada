@@ -13,8 +13,7 @@ procedure Xml_Checker is
   Parse_Ok : Boolean;
   Arg_Error : exception;
 
-  Doctype_Name, Doctype_File : Asu_Us;
-  Doctype_Internal : Boolean;
+  Doctype_Internal : Boolean := False;
 
   procedure Usage is
   begin
@@ -104,8 +103,10 @@ procedure Xml_Checker is
     Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
     Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
+    Indent1 : constant String := Indent & "  ";
+    Doctype_Name, Doctype_File : Asu_Us;
     Prev_Is_Text : Boolean;
-    use type Xml_Parser.Node_Kind_List;
+    use type Xml_Parser.Node_Kind_List, Asu_Us;
   begin
     if Level = Prologue_Level then
       if Name /= "" then
@@ -114,10 +115,25 @@ procedure Xml_Checker is
         Ada.Text_Io.Put ("<?" & Name);
         Put_Attributes (Elt, 0, 2 + Name'Length, False);
         Ada.Text_Io.Put_Line ("?>");
+        -- Put DOCTYPE if any
+        Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
+        if Doctype_Name /= Asu_Null then
+          Ada.Text_Io.Put ("<!DOCTYPE " & Asu.To_String (Doctype_Name));
+          if Doctype_File /= Asu_Null then
+            Ada.Text_Io.Put (" SYSTEM """ & Asu.To_String (Doctype_File)
+                           & """");
+          end if;
+          Ada.Text_Io.Put_Line (">");
+        end if;
+        -- Put prologue PIs and comments
         for I in Children'Range loop
           if Children(I).Kind = Xml_Parser.Element then
             -- Put PIs
             Put_Element (Children(I), Prologue_Instruction_Level);
+          elsif Children(I).Kind = Xml_Parser.Comment then
+            -- Put Comments of prologue
+            Ada.Text_Io.Put_Line ("<!--" & Ctx.Get_Comment (Children(I))
+                                & "-->");
           end if;
         end loop;
       end if;
@@ -167,10 +183,24 @@ procedure Xml_Checker is
               Ada.Text_Io.New_Line;
             end if;
             Prev_Is_Text := False;
-          else
+          elsif Children(I).Kind = Xml_Parser.Text then
             -- Specific put text
             Ada.Text_Io.Put (Ctx.Get_Text (Children(I)));
             Prev_Is_Text := True;
+          else
+            -- Comment
+            if I = 1 or else not Prev_Is_Text then
+              -- Father did not New_Line because of possible text
+              --  or prev was not text and did not New_Line because
+              --  of possible text
+              Ada.Text_Io.New_Line;
+            end if;
+            Ada.Text_Io.Put (Indent1);
+            Ada.Text_Io.Put ("<!--" & Ctx.Get_Comment (Children(I)) & "-->");
+            if I = Children'Last then
+              Ada.Text_Io.New_Line;
+            end if;
+            Prev_Is_Text := False;
           end if;
         end loop;
         -- Terminate tag after children
@@ -191,7 +221,6 @@ procedure Xml_Checker is
     end if;
   end Get_File_Name;
 
-  use type Asu_Us;
 begin
   -- Parse options
   Arg_Index := 1;
@@ -222,7 +251,7 @@ begin
   end if;
 
   -- Parse file provided as arg or stdin
-  Ctx.Parse (Get_File_Name, Parse_Ok);
+  Ctx.Parse (Get_File_Name, Parse_Ok, Comments => Output_Kind = Xml);
   if not Parse_Ok then
     Basic_Proc.Put_Line_Error ("Error in file " & Get_File_Name & ": "
                              & Xml_Parser.Get_Parse_Error_Message (Ctx));
@@ -232,20 +261,11 @@ begin
   end if;
   Prologue := Ctx.Get_Prologue;
   Root := Ctx.Get_Root_Element;
-  Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
 
   -- Dump / put
   if Output_Kind = Xml then
     Put_Element (Prologue, Prologue_Level);
     Ada.Text_Io.New_Line;
-    if Doctype_Name /= Asu_Null then
-      Ada.Text_Io.Put ("<!DOCTYPE " & Asu.To_String (Doctype_Name));
-      if Doctype_File /= Asu_Null then
-        Ada.Text_Io.Put (" SYSTEM """ & Asu.To_String (Doctype_File) & """");
-      end if;
-      Ada.Text_Io.Put_Line (">");
-      Ada.Text_Io.New_Line;
-    end if;
     Put_Element (Root, 0);
     Ada.Text_Io.New_Line;
   elsif Output_Kind = Dump then
