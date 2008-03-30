@@ -61,6 +61,14 @@ package body Xml_Parser is
     -- Add a processing instruction
     procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
                       Name, Text : in Asu_Us; Line : in Positive);
+
+    -- Is a tree (elements or prologue) empty
+    function Is_Empty (Tree : My_Tree.Tree_Type) return Boolean;
+
+    -- Add a comment to current cell (of elements or prologue)
+    -- remain on current cell
+    procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
+                           Comment : in Asu_Us; Line : in Positive);
   end Tree_Mng;
   package body Tree_Mng is separate;
 
@@ -147,7 +155,8 @@ package body Xml_Parser is
   -- May raise File_Error, Parse_Error
   procedure Parse (Ctx       : out Ctx_Type;
                    File_Name : in String;
-                   Ok        : out Boolean) is
+                   Ok        : out Boolean;
+                   Comments  : in Boolean := False) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -165,6 +174,7 @@ package body Xml_Parser is
     Ctx.Flow.Kind := Xml_File;
     Ctx.Flow.Xml_Line := 1;
     -- Parse this file
+    Ctx.Parse_Comments := Comments;
     Parse_Mng.Parse (Ctx);
     -- Close the file
     File_Mng.Close (Ctx.Flow.Xml_File);
@@ -222,6 +232,7 @@ package body Xml_Parser is
     if Text_Char.Is_Open (Ctx.Flow.Dtd_File) then
       File_Mng.Close (Ctx.Flow.Dtd_File);
     end if;
+    Ctx.Parse_Comments := False;
     -- Clean prologue tree
     if not My_Tree.Is_Empty (Ctx.Prologue.all) then
       My_Tree.Move_Root (Ctx.Prologue.all);
@@ -275,9 +286,10 @@ package body Xml_Parser is
   -- Parse the prologue of a string
   -- may raise Status_Error if Ctx is not clean
   --    Parse_Error while parsing the string
-  procedure Parse_Prologue (Ctx : out Ctx_Type;
-                            Str : in String;
-                            Ok  : out Boolean) is
+  procedure Parse_Prologue (Ctx       : out Ctx_Type;
+                            Str       : in String;
+                            Ok        : out Boolean;
+                            Comments  : in Boolean := False) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -294,6 +306,7 @@ package body Xml_Parser is
     Ctx.Flow.Kind := Xml_String;
     Ctx.Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Xml_Line := 1;
+    Ctx.Parse_Comments := Comments;
     Parse_Mng.Parse_Prologue (Ctx);
     -- Close the file
     Ctx.Status := Prologue;
@@ -317,9 +330,9 @@ package body Xml_Parser is
   -- may raise Status_Error if Ctx is clean
   --    End_Error if Ctx has already parsed elements
   --    Parse_Error while parsing the string
-  procedure Parse_Elements (Ctx : in out Ctx_Type;
-                            Dtd : in out Dtd_Type;
-                            Ok  : out Boolean) is
+  procedure Parse_Elements (Ctx       : in out Ctx_Type;
+                            Dtd       : in out Dtd_Type;
+                            Ok        : out Boolean) is
     Loc_Parse_Error : exception;
   begin
     if Ctx.Status = Clean then
@@ -394,7 +407,8 @@ package body Xml_Parser is
     My_Tree.Read (Tree.all, Cell);
     -- Check kinds match
     if (Node.Kind = Element and then Cell.Kind /= Element)
-    or else (Node.Kind = Text and then Cell.Kind /= Text) then
+    or else (Node.Kind = Text and then Cell.Kind /= Text)
+    or else (Node.Kind = Comment and then Cell.Kind /= Comment) then
       raise Invalid_Node;
     end if;
     return Cell;
@@ -543,7 +557,7 @@ package body Xml_Parser is
     return Node.Tree_Access /= My_Tree.No_Position;
   end Is_Valid;
 
-  -- Get the Children of an element (elements or texts)
+  -- Get the Children of an element (elements or texts or comments)
   function Get_Children (Ctx     : Ctx_Type;
                          Element : Element_Type) return Nodes_Array is
     Tree : Tree_Acc := Get_Tree (Ctx, Element);
@@ -563,23 +577,30 @@ package body Xml_Parser is
       end if;
       if I > Cell.Nb_Attributes then
         My_Tree.Read (Tree.all, Child);
-        if Child.Kind = Xml_Parser.Element then
-          N (I - Cell.Nb_Attributes) :=
-                (Kind =>  Xml_Parser.Element,
-                 Magic => Element.Magic,
-                 In_Prologue => Element.In_Prologue,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
-        elsif Child.Kind = Text then
-          N (I - Cell.Nb_Attributes) :=
-                (Kind => Text,
-                 Magic => Element.Magic,
-                 In_Prologue => Element.In_Prologue,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
-        else
-          -- Attribute
-          Trace ("Expecting kind text or element, found attribute");
-          raise Internal_Error;
-        end if;
+        case Child.Kind is
+          when Xml_Parser.Element =>
+            N (I - Cell.Nb_Attributes) :=
+                  (Kind =>  Xml_Parser.Element,
+                   Magic => Element.Magic,
+                   In_Prologue => Element.In_Prologue,
+                   Tree_Access => My_Tree.Get_Position (Tree.all));
+          when Xml_Parser.Text =>
+            N (I - Cell.Nb_Attributes) :=
+                  (Kind => Xml_Parser.Text,
+                   Magic => Element.Magic,
+                   In_Prologue => Element.In_Prologue,
+                   Tree_Access => My_Tree.Get_Position (Tree.all));
+          when Xml_Parser.Comment =>
+            N (I - Cell.Nb_Attributes) :=
+                  (Kind => Xml_Parser.Comment,
+                   Magic => Element.Magic,
+                   In_Prologue => Element.In_Prologue,
+                   Tree_Access => My_Tree.Get_Position (Tree.all));
+          when Xml_Parser.Attribute =>
+            -- Attribute
+            Trace ("Expecting kind text or element or comment, found attribute");
+            raise Internal_Error;
+        end case;
       end if;
     end loop;
     return N;
@@ -617,21 +638,27 @@ package body Xml_Parser is
       end if;
       if I = Cell.Nb_Attributes + Index then
         My_Tree.Read (Tree.all, Child);
-        if Child.Kind = Xml_Parser.Element then
-          N := (Kind =>  Xml_Parser.Element,
-                Magic => Element.Magic,
-                In_Prologue => Element.In_Prologue,
-                Tree_Access => My_Tree.Get_Position (Tree.all));
-        elsif Child.Kind = Text then
-          N := (Kind => Text,
-                Magic => Element.Magic,
-                In_Prologue => Element.In_Prologue,
-                Tree_Access => My_Tree.Get_Position (Tree.all));
-        else
-          -- Attribute
-          Trace ("Expecting kind text or element, found attribute");
-          raise Internal_Error;
-        end if;
+        case Child.Kind is
+          when Xml_Parser.Element =>
+            N := (Kind =>  Xml_Parser.Element,
+                  Magic => Element.Magic,
+                  In_Prologue => Element.In_Prologue,
+                  Tree_Access => My_Tree.Get_Position (Tree.all));
+          when Xml_Parser.Text =>
+            N := (Kind => Xml_Parser.Text,
+                  Magic => Element.Magic,
+                  In_Prologue => Element.In_Prologue,
+                  Tree_Access => My_Tree.Get_Position (Tree.all));
+          when Xml_Parser.Comment =>
+            N := (Kind => Xml_Parser.Comment,
+                  Magic => Element.Magic,
+                  In_Prologue => Element.In_Prologue,
+                  Tree_Access => My_Tree.Get_Position (Tree.all));
+          when  Xml_Parser.Attribute =>
+            -- Attribute
+            Trace ("Expecting kind element or text or comment, found attribute");
+            raise Internal_Error;
+        end case;
       end if;
     end loop;
     return N;
@@ -640,7 +667,7 @@ package body Xml_Parser is
   -- Get the father of an element
   -- May raise No_Parent
   function Get_Parent (Ctx     : Ctx_Type;
-                       Element : Element_Type) return Node_Type is
+                       Element : Element_Type) return Element_Type is
     Tree : Tree_Acc := Get_Tree (Ctx, Element);
     Cell : My_Tree_Cell := Get_Cell (Tree, Element);
     N : Node_Type;
@@ -655,17 +682,12 @@ package body Xml_Parser is
             Magic => Element.Magic,
             In_Prologue => Element.In_Prologue,
             Tree_Access => My_Tree.Get_Position (Tree.all));
-    elsif Cell.Kind = Text then
-      N := (Kind => Text,
-            Magic => Element.Magic,
-            In_Prologue => Element.In_Prologue,
-            Tree_Access => My_Tree.Get_Position (Tree.all));
     else
-      -- Attribute
-      Trace ("Expecting kind text or element, found attribute");
+      -- Attribute or text or comment as parent of something!
+      Trace ("Expecting kind element, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
-    return N;
+    return Element_Type (N);
   end Get_Parent;
 
   function Is_Root (Ctx     : Ctx_Type;
@@ -695,6 +717,26 @@ package body Xml_Parser is
     end if;
     return Cell.Name;
   end Get_Text;
+
+   -- Comment
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type) return String is
+  begin
+    return Asu_Ts (Get_Comment (Ctx, Comment));
+  end Get_Comment;
+
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type)
+                        return Ada.Strings.Unbounded.Unbounded_String is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Comment), Comment);
+  begin
+    if Cell.Kind /= Xml_Parser.Comment then
+      Trace ("Expecting kind Comment, found " & Cell.Kind'Img);
+      raise Internal_Error;
+    end if;
+    return Cell.Name;
+  end Get_Comment;
 
 end Xml_Parser;
 

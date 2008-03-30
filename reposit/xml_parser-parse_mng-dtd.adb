@@ -517,7 +517,7 @@ package body Dtd is
       Util.Error (Ctx.Flow, "Unsupported NOTATION directive");
     else
       -- Skip CDATA and comments, no dtd allowed
-      Parse_Directive (Ctx, Adtd, Allow_Dtd => False);
+      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
     end if;
   end Parse_Directive;
 
@@ -976,6 +976,8 @@ package body Dtd is
             Asu.Append (Children, Info_Sep & Cell.Name & Info_Sep);
           when Xml_Parser.Text =>
             Is_Mixed := True;
+          when Xml_Parser.Comment =>
+            null;
         end case;
       end loop;
       My_Tree.Move_Father (Ctx.Elements.all);

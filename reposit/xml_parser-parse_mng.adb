@@ -108,9 +108,11 @@ package body Parse_Mng  is
 
   -- Parse a directive <! >
   -- Dtd uses Parse_Directive for comment and CDATA
+  -- If not In_Dtd, comments might be stored (if Ctx.Parse_Comments)
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
-                             Allow_Dtd : in Boolean);
+                             Allow_Dtd : in Boolean;
+                             In_Dtd : in Boolean);
 
   -- Parse instruction <? >
   -- Dtd adds its own instructions (except xml)
@@ -448,9 +450,11 @@ package body Parse_Mng  is
   -- Otherwise, allow comments and CDATA only
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
-                             Allow_Dtd : in Boolean) is
+                             Allow_Dtd : in Boolean;
+                             In_Dtd : in Boolean) is
     Index : Natural;
     Ok : Boolean;
+    Comment : Asu_Us;
   begin
     -- Got <!, what's next?
     -- Comment, CDATA or DOCTYPE
@@ -460,12 +464,25 @@ package body Parse_Mng  is
       Util.Parse_Until_Str (Ctx.Flow, "--" & Util.Stop);
       -- Check that no "--" within comment
       Index := Asu.Index (Util.Get_Curr_Str (Ctx.Flow), "--");
-      if Index /= 0
-      and then Index < Asu.Length(Util.Get_Curr_Str (Ctx.Flow)) - 2 then
+      if Index < Asu.Length(Util.Get_Curr_Str (Ctx.Flow)) - 2 then
         Util.Error (Ctx.Flow, "Invalid ""--"" in comment");
       end if;
-      Trace ("Skipped <!--" & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)));
+      -- Remove tailing "-->"
+      Comment := Asu.Delete (Util.Get_Curr_Str (Ctx.Flow), Index, Index + 2);
       Util.Reset_Curr_Str (Ctx.Flow);
+      if not In_Dtd and then Ctx.Parse_Comments then
+        if Tree_Mng.Is_Empty (Ctx.Elements.all) then
+          -- No element => in prologue
+          Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
+                                Util.Get_Line_No (Ctx.Flow));
+        else
+          Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
+                                Util.Get_Line_No (Ctx.Flow));
+        end if;
+        Trace ("Parsed comment " & Asu_Ts (Comment));
+      else
+        Trace ("Skipped comment " & Asu_Ts (Comment));
+      end if;
       return;
     end if;
     Util.Try (Ctx.Flow, "[CDATA[", Ok);
@@ -525,7 +542,7 @@ package body Parse_Mng  is
         when Util.Directive =>
           -- Directive or comment or CDATA
           Check_Xml_Set (Ctx);
-          Parse_Directive (Ctx, Adtd, Allow_Dtd);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd, False);
         when others =>
           -- A name go back to before '<'
           Util.Unget (Ctx.Flow);
@@ -565,7 +582,7 @@ package body Parse_Mng  is
           return;
         elsif Char = Util.Directive then
           -- Must be a comment or CDATA
-          Parse_Directive (Ctx, Adtd, Allow_Dtd => False);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
         else
@@ -704,7 +721,7 @@ package body Parse_Mng  is
           Util.Error (Ctx.Flow, "Unexpected processing instruction");
         when Util.Directive =>
           -- Directive : only comment
-          Parse_Directive (Ctx, Adtd, False);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False);
         when others =>
           Util.Unget (Ctx.Flow);
           if Root_Found then

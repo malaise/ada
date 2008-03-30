@@ -56,7 +56,7 @@ package body Tree_Mng is
       My_Tree.Move_Father (In_Tree);
       return;
     elsif Nb_Attrs = 0 then
-      -- Only elements
+      -- Only elements or texts or comments
       My_Tree.Insert_Child (In_Tree, Attr, True);
       My_Tree.Move_Father (In_Tree);
       return;
@@ -254,5 +254,26 @@ package body Tree_Mng is
     My_Tree.Move_Root (Prologue);
   end Add_Pi;
 
+  -- Is a tree (elements or prologue) empty
+  function Is_Empty (Tree : My_Tree.Tree_Type) return Boolean is
+  begin
+    return My_Tree.Is_Empty (Tree);
+  end Is_Empty;
+
+  -- Add a comment to current cell (of elements or prologue)
+  -- remain on current cell
+  procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
+                         Comment : in Asu_Us; Line : in Positive) is
+    Cell : My_Tree_Cell;
+  begin
+    Cell.Line_No := Line;
+    Cell.Kind := Xml_Parser.Comment;
+    Cell.Nb_Attributes := 0;
+    Cell.Name := Comment;
+    Cell.Value := Asu_Null;
+    -- Insert as attribute of current and remain current
+    My_Tree.Insert_Child (Tree, Cell, False);
+    My_Tree.Move_Father (Tree);
+  end Add_Comment;
 end Tree_Mng;
 

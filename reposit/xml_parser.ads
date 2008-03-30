@@ -6,15 +6,16 @@ package Xml_Parser is
   -- TYPES --
   -----------
   -- Generic node type
-  -- A node is either an element or a text
-  type Node_Kind_List is (Element, Text);
+  -- A node is either an element or a text or a comment
+  type Node_Kind_List is (Element, Text, Comment);
   type Node_Type (Kind : Node_Kind_List := Element) is private;
 
   -- Element type
   subtype Element_Type is Node_Type(Element);
-
   -- A Text
   subtype Text_Type is Node_Type(Text);
+  -- A Comment
+  subtype Comment_Type is Node_Type(Comment);
 
   -- An attribute of an element
   type Attribute_Rec is record
@@ -57,9 +58,10 @@ package Xml_Parser is
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
-  procedure Parse (Ctx          : out Ctx_Type;
-                   File_Name    : in String;
-                   Ok           : out Boolean);
+  procedure Parse (Ctx       : out Ctx_Type;
+                   File_Name : in String;
+                   Ok        : out Boolean;
+                   Comments  : in Boolean := False);
   File_Error, Status_Error : exception;
 
   -- Return the error message if Parse error
@@ -91,17 +93,18 @@ package Xml_Parser is
   -- Then on can call Get_Prologue on Ctx
   --  (Calling Get_Root_Element will raise Use_Error);
   -- may raise Status_Error if Ctx is not clean
-  procedure Parse_Prologue (Ctx : out Ctx_Type;
-                            Str : in String;
-                            Ok  : out Boolean);
+  procedure Parse_Prologue (Ctx      : out Ctx_Type;
+                            Str      : in String;
+                            Ok       : out Boolean;
+                            Comments : in Boolean := False);
 
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean
   --           End_Error if Ctx has already parsed elements
   --           Parse_Error if Parse_Prologue was not ok
-  procedure Parse_Elements (Ctx : in out Ctx_Type;
-                            Dtd : in out Dtd_Type;
-                            Ok  : out Boolean);
+  procedure Parse_Elements (Ctx      : in out Ctx_Type;
+                            Dtd      : in out Dtd_Type;
+                            Ok       : out Boolean);
   End_Error : exception;
 
   -------------------------
@@ -153,7 +156,7 @@ package Xml_Parser is
   ----------------
   -- NAVIGATION --
   ----------------
-  -- Get the Children of an element (elements or texts)
+  -- Get the Children of an element
   function Get_Children (Ctx     : Ctx_Type;
                          Element : Element_Type) return Nodes_Array;
   function Get_Nb_Children (Ctx     : Ctx_Type;
@@ -167,18 +170,23 @@ package Xml_Parser is
   -- May raise No_Parent if Element is the Root_Element or the Prologue
   No_Parent : exception;
   function Get_Parent (Ctx     : Ctx_Type;
-                       Element : Element_Type) return Node_Type;
+                       Element : Element_Type) return Element_Type;
   function Is_Root (Ctx     : Ctx_Type;
                     Element : Element_Type) return Boolean;
 
-  ----------
-  -- TEXT --
-  ----------
+  ----------------------
+  -- TEXT and COMMENT --
+  ----------------------
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type) return String;
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type)
                      return Ada.Strings.Unbounded.Unbounded_String;
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type) return String;
+  function Get_Comment (Ctx     : Ctx_Type;
+                        Comment : Comment_Type)
+                        return Ada.Strings.Unbounded.Unbounded_String;
 
   ------------------------
   -- General EXCEPTIONS --
@@ -192,7 +200,7 @@ private
   -- NODE TYPE --
   ---------------
   -- Internal tree
-  type Internal_Kind_List is (Element, Text, Attribute);
+  type Internal_Kind_List is (Element, Text, Comment, Attribute);
   type My_Tree_Cell is record
     -- Line in source file
     Line_No : Positive := 1;
@@ -200,7 +208,7 @@ private
     Kind : Internal_Kind_List;
     -- Number of attributes when Kind is Element
     Nb_Attributes : Natural := 0;
-    -- Element name or Attribute name or text
+    -- Element name or Attribute name or text or comment
     Name : Ada.Strings.Unbounded.Unbounded_String;
     -- Attribute value
     Value : Ada.Strings.Unbounded.Unbounded_String;
@@ -310,6 +318,8 @@ private
     Magic : Float := Clean_Magic;
     -- Input flow description
     Flow : Flow_Type;
+    -- Parse or skip comments
+    Parse_Comments : Boolean := False;
     -- Prologue and parsed elements
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
