@@ -115,16 +115,6 @@ procedure Xml_Checker is
         Ada.Text_Io.Put ("<?" & Name);
         Put_Attributes (Elt, 0, 2 + Name'Length, False);
         Ada.Text_Io.Put_Line ("?>");
-        -- Put DOCTYPE if any
-        Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
-        if Doctype_Name /= Asu_Null then
-          Ada.Text_Io.Put ("<!DOCTYPE " & Asu.To_String (Doctype_Name));
-          if Doctype_File /= Asu_Null then
-            Ada.Text_Io.Put (" SYSTEM """ & Asu.To_String (Doctype_File)
-                           & """");
-          end if;
-          Ada.Text_Io.Put_Line (">");
-        end if;
         -- Put prologue PIs and comments
         for I in Children'Range loop
           if Children(I).Kind = Xml_Parser.Element then
@@ -134,6 +124,15 @@ procedure Xml_Checker is
             -- Put Comments of prologue
             Ada.Text_Io.Put_Line ("<!--" & Ctx.Get_Comment (Children(I))
                                 & "-->");
+          elsif Children(I).Kind = Xml_Parser.Text then
+            -- The doctype
+            Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
+            Ada.Text_Io.Put ("<!DOCTYPE " & Asu.To_String (Doctype_Name));
+            if Doctype_File /= Asu_Null then
+              Ada.Text_Io.Put (" SYSTEM """ & Asu.To_String (Doctype_File)
+                             & """");
+            end if;
+            Ada.Text_Io.Put_Line (">");
           end if;
         end loop;
       end if;
