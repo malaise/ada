@@ -305,14 +305,15 @@ package body Parse_Mng  is
     end if;
   end Check_Xml_Attributes;
 
+  -- Check that XML instruction is set
+  -- If not, Add a xml version 1.0
   procedure Check_Xml_Set (Ctx : in out Ctx_Type) is
     Ok : Boolean;
   begin
-    -- Check that XML instruction is set
     Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
     if not Ok then
-      Util.Error (Ctx.Flow,
-                  "Xml declaration expected");
+      -- Add a 'xml'i directive but with no attribute
+      Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
     end if;
   end Check_Xml_Set;
 
@@ -396,7 +397,12 @@ package body Parse_Mng  is
     Doctype_Name, Doctype_File : Asu_Us;
     Ok : Boolean;
     Char : Character;
+    use type Asu_Us;
   begin
+    -- Only one DOCTYPE allowed
+    if Ctx.Doctype.Name /= Asu_Null then
+      Util.Error (Ctx.Flow, "Invalid second DOCTYPE directive");
+    end if;
     -- Parse and check name
     Util.Parse_Name (Ctx.Flow, Doctype_Name);
     if not Util.Name_Ok (Doctype_Name) then
@@ -404,12 +410,15 @@ package body Parse_Mng  is
     end if;
     Ctx.Doctype.Line_No := Util.Get_Line_No (Ctx.Flow);
     Ctx.Doctype.Name := Doctype_Name;
+    -- Insert an empty text in prologue
+    Tree_Mng.Add_Text (Ctx.Prologue.all, Asu_Null, Util.Get_Line_No (Ctx.Flow));
     -- What's next
     Util.Skip_Separators (Ctx.Flow);
     Util.Try (Ctx.Flow, "PUBLIC ", Ok);
     if Ok then
       Util.Error (Ctx.Flow, "Unsuported PUBLIC DOCTYPE external ID definition");
     end if;
+    -- Parse remaining
     Util.Try (Ctx.Flow, "SYSTEM ", Ok);
     if Ok then
       -- A dtd file spec, file name expected

@@ -39,9 +39,6 @@ package body Xml_Parser is
     -- Get an attribute (if it exists, otherwise "")
     procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
                            Name : in Asu_Us; Value : out Asu_Us);
-    -- Add a text to current element, remain on current element
-    procedure Add_Text (Elements : in out My_Tree.Tree_Type;
-                        Text : in Asu_Us; Line : in Positive);
     -- Initialise an empty prologue
     procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
@@ -64,6 +61,11 @@ package body Xml_Parser is
 
     -- Is a tree (elements or prologue) empty
     function Is_Empty (Tree : My_Tree.Tree_Type) return Boolean;
+
+    -- Add a text to current cell (of elements or prologue)
+    -- remain on current cell
+    procedure Add_Text (Tree : in out My_Tree.Tree_Type;
+                        Text : in Asu_Us; Line : in Positive);
 
     -- Add a comment to current cell (of elements or prologue)
     -- remain on current cell

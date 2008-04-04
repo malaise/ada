@@ -146,20 +146,6 @@ package body Tree_Mng is
     Find_Attribute (Elements, Name, Index, Value);
   end Get_Attribute;
 
-  procedure Add_Text (Elements : in out My_Tree.Tree_Type;
-                      Text : in Asu_Us; Line : in Positive) is
-    Cell : My_Tree_Cell;
-  begin
-    Cell.Line_No := Line;
-    Cell.Kind := Xml_Parser.Text;
-    Cell.Nb_Attributes := 0;
-    Cell.Name := Text;
-    Cell.Value := Asu_Null;
-    -- Insert as attribute of current and remain current
-    My_Tree.Insert_Child (Elements, Cell, False);
-    My_Tree.Move_Father (Elements);
-  end Add_Text;
-
   --------------
   -- PROLOGUE --
   --------------
@@ -259,6 +245,22 @@ package body Tree_Mng is
   begin
     return My_Tree.Is_Empty (Tree);
   end Is_Empty;
+
+  -- Add a comment to current cell (of elements or prologue)
+  -- remain on current cell
+  procedure Add_Text (Tree : in out My_Tree.Tree_Type;
+                      Text : in Asu_Us; Line : in Positive) is
+    Cell : My_Tree_Cell;
+  begin
+    Cell.Line_No := Line;
+    Cell.Kind := Xml_Parser.Text;
+    Cell.Nb_Attributes := 0;
+    Cell.Name := Text;
+    Cell.Value := Asu_Null;
+    -- Insert as attribute of current and remain current
+    My_Tree.Insert_Child (Tree, Cell, False);
+    My_Tree.Move_Father (Tree);
+  end Add_Text;
 
   -- Add a comment to current cell (of elements or prologue)
   -- remain on current cell
