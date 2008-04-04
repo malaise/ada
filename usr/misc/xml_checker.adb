@@ -1,10 +1,11 @@
 with Ada.Text_Io, Ada.Strings.Unbounded, Ada.Exceptions;
-with Argument, Xml_Parser, Normal, Basic_Proc;
+with Argument, Xml_Parser, Normal, Basic_Proc, Xml_Generator;
 procedure Xml_Checker is
   Ctx : Xml_Parser.Ctx_Type;
   Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
+  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
   type Output_Kind_List is (Xml, Dump, Silent);
@@ -13,7 +14,10 @@ procedure Xml_Checker is
   Parse_Ok : Boolean;
   Arg_Error : exception;
 
+  Dscr : Xml_Generator.Xml_Dscr_Type;
   Doctype_Internal : Boolean := False;
+
+  Internal_Error : exception;
 
   procedure Usage is
   begin
@@ -72,145 +76,96 @@ procedure Xml_Checker is
     end loop;
   end Dump_Element;
 
-  ---------------------
-  -- Put the Xml way --
-  ---------------------
-  procedure Put_Attributes (Elt : in Xml_Parser.Element_Type;
-                            Level : in Natural;
-                            Offset : in Positive;
-                            One_Per_Line : in Boolean := True) is
-    Attrs : Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
-    Indent : constant String (1 .. 2 * Level + Offset) := (others => ' ');
+  -- Copy Ctx prologue in Dscr
+  procedure Copy_Prologue (Prologue : in Xml_Parser.Element_Type;
+                           Root : in Xml_Parser.Element_Type) is
+    Attrs : constant Xml_Parser.Attributes_Array
+          := Ctx.Get_Attributes (Prologue);
+    Children : constant Xml_Parser.Nodes_Array
+             := Ctx.Get_Children (Prologue);
+    Doctype_Name, Doctype_File : Asu_Us;
+    Doctype_Internal : Boolean;
+    Root_Name : constant String := Ctx.Get_Name (Root);
+    Text : Xml_Parser.Text_Type;
     use type Asu_Us;
   begin
-    for I in Attrs'Range loop
-      if I /= 1 and then One_Per_Line then
-        -- Indent
-        Ada.Text_Io.Put (Indent);
-      end if;
-      Ada.Text_Io.Put (" " & Asu.To_String (Attrs(I).Name
-                     & "=""" & Attrs(I).Value) & """");
-      if I /= Attrs'Last and then One_Per_Line then
-        Ada.Text_Io.New_Line;
+    -- Reset Dscr, provide version and Root name
+    if Attrs'Length = 0 then
+      -- No xml directive
+      Dscr.Reset (0, 1, Root_Name);
+    elsif Asu_Ts (Attrs(1).Value) = "1.0" then
+      Dscr.Reset (1, 0, Root_Name);
+    else
+      Dscr.Reset (1, 1, Root_Name);
+    end if;
+
+    -- Add Xml attributes
+    for I in 2 .. Attrs'Last loop
+      if Asu_Ts (Attrs(I).Name) = "encoding" then
+        Dscr.Set_Encoding (Asu_Ts (Attrs(I).Value));
+      elsif Asu_Ts (Attrs(I).Name) = "standalone" then
+        if Asu_Ts (Attrs(I).Value) = "yes" then
+          Dscr.Set_Standalone (True);
+        elsif Asu_Ts (Attrs(I).Value) = "no" then
+          Dscr.Set_Standalone (False);
+        else
+          raise Internal_Error;
+        end if;
+      else
+        raise Internal_Error;
       end if;
     end loop;
-  end Put_Attributes;
 
-  Prologue_Level : constant := -1;
-  Prologue_Instruction_Level : constant := -2;
-  procedure Put_Element (Elt : in Xml_Parser.Element_Type;
-                         Level : in Integer) is
-    Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
-    Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
-    Indent : constant String (1 .. 2 * Level) := (others => ' ');
-    Indent1 : constant String := Indent & "  ";
-    Doctype_Name, Doctype_File : Asu_Us;
-    Prev_Is_Text : Boolean;
-    use type Xml_Parser.Node_Kind_List, Asu_Us;
+    -- Fill prologue with PIs, comments, doctype
+    for I in Children'Range loop
+      case Children(I).Kind is
+        when Xml_Parser.Element =>
+          -- A PI: Element with one Text child
+          Text := Ctx.Get_Child (Children(I), 1);
+          Dscr.Add_Pi (Asu_Ts (Ctx.Get_Name (Children(I))),
+                       Asu_Ts (Ctx.Get_Text (Text)));
+        when Xml_Parser.Comment =>
+          Dscr.Add_Comment (Ctx.Get_Comment (Children(I)) );
+        when Xml_Parser.Text =>
+          -- The doctype: (empty text);
+          Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
+          Dscr.Set_Doctype (Asu_Ts (Doctype_Name), Asu_Ts (Doctype_File));
+      end case;
+    end loop;
+  end Copy_Prologue;
+
+  -- Copy Ctx element children in Dscr
+  procedure Copy_Element (Element : in Xml_Parser.Element_Type) is
+    Attrs : constant Xml_Parser.Attributes_Array
+          := Ctx.Get_Attributes (Element);
+    Nb_Children : constant Natural := Ctx.Get_Nb_Children (Element);
+    Child : Xml_Parser.Node_Type;
   begin
-    if Level = Prologue_Level then
-      if Name /= "" then
-        -- A prologue
-        -- Put the xml directive with attributes
-        Ada.Text_Io.Put ("<?" & Name);
-        Put_Attributes (Elt, 0, 2 + Name'Length, False);
-        Ada.Text_Io.Put_Line ("?>");
-        -- Put prologue PIs and comments
-        for I in Children'Range loop
-          if Children(I).Kind = Xml_Parser.Element then
-            -- Put PIs
-            Put_Element (Children(I), Prologue_Instruction_Level);
-          elsif Children(I).Kind = Xml_Parser.Comment then
-            -- Put Comments of prologue
-            Ada.Text_Io.Put_Line ("<!--" & Ctx.Get_Comment (Children(I))
-                                & "-->");
-          elsif Children(I).Kind = Xml_Parser.Text then
-            -- The doctype
-            Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
-            Ada.Text_Io.Put ("<!DOCTYPE " & Asu.To_String (Doctype_Name));
-            if Doctype_File /= Asu_Null then
-              Ada.Text_Io.Put (" SYSTEM """ & Asu.To_String (Doctype_File)
-                             & """");
-            end if;
-            Ada.Text_Io.Put_Line (">");
-          end if;
-        end loop;
-      end if;
-      return;
-    elsif Level = Prologue_Instruction_Level then
-      -- A PI of the prologue: 0 child or 1 text child
-      -- Put PI directive
-      Ada.Text_Io.Put ("<?" & Name);
-      if Children'Length = 1 then
-        Ada.Text_Io.Put (" " & Ctx.Get_Text (Children(1)));
-      elsif Children'Length /= 0 then
-        Basic_Proc.Put_Line_Error ("Error. Prologue processing instruction "
-            & Name & " has several text children.");
-        raise Program_Error;
-      end if;
-      Ada.Text_Io.Put_Line ("?>");
-      return;
-    else
-      -- Put element, attributes and children recursively
-      Ada.Text_Io.Put (Indent);
-      Ada.Text_Io.Put ("<" & Name);
-      Put_Attributes (Elt, Level, 1 + Name'Length);
-      if Children'Length = 0 then
-        -- No child, terminate tag now
-        Ada.Text_Io.Put ("/>");
-      else
-        Ada.Text_Io.Put (">");
-        Prev_Is_Text := False;
-        for I in Children'Range loop
-          if Children(I).Kind = Xml_Parser.Element then
-            -- Recursive dump child
-            if I = 1 or else not Prev_Is_Text then
-              -- Father did not New_Line because of possible text
-              --  or prev was not text and did not New_Line because
-              --  of possible text
-              Ada.Text_Io.New_Line;
-              Put_Element (Children(I), Level + 1);
-            elsif I = 1 then
-              -- First Child
-              Put_Element (Children(I), Level + 1);
-            else
-              -- Child element following text
-              --  we bet that it has no child itself, so no New_Line nor Indent
-              Put_Element (Children(I), 0);
-            end if;
-            if I = Children'Last then
-              Ada.Text_Io.New_Line;
-            end if;
-            Prev_Is_Text := False;
-          elsif Children(I).Kind = Xml_Parser.Text then
-            -- Specific put text
-            Ada.Text_Io.Put (Ctx.Get_Text (Children(I)));
-            Prev_Is_Text := True;
-          else
-            -- Comment
-            if I = 1 or else not Prev_Is_Text then
-              -- Father did not New_Line because of possible text
-              --  or prev was not text and did not New_Line because
-              --  of possible text
-              Ada.Text_Io.New_Line;
-            end if;
-            Ada.Text_Io.Put (Indent1);
-            Ada.Text_Io.Put ("<!--" & Ctx.Get_Comment (Children(I)) & "-->");
-            if I = Children'Last then
-              Ada.Text_Io.New_Line;
-            end if;
-            Prev_Is_Text := False;
-          end if;
-        end loop;
-        -- Terminate tag after children
-        if not Prev_Is_Text then
-          Ada.Text_Io.Put (Indent);
-        end if;
-        Ada.Text_Io.Put ("</" & Name & ">");
-      end if;
-    end if;
-  end Put_Element;
+    -- Add attributes
+    for I in Attrs'Range loop
+      Dscr.Add_Attribute (Asu_Ts (Attrs(I).Name), Asu_Ts (Attrs(I).Value));
+    end loop;
 
+    -- Copy children
+    for I in 1 .. Nb_Children loop
+      Child := Ctx.Get_Child (Element, I);
+      case Child.Kind is
+        when Xml_Parser.Element =>
+          Dscr.Add_Child (Ctx.Get_Name (Child), Xml_Generator.Element);
+          -- Recursively
+          Copy_Element (Child);
+          Dscr.Move_Father;
+        when Xml_Parser.Text =>
+          Dscr.Add_Child (Ctx.Get_Text (Child), Xml_Generator.Text);
+          Dscr.Move_Father;
+        when Xml_Parser.Comment =>
+          Dscr.Add_Child (Ctx.Get_Comment (Child), Xml_Generator.Comment);
+          Dscr.Move_Father;
+      end case;
+    end loop;
+  end Copy_Element;
+  
+  -- Current file name
   function Get_File_Name return String is
   begin
     if Argument.Get_Nbre_Arg = Arg_Index then
@@ -263,9 +218,9 @@ begin
 
   -- Dump / put
   if Output_Kind = Xml then
-    Put_Element (Prologue, Prologue_Level);
-    Ada.Text_Io.New_Line;
-    Put_Element (Root, 0);
+    Copy_Prologue (Prologue, Root);
+    Copy_Element (Root);
+    Dscr.Put (True);
     Ada.Text_Io.New_Line;
   elsif Output_Kind = Dump then
     Ada.Text_Io.Put_Line ("Prologue:");
