@@ -1,5 +1,14 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char;
+-- Parse Xml file or string, and provide read access to the corresponding tree
+-- Restrictions:
+-- The following features are not supported:
+--   ENTITY, ENTITIES and NOTATION attribute type in dtd
+--   SYSTEM and PUBLIC external entity in dtd
+--   NOTATION directive in dtd
+--   DOCTYPE PUBLIC in xml
+-- The internal DOCTYPE directive is parsed but cannot be retrieved by the API
+--  (so far)
 package Xml_Parser is
 
   -----------
@@ -32,7 +41,6 @@ package Xml_Parser is
   type Ctx_Type is tagged limited private;
 
 
-
   -----------------------------
   -- NOTE ABOUT THE PROLOGUE --
   -----------------------------
@@ -48,7 +56,8 @@ package Xml_Parser is
   ----------------------------
   -- NOTE ABOUT THE DOCTYPE --
   ----------------------------
-  -- The DOCTYPE is parsed during the prologue parsing
+  -- The DOCTYPE is parsed during the prologue parsing, it can be retrieved
+  --  when the Prologue has a child of type text (empty)
   -- PUBLIC directive is not processed
   -- Internal subset definitions are processed but cannot be retrieved
   --  by the application (only a flag indicates that there are

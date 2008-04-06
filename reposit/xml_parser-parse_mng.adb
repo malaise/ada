@@ -416,7 +416,7 @@ package body Parse_Mng  is
     Util.Skip_Separators (Ctx.Flow);
     Util.Try (Ctx.Flow, "PUBLIC ", Ok);
     if Ok then
-      Util.Error (Ctx.Flow, "Unsuported PUBLIC DOCTYPE external ID definition");
+      Util.Error (Ctx.Flow, "Unsupported PUBLIC DOCTYPE external ID definition");
     end if;
     -- Parse remaining
     Util.Try (Ctx.Flow, "SYSTEM ", Ok);
