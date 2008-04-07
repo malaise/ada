@@ -129,20 +129,9 @@ procedure Xml_Checker is
           -- The doctype: (empty text);
           Ctx.Get_Doctype (Doctype_Name, Doctype_Public, Doctype_Id,
                            Doctype_File, Doctype_Internal);
-          if Doctype_File /= Asu_Null then
-            -- A PUBLIC <id> <uri> or SYSTEM <uri>
-            if Doctype_Public then
-              Doctype_File := "PUBLIC """ & Doctype_Id
-                            & """ """ & Doctype_File & """";
-            else
-              Doctype_File := "SYSTEM """ & Doctype_File & """";
-            end if;
-            if Doctype_Internal /= Asu_Null then
-              Doctype_File := Doctype_File & " ";
-            end if;
-          end if;
-          Dscr.Set_Doctype (Asu_Ts (Doctype_Name),
-              Asu_Ts (Doctype_File & Doctype_Internal));
+          Dscr.Set_Doctype (Asu_Ts (Doctype_Name), Doctype_Public,
+                            Asu_Ts (Doctype_Id), Asu_Ts (Doctype_File),
+                            Asu_Ts (Doctype_Internal));
       end case;
     end loop;
   end Copy_Prologue;
