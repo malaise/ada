@@ -137,7 +137,7 @@ package Xml_Parser is
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
 
   -- Get Doctype characteristics (prologue must have been parsed)
-  procedure Get_Doctype (Ctx : Ctx_Type;
+  procedure Get_Doctype (Ctx : in Ctx_Type;
        Name    : out Ada.Strings.Unbounded.Unbounded_String;
        Public  : out Boolean;
        Pub_Id  : out Ada.Strings.Unbounded.Unbounded_String;
