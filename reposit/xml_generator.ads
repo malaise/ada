@@ -37,9 +37,13 @@ package Xml_Generator is
                             Standalone : in Boolean);
   -- Set the DOCTYPE text
   -- May raise Has_Children if Doctype already set
-  procedure Set_Doctype (Dscr : in out Xml_Dscr_Type;
-                         Name : in String;
-                         Text : in String);
+  -- May raise Invalid_Argument if not Public and Pub_Id is set
+  procedure Set_Doctype (Dscr    : in out Xml_Dscr_Type;
+                         Name    : in String;
+                         Public  : in Boolean;
+                         Pub_Id  : in String;
+                         File    : in String;
+                         Int_Def : in String);
 
   -- Add a processing instruction in the prologue
   procedure Add_Pi (Dscr : in out Xml_Dscr_Type;
@@ -136,8 +140,12 @@ private
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     -- Is xml set
     Xml_Set : Boolean := False;
-    -- Is the Doctype set
-    Doctype_Set : Boolean := False;
+    -- Doctype information
+    Doc_Name    : Ada.Strings.Unbounded.Unbounded_String;
+    Doc_Public  : Boolean := False;
+    Doc_Pub_Id  : Ada.Strings.Unbounded.Unbounded_String;
+    Doc_File    : Ada.Strings.Unbounded.Unbounded_String;
+    Doc_Int_Def : Ada.Strings.Unbounded.Unbounded_String;
     -- The tree of elements, attributes and texts
     Elements : Tree_Acc := new My_Tree.Tree_Type;
   end record;

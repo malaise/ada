@@ -1,6 +1,7 @@
 -- with Ada.Strings.Unbounded, Ada.Finalization;
 -- with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
+with Ada.Characters.Latin_1;
 with Int_Image, Text_Line, Sys_Calls;
 package body Xml_Generator is
 
@@ -147,11 +148,16 @@ package body Xml_Generator is
 
   -- Set the DOCTYPE text
   procedure Set_Doctype (Dscr : in out Xml_Dscr_Type;
-                         Name : in String; Text : in String) is
+                         Name    : in String;
+                         Public  : in Boolean;
+                         Pub_Id  : in String;
+                         File    : in String;
+                         Int_Def : in String) is
     Cell : My_Tree_Cell;
+    use type Asu_Us;
   begin
     Check_Set (Dscr);
-    if Dscr.Doctype_Set then
+    if Dscr.Doc_Name /= Asu_Null then
       raise Has_Children;
     end if;
     Check_Name (Name);
@@ -159,10 +165,14 @@ package body Xml_Generator is
     Cell.Kind := Xml_Generator.Text;
     Cell.Nb_Attributes := 0;
     Cell.Name := Asu_Tus (Name);
-    Cell.Value := Asu_Tus (Text);
     My_Tree.Insert_Child (Dscr.Prologue.all, Cell);
     My_Tree.Move_Root (Dscr.Prologue.all);
-    Dscr.Doctype_Set := True;
+    -- Store all Doctype info
+    Dscr.Doc_Name    := Asu_Tus (Name);
+    Dscr.Doc_Public  := Public;
+    Dscr.Doc_Pub_Id  := Asu_Tus (Pub_Id);
+    Dscr.Doc_File    := Asu_Tus (File);
+    Dscr.Doc_Int_Def := Asu_Tus (Int_Def);
   end Set_Doctype;
 
   -- Add a processing instruction in the prologue
@@ -289,7 +299,11 @@ package body Xml_Generator is
     -- Clean xml
     Dscr.Xml_Set := False;
     -- Clean doctype
-    Dscr.Doctype_Set := False;
+    Dscr.Doc_Name    := Asu_Null;
+    Dscr.Doc_Public  := False;
+    Dscr.Doc_Pub_Id  := Asu_Null;
+    Dscr.Doc_File    := Asu_Null;
+    Dscr.Doc_Int_Def := Asu_Null;
   end Finalize;
 
   --------------------------------------------------------------------------------------
@@ -392,6 +406,33 @@ package body Xml_Generator is
     end if;
   end New_Line;
 
+  -- Replace any sequence of separators by a space
+  function Normalize (Str : String) return String is
+    Res : Asu_Us;
+    Prev_Is_Space : Boolean := False;
+    Char : Character;
+  begin
+    for I in Str'Range loop
+      Char := Str(I);
+      if Char = Ada.Characters.Latin_1.Ht
+      or else Char = Ada.Characters.Latin_1.Cr
+      or else Char = Ada.Characters.Latin_1.Lf
+      or else Char = Ada.Characters.Latin_1.Space then
+        -- A space
+        if not Prev_Is_Space then
+          -- Add this new space
+          Asu.Append (Res, Ada.Characters.Latin_1.Space);
+          Prev_Is_Space := True;
+        end if;
+      else
+        -- Not a space
+        Asu.Append (Res, Char);
+        Prev_Is_Space := False;
+      end if;
+    end loop;
+    return Asu_Ts (Res);
+  end Normalize;
+
   -- Put the attributes of current element
   -- Move to first child of element if any, otherwise remain on element
   procedure Put_Attributes (Flow : in out Flow_Dscr;
@@ -451,6 +492,7 @@ package body Xml_Generator is
   Prologue_Level : constant := -1;
   procedure Put_Element (Flow : in out Flow_Dscr;
                          Format : in Boolean;
+                         Dscr : in Xml_Dscr_Type;
                          Element : in out My_Tree.Tree_Type;
                          Level : in Integer) is
     Cell : constant My_Tree_Cell := My_Tree.Read (Element);
@@ -503,10 +545,26 @@ package body Xml_Generator is
             end if;
             Put (Flow, "?>");
           when Text =>
-            -- Put DOCTYPE, name then text if any
-            Put (Flow, "<!DOCTYPE " & Asu_Ts (Child.Name));
-            if Child.Value /= Asu_Null then
-              Put (Flow, " " & Asu_Ts (Child.Value));
+            -- Put DOCTYPE, name
+            Put (Flow, "<!DOCTYPE " & Asu_Ts (Dscr.Doc_Name));
+            if Dscr.Doc_File /= Asu_Null then
+              -- Public or System external reference
+              if Dscr.Doc_Public then
+                -- Public and public Id
+                Put (Flow, " PUBLIC """ & Asu_Ts (Dscr.Doc_Pub_Id) & """");
+              else
+                Put (Flow, " SYSTEM");
+              end if;
+              -- Public or System URI
+              Put (Flow, " """  & Asu_Ts (Dscr.Doc_File) & """");
+            end if;
+            -- Internal definition
+            if Dscr.Doc_Int_Def /= Asu_Null then
+              if Format then
+                Put (Flow, " " & Asu_Ts (Dscr.Doc_Int_Def) & " ");
+              else
+                Put (Flow, " " & Normalize (Asu_Ts (Dscr.Doc_Int_Def)));
+              end if;
             end if;
             Put (Flow, ">");
           when Comment =>
@@ -559,14 +617,14 @@ package body Xml_Generator is
             if Format then
               New_Line (Flow);
             end if;
-            Put_Element (Flow, Format, Element, Level + 1);
+            Put_Element (Flow, Format, Dscr, Element, Level + 1);
           elsif I = 1 then
             -- First Child
-            Put_Element (Flow, Format, Element, Level + 1);
+            Put_Element (Flow, Format, Dscr, Element, Level + 1);
           else
             -- Child element following text
             --  we bet that it has no child itself, so no New_Line nor Indent
-            Put_Element (Flow, Format, Element, 0);
+            Put_Element (Flow, Format, Dscr, Element, 0);
           end if;
           if not My_Tree.Has_Brother (Element) and then Format then
             -- Last child
@@ -616,10 +674,10 @@ package body Xml_Generator is
   begin
     Check_Set (Dscr);
     -- Put prologue if any
-    Put_Element (Flow, Format, Dscr.Prologue.all, Prologue_Level);
+    Put_Element (Flow, Format, Dscr, Dscr.Prologue.all, Prologue_Level);
     -- Put Elements
     My_Tree.Move_Root (Dscr.Elements.all);
-    Put_Element (Flow, Format, Dscr.Elements.all, 0);
+    Put_Element (Flow, Format, Dscr, Dscr.Elements.all, 0);
     if Format then
       New_Line (Flow);
     end if;
