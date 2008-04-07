@@ -506,7 +506,7 @@ package body Xml_Generator is
             -- Put DOCTYPE, name then text if any
             Put (Flow, "<!DOCTYPE " & Asu_Ts (Child.Name));
             if Child.Value /= Asu_Null then
-              Put (Flow, " SYSTEM """ & Asu_Ts (Child.Value) & """");
+              Put (Flow, " " & Asu_Ts (Child.Value));
             end if;
             Put (Flow, ">");
           when Comment =>

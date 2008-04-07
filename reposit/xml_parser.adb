@@ -225,6 +225,8 @@ package body Xml_Parser is
     Ctx.Flow.Dtd_Line := 0;
     Ctx.Flow.Err_Msg := Asu_Null;
     Ctx.Flow.Curr_Str := Asu_Null;
+    Ctx.Flow.Recording := False;
+    Ctx.Flow.Recorded := Asu_Null;
 
     Ctx.Flow.In_Str := Asu_Null;
     Ctx.Flow.In_Stri := 0;
@@ -247,9 +249,11 @@ package body Xml_Parser is
     end if;
     -- Clean Doctype info
     Ctx.Doctype.Line_No := 1;
-    Ctx.Doctype.Kind := Element;
-    Ctx.Doctype.Name := Asu_Null;
-    Ctx.Doctype.Value := Asu_Null;
+    Ctx.Doctype.Name    := Asu_Null;
+    Ctx.Doctype.Public  := False;
+    Ctx.Doctype.Pub_Id  := Asu_Null;
+    Ctx.Doctype.File    := Asu_Null;
+    Ctx.Doctype.Int_Def := Asu_Null;
     -- Context is clean
     Ctx.Magic := Clean_Magic;
     Ctx.Status := Clean;
@@ -418,18 +422,22 @@ package body Xml_Parser is
 
  -- Get Doctype characteristics (prologue must have been parsed)
   procedure Get_Doctype (Ctx : Ctx_Type;
-       Doctype_Name : out Ada.Strings.Unbounded.Unbounded_String;
-       Doctype_File : out Ada.Strings.Unbounded.Unbounded_String;
-       Has_Internal : out Boolean) is
+       Name    : out Ada.Strings.Unbounded.Unbounded_String;
+       Public  : out Boolean;
+       Pub_Id  : out Ada.Strings.Unbounded.Unbounded_String;
+       File    : out Ada.Strings.Unbounded.Unbounded_String;
+       Int_Def : out Ada.Strings.Unbounded.Unbounded_String) is
   begin
     if Ctx.Status = Error then
       raise Parse_Error;
     elsif Ctx.Status = Clean then
       raise Status_Error;
     end if;
-    Doctype_Name := Ctx.Doctype.Name;
-    Doctype_File := Ctx.Doctype.Value;
-    Has_Internal := Ctx.Doctype.Kind = Text;
+    Name    := Ctx.Doctype.Name;
+    Public  := Ctx.Doctype.Public;
+    Pub_Id  := Ctx.Doctype.Pub_Id;
+    File    := Ctx.Doctype.File;
+    Int_Def := Ctx.Doctype.Int_Def;
   end Get_Doctype;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)

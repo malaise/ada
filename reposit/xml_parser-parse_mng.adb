@@ -43,6 +43,11 @@ package body Parse_Mng  is
     -- Get current line number
     function Get_Line_No (Flow : Flow_Type) return Natural;
 
+    -- Start recording
+    procedure Start_Recording (Flow : in out Flow_Type);
+    -- Stop recoding and retrieve recorded data
+    procedure Stop_Recording (Flow : in out Flow_Type; Recorded : out Asu_Us);
+
     -- Get character and store in queue
     End_Error : exception;
     procedure Get (Flow : in out Flow_Type; Char : out Character);
@@ -416,12 +421,7 @@ package body Parse_Mng  is
     Util.Skip_Separators (Ctx.Flow);
     Util.Try (Ctx.Flow, "PUBLIC ", Ok);
     if Ok then
-      Util.Error (Ctx.Flow, "Unsupported PUBLIC DOCTYPE external ID definition");
-    end if;
-    -- Parse remaining
-    Util.Try (Ctx.Flow, "SYSTEM ", Ok);
-    if Ok then
-      -- A dtd file spec, file name expected
+      -- A dtd PUBLIC directive: skip public Id
       Util.Skip_Separators (Ctx.Flow);
       Util.Get (Ctx.Flow, Char);
       if Char = ''' then
@@ -429,19 +429,41 @@ package body Parse_Mng  is
       elsif Char = '"' then
         Util.Parse_Until_Char (Ctx.Flow, """");
       else
-        Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE external ID");
+        Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE PUBLIC Id");
+      end if;
+      Ctx.Doctype.Public := True;
+      Ctx.Doctype.Pub_Id := Util.Get_Curr_Str (Ctx.Flow);
+      Util.Reset_Curr_Str (Ctx.Flow);
+    else
+      -- A dtd SYSTEM directive?
+      Util.Try (Ctx.Flow, "SYSTEM ", Ok);
+      Ctx.Doctype.Public := False;
+    end if;
+    if Ok then
+      -- Now at dtd URI: file name expected
+      Util.Skip_Separators (Ctx.Flow);
+      Util.Get (Ctx.Flow, Char);
+      if Char = ''' then
+        Util.Parse_Until_Char (Ctx.Flow, "'");
+      elsif Char = '"' then
+        Util.Parse_Until_Char (Ctx.Flow, """");
+      else
+        Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE external Id");
       end if;
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Reset_Curr_Str (Ctx.Flow);
       Dtd.Parse (Ctx, Adtd, Asu.To_String (Doctype_File));
-      Ctx.Doctype.Value := Doctype_File;
+      Ctx.Doctype.File := Doctype_File;
     end if;
     -- Now see if there is an internal definition section
     Util.Skip_Separators (Ctx.Flow);
     Util.Get (Ctx.Flow, Char);
     if Char = '[' then
+      -- Internal definition, record the parsing and copy it in Ctx
+      Util.Start_Recording (Ctx.Flow);
       Dtd.Parse (Ctx, Adtd, Dtd.Internal_Flow);
-      Ctx.Doctype.Kind := Text;
+      Util.Stop_Recording (Ctx.Flow, Ctx.Doctype.Int_Def);
+      Ctx.Doctype.Int_Def := Char & Ctx.Doctype.Int_Def;
     else
       Util.Unget (Ctx.Flow);
     end if;

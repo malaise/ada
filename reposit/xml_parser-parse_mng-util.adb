@@ -139,6 +139,21 @@ package body Util is
                                          Asu_Ts (Err_Msg));
   end Error;
 
+  -- Start recording
+  procedure Start_Recording (Flow : in out Flow_Type) is
+  begin
+    Flow.Recorded := Asu_Null;
+    Flow.Recording := True;
+  end Start_Recording;
+
+  -- Stop recoding and retrieve recorded data
+  procedure Stop_Recording (Flow : in out Flow_Type; Recorded : out Asu_Us) is
+  begin
+    Flow.Recording := False;
+    Recorded := Flow.Recorded;
+    Flow.Recorded := Asu_Null;
+  end Stop_Recording;
+
   -- Get character and store in queue
   procedure Get (Flow : in out Flow_Type; Char : out Character) is
   begin
@@ -155,6 +170,9 @@ package body Util is
         Char := Text_Char.Get (Flow.Dtd_File);
     end case;
     My_Circ.Push (Flow.Circ, Char);
+    if Flow.Recording then
+      Asu.Append (Flow.Recorded, Char);
+    end if;
     if Char = Lf then
       if Flow.Kind /= Dtd_File then
         Flow.Xml_Line := Flow.Xml_Line + 1;
@@ -186,6 +204,7 @@ package body Util is
   -- Undo some gets (default 1)
   procedure Unget (Flow : in out Flow_Type; N : Positive := 1) is
     Char : Character;
+    Len : Natural;
   begin
     for I in 1 .. N loop
       My_Circ.Look_Last (Flow.Circ, Char);
@@ -198,6 +217,12 @@ package body Util is
         when Dtd_File =>
           Text_Char.Unget (Flow.Dtd_File, Char);
       end case;
+      if Flow.Recording then
+        Len := Asu.Length (Flow.Recorded);
+        if Len /= 0 then
+          Asu.Delete (Flow.Recorded, Len, Len);
+        end if;
+      end if;
       if Char = Lf then
         if Flow.Kind /= Dtd_File then
           Flow.Xml_Line := Flow.Xml_Line - 1;

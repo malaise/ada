@@ -1,14 +1,13 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char;
 -- Parse Xml file or string, and provide read access to the corresponding tree
--- Restrictions:
--- The following features are not supported:
---   ENTITY, ENTITIES and NOTATION attribute type in dtd
---   SYSTEM and PUBLIC external entity in dtd
---   NOTATION directive in dtd
---   DOCTYPE PUBLIC in xml
--- The internal DOCTYPE directive is parsed but cannot be retrieved by the API
---  (so far)
+-- The following features of DTD are not supported (parsing error):
+--   ENTITY, ENTITIES and NOTATION attribute type
+--   SYSTEM and PUBLIC external entity
+--   NOTATION directive
+-- The following limitations apply to the DOCTYPE directive of xml:
+--   Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
+--   Only dtd local file reference is fetched, no http :-)
 package Xml_Parser is
 
   -----------
@@ -139,9 +138,11 @@ package Xml_Parser is
 
   -- Get Doctype characteristics (prologue must have been parsed)
   procedure Get_Doctype (Ctx : Ctx_Type;
-       Doctype_Name : out Ada.Strings.Unbounded.Unbounded_String;
-       Doctype_File : out Ada.Strings.Unbounded.Unbounded_String;
-       Has_Internal : out Boolean);
+       Name    : out Ada.Strings.Unbounded.Unbounded_String;
+       Public  : out Boolean;
+       Pub_Id  : out Ada.Strings.Unbounded.Unbounded_String;
+       File    : out Ada.Strings.Unbounded.Unbounded_String;
+       Int_Def : out Ada.Strings.Unbounded.Unbounded_String);
 
   -- Get the line number of the beginning of the declaration of a node
   function Get_Line_No (Ctx  : Ctx_Type;
@@ -258,7 +259,10 @@ private
     -- Error message
     Err_Msg : Ada.Strings.Unbounded.Unbounded_String;
     -- Current significant string, loaded by Parse_Until_xxx
-    Curr_Str :  Ada.Strings.Unbounded.Unbounded_String;
+    Curr_Str : Ada.Strings.Unbounded.Unbounded_String;
+    -- Recorded input characters
+    Recording : Boolean := False;
+    Recorded : Ada.Strings.Unbounded.Unbounded_String;
     -- Saved line of input (when switching to dtd file and back)
     -- Inputs flows: string and index, or files
     In_Str : Ada.Strings.Unbounded.Unbounded_String;
@@ -302,7 +306,7 @@ private
     List : Ada.Strings.Unbounded.Unbounded_String;
   end record;
 
- -- Unique list of Info_Rec
+  -- Unique list of Info_Rec
   type Info_Access is access all Info_Rec;
   procedure Set (To : out Info_Rec; Val : in Info_Rec);
   function Image (Element : Info_Rec) return String;
@@ -321,6 +325,20 @@ private
   end record;
 
   ------------------
+  -- DOCTYPE info --
+  ------------------
+  type Doctype_Type is record
+    -- Line of the DOCTYPE directive
+    Line_No : Positive := 1;
+    -- Name, file (ID+URI) and internal definition if any
+    Name    : Ada.Strings.Unbounded.Unbounded_String;
+    Public  : Boolean := False;
+    Pub_Id  : Ada.Strings.Unbounded.Unbounded_String;
+    File    : Ada.Strings.Unbounded.Unbounded_String;
+    Int_Def : Ada.Strings.Unbounded.Unbounded_String;
+  end record;
+    
+  ------------------
   -- CONTEXT TYPE --
   ------------------
   type Ctx_Status_List is (Clean, Prologue, Done, Error);
@@ -335,7 +353,7 @@ private
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
     -- Doctype name, file and a tag of internal definitions
-    Doctype : My_Tree_Cell;
+    Doctype : Doctype_Type;
   end record;
   procedure Finalize (Ctx : in out Ctx_Type) renames Clean;
 
