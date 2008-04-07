@@ -5,7 +5,7 @@ begin
   Dscr.Reset (1, 1, "Variables");
   Dscr.Add_Comment (
      " Definition of variable for test of program ""comp_vars"" ");
-  Dscr.Set_Doctype ("Variables", "variables.dtd");
+  Dscr.Set_Doctype ("Variables", False, "", "variables.dtd", "");
   Dscr.Add_Comment (" After Doctype ");
 
   Dscr.Add_Child (" Below root ", Xml_Generator.Comment);
