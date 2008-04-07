@@ -561,9 +561,9 @@ package body Xml_Generator is
             -- Internal definition
             if Dscr.Doc_Int_Def /= Asu_Null then
               if Format then
-                Put (Flow, " " & Asu_Ts (Dscr.Doc_Int_Def) & " ");
+                Put (Flow, " [" & Asu_Ts (Dscr.Doc_Int_Def) & "] ");
               else
-                Put (Flow, " " & Normalize (Asu_Ts (Dscr.Doc_Int_Def)));
+                Put (Flow, "[" & Normalize (Asu_Ts (Dscr.Doc_Int_Def)) & "]");
               end if;
             end if;
             Put (Flow, ">");

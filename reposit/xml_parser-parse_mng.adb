@@ -402,6 +402,7 @@ package body Parse_Mng  is
     Doctype_Name, Doctype_File : Asu_Us;
     Ok : Boolean;
     Char : Character;
+    Len : Natural;
     use type Asu_Us;
   begin
     -- Only one DOCTYPE allowed
@@ -463,7 +464,9 @@ package body Parse_Mng  is
       Util.Start_Recording (Ctx.Flow);
       Dtd.Parse (Ctx, Adtd, Dtd.Internal_Flow);
       Util.Stop_Recording (Ctx.Flow, Ctx.Doctype.Int_Def);
-      Ctx.Doctype.Int_Def := Char & Ctx.Doctype.Int_Def;
+      -- Remove last ']'
+      Len := Asu.Length (Ctx.Doctype.Int_Def);
+      Asu.Delete (Ctx.Doctype.Int_Def, Len, Len);
     else
       Util.Unget (Ctx.Flow);
     end if;
