@@ -15,7 +15,6 @@ procedure Xml_Checker is
   Arg_Error : exception;
 
   Dscr : Xml_Generator.Xml_Dscr_Type;
-  Doctype_Internal : Boolean := False;
 
   Internal_Error : exception;
 
@@ -83,8 +82,8 @@ procedure Xml_Checker is
           := Ctx.Get_Attributes (Prologue);
     Children : constant Xml_Parser.Nodes_Array
              := Ctx.Get_Children (Prologue);
-    Doctype_Name, Doctype_File : Asu_Us;
-    Doctype_Internal : Boolean;
+    Doctype_Name, Doctype_Id, Doctype_File, Doctype_Internal : Asu_Us;
+    Doctype_Public : Boolean;
     Root_Name : constant String := Ctx.Get_Name (Root);
     Text : Xml_Parser.Text_Type;
     use type Asu_Us;
@@ -128,8 +127,22 @@ procedure Xml_Checker is
           Dscr.Add_Comment (Ctx.Get_Comment (Children(I)) );
         when Xml_Parser.Text =>
           -- The doctype: (empty text);
-          Ctx.Get_Doctype (Doctype_Name, Doctype_File, Doctype_Internal);
-          Dscr.Set_Doctype (Asu_Ts (Doctype_Name), Asu_Ts (Doctype_File));
+          Ctx.Get_Doctype (Doctype_Name, Doctype_Public, Doctype_Id,
+                           Doctype_File, Doctype_Internal);
+          if Doctype_File /= Asu_Null then
+            -- A PUBLIC <id> <uri> or SYSTEM <uri>
+            if Doctype_Public then
+              Doctype_File := "PUBLIC """ & Doctype_Id
+                            & """ """ & Doctype_File & """";
+            else
+              Doctype_File := "SYSTEM """ & Doctype_File & """";
+            end if;
+            if Doctype_Internal /= Asu_Null then
+              Doctype_File := Doctype_File & " ";
+            end if;
+          end if;
+          Dscr.Set_Doctype (Asu_Ts (Doctype_Name),
+              Asu_Ts (Doctype_File & Doctype_Internal));
       end case;
     end loop;
   end Copy_Prologue;
@@ -230,11 +243,6 @@ begin
   end if;
   Ctx.Clean;
 
-  if Output_Kind = Xml and then Doctype_Internal then
-    Ada.Text_Io.Flush;
-    Basic_Proc.Put_Line_Error (
-     "Warning, Doctype internal subset is parsed but not displayed.");
-  end if;
 exception
   when Xml_Parser.File_Error =>
     Basic_Proc.Put_Line_Error ("Error reading file "
