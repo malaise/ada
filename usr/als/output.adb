@@ -6,7 +6,7 @@ package body Output is
   -- Max amount of entries to sort
   Env_Max_To_Sort : constant String := "ALS_MAX_TO_SORT";
   Max_To_Sort : Natural := 5_000;
-  
+
   package Asu renames Ada.Strings.Unbounded;
   function Nat_Image is new Int_Image (Natural);
   function Size_Image is new Int_Image (Sys_Calls.Size_T);
@@ -111,7 +111,7 @@ package body Output is
       return Default_Separator;
     end if;
   end Get_Separator;
-   
+
   -- First entry, and first entry after we put a name; don't need
   --  separator
   First_Entry : Boolean := True;
@@ -317,10 +317,10 @@ package body Output is
 
     -- Modif time
     -- Date_Image is "YYyy/Mm/Dd Hh:Mm:Ss.mmm"
-    -- Put "YYyy/Mm/Dd-Hh:Mm"
+    -- Put "YYyy/Mm/Dd-Hh:Mm:Ss"
     Date := Date_Image (Entity.Modif_Time);
     Date(11) := '-';
-    Ada.Text_Io.Put (Date(1 .. 16) & ' ');
+    Ada.Text_Io.Put (Date(1 .. 19) & ' ');
 
     -- Entity name
     Put_Name (Entity);
