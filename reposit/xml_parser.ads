@@ -322,6 +322,8 @@ private
     Info_List : Info_Mng.List_Type;
     -- Parsed entities
     Entity_List : Entity_List_Mng.List_Type;
+    -- Are we in an INCLUDE directive
+    In_Include : Boolean := False;
   end record;
 
   ------------------

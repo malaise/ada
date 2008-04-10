@@ -499,6 +499,7 @@ package body Dtd is
   -- Parse a directive
   procedure Parse_Directive (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
     Info : Info_Rec;
+    Char : Character;
     use type Asu_Us;
     function Try (Str : String) return Boolean is
       B : Boolean;
@@ -515,6 +516,26 @@ package body Dtd is
       Parse_Entity (Ctx, Adtd);
     elsif Try ("NOTATION ") then
       Util.Error (Ctx.Flow, "Unsupported NOTATION directive");
+    elsif Try ("[") then
+      -- IGNORE or INCLUDE directive
+      Util.Skip_Separators (Ctx.Flow);
+      if Try ("IGNORE") then
+        Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
+        Trace ("Dtd ignored " & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)));
+        Util.Reset_Curr_Str (Ctx.Flow);
+        return;
+      elsif not Try ("INCLUDE") then
+        Util.Error (Ctx.Flow, "Unknown directive");
+      end if;
+      -- INCLUDE directive: expect S? [
+      Util.Skip_Separators (Ctx.Flow);
+      Util.Get (Ctx.Flow, Char);
+      if Char /= '[' then
+        Util.Error (Ctx.Flow, "Expect a '['");
+      end if;
+      -- Go on parsing, knowing that we are in an Include directive
+      Trace ("Dtd starting inclusion");
+      Adtd.In_Include := True;
     else
       -- Skip CDATA and comments, no dtd allowed
       Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
@@ -542,13 +563,23 @@ package body Dtd is
                         "Unexpected end of file while parsing internal dtd");
           end if;
       end;
+      -- Parse instruction
       Util.Try (Ctx.Flow, Util.Start & Util.Instruction, Found);
       if Found then
         Parse_Instruction (Ctx, Adtd, External);
       else
+        -- Parse directive
         Util.Try (Ctx.Flow, Util.Start & Util.Directive, Found);
         if Found then
           Parse_Directive (Ctx, Adtd);
+        end if;
+      end if;
+      if not Found and then Adtd.In_Include then
+        -- Detect and of include
+        Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
+        if Found then
+          Adtd.In_Include := False;
+          Trace ("Dtd ending inclusion");
         end if;
       end if;
       if not Found then

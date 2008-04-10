@@ -285,6 +285,7 @@ package body Xml_Parser is
     -- Clean Dtd
     Dtd.Set := False;
     Dtd.Xml_Found := False;
+    Dtd.In_Include := False;
     Info_Mng.Delete_List (Dtd.Info_List);
     Entity_List_Mng.Delete_List (Dtd.Entity_List);
   end Clean_Dtd;
