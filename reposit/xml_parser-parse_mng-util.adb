@@ -308,6 +308,7 @@ package body Util is
   end Fix_Spaces;
 
   -- Parse until Criteria is found or until a separator if Criteria = ""
+  -- Sets Curr_Str, consumes all separators if this is the criteria
   procedure Parse_Until_Str (Flow : in out Flow_Type; Criteria : in String) is
     Str : String (Criteria'Range);
     Char : Character;
@@ -329,9 +330,13 @@ package body Util is
         exit when Str = Criteria;
       end if;
     end loop;
+    if Is_Separator (Char) then
+      Skip_Separators (Flow);
+    end if;
   end Parse_Until_Str;
 
   -- Parse until one of the chars is found (any separator if space)
+  -- Sets Curr_Str, consumes all separators if this is the criteria
   procedure Parse_Until_Char (Flow : in out Flow_Type; Criteria : in String) is
     Char : Character;
     use type Asu_Us;
@@ -352,6 +357,9 @@ package body Util is
       end loop;
       Flow.Curr_Str := Flow.Curr_Str & Char;
     end loop This_Char;
+    if Is_Separator (Char) then
+      Skip_Separators (Flow);
+    end if;
   end Parse_Until_Char;
 
   procedure Parse_Until_Stop (Flow : in out Flow_Type) is
@@ -397,7 +405,8 @@ package body Util is
   end Parse_Name;
 
   -- Try to parse a keyword, rollback if not
-  procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean) is
+  procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean;
+                 Consume : in Boolean := True) is
     Got_Str : String (1 .. Str'Length);
   begin
     Get (Flow, Got_Str);
@@ -409,14 +418,17 @@ package body Util is
       Ok := True;
     else
       -- Got enough chars but not those expected
-      Unget (Flow, Str'Length);
       Ok := False;
+    end if;
+    if not Ok or else not Consume then
+      -- No match or explicit arg to not consume
+      Unget (Flow, Str'Length);
     end if;
   exception
     when End_Error =>
       -- Not enough chars
-      Unget (Flow, Flow.Nb_Got);
       Ok := False;
+      Unget (Flow, Flow.Nb_Got);
   end Try;
 
   -- Expand %Var; and &#xx; if in dtd

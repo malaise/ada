@@ -85,10 +85,10 @@ package body Parse_Mng  is
     -- Reset current string
     procedure Reset_Curr_Str (Flow : in out Flow_Type);
     -- Parse until Criteria found, or until a separator if Criteria = ""
-    -- Sets Curr_Str
+    -- Sets Curr_Str, consumes all separators if this is the criteria
     procedure Parse_Until_Str (Flow : in out Flow_Type; Criteria : in String);
-    -- Parse until one of the chars; found (any separator if space)
-    -- Sets Curr_Str
+    -- Parse until one of the chars is found (any separator if space)
+    -- Sets Curr_Str, consumes all separators if this is the criteria
     procedure Parse_Until_Char (Flow : in out Flow_Type; Criteria : in String);
     -- Parse until stop character
     -- Sets Curr_Str
@@ -99,8 +99,10 @@ package body Parse_Mng  is
     -- Parse while name looks valid
     procedure Parse_Name (Flow : in out Flow_Type; Name : out Asu_Us);
     -- Try to parse a keyword, rollback if not
-    procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean);
-    -- Expand entities: %Var; and &#xx; if in dtd
+    -- Optionally does not consume the keyword
+    procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean;
+                   Consume : in Boolean := True);
+    -- Expand entitonsume : in Boolean := True)
     --                  &Var; if not in dtd
     -- Both recursively
     procedure Expand_Vars (Ctx : in out Ctx_Type;

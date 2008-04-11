@@ -47,7 +47,7 @@ package body Dtd is
       if Adtd.Xml_Found then
         Util.Error (Ctx.Flow, "Second declaration of xml in dtd");
       end if;
-      Util.Parse_Until_Str (Ctx.Flow, "?>");
+      Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
       Adtd.Xml_Found := True;
       Trace ("Dtd parsed instruction " & Asu_Ts(Util.Get_Curr_Str (Ctx.Flow)));
       Util.Reset_Curr_Str (Ctx.Flow);
@@ -256,7 +256,7 @@ package body Dtd is
 
   begin
     -- Parse element name
-    Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space & Util.Stop);
+    Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop);
     Elt_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Elt_Name) then
@@ -498,21 +498,12 @@ package body Dtd is
 
   -- Parse a conditional directive
   procedure Parse_Condition (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
-    Char : Character;
     Word : Asu_Us;
   begin
     -- After '[', possible separators, then IGNORE or INCLUDE directive
     -- then possible separators then '['
     Util.Skip_Separators (Ctx.Flow);
-    Util.Parse_Until_Char (Ctx.Flow, " [");
-    Util.Read (Ctx.Flow, Char);
-    if Util.Is_Separator (Char) then
-      Util.Skip_Separators (Ctx.Flow);
-      Util.Get (Ctx.Flow, Char);
-      if Char /= '[' then
-        Util.Error (Ctx.Flow, "Invalid end of conditional directive");
-      end if;
-    end if;
+    Util.Parse_Until_Char (Ctx.Flow, Util.Space & "[");
     Word := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
 
@@ -520,6 +511,7 @@ package body Dtd is
     Util.Expand_Vars (Ctx, Adtd, Word, In_Dtd => True);
     if Asu_Ts (Word) = "IGNORE" then
       -- IGNORE directive, skip up to "]]>"
+      Util.Parse_Until_Char (Ctx.Flow, "[");
       Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
       Trace ("Dtd ignored " & Asu_Ts (
          Util.Normalize_Separators (Util.Get_Curr_Str (Ctx.Flow))));
@@ -527,6 +519,7 @@ package body Dtd is
       return;
     elsif Asu_Ts (Word) = "INCLUDE" then
       -- INCLUDE directive
+      Util.Parse_Until_Char (Ctx.Flow, "[");
       -- Go on parsing, knowing that we are in an Include directive
       Trace ("Dtd starting inclusion");
       Adtd.In_Include := True;
@@ -542,23 +535,16 @@ package body Dtd is
     Ok : Boolean;
   begin
     -- Check for Comment
-    Util.Try (Ctx.Flow, "--", Ok);
-    if Ok then
-      Util.Unget (Ctx.Flow, 2);
-      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
-      return;
+    Util.Try (Ctx.Flow, "--", Ok, Consume => False);
+    if not Ok then
+      -- Check for CDATA
+      Util.Try (Ctx.Flow, "[CDATA[", Ok, Consume => False);
     end if;
-    -- Check for CDATA
-    Util.Try (Ctx.Flow, "[CDATA[", Ok);
-    if Ok then
-      Util.Unget (Ctx.Flow, 6);
-      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
-      return;
+    if not Ok then
+      -- Check for DOCTYPE
+      Util.Try (Ctx.Flow, "DOCTYPE", Ok, Consume => False);
     end if;
-    -- Check for DOCTYPE
-    Util.Try (Ctx.Flow, "DOCTYPE", Ok);
     if Ok then
-      Util.Unget (Ctx.Flow, 7);
       Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
       return;
     end if;
@@ -571,7 +557,7 @@ package body Dtd is
       Util.Unget (Ctx.Flow);
     end if;
     -- Now, expect KEYWORD and a space
-    Util.Parse_Until_Char (Ctx.Flow, " ");
+    Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Word := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Expand dtd entities
