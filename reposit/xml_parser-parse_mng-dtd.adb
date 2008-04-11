@@ -496,50 +496,101 @@ package body Dtd is
          & " " & Asu_Ts(Value));
   end Parse_Entity;
 
-  -- Parse a directive
-  procedure Parse_Directive (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
-    Info : Info_Rec;
+  -- Parse a conditional directive
+  procedure Parse_Condition (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
     Char : Character;
-    use type Asu_Us;
-    function Try (Str : String) return Boolean is
-      B : Boolean;
-    begin
-      Util.Try (Ctx.Flow, Str, B);
-      return B;
-    end Try;
+    Word : Asu_Us;
   begin
-    if Try ("ELEMENT ") then
-      Parse_Element (Ctx, Adtd);
-    elsif Try ("ATTLIST ") then
-      Parse_Attlist (Ctx, Adtd);
-    elsif Try ("ENTITY ") then
-      Parse_Entity (Ctx, Adtd);
-    elsif Try ("NOTATION ") then
-      Util.Error (Ctx.Flow, "Unsupported NOTATION directive");
-    elsif Try ("[") then
-      -- IGNORE or INCLUDE directive
-      Util.Skip_Separators (Ctx.Flow);
-      if Try ("IGNORE") then
-        Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
-        Trace ("Dtd ignored " & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)));
-        Util.Reset_Curr_Str (Ctx.Flow);
-        return;
-      elsif not Try ("INCLUDE") then
-        Util.Error (Ctx.Flow, "Unknown directive");
-      end if;
-      -- INCLUDE directive: expect S? [
+    -- After '[', possible separators, then IGNORE or INCLUDE directive
+    -- then possible separators then '['
+    Util.Skip_Separators (Ctx.Flow);
+    Util.Parse_Until_Char (Ctx.Flow, " [");
+    Util.Read (Ctx.Flow, Char);
+    if Util.Is_Separator (Char) then
       Util.Skip_Separators (Ctx.Flow);
       Util.Get (Ctx.Flow, Char);
       if Char /= '[' then
-        Util.Error (Ctx.Flow, "Expect a '['");
+        Util.Error (Ctx.Flow, "Invalid end of conditional directive");
       end if;
+    end if;
+    Word := Util.Get_Curr_Str (Ctx.Flow);
+    Util.Reset_Curr_Str (Ctx.Flow);
+
+    -- Expand dtd entities
+    Util.Expand_Vars (Ctx, Adtd, Word, In_Dtd => True);
+    if Asu_Ts (Word) = "IGNORE" then
+      -- IGNORE directive, skip up to "]]>"
+      Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
+      Trace ("Dtd ignored " & Asu_Ts (
+         Util.Normalize_Separators (Util.Get_Curr_Str (Ctx.Flow))));
+      Util.Reset_Curr_Str (Ctx.Flow);
+      return;
+    elsif Asu_Ts (Word) = "INCLUDE" then
+      -- INCLUDE directive
       -- Go on parsing, knowing that we are in an Include directive
       Trace ("Dtd starting inclusion");
       Adtd.In_Include := True;
     else
-      -- Skip CDATA and comments, no dtd allowed
-      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
+      Util.Error (Ctx.Flow, "Unknown conditional directive " & Asu_Ts (Word));
     end if;
+  end Parse_Condition;
+
+  -- Parse a directive
+  procedure Parse_Directive (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+    Char : Character;
+    Word : Asu_Us;
+    Ok : Boolean;
+  begin
+    -- Check for Comment
+    Util.Try (Ctx.Flow, "--", Ok);
+    if Ok then
+      Util.Unget (Ctx.Flow, 2);
+      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
+      return;
+    end if;
+    -- Check for CDATA
+    Util.Try (Ctx.Flow, "[CDATA[", Ok);
+    if Ok then
+      Util.Unget (Ctx.Flow, 6);
+      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
+      return;
+    end if;
+    -- Check for DOCTYPE
+    Util.Try (Ctx.Flow, "DOCTYPE", Ok);
+    if Ok then
+      Util.Unget (Ctx.Flow, 7);
+      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
+      return;
+    end if;
+    -- Check for conditional directive
+    Util.Get (Ctx.Flow, Char);
+    if Char = '[' then
+      Parse_Condition (Ctx, Adtd);
+      return;
+    else
+      Util.Unget (Ctx.Flow);
+    end if;
+    -- Now, expect KEYWORD and a space
+    Util.Parse_Until_Char (Ctx.Flow, " ");
+    Word := Util.Get_Curr_Str (Ctx.Flow);
+    Util.Reset_Curr_Str (Ctx.Flow);
+    -- Expand dtd entities
+    Util.Expand_Vars (Ctx, Adtd, Word, In_Dtd => True);
+    declare
+      Str : constant String := Asu_Ts (Word);
+    begin
+      if Str = "ELEMENT" then
+        Parse_Element (Ctx, Adtd);
+      elsif Str = "ATTLIST" then
+        Parse_Attlist (Ctx, Adtd);
+      elsif Str = "ENTITY" then
+        Parse_Entity (Ctx, Adtd);
+      elsif Str = "NOTATION" then
+        Util.Error (Ctx.Flow, "Unsupported NOTATION directive");
+      else
+        Util.Error (Ctx.Flow, "Invalid directive " & Str);
+      end if;
+    end;
   end Parse_Directive;
 
   -- Parse current dtd

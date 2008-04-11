@@ -100,6 +100,13 @@ package body Parse_Mng  is
     procedure Parse_Name (Flow : in out Flow_Type; Name : out Asu_Us);
     -- Try to parse a keyword, rollback if not
     procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean);
+    -- Expand entities: %Var; and &#xx; if in dtd
+    --                  &Var; if not in dtd
+    -- Both recursively
+    procedure Expand_Vars (Ctx : in out Ctx_Type;
+                           Dtd : in out Dtd_Type;
+                           Text : in out Asu_Us;
+                           In_Dtd : in Boolean);
     -- Fix text: expand entities and remove repetition of separators
     procedure Fix_Text (Ctx : in out Ctx_Type;
                         Dtd : in out Dtd_Type;
@@ -108,6 +115,8 @@ package body Parse_Mng  is
                         Preserve_Spaces : in Boolean);
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
+    -- Replace any sequence of separators by a space
+    function Normalize_Separators (Text : Asu_Us) return Asu_Us;
   end Util;
   package body Util is separate;
 

@@ -647,5 +647,27 @@ package body Util is
     return Asu_Tus (String_Mng.Replace (Res, Space & "", ""));
   end Remove_Separators;
 
+  -- Replace any sequence of separators by a space
+  function Normalize_Separators (Text : Asu_Us) return Asu_Us is
+    Res : Asu_Us;
+    Char : Character;
+    Prev_Is_Sep : Boolean := False;
+  begin
+    for I in 1 .. Asu.Length (Text) loop
+      Char := Asu.Element (Text, I);
+      if Util.Is_Separator (Char) then
+        if not Prev_Is_Sep then
+          Asu.Append (Res, Util.Space);
+          Prev_Is_Sep := True;
+        end if;
+      else
+        Asu.Append (Res, Char);
+        Prev_Is_Sep := False;
+      end if;
+    end loop;
+    return Res;
+  end Normalize_Separators;
+
+
 end Util;
 
