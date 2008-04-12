@@ -2,13 +2,19 @@ with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- The following features of DTD are not supported (parsing error):
---   ENTITY, ENTITIES and NOTATION attribute type
---   SYSTEM and PUBLIC external entity
---   NOTATION directive
+--  - ENTITY, ENTITIES and NOTATION attribute type
+--  - SYSTEM and PUBLIC external entity
+--   -NOTATION directive
 -- The following limitations apply to the DOCTYPE directive of xml:
---   Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
---   Only dtd local file reference is fetched, no http :-)
+--  - Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
+--  - Only local file reference is fetched, no http :-)
+-- The following restrictions applies to all the parsing:
+--  - CDATA sections are detected only when a markup ('<') is expected or
+--    within text. Not "anywhere character data may occur".
 package Xml_Parser is
+
+  -- Version incremented at each significant change
+  Version : constant String := "V2.1";
 
   -----------
   -- TYPES --

@@ -409,6 +409,7 @@ package body Util is
                  Consume : in Boolean := True) is
     Got_Str : String (1 .. Str'Length);
   begin
+    -- Get same amount of chars as Str
     Get (Flow, Got_Str);
     -- Space in Str matches any separator
     Fix_Spaces (Got_Str);
@@ -423,6 +424,9 @@ package body Util is
     if not Ok or else not Consume then
       -- No match or explicit arg to not consume
       Unget (Flow, Str'Length);
+    elsif Is_Separator (Str(Str'Last)) then
+      -- Consume any separator following Str last separator
+      Skip_Separators (Flow);
     end if;
   exception
     when End_Error =>

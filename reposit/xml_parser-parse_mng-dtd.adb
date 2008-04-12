@@ -358,16 +358,15 @@ package body Dtd is
       end if;
 
       -- Check no default value or get default value
+      Util.Skip_Separators (Ctx.Flow);
       if Def_Char = 'R' or else Def_Char = 'I' then
         -- There shall be no default value for required or implied attribute
-        Util.Skip_Separators (Ctx.Flow);
         if Try ("""") or else Try ("'") then
           Util.Error (Ctx.Flow, "Unexpected default value for attribute "
                     &  Asu_Ts (Att_Name));
         end if;
       else
         -- Get default value for fixed or default attribute
-        Util.Skip_Separators (Ctx.Flow);
         Parse_Value (Ctx, Adtd, True, Def_Val);
       end if;
 
@@ -534,15 +533,16 @@ package body Dtd is
     Word : Asu_Us;
     Ok : Boolean;
   begin
-    -- Check for Comment
-    Util.Try (Ctx.Flow, "--", Ok, Consume => False);
-    if not Ok then
-      -- Check for CDATA
-      Util.Try (Ctx.Flow, "[CDATA[", Ok, Consume => False);
+    -- Check for CDATA
+    Skip_Cdata (Ctx, False, Ok);
+    if Ok then
+      return;
     end if;
+    -- Check for Comment
+    Util.Try (Ctx.Flow, Util.Comment, Ok, Consume => False);
     if not Ok then
       -- Check for DOCTYPE
-      Util.Try (Ctx.Flow, "DOCTYPE", Ok, Consume => False);
+      Util.Try (Ctx.Flow, Util.Doctype, Ok, Consume => False);
     end if;
     if Ok then
       Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
