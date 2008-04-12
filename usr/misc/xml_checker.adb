@@ -23,6 +23,7 @@ procedure Xml_Checker is
     Basic_Proc.Put_Line_Error ("Usage: "
         & Argument.Get_Program_Name
         & " [ -d | --dump | -s | --silent ] [ <xml_file> ]");
+    Basic_Proc.Put_Line_Error (" or -h | --help | -v | --version");
   end Usage;
 
   -------------------
@@ -198,6 +199,12 @@ begin
   and then (Argument.Get_Parameter = "-h"
     or else Argument.Get_Parameter = "--help") then
     Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  elsif Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter = "-v"
+    or else Argument.Get_Parameter = "--version") then
+    Ada.Text_Io.Put_Line ("Version: " & Xml_Parser.Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
