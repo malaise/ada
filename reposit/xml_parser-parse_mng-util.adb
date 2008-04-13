@@ -114,7 +114,7 @@ package body Util is
   -- Getting char --
   ------------------
   -- Circular buffer of read characters
-  Max_Len : constant := 10;
+  Cdata_Directive : constant String := Start & Directive & Cdata;
 
   -- Separator for current line of input
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
@@ -138,6 +138,12 @@ package body Util is
     Exception_Messenger.Raise_Exception (Parse_Error'Identity,
                                          Asu_Ts (Err_Msg));
   end Error;
+
+  -- Report Unsupported Cdata
+ procedure Cdata_Error (Flow : in out Flow_Type) is
+ begin
+    Error (Flow, "CDATA directive detected in an unsupported context");
+ end Cdata_Error;
 
   -- Start recording
   procedure Start_Recording (Flow : in out Flow_Type) is
@@ -287,8 +293,12 @@ package body Util is
     Unget (Flow);
   end Get_Separators;
 
-  function Get_Curr_Str (Flow : Flow_Type) return Asu_Us is
+  function Get_Curr_Str (Flow : Flow_Type;
+                         Check_Cdata : Boolean := True) return Asu_Us is
   begin
+    if Check_Cdata then
+      Util.Check_Cdata (Flow.Curr_Str);
+    end if;
     return Flow.Curr_Str;
   end Get_Curr_Str;
 
@@ -314,7 +324,8 @@ package body Util is
     Char : Character;
     use type Asu_Us;
   begin
-    if Criteria'Length > Max_Len then
+    if Criteria'Length > Max_Buf_Len then
+      Trace ("Parsing until Str with a too long criteria");
       raise Constraint_Error;
     end if;
     loop
@@ -389,7 +400,7 @@ package body Util is
     end loop;
   end Parse_Until_Close;
 
-  -- Parse until end of name, resets Curr_Str
+  -- Parse until end of name
   procedure Parse_Name (Flow : in out Flow_Type; Name : out Asu_Us) is
     Char : Character;
     use type Asu_Us;
@@ -402,6 +413,7 @@ package body Util is
       Name := Name & Char;
     end loop;
     Unget (Flow);
+    Check_Cdata (Name);
   end Parse_Name;
 
   -- Try to parse a keyword, rollback if not
@@ -428,11 +440,13 @@ package body Util is
       -- Consume any separator following Str last separator
       Skip_Separators (Flow);
     end if;
+    Check_Cdata (Asu_Tus(Got_Str));
   exception
     when End_Error =>
       -- Not enough chars
       Ok := False;
       Unget (Flow, Flow.Nb_Got);
+      Check_Cdata (Asu_Tus(Got_Str(1 ..  Flow.Nb_Got)));
   end Try;
 
   -- Expand %Var; and &#xx; if in dtd
@@ -473,6 +487,7 @@ package body Util is
         raise Parse_Error;
     end Variable_Of;
   begin
+    Check_Cdata (Text);
     if not In_Dtd then
       Text := Asu_Tus (String_Mng.Eval_Variables (
                          Str => Asu_Ts (Text),
@@ -579,7 +594,6 @@ package body Util is
       raise Parse_Error;
   end Expand_Vars;
 
-
   -- Fix text: expand variables and remove repetition of separators
   procedure Fix_Text (Ctx : in out Ctx_Type;
                       Dtd : in out Dtd_Type;
@@ -684,6 +698,61 @@ package body Util is
     return Res;
   end Normalize_Separators;
 
+  -- Skip any Cdata section (<![CDATA[xxx]]>)
+  -- If Full_Markup then check for <![CDATA[, else check for [CDATA[
+  -- Ok set to True if a CDATA was found
+  -- Resets Curr_Str!!!
+  procedure Skip_Cdata (Flow : in out Flow_Type;
+                        Full_Markup : in Boolean;
+                        Ok : out Boolean) is
+  begin
+    begin
+      if Full_Markup then
+        Try (Flow, Cdata_Directive, Ok);
+      else
+        Try (Flow, Cdata, Ok);
+      end if;
+    exception
+      when Cdata_Detected =>
+        Ok := True;
+    end;
+    if Ok then
+      -- "<![CDATA[", a CDATA block, skip until "]]>"
+      Parse_Until_Str (Flow, "]]" & Stop);
+      Trace ("Skipped " & Cdata_Directive & Asu_Ts (Get_Curr_Str (Flow)));
+      Reset_Curr_Str (Flow);
+      return;
+    end if;
+  end Skip_Cdata;
+
+  -- Check for <![CDATA[ in text, raises Cdata_Detected
+  procedure Check_Cdata (Str : in Asu_Us) is
+  begin
+    if String_Mng.Locate (Asu_Ts(Str), Cdata_Directive) /= 0 then
+      Trace ("Detected Cdata in " & Asu_Ts(Str));
+      raise Cdata_Detected;
+    end if;
+  end Check_Cdata;
+
+  -- Check for <![CDATA[ in the next N characters if Flow, raises Cdata_Detected
+  procedure Check_Cdata (Flow : in out Flow_Type; N : Natural := 0) is
+    Got_Str : String (1 .. N + Cdata_Directive'Length);
+  begin
+    -- Ensure no buffer overflow
+    if Got_Str'Length > Max_Buf_Len then
+      Trace ("Checking Cdata within a too long string");
+      raise Constraint_Error;
+    end if;
+    -- Check Cdata in next chars of flow
+    Get (Flow, Got_Str);
+    Check_Cdata (Asu_Tus(Got_Str));
+    Unget (Flow, Got_Str'Length);
+  exception
+    when End_Error =>
+      -- Not enough chars
+      Check_Cdata (Asu_Tus(Got_Str(1 ..  Flow.Nb_Got)));
+      Unget (Flow, Flow.Nb_Got);
+  end Check_Cdata;
 
 end Util;
 

@@ -39,6 +39,7 @@ package body Dtd is
     Ok : Boolean;
   begin
     -- See if this is the xml directive
+    Util.Check_Cdata (Ctx.Flow, 3);
     Util.Try (Ctx.Flow, "xml", Ok);
     if Ok then
       if not External then
@@ -132,6 +133,7 @@ package body Dtd is
     end if;
     -- Parse type
     Util.Skip_Separators (Ctx.Flow);
+    Util.Check_Cdata (Ctx.Flow, 5);
     Util.Try (Ctx.Flow, "EMPTY", Found);
     if Found then
       Info.List := Asu_Tus ("E");
@@ -289,9 +291,13 @@ package body Dtd is
       -- Get attribute name
       Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
       Att_Name := Util.Get_Curr_Str (Ctx.Flow);
+      if not Util.Name_Ok (Att_Name) then
+        Util.Error (Ctx.Flow, "Invalid attribute " & Asu_Ts (Att_Name));
+      end if;
       Util.Reset_Curr_Str (Ctx.Flow);
       -- Check supported att types
       Util.Skip_Separators (Ctx.Flow);
+      Util.Check_Cdata (Ctx.Flow, 9);
       if Try ("CDATA ") then
         -- String type
         Typ_Char := 'S';
@@ -347,6 +353,7 @@ package body Dtd is
 
       -- Check supported att defaults
       Util.Skip_Separators (Ctx.Flow);
+      Util.Check_Cdata (Ctx.Flow, 9);
       if Try ("#REQUIRED") then
         Def_Char := 'R';
       elsif Try ("#IMPLIED") then
@@ -472,6 +479,7 @@ package body Dtd is
                           & " already defined");
     end if;
     -- Only accept local entities
+    Util.Check_Cdata (Ctx.Flow, 7);
     Util.Try (Ctx.Flow, "SYSTEM ", Found);
     if Found then
       Util.Error (Ctx.Flow, "Unsupported SYSTEM external entity");
@@ -534,10 +542,11 @@ package body Dtd is
     Ok : Boolean;
   begin
     -- Check for CDATA
-    Skip_Cdata (Ctx, False, Ok);
+    Util.Skip_Cdata (Ctx.Flow, False, Ok);
     if Ok then
       return;
     end if;
+    Util.Check_Cdata (Ctx.Flow, 7);
     -- Check for Comment
     Util.Try (Ctx.Flow, Util.Comment, Ok, Consume => False);
     if not Ok then
@@ -585,7 +594,7 @@ package body Dtd is
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
                    External : in Boolean) is
-    Found : Boolean;
+    Found, Cdata_Found : Boolean;
     Char : Character;
   begin
     loop
@@ -600,32 +609,37 @@ package body Dtd is
                         "Unexpected end of file while parsing internal dtd");
           end if;
       end;
-      -- Parse instruction
-      Util.Try (Ctx.Flow, Util.Start & Util.Instruction, Found);
-      if Found then
-        Parse_Instruction (Ctx, Adtd, External);
-      else
-        -- Parse directive
-        Util.Try (Ctx.Flow, Util.Start & Util.Directive, Found);
+      -- Skip any Cdata section
+      Util.Skip_Cdata (Ctx.Flow, True, Cdata_Found);
+      if not Cdata_Found then
+        -- Parse instruction
+        Util.Check_Cdata (Ctx.Flow, 2);
+        Util.Try (Ctx.Flow, Util.Start & Util.Instruction, Found);
         if Found then
-          Parse_Directive (Ctx, Adtd);
-        end if;
-      end if;
-      if not Found and then Adtd.In_Include then
-        -- Detect and of include
-        Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
-        if Found then
-          Adtd.In_Include := False;
-          Trace ("Dtd ending inclusion");
-        end if;
-      end if;
-      if not Found then
-        Util.Get (Ctx.Flow, Char);
-        if Char = (']') and then not External then
-          return;
+          Parse_Instruction (Ctx, Adtd, External);
         else
-          Util.Error (Ctx.Flow,
-                      "Unexpected character while parsing dtd " & Char);
+          -- Parse directive
+          Util.Try (Ctx.Flow, Util.Start & Util.Directive, Found);
+          if Found then
+            Parse_Directive (Ctx, Adtd);
+          end if;
+        end if;
+        if not Found and then Adtd.In_Include then
+          -- Detect end of include
+          Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
+          if Found then
+            Adtd.In_Include := False;
+            Trace ("Dtd ending inclusion");
+          end if;
+        end if;
+        if not Found then
+          Util.Get (Ctx.Flow, Char);
+          if Char = (']') and then not External then
+            return;
+          else
+            Util.Error (Ctx.Flow,
+                        "Unexpected character while parsing dtd " & Char);
+          end if;
         end if;
       end if;
     end loop;

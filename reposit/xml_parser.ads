@@ -4,17 +4,19 @@ with Queues, Trees, Unique_List, Text_Char;
 -- The following features of DTD are not supported (parsing error):
 --  - ENTITY, ENTITIES and NOTATION attribute type
 --  - SYSTEM and PUBLIC external entity
---   -NOTATION directive
+--  - NOTATION directive
 -- The following limitations apply to the DOCTYPE directive of xml:
 --  - Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
---  - Only local file reference is fetched, no http :-)
+--  - Only local file reference is fetched, no http :-) (parsing error)
 -- The following restrictions applies to all the parsing:
 --  - CDATA sections are detected only when a markup ('<') is expected or
---    within text. Not "anywhere character data may occur".
+--    within text. Not "anywhere character data may occur" (parsing error).
+--  - The detection and expansion of entity references is partial (it is only in
+--    text, attribute value, dtd directive).
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Version : constant String := "V2.1";
+  Version : constant String := "V2.2";
 
   -----------
   -- TYPES --
@@ -248,8 +250,9 @@ private
   ---------------------
   -- INPUT FLOW TYPE --
   ---------------------
-  Max_Len : constant := 10;
-  package My_Circ is new Queues.Circ (Max_Len, Character);
+ -- Longest keywork + <![CDATA[
+  Max_Buf_Len : constant := 21;
+  package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
   type Flow_Kind_List is (Xml_File, Xml_String, Dtd_File);
   type Flow_Type is record
     -- Is the flow a file or a string

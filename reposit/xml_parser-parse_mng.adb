@@ -40,6 +40,8 @@ package body Parse_Mng  is
     -- Report an error, raises Parsing_Error.
     procedure Error (Flow : in out Flow_Type;
                      Msg : in String; Line_No : in Natural := 0);
+    -- Report Unsupported Cdata
+    procedure Cdata_Error (Flow : in out Flow_Type);
     -- Get current line number
     function Get_Line_No (Flow : Flow_Type) return Natural;
 
@@ -76,6 +78,8 @@ package body Parse_Mng  is
     Cdata : constant String := "[CDATA[";
     Doctype : constant String := "DOCTYPE";
     Comment : constant String := "--";
+    -- Get_Curr_Str, Try... may raise Cdata_Detected if <![CDATA[ found
+    Cdata_Detected : exception;
     -- Detect separator
     function Is_Separator (Char : Character) return Boolean;
     -- Skip separators until a significant char (not separator); got
@@ -84,7 +88,8 @@ package body Parse_Mng  is
     procedure Get_Separators (Flow : in out Flow_Type;
                               Seps : out Asu_Us);
     -- Current significant string, loaded by Parse_Until_xxx
-    function Get_Curr_Str (Flow : Flow_Type) return Asu_Us;
+    function Get_Curr_Str (Flow : Flow_Type;
+                           Check_Cdata : Boolean := True) return Asu_Us;
     -- Reset current string
     procedure Reset_Curr_Str (Flow : in out Flow_Type);
     -- Parse until Criteria found, or until a separator if Criteria = ""
@@ -124,6 +129,16 @@ package body Parse_Mng  is
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
     -- Replace any sequence of separators by a space
     function Normalize_Separators (Text : Asu_Us) return Asu_Us;
+    -- Skip any Cdata section (<![CDATA[xxx]]>)
+    -- If Full_Markup then check for <![CDATA[, else check for [CDATA[
+    -- Ok set to True if a CDATA was found
+    -- Resets Curr_Str!!!
+    procedure Skip_Cdata (Flow : in out Flow_Type;
+                          Full_Markup : in Boolean; Ok : out Boolean);
+    -- Check for <![CDATA[ in text, raises Cdata_Detected
+    procedure Check_Cdata (Str : in Asu_Us);
+    -- Check for <![CDATA[ in the next N+9 chars of Flow, raises Cdata_Detected
+    procedure Check_Cdata (Flow : in out Flow_Type; N : Natural := 0);
   end Util;
   package body Util is separate;
 
@@ -140,28 +155,6 @@ package body Parse_Mng  is
   procedure Parse_Instruction (Ctx : in out Ctx_Type;
                                Adtd : in out Dtd_Type);
 
-  -- Skip any Cdata section (<![CDATA[xxx]]>)
-  -- If Full_Markup then check for <![CDATA[, else check for [CDATA[
-  -- Ok set to True if a CDATA was found
-  -- Resets Curr_Str!!!
-  procedure Skip_Cdata (Ctx : in out Ctx_Type;
-                        Full_Markup : in Boolean;
-                        Ok : out Boolean) is
-  begin
-    if Full_Markup then
-      Util.Try (Ctx.Flow, Util.Start & Util.Directive & Util.Cdata, Ok);
-    else
-      Util.Try (Ctx.Flow, Util.Cdata, Ok);
-    end if;
-    if Ok then
-      -- "<![CDATA[", a CDATA block, skip until "]]>"
-      Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
-      Trace ("Skipped <![CDATA[" & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)));
-      Util.Reset_Curr_Str (Ctx.Flow);
-      return;
-    end if;
-  end Skip_Cdata;
-
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
   procedure Parse_Value (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type;
@@ -176,6 +169,7 @@ package body Parse_Mng  is
     elsif Char = '"' then
       Util.Parse_Until_Char (Ctx.Flow, """");
     else
+      Util.Check_Cdata (Ctx.Flow);
       Util.Error (Ctx.Flow, "Unexpected value delimiter " & Char);
     end if;
     -- Save parsed text
@@ -369,6 +363,7 @@ package body Parse_Mng  is
     Str3 : String (1 .. 3);
   begin
     -- See if this is the xml directive
+    Util.Check_Cdata (Ctx.Flow, 3);
     Util.Try (Ctx.Flow, "xml", Ok);
     if Ok then
       Util.Get (Ctx.Flow, Char);
@@ -420,7 +415,7 @@ package body Parse_Mng  is
     end if;
     -- Store PI and text if any
     Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Util.Get_Curr_Str (Ctx.Flow),
-                                         Util.Get_Line_No (Ctx.Flow));
+                     Util.Get_Line_No(Ctx.Flow));
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Skip to the end
     Util.Get (Ctx.Flow, Char);
@@ -458,6 +453,7 @@ package body Parse_Mng  is
     Tree_Mng.Add_Text (Ctx.Prologue.all, Asu_Null, Util.Get_Line_No (Ctx.Flow));
     -- What's next
     Util.Skip_Separators (Ctx.Flow);
+    Util.Check_Cdata (Ctx.Flow, 7);
     Util.Try (Ctx.Flow, "PUBLIC ", Ok);
     if Ok then
       -- A dtd PUBLIC directive: skip public Id
@@ -527,20 +523,28 @@ package body Parse_Mng  is
     Ok : Boolean;
     Comment : Asu_Us;
   begin
-    -- Got <!, what's next?
-    -- Comment, CDATA or DOCTYPE
+    -- Got <!, what's next? Comment, CDATA or DOCTYPE
+    -- CDATA?
+    Util.Skip_Cdata (Ctx.Flow, False, Ok);
+    if Ok then
+      return;
+    end if;
+
+    -- Comment?
+    Util.Check_Cdata (Ctx.Flow, 2);
     Util.Try (Ctx.Flow, Util.Comment, Ok);
     if Ok then
       -- "<!--", a comment, skip util "-->"
       Util.Parse_Until_Str (Ctx.Flow, "--" & Util.Stop);
       -- Check that no "--" within comment
-      Index := Asu.Index (Util.Get_Curr_Str (Ctx.Flow), "--");
-      if Index < Asu.Length(Util.Get_Curr_Str (Ctx.Flow)) - 2 then
+      Comment := Util.Get_Curr_Str (Ctx.Flow, Check_Cdata => False);
+      Util.Reset_Curr_Str (Ctx.Flow);
+      Index := Asu.Index (Comment, "--");
+      if Index < Asu.Length(Comment) - 2 then
         Util.Error (Ctx.Flow, "Invalid ""--"" in comment");
       end if;
       -- Remove tailing "-->"
-      Comment := Asu.Delete (Util.Get_Curr_Str (Ctx.Flow), Index, Index + 2);
-      Util.Reset_Curr_Str (Ctx.Flow);
+      Comment := Asu.Delete (Comment, Index, Index + 2);
       if not In_Dtd and then Ctx.Parse_Comments then
         if Tree_Mng.Is_Empty (Ctx.Elements.all) then
           -- No element => in prologue
@@ -552,13 +556,13 @@ package body Parse_Mng  is
         end if;
         Trace ("Parsed comment " & Asu_Ts (Comment));
       else
-        Trace ("Skipped comment " & Asu_Ts (Comment));
+        Trace ("Skipped comment <!--" & Asu_Ts (Comment) & "-->");
       end if;
       return;
     end if;
-    -- Skip Cdata if any
-    Skip_Cdata (Ctx, False, Ok);
-    -- Parse Doctype
+
+    -- Doctype?
+    Util.Check_Cdata (Ctx.Flow, 8);
     Util.Try (Ctx.Flow, Util.Doctype & " ", Ok);
     if Ok then
       if Allow_Dtd then
@@ -570,6 +574,7 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected DOCTYPE directive");
       end if;
     end if;
+
     -- Reject directive
     Util.Parse_Until_Stop (Ctx.Flow);
     Util.Error (Ctx.Flow, "Invalid directive <!"
@@ -609,6 +614,9 @@ package body Parse_Mng  is
           -- Directive or comment or CDATA
           Check_Xml_Set (Ctx);
           Parse_Directive (Ctx, Adtd, Allow_Dtd, False);
+        when Util.Start =>
+          -- "<<" maybe "<<![CDATA["
+          Util.Check_Cdata (Ctx.Flow);
         when others =>
           -- A name go back to before '<'
           Util.Unget (Ctx.Flow);
@@ -652,6 +660,9 @@ package body Parse_Mng  is
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
+        elsif Char = Util.Start then
+          Util.Check_Cdata (Ctx.Flow);
+          Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
         else
           -- A new sub-element
           Util.Unget (Ctx.Flow);
@@ -676,10 +687,10 @@ package body Parse_Mng  is
           -- Parse until "Start" and concat
           Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
           Util.Unget (Ctx.Flow);
-          Text := Text & Util.Get_Curr_Str (Ctx.Flow);
-          -- Skip Cdata
-          Skip_Cdata (Ctx, True, Ok);
+          Text := Text & Util.Get_Curr_Str (Ctx.Flow, Check_Cdata => False);
           Util.Reset_Curr_Str (Ctx.Flow);
+          -- Skip Cdata if any
+          Util.Skip_Cdata (Ctx.Flow, True, Ok);
           -- This "Start" is not a Cdata => End
           exit when not Ok;
         end loop;
@@ -796,6 +807,9 @@ package body Parse_Mng  is
         when Util.Directive =>
           -- Directive : only comment
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False);
+        when Util.Start =>
+          -- "<<" maybe "<<![CDATA["
+          Util.Check_Cdata (Ctx.Flow);
         when others =>
           Util.Unget (Ctx.Flow);
           if Root_Found then
@@ -830,6 +844,9 @@ package body Parse_Mng  is
     Dtd.Final_Check (Ctx, Adtd);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
+  exception
+    when Util.Cdata_Detected =>
+      Util.Cdata_Error (Ctx.Flow);
   end Parse;
 
   -- Propagate Dtd convention
@@ -844,6 +861,9 @@ package body Parse_Mng  is
                        File_Name : in String) is
   begin
     Dtd.Parse (Ctx, Adtd, File_Name, Name_Raise_Parse => False);
+  exception
+    when Util.Cdata_Detected =>
+      Util.Cdata_Error (Ctx.Flow);
   end Parse_Dtd;
 
    -- Parse the prologue
@@ -856,6 +876,9 @@ package body Parse_Mng  is
     Dtd.Init (Adtd);
     -- Parse prologue, disallow Dtd
     Parse_Prologue (Ctx, Adtd, Allow_Dtd => False);
+  exception
+    when Util.Cdata_Detected =>
+      Util.Cdata_Error (Ctx.Flow);
   end Parse_Prologue;
 
   -- Parse the elements
@@ -866,6 +889,9 @@ package body Parse_Mng  is
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
     Dtd.Final_Check (Ctx, Adtd);
+  exception
+    when Util.Cdata_Detected =>
+      Util.Cdata_Error (Ctx.Flow);
   end Parse_Elements;
 
 end Parse_Mng;
