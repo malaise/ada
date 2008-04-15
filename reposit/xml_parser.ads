@@ -16,7 +16,7 @@ with Queues, Trees, Unique_List, Text_Char;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Version : constant String := "V2.2";
+  Version : constant String := "V2.3";
 
   -----------
   -- TYPES --
@@ -305,7 +305,7 @@ private
     --  for Mixed the list of "#<name>#<name>#" without #PCDATA
     --   (empty if only #PCDATA)
     --  for Children the regexp of "#<name>#"
-    -- Atl: Possible attributes, list of "<name>#<type><default>#"
+    -- Atl: Possible attributes, list of "#<name>##<type><default>#"
     --  <type> ::= S|I|R|r|T|t|E (String, ID, IDREF, IDREFS, NMTOKEN, NMTOKENS
     --   or enum)
     --  <default> ::= R|I|F|D (required, implied, fixed or default)

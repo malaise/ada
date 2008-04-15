@@ -230,7 +230,6 @@ package body Dtd is
     -- Atl, Att and Id info blocs
     Info, Attinfo, Idinfo : Info_Rec;
     Found : Boolean;
-    Char : Character;
     -- Element, attribute name and type
     Elt_Name, Att_Name, Att_Type : Asu_Us;
     -- Type and default chars
@@ -240,7 +239,9 @@ package body Dtd is
     -- Default value
     Def_Val : Asu_Us;
     -- Has an ID already been parsed for this element
-    Has_Id : Boolean;
+    Elt_Has_Id : Boolean;
+    -- Is this attribute already defined
+    Attr_Already_Set : Boolean;
     use type Asu_Us;
 
     function Try (Str : String) return Boolean is
@@ -259,42 +260,39 @@ package body Dtd is
   begin
     -- Parse element name
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop);
+    Util.Unget (Ctx.Flow);
     Elt_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Elt_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Elt_Name));
     end if;
     Info.Name := "Atl" & Info_Sep & Elt_Name;
-    -- Attribute list of this element must not exist
+    -- Attribute list of this element may already exist => merge
     Info_Mng.Search (Adtd.Info_List, Info, Found);
     if Found then
-      Util.Error (Ctx.Flow, "ATTLIST " & Asu_Ts (Elt_Name)
-                          & " already exists");
-    end if;
-    Util.Read (Ctx.Flow, Char);
-    if Char = Util.Stop then
-      -- Empty Attlist: store and done
-      Info_Mng.Insert (Adtd.Info_List, Info);
-      Trace ("Dtd parsed directive ATTLIST -> " & Asu_Ts (Info.Name)
-           & " " & Asu_Ts(Info.List));
-      return;
+      Info_Mng.Read (Adtd.Info_List, Info, Info);
+      Trace ("Dtd retrieved previous ATTLIST -> " & Asu_Ts (Info.Name)
+           & " " & Asu_Ts (Info.List));
     end if;
 
     -- Loop on all attributes
-    Has_Id := False;
+    Elt_Has_Id := False;
     loop
       Util.Skip_Separators (Ctx.Flow);
       -- Name of attribute or end of list
-      Util.Get (Ctx.Flow, Char);
-      exit when Char = Util.Stop;
-      Util.Unget (Ctx.Flow);
+      Util.Try (Ctx.Flow, Util.Stop & "", Found);
+      exit when Found;
       -- Get attribute name
       Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
       Att_Name := Util.Get_Curr_Str (Ctx.Flow);
+      Util.Reset_Curr_Str (Ctx.Flow);
       if not Util.Name_Ok (Att_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute " & Asu_Ts (Att_Name));
       end if;
-      Util.Reset_Curr_Str (Ctx.Flow);
+      -- Check that this attribute is not already defined, otherwise discard any new
+      -- Look for #attribute##
+      Attr_Already_Set := String_Mng.Locate (Asu_Ts (Info.List),
+             Info_Sep & Asu_Ts (Att_Name) & Info_Sep & Info_Sep) /= 0;
       -- Check supported att types
       Util.Skip_Separators (Ctx.Flow);
       Util.Check_Cdata (Ctx.Flow, 9);
@@ -378,9 +376,9 @@ package body Dtd is
       end if;
 
       -- Check ID
-      if Typ_Char = 'I' then
+      if Typ_Char = 'I' and then not Attr_Already_Set then
         -- Only one ID per element
-        if Has_Id then
+        if Elt_Has_Id then
           Util.Error (Ctx.Flow, "Element " & Asu_Ts (Elt_Name)
                     & " has already an ID attribute");
         end if;
@@ -390,7 +388,7 @@ package body Dtd is
                "Id attribute must be of type required or implied");
         end if;
         -- Initialise an Empty Ide info
-        Has_Id := True;
+        Elt_Has_Id := True;
         Idinfo.Name := "Ide" & Elt_Name;
         Idinfo.List := Asu_Null;
         Info_Mng.Insert (Adtd.Info_List, Idinfo);
@@ -415,24 +413,30 @@ package body Dtd is
 
       -- If enum store Att of enum
       --  or if fixed or default store Att of default
-      Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
-      if Typ_Char = 'E' then
-        Attinfo.List := Enum;
-        Info_Mng.Insert (Adtd.Info_List, Attinfo);
-        Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
-         & " " & Asu_Ts(Attinfo.List));
-      elsif Def_Char = 'F' or else Def_Char = 'D' then
-        Attinfo.List := Def_Val;
-        Info_Mng.Insert (Adtd.Info_List, Attinfo);
-        Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
-         & " " & Asu_Ts(Attinfo.List));
+      if not Attr_Already_Set then
+        Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
+        if Typ_Char = 'E' then
+          Attinfo.List := Enum;
+          Info_Mng.Insert (Adtd.Info_List, Attinfo);
+          Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
+           & " " & Asu_Ts(Attinfo.List));
+        elsif Def_Char = 'F' or else Def_Char = 'D' then
+          Attinfo.List := Def_Val;
+          Info_Mng.Insert (Adtd.Info_List, Attinfo);
+          Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
+           & " " & Asu_Ts(Attinfo.List));
+        end if;
+        -- Append this attribute in list: #attribute##td#attribute##td#...
+        if Info.List = Asu_Null then
+          Asu.Append (Info.List, Info_Sep);
+        end if;
+        Asu.Append (Info.List, Att_Name
+                  & Info_Sep & Info_Sep & Typ_Char & Def_Char & Info_Sep);
+      else
+        Trace ("Dtd discarding duplicate ATTLIST -> " & Asu_Ts (Info.Name)
+             & " " & Asu_Ts (Att_Name) & Info_Sep & Info_Sep
+             & Typ_Char & Def_Char);
       end if;
-      -- Append this attribute in list: #attribute#td#attribute#td#...
-      if Info.List = Asu_Null then
-        Info.List := Asu_Tus (Info_Sep & "");
-      end if;
-      Asu.Append (Info.List,
-                  Att_Name & Info_Sep & Typ_Char & Def_Char & Info_Sep);
     end loop;
     -- Attlist is ended: store
     Info_Mng.Insert (Adtd.Info_List, Info);
@@ -711,9 +715,8 @@ package body Dtd is
     Info.Name := "Elt" & Info_Sep & Name;
     Info_Mng.Search (Adtd.Info_List, Info, Ok);
     if not Ok then
-      Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
-                & " is not allowed",
-                  Line_No);
+      -- No ELEMENT directive, no constraint
+      return;
     end if;
     Info_Mng.Read (Adtd.Info_List, Info, Info);
     -- Check children
@@ -808,12 +811,15 @@ package body Dtd is
     -- Read its ATTLIST def
     Info.Name := "Atl" & Info_Sep & Name;
     Info_Mng.Search (Adtd.Info_List, Info, Info_Found);
-    if Info_Found then
+    if not Info_Found then
+      -- No ATTLIST directive, no constraint
+      return;
+    else
       Info_Mng.Read (Adtd.Info_List, Info, Info);
     end if;
-    if not Info_Found or else Info.List = Asu_Null then
-      -- No or empty ATTLIST for this element
-      if  Attributes = Asu_Null then
+    if Info.List = Asu_Null then
+      -- Empty ATTLIST for this element
+      if Attributes = Asu_Null then
         Trace ("Dtd checked element " & Asu_Ts (Name)
              & " with no attributes, versus no or empty attlist");
         return;
@@ -859,7 +865,7 @@ package body Dtd is
     end loop;
     Parser.Del (Iter_Xml);
 
-    -- Check attributes dtd vw xml
+    -- Check attributes dtd vs xml
     --  Any Fixed in dtd must appear in xml and have correct value
     --  Any default, if it does not appear in Attributes, must be added
     --   to tree with default value
