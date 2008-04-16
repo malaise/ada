@@ -594,6 +594,44 @@ package body Util is
       raise Parse_Error;
   end Expand_Vars;
 
+
+  -- Expand a name if it is a (parameter) entity reference
+  -- Error if Text contains % or & but not at beginning
+  -- Error if Text contains ; but not at end
+  -- Does nothing if not an entity reference
+  procedure Expand_Name (Ctx : in out Ctx_Type;
+                         Dtd : in out Dtd_Type;
+                         Text : in out Asu_Us;
+                         In_Dtd : in Boolean) is
+    Str : constant String := Asu_Ts (Text);
+    Len : constant Natural := Str'Length;
+    Ne, Np, Ns: Natural;
+
+    procedure Entity_Error is
+    begin
+      Error (Ctx.Flow, "Invalid (parameter) entity reference " & Str);
+    end Entity_Error;
+
+  begin
+    -- Check presence of "&" and "%" and ";"
+    Ne := String_Mng.Locate (Str, "&");
+    Np := String_Mng.Locate (Str, "%");
+    Ns := String_Mng.Locate (Str, ";");
+    if Ne + Np + Ns = 0 then
+      return;
+    end if;
+    -- Must have one start at beginning and one stop at end
+    if Ne + Np = 0         -- and Ns /= 0
+    or else Ne + Np /= 1   -- both or not at beginning
+    or else Ns /= Len      -- not at end
+    or else String_Mng.Locate (Str, "&", Occurence => 2) /= 0
+    or else String_Mng.Locate (Str, "%", Occurence => 2) /= 0
+    or else String_Mng.Locate (Str, ";", Occurence => 2) /= 0 then
+      Entity_Error;
+    end if;
+    Expand_Vars (Ctx, Dtd, Text, In_Dtd);
+  end Expand_Name;
+
   -- Fix text: expand variables and remove repetition of separators
   procedure Fix_Text (Ctx : in out Ctx_Type;
                       Dtd : in out Dtd_Type;

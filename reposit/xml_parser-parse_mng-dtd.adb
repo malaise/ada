@@ -121,6 +121,7 @@ package body Dtd is
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Info_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Expand_Name (Ctx, Adtd, Info_Name, In_Dtd => True);
     if not Util.Name_Ok (Info_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Info_Name));
     end if;
@@ -263,6 +264,7 @@ package body Dtd is
     Util.Unget (Ctx.Flow);
     Elt_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Expand_Name (Ctx, Adtd, Elt_Name, In_Dtd => True);
     if not Util.Name_Ok (Elt_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Elt_Name));
     end if;
@@ -286,6 +288,7 @@ package body Dtd is
       Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
       Att_Name := Util.Get_Curr_Str (Ctx.Flow);
       Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Expand_Name (Ctx, Adtd, Att_Name, In_Dtd => True);
       if not Util.Name_Ok (Att_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute " & Asu_Ts (Att_Name));
       end if;
@@ -462,6 +465,11 @@ package body Dtd is
     if Char = '%' then
       Parameter := True;
       Parstr := Asu_Tus ("%");
+      -- Must have a separator after "%"
+      Util.Get (Ctx.Flow, Char);
+      if not Util.Is_Separator (Char) then
+        Util.Error (Ctx.Flow, "Expect a separator after '%'");
+      end if;
       Util.Skip_Separators (Ctx.Flow);
     else
       Parameter := False;
@@ -471,6 +479,7 @@ package body Dtd is
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Expand_Name (Ctx, Adtd, Name, In_Dtd => True);
     -- Check name is valid and not already defined
     if not Util.Name_Ok (Name) then
       Util.Error (Ctx.Flow, "Invalid entity name " & Asu_Ts (Name));
@@ -519,7 +528,7 @@ package body Dtd is
     Util.Reset_Curr_Str (Ctx.Flow);
 
     -- Expand dtd entities
-    Util.Expand_Vars (Ctx, Adtd, Word, In_Dtd => True);
+    Util.Expand_Name (Ctx, Adtd, Word, In_Dtd => True);
     if Asu_Ts (Word) = "IGNORE" then
       -- IGNORE directive, skip up to "]]>"
       Util.Parse_Until_Char (Ctx.Flow, "[");
@@ -573,8 +582,6 @@ package body Dtd is
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Word := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
-    -- Expand dtd entities
-    Util.Expand_Vars (Ctx, Adtd, Word, In_Dtd => True);
     declare
       Str : constant String := Asu_Ts (Word);
     begin

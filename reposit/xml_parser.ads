@@ -11,12 +11,11 @@ with Queues, Trees, Unique_List, Text_Char;
 -- The following restrictions applies to all the parsing:
 --  - CDATA sections are detected only when a markup ('<') is expected or
 --    within text. Not "anywhere character data may occur" (parsing error).
---  - The detection and expansion of entity references is partial (it is only in
---    text, attribute value, dtd directive).
+--  - The detection and expansion of entity references may not be complete.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Version : constant String := "V2.3";
+  Version : constant String := "V2.4";
 
   -----------
   -- TYPES --

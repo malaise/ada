@@ -119,6 +119,14 @@ package body Parse_Mng  is
                            Dtd : in out Dtd_Type;
                            Text : in out Asu_Us;
                            In_Dtd : in Boolean);
+    -- Expand a name if it is a (parameter) entity reference
+    -- Error if Text contains % or & but not at beginning
+    -- Error if Text contains ; but not at end
+    -- Does nothing if not an entity reference
+    procedure Expand_Name (Ctx : in out Ctx_Type;
+                           Dtd : in out Dtd_Type;
+                           Text : in out Asu_Us;
+                           In_Dtd : in Boolean);
     -- Fix text: expand entities and remove repetition of separators
     procedure Fix_Text (Ctx : in out Ctx_Type;
                         Dtd : in out Dtd_Type;
