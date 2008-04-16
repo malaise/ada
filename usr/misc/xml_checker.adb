@@ -204,7 +204,7 @@ begin
   elsif Argument.Get_Nbre_Arg = 1
   and then (Argument.Get_Parameter = "-v"
     or else Argument.Get_Parameter = "--version") then
-    Ada.Text_Io.Put_Line ("Version: " & Xml_Parser.Version);
+    Ada.Text_Io.Put_Line ("Xml_Parser version: " & Xml_Parser.Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
