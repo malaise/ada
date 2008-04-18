@@ -320,15 +320,17 @@ package body Xml_Generator is
   -- GENERATION --
   ----------------
   -- Internal procedure to generate the output
-  procedure Generate (Dscr : in Xml_Dscr_Type;
-                      Format : in Boolean;
-                      Flow : in out Flow_Dscr);
+  procedure Generate (Dscr   : in Xml_Dscr_Type;
+                      Format : in Format_Kind_List;
+                      Width  : in Natural;
+                      Flow   : in out Flow_Dscr);
 
   -- Put in a file the indented or raw XML flow.
   -- Raises Text_Line exceptions
-  procedure Put (Dscr : in out Xml_Dscr_Type;
-                 Format : in Boolean;
-                 File_Name : in String := "") is
+  procedure Put (Dscr      : in out Xml_Dscr_Type;
+                 File_Name : in String;
+                 Format    : in Format_Kind_List := Default_Format;
+                 Width     : in Natural := Default_Width) is
     Flow : Flow_Dscr(Use_File => True);
     Fd : Sys_Calls.File_Desc;
     use type Sys_Calls.File_Desc;
@@ -345,7 +347,7 @@ package body Xml_Generator is
     end Close;
   begin
     -- Open flow
-    if File_Name /= "" then
+    if File_Name /= Stdout then
       begin
         Fd := Sys_Calls.Create (File_Name);
       exception
@@ -357,7 +359,7 @@ package body Xml_Generator is
     end if;
     Text_Line.Open (Flow.File, Text_Line.Out_File, Fd);
     -- Put generated text
-    Generate (Dscr, Format, Flow);
+    Generate (Dscr, Format, Width, Flow);
     -- Close flow
     Close;
   exception
@@ -367,21 +369,24 @@ package body Xml_Generator is
   end Put;
 
   -- Dumps in a string then raw XML flow (no CR no space)
-  function Set (Dscr : Xml_Dscr_Type; Format : Boolean) return String is
+  function Set (Dscr   : Xml_Dscr_Type;
+                Format : Format_Kind_List := Default_Format;
+                Width  : Natural := Default_Width) return String is
     Flow : Flow_Dscr(Use_File => False);
   begin
     -- Compute generated text
-    Generate (Dscr, Format, Flow);
+    Generate (Dscr, Format, Width, Flow);
     return Asu_Ts (Flow.Us);
   end Set;
 
   procedure Set (Dscr : in Xml_Dscr_Type;
-                 Format : in Boolean;
-                 Str : out Ada.Strings.Unbounded.Unbounded_String) is
+                 Str : out Ada.Strings.Unbounded.Unbounded_String;
+                 Format : in Format_Kind_List := Default_Format;
+                 Width  : in Natural := Default_Width) is
     Flow : Flow_Dscr(Use_File => False);
   begin
     -- Compute generated text
-    Generate (Dscr, Format, Flow);
+    Generate (Dscr, Format, Width, Flow);
     Str := Flow.Us;
   end Set;
 
@@ -435,15 +440,17 @@ package body Xml_Generator is
 
   -- Put the attributes of current element
   -- Move to first child of element if any, otherwise remain on element
-  procedure Put_Attributes (Flow : in out Flow_Dscr;
-                            Format : in Boolean;
+  procedure Put_Attributes (Flow    : in out Flow_Dscr;
+                            Format  : in Format_Kind_List;
+                            Width   : in Natural;
                             Element : in out My_Tree.Tree_Type;
-                            Level : in Natural;
-                            Offset : in Positive;
-                            One_Per_Line : in Boolean := True) is
+                            Level   : in Natural;
+                            Offset  : in Positive) is
     Cell : My_Tree_Cell;
     Nb_Attributes : Natural;
-    Indent : constant String (1 .. 2 * Level + Offset) := (others => ' ');
+    Pad : constant String (1 .. 2 * Level + Offset) := (others => ' ');
+    Cur_Col : Natural;
+    Att_Width : Positive;
     use type Asu_Us;
   begin
     -- Read number of attribtues
@@ -457,21 +464,29 @@ package body Xml_Generator is
       return;
     end if;
     -- Put each attribute
+    Cur_Col := Pad'Length + 1;
     for I in 1 .. Nb_Attributes loop
       if I = 1 then
          My_Tree.Move_Child (Element, False);
       else
         My_Tree.Move_Brother (Element);
       end if;
-      if I /= 1 and then One_Per_Line and then Format then
-        -- Indent
-        Put (Flow, Indent);
-      end if;
+      -- Read attribute, needed width is ' Name="Value"'
       My_Tree.Read (Element, Cell);
-      Put (Flow, " " & Asu_Ts (Cell.Name & "=""" & Cell.Value) & """");
-      if I /= Nb_Attributes and then One_Per_Line and then Format then
+      Att_Width := Asu.Length (Cell.Name) + Asu.Length (Cell.Value) + 4;
+      -- New line and Indent if needed
+      -- Never new line for first
+      -- New line if One_Per_Line of Fill_Width and no more width
+      if I /= 1
+      and then (Format = One_Per_Line
+         or else (Format = Fill_Width
+                  and then Cur_Col + Att_Width > Width) ) then
         New_Line (Flow);
+        Put (Flow, Pad);
+        Cur_Col := Pad'Length + 1;
       end if;
+      Put (Flow, " " & Asu_Ts (Cell.Name & "=""" & Cell.Value) & """");
+      Cur_Col := Cur_Col + Att_Width;
     end loop;
     -- Move to next brother if any, otherwise move to father
     if My_Tree.Has_Brother (Element) then
@@ -490,11 +505,12 @@ package body Xml_Generator is
 
   -- Put an element (and its attributes and children)
   Prologue_Level : constant := -1;
-  procedure Put_Element (Flow : in out Flow_Dscr;
-                         Format : in Boolean;
-                         Dscr : in Xml_Dscr_Type;
+  procedure Put_Element (Flow    : in out Flow_Dscr;
+                         Format  : in Format_Kind_List;
+                         Width   : in Natural;
+                         Dscr    : in Xml_Dscr_Type;
                          Element : in out My_Tree.Tree_Type;
-                         Level : in Integer) is
+                         Level   : in Integer) is
     Cell : constant My_Tree_Cell := My_Tree.Read (Element);
     Cell_Ref : constant My_Tree.Position_Access
              := My_Tree.Get_Position (Element);
@@ -505,6 +521,7 @@ package body Xml_Generator is
     Indent1 : constant String := Indent & "  ";
     Doctype_Name, Doctype_File : Asu_Us;
     Prev_Is_Text : Boolean;
+    Xml_Attr_Format : Format_Kind_List;
     use type Asu_Us, My_Tree.Position_Access;
   begin
     if Level = Prologue_Level then
@@ -513,13 +530,20 @@ package body Xml_Generator is
       My_Tree.Move_Child (Element);
       My_Tree.Read (Element, Child);
       My_Tree.Move_Father (Element);
+      -- Even if one attr per line request, Xml directive attributes
+      --  are all on the same line
+      if Format = One_Per_Line then
+        Xml_Attr_Format := Fill_Width;
+      else
+        Xml_Attr_Format := Format;
+      end if;
       -- Put the xml directive with attributes if any
       if Asu_Ts (Child.Value) /= No_Xml then
         Put (Flow, "<?" & Asu_Ts (Cell.Name));
-        Put_Attributes (Flow, Format, Element, 0,
-                        2 + Asu.Length (Cell.Name), False);
+        Put_Attributes (Flow, Xml_Attr_Format, Width, Element, 0,
+                        2 + Asu.Length (Cell.Name));
         Put (Flow, "?>");
-        if Format then
+        if Format /= Raw then
           New_Line (Flow);
         end if;
       end if;
@@ -560,7 +584,7 @@ package body Xml_Generator is
             end if;
             -- Internal definition
             if Dscr.Doc_Int_Def /= Asu_Null then
-              if Format then
+              if Format /= Raw then
                 Put (Flow, " [" & Asu_Ts (Dscr.Doc_Int_Def) & "] ");
               else
                 Put (Flow, "[" & Normalize (Asu_Ts (Dscr.Doc_Int_Def)) & "]");
@@ -570,7 +594,7 @@ package body Xml_Generator is
           when Comment =>
             Put_Comment (Flow, Asu_Ts (Child.Name));
         end case;
-        if Format then
+        if Format /= Raw then
           New_Line (Flow);
         end if;
         -- Next child or done
@@ -579,7 +603,7 @@ package body Xml_Generator is
       end loop;
       -- End of prologue and its children
       My_Tree.Move_Father (Element);
-      if Format then
+      if Format /= Raw then
         New_Line (Flow);
       end if;
       return;
@@ -587,11 +611,12 @@ package body Xml_Generator is
 
     -- An element
     -- Put element, attributes and children recursively
-    if Format then
+    if Format /= Raw then
       Put (Flow, Indent);
     end if;
     Put (Flow, "<" & Asu_Ts(Cell.Name));
-    Put_Attributes (Flow, Format, Element, Level, 1 + Asu.Length (Cell.Name));
+    Put_Attributes (Flow, Format, Width, Element, Level,
+                    1 + Asu.Length (Cell.Name));
     -- Any child
     if My_Tree.Get_Position (Element) = Cell_Ref then
       -- No child, terminate tag now
@@ -614,19 +639,19 @@ package body Xml_Generator is
             -- Father did not New_Line because of possible text
             --  or prev was not text and did not New_Line because
             --  of possible text
-            if Format then
+            if Format /= Raw then
               New_Line (Flow);
             end if;
-            Put_Element (Flow, Format, Dscr, Element, Level + 1);
+            Put_Element (Flow, Format, Width, Dscr, Element, Level + 1);
           elsif I = 1 then
             -- First Child
-            Put_Element (Flow, Format, Dscr, Element, Level + 1);
+            Put_Element (Flow, Format, Width, Dscr, Element, Level + 1);
           else
             -- Child element following text
             --  we bet that it has no child itself, so no New_Line nor Indent
-            Put_Element (Flow, Format, Dscr, Element, 0);
+            Put_Element (Flow, Format, Width, Dscr, Element, 0);
           end if;
-          if not My_Tree.Has_Brother (Element) and then Format then
+          if not My_Tree.Has_Brother (Element) and then Format /= Raw then
             -- Last child
             New_Line (Flow);
           end if;
@@ -637,7 +662,7 @@ package body Xml_Generator is
           Prev_Is_Text := True;
         when Comment =>
           -- Comment
-          if Format then
+          if Format /= Raw then
             if (I = 1 or else not Prev_Is_Text) then
               -- Father did not New_Line because of possible text
               --  or prev was not text and did not New_Line because
@@ -647,7 +672,7 @@ package body Xml_Generator is
             Put (Flow, Indent1);
           end if;
           Put_Comment (Flow, Asu_Ts (Child.Name));
-          if not My_Tree.Has_Brother (Element) and then Format then
+          if not My_Tree.Has_Brother (Element) and then Format /= Raw then
             -- Last child
             New_Line (Flow);
           end if;
@@ -658,7 +683,7 @@ package body Xml_Generator is
         My_Tree.Move_Brother (Element);
       end loop;
       -- Terminate tag after children
-      if not Prev_Is_Text and then Format then
+      if not Prev_Is_Text and then Format /= Raw then
         Put (Flow, Indent);
       end if;
       Put (Flow, "</" & Asu_Ts (Cell.Name) & ">");
@@ -668,17 +693,18 @@ package body Xml_Generator is
   end Put_Element;
 
   -- Internal procedure to generate the output
-  procedure Generate (Dscr : in Xml_Dscr_Type;
-                      Format : in Boolean;
-                      Flow : in out Flow_Dscr) is
+  procedure Generate (Dscr   : in Xml_Dscr_Type;
+                      Format : in Format_Kind_List;
+                      Width  : in Natural;
+                      Flow   : in out Flow_Dscr) is
   begin
     Check_Set (Dscr);
     -- Put prologue if any
-    Put_Element (Flow, Format, Dscr, Dscr.Prologue.all, Prologue_Level);
+    Put_Element (Flow, Format, Width, Dscr, Dscr.Prologue.all, Prologue_Level);
     -- Put Elements
     My_Tree.Move_Root (Dscr.Elements.all);
-    Put_Element (Flow, Format, Dscr, Dscr.Elements.all, 0);
-    if Format then
+    Put_Element (Flow, Format, Width, Dscr, Dscr.Elements.all, 0);
+    if Format /= Raw then
       New_Line (Flow);
     end if;
   end Generate;

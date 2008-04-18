@@ -3,6 +3,8 @@ with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
 package Xml_Generator is
 
+  Version : constant String := "V2.1";
+
   type Xml_Dscr_Type is tagged limited private;
 
   -- Internal element kind list
@@ -92,17 +94,29 @@ package Xml_Generator is
   ----------------
   -- GENERATION --
   ----------------
-  -- Put in a file (stdout if name is empty) the indented or raw XML flow.
+  -- Kind of output format
+  -- Raw is all in one physical line and no extra space
+  -- Fill_Columns is formated, with several attributes per line up to width
+  -- One_Per_Line is formated, with one attribute per line
+  type Format_Kind_List is (Raw, Fill_Width, One_Per_Line);
+  Default_Format : constant Format_Kind_List := Fill_Width;
+  Default_Width : constant Natural := 80;
+  -- Put in a file (stdout if name is empty)
   -- Raises File_Error if Pb with file
-  procedure Put (Dscr : in out Xml_Dscr_Type;
-                 Format : in Boolean;
-                 File_Name : in String := "");
+  Stdout : constant String := "";
+  procedure Put (Dscr      : in out Xml_Dscr_Type;
+                 File_Name : in String;
+                 Format    : in Format_Kind_List := Default_Format;
+                 Width     : in Natural := Default_Width);
 
-  -- Dumps in a string then raw XML flow (no CR no space)
-  function Set (Dscr : Xml_Dscr_Type; Format : Boolean) return String;
-  procedure Set (Dscr : in Xml_Dscr_Type;
-                 Format : in Boolean;
-                 Str : out Ada.Strings.Unbounded.Unbounded_String);
+  -- Dumps in a string
+  function Set (Dscr   : Xml_Dscr_Type;
+                Format : Format_Kind_List := Default_Format;
+                Width  : Natural := Default_Width) return String;
+  procedure Set (Dscr   : in Xml_Dscr_Type;
+                 Str    : out Ada.Strings.Unbounded.Unbounded_String;
+                 Format : in Format_Kind_List := Default_Format;
+                 Width  : in Natural := Default_Width);
 
   ----------------
   -- EXCEPTIONS --
