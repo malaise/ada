@@ -11,11 +11,11 @@ with Queues, Trees, Unique_List, Text_Char;
 -- The following restrictions applies to all the parsing:
 --  - CDATA sections are detected only when a markup ('<') is expected or
 --    within text. Not "anywhere character data may occur" (parsing error).
---  - The detection and expansion of entity references may not be complete.
+--  - The detection and expansion of parameter entity references may not be complete.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Version : constant String := "V2.4";
+  Version : constant String := "V2.5";
 
   -----------
   -- TYPES --
@@ -73,12 +73,16 @@ package Xml_Parser is
   -- FILE PARSING --
   ------------------
   -- Parse a Xml file, stdin if empty
+  -- On option, allows retrieval of comments (usefull for formatter)
+  -- On option, does not expand General entities (usefull for formatter)
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
-  procedure Parse (Ctx       : out Ctx_Type;
-                   File_Name : in String;
-                   Ok        : out Boolean;
-                   Comments  : in Boolean := False);
+  Stdin : constant String := "";
+  procedure Parse (Ctx             : out Ctx_Type;
+                   File_Name       : in String;
+                   Ok              : out Boolean;
+                   Comments        : in Boolean := False;
+                   Expand_Entities : in Boolean := True);
   File_Error, Status_Error : exception;
 
   -- Return the error message if Parse error
@@ -107,13 +111,16 @@ package Xml_Parser is
   procedure Clean_Dtd (Dtd : in out Dtd_Type);
 
   -- Parse the prologue of a string
-  -- Then on can call Get_Prologue on Ctx
+  -- Then one can call Get_Prologue on Ctx
   --  (Calling Get_Root_Element will raise Use_Error);
+  -- On option, allows retrieval of comments (usefull for formatter)
+  -- On option, does not expand General entities (usefull for formatter)
   -- may raise Status_Error if Ctx is not clean
-  procedure Parse_Prologue (Ctx      : out Ctx_Type;
-                            Str      : in String;
-                            Ok       : out Boolean;
-                            Comments : in Boolean := False);
+  procedure Parse_Prologue (Ctx             : out Ctx_Type;
+                            Str             : in String;
+                            Ok              : out Boolean;
+                            Comments        : in Boolean := False;
+                            Expand_Entities : in Boolean := True);
 
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean
@@ -359,6 +366,8 @@ private
     Flow : Flow_Type;
     -- Parse or skip comments
     Parse_Comments : Boolean := False;
+    -- Expand or not general entities
+    Expand_Entities : Boolean := True;
     -- Prologue and parsed elements
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;

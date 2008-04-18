@@ -489,11 +489,15 @@ package body Util is
   begin
     Check_Cdata (Text);
     if not In_Dtd then
-      Text := Asu_Tus (String_Mng.Eval_Variables (
-                         Str => Asu_Ts (Text),
-                         Start_Delimiter => "&",
-                         Stop_Delimiter  => ";",
-                         Resolv => Variable_Of'Access));
+      -- In xml, only expand general entities
+      if Ctx.Expand_Entities then
+        -- If Parse was called with Expand_Entities = False
+        Text := Asu_Tus (String_Mng.Eval_Variables (
+                           Str => Asu_Ts (Text),
+                           Start_Delimiter => "&",
+                           Stop_Delimiter  => ";",
+                           Resolv => Variable_Of'Access));
+      end if;
       return;
     end if;
     -- Expand variables when in dtd

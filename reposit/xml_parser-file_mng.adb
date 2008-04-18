@@ -8,7 +8,7 @@ package body File_Mng is
     if Text_Char.Is_Open (File) then
       raise Text_Char.Status_Error;
     end if;
-    if File_Name /= "" then
+    if File_Name /= Stdin then
       -- Open physical file for reading
       begin
         Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
