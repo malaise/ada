@@ -1,30 +1,57 @@
 with Ada.Text_Io, Ada.Strings.Unbounded, Ada.Exceptions;
-with Argument, Xml_Parser, Normal, Basic_Proc, Xml_Generator;
+with Argument, Argument_Parser, Xml_Parser, Normal, Basic_Proc, Xml_Generator;
 procedure Xml_Checker is
   Ctx : Xml_Parser.Ctx_Type;
   Prologue, Root : Xml_Parser.Element_Type;
+
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
   function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
+  function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
-  type Output_Kind_List is (Xml, Dump, Silent);
-  Output_Kind : Output_Kind_List := Xml;
-  Arg_Index : Natural;
-  Parse_Ok : Boolean;
+  Version : constant String := "V1.0";
   Arg_Error : exception;
 
-  Dscr : Xml_Generator.Xml_Dscr_Type;
+  Parse_Ok : Boolean;
+  type Output_Kind_list is (None, Dump, Gen);
+  Output_Kind : Output_Kind_list;
+
+  Gen_Dscr : Xml_Generator.Xml_Dscr_Type;
+  Format : Xml_Generator.Format_Kind_List;
+  Width  : Positive;
 
   Internal_Error : exception;
 
   procedure Usage is
+    Procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
-    Basic_Proc.Put_Line_Error ("Usage: "
-        & Argument.Get_Program_Name
-        & " [ -d | --dump | -s | --silent ] [ <xml_file> ]");
-    Basic_Proc.Put_Line_Error (" or -h | --help | -v | --version");
+    Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ <file> ]");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> | <help> |"
+       & " <version>");
+    Ple (" <silent>  ::= -s | --silent    -- No output, only exit code");
+    Ple (" <dump>    ::= -d | --dump      -- Dump expanded Xml tree");
+    PLe (" <raw>     ::= -r | --raw       -- Put all on one line");
+    Ple (" <width>   ::= -w <Width> | --width=<Width>");
+    Ple ("                                -- Put attributes up to Width");
+    Ple (" <one>     ::= -1 | --one       -- Put one attribute per line");
+    Ple (" <help>    ::= -h | --help      -- Put this help");
+    Ple (" <version> ::= -v | --version   -- Put versions");
+    Ple ("Default is -w" & Xml_Generator.Default_Width'Img & " on stdin.");
   end Usage;
+
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   1 => ('s', Asu_Tus ("silent"), False, False),
+   2 => ('d', Asu_Tus ("dump"), False, False),
+   3 => ('r', Asu_Tus ("raw"), False, False),
+   4 => ('w', Asu_Tus ("width"), False, True),
+   5 => ('1', Asu_Tus ("one"), False, False),
+   6 => ('h', Asu_Tus ("help"), False, False),
+   7 => ('v', Asu_Tus ("version"), False, False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  No_Key_Index : constant Argument_Parser.The_Keys_Index
+               := Argument_Parser.No_Key_Index;
 
   -------------------
   -- Dump xml tree --
@@ -76,7 +103,7 @@ procedure Xml_Checker is
     end loop;
   end Dump_Element;
 
-  -- Copy Ctx prologue in Dscr
+  -- Copy Ctx prologue in Gen_Dscr
   procedure Copy_Prologue (Prologue : in Xml_Parser.Element_Type;
                            Root : in Xml_Parser.Element_Type) is
     Attrs : constant Xml_Parser.Attributes_Array
@@ -92,22 +119,22 @@ procedure Xml_Checker is
     -- Reset Dscr, provide version and Root name
     if Attrs'Length = 0 then
       -- No xml directive
-      Dscr.Reset (0, 1, Root_Name);
+      Gen_Dscr.Reset (0, 1, Root_Name);
     elsif Asu_Ts (Attrs(1).Value) = "1.0" then
-      Dscr.Reset (1, 0, Root_Name);
+      Gen_Dscr.Reset (1, 0, Root_Name);
     else
-      Dscr.Reset (1, 1, Root_Name);
+      Gen_Dscr.Reset (1, 1, Root_Name);
     end if;
 
     -- Add Xml attributes
     for I in 2 .. Attrs'Last loop
       if Asu_Ts (Attrs(I).Name) = "encoding" then
-        Dscr.Set_Encoding (Asu_Ts (Attrs(I).Value));
+        Gen_Dscr.Set_Encoding (Asu_Ts (Attrs(I).Value));
       elsif Asu_Ts (Attrs(I).Name) = "standalone" then
         if Asu_Ts (Attrs(I).Value) = "yes" then
-          Dscr.Set_Standalone (True);
+          Gen_Dscr.Set_Standalone (True);
         elsif Asu_Ts (Attrs(I).Value) = "no" then
-          Dscr.Set_Standalone (False);
+          Gen_Dscr.Set_Standalone (False);
         else
           raise Internal_Error;
         end if;
@@ -122,22 +149,22 @@ procedure Xml_Checker is
         when Xml_Parser.Element =>
           -- A PI: Element with one Text child
           Text := Ctx.Get_Child (Children(I), 1);
-          Dscr.Add_Pi (Asu_Ts (Ctx.Get_Name (Children(I))),
+          Gen_Dscr.Add_Pi (Asu_Ts (Ctx.Get_Name (Children(I))),
                        Asu_Ts (Ctx.Get_Text (Text)));
         when Xml_Parser.Comment =>
-          Dscr.Add_Comment (Ctx.Get_Comment (Children(I)) );
+          Gen_Dscr.Add_Comment (Ctx.Get_Comment (Children(I)) );
         when Xml_Parser.Text =>
           -- The doctype: (empty text);
           Ctx.Get_Doctype (Doctype_Name, Doctype_Public, Doctype_Id,
                            Doctype_File, Doctype_Internal);
-          Dscr.Set_Doctype (Asu_Ts (Doctype_Name), Doctype_Public,
-                            Asu_Ts (Doctype_Id), Asu_Ts (Doctype_File),
-                            Asu_Ts (Doctype_Internal));
+          Gen_Dscr.Set_Doctype (Asu_Ts (Doctype_Name), Doctype_Public,
+                                Asu_Ts (Doctype_Id), Asu_Ts (Doctype_File),
+                                Asu_Ts (Doctype_Internal));
       end case;
     end loop;
   end Copy_Prologue;
 
-  -- Copy Ctx element children in Dscr
+  -- Copy Ctx element children in Gen_Dscr
   procedure Copy_Element (Element : in Xml_Parser.Element_Type) is
     Attrs : constant Xml_Parser.Attributes_Array
           := Ctx.Get_Attributes (Element);
@@ -146,7 +173,7 @@ procedure Xml_Checker is
   begin
     -- Add attributes
     for I in Attrs'Range loop
-      Dscr.Add_Attribute (Asu_Ts (Attrs(I).Name), Asu_Ts (Attrs(I).Value));
+      Gen_Dscr.Add_Attribute (Asu_Ts (Attrs(I).Name), Asu_Ts (Attrs(I).Value));
     end loop;
 
     -- Copy children
@@ -154,16 +181,16 @@ procedure Xml_Checker is
       Child := Ctx.Get_Child (Element, I);
       case Child.Kind is
         when Xml_Parser.Element =>
-          Dscr.Add_Child (Ctx.Get_Name (Child), Xml_Generator.Element);
+          Gen_Dscr.Add_Child (Ctx.Get_Name (Child), Xml_Generator.Element);
           -- Recursively
           Copy_Element (Child);
-          Dscr.Move_Father;
+          Gen_Dscr.Move_Father;
         when Xml_Parser.Text =>
-          Dscr.Add_Child (Ctx.Get_Text (Child), Xml_Generator.Text);
-          Dscr.Move_Father;
+          Gen_Dscr.Add_Child (Ctx.Get_Text (Child), Xml_Generator.Text);
+          Gen_Dscr.Move_Father;
         when Xml_Parser.Comment =>
-          Dscr.Add_Child (Ctx.Get_Comment (Child), Xml_Generator.Comment);
-          Dscr.Move_Father;
+          Gen_Dscr.Add_Child (Ctx.Get_Comment (Child), Xml_Generator.Comment);
+          Gen_Dscr.Move_Father;
       end case;
     end loop;
   end Copy_Element;
@@ -171,50 +198,86 @@ procedure Xml_Checker is
   -- Current file name
   function Get_File_Name return String is
   begin
-    if Argument.Get_Nbre_Arg = Arg_Index then
-      return Argument.Get_Parameter(Arg_Index);
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
+      return Xml_Parser.Stdin;
     else
-      return "";
+      return Arg_Dscr.Get_Option (No_Key_Index);
     end if;
   end Get_File_Name;
 
 begin
-  -- Parse options
-  Arg_Index := 1;
-  -- At most one option, and possible one file
-  if Argument.Get_Nbre_Arg > 2 then
+  -- Parse keys and options
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Basic_Proc.Put_Line_Error ("Error: " & Arg_Dscr.Get_Error & ".");
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+  -- Any path/file spec must be after options
+  if Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
     raise Arg_Error;
   end if;
-  if Argument.Get_Nbre_Arg >= 1
-  and then (Argument.Get_Parameter = "-d"
-    or else Argument.Get_Parameter = "--dump") then
-    Output_Kind := Dump;
-    Arg_Index := 2;
-  elsif Argument.Get_Nbre_Arg >= 1
-  and then (Argument.Get_Parameter = "-s"
-    or else Argument.Get_Parameter = "--silent") then
-    Output_Kind := Silent;
-    Arg_Index := 2;
-  elsif Argument.Get_Nbre_Arg = 1
-  and then (Argument.Get_Parameter = "-h"
-    or else Argument.Get_Parameter = "--help") then
-    Usage;
-    Basic_Proc.Set_Error_Exit_Code;
-    return;
-  elsif Argument.Get_Nbre_Arg = 1
-  and then (Argument.Get_Parameter = "-v"
-    or else Argument.Get_Parameter = "--version") then
-    Ada.Text_Io.Put_Line ("Xml_Parser version: " & Xml_Parser.Version);
-    Basic_Proc.Set_Error_Exit_Code;
-    return;
+  -- At most one file
+  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
+    raise Arg_Error;
   end if;
-  if Argument.Get_Nbre_Arg > Arg_Index then
-    -- 2 args but first is not a known option
+  -- All options are exclusive
+  if Arg_Dscr.Get_Number_Keys > 1 then
     raise Arg_Error;
   end if;
 
+  -- Process help and version options
+  if Arg_Dscr.Is_Set (6) then
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0 then
+      raise Arg_Error;
+    end if;
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  elsif Arg_Dscr.Is_Set (7) then
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0 then
+      raise Arg_Error;
+    end if;
+    Ada.Text_Io.Put_Line ("Xml_Checker version: " & Version);
+    Ada.Text_Io.Put_Line ("Parser version:      " & Xml_Parser.Version);
+    Ada.Text_Io.Put_Line ("Generator version:   " & Xml_Generator.Version);
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+
+  -- Default behavior
+  Output_Kind := Gen;
+  Width := Xml_Generator.Default_Width;
+  Format := Xml_Generator.Default_Format;
+  -- Get format info
+  if Arg_Dscr.Is_Set (1) then
+    -- Silent
+    Output_Kind := None;
+  elsif Arg_Dscr.Is_Set (2) then
+    -- Dump
+    Output_Kind := Dump;
+  elsif Arg_Dscr.Is_Set (3) then
+    Format := Xml_Generator.Raw;
+  elsif Arg_Dscr.Is_Set (4) then
+    -- -w <Width>
+    Format := Xml_Generator.Fill_Width;
+    if Arg_Dscr.Get_Option (4) = "" then
+      raise Arg_Error;
+    end if;
+    begin
+      Width := Positive'Value (Arg_Dscr.Get_Option (4));
+    exception
+      when others =>
+       raise Arg_Error;
+    end;
+  elsif Arg_Dscr.Is_Set (5) then
+    Format := Xml_Generator.One_Per_Line;
+  end if;
+
   -- Parse file provided as arg or stdin
-  Ctx.Parse (Get_File_Name, Parse_Ok, Comments => Output_Kind = Xml);
+  -- Retrieve comments and don't expand General Entities if output is Xml
+  Ctx.Parse (Get_File_Name, Parse_Ok, Comments => Output_Kind = Gen,
+                                      Expand_Entities => Output_Kind = Dump);
   if not Parse_Ok then
     Basic_Proc.Put_Line_Error ("Error in file " & Get_File_Name & ": "
                              & Xml_Parser.Get_Parse_Error_Message (Ctx));
@@ -226,16 +289,15 @@ begin
   Root := Ctx.Get_Root_Element;
 
   -- Dump / put
-  if Output_Kind = Xml then
-    Copy_Prologue (Prologue, Root);
-    Copy_Element (Root);
-    Dscr.Put (True);
-    Ada.Text_Io.New_Line;
-  elsif Output_Kind = Dump then
+  if Output_Kind = Dump then
     Ada.Text_Io.Put_Line ("Prologue:");
     Dump_Element (Prologue, 0);
     Ada.Text_Io.Put_Line ("Elements tree:");
     Dump_Element (Root, 0);
+  elsif Output_Kind = Gen then
+    Copy_Prologue (Prologue, Root);
+    Copy_Element (Root);
+    Gen_Dscr.Put (Xml_Generator.Stdout, Format, Width);
   end if;
   Ctx.Clean;
 
