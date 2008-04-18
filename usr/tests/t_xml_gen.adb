@@ -50,6 +50,6 @@ begin
   Dscr.Add_Child ("${SET_ME}", Xml_Generator.Text);
   Dscr.Move_Father;
 
-  Dscr.Put (True);
+  Dscr.Put (Xml_Generator.Stdout);
 end T_Xml_Gen;
 
