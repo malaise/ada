@@ -440,12 +440,13 @@ package body Xml_Generator is
 
   -- Put the attributes of current element
   -- Move to first child of element if any, otherwise remain on element
-  procedure Put_Attributes (Flow    : in out Flow_Dscr;
-                            Format  : in Format_Kind_List;
-                            Width   : in Natural;
-                            Element : in out My_Tree.Tree_Type;
-                            Level   : in Natural;
-                            Offset  : in Positive) is
+  procedure Put_Attributes (Flow         : in out Flow_Dscr;
+                            Format       : in Format_Kind_List;
+                            Width        : in Natural;
+                            Element      : in out My_Tree.Tree_Type;
+                            Level        : in Natural;
+                            Offset       : in Positive;
+                            Has_Children : in Boolean) is
     Cell : My_Tree_Cell;
     Nb_Attributes : Natural;
     Pad : constant String (1 .. 2 * Level + Offset) := (others => ' ');
@@ -464,7 +465,7 @@ package body Xml_Generator is
       return;
     end if;
     -- Put each attribute
-    Cur_Col := Pad'Length + 1;
+    Cur_Col := Pad'Length;
     for I in 1 .. Nb_Attributes loop
       if I = 1 then
          My_Tree.Move_Child (Element, False);
@@ -474,6 +475,14 @@ package body Xml_Generator is
       -- Read attribute, needed width is ' Name="Value"'
       My_Tree.Read (Element, Cell);
       Att_Width := Asu.Length (Cell.Name) + Asu.Length (Cell.Value) + 4;
+      -- For last attribute, a ">" (if children) or a "/>" will be added
+      if I = Nb_Attributes then
+        if Has_Children then
+          Att_Width := Att_Width + 1;
+        else
+          Att_Width := Att_Width + 2;
+        end if;
+      end if;
       -- New line and Indent if needed
       -- Never new line for first
       -- New line if One_Per_Line of Fill_Width and no more width
@@ -483,7 +492,7 @@ package body Xml_Generator is
                   and then Cur_Col + Att_Width > Width) ) then
         New_Line (Flow);
         Put (Flow, Pad);
-        Cur_Col := Pad'Length + 1;
+        Cur_Col := Pad'Length;
       end if;
       Put (Flow, " " & Asu_Ts (Cell.Name & "=""" & Cell.Value) & """");
       Cur_Col := Cur_Col + Att_Width;
@@ -541,7 +550,7 @@ package body Xml_Generator is
       if Asu_Ts (Child.Value) /= No_Xml then
         Put (Flow, "<?" & Asu_Ts (Cell.Name));
         Put_Attributes (Flow, Xml_Attr_Format, Width, Element, 0,
-                        2 + Asu.Length (Cell.Name));
+                        2 + Asu.Length (Cell.Name), False);
         Put (Flow, "?>");
         if Format /= Raw then
           New_Line (Flow);
@@ -616,7 +625,9 @@ package body Xml_Generator is
     end if;
     Put (Flow, "<" & Asu_Ts(Cell.Name));
     Put_Attributes (Flow, Format, Width, Element, Level,
-                    1 + Asu.Length (Cell.Name));
+                    1 + Asu.Length (Cell.Name),
+                    Has_Children => My_Tree.Children_Number (Element)
+                                      > Cell.Nb_Attributes);
     -- Any child
     if My_Tree.Get_Position (Element) = Cell_Ref then
       -- No child, terminate tag now

@@ -3,7 +3,7 @@ with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
 package Xml_Generator is
 
-  Version : constant String := "V2.1";
+  Version : constant String := "V2.2";
 
   type Xml_Dscr_Type is tagged limited private;
 
