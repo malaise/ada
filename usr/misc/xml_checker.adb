@@ -10,33 +10,36 @@ procedure Xml_Checker is
   function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
-  Version : constant String := "V1.0";
+  Version : constant String := "V2.0";
   Arg_Error : exception;
 
   Parse_Ok : Boolean;
-  type Output_Kind_list is (None, Dump, Gen);
-  Output_Kind : Output_Kind_list;
+  type Output_Kind_List is (None, Dump, Gen);
+  Output_Kind : Output_Kind_List;
 
   Gen_Dscr : Xml_Generator.Xml_Dscr_Type;
   Format : Xml_Generator.Format_Kind_List;
   Width  : Positive;
+  Expand : Boolean;
 
   Internal_Error : exception;
 
   procedure Usage is
-    Procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
+    procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ <file> ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> | <help> |"
-       & " <version>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> | <expand>");
+    Ple ("            | <help> | <version>");
     Ple (" <silent>  ::= -s | --silent    -- No output, only exit code");
     Ple (" <dump>    ::= -d | --dump      -- Dump expanded Xml tree");
-    PLe (" <raw>     ::= -r | --raw       -- Put all on one line");
+    Ple (" <raw>     ::= -r | --raw       -- Put all on one line");
     Ple (" <width>   ::= -w <Width> | --width=<Width>");
     Ple ("                                -- Put attributes up to Width");
     Ple (" <one>     ::= -1 | --one       -- Put one attribute per line");
+    Ple (" <expand>  ::= -e | --expand    -- Expand general entities");
     Ple (" <help>    ::= -h | --help      -- Put this help");
     Ple (" <version> ::= -v | --version   -- Put versions");
+    Ple ("Always expands general entities in dump.");
     Ple ("Default is -w" & Xml_Generator.Default_Width'Img & " on stdin.");
   end Usage;
 
@@ -48,7 +51,8 @@ procedure Xml_Checker is
    4 => ('w', Asu_Tus ("width"), False, True),
    5 => ('1', Asu_Tus ("one"), False, False),
    6 => ('h', Asu_Tus ("help"), False, False),
-   7 => ('v', Asu_Tus ("version"), False, False));
+   7 => ('v', Asu_Tus ("version"), False, False),
+   8 => ('e', Asu_Tus ("expand"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -221,21 +225,20 @@ begin
   if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
     raise Arg_Error;
   end if;
-  -- All options are exclusive
-  if Arg_Dscr.Get_Number_Keys > 1 then
-    raise Arg_Error;
-  end if;
 
   -- Process help and version options
   if Arg_Dscr.Is_Set (6) then
-    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0 then
+    -- No file nor other option
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
+    or else Arg_Dscr.Get_Number_Keys > 1 then
       raise Arg_Error;
     end if;
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   elsif Arg_Dscr.Is_Set (7) then
-    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0 then
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
+    or else Arg_Dscr.Get_Number_Keys > 1 then
       raise Arg_Error;
     end if;
     Ada.Text_Io.Put_Line ("Xml_Checker version: " & Version);
@@ -249,6 +252,18 @@ begin
   Output_Kind := Gen;
   Width := Xml_Generator.Default_Width;
   Format := Xml_Generator.Default_Format;
+  Expand := False;
+  -- Get Expand option
+  if Arg_Dscr.Is_Set (8) then
+    Expand := True;
+  end if;
+
+  -- Only 1 option (or at most 2 if Expand)
+  if (not Expand and then Arg_Dscr.Get_Number_Keys > 1)
+  or else (Expand and then Arg_Dscr.Get_Number_Keys > 2) then
+    raise Arg_Error;
+  end if;
+
   -- Get format info
   if Arg_Dscr.Is_Set (1) then
     -- Silent
@@ -277,7 +292,7 @@ begin
   -- Parse file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
   Ctx.Parse (Get_File_Name, Parse_Ok, Comments => Output_Kind = Gen,
-                                      Expand_Entities => Output_Kind = Dump);
+             Expand_Entities => Expand or else Output_Kind = Dump);
   if not Parse_Ok then
     Basic_Proc.Put_Line_Error ("Error in file " & Get_File_Name & ": "
                              & Xml_Parser.Get_Parse_Error_Message (Ctx));
