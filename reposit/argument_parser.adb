@@ -523,7 +523,7 @@ package body Argument_Parser is
                        Occurence : Positive := 1) return String is
     Loc : Positive;
   begin
-   Loc := Get_Position (Dscr, Index, Occurence);
+    Loc := Get_Position (Dscr, Index, Occurence);
 
     -- Handle No_Key_Index
     if Index = No_Key_Index then
