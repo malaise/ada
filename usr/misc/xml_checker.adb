@@ -1,33 +1,49 @@
-with Ada.Text_Io, Ada.Strings.Unbounded, Ada.Exceptions;
-with Argument, Argument_Parser, Xml_Parser, Normal, Basic_Proc, Xml_Generator;
+with Ada.Strings.Unbounded, Ada.Exceptions;
+with Argument, Argument_Parser, Xml_Parser, Normal, Basic_Proc, Xml_Generator,
+     Text_Line, Sys_Calls;
 procedure Xml_Checker is
-  Ctx : Xml_Parser.Ctx_Type;
-  Prologue, Root : Xml_Parser.Element_Type;
+  -- Current version
+  Version : constant String := "V2.1";
 
+  -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
   function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
   function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
-  Version : constant String := "V2.0";
-  Arg_Error : exception;
+  procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
+                   M : in String := "")
+            renames Ada.Exceptions.Raise_Exception;
 
-  Parse_Ok : Boolean;
+  -- Xml Parser context, elements and parsing parameters
+  Ctx : Xml_Parser.Ctx_Type;
+  Expand : Boolean;
+
+  -- Argument error
+  Arg_Error : exception;
+  -- Error on Xml directive!
+  Internal_Error : exception;
+  -- Abort loop of arguments
+  Abort_Error : exception;
+
+  -- Kind of ouput: None, dump or Xml_Generator
   type Output_Kind_List is (None, Dump, Gen);
   Output_Kind : Output_Kind_List;
 
+  -- Xml_Generator descriptor and format
   Gen_Dscr : Xml_Generator.Xml_Dscr_Type;
   Format : Xml_Generator.Format_Kind_List;
   Width  : Positive;
-  Expand : Boolean;
 
-  Internal_Error : exception;
+  -- Flow of dump
+  Out_Flow : Text_Line.File_Type;
 
+  -- Program help
   procedure Usage is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
-    Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ <file> ]");
+    Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
     Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> | <expand>");
     Ple ("            | <help> | <version>");
     Ple (" <silent>  ::= -s | --silent    -- No output, only exit code");
@@ -40,10 +56,11 @@ procedure Xml_Checker is
     Ple (" <help>    ::= -h | --help      -- Put this help");
     Ple (" <version> ::= -v | --version   -- Put versions");
     Ple ("Always expands general entities in dump.");
+    Ple ("All options except expand are exclusive.");
     Ple ("Default is -w" & Xml_Generator.Default_Width'Img & " on stdin.");
   end Usage;
 
-  -- The keys and descriptor of parsed keys
+  -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
    1 => ('s', Asu_Tus ("silent"), False, False),
    2 => ('d', Asu_Tus ("dump"), False, False),
@@ -62,7 +79,7 @@ procedure Xml_Checker is
   -------------------
   procedure Dump_Line (Node : in Xml_Parser.Node_Type) is
   begin
-    Ada.Text_Io.Put (Normal (Ctx.Get_Line_No (Node), 5, True, '0'));
+    Out_Flow.Put (Normal (Ctx.Get_Line_No (Node), 5, True, '0'));
   end Dump_Line;
 
   procedure Dump_Attributes (Elt : in Xml_Parser.Element_Type) is
@@ -70,7 +87,7 @@ procedure Xml_Checker is
     use type Asu_Us;
   begin
     for I in Attrs'Range loop
-      Ada.Text_Io.Put (" " & Asu.To_String (Attrs(I).Name
+      Out_Flow.Put (" " & Asu.To_String (Attrs(I).Name
                      & "=" & Attrs(I).Value));
     end loop;
   end Dump_Attributes;
@@ -82,13 +99,13 @@ procedure Xml_Checker is
     use type Xml_Parser.Node_Kind_List;
   begin
     Dump_Line (Elt);
-    Ada.Text_Io.Put (Indent);
-    Ada.Text_Io.Put (Asu.To_String(Ctx.Get_Name (Elt)));
+    Out_Flow.Put (Indent);
+    Out_Flow.Put (Asu.To_String(Ctx.Get_Name (Elt)));
     if Ctx.Get_Nb_Attributes (Elt) /= 0 then
-      Ada.Text_Io.Put (" :" );
+      Out_Flow.Put (" :" );
     end if;
     Dump_Attributes (Elt);
-    Ada.Text_Io.New_Line;
+    Out_Flow.New_Line;
     for I in Children'Range loop
       if I rem 2 = 0 then
         -- Test the individual get
@@ -100,13 +117,15 @@ procedure Xml_Checker is
       else
         -- Specific put text
         Dump_Line (Children(I));
-        Ada.Text_Io.Put (Indent);
-        Ada.Text_Io.Put_Line (" =>" & Ctx.Get_Text (Children(I))
-                            & "<=");
+        Out_Flow.Put (Indent);
+        Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
       end if;
     end loop;
   end Dump_Element;
 
+  ----------------------
+  -- Put the xml text --
+  ----------------------
   -- Copy Ctx prologue in Gen_Dscr
   procedure Copy_Prologue (Prologue : in Xml_Parser.Element_Type;
                            Root : in Xml_Parser.Element_Type) is
@@ -198,18 +217,78 @@ procedure Xml_Checker is
       end case;
     end loop;
   end Copy_Element;
-  
-  -- Current file name
-  function Get_File_Name return String is
+  -- Return a file name
+  function Get_File_Name (Occurence : in Natural;
+                          For_Message : in Boolean) return String is
   begin
-    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
-      return Xml_Parser.Stdin;
+    if Occurence = 0 then
+      if For_Message then
+        return "Stdin";
+      else
+        return Xml_Parser.Stdin;
+      end if;
     else
-      return Arg_Dscr.Get_Option (No_Key_Index);
+      return Arg_Dscr.Get_Option (No_Key_Index, Occurence);
     end if;
   end Get_File_Name;
+  -- Parse a file provided as arg or stdin
+  -- Retrieve comments and don't expand General Entities if output is Xml
+  procedure Do_One (Index : in Natural;
+                    Expand : in Boolean) is
+    -- Parsing elements and charactericstics
+    Prologue, Root : Xml_Parser.Element_Type;
+    Parse_Ok : Boolean;
+  begin
+    Ctx.Parse (Get_File_Name (Index, False),
+               Parse_Ok, Comments => Output_Kind = Gen,
+               Expand_Entities => Expand or else Output_Kind = Dump);
+    if not Parse_Ok then
+      Basic_Proc.Put_Line_Error ("Error in file "
+                               & Get_File_Name (Index, True) & ": "
+                               & Xml_Parser.Get_Parse_Error_Message (Ctx));
+      Basic_Proc.Set_Error_Exit_Code;
+      Xml_Parser.Clean (Ctx);
+      return;
+    end if;
+    Prologue := Ctx.Get_Prologue;
+    Root := Ctx.Get_Root_Element;
+
+    -- Dump / put
+    if Index /= 0 then
+      Out_Flow.Put_Line (Get_File_Name (Index, True) & ":");
+      Out_Flow.Flush;
+    end if;
+    if Output_Kind = Dump then
+      Out_Flow.Put_Line ("Prologue:");
+      Dump_Element (Prologue, 0);
+      Out_Flow.Put_Line ("Elements tree:");
+      Dump_Element (Root, 0);
+      Out_Flow.Flush;
+    elsif Output_Kind = Gen then
+      Copy_Prologue (Prologue, Root);
+      Copy_Element (Root);
+      Gen_Dscr.Put (Xml_Generator.Stdout, Format, Width);
+    end if;
+    Ctx.Clean;
+  exception
+    when Xml_Parser.File_Error =>
+      Basic_Proc.Put_Line_Error ("Error reading file "
+        & Get_File_Name (Index, True) & ".");
+      raise Abort_Error;
+  end Do_One;
+
+  -- Close output flow
+  procedure Close is
+  begin
+    if Out_Flow.Is_Open then
+      Out_Flow.Close;
+    end if;
+  end Close;
 
 begin
+  -- Open output flow
+  Out_Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
+
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -219,11 +298,7 @@ begin
   end if;
   -- Any path/file spec must be after options
   if Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
-    raise Arg_Error;
-  end if;
-  -- At most one file
-  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
-    raise Arg_Error;
+    Ae_Re (Arg_Error'Identity, "File name(s) must appear after option(s)");
   end if;
 
   -- Process help and version options
@@ -231,7 +306,7 @@ begin
     -- No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
-      raise Arg_Error;
+      Ae_Re (Arg_Error'Identity, "Too many options");
     end if;
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
@@ -239,11 +314,11 @@ begin
   elsif Arg_Dscr.Is_Set (7) then
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
-      raise Arg_Error;
+      Ae_Re (Arg_Error'Identity, "Too many options");
     end if;
-    Ada.Text_Io.Put_Line ("Xml_Checker version: " & Version);
-    Ada.Text_Io.Put_Line ("Parser version:      " & Xml_Parser.Version);
-    Ada.Text_Io.Put_Line ("Generator version:   " & Xml_Generator.Version);
+    Out_Flow.Put_Line ("Xml_Checker version: " & Version);
+    Out_Flow.Put_Line ("Parser version:      " & Xml_Parser.Version);
+    Out_Flow.Put_Line ("Generator version:   " & Xml_Generator.Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -261,7 +336,7 @@ begin
   -- Only 1 option (or at most 2 if Expand)
   if (not Expand and then Arg_Dscr.Get_Number_Keys > 1)
   or else (Expand and then Arg_Dscr.Get_Number_Keys > 2) then
-    raise Arg_Error;
+    Ae_Re (Arg_Error'Identity, "Too many options");
   end if;
 
   -- Get format info
@@ -277,56 +352,47 @@ begin
     -- -w <Width>
     Format := Xml_Generator.Fill_Width;
     if Arg_Dscr.Get_Option (4) = "" then
-      raise Arg_Error;
+      Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
     end if;
     begin
       Width := Positive'Value (Arg_Dscr.Get_Option (4));
     exception
       when others =>
-       raise Arg_Error;
+        Ae_Re (Arg_Error'Identity, "Invalid Width value "
+             & Arg_Dscr.Get_Option (4));
     end;
   elsif Arg_Dscr.Is_Set (5) then
     Format := Xml_Generator.One_Per_Line;
   end if;
 
-  -- Parse file provided as arg or stdin
-  -- Retrieve comments and don't expand General Entities if output is Xml
-  Ctx.Parse (Get_File_Name, Parse_Ok, Comments => Output_Kind = Gen,
-             Expand_Entities => Expand or else Output_Kind = Dump);
-  if not Parse_Ok then
-    Basic_Proc.Put_Line_Error ("Error in file " & Get_File_Name & ": "
-                             & Xml_Parser.Get_Parse_Error_Message (Ctx));
-    Basic_Proc.Set_Error_Exit_Code;
-    Xml_Parser.Clean (Ctx);
-    return;
+  -- Process arguments
+  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
+    Do_One (0, Expand);
+  else
+    for I in 1 .. Arg_Dscr.Get_Nb_Occurences (No_Key_Index) loop
+      Do_One (I, Expand);
+      if I /= Arg_Dscr.Get_Nb_Occurences (No_Key_Index) then
+        Out_Flow.New_Line;
+        Out_Flow.Flush;
+      end if;
+    end loop;
   end if;
-  Prologue := Ctx.Get_Prologue;
-  Root := Ctx.Get_Root_Element;
 
-  -- Dump / put
-  if Output_Kind = Dump then
-    Ada.Text_Io.Put_Line ("Prologue:");
-    Dump_Element (Prologue, 0);
-    Ada.Text_Io.Put_Line ("Elements tree:");
-    Dump_Element (Root, 0);
-  elsif Output_Kind = Gen then
-    Copy_Prologue (Prologue, Root);
-    Copy_Element (Root);
-    Gen_Dscr.Put (Xml_Generator.Stdout, Format, Width);
-  end if;
-  Ctx.Clean;
+  Close;
 
 exception
-  when Xml_Parser.File_Error =>
-    Basic_Proc.Put_Line_Error ("Error reading file "
-      & Get_File_Name & ".");
+  when Error:Arg_Error =>
+    -- Argument error
+    Basic_Proc.Put_Line_Error ("Error "
+         & Ada.Exceptions.Exception_Message(Error) & ".");
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
-  when Arg_Error =>
-    Basic_Proc.Put_Line_Error ("Error, invalid arguments.");
+  when Abort_Error =>
+    -- Error already put while parsing file
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
   when Error:others =>
+    -- Unexpected or internal error
     Basic_Proc.Put_Line_Error ("Exception "
         & Ada.Exceptions.Exception_Name (Error)
         & " raised.");
