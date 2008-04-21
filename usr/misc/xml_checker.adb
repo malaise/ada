@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser, Normal, Basic_Proc, Xml_Generator,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V2.1";
+  Version : constant String := "V2.2";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -217,6 +217,7 @@ procedure Xml_Checker is
       end case;
     end loop;
   end Copy_Element;
+
   -- Return a file name
   function Get_File_Name (Occurence : in Natural;
                           For_Message : in Boolean) return String is
@@ -231,6 +232,7 @@ procedure Xml_Checker is
       return Arg_Dscr.Get_Option (No_Key_Index, Occurence);
     end if;
   end Get_File_Name;
+
   -- Parse a file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
   procedure Do_One (Index : in Natural;
@@ -254,7 +256,8 @@ procedure Xml_Checker is
     Root := Ctx.Get_Root_Element;
 
     -- Dump / put
-    if Index /= 0 then
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
+      -- Title except if stdin or if only one file
       Out_Flow.Put_Line (Get_File_Name (Index, True) & ":");
       Out_Flow.Flush;
     end if;
