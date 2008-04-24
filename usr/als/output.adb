@@ -327,7 +327,12 @@ package body Output is
 
     -- Link
     if Entity.Kind = Directory.Link then
-      Ada.Text_Io.Put (" -> " & Asu.To_String (Entity.Link));
+      if Entity.Link_Ok then
+        Ada.Text_Io.Put (" -> ");
+      else
+        Ada.Text_Io.Put (" => ");
+      end if;
+      Ada.Text_Io.Put (Asu.To_String (Entity.Link));
     end if;
     -- Done
     Ada.Text_Io.New_Line;

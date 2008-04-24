@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.5";
+  Version : constant String  := "V2.6";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;

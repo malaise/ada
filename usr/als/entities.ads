@@ -21,6 +21,8 @@ package Entities is
     Size : Sys_Calls.Size_T;
     -- Symbolic link destination (if link)
     Link : Asu_Us;
+    -- Symbolic link final target exists (if link)
+    Link_Ok : Boolean;
   end record;
 
   -- List of entities

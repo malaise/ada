@@ -168,6 +168,32 @@ package body Lister is
     return False;
   end Match;
 
+  -- Read link Name and fill Ent.Link and Ent.Link_Ok
+  procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
+    Link_Target : Asu.Unbounded_String;
+    use type Asu.Unbounded_String;
+  begin
+    -- Read link direct target
+    begin
+      Ent.Link := Asu.To_Unbounded_String (Directory.Read_Link (
+          File_Name => Name, Recursive => False));
+    exception
+      when Directory.Name_Error | Directory.Access_Error =>
+        Ent.Link := Asu.Null_Unbounded_String;
+        Ent.Link_Ok := False;
+        return;
+    end;
+    -- Check if final target exists (and is reachable)
+    begin
+      Link_Target := Asu.To_Unbounded_String (Directory.Read_Link (
+          File_Name => Name, Recursive => True));
+      Ent.Link_Ok := True;
+    exception
+      when Directory.Name_Error | Directory.Access_Error =>
+        Ent.Link_Ok := False;
+    end;
+  end Read_Link;
+
   -- Add a file if it matches
   procedure List (Ent_List : in out Entities.Entity_List;
                   File : in String) is
@@ -205,14 +231,7 @@ package body Lister is
     Ent.Size := Stat.Size;
     Ent.Link := Asu.Null_Unbounded_String;
     if Ent.Kind = Directory.Link then
-      -- Read link
-      begin
-        Ent.Link := Asu.To_Unbounded_String (Directory.Read_Link (
-            File_Name => File, Recursive => False));
-      exception
-        when Directory.Name_Error | Directory.Access_Error =>
-          Ent.Link := Asu.Null_Unbounded_String;
-      end;
+      Read_Link (File, Ent);
     end if;
     -- Insert entity
     Ent_List.Insert (Ent);
@@ -307,16 +326,9 @@ package body Lister is
         Ent.Size := Stat.Size;
         Ent.Link := Asu.Null_Unbounded_String;
         if Ent.Kind = Directory.Link then
-          -- Read link
-          begin
-            Ent.Link := Asu.To_Unbounded_String (Directory.Read_Link (
-                File_Name => Directory.Build_File_Name (Dir,
+          Read_Link (Directory.Build_File_Name (Dir,
                                     Asu.To_String (Ent.Name), ""),
-                Recursive => False));
-          exception
-            when Directory.Name_Error | Directory.Access_Error =>
-              Ent.Link := Asu.Null_Unbounded_String;
-          end;
+                     Ent);
         end if;
 
         -- Append entity to list
@@ -463,5 +475,4 @@ package body Lister is
   end Add_Size;
   
 end Lister;
-
 
