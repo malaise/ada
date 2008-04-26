@@ -1,9 +1,7 @@
--- with Ada.Strings.Unbounded, Ada.Finalization;
--- with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
 with Ada.Characters.Latin_1;
 with Int_Image, Text_Line, Sys_Calls;
-package body Xml_Generator is
+package body Xml_Parser.Generator is
 
   -- Ada unbounded strings
   package Asu renames Ada.Strings.Unbounded;
@@ -162,7 +160,7 @@ package body Xml_Generator is
     end if;
     Check_Name (Name);
     -- Add this child to prologue
-    Cell.Kind := Xml_Generator.Text;
+    Cell.Kind := Generator.Text;
     Cell.Nb_Attributes := 0;
     Cell.Name := Asu_Tus (Name);
     My_Tree.Insert_Child (Dscr.Prologue.all, Cell);
@@ -570,7 +568,7 @@ package body Xml_Generator is
           when Attribute =>
             -- Impossibe
             raise Internal_Error;
-          when Xml_Generator.Element =>
+          when Generator.Element =>
             -- Put PI
             Put (Flow, "<?" & Asu_Ts (Child.Name));
             if Child.Value /= Asu_Null then
@@ -644,7 +642,7 @@ package body Xml_Generator is
         when Attribute =>
           -- Impossibe
           raise Internal_Error;
-        when Xml_Generator.Element =>
+        when Generator.Element =>
           -- Recursive dump child
           if I = 1 or else not Prev_Is_Text then
             -- Father did not New_Line because of possible text
@@ -719,5 +717,6 @@ package body Xml_Generator is
       New_Line (Flow);
     end if;
   end Generate;
-end Xml_Generator;
+
+end Xml_Parser.Generator;
 

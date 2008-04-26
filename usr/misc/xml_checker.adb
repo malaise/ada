@@ -1,9 +1,9 @@
 with Ada.Strings.Unbounded, Ada.Exceptions;
-with Argument, Argument_Parser, Xml_Parser, Normal, Basic_Proc, Xml_Generator,
+with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V2.2";
+  Version : constant String := "V2.3";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -32,8 +32,8 @@ procedure Xml_Checker is
   Output_Kind : Output_Kind_List;
 
   -- Xml_Generator descriptor and format
-  Gen_Dscr : Xml_Generator.Xml_Dscr_Type;
-  Format : Xml_Generator.Format_Kind_List;
+  Gen_Dscr : Xml_Parser.Generator.Xml_Dscr_Type;
+  Format : Xml_Parser.Generator.Format_Kind_List;
   Width  : Positive;
 
   -- Flow of dump
@@ -57,7 +57,8 @@ procedure Xml_Checker is
     Ple (" <version> ::= -v | --version   -- Put versions");
     Ple ("Always expands general entities in dump.");
     Ple ("All options except expand are exclusive.");
-    Ple ("Default is -w" & Xml_Generator.Default_Width'Img & " on stdin.");
+    Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
+                         & " on stdin.");
   end Usage;
 
   -- The argument keys and descriptor of parsed keys
@@ -204,15 +205,18 @@ procedure Xml_Checker is
       Child := Ctx.Get_Child (Element, I);
       case Child.Kind is
         when Xml_Parser.Element =>
-          Gen_Dscr.Add_Child (Ctx.Get_Name (Child), Xml_Generator.Element);
+          Gen_Dscr.Add_Child (Ctx.Get_Name (Child),
+                              Xml_Parser.Generator.Element);
           -- Recursively
           Copy_Element (Child);
           Gen_Dscr.Move_Father;
         when Xml_Parser.Text =>
-          Gen_Dscr.Add_Child (Ctx.Get_Text (Child), Xml_Generator.Text);
+          Gen_Dscr.Add_Child (Ctx.Get_Text (Child),
+                              Xml_Parser.Generator.Text);
           Gen_Dscr.Move_Father;
         when Xml_Parser.Comment =>
-          Gen_Dscr.Add_Child (Ctx.Get_Comment (Child), Xml_Generator.Comment);
+          Gen_Dscr.Add_Child (Ctx.Get_Comment (Child),
+                              Xml_Parser.Generator.Comment);
           Gen_Dscr.Move_Father;
       end case;
     end loop;
@@ -270,7 +274,7 @@ procedure Xml_Checker is
     elsif Output_Kind = Gen then
       Copy_Prologue (Prologue, Root);
       Copy_Element (Root);
-      Gen_Dscr.Put (Xml_Generator.Stdout, Format, Width);
+      Gen_Dscr.Put (Xml_Parser.Generator.Stdout, Format, Width);
     end if;
     Ctx.Clean;
   exception
@@ -321,15 +325,15 @@ begin
     end if;
     Out_Flow.Put_Line ("Xml_Checker version: " & Version);
     Out_Flow.Put_Line ("Parser version:      " & Xml_Parser.Version);
-    Out_Flow.Put_Line ("Generator version:   " & Xml_Generator.Version);
+    Out_Flow.Put_Line ("Generator version:   " & Xml_Parser.Generator.Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
   -- Default behavior
   Output_Kind := Gen;
-  Width := Xml_Generator.Default_Width;
-  Format := Xml_Generator.Default_Format;
+  Width := Xml_Parser.Generator.Default_Width;
+  Format := Xml_Parser.Generator.Default_Format;
   Expand := False;
   -- Get Expand option
   if Arg_Dscr.Is_Set (8) then
@@ -350,10 +354,10 @@ begin
     -- Dump
     Output_Kind := Dump;
   elsif Arg_Dscr.Is_Set (3) then
-    Format := Xml_Generator.Raw;
+    Format := Xml_Parser.Generator.Raw;
   elsif Arg_Dscr.Is_Set (4) then
     -- -w <Width>
-    Format := Xml_Generator.Fill_Width;
+    Format := Xml_Parser.Generator.Fill_Width;
     if Arg_Dscr.Get_Option (4) = "" then
       Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
     end if;
@@ -365,7 +369,7 @@ begin
              & Arg_Dscr.Get_Option (4));
     end;
   elsif Arg_Dscr.Is_Set (5) then
-    Format := Xml_Generator.One_Per_Line;
+    Format := Xml_Parser.Generator.One_Per_Line;
   end if;
 
   -- Process arguments

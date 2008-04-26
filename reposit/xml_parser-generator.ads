@@ -1,9 +1,9 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
-package Xml_Generator is
+package Xml_Parser.Generator is
 
-  Version : constant String := "V2.2";
+  Version : constant String := "V2.3";
 
   type Xml_Dscr_Type is tagged limited private;
 
@@ -166,5 +166,5 @@ private
 
   procedure Finalize (Dscr : in out Xml_Dscr_Type);
 
-end Xml_Generator;
+end Xml_Parser.Generator;
 
