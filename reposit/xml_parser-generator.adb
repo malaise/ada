@@ -88,13 +88,132 @@ package body Xml_Parser.Generator is
     My_Tree.Insert_Father (Dscr.Elements.all, Cell);
   end Reset;
 
-  -- Raise Status_Error id Dscr not (re)set
+  -- Initialise a XML descriptor from the context of a parsed file (or string)
+  -- May raise Status_Error if Ctx is clean
+  procedure Init_From_Parsed (Dscr  : in out Xml_Dscr_Type;
+                              Ctx   : in Ctx_Type) is
+    -- Prologue information
+    Prologue : constant Element_Type
+             := Get_Prologue (Ctx);
+    Attrs : constant Xml_Parser.Attributes_Array
+          := Ctx.Get_Attributes (Prologue);
+    Children : constant Xml_Parser.Nodes_Array
+             := Ctx.Get_Children (Prologue);
+    Doctype_Name, Doctype_Id, Doctype_File, Doctype_Internal : Asu_Us;
+    Doctype_Public : Boolean;
+    Text : Xml_Parser.Text_Type;
+
+    -- Element information
+    Root : constant Element_Type := Ctx.Get_Root_Element;
+    Root_Name : constant String := Ctx.Get_Name (Root);
+
+    -- Copy Ctx element children in Dscr
+    procedure Copy_Element (Element : in Xml_Parser.Element_Type) is
+      Attrs : constant Xml_Parser.Attributes_Array
+            := Ctx.Get_Attributes (Element);
+      Nb_Children : constant Natural := Ctx.Get_Nb_Children (Element);
+      Child : Xml_Parser.Node_Type;
+    begin
+      -- Add attributes
+      for I in Attrs'Range loop
+        Dscr.Add_Attribute (Asu_Ts (Attrs(I).Name), Asu_Ts (Attrs(I).Value));
+      end loop;
+
+      -- Copy children
+      for I in 1 .. Nb_Children loop
+        Child := Ctx.Get_Child (Element, I);
+        case Child.Kind is
+          when Xml_Parser.Element =>
+            Dscr.Add_Child (Ctx.Get_Name (Child),
+                            Xml_Parser.Generator.Element);
+            -- Recursively
+            Copy_Element (Child);
+            Dscr.Move_Father;
+          when Xml_Parser.Text =>
+            Dscr.Add_Child (Ctx.Get_Text (Child),
+                            Xml_Parser.Generator.Text);
+            Dscr.Move_Father;
+          when Xml_Parser.Comment =>
+            Dscr.Add_Child (Ctx.Get_Comment (Child),
+                            Xml_Parser.Generator.Comment);
+            Dscr.Move_Father;
+        end case;
+      end loop;
+    end Copy_Element;
+
+    use type Asu_Us;
+  begin
+    -- Copy Ctx prologue in Dscr
+    -- Set version and Root name
+    if Attrs'Length = 0 then
+      -- No xml directive
+      Dscr.Reset (0, 1, Root_Name);
+    elsif Asu_Ts (Attrs(1).Value) = "1.0" then
+      Dscr.Reset (1, 0, Root_Name);
+    else
+      Dscr.Reset (1, 1, Root_Name);
+    end if;
+
+    -- Add Xml attributes
+    for I in 2 .. Attrs'Last loop
+      if Asu_Ts (Attrs(I).Name) = "encoding" then
+        Dscr.Set_Encoding (Asu_Ts (Attrs(I).Value));
+      elsif Asu_Ts (Attrs(I).Name) = "standalone" then
+        if Asu_Ts (Attrs(I).Value) = "yes" then
+          Dscr.Set_Standalone (True);
+        elsif Asu_Ts (Attrs(I).Value) = "no" then
+          Dscr.Set_Standalone (False);
+        else
+          raise Internal_Error;
+        end if;
+      else
+        raise Internal_Error;
+      end if;
+    end loop;
+
+    -- Fill prologue with PIs, comments, doctype
+    for I in Children'Range loop
+      case Children(I).Kind is
+        when Xml_Parser.Element =>
+          -- A PI: Element with one Text child
+          Text := Ctx.Get_Child (Children(I), 1);
+          Dscr.Add_Pi (Asu_Ts (Ctx.Get_Name (Children(I))),
+                       Asu_Ts (Ctx.Get_Text (Text)));
+        when Xml_Parser.Comment =>
+          Dscr.Add_Comment (Ctx.Get_Comment (Children(I)) );
+        when Xml_Parser.Text =>
+          -- The doctype: (empty text);
+          Ctx.Get_Doctype (Doctype_Name, Doctype_Public, Doctype_Id,
+                           Doctype_File, Doctype_Internal);
+          Dscr.Set_Doctype (Asu_Ts (Doctype_Name), Doctype_Public,
+                            Asu_Ts (Doctype_Id), Asu_Ts (Doctype_File),
+                            Asu_Ts (Doctype_Internal));
+      end case;
+    end loop;
+    
+    -- Copy Root and its children
+    Copy_Element (Root);
+
+    -- Done
+    Dscr.From_Parsed := True;
+  end Init_From_Parsed;
+
+
+  -- Raise Status_Error if Dscr not (re)set
   procedure Check_Set  (Dscr : in Xml_Dscr_Type) is
   begin
     if My_Tree.Is_Empty (Dscr.Elements.all) then
       raise Status_Error;
     end if;
   end Check_Set;
+
+  -- Raise Status_Error if Dscr set from parsed
+  procedure Check_Parsed  (Dscr : in Xml_Dscr_Type) is
+  begin
+    if Dscr.From_Parsed then
+      raise Status_Error;
+    end if;
+  end Check_Parsed;
 
   -------------------------
   -- PROLOGUE OPERATIONS --
@@ -103,6 +222,7 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Set (Dscr);
+    Check_Parsed (Dscr);
     My_Tree.Read (Dscr.Prologue.all, Cell);
     if My_Tree.Children_Number (Dscr.Prologue.all) /= Cell.Nb_Attributes then
       raise Has_Children;
@@ -124,6 +244,7 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Set (Dscr);
+    Check_Parsed (Dscr);
     -- Check no child and increment Nb_Attributes
     My_Tree.Read (Dscr.Prologue.all, Cell);
     if My_Tree.Children_Number (Dscr.Prologue.all) /= Cell.Nb_Attributes then
@@ -155,10 +276,14 @@ package body Xml_Parser.Generator is
     use type Asu_Us;
   begin
     Check_Set (Dscr);
+    Check_Parsed (Dscr);
     if Dscr.Doc_Name /= Asu_Null then
       raise Has_Children;
     end if;
     Check_Name (Name);
+    if not Public and then Pub_Id /= "" then
+      raise Invalid_Argument;
+    end if;
     -- Add this child to prologue
     Cell.Kind := Generator.Text;
     Cell.Nb_Attributes := 0;
@@ -179,6 +304,7 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Set (Dscr);
+    Check_Parsed (Dscr);
     Check_Name (Name);
     -- Add this child to prologue
     My_Tree.Move_Root (Dscr.Prologue.all);
@@ -196,6 +322,7 @@ package body Xml_Parser.Generator is
     Cell : My_Tree_Cell;
   begin
     Check_Set (Dscr);
+    Check_Parsed (Dscr);
     -- Add this comment to prologue
     My_Tree.Move_Root (Dscr.Prologue.all);
     Cell.Kind := Comment;
@@ -302,6 +429,9 @@ package body Xml_Parser.Generator is
     Dscr.Doc_Pub_Id  := Asu_Null;
     Dscr.Doc_File    := Asu_Null;
     Dscr.Doc_Int_Def := Asu_Null;
+    -- Clean parsed information and dtd
+    Dscr.From_Parsed := False;
+    Clean_Dtd (Dscr.Dtd);
   end Finalize;
 
   --------------------------------------------------------------------------------------

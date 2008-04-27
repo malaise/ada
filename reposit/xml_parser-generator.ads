@@ -3,7 +3,7 @@ with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
 package Xml_Parser.Generator is
 
-  Version : constant String := "V2.3";
+  Version : constant String := "V2.4";
 
   type Xml_Dscr_Type is tagged limited private;
 
@@ -24,7 +24,15 @@ package Xml_Parser.Generator is
                    Major : in Natural; Minor : in Natural;
                    Root_Name : in String);
 
+  -- Initialise a XML descriptor from the context of a parsed file (or string)
+  -- May raise Status_Error if Ctx is clean
+  procedure Init_From_Parsed (Dscr  : in out Xml_Dscr_Type;
+                              Ctx   : in Ctx_Type);
+
   -- All calls may raise Status_Error if performed on a Dscr not (re)set
+  --  nor init
+  -- All cals on prologue  may raise Status_Error if performed on a Dscr
+  --  initialised from parsed
   -- Attributes (and xml encoding and standalone) must be set before children
   --  (and texts and doctype and PIs).
 
@@ -32,7 +40,7 @@ package Xml_Parser.Generator is
   -- PROLOGUE OPERATIONS --
   -------------------------
   -- Set the encoding and the standalone of XML directive
-  -- May raise Has_Children if Set_Doctype or Add_Pi or Add_Comment
+  -- May raise Has_Children if Set_Doctype or Add_Pi or Add_Comment already used
   procedure Set_Encoding (Dscr : in out Xml_Dscr_Type;
                           Encoding : in String);
   procedure Set_Standalone (Dscr : in out Xml_Dscr_Type;
@@ -162,6 +170,10 @@ private
     Doc_Int_Def : Ada.Strings.Unbounded.Unbounded_String;
     -- The tree of elements, attributes and texts
     Elements : Tree_Acc := new My_Tree.Tree_Type;
+    -- Is it initioalised from parsed
+    From_Parsed : Boolean := False;
+    -- The Dtd parsed information
+    Dtd : Dtd_Type;
   end record;
 
   procedure Finalize (Dscr : in out Xml_Dscr_Type);
