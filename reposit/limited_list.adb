@@ -559,6 +559,29 @@ package body Limited_List is
     To.Last := Val.Last;
   end Assign;
 
+  -- Completely insert a copy of Val list (data) after or before current
+  procedure Insert_Copy (To    : in out List_Type;
+                         Val   : in List_Type;
+                         Where : in Direction := Next) is
+    Lval : List_Type;
+    Elt : Element_Type;
+    Moved : Boolean;
+  begin
+    if Is_Empty (Val) then
+      -- Nothing if Val is empty
+      return;
+    end if;
+    Assign (Lval, Val);
+    Rewind (Lval, Where);
+    loop
+      -- Copy Elt
+      Read (Lval, Elt, Where, Moved);
+      Insert (To, Elt, Where);
+      -- End of Lval?
+      exit when not Moved;
+    end loop;
+  end Insert_Copy;
+
 
   -- Access to current element
   function Access_Current (List : List_Type) return Element_Access is

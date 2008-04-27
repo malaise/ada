@@ -161,7 +161,15 @@ package Limited_List is
 
   -- Copy the Val list to To list
   -- CARE: Risk of side effect because List_Type only is duplicated
+  --  while both versions are valid, they sould only navigate (search, move)
   procedure Assign (To : in out List_Type; Val : in List_Type);
+
+  -- Completely insert a copy of Val list (data) after or before current
+  --  position in To list. Current becomes last element copied.
+  -- No effect if Val is empty
+  procedure Insert_Copy (To    : in out List_Type;
+                         Val   : in List_Type;
+                         Where : in Direction := Next);
 
 
   -- Get direct access to current element in list (or null if list is empty).
