@@ -431,7 +431,6 @@ package body Xml_Parser.Generator is
     Dscr.Doc_Int_Def := Asu_Null;
     -- Clean parsed information and dtd
     Dscr.From_Parsed := False;
-    Clean_Dtd (Dscr.Dtd);
   end Finalize;
 
   --------------------------------------------------------------------------------------

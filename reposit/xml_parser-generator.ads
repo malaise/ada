@@ -172,8 +172,6 @@ private
     Elements : Tree_Acc := new My_Tree.Tree_Type;
     -- Is it initioalised from parsed
     From_Parsed : Boolean := False;
-    -- The Dtd parsed information
-    Dtd : Dtd_Type;
   end record;
 
   procedure Finalize (Dscr : in out Xml_Dscr_Type);
