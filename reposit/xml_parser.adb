@@ -113,7 +113,8 @@ package body Xml_Parser is
     -- Parse the Xml file. Raises exceptions
     procedure Parse (Ctx : in out Ctx_Type);
     -- Parse a Dtd Flow
-    -- Use String_Flow when Ctx.String
+    -- Use String_Flow as File_Name when Flow is Ctx.String, otherwise
+    --  File_Name is the file name
     function String_Flow return String;
     procedure Parse_Dtd (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type;
@@ -267,6 +268,8 @@ package body Xml_Parser is
                             Dtd       : out Dtd_Type) is
     Ctx : Ctx_Type;
   begin
+    Clean_Dtd (Dtd);
+    -- File Name_Error raises File_Error
     Parse_Mng.Parse_Dtd (Ctx, Dtd, File_Name);
     Clean (Ctx);
   end Parse_Dtd_File;
@@ -278,6 +281,7 @@ package body Xml_Parser is
     Ctx.Flow.Kind := Xml_String;
     Ctx.Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Xml_Line := 1;
+    Clean_Dtd (Dtd);
     Parse_Mng.Parse_Dtd (Ctx, Dtd, Parse_Mng.String_Flow);
     Clean (Ctx);
   end Parse_Dtd_String;

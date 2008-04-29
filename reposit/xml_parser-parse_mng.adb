@@ -191,12 +191,13 @@ package body Parse_Mng  is
   package Dtd is
     -- Init (clear) Dtd data
     procedure Init (Adtd : in out Dtd_Type);
-    -- Parse a dtd (either a external file or internal if name is empty)
-    -- Conventions for File_Name
-    -- String flow is when current string is a dtd
-    -- Internal flow is when a DOCTYPE contains "[...]"
-    -- If Name_Raise_Parse, then File Name_Error raises Parse_Error
-    --  otherwise File_Error
+    -- Parse a dtd (either a external file or internal flow or string)
+    -- Conventions for File_Name:
+    -- String flow is when current Ctx string is a dtd
+    -- Internal flow is when a DOCTYPE contains "[...]" (string or file)
+    -- Otherwise open and parse File_Name
+    -- If file name and Name_Raise_Parse, then file Name_Error raises
+    --  Parse_Error otherwise File_Error
     String_Flow   : constant String := "";
     Internal_Flow : constant String := ""  & Ada.Characters.Latin_1.Nul;
     procedure Parse (Ctx  : in out Ctx_Type;
@@ -868,6 +869,8 @@ package body Parse_Mng  is
                        Adtd : in out Dtd_Type;
                        File_Name : in String) is
   begin
+    -- If File_Name is a file name, then a Name_Error on it
+    --  will be propagated as such
     Dtd.Parse (Ctx, Adtd, File_Name, Name_Raise_Parse => False);
   exception
     when Util.Cdata_Detected =>

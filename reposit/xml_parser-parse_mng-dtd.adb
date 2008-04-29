@@ -663,15 +663,15 @@ package body Dtd is
                    Name_Raise_Parse : in Boolean := True) is
   begin
     if File_Name = String_Flow then
-      -- Internal declarations
+      -- String of Ctx
       Trace ("Dtd parsing string");
       Parse (Ctx, Adtd, True);
     elsif File_Name = Internal_Flow then
-      -- Internal declarations
+      -- Internal declarations (string or file) of Ctx
       Trace ("Dtd parsing internal definition");
       Parse (Ctx, Adtd, False);
     else
-      -- External declarations
+      -- File name
       Trace ("Dtd parsing file " & File_Name);
       File_Mng.Open (File_Name, Ctx.Flow.Dtd_File);
       Ctx.Flow.Kind := Dtd_File;
@@ -685,6 +685,7 @@ package body Dtd is
     Adtd.Set := True;
   exception
     when File_Error =>
+      -- Can only be raised if not internal nor string flow
       if Name_Raise_Parse then
         Util.Error (Ctx.Flow, "Cannot open dtd file " & File_Name);
       else
