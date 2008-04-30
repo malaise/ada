@@ -1,11 +1,11 @@
-* Move Xml_Generator as a child package of Xml_Parser
-Add it a function Init_From_Parsed (Ctx : Ctx_Type) return Xml_Dscr_Type;
-(move the code from Xml_Checker) and use it in Xml_Checker. Add checks that
-then the tree of elements can be modified, but not the prologue nor the root.
-Add operations for moving to child or brother, deleting attribute, child
-or brother, swapping two elements.
-Add a procedure Check that parses the DTD if needed (if not init from parsed),
-and checks the tree versus DTD.
++ Move Xml_Generator as a child package of Xml_Parser
++ Add it a function Init_From_Parsed (Ctx : Ctx_Type) return Xml_Dscr_Type;
+  (move the code from Xml_Checker) and use it in Xml_Checker. Add checks that
+  then the tree of elements can be modified, but not the prologue nor the root.
+- Make Generator Ctx the same as parser Ctx
+- Add in Generator operations for deleting attribute, element, swapping two
+  elements, modifying the prologue, changing name/comment/text of an element
+- Add a procedure Check that parses the DTD, and checks the tree versus DTD.
 
-No change of Xml_Parser at all.
+No change of Xml_Parser API at all.
 
