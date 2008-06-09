@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080222;13302200">
+	<META NAME="CHANGED" CONTENT="20080605;12224600">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V5.3</FONT></B></FONT></FONT></P>
@@ -207,12 +207,12 @@ s forbidden.</FONT></P>
 matching was found, with 1 if no matching was found and with 2
 otherwise (e.g. in case of error).</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">10.Troubleshooting</FONT></H1>
-<P><SPAN LANG="en-GB"><FONT FACE="Monospace">- Asubst is stuck. Maybe
-an argument is missing or an option is not complete, and asubst is
+<P LANG="en-GB"><FONT FACE="Monospace">- Asubst is stuck. Maybe an
+argument is missing or an option is not complete, and asubst is
 waiting in stdin. E.g. &quot;asubst -m 5 6 file&quot;. Asubst
 considers &quot;5&quot; as the value for m, &quot;6&quot; as the
 find_pattern and &quot;file&quot; as the replace_string, so no file
-name is provided.</FONT></SPAN></P>
+name is provided.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">- I want to substitute &quot;\f&quot;,
 why do I need to provide &quot;\\\\f&quot;? Because regex imposes to
 provide &quot;\\f&quot; for matching &quot;\f&quot;, (&quot;\f&quot;
@@ -220,14 +220,9 @@ matches &quot;f&quot;) and the shell imposes a &quot;\\&quot; for
 each &quot;\&quot; transmitted to asubst. Note that, you can pass to
 the shell '\\f' instead of &quot;\\\\f&quot;. Same considerations
 apply to &quot;\$&quot; or '$' in order to pass '$' to asubst.</FONT></P>
-<UL>
-	<LI><P><SPAN LANG="en-GB"><FONT FACE="Monospace">ERROR: Cannot
-	create temp file in &quot;.&quot;. Asubst cannot make the temporary
-	file, probably because the file system does not support hard links
-	(e.g. samba file system). Try the -p (--tmp) option with a UNIX
-	directory.</FONT></SPAN></P>
-</UL>
-<P LANG="en-GB"><BR><BR>
-</P>
+<P LANG="en-GB"><FONT FACE="Monospace">- ERROR: Cannot create temp
+file in &quot;.&quot;. Asubst cannot make the temporary file,
+probably because the file system does not support hard links (e.g.
+samba file system). Try the -p (--tmp) option with a UNIX directory.</FONT></P>
 </BODY>
 </HTML>
