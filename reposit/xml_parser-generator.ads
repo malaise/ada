@@ -3,101 +3,140 @@ with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
 package Xml_Parser.Generator is
 
-  Version : constant String := "V2.4";
+  Version : constant String := "V4.0";
 
-  type Xml_Dscr_Type is tagged limited private;
+  ----------------------------------
+  -- PROLOGUE SPECIFIC OPERATIONS --
+  ----------------------------------
+  -- Set version
+  subtype Major_Range is Positive range 1 .. 1;
+  subtype Minor_Range is Natural range 0 .. 1;
+  procedure Set_Version (Ctx   : in out Ctx_Type;
+                         Major : in Major_Range;
+                         Minor : in Minor_Range);
 
-  -- Internal element kind list
-  type Internal_Kind_List is (Element, Text, Comment, Attribute);
-  -- Possible kind of a child or brother
-  subtype Kind_List is Internal_Kind_List range Element .. Comment;
-
-  -- Number of children of an element
-  subtype Child_Range is Trees.Child_Range;
-
-  -- Reset a XML descriptor,
-  -- Initialise a Prologue and set root element
-  -- Optional xml directive with version (only 1.0 and 1.1 are OK))
-  -- No xml_directive is possible (in XML standard 1.0 but not in V1.1)
-  --   if Major=0
-  procedure Reset (Dscr  : in out Xml_Dscr_Type;
-                   Major : in Natural; Minor : in Natural;
-                   Root_Name : in String);
-
-  -- Initialise a XML descriptor from the context of a parsed file (or string)
-  -- May raise Status_Error if Ctx is clean
-  procedure Init_From_Parsed (Dscr  : in out Xml_Dscr_Type;
-                              Ctx   : in Ctx_Type);
-
-  -- All calls may raise Status_Error if performed on a Dscr not (re)set
-  --  nor init
-  -- All cals on prologue  may raise Status_Error if performed on a Dscr
-  --  initialised from parsed
-  -- Attributes (and xml encoding and standalone) must be set before children
-  --  (and texts and doctype and PIs).
-
-  -------------------------
-  -- PROLOGUE OPERATIONS --
-  -------------------------
   -- Set the encoding and the standalone of XML directive
-  -- May raise Has_Children if Set_Doctype or Add_Pi or Add_Comment already used
-  procedure Set_Encoding (Dscr : in out Xml_Dscr_Type;
+  -- If version is not set, then "1.0" is assumed
+  procedure Set_Encoding (Ctx : in out Ctx_Type;
                           Encoding : in String);
-  procedure Set_Standalone (Dscr : in out Xml_Dscr_Type;
+  procedure Set_Standalone (Ctx  : in out Ctx_Type;
                             Standalone : in Boolean);
-  -- Set the DOCTYPE text
-  -- May raise Has_Children if Doctype already set
+
+  -- Clear Xml information (attributes)
+  procedure Clear_Xml (Ctx : in out Ctx_Type);
+
+  -- Set the DOCTYPE text, as the last or next child (if Append_Next)
+  --  or as first or previous child (if not Append_Next) of prologue
+  -- May raise Invalid_Node if Node is not of prologue
   -- May raise Invalid_Argument if not Public and Pub_Id is set
-  procedure Set_Doctype (Dscr    : in out Xml_Dscr_Type;
-                         Name    : in String;
-                         Public  : in Boolean;
-                         Pub_Id  : in String;
-                         File    : in String;
-                         Int_Def : in String);
+  -- May raise Doctype_Already_Set if Doctype already set
+  Doctype_Already_Set : exception;
+  procedure Add_Doctype (Ctx      : in out Ctx_Type;
+                         Node     : in Node_Type;
+                         Name     : in String;
+                         Public   : in Boolean;
+                         Pub_Id   : in String;
+                         File     : in String;
+                         Int_Def  : in String;
+                         New_Node : out Node_Type;
+                         Append_Next : in Boolean := True);
 
-  -- Add a processing instruction in the prologue
-  procedure Add_Pi (Dscr : in out Xml_Dscr_Type;
-                    Name : in String; Value : in String);
+  -- Add a processing instruction as the last or next child (if Append_Next)
+  -- May raise Invalid_Node if Node is not of prologue
+  procedure Add_Pi (Ctx      : in out Ctx_Type;
+                    Node     : in Node_Type;
+                    Name     : in String; Value : in String;
+                    New_Node : out Node_Type;
+                    Append_Next : in Boolean := True);
 
-  -- Add a comment to the prolog
-  procedure Add_Comment (Dscr : in out Xml_Dscr_Type;
-                         Text : in String);
+  -- Add a comment in prologue as the last or next child of prologue
+  -- May raise Invalid_Node if Node is not of prologue
+  procedure Add_Comment (Ctx      : in out Ctx_Type;
+                         Node     : in Node_Type;
+                         Comment  : in String;
+                         New_Node : out Node_Type;
+                         Append_Next : in Boolean := True);
 
-  ----------------------
-  -- TREE OF ELEMENTS --
-  ----------------------
-  -- May raise No_Element if no father (at root)
-  procedure Move_Father (Dscr : in out Xml_Dscr_Type);
+  -- Clear the whole prologue
+  procedure Clear_Prologue (Ctx : in out Ctx_Type);
 
-  -- Modify the tree:
+  ----------------------------------
+  -- ELEMENTS SPECIFIC OPERATIONS --
+  ----------------------------------
+  -- May raise Invalid_Node if used on Prologue
+
+  -- Set (change) the name of an element
+  -- May raise Invalid_Argument if invalid name
+  procedure Set_Name (Ctx     : in out Ctx_Type;
+                      Element : in out Element_Type;
+                      Name    : in String);
+
+
   -- Add an attribute to current element
-  -- May raise No_Element if current element is text
-  -- May raise Has_Children if Add_Child/Brother already used
-  procedure Add_Attribute (Dscr  : in out Xml_Dscr_Type;
+  -- May raise Invalid_Argument if invalid name
+  procedure Add_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
                            Name, Value : in String);
 
+  -- Set all the attributes of an element
+  -- May raise Invalid_Argument if a name is invalid
+  procedure Set_Attributes (Ctx        : in out Ctx_Type;
+                            Element    : in out Element_Type;
+                            Attributes : in Attributes_Array);
+
+  -- Delete the attributes of an element
+  procedure Del_Attributes (Ctx     : in out Ctx_Type;
+                            Element : in out Element_Type);
+
   -- Insert a child element, text or comment, and move to it
-  -- May raise No_Element if current element is text
-  procedure Add_Child (Dscr : in out Xml_Dscr_Type;
-                       Name : in String;
-                       Kind : in Kind_List);
+  -- May raise Invalid_Node if in prologue
+  procedure Add_Child (Ctx      : in out Ctx_Type;
+                       Element  : in Element_Type;
+                       Name     : in String;
+                       Kind     : in Node_Kind_List;
+                       New_Node : out Node_Type;
+                       Append   : in Boolean := True);
 
   -- Insert a brother element, text or comment, and move to it
-  procedure Add_Brother (Dscr : in out Xml_Dscr_Type;
-                         Name : in String;
-                         Kind : in Kind_List);
+  -- May raise Invalid_Node if element or text in prologue
+  procedure Add_Brother (Ctx      : in out Ctx_Type;
+                         Node     : in Node_Type;
+                         Name     : in String;
+                         Kind     : in Node_Kind_List;
+                         New_Node : out Node_Type;
+                         Next     : in Boolean := True);
+
+  -- Set the text of a Text element
+  procedure Set_Text (Ctx     : in out Ctx_Type;
+                      Text    : in out Text_Type;
+                      Content : in String);
+
+  -- Set the text of a Comment
+  procedure Set_Comment (Ctx     : in out Ctx_Type;
+                         Comment : in out Comment_Type;
+                         Content : in String);
+
+  -----------------------
+  -- COMMON OPERATIONS --
+  -----------------------
+  -- Delete current node and its children, return its father
+  -- May raise Invalid_Node if being the Prologue or Element root
+  procedure Delete_Node (Ctx      : in out Ctx_Type;
+                         Node     : in Node_Type;
+                         New_Node : out Node_Type);
+
+  -- Delete all children of current element
+  procedure Delete_Children (Ctx     : in out Ctx_Type;
+                             Element : in out Element_Type);
 
   ----------------
   -- EXCEPTIONS --
   ----------------
-  -- When Dscr not (re)set
-  Status_Error : exception;
+  -- When moving outside the tree (father of root..,
+  --  to many brothers or children)
+  No_Element : exception;
   -- When invalid value of format of name, attribute, text...
   Invalid_Argument : exception;
-  -- When adding attibutes after children
-  Has_Children : exception;
-  -- When adding child not on an element, invalid move or insertion
-  No_Element : exception;
 
   ----------------
   -- GENERATION --
@@ -112,69 +151,19 @@ package Xml_Parser.Generator is
   -- Put in a file (stdout if name is empty)
   -- Raises File_Error if Pb with file
   Stdout : constant String := "";
-  procedure Put (Dscr      : in out Xml_Dscr_Type;
+  procedure Put (Ctx       : in out Ctx_Type;
                  File_Name : in String;
                  Format    : in Format_Kind_List := Default_Format;
                  Width     : in Natural := Default_Width);
 
   -- Dumps in a string
-  function Set (Dscr   : Xml_Dscr_Type;
+  function Set (Ctx    : Ctx_Type;
                 Format : Format_Kind_List := Default_Format;
                 Width  : Natural := Default_Width) return String;
-  procedure Set (Dscr   : in Xml_Dscr_Type;
+  procedure Set (Ctx    : in Ctx_Type;
                  Str    : out Ada.Strings.Unbounded.Unbounded_String;
                  Format : in Format_Kind_List := Default_Format;
                  Width  : in Natural := Default_Width);
-
-  ----------------
-  -- EXCEPTIONS --
-  ----------------
-  -- When opening/writing file
-  File_Error : exception;
-  -- Internal inconsitency of tree
-  Internal_Error : exception;
-
-private
-
-  -- In prologue: attributes of Prologue are xml directive
-  --  PIs are Element children of Prologue
-  --  Doctype is Text child of Prologue
-  -- A cell of the tree
-  type My_Tree_Cell is record
-    -- Kind:  Attribute, Element, Text or Comment
-    Kind : Internal_Kind_List;
-    -- Number of attributes when Kind is Element
-    Nb_Attributes : Natural := 0;
-    -- Element name or Attribute name or text
-    Name : Ada.Strings.Unbounded.Unbounded_String;
-    -- Attribute value
-    Value : Ada.Strings.Unbounded.Unbounded_String;
-  end record;
-
-  -- A tree
-  package My_Tree is new Trees.Tree(My_Tree_Cell);
-  type Tree_Acc is access all My_Tree.Tree_Type;
-
-  -- A XML description
-  type Xml_Dscr_Type is limited
-          new Ada.Finalization.Limited_Controlled with record
-    -- The prologue (XML & Doctype & PIs as its text)
-    Prologue : Tree_Acc := new My_Tree.Tree_Type;
-    -- Is xml set
-    Xml_Set : Boolean := False;
-    -- Doctype information
-    Doc_Name    : Ada.Strings.Unbounded.Unbounded_String;
-    Doc_Public  : Boolean := False;
-    Doc_Pub_Id  : Ada.Strings.Unbounded.Unbounded_String;
-    Doc_File    : Ada.Strings.Unbounded.Unbounded_String;
-    Doc_Int_Def : Ada.Strings.Unbounded.Unbounded_String;
-    -- The tree of elements, attributes and texts
-    Elements : Tree_Acc := new My_Tree.Tree_Type;
-    -- Is it initioalised from parsed
-    From_Parsed : Boolean := False;
-  end record;
-
-  procedure Finalize (Dscr : in out Xml_Dscr_Type);
 
 end Xml_Parser.Generator;
 
