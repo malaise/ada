@@ -6,6 +6,8 @@ procedure T_Xml_String is
   Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
+  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
+  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
 
   Data_Dir : constant String := "data";
 
@@ -89,8 +91,9 @@ procedure T_Xml_String is
     Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
     Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
+    Pi_Text : Asu_Us;
     Prev_Is_Text : Boolean;
-    use type Xml_Parser.Node_Kind_List;
+    use type Xml_Parser.Node_Kind_List, Asu_Us;
   begin
     if Level = Prologue_Level then
       if Name /= "" then
@@ -108,46 +111,38 @@ procedure T_Xml_String is
       end if;
       return;
     elsif Level = Prologue_Instruction_Level then
-      -- A PI of the prologue: 0 child or 1 text child
+      -- A PI of the prologue
       -- Put PI directive
       Ada.Text_Io.Put ("<?" & Name);
-      if Children'Length = 1 then
-        Ada.Text_Io.Put (" " & Ctx.Get_Text (Children(1)));
-      elsif Children'Length /= 0 then
-        Basic_Proc.Put_Line_Error ("Error. Prologue processing instruction "
-            & Name & " has several text children.");
-        raise Program_Error;
+      Pi_Text := Ctx.Get_Pi (Elt);
+      if Pi_Text /= Asu_Null then
+        Ada.Text_Io.Put (" " & Asu_Ts (Pi_Text));
       end if;
       Ada.Text_Io.Put_Line ("?>");
       if Name = If_Name_Key then
-        if Children'Length = 1
-        and then Ctx.Get_Text (Children(1)) = If_Name_Val then
+        if Asu_Ts (Pi_Text) = If_Name_Val then
           If_Name_Ok := True;
         else
-          Basic_Proc.Put_Line_Error ("Error. Invalid interface name");
+          Basic_Proc.Put_Line_Error ("Error. Invalid interface name "
+                                   & Asu_Ts (Pi_Text));
           raise Interface_Error;
         end if;
       elsif Name = If_Vers_Key then
-        if Children'Length = 1 then
-          declare
-            Str : constant String := Ctx.Get_Text (Children(1));
-            Strs : constant String_Mng.Regex.String_Slice
-                 := String_Mng.Regex.Split (Str, If_Vers_Crit, 2);
-          begin
-            if Strs'Length /= 2 then
-              raise Interface_Error;
-            end if;
-            Dtd_Index := Natural'Value (Asu.To_String (Strs (1)));
-          exception
-            when others =>
-              Basic_Proc.Put_Line_Error ("Error. Invalid interface version");
-              raise Interface_Error;
-          end;
+        declare
+          Strs : constant String_Mng.Regex.String_Slice
+               := String_Mng.Regex.Split (Asu_Ts (Pi_Text), If_Vers_Crit, 2);
+        begin
+          if Strs'Length /= 2 then
+            raise Interface_Error;
+          end if;
+          Dtd_Index := Natural'Value (Asu.To_String (Strs (1)));
+        exception
+          when others =>
+            Basic_Proc.Put_Line_Error ("Error. Invalid interface version "
+                                       & Asu_Ts (Pi_Text));
+            raise Interface_Error;
+        end;
           If_Vers_Ok := True;
-        else
-          Basic_Proc.Put_Line_Error ("Error. Invalid interface version");
-          raise Interface_Error;
-        end if;
       end if;
       return;
     else
