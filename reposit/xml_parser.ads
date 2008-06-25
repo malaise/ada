@@ -15,7 +15,7 @@ with Queues, Trees, Unique_List, Text_Char;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Version : constant String := "V2.5";
+  Version : constant String := "V2.6";
 
   -----------
   -- TYPES --
@@ -40,8 +40,11 @@ package Xml_Parser is
   -- The attributes of an element
   type Attributes_Array is array (Positive range <>) of Attribute_Rec;
 
+   -- Number of children of an element
+  subtype Child_Range is Trees.Child_Range;
+  subtype Child_Index is Child_Range range 1 .. Child_Range'Last;
   -- The children of an element
-  type Nodes_Array is array (Positive range <>) of Node_Type;
+  type Nodes_Array is array (Child_Index range <>) of Node_Type;
 
   -- A parsing context
   type Ctx_Type is tagged limited private;
@@ -53,9 +56,10 @@ package Xml_Parser is
   -- In xml V1.0, the prologue consists of an optional xml directive
   --  (<?xml attributes?>) then optional processing instructions
   --  (<?name text?>), DOCTYPE and comments.
+  -- In Xml V1.1 the xml directive and version is mandatory.
   -- So the Prologue is an element of name "xml" with attributes (no
-  --  attributes if no xml directive). Its children are
-  --  for PIs: elements each with the directive name and each with a text child.
+  --  attributes if no xml directive). Its children are:
+  --  for PIs: elements each with the directive name
   --  for Comments: comments
   --  for the doctype: an empty text
 
@@ -65,9 +69,6 @@ package Xml_Parser is
   -- The DOCTYPE is parsed during the prologue parsing, it can be retrieved
   --  when the Prologue has a child of type text (empty)
   -- PUBLIC directive is not processed
-  -- Internal subset definitions are processed but cannot be retrieved
-  --  by the application (only a flag indicates that there are
-  --  subset definitions)
 
   ------------------
   -- FILE PARSING --
@@ -151,6 +152,7 @@ package Xml_Parser is
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
 
   -- Get Doctype characteristics (prologue must have been parsed)
+  Doctype_Not_Set : exception;
   procedure Get_Doctype (Ctx : in Ctx_Type;
        Name    : out Ada.Strings.Unbounded.Unbounded_String;
        Public  : out Boolean;
@@ -158,9 +160,18 @@ package Xml_Parser is
        File    : out Ada.Strings.Unbounded.Unbounded_String;
        Int_Def : out Ada.Strings.Unbounded.Unbounded_String);
 
+  -- Get a PI data (use Get_Name to get the PITarget)
+  -- May raise Invalid_Node if not is not of the prologue
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Element_Type) return String;
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Element_Type)
+           return Ada.Strings.Unbounded.Unbounded_String;
+
   -- Get the line number of the beginning of the declaration of a node
+  -- 0 if not the result of parsing of text
   function Get_Line_No (Ctx  : Ctx_Type;
-                        Node : Node_Type) return Positive;
+                        Node : Node_Type) return Natural;
 
   -- Get the name of an element
   function Get_Name (Ctx     : Ctx_Type;
@@ -186,19 +197,27 @@ package Xml_Parser is
   function Get_Children (Ctx     : Ctx_Type;
                          Element : Element_Type) return Nodes_Array;
   function Get_Nb_Children (Ctx     : Ctx_Type;
-                            Element : Element_Type) return Natural;
+                            Element : Element_Type) return Child_Range;
+  -- Get one Child of an element
   -- May raise Invalid_Index
   function Get_Child (Ctx     : Ctx_Type;
                       Element : Element_Type;
-                      Index   : Positive) return Node_Type;
+                      Index   : Child_Index) return Node_Type;
+
+  -- Get a brother of an node
+  -- May raise No_Brother
+  No_Brother : exception;
+  function Get_Brother (Ctx  : Ctx_Type;
+                        Node : Node_Type;
+                        Next : Boolean := True) return Node_Type;
 
   -- Get the father of an element
   -- May raise No_Parent if Element is the Root_Element or the Prologue
   No_Parent : exception;
-  function Get_Parent (Ctx     : Ctx_Type;
-                       Element : Element_Type) return Element_Type;
-  function Is_Root (Ctx     : Ctx_Type;
-                    Element : Element_Type) return Boolean;
+  function Get_Parent (Ctx  : Ctx_Type;
+                       Node : Node_Type) return Element_Type;
+  function Is_Root (Ctx  : Ctx_Type;
+                    Node : Node_Type) return Boolean;
 
   ----------------------
   -- TEXT and COMMENT --
@@ -229,7 +248,7 @@ private
   type Internal_Kind_List is (Element, Text, Comment, Attribute);
   type My_Tree_Cell is record
     -- Line in source file
-    Line_No : Positive := 1;
+    Line_No : Natural := 0;
     -- Kind:  Element, Text or Attribute
     Kind : Internal_Kind_List;
     -- Number of attributes when Kind is Element
@@ -346,8 +365,9 @@ private
   ------------------
   type Doctype_Type is record
     -- Line of the DOCTYPE directive
-    Line_No : Positive := 1;
+    Line_No : Natural := 0;
     -- Name, file (ID+URI) and internal definition if any
+    -- Empty name for no DOCTYPE
     Name    : Ada.Strings.Unbounded.Unbounded_String;
     Public  : Boolean := False;
     Pub_Id  : Ada.Strings.Unbounded.Unbounded_String;
@@ -358,7 +378,8 @@ private
   ------------------
   -- CONTEXT TYPE --
   ------------------
-  type Ctx_Status_List is (Clean, Prologue, Done, Error);
+  type Ctx_Status_List is (Clean, Parsed_Prologue, Parsed_Elements, Error,
+                           Init);
   type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
     Magic : Float := Clean_Magic;
@@ -376,5 +397,9 @@ private
   end record;
   procedure Finalize (Ctx : in out Ctx_Type) renames Clean;
 
+  -- For Xml_Generator
+  function Get_Magic return Float;
+  function Get_Tree (Ctx : Ctx_Type;
+                     Node : Node_Type) return Tree_Acc;
 end Xml_Parser;
 

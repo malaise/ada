@@ -230,11 +230,7 @@ package body Tree_Mng is
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
     Cell.Name := Name;
-    Cell.Value := Asu_Null;
-    My_Tree.Insert_Child (Prologue, Cell, False);
-    -- Insert the text child of element
-    Cell.Kind := Xml_Parser.Text;
-    Cell.Name := Text;
+    Cell.Value := Text;
     My_Tree.Insert_Child (Prologue, Cell, False);
     -- Move back to root
     My_Tree.Move_Root (Prologue);

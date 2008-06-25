@@ -183,7 +183,7 @@ package body Xml_Parser is
     Parse_Mng.Parse (Ctx);
     -- Close the file
     File_Mng.Close (Ctx.Flow.Xml_File);
-    Ctx.Status := Done;
+    Ctx.Status := Parsed_Elements;
     Ok := True;
   exception
     when File_Error | Status_Error =>
@@ -203,7 +203,7 @@ package body Xml_Parser is
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
   begin
-    if Ctx.Status = Clean then
+    if Ctx.Status = Clean or else Ctx.Status = Init then
       raise Status_Error;
     end if;
     return Asu_Ts (Ctx.Flow.Err_Msg);
@@ -325,7 +325,7 @@ package body Xml_Parser is
     Ctx.Expand_Entities := Expand_Entities;
     Parse_Mng.Parse_Prologue (Ctx);
     -- Close the file
-    Ctx.Status := Prologue;
+    Ctx.Status := Parsed_Prologue;
     Ok := True;
   exception
     when Status_Error =>
@@ -351,9 +351,10 @@ package body Xml_Parser is
                             Ok        : out Boolean) is
     Loc_Parse_Error : exception;
   begin
-    if Ctx.Status = Clean then
+    -- Status must be Parsed_Prologue
+    if Ctx.Status = Clean or else Ctx.Status = Init then
       raise Status_Error;
-    elsif Ctx.Status = Done then
+    elsif Ctx.Status = Parsed_Elements then
       raise End_Error;
     elsif Ctx.Status = Error then
       raise Loc_Parse_Error;
@@ -365,7 +366,7 @@ package body Xml_Parser is
     -- Parse
     Parse_Mng.Parse_Elements (Ctx, Dtd);
     -- Close the file
-    Ctx.Status := Done;
+    Ctx.Status := Parsed_Elements;
     Ok := True;
   exception
     when Status_Error | End_Error =>
@@ -397,7 +398,9 @@ package body Xml_Parser is
     if Node.Tree_Access = My_Tree.No_Position then
       raise Invalid_Node;
     end if;
-    if Ctx.Status /= Prologue and then Ctx.Status /= Done then
+    if Ctx.Status /= Parsed_Prologue
+    and then Ctx.Status /= Parsed_Elements
+    and then Ctx.Status /= Init then
       raise Status_Error;
     end if;
     -- Magic must match
@@ -406,8 +409,6 @@ package body Xml_Parser is
     end if;
     if Node.In_Prologue then
       return Ctx.Prologue;
-    elsif Ctx.Status /= Done then
-      raise Status_Error;
     else
       return Ctx.Elements;
     end if;
@@ -430,18 +431,22 @@ package body Xml_Parser is
     return Cell;
   end Get_Cell;
 
- -- Get Doctype characteristics (prologue must have been parsed)
+  -- Get Doctype characteristics (prologue must have been parsed)
   procedure Get_Doctype (Ctx : in Ctx_Type;
        Name    : out Ada.Strings.Unbounded.Unbounded_String;
        Public  : out Boolean;
        Pub_Id  : out Ada.Strings.Unbounded.Unbounded_String;
        File    : out Ada.Strings.Unbounded.Unbounded_String;
        Int_Def : out Ada.Strings.Unbounded.Unbounded_String) is
+    use type Asu_Us;
   begin
     if Ctx.Status = Error then
       raise Parse_Error;
     elsif Ctx.Status = Clean then
       raise Status_Error;
+    end if;
+    if Ctx.Doctype.Name = Asu_Null then
+      raise Doctype_Not_Set;
     end if;
     Name    := Ctx.Doctype.Name;
     Public  := Ctx.Doctype.Public;
@@ -449,6 +454,30 @@ package body Xml_Parser is
     File    := Ctx.Doctype.File;
     Int_Def := Ctx.Doctype.Int_Def;
   end Get_Doctype;
+
+  -- Get a PI data (use Get_Name to get the PITarget)
+  -- May raise Invalid_Node if not is not of the prologue
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Element_Type) return String is
+  begin
+    return Asu_Ts (Get_Pi (Ctx, Pi_Node));
+  end Get_Pi;
+
+  function Get_Pi (Ctx : in Ctx_Type;
+                   Pi_Node : Element_Type)
+           return Ada.Strings.Unbounded.Unbounded_String is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
+  begin
+    if Ctx.Status = Error then
+      raise Parse_Error;
+    elsif Ctx.Status = Clean then
+      raise Status_Error;
+    elsif not Pi_Node.In_Prologue then
+      raise Invalid_Node;
+    end if;
+    return Cell.Value;
+  end Get_Pi;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   function Get_Prologue (Ctx : Ctx_Type) return Element_Type is
@@ -472,7 +501,8 @@ package body Xml_Parser is
   begin
     if Ctx.Status = Error then
       raise Parse_Error;
-    elsif Ctx.Status /= Done then
+    elsif Ctx.Status /= Parsed_Elements
+    and then Ctx.Status /= Init then
       raise Status_Error;
     end if;
     -- Only prologue or full parsing completed
@@ -485,7 +515,7 @@ package body Xml_Parser is
 
   -- Line number of start of declaration of node
   function Get_Line_No (Ctx  : Ctx_Type;
-                        Node : Node_Type) return Positive is
+                        Node : Node_Type) return Natural is
     Cell : constant My_Tree_Cell := Get_Cell (Get_Tree (Ctx, Node), Node);
   begin
     return Cell.Line_No;
@@ -684,12 +714,49 @@ package body Xml_Parser is
     return N;
   end Get_Child;
 
+  -- May raise No_Brother
+  function Get_Brother (Ctx  : Ctx_Type;
+                        Node : Node_Type;
+                        Next : Boolean := True) return Node_Type is
+    Tree : Tree_Acc := Get_Tree (Ctx, Node);
+    Cell : My_Tree_Cell := Get_Cell (Tree, Node);
+    N : Node_Type;
+  begin
+    if not My_Tree.Has_Brother (Tree.all, not Next) then
+      raise No_Brother;
+    end if;
+    My_Tree.Move_Brother (Tree.all, not Next);
+    My_Tree.Read (Tree.all, Cell);
+    case Cell.Kind is
+      when Xml_Parser.Element =>
+        N := (Kind =>  Xml_Parser.Element,
+              Magic => Node.Magic,
+              In_Prologue => Node.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when Xml_Parser.Text =>
+        N := (Kind => Xml_Parser.Text,
+              Magic => Node.Magic,
+              In_Prologue => Node.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when Xml_Parser.Comment =>
+        N := (Kind => Xml_Parser.Comment,
+              Magic => Node.Magic,
+              In_Prologue => Node.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when  Xml_Parser.Attribute =>
+        -- Attribute
+        Trace ("Expecting kind element or text or comment, found attribute");
+        raise Internal_Error;
+    end case;
+    return N;
+  end Get_Brother;
+
   -- Get the father of an element
   -- May raise No_Parent
   function Get_Parent (Ctx     : Ctx_Type;
-                       Element : Element_Type) return Element_Type is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
-    Cell : My_Tree_Cell := Get_Cell (Tree, Element);
+                       Node : Node_Type) return Element_Type is
+    Tree : Tree_Acc := Get_Tree (Ctx, Node);
+    Cell : My_Tree_Cell := Get_Cell (Tree, Node);
     N : Node_Type;
   begin
     if not My_Tree.Has_Father (Tree.all) then
@@ -699,8 +766,8 @@ package body Xml_Parser is
     My_Tree.Read (Tree.all, Cell);
     if Cell.Kind = Xml_Parser.Element then
       N := (Kind =>  Xml_Parser.Element,
-            Magic => Element.Magic,
-            In_Prologue => Element.In_Prologue,
+            Magic => Node.Magic,
+            In_Prologue => Node.In_Prologue,
             Tree_Access => My_Tree.Get_Position (Tree.all));
     else
       -- Attribute or text or comment as parent of something!
@@ -710,10 +777,10 @@ package body Xml_Parser is
     return Element_Type (N);
   end Get_Parent;
 
-  function Is_Root (Ctx     : Ctx_Type;
-                    Element : Element_Type) return Boolean is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
-    Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
+  function Is_Root (Ctx  : Ctx_Type;
+                    Node : Node_Type) return Boolean is
+    Tree : Tree_Acc := Get_Tree (Ctx, Node);
+    Cell : constant My_Tree_Cell := Get_Cell (Tree, Node);
   begin
     return not My_Tree.Has_Father (Tree.all);
   end Is_Root;
