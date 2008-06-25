@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V2.4";
+  Version : constant String := "V2.5";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -32,7 +32,6 @@ procedure Xml_Checker is
   Output_Kind : Output_Kind_List;
 
   -- Xml_Generator descriptor and format
-  Gen_Dscr : Xml_Parser.Generator.Xml_Dscr_Type;
   Format : Xml_Parser.Generator.Format_Kind_List;
   Width  : Positive;
 
@@ -174,8 +173,9 @@ procedure Xml_Checker is
       Dump_Element (Root, 0);
       Out_Flow.Flush;
     elsif Output_Kind = Gen then
-      Gen_Dscr.Init_From_Parsed (Ctx);
-      Gen_Dscr.Put (Xml_Parser.Generator.Stdout, Format, Width);
+      Xml_Parser.Generator.Put (Ctx, Xml_Parser.Generator.Stdout,
+                                Format, Width);
+      -- Ctx.Put (Xml_Parser.Generator.Stdout, Format, Width);
     end if;
     Ctx.Clean;
   exception
