@@ -62,8 +62,7 @@ begin
   -- Check tree
   Dscr.Check (Ok);
   if not Ok then
-    Basic_Proc.Put_Line_Error ("Error in tree "
-          & Dscr.Get_Parse_Error_Message);
+    Basic_Proc.Put_Line_Error (Dscr.Get_Parse_Error_Message);
     Basic_Proc.Set_Error_Exit_Code;
     Dscr.Clean;
     return;
