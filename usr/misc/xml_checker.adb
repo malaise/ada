@@ -17,7 +17,7 @@ procedure Xml_Checker is
             renames Ada.Exceptions.Raise_Exception;
 
   -- Xml Parser context, elements and parsing parameters
-  Ctx : Xml_Parser.Ctx_Type;
+  Ctx : Xml_Parser.Generator.Ctx_Type;
   Expand : Boolean;
 
   -- Argument error
@@ -152,9 +152,9 @@ procedure Xml_Checker is
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error ("Error in file "
                                & Get_File_Name (Index, True) & ": "
-                               & Xml_Parser.Get_Parse_Error_Message (Ctx));
+                               & Ctx.Get_Parse_Error_Message);
       Basic_Proc.Set_Error_Exit_Code;
-      Xml_Parser.Clean (Ctx);
+      Ctx.Clean;
       return;
     end if;
 
