@@ -704,7 +704,7 @@ package body Dtd is
   procedure Check_Children (Ctx  : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
                             Name : in Asu_Us;
-                            Line_No : in Positive;
+                            Line_No : in Natural;
                             Children : in Asu_Us;
                             Is_Mixed : in Boolean) is
     -- Element info
@@ -795,7 +795,7 @@ package body Dtd is
   procedure Check_Attributes (Ctx  : in out Ctx_Type;
                               Adtd : in out Dtd_Type;
                               Name : in Asu_Us;
-                              Line_No : in Positive;
+                              Line_No : in Natural;
                               Attributes : in Asu_Us) is
     -- Atl, Att and Id info blocs
     Info, Attinfo, Idinfo : Info_Rec;
@@ -1055,6 +1055,10 @@ package body Dtd is
       -- No dtd => no check
       return;
     end if;
+    if Debug_Level /= 0 then
+      My_Tree.Read (Ctx.Elements.all, Cell);
+      Trace ("Dtd checking element " & Asu_Ts(Cell.Name));
+    end if;
     -- Read current element from tree and make its attribute and children lists
     Is_Mixed := False;
     if My_Tree.Children_Number (Ctx.Elements.all) /= 0 then
@@ -1088,6 +1092,45 @@ package body Dtd is
     end if;
 
   end Check_Element;
+
+  -- Check a whole element tree recursively
+  procedure Check_Subtree (Ctx  : in out Ctx_Type;
+                           Adtd : in out Dtd_Type) is
+    Cell : My_Tree_Cell;
+  begin
+    -- Check current element
+    Check_Element (Ctx, Adtd, Check_The_Attributes => True);
+    -- Check children recursively
+    if My_Tree.Children_Number (Ctx.Elements.all) = 0 then
+      -- No child
+      return;
+    end if;
+    My_Tree.Read (Ctx.Elements.all, Cell);
+    if Cell.Nb_Attributes = My_Tree.Children_Number (Ctx.Elements.all) then
+      -- All children are attributes
+      return;
+    end if;
+
+    -- Move to first real child (not attribute)
+    My_Tree.Move_Child (Ctx.Elements.all);
+    for I in 1 .. Cell.Nb_Attributes loop
+      My_Tree.Move_Brother (Ctx.Elements.all, False);
+    end loop;
+
+    loop
+      My_Tree.Read (Ctx.Elements.all, Cell);
+      -- Skip Text and Comments
+      if Cell.Kind = Element then
+        -- Recursive check this sub element
+        Check_Subtree (Ctx, Adtd);
+      end if;
+      exit when not My_Tree.Has_Brother (Ctx.Elements.all, False);
+      My_Tree.Move_Brother (Ctx.Elements.all, False);
+    end loop;
+
+    -- Done, move back to father
+    My_Tree.Move_Father (Ctx.Elements.all);
+  end Check_Subtree;
 
   -- Final checks
   -- Check that all attribute values of Xml tagged IDREF(s) in Dtd

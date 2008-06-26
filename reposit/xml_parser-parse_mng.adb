@@ -204,10 +204,13 @@ package body Parse_Mng  is
                      Adtd : in out Dtd_Type;
                      File_Name : in String;
                      Name_Raise_Parse : in Boolean := True);
-    -- Check Current element of the tree
+    -- Check current element of the tree
     procedure Check_Element (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
                              Check_The_Attributes : Boolean);
+    -- Check a whole element tree recursively
+    procedure Check_Subtree (Ctx  : in out Ctx_Type;
+                             Adtd : in out Dtd_Type);
     -- Perform final checks: that IDREF(s) appear as ID
     procedure Final_Check (Ctx  : in out Ctx_Type;
                            Adtd : in out Dtd_Type);
@@ -904,6 +907,38 @@ package body Parse_Mng  is
     when Util.Cdata_Detected =>
       Util.Cdata_Error (Ctx.Flow);
   end Parse_Elements;
+
+  -- Check a Cts versus its Dtd
+  procedure Check (Ctx : in out Ctx_Type) is
+    Adtd : Dtd_Type;
+    use type Asu_Us;
+  begin
+    -- Reset Dtd
+    Dtd.Init (Adtd);
+    -- Parse Dtd
+    if Ctx.Doctype.Name /= Asu_Null then
+      if Ctx.Doctype.File /= Asu_Null then
+        -- Parse Dtd file
+        Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Doctype.File));
+      end if;
+      if Ctx.Doctype.Int_Def /= Asu_Null then
+        -- Parse internal defs
+        Ctx.Flow.Kind := Xml_String;
+        Ctx.Flow.In_Str := Ctx.Doctype.Int_Def;
+        Ctx.Flow.Xml_Line := 1;
+        Dtd.Parse (Ctx, Adtd, Dtd.String_Flow);
+      end if;
+    end if;
+    -- Check all elements
+    Dtd.Check_Subtree (Ctx, Adtd);
+    -- Perform final checks versus dtd
+    Dtd.Final_Check (Ctx, Adtd);
+    -- Clean Dtd before it disapears
+    Dtd.Init (Adtd);
+  exception
+    when Util.Cdata_Detected =>
+      Util.Cdata_Error (Ctx.Flow);
+  end Check;
 
 end Parse_Mng;
 

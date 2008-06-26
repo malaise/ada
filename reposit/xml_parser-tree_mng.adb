@@ -87,7 +87,7 @@ package body Tree_Mng is
 
   -- Insert an element
   procedure Add_Element (Elements : in out My_Tree.Tree_Type;
-                         Name : in Asu_Us; Line : in Positive) is
+                         Name : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -111,7 +111,7 @@ package body Tree_Mng is
   end Move_Up;
 
   procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
-                           Name, Value : in Asu_Us; Line : in Positive) is
+                           Name, Value : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -168,7 +168,7 @@ package body Tree_Mng is
 
   -- Set xml directive
   procedure Set_Xml (Prologue : in out My_Tree.Tree_Type;
-                     Line : in Positive) is
+                     Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -181,7 +181,7 @@ package body Tree_Mng is
   end Set_Xml;
 
   procedure Add_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
-                               Name, Value : in Asu_Us; Line : in Positive) is
+                               Name, Value : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -222,7 +222,7 @@ package body Tree_Mng is
 
   -- Add a processing instruction
   procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
-                    Name, Text : in Asu_Us; Line : in Positive) is
+                    Name, Text : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     -- Insert the Element child of root
@@ -245,7 +245,7 @@ package body Tree_Mng is
   -- Add a comment to current cell (of elements or prologue)
   -- remain on current cell
   procedure Add_Text (Tree : in out My_Tree.Tree_Type;
-                      Text : in Asu_Us; Line : in Positive) is
+                      Text : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -261,7 +261,7 @@ package body Tree_Mng is
   -- Add a comment to current cell (of elements or prologue)
   -- remain on current cell
   procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
-                         Comment : in Asu_Us; Line : in Positive) is
+                         Comment : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;

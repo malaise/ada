@@ -5,6 +5,8 @@ package Xml_Parser.Generator is
 
   Version : constant String := "V4.0";
 
+  type Ctx_Type is new Xml_Parser.Ctx_Type with private;
+
   ----------------------------------
   -- PROLOGUE SPECIFIC OPERATIONS --
   ----------------------------------
@@ -98,13 +100,20 @@ package Xml_Parser.Generator is
                        Append   : in Boolean := True);
 
   -- Insert a brother element, text or comment, and move to it
-  -- May raise Invalid_Node if element or text in prologue
+  -- May raise Invalid_Node if in prologue
   procedure Add_Brother (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;
                          Name     : in String;
                          Kind     : in Node_Kind_List;
                          New_Node : out Node_Type;
                          Next     : in Boolean := True);
+
+  -- Swap two elements (and their children)
+  -- May raise Invalid_Node if one is in prologue
+  -- May raise Invalid_Node is one is ancestor of the other
+  procedure Swap (Ctx      : in out Ctx_Type;
+                  Elt1     : in out Element_Type;
+                  Elt2     : in out Element_Type);
 
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;
@@ -165,5 +174,7 @@ package Xml_Parser.Generator is
                  Format : in Format_Kind_List := Default_Format;
                  Width  : in Natural := Default_Width);
 
+private
+  type Ctx_Type is new Xml_Parser.Ctx_Type with null record;
 end Xml_Parser.Generator;
 

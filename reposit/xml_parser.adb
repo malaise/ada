@@ -27,12 +27,12 @@ package body Xml_Parser is
   package Tree_Mng is
     -- Add an element, move to it
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
-                           Name : in Asu_Us; Line : in Positive);
+                           Name : in Asu_Us; Line : in Natural);
     -- Move up
     procedure Move_Up (Elements : in out My_Tree.Tree_Type);
     -- Add an attribute to current element, remain on current element
     procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
-                             Name, Value : in Asu_Us; Line : in Positive);
+                             Name, Value : in Asu_Us; Line : in Natural);
     -- Check if an attribute exists for current element
     procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
                               Name : in Asu_Us; Exists : out Boolean);
@@ -43,9 +43,9 @@ package body Xml_Parser is
     procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
     procedure Set_Xml (Prologue : in out My_Tree.Tree_Type;
-                       Line : in Positive);
+                       Line : in Natural);
     procedure Add_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
-                                 Name, Value : in Asu_Us; Line : in Positive);
+                                 Name, Value : in Asu_Us; Line : in Natural);
     -- Check xml is set, find an attribute (Index is 0 if not found)
     procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
                          Exists : out Boolean);
@@ -57,7 +57,7 @@ package body Xml_Parser is
                                      Number : out Natural);
     -- Add a processing instruction
     procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
-                      Name, Text : in Asu_Us; Line : in Positive);
+                      Name, Text : in Asu_Us; Line : in Natural);
 
     -- Is a tree (elements or prologue) empty
     function Is_Empty (Tree : My_Tree.Tree_Type) return Boolean;
@@ -65,12 +65,12 @@ package body Xml_Parser is
     -- Add a text to current cell (of elements or prologue)
     -- remain on current cell
     procedure Add_Text (Tree : in out My_Tree.Tree_Type;
-                        Text : in Asu_Us; Line : in Positive);
+                        Text : in Asu_Us; Line : in Natural);
 
     -- Add a comment to current cell (of elements or prologue)
     -- remain on current cell
     procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
-                           Comment : in Asu_Us; Line : in Positive);
+                           Comment : in Asu_Us; Line : in Natural);
   end Tree_Mng;
   package body Tree_Mng is separate;
 
@@ -124,6 +124,8 @@ package body Xml_Parser is
     -- Parse the elements
     procedure Parse_Elements (Ctx : in out Ctx_Type;
                               Adtd : in out Dtd_Type);
+    -- Check the Ctx vs its Dtd, Raises exceptions
+    procedure Check (Ctx : in out Ctx_Type);
   end Parse_Mng;
   package body Parse_Mng is separate;
 
@@ -385,6 +387,44 @@ package body Xml_Parser is
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse_Elements;
+
+  -----------
+  -- CHECK --
+  -----------
+  -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
+  --  (same effect as Xml_Parse.Parse)
+  procedure Check (Ctx : in out Ctx_Type;
+                   Ok  : out Boolean) is
+  begin
+    -- Status must be Parsed_Prologue
+    if Ctx.Status = Clean or else Ctx.Status = Error then
+      raise Status_Error;
+    end if;
+    -- In case of exception...
+    Ctx.Status := Error;
+    Ctx.Flow.Err_Msg := Asu_Null;
+    Ok := False;
+    -- Check this context
+    if not My_Tree.Is_Empty (Ctx.Elements.all) then
+      My_Tree.Move_Root (Ctx.Elements.all);
+    end if;
+    Parse_Mng.Check (Ctx);
+    Ctx.Status := Parsed_Elements;
+    Ok := True;
+  exception
+      when File_Error | Status_Error =>
+      raise;
+    when Error_Occ:Parse_Error =>
+      -- Retrieve and store parsing error message
+      Ctx.Status := Error;
+      Ctx.Flow.Err_Msg := Asu_Tus (
+        Exception_Messenger.Exception_Message(
+          Ada.Exceptions.Save_Occurrence (Error_Occ)));
+      Ok := False;
+    when Error_Occ:others =>
+      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      raise Internal_Error;
+  end Check;
 
   ----------------
   -- NAVIGATION --

@@ -132,6 +132,15 @@ package Xml_Parser is
                             Ok       : out Boolean);
   End_Error : exception;
 
+  -----------
+  -- CHECK --
+  -----------
+  -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
+  --  (same effect as Parse, but on a context set or modified in
+  --  Xml_Parser.Generator)
+  procedure Check (Ctx : in out Ctx_Type;
+                   Ok  : out Boolean);
+
   -------------------------
   -- NAME AND ATTRIBUTES --
   -------------------------

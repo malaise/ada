@@ -582,6 +582,24 @@ package body Xml_Parser.Generator is
                  Tree_Access => My_Tree.Get_Position (Tree.all));
   end Add_Brother;
 
+  -- Swap two elements (and their children)
+  procedure Swap (Ctx      : in out Ctx_Type;
+                  Elt1     : in out Element_Type;
+                  Elt2     : in out Element_Type) is
+    Tree : Tree_Acc;
+  begin
+    -- Move to node1, must be an element, save pos
+    Move_To_Element (Ctx, Elt1, Tree);
+    My_Tree.Save_Position (Tree.all);
+    -- Move to node2, must be an element
+    Move_To_Element (Ctx, Elt2, Tree);
+    -- Swap
+    My_Tree.Swap_Saved (Tree.all);
+  exception
+    when Trees.Is_Ancestor =>
+      raise Invalid_Node;
+  end Swap;
+
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;
                       Text    : in out Text_Type;
@@ -667,9 +685,6 @@ package body Xml_Parser.Generator is
     end case;
   end record;
 
-  ----------------
-  -- GENERATION --
-  ----------------
   -- Internal procedure to generate the output
   procedure Generate (Ctx    : in Ctx_Type;
                       Format : in Format_Kind_List;
