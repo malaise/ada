@@ -122,15 +122,24 @@ package body Util is
   procedure Error (Flow : in out Flow_Type;
                    Msg : in String; Line_No : in Natural := 0) is
     Err_Msg : Asu_Us;
+    Put_Line_No : Natural := 0;
   begin
-    Err_Msg := Asu_Tus ("Xml_Parse error at line");
     if Line_No = 0 then
-      Asu.Append (Err_Msg, Natural'Image(Get_Line_No(Flow)));
+      Put_Line_No := Get_Line_No(Flow);
     else
-      Asu.Append (Err_Msg, Line_No'Img);
+      Put_Line_No := Line_No;
+    end if;
+    Err_Msg := Asu_Tus ("Xml_Parse error");
+    if Put_Line_No /= 0 then
+      Asu.Append (Err_Msg, " at line" & Line_No'Img);
     end if;
     if Flow.Kind = Dtd_File then
-      Asu.Append (Err_Msg, " of dtd");
+      if Put_Line_No /= 0 then
+        Asu.Append (Err_Msg, " of");
+      else
+        Asu.Append (Err_Msg, " in");
+      end if;
+      Asu.Append (Err_Msg, " dtd");
     end if;
     Asu.Append (Err_Msg, ": " & Msg & ".");
     -- The error message is attached to the exception
