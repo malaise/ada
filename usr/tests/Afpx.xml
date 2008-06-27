@@ -10,7 +10,7 @@
     </List>
 
     <Field Num="1" Kind="Get">
-      <Geometry Up="0" Left="1" Low="0" Right="35"/>
+      <Geometry Up="1" Left="1" Height="1" Right="35"/>
       <Colors Foreground="Red" Background="Blue" Selected="Green"/>
     </Field>
 
@@ -20,7 +20,7 @@
     </Field>
 
     <Field Num="3" Kind="Get">
-      <Geometry Up="0" Left="37" Low="0" Right="78"/>
+      <Geometry Up="1" Left="37" Height="1" Right="78"/>
       <Colors Foreground="Red" Background="Blue" Selected="Green"/>
     </Field>
 
