@@ -305,25 +305,27 @@ procedure Afpx_Bld is
     begin
       Add_Variable (Node, Name_Of (Fn) & "." & Name, Geo_Image (Value), False, False);
     end Add_Geo;
-    Up, Left, Low, Right : Boolean := False;
+    Up, Left, Low, Right, Width, Height : Boolean := False;
+    Nb_Verti, Nb_Horiz : Natural := 0;
   begin
     if Node.Kind /= Xp.Element
     or else not Match (Ctx.Get_Name (Node), "Geometry")
     or else Ctx.Get_Nb_Attributes (Node) /= 4
     or else Ctx.Get_Nb_Children (Node) /= 0 then
       File_Error (Node, "Invalid geometry " & String'(Ctx.Get_Name (Node))
-                 & ", expected Up, Left, Down and Right");
+                 & ", expected Up, Left, Down, Right, Width, Height");
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     begin
       for I in Attrs'Range loop
-        -- Load upper left then lower right
+        -- Load upper left and lower right
         if Match (Attrs(I).Name, "Up") then
           if Up then
             File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Up := True;
+          Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Upper_Left.Row :=
                Computer.Compute (Strof (Attrs(I).Value));
           Add_Geo ("Up", Fields(Fn).Upper_Left.Row);
@@ -332,6 +334,7 @@ procedure Afpx_Bld is
             File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Left := True;
+          Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Upper_Left.Col :=
                Computer.Compute (Strof (Attrs(I).Value));
           Add_Geo ("Left", Fields(Fn).Upper_Left.Col);
@@ -340,6 +343,7 @@ procedure Afpx_Bld is
             File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Low := True;
+          Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Lower_Right.Row :=
                Computer.Compute (Strof (Attrs(I).Value));
           Add_Geo ("Low", Fields(Fn).Lower_Right.Row);
@@ -348,9 +352,28 @@ procedure Afpx_Bld is
             File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
           end if;
           Right := True;
+          Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Lower_Right.Col :=
                Computer.Compute (Strof (Attrs(I).Value));
           Add_Geo ("Right", Fields(Fn).Lower_Right.Col);
+        elsif Match (Attrs(I).Name, "Height") then
+          if Height then
+            File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
+          end if;
+          Height := True;
+          Nb_Verti := Nb_Verti + 1;
+          Fields(Fn).Height :=
+               Computer.Compute (Strof (Attrs(I).Value));
+          Add_Geo ("Height", Fields(Fn).Height);
+        elsif Match (Attrs(I).Name, "Width") then
+          if Width then
+            File_Error (Node, "Duplicated coordinate " & Attrs(I).Name);
+          end if;
+          Width := True;
+          Nb_Horiz := Nb_Horiz + 1;
+          Fields(Fn).Width :=
+               Computer.Compute (Strof (Attrs(I).Value));
+          Add_Geo ("Width", Fields(Fn).Width);
         else
           File_Error (Node, "Invalid geometry " & Attrs(I).Name);
         end if;
@@ -361,10 +384,41 @@ procedure Afpx_Bld is
       when others =>
         File_Error (Node, "Invalid geometry");
     end;
-    -- All must be set
-    if not (Up and then Left and then Low and then Right) then
+    -- 2 on each dim must be set
+    if Nb_Horiz < 2 or else Nb_Verti < 2 then
       File_Error (Node, "Invalid geometry. Missing some coordinate");
+    elsif Nb_Horiz > 2 or else Nb_Verti > 2 then
+      File_Error (Node, "Invalid geometry. Too many coordinates");
     end if;
+
+    -- Compute missing data
+    if not Height then
+      Fields(Fn).Height :=
+       Fields(Fn).Lower_Right.Row - Fields(Fn).Upper_Left.Row + 1;
+      Add_Geo ("Height", Fields(Fn).Height);
+    elsif not Up then
+      Fields(Fn).Upper_Left.Row :=
+       Fields(Fn).Lower_Right.Row - Fields(Fn).Height + 1;
+      Add_Geo ("Up", Fields(Fn).Height);
+    else
+      Fields(Fn).Lower_Right.Row :=
+       Fields(Fn).Upper_Left.Row + Fields(Fn).Height - 1;
+      Add_Geo ("Low", Fields(Fn).Height);
+    end if;
+    if not Width then
+      Fields(Fn).Width :=
+       Fields(Fn).Lower_Right.Col - Fields(Fn).Upper_Left.Col + 1;
+      Add_Geo ("Width", Fields(Fn).Width);
+    elsif not Left then
+      Fields(Fn).Upper_Left.Col :=
+       Fields(Fn).Lower_Right.Col - Fields(Fn).Width + 1;
+      Add_Geo ("Left", Fields(Fn).Height);
+    else
+      Fields(Fn).Lower_Right.Col :=
+       Fields(Fn).Upper_Left.Col - Fields(Fn).Width - 1;
+      Add_Geo ("Right", Fields(Fn).Height);
+    end if;
+
     -- Sizes must be positive
     if      Fields(Fn).Upper_Left.Row > Fields(Fn).Lower_Right.Row
     or else Fields(Fn).Upper_Left.Col > Fields(Fn).Lower_Right.Col
@@ -372,7 +426,7 @@ procedure Afpx_Bld is
       File_Error (Node, "Invalid geometry. Upper_left < lower_right");
     end if;
 
-    -- Must be ins screen
+    -- Must be in screen
     if Fields(Fn).Lower_Right.Row > Screen_Size.Row then
       File_Error (Node, "Invalid geometry. Field is higher than screen");
     end if;
@@ -380,18 +434,13 @@ procedure Afpx_Bld is
       File_Error (Node, "Invalid geometry. Field is wider than screen");
     end if;
 
-    -- Compute size
-    Fields(Fn).Height :=
-     Fields(Fn).Lower_Right.Row - Fields(Fn).Upper_Left.Row + 1;
-    Add_Geo ("Height", Fields(Fn).Height);
-    Fields(Fn).Width :=
-     Fields(Fn).Lower_Right.Col - Fields(Fn).Upper_Left.Col + 1;
-    Add_Geo ("Width", Fields(Fn).Width);
-
     -- One Row for Get fields
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
       File_Error (Node, "Invalid geometry. Get fields must have ONE row");
     end if;
+  exception
+    when Constraint_Error =>
+      File_Error (Node, "Invalid geometry");
   end Load_Geometry;
 
   procedure Load_Colors (Node : in Xp.Node_Type;

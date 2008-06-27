@@ -3,9 +3,9 @@
 
 <!-- General Informations -->
 <!-- ==================== -->
-<!-- Only Mixed_Case keywords are accepted (not lowercase nor UPPERCASE) -->
-<!-- Rows are from 0 to 255 -->
-<!-- Cols are from 0 to 255 -->
+<!-- Only Mixed_Case keywords are accepted (not lowercase nor UPPERCASE). -->
+<!-- Rows are from 0 to 255. -->
+<!-- Cols are from 0 to 255. -->
 
 <!-- Syntax and semantic of the descriptor file -->
 <!-- ========================================== -->
@@ -29,36 +29,41 @@
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
 
-<!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double) -->
+<!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double). -->
+<!-- It cannot be a variable. -->
 <!-- It is possible to define the background color of the descriptor -->
-<!--  (default black) -->
+<!--  (default black), within Basic_Colors. -->
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED>
-<!-- A descriptor allows defining one optional list, then fields -->
+<!-- A descriptor allows defining one optional list, then fields. -->
 <!-- Before and between them, it is possible to define and overwrite -->
-<!--  variables that are valid in the descriptor only -->
+<!--  variables that are valid in the descriptor only. -->
 <!ELEMENT Descriptor (Var*, List?,(Var|Field)*)>
 
 <!-- The list can be defined none or once per descriptor, at the -->
 <!-- beginning. -->
 <!ATTLIST List>
 <!-- The list (like fields) is defined by a geometry and colors. -->
-<!-- Geometry has to be compitaible with screen and list and fields -->
+<!-- Geometry has to be compatible with screen, and list and fields -->
 <!--  must not overlap. -->
 <!ELEMENT List (Geometry,Colors)>
 
 <!-- Field Num has to be within Field_Range (1 .. 200), strictly crescent -->
 <!--  within one descriptor, no "hole" nor double are allowed in filed nums. -->
+<!-- It cannot be a variable. -->
 <!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 <!-- Field are defined by a geometry and colors -->
-<!-- Fields also allow defining an initial content (several rows and cols) -->
+<!-- Fields also allow defining an initial content (several rows and cols). -->
 <!ELEMENT Field (Geometry,Colors,Init*)>
 
-<!-- Geometry must define at least one row and one col -->
+<!-- Geometry must define at least one row and one col. -->
+<!-- In each direction it must define an absolute position, and an absolute --> 
+<!--  or relative position. -->
 <!-- Geometry must not make the field overlap with another field of the -->
-<!--  descriptor. Geometry of a Get field must define only one row -->
+<!--  descriptor. Geometry of a Get field must define only one row. -->
 <!ELEMENT Geometry EMPTY>
-<!ATTLIST Geometry Up  CDATA #REQUIRED Left  CDATA #REQUIRED
-                   Low CDATA #REQUIRED Right CDATA #REQUIRED>
+<!ATTLIST Geometry
+     Up   CDATA #IMPLIED Low   CDATA #IMPLIED Height  CDATA #IMPLIED
+     Left CDATA #IMPLIED Right CDATA #IMPLIED Width   CDATA #IMPLIED>
 <!-- As soon as an attribute is parsed, the corresponding constant -->
 <!--  is defined and valid for the rest of the descriptor (e.g. List.Up, -->
 <!--  Field_2.Low, Field_21.Right). When all geometry is parsed for a list -->
@@ -72,15 +77,15 @@
 <!--  specified for List, Button and Get fields. -->
 <!-- Selected color is mandatory for List and Get fields and -->
 <!--  must not be specified for Put and Button. -->
-<!-- Summary of color combinations -->
-<!-- ============================= -->
+<!-- Summary of color combinations: -->
+<!-- ================================================= -->
 <!-- Type  |   Foreground  Blink  Background  Selected -->
 <!-- ================================================= -->
-<!-- Put   |   X Colors    X      X Basic -->
-<!-- Button|   X Basic            X Basic -->
-<!-- Get   |   X Basic            X Basic     X Basic -->
-<!-- List  |   X Basic            X Basic     X Basic -->
-<!-- ================================================ -->
+<!-- Put   |   X Colors    X      X Basic              -->
+<!-- Button|   X Basic            X Basic              -->
+<!-- Get   |   X Basic            X Basic     X Basic  -->
+<!-- List  |   X Basic            X Basic     X Basic  -->
+<!-- ================================================= -->
 <!ELEMENT Colors EMPTY>
 <!ENTITY % Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Gray">
 <!ENTITY % Colors "%Basic_Colors;|
@@ -92,10 +97,10 @@
                  Selected CDATA #IMPLIED>
 <!-- As soon as such color attribute is parsed, the corresponding constant, -->
 <!--  (valid for the rest of the descriptor) is defined (e.g. -->
-<!-- List.Foreground, Field_1.Background, Field_21.Blink). -->
+<!--  List.Foreground, Field_1.Background, Field_21.Blink). -->
 
-<!-- Init row and col have to be compatible with geometry -->
-<!-- Init string has to be compatible with geometry and init col -->
+<!-- Init row and col have to be compatible with geometry. -->
+<!-- Init string has to be compatible with geometry and init col. -->
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
