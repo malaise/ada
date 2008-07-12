@@ -82,6 +82,9 @@ package body Nav_Format is
     C : Character;
     Dot : Boolean;
   begin
+    First := 1;
+    Last := 1;
+    Sign := False;
     -- parse leading and tailing spaces
     F := Str'First;
     while F <= Str'Last and then Str(F) = ' ' loop
@@ -173,6 +176,8 @@ package body Nav_Format is
     Check (Str, F, L, S, P, R);
     if R = Unset then
       Res := Unset;
+      Pos := 1;
+      Speed := 0.0;
       return;
     end if;
     if S then
