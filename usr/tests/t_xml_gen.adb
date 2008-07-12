@@ -1,11 +1,18 @@
-with Basic_Proc, Xml_Parser.Generator;
+with Basic_Proc, Xml_Parser.Generator, Sys_Calls;
 procedure T_Xml_Gen is
   Dscr : Xml_Parser.Generator.Ctx_Type;
+  Dtd_Name : constant String := "variables.dtd";
   Node : Xml_Parser.Node_Type;
   New_Node : Xml_Parser.Node_Type;
+  Node_1, Path_Node, Fail_Node : Xml_Parser.Node_Type;
   Ok : Boolean;
   use Xml_Parser, Xml_Parser.Generator;
 begin
+  -- Symlink Dtd from Data to current
+  if not Sys_Calls.File_Found (Dtd_Name) then
+    Sys_Calls.Link ("data/" & Dtd_Name, "./" & Dtd_Name, False);
+  end if;
+
   -- Generate Tree
   Dscr.Set_Version (1, 1);
   Node := Dscr.Get_Prologue;
@@ -19,17 +26,17 @@ begin
   Dscr.Set_Name (Node, "Variables");
   Dscr.Add_Child (Node, " Below root ", Xml_Parser.Comment, New_Node);
 
-  Dscr.Add_Brother (New_Node, "Var", Xml_Parser.Element, New_Node);
-  Dscr.Add_Attribute (New_Node, "Name", "V1");
-  Dscr.Add_Attribute (New_Node, "Type", "Int");
-  Dscr.Add_Child (New_Node, "5", Xml_Parser.Text, New_Node);
+  Dscr.Add_Brother (New_Node, "Var", Xml_Parser.Element, Node_1);
+  Dscr.Add_Attribute (Node_1, "Name", "V1");
+  Dscr.Add_Attribute (Node_1, "Type", "Int");
+  Dscr.Add_Child (Node_1, "5", Xml_Parser.Text, New_Node);
   Node := Dscr.Get_Parent (New_Node);
 
-  Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
-  Dscr.Add_Attribute (New_Node, "Name", "PATH");
-  Dscr.Add_Child (New_Node, "${PATH}:/usr/local/bin", Xml_Parser.Text,
-             New_Node);
-  Node := Dscr.Get_Parent (New_Node);
+  Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, Fail_Node);
+  Dscr.Add_Attribute (Fail_Node, "Name", "Fail");
+  Dscr.Add_Attribute (Fail_Node, "Type", "Str");
+  Dscr.Add_Child (Fail_Node, "${SET_ME}", Xml_Parser.Text, New_Node);
+  Node := Fail_Node;
 
   Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V2");
@@ -43,21 +50,30 @@ begin
   Dscr.Add_Child (New_Node, "${V1}*${V2}", Xml_Parser.Text, New_Node);
   Node := Dscr.Get_Parent (New_Node);
 
-  Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
+  -- Copy from Node_1
+  Dscr.Copy (Node_1, Node, Child => False, Next => True);
+  New_Node := Dscr.Get_Brother (Node);
+
+  --  Adapt
+  Dscr.Del_Attributes (New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V2");
   Dscr.Add_Attribute (New_Node, "Type", "Int");
-  Dscr.Add_Child (New_Node, "${V3}*2", Xml_Parser.Text, New_Node);
+  New_Node := Dscr.Get_Child (New_Node, 1);
+  Dscr.Set_Text (New_Node, "${V3}*2");
   Node := Dscr.Get_Parent (New_Node);
 
-  Dscr.Add_Brother (Node,
+  Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, Path_Node);
+  Dscr.Add_Attribute (Path_Node, "Name", "PATH");
+  Dscr.Add_Child (Path_Node, "${PATH}:/usr/local/bin", Xml_Parser.Text,
+             New_Node);
+
+  -- Swap Fail and Path
+  Dscr.Swap (Fail_Node, Path_Node);
+
+  Dscr.Add_Brother (Fail_Node,
        " Comp_var will report error if variable SET_ME is not set ",
-       Xml_Parser.Comment, New_Node);
+       Xml_Parser.Comment, New_Node, Next => False);
 
-  Dscr.Add_Brother (New_Node, "Var", Xml_Parser.Element, New_Node);
-  Dscr.Add_Attribute (New_Node, "Name", "Fail");
-  Dscr.Add_Attribute (New_Node, "Type", "Str");
-  Dscr.Add_Child (New_Node, "${SET_ME}", Xml_Parser.Text, New_Node);
-  Node := Dscr.Get_Parent (New_Node);
 
   -- Check tree
   Dscr.Check (Ok);
