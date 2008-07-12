@@ -791,7 +791,9 @@ package body Generic_Con_Io is
         raise Not_Init;
       end if;
 
-
+      Ctrl := False;
+      Shift := False;
+      Code := False;
       Next_X_Event (Time_Out, X_Event);
       case X_Event is
         when X_Mng.Fd_Event =>
