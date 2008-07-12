@@ -32,6 +32,12 @@ package body Socket is
 
   type Boolean_For_C is new Boolean;
   for Boolean_For_C'Size use 4 * Byte_Size;
+  for Boolean_For_C use (False => 0, True => 1);
+
+  -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
+  --  and that char should be used instead in C
+  pragma Warnings (Off, Boolean_For_C);
+
 
   type Word is new Integer range 0 .. Integer(Port_Num'Last);
   for Word'Size use 2 * Byte_Size;

@@ -15,6 +15,11 @@ package body Event_Mng is
   for Bool_For_C'Size use 32;
   for Bool_For_C use (False => 0, True => 1);
 
+  -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
+  --  and that char should be used instead in C
+  pragma Warnings (Off, Bool_For_C);
+
+
   function For_C(Ada_Boolean : in Boolean) return Bool_For_C is
   begin
     return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
