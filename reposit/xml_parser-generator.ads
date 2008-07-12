@@ -111,9 +111,19 @@ package Xml_Parser.Generator is
   -- Swap two elements (and their children)
   -- May raise Invalid_Node if one is in prologue
   -- May raise Invalid_Node is one is ancestor of the other
-  procedure Swap (Ctx      : in out Ctx_Type;
-                  Elt1     : in out Element_Type;
-                  Elt2     : in out Element_Type);
+  procedure Swap (Ctx  : in out Ctx_Type;
+                  Elt1 : in out Element_Type;
+                  Elt2 : in out Element_Type);
+
+  -- Copy Src element (and its children) as Next (or prev) Child (or brother)
+  --  of Dst
+  -- May raise Invalid_Node if one is in prologue
+  -- May raise Invalid_Node is Src is ancestor of the Dst
+  procedure Copy (Ctx   : in out Ctx_Type;
+                  Src   : in out Element_Type;
+                  Dst   : in out Element_Type;
+                  Child : in Boolean := True;
+                  Next  : in Boolean := True);
 
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;

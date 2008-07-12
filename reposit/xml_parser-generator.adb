@@ -583,9 +583,9 @@ package body Xml_Parser.Generator is
   end Add_Brother;
 
   -- Swap two elements (and their children)
-  procedure Swap (Ctx      : in out Ctx_Type;
-                  Elt1     : in out Element_Type;
-                  Elt2     : in out Element_Type) is
+  procedure Swap (Ctx  : in out Ctx_Type;
+                  Elt1 : in out Element_Type;
+                  Elt2 : in out Element_Type) is
     Tree : Tree_Acc;
   begin
     -- Move to node1, must be an element, save pos
@@ -599,6 +599,27 @@ package body Xml_Parser.Generator is
     when Trees.Is_Ancestor =>
       raise Invalid_Node;
   end Swap;
+
+  --  Copy Src element as Next (or prev) Child (or brother)
+  --  of Dst
+  procedure  Copy (Ctx   : in out Ctx_Type;
+                  Src   : in out Element_Type;
+                  Dst   : in out Element_Type;
+                  Child : in Boolean := True;
+                  Next  : in Boolean := True) is
+    Tree : Tree_Acc;
+  begin
+    -- Move to Src, must be an element, save pos
+    Move_To_Element (Ctx, Src, Tree);
+    My_Tree.Save_Position (Tree.all);
+    -- Move to Dst, must be an element
+    Move_To_Element (Ctx, Dst, Tree);
+    -- Copy Src below or beside Dst
+    My_Tree.Copy_Saved (Tree.all, Child, not Next);
+  exception
+    when Trees.Is_Ancestor =>
+      raise Invalid_Node;
+  end Copy;
 
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;
