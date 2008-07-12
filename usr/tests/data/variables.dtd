@@ -1,0 +1,14 @@
+<?xml version="1.1"?>
+<!-- DTD for Variable definitions -->
+<!-- This allows defining several variables -->
+<!ATTLIST Variables>
+<!ELEMENT Variables (Var)*>
+
+<!-- Each variable must have a name and a type -->
+<!--  and is defined by a value -->
+<!-- Set the Type to #REQUIRED to generate an error -->
+<!-- Set the Type to #IMPLIED to fix the error -->
+<!ATTLIST Var Name CDATA #REQUIRED 
+              Type (Str|Int) #IMPLIED>
+<!ELEMENT Var (#PCDATA)>
+
