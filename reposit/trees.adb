@@ -600,10 +600,9 @@ package body Trees is
         raise No_Saved_Position;
       end if;
 
-      -- Get saved pos and check that current and saved are not ancestors
+      -- Get saved pos and check that saved is not ancestor of current
       Saved_Pool.Pop (The_Tree.Save.all, Saved);
-      if Is_Ancestor_Of (Saved, The_Tree.Curr)
-      or else Is_Ancestor_Of (The_Tree.Curr, Saved) then
+      if Is_Ancestor_Of (Saved, The_Tree.Curr) then
         raise Is_Ancestor;
       end if;
 

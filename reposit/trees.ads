@@ -130,7 +130,7 @@ package Trees is
     -- Current position becomes the copied cell
     -- May raise No_Cell if The_Tree is empty
     -- May raise No_Saved_Position if no position is saved
-    -- May raise Is_Ancestor if one (current or saved) is ancestor of the other
+    -- May raise Is_Ancestor if saved is ancestor of current
     procedure Copy_Saved (The_Tree : in out Tree_Type;
                           Child    : in Boolean;
                           Elder    : in Boolean := True);
