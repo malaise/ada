@@ -157,6 +157,13 @@ package body Menu21 is
       Afpx.Set_Field_Activation (29, Activate_No_Curve);
       Afpx.Set_Field_Activation (30, Activate_No_Curve);
 
+      if The_Bounds_Set then
+        Afpx.Reset_Field (Screen.Ok_Button_Fld,
+             Reset_Colors => False, Reset_String => True);
+      else
+        Afpx.Encode_Field (Screen.Ok_Button_Fld, (1, 1), "CANCEL");
+      end if;
+
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Ptg_Result, Redisplay);
       Redisplay := False;
