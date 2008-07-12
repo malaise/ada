@@ -3,7 +3,7 @@ with Trees;
 -- Generates a Xml file (or stdout), or string from a tree
 package Xml_Parser.Generator is
 
-  Version : constant String := "V4.0";
+  Version : constant String := "V4.1";
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
 
