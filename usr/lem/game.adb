@@ -38,6 +38,9 @@ package body Game is
   begin
     -- Start (new) game
     if New_Game then
+      if Debug.Set_Game then
+        Ada.Text_Io.Put_Line ("GAME: Starting new");
+      end if;
       -- Init Moon ground
       Moon.Init;
       -- Get a new random Lem position
@@ -56,11 +59,22 @@ package body Game is
     Screen.Init;
     Flight_Status := Flight.Get_Status;
     Screen.Update (Flight_Status, Chronos.Read (Chrono), True);
+    if Debug.Set_Game then
+      Ada.Text_Io.Put_Line ("GAME: Init done");
+    end if;
 
     -- Play
     loop
       -- Get flying status
       Flight_Status := Flight.Get_Status;
+      if Debug.Set_Game then
+        Ada.Text_Io.Put_Line ("GAME: Status is " & Flight_Status.Status'Img);
+        Ada.Text_Io.Put_Line ("GAME: Pos is " & Flight_Status.Pos.X_Pos'Img
+                                        & "/" & Flight_Status.Pos.Y_Pos'Img);
+        Ada.Text_Io.Put_Line ("GAME: Speed is "
+                        & Flight_Status.Speed.X_Speed'Img
+                  & "/" & Flight_Status.Speed.Y_Speed'Img);
+      end if;
 
       -- Fly while flying or landed but still Y thrust
       if Is_Failed (Flight_Status.Status) then
