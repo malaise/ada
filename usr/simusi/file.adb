@@ -1,5 +1,6 @@
 with Ada.Text_Io;
 with Text_Handler, Argument, Basic_Proc, Get_Line, Get_Float;
+pragma Elaborate (Argument);
 with Arg_Parsing;
 package body File is
 
