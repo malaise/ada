@@ -167,7 +167,13 @@ begin
       Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
-  My_Channel.Del_Destination(Socket.Local_Host_Name);
+  begin
+    My_Channel.Del_Destination(Socket.Local_Host_Name);
+  exception
+    when Channels.Unknown_Destination =>
+      -- Local host is not a destination of this destinations file
+      null;
+  end;
 
   -- Initialize ttys
   declare
