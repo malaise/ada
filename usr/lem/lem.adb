@@ -192,6 +192,9 @@ package body Lem is
     use type Ada.Calendar.Time;
     Delta_Time : constant Duration := Ada.Calendar.Clock - Current_Time;
   begin
+    if Debug.Set_Lem then
+      Ada.Text_Io.Put_Line ("LEM Delta time is " & Delta_Time'Img);
+    end if;
     return Position_At (Delta_Time);
   end Get_Position;
 
@@ -208,14 +211,30 @@ package body Lem is
                     return Boolean is
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
+    New_Position : Position_Rec;
+    New_Speed : Speed_Rec;
   begin
+    if Debug.Set_Lem then
+      Ada.Text_Io.Put_Line ("LEM Periodic");
+    end if;
     -- Compute LEM characteristics
     -- Time of computation for further linear interpolation
     Current_Time := Ada.Calendar.Clock;
     -- New position
-    Current_Position := Position_At (Period);
+    -- GNAT Bug? Current_Position is set to 0 before calling Position_At!
+    New_Position := Position_At (Period);
+    Current_Position := New_Position;
     -- New speed
-    Current_Speed := Speed_At (Period);
+    -- GNAT Bug? Current_Speed is set to 0 before calling Speed_At!
+    New_Speed := Speed_At (Period);
+    Current_Speed := New_Speed;
+    if Debug.Set_Lem then
+      Ada.Text_Io.Put_Line ("LEM Pos is " & Current_Position.X_Pos'Img
+                                    & "/" & Current_Position.Y_Pos'Img);
+      Ada.Text_Io.Put_Line ("LEM Speed is "
+                        & Current_Speed.X_Speed'Img
+                  & "/" & Current_Speed.Y_Speed'Img);
+    end if;
 
     -- And for next time
     -- Fuel consumed during the Period
@@ -233,6 +252,10 @@ package body Lem is
     -- New acceleration
     Current_Acceleration := (X_Acc => Current_X_Thrust / Mass,
                              Y_Acc => Current_Y_Thrust / Mass + Moon.Acceleration);
+    if Debug.Set_Lem then
+      Ada.Text_Io.Put_Line ("LEM Acc is " & Current_Acceleration.X_Acc'Img
+                                    & "/" & Current_Acceleration.Y_Acc'Img);
+    end if;
     -- Check if lem is landed
     if Landed then
       Current_X_Thrust := 0;
