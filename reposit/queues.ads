@@ -104,7 +104,7 @@ package Queues is
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
-    type File_Type is array (No_Range) of Item;
+    type File_Type is array (Ptr_Range) of Item;
     type Fifo_Type is tagged record
       Full : Boolean := False;
       File : File_Type;
@@ -167,8 +167,8 @@ package Queues is
     -- Ptr_Out points to the first to pop
     --  fifo full  is raised if and only if ptr_in  = ptr_out and full
     --  fifo empty is raised if and only if ptr_in  = ptr_out and not full
-    type Item_Prio_Type is array (No_Range) of Item;
-    type Prio_Prio_Type is array (No_Range) of Priority;
+    type Item_Prio_Type is array (Typ_Ptr) of Item;
+    type Prio_Prio_Type is array (Typ_Ptr) of Priority;
     type Prio_Type is tagged record
       File : Item_Prio_Type;
       File_Prio : Prio_Prio_Type;
