@@ -84,7 +84,8 @@ package body File_Mng is
 
     -- Everything is Ok. Overwrite the existing list. Go to end.
     Oper_List_Mng.Delete_List (Oper_List);
-    Oper_List_Mng.Assign (Oper_List, Loc_List);
+    Oper_List_Mng.Insert_Copy (Oper_List, Loc_List);
+    Oper_List_Mng.Delete_List (Loc_List, True);
     Oper_List_Mng.Rewind (Oper_List, Oper_List_Mng.Prev);
 
   exception
@@ -107,18 +108,12 @@ package body File_Mng is
   -- Save the list in file
   procedure Save (File_Name : in String;
                   Oper_List : in Oper_List_Mng.List_Type) is
-    -- Position in list
-    Loc_Pos : Natural;
     File : Oper_Io.File_Type;
     -- A record to write
     Loc_Oper, Loc_Oper_1 : Oper_Def.Oper_Rec;
     -- A list for tempo move
     Loc_List : Oper_List_Mng.List_Type;
   begin
-    Oper_List_Mng.Assign (Loc_List, Oper_List);
-
-    -- Save current position
-    Loc_Pos := Oper_List_Mng.Get_Position (Loc_List);
 
     -- Create / erase file
     declare
@@ -142,6 +137,8 @@ package body File_Mng is
         raise F_Access_Error;
     end;
 
+    -- A tempo local copy for scanning
+    Oper_List_Mng.Unchecked_Assign (Loc_List, Oper_List);
     -- Rewind, write magic record with amount of first record
     Oper_List_Mng.Rewind (Loc_List);
     Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
@@ -157,9 +154,8 @@ package body File_Mng is
       Oper_Io.Write (File, Loc_Oper);
     end loop;
 
-    -- Done. Close file, move to saved position
+    -- Done. Close file
     Oper_Io.Close (File);
-    Oper_List_Mng.Move_To (Loc_List, Oper_List_Mng.Next, Loc_Pos-1, False);
 
   exception
     when F_Access_Error =>
