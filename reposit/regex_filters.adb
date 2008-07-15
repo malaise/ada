@@ -47,8 +47,9 @@ package body Regex_Filters is
     if Filter_List_Mng.Is_Empty(Filter_List_Mng.List_Type(Filter)) then
       return True;
     end if;
-    -- Make a copy of list container
-    Filter_List_Mng.Assign(Loc_List, Filter_List_Mng.List_Type(Filter));
+    -- Make a copy of list container, just for scanning
+    Filter_List_Mng.Unchecked_Assign(Loc_List,
+                                     Filter_List_Mng.List_Type(Filter));
     -- Rewind
     Filter_List_Mng.Move_To(Loc_List, Number => 0, From_Current => False);
 

@@ -546,7 +546,7 @@ package body Limited_List is
 
 
   -- Copy the Val list to To list
-  procedure Assign (To : in out List_Type; Val : in List_Type) is
+  procedure Unchecked_Assign (To : in out List_Type; Val : in List_Type) is
   begin
     Delete_List(To);
     To.Assigned := True;
@@ -557,7 +557,7 @@ package body Limited_List is
     To.Current := Val.Current;
     To.First := Val.First;
     To.Last := Val.Last;
-  end Assign;
+  end Unchecked_Assign;
 
   -- Completely insert a copy of Val list (data) after or before current
   procedure Insert_Copy (To    : in out List_Type;
@@ -571,7 +571,7 @@ package body Limited_List is
       -- Nothing if Val is empty
       return;
     end if;
-    Assign (Lval, Val);
+    Unchecked_Assign (Lval, Val);
     Rewind (Lval, Where);
     loop
       -- Copy Elt

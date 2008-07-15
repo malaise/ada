@@ -100,7 +100,9 @@ package body Arbitrary.Factors is
     Lt : Nb_List_Mng.List_Type;
   begin
     S := One;
-    Nb_List_Mng.Assign (Lt, L);
+    -- This is a temporary copy of L for scanning up to the end
+    --  without modifying L.
+    Nb_List_Mng.Unchecked_Assign (Lt, L);
     loop
       Nb_List_Mng.Read (Lt, T, Nb_List_Mng.Current);
       S := S * T;
