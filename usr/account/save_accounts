@@ -1,3 +1,16 @@
 #!/bin/bash
-tar cvf  /dev/fd0 /usr/local/account/data/*
+Dst=${1:-/media/disk}/account_data
+if [ ! -d $Dst ] ; then
+  mkdir $Dst
+fi
+if [ ! -d $Dst ] ; then
+  echo "Cannot create directory $Dst. Abort" 1>&2
+  exit 1
+fi
+
+cp -pPR /usr/local/account/data/* $Dst
+if [ $? -ne 0 ] ; then
+  echo "Copy failed."
+  exit 1
+fi
 
