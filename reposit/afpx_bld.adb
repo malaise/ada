@@ -399,11 +399,11 @@ procedure Afpx_Bld is
     elsif not Up then
       Fields(Fn).Upper_Left.Row :=
        Fields(Fn).Lower_Right.Row - Fields(Fn).Height + 1;
-      Add_Geo ("Up", Fields(Fn).Height);
+      Add_Geo ("Up", Fields(Fn).Upper_Left.Row);
     else
       Fields(Fn).Lower_Right.Row :=
        Fields(Fn).Upper_Left.Row + Fields(Fn).Height - 1;
-      Add_Geo ("Low", Fields(Fn).Height);
+      Add_Geo ("Low", Fields(Fn).Lower_Right.Row);
     end if;
     if not Width then
       Fields(Fn).Width :=
@@ -412,11 +412,11 @@ procedure Afpx_Bld is
     elsif not Left then
       Fields(Fn).Upper_Left.Col :=
        Fields(Fn).Lower_Right.Col - Fields(Fn).Width + 1;
-      Add_Geo ("Left", Fields(Fn).Height);
+      Add_Geo ("Left", Fields(Fn).Upper_Left.Col);
     else
       Fields(Fn).Lower_Right.Col :=
-       Fields(Fn).Upper_Left.Col - Fields(Fn).Width - 1;
-      Add_Geo ("Right", Fields(Fn).Height);
+       Fields(Fn).Upper_Left.Col + Fields(Fn).Width - 1;
+      Add_Geo ("Right", Fields(Fn).Lower_Right.Col);
     end if;
 
     -- Sizes must be positive
@@ -438,6 +438,7 @@ procedure Afpx_Bld is
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
       File_Error (Node, "Invalid geometry. Get fields must have ONE row");
     end if;
+    
   exception
     when Constraint_Error =>
       File_Error (Node, "Invalid geometry");
