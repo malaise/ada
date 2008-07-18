@@ -180,7 +180,7 @@ procedure Xml_Checker is
     Ctx.Clean;
   exception
     when Xml_Parser.File_Error =>
-      Basic_Proc.Put_Line_Error ("Error reading file "
+      Basic_Proc.Put_Line_Error ("IO Error reading file "
         & Get_File_Name (Index, True) & ".");
       raise Abort_Error;
   end Do_One;
@@ -297,7 +297,6 @@ exception
     Basic_Proc.Set_Error_Exit_Code;
   when Abort_Error =>
     -- Error already put while parsing file
-    Usage;
     Basic_Proc.Set_Error_Exit_Code;
   when Error:others =>
     -- Unexpected or internal error
