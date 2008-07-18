@@ -62,6 +62,9 @@ package body Text_Char is
       -- Ready to get chars of this line
       File.Acc.Get_Index := 0;
     end if;
+  exception
+    when Text_Line.Io_Error =>
+      raise Io_Error;
   end Read_Line;
 
   -- Read next char from File
