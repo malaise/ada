@@ -226,7 +226,7 @@ package body Parse_Mng  is
     Attribute_Index : Natural;
     Char : Character;
     Line_No : Natural;
-    Found : Boolean;
+    Attr_Exists : Boolean;
   begin
     -- Loop on several attributes
     loop
@@ -249,19 +249,17 @@ package body Parse_Mng  is
           Util.Error (Ctx.Flow, "Attribute " & Asu_Ts (Attribute_Name)
                     & " already defined for xml");
         end if;
+        Attr_Exists := False;
       else
-        Tree_Mng.Attribute_Exists (Ctx.Elements.all, Attribute_Name, Found);
-        if Found then
-          Util.Error (Ctx.Flow, "Attribute " & Asu_Ts (Attribute_Name)
-                    & " already defined for this element");
-        end if;
+        Tree_Mng.Attribute_Exists (Ctx.Elements.all,
+                  Attribute_Name, Attr_Exists);
       end if;
       -- Parse value
       Parse_Value (Ctx, Adtd, False, Attribute_Value);
       if Of_Xml then
         Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
                   Attribute_Name, Attribute_Value, Line_No);
-      else
+      elsif not Attr_Exists then
         Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attribute_Name, Attribute_Value, Line_No);
       end if;
