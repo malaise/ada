@@ -131,7 +131,7 @@ package body Util is
     end if;
     Err_Msg := Asu_Tus ("Xml_Parse error");
     if Put_Line_No /= 0 then
-      Asu.Append (Err_Msg, " at line" & Line_No'Img);
+      Asu.Append (Err_Msg, " at line" & Put_Line_No'Img);
     end if;
     if Flow.Kind = Dtd_File then
       if Put_Line_No /= 0 then
@@ -198,6 +198,8 @@ package body Util is
   exception
     when Text_Char.End_Error =>
       raise End_Error;
+    when Text_Char.Io_Error =>
+      raise File_Error;
   end Get;
 
   -- Get a string
