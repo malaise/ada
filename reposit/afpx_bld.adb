@@ -203,9 +203,11 @@ procedure Afpx_Bld is
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Root);
+      Err_Val : Asu_Us;
       P : Positive;
     begin
       for I in Attrs'Range loop
+        Err_Val := Attrs(I).Value;
         -- Load upper left then lower right
         if Match (Attrs(I).Name, "Height") then
           if Height then
@@ -232,6 +234,8 @@ procedure Afpx_Bld is
     exception
       when File_Syntax_Error =>
         raise;
+      when Computer.Unknown_Variable =>
+        File_Error (Root, "Unknown variable " & Strof (Err_Val));
       when others =>
         File_Error (Root, "Invalid size");
         raise File_Syntax_Error;
@@ -317,8 +321,10 @@ procedure Afpx_Bld is
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
+      Err_Val : Asu_Us;
     begin
       for I in Attrs'Range loop
+        Err_Val := Attrs(I).Value;
         -- Load upper left and lower right
         if Match (Attrs(I).Name, "Up") then
           if Up then
@@ -381,6 +387,8 @@ procedure Afpx_Bld is
     exception
       when File_Syntax_Error =>
         raise;
+      when Computer.Unknown_Variable =>
+        File_Error (Node, "Unknown variable " & Strof (Err_Val));
       when others =>
         File_Error (Node, "Invalid geometry");
     end;
@@ -466,8 +474,10 @@ procedure Afpx_Bld is
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
+      Err_Val : Asu_Us;
     begin
       for I in Attrs'Range loop
+        Err_Val := Attrs(I).Value;
         if Match (Attrs(I).Name, "Foreground") then
           if Foreground then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -552,6 +562,8 @@ procedure Afpx_Bld is
     exception
       when File_Syntax_Error =>
         raise;
+      when Computer.Unknown_Variable =>
+        File_Error (Node, "Unknown variable " & Strof (Err_Val));
       when others =>
         File_Error (Node, "Invalid colors specification");
     end;
@@ -665,10 +677,12 @@ procedure Afpx_Bld is
 
       declare
         Child_Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Child);
+        Err_Val : Asu_Us;
       begin
         Row := False;
         Col := False;
         for I in Child_Attrs'Range loop
+          Err_Val := Child_Attrs(I).Value;
           if Match (Child_Attrs(I).Name, "Row") then
             if Row then
               File_Error (Child, "Duplicated coordinate");
@@ -687,7 +701,8 @@ procedure Afpx_Bld is
             -- Discard
             null;
           else
-            File_Error (Child, "Invalid Init attribute " & Child_Attrs(I).Name);
+            File_Error (Child, "Invalid Init attribute "
+                             & Child_Attrs(I).Value);
           end if;
         end loop;
         if not (Row and then Col) then
@@ -696,6 +711,8 @@ procedure Afpx_Bld is
       exception
         when File_Syntax_Error =>
           raise;
+        when Computer.Unknown_Variable =>
+          File_Error (Node, "Unknown variable " & Strof (Err_Val));
         when others =>
           File_Error (Child, "Invalid init row or col");
       end;
@@ -819,6 +836,8 @@ procedure Afpx_Bld is
               Con_Io.Effective_Basic_Colors'Value (
                  Computer.Eval (Strof (Attrs(I).Value)));
         exception
+          when Computer.Unknown_Variable =>
+            File_Error (Node, "Unknown variable " & Strof (Attrs(I).Value));
           when others =>
             File_Error (Node, "Invalid background specification");
         end;
