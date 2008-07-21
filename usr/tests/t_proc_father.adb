@@ -33,7 +33,7 @@ procedure T_Proc_Father is
     Reply : constant String := "F2C";
     use type Sys_Calls.File_Desc;
   begin
-    if Fd /= Spawn_Result.Fd_In then
+    if Fd /= Spawn_Result.Fd_Out then
       Ada.Text_Io.Put_Line ("Father: Fd Cb on invalid Fd");
       return False;
     end if;
@@ -45,10 +45,10 @@ procedure T_Proc_Father is
     end if;
     Ada.Text_Io.Put_Line ("Father: Read >" & Buf(1 .. Res) & "<");
     Buf(1 .. Reply'Length) := Reply;
-    Res := Sys_Calls.Write (Spawn_Result.Fd_Out, Buf'Address, Reply'Length);
+    Res := Sys_Calls.Write (Spawn_Result.Fd_In, Buf'Address, Reply'Length);
     if Res /= Reply'Length then
       Ada.Text_Io.Put_Line ("Father: Cannot write " & Natural'Image(Reply'Length)
-                            & " on out fd");
+                            & " on in fd");
     end if;
     return False;
   end Fd_Cb;
@@ -68,7 +68,8 @@ begin
 
 
   Spawn_Result := Proc_Family.Spawn (Text_Handler.Value(Str),
-                                     True, Death_Cb'Unrestricted_Access);
+                                     Proc_Family.New_Fds,
+                                     Death_Cb'Unrestricted_Access);
   if not Spawn_Result.Ok then
     Ada.Text_Io.Put_Line ("Father: Spawn result NOT OK");
     return;
@@ -92,8 +93,9 @@ begin
     return;
   end if;
 
-  Ada.Text_Io.Put_Line ("Father: Fds are " & Spawn_Result.Fd_In'Img & " and "
-                      & Spawn_Result.Fd_Out'Img);
+  Ada.Text_Io.Put_Line ("Father: Fds are " & Spawn_Result.Fd_In'Img
+                     & ", " & Spawn_Result.Fd_Out'Img
+                     & " and " & Spawn_Result.Fd_Err'Img);
 
   if not I_Am_Father then
     Ada.Text_Io.Put_Line ("Father: Child exiting");
@@ -101,7 +103,7 @@ begin
   end if;
 
   Event_Mng.Set_Sig_Term_Callback (Term_Cb'Unrestricted_Access);
-  Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_In, True,
+  Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True,
                              Fd_Cb'Unrestricted_Access);
 
   loop

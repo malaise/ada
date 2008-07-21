@@ -4,7 +4,7 @@ with Sys_Calls, Proc_Family, Many_Strings, Argument, Text_Handler, Event_Mng;
 procedure T_Proc_Child is
 
   Str : String (1 .. 1024);
-  Fd_In, Fd_Out : Sys_Calls.File_Desc;
+  Fd_In, Fd_Out, Fd_Err : Sys_Calls.File_Desc;
   Msg: constant String := "Child 2 Father";
   Res : Natural;
 
@@ -31,7 +31,7 @@ procedure T_Proc_Child is
 
 begin
   begin
-    Proc_Family.Child_Get_Fds (Fd_In, Fd_Out);
+    Proc_Family.Child_Get_Fds (Fd_In, Fd_Out, Fd_Err);
   exception
     when Proc_Family.No_Fd =>
       Ada.Text_Io.Put_Line ("Child: No fd.");
@@ -39,8 +39,9 @@ begin
   end;
 
   Event_Mng.Add_Fd_Callback (Fd_In, True, Fd_Cb'Unrestricted_Access);
-  Ada.Text_Io.Put_Line ("Child: Fds are " & Fd_In'Img & " and "
-                      & Fd_Out'Img);
+  Ada.Text_Io.Put_Line ("Child: Fds are " & Fd_In'Img
+                       & ", " &  Fd_Out'Img
+                       & " and " & Fd_Err'Img);
 
   Res := Sys_Calls.Write (Fd_Out, Msg'Address, Msg'Length);
   if Res /= Msg'Length then
