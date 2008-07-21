@@ -42,6 +42,7 @@ package Sys_Calls is
   function Environ_Val (Index : Positive) return String;
 
   -- Putenv (causes a memory leak)
+  -- May raise System_Error
   procedure Putenv (Env_Name : in String; Env_Value : in String);
 
   -- Set exit code
@@ -144,7 +145,7 @@ package Sys_Calls is
                            Status : out Get_Status_List;
                            C      : out Character);
   -- Read / write on File_Desc
-  -- May raise System_Error (end of blocking flow...)
+  -- May raise System_Error (C read/write returned -1)
   function Read  (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
            return Natural;
   function Write (Fd : File_Desc; Buffer : System.Address; Nbytes : Positive)
@@ -157,11 +158,17 @@ package Sys_Calls is
   function Open   (Name : String; Mode : File_Mode) return File_Desc;
 
   -- Close
+  -- May raise System_Error (not open)
   procedure Close (Fd : in File_Desc);
 
   -- Create a pipe
+  -- May raise System_Error
   procedure Pipe (Fd1, Fd2 : out File_Desc);
 
+  -- Duplicate a file descriptor, using smallest or Start_At
+  -- May raise System_Error
+  function Dup (To_Copy : in File_Desc) return File_Desc;
+  function Dup2 (To_Copy, Start_At : in File_Desc) return File_Desc;
 
   type Pid is new Positive;
 
@@ -170,16 +177,18 @@ package Sys_Calls is
   function Get_Parent_Pid return Pid;
 
   -- Kill a process
+  -- May raise System_Error
   procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural);
 
   -- Process procreation (fork)
+  -- May raise System_Error
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid);
 
   -- Process mutation (exec)
   -- Program_name and arguments have to follow Many_Strings format
   procedure Mutate (Program : in String);
 
-  -- Process termination
+  -- Process termination information
   type Death_Cause_List is (No_Dead, Exited, Signaled, Stopped);
   type Death_Rec (Cause : Death_Cause_List := No_Dead) is record
     case Cause is
@@ -195,6 +204,7 @@ package Sys_Calls is
         Stopped_Pid : Pid;
     end case;
   end record;
+  -- May raise System_Error
   function Next_Dead return Death_Rec;
 
   -- Exceptions (of File_Stat, Open, Create, Link)

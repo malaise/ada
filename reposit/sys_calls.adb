@@ -633,6 +633,32 @@ package body Sys_Calls is
     end if;
   end Pipe;
 
+  -- Duplicate a file descriptor, using smallest or Start_At
+  -- May raise System_Error
+  function Dup (To_Copy : in File_Desc) return File_Desc is
+    function C_Dup (Oldfd : in Integer) return Integer;
+    pragma Import (C, C_Dup, "dup");
+    Res : Integer;
+  begin
+    Res := C_Dup (Integer (To_Copy));
+    if Res = -1 then
+      raise System_Error;
+    end if;
+    return File_Desc (Res);
+  end Dup;
+
+  function Dup2 (To_Copy, Start_At : in File_Desc) return File_Desc is
+   function C_Dup2 (Oldfd : in Integer; Newfd : Integer) return Integer;
+    pragma Import (C, C_Dup2, "dup2");
+    Res : Integer;
+  begin
+    Res := C_Dup2 (Integer (To_Copy), Integer (Start_At));
+    if Res = -1 then
+      raise System_Error;
+    end if;
+    return File_Desc (Res);
+  end Dup2;
+
   -- Get current / parent pid
   function Get_Pid return Pid is
     function C_Getpid return Integer;
