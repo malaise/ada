@@ -1,0 +1,135 @@
+<?xml version="1.1"?>
+<!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
+<!-- for Xwords -->
+<Afpx_Descriptors Height="36" Width="55">
+
+  <Descriptor Num="1">
+
+    <!-- Title and list -->
+    <Var Name="WWidth" Value="40"/>
+    <List>
+      <Geometry Up="5" Left="1" Height="30" Width="${WWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Green"/>
+    </List>
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="25" Height="1" Width="9"/>
+      <Colors Foreground="Light_Gray" Background="Black" Blink="False"/>
+      <Init Row="0" Col="0">W O R D S</Init>
+    </Field>
+
+    <!-- Input area -->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="1" Left="1" Height="1" Width="5"/>
+      <Colors Foreground="Light_Gray" Background="Black" Blink="False"/>
+      <Init Row="0" Col="0">Word:</Init>
+    </Field>
+    <Field Num="3" Kind="Button">
+      <Geometry Up="1" Left="13" Width="7" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">Clear</Init>
+    </Field>
+    <Field Num="4" Kind="Get">
+      <Geometry Up="3" Left="1" Height="1" Width="${List.Width}"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+    </Field>
+
+    <!-- Search, Add and Del buttons -->
+    <Var Name="BtnLeft" Value="${List.Right}+2"/>
+    <Var Name="BtnOff"  Value="7"/>
+
+    <Field Num="5" Kind="Button">
+      <Geometry Up="1" Left="${BtnLeft}+2" Height="3" Width="8"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="1">SEARCH</Init>
+    </Field>
+
+    <Field Num="6" Kind="Put">
+      <Geometry Up="${Field_5.Low}+2" Left="${BtnLeft}"
+                Height="1" Width="5"/>
+      <Colors Foreground="Light_Gray" Background="Black" Blink="False"/>
+      <Init Row="0" Col="0">Words</Init>
+    </Field>
+
+    <Field Num="7" Kind="Put">
+      <Geometry Up="${Field_6.Low}" Left="${BtnLeft}+${BtnOff}" Height="1" Width="5"/>
+      <Colors Foreground="Light_Gray" Background="Black" Blink="False"/>
+      <Init Row="0" Col="0">Nouns</Init>
+    </Field>
+    <Field Num="8" Kind="Button">
+      <Geometry Up="${Field_6.Low}+2" Left="${BtnLeft}" Width="5" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">Add</Init>
+    </Field>
+    <Field Num="9" Kind="Button">
+      <Geometry Up="${Field_8.Up}" Left="${BtnLeft}+${BtnOff}" Width="5" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">Add</Init>
+    </Field>
+    <Field Num="10" Kind="Button">
+      <Geometry Up="${Field_8.Up}+2" Left="${BtnLeft}" Width="5" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">Del</Init>
+    </Field>
+    <Field Num="11" Kind="Button">
+      <Geometry Up="${Field_10.Up}" Left="${BtnLeft}+${BtnOff}" Width="5" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">Del</Init>
+    </Field>
+
+    <Field Num="12" Kind="Button">
+      <Geometry Up="${Field_11.Up} + 2" Left="${BtnLeft}+1" Width="9" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">History</Init>
+    </Field>
+    <Field Num="13" Kind="Button">
+      <Geometry Up="${Field_12.Up} + 2" Left="${BtnLeft}+1" Width="9" Height="1"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="2">Clear</Init>
+    </Field>
+
+    <!-- List management -->
+    <Var Name="LmLeft"  Value="${BtnLeft}+2"/>
+    <Var Name="LmUp"    Value="16"/>
+    <Var Name="LmWidth" Value="8"/>
+    <Var Name="LmSta"   Value="1"/>
+
+    <Field Num="14" Kind="Button">
+      <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}+1">Top</Init>
+    </Field>
+    <Field Num="15" Kind="Button">
+      <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="${LmSta}+1">PgUp </Init>
+    </Field>
+    <Field Num="16" Kind="Button">
+      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}+2">Up </Init>
+    </Field>
+    <Field Num="17" Kind="Button">
+      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="${LmSta}">Center</Init>
+    </Field>
+    <Field Num="18" Kind="Button">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}+1">Down</Init>
+    </Field>
+    <Field Num="19" Kind="Button">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="${LmSta}">PgDown</Init>
+    </Field>
+    <Field Num="20" Kind="Button">
+      <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}">Bottom</Init>
+    </Field>
+
+  </Descriptor>
+
+</Afpx_Descriptors>
+
