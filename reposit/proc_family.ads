@@ -27,6 +27,7 @@ package Proc_Family is
           when True =>
             Fd_In  : Sys_Calls.File_Desc;
             Fd_Out : Sys_Calls.File_Desc;
+            Fd_Err : Sys_Calls.File_Desc;
           when False =>
             null;
         end case;
@@ -36,17 +37,19 @@ package Proc_Family is
   end record;
 
   -- Spawn a process (with mutation if mutation /= "")
-  --  opening com channel if Communication
+  --  redirecting standard in/out/err flows if Std_Fds
+  --  opening com channel if New_Fds
   -- If Death_Callback is set, it will be called on child's death
-  function Spawn (Mutation      : String := "";
-                  Communication : Boolean := True;
-                  Death_Report  : Death_Callback_Access := null)
+  type Comm_Kind_List is (None, Std_Fds, New_Fds);
+  function Spawn (Mutation     : String := "";
+                  Comm         : Comm_Kind_List := None;
+                  Death_Report : Death_Callback_Access := null)
            return Spawn_Result_Rec;
 
-  -- After a Spawn with Mutation and Communication, the child can
-  -- retreive fds
+  -- After a Spawn with Mutation and Comm=New_Fds, the child can
+  -- retreive the fds
   -- No_Fd is raised if they cannot be retreived
-  procedure Child_Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc);
+  procedure Child_Get_Fds (Fd_In, Fd_Out, Fd_Err : out Sys_Calls.File_Desc);
   No_Fd : exception;
 
 end Proc_Family;

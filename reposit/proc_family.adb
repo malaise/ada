@@ -7,7 +7,7 @@ package body Proc_Family is
   type Child_Rec is record
     Child_Pid : Sys_Calls.Pid;
     Open : Boolean;
-    Fd_In, Fd_Out : Sys_Calls.File_Desc;
+    Fd_In, Fd_Out, Fd_Err : Sys_Calls.File_Desc;
     Child_Cb  : Death_Callback_Access;
   end record;
   package Child_Dyn_List_Mng is new Dynamic_List (Child_Rec);
@@ -86,6 +86,7 @@ package body Proc_Family is
     if Child.Open then
       Close (Child.Fd_In);
       Close (Child.Fd_Out);
+      Close (Child.Fd_Err);
     end if;
 
     -- Done
@@ -120,30 +121,36 @@ package body Proc_Family is
   end Image;
 
   -- Variable name for a fd
-  function Var_Name (Proc_Id : Sys_Calls.Pid; Fd_In : Boolean)
+  type Fd_Kind_List is (In_Fd, Out_Fd, Err_Fd);
+  function Var_Name (Proc_Id : Sys_Calls.Pid; Fd_Kind : Fd_Kind_List)
            return String is
     Prefix : constant String := "PFamily_";
   begin
-    if Fd_In then
-      return Prefix & Image (Natural(Proc_Id)) & "_In";
-    else
-      return Prefix & Image (Natural(Proc_Id)) & "_Out";
-    end if;
+    case Fd_Kind is
+      when In_Fd =>
+        return Prefix & Image (Natural(Proc_Id)) & "_In";
+      when Out_Fd =>
+        return Prefix & Image (Natural(Proc_Id)) & "_Out";
+      when Err_Fd =>
+        return Prefix & Image (Natural(Proc_Id)) & "_Err";
+    end case;
   end Var_Name;
 
   -- Put env Fd in and out variables
   procedure Putenv (Proc_Id : in Sys_Calls.Pid;
-                    Fd_In, Fd_Out : in Sys_Calls.File_Desc) is
+                    Fd_In, Fd_Out, Fd_Err : in Sys_Calls.File_Desc) is
   begin
-    Sys_Calls.Putenv (Var_Name(Proc_Id, True),  Image (Natural(Fd_In)));
-    Sys_Calls.Putenv (Var_Name(Proc_Id, False), Image (Natural(Fd_Out)));
+    Sys_Calls.Putenv (Var_Name(Proc_Id, In_Fd),  Image (Natural(Fd_In)));
+    Sys_Calls.Putenv (Var_Name(Proc_Id, Out_Fd), Image (Natural(Fd_Out)));
+    Sys_Calls.Putenv (Var_Name(Proc_Id, Err_Fd), Image (Natural(Fd_Err)));
   end Putenv;
 
   -- Spawn a process (with mutation if mutation /= "")
-  --  opening com channel if Communication
+  --  redirecting standard in/out/err flows if Std_Fds
+  --  opening com channel if New_Fds
   -- If Death_Callback is set, it will be called on child's death
   function Spawn (Mutation      : String := "";
-                  Communication : Boolean := True;
+                  Comm          : Comm_Kind_List := None;
                   Death_Report  : Death_Callback_Access := null)
            return Spawn_Result_Rec is
     Child : Child_Rec;
@@ -155,24 +162,34 @@ package body Proc_Family is
     -- Init if needed
     Init;
     -- Init Child rec
-    Child.Open := Communication;
+    Child.Open := Comm /= None;
     Child.Child_Cb := Death_Report;
 
     -- Open Communication if needed
-    if not Communication then
+    if Comm /= None then
       Result := (Ok => True, Open => False, Child_Pid => 1);
     else
       begin
-        Sys_Calls.Pipe (Child.Fd_In, Result.Fd_Out);
+        Sys_Calls.Pipe (Child.Fd_In, Result.Fd_In);
       exception
         when Sys_Calls.System_Error =>
           return Failure;
       end;
       begin
-        Sys_Calls.Pipe (Result.Fd_In, Child.Fd_Out);
+        Sys_Calls.Pipe (Result.Fd_Out, Child.Fd_Out);
       exception
         when Sys_Calls.System_Error =>
           Close (Child.Fd_In);
+          Close (Result.Fd_In);
+          return Failure;
+      end;
+      begin
+        Sys_Calls.Pipe (Result.Fd_Err, Child.Fd_Err);
+      exception
+        when Sys_Calls.System_Error =>
+          Close (Child.Fd_In);
+          Close (Result.Fd_In);
+          Close (Child.Fd_Out);
           Close (Result.Fd_Out);
           return Failure;
       end;
@@ -183,11 +200,13 @@ package body Proc_Family is
       Sys_Calls.Procreate (I_Am_Child, Result.Child_Pid);
     exception
       when Sys_Calls.System_Error =>
-        if Communication then
+        if Comm /= None then
           Close (Child.Fd_In);
-          Close (Result.Fd_Out);
           Close (Result.Fd_In);
           Close (Child.Fd_Out);
+          Close (Result.Fd_Out);
+          Close (Child.Fd_Err);
+          Close (Result.Fd_Err);
         end if;
         return Failure;
     end;
@@ -197,12 +216,14 @@ package body Proc_Family is
 
       -- Father
       ---------
-      if Communication then
+      if Comm /= None then
         -- Close child Fds, Store Fds to child
         Close (Child.Fd_In);
         Close (Child.Fd_Out);
+        Close (Child.Fd_Err);
         Child.Fd_In  := Result.Fd_In;
         Child.Fd_Out := Result.Fd_Out;
+        Child.Fd_Err := Result.Fd_Err;
       end if;
       Child.Child_Pid := Result.Child_Pid;
       Child_List_Mng.Insert (Child_List, Child);
@@ -213,34 +234,43 @@ package body Proc_Family is
     -- Child
     --------
     -- Close father fds
-    if Communication then
+    if Comm /= None then
       -- Close father fds
       Close (Result.Fd_In);
       Close (Result.Fd_Out);
+      Close (Result.Fd_Err);
     end if;
 
     if Mutation /= "" then
-      -- Export Fds and Mutate
       begin
-        Putenv (Result.Child_Pid, Child.Fd_In, Child.Fd_Out);
+        -- Reroute standard Fds is needed: Close and dup2
+        if Comm = Std_Fds then
+          Child.Fd_In  := Sys_Calls.Dup2 (Child.Fd_In,  Sys_Calls.Stdin);
+          Child.Fd_Out := Sys_Calls.Dup2 (Child.Fd_Out, Sys_Calls.Stdout);
+          Child.Fd_Err := Sys_Calls.Dup2 (Child.Fd_Err, Sys_Calls.Stderr);
+        end if;
+        -- Export Fds and Mutate
+        Putenv (Result.Child_Pid, Child.Fd_In, Child.Fd_Out, Child.Fd_Err);
         Sys_Calls.Mutate (Mutation);
         -- Should not be reached
         raise Constraint_Error;
       exception
         when others =>
-          if Communication then
+          if Comm /= None then
             Close (Child.Fd_In);
             Close (Child.Fd_Out);
+            Close (Child.Fd_Err);
           end if;
           return Failure;
       end;
     end if;
 
     -- No mutation
-    if Communication then
+    if Comm /= None then
       -- Return child fds
-      Result.Fd_In := Child.Fd_In;
+      Result.Fd_In  := Child.Fd_In;
       Result.Fd_Out := Child.Fd_Out;
+      Result.Fd_Err := Child.Fd_Err;
     end if;
 
     return Result;
@@ -249,23 +279,30 @@ package body Proc_Family is
   -- After a Spawn with Mutation and Communication, the child can
   -- retreive fds
   -- No_Fd is raised if they cannot be retreived
-  procedure Child_Get_Fds (Fd_In, Fd_Out : out Sys_Calls.File_Desc) is
+  procedure Child_Get_Fds (Fd_In, Fd_Out, Fd_Err : out Sys_Calls.File_Desc) is
     My_Pid : constant Sys_Calls.Pid := Sys_Calls.Get_Pid;
     Int_Val   : Integer;
   begin
     -- Get Fd_In
-    Int_Val := Environ.Get_Int(Var_Name (My_Pid, True), -1);
+    Int_Val := Environ.Get_Int(Var_Name (My_Pid, In_Fd), -1);
     if Int_Val = -1 then
       raise No_Fd;
     end if;
     Fd_In := Sys_Calls.File_Desc(Int_Val);
 
     -- Get Fd_Out
-    Int_Val := Environ.Get_Int(Var_Name (My_Pid, False), -1);
+    Int_Val := Environ.Get_Int(Var_Name (My_Pid, Out_Fd), -1);
     if Int_Val = -1 then
       raise No_Fd;
     end if;
     Fd_Out := Sys_Calls.File_Desc(Int_Val);
+
+    -- Get Fd_Err
+    Int_Val := Environ.Get_Int(Var_Name (My_Pid, Err_Fd), -1);
+    if Int_Val = -1 then
+      raise No_Fd;
+    end if;
+    Fd_Err := Sys_Calls.File_Desc(Int_Val);
   exception
     when others =>
       raise No_Fd;
