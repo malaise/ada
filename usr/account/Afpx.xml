@@ -7,7 +7,7 @@
 
     <!-- Top and Bottom of the list -->
     <Var Name="Top" Value="${Screen.Up}+2"/>
-    <Var Name="Bottom" Value="${Screen.Down}-6"/>
+    <Var Name="Bottom" Value="${Screen.Low}-6"/>
 
     <!-- List of operations -->
     <List>
