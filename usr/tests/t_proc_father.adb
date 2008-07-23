@@ -40,15 +40,21 @@ procedure T_Proc_Father is
     Res := Sys_Calls.Read (Fd, Buf'Address, Buf'Length);
     if Res = 0 then
       Ada.Text_Io.Put_Line ("Father: Read 0");
-      Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_In, True);
+      Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Out, True);
       return False;
     end if;
     Ada.Text_Io.Put_Line ("Father: Read >" & Buf(1 .. Res) & "<");
     Buf(1 .. Reply'Length) := Reply;
-    Res := Sys_Calls.Write (Spawn_Result.Fd_In, Buf'Address, Reply'Length);
+    begin
+      Res := Sys_Calls.Write (Spawn_Result.Fd_In, Buf'Address, Reply'Length);
+    exception
+      when Sys_Calls.System_Error =>
+        Res := 0;
+    end;
     if Res /= Reply'Length then
-      Ada.Text_Io.Put_Line ("Father: Cannot write " & Natural'Image(Reply'Length)
-                            & " on in fd");
+      Ada.Text_Io.Put_Line ("Father: Cannot write "
+                            & Natural'Image(Reply'Length)
+                            & " bytes on In fd");
     end if;
     return False;
   end Fd_Cb;
@@ -68,7 +74,7 @@ begin
 
 
   Spawn_Result := Proc_Family.Spawn (Text_Handler.Value(Str),
-                                     Proc_Family.New_Fds,
+                                     Proc_Family.Std_Fds,
                                      Death_Cb'Unrestricted_Access);
   if not Spawn_Result.Ok then
     Ada.Text_Io.Put_Line ("Father: Spawn result NOT OK");
