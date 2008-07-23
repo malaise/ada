@@ -1,5 +1,6 @@
 with Ada.Text_Io;
-with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng;
+with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
+     Lower_Str;
 with Common, Command;
 procedure Xwords is
 
@@ -140,7 +141,6 @@ begin
 
   Afpx.Use_Descriptor (1);
   Cursor_Field := Get_Fld;
-  Cursor_Col := 0;
   Insert := False;
   Redisplay := False;
 
@@ -154,6 +154,8 @@ begin
       Afpx.Set_Field_Colors (Afpx.List_Field_No, Background => Con_Io.Red);
     end if;
 
+    -- Set cursor at last significant char of the Get field
+    Cursor_Col := Afpx.Last_Index (Afpx.Decode_Wide_Field (Get_Fld, 0), True);
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
 
@@ -173,8 +175,14 @@ begin
           -- Double click in list => copy in get fld
           when Afpx.List_Field_No =>
             Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
-            Afpx.Encode_Wide_Field (Get_Fld, (0, 0),
-               Afpx_Item.Str (1 .. Afpx.Get_Field_Width (Afpx.List_Field_No)));
+            declare
+              Str : constant String
+                  := Language.Wide_To_String (Afpx_Item.Str (1 ..
+                                                           Afpx_Item.Len));
+            begin
+              Afpx.Clear_Field (Get_Fld);
+              Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Str));
+            end;
 
           -- Clear get
           when Clear_Fld =>
