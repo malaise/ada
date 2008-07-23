@@ -174,7 +174,7 @@ begin
           when Afpx.List_Field_No =>
             Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
             Afpx.Encode_Wide_Field (Get_Fld, (0, 0),
-               Afpx_Item.Str (1 .. Afpx.get_Field_Width (Afpx.List_Field_No)));
+               Afpx_Item.Str (1 .. Afpx.Get_Field_Width (Afpx.List_Field_No)));
 
           -- Clear get
           when Clear_Fld =>
