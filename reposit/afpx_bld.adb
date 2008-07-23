@@ -191,7 +191,7 @@ procedure Afpx_Bld is
       -- No attribute : default size
       Size := (Con_Io.Full_Def_Row_Last, Con_Io.Full_Def_Col_Last);
       -- Add constant persistent
-      Add_Variable (Root, "Screen.Down", Geo_Image (Size.Row), False, True);
+      Add_Variable (Root, "Screen.Low", Geo_Image (Size.Row), False, True);
       Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
       Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
       Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
@@ -235,7 +235,8 @@ procedure Afpx_Bld is
       when File_Syntax_Error =>
         raise;
       when Computer.Unknown_Variable =>
-        File_Error (Root, "Unknown variable " & Strof (Err_Val));
+        File_Error (Root, "Unknown variable when evaluating "
+                        & Strof (Err_Val));
       when others =>
         File_Error (Root, "Invalid size");
         raise File_Syntax_Error;
@@ -244,7 +245,7 @@ procedure Afpx_Bld is
       File_Error (Root, "Invalid size. Missing some coordinate");
       raise File_Syntax_Error;
     end if;
-    Add_Variable (Root, "Screen.Down", Geo_Image (Size.Row), False, True);
+    Add_Variable (Root, "Screen.Low", Geo_Image (Size.Row), False, True);
     Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
     return Size;
   exception
@@ -317,7 +318,7 @@ procedure Afpx_Bld is
     or else Ctx.Get_Nb_Attributes (Node) /= 4
     or else Ctx.Get_Nb_Children (Node) /= 0 then
       File_Error (Node, "Invalid geometry " & String'(Ctx.Get_Name (Node))
-                 & ", expected Up, Left, Down, Right, Width, Height");
+                 & ", expected Up, Left, Low, Right, Width, Height");
     end if;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
@@ -388,7 +389,8 @@ procedure Afpx_Bld is
       when File_Syntax_Error =>
         raise;
       when Computer.Unknown_Variable =>
-        File_Error (Node, "Unknown variable " & Strof (Err_Val));
+        File_Error (Node, "Unknown variable when evaluating "
+                        & Strof (Err_Val));
       when others =>
         File_Error (Node, "Invalid geometry");
     end;
@@ -563,7 +565,8 @@ procedure Afpx_Bld is
       when File_Syntax_Error =>
         raise;
       when Computer.Unknown_Variable =>
-        File_Error (Node, "Unknown variable " & Strof (Err_Val));
+        File_Error (Node, "Unknown variable when evaluating "
+                        & Strof (Err_Val));
       when others =>
         File_Error (Node, "Invalid colors specification");
     end;
@@ -712,7 +715,8 @@ procedure Afpx_Bld is
         when File_Syntax_Error =>
           raise;
         when Computer.Unknown_Variable =>
-          File_Error (Node, "Unknown variable " & Strof (Err_Val));
+          File_Error (Node, "Unknown variable when evaluating "
+                          & Strof (Err_Val));
         when others =>
           File_Error (Child, "Invalid init row or col");
       end;
@@ -837,7 +841,8 @@ procedure Afpx_Bld is
                  Computer.Eval (Strof (Attrs(I).Value)));
         exception
           when Computer.Unknown_Variable =>
-            File_Error (Node, "Unknown variable " & Strof (Attrs(I).Value));
+            File_Error (Node, "Unknown variable when evaluating "
+                            & Strof (Attrs(I).Value));
           when others =>
             File_Error (Node, "Invalid background specification");
         end;
