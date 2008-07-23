@@ -82,13 +82,6 @@ package body Proc_Family is
       Child.Child_Cb (Report);
     end if;
 
-    -- Close channels if open
-    if Child.Open then
-      Close (Child.Fd_In);
-      Close (Child.Fd_Out);
-      Close (Child.Fd_Err);
-    end if;
-
     -- Done
     return True;
   end Handle_Death;
@@ -166,7 +159,7 @@ package body Proc_Family is
     Child.Child_Cb := Death_Report;
 
     -- Open Communication if needed
-    if Comm /= None then
+    if Comm = None then
       Result := (Ok => True, Open => False, Child_Pid => 1);
     else
       begin
