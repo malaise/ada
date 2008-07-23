@@ -1,14 +1,14 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx SYSTEM "../../reposit/Afpx.dtd">
 <!-- for Xwords -->
-<Afpx_Descriptors Height="36" Width="55">
+<Afpx_Descriptors Height="41" Width="55">
 
   <Descriptor Num="1">
 
     <!-- Title and list -->
     <Var Name="WWidth" Value="40"/>
     <List>
-      <Geometry Up="5" Left="1" Height="30" Width="${WWidth}"/>
+      <Geometry Up="5" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Green"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -129,6 +129,11 @@
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
+    <Field Num="21" Kind="Button">
+      <Geometry Up="${Field_20.Low}+3" Left="${LmLeft}" Height="3" Width="9"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="${LmSta}">E X I T</Init>
+    </Field>
   </Descriptor>
 
 </Afpx_Descriptors>

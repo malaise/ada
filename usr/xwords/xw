@@ -1,0 +1,7 @@
+#!/bin/bash
+export WORDS_PATH=${HOME}/words
+export XWORDS_DIR=${HOME}/ada/usr/xwords
+export AFPX_DATA_DIR=${XWORDS_DIR}
+
+${XWORDS_DIR}/xwords $*
+
