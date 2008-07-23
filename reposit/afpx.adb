@@ -314,7 +314,8 @@ package body Afpx is
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
   Reset_Colors : in Boolean := True;
   Reset_String : in Boolean := True) is
-    Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
+    Fn : constant Afpx_Typ.Absolute_Field_Range
+       := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
     Af_Dscr.Check(Fn);
     Af_Dscr.Load_Field (Fn, Reset_Colors, Reset_String);
