@@ -37,7 +37,7 @@ package Afpx is
   --   after an afpx), there are two options:
   -- - One task for the con_io, the main uses afpx and the task uses con_io,
   --   each receives its own events
-  -- - The main opens an afpx and a con_io,only one is active at a time.
+  -- - The main opens an afpx and a con_io, only one is active at a time.
   --   In this case the program must suspend and not use the afpx,
   --   then open and use the new con_io, then close the new con_io
   --   then resume and use the afpx.
