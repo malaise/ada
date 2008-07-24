@@ -47,15 +47,16 @@ procedure Xwords is
     Rec : Afpx.Line_Rec;
     List_Width : constant Afpx.Width_Range
                := Afpx.Get_Field_Width (Afpx.List_Field_No);
+    Wstr : constant Wide_String
+         := Language.String_To_Wide (Common.Asu_Ts (Us));
   begin
-    Rec.Len := Common.Asu.Length (Us);
+    Rec.Len := Wstr'Length;
     -- Procuste
     Rec.Str := (others => ' ');
     if Rec.Len > List_Width then
       Rec.Len := List_Width;
     end if;
-    Rec.Str (1 .. Rec.Len) := Language.String_To_Wide (
-               Common.Asu_Ts (Us)(1 .. Rec.Len));
+    Rec.Str (1 .. Rec.Len) := Wstr(1 .. Rec.Len);
     return Rec;
   end Us2Afpx;
 
