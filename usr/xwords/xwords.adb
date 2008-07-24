@@ -24,16 +24,17 @@ procedure Xwords is
 
   -- Fields
   Clear_Fld : constant Afpx.Field_Range := 3;
-  Get_Fld : constant Afpx.Field_Range := 4;
-  Search_Fld : constant Afpx.Field_Range := 5;
-  Add_Word_Fld : constant Afpx.Field_Range := 8;
-  Add_Noun_Fld : constant Afpx.Field_Range := 9;
-  Del_Word_Fld : constant Afpx.Field_Range := 10;
-  Del_Noun_Fld : constant Afpx.Field_Range := 11;
-  History_Fld : constant Afpx.Field_Range := 12;
-  Clear_List_Fld : constant Afpx.Field_Range := 13;
-  Lmng_Fld : constant Afpx.Field_Range := 14;
-  Exit_Fld : constant Afpx.Field_Range := 21;
+  Recall_Fld : constant Afpx.Field_Range := 4;
+  Get_Fld : constant Afpx.Field_Range := 5;
+  Search_Fld : constant Afpx.Field_Range := 6;
+  Add_Word_Fld : constant Afpx.Field_Range := 9;
+  Add_Noun_Fld : constant Afpx.Field_Range := 10;
+  Del_Word_Fld : constant Afpx.Field_Range := 11;
+  Del_Noun_Fld : constant Afpx.Field_Range := 12;
+  History_Fld : constant Afpx.Field_Range := 13;
+  Clear_List_Fld : constant Afpx.Field_Range := 14;
+  Lmng_Fld : constant Afpx.Field_Range := 15;
+  Exit_Fld : constant Afpx.Field_Range := 22;
 
   -- History of search requests
   History : Command.Res_List;
@@ -71,7 +72,7 @@ procedure Xwords is
 
     -- Build command and execute it
     declare
-      Str : constant String := Afpx.Decode_Field (Get_Fld, 0);
+      Str : constant String := Afpx.Decode_Field (Get_Fld, 0, False);
       Last : constant Natural := String_Mng.Parse_Spaces (Str, False);
     begin
       Arg := Common.Asu_Tus (Str (1 .. Last));
@@ -123,7 +124,21 @@ procedure Xwords is
       Afpx.Line_List.Rewind;
       Afpx.Update_List(Afpx.Top);
     end if;
+
+    -- Make ready for a brand new command
+    if Status_Ok then
+      Afpx.Clear_Field (Get_Fld);
+    end if;
   end Do_Command;
+
+  procedure Do_Recall is
+  begin
+    Afpx.Clear_Field (Get_Fld);
+    if not History.Is_Empty then
+      History.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Common.Asu_Ts (Line)));
+    end if;
+  end Do_Recall;
 
   use type Afpx.Field_Range;
 begin
@@ -166,7 +181,7 @@ begin
           when Afpx.Return_Key =>
             Do_Command (Search_Fld);
           when Afpx.Escape_Key =>
-            Afpx.Clear_Field (Get_Fld);
+            Do_Recall;
           when Afpx.Break_Key =>
             exit;
         end case;
@@ -188,6 +203,10 @@ begin
           -- Clear get
           when Clear_Fld =>
             Afpx.Clear_Field (Get_Fld);
+
+          -- Recall last request
+          when Recall_Fld =>
+            Do_Recall;
 
           -- Words commands
           when Search_Fld .. Del_Noun_Fld =>
