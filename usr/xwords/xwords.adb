@@ -95,7 +95,7 @@ procedure Xwords is
                   Status_Ok, Result);
 
     -- Store in history if search
-    if Num = Search_Fld then
+    if Num = Search_Fld and then Arg /= Common.Asu_Null then
       History.Insert (Arg);
     end if;
 
