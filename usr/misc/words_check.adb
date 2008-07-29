@@ -46,11 +46,11 @@ begin
     begin
       -- End of file?
       exit when Last = 0;
-      if Last = 1 and then Word(1) = Text_Line.Line_Feed then
+      if Last = 1 and then Word(1) = Text_Line.Line_Feed_Char then
         -- Line must not be empty, report and next line
         Sys_Calls.Put_Line_Error ("Error: Empty line No" & Line_No'Img & ".");
         Sys_Calls.Set_Error_Exit_Code;
-      elsif  Word(Last) /= Text_Line.Line_Feed then
+      elsif  Word(Last) /= Text_Line.Line_Feed_Char then
         -- Line must be terminated by Line_Feed
         Sys_Calls.Put_Line_Error ("Error: Line No" & Line_No'Img
                                 & " must be terminated by a Line_Feed.");

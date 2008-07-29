@@ -89,8 +89,8 @@ procedure Trail_Spaces is
       Line := Text_Line.Get (In_File);
       exit when Asu.Length (Line) = 0;
       -- Append a Line_Feed if missing
-      if Asu.Element (Line, Asu.Length (Line)) /= Text_Line.Line_Feed then
-        Asu.Append (Line, Text_Line.Line_Feed);
+      if Asu.Element (Line, Asu.Length (Line)) /= Text_Line.Line_Feed_Char then
+        Asu.Append (Line, Text_Line.Line_Feed_Char);
         Modified := True;
       end if;
       -- Replace horiz tabs by spaces
@@ -105,7 +105,7 @@ procedure Trail_Spaces is
       and then Asu.Element (Line, Asu.Length (Line) - 1)
          = Ada.Characters.Latin_1.Cr then
         Line := Asu.Slice (Line, 1, Asu.Length (Line) - 2)
-              & Asu.To_Unbounded_String (Text_Line.Line_Feed & "");
+              & Asu.To_Unbounded_String (Text_Line.Line_Feed_Char & "");
         Modified := True;
       end if;
       -- Trail spaces of line
