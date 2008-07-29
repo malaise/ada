@@ -162,7 +162,7 @@ package Xml_Parser.Generator is
   ----------------
   -- Kind of output format
   -- Raw is all in one physical line and no extra space
-  -- Fill_Columns is formated, with several attributes per line up to width
+  -- Fill_Width is formated, with several attributes per line up to width
   -- One_Per_Line is formated, with one attribute per line
   type Format_Kind_List is (Raw, Fill_Width, One_Per_Line);
   Default_Format : constant Format_Kind_List := Fill_Width;
