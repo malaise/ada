@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V2.5";
+  Version : constant String := "V2.6";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -28,7 +28,7 @@ procedure Xml_Checker is
   Abort_Error : exception;
 
   -- Kind of ouput: None, dump or Xml_Generator
-  type Output_Kind_List is (None, Dump, Gen);
+  type Output_Kind_List is (None, Dump, Gen, No_Comment);
   Output_Kind : Output_Kind_List;
 
   -- Xml_Generator descriptor and format
@@ -38,26 +38,31 @@ procedure Xml_Checker is
   -- Flow of dump
   Out_Flow : Text_Line.File_Type;
 
+  -- Maximum of options allowed
+  Max_Opt : Natural;
+
   -- Program help
   procedure Usage is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> | <expand>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <width> | <one> | <expand>");
     Ple ("            | <help> | <version>");
-    Ple (" <silent>  ::= -s | --silent    -- No output, only exit code");
-    Ple (" <dump>    ::= -d | --dump      -- Dump expanded Xml tree");
-    Ple (" <raw>     ::= -r | --raw       -- Put all on one line");
-    Ple (" <width>   ::= -w <Width> | --width=<Width>");
-    Ple ("                                -- Put attributes up to Width");
-    Ple (" <one>     ::= -1 | --one       -- Put one attribute per line");
-    Ple (" <expand>  ::= -e | --expand    -- Expand general entities");
-    Ple (" <help>    ::= -h | --help      -- Put this help");
-    Ple (" <version> ::= -v | --version   -- Put versions");
+    Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
+    Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
+    Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
+    Ple (" <no_comment> ::= -n | --no_comment -- Skip comments");
+    Ple (" <width>      ::= -w <Width> | --width=<Width>");
+    Ple ("                                    -- Put attributes up to Width");
+    Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
+    Ple (" <expand>     ::= -e | --expand     -- Expand general entities");
+    Ple (" <help>       ::= -h | --help       -- Put this help");
+    Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
-    Ple ("All options except expand are exclusive.");
+    Ple ("All options except expand and no_comment are exclusive.");
+    Ple ("No_comment not allowed on silent, dump and raw modes.");
     Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
-                         & " on stdin.");
+                         & " on stdout.");
   end Usage;
 
   -- The argument keys and descriptor of parsed keys
@@ -69,7 +74,9 @@ procedure Xml_Checker is
    5 => ('1', Asu_Tus ("one"), False, False),
    6 => ('h', Asu_Tus ("help"), False, False),
    7 => ('v', Asu_Tus ("version"), False, False),
-   8 => ('e', Asu_Tus ("expand"), False, False));
+   8 => ('e', Asu_Tus ("expand"), False, False),
+   9 => ('n', Asu_Tus ("no_comment"), False, False)
+   );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -145,9 +152,12 @@ procedure Xml_Checker is
     -- Parsing elements and charactericstics
     Prologue, Root : Xml_Parser.Element_Type;
     Parse_Ok : Boolean;
+    use type Xml_Parser.Generator.Format_Kind_List;
   begin
     Ctx.Parse (Get_File_Name (Index, False),
-               Parse_Ok, Comments => Output_Kind = Gen,
+               Parse_Ok,
+               Comments => Output_Kind = Gen
+                 and then Format /= Xml_Parser.Generator.Raw,
                Expand_Entities => Expand or else Output_Kind = Dump);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error ("Error in file "
@@ -172,7 +182,7 @@ procedure Xml_Checker is
       Out_Flow.Put_Line ("Elements tree:");
       Dump_Element (Root, 0);
       Out_Flow.Flush;
-    elsif Output_Kind = Gen then
+    elsif Output_Kind = Gen or else Output_Kind = No_Comment then
       Xml_Parser.Generator.Put (Ctx, Xml_Parser.Generator.Stdout,
                                 Format, Width);
       -- Ctx.Put (Xml_Parser.Generator.Stdout, Format, Width);
@@ -193,6 +203,7 @@ procedure Xml_Checker is
     end if;
   end Close;
 
+  use type Xml_Parser.Generator.Format_Kind_List;
 begin
   -- Open output flow
   Out_Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
@@ -236,14 +247,17 @@ begin
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
   Expand := False;
-  -- Get Expand option
+  -- Get Expand option and chek max of options
+  -- Only 1 option, one more if Expand, one more if no_comment
+  Max_Opt := 1;
   if Arg_Dscr.Is_Set (8) then
     Expand := True;
+    Max_Opt := 2;
   end if;
-
-  -- Only 1 option (or at most 2 if Expand)
-  if (not Expand and then Arg_Dscr.Get_Number_Keys > 1)
-  or else (Expand and then Arg_Dscr.Get_Number_Keys > 2) then
+  if Arg_Dscr.Is_Set (9) then
+    Max_Opt := Max_Opt + 1;
+  end if;
+  if Arg_Dscr.Get_Number_Keys > Max_Opt then
     Ae_Re (Arg_Error'Identity, "Too many options");
   end if;
 
@@ -256,21 +270,34 @@ begin
     Output_Kind := Dump;
   elsif Arg_Dscr.Is_Set (3) then
     Format := Xml_Parser.Generator.Raw;
-  elsif Arg_Dscr.Is_Set (4) then
-    -- -w <Width>
-    Format := Xml_Parser.Generator.Fill_Width;
-    if Arg_Dscr.Get_Option (4) = "" then
-      Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
+  end if;
+
+  if Output_Kind = Gen then
+    -- Options only significant in normal mode
+    if Arg_Dscr.Is_Set (4) then
+      -- -w <Width>
+      Format := Xml_Parser.Generator.Fill_Width;
+      if Arg_Dscr.Get_Option (4) = "" then
+        Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
+      end if;
+      begin
+        Width := Positive'Value (Arg_Dscr.Get_Option (4));
+      exception
+        when others =>
+          Ae_Re (Arg_Error'Identity, "Invalid Width value "
+               & Arg_Dscr.Get_Option (4));
+      end;
+    elsif Arg_Dscr.Is_Set (5) then
+      Format := Xml_Parser.Generator.One_Per_Line;
     end if;
-    begin
-      Width := Positive'Value (Arg_Dscr.Get_Option (4));
-    exception
-      when others =>
-        Ae_Re (Arg_Error'Identity, "Invalid Width value "
-             & Arg_Dscr.Get_Option (4));
-    end;
-  elsif Arg_Dscr.Is_Set (5) then
-    Format := Xml_Parser.Generator.One_Per_Line;
+  end if;
+
+  if Arg_Dscr.Is_Set (9) then
+    if Output_Kind = Gen and then Format /= Xml_Parser.Generator.Raw then
+      Output_Kind := No_Comment;
+    else
+      Ae_Re (Arg_Error'Identity, "Too many options");
+    end if;
   end if;
 
   -- Process arguments
