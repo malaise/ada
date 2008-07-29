@@ -3,8 +3,8 @@ with Sys_Calls, Text_Line;
 with Words;
 package body Common is
 
-  Lfc : constant Character := Text_Line.Line_Feed;
-  Lfs : constant String := Lfc & "";
+  Lfc : constant Character := Text_Line.Line_Feed_Char;
+  Lfs : constant String := Text_Line.Line_Feed_Str;
   Lfu : constant Ada.Strings.Unbounded.Unbounded_String
       := Ada.Strings.Unbounded.To_Unbounded_String (Lfs);
 
