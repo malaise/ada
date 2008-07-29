@@ -5,8 +5,10 @@ package Text_Line is
   -- The file type
   type File_Type is tagged limited private;
 
-  -- The End_Of_Line character
-  Line_Feed : constant Character := Ada.Characters.Latin_1.Lf;
+  -- The End_Of_Line sequence
+  Line_Feed_Char : constant Character := Ada.Characters.Latin_1.Lf;
+  Line_Feed_Str : constant String := Line_Feed_Char & "";
+  Max_Line_Feed_Len : constant := 10;
 
   -- The File mode
   type File_Mode is (In_File, Out_File);
@@ -28,6 +30,12 @@ package Text_Line is
   -- Returns the associated file desc
   -- May raise Status_Error if File is not open
   function Get_Fd (File : File_Type) return Sys_Calls.File_Desc;
+
+  -- Set and get line_feed sequence
+  -- May raise Status_Error if File is not open
+  -- May raise Status_Error if Str is empty or too long
+  procedure Set_Line_Feed (File : in out File_Type; Str : in String);
+  function Get_Line_Feed (File : File_Type) return String;
 
   -- Read next text line from File
   -- Reads characters up to a New_Line (that is appended)
@@ -73,6 +81,7 @@ private
   type File_Type_Rec is record
     Fd : Sys_Calls.File_Desc;
     Mode : File_Mode;
+    Line_Feed : Ada.Strings.Unbounded.Unbounded_String;
     Buffer_Len : Buffer_Index_Range;
     Buffer_Index : Buffer_Index_Range;
     Buffer : Buffer_Array;

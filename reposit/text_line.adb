@@ -1,6 +1,7 @@
 with Unchecked_Deallocation;
 package body Text_Line is
 
+
   procedure Free is new Unchecked_Deallocation (File_Type_Rec, Rec_Access);
 
   -- Associate a file desc to a Txt_Line file
@@ -15,6 +16,8 @@ package body Text_Line is
     File.Acc := new File_Type_Rec'(
        Fd => Fd,
        Mode => Mode,
+       Line_Feed =>
+            Ada.Strings.Unbounded.To_Unbounded_String (Line_Feed_Str),
        Buffer_Len => 0,
        Buffer_Index => 0,
        Buffer => (others => Ada.Characters.Latin_1.Nul) );
@@ -49,6 +52,25 @@ package body Text_Line is
     return File.Acc.Fd;
   end Get_Fd;
 
+  procedure Set_Line_Feed (File : in out File_Type; Str : in String) is
+  begin
+    if File.Acc = null then
+      raise Status_Error;
+    end if;
+    if Str = "" or else Str'Length > Max_Line_Feed_Len then
+      raise Status_Error;
+    end if;
+    File.Acc.Line_Feed := Ada.Strings.Unbounded.To_Unbounded_String (Str);
+  end Set_Line_Feed;
+
+  function Get_Line_Feed (File : in File_Type) return String is
+  begin
+    if File.Acc = null then
+      raise Status_Error;
+    end if;
+    return Ada.Strings.Unbounded.To_String (File.Acc.Line_Feed);
+  end Get_Line_Feed;
+
   -- Read next text line from File
   -- Reads characters up to a newline (that is appended)
   --  or up to the end of file.
@@ -64,11 +86,15 @@ package body Text_Line is
   end Get;
 
   -- Internal procedure that reads a buffer (or up to end of file)
-  procedure Read (File : in File_Type) is
+  procedure Read (File : in File_Type; Done : out Boolean) is
+    Read_Len : Buffer_Index_Range;
   begin
-    File.Acc.Buffer_Len := Sys_Calls.Read (File.Acc.Fd,
-                                       File.Acc.Buffer'Address,
-                                       Buffer_Size);
+    Read_Len := Sys_Calls.Read (
+           File.Acc.Fd,
+           File.Acc.Buffer(File.Acc.Buffer_Index + 1)'Address,
+           Buffer_Size - File.Acc.Buffer_Index);
+    Done := Read_Len = 0;
+    File.Acc.Buffer_Len := File.Acc.Buffer_Len + Read_Len;
     File.Acc.Buffer_Index := 0;
   exception
     when Sys_Calls.System_Error =>
@@ -81,39 +107,51 @@ package body Text_Line is
     package Asu renames Ada.Strings.Unbounded;
     Str : Asu.Unbounded_String;
     Stop_Index : Buffer_Index_Range;
+    Done : Boolean;
   begin
     -- Check file is open and in read mode
     if File.Acc = null or else File.Acc.Mode /= In_File then
       raise Status_Error;
     end if;
     -- Locate next newline
-    loop
-      -- Fill buffer if needed
-      if File.Acc.Buffer_Len = 0 then
-         Read (File);
-         exit when File.Acc.Buffer_Len = 0;
-      end if;
-      -- Locate next newline in buffer
-      Stop_Index := 0;
-      for I in File.Acc.Buffer_Index + 1 .. File.Acc.Buffer_Len loop
-        if File.Acc.Buffer(I) = Line_Feed then
-          Stop_Index := I;
+    declare
+      Loc_Line_Feed : constant String := Asu.To_String (File.Acc.Line_Feed);
+      Loc_Line_Len : constant Natural := Loc_Line_Feed'Length;
+    begin
+      loop
+        -- Fill buffer if needed
+        if File.Acc.Buffer_Len < Loc_Line_Len then
+           Read (File, Done);
+           -- Done when read -> 0
+           exit when Done;
+        end if;
+        -- Locate next newline sequence in buffer
+        Stop_Index := 0;
+        for I in File.Acc.Buffer_Index + 1
+              .. File.Acc.Buffer_Len - Loc_Line_Len + 1 loop
+          if File.Acc.Buffer(I .. I + Loc_Line_Len - 1) = Loc_Line_Feed then
+            Stop_Index := I;
+            exit;
+          end if;
+        end loop;
+        if Stop_Index /= 0 then
+          -- A newline sequence is found: append it and return
+          Asu.Append (Str, File.Acc.Buffer(File.Acc.Buffer_Index + 1
+                                   .. Stop_Index + Loc_Line_Len - 1));
+          File.Acc.Buffer_Index := Stop_Index + Loc_Line_Len - 1;
           exit;
+        else
+          -- No newline was found: append buffer and go on reading
+          Asu.Append (Str, File.Acc.Buffer(File.Acc.Buffer_Index + 1
+                               .. File.Acc.Buffer_Len - Loc_Line_Len + 1));
+          File.Acc.Buffer(1 .. Loc_Line_Len - 1) :=
+              File.Acc.Buffer(File.Acc.Buffer_Len - Loc_Line_Len + 2
+                           .. File.Acc.Buffer_Len);
+          File.Acc.Buffer_Len := Loc_Line_Len - 1;
+          File.Acc.Buffer_Index := Loc_Line_Len - 1;
         end if;
       end loop;
-      if Stop_Index /= 0 then
-        -- A newline is found: append it and return
-        Asu.Append (Str, File.Acc.Buffer(File.Acc.Buffer_Index + 1
-                                         .. Stop_Index));
-        File.Acc.Buffer_Index := Stop_Index;
-        exit;
-      else
-        -- No newline was found: append buffer and go on reading
-        Asu.Append (Str, File.Acc.Buffer(File.Acc.Buffer_Index + 1
-                                         .. File.Acc.Buffer_Len));
-        File.Acc.Buffer_Len := 0;
-      end if;
-    end loop;
+    end;
     -- Done
     return Str;
   end Get;
@@ -161,16 +199,23 @@ package body Text_Line is
   -- Same as Put (Ada.Characters.Latin_1.Lf)
   procedure Put_Line (File : in File_Type; Text : in String) is
   begin
-    Put (File, Text & Line_Feed);
+    -- Check file is open and in write mode
+    if File.Acc = null or else File.Acc.Mode /= Out_File then
+      raise Status_Error;
+    end if;
+    Put (File, Text & Ada.Strings.Unbounded.To_String (File.Acc.Line_Feed));
   end Put_Line;
 
   -- Put a New_Line
   -- Same as Put_Line ("")
   procedure New_Line (File : in File_Type) is
   begin
-    Put (File, "" & Line_Feed);
+    -- Check file is open and in write mode
+    if File.Acc = null or else File.Acc.Mode /= Out_File then
+      raise Status_Error;
+    end if;
+    Put (File, Ada.Strings.Unbounded.To_String (File.Acc.Line_Feed));
   end New_Line;
-
 
   -- Flush the remaining of text put on file
   -- Does nothing on a In_File file
