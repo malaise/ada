@@ -12,6 +12,9 @@ procedure T_Text_Line is
       Text_Line.Open (In_File, Text_Line.In_File, Sys_Calls.Stdin);
     end if;
     Text_Line.Open (Out_File, Text_Line.Out_File, Sys_Calls.Stdout);
+    Text_Line.Set_Line_Feed (In_File, 
+           Text_Line.Line_Feed_Str & Text_Line.Line_Feed_Str);
+    Text_Line.Set_Line_Feed (Out_File, Text_Line.Get_Line_Feed (In_File));
     loop
       declare
         Str : constant String := Text_Line.Get (In_File);
