@@ -792,9 +792,9 @@ package body Xml_Parser.Generator is
   procedure New_Line (Flow : in out Flow_Dscr) is
   begin
     if Flow.Use_File then
-      Text_Line.Put (Flow.File, Text_Line.Line_Feed & "");
+      Text_Line.Put (Flow.File, Text_Line.Line_Feed_Str);
     else
-      Asu.Append (Flow.Us, Text_Line.Line_Feed);
+      Asu.Append (Flow.Us, Text_Line.Line_Feed_Str);
     end if;
   end New_Line;
 
