@@ -272,7 +272,7 @@ package body Substit is
     Line : Asu.Unbounded_String;
     Len : Natural;
     Line_Feed : constant Asu.Unbounded_String
-              :=  Asu.To_Unbounded_String (Text_Line.Line_Feed & "");
+              :=  Asu.To_Unbounded_String (Text_Line.Line_Feed_Str);
   begin
     -- Move to end
     if not Line_List_Mng.Is_Empty (Line_List) then
@@ -299,7 +299,7 @@ package body Substit is
         return False;
       end if;
       -- There are either one or two items to push
-      if Len > 1 and then Asu.Element(Line, Len) = Text_Line.Line_Feed then
+      if Len > 1 and then Asu.Element(Line, Len) = Text_Line.Line_Feed_Char then
         -- Line and Line_Feed
         -- Insert line (without Lf)
         Line_List_Mng.Insert (Line_List,

@@ -70,7 +70,7 @@ package body Search_Pattern is
   Is_Regex : Boolean;
 
   -- Line_Feed String
-  Line_Feed : constant String := Text_Line.Line_Feed & "";
+  Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
   -- Reports a parsing error
   In_Find : Boolean := True;

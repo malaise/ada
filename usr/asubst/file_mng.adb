@@ -52,7 +52,7 @@ package body File_Mng is
       Close;
       raise End_Error;
     end if;
-    if Ada.Strings.Unbounded.Element (Str, Len) = Text_Line.Line_Feed then
+    if Ada.Strings.Unbounded.Element (Str, Len) = Text_Line.Line_Feed_Char then
       -- Normal lines of Text_Line end with Line_Feed explicitly
       -- remove it
       return Ada.Strings.Unbounded.Slice (Str, 1, Len - 1);

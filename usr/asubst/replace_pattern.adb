@@ -13,7 +13,7 @@ package body Replace_Pattern is
   Subst_Char : constant Character := Ada.Characters.Latin_1.Bs;
 
   -- The line feed string
-  Line_Feed : constant String  :=Text_Line.Line_Feed & "";
+  Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
   -- Regex and subbstring indexes of \R and \r
   subtype Byte is Natural range 0 .. 255;
