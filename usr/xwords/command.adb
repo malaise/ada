@@ -60,7 +60,7 @@ package body Command is
       Line := Flow.Get;
       exit when Line = Asu_Null;
       -- Remove trailing line feed
-      if Asu.Element (Line, Asu.Length (Line)) = Text_Line.Line_Feed then
+      if Asu.Element (Line, Asu.Length (Line)) = Text_Line.Line_Feed_Char then
         Asu.Delete (Line, Asu.Length (Line), Asu.Length (Line));
       end if;
       Output_Result.Insert (Line);
