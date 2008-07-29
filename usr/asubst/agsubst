@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Agsubst: invoque asusbt with alternate block/line separator
+
+type asubst > /dev/null 2>&1
+res=$?
+if [ $res -eq 1 ] ; then
+  echo "Error, program asubst not found. Abort."  >&2
+  exit 3
+fi
+
+# Help or version
+if [ $# -eq 1 ] ; then
+  if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
+    echo "Usage: `basename $0` [ -S <search_sep> ] [ -R <replace_sep> ] <asubst_arguments>" >&2
+    echo "    or `basename $0` -V | --version" >&2
+    exit 2
+  elif [ \( "$1" = "-V" \) -o \( "$1" = "-h" \) ] ; then
+    echo "agrep "`asubst -V 2>&1 | cut -d " " -f 2` >&2
+    exit 2
+  fi
+fi
+
+export ori_sep='\n'
+export alt_sep='\x08'
+
+# Parse options
+OPTS=""
+while [ "$1" != "" ] ; do
+  
+  if [ "$1" = "-S" ] ; then
+    shift
+    ori_sep="$1"
+    shift
+  elif [ "$1" = "-R" ] ; then
+    shift
+    alt_sep="$1"
+    shift
+  elif [ "${1:0:1}" = "-" ] ; then
+    OPTS="$OPTS $1"
+    if [ "$1" = "-m" ] ; then
+      shift
+      OPTS="$OPTS $1"
+    elif [ "$1" = "--" ] ; then
+      shift
+      break;
+    fi
+    shift
+  else
+    break;
+  fi
+done
+
+if [ -z "$ori_sep" ] ; then
+  echo "ERROR: Missing search separator."
+  exit 1;
+fi
+if [ -z "$alt_sep" ] ; then
+  echo "ERROR: Missing replace separator."
+  exit 1;
+fi
+
+
+search="$1"
+replace="$2"
+shift
+shift
+
+# Subst ori by alt
+asubst "$ori_sep" "$alt_sep" $*
+# Do the substitution
+asubst $OPTs "$search" "$replace" $*
+# Subst back alt bi ori
+asubst "$alt_sep" "$ori_sep" $*
+
+
