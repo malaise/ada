@@ -1,11 +1,36 @@
 #!/bin/bash
+# Agrep: invoque asusbt to grep
 
+type asubst > /dev/null 2>&1
+res=$?
+if [ $res -eq 1 ] ; then
+  echo "Error, program asubst not found. Abort."  >&2
+  exit 3
+fi
+
+# Help or version
+if [ $# -eq 1 ] ; then
+  if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
+    echo "Usage: `basename $0` [ -l | --line ] [ { <file> } ]" >&2
+    echo "    or `basename $0` -V | --version" >&2
+    exit 2
+  elif [ \( "$1" = "-V" \) -o \( "$1" = "-h" \) ] ; then
+    echo "agrep "`asubst -V 2>&1 | cut -d " " -f 2` >&2
+    exit 2
+  fi
+fi
+
+# Options
 export opt=""
-if [ "$1" = "-l" ] ; then
-  opt="-l"
+if [ \( "$1" = "-l" \) -o \( "$1" = "--line" \) ] ; then
+  opt=$1
   shift
 fi
+
+# Find pattern
 export find=$1
 shift
-asubst -g $opt "$find" "" $*
+
+# Invoke asubst
+exec asubst -g $opt "$find" "" $*
 
