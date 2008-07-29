@@ -25,9 +25,9 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -a | -b | -d | -e | -f | -g | -i | -l | -m <max> | -n | -p");
+     "  <option> ::= -a | -b | -d | -e <pattern> | -f | -g | -i | -l | -m <max>");
     Sys_Calls.Put_Line_Error (
-     "             | -q | -s | -t | -u | -v | -x | --");
+     "             | -n | -p | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
