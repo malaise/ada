@@ -31,18 +31,19 @@ package Text_Line is
   -- May raise Status_Error if File is not open
   function Get_Fd (File : File_Type) return Sys_Calls.File_Desc;
 
-  -- Set and get line_feed sequence
+  -- Set and get Line_Feed sequence
+  -- If Line_Feed is empty, then Get returns the complete flow or file
   -- May raise Status_Error if File is not open
-  -- May raise Status_Error if Str is empty or too long
+  -- May raise Status_Error if Str is too long
   procedure Set_Line_Feed (File : in out File_Type; Str : in String);
   function Get_Line_Feed (File : File_Type) return String;
 
   -- Read next text line from File
-  -- Reads characters up to a New_Line (that is appended)
+  -- Reads characters up to Line_Feed (that is appended)
   --  or up to the end of file.
-  -- So, either the returned string ends with a New_Line and
+  -- So, either the returned string ends with Line_Feed and
   --   another get can be performed,
-  --  Or the string does not end with New_Line (or is empty) and
+  --  Or the string does not end with Line_Feed (or is empty) and
   --   the end of file has been reached.
   -- Further calls after the end of file will return an empty string.
   -- May raise Status_Error if File is not open or not In_File
@@ -58,10 +59,10 @@ package Text_Line is
   procedure Put (File : in File_Type; Text : in String);
 
   -- Put_Line some text
-  -- Same as Put (Text & New_Line)
+  -- Same as Put (Text & Line_Feed)
   procedure Put_Line (File : in File_Type; Text : in String);
 
-  -- Put a New_Line
+  -- Put a Line_Feed
   -- Same as Put_Line ("")
   procedure New_Line (File : in File_Type);
 

@@ -57,7 +57,7 @@ package body Text_Line is
     if File.Acc = null then
       raise Status_Error;
     end if;
-    if Str = "" or else Str'Length > Max_Line_Feed_Len then
+    if Str'Length > Max_Line_Feed_Len then
       raise Status_Error;
     end if;
     File.Acc.Line_Feed := Ada.Strings.Unbounded.To_Unbounded_String (Str);
@@ -108,12 +108,28 @@ package body Text_Line is
     Str : Asu.Unbounded_String;
     Stop_Index : Buffer_Index_Range;
     Done : Boolean;
+    use type Ada.Strings.Unbounded.Unbounded_String;
   begin
     -- Check file is open and in read mode
     if File.Acc = null or else File.Acc.Mode /= In_File then
       raise Status_Error;
     end if;
-    -- Locate next newline
+
+    -- Specif case of no Line_Feed, read all
+    if File.Acc.Line_Feed = Asu.Null_Unbounded_String then
+      loop
+        Read (File, Done);
+        -- Done when read -> 0
+        exit when Done;
+        -- Append read chars to Str
+        Asu.Append (Str, File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
+        File.Acc.Buffer_Len := 0;
+        File.Acc.Buffer_Index := 0;
+      end loop;
+      return Str;
+    end if;
+
+    -- Locate next Line_Feed
     declare
       Loc_Line_Feed : constant String := Asu.To_String (File.Acc.Line_Feed);
       Loc_Line_Len : constant Natural := Loc_Line_Feed'Length;
