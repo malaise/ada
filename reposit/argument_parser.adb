@@ -11,13 +11,14 @@ package body Argument_Parser is
 
   -- The result of parsing of an arg
   -- If Index is not 0, then it is a single (char or string) key
-  --  and Option is set to the option if any
+  --  and Set and Options are set to the option if any
   -- Elsif Option is not empty, then it is the list of chars of
   --  a multiple chars key
   -- Else, it is "--"
   type Arg_Dscr is record
     Index : Natural;
     Char : Boolean;
+    Set : Boolean;
     Option : Asu_Us;
   end record;
 
@@ -36,6 +37,7 @@ package body Argument_Parser is
   begin
     P_Dscr.Ok := False;
     A_Dscr.Index := 0;
+    A_Dscr.Set := False;
     A_Dscr.Option := Asu_Nus;
     if Str'Length >= 1 and then Str(1) = '-' then
       if Str = "-" then
@@ -63,6 +65,7 @@ package body Argument_Parser is
           Crit := Asu_Tus (Str(3 .. Str'Last));
         else
           -- An option: save it
+          A_Dscr.Set := True;
           A_Dscr.Option := Asu_Tus (Str(Len + 1 .. Str'Last));
           Crit := Asu_Tus (Str(3 .. Len - 1));
         end if;
@@ -118,7 +121,9 @@ package body Argument_Parser is
             Option : constant String
                    := Argument.Get_Parameter (Arg_No + 1);
           begin
-            if Option'Length >= 1 and then Option(1) /= '-' then
+            if (Option'Length >= 1 and then Option(1) /= '-')
+            or else Option = "" then
+              A_Dscr.Set := True;
               A_Dscr.Option := Asu_Tus (Option);
             end if;
           end;
@@ -239,7 +244,7 @@ package body Argument_Parser is
         Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
         Dscr.Last_Pos_Key := I;
         Dscr.Nb_Embedded := Dscr.Nb_Occurences(No_Key_Index);
-        if Arg.Char and then Arg.Option /= Asu_Nus then
+        if Arg.Char and then Arg.Set then
           -- A Char key with option
           Dscr.First_Pos_After_Keys := I + 2;
           Is_Option := True;
@@ -361,6 +366,9 @@ package body Argument_Parser is
   function Get_Number_Keys (Dscr : Parsed_Dscr) return Natural is
     Total : Natural := 0;
   begin
+    if not Dscr.Ok then
+      raise Parsing_Error;
+    end if;
     for I in Dscr.The_Keys.all'Range loop
       Total := Total + Dscr.Nb_Occurences(I);
     end loop;
@@ -558,7 +566,9 @@ package body Argument_Parser is
       Loc := 0;
       No_More_Keys := False;
       for No in 1 .. Argument.Get_Nbre_Arg loop
-        if Argument.Get_Parameter (No) = "--" then
+        if Argument.Get_Parameter (No) = "--"
+        and then not No_More_Keys then
+          -- First '--', end of options
           No_More_Keys := True;
         elsif No_More_Keys then
           Loc := Loc + 1;
