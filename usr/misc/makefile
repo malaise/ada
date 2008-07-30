@@ -7,7 +7,7 @@ EXES := adand add_nums alook arbipas beep comp_vars ddir e2f fact g \
  hanoi impot_04 \
  mlbx_overflow one_of_arg pascal prime random relay rndsok renamer \
  second stat statfile status strcase tcping trail_spaces udp_spy \
- wait words_check xml_checker \
+ wait xml_checker \
  tcping.stat udp_spy.stat xml_checker.stat
 
 CLIBS := cutil
