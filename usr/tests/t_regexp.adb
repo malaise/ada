@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument, Regular_Expressions, Int_Image;
+with Argument, Regular_Expressions, Int_Image, String_Mng, Text_Line;
 
 procedure T_Regexp is
 
@@ -65,10 +65,17 @@ begin
 
   -- Check pattern vs other arguments
   for I in 2 .. Argument.Get_Nbre_Arg loop
-    Regular_Expressions.Exec (Pattern,
-                              Argument.Get_Parameter (Occurence => I),
-                              N_Matched,
-                              Match_Info);
+    declare
+      Str : constant String
+          := String_Mng.Replace (Argument.Get_Parameter (Occurence => I),
+                                 "\n",
+                                 Text_Line.Line_Feed_Str);
+    begin
+      Regular_Expressions.Exec (Pattern,
+                                Str,
+                                N_Matched,
+                                Match_Info);
+    end;
     Ada.Text_Io.Put ("String >"
                     & Argument.Get_Parameter (Occurence => I)
                     & "< ");
