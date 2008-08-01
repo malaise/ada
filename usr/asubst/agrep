@@ -11,7 +11,7 @@ fi
 # Help or version
 if [ $# -eq 1 ] ; then
   if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
-    echo "Usage: `basename $0` [ -l | --line ] [ { <file> } ]" >&2
+    echo "Usage: `basename $0` [ -l | --line ] [ -i | --ignorecase ] [ { <file> } ]" >&2
     echo "    or `basename $0` -V | --version" >&2
     exit 2
   elif [ \( "$1" = "-V" \) -o \( "$1" = "-h" \) ] ; then
@@ -22,10 +22,21 @@ fi
 
 # Options
 export opt=""
-if [ \( "$1" = "-l" \) -o \( "$1" = "--line" \) ] ; then
-  opt=$1
-  shift
-fi
+while [ "$1" != "" ] ; do
+ case "$1" in
+    "-l" | "--line")
+      opt="$opt $1"
+      shift
+    ;;
+    "-i" | "--ignorecase")
+      opt="$opt $1"
+      shift
+    ;;
+    *)
+     break
+    ;;
+  esac
+done
 
 # Find pattern
 export find=$1
