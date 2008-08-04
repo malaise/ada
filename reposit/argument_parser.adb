@@ -496,12 +496,11 @@ package body Argument_Parser is
     Char : Character;
   begin
     -- First solve the easiest cases
-    if Str = "" then
-      return False;
-    elsif Str(1) = '-' then
+    if Str /= "" and then Str(1) = '-' then
+      -- This is a key
       return True;
     elsif Arg_No = 1 then
-      -- First arg cannot be an option
+      -- First arg cannot be an option nor a not_key
       return False;
     end if;
     -- Now we have a non-key arg, see if previous arg is a single char key
