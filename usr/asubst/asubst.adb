@@ -1,9 +1,9 @@
 with Ada.Exceptions, Ada.Text_Io, Ada.Strings.Unbounded;
-with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str;
+with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Line;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V5.3";
+  Version : constant String  := "V6.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -25,15 +25,17 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -a | -b | -d | -e <pattern> | -f | -g | -i | -l | -m <max>");
+     "  <option> ::= -a | -b | -d | -D <string> | > -e <pattern> | -f | -g | -i");
     Sys_Calls.Put_Line_Error (
-     "             | -n | -p | -q | -s | -t | -u | -v | -x | --");
+     "             | -l | -m <max> | -n | -p | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
      "    -b or --basic for basic regex,");
     Sys_Calls.Put_Line_Error (
      "    -d or --display for display find and exclude patterns and replace_string,");
+    Sys_Calls.Put_Line_Error (
+     "    -D <string> or --delimiter=<string> for a delimiter other than '\n',");
     Sys_Calls.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
@@ -68,6 +70,7 @@ procedure Asubst is
      "  Set env LANG to something containig UTF-8, or set ASUBST_UTF8 to Y for utf-8");
     Sys_Calls.Put_Line_Error (
      "   processing by default. (Processing mode can still be modified by -u or -a.)");
+
     Sys_Calls.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
     Sys_Calls.Put_Line_Error (
@@ -98,6 +101,7 @@ procedure Asubst is
      "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted,");
     Sys_Calls.Put_Line_Error (
      "    ""\n"" is forbidden, and ""\x00"" is allowed (forbidden in a regex).");
+
     Sys_Calls.Put_Line_Error (
      "  <replace_string> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
     Sys_Calls.Put_Line_Error (
@@ -116,12 +120,22 @@ procedure Asubst is
      "    Like back references, substrings are numbered in the order of opening");
     Sys_Calls.Put_Line_Error (
      "    parentheses. Note that ""\r0i"" is forbidden.");
+
     Sys_Calls.Put_Line_Error (
      "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");
     Sys_Calls.Put_Line_Error (
      "  Text matching <find_pattern> will be discarded if it also matches");
     Sys_Calls.Put_Line_Error (
      "    <exclude_pattern>.");
+    Sys_Calls.Put_Line_Error (
+     "  If a specific delimiter is set, it is used to read chunks of input text (whole");
+    Sys_Calls.Put_Line_Error (
+     "   flow if delimiter is empty). The <find_pattern> must be a simple <regex>");
+    Sys_Calls.Put_Line_Error (
+    "    (no '\n', '^' or '$'), and applies to each chunk.");
+    Sys_Calls.Put_Line_Error (
+    "    This allows multi-row processing.");
+
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (
@@ -165,7 +179,8 @@ procedure Asubst is
    16 => ('v', Asu_Tus ("verbose"), False, False),
    17 => ('V', Asu_Tus ("version"), False, False),
    18 => ('x', Asu_Tus ("noregex"), False, False),
-   19 => ('p', Asu_Tus ("tmp"), False, True)
+   19 => ('p', Asu_Tus ("tmp"), False, True),
+   20 => ('D', Asu_Tus ("delimiter"), False, True)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -186,6 +201,7 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
+  Delimiter : Ada.Strings.Unbounded.Unbounded_String;
   -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
   Found : Boolean;
@@ -219,6 +235,7 @@ procedure Asubst is
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
                   Asu.To_String (Tmp_Dir),
+                  Asu.To_String (Delimiter),
                   Max, Backup, Verbosity = Verbose, Grep, Line_Nb, Test);
     if Nb_Subst /= 0 then
       Found := True;
@@ -456,6 +473,30 @@ begin
           & Ada.Strings.Unbounded.To_String (Tmp_Dir));
     end if;
   end if;
+  if Arg_Dscr.Is_Set (20) then
+    -- Specific delimiter instead of '\n'
+    begin
+      Delimiter := Ada.Strings.Unbounded.To_Unbounded_String
+                 (Arg_Dscr.Get_Option (20));
+      if Ada.Strings.Unbounded.Length (Delimiter)
+         > Text_Line.Max_Line_Feed_Len then
+        raise Constraint_Error;
+      end if;
+    exception
+      when others =>
+        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+           & ": Syntax ERROR. Invalid delimiter.");
+        Error;
+        return;
+    end;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option delimiter = "
+          & Ada.Strings.Unbounded.To_String (Delimiter));
+    end if;
+  else
+    -- Default delimiter is Text_Line's Line_Feed
+    Delimiter := Ada.Strings.Unbounded.To_Unbounded_String (Text_Line.Line_Feed_Str);
+  end if;
 
   -- Set language (for regexp)
   Language.Set_Language (Lang);
@@ -469,6 +510,7 @@ begin
     Search_Pattern.Parse (
          Arg_Dscr.Get_Option (No_Key_Index, 1),
          Ada.Strings.Unbounded.To_String (Exclude),
+         Ada.Strings.Unbounded.To_String (Delimiter),
          Extended, Case_Sensitive, Is_Regex);
   exception
     when Search_Pattern.Parse_Error =>
@@ -551,6 +593,7 @@ begin
         Nb_Subst := Substit.Do_One_File (
             File_Name => Substit.Std_In_Out,
             Tmp_Dir   => Asu.To_String (Tmp_Dir),
+            Delimiter => Asu.To_String (Delimiter),
             Max_Subst => Max,
             Backup    => False,
             Verbose   => False,

@@ -45,8 +45,8 @@ echo "  begin" >> $FR
 echo "  begin" >> $FE
 echo "    null" >> $FR
 echo "    null" >> $FE
-echo "  end T;" >> $FR
-echo "  end T;" >> $FE
+echo "  end Test;" >> $FR
+echo "  end Test;" >> $FE
 echo "" >> $FR
 echo "" >> $FE
 echo "end Pack;" >> $FR

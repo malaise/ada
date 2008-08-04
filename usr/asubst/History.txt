@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+04/08/2008 V6.0
+Add: -D <string> (--delimiter=<string>) to set a specific input line delimiter.
+
 25/01/2008 V5.3
 Add: -p (--tmp) for alternative dir of tmp files.
 

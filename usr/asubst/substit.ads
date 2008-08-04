@@ -10,6 +10,7 @@ package Substit is
   -- Return the number of substitutions
   function Do_One_File (File_Name : String;
                         Tmp_Dir   : String;
+                        Delimiter : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
                         Verbose   : Boolean;

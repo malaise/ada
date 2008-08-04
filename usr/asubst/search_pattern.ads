@@ -3,9 +3,11 @@ package Search_Pattern is
 
   -- Parses and compiles the search patern
   -- Parses and compiles the exclude patern (if any)
+  -- Parses and checks the delimiter (if any)
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse (Search  : in String;
                    Exclude : in String;
+                   Delimiter : in String;
                    Extended, Case_Sensitive, Is_Regex : in Boolean);
   Parse_Error : exception;
 
@@ -17,7 +19,11 @@ package Search_Pattern is
   -- Tells if the search pattern can be applied several times
   --  on one line of input (i.e. does not contain '\n', '^' or '$')
   -- Raises No_Regex if the pattern was not parsed OK
-  function Multiple return Boolean;
+  function Iterative return Boolean;
+
+  -- Get the delimiter
+  function Get_Delimiter return String;
+
   -- Checks if the input string from Start to its end
   --  matches the regex no Regex_Index
   -- Raises No_Regex if the Regex_Index is higher than
@@ -64,3 +70,4 @@ package Search_Pattern is
   function Str_Indexes return Regular_Expressions.Match_Cell;
 
 end Search_Pattern;
+

@@ -66,11 +66,15 @@ replace="$2"
 shift
 shift
 
-# Subst ori by alt
-asubst "$ori_sep" "$alt_sep" $*
-# Do the substitution
-asubst $OPTs "$search" "$replace" $*
-# Subst back alt bi ori
-asubst "$alt_sep" "$ori_sep" $*
+if [ "$1" != "" ] ; then
+  # Subst ori by alt
+  asubst "$ori_sep" "$alt_sep" $*
+  # Do the substitution
+  asubst $OPTS "$search" "$replace" $*
+  # Subst back alt bi ori
+  asubst "$alt_sep" "$ori_sep" $*
+else
+  asubst "$ori_sep" "$alt_sep" | asubst $OPTS "$search" "$replace" | asubst "$alt_sep" "$ori_sep" 
+fi
 
 

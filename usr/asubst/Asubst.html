@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080605;12224600">
+	<META NAME="CHANGED" CONTENT="20080804;16313700">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V5.3</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V6.0</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -24,14 +24,16 @@ ignorecase pattern matching.</FONT></P>
 input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
 regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-d
 or --display : display arguments &lt;find_pattern&gt;,
-&lt;exclude_pattern&gt; and &lt;replace_string&gt;.<BR>-e &lt;pattern&gt;
-or --exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;,<BR>-f
-or --file : indicate that &lt;file&gt; contains the names of files to
-process.<BR>-g or --grep : print matching text as grep would do (no
-substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
-do case insensitive match checking of &lt;find_pattern&gt;.<BR><FONT FACE="monospace">-l
-or --line for display line number in grep mode.<BR></FONT>-m &lt;max&gt;
-or --max=&lt;max&gt; : stop processing each file after &lt;max&gt;
+&lt;exclude_pattern&gt; and &lt;replace_string&gt;.<BR>-D &lt;string&gt;
+or --delimiter=&lt;string&gt; for a delimiter other than '\n'.<BR>-e
+&lt;pattern&gt; or --exclude=&lt;pattern&gt; for skip text matching
+&lt;pattern&gt;.<BR>-f or --file : indicate that &lt;file&gt;
+contains the names of files to process.<BR>-g or --grep : print
+matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
+or --ignorecase : do case insensitive match checking of
+&lt;find_pattern&gt;.<BR><FONT FACE="monospace">-l or --line for
+display line number in grep mode.<BR></FONT>-m &lt;max&gt; or
+--max=&lt;max&gt; : stop processing each file after &lt;max&gt;
 substitutions, (0 for infinite).<BR>-<FONT FACE="monospace">n or
 --number : print number of substitutions per file.<BR></FONT>-p &lt;dir&gt;
 or --tmp=&lt;dir&gt; for directory of temporary files.<BR>-q or
@@ -121,17 +123,32 @@ expression) but will not match in asubst, because the input flow/file
 is decomposed into lines and then each line is compared to a regex
 expression.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">5. Exclusion pattern</FONT></H1>
-<P LANG="en-GB"><FONT FACE="Monospace">If set, the &lt;exclude_regex&gt;
-must have the same number of regex as the &lt;find_pattern&gt;. This
-option means that text matching the &lt;find_pattern&gt; but also the
-&lt;exclude_regex&gt; will not be replaced. Beware that it applies to
-the text matching &lt;find_pattern&gt; only.<BR>For example echo
-&quot;toto&quot; | asubst --exclude=toto to ti will replace toto by
-titi because each matching &quot;to&quot; does not match the
-exclusion &quot;toto&quot;.<BR>On the other hand, echo &quot;toto&quot;
-| asubst --exclude=to to ti and echo &quot;toto&quot; | asubst
---exclude=toto toto titi will not substitute.</FONT></P>
-<H1 LANG="en-GB"><FONT FACE="monospace">6. Replace string</FONT></H1>
+<P><SPAN LANG="en-GB"><FONT FACE="Monospace">If set, the
+&lt;exclude_regex&gt; must have the same number of regex as the
+&lt;find_pattern&gt;. This option means that text matching the
+&lt;find_pattern&gt; but also the &lt;exclude_regex&gt; will not be
+replaced. Beware that it applies to the text matching &lt;find_pattern&gt;
+only.<BR>For example echo &quot;toto&quot; | asubst --exclude=toto to
+ti will replace toto by titi because each matching &quot;to&quot;
+does not match the exclusion &quot;toto&quot;.<BR>On the other hand,
+echo &quot;toto&quot; | asubst --exclude=to to ti and echo &quot;toto&quot;
+| asubst --exclude=toto toto titi will not substitute.</FONT></SPAN></P>
+<H1><SPAN LANG="en-GB"><FONT FACE="monospace">7. Delimiter</FONT></SPAN></H1>
+<P><FONT FACE="Monospace">Normally asubst reads the input flow or
+file line by line (separated by '\n') and searches for matches,
+between the input sequences of text and '\n', and the sequence of
+regex of find_pattern. When an input delimiter is specified (option
+-D or --delimiter) then asubst reads sequences of text separated by
+this delimiter (the whole text if delimiter is empty). In this case
+the find patern must be a simple &lt;regex&gt; (no '\n', '^' or '$'),
+and applies to each chunk.<BR>Delimiter can contain &quot;\s&quot;,
+&quot;\t&quot;, &quot;\xIJ&quot; (even &quot;\x00&quot;) and
+&quot;\n&quot;.<BR><BR>Examples:<BR>Remove comments from a XML
+file:<BR>asubst -D '' '&lt;!--([^-]|-[^-])*--&gt;' '' file<BR><BR>Tag
+duplicated words in paragraphs (separated by two '\n'):<BR>asubst -D
+'\n\n' asubst -D '\n\n' -- '\&lt;([\M]+)\&gt;[\S]+\1' '-&gt;\R01&lt;-'
+file</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="monospace">7. Replace string</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
 are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
 be replaced by a newline.</FONT><BR><FONT FACE="monospace">- &quot;\t&quot;
@@ -170,7 +187,7 @@ applies after (sub)string replacement.<BR></FONT><BR><FONT FACE="monospace">Exam
 &quot;to\nti&quot; &quot;\u\R00&quot; -&gt; &quot;toTO\nTIti\n&quot;</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;(.)(.)(..)&quot;
 &quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt; &quot;Otto&quot;</FONT></P>
-<H1 LANG="en-GB"><FONT FACE="Monospace">7.Grep mode</FONT></H1>
+<H1 LANG="en-GB"><FONT FACE="Monospace">8.Grep mode</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In grep mode, asubst only
 looks for find_pattern and displays result, (possibly with the line
 number in input file) but does not alter the files. As a consequence,
@@ -186,7 +203,7 @@ toto<BR>echo -en &quot;toto&quot; | asubst -g &quot;toto&quot;
 &quot;found&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 found<BR>echo -en &quot;*cs add&quot; | asubst -g &quot;^\*([^ ]+) &quot;
 &quot;Got \r11&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; Got cs</FONT></P>
-<H1 LANG="en-GB"><FONT FACE="Monospace">8.Differences between regex
+<H1 LANG="en-GB"><FONT FACE="Monospace">9.Differences between regex
 and noregex modes</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In both modes &quot;\x0A&quot;
 is the same as &quot;\n&quot;, and &quot;\s&quot; and &quot;\t&quot;
@@ -202,11 +219,11 @@ and is used as such by regex library). It is allowed in noregex mode.</FONT></P>
 are not interpreted in find patern noregex mode.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">In noregex mode, &quot;\rIJ&quot;
 s forbidden.</FONT></P>
-<H1 LANG="en-GB"><FONT FACE="Monospace">9.Exit code</FONT></H1>
+<H1 LANG="en-GB"><FONT FACE="Monospace">10.Exit code</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">asubst exits with 0 if some
 matching was found, with 1 if no matching was found and with 2
 otherwise (e.g. in case of error).</FONT></P>
-<H1 LANG="en-GB"><FONT FACE="Monospace">10.Troubleshooting</FONT></H1>
+<H1 LANG="en-GB"><FONT FACE="Monospace">11.Troubleshooting</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">- Asubst is stuck. Maybe an
 argument is missing or an option is not complete, and asubst is
 waiting in stdin. E.g. &quot;asubst -m 5 6 file&quot;. Asubst

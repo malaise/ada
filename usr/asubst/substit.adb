@@ -24,9 +24,12 @@ package body Substit is
   -- We work on stdin/stdout?
   Is_Stdin : Boolean;
 
-  -- Number of patterns and can it be multiple
+  -- Number of patterns and is it iterative
   Nb_Pattern : Positive;
-  Is_Multiple : Boolean;
+  Is_Iterative : Boolean;
+
+  -- Line or block separator
+  Delimiter : Asu.Unbounded_String;
 
   -- Current line number
   Line_No : Long_Long_Natural;
@@ -245,10 +248,12 @@ package body Substit is
     end if;
     -- Associate fds to files
     Text_Line.Open (In_File,  Text_Line.In_File,  In_Fd);
+    -- Set specific delimited of In_File
+    Text_Line.Set_Line_Feed (In_File, Search_Pattern.Get_Delimiter);
     Text_Line.Open (Out_File, Text_Line.Out_File, Out_Fd);
     -- Get Search pattern characteristics
     Nb_Pattern := Search_Pattern.Number;
-    Is_Multiple := Search_Pattern.Multiple;
+    Is_Iterative := Search_Pattern.Iterative;
     -- Init number of line
     Line_No := 0;
   end Open;
@@ -339,6 +344,7 @@ package body Substit is
 
   function Do_One_File (File_Name : String;
                         Tmp_Dir   : String;
+                        Delimiter : String;
                         Max_Subst : Long_Long_Natural;
                         Backup    : Boolean;
                         Verbose   : Boolean;
@@ -357,6 +363,7 @@ package body Substit is
     -- Init buffer of lines
     Line_List_Mng.Delete_List (Line_List);
     Trail_New_Line := False;
+    Substit.Delimiter := Asu.To_Unbounded_String (Delimiter);
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
     Total_Subst := 0;
@@ -590,7 +597,7 @@ package body Substit is
   begin
     -- Rewind read lines
     Line_List_Mng.Rewind (Line_List);
-    if Is_Multiple then
+    if Is_Iterative then
       -- Handle separately multiple substitutions if one pattern
       return Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
                              Max_Subst, Verbose, Grep, Line_Nb, Test);
