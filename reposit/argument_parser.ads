@@ -6,7 +6,7 @@
 
 -- The restrictions on keys (detected and raising exceptions):
 -- - a string key shall not contain spaces or unprintable characters
--- - a char key shall be an unprintable character
+-- - a char key shall be a printable character
 -- - there shall be at least a char or a string definition for any key
 -- - any char or a string definition shall be unique
 
