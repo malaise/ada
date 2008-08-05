@@ -20,6 +20,7 @@ typedef struct {
     XIM xim;
     XIMStyle xim_style;
     int backing_store;
+    Atom delete_code;
 }t_server;
 
 typedef struct {

@@ -775,6 +775,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
     XEvent event;
     int n_events;
     int result;
+    char *str;
 
   if (local_server.x_server == NULL) return (ERR);
 
@@ -934,6 +935,21 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         *p_kind = REFRESH;
         result = OK;
       break;
+      case ClientMessage:
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        /* Check Message type */
+        str =  XGetAtomName (local_server.x_server, event.xclient.message_type);
+        if ( (strcmp (str, "WM_PROTOCOLS") == 0)
+          && ((Atom)event.xclient.data.l[0] == local_server.delete_code)) {
+          *p_line_id = (void*) win_id;
+          *p_kind = EXIT_REQ;
+          result = OK;
+        }
+        XFree (str);
       default :
         /* Other events discarded */
       break;

@@ -9,13 +9,14 @@
 /*  of wait_evt (NO_EVENT, SIG_EVENT, WAKE_EVENT) */
 #define X_EVENT (-10)
 
-/* The 5 kinds of X events */
+/* The 6 kinds of X events */
 #define DISCARD     0
 #define TID_RELEASE 1
 #define TID_PRESS   2
 #define KEYBOARD    3
 #define REFRESH     4
 #define TID_MOTION  5
+#define EXIT_REQ    6
 
 /* Basics */
 

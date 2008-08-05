@@ -141,6 +141,9 @@ Window x_window;
         return (False);
     }
 
+    /* Declare/store Atom values for WM_protocol and its delete_window request */
+    local_server.delete_code = XInternAtom (local_server.x_server, "WM_DELETE_WINDOW", False);
+
     /* Ok */
     return (True);
 }
@@ -153,7 +156,7 @@ t_window *lin_open (int screen_id, int y, int x, int height, int width,
 t_screen *p_screen;
 t_window *p_window;
 boolean screen_created;
-
+Status res;
 
     /* Checks number of lines already open */
     if (nbre_window == NBRE_MAX_WINDOW) {
@@ -306,6 +309,12 @@ boolean screen_created;
             printf ("X_LINE : X Can't create input method context.\n");
 #endif
         }
+    }
+
+    /* Set protocol to receive DELETE_WINDOW requests from window manager */
+    res =  XSetWMProtocols (p_window->server->x_server, p_window->x_window, &p_window->server->delete_code, 1);
+    if (res == 0) {
+            printf ("X_LINE : X Can set delete-window WM protocol.\n");
     }
 
     /* Map Window */

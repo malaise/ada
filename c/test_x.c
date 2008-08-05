@@ -186,7 +186,11 @@ boolean read;
 
     if (m == X_EVENT) {
       x_process_event (&line_event, &k, &l);
-      if (k == DISCARD) {
+      if (k == EXIT_REQ) {
+        /* Request to exit by Window manager */
+        printf ("Exit request\n");
+        break;
+      } else if (k == DISCARD) {
         /* Wrong X event i.e. expose... */
         continue;
       }
@@ -298,7 +302,7 @@ boolean read;
 
     /* Exit when TID release in upper left corner */
     if ( (k == TID_RELEASE) && (i == 1) && (j == 1) ) {
-      printf ("Exit\n");
+      printf ("Exit button\n");
       break;
     }
 
