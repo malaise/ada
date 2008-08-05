@@ -116,6 +116,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   end Scroll;
 
   -- Ptg on Ok (and cancel) buttons
+  Exit_Request : exception;
   function Confirm return Boolean is
     Cursor_Field : Afpx.Field_Range := 1;
     Cursor_Col : Con_Io.Col_Range := 0;
@@ -146,7 +147,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
               Res := False;
               exit;
             when Afpx.Break_Key =>
-              null;
+              raise Exit_Request;
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
@@ -375,7 +376,7 @@ begin
             Valid := False;
             exit;
           when Afpx.Break_Key =>
-            null;
+            raise Exit_Request;
         end case;
 
       when Afpx.Mouse_Button =>
@@ -433,6 +434,8 @@ begin
   else
     return "";
   end if;
-
+exception
+  when Exit_Request =>
+    return "";
 end Select_File;
 
