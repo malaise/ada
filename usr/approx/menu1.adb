@@ -41,13 +41,21 @@ package body Menu1 is
 
   function Exit_Prog return Boolean is
   begin
-    Screen.Put_Title(Screen.Exit_Approx);
-    if Dialog.Confirm_Lost then
-      -- The end
-      Afpx.Release_Descriptor;
-      return True;
-    end if;
-    return False;
+    loop
+      begin
+        Screen.Put_Title(Screen.Exit_Approx);
+        if Dialog.Confirm_Lost then
+          -- The end
+          Afpx.Release_Descriptor;
+          return True;
+        end if;
+        return False;
+      exception
+        when Screen.Exit_Requested =>
+          -- Go on asking
+          null;
+      end;
+    end loop;
   end Exit_Prog;
 
   -- Read a data file
@@ -219,161 +227,176 @@ package body Menu1 is
     Data_Changed := True;
     Saved_Index := 0;
     loop
-      case Restore is
-        when None =>
-          null;
-        when Partial =>
-          Afpx.Use_Descriptor(1, False);
-          if Saved_Index /= 0 then
-            Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-                                        Saved_Index - 1, False);
-            Afpx.Update_List (Afpx.Center);
-          end if;
-          Screen.Init_For_Main1 (Cursor_Field);
-          Screen.Put_File (Text_Handler.Value(File_Name_Txt));
-        when Full =>
-          Afpx.Use_Descriptor(1);
-          Set_Points_List;
-          if Saved_Index /= 0 then
-            Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-                                        Saved_Index - 1, False);
-            Afpx.Update_List (Afpx.Center);
-          end if;
-          Screen.Init_For_Main1 (Cursor_Field);
-          Screen.Put_File (Text_Handler.Value(File_Name_Txt));
-      end case;
+      begin
+        case Restore is
+          when None =>
+            null;
+          when Partial =>
+            Afpx.Use_Descriptor(1, False);
+            if Saved_Index /= 0 then
+              Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+                                          Saved_Index - 1, False);
+              Afpx.Update_List (Afpx.Center);
+            end if;
+            Screen.Init_For_Main1 (Cursor_Field);
+            Screen.Put_File (Text_Handler.Value(File_Name_Txt));
+          when Full =>
+            Afpx.Use_Descriptor(1);
+            Set_Points_List;
+            if Saved_Index /= 0 then
+              Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
+                                          Saved_Index - 1, False);
+              Afpx.Update_List (Afpx.Center);
+            end if;
+            Screen.Init_For_Main1 (Cursor_Field);
+            Screen.Put_File (Text_Handler.Value(File_Name_Txt));
+        end case;
 
-      -- Delete/modify/approximation/sort
-      if Points.P_Nb = 0 then
-        Afpx.Set_Field_Activation (26, False);
-        Afpx.Set_Field_Activation (27, False);
-        Afpx.Set_Field_Activation (29, False);
-        Afpx.Set_Field_Activation (31, False);
-      else
-        Afpx.Set_Field_Activation (26, True);
-        Afpx.Set_Field_Activation (27, True);
-        Afpx.Set_Field_Activation (29, True);
-        Afpx.Set_Field_Activation (31, True);
-      end if;
+        -- Delete/modify/approximation/sort
+        if Points.P_Nb = 0 then
+          Afpx.Set_Field_Activation (26, False);
+          Afpx.Set_Field_Activation (27, False);
+          Afpx.Set_Field_Activation (29, False);
+          Afpx.Set_Field_Activation (31, False);
+        else
+          Afpx.Set_Field_Activation (26, True);
+          Afpx.Set_Field_Activation (27, True);
+          Afpx.Set_Field_Activation (29, True);
+          Afpx.Set_Field_Activation (31, True);
+        end if;
 
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay);
-      Redisplay := False;
-      Restore := None;
-      Saved_Index := 0;
-      case Ptg_Result.Event is
-        when Afpx.Keyboard =>
-          case Ptg_Result.Keyboard_Key is
-            when Afpx.Return_Key =>
-              null;
-            when Afpx.Escape_Key =>
-              if Exit_Prog then
-                -- The end
-                return;
-              else
+        Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
+                           Ptg_Result, Redisplay);
+        Redisplay := False;
+        Restore := None;
+        Saved_Index := 0;
+        case Ptg_Result.Event is
+          when Afpx.Keyboard =>
+            case Ptg_Result.Keyboard_Key is
+              when Afpx.Return_Key =>
+                null;
+              when Afpx.Escape_Key =>
+                if Exit_Prog then
+                  -- The end
+                  return;
+                else
+                  Restore := Partial;
+                end if;
+              when Afpx.Break_Key =>
+                if Exit_Prog then
+                  -- The end
+                  return;
+                else
+                  Restore := Partial;
+                end if;
+            end case;
+          when Afpx.Mouse_Button =>
+            case Ptg_Result.Field_No is
+              when Screen.List_Scroll_Fld_Range'First ..
+                   Screen.List_Scroll_Fld_Range'Last =>
+                Screen.Scroll(Ptg_Result.Field_No);
+              when Screen.Exit_Button_Fld =>
+                if Exit_Prog then
+                  -- The end
+                  return;
+                else
+                  Restore := Partial;
+                end if;
+              when 21 | 22 =>
+                Load_Save(Ptg_Result.Field_No = 21, Restore);
+                Data_Changed := True;
+              when 23 =>
+                -- New points
+                Screen.Put_Title(Screen.New_Points);
+                if Dialog.Confirm_Lost then
+                  Points.P_Clear;
+                  Set_Points_List;
+                  Text_Handler.Empty(File_Name_Txt);
+                  -- Update file_name, nb of points and save_status
+                  Text_Handler.Empty (File_Name_Txt);
+                end if;
+                Data_Changed := True;
                 Restore := Partial;
-              end if;
-            when Afpx.Break_Key =>
-              null;
-          end case;
-        when Afpx.Mouse_Button =>
-          case Ptg_Result.Field_No is
-            when Screen.List_Scroll_Fld_Range'First ..
-                 Screen.List_Scroll_Fld_Range'Last =>
-              Screen.Scroll(Ptg_Result.Field_No);
-            when Screen.Exit_Button_Fld =>
-              if Exit_Prog then
-                -- The end
-                return;
-              else
+              when 25 =>
+                -- Add point
+                Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+                Screen.Put_Title(Screen.Add_1);
+                loop
+                  Point_Set := False;
+                  Read_Point(Point_Set, A_Point);
+                  exit when not Point_Set;
+                  Points.P_Upd_Point (Points.Add, 1, A_Point);
+                  Set_Points_List;
+                  Data_Changed := True;
+                end loop;
+                Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+                Saved_Index := Afpx.Line_List_Mng.List_Length (Afpx.Line_List);
                 Restore := Partial;
-              end if;
-            when 21 | 22 =>
-              Load_Save(Ptg_Result.Field_No = 21, Restore);
-              Data_Changed := True;
-            when 23 =>
-              -- New points
-              Screen.Put_Title(Screen.New_Points);
-              if Dialog.Confirm_Lost then
-                Points.P_Clear;
-                Set_Points_List;
-                Text_Handler.Empty(File_Name_Txt);
-                -- Update file_name, nb of points and save_status
-                Text_Handler.Empty (File_Name_Txt);
-              end if;
-              Data_Changed := True;
-              Restore := Partial;
-            when 25 =>
-              -- Add point
-              Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
-              Screen.Put_Title(Screen.Add_1);
-              loop
-                Point_Set := False;
-                Read_Point(Point_Set, A_Point);
-                exit when not Point_Set;
-                Points.P_Upd_Point (Points.Add, 1, A_Point);
+              when 26 | 27 | Afpx.List_Field_No =>
+                -- Delete / modify a point
+                Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+                -- Get index then point
+                Point_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                A_Point := Points.P_One_Point(Point_Index);
+                if Ptg_Result.Field_No = 26 then
+                  -- Delete a point
+                  Screen.Put_Title(Screen.Suppress_1);
+                  Afpx.Encode_Wide_Field (Screen.Get_Fld, (0, 0),
+                      Point_Str.Encode_Rec(A_Point).Str(1 .. Screen.Get_Get_Width));
+                  Afpx.Set_Field_Activation(Screen.Get_Fld, True);
+                  if Screen.Confirm(Screen.C_Delete_Point, True) then
+                    Points.P_Upd_Point (Points.Remove, Point_Index, A_Point);
+                    Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                    if Saved_Index = Afpx.Line_List_Mng.List_Length (Afpx.Line_List) then
+                      Saved_Index := Saved_Index - 1;
+                    end if;
+                    Set_Points_List;
+                    Data_Changed := True;
+                  end if;
+                else
+                  -- Modify
+                  Screen.Put_Title(Screen.Modify_1);
+                  Point_Set := True;
+                  Read_Point(Point_Set, A_Point);
+                  if Point_Set then
+                    Points.P_Upd_Point (Points.Modify, Point_Index, A_Point);
+                    Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                    Set_Points_List;
+                    Data_Changed := True;
+                  end if;
+                end if;
+                Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+                Restore := Partial;
+              when 29 =>
+                -- approximation
+                Screen.Store_File;
+                Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                Menu2.Main_Screen(Data_Changed);
+                Restore := Full;
+                Data_Changed := False;
+              when 31 =>
+                -- Sort
+                Points.P_Sort;
                 Set_Points_List;
                 Data_Changed := True;
-              end loop;
-              Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-              Saved_Index := Afpx.Line_List_Mng.List_Length (Afpx.Line_List);
-              Restore := Partial;
-            when 26 | 27 | Afpx.List_Field_No =>
-              -- Delete / modify a point
-              Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
-              -- Get index then point
-              Point_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
-              A_Point := Points.P_One_Point(Point_Index);
-              if Ptg_Result.Field_No = 26 then
-                -- Delete a point
-                Screen.Put_Title(Screen.Suppress_1);
-                Afpx.Encode_Wide_Field (Screen.Get_Fld, (0, 0),
-                    Point_Str.Encode_Rec(A_Point).Str(1 .. Screen.Get_Get_Width));
-                Afpx.Set_Field_Activation(Screen.Get_Fld, True);
-                if Screen.Confirm(Screen.C_Delete_Point, True) then
-                  Points.P_Upd_Point (Points.Remove, Point_Index, A_Point);
-                  Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
-                  if Saved_Index = Afpx.Line_List_Mng.List_Length (Afpx.Line_List) then
-                    Saved_Index := Saved_Index - 1;
-                  end if;
-                  Set_Points_List;
-                  Data_Changed := True;
-                end if;
-              else
-                -- Modify
-                Screen.Put_Title(Screen.Modify_1);
-                Point_Set := True;
-                Read_Point(Point_Set, A_Point);
-                if Point_Set then
-                  Points.P_Upd_Point (Points.Modify, Point_Index, A_Point);
-                  Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
-                  Set_Points_List;
-                  Data_Changed := True;
-                end if;
-              end if;
-              Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-              Restore := Partial;
-            when 29 =>
-              -- approximation
-              Screen.Store_File;
-              Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
-              Menu2.Main_Screen(Data_Changed);
-              Restore := Full;
-              Data_Changed := False;
-            when 31 =>
-              -- Sort
-              Points.P_Sort;
-              Set_Points_List;
-              Data_Changed := True;
-            when others =>
-              null;
-          end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-           | Afpx.Wakeup_Event =>
-          null;
-        when Afpx.Refresh =>
-          Redisplay := True;
-      end case;
+              when others =>
+                null;
+            end case;
+          when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+             | Afpx.Wakeup_Event =>
+            null;
+          when Afpx.Refresh =>
+            Redisplay := True;
+        end case;
+      exception
+        when Screen.Exit_Requested =>
+          if Exit_Prog then
+            -- The end
+            return;
+          else
+            Restore := Partial;
+          end if;
+      end;
     end loop;
 
   end Main_Screen;

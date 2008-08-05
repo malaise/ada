@@ -55,6 +55,7 @@ package Screen is
   subtype S_Error_List is S_Message_List
                           range E_Done .. E_Too_Many_Points;
 
+  Exit_Requested : exception;
   procedure Inform  (Msg : in S_Info_List);
   function  Confirm (Msg : S_Confirm_List; Alert : Boolean;
                      Subtitle : Boolean := False) return Boolean;

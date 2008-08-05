@@ -273,7 +273,7 @@ package body Menu2 is
                 return;
               end if;
             when Afpx.Break_Key =>
-              null;
+              raise Screen.Exit_Requested;
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is

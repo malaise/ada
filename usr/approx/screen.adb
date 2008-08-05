@@ -154,7 +154,7 @@ package body Screen is
               Res := False;
               exit;
             when Afpx.Break_Key =>
-              null;
+              raise Exit_Requested;
           end case;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
