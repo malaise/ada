@@ -290,7 +290,7 @@ package Generic_Con_Io is
     --  if an Up/Down arrow, (Ctrl) Page Up/Down is pressed,
     --  if the cursor leaves the field (Left/Right arrow or character input),
     --  if Tab, Ctrl Tab, Return(Lf), Escape is pressed
-    --  on CtrlC/CtrlBreak
+    --  on CtrlC/CtrlBreak or X event Exit_Request (from window manager)
     --  on mouse click, release (or motion if enabled)
     --  on time_out expiration
     --  if a callback has been activated on a fd (see x_mng)

@@ -824,6 +824,10 @@ package body Generic_Con_Io is
           Event := Mouse_Button;
           Mouse_Status := X_Event;
           return;
+        when X_Mng.Exit_Request =>
+          -- X Exit request from window manager
+          Event := Break;
+          return;
         when X_Mng.Keyboard =>
           X_Mng.X_Read_Key(Id, Ctrl, Shift, Code, Kbd_Tab);
           Translate_X_Key (Kbd_Tab, Code);

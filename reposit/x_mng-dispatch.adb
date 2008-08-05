@@ -17,6 +17,7 @@ package body Dispatch is
   C_Xevent_Keyboard       : constant Integer := 3;
   C_Xevent_Refresh        : constant Integer := 4;
   C_Xevent_Mouse_Motion   : constant Integer := 5;
+  C_Xevent_Exit_Request   : constant Integer := 6;
 
   procedure Xx_Get_Event (C_Id : out Line_For_C;
                           Event : out Event_Kind;
@@ -46,9 +47,14 @@ package body Dispatch is
       Event := Refresh;
     elsif C_Event = C_Xevent_Mouse_Motion then
       Event := Tid_Motion;
+    elsif C_Event = C_Xevent_Exit_Request then
+      Event := Exit_Request;
     else
       -- Discard, or Invalid X event
       Event := No_Event;
+    end if;
+    if Debug then
+      My_Io.Put_Line ("  Xx_Get_Event -> " & Event'Img);
     end if;
   end Xx_Get_Event;
 
@@ -473,7 +479,8 @@ package body Dispatch is
 
       -- Dispatch result
       case Event is
-        when Keyboard | Tid_Release | Tid_Press | Tid_Motion | Refresh =>
+        when Keyboard | Tid_Release | Tid_Press | Tid_Motion
+           | Refresh | Exit_Request =>
           -- A X event to deliver to proper client
           Selected := Find_From_C (Got_Id);
           Nb_X_Events := Nb_X_Events + 1;

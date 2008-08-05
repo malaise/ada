@@ -41,9 +41,9 @@ package X_Mng is
   type Button_List is (None, Left, Middle, Right, Up, Down);
 
   -- Result of waiting (see Event_Mng for Events).
-  type Event_Kind is (Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh,
-                      Timer_Event, Fd_Event, Signal_Event, Wakeup_Event,
-                      No_Event);
+  type Event_Kind is (
+     Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh, Exit_Request,
+     Timer_Event, Fd_Event, Signal_Event, Wakeup_Event, No_Event);
 
   ----- EXCEPTIONS -----
 
@@ -251,7 +251,7 @@ package X_Mng is
   -- If Timeout is a real delay (neither infinite nor exp) then
   --  it is updated with the time remaining
   -- Kind is Keyboard or Tid (Press or Release or Motion) for this line,
-  --  or Refresh or Fd_Event or Timer_Event or Signal_Event...
+  --  or Refresh or Exit_Request or Fd_Event or Timer_Event or Signal_Event...
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);
