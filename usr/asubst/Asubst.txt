@@ -131,7 +131,7 @@ Remove comments from a XML file:
 asubst -D '' '<!--([^-]|-[^-])*-->' '' file
 
 Tag duplicated words in paragraphs (separated by two '\n'):
-asubst -D '\n\n' asubst -D '\n\n' -- '\<([\M]+)\>[\S]+\1' '->\R01<-' file
+asubst -D '\n\n' -- '\<([\M]+)\>[\S]+\1' '->\R01<-' file
 
 
 7. Replace string
