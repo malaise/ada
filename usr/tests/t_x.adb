@@ -111,8 +111,11 @@ begin
       when X_Mng.No_Event =>
         Put (X_Mng.Event_Kind'Image(Kind));
         Exp.Expiration_Time := Exp.Expiration_Time + Timeout;
+      when X_Mng.Exit_Request =>
+        exit Main_Loop;
     end case;
   end loop Main_Loop;
 
   X_Mng.X_Close_Line (Id);
 end T_X;
+
