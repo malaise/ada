@@ -260,6 +260,9 @@ package body Text_Line is
       raise Io_Error;
     end if;
     File.Acc.Buffer_Len := 0;
+  exception
+    when Sys_Calls.System_Error => 
+      raise Io_Error;
   end Flush;
 
   procedure Finalize (File : in out File_Type) is
