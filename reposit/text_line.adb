@@ -139,7 +139,13 @@ package body Text_Line is
         if File.Acc.Buffer_Len < Loc_Line_Len then
            Read (File, Done);
            -- Done when read -> 0
-           exit when Done;
+           if Done then
+              -- Cat remaining of buffer
+              Asu.Append (Str, File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
+              File.Acc.Buffer_Index := 0;
+              File.Acc.Buffer_Len := 0;
+              exit;
+           end if;
         end if;
         -- Locate next newline sequence in buffer
         Stop_Index := 0;
