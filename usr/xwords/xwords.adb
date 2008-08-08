@@ -61,6 +61,13 @@ procedure Xwords is
     return Rec;
   end Us2Afpx;
 
+  -- Purge trailing spaces
+  function Strip (Str : String) return String is
+     Last : constant Natural := String_Mng.Parse_Spaces (Str, False);
+  begin
+    return Str(Str'First .. Last);
+  end Strip;
+
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Command.Res_List;
@@ -71,12 +78,7 @@ procedure Xwords is
     Afpx.Line_List.Delete_List (Deallocate => False);
 
     -- Build command and execute it
-    declare
-      Str : constant String := Afpx.Decode_Field (Get_Fld, 0, False);
-      Last : constant Natural := String_Mng.Parse_Spaces (Str, False);
-    begin
-      Arg := Common.Asu_Tus (Str (1 .. Last));
-    end;
+    Arg := Common.Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
       when Search_Fld =>
         Com := Common.Asu_Tus ("ws");
@@ -94,9 +96,10 @@ procedure Xwords is
     Command.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
                   Status_Ok, Result);
 
-    -- Store in history if search
+    -- Store in history and selection if search
     if Num = Search_Fld and then Arg /= Common.Asu_Null then
       History.Insert (Arg);
+      Afpx.Set_Selection (Common.Asu_Ts (Arg));
     end if;
 
     -- Log request if needed
@@ -198,6 +201,7 @@ begin
             begin
               Afpx.Clear_Field (Get_Fld);
               Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Str));
+              Afpx.Set_Selection (Strip (Lower_Str (Str)));
             end;
 
           -- Clear get
