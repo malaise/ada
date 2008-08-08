@@ -18,6 +18,9 @@
 #define SIZE_MAX_NAME       50
 #define STD_SUFFIX_NAME     ":0.0"
 
+const char *selection_type_names[NB_SELECTION_TYPES] =
+   {"UTF8_STRING", "COMPOUND_TEXT", "STRING", "TEXT"};
+
 t_window *list_window[NBRE_MAX_WINDOW];
 static int nbre_window = 0;
 
@@ -141,8 +144,21 @@ Window x_window;
         return (False);
     }
 
-    /* Declare/store Atom values for WM_protocol and its delete_window request */
-    local_server.delete_code = XInternAtom (local_server.x_server, "WM_DELETE_WINDOW", False);
+    /* Declare/store Atoms for WM_protocol and delete_window request */
+    local_server.wm_protocols_code = XInternAtom (local_server.x_server,
+                                            "WM_PROTOCOLS", False);
+    if (local_server.wm_protocols_code != None) {
+      local_server.delete_code = XInternAtom (local_server.x_server,
+                                              "WM_DELETE_WINDOW", False);
+    } else {
+      local_server.delete_code = None;
+    }
+
+    /* Initialise Atoms of supported PRIMARY clipborad formats */
+    for (i = 0; i < NB_SELECTION_TYPES; i++) {
+      selection_types[i] = XInternAtom (local_server.x_server,
+                             selection_type_names[i], True);
+    }
 
     /* Ok */
     return (True);
@@ -226,6 +242,8 @@ Status res;
     p_window->button = 0;
     p_window->tid_x = 0;
     p_window->tid_y = 0;
+    p_window->selection = NULL;
+    p_window->selection_code = None;
 
     /* Graphic context of the window */
     {

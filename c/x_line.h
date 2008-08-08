@@ -11,7 +11,10 @@
 
 /* #define EVENT_MASK ButtonReleaseMask | ButtonPressMask | KeyPressMask | ExposureMask | ResizeRedirectMask | StructureNotifyMask */
 #define EVENT_MASK ButtonReleaseMask | ButtonPressMask | KeyPressMask | ExposureMask | EnterWindowMask
-#define MSG_SIZE_INT    5 /* X value */
+
+/* Number of supported types of XA_PRIMARY clipborad exchanges */
+#define NB_SELECTION_TYPES 4
+Atom selection_types [NB_SELECTION_TYPES];
 
 typedef struct {
     Display *x_server;
@@ -20,6 +23,7 @@ typedef struct {
     XIM xim;
     XIMStyle xim_style;
     int backing_store;
+    Atom wm_protocols_code;
     Atom delete_code;
 }t_server;
 
@@ -64,6 +68,8 @@ typedef struct {
     int button;
     int tid_x;
     int tid_y;
+    char *selection;
+    Atom selection_code;
 }t_window;
 
 /* extern for all includer except x_line.c */

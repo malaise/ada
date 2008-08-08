@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
 void *line, *line_event;
 char name[50];
 char stra[81], stre[81], strs[81];
+char selection[81];
 char digits[5];
 int i, j, k, l, m;
 int kk[4];
@@ -232,6 +233,7 @@ boolean read;
        }
        strcat (stre, strs);
        strcat (stre, "<");
+       x_set_selection (line, stre);
      }
 
      if (j == 1) {
@@ -265,6 +267,9 @@ boolean read;
       strcat (stre, "    col: ");
       sprintf (digits, "%03d", j);
       strcat (stre, digits);
+      if (l == 2) {
+        x_request_selection (line);
+      }
 
     } else if (k == TID_RELEASE) {
 
@@ -292,6 +297,12 @@ boolean read;
       sprintf (digits, "%03d", j);
       strcat (stre, digits);
 
+    } else if (k == SELECTION) {
+      if (x_get_selection (line, selection, sizeof(selection)) != OK) {
+        printf ("Reading selection failed\n");
+      } else {
+        printf ("Selection -> %s\n", selection);
+      }
     }  else if (k == REFRESH) {
       x_read_tid (line_event, FALSE, &l, &i, &j);
       /* Redraw to be done */

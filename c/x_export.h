@@ -17,6 +17,7 @@
 #define REFRESH     4
 #define TID_MOTION  5
 #define EXIT_REQ    6
+#define SELECTION   7
 
 /* Basics */
 
@@ -104,6 +105,13 @@ extern int x_read_key (void *line_id, boolean *p_control, boolean *p_shift,
                        boolean *p_code, int *p_keys, int *p_nbre);
 
 extern int x_enable_motion_events (void *line_id, boolean enable_motion);
+
+/* Selection exchange */
+extern int x_set_selection (void *line_id, const char *selection);
+
+extern int x_request_selection (void *line_id);
+
+extern int x_get_selection (void *line_id, char *p_selection, int len);
 
 /* Blink, bell */
 

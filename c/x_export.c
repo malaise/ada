@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <unistd.h>
 #include <X11/cursorfont.h>
+#include <X11/Xatom.h>
 
 #include "x_export.h"
 #include "x_screen.h"
@@ -74,6 +75,16 @@ static int timeout_to_ms (timeout_t *p_time) {
 
 
 /***** Event management *****/
+static void x_clear_in_selection (t_window *win_id ) {
+    /* Clean previous in selection */
+    if (win_id->selection_code != None) {
+        XDeleteProperty (win_id->server->x_server,
+                         win_id->x_window,
+                         win_id->selection_code);
+        win_id->selection_code = None;
+    }
+}
+
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   boolean timeout_is_active, blink_is_active;
   timeout_t exp_time, cur_time, tmp_timeout;
@@ -773,9 +784,12 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
 
     t_window *win_id;
     XEvent event;
+    XSelectionEvent reply;
     int n_events;
     int result;
     char *str;
+    int i;
+    boolean found;
 
   if (local_server.x_server == NULL) return (ERR);
 
@@ -925,6 +939,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         *p_line_id = (void*) win_id;
         *p_kind = REFRESH;
         result = OK;
+      break;
       case EnterNotify:
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
@@ -942,14 +957,82 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           break; /* Next Event */
         }
         /* Check Message type */
-        str =  XGetAtomName (local_server.x_server, event.xclient.message_type);
-        if ( (strcmp (str, "WM_PROTOCOLS") == 0)
-          && ((Atom)event.xclient.data.l[0] == local_server.delete_code)) {
+        str = XGetAtomName (local_server.x_server, event.xclient.message_type);
+        if ( ((Atom)event.xclient.message_type
+                     == local_server.wm_protocols_code)
+          && ((Atom)event.xclient.data.l[0]
+                     == local_server.delete_code)) {
           *p_line_id = (void*) win_id;
           *p_kind = EXIT_REQ;
           result = OK;
         }
         XFree (str);
+      break;
+      case SelectionRequest:
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        /* Check that the requested type (target) is one of the supported */
+        found = FALSE;
+        for (i = 0; i < NB_SELECTION_TYPES; i++) {
+          if (event.xselectionrequest.target == selection_types[i]) {
+            found = TRUE;
+            break;
+          }
+        }
+        if (found && (win_id->selection != NULL) ) {
+          /* Store selection in property */
+          (void) XChangeProperty (local_server.x_server,
+                   event.xselectionrequest.requestor,
+                   event.xselectionrequest.property,
+                   event.xselectionrequest.target,
+                   8, PropModeReplace,
+                   (unsigned char *)win_id->selection,
+                   (int) strlen(win_id->selection)+1);
+        } else {
+          /* No selection available */
+          found = FALSE;
+        }
+
+        /* Send reply event */
+        reply.type = SelectionNotify;
+        reply.send_event = True;
+        reply.display = event.xselectionrequest.display;
+        reply.requestor = event.xselectionrequest.requestor;
+        reply.selection = event.xselectionrequest.selection;
+        reply.target = event.xselectionrequest.target;
+        reply.property = (found ? event.xselectionrequest.property : None);
+        reply.property = event.xselectionrequest.property;
+        reply.time = CurrentTime;
+        (void) XSendEvent(local_server.x_server,
+              event.xselectionrequest.requestor,
+              False, 0L, (XEvent*) &reply);
+        /* Next event */
+      break;
+      case SelectionClear:
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        /* Clear out selection */
+        (void) x_set_selection (win_id, NULL);
+      case SelectionNotify:
+        /* Find the window of event */
+        win_id = lin_get_win (event.xany.window);
+        if (win_id == NULL) {
+          break; /* Next Event */
+        }
+        if (event.xselection.property == None) {
+          /* Selection transfer failed */
+          x_clear_in_selection (win_id);
+        }
+        *p_line_id = (void*) win_id;
+        *p_kind = SELECTION;
+        result = OK;
+      break;
       default :
         /* Other events discarded */
       break;
@@ -1086,6 +1169,100 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y) {
     return (OK);
 }
 
+/* Propose selection to other applis (cancel if selection if NULL) */
+extern int x_set_selection (void *line_id, const char *selection) {
+    t_window *win_id = (t_window*) line_id;
+
+    /* Clear selection buffer */
+    if (win_id->selection != NULL) {
+        free (win_id->selection);
+        win_id->selection = NULL;
+    }
+
+    if (selection == NULL) {
+        /* Cancel our role of selection owner */
+        XSetSelectionOwner (win_id->server->x_server, XA_PRIMARY,
+                            None, CurrentTime);
+        return OK;
+     }
+     /* Set owner of selection */
+     XSetSelectionOwner (win_id->server->x_server, XA_PRIMARY,
+                         win_id->x_window, CurrentTime);
+
+     if (XGetSelectionOwner(win_id->server->x_server, XA_PRIMARY)
+                            != win_id->x_window) {
+         /* We didn't get the selection ownership */
+         return (ERR);
+     }
+     /* Store new selection */
+     win_id->selection = malloc (strlen(selection) + 1);
+     strcpy (win_id->selection, selection);
+     return (OK);
+}
+
+/* Request a SELECTION event */
+extern int x_request_selection (void *line_id) {
+    t_window *win_id = (t_window*) line_id;
+    if (win_id == NULL) return (ERR);
+
+    /* Clean previous selection */
+    x_clear_in_selection (win_id);
+
+    /* Declare/store Atom receiving selection */
+    win_id->selection_code = XInternAtom (win_id->server->x_server,
+                                          "X_MNG_SELECTION", False);
+    /* Request */
+    (void) XConvertSelection (win_id->server->x_server, XA_PRIMARY, XA_STRING,
+        win_id->selection_code, win_id->x_window, CurrentTime);
+    return (OK);
+}
+
+/* Read and clean selection associated to SELECTION event */
+/* Set len to 0 to clear */
+extern int x_get_selection (void *line_id, char *p_selection, int len) {
+    t_window *win_id = (t_window*) line_id;
+    int res;
+    Atom type_return;
+    int format_return;
+    unsigned long nitems_return, offset_return;
+    char *data;
+    
+
+
+    if (win_id == NULL) return (ERR);
+    if (p_selection == NULL) return (ERR);
+    if (win_id->selection_code == None) return (ERR);
+
+    /* Get the selection (delete it) */
+    res = XGetWindowProperty (win_id->server->x_server, win_id->x_window,
+            win_id->selection_code,
+            0L, (long)len,
+            True, XA_STRING,
+            &type_return, &format_return, &nitems_return, &offset_return,
+            (unsigned char **)&data);
+    win_id->selection_code = None;
+    if (res != Success) {
+      x_clear_in_selection (win_id);
+      return ERR;
+    }
+  
+    /* Trunc to len characters (including '\0') */
+    if (len > 0) {
+      if ((unsigned)nitems_return > (unsigned)len - 1) {
+        strncpy (p_selection, data, len - 1);
+        p_selection[len - 1] = '\0';
+      } else if (data[(unsigned)nitems_return] != '\0') {
+        strncpy (p_selection, data, (unsigned)nitems_return - 1);
+        p_selection[(unsigned)nitems_return] = '\0';
+      } else {
+        strcpy (p_selection, data);
+      }
+    }
+
+    /* Clear */
+    XFree (data);
+    return (OK);
+}
 
 /* Special Blink primitive must be called twice a second to generate */
 /* blink if blinking is stopped */
