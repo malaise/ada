@@ -261,7 +261,7 @@ package body Text_Line is
     end if;
     File.Acc.Buffer_Len := 0;
   exception
-    when Sys_Calls.System_Error => 
+    when Sys_Calls.System_Error =>
       raise Io_Error;
   end Flush;
 

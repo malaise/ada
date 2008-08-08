@@ -115,6 +115,9 @@ package body Af_Ptg is
         elsif Mouse_Status.Button = Af_Con_Io.Down then
           Af_List.Update (Down);
         end if;
+      elsif Mouse_Status.Button = Middle then
+        -- Handle past here: Click in middle
+        null; -- @@@ Af_Con_Io.Request_Selection;
       end if;
     end if;
     return Valid;
@@ -187,6 +190,7 @@ package body Af_Ptg is
     Click_Time := Ada.Calendar.Clock;
     if List_Present and then In_Field_Absolute(Lfn, Click_Pos)
     and then not Af_Dscr.Fields(Lfn).Isprotected then
+      -- Selection in list
       Click_Field := Lfn;
       Click_Row_List := Click_Pos.Row - Af_Dscr.Fields(Lfn).Upper_Left.Row;
       List_Status := Af_List.Get_Status;
@@ -570,6 +574,9 @@ package body Af_Ptg is
                      Keyboard_Key => Escape_Key);
           Insert := False;
           Done := True;
+        when Af_Con_Io.Selection =>
+          -- @@@ Get and past selection in current get field (if any)
+          raise Program_Error;
         when Af_Con_Io.Mouse_Button =>
           declare
             Click_Result : Mouse_Action_Rec;

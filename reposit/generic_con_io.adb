@@ -713,6 +713,43 @@ package body Generic_Con_Io is
       end loop;
     end New_Line;
 
+    -- Selection (in/out) management
+    -- Set/reset the selection to be transfered to other applications
+    procedure Set_Selection (Selection : in String) is
+    begin
+      if not Init_Done then
+        raise Not_Init;
+      end if;
+      if Selection = "" then
+        X_Mng.X_Reset_Selection (Id);
+      else
+        X_Mng.X_Set_Selection (Id, Selection);
+      end if;
+    end Set_Selection;
+
+    -- Request selection from other applications. An event (Curs_Mvt) of
+    --  kind Selection will be received, then Get_Selection shall be called
+    procedure Request_Selection is
+    begin
+      if not Init_Done then
+        raise Not_Init;
+      end if;
+      X_Mng.X_Request_Selection (Id);
+    end Request_Selection;
+
+    -- Get the requested selection
+    function Get_Selection (Max_Len : Natural) return String is
+    begin
+      if not Init_Done then
+        raise Not_Init;
+      end if;
+      return X_Mng.X_Get_Selection (Id, Max_Len);
+    exception
+      when X_Mng.X_Failure =>
+        -- Unable to get selection
+        return "";
+    end Get_Selection;
+
 
     -- X event management
     procedure Next_X_Event (Timeout : in Timers.Delay_Rec;
@@ -772,8 +809,8 @@ package body Generic_Con_Io is
     end Translate_X_Key;
 
     -- Check if a key is available until a certain time.
-    -- Get_key_time can return if key pressed (Esc event),
-    -- mouse action, refresh or timeout
+    -- Returns if key pressed (Esc event), then Ctrl..Kbd_Tab are significant
+    -- otherwise mouse action, refresh, timeout...
     subtype Event_List is Curs_Mvt range Esc .. Refresh;
     procedure Get_Key_Time (Check_Break : in Boolean;
                             Event       : out Event_List;
@@ -791,6 +828,7 @@ package body Generic_Con_Io is
         raise Not_Init;
       end if;
 
+      Event := Timeout;
       Ctrl := False;
       Shift := False;
       Code := False;
@@ -823,6 +861,10 @@ package body Generic_Con_Io is
         when X_Mng.Tid_Press | X_Mng.Tid_Release | X_Mng.Tid_Motion =>
           Event := Mouse_Button;
           Mouse_Status := X_Event;
+          return;
+        when X_Mng.Selection =>
+          -- Selection to get
+          Event := Selection;
           return;
         when X_Mng.Exit_Request =>
           -- X Exit request from window manager
@@ -1345,6 +1387,8 @@ package body Generic_Con_Io is
           return (Mvt => Esc);
         when Break =>
           return (Mvt => Break);
+        when Selection =>
+          return (Mvt => Selection);
         when Fd_Event =>
           return (Mvt => Fd_Event);
         when Timer_Event =>

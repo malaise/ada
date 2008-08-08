@@ -268,6 +268,20 @@ package Generic_Con_Io is
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure Pause;
 
+
+    -- Selection (in/out) management
+    -- Set the selection to be transfered to other applications
+    -- Resets if empty string
+    procedure Set_Selection (Selection : in String);
+
+    -- Request selection from other applications. An event (Curs_Mvt) of
+    --  kind Selection will be received, then Get_Selection shall be called
+    procedure Request_Selection;
+
+    -- Get the requested selection
+    function Get_Selection (Max_Len : Natural) return String;
+
+
     -- How to specify a delay, wait some seconds or until a specific time
     -- Period is not significant
     subtype Delay_List is Timers.Delay_List;
@@ -310,7 +324,7 @@ package Generic_Con_Io is
                       Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
                       Left, Right, Ctrl_Left, Ctrl_Right,
                       Full, Tab, Stab, Ret, Esc, Break,
-                      Mouse_Button, Timeout, Fd_Event, Timer_Event,
+                      Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
                       Signal_Event, Wakeup_Event, Refresh);
     procedure Get (Str        : out Wide_String;
                    Last       : out Natural;

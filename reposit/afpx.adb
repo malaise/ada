@@ -787,6 +787,14 @@ package body Afpx is
       raise;
   end Put_Then_Get;
 
+  -- Propose (mouse) selection to to other applications
+  -- Clears if empty string
+  procedure Set_Selection (Selection : in String) is
+  begin
+    Af_Dscr.Check;
+    Af_Con_Io.Set_Selection (Selection);
+  end Set_Selection;
+
   -- Ring a bell on screen
   procedure Bell (Repeat : in Positive := 1) is
   begin

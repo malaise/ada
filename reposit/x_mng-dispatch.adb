@@ -18,6 +18,7 @@ package body Dispatch is
   C_Xevent_Refresh        : constant Integer := 4;
   C_Xevent_Mouse_Motion   : constant Integer := 5;
   C_Xevent_Exit_Request   : constant Integer := 6;
+  C_Xevent_Selection      : constant Integer := 7;
 
   procedure Xx_Get_Event (C_Id : out Line_For_C;
                           Event : out Event_Kind;
@@ -49,6 +50,8 @@ package body Dispatch is
       Event := Tid_Motion;
     elsif C_Event = C_Xevent_Exit_Request then
       Event := Exit_Request;
+    elsif C_Event = C_Xevent_Selection then
+      Event := Selection;
     else
       -- Discard, or Invalid X event
       Event := No_Event;
@@ -480,7 +483,7 @@ package body Dispatch is
       -- Dispatch result
       case Event is
         when Keyboard | Tid_Release | Tid_Press | Tid_Motion
-           | Refresh | Exit_Request =>
+           | Refresh | Exit_Request | Selection =>
           -- A X event to deliver to proper client
           Selected := Find_From_C (Got_Id);
           Nb_X_Events := Nb_X_Events + 1;

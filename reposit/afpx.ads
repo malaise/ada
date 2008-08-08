@@ -282,6 +282,10 @@ package Afpx is
 
   -- Ring a bell on screen
   procedure Bell (Repeat : in Positive := 1);
+
+  -- Propose (mouse) selection to to other applications
+  -- Clears if empty string
+  procedure Set_Selection (Selection : in String);
  
   -- At elaboration
   Afpx_File_Not_Found, Afpx_File_Read_Error,

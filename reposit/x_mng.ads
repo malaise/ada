@@ -42,7 +42,8 @@ package X_Mng is
 
   -- Result of waiting (see Event_Mng for Events).
   type Event_Kind is (
-     Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh, Exit_Request,
+     Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh, Selection,
+     Exit_Request,
      Timer_Event, Fd_Event, Signal_Event, Wakeup_Event, No_Event);
 
   ----- EXCEPTIONS -----
@@ -281,6 +282,19 @@ package X_Mng is
   -- Enable disable cursor motion events
   -- The line_id must be the one given by wait_event
   procedure X_Enable_Motion_Events (Line_Id : in Line; Motion_Enable : in Boolean);
+
+  ----- SELECTION MANAGEMENT -----
+  -- Set/reset the selection to be transfered to other applications
+  procedure X_Set_Selection (Line_Id : in Line; Selection : in String);
+  procedure X_Reset_Selection (Line_Id : in Line);
+
+  -- Request selection from other applications. An event of kind Selection
+  --  will be received, then X_Get_Selection shall be called
+  procedure X_Request_Selection (Line_Id : in Line);
+
+  -- Get the requested selection
+  -- Raises X_Failure if no selection available
+  function X_Get_Selection (Line_Id : Line; Max_Len : Natural) return String;
 
   ----- BLINK MANAGEMENT -----
 

@@ -317,6 +317,31 @@ package body X_Mng is
   pragma Import(C, X_Read_Key, "x_read_key");
 
   ------------------------------------------------------------------
+  -- Propose selection to others
+  -- extern int x_set_selection (void *line_id, const char *selection);
+
+  ------------------------------------------------------------------
+  function X_Set_Selection (Line_Id : Line_For_C;
+                            Selection : System.Address) return Result;
+  pragma Import(C, X_Set_Selection, "x_set_selection");
+  
+  ------------------------------------------------------------------
+  -- Request selection from others
+  -- extern int x_request_selection (void *line_id);
+  ------------------------------------------------------------------
+  function X_Request_Selection (Line_Id : Line_For_C) return Result;
+  pragma Import(C, X_Request_Selection, "x_request_selection");
+
+  ------------------------------------------------------------------
+  -- Get requested selection
+  -- extern int x_get_selection (void *line_id, char *p_selection, int len);
+  ------------------------------------------------------------------
+  function X_Get_Selection (Line_Id : Line_For_C;
+                             Selection : System.Address;
+                             Len : Integer) return Result;
+  pragma Import(C, X_Get_Selection, "x_get_selection");
+
+  ------------------------------------------------------------------
   -- Enable / disable cursor motion events
   -- extern int x_enable_motion_events (void *line_id, boolean enable_motion);
   ------------------------------------------------------------------
@@ -1108,6 +1133,69 @@ package body X_Mng is
     end if;
   end X_Enable_Motion_Events;
 
+
+  ------------------------------------------------------------------
+  procedure X_Set_Selection (Line_Id : in Line; Selection : in String) is
+    Line_For_C_Id : Line_For_C;
+    Selection_For_C : constant String(1 .. Selection'Length+1)
+                    := Selection & Ada.Characters.Latin_1.Nul;
+    Res : Boolean;
+  begin
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Set_Selection (Line_For_C_Id, Selection_For_C'Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Set_Selection;
+
+  ------------------------------------------------------------------
+  procedure X_Reset_Selection (Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Set_Selection (Line_For_C_Id, System.Null_Address) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Reset_Selection;
+
+  ------------------------------------------------------------------
+  procedure X_Request_Selection (Line_Id : in Line) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Request_Selection (Line_For_C_Id) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Request_Selection;
+
+  ------------------------------------------------------------------
+  function X_Get_Selection (Line_Id : Line;
+                             Max_Len : Natural) return String is
+    Line_For_C_Id : Line_For_C;
+    Buffer  : String (1 .. Max_Len);
+    Res : Boolean;
+  begin
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Get_Selection (Line_For_C_Id, Buffer'Address, Buffer'Length) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+    for I in Buffer'Range loop
+      if Buffer(I) = Ada.Characters.Latin_1.Nul then
+        return Buffer (1 .. I - 1);
+      end if;
+    end loop;
+    return Buffer;
+  end X_Get_Selection;
+  
 
   ------------------------------------------------------------------
   procedure X_Blink_Alternate (Line_Id : in Line) is
