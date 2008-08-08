@@ -96,7 +96,7 @@ begin
         Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
                           & " " & Integer'Image(Tid_Row)  & " " & Integer'Image(Tid_Col));
         exit Main_Loop when Tid_Row = 1 and then Tid_Col = 1;
-      when X_Mng.Tid_Motion =>
+      when X_Mng.Tid_Motion | X_Mng.Selection =>
         null;
       when X_Mng.Keyboard =>
         X_Mng.X_Read_Key(Id, Control, Shift, Code, Kbd_Codes);

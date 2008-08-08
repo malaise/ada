@@ -345,7 +345,7 @@ package body Nav_Dialog is
                  | Con_Io.Wakeup_Event =>
                 null;
               when Con_Io.Timeout | Con_Io.Esc |
-                   Con_Io.Mouse_Button | Con_Io.Break =>
+                   Con_Io.Mouse_Button | Con_Io.Break | Con_Io.Selection =>
                 -- impossible to be here
                 null;
             end case;

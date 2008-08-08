@@ -97,55 +97,65 @@ procedure T_Con is
         My_Io.Put_Line (Positive'Image(Me)
                       & " >" & Con_Io.Wide_To_String (Str(1..Last))
                       & "<" & Con_Io.Curs_Mvt'Image(Stat));
-        if Stat = Con_Io.Esc then
-          Str (1 .. Width) := (others => ' ');
-          Pos := 1;
-          Ins := False;
-        elsif Stat = Con_Io.Refresh then
-          Redraw;
-        elsif Stat = Con_Io.Break then
-          exit;
-        elsif Stat = Con_Io.Ret then
-          if Str (1..Last) = Str_Exit then
+        case Stat is
+          when Con_Io.Esc =>
+            Str (1 .. Width) := (others => ' ');
+            Pos := 1;
+            Ins := False;
+          when Con_Io.Refresh =>
+            Redraw;
+          when Con_Io.Break =>
             exit;
-          end if;
-        elsif Stat = Con_Io.Mouse_Button then
-          Con_Io.Get_Mouse_Event (Mouse_Event);
-          if Mouse_Event.Valid then
-            Con_Io.Put (" T", W2);
-          else
-            Con_Io.Put (" D", W2);
-          end if;
-          if Mouse_Event.Status = Con_Io.Pressed then
-            Con_Io.Put (" P", W2);
-          elsif Mouse_Event.Status = Con_Io.Released then
-            Con_Io.Put (" R", W2);
-          elsif Mouse_Event.Status = Con_Io.Motion then
-            Con_Io.Put (" M", W2);
-          end if;
-          if Mouse_Event.Button = Con_Io.Left then
-            Con_Io.Put (" L", W2);
-          elsif Mouse_Event.Button = Con_Io.Middle then
-            Con_Io.Put (" M", W2);
-          elsif Mouse_Event.Button = Con_Io.Right then
-            Con_Io.Put (" R", W2);
-          elsif Mouse_Event.Button = Con_Io.Motion then
-            Con_Io.Put (" x", W2);
-          elsif Mouse_Event.Button = Con_Io.Up then
-            Con_Io.Put (" U", W2);
-          elsif Mouse_Event.Button = Con_Io.Down then
-            Con_Io.Put (" D", W2);
-          end if;
-          Con_Io.Put (Normal(Mouse_Event.Row, 4)
-                    & Normal(Mouse_Event.Col, 4), W2);
-          if Mouse_Event.Valid
-          and then Mouse_Event.Status = Con_Io.Pressed
-          and then Mouse_Event.Button = Con_Io.Left
-          and then Mouse_Event.Row = Con_Io.Row_Range'First
-          and then Mouse_Event.Col = Con_Io.Col_Range'First then
-            exit;
-          end if;
-        end if;
+          when Con_Io.Ret =>
+            if Str (1..Last) = Str_Exit then
+              exit;
+            end if;
+          when Con_Io.Mouse_Button =>
+            Con_Io.Get_Mouse_Event (Mouse_Event);
+            if Mouse_Event.Valid then
+              Con_Io.Put (" T", W2);
+            else
+              Con_Io.Put (" D", W2);
+            end if;
+            if Mouse_Event.Status = Con_Io.Pressed then
+              Con_Io.Put (" P", W2);
+            elsif Mouse_Event.Status = Con_Io.Released then
+              Con_Io.Put (" R", W2);
+            elsif Mouse_Event.Status = Con_Io.Motion then
+              Con_Io.Put (" M", W2);
+            end if;
+            if Mouse_Event.Button = Con_Io.Left then
+              Con_Io.Put (" L", W2);
+            elsif Mouse_Event.Button = Con_Io.Middle then
+              Con_Io.Put (" M", W2);
+            elsif Mouse_Event.Button = Con_Io.Right then
+              Con_Io.Put (" R", W2);
+            elsif Mouse_Event.Button = Con_Io.Motion then
+              Con_Io.Put (" x", W2);
+            elsif Mouse_Event.Button = Con_Io.Up then
+              Con_Io.Put (" U", W2);
+            elsif Mouse_Event.Button = Con_Io.Down then
+              Con_Io.Put (" D", W2);
+            end if;
+            Con_Io.Put (Normal(Mouse_Event.Row, 4)
+                      & Normal(Mouse_Event.Col, 4), W2);
+            if Mouse_Event.Valid
+            and then Mouse_Event.Status = Con_Io.Pressed
+            and then Mouse_Event.Button = Con_Io.Left
+            and then Mouse_Event.Row = Con_Io.Row_Range'First
+            and then Mouse_Event.Col = Con_Io.Col_Range'First then
+              exit;
+            end if;
+          when Con_Io.Up | Con_Io.Down | Con_Io.Ctrl_Up | Con_Io.Ctrl_Down |
+               Con_Io.Pgup | Con_Io.Pgdown |
+               Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown |
+               Con_Io.Left | Con_Io.Right |
+               Con_Io.Ctrl_Left | Con_Io.Ctrl_Right |
+               Con_Io.Full | Con_Io.Tab | Con_Io.Stab |
+               Con_Io.Selection | Con_Io.Timeout | Con_Io.Fd_Event |
+               Con_Io.Timer_Event | Con_Io.Signal_Event | Con_Io.Wakeup_Event =>
+            null;
+        end case;
         Show_Clock;
         Con_Io.Move (1, Col, W1);
         Con_Io.Put_Then_Get (Str(1..Width), Last, Stat, Pos, Ins,

@@ -258,7 +258,7 @@ package body Nav_Screen is
         when Con_Io.Esc | Con_Io.Timeout | Con_Io.Full | Con_Io.Mouse_Button
            | Con_Io.Break | Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown
            | Con_Io.Ctrl_Up   | Con_Io.Ctrl_Down
-           | Con_Io.Ctrl_Left | Con_Io.Ctrl_Right =>
+           | Con_Io.Ctrl_Left | Con_Io.Ctrl_Right | Con_Io.Selection =>
           null;
         when Con_Io.Left | Con_Io.Stab =>
           if Cur_Action /= Operation'First then
