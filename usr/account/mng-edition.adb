@@ -467,6 +467,7 @@ package body Edition is
 
   -- Cursor is set after the last significant (non space) character
   function Set_Cursor (Field : Afpx.Field_Range;
+                       Col : Con_Io.Full_Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Wide_String) return Con_Io.Full_Col_Range is
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;

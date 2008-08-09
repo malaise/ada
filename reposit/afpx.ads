@@ -226,13 +226,16 @@ package Afpx is
   -- Call back called by Put_Then_Get when entering a new get field:
   -- Given the field no, the reason for entering field (see Con_Io)
   type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
+  --  given the cursor col when this is a Mouse click
   --  and given the content of the get field as by Decode_Field (Row => 0)
   --  the client specifies the column of the cursor.
-  -- If the value returned is bigger then Str'Length - 1,
+  -- If the value returned is bigger than Str'Length - 1,
   --  then Str'Length - 1 is used.
-  -- If no callback is provided, then 0 is used.
+  -- If no callback is provided, then cursor is set to end of field if Left and
+  --  start of field otherwise.
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
+                 Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Wide_String) return Con_Io.Full_Col_Range;
 
@@ -277,6 +280,7 @@ package Afpx is
                           Redisplay     : in Boolean := False;
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
+                 Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Wide_String) return Con_Io.Full_Col_Range := null);
 
