@@ -30,6 +30,7 @@ package body Af_Ptg is
 
   -- Field and Col of selection request
   Selection_Field : Afpx_Typ.Field_Range;
+  Selection_Insert : Boolean;
   Selection_Col : Con_Io.Full_Col_Range;
 
   -- Sets Foreground and background according to state
@@ -101,7 +102,10 @@ package body Af_Ptg is
     end loop;
   end Erase_Field;
 
-  function Valid_Click (List_Present : in Boolean) return Boolean is
+  function Valid_Click (List_Present : Boolean;
+                        Cursor_Field : Afpx_Typ.Absolute_Field_Range;
+                        Insert       : Boolean) return Boolean is
+
     Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
     Click_Pos : Af_Con_Io.Full_Square;
     Valid : Boolean;
@@ -125,19 +129,18 @@ package body Af_Ptg is
         elsif Mouse_Status.Button = Af_Con_Io.Down then
           Af_List.Update (Down);
         end if;
-      elsif Mouse_Status.Button = Middle then
-        -- Handle paste here: Click in middle in get field
-        for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
-          if Af_Dscr.Fields(I).Kind = Afpx_Typ.Get  and then
-             Af_Dscr.Fields(I).Activated            and then
-             not Af_Dscr.Fields(I).Isprotected      and then
-             In_Field_Absolute(I, Click_Pos) then
-             Selection_Field := I;
-             Selection_Col := Click_Pos.Col - Af_Dscr.Fields(I).Upper_Left.Col;
-             Af_Con_Io.Request_Selection;
-            exit;
-          end if;
-        end loop;
+      elsif Mouse_Status.Button = Middle
+      and then Mouse_Status.Status = Af_Con_Io.Pressed
+      and then Af_Dscr.Fields(Cursor_Field).Kind = Afpx_Typ.Get
+      and then Af_Dscr.Fields(Cursor_Field).Activated
+      and then not Af_Dscr.Fields(Cursor_Field).Isprotected
+      and then In_Field_Absolute(Cursor_Field, Click_Pos) then
+        -- Handle paste here: Click in middle of current get field
+        Selection_Field := Cursor_Field;
+        Selection_Insert := Insert;
+        Selection_Col := Click_Pos.Col
+                       - Af_Dscr.Fields(Cursor_Field).Upper_Left.Col;
+        Af_Con_Io.Request_Selection;
       end if;
     end if;
     return Valid;
@@ -178,6 +181,8 @@ package body Af_Ptg is
   -- Get selection is left to be achieved (restoring previous and setting
   --  new color)
   procedure Handle_Click (List_Present : in Boolean;
+                          Cursor_Field : in Afpx_Typ.Absolute_Field_Range;
+                          Insert : in Boolean;
                           Result : out Mouse_Action_Rec) is
     Cursor_Pos : constant Af_Con_Io.Square := Af_Con_Io.Position;
     Valid_Field : Boolean;
@@ -200,7 +205,7 @@ package body Af_Ptg is
 
     -- Result event discarded
     Result := (Kind => Afpx_Typ.Put);
-    if not Valid_Click (List_Present) then
+    if not Valid_Click (List_Present, Cursor_Field, Insert) then
       return;
     end if;
 
@@ -329,6 +334,74 @@ package body Af_Ptg is
     Af_Con_Io.Move (Cursor_Pos);
   end Handle_Click;
 
+  -- Get and past selection (if any) in Selection_Field
+  --  and at Selection_Col
+  -- Return -2 if selection failed (no change)
+  -- Return -1 if end of field reached
+  -- Otherwise return the new cursor col
+  Sel_No_Change : constant Integer := -2;
+  Sel_New_Field : constant Integer := -1;
+  function Handle_Selection (Insert : in Boolean) return Integer is
+    Selection : constant String
+              := Af_Con_Io.Get_Selection (Af_Con_Io.Full_Col_Range'Last + 1);
+    -- Field and its initial content
+    Field : constant Afpx_Typ.Field_Rec
+          := Af_Dscr.Fields(Selection_Field);
+    Str : Wide_String (1 .. Field.Width)
+        := Af_Dscr.Chars
+              (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
+    Available : Natural;
+    Result : Integer;
+  begin
+    if Selection = "" then
+      -- No selection
+      return Sel_No_Change;
+    end if;
+    -- Amount of available columns remaining in field (for pasting selection)
+    Available := Field.Width - Selection_Col;
+    declare
+      Sel : constant Wide_String := Language.String_To_Wide (Selection);
+    begin
+      if Sel'Length >= Available then
+        -- Cursor will leave field (including when Sel'Length >= Available):
+        --  insert Available characters
+        Str(Selection_Col + 1 .. Selection_Col + Available)
+           := Sel(Sel'First .. Sel'First + Available - 1);
+        Result := Sel_New_Field;
+      else
+        -- Cursor will remain in field, insert Sel
+        if Selection_Insert then
+          -- Insert Sel: Overwrite up to Width with Sel and a Tail
+          declare
+            Tail : constant Wide_String
+                 := Str(Selection_Col + 1 ..
+                        Selection_Col + Available - Sel'Length);
+          begin
+            Str(Selection_Col + 1 .. Field.Width) := Sel & Tail;
+          end;
+        else
+          -- Overwrite Sel'Lenght characters of Str
+          Str(Selection_Col + 1 .. Selection_Col + Sel'Length) := Sel;
+          Result := Selection_Col + Sel'Length;
+        end if;
+        Result := Selection_Col + Sel'Length;
+        -- Remain in field
+        if Result > Field.Width then
+          Result := Field.Width - 1;
+        end if;
+      end if;
+    end;
+
+    -- 'Encode' new content
+    Af_Dscr.Chars(Field.Char_Index .. Field.Char_Index + Field.Width - 1)
+                 := Str;
+    Af_Dscr.Current_Dscr.Modified := True;
+    return Result;
+  exception
+    when others =>
+      return Sel_No_Change;
+  end Handle_Selection;
+
   -- Call the user callback to get cursor col
   function Get_Cursor_Col (
                  Field_No : Afpx_Typ.Field_Range;
@@ -396,6 +469,7 @@ package body Af_Ptg is
     Background : Con_Io.Effective_Basic_Colors;
     Done : Boolean;
     Need_Redisplay : Boolean;
+    Selection_Result : Integer;
 
     use Afpx_Typ;
     use type Af_Con_Io.Curs_Mvt;
@@ -606,19 +680,30 @@ package body Af_Ptg is
           Insert := False;
           Done := True;
         when Af_Con_Io.Selection =>
-          -- @@@ Get and past selection (if any) in Selection_Field
-          --  and at Selection_Col
-          declare
-            Dummy_Str : constant String
-                      := Af_Con_Io.Get_Selection (0);
-          begin
-            null;
-          end;
+          -- Paste selection
+          if Get_Active  then
+            Selection_Result := Handle_Selection (Insert);
+            if Selection_Result = Sel_New_Field then
+              -- Selection completed the field
+              -- Restore normal color of previous field
+              Put_Field (Cursor_Field, Normal);
+              Cursor_Field := Next_Get_Field (Cursor_Field);
+              Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                            Af_Con_Io.Col_Range'First,
+                                            Af_Dscr.Fields(Cursor_Field),
+                                            Right_Full, Cursor_Col_Cb);
+              New_Field := True;
+              Insert := False;
+            elsif Selection_Result /= Sel_No_Change then
+              -- Selection moved the cursor
+              Cursor_Col := Selection_Result;
+            end if;
+          end if;
         when Af_Con_Io.Mouse_Button =>
           declare
             Click_Result : Mouse_Action_Rec;
           begin
-            Handle_Click (List_Present, Click_Result);
+            Handle_Click (List_Present, Cursor_Field, Insert, Click_Result);
             case Click_Result.Kind is
               when Afpx_Typ.Put =>
                 null;
