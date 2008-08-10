@@ -1177,9 +1177,9 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   function X_Get_Selection (Line_Id : Line;
-                             Max_Len : Natural) return String is
+                            Max_Len : Natural) return String is
     Line_For_C_Id : Line_For_C;
-    Buffer  : String (1 .. Max_Len);
+    Buffer  : String (1 .. Max_Len + 1);
     Res : Boolean;
   begin
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
