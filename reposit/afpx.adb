@@ -182,6 +182,7 @@ package body Afpx is
                    Get_Active    : in Boolean;
                    Cursor_Col_Cb : access
       function (Cursor_Field : Field_Range;
+                New_Field : Boolean;
                 Cursor_Col : Con_Io.Full_Col_Range;
                 Enter_Field_Cause : Enter_Field_Cause_List;
                 Str : Wide_String) return Con_Io.Full_Col_Range := null);
@@ -742,6 +743,7 @@ package body Afpx is
                           Redisplay     : in Boolean := False;
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
+                 New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Wide_String) return Con_Io.Full_Col_Range := null) is

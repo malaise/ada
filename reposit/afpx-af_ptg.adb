@@ -110,19 +110,7 @@ package body Af_Ptg is
         := Af_Dscr.Chars
               (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
   begin
-    for I in reverse Str'Range loop
-      if Str(I) /= ' ' then
-        if I /= Str'Last then
-          -- I -> return col of I+1
-          return I;
-        else
-          -- All are significant -> return last col
-          return I - 1;
-        end if;
-      end if;
-    end loop;
-    -- None are significant
-    return 0;
+    return Last_Index (Str, True);
   end Last_Col;
 
   function Valid_Click (List_Present : Boolean;
@@ -435,15 +423,17 @@ package body Af_Ptg is
   -- Call the user callback to get cursor col
   function Get_Cursor_Col (
                  Field_No : Afpx_Typ.Field_Range;
+                 New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
-                 Field : Afpx_Typ.Field_Rec;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Cursor_Col_Cb : access
     function (Cursor_Field : Field_Range;
+              New_Field : Boolean;
               Cursor_Col : Con_Io.Full_Col_Range;
               Enter_Field_Cause : Enter_Field_Cause_List;
               Str : Wide_String) return Con_Io.Full_Col_Range)
   return Af_Con_Io.Full_Col_Range is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields (Field_No);
     Result : Af_Con_Io.Col_Range;
     Signif_Col : Af_Con_Io.Full_Col_Range;
   begin
@@ -455,13 +445,14 @@ package body Af_Ptg is
           return Con_Io.Full_Col_Range'First;
         when Left =>
           -- Last significant col if Left
-          Signif_Col := Last_Col (Selection_Field);
+          Signif_Col := Last_Col (Field_No);
           return Signif_Col;
         when Mouse =>
-          -- Set cursor where clicked if there is a significant char
-          --  otherwise set it just after last significant char
-          Signif_Col := Last_Col (Selection_Field);
-          if Cursor_Col > Signif_Col then
+          -- When click in new field set cursor where clicked if there is a
+          --  significant char otherwise set it just after last significant char
+          -- When same field, set cursor where clicked
+          Signif_Col := Last_Col (Field_No);
+          if New_Field and then Cursor_Col > Signif_Col then
             return Signif_Col;
           else
             return Cursor_Col;
@@ -476,6 +467,7 @@ package body Af_Ptg is
               (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
     begin
       Result := Cursor_Col_Cb (Afpx.Field_Range(Field_No),
+                               New_Field,
                                Cursor_Col,
                                Enter_Field_Cause,
                                Str);
@@ -499,6 +491,7 @@ package body Af_Ptg is
                  Get_Active    : in Boolean;
                  Cursor_Col_Cb : access
       function (Cursor_Field : Field_Range;
+                New_Field : Boolean;
                 Cursor_Col : Con_Io.Full_Col_Range;
                 Enter_Field_Cause : Enter_Field_Cause_List;
                 Str : Wide_String) return Con_Io.Full_Col_Range := null) is
@@ -657,8 +650,8 @@ package body Af_Ptg is
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
             Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          True,
                                           Af_Con_Io.Col_Range'First,
-                                          Af_Dscr.Fields(Cursor_Field),
                                           Right_Full, Cursor_Col_Cb);
             New_Field := True;
             Insert := False;
@@ -670,8 +663,8 @@ package body Af_Ptg is
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Next_Get_Field (Cursor_Field);
             Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          True,
                                           Af_Con_Io.Col_Range'First,
-                                          Af_Dscr.Fields(Cursor_Field),
                                           Tab, Cursor_Col_Cb);
             New_Field := True;
             Insert := False;
@@ -683,8 +676,8 @@ package body Af_Ptg is
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
             Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          True,
                                           Af_Con_Io.Col_Range'First,
-                                          Af_Dscr.Fields(Cursor_Field),
                                           Left, Cursor_Col_Cb);
             New_Field := True;
             Insert := False;
@@ -696,8 +689,8 @@ package body Af_Ptg is
             Put_Field (Cursor_Field, Normal);
             Cursor_Field := Prev_Get_Field (Cursor_Field);
             Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          True,
                                           Af_Con_Io.Col_Range'First,
-                                          Af_Dscr.Fields(Cursor_Field),
                                           Stab, Cursor_Col_Cb);
             New_Field := True;
             Insert := False;
@@ -732,8 +725,8 @@ package body Af_Ptg is
               Put_Field (Cursor_Field, Normal);
               Cursor_Field := Next_Get_Field (Cursor_Field);
               Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                            True,
                                             Af_Con_Io.Col_Range'First,
-                                            Af_Dscr.Fields(Cursor_Field),
                                             Right_Full, Cursor_Col_Cb);
               New_Field := True;
               Insert := False;
@@ -756,17 +749,18 @@ package body Af_Ptg is
                   Put_Field (Cursor_Field, Normal);
                   -- Change field
                   Cursor_Field := Click_Result.Get_Field_No;
+                  -- Update cursor col
                   Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                                True,
                                                 Click_Result.Click_Col,
-                                                Af_Dscr.Fields(Cursor_Field),
                                                 Mouse, Cursor_Col_Cb);
                   New_Field := True;
                   Insert := False;
-                elsif Cursor_Col_Cb /= null then
-                  -- Same field but a Cb is set, call it
+                else
+                  -- Same field, update cursor col
                   Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                                False,
                                                 Click_Result.Click_Col,
-                                                Af_Dscr.Fields(Cursor_Field),
                                                 Mouse, Cursor_Col_Cb);
                 end if;
               when Afpx_Typ.Button =>

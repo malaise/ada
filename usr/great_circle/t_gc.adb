@@ -40,6 +40,7 @@ procedure T_Gc is
 
   -- Clear result fields during input
   function Next_Field_Cb (Cursor_Field : Afpx.Field_Range;
+                          New_Field : Boolean;
                           Cursor_Col : Con_Io.Full_Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
                           Str : Wide_String) return Con_Io.Full_Col_Range is

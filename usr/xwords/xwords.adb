@@ -143,45 +143,6 @@ procedure Xwords is
     end if;
   end Do_Recall;
 
-  function Cursor_Cb (Cursor_Field : Afpx.Field_Range;
-                     Cursor_Col : Con_Io.Full_Col_Range;
-                     Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
-                     Str : Wide_String) return Con_Io.Full_Col_Range is
-    use type Afpx.Enter_Field_Cause_List;
-    Last_Index : Con_Io.Full_Col_Range;
-    Col : Con_Io.Full_Col_Range;
-  begin
-    if Enter_Field_Cause = Afpx.Tab
-    or else Enter_Field_Cause = Afpx.Right_Full then
-      -- First pos
-      return Con_Io.Full_Col_Range'First;
-    elsif Enter_Field_Cause = Afpx.Mouse then
-      -- Move where clicked
-      Col := Cursor_Col;
-    else
-      -- Stab or Left
-      -- Last significant char
-      Col := Str'Last - 1;
-    end if;
-    -- Locate last significant char and move just after it
-    Last_Index := 0;
-    for I in reverse Str'Range loop
-      if Str(I) /= ' ' then
-        Last_Index := I;
-        exit;
-      end if;
-    end loop;
-    if Last_Index = Str'Last then
-      Last_Index := Last_Index - 1;
-    end if;
-    -- Move to last significant char if Col is after it
-    if Col > Last_Index then
-      Col := Last_Index;
-    end if;
-    return Col;
-  end Cursor_Cb;
-
-
   use type Afpx.Field_Range;
 begin
   -- Parse option for Log
@@ -214,8 +175,7 @@ begin
 
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Wide_Field (Get_Fld, 0), True);
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay,
-                       Cursor_Cb'Unrestricted_Access);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
 
     case Ptg_Result.Event is
