@@ -466,8 +466,9 @@ package body Edition is
   end Validate;
 
   -- Cursor is set after the last significant (non space) character
+  -- Not used because using default Afpx behaviour
   function Set_Cursor (Field : Afpx.Field_Range;
-                       Col : Con_Io.Full_Col_Range;
+                       Col   : Con_Io.Full_Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Wide_String) return Con_Io.Full_Col_Range is
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
@@ -560,7 +561,7 @@ package body Edition is
       One_Edit:
       loop
         Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert,
-                          Ptg_Result, Redisplay, Set_Cursor'Access);
+                          Ptg_Result, Redisplay);
         Redisplay := False;
         case Ptg_Result.Event is
 
