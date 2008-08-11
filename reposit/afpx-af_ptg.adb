@@ -31,7 +31,7 @@ package body Af_Ptg is
   -- Field and Col of selection request
   Selection_Field : Afpx_Typ.Field_Range;
   Selection_Insert : Boolean;
-  Selection_Col : Con_Io.Full_Col_Range;
+  Selection_Col : Af_Con_Io.Full_Col_Range;
 
   -- Sets Foreground and background according to state
   procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
@@ -102,12 +102,36 @@ package body Af_Ptg is
     end loop;
   end Erase_Field;
 
+  -- Col after last non space character of a field (or last col)
+  function Last_Col (Field_No :  Afpx_Typ.Field_Range)
+           return Af_Con_Io.Full_Col_Range is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
+    Str : Wide_String (1 .. Field.Width)
+        := Af_Dscr.Chars
+              (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
+  begin
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' then
+        if I /= Str'Last then
+          -- I -> return col of I+1
+          return I;
+        else
+          -- All are significant -> return last col
+          return I - 1;
+        end if;
+      end if;
+    end loop;
+    -- None are significant
+    return 0;
+  end Last_Col;
+
   function Valid_Click (List_Present : Boolean;
                         Cursor_Field : Afpx_Typ.Absolute_Field_Range;
                         Insert       : Boolean) return Boolean is
 
     Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
     Click_Pos : Af_Con_Io.Full_Square;
+    Signif_Col : Af_Con_Io.Full_Col_Range;
     Valid : Boolean;
     use Af_Con_Io;
     use type Afpx_Typ.Field_Kind_List;
@@ -138,8 +162,14 @@ package body Af_Ptg is
         -- Handle paste here: Click in middle of current get field
         Selection_Field := Cursor_Field;
         Selection_Insert := Insert;
+        -- Insert where clicked if there is a significant char
+        --  otherwise insert after last significant char
         Selection_Col := Click_Pos.Col
                        - Af_Dscr.Fields(Cursor_Field).Upper_Left.Col;
+        Signif_Col := Last_Col (Selection_Field);
+        if Selection_Col > Signif_Col then
+          Selection_Col := Signif_Col;
+        end if;
         Af_Con_Io.Request_Selection;
       end if;
     end if;
@@ -415,15 +445,27 @@ package body Af_Ptg is
               Str : Wide_String) return Con_Io.Full_Col_Range)
   return Af_Con_Io.Full_Col_Range is
     Result : Af_Con_Io.Col_Range;
+    Signif_Col : Af_Con_Io.Full_Col_Range;
   begin
     -- Call Cb if set
     if Cursor_Col_Cb = null then
-      -- End of field if Left, Start of field otherwise
-      if Enter_Field_Cause = Left then
-         return Field.Width - 1;
-      else
-        return 0;
-      end if;
+      case Enter_Field_Cause is
+        when Right_Full | Tab | Stab=>
+          -- Start of field if Right_Full, Tab or Stab
+          return Con_Io.Full_Col_Range'First;
+        when Left =>
+          -- End of field if Left
+          return Field.Width - 1;
+        when Mouse =>
+          -- Set cursor where clicked if there is a significant char
+          --  otherwise set it just after last significant char
+          Signif_Col := Last_Col (Selection_Field);
+          if Cursor_Col > Signif_Col then
+            return Signif_Col;
+          else
+            return Cursor_Col;
+          end if;
+      end case;
     end if;
     -- The user Cb will appreciate a string (1 .. Len)
     --  so make a local copy
