@@ -198,7 +198,7 @@ package body Game is
         when Screen.Timeout =>
           -- Should not occure
           null;
-        when Screen.Other_Key =>
+        when Screen.Other_Key | Screen.Left_Key | Screen.Right_Key =>
           -- Any other key: go on and return game status
           if Is_Landed (Flight_Status.Status) then
             return Landed;
