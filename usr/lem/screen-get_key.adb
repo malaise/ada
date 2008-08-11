@@ -12,7 +12,9 @@ function Get_Key (Wait : in Duration) return Got_List is
   Pos    : Positive;
   Insert : Boolean;
   Time_Out : Con_Io.Delay_Rec;
-  use type Ada.Calendar.Time;
+  Mouse_Status : Con_Io.Mouse_Event_Rec;
+  use type Ada.Calendar.Time,
+           Con_Io.Mouse_Button_Status_List, Con_Io.Mouse_Button_List;
 begin
   -- Compute expiration time
   if Wait >= 0.0 then
@@ -53,6 +55,19 @@ begin
         return Timeout;
       when Con_Io.Refresh =>
         return Refresh;
+      when Con_Io.Mouse_Button =>
+        Con_Io.Get_Mouse_Event (Mouse_Status);
+        if Mouse_Status.Status = Con_Io.Pressed then
+          if Mouse_Status.Button = Con_Io.Up then
+            return Up_Key;
+          elsif Mouse_Status.Button = Con_Io.Down then
+            return Down_Key;
+          elsif Mouse_Status.Button = Con_Io.Left then
+            return Left_Key;
+          elsif Mouse_Status.Button = Con_Io.Right then
+            return Right_Key;
+          end if;
+        end if;
       when others =>
         null;
     end case;
