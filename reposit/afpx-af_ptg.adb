@@ -454,8 +454,9 @@ package body Af_Ptg is
           -- Start of field if Right_Full, Tab or Stab
           return Con_Io.Full_Col_Range'First;
         when Left =>
-          -- End of field if Left
-          return Field.Width - 1;
+          -- Last significant col if Left
+          Signif_Col := Last_Col (Selection_Field);
+          return Signif_Col;
         when Mouse =>
           -- Set cursor where clicked if there is a significant char
           --  otherwise set it just after last significant char
