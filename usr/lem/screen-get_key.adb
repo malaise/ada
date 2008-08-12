@@ -1,4 +1,3 @@
-with Ada.Calendar;
 with Timers;
 separate (Screen)
 
@@ -13,6 +12,10 @@ function Get_Key (Wait : in Duration) return Got_List is
   Insert : Boolean;
   Time_Out : Con_Io.Delay_Rec;
   Mouse_Status : Con_Io.Mouse_Event_Rec;
+  Prev_Action : Repeat_Action_List;
+  Prev_Time : Ada.Calendar.Time;
+  Now : Ada.Calendar.Time;
+  Delta_Double : constant Duration := 0.5;
   use type Ada.Calendar.Time,
            Con_Io.Mouse_Button_Status_List, Con_Io.Mouse_Button_List;
 begin
@@ -26,9 +29,16 @@ begin
                  Period => Timers.No_Period,
                  Delay_Seconds => Timers.Infinite_Seconds);
   end if;
+  -- Values before loop, for check
+  Prev_Action := Prev_Click_Action;
+  Prev_Time := Prev_Click_Time;
   loop
     -- Get key
     Con_Io.Get (Str, Last, Stat, Pos, Insert, Time_Out => Time_Out);
+    Now := Ada.Calendar.Clock;
+    -- (Default) values for return
+    Prev_Click_Action := None;
+    Prev_Click_Time := Now;
     -- Map
     case Stat is
       when Con_Io.Up =>
@@ -52,8 +62,12 @@ begin
       when Con_Io.Esc | Con_Io.Break =>
         return Break;
       when Con_Io.Timeout =>
+        Prev_Click_Action := Prev_Action;
+        Prev_Click_Time := Prev_Time;
         return Timeout;
       when Con_Io.Refresh =>
+        Prev_Click_Action := Prev_Action;
+        Prev_Click_Time := Prev_Time;
         return Refresh;
       when Con_Io.Mouse_Button =>
         Con_Io.Get_Mouse_Event (Mouse_Status);
@@ -63,9 +77,21 @@ begin
           elsif Mouse_Status.Button = Con_Io.Down then
             return Down_Key;
           elsif Mouse_Status.Button = Con_Io.Left then
-            return Left_Key;
+            Prev_Click_Action := Left_Key;
+            if Prev_Action = Left_Key
+            and then Now - Prev_Time <= Delta_Double then
+              return Super_Left_Key;
+            else
+              return Left_Key;
+            end if;
           elsif Mouse_Status.Button = Con_Io.Right then
-            return Right_Key;
+            Prev_Click_Action := Right_Key;
+            if Prev_Action = Right_Key
+            and then Now - Prev_Time <= Delta_Double then
+              return Super_Right_Key;
+            else
+              return Right_Key;
+            end if;
           end if;
         end if;
       when others =>

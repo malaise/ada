@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Calendar;
 with My_Math, Normal;
 with Moon, Debug;
 package body Screen is
@@ -413,6 +413,9 @@ package body Screen is
   end Put_End;
 
   -- Get a key
+  type Repeat_Action_List is (Right_Key, Left_Key, None);
+  Prev_Click_Action : Repeat_Action_List := None;
+  Prev_Click_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
   function Get_Key (Wait : in Duration) return Got_List is separate;
 
   -- Check if two heights are the same on screen
