@@ -452,7 +452,7 @@ package body Af_Ptg is
           --  significant char otherwise set it just after last significant char
           -- When same field, set cursor where clicked
           Signif_Col := Last_Col (Field_No);
-          if New_Field and then Cursor_Col > Signif_Col then
+          if Cursor_Col > Signif_Col then
             return Signif_Col;
           else
             return Cursor_Col;
