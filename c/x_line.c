@@ -19,7 +19,7 @@
 #define STD_SUFFIX_NAME     ":0.0"
 
 const char *selection_type_names[NB_SELECTION_TYPES] =
-   {"UTF8_STRING", "COMPOUND_TEXT", "STRING", "TEXT"};
+   {"UTF8_STRING", "STRING", "TEXT"};
 
 t_window *list_window[NBRE_MAX_WINDOW];
 static int nbre_window = 0;
@@ -156,9 +156,13 @@ Window x_window;
 
     /* Initialise Atoms of supported PRIMARY clipborad formats */
     for (i = 0; i < NB_SELECTION_TYPES; i++) {
-      selection_types[i] = XInternAtom (local_server.x_server,
+      local_server.selection_types[i] = XInternAtom (local_server.x_server,
                              selection_type_names[i], True);
     }
+
+    /* Declare/store Atom for receiving selection */
+    local_server.select_code = XInternAtom (local_server.x_server,
+                                            "X_MNG_SELECTION", False);
 
     /* Ok */
     return (True);
@@ -243,7 +247,7 @@ Status res;
     p_window->tid_x = 0;
     p_window->tid_y = 0;
     p_window->selection = NULL;
-    p_window->selection_code = None;
+    p_window->select_index = SELEC_NONE;
 
     /* Graphic context of the window */
     {

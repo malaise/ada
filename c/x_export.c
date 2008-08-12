@@ -77,12 +77,18 @@ static int timeout_to_ms (timeout_t *p_time) {
 /***** Event management *****/
 static void x_clear_in_selection (t_window *win_id ) {
     /* Clean previous in selection */
-    if (win_id->selection_code != None) {
+    if (win_id->select_index >= SELEC_STORED) {
         XDeleteProperty (win_id->server->x_server,
                          win_id->x_window,
-                         win_id->selection_code);
-        win_id->selection_code = None;
+                         win_id->server->select_code);
+        win_id->select_index = SELEC_NONE;
     }
+}
+static void x_request_in_selection (t_window *win_id ) {
+    /* Request a selection with a type */
+    (void) XConvertSelection (win_id->server->x_server, XA_PRIMARY,
+        win_id->server->selection_types[win_id->select_index],
+        win_id->server->select_code, win_id->x_window, CurrentTime);
 }
 
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
@@ -975,22 +981,42 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           break; /* Next Event */
         }
         /* Check that the requested type (target) is one of the supported */
+#ifdef DEBUG
+        {
+          char *str = XGetAtomName(local_server.x_server,
+                                   event.xselectionrequest.target);
+          printf ("X_PROCESS_EVENT : Selection request of target %s\n", str);
+          XFree (str);
+        }
+#endif
         found = FALSE;
         for (i = 0; i < NB_SELECTION_TYPES; i++) {
-          if (event.xselectionrequest.target == selection_types[i]) {
+          if (event.xselectionrequest.target ==
+                     local_server.selection_types[i]) {
             found = TRUE;
             break;
           }
         }
         if (found && (win_id->selection != NULL) ) {
-          /* Store selection in property */
-          (void) XChangeProperty (local_server.x_server,
-                   event.xselectionrequest.requestor,
-                   event.xselectionrequest.property,
-                   event.xselectionrequest.target,
-                   8, PropModeReplace,
-                   (unsigned char *)win_id->selection,
-                   (int) strlen(win_id->selection)+1);
+          char *str = malloc (strlen(win_id->selection)+1);
+          if (str != NULL) {
+            if (i == 0) {
+              /* UTF8_STRING requested */
+              strcpy (str, win_id->selection);
+            } else {
+              /* Non UTF8 string or text requested */
+              utf82ascii (win_id->selection, str);
+            }
+            /* Store selection in property */
+            (void) XChangeProperty (local_server.x_server,
+                     event.xselectionrequest.requestor,
+                     event.xselectionrequest.property,
+                     event.xselectionrequest.target,
+                     8, PropModeReplace,
+                     (unsigned char *)str,
+                     (int) strlen(str)+1);
+            free (str);
+          }
         } else {
           /* No selection available */
           found = FALSE;
@@ -1026,12 +1052,25 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           break; /* Next Event */
         }
         if (event.xselection.property == None) {
-          /* Selection transfer failed */
-          x_clear_in_selection (win_id);
+          /* Selection transfer failed  for this target type */
+          (win_id->select_index)++;
+          if (win_id->select_index < NB_SELECTION_TYPES) {
+            /* Try next target ype */
+            x_request_in_selection (win_id);
+          } else {
+            /* No more supported target types => failed */
+            win_id->select_index = SELEC_NONE;
+            *p_line_id = (void*) win_id;
+            *p_kind = SELECTION;
+            result = OK;
+          }
+        } else {
+          /* Success */
+          (win_id->select_index) += SELEC_STORED;
+          *p_line_id = (void*) win_id;
+          *p_kind = SELECTION;
+          result = OK;
         }
-        *p_line_id = (void*) win_id;
-        *p_kind = SELECTION;
-        result = OK;
       break;
       default :
         /* Other events discarded */
@@ -1200,20 +1239,18 @@ extern int x_set_selection (void *line_id, const char *selection) {
      return (OK);
 }
 
+
 /* Request a SELECTION event */
 extern int x_request_selection (void *line_id) {
     t_window *win_id = (t_window*) line_id;
     if (win_id == NULL) return (ERR);
 
-    /* Clean previous selection */
+    /* Clean previous selection if any */
     x_clear_in_selection (win_id);
 
-    /* Declare/store Atom receiving selection */
-    win_id->selection_code = XInternAtom (win_id->server->x_server,
-                                          "X_MNG_SELECTION", False);
-    /* Request */
-    (void) XConvertSelection (win_id->server->x_server, XA_PRIMARY, XA_STRING,
-        win_id->selection_code, win_id->x_window, CurrentTime);
+    /* Request with first possible target type */
+    win_id->select_index = 0;
+    x_request_in_selection (win_id);
     return (OK);
 }
 
@@ -1227,20 +1264,18 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
     unsigned long nitems_return, offset_return;
     char *data;
     
-
-
     if (win_id == NULL) return (ERR);
     if (p_selection == NULL) return (ERR);
-    if (win_id->selection_code == None) return (ERR);
+    if (win_id->select_index < SELEC_STORED) return (ERR);
 
     /* Get the selection (delete it) */
     res = XGetWindowProperty (win_id->server->x_server, win_id->x_window,
-            win_id->selection_code,
+            win_id->server->select_code,
             0L, (long)len,
-            True, XA_STRING,
+            True, (win_id->select_index) % SELEC_STORED,
             &type_return, &format_return, &nitems_return, &offset_return,
             (unsigned char **)&data);
-    win_id->selection_code = None;
+    win_id->select_index = SELEC_NONE;
     if (res != Success) {
       x_clear_in_selection (win_id);
       return ERR;

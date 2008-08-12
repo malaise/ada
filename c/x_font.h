@@ -21,6 +21,12 @@ int fon_get_offset(XFontStruct *font);
 
 /* Gives the index of the bold font of a font*/
 int fon_get_bold (int font);
+
+/* Gives the number of characters of an UTF-8 sequence */
+int fon_nb_chars (char first_char);
+/* Convert UTF-8 to plain ASCII. Ascii will not be longer that utf8, */
+void utf82ascii (char *utf8, char *ascii);
+
 #endif
 /* _X_FONT_H */
 

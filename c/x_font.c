@@ -114,3 +114,43 @@ int fon_get_bold (int font) {
     return (font + 1);
 }
 
+/* Gives the number of characters of an UTF-8 sequence */
+int fon_nb_chars (char first_char) {
+  const unsigned char c = (unsigned char) first_char;
+  if      ((c & 0x80) == 0) return 1;    /* Normal ASCII */
+  else if ((c & 0x40) == 0) return 0;    /* Invalid */
+  else if ((c & 0x20) == 0) return 2;
+  else if ((c & 0x10) == 0) return 3;
+  else if ((c & 0x01) == 0) return 4;
+  else return 0;
+}
+
+/* Convert UTF-8 to plain ASCII. Ascii will not be longer that utf8, */
+#define DEF_CHAR '#'
+void utf82ascii (char *utf8, char *ascii) {
+
+  int n;
+  char *ps, *pd;
+
+  ps = utf8;
+  pd = ascii;
+  for (;;) {
+    /* Number of UTF-8 bytes for current char */
+    n = fon_nb_chars (*ps);
+    if (n == 0) {
+      /* Invalid */
+      *ascii = '\0';
+      return;
+    } else if (n == 1) {
+      /* Plain ASCII */
+      *pd = *ps;
+    } else {
+      /* Non ASCII */
+      *pd = DEF_CHAR;
+    }
+    if (*ps == '\0') return;
+    ps += n;
+    pd++;
+  }
+}
+

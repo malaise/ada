@@ -13,8 +13,7 @@
 #define EVENT_MASK ButtonReleaseMask | ButtonPressMask | KeyPressMask | ExposureMask | EnterWindowMask
 
 /* Number of supported types of XA_PRIMARY clipborad exchanges */
-#define NB_SELECTION_TYPES 4
-Atom selection_types [NB_SELECTION_TYPES];
+#define NB_SELECTION_TYPES 3
 
 typedef struct {
     Display *x_server;
@@ -25,6 +24,8 @@ typedef struct {
     int backing_store;
     Atom wm_protocols_code;
     Atom delete_code;
+    Atom selection_types[NB_SELECTION_TYPES];
+    Atom select_code;
 }t_server;
 
 typedef struct {
@@ -39,6 +40,11 @@ typedef struct {
     unsigned long color_id[MAX_SIZE_TAB_COLOR];
     Colormap colormap;
 }t_screen;
+
+/* Specific values of select_index, other (natural) values
+  are indexes in selection_types */
+#define SELEC_NONE -1
+#define SELEC_STORED 1000  /* Stored index + SELEC_STORED */
 
 typedef struct {
     /* Links */
@@ -70,6 +76,7 @@ typedef struct {
     int tid_y;
     char *selection;
     Atom selection_code;
+    int select_index;
 }t_window;
 
 /* extern for all includer except x_line.c */
