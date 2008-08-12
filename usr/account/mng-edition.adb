@@ -465,29 +465,19 @@ package body Edition is
       return Field;
   end Validate;
 
-  -- Cursor is set after the last significant (non space) character
-  -- Not used because using default Afpx behaviour
+  -- Cursor is set after the last significant (non space) character on Left
+  --  and on first char in all other cases
   function Set_Cursor (Field : Afpx.Field_Range;
+                       New_Field : Boolean;
                        Col   : Con_Io.Full_Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Wide_String) return Con_Io.Full_Col_Range is
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
-    if Field = 36 then
-      -- Reference: always at the end except if end of previous
-      if Cause = Afpx.Right_Full then
-        return 0;
-      else
-        return Afpx.Last_Index (Str, Significant => True);
-      end if;
+    if Cause = Afpx.Left then
+      return Afpx.Last_Index (Str, True);
     else
-      -- Other fields: always at the beginning except if left
-      if Cause /= Afpx.Left then
-        return 0;
-      else
-        return Afpx.Last_Index (Str, Significant => True);
-      end if;
-
+      return Con_Io.Full_Col_Range'First;
     end if;
   end Set_Cursor;
 
@@ -561,7 +551,7 @@ package body Edition is
       One_Edit:
       loop
         Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert,
-                          Ptg_Result, Redisplay);
+                          Ptg_Result, Redisplay, Set_Cursor'Access);
         Redisplay := False;
         case Ptg_Result.Event is
 
