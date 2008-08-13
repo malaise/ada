@@ -144,7 +144,7 @@ package String_Mng is
   function Split (Str       : String;
                   Separator : Character) return Many_Strings.Many_String;
 
-  -- Locate where to cut Str so that is best matches the requested line Length
+  -- Locate where to cut Str so that it best matches the requested line Length
   -- Looks for separator character
   type Separator_Access is access function (Char : Character) return Boolean;
   -- Default Separator function, True for Space and Latin.Ht.
@@ -169,7 +169,9 @@ package String_Mng is
   procedure Copy (Val : in String; To : in out String);
 
   -- Replace occurences of What by By in Str. One pass.
-  function Replace (Str, What, By : String) return String;
+  -- If Skip_Backslashed, use Is_Backslash to detect it and skip
+  function Replace (Str, What, By : String;
+                    Skip_Backslashed : Boolean := False) return String;
 
   -- Return a String (1 .. N)
   function Normalize (Str : String) return String;

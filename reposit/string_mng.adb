@@ -615,7 +615,8 @@ package body String_Mng is
   end Copy;
 
   -- Replace occurences of What by By in Str. One pass.
-  function Replace (Str, What, By : String) return String is
+  function Replace (Str, What, By : String;
+                    Skip_Backslashed: Boolean := False) return String is
     Len : constant Natural := What'Length;
     Last : constant Natural := Str'Last;
     I : Positive;
@@ -633,7 +634,8 @@ package body String_Mng is
         -- Str cannot match any more (not enough chars)
         Ada.Strings.Unbounded.Append (Result, Str(I .. Last));
         exit;
-      elsif Str(I .. I + Len - 1) = What then
+      elsif Str(I .. I + Len - 1) = What
+      and then (not Skip_Backslashed or else not Is_Backslashed (Str, I)) then
         -- Match, replace
         Ada.Strings.Unbounded.Append (Result, By);
         I := I + Len;
