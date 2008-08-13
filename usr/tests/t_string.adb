@@ -266,10 +266,12 @@ begin
             My_Io.Put_Line ("15 Replace");
             My_Io.Put ("What (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
+            My_Io.Put ("Skip_Backslashed (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Replaced string: "
               & String_Mng.Replace (Str(1 .. Str_Len),
                                     What => Str1(1 .. Nat1),
-                                    By => Str2(1 .. Nat2)));
+                                    By => Str2(1 .. Nat2),
+                                    Skip_Backslashed => Bool1) );
           when 16 =>
             My_Io.Put_Line ("16 Normalize");
             declare
