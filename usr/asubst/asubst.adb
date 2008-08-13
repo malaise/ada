@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V6.0";
+  Version : constant String  := "V6.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -63,7 +63,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
     Sys_Calls.Put_Line_Error (
-     "    -x or --noregex for <find_pattern> being considered as a single string,");
+     "    -x or --noregex for <find_pattern> being considered as string(s),");
     Sys_Calls.Put_Line_Error (
      "    -- to stop options.");
     Sys_Calls.Put_Line_Error (
@@ -98,9 +98,9 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
     Sys_Calls.Put_Line_Error (
-     "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted,");
+     "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted");
     Sys_Calls.Put_Line_Error (
-     "    ""\n"" is forbidden, and ""\x00"" is allowed (forbidden in a regex).");
+     "    and ""\x00"" is allowed (forbidden in a regex).");
 
     Sys_Calls.Put_Line_Error (
      "  <replace_string> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
@@ -132,7 +132,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "   flow if delimiter is empty). The <find_pattern> must be a simple <regex>");
     Sys_Calls.Put_Line_Error (
-    "    (no '\n', '^' or '$'), and applies to each chunk.");
+    "    (no '^' or '$', but '\n' is allowed), and applies to each chunk.");
     Sys_Calls.Put_Line_Error (
     "    This allows multi-row processing.");
 
@@ -201,7 +201,9 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
-  Delimiter : Ada.Strings.Unbounded.Unbounded_String;
+  Delimiter : Ada.Strings.Unbounded.Unbounded_String
+            := Ada.Strings.Unbounded.To_Unbounded_String
+               (Text_Line.Line_Feed_Str);
   -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
   Found : Boolean;
@@ -493,9 +495,6 @@ begin
       Sys_Calls.Put_Line_Error ("Option delimiter = "
           & Ada.Strings.Unbounded.To_String (Delimiter));
     end if;
-  else
-    -- Default delimiter is Text_Line's Line_Feed
-    Delimiter := Ada.Strings.Unbounded.To_Unbounded_String (Text_Line.Line_Feed_Str);
   end if;
 
   -- Set language (for regexp)

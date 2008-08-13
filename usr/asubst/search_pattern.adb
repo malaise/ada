@@ -163,7 +163,8 @@ package body Search_Pattern is
     end if;
     if Start and then Index = Str'First then
       Error ("Pattern """ & Str & """ cannot begin with """ & Frag & """");
-    elsif not Start and then Index = Str'Last then
+    elsif not Start and then Index = Str'Last
+    and then not String_Mng.Is_Backslashed (Str, Index) then
       Error ("Pattern """ & Str & """ cannot end with """ & Frag & """");
     end if;
   end Check_Bound;
@@ -186,11 +187,12 @@ package body Search_Pattern is
   --  except ^ in first and $ in last post
   procedure Check_In (Str : in String; Extended : in Boolean) is separate;
 
-  -- Parses a pattern
+  -- Parses a pattern (splits it or not in several items of List)
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse_One (Pattern : in String;
                        Extended, Case_Sensitive, Is_Regex : in Boolean;
-                       List : in out Unique_Pattern.List_Type) is
+                       List : in out Unique_Pattern.List_Type;
+                       Split : in Boolean := True) is
 
     The_Pattern : Asu.Unbounded_String;
 
@@ -236,7 +238,7 @@ package body Search_Pattern is
       return Result;
     end Get_Hexa;
 
-    -- Returns character class (e.g. [:alnum:] associated to a key char
+    -- Returns character class (e.g. [:alnum:]) associated to a key char
     --  or "\Key"
     function Char_Class_Of (Key : Character) return String is
     begin
@@ -327,75 +329,95 @@ package body Search_Pattern is
       exit when Stop_Index >= Asu.Length (The_Pattern);
     end loop;
 
-    -- Locate all Line_Feed and split pattern (one per line)
-    Start_Index := 1;
-    Prev_Delim := False;
-    loop
-      Stop_Index := String_Mng.Locate (Asu.To_String (The_Pattern),
-                                       Line_Feed, Start_Index);
-      if Stop_Index = Start_Index then
-        -- A Delim
-        Add ("", Extended, Case_Sensitive, List);
-        Prev_Delim := True;
-      else
-        -- A Regex: see if it is followed by a delim (always except at the end)
-        Next_Delim := Stop_Index /= 0;
-        -- Make Stop_Index be the last index of regex,
-        if Stop_Index = 0 then
-          Stop_Index := Asu.Length (The_Pattern);
+    if Split then
+      -- Locate all Line_Feed and split pattern (one per line)
+      Start_Index := 1;
+      Prev_Delim := False;
+      loop
+        Stop_Index := String_Mng.Locate (Asu.To_String (The_Pattern),
+                                         Line_Feed, Start_Index);
+        if Stop_Index = Start_Index then
+          -- A Delim
+          Add ("", Extended, Case_Sensitive, List);
+          Prev_Delim := True;
         else
-          -- This delim will be located at next iteration of the loop
-          Stop_Index := Stop_Index - 1;
-        end if;
-        declare
-          Slice : constant String
-                := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
-        begin
-          if Is_Regex then
-            -- It must not contain Start_String if preeceded by a delim
-            Check_Bound (Slice, Start_String (Prev_Delim), True);
-            -- It must not contain Stop_String if preeceded by a delim
-            Check_Bound (Slice, Stop_String (Next_Delim), False);
-            -- Add this regex with start/stop strings
-            Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
-               Extended, Case_Sensitive, List);
-            -- It must not contain any significant ^ or $ in the middle
-            Check_In (Slice, Extended);
+          -- A Regex: see if it is followed by a delim (always except at the end)
+          Next_Delim := Stop_Index /= 0;
+          -- Make Stop_Index be the last index of regex,
+          if Stop_Index = 0 then
+            Stop_Index := Asu.Length (The_Pattern);
           else
-            -- Add this regex with no start/stop strings
-            Add (Slice, True, True, List);
+            -- This delim will be located at next iteration of the loop
+            Stop_Index := Stop_Index - 1;
           end if;
-        end;
-        if Is_Regex then
-          -- See if this is a single regex and if it can apply several times
-          --  to one line of input (no ^ not $)
-          if not Prev_Delim
-          and then not Next_Delim
-          and then Asu.Element (The_Pattern, Start_Index) & ""
-                 /= Start_String (True)
-          and then Asu.Element (The_Pattern, Stop_Index) & ""
-                 /= Stop_String (True) then
-            Is_Iterative := True;
-          end if;
-        else
-          -- Same, but only check delimiters (start and stop strings are
-          --  not interpreted)
-          if not Prev_Delim
-          and then not Next_Delim then
-            Is_Iterative := True;
+          declare
+            Slice : constant String
+                  := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
+          begin
+            if Is_Regex then
+              -- It must not contain Start_String if preeceded by a delim
+              Check_Bound (Slice, Start_String (Prev_Delim), True);
+              -- It must not contain Stop_String if preeceded by a delim
+              Check_Bound (Slice, Stop_String (Next_Delim), False);
+              -- Add this regex with start/stop strings
+              Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
+                 Extended, Case_Sensitive, List);
+              -- It must not contain any significant ^ or $ in the middle
+              Check_In (Slice, Extended);
+            else
+              -- Add this regex with no start/stop strings
+              Add (Slice, True, True, List);
+            end if;
+          end;
+          if Is_Regex then
+            -- See if this is a single regex and if it can apply several times
+            --  to one line of input (no ^ nor $, except "\$")
+            if not Prev_Delim
+            and then not Next_Delim
+            and then Asu.Element (The_Pattern, Start_Index) & ""
+                   /= Start_String (True)
+            and then (Asu.Element (The_Pattern, Stop_Index) & ""
+                   /= Stop_String (True)
+              or else String_Mng.Is_Backslashed (Asu.To_String (The_Pattern),
+                                                    Stop_Index) ) then
+              Is_Iterative := True;
+            end if;
+          else
+            -- Same, but only check delimiters (start and stop strings are
+            --  not interpreted)
+            if not Prev_Delim
+            and then not Next_Delim then
+              Is_Iterative := True;
+            end if;
           end if;
         end if;
-      end if;
-      -- Done
-      exit when Stop_Index = Asu.Length (The_Pattern);
-      Start_Index := Stop_Index + 1;
-    end loop;
-
+        -- Done
+        exit when Stop_Index = Asu.Length (The_Pattern);
+        Start_Index := Stop_Index + 1;
+      end loop;
+    else
+      -- No split
+      -- Check no ^ nor $, within nor at first or last char
+      declare
+        Str : constant String := Asu.To_String (The_Pattern);
+      begin
+        Check_In (Str, Extended);
+        Check_Bound (Str, Start_String (True), True);
+        Check_Bound (Str, Start_String (False), False);
+        if Is_Regex then
+          Add (Str, Extended, Case_Sensitive, List);
+        else
+          Add (Str, True, True, List);
+        end if;
+      end;
+      Is_Iterative := True;
+    end if;
     -- Done
   end Parse_One;
 
   -- Checks and sets the delimiter
-  procedure Parse_Delimiter (Delim : in String) is
+  -- return True if it is the standard (Line_Feed) delimiter
+  function Parse_Delimiter (Delim : String) return Boolean is
     Delim_List  : aliased Unique_Pattern.List_Type;
     Upat : Line_Pat_Rec;
     Acc : Line_Pat_Acc;
@@ -403,37 +425,31 @@ package body Search_Pattern is
     -- Optim and safe way
     if Delim = Line_Feed then
       Delimiter := Asu.To_Unbounded_String (Line_Feed);
-      return;
+      return True;
     elsif Delim = "" then
       -- Empty delimiter
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, parsed empty delimiter");
       end if;
       Delimiter := Asu.Null_Unbounded_String;
-      return;
+      return False;
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsing delimiter");
     end if;
 
-    -- Parse Delim as a non-regex string
+    -- Parse Delim as a non-regex string, not splitted
     Pattern_Kind := Delimiter_Kind;
-    Parse_One (Delim, False, False, False, Delim_List);
-    -- Append all Lines to Delimiter
-    Delimiter := Asu.Null_Unbounded_String;
-    for I in 1 .. Unique_Pattern.List_Length (Delim_List) loop
-      Upat.Num := I;
-      Unique_Pattern.Get_Access (Delim_List,  Upat, Acc);
-      if Acc.Is_Delim then
-        Asu.Append (Delimiter, Line_Feed);
-      else
-        Asu.Append (Delimiter, Acc.Find_Str);
-      end if;
-    end loop;
+    Parse_One (Delim, False, False, False, Delim_List, False);
+    -- One string in list: the delimiter
+    Upat.Num := 1;
+    Unique_Pattern.Get_Access (Delim_List,  Upat, Acc);
+    Delimiter := Acc.Find_Str;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsed delimiter >"
            & Asu.To_String (Delimiter) & "<");
     end if;
+    return False;
   end Parse_Delimiter;
   
 
@@ -444,30 +460,29 @@ package body Search_Pattern is
                    Exclude : in String;
                    Delimiter : in String;
                    Extended, Case_Sensitive, Is_Regex : in Boolean) is
+    Std_Delim : Boolean;
     Upat : Line_Pat_Rec;
     Search_Access, Exclude_Access : Line_Pat_Acc;
   begin
     Expected_Search := 1;
     -- Parse the delimiter
-    Parse_Delimiter (Delimiter);
+    Std_Delim := Parse_Delimiter (Delimiter);
     -- Parse the search pattern
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsing search pattern");
     end if;
 
-    -- Parse an check the find pattern
+    -- Parse and check the find pattern
     Pattern_Kind := Search_Kind;
-    Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Search_List);
-    -- Noregex find pattern must be iterative (no \n)
-    if not Is_Regex and then not Is_Iterative then
-      Error ("Noregex pattern cannot contain ""\n""");
-    end if;
-    -- If Delimiter is not Text_Line's, then find pattern must be iterative
-    if Asu.To_String (Search_Pattern.Delimiter) /= Line_Feed
-    and then not Is_Iterative then
+    -- Parse the search pattern
+    --  Don't split if not the standard delimiter
+    Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Search_List,
+               Std_Delim);
+    -- If Delimiter is not Line_Feed, then find pattern must be iterative
+    if not Std_Delim and then not Is_Iterative then
       Pattern_Kind := Delimiter_Kind;
-      Error ("Find pattern cannot contain ""\n"", ""^"" or ""$"" "
-          &  "if Delimiter is not ""\n""");
+      Error ("If Delimiter is not ""\n"" then find pattern cannot contain "
+           & """^"" or ""$""");
     end if;
 
     if Exclude = "" then

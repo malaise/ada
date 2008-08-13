@@ -39,17 +39,19 @@ while true ; do
   if [ "$input" = "" ] ; then
     break
   fi
-  if [ "$input" = "Option" ] ; then
-    export opt=`readarg $L 2`
+  if [ "$input" = "Options" ] ; then
+    export opt1=`readarg $L 2`
+    export opt2=`readarg $L 3`
+    export opt3=`readarg $L 4`
   else
     export search=`readarg $L 2`
     export replace=`readarg $L 3`
     export expected=`readarg $L 4`
     rexpected=`echo -e -n "$expected"`
     # Do test and save exit status
-    if [ "$opt" != "" ] ; then
-    echo "echo \"$input\" | asubst \"$opt\" \"$search\" \"$replace\" -> $expected"
-      result=`echo -e -n "$input" | asubst "$opt" "$search" "$replace"`
+    if [ "$opt1" != "" ] ; then
+    echo "echo \"$input\" | asubst $opt1 $opt2 $opt3 \"$search\" \"$replace\" -> $expected"
+      result=`echo -e -n "$input" | asubst $opt1 $opt2 $opt3 "$search" "$replace"`
     else
       echo "echo \"$input\" | asubst $opt \"$search\" \"$replace\" -> $expected"
       result=`echo -e -n "$input" | asubst "$search" "$replace"`

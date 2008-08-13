@@ -1,5 +1,5 @@
                                  Asubst
-                                  V6.0
+                                  V6.1
 
 
 1. General syntax
@@ -25,14 +25,13 @@ matching.
 -m <max> or --max=<max> : stop processing each file after <max> substitutions,
     (0 for infinite).
 -n or --number : print number of substitutions per file.
--p <dir> or --tmp=<dir> for directory of temporary files.
--q or --quiet : for no printout.
+-p <dir> or --tmp=<dir> : directory of temporary files.
+-q or --quiet : no printout.
 -s or --save : make a copy (<file>.asu) of original file(s).
 -t or --test for test, substitutions not performed,
 -u or --utf8 : process utf-8 sequences.
 -v or --verbose : print each substitution and its line number.
--x or --noregex : <find_pattern> is only the string to find, without "\n",
-     not a regex. This allows \x00. There is no multiple regex nor substring.
+-x or --noregex : <find_pattern> is considered as string(s).
 -- : to stop the list of options. If <find_pattern> is "-pat", then use
      asubst [ { <option> } ] -- "-pat" <replace_pattern>  [ { <file> } ].
 
@@ -118,17 +117,18 @@ echo "toto" | asubst --exclude=toto toto titi will not substitute.
 
 
 6. Delimiter
-Normally asubst reads the input flow or file line by line (separated by '\n') and
-searches for matches, between the input sequences of text and '\n', and the
+Normally asubst reads the input flow or file line by line (separated by '\n')
+and searches for matches, between the input sequences of text and '\n', and the
 sequence of regex of find_pattern. When an input delimiter is specified (option
 -D or --delimiter) then asubst reads sequences of text separated by this
 delimiter (the whole text if delimiter is empty). In this case the find
-patern must be a simple <regex> (no '\n', '^' or '$'), and applies to each chunk.
+patern must be a simple <regex> (no '^' or '$', but '\n' is allowed), and
+it applies to each chunk.
 Delimiter can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
 
 Examples:
-Remove comments from a XML file:
-asubst -D '' '<!--([^-]|-[^-])*-->' '' file
+Remove comments (and possible trailing new_line) from a XML file:
+asubst -D '' '<!--([^-]|-[^-])*-->\n?' '' file
 
 Tag duplicated words in paragraphs (separated by two '\n'):
 asubst -D '\n\n' -- '\<([\M]+)\>[\S]+\1' '->\R01<-' file
@@ -179,13 +179,12 @@ echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
 
 9. Differences between regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
-"\n" is allowed in find patern in regex mode and used to separate sub patterns,
-each applying to a line. It is forbidden in noregex mode where the find
-pattern string is always applied several times to each input line.
-"\x00" is forbidden in find patern in regex mode (because it is the C string
-terminator and is used as such by regex library). It is allowed in noregex mode.
-"\A" to "\X" are not interpreted in find patern noregex mode.
-In noregex mode, "\rIJ" s forbidden. 
+In regex mode "\x00" is forbidden in find pattern because it is the C string
+terminator and it is used as such by regex library.
+It is allowed in noregex mode.
+In noregex mode "\A" to "\X" are not interpreted, like other regex specific
+characters (including "^" and "$").
+In noregex mode, "\rIJ" with J > 0 is forbidden (no substring). 
 
 
 10. Exit code

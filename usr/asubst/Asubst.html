@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080804;16313700">
+	<META NAME="CHANGED" CONTENT="20080813;13431800">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V6.0</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V6.1</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -36,19 +36,18 @@ display line number in grep mode.<BR></FONT>-m &lt;max&gt; or
 --max=&lt;max&gt; : stop processing each file after &lt;max&gt;
 substitutions, (0 for infinite).<BR>-<FONT FACE="monospace">n or
 --number : print number of substitutions per file.<BR></FONT>-p &lt;dir&gt;
-or --tmp=&lt;dir&gt; for directory of temporary files.<BR>-q or
---quiet : for no printout.</FONT><BR><FONT FACE="monospace">-s or
---save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t or
---test for test, substitutions not performed,<BR>-u or --utf8 :
-process utf-8 sequences.<BR>-v or --verbose : print each substitution
-and its line number.<BR>-x or --noregex : &lt;find_pattern&gt; is
-only the string to find, not a regex. This allows \x00. There is no
-multiple regex nor substring.</FONT><BR><FONT FACE="monospace">-- :
-to end the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
-then use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; }
-] -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; }
-].<BR><BR>Grep mode imposes quiet, test and no-backup.<BR>Line_Nb
-mode is allowed in Grep mode only.</FONT></P>
+or --tmp=&lt;dir&gt; : directory of temporary files.<BR>-q or --quiet
+: no printout.</FONT><BR><FONT FACE="monospace">-s or --save : make a
+copy (&lt;file&gt;.asu) of original file(s),<BR>-t or --test for
+test, substitutions not performed,<BR>-u or --utf8 : process utf-8
+sequences.<BR>-v or --verbose : print each substitution and its line
+number.<BR>-x or --noregex : &lt;find_pattern&gt; is considered as
+string(s).</FONT><BR><FONT FACE="monospace">-- : to end the list of
+options. If &lt;find_pattern&gt; is &quot;-pat&quot;, then
+use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; } ] --
+&quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; } ].<BR><BR>Grep
+mode imposes quiet, test and no-backup.<BR>Line_Nb mode is allowed in
+Grep mode only.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">3. Environment</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">If the LANG environment
 variable is set to something containing “UTF-8&quot;, then asubst
@@ -123,31 +122,31 @@ expression) but will not match in asubst, because the input flow/file
 is decomposed into lines and then each line is compared to a regex
 expression.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">5. Exclusion pattern</FONT></H1>
-<P><SPAN LANG="en-GB"><FONT FACE="Monospace">If set, the
-&lt;exclude_regex&gt; must have the same number of regex as the
-&lt;find_pattern&gt;. This option means that text matching the
-&lt;find_pattern&gt; but also the &lt;exclude_regex&gt; will not be
-replaced. Beware that it applies to the text matching &lt;find_pattern&gt;
-only.<BR>For example echo &quot;toto&quot; | asubst --exclude=toto to
-ti will replace toto by titi because each matching &quot;to&quot;
-does not match the exclusion &quot;toto&quot;.<BR>On the other hand,
-echo &quot;toto&quot; | asubst --exclude=to to ti and echo &quot;toto&quot;
-| asubst --exclude=toto toto titi will not substitute.</FONT></SPAN></P>
-<H1><SPAN LANG="en-GB"><FONT FACE="monospace">7. Delimiter</FONT></SPAN></H1>
+<P LANG="en-GB"><FONT FACE="Monospace">If set, the &lt;exclude_regex&gt;
+must have the same number of regex as the &lt;find_pattern&gt;. This
+option means that text matching the &lt;find_pattern&gt; but also the
+&lt;exclude_regex&gt; will not be replaced. Beware that it applies to
+the text matching &lt;find_pattern&gt; only.<BR>For example echo
+&quot;toto&quot; | asubst --exclude=toto to ti will replace toto by
+titi because each matching &quot;to&quot; does not match the
+exclusion &quot;toto&quot;.<BR>On the other hand, echo &quot;toto&quot;
+| asubst --exclude=to to ti and echo &quot;toto&quot; | asubst
+--exclude=toto toto titi will not substitute.</FONT></P>
+<H1 LANG="en-GB"><FONT FACE="monospace">7. Delimiter</FONT></H1>
 <P><FONT FACE="Monospace">Normally asubst reads the input flow or
 file line by line (separated by '\n') and searches for matches,
 between the input sequences of text and '\n', and the sequence of
 regex of find_pattern. When an input delimiter is specified (option
 -D or --delimiter) then asubst reads sequences of text separated by
 this delimiter (the whole text if delimiter is empty). In this case
-the find patern must be a simple &lt;regex&gt; (no '\n', '^' or '$'),
-and applies to each chunk.<BR>Delimiter can contain &quot;\s&quot;,
-&quot;\t&quot;, &quot;\xIJ&quot; (even &quot;\x00&quot;) and
-&quot;\n&quot;.<BR><BR>Examples:<BR>Remove comments from a XML
-file:<BR>asubst -D '' '&lt;!--([^-]|-[^-])*--&gt;' '' file<BR><BR>Tag
-duplicated words in paragraphs (separated by two '\n'):<BR>asubst -D
-'\n\n' asubst -D '\n\n' -- '\&lt;([\M]+)\&gt;[\S]+\1' '-&gt;\R01&lt;-'
-file</FONT></P>
+the find patern must be a simple &lt;regex&gt; (no '^' or '$' but
+'\n' is allowed), and applies to each chunk.<BR>Delimiter can contain
+&quot;\s&quot;, &quot;\t&quot;, &quot;\xIJ&quot; (even &quot;\x00&quot;)
+and &quot;\n&quot;.<BR><BR>Examples:<BR>Remove comments (and possible
+trailing new_line) from a XML file:<BR>asubst -D ''
+'&lt;!--([^-]|-[^-])*--&gt;\n?' '' file<BR><BR>Tag duplicated words
+in paragraphs (separated by two '\n'):<BR>asubst -D '\n\n' asubst -D
+'\n\n' -- '\&lt;([\M]+)\&gt;[\S]+\1' '-&gt;\R01&lt;-' file</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">7. Replace string</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
 are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
@@ -207,18 +206,13 @@ found<BR>echo -en &quot;*cs add&quot; | asubst -g &quot;^\*([^ ]+) &quot;
 and noregex modes</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In both modes &quot;\x0A&quot;
 is the same as &quot;\n&quot;, and &quot;\s&quot; and &quot;\t&quot;
-are interpreted.</FONT></P>
-<P LANG="en-GB"><FONT FACE="Monospace">&quot;\n&quot; is allowed in
-find patern in regex mode and used to separate sub patterns, each
-applying to a line. It is forbidden in noregex mode where the find
-pattern string is always applied several times to each input line.</FONT></P>
-<P LANG="en-GB"><FONT FACE="Monospace">&quot;\x00&quot; is forbidden
-in find patern in regex mode (because it is the C string terminator
-and is used as such by regex library). It is allowed in noregex mode.</FONT></P>
-<P LANG="en-GB"><FONT FACE="Monospace">&quot;\A&quot; to &quot;\X&quot;
-are not interpreted in find patern noregex mode.</FONT></P>
-<P LANG="en-GB"><FONT FACE="Monospace">In noregex mode, &quot;\rIJ&quot;
-s forbidden.</FONT></P>
+are interpreted.<BR>In regex mode &quot;\x00&quot; is forbidden in
+find pattern because it is the C string terminator and it is used as
+such by regex library.<BR>It is allowed in noregex mode.<BR>In
+noregex mode &quot;\A&quot; to &quot;\X&quot; are not interpreted,
+like other regex specific characters (including &quot;^&quot; and
+&quot;$&quot;).<BR>In noregex mode, &quot;\rIJ&quot; with J &gt; 0 is
+forbidden (no substring).</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">10.Exit code</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">asubst exits with 0 if some
 matching was found, with 1 if no matching was found and with 2
