@@ -3,6 +3,14 @@ with Ada.Characters.Latin_1;
 with Int_Image, Text_Line, Sys_Calls;
 package body Xml_Parser.Generator is
 
+  -- Version incremented at each significant change
+  Minor_Version : constant String := "1";
+  function Version return String is
+  begin
+    return "V" & Major_Version & "." & Minor_Version;
+  end Version;
+
+
   -- Ada unbounded strings
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;

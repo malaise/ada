@@ -2,6 +2,13 @@ with Ada.Exceptions;
 with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
+  -- Version incremented at each significant change
+  Minor_Version : constant String := "8";
+  function Version return String is
+  begin
+    return "V" & Major_Version & "." & Minor_Version;
+  end Version;
+
   -- Ada unbounded strings
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
