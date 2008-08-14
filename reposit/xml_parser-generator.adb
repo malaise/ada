@@ -321,6 +321,13 @@ package body Xml_Parser.Generator is
                  Tree_Access => My_Tree.Get_Position (Tree.all));
   end Add_Doctype;
 
+  -- Set the Dtd file towards which comformance shall be checked
+  procedure Set_Dtd_File (Ctx      : in out Ctx_Type;
+                          Dtd_File : in String) is
+  begin
+    Ctx.Dtd_File := Asu_Tus (Dtd_File);
+  end Set_Dtd_File;
+
   -- Add a processing instruction in the prologue
   procedure Add_Pi (Ctx  : in out Ctx_Type;
                     Node : in Node_Type;

@@ -4,7 +4,7 @@ with Trees;
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "4";
+  Major_Version : constant String := "5";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -44,6 +44,12 @@ package Xml_Parser.Generator is
                          Int_Def  : in String;
                          New_Node : out Node_Type;
                          Append_Next : in Boolean := True);
+
+  -- Set the Dtd file towards which comformance shall be checked
+  --   by Xml_parser.Check. Default is Doctype.File when dtd file is "".
+  procedure Set_Dtd_File (Ctx      : in out Ctx_Type;
+                          Dtd_File : in String);
+  
 
   -- Add a processing instruction as the last or next child (if Append_Next)
   -- May raise Invalid_Node if Node is not of prologue
