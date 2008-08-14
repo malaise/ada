@@ -407,11 +407,12 @@ package body Dtd is
           Util.Error (Ctx.Flow, "Default or fixed value "
                     & Asu_Ts (Def_Val) & " not in Enum");
         end if;
+        -- Remove #default and insert #default in head
         Enum := Asu_Tus (String_Mng.Replace (
                  Asu_Ts (Enum),
-                 Info_Sep & Asu_Ts (Def_Val) & Info_Sep,
+                 Info_Sep & Asu_Ts (Def_Val),
                  ""));
-        Enum := Info_Sep & Asu_Ts (Def_Val) & Info_Sep & Enum;
+        Enum := Info_Sep & Asu_Ts (Def_Val) & Enum;
       end if;
 
       -- If enum store Att of enum
