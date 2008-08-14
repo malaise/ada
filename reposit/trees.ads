@@ -165,7 +165,7 @@ package Trees is
     -- Move to oldest/youngest child
     -- May raise No_Cell if no child or if tree is empty
     procedure Move_Child (The_Tree : in out Tree_Type;
-                          Elder    : in Boolean := True);
+                          Eldest   : in Boolean := True);
 
     -- Move to older/younger brother
     -- May raise No_Cell if no such brother or if tree is empty

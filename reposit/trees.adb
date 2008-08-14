@@ -689,13 +689,13 @@ package body Trees is
     -- Move to oldest/youngest child
     -- May raise No_Cell if no child or if tree is empty
     procedure Move_Child (The_Tree : in out Tree_Type;
-                          Elder    : in Boolean := True) is
+                          Eldest   : in Boolean := True) is
       Child : Order;
     begin
       -- No empty tree
       Check_Callback (The_Tree);
 
-      if Elder then
+      if Eldest then
         Child := Old;
       else
         Child := Young;
