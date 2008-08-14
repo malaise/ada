@@ -3,14 +3,14 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V2.6";
+  Version : constant String := "V3.0";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
   function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
   function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
-  Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
+  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -38,6 +38,10 @@ procedure Xml_Checker is
   -- Flow of dump
   Out_Flow : Text_Line.File_Type;
 
+  -- Dtd options
+  Use_Dtd : Boolean;
+  Dtd_File : Asu_Us;
+
   -- Maximum of options allowed
   Max_Opt : Natural;
 
@@ -46,8 +50,8 @@ procedure Xml_Checker is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <width> | <one> | <expand>");
-    Ple ("            | <help> | <version>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <width> | <one>");
+    Ple ("            | <expand> | <check_dtd> | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
@@ -56,26 +60,30 @@ procedure Xml_Checker is
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
     Ple (" <expand>     ::= -e | --expand     -- Expand general entities");
+    Ple (" <check_dtd>  ::= -c <Dtd> | --check_dtd=<Dtd>");
+    Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
-    Ple ("All options except expand and no_comment are exclusive.");
+    Ple ("All options except expand, no_comment and check_dtd are exclusive.");
     Ple ("No_comment not allowed on silent, dump and raw modes.");
+    Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
   end Usage;
 
   -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   1 => ('s', Asu_Tus ("silent"), False, False),
-   2 => ('d', Asu_Tus ("dump"), False, False),
-   3 => ('r', Asu_Tus ("raw"), False, False),
-   4 => ('w', Asu_Tus ("width"), False, True),
-   5 => ('1', Asu_Tus ("one"), False, False),
-   6 => ('h', Asu_Tus ("help"), False, False),
-   7 => ('v', Asu_Tus ("version"), False, False),
-   8 => ('e', Asu_Tus ("expand"), False, False),
-   9 => ('n', Asu_Tus ("no_comment"), False, False)
+    1 => ('s', Asu_Tus ("silent"), False, False),
+    2 => ('d', Asu_Tus ("dump"), False, False),
+    3 => ('r', Asu_Tus ("raw"), False, False),
+    4 => ('w', Asu_Tus ("width"), False, True),
+    5 => ('1', Asu_Tus ("one"), False, False),
+    6 => ('h', Asu_Tus ("help"), False, False),
+    7 => ('v', Asu_Tus ("version"), False, False),
+    8 => ('e', Asu_Tus ("expand"), False, False),
+    9 => ('n', Asu_Tus ("no_comment"), False, False),
+   10 => ('c', Asu_Tus ("check_dtd"), False, True)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -158,7 +166,9 @@ procedure Xml_Checker is
                Parse_Ok,
                Comments => Output_Kind = Gen
                  and then Format /= Xml_Parser.Generator.Raw,
-               Expand_Entities => Expand or else Output_Kind = Dump);
+               Expand_Entities => Expand or else Output_Kind = Dump,
+               Use_Dtd => Use_Dtd,
+               Dtd_File => Asu_Ts (Dtd_File));
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error ("Error in file "
                                & Get_File_Name (Index, True) & ": "
@@ -204,6 +214,7 @@ procedure Xml_Checker is
   end Close;
 
   use type Xml_Parser.Generator.Format_Kind_List;
+  use type Asu_Us;
 begin
   -- Open output flow
   Out_Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
@@ -247,14 +258,20 @@ begin
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
   Expand := False;
+  Use_Dtd := True;
+  Dtd_File := Asu_Null;
   -- Get Expand option and chek max of options
   -- Only 1 option, one more if Expand, one more if no_comment
+  --  one more if check_dtd
   Max_Opt := 1;
   if Arg_Dscr.Is_Set (8) then
     Expand := True;
     Max_Opt := 2;
   end if;
   if Arg_Dscr.Is_Set (9) then
+    Max_Opt := Max_Opt + 1;
+  end if;
+  if Arg_Dscr.Is_Set (10) then
     Max_Opt := Max_Opt + 1;
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
@@ -297,6 +314,14 @@ begin
       Output_Kind := No_Comment;
     else
       Ae_Re (Arg_Error'Identity, "Too many options");
+    end if;
+  end if;
+
+  if Arg_Dscr.Is_Set (10) then
+    Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (10));
+    if Dtd_File = Asu_Null then
+      -- If option set with empty dtd => no check
+      Use_Dtd := False;
     end if;
   end if;
 
