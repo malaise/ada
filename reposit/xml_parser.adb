@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "8";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -169,7 +169,9 @@ package body Xml_Parser is
                    File_Name       : in String;
                    Ok              : out Boolean;
                    Comments        : in Boolean := False;
-                   Expand_Entities : in Boolean := True) is
+                   Expand_Entities : in Boolean := True;
+                   Use_Dtd         : in Boolean := True; 
+                   Dtd_File        : in String  := "") is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -189,6 +191,8 @@ package body Xml_Parser is
     -- Parse this file
     Ctx.Parse_Comments := Comments;
     Ctx.Expand_Entities := Expand_Entities;
+    Ctx.Use_Dtd := Use_Dtd;
+    Ctx.Dtd_File := Asu_Tus (Dtd_File);
     Parse_Mng.Parse (Ctx);
     -- Close the file
     File_Mng.Close (Ctx.Flow.Xml_File);

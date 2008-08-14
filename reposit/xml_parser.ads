@@ -9,13 +9,14 @@ with Queues, Trees, Unique_List, Text_Char;
 --  - Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
 --  - Only local file reference is fetched, no http :-) (parsing error)
 -- The following restrictions applies to all the parsing:
+--  - The Xml versions (1.0 or 1.1) are not checked; 1.1 applies.
 --  - CDATA sections are detected only when a markup ('<') is expected or
 --    within text. Not "anywhere character data may occur" (parsing error).
 --  - The detection and expansion of parameter entity references may not be complete.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "2";
+  Major_Version : constant String := "3";
   function Version return String;
 
   -----------
@@ -77,6 +78,8 @@ package Xml_Parser is
   -- Parse a Xml file, stdin if empty
   -- On option, allows retrieval of comments (usefull for formatter)
   -- On option, does not expand General entities (usefull for formatter)
+  -- On option does not check compliance with Dtd
+  -- On option force a dtd file different from DOCTYPE directive
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
   Stdin : constant String := "";
@@ -84,7 +87,9 @@ package Xml_Parser is
                    File_Name       : in String;
                    Ok              : out Boolean;
                    Comments        : in Boolean := False;
-                   Expand_Entities : in Boolean := True);
+                   Expand_Entities : in Boolean := True;
+                   Use_Dtd         : in Boolean := True;
+                   Dtd_File        : in String  := "");
   File_Error, Status_Error : exception;
 
   -- Return the error message if Parse error
@@ -399,6 +404,9 @@ private
     Parse_Comments : Boolean := False;
     -- Expand or not general entities
     Expand_Entities : Boolean := True;
+    -- Use Dtd
+    Use_Dtd : Boolean := True;
+    Dtd_File : Ada.Strings.Unbounded.Unbounded_String;
     -- Prologue and parsed elements
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
