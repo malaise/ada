@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+13/08/2008 V6.1
+Add: Support '\n' in noregex mode.
+Add: Support '\n' when delimiter is set.
+
 04/08/2008 V6.0
 Add: -D <string> (--delimiter=<string>) to set a specific input line delimiter.
 
