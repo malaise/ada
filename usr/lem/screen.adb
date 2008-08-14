@@ -403,11 +403,11 @@ package body Screen is
     Con_Io.Set_Foreground (Con_Io.Light_Gray);
     case Reason is
       when Flight.Landed | Flight.Safe_Landed =>
-        Center ("Hit any key for a new game", Y_Text - Y_Offset);
+        Center ("Click or hit any key for a new game", Y_Text - Y_Offset);
       when Flight.Lost | Flight.Crashed =>
         Center ("Hit any key to retry", Y_Text - Y_Offset);
     end case;
-    Center ("or Escape to quit",
+    Center ("or hit Escape to quit",
             Y_Text - Y_Offset - Con_Io.Graphics.Font_Height);
     Con_Io.Flush;
   end Put_End;
