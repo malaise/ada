@@ -215,7 +215,6 @@ package body Parse_Mng  is
     procedure Final_Check (Ctx  : in out Ctx_Type;
                            Adtd : in out Dtd_Type);
   end Dtd;
-  package body Dtd is separate;
 
   -- Parse attributes of an element Name='Value' or Name="Value"
   -- Either of xml prologue directive or on current element
@@ -288,36 +287,44 @@ package body Parse_Mng  is
   end Parse_Attributes;
 
   -- Check Xml version, encoding and standalone are correctly defined
-  procedure Check_Xml_Attributes (Ctx : in out Ctx_Type) is
+  procedure Check_Xml_Attributes (Ctx : in out Ctx_Type;
+                                  Of_Xml : in Boolean) is
     Attribute_Value : Asu_Us;
-    Attribute_Index : Natural;
+    Attribute_Index, Next_Index : Natural;
     Nb_Attrs_Set : Natural;
-    Nb_Attrs_Allowed : Positive := 1;
   begin
-    -- Version must be set, and at first position
+    Next_Index := 1;
+    -- In XML: Version [ Encode ] [ Standalone ]
+    -- In Dtd: [ Version ] Encode
+    -- Check Version
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
            Asu.To_Unbounded_String ("version"),
            Attribute_Index, Attribute_Value);
-    if Attribute_Index /= 1 then
-      Util.Error (Ctx.Flow, "Expected xml version as first attribute");
+    if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
+    or else (Of_Xml and then Attribute_Index = 0) then
+      Util.Error (Ctx.Flow, "Missing or invalid xml version attribute");
     end if;
-    declare
-      Vers : constant String := Asu_Ts (Attribute_Value);
-    begin
-      if Vers /= "1.0"
-      and then Vers /= "1.1" then
-        Util.Error (Ctx.Flow, "Unexpected xml version " & Vers);
-      end if;
-    end;
+    if Attribute_Index /= 0 then
+      declare
+        Vers : constant String := Asu_Ts (Attribute_Value);
+      begin
+        if Vers /= "1.0"
+        and then Vers /= "1.1" then
+          Util.Error (Ctx.Flow, "Unexpected xml version " & Vers);
+        end if;
+      end;
+      Next_Index := Attribute_Index + 1;
+    end if;
 
-    -- If set, encoding must be second
+    -- Check Encoding
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
            Asu.To_Unbounded_String ("encoding"),
            Attribute_Index, Attribute_Value);
+    if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
+    or else (not Of_Xml and then Attribute_Index = 0) then
+      Util.Error (Ctx.Flow, "Missing or invalid xml encoding attribute");
+    end if;
     if Attribute_Index /= 0 then
-      if Attribute_Index /= 2 then
-        Util.Error (Ctx.Flow, "Expected xml encoding as second attribute");
-      end if;
       -- Check encoding value, must be valid name
       -- and also starting with letter and without ":"
       if not Util.Name_Ok (Attribute_Value)
@@ -325,32 +332,36 @@ package body Parse_Mng  is
       or else Asu.Index (Attribute_Value, ":") /= 0 then
         Util.Error (Ctx.Flow, "Invalid encoding name");
       end if;
-      Nb_Attrs_Allowed := Nb_Attrs_Allowed + 1;
+      Next_Index := Attribute_Index + 1;
     end if;
 
-    -- If set, standalone must be second or third
+    -- Check Standalone
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
            Asu.To_Unbounded_String ("standalone"),
            Attribute_Index, Attribute_Value);
+    if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
+    or else (not Of_Xml and then Attribute_Index /= 0) then
+      Util.Error (Ctx.Flow, "Missing or invalid xml standalone attribute");
+    end if;
     if Attribute_Index /= 0 then
-      if Attribute_Index /= 2 and then  Attribute_Index /= 3 then
-        Util.Error (Ctx.Flow,
-          "Expected xml standalone as second or third attribute");
-      end if;
       -- Check standalone value, must be "yes" or "no"
       if Asu_Ts (Attribute_Value) /= "yes"
       and then Asu_Ts (Attribute_Value) /= "no" then
         Util.Error (Ctx.Flow, "Invalid standalone value");
       end if;
-      Nb_Attrs_Allowed := Nb_Attrs_Allowed + 1;
+      Next_Index := Attribute_Index + 1;
     end if;
 
     -- No more attribute allowed
     Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all, Nb_Attrs_Set);
-    if Nb_Attrs_Set /= Nb_Attrs_Allowed then
+    if Nb_Attrs_Set /= Next_Index - 1 then
       Util.Error (Ctx.Flow, "Unexpecteed xml attribute");
     end if;
   end Check_Xml_Attributes;
+
+  -- Dtd uses Parse_Attributes and Check_Xml_Attributes
+  --  for its XML declaration
+  package body Dtd is separate;
 
   -- Check that XML instruction is set
   -- If not, Add a xml version 1.0
@@ -378,7 +389,7 @@ package body Parse_Mng  is
     if Ok then
       Util.Get (Ctx.Flow, Char);
       if Util.Is_Separator (Char) then
-        -- Only one xml declaration allowd
+        -- Only one xml declaration allowed
         Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
         if Ok then
           Util.Error (Ctx.Flow, "Second declaration of xml");
@@ -392,7 +403,7 @@ package body Parse_Mng  is
         if Char /= Util.Instruction then
           Parse_Attributes (Ctx, Adtd, Of_Xml => True);
         end if;
-        Check_Xml_Attributes (Ctx);
+        Check_Xml_Attributes (Ctx, True);
         Trace ("Parsed xml declaration");
         return;
       else
@@ -441,7 +452,8 @@ package body Parse_Mng  is
   -- Parse "<!DOCTYPE" <Spc> <Name> [ <Spc> "SYSTEM" <Spc> <File> ]
   --  [ <Spc> ] [ "[" <IntSubset> "]" [ <Spc> ] ] "!>"
   -- Reject PUBLIC directive
-  procedure Parse_Doctype (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+  procedure Parse_Doctype (Ctx : in out Ctx_Type;
+                           Adtd : in out Dtd_Type) is
     Doctype_Name, Doctype_File : Asu_Us;
     Ok : Boolean;
     Char : Character;
@@ -497,7 +509,15 @@ package body Parse_Mng  is
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Reset_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
-      Dtd.Parse (Ctx, Adtd, Asu.To_String (Doctype_File));
+      if Ctx.Use_Dtd then
+        if Ctx.Dtd_File /= Asu_Null then
+          -- Parse dtd file provided
+          Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
+        else
+          -- Parse dtd file of doctype
+          Dtd.Parse (Ctx, Adtd, Asu.To_String (Doctype_File));
+        end if;
+      end if;
       Ctx.Doctype.File := Doctype_File;
     end if;
     -- Now see if there is an internal definition section
@@ -519,6 +539,10 @@ package body Parse_Mng  is
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character " & Char & " in DOCTYPE");
     end if;
+    if not Ctx.Use_Dtd then
+      -- Reset dtd info
+      Dtd.Init (Adtd);
+    end if;
     Trace ("Parsed <!DOCTYPE ... >");
   end Parse_Doctype;
 
@@ -532,6 +556,7 @@ package body Parse_Mng  is
     Index : Natural;
     Ok : Boolean;
     Comment : Asu_Us;
+    use type Asu_Us;
   begin
     -- Got <!, what's next? Comment, CDATA or DOCTYPE
     -- CDATA?
@@ -600,6 +625,7 @@ package body Parse_Mng  is
                             Adtd : in out Dtd_Type;
                             Allow_Dtd : in Boolean) is
     C1, C2 : Character;
+    use type Asu_Us;
   begin
     -- Loop until end of prologue (<name>)
     loop
@@ -636,6 +662,12 @@ package body Parse_Mng  is
     end loop;
     -- Xml directive is mandatory in prologue, which is mandatory in doc
     Check_Xml_Set (Ctx);
+    -- Parse dtd file if requested to do so and no Doctype
+    if Ctx.Use_Dtd
+    and then Ctx.Dtd_File /= Asu_Null
+    and then Ctx.Doctype.Name = Asu_Null then
+      Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
+    end if;
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");
@@ -729,6 +761,13 @@ package body Parse_Mng  is
                           & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)));
     end if;
     Element_Name := Util.Get_Curr_Str (Ctx.Flow);
+    if Root
+    and then Ctx.Doctype.Name /= Asu_Null
+    and then Element_Name /= Ctx.Doctype.Name then
+      -- Root name must match DOCTYPE name
+      Util.Error (Ctx.Flow, "Element name " & Asu_Ts (Element_Name)
+           & " does not match doctype name " & Asu_Ts (Ctx.Doctype.Name));
+    end if;
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Add new element and move to it
     Tree_Mng.Add_Element (Ctx.Elements.all, Element_Name, Line_No);
@@ -906,7 +945,7 @@ package body Parse_Mng  is
       Util.Cdata_Error (Ctx.Flow);
   end Parse_Elements;
 
-  -- Check a Cts versus its Dtd
+  -- Check a Ctx versus its Dtd
   procedure Check (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
     use type Asu_Us;
@@ -915,8 +954,11 @@ package body Parse_Mng  is
     Dtd.Init (Adtd);
     -- Parse Dtd
     if Ctx.Doctype.Name /= Asu_Null then
-      if Ctx.Doctype.File /= Asu_Null then
-        -- Parse Dtd file
+      if Ctx.Dtd_File /= Asu_Null then
+        -- Parse Dtd explicitely forced when user called Parsed 
+        Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
+      elsif Ctx.Doctype.File /= Asu_Null then
+        -- Parse Dtd file set in DOCTYPE of Xml
         Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Doctype.File));
       end if;
       if Ctx.Doctype.Int_Def /= Asu_Null then

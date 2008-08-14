@@ -37,10 +37,16 @@ package body Dtd is
                                Adtd : in out Dtd_Type;
                                External : in Boolean) is
     Ok : Boolean;
+    Char : Character;
+    Dummy : My_Tree_Cell;
   begin
     -- See if this is the xml directive
     Util.Check_Cdata (Ctx.Flow, 3);
     Util.Try (Ctx.Flow, "xml", Ok);
+    if Ok then
+      Util.Get (Ctx.Flow, Char);
+      Ok := Util.Is_Separator (Char);
+    end  if;
     if Ok then
       if not External then
         Util.Error (Ctx.Flow, "Invalid xml instruction in internal dtd");
@@ -48,7 +54,18 @@ package body Dtd is
       if Adtd.Xml_Found then
         Util.Error (Ctx.Flow, "Second declaration of xml in dtd");
       end if;
-      Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
+      -- Add a dummy prologue root or a dummy child to prologue root
+      Trace ("Dtd parsing xml");
+      if My_Tree.Is_Empty (Ctx.Prologue.all) then
+        My_Tree.Insert_Father (Ctx.Prologue.all, Dummy);
+      else
+        My_Tree.Insert_Child (Ctx.Prologue.all, Dummy, False);
+      end if;
+      Parse_Attributes (Ctx, Adtd, True);
+      Check_Xml_Attributes (Ctx, False);
+      -- Delete this dummy child
+      My_Tree.Delete_Tree (Ctx.Prologue.all);
+      -- Done
       Adtd.Xml_Found := True;
       Trace ("Dtd parsed instruction " & Asu_Ts(Util.Get_Curr_Str (Ctx.Flow)));
       Util.Reset_Curr_Str (Ctx.Flow);
@@ -820,19 +837,17 @@ package body Dtd is
     -- Read its ATTLIST def
     Info.Name := "Atl" & Info_Sep & Name;
     Info_Mng.Search (Adtd.Info_List, Info, Info_Found);
-    if not Info_Found then
-      -- No ATTLIST directive, no constraint
-      return;
-    else
+    if Info_Found then
       Info_Mng.Read (Adtd.Info_List, Info, Info);
     end if;
-    if Info.List = Asu_Null then
-      -- Empty ATTLIST for this element
+    if not Info_Found or else Info.List = Asu_Null then
+      -- No or empty ATTLIST for this element
       if Attributes = Asu_Null then
         Trace ("Dtd checked element " & Asu_Ts (Name)
              & " with no attributes, versus no or empty attlist");
         return;
       else
+        -- Attributes must have be declared
         Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                   & " is not allowed to have attributes",
                   Line_No);
