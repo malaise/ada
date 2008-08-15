@@ -46,7 +46,7 @@
       <Colors Foreground="Red" Blink="False" Background="Magenta"/>
       <Init Row="0" Col="0">Type exit in a get field to desactivate it</Init>
       <Init Row="1" Col="0">Type return to print content of field, escape to clear field</Init>
-      <Init Row="2" Col="0">Print button is flip-flop based on keyboard event and timer</Init>
+      <Init Row="2" Col="0">Print button and list are flip-flop based on keyboard events and timer</Init>
     </Field>
 
     <Field Num="8" Kind="Button">
