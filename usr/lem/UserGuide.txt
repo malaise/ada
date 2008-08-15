@@ -35,7 +35,8 @@ activates left engine, thus increasing speed to the right. Right arrow
 activates activates right engine, thus increasing speed to the left.
 Control + an horizontal arrow applies a thrust 5 times higher than
 normal arrow (still for one second).
-Mouse controls can also be used (left and right button and wheel).
+Mouse controls can also be used: left and right click and double click for
+horizontal thrust, and wheel for vertical thurst.
 
 5. PLaying
 The game starts at a random (high) position, with a random vertical speed and
