@@ -170,7 +170,7 @@ package body Xml_Parser is
                    Ok              : out Boolean;
                    Comments        : in Boolean := False;
                    Expand_Entities : in Boolean := True;
-                   Use_Dtd         : in Boolean := True; 
+                   Use_Dtd         : in Boolean := True;
                    Dtd_File        : in String  := "") is
   begin
     if Ctx.Status /= Clean then

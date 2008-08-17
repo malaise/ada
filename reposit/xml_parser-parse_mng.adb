@@ -955,7 +955,7 @@ package body Parse_Mng  is
     -- Parse Dtd
     if Ctx.Doctype.Name /= Asu_Null then
       if Ctx.Dtd_File /= Asu_Null then
-        -- Parse Dtd explicitely forced when user called Parsed 
+        -- Parse Dtd explicitely forced when user called Parsed
         Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
       elsif Ctx.Doctype.File /= Asu_Null then
         -- Parse Dtd file set in DOCTYPE of Xml
