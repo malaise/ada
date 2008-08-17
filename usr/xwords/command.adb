@@ -29,6 +29,7 @@ package body Command is
     end if;
     Aborted := True;
   end Term_Cb;
+
   -- The callback for death of child
   procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
     use type Sys_Calls.Death_Cause_List;
@@ -123,7 +124,7 @@ package body Command is
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Err, True, Fd_Cb'Access);
 
-    -- Wait until child end and no mode out/err data
+    -- Wait until child end and no more out/err data
     --  or aborted by sigterm
     loop
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
