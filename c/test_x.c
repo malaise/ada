@@ -197,6 +197,7 @@ boolean read;
       }
     } else if (m == NO_EVENT) {
       /* Timeout */
+      x_set_selection (line_event, NULL);
       k = DISCARD;
       continue;
     } else if (m == SIG_EVENT) {

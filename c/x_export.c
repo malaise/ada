@@ -1043,8 +1043,19 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         if (win_id == NULL) {
           break; /* Next Event */
         }
-        /* Clear out selection */
-        (void) x_set_selection (win_id, NULL);
+        if (win_id->nbre_drop_clear == 0) {
+          /* This is not the consequence of ourself clearing the selection */
+          if (win_id->selection != NULL) {
+            /* Clear out selection buffer */
+            free (win_id->selection);
+            win_id->selection = NULL;
+          }
+        } else {
+          /* This is the consequence of ourself clearing the selection */
+          /* But perhaps the selection has be re-set since, so no clear */
+          (win_id->nbre_drop_clear)--;
+        }
+      break;
       case SelectionNotify:
         /* Find the window of event */
         win_id = lin_get_win (event.xany.window);
@@ -1216,13 +1227,20 @@ extern int x_set_selection (void *line_id, const char *selection) {
     if (win_id->selection != NULL) {
         free (win_id->selection);
         win_id->selection = NULL;
+
     }
 
     if (selection == NULL) {
-        /* Cancel our role of selection owner */
-        XSetSelectionOwner (win_id->server->x_server, XA_PRIMARY,
-                            None, CurrentTime);
-        return OK;
+        if (XGetSelectionOwner(win_id->server->x_server, XA_PRIMARY)
+                                == win_id->x_window) {
+            /* Cancel our role of selection owner */
+            /* We will receive a SelectionClear event that must be dropped */
+            /*  (must lead to clear the selection data */
+            XSetSelectionOwner (win_id->server->x_server, XA_PRIMARY,
+                                None, CurrentTime);
+            (win_id->nbre_drop_clear)++;
+         }
+         return OK;
      }
      /* Set owner of selection */
      XSetSelectionOwner (win_id->server->x_server, XA_PRIMARY,
@@ -1286,6 +1304,9 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
       if ((unsigned)nitems_return > (unsigned)len - 1) {
         strncpy (p_selection, data, len - 1);
         p_selection[len - 1] = '\0';
+      } else if (nitems_return == 0) {
+        /* Data is NULL */
+        p_selection[0] = '\0';
       } else if (data[(unsigned)nitems_return] != '\0') {
         strncpy (p_selection, data, (unsigned)nitems_return - 1);
         p_selection[(unsigned)nitems_return] = '\0';
@@ -1295,7 +1316,7 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
     }
 
     /* Clear */
-    XFree (data);
+    if (data != NULL) XFree (data);
     return (OK);
 }
 

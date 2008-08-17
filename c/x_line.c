@@ -247,6 +247,7 @@ Status res;
     p_window->tid_x = 0;
     p_window->tid_y = 0;
     p_window->selection = NULL;
+    p_window->nbre_drop_clear = 0;
     p_window->select_index = SELEC_NONE;
 
     /* Graphic context of the window */

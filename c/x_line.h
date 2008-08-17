@@ -75,7 +75,7 @@ typedef struct {
     int tid_x;
     int tid_y;
     char *selection;
-    Atom selection_code;
+    int nbre_drop_clear;
     int select_index;
 }t_window;
 
