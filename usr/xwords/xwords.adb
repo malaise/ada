@@ -72,6 +72,7 @@ procedure Xwords is
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Command.Res_List;
     Com, Arg : Common.Asu_Us;
+    First : Boolean;
     use type Afpx.Field_Range, Common.Asu_Us;
   begin
     -- Clear result
@@ -99,7 +100,6 @@ procedure Xwords is
     -- Store in history and selection if search
     if Num = Search_Fld and then Arg /= Common.Asu_Null then
       History.Insert (Arg);
-      Afpx.Set_Selection (Common.Asu_Ts (Arg));
     end if;
 
     -- Log request if needed
@@ -111,11 +111,19 @@ procedure Xwords is
       Ada.Text_Io.Put_Line (Common.Asu_Ts (Line));
     end if;
 
-    -- Encode result
+    -- Reset selection for case where no result or error
+    Afpx.Set_Selection ("");
+
+    -- Encode result, set first word as selection
+    First := True;
     if not Result.Is_Empty then
       Result.Rewind;
       loop
         Result.Read (Line, Done => Done);
+        if Status_Ok and then First then
+          Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Line)));
+          First := False;
+        end if;
         Afpx.Line_List.Insert (Us2Afpx (Line));
         if Log then
           Ada.Text_Io.Put_Line (Common.Asu_Ts (Line));
@@ -165,12 +173,14 @@ begin
 
   Status_Ok := True;
 
+
   loop
     -- Color of result list according to result
     if Status_Ok then
       Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
     else
       Afpx.Set_Field_Colors (Afpx.List_Field_No, Background => Con_Io.Red);
+      Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     end if;
 
     -- Set cursor at last significant char of the Get field
@@ -191,7 +201,7 @@ begin
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
 
-          -- Double click in list => copy in get fld
+          -- Double click in list => Select for copy/paste
           when Afpx.List_Field_No =>
             Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
             declare
@@ -199,8 +209,6 @@ begin
                   := Language.Wide_To_String (Afpx_Item.Str (1 ..
                                                            Afpx_Item.Len));
             begin
-              Afpx.Clear_Field (Get_Fld);
-              Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Str));
               Afpx.Set_Selection (Strip (Lower_Str (Str)));
             end;
 
