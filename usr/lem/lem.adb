@@ -165,10 +165,12 @@ package body Lem is
   end Get_Speed;
 
   -- Get a valid (reasonnably negative) initial vertical speed
-  -- At present, init speed is set to X = 0 and -10 <= Y <= 0
+  -- At present, init speed is set to -1 <= X = 1
+  --  and -10 <= Y <= 0
   function Get_Init_Speed return Speed_Rec is
   begin
-    return (0.0, - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
+    return (X_Speed => Speed_Range(Rnd.Float_Random(-1.0, 1.0)),
+            Y_Speed => - Speed_Range(Rnd.Float_Random(0.0, 10.0)));
   end Get_Init_Speed;
 
   -- Position in space

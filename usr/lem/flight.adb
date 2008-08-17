@@ -12,8 +12,8 @@ package body Flight is
     use type Space.X_Range;
   begin
     Init_Pos.X_Pos :=  Space.X_Range (Rnd.Float_Random (
-       Float(Space.X_Range'First + Lem.Width),
-       Float(Space.X_Range'Last - Lem.Width) ));
+       Float(Space.X_Range'First + 1.5 * Lem.Width),
+       Float(Space.X_Range'Last - 1.5 * Lem.Width) ));
     Init_Pos.Y_Pos := Space.Y_Range'Last - Lem.Height;
     return Init_Pos;
   end Get_Init_Position;

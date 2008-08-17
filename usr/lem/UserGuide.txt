@@ -40,7 +40,7 @@ horizontal thrust, and wheel for vertical thurst.
 
 5. PLaying
 The game starts at a random (high) position, with a random vertical speed and
-a reasonable vertical thrust.
+a reasonable vertical thrust (and a very reasonable horizontal speed).
 Spot a flat landing area and adjust speeds to reach it. Check the area (APP
 indicator) before landing.
 You land safely if within 75% of the speed limits and with at least 10% of
