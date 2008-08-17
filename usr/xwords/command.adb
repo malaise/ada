@@ -154,6 +154,14 @@ package body Command is
     Result.Insert_Copy (Output_Result);
     Ok := Child_Result.Cause = Sys_Calls.Exited
     and then Child_Result.Exit_Code = 0;
+
+    -- Exec failed leads to OK with no output
+    if not Ok and then Result.Is_Empty then
+    if Debug then
+      Ada.Text_Io.Put_Line ("Adding spwan error");
+    end if;
+      Result.Insert (Common.Asu_Tus ("Spawn error"));
+    end if;
   end Exec;
 
 end Command;
