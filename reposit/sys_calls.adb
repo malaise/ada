@@ -711,6 +711,17 @@ package body Sys_Calls is
     C_Mutate (Str4C'Address, Str4C'Length);
   end Mutate;
 
+  procedure Suicide is
+    Suicide_Failed : exception;
+    procedure C_Exit (Status : in Integer);
+    pragma Import  (C, C_Exit, "exit");
+  begin
+    -- Exit 1
+    C_Exit (1);
+    -- Should not be reached
+    raise Suicide_Failed;
+  end Suicide;
+
   -- Process termination
   C_No_More  : constant Integer := 0;
   C_Exited   : constant Integer := 1;

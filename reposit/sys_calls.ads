@@ -188,6 +188,9 @@ package Sys_Calls is
   -- Program_name and arguments have to follow Many_Strings format
   procedure Mutate (Program : in String);
 
+  -- When mutation failed, child process shall suicide by using this
+  procedure Suicide;
+
   -- Process termination information
   type Death_Cause_List is (No_Dead, Exited, Signaled, Stopped);
   type Death_Rec (Cause : Death_Cause_List := No_Dead) is record

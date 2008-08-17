@@ -254,7 +254,8 @@ package body Proc_Family is
             Close (Child.Fd_Out);
             Close (Child.Fd_Err);
           end if;
-          return Failure;
+          -- Suicide
+          Sys_Calls.Suicide;
       end;
     end if;
 
