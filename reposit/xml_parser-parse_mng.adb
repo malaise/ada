@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Lower_Str;
+with Lower_Str, String_Mng;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -259,8 +259,14 @@ package body Parse_Mng  is
         Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
                   Attribute_Name, Attribute_Value, Line_No);
       elsif not Attr_Exists then
+        -- Keep first definition
         Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attribute_Name, Attribute_Value, Line_No);
+        if Asu_Ts (Attribute_Name) = "xml:space"
+        and then Asu_Ts (Attribute_Value) = "preserve" then
+          Tree_Mng.Add_Tuning (Ctx.Elements.all, Tree_Mng.Xml_Space_Preserve);
+          Trace ("Added tuning " & Tree_Mng.Xml_Space_Preserve);
+        end if;
       end if;
       Trace ("Parsed attribute " & Asu_Ts (Attribute_Name)
            & ", " & Asu_Ts (Attribute_Value));
@@ -287,6 +293,7 @@ package body Parse_Mng  is
   end Parse_Attributes;
 
   -- Check Xml version, encoding and standalone are correctly defined
+  --  in xml declaration of DTD or XML
   procedure Check_Xml_Attributes (Ctx : in out Ctx_Type;
                                   Of_Xml : in Boolean) is
     Attribute_Value : Asu_Us;
@@ -364,16 +371,24 @@ package body Parse_Mng  is
   package body Dtd is separate;
 
   -- Check that XML instruction is set
-  -- If not, Add a xml version 1.0
-  procedure Check_Xml_Set (Ctx : in out Ctx_Type) is
+  -- Inherit the Dtd encoding (if any)
+  procedure Check_Xml (Ctx : in out Ctx_Type;
+                       Adtd : in out Dtd_Type) is
     Ok : Boolean;
+    use type Asu_Us;
   begin
     Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
     if not Ok then
-      -- Add a 'xml'i directive but with no attribute
-      Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
+      -- Add a 'xml' directive but with no attribute
+      Util.Error (Ctx.Flow, "Missing xml directive");
     end if;
-  end Check_Xml_Set;
+    -- If Dtd has encoding and Expand
+    if Adtd.Encoding = Asu_Null or else not Ctx.Expand then
+      return;
+    end if;
+    -- Current encoding shall be those of DTD
+    -- @@@ Insert as second attribute or replace second
+  end Check_Xml;
 
   -- Parse an instruction (<?xxx?>)
   procedure Parse_Instruction (Ctx : in out Ctx_Type;
@@ -420,11 +435,11 @@ package body Parse_Mng  is
     end if;
 
     -- Parse instruction until ? or separator
-    Check_Xml_Set (Ctx);
+    Check_Xml (Ctx, Adtd);
     Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Name) then
-      Util.Error (Ctx.Flow, "Unvalid processing instruction name"
+      Util.Error (Ctx.Flow, "Invalid processing instruction name"
                & Asu_Ts (Name));
     end if;
     Util.Reset_Curr_Str (Ctx.Flow);
@@ -648,7 +663,7 @@ package body Parse_Mng  is
           Parse_Instruction (Ctx, Adtd);
         when Util.Directive =>
           -- Directive or comment or CDATA
-          Check_Xml_Set (Ctx);
+          Check_Xml (Ctx, Adtd);
           Parse_Directive (Ctx, Adtd, Allow_Dtd, False);
         when Util.Start =>
           -- "<<" maybe "<<![CDATA["
@@ -661,7 +676,7 @@ package body Parse_Mng  is
       end case;
     end loop;
     -- Xml directive is mandatory in prologue, which is mandatory in doc
-    Check_Xml_Set (Ctx);
+    Check_Xml (Ctx, Adtd);
     -- Parse dtd file if requested to do so and no Doctype
     if Ctx.Use_Dtd
     and then Ctx.Dtd_File /= Asu_Null
@@ -686,8 +701,18 @@ package body Parse_Mng  is
     Preserve_Txt : Asu_Us;
     Preserve : Boolean;
     Ok : Boolean;
+    Has_Child : Boolean;
     use type Asu_Us;
   begin
+    -- Try to preserve spaces if current element has this tuning
+    Preserve := String_Mng.Locate (Tree_Mng.Get_Tuning (Ctx.Elements.all),
+                                   Tree_Mng.Xml_Space_Preserve) /= 0;
+    if Preserve then
+      Trace ("Preserving spaces of the texts of this element");
+    end if;
+
+    -- Detect children
+    Has_Child := False;
     Line_No := Util.Get_Line_No (Ctx.Flow);
     Util.Get_Separators (Ctx.Flow, Text);
     loop
@@ -696,31 +721,31 @@ package body Parse_Mng  is
         Util.Get (Ctx.Flow, Char);
         if Char = Util.Slash then
           -- "</" end of this element
+          if not Has_Child and then Text /= Asu_Null then
+            -- Element has no child but text between start and stop, add it
+            Util.Fix_Text (Ctx, Adtd, Text, False, Preserve);
+            Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
+          end if;
           return;
         elsif Char = Util.Directive then
           -- Must be a comment or CDATA
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
+          Has_Child := True;
         elsif Char = Util.Start then
           Util.Check_Cdata (Ctx.Flow);
           Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
+          Has_Child := True;
         else
           -- A new sub-element
           Util.Unget (Ctx.Flow);
           Parse_Element (Ctx, Adtd, False);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
+          Has_Child := True;
         end if;
       else
-        -- Try to preserve spaces if current element has attribute
-        --  xml:space set to preserve
-        Tree_Mng.Get_Attribute (Ctx.Elements.all,
-                                Asu_Tus ("xml:space"), Preserve_Txt);
-        Preserve := Preserve_Txt = Asu_Tus ("preserve");
-        if Preserve then
-          Trace ("Preserving spaces of the following text");
-        end if;
         -- A text, will stop with a new sub-element or
         --  with stop of current element
         -- Concatenate blocks separated by <![CDATA[xxx]]>
@@ -738,6 +763,7 @@ package body Parse_Mng  is
         end loop;
         Util.Fix_Text (Ctx, Adtd, Text, False, Preserve);
         Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
+        Has_Child := True;
         Trace ("Parsed Text " & Asu_Ts (Text));
       end if;
     end loop;

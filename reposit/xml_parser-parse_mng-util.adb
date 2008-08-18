@@ -1,4 +1,3 @@
-with String_Mng;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
 

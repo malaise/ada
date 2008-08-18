@@ -104,6 +104,25 @@ package body Tree_Mng is
     end if;
   end Add_Element;
 
+  -- Add specific tuning to element (xml:space=preserve)
+  -- Use the Value field of the element
+  procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;
+                        Tuning : in String) is
+    Cell : My_Tree_Cell;
+  begin
+    My_Tree.Read (Elements, Cell);
+    Asu.Append (Cell.Value, Tuning & " ");
+    My_Tree.Replace (Elements, Cell);
+  end Add_Tuning;
+
+  -- Get specific tuning to element (xml:space=preserve)
+  function Get_Tuning (Elements : My_Tree.Tree_Type) return String is
+    Cell : My_Tree_Cell;
+  begin
+    My_Tree.Read (Elements, Cell);
+    return Asu_Ts (Cell.Value);
+  end Get_Tuning;
+
   -- Move to father of current element
   procedure Move_Up (Elements : in out My_Tree.Tree_Type) is
   begin

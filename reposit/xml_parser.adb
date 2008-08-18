@@ -35,6 +35,12 @@ package body Xml_Parser is
     -- Add an element, move to it
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
                            Name : in Asu_Us; Line : in Natural);
+    -- Add specific tuning to element (xml:space=preserve)
+    Xml_Space_Preserve : constant String := "xml:space=preserve";
+    procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;
+                            Tuning : in String);
+    -- Get all tuning of an element
+    function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
     -- Move up
     procedure Move_Up (Elements : in out My_Tree.Tree_Type);
     -- Add an attribute to current element, remain on current element
@@ -305,6 +311,7 @@ package body Xml_Parser is
     -- Clean Dtd
     Dtd.Set := False;
     Dtd.Xml_Found := False;
+    Dtd.Encoding := Asu_Null;
     Dtd.In_Include := False;
     Info_Mng.Delete_List (Dtd.Info_List);
     Entity_List_Mng.Delete_List (Dtd.Entity_List);

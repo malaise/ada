@@ -1,4 +1,4 @@
-with String_Mng, Regular_Expressions, Parser, Int_Image;
+with Regular_Expressions, Parser, Int_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
@@ -20,6 +20,8 @@ package body Dtd is
     Adtd.Set := False;
     -- No xml instruction found (yet)
     Adtd.Xml_Found := False;
+    -- No encoding
+    Adtd.Encoding := Asu_Null;
     -- Clear entities
     Entity_Mng.Initialise (Adtd.Entity_List);
     -- Reset info list
@@ -39,6 +41,7 @@ package body Dtd is
     Ok : Boolean;
     Char : Character;
     Dummy : My_Tree_Cell;
+    Encoding_Index : Natural;
   begin
     -- See if this is the xml directive
     Util.Check_Cdata (Ctx.Flow, 3);
@@ -64,6 +67,9 @@ package body Dtd is
       end if;
       Parse_Attributes (Ctx, Adtd, True);
       Check_Xml_Attributes (Ctx, False);
+      -- Store encoding if any
+      Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all, Asu_Tus ("encoding"),
+                                   Encoding_Index, Adtd.Encoding);
       -- Delete this dummy child
       My_Tree.Delete_Tree (Ctx.Prologue.all);
       -- Done
@@ -754,7 +760,7 @@ package body Dtd is
     case Char is
       when 'E' =>
         -- Must be empty
-        if Asu.Length (Children) /= 0 then
+        if Asu.Length (Children) /= 0 or else Is_Mixed then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " must be empty",
                       Line_No);
@@ -947,7 +953,7 @@ package body Dtd is
                       & " has incorrect value "
                       & Asu_Ts (Xml_Val), Line_No);
           end if;
-        elsif Td(2) = 'D' and then not Att_Set and then Ctx.Expand then
+        elsif Td(2) = 'D' and then not Att_Set then
           -- Default in dtd with no xml value: insert default in tree
           if Td(1) = 'E' then
             -- Default of enum is first string after Info_Sep
@@ -959,13 +965,22 @@ package body Dtd is
               Dtd_Val : constant String
                       := Asu.Slice (Attinfo.List, 2, Sep - 1 );
             begin
-              Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                  Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
+              if Ctx.Expand then
+                Tree_Mng.Add_Attribute (Ctx.Elements.all,
+                    Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
+              end if;
+              if Attr = "xml:space" and then Dtd_Val = "preserve" then
+                Tree_Mng.Add_Tuning (Ctx.Elements.all,
+                                     Tree_Mng.Xml_Space_Preserve);
+                Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
+              end if;
             end;
           else
-            -- Default of not enum is the value
-            Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                  Asu_Tus (Attr), Attinfo.List, Line_No);
+            if Ctx.Expand then
+              -- Default of not enum is the value
+              Tree_Mng.Add_Attribute (Ctx.Elements.all,
+                    Asu_Tus (Attr), Attinfo.List, Line_No);
+            end if;
           end if;
         elsif Att_Set then
           -- Comformance checks on ID, IDREF(s) and NMTOKEN(s)
@@ -1115,8 +1130,9 @@ package body Dtd is
                            Adtd : in out Dtd_Type) is
     Cell : My_Tree_Cell;
   begin
-    -- Check current element
+    -- Check current element, attributes then children
     Check_Element (Ctx, Adtd, Check_The_Attributes => True);
+    Check_Element (Ctx, Adtd, Check_The_Attributes => False);
     -- Check children recursively
     if My_Tree.Children_Number (Ctx.Elements.all) = 0 then
       -- No child

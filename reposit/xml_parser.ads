@@ -369,6 +369,8 @@ private
     Set : Boolean := False;
     -- Is there already xml instruction found in the dtd
     Xml_Found : Boolean := False;
+    -- Encoding directive of dtd
+    Encoding :  Ada.Strings.Unbounded.Unbounded_String;
     -- Parsed info
     Info_List : Info_Mng.List_Type;
     -- Parsed entities
