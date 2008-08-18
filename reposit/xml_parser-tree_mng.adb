@@ -216,6 +216,58 @@ package body Tree_Mng is
     My_Tree.Replace (Prologue, Cell);
   end Add_Xml_Attribute;
 
+  -- Sets or overwrites a xml attribute at a given index
+  procedure Set_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
+                  Name : in Asu_Us; Index : in Positive; Value : in Asu_Us) is
+    Pro_Cell, Cell, Tmp_Cell : My_Tree_Cell;
+    use type Asu_Us;
+  begin
+    Cell.Line_No := 0;
+    Cell.Kind := Attribute;
+    Cell.Nb_Attributes := 0;
+    Cell.Name := Name;
+    Cell.Value := Value;
+    -- Read root and check
+    My_Tree.Read (Prologue, Pro_Cell);
+    if Index > Pro_Cell.Nb_Attributes + 1 then
+       Trace ("Inserting/replacing XML attribute " & Asu_Ts (Name)
+            & " at index " & Index'Img & " while having "
+            & Pro_Cell.Nb_Attributes'Img & " attributes");
+      raise Internal_Error;
+    end if;
+    if Pro_Cell.Nb_Attributes = 0 then
+       -- No Attribute
+       My_Tree.Insert_Child (Prologue, Cell);
+       My_Tree.Move_Root (Prologue);
+       return;
+    end if;
+    -- Move to attribute before Index
+    My_Tree.Move_Child (Prologue);
+    for I in 1 .. Index - 2 loop
+      My_Tree.Move_Brother (Prologue, False);
+    end loop;
+    if Index = Pro_Cell.Nb_Attributes + 1 then
+      -- This is the insertion of last attribute
+      My_Tree.Insert_Brother (Prologue, Cell, False);
+      Pro_Cell.Nb_Attributes := Pro_Cell.Nb_Attributes + 1;
+    else
+      -- Read next attribute and check name
+      My_Tree.Move_Brother (Prologue, False);
+      My_Tree.Read (Prologue, Tmp_Cell);
+      if Tmp_Cell.Name = Name then
+        -- This attribute matches, overwrite it
+        My_Tree.Replace (Prologue, Cell);
+      else
+        -- Attribute must be inserted before current
+        My_Tree.Insert_Brother (Prologue, Cell, True);
+        Pro_Cell.Nb_Attributes := Pro_Cell.Nb_Attributes + 1;
+      end if;
+    end if;
+    -- Done
+    My_Tree.Move_Root (Prologue);
+    My_Tree.Replace (Prologue, Pro_Cell);
+  end Set_Xml_Attribute;
+
   procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
                          Exists : out Boolean) is
     Cell : My_Tree_Cell;

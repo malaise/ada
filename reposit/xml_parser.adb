@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -52,6 +52,7 @@ package body Xml_Parser is
     -- Get an attribute (if it exists, otherwise "")
     procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
                            Name : in Asu_Us; Value : out Asu_Us);
+    
     -- Initialise an empty prologue
     procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
@@ -59,6 +60,10 @@ package body Xml_Parser is
                        Line : in Natural);
     procedure Add_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
                                  Name, Value : in Asu_Us; Line : in Natural);
+    -- Sets or overwrites a xml attribute at a given index
+    procedure Set_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
+                  Name : in Asu_Us; Index : in Positive; Value : in Asu_Us);
+
     -- Check xml is set, find an attribute (Index is 0 if not found)
     procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
                          Exists : out Boolean);

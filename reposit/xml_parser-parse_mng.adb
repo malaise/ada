@@ -387,7 +387,9 @@ package body Parse_Mng  is
       return;
     end if;
     -- Current encoding shall be those of DTD
-    -- @@@ Insert as second attribute or replace second
+    Trace ("Setting xml encoding from dtd to " & Asu_Ts (Adtd.Encoding));
+    Tree_Mng.Set_Xml_Attribute (Ctx.Prologue.all, Asu_Tus ("encoding"),
+                                2, Adtd.Encoding);
   end Check_Xml;
 
   -- Parse an instruction (<?xxx?>)
